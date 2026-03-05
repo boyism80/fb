@@ -96,6 +96,16 @@ struct character
     static int builtin_marriage(lua_State* L);
     static int builtin_marry(lua_State* L);
     static int builtin_divorce(lua_State* L);
+    static int builtin_unknown_12(lua_State* L);
+    static int builtin_unknown_26(lua_State* L);
+    static int builtin_ui(lua_State* L);
+    static int builtin_item_throw_confirm(lua_State* L);
+    static int builtin_freeze(lua_State* L);
+    static int builtin_unknown_6A(lua_State* L);
+    static int builtin_unknown_4B(lua_State* L);
+    static int builtin_unknown_1B(lua_State* L);
+    static int builtin_unknown_35(lua_State* L);
+    static int builtin_holyday_screen(lua_State* L);
 };
 
 } // namespace fb::game::builtin

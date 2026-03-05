@@ -92,8 +92,8 @@ async::task<void> bulletin::handle_articles(character* ch, std::weak_ptr<charact
         }
         else
         {
-            auto   section   = request.section;
-            auto&& articles  = co_await this->server.bulletin_list(request.section, request.offset);
+            auto   section  = request.section;
+            auto&& articles = co_await this->server.bulletin_list(request.section, request.offset);
             co_await this->server.threads.switching(weak);
 
             auto& model = table::bulletin[section];

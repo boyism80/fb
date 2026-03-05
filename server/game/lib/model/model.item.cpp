@@ -40,7 +40,7 @@ fb::model::item* fb::model::__item::name2item(std::string_view name) const
     {
         if (v.name == name)
         {
-            auto lock   = std::lock_guard(cache_mutex);
+            auto lock       = std::lock_guard(cache_mutex);
             cache[name_str] = &v;
             return &v;
         }
@@ -63,7 +63,7 @@ std::vector<fb::model::item*> fb::model::__item::name2item_prefix(std::string_vi
         }
     });
 
-    auto result = std::vector<fb::model::item*>{};
+    auto result     = std::vector<fb::model::item*>{};
     auto prefix_str = std::string(prefix);
 
     {

@@ -45,14 +45,14 @@ async::task<void> server::on_start()
     co_await fb::acceptor<session>::on_start();
 
     this->bind_timer<fb::login::handler::timer::heart_beat>(1s);
-    this->handler.amqp.bind<fb::login::handler::amqp::shutdown>("fb.global");  // Shutdown: all servers
+    this->handler.amqp.bind<fb::login::handler::amqp::shutdown>("fb.global"); // Shutdown: all servers
 }
 
 async::task<void> server::update_status()
 {
     try
     {
-        auto world = fb::config<uint32_t>("world");
+        auto world  = fb::config<uint32_t>("world");
         std::ignore = co_await this->http.post("internal",
                                                "/server/heartbeat",
                                                internal_reqs::Heartbeat{world,
@@ -116,5 +116,5 @@ async::task<bool> server::on_disconnected(fb::socket<session>& socket)
 
 void server::on_init_amqp(fb::amqp::socket& amqp)
 {
-    this->handler.amqp.declare_queue("amq.direct", "fb.global");  // Shutdown: all servers
+    this->handler.amqp.declare_queue("amq.direct", "fb.global"); // Shutdown: all servers
 }

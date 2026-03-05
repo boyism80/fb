@@ -67,12 +67,12 @@ void listener_impl::on_dialog(character&                      me,
     me.send(game_resp::dialog_list(obj, menus, std::string(message), button_prev, oid));
 }
 
-void listener_impl::on_dialog(character&                            me,
+void listener_impl::on_dialog(character&                              me,
                               std::unique_ptr<fb::game::appearance>&& appearance,
-                              std::string_view                      message,
-                              const std::vector<std::string>&       menus,
-                              bool                                  button_prev,
-                              uint32_t                              oid)
+                              std::string_view                        message,
+                              const std::vector<std::string>&         menus,
+                              bool                                    button_prev,
+                              uint32_t                                oid)
 {
     me.send(game_resp::dialog_list(std::move(appearance), menus, message, button_prev, oid));
 }

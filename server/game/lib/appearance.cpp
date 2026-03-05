@@ -7,9 +7,9 @@ using namespace fb::game;
 using namespace fb::model::enum_value;
 using table = fb::model::table;
 
-character_appearance::character_appearance(GENDER                     gender,
-                                           std::optional<STATE>       state,
-                                           uint16_t                  hair,
+character_appearance::character_appearance(GENDER                  gender,
+                                           std::optional<STATE>    state,
+                                           uint16_t                hair,
                                            std::optional<uint8_t>  hair_color,
                                            std::optional<uint16_t> weapon,
                                            std::optional<uint8_t>  weapon_color,

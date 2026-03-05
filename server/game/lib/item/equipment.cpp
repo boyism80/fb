@@ -239,12 +239,12 @@ std::string fb::game::equipment::tip_message() const
         sstream << std::left << std::setw(14) << std::endl << "마력치 상승:" << std::to_string(model.base_mp);
 
     if (model.hp_percentage != 0.0f)
-        sstream << std::left << std::setw(14) << std::endl << "최대체력 퍼센트:" << std::fixed << std::setprecision(1)
-                << model.hp_percentage << '%';
+        sstream << std::left << std::setw(14) << std::endl
+                << "최대체력 퍼센트:" << std::fixed << std::setprecision(1) << model.hp_percentage << '%';
 
     if (model.mp_percentage != 0.0f)
-        sstream << std::left << std::setw(14) << std::endl << "최대마력 퍼센트:" << std::fixed << std::setprecision(1)
-                << model.mp_percentage << '%';
+        sstream << std::left << std::setw(14) << std::endl
+                << "최대마력 퍼센트:" << std::fixed << std::setprecision(1) << model.mp_percentage << '%';
 
     if (model.strength)
         sstream << std::left << std::setw(14) << std::endl << "힘 상승:" << std::to_string(model.strength);

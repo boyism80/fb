@@ -21,7 +21,7 @@ async::task<void> login::serialize(fb::stream_writer<big_endian>& writer) const
     writer.write<uint8_t>(static_cast<uint8_t>(this->from));
     writer.write<uint32_t>(this->id);
     writer.write<std::string, uint8_t>(this->name);
-    writer.write<uint8_t>(this->transfer.has_value());
+    writer.write<bool>(this->transfer.has_value());
 
     if (transfer.has_value())
     {
@@ -45,10 +45,9 @@ async::task<void> login::deserialize(fb::stream_reader<big_endian>& reader)
 #endif
 
     // additional parameters
-    this->id      = reader.read<uint32_t>();
-    this->name    = reader.read<std::string, uint8_t>();
-    auto transfer = reader.read<uint8_t>();
-    if (transfer == 1)
+    this->id   = reader.read<uint32_t>();
+    this->name = reader.read<std::string, uint8_t>();
+    if (reader.read<bool>())
     {
         auto map       = reader.read<uint16_t>();
         auto x         = reader.read<uint16_t>();

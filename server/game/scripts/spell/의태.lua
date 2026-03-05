@@ -1,4 +1,4 @@
--- 의태시약 (id 14). Add logic as needed.
+-- 의태 (id 14). Add logic as needed.
 function ON_CAST_14(me, you, spell)
     local buff_time = 5
     if buff_cast(me, me, spell) then

@@ -178,6 +178,7 @@ function run_hand_in(me, npc)
         end
         me:dialog(npc, "아아 감사합니다~ 아, 연도 가지고 오셨는데 한번 날려보시겠어요?", false, true)
         me:dialog(npc, "사진도 한장 찍어드릴께요. ^^ 그럼 갑니다!!", false, true)
+        me:holyday_screen(1, 2, {6, 8})
         return
     end
 
@@ -195,6 +196,7 @@ function run_hand_in(me, npc)
         end
         me:dialog(npc, "감사합니다~ 제기를 한번 차보세요.", false, true)
         me:dialog(npc, "사진 찍어드릴께요.", false, true)
+        me:holyday_screen(0, 2, {9, 7})
         return
     end
 
@@ -211,6 +213,7 @@ function run_hand_in(me, npc)
             return
         end
         me:dialog(npc, "감사합니다!! 널뛰기 한번 해보세요! 사진도 찍어드립니다. ^^", false, true)
+        me:holyday_screen(2, 3, {12, 5})
         return
     end
 

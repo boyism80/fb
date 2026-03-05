@@ -1133,6 +1133,111 @@ command_funcs = {
             end,
         },
         
+        ['unknown_12'] = {
+            ['privilege'] = ROLE.ADMIN,
+            ['usage'] = '[oid] [파티슬롯] [레벨인코딩] - 그룹 랭크 패킷 전송 (테스트)',
+            ['command'] = function (me, args)
+                -- 그룹랭크가 아니라 뭔지 모르겠는데
+                --  oid, slot(인벤토리 슬롯, 1 based), weapon
+                -- 장착무기 외형이 갑자기 변하고 인벤토리 슬롯에 해당되는 아이템 뒤에 [무장]이라는 글자가 붙음
+                local oid, slot, level = table.unpack(args)
+                me:unknown_12(tonumber(oid) or 0, tonumber(slot) or 0, tonumber(level) or 1)
+                return true
+            end,
+        },
+        
+        ['unknown_26'] = {
+            ['privilege'] = ROLE.ADMIN,
+            ['usage'] = '[flags] [x] [y] [rel_x] [rel_y] [zone_slot] - cmd 0x26 (동작 간헐적, 위치워프 아님, 테스트)',
+            ['command'] = function (me, args)
+                local flags, x, y, rx, ry, slot = table.unpack(args)
+                me:unknown_26(tonumber(flags) or 0, tonumber(x) or 0, tonumber(y) or 0,
+                    tonumber(rx) or 0, tonumber(ry) or 0, tonumber(slot) or 0)
+                return true
+            end,
+        },
+        
+        ['UI화면'] = {
+            ['privilege'] = ROLE.ADMIN,
+            ['usage'] = '[0=인벤토리 2=스킬 4=상태 6=게시판 7=세부상태 8=업적] - UI 화면 전환 (cmd 0x3E)',
+            ['command'] = function (me, args)
+                local screen = tonumber(table.unpack(args)) or 0
+                me:ui(screen)
+                return true
+            end,
+        },
+        
+        ['아이템던지기확인'] = {
+            ['privilege'] = ROLE.ADMIN,
+            ['usage'] = '[inventory_slot] - item throw confirm (cmd 0x4E), client shows "정말 던지겠습니까?"',
+            ['command'] = function (me, args)
+                local slot = tonumber(table.unpack(args)) or 0
+                me:item_throw_confirm(slot)
+                return true
+            end,
+        },
+        
+        ['입력정지'] = {
+            ['privilege'] = ROLE.ADMIN,
+            ['usage'] = '[0/1] - input freeze (cmd 0x51): 1=freeze movement/input, 0=release',
+            ['command'] = function (me, args)
+                local freeze = tonumber(table.unpack(args))
+                me:freeze(freeze and freeze ~= 0 or false)
+                return true
+            end,
+        },
+        
+        ['unknown_6A'] = {
+            ['privilege'] = ROLE.ADMIN,
+            ['usage'] = '[value] - unknown packet 0x6A (no visible reaction, test)',
+            ['command'] = function (me, args)
+                local value = tonumber(table.unpack(args)) or 0
+                me:unknown_6A(value)
+                return true
+            end,
+        },
+        
+        ['unknown_4B'] = {
+            ['privilege'] = ROLE.ADMIN,
+            ['usage'] = '[text] - unknown packet 0x4B (no visible reaction, test)',
+            ['command'] = function (me, args)
+                local payload = (args and #args > 0) and table.concat(args, ' ') or ''
+                me:unknown_4B(payload)
+                return true
+            end,
+        },
+        
+        ['unknown_1B'] = {
+            ['privilege'] = ROLE.ADMIN,
+            ['usage'] = '- unknown packet 0x1B (causes client crash, test only)',
+            ['command'] = function (me, args)
+                me:unknown_1B()
+                return true
+            end,
+        },
+        
+        ['세시화면'] = {
+            ['privilege'] = ROLE.ADMIN,
+            ['usage'] = '[screen] [direction] [x] [y] - holyday_screen packet (cmd 0x5A, test)',
+            ['command'] = function (me, args)
+                local screen = tonumber(args[1]) or 0
+                local direction = tonumber(args[2]) or 0
+                local x = tonumber(args[3]) or 0
+                local y = tonumber(args[4]) or 0
+                me:holyday_screen(screen, direction, {x, y})
+                return true
+            end,
+        },
+        
+        ['unknown_35'] = {
+            ['privilege'] = ROLE.ADMIN,
+            ['usage'] = '- unknown packet 0x35 (causes client crash, test only)',
+            ['command'] = function (me, args)
+                me:unknown_35()
+                return true
+            end,
+        },
+        
         ['메일쓰기'] = {
             ['privilege'] = ROLE.ADMIN,
             ['usage'] = '<받는사람> <제목> <내용> - 메일 전송',

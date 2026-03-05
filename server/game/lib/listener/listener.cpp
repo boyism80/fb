@@ -12,22 +12,23 @@ listener_impl::listener_impl(fb::game::server& server) :
 
 void listener_impl::send_update_appearance(object& obj, const fb::model::appearance& appearance)
 {
-    auto serializer = game_resp::appearance_serializer<true>{.oid         = obj.oid(),
-                                                             .position    = obj.position(),
-                                                             .direction   = obj.direction(),
-                                                             .head_marker = HEAD_MARKER::NONE,
-                                                             .name        = obj.name(),
-                                                             .appearance  = character_appearance(appearance.gender,
-                                                                                                std::optional<STATE>(appearance.state),
-                                                                                                appearance.hair,
-                                                                                                appearance.hair_color,
-                                                                                                appearance.weapon,
-                                                                                                appearance.weapon_color,
-                                                                                                appearance.armor,
-                                                                                                appearance.armor_color,
-                                                                                                appearance.shield,
-                                                                                                appearance.shield_color,
-                                                                                                appearance.disguise)};
+    auto serializer = game_resp::appearance_serializer<true>{
+        .oid         = obj.oid(),
+        .position    = obj.position(),
+        .direction   = obj.direction(),
+        .head_marker = HEAD_MARKER::NONE,
+        .name        = obj.name(),
+        .appearance  = character_appearance(appearance.gender,
+                                           std::optional<STATE>(appearance.state),
+                                           appearance.hair,
+                                           appearance.hair_color,
+                                           appearance.weapon,
+                                           appearance.weapon_color,
+                                           appearance.armor,
+                                           appearance.armor_color,
+                                           appearance.shield,
+                                           appearance.shield_color,
+                                           appearance.disguise)};
 
     std::ignore = this->server.send(obj, game_resp::update_external<true>(serializer), scope::PIVOT);
 }

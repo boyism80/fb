@@ -74,9 +74,9 @@ bool quest::inc_step(uint32_t value)
     if (owner == nullptr)
         return false;
 
-    this->_step += value;
-    this->_progress = 0;
-    this->_param    = "";
+    this->_step     += value;
+    this->_progress  = 0;
+    this->_param     = "";
     return true;
 }
 

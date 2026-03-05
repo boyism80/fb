@@ -21,7 +21,7 @@ async::task<bool> complete::handle(fb::socket<fb::login::session>&         sessi
         if (session_data->pk == -1)
             throw std::exception();
 
-        auto world = fb::config<uint32_t>("world");
+        auto   world    = fb::config<uint32_t>("world");
         auto&& response = co_await this->server.http.post("internal",
                                                           "/account/make",
                                                           internal_reqs::MakeCharacter{world,

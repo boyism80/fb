@@ -354,9 +354,7 @@ async::task<bool> bulletin_test::mail_scenario()
     co_return true;
 }
 
-async::task<bool> bulletin_test::write(std::shared_ptr<game_bot> bot,
-                                       std::string_view        title,
-                                       std::string_view        contents)
+async::task<bool> bulletin_test::write(std::shared_ptr<game_bot> bot, std::string_view title, std::string_view contents)
 {
     if (bot == nullptr)
         co_return false;
@@ -427,8 +425,8 @@ bulletin_test::get_articles(std::shared_ptr<game_bot> bot, uint16_t section, uin
 async::task<bool> bulletin_test::read_article(std::shared_ptr<game_bot> bot,
                                               uint16_t                  section,
                                               uint16_t                  article_id,
-                                              std::string_view        expected_title,
-                                              std::string_view        expected_contents)
+                                              std::string_view          expected_title,
+                                              std::string_view          expected_contents)
 {
     if (bot == nullptr || article_id == 0)
         co_return false;
@@ -452,7 +450,7 @@ async::task<bool> bulletin_test::read_article(std::shared_ptr<game_bot> bot,
                       resp.article_title,
                       resp.article_uname);
 
-    auto expected_title_str = std::string(expected_title);
+    auto expected_title_str    = std::string(expected_title);
     auto expected_contents_str = std::string(expected_contents);
     if (resp.article_title != expected_title_str)
     {
@@ -495,16 +493,22 @@ async::task<bool> bulletin_test::delete_article(std::shared_ptr<game_bot> bot, u
 }
 
 async::task<bool> bulletin_test::send_mail(std::shared_ptr<game_bot> bot,
-                                           std::string_view        to,
-                                           std::string_view        title,
-                                           std::string_view        contents)
+                                           std::string_view          to,
+                                           std::string_view          title,
+                                           std::string_view          contents)
 {
     if (bot == nullptr)
         co_return false;
 
     // Send the request and wait for response
     auto&& resp = co_await bot->request<fb::bot::integration::bulletin_bot>(
-        game_reqs::bulletin(BULLETIN_ACTION::SEND_MAIL, 0, 0, 0, std::string(title), std::string(contents), std::string(to)),
+        game_reqs::bulletin(BULLETIN_ACTION::SEND_MAIL,
+                            0,
+                            0,
+                            0,
+                            std::string(title),
+                            std::string(contents),
+                            std::string(to)),
         [](auto& resp) -> bool {
             switch (resp.type)
             {
@@ -547,8 +551,8 @@ bulletin_test::get_mails(std::shared_ptr<game_bot> bot)
 
 async::task<bool> bulletin_test::read_mail(std::shared_ptr<game_bot> bot,
                                            uint16_t                  mail_id,
-                                           std::string_view        expected_title,
-                                           std::string_view        expected_contents)
+                                           std::string_view          expected_title,
+                                           std::string_view          expected_contents)
 {
     if (bot == nullptr)
         co_return false;
@@ -567,7 +571,7 @@ async::task<bool> bulletin_test::read_mail(std::shared_ptr<game_bot> bot,
         },
         DEFAULT_TIMEOUT);
 
-    auto expected_title_str = std::string(expected_title);
+    auto expected_title_str    = std::string(expected_title);
     auto expected_contents_str = std::string(expected_contents);
     if (resp.mail_title != expected_title_str)
     {

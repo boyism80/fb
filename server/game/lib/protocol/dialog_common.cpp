@@ -67,8 +67,8 @@ async::task<void> dialog::serialize(fb::stream_writer<big_endian>& writer) const
         writer.write<uint8_t>(0x00);
     }
     writer.write<uint32_t>(0x01);
-    writer.write<uint8_t>(this->button_prev);
-    writer.write<uint8_t>(this->button_next);
+    writer.write<bool>(this->button_prev);
+    writer.write<bool>(this->button_next);
     writer.write<std::string, uint16_t>(this->message);
 }
 #else
@@ -86,8 +86,8 @@ async::task<void> dialog::deserialize(fb::stream_reader<big_endian>& reader)
     reader.read<uint16_t>(); // look (duplicate)
     reader.read<uint8_t>();  // color (duplicate)
     reader.read<uint32_t>(); // 0x01
-    this->button_prev = reader.read<uint8_t>();
-    this->button_next = reader.read<uint8_t>();
+    this->button_prev = reader.read<bool>();
+    this->button_next = reader.read<bool>();
     this->message     = reader.read<std::string, uint16_t>();
 }
 #endif

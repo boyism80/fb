@@ -4,7 +4,7 @@ function ON_ACTIVE_9050(me, item)
         return
     end
 
-    me:cast(front, '의태시약')
+    me:cast(front, '의태')
 end
 
 function ON_INACTIVE_9050(me, item)

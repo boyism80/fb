@@ -14,7 +14,7 @@ const fb::model::promotion* fb::model::__promotion::operator() (fb::model::enum_
     }
 }
 
-bool fb::model::__promotion::name2class(std::string_view            name,
+bool fb::model::__promotion::name2class(std::string_view              name,
                                         fb::model::enum_value::CLASS& cls,
                                         uint8_t&                      promotion) const
 {

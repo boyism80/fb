@@ -26,7 +26,7 @@ IMPLEMENT_LUA_EXTENSION(character, "fb.game.character")
 {"dropitem",               builtin::character::builtin_item_drop},
 {"mkitem",                 builtin::character::builtin_mkitem},
 {"rmitem",                 builtin::character::builtin_rmitem},
-{"exchange",                builtin::character::builtin_exchange},
+{"exchange",               builtin::character::builtin_exchange},
 {"state",                  builtin::character::builtin_state},
 {"mimic",                  builtin::character::builtin_mimic},
 {"class",                  builtin::character::builtin_class},
@@ -100,6 +100,16 @@ IMPLEMENT_LUA_EXTENSION(character, "fb.game.character")
 {"marriage",                     builtin::character::builtin_marriage},
 {"marry",                        builtin::character::builtin_marry},
 {"divorce",                      builtin::character::builtin_divorce},
+{"unknown_12",                   builtin::character::builtin_unknown_12},
+{"unknown_26",                   builtin::character::builtin_unknown_26},
+{"ui",                           builtin::character::builtin_ui},
+{"item_throw_confirm",           builtin::character::builtin_item_throw_confirm},
+{"freeze",                       builtin::character::builtin_freeze},
+{"unknown_6A",                   builtin::character::builtin_unknown_6A},
+{"unknown_4B",                   builtin::character::builtin_unknown_4B},
+{"unknown_1B",                   builtin::character::builtin_unknown_1B},
+{"unknown_35",                   builtin::character::builtin_unknown_35},
+{"holyday_screen",               builtin::character::builtin_holyday_screen},
 END_LUA_EXTENSION; // clang-format on
 
 int builtin::character::builtin_uid(lua_State* L)
@@ -2893,7 +2903,7 @@ int builtin::character::builtin_weapon_color(lua_State* L)
 
     if (argc == 1)
     {
-        auto weak  = ch->weak_from_this_as<fb::game::character>();
+        auto weak = ch->weak_from_this_as<fb::game::character>();
         return lua->ensure_yield(*server, weak, [=](auto is_yield) {
             auto result = ch->weapon_color();
 
@@ -2936,7 +2946,7 @@ int builtin::character::builtin_shield_color(lua_State* L)
 
     if (argc == 1)
     {
-        auto weak  = ch->weak_from_this_as<fb::game::character>();
+        auto weak = ch->weak_from_this_as<fb::game::character>();
         return lua->ensure_yield(*server, weak, [=](auto is_yield) {
             auto result = ch->shield_color();
 
@@ -3175,6 +3185,159 @@ int builtin::character::builtin_web(lua_State* L)
     auto url     = lua->tostring(3, "http://www.google.com");
     auto message = lua->tostring(4, "default message");
     ch->send(fb::protocol::game::response::web(type, url, message));
+    return 0;
+}
+
+int builtin::character::builtin_unknown_12(lua_State* L)
+{
+    auto lua = fb::lua::get(L);
+    if (lua == nullptr)
+        return 0;
+    auto ch = lua->touserdata<fb::game::character>(1);
+    if (ch == nullptr)
+        return 0;
+    auto oid           = static_cast<uint32_t>(lua->tointeger(2, 0));
+    auto party_slot    = static_cast<uint8_t>(lua->tointeger(3, 0));
+    auto level_encoded = static_cast<uint8_t>(lua->tointeger(4, 1));
+    ch->send(fb::protocol::game::response::unknown_12(oid, party_slot, level_encoded));
+    return 0;
+}
+
+int builtin::character::builtin_unknown_26(lua_State* L)
+{
+    auto lua = fb::lua::get(L);
+    if (lua == nullptr)
+        return 0;
+    auto ch = lua->touserdata<fb::game::character>(1);
+    if (ch == nullptr)
+        return 0;
+    auto flags     = static_cast<uint8_t>(lua->tointeger(2, 0));
+    auto pos_x     = static_cast<int16_t>(lua->tointeger(3, 0));
+    auto pos_y     = static_cast<int16_t>(lua->tointeger(4, 0));
+    auto map_rel_x = static_cast<int16_t>(lua->tointeger(5, 0));
+    auto map_rel_y = static_cast<int16_t>(lua->tointeger(6, 0));
+    auto zone_slot = static_cast<uint8_t>(lua->tointeger(7, 0));
+    ch->send(fb::protocol::game::response::unknown_26(flags, pos_x, pos_y, map_rel_x, map_rel_y, zone_slot));
+    return 0;
+}
+
+int builtin::character::builtin_ui(lua_State* L)
+{
+    auto lua = fb::lua::get(L);
+    if (lua == nullptr)
+        return 0;
+    auto ch = lua->touserdata<fb::game::character>(1);
+    if (ch == nullptr)
+        return 0;
+    using UI_SCREEN = fb::protocol::game::response::UI_SCREEN;
+    auto screen     = static_cast<UI_SCREEN>(lua->tointeger(2, 0));
+    ch->send(fb::protocol::game::response::ui_screen(screen));
+    return 0;
+}
+
+int builtin::character::builtin_item_throw_confirm(lua_State* L)
+{
+    auto lua = fb::lua::get(L);
+    if (lua == nullptr)
+        return 0;
+    auto ch = lua->touserdata<fb::game::character>(1);
+    if (ch == nullptr)
+        return 0;
+    auto slot = static_cast<uint8_t>(lua->tointeger(2, 0));
+    ch->send(fb::protocol::game::response::item_throw_confirm(slot));
+    return 0;
+}
+
+int builtin::character::builtin_freeze(lua_State* L)
+{
+    auto lua = fb::lua::get(L);
+    if (lua == nullptr)
+        return 0;
+    auto ch = lua->touserdata<fb::game::character>(1);
+    if (ch == nullptr)
+        return 0;
+    auto freeze = lua->toboolean(2, false);
+    ch->send(fb::protocol::game::response::freeze(freeze));
+    return 0;
+}
+
+int builtin::character::builtin_unknown_6A(lua_State* L)
+{
+    auto lua = fb::lua::get(L);
+    if (lua == nullptr)
+        return 0;
+    auto ch = lua->touserdata<fb::game::character>(1);
+    if (ch == nullptr)
+        return 0;
+    auto value = static_cast<uint8_t>(lua->tointeger(2, 0));
+    ch->send(fb::protocol::game::response::unknown_6A(value));
+    return 0;
+}
+
+int builtin::character::builtin_unknown_4B(lua_State* L)
+{
+    auto lua = fb::lua::get(L);
+    if (lua == nullptr)
+        return 0;
+    auto ch = lua->touserdata<fb::game::character>(1);
+    if (ch == nullptr)
+        return 0;
+    auto payload = lua->tostring(2, "");
+    ch->send(fb::protocol::game::response::unknown_4B(payload));
+    return 0;
+}
+
+int builtin::character::builtin_unknown_1B(lua_State* L)
+{
+    auto lua = fb::lua::get(L);
+    if (lua == nullptr)
+        return 0;
+    auto ch = lua->touserdata<fb::game::character>(1);
+    if (ch == nullptr)
+        return 0;
+    ch->send(fb::protocol::game::response::unknown_1B());
+    return 0;
+}
+
+int builtin::character::builtin_holyday_screen(lua_State* L)
+{
+    auto lua = fb::lua::get(L);
+    if (lua == nullptr)
+        return 0;
+
+    auto ch = lua->touserdata<fb::game::character>(1);
+    if (ch == nullptr)
+        return 0;
+
+    auto screen    = static_cast<uint8_t>(lua->tointeger(2, 0));
+    auto direction = static_cast<fb::model::enum_value::DIRECTION>(lua->tointeger(3, 0));
+    auto x         = uint8_t(0);
+    auto y         = uint8_t(0);
+    if (lua->is_table(4))
+    {
+        lua->rawgeti(4, 1);
+        if (lua->is_number(-1))
+            x = static_cast<uint8_t>(lua->tointeger(-1));
+        lua->pop(1);
+        lua->rawgeti(4, 2);
+        if (lua->is_number(-1))
+            y = static_cast<uint8_t>(lua->tointeger(-1));
+        lua->pop(1);
+    }
+    auto hair = ch->look();
+    ch->send(fb::protocol::game::response::holyday_screen(screen, hair, direction, fb::model::point<uint8_t>(x, y)));
+    return 0;
+}
+
+int builtin::character::builtin_unknown_35(lua_State* L)
+{
+    auto lua = fb::lua::get(L);
+    if (lua == nullptr)
+        return 0;
+    auto ch = lua->touserdata<fb::game::character>(1);
+    if (ch == nullptr)
+        return 0;
+    ch->send(fb::protocol::game::response::unknown_35());
     return 0;
 }
 

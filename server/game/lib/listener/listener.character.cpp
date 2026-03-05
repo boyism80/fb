@@ -103,7 +103,10 @@ void listener_impl::on_level_up(character& me)
 
 void listener_impl::on_update(character& me, UPDATE_STATE_LEVEL level)
 {
-    me.send(game_resp::update_internal(me, level));
+    if (level == UPDATE_STATE_LEVEL::CROWD_CONTROL)
+        me.send(game_resp::update_cc(me));
+    else
+        me.send(game_resp::update_internal(me, level));
 }
 
 async::task<bool> listener_impl::on_transfer(character& me, map& map, const fb::model::point16_t& position)

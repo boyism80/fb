@@ -19,8 +19,9 @@ async::task<void> storage_pending_channel::fetch()
     try
     {
         auto   world = fb::config<uint32_t>("world");
-        auto&& resp    = co_await this->_owner.http.get<internal_resp::GetStoragePending>(
-            "internal", std::format("/storage/pending/{}", world));
+        auto&& resp =
+            co_await this->_owner.http.get<internal_resp::GetStoragePending>("internal",
+                                                                             std::format("/storage/pending/{}", world));
         if (resp.error != 0)
             co_return;
 
@@ -98,7 +99,8 @@ async::task<void> storage_pending_channel::read_async(
     co_await this->_data.async_read(fn);
 }
 
-void storage_pending_channel::write(const std::function<void(std::unordered_map<std::string, storage_box::pending_box>&)>& fn)
+void storage_pending_channel::write(
+    const std::function<void(std::unordered_map<std::string, storage_box::pending_box>&)>& fn)
 {
     this->_data.write(fn);
 }

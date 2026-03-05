@@ -431,11 +431,10 @@ fb::model::area<uint16_t> object::sight_area(const fb::model::point16_t& positio
         end.y   = std::max(int32_t(0), int32_t(position.y + map::HALF_SCREEN_HEIGHT + 1));
     }
 
-    return fb::model::area<uint16_t>(
-        static_cast<uint16_t>(begin.x),
-        static_cast<uint16_t>(begin.y),
-        static_cast<uint16_t>(end.x) + 1,
-        static_cast<uint16_t>(end.y) + 1);
+    return fb::model::area<uint16_t>(static_cast<uint16_t>(begin.x),
+                                     static_cast<uint16_t>(begin.y),
+                                     static_cast<uint16_t>(end.x) + 1,
+                                     static_cast<uint16_t>(end.y) + 1);
 }
 
 fb::model::area<uint16_t> object::sight_area() const

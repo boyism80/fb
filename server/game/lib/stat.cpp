@@ -185,7 +185,12 @@ uint32_t fb::game::stat::heal(uint32_t value, fb::game::object* from)
     return this->hp() - before;
 }
 
-uint32_t fb::game::stat::damage(uint32_t value, std::shared_ptr<fb::game::object> from, bool critical, float rate, bool physical, bool fixed)
+uint32_t fb::game::stat::damage(uint32_t                          value,
+                                std::shared_ptr<fb::game::object> from,
+                                bool                              critical,
+                                float                             rate,
+                                bool                              physical,
+                                bool                              fixed)
 {
     this->owner.assert_thread();
     if (from != nullptr && from->is(OBJECT_TYPE::CHARACTER))
@@ -735,7 +740,12 @@ uint32_t character_stat::regenerative() const
     return base + additional;
 }
 
-uint32_t character_stat::damage(uint32_t value, std::shared_ptr<fb::game::object> from, bool critical, float rate, bool physical, bool fixed)
+uint32_t character_stat::damage(uint32_t                          value,
+                                std::shared_ptr<fb::game::object> from,
+                                bool                              critical,
+                                float                             rate,
+                                bool                              physical,
+                                bool                              fixed)
 {
     this->owner.assert_thread();
 
@@ -872,7 +882,8 @@ uint32_t mob_stat::base_regenerative() const
     return 0;
 }
 
-uint32_t mob_stat::damage(uint32_t value, std::shared_ptr<object> from, bool critical, float rate, bool physical, bool fixed)
+uint32_t
+mob_stat::damage(uint32_t value, std::shared_ptr<object> from, bool critical, float rate, bool physical, bool fixed)
 {
     this->owner.assert_thread();
 
