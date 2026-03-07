@@ -174,7 +174,7 @@ bool item::active()
     auto lua = fb::lua::new_context();
     if (lua != nullptr)
     {
-#if defined DEBUG | defined _DEBUG
+#if defined DEBUG || defined _DEBUG
         lua->load(model.script);
 #endif
         lua->func(model.on_active);

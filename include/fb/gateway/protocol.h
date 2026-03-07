@@ -6,5 +6,6 @@
 #include <fb/gateway/protocol/server_list.h>
 #include <fb/gateway/protocol/welcome.h>
 #include <fb/gateway/protocol/encryption.h>
+#include <fb/gateway/protocol/connection_ack.h>
 
 #endif

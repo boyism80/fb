@@ -380,7 +380,7 @@ async::task<std::shared_ptr<character>> login::init(const game_reqs::login& requ
         auto lua = fb::lua::new_context();
         if (lua != nullptr)
         {
-#if defined DEBUG | defined _DEBUG
+#if defined DEBUG || defined _DEBUG
             lua->load("scripts/interaction.lua");
 #endif
             lua->func("on_login");

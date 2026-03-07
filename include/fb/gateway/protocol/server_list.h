@@ -26,7 +26,7 @@ public:
 
 namespace fb::protocol::gateway::request {
 
-class endpoint : public fb::protocol::header
+class server_list : public fb::protocol::header
 {
 public:
     static constexpr uint8_t header = 0x57;
@@ -37,9 +37,9 @@ public:
 
 public:
 #ifndef BOT
-    endpoint() = default;
+    server_list() = default;
 #else
-    endpoint(uint8_t action, uint8_t index);
+    server_list(uint8_t action, uint8_t index);
 #endif
 
 public:

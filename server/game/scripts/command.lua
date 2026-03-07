@@ -1177,16 +1177,6 @@ command_funcs = {
             end,
         },
         
-        ['입력정지'] = {
-            ['privilege'] = ROLE.ADMIN,
-            ['usage'] = '[0/1] - input freeze (cmd 0x51): 1=freeze movement/input, 0=release',
-            ['command'] = function (me, args)
-                local freeze = tonumber(table.unpack(args))
-                me:freeze(freeze and freeze ~= 0 or false)
-                return true
-            end,
-        },
-        
         ['친구목록동기화'] = {
             ['privilege'] = ROLE.ADMIN,
             ['usage'] = '[0|1] - send friends_sync (0x6A): 0=disable sync, non-zero=enable sync',

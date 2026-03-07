@@ -267,7 +267,7 @@ bool object::move(DIRECTION direction)
     auto lua = fb::lua::new_context();
     if (lua != nullptr)
     {
-#if defined DEBUG | defined _DEBUG
+#if defined DEBUG || defined _DEBUG
         lua->load("scripts/interaction.lua");
 #endif
         lua->func("on_move");
@@ -327,7 +327,7 @@ bool object::direction(DIRECTION value)
     auto lua = fb::lua::new_context();
     if (lua != nullptr)
     {
-#if defined DEBUG | defined _DEBUG
+#if defined DEBUG || defined _DEBUG
         lua->load("scripts/interaction.lua");
 #endif
         lua->func("on_direction");

@@ -1,13 +1,13 @@
-#include <fb/gateway/handler/protocol/entry_list.h>
+#include <fb/gateway/handler/protocol/server_list.h>
 #include <fb/gateway/server.h>
 
 using namespace fb::gateway::handler::protocol;
 
-entry_list::entry_list(fb::gateway::server& server) :
-    fb::handler::protocol<fb::gateway::server, gateway_reqs::endpoint>(server)
+server_list::server_list(fb::gateway::server& server) :
+    fb::handler::protocol<fb::gateway::server, gateway_reqs::server_list>(server)
 { }
 
-async::task<bool> entry_list::handle(fb::socket<fb::gateway::session>& session, gateway_reqs::endpoint& request)
+async::task<bool> server_list::handle(fb::socket<fb::gateway::session>& session, gateway_reqs::server_list& request)
 {
     switch (request.action)
     {

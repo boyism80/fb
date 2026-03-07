@@ -1,4 +1,4 @@
-#include <fb/gateway/handler/protocol/check_version.h>
+#include <fb/gateway/handler/protocol/version.h>
 #include <fb/gateway/util.h>
 
 using namespace fb::gateway::handler::protocol;
@@ -6,11 +6,11 @@ using namespace fb::gateway::util;
 
 namespace gateway_resp = fb::protocol::gateway::response;
 
-check_version::check_version(fb::gateway::server& server) :
+version::version(fb::gateway::server& server) :
     fb::handler::protocol<fb::gateway::server, gateway_reqs::version>(server)
 { }
 
-async::task<bool> check_version::handle(fb::socket<fb::gateway::session>& session, gateway_reqs::version& request)
+async::task<bool> version::handle(fb::socket<fb::gateway::session>& session, gateway_reqs::version& request)
 {
     try
     {

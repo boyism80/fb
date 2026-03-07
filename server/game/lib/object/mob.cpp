@@ -147,7 +147,7 @@ async::task<bool> mob::call_script()
     if (this->_attack_thread == nullptr)
         co_return true;
 
-#if defined DEBUG | defined _DEBUG
+#if defined DEBUG || defined _DEBUG
     this->_attack_thread->load(model.script);
 #endif
     this->_attack_thread->func(model.on_attack);
@@ -459,7 +459,7 @@ void mob::kill(std::shared_ptr<object> from, DESTROY_TYPE destroy_type)
         auto lua = fb::lua::new_context();
         if (lua != nullptr)
         {
-#if defined DEBUG | defined _DEBUG
+#if defined DEBUG || defined _DEBUG
             lua->load(model.script);
 #endif
             lua->func(model.on_die);

@@ -96,7 +96,7 @@ std::shared_ptr<equipment> items::equipment_off(EQUIPMENT_PARTS parts)
         auto lua = fb::lua::new_context();
         if (lua != nullptr)
         {
-#if defined DEBUG | defined _DEBUG
+#if defined DEBUG || defined _DEBUG
             lua->load(model.script);
 #endif
             lua->func(model.on_inactive);
@@ -1063,7 +1063,7 @@ void items::loot(bool boost)
         auto lua = fb::lua::new_context();
         if (lua != nullptr)
         {
-#if defined DEBUG | defined _DEBUG
+#if defined DEBUG || defined _DEBUG
             lua->load("scripts/interaction.lua");
 #endif
             lua->func("on_loot");

@@ -451,7 +451,7 @@ int builtin::life::builtin_cast(lua_State* L)
         return 0;
 
     auto count = 2;
-#if defined DEBUG | defined _DEBUG
+#if defined DEBUG || defined _DEBUG
     x->load("scripts/spell.lua");
     x->load(spell->script);
 #endif

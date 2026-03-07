@@ -32,7 +32,7 @@ bool server::decrypt_policy(uint8_t cmd) const
 {
     switch (cmd)
     {
-    case 0x10:
+    case fb::protocol::login::request::agreement::header:
         return false;
 
     default:

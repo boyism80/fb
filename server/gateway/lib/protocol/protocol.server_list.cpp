@@ -3,7 +3,7 @@
 namespace fb::protocol::gateway::request {
 
 #ifndef BOT
-async::task<void> endpoint::deserialize(fb::stream_reader<big_endian>& reader)
+async::task<void> server_list::deserialize(fb::stream_reader<big_endian>& reader)
 {
     co_await header::deserialize(reader);
     this->action = reader.read<uint8_t>();
@@ -11,12 +11,12 @@ async::task<void> endpoint::deserialize(fb::stream_reader<big_endian>& reader)
         this->index = reader.read<uint8_t>();
 }
 #else
-endpoint::endpoint(uint8_t action, uint8_t index) :
+server_list::server_list(uint8_t action, uint8_t index) :
     action(action),
     index(index)
 { }
 
-async::task<void> endpoint::serialize(fb::stream_writer<big_endian>& writer) const
+async::task<void> server_list::serialize(fb::stream_writer<big_endian>& writer) const
 {
     co_await header::serialize(writer);
     writer.write<uint8_t>(header);

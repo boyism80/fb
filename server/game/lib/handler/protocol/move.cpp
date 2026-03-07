@@ -65,7 +65,7 @@ async::task<bool> move::handle(fb::socket<character>&      session,
             auto lua    = fb::lua::new_context();
             if (lua != nullptr)
             {
-#if defined DEBUG | defined _DEBUG
+#if defined DEBUG || defined _DEBUG
                 lua->load(params.path);
 #endif
                 lua->func(params.function);

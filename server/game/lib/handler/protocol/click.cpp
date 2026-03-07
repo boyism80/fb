@@ -44,7 +44,7 @@ async::task<void> click::handle_f1(character* ch)
     if (lua == nullptr)
         co_return;
 
-#if defined DEBUG | defined _DEBUG
+#if defined DEBUG || defined _DEBUG
     lua->load(fb::model::const_value::script::F1_EVENT_SCRIPT);
 #endif
     lua->func(fb::model::const_value::script::F1_EVENT_FUNC);
@@ -64,7 +64,7 @@ async::task<void> click::handle_f2(character* ch)
     if (lua == nullptr)
         co_return;
 
-#if defined DEBUG | defined _DEBUG
+#if defined DEBUG || defined _DEBUG
     lua->load(fb::model::const_value::script::F2_EVENT_SCRIPT);
 #endif
     lua->func(fb::model::const_value::script::F2_EVENT_FUNC);
@@ -102,7 +102,7 @@ async::task<void> click::handle_object_click(character* ch, game_reqs::click& re
         if (lua == nullptr)
             co_return;
 
-#if defined DEBUG | defined _DEBUG
+#if defined DEBUG || defined _DEBUG
         lua->load("scripts/npc.lua");
         lua->load(model.script);
 #endif

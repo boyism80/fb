@@ -48,13 +48,13 @@ async::task<void> gateway_bot_controller::on_welcome(gateway_bot& bot, const gat
 async::task<void> gateway_bot_controller::on_crt(gateway_bot& bot, const gateway_resp::encryption& response)
 {
     bot.encryption(response.cryptor);
-    bot.send(gateway_reqs::endpoint{0x01, 0});
+    bot.send(gateway_reqs::server_list{0x01, 0});
     co_return;
 }
 
 async::task<void> gateway_bot_controller::on_hosts(gateway_bot& bot, const gateway_resp::server_list& response)
 {
-    bot.send(gateway_reqs::endpoint{0x00, 0});
+    bot.send(gateway_reqs::server_list{0x00, 0});
     co_return;
 }
 

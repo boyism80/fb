@@ -189,7 +189,7 @@ async::task<void> server::on_start()
     this->handler.protocol.bind<fb::game::handler::protocol::loot>();            // Loot handler
     this->handler.protocol.bind<fb::game::handler::protocol::emotion>();         // Emotion handler
     this->handler.protocol.bind<fb::game::handler::protocol::map_update>();      // Map data update handler
-    this->handler.protocol.bind<fb::game::handler::protocol::screen_refresh>();   // Screen refresh handler
+    this->handler.protocol.bind<fb::game::handler::protocol::screen_refresh>();  // Screen refresh handler
     this->handler.protocol.bind<fb::game::handler::protocol::item_active>();     // Item use handler
     this->handler.protocol.bind<fb::game::handler::protocol::item_inactive>();   // Item unequip handler
     this->handler.protocol.bind<fb::game::handler::protocol::item_drop>();       // Item drop handler
@@ -225,19 +225,19 @@ async::task<void> server::on_start()
     this->bind_timer<fb::game::handler::timer::schedule_timer>(1s);
 
     this->initialize_schedules();
-    this->bind_timer<fb::game::handler::timer::announce>(
-        std::chrono::seconds(fb::model::const_value::time::ANNOUNCE.total_milliseconds() / 1000));
-    // log_flush timer removed - logs are now published immediately to RabbitMQ
-
+    auto announce_interval = std::chrono::seconds(fb::model::const_value::time::ANNOUNCE.total_milliseconds() / 1000);
+    this->bind_timer<fb::game::handler::timer::announce>(announce_interval);
     this->bind_thread_timer<fb::game::handler::timer::mob_action_timer>(100ms);
     this->bind_thread_timer<fb::game::handler::timer::mob_respawn_timer>(1s);
     this->bind_thread_timer<fb::game::handler::timer::buff_timer>(1s);
     this->bind_thread_timer<fb::game::handler::timer::gear_timer>(1s);
     this->bind_thread_timer<fb::game::handler::timer::soliloquy_timer>(1s);
-    this->bind_thread_timer<fb::game::handler::timer::afk_timer>(1s);
-    this->bind_thread_timer<fb::game::handler::timer::ping_timer>(1s);
     this->bind_thread_timer<fb::game::handler::timer::save_timer>(std::chrono::seconds(fb::config<uint32_t>("save")));
     this->bind_thread_timer<fb::game::handler::timer::marketplace_restore_timer>(30s);
+#if !defined(DEBUG) && !defined(_DEBUG)
+    this->bind_thread_timer<fb::game::handler::timer::ping_timer>(1s);
+    this->bind_thread_timer<fb::game::handler::timer::afk_timer>(1s);
+#endif
 
     auto world     = config<uint32_t>("world");
     auto host_name = std::format("fb.{}.game.{}", world, config<uint32_t>("id"));
@@ -295,7 +295,7 @@ bool server::decrypt_policy(uint8_t cmd) const
 {
     switch (cmd)
     {
-    case 0x10:
+    case game_reqs::login::header:
         return false;
 
     default:

@@ -1,5 +1,6 @@
 #include <fb/gateway/server.h>
 #include <fb/gateway/handler.h>
+#include <fb/gateway/protocol.h>
 #include <fb/log_collector.h>
 #include <format>
 
@@ -19,8 +20,9 @@ server::server(boost::asio::io_context& io_context, uint16_t port) :
         fb::config<std::string>("name"),
         0) // Gateway is unified (world = 0)
 {
-    this->handler.protocol.bind<fb::gateway::handler::protocol::check_version>();
-    this->handler.protocol.bind<fb::gateway::handler::protocol::entry_list>();
+    this->handler.protocol.bind<fb::gateway::handler::protocol::version>();
+    this->handler.protocol.bind<fb::gateway::handler::protocol::server_list>();
+    this->handler.protocol.bind<fb::gateway::handler::protocol::connection_ack>();
 }
 
 server::~server()
@@ -77,7 +79,10 @@ bool server::decrypt_policy(uint8_t cmd) const
 {
     switch (cmd)
     {
-    case 0x00:
+    case request::version::header:
+        return false;
+
+    case request::connection_ack::header:
         return false;
 
     default:
@@ -92,7 +97,7 @@ async::task<void> server::on_start()
     this->bind_timer<fb::gateway::handler::timer::heart_beat>(1s);
     this->handler.amqp.bind<fb::gateway::handler::amqp::shutdown>("fb.global"); // Shutdown: all servers
 
-    auto writer = fb::stream_writer<big_endian>(this->_connection_cache);
+    auto writer = fb::stream_writer<big_endian>(this->_connection_welcome);
     writer.write<uint8_t>(0x7E);
     writer.write<uint8_t>(0x1B);
     writer.write((const void*)message, strlen(message));
@@ -108,7 +113,7 @@ async::task<void> server::on_accepted(fb::socket<session>& socket)
 
 async::task<bool> server::on_connected(fb::socket<session>& socket)
 {
-    socket.send(this->_connection_cache, false);
+    socket.send(this->_connection_welcome, false);
 
     co_return true;
 }

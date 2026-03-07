@@ -34,7 +34,7 @@ async::task<void> gateway_bot_controller::on_crt(gateway_bot& bot, const gateway
     // TODO: Add encryption parameter validation logic
 
     bot.encryption(response.cryptor);
-    bot.send(fb::protocol::gateway::request::endpoint{0x01, 0});
+    bot.send(fb::protocol::gateway::request::server_list{0x01, 0});
 
     // TODO: Validate encryption/decryption functionality
     co_return;
@@ -45,7 +45,7 @@ async::task<void> gateway_bot_controller::on_hosts(gateway_bot& bot, const gatew
     // Integration test: Validate endpoint discovery
     // TODO: Add endpoint information validation logic
 
-    bot.send(fb::protocol::gateway::request::endpoint{0x00, 0});
+    bot.send(fb::protocol::gateway::request::server_list{0x00, 0});
 
     // TODO: Validate server list completeness and correctness
     co_return;

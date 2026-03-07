@@ -48,7 +48,7 @@ async::task<void> life::attack(DURATION duration)
     auto     lua          = fb::lua::new_context();
     if (lua != nullptr)
     {
-#if defined DEBUG | defined _DEBUG
+#if defined DEBUG || defined _DEBUG
         lua->load("scripts/interaction.lua");
 #endif
         lua->func("on_attack");
@@ -77,7 +77,7 @@ async::task<void> life::attack(DURATION duration)
                 auto weapon_lua = fb::lua::new_context();
                 if (weapon_lua != nullptr)
                 {
-#if defined DEBUG | defined _DEBUG
+#if defined DEBUG || defined _DEBUG
                     weapon_lua->load(model.script);
 #endif
                     weapon_lua->func(model.on_attack);
@@ -120,7 +120,7 @@ bool life::active(fb::game::spell& spell, std::string_view message)
     if (lua == nullptr)
         return false;
 
-#if defined DEBUG | defined _DEBUG
+#if defined DEBUG || defined _DEBUG
     lua->load("scripts/spell.lua");
     lua->load(spell.model.script);
 #endif
@@ -155,7 +155,7 @@ bool life::active(fb::game::spell& spell, fb::game::object& to)
     if (lua == nullptr)
         return false;
 
-#if defined DEBUG | defined _DEBUG
+#if defined DEBUG || defined _DEBUG
     lua->load("scripts/spell.lua");
     lua->load(spell.model.script);
 #endif
@@ -187,7 +187,7 @@ bool life::active(fb::game::spell& spell)
     if (lua == nullptr)
         return false;
 
-#if defined DEBUG | defined _DEBUG
+#if defined DEBUG || defined _DEBUG
     lua->load("scripts/spell.lua");
     lua->load(spell.model.script);
 #endif
@@ -210,7 +210,7 @@ bool life::calculate_critical(life& you) const
 {
     this->assert_thread();
 
-#if defined DEBUG | defined _DEBUG
+#if defined DEBUG || defined _DEBUG
     return true;
 #else
     return std::rand() % 100 < 20;
@@ -221,7 +221,7 @@ bool life::calculate_miss(life& you) const
 {
     this->assert_thread();
 
-#if defined DEBUG | defined _DEBUG
+#if defined DEBUG || defined _DEBUG
     return false;
 #else
     return std::rand() % 3 == 0;

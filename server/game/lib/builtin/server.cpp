@@ -588,7 +588,7 @@ int builtin::server::builtin_debug(lua_State* L)
     if (lua == nullptr)
         return 0;
 
-#if defined DEBUG | defined _DEBUG
+#if defined DEBUG || defined _DEBUG
     lua->pushboolean(true);
 #else
     lua->pushboolean(false);
