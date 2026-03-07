@@ -107,7 +107,7 @@ public:
     ~server();
 
     const fb::protocol::login::response::terms_agreement& agreement() const;
-    void                                            assert_account(std::string_view id, std::string_view pw) const;
+    void assert_account(std::string_view id, std::string_view pw) const;
 
 protected:
     bool                            decrypt_policy(uint8_t cmd) const override final;

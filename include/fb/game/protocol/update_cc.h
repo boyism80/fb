@@ -25,7 +25,9 @@ public:
 
 public:
 #ifndef BOT
-    explicit update_cc(const fb::game::life& value) : life(value) { }
+    explicit update_cc(const fb::game::life& value) :
+        life(value)
+    { }
 #else
     update_cc() = default;
 #endif

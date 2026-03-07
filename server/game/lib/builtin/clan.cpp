@@ -373,11 +373,11 @@ int builtin::clan::builtin_message(lua_State* L)
     auto type    = lua->toenum(3, MESSAGE_TYPE::NOTIFY);
     auto clan_id = clan->id();
 
-    static auto fn = [](fb::lua::context*  lua,
-                        fb::game::server*  server,
-                        uint32_t           clan_id,
-                        std::string_view   message,
-                        MESSAGE_TYPE       type) -> async::task<void> {
+    static auto fn = [](fb::lua::context* lua,
+                        fb::game::server* server,
+                        uint32_t          clan_id,
+                        std::string_view  message,
+                        MESSAGE_TYPE      type) -> async::task<void> {
         try
         {
             co_await server->broadcast_clan(clan_id, message, type);

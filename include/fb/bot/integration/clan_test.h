@@ -29,9 +29,9 @@ private:
     async::task<bool> test_clan_title();
     async::task<bool> test_clan_invite();
     async::task<bool> invite_to_clan(std::shared_ptr<game_bot> inviter, std::shared_ptr<game_bot> invitee);
-    async::task<bool> change_clan_role(std::shared_ptr<game_bot> changer,
-                                      std::shared_ptr<game_bot> target,
-                                      fb::model::enum_value::CLAN_ROLE role);
+    async::task<bool> change_clan_role(std::shared_ptr<game_bot>        changer,
+                                       std::shared_ptr<game_bot>        target,
+                                       fb::model::enum_value::CLAN_ROLE role);
     async::task<bool> leave_clan(std::shared_ptr<game_bot> bot);
     async::task<bool> destroy_clan(std::shared_ptr<game_bot> bot);
     async::task<bool> kick_from_clan(std::shared_ptr<game_bot> kicker, std::shared_ptr<game_bot> target);

@@ -10,12 +10,12 @@ using namespace fb::model::enum_value;
 
 enum class UI_SCREEN : uint8_t
 {
-    INVENTORY = 0,  ///< Inventory window
-    SKILL     = 2,  ///< Skill window
-    STATUS    = 4,  ///< Status window
-    BULLETIN  = 6,  ///< Bulletin board
-    DETAIL    = 7,  ///< Detail status
-    ACHIEVEMENT = 8,///< Achievement window
+    INVENTORY   = 0, ///< Inventory window
+    SKILL       = 2, ///< Skill window
+    STATUS      = 4, ///< Status window
+    BULLETIN    = 6, ///< Bulletin board
+    DETAIL      = 7, ///< Detail status
+    ACHIEVEMENT = 8, ///< Achievement window
 };
 
 class ui_screen : public fb::protocol::header

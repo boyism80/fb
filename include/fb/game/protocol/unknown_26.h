@@ -15,25 +15,24 @@ public:
 
 public:
 #ifndef BOT
-    const uint8_t  flags;
-    const int16_t  pos_x;
-    const int16_t  pos_y;
-    const int16_t  map_rel_x;
-    const int16_t  map_rel_y;
-    const uint8_t  zone_slot;
+    const uint8_t flags;
+    const int16_t pos_x;
+    const int16_t pos_y;
+    const int16_t map_rel_x;
+    const int16_t map_rel_y;
+    const uint8_t zone_slot;
 #else
-    uint8_t  flags;
-    int16_t  pos_x;
-    int16_t  pos_y;
-    int16_t  map_rel_x;
-    int16_t  map_rel_y;
-    uint8_t  zone_slot;
+    uint8_t flags;
+    int16_t pos_x;
+    int16_t pos_y;
+    int16_t map_rel_x;
+    int16_t map_rel_y;
+    uint8_t zone_slot;
 #endif
 
 public:
 #ifndef BOT
-    unknown_26(uint8_t flags, int16_t pos_x, int16_t pos_y,
-               int16_t map_rel_x, int16_t map_rel_y, uint8_t zone_slot) :
+    unknown_26(uint8_t flags, int16_t pos_x, int16_t pos_y, int16_t map_rel_x, int16_t map_rel_y, uint8_t zone_slot) :
         flags(flags),
         pos_x(pos_x),
         pos_y(pos_y),

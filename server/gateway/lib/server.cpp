@@ -79,10 +79,8 @@ bool server::decrypt_policy(uint8_t cmd) const
 {
     switch (cmd)
     {
-    case request::version::header:
-        return false;
-
-    case request::connection_ack::header:
+    case fb::protocol::gateway::request::version::header:
+    case fb::protocol::gateway::request::connection_ack::header:
         return false;
 
     default:

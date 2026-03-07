@@ -21,7 +21,7 @@ async::task<void> ping_timer::handle(const fb::model::datetime& now, std::thread
     if (params == nullptr)
         co_return;
 
-    static thread_local std::mt19937 rng(std::random_device{}());
+    static thread_local std::mt19937        rng(std::random_device{}());
     std::uniform_int_distribution<uint32_t> dist(0, UINT32_MAX);
 
     for (auto& [uid, ch] : params->characters)
@@ -33,7 +33,7 @@ async::task<void> ping_timer::handle(const fb::model::datetime& now, std::thread
         if (socket_ptr == nullptr || !socket_ptr->is_open())
             continue;
 
-        auto& state = ch->ping_state();
+        auto& state   = ch->ping_state();
         auto  elapsed = now - state.last_ping_time;
         if (elapsed < ping_interval)
             continue;

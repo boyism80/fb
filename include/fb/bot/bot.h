@@ -34,11 +34,11 @@ public:
     const uint32_t id;
 
 protected:
-    base_bot(fb::async_executor&                                               executor,
-             base_bot_controller&                                              bot_controller,
+    base_bot(fb::async_executor&                                                 executor,
+             base_bot_controller&                                                bot_controller,
              std::function<async::task<void>(fb::socket<void*>&, fb::stream&)>&& on_receive,
              std::function<async::task<void>(fb::socket<void*>&)>&&              on_closed,
-             uint32_t                                                          id);
+             uint32_t                                                            id);
 
 public:
     virtual ~base_bot();

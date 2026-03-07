@@ -101,14 +101,14 @@ private:
     }
 
     template <typename T>
-    async::task<bool> lock(std::string_view                                key,
+    async::task<bool> lock(std::string_view                                  key,
                            std::shared_ptr<async::task_completion_source<T>> promise,
                            const async_wait_func<T>&                         fn,
                            fb::thread*                                       thread,
                            fb::dead_lock_detector&                           trans)
     {
-        auto key_str = std::string(key);
-        std::mutex* mutex = nullptr;
+        auto        key_str = std::string(key);
+        std::mutex* mutex   = nullptr;
         {
             auto _ = std::lock_guard(this->_mutex);
             if (this->_pool.contains(key_str) == false)
@@ -143,13 +143,13 @@ private:
     }
 
     template <typename T>
-    void try_lock(std::string_view                                key,
+    void try_lock(std::string_view                                  key,
                   std::shared_ptr<async::task_completion_source<T>> promise,
                   const async_peek_func<T>&                         fn,
                   fb::thread*                                       thread)
     {
-        auto key_str = std::string(key);
-        std::mutex* mutex = nullptr;
+        auto        key_str = std::string(key);
+        std::mutex* mutex   = nullptr;
         {
             auto _ = std::lock_guard(this->_mutex);
             if (this->_pool.contains(key_str) == false)
@@ -173,8 +173,8 @@ private:
     template <typename T>
     T lock(std::string_view key, const sync_wait_func<T>& fn, fb::dead_lock_detector& trans)
     {
-        auto key_str = std::string(key);
-        std::mutex* mutex = nullptr;
+        auto        key_str = std::string(key);
+        std::mutex* mutex   = nullptr;
         {
             auto _ = std::lock_guard(this->_mutex);
             if (this->_pool.contains(key_str) == false)
@@ -192,8 +192,8 @@ private:
     template <typename T>
     T try_lock(std::string_view key, const sync_peek_func<T>& fn)
     {
-        auto key_str = std::string(key);
-        std::mutex* mutex = nullptr;
+        auto        key_str = std::string(key);
+        std::mutex* mutex   = nullptr;
         {
             auto _ = std::lock_guard(this->_mutex);
             if (this->_pool.contains(key_str) == false)
@@ -207,9 +207,7 @@ private:
 
 public:
     template <typename T>
-    [[nodiscard]] async::task<T> sync(std::string_view        key,
-                                      const async_wait_func<T>& fn,
-                                      fb::dead_lock_detector&   trans)
+    [[nodiscard]] async::task<T> sync(std::string_view key, const async_wait_func<T>& fn, fb::dead_lock_detector& trans)
     {
         auto thread  = this->_executor.threads.current();
         auto promise = std::make_shared<async::task_completion_source<T>>();

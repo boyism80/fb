@@ -3295,9 +3295,9 @@ int builtin::character::builtin_unknown_4D(lua_State* L)
     auto ch = lua->touserdata<fb::game::character>(1);
     if (ch == nullptr)
         return 0;
-    auto type = static_cast<uint8_t>(lua->tointeger(2, 0));
+    auto                       type = static_cast<uint8_t>(lua->tointeger(2, 0));
     std::array<std::string, 8> strings;
-    const char* default_str = "-";
+    const char*                default_str = "-";
     for (size_t i = 0; i < strings.size(); ++i)
         strings[i] = lua->tostring(static_cast<int>(3 + i), default_str);
     ch->send(fb::protocol::game::response::unknown_4D(type, strings));

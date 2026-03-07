@@ -18,9 +18,9 @@ public:
         fb::handler::protocol<fb::game::server, game_reqs::pong>(server)
     { }
     pong(const pong&)             = delete;
-    pong(pong&&)                 = delete;
-    pong& operator=(const pong&) = delete;
-    pong& operator=(pong&&)      = delete;
+    pong(pong&&)                  = delete;
+    pong& operator= (const pong&) = delete;
+    pong& operator= (pong&&)      = delete;
 
     async::task<bool> handle(fb::socket<character>& session, game_reqs::pong& request) override;
 };

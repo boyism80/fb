@@ -89,7 +89,7 @@ protected:                                                                      
                                                                                     \
 public:                                                                             \
     virtual enum_value::OBJECT_TYPE               what() const;                     \
-    virtual std::shared_ptr<fb::game::appearance> create_appearance() const;           \
+    virtual std::shared_ptr<fb::game::appearance> create_appearance() const;        \
     bool                                          operator== (const object&) const; \
     bool                                          operator!= (const object&) const;
 
