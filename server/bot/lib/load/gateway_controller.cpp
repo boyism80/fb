@@ -52,7 +52,7 @@ async::task<void> gateway_bot_controller::on_crt(gateway_bot& bot, const gateway
     co_return;
 }
 
-async::task<void> gateway_bot_controller::on_hosts(gateway_bot& bot, const gateway_resp::endpoint& response)
+async::task<void> gateway_bot_controller::on_hosts(gateway_bot& bot, const gateway_resp::server_list& response)
 {
     bot.send(gateway_reqs::endpoint{0x00, 0});
     co_return;

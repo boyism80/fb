@@ -1187,12 +1187,12 @@ command_funcs = {
             end,
         },
         
-        ['unknown_6A'] = {
+        ['친구목록동기화'] = {
             ['privilege'] = ROLE.ADMIN,
-            ['usage'] = '[value] - unknown packet 0x6A (no visible reaction, test)',
+            ['usage'] = '[0|1] - send friends_sync (0x6A): 0=disable sync, non-zero=enable sync',
             ['command'] = function (me, args)
-                local value = tonumber(table.unpack(args)) or 0
-                me:unknown_6A(value)
+                local enabled = tonumber(table.unpack(args)) or 0
+                me:friends_sync(enabled)
                 return true
             end,
         },
@@ -1203,6 +1203,21 @@ command_funcs = {
             ['command'] = function (me, args)
                 local payload = (args and #args > 0) and table.concat(args, ' ') or ''
                 me:unknown_4B(payload)
+                return true
+            end,
+        },
+        
+        ['unknown_4D'] = {
+            ['privilege'] = ROLE.ADMIN,
+            ['usage'] = '[type] [s1]..[s8] - packet 0x4D (UserInfo). type=0: safe, no strings. type=2: 8 EUC-KR strings. Client requires USERINFO.EPF in data path or shows "File not found" and exits.',
+            ['command'] = function (me, args)
+                local type_val = tonumber(args[1]) or 0
+                local default_str = 'qweqwe'
+                local s = {}
+                for i = 1, 8 do
+                    s[i] = (args and args[i + 1] and tostring(args[i + 1]) ~= '') and tostring(args[i + 1]) or default_str
+                end
+                me:unknown_4D(type_val, s[1], s[2], s[3], s[4], s[5], s[6], s[7], s[8])
                 return true
             end,
         },

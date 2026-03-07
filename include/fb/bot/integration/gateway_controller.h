@@ -23,7 +23,7 @@ private:
     void              initialize() override;
     async::task<void> on_welcome(gateway_bot& bot, const gateway_resp::welcome& response);
     async::task<void> on_crt(gateway_bot& bot, const gateway_resp::encryption& response);
-    async::task<void> on_hosts(gateway_bot& bot, const gateway_resp::endpoint& response);
+    async::task<void> on_hosts(gateway_bot& bot, const gateway_resp::server_list& response);
     async::task<void> on_transfer(gateway_bot& bot, const fb_resp::transfer& response);
 
 public:

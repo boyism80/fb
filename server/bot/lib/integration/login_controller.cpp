@@ -17,7 +17,7 @@ void login_bot_controller::initialize()
     // No timers needed for login bot_controller as it's reactive to connections
 }
 
-async::task<void> login_bot_controller::on_agreement(login_bot& bot, const login_resp::agreement& response)
+async::task<void> login_bot_controller::on_agreement(login_bot& bot, const login_resp::terms_agreement& response)
 {
     // Integration test: Validate authentication flow with controlled test accounts
     auto           id     = bot.generate_id();

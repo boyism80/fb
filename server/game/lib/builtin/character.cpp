@@ -105,9 +105,9 @@ IMPLEMENT_LUA_EXTENSION(character, "fb.game.character")
 {"ui",                           builtin::character::builtin_ui},
 {"item_throw_confirm",           builtin::character::builtin_item_throw_confirm},
 {"freeze",                       builtin::character::builtin_freeze},
-{"unknown_6A",                   builtin::character::builtin_unknown_6A},
+{"friends_sync",                 builtin::character::builtin_friends_sync},
 {"unknown_4B",                   builtin::character::builtin_unknown_4B},
-{"unknown_1B",                   builtin::character::builtin_unknown_1B},
+{"unknown_4D",                   builtin::character::builtin_unknown_4D},
 {"unknown_35",                   builtin::character::builtin_unknown_35},
 {"holyday_screen",               builtin::character::builtin_holyday_screen},
 END_LUA_EXTENSION; // clang-format on
@@ -3261,7 +3261,7 @@ int builtin::character::builtin_freeze(lua_State* L)
     return 0;
 }
 
-int builtin::character::builtin_unknown_6A(lua_State* L)
+int builtin::character::builtin_friends_sync(lua_State* L)
 {
     auto lua = fb::lua::get(L);
     if (lua == nullptr)
@@ -3269,8 +3269,8 @@ int builtin::character::builtin_unknown_6A(lua_State* L)
     auto ch = lua->touserdata<fb::game::character>(1);
     if (ch == nullptr)
         return 0;
-    auto value = static_cast<uint8_t>(lua->tointeger(2, 0));
-    ch->send(fb::protocol::game::response::unknown_6A(value));
+    auto enabled = static_cast<uint8_t>(lua->tointeger(2, 0));
+    ch->send(fb::protocol::game::response::friends_sync(enabled));
     return 0;
 }
 
@@ -3287,7 +3287,7 @@ int builtin::character::builtin_unknown_4B(lua_State* L)
     return 0;
 }
 
-int builtin::character::builtin_unknown_1B(lua_State* L)
+int builtin::character::builtin_unknown_4D(lua_State* L)
 {
     auto lua = fb::lua::get(L);
     if (lua == nullptr)
@@ -3295,7 +3295,12 @@ int builtin::character::builtin_unknown_1B(lua_State* L)
     auto ch = lua->touserdata<fb::game::character>(1);
     if (ch == nullptr)
         return 0;
-    ch->send(fb::protocol::game::response::unknown_1B());
+    auto type = static_cast<uint8_t>(lua->tointeger(2, 0));
+    std::array<std::string, 8> strings;
+    const char* default_str = "-";
+    for (size_t i = 0; i < strings.size(); ++i)
+        strings[i] = lua->tostring(static_cast<int>(3 + i), default_str);
+    ch->send(fb::protocol::game::response::unknown_4D(type, strings));
     return 0;
 }
 

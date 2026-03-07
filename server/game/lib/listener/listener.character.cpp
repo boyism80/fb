@@ -1,5 +1,6 @@
 #include <fb/game/server.h>
 #include <fb/game/handler/amqp/ban.h>
+#include <fb/model/model.h>
 
 using namespace fb::game;
 
@@ -206,6 +207,28 @@ void listener_impl::on_character_init(character& ch)
 void listener_impl::on_update_position(character& ch)
 {
     ch.send(game_resp::position(ch));
+}
+
+void listener_impl::on_screen_refresh(character& ch)
+{
+    ch.update_id();
+    ch.update_position();
+    ch.update(UPDATE_STATE_LEVEL::ALL);
+
+    auto map = ch.map();
+    if (map == nullptr)
+        return;
+
+    for (auto& obj : ch.sight_in(OBJECT_TYPE::OBJECT))
+    {
+        if (obj->hidden(ch))
+            continue;
+
+        obj->update_external(ch, true);
+    }
+    ch.update_external(ch, true);
+    ch.send(game_resp::direction(ch));
+    ch.send(game_resp::screen_refresh_complete());
 }
 
 void listener_impl::on_browse_character(character& ch, const character& target)

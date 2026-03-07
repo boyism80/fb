@@ -40,7 +40,7 @@ async::task<void> gateway_bot_controller::on_crt(gateway_bot& bot, const gateway
     co_return;
 }
 
-async::task<void> gateway_bot_controller::on_hosts(gateway_bot& bot, const gateway_resp::endpoint& response)
+async::task<void> gateway_bot_controller::on_hosts(gateway_bot& bot, const gateway_resp::server_list& response)
 {
     // Integration test: Validate endpoint discovery
     // TODO: Add endpoint information validation logic

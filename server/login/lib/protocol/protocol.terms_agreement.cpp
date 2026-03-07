@@ -1,4 +1,4 @@
-#include <fb/login/protocol/agreement.h>
+#include <fb/login/protocol/terms_agreement.h>
 
 namespace fb::protocol::login::request {
 
@@ -33,13 +33,13 @@ async::task<void> agreement::serialize(fb::stream_writer<big_endian>& writer) co
 namespace fb::protocol::login::response {
 
 #ifndef BOT
-agreement::agreement(std::string_view contents) :
+terms_agreement::terms_agreement(std::string_view contents) :
     contents(std::string(contents))
 { }
 #endif
 
 #ifndef BOT
-async::task<void> agreement::serialize(fb::stream_writer<big_endian>& writer) const
+async::task<void> terms_agreement::serialize(fb::stream_writer<big_endian>& writer) const
 {
     co_await header::serialize(writer);
     auto compressed = fb::stream((uint8_t*)this->contents.data(), this->contents.size()).compress();
@@ -49,7 +49,7 @@ async::task<void> agreement::serialize(fb::stream_writer<big_endian>& writer) co
     writer.write(compressed.data(), (uint16_t)compressed.size());
 }
 #else
-async::task<void> agreement::deserialize(fb::stream_reader<big_endian>& reader)
+async::task<void> terms_agreement::deserialize(fb::stream_reader<big_endian>& reader)
 {
     co_await header::deserialize(reader);
     reader.read<uint8_t>();

@@ -1,5 +1,5 @@
-#ifndef __PROTOCOL_LOGIN_AGREEMENT_H__
-#define __PROTOCOL_LOGIN_AGREEMENT_H__
+#ifndef __PROTOCOL_LOGIN_TERMS_AGREEMENT_H__
+#define __PROTOCOL_LOGIN_TERMS_AGREEMENT_H__
 
 #include <fb/protocol/header.h>
 #include <fb/model/model.h>
@@ -43,7 +43,8 @@ public:
 
 namespace fb::protocol::login::response {
 
-class agreement : public fb::protocol::header
+/** Terms-of-use agreement (cmd 0x60). Server sends agreement text to the client. */
+class terms_agreement : public fb::protocol::header
 {
 public:
     static constexpr uint8_t header = 0x60;
@@ -57,9 +58,9 @@ public:
 
 public:
 #ifdef BOT
-    agreement() = default;
+    terms_agreement() = default;
 #else
-    agreement(std::string_view contents);
+    terms_agreement(std::string_view contents);
 #endif
 
 public:

@@ -1,5 +1,5 @@
-#ifndef __PROTOCOL_GATEWAY_ENTRY_LIST_H__
-#define __PROTOCOL_GATEWAY_ENTRY_LIST_H__
+#ifndef __PROTOCOL_GATEWAY_SERVER_LIST_H__
+#define __PROTOCOL_GATEWAY_SERVER_LIST_H__
 
 #include <fb/protocol/header.h>
 #include <format>
@@ -54,23 +54,24 @@ public:
 
 namespace fb::protocol::gateway::response {
 
-class endpoint : public fb::protocol::header
+/** Login server selection list (cmd 0x56). List of selectable login/game server endpoints. */
+class server_list : public fb::protocol::header
 {
 public:
     static constexpr uint8_t header = 0x56;
 
 public:
 #ifdef BOT
-    std::vector<fb::protocol::gateway::endpoint> entries;
+    std::vector<fb::protocol::gateway::endpoint> servers;
 #else
-    const std::vector<fb::protocol::gateway::endpoint>& entries;
+    const std::vector<fb::protocol::gateway::endpoint>& servers;
 #endif
 
 public:
 #ifdef BOT
-    endpoint() = default;
+    server_list() = default;
 #else
-    endpoint(const std::vector<fb::protocol::gateway::endpoint>& entries);
+    server_list(const std::vector<fb::protocol::gateway::endpoint>& servers);
 #endif
 
 public:

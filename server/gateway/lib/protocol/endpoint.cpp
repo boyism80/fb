@@ -1,4 +1,4 @@
-#include <fb/gateway/protocol/endpoint.h>
+#include <fb/gateway/protocol/server_list.h>
 #ifdef _WIN32
 #include <winsock.h>
 #else

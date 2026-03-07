@@ -1,5 +1,5 @@
-#ifndef __PROTOCOL_GAME_UNKNOWN_6A_H__
-#define __PROTOCOL_GAME_UNKNOWN_6A_H__
+#ifndef __PROTOCOL_GAME_PING_H__
+#define __PROTOCOL_GAME_PING_H__
 
 #include <fb/protocol/header.h>
 #include <fb/model/model.h>
@@ -8,25 +8,29 @@ namespace fb::protocol::game::response {
 
 using namespace fb::model::enum_value;
 
-class unknown_6A : public fb::protocol::header
+/**
+ * Server-to-client ping (0x68).
+ * Payload: 4-byte big-endian uint32_t (token).
+ */
+class ping : public fb::protocol::header
 {
 public:
-    static constexpr uint8_t header = 0x6A;
+    static constexpr uint8_t header = 0x68;
 
 public:
 #ifndef BOT
-    const uint8_t value;
+    const uint32_t value;
 #else
-    uint8_t value;
+    uint32_t value;
 #endif
 
 public:
 #ifndef BOT
-    explicit unknown_6A(uint8_t value) :
+    explicit ping(uint32_t value) :
         value(value)
     { }
 #else
-    unknown_6A() = default;
+    ping() = default;
 #endif
 
 public:

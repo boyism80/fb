@@ -54,7 +54,7 @@ async::task<void> server::load_entries()
     }
 
     auto writer = fb::stream_writer<big_endian>(this->_endpoint_bytes);
-    co_await fb::protocol::gateway::response::endpoint(this->_entrypoints).serialize(writer);
+    co_await fb::protocol::gateway::response::server_list(this->_entrypoints).serialize(writer);
     this->_endpoint_crc = this->_endpoint_bytes.crc();
 }
 

@@ -89,13 +89,13 @@ int builtin::map::builtin_objects(lua_State* L)
     if (map == nullptr)
         return 0;
 
-    auto type = lua->toenum(2, OBJECT_TYPE::UNKNOWN);
+    auto type = lua->toenum(2, OBJECT_TYPE::OBJECT);
 
     lua->new_table();
     int i = 0;
     for (auto& [_, obj] : map->objects)
     {
-        if (type != OBJECT_TYPE::UNKNOWN && obj->is(type) == false)
+        if (obj->is(type) == false)
             continue;
 
         lua->pushobject(obj);
@@ -128,7 +128,7 @@ int builtin::map::builtin_nears(lua_State* L)
     y = (uint16_t)lua->tointeger(-1);
     lua->remove(-1);
 
-    auto type  = lua->toenum(3, OBJECT_TYPE::UNKNOWN);
+    auto type  = lua->toenum(3, OBJECT_TYPE::OBJECT);
     auto nears = map->nears(fb::model::point16_t{x, y}, type);
 
     lua->new_table();
@@ -302,7 +302,7 @@ int builtin::map::builtin_belows(lua_State* L)
 
     auto x    = lua->tointeger(2);
     auto y    = lua->tointeger(3);
-    auto type = lua->toenum(4, OBJECT_TYPE::UNKNOWN);
+    auto type = lua->toenum(4, OBJECT_TYPE::OBJECT);
 
     lua->new_table();
     auto i = 0;
@@ -367,7 +367,7 @@ int builtin::map::builtin_at(lua_State* L)
 
     auto x        = (uint16_t)lua->tointeger(2);
     auto y        = (uint16_t)lua->tointeger(3);
-    auto type     = lua->toenum(4, OBJECT_TYPE::UNKNOWN);
+    auto type     = lua->toenum(4, OBJECT_TYPE::OBJECT);
     auto position = fb::model::point16_t{x, y};
 
     auto weak = map->weak_from_this_as<fb::game::map>();

@@ -3,7 +3,7 @@
 
 #include <fb/protocol/transfer.h>
 #include <fb/login/protocol/login.h>
-#include <fb/login/protocol/agreement.h>
+#include <fb/login/protocol/terms_agreement.h>
 #include <fb/login/protocol/message.h>
 #include <fb/login/protocol/create.h>
 #include <fb/login/protocol/complete.h>

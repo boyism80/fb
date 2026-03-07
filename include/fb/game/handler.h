@@ -10,7 +10,7 @@
 #include <fb/game/handler/protocol/loot.h>
 #include <fb/game/handler/protocol/emotion.h>
 #include <fb/game/handler/protocol/map_update.h>
-#include <fb/game/handler/protocol/update_screen.h>
+#include <fb/game/handler/protocol/screen_refresh.h>
 #include <fb/game/handler/protocol/item_active.h>
 #include <fb/game/handler/protocol/item_inactive.h>
 #include <fb/game/handler/protocol/item_drop.h>
@@ -38,6 +38,7 @@
 #include <fb/game/handler/protocol/give_item.h>
 #include <fb/game/handler/protocol/give_money.h>
 #include <fb/game/handler/protocol/post.h>
+#include <fb/game/handler/protocol/pong.h>
 
 #include <fb/game/handler/amqp/kick_out.h>
 #include <fb/game/handler/amqp/whisper.h>
@@ -71,6 +72,7 @@
 #include <fb/game/handler/timer/save_timer.h>
 #include <fb/game/handler/timer/marketplace_restore_timer.h>
 #include <fb/game/handler/timer/afk_timer.h>
+#include <fb/game/handler/timer/ping_timer.h>
 #include <fb/game/handler/timer/schedule_timer.h>
 
 #endif // FB_GAME_HANDLER_H

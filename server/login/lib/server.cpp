@@ -68,7 +68,7 @@ async::task<void> server::update_status()
     }
 }
 
-const fb::protocol::login::response::agreement& server::agreement() const
+const fb::protocol::login::response::terms_agreement& server::agreement() const
 {
     return this->_agreement;
 }

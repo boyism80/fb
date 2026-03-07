@@ -6,6 +6,7 @@
 #include <json/json.h>
 #include <json/writer.h>
 #include <sstream>
+#include <chrono>
 
 using namespace fb::game;
 using namespace fb::model;
@@ -32,7 +33,9 @@ character::character(fb::game::server& server, const initial_params& params) :
     _promotion(params.promotion), _money(params.money), _mimicry(params.mimicry), _title(params.title),
     _nation(params.nation), _creature(params.creature), _last_afk_time(fb::model::datetime()),
     _super_hide(params.super_hide)
-{ }
+{
+    this->_ping_state.last_ping_time = fb::model::datetime() - std::chrono::seconds(10);
+}
 
 character::~character()
 {
@@ -955,6 +958,11 @@ void character::update_position()
     this->listener.on_update_position(*this);
 }
 
+void character::screen_refresh()
+{
+    this->listener.on_screen_refresh(*this);
+}
+
 const std::string& character::title() const
 {
     this->assert_thread();
@@ -1855,6 +1863,11 @@ bool character::reward(const std::vector<fb::model::dsl>& reward)
 std::shared_ptr<fb::socket<character>> character::socket_ptr() const
 {
     return this->_socket.lock();
+}
+
+fb::game::character::ping_state_t& character::ping_state()
+{
+    return this->_ping_state;
 }
 
 std::shared_ptr<fb::game::appearance> character::appearance() const

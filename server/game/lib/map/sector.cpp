@@ -184,7 +184,7 @@ std::vector<std::shared_ptr<fb::game::object>> sectors::objects(const fb::model:
         }
     }
 
-    if (type == OBJECT_TYPE::UNKNOWN)
+    if (type == OBJECT_TYPE::OBJECT)
     {
         return std::move(objects);
     }
@@ -210,7 +210,7 @@ std::vector<std::shared_ptr<fb::game::object>> sectors::objects(OBJECT_TYPE type
                      sector->end(),
                      std::back_inserter(result),
                      [type](const std::shared_ptr<fb::game::object>& x) {
-                         return type == OBJECT_TYPE::UNKNOWN || x->is(type);
+                         return x->is(type);
                      });
     }
 

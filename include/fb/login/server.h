@@ -93,7 +93,7 @@ public:
 class server : public fb::acceptor<fb::login::session>
 {
 private:
-    fb::protocol::login::response::agreement _agreement{
+    fb::protocol::login::response::terms_agreement _agreement{
         CP949(fb::config<std::string_view>("agreement"), PLATFORM::BOTH)};
     std::vector<boost::asio::deadline_timer> _timers;
 
@@ -106,7 +106,7 @@ public:
     server(server&&)      = delete;
     ~server();
 
-    const fb::protocol::login::response::agreement& agreement() const;
+    const fb::protocol::login::response::terms_agreement& agreement() const;
     void                                            assert_account(std::string_view id, std::string_view pw) const;
 
 protected:

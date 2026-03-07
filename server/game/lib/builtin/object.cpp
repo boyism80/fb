@@ -643,7 +643,7 @@ int builtin::object::builtin_sight_in(lua_State* L)
 
     obj->assert_thread();
 
-    auto filter = OBJECT_TYPE(lua->tointeger(2, (int)OBJECT_TYPE::UNKNOWN));
+    auto filter = static_cast<OBJECT_TYPE>(lua->tointeger(2, (int)OBJECT_TYPE::OBJECT));
 
     lua->new_table();
     const auto& objects = obj->sight_in(filter);
@@ -675,7 +675,7 @@ int builtin::object::builtin_nears(lua_State* L)
         return 0;
 
     auto visit  = std::set<uint32_t>();
-    auto filter = OBJECT_TYPE(lua->tointeger(2, (int)OBJECT_TYPE::UNKNOWN));
+    auto filter = static_cast<OBJECT_TYPE>(lua->tointeger(2, (int)OBJECT_TYPE::OBJECT));
     if (argc >= 3 && lua->is_table(3))
     {
         auto size   = lua->rawlen(3);
@@ -777,7 +777,7 @@ int builtin::object::builtin_front(lua_State* L)
 
     obj->assert_thread();
 
-    auto filter = lua->toenum(2, OBJECT_TYPE::UNKNOWN);
+    auto filter = lua->toenum(2, OBJECT_TYPE::OBJECT);
     auto front  = obj->forward(filter);
     if (front == nullptr)
         lua->pushnil();
@@ -799,7 +799,7 @@ int builtin::object::builtin_is(lua_State* L)
     if (obj == nullptr)
         return 0;
 
-    auto type = lua->toenum(2, OBJECT_TYPE::UNKNOWN);
+    auto type = lua->toenum(2, OBJECT_TYPE::OBJECT);
     auto weak = obj->weak_from_this_as<fb::game::object>();
     return lua->ensure_yield(*server, weak, [=](auto is_yield) {
         auto matched = obj->is(type);

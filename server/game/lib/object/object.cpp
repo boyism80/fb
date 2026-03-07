@@ -733,7 +733,7 @@ std::vector<std::shared_ptr<fb::game::object>> object::forwards(OBJECT_TYPE type
 std::vector<std::shared_ptr<fb::game::object>> object::sight_in(OBJECT_TYPE type) const
 {
     auto result = std::vector<std::shared_ptr<fb::game::object>>{};
-    for (auto obj : this->nears())
+    for (auto& obj : this->nears())
     {
         if (obj->is(type) == false)
             continue;
@@ -764,7 +764,7 @@ std::vector<std::shared_ptr<fb::game::object>> object::nears(OBJECT_TYPE type, b
         if (!contains_super_hide && obj->hidden(*this))
             continue;
 
-        if (type != OBJECT_TYPE::UNKNOWN && obj->is(type) == false)
+        if (obj->is(type) == false)
             continue;
 
         result.push_back(std::static_pointer_cast<fb::game::object>(obj));

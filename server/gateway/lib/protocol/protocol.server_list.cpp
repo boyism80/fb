@@ -1,4 +1,4 @@
-#include <fb/gateway/protocol/endpoint.h>
+#include <fb/gateway/protocol/server_list.h>
 
 namespace fb::protocol::gateway::request {
 
@@ -32,23 +32,23 @@ async::task<void> endpoint::serialize(fb::stream_writer<big_endian>& writer) con
 namespace fb::protocol::gateway::response {
 
 #ifndef BOT
-endpoint::endpoint(const std::vector<fb::protocol::gateway::endpoint>& entries) :
-    entries(entries)
+server_list::server_list(const std::vector<fb::protocol::gateway::endpoint>& servers) :
+    servers(servers)
 { }
 #endif
 
 #ifndef BOT
-async::task<void> endpoint::serialize(fb::stream_writer<big_endian>& writer) const
+async::task<void> server_list::serialize(fb::stream_writer<big_endian>& writer) const
 {
     co_await header::serialize(writer);
     // 서버정보를 바이너리 형식으로 변환
     auto formats = fb::stream();
     {
         auto writer = fb::stream_writer<big_endian>(formats);
-        writer.write<uint8_t>((uint8_t)this->entries.size());
-        for (uint32_t i = 0; i < this->entries.size(); i++)
+        writer.write<uint8_t>((uint8_t)this->servers.size());
+        for (uint32_t i = 0; i < this->servers.size(); i++)
         {
-            auto gateway = this->entries.at(i);
+            auto gateway = this->servers.at(i);
             auto buffer  = std::format("{};{}", gateway.name, gateway.desc);
 
             writer.write<uint8_t>(i);
@@ -68,7 +68,7 @@ async::task<void> endpoint::serialize(fb::stream_writer<big_endian>& writer) con
     writer.write<uint8_t>(0);
 }
 #else
-async::task<void> endpoint::deserialize(fb::stream_reader<big_endian>& reader)
+async::task<void> server_list::deserialize(fb::stream_reader<big_endian>& reader)
 {
     co_await header::deserialize(reader);
     // TODO: 파싱해서 데이터 적재

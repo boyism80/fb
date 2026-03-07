@@ -23,6 +23,7 @@
 #include <set>
 #include <string_view>
 #include <unordered_map>
+#include <optional>
 
 namespace fb::game {
 
@@ -50,6 +51,17 @@ public:
 public:
     struct listener_t;
     struct initial_params;
+
+    /**
+     * Ping state for keepalive: last ping time, token, and whether pong was received.
+     * Initially pong_received is true so the first ping is sent after the interval.
+     */
+    struct ping_state_t
+    {
+        fb::model::datetime last_ping_time;
+        uint32_t            token         = 0;
+        bool                pong_received = true;
+    };
 
 private:
     const std::string                   _pw;
@@ -86,6 +98,7 @@ private:
         1,
     };
     std::weak_ptr<fb::socket<character>> _socket;
+    ping_state_t                         _ping_state;
 
 public:
     const uint32_t        id;
@@ -225,6 +238,7 @@ public:
     void                                               update_internal();
     void                                               update_time(uint16_t hours);
     void                                               init();
+    void                                               screen_refresh();
     const std::string&                                 title() const;
     void                                               title(std::string_view value);
     const std::optional<uint32_t>&                     group_id() const;
@@ -270,6 +284,7 @@ public:
     void                                               update_last_afk_time();
     fb::model::datetime&                               last_afk_time();
     std::shared_ptr<fb::socket<character>>             socket_ptr() const;
+    ping_state_t&                                      ping_state();
     // clang-format on
 };
 
@@ -363,6 +378,7 @@ public:
     virtual void              on_update_id(character& ch)                                                                                                                    = 0;
     virtual void              on_character_init(character& ch)                                                                                                               = 0;
     virtual void              on_update_position(character& ch)                                                                                                              = 0;
+    virtual void              on_screen_refresh(character& ch)                                                                                                               = 0;
     virtual void              on_level_up(character& me)                                                                                                                     = 0;
     virtual void              on_update(character& me, UPDATE_STATE_LEVEL level = UPDATE_STATE_LEVEL::EXP_MONEY | UPDATE_STATE_LEVEL::CROWD_CONTROL)                         = 0;
     virtual async::task<bool> on_transfer(character& me, fb::game::map& map, const fb::model::point16_t& position)                                                           = 0;

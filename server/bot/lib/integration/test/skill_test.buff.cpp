@@ -23,7 +23,7 @@ async::task<bool> skill_test::test_buff_debuff_spells(std::shared_ptr<fb::bot::g
         SPELL_TYPE  type;             // NORMAL (self buff) or TARGET (debuff/target buff)
         bool        is_self_cast;     // true: cast on self, false: cast on target
         int         expected_mp_cost; // Expected MP consumption
-        OBJECT_TYPE target_type;      // Target object type
+        OBJECT_TYPE target_type;      // Target object type (CHARACTER = run in this test; MOB = skip, monster-only)
         std::function<async::task<bool>(const std::shared_ptr<fb::bot::game_bot>&,
                                         const std::shared_ptr<fb::bot::game_bot>&)>
             condition_check;
@@ -35,42 +35,42 @@ async::task<bool> skill_test::test_buff_debuff_spells(std::shared_ptr<fb::bot::g
         {"혼마술",
          SPELL_TYPE::TARGET,
          false, 40,
-         OBJECT_TYPE::UNKNOWN,
+         OBJECT_TYPE::LIFE,
          [](const auto& caster, const auto& target) -> async::task<bool> {
              co_return true;
          }},
         {"중독",
          SPELL_TYPE::TARGET,
          false, 30,
-         OBJECT_TYPE::UNKNOWN,
+         OBJECT_TYPE::LIFE,
          [](const auto& caster, const auto& target) -> async::task<bool> {
              co_return true;
          }},
         {"절망",
          SPELL_TYPE::TARGET,
          false, 80,
-         OBJECT_TYPE::UNKNOWN,
+         OBJECT_TYPE::LIFE,
          [](const auto& caster, const auto& target) -> async::task<bool> {
              co_return true;
          }},
         {"저주",
          SPELL_TYPE::TARGET,
          false, 30,
-         OBJECT_TYPE::UNKNOWN,
+         OBJECT_TYPE::LIFE,
          [](const auto& caster, const auto& target) -> async::task<bool> {
              co_return true;
          }},
         {"마비",
          SPELL_TYPE::TARGET,
          false, 80,
-         OBJECT_TYPE::UNKNOWN,
+         OBJECT_TYPE::LIFE,
          [](const auto& caster, const auto& target) -> async::task<bool> {
              co_return true;
          }},
         {"노도성황",
          SPELL_TYPE::TARGET,
          false, 30,
-         OBJECT_TYPE::UNKNOWN,
+         OBJECT_TYPE::LIFE,
          [](const auto& caster, const auto& target) -> async::task<bool> {
              co_return true;
          }},
@@ -79,133 +79,133 @@ async::task<bool> skill_test::test_buff_debuff_spells(std::shared_ptr<fb::bot::g
         {"투명",
          SPELL_TYPE::NORMAL,
          true,  0,
-         OBJECT_TYPE::UNKNOWN,
+         OBJECT_TYPE::LIFE,
          [](const auto& caster, const auto& target) -> async::task<bool> {
              co_return true;
          }},
         {"신의축복",
          SPELL_TYPE::NORMAL,
          true,  30,
-         OBJECT_TYPE::UNKNOWN,
+         OBJECT_TYPE::LIFE,
          [](const auto& caster, const auto& target) -> async::task<bool> {
              co_return true;
          }},
         {"백호령",
          SPELL_TYPE::NORMAL,
          true,  30,
-         OBJECT_TYPE::UNKNOWN,
+         OBJECT_TYPE::LIFE,
          [](const auto& caster, const auto& target) -> async::task<bool> {
              co_return true;
          }},
         {"진백호령",
          SPELL_TYPE::NORMAL,
          true,  30,
-         OBJECT_TYPE::UNKNOWN,
+         OBJECT_TYPE::LIFE,
          [](const auto& caster, const auto& target) -> async::task<bool> {
              co_return true;
          }},
         {"측면공격",
          SPELL_TYPE::NORMAL,
          true,  90,
-         OBJECT_TYPE::UNKNOWN,
+         OBJECT_TYPE::LIFE,
          [](const auto& caster, const auto& target) -> async::task<bool> {
              co_return true;
          }},
         {"후면공격",
          SPELL_TYPE::NORMAL,
          true,  90,
-         OBJECT_TYPE::UNKNOWN,
+         OBJECT_TYPE::LIFE,
          [](const auto& caster, const auto& target) -> async::task<bool> {
              co_return true;
          }},
         {"차폐",
          SPELL_TYPE::NORMAL,
          true,  100,
-         OBJECT_TYPE::UNKNOWN,
+         OBJECT_TYPE::LIFE,
          [](const auto& caster, const auto& target) -> async::task<bool> {
              co_return true;
          }},
         {"전혈",
          SPELL_TYPE::NORMAL,
          true,  30,
-         OBJECT_TYPE::UNKNOWN,
+         OBJECT_TYPE::LIFE,
          [](const auto& caster, const auto& target) -> async::task<bool> {
              co_return true;
          }},
         {"운기",
          SPELL_TYPE::NORMAL,
          true,  30,
-         OBJECT_TYPE::UNKNOWN,
+         OBJECT_TYPE::LIFE,
          [](const auto& caster, const auto& target) -> async::task<bool> {
              co_return true;
          }},
         {"심안투영",
          SPELL_TYPE::NORMAL,
          true,  30,
-         OBJECT_TYPE::UNKNOWN,
+         OBJECT_TYPE::LIFE,
          [](const auto& caster, const auto& target) -> async::task<bool> {
              co_return true;
          }},
         {"파력무참",
          SPELL_TYPE::NORMAL,
          true,  0,
-         OBJECT_TYPE::UNKNOWN,
+         OBJECT_TYPE::LIFE,
          [](const auto& caster, const auto& target) -> async::task<bool> {
              co_return true;
          }},
         {"신령지익",
          SPELL_TYPE::NORMAL,
          true,  0,
-         OBJECT_TYPE::UNKNOWN,
+         OBJECT_TYPE::LIFE,
          [](const auto& caster, const auto& target) -> async::task<bool> {
              co_return true;
          }},
         {"이중공격",
          SPELL_TYPE::NORMAL,
          true,  60,
-         OBJECT_TYPE::UNKNOWN,
+         OBJECT_TYPE::LIFE,
          [](const auto& caster, const auto& target) -> async::task<bool> {
              co_return true;
          }},
         {"삼중공격",
          SPELL_TYPE::NORMAL,
          true,  60,
-         OBJECT_TYPE::UNKNOWN,
+         OBJECT_TYPE::LIFE,
          [](const auto& caster, const auto& target) -> async::task<bool> {
              co_return true;
          }},
         {"사중공격",
          SPELL_TYPE::NORMAL,
          true,  150,
-         OBJECT_TYPE::UNKNOWN,
+         OBJECT_TYPE::LIFE,
          [](const auto& caster, const auto& target) -> async::task<bool> {
              co_return true;
          }},
         {"오중공격",
          SPELL_TYPE::NORMAL,
          true,  200,
-         OBJECT_TYPE::UNKNOWN,
+         OBJECT_TYPE::LIFE,
          [](const auto& caster, const auto& target) -> async::task<bool> {
              co_return true;
          }},
         {"분신",
          SPELL_TYPE::NORMAL,
          true,  0,
-         OBJECT_TYPE::UNKNOWN,
+         OBJECT_TYPE::LIFE,
          [](const auto& caster, const auto& target) -> async::task<bool> {
              co_return true;
          }},
         {"누리의힘",
          SPELL_TYPE::NORMAL,
          true,  30,
-         OBJECT_TYPE::UNKNOWN,
+         OBJECT_TYPE::LIFE,
          [](const auto& caster, const auto& target) -> async::task<bool> {
              co_return true;
          }},
         {"금강불체",
          SPELL_TYPE::NORMAL,
          true,  600,
-         OBJECT_TYPE::UNKNOWN,
+         OBJECT_TYPE::LIFE,
          [](const auto& caster, const auto& target) -> async::task<bool> {
              co_return true;
          }},
@@ -214,14 +214,14 @@ async::task<bool> skill_test::test_buff_debuff_spells(std::shared_ptr<fb::bot::g
         {"무장",
          SPELL_TYPE::TARGET,
          false, 30,
-         OBJECT_TYPE::UNKNOWN,
+         OBJECT_TYPE::LIFE,
          [](const auto& caster, const auto& target) -> async::task<bool> {
              co_return true;
          }},
         {"보호",
          SPELL_TYPE::TARGET,
          false, 30,
-         OBJECT_TYPE::UNKNOWN,
+         OBJECT_TYPE::LIFE,
          [](const auto& caster, const auto& target) -> async::task<bool> {
              co_return true;
          }},
@@ -235,7 +235,7 @@ async::task<bool> skill_test::test_buff_debuff_spells(std::shared_ptr<fb::bot::g
         {"대지의힘",
          SPELL_TYPE::TARGET,
          false, 30,
-         OBJECT_TYPE::UNKNOWN,
+         OBJECT_TYPE::LIFE,
          [](const auto& caster, const auto& target) -> async::task<bool> {
              co_return true;
          }}
@@ -255,7 +255,7 @@ async::task<bool> skill_test::test_buff_debuff_spells(std::shared_ptr<fb::bot::g
 
     for (const auto& spell : buff_debuff_spells)
     {
-        if (spell.target_type != OBJECT_TYPE::UNKNOWN) // TODO: Add tests for spells that only work on monsters
+        if (spell.target_type != OBJECT_TYPE::LIFE) // Skip spells that only work on monsters (e.g. 망각)
         {
             spell_slot++;
             continue;

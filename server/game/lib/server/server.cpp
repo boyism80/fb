@@ -189,7 +189,7 @@ async::task<void> server::on_start()
     this->handler.protocol.bind<fb::game::handler::protocol::loot>();            // Loot handler
     this->handler.protocol.bind<fb::game::handler::protocol::emotion>();         // Emotion handler
     this->handler.protocol.bind<fb::game::handler::protocol::map_update>();      // Map data update handler
-    this->handler.protocol.bind<fb::game::handler::protocol::update_screen>();   // Refresh handler
+    this->handler.protocol.bind<fb::game::handler::protocol::screen_refresh>();   // Screen refresh handler
     this->handler.protocol.bind<fb::game::handler::protocol::item_active>();     // Item use handler
     this->handler.protocol.bind<fb::game::handler::protocol::item_inactive>();   // Item unequip handler
     this->handler.protocol.bind<fb::game::handler::protocol::item_drop>();       // Item drop handler
@@ -218,6 +218,7 @@ async::task<void> server::on_start()
     this->handler.protocol.bind<fb::game::handler::protocol::give_money>();
     this->handler.protocol.bind<fb::game::handler::protocol::post>();
     this->handler.protocol.bind<fb::game::handler::protocol::friends>();
+    this->handler.protocol.bind<fb::game::handler::protocol::pong>();
 
     this->bind_timer<fb::game::handler::timer::heart_beat>(1s);
     this->bind_timer<fb::game::handler::timer::update_time>(1s);
@@ -234,6 +235,7 @@ async::task<void> server::on_start()
     this->bind_thread_timer<fb::game::handler::timer::gear_timer>(1s);
     this->bind_thread_timer<fb::game::handler::timer::soliloquy_timer>(1s);
     this->bind_thread_timer<fb::game::handler::timer::afk_timer>(1s);
+    this->bind_thread_timer<fb::game::handler::timer::ping_timer>(1s);
     this->bind_thread_timer<fb::game::handler::timer::save_timer>(std::chrono::seconds(fb::config<uint32_t>("save")));
     this->bind_thread_timer<fb::game::handler::timer::marketplace_restore_timer>(30s);
 

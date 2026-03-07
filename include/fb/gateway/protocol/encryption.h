@@ -1,11 +1,12 @@
-#ifndef __PROTOCOL_GATEWAY_CRT_H__
-#define __PROTOCOL_GATEWAY_CRT_H__
+#ifndef __PROTOCOL_GATEWAY_ENCRYPTION_H__
+#define __PROTOCOL_GATEWAY_ENCRYPTION_H__
 
 #include <fb/protocol/header.h>
 #include <fb/encryption.h>
 
 namespace fb::protocol::gateway::response {
 
+/** Encryption key issuance packet (cmd 0x00). Sent by gateway/login to provide session encryption. */
 class encryption : public fb::protocol::header
 {
 public:

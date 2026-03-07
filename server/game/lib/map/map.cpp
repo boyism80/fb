@@ -275,7 +275,7 @@ std::vector<std::shared_ptr<fb::game::object>> map::belows(const fb::model::poin
         auto sector = this->_sectors->at(pivot);
         for (auto& obj : *sector)
         {
-            if (type == OBJECT_TYPE::UNKNOWN || obj->is(type))
+            if (obj->is(type))
             {
                 if (obj->position() == pivot)
                     objects.push_back(obj);

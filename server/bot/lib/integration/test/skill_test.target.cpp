@@ -44,7 +44,7 @@ async::task<bool> skill_test::test_target_spells(std::shared_ptr<fb::bot::game_b
 
         // Information display spell
         {"대지의빛",
-         30,  OBJECT_TYPE::UNKNOWN,
+         30,  OBJECT_TYPE::CHARACTER,
          [](const auto& caster, const auto& target) -> async::task<bool> {
              // Pre-condition: No special requirements
              co_return true;
@@ -79,7 +79,7 @@ async::task<bool> skill_test::test_target_spells(std::shared_ptr<fb::bot::game_b
 
         // Buff removal spells
         {"시력회복",
-         40,  OBJECT_TYPE::UNKNOWN,
+         40,  OBJECT_TYPE::CHARACTER,
          [](const auto& caster, const auto& target) -> async::task<bool> {
              // Pre-condition: Target should have '절망' buff
              // This would need to check if target has the specific buff
@@ -93,7 +93,7 @@ async::task<bool> skill_test::test_target_spells(std::shared_ptr<fb::bot::game_b
          }},
 
         {"퇴마주",
-         30,  OBJECT_TYPE::UNKNOWN,
+         30,  OBJECT_TYPE::CHARACTER,
          [](const auto& caster, const auto& target) -> async::task<bool> {
              // Pre-condition: Target should have '저주' buff
              fb::logger::debug("Pre-condition: Checking for '저주' buff on target");
@@ -105,7 +105,7 @@ async::task<bool> skill_test::test_target_spells(std::shared_ptr<fb::bot::game_b
          }},
 
         {"파혼술",
-         30,  OBJECT_TYPE::UNKNOWN,
+         30,  OBJECT_TYPE::CHARACTER,
          [](const auto& caster, const auto& target) -> async::task<bool> {
              // Pre-condition: Target should have '혼마술' buff
              fb::logger::debug("Pre-condition: Checking for '혼마술' buff on target");
@@ -117,7 +117,7 @@ async::task<bool> skill_test::test_target_spells(std::shared_ptr<fb::bot::game_b
          }},
 
         {"해독",
-         30,  OBJECT_TYPE::UNKNOWN,
+         30,  OBJECT_TYPE::CHARACTER,
          [](const auto& caster, const auto& target) -> async::task<bool> {
              // Pre-condition: Target should have '중독' buff
              fb::logger::debug("Pre-condition: Checking for '중독' buff on target");
@@ -129,7 +129,7 @@ async::task<bool> skill_test::test_target_spells(std::shared_ptr<fb::bot::game_b
          }},
 
         {"활력",
-         30,  OBJECT_TYPE::UNKNOWN,
+         30,  OBJECT_TYPE::CHARACTER,
          [](const auto& caster, const auto& target) -> async::task<bool> {
              // Pre-condition: Target should have '마비' buff
              fb::logger::debug("Pre-condition: Checking for '마비' buff on target");
