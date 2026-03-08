@@ -44,8 +44,7 @@ namespace Http.Service
 
             try
             {
-                await using var conn = dbContext.GetGlobalConnection(world);
-                await conn.OpenAsync();
+                await using var conn = dbContext.GetShardConnection(world, section);
 
                 var dynamicParams = new DynamicParameters();
                 dynamicParams.Add("id", id);
@@ -89,8 +88,7 @@ namespace Http.Service
 
             try
             {
-                await using var conn = dbContext.GetGlobalConnection(world);
-                await conn.OpenAsync();
+                await using var conn = dbContext.GetShardConnection(world, section);
 
                 var deletedIds = new List<(uint section, uint id)>();
                 var successCount = 0;
@@ -146,8 +144,7 @@ namespace Http.Service
 
             try
             {
-                await using var conn = dbContext.GetGlobalConnection(world);
-                await conn.OpenAsync();
+                await using var conn = dbContext.GetShardConnection(world, section);
 
                 var dynamicParams = new DynamicParameters();
                 dynamicParams.Add("p_id", id);
@@ -220,7 +217,7 @@ namespace Http.Service
             using var scope = _scopeFactory.CreateScope();
             var dbContext = scope.ServiceProvider.GetRequiredService<DbContext>();
 
-            await using var conn = dbContext.GetGlobalConnection(world);
+            await using var conn = dbContext.GetShardConnection(world, section);
 
             List<Bulletin> articleList;
 
@@ -320,7 +317,7 @@ namespace Http.Service
             using var scope = _scopeFactory.CreateScope();
             var dbContext = scope.ServiceProvider.GetRequiredService<DbContext>();
 
-            await using var conn = dbContext.GetGlobalConnection(world);
+            await using var conn = dbContext.GetShardConnection(world, section);
             var dynamicParams = new DynamicParameters();
             dynamicParams.Add("section", section);
             dynamicParams.Add("article", id);
@@ -344,7 +341,7 @@ namespace Http.Service
             using var scope = _scopeFactory.CreateScope();
             var dbContext = scope.ServiceProvider.GetRequiredService<DbContext>();
 
-            await using var conn = dbContext.GetGlobalConnection(world);
+            await using var conn = dbContext.GetShardConnection(world, section);
             var dynamicParams = new DynamicParameters();
             dynamicParams.Add("section", section);
             dynamicParams.Add("article", id);

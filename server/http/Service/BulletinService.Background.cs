@@ -74,7 +74,8 @@ namespace Http.Service
 
                 try
                 {
-                    await using var conn = dbContext.GetDataConnection(world, (int)bulletinSection);
+                    await using var conn = dbContext.GetShardConnection(world, bulletinSection);
+                    // Connection must be open before BeginTransactionAsync (Dapper does not open for transactions).
                     await conn.OpenAsync(cancellationToken);
 
                     // Start transaction for sequence management
