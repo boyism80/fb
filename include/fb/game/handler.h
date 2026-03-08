@@ -6,6 +6,7 @@
 #include <fb/game/handler/protocol/exit.h>
 #include <fb/game/handler/protocol/update_move.h>
 #include <fb/game/handler/protocol/move.h>
+#include <fb/game/handler/protocol/move_blocked.h>
 #include <fb/game/handler/protocol/attack.h>
 #include <fb/game/handler/protocol/loot.h>
 #include <fb/game/handler/protocol/emotion.h>

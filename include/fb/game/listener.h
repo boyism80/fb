@@ -70,7 +70,7 @@ public:
     void                          on_show_bulletin(character& ch, const fb::game::bulletin::article& value, BULLETIN_BUTTON_ENABLE flag) override final;
     void                          on_show_mail_box(character& ch, const std::vector<mail_box::summary>& mails, MAIL_BUTTON_ENABLE flag) override final;
     void                          on_show_mail_box(character& ch, const mail_box::mail& mail, MAIL_BUTTON_ENABLE flag) override final;
-    void                          on_show_bulletin_message(character& ch, std::string_view message, bool success, bool mail) override final;
+    void                          on_show_bulletin_message(character& ch, std::string_view message, bool success, BULLETIN_MESSAGE_TYPE action) override final;
     void                          on_show_world_map(character& ch, uint32_t id, uint16_t index) override final;
     void                          on_timer(character& ch, uint32_t time, TIMER_TYPE type) override final;
     void                          on_weather(character& ch, WEATHER_TYPE weather) override final;

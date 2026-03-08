@@ -35,11 +35,10 @@ public:
 public:
     void     show(const std::vector<summary>& summaries, MAIL_BUTTON_ENABLE flag);
     void     show(const mail& mail, MAIL_BUTTON_ENABLE flag);
-    void     message(std::string_view message, bool success, bool error = true);
+    void     message(std::string_view message, bool success, BULLETIN_MESSAGE_TYPE action);
     uint16_t unread_count() const;
     void     unread_count(uint16_t value);
 
-    // System mail user management
     void add_system_mail_user(uint32_t mail_id, const std::optional<std::string>& expire_date);
     void update_system_mail_user_read(uint32_t mail_id, bool read);
     bool try_mark_system_mail_user_as_sent(uint32_t mail_id);

@@ -299,9 +299,9 @@ void listener_impl::on_show_mail_box(character& ch, const mail_box::mail& mail, 
     ch.send(game_resp::bulletin_mail(dto, flag));
 }
 
-void listener_impl::on_show_bulletin_message(character& ch, std::string_view message, bool success, bool unknown)
+void listener_impl::on_show_bulletin_message(character& ch, std::string_view message, bool success, BULLETIN_MESSAGE_TYPE action)
 {
-    ch.send(game_resp::bulletin_message(message, success, unknown));
+    ch.send(game_resp::bulletin_message(message, success, action));
 }
 
 void listener_impl::on_show_world_map(character& ch, uint32_t id, uint16_t index)

@@ -185,6 +185,7 @@ async::task<void> server::on_start()
     this->handler.protocol.bind<fb::game::handler::protocol::exit>();            // Disconnect handler
     this->handler.protocol.bind<fb::game::handler::protocol::update_move>();     // Update move and map data handler
     this->handler.protocol.bind<fb::game::handler::protocol::move>();            // Move handler
+    this->handler.protocol.bind<fb::game::handler::protocol::move_blocked>();    // Move blocked
     this->handler.protocol.bind<fb::game::handler::protocol::attack>();          // Attack handler
     this->handler.protocol.bind<fb::game::handler::protocol::loot>();            // Loot handler
     this->handler.protocol.bind<fb::game::handler::protocol::emotion>();         // Emotion handler
