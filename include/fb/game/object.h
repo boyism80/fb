@@ -24,6 +24,7 @@ class objects;
 class items;
 class sector;
 class sectors;
+class appearance;
 
 class object : public fb::thread_switchable
 {
@@ -36,8 +37,9 @@ public:
 public:
     LUA_PROTOTYPE
 
-    using map_ptr    = std::shared_ptr<fb::game::map>;
-    using object_ptr = std::shared_ptr<object>;
+    using map_ptr        = std::shared_ptr<fb::game::map>;
+    using object_ptr     = std::shared_ptr<object>;
+    using appearance_ptr = std::shared_ptr<fb::game::appearance>;
 
     friend fb::game::buffs;
     friend fb::game::items;
@@ -69,6 +71,7 @@ public:
 private:
     void        update_sector();
     static bool sight(const fb::model::point16_t me, const fb::model::point16_t you, const map_ptr& map);
+    static fb::model::area<uint16_t> sight_area(const fb::model::point16_t& position, const map_ptr& map);
 
 public:
     template <typename T> const T& based() const
@@ -112,20 +115,21 @@ public:
     map_ptr                                     map() const;
     bool                                        sight(const fb::model::point16_t& position) const;
     bool                                        sight(const fb::game::object& object) const;
+    fb::model::area<uint16_t>                   sight_area() const;
     fb::model::point16_t                        side_position(DIRECTION direction, int step = 1) const;
     fb::model::point16_t                        front_position(int step = 1) const;
-    object_ptr                                  side(DIRECTION direction, OBJECT_TYPE type = OBJECT_TYPE::UNKNOWN) const;
-    std::vector<object_ptr>                     sides(DIRECTION direction, OBJECT_TYPE type = OBJECT_TYPE::UNKNOWN) const;
-    object_ptr                                  forward(OBJECT_TYPE type = OBJECT_TYPE::UNKNOWN) const;
-    std::vector<object_ptr>                     forwards(OBJECT_TYPE type = OBJECT_TYPE::UNKNOWN) const;
+    object_ptr                                  side(DIRECTION direction, OBJECT_TYPE type = OBJECT_TYPE::OBJECT) const;
+    std::vector<object_ptr>                     sides(DIRECTION direction, OBJECT_TYPE type = OBJECT_TYPE::OBJECT) const;
+    object_ptr                                  forward(OBJECT_TYPE type = OBJECT_TYPE::OBJECT) const;
+    std::vector<object_ptr>                     forwards(OBJECT_TYPE type = OBJECT_TYPE::OBJECT) const;
     double                                      distance(const object& right) const;
     uint32_t                                    distance_sqrt(const object& right) const;
     virtual bool                                condition(const std::vector<fb::model::dsl>& conditions) const;
     virtual bool                                available() const;
     virtual void                                hide(DESTROY_TYPE destroy_type = DESTROY_TYPE::DEFAULT);
     virtual void                                hide(fb::game::object& to, DESTROY_TYPE destroy_type = DESTROY_TYPE::DEFAULT);
-    std::vector<object_ptr>                     sight_in(OBJECT_TYPE type = OBJECT_TYPE::UNKNOWN) const;
-    std::vector<object_ptr>                     nears(OBJECT_TYPE type = OBJECT_TYPE::UNKNOWN, bool contains_super_hide = false) const;
+    std::vector<object_ptr>                     sight_in(OBJECT_TYPE type = OBJECT_TYPE::OBJECT) const;
+    std::vector<object_ptr>                     nears(OBJECT_TYPE type = OBJECT_TYPE::OBJECT, bool contains_super_hide = false) const;
     void                                        thread(fb::thread* value);
     virtual fb::thread*                         thread() const override;
     virtual void                                update_id();
@@ -134,6 +138,7 @@ public:
     virtual void                                update_position();
     void                                        sound(SOUND sound);
     void                                        effect(uint8_t value);
+    virtual appearance_ptr                      appearance() const = 0;
     // clang-format on
 
 public:

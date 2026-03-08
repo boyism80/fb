@@ -135,6 +135,15 @@ public:
         return this->std::unordered_map<HashType, T>::contains(hash);
     }
 
+    std::vector<HashType> keys() const
+    {
+        std::vector<HashType> out;
+        out.reserve(this->super::size());
+        for (auto it = this->super::begin(); it != this->super::end(); ++it)
+            out.push_back(it->first);
+        return out;
+    }
+
 private:
     mutable std::list<HashType> _lru_list; ///< LRU list to track access order
     size_t                      _capacity; ///< Maximum number of elements
@@ -292,6 +301,17 @@ public:
     }
 
     template <typename Func>
+    bool try_read(HashType hash, Func&& func) const
+    {
+        return this->_data.read([&](const map_type& data) {
+            if (!data.contains(hash))
+                return false;
+            func(data.at(hash));
+            return true;
+        });
+    }
+
+    template <typename Func>
     auto write(HashType hash, Func&& func)
     {
         return this->_data.write([&](map_type& data) {
@@ -402,6 +422,13 @@ public:
                 throw std::runtime_error("Element not found");
 
             co_await (*func_holder)(data.at(hash));
+        });
+    }
+
+    std::vector<HashType> keys() const
+    {
+        return this->_data.read([&](const map_type& m) {
+            return m.keys();
         });
     }
 
@@ -590,6 +617,12 @@ public:
     }
 
     template <typename Func>
+    bool try_read(HashType hash, Func&& func) const
+    {
+        return this->bucket(hash)->try_read(hash, std::forward<Func>(func));
+    }
+
+    template <typename Func>
     auto write(HashType hash, Func&& func)
     {
         return this->bucket(hash)->write(hash, std::forward<Func>(func));
@@ -635,6 +668,18 @@ public:
     auto try_async_write(HashType hash, Func&& func, Factory&& factory) -> async::task<bool>
     {
         return this->bucket(hash)->try_async_write(hash, std::forward<Func>(func), std::forward<Factory>(factory));
+    }
+
+    std::vector<HashType> keys() const
+    {
+        std::vector<HashType> out;
+        for (const auto& b : _buckets)
+        {
+            auto k = b->keys();
+            for (auto h : k)
+                out.push_back(h);
+        }
+        return out;
     }
 
 private:

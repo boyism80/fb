@@ -1,6 +1,7 @@
 #ifndef __PROTOCOL_GAME_BULLETIN_MESSAGE_H__
 #define __PROTOCOL_GAME_BULLETIN_MESSAGE_H__
 
+#include <cstdint>
 #include <fb/protocol/header.h>
 #include <fb/model/model.h>
 #include <string_view>
@@ -16,18 +17,18 @@ public:
 
 public:
 #ifndef BOT
-    const std::string text;
-    const bool        success;
-    const bool        unknown;
+    const std::string           text;
+    const bool                  success;
+    const BULLETIN_MESSAGE_TYPE action;
 #else
     std::string text;
     bool        success;
-    bool        unknown;
+    uint8_t     action;
 #endif
 
 public:
 #ifndef BOT
-    bulletin_message(std::string_view text, bool success, bool unknown = false);
+    bulletin_message(std::string_view text, bool success, BULLETIN_MESSAGE_TYPE action);
 #else
     bulletin_message() = default;
 #endif

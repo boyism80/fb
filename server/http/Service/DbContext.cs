@@ -98,6 +98,11 @@ namespace Http.Service
         /// </summary>
         public BanRepository Ban => Bind<BanRepository>();
 
+        /// <summary>
+        /// Gets the marriage repository instance.
+        /// </summary>
+        public MarriageRepository Marriage => Bind<MarriageRepository>();
+
 
         /// <summary>
         /// Gets unified database connection.

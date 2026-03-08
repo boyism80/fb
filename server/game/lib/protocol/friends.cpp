@@ -14,15 +14,9 @@ async::task<void> friends::deserialize(fb::stream_reader<big_endian>& reader)
     co_await header::deserialize(reader);
 
     auto count = reader.read<uint8_t>();
-    char buffer[12];
     for (int i = 0; i < count; i++)
     {
-        auto len = reader.read<uint8_t>();
-        if (len != 12)
-            co_return;
-
-        reader.read(buffer, sizeof(buffer));
-        auto name = std::string(buffer, sizeof(buffer));
+        auto name = reader.read<std::string, uint8_t>();
         this->names.push_back(name);
     }
 }

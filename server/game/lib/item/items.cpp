@@ -96,7 +96,7 @@ std::shared_ptr<equipment> items::equipment_off(EQUIPMENT_PARTS parts)
         auto lua = fb::lua::new_context();
         if (lua != nullptr)
         {
-#if defined DEBUG | defined _DEBUG
+#if defined DEBUG || defined _DEBUG
             lua->load(model.script);
 #endif
             lua->func(model.on_inactive);
@@ -953,6 +953,64 @@ std::shared_ptr<item> items::find(const fb::model::item& model) const
     return nullptr;
 }
 
+bool items::has(const fb::model::item& model, uint16_t count) const
+{
+    if (model.attr(ITEM_ATTRIBUTE::BUNDLE))
+    {
+        /* BUNDLE stacks in a single slot; at most one slot holds this item. */
+        for (int i = 0; i < CONTAINER_CAPACITY; i++)
+        {
+            auto slot_item = this->at(i);
+            if (slot_item == nullptr)
+                continue;
+            if (slot_item->based<fb::model::item>() == model)
+                return slot_item->count() >= count;
+        }
+        return false;
+    }
+    else
+    {
+        /* Non-BUNDLE: multiple slots possible, capacity 1 each; count slots. */
+        uint32_t slot_count = 0;
+        for (int i = 0; i < CONTAINER_CAPACITY; i++)
+        {
+            auto slot_item = this->at(i);
+            if (slot_item != nullptr && slot_item->based<fb::model::item>() == model)
+                slot_count++;
+        }
+        return slot_count >= count;
+    }
+}
+
+bool items::has(const std::vector<std::pair<const fb::model::item*, uint16_t>>& required) const
+{
+    if (required.empty())
+        return true;
+
+    std::unordered_map<uint32_t, uint32_t> counts;
+    for (int i = 0; i < CONTAINER_CAPACITY; i++)
+    {
+        auto slot_item = this->at(i);
+        if (slot_item == nullptr)
+            continue;
+        const auto& model = slot_item->based<fb::model::item>();
+        if (model.attr(ITEM_ATTRIBUTE::BUNDLE))
+            counts[model.id] += slot_item->count();
+        else
+            counts[model.id] += 1;
+    }
+
+    for (const auto& [model, min_count] : required)
+    {
+        if (model == nullptr)
+            return false;
+        auto it = counts.find(model->id);
+        if (it == counts.end() || it->second < min_count)
+            return false;
+    }
+    return true;
+}
+
 std::shared_ptr<item> items::drop(uint8_t index, uint8_t count, bool action, ITEM_DELETE_TYPE delete_type)
 {
     auto owner = this->_owner.lock();
@@ -1005,7 +1063,7 @@ void items::loot(bool boost)
         auto lua = fb::lua::new_context();
         if (lua != nullptr)
         {
-#if defined DEBUG | defined _DEBUG
+#if defined DEBUG || defined _DEBUG
             lua->load("scripts/interaction.lua");
 #endif
             lua->func("on_loot");
@@ -1230,6 +1288,151 @@ bool items::is_rewardable(const std::vector<fb::model::dsl>& items) const
         }
     }
     return this->is_rewardable(buffer, money);
+}
+
+exchange_result items::exchange(const std::unordered_map<uint32_t, uint16_t>& cost_items,
+                                uint32_t                                      cost_money,
+                                const std::unordered_map<uint32_t, uint16_t>& reward_items,
+                                uint32_t                                      reward_money)
+{
+    auto owner = this->_owner.lock();
+    if (owner == nullptr)
+        return exchange_result::lack_cost;
+
+    if (owner->money() < cost_money)
+        return exchange_result::lack_cost;
+
+    auto effective_free_slots       = this->free_size();
+    auto simulated_bundle_remaining = std::unordered_map<uint32_t, uint16_t>{};
+    auto slots_by_id                = std::unordered_map<uint32_t, std::vector<uint8_t>>{};
+
+    for (int i = 0; i < CONTAINER_CAPACITY; i++)
+    {
+        auto slot = this->at(static_cast<uint8_t>(i));
+        if (slot == nullptr)
+            continue;
+        auto& model = slot->based<fb::model::item>();
+        slots_by_id[model.id].push_back(static_cast<uint8_t>(i));
+    }
+
+    for (auto& [id, cost_count] : cost_items)
+    {
+        auto& model = table::item[id];
+        auto  it    = slots_by_id.find(id);
+        if (it == slots_by_id.end() || it->second.empty())
+            return exchange_result::lack_cost;
+
+        if (model.attr(ITEM_ATTRIBUTE::BUNDLE))
+        {
+            auto index = it->second[0];
+            auto slot  = this->at(index);
+            if (slot == nullptr)
+                return exchange_result::lack_cost;
+
+            auto current = slot->count();
+            if (current < cost_count)
+                return exchange_result::lack_cost;
+
+            auto remain = static_cast<uint16_t>(current - cost_count);
+            if (remain == 0)
+                effective_free_slots++;
+            else
+                simulated_bundle_remaining[id] = remain;
+        }
+        else
+        {
+            auto slot_count = static_cast<uint32_t>(it->second.size());
+            if (slot_count < cost_count)
+                return exchange_result::lack_cost;
+
+            effective_free_slots =
+                static_cast<uint8_t>(std::min(0xFF, static_cast<int>(effective_free_slots) + cost_count));
+        }
+    }
+
+    uint32_t money_after         = owner->money() - cost_money;
+    uint32_t effective_money_cap = 0xFFFFFFFF - money_after;
+    if (effective_money_cap < reward_money)
+        return exchange_result::lack_capacity;
+
+    int required_size = 0;
+    for (auto& [id, count] : reward_items)
+    {
+        auto& model = table::item[id];
+        if (model.attr(ITEM_ATTRIBUTE::BUNDLE) == false)
+            required_size += count;
+        else
+            required_size++;
+    }
+
+    int available_slots = effective_free_slots;
+    for (auto& [id, count] : reward_items)
+    {
+        auto& model = table::item[id];
+        if (model.attr(ITEM_ATTRIBUTE::BUNDLE) == false)
+            continue;
+
+        auto     it       = simulated_bundle_remaining.find(id);
+        uint16_t existing = (it != simulated_bundle_remaining.end()) ? it->second : 0;
+        if (model.capacity < existing + count)
+            return exchange_result::lack_capacity;
+
+        available_slots++;
+    }
+
+    if (available_slots < required_size)
+        return exchange_result::lack_capacity;
+
+    owner->money_reduce(cost_money);
+
+    for (auto& [id, cost_count] : cost_items)
+    {
+        auto&    slots     = slots_by_id[id];
+        size_t   slot_it   = 0;
+        uint16_t remaining = cost_count;
+        while (remaining > 0 && slot_it < slots.size())
+        {
+            auto index = slots[slot_it];
+            auto slot  = this->at(index);
+            if (slot == nullptr || slot->based<fb::model::item>().id != id)
+            {
+                ++slot_it;
+                continue;
+            }
+
+            auto in_slot = slot->count();
+            if (in_slot == 0)
+            {
+                ++slot_it;
+                continue;
+            }
+
+            uint16_t to_remove = std::min(in_slot, remaining);
+            auto     removed   = this->remove(index, to_remove, ITEM_DELETE_TYPE::GIVE, true);
+            if (removed != nullptr)
+                std::ignore = removed->destroy();
+            remaining -= to_remove;
+
+            if (slot->count() == 0)
+                ++slot_it;
+        }
+    }
+
+    owner->money_add(reward_money);
+
+    for (auto& [id, count] : reward_items)
+    {
+        auto& model = table::item[id];
+        auto  made  = model.make(owner->server, count);
+        if (made != nullptr)
+        {
+            auto idx = this->add(made);
+            if (idx == 0xFF)
+                std::ignore = made->destroy();
+        }
+    }
+
+    return exchange_result::ok;
 }
 
 std::map<EQUIPMENT_PARTS, std::shared_ptr<equipment>> items::equipments() const

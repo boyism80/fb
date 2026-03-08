@@ -25,7 +25,7 @@ private:
     std::vector<endpoint> _entrypoints;
     fb::stream            _endpoint_bytes;
     uint32_t              _endpoint_crc = 0;
-    fb::stream            _connection_cache;
+    fb::stream            _connection_welcome;
 
 public:
     fb::log_collector log;

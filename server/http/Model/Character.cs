@@ -1,4 +1,4 @@
-﻿using StackExchange.Redis;
+using StackExchange.Redis;
 
 namespace Http.Model
 {
@@ -32,7 +32,7 @@ namespace Http.Model
         public uint Exp { get; set; }
         public uint Money { get; set; }
         public uint DepositedMoney { get; set; }
-        public ushort? Disguise { get; set; }
+        public Mimicry Mimicry { get; set; }
         public uint Hp { get; set; }
         public uint BaseHp { get; set; }
         public uint AdditionalHp { get; set; }
@@ -50,5 +50,6 @@ namespace Http.Model
         public List<Buff> Buffs { get; set; } = new List<Buff>();
         public string Title { get; set; } = string.Empty;
         public Dictionary<string, List<Fb.Model.Dsl>> PendingListings { get; set; } = new Dictionary<string, List<Fb.Model.Dsl>>();
+        public bool SuperHide { get; set; }
     }
 }

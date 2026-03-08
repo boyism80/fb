@@ -9,5 +9,5 @@ function ON_CAST_10004(me, you, spell)
             you:message(string.format('%s %s 가합니다.', name_with(me:name(), '이', '가'), name_with(spell:name(), '을', '를')))
         end
     end
-    you:damage(math.random(30000, 35000), me)
+    you:damage(math.random(30000, 35000), me, { critical = false, rate = me:skill_damage_rate() / 1000.0, physical = false })
 end

@@ -4,6 +4,11 @@ using namespace fb::game;
 
 namespace game_resp = fb::protocol::game::response;
 
+void listener_impl::on_dialog(character& me, std::string_view message, bool button_prev, bool button_next, uint32_t oid)
+{
+    me.send(game_resp::dialog(message, button_prev, button_next, oid));
+}
+
 void listener_impl::on_dialog(character&               me,
                               const fb::model::object& object,
                               std::string_view         message,
@@ -62,14 +67,14 @@ void listener_impl::on_dialog(character&                      me,
     me.send(game_resp::dialog_list(obj, menus, std::string(message), button_prev, oid));
 }
 
-void listener_impl::on_dialog(character&                            me,
-                              std::unique_ptr<fb::game::portrait>&& portrait,
-                              std::string_view                      message,
-                              const std::vector<std::string>&       menus,
-                              bool                                  button_prev,
-                              uint32_t                              oid)
+void listener_impl::on_dialog(character&                              me,
+                              std::unique_ptr<fb::game::appearance>&& appearance,
+                              std::string_view                        message,
+                              const std::vector<std::string>&         menus,
+                              bool                                    button_prev,
+                              uint32_t                                oid)
 {
-    me.send(game_resp::dialog_list(std::move(portrait), menus, message, button_prev, oid));
+    me.send(game_resp::dialog_list(std::move(appearance), menus, message, button_prev, oid));
 }
 
 void listener_impl::on_dialog(character&                  me,

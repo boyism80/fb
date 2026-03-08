@@ -122,6 +122,7 @@ table Authenticate {
 
 table Init {
   character: fb.protocol.internal.Character;
+  marriage: fb.protocol.internal.Marriage;
   group: uint?;
   clan: uint?;
   items: [fb.protocol.internal.Item];

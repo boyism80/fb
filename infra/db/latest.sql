@@ -34,15 +34,14 @@ DROP TABLE IF EXISTS `achievement`;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `achievement` (
   `uid` int unsigned NOT NULL,
-  `model` int unsigned NOT NULL,
-  `text` varchar(128) CHARACTER SET utf8mb3 COLLATE utf8mb3_general_ci DEFAULT NULL,
-  `icon` smallint DEFAULT NULL,
-  `color` smallint DEFAULT NULL,
+  `id` int unsigned NOT NULL,
+  `text` varchar(128) CHARACTER SET utf8mb3 COLLATE utf8mb3_general_ci NOT NULL DEFAULT '',
+  `icon` smallint NOT NULL DEFAULT 0,
+  `color` smallint NOT NULL DEFAULT 0,
   `deleted` tinyint DEFAULT NULL,
   `created_date` datetime NOT NULL,
   `updated_date` datetime NOT NULL,
-  PRIMARY KEY (`uid`,`model`),
-  KEY `fk.legend.owner_idx` (`model`)
+  PRIMARY KEY (`uid`,`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
@@ -491,17 +490,17 @@ CREATE TABLE `user` (
   `exp` int unsigned NOT NULL DEFAULT '0',
   `money` int unsigned NOT NULL DEFAULT '0',
   `deposited_money` int unsigned NOT NULL DEFAULT '0',
-  `disguise` smallint unsigned DEFAULT NULL,
+  `mimicry` json DEFAULT NULL COMMENT 'Character appearance override (mimicry); NULL = no mimicry',
   `hp` int unsigned NOT NULL,
   `base_hp` int unsigned NOT NULL,
   `additional_hp` int unsigned NOT NULL DEFAULT '0',
   `mp` int unsigned NOT NULL,
   `base_mp` int unsigned NOT NULL,
   `additional_mp` int unsigned NOT NULL DEFAULT '0',
-  `weapon_color` tinyint unsigned DEFAULT NULL,
+  `weapon_color` tinyint unsigned DEFAULT NULL COMMENT 'Optional override for weapon color (appearance); NULL = use item default',
   `helmet_color` tinyint unsigned DEFAULT NULL,
-  `armor_color` tinyint unsigned DEFAULT NULL,
-  `shield_color` tinyint unsigned DEFAULT NULL,
+  `armor_color` tinyint unsigned DEFAULT NULL COMMENT 'Optional override for armor color (appearance); NULL = use item default',
+  `shield_color` tinyint unsigned DEFAULT NULL COMMENT 'Optional override for shield color (appearance); NULL = use item default',
   `ring_left_color` tinyint unsigned DEFAULT NULL,
   `ring_right_color` tinyint unsigned DEFAULT NULL,
   `aux_top_color` int unsigned DEFAULT NULL,
@@ -509,6 +508,7 @@ CREATE TABLE `user` (
   `buffs` varchar(512) NOT NULL DEFAULT '[]',
   `title` varchar(32) NOT NULL DEFAULT '',
   `pending_listings` json DEFAULT NULL,
+  `super_hide` tinyint unsigned NOT NULL DEFAULT '0',
   `deleted` tinyint unsigned NOT NULL DEFAULT '0',
   `created_date` datetime NOT NULL,
   `updated_date` datetime NOT NULL,
@@ -517,6 +517,27 @@ CREATE TABLE `user` (
   UNIQUE KEY `name_UNIQUE` (`name`),
   KEY `INDEX_NAME` (`name`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Table structure for table `marriage`
+--
+
+DROP TABLE IF EXISTS `marriage`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
+CREATE TABLE `marriage` (
+  `character_id` int unsigned NOT NULL COMMENT 'Character id (one row per character)',
+  `spouse_id` int unsigned DEFAULT NULL COMMENT 'Character id of spouse; NULL when single',
+  `remarriage_after` datetime DEFAULT NULL COMMENT 'Remarriage allowed after this time (set on divorce)',
+  `divorce_count` int unsigned NOT NULL DEFAULT '0' COMMENT 'Number of divorces (for title/achievement)',
+  `created_date` datetime NOT NULL DEFAULT (CURRENT_TIMESTAMP),
+  `updated_date` datetime NOT NULL DEFAULT (CURRENT_TIMESTAMP) ON UPDATE CURRENT_TIMESTAMP,
+  PRIMARY KEY (`character_id`),
+  KEY `idx_marriage_spouse` (`spouse_id`),
+  CONSTRAINT `fk.marriage.character` FOREIGN KEY (`character_id`) REFERENCES `user` (`id`) ON DELETE CASCADE,
+  CONSTRAINT `fk.marriage.spouse` FOREIGN KEY (`spouse_id`) REFERENCES `user` (`id`) ON DELETE SET NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3 COMMENT='Marriage state per character: spouse_id, remarriage_after, divorce_count';
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --

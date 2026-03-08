@@ -22,6 +22,6 @@ end
 -- 노도성황 지속 효과
 function ON_CONCAST_3049(me, caster, buff)
     local damage = (me:maxhp() * 5) // 100
-    me:damage(damage, caster)
+    me:damage(damage, caster, { critical = false, rate = caster:skill_damage_rate() / 1000.0, physical = false })
     me:effect(96)
 end

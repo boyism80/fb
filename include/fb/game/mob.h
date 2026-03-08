@@ -3,6 +3,7 @@
 
 #include <fb/game/life.h>
 #include <fb/game/item.h>
+#include <fb/game/appearance.h>
 #include <async/task.h>
 
 namespace fb::game {
@@ -34,8 +35,9 @@ public:
 class mob : public life
 {
 public:
-    using model_type    = fb::model::mob;
-    using item_vector_t = std::vector<std::shared_ptr<fb::game::item>>;
+    using model_type     = fb::model::mob;
+    using item_vector_t  = std::vector<std::shared_ptr<fb::game::item>>;
+    using appearance_ptr = std::shared_ptr<fb::game::appearance>;
 
     friend class mob_stat;
 
@@ -77,6 +79,7 @@ private:
     std::weak_ptr<fb::game::life>   find_target();
     [[nodiscard]] async::task<bool> call_script();
     void                            AI(const fb::model::datetime& now);
+    void                            on_die(std::shared_ptr<fb::game::object> from, DESTROY_TYPE destroy_type);
 
 public:
     bool near_target(const std::shared_ptr<fb::game::life>& target, DIRECTION& out) const;
@@ -102,6 +105,7 @@ public:
     bool                            push_item(std::shared_ptr<fb::game::item> item);
     bool                            hidden(const fb::game::object& target) const override final;
     void                            hidden(bool enabled);
+    appearance_ptr                  appearance() const override;
     // clang-format on
 };
 

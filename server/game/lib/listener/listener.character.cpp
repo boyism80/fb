@@ -1,5 +1,6 @@
 #include <fb/game/server.h>
 #include <fb/game/handler/amqp/ban.h>
+#include <fb/model/model.h>
 
 using namespace fb::game;
 
@@ -81,27 +82,8 @@ void listener_impl::on_update_map(character&                  ch,
                                   const fb::model::size8_t&   size,
                                   uint16_t                    crc)
 {
-    auto hash = static_cast<uint64_t>(map.model.id) << 48 | static_cast<uint64_t>(position.x) << 32 |
-                static_cast<uint64_t>(position.y) << 16 | static_cast<uint64_t>(size.width) << 8 |
-                static_cast<uint64_t>(size.height);
 
-    this->server.map_update_cache.write(
-        hash,
-        [&ch, crc](auto& cache_bytes) {
-            if (cache_bytes.crc != crc)
-                ch.send(fb::stream(cache_bytes.bytes.data(), cache_bytes.bytes.size()));
-        },
-        [&server = this->server, &map, &position, &size, hash]() {
-            auto bytes = map::cache_bytes();
-            bytes.hash = hash;
-            bytes.crc  = 0;
-
-            auto writer = fb::stream_writer<big_endian>(bytes.bytes);
-            auto resp   = game_resp::map_update(map, position, size);
-            std::ignore = resp.serialize(writer);
-            bytes.crc   = resp.crc;
-            return bytes;
-        });
+    this->server.send_map_cache(ch, map, position, size, crc);
 }
 
 void listener_impl::on_update_buff(character& ch, const buffs& buffs)
@@ -122,7 +104,10 @@ void listener_impl::on_level_up(character& me)
 
 void listener_impl::on_update(character& me, UPDATE_STATE_LEVEL level)
 {
-    me.send(game_resp::update_internal(me, level));
+    if (level == UPDATE_STATE_LEVEL::CROWD_CONTROL)
+        me.send(game_resp::update_cc(me));
+    else
+        me.send(game_resp::update_internal(me, level));
 }
 
 async::task<bool> listener_impl::on_transfer(character& me, map& map, const fb::model::point16_t& position)
@@ -224,9 +209,31 @@ void listener_impl::on_update_position(character& ch)
     ch.send(game_resp::position(ch));
 }
 
+void listener_impl::on_screen_refresh(character& ch)
+{
+    ch.update_id();
+    ch.update_position();
+    ch.update(UPDATE_STATE_LEVEL::ALL);
+
+    auto map = ch.map();
+    if (map == nullptr)
+        return;
+
+    for (auto& obj : ch.sight_in(OBJECT_TYPE::OBJECT))
+    {
+        if (obj->hidden(ch))
+            continue;
+
+        obj->update_external(ch, true);
+    }
+    ch.update_external(ch, true);
+    ch.send(game_resp::direction(ch));
+    ch.send(game_resp::screen_refresh_complete());
+}
+
 void listener_impl::on_browse_character(character& ch, const character& target)
 {
-    ch.send(game_resp::external_info(target));
+    ch.send(game_resp::external_info(target, ch));
 }
 
 void listener_impl::on_item_tooltip(character& ch, const item& item, uint16_t position)
@@ -292,9 +299,9 @@ void listener_impl::on_show_mail_box(character& ch, const mail_box::mail& mail, 
     ch.send(game_resp::bulletin_mail(dto, flag));
 }
 
-void listener_impl::on_show_bulletin_message(character& ch, std::string_view message, bool success, bool unknown)
+void listener_impl::on_show_bulletin_message(character& ch, std::string_view message, bool success, BULLETIN_MESSAGE_TYPE action)
 {
-    ch.send(game_resp::bulletin_message(message, success, unknown));
+    ch.send(game_resp::bulletin_message(message, success, action));
 }
 
 void listener_impl::on_show_world_map(character& ch, uint32_t id, uint16_t index)

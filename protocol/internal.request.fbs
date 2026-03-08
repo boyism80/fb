@@ -103,6 +103,7 @@ table ReserveName {
 table Save {
   world: uint;
   character: fb.protocol.internal.Character;
+  marriage: fb.protocol.internal.Marriage;
   items: [fb.protocol.internal.Item];
   spells: [fb.protocol.internal.Spell];
   achievements: [fb.protocol.internal.Achievement];

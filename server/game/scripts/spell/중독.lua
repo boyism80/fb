@@ -25,5 +25,5 @@ function ON_CONCAST_3059(me, caster, buff)
     if damage > me:hp() - 100 then
         damage = math.max(0, me:hp() - 100)
     end
-    me:damage(damage, caster)
+    me:damage(damage, caster, { critical = false, rate = caster:skill_damage_rate() / 1000.0, physical = false })
 end

@@ -15,12 +15,15 @@ struct character
     static int builtin_exp(lua_State* L);
     static int builtin_item(lua_State* L);
     static int builtin_items(lua_State* L);
+    static int builtin_has_items(lua_State* L);
     static int builtin_equipments(lua_State* L);
+    static int builtin_equipment_off(lua_State* L);
     static int builtin_item_drop(lua_State* L);
     static int builtin_mkitem(lua_State* L);
     static int builtin_rmitem(lua_State* L);
+    static int builtin_exchange(lua_State* L);
     static int builtin_state(lua_State* L);
-    static int builtin_disguise(lua_State* L);
+    static int builtin_mimic(lua_State* L);
     static int builtin_class(lua_State* L);
     static int builtin_promotion(lua_State* L);
     static int builtin_level(lua_State* L);
@@ -57,10 +60,12 @@ struct character
     static int builtin_base_dam(lua_State* L);
     static int builtin_base_hit(lua_State* L);
     static int builtin_armor_color(lua_State* L);
+    static int builtin_weapon_color(lua_State* L);
+    static int builtin_shield_color(lua_State* L);
     static int builtin_mkspell(lua_State* L);
     static int builtin_rmspell(lua_State* L);
+    static int builtin_spell(lua_State* L);
     static int builtin_world(lua_State* L);
-    static int builtin_script(lua_State* L);
     static int builtin_ad(lua_State* L);
     static int builtin_web(lua_State* L);
     static int builtin_delay(lua_State* L);
@@ -78,7 +83,7 @@ struct character
     static int builtin_quest(lua_State* L);
     static int builtin_start_quest(lua_State* L);
     static int builtin_remove_quest(lua_State* L);
-    static int builtin_can_start_quest(lua_State* L);
+    static int builtin_reward(lua_State* L);
     static int builtin_send_system_mail(lua_State* L);
     static int builtin_storage_entries(lua_State* L);
     static int builtin_receive_storage_reward(lua_State* L);
@@ -88,6 +93,19 @@ struct character
     static int builtin_marketplace_search(lua_State* L);
     static int builtin_marketplace_get_listings(lua_State* L);
     static int builtin_marketplace_pending_listings(lua_State* L);
+    static int builtin_marriage(lua_State* L);
+    static int builtin_marry(lua_State* L);
+    static int builtin_divorce(lua_State* L);
+    static int builtin_unknown_12(lua_State* L);
+    static int builtin_unknown_26(lua_State* L);
+    static int builtin_ui(lua_State* L);
+    static int builtin_item_throw_confirm(lua_State* L);
+    static int builtin_freeze(lua_State* L);
+    static int builtin_friends_sync(lua_State* L);
+    static int builtin_unknown_4B(lua_State* L);
+    static int builtin_unknown_4D(lua_State* L);
+    static int builtin_unknown_35(lua_State* L);
+    static int builtin_holyday_screen(lua_State* L);
 };
 
 } // namespace fb::game::builtin

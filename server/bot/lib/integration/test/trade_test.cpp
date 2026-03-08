@@ -75,8 +75,8 @@ async::task<void> trade_test::on_scenario_finished(uint32_t scenario_index)
 
 bool trade_test::has_item(const std::shared_ptr<game_bot>& bot, std::string_view name)
 {
-    auto name_str = std::string(name);
-    const auto& items = bot->items();
+    auto        name_str = std::string(name);
+    const auto& items    = bot->items();
     for (const auto& [slot, item] : items)
     {
         if (item.name.find(name_str) != std::string::npos)
@@ -87,8 +87,8 @@ bool trade_test::has_item(const std::shared_ptr<game_bot>& bot, std::string_view
 
 uint16_t trade_test::get_item_count(const std::shared_ptr<game_bot>& bot, std::string_view name)
 {
-    auto name_str = std::string(name);
-    const auto& items = bot->items();
+    auto        name_str = std::string(name);
+    const auto& items    = bot->items();
     for (const auto& [slot, item] : items)
     {
         if (item.name.find(name_str) != std::string::npos)

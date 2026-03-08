@@ -278,7 +278,7 @@ public:
     uint8_t                               get_spell_slot_by_name(std::string_view name) const;
     void                                  remove_buffs();
     void                                  chat(std::string_view message);
-    async::task<void> create_item(std::string_view item_name, uint32_t count, std::chrono::milliseconds timeout);
+    async::task<void>       create_item(std::string_view item_name, uint32_t count, std::chrono::milliseconds timeout);
     async::task<simple_npc> create_npc(std::string_view npc_name, std::chrono::milliseconds timeout);
     async::task<void>       change_money(uint32_t amount, std::chrono::milliseconds timeout);
     async::task<void>       drop_item(uint8_t index, bool all, std::chrono::milliseconds timeout);
@@ -289,7 +289,7 @@ public:
     async::task<void>       change_class(std::string_view class_name, std::chrono::milliseconds timeout);
     async::task<spawned_monster_info>
     spawn_monster_with_validator(std::shared_ptr<fb::bot::game_bot>                               bot,
-                                 std::string_view                                                  monster_name,
+                                 std::string_view                                                 monster_name,
                                  uint16_t                                                         x,
                                  uint16_t                                                         y,
                                  std::function<bool(const fb::protocol::game::response::update&)> validator,
@@ -298,7 +298,7 @@ public:
     async::task<spawned_monster_info>
     spawn_monster(std::string_view monster_name, uint16_t x, uint16_t y, std::chrono::milliseconds timeout);
 
-    async::task<void> spawn_monsters_bulk(std::string_view        monster_name,
+    async::task<void> spawn_monsters_bulk(std::string_view          monster_name,
                                           uint8_t                   range,
                                           std::chrono::milliseconds timeout);
 
@@ -314,7 +314,7 @@ public:
                             const std::vector<std::pair<int, int>>& relative_positions,
                             std::chrono::milliseconds               timeout);
 
-    async::task<spawned_monster_info> spawn_monster_relative(std::string_view        monster_name,
+    async::task<spawned_monster_info> spawn_monster_relative(std::string_view          monster_name,
                                                              int                       relative_x,
                                                              int                       relative_y,
                                                              std::chrono::milliseconds timeout);
@@ -345,15 +345,7 @@ public:
     async::task<bool> invite_group(std::shared_ptr<game_bot> target, std::chrono::milliseconds timeout);
     async::task<bool> leave_group(std::chrono::milliseconds timeout);
     async::task<bool> kick_group(std::shared_ptr<game_bot> target, std::chrono::milliseconds timeout);
-    async::task<bool> change_clan_role(std::shared_ptr<game_bot> target,
-                                       CLAN_ROLE                 role,
-                                       std::chrono::milliseconds timeout);
 
-    async::task<bool> invite_to_clan(std::shared_ptr<game_bot> invitee, std::chrono::milliseconds timeout);
-    async::task<bool> kick_from_clan(std::shared_ptr<game_bot> target, std::chrono::milliseconds timeout);
-    async::task<bool> leave_clan(std::chrono::milliseconds timeout);
-    async::task<bool> destroy_clan(std::chrono::milliseconds timeout);
-    async::task<bool> change_clan_title(std::string_view title, std::chrono::milliseconds timeout);
     async::task<std::shared_ptr<game_bot>> transfer(const fb::protocol::header& protocol,
                                                     const fb::model::timespan&  timeout = 15s,
                                                     bool                        encrypt = true,

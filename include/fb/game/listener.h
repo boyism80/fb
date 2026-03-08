@@ -26,7 +26,7 @@ public:
     listener_impl& operator= (listener_impl&&)      = delete;
 
 private:
-    void send_update_preset(fb::game::object& obj, const fb::model::preset& preset);
+    void send_update_appearance(fb::game::object& obj, const fb::model::appearance& appearance);
 
 public:
     // clang-format off
@@ -61,6 +61,7 @@ public:
     void                          on_update_time(character& ch, uint16_t hours) override final;
     void                          on_character_init(character& ch) override final;
     void                          on_update_position(character& ch) override final;
+    void                          on_screen_refresh(character& ch) override final;
     void                          on_browse_character(character& ch, const character& target) override final;
     void                          on_item_tooltip(character& ch, const fb::game::item& item, uint16_t position) override final;
     void                          on_show_user_list(character& ch) override final;
@@ -69,7 +70,7 @@ public:
     void                          on_show_bulletin(character& ch, const fb::game::bulletin::article& value, BULLETIN_BUTTON_ENABLE flag) override final;
     void                          on_show_mail_box(character& ch, const std::vector<mail_box::summary>& mails, MAIL_BUTTON_ENABLE flag) override final;
     void                          on_show_mail_box(character& ch, const mail_box::mail& mail, MAIL_BUTTON_ENABLE flag) override final;
-    void                          on_show_bulletin_message(character& ch, std::string_view message, bool success, bool mail) override final;
+    void                          on_show_bulletin_message(character& ch, std::string_view message, bool success, BULLETIN_MESSAGE_TYPE action) override final;
     void                          on_show_world_map(character& ch, uint32_t id, uint16_t index) override final;
     void                          on_timer(character& ch, uint32_t time, TIMER_TYPE type) override final;
     void                          on_weather(character& ch, WEATHER_TYPE weather) override final;
@@ -94,13 +95,14 @@ public:
     void                          on_trade_lock(character& me, character& you) override final;
     void                          on_trade_failed(character& me, character& you) override final;
     void                          on_trade_success(character& me, character& you) override final;
+    void                          on_dialog(character& me, std::string_view message, bool button_prev, bool button_next, uint32_t seq = 0xFFFFFFFD) override final;
     void                          on_dialog(character& me, const fb::model::object& object, std::string_view message, bool button_prev, bool button_next, uint32_t seq = 0xFFFFFFFD) override final;
     void                          on_dialog(character& me, const fb::game::object& obj, std::string_view message, bool button_prev, bool button_next, uint32_t seq = 0xFFFFFFFD) override final;
     void                          on_dialog(character& me, const fb::model::object& obj, std::string_view message, const std::vector<std::string>& menus, uint32_t seq = 0xFFFFFFFD) override final;
     void                          on_dialog(character& me, const fb::game::object& obj, std::string_view message, const std::vector<std::string>& menus, uint32_t seq = 0xFFFFFFFD) override final;
     void                          on_dialog(character& me, const fb::model::object& obj, std::string_view message, const std::vector<std::string>& menus, bool button_prev, uint32_t seq = 0xFFFFFFFD) override final;
     void                          on_dialog(character& me, const fb::game::object& obj, std::string_view message, const std::vector<std::string>& menus, bool button_prev, uint32_t seq = 0xFFFFFFFD) override final;
-    void                          on_dialog(character& me, std::unique_ptr<fb::game::portrait>&& portrait, std::string_view message, const std::vector<std::string>& menus, bool button_prev, uint32_t seq = 0xFFFFFFFD) override final;
+    void                          on_dialog(character& me, std::unique_ptr<fb::game::appearance>&& appearance_ptr, std::string_view message, const std::vector<std::string>& menus, bool button_prev, uint32_t seq = 0xFFFFFFFD) override final;
     void                          on_dialog(character& me, const fb::model::object& obj, std::string_view message, const std::vector<uint8_t>& item_slots, uint32_t seq = 0xFFFFFFFD) override final;
     void                          on_dialog(character& me, const fb::game::object& obj, std::string_view message, const std::vector<uint8_t>& item_slots, uint32_t seq = 0xFFFFFFFD) override final;
     void                          on_dialog(character& me, const fb::model::object& obj, std::string_view message, const fb::game::dialog::item_pairs& pairs, uint32_t seq = 0xFFFFFFFD, uint16_t pursuit = 0xFFFF) override final;

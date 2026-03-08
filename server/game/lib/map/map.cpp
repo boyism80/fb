@@ -184,7 +184,7 @@ bool map::movable(const fb::model::point16_t& position, const std::function<bool
 bool map::movable(const object& object, const fb::model::point16_t position) const
 {
     return this->movable(position, [&object](const auto& x) {
-        return !object.hidden(x);
+        return !x.hidden(object);
     });
 }
 
@@ -275,7 +275,7 @@ std::vector<std::shared_ptr<fb::game::object>> map::belows(const fb::model::poin
         auto sector = this->_sectors->at(pivot);
         for (auto& obj : *sector)
         {
-            if (type == OBJECT_TYPE::UNKNOWN || obj->is(type))
+            if (obj->is(type))
             {
                 if (obj->position() == pivot)
                     objects.push_back(obj);

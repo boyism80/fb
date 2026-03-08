@@ -520,7 +520,9 @@ public:
     bool is_number(int offset);
     bool is_nil(int offset);
     int  rawgeti(int offset_t, int offset_e);
+    int  rawget(int table_index);
     void rawseti(int offset_t, int offset_e);
+    void settable(int table_index);
     int  rawlen(int offset_t);
     void remove(int offset);
     void new_table();

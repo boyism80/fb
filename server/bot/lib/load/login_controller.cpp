@@ -18,7 +18,7 @@ void login_bot_controller::initialize()
     // No timers needed for login bot_controller as it's reactive
 }
 
-async::task<void> login_bot_controller::on_agreement(login_bot& bot, const login_resp::agreement& response)
+async::task<void> login_bot_controller::on_agreement(login_bot& bot, const login_resp::terms_agreement& response)
 {
     auto           id     = bot.generate_id();
     auto           exists = false;

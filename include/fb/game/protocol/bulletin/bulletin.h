@@ -39,13 +39,13 @@ public:
 
 public:
 #ifdef BOT
-    bulletin(BULLETIN_ACTION    action,
-             uint16_t           section  = 0,
-             uint16_t           article  = 0,
-             uint16_t           offset   = 0,
-             std::string_view   title    = "",
-             std::string_view   contents = "",
-             std::string_view   user     = "");
+    bulletin(BULLETIN_ACTION  action,
+             uint16_t         section  = 0,
+             uint16_t         article  = 0,
+             uint16_t         offset   = 0,
+             std::string_view title    = "",
+             std::string_view contents = "",
+             std::string_view user     = "");
 #else
     bulletin() = default;
 #endif

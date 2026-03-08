@@ -5,11 +5,11 @@ namespace fb::protocol::game::response {
 #ifndef BOT
 dialog_list::dialog_list(const fb::game::object&         object,
                          const std::vector<std::string>& lists,
-                         std::string_view                  message,
-                         bool                             button_prev,
-                         uint32_t                         oid,
-                         fb::game::dialog::interaction    interaction) :
-    portrait(fb::game::portrait_factory::create(object)),
+                         std::string_view                message,
+                         bool                            button_prev,
+                         uint32_t                        oid,
+                         fb::game::dialog::interaction   interaction) :
+    appearance(fb::game::appearance_factory::create(object)),
     lists(lists),
     message(std::string(message)),
     button_prev(button_prev),
@@ -19,11 +19,11 @@ dialog_list::dialog_list(const fb::game::object&         object,
 
 dialog_list::dialog_list(const fb::model::object&        object,
                          const std::vector<std::string>& lists,
-                         std::string_view                  message,
-                         bool                             button_prev,
-                         uint32_t                         oid,
-                         fb::game::dialog::interaction    interaction) :
-    portrait(fb::game::portrait_factory::create(object)),
+                         std::string_view                message,
+                         bool                            button_prev,
+                         uint32_t                        oid,
+                         fb::game::dialog::interaction   interaction) :
+    appearance(fb::game::appearance_factory::create(object)),
     lists(lists),
     message(std::string(message)),
     button_prev(button_prev),
@@ -31,13 +31,13 @@ dialog_list::dialog_list(const fb::model::object&        object,
     interaction(interaction)
 { }
 
-dialog_list::dialog_list(portrait_ptr&&                  portrait,
+dialog_list::dialog_list(appearance_ptr&&                appearance,
                          const std::vector<std::string>& lists,
-                         std::string_view                  message,
-                         bool                             button_prev,
-                         uint32_t                         oid,
-                         fb::game::dialog::interaction    interaction) :
-    portrait(std::move(portrait)),
+                         std::string_view                message,
+                         bool                            button_prev,
+                         uint32_t                        oid,
+                         fb::game::dialog::interaction   interaction) :
+    appearance(std::move(appearance)),
     lists(lists),
     message(std::string(message)),
     button_prev(button_prev),
@@ -54,9 +54,9 @@ async::task<void> dialog_list::serialize(fb::stream_writer<big_endian>& writer) 
     writer.write<uint8_t>(2);
     writer.write<uint8_t>(static_cast<uint8_t>(interaction));
     writer.write<uint32_t>(this->oid);
-    this->portrait->serialize(writer);
+    this->appearance->serialize(writer);
     writer.write<uint32_t>(1);
-    writer.write<uint8_t>(this->button_prev); // button prev
+    writer.write<bool>(this->button_prev); // button prev
     writer.write<uint8_t>(1);
     writer.write<std::string, uint16_t>(message);
 
@@ -82,7 +82,7 @@ async::task<void> dialog_list::deserialize(fb::stream_reader<big_endian>& reader
     reader.read<uint16_t>(); // look (duplicate)
     reader.read<uint8_t>();  // color (duplicate)
     reader.read<uint32_t>(); // 1
-    this->button_prev = reader.read<uint8_t>();
+    this->button_prev = reader.read<bool>();
     reader.read<uint8_t>(); // 1
     this->message = reader.read<std::string, uint16_t>();
 

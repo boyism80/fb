@@ -6,7 +6,7 @@ namespace fb::protocol::game::request {
 async::task<void> chat::deserialize(fb::stream_reader<big_endian>& reader)
 {
     co_await header::deserialize(reader);
-    this->shout   = reader.read<uint8_t>();
+    this->shout   = reader.read<bool>();
     this->message = reader.read<std::string, uint8_t>();
 }
 #else
@@ -19,7 +19,7 @@ async::task<void> chat::serialize(fb::stream_writer<big_endian>& writer) const
 {
     co_await header::serialize(writer);
     writer.write<uint8_t>(header);
-    writer.write<uint8_t>(this->shout);
+    writer.write<bool>(this->shout);
     writer.write<std::string, uint8_t>(this->message);
 }
 #endif

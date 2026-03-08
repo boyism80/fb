@@ -52,5 +52,7 @@ function func(me, val1, val2, val3)
     -- end
     -- sleep(1000)
 
+    me:mimic(nil)
+
     return 'hello', 'world'
 end

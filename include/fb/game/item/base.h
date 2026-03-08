@@ -2,6 +2,7 @@
 #define __ITEM_BASE_H__
 
 #include <fb/game/object.h>
+#include <fb/game/appearance.h>
 #include <fb/protocol/flatbuffer/protocol.h>
 #include <fb/model/datetime.h>
 #include <async/task.h>
@@ -89,6 +90,7 @@ public:
                                                 const fb::model::point16_t& position,
                                                 DESTROY_TYPE                destroy_type = DESTROY_TYPE::DEFAULT,
                                                 bool                        notify       = true) override;
+    std::shared_ptr<fb::game::appearance>   appearance() const override;
 
 public:
     void container(fb::game::items* container);

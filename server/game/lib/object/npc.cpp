@@ -39,3 +39,8 @@ void npc::assert_thread() const
     else
         return;
 }
+
+std::shared_ptr<fb::game::appearance> npc::appearance() const
+{
+    return this->based<fb::model::npc>().create_appearance();
+}

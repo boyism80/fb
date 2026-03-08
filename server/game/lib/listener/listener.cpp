@@ -10,24 +10,25 @@ listener_impl::listener_impl(fb::game::server& server) :
     server(server)
 { }
 
-void listener_impl::send_update_preset(object& obj, const fb::model::preset& preset)
+void listener_impl::send_update_appearance(object& obj, const fb::model::appearance& appearance)
 {
-    auto serializer = game_resp::preset_serializer<true>{.oid         = obj.oid(),
-                                                         .position    = obj.position(),
-                                                         .direction   = obj.direction(),
-                                                         .head_marker = HEAD_MARKER::NONE,
-                                                         .name        = obj.name(),
-                                                         .portrait    = character_portrait(preset.gender,
-                                                                                        preset.state,
-                                                                                        preset.hair,
-                                                                                        preset.hair_color,
-                                                                                        preset.weapon,
-                                                                                        preset.weapon_color,
-                                                                                        preset.armor,
-                                                                                        preset.armor_color,
-                                                                                        preset.shield,
-                                                                                        preset.shield_color,
-                                                                                        preset.disguise)};
+    auto serializer = game_resp::appearance_serializer<true>{
+        .oid         = obj.oid(),
+        .position    = obj.position(),
+        .direction   = obj.direction(),
+        .head_marker = HEAD_MARKER::NONE,
+        .name        = obj.name(),
+        .appearance  = character_appearance(appearance.gender,
+                                           std::optional<STATE>(appearance.state),
+                                           appearance.hair,
+                                           appearance.hair_color,
+                                           appearance.weapon,
+                                           appearance.weapon_color,
+                                           appearance.armor,
+                                           appearance.armor_color,
+                                           appearance.shield,
+                                           appearance.shield_color,
+                                           appearance.disguise)};
 
     std::ignore = this->server.send(obj, game_resp::update_external<true>(serializer), scope::PIVOT);
 }
@@ -95,10 +96,10 @@ void listener_impl::on_update_external(object& me, bool detailed)
     {
         auto& npc   = static_cast<fb::game::npc&>(me);
         auto& model = npc.based<fb::model::npc>();
-        if (model.preset.has_value())
+        if (model.appearance.has_value())
         {
-            auto& preset = table::preset[model.preset.value()];
-            this->send_update_preset(npc, preset);
+            auto& app = table::appearance[model.appearance.value()];
+            this->send_update_appearance(npc, app);
         }
         else
         {
@@ -111,10 +112,10 @@ void listener_impl::on_update_external(object& me, bool detailed)
     {
         auto& mob   = static_cast<fb::game::mob&>(me);
         auto& model = mob.based<fb::model::mob>();
-        if (model.preset.has_value())
+        if (model.appearance.has_value())
         {
-            auto& preset = table::preset[model.preset.value()];
-            this->send_update_preset(mob, preset);
+            auto& app = table::appearance[model.appearance.value()];
+            this->send_update_appearance(mob, app);
         }
         else
         {
@@ -151,10 +152,10 @@ void listener_impl::on_update_external(object& me, object& you, bool detailed)
     {
         auto& npc   = static_cast<fb::game::npc&>(me);
         auto& model = npc.based<fb::model::npc>();
-        if (model.preset.has_value())
+        if (model.appearance.has_value())
         {
-            auto& preset = table::preset[model.preset.value()];
-            this->send_update_preset(npc, preset);
+            auto& app = table::appearance[model.appearance.value()];
+            this->send_update_appearance(npc, app);
         }
         else
         {
@@ -167,10 +168,10 @@ void listener_impl::on_update_external(object& me, object& you, bool detailed)
     {
         auto& mob   = static_cast<fb::game::mob&>(me);
         auto& model = mob.based<fb::model::mob>();
-        if (model.preset.has_value())
+        if (model.appearance.has_value())
         {
-            auto& preset = table::preset[model.preset.value()];
-            this->send_update_preset(mob, preset);
+            auto& app = table::appearance[model.appearance.value()];
+            this->send_update_appearance(mob, app);
         }
         else
         {

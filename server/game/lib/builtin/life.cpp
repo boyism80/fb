@@ -198,12 +198,43 @@ int builtin::life::builtin_damage(lua_State* L)
     if (obj == nullptr)
         return 0;
 
-    auto value    = (uint32_t)lua->tointeger(2);
-    auto from     = lua->touserdata<fb::game::life>(3);
-    auto critical = lua->toboolean(4, false);
-    auto weak     = obj->weak_from_this();
+    auto  value    = (uint32_t)lua->tointeger(2);
+    auto  from     = lua->touserdata<fb::game::life>(3);
+    bool  critical = false;
+    float rate     = 1.0f;
+    bool  physical = true;
+    bool  fixed    = false;
+
+    if (argc >= 4 && lua_istable(L, 4))
+    {
+        lua_pushstring(L, "critical");
+        lua_rawget(L, 4);
+        if (!lua_isnil(L, -1))
+            critical = lua_toboolean(L, -1) != 0;
+        lua_pop(L, 1);
+
+        lua_pushstring(L, "rate");
+        lua_rawget(L, 4);
+        if (!lua_isnil(L, -1))
+            rate = static_cast<float>(lua_tonumber(L, -1));
+        lua_pop(L, 1);
+
+        lua_pushstring(L, "physical");
+        lua_rawget(L, 4);
+        if (!lua_isnil(L, -1))
+            physical = lua_toboolean(L, -1) != 0;
+        lua_pop(L, 1);
+
+        lua_pushstring(L, "fixed");
+        lua_rawget(L, 4);
+        if (!lua_isnil(L, -1))
+            fixed = lua_toboolean(L, -1) != 0;
+        lua_pop(L, 1);
+    }
+
+    auto weak = obj->weak_from_this();
     return lua->ensure_yield(*server, weak, [=](auto is_yield) {
-        obj->stat.damage(value, from, critical);
+        obj->stat.damage(value, from, critical, rate, physical, fixed);
         return lua->ensure_resume(*server, weak, [=]() {
             return 0;
         });
@@ -395,11 +426,11 @@ int builtin::life::builtin_cast(lua_State* L)
     if (obj == nullptr)
         return 0;
 
-    std::shared_ptr<fb::game::life> you;
+    std::shared_ptr<fb::game::object> you;
     if (argc == 2)
-        you = std::static_pointer_cast<fb::game::life>(obj);
-    else if (lua->is_userdata<fb::game::life>(offset))
-        you = std::static_pointer_cast<fb::game::life>(lua->touserdata<fb::game::life>(offset++));
+        you = std::static_pointer_cast<fb::game::object>(obj);
+    else if (lua->is_userdata<fb::game::object>(offset))
+        you = std::static_pointer_cast<fb::game::object>(lua->touserdata<fb::game::object>(offset++));
     else
         you = nullptr;
 
@@ -420,7 +451,7 @@ int builtin::life::builtin_cast(lua_State* L)
         return 0;
 
     auto count = 2;
-#if defined DEBUG | defined _DEBUG
+#if defined DEBUG || defined _DEBUG
     x->load("scripts/spell.lua");
     x->load(spell->script);
 #endif
@@ -851,7 +882,7 @@ int builtin::life::builtin_buff_hp(lua_State* L)
         auto value = lua->tointeger(2);
         auto weak  = obj->weak_from_this();
         return lua->ensure_yield(*server, weak, [=](auto is_yield) {
-            obj->stat.buff_hp(value);
+            obj->stat.buff_hp(static_cast<int32_t>(value));
 
             return lua->ensure_resume(*server, weak, [=]() {
                 return 0;
@@ -933,7 +964,7 @@ int builtin::life::builtin_buff_mp(lua_State* L)
         auto value = lua->tointeger(2);
         auto weak  = obj->weak_from_this();
         return lua->ensure_yield(*server, weak, [=](auto is_yield) {
-            obj->stat.buff_mp(value);
+            obj->stat.buff_mp(static_cast<int32_t>(value));
 
             return lua->ensure_resume(*server, weak, [=]() {
                 return 0;
@@ -1425,7 +1456,7 @@ int builtin::life::builtin_buff_dam(lua_State* L)
         auto value = lua->tointeger(2);
         auto weak  = obj->weak_from_this();
         return lua->ensure_yield(*server, weak, [=](auto is_yield) {
-            obj->stat.buff_dam(value);
+            obj->stat.buff_dam(static_cast<int8_t>(value));
 
             return lua->ensure_resume(*server, weak, [=]() {
                 return 0;
@@ -1507,7 +1538,7 @@ int builtin::life::builtin_buff_hit(lua_State* L)
         auto value = lua->tointeger(2);
         auto weak  = obj->weak_from_this();
         return lua->ensure_yield(*server, weak, [=](auto is_yield) {
-            obj->stat.buff_hit(value);
+            obj->stat.buff_hit(static_cast<int8_t>(value));
 
             return lua->ensure_resume(*server, weak, [=]() {
                 return 0;

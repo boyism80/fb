@@ -2,8 +2,11 @@
 #include <fb/game/server.h>
 #include <fb/game/builtin/object.h>
 #include <fb/game/builtin/mob.h>
+#include <fb/model/model.h>
+#include <fb/lua.h>
 
 using namespace fb::game;
+using table = fb::model::table;
 
 // clang-format off
 IMPLEMENT_LUA_EXTENSION(mob, "fb.game.mob")

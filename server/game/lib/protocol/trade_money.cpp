@@ -15,7 +15,7 @@ async::task<void> trade_money::serialize(fb::stream_writer<big_endian>& writer) 
     co_await header::serialize(writer);
     writer.write<uint8_t>(header);
     writer.write<uint8_t>(0x03);
-    writer.write<uint8_t>(this->mine ? 0x00 : 0x01);
+    writer.write<bool>(!this->mine);
     writer.write<uint32_t>(this->money);
     writer.write<uint8_t>(0x00);
 }
@@ -24,9 +24,8 @@ async::task<void> trade_money::deserialize(fb::stream_reader<big_endian>& reader
 {
     co_await header::deserialize(reader);
     reader.read<uint8_t>(); // 0x03
-    uint8_t mine_flag = reader.read<uint8_t>();
-    this->mine        = (mine_flag == 0x00);
-    this->money       = reader.read<uint32_t>();
+    this->mine  = !reader.read<bool>();
+    this->money = reader.read<uint32_t>();
     reader.read<uint8_t>(); // 0x00
 }
 #endif

@@ -31,15 +31,12 @@ public:
     ~socket();
 
 public:
-    bool   connect(std::string_view hostname,
-                   uint16_t           port,
-                   std::string_view id,
-                   std::string_view pw,
-                   std::string_view vhost);
+    bool
+    connect(std::string_view hostname, uint16_t port, std::string_view id, std::string_view pw, std::string_view vhost);
     queue& declare_queue(bool durable, bool exclusive, bool auto_delete, bool quorum, fb::thread_container& threads);
     bool   select(const timeval* timeout = nullptr);
-    bool   publish(std::string_view             exchange,
-                   std::string_view             routing_key,
+    bool   publish(std::string_view               exchange,
+                   std::string_view               routing_key,
                    const std::vector<uint8_t>&    message,
                    const amqp_basic_properties_t* properties = nullptr);
 

@@ -1,10 +1,13 @@
 #include <fb/game/handler/protocol/bulletin.h>
 #include <fb/game/server.h>
+#include <fb/game/bulletin.h>
+#include <fb/game/mail_box.h>
 #include <fb/encoding.h>
 #include <json/json.h>
 
 using namespace fb::game::handler::protocol;
 using table = fb::model::table;
+using namespace fb::model::enum_value;
 
 namespace game_reqs = fb::protocol::game::request;
 namespace game_resp = fb::protocol::game::response;
@@ -92,8 +95,8 @@ async::task<void> bulletin::handle_articles(character* ch, std::weak_ptr<charact
         }
         else
         {
-            auto   section   = request.section;
-            auto&& articles  = co_await this->server.bulletin_list(request.section, request.offset);
+            auto   section  = request.section;
+            auto&& articles = co_await this->server.bulletin_list(request.section, request.offset);
             co_await this->server.threads.switching(weak);
 
             auto& model = table::bulletin[section];
@@ -163,9 +166,9 @@ async::task<void> bulletin::handle_article(character* ch, std::weak_ptr<characte
         if (weak.expired() == false)
         {
             if (mail)
-                ch->mail_box.message(e.what(), false, true);
+                ch->mail_box.message(e.what(), false, BULLETIN_MESSAGE_TYPE::READ);
             else
-                ch->bulletin.message(e.what(), false, true);
+                ch->bulletin.message(e.what(), false, BULLETIN_MESSAGE_TYPE::READ);
         }
     }
 }
@@ -177,7 +180,7 @@ async::task<void> bulletin::handle_write(character* ch, std::weak_ptr<character>
         co_await this->server.write_bulletin(*ch, request.section, request.title, request.contents);
         co_await this->server.threads.switching(weak);
 
-        ch->bulletin.message(_TEXT(MESSAGE_BULLETIN_WRITE), true, false);
+        ch->bulletin.message(_TEXT(MESSAGE_BULLETIN_WRITE), true, BULLETIN_MESSAGE_TYPE::WRITE);
 
         auto log_data              = Json::Value();
         log_data["character_id"]   = static_cast<Json::Int64>(ch->id);
@@ -189,7 +192,7 @@ async::task<void> bulletin::handle_write(character* ch, std::weak_ptr<character>
     catch (std::exception& e)
     {
         if (weak.expired() == false)
-            ch->bulletin.message(e.what(), false, false);
+            ch->bulletin.message(e.what(), false, BULLETIN_MESSAGE_TYPE::WRITE);
     }
 }
 
@@ -202,7 +205,7 @@ async::task<void> bulletin::handle_delete(character* ch, std::weak_ptr<character
         {
             auto&& resp = co_await this->server.delete_mail(*ch, request.article);
             co_await this->server.threads.switching(weak);
-            ch->mail_box.message(_TEXT(MESSAGE_BULLETIN_SUCCESS_DELETE), true, false);
+            ch->mail_box.message(_TEXT(MESSAGE_BULLETIN_SUCCESS_DELETE), true, BULLETIN_MESSAGE_TYPE::DELETE);
 
             auto log_data              = Json::Value();
             log_data["character_id"]   = static_cast<Json::Int64>(ch->id);
@@ -214,7 +217,7 @@ async::task<void> bulletin::handle_delete(character* ch, std::weak_ptr<character
         {
             co_await this->server.delete_bulletin(*ch, request.section, request.article);
             co_await this->server.threads.switching(weak);
-            ch->bulletin.message(_TEXT(MESSAGE_BULLETIN_SUCCESS_DELETE), true, true);
+            ch->bulletin.message(_TEXT(MESSAGE_BULLETIN_SUCCESS_DELETE), true, BULLETIN_MESSAGE_TYPE::DELETE);
 
             auto log_data              = Json::Value();
             log_data["character_id"]   = static_cast<Json::Int64>(ch->id);
@@ -229,9 +232,9 @@ async::task<void> bulletin::handle_delete(character* ch, std::weak_ptr<character
         if (weak.expired() == false)
         {
             if (mail)
-                ch->mail_box.message(e.what(), false, true);
+                ch->mail_box.message(e.what(), false, BULLETIN_MESSAGE_TYPE::DELETE);
             else
-                ch->bulletin.message(e.what(), false, true);
+                ch->bulletin.message(e.what(), false, BULLETIN_MESSAGE_TYPE::DELETE);
         }
     }
 }
@@ -274,7 +277,7 @@ async::task<void> bulletin::handle_send_mail(character* ch, std::weak_ptr<charac
     {
         auto&& resp = co_await this->server.send_mail(*ch, request.user, request.title, request.contents);
         co_await this->server.threads.switching(weak);
-        ch->mail_box.message(_TEXT(MESSAGE_MAIL_SENT), true, false);
+        ch->mail_box.message(_TEXT(MESSAGE_MAIL_SENT), true, BULLETIN_MESSAGE_TYPE::WRITE);
 
         auto log_data             = Json::Value();
         log_data["sender_id"]     = static_cast<Json::Int64>(ch->id);
@@ -286,6 +289,6 @@ async::task<void> bulletin::handle_send_mail(character* ch, std::weak_ptr<charac
     catch (std::exception& e)
     {
         if (weak.expired() == false)
-            ch->mail_box.message(e.what(), false, true);
+            ch->mail_box.message(e.what(), false, BULLETIN_MESSAGE_TYPE::WRITE);
     }
 }

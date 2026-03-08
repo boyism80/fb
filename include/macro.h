@@ -22,7 +22,10 @@ constexpr T operator|= (T& flag1, const T& flag2)
     return flag1;
 }
 
-template <typename T1, typename T2, typename = typename std::enable_if<std::is_enum<T1>::value, T1>::type, typename = typename std::enable_if<std::is_enum<T2>::value, T2>::type>
+template <typename T1,
+          typename T2,
+          typename = typename std::enable_if<std::is_enum<T1>::value, T1>::type,
+          typename = typename std::enable_if<std::is_enum<T2>::value, T2>::type>
 constexpr bool operator&& (const T1& flag1, const T2& flag2)
 {
     return static_cast<int>(flag1) && static_cast<int>(flag2);

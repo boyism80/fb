@@ -10,6 +10,7 @@ struct object
     static int builtin_name(lua_State* L);
     static int builtin_look(lua_State* L);
     static int builtin_color(lua_State* L);
+    static int builtin_appearance(lua_State* L);
 };
 
 struct life
@@ -58,6 +59,9 @@ struct mob
     static int builtin_size(lua_State* L);
     static int builtin_damage(lua_State* L);
     static int builtin_drop(lua_State* L);
+    static int builtin_exp(lua_State* L);
+    static int builtin_script(lua_State* L);
+    static int builtin_on_spell_hit(lua_State* L);
 };
 
 struct map
@@ -75,21 +79,6 @@ struct spell
     static int builtin_type(lua_State* L);
     static int builtin_name(lua_State* L);
     static int builtin_message(lua_State* L);
-};
-
-struct achievement
-{
-    static int builtin_id(lua_State* L);
-    static int builtin_look(lua_State* L);
-    static int builtin_color(lua_State* L);
-    static int builtin_text(lua_State* L);
-};
-
-struct quest
-{
-    static int builtin_step(lua_State* L);
-    static int builtin_progress(lua_State* L);
-    static int builtin_reward(lua_State* L);
 };
 
 } // namespace fb::game::builtin::model

@@ -13,8 +13,8 @@ async::task<void> internal_info::serialize(fb::stream_writer<big_endian>& writer
     co_await header::serialize(writer);
     writer.write<uint8_t>(header);
     writer.write<int8_t>(this->ch.stat.phydef());
-    writer.write<uint8_t>(this->ch.stat.dam());
-    writer.write<uint8_t>(this->ch.stat.hit());
+    writer.write<int8_t>(this->ch.stat.dam());
+    writer.write<int8_t>(this->ch.stat.hit());
 
     auto& clan_id = this->ch.clan_id();
     if (clan_id.has_value())
@@ -86,10 +86,9 @@ async::task<void> internal_info::serialize(fb::stream_writer<big_endian>& writer
     writer.write<uint8_t>((uint8_t)this->ch.achievements.size());
     for (auto& [_, achievement] : this->ch.achievements)
     {
-        auto& model = achievement->model;
-        writer.write<uint8_t>(model.look);
-        writer.write<uint8_t>(model.color);
-        writer.write<std::string>(achievement->text.value_or(model.text.value_or("")));
+        writer.write<uint8_t>(achievement->icon);
+        writer.write<uint8_t>(achievement->color);
+        writer.write<std::string>(achievement->text);
     }
     writer.write<uint8_t>(0x00);
 }
@@ -98,8 +97,8 @@ async::task<void> internal_info::deserialize(fb::stream_reader<big_endian>& read
 {
     co_await header::deserialize(reader);
     this->phydef       = reader.read<int8_t>();
-    this->dam          = reader.read<uint8_t>();
-    this->hit          = reader.read<uint8_t>();
+    this->dam          = reader.read<int8_t>();
+    this->hit          = reader.read<int8_t>();
     this->clan_name    = reader.read<std::string, uint8_t>();
     this->clan_title   = reader.read<std::string, uint8_t>();
     this->title        = reader.read<std::string, uint8_t>();

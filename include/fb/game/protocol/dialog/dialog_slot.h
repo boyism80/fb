@@ -17,12 +17,12 @@ class dialog_slot : public fb::protocol::header
 public:
     static constexpr uint8_t header = 0x2F;
 #ifndef BOT
-    using portrait_ptr = std::unique_ptr<fb::game::portrait>;
+    using appearance_ptr = std::unique_ptr<fb::game::appearance>;
 #endif
 
 public:
 #ifndef BOT
-    const portrait_ptr                  portrait;
+    const appearance_ptr                appearance;
     const std::vector<uint8_t>          slots;
     const std::string                   message;
     const fb::game::dialog::interaction interaction;

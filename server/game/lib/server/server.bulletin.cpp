@@ -69,9 +69,10 @@ server::write_bulletin(character& ch, uint16_t section, std::string_view title, 
         throw std::runtime_error(_TEXT(MESSAGE_BULLETIN_TOO_LONG_CONTENTS));
 
     auto   world = fb::config<uint32_t>("world");
-    auto&& resp  = co_await this->http.post("internal",
-                                           "/bulletin/write",
-                                           internal_reqs::WriteArticle{world, section, ch.id, std::string(title), std::string(contents)});
+    auto&& resp  = co_await this->http.post(
+        "internal",
+        "/bulletin/write",
+        internal_reqs::WriteArticle{world, section, ch.id, std::string(title), std::string(contents)});
 
     if (resp.success == false)
         throw std::runtime_error(_TEXT(MESSAGE_BULLETIN_WRITE_FAILED));

@@ -19,7 +19,7 @@ fb::model::spell* fb::model::__spell::name2spell(std::string_view name) const
     {
         if (v.name == name)
         {
-            auto lock   = std::lock_guard(cache_mutex);
+            auto lock       = std::lock_guard(cache_mutex);
             cache[name_str] = &v;
             return &v;
         }

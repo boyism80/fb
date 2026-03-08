@@ -19,5 +19,5 @@ end
 
 -- 맹수 버프 해제 효과
 function ON_UNBUFF_2007(me, spell)
-    me:disguise(nil)
+    me:mimic(nil)
 end

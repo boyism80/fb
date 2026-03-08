@@ -16,6 +16,7 @@ static_assert(FLATBUFFERS_VERSION_MAJOR == 25 &&
 #include "fb.protocol.internal.achievement_generated.h"
 #include "fb.protocol.internal.character_generated.h"
 #include "fb.protocol.internal.item_generated.h"
+#include "fb.protocol.internal.marriage_generated.h"
 #include "fb.protocol.internal.quest_generated.h"
 #include "fb.protocol.internal.spell_generated.h"
 #include "fb.protocol.internal.storagebox_generated.h"
@@ -36,19 +37,23 @@ struct Save FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
   enum FlatBuffersVTableOffset FLATBUFFERS_VTABLE_UNDERLYING_TYPE {
     VT_WORLD = 4,
     VT_CHARACTER = 6,
-    VT_ITEMS = 8,
-    VT_SPELLS = 10,
-    VT_ACHIEVEMENTS = 12,
-    VT_QUESTS = 14,
-    VT_RECEIVED_SYSTEM_MAILS = 16,
-    VT_STORAGE_BOXES = 18,
-    VT_STORAGE_REWARD_MARKS = 20
+    VT_MARRIAGE = 8,
+    VT_ITEMS = 10,
+    VT_SPELLS = 12,
+    VT_ACHIEVEMENTS = 14,
+    VT_QUESTS = 16,
+    VT_RECEIVED_SYSTEM_MAILS = 18,
+    VT_STORAGE_BOXES = 20,
+    VT_STORAGE_REWARD_MARKS = 22
   };
   uint32_t world() const {
     return GetField<uint32_t>(VT_WORLD, 0);
   }
   const fb::protocol::internal::raw::Character *character() const {
     return GetPointer<const fb::protocol::internal::raw::Character *>(VT_CHARACTER);
+  }
+  const fb::protocol::internal::raw::Marriage *marriage() const {
+    return GetPointer<const fb::protocol::internal::raw::Marriage *>(VT_MARRIAGE);
   }
   const ::flatbuffers::Vector<::flatbuffers::Offset<fb::protocol::internal::raw::Item>> *items() const {
     return GetPointer<const ::flatbuffers::Vector<::flatbuffers::Offset<fb::protocol::internal::raw::Item>> *>(VT_ITEMS);
@@ -76,6 +81,8 @@ struct Save FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
            VerifyField<uint32_t>(verifier, VT_WORLD, 4) &&
            VerifyOffset(verifier, VT_CHARACTER) &&
            verifier.VerifyTable(character()) &&
+           VerifyOffset(verifier, VT_MARRIAGE) &&
+           verifier.VerifyTable(marriage()) &&
            VerifyOffset(verifier, VT_ITEMS) &&
            verifier.VerifyVector(items()) &&
            verifier.VerifyVectorOfTables(items()) &&
@@ -110,6 +117,9 @@ struct SaveBuilder {
   }
   void add_character(::flatbuffers::Offset<fb::protocol::internal::raw::Character> character) {
     fbb_.AddOffset(Save::VT_CHARACTER, character);
+  }
+  void add_marriage(::flatbuffers::Offset<fb::protocol::internal::raw::Marriage> marriage) {
+    fbb_.AddOffset(Save::VT_MARRIAGE, marriage);
   }
   void add_items(::flatbuffers::Offset<::flatbuffers::Vector<::flatbuffers::Offset<fb::protocol::internal::raw::Item>>> items) {
     fbb_.AddOffset(Save::VT_ITEMS, items);
@@ -147,6 +157,7 @@ inline ::flatbuffers::Offset<Save> CreateSave(
     ::flatbuffers::FlatBufferBuilder &_fbb,
     uint32_t world = 0,
     ::flatbuffers::Offset<fb::protocol::internal::raw::Character> character = 0,
+    ::flatbuffers::Offset<fb::protocol::internal::raw::Marriage> marriage = 0,
     ::flatbuffers::Offset<::flatbuffers::Vector<::flatbuffers::Offset<fb::protocol::internal::raw::Item>>> items = 0,
     ::flatbuffers::Offset<::flatbuffers::Vector<::flatbuffers::Offset<fb::protocol::internal::raw::Spell>>> spells = 0,
     ::flatbuffers::Offset<::flatbuffers::Vector<::flatbuffers::Offset<fb::protocol::internal::raw::Achievement>>> achievements = 0,
@@ -162,6 +173,7 @@ inline ::flatbuffers::Offset<Save> CreateSave(
   builder_.add_achievements(achievements);
   builder_.add_spells(spells);
   builder_.add_items(items);
+  builder_.add_marriage(marriage);
   builder_.add_character(character);
   builder_.add_world(world);
   return builder_.Finish();
@@ -171,6 +183,7 @@ inline ::flatbuffers::Offset<Save> CreateSaveDirect(
     ::flatbuffers::FlatBufferBuilder &_fbb,
     uint32_t world = 0,
     ::flatbuffers::Offset<fb::protocol::internal::raw::Character> character = 0,
+    ::flatbuffers::Offset<fb::protocol::internal::raw::Marriage> marriage = 0,
     const std::vector<::flatbuffers::Offset<fb::protocol::internal::raw::Item>> *items = nullptr,
     const std::vector<::flatbuffers::Offset<fb::protocol::internal::raw::Spell>> *spells = nullptr,
     const std::vector<::flatbuffers::Offset<fb::protocol::internal::raw::Achievement>> *achievements = nullptr,
@@ -189,6 +202,7 @@ inline ::flatbuffers::Offset<Save> CreateSaveDirect(
       _fbb,
       world,
       character,
+      marriage,
       items__,
       spells__,
       achievements__,

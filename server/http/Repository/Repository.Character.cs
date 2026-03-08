@@ -84,7 +84,7 @@ namespace Http.Reepository
                     `exp`,
                     `money`,
                     `deposited_money`,
-                    `disguise`,
+                    `mimicry`,
                     `hp`,
                     `base_hp`,
                     `additional_hp`,
@@ -102,6 +102,7 @@ namespace Http.Reepository
                     `buffs`,
                     `title`,
                     `pending_listings`,
+                    `super_hide`,
                     `deleted`,
                     `created_date`,
                     `updated_date`)
@@ -127,7 +128,7 @@ namespace Http.Reepository
                     {value.Exp.Escape()},
                     {value.Money.Escape()},
                     {value.DepositedMoney.Escape()},
-                    {value.Disguise.Escape()},
+                    {(value.Mimicry == null ? "NULL" : JsonConvert.SerializeObject(value.Mimicry).Escape())},
                     {value.Hp.Escape()},
                     {value.BaseHp.Escape()},
                     {value.AdditionalHp.Escape()},
@@ -145,6 +146,7 @@ namespace Http.Reepository
                     {JsonConvert.SerializeObject(value.Buffs).Escape()},
                     {value.Title.Escape()},
                     {(value.PendingListings == null || value.PendingListings.Count == 0 ? null : JsonConvert.SerializeObject(value.PendingListings)).Escape()},
+                    {value.SuperHide.Escape()},
                     {value.Deleted.Escape()},
                     {value.CreatedDate.Escape()},
                     {value.UpdatedDate.Escape()})
@@ -168,7 +170,7 @@ namespace Http.Reepository
                     `exp`=VALUES(`exp`),
                     `money`=VALUES(`money`),
                     `deposited_money`=VALUES(`deposited_money`),
-                    `disguise`=VALUES(`disguise`),
+                    `mimicry`=VALUES(`mimicry`),
                     `hp`=VALUES(`hp`),
                     `base_hp`=VALUES(`base_hp`),
                     `additional_hp`=VALUES(`additional_hp`),
@@ -186,6 +188,7 @@ namespace Http.Reepository
                     `buffs`=VALUES(`buffs`),
                     `title`=VALUES(`title`),
                     `pending_listings`=VALUES(`pending_listings`),
+                    `super_hide`=VALUES(`super_hide`),
                     `deleted`=VALUES(`deleted`),
                     `updated_date`=VALUES(`updated_date`);
                 """;

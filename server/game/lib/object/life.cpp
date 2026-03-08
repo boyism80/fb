@@ -32,117 +32,6 @@ void life::update_hp(uint32_t diff, bool critical)
 void life::kill(std::shared_ptr<fb::game::object> from, DESTROY_TYPE destroy_type)
 {
     this->stat.hp(0);
-
-    // Call listener for packet response
-    this->listener.on_dead(*this, from);
-
-    // Handle death logic based on object type
-    switch (this->what())
-    {
-    case OBJECT_TYPE::MOB:
-    {
-        auto& mob   = static_cast<fb::game::mob&>(*this);
-        auto& model = mob.based<fb::model::mob>();
-
-        // Execute mob death script
-        if (model.script.empty() == false && model.on_die.empty() == false)
-        {
-            auto lua = fb::lua::new_context();
-            if (lua != nullptr)
-            {
-#if defined DEBUG | defined _DEBUG
-                lua->load(model.script);
-#endif
-                lua->func(model.on_die);
-                lua->pushobject(mob);
-                if (from != nullptr)
-                    lua->pushobject(from);
-                else
-                    lua->pushnil();
-                std::ignore = lua->call(2);
-            }
-        }
-
-        // Drop items when mob dies
-        std::ignore = mob.drop_items();
-
-        // Handle spawned mob ownership
-        auto owner = mob.owner.lock();
-        if (owner != nullptr)
-        {
-            owner->detach_spawned_mob(mob);
-            return;
-        }
-
-        // Handle experience distribution
-        if (from != nullptr && from->is(OBJECT_TYPE::MOB))
-            from = std::static_pointer_cast<fb::game::mob>(from)->owner.lock();
-
-        if (from == nullptr)
-            return;
-
-        if (owner == nullptr && from->is(OBJECT_TYPE::CHARACTER))
-        {
-            auto& ch       = static_cast<character&>(*from);
-            auto& group_id = ch.group_id();
-            auto  map      = ch.map();
-            auto  exp      = mob.based<fb::model::mob>().exp;
-
-            if (group_id.has_value() && map != nullptr)
-            {
-                // Group experience distribution
-                auto server = &ch.server;
-                server->groups.read(group_id.value(), [server, &ch, map, exp](auto& group) {
-                    auto nears      = group->nears(*map, ch.position());
-                    auto size       = nears.size();
-                    auto divide_exp = exp / size;
-                    for (auto& member : nears)
-                    {
-                        auto shared_ptr = member.lock();
-                        if (shared_ptr == nullptr)
-                            continue;
-
-                        shared_ptr->add_exp(divide_exp, true, true);
-                    }
-                });
-            }
-            else
-            {
-                // Solo experience
-                ch.add_exp(exp, true, true);
-            }
-        }
-    }
-    break;
-
-    case OBJECT_TYPE::CHARACTER:
-    {
-        auto& ch = static_cast<character&>(*this);
-        ch.death_penalty();
-        ch.state(STATE::GHOST);
-
-        // Log death event
-        auto log_data              = Json::Value();
-        log_data["character_id"]   = static_cast<Json::Int64>(ch.id);
-        log_data["character_name"] = UTF8(ch.name(), PLATFORM::WINDOWS);
-        log_data["level"]          = ch.level();
-        auto map                   = ch.map();
-        if (map != nullptr)
-        {
-            log_data["map"]        = map->model.id;
-            log_data["position_x"] = ch.position().x;
-            log_data["position_y"] = ch.position().y;
-        }
-        if (from != nullptr && from->is(OBJECT_TYPE::CHARACTER))
-        {
-            auto& killer            = static_cast<character&>(*from);
-            log_data["killer_id"]   = static_cast<Json::Int64>(killer.id);
-            log_data["killer_name"] = UTF8(killer.name(), PLATFORM::WINDOWS);
-        }
-        ch.server.log.write("death", log_data);
-    }
-    break;
-    }
 }
 
 async::task<void> life::attack(DURATION duration)
@@ -159,7 +48,7 @@ async::task<void> life::attack(DURATION duration)
     auto     lua          = fb::lua::new_context();
     if (lua != nullptr)
     {
-#if defined DEBUG | defined _DEBUG
+#if defined DEBUG || defined _DEBUG
         lua->load("scripts/interaction.lua");
 #endif
         lua->func("on_attack");
@@ -188,7 +77,7 @@ async::task<void> life::attack(DURATION duration)
                 auto weapon_lua = fb::lua::new_context();
                 if (weapon_lua != nullptr)
                 {
-#if defined DEBUG | defined _DEBUG
+#if defined DEBUG || defined _DEBUG
                     weapon_lua->load(model.script);
 #endif
                     weapon_lua->func(model.on_attack);
@@ -231,7 +120,7 @@ bool life::active(fb::game::spell& spell, std::string_view message)
     if (lua == nullptr)
         return false;
 
-#if defined DEBUG | defined _DEBUG
+#if defined DEBUG || defined _DEBUG
     lua->load("scripts/spell.lua");
     lua->load(spell.model.script);
 #endif
@@ -246,13 +135,13 @@ bool life::active(fb::game::spell& spell, std::string_view message)
     return true;
 }
 
-bool life::active(fb::game::spell& spell, uint32_t fd)
+bool life::active(fb::game::spell& spell, uint32_t oid)
 {
     this->assert_thread();
     if (this->_map == nullptr)
         return false;
 
-    auto to = this->_map->objects[fd];
+    auto to = this->_map->objects[oid];
     if (to == nullptr)
         return false;
 
@@ -266,7 +155,7 @@ bool life::active(fb::game::spell& spell, fb::game::object& to)
     if (lua == nullptr)
         return false;
 
-#if defined DEBUG | defined _DEBUG
+#if defined DEBUG || defined _DEBUG
     lua->load("scripts/spell.lua");
     lua->load(spell.model.script);
 #endif
@@ -298,7 +187,7 @@ bool life::active(fb::game::spell& spell)
     if (lua == nullptr)
         return false;
 
-#if defined DEBUG | defined _DEBUG
+#if defined DEBUG || defined _DEBUG
     lua->load("scripts/spell.lua");
     lua->load(spell.model.script);
 #endif
@@ -321,7 +210,7 @@ bool life::calculate_critical(life& you) const
 {
     this->assert_thread();
 
-#if defined DEBUG | defined _DEBUG
+#if defined DEBUG || defined _DEBUG
     return true;
 #else
     return std::rand() % 100 < 20;
@@ -332,28 +221,28 @@ bool life::calculate_miss(life& you) const
 {
     this->assert_thread();
 
-#if defined DEBUG | defined _DEBUG
+#if defined DEBUG || defined _DEBUG
     return false;
 #else
     return std::rand() % 3 == 0;
 #endif
 }
 
-uint32_t life::calculate_damage(uint32_t value, const life& life, bool critical) const
+uint32_t life::calculate_damage(uint32_t value, const life& target, bool critical, float rate, bool physical) const
 {
     this->assert_thread();
-    auto n                 = (100 - life.stat.phydef()) / 10;
+    auto def               = physical ? target.stat.phydef() : target.stat.magdef();
+    auto n                 = (100 - def) / 10;
     auto defensive_percent = -125 + (n * (2 * 14.75f - (n - 1) / 2.0f)) / 2.0f;
     auto damage            = value - uint32_t(defensive_percent * (value / 100.0f));
 
-    auto rate = this->damage_rate() / 1000.0f;
-    if (life.direction() == this->direction())
-        rate *= 2;
+    if (physical && target.direction() == this->direction())
+        rate *= 2.0f;
 
     if (critical)
-        rate *= 2;
+        rate *= 2.0f;
 
-    rate /= (life.damage_derate() / 1000.0f);
+    rate /= (target.damage_derate() / 1000.0f);
     return static_cast<uint32_t>(damage * rate);
 }
 

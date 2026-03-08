@@ -12,17 +12,17 @@
 using namespace fb;
 
 log_collector::log_collector(std::string_view hostname,
-                             uint16_t           port,
+                             uint16_t         port,
                              std::string_view uid,
                              std::string_view pwd,
                              std::string_view server_id,
                              std::string_view server_name,
-                             uint32_t           world) :
+                             uint32_t         world) :
     _server_id(std::string(server_id)),
     _server_name(std::string(server_name)),
     _world(world)
 {
-    this->_amqp = std::make_unique<fb::amqp::socket>();
+    this->_amqp    = std::make_unique<fb::amqp::socket>();
     auto connected = this->_amqp->connect(hostname, port, uid, pwd, "/");
     if (!connected)
     {
@@ -43,11 +43,11 @@ void log_collector::write(std::string_view event_type, const Json::Value& data)
     try
     {
         Json::Value entry;
-        entry["timestamp"]    = fb::model::datetime().to_string();
-        entry["event"]        = std::string(event_type);
-        entry["server_id"]    = this->_server_id;
-        entry["server_name"]  = this->_server_name;
-        entry["data"]         = data;
+        entry["timestamp"]   = fb::model::datetime().to_string();
+        entry["event"]       = std::string(event_type);
+        entry["server_id"]   = this->_server_id;
+        entry["server_name"] = this->_server_name;
+        entry["data"]        = data;
 
         std::lock_guard<std::mutex> lock(this->_buffer_mutex);
         this->_buffer.push_back(std::move(entry));
@@ -94,11 +94,13 @@ void log_collector::worker_run()
 
         if (this->_amqp != nullptr)
         {
-            auto body = this->serialize_log_array(batch);
-            auto message = std::vector<uint8_t>(body.begin(), body.end());
+            auto body        = this->serialize_log_array(batch);
+            auto message     = std::vector<uint8_t>(body.begin(), body.end());
             auto routing_key = this->get_routing_key();
             if (!this->_amqp->publish("amq.direct", routing_key, message))
-                fb::logger::warn("Failed to publish log batch ({} entries) with routing key: {}", batch.size(), routing_key);
+                fb::logger::warn("Failed to publish log batch ({} entries) with routing key: {}",
+                                 batch.size(),
+                                 routing_key);
         }
     }
 
@@ -120,11 +122,13 @@ void log_collector::worker_run()
 
         if (this->_amqp != nullptr)
         {
-            auto body = this->serialize_log_array(batch);
-            auto message = std::vector<uint8_t>(body.begin(), body.end());
+            auto body        = this->serialize_log_array(batch);
+            auto message     = std::vector<uint8_t>(body.begin(), body.end());
             auto routing_key = this->get_routing_key();
             if (!this->_amqp->publish("amq.direct", routing_key, message))
-                fb::logger::warn("Failed to publish final log batch ({} entries) with routing key: {}", batch.size(), routing_key);
+                fb::logger::warn("Failed to publish final log batch ({} entries) with routing key: {}",
+                                 batch.size(),
+                                 routing_key);
         }
     }
 }
@@ -139,7 +143,7 @@ std::string log_collector::serialize_log_array(const std::vector<Json::Value>& e
     builder["emitUTF8"]    = true;
     builder["indentation"] = "";
 
-    auto writer = std::unique_ptr<Json::StreamWriter>(builder.newStreamWriter());
+    auto               writer = std::unique_ptr<Json::StreamWriter>(builder.newStreamWriter());
     std::ostringstream stream;
     writer->write(root, &stream);
     return stream.str();

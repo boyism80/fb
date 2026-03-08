@@ -147,7 +147,7 @@ async::task<bool> mob::call_script()
     if (this->_attack_thread == nullptr)
         co_return true;
 
-#if defined DEBUG | defined _DEBUG
+#if defined DEBUG || defined _DEBUG
     this->_attack_thread->load(model.script);
 #endif
     this->_attack_thread->func(model.on_attack);
@@ -393,10 +393,104 @@ uint32_t mob::normal_attack_damage(MOB_SIZE size) const
     return model.damage.min + (std::rand() % difference);
 }
 
+void mob::on_die(std::shared_ptr<object> from, DESTROY_TYPE destroy_type)
+{
+    this->listener.on_dead(*this, from);
+
+    // Drop items when mob dies
+    std::ignore = this->drop_items();
+
+    // Handle spawned mob ownership
+    auto owner = this->owner.lock();
+    if (owner != nullptr)
+    {
+        owner->detach_spawned_mob(*this);
+        return;
+    }
+
+    // Handle experience distribution
+    if (from != nullptr && from->is(OBJECT_TYPE::MOB))
+        from = std::static_pointer_cast<fb::game::mob>(from)->owner.lock();
+
+    if (from == nullptr)
+        return;
+
+    if (owner == nullptr && from->is(OBJECT_TYPE::CHARACTER))
+    {
+        auto& ch       = static_cast<character&>(*from);
+        auto& group_id = ch.group_id();
+        auto  map      = ch.map();
+        auto  exp      = this->based<fb::model::mob>().exp;
+
+        if (group_id.has_value() && map != nullptr)
+        {
+            // Group experience distribution
+            auto server = &ch.server;
+            server->groups.read(group_id.value(), [server, &ch, map, exp](auto& group) {
+                auto nears      = group->nears(*map, ch.position());
+                auto size       = nears.size();
+                auto divide_exp = exp / size;
+                for (auto& member : nears)
+                {
+                    auto shared_ptr = member.lock();
+                    if (shared_ptr == nullptr)
+                        continue;
+
+                    shared_ptr->add_exp(divide_exp, true, true);
+                }
+            });
+        }
+        else
+        {
+            // Solo experience
+            ch.add_exp(exp, true, true);
+        }
+    }
+    std::ignore = this->destroy(destroy_type);
+}
+
 void mob::kill(std::shared_ptr<object> from, DESTROY_TYPE destroy_type)
 {
     life::kill(from, destroy_type);
-    std::ignore = this->destroy(destroy_type);
+
+    auto& model = this->based<fb::model::mob>();
+    if (model.script.empty() == false && model.on_die.empty() == false)
+    {
+        auto lua = fb::lua::new_context();
+        if (lua != nullptr)
+        {
+#if defined DEBUG || defined _DEBUG
+            lua->load(model.script);
+#endif
+            lua->func(model.on_die);
+            lua->pushobject(*this);
+            if (from != nullptr)
+                lua->pushobject(from);
+            else
+                lua->pushnil();
+
+            this->invincible(true);
+            async::awaitable_then(lua->call(2), [this, from, destroy_type](async::awaitable_result<bool> result) {
+                try
+                {
+                    result();
+                    this->on_die(from, destroy_type);
+                }
+                catch (std::exception& e)
+                {
+                    fb::logger::fatal("error in mob on_die: {}", e.what());
+                }
+                catch (...)
+                {
+                    fb::logger::fatal("unknown error in mob on_die");
+                }
+            });
+        }
+    }
+    else
+    {
+        this->on_die(from, destroy_type);
+    }
 }
 
 async::task<void> mob::drop_items()
@@ -424,10 +518,10 @@ async::task<void> mob::drop_items()
             {
             case DSL::item:
             {
-                auto params = fb::model::dsl::item(dsl.params);
-                auto multiplier = this->server.drop_rate_multiplier();
+                auto params           = fb::model::dsl::item(dsl.params);
+                auto multiplier       = this->server.drop_rate_multiplier();
                 auto adjusted_percent = std::min(100.0, params.percent * multiplier);
-                auto random = std::rand() % 100;
+                auto random           = std::rand() % 100;
                 if (random > (int)adjusted_percent)
                     continue;
 
@@ -507,4 +601,9 @@ bool mob::hidden(const fb::game::object& target) const
 void mob::hidden(bool enabled)
 {
     this->_hidden = enabled;
+}
+
+std::shared_ptr<fb::game::appearance> mob::appearance() const
+{
+    return this->based<fb::model::mob>().create_appearance();
 }

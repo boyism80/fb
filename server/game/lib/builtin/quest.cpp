@@ -2,11 +2,9 @@
 #include <fb/game/server.h>
 
 using namespace fb::game;
-using table = fb::model::table;
 
 // clang-format off
 IMPLEMENT_LUA_EXTENSION(quest, "fb.game.quest")
-{"model",               builtin::quest::builtin_model},
 {"step",                builtin::quest::builtin_step},
 {"progress",            builtin::quest::builtin_progress},
 {"param",               builtin::quest::builtin_param},
@@ -14,35 +12,8 @@ IMPLEMENT_LUA_EXTENSION(quest, "fb.game.quest")
 {"inc_step",            builtin::quest::builtin_inc_step},
 {"complete",            builtin::quest::builtin_complete},
 {"completed",           builtin::quest::builtin_completed},
-{"completed_progress",  builtin::quest::builtin_completed_progress},
-{"completed_step",      builtin::quest::builtin_completed_step},
+{"resume",              builtin::quest::builtin_resume},
 END_LUA_EXTENSION; // clang-format on
-
-int builtin::quest::builtin_model(lua_State* L)
-{
-    auto lua = fb::lua::get(L);
-    if (lua == nullptr)
-        return 0;
-
-    auto server = lua->env<fb::game::server>("server");
-    auto quest  = lua->touserdata<fb::game::quest>(1);
-    if (quest == nullptr)
-        return 0;
-
-    auto owner = quest->owner.lock();
-    if (owner == nullptr)
-        return 0;
-
-    auto weak = owner->weak_from_this_as<fb::game::character>();
-    return lua->ensure_yield(*server, weak, [=](auto is_yield) {
-        auto  step  = quest->step();
-        auto& model = table::quest[quest->id][step];
-        return lua->ensure_resume(*server, weak, [=, &model]() {
-            lua->pushobject(model);
-            return 1;
-        });
-    });
-}
 
 int builtin::quest::builtin_step(lua_State* L)
 {
@@ -272,7 +243,7 @@ int builtin::quest::builtin_completed(lua_State* L)
     });
 }
 
-int builtin::quest::builtin_completed_progress(lua_State* L)
+int builtin::quest::builtin_resume(lua_State* L)
 {
     auto lua = fb::lua::get(L);
     if (lua == nullptr)
@@ -289,34 +260,7 @@ int builtin::quest::builtin_completed_progress(lua_State* L)
 
     auto weak = owner->weak_from_this_as<fb::game::character>();
     return lua->ensure_yield(*server, weak, [=](auto is_yield) {
-        auto& attr   = table::quest[quest->id];
-        auto& model  = attr[quest->step()];
-        auto  result = (model.progress == quest->progress());
-        return lua->ensure_resume(*server, weak, [=]() {
-            lua->pushboolean(result);
-            return 1;
-        });
-    });
-}
-
-int builtin::quest::builtin_completed_step(lua_State* L)
-{
-    auto lua = fb::lua::get(L);
-    if (lua == nullptr)
-        return 0;
-
-    auto server = lua->env<fb::game::server>("server");
-    auto quest  = lua->touserdata<fb::game::quest>(1);
-    if (quest == nullptr)
-        return 0;
-
-    auto owner = quest->owner.lock();
-    if (owner == nullptr)
-        return 0;
-
-    auto weak = owner->weak_from_this_as<fb::game::character>();
-    return lua->ensure_yield(*server, weak, [=](auto is_yield) {
-        auto result = (table::quest[quest->id].size() == quest->step());
+        auto result = quest->resume();
         return lua->ensure_resume(*server, weak, [=]() {
             lua->pushboolean(result);
             return 1;

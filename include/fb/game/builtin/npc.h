@@ -6,9 +6,7 @@
 namespace fb::game::builtin {
 
 struct npc
-{
-    // NPC builtin functions can be added here as needed
-};
+{ };
 
 } // namespace fb::game::builtin
 

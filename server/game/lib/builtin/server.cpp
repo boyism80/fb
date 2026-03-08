@@ -1,8 +1,12 @@
 #include <fb/game/builtin/server.h>
+#include <fb/lua.h>
+#include <json/json.h>
 #include <boost/xpressive/xpressive.hpp>
+#include <chrono>
 #include <unordered_map>
 #include <regex>
 #include <string_view>
+#include <fb/model/datetime.h>
 
 using namespace fb::game;
 using table = fb::model::table;
@@ -52,6 +56,55 @@ int builtin::server::builtin_sleep(lua_State* L)
         lua->resume(0);
     });
     return lua->yield(0);
+}
+
+/**
+ * @brief      Returns current time as seconds since epoch (for time comparisons and cooldowns).
+ *
+ *             Takes no arguments. Pushes a single integer. Use with 용왕, 상어장군, 사천족제사장
+ *             etc. for logic like now() + delay, now() < end_time.
+ *
+ * @param[in]  L     Lua state.
+ * @return     Number of return values (1 integer).
+ */
+int builtin::server::builtin_now(lua_State* L)
+{
+    auto now_c           = std::chrono::system_clock::now();
+    auto sec_since_epoch = std::chrono::duration_cast<std::chrono::seconds>(now_c.time_since_epoch()).count();
+    lua_pushinteger(L, static_cast<lua_Integer>(sec_since_epoch));
+    return 1;
+}
+
+/**
+ * @brief      Returns current date/time as a table (server local time) for calendar-style logic.
+ *
+ *             Takes no arguments. Pushes a single table with fields: year, month, day,
+ *             hour, minute, second. Use for 선원/뱃사공 time windows (e.g. datetime().hour, datetime().minute).
+ *
+ * @param[in]  L     Lua state.
+ * @return     Number of return values (1 table).
+ */
+int builtin::server::builtin_datetime(lua_State* L)
+{
+    auto lua = fb::lua::get(L);
+    if (lua == nullptr)
+        return 0;
+
+    const auto dt = fb::model::datetime();
+    lua_createtable(L, 0, 6);
+    lua_pushinteger(L, static_cast<lua_Integer>(dt.year()));
+    lua_setfield(L, -2, "year");
+    lua_pushinteger(L, static_cast<lua_Integer>(dt.month()));
+    lua_setfield(L, -2, "month");
+    lua_pushinteger(L, static_cast<lua_Integer>(dt.day()));
+    lua_setfield(L, -2, "day");
+    lua_pushinteger(L, static_cast<lua_Integer>(dt.hours()));
+    lua_setfield(L, -2, "hour");
+    lua_pushinteger(L, static_cast<lua_Integer>(dt.minutes()));
+    lua_setfield(L, -2, "minute");
+    lua_pushinteger(L, static_cast<lua_Integer>(dt.seconds()));
+    lua_setfield(L, -2, "second");
+    return 1;
 }
 
 int builtin::server::builtin_baram_time(lua_State* L)
@@ -535,7 +588,7 @@ int builtin::server::builtin_debug(lua_State* L)
     if (lua == nullptr)
         return 0;
 
-#if defined DEBUG | defined _DEBUG
+#if defined DEBUG || defined _DEBUG
     lua->pushboolean(true);
 #else
     lua->pushboolean(false);
@@ -794,8 +847,8 @@ int builtin::server::builtin_ban(lua_State* L)
 
     static auto fn = [](fb::game::server*              server,
                         fb::lua::context*              lua,
-                        std::string_view              name,
-                        std::string_view              reason,
+                        std::string_view               name,
+                        std::string_view               reason,
                         const std::optional<uint32_t>& days) -> async::task<void> {
         auto   success = false;
         auto   error   = std::string{};
@@ -954,7 +1007,7 @@ int builtin::server::builtin_exp_multiplier(lua_State* L)
         static auto fn = [](fb::game::server* server, fb::lua::context* lua, double value) -> async::task<void> {
             auto   success = false;
             auto   error   = std::string{};
-            auto world = fb::config<uint32_t>("world");
+            auto   world   = fb::config<uint32_t>("world");
             auto&& resp    = co_await server->http.post("internal",
                                                      "/in-game/set-exp-multiplier",
                                                      internal_reqs::SetExpMultiplier{world, value});
@@ -1006,7 +1059,7 @@ int builtin::server::builtin_drop_rate_multiplier(lua_State* L)
         static auto fn = [](fb::game::server* server, fb::lua::context* lua, double value) -> async::task<void> {
             auto   success = false;
             auto   error   = std::string{};
-            auto world = fb::config<uint32_t>("world");
+            auto   world   = fb::config<uint32_t>("world");
             auto&& resp    = co_await server->http.post("internal",
                                                      "/in-game/set-drop-rate-multiplier",
                                                      internal_reqs::SetDropRateMultiplier{world, value});
@@ -1034,4 +1087,73 @@ int builtin::server::builtin_drop_rate_multiplier(lua_State* L)
 
         return lua->yield(1);
     }
+}
+
+int builtin::server::builtin_gv(lua_State* L)
+{
+    auto lua = fb::lua::get(L);
+    if (lua == nullptr)
+        return 0;
+
+    auto server = lua->env<fb::game::server>("server");
+    if (server == nullptr)
+        return 0;
+
+    auto argc = lua->argc();
+    if (argc < 1)
+        return 0;
+
+    auto key = lua->tostring(1);
+    if (key.empty())
+        return 0;
+
+    if (argc == 1)
+    {
+        server->globals.read([lua, &key](const std::unordered_map<std::string, Json::Value>& map) {
+            auto it = map.find(key);
+            if (it == map.end())
+            {
+                lua->pushnil();
+                return;
+            }
+            const Json::Value& v = it->second;
+            if (v.isString())
+                lua->pushstring(v.asString());
+            else if (v.isDouble() || v.isInt())
+                lua->pushnumber(v.asDouble());
+            else if (v.isBool())
+                lua->pushboolean(v.asBool());
+            else
+                lua->pushnil();
+        });
+        return 1;
+    }
+
+    if (argc >= 2)
+    {
+        int t = lua_type(L, 2);
+        if (t == LUA_TSTRING)
+        {
+            const char* s = lua_tostring(L, 2);
+            Json::Value val(s ? s : "");
+            server->globals.write([&key, &val](auto& map) {
+                map[key] = val;
+            });
+        }
+        else if (t == LUA_TNUMBER)
+        {
+            double n = lua_tonumber(L, 2);
+            server->globals.write([&key, n](auto& map) {
+                map[key] = Json::Value(n);
+            });
+        }
+        else if (t == LUA_TBOOLEAN)
+        {
+            bool b = lua_toboolean(L, 2) != 0;
+            server->globals.write([&key, b](auto& map) {
+                map[key] = Json::Value(b);
+            });
+        }
+    }
+    return 0;
 }

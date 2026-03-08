@@ -1,3 +1,25 @@
+local function execute_mob_spell_hit(me, you, spell)
+    if not you:is(OBJECT_TYPE.MOB) then
+        return true
+    end
+    
+    local model = you:model()
+    local script = model:script()
+    if script == nil then
+        return true
+    end
+    local func = model:on_spell_hit()
+    if func == nil then
+        return true
+    end
+    local result = you:script(script, func, me, spell)
+    if result == nil then
+        return true -- continue
+    else
+        return result
+    end
+end
+
 function boolean_random(percent)
     return math.random() < percent
 end
@@ -17,7 +39,7 @@ function CREATURE_SPELL(creature, index)
         else
             return nil
         end
-
+        
     elseif creature == CREATURE.TIGER then
         if index == 1 then
             return '백열주'
@@ -32,7 +54,7 @@ function CREATURE_SPELL(creature, index)
         else
             return nil
         end
-
+        
     elseif creature == CREATURE.TURTLE then
         if index == 1 then
             return '자무주'
@@ -81,7 +103,7 @@ function CREATURE_AREA_SPELL(creature, index)
         else
             return nil
         end
-
+        
     elseif creature == CREATURE.TIGER then
         if index == 1 then
             return "백열주'첨"
@@ -96,7 +118,7 @@ function CREATURE_AREA_SPELL(creature, index)
         else
             return nil
         end
-
+        
     elseif creature == CREATURE.TURTLE then
         if index == 1 then
             return "자무주'첨"
@@ -154,31 +176,34 @@ function TELEPORT_LOOKUP(me, map, x, y, direction)
             rand_y = 1
             new_direction = DIRECTION.TOP
         end
-
+        
         if map:movable(me, x+rand_x, y+rand_y) then
             return x+rand_x, y+rand_y, new_direction
         end
     end
-
+    
     return x, y, new_direction
 end
 
-function relative_buff_name(buff_name)
-    local values = {
-        {'혼마술', '저주', '귀염추혼소'},
-        {'무장', '자동무장'},
-        {'보호', '자동보호'},
-        {'투명', '자동투명'}
-    }
+RELATIVE_BUFF_GROUPS = {
+    {'혼마술', '저주', '귀염추혼소'},
+    {'무장', '자동무장', '시약무장'},
+    {'보호', '자동보호', '시약보호'},
+    {'투명', '자동투명'},
+    {'금수', '경수', '맹수', '야수', '의태시약'},
+    {'용의제일주', '용의제이주', '용의제삼주', '용의제사주', '용의제오주', '용의제육주', '용의제칠주', '용의제팔주', '용의제구주'},
+    {'용의제일노', '용의제이노', '용의제삼노', '용의제사노', '용의제오노', '용의제육노', '용의제칠노', '용의제팔노', '용의제구노'}
+}
 
-    for _, names in pairs(values) do
+function relative_buff_name(buff_name)
+    for _, names in pairs(RELATIVE_BUFF_GROUPS) do
         for _, name in pairs(names) do
             if buff_name == name then
                 return names
             end
         end
     end
-
+    
     return {buff_name}
 end
 
@@ -188,13 +213,13 @@ function near(me, type)
     if map == nil then
         return result
     end
-
+    
     local x, y = me:position()
     for _, obj in pairs(map:objects()) do
         if not obj:is(type) then
             goto SKIP
         end
-
+        
         local obj_x, obj_y = obj:position()
         if (obj_x == x+1 or obj_x == x-1) and (obj_y == y) then
             table.insert(result, obj)
@@ -205,7 +230,7 @@ function near(me, type)
         end
         ::SKIP::
     end
-
+    
     return result
 end
 
@@ -214,12 +239,12 @@ function assert_map_debuff(me, you)
     if map == nil then
         return false
     end
-
+    
     if not you:is(OBJECT_TYPE.LIFE) then
         me:message('대상이 올바르지 않습니다.')
         return false
     end
-
+    
     local option = map:model():option()
     if you:is(OBJECT_TYPE.CHARACTER) then
         local pk = (option & MAP_OPTION.ENABLE_PK) == MAP_OPTION.ENABLE_PK
@@ -227,13 +252,13 @@ function assert_map_debuff(me, you)
             me:message('걸리지 않습니다.')
             return false
         end
-
+        
         if you:assert(STATE.GHOST) then
             me:message('대상이 올바르지 않습니다.')
             return false
         end
     end
-
+    
     return true
 end
 
@@ -242,12 +267,12 @@ function assert_map_damage(me, you)
     if map == nil then
         return false
     end
-
+    
     if not you:is(OBJECT_TYPE.LIFE) then
         me:message('대상이 올바르지 않습니다.')
         return false
     end
-
+    
     local option = map:model():option()
     if you:is(OBJECT_TYPE.CHARACTER) then
         local pk = (option & MAP_OPTION.ENABLE_PK) == MAP_OPTION.ENABLE_PK
@@ -255,25 +280,25 @@ function assert_map_damage(me, you)
             me:message('대상이 올바르지 않습니다.')
             return false
         end
-
+        
         if you:assert(STATE.GHOST) then
             me:message('대상이 올바르지 않습니다.')
             return false
         end
     end
-
+    
     return true
 end
 
 function spell_cast(me, you, spell, opts)
     opts = opts or {}
-
+    
     local mp             = opts.mp             or 0
     local sound          = opts.sound
     local effect         = opts.effect
     local no_assert      = opts.no_assert      or false
     local default_action = (opts.default_action == nil) and true or opts.default_action
-
+    
     if not no_assert and me:is(OBJECT_TYPE.CHARACTER) then
         local err = me:assert(STATE.GHOST, STATE.RIDING)
         if err then
@@ -281,43 +306,43 @@ function spell_cast(me, you, spell, opts)
             return false
         end
     end
-
+    
     if me:mp() == 0 or me:mp() < mp then
         me:message("마력이 부족합니다.")
         return false
     end
     me:mp_down(mp)
-
+    
     if you and effect then
         you:effect(effect)
     end
     if you and sound then
         you:sound(sound)
     end
-
+    
     if spell then
         me:message(string.format("%s 외웠습니다.", name_with(spell:name())))
         if me ~= you and you:is(OBJECT_TYPE.CHARACTER) then
             you:message(string.format("%s님이 %s 외워주셨습니다.", me:name(), name_with(spell:name())))
         end
     end
-
+    
     if default_action then
         me:action(ACTION.CAST_SPELL, DURATION.SPELL, 1)
     end
-
+    
     return true
 end
 
 function buff_cast(me, you, spell, opts)
     opts = opts or {}
-
+    
     local mp             = opts.mp             or 0
     local sound          = opts.sound          -- 기본 nil
     local effect         = opts.effect         -- 기본 nil
     local no_assert      = opts.no_assert      or false
     local default_action = (opts.default_action == nil) and true or opts.default_action
-
+    
     if me:is(OBJECT_TYPE.CHARACTER) then
         local error = me:assert(STATE.GHOST, STATE.RIDING)
         if error ~= nil then
@@ -325,23 +350,23 @@ function buff_cast(me, you, spell, opts)
             return false
         end
     end
-
+    
     if not you:is(OBJECT_TYPE.LIFE) then
         me:message('걸리지 않습니다.')
         return false
     end
-
+    
     if me:mp() == 0 or me:mp() < mp then
         me:message('마력이 부족합니다.')
         return false
     end
     me:mp_down(mp)
-
+    
     if you:isbuff(table.unpack(relative_buff_name(spell:name()))) then
         me:message('이미 걸려있습니다.')
         return false
     end
-
+    
     if effect ~= nil then
         you:effect(effect)
     end
@@ -350,22 +375,23 @@ function buff_cast(me, you, spell, opts)
     if me ~= you and you:is(OBJECT_TYPE.CHARACTER) then
         you:message(string.format('%s님이 %s 외워주셨습니다.', me:name(), name_with(spell:name())))
     end
-
+    
     if default_action then
         me:action(ACTION.CAST_SPELL, DURATION.SPELL, 1)
     end
-    return true
+
+    return execute_mob_spell_hit(me, you, spell)
 end
 
 function debuff_cast(me, you, spell, opts)
     opts = opts or {}
-
+    
     local mp             = opts.mp             or 0
     local sound          = opts.sound
     local effect         = opts.effect
     local no_assert      = opts.no_assert      or false
     local default_action = (opts.default_action == nil) and true or opts.default_action
-
+    
     if me:is(OBJECT_TYPE.CHARACTER) then
         local error = me:assert(STATE.GHOST, STATE.RIDING)
         if error ~= nil then
@@ -373,27 +399,27 @@ function debuff_cast(me, you, spell, opts)
             return false
         end
     end
-
+    
     if not assert_map_debuff(me, you) then
         return false
     end
-
+    
     if not you:is(OBJECT_TYPE.LIFE) then
         me:message('걸리지 않습니다.')
         return false
     end
-
+    
     if me:is(OBJECT_TYPE.CHARACTER) and me:mp() < mp then
         me:message('마력이 부족합니다.')
         return false
     end
     me:mp_down(mp)
-
+    
     if you:isbuff(table.unpack(relative_buff_name(spell:name()))) then
         me:message('이미 걸려있습니다.')
         return false
     end
-
+    
     if effect ~= nil then
         you:effect(effect)
     end
@@ -409,17 +435,18 @@ function debuff_cast(me, you, spell, opts)
             you:message(string.format('%s %s 걸었습니다.', name_with(me:name(), '이', '가'), name_with(spell:name())))
         end
     end
-
+    
     if default_action then
         me:action(ACTION.CAST_SPELL, DURATION.SPELL, 1)
     end
-    return true
+
+    return execute_mob_spell_hit(me, you, spell)
 end
 
 
 function attack_cast(me, you, spell, opts)
     opts = opts or {}
-
+    
     local hp         = opts.hp         or 0
     local mp         = opts.mp         or 0
     local damage     = opts.damage     or 0
@@ -427,12 +454,12 @@ function attack_cast(me, you, spell, opts)
     local sound      = opts.sound
     local effect     = opts.effect
     local preprocess = opts.preprocess
-
+    
     local map = me:map()
     if not map then
         return false
     end
-
+    
     if me:is(OBJECT_TYPE.CHARACTER) then
         local err = me:assert(STATE.GHOST, STATE.RIDING)
         if err then
@@ -440,19 +467,19 @@ function attack_cast(me, you, spell, opts)
             return false
         end
     end
-
+    
     local option = map:model():option()
     if (option & MAP_OPTION.DISABLE_SPELL) == MAP_OPTION.DISABLE_SPELL then
         me:message("마력이 미치지 않습니다.")
         return false
     end
-
+    
     if me:mp() == 0 or me:mp() < mp then
         me:message("마력이 부족합니다.")
         return false
     end
     me:mp_down(mp)
-
+    
     if not you then
         return false
     end
@@ -462,20 +489,20 @@ function attack_cast(me, you, spell, opts)
     if #you == 0 then
         return false
     end
-
+    
     if preprocess then
         for _, obj in pairs(you) do
             preprocess(me, obj)
         end
     end
-
+    
     me:message(string.format("%s 외웠습니다.", name_with(spell:name())))
     me:action(ACTION.ATTACK, DURATION.ATTACK, 1)
-
+    
     local pk      = (option & MAP_OPTION.ENABLE_PK) == MAP_OPTION.ENABLE_PK
     local damaged = false
-    local rate    = me:skill_damage_rate() / 1000.0
-
+    local skill_rate = me:skill_damage_rate() / 1000.0
+    
     for _, obj in pairs(you) do
         if effect then
             obj:effect(effect)
@@ -483,29 +510,29 @@ function attack_cast(me, you, spell, opts)
         if sound then
             obj:sound(sound)
         end
-
+        
         if ((obj:is(OBJECT_TYPE.CHARACTER) and pk) or obj:is(OBJECT_TYPE.MOB)) then
-            obj:damage(math.floor(damage * rate), me)
+            obj:damage(damage, me, { critical = false, rate = skill_rate })
             damaged = true
         end
     end
-
+    
     if damaged then
         me:hp(math.max(10, me:hp() - hp))
     end
-
+    
     me:chat(message, CHAT_TYPE.BLUE, false)
     return true
 end
 
 function spell_damage(me, you, spell, opts)
     opts = opts or {}
-
+    
     local damage = opts.damage or 0
     local mp     = opts.mp     or 0
     local sound  = opts.sound
     local effect = opts.effect
-
+    
     if me:is(OBJECT_TYPE.CHARACTER) then
         local err = me:assert(STATE.GHOST, STATE.RIDING)
         if err then
@@ -513,38 +540,38 @@ function spell_damage(me, you, spell, opts)
             return false
         end
     end
-
+    
     if not you:is(OBJECT_TYPE.LIFE) then
         me:message("대상이 올바르지 않습니다.")
         return false
     end
-
+    
     if not assert_map_damage(me, you) then
         return false
     end
-
+    
     if me:mp() == 0 or me:mp() < mp then
         me:message("마력이 부족합니다.")
         return false
     end
     me:mp_down(mp)
-
+    
     if effect then
         you:effect(effect)
     end
     if sound then
         you:sound(sound)
     end
-
+    
     me:action(ACTION.CAST_SPELL, DURATION.SPELL, 1)
-
+    
     if you:is(OBJECT_TYPE.CHARACTER) then
-        you:message(string.format("%s님이 %s 가합니다.",
-            me:name(), name_with(spell:name())))
+        you:message(string.format("%s님이 %s 가합니다.", me:name(), name_with(spell:name())))
     end
-
-    local rate = me:skill_damage_rate() / 1000.0
-    you:damage(math.floor(damage * rate), me)
+    
+    if execute_mob_spell_hit(me, you, spell) then
+        you:damage(damage, me, { critical = false, rate = me:skill_damage_rate() / 1000.0, physical = false })
+    end
 
     return true
 end
@@ -562,13 +589,16 @@ function spell_damage_near(me, spell, opts)
     me:mp_down(mp)
     me:sound(sound)
     me:action(ACTION.CAST_SPELL, DURATION.SPELL, 1)
-    local rate = me:skill_damage_rate() / 1000.0
+    local skill_rate = me:skill_damage_rate() / 1000.0
     for _, you in pairs(near(me, OBJECT_TYPE.LIFE)) do
         if effect then you:effect(effect) end
         if you:is(OBJECT_TYPE.CHARACTER) then
             you:message(string.format('%s님이 %s 가합니다.', me:name(), name_with(spell:name())))
         end
-        you:damage(math.floor(damage * rate), me)
+        
+        if execute_mob_spell_hit(me, you, spell) then
+            you:damage(damage, me, { critical = false, rate = skill_rate, physical = false })
+        end
     end
     return true
 end
@@ -586,16 +616,21 @@ function spell_damage_near_target(me, you, spell, opts)
     me:mp_down(mp)
     me:sound(sound)
     me:action(ACTION.CAST_SPELL, DURATION.SPELL, 1)
-    local rate = me:skill_damage_rate() / 1000.0
+    local skill_rate = me:skill_damage_rate() / 1000.0
     local targets = near(you, OBJECT_TYPE.LIFE)
     table.insert(targets, you)
     for _, target in pairs(targets) do
-        if target == me then goto CONTINUE_SPELL_DAMAGE_NEAR_TARGET end
+        if target == me then 
+            goto CONTINUE_SPELL_DAMAGE_NEAR_TARGET 
+        end
         if effect then target:effect(effect) end
         if target:is(OBJECT_TYPE.CHARACTER) then
             target:message(string.format('%s님이 %s 가합니다.', me:name(), name_with(spell:name())))
         end
-        target:damage(math.floor(damage * rate), me)
+        
+        if execute_mob_spell_hit(me, target, spell) then
+            target:damage(damage, me, { critical = false, rate = skill_rate, physical = false })
+        end
         ::CONTINUE_SPELL_DAMAGE_NEAR_TARGET::
     end
     return true
@@ -608,7 +643,7 @@ function spell_damage_area(me, you, spell, opts)
     local mp         = opts.mp or 0
     local sound      = opts.sound
     local effect     = opts.effect or {}
-
+    
     if me:is(OBJECT_TYPE.CHARACTER) then
         local err = me:assert(STATE.GHOST, STATE.RIDING)
         if err then
@@ -621,28 +656,34 @@ function spell_damage_area(me, you, spell, opts)
         return false
     end
     me:mp_down(mp)
-
+    
     if type(you) == 'userdata' then
         you = { you }
     end
 
-    local rate = me:skill_damage_rate() / 1000.0
+    local skill_rate = me:skill_damage_rate() / 1000.0
     for _, obj in pairs(you) do
         if obj:is(OBJECT_TYPE.CHARACTER) then
             obj:message(string.format('%s님이 %s 가합니다.', me:name(), name_with(spell:name())))
         end
-        if effect.you then obj:effect(effect.you) end
-        obj:damage(math.floor(damage * rate), me)
+
+        if effect.you then 
+            obj:effect(effect.you) 
+        end
+        
+        if execute_mob_spell_hit(me, obj, spell) then
+            obj:damage(damage, me, { critical = false, rate = skill_rate, physical = false })
+        end
     end
 
     me:sound(sound)
     if effect.me then me:effect(effect.me) end
     me:action(ACTION.CAST_SPELL, DURATION.SPELL, 1)
-
+    
     if hp > 0 then
         me:hp(me:hp() - hp)
     end
-
+    
     return true
 end
 
@@ -666,7 +707,10 @@ function spell_heal(me, you, spell, opts)
     if not spell_cast(me, you, spell, { mp = mp, sound = sound, effect = effect }) then
         return false
     end
-    you:heal(hp)
+    
+    if execute_mob_spell_hit(me, you, spell) then
+        you:heal(hp)
+    end
     return true
 end
 
@@ -697,9 +741,15 @@ function spell_heal_near(me, you, spell, opts)
     me:action(ACTION.CAST_SPELL, DURATION.SPELL, 1)
     me:message(string.format('%s 외웠습니다.', name_with(spell:name())))
     for _, ch in pairs(targets) do
-        ch:heal(hp)
-        if effect then ch:effect(effect) end
-        if sound then ch:sound(sound) end
+        if execute_mob_spell_hit(me, ch, spell) then
+            ch:heal(hp)
+        end
+        if effect then
+            ch:effect(effect)
+        end
+        if sound then
+            ch:sound(sound)
+        end
         if me ~= ch then
             ch:message(string.format('%s님이 %s 외워주셨습니다.', me:name(), name_with(spell:name())))
         end
@@ -738,7 +788,9 @@ function spell_heal_group(me, spell, opts)
     me:message(string.format('%s 외웠습니다.', name_with(spell:name())))
     for _, ch in pairs(group:nears(map, { me:position() })) do
         if me ~= ch then
-            ch:heal(hp)
+            if execute_mob_spell_hit(me, ch, spell) then
+                ch:heal(hp)
+            end
             if effect then ch:effect(effect) end
             if sound then ch:sound(sound) end
             ch:message(string.format('%s님이 %s 외워주셨습니다.', me:name(), name_with(spell:name())))
@@ -753,7 +805,7 @@ function spell_disguise_look(me, mobs, name)
             return v
         end
     end
-
+    
     me:message('변신 가능한 동물')
     for k, v in pairs(mobs) do
         me:message(k)
@@ -767,7 +819,7 @@ function spell_disguise(me, mobs, name, spell, opts)
     local sound     = opts.sound
     local effect    = opts.effect
     local buff_time = opts.buff_time or 0
-
+    
     if me:is(OBJECT_TYPE.CHARACTER) then
         local err = me:assert(STATE.GHOST, STATE.RIDING)
         if err then
@@ -775,18 +827,18 @@ function spell_disguise(me, mobs, name, spell, opts)
             return false
         end
     end
-
+    
     local look = spell_disguise_look(me, mobs, name)
     if not look then
         return false
     end
-
+    
     if buff_cast(me, me, spell, { mp = mp, sound = sound, effect = effect }) then
         me:buff(spell, buff_time)
-        me:disguise(look)
+        me:mimic({ disguise = look })
         return true
     end
-
+    
     return false
 end
 
@@ -795,7 +847,7 @@ function front_obj(x, y, direction, step, objects, type)
     if type == nil then
         type = 0xFF & ~OBJECT_TYPE.ITEM
     end
-
+    
     if direction == DIRECTION.LEFT then
         x = x-step
     elseif direction == DIRECTION.RIGHT then
@@ -805,14 +857,14 @@ function front_obj(x, y, direction, step, objects, type)
     else
         y = y+step
     end
-
+    
     for _, obj in pairs(objects) do
         local obj_x, obj_y =  obj:position()
         if x == obj_x and y == obj_y and obj:is(type) then
             return obj
         end
     end
-
+    
     return nil
 end
 
@@ -829,7 +881,7 @@ function spell_weapon_damage(me, mp, message, damage)
         return false
     end
     me:mp_down(mp)
-
+    
     local weapon = me:weapon()
     if weapon ~= nil and weapon:model():name() == message then
         me:message(string.format('%s 푸른 빛으로 빛납니다.', name_with(message, '이', '가')))

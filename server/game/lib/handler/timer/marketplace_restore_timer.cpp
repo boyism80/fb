@@ -19,4 +19,3 @@ async::task<void> marketplace_restore_timer::handle(const fb::model::datetime& n
 
     co_return;
 }
-

@@ -4,7 +4,7 @@
 #include <stack>
 #include <string_view>
 #include <fb/game/npc.h>
-#include <fb/game/portrait.h>
+#include <fb/game/appearance.h>
 
 namespace fb::game {
 class character;
@@ -28,13 +28,14 @@ enum class interaction : uint8_t
 // clang-format off
 struct listener_t
 {
+    virtual void on_dialog(character& me, std::string_view message, bool button_prev, bool button_next, uint32_t seq = 0xFFFFFFFD) = 0;
     virtual void on_dialog(character& me, const fb::model::object& object, std::string_view message, bool button_prev, bool button_next, uint32_t seq = 0xFFFFFFFD) = 0;
     virtual void on_dialog(character& me, const fb::game::object& obj, std::string_view message, bool button_prev, bool button_next, uint32_t seq = 0xFFFFFFFD)     = 0;
     virtual void on_dialog(character& me, const fb::model::object& obj, std::string_view message, const std::vector<std::string>& menus, uint32_t seq = 0xFFFFFFFD) = 0;
     virtual void on_dialog(character& me, const fb::game::object& obj, std::string_view message, const std::vector<std::string>& menus, uint32_t seq = 0xFFFFFFFD) = 0;
     virtual void on_dialog(character& me, const fb::model::object& obj, std::string_view message, const std::vector<std::string>& menus, bool button_prev, uint32_t seq = 0xFFFFFFFD) = 0;
     virtual void on_dialog(character& me, const fb::game::object& obj, std::string_view message, const std::vector<std::string>& menus, bool button_prev, uint32_t seq = 0xFFFFFFFD) = 0;
-    virtual void on_dialog(character& me, std::unique_ptr<portrait>&& portrait, std::string_view message, const std::vector<std::string>& menus, bool button_prev, uint32_t seq = 0xFFFFFFFD) = 0;
+    virtual void on_dialog(character& me, std::unique_ptr<appearance>&& appearance_ptr, std::string_view message, const std::vector<std::string>& menus, bool button_prev, uint32_t seq = 0xFFFFFFFD) = 0;
     virtual void on_dialog(character& me, const fb::model::object& obj, std::string_view message, const std::vector<uint8_t>& item_slots, uint32_t seq = 0xFFFFFFFD) = 0;
     virtual void on_dialog(character& me, const fb::game::object& obj, std::string_view message, const std::vector<uint8_t>& item_slots, uint32_t seq = 0xFFFFFFFD) = 0;
     virtual void on_dialog(character& me, const fb::model::object& obj, std::string_view message, const item_pairs& pairs, uint32_t seq = 0xFFFFFFFD, uint16_t pursuit = 0xFFFF) = 0;

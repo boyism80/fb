@@ -84,16 +84,10 @@ void login::init_quests(const std::vector<fb::protocol::internal::Quest>& respon
 
 void login::init_achievements(const std::vector<fb::protocol::internal::Achievement>& response, fb::game::character& ch)
 {
-    for (auto& achievement : response)
+    for (auto& a : response)
     {
-        if (table::achievement.contains(achievement.model) == false)
-            continue;
-
-        auto ptr = std::make_unique<fb::game::achievement>(table::achievement[achievement.model],
-                                                           achievement.text,
-                                                           achievement.icon,
-                                                           achievement.color);
-        ch.achievements.insert({achievement.model, std::move(ptr)});
+        auto ptr = std::make_unique<fb::game::achievement>(a.model, a.text, a.icon, a.color);
+        ch.achievements.insert({a.model, std::move(ptr)});
     }
 }
 
@@ -223,9 +217,31 @@ async::task<std::shared_ptr<character>> login::init(const game_reqs::login& requ
     params.state        = static_cast<STATE>(resp.character.state);
     params.title        = resp.character.title;
     params.armor_color  = resp.character.armor_color;
-    params.disguise     = resp.character.disguise;
-    params.nation       = static_cast<NATION>(resp.character.nation);
-    params.creature     = static_cast<CREATURE>(resp.character.creature);
+    params.weapon_color = resp.character.weapon_color;
+    params.shield_color = resp.character.shield_color;
+    if (resp.character.mimicry.has_value())
+    {
+        auto const& m  = resp.character.mimicry.value();
+        auto state     = m.state.has_value() ? std::optional<STATE>(static_cast<STATE>(m.state.value())) : std::nullopt;
+        params.mimicry = character_appearance(static_cast<GENDER>(m.gender),
+                                              state,
+                                              m.hair,
+                                              m.hair_color,
+                                              m.weapon,
+                                              m.weapon_color,
+                                              m.armor,
+                                              m.armor_color,
+                                              m.shield,
+                                              m.shield_color,
+                                              m.disguise);
+    }
+    else
+    {
+        params.mimicry = std::nullopt;
+    }
+    params.nation     = static_cast<NATION>(resp.character.nation);
+    params.creature   = static_cast<CREATURE>(resp.character.creature);
+    params.super_hide = resp.character.super_hide;
 
     auto ch   = this->server.make<character>(params);
     auto weak = ch->weak_from_this_as<character>();
@@ -297,6 +313,12 @@ async::task<std::shared_ptr<character>> login::init(const game_reqs::login& requ
     this->init_system_mail(resp.received_system_mails, *ch);
     this->init_storage(resp, *ch);
     this->init_option(resp.option, *ch);
+    ch->marriage(fb::game::marriage{resp.marriage.spouse_id,
+                                    resp.marriage.spouse_name,
+                                    resp.marriage.remarriage_after.empty()
+                                        ? fb::model::datetime()
+                                        : fb::model::datetime(resp.marriage.remarriage_after),
+                                    resp.marriage.divorce_count});
 
     // Restore pending marketplace listings if any
     if (resp.character.pending_listings.has_value() && !resp.character.pending_listings.value().empty())
@@ -358,7 +380,7 @@ async::task<std::shared_ptr<character>> login::init(const game_reqs::login& requ
         auto lua = fb::lua::new_context();
         if (lua != nullptr)
         {
-#if defined DEBUG | defined _DEBUG
+#if defined DEBUG || defined _DEBUG
             lua->load("scripts/interaction.lua");
 #endif
             lua->func("on_login");

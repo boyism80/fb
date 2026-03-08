@@ -9,7 +9,7 @@ async_executor::async_executor(boost::asio::io_context& context, std::string_vie
     static auto flag = std::once_flag{};
     std::call_once(flag, [name] {
         auto name_str = std::string(name);
-        auto mode = console::get_mode();
+        auto mode     = console::get_mode();
         console::set_mode(console::mode::plain);
         console::puts("");
         console::puts(console::align_type::center, "The Kingdom of the wind [{}]", name_str);

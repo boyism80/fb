@@ -46,13 +46,13 @@ public:
     virtual void              kill(std::shared_ptr<fb::game::object> from = nullptr, DESTROY_TYPE destroy_type = DESTROY_TYPE::DEFAULT);
     virtual bool              alive() const;
     bool                      active(fb::game::spell& spell);
-    bool                      active(fb::game::spell& spell, uint32_t fd);
+    bool                      active(fb::game::spell& spell, uint32_t oid);
     bool                      active(fb::game::spell& spell, std::string_view message);
     bool                      active(fb::game::spell& spell, fb::game::object& to);
     virtual void              action(ACTION action, DURATION duration, uint8_t sound = 0x00);
     virtual uint32_t          normal_attack_damage(MOB_SIZE size) const = 0;
     virtual bool              calculate_critical(life& you) const;
-    virtual uint32_t          calculate_damage(uint32_t damage, const life& you, bool critical) const;
+    virtual uint32_t          calculate_damage(uint32_t damage, const life& you, bool critical, float rate = 1.0f, bool physical = true) const;
     virtual bool              calculate_miss(life& you) const;
     uint32_t                  damage_rate() const;
     void                      damage_rate(uint32_t value);

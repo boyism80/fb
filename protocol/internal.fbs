@@ -22,6 +22,20 @@ table Position {
     y: ushort;
 }
 
+table Mimicry {
+    gender: ubyte;
+    state: ubyte?;
+    hair: ushort;
+    hair_color: ubyte?;
+    weapon: ushort?;
+    weapon_color: ubyte?;
+    armor: ubyte?;
+    armor_color: ubyte?;
+    shield: ubyte?;
+    shield_color: ubyte?;
+    disguise: ushort?;
+}
+
 table Character {
     id: uint;
     name: string;
@@ -43,7 +57,7 @@ table Character {
     exp: uint;
     money: uint;
     deposited_money: uint;
-    disguise: ushort?;
+    mimicry: Mimicry?;
     hp: uint;
     base_hp: uint;
     additional_hp: uint;
@@ -63,6 +77,14 @@ table Character {
     pending_listings: string?;
     created_date: string;
     updated_date: string;
+    super_hide: bool = false;
+}
+
+table Marriage {
+    spouse_id: uint?;
+    spouse_name: string = "";
+    remarriage_after: string = "";
+    divorce_count: uint = 0;
 }
 
 table Item {
@@ -149,9 +171,9 @@ table Group {
 table Achievement {
     user: uint;
     model: uint;
-    text: string?;
-    icon: ubyte?;
-    color: ushort?;
+    text: string;
+    icon: ubyte;
+    color: ushort;
 }
 
 table Clan {

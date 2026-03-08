@@ -298,9 +298,19 @@ int context::rawgeti(int offset_t, int offset_e)
     return lua_rawgeti(*this, offset_t, offset_e);
 }
 
+int context::rawget(int table_index)
+{
+    return lua_rawget(*this, table_index);
+}
+
 void context::rawseti(int offset_t, int offset_e)
 {
     lua_rawseti(*this, offset_t, offset_e);
+}
+
+void context::settable(int table_index)
+{
+    lua_settable(*this, table_index);
 }
 
 int context::rawlen(int offset_t)
@@ -597,6 +607,15 @@ bool root::dump(std::string_view path)
     };
 
     ::lua_dump(*this, callback, params, 1);
+
+    if (lua_pcall(*this, 0, LUA_MULTRET, 0) != LUA_OK)
+    {
+        auto error = lua_tostring(*this, -1);
+        context::pop(1);
+        throw std::runtime_error(error ? error : "lua_pcall failed");
+    }
+    lua_settop(*this, 0);
+
     return true;
 }
 
@@ -618,9 +637,6 @@ context* root::pop(context* parent)
 
         if (this->idle.contains(key) || this->busy.contains(key))
             return nullptr;
-
-        for (auto& [name, _] : this->_bytecodes)
-            ptr->load(name);
 
         this->busy.insert({key, std::move(ptr)});
         return this->busy[key].get();

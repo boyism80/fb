@@ -225,8 +225,10 @@ namespace Internal.Controllers
                 _dbContext.Achievement.Set(world, new Achievement
                 {
                     Uid = request.Uid,
-                    Model = 0,
-                    Text = $"{baramTime} 생"
+                    Id = 0,
+                    Text = $"{baramTime} 생",
+                    Icon = 0,
+                    Color = 47
                 });
 
                 await _dbContext.SaveChangesAsync();

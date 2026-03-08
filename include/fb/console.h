@@ -74,16 +74,16 @@ private:
         console_policy() = default;
 
     public:
-        virtual ~console_policy()                                                 = default;
+        virtual ~console_policy()                                               = default;
         virtual void put(align_type align, color color, std::string_view text)  = 0;
         virtual void puts(align_type align, color color, std::string_view text) = 0;
         virtual void comment(color color, std::string_view text)                = 0;
-        virtual void newline()                                                    = 0;
-        virtual void clear()                                                      = 0;
-        virtual void save_point()                                                 = 0;
-        virtual void restore_point()                                              = 0;
-        virtual void up(uint8_t line)                                             = 0;
-        virtual void down(uint8_t line)                                           = 0;
+        virtual void newline()                                                  = 0;
+        virtual void clear()                                                    = 0;
+        virtual void save_point()                                               = 0;
+        virtual void restore_point()                                            = 0;
+        virtual void up(uint8_t line)                                           = 0;
+        virtual void down(uint8_t line)                                         = 0;
         virtual void progress(std::string_view text, float progress)            = 0;
 
     protected:

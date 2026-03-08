@@ -14,10 +14,10 @@ static_assert(FLATBUFFERS_VERSION_MAJOR == 25 &&
              "Non-compatible flatbuffers version included");
 
 #include "fb.protocol.internal.buff_generated.h"
+#include "fb.protocol.internal.mimicry_generated.h"
 #include "fb.protocol.internal.position_generated.h"
 #include "nullable_ubyte_generated.h"
 #include "nullable_uint_generated.h"
-#include "nullable_ushort_generated.h"
 
 namespace fb {
 namespace protocol {
@@ -50,7 +50,7 @@ struct Character FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
     VT_EXP = 38,
     VT_MONEY = 40,
     VT_DEPOSITED_MONEY = 42,
-    VT_DISGUISE = 44,
+    VT_MIMICRY = 44,
     VT_HP = 46,
     VT_BASE_HP = 48,
     VT_ADDITIONAL_HP = 50,
@@ -69,7 +69,8 @@ struct Character FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
     VT_TITLE = 76,
     VT_PENDING_LISTINGS = 78,
     VT_CREATED_DATE = 80,
-    VT_UPDATED_DATE = 82
+    VT_UPDATED_DATE = 82,
+    VT_SUPER_HIDE = 84
   };
   uint32_t id() const {
     return GetField<uint32_t>(VT_ID, 0);
@@ -131,8 +132,8 @@ struct Character FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
   uint32_t deposited_money() const {
     return GetField<uint32_t>(VT_DEPOSITED_MONEY, 0);
   }
-  const nullable::nullable_ushort *disguise() const {
-    return GetPointer<const nullable::nullable_ushort *>(VT_DISGUISE);
+  const fb::protocol::internal::raw::Mimicry *mimicry() const {
+    return GetPointer<const fb::protocol::internal::raw::Mimicry *>(VT_MIMICRY);
   }
   uint32_t hp() const {
     return GetField<uint32_t>(VT_HP, 0);
@@ -191,6 +192,9 @@ struct Character FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
   const ::flatbuffers::String *updated_date() const {
     return GetPointer<const ::flatbuffers::String *>(VT_UPDATED_DATE);
   }
+  bool super_hide() const {
+    return GetField<uint8_t>(VT_SUPER_HIDE, 0) != 0;
+  }
   bool Verify(::flatbuffers::Verifier &verifier) const {
     return VerifyTableStart(verifier) &&
            VerifyField<uint32_t>(verifier, VT_ID, 4) &&
@@ -217,8 +221,8 @@ struct Character FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
            VerifyField<uint32_t>(verifier, VT_EXP, 4) &&
            VerifyField<uint32_t>(verifier, VT_MONEY, 4) &&
            VerifyField<uint32_t>(verifier, VT_DEPOSITED_MONEY, 4) &&
-           VerifyOffset(verifier, VT_DISGUISE) &&
-           verifier.VerifyTable(disguise()) &&
+           VerifyOffset(verifier, VT_MIMICRY) &&
+           verifier.VerifyTable(mimicry()) &&
            VerifyField<uint32_t>(verifier, VT_HP, 4) &&
            VerifyField<uint32_t>(verifier, VT_BASE_HP, 4) &&
            VerifyField<uint32_t>(verifier, VT_ADDITIONAL_HP, 4) &&
@@ -252,6 +256,7 @@ struct Character FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
            verifier.VerifyString(created_date()) &&
            VerifyOffset(verifier, VT_UPDATED_DATE) &&
            verifier.VerifyString(updated_date()) &&
+           VerifyField<uint8_t>(verifier, VT_SUPER_HIDE, 1) &&
            verifier.EndTable();
   }
 };
@@ -320,8 +325,8 @@ struct CharacterBuilder {
   void add_deposited_money(uint32_t deposited_money) {
     fbb_.AddElement<uint32_t>(Character::VT_DEPOSITED_MONEY, deposited_money, 0);
   }
-  void add_disguise(::flatbuffers::Offset<nullable::nullable_ushort> disguise) {
-    fbb_.AddOffset(Character::VT_DISGUISE, disguise);
+  void add_mimicry(::flatbuffers::Offset<fb::protocol::internal::raw::Mimicry> mimicry) {
+    fbb_.AddOffset(Character::VT_MIMICRY, mimicry);
   }
   void add_hp(uint32_t hp) {
     fbb_.AddElement<uint32_t>(Character::VT_HP, hp, 0);
@@ -380,6 +385,9 @@ struct CharacterBuilder {
   void add_updated_date(::flatbuffers::Offset<::flatbuffers::String> updated_date) {
     fbb_.AddOffset(Character::VT_UPDATED_DATE, updated_date);
   }
+  void add_super_hide(bool super_hide) {
+    fbb_.AddElement<uint8_t>(Character::VT_SUPER_HIDE, static_cast<uint8_t>(super_hide), 0);
+  }
   explicit CharacterBuilder(::flatbuffers::FlatBufferBuilder &_fbb)
         : fbb_(_fbb) {
     start_ = fbb_.StartTable();
@@ -413,7 +421,7 @@ inline ::flatbuffers::Offset<Character> CreateCharacter(
     uint32_t exp = 0,
     uint32_t money = 0,
     uint32_t deposited_money = 0,
-    ::flatbuffers::Offset<nullable::nullable_ushort> disguise = 0,
+    ::flatbuffers::Offset<fb::protocol::internal::raw::Mimicry> mimicry = 0,
     uint32_t hp = 0,
     uint32_t base_hp = 0,
     uint32_t additional_hp = 0,
@@ -432,7 +440,8 @@ inline ::flatbuffers::Offset<Character> CreateCharacter(
     ::flatbuffers::Offset<::flatbuffers::String> title = 0,
     ::flatbuffers::Offset<::flatbuffers::String> pending_listings = 0,
     ::flatbuffers::Offset<::flatbuffers::String> created_date = 0,
-    ::flatbuffers::Offset<::flatbuffers::String> updated_date = 0) {
+    ::flatbuffers::Offset<::flatbuffers::String> updated_date = 0,
+    bool super_hide = false) {
   CharacterBuilder builder_(_fbb);
   builder_.add_updated_date(updated_date);
   builder_.add_created_date(created_date);
@@ -453,7 +462,7 @@ inline ::flatbuffers::Offset<Character> CreateCharacter(
   builder_.add_additional_hp(additional_hp);
   builder_.add_base_hp(base_hp);
   builder_.add_hp(hp);
-  builder_.add_disguise(disguise);
+  builder_.add_mimicry(mimicry);
   builder_.add_deposited_money(deposited_money);
   builder_.add_money(money);
   builder_.add_exp(exp);
@@ -465,6 +474,7 @@ inline ::flatbuffers::Offset<Character> CreateCharacter(
   builder_.add_id(id);
   builder_.add_color(color);
   builder_.add_look(look);
+  builder_.add_super_hide(super_hide);
   builder_.add_level(level);
   builder_.add_promotion(promotion);
   builder_.add_class_type(class_type);
@@ -499,7 +509,7 @@ inline ::flatbuffers::Offset<Character> CreateCharacterDirect(
     uint32_t exp = 0,
     uint32_t money = 0,
     uint32_t deposited_money = 0,
-    ::flatbuffers::Offset<nullable::nullable_ushort> disguise = 0,
+    ::flatbuffers::Offset<fb::protocol::internal::raw::Mimicry> mimicry = 0,
     uint32_t hp = 0,
     uint32_t base_hp = 0,
     uint32_t additional_hp = 0,
@@ -518,7 +528,8 @@ inline ::flatbuffers::Offset<Character> CreateCharacterDirect(
     const char *title = nullptr,
     const char *pending_listings = nullptr,
     const char *created_date = nullptr,
-    const char *updated_date = nullptr) {
+    const char *updated_date = nullptr,
+    bool super_hide = false) {
   auto name__ = name ? _fbb.CreateString(name) : 0;
   auto pw__ = pw ? _fbb.CreateString(pw) : 0;
   auto buffs__ = buffs ? _fbb.CreateVector<::flatbuffers::Offset<fb::protocol::internal::raw::Buff>>(*buffs) : 0;
@@ -548,7 +559,7 @@ inline ::flatbuffers::Offset<Character> CreateCharacterDirect(
       exp,
       money,
       deposited_money,
-      disguise,
+      mimicry,
       hp,
       base_hp,
       additional_hp,
@@ -567,7 +578,8 @@ inline ::flatbuffers::Offset<Character> CreateCharacterDirect(
       title__,
       pending_listings__,
       created_date__,
-      updated_date__);
+      updated_date__,
+      super_hide);
 }
 
 inline const fb::protocol::internal::raw::Character *GetCharacter(const void *buf) {

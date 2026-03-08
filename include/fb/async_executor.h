@@ -85,7 +85,7 @@ protected:
     }
 
     void bind_thread_timer(std::function<async::task<void>(const fb::model::datetime&, std::thread::id)>&& fn,
-                           const std::chrono::steady_clock::duration&                                    duration)
+                           const std::chrono::steady_clock::duration&                                      duration)
     {
         this->threads.settimer(std::move(fn), duration);
     }

@@ -18,6 +18,7 @@ IMPLEMENT_LUA_EXTENSION(map, "fb.game.map")
 {"belows",              builtin::map::builtin_belows},
 {"tile",                builtin::map::builtin_tile},
 {"at",                  builtin::map::builtin_at},
+{"block",               builtin::map::builtin_block},
 {"bulk_update",         builtin::map::builtin_bulk_update},
 END_LUA_EXTENSION; // clang-format on
 
@@ -88,13 +89,13 @@ int builtin::map::builtin_objects(lua_State* L)
     if (map == nullptr)
         return 0;
 
-    auto type = lua->toenum(2, OBJECT_TYPE::UNKNOWN);
+    auto type = lua->toenum(2, OBJECT_TYPE::OBJECT);
 
     lua->new_table();
     int i = 0;
     for (auto& [_, obj] : map->objects)
     {
-        if (type != OBJECT_TYPE::UNKNOWN && obj->is(type) == false)
+        if (obj->is(type) == false)
             continue;
 
         lua->pushobject(obj);
@@ -127,7 +128,7 @@ int builtin::map::builtin_nears(lua_State* L)
     y = (uint16_t)lua->tointeger(-1);
     lua->remove(-1);
 
-    auto type  = lua->toenum(3, OBJECT_TYPE::UNKNOWN);
+    auto type  = lua->toenum(3, OBJECT_TYPE::OBJECT);
     auto nears = map->nears(fb::model::point16_t{x, y}, type);
 
     lua->new_table();
@@ -301,7 +302,7 @@ int builtin::map::builtin_belows(lua_State* L)
 
     auto x    = lua->tointeger(2);
     auto y    = lua->tointeger(3);
-    auto type = lua->toenum(4, OBJECT_TYPE::UNKNOWN);
+    auto type = lua->toenum(4, OBJECT_TYPE::OBJECT);
 
     lua->new_table();
     auto i = 0;
@@ -322,8 +323,9 @@ int builtin::map::builtin_tile(lua_State* L)
     if (lua == nullptr)
         return 0;
 
-    auto argc = lua->argc();
-    auto map  = lua->touserdata<fb::game::map>(1);
+    auto server = lua->env<fb::game::server>("server");
+    auto argc   = lua->argc();
+    auto map    = lua->touserdata<fb::game::map>(1);
     if (map == nullptr)
         return 0;
 
@@ -338,12 +340,8 @@ int builtin::map::builtin_tile(lua_State* L)
         auto value   = lua->tointeger(4);
         tile->object = value;
 
-        auto position = fb::model::point16_t{x, y};
-        for (auto& obj : map->nears(position, OBJECT_TYPE::CHARACTER))
-        {
-            auto ch = std::static_pointer_cast<character>(obj);
-            ch->update_map(*map, position, fb::model::size8_t{1, 1});
-        }
+        const auto area = fb::model::area<uint16_t>(x, y, x + 1, y + 1);
+        server->update_map_cache(map->model.id, area);
         return 0;
     }
     else
@@ -369,7 +367,7 @@ int builtin::map::builtin_at(lua_State* L)
 
     auto x        = (uint16_t)lua->tointeger(2);
     auto y        = (uint16_t)lua->tointeger(3);
-    auto type     = lua->toenum(4, OBJECT_TYPE::UNKNOWN);
+    auto type     = lua->toenum(4, OBJECT_TYPE::OBJECT);
     auto position = fb::model::point16_t{x, y};
 
     auto weak = map->weak_from_this_as<fb::game::map>();
@@ -393,6 +391,39 @@ int builtin::map::builtin_at(lua_State* L)
             return 1;
         });
     });
+}
+
+int builtin::map::builtin_block(lua_State* L)
+{
+    auto lua = fb::lua::get(L);
+    if (lua == nullptr)
+        return 0;
+
+    auto server = lua->env<fb::game::server>("server");
+    auto argc   = lua->argc();
+    auto map    = lua->touserdata<fb::game::map>(1);
+    if (map == nullptr)
+        return 0;
+
+    auto x = (uint16_t)lua->tointeger(2);
+    auto y = (uint16_t)lua->tointeger(3);
+
+    if (argc >= 4)
+    {
+        auto option = lua->toboolean(4);
+        if (map->block(x, y, option))
+        {
+            lua->pushboolean(true);
+        }
+        else
+        {
+            lua->pushboolean(false);
+        }
+        return 1;
+    }
+
+    lua->pushboolean(map->blocked(x, y));
+    return 1;
 }
 
 int builtin::map::builtin_bulk_update(lua_State* L)

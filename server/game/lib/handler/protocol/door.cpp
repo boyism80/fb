@@ -19,7 +19,7 @@ async::task<bool> door::handle(fb::socket<character>& session, game_reqs::door& 
     if (lua == nullptr)
         co_return true;
 
-#if defined DEBUG | defined _DEBUG
+#if defined DEBUG || defined _DEBUG
     lua->load("scripts/interaction.lua");
 #endif
 

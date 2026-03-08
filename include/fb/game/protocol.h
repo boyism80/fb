@@ -14,7 +14,7 @@
 #include <fb/game/protocol/attack.h>
 #include <fb/game/protocol/loot.h>
 #include <fb/game/protocol/emotion.h>
-#include <fb/game/protocol/update_screen.h>
+#include <fb/game/protocol/screen_refresh.h>
 #include <fb/game/protocol/front_info.h>
 #include <fb/game/protocol/friends.h>
 #include <fb/game/protocol/self_info.h>
@@ -85,6 +85,7 @@
 #include <fb/game/protocol/object/hide.h>
 #include <fb/game/protocol/object/chat.h>
 #include <fb/game/protocol/object/move.h>
+#include <fb/game/protocol/object/move_blocked.h>
 #include <fb/game/protocol/object/sound.h>
 #include <fb/game/protocol/object/effect.h>
 #include <fb/game/protocol/object/miss.h>
@@ -94,5 +95,19 @@
 #include <fb/game/protocol/trade/trade_money.h>
 #include <fb/game/protocol/trade/trade_close.h>
 #include <fb/game/protocol/trade/trade_lock.h>
+#include <fb/game/protocol/unknown_12.h>
+#include <fb/game/protocol/update_cc.h>
+#include <fb/game/protocol/unknown_26.h>
+#include <fb/game/protocol/ui_screen.h>
+#include <fb/game/protocol/item_throw_confirm.h>
+#include <fb/game/protocol/freeze.h>
+#include <fb/game/protocol/friends_sync.h>
+#include <fb/game/protocol/unknown_4B.h>
+#include <fb/game/protocol/unknown_4D.h>
+#include <fb/game/protocol/unknown_35.h>
+#include <fb/game/protocol/holyday_screen.h>
+#include <fb/game/protocol/ping.h>
+#include <fb/game/protocol/pong.h>
+#include <fb/game/protocol/screen_refresh_complete.h>
 
 #endif

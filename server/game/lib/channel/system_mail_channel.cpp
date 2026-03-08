@@ -16,8 +16,9 @@ async::task<void> system_mail_channel::fetch()
     try
     {
         auto   world = fb::config<uint32_t>("world");
-        auto&& resp    = co_await this->_owner.http.get<internal_resp::GetSystemMails>(
-            "internal", std::format("/mail/system/{}", world));
+        auto&& resp =
+            co_await this->_owner.http.get<internal_resp::GetSystemMails>("internal",
+                                                                          std::format("/mail/system/{}", world));
         if (resp.error != 0)
             co_return;
 
@@ -95,7 +96,3 @@ async::task<void> system_mail_channel::read_async(std::function<async::task<void
 {
     co_await this->_data.async_read(fn);
 }
-
-
-
-

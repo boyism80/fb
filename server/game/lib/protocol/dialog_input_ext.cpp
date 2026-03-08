@@ -4,14 +4,14 @@ namespace fb::protocol::game::response {
 
 #ifndef BOT
 dialog_input_ext::dialog_input_ext(const fb::model::object&      obj,
-                                   std::string_view                message,
-                                   std::string_view                top,
-                                   std::string_view                bottom,
-                                   int                            maxlen,
-                                   bool                           button_prev,
-                                   uint32_t                       oid,
-                                   fb::game::dialog::interaction  interaction) :
-    portrait(fb::game::portrait_factory::create(obj)),
+                                   std::string_view              message,
+                                   std::string_view              top,
+                                   std::string_view              bottom,
+                                   int                           maxlen,
+                                   bool                          button_prev,
+                                   uint32_t                      oid,
+                                   fb::game::dialog::interaction interaction) :
+    appearance(fb::game::appearance_factory::create(obj)),
     message(std::string(message)),
     top(std::string(top)),
     bottom(std::string(bottom)),
@@ -22,14 +22,14 @@ dialog_input_ext::dialog_input_ext(const fb::model::object&      obj,
 { }
 
 dialog_input_ext::dialog_input_ext(const fb::game::object&       object,
-                                   std::string_view                message,
-                                   std::string_view                top,
-                                   std::string_view                bottom,
-                                   int                            maxlen,
-                                   bool                           button_prev,
-                                   uint32_t                       oid,
-                                   fb::game::dialog::interaction  interaction) :
-    portrait(fb::game::portrait_factory::create(object)),
+                                   std::string_view              message,
+                                   std::string_view              top,
+                                   std::string_view              bottom,
+                                   int                           maxlen,
+                                   bool                          button_prev,
+                                   uint32_t                      oid,
+                                   fb::game::dialog::interaction interaction) :
+    appearance(fb::game::appearance_factory::create(object)),
     message(std::string(message)),
     top(std::string(top)),
     bottom(std::string(bottom)),
@@ -48,9 +48,9 @@ async::task<void> dialog_input_ext::serialize(fb::stream_writer<big_endian>& wri
     writer.write<uint8_t>(0x04);
     writer.write<uint8_t>(static_cast<uint8_t>(this->interaction));
     writer.write<uint32_t>(this->oid);
-    this->portrait->serialize(writer);
+    this->appearance->serialize(writer);
     writer.write<uint32_t>(1);
-    writer.write<uint8_t>(this->button_prev);
+    writer.write<bool>(this->button_prev);
     writer.write<uint8_t>(0x00);
     writer.write<std::string, uint16_t>(this->message);
     writer.write<std::string, uint8_t>(this->top);
@@ -73,7 +73,7 @@ async::task<void> dialog_input_ext::deserialize(fb::stream_reader<big_endian>& r
     reader.read<uint16_t>(); // look (duplicate)
     reader.read<uint8_t>();  // color (duplicate)
     reader.read<uint32_t>(); // 0x00000001
-    this->button_prev = reader.read<uint8_t>();
+    this->button_prev = reader.read<bool>();
     reader.read<uint8_t>(); // 0x00
     this->message = reader.read<std::string, uint16_t>();
     this->top     = reader.read<std::string, uint8_t>();

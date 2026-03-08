@@ -48,9 +48,7 @@ public:
     template <class... Args> static fb::logger& warn(fb::console::color color, std::string_view fmt, Args&&... args);
     template <class... Args> static fb::logger& fatal(std::string_view fmt, Args&&... args);
     template <class... Args> static fb::logger& fatal(fb::console::color color, std::string_view fmt, Args&&... args);
-    template <class... Args> static fb::logger& comment(fb::console::color color,
-                                                        std::string_view fmt,
-                                                        Args&&... args);
+    template <class... Args> static fb::logger& comment(fb::console::color color, std::string_view fmt, Args&&... args);
     template <class... Args> static fb::logger& comment(std::string_view fmt, Args&&... args);
 };
 

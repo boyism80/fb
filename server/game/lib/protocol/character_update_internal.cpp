@@ -48,15 +48,15 @@ async::task<void> update_internal::serialize(fb::stream_writer<big_endian>& writ
 
     if (ENUM_IN(this->level, UPDATE_STATE_LEVEL::CROWD_CONTROL))
     {
-        writer.write<uint8_t>(this->ch.cc.contains(CROWD_CONTROL::DIRECTION));
-        writer.write<uint8_t>(this->ch.cc.contains(CROWD_CONTROL::SIGHT));
-        writer.write<uint8_t>(this->ch.cc.contains(CROWD_CONTROL::HEAR));
-        writer.write<uint8_t>(this->ch.cc.contains(CROWD_CONTROL::CHAT));
-        writer.write<uint8_t>(this->ch.cc.contains(CROWD_CONTROL::MAP));
+        writer.write<bool>(this->ch.cc.contains(CROWD_CONTROL::DIRECTION));
+        writer.write<bool>(this->ch.cc.contains(CROWD_CONTROL::SIGHT));
+        writer.write<bool>(this->ch.cc.contains(CROWD_CONTROL::HEAR));
+        writer.write<bool>(this->ch.cc.contains(CROWD_CONTROL::CHAT));
+        writer.write<bool>(this->ch.cc.contains(CROWD_CONTROL::MAP));
     }
 
     writer.write<uint8_t>(this->ch.mail_box.unread_count());
-    writer.write<uint8_t>(this->ch.option(OPTION::FAST_MOVE));
+    writer.write<bool>(this->ch.option(OPTION::FAST_MOVE));
     writer.write<uint8_t>(0x00);
 }
 #else
@@ -96,20 +96,20 @@ async::task<void> update_internal::deserialize(fb::stream_reader<big_endian>& re
 
     if (ENUM_IN(this->level, UPDATE_STATE_LEVEL::CROWD_CONTROL))
     {
-        if (reader.read<uint8_t>())
+        if (reader.read<bool>())
             this->ch_crowd_control |= (uint32_t)CROWD_CONTROL::DIRECTION;
-        if (reader.read<uint8_t>())
+        if (reader.read<bool>())
             this->ch_crowd_control |= (uint32_t)CROWD_CONTROL::SIGHT;
-        if (reader.read<uint8_t>())
+        if (reader.read<bool>())
             this->ch_crowd_control |= (uint32_t)CROWD_CONTROL::HEAR;
-        if (reader.read<uint8_t>())
+        if (reader.read<bool>())
             this->ch_crowd_control |= (uint32_t)CROWD_CONTROL::CHAT;
-        if (reader.read<uint8_t>())
+        if (reader.read<bool>())
             this->ch_crowd_control |= (uint32_t)CROWD_CONTROL::MAP;
     }
 
     this->ch_mail      = reader.read<uint8_t>();
-    this->ch_fast_move = reader.read<uint8_t>();
+    this->ch_fast_move = reader.read<bool>();
     std::ignore        = reader.read<uint8_t>();
 }
 #endif

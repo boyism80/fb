@@ -1,6 +1,7 @@
 #include <fb/game/server.h>
 #include <fb/game/handler.h>
 #include <fb/game/builtin/server.h>
+#include <fb/lua.h>
 #include <fb/log_collector.h>
 #include <fb/encoding.h>
 #include <json/json.h>
@@ -30,7 +31,7 @@ server::server(boost::asio::io_context& io_context, uint16_t port) :
     groups([](const std::shared_ptr<group>& group) -> uint32_t {
         return group->id();
     }),
-    map_update_cache(
+    _map_update_cache(
         [](const map::cache_bytes& cache_bytes) -> uint64_t {
             return cache_bytes.hash;
         },
@@ -66,10 +67,8 @@ server::server(boost::asio::io_context& io_context, uint16_t port) :
     lua::build<equipment, item>();
     lua::build<weapon, equipment>();
     lua::build<character, life>();
-    lua::build<fb::model::quest, lua::luable>();
     lua::build<fb::model::spell, lua::luable>();
     lua::build<fb::model::map, lua::luable>();
-    lua::build<fb::model::achievement, lua::luable>();
     lua::build<fb::model::object, lua::luable>();
     lua::build<fb::model::life, fb::model::object>();
     lua::build<fb::model::mob, fb::model::life>();
@@ -81,6 +80,8 @@ server::server(boost::asio::io_context& io_context, uint16_t port) :
     lua::build("log", builtin::server::builtin_log);
     lua::build("seed", builtin::server::builtin_seed);
     lua::build("sleep", builtin::server::builtin_sleep);
+    lua::build("now", builtin::server::builtin_now);
+    lua::build("datetime", builtin::server::builtin_datetime);
     lua::build("baram_time", builtin::server::builtin_baram_time);
     lua::build("name2mob", builtin::server::builtin_name2mob);
     lua::build("name2spell", builtin::server::builtin_name2spell);
@@ -118,6 +119,7 @@ server::server(boost::asio::io_context& io_context, uint16_t port) :
     lua::build("regex", builtin::server::builtin_regex);
     lua::build("exp_multiplier", builtin::server::builtin_exp_multiplier);
     lua::build("drop_rate_multiplier", builtin::server::builtin_drop_rate_multiplier);
+    lua::build("gv", builtin::server::builtin_gv);
 
     for (auto& [_, root] : ist)
     {
@@ -183,11 +185,12 @@ async::task<void> server::on_start()
     this->handler.protocol.bind<fb::game::handler::protocol::exit>();            // Disconnect handler
     this->handler.protocol.bind<fb::game::handler::protocol::update_move>();     // Update move and map data handler
     this->handler.protocol.bind<fb::game::handler::protocol::move>();            // Move handler
+    this->handler.protocol.bind<fb::game::handler::protocol::move_blocked>();    // Move blocked
     this->handler.protocol.bind<fb::game::handler::protocol::attack>();          // Attack handler
     this->handler.protocol.bind<fb::game::handler::protocol::loot>();            // Loot handler
     this->handler.protocol.bind<fb::game::handler::protocol::emotion>();         // Emotion handler
     this->handler.protocol.bind<fb::game::handler::protocol::map_update>();      // Map data update handler
-    this->handler.protocol.bind<fb::game::handler::protocol::update_screen>();   // Refresh handler
+    this->handler.protocol.bind<fb::game::handler::protocol::screen_refresh>();  // Screen refresh handler
     this->handler.protocol.bind<fb::game::handler::protocol::item_active>();     // Item use handler
     this->handler.protocol.bind<fb::game::handler::protocol::item_inactive>();   // Item unequip handler
     this->handler.protocol.bind<fb::game::handler::protocol::item_drop>();       // Item drop handler
@@ -216,24 +219,26 @@ async::task<void> server::on_start()
     this->handler.protocol.bind<fb::game::handler::protocol::give_money>();
     this->handler.protocol.bind<fb::game::handler::protocol::post>();
     this->handler.protocol.bind<fb::game::handler::protocol::friends>();
+    this->handler.protocol.bind<fb::game::handler::protocol::pong>();
 
     this->bind_timer<fb::game::handler::timer::heart_beat>(1s);
     this->bind_timer<fb::game::handler::timer::update_time>(1s);
     this->bind_timer<fb::game::handler::timer::schedule_timer>(1s);
 
     this->initialize_schedules();
-    this->bind_timer<fb::game::handler::timer::announce>(
-        std::chrono::seconds(fb::model::const_value::time::ANNOUNCE.total_milliseconds() / 1000));
-    // log_flush timer removed - logs are now published immediately to RabbitMQ
-
+    auto announce_interval = std::chrono::seconds(fb::model::const_value::time::ANNOUNCE.total_milliseconds() / 1000);
+    this->bind_timer<fb::game::handler::timer::announce>(announce_interval);
     this->bind_thread_timer<fb::game::handler::timer::mob_action_timer>(100ms);
     this->bind_thread_timer<fb::game::handler::timer::mob_respawn_timer>(1s);
     this->bind_thread_timer<fb::game::handler::timer::buff_timer>(1s);
     this->bind_thread_timer<fb::game::handler::timer::gear_timer>(1s);
     this->bind_thread_timer<fb::game::handler::timer::soliloquy_timer>(1s);
-    this->bind_thread_timer<fb::game::handler::timer::afk_timer>(1s);
     this->bind_thread_timer<fb::game::handler::timer::save_timer>(std::chrono::seconds(fb::config<uint32_t>("save")));
     this->bind_thread_timer<fb::game::handler::timer::marketplace_restore_timer>(30s);
+#if !defined(DEBUG) && !defined(_DEBUG)
+    this->bind_thread_timer<fb::game::handler::timer::ping_timer>(1s);
+    this->bind_thread_timer<fb::game::handler::timer::afk_timer>(1s);
+#endif
 
     auto world     = config<uint32_t>("world");
     auto host_name = std::format("fb.{}.game.{}", world, config<uint32_t>("id"));
@@ -264,13 +269,34 @@ async::task<void> server::on_start()
 
     // Fetch storage pending on server startup
     co_await this->storage_pending.fetch();
+
+    // Run server init script once (gv and other globals) on the least loaded thread
+    auto* init_thread = this->threads.least_loaded();
+    if (init_thread != nullptr)
+    {
+        co_await init_thread->dispatch([this](auto&) -> async::task<void> {
+            auto lua = fb::lua::new_context();
+            if (lua != nullptr)
+            {
+                try
+                {
+                    lua->load("scripts/init.lua");
+                }
+                catch (std::exception& e)
+                {
+                    fb::logger::warn("Server init script failed: {}", e.what());
+                }
+            }
+            co_return;
+        });
+    }
 }
 
 bool server::decrypt_policy(uint8_t cmd) const
 {
     switch (cmd)
     {
-    case 0x10:
+    case game_reqs::login::header:
         return false;
 
     default:
@@ -512,10 +538,10 @@ async::task<void> server::save(character& ch)
     }
 
     auto achievements = std::vector<internal::Achievement>();
-    for (auto& [model, achievement] : ch.achievements)
+    for (auto& [id, achievement] : ch.achievements)
     {
         achievements.push_back(
-            internal::Achievement{ch.id, model, achievement->text, achievement->icon, achievement->color});
+            internal::Achievement{ch.id, id, achievement->text, achievement->icon, achievement->color});
     }
 
     auto quests = std::vector<internal::Quest>();
@@ -598,6 +624,7 @@ async::task<void> server::save(character& ch)
                                            "/in-game/save",
                                            internal_reqs::Save{world,
                                                                ch.to_protocol(),
+                                                               ch.marriage().to_protocol(),
                                                                items,
                                                                spells,
                                                                achievements,
@@ -801,4 +828,125 @@ void server::initialize_schedules()
 std::unordered_map<uint32_t, fb::model::datetime>& server::scheduled_tasks()
 {
     return this->_scheduled_tasks;
+}
+
+void server::erase_map_cache(uint32_t map_id, const fb::model::point16_t& point)
+{
+    std::unique_lock lock(this->_map_update_cache_mutex);
+
+    std::vector<uint64_t> to_erase;
+    for (auto hash : this->_map_update_cache.keys())
+    {
+        const auto entry_map_id = static_cast<uint32_t>(hash >> 48);
+        if (entry_map_id != map_id)
+            continue;
+
+        const uint16_t pos_x  = (hash >> 32) & 0xFFFF;
+        const uint16_t pos_y  = (hash >> 16) & 0xFFFF;
+        const uint8_t  width  = (hash >> 8) & 0xFF;
+        const uint8_t  height = hash & 0xFF;
+        auto           area   = fb::model::area<uint16_t>(pos_x, pos_y, pos_x + width, pos_y + height);
+        if (area.contains(point))
+            to_erase.push_back(hash);
+    }
+
+    for (uint64_t hash : to_erase)
+    {
+        this->_map_update_cache.erase(hash);
+    }
+}
+
+void server::send_map_cache(character&                  ch,
+                            const map&                  map,
+                            const fb::model::point16_t& position,
+                            const fb::model::size8_t&   size,
+                            uint16_t                    crc)
+{
+    const auto hash = static_cast<uint64_t>(map.model.id) << 48 | static_cast<uint64_t>(position.x) << 32 |
+                      static_cast<uint64_t>(position.y) << 16 | static_cast<uint64_t>(size.width) << 8 |
+                      static_cast<uint64_t>(size.height);
+
+    auto send_cache_bytes = [&ch, crc](const auto& cache_bytes) {
+        if (cache_bytes.crc == crc)
+            return;
+
+        ch.send(fb::stream(cache_bytes.bytes.data(), cache_bytes.bytes.size()));
+    };
+
+    {
+        std::shared_lock lock(this->_map_update_cache_mutex);
+        if (this->_map_update_cache.try_read(hash, send_cache_bytes))
+            return;
+    }
+
+    std::unique_lock lock(this->_map_update_cache_mutex);
+    this->_map_update_cache.write(hash, send_cache_bytes, [&map, &position, &size, hash]() {
+        auto bytes = map::cache_bytes();
+        bytes.hash = hash;
+        bytes.crc  = 0;
+
+        auto writer = fb::stream_writer<big_endian>(bytes.bytes);
+        auto resp   = game_resp::map_update(map, position, size);
+        std::ignore = resp.serialize(writer);
+        bytes.crc   = resp.crc;
+        return bytes;
+    });
+}
+
+void server::update_map_cache(uint32_t map_id, const fb::model::area<uint16_t>& area)
+{
+    // Phase 1: Invalidate cache entries whose region intersects the area (hold lock only for this).
+    {
+        std::unique_lock lock(this->_map_update_cache_mutex);
+
+        std::vector<uint64_t> to_erase;
+        for (auto hash : _map_update_cache.keys())
+        {
+            const auto entry_map_id = static_cast<uint32_t>(hash >> 48);
+            if (entry_map_id != map_id)
+                continue;
+
+            const uint16_t e_left     = (hash >> 32) & 0xFFFF;
+            const uint16_t e_top      = (hash >> 16) & 0xFFFF;
+            const uint8_t  e_w        = (hash >> 8) & 0xFF;
+            const uint8_t  e_h        = hash & 0xFF;
+            const uint16_t e_right    = static_cast<uint16_t>(e_left + e_w);
+            const uint16_t e_bottom   = static_cast<uint16_t>(e_top + e_h);
+            const auto     entry_rect = fb::model::area<uint16_t>(e_left, e_top, e_right, e_bottom);
+
+            if (entry_rect.intersects(area))
+                to_erase.push_back(hash);
+        }
+
+        for (uint64_t hash : to_erase)
+        {
+            this->_map_update_cache.erase(hash);
+        }
+    }
+
+    // Phase 2: Without holding the cache lock, collect characters whose view overlaps the area and send.
+    auto map_ptr = maps.find(map_id);
+    if (map_ptr == nullptr)
+        return;
+
+    const map& map     = *map_ptr;
+    auto       viewers = std::vector<std::shared_ptr<character>>{};
+    for (const auto& [fd, obj] : map.objects)
+    {
+        if (obj->is(OBJECT_TYPE::CHARACTER) == false)
+            continue;
+
+        if (obj->sight_area().intersects(area))
+            viewers.push_back(std::static_pointer_cast<character>(obj));
+    }
+
+    const uint16_t             w = area.right > area.left ? static_cast<uint16_t>(area.right - area.left) : 0;
+    const uint16_t             h = area.bottom > area.top ? static_cast<uint16_t>(area.bottom - area.top) : 0;
+    const fb::model::point16_t begin(area.left, area.top);
+    const fb::model::size8_t   size(static_cast<uint8_t>(w > 255 ? 255 : w), static_cast<uint8_t>(h > 255 ? 255 : h));
+
+    for (const auto& ch : viewers)
+    {
+        ch->update_map(map, begin, size);
+    }
 }

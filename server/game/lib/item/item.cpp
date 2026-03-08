@@ -1,5 +1,6 @@
 #include <fb/game/server.h>
 #include <fb/game/item.h>
+#include <stdexcept>
 
 using namespace fb::game;
 
@@ -173,7 +174,7 @@ bool item::active()
     auto lua = fb::lua::new_context();
     if (lua != nullptr)
     {
-#if defined DEBUG | defined _DEBUG
+#if defined DEBUG || defined _DEBUG
         lua->load(model.script);
 #endif
         lua->func(model.on_active);
@@ -287,4 +288,9 @@ fb::protocol::internal::Item item::to_protocol(EQUIPMENT_PARTS parts) const
     result.durability  = this->durability();
     result.custom_name = "";
     return result;
+}
+
+std::shared_ptr<fb::game::appearance> item::appearance() const
+{
+    throw std::runtime_error("appearance() not implemented");
 }

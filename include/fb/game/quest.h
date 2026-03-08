@@ -45,6 +45,7 @@ public:
     bool        inc_step(uint32_t value = 1);
     bool        complete();
     bool        completed() const;
+    bool        resume();
 };
 
 class quests : private std::unordered_map<uint32_t, std::shared_ptr<quest>>

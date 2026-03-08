@@ -64,8 +64,8 @@ public:
     const fb::model::warp*          warpable(const fb::model::point16_t& position) const;
     bool                            is_active() const;
     std::shared_ptr<sector>         sector_at(const fb::model::point16_t& position);
-    std::vector<object_ptr>         nears(const fb::model::point16_t& pivot, OBJECT_TYPE type = OBJECT_TYPE::UNKNOWN) const;
-    std::vector<object_ptr>         belows(const fb::model::point16_t& pivot, OBJECT_TYPE type = OBJECT_TYPE::UNKNOWN) const;
+    std::vector<object_ptr>         nears(const fb::model::point16_t& pivot, OBJECT_TYPE type = OBJECT_TYPE::OBJECT) const;
+    std::vector<object_ptr>         belows(const fb::model::point16_t& pivot, OBJECT_TYPE type = OBJECT_TYPE::OBJECT) const;
     void                            bulk_update(const std::vector<uint32_t>& oids);
     fb::thread*                     thread() const override;
     // clang-format on

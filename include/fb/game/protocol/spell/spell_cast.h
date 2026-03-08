@@ -37,8 +37,8 @@ public:
 #else
     spell_cast(SPELL_TYPE                        type,
                uint8_t                           slot,
-               std::string_view                   message,
-               uint32_t                           oid,
+               std::string_view                  message,
+               uint32_t                          oid,
                const fb::model::point<uint16_t>& position) :
         type(type),
         slot(slot),

@@ -1,6 +1,7 @@
 #include <fb/game/builtin/object.h>
 #include <fb/game/server.h>
 #include <fb/game/character.h>
+#include <fb/game/appearance.h>
 
 using namespace fb::game;
 using table = fb::model::table;
@@ -32,6 +33,8 @@ IMPLEMENT_LUA_EXTENSION(object, "fb.game.object")
 {"thread",              builtin::object::builtin_thread},
 {"near",                builtin::object::builtin_near},
 {"hidden",              builtin::object::builtin_hidden},
+{"script",              builtin::object::builtin_script},
+{"appearance",          builtin::object::builtin_appearance},
 END_LUA_EXTENSION; // clang-format on
 
 int builtin::object::builtin_model(lua_State* L)
@@ -640,7 +643,7 @@ int builtin::object::builtin_sight_in(lua_State* L)
 
     obj->assert_thread();
 
-    auto filter = OBJECT_TYPE(lua->tointeger(2, (int)OBJECT_TYPE::UNKNOWN));
+    auto filter = static_cast<OBJECT_TYPE>(lua->tointeger(2, (int)OBJECT_TYPE::OBJECT));
 
     lua->new_table();
     const auto& objects = obj->sight_in(filter);
@@ -672,7 +675,7 @@ int builtin::object::builtin_nears(lua_State* L)
         return 0;
 
     auto visit  = std::set<uint32_t>();
-    auto filter = OBJECT_TYPE(lua->tointeger(2, (int)OBJECT_TYPE::UNKNOWN));
+    auto filter = static_cast<OBJECT_TYPE>(lua->tointeger(2, (int)OBJECT_TYPE::OBJECT));
     if (argc >= 3 && lua->is_table(3))
     {
         auto size   = lua->rawlen(3);
@@ -774,7 +777,7 @@ int builtin::object::builtin_front(lua_State* L)
 
     obj->assert_thread();
 
-    auto filter = lua->toenum(2, OBJECT_TYPE::UNKNOWN);
+    auto filter = lua->toenum(2, OBJECT_TYPE::OBJECT);
     auto front  = obj->forward(filter);
     if (front == nullptr)
         lua->pushnil();
@@ -796,7 +799,7 @@ int builtin::object::builtin_is(lua_State* L)
     if (obj == nullptr)
         return 0;
 
-    auto type = lua->toenum(2, OBJECT_TYPE::UNKNOWN);
+    auto type = lua->toenum(2, OBJECT_TYPE::OBJECT);
     auto weak = obj->weak_from_this_as<fb::game::object>();
     return lua->ensure_yield(*server, weak, [=](auto is_yield) {
         auto matched = obj->is(type);
@@ -906,5 +909,78 @@ int builtin::object::builtin_hidden(lua_State* L)
         return 0;
 
     lua->pushboolean(me->hidden(*you));
+    return 1;
+}
+
+int builtin::object::builtin_script(lua_State* L)
+{
+    auto lua = fb::lua::get(L);
+    if (lua == nullptr)
+        return 0;
+
+    auto server = lua->env<fb::game::server>("server");
+    auto argc   = lua->argc();
+    auto obj    = lua->touserdata<fb::game::object>(1);
+    if (obj == nullptr)
+        return 0;
+
+    auto file = lua->tostring(2, "scripts/script.lua");
+    auto func = lua->tostring(3, "func");
+
+    if (obj->thread() == server->threads.current())
+    {
+        auto new_lua = fb::lua::new_context(lua);
+        if (new_lua == nullptr)
+            return 0;
+
+        new_lua->load(file);
+        new_lua->func(func);
+        new_lua->pushobject(obj);
+        lua_xmove(L, *new_lua, argc - 3);
+
+        auto n      = 0;
+        std::ignore = new_lua->call(argc - 2, true, &n);
+        switch (new_lua->state())
+        {
+        case LUA_PENDING:
+        case LUA_YIELD:
+            return lua->yield(0);
+
+        case LUA_OK:
+            return n;
+
+        default:
+            return 0;
+        }
+    }
+    else
+    {
+        auto weak = obj->weak_from_this_as<fb::game::object>();
+        return lua->ensure_yield(*server, weak, [=](auto is_yield) {
+            auto new_lua = fb::lua::new_context(lua);
+            if (new_lua == nullptr)
+                return 0;
+
+            new_lua->load(std::format("scripts/{}", file));
+            new_lua->func(func);
+            new_lua->pushobject(obj);
+            lua_xmove(L, *new_lua, argc - 3);
+            std::ignore = new_lua->call(argc - 2);
+            return 0;
+        });
+    }
+}
+
+int builtin::object::builtin_appearance(lua_State* L)
+{
+    auto lua = fb::lua::get(L);
+    if (lua == nullptr)
+        return 0;
+
+    auto obj = lua->touserdata<fb::game::object>(1);
+    if (obj == nullptr)
+        return 0;
+
+    obj->appearance()->to_lua(lua);
     return 1;
 }

@@ -315,8 +315,8 @@ public:
         static_assert(std::is_same_v<decltype(ResponseType::header), const uint8_t>,
                       "ResponseType must have 'static constexpr uint8_t header' member");
 
-        this->bind<ResponseType>(
-            std::function<async::task<void>(BotType&, ResponseType&)>(std::bind(fn, static_cast<Class*>(this), std::placeholders::_1, std::placeholders::_2)));
+        this->bind<ResponseType>(std::function<async::task<void>(BotType&, ResponseType&)>(
+            std::bind(fn, static_cast<Class*>(this), std::placeholders::_1, std::placeholders::_2)));
     }
 
     virtual async::task<void> on_bot_connected(BotType& bot)

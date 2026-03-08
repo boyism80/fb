@@ -1,0 +1,2 @@
+function ON_MOB_DIE_1257(me, you)
+end

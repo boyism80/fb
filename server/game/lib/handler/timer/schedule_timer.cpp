@@ -48,13 +48,8 @@ async::task<void> schedule_timer::handle()
             }
         }
 
-        // Calculate next execution time
-        if (!schedule.date.end.has_value())
-        {
-            // One-time schedule - no more executions
-            to_remove.push_back(schedule_id);
-        }
-        else if (schedule.repeat.has_value())
+        // Calculate next execution time (use repeat to decide repeating vs one-time)
+        if (schedule.repeat.has_value())
         {
             // Repeating schedule
             auto next_time = next_execution + schedule.repeat.value();
@@ -71,7 +66,7 @@ async::task<void> schedule_timer::handle()
         }
         else
         {
-            // Invalid schedule - remove
+            // One-time schedule - no more executions
             to_remove.push_back(schedule_id);
         }
     }

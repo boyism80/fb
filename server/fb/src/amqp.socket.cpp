@@ -17,7 +17,7 @@ socket::~socket()
 }
 
 bool socket::connect(std::string_view hostname,
-                     uint16_t           port,
+                     uint16_t         port,
                      std::string_view id,
                      std::string_view pw,
                      std::string_view vhost)
@@ -31,9 +31,9 @@ bool socket::connect(std::string_view hostname,
     }
 
     auto hostname_str = std::string(hostname);
-    auto id_str = std::string(id);
-    auto pw_str = std::string(pw);
-    auto vhost_str = std::string(vhost);
+    auto id_str       = std::string(id);
+    auto pw_str       = std::string(pw);
+    auto vhost_str    = std::string(vhost);
 
     this->_conn   = amqp_new_connection();
     this->_socket = amqp_tcp_socket_new(this->_conn);
@@ -137,16 +137,16 @@ queue& socket::declare_queue(bool durable, bool exclusive, bool auto_delete, boo
     return ref;
 }
 
-bool socket::publish(std::string_view             exchange,
-                     std::string_view             routing_key,
+bool socket::publish(std::string_view               exchange,
+                     std::string_view               routing_key,
                      const std::vector<uint8_t>&    message,
                      const amqp_basic_properties_t* properties)
 {
     if (this->_conn == nullptr)
         return false;
 
-    auto exchange_str = std::string(exchange);
-    auto routing_key_str = std::string(routing_key);
+    auto         exchange_str      = std::string(exchange);
+    auto         routing_key_str   = std::string(routing_key);
     amqp_bytes_t exchange_bytes    = amqp_cstring_bytes(exchange_str.c_str());
     amqp_bytes_t routing_key_bytes = amqp_cstring_bytes(routing_key_str.c_str());
     amqp_bytes_t message_bytes;
