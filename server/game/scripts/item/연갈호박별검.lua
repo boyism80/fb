@@ -1,5 +1,5 @@
 -- 연갈호박별검 사용 스크립트
-function ON_ACTIVE_124(me, item)
+function ON_ACTIVATED_124(me, item)
 
 end
 

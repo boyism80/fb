@@ -1,5 +1,5 @@
 -- 양첨목봉 사용 스크립트
-function ON_ACTIVE_38(me, item)
+function ON_ACTIVATED_38(me, item)
 
 end
 

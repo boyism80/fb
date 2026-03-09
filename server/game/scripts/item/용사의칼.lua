@@ -1,5 +1,5 @@
 -- 용사의칼 사용 스크립트
-function ON_ACTIVE_182(me, item)
+function ON_ACTIVATED_182(me, item)
 
 end
 

@@ -1,5 +1,5 @@
 -- 연자호박별곤 사용 스크립트
-function ON_ACTIVE_138(me, item)
+function ON_ACTIVATED_138(me, item)
 
 end
 

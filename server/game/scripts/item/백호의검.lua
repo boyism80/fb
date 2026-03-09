@@ -1,5 +1,5 @@
 -- 백호의검 사용 스크립트
-function ON_ACTIVE_231(me, item)
+function ON_ACTIVATED_231(me, item)
 
 end
 

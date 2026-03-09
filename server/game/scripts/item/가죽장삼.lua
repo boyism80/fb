@@ -1,5 +1,5 @@
 -- 가죽장삼 사용 스크립트
-function ON_ACTIVE_908(me, item)
+function ON_ACTIVATED_908(me, item)
 
 end
 

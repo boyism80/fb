@@ -1,5 +1,5 @@
 -- 연두색남자갑주 사용 스크립트
-function ON_ACTIVE_603(me, item)
+function ON_ACTIVATED_603(me, item)
 
 end
 

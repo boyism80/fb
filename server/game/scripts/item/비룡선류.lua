@@ -1,5 +1,5 @@
 -- 비룡선류 사용 스크립트
-function ON_ACTIVE_1680(me, item)
+function ON_ACTIVATED_1680(me, item)
 
 end
 

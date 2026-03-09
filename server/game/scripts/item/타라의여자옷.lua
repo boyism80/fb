@@ -1,5 +1,5 @@
 -- 타라의여자옷 사용 스크립트
-function ON_ACTIVE_704(me, item)
+function ON_ACTIVATED_704(me, item)
 
 end
 

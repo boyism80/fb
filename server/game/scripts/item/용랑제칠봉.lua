@@ -14,7 +14,7 @@ function ON_ATTACK_273(me, item)
 end
 
 -- 용랑제칠봉 사용 스크립트
-function ON_ACTIVE_273(me, item)
+function ON_ACTIVATED_273(me, item)
 
 end
 

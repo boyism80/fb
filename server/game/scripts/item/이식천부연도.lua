@@ -1,5 +1,5 @@
 -- 이식천부연도 사용 스크립트
-function ON_ACTIVE_303(me, item)
+function ON_ACTIVATED_303(me, item)
 
 end
 

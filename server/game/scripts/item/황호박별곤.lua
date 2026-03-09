@@ -1,5 +1,5 @@
 -- 황호박별곤 사용 스크립트
-function ON_ACTIVE_142(me, item)
+function ON_ACTIVATED_142(me, item)
 
 end
 

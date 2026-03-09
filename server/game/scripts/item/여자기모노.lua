@@ -1,5 +1,5 @@
 -- 여자기모노 사용 스크립트
-function ON_ACTIVE_699(me, item)
+function ON_ACTIVATED_699(me, item)
 
 end
 

@@ -1,5 +1,5 @@
 -- 철단도 사용 스크립트
-function ON_ACTIVE_23(me, item)
+function ON_ACTIVATED_23(me, item)
 
 end
 

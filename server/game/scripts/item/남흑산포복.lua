@@ -1,5 +1,5 @@
 -- 남흑산포복 사용 스크립트
-function ON_ACTIVE_711(me, item)
+function ON_ACTIVATED_711(me, item)
 
 end
 

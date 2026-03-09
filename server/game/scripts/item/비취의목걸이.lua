@@ -1,5 +1,5 @@
 -- 비취의목걸이 사용 스크립트
-function ON_ACTIVE_2139(me, item)
+function ON_ACTIVATED_2139(me, item)
 
 end
 

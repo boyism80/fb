@@ -1,5 +1,5 @@
 -- 사식천부연도 사용 스크립트
-function ON_ACTIVE_305(me, item)
+function ON_ACTIVATED_305(me, item)
 
 end
 

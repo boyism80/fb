@@ -1,5 +1,5 @@
 -- 불의연갑 사용 스크립트
-function ON_ACTIVE_754(me, item)
+function ON_ACTIVATED_754(me, item)
 
 end
 

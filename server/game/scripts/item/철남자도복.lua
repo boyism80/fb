@@ -1,5 +1,5 @@
 -- 철남자도복 사용 스크립트
-function ON_ACTIVE_838(me, item)
+function ON_ACTIVATED_838(me, item)
 
 end
 

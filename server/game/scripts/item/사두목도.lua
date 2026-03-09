@@ -1,5 +1,5 @@
 -- 사두목도 사용 스크립트
-function ON_ACTIVE_19(me, item)
+function ON_ACTIVATED_19(me, item)
 
 end
 

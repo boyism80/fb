@@ -1,5 +1,5 @@
 -- 구리여자통옷 사용 스크립트
-function ON_ACTIVE_919(me, item)
+function ON_ACTIVATED_919(me, item)
 
 end
 

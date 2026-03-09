@@ -1,5 +1,5 @@
 -- 연녹호박별도 사용 스크립트
-function ON_ACTIVE_161(me, item)
+function ON_ACTIVATED_161(me, item)
 
 end
 

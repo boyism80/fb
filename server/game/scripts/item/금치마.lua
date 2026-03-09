@@ -1,5 +1,5 @@
 -- 금치마 사용 스크립트
-function ON_ACTIVE_895(me, item)
+function ON_ACTIVATED_895(me, item)
 
 end
 

@@ -126,7 +126,7 @@ async::task<void> game_bot_controller::active_test()
     }
 
     fb::logger::debug("Activating first test: '{}'", this->_current_test->name());
-    std::ignore = this->_current_test->on_active(*this);
+    std::ignore = this->_current_test->on_activated(*this);
     fb::logger::debug("Test '{}' activated and ready to receive bot connections", this->_current_test->name());
 }
 

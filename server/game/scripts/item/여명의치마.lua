@@ -1,5 +1,5 @@
 -- 여명의치마 사용 스크립트
-function ON_ACTIVE_760(me, item)
+function ON_ACTIVATED_760(me, item)
 
 end
 

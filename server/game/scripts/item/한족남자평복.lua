@@ -1,5 +1,5 @@
 -- 한족남자평복 사용 스크립트
-function ON_ACTIVE_712(me, item)
+function ON_ACTIVATED_712(me, item)
 
 end
 

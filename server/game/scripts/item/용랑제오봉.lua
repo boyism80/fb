@@ -14,7 +14,7 @@ function ON_ATTACK_271(me, item)
 end
 
 -- 용랑제오봉 사용 스크립트
-function ON_ACTIVE_271(me, item)
+function ON_ACTIVATED_271(me, item)
 
 end
 

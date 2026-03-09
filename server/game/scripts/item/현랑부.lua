@@ -1,5 +1,5 @@
 -- 현랑부 사용 스크립트
-function ON_ACTIVE_31(me, item)
+function ON_ACTIVATED_31(me, item)
 
 end
 

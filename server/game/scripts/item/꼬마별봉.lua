@@ -1,5 +1,5 @@
 -- 꼬마별봉 사용 스크립트
-function ON_ACTIVE_52(me, item)
+function ON_ACTIVATED_52(me, item)
 
 end
 

@@ -1,5 +1,5 @@
 -- 민첩의투구2 사용 스크립트
-function ON_ACTIVE_1367(me, item)
+function ON_ACTIVATED_1367(me, item)
 
 end
 

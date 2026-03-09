@@ -14,7 +14,7 @@ function ON_ATTACK_281(me, item)
 end
 
 -- 용겸제육봉 사용 스크립트
-function ON_ACTIVE_281(me, item)
+function ON_ACTIVATED_281(me, item)
 
 end
 

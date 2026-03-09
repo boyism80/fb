@@ -1,5 +1,5 @@
 -- 이가닌자의검 사용 스크립트
-function ON_ACTIVE_81(me, item)
+function ON_ACTIVATED_81(me, item)
 
 end
 

@@ -1,5 +1,5 @@
 -- 은남자갑주 사용 스크립트
-function ON_ACTIVE_803(me, item)
+function ON_ACTIVATED_803(me, item)
 
 end
 

@@ -1,5 +1,5 @@
 -- 갈색풍선 사용 스크립트
-function ON_ACTIVE_207(me, item)
+function ON_ACTIVATED_207(me, item)
 
 end
 

@@ -1,5 +1,5 @@
 -- 삼촉현선 사용 스크립트
-function ON_ACTIVE_79(me, item)
+function ON_ACTIVATED_79(me, item)
 
 end
 

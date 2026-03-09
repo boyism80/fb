@@ -1,5 +1,5 @@
 -- 연녹호박팔찌 사용 스크립트
-function ON_ACTIVE_1654(me, item)
+function ON_ACTIVATED_1654(me, item)
 
 end
 

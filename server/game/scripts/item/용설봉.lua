@@ -1,5 +1,5 @@
 -- 용설봉 사용 스크립트
-function ON_ACTIVE_78(me, item)
+function ON_ACTIVATED_78(me, item)
 
 end
 

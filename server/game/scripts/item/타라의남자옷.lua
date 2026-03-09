@@ -1,5 +1,5 @@
 -- 타라의남자옷 사용 스크립트
-function ON_ACTIVE_705(me, item)
+function ON_ACTIVATED_705(me, item)
 
 end
 

@@ -1,5 +1,5 @@
 -- 흑월도 사용 스크립트
-function ON_ACTIVE_336(me, item)
+function ON_ACTIVATED_336(me, item)
 
 end
 

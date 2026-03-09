@@ -1,5 +1,5 @@
 -- 정화의방패 사용 스크립트
-function ON_ACTIVE_1015(me, item)
+function ON_ACTIVATED_1015(me, item)
 
 end
 

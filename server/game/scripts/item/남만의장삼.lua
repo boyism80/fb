@@ -1,5 +1,5 @@
 -- 남만의장삼 사용 스크립트
-function ON_ACTIVE_729(me, item)
+function ON_ACTIVATED_729(me, item)
 
 end
 

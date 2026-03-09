@@ -1,5 +1,5 @@
 -- 가죽비늘남자갑주 사용 스크립트
-function ON_ACTIVE_808(me, item)
+function ON_ACTIVATED_808(me, item)
 
 end
 

@@ -12,7 +12,7 @@ function ON_ATTACK_251(me, item)
 end
 
 -- 용마제삼검 사용 스크립트
-function ON_ACTIVE_251(me, item)
+function ON_ACTIVATED_251(me, item)
 
 end
 

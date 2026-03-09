@@ -1,5 +1,5 @@
 -- 단사모 사용 스크립트
-function ON_ACTIVE_66(me, item)
+function ON_ACTIVATED_66(me, item)
 
 end
 

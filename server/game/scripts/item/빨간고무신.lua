@@ -1,5 +1,5 @@
 -- 빨간고무신 사용 스크립트
-function ON_ACTIVE_2120(me, item)
+function ON_ACTIVATED_2120(me, item)
 
 end
 

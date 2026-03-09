@@ -1,5 +1,5 @@
 -- 황호박투구 사용 스크립트
-function ON_ACTIVE_1337(me, item)
+function ON_ACTIVATED_1337(me, item)
 
 end
 

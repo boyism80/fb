@@ -1,5 +1,5 @@
 -- 금마반지 사용 스크립트
-function ON_ACTIVE_1696(me, item)
+function ON_ACTIVATED_1696(me, item)
 
 end
 

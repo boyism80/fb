@@ -1,5 +1,5 @@
 -- 여자치파오 사용 스크립트
-function ON_ACTIVE_714(me, item)
+function ON_ACTIVATED_714(me, item)
 
 end
 

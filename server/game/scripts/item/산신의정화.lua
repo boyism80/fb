@@ -1,5 +1,5 @@
 -- 산신의정화 사용 스크립트
-function ON_ACTIVE_737(me, item)
+function ON_ACTIVATED_737(me, item)
 
 end
 

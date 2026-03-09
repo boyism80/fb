@@ -1,5 +1,5 @@
 -- 오식천부연곤 사용 스크립트
-function ON_ACTIVE_324(me, item)
+function ON_ACTIVATED_324(me, item)
 
 end
 

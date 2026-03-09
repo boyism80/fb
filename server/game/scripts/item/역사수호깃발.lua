@@ -1,5 +1,5 @@
 -- 역사수호깃발 사용 스크립트
-function ON_ACTIVE_247(me, item)
+function ON_ACTIVATED_247(me, item)
 
 end
 

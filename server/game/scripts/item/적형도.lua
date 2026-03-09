@@ -1,5 +1,5 @@
 -- 적형도 사용 스크립트
-function ON_ACTIVE_99(me, item)
+function ON_ACTIVATED_99(me, item)
 
 end
 

@@ -1,5 +1,5 @@
 -- 삼묘의도복 사용 스크립트
-function ON_ACTIVE_732(me, item)
+function ON_ACTIVATED_732(me, item)
 
 end
 

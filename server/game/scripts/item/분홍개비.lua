@@ -1,5 +1,5 @@
 -- 분홍개비 사용 스크립트
-function ON_ACTIVE_333(me, item)
+function ON_ACTIVATED_333(me, item)
 
 end
 

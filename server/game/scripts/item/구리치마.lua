@@ -1,5 +1,5 @@
 -- 구리치마 사용 스크립트
-function ON_ACTIVE_891(me, item)
+function ON_ACTIVATED_891(me, item)
 
 end
 

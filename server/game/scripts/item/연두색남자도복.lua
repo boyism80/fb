@@ -1,5 +1,5 @@
 -- 연두색남자도복 사용 스크립트
-function ON_ACTIVE_600(me, item)
+function ON_ACTIVATED_600(me, item)
 
 end
 

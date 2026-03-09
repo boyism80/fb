@@ -1,5 +1,5 @@
 -- 빨간색풍선 사용 스크립트
-function ON_ACTIVE_202(me, item)
+function ON_ACTIVATED_202(me, item)
 
 end
 

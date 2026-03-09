@@ -1,5 +1,5 @@
 -- 봉마의귀걸이 사용 스크립트
-function ON_ACTIVE_2128(me, item)
+function ON_ACTIVATED_2128(me, item)
 
 end
 

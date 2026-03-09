@@ -1,5 +1,5 @@
 -- 화분천검 사용 스크립트
-function ON_ACTIVE_192(me, item)
+function ON_ACTIVATED_192(me, item)
 
 end
 

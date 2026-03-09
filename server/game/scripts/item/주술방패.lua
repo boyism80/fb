@@ -1,5 +1,5 @@
 -- 주술방패 사용 스크립트
-function ON_ACTIVE_1009(me, item)
+function ON_ACTIVATED_1009(me, item)
 
 end
 

@@ -12,7 +12,7 @@ function ON_ATTACK_265(me, item)
 end
 
 -- 용천제팔검 사용 스크립트
-function ON_ACTIVE_265(me, item)
+function ON_ACTIVATED_265(me, item)
 
 end
 

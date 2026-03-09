@@ -1,5 +1,5 @@
 -- 파란색남자도복 사용 스크립트
-function ON_ACTIVE_834(me, item)
+function ON_ACTIVATED_834(me, item)
 
 end
 

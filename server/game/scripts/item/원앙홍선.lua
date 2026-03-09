@@ -1,5 +1,5 @@
 -- 원앙홍선 사용 스크립트
-function ON_ACTIVE_194(me, item)
+function ON_ACTIVATED_194(me, item)
 
 end
 

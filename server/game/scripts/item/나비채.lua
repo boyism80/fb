@@ -1,5 +1,5 @@
 -- 나비채 사용 스크립트
-function ON_ACTIVE_246(me, item)
+function ON_ACTIVATED_246(me, item)
 
 end
 

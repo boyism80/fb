@@ -1,5 +1,5 @@
 -- 남만의도포 사용 스크립트
-function ON_ACTIVE_733(me, item)
+function ON_ACTIVATED_733(me, item)
 
 end
 

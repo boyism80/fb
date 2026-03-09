@@ -1,5 +1,5 @@
 -- 등대빛의검 사용 스크립트
-function ON_ACTIVE_107(me, item)
+function ON_ACTIVATED_107(me, item)
 
 end
 

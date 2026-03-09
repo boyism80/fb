@@ -1,5 +1,5 @@
 -- 주술갑옷 사용 스크립트
-function ON_ACTIVE_700(me, item)
+function ON_ACTIVATED_700(me, item)
 
 end
 

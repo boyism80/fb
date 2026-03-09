@@ -1,5 +1,5 @@
 -- 진랑투구 사용 스크립트
-function ON_ACTIVE_1328(me, item)
+function ON_ACTIVATED_1328(me, item)
 
 end
 

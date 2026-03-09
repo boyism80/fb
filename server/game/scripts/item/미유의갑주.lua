@@ -1,5 +1,5 @@
 -- 미유의갑주 사용 스크립트
-function ON_ACTIVE_724(me, item)
+function ON_ACTIVATED_724(me, item)
 
 end
 

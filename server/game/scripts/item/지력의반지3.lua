@@ -1,5 +1,5 @@
 -- 지력의반지3 사용 스크립트
-function ON_ACTIVE_1786(me, item)
+function ON_ACTIVATED_1786(me, item)
 
 end
 

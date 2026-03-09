@@ -1,5 +1,5 @@
 -- 도절의갑주 사용 스크립트
-function ON_ACTIVE_683(me, item)
+function ON_ACTIVATED_683(me, item)
 
 end
 

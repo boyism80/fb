@@ -1,5 +1,5 @@
 -- 강마투구 사용 스크립트
-function ON_ACTIVE_1324(me, item)
+function ON_ACTIVATED_1324(me, item)
 
 end
 

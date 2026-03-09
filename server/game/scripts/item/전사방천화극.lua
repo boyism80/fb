@@ -1,4 +1,4 @@
-function ON_ACTIVE_501(me, item)
+function ON_ACTIVATED_501(me, item)
 end
 
 function ON_INACTIVE_501(me, item)

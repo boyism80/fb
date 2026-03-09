@@ -1,5 +1,5 @@
 -- 황금장갑 사용 스크립트
-function ON_ACTIVE_1712(me, item)
+function ON_ACTIVATED_1712(me, item)
 
 end
 

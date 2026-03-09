@@ -1,5 +1,5 @@
 -- 팔식천부연도 사용 스크립트
-function ON_ACTIVE_309(me, item)
+function ON_ACTIVATED_309(me, item)
 
 end
 

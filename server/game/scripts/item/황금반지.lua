@@ -1,5 +1,5 @@
 -- 황금반지 사용 스크립트
-function ON_ACTIVE_1690(me, item)
+function ON_ACTIVATED_1690(me, item)
 
 end
 

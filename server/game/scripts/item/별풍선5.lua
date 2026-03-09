@@ -1,4 +1,4 @@
-function ON_ACTIVE_530(me, item)
+function ON_ACTIVATED_530(me, item)
 end
 
 function ON_INACTIVE_530(me, item)

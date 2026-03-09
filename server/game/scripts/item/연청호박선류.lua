@@ -1,5 +1,5 @@
 -- 연청호박선류 사용 스크립트
-function ON_ACTIVE_1643(me, item)
+function ON_ACTIVATED_1643(me, item)
 
 end
 

@@ -4,7 +4,7 @@ function ON_ATTACK_287(me, item)
 end
 
 -- [손상]용천제칠검 사용 스크립트
-function ON_ACTIVE_287(me, item)
+function ON_ACTIVATED_287(me, item)
 
 end
 

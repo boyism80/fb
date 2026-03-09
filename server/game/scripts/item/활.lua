@@ -1,5 +1,5 @@
 -- 활 사용 스크립트
-function ON_ACTIVE_341(me, item)
+function ON_ACTIVATED_341(me, item)
 
 end
 

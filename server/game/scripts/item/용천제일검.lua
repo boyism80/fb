@@ -12,7 +12,7 @@ function ON_ATTACK_258(me, item)
 end
 
 -- 용천제일검 사용 스크립트
-function ON_ACTIVE_258(me, item)
+function ON_ACTIVATED_258(me, item)
 
 end
 

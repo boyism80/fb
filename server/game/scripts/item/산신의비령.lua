@@ -1,5 +1,5 @@
 -- 산신의비령 사용 스크립트
-function ON_ACTIVE_740(me, item)
+function ON_ACTIVATED_740(me, item)
 
 end
 

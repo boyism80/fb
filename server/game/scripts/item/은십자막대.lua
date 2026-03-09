@@ -1,5 +1,5 @@
 -- 은십자막대 사용 스크립트
-function ON_ACTIVE_226(me, item)
+function ON_ACTIVATED_226(me, item)
 
 end
 

@@ -1,5 +1,5 @@
 -- 진아광검 사용 스크립트
-function ON_ACTIVE_42(me, item)
+function ON_ACTIVATED_42(me, item)
 
 end
 

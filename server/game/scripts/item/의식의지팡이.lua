@@ -1,5 +1,5 @@
 -- 의식의지팡이 사용 스크립트
-function ON_ACTIVE_180(me, item)
+function ON_ACTIVATED_180(me, item)
 
 end
 

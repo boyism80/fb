@@ -1,5 +1,5 @@
 -- 지력의투구1 사용 스크립트
-function ON_ACTIVE_1359(me, item)
+function ON_ACTIVATED_1359(me, item)
 
 end
 

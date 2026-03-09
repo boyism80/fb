@@ -1,5 +1,5 @@
 -- 흑선의검 사용 스크립트
-function ON_ACTIVE_217(me, item)
+function ON_ACTIVATED_217(me, item)
 
 end
 

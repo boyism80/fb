@@ -1,5 +1,5 @@
 -- 초록색여자갑옷 사용 스크립트
-function ON_ACTIVE_859(me, item)
+function ON_ACTIVATED_859(me, item)
 
 end
 

@@ -1,5 +1,5 @@
 -- 청류팔찌 사용 스크립트
-function ON_ACTIVE_1709(me, item)
+function ON_ACTIVATED_1709(me, item)
 
 end
 

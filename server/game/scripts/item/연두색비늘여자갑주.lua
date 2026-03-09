@@ -1,5 +1,5 @@
 -- 연두색비늘여자갑주 사용 스크립트
-function ON_ACTIVE_611(me, item)
+function ON_ACTIVATED_611(me, item)
 
 end
 

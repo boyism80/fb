@@ -1,5 +1,5 @@
 -- 철비늘여자갑주 사용 스크립트
-function ON_ACTIVE_829(me, item)
+function ON_ACTIVATED_829(me, item)
 
 end
 

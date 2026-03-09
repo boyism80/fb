@@ -1,5 +1,5 @@
 -- 환두대도 사용 스크립트
-function ON_ACTIVE_40(me, item)
+function ON_ACTIVATED_40(me, item)
 
 end
 

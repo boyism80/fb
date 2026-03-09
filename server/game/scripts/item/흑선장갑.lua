@@ -1,5 +1,5 @@
 -- 흑선장갑 사용 스크립트
-function ON_ACTIVE_1713(me, item)
+function ON_ACTIVATED_1713(me, item)
 
 end
 

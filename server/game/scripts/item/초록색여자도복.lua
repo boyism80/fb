@@ -1,5 +1,5 @@
 -- 초록색여자도복 사용 스크립트
-function ON_ACTIVE_850(me, item)
+function ON_ACTIVATED_850(me, item)
 
 end
 

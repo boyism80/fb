@@ -1,5 +1,5 @@
 -- 홍옥지팡이 사용 스크립트
-function ON_ACTIVE_227(me, item)
+function ON_ACTIVATED_227(me, item)
 
 end
 

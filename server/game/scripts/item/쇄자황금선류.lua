@@ -1,5 +1,5 @@
 -- 쇄자황금선류 사용 스크립트
-function ON_ACTIVE_1677(me, item)
+function ON_ACTIVATED_1677(me, item)
 
 end
 

@@ -1,5 +1,5 @@
 -- 오뢰창 사용 스크립트
-function ON_ACTIVE_63(me, item)
+function ON_ACTIVATED_63(me, item)
 
 end
 

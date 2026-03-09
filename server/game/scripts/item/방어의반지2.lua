@@ -1,5 +1,5 @@
 -- 방어의반지2 사용 스크립트
-function ON_ACTIVE_1772(me, item)
+function ON_ACTIVATED_1772(me, item)
 
 end
 

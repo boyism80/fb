@@ -1,5 +1,5 @@
 -- 파란색치마 사용 스크립트
-function ON_ACTIVE_889(me, item)
+function ON_ACTIVATED_889(me, item)
 
 end
 

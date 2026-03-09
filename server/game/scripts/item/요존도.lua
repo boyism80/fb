@@ -1,5 +1,5 @@
 -- 요존도 사용 스크립트
-function ON_ACTIVE_83(me, item)
+function ON_ACTIVATED_83(me, item)
 
 end
 

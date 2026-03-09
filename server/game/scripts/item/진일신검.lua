@@ -1,5 +1,5 @@
 -- 진일신검 사용 스크립트
-function ON_ACTIVE_86(me, item)
+function ON_ACTIVATED_86(me, item)
 
 end
 

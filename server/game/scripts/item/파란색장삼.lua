@@ -1,5 +1,5 @@
 -- 파란색장삼 사용 스크립트
-function ON_ACTIVE_907(me, item)
+function ON_ACTIVATED_907(me, item)
 
 end
 

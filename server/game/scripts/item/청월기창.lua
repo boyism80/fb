@@ -1,5 +1,5 @@
 -- 청월기창 사용 스크립트
-function ON_ACTIVE_172(me, item)
+function ON_ACTIVATED_172(me, item)
 
 end
 

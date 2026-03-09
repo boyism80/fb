@@ -14,7 +14,7 @@ function ON_ATTACK_282(me, item)
 end
 
 -- 용겸제칠봉 사용 스크립트
-function ON_ACTIVE_282(me, item)
+function ON_ACTIVATED_282(me, item)
 
 end
 

@@ -1,5 +1,5 @@
 -- 귀검의심장 사용 스크립트
-function ON_ACTIVE_692(me, item)
+function ON_ACTIVATED_692(me, item)
 
 end
 

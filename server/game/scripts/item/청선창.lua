@@ -1,5 +1,5 @@
 -- 청선창 사용 스크립트
-function ON_ACTIVE_214(me, item)
+function ON_ACTIVATED_214(me, item)
 
 end
 

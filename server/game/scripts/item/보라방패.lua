@@ -1,5 +1,5 @@
 -- 보라방패 사용 스크립트
-function ON_ACTIVE_1017(me, item)
+function ON_ACTIVATED_1017(me, item)
 
 end
 

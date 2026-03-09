@@ -1,5 +1,5 @@
 -- 계후의도포 사용 스크립트
-function ON_ACTIVE_725(me, item)
+function ON_ACTIVATED_725(me, item)
 
 end
 

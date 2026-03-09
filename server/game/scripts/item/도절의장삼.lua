@@ -1,5 +1,5 @@
 -- 도절의장삼 사용 스크립트
-function ON_ACTIVE_684(me, item)
+function ON_ACTIVATED_684(me, item)
 
 end
 

@@ -1,5 +1,5 @@
 -- 보라여자갑옷 사용 스크립트
-function ON_ACTIVE_860(me, item)
+function ON_ACTIVATED_860(me, item)
 
 end
 

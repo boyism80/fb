@@ -1,5 +1,5 @@
 -- 금기련봉 사용 스크립트
-function ON_ACTIVE_190(me, item)
+function ON_ACTIVATED_190(me, item)
 
 end
 

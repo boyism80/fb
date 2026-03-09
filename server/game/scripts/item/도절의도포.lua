@@ -1,5 +1,5 @@
 -- 도절의도포 사용 스크립트
-function ON_ACTIVE_686(me, item)
+function ON_ACTIVATED_686(me, item)
 
 end
 

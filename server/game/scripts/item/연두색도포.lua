@@ -1,5 +1,5 @@
 -- 연두색도포 사용 스크립트
-function ON_ACTIVE_608(me, item)
+function ON_ACTIVATED_608(me, item)
 
 end
 

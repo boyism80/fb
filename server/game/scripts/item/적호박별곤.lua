@@ -1,5 +1,5 @@
 -- 적호박별곤 사용 스크립트
-function ON_ACTIVE_140(me, item)
+function ON_ACTIVATED_140(me, item)
 
 end
 

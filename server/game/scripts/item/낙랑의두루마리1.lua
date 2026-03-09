@@ -1,5 +1,5 @@
 -- 낙랑의두루마리1 사용 스크립트
-function ON_ACTIVE_1(me, item)
+function ON_ACTIVATED_1(me, item)
     ::NAK_1::
     local btn = me:dialog(item, '벌써 두루마리 사용법을 익히셨군요!! 잘 하셨어요!! 그럼 제가 주막으로 보내드릴께요...', false, true)
     if btn == DIALOG_RESULT.QUIT then

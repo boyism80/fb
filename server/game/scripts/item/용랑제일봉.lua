@@ -14,7 +14,7 @@ function ON_ATTACK_267(me, item)
 end
 
 -- 용랑제일봉 사용 스크립트
-function ON_ACTIVE_267(me, item)
+function ON_ACTIVATED_267(me, item)
 
 end
 

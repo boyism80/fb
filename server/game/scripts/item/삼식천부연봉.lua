@@ -1,5 +1,5 @@
 -- 삼식천부연봉 사용 스크립트
-function ON_ACTIVE_313(me, item)
+function ON_ACTIVATED_313(me, item)
 
 end
 

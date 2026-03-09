@@ -1,5 +1,5 @@
 -- 물의통옷 사용 스크립트
-function ON_ACTIVE_750(me, item)
+function ON_ACTIVATED_750(me, item)
 
 end
 

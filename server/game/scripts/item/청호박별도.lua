@@ -1,5 +1,5 @@
 -- 청호박별도 사용 스크립트
-function ON_ACTIVE_165(me, item)
+function ON_ACTIVATED_165(me, item)
 
 end
 

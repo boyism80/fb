@@ -1,5 +1,5 @@
 -- 진'천부연도 사용 스크립트
-function ON_ACTIVE_310(me, item)
+function ON_ACTIVATED_310(me, item)
 
 end
 

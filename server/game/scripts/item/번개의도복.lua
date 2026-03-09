@@ -1,5 +1,5 @@
 -- 번개의도복 사용 스크립트
-function ON_ACTIVE_748(me, item)
+function ON_ACTIVATED_748(me, item)
 
 end
 

@@ -1,5 +1,5 @@
 -- 비철단도 사용 스크립트
-function ON_ACTIVE_24(me, item)
+function ON_ACTIVATED_24(me, item)
 
 end
 

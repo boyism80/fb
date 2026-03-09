@@ -17,7 +17,7 @@ local TREASURE_SPOTS = {
 --- Called when the player uses 산신의보물지도. Picks or shows treasure location via quest param.
 --- @param me table Character using the item
 --- @param item table Item instance
-function ON_ACTIVE_10134(me, item)
+function ON_ACTIVATED_10134(me, item)
     local quest = me:quest(QUEST_MOUNTAIN_GOD)
     if quest == nil or quest:step() < 1 then
         return

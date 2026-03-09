@@ -1,5 +1,5 @@
 -- 적호박선류 사용 스크립트
-function ON_ACTIVE_1644(me, item)
+function ON_ACTIVATED_1644(me, item)
 
 end
 

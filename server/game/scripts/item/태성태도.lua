@@ -1,5 +1,5 @@
 -- 태성태도 사용 스크립트
-function ON_ACTIVE_177(me, item)
+function ON_ACTIVATED_177(me, item)
 
 end
 

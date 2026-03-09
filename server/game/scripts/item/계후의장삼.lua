@@ -1,5 +1,5 @@
 -- 계후의장삼 사용 스크립트
-function ON_ACTIVE_719(me, item)
+function ON_ACTIVATED_719(me, item)
 
 end
 

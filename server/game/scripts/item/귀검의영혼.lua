@@ -1,5 +1,5 @@
 -- 귀검의영혼 사용 스크립트
-function ON_ACTIVE_693(me, item)
+function ON_ACTIVATED_693(me, item)
 
 end
 

@@ -1,5 +1,5 @@
 -- 승류 사용 스크립트
-function ON_ACTIVE_1685(me, item)
+function ON_ACTIVATED_1685(me, item)
 
 end
 

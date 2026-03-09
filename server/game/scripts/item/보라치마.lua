@@ -1,5 +1,5 @@
 -- 보라치마 사용 스크립트
-function ON_ACTIVE_888(me, item)
+function ON_ACTIVATED_888(me, item)
 
 end
 

@@ -1,5 +1,5 @@
 -- 가시철단도 사용 스크립트
-function ON_ACTIVE_75(me, item)
+function ON_ACTIVATED_75(me, item)
 
 end
 

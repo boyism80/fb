@@ -1,5 +1,5 @@
 -- 적사모 사용 스크립트
-function ON_ACTIVE_211(me, item)
+function ON_ACTIVATED_211(me, item)
 
 end
 

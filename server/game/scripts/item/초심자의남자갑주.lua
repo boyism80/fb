@@ -1,5 +1,5 @@
 -- 초심자의남자갑주 사용 스크립트
-function ON_ACTIVE_10(me, item)
+function ON_ACTIVATED_10(me, item)
 
 end
 

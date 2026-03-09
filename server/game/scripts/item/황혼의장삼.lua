@@ -1,5 +1,5 @@
 -- 황혼의장삼 사용 스크립트
-function ON_ACTIVE_761(me, item)
+function ON_ACTIVATED_761(me, item)
 
 end
 

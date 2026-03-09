@@ -1,5 +1,5 @@
 -- 철도포 사용 스크립트
-function ON_ACTIVE_884(me, item)
+function ON_ACTIVATED_884(me, item)
 
 end
 

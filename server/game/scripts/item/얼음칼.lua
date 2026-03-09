@@ -20,7 +20,7 @@ function ON_ATTACK_29(me, item)
 end
 
 -- 얼음칼 사용 스크립트
-function ON_ACTIVE_29(me, item)
+function ON_ACTIVATED_29(me, item)
 
 end
 

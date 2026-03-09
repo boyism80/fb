@@ -1,5 +1,5 @@
 -- 내강의복 사용 스크립트
-function ON_ACTIVE_703(me, item)
+function ON_ACTIVATED_703(me, item)
 
 end
 

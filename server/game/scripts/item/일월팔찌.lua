@@ -1,5 +1,5 @@
 -- 일월팔찌 사용 스크립트
-function ON_ACTIVE_1706(me, item)
+function ON_ACTIVATED_1706(me, item)
 
 end
 

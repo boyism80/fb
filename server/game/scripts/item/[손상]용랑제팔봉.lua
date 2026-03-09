@@ -4,7 +4,7 @@ function ON_ATTACK_290(me, item)
 end
 
 -- [손상]용랑제팔봉 사용 스크립트
-function ON_ACTIVE_290(me, item)
+function ON_ACTIVATED_290(me, item)
 
 end
 

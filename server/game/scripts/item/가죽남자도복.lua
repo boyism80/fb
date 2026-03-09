@@ -1,5 +1,5 @@
 -- 가죽남자도복 사용 스크립트
-function ON_ACTIVE_835(me, item)
+function ON_ACTIVATED_835(me, item)
 
 end
 

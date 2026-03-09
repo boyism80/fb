@@ -1,5 +1,5 @@
 -- 오식천부연도 사용 스크립트
-function ON_ACTIVE_306(me, item)
+function ON_ACTIVATED_306(me, item)
 
 end
 

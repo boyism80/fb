@@ -1,5 +1,5 @@
 -- 흑선죽선 사용 스크립트
-function ON_ACTIVE_219(me, item)
+function ON_ACTIVATED_219(me, item)
 
 end
 

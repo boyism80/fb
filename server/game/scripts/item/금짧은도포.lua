@@ -1,5 +1,5 @@
 -- 금짧은도포 사용 스크립트
-function ON_ACTIVE_877(me, item)
+function ON_ACTIVATED_877(me, item)
 
 end
 

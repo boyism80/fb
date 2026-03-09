@@ -14,7 +14,7 @@ function ON_ATTACK_279(me, item)
 end
 
 -- 용겸제사봉 사용 스크립트
-function ON_ACTIVE_279(me, item)
+function ON_ACTIVATED_279(me, item)
 
 end
 

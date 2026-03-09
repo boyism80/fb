@@ -1,5 +1,5 @@
 -- 너악당풍선 사용 스크립트
-function ON_ACTIVE_196(me, item)
+function ON_ACTIVATED_196(me, item)
 
 end
 

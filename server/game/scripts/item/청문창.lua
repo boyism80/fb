@@ -1,5 +1,5 @@
 -- 청문창 사용 스크립트
-function ON_ACTIVE_218(me, item)
+function ON_ACTIVATED_218(me, item)
 
 end
 

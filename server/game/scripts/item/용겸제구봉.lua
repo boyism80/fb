@@ -14,7 +14,7 @@ function ON_ATTACK_284(me, item)
 end
 
 -- 용겸제구봉 사용 스크립트
-function ON_ACTIVE_284(me, item)
+function ON_ACTIVATED_284(me, item)
 
 end
 

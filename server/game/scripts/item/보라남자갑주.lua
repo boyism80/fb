@@ -1,5 +1,5 @@
 -- 보라남자갑주 사용 스크립트
-function ON_ACTIVE_797(me, item)
+function ON_ACTIVATED_797(me, item)
 
 end
 

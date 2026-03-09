@@ -1,5 +1,5 @@
 -- 승리의증표 사용 스크립트
-function ON_ACTIVE_1635(me, item)
+function ON_ACTIVATED_1635(me, item)
 
 end
 

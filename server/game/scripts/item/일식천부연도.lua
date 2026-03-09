@@ -1,5 +1,5 @@
 -- 일식천부연도 사용 스크립트
-function ON_ACTIVE_302(me, item)
+function ON_ACTIVATED_302(me, item)
 
 end
 

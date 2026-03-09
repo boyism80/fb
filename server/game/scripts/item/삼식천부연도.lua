@@ -1,5 +1,5 @@
 -- 삼식천부연도 사용 스크립트
-function ON_ACTIVE_304(me, item)
+function ON_ACTIVATED_304(me, item)
 
 end
 

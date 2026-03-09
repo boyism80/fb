@@ -1,5 +1,5 @@
 -- 대마혼봉 사용 스크립트
-function ON_ACTIVE_77(me, item)
+function ON_ACTIVATED_77(me, item)
 
 end
 

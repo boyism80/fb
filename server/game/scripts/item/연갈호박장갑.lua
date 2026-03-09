@@ -1,5 +1,5 @@
 -- 연갈호박장갑 사용 스크립트
-function ON_ACTIVE_1759(me, item)
+function ON_ACTIVATED_1759(me, item)
 
 end
 

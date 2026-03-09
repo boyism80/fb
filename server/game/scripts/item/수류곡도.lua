@@ -1,5 +1,5 @@
 -- 수류곡도 사용 스크립트
-function ON_ACTIVE_191(me, item)
+function ON_ACTIVATED_191(me, item)
 
 end
 

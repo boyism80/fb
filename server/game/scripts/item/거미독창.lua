@@ -1,5 +1,5 @@
 -- 거미독창 사용 스크립트
-function ON_ACTIVE_179(me, item)
+function ON_ACTIVATED_179(me, item)
 
 end
 

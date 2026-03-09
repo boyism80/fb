@@ -1,5 +1,5 @@
 -- 청동남자갑주 사용 스크립트
-function ON_ACTIVE_801(me, item)
+function ON_ACTIVATED_801(me, item)
 
 end
 

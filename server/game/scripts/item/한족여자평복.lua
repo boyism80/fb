@@ -1,5 +1,5 @@
 -- 한족여자평복 사용 스크립트
-function ON_ACTIVE_717(me, item)
+function ON_ACTIVATED_717(me, item)
 
 end
 

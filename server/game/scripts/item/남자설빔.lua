@@ -1,5 +1,5 @@
 -- 남자설빔 사용 스크립트
-function ON_ACTIVE_707(me, item)
+function ON_ACTIVATED_707(me, item)
 
 end
 

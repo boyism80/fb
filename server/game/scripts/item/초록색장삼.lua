@@ -1,5 +1,5 @@
 -- 초록색장삼 사용 스크립트
-function ON_ACTIVE_905(me, item)
+function ON_ACTIVATED_905(me, item)
 
 end
 

@@ -1,5 +1,5 @@
 -- 초심자의반지 사용 스크립트
-function ON_ACTIVE_13(me, item)
+function ON_ACTIVATED_13(me, item)
 
 end
 

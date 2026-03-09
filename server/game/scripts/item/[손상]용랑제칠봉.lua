@@ -4,7 +4,7 @@ function ON_ATTACK_289(me, item)
 end
 
 -- [손상]용랑제칠봉 사용 스크립트
-function ON_ACTIVE_289(me, item)
+function ON_ACTIVATED_289(me, item)
 
 end
 

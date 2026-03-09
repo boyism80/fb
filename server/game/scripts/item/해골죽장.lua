@@ -1,5 +1,5 @@
 -- 해골죽장 사용 스크립트
-function ON_ACTIVE_50(me, item)
+function ON_ACTIVATED_50(me, item)
 
 end
 

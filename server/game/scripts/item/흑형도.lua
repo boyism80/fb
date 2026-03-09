@@ -1,5 +1,5 @@
 -- 흑형도 사용 스크립트
-function ON_ACTIVE_98(me, item)
+function ON_ACTIVATED_98(me, item)
 
 end
 

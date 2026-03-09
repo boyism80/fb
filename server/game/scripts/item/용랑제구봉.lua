@@ -14,7 +14,7 @@ function ON_ATTACK_275(me, item)
 end
 
 -- 용랑제구봉 사용 스크립트
-function ON_ACTIVE_275(me, item)
+function ON_ACTIVATED_275(me, item)
 
 end
 

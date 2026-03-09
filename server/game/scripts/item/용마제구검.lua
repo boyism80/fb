@@ -12,7 +12,7 @@ function ON_ATTACK_257(me, item)
 end
 
 -- 용마제구검 사용 스크립트
-function ON_ACTIVE_257(me, item)
+function ON_ACTIVATED_257(me, item)
 
 end
 

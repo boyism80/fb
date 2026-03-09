@@ -1,5 +1,5 @@
 -- 태존도 사용 스크립트
-function ON_ACTIVE_82(me, item)
+function ON_ACTIVATED_82(me, item)
 
 end
 

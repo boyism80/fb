@@ -1,5 +1,5 @@
 -- 문신장갑 사용 스크립트
-function ON_ACTIVE_1633(me, item)
+function ON_ACTIVATED_1633(me, item)
 
 end
 

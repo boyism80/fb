@@ -1,5 +1,5 @@
 -- 청호박별봉 사용 스크립트
-function ON_ACTIVE_153(me, item)
+function ON_ACTIVATED_153(me, item)
 
 end
 

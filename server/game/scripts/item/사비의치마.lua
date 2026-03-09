@@ -1,5 +1,5 @@
 -- 사비의치마 사용 스크립트
-function ON_ACTIVE_687(me, item)
+function ON_ACTIVATED_687(me, item)
 
 end
 

@@ -1,5 +1,5 @@
 -- 번개의활복 사용 스크립트
-function ON_ACTIVE_747(me, item)
+function ON_ACTIVATED_747(me, item)
 
 end
 

@@ -1,5 +1,5 @@
 -- 칠식천부연도 사용 스크립트
-function ON_ACTIVE_308(me, item)
+function ON_ACTIVATED_308(me, item)
 
 end
 

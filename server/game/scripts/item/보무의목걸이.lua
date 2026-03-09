@@ -1,5 +1,5 @@
 -- 보무의목걸이 사용 스크립트
-function ON_ACTIVE_2135(me, item)
+function ON_ACTIVATED_2135(me, item)
 
 end
 

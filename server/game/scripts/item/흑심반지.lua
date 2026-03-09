@@ -1,5 +1,5 @@
 -- 흑심반지 사용 스크립트
-function ON_ACTIVE_1741(me, item)
+function ON_ACTIVATED_1741(me, item)
 
 end
 

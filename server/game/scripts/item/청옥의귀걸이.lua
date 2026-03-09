@@ -1,5 +1,5 @@
 -- 청옥의귀걸이 사용 스크립트
-function ON_ACTIVE_2132(me, item)
+function ON_ACTIVATED_2132(me, item)
 
 end
 

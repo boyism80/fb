@@ -1,5 +1,5 @@
 -- 파란열쇠 사용 스크립트
-function ON_ACTIVE_20211(me, item)
+function ON_ACTIVATED_20211(me, item)
     local map = me:map()
     local door = map:door(me)
     if door == nil then

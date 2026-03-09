@@ -1,5 +1,5 @@
 -- 백화검 사용 스크립트
-function ON_ACTIVE_33(me, item)
+function ON_ACTIVATED_33(me, item)
 
 end
 

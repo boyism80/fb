@@ -1,5 +1,5 @@
 -- 청호박별검 사용 스크립트
-function ON_ACTIVE_129(me, item)
+function ON_ACTIVATED_129(me, item)
 
 end
 

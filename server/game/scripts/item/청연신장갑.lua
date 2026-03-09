@@ -1,5 +1,5 @@
 -- 청연신장갑 사용 스크립트
-function ON_ACTIVE_1723(me, item)
+function ON_ACTIVATED_1723(me, item)
 
 end
 

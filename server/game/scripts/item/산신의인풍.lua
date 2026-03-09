@@ -1,5 +1,5 @@
 -- 산신의인풍 사용 스크립트
-function ON_ACTIVE_743(me, item)
+function ON_ACTIVATED_743(me, item)
 
 end
 

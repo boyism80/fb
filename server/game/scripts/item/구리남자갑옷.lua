@@ -1,5 +1,5 @@
 -- 구리남자갑옷 사용 스크립트
-function ON_ACTIVE_845(me, item)
+function ON_ACTIVATED_845(me, item)
 
 end
 

@@ -1,5 +1,5 @@
 -- 현자금봉 사용 스크립트
-function ON_ACTIVE_175(me, item)
+function ON_ACTIVATED_175(me, item)
 
 end
 

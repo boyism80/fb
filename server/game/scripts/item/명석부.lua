@@ -1,5 +1,5 @@
 -- 명석부 사용 스크립트
-function ON_ACTIVE_2144(me, item)
+function ON_ACTIVATED_2144(me, item)
 
 end
 

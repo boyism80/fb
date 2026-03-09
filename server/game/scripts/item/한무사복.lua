@@ -1,5 +1,5 @@
 -- 한무사복 사용 스크립트
-function ON_ACTIVE_710(me, item)
+function ON_ACTIVATED_710(me, item)
 
 end
 

@@ -1,5 +1,5 @@
 -- 오식천부연봉 사용 스크립트
-function ON_ACTIVE_315(me, item)
+function ON_ACTIVATED_315(me, item)
 
 end
 

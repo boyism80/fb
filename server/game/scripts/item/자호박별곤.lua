@@ -1,5 +1,5 @@
 -- 자호박별곤 사용 스크립트
-function ON_ACTIVE_135(me, item)
+function ON_ACTIVATED_135(me, item)
 
 end
 

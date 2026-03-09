@@ -1,5 +1,5 @@
 -- 보라비늘남자갑주 사용 스크립트
-function ON_ACTIVE_806(me, item)
+function ON_ACTIVATED_806(me, item)
 
 end
 

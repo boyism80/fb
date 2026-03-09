@@ -1,5 +1,5 @@
 -- 심판의낫 사용 스크립트
-function ON_ACTIVE_58(me, item)
+function ON_ACTIVATED_58(me, item)
 
 end
 

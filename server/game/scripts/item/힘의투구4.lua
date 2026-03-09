@@ -1,5 +1,5 @@
 -- 힘의투구4 사용 스크립트
-function ON_ACTIVE_1374(me, item)
+function ON_ACTIVATED_1374(me, item)
 
 end
 

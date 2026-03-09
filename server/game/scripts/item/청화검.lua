@@ -1,5 +1,5 @@
 -- 청화검 사용 스크립트
-function ON_ACTIVE_244(me, item)
+function ON_ACTIVATED_244(me, item)
 
 end
 

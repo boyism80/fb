@@ -1,5 +1,5 @@
 -- 술사별봉 사용 스크립트
-function ON_ACTIVE_49(me, item)
+function ON_ACTIVATED_49(me, item)
 
 end
 

@@ -1,5 +1,5 @@
 -- 각암추 사용 스크립트
-function ON_ACTIVE_235(me, item)
+function ON_ACTIVATED_235(me, item)
 
 end
 

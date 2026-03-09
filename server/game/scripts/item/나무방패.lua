@@ -1,5 +1,5 @@
 -- 나무방패 사용 스크립트
-function ON_ACTIVE_1018(me, item)
+function ON_ACTIVATED_1018(me, item)
 
 end
 

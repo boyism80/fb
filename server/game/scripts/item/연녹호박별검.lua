@@ -1,5 +1,5 @@
 -- 연녹호박별검 사용 스크립트
-function ON_ACTIVE_125(me, item)
+function ON_ACTIVATED_125(me, item)
 
 end
 

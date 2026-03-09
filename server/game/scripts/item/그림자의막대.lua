@@ -1,5 +1,5 @@
 -- 그림자의막대 사용 스크립트
-function ON_ACTIVE_106(me, item)
+function ON_ACTIVATED_106(me, item)
 
 end
 

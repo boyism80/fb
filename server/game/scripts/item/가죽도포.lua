@@ -1,5 +1,5 @@
 -- 가죽도포 사용 스크립트
-function ON_ACTIVE_881(me, item)
+function ON_ACTIVATED_881(me, item)
 
 end
 

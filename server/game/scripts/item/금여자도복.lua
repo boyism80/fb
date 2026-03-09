@@ -1,5 +1,5 @@
 -- 금여자도복 사용 스크립트
-function ON_ACTIVE_858(me, item)
+function ON_ACTIVATED_858(me, item)
 
 end
 

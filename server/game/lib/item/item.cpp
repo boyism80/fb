@@ -167,7 +167,7 @@ bool item::active()
     if (model.script.empty())
         return false;
 
-    if (model.on_active.empty())
+    if (model.on_activated.empty())
         return false;
 
     // Execute item activation script
@@ -177,7 +177,7 @@ bool item::active()
 #if defined DEBUG || defined _DEBUG
         lua->load(model.script);
 #endif
-        lua->func(model.on_active);
+        lua->func(model.on_activated);
         lua->pushobject(*owner);
         lua->pushobject(*this);
         std::ignore = lua->call(2);

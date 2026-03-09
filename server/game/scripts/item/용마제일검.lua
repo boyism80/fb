@@ -12,7 +12,7 @@ function ON_ATTACK_249(me, item)
 end
 
 -- 용마제일검 사용 스크립트
-function ON_ACTIVE_249(me, item)
+function ON_ACTIVATED_249(me, item)
 
 end
 

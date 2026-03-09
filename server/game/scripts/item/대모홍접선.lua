@@ -1,5 +1,5 @@
 -- 대모홍접선 사용 스크립트
-function ON_ACTIVE_102(me, item)
+function ON_ACTIVATED_102(me, item)
 
 end
 

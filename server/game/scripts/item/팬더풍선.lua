@@ -1,5 +1,5 @@
 -- 팬더풍선 사용 스크립트
-function ON_ACTIVE_197(me, item)
+function ON_ACTIVATED_197(me, item)
 
 end
 

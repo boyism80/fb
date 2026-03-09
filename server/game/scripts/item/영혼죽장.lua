@@ -1,5 +1,5 @@
 -- 영혼죽장 사용 스크립트
-function ON_ACTIVE_248(me, item)
+function ON_ACTIVATED_248(me, item)
 
 end
 

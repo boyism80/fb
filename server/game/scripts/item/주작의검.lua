@@ -1,5 +1,5 @@
 -- 주작의검 사용 스크립트
-function ON_ACTIVE_230(me, item)
+function ON_ACTIVATED_230(me, item)
 
 end
 

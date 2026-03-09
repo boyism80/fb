@@ -1,5 +1,5 @@
 -- 일식천부연곤 사용 스크립트
-function ON_ACTIVE_320(me, item)
+function ON_ACTIVATED_320(me, item)
 
 end
 

@@ -1,5 +1,5 @@
 -- 검황의심장 사용 스크립트
-function ON_ACTIVE_691(me, item)
+function ON_ACTIVATED_691(me, item)
 
 end
 

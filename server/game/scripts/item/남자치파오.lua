@@ -1,5 +1,5 @@
 -- 남자치파오 사용 스크립트
-function ON_ACTIVE_713(me, item)
+function ON_ACTIVATED_713(me, item)
 
 end
 

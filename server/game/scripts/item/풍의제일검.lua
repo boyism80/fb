@@ -1,5 +1,5 @@
 -- 풍의제일검 사용 스크립트
-function ON_ACTIVE_62(me, item)
+function ON_ACTIVATED_62(me, item)
 
 end
 

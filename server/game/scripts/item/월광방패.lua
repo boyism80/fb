@@ -1,5 +1,5 @@
 -- 월광방패 사용 스크립트
-function ON_ACTIVE_1013(me, item)
+function ON_ACTIVATED_1013(me, item)
 
 end
 

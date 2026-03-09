@@ -1,5 +1,5 @@
 -- 칠교칠선 사용 스크립트
-function ON_ACTIVE_70(me, item)
+function ON_ACTIVATED_70(me, item)
 
 end
 

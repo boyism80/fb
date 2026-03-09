@@ -1,5 +1,5 @@
 -- 상아검 사용 스크립트
-function ON_ACTIVE_27(me, item)
+function ON_ACTIVATED_27(me, item)
 
 end
 

@@ -1,5 +1,5 @@
 -- 힘의투구5 사용 스크립트
-function ON_ACTIVE_1373(me, item)
+function ON_ACTIVATED_1373(me, item)
 
 end
 

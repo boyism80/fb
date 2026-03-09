@@ -1,5 +1,5 @@
 -- 천공투구 사용 스크립트
-function ON_ACTIVE_1346(me, item)
+function ON_ACTIVATED_1346(me, item)
 
 end
 

@@ -1,5 +1,5 @@
 -- 철태도 사용 스크립트
-function ON_ACTIVE_340(me, item)
+function ON_ACTIVATED_340(me, item)
 
 end
 

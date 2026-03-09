@@ -1,5 +1,5 @@
 -- 야월도 사용 스크립트
-function ON_ACTIVE_44(me, item)
+function ON_ACTIVATED_44(me, item)
 
 end
 

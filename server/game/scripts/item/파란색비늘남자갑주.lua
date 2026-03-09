@@ -1,5 +1,5 @@
 -- 파란색비늘남자갑주 사용 스크립트
-function ON_ACTIVE_807(me, item)
+function ON_ACTIVATED_807(me, item)
 
 end
 

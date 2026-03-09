@@ -4,7 +4,7 @@ local function quiz_wrong_and_exit(me, model, wrong_msg)
     me:dialog(model, '바람의나라에 대한 공부를\n조금 더 한 뒤 다시\n도전하세요!!!', false, true)
 end
 
-function ON_ACTIVE_6(me, item)
+function ON_ACTIVATED_6(me, item)
     local model = item:model()
     local btn
 
@@ -13,21 +13,21 @@ function ON_ACTIVE_6(me, item)
         return
     end
 
-    ::ON_ACTIVE_6_0000::
+    ::ON_ACTIVATED_6_0000::
     btn = me:dialog(model, '<임무>\n 잠깐 퀴즈~!!\n\n<내용>\n 레벨을 올리시느라 힘드셨죠? 그럼 잠시\n쉬어가는 의미에서.. 퀴즈를 풀어보는 것이\n어떨까요?\n\n<보상>\n 초심자의반지, 경험치 400 (레벨5미만)', true, true)
     if btn == DIALOG_RESULT.QUIT then
         return
     end
     if btn == DIALOG_RESULT.PREV then
-        goto ON_ACTIVE_6_0000
+        goto ON_ACTIVATED_6_0000
     end
-    ::ON_ACTIVE_6_0001::
+    ::ON_ACTIVATED_6_0001::
     btn = me:dialog(model, '<힌트>\n 퀴즈에 대한 정답을 선택하기만 하면 됩니다.', true, true)
     if btn == DIALOG_RESULT.QUIT then
         return
     end
     if btn == DIALOG_RESULT.PREV then
-        goto ON_ACTIVE_6_0000
+        goto ON_ACTIVATED_6_0000
     end
 
     local sel1, list_btn = me:list(model, '그럼, 첫번째 문제입니다.!!\n\n<문제>\n 게임 내 게시판의 단축키는?', { '1) i', '2) o', '3) b' }, false)

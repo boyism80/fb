@@ -1,5 +1,5 @@
 -- 태양의막대'지 사용 스크립트
-function ON_ACTIVE_109(me, item)
+function ON_ACTIVATED_109(me, item)
 
 end
 

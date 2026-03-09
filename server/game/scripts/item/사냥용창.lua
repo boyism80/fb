@@ -1,5 +1,5 @@
 -- 사냥용창 사용 스크립트
-function ON_ACTIVE_120(me, item)
+function ON_ACTIVATED_120(me, item)
 
 end
 

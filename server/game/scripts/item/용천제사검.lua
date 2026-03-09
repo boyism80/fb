@@ -12,7 +12,7 @@ function ON_ATTACK_261(me, item)
 end
 
 -- 용천제사검 사용 스크립트
-function ON_ACTIVE_261(me, item)
+function ON_ACTIVATED_261(me, item)
 
 end
 

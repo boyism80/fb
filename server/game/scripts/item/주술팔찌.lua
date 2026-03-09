@@ -1,5 +1,5 @@
 -- 주술팔찌 사용 스크립트
-function ON_ACTIVE_1630(me, item)
+function ON_ACTIVATED_1630(me, item)
 
 end
 

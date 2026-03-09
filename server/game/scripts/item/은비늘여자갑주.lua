@@ -1,5 +1,5 @@
 -- 은비늘여자갑주 사용 스크립트
-function ON_ACTIVE_830(me, item)
+function ON_ACTIVATED_830(me, item)
 
 end
 

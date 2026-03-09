@@ -1,5 +1,5 @@
 -- 철장삼 사용 스크립트
-function ON_ACTIVE_912(me, item)
+function ON_ACTIVATED_912(me, item)
 
 end
 

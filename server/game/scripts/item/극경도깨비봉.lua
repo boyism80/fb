@@ -1,5 +1,5 @@
 -- 극경도깨비봉 사용 스크립트
-function ON_ACTIVE_345(me, item)
+function ON_ACTIVATED_345(me, item)
 
 end
 

@@ -1,5 +1,5 @@
 -- 진선장 사용 스크립트
-function ON_ACTIVE_80(me, item)
+function ON_ACTIVATED_80(me, item)
 
 end
 

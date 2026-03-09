@@ -1,5 +1,5 @@
 -- 미유의통옷 사용 스크립트
-function ON_ACTIVE_720(me, item)
+function ON_ACTIVATED_720(me, item)
 
 end
 

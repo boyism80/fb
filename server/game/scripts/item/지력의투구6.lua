@@ -1,5 +1,5 @@
 -- 지력의투구6 사용 스크립트
-function ON_ACTIVE_1354(me, item)
+function ON_ACTIVATED_1354(me, item)
 
 end
 

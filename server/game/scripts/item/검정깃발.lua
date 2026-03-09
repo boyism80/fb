@@ -1,5 +1,5 @@
 -- 검정깃발 사용 스크립트
-function ON_ACTIVE_243(me, item)
+function ON_ACTIVATED_243(me, item)
 
 end
 

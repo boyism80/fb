@@ -1,5 +1,5 @@
 -- 황금호박반지 사용 스크립트
-function ON_ACTIVE_1647(me, item)
+function ON_ACTIVATED_1647(me, item)
 
 end
 

@@ -1,5 +1,5 @@
 -- 도씨검 사용 스크립트
-function ON_ACTIVE_21(me, item)
+function ON_ACTIVATED_21(me, item)
 
 end
 

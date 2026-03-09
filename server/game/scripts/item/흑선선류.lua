@@ -1,5 +1,5 @@
 -- 흑선선류 사용 스크립트
-function ON_ACTIVE_1679(me, item)
+function ON_ACTIVATED_1679(me, item)
 
 end
 

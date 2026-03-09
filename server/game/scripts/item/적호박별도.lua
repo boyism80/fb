@@ -1,5 +1,5 @@
 -- 적호박별도 사용 스크립트
-function ON_ACTIVE_164(me, item)
+function ON_ACTIVATED_164(me, item)
 
 end
 

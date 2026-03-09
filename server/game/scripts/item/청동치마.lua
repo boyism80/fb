@@ -1,5 +1,5 @@
 -- 청동치마 사용 스크립트
-function ON_ACTIVE_892(me, item)
+function ON_ACTIVATED_892(me, item)
 
 end
 

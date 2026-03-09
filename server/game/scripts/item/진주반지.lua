@@ -1,5 +1,5 @@
 -- 진주반지 사용 스크립트
-function ON_ACTIVE_1676(me, item)
+function ON_ACTIVATED_1676(me, item)
 
 end
 

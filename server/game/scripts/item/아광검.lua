@@ -1,5 +1,5 @@
 -- 아광검 사용 스크립트
-function ON_ACTIVE_41(me, item)
+function ON_ACTIVATED_41(me, item)
 
 end
 

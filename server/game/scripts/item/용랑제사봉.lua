@@ -14,7 +14,7 @@ function ON_ATTACK_270(me, item)
 end
 
 -- 용랑제사봉 사용 스크립트
-function ON_ACTIVE_270(me, item)
+function ON_ACTIVATED_270(me, item)
 
 end
 

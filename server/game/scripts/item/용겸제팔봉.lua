@@ -14,7 +14,7 @@ function ON_ATTACK_283(me, item)
 end
 
 -- 용겸제팔봉 사용 스크립트
-function ON_ACTIVE_283(me, item)
+function ON_ACTIVATED_283(me, item)
 
 end
 

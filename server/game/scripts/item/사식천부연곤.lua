@@ -1,5 +1,5 @@
 -- 사식천부연곤 사용 스크립트
-function ON_ACTIVE_323(me, item)
+function ON_ACTIVATED_323(me, item)
 
 end
 

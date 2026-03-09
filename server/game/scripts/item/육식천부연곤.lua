@@ -1,5 +1,5 @@
 -- 육식천부연곤 사용 스크립트
-function ON_ACTIVE_325(me, item)
+function ON_ACTIVATED_325(me, item)
 
 end
 

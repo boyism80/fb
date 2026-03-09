@@ -1,5 +1,5 @@
 -- 안시도 사용 스크립트
-function ON_ACTIVE_90(me, item)
+function ON_ACTIVATED_90(me, item)
 
 end
 

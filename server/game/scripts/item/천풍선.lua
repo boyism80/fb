@@ -1,5 +1,5 @@
 -- 천풍선 사용 스크립트
-function ON_ACTIVE_72(me, item)
+function ON_ACTIVATED_72(me, item)
 
 end
 

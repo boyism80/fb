@@ -1,5 +1,5 @@
 -- 은치마 사용 스크립트
-function ON_ACTIVE_894(me, item)
+function ON_ACTIVATED_894(me, item)
 
 end
 

@@ -1,5 +1,5 @@
 -- 청호박팔찌 사용 스크립트
-function ON_ACTIVE_1658(me, item)
+function ON_ACTIVATED_1658(me, item)
 
 end
 

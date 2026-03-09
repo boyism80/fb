@@ -1,5 +1,5 @@
 -- 참마도 사용 스크립트
-function ON_ACTIVE_236(me, item)
+function ON_ACTIVATED_236(me, item)
 
 end
 

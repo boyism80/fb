@@ -1,5 +1,5 @@
 -- 황선칠선 사용 스크립트
-function ON_ACTIVE_216(me, item)
+function ON_ACTIVATED_216(me, item)
 
 end
 

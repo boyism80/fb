@@ -12,7 +12,7 @@ function ON_ATTACK_256(me, item)
 end
 
 -- 용마제팔검 사용 스크립트
-function ON_ACTIVE_256(me, item)
+function ON_ACTIVATED_256(me, item)
 
 end
 

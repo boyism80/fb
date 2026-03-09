@@ -1,5 +1,5 @@
 -- 남만의갑옷 사용 스크립트
-function ON_ACTIVE_731(me, item)
+function ON_ACTIVATED_731(me, item)
 
 end
 

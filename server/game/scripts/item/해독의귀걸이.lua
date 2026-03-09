@@ -1,5 +1,5 @@
 -- 해독의귀걸이 사용 스크립트
-function ON_ACTIVE_2129(me, item)
+function ON_ACTIVATED_2129(me, item)
 
 end
 

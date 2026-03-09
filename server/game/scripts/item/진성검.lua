@@ -1,5 +1,5 @@
 -- 진성검 사용 스크립트
-function ON_ACTIVE_74(me, item)
+function ON_ACTIVATED_74(me, item)
 
 end
 

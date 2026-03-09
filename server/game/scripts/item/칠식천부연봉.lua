@@ -1,5 +1,5 @@
 -- 칠식천부연봉 사용 스크립트
-function ON_ACTIVE_317(me, item)
+function ON_ACTIVATED_317(me, item)
 
 end
 

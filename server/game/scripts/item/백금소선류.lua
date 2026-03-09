@@ -1,5 +1,5 @@
 -- 백금소선류 사용 스크립트
-function ON_ACTIVE_1687(me, item)
+function ON_ACTIVATED_1687(me, item)
 
 end
 

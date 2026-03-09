@@ -1,5 +1,5 @@
 -- 황염곤봉 사용 스크립트
-function ON_ACTIVE_88(me, item)
+function ON_ACTIVATED_88(me, item)
 
 end
 

@@ -1,5 +1,5 @@
 -- 흑영패도 사용 스크립트
-function ON_ACTIVE_105(me, item)
+function ON_ACTIVATED_105(me, item)
 
 end
 

@@ -1,5 +1,5 @@
 -- 금장여자투구 사용 스크립트
-function ON_ACTIVE_1382(me, item)
+function ON_ACTIVATED_1382(me, item)
 
 end
 

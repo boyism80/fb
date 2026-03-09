@@ -1,5 +1,5 @@
 -- 철여자갑옷 사용 스크립트
-function ON_ACTIVE_865(me, item)
+function ON_ACTIVATED_865(me, item)
 
 end
 

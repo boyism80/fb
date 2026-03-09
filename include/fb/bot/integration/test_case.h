@@ -107,7 +107,7 @@ public:
     void                                   notify_ready();
     virtual bool                           is_ready() const;
     std::vector<std::shared_ptr<game_bot>> get_test_bots() const;
-    virtual async::task<void>              on_active(game_bot_controller& controller);
+    virtual async::task<void>              on_activated(game_bot_controller& controller);
     virtual async::task<void>              on_initialize(game_bot_controller& controller);
     virtual async::task<void>              on_finished();
     async::task<bool>                      execute();

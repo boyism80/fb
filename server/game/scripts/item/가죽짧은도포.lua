@@ -1,5 +1,5 @@
 -- 가죽짧은도포 사용 스크립트
-function ON_ACTIVE_872(me, item)
+function ON_ACTIVATED_872(me, item)
 
 end
 

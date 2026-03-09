@@ -1,5 +1,5 @@
 -- 철비늘남자갑주 사용 스크립트
-function ON_ACTIVE_811(me, item)
+function ON_ACTIVATED_811(me, item)
 
 end
 

@@ -1,5 +1,5 @@
 -- 백금소장갑 사용 스크립트
-function ON_ACTIVE_1721(me, item)
+function ON_ACTIVATED_1721(me, item)
 
 end
 

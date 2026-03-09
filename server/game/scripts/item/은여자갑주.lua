@@ -1,5 +1,5 @@
 -- 은여자갑주 사용 스크립트
-function ON_ACTIVE_821(me, item)
+function ON_ACTIVATED_821(me, item)
 
 end
 

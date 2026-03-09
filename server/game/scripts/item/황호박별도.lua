@@ -1,5 +1,5 @@
 -- 황호박별도 사용 스크립트
-function ON_ACTIVE_166(me, item)
+function ON_ACTIVATED_166(me, item)
 
 end
 

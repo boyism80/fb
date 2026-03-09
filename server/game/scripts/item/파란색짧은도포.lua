@@ -1,5 +1,5 @@
 -- 파란색짧은도포 사용 스크립트
-function ON_ACTIVE_871(me, item)
+function ON_ACTIVATED_871(me, item)
 
 end
 

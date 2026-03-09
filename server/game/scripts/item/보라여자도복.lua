@@ -1,5 +1,5 @@
 -- 보라여자도복 사용 스크립트
-function ON_ACTIVE_851(me, item)
+function ON_ACTIVATED_851(me, item)
 
 end
 

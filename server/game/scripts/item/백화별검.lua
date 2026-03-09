@@ -1,5 +1,5 @@
 -- 백화별검 사용 스크립트
-function ON_ACTIVE_34(me, item)
+function ON_ACTIVATED_34(me, item)
 
 end
 

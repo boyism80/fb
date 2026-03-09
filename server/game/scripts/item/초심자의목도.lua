@@ -1,5 +1,5 @@
 -- 초심자의목도 사용 스크립트
-function ON_ACTIVE_15(me, item)
+function ON_ACTIVATED_15(me, item)
 
 end
 

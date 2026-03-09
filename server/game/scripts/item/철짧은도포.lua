@@ -1,5 +1,5 @@
 -- 철짧은도포 사용 스크립트
-function ON_ACTIVE_875(me, item)
+function ON_ACTIVATED_875(me, item)
 
 end
 

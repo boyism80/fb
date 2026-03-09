@@ -1,5 +1,5 @@
 -- 일월장갑 사용 스크립트
-function ON_ACTIVE_1717(me, item)
+function ON_ACTIVATED_1717(me, item)
 
 end
 

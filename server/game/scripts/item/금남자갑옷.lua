@@ -1,5 +1,5 @@
 -- 금남자갑옷 사용 스크립트
-function ON_ACTIVE_849(me, item)
+function ON_ACTIVATED_849(me, item)
 
 end
 

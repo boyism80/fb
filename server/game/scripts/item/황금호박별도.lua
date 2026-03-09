@@ -1,5 +1,5 @@
 -- 황금호박별도 사용 스크립트
-function ON_ACTIVE_168(me, item)
+function ON_ACTIVATED_168(me, item)
 
 end
 

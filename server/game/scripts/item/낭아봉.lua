@@ -1,5 +1,5 @@
 -- 낭아봉 사용 스크립트
-function ON_ACTIVE_67(me, item)
+function ON_ACTIVATED_67(me, item)
 
 end
 

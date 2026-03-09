@@ -1,5 +1,5 @@
 -- 장창 사용 스크립트
-function ON_ACTIVE_22(me, item)
+function ON_ACTIVATED_22(me, item)
 
 end
 

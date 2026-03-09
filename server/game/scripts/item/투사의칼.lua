@@ -1,5 +1,5 @@
 -- 투사의칼 사용 스크립트
-function ON_ACTIVE_183(me, item)
+function ON_ACTIVATED_183(me, item)
 
 end
 

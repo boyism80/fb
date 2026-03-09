@@ -1,5 +1,5 @@
 -- 남자기모노 사용 스크립트
-function ON_ACTIVE_698(me, item)
+function ON_ACTIVATED_698(me, item)
 
 end
 
