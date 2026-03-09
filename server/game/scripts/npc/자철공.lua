@@ -1,10 +1,6 @@
--- @note Trash: 1_중국\일반.txt "자철공". $blueear_quest: 1 = list (지남침 설명/구해주세요/갑옷), 2 = hand in 자철석 1 + 무슈후슈의뿔 10 → 지남침. Mapped to QUEST_BLUEEAR step 1 = need items, completed = done.
 
 local REQUIRED_ITEMS = { ["자철석"] = 1, ["무슈후슈의뿔"] = 10 }
 
----@brief   NPC 자철공: compass (지남침) quest; info, request materials, or hand in 자철석 1 + 무슈후슈의뿔 10 for 지남침.
----@param[in]  me   The character.
----@param[in]  npc  The NPC entity.
 function NPC_562(me, npc)
     local quest = me:quest(QUEST_BLUEEAR)
 

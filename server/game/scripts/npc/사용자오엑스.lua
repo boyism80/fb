@@ -1,8 +1,4 @@
--- @note Trash: 2_이벤트\오엑스.txt "사용자오엑스". List: 물건 사기(callshop 117), 아무나오엑스입장(warp), 이벤트오엑스입장(gv oxquiz_open, warp). Shop via NPC_SELL_DIALOG if npc model has sell data.
 
----@brief   NPC 사용자오엑스: list (shop / 아무나오엑스 입장 / 이벤트오엑스 입장); warp by map name.
----@param[in] me   The character.
----@param[in] npc  The NPC entity.
 function NPC_309(me, npc)
     local sel, btn = me:list(npc, "무엇을 도와드릴까요?", {
         "물건 사기",

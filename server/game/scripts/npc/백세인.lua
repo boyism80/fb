@@ -1,7 +1,3 @@
--- @brief   NPC Baek Sein (Chuseok house): gives 찌그러진냄비 during Chunghwa quest; other seasons (e.g. Chuseok) not yet implemented.
--- @param[in]  me   The character talking to the NPC.
--- @param[in]  npc  The NPC entity.
--- @note    When gv("sesi_rightnow") == 2 and QUEST_BAEK_MONGYEON step >= 1, gives 찌그러진냄비 once.
 function NPC_357(me, npc)
     local button = me:dialog(npc, "안녕하세요? 저는 백세인입니다.", false, true)
     if button == DIALOG_RESULT.QUIT then

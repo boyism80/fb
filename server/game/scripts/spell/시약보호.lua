@@ -1,4 +1,3 @@
--- 시약보호: same buff effect as 보호 (damage_derate +1000). Trash: effect 110, sound 8, 180s.
 function ON_CAST_17(me, you, spell)
     local mp = 30
     local sound = 8

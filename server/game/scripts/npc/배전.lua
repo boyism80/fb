@@ -1,5 +1,3 @@
--- @note Trash: 1_공통/진원관.txt "배전". Skull necklace main step 10->11: 20000 zeny, give 창힐독본 2.
--- NPC id 32 (npc.json). FUNC_SLOT_AVAILABLE_ASSERT omitted.
 
 function NPC_32(me, npc)
     local main_q = me:quest(QUEST_SKULL_NECKLACE)

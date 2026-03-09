@@ -1,10 +1,6 @@
--- @note Trash: 2_이벤트\토토.txt "부롱또또". #boorongtoto_*, $boorongtoto_*, callfunc BOORONGTOTO_* not implemented. Intro dialogs + list (자동/수동 참여, 당첨번호, 응모번호, 응모리스트, 당첨여부) with placeholder messages.
 
 local JOIN_MONEY = 100
 
----@brief   NPC 부롱또또: lotto-style event. Intro dialogs + list; join/prize check logic omitted (server/account globals, callfunc).
----@param[in] me   The character.
----@param[in] npc  The NPC entity.
 function NPC_486(me, npc)
     local btn = me:dialog(npc, "현재 테스트 기간( ~ 2015. 6. 28)입니다. 당첨되어도 따로 상금/상품 지급은 되지 않습니다. 버그를 발견하면 제보 해 주세요.", false, true)
     if btn == DIALOG_RESULT.QUIT then

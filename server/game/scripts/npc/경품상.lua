@@ -1,4 +1,3 @@
--- @note Trash: 1_부여성\일반.txt "경품상". Wedding dress special sale (14/12/18 for zeny; 22/25 by exchange) and Garimbin wing dress exchange.
 
 local function run_wedding_dress_sale(me, npc)
     local btn = me:dialog(npc, "안녕하세요? 특별 이벤트 기간중에 희귀 웨딩드레스를 판매하고 있습니다.", false, true)

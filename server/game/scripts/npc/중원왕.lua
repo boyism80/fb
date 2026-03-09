@@ -1,7 +1,4 @@
--- @note Trash: 1_공통/진원관.txt "중원왕". Skull necklace sub4 (아기원숭이 give, then 2->3 진원창).
--- Phase 1: sub-quest only. Phase 2: main 34->35.
 
----@brief   Sub4 step 0: list intro, "도와드릴께요" -> give 아기원숭이, set sub4=1.
 local function do_sub4_start(me, npc)
     local sel, btn = me:list(npc, "요즘따라 인간들을 자주 만나시게 되시는도다.", { "이름을 가르쳐주세요.", "이곳의 상황은 좀 어떤가요?", "제가 도와드릴 일은 없을까요?" }, false)
     if btn == DIALOG_RESULT.QUIT or sel == nil then
@@ -42,7 +39,6 @@ local function do_sub4_start(me, npc)
     return true
 end
 
----@brief   Sub4 step 2: give 진원창, set sub4=3.
 local function do_sub4_complete(me, npc)
     local b = me:dialog(npc, "수고하셨다. 사람들 중에서도 착한 마음씨를 가진 사람이 있으시긴 하셨다. 이걸 받아라. 섬에서 쓰시던 무기시다.", false, true)
     if b == DIALOG_RESULT.QUIT then
@@ -82,7 +78,6 @@ function NPC_466(me, npc)
         return
     end
 
-    -- Phase 2: main 34->35 (마른갈대)
     local main_q = me:quest(QUEST_SKULL_NECKLACE)
     if main_q and main_q:step() == 34 then
         if not me:has_items("마른갈대", 1) then

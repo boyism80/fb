@@ -1,11 +1,4 @@
--- Quest starter for QUEST_BAEK_MONGYEON (Jungwol/Chunghwa cleanup).
--- Trash: 중화집.txt "백몽연" block; $백몽연 set to 1 in FUNC_중화절재료리스트 when player chooses "네.. 받아와드릴께요."
--- Step 1 = quest in progress (collect items from other NPCs). Other NPCs check quest:step() >= 1 to give items.
 
--- @brief   NPC Baek Mongyeon: starts Chunghwa (Jungwol) cleanup quest and accepts item turn-ins.
--- @param[in]  me   The character talking to the NPC.
--- @param[in]  npc  The NPC entity (Baek Mongyeon).
--- @note    Only active when gv("sesi_rightnow") == 2. Uses QUEST_BAEK_MONGYEON; step 1 = collecting items.
 function NPC_353(me, npc)
     local btn = me:dialog(npc, "안녕하세요? 저는 백몽연입니다.", false, true)
     if btn == DIALOG_RESULT.QUIT then
@@ -34,7 +27,6 @@ function NPC_353(me, npc)
     end
 
     if sel == 0 then
-        -- 중화절은 뭐하는 날인가요?
         btn = me:dialog(npc, "중화절은 음력 2월 1일입니다. 봄이 시작되는 때이기 때문에 창고나 부엌같은 곳을 모두 말끔히 청소하지요.", false, true)
         if btn == DIALOG_RESULT.QUIT then
             return
@@ -48,7 +40,6 @@ function NPC_353(me, npc)
     end
 
     if sel == 1 then
-        -- 도와드릴 일이라도...
         btn = me:dialog(npc, "제가 중화절에 대청소하는 일을 맡아서 하고 있는데요, 마을 곳곳의 잡동사니들을 다 모아 오려니까 정말 힘이드네요.", false, true)
         if btn == DIALOG_RESULT.QUIT then
             return
@@ -89,7 +80,6 @@ function NPC_353(me, npc)
     end
 
     if sel == 2 then
-        -- 부탁하신일 다 했어요.
         if quest and quest:completed() then
             me:dialog(npc, "감사합니다! 그럼 잘 쓰시고 좋은 봄날 맞으시길!", false, true)
             return
@@ -99,10 +89,6 @@ function NPC_353(me, npc)
     end
 end
 
--- Inline of FUNC_중화절재료리스트: dialogs then "다 아셨죠?" list; on "네.. 받아와드릴께요." start quest and set step(1).
--- @brief   Shows material list and starts QUEST_BAEK_MONGYEON with step(1) when player confirms.
--- @param[in]  me   The character.
--- @param[in]  npc   The NPC (Baek Mongyeon).
 function run_material_list(me, npc)
     local btn = me:dialog(npc, "동지집에 연이 있을텐데.. 동지집에 가서 수인이에게 연을 받아주시구요..\n\n칠석집엔 실패가 있을꺼에요.. 칠석집의 제 동생 주연이에게 실패를 받아오시구요..", false, true)
     if btn == DIALOG_RESULT.QUIT then
@@ -141,10 +127,6 @@ function run_material_list(me, npc)
     me:dialog(npc, "그런데.. 섣달집의 선릉이를 조심하셔야 되요. 이 녀석은 발명한답시고 잡동사니들을 모으는 녀석이라..\n\n부탁드리겠습니다. 감사합니다~", false, true)
 end
 
--- "어떤걸 받아오셨나요?" turn-in: 4 groups of items; last group (벌레쫓는부적 x2) gives reward and quest:complete().
--- @brief   Handles item turn-in for QUEST_BAEK_MONGYEON; completes quest when 벌레쫓는부적 x2 is handed in.
--- @param[in]  me   The character.
--- @param[in]  npc   The NPC (Baek Mongyeon).
 function run_hand_in(me, npc)
     local quest = me:quest(QUEST_BAEK_MONGYEON)
     if quest == nil or quest:completed() then

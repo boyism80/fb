@@ -1,8 +1,4 @@
--- @note Trash: 1_중국\소림사.txt "소림사둔갑술". Dialog + list (둔갑술 설명 / 배우기). 배우기: 5 options (동물/천구/후/강시/다른모습); each path: spell check, dialogs, items+zeny, addspell or additem. FB: me:spell(name), me:has_items, me:rmitem, me:money(), me:mkspell, me:mkitem.
 
---- @brief NPC 소림사둔갑술: Explain or teach disguise spells/items (소림경수둔갑술, 소림천구둔갑술, 소림후둔갑술, 소림오행진, 진소림오행진).
---- @param me   character talking to the NPC
---- @param npc  NPC entity (소림사둔갑술)
 function NPC_374(me, npc)
     local btn = me:dialog(npc, "나무아미타불.. 소림사에 입문하신 수행자이시군요. 백열장의 수련은 잘 되고 계신지?", false, true)
     if btn == DIALOG_RESULT.QUIT then

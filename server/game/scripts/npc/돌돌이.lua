@@ -1,8 +1,4 @@
--- @note Trash: 1_환상의섬\일반.txt "돌돌이". QUEST_DETECTIVE: step 1 or 2 → list "나 좀 도와주겠니?" → choice 1 → 3 dialogs → step(3). Step 8 → list "전에 부탁한 건 어떻게 됐니?" → choice 1 → 2 dialogs → step(9). Else $doldol_gosool etc omitted → placeholder.
 
---- @brief NPC 돌돌이: Detective quest. Step 1,2 → 3; step 8 → 9.
---- @param me   character
---- @param npc  NPC entity
 function NPC_134(me, npc)
     local quest = me:quest(QUEST_DETECTIVE)
     if quest == nil or quest:completed() then

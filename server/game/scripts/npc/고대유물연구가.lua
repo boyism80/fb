@@ -1,4 +1,3 @@
--- @note Trash: 1_중국\남경류.txt "고대유물연구가". Ancient relic excavation help: start quest (step 1), then exchange bead pieces for 고대금속결정 (66% per piece).
 
 local BEAD_OPTIONS = {
     { "갈색구슬조각", "고대금속결정'양" },
@@ -182,9 +181,6 @@ local function run_intro_and_list(me, npc)
     end
 end
 
--- @brief   NPC Ancient Relic Researcher: intro, quest start, and bead-piece exchange for 고대금속결정.
--- @param[in]  me   The character talking to the NPC.
--- @param[in]  npc  The NPC entity (고대유물연구가).
 function NPC_367(me, npc)
     run_intro_and_list(me, npc)
 end

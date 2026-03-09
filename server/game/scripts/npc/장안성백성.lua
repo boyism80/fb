@@ -1,9 +1,4 @@
--- @note Trash: 1_중국\일반.txt "장안성백성". QUEST_JINHWANG: start (0→1), step 1–3 hint, step 4→5, step 5 hint, step 10→11 completion.
--- Level 50+ required.
 
--- @brief   NPC Jangan citizen: QUEST_JINHWANG starter and progress hints (북천좌상, 진랑검, 영환도사, completion).
--- @param[in]  me   The character talking to the NPC.
--- @param[in]  npc  The NPC entity (장안성백성).
 function NPC_539(me, npc)
     if me:level() < 50 then
         return
@@ -11,7 +6,6 @@ function NPC_539(me, npc)
 
     local quest = me:quest(QUEST_JINHWANG)
 
-    -- Not started: offer to start
     if quest == nil then
         ::NPC_539_0000::
         local button = me:dialog(npc, "요즘 성내에는 이상한 소문이 돌고 있습니다. 황실의 기보인 진황보검이 사라졌다는 소문이죠. 황실전체가 진황보검을 되찾기위해 발칵 뒤집혔다는군요.", false, true)
@@ -61,13 +55,11 @@ function NPC_539(me, npc)
 
     local step = quest:step()
 
-    -- Step 1–3: same hint
     if step >= 1 and step <= 3 then
         me:dialog(npc, "그럼 일단 황실에 들어가 북천좌상님에게 진황보검에 대해 여쭈어보는게 좋겠네요.", false, true)
         return
     end
 
-    -- Step 4: advance to 5 after dialogs
     if step == 4 then
         ::NPC_539_0004::
         local button = me:dialog(npc, "진랑검을 구하셨군요! 오.. 이것이 진황보검의 한조각이란 말인가요.. 나머지 한조각인 혈황검에 대해선 아직 아무런 소문도 듣지 못했습니다.", false, true)
@@ -97,13 +89,11 @@ function NPC_539(me, npc)
         return
     end
 
-    -- Step 5: hint only
     if step == 5 then
         me:dialog(npc, "돌아오시면 금방 찾을수 있을겁니다. 진랑검 잘 간수하시고 그때까지 기다려보심이 어떨런지..", false, true)
         return
     end
 
-    -- Step 10: completion message and quest complete
     if step == 10 then
         me:dialog(npc, "진황보검을 찾아서 황실에 돌려주셨다구요? 기어코 찾으셨군요! 정말 대단하시네요~ 찾으신것도 대단하지만 그 기보를 그냥 돌려주시다니. 정말 곧으신 분이군요.", false, true)
         me:push_achievement(511, "진황보검을 찾았다!", 7, 20)

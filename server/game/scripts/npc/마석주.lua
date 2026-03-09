@@ -8,7 +8,7 @@ local CLOTH_ITEMS = {
     '산신의수령', '산신의정령', '산신의인령', '산신의비령',
 }
 
-local CLOTH_JOB = { '전사', '도적', '주술사', '도사', '전사', '도적', '주술사', '도사' }
+local CLOTH_CLASS = { '전사', '도적', '주술사', '도사', '전사', '도적', '주술사', '도사' }
 local CLOTH_GENDER = { '남자', '남자', '남자', '남자', '여자', '여자', '여자', '여자' }
 
 function NPC_138(me, npc)
@@ -156,10 +156,10 @@ function NPC_138(me, npc)
             return
         end
         local item_name = CLOTH_ITEMS[sel + 1]
-        local job = CLOTH_JOB[sel + 1]
+        local class_name = CLOTH_CLASS[sel + 1]
         local gender = CLOTH_GENDER[sel + 1]
         ::COS009::
-        btn = me:dialog(npc, name_with(item_name, '는', '은') .. ' ' .. gender .. ' ' .. job .. '들을 위한 옷입니다.', false, true)
+        btn = me:dialog(npc, name_with(item_name, '는', '은') .. ' ' .. gender .. ' ' .. class_name .. '들을 위한 옷입니다.', false, true)
         if btn == DIALOG_RESULT.QUIT then
             return
         end

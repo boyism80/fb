@@ -1,11 +1,7 @@
--- @note Trash: 1_중국\소림사.txt "박영나한". Re-learn 백열장/선풍각 after "forgetting": 4 intro dialogs, list choice; 백열장 100000 zeny + $palmattack$ 초기화 (rmspell); 선풍각 200000 zeny + $feetattack$ 초기화 (rmspell). FB: me:money(), me:rmspell(name).
 
 local BAEKYEOL_PRICE = 100000
 local SEONPUNG_PRICE = 200000
 
---- @brief NPC 박영나한: Re-learn 백열장 or 선풍각 for zeny; removes spell then player goes to 혜천대사.
---- @param me   character talking to the NPC
---- @param npc  NPC entity (박영나한)
 function NPC_384(me, npc)
     local btn = me:dialog(npc, "뭐라고오옷?! 이미 배웠던 선풍각과 백열장 사용 방법을 잊어버렸다고?!", false, true)
     if btn == DIALOG_RESULT.QUIT then

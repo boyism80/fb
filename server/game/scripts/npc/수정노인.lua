@@ -1,11 +1,7 @@
--- @note Trash: 1_12지신의유적\일반.txt "수정노인" + FUNC_CRYSTAL_SOOJUNG. Exchange 수정 n (1~5) for 수정반지1~5.
 
 local MATERIAL = "수정"
 local RING_NAMES = { "수정반지1", "수정반지2", "수정반지3", "수정반지4", "수정반지5" }
 
----@brief NPC 수정노인: exchange 수정 n for 수정반지 n (1~5).
----@param[in] me  The character.
----@param[in] npc The NPC entity.
 function NPC_569(me, npc)
     if not me:has_items(MATERIAL, 1) then
         me:dialog(npc, "나는 " .. MATERIAL .. "으로 세공을 한다네...", false, false)

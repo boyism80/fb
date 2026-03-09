@@ -1,7 +1,3 @@
--- @brief   NPC Baek Suin (Dongji house): gives 연 during Chunghwa quest; other seasons (e.g. Dongji) not yet implemented.
--- @param[in]  me   The character talking to the NPC.
--- @param[in]  npc  The NPC entity.
--- @note    When gv("sesi_rightnow") == 2 and QUEST_BAEK_MONGYEON step >= 1, gives 연 once.
 function NPC_548(me, npc)
     local button = me:dialog(npc, "안녕하세요? 저는 백수인입니다.", false, true)
     if button == DIALOG_RESULT.QUIT then

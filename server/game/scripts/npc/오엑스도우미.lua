@@ -1,8 +1,4 @@
--- @note Trash: 2_이벤트\오엑스.txt "오엑스도우미". List: 물건 사기(callshop 117), 사용자 오엑스(아무나OX주최토큰→출입구열기/닫기/추방), 토큰 구입(도깨비방망이 1→아무나OX주최토큰). 출입구열기/닫기: map:block(7,13)/(21,13) to open/close passage (no NPC spawn/remove). 추방: me:input + name2ch + target:map(부여성).
 
----@brief   NPC 오엑스도우미: list (shop / token-holder sub-list / 도깨비방망이→아무나OX주최토큰). 출입구열기/닫기 use map:block for passage.
----@param[in] me   The character.
----@param[in] npc  The NPC entity.
 function NPC_310(me, npc)
     ::NPC_310_000::
     local sel, btn = me:list(npc, "무엇을 도와드릴까요?", {

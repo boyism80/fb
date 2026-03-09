@@ -1,8 +1,4 @@
--- @note Trash: 1_초보자의길\초보자도우미.txt "똘똘이도우미". Intro dialogs + FAQ list. Account counter/exp reward omitted (no $@ var).
 
--- @brief   NPC Ttolttol helper: intro dialogs and FAQ list (no visit counter or exp reward).
--- @param[in]  me   The character talking to the NPC.
--- @param[in]  npc  The NPC entity (똘똘이도우미).
 function NPC_278(me, npc)
     local button = me:dialog(npc, "안녕하세요? 저는 똘똘이 도우미 입니다.", false, true)
     if button == DIALOG_RESULT.QUIT then
@@ -60,7 +56,6 @@ function NPC_278(me, npc)
     end
 
     if sel == 7 then
-        -- 신수: two dialogs in trash
         button = me:dialog(npc, "바람의나라에서 신수란 각각 사방을 상징하는 '좌-청룡', '우-백호', '북-주작', '남-현무'로 구성됩니다.", false, true)
         if button == DIALOG_RESULT.QUIT then
             return

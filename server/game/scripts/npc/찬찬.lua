@@ -1,8 +1,4 @@
--- @note Trash: 1_환상의섬\일반.txt "찬찬". QUEST_DETECTIVE: step 13 → list "다른 도움이 될 만한 건 없을까요?" → choice 1 → 3 dialogs → step(14).
 
---- @brief NPC 찬찬: Detective quest. Step 13 → 14.
---- @param me   character
---- @param npc  NPC entity
 function NPC_119(me, npc)
     local quest = me:quest(QUEST_DETECTIVE)
     if quest == nil or quest:completed() then

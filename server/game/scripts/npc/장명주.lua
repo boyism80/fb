@@ -1,9 +1,4 @@
--- @note Trash: 1_세시마을\삼짇집.txt "장명주". Active when gv("sesi_rightnow") == 3 (삼짇날).
--- List: 삼짇날 알려주기 (3 dialogs), 나비를 잡아왔어요 (hand-in by butterfly tier: 0–3 / 4–9 / 10 → 화면 rewards).
 
----@brief   Find the highest butterfly (채집통 [N 마리]) item the player has; returns item name or nil.
----@param[in] me  The character.
----@return string|nil  Item name if any, else nil.
 local function find_butterfly_item(me)
     for n = 10, 0, -1 do
         local name = "채집통 [" .. n .. " 마리]"
@@ -14,9 +9,6 @@ local function find_butterfly_item(me)
     return nil
 end
 
----@brief   NPC 장명주: 삼짇날 (sesi_rightnow==3) list and butterfly hand-in for 화면 rewards.
----@param[in] me   The character.
----@param[in] npc  The NPC entity.
 function NPC_359(me, npc)
     local btn = me:dialog(npc, "안녕하세요? 저는 장명주입니다.", false, true)
     if btn == DIALOG_RESULT.QUIT then

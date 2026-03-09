@@ -1,7 +1,3 @@
--- @brief   NPC Jung Eoeon (Seollal house): gives 널 during Chunghwa quest; other seasons (e.g. Seollal) not yet implemented.
--- @param[in]  me   The character talking to the NPC.
--- @param[in]  npc  The NPC entity.
--- @note    When gv("sesi_rightnow") == 2 and QUEST_BAEK_MONGYEON step >= 1, gives 널 once.
 function NPC_356(me, npc)
     local button = me:dialog(npc, "안녕하세요? 저는 정어언입니다.", false, true)
     if button == DIALOG_RESULT.QUIT then

@@ -1,10 +1,10 @@
 function NPC_5(me, npc)
-    local job_name = class2name(me:class(), me:promotion())
-    if not job_name then
-        job_name = '도사'
+    local class_name = class2name(me:class(), me:promotion())
+    if not class_name then
+        class_name = '도사'
     end
     local sel = me:list(npc, '안녕하세요. 어떻게 오셨나요?', {
-        name_with(job_name, '으로서', '로서') .. ' 승급을 원합니다',
+        name_with(class_name, '으로서', '로서') .. ' 승급을 원합니다',
         '기술을 배울래요',
         '3차승급 옷을 원합니다',
     })

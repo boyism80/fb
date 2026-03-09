@@ -1,4 +1,4 @@
--- 용랑제일봉: on attack, chance to apply 용의제일주 (curse) on front target. Trash: 15% prob, 6s, effect 53, sound 40.
+-- 용랑제일봉 공격 스크립트
 function ON_ATTACK_267(me, item)
     math.randomseed(seed())
     if math.random() > 0.15 then

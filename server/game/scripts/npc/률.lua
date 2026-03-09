@@ -1,9 +1,4 @@
--- @note Trash: 1_초보자의길\초보자도우미.txt "률". $초보자의길==7: warp only. Else: dialogs, exp 300, 노란비서 20, set 7, warp. 추천인등록 omitted.
---       Not the final script of 초보자의길: 아도 (0_초보지원) continues 7→8→9→10; step 10 = warp to 직업의길 + final rewards.
 
--- @brief   NPC Ryul: when QUEST_BEGINNER_PATH step 7 or completed, warp to return map; else intro dialogs, give exp 300 and 노란비서 20, set step 7, warp.
--- @param[in]  me   The character talking to the NPC.
--- @param[in]  npc  The NPC entity (률).
 function NPC_555(me, npc)
     local quest = me:quest(QUEST_BEGINNER_PATH)
     if quest and (quest:step() == 7 or quest:completed()) then

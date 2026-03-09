@@ -1,4 +1,3 @@
--- @note Trash: 1_중국\소림사.txt "소림사술장수". List: buy 동동주(200zeny), 팔십세주(4000), 백세주(10000).
 
 local OPTIONS = {
     { item = "동동주", cost = 200 },
@@ -6,9 +5,6 @@ local OPTIONS = {
     { item = "백세주", cost = 10000 },
 }
 
--- @brief   NPC Shaolin liquor merchant: sell one of three drinks for zeny.
--- @param[in]  me   The character talking to the NPC.
--- @param[in]  npc  The NPC entity (소림사술장수).
 function NPC_373(me, npc)
     local sel, list_btn = me:list(npc, "수련이 힘들텐데 술 한잔 하는게 어떻소? 공짜로 줄수는 없으니 소림사에 시주를 좀 해주었으면 하오. 어떤 술을 원하시오?", {
         "동동주 (200전)",

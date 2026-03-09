@@ -901,13 +901,10 @@ local function run_crown_prince_complete(me, npc)
     me:dialog(npc, "언제든지 용궁의 은인으로 반갑게 맞이할 테니 종종 놀러 오게나.", false, true)
 end
 
--- @note Optional: callfunc "지급아이템주인처리" is not implemented; omitted.
 
----@brief Run "심판의낫 만들기" (QUEST_CIDEQUEST) branch at 용왕. step 1=started, 2=got 용궁의보물 from 미궁무기장인, 3=hand in 보물+need 수정/크리스탈, 4=done.
 local function run_cidequest_yongwang(me, npc)
     local q = me:quest(QUEST_CIDEQUEST)
     if q == nil then
-        -- Offer start
         local sel, btn = me:list(npc, "이번 반란 사건으로 혼란한 틈을 타서 용궁의 보물이 사라져 버렸다네.\n\n그래서 이번에도 자네의 힘을 빌려야 할 것 같은데... 어떤가. 이번에도 해줄건가?", { "물론 해드려야죠.", "별로 하고싶지 않은데요." }, false)
         if btn == DIALOG_RESULT.QUIT or sel == nil then
             return

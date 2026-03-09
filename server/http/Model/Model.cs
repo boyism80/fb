@@ -757,41 +757,6 @@ namespace Fb.Model.EnumValue
     }
 
     [JsonConverter(typeof(StringEnumConverter))]
-    public enum Regex
-    {
-        [EnumMember(Value = "SELL")]
-        Sell = 0, 
-        [EnumMember(Value = "BUY")]
-        Buy = 1, 
-        [EnumMember(Value = "REPAIR")]
-        Repair = 2, 
-        [EnumMember(Value = "DEPOSIT_MONEY")]
-        DepositMoney = 3, 
-        [EnumMember(Value = "WITHDRAW_MONEY")]
-        WithdrawMoney = 4, 
-        [EnumMember(Value = "DEPOSIT_ITEM")]
-        DepositItem = 5, 
-        [EnumMember(Value = "WITHDRAW_ITEM")]
-        WithdrawItem = 6, 
-        [EnumMember(Value = "SELL_LIST")]
-        SellList = 7, 
-        [EnumMember(Value = "BUY_LIST")]
-        BuyList = 8, 
-        [EnumMember(Value = "SELL_PRICE")]
-        SellPrice = 9, 
-        [EnumMember(Value = "BUY_PRICE")]
-        BuyPrice = 10, 
-        [EnumMember(Value = "DEPOSITED_MONEY")]
-        DepositedMoney = 11, 
-        [EnumMember(Value = "RENAME_WEAPON")]
-        RenameWeapon = 12, 
-        [EnumMember(Value = "HOLD_ITEM_LIST")]
-        HoldItemList = 13, 
-        [EnumMember(Value = "HOLD_ITEM_COUNT")]
-        HoldItemCount = 14
-    }
-
-    [JsonConverter(typeof(StringEnumConverter))]
     public enum Role
     {
         [EnumMember(Value = "USER")]
@@ -968,27 +933,6 @@ namespace Fb.Model.ConstValue
     public static class Mob
     {
         public const uint Horse = 301;
-    }
-
-    public static class Regex
-    {
-        public const string Sell = "(?P<name>\\S+)\\s+(?:(?:(?:(?P<count>\\d+)개)|(?P<all>다|전부))\\s+)?(?:판다|팜|팔게)";
-        public const string Buy = "(?P<name>\\S+)\\s+(?:(?:(?:(?P<count>\\d+)개))\\s+)?(?:산다|줘|주세요)";
-        public const string Repair = "(((?P<all>전부|모두|다)|(?P<name>\\S+))\\s+?(?:고쳐|수리\\s*해))\\s*줘";
-        public const string DepositMoney = "(?:돈|금전)\\s+(?:(?P<money>\\d+)(?:원|전)|(?P<all>(?:전부)?(?:\\s*다)?))\\s+맡아\\s*(?:줘|놔|주세요)";
-        public const string WithdrawMoney = "(?:돈|금전)\\s+(?:(?P<money>\\d+)(?:원|전)|(?P<all>(?:전부)?(?:\\s*다)?))\\s+돌려\\s*(?:줘|놔|주세요)";
-        public const string StoreItem = "(?P<name>\\S+)\\s+(?:(?:(?P<count>\\d+)(?:개)|(?P<all>(?:전부)?(?:\\s*다)?))\\s+)?맡아\\s*(?:줘|놔|주세요)";
-        public const string RetrieveItem = "(?P<name>\\S+)\\s+(?:(?:(?P<count>\\d+)(?:개)|(?P<all>(?:전부)?(?:\\s*다)?))\\s+)?돌려\\s*(?:줘|놔|주세요)";
-        public const string SellList = "(?:뭐|뭘|무엇을|무얼)\\s*(?:파니|파냐|팔고\\s*(?:있니|있냐))";
-        public const string BuyList = "(?:뭐|뭘|무엇을|무얼)\\s*(?:사니|사냐|사고\\s*(?:있니|있냐))";
-        public const string SellPrice = "(?P<name>\\S+)\\s+얼마(?:(?:(?:니|야|임|냐|에\\s*파(?:니|냐)))|(?:파(?:니|냐|)))";
-        public const string BuyPrice = "(?P<name>\\S+)\\s+얼마에\\s?사(?:니|냐)";
-        public const string DepositedMoney = "(?:돈|금전)\\s*얼마(?:나)?\\s*맡(?:아두)?고\\s*있(?:니|냐)";
-        public const string RenameWeapon = "(?P<weapon>\\S+?)?(?:의|$)?\\s+이름을\\s+(?P<name>\\S+?)?(?:으|$)?로\\s+명명";
-        public const string HoldItemList = "(?:뭐|뭘|무엇을|무얼)\\s*맡고\\s*(?:있니|있냐)";
-        public const string HoldItemCount = "(?P<name>\\S+)\\s+(?:몇\\s*개|얼마나)\\s*맡고\\s*있(?:니|냐)";
-        public const string Revive = "살려(?:(?P<ok>(?:주세요|주십시오))|(?P<no>(?:줘|내|라|주소)))";
-        public const string Appreciate = "(감사합니다|고맙습니다)";
     }
 
     public static class Script

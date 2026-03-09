@@ -1,8 +1,4 @@
--- @note Trash: 1_중국\소림사.txt "철수나한". $sec_pro (극비임무) omitted. 금강퇴: learn (50000 zeny, mkspell), training hint, info (7 dialogs). me:spell, me:money, me:mkspell.
 
----@brief   NPC 철수나한: welcome, list 금강퇴 배우기/수련/수련방법; teach 금강퇴 for 50000 zeny or show training/info dialogs.
----@param[in] me   The character.
----@param[in] npc  The NPC entity.
 function NPC_251(me, npc)
     local has_spell = (me:spell("금강퇴") ~= nil)
 

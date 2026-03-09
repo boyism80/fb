@@ -1,9 +1,4 @@
--- @note Trash: 1_중국\일반.txt "영환도사". QUEST_JINHWANG step 6→7 (accept help), 7→8 (hand in 100 강시의손톱), 8→9 (hand in 만년원귀의손톱 → 혈황검).
--- Other branches ($bongma, etc.) not converted here.
 
--- @brief   NPC Yeonghwan Taoist: QUEST_JINHWANG steps 6–8 (help request, 100 claws, boss claw → 혈황검).
--- @param[in]  me   The character talking to the NPC.
--- @param[in]  npc  The NPC entity (영환도사).
 function NPC_542(me, npc)
     local quest = me:quest(QUEST_JINHWANG)
     if quest == nil then
@@ -16,7 +11,6 @@ function NPC_542(me, npc)
     local step = quest:step()
     local button
 
-    -- Step 6: accept to help → step 7
     if step == 6 then
         ::NPC_542_0000::
         button = me:dialog(npc, "무슨일로 나를 찾아왔는가? 난 방금 여행에서 돌아와 무척 피곤하다네.", false, true)
@@ -65,7 +59,6 @@ function NPC_542(me, npc)
         return
     end
 
-    -- Step 7: hand in 100 강시의손톱 → step 8, then dialogs
     if step == 7 then
         if not me:has_items("강시의손톱", 100) then
             button = me:dialog(npc, "강시들을 물리쳐 강시의손톱을 모아와주게. 100개의 강시의 손톱을 모아와보도록 하게나. 만년원귀를 바로 상대했다가 개죽음을 당할 수도 있지 않는가.", false, true)
@@ -96,7 +89,6 @@ function NPC_542(me, npc)
         return
     end
 
-    -- Step 8: hand in 만년원귀의손톱 → 혈황검, step 9, then dialogs
     if step ~= 8 then
         return
     end

@@ -1,7 +1,3 @@
--- @brief   NPC Baramdori: exchanges five wind vanes (하늘/초록/연두/파랑/분홍개비) for one random colored wind vane during Seollal (sesi_rightnow == 1), only on Feb 4-6.
--- @param[in]  me   The character talking to the NPC.
--- @param[in]  npc  The NPC entity.
--- @note    Trash: 세시마을기타.txt "바람돌이". Uses gv("sesi_rightnow") == 1; exchange allowed only when month==2 and day 4-6 (datetime() builtin).
 function NPC_497(me, npc)
     if gv("sesi_rightnow") ~= 1 then
         me:dialog(npc, "......", false, false)
@@ -46,7 +42,6 @@ function NPC_497(me, npc)
         return
     end
 
-    -- sel == 0: exchange
     local cost = { ['item'] = { ["하늘개비"] = 1, ["초록개비"] = 1, ["연두개비"] = 1, ["파랑개비"] = 1, ["분홍개비"] = 1 } }
     local r = math.random(1, 100)
     local reward_name

@@ -1,4 +1,3 @@
--- @note Trash: 2_이벤트\서바이벌달리기.txt "출발도우미". Map-based: 12010 lobby (증표 없음→만들기/설명, 있음→참여/퇴장); 12017 death revive; 12016 finish (rank prize); else join time. FB: map id via me:map():model():id(); callfunc/시간변수 omitted → event time always or gv; write_log/announce omitted for finish; map names may need to match server.
 
 local MAP_ID_LOBBY = 12010
 local MAP_ID_GAME = 12011
@@ -7,9 +6,6 @@ local MAP_ID_DEATH = 12017
 
 local SURVIVE_ITEMS = { ["노란비서"] = 1, ["소환비서"] = 1, ["동동주"] = 1, ["막걸리"] = 1 }
 
---- @brief NPC 출발도우미: Survival run event. Branch by current map (lobby/game/finish/death/else).
---- @param me   character talking to the NPC
---- @param npc  NPC entity
 function NPC_495(me, npc)
     local m = me:map()
     if m == nil or m:model() == nil then

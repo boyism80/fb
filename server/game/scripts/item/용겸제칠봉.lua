@@ -1,4 +1,4 @@
--- 용겸제칠봉: on attack, chance to apply 용의제칠노 on front target. Trash: 40% prob, 12s.
+-- 용겸제칠봉 공격 스크립트
 function ON_ATTACK_282(me, item)
     math.randomseed(seed())
     if math.random() > 0.40 then

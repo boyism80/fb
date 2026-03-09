@@ -1,8 +1,4 @@
--- @note Trash: 1_초보자의길\초보자도우미.txt "신규낙랑". Same as 률 (dialogs, exp 300, 노란비서 20, step 7) but no warp; step 7 shows "노란비서 사용해 보세요", reward end with "<노란비서>을 얻다!!!".
 
--- @brief   NPC Sin gyu Nakrang: when QUEST_BEGINNER_PATH step 7 or completed, hint to use 노란비서; else same reward flow as 률 (no warp), ends with "<노란비서>을 얻다!!!".
--- @param[in]  me   The character talking to the NPC.
--- @param[in]  npc  The NPC entity (신규낙랑).
 function NPC_279(me, npc)
     local quest = me:quest(QUEST_BEGINNER_PATH)
     if quest and (quest:step() == 7 or quest:completed()) then

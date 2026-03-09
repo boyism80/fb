@@ -1,5 +1,3 @@
--- Chat interaction regex patterns (moved from include/fb/model/model.h).
--- Separate from CONST.REGEX so C++-pushed constants remain unchanged.
 CHAT_REGEX = {
     SELL = "(?P<name>\\S+)\\s+(?:(?:(?:(?P<count>\\d+)개)|(?P<all>다|전부))\\s+)?(?:판다|팜|팔게)",
     BUY = "(?P<name>\\S+)\\s+(?:(?:(?:(?P<count>\\d+)개))\\s+)?(?:산다|줘|주세요)",
@@ -929,8 +927,6 @@ function mountain_treasure_fabric_on_move(me)
     me:dialog(nil, '산신의비단을 발견했다!', false, true)
 end
 
---- Chance to find 산신의보물지도 when moving on specific 도삭산 maps (801+). Requires QUEST_MOUNTAIN_GOD started.
---- From 무브.txt @산신의보물지도: map ids 1287,1291,1303,1313,1327,1330,1336,1344,1347,1351,1357,1360,1366,1374,1377.
 function mountain_treasure_map_on_move(me)
     local quest = me:quest(QUEST_MOUNTAIN_GOD)
     if quest == nil then

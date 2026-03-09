@@ -10,7 +10,6 @@ function NPC_113(me, npc)
             return
         end
         if sel == 0 then
-            -- fall through to TOTEM_CLOTHES logic below
         elseif sel == 1 then
             local btn = me:dialog(npc, "정령들이 화를 내고 있다. 아, 정령들이 집으로 삼는 토템들이 이 섬을 떠나는구나.", false, true)
             if btn == DIALOG_RESULT.QUIT then return end

@@ -1,8 +1,4 @@
--- @note Trash: 0_초보지원\엔피씨.txt "아도". $초보자의길 7→8 (웅담 2, set_hp half); 8→9 (use 웅담 then 동동주+막걸리); 9→10 (탁주 있으면 exp+노란비서+직업의길비서+warp, else 도토리 50→재지급 or 조합 설명). FB: QUEST_BEGINNER_PATH step 7→8→9→10; set_hp omitted.
 
---- @brief NPC 아도: Item/craft tutorial. QUEST_BEGINNER_PATH step 7→8 (웅담), 8→9 (동동주+막걸리), 9→10 (탁주→reward+warp).
---- @param me   character talking to the NPC
---- @param npc  NPC entity (아도)
 function NPC_447(me, npc)
     local quest = me:quest(QUEST_BEGINNER_PATH)
     if quest == nil then

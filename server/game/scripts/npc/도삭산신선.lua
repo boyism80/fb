@@ -1,8 +1,4 @@
--- @note Trash: 1_도삭산\일반.txt "도삭산신선". When QUEST_DOJAECHUN not started (or step 0): greeting. When step 1 and has 신선의책: dialogs then warp to 도삭산비밀의방.
 
--- @brief   NPC Dosak Mountain hermit: greeting when quest not at step 1; when QUEST_DOJAECHUN step 1 and player has 신선의책, sends to 비밀의방.
--- @param[in]  me   The character talking to the NPC.
--- @param[in]  npc  The NPC entity (도삭산신선).
 function NPC_369(me, npc)
     local quest = me:quest(QUEST_DOJAECHUN)
     local at_step_one = (quest and quest:step() == 1)

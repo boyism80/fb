@@ -1,9 +1,7 @@
 local ACHIEVEMENT_RABBIT_CATCH = 20
 local ITEM_NEURAEJINDO = '뇌진도'
 
--- @note Optional: callfunc "지급아이템주인처리" is not implemented; omitted.
 
----@brief Run "용왕의보물" (QUEST_CIDEQUEST) branch at 장돌뱅이.
 local function run_cidequest_jangdol(me, npc)
     local q = me:quest(QUEST_CIDEQUEST)
     if q == nil or q:step() ~= 1 then
@@ -24,7 +22,6 @@ local function run_cidequest_jangdol(me, npc)
         me:dialog(npc, "그 친구는 부여미궁 어딘가에 있다고 하더군...", false, false)
         return
     end
-    -- Need 뇌진도: dialog chain then set param "1"
     local list_1, b1 = me:list(npc, "음...", { "혹시 용왕님의 보물에 대해 알고 계신가요?" }, false)
     if b1 == DIALOG_RESULT.QUIT or list_1 == nil then
         return
@@ -83,7 +80,6 @@ function NPC_159(me, npc)
         me:dialog(npc, "이 귀한것을 가지고 있다니... 자, 여기 만오천전을 줄테니 어서 가져가게나.", false, false)
         return
     end
-    -- main_sel == 2: 별주부전
     local quest = me:quest(QUEST_RABBIT_LIVER)
     if quest == nil then
         me:dialog(npc, '지금은 이야기를 할 때가 아니군..', false, false)

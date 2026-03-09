@@ -1,4 +1,4 @@
--- 용마제사검: on attack, chance to cast 용마제사격 on front target. Trash: 35% probability.
+-- 용마제사검 공격 스크립트
 function ON_ATTACK_252(me, item)
     math.randomseed(seed())
     if math.random() > 0.35 then

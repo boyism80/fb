@@ -1,7 +1,3 @@
--- @brief   NPC Baek Juyeon (Chilseok house): gives 실패 during Chunghwa quest; other seasons (e.g. Chilseok) not yet implemented.
--- @param[in]  me   The character talking to the NPC.
--- @param[in]  npc  The NPC entity.
--- @note    When gv("sesi_rightnow") == 2 and QUEST_BAEK_MONGYEON step >= 1, gives 실패 once.
 function NPC_361(me, npc)
     local button = me:dialog(npc, "안녕하세요? 저는 백주연입니다.", false, true)
     if button == DIALOG_RESULT.QUIT then

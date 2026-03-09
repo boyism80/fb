@@ -1,8 +1,4 @@
--- @note Trash: 0_신수의제단\일반.txt "주작제단지기". Two intro dialogs only (no list).
 
----@brief   NPC 주작제단지기: intro dialogs about Jujak altar and Cheondo peach power (1000 mana, 5% damage).
----@param[in]  me   The character.
----@param[in]  npc  The NPC entity.
 function NPC_453(me, npc)
     local button = me:dialog(npc, "안녕하신가, " .. me:name() .. ". 나는 이곳 제단에서 힘을 모아 사악한악령에게 [파마의 중독]을 가하는 주작제단지기라네.", false, true)
     if button == DIALOG_RESULT.QUIT then

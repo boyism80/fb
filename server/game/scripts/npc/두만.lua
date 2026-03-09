@@ -1,8 +1,4 @@
--- @note Trash: 1_환상의섬\일반.txt "두만". QUEST_DETECTIVE ($detective). Flow: nil→2 dialogs; completed→message; step 0→intro/placeholder; step 1-15→list (새로운 정보/경과 보고/할 이야기 없음). Step transitions 0→1, 4→5, 10→11, 15→16 in this file; others in 돌순이, 돌돌이, 조염, 통통대감, 진진, 원주민정령사, 찬찬.
 
---- @brief NPC 두만: Detective quest hub. QUEST_DETECTIVE; quest nil / completed / step branching.
---- @param me   character
---- @param npc  NPC entity
 function NPC_379(me, npc)
     local quest = me:quest(QUEST_DETECTIVE)
 

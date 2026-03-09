@@ -1,15 +1,9 @@
--- @note Trash: 1_극지방\설원지방.txt "설원조합사2". Craft 눈꽃투구 from 눈꽃얼음 10 (99% success); materials consumed either way.
--- List: make request -> dialogs -> confirm list -> check materials, consume, roll, give reward or fail message.
 
 local MATERIAL_NAME = "눈꽃얼음"
 local MATERIAL_COUNT = 10
 local REWARD_NAME = "눈꽃투구"
 local SUCCESS_PERCENT = 99
 
----@brief Run the craft: remove materials, roll success; on success give reward (with refund on mkitem failure); on fail show fail message.
----@param[in] me  The character.
----@param[in] npc The NPC entity.
----@return boolean True if craft attempt completed (success or fail); false if materials missing or rmitem failed.
 local function do_craft(me, npc)
     local cost = { [MATERIAL_NAME] = MATERIAL_COUNT }
     local reward = nil
@@ -33,9 +27,6 @@ local function do_craft(me, npc)
     return true
 end
 
----@brief NPC 설원조합사2: craft 눈꽃투구 from 눈꽃얼음 10 (99% success).
----@param[in] me  The character.
----@param[in] npc The NPC entity.
 function NPC_439(me, npc)
     local sel, btn = me:list(npc, "저는 눈꽃얼음을 이용해 [" .. REWARD_NAME .. "]을 만들어 드립니다. ", { "만들어 주세요.", "아니요. 다음에..." }, false)
     if btn == DIALOG_RESULT.QUIT then

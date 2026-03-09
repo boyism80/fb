@@ -1,5 +1,3 @@
--- @note Trash: 2_이벤트\기타.txt "추모NPC". List: "오늘은..." (3 dialogs about 6/25), "국화 한 송이를..." (추모국화 1, 10min cooldown, 10% 추모풍선, broadcast).
--- Cooldown stored in QUEST_CHOOMO param (next available timestamp).
 
 local COOLDOWN_SEC = 600
 local FLOWER_NAME = "추모국화"
@@ -35,9 +33,6 @@ local function set_cooldown(me)
     end
 end
 
----@brief NPC 추모NPC: memorial event list (today 6/25 dialogs; offer flower with cooldown, 10% balloon).
----@param[in] me  The character.
----@param[in] npc The NPC entity.
 function NPC_553(me, npc)
     local sel, btn = me:list(npc, "안녕하신가. 오늘은 슬픈 날이로군.", { "오늘은...", "국화 한 송이를..." }, false)
     if btn == DIALOG_RESULT.QUIT then

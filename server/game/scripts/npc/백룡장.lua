@@ -1,16 +1,8 @@
--- @note Trash: 1_부여성\일반.txt "백룡장". List "zzzzzz" → 여보세요?/......; "백룡장님은?" → 천계 장군(무기 설명 8종), 사면(1000만·전과낮추기), 국적 변경(금 바치기). FB: image omitted; 사면($prison_count, spellcast, broadcast) omitted → placeholder; 국적은 me:nation()/me:nation(value), money.
 
---- @brief Shows pardon (전과 사면) placeholder; FB does not implement $prison_count / spellcast.
---- @param me  character
---- @param npc NPC entity
 local function run_pardon_placeholder(me, npc)
     me:dialog(npc, "사면 기능은 준비중입니다.", false, false)
 end
 
---- @brief Runs nation-change flow: pay zeny and set nation (고구려 ↔ 부여).
---- @param me  character
---- @param npc NPC entity
---- @return boolean  true if dialog completed (including quit/prev)
 local function run_nation_change(me, npc)
     local nation = me:nation()
     local target_name, target_nation, cost
@@ -59,13 +51,6 @@ local function run_nation_change(me, npc)
     return true
 end
 
---- @brief Runs one weapon-info dialog chain (3 dialogs). Returns false on QUIT so caller can return.
---- @param me         character
---- @param npc        NPC entity
---- @param line1      string  first dialog
---- @param line2      string  second dialog
---- @param line3      string  third dialog
---- @return boolean   false if player quit, true otherwise
 local function run_weapon_three_dialogs(me, npc, line1, line2, line3)
     local btn = me:dialog(npc, line1, false, true)
     if btn == DIALOG_RESULT.QUIT then
@@ -82,9 +67,6 @@ local function run_weapon_three_dialogs(me, npc, line1, line2, line3)
     return true
 end
 
---- @brief Runs weapon info list loop: list then dispatch to per-weapon dialogs. Returns when player quits or chooses "이만 물러가기".
---- @param me  character
---- @param npc NPC entity
 local function run_weapon_info_loop(me, npc)
     local btn = me:dialog(npc, "나는 이 세상에 존재하는 모든 무기에 대해 알고 있네. 또한 몇몇 무기는 만들 수도 있다네... 재료만 있다면...", false, true)
     if btn == DIALOG_RESULT.QUIT then
@@ -156,9 +138,6 @@ local function run_weapon_info_loop(me, npc)
     end
 end
 
---- @brief NPC 백룡장: Dialog tree — wake-up list, then "백룡장님은?" sub-list: weapon info (진성검/백진도/용설봉/진선장/백화검/빙룡검/방천화극), pardon placeholder, nation change (zeny).
---- @param me   character
---- @param npc  NPC entity
 function NPC_274(me, npc)
     local sel, list_btn = me:list(npc, "zzzzzz", {
         "여보세요?",

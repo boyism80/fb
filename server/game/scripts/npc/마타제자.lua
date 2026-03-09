@@ -1,12 +1,7 @@
--- @note Trash: 1_중국\일반.txt "마타제자". $pamaspiri: 0=accept find 파마의피리, 1=in progress, 4=hand in (has item), 5=done. QUEST_PAMASPIRI: step 1=find, hand-in when has item then complete.
 
--- @brief   NPC Mata disciple: QUEST_PAMASPIRI — accept to find 파마의피리; when has item, hand in for 마반경 and complete.
--- @param[in]  me   The character talking to the NPC.
--- @param[in]  npc  The NPC entity (마타제자).
 function NPC_273(me, npc)
     local quest = me:quest(QUEST_PAMASPIRI)
     if quest == nil then
-        -- Not started: list -> accept
         ::NPC_273_COS001::
         local sel, btn = me:list(npc, "아니, 이게 어디로 갔나... 스승님께 들키기라도 하면 경을 칠 텐데, 큰일이네. 깜빡 졸았던 사이에 누가 빼 갔나? 이를 어쩌지?", { "무슨 잃어버린 물건이라도 있습니까?", "난 가던 길이나 가야지..." }, false)
         if btn == DIALOG_RESULT.QUIT then
@@ -87,13 +82,11 @@ function NPC_273(me, npc)
     
     local step = quest:step()
     if step == 4 then
-        -- step 4 but no 파마의피리 (e.g. lost/sold); completed message is only in quest:completed() above
         if not me:has_items("파마의피리", 1) then
             me:dialog(npc, "파마의피리를 가져오시면 마반경으로 바꿔드리겠네요.", false, false)
             return
         end
         
-        -- step 4: has 파마의피리 from 피리부는소년; hand in at 마타제자.
         ::NPC_273_COS0001::
         local button = me:dialog(npc, "앗! 파마의피리를 찾아오셨군요! 고맙습니다. 덕분에 살았습니다.", false, true)
         if button == DIALOG_RESULT.QUIT then

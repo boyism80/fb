@@ -1,8 +1,4 @@
--- @note Trash: 1_중국\소림사.txt "혜천대사". Level 20+, list 백열장/선풍각; me:spell(name) to check, me:mkspell(name) + zeny deduction to teach.
 
----@brief   NPC 혜천대사: level check, list 소림사백열장전수/소림사선풍각전수; teach 백열장(10000zeny) or 선풍각(20000zeny) via mkspell.
----@param[in] me   The character.
----@param[in] npc  The NPC entity.
 function NPC_154(me, npc)
     if me:level() < 20 then
         me:dialog(npc, "자네는 소림사의 비기를 전수받기에 너무 약한것 같군...\n\n레벨이 20이 넘거든 다시 오게나.", false, false)

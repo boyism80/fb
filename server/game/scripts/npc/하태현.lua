@@ -1,7 +1,7 @@
 local ACHIEVEMENT_700 = 15
 local REQUIRED_ITEM = { ['나무가면'] = 50 }
 local REWARD_ITEMS = { '진비투구', '경비투구', '법비모', '격비모' }
-local REWARD_JOBS = { '전사', '도적', '주술사', '도사' }
+local REWARD_CLASSES = { '전사', '도적', '주술사', '도사' }
 
 function NPC_190(me, npc)
     local quest = me:quest(QUEST_HATAEHYUN)
@@ -81,7 +81,7 @@ function NPC_190(me, npc)
         end
         if sel2 >= 0 and sel2 <= 3 then
             local item_name = REWARD_ITEMS[sel2 + 1]
-            local job_name = REWARD_JOBS[sel2 + 1]
+            local class_name = REWARD_CLASSES[sel2 + 1]
             local code = me:exchange(
                 { ['item'] = REQUIRED_ITEM },
                 { ['item'] = { [item_name] = 1 } }
@@ -96,7 +96,7 @@ function NPC_190(me, npc)
             end
             quest:complete()
             me:push_achievement(ACHIEVEMENT_700, '도삭산 700층 퀘스트 완료', 7, 1)
-            btn = me:dialog(npc, item_name .. '는 ' .. job_name .. '분들을 위한 투구입니다.', false, true)
+            btn = me:dialog(npc, item_name .. '는 ' .. class_name .. '분들을 위한 투구입니다.', false, true)
             if btn == DIALOG_RESULT.QUIT then
                 return
             end

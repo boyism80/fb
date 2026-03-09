@@ -1,8 +1,4 @@
--- @note Trash: 1_백두촌\상점.txt "백두촌포목상". List: 물건사기(callshop 0,139), 물건팔기(callshop 1,139), 제작 의뢰(6 recipes with success rate). FB: buy/sell via NPC_BUY_DIALOG/NPC_SELL_DIALOG if npc has shop data; craft: check items/money, rmitem then money then rand/mkitem.
 
---- @brief NPC 백두촌포목상: List (buy/sell/craft). Craft: 6 recipes (원앙의청/적, 표범가죽옷, 곰가죽옷, 원앙청선/홍선) with success rates.
---- @param me   character
---- @param npc  NPC entity
 function NPC_621(me, npc)
     local sel, list_btn = me:list(npc, "안녕하세요. 무엇을 도와드릴까요?", {
         "물건사기",
@@ -31,7 +27,6 @@ function NPC_621(me, npc)
         return
     end
 
-    -- 제작 의뢰
     local craft_sel, craft_btn = me:list(npc, "안녕하세요. 어떤것을 만들어 드릴까요?", {
         "원앙의청",
         "원앙의적",

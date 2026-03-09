@@ -1,7 +1,5 @@
--- @note Trash: 2_이벤트\마동참가신청.txt "마동참가신청". 3rd promotion required; form (job, partner id, schedule); submit once.
--- write_log not implemented in FB; submission is stored in quest only.
 
-local JOB_OPTIONS = { "검신", "패왕", "마신", "신선" }
+local CLASS_OPTIONS = { "검신", "패왕", "마신", "신선" }
 local SCHEDULE_OPTIONS = {
     { label = "1차예선 18일 / 2차예선 25일", value = "18/25" },
     { label = "1차예선 18일 / 2차예선 26일", value = "18/26" },
@@ -9,11 +7,6 @@ local SCHEDULE_OPTIONS = {
     { label = "1차예선 19일 / 2차예선 26일", value = "19/26" },
 }
 
----@brief Parse param "job|partner|schedule" into three strings.
----@param p string|nil Quest param.
----@return string job Job name.
----@return string partner Partner id.
----@return string schedule Schedule value.
 local function parse_param(p)
     if p == nil or p == "" then
         return "", "", ""
@@ -22,25 +15,17 @@ local function parse_param(p)
     return a or "", b or "", c or ""
 end
 
----@brief Build param string from job, partner, schedule.
----@return string
-local function build_param(job, partner, schedule)
-    return (job or "") .. "|" .. (partner or "") .. "|" .. (schedule or "")
+local function build_param(class_name, partner, schedule)
+    return (class_name or "") .. "|" .. (partner or "") .. "|" .. (schedule or "")
 end
 
----@brief Show main form list and handle selection (job, partner, schedule, submit).
----@param[in] me  The character.
----@param[in] npc The NPC entity.
----@param[in] job string Current job value.
----@param[in] partner string Current partner id.
----@param[in] schedule string Current schedule value.
-local function run_form(me, npc, job, partner, schedule)
-    local job_display = (job == "" and "" or job)
+local function run_form(me, npc, class_name, partner, schedule)
+    local class_display = (class_name == "" and "" or class_name)
     local partner_display = (partner == "" and "" or partner)
     local schedule_display = (schedule == "" and "" or schedule)
 
     local labels = {
-        "직업 : " .. job_display,
+        "클래스 : " .. class_display,
         "파트너 아이디 : " .. partner_display,
         "참여일정 : " .. schedule_display,
         "제출하기",
@@ -54,27 +39,25 @@ local function run_form(me, npc, job, partner, schedule)
     end
 
     if sel == 0 then
-        -- Job
-        local sub, sub_btn = me:list(npc, "마동최강자전에 참여하실 직업을 선택하여 주세요. (파트너와 충분한 협의 후 신청하시길 바랍니다.)", JOB_OPTIONS, false)
+        local sub, sub_btn = me:list(npc, "마동최강자전에 참여하실 클래스를 선택하여 주세요. (파트너와 충분한 협의 후 신청하시길 바랍니다.)", CLASS_OPTIONS, false)
         if sub_btn == DIALOG_RESULT.QUIT then
             return
         end
-        if sub ~= nil and sub >= 0 and sub < #JOB_OPTIONS then
-            job = JOB_OPTIONS[sub + 1]
+        if sub ~= nil and sub >= 0 and sub < #CLASS_OPTIONS then
+            class_name = CLASS_OPTIONS[sub + 1]
         end
         local q = me:quest(QUEST_MADONG_APPLY)
         if q == nil then
             q = me:start_quest(QUEST_MADONG_APPLY)
         end
         if q then
-            q:param(build_param(job, partner, schedule))
+            q:param(build_param(class_name, partner, schedule))
         end
-        run_form(me, npc, job, partner, schedule)
+        run_form(me, npc, class_name, partner, schedule)
         return
     end
 
     if sel == 1 then
-        -- Partner id
         local raw = me:input(npc, "파트너의 아이디를 입력하여 주십시오.", "파트너의 아이디는", "입니다.", 20, false)
         if raw == DIALOG_RESULT.QUIT then
             return
@@ -87,14 +70,13 @@ local function run_form(me, npc, job, partner, schedule)
             q = me:start_quest(QUEST_MADONG_APPLY)
         end
         if q then
-            q:param(build_param(job, partner, schedule))
+            q:param(build_param(class_name, partner, schedule))
         end
-        run_form(me, npc, job, partner, schedule)
+        run_form(me, npc, class_name, partner, schedule)
         return
     end
 
     if sel == 2 then
-        -- Schedule
         local sched_labels = {}
         for i = 1, #SCHEDULE_OPTIONS do
             sched_labels[i] = SCHEDULE_OPTIONS[i].label
@@ -111,17 +93,16 @@ local function run_form(me, npc, job, partner, schedule)
             q = me:start_quest(QUEST_MADONG_APPLY)
         end
         if q then
-            q:param(build_param(job, partner, schedule))
+            q:param(build_param(class_name, partner, schedule))
         end
-        run_form(me, npc, job, partner, schedule)
+        run_form(me, npc, class_name, partner, schedule)
         return
     end
 
     if sel == 3 then
-        -- Submit
-        if job == "" or partner == "" or schedule == "" then
-            me:dialog(npc, "직업, 파트너 아이디, 참여일정을 모두 입력해 주세요.", false, false)
-            run_form(me, npc, job, partner, schedule)
+        if class_name == "" or partner == "" or schedule == "" then
+            me:dialog(npc, "클래스, 파트너 아이디, 참여일정을 모두 입력해 주세요.", false, false)
+            run_form(me, npc, class_name, partner, schedule)
             return
         end
         local confirm, confirm_btn = me:list(npc, "정말 이대로 제출하시겠습니까?", { "예.", "아니오." }, false)
@@ -129,7 +110,7 @@ local function run_form(me, npc, job, partner, schedule)
             return
         end
         if confirm ~= 0 then
-            run_form(me, npc, job, partner, schedule)
+            run_form(me, npc, class_name, partner, schedule)
             return
         end
         local q = me:quest(QUEST_MADONG_APPLY)
@@ -142,21 +123,18 @@ local function run_form(me, npc, job, partner, schedule)
         end
         if q then
             q:step(1)
-            q:param(build_param(job, partner, schedule))
+            q:param(build_param(class_name, partner, schedule))
         end
         me:dialog(npc, "참가 신청이 접수되었습니다. (서버 로그 기록은 지원되지 않습니다.)", false, false)
         return
     end
 end
 
----@brief NPC 마동참가신청: event sign-up form (job, partner id, schedule); 3rd promotion required; submit once.
----@param[in] me  The character.
----@param[in] npc The NPC entity.
 function NPC_550(me, npc)
     local q = me:quest(QUEST_MADONG_APPLY)
     if q ~= nil and q:step() == 1 then
-        local job, partner, schedule = parse_param(q:param())
-        me:dialog(npc, "이미 제출하셨습니다.\n선택직업:" .. job .. "\n파트너아이디:" .. partner .. "\n참여일:" .. schedule .. "", false, false)
+        local class_name, partner, schedule = parse_param(q:param())
+        me:dialog(npc, "이미 제출하셨습니다.\n선택클래스:" .. class_name .. "\n파트너아이디:" .. partner .. "\n참여일:" .. schedule .. "", false, false)
         return
     end
 
@@ -182,9 +160,9 @@ function NPC_550(me, npc)
         return
     end
 
-    local job, partner, schedule = "", "", ""
+    local class_name, partner, schedule = "", "", ""
     if q ~= nil then
-        job, partner, schedule = parse_param(q:param())
+        class_name, partner, schedule = parse_param(q:param())
     end
-    run_form(me, npc, job, partner, schedule)
+    run_form(me, npc, class_name, partner, schedule)
 end

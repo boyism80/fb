@@ -2278,84 +2278,6 @@ inline const char* enum_tostring<OPTION>(OPTION k)
     return i->second;
 }
 
-enum class REGEX
-{
-    SELL = 0, 
-    BUY = 1, 
-    REPAIR = 2, 
-    DEPOSIT_MONEY = 3, 
-    WITHDRAW_MONEY = 4, 
-    DEPOSIT_ITEM = 5, 
-    WITHDRAW_ITEM = 6, 
-    SELL_LIST = 7, 
-    BUY_LIST = 8, 
-    SELL_PRICE = 9, 
-    BUY_PRICE = 10, 
-    DEPOSITED_MONEY = 11, 
-    RENAME_WEAPON = 12, 
-    HOLD_ITEM_LIST = 13, 
-    HOLD_ITEM_COUNT = 14
-}; // end of enum 'REGEX'
-
-template <>
-inline REGEX enum_parse<REGEX>(std::string_view k)
-{
-    static const std::unordered_map<std::string, REGEX> enums
-    {
-        { "SELL", REGEX::SELL }, 
-        { "BUY", REGEX::BUY }, 
-        { "REPAIR", REGEX::REPAIR }, 
-        { "DEPOSIT_MONEY", REGEX::DEPOSIT_MONEY }, 
-        { "WITHDRAW_MONEY", REGEX::WITHDRAW_MONEY }, 
-        { "DEPOSIT_ITEM", REGEX::DEPOSIT_ITEM }, 
-        { "WITHDRAW_ITEM", REGEX::WITHDRAW_ITEM }, 
-        { "SELL_LIST", REGEX::SELL_LIST }, 
-        { "BUY_LIST", REGEX::BUY_LIST }, 
-        { "SELL_PRICE", REGEX::SELL_PRICE }, 
-        { "BUY_PRICE", REGEX::BUY_PRICE }, 
-        { "DEPOSITED_MONEY", REGEX::DEPOSITED_MONEY }, 
-        { "RENAME_WEAPON", REGEX::RENAME_WEAPON }, 
-        { "HOLD_ITEM_LIST", REGEX::HOLD_ITEM_LIST }, 
-        { "HOLD_ITEM_COUNT", REGEX::HOLD_ITEM_COUNT }
-    };
-
-    auto k_str = std::string(k);
-    auto i = enums.find(k_str);
-    if (i == enums.end())
-        throw std::runtime_error(std::format("{} is not a valid type in {}", k_str, "REGEX"));
-
-    return i->second;
-}
-
-template <>
-inline const char* enum_tostring<REGEX>(REGEX k)
-{
-    static const std::unordered_map<REGEX, const char*> enums
-    {
-        { REGEX::SELL, "SELL" }, 
-        { REGEX::BUY, "BUY" }, 
-        { REGEX::REPAIR, "REPAIR" }, 
-        { REGEX::DEPOSIT_MONEY, "DEPOSIT_MONEY" }, 
-        { REGEX::WITHDRAW_MONEY, "WITHDRAW_MONEY" }, 
-        { REGEX::DEPOSIT_ITEM, "DEPOSIT_ITEM" }, 
-        { REGEX::WITHDRAW_ITEM, "WITHDRAW_ITEM" }, 
-        { REGEX::SELL_LIST, "SELL_LIST" }, 
-        { REGEX::BUY_LIST, "BUY_LIST" }, 
-        { REGEX::SELL_PRICE, "SELL_PRICE" }, 
-        { REGEX::BUY_PRICE, "BUY_PRICE" }, 
-        { REGEX::DEPOSITED_MONEY, "DEPOSITED_MONEY" }, 
-        { REGEX::RENAME_WEAPON, "RENAME_WEAPON" }, 
-        { REGEX::HOLD_ITEM_LIST, "HOLD_ITEM_LIST" }, 
-        { REGEX::HOLD_ITEM_COUNT, "HOLD_ITEM_COUNT" }
-    };
-
-    auto i = enums.find(k);
-    if (i == enums.end())
-        throw std::runtime_error(std::format("{} is not a valid value in {}", static_cast<uint32_t>(k), "REGEX"));
-
-    return i->second;
-}
-
 enum class ROLE
 {
     USER = 0, 
@@ -2878,34 +2800,6 @@ private:
 DECLARE_CONST_MOB_EXTENSION
 #endif
 }; // end of const 'mob'
-class regex
-{
-public:
-    inline static constexpr const char* SELL = "(?P<name>\\S+)\\s+(?:(?:(?:(?P<count>\\d+)개)|(?P<all>다|전부))\\s+)?(?:판다|팜|팔게)";
-    inline static constexpr const char* BUY = "(?P<name>\\S+)\\s+(?:(?:(?:(?P<count>\\d+)개))\\s+)?(?:산다|줘|주세요)";
-    inline static constexpr const char* REPAIR = "(((?P<all>전부|모두|다)|(?P<name>\\S+))\\s+?(?:고쳐|수리\\s*해))\\s*줘";
-    inline static constexpr const char* DEPOSIT_MONEY = "(?:돈|금전)\\s+(?:(?P<money>\\d+)(?:원|전)|(?P<all>(?:전부)?(?:\\s*다)?))\\s+맡아\\s*(?:줘|놔|주세요)";
-    inline static constexpr const char* WITHDRAW_MONEY = "(?:돈|금전)\\s+(?:(?P<money>\\d+)(?:원|전)|(?P<all>(?:전부)?(?:\\s*다)?))\\s+돌려\\s*(?:줘|놔|주세요)";
-    inline static constexpr const char* STORE_ITEM = "(?P<name>\\S+)\\s+(?:(?:(?P<count>\\d+)(?:개)|(?P<all>(?:전부)?(?:\\s*다)?))\\s+)?맡아\\s*(?:줘|놔|주세요)";
-    inline static constexpr const char* RETRIEVE_ITEM = "(?P<name>\\S+)\\s+(?:(?:(?P<count>\\d+)(?:개)|(?P<all>(?:전부)?(?:\\s*다)?))\\s+)?돌려\\s*(?:줘|놔|주세요)";
-    inline static constexpr const char* SELL_LIST = "(?:뭐|뭘|무엇을|무얼)\\s*(?:파니|파냐|팔고\\s*(?:있니|있냐))";
-    inline static constexpr const char* BUY_LIST = "(?:뭐|뭘|무엇을|무얼)\\s*(?:사니|사냐|사고\\s*(?:있니|있냐))";
-    inline static constexpr const char* SELL_PRICE = "(?P<name>\\S+)\\s+얼마(?:(?:(?:니|야|임|냐|에\\s*파(?:니|냐)))|(?:파(?:니|냐|)))";
-    inline static constexpr const char* BUY_PRICE = "(?P<name>\\S+)\\s+얼마에\\s?사(?:니|냐)";
-    inline static constexpr const char* DEPOSITED_MONEY = "(?:돈|금전)\\s*얼마(?:나)?\\s*맡(?:아두)?고\\s*있(?:니|냐)";
-    inline static constexpr const char* RENAME_WEAPON = "(?P<weapon>\\S+?)?(?:의|$)?\\s+이름을\\s+(?P<name>\\S+?)?(?:으|$)?로\\s+명명";
-    inline static constexpr const char* HOLD_ITEM_LIST = "(?:뭐|뭘|무엇을|무얼)\\s*맡고\\s*(?:있니|있냐)";
-    inline static constexpr const char* HOLD_ITEM_COUNT = "(?P<name>\\S+)\\s+(?:몇\\s*개|얼마나)\\s*맡고\\s*있(?:니|냐)";
-    inline static constexpr const char* REVIVE = "살려(?:(?P<ok>(?:주세요|주십시오))|(?P<no>(?:줘|내|라|주소)))";
-    inline static constexpr const char* APPRECIATE = "(감사합니다|고맙습니다)";
-
-private:
-    regex() = default;
-    ~regex() = default;
-#ifdef DECLARE_CONST_REGEX_EXTENSION
-DECLARE_CONST_REGEX_EXTENSION
-#endif
-}; // end of const 'regex'
 class script
 {
 public:
@@ -3989,43 +3883,6 @@ inline void enum_map<fb::model::enum_value::OPTION>(lua_State* lua)
 }
 
 template <>
-inline void enum_map<fb::model::enum_value::REGEX>(lua_State* lua)
-{
-    lua_newtable(lua);
-    lua_pushinteger(lua, static_cast<lua_Integer>(fb::model::enum_value::REGEX::SELL));
-    lua_setfield(lua, -2, "SELL");
-    lua_pushinteger(lua, static_cast<lua_Integer>(fb::model::enum_value::REGEX::BUY));
-    lua_setfield(lua, -2, "BUY");
-    lua_pushinteger(lua, static_cast<lua_Integer>(fb::model::enum_value::REGEX::REPAIR));
-    lua_setfield(lua, -2, "REPAIR");
-    lua_pushinteger(lua, static_cast<lua_Integer>(fb::model::enum_value::REGEX::DEPOSIT_MONEY));
-    lua_setfield(lua, -2, "DEPOSIT_MONEY");
-    lua_pushinteger(lua, static_cast<lua_Integer>(fb::model::enum_value::REGEX::WITHDRAW_MONEY));
-    lua_setfield(lua, -2, "WITHDRAW_MONEY");
-    lua_pushinteger(lua, static_cast<lua_Integer>(fb::model::enum_value::REGEX::DEPOSIT_ITEM));
-    lua_setfield(lua, -2, "DEPOSIT_ITEM");
-    lua_pushinteger(lua, static_cast<lua_Integer>(fb::model::enum_value::REGEX::WITHDRAW_ITEM));
-    lua_setfield(lua, -2, "WITHDRAW_ITEM");
-    lua_pushinteger(lua, static_cast<lua_Integer>(fb::model::enum_value::REGEX::SELL_LIST));
-    lua_setfield(lua, -2, "SELL_LIST");
-    lua_pushinteger(lua, static_cast<lua_Integer>(fb::model::enum_value::REGEX::BUY_LIST));
-    lua_setfield(lua, -2, "BUY_LIST");
-    lua_pushinteger(lua, static_cast<lua_Integer>(fb::model::enum_value::REGEX::SELL_PRICE));
-    lua_setfield(lua, -2, "SELL_PRICE");
-    lua_pushinteger(lua, static_cast<lua_Integer>(fb::model::enum_value::REGEX::BUY_PRICE));
-    lua_setfield(lua, -2, "BUY_PRICE");
-    lua_pushinteger(lua, static_cast<lua_Integer>(fb::model::enum_value::REGEX::DEPOSITED_MONEY));
-    lua_setfield(lua, -2, "DEPOSITED_MONEY");
-    lua_pushinteger(lua, static_cast<lua_Integer>(fb::model::enum_value::REGEX::RENAME_WEAPON));
-    lua_setfield(lua, -2, "RENAME_WEAPON");
-    lua_pushinteger(lua, static_cast<lua_Integer>(fb::model::enum_value::REGEX::HOLD_ITEM_LIST));
-    lua_setfield(lua, -2, "HOLD_ITEM_LIST");
-    lua_pushinteger(lua, static_cast<lua_Integer>(fb::model::enum_value::REGEX::HOLD_ITEM_COUNT));
-    lua_setfield(lua, -2, "HOLD_ITEM_COUNT");
-    lua_setglobal(lua, "REGEX");
-}
-
-template <>
 inline void enum_map<fb::model::enum_value::ROLE>(lua_State* lua)
 {
     lua_newtable(lua);
@@ -4212,7 +4069,6 @@ inline static void map_enum(lua_State* lua)
     enum_map<fb::model::enum_value::NPC_INTERACTION>(lua);
     enum_map<fb::model::enum_value::OBJECT_TYPE>(lua);
     enum_map<fb::model::enum_value::OPTION>(lua);
-    enum_map<fb::model::enum_value::REGEX>(lua);
     enum_map<fb::model::enum_value::ROLE>(lua);
     enum_map<fb::model::enum_value::SOUND>(lua);
     enum_map<fb::model::enum_value::SPELL_TYPE>(lua);
@@ -4318,46 +4174,6 @@ inline void const_map<fb::model::const_value::mob>(lua_State* lua)
     lua_newtable(lua);
     lua_pushinteger(lua, static_cast<lua_Integer>(fb::model::const_value::mob::horse));
     lua_setfield(lua, -2, "HORSE");
-}
-
-template <>
-inline void const_map<fb::model::const_value::regex>(lua_State* lua)
-{
-    lua_newtable(lua);
-    lua_pushstring(lua, fb::model::option::encode(fb::model::const_value::regex::SELL).c_str());
-    lua_setfield(lua, -2, "SELL");
-    lua_pushstring(lua, fb::model::option::encode(fb::model::const_value::regex::BUY).c_str());
-    lua_setfield(lua, -2, "BUY");
-    lua_pushstring(lua, fb::model::option::encode(fb::model::const_value::regex::REPAIR).c_str());
-    lua_setfield(lua, -2, "REPAIR");
-    lua_pushstring(lua, fb::model::option::encode(fb::model::const_value::regex::DEPOSIT_MONEY).c_str());
-    lua_setfield(lua, -2, "DEPOSIT_MONEY");
-    lua_pushstring(lua, fb::model::option::encode(fb::model::const_value::regex::WITHDRAW_MONEY).c_str());
-    lua_setfield(lua, -2, "WITHDRAW_MONEY");
-    lua_pushstring(lua, fb::model::option::encode(fb::model::const_value::regex::STORE_ITEM).c_str());
-    lua_setfield(lua, -2, "STORE_ITEM");
-    lua_pushstring(lua, fb::model::option::encode(fb::model::const_value::regex::RETRIEVE_ITEM).c_str());
-    lua_setfield(lua, -2, "RETRIEVE_ITEM");
-    lua_pushstring(lua, fb::model::option::encode(fb::model::const_value::regex::SELL_LIST).c_str());
-    lua_setfield(lua, -2, "SELL_LIST");
-    lua_pushstring(lua, fb::model::option::encode(fb::model::const_value::regex::BUY_LIST).c_str());
-    lua_setfield(lua, -2, "BUY_LIST");
-    lua_pushstring(lua, fb::model::option::encode(fb::model::const_value::regex::SELL_PRICE).c_str());
-    lua_setfield(lua, -2, "SELL_PRICE");
-    lua_pushstring(lua, fb::model::option::encode(fb::model::const_value::regex::BUY_PRICE).c_str());
-    lua_setfield(lua, -2, "BUY_PRICE");
-    lua_pushstring(lua, fb::model::option::encode(fb::model::const_value::regex::DEPOSITED_MONEY).c_str());
-    lua_setfield(lua, -2, "DEPOSITED_MONEY");
-    lua_pushstring(lua, fb::model::option::encode(fb::model::const_value::regex::RENAME_WEAPON).c_str());
-    lua_setfield(lua, -2, "RENAME_WEAPON");
-    lua_pushstring(lua, fb::model::option::encode(fb::model::const_value::regex::HOLD_ITEM_LIST).c_str());
-    lua_setfield(lua, -2, "HOLD_ITEM_LIST");
-    lua_pushstring(lua, fb::model::option::encode(fb::model::const_value::regex::HOLD_ITEM_COUNT).c_str());
-    lua_setfield(lua, -2, "HOLD_ITEM_COUNT");
-    lua_pushstring(lua, fb::model::option::encode(fb::model::const_value::regex::REVIVE).c_str());
-    lua_setfield(lua, -2, "REVIVE");
-    lua_pushstring(lua, fb::model::option::encode(fb::model::const_value::regex::APPRECIATE).c_str());
-    lua_setfield(lua, -2, "APPRECIATE");
 }
 
 template <>
@@ -4929,8 +4745,6 @@ inline static void map_const(lua_State* lua)
     lua_setfield(lua, -2, "MARKETPLACE");
     const_map<fb::model::const_value::mob>(lua);
     lua_setfield(lua, -2, "MOB");
-    const_map<fb::model::const_value::regex>(lua);
-    lua_setfield(lua, -2, "REGEX");
     const_map<fb::model::const_value::script>(lua);
     lua_setfield(lua, -2, "SCRIPT");
     const_map<fb::model::const_value::string>(lua);

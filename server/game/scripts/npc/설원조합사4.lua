@@ -1,8 +1,5 @@
--- @note Trash: 1_극지방\설원지방.txt "설원조합사4". Job-based list (눈꽃투구/눈꽃장갑|팔찌|반지|선류/활력의귀걸이);
--- Option 0: 눈꽃투구 설명 + upgrade flow (actual upgrade uses set_itemattribute - not in FB, so "준비중" for upgrade).
--- Options 1,2: "준비중인 컨텐츠".
 
-local EQUIP_BY_JOB = {
+local EQUIP_BY_CLASS = {
     ["전사"] = "장갑",
     ["도적"] = "팔찌",
     ["주술사"] = "반지",
@@ -10,16 +7,13 @@ local EQUIP_BY_JOB = {
 }
 
 local function get_equip_name(me)
-    local job_name = class2name(me:class(), me:promotion())
-    if not job_name then
+    local class_name = class2name(me:class(), me:promotion())
+    if not class_name then
         return "장갑"
     end
-    return EQUIP_BY_JOB[job_name] or "장갑"
+    return EQUIP_BY_CLASS[class_name] or "장갑"
 end
 
----@brief Run 눈꽃투구 explanation and optional upgrade (upgrade placeholder in FB).
----@param[in] me  The character.
----@param[in] npc The NPC entity.
 local function run_snow_helmet_info(me, npc)
     local d = me:dialog(npc, "눈꽃투구에 대해 궁금하시다구요? 그렇다면 매우 잘 찾아오셨습니다. ", false, true)
     if d == DIALOG_RESULT.QUIT then
@@ -80,9 +74,6 @@ local function run_snow_helmet_info(me, npc)
     end
 end
 
----@brief NPC 설원조합사4: job-based info list (눈꽃투구 / 눈꽃장갑|팔찌|반지|선류 / 활력의귀걸이).
----@param[in] me  The character.
----@param[in] npc The NPC entity.
 function NPC_441(me, npc)
     local d = me:dialog(npc, "안녕하십니까? 당신은 눈꽃방어구에 대해 관심이 있으신 것 같군요. 자세한 설명을 들어보시겠습니까?", false, true)
     if d == DIALOG_RESULT.QUIT then

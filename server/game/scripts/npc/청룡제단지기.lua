@@ -1,8 +1,4 @@
--- @note Trash: 0_신수의제단\일반.txt "청룡제단지기". Two intro dialogs only (no list).
 
----@brief   NPC 청룡제단지기: intro dialogs about Cheongryong altar and Cheondo peach power (750 mana, 50% refill).
----@param[in]  me   The character.
----@param[in]  npc  The NPC entity.
 function NPC_454(me, npc)
     local button = me:dialog(npc, "안녕하신가, " .. me:name() .. ". 나는 이곳 제단에서 힘을 모아 다른 제단지기들에게 [용의 축복]을 걸어주는 청룡제단지기라네.", false, true)
     if button == DIALOG_RESULT.QUIT then

@@ -1,4 +1,3 @@
--- 용천제일격: deal magic damage to the target. Trash: damage 2000~2500, effect 51, sound 8, mp 100.
 function ON_CAST_30(me, you, spell)
     local damage = math.random(2000, 2500)
     local mp = 100

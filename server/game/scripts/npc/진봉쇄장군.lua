@@ -1,7 +1,4 @@
--- @note Trash: 1_공통/진원관.txt "진봉쇄장군". Skull necklace: sub3 step 1->2 (give 좌황활력환); main 4->5, 5, 6->7.
--- Phase 1: sub3 only (1->2). Phase 2: main steps 4,5,6,7.
 
----@brief   Sub3 step 1: give 좌황활력환, set sub3=2.
 local function do_sub3_give_medicine(me, npc)
     local sel, btn = me:list(npc, "모험가가 나에겐 무슨 일인가?", { "원숭이들이 약이 필요하다고 합니다." }, false)
     if btn == DIALOG_RESULT.QUIT or sel == nil or sel ~= 0 then
@@ -26,7 +23,6 @@ end
 function NPC_472(me, npc)
     local q3 = me:quest(QUEST_SKULL_NECKLACE_3)
 
-    -- Sub3 step 1: give medicine
     if q3 and q3:step() == 1 then
         if do_sub3_give_medicine(me, npc) then
             return
@@ -34,7 +30,6 @@ function NPC_472(me, npc)
         return
     end
 
-    -- Phase 2: main 4->5, 5, 6->7 (원숭이의편지)
     local main_q = me:quest(QUEST_SKULL_NECKLACE)
     if main_q then
         local s = main_q:step()

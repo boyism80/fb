@@ -1,8 +1,4 @@
--- @note Trash: 1_중국\일반.txt "피리부는소년". QUEST_PAMASPIRI: step 0="삐리리", 1→2 (dialogs+achievement), 2=hint, 3+꿀사탕→exchange for 파마의피리 step 4, 4+= "사탕이 먹고 싶어."
 
--- @brief   NPC flute-playing boy: QUEST_PAMASPIRI step 1→2 (get candy hint), step 3 exchange 꿀사탕 for 파마의피리 and set step 4.
--- @param[in]  me   The character talking to the NPC.
--- @param[in]  npc  The NPC entity (피리부는소년).
 function NPC_489(me, npc)
     local quest = me:quest(QUEST_PAMASPIRI)
     if quest == nil then
@@ -125,6 +121,5 @@ function NPC_489(me, npc)
         return
     end
 
-    -- step >= 4 (not completed yet; e.g. has 파마의피리, go to 마타제자)
     me:dialog(npc, "사탕이 먹고 싶어.", false, false)
 end

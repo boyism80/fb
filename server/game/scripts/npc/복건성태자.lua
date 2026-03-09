@@ -1,5 +1,4 @@
 function NPC_235(me, npc)
-    -- QUEST_PAMASPIRI step 2: give 꿀사탕 and set step 3 (for 피리부는소년 exchange)
     local quest = me:quest(QUEST_PAMASPIRI)
     if quest and quest:step() == 2 and not quest:completed() then
         ::NPC_235_PAMASPIRI_COS01::

@@ -1,9 +1,4 @@
--- @note Trash: 1_부여성\일반.txt "미궁무기장인". Intro dialogs + list: 작약주 1→방천화극, 신작약주 1→전사방천화극; "용궁방천화극" = QUEST_CIDEQUEST (progress 2 → dialog chain → 용궁의보물, step 2, progress 3).
--- Optional: callfunc "지급아이템주인처리" is not implemented (item-owner tracking); omitted.
 
----@brief NPC 미궁무기장인: exchange 작약주/신작약주 for 방천화극/전사방천화극; 용궁방천화극 branch placeholder.
----@param[in] me  The character.
----@param[in] npc The NPC entity.
 function NPC_307(me, npc)
     local d = me:dialog(npc, "비밀의 상점에 온 것을 환영하네. 여기선 방천화극을 팔고 있지...", false, true)
     if d == DIALOG_RESULT.QUIT then
@@ -32,7 +27,6 @@ function NPC_307(me, npc)
     end
 
     if sel == 0 then
-        -- 작약주 1 → 방천화극 1
         local code = me:exchange(
             { ['item'] = { ["작약주"] = 1 } },
             { ['item'] = { ["방천화극"] = 1 } }
@@ -50,7 +44,6 @@ function NPC_307(me, npc)
     end
 
     if sel == 1 then
-        -- 신작약주 1 → 전사방천화극 1
         local code = me:exchange(
             { ['item'] = { ["신작약주"] = 1 } },
             { ['item'] = { ["전사방천화극"] = 1 } }
@@ -73,7 +66,6 @@ function NPC_307(me, npc)
     end
 
     if sel == 3 then
-        -- 용궁방천화극: QUEST_CIDEQUEST; progress 2 = sent from 장돌뱅이 to get 용궁의보물
         local q = me:quest(QUEST_CIDEQUEST)
         local pn = (q and q:progress()) or 0
         if pn == 2 then

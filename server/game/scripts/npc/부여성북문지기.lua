@@ -1,8 +1,4 @@
--- @note Trash: 1_중국\일반.txt "부여성북문지기". QUEST_JINHWANG step 2 only: hand in 종이쪽지, receive 천상복숭아, step → 3.
 
--- @brief   NPC Buyeo north gate keeper: when QUEST_JINHWANG step is 2, exchange 종이쪽지 for 천상복숭아 and advance to step 3.
--- @param[in]  me   The character talking to the NPC.
--- @param[in]  npc  The NPC entity (부여성북문지기).
 function NPC_544(me, npc)
     local quest = me:quest(QUEST_JINHWANG)
     if quest == nil or quest:step() ~= 2 then

@@ -1,10 +1,6 @@
--- @note Trash: 1_귀문동\일반.txt "암흑귀인". Parent map check via map:model():root() (get_parentmap). write_log omitted (not implemented).
 
 local PARENT_MAP_GWIMUN = "둔귀촌"
 
----@brief NPC 암흑귀인: warp to saved dungeon map (stored in QUEST_GMD_SAVED param) consuming one 귀문흑색부적. Allowed only when current map's root is 둔귀촌.
----@param[in] me  The character.
----@param[in] npc The NPC entity.
 function NPC_551(me, npc)
     local cur = me:map()
     if cur then

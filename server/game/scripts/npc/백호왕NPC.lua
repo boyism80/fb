@@ -1,4 +1,3 @@
--- @note Trash: 2_이벤트\부여장터.txt "백호왕NPC". Exchange 교환권 for 건괘(2), 곤괘(2), 감괘(3), 진괘(3), 리괘(4), 선괘(4), 태괘(4), 간괘(16), 용의비늘(10).
 
 local TICKET_NAME = "교환권"
 
@@ -14,13 +13,6 @@ local REWARDS = {
     { count = 10, name = "용의비늘", label = "용의비늘 (10개)" },
 }
 
----@brief Try to exchange tickets for one reward; show dialog on success or failure.
----@param[in] me   The character.
----@param[in] npc  The NPC entity.
----@param[in] need_count  Number of 교환권 required.
----@param[in] reward_name Item name to give.
----@param[in] reward_count Number of reward item to give.
----@return boolean True if exchange succeeded.
 local function do_exchange(me, npc, need_count, reward_name, reward_count)
     local code = me:exchange(
         { ['item'] = { [TICKET_NAME] = need_count } },
@@ -38,9 +30,6 @@ local function do_exchange(me, npc, need_count, reward_name, reward_count)
     return true
 end
 
----@brief NPC 백호왕NPC: exchange 교환권 for one of nine items (different counts).
----@param[in] me  The character.
----@param[in] npc The NPC entity.
 function NPC_348(me, npc)
     local labels = {}
     for i = 1, #REWARDS do

@@ -1,8 +1,4 @@
--- @note Trash: 2_이벤트\배심원.txt "배심원투표도우미". $qotladnjs -> QUEST_JURY step 1 = voted. Intro 7 dialogs + oath list; agree -> vote list (좌/우/기권); vote sets step 1. Return list: 노란비서 1 consume + warp_to_return_map. mobspawn omitted; message only.
 
----@brief   NPC 배심원투표도우미: jury vote event. Oath dialogs + vote list; after vote shows return list. Uses QUEST_JURY step 1 = voted. mobspawn omitted.
----@param[in] me   The character.
----@param[in] npc  The NPC entity.
 function NPC_339(me, npc)
     local quest = me:quest(QUEST_JURY)
 

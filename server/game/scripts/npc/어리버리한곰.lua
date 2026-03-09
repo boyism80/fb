@@ -1,8 +1,4 @@
--- @note Trash: 0_곰의계곡\홍보메뉴.txt "어리버리한곰". $check==25 branch (훈제연어 5→당근케이크); else list 우루삼/당근케이크/비서/알사탕. callfunc "홍보템구입"/상점 미구현; $check=30 set omitted (no gv setter).
 
----@brief   NPC 어리버리한곰: intro dialogs and list (우루삼/당근케이크/비서/알사탕); exchange logic via callfunc not implemented, placeholder messages.
----@param[in] me   The character.
----@param[in] npc  The NPC entity.
 function NPC_460(me, npc)
     if gv("check") == 25 and me:has_items("훈제연어", 5) then
         local btn = me:dialog(npc, "난 깊은계곡을 지키고 있는 곰이다웅... 그런데 너는 보니까 임무를 수행중인것처럼 보이는데웅...?", false, true)

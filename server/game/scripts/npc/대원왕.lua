@@ -1,8 +1,4 @@
--- @note Trash: 1_공통/진원관.txt "대원왕". Skull necklace sub1 (ice), sub7 (sick baby monkey).
--- Phase 1: sub-quests only. Phase 2: main steps 8,9,12->13->14, 27->28.
--- @note FUNC_SLOT_AVAILABLE_ASSERT omitted (inventory slot check not implemented).
 
----@brief   Sub7 step 1: take 아픈아기원숭이, give 건강한아기원숭이, set sub7=2.
 local function do_sub7_cure(me, npc)
     if not me:has_items("아픈아기원숭이", 1) then
         me:dialog(npc, "퀘스트 오류입니다.\n아픈아기원숭이 아이템이 없습니다.", false, false)
@@ -44,7 +40,6 @@ local function do_sub7_cure(me, npc)
     return true
 end
 
----@brief   Sub1 step 0: intro dialogs and list, then set sub1=1 (request ice).
 local function do_sub1_start(me, npc)
     local b = me:dialog(npc, "경계하실 것 없다. 나는 아직 미치지 않으셨으니까. 그래도 우리 아이들이 저렇게 날뛰는 이유는", false, true)
     if b ~= 1 then
@@ -76,7 +71,6 @@ local function do_sub1_start(me, npc)
         me:dialog(npc, "이 곳의 상황은 본래와 다를바 없으시다.", false, false)
         return true
     end
-    -- sel == 2: "제가 도와드릴 일은 없을까요?"
     sel, btn = me:list(npc, "음? 하하하. 고마운 말씀이시다. 진심이신가?", { "네, 꼭 도와드릴께요.", "아뇨, 그만 둘래요." }, true)
     if btn == DIALOG_RESULT.QUIT or sel == nil or sel ~= 0 then
         me:dialog(npc, "장난을 치는 사람은 싫어한다.", false, false)
@@ -117,7 +111,6 @@ local function do_sub1_start(me, npc)
     return true
 end
 
----@brief   Sub1 step 1: take 깨끗한얼음 1, give 오도독망고과편 1, set sub1=2.
 local function do_sub1_turnin(me, npc)
     if not me:has_items("깨끗한얼음", 1) then
         me:dialog(npc, "나에게 그 얼음이라는걸 보여주시면 좋으시다. 깨끗하시고 투명하신 분으로 말이시다.", false, false)
@@ -163,14 +156,12 @@ function NPC_463(me, npc)
     local q7 = me:quest(QUEST_SKULL_NECKLACE_7)
     local q1 = me:quest(QUEST_SKULL_NECKLACE_1)
 
-    -- Sub7: step 1 -> hand in 아픈아기원숭이
     if q7 and q7:step() == 1 then
         if do_sub7_cure(me, npc) then
             return
         end
     end
 
-    -- Sub1: step 0 -> intro, set step 1
     if q1 == nil or q1:step() == 0 then
         if do_sub1_start(me, npc) then
             return
@@ -178,7 +169,6 @@ function NPC_463(me, npc)
         return
     end
 
-    -- Sub1: step 1 -> hand in 깨끗한얼음
     if q1 and q1:step() == 1 then
         if do_sub1_turnin(me, npc) then
             return
@@ -186,7 +176,6 @@ function NPC_463(me, npc)
         return
     end
 
-    -- Phase 2: main steps 8->9, 9, 12->13->14, 27->28
     local main_q = me:quest(QUEST_SKULL_NECKLACE)
     if main_q then
         local s = main_q:step()

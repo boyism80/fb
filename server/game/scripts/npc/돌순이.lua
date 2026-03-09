@@ -1,8 +1,4 @@
--- @note Trash: 1_환상의섬\일반.txt "돌순이". QUEST_DETECTIVE: step 1,2 → 2; step 11 → 12. QUEST_JINGOGYUN step 5 → 6 (영력구슬 인성초에게 줬다고 안내).
 
---- @brief NPC 돌순이: Jingogyun step 5→6; Detective quest step 1,2 → 2; step 11 → 12.
---- @param me   character
---- @param npc  NPC entity
 function NPC_133(me, npc)
     local q_jingo = me:quest(QUEST_JINGOGYUN)
     if q_jingo and q_jingo:step() == 5 then

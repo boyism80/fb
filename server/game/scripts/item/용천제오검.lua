@@ -1,4 +1,4 @@
--- 용천제오검: on attack, chance to cast 용천제오격 on front target. Trash: 40% probability.
+-- 용천제오검 공격 스크립트
 function ON_ATTACK_262(me, item)
     math.randomseed(seed())
     if math.random() > 0.40 then

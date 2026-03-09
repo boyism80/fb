@@ -1,4 +1,3 @@
--- @note Trash: 2_이벤트\톨루이.txt "톨루이". Day 1-24: buy one 도톨/day (1000 zeny), $톨루이=day; day 25-26: callfunc DDONG1 (pick color); day 27+: 24 도톨 → 칠지도. FB: datetime().day, quest param last_buy_day; day 25-26 placeholder.
 
 local DOTOL_NAMES = {
     "황도톨", "적도톨", "연녹도톨", "녹도톨", "청도톨", "회도톨", "갈도톨", "연갈도톨",
@@ -8,9 +7,6 @@ local DOTOL_NAMES = {
 
 local DOTOL_PRICE = 1000
 
---- @brief NPC 톨루이: Daily 도톨 sale (day 1-24), or exchange 24 kinds for 칠지도 (day 27+).
---- @param me   character talking to the NPC
---- @param npc  NPC entity (톨루이)
 function NPC_336(me, npc)
     local btn = me:dialog(npc, "안녕하세요?\n\n저는 여러분에게 행운을 가져다 주는 톨루이 입니다.", true, true)
     if btn == DIALOG_RESULT.QUIT then

@@ -1,8 +1,4 @@
--- @note Trash: 1_초보자의길\초보자도우미.txt "사냥도우미". QUEST_BEGINNER_PATH: step 3→목도 지급+step 4, step 4→(다 잡았어요) 갑주+exp 200+step 6, step≥6 안내. Kill count $@ omitted; "다 잡았어요" list used.
 
--- @brief   NPC hunting helper: QUEST_BEGINNER_PATH step 3→4 (give 목도), step 4→6 (reward 갑주, exp 200) on "다 잡았어요", step≥6 hint.
--- @param[in]  me   The character talking to the NPC.
--- @param[in]  npc  The NPC entity (사냥도우미).
 function NPC_277(me, npc)
     local quest = me:quest(QUEST_BEGINNER_PATH)
     if quest == nil then
@@ -69,7 +65,6 @@ function NPC_277(me, npc)
         return
     end
 
-    -- step 4: check "다 잡았어요" (no kill count; list choice)
     local sel, btn = me:list(npc, "다람쥐와 토끼를 각각 5마리씩 사냥하셨나요?", { "네, 다 잡았어요.", "아니요, 아직이에요." }, false)
     if btn == DIALOG_RESULT.QUIT then
         return

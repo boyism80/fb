@@ -1,5 +1,5 @@
 -- 낙랑의두루마리8 사용 스크립트
-local JOB_MAP_BY_NATION = {
+local CLASS_MAP_BY_NATION = {
     [NATION.GOGURYEO] = {
         '검성태백',
         '현자해두',
@@ -14,8 +14,8 @@ local JOB_MAP_BY_NATION = {
     },
 }
 
-local JOB_NAMES = { '전사', '주술사', '도적', '도사' }
-local JOB_MASTERS = { '예백', '처연', '마서', '선후' }
+local CLASS_NAMES = { '전사', '주술사', '도적', '도사' }
+local CLASS_MASTERS = { '예백', '처연', '마서', '선후' }
 
 local WARP_X_MIN, WARP_X_MAX = 3, 8
 local WARP_Y_MIN, WARP_Y_MAX = 5, 8
@@ -84,19 +84,19 @@ function ON_ACTIVATED_8(me, item)
         return
     end
 
-    local job_idx = sel + 1
-    local jobname = JOB_NAMES[job_idx]
-    local jobmaster = JOB_MASTERS[job_idx]
+    local class_idx = sel + 1
+    local classname = CLASS_NAMES[class_idx]
+    local classmaster = CLASS_MASTERS[class_idx]
 
     ::ON_ACTIVATED_8_0005::
-    btn = me:dialog(model, jobname .. '의 길에 들어서려구요!!\n좋아요. 그럼 ' .. jobname .. ' 길드의\n' .. jobmaster .. '님께 데려다 드릴께요..\n' .. jobname .. '가 되는 방법을\n알려주실 것입니다.', false, true)
+    btn = me:dialog(model, classname .. '의 길에 들어서려구요!!\n좋아요. 그럼 ' .. classname .. ' 길드의\n' .. classmaster .. '님께 데려다 드릴께요..\n' .. classname .. '가 되는 방법을\n알려주실 것입니다.', false, true)
     if btn == DIALOG_RESULT.QUIT then
         return
     end
     if btn == DIALOG_RESULT.PREV then
         goto ON_ACTIVATED_8_0005
     end
-    btn = me:dialog(model, '저의 가르침은 여기까집니다.\n앞으로는 ' .. jobmaster .. '님의 가르침이\n있을 것입니다..\n그럼 안녕히!!!', true, true)
+    btn = me:dialog(model, '저의 가르침은 여기까집니다.\n앞으로는 ' .. classmaster .. '님의 가르침이\n있을 것입니다..\n그럼 안녕히!!!', true, true)
     if btn == DIALOG_RESULT.QUIT then
         return
     end
@@ -105,11 +105,11 @@ function ON_ACTIVATED_8(me, item)
     end
 
     local nation = me:nation()
-    local map_names = JOB_MAP_BY_NATION[nation]
+    local map_names = CLASS_MAP_BY_NATION[nation]
     if not map_names then
-        map_names = JOB_MAP_BY_NATION[NATION.BUYEO]
+        map_names = CLASS_MAP_BY_NATION[NATION.BUYEO]
     end
-    local map_name = map_names[job_idx]
+    local map_name = map_names[class_idx]
     local map = name2map(map_name)
     if map == nil then
         me:dialog(model, '존재하지 않는 맵입니다.', false, false)

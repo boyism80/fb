@@ -1,12 +1,7 @@
--- @note Trash: 2_이벤트\묵언수행.txt "털보죄수". Global $silence1,$silence2,$silence4 → per-character QUEST_SILENCE param "a,b,solved". Problem a+b=?; if solved give 담배 1 and clear. set_state omitted.
 
----@brief   NPC 털보죄수: gives math problem (a+b=?); when player solves at 여자죄수, gives 담배 1. Uses QUEST_SILENCE param "a,b,solved".
----@param[in] me   The character.
----@param[in] npc  The NPC entity.
 function NPC_392(me, npc)
     local quest = me:quest(QUEST_SILENCE)
 
-    -- Already solved at 여자죄수: give 담배 and clear
     if quest ~= nil then
         local param = quest:param() or ""
         local solved = param:match("^%d+,%d+,(%d+)$")
@@ -21,7 +16,6 @@ function NPC_392(me, npc)
         end
     end
 
-    -- No active problem: intro + generate a,b
     if quest == nil or quest:param() == "" or not quest:param():match("^%d+,%d+,0$") then
         local btn = me:dialog(npc, "자네, 혹시 문제풀이를 잘 하는가? \\n 오랫동안 감옥에 있다보니 저 건너편에 앉아있는 여 죄수와 계산문제를 주고 받는게 내 삶의 낙이라네.", false, true)
         if btn == DIALOG_RESULT.QUIT then
@@ -54,7 +48,6 @@ function NPC_392(me, npc)
         return
     end
 
-    -- Has unsolved problem: just show problem again
     local param = quest:param() or ""
     local a, b = param:match("^(%d+),(%d+),0$")
     if a and b then

@@ -1,7 +1,4 @@
--- @note Trash: 1_공통/진원관.txt "금원왕". Skull necklace sub8 (두목의증표 -> 사각방패).
--- Phase 1: sub-quest only. Phase 2: main 16->17, 17, 18->19, 31->32.
 
----@brief   Sub8 step 0: intro, set sub8=1.
 local function do_sub8_start(me, npc)
     local sel, btn = me:list(npc, "요즘따라 인간들을 자주 만나시게 되시는도다.", { "이름을 가르쳐주세요.", "이곳의 상황은 좀 어떤가요?", "제가 도와드릴 일은 없을까요?" }, false)
     if btn == DIALOG_RESULT.QUIT or sel == nil then
@@ -45,7 +42,6 @@ local function do_sub8_start(me, npc)
     return true
 end
 
----@brief   Sub8 step 1: take 두목의증표, give 사각방패, set sub8=2.
 local function do_sub8_turnin(me, npc)
     if not me:has_items("두목의증표", 1) then
         me:dialog(npc, "흉폭한 원숭이들에게 왕의 증표를 되찾아주셨으면 좋으시겠다.", false, false)
@@ -94,7 +90,6 @@ function NPC_470(me, npc)
         return
     end
 
-    -- Phase 2: main 16->17, 17, 18->19 (철도3+사각방패3), 31->32 (마른갈대)
     local main_q = me:quest(QUEST_SKULL_NECKLACE)
     if main_q then
         local s = main_q:step()

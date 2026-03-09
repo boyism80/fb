@@ -1,8 +1,4 @@
--- @note Trash: 1_중국\일반.txt "북천좌상". QUEST_JINHWANG: step 1 → warp to jail; step 9 → hand in 진랑검+혈황검 for 강철손목보호대, step 10.
 
--- @brief   NPC North Heaven minister: when step 1, warp to jail; when step 9, exchange 진랑검+혈황검 for 강철손목보호대 and advance to step 10.
--- @param[in]  me   The character talking to the NPC.
--- @param[in]  npc  The NPC entity (북천좌상).
 function NPC_541(me, npc)
     local quest = me:quest(QUEST_JINHWANG)
     if quest == nil then
@@ -11,7 +7,6 @@ function NPC_541(me, npc)
 
     local step = quest:step()
 
-    -- Step 1: mention 진황보검 → warp to jail
     if step == 1 then
         ::NPC_541_0000::
         local button = me:dialog(npc, "진황보검에 대해서 얘기하는건가? 자네 그건 어디서 들은건가! 진황보검에 대해서 언급하는 자는 모두 하옥시키라고 하셨네.", false, true)
@@ -35,7 +30,6 @@ function NPC_541(me, npc)
         return
     end
 
-    -- Step 9: hand in 진랑검 + 혈황검 for 강철손목보호대, then step 10 and dialogs
     if step ~= 9 then
         return
     end

@@ -1,8 +1,4 @@
--- @note Trash: 1_도삭산\일반.txt "도나영". $dojaechun==0: 2 dialogs. $dojaechun==1: thanks + 1000층 hint; if has 수정해골+도삭산황금봉+도삭산의서 then list→warp to 1000층상점, broadcast, achievement.
 
--- @brief   NPC Do Na-young: when QUEST_DOJAECHUN not at step 1/completed shows family dialog; when step 1 or completed, thanks and offers warp to 1000층상점 if player has the three items.
--- @param[in]  me   The character talking to the NPC.
--- @param[in]  npc  The NPC entity (도나영).
 function NPC_370(me, npc)
     local quest = me:quest(QUEST_DOJAECHUN)
     local dojaechun_one = (quest and (quest:step() == 1 or quest:completed()))

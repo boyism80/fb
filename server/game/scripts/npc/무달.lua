@@ -1,5 +1,3 @@
--- NPC 157 (무달): Quest "용궁의정기" (정기모으기) + armor color (무한 복장 / 일반 복장)
--- Three menu options → three functions; no goto.
 
 local function do_jungki(me, npc)
     local quest = me:quest(QUEST_SHARK_WEAPON)

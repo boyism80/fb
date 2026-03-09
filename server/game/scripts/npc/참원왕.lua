@@ -1,8 +1,4 @@
--- @note Trash: 1_공통/진원관.txt "참원왕". Skull necklace main quest 0..36.
--- Phase 1: main step 0 — unlock when all 9 sub-quests complete.
--- Phase 2: main steps 1->36 (dialogs, item hand-ins). Step 35->36: push_achievement (trash addlegend 63).
 
----@brief   Returns true if all 9 sub-quests are at their completion step (unlock condition).
 local function all_sub_quests_complete(me)
     local steps = {
         [QUEST_SKULL_NECKLACE_1] = 2,
@@ -28,7 +24,6 @@ function NPC_474(me, npc)
     local main = me:quest(QUEST_SKULL_NECKLACE)
     local main_step = (main and main:step()) or 0
 
-    -- Phase 1: main step 0 — unlock or reject
     if main == nil or main_step == 0 then
         if all_sub_quests_complete(me) then
             if main == nil then
@@ -48,7 +43,6 @@ function NPC_474(me, npc)
         return
     end
 
-    -- Step 1 -> 2: list + "도와드릴께요" -> dialogs -> set 2
     if main_step == 1 then
         local sel, btn = me:list(npc, "원숭이들을 대표하여 감사드리네.", { "이름을 가르쳐주세요.", "이곳의 상황은 좀 어떤가요?", "제가 도와드릴 일은 없을까요?" }, false)
         if btn == DIALOG_RESULT.QUIT or sel == nil then
@@ -357,6 +351,5 @@ function NPC_474(me, npc)
         return
     end
 
-    -- Steps 13, 26–34 are advanced at other NPCs (대원왕, 각 왕 마른갈대). Remaining steps: reminder dialogs only.
     me:dialog(npc, "준비중입니다.", false, false)
 end

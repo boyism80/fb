@@ -1,7 +1,4 @@
--- @note Trash: 1_공통/진원관.txt "화원왕". Skull necklace sub7 (아픈아기원숭이->대원왕->건강한아기원숭이->초코바나나), sub9 (1+특제원숭이술->2).
--- Phase 1: sub-quests only. Phase 2: main 23->24, 26->27.
 
----@brief   Sub9 step 1 + 특제원숭이술: take 술, set sub9=2.
 local function do_sub9_receive_wine(me, npc)
     if not me:has_items("특제원숭이술", 1) then
         me:dialog(npc, "퀘스트 오류입니다.\n특제원숭이술 아이템이 없습니다.", false, false)
@@ -26,7 +23,6 @@ local function do_sub9_receive_wine(me, npc)
     return true
 end
 
----@brief   Sub7 step 0: give 아픈아기원숭이, set sub7=1.
 local function do_sub7_start(me, npc)
     local sel, btn = me:list(npc, "요즘따라 인간들을 자주 만나시게 되시는도다.", { "이름을 가르쳐주세요.", "이곳의 상황은 좀 어떤가요?", "제가 도와드릴 일은 없을까요?" }, false)
     if btn == DIALOG_RESULT.QUIT or sel == nil then
@@ -71,7 +67,6 @@ local function do_sub7_start(me, npc)
     return true
 end
 
----@brief   Sub7 step 2 + 건강한아기원숭이: take, give 초코바나나, set sub7=3.
 local function do_sub7_complete(me, npc)
     if not me:has_items("건강한아기원숭이", 1) then
         me:dialog(npc, "퀘스트 오류입니다\n건강한아기원숭이 아이템이 없습니다.", false, false)
@@ -107,14 +102,12 @@ function NPC_469(me, npc)
     local q9 = me:quest(QUEST_SKULL_NECKLACE_9)
     local q7 = me:quest(QUEST_SKULL_NECKLACE_7)
 
-    -- Sub9 step 1: receive 특제원숭이술
     if q9 and q9:step() == 1 then
         if do_sub9_receive_wine(me, npc) then
             return
         end
     end
 
-    -- Sub7 step 0
     if q7 == nil or q7:step() == 0 then
         if do_sub7_start(me, npc) then
             return
@@ -127,7 +120,6 @@ function NPC_469(me, npc)
         return
     end
 
-    -- Sub7 step 2: hand in 건강한아기원숭이
     if q7:step() == 2 then
         if do_sub7_complete(me, npc) then
             return
@@ -135,7 +127,6 @@ function NPC_469(me, npc)
         return
     end
 
-    -- Phase 2: main 23->24 (의견), 26->27 (마른갈대)
     local main_q = me:quest(QUEST_SKULL_NECKLACE)
     if main_q then
         local s = main_q:step()

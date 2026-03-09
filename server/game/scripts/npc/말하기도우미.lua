@@ -1,8 +1,4 @@
--- @note Trash: 1_초보자의길\초보자도우미.txt "말하기도우미". QUEST_BEGINNER_PATH: quest==nil → intro+start_quest+step(1), step 1→2 (도톨, exp 100), step 2→3 (no 도톨: exp 100), step≥3 사냥도우미 안내.
 
--- @brief   NPC speaking helper: QUEST_BEGINNER_PATH — not started (quest==nil): intro then start_quest and step(1); step 1→2 (도톨, exp), step 2→3; step≥3 hint to 사냥도우미.
--- @param[in]  me   The character talking to the NPC.
--- @param[in]  npc  The NPC entity (말하기도우미).
 function NPC_276(me, npc)
     local quest = me:quest(QUEST_BEGINNER_PATH)
 
@@ -50,7 +46,6 @@ function NPC_276(me, npc)
         return
     end
 
-    -- step == 2
     if me:has_items("도톨", 1) then
         me:dialog(npc, "그럼, 제가 알려드린 방법을 사용하여 [e, a]를 눌러 도톨을 모두 먹어보세요. 다 하셨으면 저를 클릭 해 주세요.", false, false)
         return

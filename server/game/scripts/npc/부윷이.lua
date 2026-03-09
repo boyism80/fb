@@ -1,4 +1,3 @@
--- @note Trash: 1_부여성\부여놀이방.txt "부윷이". Yut-nori: pay 10 zeny, random result (도/개/걸/윷/모/빽도).
 
 local YUT_COST = 10
 
@@ -19,9 +18,6 @@ local function yut_result()
     end
 end
 
--- @brief   NPC 부윷이: yut-nori (pay 10 zeny, random result).
--- @param[in]  me   The character talking to the NPC.
--- @param[in]  npc  The NPC entity (부윷이).
 function NPC_286(me, npc)
     if me:money() < YUT_COST then
         npc:chat(string.format("%s: [%s]님. 금전이 부족하시네요. 10전을 가져오세요.", npc:model():name(), me:name()))

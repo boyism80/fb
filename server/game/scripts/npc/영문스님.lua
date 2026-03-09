@@ -1,9 +1,4 @@
--- @note Trash: 1_세시마을\명경사.txt "영문스님". Active when gv("sesi_rightnow") == 4 (석가탄신일).
--- List: 석가탄신일 설명, 연등 재료 안내, 색비단+꿩의깃털 → 연등. $석가탄신일 kill cooldown (Server_Nowtime) omitted.
 
----@brief   NPC 영문스님: 석가탄신일 (sesi_rightnow==4) list and lantern exchange (색비단+꿩의깃털→연등).
----@param[in] me   The character.
----@param[in] npc  The NPC entity.
 function NPC_365(me, npc)
     local btn = me:dialog(npc, "어서오오시게나... 자네는 무슨 일로 이곳까지 찾아오게 되었나?.", false, true)
     if btn == DIALOG_RESULT.QUIT then

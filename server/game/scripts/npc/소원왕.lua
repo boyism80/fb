@@ -1,7 +1,4 @@
--- @note Trash: 1_공통/진원관.txt "소원왕". Skull necklace sub2 (letter to 토원왕, then 비철단도).
--- Phase 1: sub-quest only. Phase 2: main step 33->34 (마른갈대).
 
----@brief   Sub2 step 0: give 원숭이편지, set sub2=1.
 local function do_sub2_start(me, npc)
     local b = me:dialog(npc, "경계하실 것 없다. 상의하고 싶은 문제가 있는 것일 뿐이니까. 나를 도와주고 싶은건가.", false, true)
     if b == DIALOG_RESULT.QUIT then
@@ -29,7 +26,6 @@ local function do_sub2_start(me, npc)
     return true
 end
 
----@brief   Sub2 step 2: give 비철단도, set sub2=3.
 local function do_sub2_complete(me, npc)
     local b = me:dialog(npc, "고맙다, 이제 다른 두목들과의 연락도 조금은 원활해지실거다. 이건 병에 걸린 우리 아이들과 싸우시던", false, true)
     if b == DIALOG_RESULT.QUIT then
@@ -69,7 +65,6 @@ function NPC_464(me, npc)
         return
     end
 
-    -- Phase 2: main 33->34 (마른갈대)
     local main_q = me:quest(QUEST_SKULL_NECKLACE)
     if main_q and main_q:step() == 33 then
         if not me:has_items("마른갈대", 1) then

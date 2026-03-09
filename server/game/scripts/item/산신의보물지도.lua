@@ -1,6 +1,3 @@
--- Use 산신의보물지도: random treasure location is chosen and stored in QUEST_MOUNTAIN_GOD param.
--- Format: param is "mapname,x,y" or "got" after fabric was taken. From 사용스크립트.txt @산신의보물.
-
 local TREASURE_SPOTS = {
     { map = '도삭산801층', x = 32, y = 4 },
     { map = '도삭산801층', x = 4, y = 5 },
@@ -14,9 +11,6 @@ local TREASURE_SPOTS = {
     { map = '도삭산812층', x = 16, y = 3 },
 }
 
---- Called when the player uses 산신의보물지도. Picks or shows treasure location via quest param.
---- @param me table Character using the item
---- @param item table Item instance
 function ON_ACTIVATED_10134(me, item)
     local quest = me:quest(QUEST_MOUNTAIN_GOD)
     if quest == nil or quest:step() < 1 then

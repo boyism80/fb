@@ -1,5 +1,3 @@
--- @note Trash: 1_북방대초원\일반.txt "북방나무꾼". Exchange 잔가지 for 백현목(100)/자현목(200)/노송의가지(500); 23h cooldown via QUEST_JANGAJI param (timestamp).
--- Server time: now(); $jangaji -> quest param as next_available timestamp.
 
 local COOLDOWN_SEC = 82800
 
@@ -49,9 +47,6 @@ local function do_exchange(me, npc, need_count, reward_name)
     me:dialog(npc, "앗, 정말로 잔가지들을 구해오셨군요! 그럼 여기 제가 가진 " .. reward_name .. "을 하나 드리겠습니다. 앞으로도 잘 부탁 드리겠습니다.", false, false)
 end
 
--- @brief   NPC 북방나무꾼: exchange 잔가지 for 백현목/자현목/노송의가지 with cooldown.
--- @param[in]  me   The character.
--- @param[in]  npc  The NPC entity.
 function NPC_450(me, npc)
     local now_ts = now()
     local next_ts = next_available(me)

@@ -1,7 +1,4 @@
--- @note Trash: 1_공통/진원관.txt "목원왕". Skull necklace sub9 (give 특제원숭이술, then 2->3 거울방패).
--- Phase 1: sub-quest only. Phase 2: main 32->33.
 
----@brief   Sub9 step 0: give 특제원숭이술, set sub9=1.
 local function do_sub9_start(me, npc)
     local sel, btn = me:list(npc, "요즘따라 인간들을 자주 만나시게 되시는도다.", { "이름을 가르쳐주세요.", "이곳의 상황은 좀 어떤가요?", "제가 도와드릴 일은 없을까요?" }, false)
     if btn == DIALOG_RESULT.QUIT or sel == nil then
@@ -46,7 +43,6 @@ local function do_sub9_start(me, npc)
     return true
 end
 
----@brief   Sub9 step 2: give 거울방패, set sub9=3.
 local function do_sub9_complete(me, npc)
     local b = me:dialog(npc, "아, 정말 수고하셨다. 보답으로 이걸 드리시겠다. 내가 털을 다듬으실때, 쓰시는 물건이시다.", false, true)
     if b == DIALOG_RESULT.QUIT then
@@ -86,7 +82,6 @@ function NPC_471(me, npc)
         return
     end
 
-    -- Phase 2: main 32->33 (마른갈대)
     local main_q = me:quest(QUEST_SKULL_NECKLACE)
     if main_q and main_q:step() == 32 then
         if not me:has_items("마른갈대", 1) then

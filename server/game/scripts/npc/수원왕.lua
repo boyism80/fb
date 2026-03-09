@@ -1,7 +1,4 @@
--- @note Trash: 1_공통/진원관.txt "수원왕". Skull necklace sub4 (1+아기원숭이->2), sub5 (원숭이편지->바나나다발).
--- Phase 1: sub-quests only. Phase 2: main 29->30.
 
----@brief   Sub4 step 1 + 아기원숭이: take 아기원숭이, set sub4=2.
 local function do_sub4_return_baby(me, npc)
     if not me:has_items("아기원숭이", 1) then
         me:dialog(npc, "퀘스트 오류입니다.\n아기원숭이 아이템이 없습니다.", false, false)
@@ -26,7 +23,6 @@ local function do_sub4_return_baby(me, npc)
     return true
 end
 
----@brief   Sub5 step 0: intro, set sub5=1.
 local function do_sub5_start(me, npc)
     local sel, btn = me:list(npc, "요즘따라 인간들을 자주 만나시게 되시는도다.", { "이름을 가르쳐주세요.", "이곳의 상황은 좀 어떤가요?", "제가 도와드릴 일은 없을까요?" }, false)
     if btn == DIALOG_RESULT.QUIT or sel == nil then
@@ -70,7 +66,6 @@ local function do_sub5_start(me, npc)
     return true
 end
 
----@brief   Sub5 step 1 + 원숭이편지: take 편지, give 바나나다발, set sub5=2.
 local function do_sub5_turnin(me, npc)
     if not me:has_items("원숭이편지", 1) then
         me:dialog(npc, "부족이 사시는 이 건물안에 남아계신 것은 확실하시다.", false, false)
@@ -107,14 +102,12 @@ function NPC_467(me, npc)
     local q4 = me:quest(QUEST_SKULL_NECKLACE_4)
     local q5 = me:quest(QUEST_SKULL_NECKLACE_5)
 
-    -- Sub4: step 1 + 아기원숭이
     if q4 and q4:step() == 1 then
         if do_sub4_return_baby(me, npc) then
             return
         end
     end
 
-    -- Sub5: step 0
     if q5 == nil or q5:step() == 0 then
         if do_sub5_start(me, npc) then
             return
@@ -122,7 +115,6 @@ function NPC_467(me, npc)
         return
     end
 
-    -- Sub5: step 1 + letter
     if q5:step() == 1 then
         if do_sub5_turnin(me, npc) then
             return
@@ -130,7 +122,6 @@ function NPC_467(me, npc)
         return
     end
 
-    -- Phase 2: main 29->30 (마른갈대)
     local main_q = me:quest(QUEST_SKULL_NECKLACE)
     if main_q and main_q:step() == 29 then
         if not me:has_items("마른갈대", 1) then

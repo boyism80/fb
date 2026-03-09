@@ -1,12 +1,4 @@
--- @note Trash: 1_일본\상점.txt "일본전설대장장이". Job 1~4 → weapon (진월신검/청월기창/황화곤봉/적화접선).
--- $japan_weapon = quest variable (per character): step 0 = first visit, step 1 = already heard intro (return).
--- First visit (quest nil or step 0): must have that weapon equipped; intro + list (예/사양); start_quest + step(1).
--- Return (quest step 1): list "재료 구해왔나?"; check 금강석·낡은망치; list "무기가 뭐였지?"; dialogs; equipment_off(WEAPON); rmitem(old); mkitem(upgrade).
--- Omitted: write_log, get_equipattribute/set_itemattribute (귀속), FUNC_SLOT_AVAILABLE_ASSERT, BREAKING_ITEM, OPTION_APPLY.
 
----@brief   NPC 일본전설대장장이: class-based weapon upgrade (진월신검→진일신검 etc.) with 금강석+낡은망치.
----@param[in] me   The character.
----@param[in] npc  The NPC entity.
 function NPC_451(me, npc)
     local CLASS_TO_WEAPON = {
         [CLASS.WARRIOR] = "진월신검",
@@ -94,7 +86,6 @@ function NPC_451(me, npc)
         return
     end
 
-    -- Return visit (quest step >= 1)
     local button = me:dialog(npc, "왔군. 가공을 하고 싶은 무기를 손에 들고 있어야 내가 알아볼 수 있으니, 꼭 손에 들도록 하게.", false, true)
     if button == DIALOG_RESULT.QUIT then
         return

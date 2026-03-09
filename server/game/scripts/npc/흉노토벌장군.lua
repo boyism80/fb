@@ -1,4 +1,3 @@
--- @note Trash: 1_중국\일반.txt "흉노토벌장군". Intro dialogs then list to warp to 흉노족 6–10 maps.
 
 local WARP_OPTIONS = {
     { "흉노족6", "흉노족6-2", 38, 28 },
@@ -8,9 +7,6 @@ local WARP_OPTIONS = {
     { "흉노족10", "흉노족10-2", 28, 2 },
 }
 
--- @brief   NPC Huno subjugation general: intro and warp to one of five Huno maps.
--- @param[in]  me   The character talking to the NPC.
--- @param[in]  npc  The NPC entity (흉노토벌장군).
 function NPC_462(me, npc)
 ::NPC_462_0000::
     local button = me:dialog(npc, "황제께서 흉노를 토벌하기 위해 그대들을 파견했건만, 여전히 모든 흉노를 토벌하기에는 역부족이었다네.", false, true)

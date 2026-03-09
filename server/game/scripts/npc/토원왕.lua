@@ -1,7 +1,4 @@
--- @note Trash: 1_공통/진원관.txt "토원왕". Skull necklace sub2 (receive letter 1->2), sub3 (좌황활력환->과일나라).
--- Phase 1: sub-quests only. Phase 2: main 2->3, 28->29.
 
----@brief   Sub2 step 1 + 원숭이편지: take letter, set sub2=2.
 local function do_sub2_receive_letter(me, npc)
     if not me:has_items("원숭이편지", 1) then
         return false
@@ -29,7 +26,6 @@ local function do_sub2_receive_letter(me, npc)
     return true
 end
 
----@brief   Sub3 step 0: intro, set sub3=1.
 local function do_sub3_start(me, npc)
     local sel, btn = me:list(npc, "고민이시다... 정말 고민이시다...", { "무슨 일이신가요?" }, false)
     if btn == DIALOG_RESULT.QUIT or sel == nil or sel ~= 0 then
@@ -60,7 +56,6 @@ local function do_sub3_start(me, npc)
     return true
 end
 
----@brief   Sub3 step 2: take 좌황활력환, give 과일나라, set sub3=3.
 local function do_sub3_turnin(me, npc)
     if not me:has_items("좌황활력환", 1) then
         me:dialog(npc, "퀘스트 오류입니다.\n사진을 찍어 홈페이지에 문의하세요.", false, false)
@@ -96,14 +91,12 @@ function NPC_465(me, npc)
     local q2 = me:quest(QUEST_SKULL_NECKLACE_2)
     local q3 = me:quest(QUEST_SKULL_NECKLACE_3)
 
-    -- Sub2: step 1 + letter -> step 2
     if q2 and q2:step() == 1 then
         if do_sub2_receive_letter(me, npc) then
             return
         end
     end
 
-    -- Sub3: step 0 -> start
     if q3 == nil or q3:step() == 0 then
         if do_sub3_start(me, npc) then
             return
@@ -116,7 +109,6 @@ function NPC_465(me, npc)
         return
     end
 
-    -- Sub3: step 2 -> turn in
     if q3:step() == 2 then
         if do_sub3_turnin(me, npc) then
             return
@@ -124,7 +116,6 @@ function NPC_465(me, npc)
         return
     end
 
-    -- Phase 2: main 2->3 (의견), 28->29 (마른갈대)
     local main_q = me:quest(QUEST_SKULL_NECKLACE)
     if main_q then
         local s = main_q:step()
