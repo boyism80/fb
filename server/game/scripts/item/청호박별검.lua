@@ -4,6 +4,6 @@ function ON_ACTIVATED_129(me, item)
 end
 
 -- 청호박별검 해제 스크립트
-function ON_INACTIVE_129(me, item)
+function ON_DEACTIVATED_129(me, item)
 
 end

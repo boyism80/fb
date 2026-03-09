@@ -4,6 +4,6 @@ function ON_ACTIVATED_1714(me, item)
 end
 
 -- 비룡장갑 해제 스크립트
-function ON_INACTIVE_1714(me, item)
+function ON_DEACTIVATED_1714(me, item)
 
 end

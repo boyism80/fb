@@ -19,6 +19,6 @@ function ON_ACTIVATED_278(me, item)
 end
 
 -- 용겸제삼봉 해제 스크립트
-function ON_INACTIVE_278(me, item)
+function ON_DEACTIVATED_278(me, item)
 
 end

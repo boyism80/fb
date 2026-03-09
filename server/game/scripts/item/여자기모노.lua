@@ -4,6 +4,6 @@ function ON_ACTIVATED_699(me, item)
 end
 
 -- 여자기모노 해제 스크립트
-function ON_INACTIVE_699(me, item)
+function ON_DEACTIVATED_699(me, item)
 
 end

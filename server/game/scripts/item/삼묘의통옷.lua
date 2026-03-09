@@ -4,6 +4,6 @@ function ON_ACTIVATED_730(me, item)
 end
 
 -- 삼묘의통옷 해제 스크립트
-function ON_INACTIVE_730(me, item)
+function ON_DEACTIVATED_730(me, item)
 
 end

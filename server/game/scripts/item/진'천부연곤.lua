@@ -4,6 +4,6 @@ function ON_ACTIVATED_328(me, item)
 end
 
 -- 진'천부연곤 해제 스크립트
-function ON_INACTIVE_328(me, item)
+function ON_DEACTIVATED_328(me, item)
 
 end

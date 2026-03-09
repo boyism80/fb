@@ -4,6 +4,6 @@ function ON_ACTIVATED_1006(me, item)
 end
 
 -- 팔세지도 해제 스크립트
-function ON_INACTIVE_1006(me, item)
+function ON_DEACTIVATED_1006(me, item)
 
 end

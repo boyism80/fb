@@ -4,6 +4,6 @@ function ON_ACTIVATED_685(me, item)
 end
 
 -- 사비의도복 해제 스크립트
-function ON_INACTIVE_685(me, item)
+function ON_DEACTIVATED_685(me, item)
 
 end

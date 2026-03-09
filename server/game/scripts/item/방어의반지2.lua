@@ -4,6 +4,6 @@ function ON_ACTIVATED_1772(me, item)
 end
 
 -- 방어의반지2 해제 스크립트
-function ON_INACTIVE_1772(me, item)
+function ON_DEACTIVATED_1772(me, item)
 
 end

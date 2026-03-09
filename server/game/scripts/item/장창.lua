@@ -4,6 +4,6 @@ function ON_ACTIVATED_22(me, item)
 end
 
 -- 장창 해제 스크립트
-function ON_INACTIVE_22(me, item)
+function ON_DEACTIVATED_22(me, item)
 
 end

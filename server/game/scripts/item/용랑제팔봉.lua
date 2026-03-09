@@ -19,6 +19,6 @@ function ON_ACTIVATED_274(me, item)
 end
 
 -- 용랑제팔봉 해제 스크립트
-function ON_INACTIVE_274(me, item)
+function ON_DEACTIVATED_274(me, item)
 
 end

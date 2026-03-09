@@ -4,6 +4,6 @@ function ON_ACTIVATED_215(me, item)
 end
 
 -- 황선창 해제 스크립트
-function ON_INACTIVE_215(me, item)
+function ON_DEACTIVATED_215(me, item)
 
 end

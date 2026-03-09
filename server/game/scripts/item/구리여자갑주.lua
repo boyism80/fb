@@ -1,2 +1,2 @@
-function ON_INACTIVE_2018(me, item)
+function ON_DEACTIVATED_2018(me, item)
 end

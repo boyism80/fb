@@ -17,6 +17,6 @@ function ON_ACTIVATED_259(me, item)
 end
 
 -- 용천제이검 해제 스크립트
-function ON_INACTIVE_259(me, item)
+function ON_DEACTIVATED_259(me, item)
 
 end

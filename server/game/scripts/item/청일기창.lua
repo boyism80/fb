@@ -4,6 +4,6 @@ function ON_ACTIVATED_87(me, item)
 end
 
 -- 청일기창 해제 스크립트
-function ON_INACTIVE_87(me, item)
+function ON_DEACTIVATED_87(me, item)
 
 end

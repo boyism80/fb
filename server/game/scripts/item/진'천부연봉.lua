@@ -4,6 +4,6 @@ function ON_ACTIVATED_319(me, item)
 end
 
 -- 진'천부연봉 해제 스크립트
-function ON_INACTIVE_319(me, item)
+function ON_DEACTIVATED_319(me, item)
 
 end

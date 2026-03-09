@@ -4,6 +4,6 @@ function ON_ACTIVATED_711(me, item)
 end
 
 -- 남흑산포복 해제 스크립트
-function ON_INACTIVE_711(me, item)
+function ON_DEACTIVATED_711(me, item)
 
 end

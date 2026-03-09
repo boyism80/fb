@@ -4,6 +4,6 @@ function ON_ACTIVATED_179(me, item)
 end
 
 -- 거미독창 해제 스크립트
-function ON_INACTIVE_179(me, item)
+function ON_DEACTIVATED_179(me, item)
 
 end

@@ -4,6 +4,6 @@ function ON_ACTIVATED_738(me, item)
 end
 
 -- 산신의정령 해제 스크립트
-function ON_INACTIVE_738(me, item)
+function ON_DEACTIVATED_738(me, item)
 
 end

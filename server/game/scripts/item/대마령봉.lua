@@ -4,6 +4,6 @@ function ON_ACTIVATED_48(me, item)
 end
 
 -- 대마령봉 해제 스크립트
-function ON_INACTIVE_48(me, item)
+function ON_DEACTIVATED_48(me, item)
 
 end

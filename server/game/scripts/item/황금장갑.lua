@@ -4,6 +4,6 @@ function ON_ACTIVATED_1712(me, item)
 end
 
 -- 황금장갑 해제 스크립트
-function ON_INACTIVE_1712(me, item)
+function ON_DEACTIVATED_1712(me, item)
 
 end

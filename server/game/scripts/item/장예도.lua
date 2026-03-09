@@ -4,6 +4,6 @@ function ON_ACTIVATED_187(me, item)
 end
 
 -- 장예도 해제 스크립트
-function ON_INACTIVE_187(me, item)
+function ON_DEACTIVATED_187(me, item)
 
 end

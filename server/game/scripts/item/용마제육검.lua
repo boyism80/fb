@@ -17,6 +17,6 @@ function ON_ACTIVATED_254(me, item)
 end
 
 -- 용마제육검 해제 스크립트
-function ON_INACTIVE_254(me, item)
+function ON_DEACTIVATED_254(me, item)
 
 end

@@ -4,6 +4,6 @@ function ON_ACTIVATED_50(me, item)
 end
 
 -- 해골죽장 해제 스크립트
-function ON_INACTIVE_50(me, item)
+function ON_DEACTIVATED_50(me, item)
 
 end

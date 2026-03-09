@@ -4,6 +4,6 @@ function ON_ACTIVATED_1637(me, item)
 end
 
 -- 강건부 해제 스크립트
-function ON_INACTIVE_1637(me, item)
+function ON_DEACTIVATED_1637(me, item)
 
 end

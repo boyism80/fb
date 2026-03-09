@@ -4,6 +4,6 @@ function ON_ACTIVATED_170(me, item)
 end
 
 -- 적화접선 해제 스크립트
-function ON_INACTIVE_170(me, item)
+function ON_DEACTIVATED_170(me, item)
 
 end

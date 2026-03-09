@@ -17,6 +17,6 @@ function ON_ACTIVATED_250(me, item)
 end
 
 -- 용마제이검 해제 스크립트
-function ON_INACTIVE_250(me, item)
+function ON_DEACTIVATED_250(me, item)
 
 end

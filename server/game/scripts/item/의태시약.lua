@@ -7,5 +7,5 @@ function ON_ACTIVATED_9050(me, item)
     me:cast(front, '의태')
 end
 
-function ON_INACTIVE_9050(me, item)
+function ON_DEACTIVATED_9050(me, item)
 end

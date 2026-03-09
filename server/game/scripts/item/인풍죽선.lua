@@ -4,6 +4,6 @@ function ON_ACTIVATED_71(me, item)
 end
 
 -- 인풍죽선 해제 스크립트
-function ON_INACTIVE_71(me, item)
+function ON_DEACTIVATED_71(me, item)
 
 end

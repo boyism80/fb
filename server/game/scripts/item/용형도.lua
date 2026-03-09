@@ -4,6 +4,6 @@ function ON_ACTIVATED_101(me, item)
 end
 
 -- 용형도 해제 스크립트
-function ON_INACTIVE_101(me, item)
+function ON_DEACTIVATED_101(me, item)
 
 end

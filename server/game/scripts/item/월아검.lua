@@ -19,6 +19,6 @@ function ON_ACTIVATED_69(me, item)
 end
 
 -- 월아검 해제 스크립트
-function ON_INACTIVE_69(me, item)
+function ON_DEACTIVATED_69(me, item)
 
 end

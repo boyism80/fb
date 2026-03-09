@@ -4,6 +4,6 @@ function ON_ACTIVATED_1721(me, item)
 end
 
 -- 백금소장갑 해제 스크립트
-function ON_INACTIVE_1721(me, item)
+function ON_DEACTIVATED_1721(me, item)
 
 end

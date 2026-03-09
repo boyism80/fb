@@ -4,6 +4,6 @@ function ON_ACTIVATED_736(me, item)
 end
 
 -- 삼묘의갑주 해제 스크립트
-function ON_INACTIVE_736(me, item)
+function ON_DEACTIVATED_736(me, item)
 
 end

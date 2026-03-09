@@ -4,6 +4,6 @@ function ON_ACTIVATED_90(me, item)
 end
 
 -- 안시도 해제 스크립트
-function ON_INACTIVE_90(me, item)
+function ON_DEACTIVATED_90(me, item)
 
 end

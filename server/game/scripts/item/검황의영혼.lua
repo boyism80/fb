@@ -4,6 +4,6 @@ function ON_ACTIVATED_690(me, item)
 end
 
 -- 검황의영혼 해제 스크립트
-function ON_INACTIVE_690(me, item)
+function ON_DEACTIVATED_690(me, item)
 
 end

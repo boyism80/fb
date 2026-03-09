@@ -19,6 +19,6 @@ function ON_ACTIVATED_276(me, item)
 end
 
 -- 용겸제일봉 해제 스크립트
-function ON_INACTIVE_276(me, item)
+function ON_DEACTIVATED_276(me, item)
 
 end

@@ -17,6 +17,6 @@ function ON_ACTIVATED_262(me, item)
 end
 
 -- 용천제오검 해제 스크립트
-function ON_INACTIVE_262(me, item)
+function ON_DEACTIVATED_262(me, item)
 
 end

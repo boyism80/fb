@@ -4,6 +4,6 @@ function ON_ACTIVATED_816(me, item)
 end
 
 -- 파란색여자갑주 해제 스크립트
-function ON_INACTIVE_816(me, item)
+function ON_DEACTIVATED_816(me, item)
 
 end

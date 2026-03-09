@@ -4,6 +4,6 @@ function ON_ACTIVATED_914(me, item)
 end
 
 -- 금장삼 해제 스크립트
-function ON_INACTIVE_914(me, item)
+function ON_DEACTIVATED_914(me, item)
 
 end

@@ -4,6 +4,6 @@ function ON_ACTIVATED_182(me, item)
 end
 
 -- 용사의칼 해제 스크립트
-function ON_INACTIVE_182(me, item)
+function ON_DEACTIVATED_182(me, item)
 
 end

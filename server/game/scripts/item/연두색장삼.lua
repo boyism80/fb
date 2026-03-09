@@ -4,6 +4,6 @@ function ON_ACTIVATED_612(me, item)
 end
 
 -- 연두색장삼 해제 스크립트
-function ON_INACTIVE_612(me, item)
+function ON_DEACTIVATED_612(me, item)
 
 end

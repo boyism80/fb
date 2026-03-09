@@ -4,6 +4,6 @@ function ON_ACTIVATED_2119(me, item)
 end
 
 -- 정령인형 해제 스크립트
-function ON_INACTIVE_2119(me, item)
+function ON_DEACTIVATED_2119(me, item)
 
 end

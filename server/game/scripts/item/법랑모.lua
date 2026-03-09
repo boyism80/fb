@@ -4,6 +4,6 @@ function ON_ACTIVATED_1386(me, item)
 end
 
 -- 법랑모 해제 스크립트
-function ON_INACTIVE_1386(me, item)
+function ON_DEACTIVATED_1386(me, item)
 
 end

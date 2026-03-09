@@ -4,6 +4,6 @@ function ON_ACTIVATED_858(me, item)
 end
 
 -- 금여자도복 해제 스크립트
-function ON_INACTIVE_858(me, item)
+function ON_DEACTIVATED_858(me, item)
 
 end

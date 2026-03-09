@@ -4,6 +4,6 @@ function ON_ACTIVATED_854(me, item)
 end
 
 -- 구리여자도복 해제 스크립트
-function ON_INACTIVE_854(me, item)
+function ON_DEACTIVATED_854(me, item)
 
 end

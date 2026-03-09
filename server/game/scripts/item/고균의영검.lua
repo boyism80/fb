@@ -4,6 +4,6 @@ function ON_ACTIVATED_234(me, item)
 end
 
 -- 고균의영검 해제 스크립트
-function ON_INACTIVE_234(me, item)
+function ON_DEACTIVATED_234(me, item)
 
 end

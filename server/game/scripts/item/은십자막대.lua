@@ -4,6 +4,6 @@ function ON_ACTIVATED_226(me, item)
 end
 
 -- 은십자막대 해제 스크립트
-function ON_INACTIVE_226(me, item)
+function ON_DEACTIVATED_226(me, item)
 
 end

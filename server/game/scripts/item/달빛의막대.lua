@@ -4,6 +4,6 @@ function ON_ACTIVATED_112(me, item)
 end
 
 -- 달빛의막대 해제 스크립트
-function ON_INACTIVE_112(me, item)
+function ON_DEACTIVATED_112(me, item)
 
 end

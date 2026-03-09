@@ -4,6 +4,6 @@ function ON_ACTIVATED_847(me, item)
 end
 
 -- 철남자갑옷 해제 스크립트
-function ON_INACTIVE_847(me, item)
+function ON_DEACTIVATED_847(me, item)
 
 end

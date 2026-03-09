@@ -4,6 +4,6 @@ function ON_ACTIVATED_2144(me, item)
 end
 
 -- 명석부 해제 스크립트
-function ON_INACTIVE_2144(me, item)
+function ON_DEACTIVATED_2144(me, item)
 
 end

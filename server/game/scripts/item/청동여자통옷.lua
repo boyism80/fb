@@ -4,6 +4,6 @@ function ON_ACTIVATED_920(me, item)
 end
 
 -- 청동여자통옷 해제 스크립트
-function ON_INACTIVE_920(me, item)
+function ON_DEACTIVATED_920(me, item)
 
 end

@@ -19,6 +19,6 @@ function ON_ACTIVATED_281(me, item)
 end
 
 -- 용겸제육봉 해제 스크립트
-function ON_INACTIVE_281(me, item)
+function ON_DEACTIVATED_281(me, item)
 
 end

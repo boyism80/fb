@@ -4,6 +4,6 @@ function ON_ACTIVATED_743(me, item)
 end
 
 -- 산신의인풍 해제 스크립트
-function ON_INACTIVE_743(me, item)
+function ON_DEACTIVATED_743(me, item)
 
 end

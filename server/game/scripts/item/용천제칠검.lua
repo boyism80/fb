@@ -17,6 +17,6 @@ function ON_ACTIVATED_264(me, item)
 end
 
 -- 용천제칠검 해제 스크립트
-function ON_INACTIVE_264(me, item)
+function ON_DEACTIVATED_264(me, item)
 
 end

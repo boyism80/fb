@@ -4,6 +4,6 @@ function ON_ACTIVATED_907(me, item)
 end
 
 -- 파란색장삼 해제 스크립트
-function ON_INACTIVE_907(me, item)
+function ON_DEACTIVATED_907(me, item)
 
 end

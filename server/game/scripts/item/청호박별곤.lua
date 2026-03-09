@@ -4,6 +4,6 @@ function ON_ACTIVATED_141(me, item)
 end
 
 -- 청호박별곤 해제 스크립트
-function ON_INACTIVE_141(me, item)
+function ON_DEACTIVATED_141(me, item)
 
 end

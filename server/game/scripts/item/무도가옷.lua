@@ -4,6 +4,6 @@ function ON_ACTIVATED_716(me, item)
 end
 
 -- 무도가옷 해제 스크립트
-function ON_INACTIVE_716(me, item)
+function ON_DEACTIVATED_716(me, item)
 
 end

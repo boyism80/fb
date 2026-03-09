@@ -4,6 +4,6 @@ function ON_ACTIVATED_40(me, item)
 end
 
 -- 환두대도 해제 스크립트
-function ON_INACTIVE_40(me, item)
+function ON_DEACTIVATED_40(me, item)
 
 end

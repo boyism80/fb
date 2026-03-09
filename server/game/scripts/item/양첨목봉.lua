@@ -4,6 +4,6 @@ function ON_ACTIVATED_38(me, item)
 end
 
 -- 양첨목봉 해제 스크립트
-function ON_INACTIVE_38(me, item)
+function ON_DEACTIVATED_38(me, item)
 
 end

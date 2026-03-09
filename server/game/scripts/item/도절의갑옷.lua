@@ -4,6 +4,6 @@ function ON_ACTIVATED_689(me, item)
 end
 
 -- 도절의갑옷 해제 스크립트
-function ON_INACTIVE_689(me, item)
+function ON_DEACTIVATED_689(me, item)
 
 end

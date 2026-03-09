@@ -4,6 +4,6 @@ function ON_ACTIVATED_2138(me, item)
 end
 
 -- 수정의목걸이 해제 스크립트
-function ON_INACTIVE_2138(me, item)
+function ON_DEACTIVATED_2138(me, item)
 
 end

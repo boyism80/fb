@@ -4,6 +4,6 @@ function ON_ACTIVATED_161(me, item)
 end
 
 -- 연녹호박별도 해제 스크립트
-function ON_INACTIVE_161(me, item)
+function ON_DEACTIVATED_161(me, item)
 
 end

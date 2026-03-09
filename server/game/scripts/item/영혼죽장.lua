@@ -4,6 +4,6 @@ function ON_ACTIVATED_248(me, item)
 end
 
 -- 영혼죽장 해제 스크립트
-function ON_INACTIVE_248(me, item)
+function ON_DEACTIVATED_248(me, item)
 
 end

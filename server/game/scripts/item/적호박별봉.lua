@@ -4,6 +4,6 @@ function ON_ACTIVATED_152(me, item)
 end
 
 -- 적호박별봉 해제 스크립트
-function ON_INACTIVE_152(me, item)
+function ON_DEACTIVATED_152(me, item)
 
 end

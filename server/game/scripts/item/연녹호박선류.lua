@@ -4,6 +4,6 @@ function ON_ACTIVATED_1638(me, item)
 end
 
 -- 연녹호박선류 해제 스크립트
-function ON_INACTIVE_1638(me, item)
+function ON_DEACTIVATED_1638(me, item)
 
 end

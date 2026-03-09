@@ -4,6 +4,6 @@ function ON_ACTIVATED_1377(me, item)
 end
 
 -- 힘의투구1 해제 스크립트
-function ON_INACTIVE_1377(me, item)
+function ON_DEACTIVATED_1377(me, item)
 
 end

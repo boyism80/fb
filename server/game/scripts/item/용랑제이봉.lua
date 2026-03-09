@@ -19,6 +19,6 @@ function ON_ACTIVATED_268(me, item)
 end
 
 -- 용랑제이봉 해제 스크립트
-function ON_INACTIVE_268(me, item)
+function ON_DEACTIVATED_268(me, item)
 
 end

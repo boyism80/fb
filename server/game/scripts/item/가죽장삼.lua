@@ -4,6 +4,6 @@ function ON_ACTIVATED_908(me, item)
 end
 
 -- 가죽장삼 해제 스크립트
-function ON_INACTIVE_908(me, item)
+function ON_DEACTIVATED_908(me, item)
 
 end

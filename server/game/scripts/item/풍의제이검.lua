@@ -4,6 +4,6 @@ function ON_ACTIVATED_61(me, item)
 end
 
 -- 풍의제이검 해제 스크립트
-function ON_INACTIVE_61(me, item)
+function ON_DEACTIVATED_61(me, item)
 
 end

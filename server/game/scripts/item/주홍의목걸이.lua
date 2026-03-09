@@ -4,6 +4,6 @@ function ON_ACTIVATED_2137(me, item)
 end
 
 -- 주홍의목걸이 해제 스크립트
-function ON_INACTIVE_2137(me, item)
+function ON_DEACTIVATED_2137(me, item)
 
 end

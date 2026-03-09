@@ -4,6 +4,6 @@ function ON_ACTIVATED_1368(me, item)
 end
 
 -- 민첩의투구1 해제 스크립트
-function ON_INACTIVE_1368(me, item)
+function ON_DEACTIVATED_1368(me, item)
 
 end

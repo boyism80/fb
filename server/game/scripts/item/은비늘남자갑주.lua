@@ -4,6 +4,6 @@ function ON_ACTIVATED_812(me, item)
 end
 
 -- 은비늘남자갑주 해제 스크립트
-function ON_INACTIVE_812(me, item)
+function ON_DEACTIVATED_812(me, item)
 
 end

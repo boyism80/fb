@@ -19,6 +19,6 @@ function ON_ACTIVATED_283(me, item)
 end
 
 -- 용겸제팔봉 해제 스크립트
-function ON_INACTIVE_283(me, item)
+function ON_DEACTIVATED_283(me, item)
 
 end

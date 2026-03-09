@@ -4,6 +4,6 @@ function ON_ACTIVATED_807(me, item)
 end
 
 -- 파란색비늘남자갑주 해제 스크립트
-function ON_INACTIVE_807(me, item)
+function ON_DEACTIVATED_807(me, item)
 
 end

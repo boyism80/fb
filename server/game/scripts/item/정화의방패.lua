@@ -4,6 +4,6 @@ function ON_ACTIVATED_1015(me, item)
 end
 
 -- 정화의방패 해제 스크립트
-function ON_INACTIVE_1015(me, item)
+function ON_DEACTIVATED_1015(me, item)
 
 end

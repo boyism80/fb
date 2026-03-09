@@ -9,6 +9,6 @@ function ON_ACTIVATED_288(me, item)
 end
 
 -- [손상]용천제팔검 해제 스크립트
-function ON_INACTIVE_288(me, item)
+function ON_DEACTIVATED_288(me, item)
 
 end

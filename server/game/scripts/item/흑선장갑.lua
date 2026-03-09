@@ -4,6 +4,6 @@ function ON_ACTIVATED_1713(me, item)
 end
 
 -- 흑선장갑 해제 스크립트
-function ON_INACTIVE_1713(me, item)
+function ON_DEACTIVATED_1713(me, item)
 
 end

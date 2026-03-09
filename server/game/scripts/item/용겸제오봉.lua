@@ -19,6 +19,6 @@ function ON_ACTIVATED_280(me, item)
 end
 
 -- 용겸제오봉 해제 스크립트
-function ON_INACTIVE_280(me, item)
+function ON_DEACTIVATED_280(me, item)
 
 end

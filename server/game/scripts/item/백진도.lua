@@ -4,6 +4,6 @@ function ON_ACTIVATED_76(me, item)
 end
 
 -- 백진도 해제 스크립트
-function ON_INACTIVE_76(me, item)
+function ON_DEACTIVATED_76(me, item)
 
 end

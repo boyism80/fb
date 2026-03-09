@@ -19,6 +19,6 @@ function ON_ACTIVATED_282(me, item)
 end
 
 -- 용겸제칠봉 해제 스크립트
-function ON_INACTIVE_282(me, item)
+function ON_DEACTIVATED_282(me, item)
 
 end

@@ -4,6 +4,6 @@ function ON_ACTIVATED_169(me, item)
 end
 
 -- 다문창 해제 스크립트
-function ON_INACTIVE_169(me, item)
+function ON_DEACTIVATED_169(me, item)
 
 end

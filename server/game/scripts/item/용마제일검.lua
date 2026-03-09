@@ -17,6 +17,6 @@ function ON_ACTIVATED_249(me, item)
 end
 
 -- 용마제일검 해제 스크립트
-function ON_INACTIVE_249(me, item)
+function ON_DEACTIVATED_249(me, item)
 
 end

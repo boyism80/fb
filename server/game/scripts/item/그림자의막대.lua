@@ -4,6 +4,6 @@ function ON_ACTIVATED_106(me, item)
 end
 
 -- 그림자의막대 해제 스크립트
-function ON_INACTIVE_106(me, item)
+function ON_DEACTIVATED_106(me, item)
 
 end

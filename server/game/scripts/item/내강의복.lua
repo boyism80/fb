@@ -4,6 +4,6 @@ function ON_ACTIVATED_703(me, item)
 end
 
 -- 내강의복 해제 스크립트
-function ON_INACTIVE_703(me, item)
+function ON_DEACTIVATED_703(me, item)
 
 end

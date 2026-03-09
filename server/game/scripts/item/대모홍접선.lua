@@ -4,6 +4,6 @@ function ON_ACTIVATED_102(me, item)
 end
 
 -- 대모홍접선 해제 스크립트
-function ON_INACTIVE_102(me, item)
+function ON_DEACTIVATED_102(me, item)
 
 end

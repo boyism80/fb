@@ -4,6 +4,6 @@ function ON_ACTIVATED_135(me, item)
 end
 
 -- 자호박별곤 해제 스크립트
-function ON_INACTIVE_135(me, item)
+function ON_DEACTIVATED_135(me, item)
 
 end

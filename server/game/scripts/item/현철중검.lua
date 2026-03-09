@@ -4,6 +4,6 @@ function ON_ACTIVATED_39(me, item)
 end
 
 -- 현철중검 해제 스크립트
-function ON_INACTIVE_39(me, item)
+function ON_DEACTIVATED_39(me, item)
 
 end

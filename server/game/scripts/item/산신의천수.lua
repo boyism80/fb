@@ -4,6 +4,6 @@ function ON_ACTIVATED_741(me, item)
 end
 
 -- 산신의천수 해제 스크립트
-function ON_INACTIVE_741(me, item)
+function ON_DEACTIVATED_741(me, item)
 
 end

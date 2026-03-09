@@ -4,6 +4,6 @@ function ON_ACTIVATED_688(me, item)
 end
 
 -- 사비의통옷 해제 스크립트
-function ON_INACTIVE_688(me, item)
+function ON_DEACTIVATED_688(me, item)
 
 end

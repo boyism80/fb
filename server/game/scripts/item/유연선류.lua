@@ -4,6 +4,6 @@ function ON_ACTIVATED_1684(me, item)
 end
 
 -- 유연선류 해제 스크립트
-function ON_INACTIVE_1684(me, item)
+function ON_DEACTIVATED_1684(me, item)
 
 end

@@ -4,6 +4,6 @@ function ON_ACTIVATED_1756(me, item)
 end
 
 -- 녹호박장갑 해제 스크립트
-function ON_INACTIVE_1756(me, item)
+function ON_DEACTIVATED_1756(me, item)
 
 end

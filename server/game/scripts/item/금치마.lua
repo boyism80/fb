@@ -4,6 +4,6 @@ function ON_ACTIVATED_895(me, item)
 end
 
 -- 금치마 해제 스크립트
-function ON_INACTIVE_895(me, item)
+function ON_DEACTIVATED_895(me, item)
 
 end

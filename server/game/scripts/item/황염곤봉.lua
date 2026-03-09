@@ -4,6 +4,6 @@ function ON_ACTIVATED_88(me, item)
 end
 
 -- 황염곤봉 해제 스크립트
-function ON_INACTIVE_88(me, item)
+function ON_DEACTIVATED_88(me, item)
 
 end

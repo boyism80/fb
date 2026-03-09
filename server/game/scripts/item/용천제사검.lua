@@ -17,6 +17,6 @@ function ON_ACTIVATED_261(me, item)
 end
 
 -- 용천제사검 해제 스크립트
-function ON_INACTIVE_261(me, item)
+function ON_DEACTIVATED_261(me, item)
 
 end

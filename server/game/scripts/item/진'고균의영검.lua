@@ -4,6 +4,6 @@ function ON_ACTIVATED_233(me, item)
 end
 
 -- 진'고균의영검 해제 스크립트
-function ON_INACTIVE_233(me, item)
+function ON_DEACTIVATED_233(me, item)
 
 end

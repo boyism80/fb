@@ -4,6 +4,6 @@ function ON_ACTIVATED_67(me, item)
 end
 
 -- 낭아봉 해제 스크립트
-function ON_INACTIVE_67(me, item)
+function ON_DEACTIVATED_67(me, item)
 
 end

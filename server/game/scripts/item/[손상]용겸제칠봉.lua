@@ -9,6 +9,6 @@ function ON_ACTIVATED_291(me, item)
 end
 
 -- [손상]용겸제칠봉 해제 스크립트
-function ON_INACTIVE_291(me, item)
+function ON_DEACTIVATED_291(me, item)
 
 end

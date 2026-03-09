@@ -19,6 +19,6 @@ function ON_ACTIVATED_269(me, item)
 end
 
 -- 용랑제삼봉 해제 스크립트
-function ON_INACTIVE_269(me, item)
+function ON_DEACTIVATED_269(me, item)
 
 end

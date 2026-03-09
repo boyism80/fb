@@ -4,6 +4,6 @@ function ON_ACTIVATED_78(me, item)
 end
 
 -- 용설봉 해제 스크립트
-function ON_INACTIVE_78(me, item)
+function ON_DEACTIVATED_78(me, item)
 
 end

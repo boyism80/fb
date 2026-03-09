@@ -4,6 +4,6 @@ function ON_ACTIVATED_745(me, item)
 end
 
 -- 남자원주민의옷 해제 스크립트
-function ON_INACTIVE_745(me, item)
+function ON_DEACTIVATED_745(me, item)
 
 end

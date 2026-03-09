@@ -4,6 +4,6 @@ function ON_ACTIVATED_1752(me, item)
 end
 
 -- 녹호박팔찌 해제 스크립트
-function ON_INACTIVE_1752(me, item)
+function ON_DEACTIVATED_1752(me, item)
 
 end

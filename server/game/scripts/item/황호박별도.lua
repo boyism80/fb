@@ -4,6 +4,6 @@ function ON_ACTIVATED_166(me, item)
 end
 
 -- 황호박별도 해제 스크립트
-function ON_INACTIVE_166(me, item)
+function ON_DEACTIVATED_166(me, item)
 
 end

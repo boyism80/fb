@@ -4,6 +4,6 @@ function ON_ACTIVATED_1705(me, item)
 end
 
 -- 천공팔찌 해제 스크립트
-function ON_INACTIVE_1705(me, item)
+function ON_DEACTIVATED_1705(me, item)
 
 end

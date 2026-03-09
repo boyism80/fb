@@ -17,6 +17,6 @@ function ON_ACTIVATED_260(me, item)
 end
 
 -- 용천제삼검 해제 스크립트
-function ON_INACTIVE_260(me, item)
+function ON_DEACTIVATED_260(me, item)
 
 end

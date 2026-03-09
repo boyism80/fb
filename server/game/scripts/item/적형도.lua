@@ -4,6 +4,6 @@ function ON_ACTIVATED_99(me, item)
 end
 
 -- 적형도 해제 스크립트
-function ON_INACTIVE_99(me, item)
+function ON_DEACTIVATED_99(me, item)
 
 end

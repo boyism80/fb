@@ -4,6 +4,6 @@ function ON_ACTIVATED_230(me, item)
 end
 
 -- 주작의검 해제 스크립트
-function ON_INACTIVE_230(me, item)
+function ON_DEACTIVATED_230(me, item)
 
 end

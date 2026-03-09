@@ -19,6 +19,6 @@ function ON_ACTIVATED_271(me, item)
 end
 
 -- 용랑제오봉 해제 스크립트
-function ON_INACTIVE_271(me, item)
+function ON_DEACTIVATED_271(me, item)
 
 end

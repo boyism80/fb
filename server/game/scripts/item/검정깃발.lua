@@ -4,6 +4,6 @@ function ON_ACTIVATED_243(me, item)
 end
 
 -- 검정깃발 해제 스크립트
-function ON_INACTIVE_243(me, item)
+function ON_DEACTIVATED_243(me, item)
 
 end

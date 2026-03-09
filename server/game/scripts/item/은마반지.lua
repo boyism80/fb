@@ -4,6 +4,6 @@ function ON_ACTIVATED_1697(me, item)
 end
 
 -- 은마반지 해제 스크립트
-function ON_INACTIVE_1697(me, item)
+function ON_DEACTIVATED_1697(me, item)
 
 end

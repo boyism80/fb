@@ -9,6 +9,6 @@ function ON_ACTIVATED_292(me, item)
 end
 
 -- [손상]용겸제팔봉 해제 스크립트
-function ON_INACTIVE_292(me, item)
+function ON_DEACTIVATED_292(me, item)
 
 end

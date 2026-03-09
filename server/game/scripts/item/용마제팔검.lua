@@ -17,6 +17,6 @@ function ON_ACTIVATED_256(me, item)
 end
 
 -- 용마제팔검 해제 스크립트
-function ON_INACTIVE_256(me, item)
+function ON_DEACTIVATED_256(me, item)
 
 end

@@ -17,6 +17,6 @@ function ON_ACTIVATED_257(me, item)
 end
 
 -- 용마제구검 해제 스크립트
-function ON_INACTIVE_257(me, item)
+function ON_DEACTIVATED_257(me, item)
 
 end

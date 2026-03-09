@@ -4,6 +4,6 @@ function ON_ACTIVATED_339(me, item)
 end
 
 -- 비늘단도 해제 스크립트
-function ON_INACTIVE_339(me, item)
+function ON_DEACTIVATED_339(me, item)
 
 end

@@ -4,6 +4,6 @@ function ON_ACTIVATED_320(me, item)
 end
 
 -- 일식천부연곤 해제 스크립트
-function ON_INACTIVE_320(me, item)
+function ON_DEACTIVATED_320(me, item)
 
 end

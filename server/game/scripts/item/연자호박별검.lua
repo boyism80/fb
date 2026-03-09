@@ -4,6 +4,6 @@ function ON_ACTIVATED_126(me, item)
 end
 
 -- 연자호박별검 해제 스크립트
-function ON_INACTIVE_126(me, item)
+function ON_DEACTIVATED_126(me, item)
 
 end

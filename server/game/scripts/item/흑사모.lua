@@ -4,6 +4,6 @@ function ON_ACTIVATED_213(me, item)
 end
 
 -- 흑사모 해제 스크립트
-function ON_INACTIVE_213(me, item)
+function ON_DEACTIVATED_213(me, item)
 
 end

@@ -17,6 +17,6 @@ function ON_ACTIVATED_265(me, item)
 end
 
 -- 용천제팔검 해제 스크립트
-function ON_INACTIVE_265(me, item)
+function ON_DEACTIVATED_265(me, item)
 
 end

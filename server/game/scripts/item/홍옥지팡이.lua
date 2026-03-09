@@ -4,6 +4,6 @@ function ON_ACTIVATED_227(me, item)
 end
 
 -- 홍옥지팡이 해제 스크립트
-function ON_INACTIVE_227(me, item)
+function ON_DEACTIVATED_227(me, item)
 
 end
