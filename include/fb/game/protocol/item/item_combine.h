@@ -11,7 +11,7 @@ using namespace fb::model::enum_value;
 class item_combine : public fb::protocol::header
 {
 public:
-    static constexpr uint8_t header = 0x6B;
+    static constexpr uint8_t opcode = 0x6B;
 
 public:
 #ifndef BOT

@@ -11,7 +11,7 @@ using namespace fb::model::enum_value;
 class timer : public fb::protocol::header
 {
 public:
-    static constexpr uint8_t header = 0x67;
+    static constexpr uint8_t opcode = 0x67;
 
 public:
 #ifndef BOT

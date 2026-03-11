@@ -17,7 +17,7 @@ async::task<void> spell_update::serialize(fb::stream_writer<big_endian>& writer)
     if (spell == nullptr)
         co_return;
 
-    writer.write<uint8_t>(header);
+    writer.write<uint8_t>(opcode);
     writer.write<uint8_t>(this->index + 1);
     writer.write<uint8_t>(static_cast<uint8_t>(spell->model.type));
     writer.write<std::string>(spell->model.name);

@@ -14,7 +14,7 @@ using namespace fb::model::enum_value;
 class map_config : public fb::protocol::header
 {
 public:
-    static constexpr uint8_t header = 0x15;
+    static constexpr uint8_t opcode = 0x15;
 
 public:
 #ifndef BOT

@@ -70,12 +70,12 @@ public:
             return true;
         }
 
-        bool update(uint8_t cmd, const std::chrono::steady_clock::duration& duration, uint32_t limit)
+        bool update(uint8_t opcode, const std::chrono::steady_clock::duration& duration, uint32_t limit)
         {
-            if (!this->_commands.contains(cmd))
-                this->_commands[cmd] = tracker{};
+            if (!this->_commands.contains(opcode))
+                this->_commands[opcode] = tracker{};
 
-            auto& tracker = this->_commands[cmd];
+            auto& tracker = this->_commands[opcode];
 
             auto elapsed_time = fb::model::datetime() - tracker.last;
             if (elapsed_time > duration)

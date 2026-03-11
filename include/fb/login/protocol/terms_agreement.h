@@ -12,7 +12,7 @@ using namespace fb::model::enum_value;
 class agreement : public fb::protocol::header
 {
 public:
-    static constexpr uint8_t header = 0x10;
+    static constexpr uint8_t opcode = 0x10;
 
 public:
 #ifdef BOT
@@ -43,11 +43,10 @@ public:
 
 namespace fb::protocol::login::response {
 
-/** Terms-of-use agreement (cmd 0x60). Server sends agreement text to the client. */
 class terms_agreement : public fb::protocol::header
 {
 public:
-    static constexpr uint8_t header = 0x60;
+    static constexpr uint8_t opcode = 0x60;
 
 public:
 #ifdef BOT

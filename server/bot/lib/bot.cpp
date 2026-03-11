@@ -54,13 +54,13 @@ bool base_bot::on_wrap(fb::stream& out)
     return this->encryption().wrap(out);
 }
 
-bool base_bot::process_hooks(uint8_t cmd, fb::protocol::header& header)
+bool base_bot::process_hooks(uint8_t opcode, fb::protocol::header& header)
 {
     this->assert_thread();
 
-    if (this->_hooks.contains(cmd))
+    if (this->_hooks.contains(opcode))
     {
-        auto& matched_hooks = this->_hooks.at(cmd);
+        auto& matched_hooks = this->_hooks.at(opcode);
         auto  i             = std::find_if(matched_hooks.begin(), matched_hooks.end(), [&header](const auto& hook) {
             return hook.condition(header);
         });
@@ -78,13 +78,13 @@ bool base_bot::process_hooks(uint8_t cmd, fb::protocol::header& header)
     return false;
 }
 
-bool base_bot::remove_hook_by_context(uint8_t cmd, const void* context_ptr)
+bool base_bot::remove_hook_by_context(uint8_t opcode, const void* context_ptr)
 {
     this->assert_thread();
 
-    if (this->_hooks.contains(cmd))
+    if (this->_hooks.contains(opcode))
     {
-        auto& hooks = this->_hooks.at(cmd);
+        auto& hooks = this->_hooks.at(opcode);
         auto  i     = std::find_if(hooks.begin(), hooks.end(), [context_ptr](const auto& hook) {
             return hook.context_ptr == context_ptr;
         });

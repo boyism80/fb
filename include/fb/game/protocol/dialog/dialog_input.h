@@ -15,7 +15,7 @@ using namespace fb::model::enum_value;
 class dialog_input : public fb::protocol::header
 {
 public:
-    static constexpr uint8_t header = 0x2F;
+    static constexpr uint8_t opcode = 0x2F;
 #ifndef BOT
     using appearance_ptr = std::unique_ptr<fb::game::appearance>;
 #endif

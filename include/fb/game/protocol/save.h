@@ -11,7 +11,7 @@ using namespace fb::model::enum_value;
 class save : public fb::protocol::header
 {
 public:
-    static constexpr uint8_t header = 0x21;
+    static constexpr uint8_t opcode = 0x21;
 
 public:
     save() = default;

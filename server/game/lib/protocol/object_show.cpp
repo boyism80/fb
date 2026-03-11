@@ -16,7 +16,7 @@ update::update(const std::vector<fb::game::object*>& objects) :
 async::task<void> update::serialize(fb::stream_writer<big_endian>& writer) const
 {
     co_await header::serialize(writer);
-    writer.write<uint8_t>(header);
+    writer.write<uint8_t>(opcode);
     writer.write<uint16_t>((uint16_t)this->objects.size());
 
     for (const auto object : this->objects)

@@ -11,7 +11,7 @@ using namespace fb::model::enum_value;
 class item_unequip : public fb::protocol::header
 {
 public:
-    static constexpr uint8_t header = 0x38;
+    static constexpr uint8_t opcode = 0x38;
 
 public:
 #ifndef BOT

@@ -6,15 +6,10 @@
 
 namespace fb::protocol::game::request {
 
-/**
- * Client-to-server pong (0x75).
- * Sent by the client after receiving server ping (0x68).
- * Wire (after cmd): token (4 bytes BE), unknown (4 bytes BE). Total 9 bytes.
- */
 class pong : public fb::protocol::header
 {
 public:
-    static constexpr uint8_t header = 0x75;
+    static constexpr uint8_t opcode = 0x75;
 
 public:
 #ifndef BOT

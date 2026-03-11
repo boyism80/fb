@@ -17,7 +17,7 @@ async::task<void> spell_remove::serialize(fb::stream_writer<big_endian>& writer)
     if (spell != nullptr)
         co_return;
 
-    writer.write<uint8_t>(header);
+    writer.write<uint8_t>(opcode);
     writer.write<uint8_t>(this->index + 1);
     writer.write<uint8_t>(0x00);
 }

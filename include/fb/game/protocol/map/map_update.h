@@ -35,7 +35,7 @@ using namespace fb::model::enum_value;
 class map_update : public fb::protocol::header
 {
 public:
-    static constexpr uint8_t header = 0x05;
+    static constexpr uint8_t opcode = 0x05;
 
 public:
 #ifndef BOT
@@ -68,7 +68,7 @@ namespace fb::protocol::game::response {
 class map_update : public fb::protocol::header
 {
 public:
-    static constexpr uint8_t header = 0x06;
+    static constexpr uint8_t opcode = 0x06;
 
 #ifdef BOT
 

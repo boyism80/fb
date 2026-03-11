@@ -14,7 +14,7 @@ trade_upload::trade_upload(uint8_t index, const fb::game::item& item, bool mine)
 async::task<void> trade_upload::serialize(fb::stream_writer<big_endian>& writer) const
 {
     co_await header::serialize(writer);
-    writer.write<uint8_t>(header);
+    writer.write<uint8_t>(opcode);
     writer.write<uint8_t>(0x02);
     writer.write<bool>(!this->mine);
     writer.write<uint8_t>(this->index); // trade slot index

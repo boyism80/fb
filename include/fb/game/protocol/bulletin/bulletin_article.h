@@ -16,7 +16,7 @@ using namespace fb::model::enum_value;
 class bulletin_article : public fb::protocol::header
 {
 public:
-    static constexpr uint8_t header = 0x31;
+    static constexpr uint8_t opcode = 0x31;
 
 public:
 #ifndef BOT

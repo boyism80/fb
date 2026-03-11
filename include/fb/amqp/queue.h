@@ -46,14 +46,14 @@ public:
     template <typename R>
     void handler(std::function<async::task<void>(R&)> fn)
     {
-        auto cmd = static_cast<uint32_t>(R::FlatBufferProtocolType);
-        this->handler(cmd, [this, fn](const uint8_t* ptr) -> async::task<void> {
+        auto opcode = static_cast<uint32_t>(R::FlatBufferProtocolType);
+        this->handler(opcode, [this, fn](const uint8_t* ptr) -> async::task<void> {
             auto protocol = R::Deserialize(ptr);
             co_await fn(protocol);
         });
     }
 
-    void handler(uint32_t cmd, handle_func&& fn);
+    void handler(uint32_t opcode, handle_func&& fn);
 };
 
 } // namespace fb::amqp

@@ -6,7 +6,7 @@ namespace fb::protocol::game::response {
 async::task<void> trade_lock::serialize(fb::stream_writer<big_endian>& writer) const
 {
     co_await header::serialize(writer);
-    writer.write<uint8_t>(header);
+    writer.write<uint8_t>(opcode);
     writer.write<uint8_t>(0x05);
     writer.write<uint8_t>(0x00);
 }

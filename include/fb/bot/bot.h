@@ -49,8 +49,8 @@ protected:
 
 public:
     void connect(const boost::asio::ip::tcp::endpoint& endpoint);
-    bool process_hooks(uint8_t cmd, fb::protocol::header& header);
-    bool remove_hook_by_context(uint8_t cmd, const void* context_ptr);
+    bool process_hooks(uint8_t opcode, fb::protocol::header& header);
+    bool remove_hook_by_context(uint8_t opcode, const void* context_ptr);
 
 public:
     virtual fb::thread* thread() const;
@@ -71,10 +71,10 @@ public:
         std::atomic<bool>             completed{false};
         const void*                   context_ptr;
 
-        request_context(std::shared_ptr<BotType> bot, uint8_t cmd) :
+        request_context(std::shared_ptr<BotType> bot, uint8_t opcode) :
             promise(std::make_shared<promise_type>()),
             bot_weak(bot),
-            hook_cmd(cmd),
+            hook_cmd(opcode),
             context_ptr(this)
         { }
 

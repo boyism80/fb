@@ -17,7 +17,7 @@ async::task<void> bulletin_sections::serialize(fb::stream_writer<big_endian>& wr
     co_await header::serialize(writer);
     auto size = table::bulletin.size();
 
-    writer.write<uint8_t>(header);
+    writer.write<uint8_t>(opcode);
     writer.write<uint8_t>(0x01);
     writer.write<uint16_t>(size);
 

@@ -14,7 +14,7 @@ using namespace fb::model::enum_value;
 class direction : public fb::protocol::header
 {
 public:
-    static constexpr uint8_t header = 0x11;
+    static constexpr uint8_t opcode = 0x11;
 
 public:
 #ifndef BOT
@@ -47,7 +47,7 @@ using namespace fb::model::enum_value;
 class direction : public fb::protocol::header
 {
 public:
-    static constexpr uint8_t header = 0x11;
+    static constexpr uint8_t opcode = 0x11;
 
 public:
 #ifndef BOT

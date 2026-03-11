@@ -107,28 +107,28 @@ private:
                 if (this->assert_tps(socket) && socket.limiter.update(MAX_TPS) == false)
                     throw std::runtime_error("tps limit exceeded");
 
-                auto cmd = reader.read<uint8_t>();
-                if (this->decrypt_policy(cmd))
+                auto opcode = reader.read<uint8_t>();
+                if (this->decrypt_policy(opcode))
                     size = socket.encryption().decrypt(stream, reader.seek() - 1, size);
 
                 reader.flush(); // remove magic code and size
 
                 socket.update_last_packet_time();
 
-                if (!this->handler.protocol.has_deserializer(cmd))
+                if (!this->handler.protocol.has_deserializer(opcode))
                 {
-                    fb::logger::warn(std::format("Undefined protocol. [{:#x}]", cmd));
+                    fb::logger::warn(std::format("Undefined protocol. [{:#x}]", opcode));
                 }
-                else if (!this->handler.protocol.has_handler(cmd))
+                else if (!this->handler.protocol.has_handler(opcode))
                 {
-                    fb::logger::warn(std::format("Undefined handler. [{:#x}]", cmd));
+                    fb::logger::warn(std::format("Undefined handler. [{:#x}]", opcode));
                 }
                 else
                 {
-                    auto protocol = co_await this->handler.protocol.get_deserializer(cmd)(reader);
+                    auto protocol = co_await this->handler.protocol.get_deserializer(opcode)(reader);
                     auto fd       = socket.fd();
                     auto weak     = socket.template weak_from_this_as<fb::socket<T>>();
-                    this->threads.enqueue(weak, [this, protocol, weak, fd, cmd](auto& thread) -> async::task<void> {
+                    this->threads.enqueue(weak, [this, protocol, weak, fd, opcode](auto& thread) -> async::task<void> {
                         try
                         {
                             if (weak.expired())
@@ -139,11 +139,11 @@ private:
                                 co_return;
 
                             auto  socket  = shared.get();
-                            auto& handler = this->handler.protocol.get_handler(cmd);
+                            auto& handler = this->handler.protocol.get_handler(opcode);
                             // Check both global socket TPS and per-command TPS limits
                             // If either limit is exceeded, ignore the packet
                             if (this->assert_tps(*socket) &&
-                                !socket->limiter.update(cmd, handler.duration, handler.limit))
+                                !socket->limiter.update(opcode, handler.duration, handler.limit))
                                 co_return;
 
                             [[maybe_unused]]
@@ -358,7 +358,7 @@ public:
     }
 
 protected:
-    virtual bool decrypt_policy(uint8_t cmd) const
+    virtual bool decrypt_policy(uint8_t opcode) const
     {
         return true;
     }

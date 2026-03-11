@@ -60,7 +60,7 @@ private:
     async::task<void> on_transfer(game_bot& bot, const fb::protocol::response::transfer& response);
 
 protected:
-    async::task<void> on_integration_hook_execution(uint8_t                     cmd,
+    async::task<void> on_integration_hook_execution(uint8_t                     opcode,
                                                     game_bot&                   bot,
                                                     const fb::protocol::header& header) override;
 

@@ -34,11 +34,11 @@ game_bot_controller::game_bot_controller(bot_container& container) :
     this->bind(&game_bot_controller::on_internal_info);
 }
 
-bool game_bot_controller::decrypt_policy(int cmd) const
+bool game_bot_controller::decrypt_policy(int opcode) const
 {
-    switch (cmd)
+    switch (opcode)
     {
-    case fb::protocol::response::transfer::header: // Host discovery
+    case fb::protocol::response::transfer::opcode: // Host discovery
         return false;
 
     default:

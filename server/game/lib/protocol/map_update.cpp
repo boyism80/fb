@@ -36,7 +36,7 @@ using namespace fb::model::enum_value;
 async::task<void> map_update::serialize(fb::stream_writer<big_endian>& writer) const
 {
     co_await header::serialize(writer);
-    writer.write<uint8_t>(header);
+    writer.write<uint8_t>(opcode);
 
     if (this->map.model.effect == MAP_EFFECT_TYPE::NONE)
     {

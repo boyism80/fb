@@ -17,7 +17,7 @@ external_info::external_info(const fb::game::character& ch, const fb::game::obje
 async::task<void> external_info::serialize(fb::stream_writer<big_endian>& writer) const
 {
     co_await header::serialize(writer);
-    writer.write<uint8_t>(header);
+    writer.write<uint8_t>(opcode);
     writer.write<std::string>(this->ch.title());
 
     auto& clan_id = this->ch.clan_id();

@@ -167,7 +167,7 @@ public:
 protected:
     uint8_t           id() const override final;
     internal::Service service() const override final;
-    bool              decrypt_policy(uint8_t cmd) const override final;
+    bool              decrypt_policy(uint8_t opcode) const override final;
     bool              assert_tps(const fb::socket<character>& socket) const override final;
     void              on_init_amqp(fb::amqp::socket& amqp) override final;
     async::task<void> on_start() override final;

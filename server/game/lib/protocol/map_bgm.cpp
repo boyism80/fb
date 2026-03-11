@@ -13,7 +13,7 @@ map_bgm::map_bgm(uint16_t bgm, uint8_t volume) :
 async::task<void> map_bgm::serialize(fb::stream_writer<big_endian>& writer) const
 {
     co_await header::serialize(writer);
-    writer.write<uint8_t>(header);
+    writer.write<uint8_t>(opcode);
 
     writer.write<uint8_t>(0x01);
     writer.write<uint8_t>(0x05);

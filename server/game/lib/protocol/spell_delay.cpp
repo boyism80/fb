@@ -13,7 +13,7 @@ spell_delay::spell_delay(const fb::game::spell& spell, uint32_t delay) :
 async::task<void> spell_delay::serialize(fb::stream_writer<big_endian>& writer) const
 {
     co_await header::serialize(writer);
-    writer.write<uint8_t>(header);
+    writer.write<uint8_t>(opcode);
     writer.write<std::string, uint8_t>(this->spell.model.name);
     writer.write<uint32_t>(this->delay);
     writer.write<uint8_t>(0);

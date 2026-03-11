@@ -23,7 +23,7 @@ move::move(DIRECTION direction, uint32_t oid, fb::model::point<uint16_t> positio
 async::task<void> move::serialize(fb::stream_writer<big_endian>& writer) const
 {
     co_await header::serialize(writer);
-    writer.write<uint8_t>(header);
+    writer.write<uint8_t>(opcode);
     writer.write<uint8_t>(static_cast<uint8_t>(this->direction));
     writer.write<uint8_t>(this->oid);
     writer.write<uint16_t>(this->position.x);
@@ -50,7 +50,7 @@ move::move(const uint32_t id, DIRECTION direction, const point<uint16_t>& positi
 async::task<void> move::serialize(fb::stream_writer<big_endian>& writer) const
 {
     co_await header::serialize(writer);
-    writer.write<uint8_t>(header);
+    writer.write<uint8_t>(opcode);
     writer.write<uint32_t>(this->id);
     writer.write<uint16_t>(this->position.x);
     writer.write<uint16_t>(this->position.y);

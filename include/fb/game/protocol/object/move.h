@@ -14,7 +14,7 @@ using namespace fb::model::enum_value;
 class move : public fb::protocol::header
 {
 public:
-    static constexpr uint8_t header = 0x32;
+    static constexpr uint8_t opcode = 0x32;
 
 public:
     DIRECTION                  direction;
@@ -45,7 +45,7 @@ using namespace fb::model::enum_value;
 class move : public fb::protocol::header
 {
 public:
-    static constexpr uint8_t header = 0x0C;
+    static constexpr uint8_t opcode = 0x0C;
 
 public:
 #ifndef BOT

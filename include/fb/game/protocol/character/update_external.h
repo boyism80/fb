@@ -92,7 +92,7 @@ template <bool Detailed>
 class update_external : public fb::protocol::header
 {
 public:
-    static constexpr uint8_t header = Detailed ? 0x33 : 0x1D;
+    static constexpr uint8_t opcode = Detailed ? 0x33 : 0x1D;
 
 public:
 #ifndef BOT
@@ -204,7 +204,7 @@ public:
     [[nodiscard]] async::task<void> serialize(fb::stream_writer<big_endian>& writer) const
     {
         co_await header::serialize(writer);
-        writer.write<uint8_t>(header); // Use compile-time constant header
+        writer.write<uint8_t>(opcode); // Use compile-time constant header
         this->serializer.serialize(writer);
     }
 #else

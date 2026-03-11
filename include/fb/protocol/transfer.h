@@ -8,7 +8,7 @@ namespace fb::protocol::response {
 class transfer : public fb::protocol::header
 {
 public:
-    static constexpr uint8_t header = 0x03;
+    static constexpr uint8_t opcode = 0x03;
 
 public:
 #ifdef BOT
@@ -37,7 +37,7 @@ public:
     [[nodiscard]] async::task<void> serialize(fb::stream_writer<big_endian>& writer) const
     {
         co_await header::serialize(writer);
-        writer.write<uint8_t>(header);
+        writer.write<uint8_t>(opcode);
         writer.write<uint32_t>(this->ip);
         writer.write<uint16_t>(this->port);
         writer.write<uint8_t>(static_cast<uint8_t>(this->parameter.size()));

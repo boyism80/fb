@@ -22,7 +22,7 @@ update_pw::update_pw(std::string_view name, std::string_view pw, std::string_vie
 async::task<void> update_pw::serialize(fb::stream_writer<big_endian>& writer) const
 {
     co_await header::serialize(writer);
-    writer.write<uint8_t>(header);
+    writer.write<uint8_t>(opcode);
     writer.write<std::string, uint8_t>(this->name);
     writer.write<std::string, uint8_t>(this->pw);
     writer.write<std::string, uint8_t>(this->new_pw);

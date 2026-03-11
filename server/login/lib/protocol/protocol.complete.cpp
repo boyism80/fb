@@ -22,7 +22,7 @@ complete::complete(uint8_t hair, uint8_t gender, uint8_t nation, uint8_t creatur
 async::task<void> complete::serialize(fb::stream_writer<big_endian>& writer) const
 {
     co_await header::serialize(writer);
-    writer.write<uint8_t>(header);
+    writer.write<uint8_t>(opcode);
     writer.write<uint8_t>(this->hair);
     writer.write<uint8_t>(this->gender);
     writer.write<uint8_t>(this->nation);

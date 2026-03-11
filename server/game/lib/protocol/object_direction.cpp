@@ -16,7 +16,7 @@ direction::direction(DIRECTION value) :
 async::task<void> direction::serialize(fb::stream_writer<big_endian>& writer) const
 {
     co_await header::serialize(writer);
-    writer.write<uint8_t>(header);
+    writer.write<uint8_t>(opcode);
     writer.write<uint8_t>((uint8_t)this->value);
 }
 #endif
@@ -39,7 +39,7 @@ direction::direction(uint32_t oid, DIRECTION value) :
 async::task<void> direction::serialize(fb::stream_writer<big_endian>& writer) const
 {
     co_await header::serialize(writer);
-    writer.write<uint8_t>(header);
+    writer.write<uint8_t>(opcode);
     writer.write<uint32_t>(this->oid);
     writer.write<uint8_t>(static_cast<uint8_t>(this->value));
     writer.write<uint8_t>(0x00);

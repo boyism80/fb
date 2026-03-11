@@ -14,7 +14,7 @@ using namespace fb::model::enum_value;
 class sound : public fb::protocol::header
 {
 public:
-    static constexpr uint8_t header = 0x19;
+    static constexpr uint8_t opcode = 0x19;
 
 public:
 #ifndef BOT

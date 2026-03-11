@@ -11,7 +11,7 @@ using namespace fb::model::enum_value;
 class post : public fb::protocol::header
 {
 public:
-    static constexpr uint8_t header = 0x34;
+    static constexpr uint8_t opcode = 0x34;
 
 public:
     uint8_t slot = 0;

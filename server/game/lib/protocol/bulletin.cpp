@@ -59,7 +59,7 @@ bulletin::bulletin(BULLETIN_ACTION  action,
 async::task<void> bulletin::serialize(fb::stream_writer<big_endian>& writer) const
 {
     co_await header::serialize(writer);
-    writer.write<uint8_t>(header);
+    writer.write<uint8_t>(opcode);
     writer.write<uint8_t>((uint8_t)this->action);
     switch (this->action)
     {

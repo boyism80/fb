@@ -6,7 +6,7 @@ namespace fb::protocol::game::request {
 async::task<void> front_info::serialize(fb::stream_writer<big_endian>& writer) const
 {
     co_await header::serialize(writer);
-    writer.write<uint8_t>(header);
+    writer.write<uint8_t>(opcode);
 }
 #else
 async::task<void> front_info::deserialize(fb::stream_reader<big_endian>& reader)

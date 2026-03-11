@@ -16,7 +16,7 @@ bulletin_articles::bulletin_articles(const fb::model::bulletin&                 
 async::task<void> bulletin_articles::serialize(fb::stream_writer<big_endian>& writer) const
 {
     co_await header::serialize(writer);
-    writer.write<uint8_t>(header);
+    writer.write<uint8_t>(opcode);
     writer.write<uint8_t>(0x02);
     writer.write<uint8_t>(static_cast<uint8_t>(button_flags));
     writer.write<uint16_t>(bulletin.id);

@@ -9,7 +9,7 @@ namespace fb::bot::integration {
 class trade_bot : public fb::protocol::header
 {
 public:
-    static constexpr uint8_t header = 0x42;
+    static constexpr uint8_t opcode = 0x42;
 
 public:
     enum class trade_type : uint8_t

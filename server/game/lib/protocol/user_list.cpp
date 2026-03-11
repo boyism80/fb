@@ -6,7 +6,7 @@ namespace fb::protocol::game::request {
 async::task<void> user_list::serialize(fb::stream_writer<big_endian>& writer) const
 {
     co_await header::serialize(writer);
-    writer.write<uint8_t>(header);
+    writer.write<uint8_t>(opcode);
     writer.write<uint8_t>(0);
     co_return;
 }
@@ -33,7 +33,7 @@ user_list::user_list(const character& me, std::vector<std::shared_ptr<fb::game::
 async::task<void> user_list::serialize(fb::stream_writer<big_endian>& writer) const
 {
     co_await header::serialize(writer);
-    writer.write<uint8_t>(header);
+    writer.write<uint8_t>(opcode);
     writer.write<uint16_t>((uint16_t)this->users.size());
     writer.write<uint16_t>((uint16_t)this->users.size());
     writer.write<uint8_t>(0x00);

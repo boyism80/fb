@@ -292,11 +292,11 @@ async::task<void> server::on_start()
     }
 }
 
-bool server::decrypt_policy(uint8_t cmd) const
+bool server::decrypt_policy(uint8_t opcode) const
 {
-    switch (cmd)
+    switch (opcode)
     {
-    case game_reqs::login::header:
+    case game_reqs::login::opcode:
         return false;
 
     default:

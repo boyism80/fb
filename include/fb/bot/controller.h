@@ -21,10 +21,10 @@ public:
 public:
     virtual async::task<void> on_receive(fb::socket<>& socket, fb::stream& stream) = 0;
     virtual async::task<void> on_closed(fb::socket<>& socket)                      = 0;
-    virtual bool              decrypt_policy(int cmd) const                        = 0;
+    virtual bool              decrypt_policy(int opcode) const                     = 0;
     virtual async::task<void> on_bot_connected(base_bot& bot)                      = 0;
     virtual async::task<void> on_bot_disconnected(base_bot& bot)                   = 0;
-    virtual void              ensure_handler_registered(uint8_t cmd)               = 0;
+    virtual void              ensure_handler_registered(uint8_t opcode)            = 0;
 };
 
 template <typename BotType>
@@ -49,7 +49,7 @@ protected:
     { }
 
 protected:
-    virtual bool decrypt_policy(int cmd) const override
+    virtual bool decrypt_policy(int opcode) const override
     {
         return true;
     }
@@ -83,25 +83,25 @@ protected:
         co_await this->on_bot_disconnected(typed_bot);
     }
 
-    virtual void ensure_handler_registered(uint8_t cmd) override
+    virtual void ensure_handler_registered(uint8_t opcode) override
     {
         {
             auto shared_lock = std::shared_lock<std::shared_mutex>(this->_handler_mutex);
-            if (this->_deserializer.contains(cmd))
+            if (this->_deserializer.contains(opcode))
                 return;
         }
 
         auto unique_lock = std::unique_lock<std::shared_mutex>(this->_handler_mutex);
 
-        if (this->_deserializer.contains(cmd))
+        if (this->_deserializer.contains(opcode))
             return;
 
-        this->_deserializer[cmd] =
+        this->_deserializer[opcode] =
             [](fb::stream_reader<big_endian>& reader) -> async::task<std::shared_ptr<fb::protocol::header>> {
             co_return nullptr;
         };
 
-        this->_handler[cmd] = [](BotType& bot, const fb::protocol::header& protocol) -> async::task<void> {
+        this->_handler[opcode] = [](BotType& bot, const fb::protocol::header& protocol) -> async::task<void> {
             co_return;
         };
     }
@@ -183,9 +183,9 @@ public:
                     co_return;
                 }
 
-                auto cmd      = reader.read<uint8_t>();
-                processed_cmd = cmd;
-                if (this->decrypt_policy(cmd))
+                auto opcode   = reader.read<uint8_t>();
+                processed_cmd = opcode;
+                if (this->decrypt_policy(opcode))
                 {
                     auto& encryption = bot.encryption();
                     size             = encryption.decrypt(stream, reader.seek() - 1, size);
@@ -199,12 +199,12 @@ public:
 
                 {
                     auto shared_lock = std::shared_lock<std::shared_mutex>(this->_handler_mutex);
-                    if (this->_deserializer.contains(cmd))
+                    if (this->_deserializer.contains(opcode))
                     {
-                        deserializer = this->_deserializer.at(cmd);
+                        deserializer = this->_deserializer.at(opcode);
 
-                        if (this->_handler.contains(cmd))
-                            handler = this->_handler.at(cmd);
+                        if (this->_handler.contains(opcode))
+                            handler = this->_handler.at(opcode);
                     }
                     else
                     {
@@ -235,7 +235,7 @@ public:
             catch (std::exception& e)
             {
                 if (processed_cmd.has_value())
-                    fb::logger::fatal("bot_controller::on_receive: cmd={:#x} error={}\n{}",
+                    fb::logger::fatal("bot_controller::on_receive: opcode={:#x} error={}\n{}",
                                       processed_cmd.value(),
                                       e.what(),
                                       boost::stacktrace::to_string(boost::stacktrace::stacktrace()));
@@ -249,7 +249,7 @@ public:
             catch (...)
             {
                 if (processed_cmd.has_value())
-                    fb::logger::fatal("bot_controller::on_receive: cmd={:#x} error=unknown\n{}",
+                    fb::logger::fatal("bot_controller::on_receive: opcode={:#x} error=unknown\n{}",
                                       processed_cmd.value(),
                                       boost::stacktrace::to_string(boost::stacktrace::stacktrace()));
                 else
@@ -353,7 +353,7 @@ public:
         this->_bots.write(fn);
     }
 
-    virtual async::task<void> on_integration_hook_execution(uint8_t                     cmd,
+    virtual async::task<void> on_integration_hook_execution(uint8_t                     opcode,
                                                             BotType&                    bot,
                                                             const fb::protocol::header& header)
     {

@@ -28,11 +28,11 @@ server::server(boost::asio::io_context& io_context, uint16_t port) :
 server::~server()
 { }
 
-bool server::decrypt_policy(uint8_t cmd) const
+bool server::decrypt_policy(uint8_t opcode) const
 {
-    switch (cmd)
+    switch (opcode)
     {
-    case fb::protocol::login::request::agreement::header:
+    case fb::protocol::login::request::agreement::opcode:
         return false;
 
     default:

@@ -11,7 +11,7 @@ using namespace fb::model::enum_value;
 class miss : public fb::protocol::header
 {
 public:
-    static constexpr uint8_t header = 0x0C;
+    static constexpr uint8_t opcode = 0x0C;
 
 public:
     uint32_t oid;

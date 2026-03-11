@@ -11,7 +11,7 @@ using namespace fb::protocol::game::response;
 async::task<void> internal_info::serialize(fb::stream_writer<big_endian>& writer) const
 {
     co_await header::serialize(writer);
-    writer.write<uint8_t>(header);
+    writer.write<uint8_t>(opcode);
     writer.write<int8_t>(this->ch.stat.phydef());
     writer.write<int8_t>(this->ch.stat.dam());
     writer.write<int8_t>(this->ch.stat.hit());

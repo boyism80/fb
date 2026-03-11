@@ -21,7 +21,7 @@ enum class UI_SCREEN : uint8_t
 class ui_screen : public fb::protocol::header
 {
 public:
-    static constexpr uint8_t header = 0x3E;
+    static constexpr uint8_t opcode = 0x3E;
 
 public:
 #ifndef BOT

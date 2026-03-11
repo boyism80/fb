@@ -8,7 +8,7 @@ namespace fb::protocol::gateway::request {
 class version : public fb::protocol::header
 {
 public:
-    static constexpr uint8_t header = 0x00;
+    static constexpr uint8_t opcode = 0x00;
 
 public:
     uint16_t v;

@@ -21,7 +21,7 @@ agreement::agreement(uint8_t type, uint8_t ksize, const uint8_t* key) :
 async::task<void> agreement::serialize(fb::stream_writer<big_endian>& writer) const
 {
     co_await header::serialize(writer);
-    writer.write<uint8_t>(header);
+    writer.write<uint8_t>(opcode);
     writer.write<uint8_t>(this->enc_type);
     writer.write<uint8_t>(this->enc_key_size);
     writer.write((const void*)this->enc_key, this->enc_key_size);
@@ -43,7 +43,7 @@ async::task<void> terms_agreement::serialize(fb::stream_writer<big_endian>& writ
 {
     co_await header::serialize(writer);
     auto compressed = fb::stream((uint8_t*)this->contents.data(), this->contents.size()).compress();
-    writer.write<uint8_t>(header);
+    writer.write<uint8_t>(opcode);
     writer.write<uint8_t>(0x01);
     writer.write<uint16_t>((uint16_t)compressed.size());
     writer.write(compressed.data(), (uint16_t)compressed.size());

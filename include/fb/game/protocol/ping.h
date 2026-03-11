@@ -15,7 +15,7 @@ using namespace fb::model::enum_value;
 class ping : public fb::protocol::header
 {
 public:
-    static constexpr uint8_t header = 0x68;
+    static constexpr uint8_t opcode = 0x68;
 
 public:
 #ifndef BOT

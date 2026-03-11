@@ -32,7 +32,7 @@ dialog_slot::dialog_slot(const fb::game::object&       object,
 async::task<void> dialog_slot::serialize(fb::stream_writer<big_endian>& writer) const
 {
     co_await header::serialize(writer);
-    writer.write<uint8_t>(header);
+    writer.write<uint8_t>(opcode);
     writer.write<uint8_t>(0x05);
     writer.write<uint8_t>(static_cast<uint8_t>(this->interaction));
     writer.write<uint32_t>(this->oid);

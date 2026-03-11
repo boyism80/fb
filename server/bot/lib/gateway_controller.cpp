@@ -10,13 +10,13 @@ gateway_bot_controller::gateway_bot_controller(bot_container& container) :
     bot_controller<gateway_bot>(container)
 { }
 
-bool gateway_bot_controller::decrypt_policy(int cmd) const
+bool gateway_bot_controller::decrypt_policy(int opcode) const
 {
-    switch (cmd)
+    switch (opcode)
     {
-    case fb::protocol::gateway::response::encryption::header: // Welcome message
-    case fb::protocol::gateway::response::welcome::header:    // Crypto exchange
-    case fb::protocol::response::transfer::header:            // Host discovery
+    case fb::protocol::gateway::response::encryption::opcode: // Welcome message
+    case fb::protocol::gateway::response::welcome::opcode:    // Crypto exchange
+    case fb::protocol::response::transfer::opcode:            // Host discovery
         return false;
 
     default:

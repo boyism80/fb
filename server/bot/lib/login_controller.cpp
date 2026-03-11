@@ -7,11 +7,11 @@ login_bot_controller::login_bot_controller(bot_container& container) :
     bot_controller<login_bot>(container)
 { }
 
-bool login_bot_controller::decrypt_policy(int cmd) const
+bool login_bot_controller::decrypt_policy(int opcode) const
 {
-    switch (cmd)
+    switch (opcode)
     {
-    case fb::protocol::response::transfer::header: // Host discovery
+    case fb::protocol::response::transfer::opcode: // Host discovery
         return false;
 
     default:

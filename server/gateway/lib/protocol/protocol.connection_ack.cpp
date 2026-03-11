@@ -24,7 +24,7 @@ async::task<void> connection_ack::serialize(fb::stream_writer<big_endian>& write
     constexpr size_t max_name_len = 6;
 
     co_await header::serialize(writer);
-    writer.write<uint8_t>(header);
+    writer.write<uint8_t>(opcode);
 
     const size_t len = std::min(this->client_name.size(), max_name_len - 1);
     writer.write(this->client_name.data(), len);

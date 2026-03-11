@@ -15,7 +15,7 @@ using namespace fb::model::enum_value;
 class item_update_slot : public fb::protocol::header
 {
 public:
-    static constexpr uint8_t header = 0x37;
+    static constexpr uint8_t opcode = 0x37;
 
 public:
 #ifndef BOT

@@ -15,7 +15,7 @@ die::die(uint32_t oid) :
 async::task<void> die::serialize(fb::stream_writer<big_endian>& writer) const
 {
     co_await header::serialize(writer);
-    writer.write<uint8_t>(header);
+    writer.write<uint8_t>(opcode);
     writer.write<uint32_t>(this->oid);
     writer.write<uint8_t>(0x00);
 }
