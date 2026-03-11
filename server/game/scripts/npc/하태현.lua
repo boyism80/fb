@@ -8,26 +8,26 @@ function NPC_190(me, npc)
     local btn
 
     if quest == nil then
-        ::NPC_190_1::
+        ::NPC_190_0001::
         btn = me:dialog(npc, '이곳까지 오시느라 수고하셨네요. 끝까지 올라가실 생각인가요? 음.. 계속 올라가실거라면 부탁하나 드리고 싶은데..', false, true)
         if btn == DIALOG_RESULT.QUIT then
             return
         end
-        ::NPC_190_2::
+        ::NPC_190_0002::
         btn = me:dialog(npc, '조금더 올라가시다보면 도삭산선비족, 도삭산흉노족이 있답니다. 그녀석들은 포악하고 성격은 나쁘지만 여러가지 신기한것들을 가지고 있죠.', true, true)
         if btn == DIALOG_RESULT.QUIT then
             return
         end
         if btn == DIALOG_RESULT.PREV then
-            goto NPC_190_1
+            goto NPC_190_0001
         end
-        ::NPC_190_3::
+        ::NPC_190_0003::
         btn = me:dialog(npc, '그중에 가면종류가 신기한것이 많죠. 각종 나무가면과 또 철이나 다른 금속으로 만든 가면도 있다더군요.\n\n제가 그런 물건에 관심이 많아서 부탁드립니다만 나무가면 50개를 모아다 주실수 없으신가요? 50개면 종류별로 다 모을 수 있을것 같아서..', true, true)
         if btn == DIALOG_RESULT.QUIT then
             return
         end
         if btn == DIALOG_RESULT.PREV then
-            goto NPC_190_2
+            goto NPC_190_0002
         end
         local sel, list_btn = me:list(npc, '부탁드려요. 워낙 포악해서 저는 근처도 갈 용기가 없네요. 들어주실거죠?', { '그런일이라면 맡겨만 주세요.', '가면이라. 전 그런것에 관심이 없어서요.' }, false)
         if list_btn == DIALOG_RESULT.QUIT then
@@ -62,18 +62,18 @@ function NPC_190(me, npc)
             me:dialog(npc, '아직 나무가면이 별로 없네요.. 50개정도만 구해주세요~', false, false)
             return
         end
-        ::NPC_190_5::
+        ::NPC_190_0005::
         btn = me:dialog(npc, '우와. 역시 정말 멋진 가면들. 정말 감사해요. 제가 가져가도록 하죠.', false, true)
         if btn == DIALOG_RESULT.QUIT then
             return
         end
-        ::NPC_190_6::
+        ::NPC_190_0006::
         btn = me:dialog(npc, '고마움에 표시로 드리는 선물입니다. 투구인데요 님에게 맞는 투구를 고르세요..', true, true)
         if btn == DIALOG_RESULT.QUIT then
             return
         end
         if btn == DIALOG_RESULT.PREV then
-            goto NPC_190_5
+            goto NPC_190_0005
         end
         local sel2, list_btn2 = me:list(npc, '어떤 투구를 드릴까요?', { '진비투구를 주십시오.', '경비투구를 주십시오.', '법비모를 주십시오.', '격비모를 주십시오.', '어떤 투구들이 있는지 알려주십시오.' }, false)
         if list_btn2 == DIALOG_RESULT.QUIT then
@@ -107,31 +107,34 @@ function NPC_190(me, npc)
             return
         end
         if sel2 == 4 then
-            ::NPC_190_8::
+            ::NPC_190_0008::
             btn = me:dialog(name2item('진비투구'), '진비투구는 전사를 위한 투구입니다.', false, true)
             if btn == DIALOG_RESULT.QUIT then
                 return
             end
-            ::NPC_190_9::
+            ::NPC_190_0009::
             btn = me:dialog(name2item('경비투구'), '경비투구는 도적을 위한 투구입니다.', true, true)
             if btn == DIALOG_RESULT.QUIT then
                 return
             end
             if btn == DIALOG_RESULT.PREV then
-                goto NPC_190_8
+                goto NPC_190_0008
             end
-            ::NPC_190_10::
+            ::NPC_190_0010::
             btn = me:dialog(name2item('법비모'), '법비모는 주술사를 위한 투구입니다.', true, true)
             if btn == DIALOG_RESULT.QUIT then
                 return
             end
             if btn == DIALOG_RESULT.PREV then
-                goto NPC_190_9
+                goto NPC_190_0009
             end
-            ::NPC_190_11::
-            btn = me:dialog(name2item('격비모'), '격비모는 도사를 위한 투구입니다.', true, false)
+            ::NPC_190_0011::
+            btn = me:dialog(name2item('격비모'), '격비모는 도사를 위한 투구입니다.', false, false)
+            if btn == DIALOG_RESULT.QUIT then
+                return
+            end
             if btn == DIALOG_RESULT.PREV then
-                goto NPC_190_10
+                goto NPC_190_0010
             end
             return
         end

@@ -80,7 +80,7 @@ function NPC_139(me, npc)
     end
 
     local line = DRAGON_LOW_LINES[type_sel + 1]
-    local grade_sel, grade_btn = me:list(npc, '각성시킬 용무기를 고르게', line.check_items, true)
+    local grade_sel, grade_btn = me:list(npc, '각성시킬 용무기를 고르게', line.check_items, false)
     if grade_btn == DIALOG_RESULT.QUIT then
         return
     end

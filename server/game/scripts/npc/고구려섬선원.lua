@@ -27,11 +27,12 @@ function NPC_196(me, npc)
         return
     end
 
-    ::board_confirm::
+    ::NPC_196_0001::
     btn = me:dialog(npc, '배가 선착장에 정박해 있습니다.', false, true)
     if btn == DIALOG_RESULT.QUIT then
         return
     end
+    ::NPC_196_0002::
     local board_sel, list_btn = me:list(npc, '배에 승선하시길 원하십니까?', {
         '네, 승선시켜 주시기 바랍니다.',
         '아니오, 타지 않겠습니다.'
@@ -40,7 +41,7 @@ function NPC_196(me, npc)
         return
     end
     if list_btn == DIALOG_RESULT.PREV then
-        goto board_confirm
+        goto NPC_196_0001
     end
     if board_sel == 1 then
         me:dialog(npc, '네, 안녕히 가십시오.', false, true)
@@ -75,30 +76,30 @@ function NPC_196(me, npc)
 end
 
 function run_schedule_dialog(me, npc, route_text, dest_name)
-    ::s0::
+    ::NPC_196_0010::
     local btn = me:dialog(npc, route_text .. ' 건너가는 배는 하루 총 12번입니다.', false, true)
     if btn == DIALOG_RESULT.QUIT then
         return
     end
-    ::s1::
+    ::NPC_196_0011::
     btn = me:dialog(npc, '2시부터 24시까지 매 2시간마다 ' .. dest_name .. '로 건너가는 배가 출항합니다.', true, true)
     if btn == DIALOG_RESULT.QUIT then
         return
     end
     if btn == DIALOG_RESULT.PREV then
-        goto s0
+        goto NPC_196_0010
     end
-    ::s2::
+    ::NPC_196_0012::
     btn = me:dialog(npc, '출항하기전 미리 배에 오르고 있어야만 ' .. dest_name .. '로 갈 수 있음을 명심하시기 바랍니다.', true, true)
-    if btn == DIALOG_RESULT.PREV then
-        goto s1
-    end
     if btn == DIALOG_RESULT.QUIT then
         return
     end
-    ::s3::
-    btn = me:dialog(npc, '감사합니다.', true, false)
     if btn == DIALOG_RESULT.PREV then
-        goto s2
+        goto NPC_196_0011
+    end
+    ::NPC_196_0013::
+    btn = me:dialog(npc, '감사합니다.', false, false)
+    if btn == DIALOG_RESULT.PREV then
+        goto NPC_196_0012
     end
 end

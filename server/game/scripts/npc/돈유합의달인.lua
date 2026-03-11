@@ -21,15 +21,15 @@ function NPC_184(me, npc)
             me:dialog(npc, '허허. 그러시오?', false, true)
             return
         end
-        ::NPC_184_COS002::
-        local btn = me:dialog(npc, '아하...그런것이라면 내가 도와줄 수 있지. 나도 공짜로는 도와줄수 없으니 내가 필요한 물건좀 구해다주게. 약재로 사용할 인삼과 동충하초가 급히 필요하거든. 부탁하네.', true, true)
+        ::NPC_184_0001::
+        local btn = me:dialog(npc, '아하...그런것이라면 내가 도와줄 수 있지. 나도 공짜로는 도와줄수 없으니 내가 필요한 물건좀 구해다주게. 약재로 사용할 인삼과 동충하초가 급히 필요하거든. 부탁하네.', false, true)
         if btn == DIALOG_RESULT.QUIT then
             return
         end
-        ::NPC_184_COS003::
-        btn = me:dialog(npc, '동충하초는 대방성입구에, 인삼은 국경지대를 뒤져보면 나올걸세.', true, true)
+        ::NPC_184_0010::
+        btn = me:dialog(npc, '동충하초는 대방성입구에, 인삼은 국경지대를 뒤져보면 나올걸세.', false, true)
         if btn == DIALOG_RESULT.PREV then
-            goto NPC_184_COS002
+            goto NPC_184_0001
         end
         if btn == DIALOG_RESULT.QUIT then
             return
@@ -45,23 +45,23 @@ function NPC_184(me, npc)
             me:dialog(npc, '아직 재료가 부족한것 같소. 동충하초는 대방성입구, 인삼은 국경지대를 뒤져보면 나올걸세.', false, true)
             return
         end
-        ::NPC_184_COS004::
+        ::NPC_184_0020::
         btn = me:dialog(npc, '허허 고맙구만. 이 재료들은 내가 잘 사용하도록 하지.', true, true)
         if btn == DIALOG_RESULT.QUIT then
             return
         end
-        ::NPC_184_COS005::
+        ::NPC_184_0021::
         btn = me:dialog(npc, '그럼 화기삼동충초돈유합의 재료를 알려주겠네. 비둘기고기,인삼,동충하초,구기자 이렇게 네가지의 재료가 필요하다네. 구해오면 내가 직접 요리해줄테니 재료를 찾아오게.', true, true)
         if btn == DIALOG_RESULT.PREV then
-            goto NPC_184_COS004
+            goto NPC_184_0020
         end
         if btn == DIALOG_RESULT.QUIT then
             return
         end
-        ::NPC_184_COS006::
-        btn = me:dialog(npc, '동충하초와 인삼은 어디서 구할 수 있는지 알고 있지? 비둘기고기와 구기자는 귀하기 때문에 아무곳에서나 팔지는 않고 중국 어딘가의 푸줏간에서 살 수 있을걸세.', true, true)
+        ::NPC_184_0022::
+        btn = me:dialog(npc, '동충하초와 인삼은 어디서 구할 수 있는지 알고 있지? 비둘기고기와 구기자는 귀하기 때문에 아무곳에서나 팔지는 않고 중국 어딘가의 푸줏간에서 살 수 있을걸세.', false, true)
         if btn == DIALOG_RESULT.PREV then
-            goto NPC_184_COS005
+            goto NPC_184_0021
         end
         if btn == DIALOG_RESULT.QUIT then
             return
@@ -78,12 +78,12 @@ function NPC_184(me, npc)
             me:dialog(npc, '아직 재료를 다 구하지 못했군. 재료는 동충하초,인삼,비둘기고기,구기자를 구해오게.', false, true)
             return
         end
-        ::NPC_184_COS007::
-        btn = me:dialog(npc, '재료를 다 구해왔군. 내가 직접 요리해주겠네.', true, true)
+        ::NPC_184_0030::
+        btn = me:dialog(npc, '재료를 다 구해왔군. 내가 직접 요리해주겠네.', false, true)
         if btn == DIALOG_RESULT.QUIT then
             return
         end
-        ::NPC_184_COS008::
+        ::NPC_184_0031::
         local code = me:exchange(
             { ['item'] = materials },
             { ['item'] = { ['화기삼동충초돈유합'] = 1 } }

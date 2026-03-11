@@ -50,7 +50,7 @@ function NPC_545(me, npc)
     end
 
     ::NPC_545_0004::
-    button = me:dialog(npc, "어찌됐든 아들의 목숨을 구할 수 있게 되어서 너무 감사하오. 그럼 이만..", true, true)
+    button = me:dialog(npc, "어찌됐든 아들의 목숨을 구할 수 있게 되어서 너무 감사하오. 그럼 이만..", false, false)
     if button == DIALOG_RESULT.QUIT then
         return
     end

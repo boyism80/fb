@@ -92,28 +92,28 @@ function NPC_159(me, npc)
     end
 
     if sel == 0 then
-        ::NPC_159_COS001::
+        ::NPC_159_0001::
         local btn = me:dialog(npc, '음.. 거북장군에게서 토끼의간을 구해오라는 부탁을 받았단 말아지. 그런데 그 토끼는 정말 희귀한 토끼라네. 보통토끼와는 다르지', false, true)
         if btn == DIALOG_RESULT.QUIT then
             return
         end
-        ::NPC_159_COS002::
+        ::NPC_159_0002::
         btn = me:dialog(npc, '나도 장사 하느라 전국 방방곡곡 안가보는데가 없지만, 그 토끼는 딱 한 번 밖에 못봤었지.. 어디서 보았냐 하면 말일세...', true, true)
         if btn == DIALOG_RESULT.QUIT then
             return
         end
         if btn == DIALOG_RESULT.PREV then
-            goto NPC_159_COS001
+            goto NPC_159_0001
         end
-        ::NPC_159_COS003::
+        ::NPC_159_0003::
         btn = me:dialog(npc, '흐흐흐.. 이보게, 하지만 말일세.. 조금 야속하게 들릴지 모르겠지만, 나도 장사꾼이 아닌가?', true, true)
         if btn == DIALOG_RESULT.QUIT then
             return
         end
         if btn == DIALOG_RESULT.PREV then
-            goto NPC_159_COS002
+            goto NPC_159_0002
         end
-        ::NPC_159_COS004::
+        ::NPC_159_0004::
         local choice, list_btn = me:list(npc, '흐흐흐...', { '원하는게 뭡니까' }, false)
         if choice == nil or choice ~= 0 then
             return
@@ -128,22 +128,25 @@ function NPC_159(me, npc)
     quest:step(2)
     me:rmitem(ITEM_NEURAEJINDO, 1, ITEM_DELETE_TYPE.GIVE)
     me:push_achievement(ACHIEVEMENT_RABBIT_CATCH, '토깽이를 생포하자.', 7, 1)
-    ::NPC_159_COS005::
+    ::NPC_159_0005::
     btn = me:dialog(npc, '그 토끼가 출현하는 곳은 다름 아닌 한두고개라네.. 나도 한두고개에서 깊숙히 안들어가봐서 깊숙한 곳에서도 출현할지 어떨지는 모르겠네만', false, true)
     if btn == DIALOG_RESULT.QUIT then
         return
     end
-    ::NPC_159_COS006::
+    ::NPC_159_0006::
     btn = me:dialog(npc, '분명한 것은 한두고개에서 깊지 않은 곳에서 봤다는 사실일세.', true, true)
     if btn == DIALOG_RESULT.QUIT then
         return
     end
     if btn == DIALOG_RESULT.PREV then
-        goto NPC_159_COS005
+        goto NPC_159_0005
     end
-    ::NPC_159_COS007::
+    ::NPC_159_0007::
     btn = me:dialog(npc, '그럼 행운을 비네.. 아참, 이건 자네를 위해서 하는 얘기네만, 그 토끼는 아주 간악하다는 사실을 꼭 염두에 두게', true, false)
+    if btn == DIALOG_RESULT.QUIT then
+        return
+    end
     if btn == DIALOG_RESULT.PREV then
-        goto NPC_159_COS006
+        goto NPC_159_0006
     end
 end

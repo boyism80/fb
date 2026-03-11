@@ -59,24 +59,27 @@ function NPC_541(me, npc)
     quest:step(10)
 
     local button
-    ::NPC_541_0002::
+    ::NPC_541_0010::
     button = me:dialog(npc, "정말 대단한일을 해냈군 자네. 이 진황보검이 제자리를 찾아 중국 황실도 다시 평온해질걸세. 이것은 우리 황실 모두의 보답이네.", false, true)
     if button == DIALOG_RESULT.QUIT then
         return
     end
 
-    ::NPC_541_0003::
+    ::NPC_541_0011::
     button = me:dialog(npc, "언제 한번 다시 황궁에 들리게. 나와 같이 술이나 한잔하세. 진황보검을 찾으면서 일어났던 일들도 꼭 듣고싶네. 허허~", true, true)
     if button == DIALOG_RESULT.QUIT then
         return
     end
     if button == DIALOG_RESULT.PREV then
-        goto NPC_541_0002
+        goto NPC_541_0010
     end
 
-    ::NPC_541_0004::
+    ::NPC_541_0012::
     button = me:dialog(npc, "그럼 잘 지내고 언제나 의협심을 잊지 말게나.", true, true)
+    if button == DIALOG_RESULT.QUIT then
+        return
+    end
     if button == DIALOG_RESULT.PREV then
-        goto NPC_541_0003
+        goto NPC_541_0011
     end
 end

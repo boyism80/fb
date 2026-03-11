@@ -4,8 +4,8 @@ function NPC_216(me, npc)
     local quest = me:quest(QUEST_RED_CLAY)
 
     if quest == nil then
-        ::NPC_242_000::
-        local sel = me:list(npc, '안녕하신가? 시간 좀 내주실 수 있겠나?', { '네, 무슨 일이세요?', '죄송합니다. 바빠서 이만.' })
+        ::NPC_216_0000::
+        local sel = me:list(npc, '안녕하신가? 시간 좀 내주실 수 있겠나?', { '네, 무슨 일이세요?', '죄송합니다. 바빠서 이만.' }, false)
         if sel == nil then
             return
         end
@@ -13,25 +13,25 @@ function NPC_216(me, npc)
             return
         end
 
-        ::NPC_242_001::
+        ::NPC_216_0001::
         local btn = me:dialog(npc, '나는 고구려 사람이라네.\n\n소문을 듣자 하니 이 섬에는 고구려에서는 볼 수 없는 신비한 효험을 지닌 약초들이 많이 자란다고 하더군.\n\n이곳의 토질을 조사하여 그 약초들을 재배할 수 있는 환경을 고구려에도 조성해 보자고 한다네.', true, true)
         if btn == DIALOG_RESULT.QUIT then
             return
         end
         if btn == DIALOG_RESULT.PREV then
-            goto NPC_242_000
+            goto NPC_216_0000
         end
 
-        ::NPC_242_002::
+        ::NPC_216_0002::
         btn = me:dialog(npc, '하지만 막상 와보니, 곳곳의 맹수, 괴수들 때문에 필요한 표본들을 모으기가 무척 힘들군.\n제대로 된 조사를 위해선 더욱 많은 양이 필요한데 큰일일세...', true, true)
         if btn == DIALOG_RESULT.QUIT then
             return
         end
         if btn == DIALOG_RESULT.PREV then
-            goto NPC_242_001
+            goto NPC_216_0001
         end
 
-        sel = me:list(npc, '그래서 말인데.. 자네 혹시 도와줄 생각 없는가?\n내가 원하는 토양을 채집해 준다면, 은전으로 사례하겠네. 어떤가?', { '네, 해보죠.', '죄송합니다만, 힘들겠습니다.' })
+        sel = me:list(npc, '그래서 말인데.. 자네 혹시 도와줄 생각 없는가?\n내가 원하는 토양을 채집해 준다면, 은전으로 사례하겠네. 어떤가?', { '네, 해보죠.', '죄송합니다만, 힘들겠습니다.' }, false)
         if sel == nil then
             return
         end

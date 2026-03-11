@@ -120,13 +120,18 @@ function NPC_465(me, npc)
     if main_q then
         local s = main_q:step()
         if s == 2 then
+            ::NPC_465_0001::
             local b = me:dialog(npc, "음? 참원왕께서 의견이나 계책을 바사리고 계신다고? 그래, 마침 생각하시던 일이 계시는데 말이다.", false, true)
             if b == DIALOG_RESULT.QUIT then
                 return
             end
+            ::NPC_465_0002::
             b = me:dialog(npc, "좌황활력환을 대량으로 좀 얻으실 수 있으시면 굉장한 도움이 되실것 같으시다. 이게 내 의견이시다.", true, true)
-            if b == DIALOG_RESULT.PREV or b == DIALOG_RESULT.QUIT then
+            if b == DIALOG_RESULT.QUIT then
                 return
+            end
+            if b == DIALOG_RESULT.PREV then
+                goto NPC_465_0001
             end
             main_q:step(3)
             return

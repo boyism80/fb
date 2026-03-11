@@ -7,14 +7,15 @@ function NPC_182(me, npc)
         return
     end
 
-    ::NPC_182_COS001::
-    local btn = me:dialog(npc, '음... 부적이 더 필요하다고요? 알겠습니다. 마침 그 부적이 조금 남아 있으니 드리지요.', true, true)
+    ::NPC_182_0001::
+    local btn = me:dialog(npc, '음... 부적이 더 필요하다고요? 알겠습니다. 마침 그 부적이 조금 남아 있으니 드리지요.', false, true)
     if btn == DIALOG_RESULT.QUIT then
         return
     end
-    btn = me:dialog(npc, '그나저나 참 친절한 분이시군요. 생판 모르는 남을 위해 그 머나먼 일본과 이 중국을 왕복하다니. 탄복했습니다.', true, true)
+    ::NPC_182_0010::
+    btn = me:dialog(npc, '그나저나 참 친절한 분이시군요. 생판 모르는 남을 위해 그 머나먼 일본과 이 중국을 왕복하다니. 탄복했습니다.', false, true)
     if btn == DIALOG_RESULT.PREV then
-        goto NPC_182_COS001
+        goto NPC_182_0001
     end
     if btn == DIALOG_RESULT.QUIT then
         return

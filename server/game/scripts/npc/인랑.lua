@@ -25,17 +25,26 @@ local function handle_jingogyun_lt1(me, npc, q_jingo)
     if jingo_step >= 1 then
         return false
     end
+    ::NPC_475_0001::
     local b = me:dialog(npc, "화화의 내음이 잔뜩 묻어있군. 아주 오랜 시간동안 화화와 알고 지냈음이 틀림 없어.", false, true)
     if b == DIALOG_RESULT.QUIT then
         return true
     end
+    ::NPC_475_0002::
     b = me:dialog(npc, "그래, 화화의 친구라고 믿어도 좋겠군. 넌 누구지? 외부인이면서 어째서 죽은 자와 친구하고", true, true)
-    if b == DIALOG_RESULT.PREV or b == DIALOG_RESULT.QUIT then
+    if b == DIALOG_RESULT.QUIT then
         return true
     end
+    if b == DIALOG_RESULT.PREV then
+        goto NPC_475_0001
+    end
+    ::NPC_475_0003::
     b = me:dialog(npc, "저 사악한 무리들과 싸우고 있는거지? 무엇을 위해서? 무엇을 바라고 이곳에 서있는건가?", true, true)
-    if b == DIALOG_RESULT.PREV or b == DIALOG_RESULT.QUIT then
+    if b == DIALOG_RESULT.QUIT then
         return true
+    end
+    if b == DIALOG_RESULT.PREV then
+        goto NPC_475_0002
     end
     local sel, btn = me:list(npc, "대답해라. 도대체 이 곳으로 찾아온 이유가 무엇인지 말해라!", {
         "무슨 소리야? 난 부와 명성을 원할 뿐이다.",

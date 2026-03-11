@@ -5,45 +5,45 @@ function NPC_72(me, npc)
     end
 
     if selected == 0 then
-        ::NPC_72_POS000::
+        ::NPC_72_0001::
         button = me:dialog(npc, '그래, 여길 들어가고 싶단 말이지?', false, true)
         if button == DIALOG_RESULT.QUIT then
             return
         end
 
-        ::NPC_72_POS001::
+        ::NPC_72_0002::
         button = me:dialog(npc, '이 안은 아주 위험하다네...', true, true)
         if button == DIALOG_RESULT.QUIT then
             return
         end
         if button == DIALOG_RESULT.PREV then
-            goto NPC_72_POS000
+            goto NPC_72_0001
         end
 
-        ::NPC_72_POS002::
+        ::NPC_72_0003::
         button = me:dialog(npc, '폭탄으로 죽을 수도 있고, 사용자들끼리도 서로 죽일 수 있다네...', true, true)
         if button == DIALOG_RESULT.QUIT then
             return
         end
         if button == DIALOG_RESULT.PREV then
-            goto NPC_72_POS001
+            goto NPC_72_0002
         end
 
-        ::NPC_72_POS003::
+        ::NPC_72_0004::
         button = me:dialog(npc, '이 안에서 죽어서 아이템이나 경험치를 잃어버린 것은 자네가 책임져야 하네...', true, true)
         if button == DIALOG_RESULT.QUIT then
             return
         end
         if button == DIALOG_RESULT.PREV then
-            goto NPC_72_POS002
+            goto NPC_72_0003
         end
 
-        selected, button = me:list(npc, '아주 위험한 곳인데, 그래도 들어가길 원하는가?', {'네. 들어가길 원합니다.', '아니오. 다시 생각하니 겁나는군요.'})
+        selected, button = me:list(npc, '아주 위험한 곳인데, 그래도 들어가길 원하는가?', {'네. 들어가길 원합니다.', '아니오. 다시 생각하니 겁나는군요.'}, false)
         if button == DIALOG_RESULT.QUIT then
             return
         end
         if button == DIALOG_RESULT.PREV then
-            goto NPC_72_POS003
+            goto NPC_72_0004
         end
 
         if selected == 1 then
@@ -51,36 +51,36 @@ function NPC_72(me, npc)
             return
         end
 
-        ::NPC_72_POS0000::
+        ::NPC_72_0005::
         button = me:dialog(npc, '각오가 대단한가보군... 마지막으로 묻겟네...', false, true)
         if button == DIALOG_RESULT.QUIT then
             return
         end
 
-        ::NPC_72_POS0001::
+        ::NPC_72_0006::
         button = me:dialog(npc, '이 안에서 서로 죽이거나 죽어서 생긴 모든 문제는 자네 책임일세...', true, true)
         if button == DIALOG_RESULT.QUIT then
             return
         end
         if button == DIALOG_RESULT.PREV then
-            goto NPC_72_POS0000
+            goto NPC_72_0005
         end
 
-        ::NPC_72_POS0002::
+        ::NPC_72_0007::
         button = me:dialog(npc, '죽어서 아이템이나 경험치를 잃은 것도 모두 자네 책임이고 복구는 안된다네...', true, true)
         if button == DIALOG_RESULT.QUIT then
             return
         end
         if button == DIALOG_RESULT.PREV then
-            goto NPC_72_POS0001
+            goto NPC_72_0006
         end
 
-        selected, button = me:list(npc, '여기에 동의하는가?', {'네. 모두 동의합니다.', '아니오. 다시 생각하니 겁나는군요.'})
+        selected, button = me:list(npc, '여기에 동의하는가?', {'네. 모두 동의합니다.', '아니오. 다시 생각하니 겁나는군요.'}, false)
         if button == DIALOG_RESULT.QUIT then
             return
         end
         if button == DIALOG_RESULT.PREV then
-            goto NPC_72_POS0002
+            goto NPC_72_0007
         end
 
         if selected == 1 then
@@ -102,45 +102,45 @@ function NPC_72(me, npc)
         me:map(map, {x, y})
 
     elseif selected == 1 then
-        ::NPC_72_COS000::
+        ::NPC_72_0010::
         button = me:dialog(npc, '그래, 무슨일이지?', false, true)
         if button == DIALOG_RESULT.QUIT then
             return
         end
 
-        ::NPC_72_COS001::
+        ::NPC_72_0011::
         button = me:dialog(npc, '신부여성으로 가고 싶다고?', true, true)
         if button == DIALOG_RESULT.QUIT then
             return
         end
         if button == DIALOG_RESULT.PREV then
-            goto NPC_72_COS000
+            goto NPC_72_0010
         end
 
-        ::NPC_72_COS002::
+        ::NPC_72_0012::
         button = me:dialog(npc, '신부여성은 참 좋은곳이지..', true, true)
         if button == DIALOG_RESULT.QUIT then
             return
         end
         if button == DIALOG_RESULT.PREV then
-            goto NPC_72_COS001
+            goto NPC_72_0011
         end
 
-        ::NPC_72_COS003::
+        ::NPC_72_0013::
         button = me:dialog(npc, '신부여성에서는 많은 곳을 여행할 수 있다네..', true, true)
         if button == DIALOG_RESULT.QUIT then
             return
         end
         if button == DIALOG_RESULT.PREV then
-            goto NPC_72_COS002
+            goto NPC_72_0012
         end
 
-        selected, button = me:list(npc, '정말 신부여성으로 가겠는가?', {'네. 보내주세요.', '아니오. 가기싫어요.'})
+        selected, button = me:list(npc, '정말 신부여성으로 가겠는가?', {'네. 보내주세요.', '아니오. 가기싫어요.'}, false)
         if button == DIALOG_RESULT.QUIT then
             return
         end
         if button == DIALOG_RESULT.PREV then
-            goto NPC_72_COS003
+            goto NPC_72_0013
         end
 
         if selected == 1 then

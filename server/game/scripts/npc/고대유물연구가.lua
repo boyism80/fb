@@ -7,12 +7,12 @@ local BEAD_OPTIONS = {
 }
 
 local function run_decline(me, npc)
-    me:dialog(npc, "그래, 잘 가게나.", true, false)
+    me:dialog(npc, "그래, 잘 가게나.", false, false)
 end
 
 local function run_quest_accept(me, npc)
     ::NPC_367_0010::
-    local btn = me:dialog(npc, "정말인가? 자네가 유물 발굴을 도와주면, 우리도 뭔가 보답을 하겠네.", true, false)
+    local btn = me:dialog(npc, "정말인가? 자네가 유물 발굴을 도와주면, 우리도 뭔가 보답을 하겠네.", false, true)
     if btn == DIALOG_RESULT.QUIT then
         return
     end
@@ -73,7 +73,7 @@ local function run_bead_exchange(me, npc)
         return
     end
     if sel == 1 then
-        me:dialog(npc, "그렇군. 힘내서 좀 도와주게나..", true, false)
+        me:dialog(npc, "그렇군. 힘내서 좀 도와주게나..", false, false)
         return
     end
     if sel ~= 0 then
@@ -101,17 +101,13 @@ local function run_bead_exchange(me, npc)
         return
     end
     if not me:has_items(bead_item, count) then
-        ::NPC_367_0020::
-        local btn = me:dialog(npc, bead_item .. " " .. name_with(bead_item, '이', '가') .. " 부족하지 않은가?", true, false)
+        local btn = me:dialog(npc, bead_item .. " " .. name_with(bead_item, '이', '가') .. " 부족하지 않은가?", false, false)
         if btn == DIALOG_RESULT.QUIT then
             return
         end
-        if btn == DIALOG_RESULT.PREV then
-            goto NPC_367_0020
-        end
         return
     end
-    local btn = me:dialog(npc, "오, 정말 가져왔군!\\n\\n이것을 결정으로 합쳐보겠네. 잠시만 기다리시게나.", true, false)
+    local btn = me:dialog(npc, "오, 정말 가져왔군!\\n\\n이것을 결정으로 합쳐보겠네. 잠시만 기다리시게나.", false, false)
     if btn == DIALOG_RESULT.QUIT then
         return
     end
@@ -127,11 +123,11 @@ local function run_bead_exchange(me, npc)
         reward
     )
     if code == EXCHANGE_RESULT.LACK_COST then
-        me:dialog(npc, bead_item .. " " .. name_with(bead_item, '이', '가') .. " 부족하지 않은가?", true, false)
+        me:dialog(npc, bead_item .. " " .. name_with(bead_item, '이', '가') .. " 부족하지 않은가?", false, false)
         return
     end
     if code == EXCHANGE_RESULT.LACK_CAPACITY then
-        me:dialog(npc, "소지품이 가득 차서 " .. name_with(reward_item, '을', '를') .. " 받을 수 없네.", true, false)
+        me:dialog(npc, "소지품이 가득 차서 " .. name_with(reward_item, '을', '를') .. " 받을 수 없네.", false, false)
         return
     end
     me:push_achievement(41, "고대유물 연구가를 도와주었다.", 7, 16)
@@ -149,7 +145,7 @@ end
 
 local function run_intro_and_list(me, npc)
     ::NPC_367_0000::
-    local btn = me:dialog(npc, "남경과 남양은 고대 유물의 보고야. 누구라도 세심하게 조사하면 어디에서나 유물이 나올 정도라네. 그래서 우리 조사단은 여기를 근거지로 고대유물을 발굴하고 있지.", true, false)
+    local btn = me:dialog(npc, "남경과 남양은 고대 유물의 보고야. 누구라도 세심하게 조사하면 어디에서나 유물이 나올 정도라네. 그래서 우리 조사단은 여기를 근거지로 고대유물을 발굴하고 있지.", false, true)
     if btn == DIALOG_RESULT.QUIT then
         return
     end

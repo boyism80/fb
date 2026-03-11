@@ -22,7 +22,7 @@ function NPC_540(me, npc)
     end
 
     ::NPC_540_0002::
-    button = me:dialog(npc, "영환도사님을 찾아가보세요. 곧 또 여행을 떠나실테니 서두르시는게 좋을듯하네요.", true, true)
+    button = me:dialog(npc, "영환도사님을 찾아가보세요. 곧 또 여행을 떠나실테니 서두르시는게 좋을듯하네요.", false, true)
     if button == DIALOG_RESULT.QUIT then
         return
     end

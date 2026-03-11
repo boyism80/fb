@@ -1,5 +1,6 @@
 
 function NPC_353(me, npc)
+    ::NPC_353_0001::
     local btn = me:dialog(npc, "안녕하세요? 저는 백몽연입니다.", false, true)
     if btn == DIALOG_RESULT.QUIT then
         return
@@ -11,6 +12,7 @@ function NPC_353(me, npc)
 
     local quest = me:quest(QUEST_BAEK_MONGYEON)
 
+    ::NPC_353_0002::
     local sel, list_btn = me:list(npc, "안녕하세요?", {
         "중화절은 뭐하는 날인가요?",
         "도와드릴 일이라도...",
@@ -20,38 +22,52 @@ function NPC_353(me, npc)
         return
     end
     if list_btn == DIALOG_RESULT.PREV then
-        return
+        goto NPC_353_0001
     end
     if sel == nil then
         return
     end
 
     if sel == 0 then
+        ::NPC_353_0003::
         btn = me:dialog(npc, "중화절은 음력 2월 1일입니다. 봄이 시작되는 때이기 때문에 창고나 부엌같은 곳을 모두 말끔히 청소하지요.", false, true)
         if btn == DIALOG_RESULT.QUIT then
             return
         end
-        btn = me:dialog(npc, "이렇게 대청소를 한 다음, 더러운 것이나 부정한 물건, 해충들을 모두 태우고 옷을 볕에 말리기도 하죠.", false, true)
+        ::NPC_353_0004::
+        btn = me:dialog(npc, "이렇게 대청소를 한 다음, 더러운 것이나 부정한 물건, 해충들을 모두 태우고 옷을 볕에 말리기도 하죠.", true, true)
         if btn == DIALOG_RESULT.QUIT then
             return
         end
-        btn = me:dialog(npc, "특히 초가집엔 벌레가 많아서 이것을 예방하기 위해 종이에 '향랑각시 속거천리'라고 써서 서까래에 붙여두는 풍습도 있습니다.", false, true)
+        if btn == DIALOG_RESULT.PREV then
+            goto NPC_353_0003
+        end
+        ::NPC_353_0005::
+        btn = me:dialog(npc, "특히 초가집엔 벌레가 많아서 이것을 예방하기 위해 종이에 '향랑각시 속거천리'라고 써서 서까래에 붙여두는 풍습도 있습니다.", true, true)
+        if btn == DIALOG_RESULT.QUIT then
+            return
+        end
+        if btn == DIALOG_RESULT.PREV then
+            goto NPC_353_0004
+        end
         return
     end
 
     if sel == 1 then
+        ::NPC_353_0006::
         btn = me:dialog(npc, "제가 중화절에 대청소하는 일을 맡아서 하고 있는데요, 마을 곳곳의 잡동사니들을 다 모아 오려니까 정말 힘이드네요.", false, true)
         if btn == DIALOG_RESULT.QUIT then
             return
         end
 
         if quest == nil then
+            ::NPC_353_0007::
             local sel2, list_btn2 = me:list(npc, "세시마을 대청소하는거.. 좀 도와주시겠어요?", { "네 도와드려야죠.", "저는 청소는 잘 못해서.." }, true)
             if list_btn2 == DIALOG_RESULT.QUIT then
                 return
             end
             if list_btn2 == DIALOG_RESULT.PREV then
-                return
+                goto NPC_353_0006
             end
             if sel2 == nil or sel2 ~= 0 then
                 if sel2 == 1 then
@@ -90,26 +106,43 @@ function NPC_353(me, npc)
 end
 
 function run_material_list(me, npc)
+    ::NPC_353_0008::
     local btn = me:dialog(npc, "동지집에 연이 있을텐데.. 동지집에 가서 수인이에게 연을 받아주시구요..\n\n칠석집엔 실패가 있을꺼에요.. 칠석집의 제 동생 주연이에게 실패를 받아오시구요..", false, true)
     if btn == DIALOG_RESULT.QUIT then
         return
     end
-    btn = me:dialog(npc, "섣달집에는 제기가 있을꺼에요.. 섣달집의 선릉이에게 제기를 받아주세요..", false, true)
+    ::NPC_353_0009::
+    btn = me:dialog(npc, "섣달집에는 제기가 있을꺼에요.. 섣달집의 선릉이에게 제기를 받아주세요..", true, true)
     if btn == DIALOG_RESULT.QUIT then
         return
     end
-    btn = me:dialog(npc, "또, 김장집의 제 막내동생 나연이에게 김장독 깨진것 받아오시면 되고... \n\n추석집의 세인이에게 냄비 못 쓰는것도 받아야 하고..", false, true)
+    if btn == DIALOG_RESULT.PREV then
+        goto NPC_353_0008
+    end
+    ::NPC_353_0010::
+    btn = me:dialog(npc, "또, 김장집의 제 막내동생 나연이에게 김장독 깨진것 받아오시면 되고... \n\n추석집의 세인이에게 냄비 못 쓰는것도 받아야 하고..", true, true)
     if btn == DIALOG_RESULT.QUIT then
         return
     end
-    btn = me:dialog(npc, "설날집의 저희 어머니에게 널뛰기에 쓰는 널을 받아와주시고..\n\n할아버지가 계신 촌장집에 가서 종이 두장을 받아와 주세요. 아까 말씀드린 벌레 쫓는 종이에요.", false, true)
+    if btn == DIALOG_RESULT.PREV then
+        goto NPC_353_0009
+    end
+    ::NPC_353_0011::
+    btn = me:dialog(npc, "설날집의 저희 어머니에게 널뛰기에 쓰는 널을 받아와주시고..\n\n할아버지가 계신 촌장집에 가서 종이 두장을 받아와 주세요. 아까 말씀드린 벌레 쫓는 종이에요.", true, true)
     if btn == DIALOG_RESULT.QUIT then
         return
+    end
+    if btn == DIALOG_RESULT.PREV then
+        goto NPC_353_0010
     end
 
+    ::NPC_353_0012::
     local sel, list_btn = me:list(npc, "다 아셨죠?", { "다시 알려주세요..", "네.. 받아와드릴께요." }, true)
     if list_btn == DIALOG_RESULT.QUIT then
         return
+    end
+    if list_btn == DIALOG_RESULT.PREV then
+        goto NPC_353_0011
     end
     if sel == 0 then
         run_material_list(me, npc)
@@ -138,7 +171,7 @@ function run_hand_in(me, npc)
         "제기와 깨진김장독을 가지고 왔어요.",
         "널과 찌그러진 냄비를 가지고 왔어요.",
         "벌레쫓는부적을 받아왔어요."
-    }, true)
+    }, false)
     if list_btn == DIALOG_RESULT.QUIT then
         return
     end

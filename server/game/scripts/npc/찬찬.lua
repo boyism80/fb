@@ -17,19 +17,21 @@ function NPC_119(me, npc)
             return
         end
         if sel == 0 then
+            ::NPC_119_0001::
             local btn = me:dialog(npc, "음, 진진이 대륙 식재료를 팔겠다길래. 한 밤 중에 잠도 못자고 바닷가로 나갔지 뭔가.", false, true)
             if btn == DIALOG_RESULT.QUIT then
                 return
             end
+            ::NPC_119_0002::
             btn = me:dialog(npc, "한참 기다리니 배 한 척이 오고, 진진이 궤짝을 나르는 동안, 그 배 선원들에게서 식재료를 좀 샀었어.", true, true)
             if btn == DIALOG_RESULT.QUIT then
                 return
             end
             if btn == DIALOG_RESULT.PREV then
-                return
+                goto NPC_119_0001
             end
             quest:step(14)
-            me:dialog(npc, "그러고보니 배 이름이 참 묘했지. 은익...이라고 하더군. 숨은 날개라는 뜻도 가지고, 은밀한 이익이란 뜻도 가졌으니까 말야.", true, false)
+            me:dialog(npc, "그러고보니 배 이름이 참 묘했지. 은익...이라고 하더군. 숨은 날개라는 뜻도 가지고, 은밀한 이익이란 뜻도 가졌으니까 말야.", false, false)
         elseif sel == 1 then
             me:dialog(npc, "준비중입니다.", false, false)
         else

@@ -2,15 +2,23 @@ local function ranggyuryun_palgu(me, npc)
     local EIGHT_TRIGRAMS = { '건괘', '곤괘', '진괘', '감괘', '리괘', '태괘', '선괘', '간괘' }
     local btn, sel
 
-    ::NPC_2_POS00000::
-    btn = me:dialog(npc, '어서 오십시요. 저는 옥황상제의 막내딸 랑구륜이랍니다.', true, true)
-    if btn == DIALOG_RESULT.QUIT then return end
-    ::NPC_2_POS00001::
+    ::NPC_2_0001::
+    btn = me:dialog(npc, '어서 오십시요. 저는 옥황상제의 막내딸 랑구륜이랍니다.', false, true)
+    if btn == DIALOG_RESULT.QUIT then
+        return
+    end
+    ::NPC_2_0010::
     btn = me:dialog(npc, '저는 8개의 괘를 팔괘로 바꾸어드립니다.', true, true)
-    if btn == DIALOG_RESULT.QUIT then return end
-    if btn == DIALOG_RESULT.PREV then goto NPC_2_POS00000 end
+    if btn == DIALOG_RESULT.QUIT then
+        return
+    end
+    if btn == DIALOG_RESULT.PREV then
+        goto NPC_2_0001
+    end
     sel = me:list(npc, '8개의 괘를 팔괘로 바꾸시겠어요?', { '네', '아니요, 팔괘가 다 없어요...' })
-    if sel == nil or sel == 0 then return end
+    if sel == nil or sel == 0 then
+        return
+    end
     if sel == 2 then
         me:dialog(npc, '다음엔 팔괘를 다 모아오세요...', false, false)
         return
@@ -23,10 +31,16 @@ local function ranggyuryun_palgu(me, npc)
         me:dialog(npc, '아직 8개의 괘를 다 모으지 못하셨군요...', false, false)
         return
     end
+    ::NPC_2_0020::
     btn = me:dialog(npc, '8개의 괘들을 다 가져오셨군요. 팔괘를 만들어 드리겠습니다, 잠시만 기달려주세요.', true, true)
-    if btn == DIALOG_RESULT.QUIT then return end
-    btn = me:dialog(npc, '자 팔괘를 만들어 드렸습니다. 그럼 안녕히가십시요.', true, true)
-    if btn == DIALOG_RESULT.QUIT then return end
+    if btn == DIALOG_RESULT.QUIT then
+        return
+    end
+    ::NPC_2_0021::
+    btn = me:dialog(npc, '자 팔괘를 만들어 드렸습니다. 그럼 안녕히가십시요.', false, true)
+    if btn == DIALOG_RESULT.QUIT then
+        return
+    end
     local code = me:exchange(
         { ['item'] = materials },
         { ['item'] = { ['팔괘'] = 1 } }
@@ -70,8 +84,10 @@ local function ranggyuryun_pure_water(me, npc)
             me:dialog(npc, '아직 홍옥 3개를 구하시지 못하신거군요.', false, false)
             return
         end
-        btn = me:dialog(npc, '어머 홍옥을 가져오셨군요. 이건 제가 잘 먹을께요.', true, true)
-        if btn == DIALOG_RESULT.QUIT then return end
+        btn = me:dialog(npc, '어머 홍옥을 가져오셨군요. 이건 제가 잘 먹을께요.', false, true)
+        if btn == DIALOG_RESULT.QUIT then
+            return
+        end
         local code = me:exchange(
             { ['item'] = materials },
             { ['item'] = { ['정화비서'] = 1 } }
@@ -86,11 +102,13 @@ local function ranggyuryun_pure_water(me, npc)
         end
         quest:step(3)
         me:push_achievement(ACHIEVEMENT_CLEAR, '랑구륜의 부탁을 들어주었다.', 7, 1)
-        ::NPC_2_COS002::
-        btn = me:dialog(npc, '우물우물... 아... 역시 언제 먹어도 홍옥의 맛이 최고야.', true, true)
-        if btn == DIALOG_RESULT.QUIT then return end
+        ::NPC_2_0030::
+        btn = me:dialog(npc, '우물우물... 아... 역시 언제 먹어도 홍옥의 맛이 최고야.', false, true)
+        if btn == DIALOG_RESULT.QUIT then
+            return
+        end
         btn = me:dialog(npc, '정화비서를 가져다 주면 될거에요.', false, false)
-        if btn == DIALOG_RESULT.PREV then goto NPC_2_COS002 end
+        return
     end
 end
 

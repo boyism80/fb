@@ -4,7 +4,7 @@ local SMALL_ICE_NAME = '작은얼음'
 local MAX_SPLIT = 10
 
 local function run_ice_wash(me, npc)
-    ::NPC_57_COS001::
+    ::NPC_57_0001::
     local btn = me:dialog(npc, '땅에 떨어져 지저분해진 얼음을 깨끗이 세척해드립니다.', true, true)
     if btn == DIALOG_RESULT.QUIT then
         return nil
@@ -18,17 +18,17 @@ local function run_ice_wash(me, npc)
             return nil
         end
         if btn == DIALOG_RESULT.PREV then
-            goto NPC_57_COS001
+            goto NPC_57_0001
         end
         return nil
     end
-    ::NPC_57_COS002::
+    ::NPC_57_0002::
     btn = me:dialog(npc, '여기 흐르는 물에 씻어드리겠습니다.', true, true)
     if btn == DIALOG_RESULT.QUIT then
         return nil
     end
     if btn == DIALOG_RESULT.PREV then
-        goto NPC_57_COS001
+        goto NPC_57_0001
     end
     local r = math.random(1, 5)
     local reward = (r == 2 or r == 4) and { ['item'] = { [CLEAN_ICE_NAME] = 1 } } or nil
@@ -38,7 +38,9 @@ local function run_ice_wash(me, npc)
     )
     if code == EXCHANGE_RESULT.LACK_COST then
         btn = me:dialog(npc, '얼음을 구해오시면 씻어드리지요.', true, true)
-        if btn == DIALOG_RESULT.PREV then goto NPC_57_COS001 end
+        if btn == DIALOG_RESULT.PREV then
+            goto NPC_57_0001
+        end
         return nil
     end
     if code == EXCHANGE_RESULT.LACK_CAPACITY then
@@ -97,12 +99,16 @@ local function run_ice_split(me, npc)
     )
     if code == EXCHANGE_RESULT.LACK_COST then
         local btn = me:dialog(npc, '얼음이 부족합니다.', true, true)
-        if btn == DIALOG_RESULT.PREV then return DIALOG_RESULT.PREV end
+        if btn == DIALOG_RESULT.PREV then
+            return DIALOG_RESULT.PREV
+        end
         return nil
     end
     if code == EXCHANGE_RESULT.LACK_CAPACITY then
         local btn = me:dialog(npc, '소지품이 가득 차서 작은얼음을 받을 수 없어요.', true, true)
-        if btn == DIALOG_RESULT.PREV then return DIALOG_RESULT.PREV end
+        if btn == DIALOG_RESULT.PREV then
+            return DIALOG_RESULT.PREV
+        end
         return nil
     end
     return nil

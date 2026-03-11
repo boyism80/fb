@@ -4,12 +4,13 @@ local function do_sub3_give_medicine(me, npc)
     if btn == DIALOG_RESULT.QUIT or sel == nil or sel ~= 0 then
         return true
     end
-    local b = me:dialog(npc, "음, 아마도 우리 군인들이 쓰는 좌황활력환을 말하는 것 같은데? 원숭이가 별걸 다 알고 있군.", true, true)
-    if b == DIALOG_RESULT.PREV or b == DIALOG_RESULT.QUIT then
+    ::NPC_472_0010::
+    local b = me:dialog(npc, "음, 아마도 우리 군인들이 쓰는 좌황활력환을 말하는 것 같은데? 원숭이가 별걸 다 알고 있군.", false, true)
+    if b == DIALOG_RESULT.QUIT then
         return false
     end
-    b = me:dialog(npc, "얼마나 효능이 있을런지는 모르지만, 모른 척 하는 것도 못할 짓이지. 자 받으시게나.", true, true)
-    if b == DIALOG_RESULT.PREV or b == DIALOG_RESULT.QUIT then
+    b = me:dialog(npc, "얼마나 효능이 있을런지는 모르지만, 모른 척 하는 것도 못할 짓이지. 자 받으시게나.", false, true)
+    if b == DIALOG_RESULT.QUIT then
         return false
     end
     me:mkitem("좌황활력환", 1)
@@ -34,12 +35,13 @@ function NPC_472(me, npc)
     if main_q then
         local s = main_q:step()
         if s == 4 then
+            ::NPC_472_0020::
             local b = me:dialog(npc, "좌황활력환이 또 필요하다는 것인가?\n그리 쉽게 내줄 수 있는 물건이 아니네.", false, true)
             if b == DIALOG_RESULT.QUIT then
                 return
             end
-            b = me:dialog(npc, "미안하지만, 사정해도 도와줄 수 없네.\n그만 돌아가게나.", true, true)
-            if b == DIALOG_RESULT.PREV or b == DIALOG_RESULT.QUIT then
+            b = me:dialog(npc, "미안하지만, 사정해도 도와줄 수 없네.\n그만 돌아가게나.", false, true)
+            if b == DIALOG_RESULT.QUIT then
                 return
             end
             main_q:step(5)
@@ -54,16 +56,21 @@ function NPC_472(me, npc)
                 me:dialog(npc, "퀘스트 오류입니다.\n원숭이의편지 아이템이 없습니다.", false, false)
                 return
             end
+            ::NPC_472_0030::
             local b = me:dialog(npc, "(편지를 읽는 중이다.)", false, true)
             if b == DIALOG_RESULT.QUIT then
                 return
             end
+            ::NPC_472_0031::
             b = me:dialog(npc, "이런 참혹한 일이 벌어지고 있단 말인가! 아아, 인간의 양심을 가지고서 이런 참혹한 광경을 외면 할 수는 없는 일이야.", true, true)
-            if b == DIALOG_RESULT.PREV or b == DIALOG_RESULT.QUIT then
+            if b == DIALOG_RESULT.QUIT then
                 return
             end
-            b = me:dialog(npc, "알겠네, 내가 왕께 말씀드려 좌황활력환을 있는 힘껏 원숭이들에게 건네주도록 하겠네.", true, true)
-            if b == DIALOG_RESULT.PREV or b == DIALOG_RESULT.QUIT then
+            if b == DIALOG_RESULT.PREV then
+                goto NPC_472_0030
+            end
+            b = me:dialog(npc, "알겠네, 내가 왕께 말씀드려 좌황활력환을 있는 힘껏 원숭이들에게 건네주도록 하겠네.", false, true)
+            if b == DIALOG_RESULT.QUIT then
                 return
             end
             if not me:rmitem("원숭이의편지", 1, ITEM_DELETE_TYPE.GIVE) then

@@ -23,37 +23,37 @@ function NPC_277(me, npc)
     end
 
     if step == 3 then
-        ::NPC_277_S3_01::
+        ::NPC_277_0001::
         local button = me:dialog(npc, string.format("%s님, 안녕하세요?\n저는 기본적인 사냥방법을 가르쳐 드릴 사냥도우미입니다.", me:name()), false, true)
         if button == DIALOG_RESULT.QUIT then
             return
         end
 
-        ::NPC_277_S3_02::
+        ::NPC_277_0010::
         button = me:dialog(npc, "사냥에는 일반 공격, 스킬 공격 등 여러가지 방법이 있습니다.\n하지만 지금은 가장 기본적인\n공격에 대해서 알려드리도록 하겠습니다.", true, true)
         if button == DIALOG_RESULT.QUIT then
             return
         end
         if button == DIALOG_RESULT.PREV then
-            goto NPC_277_S3_01
+            goto NPC_277_0001
         end
 
-        ::NPC_277_S3_03::
+        ::NPC_277_0011::
         button = me:dialog(npc, "공격을 하기 위해서 먼저\n몬스터 앞으로 다가가 [a]키를\n누르시거나 혹은 스페이스바를 누르시면 공격을 할 수 있습니다..", true, true)
         if button == DIALOG_RESULT.QUIT then
             return
         end
         if button == DIALOG_RESULT.PREV then
-            goto NPC_277_S3_02
+            goto NPC_277_0010
         end
 
-        ::NPC_277_S3_04::
-        button = me:dialog(npc, "먼저 '목도'를 드릴테니 착용하시고 다람쥐와 토끼를 각각 5마리씩 사냥해 보세요.", true, true)
+        ::NPC_277_0012::
+        button = me:dialog(npc, "먼저 '목도'를 드릴테니 착용하시고 다람쥐와 토끼를 각각 5마리씩 사냥해 보세요.", false, true)
         if button == DIALOG_RESULT.QUIT then
             return
         end
         if button == DIALOG_RESULT.PREV then
-            goto NPC_277_S3_03
+            goto NPC_277_0011
         end
 
         if me:mkitem("목도", 1) == nil then

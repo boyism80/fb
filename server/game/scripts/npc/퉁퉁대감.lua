@@ -31,7 +31,7 @@ function NPC_121(me, npc)
         return
     end
 
-    local btn = me:dialog(npc, '잘 가져왔군. 이리주게.', true, true)
+    local btn = me:dialog(npc, '잘 가져왔군. 이리주게.', false, true)
     if btn == DIALOG_RESULT.QUIT then
         return
     end

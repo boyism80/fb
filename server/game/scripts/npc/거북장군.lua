@@ -18,32 +18,29 @@ local function run_rabbit_liver_quest(me, npc)
 
     local quest = me:quest(QUEST_RABBIT_LIVER)
     if quest == nil then
-        ::NPC_144_COS001::
+        ::NPC_144_0001::
         btn = me:dialog(npc, '휴우우.. 용왕님이 편찮으셔서 큰일입니다. 요즘 용궁은 용왕님이 편찮으셔서 다들 걱정하고 있답니다.', false, true)
         if btn == DIALOG_RESULT.QUIT then
             return
         end
-        ::NPC_144_COS002::
+        ::NPC_144_0002::
         btn = me:dialog(npc, '들리는 소문엔 지상에 사는 토끼라는 동물의 간이 용왕님의 병에 좋은 효과가 있다고 하던데....', true, true)
         if btn == DIALOG_RESULT.QUIT then
             return
         end
         if btn == DIALOG_RESULT.PREV then
-            goto NPC_144_COS001
+            goto NPC_144_0001
         end
-        ::NPC_144_COS003::
+        ::NPC_144_0003::
         btn = me:dialog(npc, me:name() .. '님.. 용왕님을 위해서 토끼의 간을 구해다 주실 수 없겠습니까?', true, true)
         if btn == DIALOG_RESULT.QUIT then
             return
         end
         if btn == DIALOG_RESULT.PREV then
-            goto NPC_144_COS002
+            goto NPC_144_0002
         end
-        ::NPC_144_COS004::
-        local sel, list_btn = me:list(npc, '구해주시겠습니까?', { '당연히 구해다 드려야죠.', '요즘 좀 바빠서..' }, true)
-        if list_btn == DIALOG_RESULT.PREV then
-            goto NPC_144_COS003
-        end
+        ::NPC_144_0004::
+        local sel, list_btn = me:list(npc, '구해주시겠습니까?', { '당연히 구해다 드려야죠.', '요즘 좀 바빠서..' }, false)
         if sel == nil or sel ~= 0 then
             return
         end
@@ -53,21 +50,21 @@ local function run_rabbit_liver_quest(me, npc)
         end
         quest:step(1)
         me:push_achievement(ACHIEVEMENT_RABBIT_HINT, '토깽이의 행방을 알아보자.', 7, 1)
-        ::NPC_144_COS005::
+        ::NPC_144_0005::
         btn = me:dialog(npc, me:name() .. '님 정말 감사합니다.. 제발 토끼의 간을 구해 주세요.', false, true)
         if btn == DIALOG_RESULT.QUIT then
             return
         end
-        ::NPC_144_COS006::
+        ::NPC_144_0006::
         btn = me:dialog(npc, '장터의 장돌뱅이가 토끼가 어디에 있는지 알고 있다고 합니다.. 그럼 부탁드립니다.', true, true)
         if btn == DIALOG_RESULT.PREV then
-            goto NPC_144_COS005
+            goto NPC_144_0005
         end
         return
     end
 
     if quest:completed() then
-        me:dialog(npc, me:name() .. '님, 저번엔 정말 감사했습니다.', true, false)
+        me:dialog(npc, me:name() .. '님, 저번엔 정말 감사했습니다.', false, false)
         return
     end
 
@@ -76,12 +73,12 @@ local function run_rabbit_liver_quest(me, npc)
         return
     end
     
-    ::NPC_144_COS007::
+    ::NPC_144_0007::
     btn = me:dialog(npc, '토끼의간을 구해오셨군요! 용왕님의 병에 토끼의 간을 써도 될까요?', false, true)
     if btn == DIALOG_RESULT.QUIT then
         return
     end
-    ::NPC_144_COS008::
+    ::NPC_144_0008::
     local sel, list_btn = me:list(npc, '토끼의 간을 주시겠어요?', { '네, 가져가세요.', '아뇨.. 제가 가지고 있을래요.' }, false)
     if sel == nil or sel ~= 0 then
         return
@@ -95,23 +92,23 @@ local function run_rabbit_liver_quest(me, npc)
     end
     quest:complete()
     me:push_achievement(ACHIEVEMENT_RABBIT_HINT, '거북장군의 부탁을 들어주었다.', 6, 1)
-    ::NPC_144_COS009::
+    ::NPC_144_0009::
     btn = me:dialog(npc, '아아.. 감사합니다. 이것으로 용왕님도 건강을 회복하실 수 있겠군요.', false, true)
     if btn == DIALOG_RESULT.QUIT then
         return
     end
-    ::NPC_144_COS010::
+    ::NPC_144_0010::
     btn = me:dialog(npc, me:name() .. '님은 저희 용궁의 은인이십니다. 감사의 의미에서 투구를 하나 드리겠습니다.', true, true)
     if btn == DIALOG_RESULT.QUIT then
         return
     end
     if btn == DIALOG_RESULT.PREV then
-        goto NPC_144_COS009
+        goto NPC_144_0009
     end
-    ::NPC_144_COS011::
-    btn = me:dialog(npc, '그럼 이 투루를 잘 쓰시길...', true, false)
+    ::NPC_144_0011::
+    btn = me:dialog(npc, '그럼 이 투구를 잘 쓰시길...', true, false)
     if btn == DIALOG_RESULT.PREV then
-        goto NPC_144_COS010
+        goto NPC_144_0010
     end
 end
 
@@ -144,13 +141,13 @@ local function run_shark_weapon_quest(me, npc)
         if me:dialog(npc, '좋아. 그런데 사실은 나도 누가 알고 있는지는 자세히는 모른다네.', true, true) == DIALOG_RESULT.QUIT then
             return
         end
-        me:dialog(npc, '단지 지나가는 말로 아주 추운 지방에서 누군가 알고 있다고 들은 기억이 있어서 말이야..\n\n자세한 건 자네가 직접 찾아봐야 할거야...\n\n그럼 부탁하네.', true, false)
+        me:dialog(npc, '단지 지나가는 말로 아주 추운 지방에서 누군가 알고 있다고 들은 기억이 있어서 말이야..\n\n자세한 건 자네가 직접 찾아봐야 할거야...\n\n그럼 부탁하네.', false, false)
         return
     end
 
     local step = q:step()
     if step >= 1 and step <= 10 then
-        me:dialog(npc, '아주 추운곳에 있다고 들었는데...', true, false)
+        me:dialog(npc, '아주 추운곳에 있다고 들었는데...', false, false)
         return
     end
 
@@ -165,7 +162,7 @@ local function run_shark_weapon_quest(me, npc)
         if me:dialog(npc, '으음...으으음....으으으으음.....!!!\n\n아. 이제야 제조법을 알았네.', true, true) == DIALOG_RESULT.QUIT then
             return
         end
-        if me:dialog(npc, '이걸 만들기 위해서 상어의핵 3개와 불의수정 3개가 필요하다네.\n\n자네가 재료를 다 모아 온다면 내가 직접 만들어 주도록 하겠네.', true, false) == DIALOG_RESULT.QUIT then
+        if me:dialog(npc, '이걸 만들기 위해서 상어의핵 3개와 불의수정 3개가 필요하다네.\n\n자네가 재료를 다 모아 온다면 내가 직접 만들어 주도록 하겠네.', false, false) == DIALOG_RESULT.QUIT then
             return
         end
         if not me:rmitem(SHARK_WEAPON_ITEM_SCROLL, 1, ITEM_DELETE_TYPE.GIVE) then
@@ -217,7 +214,7 @@ local function run_shark_weapon_quest(me, npc)
             if me:dialog(npc, '이것이 바로 괴력선창이라는 것일세.', true, true) == DIALOG_RESULT.QUIT then
                 return
             end
-            me:dialog(npc, '이걸 자네에게 줄 터이니 부디 유용하게 사용하게나.', true, false)
+            me:dialog(npc, '이걸 자네에게 줄 터이니 부디 유용하게 사용하게나.', false, false)
         else
             me:dialog(npc, '이런.. 재료가 그만 모두 뭉개져버렸군..', false, false)
         end
@@ -225,7 +222,7 @@ local function run_shark_weapon_quest(me, npc)
     end
 
     if step >= 13 then
-        me:dialog(npc, '괴력선창은 유용하게 사용하고 있나?', true, false)
+        me:dialog(npc, '괴력선창은 유용하게 사용하고 있나?', false, false)
     end
 end
 

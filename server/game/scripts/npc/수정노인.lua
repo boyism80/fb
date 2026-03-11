@@ -8,11 +8,13 @@ function NPC_569(me, npc)
         return
     end
 
+    ::NPC_569_0001::
     local d = me:dialog(npc, "오... 자네 " .. MATERIAL .. "을 가지고 있군.. 어디 몇 개나 가지고 있나 볼까.", false, true)
     if d == DIALOG_RESULT.QUIT then
         return
     end
 
+    ::NPC_569_0002::
     local sel, btn = me:list(npc, "나는 " .. MATERIAL .. "으로 " .. MATERIAL .. "반지를 만들 수 있다네. 어떻게 하겠는가?", {
         "수정반지1",
         "수정반지2",
@@ -23,20 +25,28 @@ function NPC_569(me, npc)
     if btn == DIALOG_RESULT.QUIT then
         return
     end
+    if btn == DIALOG_RESULT.PREV then
+        goto NPC_569_0001
+    end
     if sel == nil then
         return
     end
     local need_count = sel + 1
     local reward_name = RING_NAMES[sel + 1]
 
+    ::NPC_569_0003::
     d = me:dialog(npc, "그래... " .. reward_name .. "을 만들고 싶다는 말이지?", false, true)
     if d == DIALOG_RESULT.QUIT then
         return
     end
 
+    ::NPC_569_0004::
     local confirm, confirm_btn = me:list(npc, "내게 " .. MATERIAL .. "을 " .. need_count .. "개 준다면 " .. reward_name .. "를 만들어주지... 어떻게 하겠는가?", { "만들어주세요.", "아니요...괜찮습니다." }, true)
     if confirm_btn == DIALOG_RESULT.QUIT then
         return
+    end
+    if confirm_btn == DIALOG_RESULT.PREV then
+        goto NPC_569_0003
     end
     if confirm ~= 0 then
         me:dialog(npc, "그래, 생각이 바뀐다면 다시 오게나. 허허...", false, false)

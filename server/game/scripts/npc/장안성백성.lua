@@ -77,7 +77,7 @@ function NPC_539(me, npc)
         end
 
         ::NPC_539_0006::
-        button = me:dialog(npc, "돌아오시면 금방 찾을수 있을겁니다. 진랑검 잘 간수하시고 그때까지 기다려보심이 어떨런지..", true, true)
+        button = me:dialog(npc, "돌아오시면 금방 찾을수 있을겁니다. 진랑검 잘 간수하시고 그때까지 기다려보심이 어떨런지..", false, true)
         if button == DIALOG_RESULT.QUIT then
             return
         end

@@ -23,20 +23,20 @@ function NPC_215(me, npc)
     local quest = me:quest(QUEST_GREATWALL)
 
     if quest == nil then
-        ::NPC_215_COS001::
-        local btn = me:dialog(npc, '마침 잘 만났네. 자네 만리장성을 돌아보았나? 요즘 만리장성의 곳곳이 무너져내려 걱정이 보통이 아니라네.', true, true)
+        ::NPC_215_0001::
+        local btn = me:dialog(npc, '마침 잘 만났네. 자네 만리장성을 돌아보았나? 요즘 만리장성의 곳곳이 무너져내려 걱정이 보통이 아니라네.', false, true)
         if btn == DIALOG_RESULT.QUIT then
             return
         end
-        ::NPC_215_COS002::
+        ::NPC_215_0010::
         btn = me:dialog(npc, '만리장성을 수리하는데는 고구려의 벽돌만큼 좋은게 없지.', true, true)
         if btn == DIALOG_RESULT.PREV then
-            goto NPC_215_COS001
+            goto NPC_215_0001
         end
         if btn == DIALOG_RESULT.QUIT then
             return
         end
-        local sel, lb = me:list(npc, '자네가 만리장성의 무너져내린곳을 고쳐줄 수 있겠나?', { '만리장성이!! 제가 꼭 고치겠습니다!!', '죄송하지만 저에겐 그럴만한 시간이 없습니다.' })
+        local sel, lb = me:list(npc, '자네가 만리장성의 무너져내린곳을 고쳐줄 수 있겠나?', { '만리장성이!! 제가 꼭 고치겠습니다!!', '죄송하지만 저에겐 그럴만한 시간이 없습니다.' }, false)
         if lb == DIALOG_RESULT.QUIT then
             return
         end
@@ -55,20 +55,20 @@ function NPC_215(me, npc)
     end
 
     if quest:step() == 0 then
-        ::NPC_215_COS001B::
+        ::NPC_215_0020::
         local btn = me:dialog(npc, '마침 잘 만났네. 자네 만리장성을 돌아보았나? 요즘 만리장성의 곳곳이 무너져내려 걱정이 보통이 아니라네.', true, true)
         if btn == DIALOG_RESULT.QUIT then
             return
         end
-        ::NPC_215_COS002B::
+        ::NPC_215_0021::
         btn = me:dialog(npc, '만리장성을 수리하는데는 고구려의 벽돌만큼 좋은게 없지.', true, true)
         if btn == DIALOG_RESULT.PREV then
-            goto NPC_215_COS001B
+            goto NPC_215_0020
         end
         if btn == DIALOG_RESULT.QUIT then
             return
         end
-        local sel, lb = me:list(npc, '자네가 만리장성의 무너져내린곳을 고쳐줄 수 있겠나?', { '만리장성이!! 제가 꼭 고치겠습니다!!', '죄송하지만 저에겐 그럴만한 시간이 없습니다.' })
+        local sel, lb = me:list(npc, '자네가 만리장성의 무너져내린곳을 고쳐줄 수 있겠나?', { '만리장성이!! 제가 꼭 고치겠습니다!!', '죄송하지만 저에겐 그럴만한 시간이 없습니다.' }, false)
         if lb == DIALOG_RESULT.QUIT then
             return
         end

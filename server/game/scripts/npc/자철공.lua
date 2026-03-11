@@ -62,7 +62,7 @@ function NPC_562(me, npc)
                 goto NPC_562_0003
             end
             ::NPC_562_0005::
-            dialog_btn = me:dialog(npc, "괴성왕에게서 자철석을, 무슈후슈에게서 뿔 10개를 구해오면 내 만들어주겠네.", true, true)
+            dialog_btn = me:dialog(npc, "괴성왕에게서 자철석을, 무슈후슈에게서 뿔 10개를 구해오면 내 만들어주겠네.", false, true)
             if dialog_btn == DIALOG_RESULT.QUIT then
                 return
             end
@@ -95,7 +95,8 @@ function NPC_562(me, npc)
         if dialog_btn == DIALOG_RESULT.QUIT then
             return
         end
-        dialog_btn = me:dialog(npc, "자 다 만들었네. 자네가 고생했지 난 별로 한게 없구려. 또 필요하다면 언제든지 오게.", true, true)
+        ::NPC_562_0011::
+        dialog_btn = me:dialog(npc, "자 다 만들었네. 자네가 고생했지 난 별로 한게 없구려. 또 필요하다면 언제든지 오게.", false, true)
         if dialog_btn == DIALOG_RESULT.QUIT then
             return
         end

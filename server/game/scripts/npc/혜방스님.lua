@@ -10,15 +10,20 @@ local function yeondeung_list()
 end
 
 function NPC_364(me, npc)
+    ::NPC_364_0001::
     local btn = me:dialog(npc, "안녕하십니까. 저는 명경사의 혜방이라고 합니다.", false, true)
     if btn == DIALOG_RESULT.QUIT then
         return
     end
 
     local opts = yeondeung_list()
+    ::NPC_364_0002::
     local sel, list_btn = me:list(npc, "같은 연등을 두개 모아 오시면, 상위 연등으로 교환 해 드립니다..", opts, true)
-    if list_btn == DIALOG_RESULT.QUIT or list_btn == DIALOG_RESULT.PREV then
+    if list_btn == DIALOG_RESULT.QUIT then
         return
+    end
+    if list_btn == DIALOG_RESULT.PREV then
+        goto NPC_364_0001
     end
     if sel == nil then
         return

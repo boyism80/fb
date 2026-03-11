@@ -988,7 +988,7 @@ function mountain_treasure_map_on_move(me)
         return
     end
 
-    me:dialog(name2item('산신의보물지도'), '산신의보물지도를 발견했다!', true, false)
+    me:dialog(name2item('산신의보물지도'), '산신의보물지도를 발견했다!', false, false)
 end
 
 function on_move(me)
@@ -1331,7 +1331,7 @@ function on_npc_chat(me, message, shout)
                 return true
             end
             me:money(me:money() - BLACK_FLAG_PRICE)
-            me:dialog(npc, '검정깃발을 받았습니다.', false, true)
+            me:dialog(npc, '검정깃발을 받았습니다.', false, false)
             return true
         end },
     }

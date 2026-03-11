@@ -120,6 +120,7 @@ function NPC_451(me, npc)
     if button == DIALOG_RESULT.QUIT then
         return
     end
+    ::NPC_451_0002::
     local list_sel, list_btn = me:list(npc, "가지고 있던 무기는 어떤 것이었지? 늙으니 기억력이 좋지 않군...", {
         "진월신검 입니다.",
         "청월기창 입니다.",
@@ -151,9 +152,13 @@ function NPC_451(me, npc)
         return
     end
 
+    ::NPC_451_0003::
     button = me:dialog(npc, "좋아! 그럼 가공을 시작하도록 하지. 잘 듣게, 가공 도중에는 절대로 허튼 수작 부리지 말게. 말도 걸지 말고. 자칫하면 재료가 모두 사라지는 수가 있어! 그 때에는 절대 책임을 지지 않으니 알아서 하게.", true, true)
     if button == DIALOG_RESULT.QUIT then
         return
+    end
+    if button == DIALOG_RESULT.PREV then
+        goto NPC_451_0002
     end
     button = me:dialog(npc, "그럼 시작하겠네!", false, true)
     if button == DIALOG_RESULT.QUIT then

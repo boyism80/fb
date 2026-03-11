@@ -1,15 +1,24 @@
 
 local function do_sub2_start(me, npc)
+    ::NPC_464_0001::
     local b = me:dialog(npc, "경계하실 것 없다. 상의하고 싶은 문제가 있는 것일 뿐이니까. 나를 도와주고 싶은건가.", false, true)
     if b == DIALOG_RESULT.QUIT then
         return false
     end
+    ::NPC_464_0010::
     b = me:dialog(npc, "그러면, 이 편지를 토원왕에게 전해주셔야한다. 가장 지혜로운 부족의 우두머리이시다.", true, true)
-    if b == DIALOG_RESULT.PREV or b == DIALOG_RESULT.QUIT then
+    if b == DIALOG_RESULT.PREV then
+        goto NPC_464_0001
+    end
+    if b == DIALOG_RESULT.QUIT then
         return false
     end
-    b = me:dialog(npc, "상의하고 싶은 문제가 있으시니, 일단 편지를 전해주시기만 하시면, 나머지는 토원왕이 해결해 주실거다.", true, true)
-    if b == DIALOG_RESULT.PREV or b == DIALOG_RESULT.QUIT then
+    ::NPC_464_0011::
+    b = me:dialog(npc, "상의하고 싶은 문제가 있으시니, 일단 편지를 전해주시기만 하시면, 나머지는 토원왕이 해결해 주실거다.", false, true)
+    if b == DIALOG_RESULT.PREV then
+        goto NPC_464_0010
+    end
+    if b == DIALOG_RESULT.QUIT then
         return false
     end
     me:mkitem("원숭이편지", 1)
@@ -27,12 +36,17 @@ local function do_sub2_start(me, npc)
 end
 
 local function do_sub2_complete(me, npc)
+    ::NPC_464_0020::
     local b = me:dialog(npc, "고맙다, 이제 다른 두목들과의 연락도 조금은 원활해지실거다. 이건 병에 걸린 우리 아이들과 싸우시던", false, true)
     if b == DIALOG_RESULT.QUIT then
         return false
     end
-    b = me:dialog(npc, "인간들이 버리시고 가신 물건 중에서 제일 무거우시고 쓸만하신 무기시다. 요긴하게 쓰셔야 한다.", true, true)
-    if b == DIALOG_RESULT.PREV or b == DIALOG_RESULT.QUIT then
+    ::NPC_464_0021::
+    b = me:dialog(npc, "인간들이 버리시고 가신 물건 중에서 제일 무거우시고 쓸만하신 무기시다. 요긴하게 쓰셔야 한다.", false, true)
+    if b == DIALOG_RESULT.PREV then
+        goto NPC_464_0020
+    end
+    if b == DIALOG_RESULT.QUIT then
         return false
     end
     me:mkitem("비철단도", 1)

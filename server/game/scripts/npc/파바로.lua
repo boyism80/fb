@@ -2,13 +2,12 @@ function NPC_187(me, npc)
     local GRILL_ITEMS = { '감자', '고구마', '늑대고기' }
     local GRILL_COST = 2
 
-    ::NPC_187_COS001::
-    local btn = me:dialog(npc, '구워먹기 좋은 음식은 내가 맛있게 금방 구워 주지. 대신 내게도 맛 좀 보게 해 주면 좋겠군. 음식 하나를 구워주면 수수료로 하나는 내가 먹겠어.', true, true)
+    local btn = me:dialog(npc, '구워먹기 좋은 음식은 내가 맛있게 금방 구워 주지. 대신 내게도 맛 좀 보게 해 주면 좋겠군. 음식 하나를 구워주면 수수료로 하나는 내가 먹겠어.', false, true)
     if btn == DIALOG_RESULT.QUIT then
         return
     end
 
-    ::NPC_187_COS002::
+    ::NPC_187_0002::
     local list = me:list(npc, '내가 전에 구워봤던 건 이 정도야. 굽고 싶은 음식이 있으면 골라보게. 나중에 또 구워봐서 성공하는 음식이 있으면 목록에 추가하도록 하지.', { '감자', '고구마', '늑대고기', '나중에 다시 올께요.' })
     if list == nil then
         return
@@ -21,13 +20,20 @@ function NPC_187(me, npc)
     end
 
     local item_name = GRILL_ITEMS[list + 1]
+    ::NPC_187_0003::
     btn = me:dialog(npc, item_name .. '! 그거 좋지. 감자는 구우면 씹기도 좋고, 고소한 맛이 더 살아난다네.', true, true)
     if btn == DIALOG_RESULT.QUIT then
         return
     end
+    if btn == DIALOG_RESULT.PREV then
+        goto NPC_187_0002
+    end
     btn = me:dialog(npc, '자 그럼 어디 구워 볼까!', true, true)
     if btn == DIALOG_RESULT.QUIT then
         return
+    end
+    if btn == DIALOG_RESULT.PREV then
+        goto NPC_187_0003
     end
 
     local code = me:exchange(

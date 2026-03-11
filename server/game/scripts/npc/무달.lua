@@ -19,13 +19,19 @@ local function do_jungki(me, npc)
         if me:list(npc, '물론 만들줄은 아네만...그리 쉽게 만들수는 없다네..', { '!!!' }, false) ~= 0 then
             return
         end
+        ::NPC_157_0000::
         if me:list(npc, '그래도 만들고 싶은가?', { '물론이지요.', '아니요. 포기할래요.' }, false) ~= 0 then
             return
         end
-        if me:dialog(npc, '한번에 다 알려줘 봐야 소용없으니 한번에 하나씩만 알려주겠네.', true, true) == DIALOG_RESULT.QUIT then
+        ::NPC_157_0001::
+        local d_btn = me:dialog(npc, '한번에 다 알려줘 봐야 소용없으니 한번에 하나씩만 알려주겠네.', true, true)
+        if d_btn == DIALOG_RESULT.QUIT then
             return
         end
-        if me:dialog(npc, '먼저 복어의심장 30개를 가지고 오게나.', true, false) == DIALOG_RESULT.QUIT then
+        if d_btn == DIALOG_RESULT.PREV then
+            goto NPC_157_0000
+        end
+        if me:dialog(npc, '먼저 복어의심장 30개를 가지고 오게나.', false, false) == DIALOG_RESULT.QUIT then
             return
         end
         if quest then
@@ -61,15 +67,15 @@ local function do_jungki(me, npc)
             end
             me:push_achievement(24, s.legend, 7, 1)
             if s.next_msg then
-                me:dialog(npc, '다 모아왔군 그래. ' .. s.next_msg, true, false)
+                me:dialog(npc, '다 모아왔군 그래. ' .. s.next_msg, false, false)
             else
-                me:dialog(npc, '이제 용궁의정기는 모두 다 모았네. 가서 볼일을 보시게나.', true, false)
+                me:dialog(npc, '이제 용궁의정기는 모두 다 모았네. 가서 볼일을 보시게나.', false, false)
             end
             return
         end
     end
     if step >= 10 then
-        me:dialog(npc, '......', true, false)
+        me:dialog(npc, '......', false, false)
     end
 end
 
@@ -101,10 +107,17 @@ local function do_armor_infinite(me, npc)
         me:armor_color(11)
     end
     me:money(money - price)
+    ::NPC_157_0002::
     if me:dialog(npc, string.format('염색비로 %d전을 받았습니다.', price), false, true) == DIALOG_RESULT.QUIT then
         return
     end
-    me:dialog(npc, '그럼 언제나 행운이 함께 하시기를 빌겠습니다.', true, true)
+    local last_btn = me:dialog(npc, '그럼 언제나 행운이 함께 하시기를 빌겠습니다.', true, true)
+    if last_btn == DIALOG_RESULT.QUIT then
+        return
+    end
+    if last_btn == DIALOG_RESULT.PREV then
+        goto NPC_157_0002
+    end
 end
 
 local function do_armor_normal(me, npc)

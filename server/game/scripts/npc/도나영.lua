@@ -10,7 +10,7 @@ function NPC_370(me, npc)
             return
         end
 
-        button = me:dialog(npc, "저희 가족들은 도삭산 여기저기에 흩어져서 살고 있답니다. 가끔 모두 모여서 재미있는 이야기들을 하기도 하지요.", true, false)
+        button = me:dialog(npc, "저희 가족들은 도삭산 여기저기에 흩어져서 살고 있답니다. 가끔 모두 모여서 재미있는 이야기들을 하기도 하지요.", false, false)
         if button == DIALOG_RESULT.QUIT then
             return
         end

@@ -8,7 +8,7 @@ function NPC_188(me, npc)
     end
 
     if quest ~= nil and quest:step() == 7 then
-        me:dialog(npc, '또 왔구만! 허허, 난 지금 여기 특산품을 잔뜩 먹고 배가 불러서 잠시 쉬고 있는 중일세. 바닷바람을 쐬고 있으려니 참 시원하구만. 허허...', true, true)
+        me:dialog(npc, '또 왔구만! 허허, 난 지금 여기 특산품을 잔뜩 먹고 배가 불러서 잠시 쉬고 있는 중일세. 바닷바람을 쐬고 있으려니 참 시원하구만. 허허...', false, true)
         if me:mkitem('정령인형', 1) == nil then
             me:dialog(npc, '소지품이 가득 차서 정령인형을 줄 수 없네.', false, true)
             return

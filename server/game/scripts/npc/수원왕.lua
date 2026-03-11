@@ -4,12 +4,17 @@ local function do_sub4_return_baby(me, npc)
         me:dialog(npc, "퀘스트 오류입니다.\n아기원숭이 아이템이 없습니다.", false, false)
         return true
     end
+    ::NPC_467_0040::
     local b = me:dialog(npc, "잠깐만! 자네가 안고 계시는 그 아기 원숭이는 누구의 자식이시지? 뭐? 어머니를 찾고 계시다고?", false, true)
     if b == DIALOG_RESULT.QUIT then
         return false
     end
+    ::NPC_467_0041::
     b = me:dialog(npc, "밥도 안드시고 실의에 빠져계시는 원숭이 부부가 있으셨다. 이런 기쁘실데가 있나! 수고 하셨다!", true, true)
-    if b == DIALOG_RESULT.PREV or b == DIALOG_RESULT.QUIT then
+    if b == DIALOG_RESULT.PREV then
+        goto NPC_467_0040
+    end
+    if b == DIALOG_RESULT.QUIT then
         return false
     end
     if not me:rmitem("아기원숭이", 1, ITEM_DELETE_TYPE.GIVE) then
@@ -24,6 +29,7 @@ local function do_sub4_return_baby(me, npc)
 end
 
 local function do_sub5_start(me, npc)
+    ::NPC_467_0010::
     local sel, btn = me:list(npc, "요즘따라 인간들을 자주 만나시게 되시는도다.", { "이름을 가르쳐주세요.", "이곳의 상황은 좀 어떤가요?", "제가 도와드릴 일은 없을까요?" }, false)
     if btn == DIALOG_RESULT.QUIT or sel == nil then
         return false
@@ -36,21 +42,37 @@ local function do_sub5_start(me, npc)
         me:dialog(npc, "이 곳의 상황은 본래와 다를바 없으시다.", false, false)
         return true
     end
+    ::NPC_467_0020::
     sel, btn = me:list(npc, "음? 하하하. 고마운 말씀이시다. 진심이신가?", { "네, 꼭 도와드릴께요.", "아뇨, 그만 둘래요." }, true)
+    if btn == DIALOG_RESULT.PREV then
+        goto NPC_467_0010
+    end
     if btn == DIALOG_RESULT.QUIT or sel == nil or sel ~= 0 then
         me:dialog(npc, "장난을 치는 사람은 싫어한다.", false, false)
         return true
     end
+    ::NPC_467_0030::
     local b = me:dialog(npc, "요즘 날쌔시고 유능하신 부하들을 시켜서서 다른 왕들과 편지를 주고받으시고 계신데, 그만 이번에 중요한 편지", true, true)
-    if b == DIALOG_RESULT.PREV or b == DIALOG_RESULT.QUIT then
+    if b == DIALOG_RESULT.PREV then
+        goto NPC_467_0020
+    end
+    if b == DIALOG_RESULT.QUIT then
         return false
     end
+    ::NPC_467_0031::
     b = me:dialog(npc, "하나가 흉폭해진 원숭이들 손에 떨어지고 마셨다. 부하들의 말에 따르면 요 앞에서 잃어버리셨다고하니, 우리", true, true)
-    if b == DIALOG_RESULT.PREV or b == DIALOG_RESULT.QUIT then
+    if b == DIALOG_RESULT.PREV then
+        goto NPC_467_0030
+    end
+    if b == DIALOG_RESULT.QUIT then
         return false
     end
-    b = me:dialog(npc, "부족이 사시는 이 건물안에 남아계신 것은 확실하시다. 자네가 어떻게 좀 찾아주셨으면 좋으시겠다.", true, true)
-    if b == DIALOG_RESULT.PREV or b == DIALOG_RESULT.QUIT then
+    ::NPC_467_0032::
+    b = me:dialog(npc, "부족이 사시는 이 건물안에 남아계신 것은 확실하시다. 자네가 어떻게 좀 찾아주셨으면 좋으시겠다.", false, true)
+    if b == DIALOG_RESULT.PREV then
+        goto NPC_467_0031
+    end
+    if b == DIALOG_RESULT.QUIT then
         return false
     end
     local q5 = me:quest(QUEST_SKULL_NECKLACE_5)
@@ -71,12 +93,17 @@ local function do_sub5_turnin(me, npc)
         me:dialog(npc, "부족이 사시는 이 건물안에 남아계신 것은 확실하시다.", false, false)
         return true
     end
+    ::NPC_467_0050::
     local b = me:dialog(npc, "이런 편지를 찾아오시다니 엄청난 실력이시군. 도대체 어디서 찾으신건가 믿을 수가 없으시다.", false, true)
     if b == DIALOG_RESULT.QUIT then
         return false
     end
-    b = me:dialog(npc, "분명 이걸 찾아오시느라 많은 고생을 하셨겠지? 자, 이걸 드시면 좋으시다. 몸이 허하실때 드시는", true, true)
-    if b == DIALOG_RESULT.PREV or b == DIALOG_RESULT.QUIT then
+    ::NPC_467_0051::
+    b = me:dialog(npc, "분명 이걸 찾아오시느라 많은 고생을 하셨겠지? 자, 이걸 드시면 좋으시다. 몸이 허하실때 드시는", false, true)
+    if b == DIALOG_RESULT.PREV then
+        goto NPC_467_0050
+    end
+    if b == DIALOG_RESULT.QUIT then
         return false
     end
     local code = me:exchange(

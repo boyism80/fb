@@ -7,7 +7,7 @@ local function run_puffer_general_accept(me, npc)
         return
     end
     local btn
-    ::NPC_75_COS001::
+    ::NPC_75_001::
     local sel, list_btn = me:list(npc, "자넨 뭍사람이 아닌가? 여기 용궁은 무얼하러 왔는지 궁금하네만 그보다 내 부탁좀 들어줄 수 있겠나?", { "물론이지오.", "싫어요" }, false)
     if list_btn == DIALOG_RESULT.QUIT then
         return
@@ -15,31 +15,31 @@ local function run_puffer_general_accept(me, npc)
     if sel == nil or sel ~= 0 then
         return
     end
-    ::NPC_75_COS002::
+    ::NPC_75_002::
     btn = me:dialog(npc, "고맙네.. 사실 자네도 이곳 용궁에 대해서 소문을 들었을지 모르겠네만 요즘 용궁 주위에 심상찮은 분위기가 맴돌고 있다네...", true, true)
     if btn == DIALOG_RESULT.QUIT then
         return
     end
     if btn == DIALOG_RESULT.PREV then
-        goto NPC_75_COS001
+        goto NPC_75_001
     end
-    ::NPC_75_COS003::
+    ::NPC_75_003::
     btn = me:dialog(npc, "이에 내가 조사를 해 본 결과 용궁 8대 장군 중 하나인 복어장군이 반란에 가담하고 있다는 정보를 입수하게 되었다네..", true, true)
     if btn == DIALOG_RESULT.QUIT then
         return
     end
     if btn == DIALOG_RESULT.PREV then
-        goto NPC_75_COS002
+        goto NPC_75_002
     end
-    ::NPC_75_COS004::
+    ::NPC_75_004::
     btn = me:dialog(npc, "아마도 복어장군뿐 아니라 다른 이들도 관련 있는 것 같네만 아직 그것까지는 알 수가 없다네.", true, true)
     if btn == DIALOG_RESULT.QUIT then
         return
     end
     if btn == DIALOG_RESULT.PREV then
-        goto NPC_75_COS003
+        goto NPC_75_003
     end
-    ::NPC_75_COS005::
+    ::NPC_75_005::
     local sel2, list_btn2 = me:list(npc, "그래서 말인데 자네가 복어장군에게 정보를 캐내 올 수 있겠는가?", { "좋습니다. 제가 해보지요.", "너무 위험한 일인 것 같아서 못하겠어요." }, false)
     if list_btn2 == DIALOG_RESULT.QUIT then
         return
@@ -63,26 +63,26 @@ local function run_puffer_general_complete(me, npc)
         return
     end
     local btn
-    ::NPC_75_COS006::
+    ::NPC_75_006::
     btn = me:dialog(npc, "오오 정말로 이 문서를 가지고 왔구만.", false, true)
     if btn == DIALOG_RESULT.QUIT then
         return
     end
-    ::NPC_75_COS007::
+    ::NPC_75_007::
     btn = me:dialog(npc, "내 자네에게 보답을 하겠네", true, true)
     if btn == DIALOG_RESULT.QUIT then
         return
     end
     if btn == DIALOG_RESULT.PREV then
-        goto NPC_75_COS006
+        goto NPC_75_006
     end
-    ::NPC_75_COS008::
+    ::NPC_75_008::
     local gift_sel, gift_btn = me:list(npc, "자네 능력치 중에서 어떤 것을 올리고 싶은가?", { "힘이요!", "지식이요!", "민첩성이요!" }, true)
     if gift_btn == DIALOG_RESULT.QUIT then
         return
     end
     if gift_btn == DIALOG_RESULT.PREV then
-        goto NPC_75_COS007
+        goto NPC_75_007
     end
     if gift_sel == nil or gift_sel < 0 or gift_sel > 2 then
         return
@@ -124,18 +124,18 @@ local function run_crab_general_accept(me, npc)
     end
     quest:step(3)
     me:push_achievement(ACHIEVEMENT_DRAGON_KING, "게장군 생포 임무를 받다.", 7, 1)
-    ::NPC_75_COS011::
+    ::NPC_75_011::
     btn = me:dialog(npc, "고맙네, 내 듣기로 게장군이 더 강한 힘을 얻기 위해 근래 탈피를 했다더군.\n\n아직은 몸이 덜 굳어서 활동을 극히 자제하고 있을 걸세.", false, true)
     if btn == DIALOG_RESULT.QUIT then
         return
     end
-    ::NPC_75_COS012::
+    ::NPC_75_012::
     btn = me:dialog(npc, "하지만 게장군은 자기 수하들을 극히 아낀다 들었네.\n\n자네가 게장군의 수하들을 손봐주고 있으면 그도 참지 못하고 모습을 드러낼걸세.\n\n그럼 되도록 빨리 잡아오도록 하게", true, true)
     if btn == DIALOG_RESULT.QUIT then
         return
     end
     if btn == DIALOG_RESULT.PREV then
-        goto NPC_75_COS011
+        goto NPC_75_011
     end
 end
 
@@ -150,18 +150,18 @@ local function run_crab_general_complete(me, npc)
     me:mkitem("산해진미", 1)
     me:push_achievement(ACHIEVEMENT_DRAGON_KING, "게장군 생포 임무 완료.", 7, 1)
     local btn
-    ::NPC_75_COS013::
+    ::NPC_75_013::
     btn = me:dialog(npc, "고맙네, 내 산해진미를 줄 터이니 한번 맛이나 보시게나.", false, true)
     if btn == DIALOG_RESULT.QUIT then
         return
     end
-    ::NPC_75_COS014::
+    ::NPC_75_014::
     btn = me:dialog(npc, "이건 아주 몸에 좋은 음식이니 혼자 몰래 들게나....하하하", true, true)
     if btn == DIALOG_RESULT.QUIT then
         return
     end
     if btn == DIALOG_RESULT.PREV then
-        goto NPC_75_COS013
+        goto NPC_75_013
     end
 end
 
@@ -281,18 +281,18 @@ local function run_seahorse_complete(me, npc)
     me:mkitem("진주반지", 1)
     me:push_achievement(ACHIEVEMENT_DRAGON_KING, "해마장군 생포 임무 완료.", 7, 1)
     local btn
-    ::NPC_75_COS030::
+    ::NPC_75_030::
     btn = me:dialog(npc, "지금 해마장군 소속 병사들이 대 혼란에 빠졌다고 들었네.\n\n이 모든 것이 자네 덕분이야.", false, true)
     if btn == DIALOG_RESULT.QUIT then
         return
     end
-    ::NPC_75_COS031::
+    ::NPC_75_031::
     btn = me:dialog(npc, "지금이라면 해마장군 소속 병사들을 와해시키기 쉬울 듯 하네.\n\n정말 고맙네. 이것은 내 조그마한 성의니 받아두게", true, true)
     if btn == DIALOG_RESULT.QUIT then
         return
     end
     if btn == DIALOG_RESULT.PREV then
-        goto NPC_75_COS030
+        goto NPC_75_030
     end
 end
 
@@ -307,34 +307,34 @@ local function run_mermaid_accept(me, npc)
         return
     end
     local btn
-    ::NPC_75_COS032::
+    ::NPC_75_032::
     btn = me:dialog(npc, "어서오게.\n\n자네 덕분에 반란은 사전에 많이 진압을 했네.", false, true)
     if btn == DIALOG_RESULT.QUIT then
         return
     end
-    ::NPC_75_COS033::
+    ::NPC_75_033::
     btn = me:dialog(npc, "하지만 아직 그 주동자를 알아내지 못했고, 지금은 교착 상태에 빠져 있네.", true, true)
     if btn == DIALOG_RESULT.QUIT then
         return
     end
     if btn == DIALOG_RESULT.PREV then
-        goto NPC_75_COS032
+        goto NPC_75_032
     end
-    ::NPC_75_COS034::
+    ::NPC_75_034::
     btn = me:dialog(npc, "곰곰히 생각해 보니, 나는 지금껏 게장군의 말만 믿고 반란에 관한 일을 진행해 오지 않았나.\n\n지금 와서 드는 생각이네만, 게장군의 말을 전부 믿을 수 없을 것 같네.", true, true)
     if btn == DIALOG_RESULT.QUIT then
         return
     end
     if btn == DIALOG_RESULT.PREV then
-        goto NPC_75_COS033
+        goto NPC_75_033
     end
-    ::NPC_75_COS035::
+    ::NPC_75_035::
     btn = me:dialog(npc, "그래서 말인데, 게장군도 인어장군에게 설득을 당해 이번 반란에 가담하게 되었다고 했으니, 인어장군은 뭔가 더 많은 것을 알고 있을 것이라 생각하네.", true, true)
     if btn == DIALOG_RESULT.QUIT then
         return
     end
     if btn == DIALOG_RESULT.PREV then
-        goto NPC_75_COS034
+        goto NPC_75_034
     end
     local sel, list_btn = me:list(npc, "그러니 이번에 자네가 인어장군에게 정보를 좀 얻어 올 수 있겠나?", { "그 정도야 가뿐하지요.", "이번만은 좀 힘들 것 같군요..." }, false)
     if list_btn == DIALOG_RESULT.QUIT or sel == nil or sel ~= 0 then
@@ -450,26 +450,26 @@ local function run_shark_accept(me, npc)
     if btn == DIALOG_RESULT.QUIT then
         return
     end
-    ::SHARK_COS041::
+    ::NPC_75_041::
     btn = me:dialog(npc, "그런데 알고보니 문어장군은 정말로 반역에 가담하지 않았더군.\n\n내 문어장군 같이 훌륭한 충신을 의심하다니....아...문어장군.....", true, true)
     if btn == DIALOG_RESULT.QUIT then
         return
     end
-    ::SHARK_COS042::
+    ::NPC_75_042::
     btn = me:dialog(npc, "문어장군. 내 조그맣게 속죄하는 뜻에서 그대의 의지를 용궁 대대로 전해지게 하겠네.", true, true)
     if btn == DIALOG_RESULT.QUIT then
         return
     end
     if btn == DIALOG_RESULT.PREV then
-        goto SHARK_COS041
+        goto NPC_75_041
     end
-    ::SHARK_COS043::
+    ::NPC_75_043::
     btn = me:dialog(npc, "그나저나 내통문서에 적힌대로 상어장군에게 첩자를 심어놓았는데\n적들이 반란을 시도하기 위한 준비를 거의 다 끝냈다는 사실을 알아냈다네.\n\n지금 적들의 사기가 하늘을 찌르고 있다고 하더군.", true, true)
     if btn == DIALOG_RESULT.QUIT then
         return
     end
     if btn == DIALOG_RESULT.PREV then
-        goto SHARK_COS042
+        goto NPC_75_042
     end
     sel, list_btn = me:list(npc, "그래서 자네가 적들의 기세를 좀 꺽어주지 않겠는가?", { "매우 쉬운 일이군요.", "저 개인이 무슨 힘이 있어서...." }, false)
     if list_btn == DIALOG_RESULT.QUIT or sel == nil or sel ~= 0 then
@@ -483,7 +483,7 @@ local function run_shark_accept(me, npc)
     quest:progress(0)
     quest:param("0")
     me:push_achievement(ACHIEVEMENT_DRAGON_KING, "상어장군의 생포 임무를 받다. [1/2]", 7, 1)
-    ::SHARK_COS045::
+    ::NPC_75_045::
     btn = me:dialog(npc, "정말 고맙네.\n\n마침 상어장군이 돌격대장을 함께 역임하고 있다고 하니, 그자를 제거하면 적의 기세가 한풀 꺽일걸세,", false, true)
     if btn == DIALOG_RESULT.QUIT then
         return
@@ -493,7 +493,7 @@ local function run_shark_accept(me, npc)
         return
     end
     if btn == DIALOG_RESULT.PREV then
-        goto SHARK_COS045
+        goto NPC_75_045
     end
 end
 
@@ -533,7 +533,7 @@ local function run_shark_complete(me, npc)
     local t = now()
     if progress == 2 then
         local btn
-        ::SHARK_COS047::
+        ::NPC_75_047::
         btn = me:dialog(npc, "자네마저 나에 기대에 배신하다니....믿을 수 없군. 믿을수가 없어...", false, true)
         if btn == DIALOG_RESULT.QUIT then
             return
@@ -543,7 +543,7 @@ local function run_shark_complete(me, npc)
             return
         end
         if btn == DIALOG_RESULT.PREV then
-            goto SHARK_COS047
+            goto NPC_75_047
         end
         quest:param(tostring(t + SHARK_ANGER_SEC))
         quest:progress(0)
@@ -559,25 +559,25 @@ local function run_shark_complete(me, npc)
         return
     end
     local btn
-    ::SHARK_COS049::
+    ::NPC_75_049::
     btn = me:dialog(npc, "자네가 상어장군을 잡아올 때 상어장군이 한 말이 전 병사들에게 퍼져서 사기가 뚝 떨어졌다는 제보가 들어왔다네.", false, true)
     if btn == DIALOG_RESULT.QUIT then
         return
     end
-    ::SHARK_COS050::
+    ::NPC_75_050::
     btn = me:dialog(npc, "자네에게 약속대로 힘을 부여하겠네.", true, true)
     if btn == DIALOG_RESULT.QUIT then
         return
     end
     if btn == DIALOG_RESULT.PREV then
-        goto SHARK_COS049
+        goto NPC_75_049
     end
     btn = me:dialog(npc, "그럼 다음에 또 보세나", true, true)
     if btn == DIALOG_RESULT.QUIT then
         return
     end
     if btn == DIALOG_RESULT.PREV then
-        goto SHARK_COS050
+        goto NPC_75_050
     end
     quest:step(14)
     quest:progress(0)
@@ -601,18 +601,18 @@ local function run_jellyfish_accept(me, npc)
         return
     end
     local btn
-    ::JELLYFISH_COS053::
+    ::NPC_75_053::
     btn = me:dialog(npc, "지금 우리 군대와 반란군의 군대가 한참 전쟁일 벌이고 있는데, 적의 주모자를 제거하면 우리에게 유리한 방향으로 이끌어 나갈 수 있을 것 같네.", false, true)
     if btn == DIALOG_RESULT.QUIT then
         return
     end
-    ::JELLYFISH_COS054::
+    ::NPC_75_054::
     btn = me:dialog(npc, "그런데 적군의 장수 중에서 해파리 장군이 그 정보를 알고 있다고 하더군", true, true)
     if btn == DIALOG_RESULT.QUIT then
         return
     end
     if btn == DIALOG_RESULT.PREV then
-        goto JELLYFISH_COS053
+        goto NPC_75_053
     end
     sel, list_btn = me:list(npc, "자네가 나서서 그 정보를 좀 알아와 줄 수 있는가?", { "물론입니다.", "별로 내키지 않는군요." }, false)
     if list_btn == DIALOG_RESULT.QUIT or sel == nil or sel ~= 0 then
@@ -666,7 +666,7 @@ local function run_jellyfish_complete(me, npc)
     if btn == DIALOG_RESULT.QUIT then
         return
     end
-    ::JELLYFISH_COS061::
+    ::NPC_75_061::
     local sel, list_btn = me:list(npc, "음....으으으........으윽...", { "앗! 무슨 일이십니까?" }, false)
     if list_btn == DIALOG_RESULT.QUIT or sel == nil or sel ~= 0 then
         return
@@ -683,13 +683,13 @@ local function run_jellyfish_complete(me, npc)
     if btn == DIALOG_RESULT.QUIT then
         return
     end
-    ::JELLYFISH_COS065::
+    ::NPC_75_065::
     btn = me:dialog(npc, "내 자네에게 보답으로 용왕의반지를 주겠네.", true, true)
     if btn == DIALOG_RESULT.QUIT then
         return
     end
     if btn == DIALOG_RESULT.PREV then
-        goto JELLYFISH_COS065
+        goto NPC_75_065
     end
     local quest = me:quest(QUEST_DRAGON_KING)
     if quest == nil then
@@ -726,50 +726,50 @@ local function run_crown_prince_accept(me, npc)
         return
     end
     local btn
-    ::CP_COS067::
+    ::NPC_75_067::
     btn = me:dialog(npc, "좀 나아진것 같기는 하구만. 신경 써 주어서 고맙다네.", false, true)
     if btn == DIALOG_RESULT.QUIT then
         return
     end
-    ::CP_COS068::
+    ::NPC_75_068::
     btn = me:dialog(npc, "청의태자가 아직 어릴 때 양자로 들여서 여태까지 그렇게 사랑을 쏟아부었는데 이럴줄은 몰랐네.", true, true)
     if btn == DIALOG_RESULT.QUIT then
         return
     end
     if btn == DIALOG_RESULT.PREV then
-        goto CP_COS067
+        goto NPC_75_067
     end
-    ::CP_COS069::
+    ::NPC_75_069::
     btn = me:dialog(npc, "하여간 충격에서 벗어나고 나니까 이제는 화가 치밀어 오르는구만.", true, true)
     if btn == DIALOG_RESULT.QUIT then
         return
     end
     if btn == DIALOG_RESULT.PREV then
-        goto CP_COS068
+        goto NPC_75_068
     end
-    ::CP_COS070::
+    ::NPC_75_070::
     btn = me:dialog(npc, "내 처음에는 그놈의 정에 이끌려서 청의태자가 도망가게 내버려 둘까 생각도 해 보았네만,", true, true)
     if btn == DIALOG_RESULT.QUIT then
         return
     end
     if btn == DIALOG_RESULT.PREV then
-        goto CP_COS069
+        goto NPC_75_069
     end
-    ::CP_COS071::
+    ::NPC_75_071::
     btn = me:dialog(npc, "얼마전에 인어장군이 심어놓은 첩자가 여의주를 훔쳐서 청의태자에게 도망가 버렸다네.", true, true)
     if btn == DIALOG_RESULT.QUIT then
         return
     end
     if btn == DIALOG_RESULT.PREV then
-        goto CP_COS070
+        goto NPC_75_070
     end
-    ::CP_COS072::
+    ::NPC_75_072::
     btn = me:dialog(npc, "이제는 용서하고 싶어도 용서할 수 없는 지경에 이르렀지.", true, true)
     if btn == DIALOG_RESULT.QUIT then
         return
     end
     if btn == DIALOG_RESULT.PREV then
-        goto CP_COS071
+        goto NPC_75_071
     end
     sel, list_btn = me:list(npc, "그래서 말인데 자네가 도와주던 김에 확실히 좀 도와주겠는가?", { "끝을 보는 게 옳겠지요.", "남의 가족사에는 끼고 싶지 않아요." }, false)
     if list_btn == DIALOG_RESULT.QUIT or sel == nil or sel ~= 0 then
@@ -782,14 +782,14 @@ local function run_crown_prince_accept(me, npc)
     quest:step(18)
     quest:progress(0)
     me:push_achievement(ACHIEVEMENT_DRAGON_KING, "청의태자 생포 임무를 받다. [1/2]", 7, 1)
-    ::CP_COS074::
+    ::NPC_75_074::
     btn = me:dialog(npc, "정말 고맙네. 고마워.", false, true)
     if btn == DIALOG_RESULT.QUIT then
         return
     end
     btn = me:dialog(npc, "가서 청의태자를 붙잡고 여의주를 되찾아 와 주시게", true, false)
     if btn == DIALOG_RESULT.PREV then
-        goto CP_COS074
+        goto NPC_75_074
     end
 end
 
@@ -865,33 +865,33 @@ local function run_crown_prince_complete(me, npc)
     if list_btn == DIALOG_RESULT.QUIT or sel == nil or sel ~= 0 then
         return
     end
-    ::CP_COS088::
+    ::NPC_75_088::
     btn = me:dialog(npc, "여의주. 그것은 우리 용궁에 있는 비보들을 한군데로 모을 수 있게 해 주는 힘을 가진 구슬이라네.", false, true)
     if btn == DIALOG_RESULT.QUIT then
         return
     end
-    ::CP_COS089::
+    ::NPC_75_089::
     btn = me:dialog(npc, "더 이상은 우리 용궁의 비밀이라 말해줄 수 없군.", true, true)
     if btn == DIALOG_RESULT.QUIT then
         return
     end
     if btn == DIALOG_RESULT.PREV then
-        goto CP_COS088
+        goto NPC_75_088
     end
-    ::CP_COS090::
+    ::NPC_75_090::
     btn = me:dialog(npc, "이제 반란이 자네의 덕분으로 무사히 진압이 되었네", true, true)
     if btn == DIALOG_RESULT.QUIT then
         return
     end
     if btn == DIALOG_RESULT.PREV then
-        goto CP_COS089
+        goto NPC_75_089
     end
     btn = me:dialog(npc, "내 감사의 뜻으로 이 용왕의투구를 주겠네.", true, true)
     if btn == DIALOG_RESULT.QUIT then
         return
     end
     if btn == DIALOG_RESULT.PREV then
-        goto CP_COS090
+        goto NPC_75_090
     end
     quest:step(20)
     quest:progress(0)

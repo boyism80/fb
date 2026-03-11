@@ -40,17 +40,19 @@ function NPC_621(me, npc)
     end
 
     local function do_craft(need_items, money_needed, product_name, rate_percent)
+        ::NPC_621_0001::
         local req_msg = string.format("[%s]을 만들기 위해서는 재료와 금전이 필요합니다. 성공률은 %d할입니다.", product_name, rate_percent)
         local btn = me:dialog(npc, req_msg, false, true)
         if btn == DIALOG_RESULT.QUIT then
             return
         end
+        ::NPC_621_0002::
         btn = me:dialog(npc, "실패하더라도 저를 너무 원망하지는 말아주세요...", true, true)
         if btn == DIALOG_RESULT.QUIT then
             return
         end
         if btn == DIALOG_RESULT.PREV then
-            return
+            goto NPC_621_0001
         end
         for item_name, need_count in pairs(need_items) do
             if not me:has_items(item_name, need_count) then
@@ -90,20 +92,36 @@ function NPC_621(me, npc)
     elseif craft_sel == 2 then
         local sex_name = (me:gender() == GENDER.MAN) and "남자" or "여자"
         local product = sex_name .. "표범가죽옷"
+        ::NPC_621_0003::
         local btn = me:dialog(npc, "[" .. product .. "] " .. name_with(product, '을', '를') .. " 만들기 위해서는, [담비가죽] 100개, [흑담비가죽] 100개, [표범의가죽] 100개 그리고 금전 250만전 을 주셔야 합니다.", false, true)
-        if btn == DIALOG_RESULT.QUIT then return end
+        if btn == DIALOG_RESULT.QUIT then
+            return
+        end
+        ::NPC_621_0004::
         btn = me:dialog(npc, "성공률은 3할로, 실패하더라도 저를 너무 원망하지는 말아주세요...", true, true)
-        if btn == DIALOG_RESULT.QUIT then return end
-        if btn == DIALOG_RESULT.PREV then return end
+        if btn == DIALOG_RESULT.QUIT then
+            return
+        end
+        if btn == DIALOG_RESULT.PREV then
+            goto NPC_621_0003
+        end
         do_craft({ ["담비가죽"] = 100, ["흑담비가죽"] = 100, ["표범의가죽"] = 100 }, 2500000, product, 30)
     elseif craft_sel == 3 then
         local sex_name = (me:gender() == GENDER.MAN) and "남자" or "여자"
         local product = sex_name .. "곰가죽옷"
+        ::NPC_621_0005::
         local btn = me:dialog(npc, "[" .. product .. "] " .. name_with(product, '을', '를') .. " 만들기 위해서는, [담비가죽] 100개, [흑담비가죽] 30개, [백두곰가죽] 100개 그리고 금전 100만전 을 주셔야 합니다.", false, true)
-        if btn == DIALOG_RESULT.QUIT then return end
+        if btn == DIALOG_RESULT.QUIT then
+            return
+        end
+        ::NPC_621_0006::
         btn = me:dialog(npc, "성공률은 3할로, 실패하더라도 저를 너무 원망하지는 말아주세요...", true, true)
-        if btn == DIALOG_RESULT.QUIT then return end
-        if btn == DIALOG_RESULT.PREV then return end
+        if btn == DIALOG_RESULT.QUIT then
+            return
+        end
+        if btn == DIALOG_RESULT.PREV then
+            goto NPC_621_0005
+        end
         do_craft({ ["담비가죽"] = 100, ["흑담비가죽"] = 30, ["백두곰가죽"] = 100 }, 1000000, product, 30)
     elseif craft_sel == 4 then
         do_craft({ ["올빼미의깃털"] = 100, ["청원앙의깃털"] = 10 }, 2000000, "원앙청선", 10)

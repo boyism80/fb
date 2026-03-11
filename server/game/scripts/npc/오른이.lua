@@ -51,7 +51,7 @@ local function handle_jingogyun_lt1(me, npc)
     if not run_dialogs(me, npc, c) then
         return
     end
-    me:dialog(npc, "(당신은 똑같은 얼굴들이 똑같은 목소리로 똑같은 이야기를 반복하는 모습을 지켜보다가 질려서 듣기를 멈추었다.)", true, false)
+    me:dialog(npc, "(당신은 똑같은 얼굴들이 똑같은 목소리로 똑같은 이야기를 반복하는 모습을 지켜보다가 질려서 듣기를 멈추었다.)", false, false)
 end
 
 local function handle_jingogyun_1(me, npc, q_jingo)
