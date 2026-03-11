@@ -98,7 +98,7 @@ public:
         };
 
         auto unique_lock = std::unique_lock<std::shared_mutex>(this->_hook_mutex);
-        this->_test_hooks[test][ResponseType::header].push_back(hook_func);
+        this->_test_hooks[test][ResponseType::opcode].push_back(hook_func);
     }
 };
 

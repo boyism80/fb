@@ -1,6 +1,5 @@
-using Http.Redis;
 using Newtonsoft.Json;
-using StackExchange.Redis;
+using System.Text;
 
 namespace Http.Service
 {
@@ -31,29 +30,28 @@ namespace Http.Service
 
     /// <summary>
     /// Provides write-back functionality for deferred database operations.
-    /// Queues database operations in Redis for asynchronous processing to improve performance.
+    /// Queues database operations in RabbitMQ for asynchronous processing by the write-back service.
     /// </summary>
     public class WriteBackService
     {
-        private readonly RedisService _redisService;
+        private readonly RabbitMqService _rabbitMqService;
         private readonly DbContext _dbContext;
         private readonly IConfiguration _configuration;
         private readonly ILogger<WriteBackService> _logger;
-        private static readonly TimeSpan _delay = TimeSpan.FromMilliseconds(500);
 
         /// <summary>
         /// Initializes a new instance of the <see cref="WriteBackService"/> class.
         /// </summary>
-        /// <param name="redisService">The Redis service for queue operations.</param>
+        /// <param name="rabbitMqService">The RabbitMQ service for publishing write-back messages.</param>
         /// <param name="configuration">The application configuration.</param>
         /// <param name="serviceProvider">The service provider for dependency injection.</param>
         /// <param name="logger">The logger for recording write-back operations and errors.</param>
-        public WriteBackService(RedisService redisService,
+        public WriteBackService(RabbitMqService rabbitMqService,
             IConfiguration configuration,
             IServiceProvider serviceProvider,
             ILogger<WriteBackService> logger)
         {
-            _redisService = redisService;
+            _rabbitMqService = rabbitMqService;
             _configuration = configuration;
             _logger = logger;
             _dbContext = ActivatorUtilities.CreateInstance<DbContext>(serviceProvider);
@@ -69,21 +67,25 @@ namespace Http.Service
         /// <param name="key">The Redis key associated with this operation.</param>
         /// <param name="hash">The hash value for sharding.</param>
         /// <returns>A task representing the asynchronous queue operation.</returns>
-        public async Task Post(uint world, int db, string sql, string key, uint? hash)
+        public Task Post(uint world, int db, string sql, string key, uint? hash)
         {
-            var bufferKey = $"{Const.RedisBufferKey}:{db}";
-            var redisInstance = db == -1 ? _redisService.GetGlobalConnection(world) : _redisService.GetDataConnection(world, db);
-            if (redisInstance == null)
-                return;
-            var redis = redisInstance.Connection;
-            await redis.ListRightPushAsync(
-                new RedisKey(bufferKey),
-                new RedisValue(JsonConvert.SerializeObject(new BackgroundCommitEntry
+            try
+            {
+                var json = JsonConvert.SerializeObject(new BackgroundCommitEntry
                 {
                     SQL = sql,
                     RedisKey = key,
                     Hash = hash
-                })));
+                });
+                var body = Encoding.UTF8.GetBytes(json);
+                _rabbitMqService.PublishWriteBack(world, db, body);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogWarning(ex, "Failed to publish write-back message for world {World} db {Db}", world, db);
+            }
+
+            return Task.CompletedTask;
         }
 
         /// <summary>

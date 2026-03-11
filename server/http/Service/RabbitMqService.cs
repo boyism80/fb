@@ -13,6 +13,7 @@ namespace Http.Service
         private readonly IConfiguration _configuration;
         private readonly Lazy<IConnection> _connection;
         private readonly Lazy<IModel> _channel;
+        private readonly object _writeBackLock = new object();
 
         /// <summary>
         /// Initializes a new instance of the <see cref="RabbitMqService"/> class.
@@ -68,6 +69,48 @@ namespace Http.Service
         {
             var channel = _channel.Value;
             channel.BasicPublish(exchange: exchangeName, routingKey: routeKey, basicProperties: null, body: protocol.ToBytes());
+        }
+
+        /// <summary>
+        /// Name of the write-back exchange (direct, durable).
+        /// </summary>
+        public const string WriteBackExchangeName = "write-back";
+
+        /// <summary>
+        /// Builds the write-back queue name for the given world and database shard.
+        /// </summary>
+        /// <param name="world">The world identifier.</param>
+        /// <param name="db">The database shard (-1 for global, 0-based for data).</param>
+        /// <returns>Queue name used for both binding and routing key.</returns>
+        public static string GetWriteBackQueueName(uint world, int db)
+        {
+            return $"{WriteBackExchangeName}.{world}.{db}";
+        }
+
+        /// <summary>
+        /// Publishes a write-back entry to the RabbitMQ queue for the given world and database shard.
+        /// Declares the write-back exchange and queue if they do not exist (idempotent).
+        /// Uses RabbitMQ:Internal connection.
+        /// </summary>
+        /// <param name="world">The world identifier (e.g., 1, 2).</param>
+        /// <param name="db">The database shard identifier (-1 for global, 0-based for data).</param>
+        /// <param name="body">The message body (typically JSON-serialized BackgroundCommitEntry).</param>
+        public void PublishWriteBack(uint world, int db, byte[] body)
+        {
+            if (body == null || body.Length == 0)
+                return;
+
+            lock (_writeBackLock)
+            {
+                var channel = _channel.Value;
+                channel.ExchangeDeclare(WriteBackExchangeName, ExchangeType.Direct, durable: true);
+                var queueName = GetWriteBackQueueName(world, db);
+                channel.QueueDeclare(queue: queueName, durable: true, exclusive: false, autoDelete: false, arguments: null);
+                channel.QueueBind(queueName, WriteBackExchangeName, queueName);
+                var props = channel.CreateBasicProperties();
+                props.Persistent = true;
+                channel.BasicPublish(WriteBackExchangeName, queueName, props, body);
+            }
         }
     }
 }

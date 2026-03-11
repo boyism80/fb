@@ -117,7 +117,7 @@ public:
     {
         {
             auto shared_lock = std::shared_lock<std::shared_mutex>(this->_handler_mutex);
-            if (this->_handler.contains(ResponseType::header))
+            if (this->_handler.contains(ResponseType::opcode))
                 return;
         }
 
@@ -282,28 +282,28 @@ public:
     {
         static_assert(std::is_base_of_v<fb::protocol::header, ResponseType>,
                       "ResponseType must inherit from fb::protocol::header");
-        static_assert(std::is_same_v<decltype(ResponseType::header), const uint8_t>,
+        static_assert(std::is_same_v<decltype(ResponseType::opcode), const uint8_t>,
                       "ResponseType must have 'static constexpr uint8_t header' member");
 
         auto unique_lock = std::unique_lock<std::shared_mutex>(this->_handler_mutex);
 
         this->_deserializer.insert(
-            {ResponseType::header, [](auto& reader) -> async::task<std::shared_ptr<fb::protocol::header>> {
+            {ResponseType::opcode, [](auto& reader) -> async::task<std::shared_ptr<fb::protocol::header>> {
                  auto protocol = std::make_shared<ResponseType>();
                  co_await protocol->deserialize(reader);
                  co_return protocol;
              }});
 
         this->_handler.insert(
-            {ResponseType::header, [this, fn = std::move(fn)](auto& bot, auto& header) -> async::task<void> {
+            {ResponseType::opcode, [this, fn = std::move(fn)](auto& bot, auto& header) -> async::task<void> {
                  auto          protocol   = static_cast<ResponseType&>(header);
                  volatile auto controller = this;
 
                  co_await fn(bot, protocol);
 
-                 co_await controller->on_integration_hook_execution(ResponseType::header, bot, header);
+                 co_await controller->on_integration_hook_execution(ResponseType::opcode, bot, header);
 
-                 bot.process_hooks(ResponseType::header, header);
+                 bot.process_hooks(ResponseType::opcode, header);
              }});
     }
 
@@ -312,7 +312,7 @@ public:
     {
         static_assert(std::is_base_of_v<fb::protocol::header, ResponseType>,
                       "ResponseType must inherit from fb::protocol::header");
-        static_assert(std::is_same_v<decltype(ResponseType::header), const uint8_t>,
+        static_assert(std::is_same_v<decltype(ResponseType::opcode), const uint8_t>,
                       "ResponseType must have 'static constexpr uint8_t header' member");
 
         this->bind<ResponseType>(std::function<async::task<void>(BotType&, ResponseType&)>(
@@ -384,7 +384,7 @@ async::task<ResponseType> bot<BotType>::request(std::shared_ptr<BotType>        
 
     auto self_ptr = std::static_pointer_cast<BotType>(target->shared_from_this());
     auto context =
-        std::make_shared<typename BotType::template request_context<ResponseType>>(self_ptr, ResponseType::header);
+        std::make_shared<typename BotType::template request_context<ResponseType>>(self_ptr, ResponseType::opcode);
 
     if (timeout > 0s)
     {
@@ -401,19 +401,19 @@ async::task<ResponseType> bot<BotType>::request(std::shared_ptr<BotType>        
         });
     }
 
-    if (target->_hooks.contains(ResponseType::header) == false)
-        target->_hooks.insert({ResponseType::header, {}});
+    if (target->_hooks.contains(ResponseType::opcode) == false)
+        target->_hooks.insert({ResponseType::opcode, {}});
 
-    target->_hooks[ResponseType::header].push_back(hook_params{.condition =
-                                                                   [context, condition](const auto& header) {
+    target->_hooks[ResponseType::opcode].push_back(hook_params{.condition =
+                                                                   [context, condition](const auto& opcode) {
                                                                        auto& protocol =
-                                                                           static_cast<const ResponseType&>(header);
+                                                                           static_cast<const ResponseType&>(opcode);
                                                                        return condition(protocol);
                                                                    },
                                                                .matched =
-                                                                   [context](const auto& header) {
+                                                                   [context](const auto& opcode) {
                                                                        auto& protocol =
-                                                                           static_cast<const ResponseType&>(header);
+                                                                           static_cast<const ResponseType&>(opcode);
                                                                        context->complete_success(protocol);
                                                                    },
                                                                .context_ptr = context.get()});
