@@ -179,10 +179,10 @@ namespace WriteBack.Service
             try
             {
                 channel = _rabbitMqConnection.CreateModel();
-                channel.ExchangeDeclare(Http.Service.RabbitMqService.WriteBackExchangeName, ExchangeType.Direct, durable: true);
-                queueName = Http.Service.RabbitMqService.GetWriteBackQueueName(_world, db);
+                channel.ExchangeDeclare(Http.Service.WriteBackService.WriteBackExchangeName, ExchangeType.Direct, durable: true);
+                queueName = Http.Service.WriteBackService.GetWriteBackQueueName(_world, db);
                 channel.QueueDeclare(queue: queueName, durable: true, exclusive: false, autoDelete: false, arguments: null);
-                channel.QueueBind(queueName, Http.Service.RabbitMqService.WriteBackExchangeName, queueName);
+                channel.QueueBind(queueName, Http.Service.WriteBackService.WriteBackExchangeName, queueName);
             }
             catch (Exception ex)
             {
