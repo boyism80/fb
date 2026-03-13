@@ -121,8 +121,9 @@ local function run_dragon_weapon_awaken(me, npc)
     end
     local roll = math.random(1, 100)
     me:rmitem({ ['얼음'] = 1, ['은나무가지'] = 1, [check_item] = 1 }, ITEM_DELETE_TYPE.GIVE)
-    me:base_hp(me:base_hp() - 1000)
-    me:hp(me:maxhp())
+    me:base_hp(me:base_hp() - 1000, false)
+    me:hp(me:maxhp(), false)
+    me:update()
     if roll <= rate then
         broadcast(string.format('%s님이 %s 강화에 성공하셨습니다.', me:name(), check_item), MESSAGE_TYPE.WORLD, BROADCAST_TYPE.WORLD)
         me:mkitem(success_item, 1)

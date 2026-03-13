@@ -247,10 +247,10 @@ async::task<std::shared_ptr<character>> login::init(const game_reqs::login& requ
     auto weak = ch->weak_from_this_as<character>();
     co_await this->server.threads.switching(weak);
     ch->items.deposited(resp.character.deposited_money);
-    ch->stat.base_hp(resp.character.base_hp);
-    ch->stat.hp(resp.character.hp);
-    ch->stat.base_mp(resp.character.base_mp);
-    ch->stat.mp(resp.character.mp);
+    ch->stat.base_hp(resp.character.base_hp, false);
+    ch->stat.hp(resp.character.hp, false);
+    ch->stat.base_mp(resp.character.base_mp, false);
+    ch->stat.mp(resp.character.mp, false);
 
     auto thread = this->server.maps[map]->thread();
     ch->thread(thread);

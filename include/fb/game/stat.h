@@ -91,18 +91,19 @@ public:
     virtual uint32_t buff_regenerative() const;
     virtual void     buff_regenerative(uint32_t value);
     virtual uint32_t hp() const;
-    virtual void     hp(uint32_t value);
-    virtual uint32_t heal(uint32_t value, fb::game::object* from = nullptr);
+    virtual void     hp(uint32_t value, bool notify = true);
+    virtual uint32_t heal(uint32_t value, fb::game::object* from = nullptr, bool notify = true);
     virtual uint32_t damage(uint32_t                          value,
                             std::shared_ptr<fb::game::object> from     = nullptr,
                             bool                              critical = false,
                             float                             rate     = 1.0f,
                             bool                              physical = true,
-                            bool                              fixed    = false);
+                            bool                              fixed    = false,
+                            bool                              notify   = true);
     virtual uint32_t mp() const;
-    virtual void     mp(uint32_t value);
-    virtual uint32_t mp_up(uint32_t value, fb::game::object* from = nullptr);
-    virtual uint32_t mp_down(uint32_t value, fb::game::object* from = nullptr);
+    virtual void     mp(uint32_t value, bool notify = true);
+    virtual uint32_t mp_up(uint32_t value, fb::game::object* from = nullptr, bool notify = true);
+    virtual uint32_t mp_down(uint32_t value, fb::game::object* from = nullptr, bool notify = true);
     virtual uint32_t maxhp() const;
     virtual uint32_t maxmp() const;
     virtual uint8_t  str() const;
@@ -137,16 +138,16 @@ public:
     ~character_stat() = default;
 
 public:
-    void             base_hp(uint32_t value);
-    void             base_mp(uint32_t value);
-    void             base_str(uint8_t value);
-    void             base_dex(uint8_t value);
-    void             base_int(uint8_t value);
-    void             base_phydef(int8_t value);
-    void             base_magdef(int8_t value);
-    void             base_dam(uint8_t value);
-    void             base_hit(uint8_t value);
-    void             base_regenerative(uint32_t value);
+    void             base_hp(uint32_t value, bool notify = true);
+    void             base_mp(uint32_t value, bool notify = true);
+    void             base_str(uint8_t value, bool notify = true);
+    void             base_dex(uint8_t value, bool notify = true);
+    void             base_int(uint8_t value, bool notify = true);
+    void             base_phydef(int8_t value, bool notify = true);
+    void             base_magdef(int8_t value, bool notify = true);
+    void             base_dam(uint8_t value, bool notify = true);
+    void             base_hit(uint8_t value, bool notify = true);
+    void             base_regenerative(uint32_t value, bool notify = true);
     uint32_t         base_hp() const;
     uint32_t         base_mp() const;
     uint8_t          base_str() const;
@@ -172,7 +173,8 @@ public:
                             bool                              critical = false,
                             float                             rate     = 1.0f,
                             bool                              physical = true,
-                            bool                              fixed    = false) override final;
+                            bool                              fixed    = false,
+                            bool                              notify   = true) override final;
 };
 
 class mob_stat : public stat
@@ -202,7 +204,8 @@ public:
                     bool                              critical = false,
                     float                             rate     = 1.0f,
                     bool                              physical = true,
-                    bool                              fixed    = false) override final;
+                    bool                              fixed    = false,
+                    bool                              notify   = true) override final;
 };
 
 } // namespace fb::game

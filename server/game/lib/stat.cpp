@@ -169,19 +169,19 @@ uint32_t fb::game::stat::hp() const
     return this->_hp;
 }
 
-void fb::game::stat::hp(uint32_t value)
+void fb::game::stat::hp(uint32_t value, bool notify)
 {
     this->owner.assert_thread();
     this->_hp = value;
-    this->owner.update(UPDATE_STATE_LEVEL::HP_MP);
+    this->owner.update(UPDATE_STATE_LEVEL::HP_MP, notify);
 }
 
-uint32_t fb::game::stat::heal(uint32_t value, fb::game::object* from)
+uint32_t fb::game::stat::heal(uint32_t value, fb::game::object* from, bool notify)
 {
     this->owner.assert_thread();
     auto before = this->hp();
-    this->hp(this->hp() + std::min(value, this->maxhp() - this->hp()));
-    this->owner.update_hp(this->hp() - before, false);
+    this->hp(this->hp() + std::min(value, this->maxhp() - this->hp()), notify);
+    this->owner.update_hp(this->hp() - before, false, notify);
     return this->hp() - before;
 }
 
@@ -190,7 +190,8 @@ uint32_t fb::game::stat::damage(uint32_t                          value,
                                 bool                              critical,
                                 float                             rate,
                                 bool                              physical,
-                                bool                              fixed)
+                                bool                              fixed,
+                                bool                              notify)
 {
     this->owner.assert_thread();
     if (from != nullptr && from->is(OBJECT_TYPE::CHARACTER))
@@ -216,8 +217,8 @@ uint32_t fb::game::stat::damage(uint32_t                          value,
     }
 
     auto before = this->hp();
-    this->hp(this->hp() - std::min(final_value, this->hp()));
-    this->owner.update_hp(before - this->hp(), critical);
+    this->hp(this->hp() - std::min(final_value, this->hp()), notify);
+    this->owner.update_hp(before - this->hp(), critical, notify);
     return before - this->hp();
 }
 
@@ -227,26 +228,26 @@ uint32_t fb::game::stat::mp() const
     return this->_mp;
 }
 
-void fb::game::stat::mp(uint32_t value)
+void fb::game::stat::mp(uint32_t value, bool notify)
 {
     this->owner.assert_thread();
     this->_mp = value;
-    this->owner.update(UPDATE_STATE_LEVEL::HP_MP);
+    this->owner.update(UPDATE_STATE_LEVEL::HP_MP, notify);
 }
 
-uint32_t fb::game::stat::mp_up(uint32_t value, fb::game::object* from)
+uint32_t fb::game::stat::mp_up(uint32_t value, fb::game::object* from, bool notify)
 {
     this->owner.assert_thread();
     auto before = this->mp();
-    this->mp(this->mp() + std::min(value, this->maxmp() - this->mp()));
+    this->mp(this->mp() + std::min(value, this->maxmp() - this->mp()), notify);
     return this->mp() - before;
 }
 
-uint32_t fb::game::stat::mp_down(uint32_t value, fb::game::object* from)
+uint32_t fb::game::stat::mp_down(uint32_t value, fb::game::object* from, bool notify)
 {
     this->owner.assert_thread();
     auto before = this->mp();
-    this->mp(this->mp() - std::min(value, this->mp()));
+    this->mp(this->mp() - std::min(value, this->mp()), notify);
     return before - this->mp();
 }
 
@@ -367,7 +368,7 @@ character_stat::character_stat(character& owner) :
     owner(owner)
 { }
 
-void character_stat::base_hp(uint32_t value)
+void character_stat::base_hp(uint32_t value, bool notify)
 {
     this->owner.assert_thread();
 
@@ -376,7 +377,7 @@ void character_stat::base_hp(uint32_t value)
 
     auto old_base_hp = this->_max_hp;
     this->_max_hp    = value;
-    this->owner.update(UPDATE_STATE_LEVEL::BASED);
+    this->owner.update(UPDATE_STATE_LEVEL::BASED, notify);
 
     auto log_data              = Json::Value();
     log_data["character_id"]   = static_cast<Json::Int64>(this->owner.id);
@@ -386,7 +387,7 @@ void character_stat::base_hp(uint32_t value)
     this->owner.server.log.write("base_hp_change", log_data);
 }
 
-void character_stat::base_mp(uint32_t value)
+void character_stat::base_mp(uint32_t value, bool notify)
 {
     this->owner.assert_thread();
 
@@ -395,7 +396,7 @@ void character_stat::base_mp(uint32_t value)
 
     auto old_base_mp = this->_max_mp;
     this->_max_mp    = value;
-    this->owner.update(UPDATE_STATE_LEVEL::BASED);
+    this->owner.update(UPDATE_STATE_LEVEL::BASED, notify);
 
     auto log_data              = Json::Value();
     log_data["character_id"]   = static_cast<Json::Int64>(this->owner.id);
@@ -405,53 +406,53 @@ void character_stat::base_mp(uint32_t value)
     this->owner.server.log.write("base_mp_change", log_data);
 }
 
-void character_stat::base_str(uint8_t value)
+void character_stat::base_str(uint8_t value, bool notify)
 {
     this->owner.assert_thread();
     this->_str = value;
-    this->owner.update(UPDATE_STATE_LEVEL::BASED);
+    this->owner.update(UPDATE_STATE_LEVEL::BASED, notify);
 }
 
-void character_stat::base_dex(uint8_t value)
+void character_stat::base_dex(uint8_t value, bool notify)
 {
     this->owner.assert_thread();
     this->_dex = value;
-    this->owner.update(UPDATE_STATE_LEVEL::BASED);
+    this->owner.update(UPDATE_STATE_LEVEL::BASED, notify);
 }
 
-void character_stat::base_int(uint8_t value)
+void character_stat::base_int(uint8_t value, bool notify)
 {
     this->owner.assert_thread();
     this->_int = value;
-    this->owner.update(UPDATE_STATE_LEVEL::BASED);
+    this->owner.update(UPDATE_STATE_LEVEL::BASED, notify);
 }
 
-void character_stat::base_phydef(int8_t value)
+void character_stat::base_phydef(int8_t value, bool notify)
 {
     this->owner.assert_thread();
     this->_phydef = value;
-    this->owner.update(UPDATE_STATE_LEVEL::BASED);
+    this->owner.update(UPDATE_STATE_LEVEL::BASED, notify);
 }
 
-void character_stat::base_magdef(int8_t value)
+void character_stat::base_magdef(int8_t value, bool notify)
 {
     this->owner.assert_thread();
     this->_magdef = value;
 }
 
-void character_stat::base_dam(uint8_t value)
+void character_stat::base_dam(uint8_t value, bool notify)
 {
     this->owner.assert_thread();
     this->_dam = value;
 }
 
-void character_stat::base_hit(uint8_t value)
+void character_stat::base_hit(uint8_t value, bool notify)
 {
     this->owner.assert_thread();
     this->_hit = value;
 }
 
-void character_stat::base_regenerative(uint32_t value)
+void character_stat::base_regenerative(uint32_t value, bool notify)
 {
     this->owner.assert_thread();
     this->_regenerative = value;
@@ -745,14 +746,15 @@ uint32_t character_stat::damage(uint32_t                          value,
                                 bool                              critical,
                                 float                             rate,
                                 bool                              physical,
-                                bool                              fixed)
+                                bool                              fixed,
+                                bool                              notify)
 {
     this->owner.assert_thread();
 
     if (this->owner.alive() == false)
         return 0;
 
-    auto result = fb::game::stat::damage(value, from, critical, rate, physical, fixed);
+    auto result = fb::game::stat::damage(value, from, critical, rate, physical, fixed, notify);
     if (from == nullptr)
         return result;
 
@@ -883,11 +885,11 @@ uint32_t mob_stat::base_regenerative() const
 }
 
 uint32_t
-mob_stat::damage(uint32_t value, std::shared_ptr<object> from, bool critical, float rate, bool physical, bool fixed)
+mob_stat::damage(uint32_t value, std::shared_ptr<object> from, bool critical, float rate, bool physical, bool fixed, bool notify)
 {
     this->owner.assert_thread();
 
-    auto result = fb::game::stat::damage(value, from, critical, rate, physical, fixed);
+    auto result = fb::game::stat::damage(value, from, critical, rate, physical, fixed, notify);
     if (!this->owner.alive())
     {
         this->owner.kill(from, DESTROY_TYPE::DEAD);

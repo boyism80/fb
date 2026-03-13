@@ -448,14 +448,16 @@ bool character::level_up()
         return false;
 
     auto& ability = table::ability[this->_class][this->_level];
-    this->stat.base_str(this->stat.base_str() + ability.strength);
-    this->stat.base_int(this->stat.base_int() + ability.intelligence);
-    this->stat.base_dex(this->stat.base_dex() + ability.dexterity);
-    this->stat.base_hp(this->stat.base_hp() + ability.hp + std::rand() % 10);
-    this->stat.base_mp(this->stat.base_mp() + ability.mp + std::rand() % 10);
-
-    this->stat.hp(this->stat.base_hp());
-    this->stat.mp(this->stat.base_mp());
+    {
+        auto batch = this->batch_update();
+        this->stat.base_str(this->stat.base_str() + ability.strength);
+        this->stat.base_int(this->stat.base_int() + ability.intelligence);
+        this->stat.base_dex(this->stat.base_dex() + ability.dexterity);
+        this->stat.base_hp(this->stat.base_hp() + ability.hp + std::rand() % 10);
+        this->stat.base_mp(this->stat.base_mp() + ability.mp + std::rand() % 10);
+        this->stat.hp(this->stat.base_hp());
+        this->stat.mp(this->stat.base_mp());
+    }
 
     auto old_level = this->_level;
     this->level(this->_level + 1);
@@ -1374,9 +1376,19 @@ void character::assert_thread() const
     object::assert_thread();
 }
 
-void character::update(UPDATE_STATE_LEVEL value)
+void character::update(UPDATE_STATE_LEVEL value, bool notify)
 {
     this->assert_thread();
+
+    if (!notify)
+        return;
+
+    if (this->_batch_mode)
+    {
+        this->_pending_update |= value;
+        return;
+    }
+
     this->listener.on_update(*this, value);
 }
 

@@ -58,6 +58,7 @@ IMPLEMENT_LUA_EXTENSION(fb::game::life, "fb.game.life")
 {"buff_hit",             builtin::life::builtin_buff_hit},
 {"hit",                  builtin::life::builtin_hit},
 {"normal_attack_damage", builtin::life::builtin_normal_attack_damage},
+{"update",               builtin::life::builtin_update},
 END_LUA_EXTENSION; // clang-format on
 
 int builtin::life::builtin_message(lua_State* L)
@@ -114,10 +115,11 @@ int builtin::life::builtin_hp(lua_State* L)
     }
     else
     {
-        auto value = (uint32_t)lua->tointeger(2);
-        auto weak  = obj->weak_from_this();
+        auto value  = (uint32_t)lua->tointeger(2);
+        auto notify = argc < 3 || lua->toboolean(3);
+        auto weak   = obj->weak_from_this();
         return lua->ensure_yield(*server, weak, [=](auto is_yield) {
-            obj->stat.hp(value);
+            obj->stat.hp(value, notify);
 
             return lua->ensure_resume(*server, weak, [=]() {
                 return 0;
@@ -152,10 +154,11 @@ int builtin::life::builtin_mp(lua_State* L)
     }
     else
     {
-        auto value = (uint32_t)lua->tointeger(2);
-        auto weak  = obj->weak_from_this();
+        auto value  = (uint32_t)lua->tointeger(2);
+        auto notify = argc < 3 || lua->toboolean(3);
+        auto weak   = obj->weak_from_this();
         return lua->ensure_yield(*server, weak, [=](auto is_yield) {
-            obj->stat.mp(value);
+            obj->stat.mp(value, notify);
 
             return lua->ensure_resume(*server, weak, [=]() {
                 return 0;
@@ -176,10 +179,11 @@ int builtin::life::builtin_heal(lua_State* L)
     if (obj == nullptr)
         return 0;
 
-    auto value = (uint32_t)lua->tointeger(2);
-    auto weak  = obj->weak_from_this();
+    auto value  = (uint32_t)lua->tointeger(2);
+    auto notify = argc < 3 || lua->toboolean(3);
+    auto weak   = obj->weak_from_this();
     return lua->ensure_yield(*server, weak, [=](auto is_yield) {
-        obj->stat.heal(value);
+        obj->stat.heal(value, nullptr, notify);
         return lua->ensure_resume(*server, weak, [=]() {
             return 0;
         });
@@ -205,6 +209,7 @@ int builtin::life::builtin_damage(lua_State* L)
     bool  physical = true;
     bool  fixed    = false;
 
+    auto notify = true;
     if (argc >= 4 && lua_istable(L, 4))
     {
         lua_pushstring(L, "critical");
@@ -230,11 +235,17 @@ int builtin::life::builtin_damage(lua_State* L)
         if (!lua_isnil(L, -1))
             fixed = lua_toboolean(L, -1) != 0;
         lua_pop(L, 1);
+
+        lua_pushstring(L, "notify");
+        lua_rawget(L, 4);
+        if (!lua_isnil(L, -1))
+            notify = lua_toboolean(L, -1) != 0;
+        lua_pop(L, 1);
     }
 
     auto weak = obj->weak_from_this();
     return lua->ensure_yield(*server, weak, [=](auto is_yield) {
-        obj->stat.damage(value, from, critical, rate, physical, fixed);
+        obj->stat.damage(value, from, critical, rate, physical, fixed, notify);
         return lua->ensure_resume(*server, weak, [=]() {
             return 0;
         });
@@ -253,10 +264,11 @@ int builtin::life::builtin_mp_up(lua_State* L)
     if (obj == nullptr)
         return 0;
 
-    auto value = (uint32_t)lua->tointeger(2);
-    auto weak  = obj->weak_from_this();
+    auto value  = (uint32_t)lua->tointeger(2);
+    auto notify = argc < 3 || lua->toboolean(3);
+    auto weak   = obj->weak_from_this();
     return lua->ensure_yield(*server, weak, [=](auto is_yield) {
-        obj->stat.mp_up(value);
+        obj->stat.mp_up(value, nullptr, notify);
         return lua->ensure_resume(*server, weak, [=]() {
             return 0;
         });
@@ -275,10 +287,11 @@ int builtin::life::builtin_mp_down(lua_State* L)
     if (obj == nullptr)
         return 0;
 
-    auto value = (uint32_t)lua->tointeger(2);
-    auto weak  = obj->weak_from_this();
+    auto value  = (uint32_t)lua->tointeger(2);
+    auto notify = argc < 3 || lua->toboolean(3);
+    auto weak   = obj->weak_from_this();
     return lua->ensure_yield(*server, weak, [=](auto is_yield) {
-        obj->stat.mp_down(value);
+        obj->stat.mp_down(value, nullptr, notify);
         return lua->ensure_resume(*server, weak, [=]() {
             return 0;
         });
@@ -1589,6 +1602,29 @@ int builtin::life::builtin_normal_attack_damage(lua_State* L)
         return lua->ensure_resume(*server, weak, [=]() {
             lua->pushinteger(damage);
             return 1;
+        });
+    });
+}
+
+int builtin::life::builtin_update(lua_State* L)
+{
+    auto lua = fb::lua::get(L);
+    if (lua == nullptr)
+        return 0;
+
+    auto server = lua->env<fb::game::server>("server");
+    auto argc   = lua->argc();
+    auto obj    = lua->touserdata<fb::game::life>(1);
+    if (obj == nullptr)
+        return 0;
+
+    auto level = argc >= 2 ? lua->toenum(2, UPDATE_STATE_LEVEL::HP_MP | UPDATE_STATE_LEVEL::BASED)
+                           : UPDATE_STATE_LEVEL::HP_MP | UPDATE_STATE_LEVEL::BASED;
+    auto weak  = obj->weak_from_this();
+    return lua->ensure_yield(*server, weak, [=](auto is_yield) {
+        obj->update(level);
+        return lua->ensure_resume(*server, weak, [=]() {
+            return 0;
         });
     });
 }

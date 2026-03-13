@@ -21,8 +21,9 @@ function ON_CAST_4002(me, spell)
         return me:message('정신집중에 실패하였습니다.')
     end
 
-    me:mp(me:maxmp())
-    me:hp(math.max(100, me:hp() - math.floor(me:maxmp() * 0.4)))
+    me:mp(me:maxmp(), false)
+    me:hp(math.max(100, me:hp() - math.floor(me:maxmp() * 0.4)), false)
+    me:update()
     me:effect(effect)
     me:sound(sound)
     me:message(string.format('%s 외웠습니다.', name_with(spell:name())))

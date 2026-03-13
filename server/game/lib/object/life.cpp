@@ -21,12 +21,38 @@ void life::on_init()
     this->spells.owner(this->shared_from_this_as<life>());
 }
 
-void life::update(UPDATE_STATE_LEVEL value)
+void life::update(UPDATE_STATE_LEVEL value, bool notify)
 { }
 
-void life::update_hp(uint32_t diff, bool critical)
+void life::update_hp(uint32_t diff, bool critical, bool notify)
 {
+    if (!notify)
+        return;
+
     this->listener.on_update_hp(*this, diff, critical);
+}
+
+life::batch_update_guard life::batch_update()
+{
+    return batch_update_guard(*this);
+}
+
+life::batch_update_guard::batch_update_guard(life& owner) :
+    _owner(owner)
+{
+    this->_owner._batch_mode     = true;
+    this->_owner._pending_update = UPDATE_STATE_LEVEL::MINIMUM;
+}
+
+life::batch_update_guard::~batch_update_guard()
+{
+    this->_owner._batch_mode = false;
+    if (this->_owner._pending_update != UPDATE_STATE_LEVEL::MINIMUM)
+    {
+        auto pending                 = this->_owner._pending_update;
+        this->_owner._pending_update = UPDATE_STATE_LEVEL::MINIMUM;
+        this->_owner.update(pending);
+    }
 }
 
 void life::kill(std::shared_ptr<fb::game::object> from, DESTROY_TYPE destroy_type)

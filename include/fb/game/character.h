@@ -175,7 +175,7 @@ public:
     bool                                               condition(const std::vector<fb::model::dsl>& conditions) const override final;
     fb::thread*                                        thread() const override final;
     void                                               assert_thread() const override final;
-    void                                               update(UPDATE_STATE_LEVEL value = UPDATE_STATE_LEVEL::EXP_MONEY | UPDATE_STATE_LEVEL::CROWD_CONTROL) override final;
+    void                                               update(UPDATE_STATE_LEVEL value = UPDATE_STATE_LEVEL::EXP_MONEY | UPDATE_STATE_LEVEL::CROWD_CONTROL, bool notify = true) override final;
     void                                               kill(std::shared_ptr<fb::game::object> from = nullptr, DESTROY_TYPE destroy_type = DESTROY_TYPE::DEFAULT) override final;
     void                                               update_id() override final;
     bool                                               super_hide() const override final;
