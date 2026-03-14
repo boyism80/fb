@@ -1376,12 +1376,9 @@ void character::assert_thread() const
     object::assert_thread();
 }
 
-void character::update(UPDATE_STATE_LEVEL value, bool notify)
+void character::update(UPDATE_STATE_LEVEL value)
 {
     this->assert_thread();
-
-    if (!notify)
-        return;
 
     if (this->_batch_mode)
     {

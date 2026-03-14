@@ -44,7 +44,7 @@ public:
     // clang-format off
     virtual async::task<void> attack(DURATION duration = DURATION::ATTACK);
     virtual uint32_t          exp() const;
-    virtual void              update(UPDATE_STATE_LEVEL value = UPDATE_STATE_LEVEL::EXP_MONEY | UPDATE_STATE_LEVEL::CROWD_CONTROL, bool notify = true);
+    virtual void              update(UPDATE_STATE_LEVEL value = UPDATE_STATE_LEVEL::EXP_MONEY | UPDATE_STATE_LEVEL::CROWD_CONTROL);
     void                      update_hp(uint32_t diff, bool critical, bool notify = true);
     batch_update_guard        batch_update();
     virtual void              kill(std::shared_ptr<fb::game::object> from = nullptr, DESTROY_TYPE destroy_type = DESTROY_TYPE::DEFAULT);
