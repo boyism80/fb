@@ -523,34 +523,26 @@ STATE character::state_to(const fb::game::object& to, STATE state) const
 {
     this->assert_thread();
 
-    if (this == &to)
-        return state;
-
     if (to.is(OBJECT_TYPE::CHARACTER) == false)
         return state;
 
+    if (state != STATE::CLOACK && state != STATE::ADV_CLOACK)
+        return state;
+
     const auto& ch = static_cast<const fb::game::character&>(to);
+    if (this == &ch)
+        return STATE::HALF_CLOACK;
 
-    if (state == STATE::HALF_CLOACK)
-    {
-        if (ch.detect())
-            return STATE::HALF_CLOACK;
+    if (ch.detect())
+        return STATE::HALF_CLOACK;
 
-        auto& g1 = this->_group_id;
-        auto& g2 = ch._group_id;
-        if (g1 != std::nullopt && g2 != std::nullopt && g1.value() == g2.value())
-            return STATE::HALF_CLOACK;
+    auto& g1 = this->_group_id;
+    auto& g2 = ch._group_id;
+    if (g1 != std::nullopt && g2 != std::nullopt && g1.value() == g2.value())
+        return STATE::HALF_CLOACK;
 
-        if (ch.role() > ROLE::USER && this->role() <= ch.role())
-            return STATE::HALF_CLOACK;
-
-        return STATE::CLOACK;
-    }
-
-    if (state == STATE::TRANSLUCENCY)
-    {
-        return STATE::CLOACK;
-    }
+    if (ch.role() > ROLE::USER && this->role() <= ch.role())
+        return STATE::HALF_CLOACK;
 
     return state;
 }
@@ -1589,10 +1581,10 @@ void character::detect(bool value)
     for (auto& obj : this->nears(OBJECT_TYPE::CHARACTER))
     {
         auto ch = std::static_pointer_cast<fb::game::character>(obj);
-        if (ch->state() != STATE::HALF_CLOACK)
+        if (ch->state() != STATE::CLOACK && ch->state() != STATE::ADV_CLOACK)
             continue;
 
-        ch->update_external(*this, false);
+        ch->update_external(*this, true);
     }
 }
 
