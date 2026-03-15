@@ -43,7 +43,7 @@ async::task<void> server::whisper(character& sender, std::string receiver_name, 
                 throw std::runtime_error(std::format(_TEXT(MESSAGE_WHISPER_DISABLED_TARGET), receiver_name));
 
             auto target_name = receiver->name();
-            receiver->message(std::format("{}> {}", sender_name, message), MESSAGE_TYPE::NOTIFY);
+            receiver->message(std::format("{}\" {}", sender_name, message), MESSAGE_TYPE::NOTIFY);
             sender.message(std::format("{}< {}", target_name, message), MESSAGE_TYPE::NOTIFY);
 
             // Log whisper event
