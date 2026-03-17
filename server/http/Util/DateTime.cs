@@ -1,4 +1,4 @@
-﻿namespace Http.Util
+namespace Http.Util
 {
     public static class DateTimeEx
     {
@@ -18,13 +18,13 @@
 
             var season = baramMonth switch
             {
-                12 or 1 or 2 => "寃⑥슱",
-                3 or 4 or 5 => "遊?,
-                6 or 7 or 8 => "?щ쫫",
-                _ => "媛??  // 9, 10, 11
+                12 or 1 or 2 => "겨울",
+                3 or 4 or 5 => "봄",
+                6 or 7 or 8 => "여름",
+                _ => "가을"  // 9, 10, 11
             };
 
-            return $"諛붾엺??{baramYear}??{season}";
+            return $"바람력 {baramYear}년 {season}";
         }
     }
 }
