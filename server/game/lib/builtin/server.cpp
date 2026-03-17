@@ -640,7 +640,7 @@ int builtin::server::builtin_save(lua_State* L)
         return 0;
 
     auto server = lua->env<fb::game::server>("server");
-    server->save();
+    std::ignore = server->save();
     return 0;
 }
 

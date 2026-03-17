@@ -1,8 +1,12 @@
 #ifndef __FB_HTTP_CLIENT_H__
 #define __FB_HTTP_CLIENT_H__
 
+#include <atomic>
 #include <chrono>
+#include <functional>
 #include <map>
+#include <mutex>
+#include <queue>
 #include <string>
 #include <string_view>
 #include <vector>
@@ -33,11 +37,46 @@ using namespace std::chrono_literals;
 class http_client
 {
 private:
-    fb::async_executor& _executor;
+    using pending_task = std::function<void()>;
+
+    fb::async_executor&      _executor;
+    size_t                   _max_concurrent;
+    std::mutex               _queue_mutex;
+    std::queue<pending_task> _queue;
+    std::atomic<size_t>      _in_flight{0};
+
+    void process_pending()
+    {
+        pending_task task;
+        {
+            std::lock_guard lock(this->_queue_mutex);
+            if (this->_queue.empty() || this->_in_flight.load(std::memory_order_relaxed) >= this->_max_concurrent)
+                return;
+            task = std::move(this->_queue.front());
+            this->_queue.pop();
+            this->_in_flight.fetch_add(1, std::memory_order_relaxed);
+        }
+        task();
+        this->post_process_pending();
+    }
+
+    void post_process_pending()
+    {
+        auto& io_context = static_cast<boost::asio::io_context&>(this->_executor);
+        boost::asio::post(io_context, [this] {
+            this->process_pending();
+        });
+    }
 
 public:
-    http_client(fb::async_executor& executor) :
-        _executor(executor)
+    /**
+     * Constructs the HTTP client with an external concurrency limit.
+     * @param executor The async executor (e.g. acceptor).
+     * @param max_concurrent Maximum number of in-flight HTTP requests; must be greater than 0.
+     */
+    explicit http_client(fb::async_executor& executor, size_t max_concurrent) :
+        _executor(executor),
+        _max_concurrent(max_concurrent)
     { }
 
     http_client(const http_client&)             = delete;
@@ -45,10 +84,10 @@ public:
     ~http_client()                              = default;
 
 private:
-    boost::asio::awaitable<std::vector<uint8_t>> boost_get_async(std::string                         host,
-                                                                 std::string                         path,
-                                                                 std::map<std::string, std::string>  headers,
-                                                                 std::chrono::steady_clock::duration timeout)
+    boost::asio::awaitable<std::vector<uint8_t>> boost_get_raw_async(std::string                         host,
+                                                                    std::string                         path,
+                                                                    std::map<std::string, std::string>  headers,
+                                                                    std::chrono::steady_clock::duration timeout)
     {
         try
         {
@@ -117,11 +156,11 @@ private:
     }
 
 private:
-    boost::asio::awaitable<std::vector<uint8_t>> boost_post_async(std::string                         host,
-                                                                  std::string                         path,
-                                                                  std::map<std::string, std::string>  headers,
-                                                                  std::chrono::steady_clock::duration timeout,
-                                                                  std::vector<uint8_t>                body)
+    boost::asio::awaitable<std::vector<uint8_t>> boost_post_raw_async(std::string                         host,
+                                                                      std::string                         path,
+                                                                      std::map<std::string, std::string>  headers,
+                                                                      std::chrono::steady_clock::duration timeout,
+                                                                      std::vector<uint8_t>                body)
     {
         try
         {
@@ -219,36 +258,44 @@ private:
             {"Content-Type", "application/octet-stream"},
         };
 
-        auto& io_context = static_cast<boost::asio::io_context&>(this->_executor);
-        boost::asio::co_spawn(io_context,
-                              this->boost_get_async(host_str, path_str, headers, 5s),
-                              [promise](std::exception_ptr ep, std::vector<uint8_t> bytes) {
-                                  if (ep)
-                                  {
-                                      try
-                                      {
-                                          std::rethrow_exception(ep);
-                                      }
-                                      catch (...)
-                                      {
-                                          promise->set_exception(std::current_exception());
-                                          return;
-                                      }
-                                  }
+        pending_task task = [this, promise, host_str, path_str, headers]() {
+            auto& ctx = static_cast<boost::asio::io_context&>(this->_executor);
+            boost::asio::co_spawn(
+                ctx,
+                this->boost_get_raw_async(host_str, path_str, headers, 5s),
+                [this, promise](std::exception_ptr ep, std::vector<uint8_t> bytes) {
+                    if (ep)
+                    {
+                        promise->set_exception(ep);
+                        this->_in_flight.fetch_sub(1, std::memory_order_relaxed);
+                        this->post_process_pending();
+                        return;
+                    }
+                    try
+                    {
+                        auto reader        = fb::stream_reader<big_endian>(bytes);
+                        auto protocol_type = reader.read<uint32_t>();
+                        auto protocol_size = reader.read<uint32_t>();
+                        auto offset        = bytes.data() + sizeof(uint32_t) + sizeof(uint32_t);
+                        promise->set_value(Response::Deserialize(offset));
+                    }
+                    catch (std::exception& e)
+                    {
+                        promise->set_exception(std::make_exception_ptr(e));
+                    }
+                    this->_in_flight.fetch_sub(1, std::memory_order_relaxed);
+                    this->post_process_pending();
+                });
+        };
 
-                                  try
-                                  {
-                                      auto reader        = fb::stream_reader<big_endian>(bytes);
-                                      auto protocol_type = reader.read<uint32_t>();
-                                      auto protocol_size = reader.read<uint32_t>();
-                                      auto offset        = bytes.data() + sizeof(uint32_t) + sizeof(uint32_t);
-                                      promise->set_value(Response::Deserialize(offset));
-                                  }
-                                  catch (std::exception& e)
-                                  {
-                                      promise->set_exception(std::make_exception_ptr(e));
-                                  }
-                              });
+        bool trigger;
+        {
+            std::lock_guard lock(this->_queue_mutex);
+            trigger = this->_queue.empty();
+            this->_queue.push(std::move(task));
+        }
+        if (trigger)
+            this->post_process_pending();
 
         return promise->task();
     }
@@ -302,37 +349,51 @@ private:
             {"Content-Type", "application/octet-stream"}
         };
 
-        auto& io_context = static_cast<boost::asio::io_context&>(this->_executor);
-        boost::asio::co_spawn(io_context,
-                              this->boost_post_async(host, path, headers, std::chrono::seconds{5}, stream_req),
-                              [promise](std::exception_ptr ep, std::vector<uint8_t> bytes) {
-                                  if (ep)
-                                  {
-                                      promise->set_exception(ep);
-                                      return;
-                                  }
-                                  try
-                                  {
-                                      auto reader        = fb::stream_reader<big_endian>(bytes);
-                                      auto protocol_type = reader.read<uint32_t>();
-                                      auto protocol_len  = reader.read<uint32_t>();
-                                      auto offset        = bytes.data() + sizeof(uint32_t) * 2;
+        auto body_vec = std::vector<uint8_t>(stream_req.begin(), stream_req.end());
 
-                                      promise->set_value(response_of<Request>::type::Deserialize(offset));
-                                  }
-                                  catch (...)
-                                  {
-                                      promise->set_exception(std::current_exception());
-                                  }
-                              });
+        pending_task task = [this, promise, host, path, headers, body_vec]() {
+            auto& ctx = static_cast<boost::asio::io_context&>(this->_executor);
+            boost::asio::co_spawn(
+                ctx,
+                this->boost_post_raw_async(host, path, headers, std::chrono::seconds{5}, body_vec),
+                [this, promise](std::exception_ptr ep, std::vector<uint8_t> bytes) {
+                    if (ep)
+                    {
+                        promise->set_exception(ep);
+                        this->_in_flight.fetch_sub(1, std::memory_order_relaxed);
+                        this->post_process_pending();
+                        return;
+                    }
+                    try
+                    {
+                        auto reader        = fb::stream_reader<big_endian>(bytes);
+                        auto protocol_type = reader.read<uint32_t>();
+                        auto protocol_len  = reader.read<uint32_t>();
+                        auto offset        = bytes.data() + sizeof(uint32_t) * 2;
+                        promise->set_value(response_of<Request>::type::Deserialize(offset));
+                    }
+                    catch (...)
+                    {
+                        promise->set_exception(std::current_exception());
+                    }
+                    this->_in_flight.fetch_sub(1, std::memory_order_relaxed);
+                    this->post_process_pending();
+                });
+        };
+
+        bool trigger;
+        {
+            std::lock_guard lock(this->_queue_mutex);
+            trigger = this->_queue.empty();
+            this->_queue.push(std::move(task));
+        }
+        if (trigger)
+            this->post_process_pending();
 
         return promise->task();
     }
 
 private:
-    /// <summary>
-    /// Internal method to send POST request with binary data.
-    /// </summary>
     [[nodiscard]] async::task<void> boost_post_binary_async(std::string_view  url,
                                                             std::string_view  path,
                                                             const fb::stream& data)
@@ -347,17 +408,33 @@ private:
 
         auto body = std::vector<uint8_t>(data.begin(), data.end());
 
-        auto& io_context = static_cast<boost::asio::io_context&>(this->_executor);
-        boost::asio::co_spawn(io_context,
-                              this->boost_post_async(url_str, path_str, headers, std::chrono::seconds{30}, body),
-                              [promise](std::exception_ptr ep, std::vector<uint8_t> bytes) {
-                                  if (ep)
-                                  {
-                                      promise->set_exception(ep);
-                                      return;
-                                  }
-                                  promise->set_value();
-                              });
+        pending_task task = [this, promise, url_str, path_str, headers, body]() {
+            auto& ctx = static_cast<boost::asio::io_context&>(this->_executor);
+            boost::asio::co_spawn(
+                ctx,
+                this->boost_post_raw_async(url_str, path_str, headers, std::chrono::seconds{30}, body),
+                [this, promise](std::exception_ptr ep, std::vector<uint8_t> /*bytes*/) {
+                    if (ep)
+                    {
+                        promise->set_exception(ep);
+                        this->_in_flight.fetch_sub(1, std::memory_order_relaxed);
+                        this->post_process_pending();
+                        return;
+                    }
+                    promise->set_value();
+                    this->_in_flight.fetch_sub(1, std::memory_order_relaxed);
+                    this->post_process_pending();
+                });
+        };
+
+        bool trigger;
+        {
+            std::lock_guard lock(this->_queue_mutex);
+            trigger = this->_queue.empty();
+            this->_queue.push(std::move(task));
+        }
+        if (trigger)
+            this->post_process_pending();
 
         return promise->task();
     }

@@ -53,7 +53,10 @@ module.exports = function () {
                             level: ["info", "warn", "fatal"]
                         },
                         exp_multiplier: 1.0,
-                        drop_rate_multiplier: 1.0
+                        drop_rate_multiplier: 1.0,
+                        http: {
+                            max_concurrent: 500
+                        }
                     }
 
                     const configMap = new k8s.core.v1.ConfigMap(`game-${worldName}-${i}`, {

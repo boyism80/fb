@@ -64,5 +64,8 @@
     "pw_size": {
         "min": 4,
         "max": 14
+    },
+    "http": {
+        "max_concurrent": 500
     }
 }

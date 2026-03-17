@@ -50,11 +50,11 @@ protected:
     socket_container_lock _sockets;
 
 protected:
-    acceptor(boost::asio::io_context& context, std::string_view name, uint16_t port) :
+    acceptor(boost::asio::io_context& context, std::string_view name, uint16_t port, size_t http_max_concurrent = 500) :
         fb::async_executor(context, name, config<uint32_t>("thread:logic")),
         boost::asio::ip::tcp::acceptor(context, boost::asio::ip::tcp::endpoint(boost::asio::ip::tcp::v4(), port)),
         handler(*this),
-        http(*this)
+        http(*this, http_max_concurrent)
     {
         static auto flag = std::once_flag{};
         std::call_once(flag, [port] {
@@ -540,6 +540,7 @@ public:
 
         this->_running = false;
         this->cancel();
+        async::awaitable_get(this->on_exit());
         async::awaitable_get(this->disconnect_sockets());
 
         for (auto& timer : this->_timers)

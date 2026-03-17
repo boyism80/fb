@@ -72,6 +72,9 @@ module.exports = function () {
                     pw_size: {
                         min: 4,
                         max: 16
+                    },
+                    http: {
+                        max_concurrent: 500
                     }
                 }
 

@@ -176,8 +176,7 @@ inline bool init_config(std::string_view config_path)
     }
 }
 
-template <typename T = Json::Value>
-inline static typename config_value_type<T>::type config(std::string_view k)
+inline static const Json::Value& config_node(std::string_view k)
 {
     static std::once_flag flag;
     static Json::Value    ist;
@@ -217,7 +216,22 @@ inline static typename config_value_type<T>::type config(std::string_view k)
         node = &(*node)[buffer];
     }
 
-    return json_value<T>(*node);
+    return *node;
+}
+
+template <typename T = Json::Value>
+inline static typename config_value_type<T>::type config(std::string_view k)
+{
+    return json_value<T>(config_node(k));
+}
+
+template <typename T>
+inline static T config(std::string_view k, T default_value)
+{
+    const Json::Value& node = config_node(k);
+    if (node.isNull())
+        return default_value;
+    return json_value<T>(node);
 }
 
 } // namespace fb

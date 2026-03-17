@@ -99,6 +99,7 @@ private:
     };
     std::weak_ptr<fb::socket<character>> _socket;
     ping_state_t                         _ping_state;
+    bool                                 _saved_before_shutdown = false;
 
 public:
     const uint32_t        id;
@@ -285,6 +286,8 @@ public:
     fb::model::datetime&                               last_afk_time();
     std::shared_ptr<fb::socket<character>>             socket_ptr() const;
     ping_state_t&                                      ping_state();
+    bool                                               saved_before_shutdown() const;
+    void                                               saved_before_shutdown(bool value);
     // clang-format on
 };
 
@@ -314,6 +317,7 @@ public:
 
 public:
     // clang-format off
+    size_t            size() const;
     bool              insert(character_ptr_t ch);
     void              remove(character_ptr_t ch);
     character_ptr_t   find(uint32_t uid) const;

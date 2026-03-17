@@ -7,6 +7,11 @@ character::container::container(fb::game::server& server) :
     _server(server)
 { }
 
+size_t character::container::size() const
+{
+    return this->_from_uid.size();
+}
+
 bool character::container::insert(character_ptr_t ch)
 {
     if (this->_from_uid.contains(ch->id) || this->_from_name.contains(ch->name()))
