@@ -26,7 +26,7 @@ function NPC_273(me, npc)
             return
         end
         if button == DIALOG_RESULT.PREV then
-            goto NPC_273_COS002
+            goto NPC_273_0010
         end
         
         ::NPC_273_0012::
