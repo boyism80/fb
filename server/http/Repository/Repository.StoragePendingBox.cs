@@ -5,15 +5,8 @@ using Newtonsoft.Json;
 
 namespace Http.Reepository
 {
-    /// <summary>
-    /// Provides repository functionality for pending storage rewards published by the operation tool.
-    /// Implements Redis hash caching for both global and per-user pending queues.
-    /// </summary>
     public class StoragePendingBoxRepository : RedisHashRepository<StoragePendingBox, StoragePendingBoxKey>
     {
-        /// <summary>
-        /// Initializes a new instance of the <see cref="StoragePendingBoxRepository"/> class.
-        /// </summary>
         public StoragePendingBoxRepository(DbContext dbContext,
             RedisService redisService,
             RedisDistributedLockService distributedLock,
@@ -21,11 +14,6 @@ namespace Http.Reepository
         {
         }
 
-        /// <summary>
-        /// Retrieves pending rewards filtered by user scope.
-        /// </summary>
-        /// <param name="world">The world identifier (e.g., 1, 2). Use 0 for unified-global.</param>
-        /// <param name="user">Target user id or null for global rewards.</param>
         public Task<IEnumerable<StoragePendingBox>> Get(uint world, uint? user)
         {
             return base.GetAll(world, new StoragePendingBoxKey
@@ -34,17 +22,11 @@ namespace Http.Reepository
             });
         }
 
-        /// <summary>
-        /// Retrieves a specific pending reward entry.
-        /// </summary>
-        /// <param name="world">The world identifier (e.g., 1, 2). Use 0 for unified-global.</param>
-        /// <param name="key">The storage pending box key.</param>
         public Task<StoragePendingBox> GetByKey(uint world, StoragePendingBoxKey key)
         {
             return base.Get(world, key);
         }
 
-        /// <inheritdoc/>
         protected override string OnSelect(StoragePendingBoxKey key)
         {
             return $"""
@@ -54,7 +36,6 @@ namespace Http.Reepository
                 """;
         }
 
-        /// <inheritdoc/>
         protected override string OnSelectBulk(StoragePendingBoxKey key)
         {
             var userPredicate = BuildUserPredicate(key.User);
@@ -69,7 +50,6 @@ namespace Http.Reepository
             return user.HasValue ? $"`user` = {user.Value}" : "`user` IS NULL";
         }
 
-        /// <inheritdoc/>
         protected override string OnUpsert(StoragePendingBox value)
         {
             var attachmentsJson = JsonConvert.SerializeObject(value.Attachments ?? new List<Fb.Model.Dsl>());
@@ -104,7 +84,6 @@ namespace Http.Reepository
                 """;
         }
 
-        /// <inheritdoc/>
         protected override string OnUpsert(StoragePendingBox[] values)
         {
             var args = values.Select(value =>
@@ -146,4 +125,3 @@ namespace Http.Reepository
         }
     }
 }
-

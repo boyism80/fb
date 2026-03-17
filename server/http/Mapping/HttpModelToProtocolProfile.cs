@@ -4,15 +4,8 @@ using Protocol = fb.protocol._internal;
 
 namespace Http.Mapping
 {
-    /// <summary>
-    /// AutoMapper profile for mappings between Http.Model types and fb.protocol._internal (Protocol) types.
-    /// Shared by internal server, admin-tool, and any other consumers that need to map HTTP models to protocol DTOs.
-    /// </summary>
     public class HttpModelToProtocolProfile : Profile
     {
-        /// <summary>
-        /// Configures all Http.Model &lt;-&gt; Protocol mappings.
-        /// </summary>
         public HttpModelToProtocolProfile()
         {
             CreateMap<Http.Model.Mimicry, Protocol.Mimicry>();

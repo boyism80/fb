@@ -14,10 +14,6 @@ using StackExchange.Redis;
 
 namespace WriteBack.Service
 {
-    /// <summary>
-    /// Provides a background service that processes deferred database write operations.
-    /// Consumes SQL operations from RabbitMQ queues and executes them against the appropriate database shards.
-    /// </summary>
     public class WriteBackService : BackgroundService
     {
         private readonly RedisService _redisService;
@@ -29,13 +25,6 @@ namespace WriteBack.Service
         private const int BulkSize = 100;
         private IConnection _rabbitMqConnection;
 
-        /// <summary>
-        /// Initializes a new instance of the <see cref="WriteBackService"/> class.
-        /// </summary>
-        /// <param name="redisService">The Redis service for reference count and end_of_ref.</param>
-        /// <param name="configuration">The application configuration containing database and RabbitMQ connection strings.</param>
-        /// <param name="serviceProvider">The service provider for dependency injection.</param>
-        /// <param name="logger">The logger for recording write-back operations and errors.</param>
         public WriteBackService(RedisService redisService,
             IConfiguration configuration,
             IServiceProvider serviceProvider,
@@ -50,12 +39,6 @@ namespace WriteBack.Service
                 throw new Exception("World configuration is required");
         }
 
-        /// <summary>
-        /// Executes the background service that processes write-back operations.
-        /// Creates worker threads for each database shard and monitors their execution.
-        /// </summary>
-        /// <param name="stoppingToken">The cancellation token for stopping the service.</param>
-        /// <returns>A task representing the asynchronous execution of the background service.</returns>
         protected override async Task ExecuteAsync(CancellationToken stoppingToken)
         {
             if (_world == 0)
@@ -159,13 +142,6 @@ namespace WriteBack.Service
             _logger.LogInformation("All write-back workers stopped for world {World}, all messages processed", _world);
         }
 
-        /// <summary>
-        /// Processes write-back operations for a specific database shard.
-        /// Consumes messages from the RabbitMQ queue for this shard and executes them in batches.
-        /// </summary>
-        /// <param name="db">The database shard identifier to process operations for.</param>
-        /// <param name="stoppingToken">The cancellation token for stopping the worker.</param>
-        /// <returns>A task representing the asynchronous processing of write-back operations.</returns>
         private async Task OnWork(int db, CancellationToken stoppingToken)
         {
             if (_rabbitMqConnection == null || !_rabbitMqConnection.IsOpen)

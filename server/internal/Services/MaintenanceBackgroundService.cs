@@ -3,10 +3,6 @@ using Http.Service;
 
 namespace Internal.Services
 {
-    /// <summary>
-    /// Provides a background service that periodically monitors maintenance schedules and triggers force logout.
-    /// Uses Redis distributed locking to ensure only one instance executes across all internal server instances.
-    /// </summary>
     public class MaintenanceBackgroundService : BackgroundService
     {
         private readonly IServiceScopeFactory _scopeFactory;
@@ -18,9 +14,6 @@ namespace Internal.Services
         private const string LockKey = "maintenance:background:lock";
         private const int LockTtlSeconds = 60; // Longer than processing interval to prevent overlap
 
-        /// <summary>
-        /// Initializes a new instance of the <see cref="MaintenanceBackgroundService"/> class.
-        /// </summary>
         public MaintenanceBackgroundService(
             IServiceScopeFactory scopeFactory,
             RedisService redisService,
@@ -31,11 +24,6 @@ namespace Internal.Services
             _logger = logger;
         }
 
-        /// <summary>
-        /// Executes the background service that periodically monitors maintenance schedules.
-        /// </summary>
-        /// <param name="stoppingToken">The cancellation token for stopping the service.</param>
-        /// <returns>A task representing the asynchronous execution of the background service.</returns>
         protected override async Task ExecuteAsync(CancellationToken stoppingToken)
         {
             while (!stoppingToken.IsCancellationRequested)
@@ -89,11 +77,6 @@ namespace Internal.Services
             }
         }
 
-        /// <summary>
-        /// Attempts to acquire the distributed lock using Lua script.
-        /// </summary>
-        /// <param name="redis">The Redis connection.</param>
-        /// <returns>True if lock was acquired; otherwise, false.</returns>
         private async Task<bool> TryAcquireLockAsync(Http.Service.Redis redis)
         {
             try
@@ -112,12 +95,6 @@ namespace Internal.Services
             }
         }
 
-        /// <summary>
-        /// Processes maintenance checks for all configured worlds and triggers force logout if needed.
-        /// </summary>
-        /// <param name="maintenanceService">The maintenance service.</param>
-        /// <param name="cancellationToken">The cancellation token.</param>
-        /// <returns>A task representing the asynchronous operation.</returns>
         private async Task ProcessMaintenanceChecksAsync(
             MaintenanceService maintenanceService,
             CancellationToken cancellationToken)
@@ -160,14 +137,6 @@ namespace Internal.Services
             await CleanupExpiredSchedulesAsync(maintenanceService, worlds, now, cancellationToken);
         }
 
-        /// <summary>
-        /// Removes expired one-time maintenance schedules from Redis for all configured worlds.
-        /// </summary>
-        /// <param name="maintenanceService">The maintenance service.</param>
-        /// <param name="worlds">The worlds to clean up.</param>
-        /// <param name="now">The cutoff time; schedules with EndTime before this are removed.</param>
-        /// <param name="cancellationToken">The cancellation token.</param>
-        /// <returns>A task representing the asynchronous operation.</returns>
         private async Task CleanupExpiredSchedulesAsync(
             MaintenanceService maintenanceService,
             IReadOnlyList<uint> worlds,

@@ -2,10 +2,6 @@ using Fb.Model;
 
 namespace Marketplace.Extension;
 
-/// <summary>
-/// Extension methods for Table.ItemTable to convert item names to item model IDs.
-/// Provides efficient prefix matching for marketplace search operations.
-/// </summary>
 public static class ItemTableExtension
 {
     private static readonly Lazy<SortedDictionary<string, uint>> _sortedItems = new Lazy<SortedDictionary<string, uint>>(
@@ -24,13 +20,6 @@ public static class ItemTableExtension
         },
         System.Threading.LazyThreadSafetyMode.ExecutionAndPublication);
 
-    /// <summary>
-    /// Converts an item name prefix to a list of matching item model IDs.
-    /// Uses binary search for efficient prefix matching, similar to name2item_prefix in C++.
-    /// </summary>
-    /// <param name="itemTable">The item table instance (Table.Item).</param>
-    /// <param name="itemNamePrefix">The item name prefix to search for (case-insensitive).</param>
-    /// <returns>A list of item model IDs that match the prefix. Returns all item IDs if prefix is empty.</returns>
     public static List<uint> NameToItemModelIds(this Table.ItemTable itemTable, string itemNamePrefix)
     {
         var sortedItems = _sortedItems.Value;
@@ -70,4 +59,3 @@ public static class ItemTableExtension
         return result;
     }
 }
-

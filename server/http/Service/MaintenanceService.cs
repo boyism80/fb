@@ -6,19 +6,10 @@ using StackExchange.Redis;
 
 namespace Http.Service
 {
-    /// <summary>
-    /// Provides maintenance schedule management functionality.
-    /// Stores each world's schedules in a single Redis Sorted Set per world (key: maintenance:{world}).
-    /// Member is full schedule JSON; score is EndTime as Unix timestamp.
-    /// </summary>
     public class MaintenanceService
     {
         private const string MaintenanceKeyPrefix = "maintenance:";
 
-        /// <summary>
-        /// Far-future Unix timestamp used as Sorted Set score for recurring schedules
-        /// so they always appear in ZRANGEBYSCORE (score >= now) and remain queryable.
-        /// </summary>
         private static readonly double RecurringScheduleScore = ((DateTimeOffset)new DateTime(2099, 12, 31, 23, 59, 59, DateTimeKind.Utc)).ToUnixTimeSeconds();
 
         private readonly RedisService _redisService;
@@ -27,14 +18,6 @@ namespace Http.Service
         private readonly ServerStateService _serverStateService;
         private readonly ILogger<MaintenanceService> _logger;
 
-        /// <summary>
-        /// Initializes a new instance of the <see cref="MaintenanceService"/> class.
-        /// </summary>
-        /// <param name="redisService">The Redis service for accessing Redis connections.</param>
-        /// <param name="sessionService">The session service for retrieving online users.</param>
-        /// <param name="rabbitMqService">The RabbitMQ service for publishing messages.</param>
-        /// <param name="serverStateService">The server state service for getting running game servers.</param>
-        /// <param name="logger">The logger for recording operations.</param>
         public MaintenanceService(
             RedisService redisService,
             SessionService sessionService,
@@ -49,24 +32,12 @@ namespace Http.Service
             _logger = logger;
         }
 
-        /// <summary>
-        /// Checks if maintenance is currently active for the specified world.
-        /// </summary>
-        /// <param name="world">The world identifier (e.g., 1, 2). Use 0 for unified-global.</param>
-        /// <param name="checkTime">The time to check maintenance status. If null, uses current KST time.</param>
-        /// <returns>True if maintenance is active; otherwise, false.</returns>
         public async Task<bool> IsMaintenanceActive(uint world, DateTime? checkTime = null)
         {
             var info = await GetMaintenanceInfo(world, checkTime);
             return info != null && info.IsActive;
         }
 
-        /// <summary>
-        /// Gets the current maintenance information for the specified world.
-        /// </summary>
-        /// <param name="world">The world identifier (e.g., 1, 2). Use 0 for unified-global.</param>
-        /// <param name="checkTime">The time to check maintenance status. If null, uses current KST time.</param>
-        /// <returns>The maintenance information if active; otherwise, null.</returns>
         public async Task<MaintenanceInfo> GetMaintenanceInfo(uint world, DateTime? checkTime = null)
         {
             var now = checkTime ?? DateTime.Now;
@@ -106,11 +77,6 @@ namespace Http.Service
             return null;
         }
 
-        /// <summary>
-        /// Creates a new maintenance schedule.
-        /// </summary>
-        /// <param name="schedule">The maintenance schedule to create.</param>
-        /// <returns>True if the schedule was created successfully; otherwise, false.</returns>
         public async Task<bool> CreateMaintenanceSchedule(MaintenanceSchedule schedule)
         {
             if (string.IsNullOrEmpty(schedule.Id))
@@ -150,12 +116,6 @@ namespace Http.Service
             }
         }
 
-        /// <summary>
-        /// Cancels a maintenance schedule.
-        /// </summary>
-        /// <param name="world">The world identifier (e.g., 1, 2). Use 0 for unified-global.</param>
-        /// <param name="scheduleId">The schedule ID to cancel.</param>
-        /// <returns>True if the schedule was cancelled successfully; otherwise, false.</returns>
         public async Task<bool> CancelMaintenanceSchedule(uint world, string scheduleId)
         {
             var (schedule, existingMember) = await FindScheduleAndMember(world, scheduleId);
@@ -187,11 +147,6 @@ namespace Http.Service
             }
         }
 
-        /// <summary>
-        /// Gets all maintenance schedules for the specified world.
-        /// </summary>
-        /// <param name="world">The world identifier (e.g., 1, 2). Use 0 for unified-global.</param>
-        /// <returns>A list of all maintenance schedules for the world.</returns>
         public async Task<List<MaintenanceSchedule>> GetAllSchedules(uint world)
         {
             var redis = _redisService.GetUnifiedConnection();
@@ -211,11 +166,6 @@ namespace Http.Service
             return schedules.OrderByDescending(s => s.CreatedAt).ToList();
         }
 
-        /// <summary>
-        /// Applies a maintenance schedule to all configured worlds.
-        /// </summary>
-        /// <param name="schedule">The maintenance schedule to apply. World property will be ignored.</param>
-        /// <returns>True if the schedule was applied to all worlds successfully; otherwise, false.</returns>
         public async Task<bool> ApplyToAllWorlds(MaintenanceSchedule schedule)
         {
             var worlds = _redisService.GetConfiguredWorlds();
@@ -244,12 +194,6 @@ namespace Http.Service
             return success;
         }
 
-        /// <summary>
-        /// Forces logout of all regular (non-admin) users in the specified world.
-        /// Sends StartMaintenance message to each game server, which will handle disconnecting regular users.
-        /// </summary>
-        /// <param name="world">The world identifier (e.g., 1, 2). Use 0 for unified-global.</param>
-        /// <returns>The number of game servers that received the maintenance message.</returns>
         public async Task<int> ForceLogoutRegularUsers(uint world)
         {
             // Get maintenance info to include in message
@@ -323,15 +267,8 @@ namespace Http.Service
             return messageCount;
         }
 
-        /// <summary>
-        /// Gets the Redis key for a world's maintenance Sorted Set.
-        /// </summary>
         private static string GetMaintenanceKey(uint world) => $"{MaintenanceKeyPrefix}{world}";
 
-        /// <summary>
-        /// Gets the Sorted Set score for a schedule. Recurring schedules use a far-future score
-        /// so they are always included in ZRANGEBYSCORE (score >= now); one-time uses EndTime.
-        /// </summary>
         private static double GetScoreForSchedule(MaintenanceSchedule schedule)
         {
             if (schedule.RepeatType != MaintenanceRepeatType.None)
@@ -339,9 +276,6 @@ namespace Http.Service
             return ((DateTimeOffset)schedule.EndTime).ToUnixTimeSeconds();
         }
 
-        /// <summary>
-        /// Deserializes a schedule JSON string; returns null on failure.
-        /// </summary>
         private MaintenanceSchedule DeserializeSchedule(string json)
         {
             if (string.IsNullOrEmpty(json))
@@ -356,9 +290,6 @@ namespace Http.Service
             }
         }
 
-        /// <summary>
-        /// Finds a schedule by ID and returns it with the exact Redis member string (for ZREM).
-        /// </summary>
         private async Task<(MaintenanceSchedule schedule, string memberJson)> FindScheduleAndMember(uint world, string scheduleId)
         {
             var redis = _redisService.GetUnifiedConnection();
@@ -378,25 +309,12 @@ namespace Http.Service
             return (null, null);
         }
 
-        /// <summary>
-        /// Gets a maintenance schedule by ID.
-        /// </summary>
-        /// <param name="world">The world identifier (e.g., 1, 2). Use 0 for unified-global.</param>
-        /// <param name="scheduleId">The schedule ID.</param>
-        /// <returns>The maintenance schedule if found; otherwise, null.</returns>
         private async Task<MaintenanceSchedule> GetSchedule(uint world, string scheduleId)
         {
             var (schedule, _) = await FindScheduleAndMember(world, scheduleId);
             return schedule;
         }
 
-        /// <summary>
-        /// Removes expired one-time schedules (RepeatType.None, EndTime &lt; cutoff) from the world's Sorted Set.
-        /// Called by the background service to prevent accumulation of invalid data.
-        /// </summary>
-        /// <param name="world">The world identifier.</param>
-        /// <param name="cutoff">Schedules with EndTime before this time are removed if one-time.</param>
-        /// <returns>The number of schedules removed.</returns>
         public async Task<int> RemoveExpiredSchedules(uint world, DateTime cutoff)
         {
             var redis = _redisService.GetUnifiedConnection();
@@ -430,12 +348,6 @@ namespace Http.Service
             return toRemove.Count;
         }
 
-        /// <summary>
-        /// Checks if the specified time falls within the maintenance window for the schedule.
-        /// </summary>
-        /// <param name="schedule">The maintenance schedule.</param>
-        /// <param name="checkTime">The time to check.</param>
-        /// <returns>True if the time is within the maintenance window; otherwise, false.</returns>
         private bool IsWithinMaintenanceWindow(MaintenanceSchedule schedule, DateTime checkTime)
         {
             var windowStart = GetWindowStart(schedule, checkTime);
@@ -443,12 +355,6 @@ namespace Http.Service
             return checkTime >= windowStart && checkTime <= windowEnd;
         }
 
-        /// <summary>
-        /// Gets the start time of the maintenance window for the schedule at the specified check time.
-        /// </summary>
-        /// <param name="schedule">The maintenance schedule.</param>
-        /// <param name="checkTime">The time to calculate the window for.</param>
-        /// <returns>The start time of the maintenance window.</returns>
         private DateTime GetWindowStart(MaintenanceSchedule schedule, DateTime checkTime)
         {
             return schedule.RepeatType switch
@@ -462,12 +368,6 @@ namespace Http.Service
             };
         }
 
-        /// <summary>
-        /// Gets the end time of the maintenance window for the schedule at the specified check time.
-        /// </summary>
-        /// <param name="schedule">The maintenance schedule.</param>
-        /// <param name="checkTime">The time to calculate the window for.</param>
-        /// <returns>The end time of the maintenance window.</returns>
         private DateTime GetWindowEnd(MaintenanceSchedule schedule, DateTime checkTime)
         {
             var windowStart = GetWindowStart(schedule, checkTime);

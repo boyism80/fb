@@ -6,20 +6,8 @@ using System.Data;
 
 namespace Http.Reepository
 {
-    /// <summary>
-    /// Provides repository functionality for ban data management.
-    /// Implements Redis value-based caching with database persistence for ban operations.
-    /// Ban table is stored in global DB (no sharding).
-    /// </summary>
     public class BanRepository : RedisValueRepository<Ban, BanKey>
     {
-        /// <summary>
-        /// Initializes a new instance of the <see cref="BanRepository"/> class.
-        /// </summary>
-        /// <param name="dbContext">The database context for connection management.</param>
-        /// <param name="redisService">The Redis service for cache operations.</param>
-        /// <param name="distributedLock">The distributed lock service for concurrency control.</param>
-        /// <param name="dbExecuteService">The write-back service for asynchronous database writes.</param>
         public BanRepository(DbContext dbContext,
             RedisService redisService,
             RedisDistributedLockService distributedLock,
@@ -28,12 +16,6 @@ namespace Http.Reepository
         }
 
 
-        /// <summary>
-        /// Retrieves a ban by world and user ID.
-        /// </summary>
-        /// <param name="world">The world identifier (e.g., 1, 2). Use 0 for unified-global.</param>
-        /// <param name="userId">The unique identifier of the user.</param>
-        /// <returns>The ban if found; otherwise, null.</returns>
         public async Task<Ban> Get(uint world, uint userId)
         {
             await using var conn = _dbContext.GetGlobalConnection(world);
@@ -47,11 +29,6 @@ namespace Http.Reepository
             return value;
         }
 
-        /// <summary>
-        /// Generates the SQL SELECT statement for retrieving a ban by user ID.
-        /// </summary>
-        /// <param name="key">The ban key containing the user ID.</param>
-        /// <returns>A SQL SELECT statement for the ban.</returns>
         protected override string OnSelect(BanKey key)
         {
             return $"""
@@ -61,11 +38,6 @@ namespace Http.Reepository
                 """;
         }
 
-        /// <summary>
-        /// Generates the SQL UPSERT statement for a ban with all ban properties.
-        /// </summary>
-        /// <param name="value">The ban to upsert.</param>
-        /// <returns>A SQL UPSERT statement for the ban.</returns>
         protected override string OnUpsert(Ban value)
         {
             var sql = $"""
@@ -93,11 +65,6 @@ namespace Http.Reepository
         }
 
 
-        /// <summary>
-        /// Soft deletes a ban by world and user ID (sets deleted = 1).
-        /// </summary>
-        /// <param name="world">The world identifier (e.g., 1, 2). Use 0 for unified-global.</param>
-        /// <param name="userId">The unique identifier of the user.</param>
         public async Task Delete(uint world, uint userId)
         {
             var ban = await Get(world, userId);
@@ -111,4 +78,3 @@ namespace Http.Reepository
         }
     }
 }
-

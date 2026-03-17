@@ -9,10 +9,6 @@ using Response = fb.protocol._internal.response;
 
 namespace Internal.Services
 {
-    /// <summary>
-    /// Provides group management service functionality.
-    /// Handles group creation, member management, and group operations.
-    /// </summary>
     public class GroupService
     {
         private readonly IConfiguration _configuration;
@@ -22,9 +18,6 @@ namespace Internal.Services
         private readonly RedisService _redisService;
         private readonly RedisDistributedLockService _distributedLock;
 
-        /// <summary>
-        /// Initializes a new instance of the <see cref="GroupService"/> class.
-        /// </summary>
         public GroupService(IConfiguration configuration,
             DbContext dbContext,
             RabbitMqService rabbitMqService,
@@ -40,11 +33,6 @@ namespace Internal.Services
             _distributedLock = distributedLock;
         }
 
-        /// <summary>
-        /// Gets group details by world and group ID.
-        /// </summary>
-        /// <param name="world">The world identifier (e.g., 1, 2). Use 0 for unified.</param>
-        /// <param name="id">The group ID.</param>
         public async Task<Response.GroupDetails> Get(uint world, uint id)
         {
             try
@@ -121,9 +109,6 @@ namespace Internal.Services
             }
         }
 
-        /// <summary>
-        /// Creates a new group with the specified master and member.
-        /// </summary>
         public async Task<Response.GroupDetails> Create(Request.CreateGroup request)
         {
             try
@@ -252,9 +237,6 @@ namespace Internal.Services
             }
         }
 
-        /// <summary>
-        /// Adds a member to an existing group.
-        /// </summary>
         public async Task<Response.UpdatedGroup> Enter(Request.EnterGroup request)
         {
             try
@@ -337,9 +319,6 @@ namespace Internal.Services
             }
         }
 
-        /// <summary>
-        /// Removes a member from a group.
-        /// </summary>
         public async Task<Response.UpdatedGroup> Leave(Request.LeaveGroup request)
         {
             try
@@ -429,9 +408,6 @@ namespace Internal.Services
             }
         }
 
-        /// <summary>
-        /// Kicks a member from a group by the group master.
-        /// </summary>
         public async Task<Response.UpdatedGroup> Kick(Request.KickGroup request)
         {
             try
@@ -502,9 +478,6 @@ namespace Internal.Services
             }
         }
 
-        /// <summary>
-        /// Destroys a group by the group master.
-        /// </summary>
         public async Task<Response.DestroyGroup> Destroy(Request.DestroyGroup request)
         {
             try
@@ -598,9 +571,6 @@ namespace Internal.Services
             }
         }
 
-        /// <summary>
-        /// Broadcasts a message to all members of a group.
-        /// </summary>
         public async Task<Response.BroadcastGroup> Broadcast(Request.BroadcastGroup request)
         {
             try
@@ -641,9 +611,6 @@ namespace Internal.Services
             }
         }
 
-        /// <summary>
-        /// Toggles a member's group status. If the member is in the same group, kicks them. Otherwise, adds them to the group.
-        /// </summary>
         public async Task<Response.UpdatedGroup> Toggle(Request.EnterGroup request)
         {
             try
@@ -740,9 +707,6 @@ namespace Internal.Services
             }
         }
 
-        /// <summary>
-        /// Internal method to add a member to a group. Assumes locks are already acquired.
-        /// </summary>
         private async Task<Response.UpdatedGroup> EnterInternal(uint world, Character actor, Character target, CharacterSync actorSync, CharacterSync targetSync, Map map)
         {
             var group = await _dbContext.Group.Get(world, actor.Id) ??
@@ -781,9 +745,6 @@ namespace Internal.Services
             return response;
         }
 
-        /// <summary>
-        /// Internal method to kick a member from a group. Assumes locks are already acquired.
-        /// </summary>
         private async Task<Response.UpdatedGroup> KickInternal(uint world, Character actor, Character target, CharacterSync actorSync, CharacterSync targetSync, Map map)
         {
             var group = await _dbContext.Group.Get(world, actorSync.Group.Value) ??
@@ -830,4 +791,3 @@ namespace Internal.Services
         }
     }
 }
-

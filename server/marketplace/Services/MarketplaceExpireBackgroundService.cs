@@ -9,10 +9,6 @@ using StackExchange.Redis;
 
 namespace Marketplace.Services
 {
-    /// <summary>
-    /// Provides a background service that periodically processes expired marketplace listings.
-    /// Uses Redis TTL with Lua script for atomic distributed locking to prevent concurrent execution across multiple instances.
-    /// </summary>
     public class MarketplaceExpireBackgroundService : BackgroundService
     {
         private readonly IServiceScopeFactory _scopeFactory;
@@ -24,9 +20,6 @@ namespace Marketplace.Services
         private const string LockKey = "marketplace:expire:lock";
         private const int ExpireBatchSize = 1000;
 
-        /// <summary>
-        /// Initializes a new instance of the <see cref="MarketplaceExpireBackgroundService"/> class.
-        /// </summary>
         public MarketplaceExpireBackgroundService(
             IServiceScopeFactory scopeFactory,
             RedisService redisService,
@@ -37,11 +30,6 @@ namespace Marketplace.Services
             _logger = logger;
         }
 
-        /// <summary>
-        /// Executes the background service that periodically processes expired marketplace listings.
-        /// </summary>
-        /// <param name="stoppingToken">The cancellation token for stopping the service.</param>
-        /// <returns>A task representing the asynchronous execution of the background service.</returns>
         protected override async Task ExecuteAsync(CancellationToken stoppingToken)
         {
             while (!stoppingToken.IsCancellationRequested)
@@ -105,14 +93,6 @@ namespace Marketplace.Services
             }
         }
 
-        /// <summary>
-        /// Processes expired active listings by updating their status to EXPIRED and returning items with registration fee to sellers.
-        /// </summary>
-        /// <param name="dbContext">Database context for marketplace operations.</param>
-        /// <param name="storageService">Storage service for creating pending boxes.</param>
-        /// <param name="logService">Log service for logging operations.</param>
-        /// <param name="cancellationToken">Cancellation token for the operation.</param>
-        /// <returns>Task representing the asynchronous operation.</returns>
         private async Task ProcessExpiredListingsAsync(
             Marketplace.Service.DbContext dbContext,
             StorageService storageService,
@@ -176,14 +156,6 @@ namespace Marketplace.Services
             }
         }
 
-        /// <summary>
-        /// Processes an expired listing by returning items and registration fee to the seller.
-        /// </summary>
-        /// <param name="listing">The expired listing to process.</param>
-        /// <param name="storageService">Storage service for creating pending boxes.</param>
-        /// <param name="logService">Log service for logging operations.</param>
-        /// <param name="cancellationToken">Cancellation token for the operation.</param>
-        /// <returns>Task representing the asynchronous operation.</returns>
         private async Task ProcessExpiredListingAsync(
             MarketplaceListing listing,
             StorageService storageService,

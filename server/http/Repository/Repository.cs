@@ -8,81 +8,30 @@ using System.Collections.Concurrent;
 
 namespace Http.Reepository
 {
-    /// <summary>
-    /// Defines the base contract for all repository implementations.
-    /// Provides the fundamental save operation for persisting changes.
-    /// </summary>
     public interface IRepository
     {
-        /// <summary>
-        /// Asynchronously saves all pending changes to the underlying data store.
-        /// </summary>
-        /// <returns>A task representing the asynchronous save operation.</returns>
         Task SaveChangesAsync();
     }
 
-    /// <summary>
-    /// Provides a base implementation for repository pattern with generic model and key types.
-    /// Handles basic CRUD operations with database sharding support and buffered writes.
-    /// </summary>
-    /// <typeparam name="TModel">The model type that implements both IModel and the key interface.</typeparam>
-    /// <typeparam name="TKey">The key type that implements IModelKey for sharding support.</typeparam>
     public abstract class Repository<TModel, TKey> : IRepository where TModel : class, IModel, TKey where TKey : IModelKey
     {
         protected readonly DbContext _dbContext;
 
-        /// <summary>
-        /// Gets the buffer queue for pending database operations.
-        /// </summary>
-        /// <value>A queue of asynchronous database operations to be executed during save.</value>
         protected readonly Queue<Func<Task>> _buffer = new Queue<Func<Task>>();
 
-        /// <summary>
-        /// Initializes a new instance of the <see cref="Repository{TModel, TKey}"/> class.
-        /// </summary>
-        /// <param name="dbContext">The database context for connection management.</param>
         protected Repository(DbContext dbContext)
         {
             _dbContext = dbContext;
         }
 
-        /// <summary>
-        /// When overridden in a derived class, provides the SQL SELECT statement for retrieving a single entity.
-        /// </summary>
-        /// <param name="key">The key identifying the entity to retrieve.</param>
-        /// <returns>A SQL SELECT statement string.</returns>
         protected abstract string OnSelect(TKey key);
 
-        /// <summary>
-        /// When overridden in a derived class, provides the SQL SELECT statement for retrieving multiple entities.
-        /// </summary>
-        /// <param name="key">The key identifying the entities to retrieve.</param>
-        /// <returns>A SQL SELECT statement string.</returns>
-        /// <exception cref="NotImplementedException">Thrown when not implemented in derived class.</exception>
         protected virtual string OnSelectBulk(TKey key) { throw new NotImplementedException(); }
 
-        /// <summary>
-        /// When overridden in a derived class, provides the SQL UPSERT statement for a single entity.
-        /// </summary>
-        /// <param name="value">The entity to upsert.</param>
-        /// <returns>A SQL UPSERT statement string.</returns>
         protected abstract string OnUpsert(TModel value);
 
-        /// <summary>
-        /// When overridden in a derived class, provides the SQL UPSERT statement for multiple entities.
-        /// </summary>
-        /// <param name="values">The entities to upsert.</param>
-        /// <returns>A SQL UPSERT statement string.</returns>
-        /// <exception cref="NotImplementedException">Thrown when not implemented in derived class.</exception>
         protected virtual string OnUpsert(TModel[] values) { throw new NotImplementedException(); }
 
-        /// <summary>
-        /// Retrieves a single entity from the database using the specified world and key.
-        /// Automatically filters out soft-deleted entities.
-        /// </summary>
-        /// <param name="world">The world identifier (e.g., 1, 2). Use 0 for unified-global.</param>
-        /// <param name="key">The key identifying the entity to retrieve.</param>
-        /// <returns>The entity if found and not deleted; otherwise, null.</returns>
         protected virtual async Task<TModel> Get(uint world, TKey key)
         {
             var hash = key.GetHash();
@@ -97,13 +46,6 @@ namespace Http.Reepository
             return value;
         }
 
-        /// <summary>
-        /// Retrieves all entities from the database using the specified world and key.
-        /// Automatically filters out soft-deleted entities.
-        /// </summary>
-        /// <param name="world">The world identifier (e.g., 1, 2). Use 0 for unified-global.</param>
-        /// <param name="key">The key identifying the entities to retrieve.</param>
-        /// <returns>A collection of entities that are not soft-deleted.</returns>
         protected virtual async Task<IEnumerable<TModel>> GetAll(uint world, TKey key)
         {
             var hash = key.GetHash();
@@ -111,13 +53,6 @@ namespace Http.Reepository
             return (await conn.QueryAsync<TModel>(OnSelectBulk(key))).Where(x => !x.Deleted);
         }
 
-        /// <summary>
-        /// Queues a single entity for upsert operation during the next save.
-        /// The operation is buffered and executed when SaveChangesAsync is called.
-        /// </summary>
-        /// <param name="world">The world identifier (e.g., 1, 2). Use 0 for unified-global.</param>
-        /// <param name="value">The entity to upsert.</param>
-        /// <returns>The same entity instance for method chaining.</returns>
         public virtual TModel Set(uint world, TModel value)
         {
             _buffer.Enqueue(async () =>
@@ -129,13 +64,6 @@ namespace Http.Reepository
             return value;
         }
 
-        /// <summary>
-        /// Queues multiple entities for upsert operation during the next save.
-        /// Entities are grouped by shard for efficient batch operations.
-        /// </summary>
-        /// <param name="world">The world identifier (e.g., 1, 2). Use 0 for unified-global.</param>
-        /// <param name="values">The entities to upsert.</param>
-        /// <returns>The same entity array for method chaining.</returns>
         public virtual TModel[] Set(uint world, TModel[] values)
         {
             _buffer.Enqueue(async () =>
@@ -149,11 +77,6 @@ namespace Http.Reepository
             return values;
         }
 
-        /// <summary>
-        /// Asynchronously executes all buffered database operations.
-        /// Processes the operation queue until empty.
-        /// </summary>
-        /// <returns>A task representing the asynchronous save operation.</returns>
         public async Task SaveChangesAsync()
         {
             while (_buffer.TryDequeue(out var func))
@@ -163,18 +86,8 @@ namespace Http.Reepository
         }
     }
 
-    /// <summary>
-    /// Provides a Redis-backed repository implementation for value-based caching.
-    /// Implements a write-through cache pattern with distributed locking and write-back support.
-    /// </summary>
-    /// <typeparam name="TModel">The model type that implements both IModel and the Redis value key interface.</typeparam>
-    /// <typeparam name="TKey">The key type that implements IRedisValueKey for Redis integration.</typeparam>
     public abstract class RedisValueRepository<TModel, TKey> : Repository<TModel, TKey> where TModel : class, IModel, TKey where TKey : IRedisValueKey
     {
-        /// <summary>
-        /// Lua script for updating value expiry in Redis cache.
-        /// Sets a value and conditionally sets expiry if no references exist.
-        /// </summary>
         private static readonly string UpdateValueExpiryScript = """
             redis.call('set', @key, @value)
 
@@ -192,13 +105,6 @@ namespace Http.Reepository
         private readonly RedisDistributedLockService _distributedLock;
         private readonly WriteBackService _dbExecuteService;
 
-        /// <summary>
-        /// Initializes a new instance of the <see cref="RedisValueRepository{TModel, TKey}"/> class.
-        /// </summary>
-        /// <param name="dbContext">The database context for connection management.</param>
-        /// <param name="redisService">The Redis service for cache operations.</param>
-        /// <param name="distributedLock">The distributed lock service for concurrency control.</param>
-        /// <param name="dbExecuteService">The write-back service for asynchronous database writes.</param>
         protected RedisValueRepository(DbContext dbContext,
             RedisService redisService,
             RedisDistributedLockService distributedLock,
@@ -209,23 +115,11 @@ namespace Http.Reepository
             _dbExecuteService = dbExecuteService;
         }
 
-        /// <summary>
-        /// Generates a distributed lock key for the specified entity key.
-        /// </summary>
-        /// <param name="key">The entity key to generate a lock key for.</param>
-        /// <returns>A formatted lock key string for distributed locking.</returns>
         private static string GetLockKey(TKey key)
         {
             return $"lock:{key.GetRedisKey()}";
         }
 
-        /// <summary>
-        /// Retrieves a single entity with multi-level caching (local, Redis, database).
-        /// Uses distributed locking to ensure consistency across cache levels.
-        /// </summary>
-        /// <param name="world">The world identifier (e.g., 1, 2). Use 0 for unified-global.</param>
-        /// <param name="key">The key identifying the entity to retrieve.</param>
-        /// <returns>The entity if found and not deleted; otherwise, null.</returns>
         protected override async Task<TModel> Get(uint world, TKey key)
         {
             await using (await _distributedLock.Lock(world, GetLockKey(key)))
@@ -280,25 +174,11 @@ namespace Http.Reepository
             }
         }
 
-        /// <summary>
-        /// This operation is not supported for Redis value repositories.
-        /// </summary>
-        /// <param name="world">The world identifier (unused).</param>
-        /// <param name="key">The key parameter (unused).</param>
-        /// <returns>Never returns normally.</returns>
-        /// <exception cref="InvalidOperationException">Always thrown as this operation is not supported.</exception>
         protected override sealed Task<IEnumerable<TModel>> GetAll(uint world, TKey key)
         {
             throw new InvalidOperationException();
         }
 
-        /// <summary>
-        /// Queues a single entity for upsert with Redis caching and write-back support.
-        /// Updates local cache, Redis cache, and schedules database write-back.
-        /// </summary>
-        /// <param name="world">The world identifier (e.g., 1, 2). Use 0 for unified-global.</param>
-        /// <param name="value">The entity to upsert.</param>
-        /// <returns>The same entity instance for method chaining.</returns>
         public override TModel Set(uint world, TModel value)
         {
             _buffer.Enqueue(async () =>
@@ -325,31 +205,14 @@ namespace Http.Reepository
             return value;
         }
 
-        /// <summary>
-        /// This operation is not supported for Redis value repositories.
-        /// </summary>
-        /// <param name="world">The world identifier (unused).</param>
-        /// <param name="values">The values parameter (unused).</param>
-        /// <returns>Never returns normally.</returns>
-        /// <exception cref="InvalidOperationException">Always thrown as this operation is not supported.</exception>
         public override sealed TModel[] Set(uint world, TModel[] values)
         {
             throw new InvalidOperationException();
         }
     }
 
-    /// <summary>
-    /// Provides a Redis-backed repository implementation for hash-based caching.
-    /// Implements a write-through cache pattern with distributed locking and write-back support for hash structures.
-    /// </summary>
-    /// <typeparam name="TModel">The model type that implements both IModel and the Redis hash key interface.</typeparam>
-    /// <typeparam name="TKey">The key type that implements IRedisHashKey for Redis hash integration.</typeparam>
     public abstract class RedisHashRepository<TModel, TKey> : Repository<TModel, TKey> where TModel : class, IModel, TKey where TKey : IRedisHashKey
     {
-        /// <summary>
-        /// Lua script for updating hash expiry in Redis cache.
-        /// Sets multiple hash fields and conditionally sets expiry if no references exist.
-        /// </summary>
         private static readonly string UpdateHashExpiryScript = """
             local CACHE_KEY = KEYS[1]
             local COUNT_REFS = KEYS[2]
@@ -372,10 +235,6 @@ namespace Http.Reepository
             return {contains_refs}
             """;
 
-        /// <summary>
-        /// Lua script for setting a single hash field in Redis cache.
-        /// Sets hash field, removes expiry, and increments reference count.
-        /// </summary>
         private static readonly string SetHashFieldScript = """
             local CACHE_KEY = KEYS[1]
             local COUNT_REFS = KEYS[2]
@@ -394,10 +253,6 @@ namespace Http.Reepository
             return 1
             """;
 
-        /// <summary>
-        /// Lua script for setting multiple hash fields in Redis cache.
-        /// Sets hash fields, removes expiry, and increments reference count.
-        /// </summary>
         private static readonly string SetHashFieldsScript = """
             local CACHE_KEY = KEYS[1]
             local COUNT_REFS = KEYS[2]
@@ -427,13 +282,6 @@ namespace Http.Reepository
         private readonly RedisDistributedLockService _distributedLock;
         private readonly WriteBackService _dbExecuteService;
 
-        /// <summary>
-        /// Initializes a new instance of the <see cref="RedisHashRepository{TModel, TKey}"/> class.
-        /// </summary>
-        /// <param name="dbContext">The database context for connection management.</param>
-        /// <param name="redisService">The Redis service for cache operations.</param>
-        /// <param name="distributedLock">The distributed lock service for concurrency control.</param>
-        /// <param name="dbExecuteService">The write-back service for asynchronous database writes.</param>
         protected RedisHashRepository(DbContext dbContext,
             RedisService redisService,
             RedisDistributedLockService distributedLock,
@@ -444,21 +292,11 @@ namespace Http.Reepository
             _dbExecuteService = dbExecuteService;
         }
 
-        /// <summary>
-        /// Generates a local cache key for the specified entity key.
-        /// </summary>
-        /// <param name="key">The entity key to generate a local cache key for.</param>
-        /// <returns>A formatted local cache key string.</returns>
         private static string GetLocalCacheKey(TKey key)
         {
             return $"{key.GetRedisKey()}:{key.GetRedisField()}";
         }
 
-        /// <summary>
-        /// Generates a distributed lock key for the specified entity key.
-        /// </summary>
-        /// <param name="key">The entity key to generate a lock key for.</param>
-        /// <returns>A formatted lock key string for distributed locking.</returns>
         private static string GetLockKey(TKey key)
         {
             return GetLockKey(key.GetRedisKey());
@@ -469,14 +307,6 @@ namespace Http.Reepository
             return $"lock:{key}";
         }
 
-        /// <summary>
-        /// Synchronizes cache from database by loading entities and updating both Redis and local cache.
-        /// Retrieves entities from database, stores them in Redis using Lua script, and updates local cache.
-        /// </summary>
-        /// <param name="world">The world identifier (e.g., 1, 2). Use 0 for unified-global.</param>
-        /// <param name="redis">The Redis service instance for cache operations.</param>
-        /// <param name="key">The key identifying the entities to retrieve and cache.</param>
-        /// <returns>A collection of entities loaded from the database.</returns>
         private async Task<IEnumerable<TModel>> SyncCacheFromDatabase(uint world, Service.Redis redis, TKey key)
         {
             var mysqlValues = await base.GetAll(world, key);
@@ -519,13 +349,6 @@ namespace Http.Reepository
             return mysqlValues;
         }
 
-        /// <summary>
-        /// Retrieves a single entity with multi-level caching (local, Redis hash, database).
-        /// Uses distributed locking to ensure consistency across cache levels and handles hash-based Redis operations.
-        /// </summary>
-        /// <param name="world">The world identifier (e.g., 1, 2). Use 0 for unified-global.</param>
-        /// <param name="key">The key identifying the entity to retrieve.</param>
-        /// <returns>The entity if found and not deleted; otherwise, null.</returns>
         protected override async Task<TModel> Get(uint world, TKey key)
         {
             await using (await _distributedLock.Lock(world, GetLockKey(key)))
@@ -580,13 +403,6 @@ namespace Http.Reepository
             }
         }
 
-        /// <summary>
-        /// Retrieves all entities with multi-level caching (local, Redis hash, database).
-        /// Uses distributed locking and handles hash-based Redis operations for bulk retrieval.
-        /// </summary>
-        /// <param name="world">The world identifier (e.g., 1, 2). Use 0 for unified-global.</param>
-        /// <param name="key">The key identifying the entities to retrieve.</param>
-        /// <returns>A collection of entities that are not soft-deleted.</returns>
         protected override async Task<IEnumerable<TModel>> GetAll(uint world, TKey key)
         {
             await using (await _distributedLock.Lock(world, GetLockKey(key)))
@@ -612,14 +428,6 @@ namespace Http.Reepository
             }
         }
 
-        /// <summary>
-        /// Queues a single entity for upsert with Redis hash caching and write-back support.
-        /// Updates local cache, Redis hash cache, and schedules database write-back.
-        /// If Redis key doesn't exist, calls GetAll to synchronize cache with database.
-        /// </summary>
-        /// <param name="world">The world identifier (e.g., 1, 2). Use 0 for unified-global.</param>
-        /// <param name="value">The entity to upsert.</param>
-        /// <returns>The same entity instance for method chaining.</returns>
         public override TModel Set(uint world, TModel value)
         {
             _buffer.Enqueue(async () =>
@@ -675,14 +483,6 @@ namespace Http.Reepository
             return value;
         }
 
-        /// <summary>
-        /// Queues multiple entities for upsert with Redis hash caching and write-back support.
-        /// Entities are grouped by hash and Redis key for efficient batch operations with hash structures.
-        /// If Redis key doesn't exist, calls GetAll to synchronize cache with database.
-        /// </summary>
-        /// <param name="world">The world identifier (e.g., 1, 2). Use 0 for unified-global.</param>
-        /// <param name="values">The entities to upsert.</param>
-        /// <returns>The same entity array for method chaining.</returns>
         public override TModel[] Set(uint world, TModel[] values)
         {
             _buffer.Enqueue(async () =>

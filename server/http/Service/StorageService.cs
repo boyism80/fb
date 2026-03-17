@@ -6,9 +6,6 @@ using Response = fb.protocol._internal.response;
 
 namespace Http.Service
 {
-    /// <summary>
-    /// Provides storage-related aggregation logic for controllers, admin tools, and services.
-    /// </summary>
     public class StorageService
     {
         private readonly DbContext _dbContext;
@@ -58,16 +55,6 @@ namespace Http.Service
                 .ToList();
         }
 
-        /// <summary>
-        /// Creates a new storage pending box entry with the specified user ID.
-        /// </summary>
-        /// <param name="world">The world identifier (e.g., 1, 2). Use 0 for unified.</param>
-        /// <param name="title">The title of the pending box entry.</param>
-        /// <param name="message">The message content of the pending box entry.</param>
-        /// <param name="userId">The user ID to assign the pending box to (null for global).</param>
-        /// <param name="expiredDate">The expiration date for the pending box (optional).</param>
-        /// <param name="attachments">The list of attachments (items, money, exp) to include.</param>
-        /// <returns>The created storage pending box entry.</returns>
         public async Task<StoragePendingBox> CreatePendingAsync(uint world, string title, string message, uint? userId = null, DateTime? expiredDate = null, List<Dsl> attachments = null)
         {
             if (string.IsNullOrWhiteSpace(title))
@@ -122,17 +109,6 @@ namespace Http.Service
             return pending;
         }
 
-        /// <summary>
-        /// Creates a new storage pending box entry with the specified user name.
-        /// Converts the user name to user ID and calls the userId-based overload.
-        /// </summary>
-        /// <param name="world">The world identifier (e.g., 1, 2). Use 0 for unified.</param>
-        /// <param name="title">The title of the pending box entry.</param>
-        /// <param name="message">The message content of the pending box entry.</param>
-        /// <param name="userName">The user name to assign the pending box to (null for global).</param>
-        /// <param name="expiredDate">The expiration date for the pending box (optional).</param>
-        /// <param name="attachments">The list of attachments (items, money, exp) to include.</param>
-        /// <returns>The created storage pending box entry.</returns>
         public async Task<StoragePendingBox> CreatePendingAsync(uint world, string title, string message, string userName = null, DateTime? expiredDate = null, List<Dsl> attachments = null)
         {
             uint? userId = null;
@@ -213,4 +189,3 @@ namespace Http.Service
 
     }
 }
-

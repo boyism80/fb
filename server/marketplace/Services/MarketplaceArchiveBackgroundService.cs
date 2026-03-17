@@ -6,10 +6,6 @@ using StackExchange.Redis;
 
 namespace Marketplace.Services
 {
-    /// <summary>
-    /// Provides a background service that periodically archives marketplace listings.
-    /// Uses Redis TTL with Lua script for atomic distributed locking to prevent concurrent execution across multiple instances.
-    /// </summary>
     public class MarketplaceArchiveBackgroundService : BackgroundService
     {
         private readonly IServiceScopeFactory _scopeFactory;
@@ -20,9 +16,6 @@ namespace Marketplace.Services
         private static readonly TimeSpan RetryInterval = TimeSpan.FromMinutes(1);
         private const string LockKey = "marketplace:archive:lock";
 
-        /// <summary>
-        /// Initializes a new instance of the <see cref="MarketplaceArchiveBackgroundService"/> class.
-        /// </summary>
         public MarketplaceArchiveBackgroundService(
             IServiceScopeFactory scopeFactory,
             RedisService redisService,
@@ -33,11 +26,6 @@ namespace Marketplace.Services
             _logger = logger;
         }
 
-        /// <summary>
-        /// Executes the background service that periodically archives marketplace listings.
-        /// </summary>
-        /// <param name="stoppingToken">The cancellation token for stopping the service.</param>
-        /// <returns>A task representing the asynchronous execution of the background service.</returns>
         protected override async Task ExecuteAsync(CancellationToken stoppingToken)
         {
             while (!stoppingToken.IsCancellationRequested)
@@ -100,13 +88,6 @@ namespace Marketplace.Services
             }
         }
 
-        /// <summary>
-        /// Archives all non-active listings to the archive table in a single atomic operation.
-        /// </summary>
-        /// <param name="dbContext">Database context for marketplace operations.</param>
-        /// <param name="logService">Log service for logging operations.</param>
-        /// <param name="cancellationToken">Cancellation token for the operation.</param>
-        /// <returns>Task representing the asynchronous operation.</returns>
         private async Task ArchiveListingsAsync(
             Marketplace.Service.DbContext dbContext,
             LogService logService,
