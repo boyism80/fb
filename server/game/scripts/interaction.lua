@@ -1464,8 +1464,8 @@ function on_login(me, first_login)
         goto BIRTHDAY_INPUT
     end
 
-    local num = tonumber(birthday)
-    if num == nil or num <= 0 then
+    birthday = tonumber(birthday)
+    if birthday == nil or birthday <= 0 then
         goto BIRTHDAY_MUST_SET
     end
 
