@@ -107,16 +107,6 @@ int builtin::server::builtin_datetime(lua_State* L)
     return 1;
 }
 
-int builtin::server::builtin_baram_time(lua_State* L)
-{
-    auto lua = fb::lua::get(L);
-    if (lua == nullptr)
-        return 0;
-
-    lua->pushstring(baram_time());
-    return 1;
-}
-
 int builtin::server::builtin_name2mob(lua_State* L)
 {
     auto lua = fb::lua::get(L);

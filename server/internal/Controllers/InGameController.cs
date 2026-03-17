@@ -1,4 +1,4 @@
-﻿using AutoMapper;
+using AutoMapper;
 using Fb.Model.EnumValue;
 using Http;
 using Http.Model;

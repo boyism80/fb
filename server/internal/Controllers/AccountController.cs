@@ -4,7 +4,6 @@ using Fb.Model.EnumValue;
 using Http;
 using Http.Model;
 using Http.Service;
-using Http.Util;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.ObjectPool;
 using System.Buffers;
@@ -220,16 +219,6 @@ namespace Internal.Controllers
                 ch.Nation = request.Nation;
                 ch.Creature = request.Creature;
                 _dbContext.Character.Set(world, ch);
-
-                var baramTime = DateTime.Now.ToBaramTime();
-                _dbContext.Achievement.Set(world, new Achievement
-                {
-                    Uid = request.Uid,
-                    Id = 0,
-                    Text = $"{baramTime} 생",
-                    Icon = 0,
-                    Color = 47
-                });
 
                 await _dbContext.SaveChangesAsync();
                 return new Response.MakeCharacter

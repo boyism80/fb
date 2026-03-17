@@ -1356,7 +1356,36 @@ function on_npc_chat(me, message, shout)
     return false
 end
 
-function on_login(me)
+local function make_baram_birth_label()
+    local epoch = os.time{ year = 1996, month = 3, day = 31, hour = 0, min = 0, sec = 0 }
+    local now = os.time()
+    local diff_sec = now - epoch
+    local total_ms = diff_sec * 1000
+
+    -- 1 Baram day = 3 real hours = 10800000 milliseconds
+    local baram_days = math.floor(total_ms / 10800000)
+    local baram_year = math.floor(baram_days / 365) + 1
+    local remain_days = baram_days % 365
+    local baram_month = math.min(math.floor(remain_days / 30) + 1, 12)
+
+    local season
+    if baram_month == 12 or baram_month == 1 or baram_month == 2 then
+        season = "겨울"
+    elseif baram_month >= 3 and baram_month <= 5 then
+        season = "봄"
+    elseif baram_month >= 6 and baram_month <= 8 then
+        season = "여름"
+    else
+        season = "가을"
+    end
+
+    return string.format("바람력 %d년 %s", baram_year, season)
+end
+
+function on_login(me, first_login)
+    if first_login then
+        me:push_achievement(0, make_baram_birth_label() .. " 생", 0, 47)
+    end
     if me:birthday() ~= nil then
         return
     end

@@ -204,6 +204,10 @@ async::task<std::shared_ptr<character>> login::init(const game_reqs::login& requ
     params.birthday     = resp.character.birth;
     params.created_date = fb::model::datetime(resp.character.created_date);
     params.updated_date = fb::model::datetime(resp.character.updated_date);
+    if (resp.character.first_login_date.has_value())
+        params.first_login_date = std::make_optional(fb::model::datetime(resp.character.first_login_date.value()));
+    else
+        params.first_login_date = std::nullopt;
     params.role         = static_cast<ROLE>(resp.character.role);
     params.class_type   = static_cast<CLASS>(resp.character.class_type);
     params.promotion    = resp.character.promotion;
@@ -385,7 +389,8 @@ async::task<std::shared_ptr<character>> login::init(const game_reqs::login& requ
 #endif
             lua->func("on_login");
             lua->pushobject(ch);
-            std::ignore = lua->call(1);
+            lua->pushboolean(ch->is_first_login());
+            std::ignore = lua->call(2);
         }
     }
 

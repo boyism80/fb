@@ -1,4 +1,4 @@
-﻿using Dapper;
+using Dapper;
 using Newtonsoft.Json;
 using System.Data;
 
@@ -6,12 +6,21 @@ namespace Http.Extension
 {
     public static class MySql
     {
-        public static string Escape<T>(this T obj)
+        public static string Escape<T>(this T? obj) where T : struct
         {
-            if (obj == null)
+            if (!obj.HasValue)
                 return "NULL";
 
-            // Handle enum types by converting to their underlying integer value
+            return EscapeNonNull(obj.Value);
+        }
+
+        public static string Escape<T>(this T obj) where T : notnull
+        {
+            return EscapeNonNull(obj);
+        }
+
+        private static string EscapeNonNull<T>(T obj) where T : notnull
+        {
             if (obj is System.Enum enumValue)
             {
                 var underlyingType = System.Enum.GetUnderlyingType(enumValue.GetType());
@@ -31,16 +40,27 @@ namespace Http.Extension
                     return ((long)(object)enumValue).ToString();
                 if (underlyingType == typeof(ulong))
                     return ((ulong)(object)enumValue).ToString();
-                // Fallback to int conversion
                 return Convert.ToInt32(enumValue).ToString();
             }
 
             return obj switch
             {
-                string s => s == null ? "NULL" : $"'{s.Replace("'", "''").Replace("\\", "\\\\")}'",
+                string s => $"'{s.Replace("'", "''").Replace("\\", "\\\\")}'",
                 bool b => b ? "1" : "0",
+                byte v => v.ToString(),
+                sbyte v => v.ToString(),
+                short v => v.ToString(),
+                ushort v => v.ToString(),
+                int v => v.ToString(),
+                uint v => v.ToString(),
+                long v => v.ToString(),
+                ulong v => v.ToString(),
+                float v => v.ToString(),
+                double v => v.ToString(),
+                decimal v => v.ToString(),
+                char c => $"'{c.ToString().Replace("'", "''").Replace("\\", "\\\\")}'",
                 DateTime dt => $"'{dt:yyyy-MM-dd HH:mm:ss.ffffff}'",
-                _ => obj.ToString(),
+                _ => EscapeNonNull(JsonConvert.SerializeObject(obj)),
             };
         }
     }

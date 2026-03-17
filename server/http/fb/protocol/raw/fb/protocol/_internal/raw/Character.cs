@@ -97,7 +97,14 @@ public struct Character : IFlatbufferObject
   public ArraySegment<byte>? GetUpdatedDateBytes() { return __p.__vector_as_arraysegment(82); }
 #endif
   public byte[] GetUpdatedDateArray() { return __p.__vector_as_array<byte>(82); }
-  public bool SuperHide { get { int o = __p.__offset(84); return o != 0 ? 0!=__p.bb.Get(o + __p.bb_pos) : (bool)false; } }
+  public string FirstLoginDate { get { int o = __p.__offset(84); return o != 0 ? __p.__string(o + __p.bb_pos) : null; } }
+#if ENABLE_SPAN_T
+  public Span<byte> GetFirstLoginDateBytes() { return __p.__vector_as_span<byte>(84, 1); }
+#else
+  public ArraySegment<byte>? GetFirstLoginDateBytes() { return __p.__vector_as_arraysegment(84); }
+#endif
+  public byte[] GetFirstLoginDateArray() { return __p.__vector_as_array<byte>(84); }
+  public bool SuperHide { get { int o = __p.__offset(86); return o != 0 ? 0!=__p.bb.Get(o + __p.bb_pos) : (bool)false; } }
 
   public static Offset<fb.protocol._internal.raw.Character> CreateCharacter(FlatBufferBuilder builder,
       uint id = 0,
@@ -140,8 +147,10 @@ public struct Character : IFlatbufferObject
       StringOffset pending_listingsOffset = default(StringOffset),
       StringOffset created_dateOffset = default(StringOffset),
       StringOffset updated_dateOffset = default(StringOffset),
+      StringOffset first_login_dateOffset = default(StringOffset),
       bool super_hide = false) {
-    builder.StartTable(41);
+    builder.StartTable(42);
+    Character.AddFirstLoginDate(builder, first_login_dateOffset);
     Character.AddUpdatedDate(builder, updated_dateOffset);
     Character.AddCreatedDate(builder, created_dateOffset);
     Character.AddPendingListings(builder, pending_listingsOffset);
@@ -186,7 +195,7 @@ public struct Character : IFlatbufferObject
     return Character.EndCharacter(builder);
   }
 
-  public static void StartCharacter(FlatBufferBuilder builder) { builder.StartTable(41); }
+  public static void StartCharacter(FlatBufferBuilder builder) { builder.StartTable(42); }
   public static void AddId(FlatBufferBuilder builder, uint id) { builder.AddUint(0, id, 0); }
   public static void AddName(FlatBufferBuilder builder, StringOffset nameOffset) { builder.AddOffset(1, nameOffset.Value, 0); }
   public static void AddPw(FlatBufferBuilder builder, StringOffset pwOffset) { builder.AddOffset(2, pwOffset.Value, 0); }
@@ -232,7 +241,8 @@ public struct Character : IFlatbufferObject
   public static void AddPendingListings(FlatBufferBuilder builder, StringOffset pendingListingsOffset) { builder.AddOffset(37, pendingListingsOffset.Value, 0); }
   public static void AddCreatedDate(FlatBufferBuilder builder, StringOffset createdDateOffset) { builder.AddOffset(38, createdDateOffset.Value, 0); }
   public static void AddUpdatedDate(FlatBufferBuilder builder, StringOffset updatedDateOffset) { builder.AddOffset(39, updatedDateOffset.Value, 0); }
-  public static void AddSuperHide(FlatBufferBuilder builder, bool superHide) { builder.AddBool(40, superHide, false); }
+  public static void AddFirstLoginDate(FlatBufferBuilder builder, StringOffset firstLoginDateOffset) { builder.AddOffset(40, firstLoginDateOffset.Value, 0); }
+  public static void AddSuperHide(FlatBufferBuilder builder, bool superHide) { builder.AddBool(41, superHide, false); }
   public static Offset<fb.protocol._internal.raw.Character> EndCharacter(FlatBufferBuilder builder) {
     int o = builder.EndTable();
     return new Offset<fb.protocol._internal.raw.Character>(o);
@@ -287,7 +297,8 @@ static public class CharacterVerify
       && verifier.VerifyString(tablePos, 78 /*PendingListings*/, false)
       && verifier.VerifyString(tablePos, 80 /*CreatedDate*/, false)
       && verifier.VerifyString(tablePos, 82 /*UpdatedDate*/, false)
-      && verifier.VerifyField(tablePos, 84 /*SuperHide*/, 1 /*bool*/, 1, false)
+      && verifier.VerifyString(tablePos, 84 /*FirstLoginDate*/, false)
+      && verifier.VerifyField(tablePos, 86 /*SuperHide*/, 1 /*bool*/, 1, false)
       && verifier.VerifyTableEnd(tablePos);
   }
 }

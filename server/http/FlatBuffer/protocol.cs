@@ -1,4 +1,4 @@
-﻿/**
+/**
  * @file    protocol.cs
  * @brief   Auto-generated FlatBuffer C# serialization classes for FB 2D MMORPG protocol
  * @author  FB FlatBuffer-Ex Tool
@@ -17,6 +17,9 @@
  *          Generation timestamp: 17 Mar 2026
  */
 
+using System;
+using System.Collections.Generic;
+using System.Linq;
 using Google.FlatBuffers;
 using Microsoft.Extensions.ObjectPool;
 using nullable;
@@ -29,6 +32,10 @@ namespace Google.FlatBuffers
         byte[] Serialize();
     }
 
+    /// <summary>
+    /// Pooled policy for FlatBufferBuilder objects
+    /// Manages creation and cleanup of FlatBufferBuilder instances for object pooling
+    /// </summary>
     public class FlatBufferBuilderPooledPolicy : PooledObjectPolicy<FlatBufferBuilder>
     {
         private readonly int _initialSize;
@@ -38,11 +45,17 @@ namespace Google.FlatBuffers
             _initialSize = initialSize;
         }
 
+        /// <summary>
+        /// Creates a new FlatBufferBuilder with specified initial buffer size
+        /// </summary>
         public override FlatBufferBuilder Create()
         {
             return new FlatBufferBuilder(_initialSize);
         }
 
+        /// <summary>
+        /// Resets the builder's internal state for reuse
+        /// </summary>
         public override bool Return(FlatBufferBuilder builder)
         {
             builder.Clear();
@@ -50,6 +63,10 @@ namespace Google.FlatBuffers
         }
     }
 
+    /// <summary>
+    /// Static object pool manager for FlatBufferBuilder instances
+    /// Provides thread-safe access to pooled FlatBufferBuilder objects
+    /// </summary>
     public static class FlatBufferBuilderPool
     {
         private static readonly ObjectPool<FlatBufferBuilder> _pool;
@@ -60,11 +77,17 @@ namespace Google.FlatBuffers
             _pool = new DefaultObjectPool<FlatBufferBuilder>(policy, maximumRetained: 256);
         }
 
+        /// <summary>
+        /// Gets a FlatBufferBuilder from the pool
+        /// </summary>
         public static FlatBufferBuilder Get()
         {
             return _pool.Get();
         }
 
+        /// <summary>
+        /// Returns a FlatBufferBuilder to the pool
+        /// </summary>
         public static void Return(FlatBufferBuilder builder)
         {
             _pool.Return(builder);
@@ -180,6 +203,7 @@ namespace fb.protocol._internal
                 builder.Build(value.PendingListings),
                 builder.Build(value.CreatedDate),
                 builder.Build(value.UpdatedDate),
+                builder.Build(value.FirstLoginDate),
                 builder.Build(value.SuperHide));
         }
         public static Offset<fb.protocol._internal.raw.Marriage> Build(this FlatBufferBuilder builder, fb.protocol._internal.Marriage value)
@@ -1643,7 +1667,7 @@ namespace fb.protocol._internal
     }
 
     public enum FlatBufferProtocolType
-    {
+    { 
         Position,
         Mimicry,
         Character,
@@ -1778,6 +1802,7 @@ namespace fb.protocol._internal.request
                 builder.Build(value.PendingListings),
                 builder.Build(value.CreatedDate),
                 builder.Build(value.UpdatedDate),
+                builder.Build(value.FirstLoginDate),
                 builder.Build(value.SuperHide));
         }
         public static Offset<fb.protocol._internal.raw.Marriage> Build(this FlatBufferBuilder builder, fb.protocol._internal.Marriage value)
@@ -3241,7 +3266,7 @@ namespace fb.protocol._internal.request
     }
 
     public enum FlatBufferProtocolType
-    {
+    { 
         Shutdown,
         Login,
         Logout,
@@ -3395,6 +3420,7 @@ namespace fb.protocol._internal.response
                 builder.Build(value.PendingListings),
                 builder.Build(value.CreatedDate),
                 builder.Build(value.UpdatedDate),
+                builder.Build(value.FirstLoginDate),
                 builder.Build(value.SuperHide));
         }
         public static Offset<fb.protocol._internal.raw.Marriage> Build(this FlatBufferBuilder builder, fb.protocol._internal.Marriage value)
@@ -4858,7 +4884,7 @@ namespace fb.protocol._internal.response
     }
 
     public enum FlatBufferProtocolType
-    {
+    { 
         Shutdown,
         KickOut,
         Login,
@@ -5013,6 +5039,7 @@ namespace fb.protocol.marketplace
                 builder.Build(value.PendingListings),
                 builder.Build(value.CreatedDate),
                 builder.Build(value.UpdatedDate),
+                builder.Build(value.FirstLoginDate),
                 builder.Build(value.SuperHide));
         }
         public static Offset<fb.protocol._internal.raw.Marriage> Build(this FlatBufferBuilder builder, fb.protocol._internal.Marriage value)
@@ -6476,7 +6503,7 @@ namespace fb.protocol.marketplace
     }
 
     public enum FlatBufferProtocolType
-    {
+    { 
         Item,
         PurchaseInfo,
         Listing,
@@ -6592,6 +6619,7 @@ namespace fb.protocol.marketplace.request
                 builder.Build(value.PendingListings),
                 builder.Build(value.CreatedDate),
                 builder.Build(value.UpdatedDate),
+                builder.Build(value.FirstLoginDate),
                 builder.Build(value.SuperHide));
         }
         public static Offset<fb.protocol._internal.raw.Marriage> Build(this FlatBufferBuilder builder, fb.protocol._internal.Marriage value)
@@ -8055,7 +8083,7 @@ namespace fb.protocol.marketplace.request
     }
 
     public enum FlatBufferProtocolType
-    {
+    { 
         List,
         Cancel,
         Purchase,
@@ -8172,6 +8200,7 @@ namespace fb.protocol.marketplace.response
                 builder.Build(value.PendingListings),
                 builder.Build(value.CreatedDate),
                 builder.Build(value.UpdatedDate),
+                builder.Build(value.FirstLoginDate),
                 builder.Build(value.SuperHide));
         }
         public static Offset<fb.protocol._internal.raw.Marriage> Build(this FlatBufferBuilder builder, fb.protocol._internal.Marriage value)
@@ -9635,7 +9664,7 @@ namespace fb.protocol.marketplace.response
     }
 
     public enum FlatBufferProtocolType
-    {
+    { 
         List,
         Cancel,
         Purchase,
@@ -9815,6 +9844,7 @@ namespace fb.protocol._internal
         public string PendingListings { get; set; } = null;
         public string CreatedDate { get; set; } = string.Empty;
         public string UpdatedDate { get; set; } = string.Empty;
+        public string FirstLoginDate { get; set; } = null;
         public bool SuperHide { get; set; } = false;
 
         public Character()
@@ -9862,6 +9892,7 @@ namespace fb.protocol._internal
             PendingListings = raw.PendingListings;
             CreatedDate = raw.CreatedDate;
             UpdatedDate = raw.UpdatedDate;
+            FirstLoginDate = raw.FirstLoginDate;
             SuperHide = raw.SuperHide;
         }
 

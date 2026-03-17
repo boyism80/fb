@@ -82,7 +82,6 @@ server::server(boost::asio::io_context& io_context, uint16_t port) :
     lua::build("sleep", builtin::server::builtin_sleep);
     lua::build("now", builtin::server::builtin_now);
     lua::build("datetime", builtin::server::builtin_datetime);
-    lua::build("baram_time", builtin::server::builtin_baram_time);
     lua::build("name2mob", builtin::server::builtin_name2mob);
     lua::build("name2spell", builtin::server::builtin_name2spell);
     lua::build("name2item", builtin::server::builtin_name2item);

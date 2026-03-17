@@ -2,7 +2,6 @@ using Dapper;
 using Http.Extension;
 using Http.Model;
 using Http.Service;
-using Newtonsoft.Json;
 using System.Data;
 
 namespace Http.Reepository
@@ -97,12 +96,13 @@ namespace Http.Reepository
                     `super_hide`,
                     `deleted`,
                     `created_date`,
-                    `updated_date`)
+                    `updated_date`,
+                    `first_login_date`)
                 VALUES (
                     {value.Id.Escape()},
                     {value.Name.Escape()},
                     {value.Pw.Escape()},
-                    {((byte)value.Role).Escape()},
+                    {value.Role.Escape()},
                     {value.Birth.Escape()},
                     {value.Look.Escape()},
                     {value.Color.Escape()},
@@ -120,7 +120,7 @@ namespace Http.Reepository
                     {value.Exp.Escape()},
                     {value.Money.Escape()},
                     {value.DepositedMoney.Escape()},
-                    {(value.Mimicry == null ? "NULL" : JsonConvert.SerializeObject(value.Mimicry).Escape())},
+                    {value.Mimicry.Escape()},
                     {value.Hp.Escape()},
                     {value.BaseHp.Escape()},
                     {value.AdditionalHp.Escape()},
@@ -135,13 +135,14 @@ namespace Http.Reepository
                     {value.RingRightColor.Escape()},
                     {value.AuxTopColor.Escape()},
                     {value.AuxBotColor.Escape()},
-                    {JsonConvert.SerializeObject(value.Buffs).Escape()},
+                    {value.Buffs.Escape()},
                     {value.Title.Escape()},
-                    {(value.PendingListings == null || value.PendingListings.Count == 0 ? null : JsonConvert.SerializeObject(value.PendingListings)).Escape()},
+                    {value.PendingListings.Escape()},
                     {value.SuperHide.Escape()},
                     {value.Deleted.Escape()},
                     {value.CreatedDate.Escape()},
-                    {value.UpdatedDate.Escape()})
+                    {value.UpdatedDate.Escape()},
+                    {value.FirstLoginDate.Escape()})
                 ON DUPLICATE KEY UPDATE 
                     `pw`=VALUES(`pw`),
                     `role`=VALUES(`role`),
@@ -182,7 +183,8 @@ namespace Http.Reepository
                     `pending_listings`=VALUES(`pending_listings`),
                     `super_hide`=VALUES(`super_hide`),
                     `deleted`=VALUES(`deleted`),
-                    `updated_date`=VALUES(`updated_date`);
+                    `updated_date`=VALUES(`updated_date`),
+                    `first_login_date`=COALESCE(VALUES(`first_login_date`), `first_login_date`);
                 """;
 
             return sql;

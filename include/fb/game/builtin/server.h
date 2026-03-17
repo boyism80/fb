@@ -12,7 +12,6 @@ struct server
     static int builtin_sleep(lua_State* L);
     static int builtin_now(lua_State* L);
     static int builtin_datetime(lua_State* L);
-    static int builtin_baram_time(lua_State* L);
     static int builtin_name2mob(lua_State* L);
     static int builtin_name2spell(lua_State* L);
     static int builtin_name2npc(lua_State* L);

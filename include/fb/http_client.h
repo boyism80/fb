@@ -85,9 +85,9 @@ public:
 
 private:
     boost::asio::awaitable<std::vector<uint8_t>> boost_get_raw_async(std::string                         host,
-                                                                    std::string                         path,
-                                                                    std::map<std::string, std::string>  headers,
-                                                                    std::chrono::steady_clock::duration timeout)
+                                                                     std::string                         path,
+                                                                     std::map<std::string, std::string>  headers,
+                                                                     std::chrono::steady_clock::duration timeout)
     {
         try
         {
@@ -260,32 +260,31 @@ private:
 
         pending_task task = [this, promise, host_str, path_str, headers]() {
             auto& ctx = static_cast<boost::asio::io_context&>(this->_executor);
-            boost::asio::co_spawn(
-                ctx,
-                this->boost_get_raw_async(host_str, path_str, headers, 5s),
-                [this, promise](std::exception_ptr ep, std::vector<uint8_t> bytes) {
-                    if (ep)
-                    {
-                        promise->set_exception(ep);
-                        this->_in_flight.fetch_sub(1, std::memory_order_relaxed);
-                        this->post_process_pending();
-                        return;
-                    }
-                    try
-                    {
-                        auto reader        = fb::stream_reader<big_endian>(bytes);
-                        auto protocol_type = reader.read<uint32_t>();
-                        auto protocol_size = reader.read<uint32_t>();
-                        auto offset        = bytes.data() + sizeof(uint32_t) + sizeof(uint32_t);
-                        promise->set_value(Response::Deserialize(offset));
-                    }
-                    catch (std::exception& e)
-                    {
-                        promise->set_exception(std::make_exception_ptr(e));
-                    }
-                    this->_in_flight.fetch_sub(1, std::memory_order_relaxed);
-                    this->post_process_pending();
-                });
+            boost::asio::co_spawn(ctx,
+                                  this->boost_get_raw_async(host_str, path_str, headers, 5s),
+                                  [this, promise](std::exception_ptr ep, std::vector<uint8_t> bytes) {
+                                      if (ep)
+                                      {
+                                          promise->set_exception(ep);
+                                          this->_in_flight.fetch_sub(1, std::memory_order_relaxed);
+                                          this->post_process_pending();
+                                          return;
+                                      }
+                                      try
+                                      {
+                                          auto reader        = fb::stream_reader<big_endian>(bytes);
+                                          auto protocol_type = reader.read<uint32_t>();
+                                          auto protocol_size = reader.read<uint32_t>();
+                                          auto offset        = bytes.data() + sizeof(uint32_t) + sizeof(uint32_t);
+                                          promise->set_value(Response::Deserialize(offset));
+                                      }
+                                      catch (std::exception& e)
+                                      {
+                                          promise->set_exception(std::make_exception_ptr(e));
+                                      }
+                                      this->_in_flight.fetch_sub(1, std::memory_order_relaxed);
+                                      this->post_process_pending();
+                                  });
         };
 
         bool trigger;
@@ -353,32 +352,31 @@ private:
 
         pending_task task = [this, promise, host, path, headers, body_vec]() {
             auto& ctx = static_cast<boost::asio::io_context&>(this->_executor);
-            boost::asio::co_spawn(
-                ctx,
-                this->boost_post_raw_async(host, path, headers, std::chrono::seconds{5}, body_vec),
-                [this, promise](std::exception_ptr ep, std::vector<uint8_t> bytes) {
-                    if (ep)
-                    {
-                        promise->set_exception(ep);
-                        this->_in_flight.fetch_sub(1, std::memory_order_relaxed);
-                        this->post_process_pending();
-                        return;
-                    }
-                    try
-                    {
-                        auto reader        = fb::stream_reader<big_endian>(bytes);
-                        auto protocol_type = reader.read<uint32_t>();
-                        auto protocol_len  = reader.read<uint32_t>();
-                        auto offset        = bytes.data() + sizeof(uint32_t) * 2;
-                        promise->set_value(response_of<Request>::type::Deserialize(offset));
-                    }
-                    catch (...)
-                    {
-                        promise->set_exception(std::current_exception());
-                    }
-                    this->_in_flight.fetch_sub(1, std::memory_order_relaxed);
-                    this->post_process_pending();
-                });
+            boost::asio::co_spawn(ctx,
+                                  this->boost_post_raw_async(host, path, headers, std::chrono::seconds{5}, body_vec),
+                                  [this, promise](std::exception_ptr ep, std::vector<uint8_t> bytes) {
+                                      if (ep)
+                                      {
+                                          promise->set_exception(ep);
+                                          this->_in_flight.fetch_sub(1, std::memory_order_relaxed);
+                                          this->post_process_pending();
+                                          return;
+                                      }
+                                      try
+                                      {
+                                          auto reader        = fb::stream_reader<big_endian>(bytes);
+                                          auto protocol_type = reader.read<uint32_t>();
+                                          auto protocol_len  = reader.read<uint32_t>();
+                                          auto offset        = bytes.data() + sizeof(uint32_t) * 2;
+                                          promise->set_value(response_of<Request>::type::Deserialize(offset));
+                                      }
+                                      catch (...)
+                                      {
+                                          promise->set_exception(std::current_exception());
+                                      }
+                                      this->_in_flight.fetch_sub(1, std::memory_order_relaxed);
+                                      this->post_process_pending();
+                                  });
         };
 
         bool trigger;
