@@ -49,6 +49,31 @@ namespace Http.Reepository
                 """;
         }
 
+        protected override string OnSelectMany(IReadOnlyList<SystemMailUserKey> keys)
+        {
+            return $"SELECT * FROM `system_mail_user` WHERE `user` IN ({string.Join(",", keys.Select(k => k.User))});";
+        }
+
+        protected override SystemMailUserKey GetKeyFromRow(SystemMailUser row)
+        {
+            return new SystemMailUserKey { User = row.User, MailId = row.MailId };
+        }
+
+        public async Task<IReadOnlyDictionary<uint, IReadOnlyList<SystemMailUser>>> GetMany(uint world, IReadOnlyList<uint> ownerIds)
+        {
+            if (ownerIds == null || ownerIds.Count == 0)
+                return new Dictionary<uint, IReadOnlyList<SystemMailUser>>();
+
+            var keys = ownerIds.Distinct().Select(uid => new SystemMailUserKey { User = uid, MailId = 0 }).ToList();
+            var list = await base.GetMany(world, keys);
+            var dict = keys.Distinct().ToDictionary(k => k.User, _ => (IList<SystemMailUser>)new List<SystemMailUser>());
+            foreach (var m in list)
+            {
+                dict[m.User].Add(m);
+            }
+            return dict.ToDictionary(kv => kv.Key, kv => (IReadOnlyList<SystemMailUser>)kv.Value);
+        }
+
         protected override string OnUpsert(SystemMailUser value)
         {
             var sql = $"""

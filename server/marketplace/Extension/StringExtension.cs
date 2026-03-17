@@ -1,4 +1,4 @@
-namespace Marketplace.Extension;
+﻿namespace Marketplace.Extension;
 
 public static class StringExtension
 {

@@ -2,7 +2,6 @@ using Dapper;
 using Http.Extension;
 using Http.Service;
 using Http.Worker;
-using Newtonsoft.Json;
 
 namespace Http;
 public class Program

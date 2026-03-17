@@ -1,4 +1,4 @@
-using Medallion.Threading.Redis;
+﻿using Medallion.Threading.Redis;
 
 namespace Http.Service
 {

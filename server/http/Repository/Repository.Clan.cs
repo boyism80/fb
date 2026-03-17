@@ -1,4 +1,4 @@
-using Http.Extension;
+﻿using Http.Extension;
 using Http.Model;
 using Http.Service;
 
@@ -25,6 +25,11 @@ namespace Http.Reepository
                 WHERE `id` = {key.Id}
                 LIMIT 1;
                 """;
+        }
+
+        protected override ClanKey GetKeyFromRow(Clan row)
+        {
+            return new ClanKey { Id = row.Id };
         }
 
         protected override string OnUpsert(Clan value)

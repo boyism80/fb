@@ -1,4 +1,4 @@
-using Http.Extension;
+﻿using Http.Extension;
 using Http.Model;
 using Http.Service;
 
@@ -25,6 +25,11 @@ namespace Http.Reepository
                 WHERE `uid` = {key.Uid}
                 LIMIT 1;
                 """;
+        }
+
+        protected override CharacterSyncKey GetKeyFromRow(CharacterSync row)
+        {
+            return new CharacterSyncKey { Uid = row.Uid };
         }
 
         protected override string OnUpsert(CharacterSync value)

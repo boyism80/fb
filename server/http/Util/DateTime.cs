@@ -1,4 +1,4 @@
-namespace Http.Util
+﻿namespace Http.Util
 {
     public static class DateTimeEx
     {

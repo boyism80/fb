@@ -1,4 +1,4 @@
-using Fb.Model;
+﻿using Fb.Model;
 using Http.Model;
 using Newtonsoft.Json;
 using Protocol = fb.protocol._internal;

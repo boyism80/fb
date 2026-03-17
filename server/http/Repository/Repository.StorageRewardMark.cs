@@ -47,6 +47,31 @@ namespace Http.Reepository
                 """;
         }
 
+        protected override string OnSelectMany(IReadOnlyList<StorageRewardMarkKey> keys)
+        {
+            return $"SELECT * FROM `storage_reward_mark` WHERE `user` IN ({string.Join(",", keys.Select(k => k.User))});";
+        }
+
+        protected override StorageRewardMarkKey GetKeyFromRow(StorageRewardMark row)
+        {
+            return new StorageRewardMarkKey { User = row.User };
+        }
+
+        public async Task<IReadOnlyDictionary<uint, IReadOnlyList<StorageRewardMark>>> GetMany(uint world, IReadOnlyList<uint> ownerIds)
+        {
+            if (ownerIds == null || ownerIds.Count == 0)
+                return new Dictionary<uint, IReadOnlyList<StorageRewardMark>>();
+
+            var keys = ownerIds.Distinct().Select(uid => new StorageRewardMarkKey { User = uid }).ToList();
+            var list = await base.GetMany(world, keys);
+            var dict = keys.Distinct().ToDictionary(k => k.User, _ => (IList<StorageRewardMark>)new List<StorageRewardMark>());
+            foreach (var r in list)
+            {
+                dict[r.User].Add(r);
+            }
+            return dict.ToDictionary(kv => kv.Key, kv => (IReadOnlyList<StorageRewardMark>)kv.Value);
+        }
+
         protected override string OnUpsert(StorageRewardMark value)
         {
             return $"""

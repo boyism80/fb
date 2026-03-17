@@ -1,4 +1,4 @@
-/**
+﻿/**
  * @file    protocol.cs
  * @brief   Auto-generated FlatBuffer C# serialization classes for FB 2D MMORPG protocol
  * @author  FB FlatBuffer-Ex Tool
@@ -17,9 +17,6 @@
  *          Generation timestamp: 17 Mar 2026
  */
 
-using System;
-using System.Collections.Generic;
-using System.Linq;
 using Google.FlatBuffers;
 using Microsoft.Extensions.ObjectPool;
 using nullable;
@@ -1646,7 +1643,7 @@ namespace fb.protocol._internal
     }
 
     public enum FlatBufferProtocolType
-    { 
+    {
         Position,
         Mimicry,
         Character,
@@ -3244,7 +3241,7 @@ namespace fb.protocol._internal.request
     }
 
     public enum FlatBufferProtocolType
-    { 
+    {
         Shutdown,
         Login,
         Logout,
@@ -4861,7 +4858,7 @@ namespace fb.protocol._internal.response
     }
 
     public enum FlatBufferProtocolType
-    { 
+    {
         Shutdown,
         KickOut,
         Login,
@@ -6479,7 +6476,7 @@ namespace fb.protocol.marketplace
     }
 
     public enum FlatBufferProtocolType
-    { 
+    {
         Item,
         PurchaseInfo,
         Listing,
@@ -8058,7 +8055,7 @@ namespace fb.protocol.marketplace.request
     }
 
     public enum FlatBufferProtocolType
-    { 
+    {
         List,
         Cancel,
         Purchase,
@@ -9638,7 +9635,7 @@ namespace fb.protocol.marketplace.response
     }
 
     public enum FlatBufferProtocolType
-    { 
+    {
         List,
         Cancel,
         Purchase,

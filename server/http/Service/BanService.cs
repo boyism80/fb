@@ -1,8 +1,5 @@
-using Dapper;
-using Fb.Model.EnumValue;
-using Http.Extension;
+﻿using Fb.Model.EnumValue;
 using Http.Model;
-using MySqlConnector;
 
 namespace Http.Service
 {

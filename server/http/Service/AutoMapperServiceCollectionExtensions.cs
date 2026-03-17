@@ -1,6 +1,5 @@
-using AutoMapper;
+﻿using AutoMapper;
 using Http.Mapping;
-using Microsoft.Extensions.DependencyInjection;
 
 namespace Http.Service
 {

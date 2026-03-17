@@ -1,4 +1,4 @@
-using StackExchange.Redis;
+﻿using StackExchange.Redis;
 using StackExchange.Redis.Extensions.Core.Configuration;
 using System.Text;
 

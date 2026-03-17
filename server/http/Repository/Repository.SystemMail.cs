@@ -1,4 +1,4 @@
-using Dapper;
+﻿using Dapper;
 using Http.Extension;
 using Http.Model;
 using Http.Service;
@@ -38,6 +38,11 @@ namespace Http.Reepository
                 `id` = {key.Id}
                 LIMIT 1;
                 """;
+        }
+
+        protected override SystemMailKey GetKeyFromRow(SystemMail row)
+        {
+            return new SystemMailKey { Id = 0 };
         }
 
         protected override string OnSelectBulk(SystemMailKey key)
@@ -111,3 +116,4 @@ namespace Http.Reepository
         }
     }
 }
+

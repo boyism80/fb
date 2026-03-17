@@ -31,6 +31,26 @@ namespace Http.Reepository
                 """;
         }
 
+        protected override string OnSelectMany(IReadOnlyList<CharacterKey> keys)
+        {
+            return $"SELECT * FROM `user` WHERE `id` IN ({string.Join(",", keys.Select(k => k.Id))});";
+        }
+
+        protected override CharacterKey GetKeyFromRow(Character row)
+        {
+            return new CharacterKey { Id = row.Id };
+        }
+
+        public async Task<IReadOnlyDictionary<uint, Character>> GetMany(uint world, IReadOnlyList<uint> ids)
+        {
+            if (ids == null || ids.Count == 0)
+                return new Dictionary<uint, Character>();
+
+            var keys = ids.Distinct().Select(id => new CharacterKey { Id = id }).ToList();
+            var list = await base.GetMany(world, keys);
+            return list.ToDictionary(c => c.Id, c => c);
+        }
+
         protected override string OnUpsert(Character value)
         {
             var sql = $"""

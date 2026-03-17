@@ -48,6 +48,31 @@ namespace Http.Reepository
                 """;
         }
 
+        protected override string OnSelectMany(IReadOnlyList<StorageBoxKey> keys)
+        {
+            return $"SELECT * FROM `storage_box` WHERE `user` IN ({string.Join(",", keys.Select(k => k.User))});";
+        }
+
+        protected override StorageBoxKey GetKeyFromRow(StorageBox row)
+        {
+            return new StorageBoxKey { User = row.User };
+        }
+
+        public async Task<IReadOnlyDictionary<uint, IReadOnlyList<StorageBox>>> GetMany(uint world, IReadOnlyList<uint> ownerIds)
+        {
+            if (ownerIds == null || ownerIds.Count == 0)
+                return new Dictionary<uint, IReadOnlyList<StorageBox>>();
+
+            var keys = ownerIds.Distinct().Select(uid => new StorageBoxKey { User = uid }).ToList();
+            var list = await base.GetMany(world, keys);
+            var dict = keys.Distinct().ToDictionary(k => k.User, _ => (IList<StorageBox>)new List<StorageBox>());
+            foreach (var b in list)
+            {
+                dict[b.User].Add(b);
+            }
+            return dict.ToDictionary(kv => kv.Key, kv => (IReadOnlyList<StorageBox>)kv.Value);
+        }
+
         protected override string OnUpsert(StorageBox value)
         {
             var attachmentsJson = JsonConvert.SerializeObject(value.Attachments ?? new List<Fb.Model.Dsl>());
@@ -130,3 +155,4 @@ namespace Http.Reepository
         }
     }
 }
+

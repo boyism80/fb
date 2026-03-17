@@ -1,4 +1,4 @@
-using Dapper;
+﻿using Dapper;
 using Fb.Model.EnumValue;
 using Http;
 using Http.Redis;
@@ -9,8 +9,8 @@ using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 using RabbitMQ.Client;
-using System.Text;
 using StackExchange.Redis;
+using System.Text;
 
 namespace WriteBack.Service
 {

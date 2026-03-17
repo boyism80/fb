@@ -1,4 +1,4 @@
-using Http.Redis;
+﻿using Http.Redis;
 using Http.Redis.Key;
 using Newtonsoft.Json;
 using Protocol = fb.protocol._internal;

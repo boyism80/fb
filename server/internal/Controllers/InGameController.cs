@@ -1,4 +1,4 @@
-using AutoMapper;
+﻿using AutoMapper;
 using Fb.Model.EnumValue;
 using Http;
 using Http.Model;
@@ -360,7 +360,7 @@ namespace Internal.Controllers
                 });
             var storagePending = await _storageService.GetPendingForUserAsync(world, uid);
 
-            var marriageData = await _dbContext.Marriage.Get(world, uid) ?? 
+            var marriageData = await _dbContext.Marriage.Get(world, uid) ??
                 _dbContext.Marriage.Set(world, new Http.Model.Marriage
                 {
                     CharacterId = uid,
@@ -441,8 +441,7 @@ namespace Internal.Controllers
                 if (request.Payload == null)
                     throw new Exception("Save request data is null");
 
-                var world = request.World;
-                await ApplySavePayload(world, request.Payload);
+                await ApplySavePayload(request.World, new List<Protocol.SavePayload> { request.Payload });
                 await _dbContext.SaveChangesAsync();
 
                 _logService.Write("character_save", new
@@ -478,17 +477,12 @@ namespace Internal.Controllers
                 if (request.Characters == null || request.Characters.Count == 0)
                     return new Response.BatchSave { Success = true };
 
-                var world = request.World;
-                foreach (var data in request.Characters)
-                {
-                    await ApplySavePayload(world, data);
-                }
-
+                await ApplySavePayload(request.World, request.Characters);
                 await _dbContext.SaveChangesAsync();
 
                 _logService.Write("character_save_batch", new
                 {
-                    world,
+                    world = request.World,
                     character_count = request.Characters.Count
                 });
 
@@ -506,48 +500,104 @@ namespace Internal.Controllers
             }
         }
 
-        private async Task ApplySavePayload(uint world, Protocol.SavePayload data)
+        private async Task ApplySavePayload(uint world, IReadOnlyList<Protocol.SavePayload> payloads)
         {
-            var exists = await _dbContext.Character.Get(world, data.Character.Id)
-                ?? throw new Exception();
+            if (payloads == null || payloads.Count == 0)
+                return;
 
-            if (exists.Deleted)
-                throw new Exception();
+            var characterIds = payloads.Select(p => p.Character.Id).Distinct().ToList();
+
+            var charactersTask = _dbContext.Character.GetMany(world, characterIds);
+            var itemsTask = _dbContext.Item.GetMany(world, characterIds);
+            var spellsTask = _dbContext.Spell.GetMany(world, characterIds);
+            var achievementsTask = _dbContext.Achievement.GetMany(world, characterIds);
+            var questsTask = _dbContext.Quest.GetMany(world, characterIds);
+            var systemMailUsersTask = _dbContext.SystemMailUser.GetMany(world, characterIds);
+            var storageBoxesTask = _dbContext.StorageBox.GetMany(world, characterIds);
+            var storageRewardMarksTask = _dbContext.StorageRewardMark.GetMany(world, characterIds);
+            var storagePendingBoxesTask = _dbContext.StoragePendingBox.GetMany(world, characterIds);
+
+            await Task.WhenAll(charactersTask, itemsTask, spellsTask, achievementsTask, questsTask,
+                systemMailUsersTask, storageBoxesTask, storageRewardMarksTask, storagePendingBoxesTask);
+
+            var characters = await charactersTask;
+            var itemsByOwner = await itemsTask;
+            var spellsByOwner = await spellsTask;
+            var achievementsByOwner = await achievementsTask;
+            var questsByOwner = await questsTask;
+            var systemMailUsersByOwner = await systemMailUsersTask;
+            var storageBoxesByOwner = await storageBoxesTask;
+            var storageRewardMarksByOwner = await storageRewardMarksTask;
+            var pendingBoxesByOwner = await storagePendingBoxesTask;
+
+            foreach (var data in payloads)
+            {
+                var characterId = data.Character.Id;
+                if (!characters.TryGetValue(characterId, out var existingCharacter))
+                    throw new Exception();
+                if (existingCharacter.Deleted)
+                    throw new Exception();
+
+                ApplyOneSavePayload(world, data,
+                    itemsByOwner.GetValueOrDefault(characterId) ?? Array.Empty<Item>(),
+                    spellsByOwner.GetValueOrDefault(characterId) ?? Array.Empty<Spell>(),
+                    achievementsByOwner.GetValueOrDefault(characterId) ?? Array.Empty<Achievement>(),
+                    questsByOwner.GetValueOrDefault(characterId) ?? Array.Empty<Quest>(),
+                    systemMailUsersByOwner.GetValueOrDefault(characterId) ?? Array.Empty<SystemMailUser>(),
+                    storageBoxesByOwner.GetValueOrDefault(characterId) ?? Array.Empty<StorageBox>(),
+                    storageRewardMarksByOwner.GetValueOrDefault(characterId) ?? Array.Empty<StorageRewardMark>(),
+                    pendingBoxesByOwner.GetValueOrDefault(characterId) ?? Array.Empty<StoragePendingBox>());
+            }
+        }
+
+        private void ApplyOneSavePayload(
+            uint world,
+            Protocol.SavePayload data,
+            IReadOnlyList<Item> existingItems,
+            IReadOnlyList<Spell> existingSpells,
+            IReadOnlyList<Achievement> existingAchievements,
+            IReadOnlyList<Quest> existingQuests,
+            IReadOnlyList<SystemMailUser> existingSystemMailUsers,
+            IReadOnlyList<StorageBox> existingStorageBoxes,
+            IReadOnlyList<StorageRewardMark> existingStorageRewardMarks,
+            IReadOnlyList<StoragePendingBox> existingPendingBoxes)
+        {
+            var characterId = data.Character.Id;
 
             var ch = _mapper.Map<Character>(data.Character);
             _dbContext.Character.Set(world, ch);
 
             var marriage = _mapper.Map<Http.Model.Marriage>(data.Marriage);
-            marriage.CharacterId = data.Character.Id;
+            marriage.CharacterId = characterId;
             marriage.CreatedDate = DateTime.Now;
             marriage.UpdatedDate = DateTime.Now;
             _dbContext.Marriage.Set(world, marriage);
 
-            var items = Override(_mapper.Map<Protocol.Item[], Item[]>(data.Items.ToArray()), await _dbContext.Item.Get(world, data.Character.Id));
+            var items = Override(_mapper.Map<Protocol.Item[], Item[]>(data.Items.ToArray()), existingItems);
             _dbContext.Item.Set(world, items);
 
-            var spells = Override(_mapper.Map<Protocol.Spell[], Spell[]>(data.Spells.ToArray()), await _dbContext.Spell.Get(world, data.Character.Id));
+            var spells = Override(_mapper.Map<Protocol.Spell[], Spell[]>(data.Spells.ToArray()), existingSpells);
             _dbContext.Spell.Set(world, spells.ToArray());
 
-            var achievements = Override(_mapper.Map<Protocol.Achievement[], Achievement[]>(data.Achievements.ToArray()), await _dbContext.Achievement.Get(world, data.Character.Id));
+            var achievements = Override(_mapper.Map<Protocol.Achievement[], Achievement[]>(data.Achievements.ToArray()), existingAchievements);
             _dbContext.Achievement.Set(world, achievements.ToArray());
 
-            var quests = Override(_mapper.Map<Protocol.Quest[], Quest[]>(data.Quests.ToArray()), await _dbContext.Quest.Get(world, data.Character.Id));
+            var quests = Override(_mapper.Map<Protocol.Quest[], Quest[]>(data.Quests.ToArray()), existingQuests);
             _dbContext.Quest.Set(world, quests.ToArray());
 
-            var receivedSystemMails = Override(_mapper.Map<Protocol.SystemMailUser[], SystemMailUser[]>(data.ReceivedSystemMails.ToArray()), await _dbContext.SystemMailUser.Get(world, data.Character.Id));
+            var receivedSystemMails = Override(_mapper.Map<Protocol.SystemMailUser[], SystemMailUser[]>(data.ReceivedSystemMails.ToArray()), existingSystemMailUsers);
             _dbContext.SystemMailUser.Set(world, receivedSystemMails.ToArray());
 
-            var storageBoxes = Override(_mapper.Map<Protocol.StorageBox[], StorageBox[]>(data.StorageBoxes?.ToArray() ?? Array.Empty<Protocol.StorageBox>()), await _dbContext.StorageBox.Get(world, data.Character.Id));
+            var storageBoxes = Override(_mapper.Map<Protocol.StorageBox[], StorageBox[]>(data.StorageBoxes?.ToArray() ?? Array.Empty<Protocol.StorageBox>()), existingStorageBoxes);
             _dbContext.StorageBox.Set(world, storageBoxes);
 
-            var storageRewardMarks = Override(_mapper.Map<Protocol.StorageRewardMark[], StorageRewardMark[]>(data.StorageRewardMarks?.ToArray() ?? Array.Empty<Protocol.StorageRewardMark>()), await _dbContext.StorageRewardMark.Get(world, data.Character.Id));
+            var storageRewardMarks = Override(_mapper.Map<Protocol.StorageRewardMark[], StorageRewardMark[]>(data.StorageRewardMarks?.ToArray() ?? Array.Empty<Protocol.StorageRewardMark>()), existingStorageRewardMarks);
             _dbContext.StorageRewardMark.Set(world, storageRewardMarks.ToArray());
 
             var personalPendingIds = data.StorageRewardMarks?.Select(mark => mark.PendingId).ToHashSet() ?? new HashSet<string>();
-            if (personalPendingIds.Count > 0)
+            if (personalPendingIds.Count > 0 && existingPendingBoxes.Count > 0)
             {
-                var pendingBoxes = (await _dbContext.StoragePendingBox.Get(world, data.Character.Id)).Where(x => personalPendingIds.Contains(x.Id)).ToArray();
+                var pendingBoxes = existingPendingBoxes.Where(x => personalPendingIds.Contains(x.Id)).ToArray();
                 if (pendingBoxes.Length > 0)
                 {
                     foreach (var pendingBox in pendingBoxes)

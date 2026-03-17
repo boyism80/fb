@@ -1,4 +1,4 @@
-namespace Http.Service
+﻿namespace Http.Service
 {
     public class SessionTtlRefreshService : BackgroundService
     {

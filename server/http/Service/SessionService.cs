@@ -1,4 +1,4 @@
-using Http.Model.Redis;
+﻿using Http.Model.Redis;
 using Http.Redis;
 using Http.Redis.Key;
 using Newtonsoft.Json;

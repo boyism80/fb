@@ -1,4 +1,4 @@
-using Log.Repository;
+﻿using Log.Repository;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;

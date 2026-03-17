@@ -1,4 +1,4 @@
-using Fb.Model.EnumValue;
+﻿using Fb.Model.EnumValue;
 
 namespace Http
 {

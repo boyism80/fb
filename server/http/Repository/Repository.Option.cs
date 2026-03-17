@@ -1,4 +1,4 @@
-using Http.Extension;
+﻿using Http.Extension;
 using Http.Model;
 using Http.Service;
 
@@ -26,6 +26,11 @@ namespace Http.Reepository
                 WHERE `uid` = {key.Uid}
                 LIMIT 1;
                 """;
+        }
+
+        protected override OptionKey GetKeyFromRow(Option row)
+        {
+            return new OptionKey { Uid = row.Uid };
         }
 
         protected override string OnUpsert(Option value)

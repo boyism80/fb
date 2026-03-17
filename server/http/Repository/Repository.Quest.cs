@@ -48,6 +48,31 @@ namespace Http.Reepository
                 """;
         }
 
+        protected override string OnSelectMany(IReadOnlyList<QuestKey> keys)
+        {
+            return $"SELECT * FROM `quest` WHERE `user` IN ({string.Join(",", keys.Select(k => k.User))});";
+        }
+
+        protected override QuestKey GetKeyFromRow(Quest row)
+        {
+            return new QuestKey { User = row.User };
+        }
+
+        public async Task<IReadOnlyDictionary<uint, IReadOnlyList<Quest>>> GetMany(uint world, IReadOnlyList<uint> ownerIds)
+        {
+            if (ownerIds == null || ownerIds.Count == 0)
+                return new Dictionary<uint, IReadOnlyList<Quest>>();
+
+            var keys = ownerIds.Distinct().Select(uid => new QuestKey { User = uid }).ToList();
+            var list = await base.GetMany(world, keys);
+            var dict = keys.Distinct().ToDictionary(k => k.User, _ => (IList<Quest>)new List<Quest>());
+            foreach (var q in list)
+            {
+                dict[q.User].Add(q);
+            }
+            return dict.ToDictionary(kv => kv.Key, kv => (IReadOnlyList<Quest>)kv.Value);
+        }
+
         protected override string OnUpsert(Quest value)
         {
             var sql = $"""

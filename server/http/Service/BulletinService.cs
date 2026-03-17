@@ -1,4 +1,4 @@
-using Dapper;
+﻿using Dapper;
 using Http.Model;
 using System.Collections.Concurrent;
 using System.Data;

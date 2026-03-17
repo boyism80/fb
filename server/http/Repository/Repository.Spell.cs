@@ -52,6 +52,31 @@ namespace Http.Reepository
             return sql;
         }
 
+        protected override string OnSelectMany(IReadOnlyList<SpellKey> keys)
+        {
+            return $"SELECT * FROM `spell` WHERE `owner` IN ({string.Join(",", keys.Select(k => k.Owner))});";
+        }
+
+        protected override SpellKey GetKeyFromRow(Spell row)
+        {
+            return new SpellKey { Owner = row.Owner };
+        }
+
+        public async Task<IReadOnlyDictionary<uint, IReadOnlyList<Spell>>> GetMany(uint world, IReadOnlyList<uint> ownerIds)
+        {
+            if (ownerIds == null || ownerIds.Count == 0)
+                return new Dictionary<uint, IReadOnlyList<Spell>>();
+
+            var keys = ownerIds.Distinct().Select(oid => new SpellKey { Owner = oid }).ToList();
+            var list = await base.GetMany(world, keys);
+            var dict = keys.Distinct().ToDictionary(k => k.Owner, _ => (IList<Spell>)new List<Spell>());
+            foreach (var s in list)
+            {
+                dict[s.Owner].Add(s);
+            }
+            return dict.ToDictionary(kv => kv.Key, kv => (IReadOnlyList<Spell>)kv.Value);
+        }
+
         protected override string OnUpsert(Spell value)
         {
             var sql = $"""

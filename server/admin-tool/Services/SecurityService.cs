@@ -1,4 +1,4 @@
-using AdminTool.Options;
+﻿using AdminTool.Options;
 using Microsoft.Extensions.Options;
 
 namespace AdminTool.Services

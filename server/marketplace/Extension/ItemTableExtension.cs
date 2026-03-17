@@ -1,4 +1,4 @@
-using Fb.Model;
+﻿using Fb.Model;
 
 namespace Marketplace.Extension;
 

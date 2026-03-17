@@ -1,4 +1,4 @@
-namespace AdminTool.Options
+﻿namespace AdminTool.Options
 {
     public class SecurityOptions
     {

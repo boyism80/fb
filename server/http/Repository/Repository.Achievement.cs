@@ -52,6 +52,31 @@ namespace Http.Reepository
             return sql;
         }
 
+        protected override string OnSelectMany(IReadOnlyList<AchievementKey> keys)
+        {
+            return $"SELECT * FROM `achievement` WHERE `uid` IN ({string.Join(",", keys.Select(k => k.Uid))});";
+        }
+
+        protected override AchievementKey GetKeyFromRow(Achievement row)
+        {
+            return new AchievementKey { Uid = row.Uid };
+        }
+
+        public async Task<IReadOnlyDictionary<uint, IReadOnlyList<Achievement>>> GetMany(uint world, IReadOnlyList<uint> ownerIds)
+        {
+            if (ownerIds == null || ownerIds.Count == 0)
+                return new Dictionary<uint, IReadOnlyList<Achievement>>();
+
+            var keys = ownerIds.Distinct().Select(uid => new AchievementKey { Uid = uid }).ToList();
+            var list = await base.GetMany(world, keys);
+            var dict = keys.Distinct().ToDictionary(k => k.Uid, _ => (IList<Achievement>)new List<Achievement>());
+            foreach (var a in list)
+            {
+                dict[a.Uid].Add(a);
+            }
+            return dict.ToDictionary(kv => kv.Key, kv => (IReadOnlyList<Achievement>)kv.Value);
+        }
+
         protected override string OnUpsert(Achievement value)
         {
             var sql = $"""

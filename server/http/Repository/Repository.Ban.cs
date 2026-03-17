@@ -1,8 +1,7 @@
-using Dapper;
+﻿using Dapper;
 using Http.Extension;
 using Http.Model;
 using Http.Service;
-using System.Data;
 
 namespace Http.Reepository
 {
@@ -36,6 +35,11 @@ namespace Http.Reepository
                 WHERE `user` = {key.User} AND `deleted` = 0
                 LIMIT 1;
                 """;
+        }
+
+        protected override BanKey GetKeyFromRow(Ban row)
+        {
+            return new BanKey { User = row.User };
         }
 
         protected override string OnUpsert(Ban value)
@@ -78,3 +82,4 @@ namespace Http.Reepository
         }
     }
 }
+

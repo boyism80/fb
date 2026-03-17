@@ -1,7 +1,5 @@
-using Http.Model;
-using Http.Redis;
+﻿using Http.Model;
 using Newtonsoft.Json;
-using StackExchange.Redis;
 
 namespace Http.Service
 {
@@ -30,7 +28,7 @@ namespace Http.Service
 
             var cacheKey = $"maintenance:status:{world}";
             var cachedValue = await redis.Connection.StringGetAsync(cacheKey);
-            
+
             if (!cachedValue.IsNull)
             {
                 try

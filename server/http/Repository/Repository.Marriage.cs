@@ -1,4 +1,4 @@
-using Http.Extension;
+﻿using Http.Extension;
 using Http.Model;
 using Http.Service;
 
@@ -32,6 +32,11 @@ namespace Http.Reepository
                 WHERE `character_id` = {key.CharacterId}
                 LIMIT 1;
                 """;
+        }
+
+        protected override MarriageKey GetKeyFromRow(Marriage row)
+        {
+            return new MarriageKey { CharacterId = row.CharacterId };
         }
 
         protected override string OnUpsert(Marriage value)

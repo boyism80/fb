@@ -1,6 +1,5 @@
-using Http.Model;
+﻿using Http.Model;
 using Http.Redis;
-using Http.Redis.Key;
 using Newtonsoft.Json;
 using StackExchange.Redis;
 
@@ -214,7 +213,7 @@ namespace Http.Service
 
             var heartbeatPattern = $"heart-beat:{world}:Game:*";
             var keys = await redis.Connection.ScanKeysAsync(heartbeatPattern, 1000);
-            
+
             if (keys.Count == 0)
             {
                 _logger.LogWarning("No running game servers found for world {World}", world);

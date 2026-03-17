@@ -45,6 +45,32 @@ namespace Http.Reepository
                 """;
         }
 
+        protected override string OnSelectMany(IReadOnlyList<StoragePendingBoxKey> keys)
+        {
+            var users = keys.Select(k => k.User.HasValue ? k.User.Value.ToString() : "NULL").ToList();
+            return $"SELECT * FROM `storage_pending_box` WHERE `user` IN ({string.Join(",", users)});";
+        }
+
+        protected override StoragePendingBoxKey GetKeyFromRow(StoragePendingBox row)
+        {
+            return new StoragePendingBoxKey { User = row.User };
+        }
+
+        public async Task<IReadOnlyDictionary<uint, IReadOnlyList<StoragePendingBox>>> GetMany(uint world, IReadOnlyList<uint> ownerIds)
+        {
+            if (ownerIds == null || ownerIds.Count == 0)
+                return new Dictionary<uint, IReadOnlyList<StoragePendingBox>>();
+
+            var keys = ownerIds.Distinct().Select(uid => new StoragePendingBoxKey { User = uid == 0 ? null : uid }).ToList();
+            var list = await base.GetMany(world, keys);
+            var dict = keys.GroupBy(k => k.User ?? 0).ToDictionary(g => g.Key, _ => (IList<StoragePendingBox>)new List<StoragePendingBox>());
+            foreach (var p in list)
+            {
+                dict[p.User ?? 0].Add(p);
+            }
+            return dict.ToDictionary(kv => kv.Key, kv => (IReadOnlyList<StoragePendingBox>)kv.Value);
+        }
+
         private static string BuildUserPredicate(uint? user)
         {
             return user.HasValue ? $"`user` = {user.Value}" : "`user` IS NULL";

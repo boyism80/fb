@@ -1,4 +1,4 @@
-using AutoMapper;
+﻿using AutoMapper;
 using Newtonsoft.Json;
 using Protocol = fb.protocol._internal;
 
@@ -140,7 +140,7 @@ namespace Http.Mapping
                 {
                     dest.Attachments = string.IsNullOrWhiteSpace(src.Attachments)
                         ? new List<Fb.Model.Dsl>()
-                        : (JsonConvert.DeserializeObject<List<Fb.Model.Dsl> >(src.Attachments) ?? new List<Fb.Model.Dsl>());
+                        : (JsonConvert.DeserializeObject<List<Fb.Model.Dsl>>(src.Attachments) ?? new List<Fb.Model.Dsl>());
                     dest.ExpiredDate = string.IsNullOrEmpty(src.ExpiredDate) ? null : DateTime.Parse(src.ExpiredDate);
                 });
         }

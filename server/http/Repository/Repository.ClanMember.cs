@@ -1,4 +1,4 @@
-using Http.Extension;
+﻿using Http.Extension;
 using Http.Model;
 using Http.Service;
 
@@ -38,6 +38,11 @@ namespace Http.Reepository
                 `user` = {key.User}
                 LIMIT 1;
                 """";
+        }
+
+        protected override ClanMemberKey GetKeyFromRow(ClanMember row)
+        {
+            return new ClanMemberKey { Clan = row.Clan, User = 0 };
         }
 
         protected override string OnSelectBulk(ClanMemberKey key)

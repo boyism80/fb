@@ -1,4 +1,4 @@
-using Http.Extension;
+﻿using Http.Extension;
 using Http.Model;
 using Http.Service;
 using Newtonsoft.Json;
@@ -26,6 +26,11 @@ namespace Http.Reepository
                 WHERE `master` = {key.Master}
                 LIMIT 1;
                 """;
+        }
+
+        protected override GroupKey GetKeyFromRow(Group row)
+        {
+            return new GroupKey { Master = row.Master };
         }
 
         protected override string OnUpsert(Group value)

@@ -1,4 +1,4 @@
-using Google.FlatBuffers;
+﻿using Google.FlatBuffers;
 using Http.Redis;
 using RabbitMQ.Client;
 using RabbitMQ.Client.Events;
