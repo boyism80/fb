@@ -892,8 +892,13 @@ uint32_t mob_stat::base_regenerative() const
     return 0;
 }
 
-uint32_t
-mob_stat::damage(uint32_t value, std::shared_ptr<object> from, bool critical, float rate, bool physical, bool fixed, bool notify)
+uint32_t mob_stat::damage(uint32_t                value,
+                          std::shared_ptr<object> from,
+                          bool                    critical,
+                          float                   rate,
+                          bool                    physical,
+                          bool                    fixed,
+                          bool                    notify)
 {
     this->owner.assert_thread();
 

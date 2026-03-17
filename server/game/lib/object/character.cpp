@@ -26,12 +26,12 @@ character::character(fb::game::server& server, const initial_params& params) :
               }
 }),
     listener(server.listener), id(params.id), _socket(params.socket), _pw(params.pw),
-    _created_date(params.created_date), _updated_date(params.updated_date), _first_login_date(params.first_login_date), _name(params.name), _role(params.role),
-    _birthday(params.birthday), _look(params.look), _color(params.color), _armor_color(params.armor_color),
-    _weapon_color(params.weapon_color), _shield_color(params.shield_color), _experience(params.exp),
-    _gender(params.gender), _state(params.state), _level(params.level), _class(params.class_type),
-    _promotion(params.promotion), _money(params.money), _mimicry(params.mimicry), _title(params.title),
-    _nation(params.nation), _creature(params.creature), _last_afk_time(fb::model::datetime()),
+    _created_date(params.created_date), _updated_date(params.updated_date), _first_login_date(params.first_login_date),
+    _name(params.name), _role(params.role), _birthday(params.birthday), _look(params.look), _color(params.color),
+    _armor_color(params.armor_color), _weapon_color(params.weapon_color), _shield_color(params.shield_color),
+    _experience(params.exp), _gender(params.gender), _state(params.state), _level(params.level),
+    _class(params.class_type), _promotion(params.promotion), _money(params.money), _mimicry(params.mimicry),
+    _title(params.title), _nation(params.nation), _creature(params.creature), _last_afk_time(fb::model::datetime()),
     _super_hide(params.super_hide)
 {
     this->_ping_state.last_ping_time = fb::model::datetime() - std::chrono::seconds(10);
@@ -1417,30 +1417,30 @@ fb::protocol::internal::Character character::to_protocol() const
     if (!this->_first_login_date.has_value())
         this->_first_login_date = fb::model::datetime();
 
-    auto dto            = fb::protocol::internal::Character();
-    dto.id              = this->id;
-    dto.name            = this->_name;
-    dto.pw              = this->_pw;
-    dto.birth           = this->_birthday;
-    dto.created_date    = this->_created_date.to_string();
-    dto.updated_date    = fb::model::datetime().to_string();
-    dto.first_login_date  = this->_first_login_date->to_string();
-    dto.role            = static_cast<uint8_t>(this->_role);
-    dto.look            = this->_look;
-    dto.color           = this->_color;
-    dto.gender          = static_cast<uint8_t>(this->_gender);
-    dto.nation          = static_cast<uint8_t>(this->_nation);
-    dto.creature        = static_cast<uint8_t>(this->_creature);
-    dto.map             = this->_map != nullptr ? this->_map->model.id : 0;
-    dto.position        = fb::protocol::internal::Position{this->_position.x, this->_position.y};
-    dto.direction       = static_cast<uint8_t>(this->_direction);
-    dto.state           = static_cast<uint8_t>(this->_state);
-    dto.class_type      = static_cast<uint8_t>(this->_class);
-    dto.promotion       = this->_promotion;
-    dto.level           = this->_level;
-    dto.exp             = this->_experience;
-    dto.money           = this->_money;
-    dto.deposited_money = this->items.deposited();
+    auto dto             = fb::protocol::internal::Character();
+    dto.id               = this->id;
+    dto.name             = this->_name;
+    dto.pw               = this->_pw;
+    dto.birth            = this->_birthday;
+    dto.created_date     = this->_created_date.to_string();
+    dto.updated_date     = fb::model::datetime().to_string();
+    dto.first_login_date = this->_first_login_date->to_string();
+    dto.role             = static_cast<uint8_t>(this->_role);
+    dto.look             = this->_look;
+    dto.color            = this->_color;
+    dto.gender           = static_cast<uint8_t>(this->_gender);
+    dto.nation           = static_cast<uint8_t>(this->_nation);
+    dto.creature         = static_cast<uint8_t>(this->_creature);
+    dto.map              = this->_map != nullptr ? this->_map->model.id : 0;
+    dto.position         = fb::protocol::internal::Position{this->_position.x, this->_position.y};
+    dto.direction        = static_cast<uint8_t>(this->_direction);
+    dto.state            = static_cast<uint8_t>(this->_state);
+    dto.class_type       = static_cast<uint8_t>(this->_class);
+    dto.promotion        = this->_promotion;
+    dto.level            = this->_level;
+    dto.exp              = this->_experience;
+    dto.money            = this->_money;
+    dto.deposited_money  = this->items.deposited();
     if (this->_mimicry.has_value())
     {
         auto const& p         = this->_mimicry.value();
