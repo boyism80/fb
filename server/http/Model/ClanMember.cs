@@ -1,5 +1,4 @@
 using StackExchange.Redis;
-using System.Text.Json.Serialization;
 
 namespace Http.Model
 {
@@ -17,11 +16,5 @@ namespace Http.Model
     public class ClanMember : ClanMemberKey, IModel
     {
         public uint Role { get; set; }
-        [JsonIgnore]
-        public ClanMemberKey Key => new ClanMemberKey
-        {
-            Clan = Clan,
-            User = User,
-        };
     }
 }
