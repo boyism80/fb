@@ -5,19 +5,8 @@ using Newtonsoft.Json;
 
 namespace Http.Reepository
 {
-    /// <summary>
-    /// Provides repository functionality for user storage box data.
-    /// Persists storage entries with Redis hash caching support.
-    /// </summary>
     public class StorageBoxRepository : RedisHashRepository<StorageBox, StorageBoxKey>
     {
-        /// <summary>
-        /// Initializes a new instance of the <see cref="StorageBoxRepository"/> class.
-        /// </summary>
-        /// <param name="dbContext">Database context for shard connections.</param>
-        /// <param name="redisService">Redis service used for caching.</param>
-        /// <param name="distributedLock">Distributed lock provider for cache coherence.</param>
-        /// <param name="dbExecuteService">Write-back service for async persistence.</param>
         public StorageBoxRepository(DbContext dbContext,
             RedisService redisService,
             RedisDistributedLockService distributedLock,
@@ -25,12 +14,6 @@ namespace Http.Reepository
         {
         }
 
-        /// <summary>
-        /// Retrieves a specific storage entry for a user.
-        /// </summary>
-        /// <param name="world">The world identifier (e.g., 1, 2). Use 0 for unified-global.</param>
-        /// <param name="user">The user ID.</param>
-        /// <param name="id">The storage box ID.</param>
         public Task<StorageBox> Get(uint world, uint user, uint id)
         {
             return base.Get(world, new StorageBoxKey
@@ -40,11 +23,6 @@ namespace Http.Reepository
             });
         }
 
-        /// <summary>
-        /// Retrieves all storage entries for a user.
-        /// </summary>
-        /// <param name="world">The world identifier (e.g., 1, 2). Use 0 for unified-global.</param>
-        /// <param name="user">The user ID.</param>
         public Task<IEnumerable<StorageBox>> Get(uint world, uint user)
         {
             return base.GetAll(world, new StorageBoxKey
@@ -53,7 +31,6 @@ namespace Http.Reepository
             });
         }
 
-        /// <inheritdoc/>
         protected override string OnSelect(StorageBoxKey key)
         {
             return $"""
@@ -63,7 +40,6 @@ namespace Http.Reepository
                 """;
         }
 
-        /// <inheritdoc/>
         protected override string OnSelectBulk(StorageBoxKey key)
         {
             return $"""
@@ -72,7 +48,31 @@ namespace Http.Reepository
                 """;
         }
 
-        /// <inheritdoc/>
+        protected override string OnSelectMany(IReadOnlyList<StorageBoxKey> keys)
+        {
+            return $"SELECT * FROM `storage_box` WHERE `user` IN ({string.Join(",", keys.Select(k => k.User))});";
+        }
+
+        protected override StorageBoxKey GetKeyFromRow(StorageBox row)
+        {
+            return new StorageBoxKey { User = row.User };
+        }
+
+        public async Task<IReadOnlyDictionary<uint, IReadOnlyList<StorageBox>>> GetMany(uint world, IReadOnlyList<uint> ownerIds)
+        {
+            if (ownerIds == null || ownerIds.Count == 0)
+                return new Dictionary<uint, IReadOnlyList<StorageBox>>();
+
+            var keys = ownerIds.Distinct().Select(uid => new StorageBoxKey { User = uid }).ToList();
+            var list = await base.GetMany(world, keys);
+            var dict = keys.Distinct().ToDictionary(k => k.User, _ => (IList<StorageBox>)new List<StorageBox>());
+            foreach (var b in list)
+            {
+                dict[b.User].Add(b);
+            }
+            return dict.ToDictionary(kv => kv.Key, kv => (IReadOnlyList<StorageBox>)kv.Value);
+        }
+
         protected override string OnUpsert(StorageBox value)
         {
             var attachmentsJson = JsonConvert.SerializeObject(value.Attachments ?? new List<Fb.Model.Dsl>());
@@ -111,7 +111,6 @@ namespace Http.Reepository
                 """;
         }
 
-        /// <inheritdoc/>
         protected override string OnUpsert(StorageBox[] values)
         {
             var args = values.Select(value =>

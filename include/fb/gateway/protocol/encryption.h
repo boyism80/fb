@@ -10,7 +10,7 @@ namespace fb::protocol::gateway::response {
 class encryption : public fb::protocol::header
 {
 public:
-    static constexpr uint8_t header = 0x00;
+    static constexpr uint8_t opcode = 0x00;
 
 public:
 #ifdef BOT

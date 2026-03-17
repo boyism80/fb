@@ -1,4 +1,4 @@
--- 용겸제구봉: on attack, chance to apply 용의제구노 on front target. Trash: 65% prob, 15s.
+-- 용겸제구봉 공격 스크립트
 function ON_ATTACK_284(me, item)
     math.randomseed(seed())
     if math.random() > 0.65 then
@@ -14,11 +14,11 @@ function ON_ATTACK_284(me, item)
 end
 
 -- 용겸제구봉 사용 스크립트
-function ON_ACTIVE_284(me, item)
+function ON_ACTIVATED_284(me, item)
 
 end
 
 -- 용겸제구봉 해제 스크립트
-function ON_INACTIVE_284(me, item)
+function ON_DEACTIVATED_284(me, item)
 
 end

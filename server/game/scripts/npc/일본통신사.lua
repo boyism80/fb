@@ -1,4 +1,3 @@
--- @note Trash: 2_이벤트\칠지도.txt "일본통신사". Exchange 24 dotol types (1 each) for 칠지도.
 
 local NEED_ITEMS = {
     ["황도톨"] = 1, ["적도톨"] = 1, ["연녹도톨"] = 1, ["녹도톨"] = 1,
@@ -10,9 +9,6 @@ local NEED_ITEMS = {
 }
 local REWARD_NAME = "칠지도"
 
----@brief NPC 일본통신사: exchange 24 dotol types (1 each) for 칠지도.
----@param[in] me  The character.
----@param[in] npc The NPC entity.
 function NPC_366(me, npc)
     local d = me:dialog(npc, "안녕하십니까? 저는 일본과 부여를 오가며 외교를 담당하는 일본통신사 입니다.", false, true)
     if d == DIALOG_RESULT.QUIT then

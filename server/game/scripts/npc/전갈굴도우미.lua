@@ -1,5 +1,5 @@
 function NPC_46(me, npc)
-    ::NPC_46_COS00::
+    ::NPC_46_0001::
     local button = me:dialog(npc, '여기는 전갈굴입니다. 55 레벨부터 70 레벨까지 사냥하기에 좋습니다.', false, true)
     if button == DIALOG_RESULT.QUIT then
         return
@@ -10,6 +10,6 @@ function NPC_46(me, npc)
         return
     end
     if button == DIALOG_RESULT.PREV then
-        goto NPC_46_COS00
+        goto NPC_46_0001
     end
 end

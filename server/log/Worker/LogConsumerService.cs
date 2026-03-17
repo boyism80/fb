@@ -1,4 +1,4 @@
-using Log.Repository;
+﻿using Log.Repository;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
@@ -9,10 +9,6 @@ using System.Text.Json;
 
 namespace Log.Worker
 {
-    /// <summary>
-    /// Background service that consumes log messages from RabbitMQ queues and stores them in the database.
-    /// Creates queues and binds them to log routing keys (fb.{world}.log.0 to fb.{world}.log.{queueSize-1}) to receive messages for the specific world.
-    /// </summary>
     public class LogConsumerService : BackgroundService
     {
         private readonly IConfiguration _configuration;
@@ -26,12 +22,6 @@ namespace Log.Worker
         private const string ExchangeName = "amq.direct";
         private readonly uint _world;
 
-        /// <summary>
-        /// Initializes a new instance of the <see cref="LogConsumerService"/> class.
-        /// </summary>
-        /// <param name="configuration">The application configuration containing RabbitMQ connection settings.</param>
-        /// <param name="serviceScopeFactory">The service scope factory for creating scoped dependencies.</param>
-        /// <param name="logger">The logger instance.</param>
         public LogConsumerService(
             IConfiguration configuration,
             IServiceScopeFactory serviceScopeFactory,
@@ -47,12 +37,6 @@ namespace Log.Worker
             }
         }
 
-        /// <summary>
-        /// Executes the background service logic.
-        /// Connects to RabbitMQ, declares queues, and periodically processes log messages.
-        /// </summary>
-        /// <param name="stoppingToken">Cancellation token to stop the service.</param>
-        /// <returns>A task representing the asynchronous operation.</returns>
         protected override async Task ExecuteAsync(CancellationToken stoppingToken)
         {
             _logger.LogInformation("Log Consumer Service starting");
@@ -98,10 +82,6 @@ namespace Log.Worker
             _logger.LogInformation("Log Consumer Service stopped, all messages processed");
         }
 
-        /// <summary>
-        /// Processes all remaining messages in queues during graceful shutdown.
-        /// </summary>
-        /// <returns>A task representing the asynchronous operation.</returns>
         private async Task ProcessRemainingMessagesAsync()
         {
             if (_channel == null)
@@ -177,11 +157,6 @@ namespace Log.Worker
             _logger.LogInformation($"Graceful shutdown complete, processed {totalProcessed} remaining messages");
         }
 
-        /// <summary>
-        /// Connects to RabbitMQ and sets up queues for log consumption.
-        /// </summary>
-        /// <param name="cancellationToken">Cancellation token.</param>
-        /// <returns>A task representing the asynchronous operation.</returns>
         private async Task ConnectToRabbitMQAsync(CancellationToken cancellationToken)
         {
             var section = _configuration.GetSection("RabbitMQ:Log");
@@ -234,9 +209,6 @@ namespace Log.Worker
             await Task.CompletedTask;
         }
 
-        /// <summary>
-        /// Parses a log message body: array of log entries (new format) or single object (legacy).
-        /// </summary>
         private static void ParseLogMessage(JsonElement root, List<JsonElement> allLogs)
         {
             if (root.ValueKind == JsonValueKind.Array)
@@ -250,11 +222,6 @@ namespace Log.Worker
             }
         }
 
-        /// <summary>
-        /// Processes log messages from all queues in batches using BasicGet.
-        /// </summary>
-        /// <param name="cancellationToken">Cancellation token.</param>
-        /// <returns>A task representing the asynchronous operation.</returns>
         private async Task ProcessLogsAsync(CancellationToken cancellationToken)
         {
             if (_channel == null)
@@ -327,10 +294,6 @@ namespace Log.Worker
             }
         }
 
-        /// <summary>
-        /// Disconnects from RabbitMQ and cleans up resources.
-        /// </summary>
-        /// <returns>A task representing the asynchronous operation.</returns>
         private async Task DisconnectFromRabbitMQAsync()
         {
             try
@@ -347,9 +310,6 @@ namespace Log.Worker
             await Task.CompletedTask;
         }
 
-        /// <summary>
-        /// Disposes of the RabbitMQ resources when the service is being disposed.
-        /// </summary>
         public override void Dispose()
         {
             DisconnectFromRabbitMQAsync().Wait();
@@ -357,4 +317,3 @@ namespace Log.Worker
         }
     }
 }
-

@@ -5,7 +5,7 @@ function ON_CAST_2012(me, spell)
     local effect = 20
     local buff_time = 180
     if buff_cast(me, me, spell, {mp=mp, sound=sound, effect=effect}) then
-        me:state(STATE.HALF_CLOACK)
+        me:state(STATE.CLOACK)
         me:buff(spell, buff_time)
     end
 end

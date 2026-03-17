@@ -15,14 +15,17 @@ public:
 public:
     struct listener_t;
     struct initial_params;
+    class batch_update_guard;
 
 protected:
-    uint32_t _damage_rate       = 1000;
-    uint32_t _skill_damage_rate = 1000;
-    uint32_t _damage_derate     = 1000;
-    bool     _paralysis         = false;
-    bool     _invincible        = false;
-    bool     _cover             = false;
+    uint32_t           _damage_rate       = 1000;
+    uint32_t           _skill_damage_rate = 1000;
+    uint32_t           _damage_derate     = 1000;
+    bool               _paralysis         = false;
+    bool               _invincible        = false;
+    bool               _cover             = false;
+    bool               _batch_mode        = false;
+    UPDATE_STATE_LEVEL _pending_update    = UPDATE_STATE_LEVEL::MINIMUM;
 
 public:
     listener_t&      listener;
@@ -42,7 +45,8 @@ public:
     virtual async::task<void> attack(DURATION duration = DURATION::ATTACK);
     virtual uint32_t          exp() const;
     virtual void              update(UPDATE_STATE_LEVEL value = UPDATE_STATE_LEVEL::EXP_MONEY | UPDATE_STATE_LEVEL::CROWD_CONTROL);
-    void                      update_hp(uint32_t diff, bool critical);
+    void                      update_hp(uint32_t diff, bool critical, bool notify = true);
+    batch_update_guard        batch_update();
     virtual void              kill(std::shared_ptr<fb::game::object> from = nullptr, DESTROY_TYPE destroy_type = DESTROY_TYPE::DEFAULT);
     virtual bool              alive() const;
     bool                      active(fb::game::spell& spell);
@@ -75,6 +79,36 @@ struct life::listener_t : public virtual fb::game::object::listener_t, public vi
     virtual void on_attack(life& me, DURATION duration = DURATION::ATTACK)            = 0;
     virtual void on_dead(life& me, std::shared_ptr<fb::game::object> you)             = 0;
     virtual void on_update_hp(life& me, uint32_t diff, bool critical)                 = 0;
+};
+
+/**
+ * RAII guard that defers and batches consecutive update() calls into a single packet.
+ * All update() invocations while the guard is alive are accumulated using bitwise OR.
+ * The accumulated update is flushed when the guard goes out of scope.
+ *
+ * Usage:
+ * @code
+ * {
+ *     auto batch = character.batch_update();
+ *     character.stat.base_str(10);  // no packet
+ *     character.stat.hp(500);       // no packet
+ *     character.stat.mp(300);       // no packet
+ * }  // single combined packet sent here
+ * @endcode
+ */
+class life::batch_update_guard
+{
+    life& _owner;
+
+public:
+    explicit batch_update_guard(life& owner);
+    batch_update_guard(const batch_update_guard&) = delete;
+    batch_update_guard(batch_update_guard&&)      = delete;
+    ~batch_update_guard();
+
+public:
+    batch_update_guard& operator= (const batch_update_guard&) = delete;
+    batch_update_guard& operator= (batch_update_guard&&)      = delete;
 };
 
 struct life::initial_params : public fb::game::object::initial_params

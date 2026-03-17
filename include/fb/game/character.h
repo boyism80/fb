@@ -64,41 +64,43 @@ public:
     };
 
 private:
-    const std::string                   _pw;
-    const fb::model::datetime           _created_date;
-    const fb::model::datetime           _updated_date;
-    const std::string                   _name;
-    ROLE                                _role;
-    std::optional<uint32_t>             _birthday;
-    uint16_t                            _look          = 0;
-    uint8_t                             _color         = 0;
-    std::optional<uint8_t>              _armor_color   = 0;
-    std::optional<uint8_t>              _weapon_color  = std::nullopt;
-    std::optional<uint8_t>              _shield_color  = std::nullopt;
-    uint32_t                            _experience    = 0;
-    NATION                              _nation        = NATION::GOGURYEO;
-    CREATURE                            _creature      = CREATURE::DRAGON;
-    GENDER                              _gender        = GENDER::MAN;
-    STATE                               _state         = STATE::NORMAL;
-    uint8_t                             _level         = 1;
-    CLASS                               _class         = CLASS::NONE;
-    uint8_t                             _promotion     = 0;
-    uint32_t                            _money         = 0;
-    std::optional<character_appearance> _mimicry       = std::nullopt;
-    std::string                         _title         = "";
-    std::optional<uint32_t>             _group_id      = std::nullopt;
-    std::optional<uint32_t>             _clan_id       = std::nullopt;
-    uint16_t                            _weapon_damage = 0;
-    bool                                _detect        = false;
-    mob_vector_t                        _spawned_mobs  = {};
-    bool                                _super_hide    = false;
-    fb::model::datetime                 _last_afk_time;
-    fb::game::marriage                  _marriage          = {};
-    bool                                _options[0x0B + 1] = {
+    const std::string                          _pw;
+    const fb::model::datetime                  _created_date;
+    const fb::model::datetime                  _updated_date;
+    const std::string                          _name;
+    ROLE                                       _role;
+    std::optional<uint32_t>                    _birthday;
+    uint16_t                                   _look             = 0;
+    uint8_t                                    _color            = 0;
+    std::optional<uint8_t>                     _armor_color      = 0;
+    std::optional<uint8_t>                     _weapon_color     = std::nullopt;
+    std::optional<uint8_t>                     _shield_color     = std::nullopt;
+    uint32_t                                   _experience       = 0;
+    NATION                                     _nation           = NATION::GOGURYEO;
+    CREATURE                                   _creature         = CREATURE::DRAGON;
+    GENDER                                     _gender           = GENDER::MAN;
+    STATE                                      _state            = STATE::NORMAL;
+    uint8_t                                    _level            = 1;
+    CLASS                                      _class            = CLASS::NONE;
+    uint8_t                                    _promotion        = 0;
+    uint32_t                                   _money            = 0;
+    std::optional<character_appearance>        _mimicry          = std::nullopt;
+    std::string                                _title            = "";
+    std::optional<uint32_t>                    _group_id         = std::nullopt;
+    std::optional<uint32_t>                    _clan_id          = std::nullopt;
+    uint16_t                                   _weapon_damage    = 0;
+    bool                                       _detect           = false;
+    mob_vector_t                               _spawned_mobs     = {};
+    bool                                       _super_hide       = false;
+    mutable std::optional<fb::model::datetime> _first_login_date = std::nullopt;
+    fb::model::datetime                        _last_afk_time;
+    fb::game::marriage                         _marriage          = {};
+    bool                                       _options[0x0B + 1] = {
         1,
     };
     std::weak_ptr<fb::socket<character>> _socket;
     ping_state_t                         _ping_state;
+    bool                                 _saved_before_shutdown = false;
 
 public:
     const uint32_t        id;
@@ -128,17 +130,18 @@ public:
         std::optional<uint32_t>                birthday = std::nullopt;
         fb::model::datetime                    created_date;
         fb::model::datetime                    updated_date;
-        ROLE                                   role       = ROLE::USER;
-        CLASS                                  class_type = CLASS::NONE;
-        uint8_t                                promotion  = 0;
-        uint16_t                               color      = 0;
-        DIRECTION                              direction  = DIRECTION::BOTTOM;
-        uint16_t                               look       = 0;
-        uint32_t                               money      = 0;
-        GENDER                                 gender     = GENDER::MAN;
-        uint8_t                                level      = 1;
-        uint32_t                               exp        = 0;
-        STATE                                  state      = STATE::NORMAL;
+        std::optional<fb::model::datetime>     first_login_date = std::nullopt;
+        ROLE                                   role             = ROLE::USER;
+        CLASS                                  class_type       = CLASS::NONE;
+        uint8_t                                promotion        = 0;
+        uint16_t                               color            = 0;
+        DIRECTION                              direction        = DIRECTION::BOTTOM;
+        uint16_t                               look             = 0;
+        uint32_t                               money            = 0;
+        GENDER                                 gender           = GENDER::MAN;
+        uint8_t                                level            = 1;
+        uint32_t                               exp              = 0;
+        STATE                                  state            = STATE::NORMAL;
         std::string                            title;
         std::optional<uint8_t>                 armor_color  = std::nullopt;
         std::optional<uint8_t>                 weapon_color = std::nullopt;
@@ -166,6 +169,7 @@ public:
     uint32_t                                           normal_attack_damage(MOB_SIZE size) const override final;
     void                                               action(ACTION action, DURATION duration, uint8_t sound = 0x00) override final;
     const std::string&                                 name() const override final;
+    bool                                               is_first_login() const { return !_first_login_date.has_value(); }
     uint16_t                                           look() const override final;
     uint8_t                                            color() const override final;
     [[nodiscard]] async::task<bool>                    map(std::shared_ptr<fb::game::map> map, const fb::model::point16_t& position, DESTROY_TYPE destroy_type = DESTROY_TYPE::DEFAULT, bool notify = true) override final;
@@ -285,6 +289,8 @@ public:
     fb::model::datetime&                               last_afk_time();
     std::shared_ptr<fb::socket<character>>             socket_ptr() const;
     ping_state_t&                                      ping_state();
+    bool                                               saved_before_shutdown() const;
+    void                                               saved_before_shutdown(bool value);
     // clang-format on
 };
 
@@ -314,6 +320,7 @@ public:
 
 public:
     // clang-format off
+    size_t            size() const;
     bool              insert(character_ptr_t ch);
     void              remove(character_ptr_t ch);
     character_ptr_t   find(uint32_t uid) const;

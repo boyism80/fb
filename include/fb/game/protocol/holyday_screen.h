@@ -12,7 +12,7 @@ using point8_t = fb::model::point<uint8_t>;
 class holyday_screen : public fb::protocol::header
 {
 public:
-    static constexpr uint8_t header = 0x5A;
+    static constexpr uint8_t opcode = 0x5A;
 
 public:
 #ifndef BOT

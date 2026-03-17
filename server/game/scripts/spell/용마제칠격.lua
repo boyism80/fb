@@ -1,4 +1,3 @@
--- 용마제칠격: deal magic damage to the target. Trash: damage 120000~150000, effect 51, sound 8, mp 100.
 function ON_CAST_27(me, you, spell)
     local damage = math.random(120000, 150000)
     local mp = 100

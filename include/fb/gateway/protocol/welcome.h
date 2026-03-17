@@ -8,7 +8,7 @@ namespace fb::protocol::gateway::response {
 class welcome : public fb::protocol::header
 {
 public:
-    static constexpr uint8_t header = 0x7E;
+    static constexpr uint8_t opcode = 0x7E;
 
 public:
     welcome() = default;

@@ -11,7 +11,7 @@ using namespace fb::model::enum_value;
 class time : public fb::protocol::header
 {
 public:
-    static constexpr uint8_t header = 0x20;
+    static constexpr uint8_t opcode = 0x20;
 
 public:
 #ifndef BOT

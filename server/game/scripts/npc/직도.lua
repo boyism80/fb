@@ -1,12 +1,10 @@
--- @note Trash: 0_초보지원\일반.txt "직도". Branch by current map: 직업의길(11004) intro; 전사/도적/주술사/도사의길(11005-11008) job intro + list warp. Nation-based warp target (map 22 vs 14) with coords. FB: map branch by me:map():model():id(); warp via name2map("국내성")/"부여성") with trash coords.
 
-local MAP_ID_JOB_HUB = 11004
+local MAP_ID_CLASS_HUB = 11004
 local MAP_ID_WARRIOR = 11005
 local MAP_ID_ROGUE = 11006
 local MAP_ID_MAGE = 11007
 local MAP_ID_TAOIST = 11008
 
--- Warp target: [nation] -> { map_name, x, y } for each job path (warrior, rogue, mage, taoist).
 local WARP_BY_NATION = {
     [NATION.GOGURYEO] = {
         { "국내성", 49, 37 },
@@ -22,9 +20,9 @@ local WARP_BY_NATION = {
     },
 }
 
-local function do_warp(me, nation, job_index)
+local function do_warp(me, nation, class_index)
     local data = WARP_BY_NATION[nation] or WARP_BY_NATION[NATION.BUYEO]
-    local t = data[job_index]
+    local t = data[class_index]
     if not t then
         return
     end
@@ -34,9 +32,6 @@ local function do_warp(me, nation, job_index)
     end
 end
 
---- @brief NPC 직도: job path guide. Intro on 직업의길; on each job path map, job description + list to warp to job area.
---- @param me   character talking to the NPC
---- @param npc  NPC entity (직도)
 function NPC_448(me, npc)
     local m = me:map()
     if m == nil then
@@ -44,7 +39,7 @@ function NPC_448(me, npc)
     end
     local map_id = m:model() and m:model():id() or 0
 
-    if map_id == MAP_ID_JOB_HUB then
+    if map_id == MAP_ID_CLASS_HUB then
         local btn = me:dialog(npc, "안녕하세요? 저는 직도라고 합니다. " .. me:name() .. "님께서는 직업에 대한 도움을 얻기 위해 오셨군요. 잘 오셨습니다.", false, true)
         if btn == DIALOG_RESULT.QUIT then
             return

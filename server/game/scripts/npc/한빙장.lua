@@ -28,7 +28,7 @@ local ITEM_IRON_DUST = '쇠가루'
 local HELMET_IRON_DUST_COUNT = 2
 
 local function run_ice_sword(me, npc)
-    ::COS001::
+    ::NPC_156_0002::
     local sel, btn = me:list(npc, '그래..무슨일로 날 찾아 왔는가??', {
         '얼음칼이 무엇인가요?',
         '얼음칼좀 만들어 주세요..',
@@ -128,7 +128,7 @@ local function run_spirit_summon_shark_weapon(me, npc)
         if me:dialog(npc, '보약의 재료는 나도 모르니까 자네가 직접 가서 물어보고 지어오라고.', true, true) == DIALOG_RESULT.QUIT then
             return
         end
-        me:dialog(npc, '아, 그리고 난 산삼도 한뿌리 먹었으면 좋겠으니까 가서 산삼도 한뿌리 가져오시게나.', true, false)
+        me:dialog(npc, '아, 그리고 난 산삼도 한뿌리 먹었으면 좋겠으니까 가서 산삼도 한뿌리 가져오시게나.', false, false)
         return
     end
 
@@ -159,12 +159,12 @@ local function run_spirit_summon_shark_weapon(me, npc)
         if me:dialog(npc, '사실 그 제작방법은 상어장군만이 알고 있다고 하더군.\n\n하지만 상어장군이 죽은 이 마당에...', true, true) == DIALOG_RESULT.QUIT then
             return
         end
-        me:dialog(npc, '따라서 그를 저승에서 불러내서 물어봐야 한다네..\n\n그를 저승에서 불러내는 방법은 제단을 담당하고 있는 사람한테 가서 직접 물어보시게나.', true, false)
+        me:dialog(npc, '따라서 그를 저승에서 불러내서 물어봐야 한다네..\n\n그를 저승에서 불러내는 방법은 제단을 담당하고 있는 사람한테 가서 직접 물어보시게나.', false, false)
         return
     end
 
     if step >= 3 then
-        me:dialog(npc, '....', true, false)
+        me:dialog(npc, '....', false, false)
     end
 end
 
@@ -210,7 +210,7 @@ local function run_amber_helmet_craft(me, npc, colors, has_prev)
 end
 
 function NPC_156(me, npc)
-    ::COS001::
+    ::NPC_156_0001::
     local sel, btn = me:list(npc, '안녕하세요. 어떻게 오셨나요?', {
         '얼음칼만들기',
         '초혼술방법',
@@ -236,7 +236,7 @@ function NPC_156(me, npc)
             return
         end
         if r == DIALOG_RESULT.PREV then
-            goto COS001
+            goto NPC_156_0001
         end
     elseif sel == 3 then
         local r = run_amber_helmet_craft(me, npc, LIGHT_AMBER_HELMET_COLORS, true)
@@ -244,7 +244,7 @@ function NPC_156(me, npc)
             return
         end
         if r == DIALOG_RESULT.PREV then
-            goto COS001
+            goto NPC_156_0001
         end
     elseif sel == 4 then
         local r = run_amber_helmet_craft(me, npc, GOLD_AMBER_HELMET_COLORS, true)
@@ -252,8 +252,8 @@ function NPC_156(me, npc)
             return
         end
         if r == DIALOG_RESULT.PREV then
-            goto COS001
+            goto NPC_156_0001
         end
     end
-    goto COS001
+    goto NPC_156_0001
 end

@@ -3,7 +3,7 @@ local function try_craft_weapon(me, npc, materials, price, reward_name)
     for _, m in ipairs(materials) do
         materials_table[m[1]] = m[2]
     end
-    local btn = me:dialog(npc, '좋아좋아, 여기있네. 조심해서 좋은 일에 잘 쓰시게나.', true, true)
+    local btn = me:dialog(npc, '좋아좋아, 여기있네. 조심해서 좋은 일에 잘 쓰시게나.', false, true)
     if btn == DIALOG_RESULT.QUIT then
         return false
     end
@@ -36,31 +36,31 @@ function NPC_167(me, npc)
     local WOLF_FANG_CURVED_COUNT = 10
     local CURSED_DAGGER = '저주의단검'
 
-    ::NPC_167_COS001::
-    local btn = me:dialog(npc, '안녕, 보시다시피 나는 사냥꾼이야. 요즘 잡스러운 괴물들이 다시 들끓더니 외부인까지 들어오더만\n\n뭐 나쁜 일만은 아니야. 괴물들을 상대하려면 사람들이 많이 필요하거든. 이를테면 자네가 도와준다거나 할 수 있으니까.', true, true)
+    ::NPC_167_0001::
+    local btn = me:dialog(npc, '안녕, 보시다시피 나는 사냥꾼이야. 요즘 잡스러운 괴물들이 다시 들끓더니 외부인까지 들어오더만\n\n뭐 나쁜 일만은 아니야. 괴물들을 상대하려면 사람들이 많이 필요하거든. 이를테면 자네가 도와준다거나 할 수 있으니까.', false, true)
     if btn == DIALOG_RESULT.QUIT then
         return
     end
 
-    ::NPC_167_COS002::
+    ::NPC_167_0002::
     btn = me:dialog(npc, '아무튼 자네의 두 눈에 정의감이 흘러넘치는걸 보니 괴물들과 싸울 작정인가 보군. 그래, 그럴거야.\n\n그렇다면, 나도 가만히 있을수는 없지. 우리 가문에 대대로 전해져 내려오는 가문의 비밀 무기들을 만들어주지', true, true)
     if btn == DIALOG_RESULT.QUIT then
         return
     end
     if btn == DIALOG_RESULT.PREV then
-        goto NPC_167_COS001
+        goto NPC_167_0001
     end
 
-    ::NPC_167_COS003::
+    ::NPC_167_0003::
     btn = me:dialog(npc, '각각 거미독창과 저주의단검이라 불리는 무기들일세. 갖고 싶다면 재료만 좀 구해오면 되고... 또 돈도 조금만 주면 끝이지. 후후후후', true, true)
     if btn == DIALOG_RESULT.QUIT then
         return
     end
     if btn == DIALOG_RESULT.PREV then
-        goto NPC_167_COS002
+        goto NPC_167_0002
     end
 
-    ::NPC_167_COS004::
+    ::NPC_167_0004::
     local list = me:list(npc, '우리 가문 특유의 무기들이야, 골라보게!', { '이 거미독창이란게 마음에 드네요', '이 저주의단검이란게 마음에 들어요', '에이, 별로 좋은건 없어보이는데요.' })
     if list == nil then
         return

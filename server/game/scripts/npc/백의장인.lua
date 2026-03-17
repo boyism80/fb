@@ -52,53 +52,63 @@ local function show_no_ice_dialog(me, npc)
 end
 
 local function run_dragon_weapon_awaken(me, npc)
-    ::NPC_140_COS001::
+    ::NPC_140_0001::
     local btn = me:dialog(npc, '상급 용무기를 각성시키러 왔다고? 그렇다면 잘 찾아왔네.', false, true)
     if btn == DIALOG_RESULT.QUIT then
         return false
     end
-    ::NPC_140_COS002::
+    ::NPC_140_0002::
     btn = me:dialog(npc, '이제까지 나의 제자 천금장인에게 용무기를 맡기느라 수고가 많았네.', true, true)
     if btn == DIALOG_RESULT.QUIT then
         return false
     end
     if btn == DIALOG_RESULT.PREV then
-        goto NPC_140_COS001
+        goto NPC_140_0001
     end
-    ::NPC_140_COS003::
+    ::NPC_140_0003::
     btn = me:dialog(npc, '하지만 아무리 나라도 가끔 실수할 때가 있는법.', true, true)
     if btn == DIALOG_RESULT.QUIT then
         return false
     end
     if btn == DIALOG_RESULT.PREV then
-        goto NPC_140_COS002
+        goto NPC_140_0002
     end
-    ::NPC_140_COS01::
-    local sel, list_btn = me:list(npc, '그래. 그래도 나에게 용무기 각성을 맡기겠나?', { '네. 용무기를 각성해주세요.' }, false)
-    if list_btn == DIALOG_RESULT.PREV then
-        goto NPC_140_COS003
-    end
-    if sel == nil or sel ~= 0 then
+    ::NPC_140_0004::
+    local sel, list_btn = me:list(npc, '그래. 그래도 나에게 용무기 각성을 맡기겠나?', { '네. 용무기를 각성해주세요.' }, true)
+    if list_btn == DIALOG_RESULT.QUIT or sel == nil then
         return false
     end
-    ::NPC_140_COS02::
+    if list_btn == DIALOG_RESULT.PREV then
+        goto NPC_140_0003
+    end
+    if sel ~= 0 then
+        return false
+    end
+    ::NPC_140_0005::
     local type_options = {}
     for _, line in ipairs(DRAGON_WEAPON_LINES) do
         type_options[#type_options + 1] = line.type_name
     end
     local type_sel, type_btn = me:list(npc, '좋아. 각오가 대단하군. 그럼 각성시킬 용무기를 고르게.', type_options, true)
-    if type_btn == DIALOG_RESULT.PREV then
-        goto NPC_140_COS01
+    if type_btn == DIALOG_RESULT.QUIT or type_sel == nil then
+        return false
     end
-    if type_sel == nil or type_sel < 0 or type_sel >= #DRAGON_WEAPON_LINES then
+    if type_btn == DIALOG_RESULT.PREV then
+        goto NPC_140_0004
+    end
+    if type_sel < 0 or type_sel >= #DRAGON_WEAPON_LINES then
         return false
     end
     local line = DRAGON_WEAPON_LINES[type_sel + 1]
+    ::NPC_140_0006::
     local grade_sel, grade_btn = me:list(npc, '어떤 무기를 각성할건가?', line.options, true)
-    if grade_btn == DIALOG_RESULT.PREV then
-        goto NPC_140_COS02
+    if grade_btn == DIALOG_RESULT.QUIT or grade_sel == nil then
+        return false
     end
-    if grade_sel == nil or grade_sel < 0 or grade_sel >= 3 then
+    if grade_btn == DIALOG_RESULT.PREV then
+        goto NPC_140_0005
+    end
+    if grade_sel < 0 or grade_sel >= 3 then
         return false
     end
     local check_item = line.options[grade_sel + 1]
@@ -111,12 +121,13 @@ local function run_dragon_weapon_awaken(me, npc)
     end
     local roll = math.random(1, 100)
     me:rmitem({ ['얼음'] = 1, ['은나무가지'] = 1, [check_item] = 1 }, ITEM_DELETE_TYPE.GIVE)
-    me:base_hp(me:base_hp() - 1000)
-    me:hp(me:maxhp())
+    me:base_hp(me:base_hp() - 1000, false)
+    me:hp(me:maxhp(), false)
+    me:update()
     if roll <= rate then
         broadcast(string.format('%s님이 %s 강화에 성공하셨습니다.', me:name(), check_item), MESSAGE_TYPE.WORLD, BROADCAST_TYPE.WORLD)
         me:mkitem(success_item, 1)
-        me:dialog(npc, '축하하네. 하늘이 자네를 ' .. success_item .. '의 주인으로 인정하는군', true, false)
+        me:dialog(npc, '축하하네. 하늘이 자네를 ' .. success_item .. '의 주인으로 인정하는군', false, false)
     else
         broadcast(string.format('%s님이 %s 강화에 실패하셨습니다.', me:name(), check_item), MESSAGE_TYPE.WORLD, BROADCAST_TYPE.WORLD)
         if failed_item then

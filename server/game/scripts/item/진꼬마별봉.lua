@@ -1,9 +1,9 @@
 -- 진꼬마별봉 사용 스크립트
-function ON_ACTIVE_53(me, item)
+function ON_ACTIVATED_53(me, item)
 
 end
 
 -- 진꼬마별봉 해제 스크립트
-function ON_INACTIVE_53(me, item)
+function ON_DEACTIVATED_53(me, item)
 
 end

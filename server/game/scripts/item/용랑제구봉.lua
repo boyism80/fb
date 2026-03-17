@@ -1,4 +1,4 @@
--- 용랑제구봉: on attack, chance to apply 용의제구주 on front target. Trash: 65% prob, 15s.
+-- 용랑제구봉 공격 스크립트
 function ON_ATTACK_275(me, item)
     math.randomseed(seed())
     if math.random() > 0.65 then
@@ -14,11 +14,11 @@ function ON_ATTACK_275(me, item)
 end
 
 -- 용랑제구봉 사용 스크립트
-function ON_ACTIVE_275(me, item)
+function ON_ACTIVATED_275(me, item)
 
 end
 
 -- 용랑제구봉 해제 스크립트
-function ON_INACTIVE_275(me, item)
+function ON_DEACTIVATED_275(me, item)
 
 end

@@ -11,7 +11,7 @@ using namespace fb::model::enum_value;
 class update_option : public fb::protocol::header
 {
 public:
-    static constexpr uint8_t header = 0x1B;
+    static constexpr uint8_t opcode = 0x1B;
 
 public:
 #ifndef BOT

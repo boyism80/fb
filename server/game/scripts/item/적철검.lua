@@ -1,9 +1,9 @@
 -- 적철검 사용 스크립트
-function ON_ACTIVE_338(me, item)
+function ON_ACTIVATED_338(me, item)
 
 end
 
 -- 적철검 해제 스크립트
-function ON_INACTIVE_338(me, item)
+function ON_DEACTIVATED_338(me, item)
 
 end

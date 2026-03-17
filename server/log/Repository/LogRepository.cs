@@ -1,4 +1,4 @@
-using Dapper;
+﻿using Dapper;
 using Http.Extension;
 using Http.Service;
 using Microsoft.Extensions.Configuration;
@@ -7,10 +7,6 @@ using System.Text.Json;
 
 namespace Log.Repository
 {
-    /// <summary>
-    /// Repository for bulk inserting log entries into MySQL with sharding support.
-    /// Groups logs by shard and performs efficient bulk inserts.
-    /// </summary>
     public class LogRepository
     {
         private readonly DbContext _dbContext;
@@ -18,12 +14,6 @@ namespace Log.Repository
         private readonly IConfiguration _configuration;
         private readonly uint _world;
 
-        /// <summary>
-        /// Initializes a new instance of the <see cref="LogRepository"/> class.
-        /// </summary>
-        /// <param name="dbContext">The database context for connection management.</param>
-        /// <param name="logger">The logger instance.</param>
-        /// <param name="configuration">The application configuration for reading world ID.</param>
         public LogRepository(DbContext dbContext, ILogger<LogRepository> logger, IConfiguration configuration)
         {
             _dbContext = dbContext;
@@ -34,12 +24,6 @@ namespace Log.Repository
 
         private readonly Random _random = new Random();
 
-        /// <summary>
-        /// Bulk inserts log entries into MySQL using random sharding for performance.
-        /// Distributes logs randomly across all available database shards.
-        /// </summary>
-        /// <param name="logs">The collection of log entries to insert.</param>
-        /// <returns>A task representing the asynchronous operation.</returns>
         public async Task BulkInsertAsync(IEnumerable<JsonElement> logs)
         {
             var logList = logs.ToList();
@@ -89,11 +73,6 @@ namespace Log.Repository
             }
         }
 
-        /// <summary>
-        /// Parses a JSON log entry into a structured LogEntry object.
-        /// </summary>
-        /// <param name="log">The JSON log element to parse.</param>
-        /// <returns>A LogEntry object, or null if parsing fails.</returns>
         private static LogEntry ParseLogEntry(JsonElement log)
         {
             try
@@ -124,11 +103,6 @@ namespace Log.Repository
         }
 
 
-        /// <summary>
-        /// Builds a bulk INSERT SQL query for log entries.
-        /// </summary>
-        /// <param name="entries">The log entries to insert.</param>
-        /// <returns>A SQL INSERT statement string.</returns>
         private static string BuildBulkInsertQuery(List<LogEntry> entries)
         {
             var values = string.Join(", ", entries.Select(e =>
@@ -137,9 +111,6 @@ namespace Log.Repository
             return $"INSERT INTO log (`timestamp`, `event`, `server_id`, `server_name`, `data`) VALUES {values}";
         }
 
-        /// <summary>
-        /// Represents a structured log entry for database storage.
-        /// </summary>
         private class LogEntry
         {
             public string Timestamp { get; set; } = string.Empty;

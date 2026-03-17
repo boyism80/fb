@@ -1,4 +1,4 @@
--- 용랑제삼봉: on attack, chance to apply 용의제삼주 on front target. Trash: 25% prob, 6s.
+-- 용랑제삼봉 공격 스크립트
 function ON_ATTACK_269(me, item)
     math.randomseed(seed())
     if math.random() > 0.25 then
@@ -14,11 +14,11 @@ function ON_ATTACK_269(me, item)
 end
 
 -- 용랑제삼봉 사용 스크립트
-function ON_ACTIVE_269(me, item)
+function ON_ACTIVATED_269(me, item)
 
 end
 
 -- 용랑제삼봉 해제 스크립트
-function ON_INACTIVE_269(me, item)
+function ON_DEACTIVATED_269(me, item)
 
 end

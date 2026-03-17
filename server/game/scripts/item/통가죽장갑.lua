@@ -1,2 +1,2 @@
-function ON_INACTIVE_5230(me, item)
+function ON_DEACTIVATED_5230(me, item)
 end

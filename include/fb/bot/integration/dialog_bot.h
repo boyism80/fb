@@ -28,7 +28,7 @@ struct dialog_item_data
 class dialog_bot : public fb::protocol::header
 {
 public:
-    static constexpr uint8_t header = 0x2F;
+    static constexpr uint8_t opcode = 0x2F;
 
 public:
     dialog_type type;

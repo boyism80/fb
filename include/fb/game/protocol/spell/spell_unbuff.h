@@ -14,7 +14,7 @@ using namespace fb::model::enum_value;
 class spell_unbuff : public fb::protocol::header
 {
 public:
-    static constexpr uint8_t header = 0x3A;
+    static constexpr uint8_t opcode = 0x3A;
 
 public:
 #ifndef BOT

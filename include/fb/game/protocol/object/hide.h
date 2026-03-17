@@ -14,7 +14,7 @@ using namespace fb::model::enum_value;
 class hide : public fb::protocol::header
 {
 public:
-    static constexpr uint8_t header = 0x0E;
+    static constexpr uint8_t opcode = 0x0E;
 
 public:
 #ifndef BOT

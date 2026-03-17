@@ -13,7 +13,7 @@ update_internal::update_internal(const fb::game::character& ch, UPDATE_STATE_LEV
 async::task<void> update_internal::serialize(fb::stream_writer<big_endian>& writer) const
 {
     co_await header::serialize(writer);
-    writer.write<uint8_t>(header);
+    writer.write<uint8_t>(opcode);
     writer.write<uint8_t>(static_cast<uint8_t>(this->level));
 
     if (ENUM_IN(this->level, UPDATE_STATE_LEVEL::BASED))

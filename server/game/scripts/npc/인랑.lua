@@ -1,10 +1,4 @@
--- @note Trash: 1_환상의섬/일반.txt "인랑". Hwahwa quest (화화 friend) + Jingogyun ($jingogyun 0..9).
--- Logic split: handle_hwahwa_* for QUEST_HWAHWA, handle_jingogyun_* for QUEST_JINGOGYUN.
--- 인랑 sets jingogyun 1 (go help 인성초자매), 4 (learn 영력구슬), 9 (영력구슬+고균의영검 -> 진'고균의영검).
--- Steps 2,3,5,6,7,8 are advanced by 인성초자매, 화화, 돌순이 (not in this file).
--- $inrang_script1..8 and $hwasmile omitted (script flags / hwahwa smile count in 화화).
 
----Run a sequence of dialogs; return false on QUIT or PREV so caller can return.
 local function run_dialogs(me, npc, messages)
     for i, msg in ipairs(messages) do
         local prev = (i > 1)
@@ -17,8 +11,6 @@ local function run_dialogs(me, npc, messages)
     return true
 end
 
----QUEST_HWAHWA: not friend with 화화 -> random dismiss dialog.
----@return boolean true if handled (caller should return).
 local function handle_hwahwa_not_friend(me, npc)
     if math.random(1, 2) == 1 then
         me:dialog(npc, "음? 처음 맡아보는 사람 냄새군. 이 섬에 사는 사람이 아닌듯 한데... 흠.", false, false)
@@ -28,24 +20,31 @@ local function handle_hwahwa_not_friend(me, npc)
     return true
 end
 
----QUEST_JINGOGYUN step < 1: intro + "why are you here" list; option 2 sets step 1.
----@return boolean true if handled.
 local function handle_jingogyun_lt1(me, npc, q_jingo)
     local jingo_step = (q_jingo and q_jingo:step()) or 0
     if jingo_step >= 1 then
         return false
     end
+    ::NPC_475_0001::
     local b = me:dialog(npc, "화화의 내음이 잔뜩 묻어있군. 아주 오랜 시간동안 화화와 알고 지냈음이 틀림 없어.", false, true)
     if b == DIALOG_RESULT.QUIT then
         return true
     end
+    ::NPC_475_0002::
     b = me:dialog(npc, "그래, 화화의 친구라고 믿어도 좋겠군. 넌 누구지? 외부인이면서 어째서 죽은 자와 친구하고", true, true)
-    if b == DIALOG_RESULT.PREV or b == DIALOG_RESULT.QUIT then
+    if b == DIALOG_RESULT.QUIT then
         return true
     end
+    if b == DIALOG_RESULT.PREV then
+        goto NPC_475_0001
+    end
+    ::NPC_475_0003::
     b = me:dialog(npc, "저 사악한 무리들과 싸우고 있는거지? 무엇을 위해서? 무엇을 바라고 이곳에 서있는건가?", true, true)
-    if b == DIALOG_RESULT.PREV or b == DIALOG_RESULT.QUIT then
+    if b == DIALOG_RESULT.QUIT then
         return true
+    end
+    if b == DIALOG_RESULT.PREV then
+        goto NPC_475_0002
     end
     local sel, btn = me:list(npc, "대답해라. 도대체 이 곳으로 찾아온 이유가 무엇인지 말해라!", {
         "무슨 소리야? 난 부와 명성을 원할 뿐이다.",
@@ -84,8 +83,6 @@ local function handle_jingogyun_lt1(me, npc, q_jingo)
     return true
 end
 
----QUEST_JINGOGYUN step == 3: friend recognition + 7-option list; option 0 sub-option 2 sets step 4.
----@return boolean true if handled.
 local function handle_jingogyun_3(me, npc, q_jingo)
     local jingo_step = (q_jingo and q_jingo:step()) or 0
     if jingo_step ~= 3 then
@@ -243,8 +240,6 @@ local function handle_jingogyun_3(me, npc, q_jingo)
     return true
 end
 
----QUEST_JINGOGYUN step 4..8: list (영력구슬 어디 / 영력 불어넣기); option 2 gives 진'고균의영검, step 9.
----@return boolean true if handled.
 local function handle_jingogyun_4_to_8(me, npc, q_jingo)
     local jingo_step = (q_jingo and q_jingo:step()) or 0
     if jingo_step < 4 or jingo_step > 8 then
@@ -305,8 +300,6 @@ local function handle_jingogyun_4_to_8(me, npc, q_jingo)
     return true
 end
 
----QUEST_JINGOGYUN step >= 9: short dialog.
----@return boolean true if handled.
 local function handle_jingogyun_ge9(me, npc, q_jingo)
     local jingo_step = (q_jingo and q_jingo:step()) or 0
     if jingo_step < 9 then

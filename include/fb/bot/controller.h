@@ -21,10 +21,10 @@ public:
 public:
     virtual async::task<void> on_receive(fb::socket<>& socket, fb::stream& stream) = 0;
     virtual async::task<void> on_closed(fb::socket<>& socket)                      = 0;
-    virtual bool              decrypt_policy(int cmd) const                        = 0;
+    virtual bool              decrypt_policy(int opcode) const                     = 0;
     virtual async::task<void> on_bot_connected(base_bot& bot)                      = 0;
     virtual async::task<void> on_bot_disconnected(base_bot& bot)                   = 0;
-    virtual void              ensure_handler_registered(uint8_t cmd)               = 0;
+    virtual void              ensure_handler_registered(uint8_t opcode)            = 0;
 };
 
 template <typename BotType>
@@ -49,7 +49,7 @@ protected:
     { }
 
 protected:
-    virtual bool decrypt_policy(int cmd) const override
+    virtual bool decrypt_policy(int opcode) const override
     {
         return true;
     }
@@ -83,25 +83,25 @@ protected:
         co_await this->on_bot_disconnected(typed_bot);
     }
 
-    virtual void ensure_handler_registered(uint8_t cmd) override
+    virtual void ensure_handler_registered(uint8_t opcode) override
     {
         {
             auto shared_lock = std::shared_lock<std::shared_mutex>(this->_handler_mutex);
-            if (this->_deserializer.contains(cmd))
+            if (this->_deserializer.contains(opcode))
                 return;
         }
 
         auto unique_lock = std::unique_lock<std::shared_mutex>(this->_handler_mutex);
 
-        if (this->_deserializer.contains(cmd))
+        if (this->_deserializer.contains(opcode))
             return;
 
-        this->_deserializer[cmd] =
+        this->_deserializer[opcode] =
             [](fb::stream_reader<big_endian>& reader) -> async::task<std::shared_ptr<fb::protocol::header>> {
             co_return nullptr;
         };
 
-        this->_handler[cmd] = [](BotType& bot, const fb::protocol::header& protocol) -> async::task<void> {
+        this->_handler[opcode] = [](BotType& bot, const fb::protocol::header& protocol) -> async::task<void> {
             co_return;
         };
     }
@@ -117,7 +117,7 @@ public:
     {
         {
             auto shared_lock = std::shared_lock<std::shared_mutex>(this->_handler_mutex);
-            if (this->_handler.contains(ResponseType::header))
+            if (this->_handler.contains(ResponseType::opcode))
                 return;
         }
 
@@ -183,9 +183,9 @@ public:
                     co_return;
                 }
 
-                auto cmd      = reader.read<uint8_t>();
-                processed_cmd = cmd;
-                if (this->decrypt_policy(cmd))
+                auto opcode   = reader.read<uint8_t>();
+                processed_cmd = opcode;
+                if (this->decrypt_policy(opcode))
                 {
                     auto& encryption = bot.encryption();
                     size             = encryption.decrypt(stream, reader.seek() - 1, size);
@@ -199,12 +199,12 @@ public:
 
                 {
                     auto shared_lock = std::shared_lock<std::shared_mutex>(this->_handler_mutex);
-                    if (this->_deserializer.contains(cmd))
+                    if (this->_deserializer.contains(opcode))
                     {
-                        deserializer = this->_deserializer.at(cmd);
+                        deserializer = this->_deserializer.at(opcode);
 
-                        if (this->_handler.contains(cmd))
-                            handler = this->_handler.at(cmd);
+                        if (this->_handler.contains(opcode))
+                            handler = this->_handler.at(opcode);
                     }
                     else
                     {
@@ -235,7 +235,7 @@ public:
             catch (std::exception& e)
             {
                 if (processed_cmd.has_value())
-                    fb::logger::fatal("bot_controller::on_receive: cmd={:#x} error={}\n{}",
+                    fb::logger::fatal("bot_controller::on_receive: opcode={:#x} error={}\n{}",
                                       processed_cmd.value(),
                                       e.what(),
                                       boost::stacktrace::to_string(boost::stacktrace::stacktrace()));
@@ -249,7 +249,7 @@ public:
             catch (...)
             {
                 if (processed_cmd.has_value())
-                    fb::logger::fatal("bot_controller::on_receive: cmd={:#x} error=unknown\n{}",
+                    fb::logger::fatal("bot_controller::on_receive: opcode={:#x} error=unknown\n{}",
                                       processed_cmd.value(),
                                       boost::stacktrace::to_string(boost::stacktrace::stacktrace()));
                 else
@@ -282,28 +282,28 @@ public:
     {
         static_assert(std::is_base_of_v<fb::protocol::header, ResponseType>,
                       "ResponseType must inherit from fb::protocol::header");
-        static_assert(std::is_same_v<decltype(ResponseType::header), const uint8_t>,
+        static_assert(std::is_same_v<decltype(ResponseType::opcode), const uint8_t>,
                       "ResponseType must have 'static constexpr uint8_t header' member");
 
         auto unique_lock = std::unique_lock<std::shared_mutex>(this->_handler_mutex);
 
         this->_deserializer.insert(
-            {ResponseType::header, [](auto& reader) -> async::task<std::shared_ptr<fb::protocol::header>> {
+            {ResponseType::opcode, [](auto& reader) -> async::task<std::shared_ptr<fb::protocol::header>> {
                  auto protocol = std::make_shared<ResponseType>();
                  co_await protocol->deserialize(reader);
                  co_return protocol;
              }});
 
         this->_handler.insert(
-            {ResponseType::header, [this, fn = std::move(fn)](auto& bot, auto& header) -> async::task<void> {
+            {ResponseType::opcode, [this, fn = std::move(fn)](auto& bot, auto& header) -> async::task<void> {
                  auto          protocol   = static_cast<ResponseType&>(header);
                  volatile auto controller = this;
 
                  co_await fn(bot, protocol);
 
-                 co_await controller->on_integration_hook_execution(ResponseType::header, bot, header);
+                 co_await controller->on_integration_hook_execution(ResponseType::opcode, bot, header);
 
-                 bot.process_hooks(ResponseType::header, header);
+                 bot.process_hooks(ResponseType::opcode, header);
              }});
     }
 
@@ -312,7 +312,7 @@ public:
     {
         static_assert(std::is_base_of_v<fb::protocol::header, ResponseType>,
                       "ResponseType must inherit from fb::protocol::header");
-        static_assert(std::is_same_v<decltype(ResponseType::header), const uint8_t>,
+        static_assert(std::is_same_v<decltype(ResponseType::opcode), const uint8_t>,
                       "ResponseType must have 'static constexpr uint8_t header' member");
 
         this->bind<ResponseType>(std::function<async::task<void>(BotType&, ResponseType&)>(
@@ -353,7 +353,7 @@ public:
         this->_bots.write(fn);
     }
 
-    virtual async::task<void> on_integration_hook_execution(uint8_t                     cmd,
+    virtual async::task<void> on_integration_hook_execution(uint8_t                     opcode,
                                                             BotType&                    bot,
                                                             const fb::protocol::header& header)
     {
@@ -384,7 +384,7 @@ async::task<ResponseType> bot<BotType>::request(std::shared_ptr<BotType>        
 
     auto self_ptr = std::static_pointer_cast<BotType>(target->shared_from_this());
     auto context =
-        std::make_shared<typename BotType::template request_context<ResponseType>>(self_ptr, ResponseType::header);
+        std::make_shared<typename BotType::template request_context<ResponseType>>(self_ptr, ResponseType::opcode);
 
     if (timeout > 0s)
     {
@@ -401,19 +401,19 @@ async::task<ResponseType> bot<BotType>::request(std::shared_ptr<BotType>        
         });
     }
 
-    if (target->_hooks.contains(ResponseType::header) == false)
-        target->_hooks.insert({ResponseType::header, {}});
+    if (target->_hooks.contains(ResponseType::opcode) == false)
+        target->_hooks.insert({ResponseType::opcode, {}});
 
-    target->_hooks[ResponseType::header].push_back(hook_params{.condition =
-                                                                   [context, condition](const auto& header) {
+    target->_hooks[ResponseType::opcode].push_back(hook_params{.condition =
+                                                                   [context, condition](const auto& opcode) {
                                                                        auto& protocol =
-                                                                           static_cast<const ResponseType&>(header);
+                                                                           static_cast<const ResponseType&>(opcode);
                                                                        return condition(protocol);
                                                                    },
                                                                .matched =
-                                                                   [context](const auto& header) {
+                                                                   [context](const auto& opcode) {
                                                                        auto& protocol =
-                                                                           static_cast<const ResponseType&>(header);
+                                                                           static_cast<const ResponseType&>(opcode);
                                                                        context->complete_success(protocol);
                                                                    },
                                                                .context_ptr = context.get()});

@@ -512,6 +512,7 @@ CREATE TABLE `user` (
   `deleted` tinyint unsigned NOT NULL DEFAULT '0',
   `created_date` datetime NOT NULL,
   `updated_date` datetime NOT NULL,
+  `first_login_date` datetime DEFAULT NULL COMMENT 'Set on first successful login; NULL = never logged in',
   PRIMARY KEY (`id`),
   UNIQUE KEY `id_UNIQUE` (`id`),
   UNIQUE KEY `name_UNIQUE` (`name`),

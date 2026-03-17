@@ -11,7 +11,7 @@ using namespace fb::model::enum_value;
 class front_info : public fb::protocol::header
 {
 public:
-    static constexpr uint8_t header = 0x09;
+    static constexpr uint8_t opcode = 0x09;
 
 public:
     front_info() = default;

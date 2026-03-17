@@ -13,7 +13,7 @@ using namespace fb::protocol::internal;
 class bulletin_mails : public fb::protocol::header
 {
 public:
-    static constexpr uint8_t header = 0x31;
+    static constexpr uint8_t opcode = 0x31;
 
 public:
 #ifndef BOT

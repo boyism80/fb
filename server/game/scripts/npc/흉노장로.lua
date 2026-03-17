@@ -1,10 +1,6 @@
--- @note Trash: 1_중국\일반.txt "흉노장로". Potion crafting: choose type (적/황/청/녹), then exchange 2x 호박단추 + 1x 검정깃발 for 비약(소).
 
 local POTION_PREFIXES = { "적", "황", "청", "녹" }
 
--- @brief   NPC Huno elder: craft potion (amber button x2 + black flag) for potion(small).
--- @param[in]  me   The character talking to the NPC.
--- @param[in]  npc  The NPC entity (흉노장로).
 function NPC_407(me, npc)
     local button = me:dialog(npc, "비약? 누구에게 들었는지 모르지만.. 우리 흉노족의 장로에게는 비약을 만드는 법이 대대로 전해지고 있지.", false, true)
     if button == DIALOG_RESULT.QUIT then

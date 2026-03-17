@@ -4,19 +4,8 @@ using Http.Service;
 
 namespace Http.Reepository
 {
-    /// <summary>
-    /// Provides repository functionality for achievement data management.
-    /// Implements Redis hash-based caching with database persistence for achievement operations.
-    /// </summary>
     public class AchievementRepository : RedisHashRepository<Achievement, AchievementKey>
     {
-        /// <summary>
-        /// Initializes a new instance of the <see cref="AchievementRepository"/> class.
-        /// </summary>
-        /// <param name="dbContext">The database context for connection management.</param>
-        /// <param name="redisService">The Redis service for cache operations.</param>
-        /// <param name="distributedLock">The distributed lock service for concurrency control.</param>
-        /// <param name="dbExecuteService">The write-back service for asynchronous database writes.</param>
         public AchievementRepository(DbContext dbContext,
             RedisService redisService,
             RedisDistributedLockService distributedLock,
@@ -25,13 +14,6 @@ namespace Http.Reepository
 
         }
 
-        /// <summary>
-        /// Retrieves a specific achievement for a character by user ID and achievement model.
-        /// </summary>
-        /// <param name="world">The world identifier (e.g., 1, 2). Use 0 for unified.</param>
-        /// <param name="uid">The unique identifier of the character.</param>
-        /// <param name="id">The achievement identifier.</param>
-        /// <returns>The achievement if found; otherwise, null.</returns>
         public async Task<Achievement> Get(uint world, uint uid, uint id)
         {
             return await base.Get(world, new AchievementKey
@@ -41,12 +23,6 @@ namespace Http.Reepository
             });
         }
 
-        /// <summary>
-        /// Retrieves all achievements for a specific character by user ID.
-        /// </summary>
-        /// <param name="world">The world identifier (e.g., 1, 2). Use 0 for unified.</param>
-        /// <param name="uid">The unique identifier of the character.</param>
-        /// <returns>A collection of all achievements for the specified character.</returns>
         public async Task<IEnumerable<Achievement>> Get(uint world, uint uid)
         {
             return await base.GetAll(world, new AchievementKey
@@ -55,11 +31,6 @@ namespace Http.Reepository
             });
         }
 
-        /// <summary>
-        /// Generates the SQL SELECT statement for retrieving a specific achievement.
-        /// </summary>
-        /// <param name="key">The achievement key containing user ID and achievement id.</param>
-        /// <returns>A SQL SELECT statement for the specific achievement.</returns>
         protected override string OnSelect(AchievementKey key)
         {
             var sql = $"""
@@ -72,11 +43,6 @@ namespace Http.Reepository
             return sql;
         }
 
-        /// <summary>
-        /// Generates the SQL SELECT statement for retrieving all achievements for a character.
-        /// </summary>
-        /// <param name="key">The achievement key containing the user ID.</param>
-        /// <returns>A SQL SELECT statement for all achievements of the specified character.</returns>
         protected override string OnSelectBulk(AchievementKey key)
         {
             var sql = $"""
@@ -86,11 +52,31 @@ namespace Http.Reepository
             return sql;
         }
 
-        /// <summary>
-        /// Generates the SQL UPSERT statement for a single achievement.
-        /// </summary>
-        /// <param name="value">The achievement to upsert.</param>
-        /// <returns>A SQL UPSERT statement for the achievement.</returns>
+        protected override string OnSelectMany(IReadOnlyList<AchievementKey> keys)
+        {
+            return $"SELECT * FROM `achievement` WHERE `uid` IN ({string.Join(",", keys.Select(k => k.Uid))});";
+        }
+
+        protected override AchievementKey GetKeyFromRow(Achievement row)
+        {
+            return new AchievementKey { Uid = row.Uid };
+        }
+
+        public async Task<IReadOnlyDictionary<uint, IReadOnlyList<Achievement>>> GetMany(uint world, IReadOnlyList<uint> ownerIds)
+        {
+            if (ownerIds == null || ownerIds.Count == 0)
+                return new Dictionary<uint, IReadOnlyList<Achievement>>();
+
+            var keys = ownerIds.Distinct().Select(uid => new AchievementKey { Uid = uid }).ToList();
+            var list = await base.GetMany(world, keys);
+            var dict = keys.Distinct().ToDictionary(k => k.Uid, _ => (IList<Achievement>)new List<Achievement>());
+            foreach (var a in list)
+            {
+                dict[a.Uid].Add(a);
+            }
+            return dict.ToDictionary(kv => kv.Key, kv => (IReadOnlyList<Achievement>)kv.Value);
+        }
+
         protected override string OnUpsert(Achievement value)
         {
             var sql = $"""
@@ -123,11 +109,6 @@ namespace Http.Reepository
             return sql;
         }
 
-        /// <summary>
-        /// Generates the SQL UPSERT statement for multiple achievements in a batch operation.
-        /// </summary>
-        /// <param name="values">The array of achievements to upsert.</param>
-        /// <returns>A SQL UPSERT statement for the batch of achievements.</returns>
         protected override string OnUpsert(Achievement[] values)
         {
             var args = values.Select(achievement =>

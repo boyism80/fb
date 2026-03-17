@@ -12,7 +12,7 @@ using namespace fb::model::enum_value;
 class update_move : public move
 {
 public:
-    static constexpr uint8_t header = 0x06;
+    static constexpr uint8_t opcode = 0x06;
 
 public:
     fb::model::point<uint16_t> begin;

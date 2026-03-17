@@ -1,8 +1,4 @@
--- @note Trash: 2_이벤트\묵언수행.txt "여자죄수". Global $silence1,$silence2,$silence3,$silence4 -> per-character QUEST_SILENCE param "a,b,solved". Input answer; if a+b correct set solved=1; else wrong message.
 
----@brief   NPC 여자죄수: accepts answer for 털보죄수's problem (a+b). Correct -> set solved so 털보죄수 gives 담배. Uses QUEST_SILENCE param "a,b,solved".
----@param[in] me   The character.
----@param[in] npc  The NPC entity.
 function NPC_393(me, npc)
     local quest = me:quest(QUEST_SILENCE)
     if quest == nil then

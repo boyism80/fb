@@ -19,7 +19,7 @@ namespace internal_resp = fb::protocol::internal::response;
 namespace internal_reqs = fb::protocol::internal::request;
 
 server::server(boost::asio::io_context& io_context, uint16_t port) :
-    fb::acceptor<character>(io_context, "GAME", port),
+    fb::acceptor<character>(io_context, "GAME", port, fb::config<uint32_t>("http:max_concurrent", 500)),
     maps(*this, fb::config<uint32_t>("id")),
     listener(*this),
     characters(*this),
@@ -82,7 +82,6 @@ server::server(boost::asio::io_context& io_context, uint16_t port) :
     lua::build("sleep", builtin::server::builtin_sleep);
     lua::build("now", builtin::server::builtin_now);
     lua::build("datetime", builtin::server::builtin_datetime);
-    lua::build("baram_time", builtin::server::builtin_baram_time);
     lua::build("name2mob", builtin::server::builtin_name2mob);
     lua::build("name2spell", builtin::server::builtin_name2spell);
     lua::build("name2item", builtin::server::builtin_name2item);
@@ -292,11 +291,11 @@ async::task<void> server::on_start()
     }
 }
 
-bool server::decrypt_policy(uint8_t cmd) const
+bool server::decrypt_policy(uint8_t opcode) const
 {
-    switch (cmd)
+    switch (opcode)
     {
-    case game_reqs::login::header:
+    case game_reqs::login::opcode:
         return false;
 
     default:
@@ -334,7 +333,10 @@ async::task<bool> server::on_disconnected(fb::socket<character>& socket)
     auto thread = ch->thread();
     try
     {
-        co_await this->save(*ch);
+        if (!ch->saved_before_shutdown())
+        {
+            co_await this->save(*ch);
+        }
         auto world  = fb::config<uint32_t>("world");
         std::ignore = co_await this->http.post("internal", "/in-game/logout", internal_reqs::Logout{world, ch->name()});
     }
@@ -492,12 +494,8 @@ server::send(object& object, const fb::protocol::header& header, fb::game::scope
     }
 }
 
-async::task<void> server::save(character& ch)
+internal::SavePayload server::save_payload(const character& ch) const
 {
-    if (ch.inited() == false)
-        co_return;
-
-    auto weak  = ch.weak_from_this();
     auto items = std::vector<internal::Item>();
     for (auto i = 0; i < CONTAINER_CAPACITY; i++)
     {
@@ -551,14 +549,11 @@ async::task<void> server::save(character& ch)
             internal::Quest{ch.id, qid, quest->step(), quest->progress(), quest->param(), quest->completed()});
     }
 
-    // Get system mail users from character's in-memory collection
-    // Exclude expired system mails (they will be marked as deleted in InGameController)
     auto        received_system_mails = std::vector<internal::SystemMailUser>();
     auto        now                   = fb::model::datetime();
     const auto& system_mail_users     = ch.mail_box.get_system_mail_users();
     for (const auto& [mail_id, smu] : system_mail_users)
     {
-        // Skip expired system mails
         if (smu.expire_date.has_value() && smu.expire_date.value() < now)
             continue;
 
@@ -568,6 +563,7 @@ async::task<void> server::save(character& ch)
             smu.read,
             smu.expire_date.has_value() ? std::make_optional(smu.expire_date.value().to_string()) : std::nullopt});
     }
+
     auto        storage_boxes   = std::vector<internal::StorageBox>();
     const auto& character_boxes = ch.storage_box.entries();
     storage_boxes.reserve(character_boxes.size());
@@ -588,10 +584,9 @@ async::task<void> server::save(character& ch)
             {
                 json_array.append(dsl.to_json());
             }
-            // Use StreamWriterBuilder to output UTF-8 characters without escape sequences
             auto builder           = Json::StreamWriterBuilder{};
-            builder["emitUTF8"]    = true; // Output UTF-8 characters directly without escape sequences
-            builder["indentation"] = "";   // Compact output (no indentation)
+            builder["emitUTF8"]    = true;
+            builder["indentation"] = "";
             auto writer            = std::unique_ptr<Json::StreamWriter>(builder.newStreamWriter());
             auto stream            = std::ostringstream{};
             writer->write(json_array, &stream);
@@ -619,37 +614,103 @@ async::task<void> server::save(character& ch)
         storage_reward_marks.emplace_back(mark.user, pending_id, expired_date_str);
     }
 
-    auto world  = fb::config<uint32_t>("world");
-    std::ignore = co_await this->http.post("internal",
-                                           "/in-game/save",
-                                           internal_reqs::Save{world,
-                                                               ch.to_protocol(),
-                                                               ch.marriage().to_protocol(),
-                                                               items,
-                                                               spells,
-                                                               achievements,
-                                                               quests,
-                                                               received_system_mails,
-                                                               storage_boxes,
-                                                               storage_reward_marks});
+    return internal::SavePayload(ch.to_protocol(),
+                                 ch.marriage().to_protocol(),
+                                 items,
+                                 spells,
+                                 achievements,
+                                 quests,
+                                 received_system_mails,
+                                 storage_boxes,
+                                 storage_reward_marks);
+}
+
+async::task<void> server::save(character& ch)
+{
+    if (ch.inited() == false)
+        co_return;
+
+    auto weak    = ch.weak_from_this();
+    auto world   = fb::config<uint32_t>("world");
+    auto payload = this->save_payload(ch);
+    std::ignore  = co_await this->http.post("internal", "/in-game/save", internal_reqs::Save{world, payload});
 
     co_await this->threads.switching(weak);
     ch.send(game_resp::save());
 }
 
-void server::save()
+async::task<void> server::save()
 {
+    static constexpr size_t SAVE_BATCH_CHUNK_SIZE = 100;
+    auto                    world                 = fb::config<uint32_t>("world");
+    auto                    tasks                 = std::vector<async::task<void>>{};
+    tasks.reserve(this->threads.count());
     for (auto& [id, thread] : this->threads)
     {
-        std::ignore = thread->dispatch([this](auto& thread) -> async::task<void> {
-            auto params = thread.template data<thread_params>();
-            for (auto& [id, character] : params->characters)
+        tasks.push_back(thread->dispatch([this, world](auto& thread) -> async::task<void> {
+            auto params     = thread.template data<thread_params>();
+            auto characters = std::vector<character*>{};
+            auto payloads   = std::vector<internal::SavePayload>{};
+            characters.reserve(params->characters.size());
+            payloads.reserve(params->characters.size());
+            for (auto& [cid, character] : params->characters)
             {
-                std::ignore = this->save(*character);
+                if (!character->inited())
+                    continue;
+
+                characters.push_back(character.get());
+                payloads.push_back(this->save_payload(*character));
+            }
+
+            const size_t total = payloads.size();
+            for (size_t offset = 0; offset < total; offset += SAVE_BATCH_CHUNK_SIZE)
+            {
+                const size_t chunk_end = (std::min)(offset + SAVE_BATCH_CHUNK_SIZE, total);
+                auto         chunk =
+                    std::vector<internal::SavePayload>(payloads.begin() + static_cast<std::ptrdiff_t>(offset),
+                                                       payloads.begin() + static_cast<std::ptrdiff_t>(chunk_end));
+                std::ignore = co_await this->http.post("internal",
+                                                       "/in-game/save-batch",
+                                                       internal_reqs::SaveBatch{world, std::move(chunk)});
+
+                for (size_t i = offset; i < chunk_end; i++)
+                {
+                    characters[i]->send(game_resp::save());
+                }
             }
             co_return;
-        });
+        }));
     }
+    for (auto& t : tasks)
+    {
+        co_await t;
+    }
+}
+
+async::task<void> server::set_saved_before_shutdown_on_all()
+{
+    std::vector<async::task<void>> tasks;
+    tasks.reserve(this->threads.count());
+    for (auto& [id, thread] : this->threads)
+    {
+        tasks.push_back(thread->dispatch([this](auto& thread) -> async::task<void> {
+            auto params = thread.template data<thread_params>();
+            for (auto& [cid, character] : params->characters)
+            {
+                if (character->inited())
+                    character->saved_before_shutdown(true);
+            }
+            co_return;
+        }));
+    }
+    for (auto& t : tasks)
+        co_await t;
+}
+
+async::task<void> server::on_exit()
+{
+    co_await this->set_saved_before_shutdown_on_all();
+    co_await this->save();
 }
 
 uint32_t server::thread_id(const fb::socket<character>& socket) const

@@ -1,9 +1,9 @@
 -- 연두색도포 사용 스크립트
-function ON_ACTIVE_608(me, item)
+function ON_ACTIVATED_608(me, item)
 
 end
 
 -- 연두색도포 해제 스크립트
-function ON_INACTIVE_608(me, item)
+function ON_DEACTIVATED_608(me, item)
 
 end

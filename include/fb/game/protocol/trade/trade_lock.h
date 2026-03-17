@@ -11,7 +11,7 @@ using namespace fb::model::enum_value;
 class trade_lock : public fb::protocol::header
 {
 public:
-    static constexpr uint8_t header = 0x42;
+    static constexpr uint8_t opcode = 0x42;
 
 public:
     trade_lock() = default;

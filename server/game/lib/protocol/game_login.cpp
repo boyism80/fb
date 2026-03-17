@@ -14,7 +14,7 @@ login::login(const fb::stream& params)
 async::task<void> login::serialize(fb::stream_writer<big_endian>& writer) const
 {
     co_await header::serialize(writer);
-    writer.write<uint8_t>(header);
+    writer.write<uint8_t>(opcode);
     writer.write<uint8_t>(this->enc_type);
     writer.write<uint8_t>(this->key_size);
     writer.write((void*)this->enc_key, this->key_size);

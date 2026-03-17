@@ -1,9 +1,4 @@
--- @note Trash: 1_세시마을\유두집.txt "백리향". Active when gv("sesi_rightnow") == 8 (유두). List: request songpyeon ingredients (task), or hand in "weeding" for random reward. $sesicount = quest:progress() (incremented elsewhere when player weeds).
 
--- @brief   Handles "송편재료가 필요해요.": dialogs, starts quest and sets step(1), progress(0).
--- @param[in]  me    The character talking to the NPC.
--- @param[in]  npc   The NPC entity (백리향).
--- @param[in]  quest Current QUEST_BAEKRIHYANG quest or nil.
 local function run_songpyeon_request(me, npc, quest)
     local btn = me:dialog(npc, "송편재료가 필요하시다구요? 아... 세인이 언니에게 얘기듣고 오셨나보군요?", false, true)
     if btn == DIALOG_RESULT.QUIT then
@@ -33,10 +28,6 @@ local function run_songpyeon_request(me, npc, quest)
     end
 end
 
--- @brief   Handles "벌초를 하고 왔어요.": checks step/progress/completed, then gives random songpyeon ingredients and completes quest.
--- @param[in]  me    The character talking to the NPC.
--- @param[in]  npc   The NPC entity (백리향).
--- @param[in]  quest Current QUEST_BAEKRIHYANG quest (must not be nil when called for this selection).
 local function run_weeding_handin(me, npc, quest)
     if quest == nil or quest:step() < 1 then
         me:dialog(npc, "벌초를 하지 않으셨네요? 절 속이시면 안돼죠..", false, false)
@@ -81,9 +72,6 @@ local function run_weeding_handin(me, npc, quest)
     quest:complete()
 end
 
--- @brief   NPC Baekrihyang: seasonal (sesi_rightnow == 8) list; gives weeding task (step 1, progress 0) or rewards when quest:progress() >= 1.
--- @param[in]  me   The character talking to the NPC.
--- @param[in]  npc  The NPC entity (백리향).
 function NPC_363(me, npc)
     local btn = me:dialog(npc, "안녕하세요? 저는 백리향입니다.", false, true)
     if btn == DIALOG_RESULT.QUIT then

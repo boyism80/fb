@@ -56,6 +56,7 @@ struct life
     static int builtin_buff_hit(lua_State* L);
     static int builtin_hit(lua_State* L);
     static int builtin_normal_attack_damage(lua_State* L);
+    static int builtin_update(lua_State* L);
 };
 
 } // namespace fb::game::builtin

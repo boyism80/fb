@@ -1,8 +1,4 @@
--- @note Trash: 1_세시마을\단오집.txt "오단미". gv("sesi_rightnow")==5: list 단오설명/창포제출/비녀(창포뿌리5→비녀)/머리감고왔어요(반짝반짝 버프 시 망개떡). message @sd 3 -> omitted or dialog.
 
----@brief   NPC 오단미: Dano (단오) event NPC. Only active when sesi_rightnow == 5. List: explanation, 창포 hand-in (random 창포뿌리/썩은/창포물), 창포뿌리 5 -> 비녀, "머리 감고 왔어요" (isbuff 반짝반짝 -> 망개떡).
----@param[in] me   The character.
----@param[in] npc  The NPC entity.
 function NPC_355(me, npc)
     if gv("sesi_rightnow") ~= 5 then
         local btn = me:dialog(npc, "안녕하세요? 저는 오단미입니다.", false, true)

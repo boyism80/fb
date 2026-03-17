@@ -1,8 +1,4 @@
--- @note Trash: 1_도삭산\일반.txt "도삭산대신선". QUEST_DOJAECHUN step 1: hand in 신선의책 for 도삭산의서, warp to 900층주막, complete.
 
--- @brief   NPC Dosak Mountain great hermit: when QUEST_DOJAECHUN step is 1 and player has 신선의책, exchange for 도삭산의서 and warp to 900층주막.
--- @param[in]  me   The character talking to the NPC.
--- @param[in]  npc  The NPC entity (도삭산대신선).
 function NPC_368(me, npc)
     local quest = me:quest(QUEST_DOJAECHUN)
     if quest == nil then

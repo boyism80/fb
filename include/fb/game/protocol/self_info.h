@@ -11,7 +11,7 @@ using namespace fb::model::enum_value;
 class self_info : public fb::protocol::header
 {
 public:
-    static constexpr uint8_t header = 0x2D;
+    static constexpr uint8_t opcode = 0x2D;
 
 public:
     self_info() = default;

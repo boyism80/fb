@@ -2,18 +2,18 @@ local ITEM_DEAD_CENTIPEDE = '죽은지네'
 local ITEM_DRIED_CENTIPEDE = '말린지네'
 
 function NPC_239(me, npc)
-    ::NPC_239_COS001::
+    ::NPC_239_0001::
     local btn = me:dialog(npc, '고기나 생선말고는 건포로 만들기 어렵지...\n\n지네 같은 것은 말리면 부서지고 없어져서, 하기가 어려운데...', false, true)
     if btn == DIALOG_RESULT.QUIT then
         return
     end
-    ::NPC_239_COS002::
+    ::NPC_239_0002::
     btn = me:dialog(npc, '자네가 가진 지네를 전부 주면 한번 시도해 봄세...', true, true)
     if btn == DIALOG_RESULT.QUIT then
         return
     end
     if btn == DIALOG_RESULT.PREV then
-        goto NPC_239_COS001
+        goto NPC_239_0001
     end
 
     local item = me:item(ITEM_DEAD_CENTIPEDE)

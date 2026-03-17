@@ -1,5 +1,5 @@
 function NPC_51(me, npc)
-    ::NPC_51_COS00::
+    ::NPC_51_0001::
     local button = me:dialog(npc, '여기는 비밀세작의 집입니다. 85 레벨부터 99 레벨 이상 고레벨이 사냥하기에 좋습니다.', false, true)
     if button == DIALOG_RESULT.QUIT then
         return
@@ -10,6 +10,6 @@ function NPC_51(me, npc)
         return
     end
     if button == DIALOG_RESULT.PREV then
-        goto NPC_51_COS00
+        goto NPC_51_0001
     end
 end

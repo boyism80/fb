@@ -12,7 +12,7 @@ spell_unbuff::spell_unbuff(const fb::game::buff& buff) :
 async::task<void> spell_unbuff::serialize(fb::stream_writer<big_endian>& writer) const
 {
     co_await header::serialize(writer);
-    writer.write<uint8_t>(header);
+    writer.write<uint8_t>(opcode);
     writer.write<std::string>(this->buff.model.name);
     writer.write<uint32_t>(0x00);
 }

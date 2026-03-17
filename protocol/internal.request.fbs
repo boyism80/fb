@@ -102,15 +102,13 @@ table ReserveName {
 
 table Save {
   world: uint;
-  character: fb.protocol.internal.Character;
-  marriage: fb.protocol.internal.Marriage;
-  items: [fb.protocol.internal.Item];
-  spells: [fb.protocol.internal.Spell];
-  achievements: [fb.protocol.internal.Achievement];
-  quests: [fb.protocol.internal.Quest];
-  received_system_mails: [fb.protocol.internal.SystemMailUser];
-  storage_boxes: [fb.protocol.internal.StorageBox];
-  storage_reward_marks: [fb.protocol.internal.StorageRewardMark];
+  payload: fb.protocol.internal.SavePayload;
+}
+
+/// Bulk save: multiple characters in one request (same world).
+table SaveBatch {
+  world: uint;
+  characters: [fb.protocol.internal.SavePayload];
 }
 
 

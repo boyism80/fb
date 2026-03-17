@@ -29,7 +29,7 @@ namespace fb::protocol::gateway::request {
 class server_list : public fb::protocol::header
 {
 public:
-    static constexpr uint8_t header = 0x57;
+    static constexpr uint8_t opcode = 0x57;
 
 public:
     uint8_t action;
@@ -54,11 +54,10 @@ public:
 
 namespace fb::protocol::gateway::response {
 
-/** Login server selection list (cmd 0x56). List of selectable login/game server endpoints. */
 class server_list : public fb::protocol::header
 {
 public:
-    static constexpr uint8_t header = 0x56;
+    static constexpr uint8_t opcode = 0x56;
 
 public:
 #ifdef BOT

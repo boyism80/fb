@@ -1,9 +1,9 @@
 -- 땅의치마 사용 스크립트
-function ON_ACTIVE_752(me, item)
+function ON_ACTIVATED_752(me, item)
 
 end
 
 -- 땅의치마 해제 스크립트
-function ON_INACTIVE_752(me, item)
+function ON_DEACTIVATED_752(me, item)
 
 end

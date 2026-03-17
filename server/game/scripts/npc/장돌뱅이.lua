@@ -1,9 +1,7 @@
 local ACHIEVEMENT_RABBIT_CATCH = 20
 local ITEM_NEURAEJINDO = '뇌진도'
 
--- @note Optional: callfunc "지급아이템주인처리" is not implemented; omitted.
 
----@brief Run "용왕의보물" (QUEST_CIDEQUEST) branch at 장돌뱅이.
 local function run_cidequest_jangdol(me, npc)
     local q = me:quest(QUEST_CIDEQUEST)
     if q == nil or q:step() ~= 1 then
@@ -24,7 +22,6 @@ local function run_cidequest_jangdol(me, npc)
         me:dialog(npc, "그 친구는 부여미궁 어딘가에 있다고 하더군...", false, false)
         return
     end
-    -- Need 뇌진도: dialog chain then set param "1"
     local list_1, b1 = me:list(npc, "음...", { "혹시 용왕님의 보물에 대해 알고 계신가요?" }, false)
     if b1 == DIALOG_RESULT.QUIT or list_1 == nil then
         return
@@ -83,7 +80,6 @@ function NPC_159(me, npc)
         me:dialog(npc, "이 귀한것을 가지고 있다니... 자, 여기 만오천전을 줄테니 어서 가져가게나.", false, false)
         return
     end
-    -- main_sel == 2: 별주부전
     local quest = me:quest(QUEST_RABBIT_LIVER)
     if quest == nil then
         me:dialog(npc, '지금은 이야기를 할 때가 아니군..', false, false)
@@ -96,28 +92,28 @@ function NPC_159(me, npc)
     end
 
     if sel == 0 then
-        ::NPC_159_COS001::
+        ::NPC_159_0001::
         local btn = me:dialog(npc, '음.. 거북장군에게서 토끼의간을 구해오라는 부탁을 받았단 말아지. 그런데 그 토끼는 정말 희귀한 토끼라네. 보통토끼와는 다르지', false, true)
         if btn == DIALOG_RESULT.QUIT then
             return
         end
-        ::NPC_159_COS002::
+        ::NPC_159_0002::
         btn = me:dialog(npc, '나도 장사 하느라 전국 방방곡곡 안가보는데가 없지만, 그 토끼는 딱 한 번 밖에 못봤었지.. 어디서 보았냐 하면 말일세...', true, true)
         if btn == DIALOG_RESULT.QUIT then
             return
         end
         if btn == DIALOG_RESULT.PREV then
-            goto NPC_159_COS001
+            goto NPC_159_0001
         end
-        ::NPC_159_COS003::
+        ::NPC_159_0003::
         btn = me:dialog(npc, '흐흐흐.. 이보게, 하지만 말일세.. 조금 야속하게 들릴지 모르겠지만, 나도 장사꾼이 아닌가?', true, true)
         if btn == DIALOG_RESULT.QUIT then
             return
         end
         if btn == DIALOG_RESULT.PREV then
-            goto NPC_159_COS002
+            goto NPC_159_0002
         end
-        ::NPC_159_COS004::
+        ::NPC_159_0004::
         local choice, list_btn = me:list(npc, '흐흐흐...', { '원하는게 뭡니까' }, false)
         if choice == nil or choice ~= 0 then
             return
@@ -132,22 +128,25 @@ function NPC_159(me, npc)
     quest:step(2)
     me:rmitem(ITEM_NEURAEJINDO, 1, ITEM_DELETE_TYPE.GIVE)
     me:push_achievement(ACHIEVEMENT_RABBIT_CATCH, '토깽이를 생포하자.', 7, 1)
-    ::NPC_159_COS005::
+    ::NPC_159_0005::
     btn = me:dialog(npc, '그 토끼가 출현하는 곳은 다름 아닌 한두고개라네.. 나도 한두고개에서 깊숙히 안들어가봐서 깊숙한 곳에서도 출현할지 어떨지는 모르겠네만', false, true)
     if btn == DIALOG_RESULT.QUIT then
         return
     end
-    ::NPC_159_COS006::
+    ::NPC_159_0006::
     btn = me:dialog(npc, '분명한 것은 한두고개에서 깊지 않은 곳에서 봤다는 사실일세.', true, true)
     if btn == DIALOG_RESULT.QUIT then
         return
     end
     if btn == DIALOG_RESULT.PREV then
-        goto NPC_159_COS005
+        goto NPC_159_0005
     end
-    ::NPC_159_COS007::
+    ::NPC_159_0007::
     btn = me:dialog(npc, '그럼 행운을 비네.. 아참, 이건 자네를 위해서 하는 얘기네만, 그 토끼는 아주 간악하다는 사실을 꼭 염두에 두게', true, false)
+    if btn == DIALOG_RESULT.QUIT then
+        return
+    end
     if btn == DIALOG_RESULT.PREV then
-        goto NPC_159_COS006
+        goto NPC_159_0006
     end
 end

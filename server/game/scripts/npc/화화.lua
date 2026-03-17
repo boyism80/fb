@@ -1,5 +1,3 @@
--- @note Trash: 1_환상의섬/일반.txt "화화". QUEST_HWAHWA (friend), QUEST_HWAHWA_SMILE (smile count), QUEST_JINGOGYUN (step 2: 탄생의 씨앗, step 4->5).
--- Time window: 3-hour slots (1,4,7,10,13,16,19,22) and minute 10-40; outside -> ghost message. $read_legend, npcspawn/deletenpc, image omitted.
 
 local function run_dialogs(me, npc, messages)
     for i, msg in ipairs(messages) do
@@ -13,7 +11,6 @@ local function run_dialogs(me, npc, messages)
     return true
 end
 
----Return true if current time is in the "화화 appears" window (trash: gettime(2,0) in {1,4,7,10,13,16,19,22}, gettime(1,0) 10..40).
 local function in_hwahwa_time_window()
     local t = datetime()
     local hour = t and t.hour or 0
@@ -22,7 +19,6 @@ local function in_hwahwa_time_window()
     return allowed_hours[hour] and min >= 10 and min <= 40
 end
 
----Get current smile count (QUEST_HWAHWA_SMILE step); ensure quest exists and step >= 0.
 local function get_smile_count(me)
     local q = me:quest(QUEST_HWAHWA_SMILE)
     if not q then
@@ -31,7 +27,6 @@ local function get_smile_count(me)
     return q:step() or 0
 end
 
----Add to smile count and optionally push_achievement.
 local function add_smile(me, delta)
     local q = me:quest(QUEST_HWAHWA_SMILE)
     if not q then
@@ -46,7 +41,6 @@ local function add_smile(me, delta)
     end
 end
 
----QUEST_JINGOGYUN step 4: list; option 1 or 2 -> dialogs, set step 5.
 local function handle_jingogyun_4(me, npc, q_jingo)
     if not q_jingo or q_jingo:step() ~= 4 then
         return false
@@ -70,7 +64,6 @@ local function handle_jingogyun_4(me, npc, q_jingo)
     return true
 end
 
----QUEST_JINGOGYUN step 2: list (씨앗 찾아줘 / 어느 씨앗 / 아니야). Option 1: 해바라기씨 1 -> 12/1000 탄생의씨앗.
 local function handle_jingogyun_2(me, npc, q_jingo)
     if not q_jingo or q_jingo:step() ~= 2 then
         return false
@@ -129,7 +122,6 @@ local function handle_jingogyun_2(me, npc, q_jingo)
     return true
 end
 
----Frolic list: 도시락 공양, 가위바위보, 옛날 이야기.
 local function do_frolic(me, npc)
     local sel, btn = me:list(npc, "신난다! 난 새벽 2시가 넘으면 사라지기 때문에 별로 시간이 없어!", {
         "많이 배고픈 것 같은데, 도시락 공양부터 받을래?",
@@ -210,14 +202,12 @@ local function do_frolic(me, npc)
 end
 
 function NPC_126(me, npc)
-    -- Position check (trash: player must be in area x<=20, 75<=y<=94)
     local x, y = me:position()
     if (x and x > 20) or (y and (y < 75 or y > 94)) then
         me:dialog(npc, "대체 어디서 장난을 하는거야? 내가 귀신이라고 우습게보여?", false, false)
         return
     end
 
-    -- Trash: $read_legend != 5 -> "...." (omitted; no READ_LEGEND quest in scope)
 
     if not in_hwahwa_time_window() then
         me:dialog(npc, "앗, 큰일이야. 이제 다시 귀신의 모습으로 돌아가야해. 나중에 만나자.\n\n(소녀의 씁쓸한 목소리가 귓가에 남아 메아리쳤다.)", false, false)
@@ -242,7 +232,6 @@ function NPC_126(me, npc)
         return
     end
 
-    -- Friend offer when smile >= 1500
     if smile >= 1500 then
         me:dialog(npc, "심심해~ 심심해~\n\n배고파~ 배고파~", false, true)
         local sel, btn = me:list(npc, me:name() .. "!!\n우리 친구하자! 어때?", {
@@ -277,7 +266,6 @@ function NPC_126(me, npc)
         return
     end
 
-    -- 비장의도시락 intro (돌순이 friend path) -> then frolic
     if me:has_items("비장의도시락", 1) then
         if not run_dialogs(me, npc, {
             "소녀가 당신을 본다. 시선이 당신이 들고있는 도시락으로 향한다. 하지만, 표정은 경계심이 가득하다.",

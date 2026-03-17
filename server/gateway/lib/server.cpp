@@ -11,7 +11,7 @@ using namespace std::chrono_literals;
 namespace internal_reqs = fb::protocol::internal::request;
 
 server::server(boost::asio::io_context& io_context, uint16_t port) :
-    fb::acceptor<session>(io_context, "GATEWAY", port),
+    fb::acceptor<session>(io_context, "GATEWAY", port, fb::config<uint32_t>("http:max_concurrent", 500)),
     log(fb::config<std::string>("amqp:log:ip"),
         fb::config<uint16_t>("amqp:log:port"),
         fb::config<std::string>("amqp:log:uid"),
@@ -64,7 +64,7 @@ fb::stream server::make_crt_stream(const fb::encryption& encryption)
 {
     auto stream = fb::stream();
     auto writer = fb::stream_writer<big_endian>(stream);
-    writer.write<uint8_t>(0x00); // cmd : 0x00
+    writer.write<uint8_t>(0x00); // opcode : 0x00
     writer.write<uint8_t>(0x00);
     writer.write<uint32_t>(this->_endpoint_crc);
     writer.write<uint8_t>(encryption.pattern());
@@ -75,12 +75,12 @@ fb::stream server::make_crt_stream(const fb::encryption& encryption)
     return stream;
 }
 
-bool server::decrypt_policy(uint8_t cmd) const
+bool server::decrypt_policy(uint8_t opcode) const
 {
-    switch (cmd)
+    switch (opcode)
     {
-    case fb::protocol::gateway::request::version::header:
-    case fb::protocol::gateway::request::connection_ack::header:
+    case fb::protocol::gateway::request::version::opcode:
+    case fb::protocol::gateway::request::connection_ack::opcode:
         return false;
 
     default:

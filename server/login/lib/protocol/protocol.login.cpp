@@ -13,7 +13,7 @@ async::task<void> login::deserialize(fb::stream_reader<big_endian>& reader)
 async::task<void> login::serialize(fb::stream_writer<big_endian>& writer) const
 {
     co_await header::serialize(writer);
-    writer.write<uint8_t>(header);
+    writer.write<uint8_t>(opcode);
     writer.write<std::string, uint8_t>(this->id);
     writer.write<std::string, uint8_t>(this->pw);
 }

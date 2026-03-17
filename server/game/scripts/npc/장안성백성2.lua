@@ -1,8 +1,4 @@
--- @note Trash: 1_중국\일반.txt "장안성백성2". QUEST_JINHWANG step 5 only: dialog chain then step → 6 (영환도사 안내).
 
--- @brief   NPC Jangan citizen 2: when QUEST_JINHWANG step is 5, advance to step 6 and point to 영환도사.
--- @param[in]  me   The character talking to the NPC.
--- @param[in]  npc  The NPC entity (장안성백성2).
 function NPC_540(me, npc)
     local quest = me:quest(QUEST_JINHWANG)
     if quest == nil or quest:step() ~= 5 then
@@ -26,7 +22,7 @@ function NPC_540(me, npc)
     end
 
     ::NPC_540_0002::
-    button = me:dialog(npc, "영환도사님을 찾아가보세요. 곧 또 여행을 떠나실테니 서두르시는게 좋을듯하네요.", true, true)
+    button = me:dialog(npc, "영환도사님을 찾아가보세요. 곧 또 여행을 떠나실테니 서두르시는게 좋을듯하네요.", false, true)
     if button == DIALOG_RESULT.QUIT then
         return
     end

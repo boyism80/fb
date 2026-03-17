@@ -1,5 +1,5 @@
-function ON_ACTIVE_8018(me, item)
+function ON_ACTIVATED_8018(me, item)
 end
 
-function ON_INACTIVE_8018(me, item)
+function ON_DEACTIVATED_8018(me, item)
 end

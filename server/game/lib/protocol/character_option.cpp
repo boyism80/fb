@@ -12,7 +12,7 @@ option::option(const fb::game::character& ch) :
 async::task<void> option::serialize(fb::stream_writer<big_endian>& writer) const
 {
     co_await header::serialize(writer);
-    writer.write<uint8_t>(header);
+    writer.write<uint8_t>(opcode);
     writer.write<uint8_t>(this->ch.option(OPTION::WEATHER_EFFECT)); // weather
     writer.write<uint8_t>(this->ch.option(OPTION::MAGIC_EFFECT));   // magic effect
     writer.write<uint8_t>(this->ch.option(OPTION::ROAR_WORLDS));    // listen news

@@ -1,8 +1,4 @@
--- @note Trash: 0_초보지원\엔피씨.txt "말도". QUEST_BEGINNER_PATH: intro dialogs and "안녕하세요" repeat; step 2 gives exp 300 and step(3); step >= 3 next-room message.
 
--- @brief   NPC Maldo: speaking tutorial (ENTER key, repeat phrase). Uses QUEST_BEGINNER_PATH; step 2 gives exp 300.
--- @param[in]  me   The character talking to the NPC.
--- @param[in]  npc  The NPC entity (말도).
 function NPC_445(me, npc)
     local quest = me:quest(QUEST_BEGINNER_PATH)
 
@@ -53,6 +49,5 @@ function NPC_445(me, npc)
         return
     end
 
-    -- step >= 3
     me:dialog(npc, "제가 가르쳐드릴게 이거밖에 없어서 미안하네요. 말하기는 [ENTER]요. 흥... 이제 다음 방으로 가보세요.", false, false)
 end

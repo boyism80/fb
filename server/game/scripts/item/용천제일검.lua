@@ -1,4 +1,4 @@
--- 용천제일검: on attack, chance to cast 용천제일격 on front target. Trash: 20% probability.
+-- 용천제일검 공격 스크립트
 function ON_ATTACK_258(me, item)
     math.randomseed(seed())
     if math.random() > 0.20 then
@@ -12,11 +12,11 @@ function ON_ATTACK_258(me, item)
 end
 
 -- 용천제일검 사용 스크립트
-function ON_ACTIVE_258(me, item)
+function ON_ACTIVATED_258(me, item)
 
 end
 
 -- 용천제일검 해제 스크립트
-function ON_INACTIVE_258(me, item)
+function ON_DEACTIVATED_258(me, item)
 
 end

@@ -46,30 +46,35 @@ function dojaeyoung_nobidocument(me, npc)
     if lb == DIALOG_RESULT.QUIT or sel ~= 0 then
         return
     end
-    ::NPC_107_POS001::
-    local btn = me:dialog(npc, '예? 뭐라고요? 그게 사실입니까? 하하... 이거 참, 뭐라고 말해야 할지...\n\n황비연... 그가 의적이 되어 탐관오리를 혼내주고 사람들을 돕고 있단 말이지요?', true, true)
+    ::NPC_107_0001::
+    local btn = me:dialog(npc, '예? 뭐라고요? 그게 사실입니까? 하하... 이거 참, 뭐라고 말해야 할지...\n\n황비연... 그가 의적이 되어 탐관오리를 혼내주고 사람들을 돕고 있단 말이지요?', false, true)
     if btn == DIALOG_RESULT.QUIT then
         return
     end
+    ::NPC_107_0010::
     btn = me:dialog(npc, '뭐라고 해야 할까... 참 대견스럽군요. 그가 어느날 갑자기 어려운 사람들을 돕고 싶다며 풀어달라고 할 때에는 반신반의했었지요.', true, true)
     if btn == DIALOG_RESULT.PREV then
-        goto NPC_107_POS001
+        goto NPC_107_0001
     end
     if btn == DIALOG_RESULT.QUIT then
         return
     end
-    sel, lb = me:list(npc, '지금 보니 그 때 황비연을 저희 집안 노비 신세에서 풀어준 것이 잘한 일이었다는 생각이 드는군요.', { '.....' }, true)
+    sel, lb = me:list(npc, '지금 보니 그 때 황비연을 저희 집안 노비 신세에서 풀어준 것이 잘한 일이었다는 생각이 드는군요.', { '.....' }, false)
     if lb == DIALOG_RESULT.QUIT or sel ~= 0 then
         return
     end
-    ::NPC_107_POS002::
+    ::NPC_107_0011::
     btn = me:dialog(npc, '이 보패를 그에게 전해주십시오. 이 문서를 제게 전해달라고 부탁했다는 그 사람이 아마 황비연 본인일 겁니다.', true, true)
+    if btn == DIALOG_RESULT.PREV then
+        goto NPC_107_0010
+    end
     if btn == DIALOG_RESULT.QUIT then
         return
     end
-    btn = me:dialog(npc, '아마, 아무리 의적이라고 해도 도둑직을 한 것이 부끄러워서 제게 직접 오지 못한 것이겠죠. 하하...\n\n그에게 전해 주십시오. 우린 모두 너를 아주 자랑스럽게 여기고 있다고... 하하하...', true, true)
+    ::NPC_107_0012::
+    btn = me:dialog(npc, '아마, 아무리 의적이라고 해도 도둑직을 한 것이 부끄러워서 제게 직접 오지 못한 것이겠죠. 하하...\n\n그에게 전해 주십시오. 우린 모두 너를 아주 자랑스럽게 여기고 있다고... 하하하...', false, true)
     if btn == DIALOG_RESULT.PREV then
-        goto NPC_107_POS002
+        goto NPC_107_0011
     end
     if btn == DIALOG_RESULT.QUIT then
         return
@@ -109,26 +114,26 @@ function dojaeyoung_herb_quest(me, npc)
 end
 
 function dojaeyoung_herb_start(me, npc)
-    ::NPC_107_COS001::
-    local btn = me:dialog(npc, '안녕하세요 ' .. me:name() .. '님. 도삭산을 탐험하고 계시군요, 도삭산은 마법에 걸린 곳이라는 소문이있는데, 그 말처럼 이상한 여러가지 현상들이 일어나는 곳이랍니다.', true, true)
+    ::NPC_107_0020::
+    local btn = me:dialog(npc, '안녕하세요 ' .. me:name() .. '님. 도삭산을 탐험하고 계시군요, 도삭산은 마법에 걸린 곳이라는 소문이있는데, 그 말처럼 이상한 여러가지 현상들이 일어나는 곳이랍니다.', false, true)
     if btn == DIALOG_RESULT.QUIT then
         return
     end
-    ::NPC_107_COS002::
+    ::NPC_107_0021::
     btn = me:dialog(npc, '아무래도 이런 마법이 걸린 곳에서 보통 사람이 사는것은 무리인지, 저희 아버지도 요즘 건강이 안좋으시죠.', true, true)
     if btn == DIALOG_RESULT.PREV then
-        goto NPC_107_COS001
+        goto NPC_107_0020
     end
     if btn == DIALOG_RESULT.QUIT then
         return
     end
-    ::NPC_107_COS003::
-    local sel, lb = me:list(npc, '의사의 말에 따르면 도삭산의 토끼들이 가지고 있는 약초를 달여서 지은 약을 드시면 차도가 있으실꺼라고 했는데...', { '제가 구해드리겠습니다.', '그렇군요..' }, true)
+    ::NPC_107_0022::
+    local sel, lb = me:list(npc, '의사의 말에 따르면 도삭산의 토끼들이 가지고 있는 약초를 달여서 지은 약을 드시면 차도가 있으실꺼라고 했는데...', { '제가 구해드리겠습니다.', '그렇군요..' }, false)
     if lb == DIALOG_RESULT.QUIT then
         return
     end
     if lb == DIALOG_RESULT.PREV then
-        goto NPC_107_COS002
+        goto NPC_107_0021
     end
     if sel == 1 then
         me:dialog(npc, '그렇죠..이 약초들을 어떻게 구하면 좋으련지..', false, true)
@@ -144,14 +149,15 @@ function dojaeyoung_herb_start(me, npc)
     end
     quest:step(1)
     me:push_achievement(9, '도재영의 부탁을 들어주자!', 7, 1)
-    ::NPC_107_COS004::
+    ::NPC_107_0025::
     btn = me:dialog(npc, '아.. 정말 감사합니다. ' .. me:name() .. '님은 마음도 넓으신 분이시군요.', true, true)
     if btn == DIALOG_RESULT.QUIT then
         return
     end
+    ::NPC_107_0026::
     btn = me:dialog(npc, '도삭산의 토끼들은 151층에서 200층에서 나온다고 합니다. 의사의 말로는 약초잎사귀 5개와 약초가지 1개가 있어야 한다고 하네요.\n\n그럼 잘 부탁드리겠습니다! 감사합니다!', true, true)
     if btn == DIALOG_RESULT.PREV then
-        goto NPC_107_COS004
+        goto NPC_107_0025
     end
 end
 
@@ -164,7 +170,7 @@ function dojaeyoung_herb_turnin(me, npc)
         me:dialog(npc, '아직 약초를 구를 구하시지 못하셨군요. 의사의 말로는 약초잎사귀 5개와 약초가지 1개가 있어야 한다고 합니다. 부탁드립니다.', false, true)
         return
     end
-    local btn = me:dialog(npc, '약초잎사귀와 약초가지를 구하셨군요! 감사합니다! 이것으로 저희 아버지가 건강을 되찾으시겠군요!', true, true)
+    local btn = me:dialog(npc, '약초잎사귀와 약초가지를 구하셨군요! 감사합니다! 이것으로 저희 아버지가 건강을 되찾으시겠군요!', false, true)
     if btn == DIALOG_RESULT.QUIT then
         return
     end
@@ -182,5 +188,5 @@ function dojaeyoung_herb_turnin(me, npc)
     end
     quest:step(2)
     me:push_achievement(9, '도삭산 100층 퀘스트 완료', 7, 1)
-    me:dialog(npc, '약소하지만 보답으로 강철의구두를 드리겠습니다. 도삭산을 돌아다니시면서 조금이라도 도움이 되길 바랍니다. 그럼..', true, true)
+    me:dialog(npc, '약소하지만 보답으로 강철의구두를 드리겠습니다. 도삭산을 돌아다니시면서 조금이라도 도움이 되길 바랍니다. 그럼..', false, true)
 end

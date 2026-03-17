@@ -1,8 +1,4 @@
--- @note Trash: 1_세시마을\삼짇집.txt "장명지". Intro dialog + gettime(4,0) 1..12 branches; trash branches empty, placeholder by month.
 
----@brief   NPC 장명지: intro + month-based placeholder (trash had empty branches per month).
----@param[in] me   The character.
----@param[in] npc  The NPC entity.
 function NPC_360(me, npc)
     local btn = me:dialog(npc, "안녕하세요? 저는 장명지입니다.", false, true)
     if btn == DIALOG_RESULT.QUIT then

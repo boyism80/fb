@@ -1,9 +1,4 @@
--- @note Trash: 1_중국\일반.txt "장안성간수". QUEST_JINHWANG step 1 only: dialog chain then give 종이쪽지, step → 2.
--- Player is expected to be in jail (warped by 북천좌상 when step 1); this NPC gives the note to visit 부여성북문지기.
 
--- @brief   NPC Jangan prison guard: when QUEST_JINHWANG step is 1, give 종이쪽지 and advance to step 2.
--- @param[in]  me   The character talking to the NPC.
--- @param[in]  npc  The NPC entity (장안성간수).
 function NPC_543(me, npc)
     local quest = me:quest(QUEST_JINHWANG)
     if quest == nil or quest:step() ~= 1 then

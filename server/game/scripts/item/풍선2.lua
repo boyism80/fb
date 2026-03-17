@@ -1,7 +1,7 @@
-function ON_ACTIVE_558(me, item)
+function ON_ACTIVATED_558(me, item)
 end
 
-function ON_INACTIVE_558(me, item)
+function ON_DEACTIVATED_558(me, item)
 end
 
 function ON_ATTACK_558(me, item)

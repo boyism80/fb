@@ -1,4 +1,3 @@
--- @note Trash: 1_극지방\설원지방.txt "설원세공사3" + FUNC_SNOWITEM. Craft 눈꽃반지 from 눈꽃얼음 10 (30% success).
 
 local MATERIAL_NAME = "눈꽃얼음"
 local MATERIAL_COUNT = 10
@@ -28,9 +27,6 @@ local function do_craft(me, npc)
     return true
 end
 
----@brief NPC 설원세공사3: craft 눈꽃반지 from 눈꽃얼음 10 (30% success).
----@param[in] me  The character.
----@param[in] npc The NPC entity.
 function NPC_436(me, npc)
     local sel, btn = me:list(npc, "저는 눈꽃얼음을 이용해 [" .. REWARD_NAME .. "]을 만들어 드립니다. ", { "만들어 주세요.", "아니요. 다음에..." }, false)
     if btn == DIALOG_RESULT.QUIT then

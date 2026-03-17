@@ -152,6 +152,10 @@ table Save {
   success: bool;
 }
 
+table BatchSave {
+  success: bool;
+}
+
 table BroadcastSave {
   
 }

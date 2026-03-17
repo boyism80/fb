@@ -8,7 +8,7 @@ function NPC_120(me, npc)
     end
 
     if quest == nil then
-        local btn = me:dialog(npc, '요즘 대륙 사람들이 자꾸 눈에 띄눈군. 정말 성가신 일이야. 그러고보니 자네도 대륙 사람이지? 그렇다면 태존도에 대해 알겠군?', true, true)
+        local btn = me:dialog(npc, '요즘 대륙 사람들이 자꾸 눈에 띄눈군. 정말 성가신 일이야. 그러고보니 자네도 대륙 사람이지? 그렇다면 태존도에 대해 알겠군?', false, true)
         if btn == DIALOG_RESULT.QUIT then
             return
         end
@@ -37,7 +37,7 @@ function NPC_120(me, npc)
         return
     end
 
-    local btn = me:dialog(npc, '음, 그게 태존도인가? 이리 주시게.', true, true)
+    local btn = me:dialog(npc, '음, 그게 태존도인가? 이리 주시게.', false, true)
     if btn == DIALOG_RESULT.QUIT then
         return
     end

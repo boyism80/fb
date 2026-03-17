@@ -1,14 +1,8 @@
-using Http.Model;
-using Http.Redis;
+﻿using Http.Model;
 using Newtonsoft.Json;
-using StackExchange.Redis;
 
 namespace Http.Service
 {
-    /// <summary>
-    /// Provides caching functionality for maintenance status checks.
-    /// Reduces Redis queries by caching maintenance status with TTL.
-    /// </summary>
     public class MaintenanceCacheService
     {
         private readonly RedisService _redisService;
@@ -16,12 +10,6 @@ namespace Http.Service
         private readonly ILogger<MaintenanceCacheService> _logger;
         private static readonly TimeSpan CacheTtl = TimeSpan.FromSeconds(60);
 
-        /// <summary>
-        /// Initializes a new instance of the <see cref="MaintenanceCacheService"/> class.
-        /// </summary>
-        /// <param name="redisService">The Redis service for accessing Redis connections.</param>
-        /// <param name="maintenanceService">The maintenance service for retrieving maintenance information.</param>
-        /// <param name="logger">The logger for recording operations.</param>
         public MaintenanceCacheService(
             RedisService redisService,
             MaintenanceService maintenanceService,
@@ -32,12 +20,6 @@ namespace Http.Service
             _logger = logger;
         }
 
-        /// <summary>
-        /// Gets the cached maintenance status for the specified world.
-        /// If cache is expired or missing, refreshes from MaintenanceService.
-        /// </summary>
-        /// <param name="world">The world identifier (e.g., 1, 2). Use 0 for unified-global.</param>
-        /// <returns>The maintenance status if found; otherwise, null.</returns>
         public async Task<MaintenanceStatus> GetMaintenanceStatus(uint world)
         {
             var redis = _redisService.GetUnifiedConnection();
@@ -46,7 +28,7 @@ namespace Http.Service
 
             var cacheKey = $"maintenance:status:{world}";
             var cachedValue = await redis.Connection.StringGetAsync(cacheKey);
-            
+
             if (!cachedValue.IsNull)
             {
                 try
@@ -86,11 +68,6 @@ namespace Http.Service
             return statusToCache;
         }
 
-        /// <summary>
-        /// Invalidates the maintenance status cache for the specified world.
-        /// </summary>
-        /// <param name="world">The world identifier (e.g., 1, 2). Use 0 for unified-global.</param>
-        /// <returns>A task representing the asynchronous operation.</returns>
         public async Task InvalidateCache(uint world)
         {
             var redis = _redisService.GetUnifiedConnection();

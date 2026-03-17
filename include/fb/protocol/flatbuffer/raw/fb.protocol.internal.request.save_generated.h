@@ -13,15 +13,7 @@ static_assert(FLATBUFFERS_VERSION_MAJOR == 25 &&
               FLATBUFFERS_VERSION_REVISION == 10,
              "Non-compatible flatbuffers version included");
 
-#include "fb.protocol.internal.achievement_generated.h"
-#include "fb.protocol.internal.character_generated.h"
-#include "fb.protocol.internal.item_generated.h"
-#include "fb.protocol.internal.marriage_generated.h"
-#include "fb.protocol.internal.quest_generated.h"
-#include "fb.protocol.internal.spell_generated.h"
-#include "fb.protocol.internal.storagebox_generated.h"
-#include "fb.protocol.internal.storagerewardmark_generated.h"
-#include "fb.protocol.internal.systemmailuser_generated.h"
+#include "fb.protocol.internal.savepayload_generated.h"
 
 namespace fb {
 namespace protocol {
@@ -36,74 +28,19 @@ struct Save FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
   typedef SaveBuilder Builder;
   enum FlatBuffersVTableOffset FLATBUFFERS_VTABLE_UNDERLYING_TYPE {
     VT_WORLD = 4,
-    VT_CHARACTER = 6,
-    VT_MARRIAGE = 8,
-    VT_ITEMS = 10,
-    VT_SPELLS = 12,
-    VT_ACHIEVEMENTS = 14,
-    VT_QUESTS = 16,
-    VT_RECEIVED_SYSTEM_MAILS = 18,
-    VT_STORAGE_BOXES = 20,
-    VT_STORAGE_REWARD_MARKS = 22
+    VT_PAYLOAD = 6
   };
   uint32_t world() const {
     return GetField<uint32_t>(VT_WORLD, 0);
   }
-  const fb::protocol::internal::raw::Character *character() const {
-    return GetPointer<const fb::protocol::internal::raw::Character *>(VT_CHARACTER);
-  }
-  const fb::protocol::internal::raw::Marriage *marriage() const {
-    return GetPointer<const fb::protocol::internal::raw::Marriage *>(VT_MARRIAGE);
-  }
-  const ::flatbuffers::Vector<::flatbuffers::Offset<fb::protocol::internal::raw::Item>> *items() const {
-    return GetPointer<const ::flatbuffers::Vector<::flatbuffers::Offset<fb::protocol::internal::raw::Item>> *>(VT_ITEMS);
-  }
-  const ::flatbuffers::Vector<::flatbuffers::Offset<fb::protocol::internal::raw::Spell>> *spells() const {
-    return GetPointer<const ::flatbuffers::Vector<::flatbuffers::Offset<fb::protocol::internal::raw::Spell>> *>(VT_SPELLS);
-  }
-  const ::flatbuffers::Vector<::flatbuffers::Offset<fb::protocol::internal::raw::Achievement>> *achievements() const {
-    return GetPointer<const ::flatbuffers::Vector<::flatbuffers::Offset<fb::protocol::internal::raw::Achievement>> *>(VT_ACHIEVEMENTS);
-  }
-  const ::flatbuffers::Vector<::flatbuffers::Offset<fb::protocol::internal::raw::Quest>> *quests() const {
-    return GetPointer<const ::flatbuffers::Vector<::flatbuffers::Offset<fb::protocol::internal::raw::Quest>> *>(VT_QUESTS);
-  }
-  const ::flatbuffers::Vector<::flatbuffers::Offset<fb::protocol::internal::raw::SystemMailUser>> *received_system_mails() const {
-    return GetPointer<const ::flatbuffers::Vector<::flatbuffers::Offset<fb::protocol::internal::raw::SystemMailUser>> *>(VT_RECEIVED_SYSTEM_MAILS);
-  }
-  const ::flatbuffers::Vector<::flatbuffers::Offset<fb::protocol::internal::raw::StorageBox>> *storage_boxes() const {
-    return GetPointer<const ::flatbuffers::Vector<::flatbuffers::Offset<fb::protocol::internal::raw::StorageBox>> *>(VT_STORAGE_BOXES);
-  }
-  const ::flatbuffers::Vector<::flatbuffers::Offset<fb::protocol::internal::raw::StorageRewardMark>> *storage_reward_marks() const {
-    return GetPointer<const ::flatbuffers::Vector<::flatbuffers::Offset<fb::protocol::internal::raw::StorageRewardMark>> *>(VT_STORAGE_REWARD_MARKS);
+  const fb::protocol::internal::raw::SavePayload *payload() const {
+    return GetPointer<const fb::protocol::internal::raw::SavePayload *>(VT_PAYLOAD);
   }
   bool Verify(::flatbuffers::Verifier &verifier) const {
     return VerifyTableStart(verifier) &&
            VerifyField<uint32_t>(verifier, VT_WORLD, 4) &&
-           VerifyOffset(verifier, VT_CHARACTER) &&
-           verifier.VerifyTable(character()) &&
-           VerifyOffset(verifier, VT_MARRIAGE) &&
-           verifier.VerifyTable(marriage()) &&
-           VerifyOffset(verifier, VT_ITEMS) &&
-           verifier.VerifyVector(items()) &&
-           verifier.VerifyVectorOfTables(items()) &&
-           VerifyOffset(verifier, VT_SPELLS) &&
-           verifier.VerifyVector(spells()) &&
-           verifier.VerifyVectorOfTables(spells()) &&
-           VerifyOffset(verifier, VT_ACHIEVEMENTS) &&
-           verifier.VerifyVector(achievements()) &&
-           verifier.VerifyVectorOfTables(achievements()) &&
-           VerifyOffset(verifier, VT_QUESTS) &&
-           verifier.VerifyVector(quests()) &&
-           verifier.VerifyVectorOfTables(quests()) &&
-           VerifyOffset(verifier, VT_RECEIVED_SYSTEM_MAILS) &&
-           verifier.VerifyVector(received_system_mails()) &&
-           verifier.VerifyVectorOfTables(received_system_mails()) &&
-           VerifyOffset(verifier, VT_STORAGE_BOXES) &&
-           verifier.VerifyVector(storage_boxes()) &&
-           verifier.VerifyVectorOfTables(storage_boxes()) &&
-           VerifyOffset(verifier, VT_STORAGE_REWARD_MARKS) &&
-           verifier.VerifyVector(storage_reward_marks()) &&
-           verifier.VerifyVectorOfTables(storage_reward_marks()) &&
+           VerifyOffset(verifier, VT_PAYLOAD) &&
+           verifier.VerifyTable(payload()) &&
            verifier.EndTable();
   }
 };
@@ -115,32 +52,8 @@ struct SaveBuilder {
   void add_world(uint32_t world) {
     fbb_.AddElement<uint32_t>(Save::VT_WORLD, world, 0);
   }
-  void add_character(::flatbuffers::Offset<fb::protocol::internal::raw::Character> character) {
-    fbb_.AddOffset(Save::VT_CHARACTER, character);
-  }
-  void add_marriage(::flatbuffers::Offset<fb::protocol::internal::raw::Marriage> marriage) {
-    fbb_.AddOffset(Save::VT_MARRIAGE, marriage);
-  }
-  void add_items(::flatbuffers::Offset<::flatbuffers::Vector<::flatbuffers::Offset<fb::protocol::internal::raw::Item>>> items) {
-    fbb_.AddOffset(Save::VT_ITEMS, items);
-  }
-  void add_spells(::flatbuffers::Offset<::flatbuffers::Vector<::flatbuffers::Offset<fb::protocol::internal::raw::Spell>>> spells) {
-    fbb_.AddOffset(Save::VT_SPELLS, spells);
-  }
-  void add_achievements(::flatbuffers::Offset<::flatbuffers::Vector<::flatbuffers::Offset<fb::protocol::internal::raw::Achievement>>> achievements) {
-    fbb_.AddOffset(Save::VT_ACHIEVEMENTS, achievements);
-  }
-  void add_quests(::flatbuffers::Offset<::flatbuffers::Vector<::flatbuffers::Offset<fb::protocol::internal::raw::Quest>>> quests) {
-    fbb_.AddOffset(Save::VT_QUESTS, quests);
-  }
-  void add_received_system_mails(::flatbuffers::Offset<::flatbuffers::Vector<::flatbuffers::Offset<fb::protocol::internal::raw::SystemMailUser>>> received_system_mails) {
-    fbb_.AddOffset(Save::VT_RECEIVED_SYSTEM_MAILS, received_system_mails);
-  }
-  void add_storage_boxes(::flatbuffers::Offset<::flatbuffers::Vector<::flatbuffers::Offset<fb::protocol::internal::raw::StorageBox>>> storage_boxes) {
-    fbb_.AddOffset(Save::VT_STORAGE_BOXES, storage_boxes);
-  }
-  void add_storage_reward_marks(::flatbuffers::Offset<::flatbuffers::Vector<::flatbuffers::Offset<fb::protocol::internal::raw::StorageRewardMark>>> storage_reward_marks) {
-    fbb_.AddOffset(Save::VT_STORAGE_REWARD_MARKS, storage_reward_marks);
+  void add_payload(::flatbuffers::Offset<fb::protocol::internal::raw::SavePayload> payload) {
+    fbb_.AddOffset(Save::VT_PAYLOAD, payload);
   }
   explicit SaveBuilder(::flatbuffers::FlatBufferBuilder &_fbb)
         : fbb_(_fbb) {
@@ -156,60 +69,11 @@ struct SaveBuilder {
 inline ::flatbuffers::Offset<Save> CreateSave(
     ::flatbuffers::FlatBufferBuilder &_fbb,
     uint32_t world = 0,
-    ::flatbuffers::Offset<fb::protocol::internal::raw::Character> character = 0,
-    ::flatbuffers::Offset<fb::protocol::internal::raw::Marriage> marriage = 0,
-    ::flatbuffers::Offset<::flatbuffers::Vector<::flatbuffers::Offset<fb::protocol::internal::raw::Item>>> items = 0,
-    ::flatbuffers::Offset<::flatbuffers::Vector<::flatbuffers::Offset<fb::protocol::internal::raw::Spell>>> spells = 0,
-    ::flatbuffers::Offset<::flatbuffers::Vector<::flatbuffers::Offset<fb::protocol::internal::raw::Achievement>>> achievements = 0,
-    ::flatbuffers::Offset<::flatbuffers::Vector<::flatbuffers::Offset<fb::protocol::internal::raw::Quest>>> quests = 0,
-    ::flatbuffers::Offset<::flatbuffers::Vector<::flatbuffers::Offset<fb::protocol::internal::raw::SystemMailUser>>> received_system_mails = 0,
-    ::flatbuffers::Offset<::flatbuffers::Vector<::flatbuffers::Offset<fb::protocol::internal::raw::StorageBox>>> storage_boxes = 0,
-    ::flatbuffers::Offset<::flatbuffers::Vector<::flatbuffers::Offset<fb::protocol::internal::raw::StorageRewardMark>>> storage_reward_marks = 0) {
+    ::flatbuffers::Offset<fb::protocol::internal::raw::SavePayload> payload = 0) {
   SaveBuilder builder_(_fbb);
-  builder_.add_storage_reward_marks(storage_reward_marks);
-  builder_.add_storage_boxes(storage_boxes);
-  builder_.add_received_system_mails(received_system_mails);
-  builder_.add_quests(quests);
-  builder_.add_achievements(achievements);
-  builder_.add_spells(spells);
-  builder_.add_items(items);
-  builder_.add_marriage(marriage);
-  builder_.add_character(character);
+  builder_.add_payload(payload);
   builder_.add_world(world);
   return builder_.Finish();
-}
-
-inline ::flatbuffers::Offset<Save> CreateSaveDirect(
-    ::flatbuffers::FlatBufferBuilder &_fbb,
-    uint32_t world = 0,
-    ::flatbuffers::Offset<fb::protocol::internal::raw::Character> character = 0,
-    ::flatbuffers::Offset<fb::protocol::internal::raw::Marriage> marriage = 0,
-    const std::vector<::flatbuffers::Offset<fb::protocol::internal::raw::Item>> *items = nullptr,
-    const std::vector<::flatbuffers::Offset<fb::protocol::internal::raw::Spell>> *spells = nullptr,
-    const std::vector<::flatbuffers::Offset<fb::protocol::internal::raw::Achievement>> *achievements = nullptr,
-    const std::vector<::flatbuffers::Offset<fb::protocol::internal::raw::Quest>> *quests = nullptr,
-    const std::vector<::flatbuffers::Offset<fb::protocol::internal::raw::SystemMailUser>> *received_system_mails = nullptr,
-    const std::vector<::flatbuffers::Offset<fb::protocol::internal::raw::StorageBox>> *storage_boxes = nullptr,
-    const std::vector<::flatbuffers::Offset<fb::protocol::internal::raw::StorageRewardMark>> *storage_reward_marks = nullptr) {
-  auto items__ = items ? _fbb.CreateVector<::flatbuffers::Offset<fb::protocol::internal::raw::Item>>(*items) : 0;
-  auto spells__ = spells ? _fbb.CreateVector<::flatbuffers::Offset<fb::protocol::internal::raw::Spell>>(*spells) : 0;
-  auto achievements__ = achievements ? _fbb.CreateVector<::flatbuffers::Offset<fb::protocol::internal::raw::Achievement>>(*achievements) : 0;
-  auto quests__ = quests ? _fbb.CreateVector<::flatbuffers::Offset<fb::protocol::internal::raw::Quest>>(*quests) : 0;
-  auto received_system_mails__ = received_system_mails ? _fbb.CreateVector<::flatbuffers::Offset<fb::protocol::internal::raw::SystemMailUser>>(*received_system_mails) : 0;
-  auto storage_boxes__ = storage_boxes ? _fbb.CreateVector<::flatbuffers::Offset<fb::protocol::internal::raw::StorageBox>>(*storage_boxes) : 0;
-  auto storage_reward_marks__ = storage_reward_marks ? _fbb.CreateVector<::flatbuffers::Offset<fb::protocol::internal::raw::StorageRewardMark>>(*storage_reward_marks) : 0;
-  return fb::protocol::internal::request::raw::CreateSave(
-      _fbb,
-      world,
-      character,
-      marriage,
-      items__,
-      spells__,
-      achievements__,
-      quests__,
-      received_system_mails__,
-      storage_boxes__,
-      storage_reward_marks__);
 }
 
 inline const fb::protocol::internal::request::raw::Save *GetSave(const void *buf) {

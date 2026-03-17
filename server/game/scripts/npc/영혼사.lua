@@ -145,25 +145,26 @@ end
 
 local function run_init_dialogs(me, npc)
     local button
-    ::init_1::
+    ::NPC_28_0001::
     button = me:dialog(npc, '나에게 또 무슨 도움을 받겠다고 찾아왔느냐...', false, true)
     if button == DIALOG_RESULT.QUIT then
         return false
     end
+    ::NPC_28_0002::
     button = me:dialog(npc, '여기 저기서 사고나 치고 돌아다니면서, 툭하면 나를 찾아오는 속셈이 도대체 무엇이냐?', true, true)
     if button == DIALOG_RESULT.QUIT then
         return false
     end
     if button == DIALOG_RESULT.PREV then
-        goto init_1
+        goto NPC_28_0001
     end
-    ::init_2::
+    ::NPC_28_0003::
     button = me:dialog(npc, '그리고 나를 찾아올 생각을 했다면 뭔가를 들고 왔어야지... 만약 뭔가를 공짜로 얻으려고 생각했다면 큰 오산이니 바로 돌아가거라.', true, true)
     if button == DIALOG_RESULT.QUIT then
         return false
     end
     if button == DIALOG_RESULT.PREV then
-        goto init_2
+        goto NPC_28_0002
     end
     return true
 end

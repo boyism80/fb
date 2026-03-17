@@ -1,8 +1,4 @@
--- @note Trash: 1_백두촌\일반.txt "요선도인". 3 intro dialogs, list 10 crafts: 일광방패~토선투구 (요지석 100+100, 30%), 칠요구륜 (7종 100 each, 10%), 팔세지도 (7종+팔요지석 100, 10%), 팔요천의옷 (9품목 1 each, 10%, gender).
 
----@brief   NPC 요선도인: intro dialogs, list of 10 crafts (요지석-based); rmitem then mkitem, success rate per recipe.
----@param[in] me   The character.
----@param[in] npc  The NPC entity.
 function NPC_622(me, npc)
     local button = me:dialog(npc, "백두촌이 이상한 기운으로 뒤덮혀 정령들이 이성을 잃기 전 까지만 해도, 나는 그들의 신령한 기운을 모아 이런저런 무기와 장비를 만들곤 했었소.", true, true)
     if button == DIALOG_RESULT.QUIT then

@@ -13,7 +13,7 @@ bulletin_article::bulletin_article(const fb::game::bulletin::article& value, BUL
 async::task<void> bulletin_article::serialize(fb::stream_writer<big_endian>& writer) const
 {
     co_await header::serialize(writer);
-    writer.write<uint8_t>(header);
+    writer.write<uint8_t>(opcode);
     writer.write<uint8_t>(0x03);
     writer.write<uint8_t>(static_cast<uint8_t>(flag));
     writer.write<uint8_t>(0x00);

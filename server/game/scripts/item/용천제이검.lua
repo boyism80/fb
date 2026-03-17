@@ -1,4 +1,4 @@
--- 용천제이검: on attack, chance to cast 용천제이격 on front target. Trash: 25% probability.
+-- 용천제이검 공격 스크립트
 function ON_ATTACK_259(me, item)
     math.randomseed(seed())
     if math.random() > 0.25 then
@@ -12,11 +12,11 @@ function ON_ATTACK_259(me, item)
 end
 
 -- 용천제이검 사용 스크립트
-function ON_ACTIVE_259(me, item)
+function ON_ACTIVATED_259(me, item)
 
 end
 
 -- 용천제이검 해제 스크립트
-function ON_INACTIVE_259(me, item)
+function ON_DEACTIVATED_259(me, item)
 
 end

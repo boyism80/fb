@@ -51,5 +51,6 @@ namespace Http.Model
         public string Title { get; set; } = string.Empty;
         public Dictionary<string, List<Fb.Model.Dsl>> PendingListings { get; set; } = new Dictionary<string, List<Fb.Model.Dsl>>();
         public bool SuperHide { get; set; }
+        public DateTime? FirstLoginDate { get; set; }
     }
 }

@@ -1,9 +1,9 @@
 -- 회호박별검 사용 스크립트
-function ON_ACTIVE_131(me, item)
+function ON_ACTIVATED_131(me, item)
 
 end
 
 -- 회호박별검 해제 스크립트
-function ON_INACTIVE_131(me, item)
+function ON_DEACTIVATED_131(me, item)
 
 end

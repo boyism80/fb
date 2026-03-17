@@ -1,4 +1,4 @@
-using Google.FlatBuffers;
+﻿using Google.FlatBuffers;
 using Http.Redis;
 using RabbitMQ.Client;
 using RabbitMQ.Client.Events;
@@ -6,10 +6,6 @@ using Response = fb.protocol._internal.response;
 
 namespace Http.Service
 {
-    /// <summary>
-    /// Provides a background service that listens for shutdown messages via RabbitMQ.
-    /// Monitors heart-beat keys in Redis and triggers graceful application shutdown when all services are ready.
-    /// </summary>
     public class ShutdownListenerService : BackgroundService
     {
         private readonly ILogger<ShutdownListenerService> _logger;
@@ -19,14 +15,6 @@ namespace Http.Service
         private readonly RedisService _redisService;
         private readonly string _queueName;
 
-        /// <summary>
-        /// Initializes a new instance of the <see cref="ShutdownListenerService"/> class.
-        /// Sets up RabbitMQ connection and queue binding for shutdown message listening.
-        /// </summary>
-        /// <param name="config">The configuration containing RabbitMQ connection settings.</param>
-        /// <param name="logger">The logger for recording shutdown events and errors.</param>
-        /// <param name="lifetime">The application lifetime service for triggering shutdown.</param>
-        /// <param name="redisService">The Redis service for monitoring heart-beat keys.</param>
         public ShutdownListenerService(IConfiguration config,
             ILogger<ShutdownListenerService> logger,
             IHostApplicationLifetime lifetime,
@@ -75,12 +63,6 @@ namespace Http.Service
             }
         }
 
-        /// <summary>
-        /// Executes the background service that listens for shutdown messages.
-        /// Processes FlatBuffer protocol messages and coordinates graceful shutdown based on heart-beat monitoring.
-        /// </summary>
-        /// <param name="stoppingToken">The cancellation token for stopping the service.</param>
-        /// <returns>A task representing the asynchronous execution of the background service.</returns>
         protected override Task ExecuteAsync(CancellationToken stoppingToken)
         {
             var consumer = new EventingBasicConsumer(_channel);
@@ -132,10 +114,6 @@ namespace Http.Service
             return Task.CompletedTask;
         }
 
-        /// <summary>
-        /// Disposes of the RabbitMQ resources when the service is being disposed.
-        /// Properly closes the channel and connection to prevent resource leaks.
-        /// </summary>
         public override void Dispose()
         {
             _channel?.Close();

@@ -1,7 +1,4 @@
--- @note Trash: 1_공통/진원관.txt "중원왕". Skull necklace sub4 (아기원숭이 give, then 2->3 진원창).
--- Phase 1: sub-quest only. Phase 2: main 34->35.
 
----@brief   Sub4 step 0: list intro, "도와드릴께요" -> give 아기원숭이, set sub4=1.
 local function do_sub4_start(me, npc)
     local sel, btn = me:list(npc, "요즘따라 인간들을 자주 만나시게 되시는도다.", { "이름을 가르쳐주세요.", "이곳의 상황은 좀 어떤가요?", "제가 도와드릴 일은 없을까요?" }, false)
     if btn == DIALOG_RESULT.QUIT or sel == nil then
@@ -20,13 +17,18 @@ local function do_sub4_start(me, npc)
         me:dialog(npc, "장난을 치는 사람은 싫어한다.", false, false)
         return true
     end
+    ::NPC_466_0001::
     local b = me:dialog(npc, "이 아이는 원래 우리 부족 아이가 아니시다. 이주하는 난리통에 어머니를 잃어버리신 아이다. 책임지시고", true, true)
-    if b == DIALOG_RESULT.PREV or b == DIALOG_RESULT.QUIT then
+    if b == DIALOG_RESULT.QUIT then
         return false
     end
-    b = me:dialog(npc, "이 아이의 부족을 찾아 데려다 주셔야 한다. 우리 원숭이들은 모두 4성에 흩어져 계시다! 힘들어도 꼭 찾아주셔야 한다!", true, true)
-    if b == DIALOG_RESULT.PREV or b == DIALOG_RESULT.QUIT then
+    ::NPC_466_0002::
+    b = me:dialog(npc, "이 아이의 부족을 찾아 데려다 주셔야 한다. 우리 원숭이들은 모두 4성에 흩어져 계시다! 힘들어도 꼭 찾아주셔야 한다!", true, false)
+    if b == DIALOG_RESULT.QUIT then
         return false
+    end
+    if b == DIALOG_RESULT.PREV then
+        goto NPC_466_0001
     end
     me:mkitem("아기원숭이", 1)
     local q = me:quest(QUEST_SKULL_NECKLACE_4)
@@ -42,15 +44,19 @@ local function do_sub4_start(me, npc)
     return true
 end
 
----@brief   Sub4 step 2: give 진원창, set sub4=3.
 local function do_sub4_complete(me, npc)
+    ::NPC_466_0003::
     local b = me:dialog(npc, "수고하셨다. 사람들 중에서도 착한 마음씨를 가진 사람이 있으시긴 하셨다. 이걸 받아라. 섬에서 쓰시던 무기시다.", false, true)
     if b == DIALOG_RESULT.QUIT then
         return false
     end
-    b = me:dialog(npc, "부하들과 같이 물고기 사냥 가실때 쓰셨던 물건이시다. 요긴하게 쓰셨으면 좋으시겠다.", true, true)
-    if b == DIALOG_RESULT.PREV or b == DIALOG_RESULT.QUIT then
+    ::NPC_466_0004::
+    b = me:dialog(npc, "부하들과 같이 물고기 사냥 가실때 쓰셨던 물건이시다. 요긴하게 쓰셨으면 좋으시겠다.", true, false)
+    if b == DIALOG_RESULT.QUIT then
         return false
+    end
+    if b == DIALOG_RESULT.PREV then
+        goto NPC_466_0003
     end
     me:mkitem("진원창", 1)
     local q = me:quest(QUEST_SKULL_NECKLACE_4)
@@ -82,7 +88,6 @@ function NPC_466(me, npc)
         return
     end
 
-    -- Phase 2: main 34->35 (마른갈대)
     local main_q = me:quest(QUEST_SKULL_NECKLACE)
     if main_q and main_q:step() == 34 then
         if not me:has_items("마른갈대", 1) then

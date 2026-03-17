@@ -1,22 +1,11 @@
-using Http.Extension;
+﻿using Http.Extension;
 using Http.Model;
 using Http.Service;
 
 namespace Http.Reepository
 {
-    /// <summary>
-    /// Provides repository functionality for marriage data management.
-    /// Implements Redis value-based caching with database persistence for marriage state (spouse_id, remarriage_after, divorce_count).
-    /// </summary>
     public class MarriageRepository : RedisValueRepository<Marriage, MarriageKey>
     {
-        /// <summary>
-        /// Initializes a new instance of the <see cref="MarriageRepository"/> class.
-        /// </summary>
-        /// <param name="dbContext">The database context for connection management.</param>
-        /// <param name="redisService">The Redis service for cache operations.</param>
-        /// <param name="distributedLock">The distributed lock service for concurrency control.</param>
-        /// <param name="dbExecuteService">The write-back service for asynchronous database writes.</param>
         public MarriageRepository(DbContext dbContext,
             RedisService redisService,
             RedisDistributedLockService distributedLock,
@@ -24,22 +13,11 @@ namespace Http.Reepository
         {
         }
 
-        /// <summary>
-        /// Retrieves marriage state by world and character id.
-        /// </summary>
-        /// <param name="world">The world identifier (e.g., 1, 2). Use 0 for unified-global.</param>
-        /// <param name="characterId">The character id.</param>
-        /// <returns>The marriage row if found; otherwise, null (character never married).</returns>
         public async Task<Marriage> Get(uint world, uint characterId)
         {
             return await base.Get(world, new MarriageKey { CharacterId = characterId });
         }
 
-        /// <summary>
-        /// Generates the SQL SELECT statement for retrieving marriage by character id.
-        /// </summary>
-        /// <param name="key">The marriage key containing the character id.</param>
-        /// <returns>A SQL SELECT statement for the marriage row.</returns>
         protected override string OnSelect(MarriageKey key)
         {
             return $"""
@@ -56,11 +34,11 @@ namespace Http.Reepository
                 """;
         }
 
-        /// <summary>
-        /// Generates the SQL UPSERT statement for marriage state.
-        /// </summary>
-        /// <param name="value">The marriage entity to upsert.</param>
-        /// <returns>A SQL UPSERT statement for the marriage row.</returns>
+        protected override MarriageKey GetKeyFromRow(Marriage row)
+        {
+            return new MarriageKey { CharacterId = row.CharacterId };
+        }
+
         protected override string OnUpsert(Marriage value)
         {
             var spouseIdSql = value.SpouseId.HasValue ? value.SpouseId.Value.Escape() : "NULL";

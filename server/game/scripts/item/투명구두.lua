@@ -1,10 +1,10 @@
 -- 투명구두 사용 스크립트
-function ON_ACTIVE_2123(me, item)
+function ON_ACTIVATED_2123(me, item)
 
 end
 
 -- 투명구두 해제 스크립트
-function ON_INACTIVE_2123(me, item)
+function ON_DEACTIVATED_2123(me, item)
 
 end
 

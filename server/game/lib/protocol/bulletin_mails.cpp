@@ -11,7 +11,7 @@ bulletin_mails::bulletin_mails(const std::vector<MailSummary>& mails, MAIL_BUTTO
 async::task<void> bulletin_mails::serialize(fb::stream_writer<big_endian>& writer) const
 {
     co_await header::serialize(writer);
-    writer.write<uint8_t>(header);
+    writer.write<uint8_t>(opcode);
     writer.write<uint8_t>(0x04);
     writer.write<uint8_t>(static_cast<uint8_t>(this->button_flags));
     writer.write<uint16_t>(0xFFFF);

@@ -14,7 +14,7 @@ async::task<void> move_blocked::deserialize(fb::stream_reader<big_endian>& reade
 async::task<void> move_blocked::serialize(fb::stream_writer<big_endian>& writer) const
 {
     co_await header::serialize(writer);
-    writer.write<uint8_t>(header);
+    writer.write<uint8_t>(opcode);
     writer.write<uint16_t>(this->position.x);
     writer.write<uint16_t>(this->position.y);
     writer.write<uint8_t>(static_cast<uint8_t>(this->direction));

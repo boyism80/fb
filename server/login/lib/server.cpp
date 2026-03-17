@@ -9,7 +9,7 @@ using namespace fb::login;
 namespace internal_reqs = fb::protocol::internal::request;
 
 server::server(boost::asio::io_context& io_context, uint16_t port) :
-    fb::acceptor<session>(io_context, "LOGIN", port),
+    fb::acceptor<session>(io_context, "LOGIN", port, fb::config<uint32_t>("http:max_concurrent", 500)),
     log(fb::config<std::string>("amqp:log:ip"),
         fb::config<uint16_t>("amqp:log:port"),
         fb::config<std::string>("amqp:log:uid"),
@@ -28,11 +28,11 @@ server::server(boost::asio::io_context& io_context, uint16_t port) :
 server::~server()
 { }
 
-bool server::decrypt_policy(uint8_t cmd) const
+bool server::decrypt_policy(uint8_t opcode) const
 {
-    switch (cmd)
+    switch (opcode)
     {
-    case fb::protocol::login::request::agreement::header:
+    case fb::protocol::login::request::agreement::opcode:
         return false;
 
     default:

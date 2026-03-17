@@ -1,5 +1,5 @@
 -- 소환비서 사용 스크립트
-function ON_ACTIVE_4001(me, item)
+function ON_ACTIVATED_4001(me, item)
     local front = me:front(OBJECT_TYPE.CHARACTER)
     if front ~= nil then
         if front:level() < me:level() then

@@ -9,7 +9,7 @@ namespace fb::protocol::game::request {
 class whisper : public fb::protocol::header
 {
 public:
-    static constexpr uint8_t header = 0x19;
+    static constexpr uint8_t opcode = 0x19;
 
 public:
 #ifdef BOT // bot only

@@ -14,31 +14,31 @@ function NPC_211(me, npc)
     local btn, sel
 
     if quest == nil then
-        ::NPC_211_COS001::
+        ::NPC_211_0001::
         btn = me:dialog(npc, '외부에서 오신분이십니까? 남경 지역을 지나실때 조심하시기 바랍니다.', false, true)
         if btn == DIALOG_RESULT.QUIT then
             return
         end
-        ::NPC_211_COS002::
+        ::NPC_211_0010::
         btn = me:dialog(npc, '현재 산소라는 요괴 때문에 백성들이 피해가 이만저만이 아니라하여 소탕작전을 위해 출동하였습니다.', true, true)
         if btn == DIALOG_RESULT.PREV then
-            goto NPC_211_COS001
+            goto NPC_211_0001
         end
         if btn == DIALOG_RESULT.QUIT then
             return
         end
-        ::NPC_211_COS003::
+        ::NPC_211_0011::
         btn = me:dialog(npc, '하지만 워낙 산소의 종류와 수가 많고 그에 비해 병사의 수가 터무니없이 적어 어려움이 많습니다.', true, true)
         if btn == DIALOG_RESULT.PREV then
-            goto NPC_211_COS002
+            goto NPC_211_0010
         end
         if btn == DIALOG_RESULT.QUIT then
             return
         end
-        ::NPC_211_COS004::
-        sel, btn = me:list(npc, '산소를 소탕하는데 힘을 빌려주시지 않겠습니까? 도와주시면 보상금을 드리도록 하겠습니다.', { '좋습니다! 제 힘이 도움이 된다면 기꺼이..', '죄송하지만 갈길이 멀답니다. 이만.' }, true)
+        ::NPC_211_0012::
+        sel, btn = me:list(npc, '산소를 소탕하는데 힘을 빌려주시지 않겠습니까? 도와주시면 보상금을 드리도록 하겠습니다.', { '좋습니다! 제 힘이 도움이 된다면 기꺼이..', '죄송하지만 갈길이 멀답니다. 이만.' }, false)
         if btn == DIALOG_RESULT.PREV then
-            goto NPC_211_COS003
+            goto NPC_211_0011
         end
         if sel == nil or sel ~= 0 then
             if sel == 1 then
@@ -51,14 +51,15 @@ function NPC_211(me, npc)
             me:dialog(npc, '아직 산소들을 상대하시기엔 무리인 것 같습니다. 마음만은 고맙게 받겠습니다.', false, true)
             return
         end
-        ::NPC_211_COS005::
+        ::NPC_211_0020::
         btn = me:dialog(npc, '좋습니다! 이정도라면 충분합니다. 산소들은 종류마다 뿔을 가지고 있습니다. 이 뿔은 증표로 모아오시면 그에 따른 보상금을 드리겠습니다.', false, true)
         if btn == DIALOG_RESULT.QUIT then
             return
         end
-        btn = me:dialog(npc, '우선 약한 산소부터 시작하도록 하죠. 연청산소가 가장 약합니다. 연청산소의 뿔을 50개 모아와 주시기 바랍니다.', true, true)
+        ::NPC_211_0021::
+        btn = me:dialog(npc, '우선 약한 산소부터 시작하도록 하죠. 연청산소가 가장 약합니다. 연청산소의 뿔을 50개 모아와 주시기 바랍니다.', false, true)
         if btn == DIALOG_RESULT.PREV then
-            goto NPC_211_COS005
+            goto NPC_211_0020
         end
         if btn == DIALOG_RESULT.QUIT then
             return
@@ -111,21 +112,21 @@ function NPC_211(me, npc)
             me:dialog(npc, '아직 녹산소괴의뿔 30개를 모아오지 못하신 것 같군요?', false, true)
             return
         end
-        ::NPC_211_COS007::
+        ::NPC_211_0030::
         btn = me:dialog(npc, '정말 감사드립니다. 여기까지 도와주셔서 저희에겐 너무나 큰 도움이 되었답니다.', false, true)
         if btn == DIALOG_RESULT.QUIT then
             return
         end
-        ::NPC_211_COS008::
+        ::NPC_211_0031::
         btn = me:dialog(npc, '상당히 강하신분 같은데 한가지 더 부탁드려도 될까요. 산소들의 우두머리인 산소괴왕은 저희가 건드릴 수가 없답니다.', true, true)
         if btn == DIALOG_RESULT.PREV then
-            goto NPC_211_COS007
+            goto NPC_211_0030
         end
         if btn == DIALOG_RESULT.QUIT then
             return
         end
-        ::NPC_211_COS009::
-        sel = me:list(npc, '산소괴왕을 처리해주시겠습니까?', { '알겠습니다. 제가 처리해보도록 하죠.', '죄송합니다. 그건 저에게 무리일듯하군요.' })
+        ::NPC_211_0032::
+        sel = me:list(npc, '산소괴왕을 처리해주시겠습니까?', { '알겠습니다. 제가 처리해보도록 하죠.', '죄송합니다. 그건 저에게 무리일듯하군요.' }, false)
         if sel == nil or sel ~= 0 then
             if sel == 1 then
                 me:dialog(npc, '그러시다면야 할 수 없죠.', false, true)

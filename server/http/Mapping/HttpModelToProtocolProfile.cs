@@ -4,15 +4,8 @@ using Protocol = fb.protocol._internal;
 
 namespace Http.Mapping
 {
-    /// <summary>
-    /// AutoMapper profile for mappings between Http.Model types and fb.protocol._internal (Protocol) types.
-    /// Shared by internal server, admin-tool, and any other consumers that need to map HTTP models to protocol DTOs.
-    /// </summary>
     public class HttpModelToProtocolProfile : Profile
     {
-        /// <summary>
-        /// Configures all Http.Model &lt;-&gt; Protocol mappings.
-        /// </summary>
         public HttpModelToProtocolProfile()
         {
             CreateMap<Http.Model.Mimicry, Protocol.Mimicry>();
@@ -24,6 +17,7 @@ namespace Http.Mapping
                 .ForMember(x => x.Buffs, x => x.MapFrom(u => u.Buffs))
                 .ForMember(x => x.CreatedDate, x => x.MapFrom(u => u.CreatedDate.ToString("yyyy-MM-dd HH:mm:ss")))
                 .ForMember(x => x.UpdatedDate, x => x.MapFrom(u => u.UpdatedDate.ToString("yyyy-MM-dd HH:mm:ss")))
+                .ForMember(x => x.FirstLoginDate, x => x.MapFrom(u => u.FirstLoginDate.HasValue ? u.FirstLoginDate.Value.ToString("yyyy-MM-dd HH:mm:ss") : null))
                 .ForMember(x => x.Position, x => x.MapFrom(u => new Protocol.Position { X = u.PositionX, Y = u.PositionY }))
                 .ForMember(x => x.Role, x => x.MapFrom(u => (byte)u.Role))
                 .ForMember(x => x.PendingListings, x => x.MapFrom(u => u.PendingListings == null || u.PendingListings.Count == 0 ? null : JsonConvert.SerializeObject(u.PendingListings)));
@@ -33,6 +27,7 @@ namespace Http.Mapping
                 .ForMember(x => x.Buffs, x => x.MapFrom(u => u.Buffs))
                 .ForMember(x => x.Class, x => x.MapFrom(u => u.ClassType))
                 .ForMember(x => x.UpdatedDate, x => x.MapFrom(u => DateTime.Parse(u.UpdatedDate)))
+                .ForMember(x => x.FirstLoginDate, x => x.MapFrom(u => string.IsNullOrEmpty(u.FirstLoginDate) ? null : (DateTime?)DateTime.Parse(u.FirstLoginDate)))
                 .ForMember(x => x.PositionX, x => x.MapFrom(u => u.Position.X))
                 .ForMember(x => x.PositionY, x => x.MapFrom(u => u.Position.Y))
                 .ForMember(x => x.Role, x => x.MapFrom(u => (Fb.Model.EnumValue.Role)u.Role))
@@ -147,7 +142,7 @@ namespace Http.Mapping
                 {
                     dest.Attachments = string.IsNullOrWhiteSpace(src.Attachments)
                         ? new List<Fb.Model.Dsl>()
-                        : (JsonConvert.DeserializeObject<List<Fb.Model.Dsl> >(src.Attachments) ?? new List<Fb.Model.Dsl>());
+                        : (JsonConvert.DeserializeObject<List<Fb.Model.Dsl>>(src.Attachments) ?? new List<Fb.Model.Dsl>());
                     dest.ExpiredDate = string.IsNullOrEmpty(src.ExpiredDate) ? null : DateTime.Parse(src.ExpiredDate);
                 });
         }

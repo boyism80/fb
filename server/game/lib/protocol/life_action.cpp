@@ -15,7 +15,7 @@ action::action(const fb::game::life& me, ACTION value, DURATION duration, uint8_
 async::task<void> action::serialize(fb::stream_writer<big_endian>& writer) const
 {
     co_await header::serialize(writer);
-    writer.write<uint8_t>(header);
+    writer.write<uint8_t>(opcode);
     writer.write<uint32_t>(this->me.oid());
     writer.write<uint8_t>(static_cast<uint8_t>(this->value));      // type
     writer.write<uint16_t>(static_cast<uint16_t>(this->duration)); // duration

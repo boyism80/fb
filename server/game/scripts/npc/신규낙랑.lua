@@ -1,8 +1,4 @@
--- @note Trash: 1_초보자의길\초보자도우미.txt "신규낙랑". Same as 률 (dialogs, exp 300, 노란비서 20, step 7) but no warp; step 7 shows "노란비서 사용해 보세요", reward end with "<노란비서>을 얻다!!!".
 
--- @brief   NPC Sin gyu Nakrang: when QUEST_BEGINNER_PATH step 7 or completed, hint to use 노란비서; else same reward flow as 률 (no warp), ends with "<노란비서>을 얻다!!!".
--- @param[in]  me   The character talking to the NPC.
--- @param[in]  npc  The NPC entity (신규낙랑).
 function NPC_279(me, npc)
     local quest = me:quest(QUEST_BEGINNER_PATH)
     if quest and (quest:step() == 7 or quest:completed()) then
@@ -10,55 +6,55 @@ function NPC_279(me, npc)
         return
     end
 
-    ::NPC_279_COS001::
+    ::NPC_279_0001::
     local button = me:dialog(npc, "안녕하세요? 초보자방의 마지막까지 오시느라 수고하셨습니다.", false, true)
     if button == DIALOG_RESULT.QUIT then
         return
     end
 
-    ::NPC_279_COS002::
+    ::NPC_279_0002::
     button = me:dialog(npc, "이제는 이 좁은 초보자 방을 떠나, 드 넓은 바람의 나라 세계로 안내해 드리겠습니다.", true, true)
     if button == DIALOG_RESULT.QUIT then
         return
     end
     if button == DIALOG_RESULT.PREV then
-        goto NPC_279_COS001
+        goto NPC_279_0001
     end
 
-    ::NPC_279_COS003::
+    ::NPC_279_0003::
     button = me:dialog(npc, "그 곳에서는 수천/수만의 사람들과 함께 게임을 즐길 수 있습니다.", true, true)
     if button == DIALOG_RESULT.QUIT then
         return
     end
     if button == DIALOG_RESULT.PREV then
-        goto NPC_279_COS002
+        goto NPC_279_0002
     end
 
-    ::NPC_279_COS004::
+    ::NPC_279_0004::
     button = me:dialog(npc, "마지막으로 제가 노란비서 20개를 드리겠습니다.", true, true)
     if button == DIALOG_RESULT.QUIT then
         return
     end
     if button == DIALOG_RESULT.PREV then
-        goto NPC_279_COS003
+        goto NPC_279_0003
     end
 
-    ::NPC_279_COS005::
+    ::NPC_279_0005::
     button = me:dialog(npc, "[노란비서]라는 아이템을 사용하시면 언제든지 [주막]으로 이동하시게 됩니다.", true, true)
     if button == DIALOG_RESULT.QUIT then
         return
     end
     if button == DIALOG_RESULT.PREV then
-        goto NPC_279_COS004
+        goto NPC_279_0004
     end
 
-    ::NPC_279_COS006::
-    button = me:dialog(npc, "단, 이것들은 1회용 이므로, 반드시 필요할 때만 사용하시기 바랍니다.", true, true)
+    ::NPC_279_0006::
+    button = me:dialog(npc, "단, 이것들은 1회용 이므로, 반드시 필요할 때만 사용하시기 바랍니다.", false, true)
     if button == DIALOG_RESULT.QUIT then
         return
     end
     if button == DIALOG_RESULT.PREV then
-        goto NPC_279_COS005
+        goto NPC_279_0005
     end
 
     if quest == nil then

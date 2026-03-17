@@ -1,8 +1,4 @@
--- @note Trash: 1_중국\일반.txt "흉노장로2". QUEST_JINHWANG step 3 only: exchange 천상복숭아 for 진랑검, step → 4.
 
--- @brief   NPC Huno elder 2: when QUEST_JINHWANG step is 3, exchange 천상복숭아 for 진랑검 and advance to step 4.
--- @param[in]  me   The character talking to the NPC.
--- @param[in]  npc  The NPC entity (흉노장로2).
 function NPC_545(me, npc)
     local quest = me:quest(QUEST_JINHWANG)
     if quest == nil or quest:step() ~= 3 then
@@ -54,7 +50,7 @@ function NPC_545(me, npc)
     end
 
     ::NPC_545_0004::
-    button = me:dialog(npc, "어찌됐든 아들의 목숨을 구할 수 있게 되어서 너무 감사하오. 그럼 이만..", true, true)
+    button = me:dialog(npc, "어찌됐든 아들의 목숨을 구할 수 있게 되어서 너무 감사하오. 그럼 이만..", false, false)
     if button == DIALOG_RESULT.QUIT then
         return
     end

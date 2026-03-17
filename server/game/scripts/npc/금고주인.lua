@@ -9,95 +9,94 @@ local CURSE_AC_PENALTY = 49
 
 local function run_intro_and_accept(me, npc)
     local btn
-    ::NPC_172_COS001::
+    ::NPC_172_0001::
     btn = me:dialog(npc, '으이구... 이 금고를 어떻게 연다? 열쇠가 없으니 도무지 열 방법이 없구만! 이를 어쩌지? 이를 어쩐다?', false, true)
     if btn == DIALOG_RESULT.QUIT then
         return
     end
-    ::NPC_172_COS002::
+    ::NPC_172_0002::
     local sel, btn = me:list(npc, '이 금고를 대체 어쩌면 좋지', { '무슨 일이라도 있나요?', '신경쓰지 말자.' }, true)
     if btn == DIALOG_RESULT.QUIT then
         return
     end
     if btn == DIALOG_RESULT.PREV then
-        goto NPC_172_COS001
+        goto NPC_172_0001
     end
     if sel == nil or sel ~= 0 then
         return
     end
-    ::NPC_172_COS003::
+    ::NPC_172_0003::
     btn = me:dialog(npc, '아 글쎄, 이 금고를 열어야 하는데 열쇠를 잃어 버렸지 뭐야. 내가 어렸을 때 나중에 커서 열어 보겠다고 잠근 금고인데, 막상 열려고 보니 열쇠가 없네.', false, true)
     if btn == DIALOG_RESULT.QUIT then
         return
     end
-    ::NPC_172_COS004::
+    ::NPC_172_0004::
     sel, btn = me:list(npc, '뭐 방법이 없을까?', { '열지 못하면 그냥 부수는 건 어때요?', '그냥 포기하세요...' }, true)
     if btn == DIALOG_RESULT.QUIT then
         return
     end
     if btn == DIALOG_RESULT.PREV then
-        goto NPC_172_COS003
+        goto NPC_172_0003
     end
     if sel == nil or sel ~= 0 then
         return
     end
-    ::NPC_172_COS005::
+    ::NPC_172_0005::
     btn = me:dialog(npc, '뭐? 부순다고? 맞아! 그런 방법이 있었군! 내가 왜 그 생각을 못했지? 으하하하!', false, true)
     if btn == DIALOG_RESULT.QUIT then
         return
     end
-    ::NPC_172_COS006::
+    ::NPC_172_0006::
     btn = me:dialog(npc, '..............', true, true)
     if btn == DIALOG_RESULT.QUIT then
         return
     end
     if btn == DIALOG_RESULT.PREV then
-        goto NPC_172_COS005
+        goto NPC_172_0005
     end
-    ::NPC_172_COS007::
+    ::NPC_172_0007::
     sel, btn = me:list(npc, '...그런데 어떻게 부수지?', { '이리 주세요. 제가 부숴 드리죠.', '몰라요. 알아서 하세요.' }, true)
     if btn == DIALOG_RESULT.QUIT then
         return
     end
     if btn == DIALOG_RESULT.PREV then
-        goto NPC_172_COS006
+        goto NPC_172_0006
     end
     if sel == nil or sel ~= 0 then
         return
     end
-    ::NPC_172_COS008::
+    ::NPC_172_0008::
     btn = me:dialog(npc, '으음...! 음, 뭐, 좋아. 자네가 부숴 주겠다고? 그래. 자네한테 맡기지. 성공하면 보수도 주겠어.', false, true)
     if btn == DIALOG_RESULT.QUIT then
         return
     end
-    ::NPC_172_COS009::
+    ::NPC_172_0009::
     btn = me:dialog(npc, '단, 한가지 약속해줘야 할 게 있어!', true, true)
     if btn == DIALOG_RESULT.QUIT then
         return
     end
     if btn == DIALOG_RESULT.PREV then
-        goto NPC_172_COS008
+        goto NPC_172_0008
     end
-    ::NPC_172_COS010::
+    ::NPC_172_0010::
     sel, btn = me:list(npc, '이걸 열면 안에서 봉투가 하나 나올 텐데, 절대 그 봉투를 열어봐선 안돼! 약속할 수 있겠나?', { '예, 절대 안 열어보고 그대로 가져다 드리지요.', '에이, 그게 뭐길래... 그냥 열어보면 안되나요?' }, true)
     if btn == DIALOG_RESULT.QUIT then
         return
     end
     if btn == DIALOG_RESULT.PREV then
-        goto NPC_172_COS009
+        goto NPC_172_0009
     end
     if sel == nil or sel ~= 0 then
         return
     end
-    ::NPC_172_COS011::
+    ::NPC_172_0011::
     btn = me:dialog(npc, '좋아! 여기 금고가 있네. 알아서 부순 다음 안에 들어있는 봉투만 내게 주면 돼.', false, true)
     if btn == DIALOG_RESULT.QUIT then
         return
     end
-    ::NPC_172_COS012::
-    btn = me:dialog(npc, '그리고! 다시 한 번 말해두지만 안에 있는 봉투를 절대 열어봐서는 안 돼. 약속했지? 좋아, 수고하게.', true, true)
-    if btn == DIALOG_RESULT.PREV then
-        goto NPC_172_COS011
+    btn = me:dialog(npc, '그리고! 다시 한 번 말해두지만 안에 있는 봉투를 절대 열어봐서는 안 돼. 약속했지? 좋아, 수고하게.', false, true)
+    if btn == DIALOG_RESULT.QUIT then
+        return
     end
 
     local quest = me:start_quest(QUEST_STRONGBOX)
@@ -172,44 +171,44 @@ local function run_cursed_forgiveness(me, npc)
     end
     
     local btn
-    ::NPC_172_COS016::
+    ::NPC_172_0016::
     btn = me:dialog(npc, '분명히 봉투를 열지 말라고 했는데도! 내가 몇 번이나 말했는데도 그걸 열다니!\n\n에이! 못된 놈 같으니라고!', false, true)
     if btn == DIALOG_RESULT.QUIT then
         return
     end
-    ::NPC_172_COS017::
+    ::NPC_172_0017::
     btn = me:dialog(npc, '쯧...\n\n\n...하지만 그걸 열기 위해 저 멀리 중국까지 다녀오며 고생 한 것도 사실이니, 내 그 사정은 좀 봐 주지.', true, true)
     if btn == DIALOG_RESULT.QUIT then
         return
     end
     if btn == DIALOG_RESULT.PREV then
-        goto NPC_172_COS016
+        goto NPC_172_0016
     end
-    ::NPC_172_COS018::
+    ::NPC_172_0018::
     sel, btn = me:list(npc, '대신! 자네가 읽은 그 편지 내용은 아무에게도 말하지 말 것! 어때, 약속할 수 있겠나?', { '예! 물론입니다. 아무렇게도 말하지 않겠어요.', '그건 좀...' }, true)
     if btn == DIALOG_RESULT.QUIT then
         return
     end
     if btn == DIALOG_RESULT.PREV then
-        goto NPC_172_COS017
+        goto NPC_172_0017
     end
     if sel == nil or sel ~= 0 then
         me:dialog(npc, '반성의 여지가 없군! 얘기는 끝일세!', false, false)
         return
     end
-    
+
     quest:complete()
     me:mkitem(ITEM_BLACK_DAGGER, 1)
     me:push_achievement(ACHIEVEMENT_DONE, '금고주인의 부탁을 들어주었다.', 6, 1)
-    ::NPC_172_COS019::
+    ::NPC_172_0019::
     btn = me:dialog(npc, '좋아. 그럼 자네가 노력한 것을 봐서 보수를 주지. 여기 흑장단검을 가져가게. 중국에서 가져온 귀한 물건이야.', false, true)
     if btn == DIALOG_RESULT.QUIT then
         return
     end
-    ::NPC_172_COS020::
+    ::NPC_172_0020::
     btn = me:dialog(npc, '그럼 잘 가게. 편지 내용은 아무에게도 말하지 않겠다고 약속한 것도 잊지 말고!', true, true)
     if btn == DIALOG_RESULT.PREV then
-        goto NPC_172_COS019
+        goto NPC_172_0019
     end
 end
 

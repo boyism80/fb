@@ -1,7 +1,7 @@
-function ON_ACTIVE_535(me, item)
+function ON_ACTIVATED_535(me, item)
 end
 
-function ON_INACTIVE_535(me, item)
+function ON_DEACTIVATED_535(me, item)
 end
 
 function ON_ATTACK_535(me, item)

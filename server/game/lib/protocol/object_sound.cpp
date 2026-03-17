@@ -13,7 +13,7 @@ sound::sound(const fb::game::object& me, SOUND value) :
 async::task<void> sound::serialize(fb::stream_writer<big_endian>& writer) const
 {
     co_await header::serialize(writer);
-    writer.write<uint8_t>(header);
+    writer.write<uint8_t>(opcode);
     writer.write<uint8_t>(0x00);
     writer.write<uint8_t>(0x03);
     writer.write<uint16_t>(static_cast<uint16_t>(this->value)); // sound

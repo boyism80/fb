@@ -12,7 +12,7 @@ item_unequip::item_unequip(EQUIPMENT_PARTS parts) :
 async::task<void> item_unequip::serialize(fb::stream_writer<big_endian>& writer) const
 {
     co_await header::serialize(writer);
-    writer.write<uint8_t>(header);
+    writer.write<uint8_t>(opcode);
     writer.write<uint8_t>(static_cast<uint8_t>(this->parts));
     writer.write<uint8_t>(0x00);
 }

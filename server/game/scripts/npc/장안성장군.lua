@@ -2,7 +2,7 @@ function NPC_231(me, npc)
     local quest = me:quest(QUEST_HWANGBIYEON)
 
     if quest == nil then
-        local btn = me:dialog(npc, '황궁을 견학하러 왔는가? 허허, 미안하네만 지금은 보시다시피 좀 어수선하다네.', true, true)
+        local btn = me:dialog(npc, '황궁을 견학하러 왔는가? 허허, 미안하네만 지금은 보시다시피 좀 어수선하다네.', false, true)
         if btn == DIALOG_RESULT.QUIT then
             return
         end
@@ -25,30 +25,35 @@ function NPC_231(me, npc)
         if lb == DIALOG_RESULT.QUIT or sel ~= 0 then
             return
         end
-        ::NPC_231_COS001::
+        ::NPC_231_0001::
         btn = me:dialog(npc, '...실은 나도 그렇게 하고 싶지만, 상부에서 그를 잡아들이라고 난리라서 어쩔 수 없다네. 현상금도 크게 걸려 있지.', true, true)
         if btn == DIALOG_RESULT.QUIT then
             return
         end
+        ::NPC_231_0002::
         btn = me:dialog(npc, '사실 탐관오리들이 부정하게 모아온 재물이긴 하지만, 어찌 되었건 간에 도둑질은 나쁜 일이지 않은가.', true, true)
         if btn == DIALOG_RESULT.QUIT then
             return
         end
         if btn == DIALOG_RESULT.PREV then
-            goto NPC_231_COS001
+            goto NPC_231_0001
         end
         sel, lb = me:list(npc, '그래서 지금도 황비연을 잡으려고 수색중인데, 정말 신출귀몰하더군. 도저히 잡을 수가 없어...', { '저도 협조하겠습니다. 황비연을 만나보고 싶군요.', '솔직히 잡히지 말았으면 좋겠군요. 그럼 전 이만..' }, true)
         if lb == DIALOG_RESULT.QUIT or sel ~= 0 then
             return
         end
-        ::NPC_231_COS002::
+        ::NPC_231_0003::
         btn = me:dialog(npc, '음! 정말 그래 주겠는가? 고맙네. 자네는 황궁 사람이 아니니 어쩌면 황비연에게 쉽게 접글할 수 있을지도 모르지.', true, true)
         if btn == DIALOG_RESULT.QUIT then
             return
         end
-        btn = me:dialog(npc, '황비연이 마지막으로 나타난 장소는 상해일세. 그 부근에 숨어 있을 것 같으니 잘 살펴 보게나. 그럼 수고해주게.', true, true)
+        ::NPC_231_0004::
+        btn = me:dialog(npc, '황비연이 마지막으로 나타난 장소는 상해일세. 그 부근에 숨어 있을 것 같으니 잘 살펴 보게나. 그럼 수고해주게.', false, true)
+        if btn == DIALOG_RESULT.QUIT then
+            return
+        end
         if btn == DIALOG_RESULT.PREV then
-            goto NPC_231_COS002
+            goto NPC_231_0003
         end
         quest = me:start_quest(QUEST_HWANGBIYEON)
         if quest == nil then
@@ -78,17 +83,18 @@ function NPC_231(me, npc)
             me:dialog(npc, '머리띠가 없는것 같은데요?', false, true)
             return
         end
-        ::NPC_231_COS003::
+        ::NPC_231_0005::
         local btn = me:dialog(npc, '오, 머리띠라... 어디 보세.\n\n음! 과연... 이것은 그가 항상 머리에 두르고 있다는 그 머리띠가 분명하군!', true, true)
         if btn == DIALOG_RESULT.QUIT then
             return
         end
-        btn = me:dialog(npc, '그가 정말로 죽었는지 어떤지는 자네만이 알고 있겠지만... 허허허.\n\n뭐, 이 머리띠면 상부에 황비연이 죽었다고 보고할 수 있겠지. 아무튼 수고했네. 여기 현상금 10만전을 가져가게.', true, true)
-        if btn == DIALOG_RESULT.PREV then
-            goto NPC_231_COS003
-        end
+        ::NPC_231_0006::
+        btn = me:dialog(npc, '그가 정말로 죽었는지 어떤지는 자네만이 알고 있겠지만... 허허허.\n\n뭐, 이 머리띠면 상부에 황비연이 죽었다고 보고할 수 있겠지. 아무튼 수고했네. 여기 현상금 10만전을 가져가게.', false, true)
         if btn == DIALOG_RESULT.QUIT then
             return
+        end
+        if btn == DIALOG_RESULT.PREV then
+            goto NPC_231_0005
         end
         local code = me:exchange(
             { ['item'] = { ['황비연의머리띠'] = 1 } },

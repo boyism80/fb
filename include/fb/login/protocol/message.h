@@ -8,7 +8,7 @@ namespace fb::protocol::login::response {
 class message : public fb::protocol::header
 {
 public:
-    static constexpr uint8_t header = 0x02;
+    static constexpr uint8_t opcode = 0x02;
 
 public:
 #ifdef BOT
@@ -34,7 +34,7 @@ public:
     [[nodiscard]] async::task<void> serialize(fb::stream_writer<big_endian>& writer) const
     {
         co_await header::serialize(writer);
-        writer.write<uint8_t>(header);
+        writer.write<uint8_t>(opcode);
         writer.write<uint8_t>(this->type);
         writer.write<std::string, uint8_t>(this->text);
     }

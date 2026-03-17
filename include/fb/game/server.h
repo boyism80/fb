@@ -41,6 +41,7 @@ REGISTER_RESPONSE(fb::protocol::internal::request::ChangeClanRole, fb::protocol:
 REGISTER_RESPONSE(fb::protocol::internal::request::BroadcastClan, fb::protocol::internal::response::BroadcastClan)
 REGISTER_RESPONSE(fb::protocol::internal::request::Logout, fb::protocol::internal::response::Logout)
 REGISTER_RESPONSE(fb::protocol::internal::request::Save, fb::protocol::internal::response::Save)
+REGISTER_RESPONSE(fb::protocol::internal::request::SaveBatch, fb::protocol::internal::response::BatchSave)
 REGISTER_RESPONSE(fb::protocol::internal::request::Broadcast, fb::protocol::internal::response::Broadcast)
 REGISTER_RESPONSE(fb::protocol::internal::request::CreateGroup, fb::protocol::internal::response::GroupDetails)
 REGISTER_RESPONSE(fb::protocol::internal::request::EnterGroup, fb::protocol::internal::response::UpdatedGroup)
@@ -122,6 +123,10 @@ public:
     server(server&&)      = delete;
     ~server();
 
+private:
+    internal::SavePayload save_payload(const character& ch) const;
+    async::task<void>     set_saved_before_shutdown_on_all();
+
 public:
     void assert_whisper(const internal_resp::Whisper& response) const;
     void assert_group(uint32_t error, std::string_view actor) const;
@@ -167,10 +172,11 @@ public:
 protected:
     uint8_t           id() const override final;
     internal::Service service() const override final;
-    bool              decrypt_policy(uint8_t cmd) const override final;
+    bool              decrypt_policy(uint8_t opcode) const override final;
     bool              assert_tps(const fb::socket<character>& socket) const override final;
     void              on_init_amqp(fb::amqp::socket& amqp) override final;
     async::task<void> on_start() override final;
+    async::task<void> on_exit() override final;
     async::task<bool> on_connected(fb::socket<character>& ch) override final;
     async::task<bool> on_disconnected(fb::socket<character>& ch) override final;
 
@@ -178,7 +184,9 @@ public:
     // clang-format off
     async::task<void>                          send(object& obj, const fb::protocol::header& header, fb::game::scope scope, bool exclude_self = false, bool encrypt = true);
     async::task<void>                          save(character& ch);
-    void                                       save();
+    async::task<void>                          save();
+
+public:
     virtual uint32_t                           thread_id(const fb::socket<character>& socket) const;
     fb::thread*                                thread(const fb::game::map& map);
     const fb::model::datetime&                 time() const;

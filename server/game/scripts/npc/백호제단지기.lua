@@ -1,9 +1,4 @@
--- @note Trash: 0_신수의제단\일반.txt "백호제단지기". Intro dialogs + list (능력치 보기 / 기여자 조회 / 천도복숭아 바치기 / 보상 수령).
--- Ranking (@w_myrank, @w_point) and callfunc "백호제단바치기" not implemented; list options 2–4 are placeholders.
 
----@brief NPC 백호제단지기: intro + list; option 1 = ability dialog, options 2–4 placeholder.
----@param[in] me  The character.
----@param[in] npc The NPC entity.
 function NPC_452(me, npc)
     local d = me:dialog(npc, "안녕하신가, " .. me:name() .. ". 나는 이곳 제단에서 힘을 모아, 사악한악령에게 [민첩한 공격]을 가하는 백호제단지기라네.", false, true)
     if d == DIALOG_RESULT.QUIT then

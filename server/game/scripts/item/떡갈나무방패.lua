@@ -1,9 +1,9 @@
 -- 떡갈나무방패 사용 스크립트
-function ON_ACTIVE_1011(me, item)
+function ON_ACTIVATED_1011(me, item)
 
 end
 
 -- 떡갈나무방패 해제 스크립트
-function ON_INACTIVE_1011(me, item)
+function ON_DEACTIVATED_1011(me, item)
 
 end

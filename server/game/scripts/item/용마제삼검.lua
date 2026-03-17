@@ -1,4 +1,4 @@
--- 용마제삼검: on attack, chance to cast 용마제삼격 on front target. Trash: 30% probability.
+-- 용마제삼검 공격 스크립트
 function ON_ATTACK_251(me, item)
     math.randomseed(seed())
     if math.random() > 0.30 then
@@ -12,11 +12,11 @@ function ON_ATTACK_251(me, item)
 end
 
 -- 용마제삼검 사용 스크립트
-function ON_ACTIVE_251(me, item)
+function ON_ACTIVATED_251(me, item)
 
 end
 
 -- 용마제삼검 해제 스크립트
-function ON_INACTIVE_251(me, item)
+function ON_DEACTIVATED_251(me, item)
 
 end

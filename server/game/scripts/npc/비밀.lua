@@ -1,12 +1,8 @@
--- @note Trash: 1_환상의섬\일반.txt "비밀". $magic_ball_q 0: level<35 dialogs; else intro+addlegend, set 1. 1: list (포기/해치우는중/부속 구해옴). 부속 구해옴: 4 items+10만전→요술놀이구슬, set 2. 2: list (가격/조립). 가격: 15만에 요술놀이구슬 판매; 조립: same. FB: QUEST_MAGIC_BALL param "0"|"1"|"2"; addlegend omitted; sendmail2name omitted.
 
 local ASSEMBLE_ITEMS = { "요술구슬", "상하막대", "좌우막대", "누름막대" }
 local ASSEMBLE_FEE = 100000
 local SELL_PRICE = 150000
 
---- @brief NPC 비밀: Magic ball (요술놀이구슬) quest — intro, collect 4 parts + 10만 to assemble; or sell assembled for 15만.
---- @param me   character talking to the NPC
---- @param npc  NPC entity (비밀)
 function NPC_378(me, npc)
     local quest = me:quest(QUEST_MAGIC_BALL)
     local param = (quest and quest:param()) or "0"

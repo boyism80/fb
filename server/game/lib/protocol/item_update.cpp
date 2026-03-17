@@ -19,7 +19,7 @@ async::task<void> item_update::serialize(fb::stream_writer<big_endian>& writer) 
     if (item == nullptr)
         co_return;
 
-    writer.write<uint8_t>(header);
+    writer.write<uint8_t>(opcode);
     writer.write<uint8_t>(this->index + 1);
     writer.write<uint16_t>(item->look());
     writer.write<uint8_t>(item->color());

@@ -18,7 +18,7 @@ create::create(std::string_view id, std::string_view pw) :
 async::task<void> create::serialize(fb::stream_writer<big_endian>& writer) const
 {
     co_await header::serialize(writer);
-    writer.write<uint8_t>(header);
+    writer.write<uint8_t>(opcode);
     writer.write<std::string, uint8_t>(this->id);
     writer.write<std::string, uint8_t>(this->pw);
 }

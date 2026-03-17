@@ -13,7 +13,7 @@ trade_money::trade_money(uint32_t money, bool mine) :
 async::task<void> trade_money::serialize(fb::stream_writer<big_endian>& writer) const
 {
     co_await header::serialize(writer);
-    writer.write<uint8_t>(header);
+    writer.write<uint8_t>(opcode);
     writer.write<uint8_t>(0x03);
     writer.write<bool>(!this->mine);
     writer.write<uint32_t>(this->money);

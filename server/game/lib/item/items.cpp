@@ -91,7 +91,7 @@ std::shared_ptr<equipment> items::equipment_off(EQUIPMENT_PARTS parts)
 
     // Execute equipment deactivation script
     auto& model = equipment->based<fb::model::equipment>();
-    if (model.on_inactive.empty() == false)
+    if (model.on_deactivated.empty() == false)
     {
         auto lua = fb::lua::new_context();
         if (lua != nullptr)
@@ -99,7 +99,7 @@ std::shared_ptr<equipment> items::equipment_off(EQUIPMENT_PARTS parts)
 #if defined DEBUG || defined _DEBUG
             lua->load(model.script);
 #endif
-            lua->func(model.on_inactive);
+            lua->func(model.on_deactivated);
             lua->pushobject(*owner);
             lua->pushinteger(parts);
             lua->pushobject(*equipment);

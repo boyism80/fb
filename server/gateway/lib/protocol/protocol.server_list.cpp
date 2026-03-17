@@ -19,7 +19,7 @@ server_list::server_list(uint8_t action, uint8_t index) :
 async::task<void> server_list::serialize(fb::stream_writer<big_endian>& writer) const
 {
     co_await header::serialize(writer);
-    writer.write<uint8_t>(header);
+    writer.write<uint8_t>(opcode);
     writer.write<uint8_t>(this->action);
 
     if (this->action == 0x00)
@@ -62,7 +62,7 @@ async::task<void> server_list::serialize(fb::stream_writer<big_endian>& writer) 
     auto compressed = formats.compress();
 
     // 패킷 형식으로 저장
-    writer.write<uint8_t>(header);
+    writer.write<uint8_t>(opcode);
     writer.write<uint16_t>(compressed.size());
     writer.write(compressed.data(), compressed.size());
     writer.write<uint8_t>(0);

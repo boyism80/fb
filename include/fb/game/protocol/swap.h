@@ -11,7 +11,7 @@ using namespace fb::model::enum_value;
 class swap : public fb::protocol::header
 {
 public:
-    static constexpr uint8_t header = 0x30;
+    static constexpr uint8_t opcode = 0x30;
 
 public:
 #ifndef BOT

@@ -4,20 +4,18 @@ local BATTERY_PRICE = 5000
 local BATTERY_ITEM_NAME = '건전지'
 
 local function run_clock_purchase(me, npc)
-    ::NPC_250_COS001::
+    ::NPC_250_0002::
     local btn = me:dialog(npc, '자네도 내가 만든 시계를 구입하고 싶어서 찾아온 게로구만? 그렇다면 잘 찾아왔네.', false, true)
     if btn == DIALOG_RESULT.QUIT then
         return
     end
-    if btn == DIALOG_RESULT.PREV then
-        return
-    end
+    ::NPC_250_0003::
     btn = me:dialog(npc, '그렇다면 잘 찾아왔구만. 하지만 공짜로 줄 순 없지.. 1만전만 낸다면야 생각은 해 보겠다만..', true, true)
     if btn == DIALOG_RESULT.QUIT then
         return
     end
     if btn == DIALOG_RESULT.PREV then
-        goto NPC_250_COS001
+        goto NPC_250_0002
     end
     local confirm = me:list(npc, '1만전을 내고 나에게 시계를 사겠나?', { '네, 살래요.', '안살래요.' }, false)
     if confirm == nil or confirm ~= 0 then
@@ -76,6 +74,7 @@ local function run_battery_purchase(me, npc)
 end
 
 function NPC_250(me, npc)
+    ::NPC_250_0001::
     local sel = me:list(npc, '안녕하신가? 나에겐 어쩐일로 왔는가?', { '시계 구입', '건전지 구입' }, false)
     if sel == nil then
         return

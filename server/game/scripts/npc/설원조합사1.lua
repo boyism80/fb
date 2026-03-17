@@ -1,13 +1,7 @@
--- @note Trash: 1_극지방\설원지방.txt "설원조합사1". Craft 눈꽃얼음 from 얼음결정 50 + 설인의뼈 1 (100% success).
--- List: make request -> dialogs -> confirm list -> check materials, consume, give reward.
 
 local REWARD_NAME = "눈꽃얼음"
 local NEED = { ["얼음결정"] = 50, ["설인의뼈"] = 1 }
 
----@brief Run the craft: remove materials and give one 눈꽃얼음; on mkitem failure, refund materials.
----@param[in] me  The character.
----@param[in] npc The NPC entity.
----@return boolean True if craft succeeded.
 local function do_craft(me, npc)
     local code = me:exchange(
         { ['item'] = NEED },
@@ -24,9 +18,6 @@ local function do_craft(me, npc)
     return true
 end
 
----@brief NPC 설원조합사1: craft 눈꽃얼음 from 얼음결정 50 + 설인의뼈 1.
----@param[in] me  The character.
----@param[in] npc The NPC entity.
 function NPC_438(me, npc)
     local sel, btn = me:list(npc, "저는 얼음결정과 설인의뼈를 이용해 [" .. REWARD_NAME .. "]을 만들어 드립니다. ", { "만들어 주세요.", "아니요. 다음에..." }, false)
     if btn == DIALOG_RESULT.QUIT then

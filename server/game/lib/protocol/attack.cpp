@@ -11,7 +11,7 @@ async::task<void> attack::deserialize(fb::stream_reader<big_endian>& reader)
 async::task<void> attack::serialize(fb::stream_writer<big_endian>& writer) const
 {
     co_await header::serialize(writer);
-    writer.write<uint8_t>(header);
+    writer.write<uint8_t>(opcode);
 }
 #endif
 

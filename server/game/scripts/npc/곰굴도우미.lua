@@ -1,5 +1,5 @@
 function NPC_38(me, npc)
-    ::NPC_38_COS00::
+    ::NPC_38_0001::
     local button = me:dialog(npc, '여기는 곰굴입니다. 20 레벨부터 40 레벨까지 사냥하기에 좋습니다.', false, true)
     if button == DIALOG_RESULT.QUIT then
         return
@@ -10,6 +10,6 @@ function NPC_38(me, npc)
         return
     end
     if button == DIALOG_RESULT.PREV then
-        goto NPC_38_COS00
+        goto NPC_38_0001
     end
 end

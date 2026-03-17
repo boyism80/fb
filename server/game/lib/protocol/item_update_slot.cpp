@@ -56,7 +56,7 @@ async::task<void> item_update_slot::serialize(fb::stream_writer<big_endian>& wri
     if (item == nullptr)
         co_return;
 
-    writer.write<uint8_t>(header);
+    writer.write<uint8_t>(opcode);
     writer.write<uint16_t>(item->look());
     writer.write<uint8_t>(item->color());
     writer.write<std::string, uint8_t>(item->name());

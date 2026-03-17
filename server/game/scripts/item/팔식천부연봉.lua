@@ -1,9 +1,9 @@
 -- 팔식천부연봉 사용 스크립트
-function ON_ACTIVE_318(me, item)
+function ON_ACTIVATED_318(me, item)
 
 end
 
 -- 팔식천부연봉 해제 스크립트
-function ON_INACTIVE_318(me, item)
+function ON_DEACTIVATED_318(me, item)
 
 end

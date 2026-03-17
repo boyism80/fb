@@ -1,7 +1,3 @@
--- @brief   NPC Baek Nayeon: gives 깨진김장독 during Chunghwa (QUEST_BAEK_MONGYEON) cleanup quest.
--- @param[in]  me   The character talking to the NPC.
--- @param[in]  npc  The NPC entity.
--- @note    Only when gv("sesi_rightnow") == 2 and quest step >= 1; gives once (player must not already have item).
 function NPC_354(me, npc)
     local button = me:dialog(npc, "안녕하세요? 저는 백나연입니다.", false, true)
     if button == DIALOG_RESULT.QUIT then

@@ -1,4 +1,4 @@
--- 용천제칠검: on attack, chance to cast 용천제칠격 on front target. Trash: 50% probability.
+-- 용천제칠검 공격 스크립트
 function ON_ATTACK_264(me, item)
     math.randomseed(seed())
     if math.random() > 0.50 then
@@ -12,11 +12,11 @@ function ON_ATTACK_264(me, item)
 end
 
 -- 용천제칠검 사용 스크립트
-function ON_ACTIVE_264(me, item)
+function ON_ACTIVATED_264(me, item)
 
 end
 
 -- 용천제칠검 해제 스크립트
-function ON_INACTIVE_264(me, item)
+function ON_DEACTIVATED_264(me, item)
 
 end

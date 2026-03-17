@@ -11,7 +11,7 @@ using namespace fb::model::enum_value;
 class give_item : public fb::protocol::header
 {
 public:
-    static constexpr uint8_t header = 0x29;
+    static constexpr uint8_t opcode = 0x29;
 
 public:
 #ifndef BOT
@@ -43,7 +43,7 @@ public:
 class give_money : public fb::protocol::header
 {
 public:
-    static constexpr uint8_t header = 0x2A;
+    static constexpr uint8_t opcode = 0x2A;
 
 public:
 #ifndef BOT

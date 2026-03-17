@@ -1,10 +1,10 @@
 -- 해독의귀걸이 사용 스크립트
-function ON_ACTIVE_2129(me, item)
+function ON_ACTIVATED_2129(me, item)
 
 end
 
 -- 해독의귀걸이 해제 스크립트
-function ON_INACTIVE_2129(me, item)
+function ON_DEACTIVATED_2129(me, item)
 
 end
 

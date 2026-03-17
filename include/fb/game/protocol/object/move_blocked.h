@@ -16,7 +16,7 @@ using namespace fb::model::enum_value;
 class move_blocked : public fb::protocol::header
 {
 public:
-    static constexpr uint8_t header = 0x69;
+    static constexpr uint8_t opcode = 0x69;
 
 public:
     fb::model::point<uint16_t> position;

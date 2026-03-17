@@ -1,37 +1,21 @@
-using Microsoft.AspNetCore.Components.Authorization;
+﻿using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.AspNetCore.Components.Server.ProtectedBrowserStorage;
 using System.Security.Claims;
 
 namespace AdminTool.Authentication
 {
-    /// <summary>
-    /// Provides custom authentication state management for the admin tool.
-    /// Manages user authentication state using protected browser storage.
-    /// </summary>
     public class CustomAuthenticationStateProvider : AuthenticationStateProvider
     {
         private readonly ProtectedSessionStorage _sessionStorage;
         private const string AuthKey = "AdminAuth";
 
-        /// <summary>
-        /// Initializes a new instance of the <see cref="CustomAuthenticationStateProvider"/> class.
-        /// </summary>
-        /// <param name="sessionStorage">The protected session storage for storing authentication data.</param>
         public CustomAuthenticationStateProvider(ProtectedSessionStorage sessionStorage)
         {
             _sessionStorage = sessionStorage;
         }
 
-        /// <summary>
-        /// Claim type for the world (server) the user logged in from.
-        /// Used to distinguish same user across worlds when changing roles.
-        /// </summary>
         public const string LoginWorldClaimType = "LoginWorld";
 
-        /// <summary>
-        /// Gets the current authentication state asynchronously.
-        /// </summary>
-        /// <returns>The current authentication state.</returns>
         public override async Task<AuthenticationState> GetAuthenticationStateAsync()
         {
             try
@@ -65,21 +49,12 @@ namespace AdminTool.Authentication
             }
         }
 
-        /// <summary>
-        /// Marks the user as authenticated and stores authentication data.
-        /// </summary>
-        /// <param name="authData">The authentication data to store.</param>
         public async Task MarkUserAsAuthenticated(AuthData authData)
         {
             await _sessionStorage.SetAsync(AuthKey, authData);
             NotifyAuthenticationStateChanged(GetAuthenticationStateAsync());
         }
 
-        /// <summary>
-        /// Sets the authentication state with user name and role.
-        /// </summary>
-        /// <param name="userName">The user name.</param>
-        /// <param name="role">The user role.</param>
         public async Task SetAuthenticationStateAsync(string userName, Fb.Model.EnumValue.Role role)
         {
             var authData = new AuthData
@@ -90,9 +65,6 @@ namespace AdminTool.Authentication
             await MarkUserAsAuthenticated(authData);
         }
 
-        /// <summary>
-        /// Marks the user as logged out and clears authentication data.
-        /// </summary>
         public async Task MarkUserAsLoggedOut()
         {
             await _sessionStorage.DeleteAsync(AuthKey);
@@ -100,31 +72,14 @@ namespace AdminTool.Authentication
         }
     }
 
-    /// <summary>
-    /// Represents authentication data stored in session storage.
-    /// </summary>
     public class AuthData
     {
-        /// <summary>
-        /// Gets or sets the user ID.
-        /// </summary>
         public uint UserId { get; set; }
 
-        /// <summary>
-        /// Gets or sets the user name.
-        /// </summary>
         public string UserName { get; set; } = string.Empty;
 
-        /// <summary>
-        /// Gets or sets the user role.
-        /// </summary>
         public string Role { get; set; } = string.Empty;
 
-        /// <summary>
-        /// Gets or sets the world (server) the user logged in from.
-        /// Used to avoid treating a different-world user with the same character ID as "self".
-        /// </summary>
         public uint? LoginWorld { get; set; }
     }
 }
-

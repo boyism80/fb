@@ -116,8 +116,8 @@ public:
         if (!this->_handlers.contains(route_str))
             this->_handlers.insert({route_str, std::unordered_map<uint32_t, handler_func>()});
 
-        auto cmd = static_cast<uint32_t>(message_type::FlatBufferProtocolType);
-        this->_handlers[route_str].insert({cmd, [this](const uint8_t* ptr) -> async::task<void> {
+        auto opcode = static_cast<uint32_t>(message_type::FlatBufferProtocolType);
+        this->_handlers[route_str].insert({opcode, [this](const uint8_t* ptr) -> async::task<void> {
                                                auto  protocol = message_type::Deserialize(ptr);
                                                auto& server =
                                                    static_cast<typename HandlerType::server_type&>(this->_owner);
@@ -138,9 +138,9 @@ public:
             auto& route = queue.route();
             if (this->_handlers.contains(route))
             {
-                for (auto& [cmd, fn] : this->_handlers.at(route))
+                for (auto& [opcode, fn] : this->_handlers.at(route))
                 {
-                    queue.handler(cmd, std::move(fn));
+                    queue.handler(opcode, std::move(fn));
                 }
             }
         }

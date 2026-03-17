@@ -1,5 +1,3 @@
--- @note Trash: 1_북방대초원\일반.txt "북방나무꾼". Exchange 잔가지 for 백현목(100)/자현목(200)/노송의가지(500); 23h cooldown via QUEST_JANGAJI param (timestamp).
--- Server time: now(); $jangaji -> quest param as next_available timestamp.
 
 local COOLDOWN_SEC = 82800
 
@@ -49,9 +47,6 @@ local function do_exchange(me, npc, need_count, reward_name)
     me:dialog(npc, "앗, 정말로 잔가지들을 구해오셨군요! 그럼 여기 제가 가진 " .. reward_name .. "을 하나 드리겠습니다. 앞으로도 잘 부탁 드리겠습니다.", false, false)
 end
 
--- @brief   NPC 북방나무꾼: exchange 잔가지 for 백현목/자현목/노송의가지 with cooldown.
--- @param[in]  me   The character.
--- @param[in]  npc  The NPC entity.
 function NPC_450(me, npc)
     local now_ts = now()
     local next_ts = next_available(me)
@@ -68,11 +63,9 @@ function NPC_450(me, npc)
         return
     end
 
-    local sel, list_btn = me:list(npc, "북방대초원에는 어인일로 가시는지요...?", { "당신은 알 것 없네.", "나무를 좀 구하러..." }, true)
+    ::NPC_450_0010::
+    local sel, list_btn = me:list(npc, "북방대초원에는 어인일로 가시는지요...?", { "당신은 알 것 없네.", "나무를 좀 구하러..." }, false)
     if list_btn == DIALOG_RESULT.QUIT then
-        return
-    end
-    if list_btn == DIALOG_RESULT.PREV then
         return
     end
     if sel == 0 then
@@ -83,22 +76,31 @@ function NPC_450(me, npc)
         return
     end
 
-    btn = me:dialog(npc, "나무... 나무 말이군요!\n\n북방대초원에는 기괴한 괴물들이 나무를 모두 훔쳐가버리곤 한다는 사실... 알고 계셨습니까?", false, true)
+    ::NPC_450_0011::
+    btn = me:dialog(npc, "나무... 나무 말이군요!\n\n북방대초원에는 기괴한 괴물들이 나무를 모두 훔쳐가버리곤 한다는 사실... 알고 계셨습니까?", true, true)
+    if btn == DIALOG_RESULT.PREV then
+        goto NPC_450_0010
+    end
     if btn == DIALOG_RESULT.QUIT then
         return
     end
 
-    btn = me:dialog(npc, "무시무시한 녀석들이 대체 어디에 쓰려는건지는 모르겠지만... \n\n귀한 [백현목], [자현목], [노송의가지]를 훔쳐가서는 애지중지 품고 다니곤 하더군요.", false, true)
+    ::NPC_450_0020::
+    btn = me:dialog(npc, "무시무시한 녀석들이 대체 어디에 쓰려는건지는 모르겠지만... \n\n귀한 [백현목], [자현목], [노송의가지]를 훔쳐가서는 애지중지 품고 다니곤 하더군요.", true, true)
+    if btn == DIALOG_RESULT.PREV then
+        goto NPC_450_0011
+    end
     if btn == DIALOG_RESULT.QUIT then
         return
     end
 
+    ::NPC_450_0021::
     sel, list_btn = me:list(npc, "혹시 나무를 구하러 가시는거라면, 제게 몇개 있는데...", { "갈길이 바빠서...", "앗, 나무가 있으시다구요?" }, true)
     if list_btn == DIALOG_RESULT.QUIT then
         return
     end
     if list_btn == DIALOG_RESULT.PREV then
-        return
+        goto NPC_450_0020
     end
     if sel == 0 then
         me:dialog(npc, "아아.. 그렇습니까. 부디 몸 조심하시길 바랍니다.", false, false)
@@ -113,7 +115,11 @@ function NPC_450(me, npc)
         return
     end
 
-    btn = me:dialog(npc, "[잔가지]정도면 좋을것 같다는 생각이 듭니다. \n\n그래서 잔가지들을 조금 구해다 주시면, 제가 가진 나무와 바꾸어드릴수 있을 것 같은데... ", false, true)
+    ::NPC_450_0030::
+    btn = me:dialog(npc, "[잔가지]정도면 좋을것 같다는 생각이 듭니다. \n\n그래서 잔가지들을 조금 구해다 주시면, 제가 가진 나무와 바꾸어드릴수 있을 것 같은데... ", true, true)
+    if btn == DIALOG_RESULT.PREV then
+        goto NPC_450_0021
+    end
     if btn == DIALOG_RESULT.QUIT then
         return
     end
@@ -124,12 +130,12 @@ function NPC_450(me, npc)
         "노송의가지 - 잔가지 500개를 가져왔습니다.",
         "잔가지는 어떻게 구하죠?",
     }
-    sel, list_btn = me:list(npc, "잔가지를 가져오시면, 제가 가진 귀한 나뭇가지들과 교환 해 드리겠습니다.", opts, true)
+    sel, list_btn = me:list(npc, "잔가지를 가져오시면, 제가 가진 귀한 나뭇가지들과 교환 해 드리겠습니다.", opts, false)
     if list_btn == DIALOG_RESULT.QUIT then
         return
     end
     if list_btn == DIALOG_RESULT.PREV then
-        return
+        goto NPC_450_0030
     end
 
     if sel == 0 then

@@ -14,7 +14,7 @@ using namespace fb::model::enum_value;
 class update_cc : public fb::protocol::header
 {
 public:
-    static constexpr uint8_t header = 0x24;
+    static constexpr uint8_t opcode = 0x24;
 
 public:
 #ifndef BOT

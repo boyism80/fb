@@ -67,10 +67,10 @@ public:
     {
         using protocol_type = typename HandlerType::protocol_type;
 
-        this->bind<HandlerType>(protocol_type::header);
+        this->bind<HandlerType>(protocol_type::opcode);
     }
 
-    template <typename HandlerType> void bind(uint8_t cmd)
+    template <typename HandlerType> void bind(uint8_t opcode)
     {
         using session_type  = typename HandlerType::session_type;
         using protocol_type = typename HandlerType::protocol_type;
@@ -80,14 +80,14 @@ public:
         auto duration = std::chrono::milliseconds(HandlerType::duration_ms);
         auto limit    = HandlerType::limit;
 
-        this->_deserializers.insert({cmd, [](auto& reader) -> async::task<std::shared_ptr<fb::protocol::header>> {
+        this->_deserializers.insert({opcode, [](auto& reader) -> async::task<std::shared_ptr<fb::protocol::header>> {
                                          auto protocol = std::make_shared<typename HandlerType::protocol_type>();
                                          co_await protocol->deserialize(reader);
                                          co_return std::static_pointer_cast<fb::protocol::header>(protocol);
                                      }});
 
         this->_handlers.insert(
-            {cmd,
+            {opcode,
              rate_limited_command(
                  [this, &server](fb::socket<T>& socket, fb::protocol::header& header) -> async::task<bool> {
                      auto* protocol = static_cast<typename HandlerType::protocol_type*>(&header);
@@ -99,24 +99,24 @@ public:
                  limit)});
     }
 
-    bool has_handler(uint8_t cmd) const
+    bool has_handler(uint8_t opcode) const
     {
-        return this->_handlers.contains(cmd);
+        return this->_handlers.contains(opcode);
     }
 
-    bool has_deserializer(uint8_t cmd) const
+    bool has_deserializer(uint8_t opcode) const
     {
-        return this->_deserializers.contains(cmd);
+        return this->_deserializers.contains(opcode);
     }
 
-    const rate_limited_command& get_handler(uint8_t cmd) const
+    const rate_limited_command& get_handler(uint8_t opcode) const
     {
-        return this->_handlers.at(cmd);
+        return this->_handlers.at(opcode);
     }
 
-    const deserialize_func& get_deserializer(uint8_t cmd) const
+    const deserialize_func& get_deserializer(uint8_t opcode) const
     {
-        return this->_deserializers.at(cmd);
+        return this->_deserializers.at(opcode);
     }
 };
 

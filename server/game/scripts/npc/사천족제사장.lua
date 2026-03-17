@@ -30,25 +30,25 @@ function NPC_209(me, npc)
             me:dialog(npc, (next_time - nt) .. '초 후에 다시 오세요.', false, false)
             return
         end
-        ::NPC_209_COS001::
+        ::NPC_209_0001::
         local btn = me:dialog(npc, '최근 몇 년간 흉년이 계속되고 있어 마을을 위한 제를 지내기 위해 신성한 나무 가지를 구하고 있습니다.', false, true)
         if btn == DIALOG_RESULT.QUIT then
             return
         end
-        ::NPC_209_COS002::
+        ::NPC_209_0010::
         btn = me:dialog(npc, '북방대초원에는 백현목,자현목,노송의가지,천년묵은가지와 같이 신성한 기운이 깃든 나무 가지들을 구할 수 있는데, 매일 매일 제를 지내야 하다 보니 많은 양의 나무 가지가 필요합니다.', true, true)
+        if btn == DIALOG_RESULT.PREV then
+            goto NPC_209_0001
+        end
         if btn == DIALOG_RESULT.QUIT then
             return
         end
-        if btn == DIALOG_RESULT.PREV then
-            goto NPC_209_COS001
-        end
-        local sel = me:list(npc, '저에게 신성한 기운이 깃든 나무를 가져다 주실 수 있을까요?', { '네. 구해보도록 할께요.', '아니요. 제가 좀 바빠서.' })
+        local sel = me:list(npc, '저에게 신성한 기운이 깃든 나무를 가져다 주실 수 있을까요?', { '네. 구해보도록 할께요.', '아니요. 제가 좀 바빠서.' }, false)
         if sel == nil then
             return
         end
         if sel == 1 then
-            goto NPC_209_COS001
+            goto NPC_209_0001
         end
         if sel == 0 then
             quest:step(1)
@@ -58,7 +58,7 @@ function NPC_209(me, npc)
     end
 
     if quest:step() == 1 then
-        ::NPC_209_COS003::
+        ::NPC_209_0020::
         local options = {}
         for i, t in ipairs(HOLYTREE_ITEMS) do
             options[i] = name_with(t.name, '을', '를') .. ' 가지고 왔습니다.'

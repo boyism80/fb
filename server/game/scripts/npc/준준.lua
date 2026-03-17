@@ -11,13 +11,21 @@ function cultural_property_quest(me, npc)
             me:dialog(npc, '....', false, false)
             return
         end
+        ::NPC_115_0001::
         local button = me:dialog(npc, '외부와 교류를 시작하면서 가장 힘든 게 뭔지 아나? 내부의 적과 싸우는 것이야. 요즘 우리의 소중한 문화재를 파내서 팔아먹는 비류배들이 있어서 말이야, 막을 방법이 없어 골치가 아프다~ 휴우~', false, true)
         if button == DIALOG_RESULT.QUIT then
             return
         end
 
-        local selected = me:list(npc, '자네처럼 외부인 대표로, 우리가 유출된 문화재를 찾아서 나에게 가져다 주지 않겠나? 외부인에 대한 우리의 불신을 풀어줄 좋은 기회가 될거야.', { '네, 구해 보겠습니다.', '글쎄요...' })
-        if selected == nil or selected ~= 0 then
+        ::NPC_115_0002::
+        local selected, list_btn = me:list(npc, '자네처럼 외부인 대표로, 우리가 유출된 문화재를 찾아서 나에게 가져다 주지 않겠나? 외부인에 대한 우리의 불신을 풀어줄 좋은 기회가 될거야.', { '네, 구해 보겠습니다.', '글쎄요...' }, true)
+        if list_btn == DIALOG_RESULT.QUIT or selected == nil then
+            return
+        end
+        if list_btn == DIALOG_RESULT.PREV then
+            goto NPC_115_0001
+        end
+        if selected ~= 0 then
             return
         end
         quest = me:start_quest(QUEST_JUNJUN)
@@ -26,7 +34,11 @@ function cultural_property_quest(me, npc)
             return
         end
         quest:progress(0)
-        me:dialog(npc, '그럼 부탁하네. 주로 토템들이 도굴당하고 있는데.. 도굴꾼 들은 내가 잡는다쳐도, 아예 어디다 떨구고 잃어버린 것까지 찾아다닐 시간이 없어. \n\n토템들을 좀 찾아다 줬음 좋겠군.', true, true)
+        ::NPC_115_0003::
+        local last_btn = me:dialog(npc, '그럼 부탁하네. 주로 토템들이 도굴당하고 있는데.. 도굴꾼 들은 내가 잡는다쳐도, 아예 어디다 떨구고 잃어버린 것까지 찾아다닐 시간이 없어. \n\n토템들을 좀 찾아다 줬음 좋겠군.', false, true)
+        if last_btn == DIALOG_RESULT.QUIT then
+            return
+        end
         return
     end
 
@@ -47,7 +59,7 @@ function cultural_property_quest(me, npc)
         end
         local item_name = totem_names[totem_sel + 1]
         if not me:has_items(item_name, 1) then
-            me:dialog(npc, item_name .. '이 없는데?', false, true)
+            me:dialog(npc, name_with(item_name, '이', '가') .. ' 없는데?', false, true)
             return
         end
         me:rmitem(item_name, 1, ITEM_DELETE_TYPE.GIVE)
@@ -73,7 +85,7 @@ function cultural_property_quest(me, npc)
         end
         local reward_name = reward_items[next_tier]
         if me:mkitem(reward_name, 1) == nil then
-            me:dialog(npc, '소지품이 가득 차서 ' .. reward_name .. '를 줄 수 없네.', false, true)
+            me:dialog(npc, '소지품이 가득 차서 ' .. name_with(reward_name, '을', '를') .. ' 줄 수 없네.', false, true)
             return
         end
         quest:step(next_tier)

@@ -2,24 +2,12 @@ using Dapper;
 using Http.Extension;
 using Http.Model;
 using Http.Service;
-using Newtonsoft.Json;
 using System.Data;
 
 namespace Http.Reepository
 {
-    /// <summary>
-    /// Provides repository functionality for character data management.
-    /// Implements Redis value-based caching with database persistence for character operations.
-    /// </summary>
     public class CharacterRepository : RedisValueRepository<Character, CharacterKey>
     {
-        /// <summary>
-        /// Initializes a new instance of the <see cref="CharacterRepository"/> class.
-        /// </summary>
-        /// <param name="dbContext">The database context for connection management.</param>
-        /// <param name="redisService">The Redis service for cache operations.</param>
-        /// <param name="distributedLock">The distributed lock service for concurrency control.</param>
-        /// <param name="dbExecuteService">The write-back service for asynchronous database writes.</param>
         public CharacterRepository(DbContext dbContext,
             RedisService redisService,
             RedisDistributedLockService distributedLock,
@@ -28,22 +16,11 @@ namespace Http.Reepository
         }
 
 
-        /// <summary>
-        /// Retrieves a character by world and their unique identifier.
-        /// </summary>
-        /// <param name="world">The world identifier (e.g., 1, 2). Use 0 for unified-global.</param>
-        /// <param name="id">The unique identifier of the character.</param>
-        /// <returns>The character if found; otherwise, null.</returns>
         public async Task<Character> Get(uint world, uint id)
         {
             return await base.Get(world, new CharacterKey { Id = id });
         }
 
-        /// <summary>
-        /// Generates the SQL SELECT statement for retrieving a character by ID.
-        /// </summary>
-        /// <param name="key">The character key containing the character ID.</param>
-        /// <returns>A SQL SELECT statement for the character.</returns>
         protected override string OnSelect(CharacterKey key)
         {
             return $"""
@@ -53,12 +30,26 @@ namespace Http.Reepository
                 """;
         }
 
-        /// <summary>
-        /// Generates the SQL UPSERT statement for a character with all character properties.
-        /// Includes comprehensive character data such as stats, appearance, position, and equipment colors.
-        /// </summary>
-        /// <param name="value">The character to upsert.</param>
-        /// <returns>A SQL UPSERT statement for the character.</returns>
+        protected override string OnSelectMany(IReadOnlyList<CharacterKey> keys)
+        {
+            return $"SELECT * FROM `user` WHERE `id` IN ({string.Join(",", keys.Select(k => k.Id))});";
+        }
+
+        protected override CharacterKey GetKeyFromRow(Character row)
+        {
+            return new CharacterKey { Id = row.Id };
+        }
+
+        public async Task<IReadOnlyDictionary<uint, Character>> GetMany(uint world, IReadOnlyList<uint> ids)
+        {
+            if (ids == null || ids.Count == 0)
+                return new Dictionary<uint, Character>();
+
+            var keys = ids.Distinct().Select(id => new CharacterKey { Id = id }).ToList();
+            var list = await base.GetMany(world, keys);
+            return list.ToDictionary(c => c.Id, c => c);
+        }
+
         protected override string OnUpsert(Character value)
         {
             var sql = $"""
@@ -105,12 +96,13 @@ namespace Http.Reepository
                     `super_hide`,
                     `deleted`,
                     `created_date`,
-                    `updated_date`)
+                    `updated_date`,
+                    `first_login_date`)
                 VALUES (
                     {value.Id.Escape()},
                     {value.Name.Escape()},
                     {value.Pw.Escape()},
-                    {((byte)value.Role).Escape()},
+                    {value.Role.Escape()},
                     {value.Birth.Escape()},
                     {value.Look.Escape()},
                     {value.Color.Escape()},
@@ -128,7 +120,7 @@ namespace Http.Reepository
                     {value.Exp.Escape()},
                     {value.Money.Escape()},
                     {value.DepositedMoney.Escape()},
-                    {(value.Mimicry == null ? "NULL" : JsonConvert.SerializeObject(value.Mimicry).Escape())},
+                    {value.Mimicry.Escape()},
                     {value.Hp.Escape()},
                     {value.BaseHp.Escape()},
                     {value.AdditionalHp.Escape()},
@@ -143,13 +135,14 @@ namespace Http.Reepository
                     {value.RingRightColor.Escape()},
                     {value.AuxTopColor.Escape()},
                     {value.AuxBotColor.Escape()},
-                    {JsonConvert.SerializeObject(value.Buffs).Escape()},
+                    {value.Buffs.Escape()},
                     {value.Title.Escape()},
-                    {(value.PendingListings == null || value.PendingListings.Count == 0 ? null : JsonConvert.SerializeObject(value.PendingListings)).Escape()},
+                    {value.PendingListings.Escape()},
                     {value.SuperHide.Escape()},
                     {value.Deleted.Escape()},
                     {value.CreatedDate.Escape()},
-                    {value.UpdatedDate.Escape()})
+                    {value.UpdatedDate.Escape()},
+                    {value.FirstLoginDate.Escape()})
                 ON DUPLICATE KEY UPDATE 
                     `pw`=VALUES(`pw`),
                     `role`=VALUES(`role`),
@@ -190,19 +183,13 @@ namespace Http.Reepository
                     `pending_listings`=VALUES(`pending_listings`),
                     `super_hide`=VALUES(`super_hide`),
                     `deleted`=VALUES(`deleted`),
-                    `updated_date`=VALUES(`updated_date`);
+                    `updated_date`=VALUES(`updated_date`),
+                    `first_login_date`=COALESCE(VALUES(`first_login_date`), `first_login_date`);
                 """;
 
             return sql;
         }
 
-        /// <summary>
-        /// Retrieves a character ID by world and their name using a stored procedure.
-        /// Uses the world-specific database connection for name lookup operations.
-        /// </summary>
-        /// <param name="world">The world identifier (e.g., 1, 2). Use 0 for unified-global.</param>
-        /// <param name="name">The character name to look up.</param>
-        /// <returns>The character ID if found; otherwise, null.</returns>
         public async Task<uint?> GetCharacterId(uint world, string name)
         {
             await using var conn = _dbContext.GetGlobalConnection(world);
@@ -217,13 +204,6 @@ namespace Http.Reepository
             return null;
         }
 
-        /// <summary>
-        /// Retrieves a character name by world and their unique identifier.
-        /// Uses the world-specific database connection for name lookup operations.
-        /// </summary>
-        /// <param name="world">The world identifier (e.g., 1, 2). Use 0 for unified-global.</param>
-        /// <param name="id">The unique identifier of the character.</param>
-        /// <returns>The character name if found; otherwise, null.</returns>
         public async Task<string> GetName(uint world, uint id)
         {
             await using var conn = _dbContext.GetGlobalConnection(world);
@@ -231,13 +211,6 @@ namespace Http.Reepository
             return result?.Name;
         }
 
-        /// <summary>
-        /// Retrieves multiple character names by world and their unique identifiers in a single query.
-        /// Uses the world-specific database connection for batch name lookup operations.
-        /// </summary>
-        /// <param name="world">The world identifier (e.g., 1, 2). Use 0 for unified-global.</param>
-        /// <param name="ids">The collection of character IDs to look up.</param>
-        /// <returns>A read-only dictionary mapping character IDs to their names.</returns>
         public async Task<IReadOnlyDictionary<uint, string>> GetName(uint world, IEnumerable<uint> ids)
         {
             if (ids.Any() == false)

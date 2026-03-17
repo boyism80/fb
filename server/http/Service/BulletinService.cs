@@ -1,4 +1,4 @@
-using Dapper;
+﻿using Dapper;
 using Http.Model;
 using System.Collections.Concurrent;
 using System.Data;
@@ -189,9 +189,6 @@ namespace Http.Service
             }
         }
 
-        /// <summary>
-        /// Dequeues pending write requests for the specified world only.
-        /// </summary>
         public Dictionary<uint, List<BulletinWriteRequest>> DequeueBatch(uint world, int maxBatchSize)
         {
             var writes = new Dictionary<uint, List<BulletinWriteRequest>>();
@@ -355,4 +352,3 @@ namespace Http.Service
         }
     }
 }
-

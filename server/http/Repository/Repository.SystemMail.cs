@@ -1,4 +1,4 @@
-using Dapper;
+﻿using Dapper;
 using Http.Extension;
 using Http.Model;
 using Http.Service;
@@ -6,19 +6,8 @@ using System.Data;
 
 namespace Http.Reepository
 {
-    /// <summary>
-    /// Provides repository functionality for system mail data management.
-    /// Implements Redis hash-based caching with database persistence for system mail operations.
-    /// </summary>
     public class SystemMailRepository : RedisHashRepository<SystemMail, SystemMailKey>
     {
-        /// <summary>
-        /// Initializes a new instance of the <see cref="SystemMailRepository"/> class.
-        /// </summary>
-        /// <param name="dbContext">The database context for connection management.</param>
-        /// <param name="redisService">The Redis service for cache operations.</param>
-        /// <param name="distributedLock">The distributed lock service for concurrency control.</param>
-        /// <param name="dbExecuteService">The write-back service for asynchronous database writes.</param>
         public SystemMailRepository(DbContext dbContext,
             RedisService redisService,
             RedisDistributedLockService distributedLock,
@@ -26,23 +15,11 @@ namespace Http.Reepository
         {
         }
 
-        /// <summary>
-        /// Retrieves a specific system mail by world and its ID.
-        /// </summary>
-        /// <param name="world">The world identifier (e.g., 1, 2). Use 0 for unified-global.</param>
-        /// <param name="id">The unique identifier of the system mail.</param>
-        /// <returns>The system mail if found; otherwise, null.</returns>
         public async Task<SystemMail> Get(uint world, uint id)
         {
             return await base.Get(world, new SystemMailKey { Id = id });
         }
 
-        /// <summary>
-        /// Retrieves all active (non-expired and non-deleted) system mails for the specified world.
-        /// Filters out expired mails based on current time.
-        /// </summary>
-        /// <param name="world">The world identifier (e.g., 1, 2). Use 0 for unified-global.</param>
-        /// <returns>A list of active system mails that have not expired.</returns>
         public async Task<List<SystemMail>> GetAll(uint world)
         {
             // Use a dummy key to get all system mails from the same hash
@@ -54,11 +31,6 @@ namespace Http.Reepository
                 .ToList();
         }
 
-        /// <summary>
-        /// Generates the SQL SELECT statement for retrieving a specific system mail.
-        /// </summary>
-        /// <param name="key">The system mail key containing the mail ID.</param>
-        /// <returns>A SQL SELECT statement for the specific system mail.</returns>
         protected override string OnSelect(SystemMailKey key)
         {
             return $"""
@@ -68,11 +40,11 @@ namespace Http.Reepository
                 """;
         }
 
-        /// <summary>
-        /// Generates the SQL SELECT statement for retrieving all system mails.
-        /// </summary>
-        /// <param name="key">The system mail key (unused, but required by base class).</param>
-        /// <returns>A SQL SELECT statement for all system mails.</returns>
+        protected override SystemMailKey GetKeyFromRow(SystemMail row)
+        {
+            return new SystemMailKey { Id = 0 };
+        }
+
         protected override string OnSelectBulk(SystemMailKey key)
         {
             return """
@@ -80,11 +52,6 @@ namespace Http.Reepository
                 """;
         }
 
-        /// <summary>
-        /// Generates the SQL UPSERT statement for a single system mail.
-        /// </summary>
-        /// <param name="value">The system mail to upsert.</param>
-        /// <returns>A SQL UPSERT statement for the system mail.</returns>
         protected override string OnUpsert(SystemMail value)
         {
             var sql = $"""
@@ -118,15 +85,6 @@ namespace Http.Reepository
             return sql;
         }
 
-        /// <summary>
-        /// Creates a new system mail and queues it for database write-back.
-        /// </summary>
-        /// <param name="world">The world identifier (e.g., 1, 2). Use 0 for unified-global.</param>
-        /// <param name="sender">The sender's user ID for the system mail.</param>
-        /// <param name="title">The title/subject of the system mail.</param>
-        /// <param name="contents">The body content of the system mail.</param>
-        /// <param name="expireDate">Optional expiration date for the system mail.</param>
-        /// <returns>The created system mail with assigned ID.</returns>
         public async Task<SystemMail> Write(uint world, uint sender, string title, string contents, DateTime? expireDate)
         {
             var query = @"

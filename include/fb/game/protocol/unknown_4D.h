@@ -20,7 +20,7 @@ using namespace fb::model::enum_value;
 class unknown_4D : public fb::protocol::header
 {
 public:
-    static constexpr uint8_t header = 0x4D;
+    static constexpr uint8_t opcode = 0x4D;
 
 public:
 #ifndef BOT

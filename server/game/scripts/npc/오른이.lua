@@ -1,5 +1,3 @@
--- @note Trash: 1_환상의섬/일반.txt "인성초자매". Implemented in 오른이 (NPC_476). QUEST_JINGOGYUN: 1->2, 2->3, 6->7, 7->8.
--- jingogyun < 1: random dialogs; == 1: "넌 우리편이지?" / "도와줄꺼지?" -> step 2; == 2: 탄생의씨앗 10 -> step 3; == 6: 바람의 토템 4 -> step 7; == 7: hand in -> 영력구슬, step 8; >= 8: greeting.
 
 local function run_dialogs(me, npc, messages)
     for i, msg in ipairs(messages) do
@@ -53,7 +51,7 @@ local function handle_jingogyun_lt1(me, npc)
     if not run_dialogs(me, npc, c) then
         return
     end
-    me:dialog(npc, "(당신은 똑같은 얼굴들이 똑같은 목소리로 똑같은 이야기를 반복하는 모습을 지켜보다가 질려서 듣기를 멈추었다.)", true, false)
+    me:dialog(npc, "(당신은 똑같은 얼굴들이 똑같은 목소리로 똑같은 이야기를 반복하는 모습을 지켜보다가 질려서 듣기를 멈추었다.)", false, false)
 end
 
 local function handle_jingogyun_1(me, npc, q_jingo)

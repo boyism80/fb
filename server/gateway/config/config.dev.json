@@ -42,5 +42,8 @@
             "uid": "guest",
             "pwd": "guest"
         }
+    },
+    "http": {
+        "max_concurrent": 500
     }
 }

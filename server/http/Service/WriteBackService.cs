@@ -1,100 +1,85 @@
-using Http.Redis;
 using Newtonsoft.Json;
-using StackExchange.Redis;
+using RabbitMQ.Client;
+using System.Collections.Concurrent;
+using System.Text;
 
 namespace Http.Service
 {
-    /// <summary>
-    /// Represents an entry in the background commit queue for write-back operations.
-    /// Contains SQL statement, Redis key, and hash information for deferred database writes.
-    /// </summary>
     public class BackgroundCommitEntry
     {
-        /// <summary>
-        /// Gets or sets the SQL statement to be executed in the database.
-        /// </summary>
-        /// <value>The SQL command string for the database operation.</value>
         public required string SQL { get; set; }
-
-        /// <summary>
-        /// Gets or sets the Redis key associated with this database operation.
-        /// </summary>
-        /// <value>The Redis key string for cache invalidation or reference tracking.</value>
         public required string RedisKey { get; set; }
-
-        /// <summary>
-        /// Gets or sets the hash value used for database sharding.
-        /// </summary>
-        /// <value>The hash value that determines which database shard to use.</value>
         public required uint? Hash { get; set; }
     };
 
-    /// <summary>
-    /// Provides write-back functionality for deferred database operations.
-    /// Queues database operations in Redis for asynchronous processing to improve performance.
-    /// </summary>
     public class WriteBackService
     {
-        private readonly RedisService _redisService;
+        public const string WriteBackExchangeName = "write-back";
+
+        public static string GetWriteBackQueueName(uint world, int db) => $"{WriteBackExchangeName}.{world}.{db}";
+
+        private readonly RabbitMqService _rabbitMqService;
         private readonly DbContext _dbContext;
         private readonly IConfiguration _configuration;
         private readonly ILogger<WriteBackService> _logger;
-        private static readonly TimeSpan _delay = TimeSpan.FromMilliseconds(500);
+        private readonly ConcurrentDictionary<string, byte> _declaredQueues = new ConcurrentDictionary<string, byte>();
+        private readonly object _declareLock = new object();
 
-        /// <summary>
-        /// Initializes a new instance of the <see cref="WriteBackService"/> class.
-        /// </summary>
-        /// <param name="redisService">The Redis service for queue operations.</param>
-        /// <param name="configuration">The application configuration.</param>
-        /// <param name="serviceProvider">The service provider for dependency injection.</param>
-        /// <param name="logger">The logger for recording write-back operations and errors.</param>
-        public WriteBackService(RedisService redisService,
+        public WriteBackService(RabbitMqService rabbitMqService,
             IConfiguration configuration,
             IServiceProvider serviceProvider,
             ILogger<WriteBackService> logger)
         {
-            _redisService = redisService;
+            _rabbitMqService = rabbitMqService;
             _configuration = configuration;
             _logger = logger;
             _dbContext = ActivatorUtilities.CreateInstance<DbContext>(serviceProvider);
         }
 
-        /// <summary>
-        /// Posts a database operation to the write-back queue for a specific database shard.
-        /// The operation will be processed asynchronously by background workers.
-        /// </summary>
-        /// <param name="world">The world identifier (e.g., 1, 2). Use 0 for unified.</param>
-        /// <param name="db">The database shard identifier.</param>
-        /// <param name="sql">The SQL statement to execute.</param>
-        /// <param name="key">The Redis key associated with this operation.</param>
-        /// <param name="hash">The hash value for sharding.</param>
-        /// <returns>A task representing the asynchronous queue operation.</returns>
-        public async Task Post(uint world, int db, string sql, string key, uint? hash)
+        public Task Post(uint world, int db, string sql, string key, uint? hash)
         {
-            var bufferKey = $"{Const.RedisBufferKey}:{db}";
-            var redisInstance = db == -1 ? _redisService.GetGlobalConnection(world) : _redisService.GetDataConnection(world, db);
-            if (redisInstance == null)
-                return;
-            var redis = redisInstance.Connection;
-            await redis.ListRightPushAsync(
-                new RedisKey(bufferKey),
-                new RedisValue(JsonConvert.SerializeObject(new BackgroundCommitEntry
+            try
+            {
+                var queueName = GetWriteBackQueueName(world, db);
+                EnsureExchangeReady(queueName);
+
+                var json = JsonConvert.SerializeObject(new BackgroundCommitEntry
                 {
                     SQL = sql,
                     RedisKey = key,
                     Hash = hash
-                })));
+                });
+                var body = Encoding.UTF8.GetBytes(json);
+                _rabbitMqService.Publish(WriteBackExchangeName, queueName, body, persistent: true);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogWarning(ex, "Failed to publish write-back message for world {World} db {Db}", world, db);
+            }
+
+            return Task.CompletedTask;
         }
 
-        /// <summary>
-        /// Posts a database operation to the write-back queue using hash-based sharding.
-        /// Automatically determines the appropriate database shard based on the hash value.
-        /// </summary>
-        /// <param name="world">The world identifier (e.g., 1, 2). Use 0 for unified.</param>
-        /// <param name="hash">The hash value used for determining the database shard.</param>
-        /// <param name="sql">The SQL statement to execute.</param>
-        /// <param name="key">The Redis key associated with this operation.</param>
-        /// <returns>A task representing the asynchronous queue operation.</returns>
+        private void EnsureExchangeReady(string queueName)
+        {
+            if (_declaredQueues.ContainsKey(queueName))
+                return;
+
+            lock (_declareLock)
+            {
+                if (_declaredQueues.ContainsKey(queueName))
+                    return;
+
+                _rabbitMqService.WithChannel(channel =>
+                {
+                    channel.ExchangeDeclare(WriteBackExchangeName, ExchangeType.Direct, durable: true);
+                    channel.QueueDeclare(queue: queueName, durable: true, exclusive: false, autoDelete: false, arguments: null);
+                    channel.QueueBind(queueName, WriteBackExchangeName, queueName);
+                });
+                _declaredQueues.TryAdd(queueName, 0);
+            }
+        }
+
         public async Task Post(uint world, uint? hash, string sql, string key)
         {
             var sharedSize = _dbContext.GetShardDbSize(world);

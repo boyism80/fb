@@ -17,7 +17,7 @@ using namespace fb::model::enum_value;
 class user_list : public fb::protocol::header
 {
 public:
-    static constexpr uint8_t header = 0x18;
+    static constexpr uint8_t opcode = 0x18;
 
 public:
     user_list() = default;
@@ -40,7 +40,7 @@ using namespace fb::game;
 class user_list : public fb::protocol::header
 {
 public:
-    static constexpr uint8_t header = 0x36;
+    static constexpr uint8_t opcode = 0x36;
 
 public:
 #ifdef BOT

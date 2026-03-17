@@ -1,4 +1,4 @@
--- 용마제일검: on attack, chance to cast 용마제일격 on front target. Trash: 20% probability.
+-- 용마제일검 공격 스크립트
 function ON_ATTACK_249(me, item)
     math.randomseed(seed())
     if math.random() > 0.20 then
@@ -12,11 +12,11 @@ function ON_ATTACK_249(me, item)
 end
 
 -- 용마제일검 사용 스크립트
-function ON_ACTIVE_249(me, item)
+function ON_ACTIVATED_249(me, item)
 
 end
 
 -- 용마제일검 해제 스크립트
-function ON_INACTIVE_249(me, item)
+function ON_DEACTIVATED_249(me, item)
 
 end

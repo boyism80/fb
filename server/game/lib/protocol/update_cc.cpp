@@ -6,7 +6,7 @@ namespace fb::protocol::game::response {
 async::task<void> update_cc::serialize(fb::stream_writer<big_endian>& writer) const
 {
     co_await header::serialize(writer);
-    writer.write<uint8_t>(header);
+    writer.write<uint8_t>(opcode);
     writer.write<bool>(this->life.cc.contains(CROWD_CONTROL::DIRECTION));
     writer.write<bool>(this->life.cc.contains(CROWD_CONTROL::SIGHT));
     writer.write<bool>(this->life.cc.contains(CROWD_CONTROL::HEAR));

@@ -1,4 +1,3 @@
--- 용의제일주: debuff (curse) that increases target's physical def taken. Trash: Front_Curse CURSEFRONT, AC 31, 6s, effect 53, sound 40.
 function ON_CAST_39(me, you, spell)
     local mp = 40
     local sound = 40

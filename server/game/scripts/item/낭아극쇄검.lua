@@ -1,9 +1,9 @@
 -- 낭아극쇄검 사용 스크립트
-function ON_ACTIVE_193(me, item)
+function ON_ACTIVATED_193(me, item)
 
 end
 
 -- 낭아극쇄검 해제 스크립트
-function ON_INACTIVE_193(me, item)
+function ON_DEACTIVATED_193(me, item)
 
 end

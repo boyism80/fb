@@ -1,8 +1,4 @@
--- @note Trash: 1_공통/진원관.txt "성원왕". Skull necklace sub6 (호박 80 -> 바다거북의알).
--- Phase 1: sub-quest only. Phase 2: main 20->21, 30->31.
--- @note "호박" = amber (game terminology). Item name from trash: 호박.
 
----@brief   Sub6 step 0: intro, set sub6=1.
 local function do_sub6_start(me, npc)
     local sel, btn = me:list(npc, "요즘따라 인간들을 자주 만나시게 되시는도다.", { "이름을 가르쳐주세요.", "이곳의 상황은 좀 어떤가요?", "제가 도와드릴 일은 없을까요?" }, false)
     if btn == DIALOG_RESULT.QUIT or sel == nil then
@@ -46,7 +42,6 @@ local function do_sub6_start(me, npc)
     return true
 end
 
----@brief   Sub6 step 1: take 호박 80, give 바다거북의알, set sub6=2.
 local function do_sub6_turnin(me, npc)
     if not me:has_items("호박", 80) then
         me:dialog(npc, "한 호박 80개면 충분하실거다.", false, false)
@@ -96,7 +91,6 @@ function NPC_468(me, npc)
         return
     end
 
-    -- Phase 2: main 20->21 (의견), 30->31 (마른갈대)
     local main_q = me:quest(QUEST_SKULL_NECKLACE)
     if main_q then
         local s = main_q:step()

@@ -478,15 +478,17 @@ function attack_cast(me, you, spell, opts)
         me:message("마력이 부족합니다.")
         return false
     end
-    me:mp_down(mp)
+    me:mp_down(mp, false)
     
     if not you then
+        me:update()
         return false
     end
     if type(you) == "userdata" then
         you = { you }
     end
     if #you == 0 then
+        me:update()
         return false
     end
     
@@ -518,8 +520,9 @@ function attack_cast(me, you, spell, opts)
     end
     
     if damaged then
-        me:hp(math.max(10, me:hp() - hp))
+        me:hp(math.max(10, me:hp() - hp), false)
     end
+    me:update()
     
     me:chat(message, CHAT_TYPE.BLUE, false)
     return true
@@ -655,7 +658,7 @@ function spell_damage_area(me, you, spell, opts)
         me:message('마력이 부족합니다.')
         return false
     end
-    me:mp_down(mp)
+    me:mp_down(mp, false)
     
     if type(you) == 'userdata' then
         you = { you }
@@ -681,8 +684,9 @@ function spell_damage_area(me, you, spell, opts)
     me:action(ACTION.CAST_SPELL, DURATION.SPELL, 1)
     
     if hp > 0 then
-        me:hp(me:hp() - hp)
+        me:hp(me:hp() - hp, false)
     end
+    me:update()
     
     return true
 end

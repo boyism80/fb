@@ -1,4 +1,4 @@
-using Http.Model.Redis;
+﻿using Http.Model.Redis;
 using Http.Redis;
 using Http.Redis.Key;
 using Newtonsoft.Json;
@@ -7,10 +7,6 @@ using Response = fb.protocol._internal.response;
 
 namespace Http.Service
 {
-    /// <summary>
-    /// Provides session management functionality for user sessions stored in Redis.
-    /// Handles session creation, deletion, and TTL management.
-    /// </summary>
     public class SessionService
     {
         private readonly RedisService _redisService;
@@ -18,10 +14,6 @@ namespace Http.Service
         private const int SessionTtlSeconds = 300; // 5 minutes
         private const int MinTtlSeconds = 240; // 4 minutes (minimum TTL before refresh)
 
-        /// <summary>
-        /// Lua script for refreshing session TTL atomically.
-        /// Only refreshes if the current TTL is below the minimum threshold.
-        /// </summary>
         private static readonly string SessionTtlRefreshScript = """
             local key = KEYS[1]
             local new_ttl = tonumber(ARGV[1])
@@ -36,23 +28,12 @@ namespace Http.Service
             end
             """;
 
-        /// <summary>
-        /// Initializes a new instance of the <see cref="SessionService"/> class.
-        /// </summary>
-        /// <param name="redisService">The Redis service for accessing Redis connections.</param>
-        /// <param name="rabbitMqService">The RabbitMQ service for publishing messages.</param>
         public SessionService(RedisService redisService, RabbitMqService rabbitMqService)
         {
             _redisService = redisService;
             _rabbitMqService = rabbitMqService;
         }
 
-        /// <summary>
-        /// Retrieves a session by world and name.
-        /// </summary>
-        /// <param name="world">The world identifier (e.g., 1, 2). Use 0 for unified.</param>
-        /// <param name="name">The character name to retrieve the session for.</param>
-        /// <returns>The session if found; otherwise, null.</returns>
         public async Task<Session> Get(uint world, string name)
         {
             var key = new SessionKey().Key;
@@ -67,12 +48,6 @@ namespace Http.Service
             return JsonConvert.DeserializeObject<Session>(data.ToString());
         }
 
-        /// <summary>
-        /// Sets a session for a character name in the specified world and refreshes the TTL.
-        /// </summary>
-        /// <param name="world">The world identifier (e.g., 1, 2). Use 0 for unified.</param>
-        /// <param name="name">The character name.</param>
-        /// <param name="session">The session data to store.</param>
         public async Task Set(uint world, string name, Session session)
         {
             var key = new SessionKey().Key;
@@ -85,11 +60,6 @@ namespace Http.Service
             await RefreshTTL(world);
         }
 
-        /// <summary>
-        /// Deletes a session for a character name in the specified world and refreshes the TTL.
-        /// </summary>
-        /// <param name="world">The world identifier (e.g., 1, 2). Use 0 for unified.</param>
-        /// <param name="name">The character name to delete the session for.</param>
         public async Task Delete(uint world, string name)
         {
             var key = new SessionKey().Key;
@@ -102,13 +72,6 @@ namespace Http.Service
             await RefreshTTL(world);
         }
 
-        /// <summary>
-        /// Atomically gets and deletes a session by world and name using the get_and_delete_session.lua script.
-        /// Returns the session if it existed, null otherwise.
-        /// </summary>
-        /// <param name="world">The world identifier (e.g., 1, 2). Use 0 for unified.</param>
-        /// <param name="name">The character name to get and delete the session for.</param>
-        /// <returns>The session if it existed and was deleted; otherwise, null.</returns>
         public async Task<Session> GetAndDelete(uint world, string name)
         {
             var key = new SessionKey().Key;
@@ -130,16 +93,6 @@ namespace Http.Service
             return JsonConvert.DeserializeObject<Session>(sessionJson);
         }
 
-        /// <summary>
-        /// Attempts to login by setting a session in the specified world.
-        /// If force is false, uses try_login.lua script which does not delete existing sessions.
-        /// If force is true, uses login.lua script which deletes existing sessions and publishes KickOut message.
-        /// </summary>
-        /// <param name="world">The world identifier (e.g., 1, 2). Use 0 for unified.</param>
-        /// <param name="name">The character name.</param>
-        /// <param name="session">The session data to store.</param>
-        /// <param name="force">If true, replaces existing session. If false, fails if session exists.</param>
-        /// <returns>True if login was successful (new session created), false if an existing session was found.</returns>
         public async Task<bool> Login(uint world, string name, Session session, bool force = false)
         {
             var key = new SessionKey().Key;
@@ -176,11 +129,6 @@ namespace Http.Service
             return false;
         }
 
-        /// <summary>
-        /// Refreshes the TTL of the session hash key in the specified world using an atomic Lua script.
-        /// Only refreshes if the current TTL is below the minimum threshold to prevent redundant operations.
-        /// </summary>
-        /// <param name="world">The world identifier (e.g., 1, 2). Use 0 for unified.</param>
         public async Task RefreshTTL(uint world)
         {
             try
@@ -202,11 +150,6 @@ namespace Http.Service
             }
         }
 
-        /// <summary>
-        /// Gets all active sessions for the specified world.
-        /// </summary>
-        /// <param name="world">The world identifier (e.g., 1, 2). Use 0 for unified.</param>
-        /// <returns>A list of all active sessions for the world.</returns>
         public async Task<List<Session>> GetAllSessions(uint world)
         {
             var key = new SessionKey().Key;

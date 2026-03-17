@@ -1,8 +1,4 @@
--- @note Trash: 2_이벤트\톨루이.txt "토로라비". Active when gv("goldarcon") == 36 (event). List: 황금도토리 1->일반교환권, 6->특별교환권, "다음에는 언제오니" dialog.
 
----@brief   NPC 토로라비: when event (goldarcon==36) list and exchange 황금도토리 for 교환권; else "지금은 때가 아닙니다."
----@param[in] me   The character.
----@param[in] npc  The NPC entity.
 function NPC_576(me, npc)
     if gv("goldarcon") ~= 36 then
         me:dialog(npc, "지금은 때가 아닙니다.", false, false)

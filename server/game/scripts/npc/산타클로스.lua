@@ -1,8 +1,4 @@
--- @note Trash: 2_이벤트\크리스마스.txt "산타클로스". List: 홍성초 1→빨간양말 1; or 빨간양말 100→산타모자, 200→산타클로스옷.
 
----@brief NPC 산타클로스: exchange 홍성초 for 빨간양말, or 빨간양말 100/200 for 산타모자/산타클로스옷.
----@param[in] me  The character.
----@param[in] npc The NPC entity.
 function NPC_458(me, npc)
     local sel, btn = me:list(npc, "안녕하세요. 어떻게 오셨나요?", { "홍성초를 가져왔어요.", "산타양말" }, false)
     if btn == DIALOG_RESULT.QUIT then
@@ -13,7 +9,6 @@ function NPC_458(me, npc)
     end
 
     if sel == 0 then
-        -- 홍성초 branch
         local d = me:dialog(npc, "이번 크리스마스 트리를 장식할 홍성초가 부족한데... 어떻게 해야 한담...", false, true)
         if d == DIALOG_RESULT.QUIT then
             return
@@ -43,7 +38,6 @@ function NPC_458(me, npc)
     end
 
     if sel == 1 then
-        -- 산타양말 branch (빨간양말 100 → 산타모자, 200 → 산타클로스옷)
         local d = me:dialog(npc, "아니 글쎄... 빨간양말에 선물을 담아 나누어 주어야 하는데, 그만 빨간양말을 잃어버렸지 뭔가! 이걸 어떻게 해야 한담...", false, true)
         if d == DIALOG_RESULT.QUIT then
             return

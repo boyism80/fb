@@ -15,13 +15,13 @@ local function run_amber_star(me, npc)
     end
     local sel, btn = me:list(npc, '어떤 색깔의 호박별을 만드시겠어요?', options, true)
     if btn == DIALOG_RESULT.QUIT then
-        return
+        return false
     end
     if btn == DIALOG_RESULT.PREV then
-        return
+        return true
     end
     if sel == nil or sel < 0 or sel > 6 then
-        return
+        return false
     end
     local p = AMBER_STAR[sel + 1]
     local gem = p.base .. '보석'
@@ -39,10 +39,11 @@ local function run_amber_star(me, npc)
         return
     end
     me:dialog(npc, name_with(star, '을', '를') .. ' 만들어드렸습니다.', false, true)
+    return false
 end
 
 function NPC_15(me, npc)
-::NPC_15_000::
+::NPC_15_0001::
     local sel, btn = me:list(npc, '안녕하세요. 무엇을 도와드릴까요?', {'물건 사기', '물건 팔기'}, false)
     if btn == DIALOG_RESULT.QUIT then
         return
@@ -53,11 +54,11 @@ function NPC_15(me, npc)
 
     if sel == 0 then
         if NPC_SELL_DIALOG(me, npc) == DIALOG_RESULT.NEXT then
-            goto NPC_15_000
+            goto NPC_15_0001
         end
     elseif sel == 1 then
         if NPC_BUY_DIALOG(me, npc) == DIALOG_RESULT.NEXT then
-            goto NPC_15_000
+            goto NPC_15_0001
         end
     else
 
@@ -65,7 +66,7 @@ function NPC_15(me, npc)
 end
 
 function NPC_16(me, npc)
-::NPC_16_000::
+::NPC_16_0001::
     local sel, btn = me:list(npc, '안녕하세요. 어떻게 오셨나요?', { '물건 사기', '물건 팔기', '호박별만들기' }, false)
     if btn == DIALOG_RESULT.QUIT then
         return
@@ -75,13 +76,15 @@ function NPC_16(me, npc)
     end
     if sel == 0 then
         if NPC_SELL_DIALOG(me, npc) == DIALOG_RESULT.NEXT then
-            goto NPC_16_000
+            goto NPC_16_0001
         end
     elseif sel == 1 then
         if NPC_BUY_DIALOG(me, npc) == DIALOG_RESULT.NEXT then
-            goto NPC_16_000
+            goto NPC_16_0001
         end
     elseif sel == 2 then
-        run_amber_star(me, npc)
+        if run_amber_star(me, npc) then
+            goto NPC_16_0001
+        end
     end
 end

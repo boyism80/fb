@@ -10,12 +10,11 @@ function NPC_113(me, npc)
             return
         end
         if sel == 0 then
-            -- fall through to TOTEM_CLOTHES logic below
         elseif sel == 1 then
             local btn = me:dialog(npc, "정령들이 화를 내고 있다. 아, 정령들이 집으로 삼는 토템들이 이 섬을 떠나는구나.", false, true)
             if btn == DIALOG_RESULT.QUIT then return end
             dq:step(13)
-            me:dialog(npc, "보름달이 뜨면 정령들이 분노를 이기지 못하고 비명을 내지른다. 아아, 이를 어이해야 좋단 말이더냐.", true, false)
+            me:dialog(npc, "보름달이 뜨면 정령들이 분노를 이기지 못하고 비명을 내지른다. 아아, 이를 어이해야 좋단 말이더냐.", false, false)
             return
         else
             me:dialog(npc, ".............", false, false)
@@ -51,18 +50,18 @@ function NPC_113(me, npc)
         if sel == nil or sel ~= 0 then
             return
         end
-        ::NPC_113_COS001::
-        btn = me:dialog(npc, '그러나 옷을 만드는 데에는 재료가 필요하다...\n정령의 힘을 담은 재료가 필요하다...', true, true)
+        ::NPC_113_0001::
+        btn = me:dialog(npc, '그러나 옷을 만드는 데에는 재료가 필요하다...\n정령의 힘을 담은 재료가 필요하다...', false, true)
         if btn == DIALOG_RESULT.QUIT then
             return
         end
-        ::NPC_113_COS002::
+        ::NPC_113_0002::
         btn = me:dialog(npc, '외부인인 그대가 과연 정령의 힘을 이해하고 그 재료가 어떤 것인지 깨달을 수 있을까...\n깨닫는 것은 그대가 할 일... 재료를 구해오는 것도 그대가 할 일... 나는 재료로 옷을 만들 뿐...', true, true)
         if btn == DIALOG_RESULT.QUIT then
             return
         end
         if btn == DIALOG_RESULT.PREV then
-            goto NPC_113_COS001
+            goto NPC_113_0001
         end
 
         local has_any_totem = false
@@ -77,41 +76,42 @@ function NPC_113(me, npc)
             return
         end
 
-        ::NPC_113_COS003::
+        ::NPC_113_0003::
         btn = me:dialog(npc, '그렇다... 그대는 정령의 힘을 깨달았다... 토템이야말로 정령의 힘을 담은 재료...', true, true)
         if btn == DIALOG_RESULT.QUIT then
             return
         end
-        ::NPC_113_COS004::
+        ::NPC_113_0004::
         btn = me:dialog(npc, '화염, 번개, 대지, 바람의토템... 모두 4가지의 토템이 3개씩 모여야 한다...', true, true)
         if btn == DIALOG_RESULT.QUIT then
             return
         end
         if btn == DIALOG_RESULT.PREV then
-            goto NPC_113_COS003
+            goto NPC_113_0003
         end
-        ::NPC_113_COS005::
+        ::NPC_113_0005::
         btn = me:dialog(npc, '그대는 비록 외부인이지만 정령의 힘을 이해했다... 노력에 대한 보답으로... 다음 재료가 무엇인지 가르쳐준다...', true, true)
         if btn == DIALOG_RESULT.QUIT then
             return
         end
         if btn == DIALOG_RESULT.PREV then
-            goto NPC_113_COS004
+            goto NPC_113_0004
         end
-        ::NPC_113_COS006::
+        ::NPC_113_0006::
         btn = me:dialog(npc, '황혼과 여명 사이에는... 정령들의 활동의 증거로 \'이슬\'이 맺힌다...\n그 이슬을 50방울 모아 마음으로부터 기원하면... 어떤 특별한 이슬... \'여신의이슬\'을 만들 수 있다...\n그 이슬 또한 옷의 재료다...', true, true)
         if btn == DIALOG_RESULT.QUIT then
             return
         end
         if btn == DIALOG_RESULT.PREV then
-            goto NPC_113_COS005
+            goto NPC_113_0005
         end
-        btn = me:dialog(npc, '폭염도의 북쪽으로 가라... 이슬을 얻을 수 있을 것이다...', true, true)
+        ::NPC_113_0007::
+        btn = me:dialog(npc, '폭염도의 북쪽으로 가라... 이슬을 얻을 수 있을 것이다...', false, true)
         if btn == DIALOG_RESULT.QUIT then
             return
         end
         if btn == DIALOG_RESULT.PREV then
-            goto NPC_113_COS006
+            goto NPC_113_0006
         end
 
         quest = me:start_quest(QUEST_TOTEM_CLOTHES)
@@ -135,18 +135,18 @@ function NPC_113(me, npc)
         if sel == nil or sel ~= 0 then
             return
         end
-        ::NPC_113_COS001B::
-        btn = me:dialog(npc, '그러나 옷을 만드는 데에는 재료가 필요하다...\n정령의 힘을 담은 재료가 필요하다...', true, true)
+        ::NPC_113_0008::
+        btn = me:dialog(npc, '그러나 옷을 만드는 데에는 재료가 필요하다...\n정령의 힘을 담은 재료가 필요하다...', false, true)
         if btn == DIALOG_RESULT.QUIT then
             return
         end
-        ::NPC_113_COS002B::
+        ::NPC_113_0009::
         btn = me:dialog(npc, '외부인인 그대가 과연 정령의 힘을 이해하고 그 재료가 어떤 것인지 깨달을 수 있을까...\n깨닫는 것은 그대가 할 일... 재료를 구해오는 것도 그대가 할 일... 나는 재료로 옷을 만들 뿐...', true, true)
         if btn == DIALOG_RESULT.QUIT then
             return
         end
         if btn == DIALOG_RESULT.PREV then
-            goto NPC_113_COS001B
+            goto NPC_113_0008
         end
         local has_any_totem = false
         for _, name in ipairs(totem_names) do
@@ -159,41 +159,42 @@ function NPC_113(me, npc)
             me:dialog(npc, '외부인이여... 그대는 아직 깨닫지 못했다... 그대는 아직 정령의 힘을 담은 재료가 무엇인지 모르고 있다...', true, true)
             return
         end
-        ::NPC_113_COS003B::
+        ::NPC_113_0010::
         btn = me:dialog(npc, '그렇다... 그대는 정령의 힘을 깨달았다... 토템이야말로 정령의 힘을 담은 재료...', true, true)
         if btn == DIALOG_RESULT.QUIT then
             return
         end
-        ::NPC_113_COS004B::
+        ::NPC_113_0011::
         btn = me:dialog(npc, '화염, 번개, 대지, 바람의토템... 모두 4가지의 토템이 3개씩 모여야 한다...', true, true)
         if btn == DIALOG_RESULT.QUIT then
             return
         end
         if btn == DIALOG_RESULT.PREV then
-            goto NPC_113_COS003B
+            goto NPC_113_0010
         end
-        ::NPC_113_COS005B::
+        ::NPC_113_0012::
         btn = me:dialog(npc, '그대는 비록 외부인이지만 정령의 힘을 이해했다... 노력에 대한 보답으로... 다음 재료가 무엇인지 가르쳐준다...', true, true)
         if btn == DIALOG_RESULT.QUIT then
             return
         end
         if btn == DIALOG_RESULT.PREV then
-            goto NPC_113_COS004B
+            goto NPC_113_0011
         end
-        ::NPC_113_COS006B::
+        ::NPC_113_0013::
         btn = me:dialog(npc, '황혼과 여명 사이에는... 정령들의 활동의 증거로 \'이슬\'이 맺힌다...\n그 이슬을 50방울 모아 마음으로부터 기원하면... 어떤 특별한 이슬... \'여신의이슬\'을 만들 수 있다...\n그 이슬 또한 옷의 재료다...', true, true)
         if btn == DIALOG_RESULT.QUIT then
             return
         end
         if btn == DIALOG_RESULT.PREV then
-            goto NPC_113_COS005B
+            goto NPC_113_0012
         end
-        btn = me:dialog(npc, '폭염도의 북쪽으로 가라... 이슬을 얻을 수 있을 것이다...', true, true)
+        ::NPC_113_0014::
+        btn = me:dialog(npc, '폭염도의 북쪽으로 가라... 이슬을 얻을 수 있을 것이다...', false, true)
         if btn == DIALOG_RESULT.QUIT then
             return
         end
         if btn == DIALOG_RESULT.PREV then
-            goto NPC_113_COS006B
+            goto NPC_113_0013
         end
         quest:step(1)
         me:push_achievement(42, '투명한 이슬을 구하자.', 7, 16)
@@ -231,25 +232,26 @@ function NPC_113(me, npc)
         quest:step(2)
         me:push_achievement(42, '자연의인장을 구하자.', 7, 16)
 
-        ::NPC_113_COS007::
-        btn = me:dialog(npc, '여신의이슬을 구해왔는가...\n그럼 마지막으로 자연의인장을 구하라...', true, true)
+        ::NPC_113_0015::
+        btn = me:dialog(npc, '여신의이슬을 구해왔는가...\n그럼 마지막으로 자연의인장을 구하라...', false, true)
         if btn == DIALOG_RESULT.QUIT then
             return
         end
-        ::NPC_113_COS008::
+        ::NPC_113_0016::
         btn = me:dialog(npc, '자연의인장은 모든 정령들의 힘을 결집할 수 있는 힘을 가지는 일종의 증표다...\n자연의인장 또한 옷의 재료다...', true, true)
         if btn == DIALOG_RESULT.QUIT then
             return
         end
         if btn == DIALOG_RESULT.PREV then
-            goto NPC_113_COS007
+            goto NPC_113_0015
         end
+        ::NPC_113_0017::
         btn = me:dialog(npc, '자연의인장은 이 섬을 다르시는 존재가 두 조각으로 나눠 보관하고 있다...', true, true)
         if btn == DIALOG_RESULT.QUIT then
             return
         end
         if btn == DIALOG_RESULT.PREV then
-            goto NPC_113_COS008
+            goto NPC_113_0016
         end
         return
     end

@@ -22,24 +22,24 @@ function NPC_267(me, npc)
         return
     end
 
-    ::NPC_267_POS000::
+    ::NPC_267_0001::
     local selected, button = me:list(npc, '열쇠를 가지고 있구나. 이 문으로 들어갈 것이냐?', { '네, 들여보내주십시오.', '아니오. 잘못왔습니다.' })
     if button == DIALOG_RESULT.QUIT then
         return
     end
 
+    ::NPC_267_0010::
     button = me:dialog(npc, '같이 온 동료가 있으면 동료와 함께 들여보내 주겠다.', true, true)
     if button == DIALOG_RESULT.QUIT then
         return
     end
-
     if button == DIALOG_RESULT.PREV then
-        goto NPC_267_POS000
+        goto NPC_267_0001
     end
 
     local teammates = {}
     while true do
-        ::NPC_267_POS001::
+        ::NPC_267_0011::
         local message = nil
         if #teammates == 0 then
             message = '동료가 있느냐?'
@@ -64,18 +64,18 @@ function NPC_267(me, npc)
         local teammate = name2ch(name)
         if teammate == nil then
             me:dialog(npc, '존재하지 않는 캐릭터입니다.', false, true)
-            goto NPC_267_POS001
+            goto NPC_267_0011
         end
 
         if me:map() ~= teammate:map() then
             me:dialog(npc, '다른 맵에 있습니다.', false, true)
-            goto NPC_267_POS001
+            goto NPC_267_0011
         end
 
         me:dialog(npc, '동료에게 확인을 받겠다.', false, true)
         if teammate:script('scripts/npc/서쪽태극문보초.lua', "confirm_teammate", me:name(), npc) == false then
             me:dialog(npc, '동료에게 확인을 받지 못했습니다.', false, true)
-            goto NPC_267_POS001
+            goto NPC_267_0011
         end
 
         teammates[#teammates + 1] = teammate

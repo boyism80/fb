@@ -12,7 +12,7 @@ trade_close::trade_close(std::string_view message) :
 async::task<void> trade_close::serialize(fb::stream_writer<big_endian>& writer) const
 {
     co_await header::serialize(writer);
-    writer.write<uint8_t>(header);
+    writer.write<uint8_t>(opcode);
     writer.write<uint8_t>(0x04);
     writer.write<std::string, uint16_t>(this->message);
     writer.write<uint8_t>(0x00);

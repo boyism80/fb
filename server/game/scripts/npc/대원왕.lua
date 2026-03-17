@@ -1,8 +1,4 @@
--- @note Trash: 1_공통/진원관.txt "대원왕". Skull necklace sub1 (ice), sub7 (sick baby monkey).
--- Phase 1: sub-quests only. Phase 2: main steps 8,9,12->13->14, 27->28.
--- @note FUNC_SLOT_AVAILABLE_ASSERT omitted (inventory slot check not implemented).
 
----@brief   Sub7 step 1: take 아픈아기원숭이, give 건강한아기원숭이, set sub7=2.
 local function do_sub7_cure(me, npc)
     if not me:has_items("아픈아기원숭이", 1) then
         me:dialog(npc, "퀘스트 오류입니다.\n아픈아기원숭이 아이템이 없습니다.", false, false)
@@ -44,7 +40,6 @@ local function do_sub7_cure(me, npc)
     return true
 end
 
----@brief   Sub1 step 0: intro dialogs and list, then set sub1=1 (request ice).
 local function do_sub1_start(me, npc)
     local b = me:dialog(npc, "경계하실 것 없다. 나는 아직 미치지 않으셨으니까. 그래도 우리 아이들이 저렇게 날뛰는 이유는", false, true)
     if b ~= 1 then
@@ -76,7 +71,6 @@ local function do_sub1_start(me, npc)
         me:dialog(npc, "이 곳의 상황은 본래와 다를바 없으시다.", false, false)
         return true
     end
-    -- sel == 2: "제가 도와드릴 일은 없을까요?"
     sel, btn = me:list(npc, "음? 하하하. 고마운 말씀이시다. 진심이신가?", { "네, 꼭 도와드릴께요.", "아뇨, 그만 둘래요." }, true)
     if btn == DIALOG_RESULT.QUIT or sel == nil or sel ~= 0 then
         me:dialog(npc, "장난을 치는 사람은 싫어한다.", false, false)
@@ -117,7 +111,6 @@ local function do_sub1_start(me, npc)
     return true
 end
 
----@brief   Sub1 step 1: take 깨끗한얼음 1, give 오도독망고과편 1, set sub1=2.
 local function do_sub1_turnin(me, npc)
     if not me:has_items("깨끗한얼음", 1) then
         me:dialog(npc, "나에게 그 얼음이라는걸 보여주시면 좋으시다. 깨끗하시고 투명하신 분으로 말이시다.", false, false)
@@ -163,14 +156,12 @@ function NPC_463(me, npc)
     local q7 = me:quest(QUEST_SKULL_NECKLACE_7)
     local q1 = me:quest(QUEST_SKULL_NECKLACE_1)
 
-    -- Sub7: step 1 -> hand in 아픈아기원숭이
     if q7 and q7:step() == 1 then
         if do_sub7_cure(me, npc) then
             return
         end
     end
 
-    -- Sub1: step 0 -> intro, set step 1
     if q1 == nil or q1:step() == 0 then
         if do_sub1_start(me, npc) then
             return
@@ -178,7 +169,6 @@ function NPC_463(me, npc)
         return
     end
 
-    -- Sub1: step 1 -> hand in 깨끗한얼음
     if q1 and q1:step() == 1 then
         if do_sub1_turnin(me, npc) then
             return
@@ -186,22 +176,30 @@ function NPC_463(me, npc)
         return
     end
 
-    -- Phase 2: main steps 8->9, 9, 12->13->14, 27->28
     local main_q = me:quest(QUEST_SKULL_NECKLACE)
     if main_q then
         local s = main_q:step()
         if s == 8 then
+            ::NPC_463_0001::
             local b = me:dialog(npc, "참원왕께서 보내셨다고? 내 의견은 대부분의 원숭이들이", false, true)
             if b == DIALOG_RESULT.QUIT then
                 return
             end
+            ::NPC_463_0002::
             b = me:dialog(npc, "이 나라의 언어를 모르고 계시다는거다. 나는 내 능력으로 대강 필요한 재료를 느끼고 계시는데, 이 땅에는", true, true)
-            if b == DIALOG_RESULT.PREV or b == DIALOG_RESULT.QUIT then
+            if b == DIALOG_RESULT.QUIT then
                 return
             end
+            if b == DIALOG_RESULT.PREV then
+                goto NPC_463_0001
+            end
+            ::NPC_463_0003::
             b = me:dialog(npc, "그런 재료들이 계시는지, 계시다면 그게 무엇이신지 알아내시려면 글자를 아셔야만 하신다. 그게 가장 큰 문제이시다.", true, true)
-            if b == DIALOG_RESULT.PREV or b == DIALOG_RESULT.QUIT then
+            if b == DIALOG_RESULT.QUIT then
                 return
+            end
+            if b == DIALOG_RESULT.PREV then
+                goto NPC_463_0002
             end
             main_q:step(9)
             return
@@ -215,17 +213,26 @@ function NPC_463(me, npc)
                 me:dialog(npc, "퀘스트 오류입니다.\n창힐독본이 없습니다.", false, false)
                 return
             end
+            ::NPC_463_0004::
             local b = me:dialog(npc, "으음, 과연과연이시다. 음...이 창힐독본에 따르시면, 내가 생각하시고 계신 재료들의 이름은...", false, true)
             if b == DIALOG_RESULT.QUIT then
                 return
             end
+            ::NPC_463_0005::
             b = me:dialog(npc, "기린의 피 2병, 악어의 피 2병, 그리고 깨끗한 얼음 5개시다. 이렇게 모으셔서 조합하시면", true, true)
-            if b == DIALOG_RESULT.PREV or b == DIALOG_RESULT.QUIT then
+            if b == DIALOG_RESULT.QUIT then
                 return
             end
+            if b == DIALOG_RESULT.PREV then
+                goto NPC_463_0004
+            end
+            ::NPC_463_0006::
             b = me:dialog(npc, "진원비전탕이 완성되신다. 그걸 두 개 만드셔서 가져다 주시면 좋으시다.", true, true)
-            if b == DIALOG_RESULT.PREV or b == DIALOG_RESULT.QUIT then
+            if b == DIALOG_RESULT.QUIT then
                 return
+            end
+            if b == DIALOG_RESULT.PREV then
+                goto NPC_463_0005
             end
             if not me:rmitem("창힐독본", 1, ITEM_DELETE_TYPE.GIVE) then
                 me:dialog(npc, "아이템을 제거할 수 없습니다.", false, false)
@@ -239,13 +246,18 @@ function NPC_463(me, npc)
                 me:dialog(npc, "기린의 피 2병, 악어의 피 2병, 깨끗한 얼음 5개를 조합한 진원비전탕을 두 개 만들어서 가져다 주시면 좋으시다.", false, false)
                 return
             end
+            ::NPC_463_0007::
             local b = me:dialog(npc, "이럴수가 계신가. 정말 만들어 주시리라 생각도 못하셨건만... 자네는 다시 안계실 훌륭한 사람이시다.", false, true)
             if b == DIALOG_RESULT.QUIT then
                 return
             end
+            ::NPC_463_0008::
             b = me:dialog(npc, "돌아가시는 날까지 이 은혜를 잊지 않으시겠다. 고마우시다. 자, 그럼 이 남으신 한 병은 참원왕께 가져다주시면 좋으시다.", true, true)
-            if b == DIALOG_RESULT.PREV or b == DIALOG_RESULT.QUIT then
+            if b == DIALOG_RESULT.QUIT then
                 return
+            end
+            if b == DIALOG_RESULT.PREV then
+                goto NPC_463_0007
             end
             if not me:rmitem("진원비전탕", 1, ITEM_DELETE_TYPE.GIVE) then
                 me:dialog(npc, "아이템을 제거할 수 없습니다.", false, false)

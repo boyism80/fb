@@ -1,7 +1,4 @@
--- @note Trash: 1_세시마을\촌장집.txt "촌장부인". Seasonal branches: 2=벌레쫓는부적(중화절), 4=색비단, 5=창포(100zeny), 7=그물/식용호박, 8=올게심니(progress)/식용호박.
 
--- @brief   Handles sesi_rightnow == 2: Chunghwa, give 벌레쫓는부적 when QUEST_BAEK_MONGYEON step >= 1 and has < 2.
--- @return  true if branch was run and dialog was shown (caller should return).
 local function run_sesi_2(me, npc)
     if gv("sesi_rightnow") ~= 2 then
         return false
@@ -29,8 +26,6 @@ local function run_sesi_2(me, npc)
     return true
 end
 
--- @brief   Handles sesi_rightnow == 4: give 색비단 once (skip if already has).
--- @return  true if branch was run.
 local function run_sesi_4(me, npc)
     if gv("sesi_rightnow") ~= 4 then
         return false
@@ -51,8 +46,6 @@ local function run_sesi_4(me, npc)
     return true
 end
 
--- @brief   Handles sesi_rightnow == 5 (단오): 창포 100 zeny purchase list.
--- @return  true if branch was run.
 local function run_sesi_5(me, npc)
     if gv("sesi_rightnow") ~= 5 then
         return false
@@ -92,8 +85,6 @@ local function run_sesi_5(me, npc)
     return true
 end
 
--- @brief   Handles sesi_rightnow == 7: list 그물 / 식용호박, give one.
--- @return  true if branch was run.
 local function run_sesi_7(me, npc)
     if gv("sesi_rightnow") ~= 7 then
         return false
@@ -129,8 +120,6 @@ local function run_sesi_7(me, npc)
     return true
 end
 
--- @brief   Handles sesi_rightnow == 8: list "벌초를 하고 왔어요" (올게심니 when progress >= 1) / "식용호박이 없어서...".
--- @return  true if branch was run.
 local function run_sesi_8(me, npc)
     if gv("sesi_rightnow") ~= 8 then
         return false
@@ -169,9 +158,6 @@ local function run_sesi_8(me, npc)
     return true
 end
 
--- @brief   NPC Chonjang Buin (Mok Wonji): seasonal events (sesi_rightnow 2,4,5,7,8); intro then branch by season.
--- @param[in]  me   The character talking to the NPC.
--- @param[in]  npc  The NPC entity.
 function NPC_352(me, npc)
     local btn = me:dialog(npc, "저는 이 마을 촌장의 부인되는 목원지라고 합니다.", false, true)
     if btn == DIALOG_RESULT.QUIT then

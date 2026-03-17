@@ -10,26 +10,26 @@ function NPC_191(me, npc)
     local quest = me:quest(QUEST_DOTAEYEON)
 
     if quest == nil then
-        ::NPC_191_1::
+        ::NPC_191_0001::
         local btn = me:dialog(npc, '안녕하시오~ 도삭산코뿔소말이오. 그놈 이빨과 발톱, 뿔 정말 단단하게 생기지 않았소?', false, true)
         if btn == DIALOG_RESULT.QUIT then
             return
         end
-        ::NPC_191_2::
+        ::NPC_191_0010::
         btn = me:dialog(npc, '코뿔소의 이빨,발톱,뿔은 무기나 갑옷을 만드는데 정말 좋은 재료가 되지. 그중에서도 도삭산코뿔소는 내가 지금까지 본 것들중에서 제일이더군.\n\n그래서 요즘 도삭산코뿔소를 사냥하고 있는데 놈들이 워낙 사나워서 사냥이 매우 위험하다오.', true, true)
         if btn == DIALOG_RESULT.QUIT then
             return
         end
         if btn == DIALOG_RESULT.PREV then
-            goto NPC_191_1
+            goto NPC_191_0001
         end
-        ::NPC_191_3::
+        ::NPC_191_0011::
         btn = me:dialog(npc, '어떻소 도삭산코뿔소를 사냥해서 이빨,발톱,뿔을 내게 구해다 주지 않겠소? 물론 그냥 가져다 달라는것은 아니니 걱정 마시오. 내 좋은 물건 하나 주도록하지!', true, true)
         if btn == DIALOG_RESULT.QUIT then
             return
         end
         if btn == DIALOG_RESULT.PREV then
-            goto NPC_191_2
+            goto NPC_191_0010
         end
         local sel, list_btn = me:list(npc, '내 제안이 어떻소?', { '좋습니다. 맘에 드는군요.', '죄송하지만 전 갈길이 바빠서..' }, false)
         if list_btn == DIALOG_RESULT.QUIT then
@@ -57,13 +57,10 @@ function NPC_191(me, npc)
     end
 
     if step == 1 then
-        ::NPC_191_5::
-        local btn = me:dialog(npc, '어디보자~ 코뿔소 사냥은 많이 했소? 발톱,이빨,뿔 다 가지고 왔는지 봅시다.', true, true)
+        ::NPC_191_0020::
+        local btn = me:dialog(npc, '어디보자~ 코뿔소 사냥은 많이 했소? 발톱,이빨,뿔 다 가지고 왔는지 봅시다.', false, true)
         if btn == DIALOG_RESULT.QUIT then
             return
-        end
-        if btn == DIALOG_RESULT.PREV then
-            goto NPC_191_5
         end
         if not me:has_items(REQUIRED_ITEMS) then
             me:dialog(npc, '아직 발톱, 이빨, 뿔을 다 구하지 못한 모양이군..', false, false)

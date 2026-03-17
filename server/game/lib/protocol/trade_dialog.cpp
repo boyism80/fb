@@ -18,7 +18,7 @@ async::task<void> trade_dialog::serialize(fb::stream_writer<big_endian>& writer)
     std::stringstream sstream;
     sstream << this->me.name() << '(' << cname.c_str() << ')';
 
-    writer.write<uint8_t>(header);
+    writer.write<uint8_t>(opcode);
     writer.write<uint8_t>(0x00);
     writer.write<uint32_t>(this->me.oid());
     writer.write<std::string>(sstream.str());

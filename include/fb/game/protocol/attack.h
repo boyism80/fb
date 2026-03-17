@@ -11,7 +11,7 @@ using namespace fb::model::enum_value;
 class attack : public fb::protocol::header
 {
 public:
-    static constexpr uint8_t header = 0x13;
+    static constexpr uint8_t opcode = 0x13;
 
 public:
     attack() = default;

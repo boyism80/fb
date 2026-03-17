@@ -11,7 +11,7 @@ using namespace fb::model::enum_value;
 class map_world : public fb::protocol::header
 {
 public:
-    static constexpr uint8_t header = 0x3F;
+    static constexpr uint8_t opcode = 0x3F;
 
 public:
 #ifndef BOT // server only

@@ -1,5 +1,5 @@
 function NPC_158(me, npc)
-::ROUTINE_CHANGE_ARMOR_COLOR_0::
+::NPC_158_0001::
     local index, button = me:list(npc, '안녕하세요. 어떻게 오셨나요?', {'초혼술방법', '무한 복장', '일반 복장'})
     if index == nil then
         return
@@ -9,12 +9,12 @@ function NPC_158(me, npc)
         local q = me:quest(QUEST_SHARK_WEAPON)
         if q == nil then
             me:dialog(npc, '자네는 아직 알 때가 아니군.', false, false)
-            goto ROUTINE_CHANGE_ARMOR_COLOR_0
+            goto NPC_158_0001
         end
         local step = q:step()
         if step < 3 then
             me:dialog(npc, '자네는 아직 알 때가 아니군.', false, false)
-            goto ROUTINE_CHANGE_ARMOR_COLOR_0
+            goto NPC_158_0001
         end
         if step == 3 then
             if me:dialog(npc, '상어장군을 저승에서 불러내고 싶다고?\n\n매우 어려운 일을 부탁하는구만.', true, true) == DIALOG_RESULT.QUIT then
@@ -23,18 +23,18 @@ function NPC_158(me, npc)
             if me:dialog(npc, '사어장군을 소환하기 위해서는 용궁의정기가 필요하다네.', true, true) == DIALOG_RESULT.QUIT then
                 return
             end
-            if me:dialog(npc, '용궁의정기를 만드는 것은 내가 모르니 다른 사람한테 가서 물어보시게.', true, false) == DIALOG_RESULT.QUIT then
+            if me:dialog(npc, '용궁의정기를 만드는 것은 내가 모르니 다른 사람한테 가서 물어보시게.', false, false) == DIALOG_RESULT.QUIT then
                 return
             end
             if q then
                 q:step(4)
             end
             me:push_achievement(24, '초혼술 방법을 알아보자.', 7, 11)
-            goto ROUTINE_CHANGE_ARMOR_COLOR_0
+            goto NPC_158_0001
         end
         if step >= 4 and step <= 9 then
             me:dialog(npc, '아직 용궁의정기를 다 모으지 못했나 보군..', false, false)
-            goto ROUTINE_CHANGE_ARMOR_COLOR_0
+            goto NPC_158_0001
         end
         if step == 10 then
             local required_jungki = { ['용궁의정기1'] = 1, ['용궁의정기2'] = 1, ['용궁의정기3'] = 1, ['용궁의정기4'] = 1, ['용궁의정기5'] = 1 }
@@ -50,23 +50,23 @@ function NPC_158(me, npc)
             )
             if ex_code == EXCHANGE_RESULT.LACK_COST then
                 me:dialog(npc, '아직 용궁의정기를 다 모으지 못했나 보군..', false, false)
-                goto ROUTINE_CHANGE_ARMOR_COLOR_0
+                goto NPC_158_0001
             end
             if ex_code == EXCHANGE_RESULT.LACK_CAPACITY then
                 me:dialog(npc, '소지품이 가득 차서 무기제조법을 받을 수 없네. 자리 좀 비우고 다시 오게.', false, false)
-                goto ROUTINE_CHANGE_ARMOR_COLOR_0
+                goto NPC_158_0001
             end
             if q then
                 q:step(11)
             end
             me:push_achievement(24, '무기제조법을 얻다.', 7, 11)
-            me:dialog(npc, '상어장군이 하는 말을 적었으니 이 두루마리를 가져가게.', true, false)
-            goto ROUTINE_CHANGE_ARMOR_COLOR_0
+            me:dialog(npc, '상어장군이 하는 말을 적었으니 이 두루마리를 가져가게.', false, false)
+            goto NPC_158_0001
         end
         if step >= 11 then
-            me:dialog(npc, '......', true, false)
+            me:dialog(npc, '......', false, false)
         end
-        goto ROUTINE_CHANGE_ARMOR_COLOR_0
+        goto NPC_158_0001
     end
 
     if index == 1 then
@@ -103,7 +103,7 @@ function NPC_158(me, npc)
         end
 
         me:money(money - price)
-::ROUTINE_CHANGE_ARMOR_COLOR_1::
+::NPC_158_0010::
         if me:dialog(npc, string.format('염색비로 %d전을 받았습니다.', price), false, true) == DIALOG_RESULT.QUIT then
             return
         end
@@ -114,10 +114,10 @@ function NPC_158(me, npc)
         end
 
         if button == DIALOG_RESULT.PREV then
-            goto ROUTINE_CHANGE_ARMOR_COLOR_1
+            goto NPC_158_0010
         end
 
-        goto ROUTINE_CHANGE_ARMOR_COLOR_0
+        goto NPC_158_0001
 
     elseif index == 2 then
     	index = me:list(npc, '일반 복장으로 바꿔드릴까요?', {'예', '아니오'})
@@ -134,8 +134,8 @@ function NPC_158(me, npc)
     	if button == DIALOG_RESULT.QUIT then
     		return
     	end
-    	
-    	goto ROUTINE_CHANGE_ARMOR_COLOR_0
+
+    	goto NPC_158_0001
     else
     end
 end

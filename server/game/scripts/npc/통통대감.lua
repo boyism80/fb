@@ -10,13 +10,20 @@ function NPC_122(me, npc)
             return
         end
         if sel == 0 then
+            ::NPC_122_0000::
             local btn = me:dialog(npc, "그건 모조품이라구! 아니, 그럼 내가 진짜를 줬을 줄 알았어? 허참! 어이가 없구만!", false, true)
-            if btn == DIALOG_RESULT.QUIT then return end
+            if btn == DIALOG_RESULT.QUIT then
+                return
+            end
             btn = me:dialog(npc, "그리고 교역허가? 허가를 내줄 공무원들이 맨날 숲에서 낮잠이나 자고 있는데, 무슨 수로 허가를 맡느냔 말이지!", true, true)
-            if btn == DIALOG_RESULT.QUIT then return end
-            if btn == DIALOG_RESULT.PREV then return end
+            if btn == DIALOG_RESULT.QUIT then
+                return
+            end
+            if btn == DIALOG_RESULT.PREV then
+                goto NPC_122_0000
+            end
             dq:step(6)
-            me:dialog(npc, "에이! 진진처럼 게으르고 굼뜨고 못미더운 사람들 같으니라구!", true, false)
+            me:dialog(npc, "에이! 진진처럼 게으르고 굼뜨고 못미더운 사람들 같으니라구!", false, false)
         elseif sel == 1 then
             me:dialog(npc, "준비중입니다.", false, false)
         else
@@ -34,7 +41,7 @@ function NPC_122(me, npc)
     end
 
     if quest == nil then
-        local btn = me:dialog(npc, '안녕하신가, 나는 무기 수집가라네. 자네 대륙 사람 맞지?', true, true)
+        local btn = me:dialog(npc, '안녕하신가, 나는 무기 수집가라네. 자네 대륙 사람 맞지?', false, true)
         if btn == DIALOG_RESULT.QUIT then
             return
         end
@@ -64,7 +71,7 @@ function NPC_122(me, npc)
         return
     end
 
-    local btn = me:dialog(npc, '과연! 묵직하고 단단한 것이 무기로도 손색이 없겠어!', true, true)
+    local btn = me:dialog(npc, '과연! 묵직하고 단단한 것이 무기로도 손색이 없겠어!', false, true)
     if btn == DIALOG_RESULT.QUIT then
         return
     end

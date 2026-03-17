@@ -18,7 +18,7 @@ chat::chat(bool shout, std::string_view message) :
 async::task<void> chat::serialize(fb::stream_writer<big_endian>& writer) const
 {
     co_await header::serialize(writer);
-    writer.write<uint8_t>(header);
+    writer.write<uint8_t>(opcode);
     writer.write<bool>(this->shout);
     writer.write<std::string, uint8_t>(this->message);
 }
@@ -40,7 +40,7 @@ chat::chat(const fb::game::object& me, std::string_view text, CHAT_TYPE type) :
 async::task<void> chat::serialize(fb::stream_writer<big_endian>& writer) const
 {
     co_await header::serialize(writer);
-    writer.write<uint8_t>(header);
+    writer.write<uint8_t>(opcode);
     writer.write<uint8_t>(static_cast<uint8_t>(this->type));
     writer.write<uint32_t>(this->me.oid());
     writer.write<std::string>(this->text);

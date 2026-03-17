@@ -1,4 +1,4 @@
--- 용겸제오봉: on attack, chance to apply 용의제오노 on front target. Trash: 25% prob, 6s.
+-- 용겸제오봉 공격 스크립트
 function ON_ATTACK_280(me, item)
     math.randomseed(seed())
     if math.random() > 0.25 then
@@ -14,11 +14,11 @@ function ON_ATTACK_280(me, item)
 end
 
 -- 용겸제오봉 사용 스크립트
-function ON_ACTIVE_280(me, item)
+function ON_ACTIVATED_280(me, item)
 
 end
 
 -- 용겸제오봉 해제 스크립트
-function ON_INACTIVE_280(me, item)
+function ON_DEACTIVATED_280(me, item)
 
 end

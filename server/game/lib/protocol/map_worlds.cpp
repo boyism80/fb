@@ -14,7 +14,7 @@ map_worlds::map_worlds(uint32_t id, uint16_t index) :
 async::task<void> map_worlds::serialize(fb::stream_writer<big_endian>& writer) const
 {
     co_await header::serialize(writer);
-    writer.write<uint8_t>(header);
+    writer.write<uint8_t>(opcode);
 
     auto& attr   = table::world_attribute[this->id];
     auto& points = table::world[this->id];

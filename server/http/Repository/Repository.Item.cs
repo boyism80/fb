@@ -4,19 +4,8 @@ using Http.Service;
 
 namespace Http.Reepository
 {
-    /// <summary>
-    /// Provides repository functionality for item data management.
-    /// Implements Redis hash-based caching with database persistence for item operations.
-    /// </summary>
     public class ItemRepository : RedisHashRepository<Item, ItemKey>
     {
-        /// <summary>
-        /// Initializes a new instance of the <see cref="ItemRepository"/> class.
-        /// </summary>
-        /// <param name="dbContext">The database context for connection management.</param>
-        /// <param name="redisService">The Redis service for cache operations.</param>
-        /// <param name="distributedLock">The distributed lock service for concurrency control.</param>
-        /// <param name="dbExecuteService">The write-back service for asynchronous database writes.</param>
         public ItemRepository(DbContext dbContext,
             RedisService redisService,
             RedisDistributedLockService distributedLock,
@@ -24,15 +13,6 @@ namespace Http.Reepository
         {
         }
 
-        /// <summary>
-        /// Retrieves a specific item by its complete identification parameters.
-        /// </summary>
-        /// <param name="world">The world identifier (e.g., 1, 2). Use 0 for unified-global.</param>
-        /// <param name="owner">The unique identifier of the character who owns the item.</param>
-        /// <param name="index">The inventory slot index where the item is located.</param>
-        /// <param name="parts">The equipment parts identifier for the item.</param>
-        /// <param name="stored">The storage type identifier where the item is stored.</param>
-        /// <returns>The item if found; otherwise, null.</returns>
         public async Task<Item> Get(uint world, uint owner, short index, short parts, short stored)
         {
             return await base.Get(world, new ItemKey
@@ -44,12 +24,6 @@ namespace Http.Reepository
             });
         }
 
-        /// <summary>
-        /// Retrieves all items belonging to a specific character.
-        /// </summary>
-        /// <param name="world">The world identifier (e.g., 1, 2). Use 0 for unified-global.</param>
-        /// <param name="owner">The unique identifier of the character who owns the items.</param>
-        /// <returns>A collection of all items belonging to the specified character.</returns>
         public async Task<IEnumerable<Item>> Get(uint world, uint owner)
         {
             return await base.GetAll(world, new ItemKey
@@ -58,11 +32,6 @@ namespace Http.Reepository
             });
         }
 
-        /// <summary>
-        /// Generates the SQL SELECT statement for retrieving a specific item.
-        /// </summary>
-        /// <param name="key">The item key containing owner, index, parts, and storage information.</param>
-        /// <returns>A SQL SELECT statement for the specific item.</returns>
         protected override string OnSelect(ItemKey key)
         {
             return $""""
@@ -75,11 +44,6 @@ namespace Http.Reepository
                 """";
         }
 
-        /// <summary>
-        /// Generates the SQL SELECT statement for retrieving all items for a character.
-        /// </summary>
-        /// <param name="key">The item key containing the owner identifier.</param>
-        /// <returns>A SQL SELECT statement for all items of the specified character.</returns>
         protected override string OnSelectBulk(ItemKey key)
         {
             return $"""
@@ -88,11 +52,31 @@ namespace Http.Reepository
                 """;
         }
 
-        /// <summary>
-        /// Generates the SQL UPSERT statement for a single item.
-        /// </summary>
-        /// <param name="value">The item to upsert.</param>
-        /// <returns>A SQL UPSERT statement for the item.</returns>
+        protected override string OnSelectMany(IReadOnlyList<ItemKey> keys)
+        {
+            return $"SELECT * FROM `item` WHERE `owner` IN ({string.Join(",", keys.Select(k => k.Owner))});";
+        }
+
+        protected override ItemKey GetKeyFromRow(Item row)
+        {
+            return new ItemKey { Owner = row.Owner };
+        }
+
+        public async Task<IReadOnlyDictionary<uint, IReadOnlyList<Item>>> GetMany(uint world, IReadOnlyList<uint> ownerIds)
+        {
+            if (ownerIds == null || ownerIds.Count == 0)
+                return new Dictionary<uint, IReadOnlyList<Item>>();
+
+            var keys = ownerIds.Distinct().Select(oid => new ItemKey { Owner = oid }).ToList();
+            var list = await base.GetMany(world, keys);
+            var dict = keys.Distinct().ToDictionary(k => k.Owner, _ => (IList<Item>)new List<Item>());
+            foreach (var item in list)
+            {
+                dict[item.Owner].Add(item);
+            }
+            return dict.ToDictionary(kv => kv.Key, kv => (IReadOnlyList<Item>)kv.Value);
+        }
+
         protected override string OnUpsert(Item value)
         {
             var sql = $"""
@@ -132,11 +116,6 @@ namespace Http.Reepository
             return sql;
         }
 
-        /// <summary>
-        /// Generates the SQL UPSERT statement for multiple items in a batch operation.
-        /// </summary>
-        /// <param name="values">The array of items to upsert.</param>
-        /// <returns>A SQL UPSERT statement for the batch of items.</returns>
         protected override string OnUpsert(Item[] values)
         {
             var args = values.Select(item =>

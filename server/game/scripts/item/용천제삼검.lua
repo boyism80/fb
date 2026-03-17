@@ -1,4 +1,4 @@
--- 용천제삼검: on attack, chance to cast 용천제삼격 on front target. Trash: 30% probability.
+-- 용천제삼검 공격 스크립트
 function ON_ATTACK_260(me, item)
     math.randomseed(seed())
     if math.random() > 0.30 then
@@ -12,11 +12,11 @@ function ON_ATTACK_260(me, item)
 end
 
 -- 용천제삼검 사용 스크립트
-function ON_ACTIVE_260(me, item)
+function ON_ACTIVATED_260(me, item)
 
 end
 
 -- 용천제삼검 해제 스크립트
-function ON_INACTIVE_260(me, item)
+function ON_DEACTIVATED_260(me, item)
 
 end

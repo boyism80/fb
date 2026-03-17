@@ -1,7 +1,4 @@
--- @note Trash: 1_공통/진원관.txt "화원왕". Skull necklace sub7 (아픈아기원숭이->대원왕->건강한아기원숭이->초코바나나), sub9 (1+특제원숭이술->2).
--- Phase 1: sub-quests only. Phase 2: main 23->24, 26->27.
 
----@brief   Sub9 step 1 + 특제원숭이술: take 술, set sub9=2.
 local function do_sub9_receive_wine(me, npc)
     if not me:has_items("특제원숭이술", 1) then
         me:dialog(npc, "퀘스트 오류입니다.\n특제원숭이술 아이템이 없습니다.", false, false)
@@ -26,7 +23,6 @@ local function do_sub9_receive_wine(me, npc)
     return true
 end
 
----@brief   Sub7 step 0: give 아픈아기원숭이, set sub7=1.
 local function do_sub7_start(me, npc)
     local sel, btn = me:list(npc, "요즘따라 인간들을 자주 만나시게 되시는도다.", { "이름을 가르쳐주세요.", "이곳의 상황은 좀 어떤가요?", "제가 도와드릴 일은 없을까요?" }, false)
     if btn == DIALOG_RESULT.QUIT or sel == nil then
@@ -71,7 +67,6 @@ local function do_sub7_start(me, npc)
     return true
 end
 
----@brief   Sub7 step 2 + 건강한아기원숭이: take, give 초코바나나, set sub7=3.
 local function do_sub7_complete(me, npc)
     if not me:has_items("건강한아기원숭이", 1) then
         me:dialog(npc, "퀘스트 오류입니다\n건강한아기원숭이 아이템이 없습니다.", false, false)
@@ -107,14 +102,12 @@ function NPC_469(me, npc)
     local q9 = me:quest(QUEST_SKULL_NECKLACE_9)
     local q7 = me:quest(QUEST_SKULL_NECKLACE_7)
 
-    -- Sub9 step 1: receive 특제원숭이술
     if q9 and q9:step() == 1 then
         if do_sub9_receive_wine(me, npc) then
             return
         end
     end
 
-    -- Sub7 step 0
     if q7 == nil or q7:step() == 0 then
         if do_sub7_start(me, npc) then
             return
@@ -127,7 +120,6 @@ function NPC_469(me, npc)
         return
     end
 
-    -- Sub7 step 2: hand in 건강한아기원숭이
     if q7:step() == 2 then
         if do_sub7_complete(me, npc) then
             return
@@ -135,30 +127,46 @@ function NPC_469(me, npc)
         return
     end
 
-    -- Phase 2: main 23->24 (의견), 26->27 (마른갈대)
     local main_q = me:quest(QUEST_SKULL_NECKLACE)
     if main_q then
         local s = main_q:step()
         if s == 23 then
+            ::NPC_469_0001::
             local b = me:dialog(npc, "참원왕이 의견을 물으셨다고?", false, true)
             if b == DIALOG_RESULT.QUIT then
                 return
             end
+            ::NPC_469_0002::
             b = me:dialog(npc, "더 큰 문제가 계시다. 바로 우리 어린 원숭이들에 대한 문제이시다. 이 곳으로 옮겨오신지 얼마 되지 않으신 탓도", true, true)
-            if b == DIALOG_RESULT.PREV or b == DIALOG_RESULT.QUIT then
+            if b == DIALOG_RESULT.QUIT then
                 return
             end
+            if b == DIALOG_RESULT.PREV then
+                goto NPC_469_0001
+            end
+            ::NPC_469_0003::
             b = me:dialog(npc, "계시지만, 아직 이 땅이 낯설으셔서 편하게 주무실 수가 없으시다. 얼마전에 보셨는데, 담벼락 밖에서 병사 한 명이", true, true)
-            if b == DIALOG_RESULT.PREV or b == DIALOG_RESULT.QUIT then
+            if b == DIALOG_RESULT.QUIT then
                 return
             end
+            if b == DIALOG_RESULT.PREV then
+                goto NPC_469_0002
+            end
+            ::NPC_469_0004::
             b = me:dialog(npc, "'마른갈대'라는 것을 깔고 그 위에 누워 주무시던데.. 아주 편해보이셨다. 어디서 나시는 건지는 모르시지만, 그게 계시면", true, true)
-            if b == DIALOG_RESULT.PREV or b == DIALOG_RESULT.QUIT then
+            if b == DIALOG_RESULT.QUIT then
                 return
             end
+            if b == DIALOG_RESULT.PREV then
+                goto NPC_469_0003
+            end
+            ::NPC_469_0005::
             b = me:dialog(npc, "적어도 어린 원숭이들이 편하게 주무실 수 있으실거 같으시다. 이런 내 생각을 참원왕께 전해주시면 좋으시다.", true, true)
-            if b == DIALOG_RESULT.PREV or b == DIALOG_RESULT.QUIT then
+            if b == DIALOG_RESULT.QUIT then
                 return
+            end
+            if b == DIALOG_RESULT.PREV then
+                goto NPC_469_0004
             end
             main_q:step(24)
             return

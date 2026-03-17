@@ -1,8 +1,4 @@
--- @note Trash: 1_세시마을\칠성당.txt "백남인". sesi_rightnow==1: list (정월 대보름 설명 5 dialogs / 떡국 드리기 → 떡국 1 소모, 설빔 by gender); sesi_rightnow==7: hour-based 제/오작교 (직녀의바늘, 견우의피리, warp). FB: sesi_rightnow==1 only; sesi_rightnow==7 placeholder.
 
---- @brief NPC 백남인: Chilseong (칠성당). When sesi_rightnow==1: list (explanation / 떡국→설빔). When sesi_rightnow==7: placeholder.
---- @param me   character talking to the NPC
---- @param npc  NPC entity (백남인)
 function NPC_502(me, npc)
     local sesi = gv("sesi_rightnow")
     if sesi == 1 then

@@ -1,7 +1,4 @@
--- @note Trash: 1_세시마을\명경사.txt "혜방스님". List: 연등 2→연등1, 연등1 2→연등2, ... 연등30 2→연등31, "아뇨 됐습니다".
 
----@brief   Build list options for 연등 tier exchange (연등 2→연등1 through 연등30 2→연등31).
----@return string[]  List of option strings.
 local function yeondeung_list()
     local opts = {}
     opts[1] = "연등 2개를 연등1로 교환 해 주세요."
@@ -12,19 +9,21 @@ local function yeondeung_list()
     return opts
 end
 
----@brief   NPC 혜방스님: intro + list of 연등 2→상위 연등 exchanges (연등→연등1 ... 연등30→연등31).
----@param[in] me   The character.
----@param[in] npc  The NPC entity.
 function NPC_364(me, npc)
+    ::NPC_364_0001::
     local btn = me:dialog(npc, "안녕하십니까. 저는 명경사의 혜방이라고 합니다.", false, true)
     if btn == DIALOG_RESULT.QUIT then
         return
     end
 
     local opts = yeondeung_list()
+    ::NPC_364_0002::
     local sel, list_btn = me:list(npc, "같은 연등을 두개 모아 오시면, 상위 연등으로 교환 해 드립니다..", opts, true)
-    if list_btn == DIALOG_RESULT.QUIT or list_btn == DIALOG_RESULT.PREV then
+    if list_btn == DIALOG_RESULT.QUIT then
         return
+    end
+    if list_btn == DIALOG_RESULT.PREV then
+        goto NPC_364_0001
     end
     if sel == nil then
         return

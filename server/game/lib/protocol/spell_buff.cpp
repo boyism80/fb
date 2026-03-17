@@ -17,7 +17,7 @@ spell_buff::spell_buff(const fb::game::buff& buff) :
 async::task<void> spell_buff::serialize(fb::stream_writer<big_endian>& writer) const
 {
     co_await header::serialize(writer);
-    writer.write<uint8_t>(header);
+    writer.write<uint8_t>(opcode);
     writer.write<std::string>(this->name);
     writer.write<uint32_t>(static_cast<uint32_t>(this->time.count() / 1000));
 }

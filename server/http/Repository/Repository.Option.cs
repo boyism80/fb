@@ -1,22 +1,11 @@
-using Http.Extension;
+﻿using Http.Extension;
 using Http.Model;
 using Http.Service;
 
 namespace Http.Reepository
 {
-    /// <summary>
-    /// Provides repository functionality for user option data management.
-    /// Implements Redis value-based caching with database persistence for option operations.
-    /// </summary>
     public class OptionRepository : RedisValueRepository<Option, OptionKey>
     {
-        /// <summary>
-        /// Initializes a new instance of the <see cref="OptionRepository"/> class.
-        /// </summary>
-        /// <param name="dbContext">The database context for connection management.</param>
-        /// <param name="redisService">The Redis service for cache operations.</param>
-        /// <param name="distributedLock">The distributed lock service for concurrency control.</param>
-        /// <param name="dbExecuteService">The write-back service for asynchronous database writes.</param>
         public OptionRepository(DbContext dbContext,
             RedisService redisService,
             RedisDistributedLockService distributedLock,
@@ -25,22 +14,11 @@ namespace Http.Reepository
         }
 
 
-        /// <summary>
-        /// Retrieves user options by world and their unique identifier.
-        /// </summary>
-        /// <param name="world">The world identifier (e.g., 1, 2). Use 0 for unified-global.</param>
-        /// <param name="uid">The unique identifier of the user whose options to retrieve.</param>
-        /// <returns>The user options if found; otherwise, null.</returns>
         public async Task<Option> Get(uint world, uint uid)
         {
             return await base.Get(world, new OptionKey { Uid = uid });
         }
 
-        /// <summary>
-        /// Generates the SQL SELECT statement for retrieving user options by ID.
-        /// </summary>
-        /// <param name="key">The option key containing the user ID.</param>
-        /// <returns>A SQL SELECT statement for the user options.</returns>
         protected override string OnSelect(OptionKey key)
         {
             return $"""
@@ -50,12 +28,11 @@ namespace Http.Reepository
                 """;
         }
 
-        /// <summary>
-        /// Generates the SQL UPSERT statement for user options with all preference settings.
-        /// Includes all boolean flags for game features and user interface preferences.
-        /// </summary>
-        /// <param name="value">The user options to upsert.</param>
-        /// <returns>A SQL UPSERT statement for the user options.</returns>
+        protected override OptionKey GetKeyFromRow(Option row)
+        {
+            return new OptionKey { Uid = row.Uid };
+        }
+
         protected override string OnUpsert(Option value)
         {
             var sql = $"""

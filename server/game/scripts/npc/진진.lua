@@ -3,10 +3,12 @@ function NPC_118(me, npc)
     if dq and not dq:completed() then
         local ds = dq:step()
         if ds == 7 then
+            ::NPC_118_0001::
             local btn = me:dialog(npc, "으잉? 그...그건 수..수사관 명찰 아닌가요? 도..도대체 무슨 일이죠?", false, true)
             if btn == DIALOG_RESULT.QUIT then
                 return
             end
+            ::NPC_118_0002::
             local sel, list_btn = me:list(npc, "나...나한테 무슨 보..볼 일이슈?", {
                 "아니, 뭐 좀 물어볼게 있어서요.",
                 "예? 전 지나가던 길인데요?",
@@ -15,7 +17,7 @@ function NPC_118(me, npc)
                 return
             end
             if list_btn == DIALOG_RESULT.PREV then
-                return
+                goto NPC_118_0001
             end
             if sel == 0 then
                 dq:step(8)
@@ -133,26 +135,25 @@ function NPC_118(me, npc)
                 me:dialog(npc, "나..난 정말 죄 없어!", false, false)
                 return
             end
+            ::NPC_118_0009::
             local btn = me:dialog(npc, "어..어쩔 수 없었어! 우리 어머니를 좀 더 잘 모시고 싶었을뿐이야!", false, true)
             if btn == DIALOG_RESULT.QUIT then
                 return
             end
+            ::NPC_118_0010::
             btn = me:dialog(npc, "그냥.. 그냥 시키는대로 궤짝을 날라다 배에 실어준 것 밖에 없다구..", true, true)
             if btn == DIALOG_RESULT.QUIT then
                 return
             end
             if btn == DIALOG_RESULT.PREV then
-                return
+                goto NPC_118_0009
             end
-            btn = me:dialog(npc, "(진진은 얼굴을 감싸쥐고 울기 시작했다.)", true, true)
+            btn = me:dialog(npc, "(진진은 얼굴을 감싸쥐고 울기 시작했다.)", false, true)
             if btn == DIALOG_RESULT.QUIT then
                 return
             end
-            if btn == DIALOG_RESULT.PREV then
-                return
-            end
             dq:step(10)
-            me:dialog(npc, "(당신은 이번 사건에서 진진의 증언만을 기억하고, 진진의 죄는 잊기로 마음 먹었다.)", true, false)
+            me:dialog(npc, "(당신은 이번 사건에서 진진의 증언만을 기억하고, 진진의 죄는 잊기로 마음 먹었다.)", false, false)
             return
         end
         if ds > 0 and ds < 10 then

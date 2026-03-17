@@ -11,7 +11,7 @@ using namespace fb::model::enum_value;
 class item_throw_confirm : public fb::protocol::header
 {
 public:
-    static constexpr uint8_t header = 0x4E;
+    static constexpr uint8_t opcode = 0x4E;
 
 public:
 #ifndef BOT

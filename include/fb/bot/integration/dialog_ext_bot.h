@@ -18,7 +18,7 @@ enum class dialog_ext_type : uint8_t
 class dialog_ext_bot : public fb::protocol::header
 {
 public:
-    static constexpr uint8_t header = 0x30;
+    static constexpr uint8_t opcode = 0x30;
 
 public:
     dialog_ext_type type;

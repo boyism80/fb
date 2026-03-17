@@ -14,7 +14,7 @@ using namespace fb::model::enum_value;
 class die : public fb::protocol::header
 {
 public:
-    static constexpr uint8_t header = 0x5F;
+    static constexpr uint8_t opcode = 0x5F;
 
 public:
 #ifndef BOT

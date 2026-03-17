@@ -26,12 +26,12 @@ character::character(fb::game::server& server, const initial_params& params) :
               }
 }),
     listener(server.listener), id(params.id), _socket(params.socket), _pw(params.pw),
-    _created_date(params.created_date), _updated_date(params.updated_date), _name(params.name), _role(params.role),
-    _birthday(params.birthday), _look(params.look), _color(params.color), _armor_color(params.armor_color),
-    _weapon_color(params.weapon_color), _shield_color(params.shield_color), _experience(params.exp),
-    _gender(params.gender), _state(params.state), _level(params.level), _class(params.class_type),
-    _promotion(params.promotion), _money(params.money), _mimicry(params.mimicry), _title(params.title),
-    _nation(params.nation), _creature(params.creature), _last_afk_time(fb::model::datetime()),
+    _created_date(params.created_date), _updated_date(params.updated_date), _first_login_date(params.first_login_date),
+    _name(params.name), _role(params.role), _birthday(params.birthday), _look(params.look), _color(params.color),
+    _armor_color(params.armor_color), _weapon_color(params.weapon_color), _shield_color(params.shield_color),
+    _experience(params.exp), _gender(params.gender), _state(params.state), _level(params.level),
+    _class(params.class_type), _promotion(params.promotion), _money(params.money), _mimicry(params.mimicry),
+    _title(params.title), _nation(params.nation), _creature(params.creature), _last_afk_time(fb::model::datetime()),
     _super_hide(params.super_hide)
 {
     this->_ping_state.last_ping_time = fb::model::datetime() - std::chrono::seconds(10);
@@ -448,14 +448,16 @@ bool character::level_up()
         return false;
 
     auto& ability = table::ability[this->_class][this->_level];
-    this->stat.base_str(this->stat.base_str() + ability.strength);
-    this->stat.base_int(this->stat.base_int() + ability.intelligence);
-    this->stat.base_dex(this->stat.base_dex() + ability.dexterity);
-    this->stat.base_hp(this->stat.base_hp() + ability.hp + std::rand() % 10);
-    this->stat.base_mp(this->stat.base_mp() + ability.mp + std::rand() % 10);
-
-    this->stat.hp(this->stat.base_hp());
-    this->stat.mp(this->stat.base_mp());
+    {
+        auto batch = this->batch_update();
+        this->stat.base_str(this->stat.base_str() + ability.strength);
+        this->stat.base_int(this->stat.base_int() + ability.intelligence);
+        this->stat.base_dex(this->stat.base_dex() + ability.dexterity);
+        this->stat.base_hp(this->stat.base_hp() + ability.hp + std::rand() % 10);
+        this->stat.base_mp(this->stat.base_mp() + ability.mp + std::rand() % 10);
+        this->stat.hp(this->stat.base_hp());
+        this->stat.mp(this->stat.base_mp());
+    }
 
     auto old_level = this->_level;
     this->level(this->_level + 1);
@@ -521,34 +523,26 @@ STATE character::state_to(const fb::game::object& to, STATE state) const
 {
     this->assert_thread();
 
-    if (this == &to)
-        return state;
-
     if (to.is(OBJECT_TYPE::CHARACTER) == false)
         return state;
 
+    if (state != STATE::CLOACK && state != STATE::ADV_CLOACK)
+        return state;
+
     const auto& ch = static_cast<const fb::game::character&>(to);
+    if (this == &ch)
+        return STATE::HALF_CLOACK;
 
-    if (state == STATE::HALF_CLOACK)
-    {
-        if (ch.detect())
-            return STATE::HALF_CLOACK;
+    if (ch.detect())
+        return STATE::HALF_CLOACK;
 
-        auto& g1 = this->_group_id;
-        auto& g2 = ch._group_id;
-        if (g1 != std::nullopt && g2 != std::nullopt && g1.value() == g2.value())
-            return STATE::HALF_CLOACK;
+    auto& g1 = this->_group_id;
+    auto& g2 = ch._group_id;
+    if (g1 != std::nullopt && g2 != std::nullopt && g1.value() == g2.value())
+        return STATE::HALF_CLOACK;
 
-        if (ch.role() > ROLE::USER && this->role() <= ch.role())
-            return STATE::HALF_CLOACK;
-
-        return STATE::CLOACK;
-    }
-
-    if (state == STATE::TRANSLUCENCY)
-    {
-        return STATE::CLOACK;
-    }
+    if (ch.role() > ROLE::USER && this->role() <= ch.role())
+        return STATE::HALF_CLOACK;
 
     return state;
 }
@@ -1377,6 +1371,13 @@ void character::assert_thread() const
 void character::update(UPDATE_STATE_LEVEL value)
 {
     this->assert_thread();
+
+    if (this->_batch_mode)
+    {
+        this->_pending_update |= value;
+        return;
+    }
+
     this->listener.on_update(*this, value);
 }
 
@@ -1413,29 +1414,33 @@ fb::protocol::internal::Character character::to_protocol() const
 {
     this->assert_thread();
 
-    auto dto            = fb::protocol::internal::Character();
-    dto.id              = this->id;
-    dto.name            = this->_name;
-    dto.pw              = this->_pw;
-    dto.birth           = this->_birthday;
-    dto.created_date    = this->_created_date.to_string();
-    dto.updated_date    = fb::model::datetime().to_string();
-    dto.role            = static_cast<uint8_t>(this->_role);
-    dto.look            = this->_look;
-    dto.color           = this->_color;
-    dto.gender          = static_cast<uint8_t>(this->_gender);
-    dto.nation          = static_cast<uint8_t>(this->_nation);
-    dto.creature        = static_cast<uint8_t>(this->_creature);
-    dto.map             = this->_map != nullptr ? this->_map->model.id : 0;
-    dto.position        = fb::protocol::internal::Position{this->_position.x, this->_position.y};
-    dto.direction       = static_cast<uint8_t>(this->_direction);
-    dto.state           = static_cast<uint8_t>(this->_state);
-    dto.class_type      = static_cast<uint8_t>(this->_class);
-    dto.promotion       = this->_promotion;
-    dto.level           = this->_level;
-    dto.exp             = this->_experience;
-    dto.money           = this->_money;
-    dto.deposited_money = this->items.deposited();
+    if (!this->_first_login_date.has_value())
+        this->_first_login_date = fb::model::datetime();
+
+    auto dto             = fb::protocol::internal::Character();
+    dto.id               = this->id;
+    dto.name             = this->_name;
+    dto.pw               = this->_pw;
+    dto.birth            = this->_birthday;
+    dto.created_date     = this->_created_date.to_string();
+    dto.updated_date     = fb::model::datetime().to_string();
+    dto.first_login_date = this->_first_login_date->to_string();
+    dto.role             = static_cast<uint8_t>(this->_role);
+    dto.look             = this->_look;
+    dto.color            = this->_color;
+    dto.gender           = static_cast<uint8_t>(this->_gender);
+    dto.nation           = static_cast<uint8_t>(this->_nation);
+    dto.creature         = static_cast<uint8_t>(this->_creature);
+    dto.map              = this->_map != nullptr ? this->_map->model.id : 0;
+    dto.position         = fb::protocol::internal::Position{this->_position.x, this->_position.y};
+    dto.direction        = static_cast<uint8_t>(this->_direction);
+    dto.state            = static_cast<uint8_t>(this->_state);
+    dto.class_type       = static_cast<uint8_t>(this->_class);
+    dto.promotion        = this->_promotion;
+    dto.level            = this->_level;
+    dto.exp              = this->_experience;
+    dto.money            = this->_money;
+    dto.deposited_money  = this->items.deposited();
     if (this->_mimicry.has_value())
     {
         auto const& p         = this->_mimicry.value();
@@ -1580,10 +1585,10 @@ void character::detect(bool value)
     for (auto& obj : this->nears(OBJECT_TYPE::CHARACTER))
     {
         auto ch = std::static_pointer_cast<fb::game::character>(obj);
-        if (ch->state() != STATE::HALF_CLOACK)
+        if (ch->state() != STATE::CLOACK && ch->state() != STATE::ADV_CLOACK)
             continue;
 
-        ch->update_external(*this, false);
+        ch->update_external(*this, true);
     }
 }
 
@@ -1900,4 +1905,14 @@ std::shared_ptr<fb::game::appearance> character::appearance() const
     }
 
     return ptr;
+}
+
+bool character::saved_before_shutdown() const
+{
+    return this->_saved_before_shutdown;
+}
+
+void character::saved_before_shutdown(bool value)
+{
+    this->_saved_before_shutdown = value;
 }

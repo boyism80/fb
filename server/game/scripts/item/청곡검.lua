@@ -1,7 +1,7 @@
-function ON_ACTIVE_519(me, item)
+function ON_ACTIVATED_519(me, item)
 end
 
-function ON_INACTIVE_519(me, item)
+function ON_DEACTIVATED_519(me, item)
 end
 
 function ON_ATTACK_519(me, item)

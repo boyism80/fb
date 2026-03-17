@@ -1,9 +1,9 @@
 -- 지력의투구7 사용 스크립트
-function ON_ACTIVE_1353(me, item)
+function ON_ACTIVATED_1353(me, item)
 
 end
 
 -- 지력의투구7 해제 스크립트
-function ON_INACTIVE_1353(me, item)
+function ON_DEACTIVATED_1353(me, item)
 
 end

@@ -60,7 +60,7 @@ private:
     async::task<void> on_transfer(game_bot& bot, const fb::protocol::response::transfer& response);
 
 protected:
-    async::task<void> on_integration_hook_execution(uint8_t                     cmd,
+    async::task<void> on_integration_hook_execution(uint8_t                     opcode,
                                                     game_bot&                   bot,
                                                     const fb::protocol::header& header) override;
 
@@ -98,7 +98,7 @@ public:
         };
 
         auto unique_lock = std::unique_lock<std::shared_mutex>(this->_hook_mutex);
-        this->_test_hooks[test][ResponseType::header].push_back(hook_func);
+        this->_test_hooks[test][ResponseType::opcode].push_back(hook_func);
     }
 };
 

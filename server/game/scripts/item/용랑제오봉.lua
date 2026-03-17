@@ -1,4 +1,4 @@
--- 용랑제오봉: on attack, chance to apply 용의제오주 on front target. Trash: 25% prob, 6s.
+-- 용랑제오봉 공격 스크립트
 function ON_ATTACK_271(me, item)
     math.randomseed(seed())
     if math.random() > 0.25 then
@@ -14,11 +14,11 @@ function ON_ATTACK_271(me, item)
 end
 
 -- 용랑제오봉 사용 스크립트
-function ON_ACTIVE_271(me, item)
+function ON_ACTIVATED_271(me, item)
 
 end
 
 -- 용랑제오봉 해제 스크립트
-function ON_INACTIVE_271(me, item)
+function ON_DEACTIVATED_271(me, item)
 
 end

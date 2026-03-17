@@ -1,9 +1,4 @@
--- @note Trash: 0_초보지원\엔피씨.txt "사도". QUEST_BEGINNER_PATH step 3→4 (목도), 4→5 (equip check), 5→6 (hunt counts via param "n,m"), 6→7 (도토리/토끼고기 10 each → reward).
--- Hunt counts $@사냥도우미1, $@사냥도우미2 mapped to quest:param() as "다람쥐_count,토끼_count"; mob scripts must set param when killing in this map.
 
--- @brief   Parse two hunt counts from quest param (format "n,m").
--- @param[in]  param  String from quest:param() or "".
--- @return  count1, count2  Two numbers (다람쥐, 토끼); 0 if missing/invalid.
 local function parse_hunt_param(param)
     if not param or param == "" then
         return 0, 0
@@ -15,9 +10,6 @@ local function parse_hunt_param(param)
     return 0, 0
 end
 
--- @brief   NPC Sado: QUEST_BEGINNER_PATH step 3→7 (목도, equip check, hunt param, item hand-in).
--- @param[in]  me   The character talking to the NPC.
--- @param[in]  npc  The NPC entity (사도).
 function NPC_446(me, npc)
     local quest = me:quest(QUEST_BEGINNER_PATH)
     if quest == nil then
@@ -118,7 +110,6 @@ function NPC_446(me, npc)
         return
     end
 
-    -- step >= 7
     me:dialog(npc, "이제 다음 방으로 이동하시면 됩니다. 제 윗쪽에 다음 건물의 입구가 있습니다.", false, true)
     me:dialog(npc, "그럼 안녕히가세요 ~~!", false, false)
 end

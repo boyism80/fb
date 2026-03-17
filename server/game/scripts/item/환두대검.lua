@@ -1,9 +1,9 @@
 -- 환두대검 사용 스크립트
-function ON_ACTIVE_73(me, item)
+function ON_ACTIVATED_73(me, item)
 
 end
 
 -- 환두대검 해제 스크립트
-function ON_INACTIVE_73(me, item)
+function ON_DEACTIVATED_73(me, item)
 
 end

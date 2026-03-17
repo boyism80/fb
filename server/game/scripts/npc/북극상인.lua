@@ -1,13 +1,9 @@
--- @note Trash: 1_극지방\일반.txt "북극상인". List: buy 비패교환증 (time-based price), exchange 비패교환증 for one of 5 문파비패, or greeting.
 
--- Base timestamp for price increase (2017-11-15); price = 500000 + (weeks_since * 10000).
 local VOUCHER_BASE_PRICE = 500000
 local VOUCHER_PRICE_PER_WEEK = 10000
 local REF_TIMESTAMP = 1510704000
 local SEC_PER_WEEK = 604800
 
--- @brief   Computes current 비패교환증 price (increases by 10000 per server week since REF_TIMESTAMP).
--- @return  Number  Price in zeny.
 local function voucher_price()
     local now_ts = now()
     if not now_ts or now_ts <= 0 then
@@ -20,9 +16,6 @@ local function voucher_price()
     return VOUCHER_BASE_PRICE + (weeks * VOUCHER_PRICE_PER_WEEK)
 end
 
--- @brief   NPC North Pole merchant: buy 비패교환증 for zeny, or exchange voucher for one 문파비패 (5 colors).
--- @param[in]  me   The character talking to the NPC.
--- @param[in]  npc  The NPC entity (북극상인).
 function NPC_600(me, npc)
 ::MENU::
     local sel, btn = me:list(npc, "안녕하신가? 그래.. 요즘 하는 일은 잘 되고? 내게 무슨 볼일로 찾아왔나? 설마 인사차 온건 아닐테고.. 허허허 ~", {
@@ -118,7 +111,6 @@ function NPC_600(me, npc)
         goto MENU
     end
 
-    -- sel == 2: 인사차 왔어요.
     me:dialog(npc, "허허~ 싱겁기는. 나는 잘 지내고 있다네. 자네도 잘 지내시게나~", false, true)
     goto MENU
 end

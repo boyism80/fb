@@ -87,7 +87,7 @@ std::vector<std::shared_ptr<fb::bot::game_bot>> bot_integration_test::get_test_b
     return this->_test_bots;
 }
 
-async::task<void> bot_integration_test::on_active(game_bot_controller& controller)
+async::task<void> bot_integration_test::on_activated(game_bot_controller& controller)
 {
     auto ip = controller.container.ipv4(fb::config<std::string_view>("ip"));
     auto endpoint =

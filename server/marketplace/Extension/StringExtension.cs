@@ -1,15 +1,7 @@
-namespace Marketplace.Extension;
+﻿namespace Marketplace.Extension;
 
-/// <summary>
-/// Provides extension methods for string formatting operations.
-/// </summary>
 public static class StringExtension
 {
-    /// <summary>
-    /// Converts C++ format string (using {}) to C# format string (using {0}, {1}, etc.).
-    /// </summary>
-    /// <param name="format">The C++ format string with {} placeholders.</param>
-    /// <returns>The C# format string with {0}, {1}, etc. placeholders.</returns>
     public static string ToCSharpFormat(this string format)
     {
         if (string.IsNullOrEmpty(format))

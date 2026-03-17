@@ -1,23 +1,23 @@
 function NPC_53(me, npc)
     local TICKET_PRICE = 8000
 
-    ::COS001::
+    ::NPC_53_0001::
     local button = me:dialog(npc, '일본까지 가시려고? 내 표한장 드릴까? 싸게해드릴께..', false, true)
     if button == DIALOG_RESULT.QUIT then
         return
     end
 
-    ::COS002::
-    local selected, button = me:list(npc, '부여-일본쾌속승선권 한장 사시려나?', {'네, 한장 주세요.', '혹시 사기꾼 아냐?'})
+    ::NPC_53_0002::
+    local selected, button = me:list(npc, '부여-일본쾌속승선권 한장 사시려나?', {'네, 한장 주세요.', '혹시 사기꾼 아냐?'}, true)
     if button == DIALOG_RESULT.QUIT then
         return
     end
     if button == DIALOG_RESULT.PREV then
-        goto COS001
+        goto NPC_53_0001
     end
 
     if selected == 0 then
-        local selected2, button2 = me:list(npc, '부여-일본쾌속승선권.. 한장에 8000원에 드리지. 어때?', {'8000원에 사죠.', '너무 비싼데...'})
+        local selected2, button2 = me:list(npc, '부여-일본쾌속승선권.. 한장에 8000원에 드리지. 어때?', {'8000원에 사죠.', '너무 비싼데...'}, false)
         if button2 == DIALOG_RESULT.QUIT then
             return
         end
@@ -43,32 +43,32 @@ function NPC_53(me, npc)
             me:dialog(npc, '그럼 일본 잘갔다와~ 나중에 또 보자고..', false, true)
             return
         elseif selected2 == 1 then
-            ::COS003::
+            ::NPC_53_0003::
             button = me:dialog(npc, '너무 비싸다고? 얼마까지 알아보고 왔어? 에이.. 하나도 안 남는데..', false, true)
             if button == DIALOG_RESULT.QUIT then
                 return
             end
 
-            ::COS004::
+            ::NPC_53_0004::
             button = me:dialog(npc, '에이.. 좋다. 그럼 내 노란비서 하나 끼워 준다. 그럼 됐지?', true, true)
             if button == DIALOG_RESULT.QUIT then
                 return
             end
             if button == DIALOG_RESULT.PREV then
-                goto COS003
+                goto NPC_53_0003
             end
 
-            ::COS005::
-            local selected3, button3 = me:list(npc, '살꺼지?', {'그러죠 그럼..', '안살래요.'})
+            ::NPC_53_0005::
+            local selected3, button3 = me:list(npc, '살꺼지?', {'그러죠 그럼..', '안살래요.'}, true)
             if button3 == DIALOG_RESULT.QUIT then
                 return
             end
             if button3 == DIALOG_RESULT.PREV then
-                goto COS004
+                goto NPC_53_0004
             end
 
             if selected3 == 0 then
-                ::COS006::
+                ::NPC_53_0006::
                 button = me:dialog(npc, '그래그래. 잘 생각한거야. 그럼 볼까나....', false, true)
                 if button == DIALOG_RESULT.QUIT then
                     return

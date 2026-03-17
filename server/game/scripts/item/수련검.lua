@@ -1,9 +1,9 @@
 -- 수련검 사용 스크립트
-function ON_ACTIVE_119(me, item)
+function ON_ACTIVATED_119(me, item)
 
 end
 
 -- 수련검 해제 스크립트
-function ON_INACTIVE_119(me, item)
+function ON_DEACTIVATED_119(me, item)
 
 end

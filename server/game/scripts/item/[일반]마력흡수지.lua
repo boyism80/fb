@@ -1,5 +1,5 @@
-function ON_ACTIVE_10574(me, item)
+function ON_ACTIVATED_10574(me, item)
 end
 
-function ON_INACTIVE_10574(me, item)
+function ON_DEACTIVATED_10574(me, item)
 end

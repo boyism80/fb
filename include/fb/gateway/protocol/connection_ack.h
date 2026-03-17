@@ -14,7 +14,7 @@ namespace fb::protocol::gateway::request {
 class connection_ack : public fb::protocol::header
 {
 public:
-    static constexpr uint8_t header = 0x62;
+    static constexpr uint8_t opcode = 0x62;
 
 public:
     std::string client_name;

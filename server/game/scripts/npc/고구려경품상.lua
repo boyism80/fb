@@ -1,4 +1,3 @@
--- @note Trash: 2_이벤트\톨루이.txt "고구려경품상". Behavior depends on map: 2=일반교환권→random item, 3=특별교환권→random item, 4=placeholder dialog.
 
 local NORMAL_EXCHANGE_REWARDS = {
     { "장안성비서", 5 },

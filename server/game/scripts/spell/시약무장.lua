@@ -1,4 +1,3 @@
--- 시약무장: same buff effect as 무장 (buff_phydef -10). Trash: effect 110, sound 8, 180s.
 function ON_CAST_18(me, you, spell)
     local mp = 30
     local sound = 8

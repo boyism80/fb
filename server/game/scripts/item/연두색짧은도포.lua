@@ -1,9 +1,9 @@
 -- 연두색짧은도포 사용 스크립트
-function ON_ACTIVE_601(me, item)
+function ON_ACTIVATED_601(me, item)
 
 end
 
 -- 연두색짧은도포 해제 스크립트
-function ON_INACTIVE_601(me, item)
+function ON_DEACTIVATED_601(me, item)
 
 end

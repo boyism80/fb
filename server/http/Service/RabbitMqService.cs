@@ -4,20 +4,13 @@ using RabbitMQ.Client;
 
 namespace Http.Service
 {
-    /// <summary>
-    /// Provides RabbitMQ messaging service functionality for publishing messages.
-    /// Manages a single unified-global RabbitMQ connection.
-    /// </summary>
     public class RabbitMqService
     {
         private readonly IConfiguration _configuration;
         private readonly Lazy<IConnection> _connection;
         private readonly Lazy<IModel> _channel;
+        private readonly object _channelLock = new object();
 
-        /// <summary>
-        /// Initializes a new instance of the <see cref="RabbitMqService"/> class.
-        /// </summary>
-        /// <param name="configuration">The application configuration containing RabbitMQ connection settings.</param>
         public RabbitMqService(IConfiguration configuration)
         {
             _configuration = configuration;
@@ -25,10 +18,6 @@ namespace Http.Service
             _channel = new Lazy<IModel>(GetChannel);
         }
 
-        /// <summary>
-        /// Gets or creates a RabbitMQ connection for unified-global RabbitMQ.
-        /// </summary>
-        /// <returns>The RabbitMQ connection for unified-global.</returns>
         private IConnection GetConnection()
         {
             var rabbitMqSection = _configuration.GetSection("RabbitMQ:Internal");
@@ -48,26 +37,40 @@ namespace Http.Service
             return factory.CreateConnection();
         }
 
-        /// <summary>
-        /// Gets or creates a RabbitMQ channel for unified-global RabbitMQ.
-        /// </summary>
-        /// <returns>The RabbitMQ channel for unified-global.</returns>
         private IModel GetChannel()
         {
             return _connection.Value.CreateModel();
         }
 
-        /// <summary>
-        /// Publishes a FlatBuffer protocol message to the specified exchange with routing key.
-        /// Uses unified-global RabbitMQ connection. The routing key must be explicitly specified.
-        /// </summary>
-        /// <param name="protocol">The FlatBuffer protocol message to publish.</param>
-        /// <param name="exchangeName">The name of the exchange to publish to.</param>
-        /// <param name="routeKey">The routing key for message routing (must include world prefix if needed).</param>
         public void Publish(IFlatBufferEx protocol, string exchangeName, string routeKey)
         {
-            var channel = _channel.Value;
-            channel.BasicPublish(exchange: exchangeName, routingKey: routeKey, basicProperties: null, body: protocol.ToBytes());
+            lock (_channelLock)
+            {
+                var channel = _channel.Value;
+                channel.BasicPublish(exchange: exchangeName, routingKey: routeKey, basicProperties: null, body: protocol.ToBytes());
+            }
+        }
+
+        public void Publish(string exchangeName, string routingKey, byte[] body, bool persistent = true)
+        {
+            if (body == null || body.Length == 0)
+                return;
+
+            lock (_channelLock)
+            {
+                var channel = _channel.Value;
+                var props = channel.CreateBasicProperties();
+                props.Persistent = persistent;
+                channel.BasicPublish(exchangeName, routingKey, props, body);
+            }
+        }
+
+        public void WithChannel(Action<IModel> action)
+        {
+            lock (_channelLock)
+            {
+                action(_channel.Value);
+            }
         }
     }
 }

@@ -1,8 +1,4 @@
--- @note Trash: 2_이벤트\남북무한대전.txt "남북무한도우미". List: 설명듣기, 참가, 현황, 상품수령. 참가 uses #ns_schedule_* + gettime + callfunc "남북무한밸런스"; 현황 callfunc "NAMBUK_SCORE"; 상품 #ns_start/#ns_winner_team/$ns_team + 승리의갑옷. FB: 설명 full dialogs; 참가/현황/상품수령 placeholder (schedule, balance, score, account $ns_team not implemented).
 
---- @brief NPC 남북무한도우미: North-South infinite battle event. Intro list and explanation dialogs; join/score/reward placeholder.
---- @param me   character talking to the NPC
---- @param npc  NPC entity (남북무한도우미)
 function NPC_499(me, npc)
 ::NPC_499_MENU::
     local sel, list_btn = me:list(npc, "안녕하세요. 어떻게 오셨나요?", {
@@ -52,23 +48,19 @@ function NPC_499(me, npc)
     end
 
     if sel == 1 then
-        -- Trash: gettime vs #ns_schedule_*, callfunc "남북무한밸런스". FB: schedule/balance not implemented.
         me:dialog(npc, "남북무한대전 참가 신청은 공지된 일정에만 가능합니다. 현재는 진행 시간이 아니거나 준비중입니다.", false, true)
         goto NPC_499_MENU
     end
 
     if sel == 2 then
-        -- Trash: callfunc "NAMBUK_SCORE". FB: score display not implemented.
         me:dialog(npc, "남북무한대전 현황 조회는 현재 준비중입니다.", false, true)
         goto NPC_499_MENU
     end
 
     if sel == 3 then
-        -- Trash: #ns_start==2, #ns_winner_team==$ns_team, list then additem 승리의갑옷. FB: server/account vars not implemented.
         local ns_start = gv("ns_start")
         if ns_start == 2 then
             local winner = gv("ns_winner_team")
-            -- $ns_team (account) not available in FB; show placeholder or simple message
             me:dialog(npc, "승리팀 상품 수령은 대전 종료 후 해당 기능이 연동되면 이용하실 수 있습니다.", false, true)
         else
             me:dialog(npc, "수령할 상품이 없습니다. 남북무한대전에 참가하고 승리한 뒤 이용해 주세요.", false, true)

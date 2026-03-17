@@ -1,4 +1,3 @@
--- @note Trash: 1_일본\일반.txt "만월늑대인간". Linear story with @pass 1-11: list/dialog chain; pass 11: require 해골왕의뼈, 유성지의보패, 철광석, 불의수정 1 each, delitem, deletenpc + mobspawn. FB: QUEST_WOLF_CURSE step = pass; hand-in with has_items/rmitem; npc:destroy() + me:spawn_mob("만월늑대인간", x, y, false) at NPC position.
 
 local REQUIRED_ITEMS = {
     { "해골왕의뼈", 1 },
@@ -7,9 +6,6 @@ local REQUIRED_ITEMS = {
     { "불의수정", 1 },
 }
 
---- @brief NPC 만월늑대인간 (노정월): Cursed werewolf story; collect proof items and hand in (mobspawn omitted).
---- @param me   character talking to the NPC
---- @param npc  NPC entity (만월늑대인간)
 function NPC_549(me, npc)
     local quest = me:quest(QUEST_WOLF_CURSE)
     if quest and quest:completed() then
@@ -146,7 +142,6 @@ function NPC_549(me, npc)
         return
     end
 
-    -- step == 11: hand-in
     for i = 1, #REQUIRED_ITEMS do
         local name, count = REQUIRED_ITEMS[i][1], REQUIRED_ITEMS[i][2]
         if not me:has_items(name, count) then

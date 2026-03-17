@@ -11,7 +11,7 @@ using namespace fb::model::enum_value;
 class item_remove : public fb::protocol::header
 {
 public:
-    static constexpr uint8_t header = 0x10;
+    static constexpr uint8_t opcode = 0x10;
 
 public:
 #ifndef BOT

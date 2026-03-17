@@ -1,4 +1,4 @@
--- 용랑제칠봉: on attack, chance to apply 용의제칠주 on front target. Trash: 40% prob, 12s.
+-- 용랑제칠봉 공격 스크립트
 function ON_ATTACK_273(me, item)
     math.randomseed(seed())
     if math.random() > 0.40 then
@@ -14,11 +14,11 @@ function ON_ATTACK_273(me, item)
 end
 
 -- 용랑제칠봉 사용 스크립트
-function ON_ACTIVE_273(me, item)
+function ON_ACTIVATED_273(me, item)
 
 end
 
 -- 용랑제칠봉 해제 스크립트
-function ON_INACTIVE_273(me, item)
+function ON_DEACTIVATED_273(me, item)
 
 end

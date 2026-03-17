@@ -1,13 +1,9 @@
-using Newtonsoft.Json;
+﻿using Newtonsoft.Json;
 using RabbitMQ.Client;
 using System.Text;
 
 namespace Http.Service
 {
-    /// <summary>
-    /// Provides logging service functionality for publishing log entries to RabbitMQ.
-    /// Implements the same functionality as C++ log_collector, sending logs to RabbitMQ exchange with routing keys.
-    /// </summary>
     public class LogService
     {
         private readonly IConnection _connection = null;
@@ -19,12 +15,6 @@ namespace Http.Service
         private readonly ILogger<LogService> _logger;
         private readonly bool _enabled;
 
-        /// <summary>
-        /// Initializes a new instance of the <see cref="LogService"/> class.
-        /// Establishes connection to RabbitMQ log server using configuration settings.
-        /// </summary>
-        /// <param name="configuration">The application configuration containing RabbitMQ and Log settings.</param>
-        /// <param name="logger">The logger instance for error logging.</param>
         public LogService(IConfiguration configuration, ILogger<LogService> logger = null)
         {
             _logger = logger;
@@ -75,12 +65,6 @@ namespace Http.Service
             _random = new Random();
         }
 
-        /// <summary>
-        /// Writes a log entry to RabbitMQ with the specified event type and data.
-        /// Creates a JSON log entry and publishes it to RabbitMQ using a random routing key.
-        /// </summary>
-        /// <param name="eventType">The type of event being logged (e.g., "account_create", "item_gain").</param>
-        /// <param name="data">The data object to include in the log entry. Will be serialized to JSON.</param>
         public void Write(string eventType, object data)
         {
             if (!_enabled)
@@ -121,10 +105,6 @@ namespace Http.Service
             }
         }
 
-        /// <summary>
-        /// Gets the routing key for log messages (single queue per world, aligned with C++ log_collector).
-        /// </summary>
-        /// <returns>A routing key in the format "fb.{world}.log" for world > 0, or "fb.log" for unified.</returns>
         private string GetRoutingKey()
         {
             if (_world > 0)
@@ -132,10 +112,6 @@ namespace Http.Service
             return "fb.log";
         }
 
-        /// <summary>
-        /// Disposes of the RabbitMQ resources when the service is being disposed.
-        /// Properly closes the channel and connection to prevent resource leaks.
-        /// </summary>
         public void Dispose()
         {
             _channel?.Close();
@@ -143,4 +119,3 @@ namespace Http.Service
         }
     }
 }
-

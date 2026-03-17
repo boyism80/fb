@@ -126,7 +126,7 @@ async::task<void> game_bot_controller::active_test()
     }
 
     fb::logger::debug("Activating first test: '{}'", this->_current_test->name());
-    std::ignore = this->_current_test->on_active(*this);
+    std::ignore = this->_current_test->on_activated(*this);
     fb::logger::debug("Test '{}' activated and ready to receive bot connections", this->_current_test->name());
 }
 
@@ -304,7 +304,7 @@ async::task<void> game_bot_controller::on_bot_disconnected(game_bot& bot)
     co_return;
 }
 
-async::task<void> game_bot_controller::on_integration_hook_execution(uint8_t                     cmd,
+async::task<void> game_bot_controller::on_integration_hook_execution(uint8_t                     opcode,
                                                                      game_bot&                   bot,
                                                                      const fb::protocol::header& header)
 {
@@ -319,7 +319,7 @@ async::task<void> game_bot_controller::on_integration_hook_execution(uint8_t    
     if (test_it != this->_test_hooks.end())
     {
         auto& test_hooks = test_it->second;
-        auto  cmd_it     = test_hooks.find(cmd);
+        auto  cmd_it     = test_hooks.find(opcode);
         if (cmd_it != test_hooks.end())
         {
             for (auto& hook : cmd_it->second)

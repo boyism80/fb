@@ -1,4 +1,3 @@
--- @note Trash: 2_이벤트\톨루이.txt "톨루이". Day 1-24: buy one 도톨/day (1000 zeny), $톨루이=day; day 25-26: callfunc DDONG1 (pick color); day 27+: 24 도톨 → 칠지도. FB: datetime().day, quest param last_buy_day; day 25-26 placeholder.
 
 local DOTOL_NAMES = {
     "황도톨", "적도톨", "연녹도톨", "녹도톨", "청도톨", "회도톨", "갈도톨", "연갈도톨",
@@ -8,24 +7,26 @@ local DOTOL_NAMES = {
 
 local DOTOL_PRICE = 1000
 
---- @brief NPC 톨루이: Daily 도톨 sale (day 1-24), or exchange 24 kinds for 칠지도 (day 27+).
---- @param me   character talking to the NPC
---- @param npc  NPC entity (톨루이)
 function NPC_336(me, npc)
-    local btn = me:dialog(npc, "안녕하세요?\n\n저는 여러분에게 행운을 가져다 주는 톨루이 입니다.", true, true)
+    local btn = me:dialog(npc, "안녕하세요?\n\n저는 여러분에게 행운을 가져다 주는 톨루이 입니다.", false, true)
     if btn == DIALOG_RESULT.QUIT then
         return
     end
 
     local day = datetime().day
     if day >= 1 and day <= 24 then
-        btn = me:dialog(npc, "저는 여러분에게 매일 다른 색깔의 도톨을 판매하고 있습니다.", true, true)
+        ::NPC_336_0001::
+        btn = me:dialog(npc, "저는 여러분에게 매일 다른 색깔의 도톨을 판매하고 있습니다.", false, true)
         if btn == DIALOG_RESULT.QUIT then
             return
         end
+        ::NPC_336_0002::
         btn = me:dialog(npc, "매달 1일부터 24일간 24개의 도톨을 종류별로 판매하고 있고,\n\n만약 놓치신 색도톨이 있다면 25일부터 26일 2일동안은 5만전을 주시면 원하는 색상의 도톨 한개를 구입하실 수 있습니다.", true, true)
         if btn == DIALOG_RESULT.QUIT then
             return
+        end
+        if btn == DIALOG_RESULT.PREV then
+            goto NPC_336_0001
         end
 
         local quest = me:quest(QUEST_TOLUI_DAY)
@@ -85,8 +86,8 @@ function NPC_336(me, npc)
         end
     end
     if not has_all then
-        me:dialog(npc, "스물네가지 색의 도톨을 모아오셨다면, 일주일간 사용이 가능한 [칠지도]라는 무기와 교환 해 드리겠습니다.", true, true)
-        me:dialog(npc, "저런, 아쉽게도 도톨이 부족하시군요.", true, false)
+        me:dialog(npc, "스물네가지 색의 도톨을 모아오셨다면, 일주일간 사용이 가능한 [칠지도]라는 무기와 교환 해 드리겠습니다.", false, true)
+        me:dialog(npc, "저런, 아쉽게도 도톨이 부족하시군요.", false, false)
         return
     end
     local sel, list_btn = me:list(npc, "스물 네가지 색의 도톨을 가져 오셨다면, 일주일간 사용이 가능한 [칠지도]라는 무기와 교환 해 드리겠습니다.", { "예", "아니오" }, false)

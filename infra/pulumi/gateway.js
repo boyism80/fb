@@ -44,6 +44,9 @@ module.exports = function () {
                         pwd: "admin"
                     }
                 },
+                http: {
+                    max_concurrent: 500
+                },
             }
 
             for(const [worldName, worldConf] of Object.entries(conf.worlds)) {

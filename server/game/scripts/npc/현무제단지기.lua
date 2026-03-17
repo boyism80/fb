@@ -1,8 +1,4 @@
--- @note Trash: 0_신수의제단\일반.txt "현무제단지기". Two intro dialogs only (no list).
 
----@brief   NPC 현무제단지기: intro dialogs about Hyunmu altar and Cheondo peach power (1500 mana, 10 damage).
----@param[in]  me   The character.
----@param[in]  npc  The NPC entity.
 function NPC_455(me, npc)
     local button = me:dialog(npc, "안녕하신가, " .. me:name() .. ". 나는 이곳 제단에서 힘을 모아 사악한악령에게 [강력한 참격]을 가하는 현무제단지기라네.", false, true)
     if button == DIALOG_RESULT.QUIT then
