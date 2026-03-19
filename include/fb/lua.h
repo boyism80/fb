@@ -45,8 +45,6 @@ extern "C"
     }                     \
     }
 
-#define LUA_PENDING (LUA_ERRERR + 1)
-
 namespace fb {
 
 class thread;
@@ -246,7 +244,6 @@ public:
 
 private:
     context*     _parent = nullptr;
-    int          _state  = 0;
     promise_type _promise;
     bool         _auto_release = false;
 
@@ -533,10 +530,7 @@ public:
     [[nodiscard]] async::task<bool> call(int argc, bool auto_release = true, int* n = nullptr);
     void                            resume(int argc, int* n = nullptr);
     int                             yield(int retc);
-    int                             state() const;
     void                            release();
-    bool                            pending() const;
-    void                            pending(bool value);
     void                            parent(context* parent);
     context*                        parent() const;
     int                             ensure_yield(fb::async_executor&                  executor,
