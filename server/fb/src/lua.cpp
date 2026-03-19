@@ -363,9 +363,6 @@ async::task<bool> context::call(int argc, bool auto_release, int* n)
 
 void fb::lua::context::resume(int argc, int* n)
 {
-    if (this->_state == LUA_YIELD)
-        this->_state = LUA_OK;
-
     if (this->_promise == nullptr)
         return;
 
@@ -375,32 +372,23 @@ void fb::lua::context::resume(int argc, int* n)
         return;
     }
 
-    auto root = static_cast<fb::lua::root*>(this->owner);
-    if (this->_state == LUA_PENDING)
+    auto root  = static_cast<fb::lua::root*>(this->owner);
+    auto state = lua_resume(*this, nullptr, argc);
+    if (state == LUA_YIELD)
         return;
 
-    auto state = lua_resume(*this, nullptr, argc);
-
-    if (this->_state != LUA_PENDING)
-        this->_state = state;
-
-    switch (this->_state)
+    if (state != LUA_OK)
     {
-    case LUA_PENDING:
-    case LUA_YIELD:
-        break;
-
-    case LUA_ERRRUN:
-    case LUA_ERRERR:
-    {
+        // Any non-LUA_OK and non-LUA_YIELD means Lua errored.
         lua_pop(*this, 1);
         auto message = std::format("lua error message : {}", this->tostring(-1).c_str());
         fb::logger::fatal(message);
+
         auto promise = promise_type{this->_promise};
         auto parent  = this->_parent;
         root->revoke(*this);
 
-        if (parent != nullptr && parent->_state == LUA_YIELD)
+        if (parent != nullptr && lua_status(*parent) == LUA_YIELD)
         {
             async::awaitable_then(parent->_initial_thread.switching(), [=](auto result) {
                 parent->resume(0);
@@ -408,9 +396,7 @@ void fb::lua::context::resume(int argc, int* n)
         }
         promise->set_exception(std::make_exception_ptr(std::runtime_error(message)));
     }
-    break;
-
-    default:
+    else // LUA_OK: coroutine finished successfully.
     {
         auto parent = this->_parent;
         if (parent != nullptr)
@@ -421,7 +407,7 @@ void fb::lua::context::resume(int argc, int* n)
                     *n = argc;
 
                 lua_xmove(*this, *parent, argc);
-                if (parent->_state == LUA_YIELD)
+                if (lua_status(*parent) == LUA_YIELD)
                     parent->resume(argc);
             });
         }
@@ -430,8 +416,6 @@ void fb::lua::context::resume(int argc, int* n)
 
         this->_promise->set_value(true);
     }
-    break;
-    }
 }
 
 int context::yield(int retc)
@@ -439,15 +423,12 @@ int context::yield(int retc)
     return lua_yield(*this, retc);
 }
 
-int context::state() const
-{
-    return this->_state;
-}
-
 void context::release()
 {
     auto root = static_cast<fb::lua::root*>(this->owner);
-    switch (this->_state)
+
+    auto status = lua_status(*this);
+    switch (status)
     {
     case LUA_OK:
         root->release(*this);
@@ -457,16 +438,6 @@ void context::release()
         root->revoke(*this);
         break;
     }
-}
-
-bool context::pending() const
-{
-    return this->_state == LUA_PENDING;
-}
-
-void context::pending(bool value)
-{
-    this->_state = value ? LUA_PENDING : LUA_YIELD;
 }
 
 int context::ensure_yield(fb::async_executor&                  executor,
@@ -656,7 +627,7 @@ void root::release(context& ctx)
         if (this->idle.contains(ctx))
             return;
 
-        if (ctx.state() != LUA_OK)
+        if (lua_status(ctx) != LUA_OK)
             throw std::runtime_error("lua ctx's current state is not LUA_OK");
 
         lua_settop(ctx, 0);

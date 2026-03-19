@@ -940,9 +940,8 @@ int builtin::object::builtin_script(lua_State* L)
 
         auto n      = 0;
         std::ignore = new_lua->call(argc - 2, true, &n);
-        switch (new_lua->state())
+        switch (lua_status(*new_lua))
         {
-        case LUA_PENDING:
         case LUA_YIELD:
             return lua->yield(0);
 

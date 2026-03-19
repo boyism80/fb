@@ -48,11 +48,9 @@ int builtin::server::builtin_sleep(lua_State* L)
         return 0;
 
     auto ms = (uint32_t)lua->tointeger(1);
-    lua->pending(true);
 
     auto server = lua->env<fb::game::server>("server");
     async::awaitable_then(server->sleep(std::chrono::milliseconds(ms)), [lua](auto result) {
-        lua->pending(false);
         lua->resume(0);
     });
     return lua->yield(0);

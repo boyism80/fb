@@ -144,20 +144,32 @@ async::task<bool> listener_impl::on_transfer(character& me, map& map, const fb::
             throw std::runtime_error(std::format(_TEXT(MESSAGE_UNKNOWN_ERROR_WITH_CODE), resp.error));
         }
 
-        std::ignore = co_await me.map(nullptr);
-        std::ignore = this->server.save(me);
-        auto stream = fb::stream();
-        auto writer = fb::stream_writer<big_endian>(stream);
-        writer.write<uint32_t>(me.id);
-        writer.write<std::string>(me.name());
-        writer.write<uint8_t>(1);
-        writer.write<uint16_t>(map.model.id);
-        writer.write<uint16_t>(p.x);
-        writer.write<uint16_t>(p.y);
+        auto commit_now = [this, ip = resp.ip, port = resp.port, map_id = map.model.id, pos_x = p.x, pos_y = p.y](
+                              character& ch) -> async::task<void> {
+            std::ignore = co_await ch.map(nullptr);
+            std::ignore = this->server.save(ch);
 
-        auto socket_ptr = me.socket_ptr();
-        if (socket_ptr != nullptr)
-            std::ignore = this->server.transfer(*socket_ptr, resp.ip, resp.port, internal::Service::Game, stream);
+            auto stream = fb::stream();
+            auto writer = fb::stream_writer<big_endian>(stream);
+            writer.write<uint32_t>(ch.id);
+            writer.write<std::string>(ch.name());
+            writer.write<uint8_t>(1);
+            writer.write<uint16_t>(map_id);
+            writer.write<uint16_t>(pos_x);
+            writer.write<uint16_t>(pos_y);
+
+            auto socket_ptr = ch.socket_ptr();
+            if (socket_ptr != nullptr)
+                std::ignore = this->server.transfer(*socket_ptr, ip, port, internal::Service::Game, stream);
+        };
+
+        this->server.threads.enqueue(weak, [this, commit_now, weak](auto&) -> async::task<void> {
+            auto shared = weak.lock();
+            if (shared == nullptr)
+                co_return;
+
+            co_await commit_now(*shared);
+        });
         co_return true;
     }
     catch (std::exception& e)
