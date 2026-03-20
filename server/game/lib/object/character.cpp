@@ -1481,8 +1481,13 @@ fb::protocol::internal::Character character::to_protocol() const
 
     for (auto& [_, buff] : this->buffs)
     {
-        auto time = (uint32_t)(buff->time().count() / 1000);
-        dto.buffs.push_back({buff->model.id, time});
+        auto remaining_ms = buff->remaining().total_milliseconds();
+        if (remaining_ms < 0)
+            remaining_ms = 0;
+
+        // `internal::Buff.time` is seconds, not milliseconds.
+        auto remaining_s = static_cast<uint32_t>(remaining_ms / 1000);
+        dto.buffs.push_back({buff->model.id, remaining_s});
     }
 
     const auto& pending_listings = this->marketplace.pending_listings();

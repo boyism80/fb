@@ -37,13 +37,16 @@ int builtin::buff::builtin_time(lua_State* L)
 
     if (argc == 1)
     {
-        lua->pushinteger(std::chrono::duration_cast<std::chrono::seconds>(buff->time()).count());
+        auto remaining_ms = buff->remaining().total_milliseconds();
+        if (remaining_ms < 0)
+            remaining_ms = 0;
+        lua->pushinteger(remaining_ms / 1000);
         return 1;
     }
     else
     {
-        auto time = std::chrono::seconds(lua->tointeger(2));
-        buff->time(time);
+        auto seconds = lua->tointeger(2);
+        buff->remaining(fb::model::timespan{std::chrono::seconds(seconds)});
         return 0;
     }
 }

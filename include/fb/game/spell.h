@@ -73,18 +73,19 @@ struct spells::listener_t
     virtual void on_spell_remove(life& me, uint8_t index) = 0;
 };
 
-class buff : public lua::luable
+class buff : public ::fb::lua::luable
 {
 public:
     LUA_PROTOTYPE
 
 private:
-    std::chrono::milliseconds _time;
+    fb::model::timespan _duration;
 
 public:
-    const fb::game::server& server;
-    const fb::model::spell& model;
-    const fb::game::object* caster;
+    const fb::game::server&   server;
+    const fb::model::spell&   model;
+    const fb::game::object*   caster;
+    const fb::model::datetime start;
 
 public:
     buff(const fb::game::server& server,
@@ -94,14 +95,10 @@ public:
     ~buff();
 
 public:
-    std::chrono::milliseconds                 time() const;
-    template <class _Rep, class _Period> void time(const std::chrono::duration<_Rep, _Period>& value)
-    {
-        this->_time = std::chrono::duration_cast<std::chrono::milliseconds>(value);
-    }
-
-    void time_inc(const std::chrono::steady_clock::duration& inc);
-    void time_dec(const std::chrono::steady_clock::duration& dec);
+    const fb::model::timespan& duration() const;
+    void                       duration(const fb::model::timespan& value);
+    fb::model::timespan        remaining() const;
+    void                       remaining(const fb::model::timespan& value);
 };
 
 class buffs : private std::unordered_map<uint32_t, std::shared_ptr<buff>>

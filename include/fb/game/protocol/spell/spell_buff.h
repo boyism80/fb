@@ -19,16 +19,16 @@ public:
 
 public:
 #ifndef BOT
-    const std::string               name;
-    const std::chrono::milliseconds time;
+    const std::string         name;
+    const fb::model::timespan duration;
 #else
-    std::string               name;
-    std::chrono::milliseconds time;
+    std::string         name;
+    fb::model::timespan duration;
 #endif
 
 public:
 #ifndef BOT
-    spell_buff(std::string_view name, uint32_t time);
+    spell_buff(std::string_view name, const fb::model::timespan& duration);
     spell_buff(const fb::game::buff& buff);
 #else
     spell_buff() = default;

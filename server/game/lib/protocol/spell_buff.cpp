@@ -3,13 +3,13 @@
 namespace fb::protocol::game::response {
 
 #ifndef BOT
-spell_buff::spell_buff(std::string_view name, uint32_t time) :
+spell_buff::spell_buff(std::string_view name, const fb::model::timespan& duration) :
     name(std::string(name)),
-    time(time)
+    duration(duration)
 { }
 spell_buff::spell_buff(const fb::game::buff& buff) :
     name(buff.model.name),
-    time(buff.time())
+    duration(buff.remaining())
 { }
 #endif
 
@@ -19,14 +19,17 @@ async::task<void> spell_buff::serialize(fb::stream_writer<big_endian>& writer) c
     co_await header::serialize(writer);
     writer.write<uint8_t>(opcode);
     writer.write<std::string>(this->name);
-    writer.write<uint32_t>(static_cast<uint32_t>(this->time.count() / 1000));
+    auto duration_ms = this->duration.total_milliseconds();
+    if (duration_ms < 0)
+        duration_ms = 0;
+    writer.write<uint32_t>(static_cast<uint32_t>(duration_ms / 1000));
 }
 #else
 async::task<void> spell_buff::deserialize(fb::stream_reader<big_endian>& reader)
 {
     co_await header::deserialize(reader);
-    this->name = reader.read<std::string, uint8_t>();
-    this->time = std::chrono::milliseconds(reader.read<uint32_t>() * 1000);
+    this->name     = reader.read<std::string, uint8_t>();
+    this->duration = fb::model::timespan{std::chrono::seconds(reader.read<uint32_t>())};
 }
 #endif
 
