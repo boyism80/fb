@@ -1,5 +1,6 @@
 #include <fb/game/map/container.h>
 #include <fb/game/server.h>
+#include <fb/stream_reader.h>
 
 using namespace fb::game;
 
@@ -24,18 +25,39 @@ bool map_container::load_data(uint32_t id, std::vector<char>& buffer)
     return true;
 }
 
-bool map_container::load_block(uint32_t id, Json::Value& buffer)
+bool map_container::load_block(uint32_t id, std::vector<fb::model::point16_t>& buffer)
 {
-    auto          fname = std::format("maps/{:06}.block", id);
-    std::ifstream file(fname);
+    auto fname = std::format("maps/{:06}.block", id);
+    auto file  = std::ifstream(fname, std::ios::binary);
     if (file.is_open() == false)
         return false;
 
-    Json::Reader reader;
-    if (reader.parse(file, buffer) == false)
-        return false;
-
+    auto bytes = std::vector<uint8_t>(std::istreambuf_iterator<char>(file), {});
     file.close();
+
+    try
+    {
+        auto reader = fb::stream_reader<little_endian>(bytes);
+        auto count  = reader.read<uint32_t>();
+
+        buffer.clear();
+        buffer.reserve(count);
+
+        for (uint32_t i = 0; i < count; ++i)
+        {
+            auto x = reader.read<uint16_t>();
+            auto y = reader.read<uint16_t>();
+            buffer.emplace_back(x, y);
+        }
+
+        if (reader.readable_size() != 0)
+            return false;
+    }
+    catch (const std::runtime_error&)
+    {
+        return false;
+    }
+
     return true;
 }
 
@@ -43,7 +65,7 @@ void map_container::load(const fb::model::map& model)
 {
     auto active = (model.host == this->host);
     auto binary = std::vector<char>();
-    auto blocks = Json::Value();
+    auto blocks = std::vector<fb::model::point16_t>();
     if (active)
     {
         if (load_data(model.id, binary) == false)
@@ -56,7 +78,7 @@ void map_container::load(const fb::model::map& model)
     auto map = std::make_shared<fb::game::map>(this->server, model, active, binary.data(), binary.size());
     for (const auto& block : blocks)
     {
-        map->block(block["x"].asInt(), block["y"].asInt(), true);
+        map->block(block.x, block.y, true);
     }
 
     {

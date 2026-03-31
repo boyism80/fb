@@ -21,7 +21,7 @@ public:
 
 private:
     static bool load_data(uint32_t id, std::vector<char>& buffer);
-    static bool load_block(uint32_t id, Json::Value& buffer);
+    static bool load_block(uint32_t id, std::vector<fb::model::point16_t>& buffer);
 
 public:
     void                 load(const fb::model::map& model);
