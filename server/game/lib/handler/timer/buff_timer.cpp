@@ -34,8 +34,7 @@ async::task<void> buff_timer::handle(const fb::model::datetime& now, std::thread
             auto buffs       = obj->buffs; // To avoid iterator invalidation
             for (auto& [id, buff] : buffs)
             {
-                buff->time_dec(1s);
-                if (buff->time() <= 0ms)
+                if (buff->remaining() <= 0ms)
                 {
                     ended_buffs.push_back(buff);
                     continue;

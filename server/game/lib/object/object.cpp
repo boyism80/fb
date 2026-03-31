@@ -39,7 +39,7 @@ const fb::model::object& object::based() const
 bool object::is(OBJECT_TYPE type) const
 {
     auto mine = this->what();
-    return (type & mine) == mine;
+    return ENUM_IN(mine, type);
 }
 
 const std::string& object::name() const

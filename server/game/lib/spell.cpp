@@ -243,25 +243,33 @@ buff::buff(const fb::game::server& server, const fb::model::spell& model, const 
     server(server),
     model(model),
     caster(caster),
-    _time(seconds * 1000)
+    start(fb::model::datetime()),
+    _duration(std::chrono::seconds(seconds))
 { }
 
 buff::~buff()
 { }
 
-std::chrono::milliseconds buff::time() const
+const fb::model::timespan& buff::duration() const
 {
-    return this->_time;
+    return this->_duration;
 }
 
-void buff::time_inc(const std::chrono::steady_clock::duration& inc)
+void buff::duration(const fb::model::timespan& value)
 {
-    this->_time += std::chrono::duration_cast<std::chrono::milliseconds>(inc);
+    this->_duration = value;
 }
 
-void buff::time_dec(const std::chrono::steady_clock::duration& dec)
+fb::model::timespan buff::remaining() const
 {
-    this->_time -= std::chrono::duration_cast<std::chrono::milliseconds>(dec);
+    auto elapsed = fb::model::datetime() - this->start;
+    return this->_duration - elapsed;
+}
+
+void buff::remaining(const fb::model::timespan& value)
+{
+    auto elapsed    = fb::model::datetime() - this->start;
+    this->_duration = elapsed + value;
 }
 
 buffs::buffs(object& owner) :
@@ -325,7 +333,7 @@ std::shared_ptr<buff> buffs::push_back(const fb::model::spell&                  
     if (this->contains(model.id))
     {
         auto& buff = this->at(model.id);
-        buff->time(std::chrono::seconds(seconds));
+        buff->remaining(std::chrono::seconds(seconds));
         return buff;
     }
 
