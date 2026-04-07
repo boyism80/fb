@@ -121,8 +121,15 @@ async::task<void> server::on_create_clan(const internal_resp::ClanDetails& resp)
                         auto ch = characters.find(master_uid);
                         if (ch != nullptr)
                         {
-                            ch->clan_id(id);
-                            clan->attach(ch->template weak_from_this_as<character>());
+                            auto weak = ch->template weak_from_this_as<character>();
+                            clan->attach(weak);
+
+                            auto before = this->threads.current();
+                            co_await this->threads.switching(weak);
+                            if (weak.expired() == false)
+                                ch->clan_id(id);
+                            if (before != nullptr)
+                                co_await before->switching();
 
                             auto log_data              = Json::Value();
                             log_data["character_id"]   = static_cast<Json::Int64>(ch->id);
@@ -454,7 +461,8 @@ async::task<void> server::on_updated_clan(const internal_resp::UpdatedClan& resp
             clan->join(clan_member{resp.new_member.value().name, role});
 
             co_await this->characters.async_write([this, &resp, clan](auto& characters) -> async::task<void> {
-                auto ch = characters.find(resp.new_member.value().name);
+                auto joined_member_name = resp.new_member.value().name;
+                auto ch                 = characters.find(joined_member_name);
                 if (ch == nullptr)
                     co_return;
 
@@ -472,8 +480,8 @@ async::task<void> server::on_updated_clan(const internal_resp::UpdatedClan& resp
                 }
 
                 characters.foreach_enqueue(
-                    [this, &resp](auto& member) -> async::task<void> {
-                        member->message(std::format(_TEXT(MESSAGE_CLAN_MEMBER_JOINED), resp.new_member.value().name),
+                    [joined_member_name](auto& member) -> async::task<void> {
+                        member->message(std::format(_TEXT(MESSAGE_CLAN_MEMBER_JOINED), joined_member_name),
                                         MESSAGE_TYPE::NOTIFY);
                         co_return;
                     },
@@ -482,13 +490,22 @@ async::task<void> server::on_updated_clan(const internal_resp::UpdatedClan& resp
                 if (weak.expired() == false)
                 {
                     clan->attach(weak);
-                    ch->clan_id(clan->id());
-                    ch->update_external(false);
-                    ch->message(std::format(_TEXT(MESSAGE_CLAN_JOINED_SUCCESS), clan->name()), MESSAGE_TYPE::NOTIFY);
+
+                    auto before = this->threads.current();
+                    co_await this->threads.switching(weak);
+                    if (weak.expired() == false)
+                    {
+                        ch->clan_id(clan->id());
+                        ch->update_external(false);
+                        ch->message(std::format(_TEXT(MESSAGE_CLAN_JOINED_SUCCESS), clan->name()),
+                                    MESSAGE_TYPE::NOTIFY);
+                    }
+                    if (before != nullptr)
+                        co_await before->switching();
 
                     auto log_data              = Json::Value();
                     log_data["character_id"]   = static_cast<Json::Int64>(ch->id);
-                    log_data["character_name"] = UTF8(resp.new_member.value().name, PLATFORM::WINDOWS);
+                    log_data["character_name"] = UTF8(joined_member_name, PLATFORM::WINDOWS);
                     log_data["clan_id"]        = static_cast<Json::Int64>(clan->id());
                     log_data["clan_name"]      = UTF8(clan->name(), PLATFORM::WINDOWS);
                     this->log.write("clan_join", log_data);
@@ -503,28 +520,38 @@ async::task<void> server::on_updated_clan(const internal_resp::UpdatedClan& resp
             if (resp.deleted_member.has_value() == false)
                 break;
 
-            this->characters.write([this, &resp, clan](auto& characters) {
-                auto ch = characters.find(resp.deleted_member.value().name);
+            co_await this->characters.async_write([this, &resp, clan](auto& characters) -> async::task<void> {
+                auto deleted_member_name = resp.deleted_member.value().name;
+                auto action_type         = static_cast<internal::ClanActionType>(resp.action);
+                auto ch                  = characters.find(deleted_member_name);
                 if (ch != nullptr)
                 {
                     auto weak = ch->template weak_from_this_as<character>();
                     clan->detach(weak);
-                    ch->clan_reset();
-                    ch->update_external(false);
-                    ch->message(resp.action == internal::ClanActionType::Kick ? _TEXT(MESSAGE_CLAN_KICKED)
-                                                                              : _TEXT(MESSAGE_CLAN_LEFT),
-                                MESSAGE_TYPE::NOTIFY);
+
+                    auto before = this->threads.current();
+                    co_await this->threads.switching(weak);
+                    if (weak.expired() == false)
+                    {
+                        ch->clan_reset();
+                        ch->update_external(false);
+                        ch->message(action_type == internal::ClanActionType::Kick ? _TEXT(MESSAGE_CLAN_KICKED)
+                                                                                  : _TEXT(MESSAGE_CLAN_LEFT),
+                                    MESSAGE_TYPE::NOTIFY);
+                    }
+                    if (before != nullptr)
+                        co_await before->switching();
 
                     auto log_data              = Json::Value();
                     log_data["character_id"]   = static_cast<Json::Int64>(ch->id);
-                    log_data["character_name"] = UTF8(resp.deleted_member.value().name, PLATFORM::WINDOWS);
+                    log_data["character_name"] = UTF8(deleted_member_name, PLATFORM::WINDOWS);
                     log_data["clan_id"]        = static_cast<Json::Int64>(clan->id());
                     log_data["clan_name"]      = UTF8(clan->name(), PLATFORM::WINDOWS);
-                    this->log.write(resp.action == internal::ClanActionType::Kick ? "clan_kick" : "clan_leave",
+                    this->log.write(action_type == internal::ClanActionType::Kick ? "clan_kick" : "clan_leave",
                                     log_data);
                 }
 
-                clan->leave(resp.deleted_member.value().name);
+                clan->leave(deleted_member_name);
                 auto members = std::vector<std::shared_ptr<fb::game::character>>();
                 for (auto& [_, weak_ptr] : clan->characters())
                 {
@@ -534,15 +561,16 @@ async::task<void> server::on_updated_clan(const internal_resp::UpdatedClan& resp
                     members.push_back(shared_ptr);
                 }
 
-                auto message = resp.action == internal::ClanActionType::Kick
-                                   ? std::format(_TEXT(MESSAGE_CLAN_MEMBER_KICKED), resp.deleted_member.value().name)
-                                   : std::format(_TEXT(MESSAGE_CLAN_MEMBER_LEFT), resp.deleted_member.value().name);
+                auto message = action_type == internal::ClanActionType::Kick
+                                   ? std::format(_TEXT(MESSAGE_CLAN_MEMBER_KICKED), deleted_member_name)
+                                   : std::format(_TEXT(MESSAGE_CLAN_MEMBER_LEFT), deleted_member_name);
                 characters.foreach_enqueue(
-                    [this, message](auto& member) -> async::task<void> {
+                    [message](auto& member) -> async::task<void> {
                         member->message(message, MESSAGE_TYPE::NOTIFY);
                         co_return;
                     },
                     members);
+                co_return;
             });
             break;
         }
@@ -560,11 +588,18 @@ async::task<void> server::on_updated_clan(const internal_resp::UpdatedClan& resp
                 auto target = characters.find(resp.target.value().uid);
                 if (target != nullptr && resp.old_role.has_value() && resp.new_role.has_value())
                 {
-                    target->message(
-                        std::format(_TEXT(MESSAGE_CLAN_ROLE_CHANGED), resp.old_role.value(), resp.new_role.value()),
-                        MESSAGE_TYPE::NOTIFY);
+                    auto targets = std::vector<std::shared_ptr<fb::game::character>>{target};
+                    auto message =
+                        std::format(_TEXT(MESSAGE_CLAN_ROLE_CHANGED), resp.old_role.value(), resp.new_role.value());
+                    characters.foreach_enqueue(
+                        [message](auto& target_member) -> async::task<void> {
+                            target_member->message(message, MESSAGE_TYPE::NOTIFY);
+                            co_return;
+                        },
+                        targets);
                 }
 
+                auto members = std::vector<std::shared_ptr<fb::game::character>>();
                 for (auto& [uid, weak] : clan->characters())
                 {
                     if (resp.target.has_value() && uid == resp.target.value().uid)
@@ -576,12 +611,22 @@ async::task<void> server::on_updated_clan(const internal_resp::UpdatedClan& resp
 
                     if (resp.target.has_value() && resp.old_role.has_value() && resp.new_role.has_value())
                     {
-                        shared->message(std::format(_TEXT(MESSAGE_CLAN_ROLE_CHANGED_DETAILED),
-                                                    resp.target.value().name,
-                                                    resp.old_role.value(),
-                                                    resp.new_role.value()),
-                                        MESSAGE_TYPE::NOTIFY);
+                        members.push_back(shared);
                     }
+                }
+
+                if (resp.target.has_value() && resp.old_role.has_value() && resp.new_role.has_value())
+                {
+                    auto message = std::format(_TEXT(MESSAGE_CLAN_ROLE_CHANGED_DETAILED),
+                                               resp.target.value().name,
+                                               resp.old_role.value(),
+                                               resp.new_role.value());
+                    characters.foreach_enqueue(
+                        [message](auto& member_ptr) -> async::task<void> {
+                            member_ptr->message(message, MESSAGE_TYPE::NOTIFY);
+                            co_return;
+                        },
+                        members);
                 }
             });
             break;

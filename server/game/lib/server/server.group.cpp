@@ -330,13 +330,18 @@ async::task<void> server::on_create_group(const internal_resp::GroupDetails& res
                     [id, master_uid, &group, master, &resp, this](auto& characters) -> async::task<void> {
                         // First, add all members to the group and collect valid character pointers
                         auto group_members = std::vector<std::shared_ptr<fb::game::character>>();
+                        auto member_names  = std::vector<std::string>{};
+                        member_names.reserve(resp.members.size());
+                        for (const auto& member : resp.members)
+                        {
+                            member_names.push_back(member.name);
+                        }
 
                         // Add master to group
                         auto ch = characters.find(master_uid);
                         if (ch != nullptr)
                         {
                             auto weak = ch->template weak_from_this_as<character>();
-                            ch->group_id(id);
                             group->enter(weak);
 
                             // Log group create event (always log regardless of weak state)
@@ -364,32 +369,28 @@ async::task<void> server::on_create_group(const internal_resp::GroupDetails& res
                                 auto invited_weak = invited_ch->template weak_from_this_as<character>();
                                 if (invited_weak.expired() == false)
                                 {
-                                    invited_ch->group_id(id);
                                     group->enter(invited_weak);
                                     group_members.push_back(invited_ch);
                                 }
                             }
                         }
 
-                        // Send messages to all members
-                        for (auto& member_ptr : group_members)
-                        {
-                            if (member_ptr == nullptr)
-                                continue;
-
-                            // Send group-join notification to other members
-                            for (auto& other_member : resp.members)
-                            {
-                                if (other_member.name != member_ptr->name())
+                        characters.foreach_enqueue(
+                            [id, member_names](auto& member_ptr) -> async::task<void> {
+                                member_ptr->group_id(id);
+                                for (const auto& other_member_name : member_names)
                                 {
-                                    member_ptr->message(std::format(_TEXT(MESSAGE_GROUP_JOINED), other_member.name),
+                                    if (other_member_name == member_ptr->name())
+                                        continue;
+
+                                    member_ptr->message(std::format(_TEXT(MESSAGE_GROUP_JOINED), other_member_name),
                                                         MESSAGE_TYPE::STATE);
                                 }
-                            }
 
-                            // Send "joined the group" message to joiner
-                            member_ptr->message(_TEXT(MESSAGE_GROUP_JOINED_SUCCESS), MESSAGE_TYPE::STATE);
-                        }
+                                member_ptr->message(_TEXT(MESSAGE_GROUP_JOINED_SUCCESS), MESSAGE_TYPE::STATE);
+                                co_return;
+                            },
+                            group_members);
                         co_return;
                     });
             }

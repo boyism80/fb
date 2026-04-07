@@ -484,10 +484,10 @@ server::send(object& object, const fb::protocol::header& header, fb::game::scope
     case fb::game::scope::WORLD:
     {
         this->characters.write([stream, encrypt](auto& characters) {
-            for (auto& [_, ch] : characters)
-            {
+            characters.foreach_enqueue([stream, encrypt](auto& ch) -> async::task<void> {
                 std::ignore = ch->send(stream, encrypt);
-            }
+                co_return;
+            });
         });
     }
     break;
@@ -842,10 +842,10 @@ void server::update_time()
     if (this->_time.hours() != updated.hours())
     {
         this->characters.write([hours = updated.hours()](auto& characters) {
-            for (auto& [_, ch] : characters)
-            {
+            characters.foreach_enqueue([hours](auto& ch) -> async::task<void> {
                 ch->update_time(hours);
-            }
+                co_return;
+            });
         });
     }
 

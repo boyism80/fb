@@ -480,10 +480,10 @@ int builtin::server::builtin_timer(lua_State* L)
 
     auto type = decrease ? TIMER_TYPE::DECREASE : TIMER_TYPE::INCREASE;
     server->characters.write([value, type](auto& container) {
-        for (auto& [uid, ch] : container)
-        {
+        container.foreach_enqueue([value, type](auto& ch) -> async::task<void> {
             ch->timer(value, type);
-        }
+            co_return;
+        });
     });
     return 0;
 }
@@ -498,10 +498,10 @@ int builtin::server::builtin_weather(lua_State* L)
     auto value  = (uint32_t)lua->tointeger(1);
 
     server->characters.write([value](auto& container) {
-        for (auto& [uid, ch] : container)
-        {
+        container.foreach_enqueue([value](auto& ch) -> async::task<void> {
             ch->weather(WEATHER_TYPE(value));
-        }
+            co_return;
+        });
     });
     return 0;
 }
@@ -516,10 +516,10 @@ int builtin::server::builtin_bright(lua_State* L)
     auto value  = (uint32_t)lua->tointeger(1);
 
     server->characters.write([value](auto& container) {
-        for (auto& [uid, ch] : container)
-        {
+        container.foreach_enqueue([value](auto& ch) -> async::task<void> {
             ch->bright(value);
-        }
+            co_return;
+        });
     });
     return 0;
 }

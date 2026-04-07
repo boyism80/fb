@@ -4861,7 +4861,20 @@ int builtin::character::builtin_divorce(lua_State* L)
     new_tar.divorce_count    = spouse->marriage().divorce_count + 1;
 
     me->marriage(new_me);
-    spouse->marriage(new_tar);
+    if (spouse->thread() == me->thread())
+    {
+        spouse->marriage(new_tar);
+    }
+    else
+    {
+        auto spouse_weak = spouse->weak_from_this_as<fb::game::character>();
+        server->threads.enqueue(spouse_weak, [spouse_weak, new_tar](auto&) -> async::task<void> {
+            auto spouse_shared = spouse_weak.lock();
+            if (spouse_shared != nullptr)
+                spouse_shared->marriage(new_tar);
+            co_return;
+        });
+    }
 
     lua->pushnil();
     return 1;
