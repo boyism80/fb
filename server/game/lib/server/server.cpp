@@ -158,7 +158,7 @@ async::task<void> server::on_start()
     {
         async_tasks.push_back(thread->dispatch([this, maps = std::move(maps)](auto& thread) -> async::task<void> {
             auto params = std::make_unique<thread_params>(*this);
-            for (auto map : maps)
+            for (const auto& map : maps)
             {
                 params->maps.insert({map->model.id, map});
                 if (table::mob_spawn.contains(map->model.id))

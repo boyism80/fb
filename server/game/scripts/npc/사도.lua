@@ -87,7 +87,7 @@ function NPC_446(me, npc)
             me:dialog(npc, "지금 모아둔 도토리와 토끼고기는 나중에 쓸데가 있으니, 먹지 말고 모아두세요!", false, true)
             me:dialog(npc, "제가 드린 임무를 훌륭하게 수행하셨으니, 조그마한 선물을 드릴게요. 기쁘게 받아주셨으면 해요.", false, true)
 
-            local armor = (me:gender() == GENDER.WOMAN) and "초보자용여자갑주" or "초보자용남자갑주"
+            local armor = (me:gender() == GENDER.FEMALE) and "초보자용여자갑주" or "초보자용남자갑주"
             if me:mkitem(armor, 1) == nil then
                 me:dialog(npc, "소지품이 가득 차서 갑옷을 줄 수 없습니다.", false, false)
                 return

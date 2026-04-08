@@ -121,7 +121,7 @@ std::shared_ptr<life> ai::find_target_in_sight(mob& mob_obj, const datetime& now
         return best_target;
 
     // Otherwise check for any target in sight
-    for (auto obj : mob_obj.sight_in(OBJECT_TYPE::CHARACTER))
+    for (const auto& obj : mob_obj.sight_in(OBJECT_TYPE::CHARACTER))
     {
         auto potential_target = std::static_pointer_cast<life>(obj);
 
@@ -177,7 +177,7 @@ std::shared_ptr<life> ai::find_target_in_range(mob& mob_obj, const datetime& now
         return best_target;
 
     // Otherwise check for any target in range
-    for (auto obj : mob_obj.sight_in(OBJECT_TYPE::CHARACTER))
+    for (const auto& obj : mob_obj.sight_in(OBJECT_TYPE::CHARACTER))
     {
         auto potential_target = std::static_pointer_cast<life>(obj);
 

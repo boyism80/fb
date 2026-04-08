@@ -78,7 +78,7 @@ private:
     uint32_t                                   _experience       = 0;
     NATION                                     _nation           = NATION::GOGURYEO;
     CREATURE                                   _creature         = CREATURE::DRAGON;
-    GENDER                                     _gender           = GENDER::MAN;
+    GENDER                                     _gender           = GENDER::MALE;
     STATE                                      _state            = STATE::NORMAL;
     uint8_t                                    _level            = 1;
     CLASS                                      _class            = CLASS::NONE;
@@ -138,7 +138,7 @@ public:
         DIRECTION                              direction        = DIRECTION::BOTTOM;
         uint16_t                               look             = 0;
         uint32_t                               money            = 0;
-        GENDER                                 gender           = GENDER::MAN;
+        GENDER                                 gender           = GENDER::MALE;
         uint8_t                                level            = 1;
         uint32_t                               exp              = 0;
         STATE                                  state            = STATE::NORMAL;

@@ -38,7 +38,7 @@ async::task<void> user_list::serialize(fb::stream_writer<big_endian>& writer) co
     writer.write<uint16_t>((uint16_t)this->users.size());
     writer.write<uint8_t>(0x00);
 
-    for (auto ch : this->users)
+    for (const auto& ch : this->users)
     {
         auto& name = ch->name();
 

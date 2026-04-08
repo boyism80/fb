@@ -209,7 +209,7 @@ function NPC_622(me, npc)
             end
             cost_nine[name] = 1
         end
-        local product = (me:gender() == GENDER.MAN) and "팔요천의기" or "팔요천의향"
+        local product = (me:gender() == GENDER.MALE) and "팔요천의기" or "팔요천의향"
         local reward = nil
         if math.random(1, 100) < 10 then
             reward = { ['item'] = { [product] = 1 } }

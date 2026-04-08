@@ -198,7 +198,7 @@ uint32_t fb::game::stat::damage(uint32_t                          value,
     if (from != nullptr && from->is(OBJECT_TYPE::CHARACTER))
     {
         auto ch = std::static_pointer_cast<fb::game::character>(from);
-        for (auto mob : ch->spawned_mobs())
+        for (const auto& mob : ch->spawned_mobs())
         {
             if (mob.get() == &this->owner)
                 continue;
@@ -766,7 +766,7 @@ uint32_t character_stat::damage(uint32_t                          value,
     if (from == nullptr)
         return result;
 
-    for (auto mob : this->owner.spawned_mobs())
+    for (const auto& mob : this->owner.spawned_mobs())
     {
         if (mob->target() != nullptr)
             continue;

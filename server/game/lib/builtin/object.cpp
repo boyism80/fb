@@ -856,7 +856,7 @@ int builtin::object::builtin_near(lua_State* L)
     auto you   = lua->touserdata<fb::game::object>(2);
     auto nears = map->nears(obj->position());
     auto found = false;
-    for (auto x : nears)
+    for (const auto& x : nears)
     {
         if (you == x)
         {

@@ -288,7 +288,7 @@ std::weak_ptr<life> mob::find_target()
         return std::weak_ptr<life>();
 
     auto min_distance_sqrt = 0xFFFFFFFF;
-    for (auto x : this->sight_in(OBJECT_TYPE::CHARACTER))
+    for (const auto& x : this->sight_in(OBJECT_TYPE::CHARACTER))
     {
         auto life = std::static_pointer_cast<fb::game::life>(x);
         if (life == this->_oblivion.lock())

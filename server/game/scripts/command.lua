@@ -1363,10 +1363,10 @@ command_funcs = {
             ['privilege'] = ROLE.ADMIN,
             ['usage'] = '- 성별 변경',
             ['command'] = function (me, args)
-                if me:gender() == GENDER.MAN then
-                    me:gender(GENDER.WOMAN)
+                if me:gender() == GENDER.MALE then
+                    me:gender(GENDER.FEMALE)
                 else
-                    me:gender(GENDER.MAN)
+                    me:gender(GENDER.MALE)
                 end
                 return true
             end,

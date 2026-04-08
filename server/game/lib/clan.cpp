@@ -140,7 +140,7 @@ std::vector<std::shared_ptr<fb::game::character>> clan::nears(const fb::game::ma
     auto nears  = map.nears(position, OBJECT_TYPE::CHARACTER); // same thread
     auto result = std::vector<std::shared_ptr<fb::game::character>>();
 
-    for (auto obj : nears)
+    for (const auto& obj : nears)
     {
         if (obj->is(OBJECT_TYPE::CHARACTER) == false)
             continue;

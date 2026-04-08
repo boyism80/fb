@@ -138,7 +138,7 @@ int builtin::mob::builtin_items(lua_State* L)
         return lua->ensure_resume(*server, weak, [=]() {
             lua->new_table();
             auto i = 0;
-            for (auto item : buffer)
+            for (const auto& item : buffer)
             {
                 lua->pushobject(item);
                 lua_rawseti(L, -2, i + 1);

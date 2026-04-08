@@ -1514,10 +1514,10 @@ async::task<void> game_bot::reverse_condition(const std::vector<fb::model::dsl>&
         case fb::model::enum_value::DSL::gender:
         {
             auto params = dsl::gender(condition.params);
-            if (params.value == GENDER::MAN)
-                co_await this->change_gender(GENDER::WOMAN, timeout);
+            if (params.value == GENDER::MALE)
+                co_await this->change_gender(GENDER::FEMALE, timeout);
             else
-                co_await this->change_gender(GENDER::MAN, timeout);
+                co_await this->change_gender(GENDER::MALE, timeout);
         }
         break;
 

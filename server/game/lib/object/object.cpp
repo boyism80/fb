@@ -500,7 +500,7 @@ async::task<bool> object::map(map_ptr map, const fb::model::point16_t& position,
         if (map == nullptr)
         {
             // broadcast near characters
-            for (auto x : this->_map->nears(this->_position))
+            for (const auto& x : this->_map->nears(this->_position))
             {
                 if (x.get() != this)
                     this->hide(*x, destroy_type);
@@ -756,7 +756,7 @@ std::vector<std::shared_ptr<fb::game::object>> object::nears(OBJECT_TYPE type, b
         return {};
 
     auto result = std::vector<std::shared_ptr<fb::game::object>>{};
-    for (auto obj : this->_map->nears(this->_position))
+    for (const auto& obj : this->_map->nears(this->_position))
     {
         if (this == obj.get())
             continue;

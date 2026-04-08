@@ -1,5 +1,5 @@
 function NPC_559(me, npc)
-    if me:gender() == GENDER.MAN then
+    if me:gender() == GENDER.MALE then
         local button = me:dialog(npc, "남자분들은 견우님에게 말을 걸어보세요.", false, false)
         if button == DIALOG_RESULT.QUIT then
             return

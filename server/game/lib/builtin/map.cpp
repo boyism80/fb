@@ -306,7 +306,7 @@ int builtin::map::builtin_belows(lua_State* L)
 
     lua->new_table();
     auto i = 0;
-    for (auto below : map->belows(fb::model::point16_t(x, y), type))
+    for (const auto& below : map->belows(fb::model::point16_t(x, y), type))
     {
         lua->pushinteger(i + 1);
         lua->pushobject(below);
@@ -374,7 +374,7 @@ int builtin::map::builtin_at(lua_State* L)
     return lua->ensure_yield(*server, weak, [=](auto is_yield) {
         auto nears  = map->nears(fb::model::point16_t{x, y}, type);
         auto result = std::shared_ptr<object>(nullptr);
-        for (auto obj : nears)
+        for (const auto& obj : nears)
         {
             if (obj->position() == position)
             {

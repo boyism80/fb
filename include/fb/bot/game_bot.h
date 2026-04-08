@@ -109,7 +109,7 @@ private:
     uint8_t                         _mail_count    = 0;
     uint8_t                         _fast_move     = 0;
     uint8_t                         _disguised     = 0;
-    GENDER                          _gender        = GENDER::MAN;
+    GENDER                          _gender        = GENDER::MALE;
     STATE                           _state         = STATE::NORMAL;
     uint8_t                         _armor_dress   = 0;
     uint8_t                         _armor_color   = 0;
