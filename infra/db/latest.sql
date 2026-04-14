@@ -238,6 +238,7 @@ DROP TABLE IF EXISTS `name`;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `name` (
   `id` int unsigned NOT NULL AUTO_INCREMENT,
+  `world` int unsigned NOT NULL COMMENT 'World id at reservation time; kept for historical/merge lookup',
   `name` varchar(256) CHARACTER SET utf8mb3 COLLATE utf8mb3_bin NOT NULL,
   `created_date` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
   `updated_date` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
@@ -470,6 +471,7 @@ DROP TABLE IF EXISTS `user`;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `user` (
   `id` int unsigned NOT NULL,
+  `world` int unsigned NOT NULL COMMENT 'World id at character creation time; kept for historical/merge lookup',
   `name` varchar(256) NOT NULL,
   `pw` varchar(256) CHARACTER SET utf8mb3 COLLATE utf8mb3_general_ci NOT NULL,
   `birth` int unsigned DEFAULT NULL,
@@ -911,7 +913,7 @@ DELIMITER ;
 /*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
 /*!50003 SET sql_mode              = 'ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION' */ ;
 DELIMITER ;;
-CREATE DEFINER=`fb`@`localhost` PROCEDURE `USP_NAME_SET`(IN uname NVARCHAR(256))
+CREATE DEFINER=`fb`@`localhost` PROCEDURE `USP_NAME_SET`(IN uname NVARCHAR(256), IN in_world INT UNSIGNED)
 BEGIN
     DECLARE uid INT;
     DECLARE EXIT HANDLER FOR SQLEXCEPTION
@@ -926,7 +928,7 @@ BEGIN
     SELECT id INTO uid FROM name WHERE name = uname FOR UPDATE;
     
     IF uid IS NULL THEN
-        INSERT INTO name (name) VALUES (uname);
+        INSERT INTO name (name, world) VALUES (uname, in_world);
         SET uid = LAST_INSERT_ID();
         SELECT 1 AS result, uid;
     ELSE

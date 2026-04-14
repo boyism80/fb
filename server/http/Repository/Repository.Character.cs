@@ -55,6 +55,7 @@ namespace Http.Reepository
             var sql = $"""
                 INSERT INTO `user` (
                     `id`,
+                    `world`,
                     `name`,
                     `pw`,
                     `role`,
@@ -100,6 +101,7 @@ namespace Http.Reepository
                     `first_login_date`)
                 VALUES (
                     {value.Id.Escape()},
+                    {value.World.Escape()},
                     {value.Name.Escape()},
                     {value.Pw.Escape()},
                     {value.Role.Escape()},

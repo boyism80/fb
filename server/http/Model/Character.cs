@@ -12,6 +12,7 @@ namespace Http.Model
 
     public class Character : CharacterKey, IModel
     {
+        public uint World { get; set; }
         public string Name { get; set; }
         public string Pw { get; set; }
         public uint? Birth { get; set; }

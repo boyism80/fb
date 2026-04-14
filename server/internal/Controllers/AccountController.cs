@@ -160,7 +160,8 @@ namespace Internal.Controllers
             await using var connection = _dbContext.GetGlobalConnection(world);
             var result = await connection.QueryFirstAsync<ReserveNameResult>("USP_NAME_SET", new
             {
-                uname = request.Name
+                uname = request.Name,
+                in_world = world
             }, commandType: CommandType.StoredProcedure);
 
             return new Response.ReserveName
@@ -176,6 +177,7 @@ namespace Internal.Controllers
             var ch = new Character
             {
                 Id = request.Uid,
+                World = world,
                 Name = request.Name,
                 Pw = SHA256Hash(request.Pw),
                 Level = 1,
