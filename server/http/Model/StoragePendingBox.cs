@@ -12,8 +12,8 @@ namespace Http.Model
         public uint? GetHash() => User;
 
         public RedisKey GetRedisKey() => User.HasValue
-            ? $"cache:storage:pending:{User.Value}"
-            : "cache:storage:pending:global";
+            ? $"fb:cache:storage:pending:{User.Value}"
+            : "fb:cache:storage:pending:global";
 
         public RedisValue GetRedisField() => Id;
     }

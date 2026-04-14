@@ -126,7 +126,7 @@ namespace Http.Reepository
 
         private static string GetLockKey(RedisKey key)
         {
-            return $"lock:{key}";
+            return $"fb:lock:{key}";
         }
 
         private async Task<IEnumerable<TModel>> SyncCacheFromDatabase(uint world, Service.Redis redis, TKey key)

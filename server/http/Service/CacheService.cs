@@ -47,7 +47,7 @@ namespace Http.Service
                 var batch = 10;
                 for (int i = 0; i < _redisService.GetShardSize(world); i++)
                 {
-                    count += await DeleteCache(world, i, "cache:*", batch);
+                    count += await DeleteCache(world, i, "fb:cache:*", batch);
                     count += await DeleteCache(world, i, Const.ReferenceCountKey, 10);
                     count += await DeleteCache(world, i, $"{Const.RedisBufferKey}:*", 10);
                 }

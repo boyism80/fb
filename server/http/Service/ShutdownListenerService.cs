@@ -93,7 +93,7 @@ namespace Http.Service
 
                     while (true)
                     {
-                        var isEmpty = redis.Connection.ScanKeysAsync("heart-beat:*", 1).Result.Count == 0;
+                        var isEmpty = redis.Connection.ScanKeysAsync("fb:heart-beat:*", 1).Result.Count == 0;
                         if (isEmpty)
                         {
                             _logger.LogInformation("All heart-beat keys deleted, shutting down.");

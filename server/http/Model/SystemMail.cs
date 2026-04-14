@@ -7,7 +7,7 @@ namespace Http.Model
         public required uint Id { get; set; }
         public uint? GetHash() => 0;
 
-        public RedisKey GetRedisKey() => "cache:system_mail";
+        public RedisKey GetRedisKey() => "fb:cache:system_mail";
 
         public RedisValue GetRedisField() => Id.ToString();
     }

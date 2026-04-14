@@ -33,20 +33,19 @@ namespace Http.Service
             if (redis == null)
                 return new List<ServerInfo>();
 
-            var keys = await redis.Connection.ScanKeysAsync("heart-beat:*", 1000);
+            var keys = await redis.Connection.ScanKeysAsync("fb:heart-beat:*", 1000);
             var servers = new List<ServerInfo>();
 
             foreach (var key in keys)
             {
                 var keyStr = key.ToString();
-                // Parse key format: heart-beat:World:Service:Id
+                // Parse key format: fb:heart-beat:World:Service:Id
                 var parts = keyStr.Split(':');
-                if (parts.Length != 4)
+                if (parts.Length != 5)
                     continue;
 
-                var section = parts[1];
-                var service = parts[2];
-                if (!byte.TryParse(parts[3], out var id))
+                var service = parts[3];
+                if (!byte.TryParse(parts[4], out var id))
                     continue;
 
                 var value = await redis.Connection.StringGetAsync(key);
@@ -83,7 +82,7 @@ namespace Http.Service
             if (redis == null)
                 return false;
 
-            var keys = await redis.Connection.ScanKeysAsync("heart-beat:*", 1000);
+            var keys = await redis.Connection.ScanKeysAsync("fb:heart-beat:*", 1000);
             return keys.Count > 0;
         }
 

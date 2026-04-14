@@ -58,7 +58,7 @@ namespace Http.Reepository
 
         private static string GetLockKey(TKey key)
         {
-            return $"lock:{key.GetRedisKey()}";
+            return $"fb:lock:{key.GetRedisKey()}";
         }
 
         protected override async Task<TModel> Get(uint world, TKey key)

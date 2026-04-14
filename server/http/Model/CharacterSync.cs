@@ -7,7 +7,7 @@ namespace Http.Model
         public required uint Uid { get; set; }
         public uint? GetHash() => Uid;
 
-        public RedisKey GetRedisKey() => $"cache:character-sync:{Uid}";
+        public RedisKey GetRedisKey() => $"fb:cache:character-sync:{Uid}";
     }
 
     public class CharacterSync : CharacterSyncKey, IModel
@@ -16,7 +16,7 @@ namespace Http.Model
         public uint? Clan { get; set; }
         public static string DistributedLockKey(uint uid)
         {
-            return $"lock:character-sync:{uid}";
+            return $"fb:lock:character-sync:{uid}";
         }
     }
 }

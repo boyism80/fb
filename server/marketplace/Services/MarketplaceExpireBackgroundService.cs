@@ -17,7 +17,7 @@ namespace Marketplace.Services
 
         private static readonly TimeSpan ProcessingInterval = TimeSpan.FromMinutes(1);
         private static readonly TimeSpan RetryInterval = TimeSpan.FromSeconds(10);
-        private const string LockKey = "marketplace:expire:lock";
+        private const string LockKey = "fb:marketplace:expire:lock";
         private const int ExpireBatchSize = 1000;
 
         public MarketplaceExpireBackgroundService(

@@ -26,7 +26,7 @@ namespace Http.Service
             if (redis == null)
                 return null;
 
-            var cacheKey = $"maintenance:status:{world}";
+            var cacheKey = $"fb:maintenance:status:{world}";
             var cachedValue = await redis.Connection.StringGetAsync(cacheKey);
 
             if (!cachedValue.IsNull)
@@ -74,7 +74,7 @@ namespace Http.Service
             if (redis == null)
                 return;
 
-            var cacheKey = $"maintenance:status:{world}";
+            var cacheKey = $"fb:maintenance:status:{world}";
             await redis.Connection.KeyDeleteAsync(cacheKey);
         }
     }

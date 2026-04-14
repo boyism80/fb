@@ -6,6 +6,6 @@ namespace Http.Redis.Key
         public fb.protocol._internal.Service Service { get; set; }
         public byte Id { get; set; } = 0xFF;
 
-        public string Key => $"heart-beat:{World}:{Service}:{Id}";
+        public string Key => $"fb:heart-beat:{World}:{Service}:{Id}";
     }
 }

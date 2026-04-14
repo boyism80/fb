@@ -8,7 +8,7 @@ namespace Http.Model
         public uint User { get; set; }
         public uint? GetHash() => Clan;
 
-        public RedisKey GetRedisKey() => $"cache:clan-member:{Clan}";
+        public RedisKey GetRedisKey() => $"fb:cache:clan-member:{Clan}";
 
         public RedisValue GetRedisField() => $"{User}";
     }

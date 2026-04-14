@@ -14,7 +14,7 @@ namespace Marketplace.Services
 
         private static readonly TimeSpan ProcessingInterval = TimeSpan.FromMinutes(10);
         private static readonly TimeSpan RetryInterval = TimeSpan.FromMinutes(1);
-        private const string LockKey = "marketplace:archive:lock";
+        private const string LockKey = "fb:marketplace:archive:lock";
 
         public MarketplaceArchiveBackgroundService(
             IServiceScopeFactory scopeFactory,

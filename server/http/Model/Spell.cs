@@ -8,7 +8,7 @@ namespace Http.Model
         public byte Slot { get; set; }
         public uint? GetHash() => Owner;
 
-        public RedisKey GetRedisKey() => $"cache:spell:{Owner}";
+        public RedisKey GetRedisKey() => $"fb:cache:spell:{Owner}";
 
         public RedisValue GetRedisField() => $"{Slot}";
     }

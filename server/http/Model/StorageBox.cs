@@ -9,7 +9,7 @@ namespace Http.Model
         public uint Id { get; set; }
         public uint? GetHash() => User;
 
-        public RedisKey GetRedisKey() => $"cache:storage:box:{User}";
+        public RedisKey GetRedisKey() => $"fb:cache:storage:box:{User}";
 
         public RedisValue GetRedisField() => Id.ToString();
     }

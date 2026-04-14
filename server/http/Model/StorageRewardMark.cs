@@ -8,7 +8,7 @@ namespace Http.Model
         public string PendingId { get; set; } = string.Empty;
         public uint? GetHash() => User;
 
-        public RedisKey GetRedisKey() => $"cache:storage:mark:{User}";
+        public RedisKey GetRedisKey() => $"fb:cache:storage:mark:{User}";
 
         public RedisValue GetRedisField() => PendingId;
     }

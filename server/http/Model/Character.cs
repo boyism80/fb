@@ -7,7 +7,7 @@ namespace Http.Model
         public required uint Id { get; set; }
         public uint? GetHash() => Id;
 
-        public RedisKey GetRedisKey() => $"cache:user:{Id}";
+        public RedisKey GetRedisKey() => $"fb:cache:user:{Id}";
     }
 
     public class Character : CharacterKey, IModel
