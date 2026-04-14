@@ -63,6 +63,7 @@ namespace Http.Reepository
                     `spouse_id` = VALUES(`spouse_id`),
                     `remarriage_after` = VALUES(`remarriage_after`),
                     `divorce_count` = VALUES(`divorce_count`),
+                    `created_date` = COALESCE(`created_date`, VALUES(`created_date`)),
                     `updated_date` = VALUES(`updated_date`);
                 """;
 

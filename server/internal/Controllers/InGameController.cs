@@ -58,7 +58,6 @@ namespace Internal.Controllers
             {
                 var world = request.World;
 
-                // Check if user is banned
                 var banCheck = await _banService.IsBanned(world, request.Name);
                 if (banCheck != null && banCheck.IsBanned)
                 {
@@ -70,11 +69,9 @@ namespace Internal.Controllers
                     };
                 }
 
-                // Check if maintenance is active
                 var maintenanceInfo = await _maintenanceService.GetMaintenanceInfo(world);
                 if (maintenanceInfo != null && maintenanceInfo.IsActive)
                 {
-                    // Check if user is admin
                     var characterId = await _dbContext.Character.GetCharacterId(world, request.Name);
                     if (characterId.HasValue)
                     {
@@ -147,7 +144,6 @@ namespace Internal.Controllers
             {
                 var world = request.World;
 
-                // Check if user is banned (only if name is provided)
                 if (!string.IsNullOrEmpty(request.Name))
                 {
                     var banCheck = await _banService.IsBanned(world, request.Name);
@@ -161,11 +157,9 @@ namespace Internal.Controllers
                         };
                     }
 
-                    // Check if maintenance is active
                     var maintenanceInfo = await _maintenanceService.GetMaintenanceInfo(world);
                     if (maintenanceInfo != null && maintenanceInfo.IsActive)
                     {
-                        // Check if user is admin
                         var characterId = await _dbContext.Character.GetCharacterId(world, request.Name);
                         if (characterId.HasValue)
                         {
@@ -201,7 +195,6 @@ namespace Internal.Controllers
                     }
                 }
 
-                // Log game server entry event (only if name is provided)
                 if (!string.IsNullOrEmpty(request.Name))
                 {
                     var uid = await _dbContext.Character.GetCharacterId(world, request.Name);
@@ -460,8 +453,9 @@ namespace Internal.Controllers
                     Success = true
                 };
             }
-            catch (Exception)
+            catch (Exception e)
             {
+                _logger.LogError(e, "Save failed for character {CharacterId}", request.Payload?.Character?.Id);
                 return new Response.Save
                 {
                     Success = false
@@ -491,8 +485,9 @@ namespace Internal.Controllers
                     Success = true
                 };
             }
-            catch (Exception)
+            catch (Exception e)
             {
+                _logger.LogError(e, "BatchSave failed for world {World} with {Count} characters", request.World, request.Characters?.Count ?? 0);
                 return new Response.BatchSave
                 {
                     Success = false
@@ -506,7 +501,6 @@ namespace Internal.Controllers
                 return;
 
             var characterIds = payloads.Select(p => p.Character.Id).Distinct().ToList();
-
             var charactersTask = _dbContext.Character.GetMany(world, characterIds);
             var itemsTask = _dbContext.Item.GetMany(world, characterIds);
             var spellsTask = _dbContext.Spell.GetMany(world, characterIds);
@@ -534,9 +528,9 @@ namespace Internal.Controllers
             {
                 var characterId = data.Character.Id;
                 if (!characters.TryGetValue(characterId, out var existingCharacter))
-                    throw new Exception();
+                    throw new Exception($"Character not found: {characterId}");
                 if (existingCharacter.Deleted)
-                    throw new Exception();
+                    throw new Exception($"Character is deleted: {characterId}");
 
                 ApplyOneSavePayload(world, data,
                     itemsByOwner.GetValueOrDefault(characterId) ?? Array.Empty<Item>(),
@@ -569,23 +563,22 @@ namespace Internal.Controllers
 
             var marriage = _mapper.Map<Http.Model.Marriage>(data.Marriage);
             marriage.CharacterId = characterId;
-            marriage.CreatedDate = DateTime.Now;
             marriage.UpdatedDate = DateTime.Now;
             _dbContext.Marriage.Set(world, marriage);
 
-            var items = Override(_mapper.Map<Protocol.Item[], Item[]>(data.Items.ToArray()), existingItems);
+            var items = Override(_mapper.Map<Protocol.Item[], Item[]>(data.Items?.ToArray() ?? Array.Empty<Protocol.Item>()), existingItems);
             _dbContext.Item.Set(world, items);
 
-            var spells = Override(_mapper.Map<Protocol.Spell[], Spell[]>(data.Spells.ToArray()), existingSpells);
+            var spells = Override(_mapper.Map<Protocol.Spell[], Spell[]>(data.Spells?.ToArray() ?? Array.Empty<Protocol.Spell>()), existingSpells);
             _dbContext.Spell.Set(world, spells.ToArray());
 
-            var achievements = Override(_mapper.Map<Protocol.Achievement[], Achievement[]>(data.Achievements.ToArray()), existingAchievements);
+            var achievements = Override(_mapper.Map<Protocol.Achievement[], Achievement[]>(data.Achievements?.ToArray() ?? Array.Empty<Protocol.Achievement>()), existingAchievements);
             _dbContext.Achievement.Set(world, achievements.ToArray());
 
-            var quests = Override(_mapper.Map<Protocol.Quest[], Quest[]>(data.Quests.ToArray()), existingQuests);
+            var quests = Override(_mapper.Map<Protocol.Quest[], Quest[]>(data.Quests?.ToArray() ?? Array.Empty<Protocol.Quest>()), existingQuests);
             _dbContext.Quest.Set(world, quests.ToArray());
 
-            var receivedSystemMails = Override(_mapper.Map<Protocol.SystemMailUser[], SystemMailUser[]>(data.ReceivedSystemMails.ToArray()), existingSystemMailUsers);
+            var receivedSystemMails = Override(_mapper.Map<Protocol.SystemMailUser[], SystemMailUser[]>(data.ReceivedSystemMails?.ToArray() ?? Array.Empty<Protocol.SystemMailUser>()), existingSystemMailUsers);
             _dbContext.SystemMailUser.Set(world, receivedSystemMails.ToArray());
 
             var storageBoxes = Override(_mapper.Map<Protocol.StorageBox[], StorageBox[]>(data.StorageBoxes?.ToArray() ?? Array.Empty<Protocol.StorageBox>()), existingStorageBoxes);
@@ -608,6 +601,7 @@ namespace Internal.Controllers
                 }
             }
         }
+
         [HttpPost("option")]
         public async Task<Response.SetOption> Option(Request.SetOption request)
         {
