@@ -51,6 +51,7 @@ namespace Internal.Controllers
             _logService = logService;
             _maintenanceService = maintenanceService;
         }
+
         [HttpPost("login")]
         public async Task<Response.Login> Login(Request.Login request)
         {
@@ -126,6 +127,7 @@ namespace Internal.Controllers
                 };
             }
         }
+
         [HttpPost("logout")]
         public async Task<Response.Logout> Logout(Request.Logout request)
         {
@@ -137,6 +139,7 @@ namespace Internal.Controllers
                 Success = true
             };
         }
+
         [HttpPost("transfer")]
         public async Task<Response.Transfer> Transfer(Request.Transfer request)
         {
@@ -232,6 +235,7 @@ namespace Internal.Controllers
                 };
             }
         }
+
         [HttpPost("whisper")]
         public async Task<Response.Whisper> Whisper(Request.Whisper request)
         {
@@ -285,6 +289,7 @@ namespace Internal.Controllers
                 };
             }
         }
+
         [HttpPost("broadcast")]
         public Task<Response.Broadcast> Broadcast(Request.Broadcast request)
         {
@@ -336,6 +341,7 @@ namespace Internal.Controllers
 
             return Task.FromResult(response);
         }
+
         [HttpGet("init/{world}/{uid}")]
         public async Task<Response.Init> Init(uint world, uint uid)
         {
@@ -403,7 +409,8 @@ namespace Internal.Controllers
                 };
             }
         }
-        private T[] Override<T>(IEnumerable<T> request, IEnumerable<T> exists) where T : IModel, IRedisHashKey
+
+        private T[] ReconcileSnapshot<T>(IEnumerable<T> request, IEnumerable<T> exists) where T : IModel, IRedisHashKey
         {
             var src = request.ToDictionary(x => $"{x.GetRedisKey()}:{x.GetRedisField()}");
             var dst = exists.ToDictionary(x => $"{x.GetRedisKey()}:{x.GetRedisField()}");
@@ -426,6 +433,7 @@ namespace Internal.Controllers
 
             return dst.Values.ToArray();
         }
+
         [HttpPost("save")]
         public async Task<Response.Save> Save(Request.Save request)
         {
@@ -566,25 +574,25 @@ namespace Internal.Controllers
             marriage.UpdatedDate = DateTime.Now;
             _dbContext.Marriage.Set(world, marriage);
 
-            var items = Override(_mapper.Map<Protocol.Item[], Item[]>(data.Items?.ToArray() ?? Array.Empty<Protocol.Item>()), existingItems);
+            var items = ReconcileSnapshot(_mapper.Map<Protocol.Item[], Item[]>(data.Items?.ToArray() ?? Array.Empty<Protocol.Item>()), existingItems);
             _dbContext.Item.Set(world, items);
 
-            var spells = Override(_mapper.Map<Protocol.Spell[], Spell[]>(data.Spells?.ToArray() ?? Array.Empty<Protocol.Spell>()), existingSpells);
+            var spells = ReconcileSnapshot(_mapper.Map<Protocol.Spell[], Spell[]>(data.Spells?.ToArray() ?? Array.Empty<Protocol.Spell>()), existingSpells);
             _dbContext.Spell.Set(world, spells.ToArray());
 
-            var achievements = Override(_mapper.Map<Protocol.Achievement[], Achievement[]>(data.Achievements?.ToArray() ?? Array.Empty<Protocol.Achievement>()), existingAchievements);
+            var achievements = ReconcileSnapshot(_mapper.Map<Protocol.Achievement[], Achievement[]>(data.Achievements?.ToArray() ?? Array.Empty<Protocol.Achievement>()), existingAchievements);
             _dbContext.Achievement.Set(world, achievements.ToArray());
 
-            var quests = Override(_mapper.Map<Protocol.Quest[], Quest[]>(data.Quests?.ToArray() ?? Array.Empty<Protocol.Quest>()), existingQuests);
+            var quests = ReconcileSnapshot(_mapper.Map<Protocol.Quest[], Quest[]>(data.Quests?.ToArray() ?? Array.Empty<Protocol.Quest>()), existingQuests);
             _dbContext.Quest.Set(world, quests.ToArray());
 
-            var receivedSystemMails = Override(_mapper.Map<Protocol.SystemMailUser[], SystemMailUser[]>(data.ReceivedSystemMails?.ToArray() ?? Array.Empty<Protocol.SystemMailUser>()), existingSystemMailUsers);
+            var receivedSystemMails = ReconcileSnapshot(_mapper.Map<Protocol.SystemMailUser[], SystemMailUser[]>(data.ReceivedSystemMails?.ToArray() ?? Array.Empty<Protocol.SystemMailUser>()), existingSystemMailUsers);
             _dbContext.SystemMailUser.Set(world, receivedSystemMails.ToArray());
 
-            var storageBoxes = Override(_mapper.Map<Protocol.StorageBox[], StorageBox[]>(data.StorageBoxes?.ToArray() ?? Array.Empty<Protocol.StorageBox>()), existingStorageBoxes);
+            var storageBoxes = ReconcileSnapshot(_mapper.Map<Protocol.StorageBox[], StorageBox[]>(data.StorageBoxes?.ToArray() ?? Array.Empty<Protocol.StorageBox>()), existingStorageBoxes);
             _dbContext.StorageBox.Set(world, storageBoxes);
 
-            var storageRewardMarks = Override(_mapper.Map<Protocol.StorageRewardMark[], StorageRewardMark[]>(data.StorageRewardMarks?.ToArray() ?? Array.Empty<Protocol.StorageRewardMark>()), existingStorageRewardMarks);
+            var storageRewardMarks = ReconcileSnapshot(_mapper.Map<Protocol.StorageRewardMark[], StorageRewardMark[]>(data.StorageRewardMarks?.ToArray() ?? Array.Empty<Protocol.StorageRewardMark>()), existingStorageRewardMarks);
             _dbContext.StorageRewardMark.Set(world, storageRewardMarks.ToArray());
 
             var personalPendingIds = data.StorageRewardMarks?.Select(mark => mark.PendingId).ToHashSet() ?? new HashSet<string>();
