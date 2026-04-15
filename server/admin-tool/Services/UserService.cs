@@ -32,10 +32,10 @@ namespace AdminTool.Services
                 searchParam = $"%{searchTerm}%";
             }
 
-            // Get total count from name table (global DB)
+            // Get total count from name_registry table (global DB)
             var countQuery = $"""
                 SELECT COUNT(*) 
-                FROM `name` n
+                FROM `name_registry` n
                 {whereClause}
                 """;
             var totalCount = await globalConn.QueryFirstOrDefaultAsync<int>(countQuery, new { searchTerm = searchParam });
@@ -48,7 +48,7 @@ namespace AdminTool.Services
                     CASE WHEN b.`user` IS NOT NULL AND b.`deleted` = 0 THEN 1 ELSE 0 END AS IsBanned,
                     b.`reason` AS BanReason,
                     b.`expire_date` AS BanExpireDate
-                FROM `name` n
+                FROM `name_registry` n
                 LEFT JOIN `ban` b ON n.`id` = b.`user` AND b.`deleted` = 0
                 {whereClause}
                 ORDER BY n.`id` DESC

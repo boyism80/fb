@@ -230,13 +230,13 @@ CREATE TABLE `mail_sequence` (
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
--- Table structure for table `name`
+-- Table structure for table `name_registry`
 --
 
-DROP TABLE IF EXISTS `name`;
+DROP TABLE IF EXISTS `name_registry`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!50503 SET character_set_client = utf8mb4 */;
-CREATE TABLE `name` (
+CREATE TABLE `name_registry` (
   `id` int unsigned NOT NULL AUTO_INCREMENT,
   `world` int unsigned NOT NULL COMMENT 'World id at reservation time; kept for historical/merge lookup',
   `name` varchar(256) CHARACTER SET utf8mb3 COLLATE utf8mb3_bin NOT NULL,
@@ -263,7 +263,7 @@ CREATE TABLE `ban` (
   `updated_date` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
   PRIMARY KEY (`user`),
   KEY `fk.ban.user_idx` (`user`),
-  CONSTRAINT `fk.ban.user` FOREIGN KEY (`user`) REFERENCES `name` (`id`)
+  CONSTRAINT `fk.ban.user` FOREIGN KEY (`user`) REFERENCES `name_registry` (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_bin;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
@@ -896,7 +896,7 @@ DELIMITER ;
 DELIMITER ;;
 CREATE DEFINER=`fb`@`%` PROCEDURE `USP_NAME_GET_ID`(n NVARCHAR(256))
 BEGIN
-	SELECT id FROM name WHERE name.name = n;
+	SELECT id FROM name_registry WHERE name_registry.name = n;
 END ;;
 DELIMITER ;
 /*!50003 SET sql_mode              = @saved_sql_mode */ ;
@@ -925,10 +925,10 @@ BEGIN
 	SET TRANSACTION ISOLATION LEVEL REPEATABLE READ;
     START TRANSACTION;
     
-    SELECT id INTO uid FROM name WHERE name = uname FOR UPDATE;
+    SELECT id INTO uid FROM name_registry WHERE name = uname FOR UPDATE;
     
     IF uid IS NULL THEN
-        INSERT INTO name (name, world) VALUES (uname, in_world);
+        INSERT INTO name_registry (name, world) VALUES (uname, in_world);
         SET uid = LAST_INSERT_ID();
         SELECT 1 AS result, uid;
     ELSE

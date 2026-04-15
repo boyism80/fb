@@ -43,7 +43,7 @@ namespace Internal.Controllers
         {
             var members = await _dbContext.ClanMember.Get(world, id);
             await using var conn = _dbContext.GetGlobalConnection(world);
-            var names = await conn.QueryAsync($"SELECT `id`, `name` FROM `name` WHERE id IN ({string.Join(',', members.Select(x => x.User))})");
+            var names = await conn.QueryAsync($"SELECT `id`, `name` FROM `name_registry` WHERE id IN ({string.Join(',', members.Select(x => x.User))})");
             var nameDict = names.ToDictionary(x => x.id, x => x.name);
 
             return members.Select(x =>
@@ -247,7 +247,7 @@ namespace Internal.Controllers
 
                         var conn = _dbContext.GetGlobalConnection(world);
                         var masterName = await conn.QueryFirstOrDefaultAsync<string>(
-                            $"SELECT `name` FROM `name` WHERE id = {ch.Id}");
+                            $"SELECT `name` FROM `name_registry` WHERE id = {ch.Id}");
 
                         var response = new Response.DestroyClan
                         {
