@@ -26,7 +26,7 @@ ENDIF(WIN32)
 set(CMAKE_CXX_STANDARD 20)
 add_compile_definitions(NOMINMAX)
 
-file(GLOB_RECURSE SOURCE_FILES "${PROJECT_SOURCE_DIR}/lib/*.cpp")
+file(GLOB_RECURSE SOURCE_FILES "${PROJECT_SOURCE_DIR}/src/*.cpp")
 IF(WIN32)
   list(APPEND SOURCE_FILES ${ROOT_DIR}/resources/baram.ico gateway.rc)
 ENDIF(WIN32)

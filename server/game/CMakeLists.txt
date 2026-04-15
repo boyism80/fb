@@ -28,7 +28,7 @@ add_definitions(-DREDISCPP_HEADER_ONLY)
 add_compile_definitions(LUA)
 add_compile_definitions(NOMINMAX)
 
-file(GLOB_RECURSE SOURCE_FILES "${PROJECT_SOURCE_DIR}/lib/*.cpp")
+file(GLOB_RECURSE SOURCE_FILES "${PROJECT_SOURCE_DIR}/src/*.cpp")
 IF(WIN32)
   list(APPEND SOURCE_FILES ${ROOT_DIR}/resources/baram.ico game.rc)
 ENDIF(WIN32)
