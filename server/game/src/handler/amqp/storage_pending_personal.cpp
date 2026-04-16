@@ -61,8 +61,12 @@ async::task<void> storage_pending_personal::handle(const internal_resp::GetStora
             dao.push_back(std::move(pending));
         }
 
-        auto weak = ch->weak_from_this();
+        auto weak = ch->weak_from_this_as<character>();
         co_await this->server.threads.switching(weak);
-        ch->storage_box.apply_pending(dao);
+        auto ptr = weak.lock();
+        if (ptr == nullptr)
+            co_return;
+
+        ptr->storage_box.apply_pending(dao);
     });
 }

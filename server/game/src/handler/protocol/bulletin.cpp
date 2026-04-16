@@ -75,9 +75,12 @@ async::task<void> bulletin::handle_articles(character* ch, std::weak_ptr<charact
         {
             auto&& resp = co_await this->server.mail_list(*ch, request.offset, 20);
             co_await this->server.threads.switching(weak);
+            auto ptr = weak.lock();
+            if (ptr == nullptr)
+                co_return;
 
             auto flag = MAIL_BUTTON_ENABLE::NONE;
-            if (ch->level() >= fb::model::const_value::mail::REQUIRED_LEVEL)
+            if (ptr->level() >= fb::model::const_value::mail::REQUIRED_LEVEL)
                 flag |= MAIL_BUTTON_ENABLE::NEW;
 
             auto dao = std::vector<mail_box::summary>();
@@ -91,26 +94,30 @@ async::task<void> bulletin::handle_articles(character* ch, std::weak_ptr<charact
                                                 summary.created_date});
             }
 
-            ch->mail_box.show(dao, flag);
+            ptr->mail_box.show(dao, flag);
         }
         else
         {
             auto   section  = request.section;
             auto&& articles = co_await this->server.bulletin_list(request.section, request.offset);
             co_await this->server.threads.switching(weak);
+            auto ptr = weak.lock();
+            if (ptr == nullptr)
+                co_return;
 
             auto& model = table::bulletin[section];
             auto  flag  = BULLETIN_BUTTON_ENABLE::UP;
-            if (ch->condition(model.condition))
+            if (ptr->condition(model.condition))
                 flag |= BULLETIN_BUTTON_ENABLE::WRITE;
 
-            ch->bulletin.show(model, articles, flag);
+            ptr->bulletin.show(model, articles, flag);
         }
     }
     catch (std::exception& e)
     {
-        if (weak.expired() == false)
-            ch->message(e.what());
+        auto ptr = weak.lock();
+        if (ptr != nullptr)
+            ptr->message(e.what());
     }
 }
 
@@ -123,24 +130,27 @@ async::task<void> bulletin::handle_article(character* ch, std::weak_ptr<characte
         {
             auto&& resp = co_await this->server.read_mail(*ch, request.article);
             co_await this->server.threads.switching(weak);
+            auto ptr = weak.lock();
+            if (ptr == nullptr)
+                co_return;
             auto flag = MAIL_BUTTON_ENABLE::UP;
-            if (ch->level() >= fb::model::const_value::mail::REQUIRED_LEVEL)
+            if (ptr->level() >= fb::model::const_value::mail::REQUIRED_LEVEL)
                 flag |= MAIL_BUTTON_ENABLE::NEW;
 
-            ch->mail_box.show(mail_box::mail{resp.mail.id,
-                                             resp.mail.user,
-                                             resp.mail.sender,
-                                             resp.mail.title,
-                                             resp.mail.contents,
-                                             resp.mail.read,
-                                             resp.mail.created_date},
-                              flag);
+            ptr->mail_box.show(mail_box::mail{resp.mail.id,
+                                              resp.mail.user,
+                                              resp.mail.sender,
+                                              resp.mail.title,
+                                              resp.mail.contents,
+                                              resp.mail.read,
+                                              resp.mail.created_date},
+                               flag);
 
             if (!resp.mail.read)
             {
                 auto log_data              = Json::Value();
-                log_data["character_id"]   = static_cast<Json::Int64>(ch->id);
-                log_data["character_name"] = UTF8(ch->name(), PLATFORM::WINDOWS);
+                log_data["character_id"]   = static_cast<Json::Int64>(ptr->id);
+                log_data["character_name"] = UTF8(ptr->name(), PLATFORM::WINDOWS);
                 log_data["mail_id"]        = request.article;
                 log_data["sender_name"]    = UTF8(resp.mail.sender, PLATFORM::WINDOWS);
                 this->server.log.write("mail_read", log_data);
@@ -150,25 +160,29 @@ async::task<void> bulletin::handle_article(character* ch, std::weak_ptr<characte
         {
             auto&& article = co_await this->server.read_bulletin(request.section, request.article);
             co_await this->server.threads.switching(weak);
+            auto ptr = weak.lock();
+            if (ptr == nullptr)
+                co_return;
 
             auto flag = BULLETIN_BUTTON_ENABLE::NONE;
             if (article.next)
                 flag |= BULLETIN_BUTTON_ENABLE::NEXT;
 
-            if (ch->condition(table::bulletin[article.section].condition))
+            if (ptr->condition(table::bulletin[article.section].condition))
                 flag |= BULLETIN_BUTTON_ENABLE::WRITE;
 
-            ch->bulletin.show(article, flag);
+            ptr->bulletin.show(article, flag);
         }
     }
     catch (std::exception& e)
     {
-        if (weak.expired() == false)
+        auto ptr = weak.lock();
+        if (ptr != nullptr)
         {
             if (mail)
-                ch->mail_box.message(e.what(), false, BULLETIN_MESSAGE_TYPE::READ);
+                ptr->mail_box.message(e.what(), false, BULLETIN_MESSAGE_TYPE::READ);
             else
-                ch->bulletin.message(e.what(), false, BULLETIN_MESSAGE_TYPE::READ);
+                ptr->bulletin.message(e.what(), false, BULLETIN_MESSAGE_TYPE::READ);
         }
     }
 }
@@ -179,20 +193,24 @@ async::task<void> bulletin::handle_write(character* ch, std::weak_ptr<character>
     {
         co_await this->server.write_bulletin(*ch, request.section, request.title, request.contents);
         co_await this->server.threads.switching(weak);
+        auto ptr = weak.lock();
+        if (ptr == nullptr)
+            co_return;
 
-        ch->bulletin.message(_TEXT(MESSAGE_BULLETIN_WRITE), true, BULLETIN_MESSAGE_TYPE::WRITE);
+        ptr->bulletin.message(_TEXT(MESSAGE_BULLETIN_WRITE), true, BULLETIN_MESSAGE_TYPE::WRITE);
 
         auto log_data              = Json::Value();
-        log_data["character_id"]   = static_cast<Json::Int64>(ch->id);
-        log_data["character_name"] = UTF8(ch->name(), PLATFORM::WINDOWS);
+        log_data["character_id"]   = static_cast<Json::Int64>(ptr->id);
+        log_data["character_name"] = UTF8(ptr->name(), PLATFORM::WINDOWS);
         log_data["section"]        = request.section;
         log_data["title"]          = UTF8(request.title, PLATFORM::WINDOWS);
         this->server.log.write("bulletin_write", log_data);
     }
     catch (std::exception& e)
     {
-        if (weak.expired() == false)
-            ch->bulletin.message(e.what(), false, BULLETIN_MESSAGE_TYPE::WRITE);
+        auto ptr = weak.lock();
+        if (ptr != nullptr)
+            ptr->bulletin.message(e.what(), false, BULLETIN_MESSAGE_TYPE::WRITE);
     }
 }
 
@@ -205,11 +223,14 @@ async::task<void> bulletin::handle_delete(character* ch, std::weak_ptr<character
         {
             auto&& resp = co_await this->server.delete_mail(*ch, request.article);
             co_await this->server.threads.switching(weak);
-            ch->mail_box.message(_TEXT(MESSAGE_BULLETIN_SUCCESS_DELETE), true, BULLETIN_MESSAGE_TYPE::DELETE);
+            auto ptr = weak.lock();
+            if (ptr == nullptr)
+                co_return;
+            ptr->mail_box.message(_TEXT(MESSAGE_BULLETIN_SUCCESS_DELETE), true, BULLETIN_MESSAGE_TYPE::DELETE);
 
             auto log_data              = Json::Value();
-            log_data["character_id"]   = static_cast<Json::Int64>(ch->id);
-            log_data["character_name"] = UTF8(ch->name(), PLATFORM::WINDOWS);
+            log_data["character_id"]   = static_cast<Json::Int64>(ptr->id);
+            log_data["character_name"] = UTF8(ptr->name(), PLATFORM::WINDOWS);
             log_data["mail_id"]        = request.article;
             this->server.log.write("mail_delete", log_data);
         }
@@ -217,11 +238,14 @@ async::task<void> bulletin::handle_delete(character* ch, std::weak_ptr<character
         {
             co_await this->server.delete_bulletin(*ch, request.section, request.article);
             co_await this->server.threads.switching(weak);
-            ch->bulletin.message(_TEXT(MESSAGE_BULLETIN_SUCCESS_DELETE), true, BULLETIN_MESSAGE_TYPE::DELETE);
+            auto ptr = weak.lock();
+            if (ptr == nullptr)
+                co_return;
+            ptr->bulletin.message(_TEXT(MESSAGE_BULLETIN_SUCCESS_DELETE), true, BULLETIN_MESSAGE_TYPE::DELETE);
 
             auto log_data              = Json::Value();
-            log_data["character_id"]   = static_cast<Json::Int64>(ch->id);
-            log_data["character_name"] = UTF8(ch->name(), PLATFORM::WINDOWS);
+            log_data["character_id"]   = static_cast<Json::Int64>(ptr->id);
+            log_data["character_name"] = UTF8(ptr->name(), PLATFORM::WINDOWS);
             log_data["section"]        = request.section;
             log_data["article_id"]     = request.article;
             this->server.log.write("bulletin_delete", log_data);
@@ -229,12 +253,13 @@ async::task<void> bulletin::handle_delete(character* ch, std::weak_ptr<character
     }
     catch (std::exception& e)
     {
-        if (weak.expired() == false)
+        auto ptr = weak.lock();
+        if (ptr != nullptr)
         {
             if (mail)
-                ch->mail_box.message(e.what(), false, BULLETIN_MESSAGE_TYPE::DELETE);
+                ptr->mail_box.message(e.what(), false, BULLETIN_MESSAGE_TYPE::DELETE);
             else
-                ch->bulletin.message(e.what(), false, BULLETIN_MESSAGE_TYPE::DELETE);
+                ptr->bulletin.message(e.what(), false, BULLETIN_MESSAGE_TYPE::DELETE);
         }
     }
 }
@@ -245,10 +270,13 @@ async::task<void> bulletin::handle_mail(character* ch, std::weak_ptr<character> 
     {
         auto&& resp = co_await this->server.mail_list(*ch, 0xFFFF, fb::model::const_value::mail::COUNT_PER_PAGE);
         co_await this->server.threads.switching(weak);
+        auto ptr = weak.lock();
+        if (ptr == nullptr)
+            co_return;
 
         this->server.assert_mail(resp.error);
         auto flag = MAIL_BUTTON_ENABLE::NONE;
-        if (ch->level() >= fb::model::const_value::mail::REQUIRED_LEVEL)
+        if (ptr->level() >= fb::model::const_value::mail::REQUIRED_LEVEL)
             flag |= MAIL_BUTTON_ENABLE::NEW;
 
         auto dao = std::vector<mail_box::summary>();
@@ -262,12 +290,13 @@ async::task<void> bulletin::handle_mail(character* ch, std::weak_ptr<character> 
                                             summary.created_date});
         }
 
-        ch->mail_box.show(dao, flag);
+        ptr->mail_box.show(dao, flag);
     }
     catch (std::exception& e)
     {
-        if (weak.expired() == false)
-            ch->message(e.what());
+        auto ptr = weak.lock();
+        if (ptr != nullptr)
+            ptr->message(e.what());
     }
 }
 
@@ -277,18 +306,22 @@ async::task<void> bulletin::handle_send_mail(character* ch, std::weak_ptr<charac
     {
         auto&& resp = co_await this->server.send_mail(*ch, request.user, request.title, request.contents);
         co_await this->server.threads.switching(weak);
-        ch->mail_box.message(_TEXT(MESSAGE_MAIL_SENT), true, BULLETIN_MESSAGE_TYPE::WRITE);
+        auto ptr = weak.lock();
+        if (ptr == nullptr)
+            co_return;
+        ptr->mail_box.message(_TEXT(MESSAGE_MAIL_SENT), true, BULLETIN_MESSAGE_TYPE::WRITE);
 
         auto log_data             = Json::Value();
-        log_data["sender_id"]     = static_cast<Json::Int64>(ch->id);
-        log_data["sender_name"]   = UTF8(ch->name(), PLATFORM::WINDOWS);
+        log_data["sender_id"]     = static_cast<Json::Int64>(ptr->id);
+        log_data["sender_name"]   = UTF8(ptr->name(), PLATFORM::WINDOWS);
         log_data["receiver_name"] = UTF8(request.user, PLATFORM::WINDOWS);
         log_data["title"]         = UTF8(request.title, PLATFORM::WINDOWS);
         this->server.log.write("mail_write", log_data);
     }
     catch (std::exception& e)
     {
-        if (weak.expired() == false)
-            ch->mail_box.message(e.what(), false, BULLETIN_MESSAGE_TYPE::WRITE);
+        auto ptr = weak.lock();
+        if (ptr != nullptr)
+            ptr->mail_box.message(e.what(), false, BULLETIN_MESSAGE_TYPE::WRITE);
     }
 }

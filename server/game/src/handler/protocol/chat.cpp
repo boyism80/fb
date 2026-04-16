@@ -61,7 +61,13 @@ async::task<bool> chat::try_command(character* ch, std::weak_ptr<character> weak
         co_return true;
     }
 
-    co_await ch->thread()->switching();
+    co_await this->server.threads.switching(weak);
+    auto ptr = weak.lock();
+    if (ptr == nullptr)
+    {
+        lua->release();
+        co_return true;
+    }
 
     auto stop = lua->toboolean(1);
     lua->release();
@@ -70,10 +76,10 @@ async::task<bool> chat::try_command(character* ch, std::weak_ptr<character> weak
         co_return false;
 
     auto log_data              = Json::Value();
-    log_data["character_id"]   = static_cast<Json::Int64>(ch->id);
-    log_data["character_name"] = UTF8(ch->name(), PLATFORM::WINDOWS);
+    log_data["character_id"]   = static_cast<Json::Int64>(ptr->id);
+    log_data["character_name"] = UTF8(ptr->name(), PLATFORM::WINDOWS);
     log_data["command"]        = UTF8(request.message, PLATFORM::WINDOWS);
-    auto map                   = ch->map();
+    auto map                   = ptr->map();
     if (map != nullptr)
         log_data["map"] = map->model.id;
     this->server.log.write("command_execute", log_data);

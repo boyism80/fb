@@ -126,8 +126,9 @@ async::task<void> server::on_create_clan(const internal_resp::ClanDetails& resp)
 
                             auto before = this->threads.current();
                             co_await this->threads.switching(weak);
-                            if (weak.expired() == false)
-                                ch->clan_id(id);
+                            auto ptr = weak.lock();
+                            if (ptr != nullptr)
+                                ptr->clan_id(id);
                             if (before != nullptr)
                                 co_await before->switching();
 
@@ -493,12 +494,13 @@ async::task<void> server::on_updated_clan(const internal_resp::UpdatedClan& resp
 
                     auto before = this->threads.current();
                     co_await this->threads.switching(weak);
-                    if (weak.expired() == false)
+                    auto ptr = weak.lock();
+                    if (ptr != nullptr)
                     {
-                        ch->clan_id(clan->id());
-                        ch->update_external(false);
-                        ch->message(std::format(_TEXT(MESSAGE_CLAN_JOINED_SUCCESS), clan->name()),
-                                    MESSAGE_TYPE::NOTIFY);
+                        ptr->clan_id(clan->id());
+                        ptr->update_external(false);
+                        ptr->message(std::format(_TEXT(MESSAGE_CLAN_JOINED_SUCCESS), clan->name()),
+                                     MESSAGE_TYPE::NOTIFY);
                     }
                     if (before != nullptr)
                         co_await before->switching();
@@ -531,13 +533,14 @@ async::task<void> server::on_updated_clan(const internal_resp::UpdatedClan& resp
 
                     auto before = this->threads.current();
                     co_await this->threads.switching(weak);
-                    if (weak.expired() == false)
+                    auto ptr = weak.lock();
+                    if (ptr != nullptr)
                     {
-                        ch->clan_reset();
-                        ch->update_external(false);
-                        ch->message(action_type == internal::ClanActionType::Kick ? _TEXT(MESSAGE_CLAN_KICKED)
-                                                                                  : _TEXT(MESSAGE_CLAN_LEFT),
-                                    MESSAGE_TYPE::NOTIFY);
+                        ptr->clan_reset();
+                        ptr->update_external(false);
+                        ptr->message(action_type == internal::ClanActionType::Kick ? _TEXT(MESSAGE_CLAN_KICKED)
+                                                                                   : _TEXT(MESSAGE_CLAN_LEFT),
+                                     MESSAGE_TYPE::NOTIFY);
                     }
                     if (before != nullptr)
                         co_await before->switching();

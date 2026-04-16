@@ -15,7 +15,7 @@ async::task<bool> whisper::handle(fb::socket<character>& session, game_reqs::whi
     if (me->inited() == false)
         co_return true;
 
-    auto weak = me->weak_from_this();
+    auto weak = me->weak_from_this_as<character>();
     auto map  = me->map();
     if (map == nullptr)
         co_return true;
@@ -30,11 +30,14 @@ async::task<bool> whisper::handle(fb::socket<character>& session, game_reqs::whi
     {
         co_await this->server.whisper(*me, request.name, request.message);
         co_await this->server.threads.switching(weak);
+        if (weak.lock() == nullptr)
+            co_return true;
     }
     catch (std::exception& e)
     {
-        if (weak.expired() == false)
-            me->message(e.what(), MESSAGE_TYPE::NOTIFY);
+        auto ptr = weak.lock();
+        if (ptr != nullptr)
+            ptr->message(e.what(), MESSAGE_TYPE::NOTIFY);
     }
     co_return true;
 }

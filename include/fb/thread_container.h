@@ -2,7 +2,9 @@
 #define __THREAD_CONTAINER_H__
 
 #include <boost/asio.hpp>
+#include <coroutine>
 #include <fb/thread.h>
+#include <fb/timer.h>
 #include <fb/thread_switchable.h>
 #include <map>
 
@@ -192,33 +194,48 @@ public:
     {
         static_assert(std::is_base_of_v<thread_switchable, T>, "T must be a thread_switchable");
 
-        auto shared = pivot.lock();
-        if (shared == nullptr)
-            throw std::runtime_error("pivot object is expired");
-
-        auto target_thread = shared->thread();
-        if (target_thread == nullptr)
-            throw std::runtime_error("no matched thread");
-
-        if (target_thread->id() == std::this_thread::get_id())
+        auto promise    = std::make_shared<async::task_completion_source<ReturnType>>();
+        auto need_yield = false;
+        try
         {
-            if (condition(*target_thread) == false)
-                throw std::runtime_error("condition not satisfied");
+            auto shared = pivot.lock();
+            if (shared == nullptr)
+                throw std::runtime_error("pivot object is expired");
 
-            co_return co_await fn(*target_thread);
+            auto target_thread = shared->thread();
+            if (target_thread == nullptr)
+                throw std::runtime_error("no matched thread");
+
+            if (target_thread->id() == std::this_thread::get_id())
+            {
+                if (condition(*target_thread) == false)
+                    throw std::runtime_error("condition not satisfied");
+
+                auto value = co_await fn(*target_thread);
+                promise->set_value(std::move(value));
+                co_return co_await promise->task();
+            }
+
+            this->enqueue<ReturnType, T>(
+                pivot,
+                std::move(condition),
+                std::move(fn),
+                [promise](std::exception& e) {
+                    promise->set_exception(std::make_exception_ptr(e));
+                },
+                [promise](ReturnType&& value) {
+                    promise->set_value(value);
+                });
+            co_return co_await promise->task();
+        }
+        catch (...)
+        {
+            promise->set_exception(std::make_exception_ptr(std::current_exception()));
+            need_yield = true;
         }
 
-        auto promise = std::make_shared<async::task_completion_source<ReturnType>>();
-        this->enqueue<ReturnType, T>(
-            pivot,
-            std::move(condition),
-            std::move(fn),
-            [promise](std::exception& e) {
-                promise->set_exception(std::make_exception_ptr(e));
-            },
-            [promise](ReturnType&& value) {
-                promise->set_value(value);
-            });
+        if (need_yield)
+            co_await std::suspend_always{};
         co_return co_await promise->task();
     }
 
@@ -227,32 +244,47 @@ public:
     {
         static_assert(std::is_base_of_v<thread_switchable, T>, "T must be a thread_switchable");
 
-        auto shared = pivot.lock();
-        if (shared == nullptr)
-            throw std::runtime_error("pivot object is expired");
-
-        auto target_thread = shared->thread();
-        if (target_thread == nullptr)
-            throw std::runtime_error("no matched thread");
-
-        if (target_thread->id() == std::this_thread::get_id())
+        auto promise    = std::make_shared<async::task_completion_source<ReturnType>>();
+        auto need_yield = false;
+        try
         {
-            co_return co_await fn(*target_thread);
+            auto shared = pivot.lock();
+            if (shared == nullptr)
+                throw std::runtime_error("pivot object is expired");
+
+            auto target_thread = shared->thread();
+            if (target_thread == nullptr)
+                throw std::runtime_error("no matched thread");
+
+            if (target_thread->id() == std::this_thread::get_id())
+            {
+                auto value = co_await fn(*target_thread);
+                promise->set_value(std::move(value));
+                co_return co_await promise->task();
+            }
+
+            this->enqueue<ReturnType, T>(
+                pivot,
+                [](auto& thread) -> bool {
+                    return true;
+                },
+                std::move(fn),
+                [promise](std::exception& e) {
+                    promise->set_exception(std::make_exception_ptr(e));
+                },
+                [promise](ReturnType&& value) {
+                    promise->set_value(value);
+                });
+            co_return co_await promise->task();
+        }
+        catch (...)
+        {
+            promise->set_exception(std::make_exception_ptr(std::current_exception()));
+            need_yield = true;
         }
 
-        auto promise = std::make_shared<async::task_completion_source<ReturnType>>();
-        this->enqueue<ReturnType, T>(
-            pivot,
-            [](auto& thread) -> bool {
-                return true;
-            },
-            std::move(fn),
-            [promise](std::exception& e) {
-                promise->set_exception(std::make_exception_ptr(e));
-            },
-            [promise](ReturnType&& value) {
-                promise->set_value(value);
-            });
+        if (need_yield)
+            co_await std::suspend_always{};
         co_return co_await promise->task();
     }
 
@@ -262,69 +294,97 @@ public:
     {
         static_assert(std::is_base_of_v<thread_switchable, T>, "T must be a thread_switchable");
 
-        auto shared = pivot.lock();
-        if (shared == nullptr)
-            throw std::runtime_error("pivot object is expired");
-
-        auto target_thread = shared->thread();
-        if (target_thread == nullptr)
-            throw std::runtime_error("no matched thread");
-
-        if (target_thread->id() == std::this_thread::get_id())
+        auto promise    = std::make_shared<async::task_completion_source<void>>();
+        auto need_yield = false;
+        try
         {
-            if (condition(*target_thread) == false)
-                throw std::runtime_error("condition not satisfied");
+            auto shared = pivot.lock();
+            if (shared == nullptr)
+                throw std::runtime_error("pivot object is expired");
 
-            co_await fn(*target_thread);
-            co_return;
+            auto target_thread = shared->thread();
+            if (target_thread == nullptr)
+                throw std::runtime_error("no matched thread");
+
+            if (target_thread->id() == std::this_thread::get_id())
+            {
+                if (condition(*target_thread) == false)
+                    throw std::runtime_error("condition not satisfied");
+
+                co_await fn(*target_thread);
+                promise->set_value();
+                co_return co_await promise->task();
+            }
+
+            this->enqueue<T>(
+                pivot,
+                std::move(condition),
+                std::move(fn),
+                [promise](std::exception& e) {
+                    promise->set_exception(std::make_exception_ptr(e));
+                },
+                [promise]() {
+                    promise->set_value();
+                });
+            co_return co_await promise->task();
+        }
+        catch (...)
+        {
+            promise->set_exception(std::make_exception_ptr(std::current_exception()));
+            need_yield = true;
         }
 
-        auto promise = std::make_shared<async::task_completion_source<void>>();
-        this->enqueue<T>(
-            pivot,
-            std::move(condition),
-            std::move(fn),
-            [promise](std::exception& e) {
-                promise->set_exception(std::make_exception_ptr(e));
-            },
-            [promise]() {
-                promise->set_value();
-            });
-        co_await promise->task();
+        if (need_yield)
+            co_await std::suspend_always{};
+        co_return co_await promise->task();
     }
 
     template <typename T> async::task<void> dispatch(std::weak_ptr<T> pivot, thread::handle_func_type<void>&& fn)
     {
         static_assert(std::is_base_of_v<thread_switchable, T>, "T must be a thread_switchable");
 
-        auto shared = pivot.lock();
-        if (shared == nullptr)
-            throw std::runtime_error("pivot object is expired");
-
-        auto target_thread = shared->thread();
-        if (target_thread == nullptr)
-            throw std::runtime_error("no matched thread");
-
-        if (target_thread->id() == std::this_thread::get_id())
+        auto promise    = std::make_shared<async::task_completion_source<void>>();
+        auto need_yield = false;
+        try
         {
-            co_await fn(*target_thread);
-            co_return;
+            auto shared = pivot.lock();
+            if (shared == nullptr)
+                throw std::runtime_error("pivot object is expired");
+
+            auto target_thread = shared->thread();
+            if (target_thread == nullptr)
+                throw std::runtime_error("no matched thread");
+
+            if (target_thread->id() == std::this_thread::get_id())
+            {
+                co_await fn(*target_thread);
+                promise->set_value();
+                co_return co_await promise->task();
+            }
+
+            this->enqueue<T>(
+                pivot,
+                [](auto& thread) -> bool {
+                    return true;
+                },
+                std::move(fn),
+                [promise](std::exception& e) {
+                    promise->set_exception(std::make_exception_ptr(e));
+                },
+                [promise]() {
+                    promise->set_value();
+                });
+            co_return co_await promise->task();
+        }
+        catch (...)
+        {
+            promise->set_exception(std::make_exception_ptr(std::current_exception()));
+            need_yield = true;
         }
 
-        auto promise = std::make_shared<async::task_completion_source<void>>();
-        this->enqueue<T>(
-            pivot,
-            [](auto& thread) -> bool {
-                return true;
-            },
-            std::move(fn),
-            [promise](std::exception& e) {
-                promise->set_exception(std::make_exception_ptr(e));
-            },
-            [promise]() {
-                promise->set_value();
-            });
-        co_await promise->task();
+        if (need_yield)
+            co_await std::suspend_always{};
+        co_return co_await promise->task();
     }
 
     template <typename T> async::task<void> switching(std::weak_ptr<T> pivot)
@@ -336,7 +396,8 @@ public:
         });
     }
 
-    void        settimer(fb::timer::handle_callback_type&& fn, const fb::model::timespan& duration);
+    void        settimer(std::function<async::task<void>(const fb::model::datetime&, std::thread::id)>&& fn,
+                         const fb::model::timespan& duration);
     void        exit();
     fb::thread* least_loaded() const;
 

@@ -62,6 +62,8 @@ server::send_mail(const character& ch, std::string_view to, std::string_view tit
         "/mail/write",
         internal_reqs::WriteMail{world, ch.id, to_str, title_str, contents_str, config<uint32_t>("id")});
     co_await this->threads.switching(weak);
+    if (weak.expired())
+        throw std::runtime_error("character expired while sending mail");
 
     this->assert_mail(resp.error);
     this->on_write_mail(resp);
@@ -76,6 +78,8 @@ async::task<internal_resp::GetMailList> server::mail_list(const character& ch, u
         "internal",
         std::format("/mail/{}/{}?offset={}&count={}", world, ch.id, offset, count));
     co_await this->threads.switching(weak);
+    if (weak.expired())
+        throw std::runtime_error("character expired while listing mail");
 
     this->assert_mail(resp.error);
     co_return std::move(resp);
@@ -83,24 +87,30 @@ async::task<internal_resp::GetMailList> server::mail_list(const character& ch, u
 
 async::task<internal_resp::GetMail> server::read_mail(character& ch, uint16_t id)
 {
-    auto   weak  = ch.weak_from_this();
+    auto   weak  = ch.weak_from_this_as<character>();
     auto   world = fb::config<uint32_t>("world");
     auto   url   = std::format("/mail/{}/{}/{}", world, ch.id, id);
     auto&& resp  = co_await this->http.get<internal_resp::GetMail>("internal", url);
     co_await this->threads.switching(weak);
+    auto ptr = weak.lock();
+    if (ptr == nullptr)
+        throw std::runtime_error("character expired while reading mail");
 
     this->assert_mail(resp.error);
-    ch.mail_box.unread_count(resp.unread);
+    ptr->mail_box.unread_count(resp.unread);
     co_return std::move(resp);
 }
 
 async::task<internal_resp::DeleteMail> server::delete_mail(character& ch, uint16_t id)
 {
-    auto   weak  = ch.weak_from_this();
+    auto   weak  = ch.weak_from_this_as<character>();
     auto   world = fb::config<uint32_t>("world");
     auto&& resp  = co_await this->http.post("internal", "/mail/delete", internal_reqs::DeleteMail{world, ch.id, id});
     co_await this->threads.switching(weak);
+    auto ptr = weak.lock();
+    if (ptr == nullptr)
+        throw std::runtime_error("character expired while deleting mail");
     this->assert_mail(resp.error);
-    ch.mail_box.unread_count(resp.unread);
+    ptr->mail_box.unread_count(resp.unread);
     co_return std::move(resp);
 }

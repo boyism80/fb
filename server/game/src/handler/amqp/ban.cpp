@@ -42,6 +42,9 @@ async::task<void> ban::handle(const internal_resp::Ban& message)
     // Switch to character's thread, show ban message, then disconnect
     auto weak = ch->weak_from_this_as<character>();
     co_await this->server.threads.switching(weak);
+    ch = weak.lock();
+    if (ch == nullptr)
+        co_return;
 
     ch->message(build_ban_message(message.reason, message.expire_date), MESSAGE_TYPE::POPUP);
 

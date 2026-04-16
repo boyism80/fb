@@ -15,7 +15,7 @@ async::task<bool> update_option::handle(fb::socket<character>& session, game_req
     if (ch->inited() == false)
         co_return true;
 
-    auto weak   = ch->weak_from_this();
+    auto weak   = ch->weak_from_this_as<character>();
     auto option = OPTION(request.option);
     switch (option)
     {
@@ -62,11 +62,14 @@ async::task<bool> update_option::handle(fb::socket<character>& session, game_req
             "/in-game/option",
             internal_reqs::SetOption{world, ch->id, static_cast<uint8_t>(option), next});
         co_await this->server.threads.switching(weak);
+        auto ptr = weak.lock();
+        if (ptr == nullptr)
+            co_return true;
 
         if (resp.success == false)
-            ch->message(_TEXT(MESSAGE_OPTION_UPDATE_FAILED));
+            ptr->message(_TEXT(MESSAGE_OPTION_UPDATE_FAILED));
 
-        ch->option(option, next);
+        ptr->option(option, next);
         break;
     }
     co_return true;

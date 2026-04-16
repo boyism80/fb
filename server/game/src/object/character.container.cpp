@@ -1,5 +1,6 @@
 #include <fb/game/character.h>
 #include <fb/game/server.h>
+#include <atomic>
 
 using namespace fb::game;
 
@@ -88,34 +89,62 @@ async::task<void> character::container::foreach (character_function_t           
 async::task<void> character::container::foreach_async(character_async_function_t          fn,
                                                       const std::vector<character_ptr_t>& characters)
 {
-    auto thread = this->_server.threads.current();
-    auto group  = std::unordered_map<fb::thread*, std::vector<std::weak_ptr<character>>>();
+    auto before = this->_server.threads.current();
+    auto weak_ptrs = std::vector<std::weak_ptr<character>>();
+    weak_ptrs.reserve(characters.size());
 
     for (auto& ch : characters)
     {
-        auto each_thread = ch->thread();
-        auto weak_ptr    = ch->weak_from_this_as<character>();
-        if (group.contains(each_thread) == false)
-            group[each_thread] = std::vector<std::weak_ptr<character>>();
+        if (ch == nullptr)
+            continue;
 
-        group[each_thread].push_back(weak_ptr);
+        weak_ptrs.push_back(ch->weak_from_this_as<character>());
     }
 
-    for (auto& [thread, weak_ptrs] : group)
+    if (weak_ptrs.empty())
     {
-        co_await thread->switching();
-        for (auto& weak_ptr : weak_ptrs)
-        {
-            auto shared_ptr = weak_ptr.lock();
-            if (shared_ptr == nullptr)
-                continue;
-
-            co_await fn(shared_ptr);
-        }
+        if (before != nullptr)
+            co_await before->switching();
+        co_return;
     }
 
-    if (thread != nullptr)
-        co_await thread->switching();
+    auto promise   = std::make_shared<async::task_completion_source<void>>();
+    auto remaining = std::make_shared<std::atomic_size_t>(weak_ptrs.size());
+
+    auto fn_holder = std::make_shared<character_async_function_t>(std::move(fn));
+    for (auto& weak_ptr : weak_ptrs)
+    {
+        async::awaitable_then(
+            this->_server.threads.dispatch(
+                weak_ptr,
+                [weak_ptr, fn_holder](auto& thread) -> async::task<void> {
+                    auto shared_ptr = weak_ptr.lock();
+                    if (shared_ptr != nullptr)
+                        co_await (*fn_holder)(shared_ptr);
+                    co_return;
+                }),
+            [promise, remaining](async::awaitable_result<void> result) mutable {
+                try
+                {
+                    result();
+                }
+                catch (std::exception&)
+                {
+                }
+                catch (...)
+                {
+                }
+
+                // Count down regardless of success/failure to avoid deadlock.
+                if (remaining->fetch_sub(1) == 1)
+                    promise->set_value();
+            });
+    }
+
+    co_await promise->task();
+
+    if (before != nullptr)
+        co_await before->switching();
 }
 
 async::task<void> character::container::foreach (const std::vector<std::string>& names,
@@ -167,7 +196,9 @@ async::task<void> character::container::invoke(std::string_view          name,
     auto before = this->_server.threads.current();
     auto weak   = ch->weak_from_this_as<character>();
     co_await this->_server.threads.switching(weak);
-    fn(ch);
+    auto ptr = weak.lock();
+    if (ptr != nullptr)
+        fn(ptr);
     if (before != nullptr)
         co_await before->switching();
 }
@@ -187,7 +218,9 @@ async::task<void> character::container::invoke_async(std::string_view           
     auto before = this->_server.threads.current();
     auto weak   = ch->weak_from_this_as<character>();
     co_await this->_server.threads.switching(weak);
-    co_await fn(ch);
+    auto ptr = weak.lock();
+    if (ptr != nullptr)
+        co_await fn(ptr);
     if (before != nullptr)
         co_await before->switching();
 }

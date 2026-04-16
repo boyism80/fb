@@ -126,6 +126,8 @@ async::task<bool> listener_impl::on_transfer(character& me, map& map, const fb::
             "/in-game/transfer",
             internal_reqs::Transfer{world, internal::Service::Game, map.model.host, me.name(), false});
         co_await this->server.threads.switching(weak);
+        if (weak.lock() == nullptr)
+            co_return false;
         switch (static_cast<ERROR_CODE>(resp.error))
         {
         case ERROR_CODE::NONE:

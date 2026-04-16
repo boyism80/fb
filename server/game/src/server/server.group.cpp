@@ -447,9 +447,13 @@ async::task<void> server::on_updated_group(const internal_resp::UpdatedGroup& re
                 group->add_member(new_member);
 
                 auto thread = this->threads.current();
-                co_await ch->thread()->switching();
-                ch->group_id(group->id());
-                ch->message(_TEXT(MESSAGE_GROUP_JOINED_SUCCESS), MESSAGE_TYPE::STATE);
+                co_await this->threads.switching(weak);
+                auto ptr = weak.lock();
+                if (ptr != nullptr)
+                {
+                    ptr->group_id(group->id());
+                    ptr->message(_TEXT(MESSAGE_GROUP_JOINED_SUCCESS), MESSAGE_TYPE::STATE);
+                }
 
                 if (thread != nullptr)
                     co_await thread->switching();
@@ -470,17 +474,17 @@ async::task<void> server::on_updated_group(const internal_resp::UpdatedGroup& re
                 auto before_thread = this->threads.current();
                 if (ch != nullptr)
                 {
-                    auto thread = ch->thread();
                     auto weak   = ch->template weak_from_this_as<character>();
                     group->detach(weak);
 
-                    co_await thread->switching();
-                    if (weak.expired() == false)
+                    co_await this->threads.switching(weak);
+                    auto ptr = weak.lock();
+                    if (ptr != nullptr)
                     {
-                        ch->group_reset();
-                        ch->message(resp.action == internal::GroupActionType::Kick ? _TEXT(MESSAGE_GROUP_KICKED)
-                                                                                   : _TEXT(MESSAGE_GROUP_LEFT_SUCCESS),
-                                    MESSAGE_TYPE::STATE);
+                        ptr->group_reset();
+                        ptr->message(resp.action == internal::GroupActionType::Kick ? _TEXT(MESSAGE_GROUP_KICKED)
+                                                                                    : _TEXT(MESSAGE_GROUP_LEFT_SUCCESS),
+                                     MESSAGE_TYPE::STATE);
                     }
 
                     // Log group leave/kick event
