@@ -371,10 +371,10 @@ namespace Internal.Controllers
             var marriageProtocol = _mapper.Map<Protocol.Marriage>(marriageData);
             marriageProtocol.SpouseName = spouseName ?? string.Empty;
 
-            await using (await _distributedLock.Lock(world, CharacterSync.DistributedLockKey(uid)))
+            await using (await _distributedLock.Lock(world, CharacterRealtimeState.DistributedLockKey(uid)))
             {
-                var sync = await _dbContext.CharacterSync.Get(world, uid) ??
-                    _dbContext.CharacterSync.Set(world, new CharacterSync
+                var sync = await _dbContext.CharacterRealtimeState.Get(world, uid) ??
+                    _dbContext.CharacterRealtimeState.Set(world, new CharacterRealtimeState
                     {
                         Uid = uid
                     });

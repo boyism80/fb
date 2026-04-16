@@ -653,7 +653,7 @@ async::task<void> server::on_clan_broadcast(const internal_resp::BroadcastClan& 
             members.push_back(shared_ptr);
         }
 
-        this->characters.write([this, &resp, &members](auto& characters) {
+        this->characters.write([this, resp, members](auto& characters) {
             characters.foreach_enqueue(
                 [this, resp](auto& member) -> async::task<void> {
                     member->message(resp.message, static_cast<MESSAGE_TYPE>(resp.type));

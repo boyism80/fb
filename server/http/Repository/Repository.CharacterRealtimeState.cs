@@ -1,41 +1,41 @@
-﻿using Http.Extension;
+using Http.Extension;
 using Http.Model;
 using Http.Service;
 
 namespace Http.Reepository
 {
-    public class CharacterSyncRepository : RedisValueRepository<CharacterSync, CharacterSyncKey>
+    public class CharacterRealtimeStateRepository : RedisValueRepository<CharacterRealtimeState, CharacterRealtimeStateKey>
     {
-        public CharacterSyncRepository(DbContext dbContext,
+        public CharacterRealtimeStateRepository(DbContext dbContext,
             RedisService redisService,
             RedisDistributedLockService distributedLock,
             WriteBackService dbExecuteService) : base(dbContext, redisService, distributedLock, dbExecuteService)
         {
         }
 
-        public async Task<CharacterSync> Get(uint world, uint uid)
+        public async Task<CharacterRealtimeState> Get(uint world, uint uid)
         {
-            return await base.Get(world, new CharacterSyncKey { Uid = uid });
+            return await base.Get(world, new CharacterRealtimeStateKey { Uid = uid });
         }
 
-        protected override string OnSelect(CharacterSyncKey key)
+        protected override string OnSelect(CharacterRealtimeStateKey key)
         {
             return $"""
-                SELECT * FROM `character_sync`
+                SELECT * FROM `character_realtime_state`
                 WHERE `uid` = {key.Uid}
                 LIMIT 1;
                 """;
         }
 
-        protected override CharacterSyncKey GetKeyFromRow(CharacterSync row)
+        protected override CharacterRealtimeStateKey GetKeyFromRow(CharacterRealtimeState row)
         {
-            return new CharacterSyncKey { Uid = row.Uid };
+            return new CharacterRealtimeStateKey { Uid = row.Uid };
         }
 
-        protected override string OnUpsert(CharacterSync value)
+        protected override string OnUpsert(CharacterRealtimeState value)
         {
             var sql = $"""
-                INSERT INTO `character_sync` (
+                INSERT INTO `character_realtime_state` (
                     `uid`,
                     `group`,
                     `clan`,
@@ -60,3 +60,4 @@ namespace Http.Reepository
         }
     }
 }
+

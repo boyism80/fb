@@ -1,4 +1,4 @@
-﻿using Http.Reepository;
+using Http.Reepository;
 using MySqlConnector;
 
 namespace Http.Service
@@ -25,7 +25,7 @@ namespace Http.Service
 
         public ClanMemberRepository ClanMember => Bind<ClanMemberRepository>();
 
-        public CharacterSyncRepository CharacterSync => Bind<CharacterSyncRepository>();
+        public CharacterRealtimeStateRepository CharacterRealtimeState => Bind<CharacterRealtimeStateRepository>();
 
         public MailRepository Mail => Bind<MailRepository>();
 

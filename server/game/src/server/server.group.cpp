@@ -488,9 +488,19 @@ async::task<void> server::on_updated_group(const internal_resp::UpdatedGroup& re
                     log_data["character_id"]   = static_cast<Json::Int64>(ch->id);
                     log_data["character_name"] = UTF8(resp.deleted_member.value().name, PLATFORM::WINDOWS);
                     log_data["group_id"]       = static_cast<Json::Int64>(group->id());
-                    this->log.write(resp.action == internal::GroupActionType::Kick ? "group_kick" : "group_leave",
-                                    log_data);
-                    co_await before_thread->switching();
+                    switch (resp.action)
+                    {
+                    case internal::GroupActionType::Kick:
+                        this->log.write("group_kick", log_data);
+                        break;
+                    case internal::GroupActionType::Leave:
+                        this->log.write("group_leave", log_data);
+                        break;
+                    default:
+                        break;
+                    }
+                    if (before_thread != nullptr)
+                        co_await before_thread->switching();
                 }
 
                 auto members = std::vector<std::shared_ptr<fb::game::character>>();
@@ -523,10 +533,11 @@ async::task<void> server::on_destroyed_group(const internal_resp::DestroyGroup& 
     this->assert_group(resp.error, resp.actor.name);
 
     auto gid = resp.group_id;
-    this->groups.erase(gid, [this, gid, &resp](const auto& group) {
+    this->groups.erase(gid, [this, gid](const auto& group) {
         auto members = std::vector<std::string>{group->members()};
+        members.push_back(group->master());
 
-        this->characters.write([this, &resp, &members](auto& characters) {
+        this->characters.write([this, &members](auto& characters) {
             characters.foreach_enqueue(members, [](auto& ch) -> async::task<void> {
                 ch->group_reset();
                 ch->message(_TEXT(MESSAGE_GROUP_DISBANDED), MESSAGE_TYPE::STATE);

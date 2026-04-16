@@ -81,13 +81,13 @@ CREATE TABLE `bulletin_sequence` (
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
--- Table structure for table `character_sync`
+-- Table structure for table `character_realtime_state`
 --
 
-DROP TABLE IF EXISTS `character_sync`;
+DROP TABLE IF EXISTS `character_realtime_state`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!50503 SET character_set_client = utf8mb4 */;
-CREATE TABLE `character_sync` (
+CREATE TABLE `character_realtime_state` (
   `uid` int NOT NULL,
   `group` int DEFAULT NULL,
   `clan` int DEFAULT NULL,
@@ -1086,3 +1086,4 @@ CREATE TABLE `marketplace_statistics` (
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
 -- Dump completed on 2025-11-23 17:53:02
+

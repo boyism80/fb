@@ -1,4 +1,4 @@
-﻿using Fb.Model;
+using Fb.Model;
 using Fb.Model.EnumValue;
 using Http;
 using Http.Model;
@@ -132,14 +132,14 @@ namespace Internal.Services
                 var target = await _dbContext.Character.Get(world, targetSession.Uid) ??
                     throw new LogicException(ErrorCode.Offline);
 
-                await using (await _distributedLock.Lock(world, CharacterSync.DistributedLockKey(actor.Id)))
+                await using (await _distributedLock.Lock(world, CharacterRealtimeState.DistributedLockKey(actor.Id)))
                 {
-                    await using (await _distributedLock.Lock(world, CharacterSync.DistributedLockKey(target.Id)))
+                    await using (await _distributedLock.Lock(world, CharacterRealtimeState.DistributedLockKey(target.Id)))
                     {
-                        var actorSync = await _dbContext.CharacterSync.Get(world, actor.Id) ??
+                        var actorSync = await _dbContext.CharacterRealtimeState.Get(world, actor.Id) ??
                             throw new LogicException(ErrorCode.NotFoundCharacterSync);
 
-                        var targetSync = await _dbContext.CharacterSync.Get(world, target.Id) ??
+                        var targetSync = await _dbContext.CharacterRealtimeState.Get(world, target.Id) ??
                             throw new LogicException(ErrorCode.NotFoundCharacterSync);
 
                         // Create group - actor must not be in a group
@@ -171,8 +171,8 @@ namespace Internal.Services
 
                             actorSync.Group = group.Master;
                             targetSync.Group = group.Master;
-                            _dbContext.CharacterSync.Set(world, actorSync);
-                            _dbContext.CharacterSync.Set(world, targetSync);
+                            _dbContext.CharacterRealtimeState.Set(world, actorSync);
+                            _dbContext.CharacterRealtimeState.Set(world, targetSync);
                             _dbContext.Group.Set(world, group);
 
                             var members = new List<Protocol.CharacterRef>
@@ -260,14 +260,14 @@ namespace Internal.Services
                 var target = await _dbContext.Character.Get(world, targetSession.Uid) ??
                     throw new LogicException(ErrorCode.Offline);
 
-                await using (await _distributedLock.Lock(world, CharacterSync.DistributedLockKey(actor.Id)))
+                await using (await _distributedLock.Lock(world, CharacterRealtimeState.DistributedLockKey(actor.Id)))
                 {
-                    await using (await _distributedLock.Lock(world, CharacterSync.DistributedLockKey(target.Id)))
+                    await using (await _distributedLock.Lock(world, CharacterRealtimeState.DistributedLockKey(target.Id)))
                     {
-                        var actorSync = await _dbContext.CharacterSync.Get(world, actor.Id) ??
+                        var actorSync = await _dbContext.CharacterRealtimeState.Get(world, actor.Id) ??
                             throw new LogicException(ErrorCode.NotFoundCharacterSync);
 
-                        var targetSync = await _dbContext.CharacterSync.Get(world, target.Id) ??
+                        var targetSync = await _dbContext.CharacterRealtimeState.Get(world, target.Id) ??
                             throw new LogicException(ErrorCode.NotFoundCharacterSync);
 
                         // Enter group - actor must be group master
@@ -333,9 +333,9 @@ namespace Internal.Services
                 if (Table.Map.TryGetValue(character.Map, out var map) == false)
                     throw new LogicException(ErrorCode.NotFoundMap);
 
-                await using (await _distributedLock.Lock(world, CharacterSync.DistributedLockKey(character.Id)))
+                await using (await _distributedLock.Lock(world, CharacterRealtimeState.DistributedLockKey(character.Id)))
                 {
-                    var sync = await _dbContext.CharacterSync.Get(world, character.Id) ??
+                    var sync = await _dbContext.CharacterRealtimeState.Get(world, character.Id) ??
                         throw new LogicException(ErrorCode.NotFoundCharacterSync);
 
                     var groupId = sync.Group ??
@@ -357,7 +357,7 @@ namespace Internal.Services
                         _dbContext.Group.Set(world, group);
 
                         sync.Group = null;
-                        _dbContext.CharacterSync.Set(world, sync);
+                        _dbContext.CharacterRealtimeState.Set(world, sync);
 
                         var master = await _dbContext.Character.Get(world, group.Master) ??
                             throw new LogicException(ErrorCode.NotFoundCharacter);
@@ -433,14 +433,14 @@ namespace Internal.Services
                 if (Table.Map.TryGetValue(actor.Map, out var map) == false)
                     throw new LogicException(ErrorCode.NotFoundMap);
 
-                await using (await _distributedLock.Lock(world, CharacterSync.DistributedLockKey(actor.Id)))
+                await using (await _distributedLock.Lock(world, CharacterRealtimeState.DistributedLockKey(actor.Id)))
                 {
-                    await using (await _distributedLock.Lock(world, CharacterSync.DistributedLockKey(target.Id)))
+                    await using (await _distributedLock.Lock(world, CharacterRealtimeState.DistributedLockKey(target.Id)))
                     {
-                        var actorSync = await _dbContext.CharacterSync.Get(world, actor.Id) ??
+                        var actorSync = await _dbContext.CharacterRealtimeState.Get(world, actor.Id) ??
                             throw new LogicException(ErrorCode.NotFoundCharacterSync);
 
-                        var targetSync = await _dbContext.CharacterSync.Get(world, target.Id) ??
+                        var targetSync = await _dbContext.CharacterRealtimeState.Get(world, target.Id) ??
                             throw new LogicException(ErrorCode.NotFoundCharacterSync);
 
                         // Check if actor is in a group
@@ -492,9 +492,9 @@ namespace Internal.Services
                 if (Table.Map.TryGetValue(character.Map, out var map) == false)
                     throw new LogicException(ErrorCode.NotFoundMap);
 
-                await using (await _distributedLock.Lock(world, CharacterSync.DistributedLockKey(character.Id)))
+                await using (await _distributedLock.Lock(world, CharacterRealtimeState.DistributedLockKey(character.Id)))
                 {
-                    var sync = await _dbContext.CharacterSync.Get(world, character.Id) ??
+                    var sync = await _dbContext.CharacterRealtimeState.Get(world, character.Id) ??
                         throw new LogicException(ErrorCode.NotFoundCharacterSync);
 
                     var groupId = sync.Group ??
@@ -513,22 +513,22 @@ namespace Internal.Services
                         var memberNames = new List<string>();
                         foreach (var uid in group.Members)
                         {
-                            await using (await _distributedLock.Lock(world, CharacterSync.DistributedLockKey(uid)))
+                            await using (await _distributedLock.Lock(world, CharacterRealtimeState.DistributedLockKey(uid)))
                             {
                                 var member = await _dbContext.Character.Get(world, uid) ??
                                     throw new LogicException(ErrorCode.NotFoundCharacter);
 
-                                var memberSync = await _dbContext.CharacterSync.Get(world, uid) ??
+                                var memberSync = await _dbContext.CharacterRealtimeState.Get(world, uid) ??
                                     throw new LogicException(ErrorCode.NotFoundCharacterSync);
 
                                 memberSync.Group = null;
-                                _dbContext.CharacterSync.Set(world, memberSync);
+                                _dbContext.CharacterRealtimeState.Set(world, memberSync);
                                 memberNames.Add(member.Name);
                             }
                         }
 
                         sync.Group = null;
-                        _dbContext.CharacterSync.Set(world, sync);
+                        _dbContext.CharacterRealtimeState.Set(world, sync);
 
                         group.Deleted = true;
                         _dbContext.Group.Set(world, group);
@@ -634,14 +634,14 @@ namespace Internal.Services
                 var target = await _dbContext.Character.Get(world, targetSession.Uid) ??
                     throw new LogicException(ErrorCode.Offline);
 
-                await using (await _distributedLock.Lock(world, CharacterSync.DistributedLockKey(actor.Id)))
+                await using (await _distributedLock.Lock(world, CharacterRealtimeState.DistributedLockKey(actor.Id)))
                 {
-                    await using (await _distributedLock.Lock(world, CharacterSync.DistributedLockKey(target.Id)))
+                    await using (await _distributedLock.Lock(world, CharacterRealtimeState.DistributedLockKey(target.Id)))
                     {
-                        var actorSync = await _dbContext.CharacterSync.Get(world, actor.Id) ??
+                        var actorSync = await _dbContext.CharacterRealtimeState.Get(world, actor.Id) ??
                             throw new LogicException(ErrorCode.NotFoundCharacterSync);
 
-                        var targetSync = await _dbContext.CharacterSync.Get(world, target.Id) ??
+                        var targetSync = await _dbContext.CharacterRealtimeState.Get(world, target.Id) ??
                             throw new LogicException(ErrorCode.NotFoundCharacterSync);
 
                         // Toggle requires actor to be group master
@@ -707,7 +707,7 @@ namespace Internal.Services
             }
         }
 
-        private async Task<Response.UpdatedGroup> EnterInternal(uint world, Character actor, Character target, CharacterSync actorSync, CharacterSync targetSync, Map map)
+        private async Task<Response.UpdatedGroup> EnterInternal(uint world, Character actor, Character target, CharacterRealtimeState actorSync, CharacterRealtimeState targetSync, Map map)
         {
             var group = await _dbContext.Group.Get(world, actor.Id) ??
                 throw new LogicException(ErrorCode.GroupNotFound);
@@ -718,7 +718,7 @@ namespace Internal.Services
             group.Members.Add(target.Id);
             targetSync.Group = group.Master;
             _dbContext.Group.Set(world, group);
-            _dbContext.CharacterSync.Set(world, targetSync);
+            _dbContext.CharacterRealtimeState.Set(world, targetSync);
 
             await _dbContext.SaveChangesAsync();
 
@@ -745,7 +745,7 @@ namespace Internal.Services
             return response;
         }
 
-        private async Task<Response.UpdatedGroup> KickInternal(uint world, Character actor, Character target, CharacterSync actorSync, CharacterSync targetSync, Map map)
+        private async Task<Response.UpdatedGroup> KickInternal(uint world, Character actor, Character target, CharacterRealtimeState actorSync, CharacterRealtimeState targetSync, Map map)
         {
             var group = await _dbContext.Group.Get(world, actorSync.Group.Value) ??
                 throw new LogicException(ErrorCode.GroupNotFound);
@@ -763,7 +763,7 @@ namespace Internal.Services
             _dbContext.Group.Set(world, group);
 
             targetSync.Group = null;
-            _dbContext.CharacterSync.Set(world, targetSync);
+            _dbContext.CharacterRealtimeState.Set(world, targetSync);
 
             await _dbContext.SaveChangesAsync();
 
@@ -791,3 +791,4 @@ namespace Internal.Services
         }
     }
 }
+
