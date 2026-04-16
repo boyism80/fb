@@ -7,6 +7,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
+using MySqlConnector;
 using Newtonsoft.Json;
 using RabbitMQ.Client;
 using StackExchange.Redis;
@@ -216,44 +217,37 @@ namespace WriteBack.Service
                             continue;
                         }
 
-                        await using var dbConn = db == -1 ? _dbContext.GetGlobalConnection(_world) : _dbContext.GetDataConnection(_world, db);
-                        foreach (var g in entryList.GroupBy(x => x.Hash != null ? (int)(x.Hash % shardSize) : -1))
+                        if (db == -1)
                         {
-                            var mod = g.Key;
-                            var sql = string.Join(Environment.NewLine, g.Select(x => x.SQL));
-                            await dbConn.ExecuteAsync(sql);
-                            _logger.LogInformation(sql);
-
-                            var countSet = g.GroupBy(x => x.RedisKey).ToDictionary(x => x.Key, x => x.Count());
-                            var values = new List<RedisValue>
+                            await using var conn = _dbContext.GetGlobalConnection(_world);
+                            for (var i = 0; i < entryList.Count; i++)
                             {
-                                (int)Http.Redis.Const.CacheTimeToLive.TotalSeconds,
-                                countSet.Count,
-                            };
-                            foreach (var (field, count) in countSet)
-                            {
-                                values.Add(field);
-                                values.Add(count);
-                            }
-
-                            var redisRefConn = mod == -1 ? _redisService.GetGlobalConnection(_world) : _redisService.GetDataConnection(_world, mod);
-                            if (redisRefConn != null)
-                            {
-                                await redisRefConn.ScriptEvaluateAsync("end_of_ref.lua",
-                                    keys: [new RedisKey(Const.ReferenceCountKey)],
-                                    values: [.. values]);
+                                await ProcessWriteBackEntryAsync(
+                                    channel,
+                                    conn,
+                                    conn,
+                                    db,
+                                    shardSize,
+                                    entryList[i],
+                                    messagesToAck[i],
+                                    stoppingToken);
                             }
                         }
-
-                        foreach (var tag in messagesToAck)
+                        else
                         {
-                            try
+                            await using var logConn = _dbContext.GetGlobalConnection(_world);
+                            await using var execConn = _dbContext.GetDataConnection(_world, db);
+                            for (var i = 0; i < entryList.Count; i++)
                             {
-                                channel.BasicAck(tag, false);
-                            }
-                            catch (Exception ex)
-                            {
-                                _logger.LogWarning(ex, "Failed to ack delivery tag {Tag}", tag);
+                                await ProcessWriteBackEntryAsync(
+                                    channel,
+                                    execConn,
+                                    logConn,
+                                    db,
+                                    shardSize,
+                                    entryList[i],
+                                    messagesToAck[i],
+                                    stoppingToken);
                             }
                         }
                     }
@@ -275,6 +269,66 @@ namespace WriteBack.Service
                         _logger.LogError(e, e.Message);
                         await Task.Delay(_delay, stoppingToken);
                     }
+                }
+            }
+        }
+
+        private async Task ProcessWriteBackEntryAsync(
+            IModel channel,
+            MySqlConnection execConn,
+            MySqlConnection logConn,
+            int db,
+            int shardSize,
+            BackgroundCommitEntry entry,
+            ulong deliveryTag,
+            CancellationToken stoppingToken)
+        {
+            try
+            {
+                await execConn.ExecuteAsync(entry.SQL);
+                _logger.LogInformation(entry.SQL);
+
+                var mod = entry.Hash != null ? (int)(entry.Hash % shardSize) : -1;
+                var values = new List<RedisValue>
+                {
+                    (int)Http.Redis.Const.CacheTimeToLive.TotalSeconds,
+                    1,
+                    entry.RedisKey,
+                    1,
+                };
+
+                var redisRefConn = mod == -1 ? _redisService.GetGlobalConnection(_world) : _redisService.GetDataConnection(_world, mod);
+                if (redisRefConn != null)
+                {
+                    await redisRefConn.ScriptEvaluateAsync("end_of_ref.lua",
+                        keys: [new RedisKey(Const.ReferenceCountKey)],
+                        values: [.. values]);
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Write-back entry failed for world {World} db {Db}", _world, db);
+                try
+                {
+                    await WriteBackFailureRecorder.RecordAsync(logConn, _world, db, entry, ex, stoppingToken);
+                }
+                catch (Exception logEx)
+                {
+                    _logger.LogCritical(logEx,
+                        "Failed to insert write_back_failure for world {World} db {Db}. Message is still removed from MQ.",
+                        _world,
+                        db);
+                }
+            }
+            finally
+            {
+                try
+                {
+                    channel.BasicAck(deliveryTag, false);
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogWarning(ex, "Failed to ack delivery tag {Tag}", deliveryTag);
                 }
             }
         }

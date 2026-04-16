@@ -544,6 +544,30 @@ CREATE TABLE `marriage` (
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
+-- Table structure for table `write_back_failure`
+--
+
+DROP TABLE IF EXISTS `write_back_failure`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
+CREATE TABLE `write_back_failure` (
+  `id` bigint unsigned NOT NULL AUTO_INCREMENT,
+  `world` int unsigned NOT NULL,
+  `db_shard` int NOT NULL COMMENT 'Write-back queue DB: -1 global, else data shard index',
+  `hash` int unsigned DEFAULT NULL,
+  `redis_key` varchar(256) NOT NULL,
+  `sql_text` mediumtext NOT NULL,
+  `error_code` int NOT NULL DEFAULT 0,
+  `sql_state` varchar(10) DEFAULT NULL,
+  `error_message` varchar(2048) NOT NULL,
+  `created_date` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `status` tinyint unsigned NOT NULL DEFAULT 0 COMMENT '0=pending, 1=replayed, 2=discarded',
+  PRIMARY KEY (`id`),
+  KEY `idx_write_back_failure_world_created` (`world`,`created_date`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3 COMMENT='Write-back failures (no MQ retry; ops replay)';
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
 -- Dumping routines for database 'fb'
 --
 /*!50003 DROP PROCEDURE IF EXISTS `USP_BULLETIN_ADD` */;
