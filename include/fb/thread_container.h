@@ -60,7 +60,11 @@ public:
     {
         static_assert(std::is_base_of_v<thread_switchable, T>, "T must be a thread_switchable");
 
-        auto thread = pivot->thread();
+        auto shared = pivot.lock();
+        if (shared == nullptr)
+            throw std::runtime_error("pivot object is expired");
+
+        auto thread = shared->thread();
         if (thread == nullptr)
             throw std::runtime_error("no matched thread");
 
@@ -77,7 +81,7 @@ public:
                 auto current_thread = this->current();
                 if (active_thread != current_thread)
                 {
-                    this->enqueue(shared.week_from_this(), std::move(condition), std::move(fn));
+                    this->enqueue(shared->template weak_from_this_as<T>(), std::move(condition), std::move(fn));
                     throw std::runtime_error("active thread not matched");
                 }
 
@@ -397,7 +401,7 @@ public:
     }
 
     void        settimer(std::function<async::task<void>(const fb::model::datetime&, std::thread::id)>&& fn,
-                         const fb::model::timespan& duration);
+                         const fb::model::timespan&                                                      duration);
     void        exit();
     fb::thread* least_loaded() const;
 
