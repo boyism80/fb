@@ -307,3 +307,9 @@ table SetDropRateMultiplier {
   world: uint;
   value: double;
 }
+
+table SetDateTime {
+  world: uint;
+  datetime: string;
+  reset: bool = false;
+}

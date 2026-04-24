@@ -60,6 +60,7 @@
 #include <fb/game/handler/amqp/storage_pending_fetch.h>
 #include <fb/game/handler/amqp/set_exp_multiplier.h>
 #include <fb/game/handler/amqp/set_drop_rate_multiplier.h>
+#include <fb/game/handler/amqp/set_datetime.h>
 #include <fb/game/handler/amqp/start_maintenance.h>
 
 #include <fb/game/handler/timer/heart_beat.h>

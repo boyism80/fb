@@ -296,6 +296,12 @@ table SetDropRateMultiplier {
   error: uint;
 }
 
+table SetDateTime {
+  datetime: string;
+  reset: bool = false;
+  error: uint;
+}
+
 table StartMaintenance {
   message: string;
   end_time: string;

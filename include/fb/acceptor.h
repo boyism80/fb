@@ -10,6 +10,7 @@
 #include <fb/http_client.h>
 #include <fb/socket.h>
 #include <iomanip>
+#include <mutex>
 #include <boost/stacktrace.hpp>
 
 namespace fb {
@@ -44,7 +45,9 @@ public:
     fb::http_client http;
 
 private:
-    boost_timers _timers;
+    boost_timers        _timers;
+    mutable std::mutex  _now_mutex;
+    fb::model::timespan _now_offset;
 
 protected:
     socket_container_lock _sockets;
@@ -490,6 +493,35 @@ public:
         auto thread = this->threads.current();
         if (thread != nullptr)
             co_await thread->sleep(duration);
+    }
+
+public:
+    fb::model::datetime now() const
+    {
+        auto lock = std::lock_guard<std::mutex>(this->_now_mutex);
+        return fb::model::datetime() + this->_now_offset;
+    }
+
+public:
+    void now(const fb::model::datetime& value)
+    {
+        auto current      = fb::model::datetime();
+        auto lock         = std::lock_guard<std::mutex>(this->_now_mutex);
+        this->_now_offset = value - current;
+    }
+
+public:
+    fb::model::timespan now_offset() const
+    {
+        auto lock = std::lock_guard<std::mutex>(this->_now_mutex);
+        return this->_now_offset;
+    }
+
+public:
+    void reset_now_offset()
+    {
+        auto lock         = std::lock_guard<std::mutex>(this->_now_mutex);
+        this->_now_offset = fb::model::timespan();
     }
 
 private:

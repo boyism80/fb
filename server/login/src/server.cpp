@@ -46,6 +46,8 @@ async::task<void> server::on_start()
 
     this->bind_timer<fb::login::handler::timer::heart_beat>(1s);
     this->handler.amqp.bind<fb::login::handler::amqp::shutdown>("fb.global"); // Shutdown: all servers
+    this->handler.amqp.bind<fb::login::handler::amqp::set_datetime>(
+        std::format("fb.{}.global", fb::config<uint32_t>("world")));
 }
 
 async::task<void> server::update_status()
@@ -117,4 +119,5 @@ async::task<bool> server::on_disconnected(fb::socket<session>& socket)
 void server::on_init_amqp(fb::amqp::socket& amqp)
 {
     this->handler.amqp.declare_queue("amq.direct", "fb.global"); // Shutdown: all servers
+    this->handler.amqp.declare_queue("amq.direct", std::format("fb.{}.global", fb::config<uint32_t>("world")));
 }

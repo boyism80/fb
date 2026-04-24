@@ -12,7 +12,7 @@ spell::spell(const fb::game::server& server, const life& owner, const fb::model:
     server(server),
     owner(owner),
     model(model),
-    _next(fb::model::datetime() + std::chrono::seconds(delay))
+    _next(this->server.now() + std::chrono::seconds(delay))
 { }
 
 spell::~spell()
@@ -20,12 +20,12 @@ spell::~spell()
 
 void spell::delay(uint16_t value)
 {
-    this->_next = fb::model::datetime() + std::chrono::seconds(value);
+    this->_next = this->server.now() + std::chrono::seconds(value);
 }
 
 uint16_t spell::delay() const
 {
-    auto diff = this->_next - fb::model::datetime();
+    auto diff = this->_next - this->server.now();
     auto sec  = diff.seconds();
     if (sec < 0)
         return 0;
@@ -243,7 +243,7 @@ buff::buff(const fb::game::server& server, const fb::model::spell& model, const 
     server(server),
     model(model),
     caster(caster),
-    start(fb::model::datetime()),
+    start(this->server.now()),
     _duration(std::chrono::seconds(seconds))
 { }
 
@@ -262,13 +262,13 @@ void buff::duration(const fb::model::timespan& value)
 
 fb::model::timespan buff::remaining() const
 {
-    auto elapsed = fb::model::datetime() - this->start;
+    auto elapsed = this->server.now() - this->start;
     return this->_duration - elapsed;
 }
 
 void buff::remaining(const fb::model::timespan& value)
 {
-    auto elapsed    = fb::model::datetime() - this->start;
+    auto elapsed    = this->server.now() - this->start;
     this->_duration = elapsed + value;
 }
 

@@ -143,7 +143,7 @@ std::vector<uint8_t> items::add(const std::vector<std::shared_ptr<item>>& items,
             auto& drop_time = item->dropped_time();
             if (drop_time.has_value())
             {
-                auto diff = fb::model::datetime() - drop_time.value();
+                auto diff = owner->server.now() - drop_time.value();
                 if (diff < fb::model::const_value::death_penalty::warmth_time)
                 {
                     owner->message(_TEXT(MESSAGE_ITEM_DEATH_PENALTY_WARMTH));

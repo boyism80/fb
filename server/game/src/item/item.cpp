@@ -46,7 +46,7 @@ async::task<bool> item::map(std::shared_ptr<fb::game::map> map,
     if (map == nullptr)
         this->_dropped_time = std::nullopt;
     else
-        this->_dropped_time = fb::model::datetime();
+        this->_dropped_time = this->server.now();
 
     co_return true;
 }

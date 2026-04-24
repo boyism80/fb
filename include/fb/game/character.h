@@ -94,7 +94,7 @@ private:
     bool                                       _super_hide       = false;
     mutable std::optional<fb::model::datetime> _first_login_date = std::nullopt;
     fb::model::datetime                        _last_afk_time;
-    fb::game::marriage                         _marriage          = {};
+    fb::game::marriage                         _marriage;
     bool                                       _options[0x0B + 1] = {
         1,
     };

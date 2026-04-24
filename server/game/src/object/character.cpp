@@ -31,10 +31,10 @@ character::character(fb::game::server& server, const initial_params& params) :
     _armor_color(params.armor_color), _weapon_color(params.weapon_color), _shield_color(params.shield_color),
     _experience(params.exp), _gender(params.gender), _state(params.state), _level(params.level),
     _class(params.class_type), _promotion(params.promotion), _money(params.money), _mimicry(params.mimicry),
-    _title(params.title), _nation(params.nation), _creature(params.creature), _last_afk_time(fb::model::datetime()),
-    _super_hide(params.super_hide)
+    _title(params.title), _nation(params.nation), _creature(params.creature), _last_afk_time(server.now()),
+    _marriage(server.now()), _super_hide(params.super_hide)
 {
-    this->_ping_state.last_ping_time = fb::model::datetime() - std::chrono::seconds(10);
+    this->_ping_state.last_ping_time = server.now() - std::chrono::seconds(10);
 }
 
 character::~character()
@@ -1240,7 +1240,7 @@ async::task<void> character::process_system_mails()
             if (system_mails.empty())
                 co_return;
 
-            auto now          = fb::model::datetime();
+            auto now          = this->server.now();
             auto created_date = this->_created_date;
 
             const auto& system_mail_users = this->mail_box.get_system_mail_users();
@@ -1415,7 +1415,7 @@ fb::protocol::internal::Character character::to_protocol() const
     this->assert_thread();
 
     if (!this->_first_login_date.has_value())
-        this->_first_login_date = fb::model::datetime();
+        this->_first_login_date = this->server.now();
 
     auto dto             = fb::protocol::internal::Character();
     dto.id               = this->id;
@@ -1423,7 +1423,7 @@ fb::protocol::internal::Character character::to_protocol() const
     dto.pw               = this->_pw;
     dto.birth            = this->_birthday;
     dto.created_date     = this->_created_date.to_string();
-    dto.updated_date     = fb::model::datetime().to_string();
+    dto.updated_date     = this->server.now().to_string();
     dto.first_login_date = this->_first_login_date->to_string();
     dto.role             = static_cast<uint8_t>(this->_role);
     dto.look             = this->_look;
@@ -1700,7 +1700,7 @@ bool character::hidden(ROLE role) const
 void character::update_last_afk_time()
 {
     this->assert_thread();
-    this->_last_afk_time = fb::model::datetime();
+    this->_last_afk_time = this->server.now();
 }
 
 fb::model::datetime& character::last_afk_time()

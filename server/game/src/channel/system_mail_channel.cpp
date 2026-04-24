@@ -22,7 +22,7 @@ async::task<void> system_mail_channel::fetch()
         if (resp.error != 0)
             co_return;
 
-        auto now = fb::model::datetime();
+        auto now = this->_owner.now();
 
         this->_data.write([&resp, now](auto& mails) {
             mails.clear();
@@ -55,7 +55,7 @@ async::task<void> system_mail_channel::append(const system_mail& mail)
 {
     try
     {
-        auto now = fb::model::datetime();
+        auto now = this->_owner.now();
 
         // Skip if expired
         if (mail.expire_date.has_value() && mail.expire_date.value() < now)

@@ -474,7 +474,7 @@ async::task<void> server::on_updated_group(const internal_resp::UpdatedGroup& re
                 auto before_thread = this->threads.current();
                 if (ch != nullptr)
                 {
-                    auto weak   = ch->template weak_from_this_as<character>();
+                    auto weak = ch->template weak_from_this_as<character>();
                     group->detach(weak);
 
                     co_await this->threads.switching(weak);

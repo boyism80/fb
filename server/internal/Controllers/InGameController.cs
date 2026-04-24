@@ -331,6 +331,20 @@ namespace Internal.Controllers
             return Task.FromResult(response);
         }
 
+        [HttpPost("set-datetime")]
+        public Task<Response.SetDateTime> SetDateTime(Request.SetDateTime request)
+        {
+            var response = new Response.SetDateTime
+            {
+                Datetime = request.Datetime,
+                Reset = request.Reset,
+                Error = (uint)ErrorCode.None
+            };
+
+            _rabbitMqService.Publish(response, "amq.direct", $"fb.{request.World}.global");
+            return Task.FromResult(response);
+        }
+
         [HttpPost("update-friends")]
         public Task<Response.UpdateFriends> UpdateFriends(Request.UpdateFriends request)
         {

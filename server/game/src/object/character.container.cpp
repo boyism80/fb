@@ -89,7 +89,7 @@ async::task<void> character::container::foreach (character_function_t           
 async::task<void> character::container::foreach_async(character_async_function_t          fn,
                                                       const std::vector<character_ptr_t>& characters)
 {
-    auto before = this->_server.threads.current();
+    auto before    = this->_server.threads.current();
     auto weak_ptrs = std::vector<std::weak_ptr<character>>();
     weak_ptrs.reserve(characters.size());
 
@@ -114,31 +114,27 @@ async::task<void> character::container::foreach_async(character_async_function_t
     auto fn_holder = std::make_shared<character_async_function_t>(std::move(fn));
     for (auto& weak_ptr : weak_ptrs)
     {
-        async::awaitable_then(
-            this->_server.threads.dispatch(
-                weak_ptr,
-                [weak_ptr, fn_holder](auto& thread) -> async::task<void> {
-                    auto shared_ptr = weak_ptr.lock();
-                    if (shared_ptr != nullptr)
-                        co_await (*fn_holder)(shared_ptr);
-                    co_return;
-                }),
-            [promise, remaining](async::awaitable_result<void> result) mutable {
-                try
-                {
-                    result();
-                }
-                catch (std::exception&)
-                {
-                }
-                catch (...)
-                {
-                }
+        async::awaitable_then(this->_server.threads.dispatch(weak_ptr,
+                                                             [weak_ptr, fn_holder](auto& thread) -> async::task<void> {
+                                                                 auto shared_ptr = weak_ptr.lock();
+                                                                 if (shared_ptr != nullptr)
+                                                                     co_await (*fn_holder)(shared_ptr);
+                                                                 co_return;
+                                                             }),
+                              [promise, remaining](async::awaitable_result<void> result) mutable {
+                                  try
+                                  {
+                                      result();
+                                  }
+                                  catch (std::exception&)
+                                  { }
+                                  catch (...)
+                                  { }
 
-                // Count down regardless of success/failure to avoid deadlock.
-                if (remaining->fetch_sub(1) == 1)
-                    promise->set_value();
-            });
+                                  // Count down regardless of success/failure to avoid deadlock.
+                                  if (remaining->fetch_sub(1) == 1)
+                                      promise->set_value();
+                              });
     }
 
     co_await promise->task();

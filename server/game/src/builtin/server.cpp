@@ -67,10 +67,182 @@ int builtin::server::builtin_sleep(lua_State* L)
  */
 int builtin::server::builtin_now(lua_State* L)
 {
-    auto now_c           = std::chrono::system_clock::now();
-    auto sec_since_epoch = std::chrono::duration_cast<std::chrono::seconds>(now_c.time_since_epoch()).count();
-    lua_pushinteger(L, static_cast<lua_Integer>(sec_since_epoch));
-    return 1;
+    auto lua = fb::lua::get(L);
+    if (lua == nullptr)
+        return 0;
+
+    auto server = lua->env<fb::game::server>("server");
+    auto argc   = lua->argc();
+
+    if (argc == 0)
+    {
+        auto offset = server->now_offset();
+        auto now_c  = std::chrono::system_clock::now() + std::chrono::milliseconds(offset.total_milliseconds());
+        auto sec_since_epoch = std::chrono::duration_cast<std::chrono::seconds>(now_c.time_since_epoch()).count();
+        lua->pushinteger(static_cast<lua_Integer>(sec_since_epoch));
+        return 1;
+    }
+    else
+    {
+        auto value = lua->tostring(1);
+        auto reset = false;
+        if (value == "reset")
+        {
+            reset = true;
+            value = "";
+        }
+
+        if (value.empty() && !reset)
+        {
+            lua->pushboolean(false);
+            lua->pushstring("datetime is required");
+            return 2;
+        }
+
+        static auto fn =
+            [](fb::game::server* server, fb::lua::context* lua, std::string datetime, bool reset) -> async::task<void> {
+            auto   success = false;
+            auto   error   = std::string{};
+            auto   world   = fb::config<uint32_t>("world");
+            auto&& resp    = co_await server->http.post("internal",
+                                                     "/in-game/set-datetime",
+                                                     internal_reqs::SetDateTime{world, datetime, reset});
+            if (resp.error == 0)
+            {
+                success = true;
+            }
+            else
+            {
+                error = std::format("Set datetime failed with error code: {}", resp.error);
+            }
+
+            co_await lua->switching();
+            lua->pushboolean(success);
+            if (!success)
+                lua->pushstring(error);
+            lua->resume(success ? 1 : 2);
+        };
+
+        async::awaitable_then(fn(server, lua, value, reset), [lua](auto result) {
+            result();
+        });
+
+        return lua->yield(1);
+    }
+}
+
+int builtin::server::builtin_time_forward(lua_State* L)
+{
+    auto lua = fb::lua::get(L);
+    if (lua == nullptr)
+        return 0;
+
+    auto server = lua->env<fb::game::server>("server");
+    auto value  = lua->tostring(1);
+    if (value.empty())
+    {
+        lua->pushboolean(false);
+        lua->pushstring("timespan is required");
+        return 2;
+    }
+
+    fb::model::timespan delta;
+    try
+    {
+        delta = fb::model::timespan(value);
+    }
+    catch (const std::exception& e)
+    {
+        lua->pushboolean(false);
+        lua->pushstring(e.what());
+        return 2;
+    }
+
+    auto        target = server->now() + delta;
+    static auto fn = [](fb::game::server* server, fb::lua::context* lua, std::string datetime) -> async::task<void> {
+        auto   success = false;
+        auto   error   = std::string{};
+        auto   world   = fb::config<uint32_t>("world");
+        auto&& resp    = co_await server->http.post("internal",
+                                                 "/in-game/set-datetime",
+                                                 internal_reqs::SetDateTime{world, datetime, false});
+        if (resp.error == 0)
+        {
+            success = true;
+        }
+        else
+        {
+            error = std::format("Set datetime failed with error code: {}", resp.error);
+        }
+
+        co_await lua->switching();
+        lua->pushboolean(success);
+        if (!success)
+            lua->pushstring(error);
+        lua->resume(success ? 1 : 2);
+    };
+
+    async::awaitable_then(fn(server, lua, target.to_string()), [lua](auto result) {
+        result();
+    });
+    return lua->yield(1);
+}
+
+int builtin::server::builtin_time_backward(lua_State* L)
+{
+    auto lua = fb::lua::get(L);
+    if (lua == nullptr)
+        return 0;
+
+    auto server = lua->env<fb::game::server>("server");
+    auto value  = lua->tostring(1);
+    if (value.empty())
+    {
+        lua->pushboolean(false);
+        lua->pushstring("timespan is required");
+        return 2;
+    }
+
+    fb::model::timespan delta;
+    try
+    {
+        delta = fb::model::timespan(value);
+    }
+    catch (const std::exception& e)
+    {
+        lua->pushboolean(false);
+        lua->pushstring(e.what());
+        return 2;
+    }
+
+    auto        target = server->now() - delta;
+    static auto fn = [](fb::game::server* server, fb::lua::context* lua, std::string datetime) -> async::task<void> {
+        auto   success = false;
+        auto   error   = std::string{};
+        auto   world   = fb::config<uint32_t>("world");
+        auto&& resp    = co_await server->http.post("internal",
+                                                 "/in-game/set-datetime",
+                                                 internal_reqs::SetDateTime{world, datetime, false});
+        if (resp.error == 0)
+        {
+            success = true;
+        }
+        else
+        {
+            error = std::format("Set datetime failed with error code: {}", resp.error);
+        }
+
+        co_await lua->switching();
+        lua->pushboolean(success);
+        if (!success)
+            lua->pushstring(error);
+        lua->resume(success ? 1 : 2);
+    };
+
+    async::awaitable_then(fn(server, lua, target.to_string()), [lua](auto result) {
+        result();
+    });
+    return lua->yield(1);
 }
 
 /**
@@ -88,7 +260,8 @@ int builtin::server::builtin_datetime(lua_State* L)
     if (lua == nullptr)
         return 0;
 
-    const auto dt = fb::model::datetime();
+    auto server = lua->env<fb::game::server>("server");
+    auto dt     = server->now();
     lua_createtable(L, 0, 6);
     lua_pushinteger(L, static_cast<lua_Integer>(dt.year()));
     lua_setfield(L, -2, "year");

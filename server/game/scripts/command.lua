@@ -252,6 +252,87 @@ command_funcs = {
             return true
         end,
     },
+
+    ['현재시간'] = {
+        ['privilege'] = ROLE.ADMIN,
+        ['usage'] = '[YYYY-MM-DD HH:MM:SS] - 현재 서버 시간 조회/설정',
+        ['command'] = function (me, args)
+            if #args == 0 then
+                local dt = datetime()
+                me:message(string.format("현재 서버 시간: %04d-%02d-%02d %02d:%02d:%02d",
+                    dt.year, dt.month, dt.day, dt.hour, dt.minute, dt.second), MESSAGE_TYPE.BROWN)
+                return true
+            end
+
+            local value = table.concat(args, ' ')
+            if not string.match(value, '^%d%d%d%d%-%d%d%-%d%d %d%d:%d%d:%d%d$') then
+                me:message("사용법: /현재시간 YYYY-MM-DD HH:MM:SS")
+                return true
+            end
+
+            local success, error_message = now(value)
+            if success then
+                me:message(string.format("현재 시간을 %s 로 설정 요청했습니다.", value), MESSAGE_TYPE.BROWN)
+            else
+                me:message(string.format("현재시간 설정 실패: %s", error_message or "unknown error"), MESSAGE_TYPE.BROWN)
+            end
+            return true
+        end,
+    },
+
+    ['현재시간초기화'] = {
+        ['privilege'] = ROLE.ADMIN,
+        ['usage'] = '- 현재 서버 시간 보정 초기화',
+        ['command'] = function (me, args)
+            local success, error_message = now("reset")
+            if success then
+                me:message("현재 시간 보정 초기화 요청을 전송했습니다.", MESSAGE_TYPE.BROWN)
+            else
+                me:message(string.format("현재시간 보정 초기화 실패: %s", error_message or "unknown error"), MESSAGE_TYPE.BROWN)
+            end
+            return true
+        end,
+    },
+
+    ['시간가속'] = {
+        ['privilege'] = ROLE.ADMIN,
+        ['usage'] = '<timespan> - 시간 앞으로 이동 (예: 10.12:30:00 / 12:30:00)',
+        ['command'] = function (me, args)
+            local value = table.unpack(args)
+            if not value then
+                me:message("사용법: /시간가속 <timespan>")
+                return true
+            end
+
+            local success, error_message = time_forward(value)
+            if success then
+                me:message(string.format("시간가속 적용 요청: %s", value), MESSAGE_TYPE.BROWN)
+            else
+                me:message(string.format("시간가속 실패: %s", error_message or "unknown error"), MESSAGE_TYPE.BROWN)
+            end
+            return true
+        end,
+    },
+
+    ['시간역전'] = {
+        ['privilege'] = ROLE.ADMIN,
+        ['usage'] = '<timespan> - 시간 뒤로 이동 (예: 10.12:30:00 / 12:30:00)',
+        ['command'] = function (me, args)
+            local value = table.unpack(args)
+            if not value then
+                me:message("사용법: /시간역전 <timespan>")
+                return true
+            end
+
+            local success, error_message = time_backward(value)
+            if success then
+                me:message(string.format("시간역전 적용 요청: %s", value), MESSAGE_TYPE.BROWN)
+            else
+                me:message(string.format("시간역전 실패: %s", error_message or "unknown error"), MESSAGE_TYPE.BROWN)
+            end
+            return true
+        end,
+    },
     
     ['타이틀'] = {
         ['privilege'] = ROLE.ADMIN,

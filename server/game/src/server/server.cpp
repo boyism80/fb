@@ -260,6 +260,7 @@ async::task<void> server::on_start()
     this->handler.amqp.bind<fb::game::handler::amqp::ban>(std::format("fb.{}.ban", world));
     this->handler.amqp.bind<fb::game::handler::amqp::set_exp_multiplier>(std::format("fb.{}.global", world));
     this->handler.amqp.bind<fb::game::handler::amqp::set_drop_rate_multiplier>(std::format("fb.{}.global", world));
+    this->handler.amqp.bind<fb::game::handler::amqp::set_datetime>(std::format("fb.{}.global", world));
     this->handler.amqp.bind<fb::game::handler::amqp::start_maintenance>(
         std::format("fb.{}.game.{}", world, fb::config<uint32_t>("id")));
 
@@ -550,7 +551,7 @@ internal::SavePayload server::save_payload(const character& ch) const
     }
 
     auto        received_system_mails = std::vector<internal::SystemMailUser>();
-    auto        now                   = fb::model::datetime();
+    auto        now                   = this->now();
     const auto& system_mail_users     = ch.mail_box.get_system_mail_users();
     for (const auto& [mail_id, smu] : system_mail_users)
     {
@@ -838,7 +839,7 @@ async::task<void> server::update_status()
 
 void server::update_time()
 {
-    auto updated = fb::model::datetime();
+    auto updated = this->now();
     if (this->_time.hours() != updated.hours())
     {
         this->characters.write([hours = updated.hours()](auto& characters) {
@@ -874,7 +875,7 @@ void server::drop_rate_multiplier(double value)
 
 void server::initialize_schedules()
 {
-    auto now = fb::model::datetime();
+    auto now = this->now();
 
     for (const auto& schedule : table::schedule)
     {

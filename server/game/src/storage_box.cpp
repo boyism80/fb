@@ -104,7 +104,7 @@ bool storage_box::receive_reward(uint32_t entry_id)
     if (it->second.received)
         return false;
 
-    auto now = fb::model::datetime();
+    auto now = this->_owner.server.now();
     if (it->second.expire_date.has_value() && it->second.expire_date.value() < now)
         return false;
 

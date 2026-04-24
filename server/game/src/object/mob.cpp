@@ -12,12 +12,12 @@ rezen::rezen(server& server, const fb::model::mob_spawn& model) :
     _server(server),
     model(model)
 {
-    this->_respawn_time = fb::model::datetime();
+    this->_respawn_time = this->_server.now();
 }
 
 void rezen::decrease()
 {
-    auto now = fb::model::datetime();
+    auto now = this->_server.now();
 
     if (!this->_respawn_time.has_value())
         this->_respawn_time = now + this->model.rezen;
@@ -40,7 +40,7 @@ async::task<void> rezen::spawn(std::thread::id thread_id)
     if (thread == nullptr || thread->id() != thread_id)
         co_return;
 
-    auto now = fb::model::datetime();
+    auto now = this->_server.now();
     if (!this->_respawn_time.has_value())
         co_return;
 
@@ -101,7 +101,7 @@ async::task<void> rezen::spawn(std::thread::id thread_id)
 
 void rezen::force_spawn(std::thread::id thread_id)
 {
-    this->_respawn_time = fb::model::datetime();
+    this->_respawn_time = this->_server.now();
 }
 
 mob::mob(fb::game::server& server, const fb::model::mob& model, const initial_params& params) :

@@ -21,7 +21,7 @@ async::task<void> schedule_timer::handle()
     // Switch to logic thread context
     co_await logic_thread->switching();
 
-    auto now       = fb::model::datetime();
+    auto now       = this->server.now();
     auto to_remove = std::vector<uint32_t>{};
 
     for (auto& [schedule_id, next_execution] : this->server.scheduled_tasks())

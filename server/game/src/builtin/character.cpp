@@ -4180,7 +4180,7 @@ int builtin::character::builtin_storage_entries(lua_State* L)
     return lua->ensure_yield(*server, weak, [=](auto is_yield) {
         auto buffer = std::vector<fb::game::storage_box::entry>();
         buffer.reserve(ch->storage_box.entries().size());
-        auto now = fb::model::datetime();
+        auto now = server->now();
         for (const auto& [id, entry] : ch->storage_box.entries())
         {
             // Exclude entries with no rewards, already received, or expired
@@ -4728,7 +4728,7 @@ int builtin::character::builtin_marriage(lua_State* L)
 
     const auto& m           = ch->marriage();
     bool        married     = m.spouse_id.has_value();
-    bool        can_remarry = !married && (fb::model::datetime() >= m.remarriage_after);
+    bool        can_remarry = !married && (ch->server.now() >= m.remarriage_after);
 
     lua->new_table();
     lua_pushstring(*lua, "married");
@@ -4782,28 +4782,20 @@ int builtin::character::builtin_marry(lua_State* L)
         lua->pushstring("target already married");
         return 1;
     }
-    if (fb::model::datetime() < my_m.remarriage_after)
+    if (server->now() < my_m.remarriage_after)
     {
         lua->pushstring("remarriage cooldown");
         return 1;
     }
-    if (fb::model::datetime() < tar_m.remarriage_after)
+    if (server->now() < tar_m.remarriage_after)
     {
         lua->pushstring("target remarriage cooldown");
         return 1;
     }
 
-    fb::game::marriage new_me;
-    new_me.spouse_id        = target->id;
-    new_me.spouse_name      = target->name();
-    new_me.remarriage_after = fb::model::datetime();
-    new_me.divorce_count    = my_m.divorce_count;
+    fb::game::marriage new_me(server->now(), target->id, target->name(), my_m.divorce_count);
 
-    fb::game::marriage new_tar;
-    new_tar.spouse_id        = me->id;
-    new_tar.spouse_name      = me->name();
-    new_tar.remarriage_after = fb::model::datetime();
-    new_tar.divorce_count    = tar_m.divorce_count;
+    fb::game::marriage new_tar(server->now(), me->id, me->name(), tar_m.divorce_count);
 
     me->marriage(new_me);
     target->marriage(new_tar);
@@ -4845,20 +4837,12 @@ int builtin::character::builtin_divorce(lua_State* L)
         return 1;
     }
 
-    auto now = fb::model::datetime();
+    auto now = server->now();
     now.add_days(7);
 
-    fb::game::marriage new_me;
-    new_me.spouse_id        = std::nullopt;
-    new_me.spouse_name      = "";
-    new_me.remarriage_after = now;
-    new_me.divorce_count    = m.divorce_count + 1;
+    fb::game::marriage new_me(now, std::nullopt, "", m.divorce_count + 1);
 
-    fb::game::marriage new_tar;
-    new_tar.spouse_id        = std::nullopt;
-    new_tar.spouse_name      = "";
-    new_tar.remarriage_after = now;
-    new_tar.divorce_count    = spouse->marriage().divorce_count + 1;
+    fb::game::marriage new_tar(now, std::nullopt, "", spouse->marriage().divorce_count + 1);
 
     me->marriage(new_me);
     if (spouse->thread() == me->thread())

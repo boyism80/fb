@@ -64,7 +64,7 @@ void login::init_spells(const std::vector<internal::Spell>& response, character&
             continue;
 
         auto& model = table::spell[x.model];
-        auto  delay = fb::model::datetime(x.next) - fb::model::datetime();
+        auto  delay = fb::model::datetime(x.next) - this->server.now();
         auto  sec   = delay.seconds();
         if (sec >= 0)
             sec += (delay.milliseconds() > 0 ? 1 : 0);
@@ -317,12 +317,12 @@ async::task<std::shared_ptr<character>> login::init(const game_reqs::login& requ
     this->init_system_mail(resp.received_system_mails, *ch);
     this->init_storage(resp, *ch);
     this->init_option(resp.option, *ch);
-    ch->marriage(fb::game::marriage{resp.marriage.spouse_id,
-                                    resp.marriage.spouse_name,
-                                    resp.marriage.remarriage_after.empty()
-                                        ? fb::model::datetime()
+    ch->marriage(fb::game::marriage(resp.marriage.remarriage_after.empty()
+                                        ? this->server.now()
                                         : fb::model::datetime(resp.marriage.remarriage_after),
-                                    resp.marriage.divorce_count});
+                                    resp.marriage.spouse_id,
+                                    resp.marriage.spouse_name,
+                                    resp.marriage.divorce_count));
 
     // Restore pending marketplace listings if any
     if (resp.character.pending_listings.has_value() && !resp.character.pending_listings.value().empty())
@@ -425,7 +425,7 @@ async::task<bool> login::assert_login(const game_reqs::login& request)
 
 std::string login::elapsed_message(std::string_view dt)
 {
-    auto elapsed = fb::model::datetime() - fb::model::datetime(dt);
+    auto elapsed = this->server.now() - fb::model::datetime(dt);
     if (elapsed.total_milliseconds() < 1000 * 60)
         return std::string();
 

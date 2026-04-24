@@ -914,7 +914,7 @@ uint32_t mob_stat::damage(uint32_t                value,
     {
         this->owner._ai_strategy->on_damage(this->owner,
                                             std::static_pointer_cast<fb::game::life>(from),
-                                            fb::model::datetime());
+                                            this->owner.server.now());
     }
 
     return result;
