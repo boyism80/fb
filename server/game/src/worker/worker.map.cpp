@@ -10,6 +10,8 @@ map_loader::map_loader(server& server) :
 
 fb::generator<map_loader::input_type> map_loader::on_ready()
 {
+    fb::console::progress("Loading map files", 0);
+
     for (auto& [k, v] : table::map)
     {
         co_yield v;

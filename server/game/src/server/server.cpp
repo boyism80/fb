@@ -81,6 +81,8 @@ server::server(boost::asio::io_context& io_context, uint16_t port) :
     lua::build("seed", builtin::server::builtin_seed);
     lua::build("sleep", builtin::server::builtin_sleep);
     lua::build("now", builtin::server::builtin_now);
+    lua::build("time_forward", builtin::server::builtin_time_forward);
+    lua::build("time_backward", builtin::server::builtin_time_backward);
     lua::build("datetime", builtin::server::builtin_datetime);
     lua::build("name2mob", builtin::server::builtin_name2mob);
     lua::build("name2spell", builtin::server::builtin_name2spell);

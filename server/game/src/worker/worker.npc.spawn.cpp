@@ -11,6 +11,8 @@ fb::game::npc_spawner::npc_spawner(fb::game::server& server) :
 
 fb::generator<fb::game::npc_spawner::input_type> fb::game::npc_spawner::on_ready()
 {
+    fb::console::progress("Loading npc spawns", 0);
+
     for (auto& [map, spawns] : table::npc_spawn)
     {
         for (auto& spawn : spawns)

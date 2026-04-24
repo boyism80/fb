@@ -40,12 +40,14 @@ life::batch_update_guard life::batch_update()
 life::batch_update_guard::batch_update_guard(life& owner) :
     _owner(owner)
 {
+    this->_owner.assert_thread();
     this->_owner._batch_mode     = true;
     this->_owner._pending_update = UPDATE_STATE_LEVEL::MINIMUM;
 }
 
 life::batch_update_guard::~batch_update_guard()
 {
+    this->_owner.assert_thread();
     this->_owner._batch_mode = false;
     if (this->_owner._pending_update != UPDATE_STATE_LEVEL::MINIMUM)
     {
@@ -57,6 +59,7 @@ life::batch_update_guard::~batch_update_guard()
 
 void life::kill(std::shared_ptr<fb::game::object> from, DESTROY_TYPE destroy_type)
 {
+    this->assert_thread();
     this->stat.hp(0);
 }
 
@@ -279,6 +282,7 @@ uint32_t life::damage_rate() const
 
 void life::damage_rate(uint32_t value)
 {
+    this->assert_thread();
     this->_damage_rate = value;
 }
 
@@ -289,6 +293,7 @@ uint32_t life::skill_damage_rate() const
 
 void life::skill_damage_rate(uint32_t value)
 {
+    this->assert_thread();
     this->_skill_damage_rate = value;
 }
 
@@ -299,6 +304,7 @@ uint32_t life::damage_derate() const
 
 void life::damage_derate(uint32_t value)
 {
+    this->assert_thread();
     this->_damage_derate = value;
 }
 

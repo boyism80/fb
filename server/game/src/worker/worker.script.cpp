@@ -9,6 +9,8 @@ fb::game::script_loader::script_loader(fb::game::server& server) :
 
 fb::generator<std::function<async::task<void>()>> fb::game::script_loader::on_ready()
 {
+    fb::console::progress("Loading script files", 0);
+
     auto scripts = std::vector<std::string>{};
     scripts.push_back("scripts/server.lua");
     scripts.push_back("scripts/spell.lua");

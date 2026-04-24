@@ -762,10 +762,7 @@ local function shuffle_array(arr, from_idx, to_idx)
 end
 
 function sky_maze_shuffle(seed)
-    if seed == nil then
-        seed = now()
-    end
-    math.randomseed(seed)
+    math.randomseed(seed or now() or os.time())
     local arr = {}
     for i = 0, 26 do
         arr[i] = map_name_to_id(SKY_MAZE_NAMES[i + 1])
@@ -777,10 +774,7 @@ function sky_maze_shuffle(seed)
 end
 
 function pk_sky_maze_shuffle(seed)
-    if seed == nil then
-        seed = now()
-    end
-    math.randomseed(seed)
+    math.randomseed(seed or now() or os.time())
     local arr = {}
     for i = 0, 26 do
         arr[i] = map_name_to_id(PK_SKY_MAZE_NAMES[i + 1])

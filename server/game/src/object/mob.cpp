@@ -326,6 +326,7 @@ bool mob::near_target(const std::shared_ptr<fb::game::life>& target, DIRECTION& 
 
 bool mob::move_step(const fb::model::point16_t& position)
 {
+    this->assert_thread();
     auto x_axis = bool(std::rand() % 2);
     if (x_axis)
     {
@@ -395,6 +396,7 @@ uint32_t mob::normal_attack_damage(MOB_SIZE size) const
 
 void mob::on_die(std::shared_ptr<object> from, DESTROY_TYPE destroy_type)
 {
+    this->assert_thread();
     this->listener.on_dead(*this, from);
 
     // Drop items when mob dies
@@ -451,6 +453,7 @@ void mob::on_die(std::shared_ptr<object> from, DESTROY_TYPE destroy_type)
 
 void mob::kill(std::shared_ptr<object> from, DESTROY_TYPE destroy_type)
 {
+    this->assert_thread();
     life::kill(from, destroy_type);
 
     auto& model = this->based<fb::model::mob>();
@@ -548,6 +551,7 @@ void mob::assert_thread() const
 
 bool mob::move(DIRECTION direction)
 {
+    this->assert_thread();
     auto map = this->map();
     if (map == nullptr)
         return false;
@@ -581,11 +585,13 @@ bool mob::move(DIRECTION direction)
 
 const std::vector<std::shared_ptr<fb::game::item>>& mob::items() const
 {
+    this->assert_thread();
     return this->_items;
 }
 
 bool mob::push_item(std::shared_ptr<fb::game::item> item)
 {
+    this->assert_thread();
     if (this->_items.size() >= CONTAINER_CAPACITY)
         return false;
 
@@ -600,6 +606,7 @@ bool mob::hidden(const fb::game::object& target) const
 
 void mob::hidden(bool enabled)
 {
+    this->assert_thread();
     this->_hidden = enabled;
 }
 

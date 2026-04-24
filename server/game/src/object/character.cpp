@@ -363,6 +363,7 @@ void character::shield_color(std::optional<uint8_t> value)
 
 const std::optional<character_appearance>& character::mimicry() const
 {
+    this->assert_thread();
     return this->_mimicry;
 }
 
@@ -1001,6 +1002,7 @@ void character::group_reset()
 
 const std::optional<uint32_t>& character::clan_id() const
 {
+    this->assert_thread();
     return this->_clan_id;
 }
 
@@ -1360,6 +1362,7 @@ fb::thread* character::thread() const
 
 void character::thread(fb::thread* value)
 {
+    this->assert_thread();
     this->_thread = value;
 }
 
@@ -1383,6 +1386,7 @@ void character::update(UPDATE_STATE_LEVEL value)
 
 void character::kill(std::shared_ptr<fb::game::object> from, DESTROY_TYPE destroy_type)
 {
+    this->assert_thread();
     life::kill(from, destroy_type);
 
     this->death_penalty();
@@ -1528,11 +1532,13 @@ fb::protocol::internal::Character character::to_protocol() const
 
 const fb::game::marriage& character::marriage() const
 {
+    this->assert_thread();
     return this->_marriage;
 }
 
 void character::marriage(const fb::game::marriage& value)
 {
+    this->assert_thread();
     this->_marriage = value;
 }
 
@@ -1605,6 +1611,7 @@ bool character::detect() const
 std::shared_ptr<fb::game::mob>
 character::spawn_mob(const fb::model::mob& model, const fb::model::point16_t& position, bool owned, bool notify)
 {
+    this->assert_thread();
     auto map = this->_map;
     if (map == nullptr)
         return nullptr;
@@ -1622,11 +1629,13 @@ character::spawn_mob(const fb::model::mob& model, const fb::model::point16_t& po
 
 const std::vector<std::shared_ptr<fb::game::mob>>& character::spawned_mobs() const
 {
+    this->assert_thread();
     return this->_spawned_mobs;
 }
 
 bool character::detach_spawned_mob(fb::game::mob& mob)
 {
+    this->assert_thread();
     auto owner = mob.owner.lock();
     if (owner == nullptr)
         return false;
@@ -1660,6 +1669,7 @@ bool character::super_hide() const
 
 void character::super_hide(bool enabled)
 {
+    this->assert_thread();
     this->_super_hide = enabled;
     if (enabled)
     {
@@ -1711,6 +1721,7 @@ fb::model::datetime& character::last_afk_time()
 
 async::task<void> character::death_penalty()
 {
+    this->assert_thread();
     auto buff_keys = std::vector<uint32_t>{};
     for (auto& [k, v] : this->buffs)
     {
@@ -1807,6 +1818,7 @@ async::task<void> character::death_penalty()
 
 bool character::reward(const std::vector<fb::model::dsl>& reward)
 {
+    this->assert_thread();
     if (this->items.is_rewardable(reward) == false)
         return false;
 
@@ -1877,6 +1889,7 @@ std::shared_ptr<fb::socket<character>> character::socket_ptr() const
 
 fb::game::character::ping_state_t& character::ping_state()
 {
+    this->assert_thread();
     return this->_ping_state;
 }
 

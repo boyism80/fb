@@ -18,6 +18,7 @@ npc::~npc()
 
 void fb::game::npc::soliloquy()
 {
+    this->assert_thread();
     auto& model = this->based<fb::model::npc>();
     if (table::soliloquy.contains(model.id) == false)
         return;

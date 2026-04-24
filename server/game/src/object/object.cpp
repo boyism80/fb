@@ -342,6 +342,7 @@ bool object::direction(DIRECTION value)
 
 std::shared_ptr<fb::game::map> object::map() const
 {
+    this->assert_thread();
     auto _ = std::shared_lock(this->_map_lock);
     return this->_map;
 }
@@ -732,6 +733,7 @@ std::vector<std::shared_ptr<fb::game::object>> object::forwards(OBJECT_TYPE type
 
 std::vector<std::shared_ptr<fb::game::object>> object::sight_in(OBJECT_TYPE type) const
 {
+    this->assert_thread();
     auto result = std::vector<std::shared_ptr<fb::game::object>>{};
     for (auto& obj : this->nears())
     {
@@ -752,6 +754,7 @@ std::vector<std::shared_ptr<fb::game::object>> object::sight_in(OBJECT_TYPE type
 
 std::vector<std::shared_ptr<fb::game::object>> object::nears(OBJECT_TYPE type, bool contains_super_hide) const
 {
+    this->assert_thread();
     if (this->_map == nullptr)
         return {};
 
@@ -814,6 +817,7 @@ void object::hide(object& to, DESTROY_TYPE destroy_type)
 
 void object::thread(fb::thread* value)
 {
+    this->assert_thread();
     auto _ = std::unique_lock(this->_map_lock);
 
     this->_thread = value;
