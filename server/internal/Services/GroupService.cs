@@ -207,7 +207,7 @@ namespace Internal.Services
                                 Error = (uint)ErrorCode.None
                             };
 
-                            _rabbitMqService.Publish(response, "amq.direct", $"fb.{world}.group");
+                            await _rabbitMqService.PublishAsync(response, "amq.direct", $"fb.{world}.group");
                             return response;
                         }
                     }
@@ -383,7 +383,7 @@ namespace Internal.Services
                             Error = (uint)ErrorCode.None
                         };
 
-                        _rabbitMqService.Publish(response, "amq.direct", $"fb.{world}.group");
+                        await _rabbitMqService.PublishAsync(response, "amq.direct", $"fb.{world}.group");
                         return response;
                     }
                 }
@@ -548,7 +548,7 @@ namespace Internal.Services
                             Error = (uint)ErrorCode.None
                         };
 
-                        _rabbitMqService.Publish(response, "amq.direct", $"fb.{world}.group");
+                        await _rabbitMqService.PublishAsync(response, "amq.direct", $"fb.{world}.group");
                         return response;
                     }
                 }
@@ -589,7 +589,7 @@ namespace Internal.Services
                         Type = request.Type,
                         Error = (uint)ErrorCode.None
                     };
-                    _rabbitMqService.Publish(response, "amq.direct", $"fb.{world}.group");
+                    await _rabbitMqService.PublishAsync(response, "amq.direct", $"fb.{world}.group");
                     return response;
                 }
             }
@@ -741,7 +741,7 @@ namespace Internal.Services
                 Error = (uint)ErrorCode.None
             };
 
-            _rabbitMqService.Publish(response, "amq.direct", $"fb.{world}.group");
+            await _rabbitMqService.PublishAsync(response, "amq.direct", $"fb.{world}.group");
             return response;
         }
 
@@ -786,7 +786,7 @@ namespace Internal.Services
                 Error = (uint)ErrorCode.None
             };
 
-            _rabbitMqService.Publish(response, "amq.direct", $"fb.{world}.group");
+            await _rabbitMqService.PublishAsync(response, "amq.direct", $"fb.{world}.group");
             return response;
         }
     }

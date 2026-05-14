@@ -1138,13 +1138,13 @@ namespace Runner.ViewModel
         private static async Task DownloadFileAsync(string url, string destinationPath, Action<long, long> progressCallback)
         {
             using (var httpClient = new HttpClient())
-            using (var response = await httpClient.GetAsync(url, HttpCompletionOption.ResponseHeadersRead).ConfigureAwait(false))
+            using (var response = await httpClient.GetAsync(url, HttpCompletionOption.ResponseHeadersRead))
             {
                 response.EnsureSuccessStatusCode();
 
                 var totalBytes = response.Content.Headers.ContentLength ?? -1L;
                 var bufferSize = 128 * 1024;
-                using (var contentStream = await response.Content.ReadAsStreamAsync().ConfigureAwait(false))
+                using (var contentStream = await response.Content.ReadAsStreamAsync())
                 using (var fileStream = new FileStream(
                            destinationPath,
                            FileMode.Create,
@@ -1160,9 +1160,9 @@ namespace Runner.ViewModel
                     int bytesRead;
                     long lastLoggedMb = 0;
 
-                    while ((bytesRead = await contentStream.ReadAsync(buffer, 0, bufferSize).ConfigureAwait(false)) > 0)
+                    while ((bytesRead = await contentStream.ReadAsync(buffer, 0, bufferSize)) > 0)
                     {
-                        await fileStream.WriteAsync(buffer, 0, bytesRead).ConfigureAwait(false);
+                        await fileStream.WriteAsync(buffer, 0, bytesRead);
                         totalRead += bytesRead;
 
                         var currentMb = totalRead / (1024 * 1024);
@@ -1343,7 +1343,7 @@ namespace Runner.ViewModel
                             await Task.Run(() =>
                             {
                                 ParallelDirectoryCopy(sourceDir, targetDir);
-                            }).ConfigureAwait(false);
+                            });
                             await Application.Current.Dispatcher.InvokeAsync(() =>
                             {
                                 BuildLog += $"Copied (parallel): {sourceDir} → {targetDir}{Environment.NewLine}";

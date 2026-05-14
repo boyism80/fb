@@ -140,7 +140,7 @@ namespace Marketplace.Services
                 }
 
                 // Log success
-                logService?.Write("marketplace_expire_success", new
+                await logService.WriteAsync("marketplace_expire_success", new
                 {
                     expired_count = expiredListings.Count
                 });
@@ -148,7 +148,7 @@ namespace Marketplace.Services
             catch (Exception ex)
             {
                 await transaction.RollbackAsync(cancellationToken);
-                logService?.Write("marketplace_expire_failed", new
+                await logService.WriteAsync("marketplace_expire_failed", new
                 {
                     error = ex.Message
                 });
@@ -206,7 +206,7 @@ namespace Marketplace.Services
                 attachments);
 
             // Log expired listing processing
-            logService?.Write("marketplace_expired_listing_processed", new
+            await logService.WriteAsync("marketplace_expired_listing_processed", new
             {
                 listing_id = listing.Id,
                 seller_id = listing.SellerId,

@@ -25,14 +25,13 @@ namespace Internal.Controllers
         }
 
         [HttpPost("shutdown")]
-        public Task Shutdown()
+        public async Task Shutdown()
         {
             // Shutdown uses fb.global (no world prefix - all servers receive)
-            _rabbitMqService.Publish(new Response.Shutdown
+            await _rabbitMqService.PublishAsync(new Response.Shutdown
             {
 
             }, "amq.direct", "fb.global");
-            return Task.CompletedTask;
         }
     }
 }

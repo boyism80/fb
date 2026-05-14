@@ -189,7 +189,7 @@ namespace Internal.Controllers
                     var session = await _sessionService.GetAndDelete(world, request.Name);
                     if (session != null)
                     {
-                        _rabbitMqService.Publish(new Response.KickOut
+                        await _rabbitMqService.PublishAsync(new Response.KickOut
                         {
                             Uid = session.Uid,
                             Name = request.Name
@@ -203,7 +203,7 @@ namespace Internal.Controllers
                     var uid = await _dbContext.Character.GetCharacterId(world, request.Name);
                     if (uid.HasValue)
                     {
-                        _logService.Write("game_server_entry", new
+                        await _logService.WriteAsync("game_server_entry", new
                         {
                             account_name = request.Name,
                             uid = uid.Value,
@@ -266,7 +266,7 @@ namespace Internal.Controllers
                     To = target.Name,
                     Message = request.Message
                 };
-                _rabbitMqService.Publish(response, "amq.direct", $"fb.{request.World}.game.{targetSession.Host}");
+                await _rabbitMqService.PublishAsync(response, "amq.direct", $"fb.{request.World}.game.{targetSession.Host}");
                 return response;
             }
             catch (LogicException e)
@@ -291,7 +291,7 @@ namespace Internal.Controllers
         }
 
         [HttpPost("broadcast")]
-        public Task<Response.Broadcast> Broadcast(Request.Broadcast request)
+        public async Task<Response.Broadcast> Broadcast(Request.Broadcast request)
         {
             var response = new Response.Broadcast
             {
@@ -301,12 +301,12 @@ namespace Internal.Controllers
                 Error = (uint)ErrorCode.None
             };
 
-            _rabbitMqService.Publish(response, "amq.direct", $"fb.{request.World}.global");
-            return Task.FromResult(response);
+            await _rabbitMqService.PublishAsync(response, "amq.direct", $"fb.{request.World}.global");
+            return response;
         }
 
         [HttpPost("set-exp-multiplier")]
-        public Task<Response.SetExpMultiplier> SetExpMultiplier(Request.SetExpMultiplier request)
+        public async Task<Response.SetExpMultiplier> SetExpMultiplier(Request.SetExpMultiplier request)
         {
             var response = new Response.SetExpMultiplier
             {
@@ -314,12 +314,12 @@ namespace Internal.Controllers
                 Error = (uint)ErrorCode.None
             };
 
-            _rabbitMqService.Publish(response, "amq.direct", $"fb.{request.World}.global");
-            return Task.FromResult(response);
+            await _rabbitMqService.PublishAsync(response, "amq.direct", $"fb.{request.World}.global");
+            return response;
         }
 
         [HttpPost("set-drop-rate-multiplier")]
-        public Task<Response.SetDropRateMultiplier> SetDropRateMultiplier(Request.SetDropRateMultiplier request)
+        public async Task<Response.SetDropRateMultiplier> SetDropRateMultiplier(Request.SetDropRateMultiplier request)
         {
             var response = new Response.SetDropRateMultiplier
             {
@@ -327,12 +327,12 @@ namespace Internal.Controllers
                 Error = (uint)ErrorCode.None
             };
 
-            _rabbitMqService.Publish(response, "amq.direct", $"fb.{request.World}.global");
-            return Task.FromResult(response);
+            await _rabbitMqService.PublishAsync(response, "amq.direct", $"fb.{request.World}.global");
+            return response;
         }
 
         [HttpPost("set-datetime")]
-        public Task<Response.SetDateTime> SetDateTime(Request.SetDateTime request)
+        public async Task<Response.SetDateTime> SetDateTime(Request.SetDateTime request)
         {
             var response = new Response.SetDateTime
             {
@@ -341,8 +341,8 @@ namespace Internal.Controllers
                 Error = (uint)ErrorCode.None
             };
 
-            _rabbitMqService.Publish(response, "amq.direct", $"fb.{request.World}.global");
-            return Task.FromResult(response);
+            await _rabbitMqService.PublishAsync(response, "amq.direct", $"fb.{request.World}.global");
+            return response;
         }
 
         [HttpPost("update-friends")]
@@ -459,7 +459,7 @@ namespace Internal.Controllers
                 await ApplySavePayload(request.World, new List<Protocol.SavePayload> { request.Payload });
                 await _dbContext.SaveChangesAsync();
 
-                _logService.Write("character_save", new
+                await _logService.WriteAsync("character_save", new
                 {
                     character_id = request.Payload.Character.Id,
                     character_name = request.Payload.Character.Name,
@@ -496,7 +496,7 @@ namespace Internal.Controllers
                 await ApplySavePayload(request.World, request.Characters);
                 await _dbContext.SaveChangesAsync();
 
-                _logService.Write("character_save_batch", new
+                await _logService.WriteAsync("character_save_batch", new
                 {
                     world = request.World,
                     character_count = request.Characters.Count

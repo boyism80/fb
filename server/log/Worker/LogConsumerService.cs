@@ -15,7 +15,7 @@ namespace Log.Worker
         private readonly IServiceScopeFactory _serviceScopeFactory;
         private readonly ILogger<LogConsumerService> _logger;
         private IConnection _connection;
-        private IModel _channel;
+        private IChannel _channel;
         private readonly List<string> _queueNames = new();
         private static readonly TimeSpan ProcessInterval = TimeSpan.FromSeconds(10);
         private const int BatchSize = 1000;
@@ -41,7 +41,6 @@ namespace Log.Worker
         {
             _logger.LogInformation("Log Consumer Service starting");
 
-            // Retry connection loop until successful or cancelled
             while (!stoppingToken.IsCancellationRequested)
             {
                 try
@@ -49,7 +48,6 @@ namespace Log.Worker
                     await ConnectToRabbitMQAsync(stoppingToken);
                     _logger.LogInformation("Log Consumer Service started");
 
-                    // Main processing loop
                     while (!stoppingToken.IsCancellationRequested)
                     {
                         try
@@ -63,29 +61,30 @@ namespace Log.Worker
 
                         await Task.Delay(ProcessInterval, stoppingToken);
                     }
-                    break; // Exit retry loop if cancellation requested
+
+                    break;
                 }
                 catch (Exception ex)
                 {
                     _logger.LogError(ex, "Failed to connect to RabbitMQ, retrying in 5 seconds...");
-                    await DisconnectFromRabbitMQAsync(); // Clean up failed connection
+                    await DisconnectFromRabbitMQAsync();
                     await Task.Delay(TimeSpan.FromSeconds(5), stoppingToken);
                 }
             }
 
-            // Process remaining messages during shutdown
             _logger.LogInformation("Graceful shutdown initiated, processing remaining messages...");
-            await ProcessRemainingMessagesAsync();
+            await ProcessRemainingMessagesAsync(stoppingToken);
 
-            // Clean shutdown
             await DisconnectFromRabbitMQAsync();
             _logger.LogInformation("Log Consumer Service stopped, all messages processed");
         }
 
-        private async Task ProcessRemainingMessagesAsync()
+        private async Task ProcessRemainingMessagesAsync(CancellationToken cancellationToken)
         {
             if (_channel == null)
+            {
                 return;
+            }
 
             var totalProcessed = 0;
             while (true)
@@ -98,9 +97,11 @@ namespace Log.Worker
                 {
                     while (true)
                     {
-                        var result = _channel.BasicGet(queueName, autoAck: false);
+                        var result = await _channel.BasicGetAsync(queueName, autoAck: false, cancellationToken);
                         if (result == null)
+                        {
                             break;
+                        }
 
                         try
                         {
@@ -114,7 +115,7 @@ namespace Log.Worker
                         catch (Exception ex)
                         {
                             _logger.LogWarning(ex, "Failed to parse log message from queue {QueueName}", queueName);
-                            _channel.BasicAck(result.DeliveryTag, false);
+                            await _channel.BasicAckAsync(result.DeliveryTag, false, cancellationToken);
                         }
                     }
                 }
@@ -130,7 +131,7 @@ namespace Log.Worker
                 {
                     try
                     {
-                        _channel.BasicAck(deliveryTag, false);
+                        await _channel.BasicAckAsync(deliveryTag, false, cancellationToken);
                     }
                     catch (Exception ex)
                     {
@@ -175,28 +176,29 @@ namespace Log.Worker
                 Password = password
             };
 
-            _connection = factory.CreateConnection();
+            _connection = await factory.CreateConnectionAsync(cancellationToken);
             _logger.LogInformation("RabbitMQ connection established");
 
-            _channel = _connection.CreateModel();
+            _channel = await _connection.CreateChannelAsync(new CreateChannelOptions(false, false, null, null), cancellationToken);
 
-            // Declare exchange (should already exist, but ensure it's durable)
-            _channel.ExchangeDeclare(ExchangeName, ExchangeType.Direct, durable: true);
+            await _channel.ExchangeDeclareAsync(ExchangeName, ExchangeType.Direct, durable: true, autoDelete: false, arguments: null, passive: false, noWait: false, cancellationToken);
 
-            // Single queue per world: game server publishes batched log arrays to fb.{world}.log
             var routingKey = $"fb.{_world}.log";
             var queueName = routingKey;
 
             try
             {
-                _channel.QueueDeclare(
+                await _channel.QueueDeclareAsync(
                     queue: queueName,
                     durable: true,
                     exclusive: false,
                     autoDelete: false,
-                    arguments: null);
+                    arguments: null,
+                    passive: false,
+                    noWait: false,
+                    cancellationToken: cancellationToken);
 
-                _channel.QueueBind(queueName, ExchangeName, routingKey);
+                await _channel.QueueBindAsync(queueName, ExchangeName, routingKey, arguments: null, noWait: false, cancellationToken);
                 _queueNames.Add(queueName);
             }
             catch (Exception ex)
@@ -206,7 +208,6 @@ namespace Log.Worker
             }
 
             _logger.LogInformation("Connected to RabbitMQ and declared queue {QueueName}", queueName);
-            await Task.CompletedTask;
         }
 
         private static void ParseLogMessage(JsonElement root, List<JsonElement> allLogs)
@@ -214,7 +215,9 @@ namespace Log.Worker
             if (root.ValueKind == JsonValueKind.Array)
             {
                 foreach (var element in root.EnumerateArray())
+                {
                     allLogs.Add(element.Clone());
+                }
             }
             else if (root.ValueKind == JsonValueKind.Object)
             {
@@ -225,23 +228,24 @@ namespace Log.Worker
         private async Task ProcessLogsAsync(CancellationToken cancellationToken)
         {
             if (_channel == null)
+            {
                 return;
+            }
 
             var allLogs = new List<JsonElement>();
             var messagesToAck = new List<(string QueueName, ulong DeliveryTag)>();
 
-            // Process messages from the auto-generated queue
-            // This queue is bound to all log routing keys (fb.log.0 to fb.log.127)
             foreach (var queueName in _queueNames)
             {
                 var messageCount = 0;
 
-                // Collect messages from this queue (up to BatchSize per queue)
                 while (messageCount < BatchSize)
                 {
-                    var result = _channel.BasicGet(queueName, autoAck: false);
+                    var result = await _channel.BasicGetAsync(queueName, autoAck: false, cancellationToken);
                     if (result == null)
+                    {
                         break;
+                    }
 
                     try
                     {
@@ -255,7 +259,7 @@ namespace Log.Worker
                     catch (Exception ex)
                     {
                         _logger.LogWarning(ex, "Failed to parse log message from queue {QueueName}", queueName);
-                        _channel.BasicAck(result.DeliveryTag, false);
+                        await _channel.BasicAckAsync(result.DeliveryTag, false, cancellationToken);
                     }
                 }
             }
@@ -269,7 +273,7 @@ namespace Log.Worker
             {
                 try
                 {
-                    _channel.BasicAck(deliveryTag, false);
+                    await _channel.BasicAckAsync(deliveryTag, false, cancellationToken);
                 }
                 catch (Exception ex)
                 {
@@ -277,7 +281,6 @@ namespace Log.Worker
                 }
             }
 
-            // Bulk insert all collected logs into MySQL
             if (allLogs.Count > 0)
             {
                 try
@@ -298,22 +301,42 @@ namespace Log.Worker
         {
             try
             {
-                _channel?.Close();
-                _connection?.Close();
+                if (_channel != null)
+                {
+                    try
+                    {
+                        await _channel.CloseAsync(cancellationToken: CancellationToken.None);
+                    }
+                    catch
+                    {
+                        // Ignore
+                    }
+
+                    await _channel.DisposeAsync();
+                    _channel = null;
+                }
+
+                if (_connection != null)
+                {
+                    try
+                    {
+                        await _connection.CloseAsync(cancellationToken: CancellationToken.None);
+                    }
+                    catch
+                    {
+                        // Ignore
+                    }
+
+                    await _connection.DisposeAsync();
+                    _connection = null;
+                }
+
                 _queueNames.Clear();
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error disconnecting from RabbitMQ");
             }
-
-            await Task.CompletedTask;
-        }
-
-        public override void Dispose()
-        {
-            DisconnectFromRabbitMQAsync().Wait();
-            base.Dispose();
         }
     }
 }

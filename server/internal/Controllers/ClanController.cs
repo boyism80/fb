@@ -161,7 +161,7 @@ namespace Internal.Controllers
                             Error = (uint)ErrorCode.None
                         };
 
-                        _rabbitMqService.Publish(response, "amq.direct", $"fb.{request.World}.clan");
+                        await _rabbitMqService.PublishAsync(response, "amq.direct", $"fb.{request.World}.clan");
                         return response;
                     }
                 }
@@ -262,7 +262,7 @@ namespace Internal.Controllers
                             Error = (uint)ErrorCode.None
                         };
 
-                        _rabbitMqService.Publish(response, "amq.direct", $"fb.{request.World}.clan");
+                        await _rabbitMqService.PublishAsync(response, "amq.direct", $"fb.{request.World}.clan");
                         return response;
                     }
                 }
@@ -348,7 +348,7 @@ namespace Internal.Controllers
                             NewTitle = request.Title,
                             Error = (uint)ErrorCode.None
                         };
-                        _rabbitMqService.Publish(response, "amq.direct", $"fb.{request.World}.clan");
+                        await _rabbitMqService.PublishAsync(response, "amq.direct", $"fb.{request.World}.clan");
                         return response;
                     }
                 }
@@ -467,7 +467,7 @@ namespace Internal.Controllers
                                 Error = (uint)ErrorCode.None
                             };
 
-                            _rabbitMqService.Publish(response, "amq.direct", $"fb.{request.World}.clan");
+                            await _rabbitMqService.PublishAsync(response, "amq.direct", $"fb.{request.World}.clan");
                             return response;
                         }
                     }
@@ -558,7 +558,7 @@ namespace Internal.Controllers
                             Error = (uint)ErrorCode.None
                         };
 
-                        _rabbitMqService.Publish(response, "amq.direct", $"fb.{request.World}.clan");
+                        await _rabbitMqService.PublishAsync(response, "amq.direct", $"fb.{request.World}.clan");
                         return response;
                     }
                 }
@@ -682,7 +682,7 @@ namespace Internal.Controllers
                                 Error = (uint)ErrorCode.None
                             };
 
-                            _rabbitMqService.Publish(response, "amq.direct", $"fb.{request.World}.clan");
+                            await _rabbitMqService.PublishAsync(response, "amq.direct", $"fb.{request.World}.clan");
                             return response;
                         }
                     }
@@ -726,7 +726,7 @@ namespace Internal.Controllers
                         Type = request.Type,
                         Error = (uint)ErrorCode.None
                     };
-                    _rabbitMqService.Publish(response, "amq.direct", $"fb.{world}.clan");
+                    await _rabbitMqService.PublishAsync(response, "amq.direct", $"fb.{world}.clan");
                     return response;
                 }
             }
@@ -850,7 +850,7 @@ namespace Internal.Controllers
                                 Error = (uint)ErrorCode.None
                             };
 
-                            _rabbitMqService.Publish(response, "amq.direct", $"fb.{request.World}.clan");
+                            await _rabbitMqService.PublishAsync(response, "amq.direct", $"fb.{request.World}.clan");
                             return response;
                         }
                     }

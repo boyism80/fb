@@ -256,13 +256,13 @@
         }
     }
 
-    private Task RequestServerSave()
+    private async Task RequestServerSave()
     {
         if (!canSaveServers)
         {
             errorMessage = "You do not have permission to force saves.";
             successMessage = null;
-            return Task.CompletedTask;
+            return;
         }
 
         isSaveProcessing = true;
@@ -274,10 +274,10 @@
             if (!selectedWorld.HasValue)
             {
                 errorMessage = "World is not selected.";
-                return Task.CompletedTask;
+                return;
             }
             var packet = new Response.BroadcastSave();
-            RabbitMqService.Publish(packet, "amq.direct", $"fb.{selectedWorld.Value}.system");
+            await RabbitMqService.PublishAsync(packet, "amq.direct", $"fb.{selectedWorld.Value}.system");
             successMessage = "Save instruction broadcasted to all game servers.";
         }
         catch (Exception ex)
@@ -288,17 +288,15 @@
         {
             isSaveProcessing = false;
         }
-
-        return Task.CompletedTask;
     }
 
-    private Task RequestServerShutdown()
+    private async Task RequestServerShutdown()
     {
         if (!canShutdownServers)
         {
             errorMessage = "You do not have permission to shutdown servers.";
             successMessage = null;
-            return Task.CompletedTask;
+            return;
         }
 
         isShutdownProcessing = true;
@@ -310,11 +308,11 @@
             if (!selectedWorld.HasValue)
             {
                 errorMessage = "World is not selected.";
-                return Task.CompletedTask;
+                return;
             }
             var packet = new Response.Shutdown();
             // Shutdown uses fb.global (no world prefix - all servers receive)
-            RabbitMqService.Publish(packet, "amq.direct", "fb.global");
+            await RabbitMqService.PublishAsync(packet, "amq.direct", "fb.global");
             successMessage = "Shutdown instruction sent to all game servers.";
         }
         catch (Exception ex)
@@ -325,8 +323,6 @@
         {
             isShutdownProcessing = false;
         }
-
-        return Task.CompletedTask;
     }
 
 }

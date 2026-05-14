@@ -149,7 +149,7 @@ namespace Marketplace.Services
                 await transaction.CommitAsync(cancellationToken);
 
                 // Log success
-                logService?.Write("marketplace_archive_success", new
+                await logService.WriteAsync("marketplace_archive_success", new
                 {
                     archived_count = archivedCount
                 });
@@ -158,7 +158,7 @@ namespace Marketplace.Services
             {
                 await transaction.RollbackAsync(cancellationToken);
                 _logger.LogError(ex, "Error archiving marketplace listings");
-                logService?.Write("marketplace_archive_failed", new
+                await logService.WriteAsync("marketplace_archive_failed", new
                 {
                     error = ex.Message
                 });

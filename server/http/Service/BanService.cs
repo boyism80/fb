@@ -9,7 +9,7 @@ namespace Http.Service
         private readonly ILogger<BanService> _logger;
         private readonly LogService _logService;
 
-        public BanService(DbContext dbContext, ILogger<BanService> logger, LogService logService = null)
+        public BanService(DbContext dbContext, ILogger<BanService> logger, LogService logService)
         {
             _dbContext = dbContext;
             _logger = logger;
@@ -48,7 +48,7 @@ namespace Http.Service
                 name, userId, world, reason, expireDate?.ToString("yyyy-MM-dd HH:mm:ss") ?? "Permanent");
 
             // Log ban event
-            _logService?.Write("ban", new
+            await _logService.WriteAsync("ban", new
             {
                 account_name = name,
                 uid = userId,
@@ -84,7 +84,7 @@ namespace Http.Service
             _logger.LogInformation("User {Name} (ID: {UserId}) in world {World} has been unbanned.", name, userId, world);
 
             // Log unban event
-            _logService?.Write("unban", new
+            await _logService.WriteAsync("unban", new
             {
                 account_name = name,
                 uid = userId,

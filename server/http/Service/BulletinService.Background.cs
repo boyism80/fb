@@ -23,7 +23,7 @@ namespace Http.Service
             ILogger<BulletinBackgroundService> logger,
             BulletinCacheService bulletinCacheService,
             IConfiguration configuration,
-            LogService logService = null)
+            LogService logService)
         {
             _bulletinService = bulletinService;
             _scopeFactory = scopeFactory;
@@ -144,11 +144,11 @@ namespace Http.Service
                         // Batch cache insert
                         await _bulletinCacheService.SetArticlesBatchAsync(world, cacheItems);
 
-                        // Log bulletin write events
-                        foreach (var request in requests)
+                        for (int i = 0; i < requests.Count; i++)
                         {
-                            var articleId = startId + (uint)requests.IndexOf(request);
-                            _logService?.Write("bulletin_write", new
+                            var request = requests[i];
+                            var articleId = startId + (uint)i;
+                            await _logService.WriteAsync("bulletin_write", new
                             {
                                 world = world,
                                 bulletinSection = bulletinSection,

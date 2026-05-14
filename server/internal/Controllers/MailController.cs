@@ -120,7 +120,7 @@ namespace Internal.Controllers
                     Error = (uint)ErrorCode.None
                 };
 
-                _rabbitMqService.Publish(response, "amq.direct", $"fb.{request.World}.mail");
+                await _rabbitMqService.PublishAsync(response, "amq.direct", $"fb.{request.World}.mail");
                 return response;
             }
             catch (LogicException e)

@@ -4,29 +4,62 @@ using RabbitMQ.Client;
 
 namespace Http.Service
 {
-    public class RabbitMqService
+    public class RabbitMqService : IAsyncDisposable
     {
         private readonly IConfiguration _configuration;
-        private readonly Lazy<IConnection> _connection;
-        private readonly Lazy<IModel> _channel;
-        private readonly object _channelLock = new object();
+        private readonly SemaphoreSlim _channelLock = new(1, 1);
+        private IConnection _connection;
+        private IChannel _channel;
 
         public RabbitMqService(IConfiguration configuration)
         {
             _configuration = configuration;
-            _connection = new Lazy<IConnection>(GetConnection);
-            _channel = new Lazy<IModel>(GetChannel);
         }
 
-        private IConnection GetConnection()
+        private async Task EnsureConnectedAsync(CancellationToken cancellationToken)
         {
+            if (_connection != null && _connection.IsOpen && _channel != null && _channel.IsOpen)
+            {
+                return;
+            }
+
+            if (_channel != null)
+            {
+                try
+                {
+                    await _channel.CloseAsync(cancellationToken: cancellationToken);
+                }
+                catch
+                {
+                    // Ignore close errors on stale channel
+                }
+
+                await _channel.DisposeAsync();
+                _channel = null;
+            }
+
+            if (_connection != null)
+            {
+                try
+                {
+                    await _connection.CloseAsync(cancellationToken: cancellationToken);
+                }
+                catch
+                {
+                    // Ignore close errors on stale connection
+                }
+
+                await _connection.DisposeAsync();
+                _connection = null;
+            }
+
             var rabbitMqSection = _configuration.GetSection("RabbitMQ:Internal");
             if (rabbitMqSection == null || !rabbitMqSection.Exists())
             {
                 throw new Exception("RabbitMQ configuration not found for unified-global");
             }
 
-            var factory = new ConnectionFactory()
+            var factory = new ConnectionFactory
             {
                 HostName = rabbitMqSection.GetValue<string>("Host"),
                 Port = rabbitMqSection.GetValue<int>("Port"),
@@ -34,43 +67,98 @@ namespace Http.Service
                 Password = rabbitMqSection.GetValue<string>("Pwd")
             };
 
-            return factory.CreateConnection();
+            _connection = await factory.CreateConnectionAsync(cancellationToken);
+            _channel = await _connection.CreateChannelAsync(new CreateChannelOptions(false, false, null, null), cancellationToken);
         }
 
-        private IModel GetChannel()
+        public async Task PublishAsync(IFlatBufferEx protocol, string exchangeName, string routeKey, CancellationToken cancellationToken = default)
         {
-            return _connection.Value.CreateModel();
+            var bytes = protocol.ToBytes();
+            await PublishAsync(exchangeName, routeKey, bytes, persistent: false, cancellationToken);
         }
 
-        public void Publish(IFlatBufferEx protocol, string exchangeName, string routeKey)
-        {
-            lock (_channelLock)
-            {
-                var channel = _channel.Value;
-                channel.BasicPublish(exchange: exchangeName, routingKey: routeKey, basicProperties: null, body: protocol.ToBytes());
-            }
-        }
-
-        public void Publish(string exchangeName, string routingKey, byte[] body, bool persistent = true)
+        public async Task PublishAsync(string exchangeName, string routingKey, byte[] body, bool persistent = true, CancellationToken cancellationToken = default)
         {
             if (body == null || body.Length == 0)
-                return;
-
-            lock (_channelLock)
             {
-                var channel = _channel.Value;
-                var props = channel.CreateBasicProperties();
-                props.Persistent = persistent;
-                channel.BasicPublish(exchangeName, routingKey, props, body);
+                return;
+            }
+
+            await _channelLock.WaitAsync(cancellationToken);
+            try
+            {
+                await EnsureConnectedAsync(cancellationToken);
+                if (persistent)
+                {
+                    var props = new BasicProperties { Persistent = true };
+                    await _channel.BasicPublishAsync(exchangeName, routingKey, mandatory: false, basicProperties: props, body: body, cancellationToken: cancellationToken);
+                }
+                else
+                {
+                    await _channel.BasicPublishAsync(exchangeName, routingKey, body, cancellationToken);
+                }
+            }
+            finally
+            {
+                _channelLock.Release();
             }
         }
 
-        public void WithChannel(Action<IModel> action)
+        public async Task WithChannelAsync(Func<IChannel, Task> action, CancellationToken cancellationToken = default)
         {
-            lock (_channelLock)
+            await _channelLock.WaitAsync(cancellationToken);
+            try
             {
-                action(_channel.Value);
+                await EnsureConnectedAsync(cancellationToken);
+                await action(_channel);
             }
+            finally
+            {
+                _channelLock.Release();
+            }
+        }
+
+        public async ValueTask DisposeAsync()
+        {
+            await _channelLock.WaitAsync();
+            try
+            {
+                if (_channel != null)
+                {
+                    try
+                    {
+                        await _channel.CloseAsync(cancellationToken: CancellationToken.None);
+                    }
+                    catch
+                    {
+                        // Ignore on shutdown
+                    }
+
+                    await _channel.DisposeAsync();
+                    _channel = null;
+                }
+
+                if (_connection != null)
+                {
+                    try
+                    {
+                        await _connection.CloseAsync(cancellationToken: CancellationToken.None);
+                    }
+                    catch
+                    {
+                        // Ignore on shutdown
+                    }
+
+                    await _connection.DisposeAsync();
+                    _connection = null;
+                }
+            }
+            finally
+            {
+                _channelLock.Release();
+            }
+
+            _channelLock.Dispose();
         }
     }
 }

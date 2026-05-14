@@ -16,7 +16,7 @@ namespace Http.Service
         public StorageService(DbContext dbContext,
             RabbitMqService rabbitMqService,
             SessionService sessionService,
-            LogService logService = null)
+            LogService logService)
         {
             _dbContext = dbContext;
             _rabbitMqService = rabbitMqService;
@@ -92,8 +92,7 @@ namespace Http.Service
             _dbContext.StoragePendingBox.Set(world, pending);
             await _dbContext.SaveChangesAsync();
 
-            // Log storage pending creation event
-            _logService?.Write("storage_pending_create", new
+            await _logService.WriteAsync("storage_pending_create", new
             {
                 pending_id = pending.Id,
                 user_id = pending.User,
@@ -124,7 +123,7 @@ namespace Http.Service
             // Log storage pending creation event with user name
             var pending = await CreatePendingAsync(world, title, message, userId, expiredDate, attachments);
 
-            _logService?.Write("storage_pending_create", new
+            await _logService.WriteAsync("storage_pending_create", new
             {
                 pending_id = pending.Id,
                 user_id = pending.User,
@@ -151,7 +150,7 @@ namespace Http.Service
                 return;
 
             var response = BuildPendingResponse(user, pending);
-            _rabbitMqService.Publish(response, "amq.direct", $"fb.{world}.game.{session.Host}");
+            await _rabbitMqService.PublishAsync(response, "amq.direct", $"fb.{world}.game.{session.Host}");
         }
 
         private async Task NotifyGlobalPendingAsync(uint world)
@@ -161,7 +160,7 @@ namespace Http.Service
                 return;
 
             var response = BuildPendingResponse(null, pending);
-            _rabbitMqService.Publish(response, "amq.direct", $"fb.{world}.global");
+            await _rabbitMqService.PublishAsync(response, "amq.direct", $"fb.{world}.global");
         }
 
         private Response.GetStoragePending BuildPendingResponse(uint? user, IEnumerable<StoragePendingBox> pending)

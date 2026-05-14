@@ -80,14 +80,14 @@ namespace Internal.Controllers
                 };
 
                 // Log system mail creation event
-                _logService.Write("system_mail_create", new
+                await _logService.WriteAsync("system_mail_create", new
                 {
                     mail_id = systemMail.Id,
                     sender_id = systemMail.Sender,
                     expire_date = systemMail.ExpireDate?.ToString("yyyy-MM-dd HH:mm:ss") ?? null
                 });
 
-                _rabbitMqService.Publish(response, "amq.direct", $"fb.{request.World}.system");
+                await _rabbitMqService.PublishAsync(response, "amq.direct", $"fb.{request.World}.system");
                 return response;
             }
             catch (Exception)

@@ -168,7 +168,7 @@
                 Error = 0
             };
 
-            RabbitMqService.Publish(response, "amq.direct", $"fb.{selectedWorld.Value}.system");
+            await RabbitMqService.PublishAsync(response, "amq.direct", $"fb.{selectedWorld.Value}.system");
 
             successMessage = $"System mail has been created successfully. Mail ID: {systemMail.Id}";
             ResetForm();

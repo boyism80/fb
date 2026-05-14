@@ -244,7 +244,7 @@ namespace Http.Service
             {
                 try
                 {
-                    _rabbitMqService.Publish(new fb.protocol._internal.response.StartMaintenance
+                    await _rabbitMqService.PublishAsync(new fb.protocol._internal.response.StartMaintenance
                     {
                         Message = maintenanceInfo.Message,
                         EndTime = maintenanceInfo.EndTime.ToString("yyyy-MM-dd HH:mm:ss")

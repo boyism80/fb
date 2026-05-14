@@ -196,7 +196,7 @@ namespace Internal.Controllers
             await _dbContext.SaveChangesAsync();
 
             // Log account creation event
-            _logService.Write("account_create", new
+            await _logService.WriteAsync("account_create", new
             {
                 account_name = request.Name,
                 uid = request.Uid
@@ -257,7 +257,7 @@ namespace Internal.Controllers
                 await _dbContext.SaveChangesAsync();
 
                 // Log password change event
-                _logService.Write("password_change", new
+                await _logService.WriteAsync("password_change", new
                 {
                     account_name = ch.Name,
                     uid = request.Uid

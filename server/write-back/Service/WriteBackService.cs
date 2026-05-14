@@ -37,7 +37,9 @@ namespace WriteBack.Service
             _dbContext = ActivatorUtilities.CreateInstance<DbContext>(serviceProvider);
             _world = _configuration.GetValue<uint>("World");
             if (_world == 0 && _configuration["World"] != "0")
+            {
                 throw new Exception("World configuration is required");
+            }
         }
 
         protected override async Task ExecuteAsync(CancellationToken stoppingToken)
@@ -54,12 +56,14 @@ namespace WriteBack.Service
                 throw new Exception($"MySQL configuration not found for world: {_world}");
             }
 
-            // Connect to RabbitMQ (same broker as Internal, RabbitMQ:Internal)
             try
             {
                 var rabbitSection = _configuration.GetSection("RabbitMQ:Internal");
                 if (!rabbitSection.Exists())
+                {
                     throw new Exception("RabbitMQ:Internal configuration not found for write-back consumer");
+                }
+
                 var factory = new ConnectionFactory
                 {
                     HostName = rabbitSection.GetValue<string>("Host"),
@@ -67,7 +71,7 @@ namespace WriteBack.Service
                     UserName = rabbitSection.GetValue<string>("Uid"),
                     Password = rabbitSection.GetValue<string>("Pwd")
                 };
-                _rabbitMqConnection = factory.CreateConnection();
+                _rabbitMqConnection = await factory.CreateConnectionAsync(stoppingToken);
                 _logger.LogInformation("Write-back connected to RabbitMQ");
             }
             catch (Exception ex)
@@ -76,64 +80,40 @@ namespace WriteBack.Service
                 throw;
             }
 
-            var threadList = new List<Thread>();
+            var workers = new List<Task>();
 
-            // Add thread for global database (-1)
             var globalSection = mysqlSection.GetSection("global");
             if (globalSection.Exists())
             {
-                threadList.Add(new Thread(() =>
-                {
-                    var task = OnWork(-1, stoppingToken);
-                    try
-                    {
-                        task.Wait(stoppingToken);
-                    }
-                    catch (OperationCanceledException) when (stoppingToken.IsCancellationRequested)
-                    {
-                        _logger.LogInformation("Write-back worker for world {World} DB {DbId} cancelled.", _world, -1);
-                    }
-                }));
+                workers.Add(OnWorkAsync(-1, stoppingToken));
             }
 
-            // Add threads for data shards (0, 1, 2, ...)
             var dataArray = mysqlSection.GetSection("data").Get<string[]>();
             if (dataArray != null && dataArray.Length > 0)
             {
                 for (int i = 0; i < dataArray.Length; i++)
                 {
-                    var shardIndex = i; // Capture loop variable
-                    threadList.Add(new Thread(() =>
-                    {
-                        var task = OnWork(shardIndex, stoppingToken);
-                        try
-                        {
-                            task.Wait(stoppingToken);
-                        }
-                        catch (OperationCanceledException) when (stoppingToken.IsCancellationRequested)
-                        {
-                            _logger.LogInformation("Write-back worker for world {World} DB {DbId} cancelled.", _world, shardIndex);
-                        }
-                    }));
+                    var shardIndex = i;
+                    workers.Add(OnWorkAsync(shardIndex, stoppingToken));
                 }
-            }
-
-            var threads = threadList.ToArray();
-
-            foreach (var thread in threads)
-            {
-                thread.Name = $"WriteBackThread";
-                thread.Start();
-            }
-
-            while (!stoppingToken.IsCancellationRequested && threads.Any(thread => thread.IsAlive))
-            {
-                await Task.Delay(_delay, stoppingToken);
             }
 
             try
             {
-                _rabbitMqConnection?.Close();
+                await Task.WhenAll(workers);
+            }
+            catch (OperationCanceledException) when (stoppingToken.IsCancellationRequested)
+            {
+                _logger.LogInformation("Write-back workers cancelled for world {World}.", _world);
+            }
+
+            try
+            {
+                if (_rabbitMqConnection != null)
+                {
+                    await _rabbitMqConnection.CloseAsync(cancellationToken: CancellationToken.None);
+                    await _rabbitMqConnection.DisposeAsync();
+                }
             }
             catch (Exception ex)
             {
@@ -143,7 +123,7 @@ namespace WriteBack.Service
             _logger.LogInformation("All write-back workers stopped for world {World}, all messages processed", _world);
         }
 
-        private async Task OnWork(int db, CancellationToken stoppingToken)
+        private async Task OnWorkAsync(int db, CancellationToken stoppingToken)
         {
             if (_rabbitMqConnection == null || !_rabbitMqConnection.IsOpen)
             {
@@ -151,29 +131,45 @@ namespace WriteBack.Service
                 return;
             }
 
-            IModel channel = null;
             string queueName = null;
+            IChannel channel = null;
             try
             {
-                channel = _rabbitMqConnection.CreateModel();
-                channel.ExchangeDeclare(Http.Service.WriteBackService.WriteBackExchangeName, ExchangeType.Direct, durable: true);
+                channel = await _rabbitMqConnection.CreateChannelAsync(new CreateChannelOptions(false, false, null, null), stoppingToken);
+                await channel.ExchangeDeclareAsync(Http.Service.WriteBackService.WriteBackExchangeName, ExchangeType.Direct, durable: true, autoDelete: false, arguments: null, passive: false, noWait: false, stoppingToken);
                 queueName = Http.Service.WriteBackService.GetWriteBackQueueName(_world, db);
-                channel.QueueDeclare(queue: queueName, durable: true, exclusive: false, autoDelete: false, arguments: null);
-                channel.QueueBind(queueName, Http.Service.WriteBackService.WriteBackExchangeName, queueName);
+                await channel.QueueDeclareAsync(queue: queueName, durable: true, exclusive: false, autoDelete: false, arguments: null, passive: false, noWait: false, cancellationToken: stoppingToken);
+                await channel.QueueBindAsync(queueName, Http.Service.WriteBackService.WriteBackExchangeName, queueName, arguments: null, noWait: false, stoppingToken);
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Failed to declare RabbitMQ queue for world {World} DB {Db}", _world, db);
+                if (channel != null)
+                {
+                    try
+                    {
+                        await channel.CloseAsync(cancellationToken: CancellationToken.None);
+                    }
+                    catch
+                    {
+                        // Ignore
+                    }
+
+                    await channel.DisposeAsync();
+                }
+
                 return;
             }
 
             if (queueName == null)
+            {
                 return;
+            }
 
             var shardSize = _redisService.GetShardSize(_world);
             var continuous = true;
 
-            using (channel)
+            try
             {
                 while (continuous || !stoppingToken.IsCancellationRequested)
                 {
@@ -184,9 +180,11 @@ namespace WriteBack.Service
 
                         for (var i = 0; i < BulkSize; i++)
                         {
-                            var result = channel.BasicGet(queueName, autoAck: false);
+                            var result = await channel.BasicGetAsync(queueName, autoAck: false, stoppingToken);
                             if (result == null)
+                            {
                                 break;
+                            }
 
                             try
                             {
@@ -199,13 +197,13 @@ namespace WriteBack.Service
                                 }
                                 else
                                 {
-                                    channel.BasicAck(result.DeliveryTag, false);
+                                    await channel.BasicAckAsync(result.DeliveryTag, false, stoppingToken);
                                 }
                             }
                             catch (Exception ex)
                             {
                                 _logger.LogWarning(ex, "Failed to deserialize write-back message, discarding");
-                                channel.BasicAck(result.DeliveryTag, false);
+                                await channel.BasicAckAsync(result.DeliveryTag, false, stoppingToken);
                             }
                         }
 
@@ -253,15 +251,13 @@ namespace WriteBack.Service
                     }
                     catch (LogicException e)
                     {
-                        switch (e.Error)
+                        if (e.Error == ErrorCode.DistributedLockFailed)
                         {
-                            case ErrorCode.DistributedLockFailed:
-                                await Task.Delay(_delay, stoppingToken);
-                                break;
-
-                            default:
-                                _logger.LogError(e, e.Message);
-                                break;
+                            await Task.Delay(_delay, stoppingToken);
+                        }
+                        else
+                        {
+                            _logger.LogError(e, e.Message);
                         }
                     }
                     catch (Exception e)
@@ -271,10 +267,26 @@ namespace WriteBack.Service
                     }
                 }
             }
+            finally
+            {
+                if (channel != null)
+                {
+                    try
+                    {
+                        await channel.CloseAsync(cancellationToken: CancellationToken.None);
+                    }
+                    catch
+                    {
+                        // Ignore
+                    }
+
+                    await channel.DisposeAsync();
+                }
+            }
         }
 
         private async Task ProcessWriteBackEntryAsync(
-            IModel channel,
+            IChannel channel,
             MySqlConnection execConn,
             MySqlConnection logConn,
             int db,
@@ -324,7 +336,7 @@ namespace WriteBack.Service
             {
                 try
                 {
-                    channel.BasicAck(deliveryTag, false);
+                    await channel.BasicAckAsync(deliveryTag, false, stoppingToken);
                 }
                 catch (Exception ex)
                 {
