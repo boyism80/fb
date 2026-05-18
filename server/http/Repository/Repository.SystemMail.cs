@@ -20,13 +20,13 @@ namespace Http.Reepository
             return await base.Get(world, new SystemMailKey { Id = id });
         }
 
-        public async Task<List<SystemMail>> GetAll(uint world)
+        public async Task<List<SystemMail>> GetAll(uint world, uint offset = 0)
         {
             // Use a dummy key to get all system mails from the same hash
             var allMails = await base.GetAll(world, new SystemMailKey { Id = 0 });
             var now = DateTime.Now;
             return allMails
-                .Where(m => !m.Deleted && (m.ExpireDate == null || m.ExpireDate > now))
+                .Where(m => m.Id >= offset && !m.Deleted && (m.ExpireDate == null || m.ExpireDate > now))
                 .OrderByDescending(m => m.Id)
                 .ToList();
         }

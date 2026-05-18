@@ -8,6 +8,7 @@ namespace Http.Model
         public string Title { get; set; }
         public string Contents { get; set; }
         public bool Read { get; set; }
+        public uint? SystemMailId { get; set; }
         public DateTime CreatedDate { get; set; }
         public DateTime UpdatedDate { get; set; }
         public bool Deleted { get; set; }

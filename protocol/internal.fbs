@@ -163,6 +163,12 @@ table Mail {
     created_date: string;
 }
 
+table MailWriteEntry {
+    user: uint;
+    mail: Mail;
+    unread: ushort;
+}
+
 table Group {
     id: uint;
     master: string;
@@ -225,13 +231,6 @@ table SystemMail {
     created_date: string;
 }
 
-table SystemMailUser {
-    user: uint;
-    mail_id: uint;
-    read: bool;
-    expire_date: string?;
-}
-
 table StorageBox {
     user: uint;
     id: uint;
@@ -265,7 +264,6 @@ table SavePayload {
     spells: [Spell];
     achievements: [Achievement];
     quests: [Quest];
-    received_system_mails: [SystemMailUser];
     storage_boxes: [StorageBox];
     storage_reward_marks: [StorageRewardMark];
 }

@@ -33,8 +33,6 @@ namespace Http.Service
 
         public SystemMailRepository SystemMail => Bind<SystemMailRepository>();
 
-        public SystemMailUserRepository SystemMailUser => Bind<SystemMailUserRepository>();
-
         public StorageBoxRepository StorageBox => Bind<StorageBoxRepository>();
 
         public StoragePendingBoxRepository StoragePendingBox => Bind<StoragePendingBoxRepository>();

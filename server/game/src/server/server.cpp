@@ -23,7 +23,6 @@ server::server(boost::asio::io_context& io_context, uint16_t port) :
     maps(*this, fb::config<uint32_t>("id")),
     listener(*this),
     characters(*this),
-    system_mail(*this),
     storage_pending(*this),
     clans([](const std::shared_ptr<clan>& clan) -> uint32_t {
         return clan->id();
@@ -225,6 +224,7 @@ async::task<void> server::on_start()
     this->bind_timer<fb::game::handler::timer::heart_beat>(1s);
     this->bind_timer<fb::game::handler::timer::update_time>(1s);
     this->bind_timer<fb::game::handler::timer::schedule_timer>(1s);
+    this->bind_timer<fb::game::handler::timer::system_mail_timer>(1s);
 
     this->initialize_schedules();
     auto announce_interval = std::chrono::seconds(fb::model::const_value::time::ANNOUNCE.total_milliseconds() / 1000);
@@ -247,7 +247,6 @@ async::task<void> server::on_start()
     this->handler.amqp.bind<fb::game::handler::amqp::whisper>(host_name);
     this->handler.amqp.bind<fb::game::handler::amqp::storage_pending_personal>(host_name);
     this->handler.amqp.bind<fb::game::handler::amqp::shutdown>("fb.global"); // Shutdown: all servers
-    this->handler.amqp.bind<fb::game::handler::amqp::write_system_mail>(std::format("fb.{}.system", world));
     this->handler.amqp.bind<fb::game::handler::amqp::broadcast>(std::format("fb.{}.global", world));
     this->handler.amqp.bind<fb::game::handler::amqp::storage_pending_fetch>(std::format("fb.{}.global", world));
     this->handler.amqp.bind<fb::game::handler::amqp::broadcast_save>(std::format("fb.{}.system", world));
@@ -259,15 +258,14 @@ async::task<void> server::on_start()
     this->handler.amqp.bind<fb::game::handler::amqp::updated_clan>(std::format("fb.{}.clan", world));
     this->handler.amqp.bind<fb::game::handler::amqp::broadcast_clan>(std::format("fb.{}.clan", world));
     this->handler.amqp.bind<fb::game::handler::amqp::write_mail>(std::format("fb.{}.mail", world));
+    this->handler.amqp.bind<fb::game::handler::amqp::write_mails>(std::format("fb.{}.mail", world));
+    this->handler.amqp.bind<fb::game::handler::amqp::deliver_system_mail>(std::format("fb.{}.mail", world));
     this->handler.amqp.bind<fb::game::handler::amqp::ban>(std::format("fb.{}.ban", world));
     this->handler.amqp.bind<fb::game::handler::amqp::set_exp_multiplier>(std::format("fb.{}.global", world));
     this->handler.amqp.bind<fb::game::handler::amqp::set_drop_rate_multiplier>(std::format("fb.{}.global", world));
     this->handler.amqp.bind<fb::game::handler::amqp::set_datetime>(std::format("fb.{}.global", world));
     this->handler.amqp.bind<fb::game::handler::amqp::start_maintenance>(
         std::format("fb.{}.game.{}", world, fb::config<uint32_t>("id")));
-
-    // Fetch system mails on server startup
-    co_await this->system_mail.fetch();
 
     // Fetch storage pending on server startup
     co_await this->storage_pending.fetch();
@@ -552,21 +550,7 @@ internal::SavePayload server::save_payload(const character& ch) const
             internal::Quest{ch.id, qid, quest->step(), quest->progress(), quest->param(), quest->completed()});
     }
 
-    auto        received_system_mails = std::vector<internal::SystemMailUser>();
-    auto        now                   = this->now();
-    const auto& system_mail_users     = ch.mail_box.get_system_mail_users();
-    for (const auto& [mail_id, smu] : system_mail_users)
-    {
-        if (smu.expire_date.has_value() && smu.expire_date.value() < now)
-            continue;
-
-        received_system_mails.push_back(internal::SystemMailUser{
-            ch.id,
-            mail_id,
-            smu.read,
-            smu.expire_date.has_value() ? std::make_optional(smu.expire_date.value().to_string()) : std::nullopt});
-    }
-
+    auto        now             = this->now();
     auto        storage_boxes   = std::vector<internal::StorageBox>();
     const auto& character_boxes = ch.storage_box.entries();
     storage_boxes.reserve(character_boxes.size());
@@ -623,7 +607,6 @@ internal::SavePayload server::save_payload(const character& ch) const
                                  spells,
                                  achievements,
                                  quests,
-                                 received_system_mails,
                                  storage_boxes,
                                  storage_reward_marks);
 }

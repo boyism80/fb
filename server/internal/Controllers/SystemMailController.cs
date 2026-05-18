@@ -12,22 +12,20 @@ namespace Internal.Controllers
     public class SystemMailController : ControllerBase
     {
         private readonly DbContext _dbContext;
-        private readonly RabbitMqService _rabbitMqService;
         private readonly LogService _logService;
 
-        public SystemMailController(DbContext dbContext, RabbitMqService rabbitMqService, LogService logService)
+        public SystemMailController(DbContext dbContext, LogService logService)
         {
             _dbContext = dbContext;
-            _rabbitMqService = rabbitMqService;
             _logService = logService;
         }
 
         [HttpGet("{world}")]
-        public async Task<Response.GetSystemMails> GetSystemMails(uint world)
+        public async Task<Response.GetSystemMails> GetSystemMails(uint world, [FromQuery(Name = "offset")] uint offset = 0)
         {
             try
             {
-                var systemMails = await _dbContext.SystemMail.GetAll(world);
+                var systemMails = await _dbContext.SystemMail.GetAll(world, offset);
                 var protocolMails = systemMails.Select(m => new Protocol.SystemMail
                 {
                     Id = m.Id,
@@ -87,7 +85,6 @@ namespace Internal.Controllers
                     expire_date = systemMail.ExpireDate?.ToString("yyyy-MM-dd HH:mm:ss") ?? null
                 });
 
-                await _rabbitMqService.PublishAsync(response, "amq.direct", $"fb.{request.World}.system");
                 return response;
             }
             catch (Exception)

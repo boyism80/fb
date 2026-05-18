@@ -91,21 +91,6 @@ void login::init_achievements(const std::vector<fb::protocol::internal::Achievem
     }
 }
 
-void login::init_system_mail(const std::vector<fb::protocol::internal::SystemMailUser>& response,
-                             fb::game::character&                                       ch)
-{
-    for (auto& smu : response)
-    {
-        ch.mail_box.add_system_mail_user(smu.mail_id,
-                                         smu.expire_date.has_value() ? std::make_optional(smu.expire_date.value())
-                                                                     : std::nullopt);
-        if (smu.read)
-        {
-            ch.mail_box.update_system_mail_user_read(smu.mail_id, true);
-        }
-    }
-}
-
 void login::init_storage(const fb::protocol::internal::response::Init& response, fb::game::character& ch)
 {
     auto storage_boxes = std::vector<fb::game::storage_box::entry>();
@@ -314,7 +299,6 @@ async::task<std::shared_ptr<character>> login::init(const game_reqs::login& requ
     this->init_spells(resp.spells, *ch);
     this->init_achievements(resp.achievements, *ch);
     this->init_quests(resp.quests, *ch);
-    this->init_system_mail(resp.received_system_mails, *ch);
     this->init_storage(resp, *ch);
     this->init_option(resp.option, *ch);
     ch->marriage(fb::game::marriage(resp.marriage.remarriage_after.empty()
@@ -396,7 +380,6 @@ async::task<std::shared_ptr<character>> login::init(const game_reqs::login& requ
 
     ch->update(UPDATE_STATE_LEVEL::ALL);
     ch->update_option();
-    co_await ch->process_system_mails();
     ch->process_storage_pending();
     co_return ch;
 }

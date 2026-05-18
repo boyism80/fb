@@ -7,7 +7,6 @@
 @using System.ComponentModel.DataAnnotations
 @inject AuthenticationStateProvider AuthenticationStateProvider
 @inject DbContext DbContext
-@inject RabbitMqService RabbitMqService
 @inject IConfiguration Configuration
 @attribute [AuthorizeRole(Role.Admin)]
 
@@ -150,25 +149,6 @@
 
             var systemMail = await DbContext.SystemMail.Write(selectedWorld.Value, currentUserId, mailModel.Title, mailModel.Contents, expireDate);
             await DbContext.SaveChangesAsync();
-
-            // Publish notification to all game servers via RabbitMQ
-            var protocolMail = new fb.protocol._internal.SystemMail
-            {
-                Id = systemMail.Id,
-                Sender = systemMail.Sender,
-                Title = systemMail.Title,
-                Contents = systemMail.Contents,
-                ExpireDate = systemMail.ExpireDate?.ToString("yyyy-MM-dd HH:mm:ss"),
-                CreatedDate = systemMail.CreatedDate.ToString("yyyy-MM-dd HH:mm:ss")
-            };
-
-            var response = new fb.protocol._internal.response.WriteSystemMail
-            {
-                Mail = protocolMail,
-                Error = 0
-            };
-
-            await RabbitMqService.PublishAsync(response, "amq.direct", $"fb.{selectedWorld.Value}.system");
 
             successMessage = $"System mail has been created successfully. Mail ID: {systemMail.Id}";
             ResetForm();

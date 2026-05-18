@@ -21,7 +21,6 @@ static_assert(FLATBUFFERS_VERSION_MAJOR == 25 &&
 #include "fb.protocol.internal.spell_generated.h"
 #include "fb.protocol.internal.storagebox_generated.h"
 #include "fb.protocol.internal.storagerewardmark_generated.h"
-#include "fb.protocol.internal.systemmailuser_generated.h"
 
 namespace fb {
 namespace protocol {
@@ -40,9 +39,8 @@ struct SavePayload FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
     VT_SPELLS = 10,
     VT_ACHIEVEMENTS = 12,
     VT_QUESTS = 14,
-    VT_RECEIVED_SYSTEM_MAILS = 16,
-    VT_STORAGE_BOXES = 18,
-    VT_STORAGE_REWARD_MARKS = 20
+    VT_STORAGE_BOXES = 16,
+    VT_STORAGE_REWARD_MARKS = 18
   };
   const fb::protocol::internal::raw::Character *character() const {
     return GetPointer<const fb::protocol::internal::raw::Character *>(VT_CHARACTER);
@@ -61,9 +59,6 @@ struct SavePayload FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
   }
   const ::flatbuffers::Vector<::flatbuffers::Offset<fb::protocol::internal::raw::Quest>> *quests() const {
     return GetPointer<const ::flatbuffers::Vector<::flatbuffers::Offset<fb::protocol::internal::raw::Quest>> *>(VT_QUESTS);
-  }
-  const ::flatbuffers::Vector<::flatbuffers::Offset<fb::protocol::internal::raw::SystemMailUser>> *received_system_mails() const {
-    return GetPointer<const ::flatbuffers::Vector<::flatbuffers::Offset<fb::protocol::internal::raw::SystemMailUser>> *>(VT_RECEIVED_SYSTEM_MAILS);
   }
   const ::flatbuffers::Vector<::flatbuffers::Offset<fb::protocol::internal::raw::StorageBox>> *storage_boxes() const {
     return GetPointer<const ::flatbuffers::Vector<::flatbuffers::Offset<fb::protocol::internal::raw::StorageBox>> *>(VT_STORAGE_BOXES);
@@ -89,9 +84,6 @@ struct SavePayload FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
            VerifyOffset(verifier, VT_QUESTS) &&
            verifier.VerifyVector(quests()) &&
            verifier.VerifyVectorOfTables(quests()) &&
-           VerifyOffset(verifier, VT_RECEIVED_SYSTEM_MAILS) &&
-           verifier.VerifyVector(received_system_mails()) &&
-           verifier.VerifyVectorOfTables(received_system_mails()) &&
            VerifyOffset(verifier, VT_STORAGE_BOXES) &&
            verifier.VerifyVector(storage_boxes()) &&
            verifier.VerifyVectorOfTables(storage_boxes()) &&
@@ -124,9 +116,6 @@ struct SavePayloadBuilder {
   void add_quests(::flatbuffers::Offset<::flatbuffers::Vector<::flatbuffers::Offset<fb::protocol::internal::raw::Quest>>> quests) {
     fbb_.AddOffset(SavePayload::VT_QUESTS, quests);
   }
-  void add_received_system_mails(::flatbuffers::Offset<::flatbuffers::Vector<::flatbuffers::Offset<fb::protocol::internal::raw::SystemMailUser>>> received_system_mails) {
-    fbb_.AddOffset(SavePayload::VT_RECEIVED_SYSTEM_MAILS, received_system_mails);
-  }
   void add_storage_boxes(::flatbuffers::Offset<::flatbuffers::Vector<::flatbuffers::Offset<fb::protocol::internal::raw::StorageBox>>> storage_boxes) {
     fbb_.AddOffset(SavePayload::VT_STORAGE_BOXES, storage_boxes);
   }
@@ -152,13 +141,11 @@ inline ::flatbuffers::Offset<SavePayload> CreateSavePayload(
     ::flatbuffers::Offset<::flatbuffers::Vector<::flatbuffers::Offset<fb::protocol::internal::raw::Spell>>> spells = 0,
     ::flatbuffers::Offset<::flatbuffers::Vector<::flatbuffers::Offset<fb::protocol::internal::raw::Achievement>>> achievements = 0,
     ::flatbuffers::Offset<::flatbuffers::Vector<::flatbuffers::Offset<fb::protocol::internal::raw::Quest>>> quests = 0,
-    ::flatbuffers::Offset<::flatbuffers::Vector<::flatbuffers::Offset<fb::protocol::internal::raw::SystemMailUser>>> received_system_mails = 0,
     ::flatbuffers::Offset<::flatbuffers::Vector<::flatbuffers::Offset<fb::protocol::internal::raw::StorageBox>>> storage_boxes = 0,
     ::flatbuffers::Offset<::flatbuffers::Vector<::flatbuffers::Offset<fb::protocol::internal::raw::StorageRewardMark>>> storage_reward_marks = 0) {
   SavePayloadBuilder builder_(_fbb);
   builder_.add_storage_reward_marks(storage_reward_marks);
   builder_.add_storage_boxes(storage_boxes);
-  builder_.add_received_system_mails(received_system_mails);
   builder_.add_quests(quests);
   builder_.add_achievements(achievements);
   builder_.add_spells(spells);
@@ -176,14 +163,12 @@ inline ::flatbuffers::Offset<SavePayload> CreateSavePayloadDirect(
     const std::vector<::flatbuffers::Offset<fb::protocol::internal::raw::Spell>> *spells = nullptr,
     const std::vector<::flatbuffers::Offset<fb::protocol::internal::raw::Achievement>> *achievements = nullptr,
     const std::vector<::flatbuffers::Offset<fb::protocol::internal::raw::Quest>> *quests = nullptr,
-    const std::vector<::flatbuffers::Offset<fb::protocol::internal::raw::SystemMailUser>> *received_system_mails = nullptr,
     const std::vector<::flatbuffers::Offset<fb::protocol::internal::raw::StorageBox>> *storage_boxes = nullptr,
     const std::vector<::flatbuffers::Offset<fb::protocol::internal::raw::StorageRewardMark>> *storage_reward_marks = nullptr) {
   auto items__ = items ? _fbb.CreateVector<::flatbuffers::Offset<fb::protocol::internal::raw::Item>>(*items) : 0;
   auto spells__ = spells ? _fbb.CreateVector<::flatbuffers::Offset<fb::protocol::internal::raw::Spell>>(*spells) : 0;
   auto achievements__ = achievements ? _fbb.CreateVector<::flatbuffers::Offset<fb::protocol::internal::raw::Achievement>>(*achievements) : 0;
   auto quests__ = quests ? _fbb.CreateVector<::flatbuffers::Offset<fb::protocol::internal::raw::Quest>>(*quests) : 0;
-  auto received_system_mails__ = received_system_mails ? _fbb.CreateVector<::flatbuffers::Offset<fb::protocol::internal::raw::SystemMailUser>>(*received_system_mails) : 0;
   auto storage_boxes__ = storage_boxes ? _fbb.CreateVector<::flatbuffers::Offset<fb::protocol::internal::raw::StorageBox>>(*storage_boxes) : 0;
   auto storage_reward_marks__ = storage_reward_marks ? _fbb.CreateVector<::flatbuffers::Offset<fb::protocol::internal::raw::StorageRewardMark>>(*storage_reward_marks) : 0;
   return fb::protocol::internal::raw::CreateSavePayload(
@@ -194,7 +179,6 @@ inline ::flatbuffers::Offset<SavePayload> CreateSavePayloadDirect(
       spells__,
       achievements__,
       quests__,
-      received_system_mails__,
       storage_boxes__,
       storage_reward_marks__);
 }

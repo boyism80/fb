@@ -48,6 +48,39 @@ async::task<void> server::on_write_mail(const internal_resp::WriteMail& resp)
     co_return;
 }
 
+async::task<void> server::on_mail_write_entries(const std::vector<fb::protocol::internal::MailWriteEntry>& entries)
+{
+    if (entries.empty())
+        co_return;
+
+    auto entries_copy = entries;
+    this->characters.write([this, entries_copy = std::move(entries_copy)](auto& characters) {
+        for (const auto& entry : entries_copy)
+        {
+            const auto user = entry.mail.user != 0 ? entry.mail.user : entry.user;
+            auto       ch   = characters.find(user);
+            if (ch == nullptr)
+                continue;
+
+            auto weak   = ch->template weak_from_this_as<character>();
+            auto unread = entry.unread;
+            auto mail   = entry.mail;
+            this->threads.enqueue(weak, [this, ch, unread, mail](auto& thread) -> async::task<void> {
+                ch->mail_box.unread_count(unread);
+
+                auto log_data            = Json::Value();
+                log_data["character_id"] = static_cast<Json::Int64>(ch->id);
+                log_data["sender_name"]  = UTF8(mail.sender, PLATFORM::WINDOWS);
+                log_data["mail_id"]      = static_cast<Json::Int64>(mail.id);
+                log_data["title"]        = UTF8(mail.title, PLATFORM::WINDOWS);
+                this->log.write("mail_receive", log_data);
+                co_return;
+            });
+        }
+    });
+    co_return;
+}
+
 async::task<internal_resp::WriteMail>
 server::send_mail(const character& ch, std::string_view to, std::string_view title, std::string_view contents)
 {

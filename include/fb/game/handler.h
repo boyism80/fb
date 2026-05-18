@@ -53,7 +53,8 @@
 #include <fb/game/handler/amqp/updated_clan.h>
 #include <fb/game/handler/amqp/broadcast_clan.h>
 #include <fb/game/handler/amqp/write_mail.h>
-#include <fb/game/handler/amqp/write_system_mail.h>
+#include <fb/game/handler/amqp/write_mails.h>
+#include <fb/game/handler/amqp/deliver_system_mail.h>
 #include <fb/game/handler/amqp/ban.h>
 #include <fb/game/handler/amqp/broadcast_save.h>
 #include <fb/game/handler/amqp/storage_pending_personal.h>
@@ -76,5 +77,6 @@
 #include <fb/game/handler/timer/afk_timer.h>
 #include <fb/game/handler/timer/ping_timer.h>
 #include <fb/game/handler/timer/schedule_timer.h>
+#include <fb/game/handler/timer/system_mail_timer.h>
 
 #endif // FB_GAME_HANDLER_H

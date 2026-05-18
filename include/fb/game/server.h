@@ -16,7 +16,6 @@
 #include <fb/game/clan.h>
 #include <fb/game/system_mail.h>
 #include <fb/game/storage.h>
-#include <fb/game/channel/system_mail_channel.h>
 #include <fb/game/channel/storage_pending_channel.h>
 #include <fb/log_collector.h>
 #include <fb/locker.h>
@@ -52,6 +51,9 @@ REGISTER_RESPONSE(fb::protocol::internal::request::BroadcastGroup, fb::protocol:
 REGISTER_RESPONSE(fb::protocol::internal::request::Login, fb::protocol::internal::response::Login)
 REGISTER_RESPONSE(fb::protocol::internal::request::SetOption, fb::protocol::internal::response::SetOption)
 REGISTER_RESPONSE(fb::protocol::internal::request::WriteMail, fb::protocol::internal::response::WriteMail)
+REGISTER_RESPONSE(fb::protocol::internal::request::WriteMails, fb::protocol::internal::response::WriteMails)
+REGISTER_RESPONSE(fb::protocol::internal::request::DeliverSystemMail,
+                  fb::protocol::internal::response::DeliverSystemMail)
 REGISTER_RESPONSE(fb::protocol::internal::request::DeleteMail, fb::protocol::internal::response::DeleteMail)
 REGISTER_RESPONSE(fb::protocol::internal::request::Whisper, fb::protocol::internal::response::Whisper)
 REGISTER_RESPONSE(fb::protocol::internal::request::Transfer, fb::protocol::internal::response::Transfer)
@@ -109,7 +111,6 @@ private:
 
 public:
     fb::log_collector                                        log;
-    system_mail_channel                                      system_mail;
     storage_pending_channel                                  storage_pending;
     listener_impl                                            listener;
     map_container                                            maps;
@@ -145,6 +146,7 @@ public:
     async::task<void> on_destroyed_group(const internal_resp::DestroyGroup& resp);
     async::task<void> on_updated_group(const internal_resp::UpdatedGroup& resp);
     async::task<void> on_write_mail(const internal_resp::WriteMail& resp);
+    async::task<void> on_mail_write_entries(const std::vector<fb::protocol::internal::MailWriteEntry>& entries);
     async::task<void> on_whisper(const internal_resp::Whisper& resp);
 
 public:

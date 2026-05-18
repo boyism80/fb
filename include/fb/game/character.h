@@ -170,6 +170,7 @@ public:
     void                                               action(ACTION action, DURATION duration, uint8_t sound = 0x00) override final;
     const std::string&                                 name() const override final;
     bool                                               is_first_login() const { return !_first_login_date.has_value(); }
+    [[nodiscard]] const fb::model::datetime&           created_date() const { return this->_created_date; }
     uint16_t                                           look() const override final;
     uint8_t                                            color() const override final;
     [[nodiscard]] async::task<bool>                    map(std::shared_ptr<fb::game::map> map, const fb::model::point16_t& position, DESTROY_TYPE destroy_type = DESTROY_TYPE::DEFAULT, bool notify = true) override final;
@@ -261,7 +262,6 @@ public:
     void                                               unride();
     bool                                               alive() const;
     void                                               message(std::string_view message, MESSAGE_TYPE type = MESSAGE_TYPE::STATE);
-    async::task<void>                                  process_system_mails();
     void                                               process_storage_pending();
     void                                               thread(fb::thread* value);
     void                                               browse_ch(const character& ch);

@@ -395,7 +395,6 @@ namespace Internal.Controllers
 
                 await _dbContext.SaveChangesAsync();
                 var now = DateTime.Now;
-                var receivedSystemMails = await _dbContext.SystemMailUser.Get(world, uid);
                 return new Response.Init
                 {
                     Character = _mapper.Map<Protocol.Character>(ch),
@@ -404,7 +403,6 @@ namespace Internal.Controllers
                     Spells = spells.Select(_mapper.Map<Protocol.Spell>).ToList(),
                     Achievements = achievements.Select(_mapper.Map<Protocol.Achievement>).ToList(),
                     Quests = quests.Select(_mapper.Map<Protocol.Quest>).ToList(),
-                    ReceivedSystemMails = receivedSystemMails.Where(smu => !smu.Deleted).Select(_mapper.Map<Protocol.SystemMailUser>).ToList(),
                     StorageBoxes = storageBoxes
                         .Where(box => box.ExpiredDate == null || box.ExpiredDate > now)
                         .Select(_mapper.Map<Protocol.StorageBox>)
@@ -528,20 +526,18 @@ namespace Internal.Controllers
             var spellsTask = _dbContext.Spell.GetMany(world, characterIds);
             var achievementsTask = _dbContext.Achievement.GetMany(world, characterIds);
             var questsTask = _dbContext.Quest.GetMany(world, characterIds);
-            var systemMailUsersTask = _dbContext.SystemMailUser.GetMany(world, characterIds);
             var storageBoxesTask = _dbContext.StorageBox.GetMany(world, characterIds);
             var storageRewardMarksTask = _dbContext.StorageRewardMark.GetMany(world, characterIds);
             var storagePendingBoxesTask = _dbContext.StoragePendingBox.GetMany(world, characterIds);
 
             await Task.WhenAll(charactersTask, itemsTask, spellsTask, achievementsTask, questsTask,
-                systemMailUsersTask, storageBoxesTask, storageRewardMarksTask, storagePendingBoxesTask);
+                storageBoxesTask, storageRewardMarksTask, storagePendingBoxesTask);
 
             var characters = await charactersTask;
             var itemsByOwner = await itemsTask;
             var spellsByOwner = await spellsTask;
             var achievementsByOwner = await achievementsTask;
             var questsByOwner = await questsTask;
-            var systemMailUsersByOwner = await systemMailUsersTask;
             var storageBoxesByOwner = await storageBoxesTask;
             var storageRewardMarksByOwner = await storageRewardMarksTask;
             var pendingBoxesByOwner = await storagePendingBoxesTask;
@@ -559,7 +555,6 @@ namespace Internal.Controllers
                     spellsByOwner.GetValueOrDefault(characterId) ?? Array.Empty<Spell>(),
                     achievementsByOwner.GetValueOrDefault(characterId) ?? Array.Empty<Achievement>(),
                     questsByOwner.GetValueOrDefault(characterId) ?? Array.Empty<Quest>(),
-                    systemMailUsersByOwner.GetValueOrDefault(characterId) ?? Array.Empty<SystemMailUser>(),
                     storageBoxesByOwner.GetValueOrDefault(characterId) ?? Array.Empty<StorageBox>(),
                     storageRewardMarksByOwner.GetValueOrDefault(characterId) ?? Array.Empty<StorageRewardMark>(),
                     pendingBoxesByOwner.GetValueOrDefault(characterId) ?? Array.Empty<StoragePendingBox>());
@@ -573,7 +568,6 @@ namespace Internal.Controllers
             IReadOnlyList<Spell> existingSpells,
             IReadOnlyList<Achievement> existingAchievements,
             IReadOnlyList<Quest> existingQuests,
-            IReadOnlyList<SystemMailUser> existingSystemMailUsers,
             IReadOnlyList<StorageBox> existingStorageBoxes,
             IReadOnlyList<StorageRewardMark> existingStorageRewardMarks,
             IReadOnlyList<StoragePendingBox> existingPendingBoxes)
@@ -599,9 +593,6 @@ namespace Internal.Controllers
 
             var quests = ReconcileSnapshot(_mapper.Map<Protocol.Quest[], Quest[]>(data.Quests?.ToArray() ?? Array.Empty<Protocol.Quest>()), existingQuests);
             _dbContext.Quest.Set(world, quests.ToArray());
-
-            var receivedSystemMails = ReconcileSnapshot(_mapper.Map<Protocol.SystemMailUser[], SystemMailUser[]>(data.ReceivedSystemMails?.ToArray() ?? Array.Empty<Protocol.SystemMailUser>()), existingSystemMailUsers);
-            _dbContext.SystemMailUser.Set(world, receivedSystemMails.ToArray());
 
             var storageBoxes = ReconcileSnapshot(_mapper.Map<Protocol.StorageBox[], StorageBox[]>(data.StorageBoxes?.ToArray() ?? Array.Empty<Protocol.StorageBox>()), existingStorageBoxes);
             _dbContext.StorageBox.Set(world, storageBoxes);
