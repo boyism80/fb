@@ -165,7 +165,7 @@
                                     <h6 class="small mb-2">Items to Grant:</h6>
                                     @foreach (var (attachment, index) in model.Attachments.Select((a, i) => (a, i)))
                                     {
-                                        <div class="d-flex justify-content-between align-items-center mb-1 p-1 bg-light rounded">
+                                        <div class="d-flex justify-content-between align-items-center mb-1 p-2 rounded" style="background-color: var(--bg-tertiary);">
                                             <span class="small">
                                                 @if (attachment.Header == Fb.Model.EnumValue.Dsl.Item)
                                                 {
@@ -456,7 +456,7 @@
                 errorMessage = "World is not selected.";
                 return;
             }
-            var result = await StorageService.CreatePendingAsync(
+            var result = await StorageService.CreateSystemStorageAsync(
                 selectedWorld.Value,
                 model.Title.Trim(),
                 model.Message.Trim(),
@@ -464,8 +464,8 @@
                 model.ExpiredDate,
                 model.Attachments);
             successMessage = result.User.HasValue
-                ? $"Items granted successfully (ID: #{result.Id}) for user {result.User.Value}."
-                : $"Items granted successfully (ID: #{result.Id}) to all users.";
+                ? $"System storage created (ID: #{result.Id}) for user {result.User.Value}."
+                : $"System storage created (ID: #{result.Id}) for all online users.";
             ResetForm();
         }
         catch (Exception ex)

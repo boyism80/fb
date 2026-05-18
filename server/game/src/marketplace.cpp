@@ -640,16 +640,11 @@ async::task<void> marketplace::restore()
             std::string title   = _TEXT(MESSAGE_MARKETPLACE_LISTING_RECOVERY_TITLE);
             std::string message = _TEXT(MESSAGE_MARKETPLACE_LISTING_RECOVERY_MESSAGE);
 
-            auto box = fb::game::storage_box::pending_box{.id          = listing_id,
-                                                          .user        = this->_owner.id,
-                                                          .title       = title,
-                                                          .message     = message,
-                                                          .attachments = pending_info.dsls,
-                                                          .expire_date = std::nullopt};
-
-            auto pending_boxes = std::vector<storage_box::pending_box>{};
-            pending_boxes.push_back(std::move(box));
-            this->_owner.storage_box.apply_pending(pending_boxes);
+            co_await this->_owner.server.create_system_storage(this->_owner.id,
+                                                               std::format("marketplace:list:{}", listing_id),
+                                                               title,
+                                                               message,
+                                                               pending_info.dsls);
 
             auto log_data            = Json::Value();
             log_data["character_id"] = static_cast<Json::Int64>(this->_owner.id);
@@ -684,17 +679,12 @@ async::task<void> marketplace::restore()
                     auto dsls_copy  = pending_info.dsls;
                     dsls_copy.push_back(refund_dsl.to_dsl());
 
-                    auto box = fb::game::storage_box::pending_box{
-                        .id          = purchase_id,
-                        .user        = this->_owner.id,
-                        .title       = _TEXT(MESSAGE_MARKETPLACE_PURCHASE_REFUND_TITLE),
-                        .message     = _TEXT(MESSAGE_MARKETPLACE_PURCHASE_REFUND_MESSAGE),
-                        .attachments = std::move(dsls_copy),
-                        .expire_date = std::nullopt};
-
-                    auto pending_boxes = std::vector<storage_box::pending_box>{};
-                    pending_boxes.push_back(std::move(box));
-                    this->_owner.storage_box.apply_pending(pending_boxes);
+                    co_await this->_owner.server.create_system_storage(
+                        this->_owner.id,
+                        std::format("marketplace:purchase:refund:{}", purchase_id),
+                        _TEXT(MESSAGE_MARKETPLACE_PURCHASE_REFUND_TITLE),
+                        _TEXT(MESSAGE_MARKETPLACE_PURCHASE_REFUND_MESSAGE),
+                        dsls_copy);
 
                     auto log_data             = Json::Value();
                     log_data["character_id"]  = static_cast<Json::Int64>(this->_owner.id);
@@ -711,17 +701,11 @@ async::task<void> marketplace::restore()
         else
         {
             // Purchase record does not exist - restore money
-            auto box =
-                fb::game::storage_box::pending_box{.id          = purchase_id,
-                                                   .user        = this->_owner.id,
-                                                   .title       = _TEXT(MESSAGE_MARKETPLACE_PURCHASE_RECOVERY_TITLE),
-                                                   .message     = _TEXT(MESSAGE_MARKETPLACE_PURCHASE_RECOVERY_MESSAGE),
-                                                   .attachments = pending_info.dsls,
-                                                   .expire_date = std::nullopt};
-
-            auto pending_boxes = std::vector<storage_box::pending_box>{};
-            pending_boxes.push_back(std::move(box));
-            this->_owner.storage_box.apply_pending(pending_boxes);
+            co_await this->_owner.server.create_system_storage(this->_owner.id,
+                                                               std::format("marketplace:purchase:{}", purchase_id),
+                                                               _TEXT(MESSAGE_MARKETPLACE_PURCHASE_RECOVERY_TITLE),
+                                                               _TEXT(MESSAGE_MARKETPLACE_PURCHASE_RECOVERY_MESSAGE),
+                                                               pending_info.dsls);
 
             auto log_data            = Json::Value();
             log_data["character_id"] = static_cast<Json::Int64>(this->_owner.id);

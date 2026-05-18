@@ -369,6 +369,7 @@ DROP TABLE IF EXISTS `storage_box`;
 CREATE TABLE `storage_box` (
   `user` int unsigned NOT NULL,
   `id` int unsigned NOT NULL,
+  `system_storage_box_id` int unsigned DEFAULT NULL,
   `title` varchar(128) NOT NULL DEFAULT '',
   `message` varchar(256) NOT NULL,
   `attachments` json NOT NULL,
@@ -378,51 +379,33 @@ CREATE TABLE `storage_box` (
   `created_date` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
   `updated_date` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
   PRIMARY KEY (`user`,`id`),
+  UNIQUE KEY `UX_USER_SYSTEM_STORAGE` (`user`,`system_storage_box_id`),
   KEY `idx_storage_box_expired` (`user`,`expired_date`),
   KEY `idx_storage_box_received` (`user`,`received`,`deleted`)
 ) ENGINE=InnoDB DEFAULT CHARSET=euckr;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
--- Table structure for table `storage_pending_box`
+-- Table structure for table `system_storage_box`
 --
 
-DROP TABLE IF EXISTS `storage_pending_box`;
+DROP TABLE IF EXISTS `system_storage_box`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!50503 SET character_set_client = utf8mb4 */;
-CREATE TABLE `storage_pending_box` (
-  `id` varchar(36) NOT NULL,
+CREATE TABLE `system_storage_box` (
+  `id` int unsigned NOT NULL AUTO_INCREMENT,
   `user` int unsigned DEFAULT NULL,
   `title` varchar(128) NOT NULL DEFAULT '',
   `message` varchar(256) NOT NULL,
   `attachments` json NOT NULL,
   `expired_date` datetime DEFAULT NULL,
+  `external_ref` varchar(128) DEFAULT NULL,
   `deleted` tinyint NOT NULL DEFAULT '0',
   `created_date` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
   `updated_date` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
   PRIMARY KEY (`id`),
-  KEY `idx_storage_pending_user` (`user`,`deleted`,`expired_date`),
-  KEY `idx_storage_pending_expired` (`deleted`,`expired_date`)
-) ENGINE=InnoDB DEFAULT CHARSET=euckr;
-/*!40101 SET character_set_client = @saved_cs_client */;
-
-
---
--- Table structure for table `storage_reward_mark`
---
-
-DROP TABLE IF EXISTS `storage_reward_mark`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!50503 SET character_set_client = utf8mb4 */;
-CREATE TABLE `storage_reward_mark` (
-  `user` int unsigned NOT NULL,
-  `pending_id` varchar(36) NOT NULL,
-  `expired_date` datetime DEFAULT NULL,
-  `deleted` tinyint NOT NULL DEFAULT '0',
-  `created_date` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  `updated_date` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  PRIMARY KEY (`pending_id`),
-  KEY `idx_storage_reward_mark_user` (`user`,`deleted`)
+  UNIQUE KEY `UX_EXTERNAL_REF` (`external_ref`),
+  KEY `idx_system_storage_user` (`user`,`deleted`,`expired_date`)
 ) ENGINE=InnoDB DEFAULT CHARSET=euckr;
 /*!40101 SET character_set_client = @saved_cs_client */;
 

@@ -285,9 +285,21 @@ table UpdateFriends {
   names: [string];
 }
 
-table GetStoragePending {
+table DeliverSystemStorage {
+  world: uint;
+  system_storage_box_id: uint;
+  users: [uint];
+  host: uint;
+}
+
+table WriteSystemStorageBox {
   world: uint;
   user: uint;
+  title: string;
+  message: string;
+  attachments: string;
+  expire_date: string?;
+  external_ref: string?;
 }
 
 table WriteSystemMail {

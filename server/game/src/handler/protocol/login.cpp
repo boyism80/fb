@@ -97,8 +97,10 @@ void login::init_storage(const fb::protocol::internal::response::Init& response,
     storage_boxes.reserve(response.storage_boxes.size());
     for (const auto& dto : response.storage_boxes)
     {
-        auto box    = fb::game::storage_box::entry{};
-        box.id      = dto.id;
+        auto box = fb::game::storage_box::entry{};
+        box.id   = dto.id;
+        if (dto.system_storage_box_id != 0)
+            box.system_storage_box_id = dto.system_storage_box_id;
         box.title   = dto.title;
         box.message = dto.message;
 
@@ -123,54 +125,7 @@ void login::init_storage(const fb::protocol::internal::response::Init& response,
         storage_boxes.push_back(std::move(box));
     }
 
-    auto storage_reward_marks = std::vector<fb::game::storage_box::reward_mark>();
-    storage_reward_marks.reserve(response.storage_reward_marks.size());
-    for (const auto& dto : response.storage_reward_marks)
-    {
-        fb::game::storage_box::reward_mark mark{};
-        mark.user       = dto.user;
-        mark.pending_id = dto.pending_id;
-        if (dto.expired_date.has_value())
-            mark.expire_date = fb::model::datetime(dto.expired_date.value());
-        storage_reward_marks.push_back(std::move(mark));
-    }
-
-    ch.storage_box.init(storage_boxes, storage_reward_marks);
-
-    if (response.storage_pending.empty() == false)
-    {
-        auto pending_models = std::vector<fb::game::storage_box::pending_box>();
-        pending_models.reserve(response.storage_pending.size());
-        for (const auto& dto : response.storage_pending)
-        {
-            fb::game::storage_box::pending_box pending_box{};
-            pending_box.id      = dto.id;
-            pending_box.user    = dto.user;
-            pending_box.title   = dto.title;
-            pending_box.message = dto.message;
-
-            if (!dto.attachments.empty())
-            {
-                auto json   = Json::Value{};
-                auto reader = Json::Reader{};
-                auto stream = std::istringstream(dto.attachments);
-                if (reader.parse(stream, json) && json.isArray())
-                {
-                    pending_box.attachments.reserve(json.size());
-                    for (const auto& item : json)
-                    {
-                        pending_box.attachments.emplace_back(item);
-                    }
-                }
-            }
-
-            if (dto.expired_date.has_value())
-                pending_box.expire_date = fb::model::datetime(dto.expired_date.value());
-            pending_models.push_back(std::move(pending_box));
-        }
-
-        ch.storage_box.apply_pending(pending_models);
-    }
+    ch.storage_box.init(storage_boxes);
 }
 
 async::task<std::shared_ptr<character>> login::init(const game_reqs::login& request, fb::socket<character>& session)
@@ -378,9 +333,10 @@ async::task<std::shared_ptr<character>> login::init(const game_reqs::login& requ
         }
     }
 
+    co_await this->server.sync_system_storage_for_character(*ch);
+
     ch->update(UPDATE_STATE_LEVEL::ALL);
     ch->update_option();
-    ch->process_storage_pending();
     co_return ch;
 }
 

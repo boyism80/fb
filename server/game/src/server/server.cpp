@@ -23,7 +23,6 @@ server::server(boost::asio::io_context& io_context, uint16_t port) :
     maps(*this, fb::config<uint32_t>("id")),
     listener(*this),
     characters(*this),
-    storage_pending(*this),
     clans([](const std::shared_ptr<clan>& clan) -> uint32_t {
         return clan->id();
     }),
@@ -225,6 +224,7 @@ async::task<void> server::on_start()
     this->bind_timer<fb::game::handler::timer::update_time>(1s);
     this->bind_timer<fb::game::handler::timer::schedule_timer>(1s);
     this->bind_timer<fb::game::handler::timer::system_mail_timer>(1s);
+    this->bind_timer<fb::game::handler::timer::system_storage_box_timer>(1s);
 
     this->initialize_schedules();
     auto announce_interval = std::chrono::seconds(fb::model::const_value::time::ANNOUNCE.total_milliseconds() / 1000);
@@ -245,10 +245,8 @@ async::task<void> server::on_start()
     auto host_name = std::format("fb.{}.game.{}", world, config<uint32_t>("id"));
     this->handler.amqp.bind<fb::game::handler::amqp::kick_out>(host_name);
     this->handler.amqp.bind<fb::game::handler::amqp::whisper>(host_name);
-    this->handler.amqp.bind<fb::game::handler::amqp::storage_pending_personal>(host_name);
     this->handler.amqp.bind<fb::game::handler::amqp::shutdown>("fb.global"); // Shutdown: all servers
     this->handler.amqp.bind<fb::game::handler::amqp::broadcast>(std::format("fb.{}.global", world));
-    this->handler.amqp.bind<fb::game::handler::amqp::storage_pending_fetch>(std::format("fb.{}.global", world));
     this->handler.amqp.bind<fb::game::handler::amqp::broadcast_save>(std::format("fb.{}.system", world));
     this->handler.amqp.bind<fb::game::handler::amqp::create_group>(std::format("fb.{}.group", world));
     this->handler.amqp.bind<fb::game::handler::amqp::updated_group>(std::format("fb.{}.group", world));
@@ -266,9 +264,6 @@ async::task<void> server::on_start()
     this->handler.amqp.bind<fb::game::handler::amqp::set_datetime>(std::format("fb.{}.global", world));
     this->handler.amqp.bind<fb::game::handler::amqp::start_maintenance>(
         std::format("fb.{}.game.{}", world, fb::config<uint32_t>("id")));
-
-    // Fetch storage pending on server startup
-    co_await this->storage_pending.fetch();
 
     // Run server init script once (gv and other globals) on the least loaded thread
     auto* init_thread = this->threads.least_loaded();
@@ -580,8 +575,10 @@ internal::SavePayload server::save_payload(const character& ch) const
             attachments_json = stream.str();
         }
 
+        const auto system_storage_id = box.system_storage_box_id.has_value() ? box.system_storage_box_id.value() : 0u;
         storage_boxes.emplace_back(ch.id,
                                    box.id,
+                                   system_storage_id,
                                    box.title,
                                    box.message,
                                    attachments_json,
@@ -590,25 +587,13 @@ internal::SavePayload server::save_payload(const character& ch) const
                                                                : std::nullopt);
     }
 
-    auto        storage_reward_marks = std::vector<internal::StorageRewardMark>();
-    const auto& reward_marks         = ch.storage_box.reward_marks();
-    storage_reward_marks.reserve(reward_marks.size());
-    for (const auto& [pending_id, mark] : reward_marks)
-    {
-        auto expired_date_str = std::optional<std::string>();
-        if (mark.expire_date.has_value())
-            expired_date_str = std::make_optional(mark.expire_date->to_string());
-        storage_reward_marks.emplace_back(mark.user, pending_id, expired_date_str);
-    }
-
     return internal::SavePayload(ch.to_protocol(),
                                  ch.marriage().to_protocol(),
                                  items,
                                  spells,
                                  achievements,
                                  quests,
-                                 storage_boxes,
-                                 storage_reward_marks);
+                                 storage_boxes);
 }
 
 async::task<void> server::save(character& ch)

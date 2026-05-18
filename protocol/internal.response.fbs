@@ -104,6 +104,12 @@ table DeliverSystemMail {
   error: uint;
 }
 
+table DeliverSystemStorage {
+  entries: [fb.protocol.internal.StorageWriteEntry];
+  host: uint;
+  error: uint;
+}
+
 table DeleteMail {
   unread: uint;
   error: uint;
@@ -143,8 +149,6 @@ table Init {
   achievements: [fb.protocol.internal.Achievement];
   quests: [fb.protocol.internal.Quest];
   storage_boxes: [fb.protocol.internal.StorageBox];
-  storage_reward_marks: [fb.protocol.internal.StorageRewardMark];
-  storage_pending: [fb.protocol.internal.StoragePendingBox];
   mail: uint;
 }
 
@@ -265,9 +269,13 @@ table UpdateFriends
   error: uint;
 }
 
-table GetStoragePending {
-  user: uint?;
-  pending: [fb.protocol.internal.StoragePendingBox];
+table GetSystemStorageBoxes {
+  boxes: [fb.protocol.internal.SystemStorageBox];
+  error: uint;
+}
+
+table WriteSystemStorageBox {
+  box: fb.protocol.internal.SystemStorageBox;
   error: uint;
 }
 

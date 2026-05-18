@@ -1233,26 +1233,6 @@ void character::message(std::string_view message, MESSAGE_TYPE type)
     this->listener.on_message(*this, message, type);
 }
 
-void character::process_storage_pending()
-{
-    this->assert_thread();
-
-    this->server.storage_pending.read([this](const auto& pending_map) {
-        if (pending_map.empty())
-            return;
-
-        // Convert map to vector for apply_pending
-        auto pending = std::vector<fb::game::storage_box::pending_box>();
-        pending.reserve(pending_map.size());
-        for (const auto& [id, box] : pending_map)
-        {
-            pending.push_back(box);
-        }
-
-        this->storage_box.apply_pending(pending);
-    });
-}
-
 fb::thread* character::thread() const
 {
     if (this->_thread != nullptr)

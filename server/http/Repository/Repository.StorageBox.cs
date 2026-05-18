@@ -81,6 +81,7 @@ namespace Http.Reepository
                 INSERT INTO `storage_box` (
                     `user`,
                     `id`,
+                    `system_storage_box_id`,
                     `title`,
                     `message`,
                     `attachments`,
@@ -92,6 +93,7 @@ namespace Http.Reepository
                 VALUES (
                     {value.User.Escape()},
                     {value.Id.Escape()},
+                    {value.SystemStorageBoxId.Escape()},
                     {value.Title.Escape()},
                     {value.Message.Escape()},
                     {attachmentsJson.Escape()},
@@ -101,6 +103,7 @@ namespace Http.Reepository
                     {value.CreatedDate.Escape()},
                     {value.UpdatedDate.Escape()})
                 ON DUPLICATE KEY UPDATE
+                    `system_storage_box_id`=VALUES(`system_storage_box_id`),
                     `title`=VALUES(`title`),
                     `message`=VALUES(`message`),
                     `attachments`=VALUES(`attachments`),
@@ -119,6 +122,7 @@ namespace Http.Reepository
                 return $"""
                         ({value.User.Escape()},
                          {value.Id.Escape()},
+                         {value.SystemStorageBoxId.Escape()},
                          {value.Title.Escape()},
                          {value.Message.Escape()},
                          {attachmentsJson.Escape()},
@@ -134,6 +138,7 @@ namespace Http.Reepository
                 INSERT INTO `storage_box` (
                     `user`,
                     `id`,
+                    `system_storage_box_id`,
                     `title`,
                     `message`,
                     `attachments`,
@@ -144,6 +149,7 @@ namespace Http.Reepository
                     `updated_date`)
                 VALUES {string.Join(',', args)}
                 ON DUPLICATE KEY UPDATE
+                    `system_storage_box_id`=VALUES(`system_storage_box_id`),
                     `title`=VALUES(`title`),
                     `message`=VALUES(`message`),
                     `attachments`=VALUES(`attachments`),

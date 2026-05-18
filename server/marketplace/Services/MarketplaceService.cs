@@ -188,13 +188,13 @@ public class MarketplaceService : IMarketplaceService
             }.ToDSL()
         };
 
-        await _storageService.CreatePendingAsync(
+        await _storageService.CreateSystemStorageAsync(
             world,
             Fb.Model.ConstValue.String.MessageMarketplaceListingCancelledTitle,
             Fb.Model.ConstValue.String.MessageMarketplaceListingCancelledMessage,
             listing.SellerId,
-            null, // Unlimited expiry for marketplace items
-            attachments);
+            attachments: attachments,
+            externalRef: $"marketplace:cancel:{listing.Id}");
 
         // Log successful cancellation
         await _logService.WriteAsync("marketplace_cancel_success", new
@@ -314,15 +314,13 @@ public class MarketplaceService : IMarketplaceService
             }
 
             // Send seller revenue via storage_box (full price, no fees deducted)
-            await _storageService.CreatePendingAsync(
+            await _storageService.CreateSystemStorageAsync(
                 listing.World,
                 Fb.Model.ConstValue.String.MessageMarketplaceSaleTitle,
                 string.Format(Fb.Model.ConstValue.String.MessageMarketplaceSaleMessage.ToCSharpFormat(), itemName, actualPurchaseCount, actualPrice),
                 listing.SellerId,
-                null, // Unlimited expiry for marketplace items
-                [
-                    new Fb.Model.Dsl.Money { Value = actualPrice }.ToDSL()
-                ]);
+                attachments: [new Fb.Model.Dsl.Money { Value = actualPrice }.ToDSL()],
+                externalRef: $"marketplace:sale:{purchaseId}");
 
             // Prepare buyer attachments (item + refund if any) - all in one storage box
             var buyerAttachments = new List<Fb.Model.Dsl>
@@ -359,13 +357,13 @@ public class MarketplaceService : IMarketplaceService
                 buyerMessage = string.Format(Fb.Model.ConstValue.String.MessageMarketplacePurchaseMessage.ToCSharpFormat(), itemName, actualPurchaseCount, actualPrice);
             }
 
-            await _storageService.CreatePendingAsync(
+            await _storageService.CreateSystemStorageAsync(
                 world,
                 buyerTitle,
                 buyerMessage,
                 buyerId,
-                null, // Unlimited expiry for marketplace items
-                buyerAttachments);
+                attachments: buyerAttachments,
+                externalRef: $"marketplace:buy:{purchaseId}");
 
             // Commit transaction
             await transaction.CommitAsync();

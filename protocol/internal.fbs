@@ -234,6 +234,7 @@ table SystemMail {
 table StorageBox {
     user: uint;
     id: uint;
+    system_storage_box_id: uint;
     title: string;
     message: string;
     attachments: string;
@@ -241,19 +242,20 @@ table StorageBox {
     expired_date: string?;
 }
 
-table StoragePendingBox {
-    id: string;
-    user: uint?;
+table StorageWriteEntry {
+    user: uint;
+    box: StorageBox;
+}
+
+table SystemStorageBox {
+    id: uint;
+    user: uint;
     title: string;
     message: string;
     attachments: string;
     expired_date: string?;
-}
-
-table StorageRewardMark {
-    user: uint;
-    pending_id: string;
-    expired_date: string?;
+    external_ref: string?;
+    created_date: string;
 }
 
 /// Full save payload for a single character (world is supplied by the request).
@@ -265,5 +267,4 @@ table SavePayload {
     achievements: [Achievement];
     quests: [Quest];
     storage_boxes: [StorageBox];
-    storage_reward_marks: [StorageRewardMark];
 }

@@ -262,7 +262,6 @@ public:
     void                                               unride();
     bool                                               alive() const;
     void                                               message(std::string_view message, MESSAGE_TYPE type = MESSAGE_TYPE::STATE);
-    void                                               process_storage_pending();
     void                                               thread(fb::thread* value);
     void                                               browse_ch(const character& ch);
     void                                               item_tooltip(const item& iteem, uint16_t position);

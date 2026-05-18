@@ -192,18 +192,17 @@ namespace Marketplace.Services
                 attachments.Add(new Fb.Model.Dsl.Money { Value = registrationFee }.ToDSL());
             }
 
-            // Use StorageService to create pending box (handles Redis caching and DB write-back automatically)
             var message = registrationFee > 0
                 ? string.Format(Fb.Model.ConstValue.String.MessageMarketplaceListingExpiredMessageWithFee.ToCSharpFormat(), itemName, listing.RemainingCount, registrationFee)
                 : string.Format(Fb.Model.ConstValue.String.MessageMarketplaceListingExpiredMessage.ToCSharpFormat(), itemName, listing.RemainingCount);
 
-            await storageService.CreatePendingAsync(
+            await storageService.CreateSystemStorageAsync(
                 listing.World,
                 Fb.Model.ConstValue.String.MessageMarketplaceListingExpiredTitle,
                 message,
                 listing.SellerId,
-                null, // Unlimited expiry for marketplace items
-                attachments);
+                attachments: attachments,
+                externalRef: $"marketplace:expire:{listing.Id}");
 
             // Log expired listing processing
             await logService.WriteAsync("marketplace_expired_listing_processed", new

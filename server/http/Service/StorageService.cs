@@ -1,61 +1,27 @@
 ﻿using Fb.Model;
 using Http.Model;
-using Newtonsoft.Json;
-using Protocol = fb.protocol._internal;
-using Response = fb.protocol._internal.response;
+using Http.Service;
 
 namespace Http.Service
 {
     public class StorageService
     {
         private readonly DbContext _dbContext;
-        private readonly RabbitMqService _rabbitMqService;
-        private readonly SessionService _sessionService;
         private readonly LogService _logService;
 
-        public StorageService(DbContext dbContext,
-            RabbitMqService rabbitMqService,
-            SessionService sessionService,
-            LogService logService)
+        public StorageService(DbContext dbContext, LogService logService)
         {
             _dbContext = dbContext;
-            _rabbitMqService = rabbitMqService;
-            _sessionService = sessionService;
             _logService = logService;
         }
 
-        public async Task<List<StoragePendingBox>> GetPendingForUserAsync(uint world, uint user)
-        {
-            var personalTask = _dbContext.StoragePendingBox.Get(world, user);
-            var rewardMarksTask = _dbContext.StorageRewardMark.Get(world, user);
-
-            await Task.WhenAll(personalTask, rewardMarksTask);
-
-            var now = DateTime.Now;
-            var processedIds = (await rewardMarksTask)
-                .Where(mark => !mark.Deleted)
-                .Select(mark => mark.PendingId)
-                .ToHashSet();
-
-            return (await personalTask)
-                .Where(box => !box.Deleted)
-                .Where(box => box.ExpiredDate == null || box.ExpiredDate >= now)
-                .Where(box => !processedIds.Contains(box.Id))
-                .ToList();
-        }
-
-        public async Task<List<StoragePendingBox>> GetGlobalPendingAsync(uint world)
-        {
-            var pending = await _dbContext.StoragePendingBox.Get(world, null);
-            var now = DateTime.Now;
-
-            return pending
-                .Where(box => !box.Deleted)
-                .Where(box => box.ExpiredDate == null || box.ExpiredDate >= now)
-                .ToList();
-        }
-
-        public async Task<StoragePendingBox> CreatePendingAsync(uint world, string title, string message, uint? userId = null, DateTime? expiredDate = null, List<Dsl> attachments = null)
+        public async Task<SystemStorageBox> CreateSystemStorageAsync(uint world,
+            string title,
+            string message,
+            uint? userId = null,
+            DateTime? expiredDate = null,
+            List<Dsl> attachments = null,
+            string externalRef = null)
         {
             if (string.IsNullOrWhiteSpace(title))
                 throw new ArgumentException("Title is required", nameof(title));
@@ -67,48 +33,32 @@ namespace Http.Service
             if (attachmentsList.Count == 0)
                 throw new ArgumentException("At least one attachment is required (item, money, or exp)", nameof(attachments));
 
-            var normalizedTitle = title.Trim();
-            var normalizedMessage = message.Trim();
+            var box = await _dbContext.SystemStorageBox.Write(world,
+                userId,
+                title.Trim(),
+                message.Trim(),
+                attachmentsList,
+                expiredDate,
+                externalRef);
 
-            // Generate UUID for pending ID (as string, MySql.Escape() will convert to VARCHAR(36))
-            var pendingId = Guid.NewGuid().ToString();
-
-            // Create pending box entity
-            var pending = new StoragePendingBox
+            await _logService.WriteAsync("system_storage_box_create", new
             {
-                Id = pendingId,
-                User = userId,
-                Title = normalizedTitle,
-                Message = normalizedMessage,
-                Attachments = attachmentsList,
-                ExpiredDate = expiredDate,
-                Deleted = false,
-                CreatedDate = DateTime.Now,
-                UpdatedDate = DateTime.Now
-            };
-
-            // Save using Repository (handles Redis caching and DB write-back automatically)
-            // Note: StoragePendingBox uses world-global database
-            _dbContext.StoragePendingBox.Set(world, pending);
-            await _dbContext.SaveChangesAsync();
-
-            await _logService.WriteAsync("storage_pending_create", new
-            {
-                pending_id = pending.Id,
-                user_id = pending.User,
-                is_global = !pending.User.HasValue,
-                expired_date = expiredDate?.ToString("yyyy-MM-dd HH:mm:ss") ?? null
+                box_id       = box.Id,
+                user_id      = box.User,
+                external_ref = box.ExternalRef,
+                expired_date = expiredDate?.ToString("yyyy-MM-dd HH:mm:ss")
             });
 
-            if (pending.User.HasValue)
-                await NotifyPersonalPendingAsync(world, pending.User.Value);
-            else
-                await NotifyGlobalPendingAsync(world);
-
-            return pending;
+            return box;
         }
 
-        public async Task<StoragePendingBox> CreatePendingAsync(uint world, string title, string message, string userName = null, DateTime? expiredDate = null, List<Dsl> attachments = null)
+        public async Task<SystemStorageBox> CreateSystemStorageAsync(uint world,
+            string title,
+            string message,
+            string userName = null,
+            DateTime? expiredDate = null,
+            List<Dsl> attachments = null,
+            string externalRef = null)
         {
             uint? userId = null;
             if (string.IsNullOrWhiteSpace(userName) == false)
@@ -120,71 +70,7 @@ namespace Http.Service
                 userId = id.Value;
             }
 
-            // Log storage pending creation event with user name
-            var pending = await CreatePendingAsync(world, title, message, userId, expiredDate, attachments);
-
-            await _logService.WriteAsync("storage_pending_create", new
-            {
-                pending_id = pending.Id,
-                user_id = pending.User,
-                user_name = userName,
-                is_global = !pending.User.HasValue,
-                expired_date = expiredDate?.ToString("yyyy-MM-dd HH:mm:ss") ?? null
-            });
-
-            return pending;
+            return await CreateSystemStorageAsync(world, title, message, userId, expiredDate, attachments, externalRef);
         }
-
-        private async Task NotifyPersonalPendingAsync(uint world, uint user)
-        {
-            var pending = await GetPendingForUserAsync(world, user);
-            if (pending.Count == 0)
-                return;
-
-            var character = await _dbContext.Character.Get(world, user);
-            if (character == null || string.IsNullOrWhiteSpace(character.Name))
-                return;
-
-            var session = await _sessionService.Get(world, character.Name);
-            if (session == null)
-                return;
-
-            var response = BuildPendingResponse(user, pending);
-            await _rabbitMqService.PublishAsync(response, "amq.direct", $"fb.{world}.game.{session.Host}");
-        }
-
-        private async Task NotifyGlobalPendingAsync(uint world)
-        {
-            var pending = await GetGlobalPendingAsync(world);
-            if (pending.Count == 0)
-                return;
-
-            var response = BuildPendingResponse(null, pending);
-            await _rabbitMqService.PublishAsync(response, "amq.direct", $"fb.{world}.global");
-        }
-
-        private Response.GetStoragePending BuildPendingResponse(uint? user, IEnumerable<StoragePendingBox> pending)
-        {
-            return new Response.GetStoragePending
-            {
-                User = user,
-                Pending = pending.Select(ToProtocol).ToList(),
-                Error = 0
-            };
-        }
-
-        private static Protocol.StoragePendingBox ToProtocol(StoragePendingBox box)
-        {
-            return new Protocol.StoragePendingBox
-            {
-                Id = box.Id,
-                User = box.User,
-                Title = box.Title ?? string.Empty,
-                Message = box.Message ?? string.Empty,
-                Attachments = JsonConvert.SerializeObject(box.Attachments ?? new List<Dsl>()),
-                ExpiredDate = box.ExpiredDate?.ToString("yyyy-MM-dd HH:mm:ss")
-            };
-        }
-
     }
 }

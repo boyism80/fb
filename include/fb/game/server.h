@@ -16,7 +16,7 @@
 #include <fb/game/clan.h>
 #include <fb/game/system_mail.h>
 #include <fb/game/storage.h>
-#include <fb/game/channel/storage_pending_channel.h>
+#include <fb/game/system_storage_box.h>
 #include <fb/log_collector.h>
 #include <fb/locker.h>
 #include <vector>
@@ -58,8 +58,8 @@ REGISTER_RESPONSE(fb::protocol::internal::request::DeleteMail, fb::protocol::int
 REGISTER_RESPONSE(fb::protocol::internal::request::Whisper, fb::protocol::internal::response::Whisper)
 REGISTER_RESPONSE(fb::protocol::internal::request::Transfer, fb::protocol::internal::response::Transfer)
 REGISTER_RESPONSE(fb::protocol::internal::request::UpdateFriends, fb::protocol::internal::response::UpdateFriends)
-REGISTER_RESPONSE(fb::protocol::internal::request::GetStoragePending,
-                  fb::protocol::internal::response::GetStoragePending)
+REGISTER_RESPONSE(fb::protocol::internal::request::WriteSystemStorageBox,
+                  fb::protocol::internal::response::WriteSystemStorageBox)
 REGISTER_RESPONSE(fb::protocol::internal::request::WriteSystemMail, fb::protocol::internal::response::WriteSystemMail)
 REGISTER_RESPONSE(fb::protocol::internal::request::Ban, fb::protocol::internal::response::Ban)
 REGISTER_RESPONSE(fb::protocol::internal::request::Unban, fb::protocol::internal::response::Unban)
@@ -111,7 +111,6 @@ private:
 
 public:
     fb::log_collector                                        log;
-    storage_pending_channel                                  storage_pending;
     listener_impl                                            listener;
     map_container                                            maps;
     fb::locker<character::container>                         characters;
@@ -209,6 +208,14 @@ public:
     async::task<void>                          set_clan_title(character& changer, std::string_view title);
     async::task<void>                          broadcast_clan(uint32_t clan_id, std::string_view message, MESSAGE_TYPE type);
     async::task<internal_resp::WriteMail>      send_mail(const character& ch, std::string_view to, std::string_view title, std::string_view contents);
+    void                                       apply_system_storage_to_users(const std::vector<uint32_t>& user_ids,
+                                                                             const system_storage_box&     box);
+    async::task<void>                          sync_system_storage_for_character(character& ch);
+    async::task<void>                          create_system_storage(uint32_t user_id,
+                                                                     std::string_view external_ref,
+                                                                     std::string_view title,
+                                                                     std::string_view message,
+                                                                     const std::vector<fb::model::dsl>& attachments);
     async::task<internal_resp::GetMailList>    mail_list(const character& ch, uint16_t offset, uint16_t count);
     async::task<internal_resp::GetMail>        read_mail(character& ch, uint16_t id);
     async::task<internal_resp::DeleteMail>     delete_mail(character& ch, uint16_t id);

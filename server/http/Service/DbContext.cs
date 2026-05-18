@@ -35,9 +35,7 @@ namespace Http.Service
 
         public StorageBoxRepository StorageBox => Bind<StorageBoxRepository>();
 
-        public StoragePendingBoxRepository StoragePendingBox => Bind<StoragePendingBoxRepository>();
-
-        public StorageRewardMarkRepository StorageRewardMark => Bind<StorageRewardMarkRepository>();
+        public SystemStorageBoxRepository SystemStorageBox => Bind<SystemStorageBoxRepository>();
 
         public BanRepository Ban => Bind<BanRepository>();
 

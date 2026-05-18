@@ -22,7 +22,6 @@ namespace Internal.Controllers
         private readonly DbContext _dbContext;
         private readonly IMapper _mapper;
         private readonly RedisDistributedLockService _distributedLock;
-        private readonly StorageService _storageService;
         private readonly BanService _banService;
         private readonly ServerStateService _serverStateService;
         private readonly LogService _logService;
@@ -33,7 +32,6 @@ namespace Internal.Controllers
             DbContext dbContext,
             IMapper mapper,
             RedisDistributedLockService distributedLock,
-            StorageService storageService,
             BanService banService,
             ServerStateService serverStateService,
             LogService logService,
@@ -45,7 +43,6 @@ namespace Internal.Controllers
             _dbContext = dbContext;
             _mapper = mapper;
             _distributedLock = distributedLock;
-            _storageService = storageService;
             _banService = banService;
             _serverStateService = serverStateService;
             _logService = logService;
@@ -365,14 +362,11 @@ namespace Internal.Controllers
             var achievements = await _dbContext.Achievement.Get(world, uid);
             var quests = await _dbContext.Quest.Get(world, uid);
             var storageBoxes = await _dbContext.StorageBox.Get(world, uid);
-            var storageRewardMarks = await _dbContext.StorageRewardMark.Get(world, uid);
             var option = await _dbContext.Option.Get(world, uid) ??
                 _dbContext.Option.Set(world, new Option
                 {
                     Uid = uid,
                 });
-            var storagePending = await _storageService.GetPendingForUserAsync(world, uid);
-
             var marriageData = await _dbContext.Marriage.Get(world, uid) ??
                 _dbContext.Marriage.Set(world, new Http.Model.Marriage
                 {
@@ -406,13 +400,6 @@ namespace Internal.Controllers
                     StorageBoxes = storageBoxes
                         .Where(box => box.ExpiredDate == null || box.ExpiredDate > now)
                         .Select(_mapper.Map<Protocol.StorageBox>)
-                        .ToList(),
-                    StorageRewardMarks = storageRewardMarks
-                        .Where(mark => !mark.Deleted)
-                        .Select(_mapper.Map<Protocol.StorageRewardMark>)
-                        .ToList(),
-                    StoragePending = storagePending
-                        .Select(_mapper.Map<Protocol.StoragePendingBox>)
                         .ToList(),
                     Option = _mapper.Map<Protocol.Option>(option),
                     Clan = sync.Clan,
@@ -527,11 +514,9 @@ namespace Internal.Controllers
             var achievementsTask = _dbContext.Achievement.GetMany(world, characterIds);
             var questsTask = _dbContext.Quest.GetMany(world, characterIds);
             var storageBoxesTask = _dbContext.StorageBox.GetMany(world, characterIds);
-            var storageRewardMarksTask = _dbContext.StorageRewardMark.GetMany(world, characterIds);
-            var storagePendingBoxesTask = _dbContext.StoragePendingBox.GetMany(world, characterIds);
 
             await Task.WhenAll(charactersTask, itemsTask, spellsTask, achievementsTask, questsTask,
-                storageBoxesTask, storageRewardMarksTask, storagePendingBoxesTask);
+                storageBoxesTask);
 
             var characters = await charactersTask;
             var itemsByOwner = await itemsTask;
@@ -539,8 +524,6 @@ namespace Internal.Controllers
             var achievementsByOwner = await achievementsTask;
             var questsByOwner = await questsTask;
             var storageBoxesByOwner = await storageBoxesTask;
-            var storageRewardMarksByOwner = await storageRewardMarksTask;
-            var pendingBoxesByOwner = await storagePendingBoxesTask;
 
             foreach (var data in payloads)
             {
@@ -555,9 +538,7 @@ namespace Internal.Controllers
                     spellsByOwner.GetValueOrDefault(characterId) ?? Array.Empty<Spell>(),
                     achievementsByOwner.GetValueOrDefault(characterId) ?? Array.Empty<Achievement>(),
                     questsByOwner.GetValueOrDefault(characterId) ?? Array.Empty<Quest>(),
-                    storageBoxesByOwner.GetValueOrDefault(characterId) ?? Array.Empty<StorageBox>(),
-                    storageRewardMarksByOwner.GetValueOrDefault(characterId) ?? Array.Empty<StorageRewardMark>(),
-                    pendingBoxesByOwner.GetValueOrDefault(characterId) ?? Array.Empty<StoragePendingBox>());
+                    storageBoxesByOwner.GetValueOrDefault(characterId) ?? Array.Empty<StorageBox>());
             }
         }
 
@@ -568,9 +549,7 @@ namespace Internal.Controllers
             IReadOnlyList<Spell> existingSpells,
             IReadOnlyList<Achievement> existingAchievements,
             IReadOnlyList<Quest> existingQuests,
-            IReadOnlyList<StorageBox> existingStorageBoxes,
-            IReadOnlyList<StorageRewardMark> existingStorageRewardMarks,
-            IReadOnlyList<StoragePendingBox> existingPendingBoxes)
+            IReadOnlyList<StorageBox> existingStorageBoxes)
         {
             var characterId = data.Character.Id;
 
@@ -596,23 +575,6 @@ namespace Internal.Controllers
 
             var storageBoxes = ReconcileSnapshot(_mapper.Map<Protocol.StorageBox[], StorageBox[]>(data.StorageBoxes?.ToArray() ?? Array.Empty<Protocol.StorageBox>()), existingStorageBoxes);
             _dbContext.StorageBox.Set(world, storageBoxes);
-
-            var storageRewardMarks = ReconcileSnapshot(_mapper.Map<Protocol.StorageRewardMark[], StorageRewardMark[]>(data.StorageRewardMarks?.ToArray() ?? Array.Empty<Protocol.StorageRewardMark>()), existingStorageRewardMarks);
-            _dbContext.StorageRewardMark.Set(world, storageRewardMarks.ToArray());
-
-            var personalPendingIds = data.StorageRewardMarks?.Select(mark => mark.PendingId).ToHashSet() ?? new HashSet<string>();
-            if (personalPendingIds.Count > 0 && existingPendingBoxes.Count > 0)
-            {
-                var pendingBoxes = existingPendingBoxes.Where(x => personalPendingIds.Contains(x.Id)).ToArray();
-                if (pendingBoxes.Length > 0)
-                {
-                    foreach (var pendingBox in pendingBoxes)
-                    {
-                        pendingBox.Deleted = true;
-                    }
-                    _dbContext.StoragePendingBox.Set(world, pendingBoxes);
-                }
-            }
         }
 
         [HttpPost("option")]
