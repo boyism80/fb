@@ -145,7 +145,9 @@ std::vector<fb::model::item*> fb::model::__item::name2item_prefix(std::string_vi
         {
             result.reserve(sorted_items.size());
             for (auto& [name, item] : sorted_items)
+            {
                 result.push_back(item);
+            }
             return result;
         }
 

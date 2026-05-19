@@ -11,7 +11,9 @@ async::task<void> unknown_4D::serialize(fb::stream_writer<big_endian>& writer) c
     if (this->type == 2)
     {
         for (size_t i = 0; i < this->strings.size(); ++i)
+        {
             writer.write<std::string, uint8_t>(this->strings[i]);
+        }
     }
 }
 #else
@@ -22,7 +24,9 @@ async::task<void> unknown_4D::deserialize(fb::stream_reader<big_endian>& reader)
     if (this->type == 2)
     {
         for (size_t i = 0; i < this->strings.size(); ++i)
+        {
             this->strings[i] = reader.read<std::string, uint8_t>();
+        }
     }
 }
 #endif

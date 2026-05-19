@@ -675,7 +675,9 @@ async::task<void> server::set_saved_before_shutdown_on_all()
         }));
     }
     for (auto& t : tasks)
+    {
         co_await t;
+    }
 }
 
 async::task<void> server::on_exit()

@@ -11,18 +11,13 @@ using namespace fb::game::handler::timer;
 
 namespace internal_resp = fb::protocol::internal::response;
 
-bool system_storage_box_timer::is_expired(const fb::game::system_storage_box& box, const fb::model::datetime& now)
-{
-    return box.expire_date.has_value() && box.expire_date.value() < now;
-}
-
 void system_storage_box_timer::prune_expired_boxes(std::vector<fb::game::system_storage_box>& boxes,
                                                    const fb::model::datetime&                 now)
 {
     boxes.erase(std::remove_if(boxes.begin(),
                                boxes.end(),
                                [&](const fb::game::system_storage_box& box) {
-                                   return is_expired(box, now);
+                                   return box.expired(now);
                                }),
                 boxes.end());
 }
@@ -78,7 +73,7 @@ fb::async_generator<void> system_storage_box_timer::delivery_coroutine()
                 for (const auto& dto : resp.boxes)
                 {
                     auto box = fb::game::system_storage_box(dto);
-                    if (is_expired(box, now))
+                    if (box.expired(now))
                         continue;
 
                     max_box_id = std::max(max_box_id, box.id);
@@ -106,12 +101,12 @@ fb::async_generator<void> system_storage_box_timer::delivery_coroutine()
 
         for (const auto& box : boxes)
         {
-            if (is_expired(box, now))
+            if (box.expired(now))
                 continue;
 
             if (box.user.has_value())
             {
-                this->server.apply_system_storage_to_users({box.user.value()}, box);
+                this->server.apply_system_storage({box.user.value()}, box);
             }
             else
             {
@@ -124,7 +119,7 @@ fb::async_generator<void> system_storage_box_timer::delivery_coroutine()
                         eligible.push_back(user_id);
                 }
 
-                this->server.apply_system_storage_to_users(eligible, box);
+                this->server.apply_system_storage(eligible, box);
             }
         }
 

@@ -2,8 +2,9 @@
 #define FB_GAME_SYSTEM_STORAGE_BOX_H
 
 #include <cstdint>
-#include <string>
 #include <optional>
+#include <string>
+#include <fb/game/storage.h>
 #include <fb/model/datetime.h>
 
 namespace fb::protocol::internal {
@@ -11,6 +12,8 @@ class SystemStorageBox;
 }
 
 namespace fb::game {
+
+class character;
 
 struct system_storage_box
 {
@@ -25,6 +28,10 @@ struct system_storage_box
 
     system_storage_box() = default;
     explicit system_storage_box(const fb::protocol::internal::SystemStorageBox& dto);
+
+    [[nodiscard]] bool               expired(const fb::model::datetime& now) const;
+    [[nodiscard]] bool               eligible_for(const character& ch) const;
+    [[nodiscard]] storage_box::entry to_entry() const;
 };
 
 } // namespace fb::game

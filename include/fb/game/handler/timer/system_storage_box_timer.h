@@ -20,7 +20,6 @@ private:
     [[nodiscard]] fb::async_generator<void>                delivery_coroutine();
     std::vector<std::tuple<uint32_t, fb::model::datetime>> collect_online_users() const;
 
-    static bool is_expired(const fb::game::system_storage_box& box, const fb::model::datetime& now);
     static void prune_expired_boxes(std::vector<fb::game::system_storage_box>& boxes, const fb::model::datetime& now);
 
 public:

@@ -36,11 +36,7 @@ void storage_box::apply_delivered(const std::vector<entry>& delivered)
     {
         if (box.system_storage_box_id.has_value())
         {
-            const auto system_id = box.system_storage_box_id.value();
-            const auto duplicate = std::any_of(this->_entries.cbegin(), this->_entries.cend(), [&](const auto& pair) {
-                return pair.second.system_storage_box_id == system_id;
-            });
-            if (duplicate)
+            if (this->contains_system_box(box.system_storage_box_id.value()))
                 continue;
         }
 
@@ -65,7 +61,9 @@ void storage_box::apply_delivered(const std::vector<entry>& delivered)
         log_data["title"]      = UTF8(e.title, PLATFORM::WINDOWS);
         auto attachments_array = Json::Value(Json::arrayValue);
         for (const auto& attachment : e.attachments)
+        {
             attachments_array.append(attachment.to_json());
+        }
         log_data["attachments"] = attachments_array;
         log_data["expire_date"] = e.expire_date.has_value()
                                       ? Json::Value(UTF8(e.expire_date.value().to_string(), PLATFORM::WINDOWS))
@@ -77,6 +75,16 @@ void storage_box::apply_delivered(const std::vector<entry>& delivered)
         else
             this->_owner.message(_TEXT(MESSAGE_STORAGE_BOX_REWARD_ADDED_NO_TITLE), MESSAGE_TYPE::STATE);
     }
+}
+
+bool storage_box::contains_system_box(uint32_t system_storage_box_id) const
+{
+    this->_owner.assert_thread();
+
+    return std::any_of(this->_entries.cbegin(), this->_entries.cend(), [&](const auto& pair) {
+        return pair.second.system_storage_box_id.has_value() &&
+               pair.second.system_storage_box_id.value() == system_storage_box_id;
+    });
 }
 
 bool storage_box::receive_reward(uint32_t entry_id)
@@ -104,7 +112,9 @@ bool storage_box::receive_reward(uint32_t entry_id)
     log_data["title"]          = UTF8(it->second.title, PLATFORM::WINDOWS);
     auto attachments_array     = Json::Value(Json::arrayValue);
     for (const auto& attachment : it->second.attachments)
+    {
         attachments_array.append(attachment.to_json());
+    }
     log_data["attachments"] = attachments_array;
     this->_owner.server.log.write("storage_box_attachment_receive", log_data);
 

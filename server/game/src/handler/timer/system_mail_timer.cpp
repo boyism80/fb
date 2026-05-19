@@ -12,7 +12,7 @@ using namespace fb::game::handler::timer;
 namespace internal_resp = fb::protocol::internal::response;
 namespace internal_reqs = fb::protocol::internal::request;
 
-bool system_mail_timer::is_expired(const fb::game::system_mail& mail, const fb::model::datetime& now)
+bool system_mail_timer::expired(const fb::game::system_mail& mail, const fb::model::datetime& now)
 {
     return mail.expire_date.has_value() && mail.expire_date.value() < now;
 }
@@ -22,7 +22,7 @@ void system_mail_timer::prune_expired_mails(std::vector<fb::game::system_mail>& 
     mails.erase(std::remove_if(mails.begin(),
                                mails.end(),
                                [&](const fb::game::system_mail& mail) {
-                                   return is_expired(mail, now);
+                                   return expired(mail, now);
                                }),
                 mails.end());
 }
@@ -78,7 +78,7 @@ fb::async_generator<void> system_mail_timer::delivery_coroutine()
                 for (const auto& dto : resp.mails)
                 {
                     auto mail = fb::game::system_mail(dto);
-                    if (is_expired(mail, now))
+                    if (expired(mail, now))
                         continue;
 
                     max_mail_id = std::max(max_mail_id, mail.id);
@@ -107,7 +107,7 @@ fb::async_generator<void> system_mail_timer::delivery_coroutine()
 
         for (const auto& mail : mails)
         {
-            if (is_expired(mail, now))
+            if (expired(mail, now))
                 continue;
 
             auto eligible = std::vector<uint32_t>{};

@@ -10,64 +10,12 @@ using namespace fb::game;
 namespace internal_resp = fb::protocol::internal::response;
 namespace internal_reqs = fb::protocol::internal::request;
 
-namespace {
-
-bool is_expired(const system_storage_box& box, const fb::model::datetime& now)
-{
-    return box.expire_date.has_value() && box.expire_date.value() < now;
-}
-
-bool has_system_storage_entry(const storage_box& box, uint32_t system_storage_box_id)
-{
-    return std::any_of(box.entries().cbegin(), box.entries().cend(), [&](const auto& pair) {
-        return pair.second.system_storage_box_id.has_value() &&
-               pair.second.system_storage_box_id.value() == system_storage_box_id;
-    });
-}
-
-bool is_eligible(const character& ch, const system_storage_box& box)
-{
-    if (box.user.has_value())
-        return ch.id == box.user.value();
-
-    return ch.created_date() < box.created_date;
-}
-
-storage_box::entry entry_from_system_storage(const system_storage_box& box)
-{
-    auto e                  = storage_box::entry{};
-    e.system_storage_box_id = box.id;
-    e.title                 = box.title;
-    e.message               = box.message;
-
-    if (!box.attachments.empty())
-    {
-        auto json   = Json::Value{};
-        auto reader = Json::Reader{};
-        auto stream = std::istringstream(box.attachments);
-        if (reader.parse(stream, json) && json.isArray())
-        {
-            e.attachments.reserve(json.size());
-            for (const auto& item : json)
-                e.attachments.emplace_back(item);
-        }
-    }
-
-    e.received = false;
-    if (box.expire_date.has_value())
-        e.expire_date = box.expire_date;
-
-    return e;
-}
-
-} // namespace
-
-void server::apply_system_storage_to_users(const std::vector<uint32_t>& user_ids, const system_storage_box& box)
+void server::apply_system_storage(const std::vector<uint32_t>& user_ids, const system_storage_box& box)
 {
     if (user_ids.empty())
         return;
 
-    auto entry = entry_from_system_storage(box);
+    auto entry = box.to_entry();
 
     this->characters.write([this, user_ids, box_id = box.id, entry = std::move(entry)](auto& characters) {
         for (const auto user_id : user_ids)
@@ -78,7 +26,7 @@ void server::apply_system_storage_to_users(const std::vector<uint32_t>& user_ids
 
             auto weak = ch->template weak_from_this_as<character>();
             this->threads.enqueue(weak, [ch, box_id, entry](auto&) -> async::task<void> {
-                if (has_system_storage_entry(ch->storage_box, box_id))
+                if (ch->storage_box.contains_system_box(box_id))
                     co_return;
 
                 ch->storage_box.apply_delivered({entry});
@@ -112,16 +60,16 @@ async::task<void> server::sync_system_storage_for_character(character& ch)
         for (const auto& dto : resp.boxes)
         {
             auto box = system_storage_box(dto);
-            if (is_expired(box, now))
+            if (box.expired(now))
                 continue;
 
-            if (!is_eligible(*ptr, box))
+            if (!box.eligible_for(*ptr))
                 continue;
 
-            if (has_system_storage_entry(ptr->storage_box, box.id))
+            if (ptr->storage_box.contains_system_box(box.id))
                 continue;
 
-            batch.push_back(entry_from_system_storage(box));
+            batch.push_back(box.to_entry());
         }
 
         if (!batch.empty())
@@ -147,7 +95,9 @@ async::task<void> server::create_system_storage(uint32_t                        
     {
         auto json_array = Json::Value(Json::arrayValue);
         for (const auto& dsl : attachments)
+        {
             json_array.append(dsl.to_json());
+        }
 
         auto builder           = Json::StreamWriterBuilder{};
         builder["emitUTF8"]    = true;

@@ -56,7 +56,9 @@ async::task<void> buff_timer::handle(const fb::model::datetime& now, std::thread
             }
 
             for (auto& buff : ended_buffs)
+            {
                 std::ignore = obj->buffs.remove(buff->model);
+            }
         }
     }
 

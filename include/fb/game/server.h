@@ -208,14 +208,9 @@ public:
     async::task<void>                          set_clan_title(character& changer, std::string_view title);
     async::task<void>                          broadcast_clan(uint32_t clan_id, std::string_view message, MESSAGE_TYPE type);
     async::task<internal_resp::WriteMail>      send_mail(const character& ch, std::string_view to, std::string_view title, std::string_view contents);
-    void                                       apply_system_storage_to_users(const std::vector<uint32_t>& user_ids,
-                                                                             const system_storage_box&     box);
+    void                                       apply_system_storage(const std::vector<uint32_t>& user_ids, const system_storage_box&     box);
     async::task<void>                          sync_system_storage_for_character(character& ch);
-    async::task<void>                          create_system_storage(uint32_t user_id,
-                                                                     std::string_view external_ref,
-                                                                     std::string_view title,
-                                                                     std::string_view message,
-                                                                     const std::vector<fb::model::dsl>& attachments);
+    async::task<void>                          create_system_storage(uint32_t user_id, std::string_view external_ref, std::string_view title, std::string_view message, const std::vector<fb::model::dsl>& attachments);
     async::task<internal_resp::GetMailList>    mail_list(const character& ch, uint16_t offset, uint16_t count);
     async::task<internal_resp::GetMail>        read_mail(character& ch, uint16_t id);
     async::task<internal_resp::DeleteMail>     delete_mail(character& ch, uint16_t id);

@@ -42,7 +42,9 @@ async::task<void> dialog_slot::serialize(fb::stream_writer<big_endian>& writer) 
     writer.write<uint8_t>((uint8_t)this->slots.size());
 
     for (auto slot : this->slots)
+    {
         writer.write<uint8_t>(slot);
+    }
     writer.write<uint8_t>(0x00);
 }
 #else

@@ -90,7 +90,9 @@ protected:
         if (this->data.empty())
         {
             for (auto& node : this->_nodes)
+            {
                 queue.push({*node});
+            }
         }
         else
         {

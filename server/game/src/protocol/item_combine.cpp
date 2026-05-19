@@ -19,7 +19,9 @@ async::task<void> item_combine::deserialize(fb::stream_reader<big_endian>& reade
     co_await header::deserialize(reader);
     auto count = reader.read<uint8_t>();
     for (int i = 0; i < count; i++)
+    {
         this->indices.push_back(reader.read<uint8_t>() - 1);
+    }
 }
 #endif
 } // namespace fb::protocol::game::request

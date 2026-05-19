@@ -247,10 +247,14 @@ encryption encryption::generate()
 
 #if defined DEBUG || defined _DEBUG
     for (int i = 0; i < KEY_SIZE; i++)
+    {
         enc_key[i] = i + 1;
+    }
 #else
     for (int i = 0; i < KEY_SIZE; i++)
+    {
         enc_key[i] = rand() % 255 + 1;
+    }
 #endif
 
     return encryption(enc_type, enc_key);

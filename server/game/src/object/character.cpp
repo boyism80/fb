@@ -1040,7 +1040,9 @@ void character::assert_state(const std::vector<STATE>& values) const
     this->assert_thread();
 
     for (auto value : values)
+    {
         this->assert_state(value);
+    }
 }
 
 bool character::move(const fb::model::point16_t& before)

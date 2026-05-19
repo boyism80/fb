@@ -572,7 +572,9 @@ bool root::dump(std::string_view path)
         auto bytecodes = static_cast<std::vector<char>*>(params[0]);
 
         for (size_t i = 0; i < size; i++)
+        {
             bytecodes->push_back(static_cast<const char*>(bytes)[i]);
+        }
 
         return 0;
     };

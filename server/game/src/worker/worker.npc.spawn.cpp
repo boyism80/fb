@@ -16,7 +16,9 @@ fb::generator<fb::game::npc_spawner::input_type> fb::game::npc_spawner::on_ready
     for (auto& [map, spawns] : table::npc_spawn)
     {
         for (auto& spawn : spawns)
+        {
             co_yield spawn;
+        }
     }
 }
 

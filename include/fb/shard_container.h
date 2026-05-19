@@ -140,7 +140,9 @@ public:
         std::vector<HashType> out;
         out.reserve(this->super::size());
         for (auto it = this->super::begin(); it != this->super::end(); ++it)
+        {
             out.push_back(it->first);
+        }
         return out;
     }
 
@@ -677,7 +679,9 @@ public:
         {
             auto k = b->keys();
             for (auto h : k)
+            {
                 out.push_back(h);
+            }
         }
         return out;
     }

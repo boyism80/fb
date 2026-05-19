@@ -89,7 +89,9 @@ void listener_impl::on_update_map(character&                  ch,
 void listener_impl::on_update_buff(character& ch, const buffs& buffs)
 {
     for (auto& [id, buff] : buffs)
+    {
         ch.send(game_resp::spell_buff(*buff));
+    }
 }
 
 void listener_impl::on_update_internal(character& ch)

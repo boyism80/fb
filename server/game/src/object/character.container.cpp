@@ -315,6 +315,24 @@ character::container::character_ptr_t character::container::operator[] (std::str
     return ch;
 }
 
+const character::container::character_ptr_t& character::container::operator[] (uint32_t uid) const
+{
+    auto ch = this->find(uid);
+    if (ch == nullptr)
+        throw std::out_of_range("out of range exception");
+
+    return ch;
+}
+
+const character::container::character_ptr_t& character::container::operator[] (std::string_view name) const
+{
+    auto ch = this->find(name);
+    if (ch == nullptr)
+        throw std::out_of_range("out of range exception");
+
+    return ch;
+}
+
 character::container::iterator character::container::begin()
 {
     return this->_from_uid.begin();

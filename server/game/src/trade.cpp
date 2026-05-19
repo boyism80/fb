@@ -478,7 +478,9 @@ bool trade::lock()
         }
         log_data["items1"] = Json::Value(Json::arrayValue);
         for (auto& item : items1)
+        {
             log_data["items1"].append(item);
+        }
         auto items2 = std::vector<Json::Value>();
         for (auto& [index, order] : you->trade._items)
         {
@@ -494,7 +496,9 @@ bool trade::lock()
         }
         log_data["items2"] = Json::Value(Json::arrayValue);
         for (auto& item : items2)
+        {
             log_data["items2"].append(item);
+        }
         owner->server.log.write("trade_complete", log_data);
 
         this->end();

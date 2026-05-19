@@ -22,7 +22,7 @@ private:
     [[nodiscard]] fb::async_generator<void>                delivery_coroutine();
     std::vector<std::tuple<uint32_t, fb::model::datetime>> collect_online_users() const;
 
-    static bool is_expired(const fb::game::system_mail& mail, const fb::model::datetime& now);
+    static bool expired(const fb::game::system_mail& mail, const fb::model::datetime& now);
     static void prune_expired_mails(std::vector<fb::game::system_mail>& mails, const fb::model::datetime& now);
 
 public:

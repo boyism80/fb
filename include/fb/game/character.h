@@ -340,8 +340,10 @@ public:
     // clang-format on
 
 public:
-    character_ptr_t operator[] (uint32_t uid);
-    character_ptr_t operator[] (std::string_view name);
+    character_ptr_t        operator[] (uint32_t uid);
+    character_ptr_t        operator[] (std::string_view name);
+    const character_ptr_t& operator[] (uint32_t uid) const;
+    const character_ptr_t& operator[] (std::string_view name) const;
 
 public:
     iterator       begin();

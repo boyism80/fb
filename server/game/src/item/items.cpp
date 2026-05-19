@@ -1077,7 +1077,9 @@ void items::loot(bool boost)
         // Pick up items in reverse order
         auto belows = std::vector<std::shared_ptr<item>>();
         for (auto& below : map->belows(owner->position(), OBJECT_TYPE::ITEM))
+        {
             belows.push_back(std::static_pointer_cast<item>(below));
+        }
 
         if (belows.size() == 0)
         {

@@ -149,7 +149,9 @@ fb::model::recipe_node::find(const std::vector<fb::model::dsl::item>& source, in
         if (data.count <= item.count)
         {
             for (auto& x : node->_recipes)
+            {
                 co_yield x;
+            }
         }
 
         auto gen = (data.count == 0) ? node->find(source, i) : node->find(source, i + 1);
@@ -180,7 +182,9 @@ fb::model::recipe_node::find(const std::vector<fb::model::dsl::item>& source)
     {
         auto gen = this->find(compact, i);
         while (gen.next())
+        {
             co_yield gen.value();
+        }
     }
 }
 

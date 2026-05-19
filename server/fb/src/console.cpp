@@ -243,10 +243,14 @@ void console::tty_policy::progress(std::string_view text, float progress)
 
     os << '\r' << '[';
     for (size_t i = 0; i < whole_width; ++i)
+    {
         os << fill_text;
+    }
     os << lead_text;
     for (size_t i = 0; i < width - whole_width; ++i)
+    {
         os << " ";
+    }
     os << "]";
 
     os << std::format(" {:>7.2f}% {}", progress, text);
