@@ -34,23 +34,10 @@ void fb::game::npc_spawner::on_work(const fb::game::npc_spawner::input_type& val
     if (map == nullptr || map->active == false)
         return;
 
-    auto thread = map->thread();
-    if (thread == nullptr)
-        throw std::runtime_error("thread exception");
+    if (map->loaded() == false)
+        return;
 
-    // Use smart pointer for NPC creation
-    auto& model = table::npc[spawn_model.npc];
-    auto  npc   = this->_server.make<fb::game::npc>(model);
-    auto  weak  = npc->weak_from_this_as<fb::game::npc>();
-    auto  fn    = [](std::shared_ptr<fb::game::npc> npc,
-                 std::shared_ptr<fb::game::map> map,
-                 fb::model::npc_spawn&          spawn_model) -> async::task<void> {
-        std::ignore = co_await npc->map(map, spawn_model.position);
-        npc->direction(spawn_model.direction);
-    };
-    this->_server.threads.enqueue(weak, [fn, npc, map, &spawn_model](auto&) -> async::task<void> {
-        co_await fn(npc, map, spawn_model);
-    });
+    this->_server.maps.spawn_npc(spawn_model);
 }
 
 void fb::game::npc_spawner::on_worked(const fb::game::npc_spawner::input_type& input, double percent)

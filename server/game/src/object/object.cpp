@@ -1,4 +1,5 @@
 #include <fb/game/character.h>
+#include <fb/game/map/container.h>
 #include <fb/game/server.h>
 #include <fb/model/model.h>
 #include <fb/game/object.h>
@@ -543,6 +544,9 @@ async::task<bool> object::map(map_ptr map, const fb::model::point16_t& position,
         }
 
         if (map->active == false)
+            co_return false;
+
+        if (this->server.maps.ensure_loaded(map) == false)
             co_return false;
 
         // here the character is on some map.

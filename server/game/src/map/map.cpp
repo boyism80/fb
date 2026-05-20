@@ -13,22 +13,32 @@ map::map(fb::game::server& server, const fb::model::map& model, bool active, con
     if (this->active == false)
         return;
 
-    auto what   = std::string();
+    if (data == nullptr || size == 0)
+        return;
+
+    this->load_tiles(data, size);
+}
+
+void map::load_tiles(const void* data, size_t size)
+{
+    if (this->loaded())
+        return;
+
     auto stream = fb::stream((uint8_t*)data, size);
     auto reader = fb::stream_reader<big_endian>(stream);
 
     this->_size.width = reader.read<uint16_t>();
     if (this->_size.width == 0)
-        throw std::runtime_error(std::format(_TEXT(MESSAGE_MAP_INVALID_DATA), model.name));
+        throw std::runtime_error(std::format(_TEXT(MESSAGE_MAP_INVALID_DATA), this->model.name));
 
     this->_size.height = reader.read<uint16_t>();
     if (this->_size.height == 0)
-        throw std::runtime_error(std::format(_TEXT(MESSAGE_MAP_INVALID_DATA), model.name));
+        throw std::runtime_error(std::format(_TEXT(MESSAGE_MAP_INVALID_DATA), this->model.name));
 
     uint32_t map_size = this->_size.width * this->_size.height;
     this->_tiles      = std::make_unique<tile[]>(map_size);
     if (this->_tiles == nullptr)
-        throw std::runtime_error(std::format(_TEXT(MESSAGE_MAP_TILE_ALLOCATION_FAILED), model.name));
+        throw std::runtime_error(std::format(_TEXT(MESSAGE_MAP_TILE_ALLOCATION_FAILED), this->model.name));
 
     for (uint32_t i = 0; i < map_size; i++)
     {

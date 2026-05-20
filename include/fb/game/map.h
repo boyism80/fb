@@ -7,8 +7,12 @@
 
 namespace fb::game {
 
+class map_container;
+
 class map : public fb::thread_switchable
 {
+    friend class map_container;
+
 public:
     LUA_PROTOTYPE
 
@@ -44,6 +48,7 @@ public:
     ~map();
 
 private:
+    void load_tiles(const void* data, size_t size);
     void update_door();
 
 public:

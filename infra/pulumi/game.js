@@ -52,6 +52,7 @@ module.exports = function () {
                             port: worldConf.log.port.cluster,
                             level: ["info", "warn", "fatal"]
                         },
+                        lazy_load_maps: false,
                         exp_multiplier: 1.0,
                         drop_rate_multiplier: 1.0,
                         http: {

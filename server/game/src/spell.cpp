@@ -12,7 +12,7 @@ spell::spell(const fb::game::server& server, const life& owner, const fb::model:
     server(server),
     owner(owner),
     model(model),
-    _next(this->server.now() + std::chrono::seconds(delay))
+    _next(server.now() + std::chrono::seconds(delay))
 { }
 
 spell::~spell()
@@ -243,7 +243,7 @@ buff::buff(const fb::game::server& server, const fb::model::spell& model, const 
     server(server),
     model(model),
     caster(caster),
-    start(this->server.now()),
+    start(server.now()),
     _duration(std::chrono::seconds(seconds))
 { }
 
