@@ -26,6 +26,7 @@
 #include <string_view>
 #include <unordered_map>
 
+// clang-format off
 REGISTER_RESPONSE(fb::protocol::internal::request::Shutdown, fb::protocol::internal::response::Shutdown)
 REGISTER_RESPONSE(fb::protocol::internal::request::Heartbeat, fb::protocol::internal::response::Heartbeat)
 REGISTER_RESPONSE(fb::protocol::internal::request::WriteArticle, fb::protocol::internal::response::WriteArticle)
@@ -52,20 +53,17 @@ REGISTER_RESPONSE(fb::protocol::internal::request::Login, fb::protocol::internal
 REGISTER_RESPONSE(fb::protocol::internal::request::SetOption, fb::protocol::internal::response::SetOption)
 REGISTER_RESPONSE(fb::protocol::internal::request::WriteMail, fb::protocol::internal::response::WriteMail)
 REGISTER_RESPONSE(fb::protocol::internal::request::WriteMails, fb::protocol::internal::response::WriteMails)
-REGISTER_RESPONSE(fb::protocol::internal::request::DeliverSystemMail,
-                  fb::protocol::internal::response::DeliverSystemMail)
+REGISTER_RESPONSE(fb::protocol::internal::request::DeliverSystemMail, fb::protocol::internal::response::DeliverSystemMail)
 REGISTER_RESPONSE(fb::protocol::internal::request::DeleteMail, fb::protocol::internal::response::DeleteMail)
 REGISTER_RESPONSE(fb::protocol::internal::request::Whisper, fb::protocol::internal::response::Whisper)
 REGISTER_RESPONSE(fb::protocol::internal::request::Transfer, fb::protocol::internal::response::Transfer)
 REGISTER_RESPONSE(fb::protocol::internal::request::UpdateFriends, fb::protocol::internal::response::UpdateFriends)
-REGISTER_RESPONSE(fb::protocol::internal::request::WriteSystemStorageBox,
-                  fb::protocol::internal::response::WriteSystemStorageBox)
+REGISTER_RESPONSE(fb::protocol::internal::request::WriteSystemStorageBox, fb::protocol::internal::response::WriteSystemStorageBox)
 REGISTER_RESPONSE(fb::protocol::internal::request::WriteSystemMail, fb::protocol::internal::response::WriteSystemMail)
 REGISTER_RESPONSE(fb::protocol::internal::request::Ban, fb::protocol::internal::response::Ban)
 REGISTER_RESPONSE(fb::protocol::internal::request::Unban, fb::protocol::internal::response::Unban)
 REGISTER_RESPONSE(fb::protocol::internal::request::SetExpMultiplier, fb::protocol::internal::response::SetExpMultiplier)
-REGISTER_RESPONSE(fb::protocol::internal::request::SetDropRateMultiplier,
-                  fb::protocol::internal::response::SetDropRateMultiplier)
+REGISTER_RESPONSE(fb::protocol::internal::request::SetDropRateMultiplier, fb::protocol::internal::response::SetDropRateMultiplier)
 REGISTER_RESPONSE(fb::protocol::internal::request::SetDateTime, fb::protocol::internal::response::SetDateTime)
 REGISTER_RESPONSE(fb::protocol::marketplace::request::List, fb::protocol::marketplace::response::List)
 REGISTER_RESPONSE(fb::protocol::marketplace::request::Cancel, fb::protocol::marketplace::response::Cancel)
@@ -73,6 +71,7 @@ REGISTER_RESPONSE(fb::protocol::marketplace::request::Purchase, fb::protocol::ma
 REGISTER_RESPONSE(fb::protocol::marketplace::request::Search, fb::protocol::marketplace::response::Search)
 REGISTER_RESPONSE(fb::protocol::marketplace::request::GetListings, fb::protocol::marketplace::response::GetListings)
 REGISTER_RESPONSE(fb::protocol::marketplace::request::GetPurchases, fb::protocol::marketplace::response::GetPurchases)
+// clang-format on
 
 namespace fb::game {
 

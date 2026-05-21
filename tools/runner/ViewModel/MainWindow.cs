@@ -825,8 +825,13 @@ namespace Runner.ViewModel
                         port = (ushort)3005,
                         level = new JArray("debug", "info", "warn", "fatal")
                     });
+                    conf["lazy_load_maps"] = true;
                     conf["exp_multiplier"] = 100.0;
                     conf["drop_rate_multiplier"] = 100.0;
+                    conf["http"] = JObject.FromObject(new
+                    {
+                        max_concurrent = 500
+                    });
                     File.WriteAllText(Path.Combine([gameDir, $"config_game_{setting.ID}.json"]), conf.ToString(Formatting.Indented));
                 }
 
