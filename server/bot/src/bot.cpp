@@ -32,9 +32,11 @@ void base_bot::connect(const boost::asio::ip::tcp::endpoint& endpoint)
 
             boost::asio::co_spawn(this->_executor.io_context, this->recv(), boost::asio::detached);
 
-            std::ignore = this->thread()->dispatch([this](auto& thread) -> async::task<void> {
+            auto builder = this->thread()->new_builder<void>();
+            builder.func = [this](auto& thread) -> async::task<void> {
                 co_await this->_bot_controller.on_bot_connected(*this);
-            });
+            };
+            builder.enqueue();
         });
     }
     catch (...)

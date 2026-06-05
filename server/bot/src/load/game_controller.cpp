@@ -19,16 +19,15 @@ async::task<void> game_bot_controller::on_timer(const fb::model::datetime& now, 
     if (params == nullptr)
         co_return;
 
-    this->_bots.read([&](const auto& bots) {
-        for (auto& [_, bot] : params->bots)
-        {
-            if (bots.contains(bot->id) == false)
-                continue;
+    auto guard = this->_bots.enter_read();
+    for (auto& [_, bot] : params->bots)
+    {
+        if (guard.value().contains(bot->id) == false)
+            continue;
 
-            auto typed_bot = static_cast<game_bot*>(bot.get());
-            typed_bot->process_random_pattern(now);
-        }
-    });
+        auto typed_bot = static_cast<game_bot*>(bot.get());
+        typed_bot->process_random_pattern(now);
+    }
     co_return;
 }
 

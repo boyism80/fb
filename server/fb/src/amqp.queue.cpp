@@ -106,16 +106,14 @@ void queue::invoke_async(const std::vector<uint8_t>& message)
     else
     {
         // Enqueue to the least loaded thread
-        target_thread->enqueue(
-            [message, this](auto& thread) -> async::task<void> {
-                co_await this->invoke(message);
-            },
-            [](std::exception& e) {
-                fb::logger::fatal("AMQP message processing error: {}", e.what());
-            },
-            []() {
-                // work done
-            });
+        auto builder = target_thread->new_builder<void>();
+        builder.func = [message, this](auto& thread) -> async::task<void> {
+            co_await this->invoke(message);
+        };
+        builder.on_error = [](std::exception& e) {
+            fb::logger::fatal("AMQP message processing error: {}", e.what());
+        };
+        builder.enqueue();
     }
 }
 

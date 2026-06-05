@@ -12,5 +12,6 @@ async::task<void> broadcast_clan::handle(const internal_resp::BroadcastClan& mes
     if (message.host == fb::config<uint32_t>("id"))
         co_return;
 
-    co_await this->server.on_clan_broadcast(message);
+    co_await this->server.clans.on_error(message.error);
+    co_await this->server.clans.on_broadcast(message.clan, message.message, message.type);
 }

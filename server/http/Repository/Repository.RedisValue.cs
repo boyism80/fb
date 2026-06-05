@@ -63,56 +63,55 @@ namespace Http.Reepository
 
         protected override async Task<TModel> Get(uint world, TKey key)
         {
-            await using (await _distributedLock.Lock(world, GetLockKey(key)))
+            await using var _ = await _distributedLock.Lock(world, GetLockKey(key));
+
+            if (_local.TryGetValue(key.GetRedisKey(), out var localValue))
             {
-                if (_local.TryGetValue(key.GetRedisKey(), out var localValue))
-                {
-                    var value = JsonConvert.DeserializeObject<TModel>(localValue);
-                    if (value.Deleted)
-                        return null;
-
-                    return value;
-                }
-
-                var hash = key.GetHash();
-                var redis = hash == null ? _redisService.GetGlobalConnection(world) : _redisService.GetShardConnection(world, hash.Value);
-                if (redis == null)
+                var value = JsonConvert.DeserializeObject<TModel>(localValue);
+                if (value.Deleted)
                     return null;
 
-                var redisValues = await redis.Connection.JsonGetAsync<TModel>(key.GetRedisKey());
-                if (redisValues != null)
-                {
-                    if (redisValues.Deleted)
-                        return null;
-
-                    return redisValues;
-                }
-
-                var mysqlValue = await base.Get(world, key);
-                if (mysqlValue != null)
-                {
-                    if (!_updateValueExpiryScripts.TryGetValue(redis, out var script))
-                    {
-                        script = LuaScript.Prepare(UpdateValueExpiryScript).Load(redis.GetServer());
-                        _updateValueExpiryScripts[redis] = script;
-                    }
-
-                    await redis.Connection.ScriptEvaluateAsync(script, new
-                    {
-                        key = key.GetRedisKey(),
-                        value = JsonConvert.SerializeObject(mysqlValue),
-                        cref = new RedisKey(Const.ReferenceCountKey),
-                        expiry = (int)Const.CacheTimeToLive.TotalSeconds
-                    });
-
-                    if (mysqlValue.Deleted)
-                        return null;
-
-                    return mysqlValue;
-                }
-
-                return null;
+                return value;
             }
+
+            var hash = key.GetHash();
+            var redis = hash == null ? _redisService.GetGlobalConnection(world) : _redisService.GetShardConnection(world, hash.Value);
+            if (redis == null)
+                return null;
+
+            var redisValues = await redis.Connection.JsonGetAsync<TModel>(key.GetRedisKey());
+            if (redisValues != null)
+            {
+                if (redisValues.Deleted)
+                    return null;
+
+                return redisValues;
+            }
+
+            var mysqlValue = await base.Get(world, key);
+            if (mysqlValue != null)
+            {
+                if (!_updateValueExpiryScripts.TryGetValue(redis, out var script))
+                {
+                    script = LuaScript.Prepare(UpdateValueExpiryScript).Load(redis.GetServer());
+                    _updateValueExpiryScripts[redis] = script;
+                }
+
+                await redis.Connection.ScriptEvaluateAsync(script, new
+                {
+                    key = key.GetRedisKey(),
+                    value = JsonConvert.SerializeObject(mysqlValue),
+                    cref = new RedisKey(Const.ReferenceCountKey),
+                    expiry = (int)Const.CacheTimeToLive.TotalSeconds
+                });
+
+                if (mysqlValue.Deleted)
+                    return null;
+
+                return mysqlValue;
+            }
+
+            return null;
         }
 
         protected override sealed Task<IEnumerable<TModel>> GetAll(uint world, TKey key)
@@ -213,27 +212,26 @@ namespace Http.Reepository
                         continue;
                     var key = kv.Key;
                     var firstEntity = kv.Value[0];
-                    await using (await _distributedLock.Lock(world, GetLockKey(key)))
-                    {
-                        var hash = key.GetHash();
-                        var redisForKey = hash == null ? _redisService.GetGlobalConnection(world) : _redisService.GetShardConnection(world, hash.Value);
-                        if (redisForKey != null)
-                        {
-                            if (!_updateValueExpiryScripts.TryGetValue(redisForKey, out var script))
-                            {
-                                script = LuaScript.Prepare(UpdateValueExpiryScript).Load(redisForKey.GetServer());
-                                _updateValueExpiryScripts[redisForKey] = script;
-                            }
+                    await using var _ = await _distributedLock.Lock(world, GetLockKey(key));
 
-                            await redisForKey.Connection.ScriptEvaluateAsync(script, new
-                            {
-                                key = key.GetRedisKey(),
-                                value = JsonConvert.SerializeObject(firstEntity),
-                                cref = new RedisKey(Const.ReferenceCountKey),
-                                expiry = (int)Const.CacheTimeToLive.TotalSeconds
-                            });
-                            _local[key.GetRedisKey()] = JsonConvert.SerializeObject(firstEntity);
+                    var hash = key.GetHash();
+                    var redisForKey = hash == null ? _redisService.GetGlobalConnection(world) : _redisService.GetShardConnection(world, hash.Value);
+                    if (redisForKey != null)
+                    {
+                        if (!_updateValueExpiryScripts.TryGetValue(redisForKey, out var script))
+                        {
+                            script = LuaScript.Prepare(UpdateValueExpiryScript).Load(redisForKey.GetServer());
+                            _updateValueExpiryScripts[redisForKey] = script;
                         }
+
+                        await redisForKey.Connection.ScriptEvaluateAsync(script, new
+                        {
+                            key = key.GetRedisKey(),
+                            value = JsonConvert.SerializeObject(firstEntity),
+                            cref = new RedisKey(Const.ReferenceCountKey),
+                            expiry = (int)Const.CacheTimeToLive.TotalSeconds
+                        });
+                        _local[key.GetRedisKey()] = JsonConvert.SerializeObject(firstEntity);
                     }
                 }
             }

@@ -84,7 +84,7 @@ namespace Http.Service
             };
 
             _connection = await factory.CreateConnectionAsync(cancellationToken);
-            _channel = await _connection.CreateChannelAsync(new CreateChannelOptions(false, false, null, null), cancellationToken);
+            _channel = await _connection.CreateChannelAsync(RabbitMqService.PublishChannelOptions, cancellationToken);
         }
 
         public async Task WriteAsync(string eventType, object data, CancellationToken cancellationToken = default)

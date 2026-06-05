@@ -78,7 +78,8 @@ fb::generator<std::function<async::task<void>()>> fb::game::script_loader::on_re
     {
         auto& thread = root->initial_thread();
         co_yield [&thread, &root, scripts]() -> async::task<void> {
-            co_await thread.dispatch([&root, scripts](auto&) -> async::task<void> {
+            auto builder = thread.new_builder<void>();
+            builder.func = [&root, scripts](auto&) -> async::task<void> {
                 for (auto& script : scripts)
                 {
                     try
@@ -96,7 +97,8 @@ fb::generator<std::function<async::task<void>()>> fb::game::script_loader::on_re
                     }
                 }
                 co_return;
-            });
+            };
+            co_return co_await builder.dispatch();
         };
     }
 }

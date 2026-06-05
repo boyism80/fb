@@ -372,20 +372,22 @@ int builtin::server::builtin_name2ch(lua_State* L)
     auto argc   = lua->argc();
     auto name   = lua->tostring(1);
 
-    return server->characters.read([lua, server, name](auto& container) {
-        auto ch = container.find(name);
-        if (ch == nullptr)
-        {
-            lua->pushnil();
-            return 1;
-        }
+    character::container::character_ptr_t ch;
+    {
+        auto guard = server->characters.enter_read();
+        ch         = guard.value().find(name);
+    }
+    if (ch == nullptr)
+    {
+        lua->pushnil();
+        return 1;
+    }
 
-        auto weak = ch->template weak_from_this_as<character>();
-        return lua->ensure_yield(*server, weak, [=](auto is_yield) {
-            return lua->ensure_resume(*server, weak, [=]() {
-                lua->pushobject(ch);
-                return 1;
-            });
+    auto weak = ch->template weak_from_this_as<character>();
+    return lua->ensure_yield(*server, weak, [=](auto is_yield) {
+        return lua->ensure_resume(*server, weak, [=]() {
+            lua->pushobject(ch);
+            return 1;
         });
     });
 }
@@ -505,20 +507,22 @@ int builtin::server::builtin_id2ch(lua_State* L)
     auto server = lua->env<fb::game::server>("server");
     auto id     = static_cast<uint32_t>(lua->tointeger(1));
 
-    return server->characters.read([lua, server, id](auto& container) {
-        auto ch = container.find(id);
-        if (ch == nullptr)
-        {
-            lua->pushnil();
-            return 0;
-        }
+    character::container::character_ptr_t ch;
+    {
+        auto guard = server->characters.enter_read();
+        ch         = guard.value().find(id);
+    }
+    if (ch == nullptr)
+    {
+        lua->pushnil();
+        return 0;
+    }
 
-        auto weak = ch->template weak_from_this_as<character>();
-        return lua->ensure_yield(*server, weak, [=](auto /*is_yield*/) {
-            return lua->ensure_resume(*server, weak, [=]() {
-                lua->pushobject(ch);
-                return 1;
-            });
+    auto weak = ch->template weak_from_this_as<character>();
+    return lua->ensure_yield(*server, weak, [=](auto /*is_yield*/) {
+        return lua->ensure_resume(*server, weak, [=]() {
+            lua->pushobject(ch);
+            return 1;
         });
     });
 }
@@ -651,12 +655,11 @@ int builtin::server::builtin_timer(lua_State* L)
     auto value    = (uint32_t)lua->tointeger(1);
     auto decrease = lua->toboolean(2);
 
-    auto type = decrease ? TIMER_TYPE::DECREASE : TIMER_TYPE::INCREASE;
-    server->characters.write([value, type](auto& container) {
-        container.foreach_enqueue([value, type](auto& ch) -> async::task<void> {
-            ch->timer(value, type);
-            co_return;
-        });
+    auto type  = decrease ? TIMER_TYPE::DECREASE : TIMER_TYPE::INCREASE;
+    auto guard = server->characters.enter_write();
+    guard.value().foreach_enqueue([value, type](auto& ch) -> async::task<void> {
+        ch->timer(value, type);
+        co_return;
     });
     return 0;
 }
@@ -670,11 +673,10 @@ int builtin::server::builtin_weather(lua_State* L)
     auto server = lua->env<fb::game::server>("server");
     auto value  = (uint32_t)lua->tointeger(1);
 
-    server->characters.write([value](auto& container) {
-        container.foreach_enqueue([value](auto& ch) -> async::task<void> {
-            ch->weather(WEATHER_TYPE(value));
-            co_return;
-        });
+    auto guard = server->characters.enter_write();
+    guard.value().foreach_enqueue([value](auto& ch) -> async::task<void> {
+        ch->weather(WEATHER_TYPE(value));
+        co_return;
     });
     return 0;
 }
@@ -688,11 +690,10 @@ int builtin::server::builtin_bright(lua_State* L)
     auto server = lua->env<fb::game::server>("server");
     auto value  = (uint32_t)lua->tointeger(1);
 
-    server->characters.write([value](auto& container) {
-        container.foreach_enqueue([value](auto& ch) -> async::task<void> {
-            ch->bright(value);
-            co_return;
-        });
+    auto guard = server->characters.enter_write();
+    guard.value().foreach_enqueue([value](auto& ch) -> async::task<void> {
+        ch->bright(value);
+        co_return;
     });
     return 0;
 }
@@ -957,14 +958,20 @@ int builtin::server::builtin_broadcast(lua_State* L)
 
     if (broad_type == BROADCAST_TYPE::WORLD)
     {
-        std::ignore = server->broadcast(text, type, broad_type);
+        auto guard = server->characters.enter_write();
+        guard.value().broadcast(text, type);
         return 0;
     }
     else
     {
-        async::awaitable_then(server->broadcast(text, type, broad_type), [lua](auto result) {
-            lua->resume(0);
-        });
+        async::awaitable_then(
+            [server, text, type, broad_type]() -> async::task<void> {
+                auto guard = co_await server->characters.enter_write_async();
+                co_await guard.value().broadcast(text, type, broad_type);
+            }(),
+            [lua](auto result) {
+                lua->resume(0);
+            });
         return lua->yield(0);
     }
 }
@@ -1270,23 +1277,32 @@ int builtin::server::builtin_gv(lua_State* L)
 
     if (argc == 1)
     {
-        server->globals.read([lua, &key](const std::unordered_map<std::string, Json::Value>& map) {
-            auto it = map.find(key);
-            if (it == map.end())
+        Json::Value value;
+        bool        found = false;
+        {
+            auto guard = server->globals.enter_read();
+            auto it    = guard.value().find(key);
+            if (it != guard.value().end())
             {
-                lua->pushnil();
-                return;
+                value = it->second;
+                found = true;
             }
-            const Json::Value& v = it->second;
-            if (v.isString())
-                lua->pushstring(v.asString());
-            else if (v.isDouble() || v.isInt())
-                lua->pushnumber(v.asDouble());
-            else if (v.isBool())
-                lua->pushboolean(v.asBool());
-            else
-                lua->pushnil();
-        });
+        }
+
+        if (found == false)
+        {
+            lua->pushnil();
+            return 1;
+        }
+
+        if (value.isString())
+            lua->pushstring(value.asString());
+        else if (value.isDouble() || value.isInt())
+            lua->pushnumber(value.asDouble());
+        else if (value.isBool())
+            lua->pushboolean(value.asBool());
+        else
+            lua->pushnil();
         return 1;
     }
 
@@ -1297,23 +1313,26 @@ int builtin::server::builtin_gv(lua_State* L)
         {
             const char* s = lua_tostring(L, 2);
             Json::Value val(s ? s : "");
-            server->globals.write([&key, &val](auto& map) {
-                map[key] = val;
-            });
+            {
+                auto guard         = server->globals.enter_write();
+                guard.value()[key] = val;
+            }
         }
         else if (t == LUA_TNUMBER)
         {
             double n = lua_tonumber(L, 2);
-            server->globals.write([&key, n](auto& map) {
-                map[key] = Json::Value(n);
-            });
+            {
+                auto guard         = server->globals.enter_write();
+                guard.value()[key] = Json::Value(n);
+            }
         }
         else if (t == LUA_TBOOLEAN)
         {
             bool b = lua_toboolean(L, 2) != 0;
-            server->globals.write([&key, b](auto& map) {
-                map[key] = Json::Value(b);
-            });
+            {
+                auto guard         = server->globals.enter_write();
+                guard.value()[key] = Json::Value(b);
+            }
         }
     }
     return 0;

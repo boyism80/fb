@@ -16,11 +16,13 @@ bot_container::bot_container(boost::asio::io_context& context, uint32_t thread_c
 
     for (int i = 0; i < this->threads.count(); i++)
     {
-        auto thread = this->threads.at(i);
-        std::ignore = thread->dispatch([](auto& thread) -> async::task<void> {
+        auto thread  = this->threads.at(i);
+        auto builder = thread->new_builder<void>();
+        builder.func = [](auto& thread) -> async::task<void> {
             thread.data(std::make_unique<bot_thread_params>());
             co_return;
-        });
+        };
+        builder.enqueue();
     }
 }
 
@@ -61,7 +63,9 @@ boost::asio::io_context& bot_container::context() const
 
 async::task<void> bot_container::dispatch(uint32_t id, std::function<async::task<void>(fb::thread&)>&& fn)
 {
-    auto index  = id % this->threads.size();
-    auto thread = this->threads[index];
-    co_await thread->dispatch(std::move(fn));
+    auto index   = id % this->threads.size();
+    auto thread  = this->threads[index];
+    auto builder = thread->new_builder<void>();
+    builder.func = std::move(fn);
+    co_await builder.dispatch();
 }

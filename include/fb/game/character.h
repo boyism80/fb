@@ -24,6 +24,20 @@
 #include <string_view>
 #include <unordered_map>
 #include <optional>
+#include <tuple>
+
+namespace fb {
+class stream;
+}
+
+namespace fb::protocol::internal::response {
+class Whisper;
+class Ban;
+class Unban;
+class Broadcast;
+class KickOut;
+class StartMaintenance;
+} // namespace fb::protocol::internal::response
 
 namespace fb::game {
 
@@ -262,6 +276,7 @@ public:
     void                                               unride();
     bool                                               alive() const;
     void                                               message(std::string_view message, MESSAGE_TYPE type = MESSAGE_TYPE::STATE);
+    async::task<void>                                  whisper(std::string receiver_name, std::string message);
     void                                               thread(fb::thread* value);
     void                                               browse_ch(const character& ch);
     void                                               item_tooltip(const item& iteem, uint16_t position);
@@ -295,8 +310,10 @@ public:
 
 class character::container
 {
+public:
+    using character_ptr_t = std::shared_ptr<fb::game::character>;
+
 private:
-    using character_ptr_t            = std::shared_ptr<fb::game::character>;
     using character_function_t       = std::function<void(character_ptr_t&)>;
     using character_predicate_t      = std::function<bool(const character_ptr_t&)>;
     using character_async_function_t = std::function<async::task<void>(character_ptr_t&)>;
@@ -307,8 +324,9 @@ private:
     std::unordered_map<std::string, character_ptr_t> _from_name;
 
 public:
-    using iterator       = std::unordered_map<uint32_t, character_ptr_t>::iterator;
-    using const_iterator = std::unordered_map<uint32_t, character_ptr_t>::const_iterator;
+    using iterator          = std::unordered_map<uint32_t, character_ptr_t>::iterator;
+    using const_iterator    = std::unordered_map<uint32_t, character_ptr_t>::const_iterator;
+    using online_snapshot_t = std::unordered_map<uint32_t, fb::model::datetime>;
 
 public:
     fb::game::server& _server;
@@ -335,8 +353,23 @@ public:
     void              foreach_enqueue(character_async_function_t&& fn, character_predicate_t predict = nullptr);
     void              foreach_enqueue(character_async_function_t&& fn, const std::vector<character_ptr_t>& characters);
     void              foreach_enqueue(const std::vector<std::string>& names, character_async_function_t&& fn, character_function_t_miss miss = nullptr);
-    async::task<void> invoke(std::string_view name, character_function_t fn, character_function_t_miss miss = nullptr);
-    async::task<void> invoke_async(std::string_view name, character_async_function_t fn, character_function_t_miss miss = nullptr);
+    async::task<void> invoke(std::string_view name, character_function_t fn, character_function_t_miss miss = nullptr) const;
+    async::task<void> invoke_async(std::string_view name, character_async_function_t fn, character_function_t_miss miss = nullptr) const;
+
+    void broadcast(std::string_view message, MESSAGE_TYPE type);
+    async::task<void> broadcast(std::string_view message, MESSAGE_TYPE type, BROADCAST_TYPE broadcast_type);
+    async::task<void> on_broadcast(const fb::protocol::internal::response::Broadcast& resp);
+    void              update_time(uint8_t hours);
+    void              send(const fb::stream& stream, bool encrypt);
+    [[nodiscard]] online_snapshot_t online_users() const;
+
+    async::task<void> on_whisper(const fb::protocol::internal::response::Whisper& resp) const;
+    static void       assert_whisper(uint32_t error, std::string_view to);
+    async::task<void> on_ban(const fb::protocol::internal::response::Ban& message);
+    void                                                 on_kick_out(const fb::protocol::internal::response::KickOut& message);
+    void                                                 on_start_maintenance(const fb::protocol::internal::response::StartMaintenance& message);
+
+    static std::string build_ban_message(std::string_view reason, const std::optional<std::string>& expire_date);
     // clang-format on
 
 public:

@@ -341,7 +341,7 @@ int builtin::map::builtin_tile(lua_State* L)
         tile->object = value;
 
         const auto area = fb::model::area<uint16_t>(x, y, x + 1, y + 1);
-        server->update_map_cache(map->model.id, area);
+        server->maps.update_map_cache(map->model.id, area);
         return 0;
     }
     else

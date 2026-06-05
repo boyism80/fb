@@ -14,7 +14,7 @@ async::task<void> save_timer::handle(const fb::model::datetime& now, std::thread
 
     for (auto& [id, character] : params->characters)
     {
-        std::ignore = this->server.save(*character);
+        co_await this->server.save(*character);
     }
 
     co_return;

@@ -379,34 +379,33 @@ namespace Internal.Controllers
             var marriageProtocol = _mapper.Map<Protocol.Marriage>(marriageData);
             marriageProtocol.SpouseName = spouseName ?? string.Empty;
 
-            await using (await _distributedLock.Lock(world, CharacterRealtimeState.DistributedLockKey(uid)))
-            {
-                var sync = await _dbContext.CharacterRealtimeState.Get(world, uid) ??
-                    _dbContext.CharacterRealtimeState.Set(world, new CharacterRealtimeState
-                    {
-                        Uid = uid
-                    });
+            await using var _ = await _distributedLock.Lock(world, CharacterRealtimeState.DistributedLockKey(uid));
 
-                await _dbContext.SaveChangesAsync();
-                var now = DateTime.Now;
-                return new Response.Init
+            var sync = await _dbContext.CharacterRealtimeState.Get(world, uid) ??
+                _dbContext.CharacterRealtimeState.Set(world, new CharacterRealtimeState
                 {
-                    Character = _mapper.Map<Protocol.Character>(ch),
-                    Marriage = marriageProtocol,
-                    Items = items.Select(_mapper.Map<Protocol.Item>).ToList(),
-                    Spells = spells.Select(_mapper.Map<Protocol.Spell>).ToList(),
-                    Achievements = achievements.Select(_mapper.Map<Protocol.Achievement>).ToList(),
-                    Quests = quests.Select(_mapper.Map<Protocol.Quest>).ToList(),
-                    StorageBoxes = storageBoxes
-                        .Where(box => box.ExpiredDate == null || box.ExpiredDate > now)
-                        .Select(_mapper.Map<Protocol.StorageBox>)
-                        .ToList(),
-                    Option = _mapper.Map<Protocol.Option>(option),
-                    Clan = sync.Clan,
-                    Group = sync.Group,
-                    Mail = await _dbContext.Mail.Unread(world, uid)
-                };
-            }
+                    Uid = uid
+                });
+
+            await _dbContext.SaveChangesAsync();
+            var now = DateTime.Now;
+            return new Response.Init
+            {
+                Character = _mapper.Map<Protocol.Character>(ch),
+                Marriage = marriageProtocol,
+                Items = items.Select(_mapper.Map<Protocol.Item>).ToList(),
+                Spells = spells.Select(_mapper.Map<Protocol.Spell>).ToList(),
+                Achievements = achievements.Select(_mapper.Map<Protocol.Achievement>).ToList(),
+                Quests = quests.Select(_mapper.Map<Protocol.Quest>).ToList(),
+                StorageBoxes = storageBoxes
+                    .Where(box => box.ExpiredDate == null || box.ExpiredDate > now)
+                    .Select(_mapper.Map<Protocol.StorageBox>)
+                    .ToList(),
+                Option = _mapper.Map<Protocol.Option>(option),
+                Clan = sync.Clan,
+                Group = sync.Group,
+                Mail = await _dbContext.Mail.Unread(world, uid)
+            };
         }
 
         private T[] ReconcileSnapshot<T>(IEnumerable<T> request, IEnumerable<T> exists) where T : IModel, IRedisHashKey

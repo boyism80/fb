@@ -6,6 +6,12 @@ namespace Http.Service
 {
     public class RabbitMqService : IAsyncDisposable
     {
+        internal static readonly CreateChannelOptions PublishChannelOptions = new CreateChannelOptions(
+            publisherConfirmationsEnabled: true,
+            publisherConfirmationTrackingEnabled: true,
+            outstandingPublisherConfirmationsRateLimiter: null,
+            consumerDispatchConcurrency: null);
+
         private readonly IConfiguration _configuration;
         private readonly SemaphoreSlim _channelLock = new(1, 1);
         private IConnection _connection;
@@ -68,7 +74,7 @@ namespace Http.Service
             };
 
             _connection = await factory.CreateConnectionAsync(cancellationToken);
-            _channel = await _connection.CreateChannelAsync(new CreateChannelOptions(false, false, null, null), cancellationToken);
+            _channel = await _connection.CreateChannelAsync(PublishChannelOptions, cancellationToken);
         }
 
         public async Task PublishAsync(IFlatBufferEx protocol, string exchangeName, string routeKey, CancellationToken cancellationToken = default)

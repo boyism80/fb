@@ -7,10 +7,6 @@
 #include <fb/game/storage.h>
 #include <fb/model/datetime.h>
 
-namespace fb::protocol::internal {
-class SystemStorageBox;
-}
-
 namespace fb::game {
 
 class character;
@@ -25,9 +21,6 @@ struct system_storage_box
     std::optional<fb::model::datetime> expire_date;
     std::optional<std::string>         external_ref;
     fb::model::datetime                created_date;
-
-    system_storage_box() = default;
-    explicit system_storage_box(const fb::protocol::internal::SystemStorageBox& dto);
 
     [[nodiscard]] bool               expired(const fb::model::datetime& now) const;
     [[nodiscard]] bool               eligible_for(const character& ch) const;

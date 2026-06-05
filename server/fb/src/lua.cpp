@@ -645,10 +645,12 @@ void root::release(context& ctx)
 
     if (this->_initial_thread.id() != std::this_thread::get_id())
     {
-        std::ignore = this->_initial_thread.dispatch([=, &ctx](auto&) -> async::task<void> {
+        auto builder = this->_initial_thread.new_builder<void>();
+        builder.func = [=, &ctx](auto&) -> async::task<void> {
             internal_func(ctx);
             co_return;
-        });
+        };
+        builder.enqueue();
     }
     else
     {

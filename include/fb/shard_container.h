@@ -167,13 +167,13 @@ public:
 
     bool insert(HashType hash, const T& value)
     {
-        return this->_data.write([&](map_type& data) {
-            if (data.contains(hash))
-                return false;
+        auto  guard = this->_data.enter_write();
+        auto& data  = guard.value();
+        if (data.contains(hash))
+            return false;
 
-            data[hash] = value;
-            return true;
-        });
+        data[hash] = value;
+        return true;
     }
 
     template <typename Callback = std::nullptr_t>
@@ -182,13 +182,13 @@ public:
         if constexpr (std::is_same_v<std::decay_t<Callback>, std::nullptr_t>)
         {
             // No callback version
-            return this->_data.write([&](map_type& data) {
-                if (!data.contains(hash))
-                    return false;
+            auto  guard = this->_data.enter_write();
+            auto& data  = guard.value();
+            if (!data.contains(hash))
+                return false;
 
-                data.erase(hash);
-                return true;
-            });
+            data.erase(hash);
+            return true;
         }
         else
         {
@@ -196,20 +196,15 @@ public:
             // Callback signature: (const T&) -> void
             auto callback_holder = std::make_shared<std::decay_t<Callback>>(std::forward<Callback>(callback));
 
-            return this->_data.write([hash, callback_holder](map_type& data) {
-                if (!data.contains(hash))
-                    return false;
+            auto  guard = this->_data.enter_write();
+            auto& data  = guard.value();
+            if (!data.contains(hash))
+                return false;
 
-                // Get reference to element before erasure
-                const auto& element = data.at(hash);
-
-                // Call callback with element before erasing
-                (*callback_holder)(element);
-
-                // Erase after callback
-                data.erase(hash);
-                return true;
-            });
+            const auto& element = data.at(hash);
+            (*callback_holder)(element);
+            data.erase(hash);
+            return true;
         }
     }
 
@@ -219,13 +214,15 @@ public:
         if constexpr (std::is_same_v<std::decay_t<Callback>, std::nullptr_t>)
         {
             // No callback version
-            return this->_data.async_write([hash](map_type& data) -> async::task<bool> {
+            return [this, hash]() -> async::task<bool> {
+                auto  guard = co_await this->_data.enter_write_async();
+                auto& data  = guard.value();
                 if (!data.contains(hash))
                     co_return false;
 
                 data.erase(hash);
                 co_return true;
-            });
+            }();
         }
         else
         {
@@ -294,56 +291,55 @@ public:
     template <typename Func>
     auto read(HashType hash, Func&& func) const
     {
-        return this->_data.read([&](const map_type& data) {
-            if (!data.contains(hash))
-                throw std::runtime_error("Element not found");
+        auto        guard = this->_data.enter_read();
+        const auto& data  = guard.value();
+        if (!data.contains(hash))
+            throw std::runtime_error("Element not found");
 
-            return func(data.at(hash));
-        });
+        return func(data.at(hash));
     }
 
     template <typename Func>
     bool try_read(HashType hash, Func&& func) const
     {
-        return this->_data.read([&](const map_type& data) {
-            if (!data.contains(hash))
-                return false;
-            func(data.at(hash));
-            return true;
-        });
+        auto        guard = this->_data.enter_read();
+        const auto& data  = guard.value();
+        if (!data.contains(hash))
+            return false;
+
+        func(data.at(hash));
+        return true;
     }
 
     template <typename Func>
     auto write(HashType hash, Func&& func)
     {
-        return this->_data.write([&](map_type& data) {
-            if (!data.contains(hash))
-                throw std::runtime_error("Element not found");
+        auto  guard = this->_data.enter_write();
+        auto& data  = guard.value();
+        if (!data.contains(hash))
+            throw std::runtime_error("Element not found");
 
-            return func(data.at(hash));
-        });
+        return func(data.at(hash));
     }
 
     template <typename Func, typename Factory>
     auto write(HashType hash, Func&& func, Factory&& factory)
     {
-        return this->_data.write([&](map_type& data) {
-            if (!data.contains(hash))
+        auto  guard = this->_data.enter_write();
+        auto& data  = guard.value();
+        if (!data.contains(hash))
+        {
+            if constexpr (std::is_invocable_r_v<T, Factory>)
             {
-                // Create element using factory
-                if constexpr (std::is_invocable_r_v<T, Factory>)
-                {
-                    // Regular function returning T
-                    data.insert(hash, factory());
-                }
-                else
-                {
-                    static_assert(std::is_invocable_r_v<T, Factory>, "Factory must return T");
-                }
+                data.insert(hash, factory());
             }
+            else
+            {
+                static_assert(std::is_invocable_r_v<T, Factory>, "Factory must return T");
+            }
+        }
 
-            return func(data.at(hash));
-        });
+        return func(data.at(hash));
     }
 
     template <typename Func>
@@ -353,25 +349,15 @@ public:
 
         auto func_holder = std::make_shared<std::decay_t<Func>>(std::forward<Func>(func));
 
+        auto        guard = co_await this->_data.enter_read_async();
+        const auto& data  = guard.value();
+        if (!data.contains(hash))
+            throw std::runtime_error("Element not found");
+
         if constexpr (std::is_same_v<task_type, async::task<void>>)
-        {
-            co_return co_await this->_data.async_read(
-                [hash, func_holder](const map_type& data) mutable -> async::task<void> {
-                    if (!data.contains(hash))
-                        throw std::runtime_error("Element not found");
-
-                    co_await (*func_holder)(data.at(hash));
-                });
-        }
+            co_await (*func_holder)(data.at(hash));
         else
-        {
-            co_return co_await this->_data.async_read([hash, func_holder](const map_type& data) mutable -> task_type {
-                if (!data.contains(hash))
-                    throw std::runtime_error("Element not found");
-
-                co_return co_await (*func_holder)(data.at(hash));
-            });
-        }
+            co_return co_await (*func_holder)(data.at(hash));
     }
 
     template <typename Func>
@@ -383,21 +369,25 @@ public:
 
         if constexpr (std::is_same_v<task_type, async::task<void>>)
         {
-            return this->_data.async_write([hash, func_holder](map_type& data) mutable -> async::task<void> {
+            return [this, hash, func_holder]() -> async::task<void> {
+                auto  guard = co_await this->_data.enter_write_async();
+                auto& data  = guard.value();
                 if (!data.contains(hash))
                     throw std::runtime_error("Element not found");
 
                 co_await (*func_holder)(data.at(hash));
-            });
+            }();
         }
         else
         {
-            return this->_data.async_write([hash, func_holder](map_type& data) mutable -> task_type {
+            return [this, hash, func_holder]() -> task_type {
+                auto  guard = co_await this->_data.enter_write_async();
+                auto& data  = guard.value();
                 if (!data.contains(hash))
                     throw std::runtime_error("Element not found");
 
                 co_return co_await (*func_holder)(data.at(hash));
-            });
+            }();
         }
     }
 
@@ -406,12 +396,16 @@ public:
     {
         auto func_holder = std::make_shared<std::decay_t<Func>>(std::forward<Func>(func));
 
-        return this->_data.try_async_read([hash, func_holder](const map_type& data) mutable -> async::task<void> {
-            if (!data.contains(hash))
-                throw std::runtime_error("Element not found");
+        auto guard = co_await this->_data.try_enter_read_async();
+        if (guard.has_value() == false)
+            co_return false;
 
-            co_await (*func_holder)(data.at(hash));
-        });
+        const auto& data = guard->value();
+        if (!data.contains(hash))
+            throw std::runtime_error("Element not found");
+
+        co_await (*func_holder)(data.at(hash));
+        co_return true;
     }
 
     template <typename Func>
@@ -419,19 +413,22 @@ public:
     {
         auto func_holder = std::make_shared<std::decay_t<Func>>(std::forward<Func>(func));
 
-        return this->_data.try_async_write([hash, func_holder](map_type& data) mutable -> async::task<void> {
-            if (!data.contains(hash))
-                throw std::runtime_error("Element not found");
+        auto guard = co_await this->_data.try_enter_write_async();
+        if (guard.has_value() == false)
+            co_return false;
 
-            co_await (*func_holder)(data.at(hash));
-        });
+        auto& data = guard->value();
+        if (!data.contains(hash))
+            throw std::runtime_error("Element not found");
+
+        co_await (*func_holder)(data.at(hash));
+        co_return true;
     }
 
     std::vector<HashType> keys() const
     {
-        return this->_data.read([&](const map_type& m) {
-            return m.keys();
-        });
+        auto guard = this->_data.enter_read();
+        return guard.value().keys();
     }
 
     template <typename Func, typename Factory>

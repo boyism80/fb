@@ -15,5 +15,12 @@ async::task<void> create_group::handle(const internal_resp::GroupDetails& messag
     if (static_cast<internal::GroupDetailsAction>(message.action) != internal::GroupDetailsAction::Create)
         co_return;
 
-    co_await this->server.on_create_group(message);
+    auto members = std::map<uint32_t, std::string>{};
+    for (const auto& member : message.members)
+    {
+        members.emplace(member.uid, member.name);
+    }
+
+    co_await this->server.groups.on_error(message.error, message.target);
+    co_await this->server.groups.on_create(message.target, message.group.id, message.group.master, std::move(members));
 }

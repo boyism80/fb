@@ -640,7 +640,7 @@ async::task<void> marketplace::restore()
             std::string title   = _TEXT(MESSAGE_MARKETPLACE_LISTING_RECOVERY_TITLE);
             std::string message = _TEXT(MESSAGE_MARKETPLACE_LISTING_RECOVERY_MESSAGE);
 
-            co_await this->_owner.server.create_system_storage(this->_owner.id,
+            co_await this->_owner.server.system_storage.create(this->_owner.id,
                                                                std::format("marketplace:list:{}", listing_id),
                                                                title,
                                                                message,
@@ -679,7 +679,7 @@ async::task<void> marketplace::restore()
                     auto dsls_copy  = pending_info.dsls;
                     dsls_copy.push_back(refund_dsl.to_dsl());
 
-                    co_await this->_owner.server.create_system_storage(
+                    co_await this->_owner.server.system_storage.create(
                         this->_owner.id,
                         std::format("marketplace:purchase:refund:{}", purchase_id),
                         _TEXT(MESSAGE_MARKETPLACE_PURCHASE_REFUND_TITLE),
@@ -701,7 +701,7 @@ async::task<void> marketplace::restore()
         else
         {
             // Purchase record does not exist - restore money
-            co_await this->_owner.server.create_system_storage(this->_owner.id,
+            co_await this->_owner.server.system_storage.create(this->_owner.id,
                                                                std::format("marketplace:purchase:{}", purchase_id),
                                                                _TEXT(MESSAGE_MARKETPLACE_PURCHASE_RECOVERY_TITLE),
                                                                _TEXT(MESSAGE_MARKETPLACE_PURCHASE_RECOVERY_MESSAGE),

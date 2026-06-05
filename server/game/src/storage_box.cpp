@@ -4,7 +4,9 @@
 #include <fb/model/datetime.h>
 #include <fb/model/model.h>
 #include <fb/encoding.h>
+#include <fb/protocol/flatbuffer/protocol.h>
 #include <json/json.h>
+#include <sstream>
 #include <algorithm>
 
 using namespace fb::game;
@@ -12,6 +14,59 @@ using namespace fb::game;
 storage_box::storage_box(character& owner) :
     _owner(owner)
 { }
+
+std::string storage_box::attachments_to_json(const std::vector<fb::model::dsl>& attachments)
+{
+    if (attachments.empty())
+        return "[]";
+
+    auto json_array = Json::Value{Json::arrayValue};
+    for (const auto& dsl : attachments)
+    {
+        json_array.append(dsl.to_json());
+    }
+
+    auto builder           = Json::StreamWriterBuilder{};
+    builder["emitUTF8"]    = true;
+    builder["indentation"] = "";
+    auto writer            = std::unique_ptr<Json::StreamWriter>(builder.newStreamWriter());
+    auto stream            = std::ostringstream{};
+    writer->write(json_array, &stream);
+    return stream.str();
+}
+
+fb::protocol::internal::StorageBox storage_box::to_save_dto(uint32_t user_id, const entry& box)
+{
+    const auto system_storage_id = box.system_storage_box_id.has_value() ? box.system_storage_box_id.value() : 0u;
+    return fb::protocol::internal::StorageBox{
+        user_id,
+        box.id,
+        system_storage_id,
+        box.title,
+        box.message,
+        attachments_to_json(box.attachments),
+        box.received,
+        box.expire_date.has_value() ? std::make_optional(box.expire_date->to_string()) : std::nullopt,
+    };
+}
+
+std::vector<fb::protocol::internal::StorageBox> storage_box::to_save_dtos(uint32_t                   user_id,
+                                                                          const fb::model::datetime& now) const
+{
+    this->_owner.assert_thread();
+
+    auto dtos = std::vector<fb::protocol::internal::StorageBox>{};
+    dtos.reserve(this->_entries.size());
+    for (const auto& [id, box] : this->_entries)
+    {
+        if (box.expire_date.has_value() && box.expire_date.value() < now)
+            continue;
+
+        dtos.push_back(to_save_dto(user_id, box));
+    }
+
+    return dtos;
+}
 
 void storage_box::init(const std::vector<entry>& entries)
 {

@@ -9,15 +9,7 @@ kick_out::kick_out(fb::game::server& server) :
 
 async::task<void> kick_out::handle(const internal_resp::KickOut& message)
 {
-    this->server.characters.read([&message](const auto& container) {
-        auto ch = container.find(message.name);
-        if (ch == nullptr)
-            return;
-
-        auto socket_ptr = ch->socket_ptr();
-        if (socket_ptr != nullptr)
-            socket_ptr->close();
-    });
-
+    auto guard = this->server.characters.enter_write();
+    guard.value().on_kick_out(message);
     co_return;
 }

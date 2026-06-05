@@ -7,7 +7,10 @@
 #include <atomic>
 #include <mutex>
 #include <memory>
+#include <optional>
+#include <tuple>
 #include <type_traits>
+#include <utility>
 
 // Microsoft cpp-async library
 #include <async/task.h>
@@ -193,6 +196,187 @@ private:
 template <typename ValueType>
 class locker
 {
+public:
+    class write_guard
+    {
+    public:
+        write_guard(write_guard&&) noexcept         = default;
+        write_guard& operator= (write_guard&&)      = delete;
+        write_guard(const write_guard&)             = delete;
+        write_guard& operator= (const write_guard&) = delete;
+
+        ValueType& value() noexcept
+        {
+            return this->_owner->_value;
+        }
+
+    private:
+        friend class locker;
+
+        locker*                             _owner;
+        std::unique_lock<std::shared_mutex> _lock;
+
+        write_guard(locker& owner, std::unique_lock<std::shared_mutex>&& lock) noexcept :
+            _owner(&owner),
+            _lock(std::move(lock))
+        { }
+    };
+
+    class read_guard
+    {
+    public:
+        read_guard(read_guard&&) noexcept         = default;
+        read_guard& operator= (read_guard&&)      = delete;
+        read_guard(const read_guard&)             = delete;
+        read_guard& operator= (const read_guard&) = delete;
+
+        const ValueType& value() const noexcept
+        {
+            return this->_owner->_value;
+        }
+
+    private:
+        friend class locker;
+
+        const locker*                       _owner;
+        std::shared_lock<std::shared_mutex> _lock;
+
+        read_guard(const locker& owner, std::shared_lock<std::shared_mutex>&& lock) noexcept :
+            _owner(&owner),
+            _lock(std::move(lock))
+        { }
+    };
+
+    class async_write_guard
+    {
+    public:
+        async_write_guard(async_write_guard&& other) noexcept :
+            _owner(other._owner),
+            _lock(std::move(other._lock)),
+            _async_locked(other._async_locked)
+        {
+            other._async_locked = false;
+        }
+
+        async_write_guard& operator= (async_write_guard&& other) noexcept
+        {
+            if (this != &other)
+            {
+                this->release();
+                this->_owner        = other._owner;
+                this->_lock         = std::move(other._lock);
+                this->_async_locked = other._async_locked;
+                other._async_locked = false;
+            }
+            return *this;
+        }
+
+        async_write_guard(const async_write_guard&)             = delete;
+        async_write_guard& operator= (const async_write_guard&) = delete;
+
+        ~async_write_guard()
+        {
+            this->release();
+        }
+
+        ValueType& value() noexcept
+        {
+            return this->_owner->_value;
+        }
+
+    private:
+        friend class locker;
+
+        locker*                             _owner = nullptr;
+        std::unique_lock<std::shared_mutex> _lock;
+        bool                                _async_locked = false;
+
+        async_write_guard(locker& owner, std::unique_lock<std::shared_mutex>&& lock, bool async_locked) noexcept :
+            _owner(&owner),
+            _lock(std::move(lock)),
+            _async_locked(async_locked)
+        { }
+
+        void release() noexcept
+        {
+            if (this->_async_locked == false)
+                return;
+
+            if (this->_lock.owns_lock())
+                this->_lock.unlock();
+
+            if (this->_owner != nullptr)
+                this->_owner->_async_mutex.unlock();
+
+            this->_async_locked = false;
+        }
+    };
+
+    class async_read_guard
+    {
+    public:
+        async_read_guard(async_read_guard&& other) noexcept :
+            _owner(other._owner),
+            _lock(std::move(other._lock)),
+            _async_locked(other._async_locked)
+        {
+            other._async_locked = false;
+        }
+
+        async_read_guard& operator= (async_read_guard&& other) noexcept
+        {
+            if (this != &other)
+            {
+                this->release();
+                this->_owner        = other._owner;
+                this->_lock         = std::move(other._lock);
+                this->_async_locked = other._async_locked;
+                other._async_locked = false;
+            }
+            return *this;
+        }
+
+        async_read_guard(const async_read_guard&)             = delete;
+        async_read_guard& operator= (const async_read_guard&) = delete;
+
+        ~async_read_guard()
+        {
+            this->release();
+        }
+
+        const ValueType& value() const noexcept
+        {
+            return this->_owner->_value;
+        }
+
+    private:
+        friend class locker;
+
+        const locker*                       _owner = nullptr;
+        std::shared_lock<std::shared_mutex> _lock;
+        bool                                _async_locked = false;
+
+        async_read_guard(const locker& owner, std::shared_lock<std::shared_mutex>&& lock, bool async_locked) noexcept :
+            _owner(&owner),
+            _lock(std::move(lock)),
+            _async_locked(async_locked)
+        { }
+
+        void release() noexcept
+        {
+            if (this->_async_locked == false)
+                return;
+
+            if (this->_lock.owns_lock())
+                this->_lock.unlock();
+
+            if (this->_owner != nullptr)
+                this->_owner->_async_mutex.unlock_shared();
+
+            this->_async_locked = false;
+        }
+    };
+
 private:
     mutable std::shared_mutex  _sync_mutex;
     mutable async_shared_mutex _async_mutex;
@@ -206,142 +390,143 @@ public:
     locker(const locker&) = delete;
     locker(locker&&)      = delete;
     ~locker()             = default;
+
+    write_guard enter_write()
+    {
+        return write_guard(*this, std::unique_lock(this->_sync_mutex));
+    }
+
+    read_guard enter_read() const
+    {
+        return read_guard(*this, std::shared_lock(this->_sync_mutex));
+    }
+
+    async::task<async_write_guard> enter_write_async()
+    {
+        co_await this->_async_mutex.lock();
+
+        try
+        {
+            co_return async_write_guard(*this, std::unique_lock(this->_sync_mutex), true);
+        }
+        catch (...)
+        {
+            this->_async_mutex.unlock();
+            throw;
+        }
+    }
+
+    async::task<async_read_guard> enter_read_async() const
+    {
+        co_await this->_async_mutex.lock_shared();
+
+        try
+        {
+            co_return async_read_guard(*this, std::shared_lock(this->_sync_mutex), true);
+        }
+        catch (...)
+        {
+            this->_async_mutex.unlock_shared();
+            throw;
+        }
+    }
+
+    async::task<std::optional<async_write_guard>> try_enter_write_async()
+    {
+        if (this->_async_mutex.try_lock() == false)
+            co_return std::nullopt;
+
+        try
+        {
+            co_return async_write_guard(*this, std::unique_lock(this->_sync_mutex), true);
+        }
+        catch (...)
+        {
+            this->_async_mutex.unlock();
+            throw;
+        }
+    }
+
+    async::task<std::optional<async_read_guard>> try_enter_read_async() const
+    {
+        if (this->_async_mutex.try_lock_shared() == false)
+            co_return std::nullopt;
+
+        try
+        {
+            co_return async_read_guard(*this, std::shared_lock(this->_sync_mutex), true);
+        }
+        catch (...)
+        {
+            this->_async_mutex.unlock_shared();
+            throw;
+        }
+    }
+
     template <typename Func> auto write(Func&& fn) -> decltype(fn(std::declval<ValueType&>()))
     {
-        auto _ = std::unique_lock(this->_sync_mutex);
-        return fn(this->_value);
+        auto guard = this->enter_write();
+        return fn(guard.value());
     }
 
     template <typename Func> auto read(Func&& fn) const -> decltype(fn(std::declval<const ValueType&>()))
     {
-        auto _ = std::shared_lock(this->_sync_mutex);
-        return fn(this->_value);
+        auto guard = this->enter_read();
+        return fn(guard.value());
     }
 
     template <typename Func> auto async_read(Func&& fn) const -> decltype(fn(std::declval<const ValueType&>()))
     {
-        // Create shared_ptr holder to ensure function lifetime safety
         auto func_holder = std::make_shared<std::decay_t<Func>>(std::forward<Func>(fn));
+        auto guard       = co_await this->enter_read_async();
 
-        co_await this->_async_mutex.lock_shared();
-        std::shared_lock lock(this->_sync_mutex);
-
-        try
-        {
-            if constexpr (std::is_same_v<decltype((*func_holder)(this->_value)), async::task<void>>)
-            {
-                co_await (*func_holder)(this->_value);
-                this->_async_mutex.unlock_shared();
-            }
-            else
-            {
-                auto result = co_await (*func_holder)(this->_value);
-                this->_async_mutex.unlock_shared();
-                co_return result;
-            }
-        }
-        catch (...)
-        {
-            this->_async_mutex.unlock_shared();
-            throw;
-        }
+        if constexpr (std::is_same_v<decltype((*func_holder)(guard.value())), async::task<void>>)
+            co_await (*func_holder)(guard.value());
+        else
+            co_return co_await (*func_holder)(guard.value());
     }
 
     template <typename Func> auto async_write(Func&& fn) -> decltype(fn(std::declval<ValueType&>()))
     {
-        // Create shared_ptr holder to ensure function lifetime safety
         auto func_holder = std::make_shared<std::decay_t<Func>>(std::forward<Func>(fn));
+        auto guard       = co_await this->enter_write_async();
 
-        co_await this->_async_mutex.lock();
-        std::unique_lock lock(this->_sync_mutex);
-
-        try
-        {
-            if constexpr (std::is_same_v<decltype((*func_holder)(this->_value)), async::task<void>>)
-            {
-                co_await (*func_holder)(this->_value);
-                this->_async_mutex.unlock();
-            }
-            else
-            {
-                auto result = co_await (*func_holder)(this->_value);
-                this->_async_mutex.unlock();
-                co_return result;
-            }
-        }
-        catch (...)
-        {
-            this->_async_mutex.unlock();
-            throw;
-        }
+        if constexpr (std::is_same_v<decltype((*func_holder)(guard.value())), async::task<void>>)
+            co_await (*func_holder)(guard.value());
+        else
+            co_return co_await (*func_holder)(guard.value());
     }
 
     template <typename Func> auto try_async_read(Func&& fn) const -> async::task<bool>
     {
-        // Create shared_ptr holder to ensure function lifetime safety
         auto func_holder = std::make_shared<std::decay_t<Func>>(std::forward<Func>(fn));
+        auto guard       = co_await this->try_enter_read_async();
 
-        if (!this->_async_mutex.try_lock_shared())
-        {
+        if (guard.has_value() == false)
             co_return false;
-        }
 
-        std::shared_lock lock(this->_sync_mutex);
+        if constexpr (std::is_same_v<decltype((*func_holder)(guard->value())), async::task<void>>)
+            co_await (*func_holder)(guard->value());
+        else
+            std::ignore = co_await (*func_holder)(guard->value());
 
-        try
-        {
-            if constexpr (std::is_same_v<decltype((*func_holder)(this->_value)), async::task<void>>)
-            {
-                co_await (*func_holder)(this->_value);
-                this->_async_mutex.unlock_shared();
-                co_return true;
-            }
-            else
-            {
-                co_await (*func_holder)(this->_value);
-                this->_async_mutex.unlock_shared();
-                co_return true;
-            }
-        }
-        catch (...)
-        {
-            this->_async_mutex.unlock_shared();
-            throw;
-        }
+        co_return true;
     }
 
     template <typename Func> auto try_async_write(Func&& fn) -> async::task<bool>
     {
-        // Create shared_ptr holder to ensure function lifetime safety
         auto func_holder = std::make_shared<std::decay_t<Func>>(std::forward<Func>(fn));
+        auto guard       = co_await this->try_enter_write_async();
 
-        if (!this->_async_mutex.try_lock())
-        {
+        if (guard.has_value() == false)
             co_return false;
-        }
 
-        std::unique_lock lock(this->_sync_mutex);
+        if constexpr (std::is_same_v<decltype((*func_holder)(guard->value())), async::task<void>>)
+            co_await (*func_holder)(guard->value());
+        else
+            std::ignore = co_await (*func_holder)(guard->value());
 
-        try
-        {
-            if constexpr (std::is_same_v<decltype((*func_holder)(this->_value)), async::task<void>>)
-            {
-                co_await (*func_holder)(this->_value);
-                this->_async_mutex.unlock();
-                co_return true;
-            }
-            else
-            {
-                co_await (*func_holder)(this->_value);
-                this->_async_mutex.unlock();
-                co_return true;
-            }
-        }
-        catch (...)
-        {
-            this->_async_mutex.unlock();
-            throw;
-        }
+        co_return true;
     }
 };
 

@@ -13,9 +13,9 @@ namespace Http.Service
 
         public async Task<RedisDistributedLockHandle> Lock(uint world, string key)
         {
-            var redis = _redisService.GetShardConnection(world, key);
-            if (redis == null)
+            var redis = _redisService.GetShardConnection(world, key) ??
                 throw new Exception($"Redis instance not found for world {world} and key {key}");
+
             return await new RedisDistributedLock(key, redis.Connection).AcquireAsync();
         }
     }

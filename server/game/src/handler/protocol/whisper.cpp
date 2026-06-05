@@ -28,7 +28,7 @@ async::task<bool> whisper::handle(fb::socket<character>& session, game_reqs::whi
 
     try
     {
-        co_await this->server.whisper(*me, request.name, request.message);
+        co_await me->whisper(request.name, request.message);
         co_await this->server.threads.switching(weak);
         if (weak.lock() == nullptr)
             co_return true;

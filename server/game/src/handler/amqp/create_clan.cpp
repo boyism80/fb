@@ -9,15 +9,22 @@ create_clan::create_clan(fb::game::server& server) :
 
 async::task<void> create_clan::handle(const internal_resp::ClanDetails& message)
 {
-    // If this is from HTTP response (same host), skip processing as it's already handled
     if (message.host == fb::config<uint32_t>("id"))
         co_return;
 
-    // Only process Create action from RabbitMQ
-    // Query action is for direct HTTP GET requests, not broadcasted
     if (static_cast<internal::ClanDetailsAction>(message.action) != internal::ClanDetailsAction::Create)
         co_return;
 
-    // Create clan in memory from ClanDetails (no API call needed)
-    co_await this->server.on_create_clan(message);
+    auto members = std::unordered_map<std::string, fb::game::clan_member>{};
+    for (auto& member : message.members)
+    {
+        members.insert({
+            member.name,
+            fb::game::clan_member{member.name, static_cast<fb::game::CLAN_ROLE>(member.role)}
+        });
+    }
+
+    co_await this->server.clans.on_error(message.error);
+    auto title = message.clan.title.has_value() ? message.clan.title.value() : std::string{};
+    co_await this->server.clans.on_create(message.clan.id, message.clan.name, title, std::move(members));
 }

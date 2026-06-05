@@ -112,45 +112,54 @@ int builtin::group::builtin_message(lua_State* L)
                         MESSAGE_TYPE      type) -> async::task<void> {
         try
         {
-            co_await server->broadcast_group(group_id, message, type);
+            co_await server->groups.broadcast(group_id, message, type);
+            co_await lua->switching();
             lua->pushnil();
+            lua->resume(1);
         }
         catch (std::exception& e)
         {
-            lua->pushstring(e.what());
+            auto what = std::string(e.what());
+            async::awaitable_then(lua->switching(), [lua, what](auto result) {
+                result();
+                lua->pushstring(what.c_str());
+                lua->resume(1);
+            });
         }
-
-        lua->resume(1);
     };
 
     // Use group's master character to determine the thread
-    auto master_name = group->master();
-    return server->characters.read([=](auto& container) {
-        auto master_ch = container.find(master_name);
-        if (master_ch == nullptr)
+    auto                                  master_name = group->master();
+    character::container::character_ptr_t master_ch;
+    {
+        auto guard = server->characters.enter_read();
+        master_ch  = guard.value().find(master_name);
+    }
+    if (master_ch == nullptr)
+    {
+        // If master not found, fall back to current thread dispatch
+        auto thread = server->threads.current();
+        if (thread == nullptr)
         {
-            // If master not found, fall back to current thread dispatch
-            auto thread = server->threads.current();
-            if (thread == nullptr)
-            {
-                lua->pushstring("thread not found");
-                return 1;
-            }
+            lua->pushstring("thread not found");
+            return 1;
+        }
 
-            std::ignore = thread->dispatch([=](auto&) -> async::task<void> {
-                co_await fn(lua, server, group_id, message, type);
-            });
-            return lua->yield(1);
-        }
-        else
-        {
-            auto weak = master_ch->template weak_from_this_as<fb::game::character>();
-            server->threads.enqueue(weak, [=](auto&) -> async::task<void> {
-                co_await fn(lua, server, group_id, message, type);
-            });
-            return lua->yield(1);
-        }
-    });
+        auto builder = thread->new_builder<void>();
+        builder.func = [=](auto&) -> async::task<void> {
+            co_await fn(lua, server, group_id, message, type);
+        };
+        builder.enqueue();
+        return lua->yield(1);
+    }
+
+    auto weak    = master_ch->template weak_from_this_as<fb::game::character>();
+    auto builder = server->threads.new_builder(weak);
+    builder.func = [=](auto&) -> async::task<void> {
+        co_await fn(lua, server, group_id, message, type);
+    };
+    builder.enqueue();
+    return lua->yield(1);
 }
 
 int builtin::group::builtin_toggle(lua_State* L)
@@ -182,22 +191,29 @@ int builtin::group::builtin_toggle(lua_State* L)
             if (actor_shared == nullptr)
                 throw std::runtime_error("actor character is not alive");
 
-            co_await server->toggle_group_member(*actor_shared, target_name);
+            co_await server->groups.toggle_member(*actor_shared, target_name);
+            co_await lua->switching();
             lua->pushnil();
+            lua->resume(1);
         }
         catch (std::exception& e)
         {
-            lua->pushstring(e.what());
+            auto what = std::string(e.what());
+            async::awaitable_then(lua->switching(), [lua, what](auto result) {
+                result();
+                lua->pushstring(what.c_str());
+                lua->resume(1);
+            });
         }
-
-        lua->resume(1);
     };
 
     auto actor_shared = actor->shared_from_this_as<fb::game::character>();
     auto actor_weak   = actor->weak_from_this_as<fb::game::character>();
-    server->threads.enqueue(actor_weak, [=](auto&) -> async::task<void> {
+    auto builder      = server->threads.new_builder(actor_weak);
+    builder.func      = [=](auto&) -> async::task<void> {
         co_await fn(lua, server, actor_shared, target_name);
-    });
+    };
+    builder.enqueue();
 
     return lua->yield(1);
 }

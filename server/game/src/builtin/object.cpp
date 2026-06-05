@@ -578,8 +578,9 @@ int builtin::object::builtin_map(lua_State* L)
     }
     else
     {
-        auto weak = obj->weak_from_this_as<fb::game::object>();
-        server->threads.enqueue(weak, [=](auto& thread) -> async::task<void> {
+        auto weak    = obj->weak_from_this_as<fb::game::object>();
+        auto builder = server->threads.new_builder(weak);
+        builder.func = [=](auto& thread) -> async::task<void> {
             async::awaitable_then(static_func(weak, map, position), [=](auto result) {
                 auto success = result();
                 lua->ensure_resume(
@@ -592,7 +593,8 @@ int builtin::object::builtin_map(lua_State* L)
                     true);
             });
             co_return;
-        });
+        };
+        builder.enqueue();
 
         return lua->yield(0);
     }

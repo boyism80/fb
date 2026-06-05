@@ -1,5 +1,4 @@
 #include <fb/game/server.h>
-#include <fb/game/handler/amqp/ban.h>
 #include <fb/model/model.h>
 
 using namespace fb::game;
@@ -83,7 +82,7 @@ void listener_impl::on_update_map(character&                  ch,
                                   uint16_t                    crc)
 {
 
-    this->server.send_map_cache(ch, map, position, size, crc);
+    this->server.maps.send_map_cache(ch, map, position, size, crc);
 }
 
 void listener_impl::on_update_buff(character& ch, const buffs& buffs)
@@ -140,8 +139,7 @@ async::task<bool> listener_impl::on_transfer(character& me, map& map, const fb::
 
         case ERROR_CODE::BANNED:
         {
-            throw std::runtime_error(
-                fb::game::handler::amqp::ban::build_ban_message(resp.ban_reason, resp.ban_expire_date));
+            throw std::runtime_error(character::container::build_ban_message(resp.ban_reason, resp.ban_expire_date));
         }
 
         default:
@@ -151,7 +149,7 @@ async::task<bool> listener_impl::on_transfer(character& me, map& map, const fb::
         auto commit_now = [this, ip = resp.ip, port = resp.port, map_id = map.model.id, pos_x = p.x, pos_y = p.y](
                               character& ch) -> async::task<void> {
             std::ignore = co_await ch.map(nullptr);
-            std::ignore = this->server.save(ch);
+            co_await this->server.save(ch);
 
             auto stream = fb::stream();
             auto writer = fb::stream_writer<big_endian>(stream);
@@ -167,13 +165,15 @@ async::task<bool> listener_impl::on_transfer(character& me, map& map, const fb::
                 std::ignore = this->server.transfer(*socket_ptr, ip, port, internal::Service::Game, stream);
         };
 
-        this->server.threads.enqueue(weak, [this, commit_now, weak](auto&) -> async::task<void> {
+        auto builder = this->server.threads.new_builder(weak);
+        builder.func = [this, commit_now, weak](auto&) -> async::task<void> {
             auto shared = weak.lock();
             if (shared == nullptr)
                 co_return;
 
             co_await commit_now(*shared);
-        });
+        };
+        builder.enqueue();
         co_return true;
     }
     catch (std::exception& e)

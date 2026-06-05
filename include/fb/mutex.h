@@ -44,26 +44,24 @@ private:
                                            std::string_view                                  key,
                                            std::mutex&                                       mutex)
     {
+        auto _ = std::lock_guard(mutex);
+        try
         {
-            auto _ = std::lock_guard(mutex);
-            try
+            if constexpr (std::is_same_v<T, void>)
             {
-                if constexpr (std::is_same_v<T, void>)
-                {
-                    co_await fn(current);
-                    promise->set_value();
-                }
-                else
-                {
-                    promise->set_value(co_await fn(current));
-                }
+                co_await fn(current);
+                promise->set_value();
+            }
+            else
+            {
+                promise->set_value(co_await fn(current));
+            }
 
-                concurrent::add(current);
-            }
-            catch (std::exception& e)
-            {
-                promise->set_exception(std::make_exception_ptr(e));
-            }
+            concurrent::add(current);
+        }
+        catch (std::exception& e)
+        {
+            promise->set_exception(std::make_exception_ptr(e));
         }
     }
 
@@ -130,9 +128,11 @@ private:
 
         if (thread != nullptr)
         {
-            thread->dispatch([this, promise, &fn, &current, key_str, mutex](auto& thread) mutable -> async::task<void> {
+            auto builder = thread->new_builder<void>();
+            builder.func = [this, promise, &fn, &current, key_str, mutex](auto& thread) mutable -> async::task<void> {
                 co_await this->on_locked(promise, fn, current, key_str, *mutex);
-            });
+            };
+            builder.enqueue();
         }
         else
         {
@@ -160,9 +160,12 @@ private:
 
         if (thread != nullptr)
         {
-            thread->dispatch([this, promise, &fn, key_str, mutex]() mutable {
+            auto builder = thread->new_builder<void>();
+            builder.func = [this, promise, &fn, key_str, mutex](auto&) mutable -> async::task<void> {
                 this->on_locked(promise, fn, key_str, *mutex);
-            });
+                co_return;
+            };
+            builder.enqueue();
         }
         else
         {

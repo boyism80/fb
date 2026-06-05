@@ -7,6 +7,10 @@
 #include <map>
 #include <vector>
 
+namespace fb::protocol::internal {
+class StorageBox;
+}
+
 namespace fb::game {
 
 class character;
@@ -31,15 +35,20 @@ private:
     entry_map  _entries;
     uint32_t   _sequence = 1;
 
+    static std::string                        attachments_to_json(const std::vector<fb::model::dsl>& attachments);
+    static fb::protocol::internal::StorageBox to_save_dto(uint32_t user_id, const entry& box);
+
 public:
     explicit storage_box(character& owner);
-    void             init(const std::vector<entry>& entries);
-    void             apply_delivered(const std::vector<entry>& delivered);
-    bool             contains_system_box(uint32_t system_storage_box_id) const;
-    bool             receive_reward(uint32_t entry_id);
-    const entry_map& entries() const;
-    uint32_t         next_sequence() const;
-    void             set_sequence(uint32_t value);
+    void                                            init(const std::vector<entry>& entries);
+    void                                            apply_delivered(const std::vector<entry>& delivered);
+    bool                                            contains_system_box(uint32_t system_storage_box_id) const;
+    bool                                            receive_reward(uint32_t entry_id);
+    const entry_map&                                entries() const;
+    uint32_t                                        next_sequence() const;
+    void                                            set_sequence(uint32_t value);
+    std::vector<fb::protocol::internal::StorageBox> to_save_dtos(uint32_t                   user_id,
+                                                                 const fb::model::datetime& now) const;
 };
 } // namespace fb::game
 #endif // FB_GAME_STORAGE_H

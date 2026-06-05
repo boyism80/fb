@@ -72,6 +72,7 @@ public:
     std::vector<object_ptr>         nears(const fb::model::point16_t& pivot, OBJECT_TYPE type = OBJECT_TYPE::OBJECT) const;
     std::vector<object_ptr>         belows(const fb::model::point16_t& pivot, OBJECT_TYPE type = OBJECT_TYPE::OBJECT) const;
     void                            bulk_update(const std::vector<uint32_t>& oids);
+    void                            rezen_force() const;
     fb::thread*                     thread() const override;
     // clang-format on
 

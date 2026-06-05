@@ -316,8 +316,9 @@ game_bot::transfer(const fb::protocol::header& protocol, const fb::model::timesp
     // Set up timeout timer if specified
     if (timeout > 0s)
     {
-        auto thread = this->thread();
-        std::ignore = thread->dispatch([context, timeout](auto& thread) -> async::task<void> {
+        auto thread  = this->thread();
+        auto builder = thread->new_builder<void>();
+        builder.func = [context, timeout](auto& thread) -> async::task<void> {
             context->timer = thread.settimer(
                 [context](auto& datetime, auto thread_id) -> async::task<void> {
                     context->complete_timeout();
@@ -326,7 +327,8 @@ game_bot::transfer(const fb::protocol::header& protocol, const fb::model::timesp
                 timeout,
                 fb::timer::repeat_type::once);
             co_return;
-        });
+        };
+        builder.enqueue();
     }
 
     this->send(protocol, encrypt, wrap);

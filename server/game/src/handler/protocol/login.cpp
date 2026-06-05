@@ -93,39 +93,7 @@ void login::init_achievements(const std::vector<fb::protocol::internal::Achievem
 
 void login::init_storage(const fb::protocol::internal::response::Init& response, fb::game::character& ch)
 {
-    auto storage_boxes = std::vector<fb::game::storage_box::entry>();
-    storage_boxes.reserve(response.storage_boxes.size());
-    for (const auto& dto : response.storage_boxes)
-    {
-        auto box = fb::game::storage_box::entry{};
-        box.id   = dto.id;
-        if (dto.system_storage_box_id != 0)
-            box.system_storage_box_id = dto.system_storage_box_id;
-        box.title   = dto.title;
-        box.message = dto.message;
-
-        if (!dto.attachments.empty())
-        {
-            auto json   = Json::Value{};
-            auto reader = Json::Reader{};
-            auto stream = std::istringstream(dto.attachments);
-            if (reader.parse(stream, json) && json.isArray())
-            {
-                box.attachments.reserve(json.size());
-                for (const auto& item : json)
-                {
-                    box.attachments.emplace_back(item);
-                }
-            }
-        }
-
-        box.received = dto.received;
-        if (dto.expired_date.has_value())
-            box.expire_date = fb::model::datetime(dto.expired_date.value());
-        storage_boxes.push_back(std::move(box));
-    }
-
-    ch.storage_box.init(storage_boxes);
+    ch.server.system_storage.init_from_login(ch, response.storage_boxes);
 }
 
 async::task<std::shared_ptr<character>> login::init(const game_reqs::login& request, fb::socket<character>& session)
@@ -222,7 +190,7 @@ async::task<std::shared_ptr<character>> login::init(const game_reqs::login& requ
 
     if (resp.group.has_value())
     {
-        co_await this->server.ensure_group(resp.group.value(), [this, &ch, weak](auto& group) -> async::task<void> {
+        co_await this->server.groups.ensure(resp.group.value(), [this, &ch, weak](auto& group) -> async::task<void> {
             group->enter(weak);
             ch->group_id(group->id());
             co_return;
@@ -231,16 +199,18 @@ async::task<std::shared_ptr<character>> login::init(const game_reqs::login& requ
 
     if (resp.clan.has_value())
     {
-        co_await this->server.ensure_clan(resp.clan.value(), [this, &ch, weak](auto& clan) -> async::task<void> {
+        co_await this->server.clans.ensure(resp.clan.value(), [this, &ch, weak](auto& clan) -> async::task<void> {
             clan->attach(weak);
             ch->clan_id(clan->id());
             co_return;
         });
     }
 
-    auto inserted = this->server.characters.write([ch](auto& container) {
-        return container.insert(ch);
-    });
+    bool inserted = false;
+    {
+        auto guard = this->server.characters.enter_write();
+        inserted   = guard.value().insert(ch);
+    }
     if (inserted == false)
     {
         fb::logger::fatal(
@@ -333,7 +303,7 @@ async::task<std::shared_ptr<character>> login::init(const game_reqs::login& requ
         }
     }
 
-    co_await this->server.sync_system_storage_for_character(*ch);
+    co_await this->server.system_storage.sync(*ch);
 
     ch->update(UPDATE_STATE_LEVEL::ALL);
     ch->update_option();
@@ -390,9 +360,11 @@ async::task<bool> login::handle(fb::socket<character>& session, game_reqs::login
     session.encryption(request.enc_type, request.enc_key);
     fb::logger::info("{} has connected.", request.name);
 
-    auto exists = this->server.characters.read([id = request.id](auto& container) {
-        return container.find(id) != nullptr;
-    });
+    bool exists = false;
+    {
+        auto guard = this->server.characters.enter_read();
+        exists     = guard.value().find(request.id) != nullptr;
+    }
     if (exists)
     {
         fb::logger::fatal(

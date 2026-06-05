@@ -274,10 +274,12 @@ async::task<void> game_bot_controller::on_bot_connected(game_bot& bot)
     if (this->_current_test)
     {
         // Use shared_from_this to get shared_ptr to game_bot
-        auto bot_shared = this->_bots.read([&bot](const auto& bots) {
-            auto it = bots.find(bot.id);
-            return (it != bots.end()) ? it->second : nullptr;
-        });
+        std::shared_ptr<game_bot> bot_shared;
+        {
+            auto guard = this->_bots.enter_read();
+            auto it    = guard.value().find(bot.id);
+            bot_shared = (it != guard.value().end()) ? it->second : nullptr;
+        }
 
         if (bot_shared)
         {

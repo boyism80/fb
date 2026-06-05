@@ -23,17 +23,13 @@ server::server(boost::asio::io_context& io_context, uint16_t port) :
     maps(*this, fb::config<uint32_t>("id")),
     listener(*this),
     characters(*this),
-    clans([](const std::shared_ptr<clan>& clan) -> uint32_t {
-        return clan->id();
-    }),
-    groups([](const std::shared_ptr<group>& group) -> uint32_t {
-        return group->id();
-    }),
-    _map_update_cache(
-        [](const map::cache_bytes& cache_bytes) -> uint64_t {
-            return cache_bytes.hash;
-        },
-        1024),
+    clans(*this),
+    groups(*this),
+    mail(*this),
+    bulletin(*this),
+    system_storage(*this),
+    system_mail(*this),
+    schedules(*this),
     log(fb::config<std::string>("amqp:log:ip"),
         fb::config<uint16_t>("amqp:log:port"),
         fb::config<std::string>("amqp:log:uid"),
@@ -122,12 +118,14 @@ server::server(boost::asio::io_context& io_context, uint16_t port) :
 
     for (auto& [_, root] : ist)
     {
-        auto& thread = root->initial_thread();
-        std::ignore  = thread.dispatch([&root](auto&) -> async::task<void> {
+        auto& thread  = root->initial_thread();
+        auto  builder = thread.new_builder<void>();
+        builder.func  = [&root](auto&) -> async::task<void> {
             fb::model::lua::map_enum(*root);
             fb::model::lua::map_const(*root);
             co_return;
-        });
+        };
+        builder.enqueue();
     }
 }
 
@@ -156,7 +154,8 @@ async::task<void> server::on_start()
     auto async_tasks = std::vector<async::task<void>>();
     for (auto& [thread, maps] : maps_division)
     {
-        async_tasks.push_back(thread->dispatch([this, maps = std::move(maps)](auto& thread) -> async::task<void> {
+        auto builder = thread->new_builder<void>();
+        builder.func = [this, maps = std::move(maps)](auto& thread) -> async::task<void> {
             auto params = std::make_unique<thread_params>(*this);
             for (const auto& map : maps)
             {
@@ -171,7 +170,8 @@ async::task<void> server::on_start()
             }
             thread.data(std::move(params));
             co_return;
-        }));
+        };
+        async_tasks.push_back(builder.dispatch());
     }
 
     for (auto& async_task : async_tasks)
@@ -226,7 +226,7 @@ async::task<void> server::on_start()
     this->bind_timer<fb::game::handler::timer::system_mail_timer>(1s);
     this->bind_timer<fb::game::handler::timer::system_storage_box_timer>(1s);
 
-    this->initialize_schedules();
+    this->schedules.init();
     auto announce_interval = std::chrono::seconds(fb::model::const_value::time::ANNOUNCE.total_milliseconds() / 1000);
     this->bind_timer<fb::game::handler::timer::announce>(announce_interval);
     this->bind_thread_timer<fb::game::handler::timer::mob_action_timer>(100ms);
@@ -269,7 +269,8 @@ async::task<void> server::on_start()
     auto* init_thread = this->threads.least_loaded();
     if (init_thread != nullptr)
     {
-        co_await init_thread->dispatch([this](auto&) -> async::task<void> {
+        auto builder = init_thread->new_builder<void>();
+        builder.func = [this](auto&) -> async::task<void> {
             auto lua = fb::lua::new_context();
             if (lua != nullptr)
             {
@@ -283,7 +284,8 @@ async::task<void> server::on_start()
                 }
             }
             co_return;
-        });
+        };
+        co_await builder.dispatch();
     }
 }
 
@@ -376,24 +378,21 @@ async::task<bool> server::on_disconnected(fb::socket<character>& socket)
         auto& group_id = ptr->group_id();
         if (group_id.has_value())
         {
-            this->groups.write(group_id.value(), [weak](auto& group) {
-                group->detach(weak);
-            });
+            this->groups.detach(weak, group_id.value());
             ptr->group_reset();
         }
 
         auto& clan_id = ptr->clan_id();
         if (clan_id.has_value())
         {
-            this->clans.read(clan_id.value(), [weak](auto& clan) {
-                clan->detach(weak);
-            });
+            this->clans.detach(weak, clan_id.value());
             ptr->clan_reset();
         }
 
-        this->characters.write([ptr](auto& container) {
-            container.remove(ptr);
-        });
+        {
+            auto guard = this->characters.enter_write();
+            guard.value().remove(ptr);
+        }
         co_await ch->destroy();
         socket.data(nullptr);
     }
@@ -479,15 +478,57 @@ server::send(object& object, const fb::protocol::header& header, fb::game::scope
 
     case fb::game::scope::WORLD:
     {
-        this->characters.write([stream, encrypt](auto& characters) {
-            characters.foreach_enqueue([stream, encrypt](auto& ch) -> async::task<void> {
-                std::ignore = ch->send(stream, encrypt);
-                co_return;
-            });
-        });
+        auto guard = this->characters.enter_write();
+        guard.value().send(stream, encrypt);
     }
     break;
     }
+}
+
+void server::sync_time()
+{
+    auto updated = this->now();
+    if (this->_time.hours() != updated.hours())
+    {
+        auto guard = this->characters.enter_write();
+        guard.value().update_time(updated.hours());
+    }
+
+    this->_time = updated;
+}
+
+async::task<void> server::save(character& ch)
+{
+    if (ch.inited() == false)
+        co_return;
+
+    auto weak    = ch.weak_from_this();
+    auto world   = fb::config<uint32_t>("world");
+    auto payload = this->save_payload(ch);
+    std::ignore  = co_await this->http.post("internal", "/in-game/save", internal_reqs::Save{world, payload});
+
+    co_await this->threads.switching(weak);
+    ch.send(game_resp::save());
+}
+
+async::task<internal_resp::Ban> server::ban(std::string_view               name,
+                                            std::string_view               reason,
+                                            const std::optional<uint32_t>& days)
+{
+    auto   name_str   = std::string(name);
+    auto   reason_str = std::string(reason);
+    auto   world      = fb::config<uint32_t>("world");
+    auto&& resp =
+        co_await this->http.post("internal", "/ban/add", internal_reqs::Ban{world, name_str, reason_str, days});
+    co_return std::move(resp);
+}
+
+async::task<internal_resp::Unban> server::unban(std::string_view name)
+{
+    auto   name_str = std::string(name);
+    auto   world    = fb::config<uint32_t>("world");
+    auto&& resp     = co_await this->http.post("internal", "/ban/remove", internal_reqs::Unban{world, name_str});
+    co_return std::move(resp);
 }
 
 internal::SavePayload server::save_payload(const character& ch) const
@@ -545,47 +586,8 @@ internal::SavePayload server::save_payload(const character& ch) const
             internal::Quest{ch.id, qid, quest->step(), quest->progress(), quest->param(), quest->completed()});
     }
 
-    auto        now             = this->now();
-    auto        storage_boxes   = std::vector<internal::StorageBox>();
-    const auto& character_boxes = ch.storage_box.entries();
-    storage_boxes.reserve(character_boxes.size());
-    for (const auto& [id, box] : character_boxes)
-    {
-        if (box.expire_date.has_value() && box.expire_date.value() < now)
-            continue;
-
-        std::string attachments_json;
-        if (box.attachments.empty())
-        {
-            attachments_json = "[]";
-        }
-        else
-        {
-            auto json_array = Json::Value{Json::arrayValue};
-            for (const auto& dsl : box.attachments)
-            {
-                json_array.append(dsl.to_json());
-            }
-            auto builder           = Json::StreamWriterBuilder{};
-            builder["emitUTF8"]    = true;
-            builder["indentation"] = "";
-            auto writer            = std::unique_ptr<Json::StreamWriter>(builder.newStreamWriter());
-            auto stream            = std::ostringstream{};
-            writer->write(json_array, &stream);
-            attachments_json = stream.str();
-        }
-
-        const auto system_storage_id = box.system_storage_box_id.has_value() ? box.system_storage_box_id.value() : 0u;
-        storage_boxes.emplace_back(ch.id,
-                                   box.id,
-                                   system_storage_id,
-                                   box.title,
-                                   box.message,
-                                   attachments_json,
-                                   box.received,
-                                   box.expire_date.has_value() ? std::make_optional(box.expire_date->to_string())
-                                                               : std::nullopt);
-    }
+    const auto now           = this->now();
+    auto       storage_boxes = ch.storage_box.to_save_dtos(ch.id, now);
 
     return internal::SavePayload(ch.to_protocol(),
                                  ch.marriage().to_protocol(),
@@ -596,20 +598,6 @@ internal::SavePayload server::save_payload(const character& ch) const
                                  storage_boxes);
 }
 
-async::task<void> server::save(character& ch)
-{
-    if (ch.inited() == false)
-        co_return;
-
-    auto weak    = ch.weak_from_this();
-    auto world   = fb::config<uint32_t>("world");
-    auto payload = this->save_payload(ch);
-    std::ignore  = co_await this->http.post("internal", "/in-game/save", internal_reqs::Save{world, payload});
-
-    co_await this->threads.switching(weak);
-    ch.send(game_resp::save());
-}
-
 async::task<void> server::save()
 {
     static constexpr size_t SAVE_BATCH_CHUNK_SIZE = 100;
@@ -618,7 +606,8 @@ async::task<void> server::save()
     tasks.reserve(this->threads.count());
     for (auto& [id, thread] : this->threads)
     {
-        tasks.push_back(thread->dispatch([this, world](auto& thread) -> async::task<void> {
+        auto builder = thread->new_builder<void>();
+        builder.func = [this, world](auto& thread) -> async::task<void> {
             auto params     = thread.template data<thread_params>();
             auto characters = std::vector<character*>{};
             auto payloads   = std::vector<internal::SavePayload>{};
@@ -650,7 +639,8 @@ async::task<void> server::save()
                 }
             }
             co_return;
-        }));
+        };
+        tasks.push_back(builder.dispatch());
     }
     for (auto& t : tasks)
     {
@@ -664,7 +654,8 @@ async::task<void> server::set_saved_before_shutdown_on_all()
     tasks.reserve(this->threads.count());
     for (auto& [id, thread] : this->threads)
     {
-        tasks.push_back(thread->dispatch([this](auto& thread) -> async::task<void> {
+        auto builder = thread->new_builder<void>();
+        builder.func = [this](auto& thread) -> async::task<void> {
             auto params = thread.template data<thread_params>();
             for (auto& [cid, character] : params->characters)
             {
@@ -672,7 +663,8 @@ async::task<void> server::set_saved_before_shutdown_on_all()
                     character->saved_before_shutdown(true);
             }
             co_return;
-        }));
+        };
+        tasks.push_back(builder.dispatch());
     }
     for (auto& t : tasks)
     {
@@ -699,15 +691,6 @@ uint32_t server::thread_id(const fb::socket<character>& socket) const
     return map->model.id;
 }
 
-fb::thread* server::thread(const map& map)
-{
-    auto count = this->threads.count();
-    if (count == 0)
-        return nullptr;
-
-    return this->threads.at(map.model.id % count);
-}
-
 const fb::model::datetime& server::time() const
 {
     return this->_time;
@@ -724,69 +707,6 @@ void server::on_init_amqp(fb::amqp::socket& amqp)
     this->handler.amqp.declare_queue("amq.direct", std::format("fb.{}.clan", world));
     this->handler.amqp.declare_queue("amq.direct", std::format("fb.{}.mail", world));
     this->handler.amqp.declare_queue("amq.direct", std::format("fb.{}.ban", world));
-}
-
-async::task<void> server::broadcast(std::string_view message, MESSAGE_TYPE type, BROADCAST_TYPE broadcast_type)
-{
-    auto message_str = std::string(message);
-    switch (broadcast_type)
-    {
-    case BROADCAST_TYPE::GLOBAL:
-    {
-        auto   world = fb::config<uint32_t>("world");
-        auto&& resp  = co_await this->http.post(
-            "internal",
-            "/in-game/broadcast",
-            internal_reqs::Broadcast{world, fb::config<uint32_t>("id"), message_str, static_cast<uint8_t>(type)});
-        co_await this->on_broadcast(resp);
-    }
-    break;
-
-    case BROADCAST_TYPE::WORLD:
-    {
-        this->characters.write([message_str, type](auto& characters) {
-            characters.foreach_enqueue([message_str, type](auto& ch) -> async::task<void> {
-                ch->message(message_str, type);
-                co_return;
-            });
-        });
-    }
-    break;
-    }
-}
-
-async::task<void> server::on_broadcast(const internal_resp::Broadcast& resp)
-{
-    co_await this->broadcast(resp.message, static_cast<MESSAGE_TYPE>(resp.type), BROADCAST_TYPE::WORLD);
-}
-
-void server::rezen_force()
-{
-    for (auto& [id, thread] : this->threads)
-    {
-        std::ignore = thread->dispatch([](auto& thread) -> async::task<void> {
-            auto params = thread.template data<thread_params>();
-            for (auto& rezen : params->rezens)
-            {
-                rezen.force_spawn(thread.id());
-            }
-            co_return;
-        });
-    }
-}
-
-void server::rezen_force(const fb::game::map& map)
-{
-    auto thread = map.thread();
-    std::ignore = thread->dispatch([map_id = map.model.id](auto& thread) -> async::task<void> {
-        auto params = thread.template data<thread_params>();
-        for (auto& rezen : params->rezens)
-        {
-            if (rezen.model.parent == map_id)
-                rezen.force_spawn(thread.id());
-        }
-        co_return;
-    });
 }
 
 async::task<void> server::update_status()
@@ -809,22 +729,6 @@ async::task<void> server::update_status()
     }
 }
 
-void server::update_time()
-{
-    auto updated = this->now();
-    if (this->_time.hours() != updated.hours())
-    {
-        this->characters.write([hours = updated.hours()](auto& characters) {
-            characters.foreach_enqueue([hours](auto& ch) -> async::task<void> {
-                ch->update_time(hours);
-                co_return;
-            });
-        });
-    }
-
-    this->_time = updated;
-}
-
 double server::exp_multiplier() const
 {
     return this->_exp_multiplier;
@@ -843,144 +747,4 @@ double server::drop_rate_multiplier() const
 void server::drop_rate_multiplier(double value)
 {
     this->_drop_rate_multiplier = value;
-}
-
-void server::initialize_schedules()
-{
-    auto now = this->now();
-
-    for (const auto& schedule : table::schedule)
-    {
-        auto next = schedule.next_execution(now);
-        if (next.has_value())
-        {
-            this->_scheduled_tasks[schedule.id] = next.value();
-        }
-    }
-}
-
-std::unordered_map<uint32_t, fb::model::datetime>& server::scheduled_tasks()
-{
-    return this->_scheduled_tasks;
-}
-
-void server::erase_map_cache(uint32_t map_id, const fb::model::point16_t& point)
-{
-    std::unique_lock lock(this->_map_update_cache_mutex);
-
-    std::vector<uint64_t> to_erase;
-    for (auto hash : this->_map_update_cache.keys())
-    {
-        const auto entry_map_id = static_cast<uint32_t>(hash >> 48);
-        if (entry_map_id != map_id)
-            continue;
-
-        const uint16_t pos_x  = (hash >> 32) & 0xFFFF;
-        const uint16_t pos_y  = (hash >> 16) & 0xFFFF;
-        const uint8_t  width  = (hash >> 8) & 0xFF;
-        const uint8_t  height = hash & 0xFF;
-        auto           area   = fb::model::area<uint16_t>(pos_x, pos_y, pos_x + width, pos_y + height);
-        if (area.contains(point))
-            to_erase.push_back(hash);
-    }
-
-    for (uint64_t hash : to_erase)
-    {
-        this->_map_update_cache.erase(hash);
-    }
-}
-
-void server::send_map_cache(character&                  ch,
-                            const map&                  map,
-                            const fb::model::point16_t& position,
-                            const fb::model::size8_t&   size,
-                            uint16_t                    crc)
-{
-    const auto hash = static_cast<uint64_t>(map.model.id) << 48 | static_cast<uint64_t>(position.x) << 32 |
-                      static_cast<uint64_t>(position.y) << 16 | static_cast<uint64_t>(size.width) << 8 |
-                      static_cast<uint64_t>(size.height);
-
-    auto send_cache_bytes = [&ch, crc](const auto& cache_bytes) {
-        if (cache_bytes.crc == crc)
-            return;
-
-        ch.send(fb::stream(cache_bytes.bytes.data(), cache_bytes.bytes.size()));
-    };
-
-    {
-        std::shared_lock lock(this->_map_update_cache_mutex);
-        if (this->_map_update_cache.try_read(hash, send_cache_bytes))
-            return;
-    }
-
-    std::unique_lock lock(this->_map_update_cache_mutex);
-    this->_map_update_cache.write(hash, send_cache_bytes, [&map, &position, &size, hash]() {
-        auto bytes = map::cache_bytes();
-        bytes.hash = hash;
-        bytes.crc  = 0;
-
-        auto writer = fb::stream_writer<big_endian>(bytes.bytes);
-        auto resp   = game_resp::map_update(map, position, size);
-        std::ignore = resp.serialize(writer);
-        bytes.crc   = resp.crc;
-        return bytes;
-    });
-}
-
-void server::update_map_cache(uint32_t map_id, const fb::model::area<uint16_t>& area)
-{
-    // Phase 1: Invalidate cache entries whose region intersects the area (hold lock only for this).
-    {
-        std::unique_lock lock(this->_map_update_cache_mutex);
-
-        std::vector<uint64_t> to_erase;
-        for (auto hash : _map_update_cache.keys())
-        {
-            const auto entry_map_id = static_cast<uint32_t>(hash >> 48);
-            if (entry_map_id != map_id)
-                continue;
-
-            const uint16_t e_left     = (hash >> 32) & 0xFFFF;
-            const uint16_t e_top      = (hash >> 16) & 0xFFFF;
-            const uint8_t  e_w        = (hash >> 8) & 0xFF;
-            const uint8_t  e_h        = hash & 0xFF;
-            const uint16_t e_right    = static_cast<uint16_t>(e_left + e_w);
-            const uint16_t e_bottom   = static_cast<uint16_t>(e_top + e_h);
-            const auto     entry_rect = fb::model::area<uint16_t>(e_left, e_top, e_right, e_bottom);
-
-            if (entry_rect.intersects(area))
-                to_erase.push_back(hash);
-        }
-
-        for (uint64_t hash : to_erase)
-        {
-            this->_map_update_cache.erase(hash);
-        }
-    }
-
-    // Phase 2: Without holding the cache lock, collect characters whose view overlaps the area and send.
-    auto map_ptr = maps.find(map_id);
-    if (map_ptr == nullptr)
-        return;
-
-    const map& map     = *map_ptr;
-    auto       viewers = std::vector<std::shared_ptr<character>>{};
-    for (const auto& [fd, obj] : map.objects)
-    {
-        if (obj->is(OBJECT_TYPE::CHARACTER) == false)
-            continue;
-
-        if (obj->sight_area().intersects(area))
-            viewers.push_back(std::static_pointer_cast<character>(obj));
-    }
-
-    const uint16_t             w = area.right > area.left ? static_cast<uint16_t>(area.right - area.left) : 0;
-    const uint16_t             h = area.bottom > area.top ? static_cast<uint16_t>(area.bottom - area.top) : 0;
-    const fb::model::point16_t begin(area.left, area.top);
-    const fb::model::size8_t   size(static_cast<uint8_t>(w > 255 ? 255 : w), static_cast<uint8_t>(h > 255 ? 255 : h));
-
-    for (const auto& ch : viewers)
-    {
-        ch->update_map(map, begin, size);
-    }
 }

@@ -73,7 +73,7 @@ async::task<void> bulletin::handle_articles(character* ch, std::weak_ptr<charact
     {
         if (mail)
         {
-            auto&& resp = co_await this->server.mail_list(*ch, request.offset, 20);
+            auto&& summaries = co_await this->server.mail.list(*ch, request.offset, 20);
             co_await this->server.threads.switching(weak);
             auto ptr = weak.lock();
             if (ptr == nullptr)
@@ -83,23 +83,12 @@ async::task<void> bulletin::handle_articles(character* ch, std::weak_ptr<charact
             if (ptr->level() >= fb::model::const_value::mail::REQUIRED_LEVEL)
                 flag |= MAIL_BUTTON_ENABLE::NEW;
 
-            auto dao = std::vector<mail_box::summary>();
-            for (auto& summary : resp.summary_list)
-            {
-                dao.push_back(mail_box::summary{summary.id,
-                                                summary.user,
-                                                summary.sender,
-                                                summary.read,
-                                                summary.title,
-                                                summary.created_date});
-            }
-
-            ptr->mail_box.show(dao, flag);
+            ptr->mail_box.show(summaries, flag);
         }
         else
         {
             auto   section  = request.section;
-            auto&& articles = co_await this->server.bulletin_list(request.section, request.offset);
+            auto&& articles = co_await this->server.bulletin.list(request.section, request.offset);
             co_await this->server.threads.switching(weak);
             auto ptr = weak.lock();
             if (ptr == nullptr)
@@ -128,7 +117,7 @@ async::task<void> bulletin::handle_article(character* ch, std::weak_ptr<characte
     {
         if (mail)
         {
-            auto&& resp = co_await this->server.read_mail(*ch, request.article);
+            auto&& mail = co_await this->server.mail.read(*ch, request.article);
             co_await this->server.threads.switching(weak);
             auto ptr = weak.lock();
             if (ptr == nullptr)
@@ -137,28 +126,21 @@ async::task<void> bulletin::handle_article(character* ch, std::weak_ptr<characte
             if (ptr->level() >= fb::model::const_value::mail::REQUIRED_LEVEL)
                 flag |= MAIL_BUTTON_ENABLE::NEW;
 
-            ptr->mail_box.show(mail_box::mail{resp.mail.id,
-                                              resp.mail.user,
-                                              resp.mail.sender,
-                                              resp.mail.title,
-                                              resp.mail.contents,
-                                              resp.mail.read,
-                                              resp.mail.created_date},
-                               flag);
+            ptr->mail_box.show(mail, flag);
 
-            if (!resp.mail.read)
+            if (!mail.read)
             {
                 auto log_data              = Json::Value();
                 log_data["character_id"]   = static_cast<Json::Int64>(ptr->id);
                 log_data["character_name"] = UTF8(ptr->name(), PLATFORM::WINDOWS);
                 log_data["mail_id"]        = request.article;
-                log_data["sender_name"]    = UTF8(resp.mail.sender, PLATFORM::WINDOWS);
+                log_data["sender_name"]    = UTF8(mail.sender, PLATFORM::WINDOWS);
                 this->server.log.write("mail_read", log_data);
             }
         }
         else
         {
-            auto&& article = co_await this->server.read_bulletin(request.section, request.article);
+            auto&& article = co_await this->server.bulletin.read(request.section, request.article);
             co_await this->server.threads.switching(weak);
             auto ptr = weak.lock();
             if (ptr == nullptr)
@@ -191,7 +173,7 @@ async::task<void> bulletin::handle_write(character* ch, std::weak_ptr<character>
 {
     try
     {
-        co_await this->server.write_bulletin(*ch, request.section, request.title, request.contents);
+        co_await this->server.bulletin.write(*ch, request.section, request.title, request.contents);
         co_await this->server.threads.switching(weak);
         auto ptr = weak.lock();
         if (ptr == nullptr)
@@ -221,7 +203,7 @@ async::task<void> bulletin::handle_delete(character* ch, std::weak_ptr<character
     {
         if (mail)
         {
-            auto&& resp = co_await this->server.delete_mail(*ch, request.article);
+            co_await this->server.mail.remove(*ch, request.article);
             co_await this->server.threads.switching(weak);
             auto ptr = weak.lock();
             if (ptr == nullptr)
@@ -236,7 +218,7 @@ async::task<void> bulletin::handle_delete(character* ch, std::weak_ptr<character
         }
         else
         {
-            co_await this->server.delete_bulletin(*ch, request.section, request.article);
+            co_await this->server.bulletin.remove(*ch, request.section, request.article);
             co_await this->server.threads.switching(weak);
             auto ptr = weak.lock();
             if (ptr == nullptr)
@@ -268,29 +250,17 @@ async::task<void> bulletin::handle_mail(character* ch, std::weak_ptr<character> 
 {
     try
     {
-        auto&& resp = co_await this->server.mail_list(*ch, 0xFFFF, fb::model::const_value::mail::COUNT_PER_PAGE);
+        auto&& summaries = co_await this->server.mail.list(*ch, 0xFFFF, fb::model::const_value::mail::COUNT_PER_PAGE);
         co_await this->server.threads.switching(weak);
         auto ptr = weak.lock();
         if (ptr == nullptr)
             co_return;
 
-        this->server.assert_mail(resp.error);
         auto flag = MAIL_BUTTON_ENABLE::NONE;
         if (ptr->level() >= fb::model::const_value::mail::REQUIRED_LEVEL)
             flag |= MAIL_BUTTON_ENABLE::NEW;
 
-        auto dao = std::vector<mail_box::summary>();
-        for (auto& summary : resp.summary_list)
-        {
-            dao.push_back(mail_box::summary{summary.id,
-                                            summary.user,
-                                            summary.sender,
-                                            summary.read,
-                                            summary.title,
-                                            summary.created_date});
-        }
-
-        ptr->mail_box.show(dao, flag);
+        ptr->mail_box.show(summaries, flag);
     }
     catch (std::exception& e)
     {
@@ -304,7 +274,7 @@ async::task<void> bulletin::handle_send_mail(character* ch, std::weak_ptr<charac
 {
     try
     {
-        auto&& resp = co_await this->server.send_mail(*ch, request.user, request.title, request.contents);
+        co_await this->server.mail.send(*ch, request.user, request.title, request.contents);
         co_await this->server.threads.switching(weak);
         auto ptr = weak.lock();
         if (ptr == nullptr)

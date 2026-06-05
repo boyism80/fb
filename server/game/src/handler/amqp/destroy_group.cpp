@@ -12,5 +12,6 @@ async::task<void> destroy_group::handle(const internal_resp::DestroyGroup& messa
     if (message.host == fb::config<uint32_t>("id"))
         co_return;
 
-    co_await this->server.on_destroyed_group(message);
+    co_await this->server.groups.on_error(message.error, message.actor.name);
+    co_await this->server.groups.on_destroyed(message.actor.name, message.group_id);
 }

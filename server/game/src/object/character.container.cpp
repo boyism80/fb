@@ -114,27 +114,27 @@ async::task<void> character::container::foreach_async(character_async_function_t
     auto fn_holder = std::make_shared<character_async_function_t>(std::move(fn));
     for (auto& weak_ptr : weak_ptrs)
     {
-        async::awaitable_then(this->_server.threads.dispatch(weak_ptr,
-                                                             [weak_ptr, fn_holder](auto& thread) -> async::task<void> {
-                                                                 auto shared_ptr = weak_ptr.lock();
-                                                                 if (shared_ptr != nullptr)
-                                                                     co_await (*fn_holder)(shared_ptr);
-                                                                 co_return;
-                                                             }),
-                              [promise, remaining](async::awaitable_result<void> result) mutable {
-                                  try
-                                  {
-                                      result();
-                                  }
-                                  catch (std::exception&)
-                                  { }
-                                  catch (...)
-                                  { }
+        auto builder = this->_server.threads.new_builder(weak_ptr);
+        builder.func = [weak_ptr, fn_holder](auto& thread) -> async::task<void> {
+            auto shared_ptr = weak_ptr.lock();
+            if (shared_ptr != nullptr)
+                co_await (*fn_holder)(shared_ptr);
+            co_return;
+        };
+        async::awaitable_then(builder.dispatch(), [promise, remaining](async::awaitable_result<void> result) mutable {
+            try
+            {
+                result();
+            }
+            catch (std::exception&)
+            { }
+            catch (...)
+            { }
 
-                                  // Count down regardless of success/failure to avoid deadlock.
-                                  if (remaining->fetch_sub(1) == 1)
-                                      promise->set_value();
-                              });
+            // Count down regardless of success/failure to avoid deadlock.
+            if (remaining->fetch_sub(1) == 1)
+                promise->set_value();
+        });
     }
 
     co_await promise->task();
@@ -179,7 +179,7 @@ async::task<void> character::container::foreach_async(const std::vector<std::str
 
 async::task<void> character::container::invoke(std::string_view          name,
                                                character_function_t      fn,
-                                               character_function_t_miss miss)
+                                               character_function_t_miss miss) const
 {
     auto ch = this->find(name);
     if (ch == nullptr)
@@ -201,7 +201,7 @@ async::task<void> character::container::invoke(std::string_view          name,
 
 async::task<void> character::container::invoke_async(std::string_view           name,
                                                      character_async_function_t fn,
-                                                     character_function_t_miss  miss)
+                                                     character_function_t_miss  miss) const
 {
     auto ch = this->find(name);
     if (ch == nullptr)
@@ -242,23 +242,21 @@ void character::container::foreach_enqueue(character_async_function_t&&        f
     auto fn_holder = std::make_shared<character_async_function_t>(std::move(fn));
     for (auto& [thread, weak_ptrs] : group)
     {
-        thread->enqueue(
-            [fn_holder, weak_ptrs](auto& thread) -> async::task<void> {
-                for (auto& weak_ptr : weak_ptrs)
-                {
-                    auto shared_ptr = weak_ptr.lock();
-                    if (shared_ptr == nullptr)
-                        continue;
+        auto builder = thread->new_builder<void>();
+        builder.func = [fn_holder, weak_ptrs](auto& thread) -> async::task<void> {
+            for (auto& weak_ptr : weak_ptrs)
+            {
+                auto shared_ptr = weak_ptr.lock();
+                if (shared_ptr == nullptr)
+                    continue;
 
-                    co_await (*fn_holder)(shared_ptr);
-                }
-            },
-            [](std::exception& e) {
-                fb::logger::fatal("foreach_enqueue error: {}", e.what());
-            },
-            []() {
-                // work done
-            });
+                co_await (*fn_holder)(shared_ptr);
+            }
+        };
+        builder.on_error = [](std::exception& e) {
+            fb::logger::fatal("foreach_enqueue error: {}", e.what());
+        };
+        builder.enqueue();
     }
 }
 

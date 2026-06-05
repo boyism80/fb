@@ -1,5 +1,6 @@
 #include <fb/game/server.h>
 #include <fb/game/map.h>
+#include <fb/game/thread_params.h>
 
 using namespace fb::game;
 using table = fb::model::table;
@@ -351,6 +352,25 @@ void map::bulk_update(const std::vector<uint32_t>& oids)
             target->send(fb::protocol::game::response::update(changed_objects));
         }
     }
+}
+
+void map::rezen_force() const
+{
+    auto thread = this->thread();
+    if (thread == nullptr)
+        return;
+
+    auto builder = thread->new_builder<void>();
+    builder.func = [map_id = this->model.id](auto& thread) -> async::task<void> {
+        auto params = thread.template data<thread_params>();
+        for (auto& rezen : params->rezens)
+        {
+            if (rezen.model.parent == map_id)
+                rezen.force_spawn(thread.id());
+        }
+        co_return;
+    };
+    builder.enqueue();
 }
 
 fb::thread* map::thread() const

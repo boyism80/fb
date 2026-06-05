@@ -131,7 +131,8 @@ private:
                     auto protocol = co_await this->handler.protocol.get_deserializer(opcode)(reader);
                     auto fd       = socket.fd();
                     auto weak     = socket.template weak_from_this_as<fb::socket<T>>();
-                    this->threads.enqueue(weak, [this, protocol, weak, fd, opcode](auto& thread) -> async::task<void> {
+                    auto builder  = this->threads.new_builder(weak);
+                    builder.func  = [this, protocol, weak, fd, opcode](auto& thread) -> async::task<void> {
                         try
                         {
                             if (weak.expired())
@@ -163,7 +164,8 @@ private:
                         {
                             fb::logger::fatal("unhandled exception");
                         }
-                    });
+                    };
+                    builder.enqueue();
                 }
 
                 reader.seek(size - sizeof(uint8_t));
@@ -196,9 +198,10 @@ private:
             fb::logger::fatal(e.what());
         }
         auto fd = socket.fd();
-        this->_sockets.write([fd](auto& v) -> void {
-            v.erase(fd);
-        });
+        {
+            auto guard = this->_sockets.enter_write();
+            guard.value().erase(fd);
+        }
     }
 
     async::task<void> on_socket_received(fb::socket<T>& socket, fb::stream& stream)
@@ -264,16 +267,16 @@ private:
                 socket_ptr->set_option(boost::asio::ip::tcp::no_delay(false));
 
                 {
-                    auto fd = socket_ptr->fd();
-                    this->_sockets.write([fd, &socket_ptr](auto& v) -> void {
-                        if (v.contains(fd))
-                        {
-                            fb::logger::warn(std::format("socket already exists. fd: {}", fd));
-                            v.erase(fd); // remove old socket if exists
-                        }
+                    auto  fd    = socket_ptr->fd();
+                    auto  guard = this->_sockets.enter_write();
+                    auto& v     = guard.value();
+                    if (v.contains(fd))
+                    {
+                        fb::logger::warn(std::format("socket already exists. fd: {}", fd));
+                        v.erase(fd);
+                    }
 
-                        v.insert({fd, socket_ptr});
-                    });
+                    v.insert({fd, socket_ptr});
                 }
 
                 async::awaitable_get(this->on_connected(*socket_ptr));
@@ -528,14 +531,16 @@ private:
     [[nodiscard]] async::task<void> disconnect_sockets()
     {
         auto pairs = std::unordered_map<fb::thread*, std::vector<fb::socket<T>*>>();
-        this->_sockets.read([&pairs](const auto& v) -> void {
-            for (auto& [fd, socket] : v)
+        {
+            auto guard = this->_sockets.enter_read();
+            for (auto& [fd, socket] : guard.value())
             {
+                std::ignore = fd;
                 auto thread = socket->thread();
                 if (thread != nullptr)
                     pairs[thread].push_back(socket.get());
             }
-        });
+        }
 
         for (auto& [thread, sockets] : pairs)
         {
@@ -559,9 +564,8 @@ private:
 public:
     void access_sockets(std::function<void(const socket_container&)> fn)
     {
-        this->_sockets.read([fn](const auto& v) {
-            fn(v);
-        });
+        auto guard = this->_sockets.enter_read();
+        fn(guard.value());
     }
 
 public:

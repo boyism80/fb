@@ -43,15 +43,15 @@ async::task<bool> update_option::handle(fb::socket<character>& session, game_req
             auto group_id = ch->group_id();
             if (group_id.has_value())
             {
-                // Currently in a group - use handle_group_action to handle both master (destroy) and member (leave)
-                // cases Note: handle_group_action checks OPTION::GROUP, but at this point it's still true
+                // Currently in a group - use groups.handle_action to handle both master (destroy) and member (leave)
+                // cases Note: handle_action checks OPTION::GROUP, but at this point it's still true
                 try
                 {
-                    co_await this->server.handle_group_action(*ch, ch->name());
+                    co_await this->server.groups.handle_action(*ch, ch->name());
                 }
                 catch (std::exception& e)
                 {
-                    fb::logger::warn("update_option: handle_group_action failed: {}", e.what());
+                    fb::logger::warn("update_option: groups.handle_action failed: {}", e.what());
                 }
             }
         }

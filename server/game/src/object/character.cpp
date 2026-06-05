@@ -1,15 +1,21 @@
 #include <fb/game/character.h>
 #include <fb/game/server.h>
+#include <fb/game/thread_params.h>
 #include <fb/model/model.h>
 #include <stdexcept>
 #include <fb/encoding.h>
+#include <fb/config.h>
+#include <fb/protocol/flatbuffer/protocol.h>
 #include <json/json.h>
 #include <json/writer.h>
 #include <sstream>
 #include <chrono>
+#include <format>
+#include <macro.h>
 
 using namespace fb::game;
 using namespace fb::model;
+namespace internal_reqs = fb::protocol::internal::request;
 
 character::character(fb::game::server& server, const initial_params& params) :
     stat(*this),
@@ -1233,6 +1239,57 @@ void character::message(std::string_view message, MESSAGE_TYPE type)
 {
     this->assert_thread();
     this->listener.on_message(*this, message, type);
+}
+
+async::task<void> character::whisper(std::string receiver_name, std::string message)
+{
+    if (this->option(OPTION::WHISPER) == false)
+        throw std::runtime_error(_TEXT(MESSAGE_WHISPER_DISABLED_MINE));
+
+    auto sender_weak = this->weak_from_this_as<character>();
+    auto sender_name = this->name();
+
+    auto current_thread = this->server.threads.current();
+    if (current_thread != nullptr)
+    {
+        auto params   = current_thread->template data<thread_params>();
+        auto receiver = params->characters.find(receiver_name);
+        if (receiver != nullptr)
+        {
+            if (receiver->option(OPTION::WHISPER) == false)
+                throw std::runtime_error(std::format(_TEXT(MESSAGE_WHISPER_DISABLED_TARGET), receiver_name));
+
+            auto target_name = receiver->name();
+            receiver->message(std::format("{}\" {}", sender_name, message), MESSAGE_TYPE::NOTIFY);
+            this->message(std::format("{}< {}", target_name, message), MESSAGE_TYPE::NOTIFY);
+
+            auto log_data             = Json::Value();
+            log_data["sender_id"]     = static_cast<Json::Int64>(this->id);
+            log_data["sender_name"]   = UTF8(sender_name, PLATFORM::WINDOWS);
+            log_data["receiver_id"]   = static_cast<Json::Int64>(receiver->id);
+            log_data["receiver_name"] = UTF8(target_name, PLATFORM::WINDOWS);
+            log_data["message"]       = UTF8(message, PLATFORM::WINDOWS);
+            this->server.log.write("whisper", log_data);
+            co_return;
+        }
+    }
+
+    auto   world = fb::config<uint32_t>("world");
+    auto&& resp  = co_await this->server.http.post("internal",
+                                                  "/in-game/whisper",
+                                                  internal_reqs::Whisper{world, sender_name, receiver_name, message});
+    co_await this->server.threads.switching(sender_weak);
+
+    auto guard = co_await this->server.characters.enter_read_async();
+    co_await guard.value().on_whisper(resp);
+    this->message(std::format("{}< {}", receiver_name, message), MESSAGE_TYPE::NOTIFY);
+
+    auto log_data             = Json::Value();
+    log_data["sender_id"]     = static_cast<Json::Int64>(this->id);
+    log_data["sender_name"]   = UTF8(sender_name, PLATFORM::WINDOWS);
+    log_data["receiver_name"] = UTF8(receiver_name, PLATFORM::WINDOWS);
+    log_data["message"]       = UTF8(message, PLATFORM::WINDOWS);
+    this->server.log.write("whisper", log_data);
 }
 
 fb::thread* character::thread() const

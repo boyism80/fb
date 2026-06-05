@@ -173,81 +173,79 @@ namespace Http.Reepository
 
         protected override async Task<TModel> Get(uint world, TKey key)
         {
-            await using (await _distributedLock.Lock(world, GetLockKey(key)))
+            await using var _ = await _distributedLock.Lock(world, GetLockKey(key));
+
+            if (_local.TryGetValue(key.GetRedisKey(), out var localValues) && localValues.TryGetValue(key.GetRedisField(), out var localValue))
             {
-                if (_local.TryGetValue(key.GetRedisKey(), out var localValues) && localValues.TryGetValue(key.GetRedisField(), out var localValue))
+                var value = JsonConvert.DeserializeObject<TModel>(localValue);
+                if (value.Deleted)
+                    return null;
+
+                return value;
+            }
+
+            var hash = key.GetHash();
+            var redis = hash == null ? _redisService.GetGlobalConnection(world) : _redisService.GetShardConnection(world, hash.Value);
+            if (redis == null)
+                return null;
+
+            var redisValues = await redis.Connection.JsonHashGetAllAsync<TModel>(key.GetRedisKey());
+            if (redisValues.Count > 0)
+            {
+                var newCache = new ConcurrentDictionary<string, string>(redisValues.ToDictionary(x => x.Key.ToString(), x => JsonConvert.SerializeObject(x.Value)));
+                _local.AddOrUpdate(key.GetRedisKey(), newCache, (k, oldValue) => newCache);
+                if (redisValues.TryGetValue(key.GetRedisField(), out var redisValue))
                 {
-                    var value = JsonConvert.DeserializeObject<TModel>(localValue);
-                    if (value.Deleted)
+                    if (redisValue.Deleted)
                         return null;
 
-                    return value;
+                    return redisValue;
                 }
-
-                var hash = key.GetHash();
-                var redis = hash == null ? _redisService.GetGlobalConnection(world) : _redisService.GetShardConnection(world, hash.Value);
-                if (redis == null)
-                    return null;
-
-                var redisValues = await redis.Connection.JsonHashGetAllAsync<TModel>(key.GetRedisKey());
-                if (redisValues.Count > 0)
-                {
-                    var newCache = new ConcurrentDictionary<string, string>(redisValues.ToDictionary(x => x.Key.ToString(), x => JsonConvert.SerializeObject(x.Value)));
-                    _local.AddOrUpdate(key.GetRedisKey(), newCache, (k, oldValue) => newCache);
-                    if (redisValues.TryGetValue(key.GetRedisField(), out var redisValue))
-                    {
-                        if (redisValue.Deleted)
-                            return null;
-
-                        return redisValue;
-                    }
-                }
-
-                var mysqlValues = await SyncCacheFromDatabase(world, redis, key);
-                var found = mysqlValues.FirstOrDefault(x =>
-                {
-                    if (x.GetRedisKey() != key.GetRedisKey())
-                        return false;
-
-                    if (x.GetRedisField() != key.GetRedisField())
-                        return false;
-
-                    return true;
-                });
-
-                if (found == null)
-                    return null;
-
-                if (found.Deleted)
-                    return null;
-
-                return found;
             }
+
+            var mysqlValues = await SyncCacheFromDatabase(world, redis, key);
+            var found = mysqlValues.FirstOrDefault(x =>
+            {
+                if (x.GetRedisKey() != key.GetRedisKey())
+                    return false;
+
+                if (x.GetRedisField() != key.GetRedisField())
+                    return false;
+
+                return true;
+            });
+
+            if (found == null)
+                return null;
+
+            if (found.Deleted)
+                return null;
+
+            return found;
         }
 
         protected override async Task<IEnumerable<TModel>> GetAll(uint world, TKey key)
         {
-            await using (await _distributedLock.Lock(world, GetLockKey(key)))
+            await using var _ = await _distributedLock.Lock(world, GetLockKey(key));
+
+            if (_local.TryGetValue(key.GetRedisKey(), out var localValues))
+                return localValues.Values.Select(x => JsonConvert.DeserializeObject<TModel>(x)).Where(x => !x.Deleted);
+
+            var hash = key.GetHash();
+            var redis = hash == null ? _redisService.GetGlobalConnection(world) : _redisService.GetShardConnection(world, hash.Value);
+            if (redis == null)
+                return Enumerable.Empty<TModel>();
+
+            var redisValues = await redis.Connection.JsonHashGetAsync<TModel>(key.GetRedisKey());
+            if (redisValues.Count > 0)
             {
-                if (_local.TryGetValue(key.GetRedisKey(), out var localValues))
-                    return localValues.Values.Select(x => JsonConvert.DeserializeObject<TModel>(x)).Where(x => !x.Deleted);
-
-                var hash = key.GetHash();
-                var redis = hash == null ? _redisService.GetGlobalConnection(world) : _redisService.GetShardConnection(world, hash.Value);
-                if (redis == null)
-                    return Enumerable.Empty<TModel>();
-
-                var redisValues = await redis.Connection.JsonHashGetAsync<TModel>(key.GetRedisKey());
-                if (redisValues.Count > 0)
-                {
-                    var newCache = new ConcurrentDictionary<string, string>(redisValues.ToDictionary(x => x.Key.ToString(), x => JsonConvert.SerializeObject(x.Value)));
-                    _local.AddOrUpdate(key.GetRedisKey(), newCache, (k, oldValue) => newCache);
-                    return redisValues.Values.Where(x => !x.Deleted);
-                }
-
-                var mysqlValues = await SyncCacheFromDatabase(world, redis, key);
-                return mysqlValues.Where(x => !x.Deleted);
+                var newCache = new ConcurrentDictionary<string, string>(redisValues.ToDictionary(x => x.Key.ToString(), x => JsonConvert.SerializeObject(x.Value)));
+                _local.AddOrUpdate(key.GetRedisKey(), newCache, (k, oldValue) => newCache);
+                return redisValues.Values.Where(x => !x.Deleted);
             }
+
+            var mysqlValues = await SyncCacheFromDatabase(world, redis, key);
+            return mysqlValues.Where(x => !x.Deleted);
         }
 
         protected virtual async Task<IReadOnlyList<TModel>> GetMany(uint world, IReadOnlyList<TKey> keys)
@@ -354,38 +352,37 @@ namespace Http.Reepository
                     if (list.Count == 0)
                         continue;
 
-                    await using (await _distributedLock.Lock(world, GetLockKey(key)))
+                    await using var _ = await _distributedLock.Lock(world, GetLockKey(key));
+
+                    var hash = key.GetHash();
+                    var redisForKey = hash == null ? _redisService.GetGlobalConnection(world) : _redisService.GetShardConnection(world, hash.Value);
+                    if (redisForKey != null)
                     {
-                        var hash = key.GetHash();
-                        var redisForKey = hash == null ? _redisService.GetGlobalConnection(world) : _redisService.GetShardConnection(world, hash.Value);
-                        if (redisForKey != null)
+                        var dataGroup = list.ToDictionary(x => x.GetRedisField(), x => x);
+                        var values = new List<RedisValue>
                         {
-                            var dataGroup = list.ToDictionary(x => x.GetRedisField(), x => x);
-                            var values = new List<RedisValue>
-                            {
-                                (int)Const.CacheTimeToLive.TotalSeconds,
-                                dataGroup.Count
-                            };
-                            foreach (var (k, v) in dataGroup)
-                            {
-                                values.Add(k);
-                                values.Add(JsonConvert.SerializeObject(v));
-                            }
-
-                            if (!_updateHashExpiryScripts.TryGetValue(redisForKey, out var script))
-                            {
-                                script = LuaScript.Prepare(UpdateHashExpiryScript).Load(redisForKey.GetServer());
-                                _updateHashExpiryScripts[redisForKey] = script;
-                            }
-
-                            await redisForKey.Connection.ScriptEvaluateAsync(script.Hash,
-                                keys: [key.GetRedisKey(), new RedisKey(Const.ReferenceCountKey)],
-                                values: values.ToArray());
-
-                            _local.AddOrUpdate(key.GetRedisKey(),
-                                new ConcurrentDictionary<string, string>(dataGroup.ToDictionary(x => x.Key.ToString(), x => JsonConvert.SerializeObject(x.Value))),
-                                (k, old) => new ConcurrentDictionary<string, string>(dataGroup.ToDictionary(x => x.Key.ToString(), x => JsonConvert.SerializeObject(x.Value))));
+                            (int)Const.CacheTimeToLive.TotalSeconds,
+                            dataGroup.Count
+                        };
+                        foreach (var (k, v) in dataGroup)
+                        {
+                            values.Add(k);
+                            values.Add(JsonConvert.SerializeObject(v));
                         }
+
+                        if (!_updateHashExpiryScripts.TryGetValue(redisForKey, out var script))
+                        {
+                            script = LuaScript.Prepare(UpdateHashExpiryScript).Load(redisForKey.GetServer());
+                            _updateHashExpiryScripts[redisForKey] = script;
+                        }
+
+                        await redisForKey.Connection.ScriptEvaluateAsync(script.Hash,
+                            keys: [key.GetRedisKey(), new RedisKey(Const.ReferenceCountKey)],
+                            values: values.ToArray());
+
+                        _local.AddOrUpdate(key.GetRedisKey(),
+                            new ConcurrentDictionary<string, string>(dataGroup.ToDictionary(x => x.Key.ToString(), x => JsonConvert.SerializeObject(x.Value))),
+                            (k, old) => new ConcurrentDictionary<string, string>(dataGroup.ToDictionary(x => x.Key.ToString(), x => JsonConvert.SerializeObject(x.Value))));
                     }
                 }
             }
