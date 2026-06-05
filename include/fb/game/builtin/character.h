@@ -64,7 +64,6 @@ struct character
     static int builtin_shield_color(lua_State* L);
     static int builtin_mkspell(lua_State* L);
     static int builtin_rmspell(lua_State* L);
-    static int builtin_spell(lua_State* L);
     static int builtin_world(lua_State* L);
     static int builtin_ad(lua_State* L);
     static int builtin_web(lua_State* L);

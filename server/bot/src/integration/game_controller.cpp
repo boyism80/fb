@@ -24,6 +24,8 @@
 #include <fb/logger.h>
 
 using namespace fb::bot::integration;
+using table = fb::model::table;
+using namespace fb::model::enum_value;
 
 game_bot_controller::game_bot_controller(bot_container& container) :
     fb::bot::game_bot_controller(container),
@@ -42,30 +44,45 @@ game_bot_controller::game_bot_controller(bot_container& container) :
 
 void game_bot_controller::initialize()
 {
+    table::npc.hook.build = [](const Json::Value& json) -> fb::model::npc* {
+        auto clone    = json;
+        clone["look"] = clone["look"].asUInt() + 0x7FFF;
+        return fb::model::build<fb::model::npc*>(clone);
+    };
+
+    table::mob.hook.build = [](const Json::Value& json) -> fb::model::mob* {
+        auto clone    = json;
+        clone["look"] = clone["look"].asUInt() + 0x7FFF;
+        return fb::model::build<fb::model::mob*>(clone);
+    };
+
     table::item.hook.build = [](const Json::Value& json) -> fb::model::item* {
-        auto type = fb::model::build<ITEM_TYPE>(json["type"]);
+        auto clone    = json;
+        clone["look"] = clone["look"].asUInt() + 0xBFFF;
+
+        auto type = fb::model::build<ITEM_TYPE>(clone["type"]);
         switch (type)
         {
         case ITEM_TYPE::STUFF:
-            return fb::model::build<fb::model::item*>(json);
+            return fb::model::build<fb::model::item*>(clone);
         case ITEM_TYPE::CASH:
-            return fb::model::build<fb::model::cash*>(json);
+            return fb::model::build<fb::model::cash*>(clone);
         case ITEM_TYPE::CONSUME:
-            return fb::model::build<fb::model::consume*>(json);
+            return fb::model::build<fb::model::consume*>(clone);
         case ITEM_TYPE::WEAPON:
-            return fb::model::build<fb::model::weapon*>(json);
+            return fb::model::build<fb::model::weapon*>(clone);
         case ITEM_TYPE::ARMOR:
-            return fb::model::build<fb::model::armor*>(json);
+            return fb::model::build<fb::model::armor*>(clone);
         case ITEM_TYPE::HELMET:
-            return fb::model::build<fb::model::helmet*>(json);
+            return fb::model::build<fb::model::helmet*>(clone);
         case ITEM_TYPE::RING:
-            return fb::model::build<fb::model::ring*>(json);
+            return fb::model::build<fb::model::ring*>(clone);
         case ITEM_TYPE::SHIELD:
-            return fb::model::build<fb::model::shield*>(json);
+            return fb::model::build<fb::model::shield*>(clone);
         case ITEM_TYPE::AUXILIARY:
-            return fb::model::build<fb::model::auxiliary*>(json);
+            return fb::model::build<fb::model::auxiliary*>(clone);
         case ITEM_TYPE::PACKAGE:
-            return fb::model::build<fb::model::pack*>(json);
+            return fb::model::build<fb::model::pack*>(clone);
         default:
             return nullptr;
         }

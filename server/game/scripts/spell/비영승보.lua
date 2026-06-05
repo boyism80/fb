@@ -35,7 +35,7 @@ function ON_CAST_2015(me, spell)
         return
     end
 
-    local front = me:front(0xff & (~OBJECT_TYPE.ITEM))
+    local front = front_exclude_item(me)
     if front == nil then
         return
     end

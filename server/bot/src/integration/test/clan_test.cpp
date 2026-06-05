@@ -71,10 +71,10 @@ async::task<bool> clan_test::invite_to_clan(std::shared_ptr<game_bot> inviter, s
     if (npc == nullptr)
         co_return false;
 
-    auto&& resp1 = co_await inviter->request<fb::bot::integration::dialog_bot>(
+    auto&& resp1 = co_await inviter->request<fb::bot::integration::dialog_ext_bot>(
         game_reqs::click(_clan_npc_oid),
         [&npc](auto& r) {
-            return r.look == npc->look && r.type == fb::bot::integration::dialog_type::menu;
+            return r.look == npc->look && r.type == fb::bot::integration::dialog_ext_type::list;
         },
         DEFAULT_TIMEOUT);
 
@@ -144,10 +144,10 @@ async::task<bool> clan_test::change_clan_role(std::shared_ptr<game_bot> changer,
     if (npc == nullptr)
         co_return false;
 
-    auto&& resp = co_await changer->request<fb::bot::integration::dialog_bot>(
+    auto&& resp = co_await changer->request<fb::bot::integration::dialog_ext_bot>(
         game_reqs::click(_clan_npc_oid),
         [&npc](auto& r) {
-            return r.type == fb::bot::integration::dialog_type::menu && r.look == npc->look;
+            return r.type == fb::bot::integration::dialog_ext_type::list && r.look == npc->look;
         },
         DEFAULT_TIMEOUT);
     if (resp.message != std::format("클랜 이름 : {}", changer->clan_name()))
@@ -194,10 +194,10 @@ async::task<bool> clan_test::leave_clan(std::shared_ptr<game_bot> bot)
     if (npc == nullptr)
         co_return false;
 
-    auto&& resp1 = co_await bot->request<fb::bot::integration::dialog_bot>(
+    auto&& resp1 = co_await bot->request<fb::bot::integration::dialog_ext_bot>(
         game_reqs::click(_clan_npc_oid),
         [&npc](auto& r) {
-            return r.look == npc->look && r.type == fb::bot::integration::dialog_type::menu;
+            return r.look == npc->look && r.type == fb::bot::integration::dialog_ext_type::list;
         },
         DEFAULT_TIMEOUT);
     co_await bot->update_internal_info(DEFAULT_TIMEOUT);
@@ -221,10 +221,10 @@ async::task<bool> clan_test::destroy_clan(std::shared_ptr<game_bot> bot)
     if (npc == nullptr)
         co_return false;
 
-    auto&& resp1 = co_await bot->request<fb::bot::integration::dialog_bot>(
+    auto&& resp1 = co_await bot->request<fb::bot::integration::dialog_ext_bot>(
         game_reqs::click(_clan_npc_oid),
         [&npc](auto& r) {
-            return r.look == npc->look && r.type == fb::bot::integration::dialog_type::menu;
+            return r.look == npc->look && r.type == fb::bot::integration::dialog_ext_type::list;
         },
         DEFAULT_TIMEOUT);
     co_await bot->update_internal_info(DEFAULT_TIMEOUT);
@@ -248,10 +248,10 @@ async::task<bool> clan_test::kick_from_clan(std::shared_ptr<game_bot> kicker, st
     if (npc == nullptr)
         co_return false;
 
-    auto&& resp1 = co_await kicker->request<fb::bot::integration::dialog_bot>(
+    auto&& resp1 = co_await kicker->request<fb::bot::integration::dialog_ext_bot>(
         game_reqs::click(_clan_npc_oid),
         [&npc](auto& r) {
-            return r.look == npc->look && r.type == fb::bot::integration::dialog_type::menu;
+            return r.look == npc->look && r.type == fb::bot::integration::dialog_ext_type::list;
         },
         DEFAULT_TIMEOUT);
     co_await kicker->update_internal_info(DEFAULT_TIMEOUT);
@@ -284,10 +284,10 @@ async::task<bool> clan_test::change_clan_title(std::shared_ptr<game_bot> bot, st
     if (npc == nullptr)
         co_return false;
 
-    auto&& resp1 = co_await bot->request<fb::bot::integration::dialog_bot>(
+    auto&& resp1 = co_await bot->request<fb::bot::integration::dialog_ext_bot>(
         game_reqs::click(_clan_npc_oid),
         [&npc](auto& r) {
-            return r.look == npc->look && r.type == fb::bot::integration::dialog_type::menu;
+            return r.look == npc->look && r.type == fb::bot::integration::dialog_ext_type::list;
         },
         DEFAULT_TIMEOUT);
     co_await bot->update_internal_info(DEFAULT_TIMEOUT);
@@ -388,19 +388,11 @@ async::task<bool> clan_test::test_clan_title()
     auto clan_title = std::format("{}타이틀", bot->name());
     fb::logger::debug("Setting clan title to: {}", clan_title);
 
-    fb::logger::debug("Clicking on NPC to open dialog");
-    std::ignore = co_await bot->request<fb::bot::integration::dialog_bot>(
+    fb::logger::debug("Clicking on NPC to open clan list");
+    std::ignore = co_await bot->request<fb::bot::integration::dialog_ext_bot>(
         game_reqs::click(_clan_npc_oid),
         [&npc](auto& resp) {
-            return resp.type == fb::bot::integration::dialog_type::menu && resp.look == npc->look;
-        },
-        DEFAULT_TIMEOUT);
-
-    fb::logger::debug("Selecting clan title menu option");
-    std::ignore = co_await bot->request<fb::bot::integration::dialog_ext_bot>(
-        game_reqs::dialog(game_reqs::dialog::INTERACTION::LIST, 0, "", 0, 0, "", DIALOG_RESULT::NEXT),
-        [](auto& resp) {
-            return resp.type == fb::bot::integration::dialog_ext_type::list;
+            return resp.type == fb::bot::integration::dialog_ext_type::list && resp.look == npc->look;
         },
         DEFAULT_TIMEOUT);
 

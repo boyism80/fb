@@ -281,7 +281,10 @@ public:
                                       async::awaitable_result<ReturnType> result) {
                                       try
                                       {
-                                          callback(result());
+                                          if (callback)
+                                              callback(result());
+                                          else
+                                              result();
                                       }
                                       catch (std::exception& e)
                                       {

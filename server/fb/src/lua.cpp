@@ -380,8 +380,10 @@ void fb::lua::context::resume(int argc, int* n)
     if (state != LUA_OK)
     {
         // Any non-LUA_OK and non-LUA_YIELD means Lua errored.
+        const char* raw = lua_tostring(*this, -1);
+        auto        message =
+            std::format("lua error message : {}", raw != nullptr ? std::string_view{raw} : std::string_view{});
         lua_pop(*this, 1);
-        auto message = std::format("lua error message : {}", this->tostring(-1).c_str());
         fb::logger::fatal(message);
 
         auto promise = promise_type{this->_promise};

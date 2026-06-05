@@ -149,7 +149,9 @@ void fb::thread::enqueue(handle_func_type<void>&& fn, handle_error_type&& error,
                                   async::awaitable_result<void> result) {
                                   try
                                   {
-                                      callback();
+                                      result();
+                                      if (callback)
+                                          callback();
                                   }
                                   catch (std::exception& e)
                                   {

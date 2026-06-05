@@ -1739,15 +1739,10 @@ std::string game_bot::simple_item::get_equipment_info(const game_bot_controller&
         auto&             model = static_cast<fb::model::equipment&>(*item_model);
 
         sstream << name << std::endl;
+        sstream << "내구성: " << std::to_string(model.durability) << '/' << std::to_string(model.durability) << ' '
+                << std::fixed << std::setprecision(1) << (model.durability / (float)model.durability) * 100 << '%'
+                << std::endl;
 
-        // Add durability info if available (for equipment with durability)
-        if (model.durability > 0)
-        {
-            sstream << "내구성: " << std::to_string(model.durability) << '/' << std::to_string(model.durability) << ' '
-                    << std::fixed << std::setprecision(1) << 100.0 << '%' << std::endl;
-        }
-
-        // Add weapon damage info if it's a weapon
         if (item_model->type == ITEM_TYPE::WEAPON)
         {
             auto& weapon_model = static_cast<const fb::model::weapon&>(*item_model);
@@ -1757,16 +1752,22 @@ std::string game_bot::simple_item::get_equipment_info(const game_bot_controller&
                     << std::to_string(weapon_model.damage_large.max) << std::endl;
         }
 
-        // Add basic stats
         sstream << "무장:   " << std::to_string(model.defensive_physical) << " Hit:  " << std::to_string(model.hit)
                 << " Dam:  " << std::to_string(model.damage);
 
-        // Add stat bonuses
         if (model.base_hp)
             sstream << std::left << std::setw(14) << std::endl << "체력치 상승:" << std::to_string(model.base_hp);
 
         if (model.base_mp)
             sstream << std::left << std::setw(14) << std::endl << "마력치 상승:" << std::to_string(model.base_mp);
+
+        if (model.hp_percentage != 0.0f)
+            sstream << std::left << std::setw(14) << std::endl
+                    << "최대체력 퍼센트:" << std::fixed << std::setprecision(1) << model.hp_percentage << '%';
+
+        if (model.mp_percentage != 0.0f)
+            sstream << std::left << std::setw(14) << std::endl
+                    << "최대마력 퍼센트:" << std::fixed << std::setprecision(1) << model.mp_percentage << '%';
 
         if (model.strength)
             sstream << std::left << std::setw(14) << std::endl << "힘 상승:" << std::to_string(model.strength);
@@ -1780,7 +1781,6 @@ std::string game_bot::simple_item::get_equipment_info(const game_bot_controller&
         if (model.healing_cycle)
             sstream << std::left << std::setw(14) << std::endl << "재생력 상승:" << std::to_string(model.healing_cycle);
 
-        // Add class and level requirements
         auto cls   = CLASS::NONE;
         auto level = uint8_t(0);
         for (auto& dsl : model.condition)
@@ -1811,7 +1811,6 @@ std::string game_bot::simple_item::get_equipment_info(const game_bot_controller&
 
         sstream << " 레벨 " << std::to_string(level) << " 이상";
 
-        // Add description if available
         if (model.desc.empty() == false)
             sstream << std::endl << std::endl << model.desc;
 

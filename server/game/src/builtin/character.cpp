@@ -69,7 +69,6 @@ IMPLEMENT_LUA_EXTENSION(character, "fb.game.character")
 {"shield_color",                 builtin::character::builtin_shield_color},
 {"mkspell",                      builtin::character::builtin_mkspell},
 {"rmspell",                      builtin::character::builtin_rmspell},
-{"spell",                        builtin::character::builtin_spell},
 {"world",                        builtin::character::builtin_world},
 {"ad",                           builtin::character::builtin_ad},
 {"web",                          builtin::character::builtin_web},
@@ -3100,39 +3099,6 @@ int builtin::character::builtin_rmspell(lua_State* L)
     {
         return 0;
     }
-}
-
-int builtin::character::builtin_spell(lua_State* L)
-{
-    auto lua = fb::lua::get(L);
-    if (lua == nullptr)
-        return 0;
-
-    auto ch = lua->touserdata<fb::game::character>(1);
-    if (ch == nullptr)
-        return 0;
-
-    auto name = lua->tostring(2);
-    if (name.empty())
-    {
-        lua->pushnil();
-        return 1;
-    }
-
-    auto model = table::spell.name2spell(name);
-    if (model == nullptr)
-    {
-        lua->pushnil();
-        return 1;
-    }
-
-    auto spell = ch->spells.find(*model);
-    if (spell == nullptr)
-        lua->pushnil();
-    else
-        lua->pushobject(spell);
-
-    return 1;
 }
 
 int builtin::character::builtin_world(lua_State* L)

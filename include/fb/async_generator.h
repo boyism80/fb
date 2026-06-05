@@ -1,6 +1,7 @@
 #ifndef __ASYNC_GENERATOR_H__
 #define __ASYNC_GENERATOR_H__
 
+#include <async/awaitable_then.h>
 #include <async/task.h>
 #include <async/task_completion_source.h>
 #include <coroutine>
@@ -8,6 +9,7 @@
 #include <memory>
 #include <optional>
 #include <stdexcept>
+#include <type_traits>
 #include <utility>
 
 namespace fb {
@@ -17,8 +19,71 @@ namespace fb {
 struct async_suspend
 { };
 
+namespace details {
+
+template <typename U>
+struct async_generator_task_state
+{
+    std::optional<async::awaitable_result<U>> result;
+};
+
+/// Bridges async::task completion back into the generator coroutine without yielding to the consumer.
+template <typename U>
+struct async_generator_task_awaiter
+{
+    async::task<U>                                 task;
+    std::shared_ptr<async_generator_task_state<U>> state = std::make_shared<async_generator_task_state<U>>();
+
+    constexpr bool await_ready() const noexcept
+    {
+        return false;
+    }
+
+    void await_suspend(std::coroutine_handle<> handle)
+    {
+        async::awaitable_then(std::move(this->task),
+                              [state = this->state, handle](async::awaitable_result<U> result) mutable {
+                                  state->result.emplace(std::move(result));
+                                  handle.resume();
+                              });
+    }
+
+    decltype(auto) await_resume()
+    {
+        if (this->state->result.has_value() == false)
+            throw std::runtime_error("async_generator internal task result not available");
+
+        auto result = std::move(*this->state->result);
+        this->state->result.reset();
+
+        if constexpr (std::is_void_v<U>)
+        {
+            result();
+        }
+        else
+        {
+            return result();
+        }
+    }
+};
+
+template <typename U>
+async_generator_task_awaiter<U> make_task_awaiter(async::task<U>&& task)
+{
+    return async_generator_task_awaiter<U>{std::move(task)};
+}
+
+template <typename U>
+async_generator_task_awaiter<U> make_task_awaiter(async::task<U>& task)
+{
+    return async_generator_task_awaiter<U>{std::move(task)};
+}
+
+} // namespace details
+
 /// Async iterable coroutine: supports co_yield and co_await async::task inside the body.
 /// Consumer advances with co_await gen.next() (not synchronous next()).
+/// Only co_yield yields to the consumer; co_await async::task runs internally until the next yield.
 template <typename T>
 class async_generator
 {
@@ -29,7 +94,8 @@ class async_generator
     {
         std::optional<T>                                     current_value;
         std::exception_ptr                                   exception;
-        bool                                                 yielded = false;
+        bool                                                 yielded             = false;
+        bool                                                 advance_in_progress = false;
         std::shared_ptr<async::task_completion_source<void>> signal;
 
         auto get_return_object()
@@ -69,13 +135,13 @@ class async_generator
         template <typename U>
         auto await_transform(async::task<U>&& task)
         {
-            return std::forward<async::task<U>>(task);
+            return details::make_task_awaiter(std::forward<async::task<U>>(task));
         }
 
         template <typename U>
         auto await_transform(async::task<U>& task)
         {
-            return task;
+            return details::make_task_awaiter(task);
         }
 
         void prepare_advance()
@@ -88,7 +154,10 @@ class async_generator
         void notify()
         {
             if (this->signal != nullptr)
-                this->signal->set_value();
+            {
+                std::exception_ptr completion_exception{};
+                std::ignore = this->signal->try_set_value(completion_exception);
+            }
         }
     };
 
@@ -106,31 +175,45 @@ public:
 
         auto& promise = this->_coro.promise();
 
-        while (true)
+        if (promise.advance_in_progress)
+            co_return false;
+
+        promise.advance_in_progress = true;
+        struct advance_scope
         {
-            promise.prepare_advance();
-            this->_coro.resume();
+            promise_type* promise;
 
-            if (promise.yielded)
-                co_return true;
-
-            if (this->_coro.done())
+            ~advance_scope()
             {
-                this->rethrow_if_exception();
-                co_return false;
+                this->promise->advance_in_progress = false;
             }
+        } scope{&promise};
 
-            co_await promise.signal->task();
+        promise.prepare_advance();
+        this->_coro.resume();
 
-            if (promise.yielded)
-                co_return true;
+        if (promise.yielded)
+            co_return true;
 
-            if (this->_coro.done())
-            {
-                this->rethrow_if_exception();
-                co_return false;
-            }
+        if (this->_coro.done())
+        {
+            this->rethrow_if_exception();
+            co_return false;
         }
+
+        auto signal = promise.signal;
+        co_await signal->task();
+
+        if (promise.yielded)
+            co_return true;
+
+        if (this->_coro.done())
+        {
+            this->rethrow_if_exception();
+            co_return false;
+        }
+
+        co_return false;
     }
 
     [[nodiscard]] const T& value() const
@@ -191,6 +274,7 @@ private:
 };
 
 /// Async coroutine with no yielded values: co_await async::task and co_await async_suspend only.
+/// co_await async_suspend yields to the consumer; co_await async::task does not.
 template <>
 class async_generator<void>
 {
@@ -224,7 +308,8 @@ public:
     struct promise_type
     {
         std::exception_ptr                                   exception;
-        bool                                                 step_completed = false;
+        bool                                                 step_completed      = false;
+        bool                                                 advance_in_progress = false;
         std::shared_ptr<async::task_completion_source<void>> signal;
 
         auto get_return_object()
@@ -261,13 +346,13 @@ public:
         template <typename U>
         auto await_transform(async::task<U>&& task)
         {
-            return std::forward<async::task<U>>(task);
+            return details::make_task_awaiter(std::forward<async::task<U>>(task));
         }
 
         template <typename U>
         auto await_transform(async::task<U>& task)
         {
-            return task;
+            return details::make_task_awaiter(task);
         }
 
         void prepare_advance()
@@ -279,7 +364,10 @@ public:
         void notify()
         {
             if (this->signal != nullptr)
-                this->signal->set_value();
+            {
+                std::exception_ptr completion_exception{};
+                std::ignore = this->signal->try_set_value(completion_exception);
+            }
         }
     };
 
@@ -297,31 +385,45 @@ public:
 
         auto& promise = this->_coro.promise();
 
-        while (true)
+        if (promise.advance_in_progress)
+            co_return false;
+
+        promise.advance_in_progress = true;
+        struct advance_scope
         {
-            promise.prepare_advance();
-            this->_coro.resume();
+            promise_type* promise;
 
-            if (promise.step_completed)
-                co_return true;
-
-            if (this->_coro.done())
+            ~advance_scope()
             {
-                this->rethrow_if_exception();
-                co_return false;
+                this->promise->advance_in_progress = false;
             }
+        } scope{&promise};
 
-            co_await promise.signal->task();
+        promise.prepare_advance();
+        this->_coro.resume();
 
-            if (promise.step_completed)
-                co_return true;
+        if (promise.step_completed)
+            co_return true;
 
-            if (this->_coro.done())
-            {
-                this->rethrow_if_exception();
-                co_return false;
-            }
+        if (this->_coro.done())
+        {
+            this->rethrow_if_exception();
+            co_return false;
         }
+
+        auto signal = promise.signal;
+        co_await signal->task();
+
+        if (promise.step_completed)
+            co_return true;
+
+        if (this->_coro.done())
+        {
+            this->rethrow_if_exception();
+            co_return false;
+        }
+
+        co_return false;
     }
 
     [[nodiscard]] bool done() const noexcept
