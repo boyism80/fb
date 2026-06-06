@@ -127,16 +127,18 @@ function NPC_117(me, npc)
         if selected == nil or selected ~= 0 then
             return
         end
-        local money = me:money()
-        if money < 1000 then
+        local code = me:exchange(
+            { ['money'] = 1000 },
+            { ['item'] = { [ITEM_BONG_BOOK] = 1 } }
+        )
+        if code == EXCHANGE_RESULT.LACK_COST then
             me:dialog(npc, '돈이 부족하지 않나?', false, true)
             return
         end
-        if me:mkitem(ITEM_BONG_BOOK, 1) == nil then
+        if code == EXCHANGE_RESULT.LACK_CAPACITY then
             me:dialog(npc, '소지품이 가득 차서 줄 수가 없네.', false, true)
             return
         end
-        me:money(money - 1000)
         me:dialog(npc, '다시 잘 읽어봐!', false, true)
     else
         me:dialog(npc, '어때? 봉래산전설은 재미있나?', false, true)
