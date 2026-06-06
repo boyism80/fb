@@ -1789,10 +1789,9 @@ int builtin::character::builtin_group(lua_State* L)
             {
                 async::awaitable_then(lua->switching(), [lua, server, gid = group_id.value()](auto result) {
                     result();
-                    server->groups.read(gid, [=](const auto& group) {
-                        lua->pushobject(group);
-                        lua->resume(1);
-                    });
+                    auto guard = server->groups.enter_read(gid);
+                    lua->pushobject(guard.value());
+                    lua->resume(1);
                 });
             }
             co_return;
@@ -1827,10 +1826,9 @@ int builtin::character::builtin_group(lua_State* L)
                 }
                 else
                 {
-                    return server->groups.read(group_id.value(), [=](const auto& group) {
-                        lua->pushobject(group);
-                        return static_func(lua);
-                    });
+                    auto guard = server->groups.enter_read(group_id.value());
+                    lua->pushobject(guard.value());
+                    return static_func(lua);
                 }
             });
         });
@@ -1932,10 +1930,9 @@ int builtin::character::builtin_clan(lua_State* L)
             {
                 async::awaitable_then(lua->switching(), [lua, server, cid = clan_id.value()](auto result) {
                     result();
-                    server->clans.read(cid, [=](const auto& clan) {
-                        lua->pushobject(clan);
-                        lua->resume(1);
-                    });
+                    auto guard = server->clans.enter_read(cid);
+                    lua->pushobject(guard.value());
+                    lua->resume(1);
                 });
             }
             co_return;
@@ -1974,10 +1971,9 @@ int builtin::character::builtin_clan(lua_State* L)
             {
                 async::awaitable_then(lua->switching(), [lua, server, cid = clan_id.value()](auto result) {
                     result();
-                    server->clans.read(cid, [=](const auto& clan) {
-                        lua->pushobject(clan);
-                        lua->resume(1);
-                    });
+                    auto guard = server->clans.enter_read(cid);
+                    lua->pushobject(guard.value());
+                    lua->resume(1);
                 });
             }
         };

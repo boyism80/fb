@@ -50,6 +50,11 @@ local function marriage_npc(me, npc)
             return
         end
 
+        if found:gender() == me:gender() then
+            me:dialog(npc, '같은 성별끼리는 결혼할 수 없습니다.')
+            return
+        end
+
         local target_m = found:marriage()
         if target_m.married then
             me:dialog(npc, '이미 결혼한 상대와는 결혼을 할 수 없습니다.')

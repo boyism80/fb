@@ -22,7 +22,7 @@ class acceptor : public fb::async_executor, public boost::asio::ip::tcp::accepto
 {
 public:
     using socket_container      = std::unordered_map<uint32_t, std::shared_ptr<fb::socket<T>>>;
-    using socket_container_lock = fb::locker<socket_container>;
+    using socket_container_sync = fb::synchronized<socket_container>;
     using boost_timers          = std::vector<std::shared_ptr<boost::asio::deadline_timer>>;
     using session_type          = fb::socket<T>;
 
@@ -50,7 +50,7 @@ private:
     fb::model::timespan _now_offset;
 
 protected:
-    socket_container_lock _sockets;
+    socket_container_sync _sockets;
 
 protected:
     acceptor(boost::asio::io_context& context, std::string_view name, uint16_t port, size_t http_max_concurrent = 500) :

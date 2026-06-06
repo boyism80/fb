@@ -22,7 +22,7 @@
 #include <fb/game/storage.h>
 #include <fb/game/system_storage_box.h>
 #include <fb/log_collector.h>
-#include <fb/locker.h>
+#include <fb/synchronized.h>
 #include <vector>
 #include <memory>
 #include <mutex>
@@ -107,18 +107,18 @@ private:
     double              _drop_rate_multiplier;
 
 public:
-    fb::log_collector                                        log;
-    listener_impl                                            listener;
-    map_container                                            maps;
-    fb::locker<character::container>                         characters;
-    clan_container                                           clans;
-    group_container                                          groups;
-    mail_service                                             mail;
-    bulletin_service                                         bulletin;
-    system_storage_service                                   system_storage;
-    system_mail_service                                      system_mail;
-    schedule_service                                         schedules;
-    fb::locker<std::unordered_map<std::string, Json::Value>> globals;
+    fb::log_collector                                              log;
+    listener_impl                                                  listener;
+    map_container                                                  maps;
+    fb::synchronized<character::container>                         characters;
+    clan_container                                                 clans;
+    group_container                                                groups;
+    mail_service                                                   mail;
+    bulletin_service                                               bulletin;
+    system_storage_service                                         system_storage;
+    system_mail_service                                            system_mail;
+    schedule_service                                               schedules;
+    fb::synchronized<std::unordered_map<std::string, Json::Value>> globals;
 
 public:
     server(boost::asio::io_context& io_context, uint16_t port);

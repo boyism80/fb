@@ -21,7 +21,7 @@ extern "C"
 #include <macro.h>
 #include <fb/encoding.h>
 #include <fb/logger.h>
-#include <fb/locker.h>
+#include <fb/synchronized.h>
 #include <async/task.h>
 #include <async/task_completion_source.h>
 #include <shared_mutex>

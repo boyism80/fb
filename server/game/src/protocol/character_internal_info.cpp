@@ -19,10 +19,9 @@ async::task<void> internal_info::serialize(fb::stream_writer<big_endian>& writer
     auto& clan_id = this->ch.clan_id();
     if (clan_id.has_value())
     {
-        this->ch.server.clans.read(clan_id.value(), [&writer](auto& clan) {
-            writer.write<std::string>(clan->name());
-            writer.write<std::string>(clan->title().value_or(""));
-        });
+        auto guard = this->ch.server.clans.enter_read(clan_id.value());
+        writer.write<std::string>(guard.value()->name());
+        writer.write<std::string>(guard.value()->title().value_or(""));
     }
     else
     {
@@ -31,26 +30,33 @@ async::task<void> internal_info::serialize(fb::stream_writer<big_endian>& writer
     }
     writer.write<std::string>(this->ch.title());
 
+    auto  sstream  = std::stringstream();
+    auto& marriage = this->ch.marriage();
+    if (marriage.spouse_id.has_value())
+    {
+        sstream << "배우자: " << marriage.spouse_name << std::endl;
+    }
+
     auto& group_id = this->ch.group_id();
     if (group_id.has_value())
     {
-        this->ch.server.groups.read(group_id.value(), [&writer](auto& group) {
-            auto sstream = std::stringstream();
-            sstream << _TEXT(MESSAGE_GROUP_MEMBERS_HEADER) << std::endl << "  * " << group->master() << std::endl;
+        auto  guard   = this->ch.server.groups.enter_read(group_id.value());
+        auto& group   = guard.value();
+        auto  sstream = std::stringstream();
+        sstream << _TEXT(MESSAGE_GROUP_MEMBERS_HEADER) << std::endl << "  * " << group->master() << std::endl;
 
-            auto master_name = group->master();
-            for (auto& member : group->members())
-            {
-                if (member != master_name)
-                    sstream << "    " << member << std::endl;
-            }
-            writer.write<std::string>(sstream.str());
-        });
+        auto master_name = group->master();
+        for (auto& member : group->members())
+        {
+            if (member != master_name)
+                sstream << "    " << member << std::endl;
+        }
     }
     else
     {
-        writer.write<std::string>(_TEXT(MESSAGE_GROUP_NONE));
+        sstream << _TEXT(MESSAGE_GROUP_NONE);
     }
+    writer.write<std::string>(sstream.str());
     writer.write<uint8_t>(this->ch.option(OPTION::GROUP));
 
     uint32_t remained_exp = this->ch.experience_remained();

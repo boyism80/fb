@@ -1,5 +1,5 @@
-#ifndef __LOCKER_H__
-#define __LOCKER_H__
+﻿#ifndef __SYNCHRONIZED_H__
+#define __SYNCHRONIZED_H__
 
 #include <shared_mutex>
 #include <functional>
@@ -194,7 +194,7 @@ private:
 };
 
 template <typename ValueType>
-class locker
+class synchronized
 {
 public:
     class write_guard
@@ -211,12 +211,12 @@ public:
         }
 
     private:
-        friend class locker;
+        friend class synchronized;
 
-        locker*                             _owner;
+        synchronized*                       _owner;
         std::unique_lock<std::shared_mutex> _lock;
 
-        write_guard(locker& owner, std::unique_lock<std::shared_mutex>&& lock) noexcept :
+        write_guard(synchronized& owner, std::unique_lock<std::shared_mutex>&& lock) noexcept :
             _owner(&owner),
             _lock(std::move(lock))
         { }
@@ -236,12 +236,12 @@ public:
         }
 
     private:
-        friend class locker;
+        friend class synchronized;
 
-        const locker*                       _owner;
+        const synchronized*                 _owner;
         std::shared_lock<std::shared_mutex> _lock;
 
-        read_guard(const locker& owner, std::shared_lock<std::shared_mutex>&& lock) noexcept :
+        read_guard(const synchronized& owner, std::shared_lock<std::shared_mutex>&& lock) noexcept :
             _owner(&owner),
             _lock(std::move(lock))
         { }
@@ -285,13 +285,13 @@ public:
         }
 
     private:
-        friend class locker;
+        friend class synchronized;
 
-        locker*                             _owner = nullptr;
+        synchronized*                       _owner = nullptr;
         std::unique_lock<std::shared_mutex> _lock;
         bool                                _async_locked = false;
 
-        async_write_guard(locker& owner, std::unique_lock<std::shared_mutex>&& lock, bool async_locked) noexcept :
+        async_write_guard(synchronized& owner, std::unique_lock<std::shared_mutex>&& lock, bool async_locked) noexcept :
             _owner(&owner),
             _lock(std::move(lock)),
             _async_locked(async_locked)
@@ -350,13 +350,15 @@ public:
         }
 
     private:
-        friend class locker;
+        friend class synchronized;
 
-        const locker*                       _owner = nullptr;
+        const synchronized*                 _owner = nullptr;
         std::shared_lock<std::shared_mutex> _lock;
         bool                                _async_locked = false;
 
-        async_read_guard(const locker& owner, std::shared_lock<std::shared_mutex>&& lock, bool async_locked) noexcept :
+        async_read_guard(const synchronized&                   owner,
+                         std::shared_lock<std::shared_mutex>&& lock,
+                         bool                                  async_locked) noexcept :
             _owner(&owner),
             _lock(std::move(lock)),
             _async_locked(async_locked)
@@ -383,13 +385,13 @@ private:
     ValueType                  _value;
 
 public:
-    template <typename... Args> locker(Args&&... args) :
+    template <typename... Args> synchronized(Args&&... args) :
         _value(std::forward<Args>(args)...)
     { }
 
-    locker(const locker&) = delete;
-    locker(locker&&)      = delete;
-    ~locker()             = default;
+    synchronized(const synchronized&) = delete;
+    synchronized(synchronized&&)      = delete;
+    ~synchronized()                   = default;
 
     write_guard enter_write()
     {
@@ -531,20 +533,20 @@ public:
 };
 
 template <typename ValueType>
-class recursive_locker
+class recursive_synchronized
 {
 private:
     mutable std::recursive_mutex _mutex;
     ValueType                    _value;
 
 public:
-    template <typename... Args> recursive_locker(Args&&... args) :
+    template <typename... Args> recursive_synchronized(Args&&... args) :
         _value(std::forward<Args>(args)...)
     { }
 
-    recursive_locker(const recursive_locker&) = delete;
-    recursive_locker(recursive_locker&&)      = delete;
-    ~recursive_locker()                       = default;
+    recursive_synchronized(const recursive_synchronized&) = delete;
+    recursive_synchronized(recursive_synchronized&&)      = delete;
+    ~recursive_synchronized()                             = default;
     template <typename Func> auto lock(Func&& fn) -> decltype(fn(std::declval<ValueType&>()))
     {
         std::lock_guard<std::recursive_mutex> lock(this->_mutex);

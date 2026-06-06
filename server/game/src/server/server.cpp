@@ -451,12 +451,14 @@ server::send(object& object, const fb::protocol::header& header, fb::game::scope
         if (group_id.has_value() == false)
             co_return;
 
-        this->groups.read(group_id.value(), [&stream, encrypt](auto& group) {
+        {
+            auto  guard = this->groups.enter_read(group_id.value());
+            auto& group = guard.value();
             for (auto& shared_ptr : group->characters())
             {
                 shared_ptr->send(stream, encrypt);
             }
-        });
+        }
     }
     break;
 

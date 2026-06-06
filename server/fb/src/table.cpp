@@ -1,5 +1,5 @@
 #include <fb/table.h>
-#include <fb/locker.h>
+#include <fb/synchronized.h>
 
 using namespace fb::table;
 
@@ -35,7 +35,7 @@ uint32_t fb::table::load(std::string_view path, const handle_callback& callback,
         int                                                              read = 0;
     };
 
-    fb::locker<work_data> work;
+    fb::synchronized<work_data> work;
 
     for (auto i = data.begin(); i != data.end(); i++)
     {

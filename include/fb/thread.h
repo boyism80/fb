@@ -1,4 +1,4 @@
-﻿#ifndef __THREAD_H__
+#ifndef __THREAD_H__
 #define __THREAD_H__
 
 #include <thread>
@@ -16,7 +16,7 @@
 #include <fb/model/datetime.h>
 #include <unordered_set>
 #include <fb/lua.h>
-#include <fb/locker.h>
+#include <fb/synchronized.h>
 #include <boost/stacktrace.hpp>
 #include <memory>
 
@@ -59,7 +59,7 @@ private:
     std::unique_ptr<void, std::function<void(void*)>> _data;
 
 private:
-    fb::locker<std::queue<std::function<void()>>> _queue;
+    fb::synchronized<std::queue<std::function<void()>>> _queue;
 
 public:
     thread(uint8_t index);

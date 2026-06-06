@@ -482,6 +482,13 @@ local function run_change_gender(me, npc)
     if button == DIALOG_RESULT.QUIT then
         return false
     end
+
+    local m = me:marriage()
+    if m.married then
+        me:dialog(npc, '음... 결혼한 상태에서는 성전환 수술을 할 수 없네. 먼저 이혼을 한 뒤에 다시 오도록 하게.')
+        return false
+    end
+
     button = me:dialog(npc, '음... 아직 결혼한 상태가 아니니... 수술을 시작해 봐야지.', false, true)
     if button == DIALOG_RESULT.QUIT then
         return false

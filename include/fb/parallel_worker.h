@@ -9,7 +9,7 @@
 #include <future>
 #include <algorithm>
 #include <fb/generator.h>
-#include <fb/locker.h>
+#include <fb/synchronized.h>
 
 namespace fb {
 
@@ -32,8 +32,8 @@ public:
         auto indices   = std::unordered_map<T*, int>();
         auto processed = std::atomic<int>(0);
 
-        auto queue  = fb::locker<std::queue<T>>();
-        auto buffer = fb::locker<std::unordered_map<uint32_t, std::unique_ptr<std::vector<R>>>>();
+        auto queue  = fb::synchronized<std::queue<T>>();
+        auto buffer = fb::synchronized<std::unordered_map<uint32_t, std::unique_ptr<std::vector<R>>>>();
 
         auto gen_ready = this->on_ready();
         while (gen_ready.next())
@@ -161,8 +161,8 @@ protected:
 public:
     void run()
     {
-        fb::locker<std::queue<T>> queue;
-        std::atomic<int>          processed{0};
+        fb::synchronized<std::queue<T>> queue;
+        std::atomic<int>                processed{0};
 
         auto gen = this->on_ready();
         while (gen.next())

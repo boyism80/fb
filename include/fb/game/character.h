@@ -5,7 +5,7 @@
 #include <algorithm>
 #include <fb/game/dialog.h>
 #include <fb/game/character.h>
-#include <fb/locker.h>
+#include <fb/synchronized.h>
 #include <fb/socket.h>
 #include <iostream>
 #include <fb/game/mob.h>

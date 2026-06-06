@@ -428,10 +428,12 @@ void mob::on_die(std::shared_ptr<object> from, DESTROY_TYPE destroy_type)
         {
             // Group experience distribution
             auto server = &ch.server;
-            server->groups.read(group_id.value(), [server, &ch, map, exp](auto& group) {
-                auto nears      = group->nears(*map, ch.position());
-                auto size       = nears.size();
-                auto divide_exp = exp / size;
+            {
+                auto  guard      = server->groups.enter_read(group_id.value());
+                auto& group      = guard.value();
+                auto  nears      = group->nears(*map, ch.position());
+                auto  size       = nears.size();
+                auto  divide_exp = exp / size;
                 for (auto& member : nears)
                 {
                     auto shared_ptr = member.lock();
@@ -440,7 +442,7 @@ void mob::on_die(std::shared_ptr<object> from, DESTROY_TYPE destroy_type)
 
                     shared_ptr->add_exp(divide_exp, true, true);
                 }
-            });
+            }
         }
         else
         {

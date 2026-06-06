@@ -3,7 +3,7 @@
 
 #include <fb/bot/bot.h>
 #include <fb/bot/container.h>
-#include <fb/locker.h>
+#include <fb/synchronized.h>
 #include <fb/protocol/header.h>
 
 namespace fb::bot {
@@ -41,7 +41,7 @@ private:
     std::shared_mutex                           _handler_mutex;
 
 protected:
-    fb::locker<std::unordered_map<uint32_t, std::shared_ptr<BotType>>> _bots;
+    fb::synchronized<std::unordered_map<uint32_t, std::shared_ptr<BotType>>> _bots;
 
 protected:
     bot_controller(bot_container& container) :

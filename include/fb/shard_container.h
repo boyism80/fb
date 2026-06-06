@@ -15,7 +15,8 @@
 #include <memory>
 #include <coroutine>
 #include <list>
-#include <fb/locker.h>
+#include <stdexcept>
+#include <fb/synchronized.h>
 
 // Microsoft cpp-async library
 #include <async/task.h>
@@ -157,8 +158,108 @@ class sub_container
 public:
     using map_type = unordered_lru_map<T, HashType>;
 
+    class read_guard
+    {
+    public:
+        read_guard(read_guard&&) noexcept         = default;
+        read_guard& operator= (read_guard&&)      = delete;
+        read_guard(const read_guard&)             = delete;
+        read_guard& operator= (const read_guard&) = delete;
+
+        const T& value() const noexcept
+        {
+            return this->_map_guard.value().at(this->_hash);
+        }
+
+    private:
+        friend class sub_container;
+
+        typename fb::synchronized<map_type>::read_guard _map_guard;
+        HashType                                        _hash;
+
+        read_guard(typename fb::synchronized<map_type>::read_guard&& map_guard, HashType hash) noexcept :
+            _map_guard(std::move(map_guard)),
+            _hash(hash)
+        { }
+    };
+
+    class write_guard
+    {
+    public:
+        write_guard(write_guard&&) noexcept         = default;
+        write_guard& operator= (write_guard&&)      = delete;
+        write_guard(const write_guard&)             = delete;
+        write_guard& operator= (const write_guard&) = delete;
+
+        T& value() noexcept
+        {
+            return this->_map_guard.value().at(this->_hash);
+        }
+
+    private:
+        friend class sub_container;
+
+        typename fb::synchronized<map_type>::write_guard _map_guard;
+        HashType                                         _hash;
+
+        write_guard(typename fb::synchronized<map_type>::write_guard&& map_guard, HashType hash) noexcept :
+            _map_guard(std::move(map_guard)),
+            _hash(hash)
+        { }
+    };
+
+    class async_read_guard
+    {
+    public:
+        async_read_guard(async_read_guard&&) noexcept         = default;
+        async_read_guard& operator= (async_read_guard&&)      = delete;
+        async_read_guard(const async_read_guard&)             = delete;
+        async_read_guard& operator= (const async_read_guard&) = delete;
+
+        const T& value() const noexcept
+        {
+            return this->_map_guard.value().at(this->_hash);
+        }
+
+    private:
+        friend class sub_container;
+
+        typename fb::synchronized<map_type>::async_read_guard _map_guard;
+        HashType                                              _hash;
+
+        async_read_guard(typename fb::synchronized<map_type>::async_read_guard&& map_guard, HashType hash) noexcept :
+            _map_guard(std::move(map_guard)),
+            _hash(hash)
+        { }
+    };
+
+    class async_write_guard
+    {
+    public:
+        async_write_guard(async_write_guard&&) noexcept         = default;
+        async_write_guard& operator= (async_write_guard&&)      = delete;
+        async_write_guard(const async_write_guard&)             = delete;
+        async_write_guard& operator= (const async_write_guard&) = delete;
+
+        T& value() noexcept
+        {
+            return this->_map_guard.value().at(this->_hash);
+        }
+
+    private:
+        friend class sub_container;
+
+        typename fb::synchronized<map_type>::async_write_guard _map_guard;
+        HashType                                               _hash;
+
+        async_write_guard(typename fb::synchronized<map_type>::async_write_guard&& map_guard, HashType hash) noexcept :
+            _map_guard(std::move(map_guard)),
+            _hash(hash)
+        { }
+    };
+
 private:
-    fb::locker<map_type> _data;
+    fb::synchronized<map_type> _data;
 
 public:
     explicit sub_container(size_t capacity = 0xFFFFFFFF) :
@@ -288,38 +389,105 @@ public:
         }
     }
 
+    read_guard enter_read(HashType hash) const
+    {
+        auto        map_guard = this->_data.enter_read();
+        const auto& data      = map_guard.value();
+        if (data.contains(hash) == false)
+            throw std::runtime_error("Element not found");
+
+        return read_guard(std::move(map_guard), hash);
+    }
+
+    std::optional<read_guard> try_enter_read(HashType hash) const
+    {
+        auto        map_guard = this->_data.enter_read();
+        const auto& data      = map_guard.value();
+        if (data.contains(hash) == false)
+            return std::nullopt;
+
+        return read_guard(std::move(map_guard), hash);
+    }
+
+    write_guard enter_write(HashType hash)
+    {
+        auto  map_guard = this->_data.enter_write();
+        auto& data      = map_guard.value();
+        if (data.contains(hash) == false)
+            throw std::runtime_error("Element not found");
+
+        return write_guard(std::move(map_guard), hash);
+    }
+
+    async::task<async_read_guard> enter_read_async(HashType hash) const
+    {
+        auto        map_guard = co_await this->_data.enter_read_async();
+        const auto& data      = map_guard.value();
+        if (data.contains(hash) == false)
+            throw std::runtime_error("Element not found");
+
+        co_return async_read_guard(std::move(map_guard), hash);
+    }
+
+    async::task<async_write_guard> enter_write_async(HashType hash)
+    {
+        auto  map_guard = co_await this->_data.enter_write_async();
+        auto& data      = map_guard.value();
+        if (data.contains(hash) == false)
+            throw std::runtime_error("Element not found");
+
+        co_return async_write_guard(std::move(map_guard), hash);
+    }
+
+    async::task<std::optional<async_read_guard>> try_enter_read_async(HashType hash) const
+    {
+        auto map_guard = co_await this->_data.try_enter_read_async();
+        if (map_guard.has_value() == false)
+            co_return std::nullopt;
+
+        const auto& data = map_guard->value();
+        if (data.contains(hash) == false)
+            throw std::runtime_error("Element not found");
+
+        co_return async_read_guard(std::move(*map_guard), hash);
+    }
+
+    async::task<std::optional<async_write_guard>> try_enter_write_async(HashType hash)
+    {
+        auto map_guard = co_await this->_data.try_enter_write_async();
+        if (map_guard.has_value() == false)
+            co_return std::nullopt;
+
+        auto& data = map_guard->value();
+        if (data.contains(hash) == false)
+            throw std::runtime_error("Element not found");
+
+        co_return async_write_guard(std::move(*map_guard), hash);
+    }
+
     template <typename Func>
     auto read(HashType hash, Func&& func) const
     {
-        auto        guard = this->_data.enter_read();
-        const auto& data  = guard.value();
-        if (!data.contains(hash))
-            throw std::runtime_error("Element not found");
-
-        return func(data.at(hash));
+        auto guard = this->enter_read(hash);
+        return func(guard.value());
     }
 
     template <typename Func>
     bool try_read(HashType hash, Func&& func) const
     {
-        auto        guard = this->_data.enter_read();
-        const auto& data  = guard.value();
-        if (!data.contains(hash))
+        auto guard = this->try_enter_read(hash);
+        if (guard.has_value() == false)
             return false;
 
-        func(data.at(hash));
+        func(guard->value());
         return true;
     }
 
     template <typename Func>
     auto write(HashType hash, Func&& func)
     {
-        auto  guard = this->_data.enter_write();
-        auto& data  = guard.value();
-        if (!data.contains(hash))
-            throw std::runtime_error("Element not found");
-
-        return func(data.at(hash));
+        auto guard = this->enter_write(hash);
+        return func(guard.value());
     }
 
     template <typename Func, typename Factory>
@@ -348,16 +516,12 @@ public:
         using task_type = decltype(func(std::declval<const T&>()));
 
         auto func_holder = std::make_shared<std::decay_t<Func>>(std::forward<Func>(func));
-
-        auto        guard = co_await this->_data.enter_read_async();
-        const auto& data  = guard.value();
-        if (!data.contains(hash))
-            throw std::runtime_error("Element not found");
+        auto guard       = co_await this->enter_read_async(hash);
 
         if constexpr (std::is_same_v<task_type, async::task<void>>)
-            co_await (*func_holder)(data.at(hash));
+            co_await (*func_holder)(guard.value());
         else
-            co_return co_await (*func_holder)(data.at(hash));
+            co_return co_await (*func_holder)(guard.value());
     }
 
     template <typename Func>
@@ -370,23 +534,15 @@ public:
         if constexpr (std::is_same_v<task_type, async::task<void>>)
         {
             return [this, hash, func_holder]() -> async::task<void> {
-                auto  guard = co_await this->_data.enter_write_async();
-                auto& data  = guard.value();
-                if (!data.contains(hash))
-                    throw std::runtime_error("Element not found");
-
-                co_await (*func_holder)(data.at(hash));
+                auto guard = co_await this->enter_write_async(hash);
+                co_await (*func_holder)(guard.value());
             }();
         }
         else
         {
             return [this, hash, func_holder]() -> task_type {
-                auto  guard = co_await this->_data.enter_write_async();
-                auto& data  = guard.value();
-                if (!data.contains(hash))
-                    throw std::runtime_error("Element not found");
-
-                co_return co_await (*func_holder)(data.at(hash));
+                auto guard = co_await this->enter_write_async(hash);
+                co_return co_await (*func_holder)(guard.value());
             }();
         }
     }
@@ -395,16 +551,12 @@ public:
     auto try_async_read(HashType hash, Func&& func) const -> async::task<bool>
     {
         auto func_holder = std::make_shared<std::decay_t<Func>>(std::forward<Func>(func));
+        auto guard       = co_await this->try_enter_read_async(hash);
 
-        auto guard = co_await this->_data.try_enter_read_async();
         if (guard.has_value() == false)
             co_return false;
 
-        const auto& data = guard->value();
-        if (!data.contains(hash))
-            throw std::runtime_error("Element not found");
-
-        co_await (*func_holder)(data.at(hash));
+        co_await (*func_holder)(guard->value());
         co_return true;
     }
 
@@ -412,16 +564,12 @@ public:
     auto try_async_write(HashType hash, Func&& func) -> async::task<bool>
     {
         auto func_holder = std::make_shared<std::decay_t<Func>>(std::forward<Func>(func));
+        auto guard       = co_await this->try_enter_write_async(hash);
 
-        auto guard = co_await this->_data.try_enter_write_async();
         if (guard.has_value() == false)
             co_return false;
 
-        auto& data = guard->value();
-        if (!data.contains(hash))
-            throw std::runtime_error("Element not found");
-
-        co_await (*func_holder)(data.at(hash));
+        co_await (*func_holder)(guard->value());
         co_return true;
     }
 
@@ -607,6 +755,41 @@ public:
     auto async_erase(HashType hash, Callback&& callback = nullptr)
     {
         return this->bucket(hash)->async_erase(hash, std::forward<Callback>(callback));
+    }
+
+    typename sub_container_type::read_guard enter_read(HashType hash) const
+    {
+        return this->bucket(hash)->enter_read(hash);
+    }
+
+    std::optional<typename sub_container_type::read_guard> try_enter_read(HashType hash) const
+    {
+        return this->bucket(hash)->try_enter_read(hash);
+    }
+
+    typename sub_container_type::write_guard enter_write(HashType hash)
+    {
+        return this->bucket(hash)->enter_write(hash);
+    }
+
+    async::task<typename sub_container_type::async_read_guard> enter_read_async(HashType hash) const
+    {
+        co_return co_await this->bucket(hash)->enter_read_async(hash);
+    }
+
+    async::task<typename sub_container_type::async_write_guard> enter_write_async(HashType hash)
+    {
+        co_return co_await this->bucket(hash)->enter_write_async(hash);
+    }
+
+    async::task<std::optional<typename sub_container_type::async_read_guard>> try_enter_read_async(HashType hash) const
+    {
+        co_return co_await this->bucket(hash)->try_enter_read_async(hash);
+    }
+
+    async::task<std::optional<typename sub_container_type::async_write_guard>> try_enter_write_async(HashType hash)
+    {
+        co_return co_await this->bucket(hash)->try_enter_write_async(hash);
     }
 
     template <typename Func>

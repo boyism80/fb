@@ -5,7 +5,7 @@
 #include <async/awaitable_get.h>
 #include <async/awaitable_then.h>
 #include <fb/hash.h>
-#include <fb/locker.h>
+#include <fb/synchronized.h>
 #include <fb/logger.h>
 #include <fb/thread_container.h>
 #include <format>
