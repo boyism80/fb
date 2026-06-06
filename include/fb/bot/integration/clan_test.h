@@ -36,7 +36,7 @@ private:
                                       std::string_view                        step,
                                       std::initializer_list<std::string_view> extra_args = {});
 
-    static constexpr std::string_view SCRIPT_FILE = "scripts/clan_test.lua";
+    static constexpr std::string_view SCRIPT_FILE = "scripts/integration.lua";
 };
 
 } // namespace fb::bot::integration

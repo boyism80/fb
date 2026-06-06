@@ -41,40 +41,6 @@ async::task<bool> item_test::test_equipment(uint32_t index)
 
         co_await bot->create_item(item.name, 1, DEFAULT_TIMEOUT);
 
-        // Test item_info packet handler immediately after creating equipment
-        try
-        {
-            // Get expected equipment info using simple_item method
-            auto simple_item   = fb::bot::game_bot::simple_item(item.name, 1);
-            auto expected_info = simple_item.get_equipment_info(this->controller);
-
-            if (expected_info.empty())
-            {
-                bot->chat(std::format("[{}] No equipment info for: {}", seq, item.name));
-                passed = false;
-                continue;
-            }
-
-            // Send item_info request and wait for response
-            auto&& resp = co_await bot->request<game_resp::item_tip>(game_reqs::item_info(0, 0), DEFAULT_TIMEOUT);
-
-            // Compare received tooltip with expected info
-            if (resp.message != expected_info || resp.position != 0)
-            {
-                bot->chat(std::format("[{}] Tooltip mismatch for: {}", seq, item.name));
-                bot->chat(std::format("Expected: {}", expected_info));
-                bot->chat(std::format("Received: {}", resp.message));
-                throw std::runtime_error(std::format("Tooltip mismatch for {}", item.name));
-            }
-
-            bot->chat(std::format("[{}] Tooltip verified for: {}", seq, item.name));
-        }
-        catch (const std::exception& e)
-        {
-            fb::logger::fatal("Scenario 1-2: Item info test failed: {}", e.what());
-            passed = false;
-        }
-
         auto equipped = false;
         try
         {

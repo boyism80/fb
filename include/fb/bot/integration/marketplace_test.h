@@ -34,7 +34,7 @@ private:
                                       std::string_view                 step);
     async::task<bool> cleanup_bot(const std::shared_ptr<game_bot>& bot);
 
-    static constexpr std::string_view SCRIPT_FILE = "scripts/marketplace_test.lua";
+    static constexpr std::string_view SCRIPT_FILE = "scripts/integration.lua";
 };
 
 } // namespace fb::bot::integration
