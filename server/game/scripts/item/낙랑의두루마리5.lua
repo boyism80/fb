@@ -69,10 +69,16 @@ function ON_ACTIVATED_5(me, item)
         if btn == DIALOG_RESULT.QUIT then
             return
         end
-        me:rmitem(item, 1, ITEM_DELETE_TYPE.REDUCE)
-        me:mkitem({['낙랑의두루마리6'] = 1, ['초심자의머리띠'] = 1})
-        if me:level() < 5 then
-            me:exp(me:exp() + 200)
+        local give_exp = (me:level() < 5)
+        local code = me:exchange(
+            { ['item'] = { ['낙랑의두루마리5'] = 1 } },
+            { ['item'] = { ['낙랑의두루마리6'] = 1, ['초심자의머리띠'] = 1 }, ['exp'] = give_exp and 200 or 0 }
+        )
+        if code == EXCHANGE_RESULT.LACK_CAPACITY then
+            me:dialog(model, '소지품이 가득 찼습니다.', false, false)
+            return
+        end
+        if give_exp then
             btn = me:dialog(model, '<보상>\n\'초심자의귀마개\'\n\'낙랑의두루마리6\'을 얻다!!!\n경험치 200 상승!!', false, true)
         else
             btn = me:dialog(model, '<보상>\n\'초심자의귀마개\'\n\'낙랑의두루마리6\'을 얻다!!!', false, true)

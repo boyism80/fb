@@ -72,11 +72,17 @@ function ON_ACTIVATED_6(me, item)
     me:dialog(model, '맞추셨습니다!! F1은 도움말,\nF2는 순위리스트, F10은\n설정의 단축키입니다.', false, true)
     me:dialog(model, '잘 하셨습니다!! 상으로\n초심자의반지를 드릴게요!!', false, true)
 
-    me:rmitem(item, 1, ITEM_DELETE_TYPE.REDUCE)
-    me:mkitem({ ['낙랑의두루마리7'] = 1, ['초심자의반지'] = 1 })
-    if me:level() < 5 then
+    local give_exp = (me:level() < 5)
+    local code = me:exchange(
+        { ['item'] = { ['낙랑의두루마리6'] = 1 } },
+        { ['item'] = { ['낙랑의두루마리7'] = 1, ['초심자의반지'] = 1 }, ['exp'] = give_exp and 400 or 0 }
+    )
+    if code == EXCHANGE_RESULT.LACK_CAPACITY then
+        me:dialog(model, '소지품이 가득 찼습니다.', false, false)
+        return
+    end
+    if give_exp then
         me:dialog(model, '<보상>\n\'초심자의반지\',\n\'낙랑의두루마리7\'을 얻다!!!\n경험치400상승', false, true)
-        me:exp(me:exp() + 400)
     else
         me:dialog(model, '<보상>\n\'초심자의반지\',\n\'낙랑의두루마리7\'을 얻다!!!', false, true)
     end

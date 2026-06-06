@@ -43,8 +43,14 @@ function ON_ACTIVATED_7(me, item)
         if btn == DIALOG_RESULT.QUIT then
             return
         end
-        me:rmitem(item, 1, ITEM_DELETE_TYPE.REDUCE)
-        me:mkitem({ ['낙랑의두루마리8'] = 1, ['초심자의방패'] = 1 })
+        local code = me:exchange(
+            { ['item'] = { ['낙랑의두루마리7'] = 1 } },
+            { ['item'] = { ['낙랑의두루마리8'] = 1, ['초심자의방패'] = 1 } }
+        )
+        if code == EXCHANGE_RESULT.LACK_CAPACITY then
+            me:dialog(model, '소지품이 가득 찼습니다.', false, false)
+            return
+        end
         quest:complete()
         me:dialog(model, '<보상>\n\'초심자의방패\',\n\'낙랑의두루마리8\'을 얻다!!!', false, true)
     else

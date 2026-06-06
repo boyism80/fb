@@ -10,7 +10,13 @@ function ON_ACTIVATED_10248(me, item)
         return
     end
 
-    me:rmitem(item)
-    local added = me:mkitem('낡은연애편지')
+    local code = me:exchange(
+        { ['item'] = { ['낡은봉투'] = 1 } },
+        { ['item'] = { ['낡은연애편지'] = 1 } }
+    )
+    if code ~= EXCHANGE_RESULT.OK then
+        return
+    end
+    local added = me:item('낡은연애편지')
     me:active(added)
 end

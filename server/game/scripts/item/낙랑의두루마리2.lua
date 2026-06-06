@@ -42,11 +42,14 @@ function ON_ACTIVATED_2(me, item)
 
     me:dialog(model, '잘 하셨습니다!! 상으로\n목도를 드릴게요!!', false, true)
 
-    if me:mkitem('낙랑의두루마리3', 1) == nil or me:mkitem('초심자의목도', 1) == nil then
+    local code = me:exchange(
+        { ['item'] = { ['낙랑의두루마리2'] = 1 } },
+        { ['item'] = { ['낙랑의두루마리3'] = 1, ['초심자의목도'] = 1 } }
+    )
+    if code == EXCHANGE_RESULT.LACK_CAPACITY then
         me:dialog(model, '소지품이 가득 찼습니다.', false, false)
         return
     end
-    me:rmitem(item, 1, ITEM_DELETE_TYPE.REDUCE)
 
     if me:level() < 5 then
         me:exp(me:exp() + 50)
