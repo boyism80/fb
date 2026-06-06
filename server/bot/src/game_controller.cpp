@@ -32,6 +32,7 @@ game_bot_controller::game_bot_controller(bot_container& container) :
     this->bind(&game_bot_controller::on_item_update);
     this->bind(&game_bot_controller::on_item_remove);
     this->bind(&game_bot_controller::on_internal_info);
+    this->bind(&game_bot_controller::on_ping);
 }
 
 bool game_bot_controller::decrypt_policy(int opcode) const
@@ -272,6 +273,12 @@ async::task<void> game_bot_controller::on_internal_info(game_bot& bot, const gam
     bot.set_group_info(response.group_info);
     bot.set_group_option(response.group_option);
     bot.set_remained_exp(response.remained_exp);
+    co_return;
+}
+
+async::task<void> game_bot_controller::on_ping(game_bot& bot, const game_resp::ping& response)
+{
+    bot.send(game_reqs::pong(response.value, 0));
     co_return;
 }
 

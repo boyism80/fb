@@ -145,24 +145,10 @@ module.exports = {
                     template: {
                         metadata: { labels: appLabels },
                         spec: {
-                            affinity: {
-                                nodeAffinity: {
-                                    preferredDuringSchedulingIgnoredDuringExecution: [{
-                                        weight: 100,
-                                        preference: {
-                                            matchExpressions: [{
-                                                key: "cpu",
-                                                operator: "In",
-                                                values: ["epyc"]
-                                            }]
-                                        }
-                                    }]
-                                }
+                            nodeSelector: {
+                                cpu: "epyc"
                             },
                             containers: [{
-                                nodeSelector: {
-                                    cpu: "epyc"
-                                },
                                 name: "admin-tool",
                                 image: "ghcr.io/boyism80/fb/admin-tool:latest",
                                 imagePullPolicy: "Always",

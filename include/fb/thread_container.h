@@ -67,7 +67,7 @@ public:
     {
         static_assert(std::is_base_of_v<thread_switchable, PivotT>, "PivotT must be a thread_switchable");
 
-        auto builder = this->new_builder<void, PivotT>(std::move(pivot));
+        auto builder = this->template new_builder<void, PivotT>(std::move(pivot));
         builder.func = [](auto&) -> async::task<void> {
             co_return;
         };
@@ -138,7 +138,7 @@ public:
         auto  wrapped =
             this->make_wrapped_func(std::make_shared<thread::handle_func_type<T>>(std::move(this->func)), true);
 
-        auto inner        = target->new_builder<T>();
+        auto inner        = target->template new_builder<T>();
         inner.func        = std::move(wrapped);
         inner.retry_count = this->retry_count;
         inner.on_error    = thread_container::resolve_error(std::move(this->on_error));
@@ -197,7 +197,7 @@ public:
 
         auto fn_holder    = std::make_shared<thread::handle_func_type<T>>(std::move(this->func));
         auto wrapped      = this->make_wrapped_func(fn_holder, false);
-        auto inner        = target_thread->new_builder<T>();
+        auto inner        = target_thread->template new_builder<T>();
         inner.func        = std::move(wrapped);
         inner.retry_count = this->retry_count;
         co_return co_await inner.dispatch();
@@ -238,9 +238,9 @@ private:
             auto* active_thread = shared->thread();
             if (active_thread != &thread)
             {
-                auto retry        = container->new_builder<T, PivotT>(shared->template weak_from_this_as<PivotT>());
-                retry.when        = when_fn;
-                retry.func        = *fn_holder;
+                auto retry = container->template new_builder<T, PivotT>(shared->template weak_from_this_as<PivotT>());
+                retry.when = when_fn;
+                retry.func = *fn_holder;
                 retry.on_error    = *on_error_holder;
                 retry.on_complete = on_complete_holder ? *on_complete_holder : std::function<void()>{};
                 retry.retry_count = retry_count;

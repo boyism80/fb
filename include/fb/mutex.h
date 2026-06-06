@@ -128,7 +128,7 @@ private:
 
         if (thread != nullptr)
         {
-            auto builder = thread->new_builder<void>();
+            auto builder = thread->template new_builder<void>();
             builder.func = [this, promise, &fn, &current, key_str, mutex](auto& thread) mutable -> async::task<void> {
                 co_await this->on_locked(promise, fn, current, key_str, *mutex);
             };
@@ -160,7 +160,7 @@ private:
 
         if (thread != nullptr)
         {
-            auto builder = thread->new_builder<void>();
+            auto builder = thread->template new_builder<void>();
             builder.func = [this, promise, &fn, key_str, mutex](auto&) mutable -> async::task<void> {
                 this->on_locked(promise, fn, key_str, *mutex);
                 co_return;

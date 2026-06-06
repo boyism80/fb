@@ -133,6 +133,7 @@ private:
     async::task<void> on_item_update(game_bot& bot, const game_resp::item_update& response);
     async::task<void> on_item_remove(game_bot& bot, const game_resp::item_remove& response);
     async::task<void> on_internal_info(game_bot& bot, const game_resp::internal_info& response);
+    async::task<void> on_ping(game_bot& bot, const game_resp::ping& response);
 
 public:
     bool register_transfer_context(const fb::protocol::header& protocol, std::shared_ptr<transfer_context> context);

@@ -13,6 +13,7 @@ async::task<void> pong::deserialize(fb::stream_reader<big_endian>& reader)
 async::task<void> pong::serialize(fb::stream_writer<big_endian>& writer) const
 {
     co_await header::serialize(writer);
+    writer.write<uint8_t>(opcode);
     writer.write<uint32_t>(this->token);
     writer.write<uint32_t>(this->unknown);
 }

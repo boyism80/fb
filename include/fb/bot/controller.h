@@ -395,7 +395,7 @@ async::task<ResponseType> bot<BotType>::request(std::shared_ptr<BotType>        
     if (timeout > 0s)
     {
         auto thread  = target->thread();
-        auto builder = thread->new_builder<void>();
+        auto builder = thread->template new_builder<void>();
         builder.func = [context, timeout](auto& thread) -> async::task<void> {
             context->timer = thread.settimer(
                 [context](auto& datetime, auto thread_id) -> async::task<void> {

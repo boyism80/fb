@@ -48,7 +48,7 @@ private:
     {
         auto id      = this->_sequence++;
         auto bot     = std::make_shared<T>(*this, id);
-        auto builder = bot->thread()->new_builder<void>();
+        auto builder = bot->thread()->template new_builder<void>();
         builder.func = [id, bot](auto& thread) -> async::task<void> {
             auto params = thread.template data<bot_thread_params>();
             params->bots.insert({id, bot});
@@ -62,7 +62,7 @@ private:
     {
         auto id      = this->_sequence++;
         auto bot     = std::make_shared<T>(bot_controller, id);
-        auto builder = bot->thread()->new_builder<void>();
+        auto builder = bot->thread()->template new_builder<void>();
         builder.func = [id, bot](auto& thread) -> async::task<void> {
             auto params = thread.template data<bot_thread_params>();
             params->bots.insert({id, bot});
@@ -77,7 +77,7 @@ private:
     {
         auto id      = this->_sequence++;
         auto bot     = std::make_shared<T>(bot_controller, id, params);
-        auto builder = bot->thread()->new_builder<void>();
+        auto builder = bot->thread()->template new_builder<void>();
         builder.func = [id, bot](auto& thread) -> async::task<void> {
             auto params = thread.template data<bot_thread_params>();
             params->bots.insert({id, bot});
