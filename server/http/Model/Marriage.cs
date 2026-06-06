@@ -8,7 +8,7 @@ namespace Http.Model
 
         public uint? GetHash() => CharacterId;
 
-        public RedisKey GetRedisKey() => $"cache:marriage:{CharacterId}";
+        public RedisKey GetRedisKey() => $"fb:cache:marriage:{CharacterId}";
     }
 
     public class Marriage : MarriageKey, IModel

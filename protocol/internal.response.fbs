@@ -92,6 +92,24 @@ table WriteMail {
   error: uint;
 }
 
+table WriteMails {
+  entries: [fb.protocol.internal.MailWriteEntry];
+  host: uint;
+  error: uint;
+}
+
+table DeliverSystemMail {
+  entries: [fb.protocol.internal.MailWriteEntry];
+  host: uint;
+  error: uint;
+}
+
+table DeliverSystemStorage {
+  entries: [fb.protocol.internal.StorageWriteEntry];
+  host: uint;
+  error: uint;
+}
+
 table DeleteMail {
   unread: uint;
   error: uint;
@@ -130,10 +148,7 @@ table Init {
   option: fb.protocol.internal.Option;
   achievements: [fb.protocol.internal.Achievement];
   quests: [fb.protocol.internal.Quest];
-  received_system_mails: [fb.protocol.internal.SystemMailUser];
   storage_boxes: [fb.protocol.internal.StorageBox];
-  storage_reward_marks: [fb.protocol.internal.StorageRewardMark];
-  storage_pending: [fb.protocol.internal.StoragePendingBox];
   mail: uint;
 }
 
@@ -254,9 +269,13 @@ table UpdateFriends
   error: uint;
 }
 
-table GetStoragePending {
-  user: uint?;
-  pending: [fb.protocol.internal.StoragePendingBox];
+table GetSystemStorageBoxes {
+  boxes: [fb.protocol.internal.SystemStorageBox];
+  error: uint;
+}
+
+table WriteSystemStorageBox {
+  box: fb.protocol.internal.SystemStorageBox;
   error: uint;
 }
 
@@ -293,6 +312,12 @@ table SetExpMultiplier {
 
 table SetDropRateMultiplier {
   value: double;
+  error: uint;
+}
+
+table SetDateTime {
+  datetime: string;
+  reset: bool = false;
   error: uint;
 }
 

@@ -83,18 +83,9 @@ namespace Http.Mapping
                 .ForMember(x => x.Qid, x => x.MapFrom(u => u.Id))
                 .ReverseMap();
 
-            CreateMap<Protocol.SystemMailUser, Http.Model.SystemMailUser>()
-                .ForMember(x => x.User, x => x.MapFrom(u => u.User))
-                .ForMember(x => x.MailId, x => x.MapFrom(u => u.MailId))
-                .ForMember(x => x.Read, x => x.MapFrom(u => u.Read))
-                .ForMember(x => x.ExpireDate, x => x.MapFrom(u => !string.IsNullOrEmpty(u.ExpireDate) ? (DateTime?)DateTime.Parse(u.ExpireDate) : null))
-                .ForMember(x => x.Deleted, x => x.Ignore())
-                .ForMember(x => x.CreatedDate, x => x.Ignore())
-                .ReverseMap()
-                .ForMember(x => x.ExpireDate, x => x.MapFrom(u => u.ExpireDate.HasValue ? u.ExpireDate.Value.ToString("yyyy-MM-dd HH:mm:ss") : null));
-
             CreateMap<Http.Model.StorageBox, Protocol.StorageBox>()
                 .ForMember(x => x.Attachments, x => x.Ignore())
+                .ForMember(x => x.SystemStorageBoxId, x => x.MapFrom(u => u.SystemStorageBoxId ?? 0))
                 .ForMember(x => x.Title, x => x.MapFrom(u => u.Title ?? string.Empty))
                 .ForMember(x => x.ExpiredDate, x => x.MapFrom(u => u.ExpiredDate.HasValue ? u.ExpiredDate.Value.ToString("yyyy-MM-dd HH:mm:ss") : null))
                 .AfterMap((src, dest) =>
@@ -104,6 +95,7 @@ namespace Http.Mapping
 
             CreateMap<Protocol.StorageBox, Http.Model.StorageBox>()
                 .ForMember(x => x.Attachments, x => x.Ignore())
+                .ForMember(x => x.SystemStorageBoxId, x => x.MapFrom(u => u.SystemStorageBoxId != 0 ? (uint?)u.SystemStorageBoxId : null))
                 .ForMember(x => x.ExpiredDate, x => x.Ignore())
                 .ForMember(x => x.Title, x => x.MapFrom(u => u.Title ?? string.Empty))
                 .ForMember(x => x.Message, x => x.MapFrom(u => u.Message ?? string.Empty))
@@ -115,35 +107,15 @@ namespace Http.Mapping
                     dest.ExpiredDate = string.IsNullOrEmpty(src.ExpiredDate) ? null : DateTime.Parse(src.ExpiredDate);
                 });
 
-            CreateMap<Http.Model.StorageRewardMark, Protocol.StorageRewardMark>()
-                .ForMember(x => x.ExpiredDate, x => x.MapFrom(u => u.ExpiredDate.HasValue ? u.ExpiredDate.Value.ToString("yyyy-MM-dd HH:mm:ss") : null));
-
-            CreateMap<Protocol.StorageRewardMark, Http.Model.StorageRewardMark>()
-                .ForMember(x => x.ExpiredDate, x => x.Ignore())
-                .AfterMap((src, dest) =>
-                {
-                    dest.ExpiredDate = string.IsNullOrEmpty(src.ExpiredDate) ? null : DateTime.Parse(src.ExpiredDate);
-                });
-
-            CreateMap<Http.Model.StoragePendingBox, Protocol.StoragePendingBox>()
+            CreateMap<Http.Model.SystemStorageBox, Protocol.SystemStorageBox>()
                 .ForMember(x => x.Attachments, x => x.Ignore())
+                .ForMember(x => x.User, x => x.MapFrom(u => u.User ?? 0))
                 .ForMember(x => x.Title, x => x.MapFrom(u => u.Title ?? string.Empty))
                 .ForMember(x => x.ExpiredDate, x => x.MapFrom(u => u.ExpiredDate.HasValue ? u.ExpiredDate.Value.ToString("yyyy-MM-dd HH:mm:ss") : null))
+                .ForMember(x => x.CreatedDate, x => x.MapFrom(u => u.CreatedDate.ToString("yyyy-MM-dd HH:mm:ss")))
                 .AfterMap((src, dest) =>
                 {
                     dest.Attachments = JsonConvert.SerializeObject(src.Attachments ?? new List<Fb.Model.Dsl>());
-                });
-
-            CreateMap<Protocol.StoragePendingBox, Http.Model.StoragePendingBox>()
-                .ForMember(x => x.Attachments, x => x.Ignore())
-                .ForMember(x => x.ExpiredDate, x => x.Ignore())
-                .ForMember(x => x.Title, x => x.MapFrom(u => u.Title ?? string.Empty))
-                .AfterMap((src, dest) =>
-                {
-                    dest.Attachments = string.IsNullOrWhiteSpace(src.Attachments)
-                        ? new List<Fb.Model.Dsl>()
-                        : (JsonConvert.DeserializeObject<List<Fb.Model.Dsl>>(src.Attachments) ?? new List<Fb.Model.Dsl>());
-                    dest.ExpiredDate = string.IsNullOrEmpty(src.ExpiredDate) ? null : DateTime.Parse(src.ExpiredDate);
                 });
         }
     }

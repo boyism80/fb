@@ -30,6 +30,7 @@ REGISTER_RESPONSE(fb::protocol::internal::request::MakeCharacter, fb::protocol::
 REGISTER_RESPONSE(fb::protocol::internal::request::Authenticate, fb::protocol::internal::response::Authenticate)
 REGISTER_RESPONSE(fb::protocol::internal::request::ChangePw, fb::protocol::internal::response::ChangePw)
 REGISTER_RESPONSE(fb::protocol::internal::request::Transfer, fb::protocol::internal::response::Transfer)
+REGISTER_RESPONSE(fb::protocol::internal::request::SetDateTime, fb::protocol::internal::response::SetDateTime)
 
 namespace fb::login {
 

@@ -1,4 +1,4 @@
-﻿using Http.Reepository;
+using Http.Reepository;
 using MySqlConnector;
 
 namespace Http.Service
@@ -25,7 +25,7 @@ namespace Http.Service
 
         public ClanMemberRepository ClanMember => Bind<ClanMemberRepository>();
 
-        public CharacterSyncRepository CharacterSync => Bind<CharacterSyncRepository>();
+        public CharacterRealtimeStateRepository CharacterRealtimeState => Bind<CharacterRealtimeStateRepository>();
 
         public MailRepository Mail => Bind<MailRepository>();
 
@@ -33,13 +33,9 @@ namespace Http.Service
 
         public SystemMailRepository SystemMail => Bind<SystemMailRepository>();
 
-        public SystemMailUserRepository SystemMailUser => Bind<SystemMailUserRepository>();
-
         public StorageBoxRepository StorageBox => Bind<StorageBoxRepository>();
 
-        public StoragePendingBoxRepository StoragePendingBox => Bind<StoragePendingBoxRepository>();
-
-        public StorageRewardMarkRepository StorageRewardMark => Bind<StorageRewardMarkRepository>();
+        public SystemStorageBoxRepository SystemStorageBox => Bind<SystemStorageBoxRepository>();
 
         public BanRepository Ban => Bind<BanRepository>();
 

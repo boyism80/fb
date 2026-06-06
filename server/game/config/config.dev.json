@@ -46,6 +46,7 @@
             "pwd": "guest"
         }
     },
+    "lazy_load_maps": true,
     "exp_multiplier": 100.0,
     "drop_rate_multiplier": 100.0,
     "http": {

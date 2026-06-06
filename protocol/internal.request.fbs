@@ -137,6 +137,27 @@ table WriteMail {
   host: uint;
 }
 
+/// Bulk mail write: same title/contents to multiple users by user id.
+table WriteMails {
+  world: uint;
+  sender: uint;
+  users: [uint];
+  title: string;
+  contents: string;
+  host: uint;
+}
+
+/// Idempotent system mail delivery to multiple users (skips if already received).
+table DeliverSystemMail {
+  world: uint;
+  system_mail_id: uint;
+  sender: uint;
+  users: [uint];
+  title: string;
+  contents: string;
+  host: uint;
+}
+
 table DeleteMail {
   world: uint;
   user: uint;
@@ -264,9 +285,21 @@ table UpdateFriends {
   names: [string];
 }
 
-table GetStoragePending {
+table DeliverSystemStorage {
+  world: uint;
+  system_storage_box_id: uint;
+  users: [uint];
+  host: uint;
+}
+
+table WriteSystemStorageBox {
   world: uint;
   user: uint;
+  title: string;
+  message: string;
+  attachments: string;
+  expire_date: string?;
+  external_ref: string?;
 }
 
 table WriteSystemMail {
@@ -306,4 +339,10 @@ table SetExpMultiplier {
 table SetDropRateMultiplier {
   world: uint;
   value: double;
+}
+
+table SetDateTime {
+  world: uint;
+  datetime: string;
+  reset: bool = false;
 }

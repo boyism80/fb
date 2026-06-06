@@ -1,5 +1,5 @@
 #include <fb/table.h>
-#include <fb/locker.h>
+#include <fb/synchronized.h>
 
 using namespace fb::table;
 
@@ -35,13 +35,14 @@ uint32_t fb::table::load(std::string_view path, const handle_callback& callback,
         int                                                              read = 0;
     };
 
-    fb::locker<work_data> work;
+    fb::synchronized<work_data> work;
 
     for (auto i = data.begin(); i != data.end(); i++)
     {
-        work.write([&i](auto& w) {
-            w.queue.push(std::make_pair(i.key(), std::make_unique<Json::Value>(*i)));
-        });
+        {
+            auto guard = work.enter_write();
+            guard.value().queue.push(std::make_pair(i.key(), std::make_unique<Json::Value>(*i)));
+        }
     }
 
     auto fn = [&]() {
@@ -50,16 +51,22 @@ uint32_t fb::table::load(std::string_view path, const handle_callback& callback,
             auto key  = Json::Value{};
             auto data = Json::Value{};
 
-            bool queue_empty = work.write([&key, &data](auto& w) -> bool {
+            bool queue_empty = false;
+            {
+                auto  guard = work.enter_write();
+                auto& w     = guard.value();
                 if (w.queue.empty())
-                    return true;
-
-                auto& entity = w.queue.front();
-                key          = entity.first;
-                data         = *entity.second;
-                w.queue.pop();
-                return false;
-            });
+                {
+                    queue_empty = true;
+                }
+                else
+                {
+                    auto& entity = w.queue.front();
+                    key          = entity.first;
+                    data         = *entity.second;
+                    w.queue.pop();
+                }
+            }
 
             if (queue_empty)
                 break;
@@ -67,9 +74,10 @@ uint32_t fb::table::load(std::string_view path, const handle_callback& callback,
             auto percentage = 0.0;
             try
             {
-                percentage = work.write([count](auto& w) {
-                    return (w.read++ * 100) / double(count);
-                });
+                {
+                    auto guard = work.enter_write();
+                    percentage = (guard.value().read++ * 100) / double(count);
+                }
 
                 callback(key, data, percentage);
             }

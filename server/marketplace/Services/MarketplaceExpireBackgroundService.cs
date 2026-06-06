@@ -17,7 +17,7 @@ namespace Marketplace.Services
 
         private static readonly TimeSpan ProcessingInterval = TimeSpan.FromMinutes(1);
         private static readonly TimeSpan RetryInterval = TimeSpan.FromSeconds(10);
-        private const string LockKey = "marketplace:expire:lock";
+        private const string LockKey = "fb:marketplace:expire:lock";
         private const int ExpireBatchSize = 1000;
 
         public MarketplaceExpireBackgroundService(
@@ -140,7 +140,7 @@ namespace Marketplace.Services
                 }
 
                 // Log success
-                logService?.Write("marketplace_expire_success", new
+                await logService.WriteAsync("marketplace_expire_success", new
                 {
                     expired_count = expiredListings.Count
                 });
@@ -148,7 +148,7 @@ namespace Marketplace.Services
             catch (Exception ex)
             {
                 await transaction.RollbackAsync(cancellationToken);
-                logService?.Write("marketplace_expire_failed", new
+                await logService.WriteAsync("marketplace_expire_failed", new
                 {
                     error = ex.Message
                 });
@@ -192,21 +192,20 @@ namespace Marketplace.Services
                 attachments.Add(new Fb.Model.Dsl.Money { Value = registrationFee }.ToDSL());
             }
 
-            // Use StorageService to create pending box (handles Redis caching and DB write-back automatically)
             var message = registrationFee > 0
                 ? string.Format(Fb.Model.ConstValue.String.MessageMarketplaceListingExpiredMessageWithFee.ToCSharpFormat(), itemName, listing.RemainingCount, registrationFee)
                 : string.Format(Fb.Model.ConstValue.String.MessageMarketplaceListingExpiredMessage.ToCSharpFormat(), itemName, listing.RemainingCount);
 
-            await storageService.CreatePendingAsync(
+            await storageService.CreateSystemStorageAsync(
                 listing.World,
                 Fb.Model.ConstValue.String.MessageMarketplaceListingExpiredTitle,
                 message,
                 listing.SellerId,
-                null, // Unlimited expiry for marketplace items
-                attachments);
+                attachments: attachments,
+                externalRef: $"marketplace:expire:{listing.Id}");
 
             // Log expired listing processing
-            logService?.Write("marketplace_expired_listing_processed", new
+            await logService.WriteAsync("marketplace_expired_listing_processed", new
             {
                 listing_id = listing.Id,
                 seller_id = listing.SellerId,

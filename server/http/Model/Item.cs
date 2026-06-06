@@ -10,7 +10,7 @@ namespace Http.Model
         public short Stored { get; set; }
         public uint? GetHash() => Owner;
 
-        public RedisKey GetRedisKey() => $"cache:item:{Owner}";
+        public RedisKey GetRedisKey() => $"fb:cache:item:{Owner}";
 
         public RedisValue GetRedisField() => $"{Index}-{Parts}-{Stored}";
     }

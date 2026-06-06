@@ -23,16 +23,13 @@ function ON_CAST_1019(me, spell)
         end
     end
 
-    local nears = me:nears(0xFF & ~OBJECT_TYPE.ITEM)
+    local nears = nears_exclude_item(me)
     local x, y = me:position()
     local direction = me:direction()
     local front = front_obj(x, y, direction, 4, nears)
     if front == nil then
         return failed_attack_spell(me)
     end
-
-    local hp_consume = (me:hp() * 2) // 3
-    me:hp(math.max(1, me:hp() - hp_consume))
 
     if direction == DIRECTION.LEFT then
         x = x-3

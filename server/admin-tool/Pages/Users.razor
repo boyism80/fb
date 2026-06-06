@@ -670,7 +670,7 @@
             await DbContext.SaveChangesAsync();
 
             // Log role change event
-            LogService.Write("role_change", new
+            await LogService.WriteAsync("role_change", new
             {
                 target_account_name = character.Name,
                 target_uid = character.Id,
@@ -744,7 +744,7 @@
                 ExpireDate = result.ExpireDate?.ToString("yyyy-MM-dd HH:mm:ss"),
                 Error = (uint)result.Error
             };
-            RabbitMqService.Publish(response, "amq.direct", $"fb.{selectedWorld.Value}.ban");
+            await RabbitMqService.PublishAsync(response, "amq.direct", $"fb.{selectedWorld.Value}.ban");
 
             successMessage = $"User {selectedUser.Name} has been banned successfully.";
             CloseBanModal();
@@ -786,7 +786,7 @@
                 Name = selectedUser.Name,
                 Error = (uint)result.Error
             };
-            RabbitMqService.Publish(response, "amq.direct", $"fb.{selectedWorld.Value}.unban");
+            await RabbitMqService.PublishAsync(response, "amq.direct", $"fb.{selectedWorld.Value}.unban");
 
             successMessage = $"User {selectedUser.Name} has been unbanned successfully.";
             CloseUnbanModal();

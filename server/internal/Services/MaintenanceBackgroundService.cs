@@ -11,7 +11,7 @@ namespace Internal.Services
 
         private static readonly TimeSpan ProcessingInterval = TimeSpan.FromSeconds(10);
         private static readonly TimeSpan RetryInterval = TimeSpan.FromSeconds(1);
-        private const string LockKey = "maintenance:background:lock";
+        private const string LockKey = "fb:maintenance:background:lock";
         private const int LockTtlSeconds = 60; // Longer than processing interval to prevent overlap
 
         public MaintenanceBackgroundService(

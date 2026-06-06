@@ -28,10 +28,10 @@ add_definitions(-DREDISCPP_HEADER_ONLY)
 add_compile_definitions(BOT)
 add_compile_definitions(NOMINMAX)
 
-file(GLOB_RECURSE BOT_SOURCE_FILES "${PROJECT_SOURCE_DIR}/lib/*.cpp")
-file(GLOB_RECURSE GATEWAY_PROTOCOL_FILES "${ROOT_DIR}/server/gateway/lib/protocol/*.cpp")
-file(GLOB_RECURSE LOGIN_PROTOCOL_FILES "${ROOT_DIR}/server/login/lib/protocol/*.cpp")
-file(GLOB_RECURSE GAME_PROTOCOL_FILES "${ROOT_DIR}/server/game/lib/protocol/*.cpp")
+file(GLOB_RECURSE BOT_SOURCE_FILES "${PROJECT_SOURCE_DIR}/src/*.cpp")
+file(GLOB_RECURSE GATEWAY_PROTOCOL_FILES "${ROOT_DIR}/server/gateway/src/protocol/*.cpp")
+file(GLOB_RECURSE LOGIN_PROTOCOL_FILES "${ROOT_DIR}/server/login/src/protocol/*.cpp")
+file(GLOB_RECURSE GAME_PROTOCOL_FILES "${ROOT_DIR}/server/game/src/protocol/*.cpp")
 add_executable(${DEST} ${BOT_SOURCE_FILES} ${GATEWAY_PROTOCOL_FILES} ${LOGIN_PROTOCOL_FILES} ${GAME_PROTOCOL_FILES} main.cpp)
 
 # Set debug command arguments for Visual Studio

@@ -23,7 +23,7 @@ namespace Http.Service
         private readonly IConfiguration _configuration;
         private readonly ILogger<WriteBackService> _logger;
         private readonly ConcurrentDictionary<string, byte> _declaredQueues = new ConcurrentDictionary<string, byte>();
-        private readonly object _declareLock = new object();
+        private readonly SemaphoreSlim _declareLock = new(1, 1);
 
         public WriteBackService(RabbitMqService rabbitMqService,
             IConfiguration configuration,
@@ -36,12 +36,12 @@ namespace Http.Service
             _dbContext = ActivatorUtilities.CreateInstance<DbContext>(serviceProvider);
         }
 
-        public Task Post(uint world, int db, string sql, string key, uint? hash)
+        public async Task Post(uint world, int db, string sql, string key, uint? hash, CancellationToken cancellationToken = default)
         {
             try
             {
                 var queueName = GetWriteBackQueueName(world, db);
-                EnsureExchangeReady(queueName);
+                await EnsureExchangeReadyAsync(queueName, cancellationToken);
 
                 var json = JsonConvert.SerializeObject(new BackgroundCommitEntry
                 {
@@ -50,41 +50,49 @@ namespace Http.Service
                     Hash = hash
                 });
                 var body = Encoding.UTF8.GetBytes(json);
-                _rabbitMqService.Publish(WriteBackExchangeName, queueName, body, persistent: true);
+                await _rabbitMqService.PublishAsync(WriteBackExchangeName, queueName, body, persistent: true, cancellationToken);
             }
             catch (Exception ex)
             {
                 _logger.LogWarning(ex, "Failed to publish write-back message for world {World} db {Db}", world, db);
             }
-
-            return Task.CompletedTask;
         }
 
-        private void EnsureExchangeReady(string queueName)
+        private async Task EnsureExchangeReadyAsync(string queueName, CancellationToken cancellationToken)
         {
             if (_declaredQueues.ContainsKey(queueName))
+            {
                 return;
+            }
 
-            lock (_declareLock)
+            await _declareLock.WaitAsync(cancellationToken);
+            try
             {
                 if (_declaredQueues.ContainsKey(queueName))
-                    return;
-
-                _rabbitMqService.WithChannel(channel =>
                 {
-                    channel.ExchangeDeclare(WriteBackExchangeName, ExchangeType.Direct, durable: true);
-                    channel.QueueDeclare(queue: queueName, durable: true, exclusive: false, autoDelete: false, arguments: null);
-                    channel.QueueBind(queueName, WriteBackExchangeName, queueName);
-                });
+                    return;
+                }
+
+                await _rabbitMqService.WithChannelAsync(async channel =>
+                {
+                    await channel.ExchangeDeclareAsync(WriteBackExchangeName, ExchangeType.Direct, durable: true, autoDelete: false, arguments: null, passive: false, noWait: false, cancellationToken);
+                    await channel.QueueDeclareAsync(queue: queueName, durable: true, exclusive: false, autoDelete: false, arguments: null, passive: false, noWait: false, cancellationToken);
+                    await channel.QueueBindAsync(queueName, WriteBackExchangeName, queueName, arguments: null, noWait: false, cancellationToken);
+                }, cancellationToken);
+
                 _declaredQueues.TryAdd(queueName, 0);
+            }
+            finally
+            {
+                _declareLock.Release();
             }
         }
 
-        public async Task Post(uint world, uint? hash, string sql, string key)
+        public async Task Post(uint world, uint? hash, string sql, string key, CancellationToken cancellationToken = default)
         {
             var sharedSize = _dbContext.GetShardDbSize(world);
             int db = hash != null ? (int)(hash % sharedSize) : -1;
-            await Post(world, db, sql, key, hash);
+            await Post(world, db, sql, key, hash, cancellationToken);
         }
     }
 }

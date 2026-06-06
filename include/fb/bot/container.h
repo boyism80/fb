@@ -46,38 +46,44 @@ public:
 private:
     template <typename T> std::shared_ptr<T> create()
     {
-        auto id     = this->_sequence++;
-        auto bot    = std::make_shared<T>(*this, id);
-        std::ignore = bot->thread()->dispatch([id, bot](auto& thread) -> async::task<void> {
+        auto id      = this->_sequence++;
+        auto bot     = std::make_shared<T>(*this, id);
+        auto builder = bot->thread()->template new_builder<void>();
+        builder.func = [id, bot](auto& thread) -> async::task<void> {
             auto params = thread.template data<bot_thread_params>();
             params->bots.insert({id, bot});
             co_return;
-        });
+        };
+        builder.enqueue();
         return bot;
     }
 
     template <typename T, typename Controller> std::shared_ptr<T> create(Controller& bot_controller)
     {
-        auto id     = this->_sequence++;
-        auto bot    = std::make_shared<T>(bot_controller, id);
-        std::ignore = bot->thread()->dispatch([id, bot](auto& thread) -> async::task<void> {
+        auto id      = this->_sequence++;
+        auto bot     = std::make_shared<T>(bot_controller, id);
+        auto builder = bot->thread()->template new_builder<void>();
+        builder.func = [id, bot](auto& thread) -> async::task<void> {
             auto params = thread.template data<bot_thread_params>();
             params->bots.insert({id, bot});
             co_return;
-        });
+        };
+        builder.enqueue();
         return bot;
     }
 
     template <typename T, typename Controller> std::shared_ptr<T> create(Controller&       bot_controller,
                                                                          const fb::stream& params)
     {
-        auto id     = this->_sequence++;
-        auto bot    = std::make_shared<T>(bot_controller, id, params);
-        std::ignore = bot->thread()->dispatch([id, bot](auto& thread) -> async::task<void> {
+        auto id      = this->_sequence++;
+        auto bot     = std::make_shared<T>(bot_controller, id, params);
+        auto builder = bot->thread()->template new_builder<void>();
+        builder.func = [id, bot](auto& thread) -> async::task<void> {
             auto params = thread.template data<bot_thread_params>();
             params->bots.insert({id, bot});
             co_return;
-        });
+        };
+        builder.enqueue();
         return bot;
     }
 

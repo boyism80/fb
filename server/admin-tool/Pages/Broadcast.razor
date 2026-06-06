@@ -136,7 +136,7 @@
                     var worlds = GetWorlds();
                     foreach (var world in worlds)
                     {
-                        RabbitMqService.Publish(message, "amq.direct", $"fb.{world}.global");
+                        await RabbitMqService.PublishAsync(message, "amq.direct", $"fb.{world}.global");
                     }
                 }
                 else
@@ -147,11 +147,11 @@
                         errorMessage = "World is required when not using broadcast to all worlds.";
                         return;
                     }
-                    RabbitMqService.Publish(message, "amq.direct", $"fb.{selectedWorld.Value}.global");
+                    await RabbitMqService.PublishAsync(message, "amq.direct", $"fb.{selectedWorld.Value}.global");
                 }
 
                 // Log broadcast event
-                LogService.Write("broadcast", new
+                await LogService.WriteAsync("broadcast", new
                 {
                     message_type = broadcastModel.Type.ToString(),
                     message = trimmedMessage,

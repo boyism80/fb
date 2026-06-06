@@ -1,5 +1,5 @@
 function ON_ACTIVATED_9050(me, item)
-    local front = me:front(~OBJECT_TYPE.ITEM)
+    local front = front_exclude_item(me)
     if front == nil then
         return
     end

@@ -20,7 +20,7 @@ namespace Http.Service
             var bulletinSection = Convert.ToUInt32(parameters[0]);
             var id = Convert.ToUInt32(parameters[1]);
 
-            return $"cache:bulletin:{bulletinSection}:{id}";
+            return $"fb:cache:bulletin:{bulletinSection}:{id}";
         }
 
         protected override uint? GetHashForSharding(string cacheKey, params object[] parameters)

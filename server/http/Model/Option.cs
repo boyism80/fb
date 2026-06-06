@@ -7,7 +7,7 @@ namespace Http.Model
         public required uint Uid { get; set; }
         public uint? GetHash() => Uid;
 
-        public RedisKey GetRedisKey() => $"cache:option:{Uid}";
+        public RedisKey GetRedisKey() => $"fb:cache:option:{Uid}";
     }
 
     public class Option : OptionKey, IModel

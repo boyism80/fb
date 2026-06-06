@@ -8,6 +8,7 @@
 #include <fb/login/handler/protocol/login.h>
 
 #include <fb/login/handler/amqp/shutdown.h>
+#include <fb/login/handler/amqp/set_datetime.h>
 
 #include <fb/login/handler/timer/heart_beat.h>
 

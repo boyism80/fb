@@ -3,7 +3,7 @@
 
 #include <fb/bot/bot.h>
 #include <fb/bot/container.h>
-#include <fb/locker.h>
+#include <fb/synchronized.h>
 #include <fb/protocol/header.h>
 
 namespace fb::bot {
@@ -41,7 +41,7 @@ private:
     std::shared_mutex                           _handler_mutex;
 
 protected:
-    fb::locker<std::unordered_map<uint32_t, std::shared_ptr<BotType>>> _bots;
+    fb::synchronized<std::unordered_map<uint32_t, std::shared_ptr<BotType>>> _bots;
 
 protected:
     bot_controller(bot_container& container) :
@@ -131,9 +131,10 @@ public:
         auto& derived_bot_controller = static_cast<typename BotType::bot_controller_type&>(*this);
         auto  bot                    = this->container.create<BotType>(derived_bot_controller);
 
-        this->_bots.write([&](auto& bots) {
-            bots[bot->id] = bot;
-        });
+        {
+            auto guard             = this->_bots.enter_write();
+            guard.value()[bot->id] = bot;
+        }
 
         return bot;
     }
@@ -143,18 +144,18 @@ public:
         auto& derived_bot_controller = static_cast<typename BotType::bot_controller_type&>(*this);
         auto  bot                    = this->container.create<BotType>(derived_bot_controller, params);
 
-        this->_bots.write([&](auto& bots) {
-            bots[bot->id] = bot;
-        });
+        {
+            auto guard             = this->_bots.enter_write();
+            guard.value()[bot->id] = bot;
+        }
 
         return bot;
     }
 
     bool contains(uint32_t id) const
     {
-        return this->_bots.template read<bool>([&](const auto& bots) {
-            return bots.contains(id);
-        });
+        auto guard = this->_bots.enter_read();
+        return guard.value().contains(id);
     }
 
     async::task<void> on_receive(fb::socket<>& socket, fb::stream& stream)
@@ -220,13 +221,15 @@ public:
                 {
                     auto weak = bot.template weak_from_this_as<BotType>();
 
-                    this->container.threads.enqueue(weak, [=, this](auto& thread) -> async::task<void> {
+                    auto builder = this->container.threads.new_builder(weak);
+                    builder.func = [=, this](auto& thread) -> async::task<void> {
                         auto shared = weak.lock();
                         if (shared == nullptr)
                             co_return;
 
                         co_await handler(*shared, *protocol.get());
-                    });
+                    };
+                    builder.enqueue();
                 }
 
                 reader.seek(size - sizeof(uint8_t));
@@ -270,9 +273,10 @@ public:
 
         co_await this->on_bot_disconnected(bot);
 
-        this->_bots.write([&](auto& bots) {
-            bots.erase(bot.id);
-        });
+        {
+            auto guard = this->_bots.enter_write();
+            guard.value().erase(bot.id);
+        }
 
         auto params = thread->template data<bot_thread_params>();
         params->bots.erase(bot.id);
@@ -331,26 +335,28 @@ public:
 
     size_t bot_count() const
     {
-        return this->_bots.read([](const auto& bots) {
-            return bots.size();
-        });
+        auto guard = this->_bots.enter_read();
+        return guard.value().size();
     }
 
     template <typename Func> auto read_bots(Func&& fn) const
         -> decltype(fn(std::declval<const std::unordered_map<uint32_t, std::shared_ptr<BotType>>&>()))
     {
-        return this->_bots.read(std::forward<Func>(fn));
+        auto guard = this->_bots.enter_read();
+        return fn(guard.value());
     }
 
     template <typename Func> auto write_bots(Func&& fn)
         -> decltype(fn(std::declval<std::unordered_map<uint32_t, std::shared_ptr<BotType>>&>()))
     {
-        return this->_bots.write(std::forward<Func>(fn));
+        auto guard = this->_bots.enter_write();
+        return fn(guard.value());
     }
 
     void write_bots(const std::function<void(std::unordered_map<uint32_t, std::shared_ptr<BotType>>&)>& fn)
     {
-        this->_bots.write(fn);
+        auto guard = this->_bots.enter_write();
+        fn(guard.value());
     }
 
     virtual async::task<void> on_integration_hook_execution(uint8_t                     opcode,
@@ -388,8 +394,9 @@ async::task<ResponseType> bot<BotType>::request(std::shared_ptr<BotType>        
 
     if (timeout > 0s)
     {
-        auto thread = target->thread();
-        std::ignore = thread->dispatch([context, timeout](auto& thread) -> async::task<void> {
+        auto thread  = target->thread();
+        auto builder = thread->template new_builder<void>();
+        builder.func = [context, timeout](auto& thread) -> async::task<void> {
             context->timer = thread.settimer(
                 [context](auto& datetime, auto thread_id) -> async::task<void> {
                     context->complete_timeout();
@@ -398,7 +405,8 @@ async::task<ResponseType> bot<BotType>::request(std::shared_ptr<BotType>        
                 timeout,
                 fb::timer::repeat_type::once);
             co_return;
-        });
+        };
+        builder.enqueue();
     }
 
     if (target->_hooks.contains(ResponseType::opcode) == false)

@@ -482,6 +482,13 @@ local function run_change_gender(me, npc)
     if button == DIALOG_RESULT.QUIT then
         return false
     end
+
+    local m = me:marriage()
+    if m.married then
+        me:dialog(npc, '음... 결혼한 상태에서는 성전환 수술을 할 수 없네. 먼저 이혼을 한 뒤에 다시 오도록 하게.')
+        return false
+    end
+
     button = me:dialog(npc, '음... 아직 결혼한 상태가 아니니... 수술을 시작해 봐야지.', false, true)
     if button == DIALOG_RESULT.QUIT then
         return false
@@ -489,7 +496,7 @@ local function run_change_gender(me, npc)
 
     local gender = me:gender()
     local gender_from, gender_to
-    if gender == SEX.MAN then
+    if gender == GENDER.MALE then
         gender_from = '남자'
         gender_to = '여자'
     else
@@ -510,10 +517,10 @@ local function run_change_gender(me, npc)
     end
 
     me:money(money - price)
-    if gender == SEX.MAN then
-        me:gender(SEX.WOMAN)
+    if gender == GENDER.MALE then
+        me:gender(GENDER.FEMALE)
     else
-        me:gender(SEX.MAN)
+        me:gender(GENDER.MALE)
     end
     button = me:dialog(npc, string.format('자네 지금부터는 %s 되었네. %s용 의복을 갖추고 있는지는 몰라도, 하여간 자네는 이제 %s의 몸을 갖게 되었으니 그렇게 알고 돌아고도록 하게.', gender_to, gender_from, gender_to), false, true)
     if button == DIALOG_RESULT.QUIT then

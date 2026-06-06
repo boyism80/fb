@@ -163,6 +163,12 @@ table Mail {
     created_date: string;
 }
 
+table MailWriteEntry {
+    user: uint;
+    mail: Mail;
+    unread: ushort;
+}
+
 table Group {
     id: uint;
     master: string;
@@ -225,16 +231,10 @@ table SystemMail {
     created_date: string;
 }
 
-table SystemMailUser {
-    user: uint;
-    mail_id: uint;
-    read: bool;
-    expire_date: string?;
-}
-
 table StorageBox {
     user: uint;
     id: uint;
+    system_storage_box_id: uint;
     title: string;
     message: string;
     attachments: string;
@@ -242,19 +242,20 @@ table StorageBox {
     expired_date: string?;
 }
 
-table StoragePendingBox {
-    id: string;
-    user: uint?;
+table StorageWriteEntry {
+    user: uint;
+    box: StorageBox;
+}
+
+table SystemStorageBox {
+    id: uint;
+    user: uint;
     title: string;
     message: string;
     attachments: string;
     expired_date: string?;
-}
-
-table StorageRewardMark {
-    user: uint;
-    pending_id: string;
-    expired_date: string?;
+    external_ref: string?;
+    created_date: string;
 }
 
 /// Full save payload for a single character (world is supplied by the request).
@@ -265,7 +266,5 @@ table SavePayload {
     spells: [Spell];
     achievements: [Achievement];
     quests: [Quest];
-    received_system_mails: [SystemMailUser];
     storage_boxes: [StorageBox];
-    storage_reward_marks: [StorageRewardMark];
 }

@@ -104,7 +104,7 @@ namespace AdminTool.Services
             }
 
             // Log admin login event
-            _logService.Write("admin_login", new
+            await _logService.WriteAsync("admin_login", new
             {
                 account_name = character.Name,
                 uid = userId.Value,

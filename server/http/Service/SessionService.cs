@@ -119,7 +119,7 @@ namespace Http.Service
                 var existingSession = JsonConvert.DeserializeObject<Session>(redisResult[1].ToString());
 
                 // Publish KickOut message to notify the game server to disconnect the existing user
-                _rabbitMqService.Publish(new Response.KickOut
+                await _rabbitMqService.PublishAsync(new Response.KickOut
                 {
                     Uid = existingSession.Uid,
                     Name = name

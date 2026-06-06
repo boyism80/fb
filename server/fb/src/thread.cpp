@@ -20,13 +20,15 @@ void fb::thread::on_thread(uint8_t index)
     {
         std::function<void()> func;
 
-        this->_queue.write([&func](auto& queue) {
+        {
+            auto  guard = this->_queue.enter_write();
+            auto& queue = guard.value();
             if (queue.empty() == false)
             {
                 func = queue.front();
                 queue.pop();
             }
-        });
+        }
 
         if (func != nullptr)
         {
@@ -139,34 +141,35 @@ async::task<void> fb::thread::sleep(const fb::model::timespan& delay)
 
 void fb::thread::enqueue(handle_func_type<void>&& fn, handle_error_type&& error, std::function<void()>&& callback)
 {
-    this->_queue.write(
-        [fn = std::move(fn), error = std::move(error), callback = std::move(callback), this](auto& queue) {
-            queue.push([fn = std::move(fn), error = std::move(error), callback = std::move(callback), this]() {
-                async::awaitable_then(fn(*this),
-                                      [fn = std::move(fn), error = std::move(error), callback = std::move(callback)](
-                                          async::awaitable_result<void> result) {
-                                          try
-                                          {
-                                              callback();
-                                          }
-                                          catch (std::exception& e)
-                                          {
-                                              error(e);
-                                          }
-                                          catch (...)
-                                          {
-                                              try
-                                              {
-                                                  std::rethrow_exception(std::current_exception());
-                                              }
-                                              catch (std::exception& e)
-                                              {
-                                                  error(e);
-                                              }
-                                          }
-                                      });
-            });
-        });
+    auto  guard = this->_queue.enter_write();
+    auto& queue = guard.value();
+    queue.push([fn = std::move(fn), error = std::move(error), callback = std::move(callback), this]() {
+        async::awaitable_then(fn(*this),
+                              [fn = std::move(fn), error = std::move(error), callback = std::move(callback)](
+                                  async::awaitable_result<void> result) {
+                                  try
+                                  {
+                                      result();
+                                      if (callback)
+                                          callback();
+                                  }
+                                  catch (std::exception& e)
+                                  {
+                                      error(e);
+                                  }
+                                  catch (...)
+                                  {
+                                      try
+                                      {
+                                          std::rethrow_exception(std::current_exception());
+                                      }
+                                      catch (std::exception& e)
+                                      {
+                                          error(e);
+                                      }
+                                  }
+                              });
+    });
 }
 
 async::task<void> fb::thread::dispatch(handle_func_type<void>&& fn)
@@ -224,9 +227,8 @@ uint8_t fb::thread::index() const
 
 size_t fb::thread::queue_size() const
 {
-    return this->_queue.read([](const auto& queue) -> size_t {
-        return queue.size();
-    });
+    auto guard = this->_queue.enter_read();
+    return guard.value().size();
 }
 
 std::string fb::thread::to_string() const

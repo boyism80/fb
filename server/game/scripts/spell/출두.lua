@@ -25,7 +25,7 @@ function ON_CAST_3(me, spell, name)
         local direction = me:direction()
         local new_x, new_y, direction = TELEPORT_LOOKUP(me, map, x, y, direction)
         me:map(map, new_x, new_y)
-        me:script('scripts/spell/출두.lua', "ON_CAST_3_BULK", spell:name(), map:model():name(), {new_x, new_y}, direction, sound, effect)
+        me:script('spell/출두.lua', "ON_CAST_3_BULK", spell:name(), map:model():name(), {new_x, new_y}, direction, sound, effect)
     end
 end
 

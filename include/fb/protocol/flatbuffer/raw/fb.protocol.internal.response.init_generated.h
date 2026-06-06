@@ -21,9 +21,6 @@ static_assert(FLATBUFFERS_VERSION_MAJOR == 25 &&
 #include "fb.protocol.internal.quest_generated.h"
 #include "fb.protocol.internal.spell_generated.h"
 #include "fb.protocol.internal.storagebox_generated.h"
-#include "fb.protocol.internal.storagependingbox_generated.h"
-#include "fb.protocol.internal.storagerewardmark_generated.h"
-#include "fb.protocol.internal.systemmailuser_generated.h"
 #include "nullable_uint_generated.h"
 
 namespace fb {
@@ -47,11 +44,8 @@ struct Init FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
     VT_OPTION = 16,
     VT_ACHIEVEMENTS = 18,
     VT_QUESTS = 20,
-    VT_RECEIVED_SYSTEM_MAILS = 22,
-    VT_STORAGE_BOXES = 24,
-    VT_STORAGE_REWARD_MARKS = 26,
-    VT_STORAGE_PENDING = 28,
-    VT_MAIL = 30
+    VT_STORAGE_BOXES = 22,
+    VT_MAIL = 24
   };
   const fb::protocol::internal::raw::Character *character() const {
     return GetPointer<const fb::protocol::internal::raw::Character *>(VT_CHARACTER);
@@ -80,17 +74,8 @@ struct Init FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
   const ::flatbuffers::Vector<::flatbuffers::Offset<fb::protocol::internal::raw::Quest>> *quests() const {
     return GetPointer<const ::flatbuffers::Vector<::flatbuffers::Offset<fb::protocol::internal::raw::Quest>> *>(VT_QUESTS);
   }
-  const ::flatbuffers::Vector<::flatbuffers::Offset<fb::protocol::internal::raw::SystemMailUser>> *received_system_mails() const {
-    return GetPointer<const ::flatbuffers::Vector<::flatbuffers::Offset<fb::protocol::internal::raw::SystemMailUser>> *>(VT_RECEIVED_SYSTEM_MAILS);
-  }
   const ::flatbuffers::Vector<::flatbuffers::Offset<fb::protocol::internal::raw::StorageBox>> *storage_boxes() const {
     return GetPointer<const ::flatbuffers::Vector<::flatbuffers::Offset<fb::protocol::internal::raw::StorageBox>> *>(VT_STORAGE_BOXES);
-  }
-  const ::flatbuffers::Vector<::flatbuffers::Offset<fb::protocol::internal::raw::StorageRewardMark>> *storage_reward_marks() const {
-    return GetPointer<const ::flatbuffers::Vector<::flatbuffers::Offset<fb::protocol::internal::raw::StorageRewardMark>> *>(VT_STORAGE_REWARD_MARKS);
-  }
-  const ::flatbuffers::Vector<::flatbuffers::Offset<fb::protocol::internal::raw::StoragePendingBox>> *storage_pending() const {
-    return GetPointer<const ::flatbuffers::Vector<::flatbuffers::Offset<fb::protocol::internal::raw::StoragePendingBox>> *>(VT_STORAGE_PENDING);
   }
   uint32_t mail() const {
     return GetField<uint32_t>(VT_MAIL, 0);
@@ -119,18 +104,9 @@ struct Init FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
            VerifyOffset(verifier, VT_QUESTS) &&
            verifier.VerifyVector(quests()) &&
            verifier.VerifyVectorOfTables(quests()) &&
-           VerifyOffset(verifier, VT_RECEIVED_SYSTEM_MAILS) &&
-           verifier.VerifyVector(received_system_mails()) &&
-           verifier.VerifyVectorOfTables(received_system_mails()) &&
            VerifyOffset(verifier, VT_STORAGE_BOXES) &&
            verifier.VerifyVector(storage_boxes()) &&
            verifier.VerifyVectorOfTables(storage_boxes()) &&
-           VerifyOffset(verifier, VT_STORAGE_REWARD_MARKS) &&
-           verifier.VerifyVector(storage_reward_marks()) &&
-           verifier.VerifyVectorOfTables(storage_reward_marks()) &&
-           VerifyOffset(verifier, VT_STORAGE_PENDING) &&
-           verifier.VerifyVector(storage_pending()) &&
-           verifier.VerifyVectorOfTables(storage_pending()) &&
            VerifyField<uint32_t>(verifier, VT_MAIL, 4) &&
            verifier.EndTable();
   }
@@ -167,17 +143,8 @@ struct InitBuilder {
   void add_quests(::flatbuffers::Offset<::flatbuffers::Vector<::flatbuffers::Offset<fb::protocol::internal::raw::Quest>>> quests) {
     fbb_.AddOffset(Init::VT_QUESTS, quests);
   }
-  void add_received_system_mails(::flatbuffers::Offset<::flatbuffers::Vector<::flatbuffers::Offset<fb::protocol::internal::raw::SystemMailUser>>> received_system_mails) {
-    fbb_.AddOffset(Init::VT_RECEIVED_SYSTEM_MAILS, received_system_mails);
-  }
   void add_storage_boxes(::flatbuffers::Offset<::flatbuffers::Vector<::flatbuffers::Offset<fb::protocol::internal::raw::StorageBox>>> storage_boxes) {
     fbb_.AddOffset(Init::VT_STORAGE_BOXES, storage_boxes);
-  }
-  void add_storage_reward_marks(::flatbuffers::Offset<::flatbuffers::Vector<::flatbuffers::Offset<fb::protocol::internal::raw::StorageRewardMark>>> storage_reward_marks) {
-    fbb_.AddOffset(Init::VT_STORAGE_REWARD_MARKS, storage_reward_marks);
-  }
-  void add_storage_pending(::flatbuffers::Offset<::flatbuffers::Vector<::flatbuffers::Offset<fb::protocol::internal::raw::StoragePendingBox>>> storage_pending) {
-    fbb_.AddOffset(Init::VT_STORAGE_PENDING, storage_pending);
   }
   void add_mail(uint32_t mail) {
     fbb_.AddElement<uint32_t>(Init::VT_MAIL, mail, 0);
@@ -204,17 +171,11 @@ inline ::flatbuffers::Offset<Init> CreateInit(
     ::flatbuffers::Offset<fb::protocol::internal::raw::Option> option = 0,
     ::flatbuffers::Offset<::flatbuffers::Vector<::flatbuffers::Offset<fb::protocol::internal::raw::Achievement>>> achievements = 0,
     ::flatbuffers::Offset<::flatbuffers::Vector<::flatbuffers::Offset<fb::protocol::internal::raw::Quest>>> quests = 0,
-    ::flatbuffers::Offset<::flatbuffers::Vector<::flatbuffers::Offset<fb::protocol::internal::raw::SystemMailUser>>> received_system_mails = 0,
     ::flatbuffers::Offset<::flatbuffers::Vector<::flatbuffers::Offset<fb::protocol::internal::raw::StorageBox>>> storage_boxes = 0,
-    ::flatbuffers::Offset<::flatbuffers::Vector<::flatbuffers::Offset<fb::protocol::internal::raw::StorageRewardMark>>> storage_reward_marks = 0,
-    ::flatbuffers::Offset<::flatbuffers::Vector<::flatbuffers::Offset<fb::protocol::internal::raw::StoragePendingBox>>> storage_pending = 0,
     uint32_t mail = 0) {
   InitBuilder builder_(_fbb);
   builder_.add_mail(mail);
-  builder_.add_storage_pending(storage_pending);
-  builder_.add_storage_reward_marks(storage_reward_marks);
   builder_.add_storage_boxes(storage_boxes);
-  builder_.add_received_system_mails(received_system_mails);
   builder_.add_quests(quests);
   builder_.add_achievements(achievements);
   builder_.add_option(option);
@@ -238,19 +199,13 @@ inline ::flatbuffers::Offset<Init> CreateInitDirect(
     ::flatbuffers::Offset<fb::protocol::internal::raw::Option> option = 0,
     const std::vector<::flatbuffers::Offset<fb::protocol::internal::raw::Achievement>> *achievements = nullptr,
     const std::vector<::flatbuffers::Offset<fb::protocol::internal::raw::Quest>> *quests = nullptr,
-    const std::vector<::flatbuffers::Offset<fb::protocol::internal::raw::SystemMailUser>> *received_system_mails = nullptr,
     const std::vector<::flatbuffers::Offset<fb::protocol::internal::raw::StorageBox>> *storage_boxes = nullptr,
-    const std::vector<::flatbuffers::Offset<fb::protocol::internal::raw::StorageRewardMark>> *storage_reward_marks = nullptr,
-    const std::vector<::flatbuffers::Offset<fb::protocol::internal::raw::StoragePendingBox>> *storage_pending = nullptr,
     uint32_t mail = 0) {
   auto items__ = items ? _fbb.CreateVector<::flatbuffers::Offset<fb::protocol::internal::raw::Item>>(*items) : 0;
   auto spells__ = spells ? _fbb.CreateVector<::flatbuffers::Offset<fb::protocol::internal::raw::Spell>>(*spells) : 0;
   auto achievements__ = achievements ? _fbb.CreateVector<::flatbuffers::Offset<fb::protocol::internal::raw::Achievement>>(*achievements) : 0;
   auto quests__ = quests ? _fbb.CreateVector<::flatbuffers::Offset<fb::protocol::internal::raw::Quest>>(*quests) : 0;
-  auto received_system_mails__ = received_system_mails ? _fbb.CreateVector<::flatbuffers::Offset<fb::protocol::internal::raw::SystemMailUser>>(*received_system_mails) : 0;
   auto storage_boxes__ = storage_boxes ? _fbb.CreateVector<::flatbuffers::Offset<fb::protocol::internal::raw::StorageBox>>(*storage_boxes) : 0;
-  auto storage_reward_marks__ = storage_reward_marks ? _fbb.CreateVector<::flatbuffers::Offset<fb::protocol::internal::raw::StorageRewardMark>>(*storage_reward_marks) : 0;
-  auto storage_pending__ = storage_pending ? _fbb.CreateVector<::flatbuffers::Offset<fb::protocol::internal::raw::StoragePendingBox>>(*storage_pending) : 0;
   return fb::protocol::internal::response::raw::CreateInit(
       _fbb,
       character,
@@ -262,10 +217,7 @@ inline ::flatbuffers::Offset<Init> CreateInitDirect(
       option,
       achievements__,
       quests__,
-      received_system_mails__,
       storage_boxes__,
-      storage_reward_marks__,
-      storage_pending__,
       mail);
 }
 

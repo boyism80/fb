@@ -100,6 +100,138 @@ namespace Internal.Controllers
                 };
             }
         }
+        [HttpPost("write-mails")]
+        public async Task<Response.WriteMails> WriteMails(Request.WriteMails request)
+        {
+            try
+            {
+                var users = request.Users ?? new List<uint>();
+                if (users.Count == 0)
+                {
+                    return new Response.WriteMails
+                    {
+                        Host  = request.Host,
+                        Error = (uint)ErrorCode.None
+                    };
+                }
+
+                var written = await _dbContext.Mail.WriteMany(request.World,
+                    request.Sender,
+
+                    users,
+                    request.Title,
+                    request.Contents);
+
+                var senderName = await _dbContext.Character.GetName(request.World, request.Sender) ?? string.Empty;
+                var entries    = new List<Protocol.MailWriteEntry>(written.Count);
+
+                foreach (var result in written)
+                {
+                    var protocolMail = _mapper.Map<Protocol.Mail>(result.Mail);
+                    protocolMail.Sender = senderName;
+
+                    entries.Add(new Protocol.MailWriteEntry
+                    {
+                        User   = result.Mail.User,
+                        Mail   = protocolMail,
+                        Unread = result.Unread
+                    });
+                }
+
+                var response = new Response.WriteMails
+                {
+                    Entries = entries,
+                    Host    = request.Host,
+                    Error   = (uint)ErrorCode.None
+                };
+
+                await _rabbitMqService.PublishAsync(response, "amq.direct", $"fb.{request.World}.mail");
+                return response;
+            }
+            catch (LogicException e)
+            {
+                return new Response.WriteMails
+                {
+                    Host  = request.Host,
+                    Error = (uint)e.Error
+                };
+            }
+            catch (Exception)
+            {
+                return new Response.WriteMails
+                {
+                    Host  = request.Host,
+                    Error = (uint)ErrorCode.Unhandled
+                };
+            }
+        }
+
+        [HttpPost("deliver-system-mail")]
+        public async Task<Response.DeliverSystemMail> DeliverSystemMail(Request.DeliverSystemMail request)
+        {
+            try
+            {
+                var users = request.Users ?? new List<uint>();
+                if (users.Count == 0)
+                {
+                    return new Response.DeliverSystemMail
+                    {
+                        Host  = request.Host,
+                        Error = (uint)ErrorCode.None
+                    };
+                }
+
+                var written = await _dbContext.Mail.DeliverSystemMany(request.World,
+                    request.SystemMailId,
+                    request.Sender,
+                    users,
+                    request.Title,
+                    request.Contents);
+
+                var senderName = await _dbContext.Character.GetName(request.World, request.Sender) ?? string.Empty;
+                var entries    = new List<Protocol.MailWriteEntry>(written.Count);
+
+                foreach (var result in written)
+                {
+                    var protocolMail = _mapper.Map<Protocol.Mail>(result.Mail);
+                    protocolMail.Sender = senderName;
+
+                    entries.Add(new Protocol.MailWriteEntry
+                    {
+                        User   = result.Mail.User,
+                        Mail   = protocolMail,
+                        Unread = result.Unread
+                    });
+                }
+
+                var response = new Response.DeliverSystemMail
+                {
+                    Entries = entries,
+                    Host    = request.Host,
+                    Error   = (uint)ErrorCode.None
+                };
+
+                await _rabbitMqService.PublishAsync(response, "amq.direct", $"fb.{request.World}.mail");
+                return response;
+            }
+            catch (LogicException e)
+            {
+                return new Response.DeliverSystemMail
+                {
+                    Host  = request.Host,
+                    Error = (uint)e.Error
+                };
+            }
+            catch (Exception)
+            {
+                return new Response.DeliverSystemMail
+                {
+                    Host  = request.Host,
+                    Error = (uint)ErrorCode.Unhandled
+                };
+            }
+        }
+
         [HttpPost("write")]
         public async Task<Response.WriteMail> Write(Request.WriteMail request)
         {
@@ -120,7 +252,7 @@ namespace Internal.Controllers
                     Error = (uint)ErrorCode.None
                 };
 
-                _rabbitMqService.Publish(response, "amq.direct", $"fb.{request.World}.mail");
+                await _rabbitMqService.PublishAsync(response, "amq.direct", $"fb.{request.World}.mail");
                 return response;
             }
             catch (LogicException e)

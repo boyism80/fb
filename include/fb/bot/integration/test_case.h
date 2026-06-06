@@ -2,7 +2,7 @@
 #define __BOT_INTEGRATION_TEST_CASE_H__
 
 #include <fb/bot/game_bot.h>
-#include <fb/locker.h>
+#include <fb/synchronized.h>
 #include <async/task.h>
 #include <memory>
 #include <vector>

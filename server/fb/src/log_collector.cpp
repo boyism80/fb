@@ -137,7 +137,9 @@ std::string log_collector::serialize_log_array(const std::vector<Json::Value>& e
 {
     Json::Value root(Json::arrayValue);
     for (const auto& e : entries)
+    {
         root.append(e);
+    }
 
     Json::StreamWriterBuilder builder;
     builder["emitUTF8"]    = true;

@@ -2,6 +2,6 @@
 {
     public class SessionKey : IRedisKey
     {
-        public string Key => $"user:session";
+        public string Key => $"fb:user:session";
     }
 }

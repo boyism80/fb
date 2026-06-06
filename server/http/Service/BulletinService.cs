@@ -12,7 +12,7 @@ namespace Http.Service
         private readonly IServiceScopeFactory _scopeFactory;
         private readonly LogService _logService;
 
-        public BulletinService(BulletinCacheService cacheService, IServiceScopeFactory scopeFactory, LogService logService = null)
+        public BulletinService(BulletinCacheService cacheService, IServiceScopeFactory scopeFactory, LogService logService)
         {
             _cacheService = cacheService;
             _scopeFactory = scopeFactory;
@@ -61,8 +61,7 @@ namespace Http.Service
                 {
                     await _cacheService.DeleteArticlesBatchAsync(world, new List<(uint section, uint id)> { (section, id) });
 
-                    // Log bulletin delete event
-                    _logService?.Write("bulletin_delete", new
+                    await _logService.WriteAsync("bulletin_delete", new
                     {
                         world = world,
                         section = section,
@@ -117,8 +116,7 @@ namespace Http.Service
                 {
                     await _cacheService.DeleteArticlesBatchAsync(world, deletedIds);
 
-                    // Log bulletin batch delete event
-                    _logService?.Write("bulletin_delete_batch", new
+                    await _logService.WriteAsync("bulletin_delete_batch", new
                     {
                         world = world,
                         section = section,
@@ -170,8 +168,7 @@ namespace Http.Service
                         await _cacheService.DeleteArticlesBatchAsync(world, new List<(uint section, uint id)> { (section, id) });
                     }
 
-                    // Log bulletin update event
-                    _logService?.Write("bulletin_update", new
+                    await _logService.WriteAsync("bulletin_update", new
                     {
                         world = world,
                         section = section,

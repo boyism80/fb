@@ -5,9 +5,9 @@ ARG BUILD_TYPE=Release
 
 WORKDIR /app
 COPY include ./include
-COPY server/gateway/lib/protocol ./server/gateway/lib/protocol
-COPY server/login/lib/protocol ./server/login/lib/protocol
-COPY server/game/lib/protocol ./server/game/lib/protocol
+COPY server/gateway/src/protocol ./server/gateway/src/protocol
+COPY server/login/src/protocol ./server/login/src/protocol
+COPY server/game/src/protocol ./server/game/src/protocol
 COPY server/bot ./bot
 
 WORKDIR /app/bot/build

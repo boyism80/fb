@@ -9,13 +9,14 @@ namespace Http.Model
         public uint Id { get; set; }
         public uint? GetHash() => User;
 
-        public RedisKey GetRedisKey() => $"cache:storage:box:{User}";
+        public RedisKey GetRedisKey() => $"fb:cache:storage:box:{User}";
 
         public RedisValue GetRedisField() => Id.ToString();
     }
 
     public class StorageBox : StorageBoxKey, IModel
     {
+        public uint? SystemStorageBoxId { get; set; }
         public string Title { get; set; } = string.Empty;
         public string Message { get; set; } = string.Empty;
         public List<Dsl> Attachments { get; set; } = new List<Dsl>();

@@ -10,6 +10,7 @@
 #include <fb/http_client.h>
 #include <fb/socket.h>
 #include <iomanip>
+#include <mutex>
 #include <boost/stacktrace.hpp>
 
 namespace fb {
@@ -21,7 +22,7 @@ class acceptor : public fb::async_executor, public boost::asio::ip::tcp::accepto
 {
 public:
     using socket_container      = std::unordered_map<uint32_t, std::shared_ptr<fb::socket<T>>>;
-    using socket_container_lock = fb::locker<socket_container>;
+    using socket_container_sync = fb::synchronized<socket_container>;
     using boost_timers          = std::vector<std::shared_ptr<boost::asio::deadline_timer>>;
     using session_type          = fb::socket<T>;
 
@@ -44,10 +45,12 @@ public:
     fb::http_client http;
 
 private:
-    boost_timers _timers;
+    boost_timers        _timers;
+    mutable std::mutex  _now_mutex;
+    fb::model::timespan _now_offset;
 
 protected:
-    socket_container_lock _sockets;
+    socket_container_sync _sockets;
 
 protected:
     acceptor(boost::asio::io_context& context, std::string_view name, uint16_t port, size_t http_max_concurrent = 500) :
@@ -128,7 +131,8 @@ private:
                     auto protocol = co_await this->handler.protocol.get_deserializer(opcode)(reader);
                     auto fd       = socket.fd();
                     auto weak     = socket.template weak_from_this_as<fb::socket<T>>();
-                    this->threads.enqueue(weak, [this, protocol, weak, fd, opcode](auto& thread) -> async::task<void> {
+                    auto builder  = this->threads.new_builder(weak);
+                    builder.func  = [this, protocol, weak, fd, opcode](auto& thread) -> async::task<void> {
                         try
                         {
                             if (weak.expired())
@@ -160,7 +164,8 @@ private:
                         {
                             fb::logger::fatal("unhandled exception");
                         }
-                    });
+                    };
+                    builder.enqueue();
                 }
 
                 reader.seek(size - sizeof(uint8_t));
@@ -193,9 +198,10 @@ private:
             fb::logger::fatal(e.what());
         }
         auto fd = socket.fd();
-        this->_sockets.write([fd](auto& v) -> void {
-            v.erase(fd);
-        });
+        {
+            auto guard = this->_sockets.enter_write();
+            guard.value().erase(fd);
+        }
     }
 
     async::task<void> on_socket_received(fb::socket<T>& socket, fb::stream& stream)
@@ -261,16 +267,16 @@ private:
                 socket_ptr->set_option(boost::asio::ip::tcp::no_delay(false));
 
                 {
-                    auto fd = socket_ptr->fd();
-                    this->_sockets.write([fd, &socket_ptr](auto& v) -> void {
-                        if (v.contains(fd))
-                        {
-                            fb::logger::warn(std::format("socket already exists. fd: {}", fd));
-                            v.erase(fd); // remove old socket if exists
-                        }
+                    auto  fd    = socket_ptr->fd();
+                    auto  guard = this->_sockets.enter_write();
+                    auto& v     = guard.value();
+                    if (v.contains(fd))
+                    {
+                        fb::logger::warn(std::format("socket already exists. fd: {}", fd));
+                        v.erase(fd);
+                    }
 
-                        v.insert({fd, socket_ptr});
-                    });
+                    v.insert({fd, socket_ptr});
                 }
 
                 async::awaitable_get(this->on_connected(*socket_ptr));
@@ -492,18 +498,49 @@ public:
             co_await thread->sleep(duration);
     }
 
+public:
+    fb::model::datetime now() const
+    {
+        auto lock = std::lock_guard<std::mutex>(this->_now_mutex);
+        return fb::model::datetime() + this->_now_offset;
+    }
+
+public:
+    void now(const fb::model::datetime& value)
+    {
+        auto current      = fb::model::datetime();
+        auto lock         = std::lock_guard<std::mutex>(this->_now_mutex);
+        this->_now_offset = value - current;
+    }
+
+public:
+    fb::model::timespan now_offset() const
+    {
+        auto lock = std::lock_guard<std::mutex>(this->_now_mutex);
+        return this->_now_offset;
+    }
+
+public:
+    void reset_now_offset()
+    {
+        auto lock         = std::lock_guard<std::mutex>(this->_now_mutex);
+        this->_now_offset = fb::model::timespan();
+    }
+
 private:
     [[nodiscard]] async::task<void> disconnect_sockets()
     {
         auto pairs = std::unordered_map<fb::thread*, std::vector<fb::socket<T>*>>();
-        this->_sockets.read([&pairs](const auto& v) -> void {
-            for (auto& [fd, socket] : v)
+        {
+            auto guard = this->_sockets.enter_read();
+            for (auto& [fd, socket] : guard.value())
             {
+                std::ignore = fd;
                 auto thread = socket->thread();
                 if (thread != nullptr)
                     pairs[thread].push_back(socket.get());
             }
-        });
+        }
 
         for (auto& [thread, sockets] : pairs)
         {
@@ -527,9 +564,8 @@ private:
 public:
     void access_sockets(std::function<void(const socket_container&)> fn)
     {
-        this->_sockets.read([fn](const auto& v) {
-            fn(v);
-        });
+        auto guard = this->_sockets.enter_read();
+        fn(guard.value());
     }
 
 public:

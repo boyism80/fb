@@ -8,7 +8,7 @@ function ON_ACTIVATED_3(me, item)
 
     if quest == nil or quest:completed() then
         ::ON_ACTIVATED_3_0000::
-        if me:gender() == GENDER.MAN then
+        if me:gender() == GENDER.MALE then
             btn = me:dialog(model, '<임무>\n 목도착용\n\n<내용> \n도톨을 사용하는 방법은 잘 익히셨지요? 이번엔\n목도를 착용해 봅시다! 도톨과 같은 방법으로\n사용하시면 착용이 된답니다!! 자.. 시간은 5초\n드립니다!!\n\n<보상>\n 초심자의남자갑주, 경험치 50 (레벨5미만)', false, true)
         else
             btn = me:dialog(model, '<임무>\n 목도착용\n\n<내용> \n도톨을 사용하는 방법은 잘 익히셨지요? 이번엔\n목도를 착용해 봅시다! 도톨과 같은 방법으로\n사용하시면 착용이 된답니다!! 자.. 시간은 5초\n드립니다!!\n\n<보상>\n 초심자의여자갑주, 경험치 50 (레벨5미만)', false, true)
@@ -48,13 +48,13 @@ function ON_ACTIVATED_3(me, item)
         return
     end
 
-    if me:gender() == GENDER.MAN then
+    if me:gender() == GENDER.MALE then
         me:dialog(model, '잘 하셨습니다!! 상으로\n초심자의남자갑주를 드릴게요!!', false, true)
     else
         me:dialog(model, '잘 하셨습니다!! 상으로\n초심자의여자갑주를 드릴게요!!', false, true)
     end
 
-    local armor_name = (me:gender() == GENDER.MAN) and '초심자의남자갑주' or '초심자의여자갑주'
+    local armor_name = (me:gender() == GENDER.MALE) and '초심자의남자갑주' or '초심자의여자갑주'
     if me:mkitem('낙랑의두루마리4', 1) == nil or me:mkitem(armor_name, 1) == nil then
         me:dialog(model, '소지품이 가득 찼습니다.', false, false)
         return
@@ -65,7 +65,7 @@ function ON_ACTIVATED_3(me, item)
         me:exp(me:exp() + 50)
     end
 
-    if me:gender() == GENDER.MAN then
+    if me:gender() == GENDER.MALE then
         if me:level() < 5 then
             me:dialog(model, '<보상>\n\'초심자의남자갑주\',\n\'낙랑의두루마리4\'을 얻다!!!\n경험치 50 상승!!', false, true)
         else

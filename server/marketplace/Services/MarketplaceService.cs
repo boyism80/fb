@@ -51,7 +51,7 @@ public class MarketplaceService : IMarketplaceService
         // Check if listing ID already exists
         if (await _dbContext.Marketplace.CheckListingIdExistsAsync(listingId))
         {
-            _logService?.Write("marketplace_list_failed", new
+            await _logService.WriteAsync("marketplace_list_failed", new
             {
                 character_id = characterId,
                 listing_id = listingId,
@@ -64,7 +64,7 @@ public class MarketplaceService : IMarketplaceService
         var activeListingCount = await _dbContext.Marketplace.CountActiveListingsBySellerAsync(characterId);
         if (activeListingCount >= Fb.Model.ConstValue.Marketplace.ListingLimit)
         {
-            _logService?.Write("marketplace_list_failed", new
+            await _logService.WriteAsync("marketplace_list_failed", new
             {
                 character_id = characterId,
                 listing_id = listingId,
@@ -76,7 +76,7 @@ public class MarketplaceService : IMarketplaceService
         }
 
         // Log before creating listing
-        _logService?.Write("marketplace_list", new
+        await _logService.WriteAsync("marketplace_list", new
         {
             character_id = characterId,
             listing_id = listingId,
@@ -99,7 +99,7 @@ public class MarketplaceService : IMarketplaceService
             DateTime.UtcNow + expireTime);
 
         // Log successful listing creation
-        _logService?.Write("marketplace_list_success", new
+        await _logService.WriteAsync("marketplace_list_success", new
         {
             character_id = characterId,
             listing_id = listingId
@@ -112,7 +112,7 @@ public class MarketplaceService : IMarketplaceService
     public async Task CancelListingAsync(uint world, uint characterId, string listingId)
     {
         // Log before cancel
-        _logService?.Write("marketplace_cancel", new
+        await _logService.WriteAsync("marketplace_cancel", new
         {
             character_id = characterId,
             listing_id = listingId
@@ -121,7 +121,7 @@ public class MarketplaceService : IMarketplaceService
         var listing = await _dbContext.Marketplace.GetListingByIdAsync(listingId);
         if (listing == null)
         {
-            _logService?.Write("marketplace_cancel_failed", new
+            await _logService.WriteAsync("marketplace_cancel_failed", new
             {
                 character_id = characterId,
                 listing_id = listingId,
@@ -132,7 +132,7 @@ public class MarketplaceService : IMarketplaceService
 
         if (listing.SellerId != characterId)
         {
-            _logService?.Write("marketplace_cancel_failed", new
+            await _logService.WriteAsync("marketplace_cancel_failed", new
             {
                 character_id = characterId,
                 listing_id = listingId,
@@ -146,7 +146,7 @@ public class MarketplaceService : IMarketplaceService
             // Check if already cancelled or sold
             if (listing.Status == ListingState.CANCELLED)
             {
-                _logService?.Write("marketplace_cancel_failed", new
+                await _logService.WriteAsync("marketplace_cancel_failed", new
                 {
                     character_id = characterId,
                     listing_id = listingId,
@@ -156,7 +156,7 @@ public class MarketplaceService : IMarketplaceService
             }
             if (listing.Status == ListingState.SOLD)
             {
-                _logService?.Write("marketplace_cancel_failed", new
+                await _logService.WriteAsync("marketplace_cancel_failed", new
                 {
                     character_id = characterId,
                     listing_id = listingId,
@@ -164,7 +164,7 @@ public class MarketplaceService : IMarketplaceService
                 });
                 throw new LogicException(ErrorCode.MarketplaceListingAlreadySold);
             }
-            _logService?.Write("marketplace_cancel_failed", new
+            await _logService.WriteAsync("marketplace_cancel_failed", new
             {
                 character_id = characterId,
                 listing_id = listingId,
@@ -188,16 +188,16 @@ public class MarketplaceService : IMarketplaceService
             }.ToDSL()
         };
 
-        await _storageService.CreatePendingAsync(
+        await _storageService.CreateSystemStorageAsync(
             world,
             Fb.Model.ConstValue.String.MessageMarketplaceListingCancelledTitle,
             Fb.Model.ConstValue.String.MessageMarketplaceListingCancelledMessage,
             listing.SellerId,
-            null, // Unlimited expiry for marketplace items
-            attachments);
+            attachments: attachments,
+            externalRef: $"marketplace:cancel:{listing.Id}");
 
         // Log successful cancellation
-        _logService?.Write("marketplace_cancel_success", new
+        await _logService.WriteAsync("marketplace_cancel_success", new
         {
             character_id = characterId,
             listing_id = listingId
@@ -214,7 +214,7 @@ public class MarketplaceService : IMarketplaceService
         // Check if purchase ID already exists
         if (await _dbContext.MarketplacePurchase.CheckPurchaseIdExistsAsync(purchaseId))
         {
-            _logService?.Write("marketplace_purchase_failed", new
+            await _logService.WriteAsync("marketplace_purchase_failed", new
             {
                 buyer_id = buyerId,
                 listing_id = listingId,
@@ -225,7 +225,7 @@ public class MarketplaceService : IMarketplaceService
         }
 
         // Log before purchase
-        _logService?.Write("marketplace_purchase", new
+        await _logService.WriteAsync("marketplace_purchase", new
         {
             buyer_id = buyerId,
             listing_id = listingId,
@@ -245,7 +245,7 @@ public class MarketplaceService : IMarketplaceService
             if (listing == null)
             {
                 await transaction.RollbackAsync();
-                _logService?.Write("marketplace_purchase_failed", new
+                await _logService.WriteAsync("marketplace_purchase_failed", new
                 {
                     buyer_id = buyerId,
                     listing_id = listingId,
@@ -260,7 +260,7 @@ public class MarketplaceService : IMarketplaceService
             if (actualPurchaseCount == 0)
             {
                 await transaction.RollbackAsync();
-                _logService?.Write("marketplace_purchase_failed", new
+                await _logService.WriteAsync("marketplace_purchase_failed", new
                 {
                     buyer_id = buyerId,
                     listing_id = listingId,
@@ -285,7 +285,7 @@ public class MarketplaceService : IMarketplaceService
             {
                 // Another transaction already purchased or insufficient stock
                 await transaction.RollbackAsync();
-                _logService?.Write("marketplace_purchase_failed", new
+                await _logService.WriteAsync("marketplace_purchase_failed", new
                 {
                     buyer_id = buyerId,
                     listing_id = listingId,
@@ -314,15 +314,13 @@ public class MarketplaceService : IMarketplaceService
             }
 
             // Send seller revenue via storage_box (full price, no fees deducted)
-            await _storageService.CreatePendingAsync(
+            await _storageService.CreateSystemStorageAsync(
                 listing.World,
                 Fb.Model.ConstValue.String.MessageMarketplaceSaleTitle,
                 string.Format(Fb.Model.ConstValue.String.MessageMarketplaceSaleMessage.ToCSharpFormat(), itemName, actualPurchaseCount, actualPrice),
                 listing.SellerId,
-                null, // Unlimited expiry for marketplace items
-                [
-                    new Fb.Model.Dsl.Money { Value = actualPrice }.ToDSL()
-                ]);
+                attachments: [new Fb.Model.Dsl.Money { Value = actualPrice }.ToDSL()],
+                externalRef: $"marketplace:sale:{purchaseId}");
 
             // Prepare buyer attachments (item + refund if any) - all in one storage box
             var buyerAttachments = new List<Fb.Model.Dsl>
@@ -359,19 +357,19 @@ public class MarketplaceService : IMarketplaceService
                 buyerMessage = string.Format(Fb.Model.ConstValue.String.MessageMarketplacePurchaseMessage.ToCSharpFormat(), itemName, actualPurchaseCount, actualPrice);
             }
 
-            await _storageService.CreatePendingAsync(
+            await _storageService.CreateSystemStorageAsync(
                 world,
                 buyerTitle,
                 buyerMessage,
                 buyerId,
-                null, // Unlimited expiry for marketplace items
-                buyerAttachments);
+                attachments: buyerAttachments,
+                externalRef: $"marketplace:buy:{purchaseId}");
 
             // Commit transaction
             await transaction.CommitAsync();
 
             // Log successful purchase
-            _logService?.Write("marketplace_purchase_success", new
+            await _logService.WriteAsync("marketplace_purchase_success", new
             {
                 buyer_id = buyerId,
                 listing_id = listingId,
@@ -395,7 +393,7 @@ public class MarketplaceService : IMarketplaceService
         catch (Exception ex)
         {
             await transaction.RollbackAsync();
-            _logService?.Write("marketplace_purchase_failed", new
+            await _logService.WriteAsync("marketplace_purchase_failed", new
             {
                 buyer_id = buyerId,
                 listing_id = listingId,

@@ -30,7 +30,7 @@ function NPC_502(me, npc)
             return
         end
         if sel == 1 then
-            local armor = (me:gender() == GENDER.MAN) and "남자설빔" or "여자설빔"
+            local armor = (me:gender() == GENDER.MALE) and "남자설빔" or "여자설빔"
             local code = me:exchange(
                 { ['item'] = { ["떡국"] = 1 } },
                 { ['item'] = { [armor] = 1 } }

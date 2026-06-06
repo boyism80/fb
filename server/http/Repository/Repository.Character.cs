@@ -55,6 +55,7 @@ namespace Http.Reepository
             var sql = $"""
                 INSERT INTO `user` (
                     `id`,
+                    `world`,
                     `name`,
                     `pw`,
                     `role`,
@@ -100,6 +101,7 @@ namespace Http.Reepository
                     `first_login_date`)
                 VALUES (
                     {value.Id.Escape()},
+                    {value.World.Escape()},
                     {value.Name.Escape()},
                     {value.Pw.Escape()},
                     {value.Role.Escape()},
@@ -207,7 +209,7 @@ namespace Http.Reepository
         public async Task<string> GetName(uint world, uint id)
         {
             await using var conn = _dbContext.GetGlobalConnection(world);
-            var result = await conn.QueryFirstOrDefaultAsync<CharacterName>($"SELECT id, name FROM name WHERE id = {id}");
+            var result = await conn.QueryFirstOrDefaultAsync<CharacterName>($"SELECT id, name FROM name_registry WHERE id = {id}");
             return result?.Name;
         }
 
@@ -217,7 +219,7 @@ namespace Http.Reepository
                 return new Dictionary<uint, string>();
 
             await using var conn = _dbContext.GetGlobalConnection(world);
-            var result = await conn.QueryAsync<CharacterName>($"SELECT id, name FROM name WHERE id IN ({string.Join(',', ids)})");
+            var result = await conn.QueryAsync<CharacterName>($"SELECT id, name FROM name_registry WHERE id IN ({string.Join(',', ids)})");
             return result.ToDictionary(x => x.Id, x => x.Name);
         }
     }

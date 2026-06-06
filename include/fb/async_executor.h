@@ -2,10 +2,13 @@
 #define __ASYNC_EXECUTOR_H__
 
 #include <boost/asio.hpp>
-#include <fb/thread_container.h>
-#include <fb/hash.h>
-#include <fb/locker.h>
 #include <async/awaitable_get.h>
+#include <async/awaitable_then.h>
+#include <fb/hash.h>
+#include <fb/synchronized.h>
+#include <fb/logger.h>
+#include <fb/thread_container.h>
+#include <format>
 #include <memory>
 
 namespace fb {
@@ -64,21 +67,20 @@ protected:
                     if (!shared_this->_running)
                         break;
 
-                    try
-                    {
-                        // Execute the timer callback
-                        std::ignore = (shared_this.get()->*fn)();
-                    }
-                    catch (const std::exception& e)
-                    {
-                        // Log timer callback errors but don't stop the timer
-                        fb::logger::warn(std::format("Timer callback error: {}", e.what()));
-                    }
-                    catch (...)
-                    {
-                        // Log unknown errors
-                        fb::logger::warn("Timer callback error: Unknown exception");
-                    }
+                    async::awaitable_then((shared_this.get()->*fn)(), [](async::awaitable_result<void> result) {
+                        try
+                        {
+                            result();
+                        }
+                        catch (const std::exception& e)
+                        {
+                            fb::logger::warn(std::format("Timer callback error: {}", e.what()));
+                        }
+                        catch (...)
+                        {
+                            fb::logger::warn("Timer callback error: Unknown exception");
+                        }
+                    });
                 }
             },
             boost::asio::detached);
@@ -148,21 +150,20 @@ protected:
                     if (!shared_this->_running)
                         break;
 
-                    try
-                    {
-                        // Execute the timer callback
-                        std::ignore = fn();
-                    }
-                    catch (const std::exception& e)
-                    {
-                        // Log timer callback errors but don't stop the timer
-                        fb::logger::warn(std::format("Timer callback error: {}", e.what()));
-                    }
-                    catch (...)
-                    {
-                        // Log unknown errors
-                        fb::logger::warn("Timer callback error: Unknown exception");
-                    }
+                    async::awaitable_then(fn(), [](async::awaitable_result<void> result) {
+                        try
+                        {
+                            result();
+                        }
+                        catch (const std::exception& e)
+                        {
+                            fb::logger::warn(std::format("Timer callback error: {}", e.what()));
+                        }
+                        catch (...)
+                        {
+                            fb::logger::warn("Timer callback error: Unknown exception");
+                        }
+                    });
                 }
             },
             boost::asio::detached);

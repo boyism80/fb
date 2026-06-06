@@ -9,7 +9,7 @@
 #include <future>
 #include <algorithm>
 #include <fb/generator.h>
-#include <fb/locker.h>
+#include <fb/synchronized.h>
 
 namespace fb {
 
@@ -32,43 +32,54 @@ public:
         auto indices   = std::unordered_map<T*, int>();
         auto processed = std::atomic<int>(0);
 
-        auto queue  = fb::locker<std::queue<T>>();
-        auto buffer = fb::locker<std::unordered_map<uint32_t, std::unique_ptr<std::vector<R>>>>();
+        auto queue  = fb::synchronized<std::queue<T>>();
+        auto buffer = fb::synchronized<std::unordered_map<uint32_t, std::unique_ptr<std::vector<R>>>>();
 
         auto gen_ready = this->on_ready();
         while (gen_ready.next())
         {
             auto input = gen_ready.value();
-            queue.write([&input, &indices](auto& q) {
+            {
+                auto  guard = queue.enter_write();
+                auto& q     = guard.value();
                 q.push(input);
                 auto& added = q.back();
                 indices.insert({&added, indices.size()});
-            });
+            }
         }
 
-        auto count = queue.read([](const auto& q) {
-            return double(q.size());
-        });
-        auto fn    = [&, this]() {
+        double count = 0;
+        {
+            auto guard = queue.enter_read();
+            count      = double(guard.value().size());
+        }
+        auto fn = [&, this]() {
             while (true)
             {
                 T*   input       = nullptr;
-                bool queue_empty = queue.write([&input](auto& q) -> bool {
+                bool queue_empty = false;
+                {
+                    auto  guard = queue.enter_write();
+                    auto& q     = guard.value();
                     if (q.empty())
-                        return true;
-
-                    input = &q.front();
-                    q.pop();
-                    return false;
-                });
+                    {
+                        queue_empty = true;
+                    }
+                    else
+                    {
+                        input = &q.front();
+                        q.pop();
+                    }
+                }
 
                 if (queue_empty)
                     break;
 
                 auto index = indices.at(input);
-                buffer.write([index](auto& buf) {
-                    buf.insert({index, std::make_unique<std::vector<R>>()});
-                });
+                {
+                    auto guard = buffer.enter_write();
+                    guard.value().insert({index, std::make_unique<std::vector<R>>()});
+                }
 
                 try
                 {
@@ -76,17 +87,19 @@ public:
                     while (gen_work.next())
                     {
                         auto output = gen_work.value();
-                        buffer.write([index, &output](auto& buf) {
-                            buf[index]->push_back(output);
-                        });
+                        {
+                            auto guard = buffer.enter_write();
+                            guard.value()[index]->push_back(output);
+                        }
                     }
 
-                    buffer.read([this, input, index, &processed, count](const auto& buf) {
-                        for (auto& output : *buf.at(index))
+                    {
+                        auto guard = buffer.enter_read();
+                        for (auto& output : *guard.value().at(index))
                         {
                             this->on_worked(*input, output, (++processed * 100) / count);
                         }
-                    });
+                    }
                 }
                 catch (std::exception& e)
                 {
@@ -107,25 +120,26 @@ public:
             task.wait();
         }
 
-        auto keys = buffer.read([](const auto& buf) {
-            auto result_keys = std::vector<uint32_t>();
-            for (auto& [k, _] : buf)
+        auto keys = std::vector<uint32_t>{};
+        {
+            auto guard = buffer.enter_read();
+            for (auto& [k, _] : guard.value())
             {
-                result_keys.push_back(k);
+                keys.push_back(k);
             }
-            std::sort(result_keys.begin(), result_keys.end());
-            return result_keys;
-        });
+        }
+        std::sort(keys.begin(), keys.end());
 
-        buffer.read([&result, &keys](const auto& buf) {
+        {
+            auto guard = buffer.enter_read();
             for (auto k : keys)
             {
-                for (auto& output : *buf.at(k))
+                for (auto& output : *guard.value().at(k))
                 {
                     result.push_back(output);
                 }
             }
-        });
+        }
 
         this->on_finish(result);
     }
@@ -147,32 +161,41 @@ protected:
 public:
     void run()
     {
-        fb::locker<std::queue<T>> queue;
-        std::atomic<int>          processed{0};
+        fb::synchronized<std::queue<T>> queue;
+        std::atomic<int>                processed{0};
 
         auto gen = this->on_ready();
         while (gen.next())
         {
-            queue.write([&gen](auto& q) {
-                q.push(gen.value());
-            });
+            {
+                auto guard = queue.enter_write();
+                guard.value().push(gen.value());
+            }
         }
 
-        auto count = queue.read([](const auto& q) {
-            return double(q.size());
-        });
-        auto fn    = [&, this]() {
+        double count = 0;
+        {
+            auto guard = queue.enter_read();
+            count      = double(guard.value().size());
+        }
+        auto fn = [&, this]() {
             while (true)
             {
                 auto input       = std::optional<T>{};
-                bool queue_empty = queue.write([&input](auto& q) -> bool {
+                bool queue_empty = false;
+                {
+                    auto  guard = queue.enter_write();
+                    auto& q     = guard.value();
                     if (q.empty())
-                        return true;
-
-                    input = std::move(q.front());
-                    q.pop();
-                    return false;
-                });
+                    {
+                        queue_empty = true;
+                    }
+                    else
+                    {
+                        input = std::move(q.front());
+                        q.pop();
+                    }
+                }
 
                 if (queue_empty)
                     break;

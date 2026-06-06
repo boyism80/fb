@@ -7,7 +7,7 @@ namespace Http.Model
         public required uint User { get; set; }
         public uint? GetHash() => 0;
 
-        public RedisKey GetRedisKey() => $"cache:ban:{User}";
+        public RedisKey GetRedisKey() => $"fb:cache:ban:{User}";
     }
 
     public class Ban : BanKey, IModel

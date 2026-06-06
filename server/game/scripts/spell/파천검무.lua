@@ -20,7 +20,7 @@ function ON_CAST_2022(me, spell)
         return failed(me)
     end
 
-    local nears = me:nears(0xFF & ~OBJECT_TYPE.ITEM)
+    local nears = nears_exclude_item(me)
     local x, y = me:position()
     local direction = me:direction()
     local targets = {}

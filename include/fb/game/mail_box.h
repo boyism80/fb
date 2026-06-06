@@ -5,9 +5,7 @@
 #include <stdint.h>
 #include <optional>
 #include <string>
-#include <map>
 #include <fb/model/model.h>
-#include <fb/game/system_mail_user.h>
 
 namespace fb::game {
 
@@ -22,8 +20,7 @@ public:
     struct mail;
 
 private:
-    uint16_t                             _unread_count = 0;
-    std::map<uint32_t, system_mail_user> _system_mail_users;
+    uint16_t _unread_count = 0;
 
 public:
     character& owner;
@@ -38,11 +35,6 @@ public:
     void     message(std::string_view message, bool success, BULLETIN_MESSAGE_TYPE action);
     uint16_t unread_count() const;
     void     unread_count(uint16_t value);
-
-    void add_system_mail_user(uint32_t mail_id, const std::optional<std::string>& expire_date);
-    void update_system_mail_user_read(uint32_t mail_id, bool read);
-    bool try_mark_system_mail_user_as_sent(uint32_t mail_id);
-    const std::map<uint32_t, system_mail_user>& get_system_mail_users() const;
 };
 
 struct mail_box::summary

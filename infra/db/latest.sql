@@ -81,13 +81,13 @@ CREATE TABLE `bulletin_sequence` (
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
--- Table structure for table `character_sync`
+-- Table structure for table `character_realtime_state`
 --
 
-DROP TABLE IF EXISTS `character_sync`;
+DROP TABLE IF EXISTS `character_realtime_state`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!50503 SET character_set_client = utf8mb4 */;
-CREATE TABLE `character_sync` (
+CREATE TABLE `character_realtime_state` (
   `uid` int NOT NULL,
   `group` int DEFAULT NULL,
   `clan` int DEFAULT NULL,
@@ -206,11 +206,13 @@ CREATE TABLE `mail` (
   `sender` int unsigned NOT NULL,
   `title` varchar(64) NOT NULL,
   `contents` varchar(256) NOT NULL,
+  `system_mail_id` int unsigned DEFAULT NULL,
   `read` tinyint NOT NULL DEFAULT '0',
   `deleted` tinyint NOT NULL DEFAULT '0',
   `created_date` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
   `updated_date` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
   PRIMARY KEY (`id`,`user`),
+  UNIQUE KEY `UX_USER_SYSTEM_MAIL` (`user`,`system_mail_id`),
   KEY `IX_UNAME` (`user`)
 ) ENGINE=InnoDB DEFAULT CHARSET=euckr;
 /*!40101 SET character_set_client = @saved_cs_client */;
@@ -230,14 +232,15 @@ CREATE TABLE `mail_sequence` (
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
--- Table structure for table `name`
+-- Table structure for table `name_registry`
 --
 
-DROP TABLE IF EXISTS `name`;
+DROP TABLE IF EXISTS `name_registry`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!50503 SET character_set_client = utf8mb4 */;
-CREATE TABLE `name` (
+CREATE TABLE `name_registry` (
   `id` int unsigned NOT NULL AUTO_INCREMENT,
+  `world` int unsigned NOT NULL COMMENT 'World id at reservation time; kept for historical/merge lookup',
   `name` varchar(256) CHARACTER SET utf8mb3 COLLATE utf8mb3_bin NOT NULL,
   `created_date` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
   `updated_date` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
@@ -262,7 +265,7 @@ CREATE TABLE `ban` (
   `updated_date` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
   PRIMARY KEY (`user`),
   KEY `fk.ban.user_idx` (`user`),
-  CONSTRAINT `fk.ban.user` FOREIGN KEY (`user`) REFERENCES `name` (`id`)
+  CONSTRAINT `fk.ban.user` FOREIGN KEY (`user`) REFERENCES `name_registry` (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_bin;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
@@ -357,25 +360,6 @@ CREATE TABLE `system_mail` (
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
--- Table structure for table `system_mail_user`
---
-
-DROP TABLE IF EXISTS `system_mail_user`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!50503 SET character_set_client = utf8mb4 */;
-CREATE TABLE `system_mail_user` (
-  `mail_id` int unsigned NOT NULL,
-  `user` int unsigned NOT NULL,
-  `read` tinyint NOT NULL DEFAULT '0',
-  `deleted` tinyint NOT NULL DEFAULT '0',
-  `created_date` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  PRIMARY KEY (`mail_id`,`user`),
-  KEY `IX_USER` (`user`),
-  KEY `IX_MAIL_ID` (`mail_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=euckr;
-/*!40101 SET character_set_client = @saved_cs_client */;
-
---
 -- Table structure for table `storage_box`
 --
 
@@ -385,6 +369,7 @@ DROP TABLE IF EXISTS `storage_box`;
 CREATE TABLE `storage_box` (
   `user` int unsigned NOT NULL,
   `id` int unsigned NOT NULL,
+  `system_storage_box_id` int unsigned DEFAULT NULL,
   `title` varchar(128) NOT NULL DEFAULT '',
   `message` varchar(256) NOT NULL,
   `attachments` json NOT NULL,
@@ -394,51 +379,33 @@ CREATE TABLE `storage_box` (
   `created_date` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
   `updated_date` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
   PRIMARY KEY (`user`,`id`),
+  UNIQUE KEY `UX_USER_SYSTEM_STORAGE` (`user`,`system_storage_box_id`),
   KEY `idx_storage_box_expired` (`user`,`expired_date`),
   KEY `idx_storage_box_received` (`user`,`received`,`deleted`)
 ) ENGINE=InnoDB DEFAULT CHARSET=euckr;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
--- Table structure for table `storage_pending_box`
+-- Table structure for table `system_storage_box`
 --
 
-DROP TABLE IF EXISTS `storage_pending_box`;
+DROP TABLE IF EXISTS `system_storage_box`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!50503 SET character_set_client = utf8mb4 */;
-CREATE TABLE `storage_pending_box` (
-  `id` varchar(36) NOT NULL,
+CREATE TABLE `system_storage_box` (
+  `id` int unsigned NOT NULL AUTO_INCREMENT,
   `user` int unsigned DEFAULT NULL,
   `title` varchar(128) NOT NULL DEFAULT '',
   `message` varchar(256) NOT NULL,
   `attachments` json NOT NULL,
   `expired_date` datetime DEFAULT NULL,
+  `external_ref` varchar(128) DEFAULT NULL,
   `deleted` tinyint NOT NULL DEFAULT '0',
   `created_date` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
   `updated_date` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
   PRIMARY KEY (`id`),
-  KEY `idx_storage_pending_user` (`user`,`deleted`,`expired_date`),
-  KEY `idx_storage_pending_expired` (`deleted`,`expired_date`)
-) ENGINE=InnoDB DEFAULT CHARSET=euckr;
-/*!40101 SET character_set_client = @saved_cs_client */;
-
-
---
--- Table structure for table `storage_reward_mark`
---
-
-DROP TABLE IF EXISTS `storage_reward_mark`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!50503 SET character_set_client = utf8mb4 */;
-CREATE TABLE `storage_reward_mark` (
-  `user` int unsigned NOT NULL,
-  `pending_id` varchar(36) NOT NULL,
-  `expired_date` datetime DEFAULT NULL,
-  `deleted` tinyint NOT NULL DEFAULT '0',
-  `created_date` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  `updated_date` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  PRIMARY KEY (`pending_id`),
-  KEY `idx_storage_reward_mark_user` (`user`,`deleted`)
+  UNIQUE KEY `UX_EXTERNAL_REF` (`external_ref`),
+  KEY `idx_system_storage_user` (`user`,`deleted`,`expired_date`)
 ) ENGINE=InnoDB DEFAULT CHARSET=euckr;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
@@ -470,6 +437,7 @@ DROP TABLE IF EXISTS `user`;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `user` (
   `id` int unsigned NOT NULL,
+  `world` int unsigned NOT NULL COMMENT 'World id at character creation time; kept for historical/merge lookup',
   `name` varchar(256) NOT NULL,
   `pw` varchar(256) CHARACTER SET utf8mb3 COLLATE utf8mb3_general_ci NOT NULL,
   `birth` int unsigned DEFAULT NULL,
@@ -539,6 +507,30 @@ CREATE TABLE `marriage` (
   CONSTRAINT `fk.marriage.character` FOREIGN KEY (`character_id`) REFERENCES `user` (`id`) ON DELETE CASCADE,
   CONSTRAINT `fk.marriage.spouse` FOREIGN KEY (`spouse_id`) REFERENCES `user` (`id`) ON DELETE SET NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3 COMMENT='Marriage state per character: spouse_id, remarriage_after, divorce_count';
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Table structure for table `write_back_failure`
+--
+
+DROP TABLE IF EXISTS `write_back_failure`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
+CREATE TABLE `write_back_failure` (
+  `id` bigint unsigned NOT NULL AUTO_INCREMENT,
+  `world` int unsigned NOT NULL,
+  `db_shard` int NOT NULL COMMENT 'Write-back queue DB: -1 global, else data shard index',
+  `hash` int unsigned DEFAULT NULL,
+  `redis_key` varchar(256) NOT NULL,
+  `sql_text` mediumtext NOT NULL,
+  `error_code` int NOT NULL DEFAULT 0,
+  `sql_state` varchar(10) DEFAULT NULL,
+  `error_message` varchar(2048) NOT NULL,
+  `created_date` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `status` tinyint unsigned NOT NULL DEFAULT 0 COMMENT '0=pending, 1=replayed, 2=discarded',
+  PRIMARY KEY (`id`),
+  KEY `idx_write_back_failure_world_created` (`world`,`created_date`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3 COMMENT='Write-back failures (no MQ retry; ops replay)';
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -882,6 +874,206 @@ DELIMITER ;
 /*!50003 SET character_set_client  = @saved_cs_client */ ;
 /*!50003 SET character_set_results = @saved_cs_results */ ;
 /*!50003 SET collation_connection  = @saved_col_connection */ ;
+/*!50003 DROP PROCEDURE IF EXISTS `USP_MAIL_WRITE_MANY` */;
+/*!50003 SET @saved_cs_client      = @@character_set_client */ ;
+/*!50003 SET @saved_cs_results     = @@character_set_results */ ;
+/*!50003 SET @saved_col_connection = @@collation_connection */ ;
+/*!50003 SET character_set_client  = utf8mb4 */ ;
+/*!50003 SET character_set_results = utf8mb4 */ ;
+/*!50003 SET collation_connection  = utf8mb4_0900_ai_ci */ ;
+/*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
+/*!50003 SET sql_mode              = 'ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION' */ ;
+DELIMITER ;;
+CREATE DEFINER=`fb`@`%` PROCEDURE `USP_MAIL_WRITE_MANY`(
+    IN sender INT,
+    IN title NVARCHAR(64),
+    IN contents NVARCHAR(256)
+)
+BEGIN
+    DECLARE done INT DEFAULT FALSE;
+    DECLARE v_user INT UNSIGNED;
+    DECLARE new_id INT UNSIGNED;
+
+    -- Caller must populate session temp table tmp_mail_write_users (user_id) on the same connection.
+
+    DECLARE user_cursor CURSOR FOR
+        SELECT user_id
+        FROM tmp_mail_write_users
+        WHERE user_id > 0
+        ORDER BY user_id;
+
+    DECLARE CONTINUE HANDLER FOR NOT FOUND SET done = TRUE;
+
+    DECLARE EXIT HANDLER FOR SQLEXCEPTION
+    BEGIN
+        ROLLBACK;
+        SELECT 0 AS RESULT;
+    END;
+
+    DROP TEMPORARY TABLE IF EXISTS tmp_mail_written;
+    CREATE TEMPORARY TABLE tmp_mail_written (
+        `user` INT UNSIGNED NOT NULL,
+        `id` INT UNSIGNED NOT NULL,
+        PRIMARY KEY (`user`, `id`)
+    ) ENGINE = MEMORY;
+
+    START TRANSACTION;
+
+    OPEN user_cursor;
+
+    read_loop: LOOP
+        FETCH user_cursor INTO v_user;
+        IF done THEN
+            LEAVE read_loop;
+        END IF;
+
+        SELECT id INTO new_id
+        FROM mail_sequence
+        WHERE mail_sequence.`user` = v_user FOR UPDATE;
+
+        IF new_id IS NULL THEN
+            SET new_id = 1;
+            INSERT INTO mail_sequence (`user`, `id`) VALUES (v_user, new_id);
+        ELSE
+            SET new_id = new_id + 1;
+            UPDATE mail_sequence SET id = new_id WHERE mail_sequence.`user` = v_user;
+        END IF;
+
+        INSERT INTO mail (`id`, `user`, `sender`, `title`, `contents`)
+        VALUES (new_id, v_user, sender, title, contents);
+
+        INSERT INTO tmp_mail_written (`user`, `id`) VALUES (v_user, new_id);
+    END LOOP;
+
+    CLOSE user_cursor;
+
+    COMMIT;
+
+    SELECT 1 AS RESULT;
+
+    SELECT m.*
+    FROM mail m
+    INNER JOIN tmp_mail_written t ON m.`user` = t.`user` AND m.`id` = t.`id`;
+
+    SELECT m.`user`, CAST(COUNT(*) AS UNSIGNED) AS unread
+    FROM mail m
+    INNER JOIN tmp_mail_written t ON m.`user` = t.`user`
+    WHERE m.`read` = 0 AND m.deleted = 0
+    GROUP BY m.`user`;
+
+    DROP TEMPORARY TABLE tmp_mail_written;
+
+END ;;
+DELIMITER ;
+/*!50003 SET sql_mode              = @saved_sql_mode */ ;
+/*!50003 SET character_set_client  = @saved_cs_client */ ;
+/*!50003 SET character_set_results = @saved_cs_results */ ;
+/*!50003 SET collation_connection  = @saved_col_connection */ ;
+/*!50003 DROP PROCEDURE IF EXISTS `USP_MAIL_DELIVER_SYSTEM_MANY` */;
+/*!50003 SET @saved_cs_client      = @@character_set_client */ ;
+/*!50003 SET @saved_cs_results     = @@character_set_results */ ;
+/*!50003 SET @saved_col_connection = @@collation_connection */ ;
+/*!50003 SET character_set_client  = utf8mb4 */ ;
+/*!50003 SET character_set_results = utf8mb4 */ ;
+/*!50003 SET collation_connection  = utf8mb4_0900_ai_ci */ ;
+/*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
+/*!50003 SET sql_mode              = 'ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION' */ ;
+DELIMITER ;;
+CREATE DEFINER=`fb`@`%` PROCEDURE `USP_MAIL_DELIVER_SYSTEM_MANY`(
+    IN system_mail_id INT UNSIGNED,
+    IN sender INT,
+    IN title NVARCHAR(64),
+    IN contents NVARCHAR(256)
+)
+BEGIN
+    DECLARE done INT DEFAULT FALSE;
+    DECLARE v_user INT UNSIGNED;
+    DECLARE new_id INT UNSIGNED;
+
+    -- Caller must populate session temp table tmp_mail_write_users (user_id) on the same connection.
+
+    DECLARE user_cursor CURSOR FOR
+        SELECT user_id
+        FROM tmp_mail_write_users
+        WHERE user_id > 0
+        ORDER BY user_id;
+
+    DECLARE CONTINUE HANDLER FOR NOT FOUND SET done = TRUE;
+
+    DECLARE EXIT HANDLER FOR SQLEXCEPTION
+    BEGIN
+        ROLLBACK;
+        SELECT 0 AS RESULT;
+    END;
+
+    DROP TEMPORARY TABLE IF EXISTS tmp_mail_written;
+    CREATE TEMPORARY TABLE tmp_mail_written (
+        `user` INT UNSIGNED NOT NULL,
+        `id` INT UNSIGNED NOT NULL,
+        PRIMARY KEY (`user`, `id`)
+    ) ENGINE = MEMORY;
+
+    START TRANSACTION;
+
+    OPEN user_cursor;
+
+    read_loop: LOOP
+        FETCH user_cursor INTO v_user;
+        IF done THEN
+            LEAVE read_loop;
+        END IF;
+
+        IF EXISTS (
+            SELECT 1 FROM mail
+            WHERE mail.`user` = v_user
+              AND mail.system_mail_id = system_mail_id
+              AND mail.deleted = 0
+        ) THEN
+            ITERATE read_loop;
+        END IF;
+
+        SELECT id INTO new_id
+        FROM mail_sequence
+        WHERE mail_sequence.`user` = v_user FOR UPDATE;
+
+        IF new_id IS NULL THEN
+            SET new_id = 1;
+            INSERT INTO mail_sequence (`user`, `id`) VALUES (v_user, new_id);
+        ELSE
+            SET new_id = new_id + 1;
+            UPDATE mail_sequence SET id = new_id WHERE mail_sequence.`user` = v_user;
+        END IF;
+
+        INSERT INTO mail (`id`, `user`, `sender`, `title`, `contents`, `system_mail_id`)
+        VALUES (new_id, v_user, sender, title, contents, system_mail_id);
+
+        INSERT INTO tmp_mail_written (`user`, `id`) VALUES (v_user, new_id);
+    END LOOP;
+
+    CLOSE user_cursor;
+
+    COMMIT;
+
+    SELECT 1 AS RESULT;
+
+    SELECT m.*
+    FROM mail m
+    INNER JOIN tmp_mail_written t ON m.`user` = t.`user` AND m.`id` = t.`id`;
+
+    SELECT m.`user`, CAST(COUNT(*) AS UNSIGNED) AS unread
+    FROM mail m
+    INNER JOIN tmp_mail_written t ON m.`user` = t.`user`
+    WHERE m.`read` = 0 AND m.deleted = 0
+    GROUP BY m.`user`;
+
+    DROP TEMPORARY TABLE tmp_mail_written;
+
+END ;;
+DELIMITER ;
+/*!50003 SET sql_mode              = @saved_sql_mode */ ;
+/*!50003 SET character_set_client  = @saved_cs_client */ ;
+/*!50003 SET character_set_results = @saved_cs_results */ ;
+/*!50003 SET collation_connection  = @saved_col_connection */ ;
 /*!50003 DROP PROCEDURE IF EXISTS `USP_NAME_GET_ID` */;
 /*!50003 SET @saved_cs_client      = @@character_set_client */ ;
 /*!50003 SET @saved_cs_results     = @@character_set_results */ ;
@@ -894,7 +1086,7 @@ DELIMITER ;
 DELIMITER ;;
 CREATE DEFINER=`fb`@`%` PROCEDURE `USP_NAME_GET_ID`(n NVARCHAR(256))
 BEGIN
-	SELECT id FROM name WHERE name.name = n;
+	SELECT id FROM name_registry WHERE name_registry.name = n;
 END ;;
 DELIMITER ;
 /*!50003 SET sql_mode              = @saved_sql_mode */ ;
@@ -911,7 +1103,7 @@ DELIMITER ;
 /*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
 /*!50003 SET sql_mode              = 'ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION' */ ;
 DELIMITER ;;
-CREATE DEFINER=`fb`@`localhost` PROCEDURE `USP_NAME_SET`(IN uname NVARCHAR(256))
+CREATE DEFINER=`fb`@`localhost` PROCEDURE `USP_NAME_SET`(IN uname NVARCHAR(256), IN in_world INT UNSIGNED)
 BEGIN
     DECLARE uid INT;
     DECLARE EXIT HANDLER FOR SQLEXCEPTION
@@ -923,10 +1115,10 @@ BEGIN
 	SET TRANSACTION ISOLATION LEVEL REPEATABLE READ;
     START TRANSACTION;
     
-    SELECT id INTO uid FROM name WHERE name = uname FOR UPDATE;
+    SELECT id INTO uid FROM name_registry WHERE name = uname FOR UPDATE;
     
     IF uid IS NULL THEN
-        INSERT INTO name (name) VALUES (uname);
+        INSERT INTO name_registry (name, world) VALUES (uname, in_world);
         SET uid = LAST_INSERT_ID();
         SELECT 1 AS result, uid;
     ELSE
@@ -1060,3 +1252,4 @@ CREATE TABLE `marketplace_statistics` (
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
 -- Dump completed on 2025-11-23 17:53:02
+

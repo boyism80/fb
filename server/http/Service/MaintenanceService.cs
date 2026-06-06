@@ -7,7 +7,7 @@ namespace Http.Service
 {
     public class MaintenanceService
     {
-        private const string MaintenanceKeyPrefix = "maintenance:";
+        private const string MaintenanceKeyPrefix = "fb:maintenance:";
 
         private static readonly double RecurringScheduleScore = ((DateTimeOffset)new DateTime(2099, 12, 31, 23, 59, 59, DateTimeKind.Utc)).ToUnixTimeSeconds();
 
@@ -211,7 +211,7 @@ namespace Http.Service
                 return 0;
             }
 
-            var heartbeatPattern = $"heart-beat:{world}:Game:*";
+            var heartbeatPattern = $"fb:heart-beat:{world}:Game:*";
             var keys = await redis.Connection.ScanKeysAsync(heartbeatPattern, 1000);
 
             if (keys.Count == 0)
@@ -220,13 +220,13 @@ namespace Http.Service
                 return 0;
             }
 
-            // Extract server IDs from heartbeat keys (format: heart-beat:World:Service:Id)
+            // Extract server IDs from heartbeat keys (format: fb:heart-beat:World:Service:Id)
             var serverIds = new HashSet<byte>();
             foreach (var key in keys)
             {
                 var keyStr = key.ToString();
                 var parts = keyStr.Split(':');
-                if (parts.Length == 4 && byte.TryParse(parts[3], out var serverId))
+                if (parts.Length == 5 && byte.TryParse(parts[4], out var serverId))
                 {
                     serverIds.Add(serverId);
                 }
@@ -244,7 +244,7 @@ namespace Http.Service
             {
                 try
                 {
-                    _rabbitMqService.Publish(new fb.protocol._internal.response.StartMaintenance
+                    await _rabbitMqService.PublishAsync(new fb.protocol._internal.response.StartMaintenance
                     {
                         Message = maintenanceInfo.Message,
                         EndTime = maintenanceInfo.EndTime.ToString("yyyy-MM-dd HH:mm:ss")

@@ -76,7 +76,7 @@ function NPC_277(me, npc)
 
     me:dialog(npc, "다람쥐와 토끼를 모두 잡으셨나요? 선물로 초보자용 갑옷을 드리겠습니다.", false, true)
 
-    local armor = (me:gender() == GENDER.WOMAN) and "초보자용여자갑주" or "초보자용남자갑주"
+    local armor = (me:gender() == GENDER.FEMALE) and "초보자용여자갑주" or "초보자용남자갑주"
     if me:mkitem(armor, 1) == nil then
         me:dialog(npc, "소지품이 가득 차서 갑옷을 줄 수 없습니다.", false, false)
         return

@@ -22,7 +22,6 @@ namespace Internal.Controllers
         private readonly DbContext _dbContext;
         private readonly IMapper _mapper;
         private readonly RedisDistributedLockService _distributedLock;
-        private readonly StorageService _storageService;
         private readonly BanService _banService;
         private readonly ServerStateService _serverStateService;
         private readonly LogService _logService;
@@ -33,7 +32,6 @@ namespace Internal.Controllers
             DbContext dbContext,
             IMapper mapper,
             RedisDistributedLockService distributedLock,
-            StorageService storageService,
             BanService banService,
             ServerStateService serverStateService,
             LogService logService,
@@ -45,12 +43,12 @@ namespace Internal.Controllers
             _dbContext = dbContext;
             _mapper = mapper;
             _distributedLock = distributedLock;
-            _storageService = storageService;
             _banService = banService;
             _serverStateService = serverStateService;
             _logService = logService;
             _maintenanceService = maintenanceService;
         }
+
         [HttpPost("login")]
         public async Task<Response.Login> Login(Request.Login request)
         {
@@ -58,7 +56,6 @@ namespace Internal.Controllers
             {
                 var world = request.World;
 
-                // Check if user is banned
                 var banCheck = await _banService.IsBanned(world, request.Name);
                 if (banCheck != null && banCheck.IsBanned)
                 {
@@ -70,11 +67,9 @@ namespace Internal.Controllers
                     };
                 }
 
-                // Check if maintenance is active
                 var maintenanceInfo = await _maintenanceService.GetMaintenanceInfo(world);
                 if (maintenanceInfo != null && maintenanceInfo.IsActive)
                 {
-                    // Check if user is admin
                     var characterId = await _dbContext.Character.GetCharacterId(world, request.Name);
                     if (characterId.HasValue)
                     {
@@ -129,6 +124,7 @@ namespace Internal.Controllers
                 };
             }
         }
+
         [HttpPost("logout")]
         public async Task<Response.Logout> Logout(Request.Logout request)
         {
@@ -140,6 +136,7 @@ namespace Internal.Controllers
                 Success = true
             };
         }
+
         [HttpPost("transfer")]
         public async Task<Response.Transfer> Transfer(Request.Transfer request)
         {
@@ -147,7 +144,6 @@ namespace Internal.Controllers
             {
                 var world = request.World;
 
-                // Check if user is banned (only if name is provided)
                 if (!string.IsNullOrEmpty(request.Name))
                 {
                     var banCheck = await _banService.IsBanned(world, request.Name);
@@ -161,11 +157,9 @@ namespace Internal.Controllers
                         };
                     }
 
-                    // Check if maintenance is active
                     var maintenanceInfo = await _maintenanceService.GetMaintenanceInfo(world);
                     if (maintenanceInfo != null && maintenanceInfo.IsActive)
                     {
-                        // Check if user is admin
                         var characterId = await _dbContext.Character.GetCharacterId(world, request.Name);
                         if (characterId.HasValue)
                         {
@@ -192,7 +186,7 @@ namespace Internal.Controllers
                     var session = await _sessionService.GetAndDelete(world, request.Name);
                     if (session != null)
                     {
-                        _rabbitMqService.Publish(new Response.KickOut
+                        await _rabbitMqService.PublishAsync(new Response.KickOut
                         {
                             Uid = session.Uid,
                             Name = request.Name
@@ -201,13 +195,12 @@ namespace Internal.Controllers
                     }
                 }
 
-                // Log game server entry event (only if name is provided)
                 if (!string.IsNullOrEmpty(request.Name))
                 {
                     var uid = await _dbContext.Character.GetCharacterId(world, request.Name);
                     if (uid.HasValue)
                     {
-                        _logService.Write("game_server_entry", new
+                        await _logService.WriteAsync("game_server_entry", new
                         {
                             account_name = request.Name,
                             uid = uid.Value,
@@ -239,6 +232,7 @@ namespace Internal.Controllers
                 };
             }
         }
+
         [HttpPost("whisper")]
         public async Task<Response.Whisper> Whisper(Request.Whisper request)
         {
@@ -269,7 +263,7 @@ namespace Internal.Controllers
                     To = target.Name,
                     Message = request.Message
                 };
-                _rabbitMqService.Publish(response, "amq.direct", $"fb.{request.World}.game.{targetSession.Host}");
+                await _rabbitMqService.PublishAsync(response, "amq.direct", $"fb.{request.World}.game.{targetSession.Host}");
                 return response;
             }
             catch (LogicException e)
@@ -292,8 +286,9 @@ namespace Internal.Controllers
                 };
             }
         }
+
         [HttpPost("broadcast")]
-        public Task<Response.Broadcast> Broadcast(Request.Broadcast request)
+        public async Task<Response.Broadcast> Broadcast(Request.Broadcast request)
         {
             var response = new Response.Broadcast
             {
@@ -303,12 +298,12 @@ namespace Internal.Controllers
                 Error = (uint)ErrorCode.None
             };
 
-            _rabbitMqService.Publish(response, "amq.direct", $"fb.{request.World}.global");
-            return Task.FromResult(response);
+            await _rabbitMqService.PublishAsync(response, "amq.direct", $"fb.{request.World}.global");
+            return response;
         }
 
         [HttpPost("set-exp-multiplier")]
-        public Task<Response.SetExpMultiplier> SetExpMultiplier(Request.SetExpMultiplier request)
+        public async Task<Response.SetExpMultiplier> SetExpMultiplier(Request.SetExpMultiplier request)
         {
             var response = new Response.SetExpMultiplier
             {
@@ -316,12 +311,12 @@ namespace Internal.Controllers
                 Error = (uint)ErrorCode.None
             };
 
-            _rabbitMqService.Publish(response, "amq.direct", $"fb.{request.World}.global");
-            return Task.FromResult(response);
+            await _rabbitMqService.PublishAsync(response, "amq.direct", $"fb.{request.World}.global");
+            return response;
         }
 
         [HttpPost("set-drop-rate-multiplier")]
-        public Task<Response.SetDropRateMultiplier> SetDropRateMultiplier(Request.SetDropRateMultiplier request)
+        public async Task<Response.SetDropRateMultiplier> SetDropRateMultiplier(Request.SetDropRateMultiplier request)
         {
             var response = new Response.SetDropRateMultiplier
             {
@@ -329,8 +324,22 @@ namespace Internal.Controllers
                 Error = (uint)ErrorCode.None
             };
 
-            _rabbitMqService.Publish(response, "amq.direct", $"fb.{request.World}.global");
-            return Task.FromResult(response);
+            await _rabbitMqService.PublishAsync(response, "amq.direct", $"fb.{request.World}.global");
+            return response;
+        }
+
+        [HttpPost("set-datetime")]
+        public async Task<Response.SetDateTime> SetDateTime(Request.SetDateTime request)
+        {
+            var response = new Response.SetDateTime
+            {
+                Datetime = request.Datetime,
+                Reset = request.Reset,
+                Error = (uint)ErrorCode.None
+            };
+
+            await _rabbitMqService.PublishAsync(response, "amq.direct", $"fb.{request.World}.global");
+            return response;
         }
 
         [HttpPost("update-friends")]
@@ -343,6 +352,7 @@ namespace Internal.Controllers
 
             return Task.FromResult(response);
         }
+
         [HttpGet("init/{world}/{uid}")]
         public async Task<Response.Init> Init(uint world, uint uid)
         {
@@ -352,14 +362,11 @@ namespace Internal.Controllers
             var achievements = await _dbContext.Achievement.Get(world, uid);
             var quests = await _dbContext.Quest.Get(world, uid);
             var storageBoxes = await _dbContext.StorageBox.Get(world, uid);
-            var storageRewardMarks = await _dbContext.StorageRewardMark.Get(world, uid);
             var option = await _dbContext.Option.Get(world, uid) ??
                 _dbContext.Option.Set(world, new Option
                 {
                     Uid = uid,
                 });
-            var storagePending = await _storageService.GetPendingForUserAsync(world, uid);
-
             var marriageData = await _dbContext.Marriage.Get(world, uid) ??
                 _dbContext.Marriage.Set(world, new Http.Model.Marriage
                 {
@@ -372,45 +379,36 @@ namespace Internal.Controllers
             var marriageProtocol = _mapper.Map<Protocol.Marriage>(marriageData);
             marriageProtocol.SpouseName = spouseName ?? string.Empty;
 
-            await using (await _distributedLock.Lock(world, CharacterSync.DistributedLockKey(uid)))
-            {
-                var sync = await _dbContext.CharacterSync.Get(world, uid) ??
-                    _dbContext.CharacterSync.Set(world, new CharacterSync
-                    {
-                        Uid = uid
-                    });
+            await using var _ = await _distributedLock.Lock(world, CharacterRealtimeState.DistributedLockKey(uid));
 
-                await _dbContext.SaveChangesAsync();
-                var now = DateTime.Now;
-                var receivedSystemMails = await _dbContext.SystemMailUser.Get(world, uid);
-                return new Response.Init
+            var sync = await _dbContext.CharacterRealtimeState.Get(world, uid) ??
+                _dbContext.CharacterRealtimeState.Set(world, new CharacterRealtimeState
                 {
-                    Character = _mapper.Map<Protocol.Character>(ch),
-                    Marriage = marriageProtocol,
-                    Items = items.Select(_mapper.Map<Protocol.Item>).ToList(),
-                    Spells = spells.Select(_mapper.Map<Protocol.Spell>).ToList(),
-                    Achievements = achievements.Select(_mapper.Map<Protocol.Achievement>).ToList(),
-                    Quests = quests.Select(_mapper.Map<Protocol.Quest>).ToList(),
-                    ReceivedSystemMails = receivedSystemMails.Where(smu => !smu.Deleted).Select(_mapper.Map<Protocol.SystemMailUser>).ToList(),
-                    StorageBoxes = storageBoxes
-                        .Where(box => box.ExpiredDate == null || box.ExpiredDate > now)
-                        .Select(_mapper.Map<Protocol.StorageBox>)
-                        .ToList(),
-                    StorageRewardMarks = storageRewardMarks
-                        .Where(mark => !mark.Deleted)
-                        .Select(_mapper.Map<Protocol.StorageRewardMark>)
-                        .ToList(),
-                    StoragePending = storagePending
-                        .Select(_mapper.Map<Protocol.StoragePendingBox>)
-                        .ToList(),
-                    Option = _mapper.Map<Protocol.Option>(option),
-                    Clan = sync.Clan,
-                    Group = sync.Group,
-                    Mail = await _dbContext.Mail.Unread(world, uid)
-                };
-            }
+                    Uid = uid
+                });
+
+            await _dbContext.SaveChangesAsync();
+            var now = DateTime.Now;
+            return new Response.Init
+            {
+                Character = _mapper.Map<Protocol.Character>(ch),
+                Marriage = marriageProtocol,
+                Items = items.Select(_mapper.Map<Protocol.Item>).ToList(),
+                Spells = spells.Select(_mapper.Map<Protocol.Spell>).ToList(),
+                Achievements = achievements.Select(_mapper.Map<Protocol.Achievement>).ToList(),
+                Quests = quests.Select(_mapper.Map<Protocol.Quest>).ToList(),
+                StorageBoxes = storageBoxes
+                    .Where(box => box.ExpiredDate == null || box.ExpiredDate > now)
+                    .Select(_mapper.Map<Protocol.StorageBox>)
+                    .ToList(),
+                Option = _mapper.Map<Protocol.Option>(option),
+                Clan = sync.Clan,
+                Group = sync.Group,
+                Mail = await _dbContext.Mail.Unread(world, uid)
+            };
         }
-        private T[] Override<T>(IEnumerable<T> request, IEnumerable<T> exists) where T : IModel, IRedisHashKey
+
+        private T[] ReconcileSnapshot<T>(IEnumerable<T> request, IEnumerable<T> exists) where T : IModel, IRedisHashKey
         {
             var src = request.ToDictionary(x => $"{x.GetRedisKey()}:{x.GetRedisField()}");
             var dst = exists.ToDictionary(x => $"{x.GetRedisKey()}:{x.GetRedisField()}");
@@ -433,6 +431,7 @@ namespace Internal.Controllers
 
             return dst.Values.ToArray();
         }
+
         [HttpPost("save")]
         public async Task<Response.Save> Save(Request.Save request)
         {
@@ -444,7 +443,7 @@ namespace Internal.Controllers
                 await ApplySavePayload(request.World, new List<Protocol.SavePayload> { request.Payload });
                 await _dbContext.SaveChangesAsync();
 
-                _logService.Write("character_save", new
+                await _logService.WriteAsync("character_save", new
                 {
                     character_id = request.Payload.Character.Id,
                     character_name = request.Payload.Character.Name,
@@ -460,8 +459,9 @@ namespace Internal.Controllers
                     Success = true
                 };
             }
-            catch (Exception)
+            catch (Exception e)
             {
+                _logger.LogError(e, "Save failed for character {CharacterId}", request.Payload?.Character?.Id);
                 return new Response.Save
                 {
                     Success = false
@@ -480,7 +480,7 @@ namespace Internal.Controllers
                 await ApplySavePayload(request.World, request.Characters);
                 await _dbContext.SaveChangesAsync();
 
-                _logService.Write("character_save_batch", new
+                await _logService.WriteAsync("character_save_batch", new
                 {
                     world = request.World,
                     character_count = request.Characters.Count
@@ -491,8 +491,9 @@ namespace Internal.Controllers
                     Success = true
                 };
             }
-            catch (Exception)
+            catch (Exception e)
             {
+                _logger.LogError(e, "BatchSave failed for world {World} with {Count} characters", request.World, request.Characters?.Count ?? 0);
                 return new Response.BatchSave
                 {
                     Success = false
@@ -506,47 +507,37 @@ namespace Internal.Controllers
                 return;
 
             var characterIds = payloads.Select(p => p.Character.Id).Distinct().ToList();
-
             var charactersTask = _dbContext.Character.GetMany(world, characterIds);
             var itemsTask = _dbContext.Item.GetMany(world, characterIds);
             var spellsTask = _dbContext.Spell.GetMany(world, characterIds);
             var achievementsTask = _dbContext.Achievement.GetMany(world, characterIds);
             var questsTask = _dbContext.Quest.GetMany(world, characterIds);
-            var systemMailUsersTask = _dbContext.SystemMailUser.GetMany(world, characterIds);
             var storageBoxesTask = _dbContext.StorageBox.GetMany(world, characterIds);
-            var storageRewardMarksTask = _dbContext.StorageRewardMark.GetMany(world, characterIds);
-            var storagePendingBoxesTask = _dbContext.StoragePendingBox.GetMany(world, characterIds);
 
             await Task.WhenAll(charactersTask, itemsTask, spellsTask, achievementsTask, questsTask,
-                systemMailUsersTask, storageBoxesTask, storageRewardMarksTask, storagePendingBoxesTask);
+                storageBoxesTask);
 
             var characters = await charactersTask;
             var itemsByOwner = await itemsTask;
             var spellsByOwner = await spellsTask;
             var achievementsByOwner = await achievementsTask;
             var questsByOwner = await questsTask;
-            var systemMailUsersByOwner = await systemMailUsersTask;
             var storageBoxesByOwner = await storageBoxesTask;
-            var storageRewardMarksByOwner = await storageRewardMarksTask;
-            var pendingBoxesByOwner = await storagePendingBoxesTask;
 
             foreach (var data in payloads)
             {
                 var characterId = data.Character.Id;
                 if (!characters.TryGetValue(characterId, out var existingCharacter))
-                    throw new Exception();
+                    throw new Exception($"Character not found: {characterId}");
                 if (existingCharacter.Deleted)
-                    throw new Exception();
+                    throw new Exception($"Character is deleted: {characterId}");
 
                 ApplyOneSavePayload(world, data,
                     itemsByOwner.GetValueOrDefault(characterId) ?? Array.Empty<Item>(),
                     spellsByOwner.GetValueOrDefault(characterId) ?? Array.Empty<Spell>(),
                     achievementsByOwner.GetValueOrDefault(characterId) ?? Array.Empty<Achievement>(),
                     questsByOwner.GetValueOrDefault(characterId) ?? Array.Empty<Quest>(),
-                    systemMailUsersByOwner.GetValueOrDefault(characterId) ?? Array.Empty<SystemMailUser>(),
-                    storageBoxesByOwner.GetValueOrDefault(characterId) ?? Array.Empty<StorageBox>(),
-                    storageRewardMarksByOwner.GetValueOrDefault(characterId) ?? Array.Empty<StorageRewardMark>(),
-                    pendingBoxesByOwner.GetValueOrDefault(characterId) ?? Array.Empty<StoragePendingBox>());
+                    storageBoxesByOwner.GetValueOrDefault(characterId) ?? Array.Empty<StorageBox>());
             }
         }
 
@@ -557,10 +548,7 @@ namespace Internal.Controllers
             IReadOnlyList<Spell> existingSpells,
             IReadOnlyList<Achievement> existingAchievements,
             IReadOnlyList<Quest> existingQuests,
-            IReadOnlyList<SystemMailUser> existingSystemMailUsers,
-            IReadOnlyList<StorageBox> existingStorageBoxes,
-            IReadOnlyList<StorageRewardMark> existingStorageRewardMarks,
-            IReadOnlyList<StoragePendingBox> existingPendingBoxes)
+            IReadOnlyList<StorageBox> existingStorageBoxes)
         {
             var characterId = data.Character.Id;
 
@@ -569,45 +557,25 @@ namespace Internal.Controllers
 
             var marriage = _mapper.Map<Http.Model.Marriage>(data.Marriage);
             marriage.CharacterId = characterId;
-            marriage.CreatedDate = DateTime.Now;
             marriage.UpdatedDate = DateTime.Now;
             _dbContext.Marriage.Set(world, marriage);
 
-            var items = Override(_mapper.Map<Protocol.Item[], Item[]>(data.Items.ToArray()), existingItems);
+            var items = ReconcileSnapshot(_mapper.Map<Protocol.Item[], Item[]>(data.Items?.ToArray() ?? Array.Empty<Protocol.Item>()), existingItems);
             _dbContext.Item.Set(world, items);
 
-            var spells = Override(_mapper.Map<Protocol.Spell[], Spell[]>(data.Spells.ToArray()), existingSpells);
+            var spells = ReconcileSnapshot(_mapper.Map<Protocol.Spell[], Spell[]>(data.Spells?.ToArray() ?? Array.Empty<Protocol.Spell>()), existingSpells);
             _dbContext.Spell.Set(world, spells.ToArray());
 
-            var achievements = Override(_mapper.Map<Protocol.Achievement[], Achievement[]>(data.Achievements.ToArray()), existingAchievements);
+            var achievements = ReconcileSnapshot(_mapper.Map<Protocol.Achievement[], Achievement[]>(data.Achievements?.ToArray() ?? Array.Empty<Protocol.Achievement>()), existingAchievements);
             _dbContext.Achievement.Set(world, achievements.ToArray());
 
-            var quests = Override(_mapper.Map<Protocol.Quest[], Quest[]>(data.Quests.ToArray()), existingQuests);
+            var quests = ReconcileSnapshot(_mapper.Map<Protocol.Quest[], Quest[]>(data.Quests?.ToArray() ?? Array.Empty<Protocol.Quest>()), existingQuests);
             _dbContext.Quest.Set(world, quests.ToArray());
 
-            var receivedSystemMails = Override(_mapper.Map<Protocol.SystemMailUser[], SystemMailUser[]>(data.ReceivedSystemMails.ToArray()), existingSystemMailUsers);
-            _dbContext.SystemMailUser.Set(world, receivedSystemMails.ToArray());
-
-            var storageBoxes = Override(_mapper.Map<Protocol.StorageBox[], StorageBox[]>(data.StorageBoxes?.ToArray() ?? Array.Empty<Protocol.StorageBox>()), existingStorageBoxes);
+            var storageBoxes = ReconcileSnapshot(_mapper.Map<Protocol.StorageBox[], StorageBox[]>(data.StorageBoxes?.ToArray() ?? Array.Empty<Protocol.StorageBox>()), existingStorageBoxes);
             _dbContext.StorageBox.Set(world, storageBoxes);
-
-            var storageRewardMarks = Override(_mapper.Map<Protocol.StorageRewardMark[], StorageRewardMark[]>(data.StorageRewardMarks?.ToArray() ?? Array.Empty<Protocol.StorageRewardMark>()), existingStorageRewardMarks);
-            _dbContext.StorageRewardMark.Set(world, storageRewardMarks.ToArray());
-
-            var personalPendingIds = data.StorageRewardMarks?.Select(mark => mark.PendingId).ToHashSet() ?? new HashSet<string>();
-            if (personalPendingIds.Count > 0 && existingPendingBoxes.Count > 0)
-            {
-                var pendingBoxes = existingPendingBoxes.Where(x => personalPendingIds.Contains(x.Id)).ToArray();
-                if (pendingBoxes.Length > 0)
-                {
-                    foreach (var pendingBox in pendingBoxes)
-                    {
-                        pendingBox.Deleted = true;
-                    }
-                    _dbContext.StoragePendingBox.Set(world, pendingBoxes);
-                }
-            }
         }
+
         [HttpPost("option")]
         public async Task<Response.SetOption> Option(Request.SetOption request)
         {

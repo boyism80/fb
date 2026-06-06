@@ -1851,10 +1851,10 @@ function NPC_PROMOTION_SKILLS(me, npc, class)
 end
 
 local PROMOTION_CLOTHES_ITEMS = {
-    [CLASS.WARRIOR] = { [GENDER.MAN] = '검황의영혼', [GENDER.WOMAN] = '검황의심장' },
-    [CLASS.ROGUE]   = { [GENDER.MAN] = '귀검의영혼', [GENDER.WOMAN] = '귀검의심장' },
-    [CLASS.MAGE]    = { [GENDER.MAN] = '현인의영혼', [GENDER.WOMAN] = '현인의심장' },
-    [CLASS.POET]    = { [GENDER.MAN] = '진인의영혼', [GENDER.WOMAN] = '진인의심장' },
+    [CLASS.WARRIOR] = { [GENDER.MALE] = '검황의영혼', [GENDER.FEMALE] = '검황의심장' },
+    [CLASS.ROGUE]   = { [GENDER.MALE] = '귀검의영혼', [GENDER.FEMALE] = '귀검의심장' },
+    [CLASS.MAGE]    = { [GENDER.MALE] = '현인의영혼', [GENDER.FEMALE] = '현인의심장' },
+    [CLASS.POET]    = { [GENDER.MALE] = '진인의영혼', [GENDER.FEMALE] = '진인의심장' },
 }
 
 function NPC_PROMOTION_CLOTHES(me, npc, class)

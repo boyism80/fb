@@ -380,8 +380,10 @@ void fb::lua::context::resume(int argc, int* n)
     if (state != LUA_OK)
     {
         // Any non-LUA_OK and non-LUA_YIELD means Lua errored.
+        const char* raw = lua_tostring(*this, -1);
+        auto        message =
+            std::format("lua error message : {}", raw != nullptr ? std::string_view{raw} : std::string_view{});
         lua_pop(*this, 1);
-        auto message = std::format("lua error message : {}", this->tostring(-1).c_str());
         fb::logger::fatal(message);
 
         auto promise = promise_type{this->_promise};
@@ -572,7 +574,9 @@ bool root::dump(std::string_view path)
         auto bytecodes = static_cast<std::vector<char>*>(params[0]);
 
         for (size_t i = 0; i < size; i++)
+        {
             bytecodes->push_back(static_cast<const char*>(bytes)[i]);
+        }
 
         return 0;
     };
@@ -643,10 +647,12 @@ void root::release(context& ctx)
 
     if (this->_initial_thread.id() != std::this_thread::get_id())
     {
-        std::ignore = this->_initial_thread.dispatch([=, &ctx](auto&) -> async::task<void> {
+        auto builder = this->_initial_thread.new_builder<void>();
+        builder.func = [=, &ctx](auto&) -> async::task<void> {
             internal_func(ctx);
             co_return;
-        });
+        };
+        builder.enqueue();
     }
     else
     {

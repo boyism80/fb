@@ -8,7 +8,7 @@ namespace Http.Model
 
         public uint? GetHash() => Master;
 
-        public RedisKey GetRedisKey() => $"cache:group:{Master}";
+        public RedisKey GetRedisKey() => $"fb:cache:group:{Master}";
     }
 
     public class Group : GroupKey, IModel
@@ -17,7 +17,7 @@ namespace Http.Model
 
         public static string DistributedLockKey(uint id)
         {
-            return $"lock:group:{id}";
+            return $"fb:lock:group:{id}";
         }
     }
 }

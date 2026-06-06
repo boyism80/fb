@@ -8,7 +8,7 @@ namespace Http.Model
         public uint Id { get; set; }
         public uint? GetHash() => Uid;
 
-        public RedisKey GetRedisKey() => $"cache:achievement:{Uid}";
+        public RedisKey GetRedisKey() => $"fb:cache:achievement:{Uid}";
 
         public RedisValue GetRedisField() => $"{Id}";
     }

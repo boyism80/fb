@@ -26,17 +26,21 @@ struct StorageBox FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
   enum FlatBuffersVTableOffset FLATBUFFERS_VTABLE_UNDERLYING_TYPE {
     VT_USER = 4,
     VT_ID = 6,
-    VT_TITLE = 8,
-    VT_MESSAGE = 10,
-    VT_ATTACHMENTS = 12,
-    VT_RECEIVED = 14,
-    VT_EXPIRED_DATE = 16
+    VT_SYSTEM_STORAGE_BOX_ID = 8,
+    VT_TITLE = 10,
+    VT_MESSAGE = 12,
+    VT_ATTACHMENTS = 14,
+    VT_RECEIVED = 16,
+    VT_EXPIRED_DATE = 18
   };
   uint32_t user() const {
     return GetField<uint32_t>(VT_USER, 0);
   }
   uint32_t id() const {
     return GetField<uint32_t>(VT_ID, 0);
+  }
+  uint32_t system_storage_box_id() const {
+    return GetField<uint32_t>(VT_SYSTEM_STORAGE_BOX_ID, 0);
   }
   const ::flatbuffers::String *title() const {
     return GetPointer<const ::flatbuffers::String *>(VT_TITLE);
@@ -57,6 +61,7 @@ struct StorageBox FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
     return VerifyTableStart(verifier) &&
            VerifyField<uint32_t>(verifier, VT_USER, 4) &&
            VerifyField<uint32_t>(verifier, VT_ID, 4) &&
+           VerifyField<uint32_t>(verifier, VT_SYSTEM_STORAGE_BOX_ID, 4) &&
            VerifyOffset(verifier, VT_TITLE) &&
            verifier.VerifyString(title()) &&
            VerifyOffset(verifier, VT_MESSAGE) &&
@@ -79,6 +84,9 @@ struct StorageBoxBuilder {
   }
   void add_id(uint32_t id) {
     fbb_.AddElement<uint32_t>(StorageBox::VT_ID, id, 0);
+  }
+  void add_system_storage_box_id(uint32_t system_storage_box_id) {
+    fbb_.AddElement<uint32_t>(StorageBox::VT_SYSTEM_STORAGE_BOX_ID, system_storage_box_id, 0);
   }
   void add_title(::flatbuffers::Offset<::flatbuffers::String> title) {
     fbb_.AddOffset(StorageBox::VT_TITLE, title);
@@ -110,6 +118,7 @@ inline ::flatbuffers::Offset<StorageBox> CreateStorageBox(
     ::flatbuffers::FlatBufferBuilder &_fbb,
     uint32_t user = 0,
     uint32_t id = 0,
+    uint32_t system_storage_box_id = 0,
     ::flatbuffers::Offset<::flatbuffers::String> title = 0,
     ::flatbuffers::Offset<::flatbuffers::String> message = 0,
     ::flatbuffers::Offset<::flatbuffers::String> attachments = 0,
@@ -120,6 +129,7 @@ inline ::flatbuffers::Offset<StorageBox> CreateStorageBox(
   builder_.add_attachments(attachments);
   builder_.add_message(message);
   builder_.add_title(title);
+  builder_.add_system_storage_box_id(system_storage_box_id);
   builder_.add_id(id);
   builder_.add_user(user);
   builder_.add_received(received);
@@ -130,6 +140,7 @@ inline ::flatbuffers::Offset<StorageBox> CreateStorageBoxDirect(
     ::flatbuffers::FlatBufferBuilder &_fbb,
     uint32_t user = 0,
     uint32_t id = 0,
+    uint32_t system_storage_box_id = 0,
     const char *title = nullptr,
     const char *message = nullptr,
     const char *attachments = nullptr,
@@ -143,6 +154,7 @@ inline ::flatbuffers::Offset<StorageBox> CreateStorageBoxDirect(
       _fbb,
       user,
       id,
+      system_storage_box_id,
       title__,
       message__,
       attachments__,

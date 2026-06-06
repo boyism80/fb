@@ -846,12 +846,33 @@ function spell_disguise(me, mobs, name, spell, opts)
     return false
 end
 
+function nears_exclude_item(me)
+    local result = {}
+    for _, obj in pairs(me:nears()) do
+        if not obj:is(OBJECT_TYPE.ITEM) then
+            table.insert(result, obj)
+        end
+    end
+    return result
+end
+
+function front_exclude_item(me)
+    local x, y = me:front_position()
+    for _, obj in pairs(me:nears()) do
+        if obj:is(OBJECT_TYPE.ITEM) then
+            goto CONTINUE
+        end
+
+        local obj_x, obj_y = obj:position()
+        if obj_x == x and obj_y == y then
+            return obj
+        end
+        ::CONTINUE::
+    end
+    return nil
+end
 
 function front_obj(x, y, direction, step, objects, type)
-    if type == nil then
-        type = 0xFF & ~OBJECT_TYPE.ITEM
-    end
-    
     if direction == DIRECTION.LEFT then
         x = x-step
     elseif direction == DIRECTION.RIGHT then
@@ -863,9 +884,15 @@ function front_obj(x, y, direction, step, objects, type)
     end
     
     for _, obj in pairs(objects) do
-        local obj_x, obj_y =  obj:position()
-        if x == obj_x and y == obj_y and obj:is(type) then
-            return obj
+        local obj_x, obj_y = obj:position()
+        if x == obj_x and y == obj_y then
+            if type == nil then
+                if not obj:is(OBJECT_TYPE.ITEM) then
+                    return obj
+                end
+            elseif obj:is(type) then
+                return obj
+            end
         end
     end
     
