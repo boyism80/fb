@@ -18,6 +18,7 @@
 #include <fb/bot/integration/door_test.h>
 #include <fb/bot/integration/group_test.h>
 #include <fb/bot/integration/clan_test.h>
+#include <fb/bot/integration/marketplace_test.h>
 #include <fb/bot/game_bot.h>
 #include <fb/bot/container.h>
 #include <fb/bot/gateway_controller.h>
@@ -113,6 +114,7 @@ void game_bot_controller::initialize()
     this->enqueue_test(std::make_unique<throw_test>(*this));
     this->enqueue_test(std::make_unique<group_test>(*this));
     this->enqueue_test(std::make_unique<clan_test>(*this));
+    this->enqueue_test(std::make_unique<marketplace_test>(*this));
     if (!local)
     {
         this->enqueue_test(std::make_unique<worldmap_test>(*this));

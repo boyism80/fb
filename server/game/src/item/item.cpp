@@ -286,7 +286,7 @@ fb::protocol::internal::Item item::to_protocol(EQUIPMENT_PARTS parts) const
     result.model       = model.id;
     result.count       = this->_count;
     result.durability  = this->durability();
-    result.custom_name = "";
+    result.custom_name = std::nullopt;
     return result;
 }
 

@@ -138,7 +138,7 @@ async::task<void> dialog::serialize(fb::stream_writer<big_endian>& writer) const
     case INTERACTION::SLOT:                 // SLOT
         writer.write<uint32_t>(0x00000000); // unknown
         writer.write<uint16_t>(this->pursuit);
-        writer.write<std::string, uint8_t>(this->name);
+        writer.write<uint8_t>(static_cast<uint8_t>(this->index + 1));
         break;
 
     case INTERACTION::ITEM:                 // ITEM

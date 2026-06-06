@@ -791,9 +791,14 @@ command_funcs = {
         
         ['스크립트'] = {
             ['privilege'] = ROLE.ADMIN,
-            ['usage'] = '- 스크립트 실행',
+            ['usage'] = '[파일] [함수] [인자...] - Lua 스크립트 함수 실행 (기본: scripts/script.lua func)',
             ['command'] = function (me, args)
-                me:script("scripts/script.lua", "func", 1, "hello", "good")
+                local script_file = args[1] or 'scripts/script.lua'
+                local func_name = args[2] or 'func'
+                if not script_file:match('%.lua$') then
+                    script_file = script_file .. '.lua'
+                end
+                me:script(script_file, func_name, table.unpack(args, 3))
                 return true
             end,
         },

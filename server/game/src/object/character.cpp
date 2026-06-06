@@ -1788,7 +1788,8 @@ bool character::reward(const std::vector<fb::model::dsl>& reward)
                 }
             }
 
-            if (params.custom_name.has_value() && model.attr(ITEM_ATTRIBUTE::WEAPON))
+            if (params.custom_name.has_value() && params.custom_name->empty() == false &&
+                *params.custom_name != "null" && model.attr(ITEM_ATTRIBUTE::WEAPON))
             {
                 auto weapon = std::static_pointer_cast<fb::game::weapon>(item);
                 weapon->custom_name(*params.custom_name);
