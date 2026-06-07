@@ -164,7 +164,7 @@ async::task<std::shared_ptr<character>> login::init(const game_reqs::login& requ
     ch->stat.base_mp(resp.character.base_mp, false);
     ch->stat.mp(resp.character.mp, false);
 
-    auto thread = this->server.maps[map]->thread();
+    auto thread = this->server.map[map]->thread();
     ch->thread(thread);
     co_await thread->switching();
 
@@ -179,7 +179,7 @@ async::task<std::shared_ptr<character>> login::init(const game_reqs::login& requ
 
     session.data(ch);
 
-    if (co_await ch->map(this->server.maps[map], fb::model::point16_t(position_x, position_y)) == false)
+    if (co_await ch->map(this->server.map[map], fb::model::point16_t(position_x, position_y)) == false)
         co_return nullptr;
 
     for (auto& buff : resp.character.buffs)
@@ -190,7 +190,7 @@ async::task<std::shared_ptr<character>> login::init(const game_reqs::login& requ
 
     if (resp.group.has_value())
     {
-        co_await this->server.groups.ensure(resp.group.value(), [this, &ch, weak](auto& group) -> async::task<void> {
+        co_await this->server.group.ensure(resp.group.value(), [this, &ch, weak](auto& group) -> async::task<void> {
             group->enter(weak);
             ch->group_id(group->id());
             co_return;
@@ -199,7 +199,7 @@ async::task<std::shared_ptr<character>> login::init(const game_reqs::login& requ
 
     if (resp.clan.has_value())
     {
-        co_await this->server.clans.ensure(resp.clan.value(), [this, &ch, weak](auto& clan) -> async::task<void> {
+        co_await this->server.clan.ensure(resp.clan.value(), [this, &ch, weak](auto& clan) -> async::task<void> {
             clan->attach(weak);
             ch->clan_id(clan->id());
             co_return;

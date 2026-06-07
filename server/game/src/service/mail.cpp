@@ -1,4 +1,4 @@
-#include <fb/game/mail/service.h>
+#include <fb/game/service/mail.h>
 #include <fb/game/server.h>
 #include <fb/game/character.h>
 #include <fb/encoding.h>
@@ -10,11 +10,11 @@ using namespace fb::game;
 namespace internal_resp = fb::protocol::internal::response;
 namespace internal_reqs = fb::protocol::internal::request;
 
-mail_service::mail_service(fb::game::server& server) :
+service::mail::mail(fb::game::server& server) :
     server(server)
 { }
 
-void mail_service::on_error(uint32_t error) const
+void service::mail::on_error(uint32_t error) const
 {
     switch (static_cast<ERROR_CODE>(error))
     {
@@ -32,7 +32,7 @@ void mail_service::on_error(uint32_t error) const
     }
 }
 
-mail_box::summary mail_service::to_summary(const fb::protocol::internal::MailSummary& mail)
+mail_box::summary service::mail::to_summary(const fb::protocol::internal::MailSummary& mail)
 {
     return mail_box::summary{
         .id           = mail.id,
@@ -44,7 +44,7 @@ mail_box::summary mail_service::to_summary(const fb::protocol::internal::MailSum
     };
 }
 
-mail_box::summary mail_service::to_summary(const fb::protocol::internal::Mail& mail)
+mail_box::summary service::mail::to_summary(const fb::protocol::internal::Mail& mail)
 {
     return mail_box::summary{
         .id           = mail.id,
@@ -56,7 +56,7 @@ mail_box::summary mail_service::to_summary(const fb::protocol::internal::Mail& m
     };
 }
 
-mail_box::mail mail_service::to_mail(const fb::protocol::internal::Mail& mail)
+mail_box::mail service::mail::to_mail(const fb::protocol::internal::Mail& mail)
 {
     return mail_box::mail{
         .id           = mail.id,
@@ -69,7 +69,7 @@ mail_box::mail mail_service::to_mail(const fb::protocol::internal::Mail& mail)
     };
 }
 
-void mail_service::apply_received(character& ch, uint16_t unread, const mail_box::summary& snapshot)
+void service::mail::apply_received(character& ch, uint16_t unread, const mail_box::summary& snapshot)
 {
     ch.mail_box.unread_count(unread);
 
@@ -81,7 +81,7 @@ void mail_service::apply_received(character& ch, uint16_t unread, const mail_box
     this->server.log.write("mail_receive", log_data);
 }
 
-async::task<void> mail_service::on_received(uint32_t user_id, uint16_t unread, const mail_box::summary& snapshot)
+async::task<void> service::mail::on_received(uint32_t user_id, uint16_t unread, const mail_box::summary& snapshot)
 {
     auto guard = this->server.characters.enter_write();
     auto ch    = guard.value().find(user_id);
@@ -98,9 +98,9 @@ async::task<void> mail_service::on_received(uint32_t user_id, uint16_t unread, c
     co_return;
 }
 
-async::task<void> mail_service::on_received_batch(const std::vector<mail_box::summary>& snapshots,
-                                                  const std::vector<uint32_t>&          user_ids,
-                                                  const std::vector<uint16_t>&          unread_counts)
+async::task<void> service::mail::on_received_batch(const std::vector<mail_box::summary>& snapshots,
+                                                   const std::vector<uint32_t>&          user_ids,
+                                                   const std::vector<uint16_t>&          unread_counts)
 {
     if (snapshots.empty())
         co_return;
@@ -128,7 +128,7 @@ async::task<void> mail_service::on_received_batch(const std::vector<mail_box::su
 }
 
 async::task<void>
-mail_service::send(character& sender, std::string_view to, std::string_view title, std::string_view contents)
+service::mail::send(character& sender, std::string_view to, std::string_view title, std::string_view contents)
 {
     auto   weak         = sender.weak_from_this();
     auto   to_str       = std::string(to);
@@ -150,7 +150,7 @@ mail_service::send(character& sender, std::string_view to, std::string_view titl
     co_await this->on_received(resp.mail.user, resp.unread, snapshot);
 }
 
-async::task<std::vector<mail_box::summary>> mail_service::list(const character& ch, uint16_t offset, uint16_t count)
+async::task<std::vector<mail_box::summary>> service::mail::list(const character& ch, uint16_t offset, uint16_t count)
 {
     auto   weak  = ch.weak_from_this();
     auto   world = fb::config<uint32_t>("world");
@@ -173,7 +173,7 @@ async::task<std::vector<mail_box::summary>> mail_service::list(const character& 
     co_return summaries;
 }
 
-async::task<mail_box::mail> mail_service::read(character& ch, uint16_t id)
+async::task<mail_box::mail> service::mail::read(character& ch, uint16_t id)
 {
     auto   weak  = ch.weak_from_this_as<character>();
     auto   world = fb::config<uint32_t>("world");
@@ -189,7 +189,7 @@ async::task<mail_box::mail> mail_service::read(character& ch, uint16_t id)
     co_return to_mail(resp.mail);
 }
 
-async::task<void> mail_service::remove(character& ch, uint16_t id)
+async::task<void> service::mail::remove(character& ch, uint16_t id)
 {
     auto   weak  = ch.weak_from_this_as<character>();
     auto   world = fb::config<uint32_t>("world");

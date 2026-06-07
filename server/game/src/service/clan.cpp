@@ -1,4 +1,4 @@
-#include <fb/game/clan/container.h>
+#include <fb/game/service/clan.h>
 #include <fb/game/server.h>
 #include <fb/game/character.h>
 #include <fb/game/thread_params.h>
@@ -10,7 +10,7 @@ using namespace fb::game;
 namespace internal_resp = fb::protocol::internal::response;
 namespace internal_reqs = fb::protocol::internal::request;
 
-async::task<void> clan_container::apply_updated(clan_container& container, const internal_resp::UpdatedClan& resp)
+async::task<void> service::clan::apply_updated(service::clan& container, const internal_resp::UpdatedClan& resp)
 {
     co_await container.on_error(resp.error);
 
@@ -56,21 +56,21 @@ async::task<void> clan_container::apply_updated(clan_container& container, const
     }
 }
 
-clan_container::clan_container(fb::game::server& server) :
+service::clan::clan(fb::game::server& server) :
     fb::sharded_container<clan_ptr, 16>([](const clan_ptr& clan) -> uint32_t {
         return clan->id();
     }),
     server(server)
 { }
 
-void clan_container::detach(std::weak_ptr<character> weak, uint32_t clan_id)
+void service::clan::detach(std::weak_ptr<character> weak, uint32_t clan_id)
 {
     this->write(clan_id, [weak](auto& clan) {
         clan->detach(weak);
     });
 }
 
-async::task<void> clan_container::on_error(uint32_t error)
+async::task<void> service::clan::on_error(uint32_t error)
 {
     switch (static_cast<ERROR_CODE>(error))
     {
@@ -85,7 +85,7 @@ async::task<void> clan_container::on_error(uint32_t error)
     }
 }
 
-async::task<void> clan_container::ensure(uint32_t id, ensure_fn fn)
+async::task<void> service::clan::ensure(uint32_t id, ensure_fn fn)
 {
     auto thread = this->server.threads.current();
     if (thread == nullptr)
@@ -117,7 +117,7 @@ async::task<void> clan_container::ensure(uint32_t id, ensure_fn fn)
                                 clan_member{member.name, static_cast<CLAN_ROLE>(member.role)}
                             });
                         }
-                        co_return this->server.make<clan>(id, resp.clan.name, resp.clan.title, members);
+                        co_return this->server.make<fb::game::clan>(id, resp.clan.name, resp.clan.title, members);
                     }
 
                     default:
@@ -131,10 +131,10 @@ async::task<void> clan_container::ensure(uint32_t id, ensure_fn fn)
     co_await builder.dispatch();
 }
 
-async::task<void> clan_container::on_create(uint32_t                                     clan_id,
-                                            std::string                                  name,
-                                            std::string                                  title,
-                                            std::unordered_map<std::string, clan_member> members)
+async::task<void> service::clan::on_create(uint32_t                                     clan_id,
+                                           std::string                                  name,
+                                           std::string                                  title,
+                                           std::unordered_map<std::string, clan_member> members)
 {
     auto clan_title = title.empty() ? std::optional<std::string>{} : std::optional<std::string>{title};
 
@@ -183,11 +183,11 @@ async::task<void> clan_container::on_create(uint32_t                            
             co_return;
         },
         [=, this]() -> async::task<clan_ptr> {
-            co_return this->server.make<clan>(clan_id, name, clan_title, members);
+            co_return this->server.make<fb::game::clan>(clan_id, name, clan_title, members);
         });
 }
 
-async::task<void> clan_container::create(character& me, std::string_view name)
+async::task<void> service::clan::create(character& me, std::string_view name)
 {
     if (me.clan_id().has_value())
         throw std::runtime_error(_TEXT(MESSAGE_ALREADY_JOINED_CLAN));
@@ -216,7 +216,7 @@ async::task<void> clan_container::create(character& me, std::string_view name)
     co_await this->on_create(resp.clan.id, resp.clan.name, title, std::move(members));
 }
 
-async::task<void> clan_container::destroy(character& me)
+async::task<void> service::clan::destroy(character& me)
 {
     auto clan_id = me.clan_id();
     if (clan_id.has_value() == false)
@@ -249,7 +249,7 @@ async::task<void> clan_container::destroy(character& me)
     co_await this->on_destroyed(resp.clan_id, resp.clan_name);
 }
 
-async::task<void> clan_container::join_member(character& inviter, std::string_view target_name)
+async::task<void> service::clan::join_member(character& inviter, std::string_view target_name)
 {
     auto inviter_clan_id = inviter.clan_id();
     if (inviter_clan_id.has_value() == false)
@@ -276,10 +276,10 @@ async::task<void> clan_container::join_member(character& inviter, std::string_vi
         "/clan/join",
         internal_reqs::JoinClan{world, fb::config<uint32_t>("host"), inviter.id, target_name_str});
     co_await this->server.threads.switching(weak);
-    co_await clan_container::apply_updated(*this, resp);
+    co_await service::clan::apply_updated(*this, resp);
 }
 
-async::task<void> clan_container::leave_member(character& leaver)
+async::task<void> service::clan::leave_member(character& leaver)
 {
     auto clan_id = leaver.clan_id();
     if (clan_id.has_value() == false)
@@ -302,10 +302,10 @@ async::task<void> clan_container::leave_member(character& leaver)
         "/clan/leave",
         internal_reqs::LeaveClan{world, fb::config<uint32_t>("host"), clan_id.value(), leaver.name()});
     co_await this->server.threads.switching(weak);
-    co_await clan_container::apply_updated(*this, resp);
+    co_await service::clan::apply_updated(*this, resp);
 }
 
-async::task<void> clan_container::kick_member(character& kicker, std::string_view target_name)
+async::task<void> service::clan::kick_member(character& kicker, std::string_view target_name)
 {
     auto kicker_clan_id = kicker.clan_id();
     if (kicker_clan_id.has_value() == false)
@@ -336,10 +336,10 @@ async::task<void> clan_container::kick_member(character& kicker, std::string_vie
                                                                           kicker.name(),
                                                                           target_name_str});
     co_await this->server.threads.switching(weak);
-    co_await clan_container::apply_updated(*this, resp);
+    co_await service::clan::apply_updated(*this, resp);
 }
 
-async::task<void> clan_container::change_role(character& changer, std::string_view target_name, CLAN_ROLE role)
+async::task<void> service::clan::change_role(character& changer, std::string_view target_name, CLAN_ROLE role)
 {
     auto changer_clan_id = changer.clan_id();
     if (changer_clan_id.has_value() == false)
@@ -371,10 +371,10 @@ async::task<void> clan_container::change_role(character& changer, std::string_vi
                                                                                 changer_clan_id.value(),
                                                                                 static_cast<uint32_t>(role)});
     co_await this->server.threads.switching(weak);
-    co_await clan_container::apply_updated(*this, resp);
+    co_await service::clan::apply_updated(*this, resp);
 }
 
-async::task<void> clan_container::set_title(character& changer, std::string_view title)
+async::task<void> service::clan::set_title(character& changer, std::string_view title)
 {
     auto changer_clan_id = changer.clan_id();
     if (changer_clan_id.has_value() == false)
@@ -407,10 +407,10 @@ async::task<void> clan_container::set_title(character& changer, std::string_view
         "/clan/title",
         internal_reqs::SetClanTitle{world, fb::config<uint32_t>("host"), changer.id, title_str});
     co_await this->server.threads.switching(weak);
-    co_await clan_container::apply_updated(*this, resp);
+    co_await service::clan::apply_updated(*this, resp);
 }
 
-async::task<void> clan_container::broadcast(uint32_t clan_id, std::string_view message, MESSAGE_TYPE type)
+async::task<void> service::clan::broadcast(uint32_t clan_id, std::string_view message, MESSAGE_TYPE type)
 {
     auto   message_str = std::string(message);
     auto   world       = fb::config<uint32_t>("world");
@@ -425,7 +425,7 @@ async::task<void> clan_container::broadcast(uint32_t clan_id, std::string_view m
     co_await this->on_broadcast(resp.clan, std::move(resp.message), resp.type);
 }
 
-async::task<void> clan_container::on_destroyed(uint32_t clan_id, std::string clan_name)
+async::task<void> service::clan::on_destroyed(uint32_t clan_id, std::string clan_name)
 {
     this->erase(clan_id, [this, clan_name](const auto& clan) {
         auto members = std::vector<std::shared_ptr<character>>{};
@@ -451,7 +451,7 @@ async::task<void> clan_container::on_destroyed(uint32_t clan_id, std::string cla
     co_return;
 }
 
-async::task<void> clan_container::on_broadcast(uint32_t clan_id, std::string message, uint8_t type)
+async::task<void> service::clan::on_broadcast(uint32_t clan_id, std::string message, uint8_t type)
 {
     co_await this->ensure(clan_id, [this, message = std::move(message), type](auto& clan) -> async::task<void> {
         auto members = std::vector<std::shared_ptr<character>>{};
@@ -475,7 +475,7 @@ async::task<void> clan_container::on_broadcast(uint32_t clan_id, std::string mes
     });
 }
 
-async::task<void> clan_container::on_set_title(uint32_t clan_id, std::optional<std::string> new_title)
+async::task<void> service::clan::on_set_title(uint32_t clan_id, std::optional<std::string> new_title)
 {
     co_await this->ensure(clan_id, [this, new_title](auto& clan) -> async::task<void> {
         auto old_title = clan->title();
@@ -493,7 +493,7 @@ async::task<void> clan_container::on_set_title(uint32_t clan_id, std::optional<s
     });
 }
 
-async::task<void> clan_container::on_join(uint32_t clan_id, std::optional<std::string> new_member, CLAN_ROLE role)
+async::task<void> service::clan::on_join(uint32_t clan_id, std::optional<std::string> new_member, CLAN_ROLE role)
 {
     if (new_member.has_value() == false)
         co_return;
@@ -556,7 +556,7 @@ async::task<void> clan_container::on_join(uint32_t clan_id, std::optional<std::s
     });
 }
 
-async::task<void> clan_container::on_leave(uint32_t clan_id, std::optional<std::string> deleted_member)
+async::task<void> service::clan::on_leave(uint32_t clan_id, std::optional<std::string> deleted_member)
 {
     if (deleted_member.has_value() == false)
         co_return;
@@ -612,7 +612,7 @@ async::task<void> clan_container::on_leave(uint32_t clan_id, std::optional<std::
     });
 }
 
-async::task<void> clan_container::on_kick(uint32_t clan_id, std::optional<std::string> deleted_member)
+async::task<void> service::clan::on_kick(uint32_t clan_id, std::optional<std::string> deleted_member)
 {
     if (deleted_member.has_value() == false)
         co_return;
@@ -668,11 +668,11 @@ async::task<void> clan_container::on_kick(uint32_t clan_id, std::optional<std::s
     });
 }
 
-async::task<void> clan_container::on_change_role(uint32_t                   clan_id,
-                                                 std::optional<uint32_t>    target_uid,
-                                                 std::optional<std::string> target_name,
-                                                 std::optional<uint32_t>    old_role,
-                                                 std::optional<uint32_t>    new_role)
+async::task<void> service::clan::on_change_role(uint32_t                   clan_id,
+                                                std::optional<uint32_t>    target_uid,
+                                                std::optional<std::string> target_name,
+                                                std::optional<uint32_t>    old_role,
+                                                std::optional<uint32_t>    new_role)
 {
     if (target_name.has_value() == false)
         co_return;

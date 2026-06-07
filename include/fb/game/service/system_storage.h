@@ -1,5 +1,5 @@
-#ifndef __SYSTEM_STORAGE_SERVICE_H__
-#define __SYSTEM_STORAGE_SERVICE_H__
+#ifndef __FB_GAME_SERVICE_SYSTEM_STORAGE_H__
+#define __FB_GAME_SERVICE_SYSTEM_STORAGE_H__
 
 #include <fb/game/storage.h>
 #include <fb/game/system_storage_box.h>
@@ -16,11 +16,13 @@ class SystemStorageBox;
 } // namespace fb::protocol::internal
 
 namespace fb::game {
-
 class server;
 class character;
+} // namespace fb::game
 
-class system_storage_service
+namespace fb::game::service {
+
+class system_storage
 {
 private:
     static system_storage_box from_system_storage_dto(const fb::protocol::internal::SystemStorageBox& dto);
@@ -34,7 +36,7 @@ public:
     fb::game::server& server;
 
 public:
-    explicit system_storage_service(fb::game::server& server);
+    explicit system_storage(fb::game::server& server);
 
     async::task<void> create(uint32_t                           user_id,
                              std::string_view                   external_ref,
@@ -49,6 +51,6 @@ public:
     void init_from_login(character& ch, const std::vector<fb::protocol::internal::StorageBox>& boxes);
 };
 
-} // namespace fb::game
+} // namespace fb::game::service
 
 #endif

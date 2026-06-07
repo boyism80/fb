@@ -827,10 +827,10 @@ int builtin::server::builtin_mknpc(lua_State* L)
         if (map_model == nullptr)
             return 0;
 
-        if (server->maps.contains(map_model->id) == false)
+        if (server->map.contains(map_model->id) == false)
             return 0;
 
-        map = server->maps[map_model->id];
+        map = server->map[map_model->id];
     }
     else if (lua->is_userdata<fb::game::map>(2))
     {
@@ -844,10 +844,10 @@ int builtin::server::builtin_mknpc(lua_State* L)
         if (map_model == nullptr)
             return 0;
 
-        if (server->maps.contains(map_model->id) == false)
+        if (server->map.contains(map_model->id) == false)
             return 0;
 
-        map = server->maps[map_model->id];
+        map = server->map[map_model->id];
     }
     else
     {
@@ -925,7 +925,7 @@ int builtin::server::builtin_maps(lua_State* L)
     auto server = lua->env<fb::game::server>("server");
     lua->new_table();
     auto i = 1;
-    for (auto& [id, map] : server->maps)
+    for (auto& [id, map] : server->map)
     {
         lua->pushobject(map);
         lua_rawseti(L, -2, i++);
@@ -1280,7 +1280,7 @@ int builtin::server::builtin_gv(lua_State* L)
         Json::Value value;
         bool        found = false;
         {
-            auto guard = server->globals.enter_read();
+            auto guard = server->vars.enter_read();
             auto it    = guard.value().find(key);
             if (it != guard.value().end())
             {
@@ -1314,7 +1314,7 @@ int builtin::server::builtin_gv(lua_State* L)
             const char* s = lua_tostring(L, 2);
             Json::Value val(s ? s : "");
             {
-                auto guard         = server->globals.enter_write();
+                auto guard         = server->vars.enter_write();
                 guard.value()[key] = val;
             }
         }
@@ -1322,7 +1322,7 @@ int builtin::server::builtin_gv(lua_State* L)
         {
             double n = lua_tonumber(L, 2);
             {
-                auto guard         = server->globals.enter_write();
+                auto guard         = server->vars.enter_write();
                 guard.value()[key] = Json::Value(n);
             }
         }
@@ -1330,7 +1330,7 @@ int builtin::server::builtin_gv(lua_State* L)
         {
             bool b = lua_toboolean(L, 2) != 0;
             {
-                auto guard         = server->globals.enter_write();
+                auto guard         = server->vars.enter_write();
                 guard.value()[key] = Json::Value(b);
             }
         }

@@ -1,4 +1,4 @@
-#include <fb/game/system_mail/service.h>
+#include <fb/game/service/system_mail.h>
 #include <fb/game/server.h>
 #include <fb/game/character.h>
 #include <fb/config.h>
@@ -11,9 +11,9 @@ using namespace fb::game;
 namespace internal_resp = fb::protocol::internal::response;
 namespace internal_reqs = fb::protocol::internal::request;
 
-system_mail system_mail_service::from_system_mail_dto(const fb::protocol::internal::SystemMail& dto)
+fb::game::system_mail service::system_mail::from_system_mail_dto(const fb::protocol::internal::SystemMail& dto)
 {
-    auto mail = system_mail{
+    auto mail = fb::game::system_mail{
         .id           = dto.id,
         .sender       = dto.sender,
         .title        = dto.title,
@@ -27,30 +27,31 @@ system_mail system_mail_service::from_system_mail_dto(const fb::protocol::intern
     return mail;
 }
 
-bool system_mail_service::expired(const system_mail& mail, const fb::model::datetime& now)
+bool service::system_mail::expired(const fb::game::system_mail& mail, const fb::model::datetime& now)
 {
     return mail.expire_date.has_value() && mail.expire_date.value() < now;
 }
 
-void system_mail_service::prune_expired_mails(std::vector<system_mail>& mails, const fb::model::datetime& now)
+void service::system_mail::prune_expired_mails(std::vector<fb::game::system_mail>& mails,
+                                               const fb::model::datetime&          now)
 {
     mails.erase(std::remove_if(mails.begin(),
                                mails.end(),
-                               [&](const system_mail& mail) {
-                                   return expired(mail, now);
+                               [&](const fb::game::system_mail& entry) {
+                                   return expired(entry, now);
                                }),
                 mails.end());
 }
 
-system_mail_service::system_mail_service(fb::game::server& server) :
+service::system_mail::system_mail(fb::game::server& server) :
     server(server),
     _delivery(delivery_coroutine())
 { }
 
-async::task<bool> system_mail_service::create(uint32_t                          sender,
-                                              std::string_view                  title,
-                                              std::string_view                  contents,
-                                              const std::optional<std::string>& expire_date)
+async::task<bool> service::system_mail::create(uint32_t                          sender,
+                                               std::string_view                  title,
+                                               std::string_view                  contents,
+                                               const std::optional<std::string>& expire_date)
 {
     const auto world = fb::config<uint32_t>("world");
     auto&&     resp  = co_await this->server.http.post(
@@ -65,13 +66,13 @@ async::task<bool> system_mail_service::create(uint32_t                          
     co_return resp.error == 0;
 }
 
-async::task<void> system_mail_service::poll_and_deliver()
+async::task<void> service::system_mail::poll_and_deliver()
 {
     std::ignore = co_await this->_delivery.next();
     co_return;
 }
 
-fb::async_generator<void> system_mail_service::delivery_coroutine()
+fb::async_generator<void> service::system_mail::delivery_coroutine()
 {
     while (true)
     {
@@ -95,7 +96,7 @@ fb::async_generator<void> system_mail_service::delivery_coroutine()
 
                     const auto already_tracked = std::any_of(this->_pending_mails.cbegin(),
                                                              this->_pending_mails.cend(),
-                                                             [&](const system_mail& existing) {
+                                                             [&](const fb::game::system_mail& existing) {
                                                                  return existing.id == mail.id;
                                                              });
                     if (!already_tracked)

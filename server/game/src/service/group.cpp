@@ -1,4 +1,4 @@
-#include <fb/game/group/container.h>
+#include <fb/game/service/group.h>
 #include <fb/game/server.h>
 #include <fb/game/character.h>
 #include <fb/game/thread_params.h>
@@ -9,21 +9,21 @@ using namespace fb::game;
 namespace internal_resp = fb::protocol::internal::response;
 namespace internal_reqs = fb::protocol::internal::request;
 
-group_container::group_container(fb::game::server& server) :
+service::group::group(fb::game::server& server) :
     fb::sharded_container<group_ptr, 16>([](const group_ptr& group) -> uint32_t {
         return group->id();
     }),
     server(server)
 { }
 
-void group_container::detach(std::weak_ptr<character> weak, uint32_t group_id)
+void service::group::detach(std::weak_ptr<character> weak, uint32_t group_id)
 {
     this->write(group_id, [weak](auto& group) {
         group->detach(weak);
     });
 }
 
-async::task<void> group_container::on_error(uint32_t error, std::string_view actor)
+async::task<void> service::group::on_error(uint32_t error, std::string_view actor)
 {
     switch (static_cast<ERROR_CODE>(error))
     {
@@ -56,7 +56,7 @@ async::task<void> group_container::on_error(uint32_t error, std::string_view act
     }
 }
 
-async::task<void> group_container::ensure(uint32_t id, ensure_fn fn)
+async::task<void> service::group::ensure(uint32_t id, ensure_fn fn)
 {
     auto thread = this->server.threads.current();
     if (thread == nullptr)
@@ -85,7 +85,7 @@ async::task<void> group_container::ensure(uint32_t id, ensure_fn fn)
                         {
                             members.push_back(member.name);
                         }
-                        co_return this->server.make<group>(id, resp.group.master, members);
+                        co_return this->server.make<fb::game::group>(id, resp.group.master, members);
                     }
 
                     default:
@@ -99,7 +99,7 @@ async::task<void> group_container::ensure(uint32_t id, ensure_fn fn)
     co_await builder.dispatch();
 }
 
-async::task<void> group_container::create(character& me, std::string_view target_name)
+async::task<void> service::group::create(character& me, std::string_view target_name)
 {
     auto weak            = me.weak_from_this_as<character>();
     auto target_name_str = std::string(target_name);
@@ -144,7 +144,7 @@ async::task<void> group_container::create(character& me, std::string_view target
     co_await this->on_create(resp.target, resp.group.id, resp.group.master, std::move(members));
 }
 
-async::task<void> group_container::destroy(character& me)
+async::task<void> service::group::destroy(character& me)
 {
     auto group_id = me.group_id();
     if (group_id.has_value() == false)
@@ -161,7 +161,7 @@ async::task<void> group_container::destroy(character& me)
     co_await this->on_destroyed(resp.actor.name, resp.group_id);
 }
 
-async::task<void> group_container::toggle_member(character& actor, std::string_view target_name)
+async::task<void> service::group::toggle_member(character& actor, std::string_view target_name)
 {
     auto weak            = actor.weak_from_this_as<character>();
     auto target_name_str = std::string(target_name);
@@ -217,7 +217,7 @@ async::task<void> group_container::toggle_member(character& actor, std::string_v
     }
 }
 
-async::task<void> group_container::leave_member(character& leaver)
+async::task<void> service::group::leave_member(character& leaver)
 {
     auto weak = leaver.weak_from_this_as<character>();
     if (leaver.group_id().has_value() == false)
@@ -262,7 +262,7 @@ async::task<void> group_container::leave_member(character& leaver)
     }
 }
 
-async::task<void> group_container::broadcast(uint32_t group_id, std::string_view message, MESSAGE_TYPE type)
+async::task<void> service::group::broadcast(uint32_t group_id, std::string_view message, MESSAGE_TYPE type)
 {
     auto   message_str = std::string(message);
     auto   world       = fb::config<uint32_t>("world");
@@ -277,7 +277,7 @@ async::task<void> group_container::broadcast(uint32_t group_id, std::string_view
     co_await this->on_broadcast(resp.group, std::move(resp.message), resp.type);
 }
 
-async::task<void> group_container::handle_action(character& actor, std::string_view target_name)
+async::task<void> service::group::handle_action(character& actor, std::string_view target_name)
 {
     auto weak            = actor.weak_from_this_as<character>();
     auto target_name_str = std::string(target_name);
@@ -357,10 +357,10 @@ async::task<void> group_container::handle_action(character& actor, std::string_v
     }
 }
 
-async::task<void> group_container::on_create(std::string                     target,
-                                             uint32_t                        group_id,
-                                             std::string                     master,
-                                             std::map<uint32_t, std::string> members)
+async::task<void> service::group::on_create(std::string                     target,
+                                            uint32_t                        group_id,
+                                            std::string                     master,
+                                            std::map<uint32_t, std::string> members)
 {
     auto member_names = std::vector<std::string>{};
     member_names.reserve(members.size());
@@ -441,13 +441,11 @@ async::task<void> group_container::on_create(std::string                     tar
             co_return;
         },
         [=, this]() -> async::task<group_ptr> {
-            co_return this->server.make<group>(group_id, master, member_names);
+            co_return this->server.make<fb::game::group>(group_id, master, member_names);
         });
 }
 
-async::task<void> group_container::on_enter(std::string                target,
-                                            uint32_t                   group_id,
-                                            std::optional<std::string> new_member)
+async::task<void> service::group::on_enter(std::string target, uint32_t group_id, std::optional<std::string> new_member)
 {
     if (new_member.has_value() == false)
         co_return;
@@ -497,9 +495,9 @@ async::task<void> group_container::on_enter(std::string                target,
     });
 }
 
-async::task<void> group_container::on_leave(std::string                target,
-                                            uint32_t                   group_id,
-                                            std::optional<std::string> deleted_member)
+async::task<void> service::group::on_leave(std::string                target,
+                                           uint32_t                   group_id,
+                                           std::optional<std::string> deleted_member)
 {
     if (deleted_member.has_value() == false)
         co_return;
@@ -550,9 +548,9 @@ async::task<void> group_container::on_leave(std::string                target,
     });
 }
 
-async::task<void> group_container::on_kick(std::string                target,
-                                           uint32_t                   group_id,
-                                           std::optional<std::string> deleted_member)
+async::task<void> service::group::on_kick(std::string                target,
+                                          uint32_t                   group_id,
+                                          std::optional<std::string> deleted_member)
 {
     if (deleted_member.has_value() == false)
         co_return;
@@ -603,7 +601,7 @@ async::task<void> group_container::on_kick(std::string                target,
     });
 }
 
-async::task<void> group_container::on_destroyed(std::string actor, uint32_t group_id)
+async::task<void> service::group::on_destroyed(std::string actor, uint32_t group_id)
 {
     this->erase(group_id, [this, group_id](const auto& group) {
         auto members = std::vector<std::string>{group->members()};
@@ -619,7 +617,7 @@ async::task<void> group_container::on_destroyed(std::string actor, uint32_t grou
     co_return;
 }
 
-async::task<void> group_container::on_broadcast(uint32_t group_id, std::string message, uint8_t type)
+async::task<void> service::group::on_broadcast(uint32_t group_id, std::string message, uint8_t type)
 {
     co_await this->ensure(group_id, [this, message = std::move(message), type](auto& group) -> async::task<void> {
         auto members = std::vector<std::shared_ptr<character>>();

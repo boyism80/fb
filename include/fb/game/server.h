@@ -9,16 +9,17 @@
 #include <fb/amqp.h>
 #include <fb/game/listener.h>
 #include <fb/game/thread_params.h>
-#include <fb/game/map/container.h>
+#include <fb/game/service/map.h>
 #include <fb/hash.h>
 #include <fb/redis.h>
-#include <fb/game/clan/container.h>
-#include <fb/game/group/container.h>
-#include <fb/game/mail/service.h>
-#include <fb/game/bulletin/service.h>
-#include <fb/game/system_storage/service.h>
-#include <fb/game/system_mail/service.h>
-#include <fb/game/schedule/service.h>
+#include <fb/game/service/clan.h>
+#include <fb/game/service/group.h>
+#include <fb/game/service/mail.h>
+#include <fb/game/service/bulletin.h>
+#include <fb/game/service/system_storage.h>
+#include <fb/game/service/system_mail.h>
+#include <fb/game/service/schedule.h>
+#include <fb/game/service/vars.h>
 #include <fb/game/storage.h>
 #include <fb/game/system_storage_box.h>
 #include <fb/log_collector.h>
@@ -107,18 +108,18 @@ private:
     double              _drop_rate_multiplier;
 
 public:
-    fb::log_collector                                              log;
-    listener_impl                                                  listener;
-    map_container                                                  maps;
-    fb::synchronized<character::container>                         characters;
-    clan_container                                                 clans;
-    group_container                                                groups;
-    mail_service                                                   mail;
-    bulletin_service                                               bulletin;
-    system_storage_service                                         system_storage;
-    system_mail_service                                            system_mail;
-    schedule_service                                               schedules;
-    fb::synchronized<std::unordered_map<std::string, Json::Value>> globals;
+    fb::log_collector                      log;
+    listener_impl                          listener;
+    fb::synchronized<character::container> characters;
+    service::map                           map;
+    service::clan                          clan;
+    service::group                         group;
+    service::mail                          mail;
+    service::bulletin                      bulletin;
+    service::system_storage                system_storage;
+    service::system_mail                   system_mail;
+    service::schedule                      schedules;
+    service::vars                          vars;
 
 public:
     server(boost::asio::io_context& io_context, uint16_t port);

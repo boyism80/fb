@@ -151,7 +151,7 @@ std::vector<std::shared_ptr<fb::game::character>> clan::nears(const fb::game::ma
 
         auto& clan_id = ch->clan_id().value();
         {
-            auto guard = this->_server.clans.enter_read(clan_id);
+            auto guard = this->_server.clan.enter_read(clan_id);
             if (ch->clan_id() == clan_id)
                 result.push_back(ch);
         } // same thread
