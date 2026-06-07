@@ -30,7 +30,7 @@ int builtin::door::builtin_toggle(lua_State* L)
                                                 door->pivot.y,
                                                 door->pivot.x + size.width,
                                                 door->pivot.y + size.height);
-    server->maps.update_map_cache(door->map.model.id, area);
+    server->map.update_map_cache(door->map.model.id, area);
     return 1;
 }
 

@@ -18,10 +18,6 @@ local function run_normal_exchange(me, npc)
     if sel ~= 0 then
         return
     end
-    if not me:has_items("일반교환권", 1) then
-        me:dialog(npc, "일반교환권이 없으시군요. 일반교환권을 가져오세요.", false, false)
-        return
-    end
     local idx = math.random(1, #NORMAL_EXCHANGE_REWARDS)
     local entry = NORMAL_EXCHANGE_REWARDS[idx]
     local code = me:exchange(
@@ -70,10 +66,6 @@ local function run_special_exchange(me, npc)
         return
     end
     if sel ~= 0 then
-        return
-    end
-    if not me:has_items("특별교환권", 1) then
-        me:dialog(npc, "특별교환권이 없으시군요. 특별교환권을 가져오세요.", false, false)
         return
     end
     local idx = math.random(1, #SPECIAL_EXCHANGE_REWARDS)

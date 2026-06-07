@@ -503,18 +503,18 @@ int builtin::object::builtin_map(lua_State* L)
         else if (lua->is_userdata<fb::model::map>(2))
         {
             auto model = lua->touserdata<fb::model::map>(2);
-            if (server->maps.contains(model->id))
-                map = server->maps[model->id];
+            if (server->map.contains(model->id))
+                map = server->map[model->id];
         }
         else if (lua->is_number(2))
         {
             auto id = lua->tointeger(2);
-            if (server->maps.contains(id))
-                map = server->maps[id];
+            if (server->map.contains(id))
+                map = server->map[id];
         }
         else if (lua->is_string(2))
         {
-            map = server->maps.name2map(lua->tostring(2));
+            map = server->map.name2map(lua->tostring(2));
         }
         else
         {

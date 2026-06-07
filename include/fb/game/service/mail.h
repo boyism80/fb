@@ -1,5 +1,5 @@
-#ifndef __MAIL_SERVICE_H__
-#define __MAIL_SERVICE_H__
+#ifndef __FB_GAME_SERVICE_MAIL_H__
+#define __FB_GAME_SERVICE_MAIL_H__
 
 #include <fb/game/mail_box.h>
 #include <string>
@@ -13,17 +13,19 @@ class Mail;
 } // namespace fb::protocol::internal
 
 namespace fb::game {
-
 class server;
 class character;
+} // namespace fb::game
 
-class mail_service
+namespace fb::game::service {
+
+class mail
 {
 public:
     fb::game::server& server;
 
 public:
-    explicit mail_service(fb::game::server& server);
+    explicit mail(fb::game::server& server);
 
     async::task<void> send(character& sender, std::string_view to, std::string_view title, std::string_view contents);
     async::task<std::vector<mail_box::summary>> list(const character& ch, uint16_t offset, uint16_t count);
@@ -44,6 +46,6 @@ private:
     void                     apply_received(character& ch, uint16_t unread, const mail_box::summary& snapshot);
 };
 
-} // namespace fb::game
+} // namespace fb::game::service
 
 #endif

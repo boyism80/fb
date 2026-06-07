@@ -193,9 +193,6 @@ local function run_amber_helmet_craft(me, npc, colors, has_prev)
     if confirm_opt ~= 0 then
         return DIALOG_RESULT.NEXT
     end
-    if not me:has_items({ [gem_name] = 1, [ITEM_IRON_DUST] = HELMET_IRON_DUST_COUNT }) then
-        return me:dialog(npc, '자네 혹시 재료를 모르는 것인가? ' .. gem_name .. '과 쇠가루 2개를 가지고 와야 ' .. helmet_name .. '를 만들어 줄 수 있네.', false, true)
-    end
     local code = me:exchange(
         { ['item'] = { [gem_name] = 1, [ITEM_IRON_DUST] = HELMET_IRON_DUST_COUNT } },
         { ['item'] = { [helmet_name] = 1 } }

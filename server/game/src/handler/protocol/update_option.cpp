@@ -47,7 +47,7 @@ async::task<bool> update_option::handle(fb::socket<character>& session, game_req
                 // cases Note: handle_action checks OPTION::GROUP, but at this point it's still true
                 try
                 {
-                    co_await this->server.groups.handle_action(*ch, ch->name());
+                    co_await this->server.group.handle_action(*ch, ch->name());
                 }
                 catch (std::exception& e)
                 {

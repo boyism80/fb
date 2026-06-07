@@ -26,10 +26,10 @@ void rezen::decrease()
 
 async::task<void> rezen::spawn(std::thread::id thread_id)
 {
-    if (this->_server.maps.contains(this->model.parent) == false)
+    if (this->_server.map.contains(this->model.parent) == false)
         co_return;
 
-    auto map = this->_server.maps[this->model.parent];
+    auto map = this->_server.map[this->model.parent];
     if (map->active == false)
         co_return;
 
@@ -65,7 +65,7 @@ async::task<void> rezen::spawn(std::thread::id thread_id)
         {
             auto width    = this->model.end.x - this->model.begin.x;
             auto height   = this->model.end.y - this->model.begin.y;
-            auto map      = this->_server.maps[this->model.parent];
+            auto map      = this->_server.map[this->model.parent];
             auto position = fb::model::point16_t(this->model.begin.x + (width > 0 ? std::rand() % width : 0),
                                                  this->model.begin.y + (height > 0 ? std::rand() % height : 0));
 
@@ -429,7 +429,7 @@ void mob::on_die(std::shared_ptr<object> from, DESTROY_TYPE destroy_type)
             // Group experience distribution
             auto server = &ch.server;
             {
-                auto  guard      = server->groups.enter_read(group_id.value());
+                auto  guard      = server->group.enter_read(group_id.value());
                 auto& group      = guard.value();
                 auto  nears      = group->nears(*map, ch.position());
                 auto  size       = nears.size();

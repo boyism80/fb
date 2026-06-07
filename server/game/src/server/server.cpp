@@ -20,11 +20,11 @@ namespace internal_reqs = fb::protocol::internal::request;
 
 server::server(boost::asio::io_context& io_context, uint16_t port) :
     fb::acceptor<character>(io_context, "GAME", port, fb::config<uint32_t>("http:max_concurrent", 500)),
-    maps(*this, fb::config<uint32_t>("id")),
+    map(*this, fb::config<uint32_t>("id")),
     listener(*this),
     characters(*this),
-    clans(*this),
-    groups(*this),
+    clan(*this),
+    group(*this),
     mail(*this),
     bulletin(*this),
     system_storage(*this),
@@ -44,23 +44,23 @@ server::server(boost::asio::io_context& io_context, uint16_t port) :
     ist.setup(this->threads);
 
     lua::env<fb::game::server>("server", this);
-    lua::build<quest, lua::luable>();
-    lua::build<door, lua::luable>();
-    lua::build<clan, lua::luable>();
-    lua::build<clan_member, lua::luable>();
-    lua::build<achievement, lua::luable>();
-    lua::build<spell, lua::luable>();
-    lua::build<buff, lua::luable>();
-    lua::build<map, fb::thread_switchable>();
-    lua::build<group, fb::thread_switchable>();
-    lua::build<object, fb::thread_switchable>();
-    lua::build<life, object>();
-    lua::build<mob, life>();
-    lua::build<npc, object>();
-    lua::build<item, object>();
-    lua::build<equipment, item>();
-    lua::build<weapon, equipment>();
-    lua::build<character, life>();
+    lua::build<fb::game::quest, lua::luable>();
+    lua::build<fb::game::door, lua::luable>();
+    lua::build<fb::game::clan, lua::luable>();
+    lua::build<fb::game::clan_member, lua::luable>();
+    lua::build<fb::game::achievement, lua::luable>();
+    lua::build<fb::game::spell, lua::luable>();
+    lua::build<fb::game::buff, lua::luable>();
+    lua::build<fb::game::map, fb::thread_switchable>();
+    lua::build<fb::game::group, fb::thread_switchable>();
+    lua::build<fb::game::object, fb::thread_switchable>();
+    lua::build<fb::game::life, fb::game::object>();
+    lua::build<fb::game::mob, fb::game::life>();
+    lua::build<fb::game::npc, fb::game::object>();
+    lua::build<fb::game::item, fb::game::object>();
+    lua::build<fb::game::equipment, fb::game::item>();
+    lua::build<fb::game::weapon, fb::game::equipment>();
+    lua::build<fb::game::character, fb::game::life>();
     lua::build<fb::model::spell, lua::luable>();
     lua::build<fb::model::map, lua::luable>();
     lua::build<fb::model::object, lua::luable>();
@@ -145,7 +145,7 @@ async::task<void> server::on_start()
         maps_division.insert({thread, std::vector<std::shared_ptr<fb::game::map>>{}});
     }
 
-    for (auto& [id, map] : this->maps)
+    for (auto& [id, map] : this->map)
     {
         auto thread = this->threads.modular(id);
         maps_division[thread].push_back(map);
@@ -265,7 +265,7 @@ async::task<void> server::on_start()
     this->handler.amqp.bind<fb::game::handler::amqp::start_maintenance>(
         std::format("fb.{}.game.{}", world, fb::config<uint32_t>("id")));
 
-    // Run server init script once (gv and other globals) on the least loaded thread
+    // Run server init script once (gv and other vars) on the least loaded thread
     auto* init_thread = this->threads.least_loaded();
     if (init_thread != nullptr)
     {
@@ -378,14 +378,14 @@ async::task<bool> server::on_disconnected(fb::socket<character>& socket)
         auto& group_id = ptr->group_id();
         if (group_id.has_value())
         {
-            this->groups.detach(weak, group_id.value());
+            this->group.detach(weak, group_id.value());
             ptr->group_reset();
         }
 
         auto& clan_id = ptr->clan_id();
         if (clan_id.has_value())
         {
-            this->clans.detach(weak, clan_id.value());
+            this->clan.detach(weak, clan_id.value());
             ptr->clan_reset();
         }
 
@@ -452,7 +452,7 @@ server::send(object& object, const fb::protocol::header& header, fb::game::scope
             co_return;
 
         {
-            auto  guard = this->groups.enter_read(group_id.value());
+            auto  guard = this->group.enter_read(group_id.value());
             auto& group = guard.value();
             for (auto& shared_ptr : group->characters())
             {

@@ -1,4 +1,4 @@
-#include <fb/game/system_storage/service.h>
+#include <fb/game/service/system_storage.h>
 #include <fb/game/server.h>
 #include <fb/game/character.h>
 #include <fb/config.h>
@@ -13,7 +13,7 @@ using namespace fb::game;
 namespace internal_resp = fb::protocol::internal::response;
 namespace internal_reqs = fb::protocol::internal::request;
 
-system_storage_box system_storage_service::from_system_storage_dto(const fb::protocol::internal::SystemStorageBox& dto)
+system_storage_box service::system_storage::from_system_storage_dto(const fb::protocol::internal::SystemStorageBox& dto)
 {
     auto box = system_storage_box{
         .id           = dto.id,
@@ -35,7 +35,7 @@ system_storage_box system_storage_service::from_system_storage_dto(const fb::pro
     return box;
 }
 
-storage_box::entry system_storage_service::from_login_storage_box(const fb::protocol::internal::StorageBox& dto)
+storage_box::entry service::system_storage::from_login_storage_box(const fb::protocol::internal::StorageBox& dto)
 {
     auto box = storage_box::entry{};
     box.id   = dto.id;
@@ -66,7 +66,8 @@ storage_box::entry system_storage_service::from_login_storage_box(const fb::prot
     return box;
 }
 
-void system_storage_service::prune_expired_boxes(std::vector<system_storage_box>& boxes, const fb::model::datetime& now)
+void service::system_storage::prune_expired_boxes(std::vector<system_storage_box>& boxes,
+                                                  const fb::model::datetime&       now)
 {
     boxes.erase(std::remove_if(boxes.begin(),
                                boxes.end(),
@@ -76,11 +77,11 @@ void system_storage_service::prune_expired_boxes(std::vector<system_storage_box>
                 boxes.end());
 }
 
-system_storage_service::system_storage_service(fb::game::server& server) :
+service::system_storage::system_storage(fb::game::server& server) :
     server(server)
 { }
 
-void system_storage_service::on_deliver(const std::vector<uint32_t>& user_ids, const system_storage_box& box)
+void service::system_storage::on_deliver(const std::vector<uint32_t>& user_ids, const system_storage_box& box)
 {
     if (user_ids.empty())
         return;
@@ -112,13 +113,13 @@ void system_storage_service::on_deliver(const std::vector<uint32_t>& user_ids, c
     }
 }
 
-void system_storage_service::init_character(character& ch, const std::vector<storage_box::entry>& entries)
+void service::system_storage::init_character(character& ch, const std::vector<storage_box::entry>& entries)
 {
     ch.storage_box.init(entries);
 }
 
-void system_storage_service::init_from_login(character&                                             ch,
-                                             const std::vector<fb::protocol::internal::StorageBox>& boxes)
+void service::system_storage::init_from_login(character&                                             ch,
+                                              const std::vector<fb::protocol::internal::StorageBox>& boxes)
 {
     auto entries = std::vector<storage_box::entry>{};
     entries.reserve(boxes.size());
@@ -130,7 +131,7 @@ void system_storage_service::init_from_login(character&                         
     this->init_character(ch, entries);
 }
 
-async::task<void> system_storage_service::sync(character& ch)
+async::task<void> service::system_storage::sync(character& ch)
 {
     const auto  world = fb::config<uint32_t>("world");
     const auto& url   = std::format("/storage/system/{}?offset=0", world);
@@ -177,11 +178,11 @@ async::task<void> system_storage_service::sync(character& ch)
     co_return;
 }
 
-async::task<void> system_storage_service::create(uint32_t                           user_id,
-                                                 std::string_view                   external_ref,
-                                                 std::string_view                   title,
-                                                 std::string_view                   message,
-                                                 const std::vector<fb::model::dsl>& attachments)
+async::task<void> service::system_storage::create(uint32_t                           user_id,
+                                                  std::string_view                   external_ref,
+                                                  std::string_view                   title,
+                                                  std::string_view                   message,
+                                                  const std::vector<fb::model::dsl>& attachments)
 {
     const auto world = fb::config<uint32_t>("world");
 
@@ -218,7 +219,7 @@ async::task<void> system_storage_service::create(uint32_t                       
     co_return;
 }
 
-async::task<void> system_storage_service::poll_and_deliver()
+async::task<void> service::system_storage::poll_and_deliver()
 {
     auto        max_box_id = uint32_t{0};
     const auto  world      = fb::config<uint32_t>("world");

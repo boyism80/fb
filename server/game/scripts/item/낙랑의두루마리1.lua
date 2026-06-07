@@ -30,10 +30,10 @@ function ON_ACTIVATED_1(me, item)
 
     math.randomseed(seed())
     local map = maps[math.random(1, #maps)]
-    if me:map(map) then
-        me:rmitem(item, 1, ITEM_DELETE_TYPE.REDUCE)
-        me:mkitem('낙랑의두루마리2', 1)
-        me:mkitem('노란비서', 1)
-        me:mkitem('도톨', 2)
-    end
+    me:map(map, function()
+        me:exchange(
+            { ['item'] = { ['낙랑의두루마리1'] = 1 } },
+            { ['item'] = { ['낙랑의두루마리2'] = 1, ['노란비서'] = 1, ['도톨'] = 2 } }
+        )
+    end)
 end

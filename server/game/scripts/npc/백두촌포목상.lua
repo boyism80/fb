@@ -54,16 +54,6 @@ function NPC_621(me, npc)
         if btn == DIALOG_RESULT.PREV then
             goto NPC_621_0001
         end
-        for item_name, need_count in pairs(need_items) do
-            if not me:has_items(item_name, need_count) then
-                me:dialog(npc, name_with(item_name, '이', '가') .. " 부족합니다.", false, false)
-                return
-            end
-        end
-        if me:money() < money_needed then
-            me:dialog(npc, "금전이 부족합니다.", false, false)
-            return
-        end
         local cost = { ['item'] = need_items, ['money'] = money_needed }
         local reward = nil
         if math.random(1, 100) <= rate_percent then
@@ -71,7 +61,13 @@ function NPC_621(me, npc)
         end
         local code = me:exchange(cost, reward)
         if code == EXCHANGE_RESULT.LACK_COST then
-            me:dialog(npc, "재료나 금전이 부족합니다.", false, false)
+            for item_name, need_count in pairs(need_items) do
+                if not me:has_items(item_name, need_count) then
+                    me:dialog(npc, name_with(item_name, '이', '가') .. " 부족합니다.", false, false)
+                    return
+                end
+            end
+            me:dialog(npc, "금전이 부족합니다.", false, false)
             return
         end
         if code == EXCHANGE_RESULT.LACK_CAPACITY then

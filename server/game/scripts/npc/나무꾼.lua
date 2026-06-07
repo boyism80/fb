@@ -35,8 +35,7 @@ function NPC_180(me, npc)
             end
             me:push_achievement(28, '쇠도끼로 나무를 하자.', 7, 5)
 
-            local item = me:mkitem('쇠도끼', 1)
-            if item == nil then
+            if me:mkitem('쇠도끼', 1) == nil then
                 me:dialog(npc, '소지품이 가득 차서 줄 수가 없네.', false, true)
                 return
             end
@@ -61,17 +60,17 @@ function NPC_180(me, npc)
         return
     end
 
-    local money = me:money()
-    if money < 10000 then
+    local code = me:exchange(
+        { ['money'] = 10000 },
+        { ['item'] = { ['쇠도끼'] = 1 } }
+    )
+    if code == EXCHANGE_RESULT.LACK_COST then
         me:dialog(npc, '돈이 부족한 것은 아니오?', false, true)
         return
     end
-
-    local item = me:mkitem('쇠도끼', 1)
-    if item == nil then
+    if code == EXCHANGE_RESULT.LACK_CAPACITY then
         me:dialog(npc, '소지품이 가득 차서 줄 수가 없네.', false, true)
         return
     end
-    me:money(money - 10000)
     me:dialog(npc, '자, 여기있소. 또 잃어버리지 않게 조심하시오.', false, true)
 end

@@ -1,4 +1,4 @@
-#include <fb/game/schedule/service.h>
+#include <fb/game/service/schedule.h>
 #include <fb/game/server.h>
 #include <fb/lua.h>
 #include <fb/logger.h>
@@ -7,23 +7,23 @@
 using namespace fb::game;
 using table = fb::model::table;
 
-schedule_service::schedule_service(fb::game::server& server) :
+service::schedule::schedule(fb::game::server& server) :
     server(server)
 { }
 
-void schedule_service::init()
+void service::schedule::init()
 {
     auto now = this->server.now();
 
-    for (const auto& schedule : table::schedule)
+    for (const auto& entry : table::schedule)
     {
-        auto next = schedule.next_execution(now);
+        auto next = entry.next_execution(now);
         if (next.has_value())
-            this->_tasks[schedule.id] = next.value();
+            this->_tasks[entry.id] = next.value();
     }
 }
 
-async::task<void> schedule_service::poll()
+async::task<void> service::schedule::poll()
 {
     auto* logic_thread = this->server.threads.least_loaded();
     if (logic_thread == nullptr)
@@ -42,15 +42,15 @@ async::task<void> schedule_service::poll()
         if (now < next_execution)
             continue;
 
-        const auto& schedule = table::schedule[schedule_id];
+        const auto& entry = table::schedule[schedule_id];
 
         auto lua = fb::lua::new_context();
         if (lua != nullptr)
         {
             try
             {
-                lua->load(schedule.script);
-                lua->func(schedule.func);
+                lua->load(entry.script);
+                lua->func(entry.func);
                 std::ignore = co_await lua->call(0);
             }
             catch (std::exception& e)
@@ -59,11 +59,11 @@ async::task<void> schedule_service::poll()
             }
         }
 
-        if (schedule.repeat.has_value())
+        if (entry.repeat.has_value())
         {
-            auto next_time = next_execution + schedule.repeat.value();
+            auto next_time = next_execution + entry.repeat.value();
 
-            if (schedule.date.end.has_value() && next_time > schedule.date.end.value())
+            if (entry.date.end.has_value() && next_time > entry.date.end.value())
                 to_remove.push_back(schedule_id);
             else
                 next_execution = next_time;

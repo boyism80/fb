@@ -55,11 +55,14 @@ function ON_ACTIVATED_3(me, item)
     end
 
     local armor_name = (me:gender() == GENDER.MALE) and '초심자의남자갑주' or '초심자의여자갑주'
-    if me:mkitem('낙랑의두루마리4', 1) == nil or me:mkitem(armor_name, 1) == nil then
+    local code = me:exchange(
+        { ['item'] = { ['낙랑의두루마리3'] = 1 } },
+        { ['item'] = { ['낙랑의두루마리4'] = 1, [armor_name] = 1 } }
+    )
+    if code == EXCHANGE_RESULT.LACK_CAPACITY then
         me:dialog(model, '소지품이 가득 찼습니다.', false, false)
         return
     end
-    me:rmitem(item, 1, ITEM_DELETE_TYPE.REDUCE)
 
     if me:level() < 5 then
         me:exp(me:exp() + 50)

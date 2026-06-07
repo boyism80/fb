@@ -34,11 +34,6 @@ function NPC_541(me, npc)
         return
     end
 
-    if not me:has_items({["진랑검"] = 1, ["혈황검"] = 1}) then
-        me:dialog(npc, "퀘스트 오류입니다.\n\n운영자에게 문의하세요.\n(*진랑검, 혈황검이 없을 경우 나타나는 메시지 입니다.)", false, true)
-        return
-    end
-
     local code = me:exchange(
         { ['item'] = { ["진랑검"] = 1, ["혈황검"] = 1 } },
         { ['item'] = { ["강철손목보호대"] = 1 } }

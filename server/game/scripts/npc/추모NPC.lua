@@ -62,11 +62,6 @@ function NPC_553(me, npc)
         return
     end
 
-    if not me:has_items(FLOWER_NAME, 1) then
-        me:dialog(npc, "고인에 대한 진심을 담아 꽃 한송이를 올리게나...", false, false)
-        return
-    end
-
     local reward = nil
     if math.random(1, 100) <= BALLOON_CHANCE then
         reward = { ['item'] = { [BALLOON_NAME] = 1 } }

@@ -21,6 +21,6 @@ async::task<void> create_group::handle(const internal_resp::GroupDetails& messag
         members.emplace(member.uid, member.name);
     }
 
-    co_await this->server.groups.on_error(message.error, message.target);
-    co_await this->server.groups.on_create(message.target, message.group.id, message.group.master, std::move(members));
+    co_await this->server.group.on_error(message.error, message.target);
+    co_await this->server.group.on_create(message.target, message.group.id, message.group.master, std::move(members));
 }

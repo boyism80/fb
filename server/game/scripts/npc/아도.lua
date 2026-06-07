@@ -83,18 +83,16 @@ function NPC_447(me, npc)
         if not me:has_items("동동주", 1) or not me:has_items("막걸리", 1) then
             me:dialog(npc, "저런, 동동주와 막걸리를 잃어버리셨나요? 그럼 제가 하나를 다시 드릴테니...", false, true)
             me:dialog(npc, "도토리 [50]개만 구해오세요. 그러면 동동주와 막걸리를 하나씩 드릴게요.", false, true)
-            if me:has_items("도토리", 50) then
-                local code = me:exchange(
-                    { ['item'] = { ["도토리"] = 50 } },
-                    { ['item'] = { ["동동주"] = 1, ["막걸리"] = 1 } }
-                )
-                if code == EXCHANGE_RESULT.OK then
-                    me:dialog(npc, "동동주와 막걸리를 하나씩 드렸으니, 이제 잃어버리지 않도록 조심하세요.", false, false)
-                elseif code == EXCHANGE_RESULT.LACK_COST then
-                    me:dialog(npc, "도토리가 부족합니다.", false, false)
-                elseif code == EXCHANGE_RESULT.LACK_CAPACITY then
-                    me:dialog(npc, "소지품이 가득 차서 동동주와 막걸리를 줄 수 없습니다.", false, false)
-                end
+            local code = me:exchange(
+                { ['item'] = { ["도토리"] = 50 } },
+                { ['item'] = { ["동동주"] = 1, ["막걸리"] = 1 } }
+            )
+            if code == EXCHANGE_RESULT.OK then
+                me:dialog(npc, "동동주와 막걸리를 하나씩 드렸으니, 이제 잃어버리지 않도록 조심하세요.", false, false)
+            elseif code == EXCHANGE_RESULT.LACK_COST then
+                me:dialog(npc, "도토리가 부족합니다.", false, false)
+            elseif code == EXCHANGE_RESULT.LACK_CAPACITY then
+                me:dialog(npc, "소지품이 가득 차서 동동주와 막걸리를 줄 수 없습니다.", false, false)
             end
             return
         end

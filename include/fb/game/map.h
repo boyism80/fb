@@ -5,13 +5,15 @@
 #include <fb/game/object.h>
 #include <fb/game/sector.h>
 
-namespace fb::game {
+namespace fb::game::service {
+class map;
+}
 
-class map_container;
+namespace fb::game {
 
 class map : public fb::thread_switchable
 {
-    friend class map_container;
+    friend class service::map;
 
 public:
     LUA_PROTOTYPE

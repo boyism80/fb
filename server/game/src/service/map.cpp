@@ -1,6 +1,6 @@
 #include <fb/config.h>
 #include <fb/game/character.h>
-#include <fb/game/map/container.h>
+#include <fb/game/service/map.h>
 #include <fb/game/npc.h>
 #include <fb/game/server.h>
 #include <fb/game/thread_params.h>
@@ -12,9 +12,9 @@ using namespace fb::game;
 using table         = fb::model::table;
 namespace game_resp = fb::protocol::game::response;
 
-map_container::map_container(fb::game::server& server, uint32_t host) :
+service::map::map(fb::game::server& server, uint32_t host) :
     _update_cache(
-        [](const map::cache_bytes& cache_bytes) -> uint64_t {
+        [](const fb::game::map::cache_bytes& cache_bytes) -> uint64_t {
             return cache_bytes.hash;
         },
         1024),
@@ -22,10 +22,10 @@ map_container::map_container(fb::game::server& server, uint32_t host) :
     host(host)
 { }
 
-map_container::~map_container()
+service::map::~map()
 { }
 
-bool map_container::load_data(uint32_t id, std::vector<char>& buffer)
+bool service::map::load_data(uint32_t id, std::vector<char>& buffer)
 {
     auto fname = std::format("maps/{:06}.map", id);
     auto file  = std::ifstream(fname, std::ios::binary);
@@ -38,7 +38,7 @@ bool map_container::load_data(uint32_t id, std::vector<char>& buffer)
     return true;
 }
 
-bool map_container::load_block(uint32_t id, std::vector<fb::model::point16_t>& buffer)
+bool service::map::load_block(uint32_t id, std::vector<fb::model::point16_t>& buffer)
 {
     auto fname = std::format("maps/{:06}.block", id);
     auto file  = std::ifstream(fname, std::ios::binary);
@@ -74,7 +74,7 @@ bool map_container::load_block(uint32_t id, std::vector<fb::model::point16_t>& b
     return true;
 }
 
-void map_container::load(const fb::model::map& model)
+void service::map::load(const fb::model::map& model)
 {
     auto active    = (model.host == this->host);
     auto lazy_load = fb::config<bool>("lazy_load_maps", false);
@@ -105,7 +105,7 @@ void map_container::load(const fb::model::map& model)
     }
 }
 
-bool map_container::ensure_loaded(const std::shared_ptr<map>& map)
+bool service::map::ensure_loaded(const std::shared_ptr<fb::game::map>& map)
 {
     if (map == nullptr)
         return false;
@@ -139,7 +139,7 @@ bool map_container::ensure_loaded(const std::shared_ptr<map>& map)
     return true;
 }
 
-void map_container::spawn_npcs(const std::shared_ptr<map>& map)
+void service::map::spawn_npcs(const std::shared_ptr<fb::game::map>& map)
 {
     if (table::npc_spawn.contains(map->model.id) == false)
         return;
@@ -150,7 +150,7 @@ void map_container::spawn_npcs(const std::shared_ptr<map>& map)
     }
 }
 
-void map_container::spawn_npc(const fb::model::npc_spawn& spawn)
+void service::map::spawn_npc(const fb::model::npc_spawn& spawn)
 {
     if (this->contains(spawn.parent) == false)
         return;
@@ -165,7 +165,7 @@ void map_container::spawn_npc(const fb::model::npc_spawn& spawn)
     this->spawn_npc(spawn, map);
 }
 
-void map_container::spawn_npc(const fb::model::npc_spawn& spawn, const std::shared_ptr<map>& map)
+void service::map::spawn_npc(const fb::model::npc_spawn& spawn, const std::shared_ptr<fb::game::map>& map)
 {
     auto& npc_model = table::npc[spawn.npc];
     auto  npc       = this->server.make<fb::game::npc>(npc_model);
@@ -183,7 +183,7 @@ void map_container::spawn_npc(const fb::model::npc_spawn& spawn, const std::shar
     builder.enqueue();
 }
 
-std::shared_ptr<fb::game::map> map_container::name2map(std::string_view name) const
+std::shared_ptr<fb::game::map> service::map::name2map(std::string_view name) const
 {
     for (const auto& [id, map] : *this)
     {
@@ -194,7 +194,7 @@ std::shared_ptr<fb::game::map> map_container::name2map(std::string_view name) co
     return nullptr;
 }
 
-void map_container::rezen_force()
+void service::map::rezen_force()
 {
     for (auto& [id, thread] : this->server.threads)
     {
@@ -211,7 +211,7 @@ void map_container::rezen_force()
     }
 }
 
-void map_container::erase_map_cache(uint32_t map_id, const fb::model::point16_t& point)
+void service::map::erase_map_cache(uint32_t map_id, const fb::model::point16_t& point)
 {
     std::unique_lock lock(this->_update_cache_mutex);
 
@@ -237,11 +237,11 @@ void map_container::erase_map_cache(uint32_t map_id, const fb::model::point16_t&
     }
 }
 
-void map_container::send_map_cache(character&                  ch,
-                                   const map&                  map,
-                                   const fb::model::point16_t& position,
-                                   const fb::model::size8_t&   size,
-                                   uint16_t                    crc)
+void service::map::send_map_cache(character&                  ch,
+                                  const fb::game::map&        map,
+                                  const fb::model::point16_t& position,
+                                  const fb::model::size8_t&   size,
+                                  uint16_t                    crc)
 {
     const auto hash = static_cast<uint64_t>(map.model.id) << 48 | static_cast<uint64_t>(position.x) << 32 |
                       static_cast<uint64_t>(position.y) << 16 | static_cast<uint64_t>(size.width) << 8 |
@@ -262,7 +262,7 @@ void map_container::send_map_cache(character&                  ch,
 
     std::unique_lock lock(this->_update_cache_mutex);
     this->_update_cache.write(hash, send_cache_bytes, [&map, &position, &size, hash]() {
-        auto bytes = map::cache_bytes();
+        auto bytes = fb::game::map::cache_bytes();
         bytes.hash = hash;
         bytes.crc  = 0;
 
@@ -274,7 +274,7 @@ void map_container::send_map_cache(character&                  ch,
     });
 }
 
-void map_container::update_map_cache(uint32_t map_id, const fb::model::area<uint16_t>& area)
+void service::map::update_map_cache(uint32_t map_id, const fb::model::area<uint16_t>& area)
 {
     {
         std::unique_lock lock(this->_update_cache_mutex);
@@ -308,8 +308,8 @@ void map_container::update_map_cache(uint32_t map_id, const fb::model::area<uint
     if (map_ptr == nullptr)
         return;
 
-    const map& map     = *map_ptr;
-    auto       viewers = std::vector<std::shared_ptr<character>>{};
+    const auto& map     = *map_ptr;
+    auto        viewers = std::vector<std::shared_ptr<character>>{};
     for (const auto& [fd, obj] : map.objects)
     {
         if (obj->is(OBJECT_TYPE::CHARACTER) == false)

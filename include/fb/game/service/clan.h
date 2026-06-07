@@ -1,5 +1,5 @@
-#ifndef __CLAN_CONTAINER_H__
-#define __CLAN_CONTAINER_H__
+#ifndef __FB_GAME_SERVICE_CLAN_H__
+#define __FB_GAME_SERVICE_CLAN_H__
 
 #include <fb/shard_container.h>
 #include <fb/game/clan.h>
@@ -16,21 +16,23 @@ class UpdatedClan;
 }
 
 namespace fb::game {
-
 class server;
 class character;
+} // namespace fb::game
 
-class clan_container : public sharded_container<std::shared_ptr<clan>, 16>
+namespace fb::game::service {
+
+class clan : public sharded_container<std::shared_ptr<fb::game::clan>, 16>
 {
 public:
-    using clan_ptr  = std::shared_ptr<clan>;
+    using clan_ptr  = std::shared_ptr<fb::game::clan>;
     using ensure_fn = std::function<async::task<void>(clan_ptr&)>;
 
 public:
     fb::game::server& server;
 
 public:
-    explicit clan_container(fb::game::server& server);
+    explicit clan(fb::game::server& server);
 
     void detach(std::weak_ptr<character> weak, uint32_t clan_id);
 
@@ -62,10 +64,9 @@ public:
                                      std::optional<uint32_t>    new_role);
 
 private:
-    static async::task<void> apply_updated(clan_container&                                      container,
-                                           const fb::protocol::internal::response::UpdatedClan& resp);
+    static async::task<void> apply_updated(clan& container, const fb::protocol::internal::response::UpdatedClan& resp);
 };
 
-} // namespace fb::game
+} // namespace fb::game::service
 
 #endif

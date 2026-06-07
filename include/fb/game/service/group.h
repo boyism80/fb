@@ -1,5 +1,5 @@
-#ifndef __GROUP_CONTAINER_H__
-#define __GROUP_CONTAINER_H__
+#ifndef __FB_GAME_SERVICE_GROUP_H__
+#define __FB_GAME_SERVICE_GROUP_H__
 
 #include <fb/shard_container.h>
 #include <fb/game/group.h>
@@ -12,21 +12,23 @@
 #include <cstdint>
 
 namespace fb::game {
-
 class server;
 class character;
+} // namespace fb::game
 
-class group_container : public sharded_container<std::shared_ptr<group>, 16>
+namespace fb::game::service {
+
+class group : public sharded_container<std::shared_ptr<fb::game::group>, 16>
 {
 public:
-    using group_ptr = std::shared_ptr<group>;
+    using group_ptr = std::shared_ptr<fb::game::group>;
     using ensure_fn = std::function<async::task<void>(group_ptr&)>;
 
 public:
     fb::game::server& server;
 
 public:
-    explicit group_container(fb::game::server& server);
+    explicit group(fb::game::server& server);
 
     void detach(std::weak_ptr<character> weak, uint32_t group_id);
 
@@ -48,6 +50,6 @@ public:
     async::task<void> on_broadcast(uint32_t group_id, std::string message, uint8_t type);
 };
 
-} // namespace fb::game
+} // namespace fb::game::service
 
 #endif

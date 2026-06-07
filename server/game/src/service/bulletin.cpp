@@ -1,4 +1,4 @@
-#include <fb/game/bulletin/service.h>
+#include <fb/game/service/bulletin.h>
 #include <fb/game/server.h>
 #include <fb/game/character.h>
 #include <fb/model/model.h>
@@ -9,17 +9,17 @@ using table             = fb::model::table;
 namespace internal_resp = fb::protocol::internal::response;
 namespace internal_reqs = fb::protocol::internal::request;
 
-bulletin_service::bulletin_service(fb::game::server& server) :
+service::bulletin::bulletin(fb::game::server& server) :
     server(server)
 { }
 
-void bulletin_service::assert_section(uint16_t section) const
+void service::bulletin::assert_section(uint16_t section) const
 {
     if (table::bulletin.contains(section) == false)
         throw std::runtime_error(_TEXT(MESSAGE_BULLETIN_SECTION_NOT_EXIST));
 }
 
-void bulletin_service::assert_auth(const character& ch, uint16_t section) const
+void service::bulletin::assert_auth(const character& ch, uint16_t section) const
 {
     this->assert_section(section);
 
@@ -27,7 +27,7 @@ void bulletin_service::assert_auth(const character& ch, uint16_t section) const
         throw std::runtime_error(_TEXT(MESSAGE_BULLETIN_NOT_AUTH));
 }
 
-void bulletin_service::on_delete_error(int32_t result) const
+void service::bulletin::on_delete_error(int32_t result) const
 {
     switch (result)
     {
@@ -42,35 +42,36 @@ void bulletin_service::on_delete_error(int32_t result) const
     }
 }
 
-bulletin::article bulletin_service::to_article(const fb::protocol::internal::ArticleSummary& summary, uint16_t section)
+fb::game::bulletin::article service::bulletin::to_article(const fb::protocol::internal::ArticleSummary& summary,
+                                                          uint16_t                                      section)
 {
     auto dt = fb::model::datetime(summary.created_date);
-    return bulletin::article{.id      = summary.id,
-                             .section = section,
-                             .user    = summary.user,
-                             .month   = static_cast<uint8_t>(dt.month()),
-                             .day     = static_cast<uint8_t>(dt.day()),
-                             .uname   = summary.user_name,
-                             .title   = summary.title};
+    return fb::game::bulletin::article{.id      = summary.id,
+                                       .section = section,
+                                       .user    = summary.user,
+                                       .month   = static_cast<uint8_t>(dt.month()),
+                                       .day     = static_cast<uint8_t>(dt.day()),
+                                       .uname   = summary.user_name,
+                                       .title   = summary.title};
 }
 
-bulletin::article bulletin_service::to_article(const fb::protocol::internal::Article& article,
-                                               uint16_t                               section,
-                                               bool                                   next)
+fb::game::bulletin::article service::bulletin::to_article(const fb::protocol::internal::Article& article,
+                                                          uint16_t                               section,
+                                                          bool                                   next)
 {
     auto dt = fb::model::datetime(article.created_date);
-    return bulletin::article{.id       = article.id,
-                             .section  = section,
-                             .user     = article.user,
-                             .month    = static_cast<uint8_t>(dt.month()),
-                             .day      = static_cast<uint8_t>(dt.day()),
-                             .uname    = article.user_name,
-                             .title    = article.title,
-                             .contents = article.contents,
-                             .next     = next};
+    return fb::game::bulletin::article{.id       = article.id,
+                                       .section  = section,
+                                       .user     = article.user,
+                                       .month    = static_cast<uint8_t>(dt.month()),
+                                       .day      = static_cast<uint8_t>(dt.day()),
+                                       .uname    = article.user_name,
+                                       .title    = article.title,
+                                       .contents = article.contents,
+                                       .next     = next};
 }
 
-async::task<std::list<bulletin::article>> bulletin_service::list(uint16_t section, uint16_t offset)
+async::task<std::list<fb::game::bulletin::article>> service::bulletin::list(uint16_t section, uint16_t offset)
 {
     this->assert_section(section);
 
@@ -79,7 +80,7 @@ async::task<std::list<bulletin::article>> bulletin_service::list(uint16_t sectio
         "internal",
         std::format("/bulletin/{}/{}?offset={}", world, section, offset));
 
-    auto articles = std::list<bulletin::article>{};
+    auto articles = std::list<fb::game::bulletin::article>{};
     for (const auto& summary : resp.summary_list)
     {
         articles.push_back(to_article(summary, section));
@@ -88,7 +89,7 @@ async::task<std::list<bulletin::article>> bulletin_service::list(uint16_t sectio
     co_return std::move(articles);
 }
 
-async::task<bulletin::article> bulletin_service::read(uint16_t section, uint16_t id)
+async::task<fb::game::bulletin::article> service::bulletin::read(uint16_t section, uint16_t id)
 {
     this->assert_section(section);
 
@@ -103,7 +104,7 @@ async::task<bulletin::article> bulletin_service::read(uint16_t section, uint16_t
 }
 
 async::task<void>
-bulletin_service::write(character& ch, uint16_t section, std::string_view title, std::string_view contents)
+service::bulletin::write(character& ch, uint16_t section, std::string_view title, std::string_view contents)
 {
     this->assert_auth(ch, section);
 
@@ -123,7 +124,7 @@ bulletin_service::write(character& ch, uint16_t section, std::string_view title,
         throw std::runtime_error(_TEXT(MESSAGE_BULLETIN_WRITE_FAILED));
 }
 
-async::task<void> bulletin_service::remove(character& ch, uint16_t section, uint16_t id)
+async::task<void> service::bulletin::remove(character& ch, uint16_t section, uint16_t id)
 {
     this->assert_auth(ch, section);
 
