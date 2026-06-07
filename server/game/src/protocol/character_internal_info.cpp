@@ -40,9 +40,8 @@ async::task<void> internal_info::serialize(fb::stream_writer<big_endian>& writer
     auto& group_id = this->ch.group_id();
     if (group_id.has_value())
     {
-        auto  guard   = this->ch.server.group.enter_read(group_id.value());
-        auto& group   = guard.value();
-        auto  sstream = std::stringstream();
+        auto  guard = this->ch.server.group.enter_read(group_id.value());
+        auto& group = guard.value();
         sstream << _TEXT(MESSAGE_GROUP_MEMBERS_HEADER) << std::endl << "  * " << group->master() << std::endl;
 
         auto master_name = group->master();
