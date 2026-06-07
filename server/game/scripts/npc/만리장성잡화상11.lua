@@ -14,22 +14,17 @@ function NPC_404(me, npc)
     end
 
     if sel == 0 then
-        if not me:has_items({ ["금천패"] = 1, ["금지패"] = 1, ["금인패"] = 1 }) then
-            me:dialog(npc, "여보게, 자네는 금천패, 금지패, 금인패를 모두 가져오지 않았잖나.", false, false)
-            goto NPC_404_000
-        end
-        if not me:has_items("녹비약(대)", 1) then
-            me:dialog(npc, "금천지인패를 만들기 위해서는 녹비약(대)가 필요하다네. 자네는 가지고 있지 않은 것 같은데?", false, false)
-            goto NPC_404_000
-        end
-
         local reward = nil
         if math.random(1, 100) <= 50 then
             reward = { ['item'] = { ["금천지인패"] = 1 } }
         end
         local code = me:exchange({ ['item'] = required }, reward)
         if code == EXCHANGE_RESULT.LACK_COST then
-            me:dialog(npc, "여보게, 자네는 금천패, 금지패, 금인패를 모두 가져오지 않았잖나.", false, false)
+            if not me:has_items({ ["금천패"] = 1, ["금지패"] = 1, ["금인패"] = 1 }) then
+                me:dialog(npc, "여보게, 자네는 금천패, 금지패, 금인패를 모두 가져오지 않았잖나.", false, false)
+            else
+                me:dialog(npc, "금천지인패를 만들기 위해서는 녹비약(대)가 필요하다네. 자네는 가지고 있지 않은 것 같은데?", false, false)
+            end
             goto NPC_404_000
         elseif code == EXCHANGE_RESULT.LACK_CAPACITY then
             me:dialog(npc, "소지품이 가득 차서 금천지인패를 받을 수 없네. 자리 좀 비우고 다시 오게.", false, false)

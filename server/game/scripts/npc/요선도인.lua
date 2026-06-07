@@ -53,14 +53,6 @@ function NPC_622(me, npc)
         if d == DIALOG_RESULT.QUIT then
             return
         end
-        if not me:has_items(r.main, 100) then
-            me:dialog(npc, r.main .. "이 부족합니다.", false, false)
-            return
-        end
-        if not me:has_items(other, 100) then
-            me:dialog(npc, other .. "이 부족합니다.", false, false)
-            return
-        end
         local cost_7 = { [r.main] = 100, [other] = 100 }
         local reward = nil
         if math.random(1, 100) < 30 then
@@ -68,7 +60,13 @@ function NPC_622(me, npc)
         end
         local code = me:exchange({ ['item'] = cost_7 }, reward)
         if code == EXCHANGE_RESULT.LACK_COST then
-            me:dialog(npc, r.main .. "이나 " .. other .. "을 제거할 수 없소.", false, false)
+            if not me:has_items(r.main, 100) then
+                me:dialog(npc, r.main .. "이 부족합니다.", false, false)
+            elseif not me:has_items(other, 100) then
+                me:dialog(npc, other .. "이 부족합니다.", false, false)
+            else
+                me:dialog(npc, r.main .. "이나 " .. other .. "을 제거할 수 없소.", false, false)
+            end
             return
         end
         if code == EXCHANGE_RESULT.LACK_CAPACITY then
@@ -98,10 +96,6 @@ function NPC_622(me, npc)
         end
         local cost_chil = {}
         for _, name in ipairs(STONES) do
-            if not me:has_items(name, 100) then
-                me:dialog(npc, "[" .. name .. "]이 부족합니다.", false, false)
-                return
-            end
             cost_chil[name] = 100
         end
         local reward = nil
@@ -110,6 +104,12 @@ function NPC_622(me, npc)
         end
         local code = me:exchange({ ['item'] = cost_chil }, reward)
         if code == EXCHANGE_RESULT.LACK_COST then
+            for _, name in ipairs(STONES) do
+                if not me:has_items(name, 100) then
+                    me:dialog(npc, "[" .. name .. "]이 부족합니다.", false, false)
+                    return
+                end
+            end
             me:dialog(npc, "지석이 부족하오.", false, false)
             return
         end
@@ -140,15 +140,7 @@ function NPC_622(me, npc)
         end
         local cost_pal = { ["팔요지석"] = 100 }
         for _, name in ipairs(STONES) do
-            if not me:has_items(name, 100) then
-                me:dialog(npc, "[" .. name .. "]이 부족합니다.", false, false)
-                return
-            end
             cost_pal[name] = 100
-        end
-        if not me:has_items("팔요지석", 100) then
-            me:dialog(npc, "[팔요지석]이 부족합니다.", false, false)
-            return
         end
         local reward = nil
         if math.random(1, 100) < 10 then
@@ -156,7 +148,17 @@ function NPC_622(me, npc)
         end
         local code = me:exchange({ ['item'] = cost_pal }, reward)
         if code == EXCHANGE_RESULT.LACK_COST then
-            me:dialog(npc, "지석이 부족하오.", false, false)
+            if not me:has_items("팔요지석", 100) then
+                me:dialog(npc, "[팔요지석]이 부족합니다.", false, false)
+            else
+                for _, name in ipairs(STONES) do
+                    if not me:has_items(name, 100) then
+                        me:dialog(npc, "[" .. name .. "]이 부족합니다.", false, false)
+                        return
+                    end
+                end
+                me:dialog(npc, "지석이 부족하오.", false, false)
+            end
             return
         end
         if code == EXCHANGE_RESULT.LACK_CAPACITY then
@@ -203,10 +205,6 @@ function NPC_622(me, npc)
         local need_nine = { "일광방패", "월광방패", "화분천검", "수류곡도", "목근정곤", "금기련봉", "토선투구", "칠요구륜", "팔세지도" }
         local cost_nine = {}
         for _, name in ipairs(need_nine) do
-            if not me:has_items(name, 1) then
-                me:dialog(npc, "[" .. name .. "]가 부족합니다.", false, false)
-                return
-            end
             cost_nine[name] = 1
         end
         local product = (me:gender() == GENDER.MALE) and "팔요천의기" or "팔요천의향"
@@ -216,6 +214,12 @@ function NPC_622(me, npc)
         end
         local code = me:exchange({ ['item'] = cost_nine }, reward)
         if code == EXCHANGE_RESULT.LACK_COST then
+            for _, name in ipairs(need_nine) do
+                if not me:has_items(name, 1) then
+                    me:dialog(npc, "[" .. name .. "]가 부족합니다.", false, false)
+                    return
+                end
+            end
             me:dialog(npc, "재료가 부족하오.", false, false)
             return
         end

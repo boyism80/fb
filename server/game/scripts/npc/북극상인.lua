@@ -92,10 +92,6 @@ function NPC_600(me, npc)
         end
         local names = { "파랑문파비패", "노랑문파비패", "초록문파비패", "보라문파비패", "연두문파비패" }
         local name = names[sel2 + 1]
-        if not me:has_items("비패교환증", 1) then
-            me:dialog(npc, "뭐야? 비패교환증을 가져오게나.", false, true)
-            return
-        end
         local code = me:exchange(
             { ['item'] = { ["비패교환증"] = 1 } },
             { ['item'] = { [name] = 1 } }

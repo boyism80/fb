@@ -78,21 +78,21 @@ function NPC_495(me, npc)
                 return
             end
             if sel == 0 then
-                if not me:has_items(SURVIVE_ITEMS) then
-                    local lack = {}
-                    if not me:has_items("노란비서", 1) then lack[#lack + 1] = "노란비서" end
-                    if not me:has_items("소환비서", 1) then lack[#lack + 1] = "소환비서" end
-                    if not me:has_items("동동주", 1) then lack[#lack + 1] = "동동주" end
-                    if not me:has_items("막걸리", 1) then lack[#lack + 1] = "막걸리" end
-                    me:dialog(npc, "저런, " .. me:name() .. "님은 " .. table.concat(lack, ", ") .. " 가 부족하시군요. 어서 구해오세요.", false, false)
-                    return
-                end
                 local code = me:exchange(
                     { ['item'] = SURVIVE_ITEMS },
                     { ['item'] = { ["서바이벌증표"] = 1 } }
                 )
                 if code == EXCHANGE_RESULT.LACK_COST then
-                    me:dialog(npc, "아이템을 건네지 못했습니다.", false, false)
+                    local lack = {}
+                    if not me:has_items("노란비서", 1) then lack[#lack + 1] = "노란비서" end
+                    if not me:has_items("소환비서", 1) then lack[#lack + 1] = "소환비서" end
+                    if not me:has_items("동동주", 1) then lack[#lack + 1] = "동동주" end
+                    if not me:has_items("막걸리", 1) then lack[#lack + 1] = "막걸리" end
+                    if #lack > 0 then
+                        me:dialog(npc, "저런, " .. me:name() .. "님은 " .. table.concat(lack, ", ") .. " 가 부족하시군요. 어서 구해오세요.", false, false)
+                    else
+                        me:dialog(npc, "아이템을 건네지 못했습니다.", false, false)
+                    end
                     return
                 elseif code == EXCHANGE_RESULT.LACK_CAPACITY then
                     me:dialog(npc, "소지품이 가득 차서 증표를 줄 수 없습니다.", false, false)

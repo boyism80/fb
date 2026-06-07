@@ -77,16 +77,13 @@ local function handle_jingogyun_2(me, npc, q_jingo)
         return true
     end
     if sel == 0 then
-        if not me:has_items("해바라기씨", 1) then
-            me:dialog(npc, "해바라기씨앗을 가져와~", false, false)
-            return true
-        end
         local reward = nil
         if math.random(1, 1000) < 12 then
             reward = { ['item'] = { ["탄생의씨앗"] = 1 } }
         end
         local code = me:exchange({ ['item'] = { ["해바라기씨"] = 1 } }, reward)
         if code == EXCHANGE_RESULT.LACK_COST then
+            me:dialog(npc, "해바라기씨앗을 가져와~", false, false)
             return true
         end
         if code == EXCHANGE_RESULT.LACK_CAPACITY then

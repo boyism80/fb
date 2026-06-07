@@ -5,18 +5,18 @@ local REWARD_NAME = "눈꽃팔찌"
 local SUCCESS_PERCENT = 30
 
 local function do_craft(me, npc)
-    local cost = { [MATERIAL_NAME] = MATERIAL_COUNT }
+    local cost = { ['item'] = { [MATERIAL_NAME] = MATERIAL_COUNT } }
     local reward = nil
     if math.random(1, 100) <= SUCCESS_PERCENT then
         reward = { ['item'] = { [REWARD_NAME] = 1 } }
     end
-    local code = me:exchange({ ['item'] = cost }, reward)
+    local code = me:exchange(cost, reward)
     if code == EXCHANGE_RESULT.LACK_COST then
         me:dialog(npc, "눈꽃얼음이 없으신데요?", false, false)
         return false
     end
     if code == EXCHANGE_RESULT.LACK_CAPACITY then
-        me:dialog(npc, "소지품이 가득 차서 " .. REWARD_NAME .. "을 드리지 못합니다.", false, false)
+        me:dialog(npc, "소지품이 가득 차서 " .. name_with(REWARD_NAME, '을', '를') .. " 드리지 못합니다.", false, false)
         return true
     end
     if reward == nil then

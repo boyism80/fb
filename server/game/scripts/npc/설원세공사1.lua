@@ -5,26 +5,24 @@ local REWARD_NAME = "눈꽃장갑"
 local SUCCESS_PERCENT = 30
 
 local function do_craft(me, npc)
-    if not me:has_items(MATERIAL_NAME, MATERIAL_COUNT) then
+    local cost = { ['item'] = { [MATERIAL_NAME] = MATERIAL_COUNT } }
+    local reward = nil
+    if math.random(1, 100) <= SUCCESS_PERCENT then
+        reward = { ['item'] = { [REWARD_NAME] = 1 } }
+    end
+    local code = me:exchange(cost, reward)
+    if code == EXCHANGE_RESULT.LACK_COST then
         me:dialog(npc, "눈꽃얼음이 없으신데요?", false, false)
         return false
     end
-    local roll = math.random(1, 100)
-    if roll <= SUCCESS_PERCENT then
-        local code = me:exchange(
-            { ['item'] = { [MATERIAL_NAME] = MATERIAL_COUNT } },
-            { ['item'] = { [REWARD_NAME] = 1 } }
-        )
-        if code == EXCHANGE_RESULT.LACK_COST then
-            me:dialog(npc, "눈꽃얼음이 없으신데요?", false, false)
-            return true
-        elseif code == EXCHANGE_RESULT.LACK_CAPACITY then
-            me:dialog(npc, "소지품이 가득 차서 " .. REWARD_NAME .. "을 드리지 못합니다. 재료는 돌려드렸습니다.", false, false)
-            return true
-        end
-        me:dialog(npc, "오... 이것이 " .. REWARD_NAME .. "로군요. 이렇게 아름답게 생긴 것은 처음입니다. 잘 사용하시길 바라겠습니다.", false, false)
-    else
+    if code == EXCHANGE_RESULT.LACK_CAPACITY then
+        me:dialog(npc, "소지품이 가득 차서 " .. name_with(REWARD_NAME, '을', '를') .. " 드리지 못합니다.", false, false)
+        return true
+    end
+    if reward == nil then
         me:dialog(npc, "이런... 그만 실패하고 말았군요. 다음 기회를 기약하셔야 할 듯 싶네요...", false, false)
+    else
+        me:dialog(npc, "오... 이것이 " .. REWARD_NAME .. "로군요. 이렇게 아름답게 생긴 것은 처음입니다. 잘 사용하시길 바라겠습니다.", false, false)
     end
     return true
 end

@@ -24,10 +24,6 @@ function NPC_406(me, npc)
 
     local opt = options[sel + 1]
     local required = opt.required
-    if not me:has_items(required) then
-        me:dialog(npc, opt.need_msg, false, false)
-        goto NPC_406_000
-    end
 
     local reward = nil
     if math.random(1, 100) <= 60 then

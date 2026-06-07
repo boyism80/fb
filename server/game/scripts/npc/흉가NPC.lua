@@ -17,10 +17,6 @@ local REWARDS = {
 }
 
 local function do_exchange(me, npc, need_count, reward_name)
-    if not me:has_items(TICKET_NAME, need_count) then
-        me:dialog(npc, "교환권이 부족하시네요.", false, false)
-        return false
-    end
     local code = me:exchange(
         { ['item'] = { [TICKET_NAME] = need_count } },
         { ['item'] = { [reward_name] = 1 } }
@@ -30,7 +26,7 @@ local function do_exchange(me, npc, need_count, reward_name)
         return false
     end
     if code == EXCHANGE_RESULT.LACK_CAPACITY then
-        me:dialog(npc, "소지품이 가득 차서 " .. reward_name .. "을(를) 드리지 못합니다.", false, false)
+        me:dialog(npc, "소지품이 가득 차서 " .. name_with(reward_name, '을', '를') .. " 드리지 못합니다.", false, false)
         return false
     end
     me:dialog(npc, "여기 있습니다..", false, false)

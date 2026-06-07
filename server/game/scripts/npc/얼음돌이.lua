@@ -86,13 +86,6 @@ local function run_ice_split(me, npc)
         end
         return nil
     end
-    if not me:has_items(ICE_NAME, num) then
-        local btn = me:dialog(npc, '얼음이 부족합니다.', true, true)
-        if btn == DIALOG_RESULT.PREV then
-            return DIALOG_RESULT.PREV
-        end
-        return nil
-    end
     local code = me:exchange(
         { ['item'] = { [ICE_NAME] = num } },
         { ['item'] = { [SMALL_ICE_NAME] = num * 10 } }

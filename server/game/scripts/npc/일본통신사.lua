@@ -31,10 +31,6 @@ function NPC_366(me, npc)
         return
     end
 
-    if not me:has_items(NEED_ITEMS) then
-        me:dialog(npc, "24일간 모은 도톨 24종류를 가지고 오셔야 합니다.", false, false)
-        return
-    end
     local code = me:exchange(
         { ['item'] = NEED_ITEMS },
         { ['item'] = { [REWARD_NAME] = 1 } }
