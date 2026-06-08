@@ -8,7 +8,7 @@ end
 
 -- Daily 18:00: restock batteries at 시계장인 (clock_time_item)
 function ON_SCHEDULE_2()
-    gv("clock_time_item", 10)
+    property("clock_time_item", 10)
 end
 
 function ON_SCHEDULE_3()

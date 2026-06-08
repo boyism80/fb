@@ -1257,7 +1257,7 @@ int builtin::server::builtin_drop_rate_multiplier(lua_State* L)
     }
 }
 
-int builtin::server::builtin_gv(lua_State* L)
+int builtin::server::builtin_property(lua_State* L)
 {
     auto lua = fb::lua::get(L);
     if (lua == nullptr)
@@ -1280,7 +1280,7 @@ int builtin::server::builtin_gv(lua_State* L)
         Json::Value value;
         bool        found = false;
         {
-            auto guard = server->vars.enter_read();
+            auto guard = server->property.enter_read();
             auto it    = guard.value().find(key);
             if (it != guard.value().end())
             {
@@ -1314,7 +1314,7 @@ int builtin::server::builtin_gv(lua_State* L)
             const char* s = lua_tostring(L, 2);
             Json::Value val(s ? s : "");
             {
-                auto guard         = server->vars.enter_write();
+                auto guard         = server->property.enter_write();
                 guard.value()[key] = val;
             }
         }
@@ -1322,7 +1322,7 @@ int builtin::server::builtin_gv(lua_State* L)
         {
             double n = lua_tonumber(L, 2);
             {
-                auto guard         = server->vars.enter_write();
+                auto guard         = server->property.enter_write();
                 guard.value()[key] = Json::Value(n);
             }
         }
@@ -1330,7 +1330,7 @@ int builtin::server::builtin_gv(lua_State* L)
         {
             bool b = lua_toboolean(L, 2) != 0;
             {
-                auto guard         = server->vars.enter_write();
+                auto guard         = server->property.enter_write();
                 guard.value()[key] = Json::Value(b);
             }
         }

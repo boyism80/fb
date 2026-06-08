@@ -769,7 +769,7 @@ function sky_maze_shuffle(seed)
     end
     shuffle_array(arr, 1, 25)
     for i = 0, 26 do
-        gv("sky_maze_" .. tostring(i), arr[i])
+        property("sky_maze_" .. tostring(i), arr[i])
     end
 end
 
@@ -781,12 +781,12 @@ function pk_sky_maze_shuffle(seed)
     end
     shuffle_array(arr, 1, 25)
     for i = 0, 26 do
-        gv("pk_sky_maze_" .. tostring(i), arr[i])
+        property("pk_sky_maze_" .. tostring(i), arr[i])
     end
 end
 
 function get_sky_maze_slot(i)
-    local map_id = gv("sky_maze_" .. tostring(i))
+    local map_id = property("sky_maze_" .. tostring(i))
     if map_id == nil then
         return SKY_MAZE_NAMES[i + 1]
     end
@@ -798,7 +798,7 @@ function get_sky_maze_slot(i)
 end
 
 function get_pk_sky_maze_slot(i)
-    local map_id = gv("pk_sky_maze_" .. tostring(i))
+    local map_id = property("pk_sky_maze_" .. tostring(i))
     if map_id == nil then
         return PK_SKY_MAZE_NAMES[i + 1]
     end
@@ -810,7 +810,7 @@ function get_pk_sky_maze_slot(i)
 end
 
 local function get_sky_maze_slot_id(i)
-    local map_id = gv("sky_maze_" .. tostring(i))
+    local map_id = property("sky_maze_" .. tostring(i))
     if map_id == nil then
         return map_name_to_id(SKY_MAZE_NAMES[i + 1])
     end
@@ -818,7 +818,7 @@ local function get_sky_maze_slot_id(i)
 end
 
 local function get_pk_sky_maze_slot_id(i)
-    local map_id = gv("pk_sky_maze_" .. tostring(i))
+    local map_id = property("pk_sky_maze_" .. tostring(i))
     if map_id == nil then
         return map_name_to_id(PK_SKY_MAZE_NAMES[i + 1])
     end
@@ -865,7 +865,7 @@ function ON_WARP_SKY_MAZE(me)
     local map_name = map:model():name()
     local x, y = me:position()
     
-    if gv("sky_maze_0") == nil then
+    if property("sky_maze_0") == nil then
         sky_maze_shuffle()
     end
     
@@ -946,7 +946,7 @@ function ON_WARP_PK_SKY_MAZE(me)
     local map_name = map:model():name()
     local x, y = me:position()
     
-    if gv("pk_sky_maze_0") == nil then
+    if property("pk_sky_maze_0") == nil then
         pk_sky_maze_shuffle()
     end
     

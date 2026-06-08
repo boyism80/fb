@@ -58,9 +58,9 @@ function NPC_499(me, npc)
     end
 
     if sel == 3 then
-        local ns_start = gv("ns_start")
+        local ns_start = property("ns_start")
         if ns_start == 2 then
-            local winner = gv("ns_winner_team")
+            local winner = property("ns_winner_team")
             me:dialog(npc, "승리팀 상품 수령은 대전 종료 후 해당 기능이 연동되면 이용하실 수 있습니다.", false, true)
         else
             me:dialog(npc, "수령할 상품이 없습니다. 남북무한대전에 참가하고 승리한 뒤 이용해 주세요.", false, true)

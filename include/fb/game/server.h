@@ -19,7 +19,7 @@
 #include <fb/game/service/system_storage.h>
 #include <fb/game/service/system_mail.h>
 #include <fb/game/service/schedule.h>
-#include <fb/game/service/vars.h>
+#include <fb/game/service/property.h>
 #include <fb/game/storage.h>
 #include <fb/game/system_storage_box.h>
 #include <fb/log_collector.h>
@@ -119,7 +119,7 @@ public:
     service::system_storage                system_storage;
     service::system_mail                   system_mail;
     service::schedule                      schedules;
-    service::vars                          vars;
+    service::property                      property;
 
 public:
     server(boost::asio::io_context& io_context, uint16_t port);

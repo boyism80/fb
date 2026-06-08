@@ -36,26 +36,26 @@ function NPC_495(me, npc)
     end
 
     if map_id == MAP_ID_FINISH then
-        local rank = gv("surviverun_rank")
+        local rank = property("surviverun_rank")
         if rank == nil or rank == 0 then
             rank = 1
         end
         local prize_name = "노란비서"
         if rank == 1 then
-            prize_name = gv("survive_prize_1") or prize_name
+            prize_name = property("survive_prize_1") or prize_name
         elseif rank == 2 then
-            prize_name = gv("survive_prize_2") or prize_name
+            prize_name = property("survive_prize_2") or prize_name
         elseif rank <= 10 then
-            prize_name = gv("survive_prize_10") or prize_name
+            prize_name = property("survive_prize_10") or prize_name
         else
-            prize_name = gv("survive_prize_joiner") or prize_name
+            prize_name = property("survive_prize_joiner") or prize_name
         end
         local btn = me:dialog(npc, "축하합니다! " .. me:name() .. "님은 " .. tostring(rank) .. "등으로 완주하여 상품으로 " .. prize_name .. "을(를) 받으실 수 있습니다.", false, false)
         if btn == DIALOG_RESULT.QUIT then
             return
         end
         if me:mkitem(prize_name, 1) ~= nil then
-            gv("surviverun_rank", rank + 1)
+            property("surviverun_rank", rank + 1)
         end
         local exit_map = name2map("부여성")
         if exit_map then
@@ -65,8 +65,8 @@ function NPC_495(me, npc)
     end
 
     if map_id == MAP_ID_LOBBY then
-        local game_start = gv("survive_game_start")
-        local game_end = gv("survive_game_end")
+        local game_start = property("survive_game_start")
+        local game_end = property("survive_game_end")
         local now_ok = (game_start == nil and game_end == nil) or true
 
         if not me:has_items("서바이벌증표", 1) then
@@ -155,8 +155,8 @@ function NPC_495(me, npc)
         return
     end
 
-    local join_start = gv("survive_join_start")
-    local join_end = gv("survive_join_end")
+    local join_start = property("survive_join_start")
+    local join_end = property("survive_join_end")
     local in_join = (join_start == nil and join_end == nil) or true
 
     if not in_join then

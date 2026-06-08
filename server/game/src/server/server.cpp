@@ -114,7 +114,7 @@ server::server(boost::asio::io_context& io_context, uint16_t port) :
     lua::build("regex", builtin::server::builtin_regex);
     lua::build("exp_multiplier", builtin::server::builtin_exp_multiplier);
     lua::build("drop_rate_multiplier", builtin::server::builtin_drop_rate_multiplier);
-    lua::build("gv", builtin::server::builtin_gv);
+    lua::build("property", builtin::server::builtin_property);
 
     for (auto& [_, root] : ist)
     {
@@ -265,7 +265,7 @@ async::task<void> server::on_start()
     this->handler.amqp.bind<fb::game::handler::amqp::start_maintenance>(
         std::format("fb.{}.game.{}", world, fb::config<uint32_t>("id")));
 
-    // Run server init script once (gv and other vars) on the least loaded thread
+    // Run server init script once (property and other startup state) on the least loaded thread
     auto* init_thread = this->threads.least_loaded();
     if (init_thread != nullptr)
     {

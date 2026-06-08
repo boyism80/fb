@@ -4,7 +4,7 @@ function NPC_362(me, npc)
         return
     end
 
-    if gv("sesi_rightnow") ~= 2 then
+    if property("sesi_rightnow") ~= 2 then
         me:dialog(npc, "준비중입니다.", false, false)
         return
     end

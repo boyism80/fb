@@ -1,5 +1,5 @@
 function NPC_497(me, npc)
-    if gv("sesi_rightnow") ~= 1 then
+    if property("sesi_rightnow") ~= 1 then
         me:dialog(npc, "......", false, false)
         return
     end
