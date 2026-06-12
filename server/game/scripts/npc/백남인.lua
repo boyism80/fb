@@ -1,6 +1,6 @@
 
 function NPC_502(me, npc)
-    local sesi = gv("sesi_rightnow")
+    local sesi = property("sesi_rightnow")
     if sesi == 1 then
         local sel, list_btn = me:list(npc, " 어쩐일로 찾아오셨습니까?", {
             "정월 대보름이 뭐에요?",

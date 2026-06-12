@@ -1,4 +1,5 @@
 #include <fb/async_executor.h>
+#include <fb/execution_context.h>
 
 using namespace fb;
 
@@ -6,6 +7,7 @@ async_executor::async_executor(boost::asio::io_context& context, std::string_vie
     io_context(context),
     threads(*this, thread_count)
 {
+    execution_context::install_propagation_hooks(*this);
     static auto flag = std::once_flag{};
     std::call_once(flag, [name] {
         auto name_str = std::string(name);

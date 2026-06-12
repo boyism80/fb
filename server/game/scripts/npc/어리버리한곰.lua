@@ -1,6 +1,6 @@
 
 function NPC_460(me, npc)
-    if gv("check") == 25 and me:has_items("훈제연어", 5) then
+    if property("check") == 25 and me:has_items("훈제연어", 5) then
         local btn = me:dialog(npc, "난 깊은계곡을 지키고 있는 곰이다웅... 그런데 너는 보니까 임무를 수행중인것처럼 보이는데웅...?", false, true)
         if btn == DIALOG_RESULT.QUIT then
             return

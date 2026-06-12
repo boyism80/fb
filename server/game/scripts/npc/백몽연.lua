@@ -6,7 +6,7 @@ function NPC_353(me, npc)
         return
     end
 
-    if gv("sesi_rightnow") ~= 2 then
+    if property("sesi_rightnow") ~= 2 then
         return
     end
 

@@ -1,5 +1,5 @@
 function NPC_500(me, npc)
-    if gv("ns_start") ~= 1 then
+    if property("ns_start") ~= 1 then
         me:dialog(npc, "저런, 남북무한대전은 종료되었는데요. 나가는걸 도와드릴게요.", false, false)
         local map = name2map("국내성")
         if map then

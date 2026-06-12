@@ -5,7 +5,7 @@ function NPC_365(me, npc)
         return
     end
 
-    if gv("sesi_rightnow") ~= 4 then
+    if property("sesi_rightnow") ~= 4 then
         return
     end
 

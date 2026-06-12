@@ -1,6 +1,6 @@
 
 local function run_sesi_2(me, npc)
-    if gv("sesi_rightnow") ~= 2 then
+    if property("sesi_rightnow") ~= 2 then
         return false
     end
     local quest = me:quest(QUEST_BAEK_MONGYEON)
@@ -27,7 +27,7 @@ local function run_sesi_2(me, npc)
 end
 
 local function run_sesi_4(me, npc)
-    if gv("sesi_rightnow") ~= 4 then
+    if property("sesi_rightnow") ~= 4 then
         return false
     end
     if me:has_items("색비단", 1) then
@@ -47,7 +47,7 @@ local function run_sesi_4(me, npc)
 end
 
 local function run_sesi_5(me, npc)
-    if gv("sesi_rightnow") ~= 5 then
+    if property("sesi_rightnow") ~= 5 then
         return false
     end
     local btn = me:dialog(npc, "창포가 필요하시다구요.. 제가 모아놓은 창포를 드리도록 하죠.", false, true)
@@ -86,7 +86,7 @@ local function run_sesi_5(me, npc)
 end
 
 local function run_sesi_7(me, npc)
-    if gv("sesi_rightnow") ~= 7 then
+    if property("sesi_rightnow") ~= 7 then
         return false
     end
     local sel, list_btn = me:list(npc, "무슨일로 오셨나요?", { "그물이 필요해요..", "식용호박이 필요해요..." }, false)
@@ -121,7 +121,7 @@ local function run_sesi_7(me, npc)
 end
 
 local function run_sesi_8(me, npc)
-    if gv("sesi_rightnow") ~= 8 then
+    if property("sesi_rightnow") ~= 8 then
         return false
     end
     local quest = me:quest(QUEST_BAEKRIHYANG)

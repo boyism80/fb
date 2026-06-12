@@ -15,7 +15,7 @@ function NPC_359(me, npc)
         return
     end
 
-    if gv("sesi_rightnow") ~= 3 then
+    if property("sesi_rightnow") ~= 3 then
         return
     end
 

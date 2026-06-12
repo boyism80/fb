@@ -78,7 +78,7 @@ function NPC_363(me, npc)
         return
     end
 
-    if gv("sesi_rightnow") ~= 8 then
+    if property("sesi_rightnow") ~= 8 then
         return
     end
 

@@ -2,6 +2,7 @@
 #include <fb/game/server.h>
 #include <fb/game/character.h>
 #include <fb/game/appearance.h>
+#include <async/propagation.h>
 
 using namespace fb::game;
 using table = fb::model::table;
@@ -578,9 +579,10 @@ int builtin::object::builtin_map(lua_State* L)
     }
     else
     {
-        auto weak    = obj->weak_from_this_as<fb::game::object>();
-        auto builder = server->threads.new_builder(weak);
-        builder.func = [=](auto& thread) -> async::task<void> {
+        auto weak       = obj->weak_from_this_as<fb::game::object>();
+        auto builder    = server->threads.new_builder(weak);
+        builder.context = fb::execution_context::token();
+        builder.func    = [=](auto& thread) -> async::task<void> {
             async::awaitable_then(static_func(weak, map, position), [=](auto result) {
                 auto success = result();
                 lua->ensure_resume(

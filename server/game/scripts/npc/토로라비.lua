@@ -1,6 +1,6 @@
 
 function NPC_576(me, npc)
-    if gv("goldarcon") ~= 36 then
+    if property("goldarcon") ~= 36 then
         me:dialog(npc, "지금은 때가 아닙니다.", false, false)
         return
     end

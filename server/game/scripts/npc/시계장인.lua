@@ -37,7 +37,7 @@ local function run_clock_purchase(me, npc)
 end
 
 local function run_battery_purchase(me, npc)
-    local stock = gv("clock_time_item")
+    local stock = property("clock_time_item")
     if stock == nil then
         stock = 0
     end
@@ -69,7 +69,7 @@ local function run_battery_purchase(me, npc)
         me:dialog(npc, '소지품이 가득 차서 건전지를 줄 수 없네.', false, false)
         return
     end
-    gv("clock_time_item", stock - 1)
+    property("clock_time_item", stock - 1)
     me:dialog(npc, '자네 생각보다 운이 좋은걸? 여기 건전기 가져가게나.', false, false)
 end
 

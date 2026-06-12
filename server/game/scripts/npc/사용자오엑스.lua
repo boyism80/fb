@@ -27,7 +27,7 @@ function NPC_309(me, npc)
     end
 
     if sel == 2 then
-        if gv("oxquiz_open") == 1 then
+        if property("oxquiz_open") == 1 then
             local map = name2map("OX퀴즈장")
             if map then
                 me:map(map, math.random(13, 15), math.random(2, 4))

@@ -1,6 +1,6 @@
 
 function NPC_355(me, npc)
-    if gv("sesi_rightnow") ~= 5 then
+    if property("sesi_rightnow") ~= 5 then
         local btn = me:dialog(npc, "안녕하세요? 저는 오단미입니다.", false, true)
         if btn == DIALOG_RESULT.QUIT then
             return

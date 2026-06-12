@@ -1,5 +1,5 @@
-#ifndef __FB_GAME_SERVICE_VARS_H__
-#define __FB_GAME_SERVICE_VARS_H__
+#ifndef __FB_GAME_SERVICE_PROPERTY_H__
+#define __FB_GAME_SERVICE_PROPERTY_H__
 
 #include <fb/synchronized.h>
 #include <json/json.h>
@@ -8,7 +8,7 @@
 
 namespace fb::game::service {
 
-class vars
+class property
 {
 private:
     using storage = std::unordered_map<std::string, Json::Value>;

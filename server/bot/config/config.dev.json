@@ -7,8 +7,8 @@
 			"fatal"
 		]
 	},
-	"ip": "192.168.0.180",
-	"port": 30000,
+	"ip": "127.0.0.1",
+	"port": 3001,
 	"io_size": 1,
 	"interval": 1000,
 	"spawn_per_interval": 1,

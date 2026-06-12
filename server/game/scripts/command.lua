@@ -826,7 +826,7 @@ command_funcs = {
             ['privilege'] = ROLE.ADMIN,
             ['usage'] = '- 현재 셔플 기준 천상미궁시작~천상미궁비밀방 루트를 메시지로 출력',
             ['command'] = function (me, args)
-                if gv("sky_maze_0") == nil then
+                if property("sky_maze_0") == nil then
                     sky_maze_shuffle()
                 end
                 
