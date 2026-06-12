@@ -3,6 +3,8 @@
 
 #include <boost/asio.hpp>
 #include <coroutine>
+#include <async/propagation.h>
+#include <fb/execution_context.h>
 #include <fb/thread.h>
 #include <fb/timer.h>
 #include <fb/thread_switchable.h>
@@ -71,6 +73,7 @@ public:
         builder.func = [](auto&) -> async::task<void> {
             co_return;
         };
+        builder.context = execution_context::token();
         co_return co_await builder.dispatch();
     }
 
@@ -87,17 +90,8 @@ public:
     const_iterator cend() const;
 
 private:
-    static thread::handle_error_type resolve_error(thread::handle_error_type error)
-    {
-        if (error)
-            return error;
-
-        return [](std::exception&) {
-        };
-    }
-
     template <typename PivotT>
-    fb::thread* resolve_thread(const std::weak_ptr<PivotT>& pivot) const
+    fb::thread* thread_for(const std::weak_ptr<PivotT>& pivot) const
     {
         static_assert(std::is_base_of_v<thread_switchable, PivotT>, "PivotT must be a thread_switchable");
 
@@ -128,20 +122,22 @@ public:
     thread::handle_error_type        on_error;
     std::function<void()>            on_complete;
     size_t                           retry_count = 0;
+    async::propagation::token        context;
 
     void enqueue()
     {
         if (this->func == nullptr)
             throw std::runtime_error("thread container builder: func is not set");
 
-        auto* target = this->_container.resolve_thread<PivotT>(this->_pivot);
+        auto* target = this->_container.thread_for<PivotT>(this->_pivot);
         auto  wrapped =
             this->make_wrapped_func(std::make_shared<thread::handle_func_type<T>>(std::move(this->func)), true);
 
         auto inner        = target->template new_builder<T>();
         inner.func        = std::move(wrapped);
         inner.retry_count = this->retry_count;
-        inner.on_error    = thread_container::resolve_error(std::move(this->on_error));
+        inner.context     = this->context;
+        inner.on_error    = thread::on_error(std::move(this->on_error));
         inner.on_complete = std::move(this->on_complete);
         inner.enqueue();
     }
@@ -172,6 +168,8 @@ public:
                 if (when_fn(*target_thread) == false)
                     throw std::runtime_error("condition not satisfied");
 
+                execution_context::pending(this->context);
+
                 if constexpr (std::is_same_v<T, void>)
                 {
                     co_await this->func(*target_thread);
@@ -200,6 +198,7 @@ public:
         auto inner        = target_thread->template new_builder<T>();
         inner.func        = std::move(wrapped);
         inner.retry_count = this->retry_count;
+        inner.context     = this->context;
         co_return co_await inner.dispatch();
     }
 
@@ -212,13 +211,13 @@ private:
     thread::handle_func_type<T> make_wrapped_func(std::shared_ptr<thread::handle_func_type<T>> fn_holder,
                                                   bool                                         for_enqueue) const
     {
-        auto when_fn = this->when ? this->when : std::function<bool(fb::thread&)>([](auto&) {
+        auto when_fn            = this->when ? this->when : std::function<bool(fb::thread&)>([](auto&) {
             return true;
         });
-        auto on_error_holder =
-            std::make_shared<thread::handle_error_type>(thread_container::resolve_error(this->on_error));
+        auto on_error_holder    = std::make_shared<thread::handle_error_type>(thread::on_error(this->on_error));
         auto on_complete_holder = std::make_shared<std::function<void()>>(this->on_complete);
         auto retry_count        = this->retry_count;
+        auto context            = this->context;
 
         return [container = &this->_container,
                 pivot     = this->_pivot,
@@ -227,6 +226,7 @@ private:
                 on_error_holder,
                 on_complete_holder,
                 retry_count,
+                context,
                 for_enqueue](fb::thread& thread) mutable -> async::task<T> {
             auto shared = pivot.lock();
             if (shared == nullptr)
@@ -244,6 +244,7 @@ private:
                 retry.on_error    = *on_error_holder;
                 retry.on_complete = on_complete_holder ? *on_complete_holder : std::function<void()>{};
                 retry.retry_count = retry_count;
+                retry.context     = context;
 
                 if (for_enqueue)
                 {

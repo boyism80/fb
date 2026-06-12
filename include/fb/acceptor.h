@@ -2,6 +2,8 @@
 #define __FB_ACCEPTOR_H__
 
 #include <ctime>
+#include <fb/context.h>
+#include <fb/execution_context.h>
 #include <fb/mutex.h>
 #include <fb/protocol/flatbuffer/protocol.h>
 #include <fb/protocol/transfer.h>
@@ -132,7 +134,10 @@ private:
                     auto fd       = socket.fd();
                     auto weak     = socket.template weak_from_this_as<fb::socket<T>>();
                     auto builder  = this->threads.new_builder(weak);
-                    builder.func  = [this, protocol, weak, fd, opcode](auto& thread) -> async::task<void> {
+                    auto frame    = execution_context::create();
+                    frame->slot(context::local::slot_id(), context{.transaction_id = mint_transaction_id()});
+                    builder.context = execution_context::token(std::move(frame));
+                    builder.func    = [this, protocol, weak, fd, opcode](auto& thread) -> async::task<void> {
                         try
                         {
                             if (weak.expired())

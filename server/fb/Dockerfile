@@ -53,9 +53,9 @@ RUN cmake --build . --config Release --parallel 32
 RUN make install
 
 WORKDIR /app
-RUN git clone https://github.com/microsoft/cpp-async
+RUN git clone https://github.com/boyism80/cpp-async
 WORKDIR /app/cpp-async
-RUN git checkout v1.1.0
+RUN git checkout v1.1.0-fb
 RUN cp -r /app/cpp-async/include/async /usr/local/include/async
 
 WORKDIR /app

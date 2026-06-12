@@ -8,8 +8,10 @@
 #include <queue>
 #include <stdexcept>
 #include <type_traits>
+#include <fb/execution_context.h>
 #include <fb/logger.h>
 #include <fb/timer.h>
+#include <async/propagation.h>
 #include <async/task.h>
 #include <async/task_completion_source.h>
 #include <async/awaitable_then.h>
@@ -73,17 +75,12 @@ private:
     void on_idle();
     void assert_exec() const;
 
-    static handle_error_type resolve_error(handle_error_type error)
-    {
-        if (error)
-            return error;
-
-        return [](std::exception&) {
-        };
-    }
-
     template <typename T, typename OnSuccess, typename OnFailure>
-    void run_retry_loop(handle_func_type<T>&& fn, size_t max_retries, OnSuccess&& on_success, OnFailure&& on_failure)
+    void run_retry_loop(handle_func_type<T>&&     fn,
+                        size_t                    max_retries,
+                        async::propagation::token context,
+                        OnSuccess&&               on_success,
+                        OnFailure&&               on_failure)
     {
         const auto     retry_limit = max_retries;
         auto           attempts    = std::make_shared<size_t>(0);
@@ -95,6 +92,7 @@ private:
                        this,
                        on_success = std::forward<OnSuccess>(on_success),
                        on_failure = std::forward<OnFailure>(on_failure)]() mutable {
+            execution_context::pending(context);
             async::awaitable_then((*fn_holder)(*this),
                                   [=,
                                    this,
@@ -171,7 +169,9 @@ private:
     }
 
     template <typename T>
-    async::task<T> dispatch_with_retry(handle_func_type<T>&& fn, size_t max_retries)
+    async::task<T> dispatch_with_retry(handle_func_type<T>&&     fn,
+                                       size_t                    max_retries,
+                                       async::propagation::token context = {})
     {
         auto promise = std::make_shared<async::task_completion_source<T>>();
 
@@ -180,6 +180,7 @@ private:
             this->run_retry_loop<T>(
                 std::move(fn),
                 max_retries,
+                std::move(context),
                 [promise]() {
                     promise->set_value();
                 },
@@ -192,6 +193,7 @@ private:
             this->run_retry_loop<T>(
                 std::move(fn),
                 max_retries,
+                std::move(context),
                 [promise](T&& value) {
                     promise->set_value(std::move(value));
                 },
@@ -204,16 +206,18 @@ private:
     }
 
     template <typename T>
-    void enqueue_with_retry(handle_func_type<T>&& fn,
-                            size_t                max_retries,
-                            handle_error_type     error,
-                            std::function<void()> on_complete)
+    void enqueue_with_retry(handle_func_type<T>&&     fn,
+                            size_t                    max_retries,
+                            handle_error_type         error,
+                            std::function<void()>     on_complete,
+                            async::propagation::token context = {})
     {
         if constexpr (std::is_same_v<T, void>)
         {
             this->run_retry_loop<T>(
                 std::move(fn),
                 max_retries,
+                std::move(context),
                 [on_complete = std::move(on_complete)]() {
                     if (on_complete)
                         on_complete();
@@ -225,6 +229,7 @@ private:
             this->run_retry_loop<T>(
                 std::move(fn),
                 max_retries,
+                std::move(context),
                 [on_complete = std::move(on_complete)](T&&) {
                     if (on_complete)
                         on_complete();
@@ -234,6 +239,15 @@ private:
     }
 
 public:
+    static handle_error_type on_error(handle_error_type handler)
+    {
+        if (handler)
+            return handler;
+
+        return [](std::exception&) {
+        };
+    }
+
     std::thread::id            id() const;
     uint8_t                    index() const;
     void                       join();
@@ -267,15 +281,24 @@ public:
         return builder<T>(*this);
     }
 
-    void enqueue(handle_func_type<void>&& fn, handle_error_type&& error, std::function<void()>&& callback);
+    void enqueue(handle_func_type<void>&&  fn,
+                 handle_error_type&&       error,
+                 std::function<void()>&&   callback,
+                 async::propagation::token context = {});
 
     template <typename ReturnType> void enqueue(handle_func_type<ReturnType>&&      fn,
                                                 handle_error_type&&                 error,
-                                                std::function<void(ReturnType&&)>&& callback)
+                                                std::function<void(ReturnType&&)>&& callback,
+                                                async::propagation::token           context = {})
     {
         auto  guard = this->_queue.enter_write();
         auto& queue = guard.value();
-        queue.push([fn = std::move(fn), error = std::move(error), callback = std::move(callback), this]() {
+        queue.push([fn       = std::move(fn),
+                    error    = std::move(error),
+                    callback = std::move(callback),
+                    context  = std::move(context),
+                    this]() {
+            execution_context::pending(context);
             async::awaitable_then(fn(*this),
                                   [fn = std::move(fn), error = std::move(error), callback = std::move(callback)](
                                       async::awaitable_result<ReturnType> result) {
@@ -305,7 +328,8 @@ public:
         });
     }
 
-    template <typename ReturnType> async::task<ReturnType> dispatch(handle_func_type<ReturnType>&& fn)
+    template <typename ReturnType> async::task<ReturnType> dispatch(handle_func_type<ReturnType>&& fn,
+                                                                    async::propagation::token      context = {})
     {
         auto promise = std::make_shared<async::task_completion_source<ReturnType>>();
         this->enqueue<ReturnType>(
@@ -315,11 +339,12 @@ public:
             },
             [promise](ReturnType&& value) {
                 promise->set_value(value);
-            });
+            },
+            std::move(context));
         return promise->task();
     }
 
-    [[nodiscard]] async::task<void> dispatch(handle_func_type<void>&& fn);
+    [[nodiscard]] async::task<void> dispatch(handle_func_type<void>&& fn, async::propagation::token context = {});
     [[nodiscard]] async::task<void> switching();
     size_t                          queue_size() const;
     std::string                     to_string() const;
@@ -334,33 +359,43 @@ private:
     thread& _thread;
 
 public:
-    handle_func_type<T>   func;
-    handle_error_type     on_error;
-    std::function<void()> on_complete;
-    size_t                retry_count = 0;
+    handle_func_type<T>       func;
+    handle_error_type         on_error;
+    std::function<void()>     on_complete;
+    size_t                    retry_count = 0;
+    async::propagation::token context;
 
     void enqueue()
     {
         if (this->func == nullptr)
             throw std::runtime_error("thread builder: func is not set");
 
-        auto error    = thread::resolve_error(std::move(this->on_error));
+        auto resolved = execution_context::token(this->context);
+        auto error    = thread::on_error(std::move(this->on_error));
         auto complete = this->on_complete ? std::move(this->on_complete) : std::function<void()>{};
 
         if (this->retry_count > 0)
         {
-            this->_thread.enqueue_with_retry<T>(std::move(this->func), this->retry_count, error, std::move(complete));
+            this->_thread.enqueue_with_retry<T>(std::move(this->func),
+                                                this->retry_count,
+                                                error,
+                                                std::move(complete),
+                                                std::move(resolved));
         }
         else if constexpr (std::is_same_v<T, void>)
         {
-            this->_thread.enqueue(std::move(this->func), std::move(error), std::move(complete));
+            this->_thread.enqueue(std::move(this->func), std::move(error), std::move(complete), std::move(resolved));
         }
         else
         {
-            this->_thread.enqueue<T>(std::move(this->func), std::move(error), [complete = std::move(complete)](T&&) {
-                if (complete)
-                    complete();
-            });
+            this->_thread.enqueue<T>(
+                std::move(this->func),
+                std::move(error),
+                [complete = std::move(complete)](T&&) {
+                    if (complete)
+                        complete();
+                },
+                std::move(resolved));
         }
     }
 
@@ -369,15 +404,17 @@ public:
         if (this->func == nullptr)
             throw std::runtime_error("thread builder: func is not set");
 
+        auto resolved = execution_context::token(this->context);
+
         if (this->retry_count > 0)
         {
-            return this->_thread.dispatch_with_retry<T>(std::move(this->func), this->retry_count);
+            return this->_thread.dispatch_with_retry<T>(std::move(this->func), this->retry_count, std::move(resolved));
         }
 
         if constexpr (std::is_same_v<T, void>)
-            return this->_thread.dispatch(std::move(this->func));
+            return this->_thread.dispatch(std::move(this->func), std::move(resolved));
         else
-            return this->_thread.dispatch<T>(std::move(this->func));
+            return this->_thread.dispatch<T>(std::move(this->func), std::move(resolved));
     }
 
     explicit builder(thread& owner) :
