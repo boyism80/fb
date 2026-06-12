@@ -81,9 +81,9 @@ XCOPY flatbuffers\build\Debug\flatbuffers.lib %DEST%\lib\flatbuffersd.* /K /D /H
 XCOPY flatbuffers\build\Release\flatbuffers.lib %DEST%\lib\flatbuffers.* /K /D /H /Y
 ROBOCOPY flatbuffers\include\ %DEST%\include\ /E
 
-git clone https://github.com/microsoft/cpp-async
+git clone https://github.com/boyism80/cpp-async
 PUSHD cpp-async
-git checkout v1.1.0
+git checkout v1.1.0-fb
 POPD
 ROBOCOPY cpp-async\include\async\ %DEST%\include\async\ *.h
 

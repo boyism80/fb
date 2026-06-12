@@ -87,12 +87,20 @@ namespace Log.Repository
                     timestampStr = DateTimeOffset.UtcNow.ToString("yyyy-MM-dd HH:mm:ss");
                 }
 
+                string? transactionId = null;
+                if (log.TryGetProperty("transaction_id", out var txn) &&
+                    txn.ValueKind == JsonValueKind.String)
+                {
+                    transactionId = txn.GetString();
+                }
+
                 return new LogEntry
                 {
                     Timestamp = timestampStr,
                     Event = log.TryGetProperty("event", out var evt) ? evt.GetString() ?? string.Empty : string.Empty,
                     ServerId = log.TryGetProperty("server_id", out var sid) ? sid.GetString() ?? string.Empty : string.Empty,
                     ServerName = log.TryGetProperty("server_name", out var sname) ? sname.GetString() ?? string.Empty : string.Empty,
+                    TransactionId = transactionId,
                     Data = log.TryGetProperty("data", out var data) ? data.GetRawText() : "{}"
                 };
             }
@@ -106,9 +114,9 @@ namespace Log.Repository
         private static string BuildBulkInsertQuery(List<LogEntry> entries)
         {
             var values = string.Join(", ", entries.Select(e =>
-                $"({e.Timestamp.Escape()}, {e.Event.Escape()}, {e.ServerId.Escape()}, {e.ServerName.Escape()}, {e.Data.Escape()})"));
+                $"({e.Timestamp.Escape()}, {e.Event.Escape()}, {e.ServerId.Escape()}, {e.ServerName.Escape()}, {e.TransactionId.Escape()}, {e.Data.Escape()})"));
 
-            return $"INSERT INTO log (`timestamp`, `event`, `server_id`, `server_name`, `data`) VALUES {values}";
+            return $"INSERT INTO log (`timestamp`, `event`, `server_id`, `server_name`, `transaction_id`, `data`) VALUES {values}";
         }
 
         private class LogEntry
@@ -117,6 +125,7 @@ namespace Log.Repository
             public string Event { get; set; } = string.Empty;
             public string ServerId { get; set; } = string.Empty;
             public string ServerName { get; set; } = string.Empty;
+            public string? TransactionId { get; set; }
             public string Data { get; set; } = "{}";
         }
     }

@@ -1,7 +1,9 @@
 #include <fb/async_executor.h>
+#include <fb/execution_context.h>
 #include <fb/lua.h>
 #include <fb/thread_container.h>
 #include <async/awaitable_then.h>
+#include <async/propagation.h>
 
 using namespace fb::lua;
 
@@ -392,9 +394,13 @@ void fb::lua::context::resume(int argc, int* n)
 
         if (parent != nullptr && lua_status(*parent) == LUA_YIELD)
         {
-            async::awaitable_then(parent->_initial_thread.switching(), [=](auto result) {
-                parent->resume(0);
-            });
+            auto context = fb::execution_context::token();
+            async::awaitable_then(parent->_initial_thread.switching(),
+                                  [parent, context](async::awaitable_result<void> result) {
+                                      result();
+                                      fb::execution_context::pending(context);
+                                      parent->resume(0);
+                                  });
         }
         promise->set_exception(std::make_exception_ptr(std::runtime_error(message)));
     }
@@ -403,15 +409,20 @@ void fb::lua::context::resume(int argc, int* n)
         auto parent = this->_parent;
         if (parent != nullptr)
         {
-            async::awaitable_then(parent->_initial_thread.switching(), [=, this](auto result) {
-                auto argc = this->argc();
-                if (n != nullptr)
-                    *n = argc;
+            auto context = fb::execution_context::token();
+            async::awaitable_then(parent->_initial_thread.switching(),
+                                  [this, parent, n, context](async::awaitable_result<void> result) {
+                                      result();
+                                      fb::execution_context::pending(context);
 
-                lua_xmove(*this, *parent, argc);
-                if (lua_status(*parent) == LUA_YIELD)
-                    parent->resume(argc);
-            });
+                                      auto argc = this->argc();
+                                      if (n != nullptr)
+                                          *n = argc;
+
+                                      lua_xmove(*this, *parent, argc);
+                                      if (lua_status(*parent) == LUA_YIELD)
+                                          parent->resume(argc);
+                                  });
         }
         if (this->_auto_release)
             root->release(*this);
@@ -457,19 +468,22 @@ int context::ensure_yield(fb::async_executor&                  executor,
     }
     else
     {
-        async::awaitable_then(executor.threads.switching(weak), [this, fn](auto result) {
-            try
-            {
-                result();
-                return fn(true);
-            }
-            catch (std::exception& e)
-            {
-                fb::logger::fatal("lua error message : {}", e.what());
-                this->release();
-                return 0;
-            }
-        });
+        auto context = fb::execution_context::token();
+        async::awaitable_then(executor.threads.switching(weak),
+                              [this, fn, context](async::awaitable_result<void> result) {
+                                  try
+                                  {
+                                      result();
+                                      fb::execution_context::pending(context);
+                                      return fn(true);
+                                  }
+                                  catch (std::exception& e)
+                                  {
+                                      fb::logger::fatal("lua error message : {}", e.what());
+                                      this->release();
+                                      return 0;
+                                  }
+                              });
         if (no_yield)
             return 0;
         else
@@ -501,24 +515,27 @@ int fb::lua::context::ensure_resume(fb::async_executor&                  executo
     }
     else
     {
-        async::awaitable_then(this->_initial_thread.switching(), [this, fn, &executor, weak](auto result) {
-            try
-            {
-                result();
+        auto context = fb::execution_context::token();
+        async::awaitable_then(this->_initial_thread.switching(),
+                              [this, fn, weak, context](async::awaitable_result<void> result) {
+                                  try
+                                  {
+                                      result();
 
-                auto shared = weak.lock();
-                if (shared == nullptr)
-                    throw std::runtime_error("object not alive");
+                                      auto shared = weak.lock();
+                                      if (shared == nullptr)
+                                          throw std::runtime_error("object not alive");
 
-                auto n = fn();
-                this->resume(n);
-            }
-            catch (std::exception& e)
-            {
-                fb::logger::fatal("lua error message : {}", e.what());
-                this->release();
-            }
-        });
+                                      fb::execution_context::pending(context);
+                                      auto n = fn();
+                                      this->resume(n);
+                                  }
+                                  catch (std::exception& e)
+                                  {
+                                      fb::logger::fatal("lua error message : {}", e.what());
+                                      this->release();
+                                  }
+                              });
         return 0;
     }
 }

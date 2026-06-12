@@ -1,3 +1,4 @@
+#include <fb/execution_context.h>
 #include <fb/thread.h>
 #include <sstream>
 
@@ -63,6 +64,7 @@ void fb::thread::on_idle()
 
         auto repeat = timer->repeat;
         auto fn     = fb::timer::handle_callback_type{timer->fn};
+        execution_context::pending(timer->context);
         async::awaitable_then(fn(now, this->_thread.get_id()), [timer, repeat, now](auto result) {
             if (repeat == fb::timer::repeat_type::repeat)
                 timer->begin = now;
@@ -104,7 +106,8 @@ std::shared_ptr<fb::timer> fb::thread::settimer(fb::timer::handle_callback_type&
                                              boost::stacktrace::to_string(boost::stacktrace::stacktrace())));
     }
 
-    auto ptr = new fb::timer(
+    auto snapshot = execution_context::token();
+    auto ptr      = new fb::timer(
         [this, fn](const fb::model::datetime&, std::thread::id) -> async::task<void> {
             auto index = this->_index;
             try
@@ -118,7 +121,8 @@ std::shared_ptr<fb::timer> fb::thread::settimer(fb::timer::handle_callback_type&
             co_return;
         },
         duration,
-        repeat);
+        repeat,
+        std::move(snapshot));
 
     auto shared_ptr = std::shared_ptr<fb::timer>(ptr);
     this->_timers.push_back(shared_ptr);
@@ -139,11 +143,19 @@ async::task<void> fb::thread::sleep(const fb::model::timespan& delay)
     return promise->task();
 }
 
-void fb::thread::enqueue(handle_func_type<void>&& fn, handle_error_type&& error, std::function<void()>&& callback)
+void fb::thread::enqueue(handle_func_type<void>&&  fn,
+                         handle_error_type&&       error,
+                         std::function<void()>&&   callback,
+                         async::propagation::token context)
 {
     auto  guard = this->_queue.enter_write();
     auto& queue = guard.value();
-    queue.push([fn = std::move(fn), error = std::move(error), callback = std::move(callback), this]() {
+    queue.push([fn       = std::move(fn),
+                error    = std::move(error),
+                callback = std::move(callback),
+                context  = std::move(context),
+                this]() {
+        execution_context::pending(context);
         async::awaitable_then(fn(*this),
                               [fn = std::move(fn), error = std::move(error), callback = std::move(callback)](
                                   async::awaitable_result<void> result) {
@@ -172,11 +184,12 @@ void fb::thread::enqueue(handle_func_type<void>&& fn, handle_error_type&& error,
     });
 }
 
-async::task<void> fb::thread::dispatch(handle_func_type<void>&& fn)
+async::task<void> fb::thread::dispatch(handle_func_type<void>&& fn, async::propagation::token context)
 {
     auto promise = std::make_shared<async::task_completion_source<void>>();
     if (this->id() == std::this_thread::get_id())
     {
+        execution_context::pending(context);
         async::awaitable_then(fn(*this), [promise](auto result) {
             try
             {
@@ -202,7 +215,8 @@ async::task<void> fb::thread::dispatch(handle_func_type<void>&& fn)
             },
             [promise]() {
                 promise->set_value();
-            });
+            },
+            std::move(context));
     }
 
     return promise->task();

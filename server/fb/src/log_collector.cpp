@@ -1,4 +1,5 @@
 #include <fb/log_collector.h>
+#include <fb/context.h>
 #include <fb/amqp.h>
 #include <fb/logger.h>
 #include <fb/model/datetime.h>
@@ -48,6 +49,9 @@ void log_collector::write(std::string_view event_type, const Json::Value& data)
         entry["server_id"]   = this->_server_id;
         entry["server_name"] = this->_server_name;
         entry["data"]        = data;
+
+        if (auto* ctx = context::local::try_get())
+            entry["transaction_id"] = ctx->transaction_id;
 
         std::lock_guard<std::mutex> lock(this->_buffer_mutex);
         this->_buffer.push_back(std::move(entry));

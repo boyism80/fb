@@ -1,4 +1,6 @@
 #include <fb/amqp/queue.h>
+#include <fb/context.h>
+#include <fb/execution_context.h>
 
 using namespace fb::amqp;
 
@@ -87,6 +89,9 @@ void queue::invoke_async(const std::vector<uint8_t>& message)
     if (target_thread == nullptr)
     {
         // Fallback to synchronous invoke if no thread available
+        auto frame = fb::execution_context::create();
+        frame->slot(fb::context::local::slot_id(), fb::context{.transaction_id = fb::mint_transaction_id()});
+        fb::execution_context::pending(fb::execution_context::token(std::move(frame)));
         async::awaitable_then(this->invoke(message), [](async::awaitable_result<void> result) {
             // work done
             try
@@ -107,7 +112,10 @@ void queue::invoke_async(const std::vector<uint8_t>& message)
     {
         // Enqueue to the least loaded thread
         auto builder = target_thread->new_builder<void>();
-        builder.func = [message, this](auto& thread) -> async::task<void> {
+        auto frame   = fb::execution_context::create();
+        frame->slot(fb::context::local::slot_id(), fb::context{.transaction_id = fb::mint_transaction_id()});
+        builder.context = fb::execution_context::token(std::move(frame));
+        builder.func    = [message, this](auto& thread) -> async::task<void> {
             co_await this->invoke(message);
         };
         builder.on_error = [](std::exception& e) {
