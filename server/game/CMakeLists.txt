@@ -24,7 +24,6 @@ ELSE()
 ENDIF(WIN32)
 
 set(CMAKE_CXX_STANDARD 20)
-add_definitions(-DREDISCPP_HEADER_ONLY)
 add_compile_definitions(LUA)
 add_compile_definitions(NOMINMAX)
 
@@ -58,7 +57,6 @@ IF(WIN32)
                                 lua$<$<CONFIG:Debug>:d>.lib
                                 zlib$<$<CONFIG:Debug>:d>.lib
                                 flatbuffers$<$<CONFIG:Debug>:d>.lib
-                                hiredis$<$<CONFIG:Debug>:d>.lib
                                 ws2_32)
 ELSE()
   set(CMAKE_CXX_FLAGS_RELEASE "-O3 -g -fsanitize=address -fstack-protector-strong -fno-omit-frame-pointer -DNDEBUG")
@@ -74,7 +72,6 @@ ELSE()
                                 crypto
                                 lua
                                 boost_program_options
-                                hiredis
                                 rabbitmq
                                 ncursesw
                                 ubsan)

@@ -11,7 +11,6 @@
 #include <fb/game/thread_params.h>
 #include <fb/game/service/map.h>
 #include <fb/hash.h>
-#include <fb/redis.h>
 #include <fb/game/group.h>
 #include <fb/game/clan.h>
 #include <fb/game/service/mail.h>

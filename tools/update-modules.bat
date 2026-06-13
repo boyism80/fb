@@ -1,14 +1,20 @@
-mkdir library
+@echo off
+setlocal
+
+REM Pinned refs — keep server/fb/Dockerfile ARG defaults in sync when bumping below.
+set JSONCPP_REF=1.9.6
+set RABBITMQ_REF=v0.14.0
+set ZLIB_REF=v1.2.9
+set CPP_ASYNC_REF=v1.1.1
+set BOOST_REF=boost-1.84.0
+
+mkdir library 2>nul
 PUSHD library
 
 SET DEST=..\..\dependency
-SET BOOST=boost_1_84_0
 
-
-
-git clone https://github.com/open-source-parsers/jsoncpp
+call :ensure_git_repo https://github.com/open-source-parsers/jsoncpp jsoncpp %JSONCPP_REF%
 PUSHD jsoncpp
-git checkout 1.9.6
 if not exist build mkdir build
 PUSHD build
 cmake .. -DCMAKE_POLICY_DEFAULT_CMP0091=NEW -DJSONCPP_STATIC_WINDOWS_RUNTIME=ON -DCMAKE_MSVC_RUNTIME_LIBRARY=MultiThreadedDebug
@@ -21,9 +27,8 @@ XCOPY jsoncpp\build\lib\Debug\jsoncpp_static.lib %DEST%\lib\jsoncppd.* /K /D /H 
 XCOPY jsoncpp\build\lib\Release\jsoncpp_static.lib %DEST%\lib\jsoncpp.* /K /D /H /Y
 ROBOCOPY jsoncpp\include\json\ %DEST%\include\json\
 
-git clone https://github.com/alanxz/rabbitmq-c
+call :ensure_git_repo https://github.com/alanxz/rabbitmq-c rabbitmq-c %RABBITMQ_REF%
 PUSHD rabbitmq-c
-git checkout v0.14.0
 if not exist build mkdir build
 PUSHD build
 cmake .. -DCMAKE_POLICY_DEFAULT_CMP0091=NEW -DCMAKE_MSVC_RUNTIME_LIBRARY=MultiThreadedDebug -DENABLE_SSL_SUPPORT=OFF
@@ -37,7 +42,7 @@ XCOPY rabbitmq-c\build\librabbitmq\Release\librabbitmq.4.lib %DEST%\lib\librabbi
 ROBOCOPY rabbitmq-c\include\rabbitmq-c\ %DEST%\include\rabbitmq-c\ *.h*
 ROBOCOPY rabbitmq-c\build\include\rabbitmq-c\ %DEST%\include\rabbitmq-c\ *.h*
 
-git clone --recursive https://github.com/boyism80/lua
+call :ensure_git_repo https://github.com/boyism80/lua lua "" --recursive
 PUSHD lua
 if not exist build mkdir build
 PUSHD build
@@ -51,9 +56,8 @@ XCOPY lua\build\Debug\lua.lib %DEST%\lib\luad.* /K /D /H /Y
 XCOPY lua\build\Release\lua.lib %DEST%\lib\lua.* /K /D /H /Y
 ROBOCOPY lua\upstream\ %DEST%\include\lua\ *.h*
 
-git clone https://github.com/intel/zlib
+call :ensure_git_repo https://github.com/intel/zlib zlib %ZLIB_REF%
 PUSHD zlib
-git checkout v1.2.9
 if not exist build mkdir build
 PUSHD build
 cmake .. -DCMAKE_POLICY_VERSION_MINIMUM=3.5 -DCMAKE_POLICY_DEFAULT_CMP0091=NEW -DCMAKE_MSVC_RUNTIME_LIBRARY=MultiThreadedDebug
@@ -67,7 +71,7 @@ XCOPY zlib\build\Release\zlibstatic.lib %DEST%\lib\zlib.* /K /D /H /Y
 XCOPY zlib\build\zconf.h %DEST%\include\zlib\zconf.* /K /D /H /Y
 ROBOCOPY zlib\ %DEST%\include\zlib\ *.h
 
-git clone https://github.com/boyism80/flatbuffers
+call :ensure_git_repo https://github.com/boyism80/flatbuffers flatbuffers
 PUSHD flatbuffers
 if not exist build mkdir build
 PUSHD build
@@ -81,30 +85,10 @@ XCOPY flatbuffers\build\Debug\flatbuffers.lib %DEST%\lib\flatbuffersd.* /K /D /H
 XCOPY flatbuffers\build\Release\flatbuffers.lib %DEST%\lib\flatbuffers.* /K /D /H /Y
 ROBOCOPY flatbuffers\include\ %DEST%\include\ /E
 
-git clone https://github.com/boyism80/cpp-async
-PUSHD cpp-async
-git checkout v1.1.1
-POPD
-ROBOCOPY cpp-async\include\async\ %DEST%\include\async\ *.h
+call :sync_cpp_async
 
-git clone https://github.com/redis/hiredis.git
-PUSHD hiredis
-git checkout v1.2.0
-if not exist build mkdir build
-PUSHD build
-cmake .. -DBUILD_SHARED_LIBS=OFF -DCMAKE_POLICY_DEFAULT_CMP0091=NEW -DCMAKE_MSVC_RUNTIME_LIBRARY=MultiThreadedDebug -DENABLE_SSL_SUPPORT=OFF -DCMAKE_POLICY_VERSION_MINIMUM=3.5
-cmake --build . --config Debug --parallel
-cmake .. -DBUILD_SHARED_LIBS=OFF -DCMAKE_POLICY_DEFAULT_CMP0091=NEW -DCMAKE_MSVC_RUNTIME_LIBRARY=MultiThreaded -DENABLE_SSL_SUPPORT=OFF -DCMAKE_POLICY_VERSION_MINIMUM=3.5
-cmake --build . --config Release --parallel
-POPD
-POPD
-XCOPY hiredis\build\Debug\hiredisd.lib %DEST%\lib\hiredisd.* /K /D /H /Y
-XCOPY hiredis\build\Release\hiredis.lib %DEST%\lib\hiredis.* /K /D /H /Y
-ROBOCOPY hiredis\ %DEST%\include\hiredis\ *.h*
-
-git clone https://github.com/boostorg/boost
+call :ensure_git_repo https://github.com/boostorg/boost boost %BOOST_REF%
 PUSHD boost
-git checkout boost-1.84.0
 git submodule update --init --recursive
 CALL bootstrap.bat
 CALL b2.exe --build-type=complete --layout=versioned runtime-link=static threading=multi variant=debug,release
@@ -113,4 +97,35 @@ ROBOCOPY boost\boost\ %DEST%\include\boost\ /E
 ROBOCOPY boost\stage\lib\ %DEST%\lib\boost\ /E *.lib
 
 POPD
+exit /b 0
+
+REM Clone when missing; fetch and checkout the pinned ref when the repo already exists.
+REM Usage: call :ensure_git_repo <url> <dir> [ref] [clone-options]
+:ensure_git_repo
+if not exist "%~2" (
+    if "%~4"=="" (
+        git clone "%~1" "%~2"
+    ) else (
+        git clone %~4 "%~1" "%~2"
+    )
+    if not "%~3"=="" (
+        pushd "%~2"
+        git checkout "%~3"
+        popd
+    )
+) else if not "%~3"=="" (
+    pushd "%~2"
+    git fetch origin --tags
+    git checkout "%~3"
+    popd
+)
+exit /b 0
+
+REM Header-only: always refresh so version bumps apply on cached CI runners.
+:sync_cpp_async
+if exist cpp-async rmdir /s /q cpp-async
+git clone --depth 1 --branch %CPP_ASYNC_REF% https://github.com/boyism80/cpp-async cpp-async
+if not exist "%DEST%\include\async" mkdir "%DEST%\include\async"
+ROBOCOPY cpp-async\include\async\ %DEST%\include\async\ *.h /MIR /NFL /NDL /NJH /NJS /NP
+if %ERRORLEVEL% GEQ 8 exit /b %ERRORLEVEL%
 exit /b 0

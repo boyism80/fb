@@ -16,7 +16,6 @@
 #include <fb/login/session.h>
 #include <fb/login/gateway.h>
 #include <fb/login/protocol.h>
-#include <fb/redis.h>
 #include <fb/log_collector.h>
 #include <memory>
 #include <string_view>
