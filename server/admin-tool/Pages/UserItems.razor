@@ -9,17 +9,27 @@
 @inject UserService UserService
 @attribute [AuthorizeRole(Role.Admin)]
 
-<PageTitle>User Items - Admin Tool</PageTitle>
+<PageTitle>유저 아이템 - FB ADMIN</PageTitle>
 
 <div>
-    <div class="page-header mb-4">
-        <h1>User Items</h1>
-        @if (userDetail != null)
-        {
-            <p class="text-muted">Items for: <strong>@userDetail.Name</strong> (ID: @userDetail.Id)</p>
-        }
+    <div class="page-breadcrumb">
+        <a href="/users">유저</a> &gt; @(userDetail?.Name ?? "—") (UID: @UserId)
     </div>
-
+    <div class="page-header">
+        <div class="dash-card-title-row" style="justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:1rem;">
+            <div>
+                <h1>유저 아이템 관리</h1>
+                <p class="dash-ops-desc" style="margin:0.25rem 0 0;">@(userDetail?.Name ?? "—") · UID @UserId</p>
+            </div>
+            @if (userDetail != null)
+            {
+                <div class="filter-toolbar-right" style="padding:0;">
+                    <a href="@GetGrantItemsUrl()" class="stitch-btn stitch-btn-primary">아이템 지급</a>
+                    <a href="/users" class="stitch-btn stitch-btn-neutral">유저 목록</a>
+                </div>
+            }
+        </div>
+    </div>
     @if (!string.IsNullOrEmpty(errorMessage))
     {
         <div class="alert alert-danger alert-dismissible fade show" role="alert">
@@ -27,34 +37,34 @@
             <button type="button" class="btn-close" @onclick="() => errorMessage = null"></button>
         </div>
     }
-
     @if (isLoading)
     {
-        <div class="text-center">
+        <div class="text-center py-4">
             <div class="spinner-border" role="status">
-                <span class="visually-hidden">Loading...</span>
+                <span class="visually-hidden">불러오는 중...</span>
             </div>
         </div>
     }
     else if (userDetail != null)
     {
-        <!-- Equipped Items -->
-        <div class="card mb-4">
-            <div class="card-header">
-                <h5 class="mb-0">Equipped Items</h5>
+        <div class="card-bg stitch-form-card mb-4">
+            <div class="stitch-form-card-header">
+                <h2 class="dash-card-title">장착 아이템</h2>
+                <span class="stitch-badge">@equippedItems.Count 부위</span>
             </div>
             <div class="card-body">
                 @if (equippedItems.Any())
                 {
-                    <div class="table-responsive">
-                        <table class="table table-striped table-hover">
+                    <div class="dash-table-wrap">
+                        <table class="dash-table">
                             <thead>
                                 <tr>
-                                    <th>Parts</th>
-                                    <th>Item Name</th>
-                                    <th>Count</th>
-                                    <th>Durability</th>
-                                    <th>Custom Name</th>
+                                    <th>부위</th>
+                                    <th>모델 ID</th>
+                                    <th>아이템명</th>
+                                    <th>수량</th>
+                                    <th>내구도</th>
+                                    <th>커스텀명</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -62,9 +72,10 @@
                                 {
                                     <tr>
                                         <td>@GetPartsName(item.Parts)</td>
+                                        <td class="table-meta">@item.Model</td>
                                         <td>@GetItemName(item.Model)</td>
                                         <td>@item.Count</td>
-                                        <td>@(item.Durability?.ToString() ?? "N/A")</td>
+                                        <td>@(item.Durability?.ToString() ?? "-")</td>
                                         <td>@(string.IsNullOrEmpty(item.CustomName) ? "-" : item.CustomName)</td>
                                     </tr>
                                 }
@@ -74,28 +85,28 @@
                 }
                 else
                 {
-                    <p class="text-muted mb-0">No equipped items.</p>
+                    <p class="text-muted mb-0">장착된 아이템이 없습니다.</p>
                 }
             </div>
         </div>
-
-        <!-- Inventory Items -->
-        <div class="card mb-4">
-            <div class="card-header">
-                <h5 class="mb-0">Inventory Items</h5>
+        <div class="card-bg stitch-form-card mb-4">
+            <div class="stitch-form-card-header">
+                <h2 class="dash-card-title">인벤토리</h2>
+                <span class="stitch-badge">@GetInventorySlotSummary()</span>
             </div>
             <div class="card-body">
                 @if (inventoryItems.Any())
                 {
-                    <div class="table-responsive">
-                        <table class="table table-striped table-hover">
+                    <div class="dash-table-wrap">
+                        <table class="dash-table">
                             <thead>
                                 <tr>
-                                    <th>Index</th>
-                                    <th>Item Name</th>
-                                    <th>Count</th>
-                                    <th>Durability</th>
-                                    <th>Custom Name</th>
+                                    <th>슬롯</th>
+                                    <th>모델 ID</th>
+                                    <th>아이템명</th>
+                                    <th>수량</th>
+                                    <th>내구도</th>
+                                    <th>커스텀명</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -103,9 +114,10 @@
                                 {
                                     <tr>
                                         <td>@item.Index</td>
+                                        <td class="table-meta">@item.Model</td>
                                         <td>@GetItemName(item.Model)</td>
                                         <td>@item.Count</td>
-                                        <td>@(item.Durability?.ToString() ?? "N/A")</td>
+                                        <td>@(item.Durability?.ToString() ?? "-")</td>
                                         <td>@(string.IsNullOrEmpty(item.CustomName) ? "-" : item.CustomName)</td>
                                     </tr>
                                 }
@@ -115,38 +127,41 @@
                 }
                 else
                 {
-                    <p class="text-muted mb-0">No inventory items.</p>
+                    <p class="text-muted mb-0">인벤토리 아이템이 없습니다.</p>
                 }
             </div>
         </div>
-
-        <!-- Stored Items -->
-        <div class="card mb-4">
-            <div class="card-header">
-                <h5 class="mb-0">Stored Items (Bank/Storage)</h5>
+        <div class="card-bg stitch-form-card mb-4">
+            <div class="stitch-form-card-header">
+                <h2 class="dash-card-title">창고</h2>
+                <span class="stitch-badge">@GetStorageSlotSummary()</span>
             </div>
             <div class="card-body">
                 @if (storedItems.Any())
                 {
-                    <div class="table-responsive">
-                        <table class="table table-striped table-hover">
+                    <div class="dash-table-wrap">
+                        <table class="dash-table">
                             <thead>
                                 <tr>
-                                    <th>Index</th>
-                                    <th>Item Name</th>
-                                    <th>Count</th>
-                                    <th>Durability</th>
-                                    <th>Custom Name</th>
+                                    <th>창고</th>
+                                    <th>슬롯</th>
+                                    <th>모델 ID</th>
+                                    <th>아이템명</th>
+                                    <th>수량</th>
+                                    <th>내구도</th>
+                                    <th>커스텀명</th>
                                 </tr>
                             </thead>
                             <tbody>
-                                @foreach (var item in storedItems.OrderBy(i => i.Index))
+                                @foreach (var item in storedItems.OrderBy(i => i.Stored).ThenBy(i => i.Index))
                                 {
                                     <tr>
+                                        <td>@item.Stored</td>
                                         <td>@item.Index</td>
+                                        <td class="table-meta">@item.Model</td>
                                         <td>@GetItemName(item.Model)</td>
                                         <td>@item.Count</td>
-                                        <td>@(item.Durability?.ToString() ?? "N/A")</td>
+                                        <td>@(item.Durability?.ToString() ?? "-")</td>
                                         <td>@(string.IsNullOrEmpty(item.CustomName) ? "-" : item.CustomName)</td>
                                     </tr>
                                 }
@@ -156,19 +171,15 @@
                 }
                 else
                 {
-                    <p class="text-muted mb-0">No stored items.</p>
+                    <p class="text-muted mb-0">창고 아이템이 없습니다.</p>
                 }
             </div>
-        </div>
-
-        <div class="mb-3">
-            <a href="/users" class="btn btn-secondary">Back to Users</a>
         </div>
     }
     else if (!isLoading)
     {
         <div class="alert alert-warning">
-            User not found.
+            유저를 찾을 수 없습니다.
         </div>
     }
 </div>
@@ -178,14 +189,12 @@
     private uint? selectedWorld { get; set; }
     [Parameter]
     public int UserId { get; set; }
-
     private UserDetail? userDetail;
     private List<Http.Model.Item> equippedItems = new();
     private List<Http.Model.Item> inventoryItems = new();
     private List<Http.Model.Item> storedItems = new();
     private bool isLoading = false;
     private string? errorMessage;
-
     protected override async Task OnInitializedAsync()
     {
         await LoadUserItems();
@@ -195,49 +204,36 @@
     {
         isLoading = true;
         errorMessage = null;
-
         try
         {
             if (!selectedWorld.HasValue)
             {
-                errorMessage = "World is not selected.";
+                errorMessage = "월드가 선택되지 않았습니다.";
                 isLoading = false;
                 return;
             }
-
-            // Get user detail
             var character = await DbContext.Character.Get(selectedWorld.Value, (uint)UserId);
             if (character == null)
             {
-                errorMessage = "User not found.";
+                errorMessage = "유저를 찾을 수 없습니다.";
                 isLoading = false;
                 return;
             }
-
             userDetail = await UserService.GetUserByName(selectedWorld.Value, character.Name);
             if (userDetail == null)
             {
-                errorMessage = "User not found.";
+                errorMessage = "유저를 찾을 수 없습니다.";
                 isLoading = false;
                 return;
             }
-
-            // Get all items for the user
             var allItems = (await DbContext.Item.Get(selectedWorld.Value, (uint)UserId)).ToList();
-
-            // Categorize items
-            // Equipped: stored == -1 and parts != 0
             equippedItems = allItems.Where(i => i.Stored == -1 && i.Parts != 0).ToList();
-
-            // Inventory: stored == -1 and parts == 0
             inventoryItems = allItems.Where(i => i.Stored == -1 && i.Parts == 0).ToList();
-
-            // Stored: stored != -1
             storedItems = allItems.Where(i => i.Stored != -1).ToList();
         }
         catch (Exception ex)
         {
-            errorMessage = $"Error loading user items: {ex.Message}";
+            errorMessage = $"아이템 목록을 불러오지 못했습니다: {ex.Message}";
         }
         finally
         {
@@ -245,21 +241,44 @@
         }
     }
 
+    private string GetGrantItemsUrl()
+    {
+        if (userDetail == null || string.IsNullOrWhiteSpace(userDetail.Name))
+            return "/items";
+        return $"/items?user={Uri.EscapeDataString(userDetail.Name)}";
+    }
+
+    private string GetInventorySlotSummary()
+    {
+        if (!inventoryItems.Any())
+            return "0 슬롯";
+        var maxIndex = inventoryItems.Max(i => i.Index);
+        return $"{inventoryItems.Count}개 · 최대 슬롯 {maxIndex}";
+    }
+
+    private string GetStorageSlotSummary()
+    {
+        if (!storedItems.Any())
+            return "0 슬롯";
+        var vaultCount = storedItems.Select(i => i.Stored).Distinct().Count();
+        return $"{storedItems.Count}개 · 창고 {vaultCount}개";
+    }
+
     private string GetPartsName(short parts)
     {
         var equipmentParts = (EquipmentParts)parts;
         return equipmentParts switch
         {
-            EquipmentParts.Weapon => "Weapon",
-            EquipmentParts.Armor => "Armor",
-            EquipmentParts.Shield => "Shield",
-            EquipmentParts.Helmet => "Helmet",
-            EquipmentParts.LeftHand => "Ring (Left)",
-            EquipmentParts.RightHand => "Ring (Right)",
-            EquipmentParts.LeftAux => "Auxiliary (Left)",
-            EquipmentParts.RightAux => "Auxiliary (Right)",
-            EquipmentParts.Unknown => "Unknown",
-            _ => $"Unknown ({parts})"
+            EquipmentParts.Weapon => "무기",
+            EquipmentParts.Armor => "갑옷",
+            EquipmentParts.Shield => "방패",
+            EquipmentParts.Helmet => "투구",
+            EquipmentParts.LeftHand => "반지 (좌)",
+            EquipmentParts.RightHand => "반지 (우)",
+            EquipmentParts.LeftAux => "보조 (좌)",
+            EquipmentParts.RightAux => "보조 (우)",
+            EquipmentParts.Unknown => "알 수 없음",
+            _ => $"알 수 없음 ({parts})"
         };
     }
 
@@ -268,12 +287,11 @@
         try
         {
             var item = Table.Item[modelId];
-            return item?.Name ?? $"Unknown (ID: {modelId})";
+            return item?.Name ?? $"알 수 없음 (ID: {modelId})";
         }
         catch
         {
-            return $"Unknown (ID: {modelId})";
+            return $"알 수 없음 (ID: {modelId})";
         }
     }
 }
-

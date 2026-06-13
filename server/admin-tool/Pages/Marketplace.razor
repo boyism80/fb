@@ -1,0 +1,244 @@
+@page "/marketplace"
+@using AdminTool.Services
+@using Fb.Model
+@using Fb.Model.EnumValue
+@inject MarketplaceAdminService MarketplaceAdminService
+@attribute [AuthorizeRole(Role.Admin)]
+
+<PageTitle>거래소 - FB ADMIN</PageTitle>
+
+<div>
+    <div class="page-header">
+        <h1>거래소 관리</h1>
+        <p>등록된 거래소 목록 조회</p>
+    </div>
+
+    @if (!string.IsNullOrEmpty(errorMessage))
+    {
+        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+            @errorMessage
+            <button type="button" class="btn-close" @onclick="() => errorMessage = null"></button>
+        </div>
+    }
+
+    @if (stats != null)
+    {
+        <div class="dash-kpi-row">
+            <div class="dash-kpi-tile">
+                <div class="dash-kpi-label">등록 물품</div>
+                <div class="dash-kpi-value">@stats.ActiveCount.ToString("N0")</div>
+            </div>
+            <div class="dash-kpi-tile">
+                <div class="dash-kpi-label">오늘 거래</div>
+                <div class="dash-kpi-value">@stats.TodayCompletedCount.ToString("N0")</div>
+            </div>
+            <div class="dash-kpi-tile">
+                <div class="dash-kpi-label">평균 가격</div>
+                <div class="dash-kpi-value">@stats.AveragePrice.ToString("N0") G</div>
+            </div>
+        </div>
+    }
+
+    <div class="card-bg filter-toolbar">
+        <div class="filter-toolbar-left">
+            <div class="stitch-search-wrap">
+                <span class="material-symbols-outlined" aria-hidden="true">search</span>
+                <input type="text" class="stitch-search" placeholder="판매자 UID"
+                       @bind="sellerSearch" @bind:event="oninput" @onkeypress="HandleSearchKeyPress" />
+            </div>
+            <select class="stitch-select" @bind="statusFilter">
+                <option value="">상태: 전체</option>
+                <option value="0">활성</option>
+                <option value="1">판매완료</option>
+                <option value="2">취소</option>
+                <option value="3">만료</option>
+            </select>
+            <select class="stitch-select" @bind="sortOrder">
+                <option value="newest">최신순</option>
+                <option value="oldest">오래된순</option>
+                <option value="price_desc">가격 높은순</option>
+                <option value="price_asc">가격 낮은순</option>
+            </select>
+        </div>
+        <div class="filter-toolbar-right">
+            <button class="stitch-btn stitch-btn-neutral" type="button" @onclick="ClearSearch" disabled="@isLoading">초기화</button>
+            <button class="stitch-btn stitch-btn-primary" type="button" @onclick="SearchListings" disabled="@isLoading">검색</button>
+        </div>
+    </div>
+
+    @if (isLoading)
+    {
+        <div class="text-center py-5">
+            <div class="spinner-border" role="status"></div>
+            <p class="dash-empty mt-3">목록을 불러오는 중...</p>
+        </div>
+    }
+    else if (listResult?.Listings != null && listResult.Listings.Any())
+    {
+        <div class="card-bg data-table-card">
+            <div class="dash-table-wrap">
+                <table class="dash-table">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>월드</th>
+                            <th>판매자</th>
+                            <th>아이템</th>
+                            <th style="text-align:right;">수량</th>
+                            <th style="text-align:right;">단가</th>
+                            <th>상태</th>
+                            <th>만료</th>
+                            <th>등록일</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var listing in listResult.Listings)
+                        {
+                            <tr>
+                                <td class="table-meta">@listing.Id</td>
+                                <td>World @listing.World</td>
+                                <td class="table-meta">@listing.SellerId</td>
+                                <td>@GetItemName(listing.ItemModel)</td>
+                                <td style="text-align:right;">@listing.RemainingCount</td>
+                                <td style="text-align:right;">@listing.Price.ToString("N0")</td>
+                                <td><span class="dash-status-chip">@FormatStatus(listing.Status)</span></td>
+                                <td class="meta">@listing.ExpireDate.ToString("yyyy-MM-dd HH:mm")</td>
+                                <td class="meta">@listing.CreatedDate.ToString("yyyy-MM-dd HH:mm")</td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        @if (listResult.TotalPages > 1)
+        {
+            <div class="page-footer-bar">
+                <div>@listResult.TotalCount 건 · @currentPage / @listResult.TotalPages 페이지</div>
+                <nav>
+                    <ul class="stitch-pagination">
+                        <li>
+                            <a class="stitch-page-btn @(currentPage <= 1 ? "disabled" : "")" href="#"
+                               @onclick="() => ChangePage(currentPage - 1)" @onclick:preventDefault>
+                                <span class="material-symbols-outlined" style="font-size:1.125rem;">chevron_left</span>
+                            </a>
+                        </li>
+                        <li>
+                            <span class="stitch-page-btn active">@currentPage / @listResult.TotalPages</span>
+                        </li>
+                        <li>
+                            <a class="stitch-page-btn @(currentPage >= listResult.TotalPages ? "disabled" : "")" href="#"
+                               @onclick="() => ChangePage(currentPage + 1)" @onclick:preventDefault>
+                                <span class="material-symbols-outlined" style="font-size:1.125rem;">chevron_right</span>
+                            </a>
+                        </li>
+                    </ul>
+                </nav>
+            </div>
+        }
+    }
+    else
+    {
+        <div class="card-bg stitch-form-card placeholder-card">
+            <span class="material-symbols-outlined">storefront</span>
+            <p>@(string.IsNullOrWhiteSpace(sellerSearch) ? "등록된 거래소 목록이 없습니다." : "검색 결과가 없습니다.")</p>
+        </div>
+    }
+</div>
+
+@code {
+    [CascadingParameter(Name = "SelectedWorld")]
+    private uint? selectedWorld { get; set; }
+
+    private MarketplaceListResult? listResult;
+    private MarketplaceStats? stats;
+    private string sellerSearch = string.Empty;
+    private string statusFilter = string.Empty;
+    private string sortOrder = "newest";
+    private int currentPage = 1;
+    private const int pageSize = 20;
+    private bool isLoading;
+    private string? errorMessage;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadListings();
+    }
+
+    protected override async Task OnParametersSetAsync()
+    {
+        await LoadListings();
+    }
+
+    private async Task LoadListings()
+    {
+        isLoading = true;
+        errorMessage = null;
+        try
+        {
+            byte? status = string.IsNullOrEmpty(statusFilter) ? null : byte.Parse(statusFilter);
+            stats = await MarketplaceAdminService.GetStatsAsync(selectedWorld);
+            listResult = await MarketplaceAdminService.GetListingsAsync(
+                selectedWorld,
+                currentPage,
+                pageSize,
+                string.IsNullOrWhiteSpace(sellerSearch) ? null : sellerSearch.Trim(),
+                status,
+                sortOrder);
+        }
+        catch (Exception ex)
+        {
+            errorMessage = $"거래소 목록을 불러오지 못했습니다: {ex.Message}";
+            listResult = null;
+        }
+        finally
+        {
+            isLoading = false;
+        }
+    }
+
+    private async Task SearchListings()
+    {
+        currentPage = 1;
+        await LoadListings();
+    }
+
+    private async Task ClearSearch()
+    {
+        sellerSearch = string.Empty;
+        statusFilter = string.Empty;
+        sortOrder = "newest";
+        currentPage = 1;
+        await LoadListings();
+    }
+
+    private async Task ChangePage(int page)
+    {
+        if (page < 1 || listResult == null || page > listResult.TotalPages)
+            return;
+        currentPage = page;
+        await LoadListings();
+    }
+
+    private Task HandleSearchKeyPress(KeyboardEventArgs e)
+    {
+        if (e.Key == "Enter")
+            return SearchListings();
+        return Task.CompletedTask;
+    }
+
+    private static string GetItemName(uint itemModel)
+    {
+        var item = Table.Item?.GetValueOrDefault(itemModel);
+        return item != null ? $"{item.Name} ({itemModel})" : itemModel.ToString();
+    }
+
+    private static string FormatStatus(byte status) => status switch
+    {
+        0 => "활성",
+        1 => "판매완료",
+        2 => "취소",
+        3 => "만료",
+        _ => status.ToString()
+    };
+}

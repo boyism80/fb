@@ -1,61 +1,48 @@
 .main-nav {
     display: flex;
     align-items: center;
-    gap: 0.5rem;
-    height: 100%;
-    justify-content: flex-start;
+    gap: 0;
     flex-wrap: wrap;
+    padding: 0;
 }
 
 .main-nav ::deep .nav-link {
-    color: var(--text-primary) !important;
+    color: var(--text-secondary) !important;
     text-decoration: none !important;
-    padding: 0.625rem 1.25rem !important;
-    border-radius: 6px !important;
+    padding: 0 0 !important;
+    margin-right: 2rem !important;
     font-weight: 500 !important;
-    font-size: 0.95rem !important;
-    transition: all 0.2s ease !important;
-    position: relative !important;
-    white-space: nowrap !important;
+    font-size: 0.875rem !important;
     background-color: transparent !important;
     border: none !important;
+    border-bottom: 2px solid transparent !important;
+    border-radius: 0 !important;
+    white-space: nowrap !important;
+    height: 48px;
+    display: inline-flex !important;
+    align-items: center !important;
+    padding-top: 2px !important;
+    box-sizing: border-box;
 }
 
 .main-nav ::deep .nav-link:hover {
     color: var(--text-primary) !important;
-    background-color: var(--bg-hover) !important;
+    background-color: transparent !important;
 }
 
 .main-nav ::deep .nav-link.active {
-    color: #1a1a1a !important;
-    background-color: var(--accent-color) !important;
-    font-weight: 600 !important;
-}
-
-.main-nav ::deep .nav-link.active::after {
-    display: none !important;
-}
-
-@media (max-width: 1024px) {
-    .main-nav {
-        gap: 0.125rem;
-    }
-
-    .main-nav ::deep .nav-link {
-        padding: 0.625rem 1rem !important;
-        font-size: 0.875rem !important;
-    }
+    color: var(--accent-color) !important;
+    background-color: transparent !important;
+    border-bottom-color: var(--accent-color) !important;
+    font-weight: 500 !important;
 }
 
 @media (max-width: 768px) {
     .main-nav {
-        justify-content: flex-start;
-        gap: 0.25rem;
         overflow-x: auto;
+        flex-wrap: nowrap;
         -webkit-overflow-scrolling: touch;
         scrollbar-width: none;
-        -ms-overflow-style: none;
-        padding: 0.5rem 0;
     }
 
     .main-nav::-webkit-scrollbar {
@@ -63,7 +50,7 @@
     }
 
     .main-nav ::deep .nav-link {
-        padding: 0.5rem 0.875rem !important;
-        font-size: 0.875rem !important;
+        padding: 0.5rem 0.75rem !important;
+        font-size: 0.9375rem !important;
     }
 }

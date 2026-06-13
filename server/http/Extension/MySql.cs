@@ -85,7 +85,19 @@ namespace Http.Extension
 
         public object Parse(Type destinationType, object value)
         {
-            return JsonConvert.DeserializeObject(value as string, destinationType);
+            if (value == null || value is DBNull)
+            {
+                return Activator.CreateInstance(destinationType)!;
+            }
+
+            var str = value as string ?? value.ToString();
+            if (string.IsNullOrWhiteSpace(str) || str == "{}")
+            {
+                return Activator.CreateInstance(destinationType)!;
+            }
+
+            return JsonConvert.DeserializeObject(str, destinationType)
+                ?? Activator.CreateInstance(destinationType)!;
         }
     }
 }

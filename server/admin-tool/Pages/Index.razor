@@ -1,94 +1,464 @@
 @page "/"
 @attribute [Authorize]
+@using Fb.Model
+@using Http.Model
+@using Http.Service
+@using AdminTool.Services
+@inject ServerStateService ServerStateService
+@inject MaintenanceService MaintenanceService
+@inject BulletinService BulletinService
+@inject UserService UserService
+@inject NavigationManager Navigation
+@using Microsoft.AspNetCore.WebUtilities
 
-<PageTitle>Admin Tool - Dashboard</PageTitle>
+<PageTitle>FB ADMIN - 홈</PageTitle>
 
-<div>
-    <div class="page-header mb-4">
-        <h1>Admin Tool</h1>
-        <p class="text-muted">Welcome to the administration dashboard</p>
-    </div>
+<div class="dashboard-page">
+    <section class="dash-hero">
+        <div class="dash-hero-bg" aria-hidden="true"></div>
+        <div class="dash-hero-content">
+            <h1 class="dash-hero-title">FB ADMIN</h1>
+            <p class="dash-hero-subtitle">게임 서버 관리 콘솔</p>
+            <div class="dash-hero-search">
+                <div class="input-bg">
+                    <span class="material-symbols-outlined" aria-hidden="true">search</span>
+                    <input type="text" placeholder="유저, 캐릭터, 아이템 검색..."
+                           @bind="searchTerm" @bind:event="oninput"
+                           @onkeypress="HandleSearchKeyPress" />
+                    <kbd>/</kbd>
+                </div>
+            </div>
+            <div class="dash-hero-stats">
+                <span>접속 중: @FormatCount(onlineCount)</span>
+                <span class="sep">|</span>
+                <span>전체 계정: @FormatCount(totalAccounts)</span>
+                <span class="sep">|</span>
+                <span>가동 서버: @runningServerCount/@expectedServerCount</span>
+                <span class="sep">|</span>
+                <span>점검: @maintenanceStatus</span>
+            </div>
+        </div>
+    </section>
 
-    <div class="dashboard-grid">
-        <div class="dashboard-card">
-            <div class="dashboard-card-icon">
-                <span class="oi oi-people"></span>
+    <div class="dash-body">
+        <div class="dash-row-12">
+            <div class="card-bg dash-card">
+                <div class="dash-card-header">
+                    <div class="dash-card-title-row">
+                        <span class="material-symbols-outlined" aria-hidden="true">dns</span>
+                        <h2 class="dash-card-title">서버 상태</h2>
+                        @if (runningServerCount > 0)
+                        {
+                            <span class="dash-badge">@runningServerCount/@expectedServerCount 가동 중</span>
+                        }
+                    </div>
+                    <a href="/servers" class="action-link">전체 보기 →</a>
+                </div>
+                <ServerStatusGroups Servers="servers"
+                                    ShowKpi="false"
+                                    AllowExpand="false"
+                                    Compact="true"
+                                    EmptyMessage="실행 중인 서버가 없습니다." />
             </div>
-            <div class="dashboard-card-content">
-                <h3 class="dashboard-card-title">Users</h3>
-                <p class="dashboard-card-description">Manage user accounts</p>
-                <a href="/users" class="btn btn-primary mt-3">Go to Users</a>
-            </div>
-        </div>
-        <div class="dashboard-card">
-            <div class="dashboard-card-icon">
-                <span class="oi oi-monitor"></span>
-            </div>
-            <div class="dashboard-card-content">
-                <h3 class="dashboard-card-title">Servers</h3>
-                <p class="dashboard-card-description">Monitor server status</p>
-                <a href="/servers" class="btn btn-primary mt-3">Go to Servers</a>
-            </div>
-        </div>
-        <div class="dashboard-card">
-            <div class="dashboard-card-icon">
-                <span class="oi oi-box"></span>
-            </div>
-            <div class="dashboard-card-content">
-                <h3 class="dashboard-card-title">Items</h3>
-                <p class="dashboard-card-description">Manage game items</p>
-                <a href="/items" class="btn btn-primary mt-3">Go to Items</a>
-            </div>
-        </div>
-        <div class="dashboard-card">
-            <div class="dashboard-card-icon">
-                <span class="oi oi-envelope-closed"></span>
-            </div>
-            <div class="dashboard-card-content">
-                <h3 class="dashboard-card-title">System Mail</h3>
-                <p class="dashboard-card-description">Send system messages</p>
-                <a href="/systemmail" class="btn btn-primary mt-3">Go to System Mail</a>
-            </div>
-        </div>
-        <div class="dashboard-card">
-            <div class="dashboard-card-icon">
-                <span class="oi oi-document"></span>
-            </div>
-            <div class="dashboard-card-content">
-                <h3 class="dashboard-card-title">Bulletin</h3>
-                <p class="dashboard-card-description">Manage announcements</p>
-                <a href="/bulletin" class="btn btn-primary mt-3">Go to Bulletin</a>
+
+            <div class="card-bg dash-card">
+                <div class="dash-card-title-row" style="margin-bottom:1rem;">
+                    <span class="material-symbols-outlined" aria-hidden="true">bolt</span>
+                    <h2 class="dash-card-title">빠른 작업</h2>
+                </div>
+                <div class="dash-btn-grid" style="margin-top:1rem;margin-bottom:1rem;">
+                    <a href="/broadcast" class="dash-quick-btn">방송 보내기</a>
+                    <a href="/systemmail" class="dash-quick-btn">시스템 메일</a>
+                    <a href="/items" class="dash-quick-btn">아이템 지급</a>
+                    <a href="/maintenance" class="dash-quick-btn">점검 예약</a>
+                </div>
+                <div class="dash-divider">
+                    <div class="dash-card-title-row" style="margin-bottom:1rem;">
+                        <span class="material-symbols-outlined" aria-hidden="true">grid_view</span>
+                        <h2 class="dash-card-title">관리 바로가기</h2>
+                    </div>
+                    <div class="dash-btn-grid">
+                        <a href="/users" class="dash-quick-btn dash-quick-btn-outline">유저 검색</a>
+                        <a href="/bulletin" class="dash-quick-btn dash-quick-btn-outline">게시글 작성</a>
+                        <a href="/cache" class="dash-quick-btn dash-quick-btn-outline">캐시 초기화</a>
+                        <a href="/servers" class="dash-quick-btn dash-quick-btn-outline">서버 제어</a>
+                    </div>
+                </div>
             </div>
         </div>
-        <div class="dashboard-card">
-            <div class="dashboard-card-icon">
-                <span class="oi oi-megaphone"></span>
+
+        <div class="dash-row-3">
+            <div class="card-bg dash-card">
+                <div class="dash-card-header">
+                    <div class="dash-card-title-row">
+                        <span class="material-symbols-outlined" aria-hidden="true">group</span>
+                        <h2 class="dash-card-title">접속 중인 유저</h2>
+                    </div>
+                </div>
+                @if (onlineUsers.Any())
+                {
+                    @for (var i = 0; i < onlineUsers.Count; i++)
+                    {
+                        var user = onlineUsers[i];
+                        <div class="dash-list-item">
+                            <div style="display:flex;align-items:center;flex:1;min-width:0;">
+                                <span class="dash-list-num">@(i + 1).</span>
+                                <div class="dash-list-main">
+                                    <div class="dash-list-name">@user.Name</div>
+                                    <div class="dash-list-sub">Lv.@user.Level</div>
+                                </div>
+                            </div>
+                            <span class="status-dot-green"></span>
+                        </div>
+                    }
+                }
+                else
+                {
+                    <p class="dash-empty">접속 중인 유저가 없습니다.</p>
+                }
             </div>
-            <div class="dashboard-card-content">
-                <h3 class="dashboard-card-title">Broadcast</h3>
-                <p class="dashboard-card-description">Broadcast messages</p>
-                <a href="/broadcast" class="btn btn-primary mt-3">Go to Broadcast</a>
+
+            <div class="card-bg dash-card">
+                <div class="dash-card-title-row" style="margin-bottom:1rem;">
+                    <span class="material-symbols-outlined" aria-hidden="true">grid_view</span>
+                    <h2 class="dash-card-title">빠른 이동</h2>
+                </div>
+                <div class="dash-icon-grid">
+                    <a href="/users" class="dash-icon-link">
+                        <span class="material-symbols-outlined">group</span>
+                        <span class="dash-icon-label">유저</span>
+                    </a>
+                    <a href="/servers" class="dash-icon-link">
+                        <span class="material-symbols-outlined">dns</span>
+                        <span class="dash-icon-label">서버</span>
+                    </a>
+                    <a href="/items" class="dash-icon-link">
+                        <span class="material-symbols-outlined">category</span>
+                        <span class="dash-icon-label">아이템</span>
+                    </a>
+                    <a href="/marketplace" class="dash-icon-link">
+                        <span class="material-symbols-outlined">storefront</span>
+                        <span class="dash-icon-label">거래소</span>
+                    </a>
+                    <a href="/systemmail" class="dash-icon-link">
+                        <span class="material-symbols-outlined">mark_email_unread</span>
+                        <span class="dash-icon-label">메일</span>
+                    </a>
+                    <a href="/bulletin" class="dash-icon-link">
+                        <span class="material-symbols-outlined">forum</span>
+                        <span class="dash-icon-label">게시판</span>
+                    </a>
+                    <a href="/broadcast" class="dash-icon-link">
+                        <span class="material-symbols-outlined">campaign</span>
+                        <span class="dash-icon-label">방송</span>
+                    </a>
+                    <a href="/cache" class="dash-icon-link">
+                        <span class="material-symbols-outlined">payments</span>
+                        <span class="dash-icon-label">캐시</span>
+                    </a>
+                    <a href="/maintenance" class="dash-icon-link">
+                        <span class="material-symbols-outlined">build</span>
+                        <span class="dash-icon-label">점검</span>
+                    </a>
+                </div>
+            </div>
+
+            <div class="card-bg dash-card">
+                <div class="dash-card-header">
+                    <div class="dash-card-title-row">
+                        <span class="material-symbols-outlined" aria-hidden="true">notifications</span>
+                        <h2 class="dash-card-title">시스템 공지</h2>
+                    </div>
+                    <a href="/bulletin" class="action-link">더보기</a>
+                </div>
+                @if (notices != null && notices.Any())
+                {
+                    @foreach (var notice in notices)
+                    {
+                        <a href="/bulletin" class="dash-notice-item">
+                            <p class="dash-notice-title">
+                                <span style="color:var(--text-secondary);">[공지]</span> @notice.Title
+                            </p>
+                            <p class="dash-notice-date">@notice.CreatedDate.ToString("yyyy-MM-dd")</p>
+                        </a>
+                    }
+                }
+                else
+                {
+                    <p class="dash-empty">등록된 공지가 없습니다.</p>
+                }
             </div>
         </div>
-        <div class="dashboard-card">
-            <div class="dashboard-card-icon">
-                <span class="oi oi-wrench"></span>
+
+        <div class="card-bg dash-card">
+            <div class="dash-card-title-row" style="margin-bottom:1rem;">
+                <span class="material-symbols-outlined" aria-hidden="true">analytics</span>
+                <h2 class="dash-card-title">유저 통계</h2>
             </div>
-            <div class="dashboard-card-content">
-                <h3 class="dashboard-card-title">Maintenance</h3>
-                <p class="dashboard-card-description">Schedule and manage server maintenance</p>
-                <a href="/maintenance" class="btn btn-primary mt-3">Go to Maintenance</a>
+            <div class="dash-stat-tiles">
+                <div class="dash-stat-tile">
+                    <span class="material-symbols-outlined dash-stat-tile-icon">group</span>
+                    <span class="dash-stat-tile-label">전체 계정</span>
+                    <span class="dash-stat-tile-value">@FormatCount(totalAccounts)</span>
+                </div>
+                <div class="dash-stat-tile">
+                    <span class="material-symbols-outlined dash-stat-tile-icon">public</span>
+                    <span class="dash-stat-tile-label">접속 중</span>
+                    <span class="dash-stat-tile-value accent">@FormatCount(onlineCount)</span>
+                </div>
+                <div class="dash-stat-tile">
+                    <span class="material-symbols-outlined dash-stat-tile-icon">block</span>
+                    <span class="dash-stat-tile-label">차단 계정</span>
+                    <span class="dash-stat-tile-value error">@FormatCount(bannedCount)</span>
+                </div>
+                <div class="dash-stat-tile">
+                    <span class="material-symbols-outlined dash-stat-tile-icon">admin_panel_settings</span>
+                    <span class="dash-stat-tile-label">GM/관리자</span>
+                    <span class="dash-stat-tile-value">@FormatCount(adminCount)</span>
+                </div>
             </div>
         </div>
-        <div class="dashboard-card">
-            <div class="dashboard-card-icon">
-                <span class="oi oi-dashboard"></span>
+
+        <div class="card-bg dash-card">
+            <div class="dash-card-title-row" style="margin-bottom:1rem;">
+                <span class="material-symbols-outlined" aria-hidden="true">calendar_today</span>
+                <h2 class="dash-card-title">점검 일정</h2>
             </div>
-            <div class="dashboard-card-content">
-                <h3 class="dashboard-card-title">Cache</h3>
-                <p class="dashboard-card-description">Manage cache entries</p>
-                <a href="/cache" class="btn btn-primary mt-3">Go to Cache</a>
+            @if (schedules != null && schedules.Any())
+            {
+                <div class="dash-table-wrap">
+                    <table class="dash-table">
+                        <thead>
+                            <tr>
+                                <th>제목</th>
+                                <th>월드</th>
+                                <th>시작</th>
+                                <th>종료</th>
+                                <th>반복</th>
+                                <th>상태</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var schedule in schedules.Take(5))
+                            {
+                                <tr>
+                                    <td>@schedule.Title</td>
+                                    <td>@(schedule.World == 0 ? "전체" : $"World {schedule.World}")</td>
+                                    <td class="meta">@schedule.StartTime.ToString("yyyy-MM-dd HH:mm")</td>
+                                    <td class="meta">@schedule.EndTime.ToString("yyyy-MM-dd HH:mm")</td>
+                                    <td>@FormatRepeat(schedule.RepeatType)</td>
+                                    <td><span class="dash-status-chip">@GetScheduleStatus(schedule)</span></td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            }
+            else
+            {
+                <p class="dash-empty">등록된 점검 일정이 없습니다.</p>
+            }
+        </div>
+
+        <div class="dash-row-2">
+            <div class="card-bg dash-card">
+                <div class="dash-card-header">
+                    <div class="dash-card-title-row">
+                        <span class="material-symbols-outlined" aria-hidden="true">person_add</span>
+                        <h2 class="dash-card-title">최근 가입 유저</h2>
+                    </div>
+                    <a href="/users" class="action-link">전체보기</a>
+                </div>
+                @if (recentSignups != null && recentSignups.Any())
+                {
+                    <div class="dash-table-wrap">
+                        <table class="dash-table">
+                            <thead>
+                                <tr>
+                                    <th>UID</th>
+                                    <th>닉네임</th>
+                                    <th>가입일시</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var user in recentSignups)
+                                {
+                                    <tr>
+                                        <td class="table-meta">@user.Id</td>
+                                        <td>@user.Name</td>
+                                        <td class="table-meta">@FormatRelativeTime(user.CreatedAt)</td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                }
+                else
+                {
+                    <p class="dash-empty">최근 가입 유저가 없습니다.</p>
+                }
+            </div>
+
+            <div class="card-bg dash-card dash-ops-panel">
+                <h2 class="dash-card-title">운영 패널</h2>
+                <p class="dash-ops-desc">위험 작업은 서버 페이지에서 실행</p>
+                <div class="dash-btn-grid">
+                    <a href="/servers" class="dash-ops-btn">전체 저장</a>
+                    <a href="/servers" class="dash-ops-btn">서버 종료</a>
+                    <a href="/servers" class="dash-ops-btn">세션 초기화</a>
+                    <a href="/cache" class="dash-ops-btn">캐시 삭제</a>
+                </div>
             </div>
         </div>
     </div>
 </div>
+
+@code {
+    [CascadingParameter(Name = "SelectedWorld")]
+    private uint? selectedWorld { get; set; }
+
+    private string searchTerm = string.Empty;
+    private List<ServerStateService.ServerInfo>? servers;
+    private List<MaintenanceSchedule>? schedules;
+    private List<Http.Model.Bulletin>? notices;
+    private List<RecentSignupItem> recentSignups = new();
+
+    private List<OnlineUserItem> onlineUsers = new();
+
+    private int runningServerCount;
+    private int expectedServerCount = 3;
+    private int totalAccounts;
+    private int onlineCount;
+    private int bannedCount;
+    private int adminCount;
+    private string maintenanceStatus = "정상";
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadDashboardData();
+    }
+
+    protected override async Task OnParametersSetAsync()
+    {
+        await LoadDashboardData();
+    }
+
+    private async Task LoadDashboardData()
+    {
+        try
+        {
+            servers = await ServerStateService.GetRunningServers();
+            runningServerCount = servers.Count;
+        }
+        catch
+        {
+            servers = new List<ServerStateService.ServerInfo>();
+            runningServerCount = 0;
+        }
+
+        if (selectedWorld.HasValue && selectedWorld.Value > 0)
+        {
+            try
+            {
+                var maintenance = await MaintenanceService.GetMaintenanceInfo(selectedWorld.Value);
+                maintenanceStatus = maintenance?.IsActive == true ? "진행 중" : "정상";
+                schedules = await MaintenanceService.GetAllSchedules(selectedWorld.Value);
+            }
+            catch
+            {
+                maintenanceStatus = "—";
+                schedules = new List<MaintenanceSchedule>();
+            }
+
+            try
+            {
+                var stats = await UserService.GetDashboardStatsAsync(selectedWorld.Value);
+                totalAccounts = stats.TotalAccounts;
+                onlineCount = stats.OnlineCount;
+                bannedCount = stats.BannedCount;
+                adminCount = stats.AdminCount;
+                onlineUsers = stats.OnlineUsers;
+
+                var userResult = await UserService.GetUsers(selectedWorld.Value, 1, 5);
+                recentSignups = userResult.Users
+                    .Select(u => new RecentSignupItem { Id = u.Id, Name = u.Name, CreatedAt = u.CreatedDate })
+                    .ToList();
+            }
+            catch
+            {
+                totalAccounts = 0;
+                onlineCount = 0;
+                bannedCount = 0;
+                adminCount = 0;
+                onlineUsers = new List<OnlineUserItem>();
+            }
+
+            try
+            {
+                var sectionId = Table.Bulletin?.Keys.FirstOrDefault() ?? 0;
+                if (sectionId > 0)
+                {
+                    notices = await BulletinService.GetArticleListAsync(
+                        selectedWorld.Value, sectionId, 0);
+                    notices = notices?.Take(4).ToList();
+                }
+            }
+            catch
+            {
+                notices = new List<Http.Model.Bulletin>();
+            }
+        }
+    }
+
+    private Task HandleSearchKeyPress(KeyboardEventArgs e)
+    {
+        if (e.Key == "Enter" && !string.IsNullOrWhiteSpace(searchTerm))
+        {
+            var query = new Dictionary<string, string?> { ["search"] = searchTerm.Trim() };
+            if (selectedWorld.HasValue)
+                query["world"] = selectedWorld.Value.ToString();
+            Navigation.NavigateTo(QueryHelpers.AddQueryString("/users", query));
+        }
+        return Task.CompletedTask;
+    }
+
+    private static string FormatCount(int value) => value.ToString("N0");
+
+    private static string FormatRepeat(MaintenanceRepeatType type) => type switch
+    {
+        MaintenanceRepeatType.None => "없음",
+        MaintenanceRepeatType.Daily => "매일",
+        MaintenanceRepeatType.Weekly => "매주",
+        MaintenanceRepeatType.Monthly => "매월",
+        MaintenanceRepeatType.Yearly => "매년",
+        _ => type.ToString()
+    };
+
+    private static string GetScheduleStatus(MaintenanceSchedule schedule)
+    {
+        if (!schedule.IsActive)
+            return "취소";
+        var now = DateTime.Now;
+        if (now >= schedule.StartTime && now <= schedule.EndTime)
+            return "진행 중";
+        if (now < schedule.StartTime)
+            return "대기";
+        return "종료";
+    }
+
+    private static string FormatRelativeTime(DateTime time)
+    {
+        var diff = DateTime.UtcNow - time.ToUniversalTime();
+        if (diff.TotalMinutes < 1) return "방금 전";
+        if (diff.TotalHours < 1) return $"{(int)diff.TotalMinutes}분 전";
+        if (diff.TotalDays < 1) return $"{(int)diff.TotalHours}시간 전";
+        return time.ToString("yyyy-MM-dd");
+    }
+
+    private class RecentSignupItem
+    {
+        public uint Id { get; set; }
+        public string Name { get; set; } = string.Empty;
+        public DateTime CreatedAt { get; set; }
+    }
+}

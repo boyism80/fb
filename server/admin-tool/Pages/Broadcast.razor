@@ -1,25 +1,26 @@
 @page "/broadcast"
+@using AdminTool.Services
 @using Fb.Model.EnumValue
 @using Http.Service
 @using Microsoft.AspNetCore.Authorization
 @using Microsoft.AspNetCore.Components.Forms
-@using Microsoft.AspNetCore.Components
+@using Microsoft.AspNetCore.Components.Authorization
 @using System.ComponentModel.DataAnnotations
+@using System.Security.Claims
 @using Response = fb.protocol._internal.response
 @inject RabbitMqService RabbitMqService
 @inject LogService LogService
+@inject AdminActivityLogService ActivityLog
+@inject AuthenticationStateProvider AuthenticationStateProvider
 @inject IConfiguration Configuration
 @attribute [AuthorizeRole(Role.Admin)]
 
-<PageTitle>Broadcast - Admin Tool</PageTitle>
+<PageTitle>전체 방송 - FB ADMIN</PageTitle>
 
 <div>
-    <div class="page-header mb-4">
-        <h1>Broadcast Message</h1>
-        <p class="text-muted">
-            Send a global broadcast message to every game server. Host is fixed to 0xFFFFFFFF so all servers receive
-            it.
-        </p>
+    <div class="page-header">
+        <h1>전체 방송</h1>
+        <p>모든 게임 서버에 방송 메시지 전송</p>
     </div>
 
     @if (!string.IsNullOrEmpty(errorMessage))
@@ -38,60 +39,111 @@
         </div>
     }
 
-    <div class="row">
-        <div class="col-md-8">
-            <div class="card">
-                <div class="card-header">
-                    <h5 class="mb-0">New Broadcast</h5>
-                </div>
-                <div class="card-body">
-                    <EditForm Model="@broadcastModel" OnValidSubmit="@HandleSubmit">
-                        <DataAnnotationsValidator />
-                        <div class="mb-3">
-                            <label for="type" class="form-label">Message Type</label>
-                            <InputSelect id="type" class="form-select" @bind-Value="broadcastModel.Type">
-                                @foreach (var type in MessageTypes)
-                                {
-                                    <option value="@type">@type</option>
-                                }
-                            </InputSelect>
-                            <ValidationMessage For="@(() => broadcastModel.Type)" />
-                        </div>
-                        <div class="mb-3">
-                            <label for="message" class="form-label">Message</label>
-                            <InputTextArea id="message" class="form-control" rows="4"
-                                           @bind-Value="broadcastModel.Message" />
-                            <ValidationMessage For="@(() => broadcastModel.Message)" />
-                        </div>
-                        <div class="mb-3">
-                            <div class="form-check">
-                                <InputCheckbox id="useBroadcast" class="form-check-input" @bind-Value="useBroadcast" />
-                                <label class="form-check-label" for="useBroadcast">
-                                    Broadcast to all worlds
-                                </label>
-                                <small class="form-text text-muted d-block">
-                                    If checked, message will be sent to all worlds using Broadcast method. If unchecked, message will be sent only to the selected world.
-                                </small>
-                            </div>
-                        </div>
-                        <div class="d-flex justify-content-end gap-2">
-                            <button type="button" class="btn btn-secondary" @onclick="ResetForm"
-                                    disabled="@isProcessing">
-                                Reset
-                            </button>
-                            <button type="submit" class="btn btn-primary" disabled="@isProcessing">
-                                @if (isProcessing)
-                                {
-                                    <span class="spinner-border spinner-border-sm me-2" role="status"
-                                          aria-hidden="true"></span>
-                                }
-                                Send Broadcast
-                            </button>
-                        </div>
-                    </EditForm>
-                </div>
+    <div class="card-bg stitch-form-card">
+        <div class="stitch-form-card-header">
+            <div class="dash-card-title-row">
+                <span class="material-symbols-outlined">campaign</span>
+                <h2 class="dash-card-title">새 방송 작성</h2>
             </div>
         </div>
+        <div class="card-body">
+            <EditForm Model="@broadcastModel" OnValidSubmit="@HandleSubmit">
+                <DataAnnotationsValidator />
+                <div class="mb-3">
+                    <label for="type" class="form-label">메시지 유형</label>
+                    <InputSelect id="type" class="form-select" @bind-Value="broadcastModel.Type">
+                        @foreach (var type in MessageTypes)
+                        {
+                            <option value="@type">@FormatMessageType(type)</option>
+                        }
+                    </InputSelect>
+                    <ValidationMessage For="@(() => broadcastModel.Type)" />
+                </div>
+                <div class="mb-3">
+                    <label for="message" class="form-label">메시지 내용</label>
+                    <InputTextArea id="message" class="form-control" rows="4"
+                                   @bind-Value="broadcastModel.Message"
+                                   placeholder="방송할 내용을 입력하세요" />
+                    <ValidationMessage For="@(() => broadcastModel.Message)" />
+                </div>
+                <div class="mb-3">
+                    <div class="form-check">
+                        <InputCheckbox id="useBroadcast" class="form-check-input" @bind-Value="useBroadcast" />
+                        <label class="form-check-label" for="useBroadcast">전체 월드에 방송</label>
+                    </div>
+                </div>
+                <div class="stitch-form-actions">
+                    <button type="button" class="stitch-btn stitch-btn-neutral" @onclick="ResetForm" disabled="@isProcessing">
+                        초기화
+                    </button>
+                    <button type="submit" class="stitch-btn stitch-btn-primary" disabled="@isProcessing">
+                        @if (isProcessing)
+                        {
+                            <span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
+                        }
+                        <span class="material-symbols-outlined" style="font-size:1rem;">send</span>
+                        방송 보내기
+                    </button>
+                </div>
+            </EditForm>
+        </div>
+    </div>
+
+    <div class="card-bg stitch-form-card" style="margin-top:var(--section-gap);">
+        <div class="stitch-form-card-header">
+            <div class="dash-card-title-row">
+                <span class="material-symbols-outlined">history</span>
+                <h2 class="dash-card-title">방송 기록</h2>
+            </div>
+            <button type="button" class="stitch-btn stitch-btn-neutral" @onclick="LoadHistory">
+                <span class="material-symbols-outlined" style="font-size:1rem;">refresh</span>
+                새로고침
+            </button>
+        </div>
+        @if (broadcastHistory.Any())
+        {
+            <div class="dash-table-wrap">
+                <table class="dash-table">
+                    <thead>
+                        <tr>
+                            <th>시간</th>
+                            <th>유형</th>
+                            <th>메시지</th>
+                            <th>발송자</th>
+                            <th>대상</th>
+                            <th>상태</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var entry in broadcastHistory)
+                        {
+                            <tr>
+                                <td class="table-meta">@entry.Timestamp.ToString("HH:mm:ss")</td>
+                                <td class="table-meta">@entry.Summary</td>
+                                <td>@(entry.Detail?.Length > 80 ? entry.Detail[..80] + "…" : entry.Detail)</td>
+                                <td class="table-meta">@entry.Actor</td>
+                                <td class="table-meta">@entry.Target</td>
+                                <td>
+                                    @if (entry.Success)
+                                    {
+                                        <span class="stitch-badge active">성공</span>
+                                    }
+                                    else
+                                    {
+                                        <span class="stitch-badge" style="border-color:#5c2b2b;color:var(--error-text);">실패</span>
+                                    }
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+            <p class="table-meta" style="padding:0.75rem 1rem 0;">Total: @broadcastHistory.Count records</p>
+        }
+        else
+        {
+            <p class="dash-empty" style="padding:1.5rem;">방송 기록이 없습니다. (이 서버 세션 기준)</p>
+        }
     </div>
 </div>
 
@@ -101,11 +153,29 @@
     private string? errorMessage;
     private string? successMessage;
     private bool isProcessing;
-    private bool useBroadcast = false;
+    private bool useBroadcast;
+    private string currentUserName = "Admin";
+    private List<AdminActivityEntry> broadcastHistory = new();
+
     [CascadingParameter(Name = "SelectedWorld")]
     private uint? selectedWorld { get; set; }
 
     private IEnumerable<MessageType> MessageTypes => Enum.GetValues<MessageType>();
+
+    protected override async Task OnInitializedAsync()
+    {
+        var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
+        var nameClaim = authState.User.FindFirst(ClaimTypes.Name);
+        if (!string.IsNullOrEmpty(nameClaim?.Value))
+            currentUserName = nameClaim.Value;
+        LoadHistory();
+        await Task.CompletedTask;
+    }
+
+    private void LoadHistory()
+    {
+        broadcastHistory = ActivityLog.GetRecent("broadcast", 50).ToList();
+    }
 
     private async Task HandleSubmit()
     {
@@ -118,79 +188,97 @@
             var trimmedMessage = broadcastModel.Message?.Trim() ?? string.Empty;
             if (string.IsNullOrWhiteSpace(trimmedMessage))
             {
-                errorMessage = "Message is required.";
+                errorMessage = "메시지를 입력하세요.";
+                return;
+            }
+
+            var message = new Response.Broadcast
+            {
+                Message = trimmedMessage,
+                Type = (byte)broadcastModel.Type,
+                Host = BroadcastHost,
+                Error = 0
+            };
+
+            if (useBroadcast)
+            {
+                foreach (var world in GetWorlds())
+                    await RabbitMqService.PublishAsync(message, "amq.direct", $"fb.{world}.global");
             }
             else
             {
-                var message = new Response.Broadcast
+                if (!selectedWorld.HasValue)
                 {
-                    Message = trimmedMessage,
-                    Type = (byte)broadcastModel.Type,
-                    Host = BroadcastHost,
-                    Error = 0
-                };
-
-                if (useBroadcast)
-                {
-                    // Publish to all worlds
-                    var worlds = GetWorlds();
-                    foreach (var world in worlds)
-                    {
-                        await RabbitMqService.PublishAsync(message, "amq.direct", $"fb.{world}.global");
-                    }
+                    errorMessage = "월드가 선택되지 않았습니다.";
+                    return;
                 }
-                else
-                {
-                    // Publish to selected world only
-                    if (!selectedWorld.HasValue)
-                    {
-                        errorMessage = "World is required when not using broadcast to all worlds.";
-                        return;
-                    }
-                    await RabbitMqService.PublishAsync(message, "amq.direct", $"fb.{selectedWorld.Value}.global");
-                }
-
-                // Log broadcast event
-                await LogService.WriteAsync("broadcast", new
-                {
-                    message_type = broadcastModel.Type.ToString(),
-                    message = trimmedMessage,
-                    message_length = trimmedMessage.Length,
-                    world = useBroadcast ? "all" : selectedWorld?.ToString() ?? "unknown",
-                    use_broadcast = useBroadcast
-                });
-
-                successMessage = useBroadcast
-                    ? "Broadcast sent successfully to all worlds."
-                    : $"Broadcast sent successfully to world: {selectedWorld?.ToString() ?? "unknown"}";
-
-                // Clear only the message, keep the message type
-                broadcastModel.Message = string.Empty;
+                await RabbitMqService.PublishAsync(message, "amq.direct", $"fb.{selectedWorld.Value}.global");
             }
+
+            var targetLabel = useBroadcast ? "전체 월드" : $"World {selectedWorld}";
+            await LogService.WriteAsync("broadcast", new
+            {
+                message_type = broadcastModel.Type.ToString(),
+                message = trimmedMessage,
+                message_length = trimmedMessage.Length,
+                world = useBroadcast ? "all" : selectedWorld?.ToString() ?? "unknown",
+                use_broadcast = useBroadcast
+            });
+
+            ActivityLog.Add(new AdminActivityEntry
+            {
+                Category = "broadcast",
+                Summary = FormatMessageType(broadcastModel.Type),
+                Detail = trimmedMessage,
+                Actor = currentUserName,
+                Target = targetLabel,
+                Success = true
+            });
+
+            successMessage = useBroadcast
+                ? "전체 월드에 방송을 전송했습니다."
+                : $"World {selectedWorld}에 방송을 전송했습니다.";
+            broadcastModel.Message = string.Empty;
+            LoadHistory();
         }
         catch (Exception ex)
         {
-            errorMessage = $"Failed to send broadcast: {ex.Message}";
+            errorMessage = $"방송 전송 실패: {ex.Message}";
+            ActivityLog.Add(new AdminActivityEntry
+            {
+                Category = "broadcast",
+                Summary = FormatMessageType(broadcastModel.Type),
+                Detail = broadcastModel.Message,
+                Actor = currentUserName,
+                Target = useBroadcast ? "전체 월드" : $"World {selectedWorld}",
+                Success = false
+            });
+            LoadHistory();
         }
         finally
         {
             isProcessing = false;
         }
-
-        await Task.CompletedTask;
     }
 
-    private void ResetForm()
+    private void ResetForm() => broadcastModel = new BroadcastModel();
+
+    private static string FormatMessageType(MessageType type) => type switch
     {
-        broadcastModel = new BroadcastModel();
-    }
+        MessageType.Notify => "일반",
+        MessageType.Blue => "공지",
+        MessageType.Yellow => "긴급",
+        MessageType.Shout => "외치기",
+        MessageType.World => "월드",
+        MessageType.Popup => "팝업",
+        _ => type.ToString()
+    };
 
     private List<uint> GetWorlds()
     {
         try
         {
-            var worldServersSection = Configuration.GetSection("WorldServers");
-            return worldServersSection.GetChildren()
+            return Configuration.GetSection("WorldServers").GetChildren()
                 .Where(child => uint.TryParse(child.Key, out _))
                 .Select(child => uint.Parse(child.Key))
                 .ToList();

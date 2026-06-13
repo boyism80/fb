@@ -1,4 +1,5 @@
 @page "/login"
+@layout LoginLayout
 @using AdminTool.Services
 @using AdminTool.Authentication
 @using System.ComponentModel.DataAnnotations
@@ -7,64 +8,54 @@
 @inject AuthenticationStateProvider AuthenticationStateProvider
 @inject IConfiguration Configuration
 
-<PageTitle>Login - Admin Tool</PageTitle>
+<PageTitle>로그인 - FB ADMIN</PageTitle>
 
-<div class="login-container">
-    <div class="container">
-        <div class="row justify-content-center align-items-center min-vh-100">
-            <div class="col-md-5 col-lg-4">
-                <div class="text-center mb-4">
-                    <h1 class="mb-2">Admin Tool</h1>
-                    <p class="text-muted">Sign in to access the administration panel</p>
-                </div>
-                <div class="card">
-                    <div class="card-body p-4">
-                        @if (!string.IsNullOrEmpty(ErrorMessage))
-                        {
-                            <div class="alert alert-danger alert-dismissible fade show" role="alert">
-                                @ErrorMessage
-                                <button type="button" class="btn-close" @onclick="() => ErrorMessage = null"></button>
-                            </div>
-                        }
+<div class="login-wrap">
+    <div class="login-logo">FB ADMIN</div>
+    <p class="login-subtitle">게임 서버 관리 콘솔</p>
 
-                        <EditForm Model="@loginModel" OnValidSubmit="@HandleLogin">
-                            <DataAnnotationsValidator />
-                            <div class="mb-3">
-                                <label for="server" class="form-label">Server</label>
-                                <select id="server" class="form-select" @bind="selectedServerName" @bind:after="OnServerChanged">
-                                    @if (serverNames != null && serverNames.Any())
-                                    {
-                                        @foreach (var serverName in serverNames)
-                                        {
-                                            <option value="@serverName">@serverName</option>
-                                        }
-                                    }
-                                </select>
-                            </div>
-                            <div class="mb-3">
-                                <label for="username" class="form-label">Character Name</label>
-                                <InputText id="username" class="form-control" @bind-Value="loginModel.Username"
-                                           placeholder="Enter your character name" />
-                                <ValidationMessage For="@(() => loginModel.Username)" />
-                            </div>
-                            <div class="mb-4">
-                                <label for="password" class="form-label">Password</label>
-                                <InputText id="password" type="password" class="form-control" @bind-Value="loginModel.Password"
-                                           placeholder="Enter your password" />
-                                <ValidationMessage For="@(() => loginModel.Password)" />
-                            </div>
-                            <button type="submit" class="btn btn-primary w-100" disabled="@isLoading">
-                                @if (isLoading)
-                                {
-                                    <span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
-                                }
-                                Sign In
-                            </button>
-                        </EditForm>
-                    </div>
-                </div>
+    <div class="login-card card-bg">
+        @if (!string.IsNullOrEmpty(ErrorMessage))
+        {
+            <div class="login-error" role="alert">
+                @ErrorMessage
             </div>
-        </div>
+        }
+
+        <EditForm Model="@loginModel" OnValidSubmit="@HandleLogin">
+            <DataAnnotationsValidator />
+            <div class="mb-3">
+                <label for="server" class="form-label">서버 선택</label>
+                <select id="server" class="form-select" @bind="selectedServerName" @bind:after="OnServerChanged">
+                    @if (serverNames != null && serverNames.Any())
+                    {
+                        @foreach (var serverName in serverNames)
+                        {
+                            <option value="@serverName">@serverName</option>
+                        }
+                    }
+                </select>
+            </div>
+            <div class="mb-3">
+                <label for="username" class="form-label">캐릭터명</label>
+                <InputText id="username" class="form-control" @bind-Value="loginModel.Username"
+                           placeholder="캐릭터명을 입력하세요" />
+                <ValidationMessage For="@(() => loginModel.Username)" />
+            </div>
+            <div class="mb-4">
+                <label for="password" class="form-label">비밀번호</label>
+                <InputText id="password" type="password" class="form-control" @bind-Value="loginModel.Password"
+                           placeholder="비밀번호를 입력하세요" />
+                <ValidationMessage For="@(() => loginModel.Password)" />
+            </div>
+            <button type="submit" class="btn-login" disabled="@isLoading">
+                @if (isLoading)
+                {
+                    <span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
+                }
+                로그인
+            </button>
+        </EditForm>
     </div>
 </div>
 
@@ -123,20 +114,19 @@
         {
             if (string.IsNullOrEmpty(selectedServerName) || serverNameToWorld == null)
             {
-                ErrorMessage = "Server is not selected.";
+                ErrorMessage = "서버가 선택되지 않았습니다.";
                 return;
             }
 
             if (!serverNameToWorld.TryGetValue(selectedServerName, out var world))
             {
-                ErrorMessage = "Invalid server selection.";
+                ErrorMessage = "잘못된 서버 선택입니다.";
                 return;
             }
 
             var result = await AuthService.Authenticate(world, loginModel.Username, loginModel.Password);
             if (result.Success && result.UserId.HasValue && result.Role.HasValue)
             {
-                // Update authentication state
                 if (AuthenticationStateProvider is CustomAuthenticationStateProvider customProvider)
                 {
                     var authData = new AuthData
@@ -152,12 +142,12 @@
             }
             else
             {
-                ErrorMessage = result.Error;
+                ErrorMessage = result.Error ?? "로그인에 실패했습니다.";
             }
         }
         catch (Exception ex)
         {
-            ErrorMessage = $"An error occurred: {ex.Message}";
+            ErrorMessage = $"오류가 발생했습니다: {ex.Message}";
         }
         finally
         {
@@ -167,11 +157,10 @@
 
     private class LoginModel
     {
-        [Required(ErrorMessage = "Character name is required")]
+        [Required(ErrorMessage = "캐릭터명을 입력하세요")]
         public string Username { get; set; } = string.Empty;
 
-        [Required(ErrorMessage = "Password is required")]
+        [Required(ErrorMessage = "비밀번호를 입력하세요")]
         public string Password { get; set; } = string.Empty;
     }
 }
-
