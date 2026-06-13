@@ -46,19 +46,15 @@ else
                 @foreach (var group in GetGroups())
                 {
                     var isExpanded = expandedGroups.Contains(group.ServiceKey);
-                    var canExpand = AllowExpand && group.Instances.Count > 1;
 
-                    <tr class="server-group-row @(canExpand ? "expandable" : null) @(isExpanded ? "expanded" : null)"
-                        @onclick="() => OnGroupRowClick(canExpand, group.ServiceKey)">
+                    <tr class="server-group-row @(AllowExpand ? "expandable" : null) @(isExpanded ? "expanded" : null)"
+                        @onclick="() => OnGroupRowClick(group.ServiceKey)">
                         @if (AllowExpand)
                         {
                             <td class="server-groups-col-toggle">
-                                @if (canExpand)
-                                {
-                                    <span class="material-symbols-outlined server-group-chevron @(isExpanded ? "open" : null)">
-                                        @(isExpanded ? "expand_more" : "chevron_right")
-                                    </span>
-                                }
+                                <span class="material-symbols-outlined server-group-chevron @(isExpanded ? "open" : null)">
+                                    @(isExpanded ? "expand_more" : "chevron_right")
+                                </span>
                             </td>
                         }
                         <td class="server-group-name">@group.DisplayName</td>
@@ -73,7 +69,7 @@ else
                         </td>
                     </tr>
 
-                    @if (AllowExpand && isExpanded && group.Instances.Count > 1)
+                    @if (AllowExpand && isExpanded)
                     {
                         <tr class="server-group-detail-row">
                             <td colspan="4">
@@ -121,9 +117,9 @@ else
 
     private readonly HashSet<string> expandedGroups = new(StringComparer.OrdinalIgnoreCase);
 
-    private void OnGroupRowClick(bool canExpand, string serviceKey)
+    private void OnGroupRowClick(string serviceKey)
     {
-        if (!canExpand)
+        if (!AllowExpand)
             return;
 
         ToggleGroup(serviceKey);
