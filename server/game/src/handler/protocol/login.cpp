@@ -190,20 +190,22 @@ async::task<std::shared_ptr<character>> login::init(const game_reqs::login& requ
 
     if (resp.group.has_value())
     {
-        co_await this->server.group.ensure(resp.group.value(), [this, &ch, weak](auto& group) -> async::task<void> {
+        auto guard = co_await this->server.groups.ensure(resp.group.value());
+        if (auto& group = guard.value(); group != nullptr)
+        {
             group->enter(weak);
             ch->group_id(group->id());
-            co_return;
-        });
+        }
     }
 
     if (resp.clan.has_value())
     {
-        co_await this->server.clan.ensure(resp.clan.value(), [this, &ch, weak](auto& clan) -> async::task<void> {
+        auto guard = co_await this->server.clans.ensure(resp.clan.value());
+        if (auto& clan = guard.value(); clan != nullptr)
+        {
             clan->attach(weak);
             ch->clan_id(clan->id());
-            co_return;
-        });
+        }
     }
 
     bool inserted = false;

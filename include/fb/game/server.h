@@ -12,8 +12,8 @@
 #include <fb/game/service/map.h>
 #include <fb/hash.h>
 #include <fb/redis.h>
-#include <fb/game/service/clan.h>
-#include <fb/game/service/group.h>
+#include <fb/game/group.h>
+#include <fb/game/clan.h>
 #include <fb/game/service/mail.h>
 #include <fb/game/service/bulletin.h>
 #include <fb/game/service/system_storage.h>
@@ -112,8 +112,8 @@ public:
     listener_impl                          listener;
     fb::synchronized<character::container> characters;
     service::map                           map;
-    service::clan                          clan;
-    service::group                         group;
+    clan::container                        clans;
+    group::container                       groups;
     service::mail                          mail;
     service::bulletin                      bulletin;
     service::system_storage                system_storage;

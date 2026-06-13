@@ -19,7 +19,7 @@ async::task<void> internal_info::serialize(fb::stream_writer<big_endian>& writer
     auto& clan_id = this->ch.clan_id();
     if (clan_id.has_value())
     {
-        auto guard = this->ch.server.clan.enter_read(clan_id.value());
+        auto guard = this->ch.server.clans.enter_read(clan_id.value());
         writer.write<std::string>(guard.value()->name());
         writer.write<std::string>(guard.value()->title().value_or(""));
     }
@@ -40,7 +40,7 @@ async::task<void> internal_info::serialize(fb::stream_writer<big_endian>& writer
     auto& group_id = this->ch.group_id();
     if (group_id.has_value())
     {
-        auto  guard = this->ch.server.group.enter_read(group_id.value());
+        auto  guard = this->ch.server.groups.enter_read(group_id.value());
         auto& group = guard.value();
         sstream << _TEXT(MESSAGE_GROUP_MEMBERS_HEADER) << std::endl << "  * " << group->master() << std::endl;
 

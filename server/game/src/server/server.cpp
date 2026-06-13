@@ -23,8 +23,8 @@ server::server(boost::asio::io_context& io_context, uint16_t port) :
     map(*this, fb::config<uint32_t>("id")),
     listener(*this),
     characters(*this),
-    clan(*this),
-    group(*this),
+    clans(*this),
+    groups(*this),
     mail(*this),
     bulletin(*this),
     system_storage(*this),
@@ -378,14 +378,18 @@ async::task<bool> server::on_disconnected(fb::socket<character>& socket)
         auto& group_id = ptr->group_id();
         if (group_id.has_value())
         {
-            this->group.detach(weak, group_id.value());
+            this->groups.write(group_id.value(), [weak](auto& group) {
+                group->detach(weak);
+            });
             ptr->group_reset();
         }
 
         auto& clan_id = ptr->clan_id();
         if (clan_id.has_value())
         {
-            this->clan.detach(weak, clan_id.value());
+            this->clans.write(clan_id.value(), [weak](auto& clan) {
+                clan->detach(weak);
+            });
             ptr->clan_reset();
         }
 
@@ -452,7 +456,7 @@ server::send(object& object, const fb::protocol::header& header, fb::game::scope
             co_return;
 
         {
-            auto  guard = this->group.enter_read(group_id.value());
+            auto  guard = this->groups.enter_read(group_id.value());
             auto& group = guard.value();
             for (auto& shared_ptr : group->characters())
             {

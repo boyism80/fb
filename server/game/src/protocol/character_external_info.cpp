@@ -23,7 +23,7 @@ async::task<void> external_info::serialize(fb::stream_writer<big_endian>& writer
     auto& clan_id = this->ch.clan_id();
     if (clan_id.has_value())
     {
-        auto guard = this->ch.server.clan.enter_read(clan_id.value());
+        auto guard = this->ch.server.clans.enter_read(clan_id.value());
         writer.write<std::string>(guard.value()->name());
         writer.write<std::string>(guard.value()->title().value_or(""));
     }
