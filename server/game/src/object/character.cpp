@@ -1,6 +1,7 @@
 #include <fb/game/character.h>
 #include <fb/game/server.h>
 #include <fb/game/thread_params.h>
+#include <fb/context.h>
 #include <fb/model/model.h>
 #include <stdexcept>
 #include <fb/encoding.h>
@@ -64,10 +65,24 @@ async::task<size_t> character::send(const fb::stream& stream, bool encrypt, bool
     auto socket_ptr = this->_socket.lock();
     if (socket_ptr == nullptr || !socket_ptr->is_open())
     {
-        co_return 0; // Socket has been destroyed or is not open
+        co_return 0;
     }
 
-    co_return co_await socket_ptr->send(stream, encrypt, wrap);
+    auto wire = fb::stream(stream);
+    if (socket_ptr->prepare_outbound(wire, encrypt, wrap) == false)
+        throw std::runtime_error("unknown exception while send bytes");
+
+    const auto queued = wire.size();
+
+    auto* ctx = context::local::try_get();
+    if (ctx == nullptr)
+        co_return co_await this->send_immediate(stream, encrypt, wrap);
+
+    const auto endpoint = std::shared_ptr<boost::asio::ip::tcp::socket>(
+        socket_ptr,
+        static_cast<boost::asio::ip::tcp::socket*>(socket_ptr.get()));
+    ctx->outbound.append(endpoint, std::move(wire));
+    co_return queued;
 }
 
 async::task<size_t> character::send(const fb::protocol::header& response, bool encrypt, bool wrap)
@@ -77,7 +92,36 @@ async::task<size_t> character::send(const fb::protocol::header& response, bool e
     auto socket_ptr = this->_socket.lock();
     if (socket_ptr == nullptr || !socket_ptr->is_open())
     {
-        co_return 0; // Socket has been destroyed or is not open
+        co_return 0;
+    }
+
+    auto stream = fb::stream();
+    auto writer = fb::stream_writer<big_endian>(stream);
+    co_await response.serialize(writer);
+    co_return co_await this->send(stream, encrypt, wrap);
+}
+
+async::task<size_t> character::send_immediate(const fb::stream& stream, bool encrypt, bool wrap)
+{
+    this->assert_thread();
+
+    auto socket_ptr = this->_socket.lock();
+    if (socket_ptr == nullptr || !socket_ptr->is_open())
+    {
+        co_return 0;
+    }
+
+    co_return co_await socket_ptr->send(stream, encrypt, wrap);
+}
+
+async::task<size_t> character::send_immediate(const fb::protocol::header& response, bool encrypt, bool wrap)
+{
+    this->assert_thread();
+
+    auto socket_ptr = this->_socket.lock();
+    if (socket_ptr == nullptr || !socket_ptr->is_open())
+    {
+        co_return 0;
     }
 
     co_return co_await socket_ptr->send(response, encrypt, wrap);

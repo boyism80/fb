@@ -83,7 +83,7 @@ ROBOCOPY flatbuffers\include\ %DEST%\include\ /E
 
 git clone https://github.com/boyism80/cpp-async
 PUSHD cpp-async
-git checkout v1.1.0-fb
+git checkout v1.1.1
 POPD
 ROBOCOPY cpp-async\include\async\ %DEST%\include\async\ *.h
 

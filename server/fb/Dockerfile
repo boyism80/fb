@@ -55,7 +55,7 @@ RUN make install
 WORKDIR /app
 RUN git clone https://github.com/boyism80/cpp-async
 WORKDIR /app/cpp-async
-RUN git checkout v1.1.0-fb
+RUN git checkout v1.1.1
 RUN cp -r /app/cpp-async/include/async /usr/local/include/async
 
 WORKDIR /app

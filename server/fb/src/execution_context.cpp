@@ -1,4 +1,5 @@
 #include <fb/async_executor.h>
+#include <fb/context.h>
 #include <fb/execution_context.h>
 
 using namespace fb;
@@ -79,5 +80,15 @@ void execution_context::install_propagation_hooks(async_executor&)
 
     hooks.restore = [](async::propagation::token value) {
         active(frame(std::move(value)));
+    };
+
+    hooks.on_suspend = []() {
+        if (auto* ctx = context::local::try_get())
+            ctx->outbound.flush();
+    };
+
+    hooks.on_complete = []() {
+        if (auto* ctx = context::local::try_get())
+            ctx->outbound.flush();
     };
 }
