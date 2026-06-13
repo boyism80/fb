@@ -246,6 +246,11 @@ public:
             return this->_map_guard.value().at(this->_hash);
         }
 
+        const T& value() const noexcept
+        {
+            return this->_map_guard.value().at(this->_hash);
+        }
+
     private:
         friend class sub_container;
 
