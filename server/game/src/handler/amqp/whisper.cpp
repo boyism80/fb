@@ -1,5 +1,9 @@
 #include <fb/game/handler/amqp/whisper.h>
+#include <fb/game/character.h>
 #include <fb/game/server.h>
+#include <fb/encoding.h>
+#include <json/json.h>
+#include <format>
 
 using namespace fb::game::handler::amqp;
 
@@ -12,6 +16,34 @@ async::task<void> whisper::handle(const internal_resp::Whisper& message)
     if (message.host == fb::config<uint16_t>("id"))
         co_return;
 
-    auto guard = co_await this->server.characters.enter_read_async();
-    co_await guard.value().on_whisper(message);
+    fb::game::character::container::assert_whisper(message.error, message.to);
+
+    std::weak_ptr<fb::game::character> weak;
+    {
+        auto guard = co_await this->server.characters.enter_read_async();
+        auto ch    = guard.value().find(message.to);
+        if (ch == nullptr)
+            co_return;
+
+        weak = ch->weak_from_this_as<fb::game::character>();
+    }
+
+    auto before = this->server.threads.current();
+    co_await this->server.threads.switching(weak);
+
+    auto ch = weak.lock();
+    if (ch != nullptr)
+    {
+        ch->message(std::format("{}> {}", message.from, message.message), fb::game::MESSAGE_TYPE::NOTIFY);
+
+        auto log_data             = Json::Value();
+        log_data["sender_name"]   = UTF8(message.from, PLATFORM::WINDOWS);
+        log_data["receiver_id"]   = static_cast<Json::Int64>(ch->id);
+        log_data["receiver_name"] = UTF8(message.to, PLATFORM::WINDOWS);
+        log_data["message"]       = UTF8(message.message, PLATFORM::WINDOWS);
+        this->server.log.write("whisper", log_data);
+    }
+
+    if (before != nullptr)
+        co_await before->switching();
 }

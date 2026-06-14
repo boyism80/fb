@@ -93,29 +93,36 @@ async::task<void> clan::container::on_create(uint32_t                           
 
             if (master_name.has_value())
             {
-                auto  guard      = co_await this->_server.characters.enter_read_async();
-                auto& characters = guard.value();
-                auto  ch         = characters.find(master_name.value());
-                if (ch != nullptr)
+                std::weak_ptr<character> weak;
+                uint32_t                 ch_id = 0;
                 {
-                    auto weak = ch->template weak_from_this_as<character>();
+                    auto  guard      = co_await this->_server.characters.enter_read_async();
+                    auto& characters = guard.value();
+                    auto  ch         = characters.find(master_name.value());
+                    if (ch == nullptr)
+                        co_return;
+
+                    weak  = ch->template weak_from_this_as<character>();
+                    ch_id = ch->id;
                     clan->attach(weak);
-
-                    auto before = this->_server.threads.current();
-                    co_await this->_server.threads.switching(weak);
-                    auto ptr = weak.lock();
-                    if (ptr != nullptr)
-                        ptr->clan_id(clan_id);
-                    if (before != nullptr)
-                        co_await before->switching();
-
-                    auto log_data              = Json::Value();
-                    log_data["character_id"]   = static_cast<Json::Int64>(ch->id);
-                    log_data["character_name"] = UTF8(ch->name(), PLATFORM::WINDOWS);
-                    log_data["clan_id"]        = static_cast<Json::Int64>(clan_id);
-                    log_data["clan_name"]      = UTF8(clan->name(), PLATFORM::WINDOWS);
-                    this->_server.log.write("clan_create", log_data);
                 }
+
+                auto before = this->_server.threads.current();
+                co_await this->_server.threads.switching(weak);
+
+                auto ptr = weak.lock();
+                if (ptr != nullptr)
+                    ptr->clan_id(clan_id);
+
+                if (before != nullptr)
+                    co_await before->switching();
+
+                auto log_data              = Json::Value();
+                log_data["character_id"]   = static_cast<Json::Int64>(ch_id);
+                log_data["character_name"] = UTF8(master_name.value(), PLATFORM::WINDOWS);
+                log_data["clan_id"]        = static_cast<Json::Int64>(clan_id);
+                log_data["clan_name"]      = UTF8(clan->name(), PLATFORM::WINDOWS);
+                this->_server.log.write("clan_create", log_data);
             }
             co_return;
         },
@@ -209,39 +216,54 @@ async::task<void> clan::container::on_join(uint32_t clan_id, std::optional<std::
 
     clan->join(clan_member{joined_member_name, role});
 
-    auto  char_guard = co_await this->_server.characters.enter_write_async();
-    auto& characters = char_guard.value();
-    auto  ch         = characters.find(joined_member_name);
-    if (ch == nullptr)
-        co_return;
+    std::weak_ptr<character> weak;
+    auto                     members = std::vector<std::shared_ptr<character>>{};
+    uint32_t                 ch_id   = 0;
+    bool                     attach  = false;
 
-    if (ch->clan_id().has_value())
-        co_return;
-
-    auto weak    = ch->template weak_from_this_as<character>();
-    auto members = std::vector<std::shared_ptr<character>>{};
-    for (auto& [uid, weak_ptr] : clan->characters())
     {
-        std::ignore     = uid;
-        auto shared_ptr = weak_ptr.lock();
-        if (shared_ptr == nullptr)
-            continue;
-        members.push_back(shared_ptr);
+        auto  char_guard = co_await this->_server.characters.enter_write_async();
+        auto& characters = char_guard.value();
+        auto  ch         = characters.find(joined_member_name);
+        if (ch == nullptr)
+            co_return;
+
+        if (ch->clan_id().has_value())
+            co_return;
+
+        weak   = ch->template weak_from_this_as<character>();
+        ch_id  = ch->id;
+        attach = weak.expired() == false;
+
+        for (auto& [uid, weak_ptr] : clan->characters())
+        {
+            std::ignore     = uid;
+            auto shared_ptr = weak_ptr.lock();
+            if (shared_ptr == nullptr)
+                continue;
+            members.push_back(shared_ptr);
+        }
+
+        if (attach)
+            clan->attach(weak);
     }
 
-    characters.foreach_enqueue(
-        [joined_member_name](auto& member) -> async::task<void> {
-            member->message(std::format(_TEXT(MESSAGE_CLAN_MEMBER_JOINED), joined_member_name), MESSAGE_TYPE::NOTIFY);
-            co_return;
-        },
-        members);
-
-    if (weak.expired() == false)
     {
-        clan->attach(weak);
+        auto read_guard = this->_server.characters.enter_read();
+        read_guard.value().foreach_enqueue(
+            [joined_member_name](auto& member) -> async::task<void> {
+                member->message(std::format(_TEXT(MESSAGE_CLAN_MEMBER_JOINED), joined_member_name),
+                                MESSAGE_TYPE::NOTIFY);
+                co_return;
+            },
+            members);
+    }
 
+    if (attach)
+    {
         auto before = this->_server.threads.current();
         co_await this->_server.threads.switching(weak);
+
         auto ptr = weak.lock();
         if (ptr != nullptr)
         {
@@ -249,11 +271,12 @@ async::task<void> clan::container::on_join(uint32_t clan_id, std::optional<std::
             ptr->update_external(false);
             ptr->message(std::format(_TEXT(MESSAGE_CLAN_JOINED_SUCCESS), clan->name()), MESSAGE_TYPE::NOTIFY);
         }
+
         if (before != nullptr)
             co_await before->switching();
 
         auto log_data              = Json::Value();
-        log_data["character_id"]   = static_cast<Json::Int64>(ch->id);
+        log_data["character_id"]   = static_cast<Json::Int64>(ch_id);
         log_data["character_name"] = UTF8(joined_member_name, PLATFORM::WINDOWS);
         log_data["clan_id"]        = static_cast<Json::Int64>(clan->id());
         log_data["clan_name"]      = UTF8(clan->name(), PLATFORM::WINDOWS);
@@ -272,16 +295,25 @@ async::task<void> clan::container::on_leave(uint32_t clan_id, std::optional<std:
         co_return;
     auto& clan = guard.value();
 
-    auto  char_guard = co_await this->_server.characters.enter_write_async();
-    auto& characters = char_guard.value();
-    auto  ch         = characters.find(deleted_member_name);
-    if (ch != nullptr)
+    std::weak_ptr<character> weak;
+    uint32_t                 ch_id = 0;
     {
-        auto weak = ch->template weak_from_this_as<character>();
-        clan->detach(weak);
+        auto  char_guard = co_await this->_server.characters.enter_write_async();
+        auto& characters = char_guard.value();
+        auto  ch         = characters.find(deleted_member_name);
+        if (ch != nullptr)
+        {
+            weak  = ch->template weak_from_this_as<character>();
+            ch_id = ch->id;
+            clan->detach(weak);
+        }
+    }
 
+    if (weak.expired() == false)
+    {
         auto before = this->_server.threads.current();
         co_await this->_server.threads.switching(weak);
+
         auto ptr = weak.lock();
         if (ptr != nullptr)
         {
@@ -289,11 +321,12 @@ async::task<void> clan::container::on_leave(uint32_t clan_id, std::optional<std:
             ptr->update_external(false);
             ptr->message(_TEXT(MESSAGE_CLAN_LEFT), MESSAGE_TYPE::NOTIFY);
         }
+
         if (before != nullptr)
             co_await before->switching();
 
         auto log_data              = Json::Value();
-        log_data["character_id"]   = static_cast<Json::Int64>(ch->id);
+        log_data["character_id"]   = static_cast<Json::Int64>(ch_id);
         log_data["character_name"] = UTF8(deleted_member_name, PLATFORM::WINDOWS);
         log_data["clan_id"]        = static_cast<Json::Int64>(clan->id());
         log_data["clan_name"]      = UTF8(clan->name(), PLATFORM::WINDOWS);
@@ -312,12 +345,15 @@ async::task<void> clan::container::on_leave(uint32_t clan_id, std::optional<std:
     }
 
     auto message = std::format(_TEXT(MESSAGE_CLAN_MEMBER_LEFT), deleted_member_name);
-    characters.foreach_enqueue(
-        [message](auto& member) -> async::task<void> {
-            member->message(message, MESSAGE_TYPE::NOTIFY);
-            co_return;
-        },
-        members);
+    {
+        auto read_guard = this->_server.characters.enter_read();
+        read_guard.value().foreach_enqueue(
+            [message](auto& member) -> async::task<void> {
+                member->message(message, MESSAGE_TYPE::NOTIFY);
+                co_return;
+            },
+            members);
+    }
 }
 
 async::task<void> clan::container::on_kick(uint32_t clan_id, std::optional<std::string> deleted_member)
@@ -331,16 +367,25 @@ async::task<void> clan::container::on_kick(uint32_t clan_id, std::optional<std::
         co_return;
     auto& clan = guard.value();
 
-    auto  char_guard = co_await this->_server.characters.enter_write_async();
-    auto& characters = char_guard.value();
-    auto  ch         = characters.find(deleted_member_name);
-    if (ch != nullptr)
+    std::weak_ptr<character> weak;
+    uint32_t                 ch_id = 0;
     {
-        auto weak = ch->template weak_from_this_as<character>();
-        clan->detach(weak);
+        auto  char_guard = co_await this->_server.characters.enter_write_async();
+        auto& characters = char_guard.value();
+        auto  ch         = characters.find(deleted_member_name);
+        if (ch != nullptr)
+        {
+            weak  = ch->template weak_from_this_as<character>();
+            ch_id = ch->id;
+            clan->detach(weak);
+        }
+    }
 
+    if (weak.expired() == false)
+    {
         auto before = this->_server.threads.current();
         co_await this->_server.threads.switching(weak);
+
         auto ptr = weak.lock();
         if (ptr != nullptr)
         {
@@ -348,11 +393,12 @@ async::task<void> clan::container::on_kick(uint32_t clan_id, std::optional<std::
             ptr->update_external(false);
             ptr->message(_TEXT(MESSAGE_CLAN_KICKED), MESSAGE_TYPE::NOTIFY);
         }
+
         if (before != nullptr)
             co_await before->switching();
 
         auto log_data              = Json::Value();
-        log_data["character_id"]   = static_cast<Json::Int64>(ch->id);
+        log_data["character_id"]   = static_cast<Json::Int64>(ch_id);
         log_data["character_name"] = UTF8(deleted_member_name, PLATFORM::WINDOWS);
         log_data["clan_id"]        = static_cast<Json::Int64>(clan->id());
         log_data["clan_name"]      = UTF8(clan->name(), PLATFORM::WINDOWS);
@@ -371,12 +417,15 @@ async::task<void> clan::container::on_kick(uint32_t clan_id, std::optional<std::
     }
 
     auto message = std::format(_TEXT(MESSAGE_CLAN_MEMBER_KICKED), deleted_member_name);
-    characters.foreach_enqueue(
-        [message](auto& member) -> async::task<void> {
-            member->message(message, MESSAGE_TYPE::NOTIFY);
-            co_return;
-        },
-        members);
+    {
+        auto read_guard = this->_server.characters.enter_read();
+        read_guard.value().foreach_enqueue(
+            [message](auto& member) -> async::task<void> {
+                member->message(message, MESSAGE_TYPE::NOTIFY);
+                co_return;
+            },
+            members);
+    }
 }
 
 async::task<void> clan::container::on_change_role(uint32_t                   clan_id,
