@@ -82,6 +82,38 @@ void login::init_quests(const std::vector<fb::protocol::internal::Quest>& respon
     }
 }
 
+void login::init_marketplace(const std::vector<fb::protocol::internal::MarketplacePending>& response,
+                             fb::game::character&                                           ch)
+{
+    auto pending_listings = fb::game::marketplace::pending_listings_t{};
+    for (const auto& row : response)
+    {
+        fb::game::marketplace::pending_listing_info info{};
+        info.type                    = static_cast<fb::game::marketplace::pending_type>(row.type);
+        info.purchase_id             = row.purchase_id;
+        info.listing_id              = row.listing_id;
+        info.character_id            = row.character_id;
+        info.expected_purchase_count = row.expected_purchase_count;
+        info.expected_total_price    = row.expected_total_price;
+
+        auto reader = Json::Reader{};
+        auto json   = Json::Value{};
+        if (reader.parse(row.attachments, json) && json.isArray())
+        {
+            for (const auto& dsl_json : json)
+            {
+                info.dsls.push_back(fb::model::dsl(dsl_json));
+            }
+        }
+
+        if (!info.dsls.empty())
+            pending_listings[row.pending_key] = std::move(info);
+    }
+
+    if (!pending_listings.empty())
+        ch.marketplace.set_pending_listings(std::move(pending_listings));
+}
+
 void login::init_achievements(const std::vector<fb::protocol::internal::Achievement>& response, fb::game::character& ch)
 {
     for (auto& a : response)
@@ -226,6 +258,7 @@ async::task<std::shared_ptr<character>> login::init(const game_reqs::login& requ
     this->init_spells(resp.spells, *ch);
     this->init_achievements(resp.achievements, *ch);
     this->init_quests(resp.quests, *ch);
+    this->init_marketplace(resp.marketplace_pendings, *ch);
     this->init_storage(resp, *ch);
     this->init_option(resp.option, *ch);
     ch->marriage(fb::game::marriage(resp.marriage.remarriage_after.empty()
@@ -234,55 +267,6 @@ async::task<std::shared_ptr<character>> login::init(const game_reqs::login& requ
                                     resp.marriage.spouse_id,
                                     resp.marriage.spouse_name,
                                     resp.marriage.divorce_count));
-
-    // Restore pending marketplace listings if any
-    if (resp.character.pending_listings.has_value() && !resp.character.pending_listings.value().empty())
-    {
-        auto json   = Json::Value{};
-        auto reader = Json::Reader{};
-        if (reader.parse(resp.character.pending_listings.value(), json) && json.isObject())
-        {
-            auto pending_listings = fb::game::marketplace::pending_listings_t{};
-            for (auto it = json.begin(); it != json.end(); ++it)
-            {
-                auto  listing_id = it.key().asString();
-                auto& value      = *it;
-
-                if (value.isObject())
-                {
-                    fb::game::marketplace::pending_listing_info info{};
-                    info.listing_id = listing_id;
-
-                    // Parse type
-                    if (value.isMember("type") && value["type"].isUInt())
-                    {
-                        info.type = static_cast<fb::game::marketplace::pending_type>(value["type"].asUInt());
-                    }
-
-                    // Parse character_id
-                    if (value.isMember("character_id") && value["character_id"].isUInt())
-                    {
-                        info.character_id = value["character_id"].asUInt();
-                    }
-
-                    // Parse DSLs
-                    if (value.isMember("dsls") && value["dsls"].isArray())
-                    {
-                        for (const auto& dsl_json : value["dsls"])
-                        {
-                            info.dsls.push_back(fb::model::dsl(dsl_json));
-                        }
-                    }
-
-                    if (!info.dsls.empty())
-                        pending_listings[listing_id] = std::move(info);
-                }
-            }
-
-            if (!pending_listings.empty())
-                ch->marketplace.set_pending_listings(std::move(pending_listings));
-        }
-    }
 
     ch->init();
     ch->update_time(this->server.time().hours());

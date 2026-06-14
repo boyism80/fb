@@ -16,6 +16,7 @@ static_assert(FLATBUFFERS_VERSION_MAJOR == 25 &&
 #include "fb.protocol.internal.achievement_generated.h"
 #include "fb.protocol.internal.character_generated.h"
 #include "fb.protocol.internal.item_generated.h"
+#include "fb.protocol.internal.marketplacepending_generated.h"
 #include "fb.protocol.internal.marriage_generated.h"
 #include "fb.protocol.internal.option_generated.h"
 #include "fb.protocol.internal.quest_generated.h"
@@ -45,7 +46,8 @@ struct Init FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
     VT_ACHIEVEMENTS = 18,
     VT_QUESTS = 20,
     VT_STORAGE_BOXES = 22,
-    VT_MAIL = 24
+    VT_MARKETPLACE_PENDINGS = 24,
+    VT_MAIL = 26
   };
   const fb::protocol::internal::raw::Character *character() const {
     return GetPointer<const fb::protocol::internal::raw::Character *>(VT_CHARACTER);
@@ -77,6 +79,9 @@ struct Init FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
   const ::flatbuffers::Vector<::flatbuffers::Offset<fb::protocol::internal::raw::StorageBox>> *storage_boxes() const {
     return GetPointer<const ::flatbuffers::Vector<::flatbuffers::Offset<fb::protocol::internal::raw::StorageBox>> *>(VT_STORAGE_BOXES);
   }
+  const ::flatbuffers::Vector<::flatbuffers::Offset<fb::protocol::internal::raw::MarketplacePending>> *marketplace_pendings() const {
+    return GetPointer<const ::flatbuffers::Vector<::flatbuffers::Offset<fb::protocol::internal::raw::MarketplacePending>> *>(VT_MARKETPLACE_PENDINGS);
+  }
   uint32_t mail() const {
     return GetField<uint32_t>(VT_MAIL, 0);
   }
@@ -107,6 +112,9 @@ struct Init FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
            VerifyOffset(verifier, VT_STORAGE_BOXES) &&
            verifier.VerifyVector(storage_boxes()) &&
            verifier.VerifyVectorOfTables(storage_boxes()) &&
+           VerifyOffset(verifier, VT_MARKETPLACE_PENDINGS) &&
+           verifier.VerifyVector(marketplace_pendings()) &&
+           verifier.VerifyVectorOfTables(marketplace_pendings()) &&
            VerifyField<uint32_t>(verifier, VT_MAIL, 4) &&
            verifier.EndTable();
   }
@@ -146,6 +154,9 @@ struct InitBuilder {
   void add_storage_boxes(::flatbuffers::Offset<::flatbuffers::Vector<::flatbuffers::Offset<fb::protocol::internal::raw::StorageBox>>> storage_boxes) {
     fbb_.AddOffset(Init::VT_STORAGE_BOXES, storage_boxes);
   }
+  void add_marketplace_pendings(::flatbuffers::Offset<::flatbuffers::Vector<::flatbuffers::Offset<fb::protocol::internal::raw::MarketplacePending>>> marketplace_pendings) {
+    fbb_.AddOffset(Init::VT_MARKETPLACE_PENDINGS, marketplace_pendings);
+  }
   void add_mail(uint32_t mail) {
     fbb_.AddElement<uint32_t>(Init::VT_MAIL, mail, 0);
   }
@@ -172,9 +183,11 @@ inline ::flatbuffers::Offset<Init> CreateInit(
     ::flatbuffers::Offset<::flatbuffers::Vector<::flatbuffers::Offset<fb::protocol::internal::raw::Achievement>>> achievements = 0,
     ::flatbuffers::Offset<::flatbuffers::Vector<::flatbuffers::Offset<fb::protocol::internal::raw::Quest>>> quests = 0,
     ::flatbuffers::Offset<::flatbuffers::Vector<::flatbuffers::Offset<fb::protocol::internal::raw::StorageBox>>> storage_boxes = 0,
+    ::flatbuffers::Offset<::flatbuffers::Vector<::flatbuffers::Offset<fb::protocol::internal::raw::MarketplacePending>>> marketplace_pendings = 0,
     uint32_t mail = 0) {
   InitBuilder builder_(_fbb);
   builder_.add_mail(mail);
+  builder_.add_marketplace_pendings(marketplace_pendings);
   builder_.add_storage_boxes(storage_boxes);
   builder_.add_quests(quests);
   builder_.add_achievements(achievements);
@@ -200,12 +213,14 @@ inline ::flatbuffers::Offset<Init> CreateInitDirect(
     const std::vector<::flatbuffers::Offset<fb::protocol::internal::raw::Achievement>> *achievements = nullptr,
     const std::vector<::flatbuffers::Offset<fb::protocol::internal::raw::Quest>> *quests = nullptr,
     const std::vector<::flatbuffers::Offset<fb::protocol::internal::raw::StorageBox>> *storage_boxes = nullptr,
+    const std::vector<::flatbuffers::Offset<fb::protocol::internal::raw::MarketplacePending>> *marketplace_pendings = nullptr,
     uint32_t mail = 0) {
   auto items__ = items ? _fbb.CreateVector<::flatbuffers::Offset<fb::protocol::internal::raw::Item>>(*items) : 0;
   auto spells__ = spells ? _fbb.CreateVector<::flatbuffers::Offset<fb::protocol::internal::raw::Spell>>(*spells) : 0;
   auto achievements__ = achievements ? _fbb.CreateVector<::flatbuffers::Offset<fb::protocol::internal::raw::Achievement>>(*achievements) : 0;
   auto quests__ = quests ? _fbb.CreateVector<::flatbuffers::Offset<fb::protocol::internal::raw::Quest>>(*quests) : 0;
   auto storage_boxes__ = storage_boxes ? _fbb.CreateVector<::flatbuffers::Offset<fb::protocol::internal::raw::StorageBox>>(*storage_boxes) : 0;
+  auto marketplace_pendings__ = marketplace_pendings ? _fbb.CreateVector<::flatbuffers::Offset<fb::protocol::internal::raw::MarketplacePending>>(*marketplace_pendings) : 0;
   return fb::protocol::internal::response::raw::CreateInit(
       _fbb,
       character,
@@ -218,6 +233,7 @@ inline ::flatbuffers::Offset<Init> CreateInitDirect(
       achievements__,
       quests__,
       storage_boxes__,
+      marketplace_pendings__,
       mail);
 }
 

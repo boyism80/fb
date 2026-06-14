@@ -47,22 +47,18 @@ namespace AdminTool.Services
                 """;
             var totalCount = await globalConn.QueryFirstOrDefaultAsync<int>(countQuery, new { searchTerm = searchParam });
 
-            // Get paginated name IDs with ban information from global DB
+            // Get paginated name IDs from global DB (ban rows live on data shards)
             var nameQuery = $"""
                 SELECT 
                     n.`id` AS Id,
-                    n.`name` AS Name,
-                    CASE WHEN b.`user` IS NOT NULL AND b.`deleted` = 0 THEN 1 ELSE 0 END AS IsBanned,
-                    b.`reason` AS BanReason,
-                    b.`expire_date` AS BanExpireDate
+                    n.`name` AS Name
                 FROM `name_registry` n
-                LEFT JOIN `ban` b ON n.`id` = b.`user` AND b.`deleted` = 0
                 {whereClause}
                 ORDER BY n.`id` DESC
                 LIMIT @pageSize OFFSET @offset
                 """;
 
-            var nameResults = await globalConn.QueryAsync<NameWithBanInfo>(nameQuery, new
+            var nameResults = await globalConn.QueryAsync<NameInfo>(nameQuery, new
             {
                 searchTerm = searchParam,
                 pageSize,
@@ -81,6 +77,8 @@ namespace AdminTool.Services
                     TotalPages = (int)Math.Ceiling(totalCount / (double)pageSize)
                 };
             }
+
+            var banByUserId = await LoadBanInfoByUserIdsAsync(world, nameList.Select(n => n.Id));
 
             // Get user details via Character repository (Redis cache) so list matches role changes.
             var userIds = nameList.Select(n => n.Id).ToList();
@@ -122,9 +120,12 @@ namespace AdminTool.Services
             {
                 if (userDetailsDict.TryGetValue(nameInfo.Id, out var userDetail))
                 {
-                    userDetail.IsBanned = nameInfo.IsBanned == 1;
-                    userDetail.BanReason = nameInfo.BanReason;
-                    userDetail.BanExpireDate = nameInfo.BanExpireDate;
+                    if (banByUserId.TryGetValue(nameInfo.Id, out var banInfo))
+                    {
+                        userDetail.IsBanned = true;
+                        userDetail.BanReason = banInfo.BanReason;
+                        userDetail.BanExpireDate = banInfo.BanExpireDate;
+                    }
                     userDetail.IsOnline = onlineIds.Contains(userDetail.Id);
                     resultUsers.Add(userDetail);
                 }
@@ -221,8 +222,6 @@ namespace AdminTool.Services
             {
                 await using var globalConn = _dbContext.GetGlobalConnection(world);
                 stats.TotalAccounts = await globalConn.QuerySingleAsync<int>("SELECT COUNT(*) FROM `name_registry`");
-                stats.BannedCount = await globalConn.QuerySingleAsync<int>(
-                    "SELECT COUNT(*) FROM `ban` WHERE `deleted` = 0");
             }
             catch (Exception ex)
             {
@@ -238,11 +237,13 @@ namespace AdminTool.Services
                     stats.AdminCount += await conn.QuerySingleAsync<int>(
                         "SELECT COUNT(*) FROM `user` WHERE `role` >= @minRole AND `deleted` = 0",
                         new { minRole = (byte)Fb.Model.EnumValue.Role.Moderator });
+                    stats.BannedCount += await conn.QuerySingleAsync<int>(
+                        "SELECT COUNT(*) FROM `ban` WHERE `deleted` = 0");
                 }
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Failed to load admin count for world {World}", world);
+                _logger.LogError(ex, "Failed to load admin/ban count for world {World}", world);
             }
 
             try
@@ -270,6 +271,35 @@ namespace AdminTool.Services
             }
 
             return stats;
+        }
+
+        private async Task<Dictionary<uint, BanInfo>> LoadBanInfoByUserIdsAsync(uint world, IEnumerable<uint> userIds)
+        {
+            var result = new Dictionary<uint, BanInfo>();
+            var ids = userIds.Distinct().ToList();
+            if (ids.Count == 0)
+                return result;
+
+            var shardSize = _dbContext.GetShardDbSize(world);
+            foreach (var group in ids.GroupBy(id => (int)(id % (uint)shardSize)))
+            {
+                await using var conn = _dbContext.GetDataConnection(world, group.Key);
+                var idList = group.ToList();
+                var rows = await conn.QueryAsync<BanInfo>(
+                    $"""
+                    SELECT
+                        `user` AS UserId,
+                        `reason` AS BanReason,
+                        `expire_date` AS BanExpireDate
+                    FROM `ban`
+                    WHERE `user` IN ({string.Join(',', idList)}) AND `deleted` = 0
+                    """);
+
+                foreach (var row in rows)
+                    result[row.UserId] = row;
+            }
+
+            return result;
         }
     }
 
@@ -337,15 +367,18 @@ namespace AdminTool.Services
         public DateTime? BanExpireDate { get; set; }
     }
 
-    internal class NameWithBanInfo
+    internal class NameInfo
     {
         public uint Id { get; set; }
 
         public string Name { get; set; } = string.Empty;
+    }
 
-        public int IsBanned { get; set; }
+    internal class BanInfo
+    {
+        public uint UserId { get; set; }
 
-        public string? BanReason { get; set; }
+        public string BanReason { get; set; } = string.Empty;
 
         public DateTime? BanExpireDate { get; set; }
     }

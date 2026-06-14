@@ -252,5 +252,28 @@ namespace Http.Reepository
 
             return values;
         }
+
+        protected void DeleteFields(uint world, TKey keyForLockAndRedisKey, IReadOnlyList<RedisValue> fields, string deleteSql)
+        {
+            if (fields == null || fields.Count == 0)
+                return;
+
+            _buffer.Enqueue(async () =>
+            {
+                var redisKey = keyForLockAndRedisKey.GetRedisKey();
+                var redis = _redis.GetConnection(world, keyForLockAndRedisKey.GetHash());
+                if (redis == null)
+                    return;
+
+                await using (await _distributedLock.Lock(world, GetLockKey(redisKey)))
+                {
+                    await _redis.RemoveFieldsAsync(redis, redisKey, fields);
+                    foreach (var field in fields)
+                        _local.RemoveField(redisKey, field);
+                }
+
+                await _dbExecuteService.Post(world, keyForLockAndRedisKey.GetHash(), deleteSql, redisKey.ToString());
+            });
+        }
     }
 }

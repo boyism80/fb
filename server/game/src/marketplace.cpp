@@ -545,6 +545,52 @@ void marketplace::set_pending_listings(marketplace::pending_listings_t pending_l
     this->_pending_listings = std::move(pending_listings);
 }
 
+std::string marketplace::attachments_to_json(const std::vector<fb::model::dsl>& attachments)
+{
+    if (attachments.empty())
+        return "[]";
+
+    auto json_array = Json::Value{Json::arrayValue};
+    for (const auto& dsl : attachments)
+    {
+        json_array.append(dsl.to_json());
+    }
+
+    auto builder           = Json::StreamWriterBuilder{};
+    builder["emitUTF8"]    = true;
+    builder["indentation"] = "";
+    auto writer            = std::unique_ptr<Json::StreamWriter>(builder.newStreamWriter());
+    auto stream            = std::ostringstream{};
+    writer->write(json_array, &stream);
+    return stream.str();
+}
+
+std::vector<fb::protocol::internal::MarketplacePending> marketplace::to_save_dtos() const
+{
+    this->_owner.assert_thread();
+
+    auto dtos = std::vector<fb::protocol::internal::MarketplacePending>{};
+    dtos.reserve(this->_pending_listings.size());
+
+    for (const auto& [key, info] : this->_pending_listings)
+    {
+        if (info.dsls.empty())
+            continue;
+
+        dtos.push_back(fb::protocol::internal::MarketplacePending{this->_owner.id,
+                                                                  key,
+                                                                  static_cast<uint8_t>(info.type),
+                                                                  info.purchase_id,
+                                                                  info.listing_id,
+                                                                  attachments_to_json(info.dsls),
+                                                                  info.expected_purchase_count,
+                                                                  info.expected_total_price,
+                                                                  info.character_id});
+    }
+
+    return dtos;
+}
+
 async::task<void> marketplace::restore()
 {
     this->_owner.assert_thread();

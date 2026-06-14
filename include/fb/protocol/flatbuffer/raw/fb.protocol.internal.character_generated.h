@@ -67,11 +67,10 @@ struct Character FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
     VT_AUX_BOT_COLOR = 72,
     VT_BUFFS = 74,
     VT_TITLE = 76,
-    VT_PENDING_LISTINGS = 78,
-    VT_CREATED_DATE = 80,
-    VT_UPDATED_DATE = 82,
-    VT_FIRST_LOGIN_DATE = 84,
-    VT_SUPER_HIDE = 86
+    VT_CREATED_DATE = 78,
+    VT_UPDATED_DATE = 80,
+    VT_FIRST_LOGIN_DATE = 82,
+    VT_SUPER_HIDE = 84
   };
   uint32_t id() const {
     return GetField<uint32_t>(VT_ID, 0);
@@ -184,9 +183,6 @@ struct Character FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
   const ::flatbuffers::String *title() const {
     return GetPointer<const ::flatbuffers::String *>(VT_TITLE);
   }
-  const ::flatbuffers::String *pending_listings() const {
-    return GetPointer<const ::flatbuffers::String *>(VT_PENDING_LISTINGS);
-  }
   const ::flatbuffers::String *created_date() const {
     return GetPointer<const ::flatbuffers::String *>(VT_CREATED_DATE);
   }
@@ -254,8 +250,6 @@ struct Character FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
            verifier.VerifyVectorOfTables(buffs()) &&
            VerifyOffset(verifier, VT_TITLE) &&
            verifier.VerifyString(title()) &&
-           VerifyOffset(verifier, VT_PENDING_LISTINGS) &&
-           verifier.VerifyString(pending_listings()) &&
            VerifyOffset(verifier, VT_CREATED_DATE) &&
            verifier.VerifyString(created_date()) &&
            VerifyOffset(verifier, VT_UPDATED_DATE) &&
@@ -382,9 +376,6 @@ struct CharacterBuilder {
   void add_title(::flatbuffers::Offset<::flatbuffers::String> title) {
     fbb_.AddOffset(Character::VT_TITLE, title);
   }
-  void add_pending_listings(::flatbuffers::Offset<::flatbuffers::String> pending_listings) {
-    fbb_.AddOffset(Character::VT_PENDING_LISTINGS, pending_listings);
-  }
   void add_created_date(::flatbuffers::Offset<::flatbuffers::String> created_date) {
     fbb_.AddOffset(Character::VT_CREATED_DATE, created_date);
   }
@@ -447,7 +438,6 @@ inline ::flatbuffers::Offset<Character> CreateCharacter(
     ::flatbuffers::Offset<nullable::nullable_ubyte> aux_bot_color = 0,
     ::flatbuffers::Offset<::flatbuffers::Vector<::flatbuffers::Offset<fb::protocol::internal::raw::Buff>>> buffs = 0,
     ::flatbuffers::Offset<::flatbuffers::String> title = 0,
-    ::flatbuffers::Offset<::flatbuffers::String> pending_listings = 0,
     ::flatbuffers::Offset<::flatbuffers::String> created_date = 0,
     ::flatbuffers::Offset<::flatbuffers::String> updated_date = 0,
     ::flatbuffers::Offset<::flatbuffers::String> first_login_date = 0,
@@ -456,7 +446,6 @@ inline ::flatbuffers::Offset<Character> CreateCharacter(
   builder_.add_first_login_date(first_login_date);
   builder_.add_updated_date(updated_date);
   builder_.add_created_date(created_date);
-  builder_.add_pending_listings(pending_listings);
   builder_.add_title(title);
   builder_.add_buffs(buffs);
   builder_.add_aux_bot_color(aux_bot_color);
@@ -537,7 +526,6 @@ inline ::flatbuffers::Offset<Character> CreateCharacterDirect(
     ::flatbuffers::Offset<nullable::nullable_ubyte> aux_bot_color = 0,
     const std::vector<::flatbuffers::Offset<fb::protocol::internal::raw::Buff>> *buffs = nullptr,
     const char *title = nullptr,
-    const char *pending_listings = nullptr,
     const char *created_date = nullptr,
     const char *updated_date = nullptr,
     const char *first_login_date = nullptr,
@@ -546,7 +534,6 @@ inline ::flatbuffers::Offset<Character> CreateCharacterDirect(
   auto pw__ = pw ? _fbb.CreateString(pw) : 0;
   auto buffs__ = buffs ? _fbb.CreateVector<::flatbuffers::Offset<fb::protocol::internal::raw::Buff>>(*buffs) : 0;
   auto title__ = title ? _fbb.CreateString(title) : 0;
-  auto pending_listings__ = pending_listings ? _fbb.CreateString(pending_listings) : 0;
   auto created_date__ = created_date ? _fbb.CreateString(created_date) : 0;
   auto updated_date__ = updated_date ? _fbb.CreateString(updated_date) : 0;
   auto first_login_date__ = first_login_date ? _fbb.CreateString(first_login_date) : 0;
@@ -589,7 +576,6 @@ inline ::flatbuffers::Offset<Character> CreateCharacterDirect(
       aux_bot_color,
       buffs__,
       title__,
-      pending_listings__,
       created_date__,
       updated_date__,
       first_login_date__,

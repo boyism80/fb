@@ -41,6 +41,8 @@ namespace Http.Service
 
         public MarriageRepository Marriage => Bind<MarriageRepository>();
 
+        public MarketplacePendingRepository MarketplacePending => Bind<MarketplacePendingRepository>();
+
 
         public MySqlConnection GetUnifiedConnection()
         {

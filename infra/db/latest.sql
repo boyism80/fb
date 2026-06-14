@@ -250,26 +250,6 @@ CREATE TABLE `name_registry` (
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
--- Table structure for table `ban`
---
-
-DROP TABLE IF EXISTS `ban`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!50503 SET character_set_client = utf8mb4 */;
-CREATE TABLE `ban` (
-  `user` int unsigned NOT NULL,
-  `reason` varchar(256) CHARACTER SET utf8mb3 COLLATE utf8mb3_bin NOT NULL,
-  `expire_date` datetime DEFAULT NULL,
-  `deleted` tinyint NOT NULL DEFAULT '0',
-  `created_date` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  `updated_date` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  PRIMARY KEY (`user`),
-  KEY `fk.ban.user_idx` (`user`),
-  CONSTRAINT `fk.ban.user` FOREIGN KEY (`user`) REFERENCES `name_registry` (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_bin;
-/*!40101 SET character_set_client = @saved_cs_client */;
-
---
 -- Table structure for table `option`
 --
 
@@ -337,6 +317,29 @@ CREATE TABLE `spell` (
   KEY `spell_owner_idx` (`owner`),
   CONSTRAINT `fk.spell.owner` FOREIGN KEY (`owner`) REFERENCES `user` (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Table structure for table `marketplace_pending`
+--
+
+DROP TABLE IF EXISTS `marketplace_pending`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
+CREATE TABLE `marketplace_pending` (
+  `user` int unsigned NOT NULL,
+  `pending_key` varchar(64) CHARACTER SET utf8mb3 COLLATE utf8mb3_bin NOT NULL,
+  `type` tinyint unsigned NOT NULL,
+  `purchase_id` varchar(64) CHARACTER SET utf8mb3 COLLATE utf8mb3_bin NOT NULL DEFAULT '',
+  `listing_id` varchar(64) CHARACTER SET utf8mb3 COLLATE utf8mb3_bin NOT NULL DEFAULT '',
+  `attachments` json NOT NULL,
+  `expected_purchase_count` smallint unsigned NOT NULL DEFAULT '0',
+  `expected_total_price` int unsigned NOT NULL DEFAULT '0',
+  `character_id` int unsigned NOT NULL,
+  `created_date` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `updated_date` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (`user`,`pending_key`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_bin;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -477,7 +480,6 @@ CREATE TABLE `user` (
   `aux_bot_color` int unsigned DEFAULT NULL,
   `buffs` varchar(512) NOT NULL DEFAULT '[]',
   `title` varchar(32) NOT NULL DEFAULT '',
-  `pending_listings` json DEFAULT NULL,
   `super_hide` tinyint unsigned NOT NULL DEFAULT '0',
   `deleted` tinyint unsigned NOT NULL DEFAULT '0',
   `created_date` datetime NOT NULL,
@@ -488,6 +490,24 @@ CREATE TABLE `user` (
   UNIQUE KEY `name_UNIQUE` (`name`),
   KEY `INDEX_NAME` (`name`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Table structure for table `ban`
+--
+
+DROP TABLE IF EXISTS `ban`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
+CREATE TABLE `ban` (
+  `user` int unsigned NOT NULL,
+  `reason` varchar(256) CHARACTER SET utf8mb3 COLLATE utf8mb3_bin NOT NULL,
+  `expire_date` datetime DEFAULT NULL,
+  `deleted` tinyint NOT NULL DEFAULT '0',
+  `created_date` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `updated_date` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (`user`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_bin;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --

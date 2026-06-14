@@ -1507,39 +1507,6 @@ fb::protocol::internal::Character character::to_protocol() const
         dto.buffs.push_back({buff->model.id, remaining_s});
     }
 
-    const auto& pending_listings = this->marketplace.pending_listings();
-    if (!pending_listings.empty())
-    {
-        auto json = Json::Value{Json::objectValue};
-        for (const auto& [listing_id, pending_info] : pending_listings)
-        {
-            auto info_json            = Json::Value{Json::objectValue};
-            info_json["type"]         = static_cast<uint8_t>(pending_info.type);
-            info_json["character_id"] = pending_info.character_id;
-
-            auto dsl_array = Json::Value{Json::arrayValue};
-            for (const auto& dsl : pending_info.dsls)
-            {
-                dsl_array.append(dsl.to_json());
-            }
-            info_json["dsls"] = dsl_array;
-
-            json[listing_id] = info_json;
-        }
-        // Use StreamWriterBuilder to output UTF-8 characters without escape sequences
-        auto builder           = Json::StreamWriterBuilder{};
-        builder["emitUTF8"]    = true; // Output UTF-8 characters directly without escape sequences
-        builder["indentation"] = "";   // Compact output (no indentation)
-        auto writer            = std::unique_ptr<Json::StreamWriter>(builder.newStreamWriter());
-        auto stream            = std::ostringstream{};
-        writer->write(json, &stream);
-        dto.pending_listings = stream.str();
-    }
-    else
-    {
-        dto.pending_listings = std::nullopt;
-    }
-
     return dto;
 }
 

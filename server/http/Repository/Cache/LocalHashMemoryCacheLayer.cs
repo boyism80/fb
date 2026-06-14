@@ -70,5 +70,15 @@ namespace Http.Reepository.Cache
         {
             _cache.Remove(ToKey(redisKey));
         }
+
+        public void RemoveField(RedisKey redisKey, RedisValue field)
+        {
+            if (!_cache.TryGetValue(ToKey(redisKey), out var fields))
+                return;
+
+            fields.Remove(field.ToString());
+            if (fields.Count == 0)
+                _cache.Remove(ToKey(redisKey));
+        }
     }
 }
