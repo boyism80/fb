@@ -362,6 +362,7 @@ namespace Internal.Controllers
             var achievements = await _dbContext.Achievement.Get(world, uid);
             var quests = await _dbContext.Quest.Get(world, uid);
             var storageBoxes = await _dbContext.StorageBox.Get(world, uid);
+            var marketplacePendings = await _dbContext.MarketplacePending.Get(world, uid);
             var option = await _dbContext.Option.Get(world, uid) ??
                 _dbContext.Option.Set(world, new Option
                 {
@@ -401,6 +402,7 @@ namespace Internal.Controllers
                     .Where(box => box.ExpiredDate == null || box.ExpiredDate > now)
                     .Select(_mapper.Map<Protocol.StorageBox>)
                     .ToList(),
+                MarketplacePendings = marketplacePendings.Select(_mapper.Map<Protocol.MarketplacePending>).ToList(),
                 Option = _mapper.Map<Protocol.Option>(option),
                 Clan = sync.Clan,
                 Group = sync.Group,
@@ -430,6 +432,23 @@ namespace Internal.Controllers
             }
 
             return dst.Values.ToArray();
+        }
+
+        private void ApplyMarketplacePendingSnapshot(
+            uint world,
+            uint userId,
+            MarketplacePending[] request,
+            IReadOnlyList<MarketplacePending> existing)
+        {
+            var src = request.ToDictionary(x => x.PendingKey);
+            var existingByKey = existing.ToDictionary(x => x.PendingKey);
+
+            var removedKeys = existingByKey.Keys.Except(src.Keys).ToArray();
+            if (removedKeys.Length > 0)
+                _dbContext.MarketplacePending.DeleteMany(world, userId, removedKeys);
+
+            if (src.Count > 0)
+                _dbContext.MarketplacePending.Set(world, src.Values.ToArray());
         }
 
         [HttpPost("save")]
@@ -513,9 +532,10 @@ namespace Internal.Controllers
             var achievementsTask = _dbContext.Achievement.GetMany(world, characterIds);
             var questsTask = _dbContext.Quest.GetMany(world, characterIds);
             var storageBoxesTask = _dbContext.StorageBox.GetMany(world, characterIds);
+            var marketplacePendingsTask = _dbContext.MarketplacePending.GetMany(world, characterIds);
 
             await Task.WhenAll(charactersTask, itemsTask, spellsTask, achievementsTask, questsTask,
-                storageBoxesTask);
+                storageBoxesTask, marketplacePendingsTask);
 
             var characters = await charactersTask;
             var itemsByOwner = await itemsTask;
@@ -523,6 +543,7 @@ namespace Internal.Controllers
             var achievementsByOwner = await achievementsTask;
             var questsByOwner = await questsTask;
             var storageBoxesByOwner = await storageBoxesTask;
+            var marketplacePendingsByOwner = await marketplacePendingsTask;
 
             foreach (var data in payloads)
             {
@@ -537,7 +558,8 @@ namespace Internal.Controllers
                     spellsByOwner.GetValueOrDefault(characterId) ?? Array.Empty<Spell>(),
                     achievementsByOwner.GetValueOrDefault(characterId) ?? Array.Empty<Achievement>(),
                     questsByOwner.GetValueOrDefault(characterId) ?? Array.Empty<Quest>(),
-                    storageBoxesByOwner.GetValueOrDefault(characterId) ?? Array.Empty<StorageBox>());
+                    storageBoxesByOwner.GetValueOrDefault(characterId) ?? Array.Empty<StorageBox>(),
+                    marketplacePendingsByOwner.GetValueOrDefault(characterId) ?? Array.Empty<MarketplacePending>());
             }
         }
 
@@ -548,7 +570,8 @@ namespace Internal.Controllers
             IReadOnlyList<Spell> existingSpells,
             IReadOnlyList<Achievement> existingAchievements,
             IReadOnlyList<Quest> existingQuests,
-            IReadOnlyList<StorageBox> existingStorageBoxes)
+            IReadOnlyList<StorageBox> existingStorageBoxes,
+            IReadOnlyList<MarketplacePending> existingMarketplacePendings)
         {
             var characterId = data.Character.Id;
 
@@ -574,6 +597,10 @@ namespace Internal.Controllers
 
             var storageBoxes = ReconcileSnapshot(_mapper.Map<Protocol.StorageBox[], StorageBox[]>(data.StorageBoxes?.ToArray() ?? Array.Empty<Protocol.StorageBox>()), existingStorageBoxes);
             _dbContext.StorageBox.Set(world, storageBoxes);
+
+            var marketplacePendings = _mapper.Map<Protocol.MarketplacePending[], MarketplacePending[]>(
+                data.MarketplacePendings?.ToArray() ?? Array.Empty<Protocol.MarketplacePending>());
+            ApplyMarketplacePendingSnapshot(world, characterId, marketplacePendings, existingMarketplacePendings);
         }
 
         [HttpPost("option")]

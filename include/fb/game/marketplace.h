@@ -12,6 +12,10 @@
 #include <cstdint>
 #include <async/task.h>
 
+namespace fb::protocol::internal {
+class MarketplacePending;
+}
+
 namespace fb::game {
 class character;
 class server;
@@ -111,6 +115,11 @@ public:
     void                              set_pending_listings(pending_listings_t pending_listings);
     async::task<void>                 restore();
     const pending_listings_t&         pending_listings() const;
+
+    std::vector<fb::protocol::internal::MarketplacePending> to_save_dtos() const;
+
+private:
+    static std::string attachments_to_json(const std::vector<fb::model::dsl>& attachments);
 };
 
 } // namespace fb::game

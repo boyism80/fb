@@ -200,6 +200,14 @@ namespace Http.Reepository.Cache
                 values: scriptValues.ToArray());
         }
 
+        public async Task RemoveFieldsAsync(Service.Redis redis, RedisKey cacheKey, IReadOnlyList<RedisValue> fields)
+        {
+            if (redis == null || fields == null || fields.Count == 0)
+                return;
+
+            await redis.Connection.HashDeleteAsync(cacheKey, fields.ToArray());
+        }
+
         public async Task<IReadOnlyList<(RedisKey RedisKey, Dictionary<string, string> Fields)>> TryGetManyAsync(
             Service.Redis redis,
             IReadOnlyList<RedisKey> redisKeys)

@@ -24,6 +24,7 @@ private:
     void                  init_items(const std::vector<internal::Item>& response, character& ch);
     void                  init_spells(const std::vector<internal::Spell>& response, character& ch);
     void                  init_quests(const std::vector<internal::Quest>& response, character& ch);
+    void                  init_marketplace(const std::vector<internal::MarketplacePending>& response, character& ch);
     void                  init_achievements(const std::vector<internal::Achievement>& response, character& ch);
     void                  init_storage(const internal_resp::Init& response, character& ch);
     async::task<ch_ptr_t> init(const game_reqs::login& request, fb::socket<character>& session);

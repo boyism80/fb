@@ -5,7 +5,7 @@ namespace Http.Model
     public class BanKey : BaseModel, IRedisValueKey
     {
         public required uint User { get; set; }
-        public uint? GetHash() => 0;
+        public uint? GetHash() => User;
 
         public RedisKey GetRedisKey() => $"fb:cache:ban:{User}";
     }

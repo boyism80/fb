@@ -40,8 +40,6 @@ namespace Http.Service
                 UpdatedDate = DateTime.Now
             };
 
-            // Use BanRepository's Set method which will use the correct connection
-            // Note: Ban is stored in world-global DB (-1)
             _dbContext.Ban.Set(world, ban);
 
             _logger.LogInformation("User {Name} (ID: {UserId}) in world {World} has been banned. Reason: {Reason}, Expire: {ExpireDate}",
@@ -113,8 +111,8 @@ namespace Http.Service
             // Check if ban is expired
             if (ban.ExpireDate.HasValue && ban.ExpireDate.Value <= DateTime.Now)
             {
-                // Ban expired, remove it
                 await _dbContext.Ban.Delete(world, userId.Value);
+                await _dbContext.SaveChangesAsync();
                 _logger.LogInformation("Expired ban removed for user {Name} (ID: {UserId}) in world {World}", name, userId.Value, world);
                 return null;
             }

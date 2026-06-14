@@ -19,8 +19,7 @@ namespace Http.Mapping
                 .ForMember(x => x.UpdatedDate, x => x.MapFrom(u => u.UpdatedDate.ToString("yyyy-MM-dd HH:mm:ss")))
                 .ForMember(x => x.FirstLoginDate, x => x.MapFrom(u => u.FirstLoginDate.HasValue ? u.FirstLoginDate.Value.ToString("yyyy-MM-dd HH:mm:ss") : null))
                 .ForMember(x => x.Position, x => x.MapFrom(u => new Protocol.Position { X = u.PositionX, Y = u.PositionY }))
-                .ForMember(x => x.Role, x => x.MapFrom(u => (byte)u.Role))
-                .ForMember(x => x.PendingListings, x => x.MapFrom(u => u.PendingListings == null || u.PendingListings.Count == 0 ? null : JsonConvert.SerializeObject(u.PendingListings)));
+                .ForMember(x => x.Role, x => x.MapFrom(u => (byte)u.Role));
 
             CreateMap<Protocol.Character, Http.Model.Character>()
                 .ForMember(x => x.Mimicry, x => x.MapFrom(u => u.Mimicry))
@@ -30,8 +29,24 @@ namespace Http.Mapping
                 .ForMember(x => x.FirstLoginDate, x => x.MapFrom(u => string.IsNullOrEmpty(u.FirstLoginDate) ? null : (DateTime?)DateTime.Parse(u.FirstLoginDate)))
                 .ForMember(x => x.PositionX, x => x.MapFrom(u => u.Position.X))
                 .ForMember(x => x.PositionY, x => x.MapFrom(u => u.Position.Y))
-                .ForMember(x => x.Role, x => x.MapFrom(u => (Fb.Model.EnumValue.Role)u.Role))
-                .ForMember(x => x.PendingListings, x => x.MapFrom(u => string.IsNullOrEmpty(u.PendingListings) ? new Dictionary<string, List<Fb.Model.Dsl>>() : (JsonConvert.DeserializeObject<Dictionary<string, List<Fb.Model.Dsl>>>(u.PendingListings) ?? new Dictionary<string, List<Fb.Model.Dsl>>())));
+                .ForMember(x => x.Role, x => x.MapFrom(u => (Fb.Model.EnumValue.Role)u.Role));
+
+            CreateMap<Http.Model.MarketplacePending, Protocol.MarketplacePending>()
+                .ForMember(x => x.User, x => x.MapFrom(u => u.User))
+                .ForMember(x => x.Attachments, x => x.Ignore())
+                .AfterMap((src, dest) =>
+                {
+                    dest.Attachments = JsonConvert.SerializeObject(src.Attachments ?? new List<Fb.Model.Dsl>());
+                });
+
+            CreateMap<Protocol.MarketplacePending, Http.Model.MarketplacePending>()
+                .ForMember(x => x.Attachments, x => x.Ignore())
+                .AfterMap((src, dest) =>
+                {
+                    dest.Attachments = string.IsNullOrWhiteSpace(src.Attachments)
+                        ? new List<Fb.Model.Dsl>()
+                        : (JsonConvert.DeserializeObject<List<Fb.Model.Dsl>>(src.Attachments) ?? new List<Fb.Model.Dsl>());
+                });
 
             CreateMap<Http.Model.Spell, Protocol.Spell>()
                 .ForMember(x => x.User, x => x.MapFrom(u => u.Owner))

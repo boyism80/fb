@@ -74,7 +74,6 @@ table Character {
     aux_bot_color: ubyte?;
     buffs: [Buff];
     title: string;
-    pending_listings: string?;
     created_date: string;
     updated_date: string;
     first_login_date: string?;
@@ -222,6 +221,18 @@ table Quest {
     completed: bool;
 }
 
+table MarketplacePending {
+    user: uint;
+    pending_key: string;
+    type: ubyte;
+    purchase_id: string;
+    listing_id: string;
+    attachments: string;
+    expected_purchase_count: ushort;
+    expected_total_price: uint;
+    character_id: uint;
+}
+
 table SystemMail {
     id: uint;
     sender: uint;
@@ -267,4 +278,5 @@ table SavePayload {
     achievements: [Achievement];
     quests: [Quest];
     storage_boxes: [StorageBox];
+    marketplace_pendings: [MarketplacePending];
 }

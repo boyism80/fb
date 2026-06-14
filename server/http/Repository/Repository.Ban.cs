@@ -1,5 +1,4 @@
-﻿using Dapper;
-using Http.Extension;
+﻿using Http.Extension;
 using Http.Model;
 using Http.Service;
 
@@ -14,19 +13,8 @@ namespace Http.Reepository
         {
         }
 
-
-        public async Task<Ban> Get(uint world, uint userId)
-        {
-            await using var conn = _dbContext.GetGlobalConnection(world);
-            var value = await conn.QuerySingleOrDefaultAsync<Ban>(OnSelect(new BanKey { User = userId }));
-            if (value == null)
-                return null;
-
-            if (value.Deleted)
-                return null;
-
-            return value;
-        }
+        public Task<Ban> Get(uint world, uint userId) =>
+            base.Get(world, new BanKey { User = userId });
 
         protected override string OnSelect(BanKey key)
         {
@@ -68,7 +56,6 @@ namespace Http.Reepository
             return sql;
         }
 
-
         public async Task Delete(uint world, uint userId)
         {
             var ban = await Get(world, userId);
@@ -76,10 +63,7 @@ namespace Http.Reepository
                 return;
 
             ban.Deleted = true;
-            // Note: Set method needs to be updated to support world, but for now use direct connection
-            await using var conn = _dbContext.GetGlobalConnection(world);
-            await conn.ExecuteAsync(OnUpsert(ban));
+            Set(world, ban);
         }
     }
 }
-

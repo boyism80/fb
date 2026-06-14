@@ -592,8 +592,9 @@ internal::SavePayload server::save_payload(const character& ch) const
             internal::Quest{ch.id, qid, quest->step(), quest->progress(), quest->param(), quest->completed()});
     }
 
-    const auto now           = this->now();
-    auto       storage_boxes = ch.storage_box.to_save_dtos(ch.id, now);
+    const auto now                  = this->now();
+    auto       storage_boxes        = ch.storage_box.to_save_dtos(ch.id, now);
+    auto       marketplace_pendings = ch.marketplace.to_save_dtos();
 
     return internal::SavePayload(ch.to_protocol(),
                                  ch.marriage().to_protocol(),
@@ -601,7 +602,8 @@ internal::SavePayload server::save_payload(const character& ch) const
                                  spells,
                                  achievements,
                                  quests,
-                                 storage_boxes);
+                                 storage_boxes,
+                                 marketplace_pendings);
 }
 
 async::task<void> server::save()
