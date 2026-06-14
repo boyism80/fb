@@ -983,22 +983,25 @@ DELIMITER ;
 DELIMITER ;;
 CREATE DEFINER=`fb`@`%` PROCEDURE `USP_MAIL_DELIVER_SYSTEM_MANY`(
     IN system_mail_id INT UNSIGNED,
-    IN sender INT,
-    IN title NVARCHAR(64),
-    IN contents NVARCHAR(256)
+    IN sender INT
 )
 BEGIN
     DECLARE done INT DEFAULT FALSE;
     DECLARE v_user INT UNSIGNED;
+    DECLARE v_title NVARCHAR(64);
+    DECLARE v_contents NVARCHAR(256);
     DECLARE new_id INT UNSIGNED;
 
-    -- Caller must populate session temp table tmp_mail_write_users (user_id) on the same connection.
+    -- Caller must populate session temp tables on the same connection:
+    --   tmp_mail_write_users (user_id)
+    --   tmp_mail_deliver_content (user_id, title, contents) — per-recipient rendered text
 
     DECLARE user_cursor CURSOR FOR
-        SELECT user_id
-        FROM tmp_mail_write_users
-        WHERE user_id > 0
-        ORDER BY user_id;
+        SELECT u.user_id, c.title, c.contents
+        FROM tmp_mail_write_users u
+        INNER JOIN tmp_mail_deliver_content c ON c.user_id = u.user_id
+        WHERE u.user_id > 0
+        ORDER BY u.user_id;
 
     DECLARE CONTINUE HANDLER FOR NOT FOUND SET done = TRUE;
 
@@ -1020,7 +1023,7 @@ BEGIN
     OPEN user_cursor;
 
     read_loop: LOOP
-        FETCH user_cursor INTO v_user;
+        FETCH user_cursor INTO v_user, v_title, v_contents;
         IF done THEN
             LEAVE read_loop;
         END IF;
@@ -1047,7 +1050,7 @@ BEGIN
         END IF;
 
         INSERT INTO mail (`id`, `user`, `sender`, `title`, `contents`, `system_mail_id`)
-        VALUES (new_id, v_user, sender, title, contents, system_mail_id);
+        VALUES (new_id, v_user, sender, v_title, v_contents, system_mail_id);
 
         INSERT INTO tmp_mail_written (`user`, `id`) VALUES (v_user, new_id);
     END LOOP;

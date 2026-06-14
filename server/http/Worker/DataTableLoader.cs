@@ -70,6 +70,12 @@ namespace Http.Worker
             value.Load();
         }
 
+        protected override void OnFinish()
+        {
+            AbilityStackedExp.BuildCache();
+            base.OnFinish();
+        }
+
         protected override void OnWorked(Container input, int percent)
         {
             var attr = input.GetType().GetCustomAttributes(typeof(TableAttribute), true).FirstOrDefault() as TableAttribute;

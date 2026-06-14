@@ -361,6 +361,28 @@ private:                                           \
 public:                                            \
     const fb::model::recipe* find(const std::vector<fb::model::dsl::item>& dsl) const;
 
+#define DECLARE_ABILITY_CONTAINER_CUSTOM_CONSTRUCTOR \
+    __ability();                                     \
+    __ability(const __ability&) = delete;            \
+    ~__ability()                = default;
+
+#define DECLARE_ABILITY_CONTAINER_EXTENSION                                                               \
+                                                                                                          \
+private:                                                                                                  \
+    std::unordered_map<fb::model::enum_value::CLASS, std::unordered_map<uint8_t, uint32_t>> _stacked_exp; \
+                                                                                                          \
+    void build_stacked_exp();                                                                             \
+                                                                                                          \
+public:                                                                                                   \
+    void load() override                                                                                  \
+    {                                                                                                     \
+        fb::model::kv_container<fb::model::enum_value::CLASS,                                             \
+                                fb::model::kv_container<uint8_t, fb::model::ability>>::load();            \
+        this->build_stacked_exp();                                                                        \
+    }                                                                                                     \
+                                                                                                          \
+    uint32_t stacked_exp(fb::model::enum_value::CLASS cls, uint8_t level) const;
+
 #define DECLARE_AFTER_ENUM                                                                  \
     template <typename T>                                                                   \
     struct point<T>& point<T>::move(fb::model::enum_value::DIRECTION direction, T step)     \

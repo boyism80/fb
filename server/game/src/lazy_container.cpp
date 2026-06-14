@@ -21,7 +21,8 @@ lazy_container<Entity, NumBuckets>::ensure_guard::ensure_guard(write_guard&& gua
 { }
 
 template <typename Entity, size_t NumBuckets>
-typename lazy_container<Entity, NumBuckets>::entity_ptr& lazy_container<Entity, NumBuckets>::ensure_guard::value() noexcept
+typename lazy_container<Entity, NumBuckets>::entity_ptr&
+lazy_container<Entity, NumBuckets>::ensure_guard::value() noexcept
 {
     if (this->_write_guard.has_value())
         return this->_write_guard->value();
@@ -96,8 +97,8 @@ lazy_container<Entity, NumBuckets>::ensure_impl(uint32_t id, fb::thread& thread_
 }
 
 template <typename Entity, size_t NumBuckets>
-async::task<typename lazy_container<Entity, NumBuckets>::ensure_guard> lazy_container<Entity, NumBuckets>::ensure(
-    uint32_t id)
+async::task<typename lazy_container<Entity, NumBuckets>::ensure_guard>
+lazy_container<Entity, NumBuckets>::ensure(uint32_t id)
 {
     auto* thread = this->_server.threads.current();
     if (thread == nullptr)
@@ -123,10 +124,10 @@ template class lazy_container<group>::ensure_guard;
 template lazy_container<clan>::lazy_container(server&);
 template lazy_container<group>::lazy_container(server&);
 
-template async::task<lazy_container<clan>::ensure_guard> lazy_container<clan>::ensure_impl(uint32_t, fb::thread&);
+template async::task<lazy_container<clan>::ensure_guard>  lazy_container<clan>::ensure_impl(uint32_t, fb::thread&);
 template async::task<lazy_container<group>::ensure_guard> lazy_container<group>::ensure_impl(uint32_t, fb::thread&);
 
-template async::task<lazy_container<clan>::ensure_guard> lazy_container<clan>::ensure(uint32_t);
+template async::task<lazy_container<clan>::ensure_guard>  lazy_container<clan>::ensure(uint32_t);
 template async::task<lazy_container<group>::ensure_guard> lazy_container<group>::ensure(uint32_t);
 
 template bool lazy_container<clan>::contains(hash_type) const;

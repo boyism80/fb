@@ -74,11 +74,26 @@ else
                         <tr class="server-group-detail-row">
                             <td colspan="4">
                                 <div class="server-instance-list">
-                                    <table class="server-instance-table">
+                                    <table class="server-instance-table @(ShowWorld ? "has-world-col" : null)">
+                                        @if (ShowWorld)
+                                        {
+                                            <thead>
+                                                <tr>
+                                                    <th>월드</th>
+                                                    <th>인스턴스</th>
+                                                    <th>엔드포인트</th>
+                                                    <th class="server-instance-status">상태</th>
+                                                </tr>
+                                            </thead>
+                                        }
                                         <tbody>
                                             @foreach (var instance in group.Instances)
                                             {
                                                 <tr>
+                                                    @if (ShowWorld)
+                                                    {
+                                                        <td class="server-instance-world">@FormatWorldName(instance.World)</td>
+                                                    }
                                                     <td class="server-instance-name">@instance.Name</td>
                                                     <td class="server-instance-endpoint">@instance.IP:@instance.Port</td>
                                                     <td class="server-instance-status">
@@ -111,6 +126,12 @@ else
 
     [Parameter]
     public bool Compact { get; set; }
+
+    [Parameter]
+    public bool ShowWorld { get; set; }
+
+    [Parameter]
+    public IReadOnlyDictionary<uint, string>? WorldNames { get; set; }
 
     [Parameter]
     public string EmptyMessage { get; set; } = "실행 중인 서버가 없습니다.";
@@ -195,6 +216,14 @@ else
                 ? service
                 : char.ToUpper(service[0]) + service[1..]
         };
+
+    private string FormatWorldName(uint world)
+    {
+        if (WorldNames != null && WorldNames.TryGetValue(world, out var name))
+            return name;
+
+        return $"World {world}";
+    }
 
     private sealed class ServerGroup
     {

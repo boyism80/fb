@@ -1,0 +1,157 @@
+@using AdminTool.Services
+
+<div class="user-detail-items">
+    <div class="card-bg stitch-form-card mb-4">
+        <div class="stitch-form-card-header">
+            <h2 class="dash-card-title">장착 아이템</h2>
+            <span class="stitch-badge">@Items.Equipped.Count 부위</span>
+        </div>
+        <div class="user-detail-card-content">
+            @if (Items.Equipped.Any())
+            {
+                <div class="dash-table-wrap">
+                    <table class="dash-table">
+                        <thead>
+                            <tr>
+                                <th>부위</th>
+                                <th>모델 ID</th>
+                                <th>아이템명</th>
+                                <th>수량</th>
+                                <th>내구도</th>
+                                <th>커스텀명</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var item in Items.Equipped)
+                            {
+                                <tr>
+                                    <td>@UserDetailDisplay.FormatPartsName(item.Parts)</td>
+                                    <td class="table-meta">@item.Model</td>
+                                    <td>@UserDetailDisplay.FormatItemName(item.Model)</td>
+                                    <td>@item.Count</td>
+                                    <td>@(item.Durability?.ToString() ?? "-")</td>
+                                    <td>@(string.IsNullOrEmpty(item.CustomName) ? "-" : item.CustomName)</td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            }
+            else
+            {
+                <p class="text-muted mb-0">장착된 아이템이 없습니다.</p>
+            }
+        </div>
+    </div>
+
+    <div class="card-bg stitch-form-card mb-4">
+        <div class="stitch-form-card-header">
+            <h2 class="dash-card-title">인벤토리</h2>
+            <span class="stitch-badge">@GetInventorySlotSummary()</span>
+        </div>
+        <div class="user-detail-card-content">
+            @if (Items.Inventory.Any())
+            {
+                <div class="dash-table-wrap">
+                    <table class="dash-table">
+                        <thead>
+                            <tr>
+                                <th>슬롯</th>
+                                <th>모델 ID</th>
+                                <th>아이템명</th>
+                                <th>수량</th>
+                                <th>내구도</th>
+                                <th>커스텀명</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var item in Items.Inventory.OrderBy(i => i.Index))
+                            {
+                                <tr>
+                                    <td>@item.Index</td>
+                                    <td class="table-meta">@item.Model</td>
+                                    <td>@UserDetailDisplay.FormatItemName(item.Model)</td>
+                                    <td>@item.Count</td>
+                                    <td>@(item.Durability?.ToString() ?? "-")</td>
+                                    <td>@(string.IsNullOrEmpty(item.CustomName) ? "-" : item.CustomName)</td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            }
+            else
+            {
+                <p class="text-muted mb-0">인벤토리 아이템이 없습니다.</p>
+            }
+        </div>
+    </div>
+
+    <div class="card-bg stitch-form-card mb-4">
+        <div class="stitch-form-card-header">
+            <h2 class="dash-card-title">창고</h2>
+            <span class="stitch-badge">@GetStorageSlotSummary()</span>
+        </div>
+        <div class="user-detail-card-content">
+            @if (Items.Storage.Any())
+            {
+                <div class="dash-table-wrap">
+                    <table class="dash-table">
+                        <thead>
+                            <tr>
+                                <th>창고</th>
+                                <th>슬롯</th>
+                                <th>모델 ID</th>
+                                <th>아이템명</th>
+                                <th>수량</th>
+                                <th>내구도</th>
+                                <th>커스텀명</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var item in Items.Storage.OrderBy(i => i.Stored).ThenBy(i => i.Index))
+                            {
+                                <tr>
+                                    <td>@item.Stored</td>
+                                    <td>@item.Index</td>
+                                    <td class="table-meta">@item.Model</td>
+                                    <td>@UserDetailDisplay.FormatItemName(item.Model)</td>
+                                    <td>@item.Count</td>
+                                    <td>@(item.Durability?.ToString() ?? "-")</td>
+                                    <td>@(string.IsNullOrEmpty(item.CustomName) ? "-" : item.CustomName)</td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            }
+            else
+            {
+                <p class="text-muted mb-0">창고 아이템이 없습니다.</p>
+            }
+        </div>
+    </div>
+</div>
+
+@code {
+    [Parameter, EditorRequired]
+    public UserDetailItemsData Items { get; set; } = null!;
+
+    private string GetInventorySlotSummary()
+    {
+        if (!Items.Inventory.Any())
+            return "0 슬롯";
+
+        var maxIndex = Items.Inventory.Max(i => i.Index);
+        return $"{Items.Inventory.Count}개 · 최대 슬롯 {maxIndex}";
+    }
+
+    private string GetStorageSlotSummary()
+    {
+        if (!Items.Storage.Any())
+            return "0 슬롯";
+
+        var vaultCount = Items.Storage.Select(i => i.Stored).Distinct().Count();
+        return $"{Items.Storage.Count}개 · 창고 {vaultCount}개";
+    }
+}

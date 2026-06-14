@@ -116,9 +116,9 @@
                             <tr>
                                 <td class="table-meta">@userIndex</td>
                                 <td style="@(user.IsBanned ? "opacity:0.5;" : "")">
-                                    <strong>@user.Name</strong>
+                                    <a href="/users/@user.Id" class="user-name-link">@user.Name</a>
                                 </td>
-                                <td class="table-meta" style="@(user.IsBanned ? "opacity:0.5;" : "")">USR-@user.Id.ToString("D5")</td>
+                                <td class="table-meta" style="@(user.IsBanned ? "opacity:0.5;" : "")">@user.Id</td>
                                 <td style="text-align:right;">@user.Level</td>
                                 <td class="table-meta">@FormatRole(user.Role)</td>
                                 <td>
@@ -143,7 +143,7 @@
                                 <td class="table-meta">@user.UpdatedDate.ToString("yyyy-MM-dd HH:mm:ss")</td>
                                 <td>
                                     <div class="table-actions">
-                                        <a href="/users/@user.Id/items" class="text-link">상세</a>
+                                        <a href="/users/@user.Id" class="text-link">상세</a>
                                         <button class="text-link"
                                                 title="@GetChangeRoleButtonTitle(user)"
                                                 @onclick="() => ShowChangeRoleModal(user)"

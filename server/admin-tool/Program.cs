@@ -46,6 +46,7 @@ builder.Services.AddSingleton<Microsoft.AspNetCore.Authorization.IAuthorizationP
 // Admin tool services
 builder.Services.AddScoped<AdminTool.Services.AuthService>();
 builder.Services.AddScoped<AdminTool.Services.UserService>();
+builder.Services.AddScoped<AdminTool.Services.UserDetailService>();
 builder.Services.AddScoped<AdminTool.Services.MarketplaceAdminService>();
 builder.Services.AddSingleton<AdminTool.Services.AdminActivityLogService>();
 builder.Services.AddSingleton<Http.Service.MaintenanceService>();

@@ -1,0 +1,126 @@
+@using AdminTool.Services
+@using Http.Model
+
+<div class="user-detail-mail">
+    <div class="card-bg filter-toolbar user-detail-mail-filters">
+        <div class="filter-toolbar-left">
+            <button type="button" class="stitch-btn @(Filter == "all" ? "stitch-btn-primary" : "stitch-btn-neutral")"
+                    @onclick='() => SetFilter("all")'>전체</button>
+            <button type="button" class="stitch-btn @(Filter == "unread" ? "stitch-btn-primary" : "stitch-btn-neutral")"
+                    @onclick='() => SetFilter("unread")'>미읽음</button>
+            <button type="button" class="stitch-btn @(Filter == "system" ? "stitch-btn-primary" : "stitch-btn-neutral")"
+                    @onclick='() => SetFilter("system")'>시스템</button>
+        </div>
+        <div class="filter-toolbar-right">
+            @if (UnreadCount > 0)
+            {
+                <span class="stitch-badge active">미읽음 @UnreadCount</span>
+            }
+        </div>
+    </div>
+
+    <div class="card-bg stitch-form-card">
+        <div class="stitch-form-card-header">
+            <h2 class="dash-card-title">수신 메일</h2>
+            <span class="stitch-badge">@FilteredMails.Count</span>
+        </div>
+        <div class="user-detail-card-content">
+            @if (FilteredMails.Any())
+            {
+                <div class="dash-table-wrap">
+                    <table class="dash-table user-detail-mail-table">
+                        <thead>
+                            <tr>
+                                <th></th>
+                                <th>제목</th>
+                                <th>발신자</th>
+                                <th>수신일</th>
+                                <th class="text-end">시스템메일</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var mail in FilteredMails)
+                            {
+                                var isExpanded = expandedMailId == mail.Id;
+                                <tr class="@(mail.Read ? "" : "user-detail-mail-unread") @(isExpanded ? "expanded" : "")"
+                                    @onclick="() => ToggleMail(mail.Id)">
+                                    <td class="user-detail-mail-toggle">
+                                        <span class="material-symbols-outlined" aria-hidden="true">
+                                            @(isExpanded ? "expand_less" : "expand_more")
+                                        </span>
+                                    </td>
+                                    <td>
+                                        @if (!mail.Read)
+                                        {
+                                            <span class="user-detail-mail-dot" title="미읽음"></span>
+                                        }
+                                        @mail.Title
+                                    </td>
+                                    <td class="table-meta">@GetSenderLabel(mail)</td>
+                                    <td class="table-meta">@UserDetailDisplay.FormatDateTime(mail.CreatedDate)</td>
+                                    <td class="table-meta text-end">@(mail.SystemMailId.HasValue ? mail.SystemMailId.Value.ToString() : "-")</td>
+                                </tr>
+                                @if (isExpanded)
+                                {
+                                    <tr class="user-detail-mail-preview-row">
+                                        <td colspan="5">
+                                            <div class="user-detail-mail-preview">@mail.Contents</div>
+                                        </td>
+                                    </tr>
+                                }
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            }
+            else
+            {
+                <p class="text-muted mb-0">메일이 없습니다.</p>
+            }
+        </div>
+    </div>
+</div>
+
+@code {
+    [Parameter, EditorRequired]
+    public List<Mail> Mails { get; set; } = new();
+
+    [Parameter]
+    public Dictionary<uint, string> SenderNames { get; set; } = new();
+
+    private string filter = "all";
+    private uint? expandedMailId;
+
+    private string Filter => filter;
+
+    private int UnreadCount => Mails.Count(m => !m.Read && !m.Deleted);
+
+    private List<Mail> FilteredMails => filter switch
+    {
+        "unread" => Mails.Where(m => !m.Read && !m.Deleted).ToList(),
+        "system" => Mails.Where(m => m.SystemMailId.HasValue && !m.Deleted).ToList(),
+        _ => Mails.Where(m => !m.Deleted).ToList()
+    };
+
+    private void SetFilter(string value)
+    {
+        filter = value;
+        expandedMailId = null;
+    }
+
+    private void ToggleMail(uint mailId)
+    {
+        expandedMailId = expandedMailId == mailId ? null : mailId;
+    }
+
+    private string GetSenderLabel(Mail mail)
+    {
+        if (mail.Sender == 0)
+            return "시스템";
+
+        if (SenderNames.TryGetValue(mail.Sender, out var name))
+            return $"{name} (UID {mail.Sender})";
+
+        return $"UID {mail.Sender}";
+    }
+}

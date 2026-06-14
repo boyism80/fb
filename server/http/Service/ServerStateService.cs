@@ -16,6 +16,8 @@ namespace Http.Service
 
         public class ServerInfo
         {
+            public uint World { get; set; }
+
             public string Service { get; set; } = string.Empty;
 
             public byte Id { get; set; }
@@ -44,6 +46,9 @@ namespace Http.Service
                 if (parts.Length != 5)
                     continue;
 
+                if (!uint.TryParse(parts[2], out var world))
+                    continue;
+
                 var service = parts[3];
                 if (!byte.TryParse(parts[4], out var id))
                     continue;
@@ -59,11 +64,12 @@ namespace Http.Service
                     {
                         servers.Add(new ServerInfo
                         {
+                            World   = world,
                             Service = service,
-                            Id = id,
-                            Name = config.Name,
-                            IP = config.IP,
-                            Port = config.Port
+                            Id      = id,
+                            Name    = config.Name,
+                            IP      = config.IP,
+                            Port    = config.Port
                         });
                     }
                 }
@@ -73,7 +79,11 @@ namespace Http.Service
                 }
             }
 
-            return servers.OrderBy(s => s.Service).ThenBy(s => s.Id).ToList();
+            return servers
+                .OrderBy(s => s.World)
+                .ThenBy(s => s.Service)
+                .ThenBy(s => s.Id)
+                .ToList();
         }
 
         public async Task<bool> HasRunningServers()

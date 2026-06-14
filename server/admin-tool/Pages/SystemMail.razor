@@ -45,44 +45,75 @@
         </div>
     }
 
-    <div class="system-mail-form-card">
-        <EditForm Model="@mailModel" OnValidSubmit="@HandleSubmit">
-            <DataAnnotationsValidator />
-            <div class="system-mail-form-fields">
-                <div class="system-mail-field">
-                    <label for="title" class="system-mail-label">제목</label>
-                    <InputText id="title" class="form-control system-mail-input" @bind-Value="mailModel.Title"
-                               placeholder="메일 제목을 입력하세요..." />
-                    <ValidationMessage For="@(() => mailModel.Title)" />
-                </div>
-                <div class="system-mail-field">
-                    <label for="contents" class="system-mail-label">내용</label>
-                    <InputTextArea id="contents" class="form-control system-mail-textarea" rows="6"
-                        @bind-Value="mailModel.Contents" placeholder="메일 본문 내용을 입력하세요. 시스템 변수 지원 (예: {USER_NAME})..." />
-                    <ValidationMessage For="@(() => mailModel.Contents)" />
-                </div>
-                <div class="system-mail-field">
-                    <div class="system-mail-expire-row">
-                        <label for="expireDate" class="system-mail-label">만료일 (선택)</label>
-                        <span class="system-mail-hint">비워두면 만료 없음</span>
+    <div class="system-mail-compose">
+        <div class="system-mail-form-card">
+            <EditForm Model="@mailModel" OnValidSubmit="@HandleSubmit">
+                <DataAnnotationsValidator />
+                <div class="system-mail-form-fields">
+                    <div class="system-mail-field">
+                        <label for="title" class="system-mail-label">제목</label>
+                        <InputText id="title" class="form-control system-mail-input" @bind-Value="mailModel.Title"
+                                   placeholder="제목 (예: {USER_NAME}님 안내)" />
+                        <ValidationMessage For="@(() => mailModel.Title)" />
                     </div>
-                    <InputDate id="expireDate" class="form-control system-mail-input" @bind-Value="expireDateValue" />
+                    <div class="system-mail-field">
+                        <label for="contents" class="system-mail-label">내용</label>
+                        <InputTextArea id="contents" class="form-control system-mail-textarea" rows="6"
+                            @bind-Value="mailModel.Contents" placeholder="본문 내용을 입력하세요..." />
+                        <ValidationMessage For="@(() => mailModel.Contents)" />
+                    </div>
+                    <div class="system-mail-field">
+                        <div class="system-mail-expire-row">
+                            <label for="expireDate" class="system-mail-label">만료일 (선택)</label>
+                            <span class="system-mail-hint">비워두면 만료 없음</span>
+                        </div>
+                        <InputDate id="expireDate" class="form-control system-mail-input" @bind-Value="expireDateValue" />
+                    </div>
                 </div>
+                <div class="system-mail-actions">
+                    <button type="button" class="system-mail-reset-btn" @onclick="ResetForm" disabled="@isProcessing">
+                        초기화
+                    </button>
+                    <button type="submit" class="stitch-btn stitch-btn-primary" disabled="@isProcessing">
+                        @if (isProcessing)
+                        {
+                            <span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
+                        }
+                        <span class="material-symbols-outlined" style="font-size:1rem;">send</span>
+                        전체 유저에게 발송
+                    </button>
+                </div>
+            </EditForm>
+        </div>
+
+        <aside class="system-mail-vars-card" aria-labelledby="system-mail-vars-title">
+            <div class="system-mail-vars-header">
+                <h2 id="system-mail-vars-title" class="system-mail-vars-title">시스템 변수</h2>
+                <span class="system-mail-vars-count">@SystemMailTemplate.Variables.Count</span>
             </div>
-            <div class="system-mail-actions">
-                <button type="button" class="system-mail-reset-btn" @onclick="ResetForm" disabled="@isProcessing">
-                    초기화
-                </button>
-                <button type="submit" class="stitch-btn stitch-btn-primary" disabled="@isProcessing">
-                    @if (isProcessing)
-                    {
-                        <span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
-                    }
-                    <span class="material-symbols-outlined" style="font-size:1rem;">send</span>
-                    전체 유저에게 발송
-                </button>
+            <p class="system-mail-vars-desc">제목·본문에 변수를 입력하면 유저별 메일 생성 시 치환됩니다.</p>
+            <div class="system-mail-vars-scroll">
+                <table class="system-mail-vars-table">
+                    <thead>
+                        <tr>
+                            <th class="system-mail-vars-col-token">변수</th>
+                            <th>설명</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var variable in SystemMailTemplate.Variables)
+                        {
+                            <tr>
+                                <td class="system-mail-vars-col-token">
+                                    <code class="system-mail-var-token">{@variable.Token}</code>
+                                </td>
+                                <td>@variable.Description</td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
             </div>
-        </EditForm>
+        </aside>
     </div>
 
     <section class="system-mail-history">

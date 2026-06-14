@@ -13,28 +13,50 @@
 
 <PageTitle>서버 상태 - FB ADMIN</PageTitle>
 
-<div>
+<div class="servers-page">
     <div class="page-header">
         <h1>서버 상태</h1>
         <p>실시간 서버 하트비트 모니터링</p>
     </div>
     @if (!string.IsNullOrEmpty(errorMessage))
     {
-        <div class="alert alert-danger alert-dismissible fade show" role="alert">
-            @errorMessage
-            <button type="button" class="btn-close" @onclick="() => errorMessage = null"></button>
+        <div class="stitch-error-banner">
+            <div class="stitch-error-banner-content">
+                <span class="material-symbols-outlined">error</span>
+                <span>@errorMessage</span>
+            </div>
+            <button type="button" class="stitch-banner-dismiss" @onclick="() => errorMessage = null" aria-label="닫기">
+                <span class="material-symbols-outlined">close</span>
+            </button>
         </div>
     }
     @if (!string.IsNullOrEmpty(successMessage))
     {
-        <div class="alert alert-success alert-dismissible fade show" role="alert">
-            @successMessage
-            <button type="button" class="btn-close" @onclick="() => successMessage = null"></button>
+        <div class="stitch-success-banner">
+            <div class="stitch-success-banner-content">
+                <span class="material-symbols-outlined">check_circle</span>
+                <span class="stitch-success-text">@successMessage</span>
+            </div>
+            <button type="button" class="stitch-banner-dismiss stitch-success-dismiss" @onclick="() => successMessage = null" aria-label="닫기">
+                <span class="material-symbols-outlined">close</span>
+            </button>
         </div>
     }
     <div class="card-bg filter-toolbar">
         <div class="filter-toolbar-left">
-            <span class="dash-card-title" style="margin:0;">실행 중인 서버 @(servers?.Count ?? 0)개</span>
+            <span class="dash-card-title" style="margin:0;">실행 중인 서버 @(filteredServers?.Count ?? 0)개</span>
+            @if (!showAllWorlds && selectedWorld.HasValue)
+            {
+                <span class="servers-filter-scope">@GetWorldDisplayName(selectedWorld.Value)</span>
+            }
+            else if (showAllWorlds)
+            {
+                <span class="servers-filter-scope">전체 월드</span>
+            }
+            <label class="stitch-filter-check">
+                <input type="checkbox" @bind="showAllWorlds" @bind:after="ApplyWorldFilter" />
+                <span>전체 월드 표시</span>
+            </label>
         </div>
         <div class="filter-toolbar-right">
             <button class="stitch-btn stitch-btn-primary" @onclick="LoadServers" disabled="@isLoading">
@@ -51,13 +73,15 @@
             </button>
         </div>
     </div>
-    @if (servers != null)
+    @if (filteredServers != null)
     {
         <div style="margin-bottom:var(--section-gap);">
-            <ServerStatusGroups Servers="servers"
+            <ServerStatusGroups Servers="filteredServers"
                                 ShowKpi="true"
                                 AllowExpand="true"
-                                EmptyMessage="현재 실행 중인 서버가 없습니다." />
+                                ShowWorld="showAllWorlds"
+                                WorldNames="worldToServerName"
+                                EmptyMessage="@GetEmptyMessage()" />
         </div>
         <div class="dash-row-2">
             <div class="card-bg dash-card dash-ops-panel">
@@ -88,12 +112,12 @@
                 <h2 class="dash-card-title">세션 관리</h2>
                 <p class="dash-ops-desc">Redis에 저장된 유저 세션을 초기화합니다. 서버가 실행 중일 때는 사용할 수 없습니다.</p>
                 <div class="dash-btn-grid dash-btn-grid-single">
-                    <button class="dash-ops-btn" @onclick="ClearSessions" disabled="@(isSessionProcessing || servers.Any())">
+                    <button class="dash-ops-btn" @onclick="ClearSessions" disabled="@(isSessionProcessing || filteredServers.Any())">
                         @if (isSessionProcessing) { <span>처리 중...</span> }
                         else { <span>세션 초기화</span> }
                     </button>
                 </div>
-                @if (servers.Any())
+                @if (filteredServers.Any())
                 {
                     <p class="dash-ops-hint">
                         서버가 실행 중이면 세션을 초기화할 수 없습니다.
@@ -107,19 +131,48 @@
 @code {
     [CascadingParameter(Name = "SelectedWorld")]
     private uint? selectedWorld { get; set; }
-    private List<ServerStateService.ServerInfo>? servers;
-    private bool isLoading = false;
-    private bool isSessionProcessing = false;
-    private bool isSaveProcessing = false;
-    private bool isShutdownProcessing = false;
-    private bool canSaveServers = false;
-    private bool canShutdownServers = false;
+
+    private List<ServerStateService.ServerInfo>? allServers;
+    private List<ServerStateService.ServerInfo>? filteredServers;
+    private Dictionary<uint, string>? worldToServerName;
+    private bool showAllWorlds;
+    private bool isLoading;
+    private bool isSessionProcessing;
+    private bool isSaveProcessing;
+    private bool isShutdownProcessing;
+    private bool canSaveServers;
+    private bool canShutdownServers;
     private string? errorMessage;
     private string? successMessage;
+
     protected override async Task OnInitializedAsync()
     {
+        LoadWorldNames();
         await InitializePermissions();
         await LoadServers();
+    }
+
+    protected override void OnParametersSet()
+    {
+        if (allServers != null)
+            ApplyWorldFilter();
+    }
+
+    private void LoadWorldNames()
+    {
+        try
+        {
+            var worldServersSection = Configuration.GetSection("WorldServers");
+            worldToServerName = worldServersSection.GetChildren()
+                .Where(child => uint.TryParse(child.Key, out _))
+                .ToDictionary(
+                    child => uint.Parse(child.Key),
+                    child => child.Value ?? child.Key);
+        }
+        catch
+        {
+            worldToServerName = new Dictionary<uint, string>();
+        }
     }
 
     private async Task InitializePermissions()
@@ -140,7 +193,8 @@
         successMessage = null;
         try
         {
-            servers = await ServerStateService.GetRunningServers();
+            allServers = await ServerStateService.GetRunningServers();
+            ApplyWorldFilter();
         }
         catch (Exception ex)
         {
@@ -150,6 +204,49 @@
         {
             isLoading = false;
         }
+    }
+
+    private void ApplyWorldFilter()
+    {
+        if (allServers == null)
+        {
+            filteredServers = null;
+            return;
+        }
+
+        if (showAllWorlds)
+        {
+            filteredServers = allServers;
+        }
+        else if (selectedWorld.HasValue)
+        {
+            filteredServers = allServers
+                .Where(server => server.World == selectedWorld.Value)
+                .ToList();
+        }
+        else
+        {
+            filteredServers = new List<ServerStateService.ServerInfo>();
+        }
+    }
+
+    private string GetWorldDisplayName(uint world)
+    {
+        if (worldToServerName != null && worldToServerName.TryGetValue(world, out var name))
+            return name;
+
+        return $"World {world}";
+    }
+
+    private string GetEmptyMessage()
+    {
+        if (!showAllWorlds && !selectedWorld.HasValue)
+            return "월드를 선택하세요.";
+
+        if (!showAllWorlds && selectedWorld.HasValue)
+            return $"{GetWorldDisplayName(selectedWorld.Value)}에 실행 중인 서버가 없습니다.";
+
+        return "현재 실행 중인 서버가 없습니다.";
     }
 
     private async Task ClearSessions()
@@ -248,5 +345,4 @@
             isShutdownProcessing = false;
         }
     }
-
 }

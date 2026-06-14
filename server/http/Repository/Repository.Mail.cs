@@ -8,7 +8,8 @@ namespace Http.Reepository
 {
     public class MailRepository : IRepository
     {
-        private const string TempMailWriteUsersTable = "tmp_mail_write_users";
+        private const string TempMailWriteUsersTable    = "tmp_mail_write_users";
+        private const string TempMailDeliverContentTable = "tmp_mail_deliver_content";
 
         private readonly DbContext _dbContext;
 
@@ -33,6 +34,35 @@ namespace Http.Reepository
             var userValues = string.Join(", ", userIds.Select(id => $"({id})"));
             await connection.ExecuteAsync(
                 $"INSERT INTO {TempMailWriteUsersTable} (`user_id`) VALUES {userValues}");
+        }
+
+        /// <summary>
+        /// Populates per-recipient rendered title/contents for system mail delivery.
+        /// Must stay on the same connection as <see cref="PopulateTempMailWriteUsersAsync"/>.
+        /// </summary>
+        private static async Task PopulateTempMailDeliverContentAsync(
+            MySqlConnection connection,
+            IReadOnlyDictionary<uint, (string Title, string Contents)> rendered)
+        {
+            if (connection.State != System.Data.ConnectionState.Open)
+                await connection.OpenAsync();
+
+            await connection.ExecuteAsync($"DROP TEMPORARY TABLE IF EXISTS {TempMailDeliverContentTable}");
+            await connection.ExecuteAsync(
+                $"CREATE TEMPORARY TABLE {TempMailDeliverContentTable} (" +
+                "`user_id` INT UNSIGNED NOT NULL, " +
+                "`title` NVARCHAR(64) NOT NULL, " +
+                "`contents` NVARCHAR(256) NOT NULL, " +
+                "PRIMARY KEY (`user_id`)" +
+                ") ENGINE = MEMORY");
+
+            foreach (var (userId, content) in rendered)
+            {
+                await connection.ExecuteAsync(
+                    $"INSERT INTO {TempMailDeliverContentTable} (`user_id`, `title`, `contents`) " +
+                    "VALUES (@userId, @title, @contents)",
+                    new { userId, title = content.Title, contents = content.Contents });
+            }
         }
 
         public MailRepository(DbContext dbContext)
@@ -143,13 +173,24 @@ namespace Http.Reepository
                     if (userIds.Length == 0)
                         continue;
 
+                    var characters = await _dbContext.Character.GetMany(world, userIds);
+                    var rendered = new Dictionary<uint, (string Title, string Contents)>(userIds.Length);
+                    foreach (var userId in userIds)
+                    {
+                        characters.TryGetValue(userId, out var character);
+                        var context = new SystemMailRecipientContext(
+                            userId,
+                            character?.Name ?? string.Empty,
+                            character?.Level ?? 0);
+                        rendered[userId] = SystemMailTemplate.Render(title, contents, context);
+                    }
+
                     await PopulateTempMailWriteUsersAsync(connection, userIds);
+                    await PopulateTempMailDeliverContentAsync(connection, rendered);
 
                     var dynamicParams = new DynamicParameters();
                     dynamicParams.Add("system_mail_id", systemMailId);
                     dynamicParams.Add("sender", sender);
-                    dynamicParams.Add("title", title);
-                    dynamicParams.Add("contents", contents);
 
                     await using var reader = await connection.QueryMultipleAsync(
                         "USP_MAIL_DELIVER_SYSTEM_MANY",
