@@ -44,6 +44,7 @@ builder.Services.AddSingleton<Microsoft.AspNetCore.Authorization.IAuthorizationH
 builder.Services.AddSingleton<Microsoft.AspNetCore.Authorization.IAuthorizationPolicyProvider, MinimumRolePolicyProvider>();
 
 // Admin tool services
+builder.Services.AddScoped<AdminTool.Services.ThemeService>();
 builder.Services.AddScoped<AdminTool.Services.AuthService>();
 builder.Services.AddScoped<AdminTool.Services.UserService>();
 builder.Services.AddScoped<AdminTool.Services.UserDetailService>();
