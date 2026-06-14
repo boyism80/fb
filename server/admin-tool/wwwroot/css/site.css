@@ -4182,10 +4182,23 @@ a.dashboard-card:hover,
 }
 
 .user-detail-tabs {
+    border-bottom: 1px solid var(--border-color);
+}
+
+.user-detail-tabs-desktop {
     display: flex;
     gap: 0;
-    border-bottom: 1px solid var(--border-color);
     overflow-x: auto;
+}
+
+.user-detail-tabs-mobile {
+    display: none;
+    padding: 0.75rem 0;
+    box-sizing: border-box;
+}
+
+.user-detail-tab-select {
+    width: 100%;
 }
 
 .user-detail-tab {
@@ -4207,6 +4220,16 @@ a.dashboard-card:hover,
 .user-detail-tab.active {
     color: var(--accent-color);
     border-bottom-color: var(--accent-color);
+}
+
+@media (max-width: 768px) {
+    .user-detail-tabs-desktop {
+        display: none;
+    }
+
+    .user-detail-tabs-mobile {
+        display: block;
+    }
 }
 
 .user-detail-content {

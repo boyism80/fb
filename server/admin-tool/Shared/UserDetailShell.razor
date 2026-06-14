@@ -1,6 +1,7 @@
 @using AdminTool.Services
 @using Fb.Model.EnumValue
 @using Http.Model
+@inject NavigationManager Navigation
 
 <div class="user-detail-page">
     <div class="page-breadcrumb">
@@ -96,11 +97,25 @@
         </div>
 
         <nav class="user-detail-tabs" aria-label="유저 상세 탭">
-            @foreach (var tab in Tabs)
-            {
-                <a href="@GetTabUrl(tab.Key)"
-                   class="user-detail-tab @(ActiveTab == tab.Key ? "active" : "")">@tab.Label</a>
-            }
+            <div class="user-detail-tabs-desktop">
+                @foreach (var tab in Tabs)
+                {
+                    <a href="@GetTabUrl(tab.Key)"
+                       class="user-detail-tab @(ActiveTab == tab.Key ? "active" : "")">@tab.Label</a>
+                }
+            </div>
+            <div class="user-detail-tabs-mobile">
+                <label class="visually-hidden" for="user-detail-tab-select">탭 선택</label>
+                <select id="user-detail-tab-select"
+                        class="stitch-select user-detail-tab-select"
+                        value="@ActiveTab"
+                        @onchange="OnTabSelectChange">
+                    @foreach (var tab in Tabs)
+                    {
+                        <option value="@tab.Key">@tab.Label</option>
+                    }
+                </select>
+            </div>
         </nav>
 
         <div class="user-detail-content">
@@ -152,4 +167,13 @@
             : $"/items?user={Uri.EscapeDataString(Core.Character.Name)}";
 
     private string GetTabUrl(string tab) => $"/users/{UserId}/{tab}";
+
+    private void OnTabSelectChange(ChangeEventArgs e)
+    {
+        var tab = e.Value?.ToString();
+        if (string.IsNullOrWhiteSpace(tab))
+            return;
+
+        Navigation.NavigateTo(GetTabUrl(tab));
+    }
 }

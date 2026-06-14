@@ -1,12 +1,71 @@
-<nav class="main-nav">
-    <NavLink class="nav-link" href="" Match="NavLinkMatch.All">홈</NavLink>
-    <NavLink class="nav-link" href="users">유저</NavLink>
-    <NavLink class="nav-link" href="servers">서버</NavLink>
-    <NavLink class="nav-link" href="items">아이템</NavLink>
-    <NavLink class="nav-link" href="marketplace">거래소</NavLink>
-    <NavLink class="nav-link" href="systemmail">메일</NavLink>
-    <NavLink class="nav-link" href="bulletin">게시판</NavLink>
-    <NavLink class="nav-link" href="broadcast">방송</NavLink>
-    <NavLink class="nav-link" href="cache">캐시</NavLink>
-    <NavLink class="nav-link" href="maintenance">점검</NavLink>
+@inject NavigationManager Navigation
+@implements IDisposable
+
+<nav class="main-nav" aria-label="주 메뉴">
+    <div class="main-nav-desktop">
+        @foreach (var item in NavItems)
+        {
+            <NavLink class="nav-link" href="@item.Href" Match="@item.Match">@item.Label</NavLink>
+        }
+    </div>
+    <div class="main-nav-mobile">
+        <label class="nav-select-label visually-hidden" for="main-nav-select">메뉴</label>
+        <select id="main-nav-select"
+                class="stitch-select nav-select"
+                value="@CurrentSegment"
+                @onchange="OnMobileNavChange">
+            @foreach (var item in NavItems)
+            {
+                <option value="@item.Href">@item.Label</option>
+            }
+        </select>
+    </div>
 </nav>
+
+@code {
+    private sealed record NavItem(string Href, string Label, NavLinkMatch Match = NavLinkMatch.Prefix);
+
+    private static readonly NavItem[] NavItems =
+    {
+        new("", "홈", NavLinkMatch.All),
+        new("users", "유저"),
+        new("servers", "서버"),
+        new("items", "아이템"),
+        new("marketplace", "거래소"),
+        new("systemmail", "메일"),
+        new("bulletin", "게시판"),
+        new("broadcast", "방송"),
+        new("cache", "캐시"),
+        new("maintenance", "점검")
+    };
+
+    private string CurrentSegment
+    {
+        get
+        {
+            var relative = Navigation.ToBaseRelativePath(Navigation.Uri);
+            return relative.Split('?', '/')[0];
+        }
+    }
+
+    protected override void OnInitialized()
+    {
+        Navigation.LocationChanged += OnLocationChanged;
+    }
+
+    private void OnLocationChanged(object? sender, LocationChangedEventArgs e)
+    {
+        _ = InvokeAsync(StateHasChanged);
+    }
+
+    private void OnMobileNavChange(ChangeEventArgs e)
+    {
+        var href = e.Value?.ToString() ?? string.Empty;
+        Navigation.NavigateTo(string.IsNullOrEmpty(href) ? "/" : href);
+    }
+
+    public void Dispose()
+    {
+        Navigation.LocationChanged -= OnLocationChanged;
+    }
+}
