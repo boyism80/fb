@@ -43,7 +43,10 @@
                         </div>
                         <div class="user-detail-dl-item">
                             <dt>파티장</dt>
-                            <dd>@Social.Party.MasterName <span class="table-meta">(UID @Social.Party.MasterId)</span></dd>
+                            <dd>
+                            <UserDetailLink UserId="Social.Party.MasterId" Name="@Social.Party.MasterName" />
+                            <span class="table-meta">(UID @Social.Party.MasterId)</span>
+                        </dd>
                         </div>
                         <div class="user-detail-dl-item">
                             <dt>파티 ID</dt>
@@ -77,7 +80,7 @@
                     <div class="user-detail-dl-item">
                         <dt>배우자</dt>
                         <dd>
-                            @(SpouseName ?? $"UID {spouseId}")
+                            <UserDetailLink UserId="spouseId" Name="@SpouseName" />
                             <span class="table-meta">(UID @spouseId)</span>
                         </dd>
                     </div>

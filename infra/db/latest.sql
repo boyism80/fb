@@ -763,7 +763,7 @@ DELIMITER ;
 /*!50003 SET character_set_client  = @saved_cs_client */ ;
 /*!50003 SET character_set_results = @saved_cs_results */ ;
 /*!50003 SET collation_connection  = @saved_col_connection */ ;
-/*!50003 DROP PROCEDURE IF EXISTS `USP_MAIL_GET_LIST` */;
+/*!50003 DROP PROCEDURE IF EXISTS `USP_MAIL_GET_SUMMARY_LIST` */;
 /*!50003 SET @saved_cs_client      = @@character_set_client */ ;
 /*!50003 SET @saved_cs_results     = @@character_set_results */ ;
 /*!50003 SET @saved_col_connection = @@collation_connection */ ;
@@ -773,7 +773,7 @@ DELIMITER ;
 /*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
 /*!50003 SET sql_mode              = 'ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION' */ ;
 DELIMITER ;;
-CREATE DEFINER=`fb`@`%` PROCEDURE `USP_MAIL_GET_LIST`(IN user INT, IN position INT, IN count INT)
+CREATE DEFINER=`fb`@`%` PROCEDURE `USP_MAIL_GET_SUMMARY_LIST`(IN user INT, IN position INT, IN count INT)
 BEGIN
     SELECT mail.`id`,
            mail.`user`,
@@ -785,6 +785,79 @@ BEGIN
     WHERE mail.`user` = user AND mail.`deleted` = 0 AND position >= mail.`id`
     ORDER BY mail.`id` DESC
     LIMIT 0, count;
+END ;;
+DELIMITER ;
+/*!50003 SET sql_mode              = @saved_sql_mode */ ;
+/*!50003 SET character_set_client  = @saved_cs_client */ ;
+/*!50003 SET character_set_results = @saved_cs_results */ ;
+/*!50003 SET collation_connection  = @saved_col_connection */ ;
+/*!50003 DROP PROCEDURE IF EXISTS `USP_MAIL_GET_LIST` */;
+/*!50003 SET @saved_cs_client      = @@character_set_client */ ;
+/*!50003 SET @saved_cs_results     = @@character_set_results */ ;
+/*!50003 SET @saved_col_connection = @@collation_connection */ ;
+/*!50003 SET character_set_client  = utf8mb4 */ ;
+/*!50003 SET character_set_results = utf8mb4 */ ;
+/*!50003 SET collation_connection  = utf8mb4_0900_ai_ci */ ;
+/*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
+/*!50003 SET sql_mode              = 'ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION' */ ;
+DELIMITER ;;
+CREATE DEFINER=`fb`@`%` PROCEDURE `USP_MAIL_GET_LIST`(
+    IN user INT,
+    IN offset INT,
+    IN count INT,
+    IN mail_filter TINYINT
+)
+BEGIN
+    SELECT mail.`id`,
+           mail.`user`,
+           mail.`sender`,
+           mail.`title`,
+           mail.`contents`,
+           mail.`system_mail_id`,
+           mail.`read`,
+           mail.`deleted`,
+           mail.`created_date`,
+           mail.`updated_date`
+    FROM mail
+    WHERE mail.`user` = user
+      AND mail.`deleted` = 0
+      AND (
+          mail_filter = 0
+          OR (mail_filter = 1 AND mail.`read` = 0)
+          OR (mail_filter = 2 AND mail.`system_mail_id` IS NOT NULL)
+      )
+    ORDER BY mail.`id` DESC
+    LIMIT offset, count;
+END ;;
+DELIMITER ;
+/*!50003 SET sql_mode              = @saved_sql_mode */ ;
+/*!50003 SET character_set_client  = @saved_cs_client */ ;
+/*!50003 SET character_set_results = @saved_cs_results */ ;
+/*!50003 SET collation_connection  = @saved_col_connection */ ;
+/*!50003 DROP PROCEDURE IF EXISTS `USP_MAIL_COUNT_BY_USER` */;
+/*!50003 SET @saved_cs_client      = @@character_set_client */ ;
+/*!50003 SET @saved_cs_results     = @@character_set_results */ ;
+/*!50003 SET @saved_col_connection = @@collation_connection */ ;
+/*!50003 SET character_set_client  = utf8mb4 */ ;
+/*!50003 SET character_set_results = utf8mb4 */ ;
+/*!50003 SET collation_connection  = utf8mb4_0900_ai_ci */ ;
+/*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
+/*!50003 SET sql_mode              = 'ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION' */ ;
+DELIMITER ;;
+CREATE DEFINER=`fb`@`%` PROCEDURE `USP_MAIL_COUNT_BY_USER`(
+    IN user INT,
+    IN mail_filter TINYINT
+)
+BEGIN
+    SELECT COUNT(*)
+    FROM mail
+    WHERE mail.`user` = user
+      AND mail.`deleted` = 0
+      AND (
+          mail_filter = 0
+          OR (mail_filter = 1 AND mail.`read` = 0)
+          OR (mail_filter = 2 AND mail.`system_mail_id` IS NOT NULL)
+      );
 END ;;
 DELIMITER ;
 /*!50003 SET sql_mode              = @saved_sql_mode */ ;

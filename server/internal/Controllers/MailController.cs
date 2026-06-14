@@ -29,7 +29,7 @@ namespace Internal.Controllers
         {
             try
             {
-                var mails = await _dbContext.Mail.GetList(world, user, offset, count);
+                var mails = await _dbContext.Mail.GetSummaryList(world, user, offset, count);
                 var summaryList = _mapper.Map<List<Http.Model.Mail>, List<Protocol.MailSummary>>(mails.ToList());
                 if (summaryList.Count > 0)
                 {

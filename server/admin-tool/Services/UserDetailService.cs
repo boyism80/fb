@@ -1,5 +1,6 @@
 using Dapper;
 using Http.Model;
+using Http.Reepository;
 using Http.Service;
 
 namespace AdminTool.Services
@@ -163,9 +164,52 @@ namespace AdminTool.Services
             return social;
         }
 
-        public async Task<List<Mail>> LoadMailAsync(uint world, uint userId, ushort count = 50)
+        public async Task<UserDetailMailData> LoadMailPageAsync(
+            uint world,
+            uint userId,
+            int page,
+            int pageSize,
+            string filter)
         {
-            return await _dbContext.Mail.GetList(world, userId, 0, count);
+            var mailFilter = ParseMailFilter(filter);
+            var safePage = Math.Max(1, page);
+            var safePageSize = Math.Clamp(pageSize, 1, 100);
+            var offset = (safePage - 1) * safePageSize;
+
+            var totalCount = await _dbContext.Mail.CountByUser(world, userId, mailFilter);
+            var mails = await _dbContext.Mail.GetAdminList(world, userId, offset, safePageSize, mailFilter);
+            var unreadCount = await _dbContext.Mail.CountByUser(world, userId, MailRepository.AdminMailFilter.Unread);
+
+            var senderIds = mails
+                .Where(m => m.Sender != 0)
+                .Select(m => m.Sender)
+                .Distinct()
+                .ToList();
+
+            var senderNames = senderIds.Count > 0
+                ? await ResolveCharacterNamesAsync(world, senderIds)
+                : new Dictionary<uint, string>();
+
+            return new UserDetailMailData
+            {
+                Mails = mails,
+                SenderNames = senderNames,
+                TotalCount = totalCount,
+                Page = safePage,
+                PageSize = safePageSize,
+                Filter = filter,
+                UnreadCount = unreadCount
+            };
+        }
+
+        private static MailRepository.AdminMailFilter ParseMailFilter(string filter)
+        {
+            return filter switch
+            {
+                "unread" => MailRepository.AdminMailFilter.Unread,
+                "system" => MailRepository.AdminMailFilter.System,
+                _ => MailRepository.AdminMailFilter.All
+            };
         }
 
         public async Task<Option?> LoadOptionsAsync(uint world, uint userId)
@@ -323,5 +367,26 @@ namespace AdminTool.Services
         public bool IsMaster { get; set; }
 
         public int MemberCount { get; set; }
+    }
+
+    public class UserDetailMailData
+    {
+        public List<Mail> Mails { get; set; } = new();
+
+        public Dictionary<uint, string> SenderNames { get; set; } = new();
+
+        public int TotalCount { get; set; }
+
+        public int Page { get; set; }
+
+        public int PageSize { get; set; }
+
+        public string Filter { get; set; } = "all";
+
+        public int UnreadCount { get; set; }
+
+        public int TotalPages => PageSize > 0
+            ? (int)Math.Ceiling(TotalCount / (double)PageSize)
+            : 0;
     }
 }

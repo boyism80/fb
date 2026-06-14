@@ -67,9 +67,11 @@
                 }
                 break;
             case "mail":
-                @if (mails != null)
+                @if (mailData != null)
                 {
-                    <UserDetailMail Mails="mails" SenderNames="mailSenderNames" />
+                    <UserDetailMail Data="mailData"
+                                    OnFilterChanged="OnMailFilterChanged"
+                                    OnPageChanged="OnMailPageChanged" />
                 }
                 else if (tabLoading)
                 {
@@ -114,8 +116,10 @@
     private UserDetailItemsData? items;
     private UserDetailProgressData? progress;
     private UserDetailSocialData? social;
-    private List<Mail>? mails;
-    private Dictionary<uint, string> mailSenderNames = new();
+    private UserDetailMailData? mailData;
+    private int mailPage = 1;
+    private const int MailPageSize = 20;
+    private string mailFilter = "all";
     private Http.Model.Option? options;
     private bool optionsLoaded;
     private string? spouseName;
@@ -165,7 +169,7 @@
                 await LoadItemCountsAsync(selectedWorld.Value);
             }
 
-            var tabKey = $"{selectedWorld}:{UserId}:{activeTab}";
+            var tabKey = GetTabKey();
             if (loadedTabKey == tabKey)
                 return;
 
@@ -220,8 +224,12 @@
                     spouseName = await UserDetailService.ResolveCharacterNameAsync(world, spouseId);
                 break;
             case "mail":
-                mails = await UserDetailService.LoadMailAsync(world, (uint)UserId);
-                mailSenderNames = await ResolveMailSenderNamesAsync(world, mails);
+                mailData = await UserDetailService.LoadMailPageAsync(
+                    world,
+                    (uint)UserId,
+                    mailPage,
+                    MailPageSize,
+                    mailFilter);
                 break;
             case "settings":
                 options = await UserDetailService.LoadOptionsAsync(world, (uint)UserId);
@@ -230,19 +238,53 @@
         }
     }
 
-    private async Task<Dictionary<uint, string>> ResolveMailSenderNamesAsync(uint world, List<Mail> mailList)
+    private string GetTabKey()
     {
-        var senderIds = mailList
-            .Where(m => m.Sender != 0)
-            .Select(m => m.Sender)
-            .Distinct()
-            .ToList();
+        if (activeTab == "mail")
+            return $"{selectedWorld}:{UserId}:{activeTab}:{mailFilter}:{mailPage}";
 
-        if (!senderIds.Any())
-            return new Dictionary<uint, string>();
+        return $"{selectedWorld}:{UserId}:{activeTab}";
+    }
 
-        var characters = await UserDetailService.ResolveCharacterNamesAsync(world, senderIds);
-        return characters;
+    private async Task OnMailFilterChanged(string filter)
+    {
+        mailFilter = filter;
+        mailPage = 1;
+        await ReloadMailTabAsync();
+    }
+
+    private async Task OnMailPageChanged(int page)
+    {
+        mailPage = page;
+        await ReloadMailTabAsync();
+    }
+
+    private async Task ReloadMailTabAsync()
+    {
+        if (!selectedWorld.HasValue || activeTab != "mail")
+            return;
+
+        tabLoading = true;
+        errorMessage = null;
+
+        try
+        {
+            mailData = await UserDetailService.LoadMailPageAsync(
+                selectedWorld.Value,
+                (uint)UserId,
+                mailPage,
+                MailPageSize,
+                mailFilter);
+            loadedTabKey = GetTabKey();
+        }
+        catch (Exception ex)
+        {
+            errorMessage = $"메일을 불러오지 못했습니다: {ex.Message}";
+        }
+        finally
+        {
+            tabLoading = false;
+        }
     }
 
     private static string NormalizeTab(string? tab)

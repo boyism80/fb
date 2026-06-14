@@ -53,7 +53,6 @@
             </div>
             <div class="user-detail-location-value">
                 <span>@UserDetailDisplay.FormatMapName(Character.Map) (@Character.PositionX, @Character.PositionY)</span>
-                <span class="user-detail-kpi-sub">@UserDetailDisplay.FormatDirection(Character.Direction)</span>
             </div>
         </div>
     </div>
@@ -72,7 +71,9 @@
                     <div class="user-detail-field"><span class="user-detail-field-label">승급</span><span class="user-detail-field-value">@UserDetailDisplay.FormatPromotion(Character.Promotion)</span></div>
                     <div class="user-detail-field"><span class="user-detail-field-label">레벨</span><span class="user-detail-field-value table-meta">@Character.Level</span></div>
                     <div class="user-detail-field"><span class="user-detail-field-label">Look</span><span class="user-detail-field-value table-meta">@Character.Look</span></div>
-                    <div class="user-detail-field"><span class="user-detail-field-label">성별/국가</span><span class="user-detail-field-value">@UserDetailDisplay.FormatGender(Character.Gender) / @UserDetailDisplay.FormatNation(Character.Nation)</span></div>
+                    <div class="user-detail-field"><span class="user-detail-field-label">성별</span><span class="user-detail-field-value">@UserDetailDisplay.FormatGender(Character.Gender)</span></div>
+                    <div class="user-detail-field"><span class="user-detail-field-label">국가</span><span class="user-detail-field-value">@UserDetailDisplay.FormatNation(Character.Nation)</span></div>
+                    <div class="user-detail-field"><span class="user-detail-field-label">신수</span><span class="user-detail-field-value">@UserDetailDisplay.FormatCreature(Character.Creature)</span></div>
                     <div class="user-detail-field"><span class="user-detail-field-label">칭호</span><span class="user-detail-field-value">@(string.IsNullOrWhiteSpace(Character.Title) ? "-" : Character.Title)</span></div>
                     <div class="user-detail-field"><span class="user-detail-field-label">상태</span><span class="user-detail-field-value user-detail-status-ok">@(Character.State == 0 ? "정상" : Character.State.ToString())</span></div>
                 </div>

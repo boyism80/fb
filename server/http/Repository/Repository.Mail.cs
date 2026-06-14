@@ -70,17 +70,59 @@ namespace Http.Reepository
             _dbContext = dbContext;
         }
 
-        public async Task<List<Mail>> GetList(uint world, uint user, ushort offset, ushort count)
+        public enum AdminMailFilter : byte
+        {
+            All = 0,
+            Unread = 1,
+            System = 2
+        }
+
+        public async Task<List<Mail>> GetSummaryList(uint world, uint user, ushort position, ushort count)
         {
             await using var conn = _dbContext.GetShardConnection(world, user);
             var dynamicParams = new DynamicParameters();
             dynamicParams.Add("user", user);
-            dynamicParams.Add("position", offset);
+            dynamicParams.Add("position", position);
             dynamicParams.Add("count", count);
-            var mails = await conn.QueryAsync<Http.Model.Mail>($"USP_MAIL_GET_LIST", dynamicParams, commandType: System.Data.CommandType.StoredProcedure);
+            var mails = await conn.QueryAsync<Mail>(
+                "USP_MAIL_GET_SUMMARY_LIST",
+                dynamicParams,
+                commandType: System.Data.CommandType.StoredProcedure);
 
             return mails.ToList();
         }
+
+        public async Task<List<Mail>> GetAdminList(uint world, uint user, int offset, int count, AdminMailFilter mailFilter)
+        {
+            await using var conn = _dbContext.GetShardConnection(world, user);
+            var dynamicParams = new DynamicParameters();
+            dynamicParams.Add("user", user);
+            dynamicParams.Add("offset", offset);
+            dynamicParams.Add("count", count);
+            dynamicParams.Add("mail_filter", (byte)mailFilter);
+            var mails = await conn.QueryAsync<Mail>(
+                "USP_MAIL_GET_LIST",
+                dynamicParams,
+                commandType: System.Data.CommandType.StoredProcedure);
+
+            return mails.ToList();
+        }
+
+        public async Task<int> CountByUser(uint world, uint user, AdminMailFilter mailFilter)
+        {
+            await using var conn = _dbContext.GetShardConnection(world, user);
+            var dynamicParams = new DynamicParameters();
+            dynamicParams.Add("user", user);
+            dynamicParams.Add("mail_filter", (byte)mailFilter);
+            return await conn.QueryFirstOrDefaultAsync<int>(
+                "USP_MAIL_COUNT_BY_USER",
+                dynamicParams,
+                commandType: System.Data.CommandType.StoredProcedure);
+        }
+
+        [Obsolete("Use GetSummaryList for game server or GetAdminList for admin tool.")]
+        public Task<List<Mail>> GetList(uint world, uint user, ushort offset, ushort count)
+            => GetSummaryList(world, user, offset, count);
 
         public async Task<Mail> Get(uint world, uint user, uint id)
         {

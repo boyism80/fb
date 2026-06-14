@@ -5,8 +5,10 @@
 @using Microsoft.AspNetCore.Components.Forms
 @using Microsoft.AspNetCore.WebUtilities
 @using AdminTool.Authentication
+@using AdminTool.Services
 @inject AuthenticationStateProvider AuthenticationStateProvider
 @inject NavigationManager Navigation
+@inject UserService UserService
 @inject IConfiguration Configuration
 
 <PageTitle>FB ADMIN</PageTitle>
@@ -180,17 +182,10 @@
         isAuthenticated = authState.User.Identity?.IsAuthenticated == true;
     }
 
-    private Task HandleSearchKeyPress(KeyboardEventArgs e)
+    private async Task HandleSearchKeyPress(KeyboardEventArgs e)
     {
         if (e.Key == "Enter" && !string.IsNullOrWhiteSpace(globalSearchTerm))
-        {
-            var query = new Dictionary<string, string?> { ["search"] = globalSearchTerm.Trim() };
-            if (selectedWorld.HasValue)
-                query["world"] = selectedWorld.Value.ToString();
-            var queryString = QueryHelpers.AddQueryString("/users", query);
-            Navigation.NavigateTo(queryString);
-        }
-        return Task.CompletedTask;
+            await UserSearchNavigation.NavigateFromSearchAsync(Navigation, UserService, selectedWorld, globalSearchTerm);
     }
 
     private void NavigateToLogin()

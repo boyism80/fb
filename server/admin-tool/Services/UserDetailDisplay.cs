@@ -41,26 +41,21 @@ namespace AdminTool.Services
             _ => gender.ToString()
         };
 
-        public static string FormatNation(byte nation) => nation switch
+        public static string FormatNation(byte nation) => ((Nation)nation) switch
         {
-            0 => "신수",
-            1 => "백호",
-            2 => "현무",
-            3 => "주작",
+            Nation.Goguryeo => "고구려",
+            Nation.Buyeo => "부여",
             _ => nation.ToString()
         };
 
-        public static string FormatDirection(byte direction) => direction switch
+        public static string FormatCreature(byte? creature) => creature switch
         {
-            0 => "북",
-            1 => "북동",
-            2 => "동",
-            3 => "남동",
-            4 => "남",
-            5 => "남서",
-            6 => "서",
-            7 => "북서",
-            _ => direction.ToString()
+            null => "-",
+            (byte)Creature.Phoenix => "주작",
+            (byte)Creature.Tiger => "백호",
+            (byte)Creature.Turtle => "현무",
+            (byte)Creature.Dragon => "청룡",
+            _ => creature.ToString()
         };
 
         public static string FormatClanRole(uint role) => ((ClanRole)role) switch

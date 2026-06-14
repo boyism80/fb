@@ -1,0 +1,21 @@
+@if (UserId > 0)
+{
+    <a href="@($"/users/{UserId}")" class="@CssClass">@DisplayName</a>
+}
+else
+{
+    <span>@DisplayName</span>
+}
+
+@code {
+    [Parameter, EditorRequired]
+    public uint UserId { get; set; }
+
+    [Parameter]
+    public string? Name { get; set; }
+
+    [Parameter]
+    public string CssClass { get; set; } = "user-name-link";
+
+    private string DisplayName => string.IsNullOrWhiteSpace(Name) ? UserId.ToString() : Name;
+}

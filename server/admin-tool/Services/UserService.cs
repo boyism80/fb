@@ -142,7 +142,7 @@ namespace AdminTool.Services
 
         public async Task<UserDetail?> GetUserByName(uint world, string name)
         {
-            var userId = await _dbContext.Character.GetCharacterId(world, name);
+            var userId = await TryResolveUserIdAsync(world, name);
             if (!userId.HasValue)
                 return null;
 
@@ -166,6 +166,26 @@ namespace AdminTool.Services
                 BanReason = ban?.Reason,
                 BanExpireDate = ban?.ExpireDate
             };
+        }
+
+        /// <summary>
+        /// Resolves a character UID from an exact name or numeric UID string.
+        /// </summary>
+        public async Task<uint?> TryResolveUserIdAsync(uint world, string query)
+        {
+            if (string.IsNullOrWhiteSpace(query))
+                return null;
+
+            var term = query.Trim();
+
+            if (uint.TryParse(term, out var uid))
+            {
+                var character = await _dbContext.Character.Get(world, uid);
+                if (character != null)
+                    return uid;
+            }
+
+            return await _dbContext.Character.GetCharacterId(world, term);
         }
 
         public async Task<bool> IsOnline(uint world, string userName)
@@ -239,7 +259,7 @@ namespace AdminTool.Services
                         .Select(id =>
                         {
                             var ch = characters[id];
-                            return new OnlineUserItem { Name = ch.Name, Level = ch.Level };
+                            return new OnlineUserItem { Id = ch.Id, Name = ch.Name, Level = ch.Level };
                         })
                         .ToList();
                 }
@@ -264,6 +284,7 @@ namespace AdminTool.Services
 
     public class OnlineUserItem
     {
+        public uint Id { get; set; }
         public string Name { get; set; } = string.Empty;
         public ushort Level { get; set; }
     }

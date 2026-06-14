@@ -5,11 +5,11 @@
     <div class="card-bg filter-toolbar user-detail-mail-filters">
         <div class="filter-toolbar-left">
             <button type="button" class="stitch-btn @(Filter == "all" ? "stitch-btn-primary" : "stitch-btn-neutral")"
-                    @onclick='() => SetFilter("all")'>전체</button>
+                    @onclick='() => ChangeFilter("all")'>전체</button>
             <button type="button" class="stitch-btn @(Filter == "unread" ? "stitch-btn-primary" : "stitch-btn-neutral")"
-                    @onclick='() => SetFilter("unread")'>미읽음</button>
+                    @onclick='() => ChangeFilter("unread")'>미읽음</button>
             <button type="button" class="stitch-btn @(Filter == "system" ? "stitch-btn-primary" : "stitch-btn-neutral")"
-                    @onclick='() => SetFilter("system")'>시스템</button>
+                    @onclick='() => ChangeFilter("system")'>시스템</button>
         </div>
         <div class="filter-toolbar-right">
             @if (UnreadCount > 0)
@@ -22,10 +22,10 @@
     <div class="card-bg stitch-form-card">
         <div class="stitch-form-card-header">
             <h2 class="dash-card-title">수신 메일</h2>
-            <span class="stitch-badge">@FilteredMails.Count</span>
+            <span class="stitch-badge">@TotalCount</span>
         </div>
         <div class="user-detail-card-content">
-            @if (FilteredMails.Any())
+            @if (Mails.Any())
             {
                 <div class="dash-table-wrap">
                     <table class="dash-table user-detail-mail-table">
@@ -39,7 +39,7 @@
                             </tr>
                         </thead>
                         <tbody>
-                            @foreach (var mail in FilteredMails)
+                            @foreach (var mail in Mails)
                             {
                                 var isExpanded = expandedMailId == mail.Id;
                                 <tr class="@(mail.Read ? "" : "user-detail-mail-unread") @(isExpanded ? "expanded" : "")"
@@ -56,7 +56,20 @@
                                         }
                                         @mail.Title
                                     </td>
-                                    <td class="table-meta">@GetSenderLabel(mail)</td>
+                                    <td class="table-meta">
+                                        @if (mail.Sender == 0)
+                                        {
+                                            @:시스템
+                                        }
+                                        else if (SenderNames.TryGetValue(mail.Sender, out var senderName))
+                                        {
+                                            <UserDetailLink UserId="mail.Sender" Name="@($"{senderName} (UID {mail.Sender})")" />
+                                        }
+                                        else
+                                        {
+                                            <UserDetailLink UserId="mail.Sender" Name="@($"UID {mail.Sender}")" />
+                                        }
+                                    </td>
                                     <td class="table-meta">@UserDetailDisplay.FormatDateTime(mail.CreatedDate)</td>
                                     <td class="table-meta text-end">@(mail.SystemMailId.HasValue ? mail.SystemMailId.Value.ToString() : "-")</td>
                                 </tr>
@@ -64,7 +77,7 @@
                                 {
                                     <tr class="user-detail-mail-preview-row">
                                         <td colspan="5">
-                                            <div class="user-detail-mail-preview">@mail.Contents</div>
+                                            <div class="user-detail-mail-preview">@(mail.Contents ?? string.Empty)</div>
                                         </td>
                                     </tr>
                                 }
@@ -79,48 +92,89 @@
             }
         </div>
     </div>
+
+    @if (TotalPages > 1)
+    {
+        <div class="page-footer-bar">
+            <div>
+                @((Page - 1) * PageSize + 1) ~ @(Math.Min(Page * PageSize, TotalCount)) / @(TotalCount)건
+            </div>
+            <nav>
+                <ul class="stitch-pagination">
+                    <li>
+                        <a class="stitch-page-btn @(Page <= 1 ? "disabled" : "")" href="#"
+                           @onclick="() => ChangePage(Page - 1)" @onclick:preventDefault>
+                            <span class="material-symbols-outlined" style="font-size:1.125rem;">chevron_left</span>
+                        </a>
+                    </li>
+                    @for (int i = Math.Max(1, Page - 2); i <= Math.Min(TotalPages, Page + 2); i++)
+                    {
+                        var pageNum = i;
+                        <li>
+                            <a class="stitch-page-btn @(Page == pageNum ? "active" : "")" href="#"
+                               @onclick="() => ChangePage(pageNum)" @onclick:preventDefault>@pageNum</a>
+                        </li>
+                    }
+                    <li>
+                        <a class="stitch-page-btn @(Page >= TotalPages ? "disabled" : "")" href="#"
+                           @onclick="() => ChangePage(Page + 1)" @onclick:preventDefault>
+                            <span class="material-symbols-outlined" style="font-size:1.125rem;">chevron_right</span>
+                        </a>
+                    </li>
+                </ul>
+            </nav>
+        </div>
+    }
 </div>
 
 @code {
     [Parameter, EditorRequired]
-    public List<Mail> Mails { get; set; } = new();
+    public UserDetailMailData Data { get; set; } = new();
 
-    [Parameter]
-    public Dictionary<uint, string> SenderNames { get; set; } = new();
+    [Parameter, EditorRequired]
+    public EventCallback<string> OnFilterChanged { get; set; }
 
-    private string filter = "all";
+    [Parameter, EditorRequired]
+    public EventCallback<int> OnPageChanged { get; set; }
+
     private uint? expandedMailId;
 
-    private string Filter => filter;
+    private List<Mail> Mails => Data.Mails;
 
-    private int UnreadCount => Mails.Count(m => !m.Read && !m.Deleted);
+    private Dictionary<uint, string> SenderNames => Data.SenderNames;
 
-    private List<Mail> FilteredMails => filter switch
+    private string Filter => Data.Filter;
+
+    private int UnreadCount => Data.UnreadCount;
+
+    private int TotalCount => Data.TotalCount;
+
+    private int Page => Data.Page;
+
+    private int PageSize => Data.PageSize;
+
+    private int TotalPages => Data.TotalPages;
+
+    private async Task ChangeFilter(string value)
     {
-        "unread" => Mails.Where(m => !m.Read && !m.Deleted).ToList(),
-        "system" => Mails.Where(m => m.SystemMailId.HasValue && !m.Deleted).ToList(),
-        _ => Mails.Where(m => !m.Deleted).ToList()
-    };
+        if (Filter == value)
+            return;
 
-    private void SetFilter(string value)
-    {
-        filter = value;
         expandedMailId = null;
+        await OnFilterChanged.InvokeAsync(value);
+    }
+
+    private async Task ChangePage(int page)
+    {
+        if (page < 1 || page > TotalPages || page == Page)
+            return;
+
+        expandedMailId = null;
+        await OnPageChanged.InvokeAsync(page);
     }
 
     private void ToggleMail(uint mailId)
     {
         expandedMailId = expandedMailId == mailId ? null : mailId;
-    }
-
-    private string GetSenderLabel(Mail mail)
-    {
-        if (mail.Sender == 0)
-            return "시스템";
-
-        if (SenderNames.TryGetValue(mail.Sender, out var name))
-            return $"{name} (UID {mail.Sender})";
-
-        return $"UID {mail.Sender}";
     }
 }

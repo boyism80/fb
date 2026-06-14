@@ -104,7 +104,9 @@
                             <div style="display:flex;align-items:center;flex:1;min-width:0;">
                                 <span class="dash-list-num">@(i + 1).</span>
                                 <div class="dash-list-main">
-                                    <div class="dash-list-name">@user.Name</div>
+                                    <div class="dash-list-name">
+                                        <UserDetailLink UserId="user.Id" Name="@user.Name" />
+                                    </div>
                                     <div class="dash-list-sub">Lv.@user.Level</div>
                                 </div>
                             </div>
@@ -285,7 +287,7 @@
                                 {
                                     <tr>
                                         <td class="table-meta">@user.Id</td>
-                                        <td>@user.Name</td>
+                                        <td><UserDetailLink UserId="user.Id" Name="@user.Name" /></td>
                                         <td class="table-meta">@FormatRelativeTime(user.CreatedAt)</td>
                                     </tr>
                                 }
@@ -410,16 +412,10 @@
         }
     }
 
-    private Task HandleSearchKeyPress(KeyboardEventArgs e)
+    private async Task HandleSearchKeyPress(KeyboardEventArgs e)
     {
         if (e.Key == "Enter" && !string.IsNullOrWhiteSpace(searchTerm))
-        {
-            var query = new Dictionary<string, string?> { ["search"] = searchTerm.Trim() };
-            if (selectedWorld.HasValue)
-                query["world"] = selectedWorld.Value.ToString();
-            Navigation.NavigateTo(QueryHelpers.AddQueryString("/users", query));
-        }
-        return Task.CompletedTask;
+            await UserSearchNavigation.NavigateFromSearchAsync(Navigation, UserService, selectedWorld, searchTerm);
     }
 
     private static string FormatCount(int value) => value.ToString("N0");

@@ -534,6 +534,16 @@
 
     private async Task SearchUsers()
     {
+        if (selectedWorld.HasValue && !string.IsNullOrWhiteSpace(searchTerm))
+        {
+            var userId = await UserService.TryResolveUserIdAsync(selectedWorld.Value, searchTerm);
+            if (userId.HasValue)
+            {
+                Navigation.NavigateTo($"/users/{userId.Value}");
+                return;
+            }
+        }
+
         currentPage = 1;
         await LoadUsers();
         UpdateUsersUrl();
