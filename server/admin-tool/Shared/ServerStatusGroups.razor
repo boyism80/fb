@@ -1,0 +1,240 @@
+@using Http.Service
+
+@if (Servers == null || !Servers.Any())
+{
+    <p class="dash-empty">@EmptyMessage</p>
+}
+else
+{
+    @if (ShowKpi)
+    {
+        <div class="server-kpi-row">
+            <div class="server-kpi-tile">
+                <span class="server-kpi-label">Total Online</span>
+                <div class="server-kpi-value-row">
+                    <span class="server-kpi-value accent">@Servers.Count</span>
+                    <span class="server-kpi-tag accent">ACTIVE</span>
+                </div>
+            </div>
+            @foreach (var kpi in GetKpiGroups())
+            {
+                <div class="server-kpi-tile">
+                    <span class="server-kpi-label">@kpi.Label</span>
+                    <div class="server-kpi-value-row">
+                        <span class="server-kpi-value accent">@kpi.Count/@kpi.Count</span>
+                        <span class="status-dot-green"></span>
+                    </div>
+                </div>
+            }
+        </div>
+    }
+
+    <div class="server-groups-card @(Compact ? "server-groups-card-compact" : null)">
+        <table class="server-groups-table">
+            <thead>
+                <tr>
+                    @if (AllowExpand)
+                    {
+                        <th class="server-groups-col-toggle"></th>
+                    }
+                    <th>서비스</th>
+                    <th class="server-groups-col-online">온라인</th>
+                    <th class="server-groups-col-status">상태</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var group in GetGroups())
+                {
+                    var isExpanded = expandedGroups.Contains(group.ServiceKey);
+
+                    <tr class="server-group-row @(AllowExpand ? "expandable" : null) @(isExpanded ? "expanded" : null)"
+                        @onclick="() => OnGroupRowClick(group.ServiceKey)">
+                        @if (AllowExpand)
+                        {
+                            <td class="server-groups-col-toggle">
+                                <span class="material-symbols-outlined server-group-chevron @(isExpanded ? "open" : null)">
+                                    @(isExpanded ? "expand_more" : "chevron_right")
+                                </span>
+                            </td>
+                        }
+                        <td class="server-group-name">@group.DisplayName</td>
+                        <td class="server-groups-col-online">
+                            <span class="server-group-count">@group.Instances.Count / @group.Instances.Count</span>
+                        </td>
+                        <td class="server-groups-col-status">
+                            <span class="server-group-status">
+                                <span>정상</span>
+                                <span class="status-dot-green"></span>
+                            </span>
+                        </td>
+                    </tr>
+
+                    @if (AllowExpand && isExpanded)
+                    {
+                        <tr class="server-group-detail-row">
+                            <td colspan="4">
+                                <div class="server-instance-list">
+                                    <table class="server-instance-table @(ShowWorld ? "has-world-col" : null)">
+                                        @if (ShowWorld)
+                                        {
+                                            <thead>
+                                                <tr>
+                                                    <th>월드</th>
+                                                    <th>인스턴스</th>
+                                                    <th>엔드포인트</th>
+                                                    <th class="server-instance-status">상태</th>
+                                                </tr>
+                                            </thead>
+                                        }
+                                        <tbody>
+                                            @foreach (var instance in group.Instances)
+                                            {
+                                                <tr>
+                                                    @if (ShowWorld)
+                                                    {
+                                                        <td class="server-instance-world">@FormatWorldName(instance.World)</td>
+                                                    }
+                                                    <td class="server-instance-name">@instance.Name</td>
+                                                    <td class="server-instance-endpoint">@instance.IP:@instance.Port</td>
+                                                    <td class="server-instance-status">
+                                                        <span>온라인</span>
+                                                        <span class="status-dot-green"></span>
+                                                    </td>
+                                                </tr>
+                                            }
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </td>
+                        </tr>
+                    }
+                }
+            </tbody>
+        </table>
+    </div>
+}
+
+@code {
+    [Parameter]
+    public List<ServerStateService.ServerInfo>? Servers { get; set; }
+
+    [Parameter]
+    public bool ShowKpi { get; set; } = true;
+
+    [Parameter]
+    public bool AllowExpand { get; set; } = true;
+
+    [Parameter]
+    public bool Compact { get; set; }
+
+    [Parameter]
+    public bool ShowWorld { get; set; }
+
+    [Parameter]
+    public IReadOnlyDictionary<uint, string>? WorldNames { get; set; }
+
+    [Parameter]
+    public string EmptyMessage { get; set; } = "실행 중인 서버가 없습니다.";
+
+    private readonly HashSet<string> expandedGroups = new(StringComparer.OrdinalIgnoreCase);
+
+    private void OnGroupRowClick(string serviceKey)
+    {
+        if (!AllowExpand)
+            return;
+
+        ToggleGroup(serviceKey);
+    }
+
+    private void ToggleGroup(string serviceKey)
+    {
+        if (expandedGroups.Contains(serviceKey))
+            expandedGroups.Remove(serviceKey);
+        else
+            expandedGroups.Add(serviceKey);
+    }
+
+    private List<ServerGroup> GetGroups()
+    {
+        if (Servers == null || !Servers.Any())
+            return new List<ServerGroup>();
+
+        var order = new Dictionary<string, int>(StringComparer.OrdinalIgnoreCase)
+        {
+            ["gateway"] = 0,
+            ["login"] = 1,
+            ["game"] = 2,
+            ["internal"] = 3,
+            ["marketplace"] = 4,
+            ["bot"] = 5,
+            ["write-back"] = 6,
+            ["admin-tool"] = 7
+        };
+
+        return Servers
+            .GroupBy(s => s.Service, StringComparer.OrdinalIgnoreCase)
+            .Select(g => new ServerGroup
+            {
+                ServiceKey = g.Key,
+                DisplayName = FormatServiceName(g.Key),
+                Instances = g.OrderBy(x => x.Id).ToList()
+            })
+            .OrderBy(g => order.TryGetValue(g.ServiceKey, out var rank) ? rank : 100)
+            .ThenBy(g => g.DisplayName)
+            .ToList();
+    }
+
+    private IEnumerable<KpiGroup> GetKpiGroups()
+    {
+        var groups = GetGroups();
+        var priority = new[] { "gateway", "login", "game" };
+        foreach (var service in priority)
+        {
+            var group = groups.FirstOrDefault(g => g.ServiceKey.Equals(service, StringComparison.OrdinalIgnoreCase));
+            if (group == null)
+                continue;
+
+            yield return new KpiGroup
+            {
+                Label = group.DisplayName,
+                Count = group.Instances.Count
+            };
+        }
+    }
+
+    private static string FormatServiceName(string service) =>
+        service.ToLowerInvariant() switch
+        {
+            "gateway" => "Gateway",
+            "login" => "Login",
+            "game" => "Game",
+            "internal" => "Internal",
+            "marketplace" => "Marketplace",
+            "write-back" => "Write-back",
+            "admin-tool" => "Admin Tool",
+            _ => string.IsNullOrEmpty(service)
+                ? service
+                : char.ToUpper(service[0]) + service[1..]
+        };
+
+    private string FormatWorldName(uint world)
+    {
+        if (WorldNames != null && WorldNames.TryGetValue(world, out var name))
+            return name;
+
+        return $"World {world}";
+    }
+
+    private sealed class ServerGroup
+    {
+        public string ServiceKey { get; set; } = string.Empty;
+        public string DisplayName { get; set; } = string.Empty;
+        public List<ServerStateService.ServerInfo> Instances { get; set; } = new();
+    }
+
+    private sealed class KpiGroup
+    {
+        public string Label { get; set; } = string.Empty;
+        public int Count { get; set; }
+    }
+}

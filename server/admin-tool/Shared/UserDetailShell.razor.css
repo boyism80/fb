@@ -1,0 +1,22 @@
+::deep .user-detail-overview,
+::deep .user-detail-character,
+::deep .user-detail-social,
+::deep .user-detail-items,
+::deep .user-detail-progress,
+::deep .user-detail-mail,
+::deep .user-detail-settings {
+    display: flex;
+    flex-direction: column;
+    gap: var(--section-gap);
+}
+
+::deep .user-detail-card-content,
+::deep .user-detail-summary-body {
+    padding: 1.25rem;
+    box-sizing: border-box;
+}
+
+::deep .user-detail-kpi-tile {
+    padding: 1rem;
+    box-sizing: border-box;
+}

@@ -178,6 +178,8 @@ public:
     void                                               on_init() override final;
     async::task<size_t>                                send(const fb::stream& stream, bool encrypt = true, bool wrap = true) override final;
     async::task<size_t>                                send(const fb::protocol::header& response, bool encrypt = true, bool wrap = true) override final;
+    async::task<size_t>                                send_immediate(const fb::stream& stream, bool encrypt = true, bool wrap = true);
+    async::task<size_t>                                send_immediate(const fb::protocol::header& response, bool encrypt = true, bool wrap = true);
     OBJECT_TYPE                                        what() const override final;
     async::task<void>                                  attack(DURATION duration = DURATION::ATTACK) override final;
     uint32_t                                           normal_attack_damage(MOB_SIZE size) const override final;

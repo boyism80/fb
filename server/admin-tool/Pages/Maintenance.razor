@@ -10,14 +10,19 @@
 @inject ILogger<Maintenance> Logger
 @attribute [AuthorizeRole(Role.Admin)]
 
-<PageTitle>Maintenance - Admin Tool</PageTitle>
+<PageTitle>점검 관리 - FB ADMIN</PageTitle>
 
 <div>
-    <div class="page-header mb-4">
-        <h1>Maintenance Management</h1>
-        <p class="text-muted">Schedule and manage server maintenance periods</p>
+    <div class="page-header" style="display:flex;justify-content:space-between;align-items:flex-start;gap:1rem;">
+        <div>
+            <h1>점검 관리</h1>
+            <p>서버 점검 일정 등록 및 관리</p>
+        </div>
+        <a href="#maintenance-register" class="stitch-btn stitch-btn-primary">
+            <span class="material-symbols-outlined" style="font-size:1rem;">add</span>
+            점검 등록
+        </a>
     </div>
-
     @if (!string.IsNullOrEmpty(errorMessage))
     {
         <div class="alert alert-danger alert-dismissible fade show" role="alert">
@@ -25,7 +30,6 @@
             <button type="button" class="btn-close" @onclick="() => errorMessage = null"></button>
         </div>
     }
-
     @if (!string.IsNullOrEmpty(successMessage))
     {
         <div class="alert alert-success alert-dismissible fade show" role="alert">
@@ -33,178 +37,157 @@
             <button type="button" class="btn-close" @onclick="() => successMessage = null"></button>
         </div>
     }
-
-    <div class="row">
-        <div class="col-md-4">
-            <div class="card">
-                <div class="card-header">
-                    <h5 class="mb-0">Current Status</h5>
-                </div>
-                <div class="card-body">
-                    @if (currentMaintenanceInfo != null && currentMaintenanceInfo.IsActive)
-                    {
-                        <div class="alert alert-warning">
-                            <strong>Maintenance Active</strong>
-                            <p class="mb-1">@currentMaintenanceInfo.Message</p>
-                            <small>Ends: @FormatDateTime(currentMaintenanceInfo.EndTime)</small>
-                        </div>
-                    }
-                    else
-                    {
-                        <div class="alert alert-success">
-                            <strong>No Active Maintenance</strong>
-                            <p class="mb-0">Server is running normally.</p>
-                        </div>
-                    }
-                    <button class="btn btn-sm btn-outline-primary" @onclick="RefreshStatus" disabled="@isLoading">
-                        <span class="oi oi-reload" aria-hidden="true"></span> Refresh
-                    </button>
-                </div>
+    <div class="card-bg filter-toolbar">
+        <div class="toolbar mb-0">
+            <div class="flex-grow-1">
+                @if (currentMaintenanceInfo != null && currentMaintenanceInfo.IsActive)
+                {
+                    <div class="status-online"><span class="status-dot"></span>점검 진행 중</div>
+                    <div class="text-muted mt-1" style="font-size: 0.8125rem;">
+                        @currentMaintenanceInfo.Message
+                        <span class="ms-2">종료: @FormatDateTime(currentMaintenanceInfo.EndTime)</span>
+                    </div>
+                }
+                else
+                {
+                    <div style="font-size:0.875rem;color:var(--text-primary);">정상 운영 중</div>
+                    <div class="text-muted mt-1" style="font-size:0.8125rem;">
+                        Last Checked @lastCheckedAt.ToString("yyyy-MM-dd HH:mm:ss") KST
+                    </div>
+                }
             </div>
-        </div>
-
-        <div class="col-md-8">
-            <div class="card">
-                <div class="card-header d-flex justify-content-between align-items-center">
-                    <h5 class="mb-0">Create Maintenance Schedule</h5>
-                </div>
-                <div class="card-body">
-                    <EditForm Model="@scheduleModel" OnValidSubmit="@HandleSubmit">
-                        <DataAnnotationsValidator />
-                        <div class="row">
-                            <div class="col-md-6 mb-3">
-                                <label for="title" class="form-label">Title</label>
-                                <InputText id="title" class="form-control" @bind-Value="scheduleModel.Title" />
-                                <ValidationMessage For="@(() => scheduleModel.Title)" />
-                            </div>
-                            <div class="col-md-6 mb-3">
-                                <label for="world" class="form-label">World</label>
-                                <InputSelect id="world" class="form-select" @bind-Value="scheduleModel.World">
-                                    <option value="0">All Worlds</option>
-                                    @if (selectedWorld.HasValue && selectedWorld.Value > 0)
-                                    {
-                                        <option value="@selectedWorld.Value">World @selectedWorld.Value</option>
-                                    }
-                                </InputSelect>
-                                <small class="form-text text-muted">Select 0 to apply to all worlds</small>
-                            </div>
-                        </div>
-                        <div class="mb-3">
-                            <label for="message" class="form-label">Message</label>
-                            <InputTextArea id="message" class="form-control" rows="3" @bind-Value="scheduleModel.Message" />
-                            <ValidationMessage For="@(() => scheduleModel.Message)" />
-                        </div>
-                        <div class="row">
-                            <div class="col-md-6 mb-3">
-                                <label for="startTime" class="form-label">Start Time</label>
-                                <InputText id="startTime" type="datetime-local" class="form-control" @bind-Value="startTimeString" />
-                                <ValidationMessage For="@(() => scheduleModel.StartTime)" />
-                                <small class="form-text text-muted">KST (UTC+9)</small>
-                            </div>
-                            <div class="col-md-6 mb-3">
-                                <label for="endTime" class="form-label">End Time</label>
-                                <InputText id="endTime" type="datetime-local" class="form-control" @bind-Value="endTimeString" />
-                                <ValidationMessage For="@(() => scheduleModel.EndTime)" />
-                                <small class="form-text text-muted">KST (UTC+9)</small>
-                            </div>
-                        </div>
-                        <div class="mb-3">
-                            <label for="repeatType" class="form-label">Repeat Type</label>
-                            <InputSelect id="repeatType" class="form-select" @bind-Value="scheduleModel.RepeatType">
-                                <option value="@MaintenanceRepeatType.None">One-time</option>
-                                <option value="@MaintenanceRepeatType.Daily">Daily</option>
-                                <option value="@MaintenanceRepeatType.Weekly">Weekly</option>
-                                <option value="@MaintenanceRepeatType.Monthly">Monthly</option>
-                                <option value="@MaintenanceRepeatType.Yearly">Yearly</option>
-                            </InputSelect>
-                        </div>
-                        <div class="d-flex justify-content-end gap-2">
-                            <button type="button" class="btn btn-secondary" @onclick="ResetForm" disabled="@isProcessing">
-                                Reset
-                            </button>
-                            <button type="submit" class="btn btn-primary" disabled="@isProcessing">
-                                @if (isProcessing)
-                                {
-                                    <span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
-                                }
-                                Create Schedule
-                            </button>
-                        </div>
-                    </EditForm>
-                </div>
-            </div>
+            <button class="stitch-btn stitch-btn-neutral" @onclick="RefreshStatus" disabled="@isLoading">
+                <span class="material-symbols-outlined" style="font-size:1rem;vertical-align:middle;">refresh</span> 새로고침
+            </button>
         </div>
     </div>
-
-    <div class="row mt-4">
-        <div class="col-12">
-            <div class="card">
-                <div class="card-header">
-                    <h5 class="mb-0">Scheduled Maintenance</h5>
+    <div class="card-bg stitch-form-card">
+        <div class="stitch-form-card-header">
+            <h2 class="dash-card-title">등록된 점검 일정</h2>
+        </div>
+        <div class="card-body">
+            @if (isLoading)
+            {
+                <div class="stitch-loading">
+                    <div class="spinner-border" role="status"></div>
                 </div>
-                <div class="card-body">
-                    @if (isLoading)
-                    {
-                        <div class="text-center py-4">
-                            <div class="spinner-border" role="status">
-                                <span class="visually-hidden">Loading...</span>
-                            </div>
-                        </div>
-                    }
-                    else if (schedules == null || !schedules.Any())
-                    {
-                        <p class="text-muted text-center py-4">No maintenance schedules found.</p>
-                    }
-                    else
-                    {
-                        <div class="table-responsive">
-                            <table class="table table-hover">
-                                <thead>
-                                    <tr>
-                                        <th>Title</th>
-                                        <th>World</th>
-                                        <th>Start Time</th>
-                                        <th>End Time</th>
-                                        <th>Repeat</th>
-                                        <th>Status</th>
-                                        <th>Actions</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    @foreach (var schedule in schedules)
-                                    {
-                                        <tr>
-                                            <td>@schedule.Title</td>
-                                            <td>@(schedule.World == 0 ? "All Worlds" : $"World {schedule.World}")</td>
-                                            <td>@FormatDateTime(schedule.StartTime)</td>
-                                            <td>@FormatDateTime(schedule.EndTime)</td>
-                                            <td>@GetRepeatTypeName(schedule.RepeatType)</td>
-                                            <td>
-                                                @if (schedule.IsActive)
-                                                {
-                                                    <span class="badge bg-success">Active</span>
-                                                }
-                                                else
-                                                {
-                                                    <span class="badge bg-secondary">Cancelled</span>
-                                                }
-                                            </td>
-                                            <td>
-                                                @if (schedule.IsActive)
-                                                {
-                                                    <button class="btn btn-sm btn-danger" @onclick="() => CancelSchedule(schedule)" disabled="@isProcessing">
-                                                        Cancel
-                                                    </button>
-                                                }
-                                            </td>
-                                        </tr>
-                                    }
-                                </tbody>
-                            </table>
-                        </div>
-                    }
+            }
+            else if (schedules == null || !schedules.Any())
+            {
+                <p class="dash-empty">등록된 점검 일정이 없습니다.</p>
+            }
+            else
+            {
+                <div class="dash-table-wrap">
+                    <table class="dash-table">
+                        <thead>
+                            <tr>
+                                <th>시작</th>
+                                <th>종료</th>
+                                <th>내용</th>
+                                <th>상태</th>
+                                <th style="text-align:right;">작업</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var schedule in schedules)
+                            {
+                                <tr>
+                                    <td class="table-meta">@FormatDateTime(schedule.StartTime)</td>
+                                    <td class="table-meta">@FormatDateTime(schedule.EndTime)</td>
+                                    <td>
+                                        <strong>@schedule.Title</strong>
+                                        <div class="table-meta">@(schedule.World == 0 ? "전체" : $"World {schedule.World}") · @GetRepeatTypeName(schedule.RepeatType)</div>
+                                    </td>
+                                    <td>
+                                        @if (schedule.IsActive)
+                                        {
+                                            <span class="stitch-badge active">@GetScheduleStatusLabel(schedule)</span>
+                                        }
+                                        else
+                                        {
+                                            <span class="stitch-badge muted">취소됨</span>
+                                        }
+                                    </td>
+                                    <td style="text-align:right;">
+                                        @if (schedule.IsActive)
+                                        {
+                                            <button class="text-link" @onclick="() => CancelSchedule(schedule)" disabled="@isProcessing">취소</button>
+                                        }
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
                 </div>
-            </div>
+            }
+        </div>
+    </div>
+    <div class="card-bg stitch-form-card" id="maintenance-register">
+        <div class="stitch-form-card-header">
+            <h2 class="dash-card-title">점검 일정 등록</h2>
+        </div>
+        <div class="card-body">
+            <EditForm Model="@scheduleModel" OnValidSubmit="@HandleSubmit">
+                <DataAnnotationsValidator />
+                <div class="form-grid">
+                    <div>
+                        <label for="title" class="form-label">제목</label>
+                        <InputText id="title" class="form-control" @bind-Value="scheduleModel.Title" />
+                        <ValidationMessage For="@(() => scheduleModel.Title)" />
+                    </div>
+                    <div>
+                        <label for="world" class="form-label">월드</label>
+                        <InputSelect id="world" class="form-select" @bind-Value="scheduleModel.World">
+                            <option value="0">전체 월드</option>
+                            @if (selectedWorld.HasValue && selectedWorld.Value > 0)
+                            {
+                                <option value="@selectedWorld.Value">World @selectedWorld.Value</option>
+                            }
+                        </InputSelect>
+                        <small class="form-text text-muted">0을 선택하면 모든 월드에 적용됩니다</small>
+                    </div>
+                    <div class="form-grid-full">
+                        <label for="message" class="form-label">메시지</label>
+                        <InputTextArea id="message" class="form-control" rows="3" @bind-Value="scheduleModel.Message" />
+                        <ValidationMessage For="@(() => scheduleModel.Message)" />
+                    </div>
+                    <div>
+                        <label for="startTime" class="form-label">시작 시간</label>
+                        <InputText id="startTime" type="datetime-local" class="form-control" @bind-Value="startTimeString" />
+                        <ValidationMessage For="@(() => scheduleModel.StartTime)" />
+                        <small class="form-text text-muted">KST (UTC+9)</small>
+                    </div>
+                    <div>
+                        <label for="endTime" class="form-label">종료 시간</label>
+                        <InputText id="endTime" type="datetime-local" class="form-control" @bind-Value="endTimeString" />
+                        <ValidationMessage For="@(() => scheduleModel.EndTime)" />
+                        <small class="form-text text-muted">KST (UTC+9)</small>
+                    </div>
+                    <div class="form-grid-full">
+                        <label for="repeatType" class="form-label">반복 유형</label>
+                        <InputSelect id="repeatType" class="form-select" @bind-Value="scheduleModel.RepeatType">
+                            <option value="@MaintenanceRepeatType.None">1회</option>
+                            <option value="@MaintenanceRepeatType.Daily">매일</option>
+                            <option value="@MaintenanceRepeatType.Weekly">매주</option>
+                            <option value="@MaintenanceRepeatType.Monthly">매월</option>
+                            <option value="@MaintenanceRepeatType.Yearly">매년</option>
+                        </InputSelect>
+                    </div>
+                </div>
+                <div class="stitch-form-actions">
+                    <button type="button" class="stitch-btn stitch-btn-neutral" @onclick="ResetForm" disabled="@isProcessing">
+                        초기화
+                    </button>
+                    <button type="submit" class="stitch-btn stitch-btn-primary" disabled="@isProcessing">
+                        @if (isProcessing)
+                        {
+                            <span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
+                        }
+                        일정 등록
+                    </button>
+                </div>
+            </EditForm>
         </div>
     </div>
 </div>
@@ -212,7 +195,6 @@
 @code {
     [CascadingParameter(Name = "SelectedWorld")]
     private uint? selectedWorld { get; set; }
-
     private MaintenanceScheduleModel scheduleModel = new();
     private List<MaintenanceSchedule>? schedules;
     private MaintenanceInfo? currentMaintenanceInfo;
@@ -220,7 +202,7 @@
     private string? successMessage;
     private bool isProcessing;
     private bool isLoading;
-
+    private DateTime lastCheckedAt = DateTime.Now;
     private string startTimeString
     {
         get => scheduleModel.StartTime.ToString("yyyy-MM-ddTHH:mm");
@@ -258,11 +240,12 @@
             var world = selectedWorld ?? 0;
             schedules = await MaintenanceService.GetAllSchedules(world);
             currentMaintenanceInfo = await MaintenanceService.GetMaintenanceInfo(world);
+            lastCheckedAt = DateTime.Now;
         }
         catch (Exception ex)
         {
             Logger.LogError(ex, "Failed to load maintenance data");
-            errorMessage = "Failed to load maintenance data.";
+            errorMessage = "점검 데이터를 불러오지 못했습니다.";
         }
         finally
         {
@@ -275,10 +258,8 @@
         isProcessing = true;
         errorMessage = null;
         successMessage = null;
-
         try
         {
-            // All times are stored in KST
             var schedule = new MaintenanceSchedule
             {
                 Id = Guid.NewGuid().ToString(),
@@ -291,7 +272,6 @@
                 IsActive = true,
                 CreatedAt = DateTime.Now
             };
-
             bool success;
             if (schedule.World == 0)
             {
@@ -301,24 +281,23 @@
             {
                 success = await MaintenanceService.CreateMaintenanceSchedule(schedule);
             }
-
             if (success)
             {
                 successMessage = schedule.World == 0
-                    ? "Maintenance schedule created for all worlds."
-                    : $"Maintenance schedule created for World {schedule.World}.";
+                    ? "전체 월드에 점검 일정을 등록했습니다."
+                    : $"World {schedule.World}에 점검 일정을 등록했습니다.";
                 ResetForm();
                 await LoadData();
             }
             else
             {
-                errorMessage = "Failed to create maintenance schedule.";
+                errorMessage = "점검 일정 등록에 실패했습니다.";
             }
         }
         catch (Exception ex)
         {
             Logger.LogError(ex, "Failed to create maintenance schedule");
-            errorMessage = $"Failed to create maintenance schedule: {ex.Message}";
+            errorMessage = $"점검 일정 등록 실패: {ex.Message}";
         }
         finally
         {
@@ -330,28 +309,26 @@
     {
         if (!await ConfirmCancel(schedule))
             return;
-
         isProcessing = true;
         errorMessage = null;
         successMessage = null;
-
         try
         {
             var success = await MaintenanceService.CancelMaintenanceSchedule(schedule.World, schedule.Id);
             if (success)
             {
-                successMessage = "Maintenance schedule cancelled successfully.";
+                successMessage = "점검 일정을 취소했습니다.";
                 await LoadData();
             }
             else
             {
-                errorMessage = "Failed to cancel maintenance schedule.";
+                errorMessage = "점검 일정 취소에 실패했습니다.";
             }
         }
         catch (Exception ex)
         {
             Logger.LogError(ex, "Failed to cancel maintenance schedule");
-            errorMessage = $"Failed to cancel maintenance schedule: {ex.Message}";
+            errorMessage = $"점검 일정 취소 실패: {ex.Message}";
         }
         finally
         {
@@ -361,13 +338,24 @@
 
     private async Task<bool> ConfirmCancel(MaintenanceSchedule schedule)
     {
-        // Simple confirmation - in a real app, you might use a modal
         return await Task.FromResult(true);
     }
 
     private async Task RefreshStatus()
     {
         await LoadData();
+    }
+
+    private static string GetScheduleStatusLabel(MaintenanceSchedule schedule)
+    {
+        if (!schedule.IsActive)
+            return "취소";
+        var now = DateTime.Now;
+        if (now >= schedule.StartTime && now <= schedule.EndTime)
+            return "진행 중";
+        if (now < schedule.StartTime)
+            return "대기 중";
+        return "완료";
     }
 
     private void ResetForm()
@@ -390,33 +378,28 @@
     {
         return repeatType switch
         {
-            MaintenanceRepeatType.None => "One-time",
-            MaintenanceRepeatType.Daily => "Daily",
-            MaintenanceRepeatType.Weekly => "Weekly",
-            MaintenanceRepeatType.Monthly => "Monthly",
-            MaintenanceRepeatType.Yearly => "Yearly",
-            _ => "Unknown"
+            MaintenanceRepeatType.None => "1회",
+            MaintenanceRepeatType.Daily => "매일",
+            MaintenanceRepeatType.Weekly => "매주",
+            MaintenanceRepeatType.Monthly => "매월",
+            MaintenanceRepeatType.Yearly => "매년",
+            _ => "알 수 없음"
         };
     }
 
     private class MaintenanceScheduleModel
     {
-        [Required(ErrorMessage = "Title is required.")]
-        [StringLength(100, ErrorMessage = "Title must be 100 characters or less.")]
+        [Required(ErrorMessage = "제목을 입력하세요.")]
+        [StringLength(100, ErrorMessage = "제목은 100자 이하여야 합니다.")]
         public string Title { get; set; } = string.Empty;
-
-        [Required(ErrorMessage = "Message is required.")]
-        [StringLength(500, ErrorMessage = "Message must be 500 characters or less.")]
+        [Required(ErrorMessage = "메시지를 입력하세요.")]
+        [StringLength(500, ErrorMessage = "메시지는 500자 이하여야 합니다.")]
         public string Message { get; set; } = string.Empty;
-
         public uint World { get; set; }
-
-        [Required(ErrorMessage = "Start time is required.")]
+        [Required(ErrorMessage = "시작 시간을 입력하세요.")]
         public DateTime StartTime { get; set; } = DateTime.Now;
-
-        [Required(ErrorMessage = "End time is required.")]
+        [Required(ErrorMessage = "종료 시간을 입력하세요.")]
         public DateTime EndTime { get; set; } = DateTime.Now.AddHours(1);
-
         public MaintenanceRepeatType RepeatType { get; set; } = MaintenanceRepeatType.None;
     }
 }

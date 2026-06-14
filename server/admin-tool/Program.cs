@@ -11,6 +11,7 @@ Dapper.DefaultTypeMap.MatchNamesWithUnderscores = true;
 SqlMapper.AddTypeHandler(typeof(List<uint>), new JsonTypeHandler());
 SqlMapper.AddTypeHandler(typeof(List<Http.Model.Buff>), new JsonTypeHandler());
 SqlMapper.AddTypeHandler(typeof(List<Fb.Model.Dsl>), new JsonTypeHandler());
+SqlMapper.AddTypeHandler(typeof(Dictionary<string, List<Fb.Model.Dsl>>), new JsonTypeHandler());
 SqlMapper.AddTypeHandler(typeof(Http.Model.Mimicry), new JsonTypeHandler());
 
 var builder = WebApplication.CreateBuilder(args);
@@ -43,8 +44,12 @@ builder.Services.AddSingleton<Microsoft.AspNetCore.Authorization.IAuthorizationH
 builder.Services.AddSingleton<Microsoft.AspNetCore.Authorization.IAuthorizationPolicyProvider, MinimumRolePolicyProvider>();
 
 // Admin tool services
+builder.Services.AddScoped<AdminTool.Services.ThemeService>();
 builder.Services.AddScoped<AdminTool.Services.AuthService>();
 builder.Services.AddScoped<AdminTool.Services.UserService>();
+builder.Services.AddScoped<AdminTool.Services.UserDetailService>();
+builder.Services.AddScoped<AdminTool.Services.MarketplaceAdminService>();
+builder.Services.AddSingleton<AdminTool.Services.AdminActivityLogService>();
 builder.Services.AddSingleton<Http.Service.MaintenanceService>();
 
 var app = builder.Build();
@@ -64,6 +69,9 @@ if (!app.Environment.IsDevelopment())
 app.UseStaticFiles();
 app.UseRouting();
 
+app.UseAuthorization();
+
+app.MapRazorPages();
 app.MapBlazorHub();
 app.MapFallbackToPage("/_Host");
 

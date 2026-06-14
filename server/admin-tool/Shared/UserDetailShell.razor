@@ -1,0 +1,179 @@
+@using AdminTool.Services
+@using Fb.Model.EnumValue
+@using Http.Model
+@inject NavigationManager Navigation
+
+<div class="user-detail-page">
+    <div class="page-breadcrumb">
+        <a href="/users">유저</a> &gt; 유저 상세 (UID: @UserId)
+    </div>
+
+    @if (!string.IsNullOrEmpty(ErrorMessage))
+    {
+        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+            @ErrorMessage
+            <button type="button" class="btn-close" @onclick="OnDismissError"></button>
+        </div>
+    }
+
+    @if (IsLoading)
+    {
+        <div class="text-center py-5">
+            <div class="spinner-border" role="status">
+                <span class="visually-hidden">불러오는 중...</span>
+            </div>
+        </div>
+    }
+    else if (Core != null)
+    {
+        @if (Core.UserDetail.IsBanned)
+        {
+            <div class="user-detail-ban-banner">
+                <span class="material-symbols-outlined" aria-hidden="true">gavel</span>
+                <div>
+                    <strong>계정 이용 제한</strong>
+                    @if (!string.IsNullOrWhiteSpace(Core.UserDetail.BanReason))
+                    {
+                        <span> — @Core.UserDetail.BanReason</span>
+                    }
+                    @if (Core.UserDetail.BanExpireDate.HasValue)
+                    {
+                        <span class="user-detail-ban-expire"> (만료: @UserDetailDisplay.FormatDateTime(Core.UserDetail.BanExpireDate))</span>
+                    }
+                </div>
+            </div>
+        }
+
+        <div class="user-detail-profile card-bg">
+            <div class="user-detail-profile-main">
+                <div class="user-detail-avatar">
+                    <span class="material-symbols-outlined" aria-hidden="true">person</span>
+                    @if (Core.IsOnline)
+                    {
+                        <span class="user-detail-avatar-dot" title="온라인"></span>
+                    }
+                </div>
+                <div class="user-detail-profile-info">
+                    <div class="user-detail-name-row">
+                        <h1 class="user-detail-name">@Core.Character.Name</h1>
+                        <span class="user-detail-role-badge">@UserDetailDisplay.FormatRole(Core.Character.Role)</span>
+                    </div>
+                    <div class="user-detail-status-row">
+                        <span class="user-detail-level">Lv.@Core.Character.Level</span>
+                        <span class="user-detail-status-sep"></span>
+                        @if (Core.IsOnline)
+                        {
+                            <span class="user-detail-online"><span class="status-dot"></span> 온라인</span>
+                        }
+                        else
+                        {
+                            <span class="user-detail-offline">오프라인</span>
+                        }
+                    </div>
+                </div>
+            </div>
+            <div class="user-detail-profile-stats">
+                <div class="user-detail-stat">
+                    <span class="user-detail-stat-label">보유금</span>
+                    <span class="user-detail-stat-value">@UserDetailDisplay.FormatMoney(Core.Character.Money) <span class="user-detail-stat-unit">G</span></span>
+                </div>
+                <div class="user-detail-stat">
+                    <span class="user-detail-stat-label">창고예치</span>
+                    <span class="user-detail-stat-value">@UserDetailDisplay.FormatMoney(Core.Character.DepositedMoney) <span class="user-detail-stat-unit">G</span></span>
+                </div>
+                <div class="user-detail-stat">
+                    <span class="user-detail-stat-label">최근접속</span>
+                    <span class="user-detail-stat-value">@UserDetailDisplay.FormatDateTime(Core.Character.UpdatedDate)</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="user-detail-toolbar">
+            <a href="@GrantItemsUrl" class="stitch-btn stitch-btn-neutral user-detail-grant-btn">
+                <span class="material-symbols-outlined" aria-hidden="true">redeem</span>
+                아이템 지급
+            </a>
+            <a href="/users" class="stitch-btn stitch-btn-neutral">유저 목록</a>
+        </div>
+
+        <nav class="user-detail-tabs" aria-label="유저 상세 탭">
+            <div class="user-detail-tabs-desktop">
+                @foreach (var tab in Tabs)
+                {
+                    <a href="@GetTabUrl(tab.Key)"
+                       class="user-detail-tab @(ActiveTab == tab.Key ? "active" : "")">@tab.Label</a>
+                }
+            </div>
+            <div class="user-detail-tabs-mobile">
+                <label class="visually-hidden" for="user-detail-tab-select">탭 선택</label>
+                <select id="user-detail-tab-select"
+                        class="stitch-select user-detail-tab-select"
+                        value="@ActiveTab"
+                        @onchange="OnTabSelectChange">
+                    @foreach (var tab in Tabs)
+                    {
+                        <option value="@tab.Key">@tab.Label</option>
+                    }
+                </select>
+            </div>
+        </nav>
+
+        <div class="user-detail-content">
+            @ChildContent
+        </div>
+    }
+    else if (!IsLoading)
+    {
+        <div class="alert alert-warning">유저를 찾을 수 없습니다.</div>
+    }
+</div>
+
+@code {
+    [Parameter]
+    public int UserId { get; set; }
+
+    [Parameter]
+    public UserDetailCore? Core { get; set; }
+
+    [Parameter]
+    public string ActiveTab { get; set; } = "overview";
+
+    [Parameter]
+    public bool IsLoading { get; set; }
+
+    [Parameter]
+    public string? ErrorMessage { get; set; }
+
+    [Parameter]
+    public EventCallback OnDismissError { get; set; }
+
+    [Parameter]
+    public RenderFragment? ChildContent { get; set; }
+
+    private static readonly (string Key, string Label)[] Tabs =
+    {
+        ("overview", "개요"),
+        ("character", "캐릭터"),
+        ("items", "아이템"),
+        ("progress", "진행"),
+        ("social", "소셜"),
+        ("mail", "메일"),
+        ("settings", "설정")
+    };
+
+    private string GrantItemsUrl =>
+        Core == null || string.IsNullOrWhiteSpace(Core.Character.Name)
+            ? "/items"
+            : $"/items?user={Uri.EscapeDataString(Core.Character.Name)}";
+
+    private string GetTabUrl(string tab) => $"/users/{UserId}/{tab}";
+
+    private void OnTabSelectChange(ChangeEventArgs e)
+    {
+        var tab = e.Value?.ToString();
+        if (string.IsNullOrWhiteSpace(tab))
+            return;
+
+        Navigation.NavigateTo(GetTabUrl(tab));
+    }
+}

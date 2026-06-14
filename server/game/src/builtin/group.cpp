@@ -112,7 +112,7 @@ int builtin::group::builtin_message(lua_State* L)
                         MESSAGE_TYPE      type) -> async::task<void> {
         try
         {
-            co_await server->group.broadcast(group_id, message, type);
+            co_await server->groups.broadcast(group_id, message, type);
             co_await lua->switching();
             lua->pushnil();
             lua->resume(1);
@@ -191,7 +191,7 @@ int builtin::group::builtin_toggle(lua_State* L)
             if (actor_shared == nullptr)
                 throw std::runtime_error("actor character is not alive");
 
-            co_await server->group.toggle_member(*actor_shared, target_name);
+            co_await server->groups.toggle_member(*actor_shared, target_name);
             co_await lua->switching();
             lua->pushnil();
             lua->resume(1);

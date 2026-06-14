@@ -1,6 +1,7 @@
 #include <fb/game/character.h>
 #include <fb/game/server.h>
 #include <fb/game/thread_params.h>
+#include <fb/context.h>
 #include <fb/model/model.h>
 #include <stdexcept>
 #include <fb/encoding.h>
@@ -64,10 +65,24 @@ async::task<size_t> character::send(const fb::stream& stream, bool encrypt, bool
     auto socket_ptr = this->_socket.lock();
     if (socket_ptr == nullptr || !socket_ptr->is_open())
     {
-        co_return 0; // Socket has been destroyed or is not open
+        co_return 0;
     }
 
-    co_return co_await socket_ptr->send(stream, encrypt, wrap);
+    auto wire = fb::stream(stream);
+    if (socket_ptr->prepare_outbound(wire, encrypt, wrap) == false)
+        throw std::runtime_error("unknown exception while send bytes");
+
+    const auto queued = wire.size();
+
+    auto* ctx = context::local::try_get();
+    if (ctx == nullptr)
+        co_return co_await this->send_immediate(stream, encrypt, wrap);
+
+    const auto endpoint =
+        std::shared_ptr<boost::asio::ip::tcp::socket>(socket_ptr,
+                                                      static_cast<boost::asio::ip::tcp::socket*>(socket_ptr.get()));
+    ctx->outbound.append(endpoint, std::move(wire));
+    co_return queued;
 }
 
 async::task<size_t> character::send(const fb::protocol::header& response, bool encrypt, bool wrap)
@@ -77,7 +92,36 @@ async::task<size_t> character::send(const fb::protocol::header& response, bool e
     auto socket_ptr = this->_socket.lock();
     if (socket_ptr == nullptr || !socket_ptr->is_open())
     {
-        co_return 0; // Socket has been destroyed or is not open
+        co_return 0;
+    }
+
+    auto stream = fb::stream();
+    auto writer = fb::stream_writer<big_endian>(stream);
+    co_await response.serialize(writer);
+    co_return co_await this->send(stream, encrypt, wrap);
+}
+
+async::task<size_t> character::send_immediate(const fb::stream& stream, bool encrypt, bool wrap)
+{
+    this->assert_thread();
+
+    auto socket_ptr = this->_socket.lock();
+    if (socket_ptr == nullptr || !socket_ptr->is_open())
+    {
+        co_return 0;
+    }
+
+    co_return co_await socket_ptr->send(stream, encrypt, wrap);
+}
+
+async::task<size_t> character::send_immediate(const fb::protocol::header& response, bool encrypt, bool wrap)
+{
+    this->assert_thread();
+
+    auto socket_ptr = this->_socket.lock();
+    if (socket_ptr == nullptr || !socket_ptr->is_open())
+    {
+        co_return 0;
     }
 
     co_return co_await socket_ptr->send(response, encrypt, wrap);
@@ -671,7 +715,7 @@ uint32_t character::add_exp(uint32_t value, bool limit, bool notify)
         // When class is NONE, cap exp to exactly what is needed for level 5
         if (this->_class == CLASS::NONE)
         {
-            auto require = table::ability[CLASS::NONE][5].stacked_exp;
+            auto require = table::ability.stacked_exp(CLASS::NONE, 5);
             if (this->_experience > require)
                 value = 0;
 
@@ -707,7 +751,7 @@ uint32_t character::add_exp(uint32_t value, bool limit, bool notify)
             if (next.exp == 0)
                 break;
 
-            if (this->_experience < next.stacked_exp)
+            if (this->_experience < table::ability.stacked_exp(this->_class, this->_level))
                 break;
 
             if (this->level_up() == false)
@@ -757,7 +801,7 @@ uint32_t character::experience_remained() const
     if (table::ability[this->_class].contains(this->_level) == false)
         return 0;
 
-    return table::ability[this->_class][this->_level].stacked_exp - this->exp();
+    return table::ability.stacked_exp(this->_class, this->_level) - this->exp();
 }
 
 float character::experience_percent() const
@@ -771,9 +815,9 @@ float character::experience_percent() const
     auto required       = table::ability[this->_class][level].exp;
     auto prev_stack_exp = uint32_t{0};
     if (table::ability[this->_class].contains(level - 1))
-        prev_stack_exp = table::ability[this->_class][level - 1].stacked_exp;
+        prev_stack_exp = table::ability.stacked_exp(this->_class, level - 1);
     else if (table::ability[CLASS::NONE].contains(level - 1))
-        prev_stack_exp = table::ability[CLASS::NONE][level - 1].stacked_exp;
+        prev_stack_exp = table::ability.stacked_exp(CLASS::NONE, level - 1);
 
     return std::min(100.0f, ((this->_experience - prev_stack_exp) / float(required)) * 100.0f);
 }
@@ -1745,7 +1789,7 @@ async::task<void> character::death_penalty()
     if (table::ability.contains(cls) && table::ability[cls].contains(level) && table::ability[cls].contains(level - 1))
     {
         auto penalty = uint32_t(table::ability[cls][level].exp * fb::model::const_value::death_penalty::exp);
-        auto gained  = this->exp() - table::ability[cls][level - 1].stacked_exp;
+        auto gained  = this->exp() - table::ability.stacked_exp(cls, level - 1);
 
         penalty = std::min(gained, penalty);
         if (penalty > 0)

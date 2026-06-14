@@ -3,7 +3,13 @@
 
 #include <fb/game/character.h>
 #include <fb/game/clan.member.h>
+#include <fb/game/lazy_container.h>
 #include <string_view>
+#include <unordered_map>
+
+namespace fb::protocol::internal::response {
+class UpdatedClan;
+}
 
 namespace fb::game {
 
@@ -11,6 +17,9 @@ class clan : public lua::luable
 {
 public:
     LUA_PROTOTYPE
+
+public:
+    class container;
 
 private:
     using character_ptr_t    = std::shared_ptr<fb::game::character>;
@@ -55,6 +64,43 @@ public:
     void                              detach(character_weak_ptr ch);
     std::vector<character_ptr_t>      nears(const fb::game::map& map, const fb::model::point16_t& position) const;
     // clang-format on
+};
+
+class clan::container : public lazy_container<clan>
+{
+protected:
+    async::task<entity_ptr> fetch(uint32_t id) override;
+
+public:
+    explicit container(server& server);
+
+    async::task<void> apply_updated(const fb::protocol::internal::response::UpdatedClan& resp);
+
+    async::task<void> create(character& me, std::string_view name);
+    async::task<void> destroy(character& me);
+    async::task<void> join_member(character& inviter, std::string_view target_name);
+    async::task<void> leave_member(character& leaver);
+    async::task<void> kick_member(character& kicker, std::string_view target_name);
+    async::task<void> change_role(character& changer, std::string_view target_name, CLAN_ROLE role);
+    async::task<void> set_title(character& changer, std::string_view title);
+    async::task<void> broadcast(uint32_t clan_id, std::string_view message, MESSAGE_TYPE type);
+
+    async::task<void> on_error(uint32_t error);
+    async::task<void> on_create(uint32_t                                     clan_id,
+                                std::string                                  name,
+                                std::string                                  title,
+                                std::unordered_map<std::string, clan_member> members);
+    async::task<void> on_destroyed(uint32_t clan_id, std::string clan_name);
+    async::task<void> on_broadcast(uint32_t clan_id, std::string message, uint8_t type);
+    async::task<void> on_set_title(uint32_t clan_id, std::optional<std::string> new_title);
+    async::task<void> on_join(uint32_t clan_id, std::optional<std::string> new_member, CLAN_ROLE role);
+    async::task<void> on_leave(uint32_t clan_id, std::optional<std::string> deleted_member);
+    async::task<void> on_kick(uint32_t clan_id, std::optional<std::string> deleted_member);
+    async::task<void> on_change_role(uint32_t                   clan_id,
+                                     std::optional<uint32_t>    target_uid,
+                                     std::optional<std::string> target_name,
+                                     std::optional<uint32_t>    old_role,
+                                     std::optional<uint32_t>    new_role);
 };
 
 } // namespace fb::game

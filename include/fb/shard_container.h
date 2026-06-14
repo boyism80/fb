@@ -246,6 +246,11 @@ public:
             return this->_map_guard.value().at(this->_hash);
         }
 
+        const T& value() const noexcept
+        {
+            return this->_map_guard.value().at(this->_hash);
+        }
+
     private:
         friend class sub_container;
 
@@ -265,6 +270,17 @@ public:
     explicit sub_container(size_t capacity = 0xFFFFFFFF) :
         _data(map_type(capacity))
     { }
+
+    [[nodiscard]] static bool needs_factory_insert(const map_type& data, HashType hash)
+    {
+        if (data.contains(hash) == false)
+            return true;
+
+        if constexpr (requires(const T& value) { value == nullptr; })
+            return data.at(hash) == nullptr;
+
+        return false;
+    }
 
     bool insert(HashType hash, const T& value)
     {
@@ -447,7 +463,7 @@ public:
 
         const auto& data = map_guard->value();
         if (data.contains(hash) == false)
-            throw std::runtime_error("Element not found");
+            co_return std::nullopt;
 
         co_return async_read_guard(std::move(*map_guard), hash);
     }
@@ -460,7 +476,7 @@ public:
 
         auto& data = map_guard->value();
         if (data.contains(hash) == false)
-            throw std::runtime_error("Element not found");
+            co_return std::nullopt;
 
         co_return async_write_guard(std::move(*map_guard), hash);
     }
@@ -495,11 +511,11 @@ public:
     {
         auto  guard = this->_data.enter_write();
         auto& data  = guard.value();
-        if (!data.contains(hash))
+        if (sub_container::needs_factory_insert(data, hash))
         {
             if constexpr (std::is_invocable_r_v<T, Factory>)
             {
-                data.insert(hash, factory());
+                data[hash] = factory();
             }
             else
             {
@@ -591,18 +607,15 @@ public:
         {
             return this->_data.try_async_write(
                 [hash, func_holder, factory_holder](map_type& data) mutable -> async::task<void> {
-                    if (!data.contains(hash))
+                    if (sub_container::needs_factory_insert(data, hash))
                     {
-                        // Create element using factory
                         if constexpr (std::is_invocable_r_v<T, Factory>)
                         {
-                            // Regular function returning T
-                            data.insert(hash, (*factory_holder)());
+                            data[hash] = (*factory_holder)();
                         }
                         else if constexpr (std::is_invocable_r_v<async::task<T>, Factory>)
                         {
-                            // Coroutine function returning async::task<T>
-                            data.insert(hash, co_await (*factory_holder)());
+                            data[hash] = co_await (*factory_holder)();
                         }
                         else
                         {
@@ -619,18 +632,15 @@ public:
         {
             return this->_data.try_async_write(
                 [hash, func_holder, factory_holder](map_type& data) mutable -> async::task<void> {
-                    if (!data.contains(hash))
+                    if (sub_container::needs_factory_insert(data, hash))
                     {
-                        // Create element using factory
                         if constexpr (std::is_invocable_r_v<T, Factory>)
                         {
-                            // Regular function returning T
-                            data.insert(hash, (*factory_holder)());
+                            data[hash] = (*factory_holder)();
                         }
                         else if constexpr (std::is_invocable_r_v<async::task<T>, Factory>)
                         {
-                            // Coroutine function returning async::task<T>
-                            data.insert(hash, co_await (*factory_holder)());
+                            data[hash] = co_await (*factory_holder)();
                         }
                         else
                         {
@@ -657,18 +667,15 @@ public:
         {
             return this->_data.async_write(
                 [hash, func_holder, factory_holder](map_type& data) mutable -> async::task<void> {
-                    if (!data.contains(hash))
+                    if (sub_container::needs_factory_insert(data, hash))
                     {
-                        // Create element using factory
                         if constexpr (std::is_invocable_r_v<T, Factory>)
                         {
-                            // Regular function returning T
-                            data.insert(hash, (*factory_holder)());
+                            data[hash] = (*factory_holder)();
                         }
                         else if constexpr (std::is_invocable_r_v<async::task<T>, Factory>)
                         {
-                            // Coroutine function returning async::task<T>
-                            data.insert(hash, co_await (*factory_holder)());
+                            data[hash] = co_await (*factory_holder)();
                         }
                         else
                         {
@@ -684,18 +691,15 @@ public:
         else
         {
             return this->_data.async_write([hash, func_holder, factory_holder](map_type& data) mutable -> task_type {
-                if (!data.contains(hash))
+                if (sub_container::needs_factory_insert(data, hash))
                 {
-                    // Create element using factory
                     if constexpr (std::is_invocable_r_v<T, Factory>)
                     {
-                        // Regular function returning T
-                        data.insert(hash, (*factory_holder)());
+                        data[hash] = (*factory_holder)();
                     }
                     else if constexpr (std::is_invocable_r_v<async::task<T>, Factory>)
                     {
-                        // Coroutine function returning async::task<T>
-                        data.insert(hash, co_await (*factory_holder)());
+                        data[hash] = co_await (*factory_holder)();
                     }
                     else
                     {

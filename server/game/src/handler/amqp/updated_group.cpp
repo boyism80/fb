@@ -24,19 +24,19 @@ async::task<void> updated_group::handle(const internal_resp::UpdatedGroup& messa
     if (message.deleted_member.has_value())
         deleted_member = message.deleted_member.value().name;
 
-    co_await this->server.group.on_error(message.error, target);
+    co_await this->server.groups.on_error(message.error, target);
     switch (message.action)
     {
     case fb::protocol::internal::GroupActionType::Enter:
-        co_await this->server.group.on_enter(std::move(target), message.group_id, std::move(new_member));
+        co_await this->server.groups.on_enter(std::move(target), message.group_id, std::move(new_member));
         break;
 
     case fb::protocol::internal::GroupActionType::Leave:
-        co_await this->server.group.on_leave(std::move(target), message.group_id, std::move(deleted_member));
+        co_await this->server.groups.on_leave(std::move(target), message.group_id, std::move(deleted_member));
         break;
 
     case fb::protocol::internal::GroupActionType::Kick:
-        co_await this->server.group.on_kick(std::move(target), message.group_id, std::move(deleted_member));
+        co_await this->server.groups.on_kick(std::move(target), message.group_id, std::move(deleted_member));
         break;
 
     default:

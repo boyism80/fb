@@ -1,4 +1,5 @@
-﻿using Dapper;
+using Dapper;
+using Fb.Model.EnumValue;
 using Http.Redis.Key;
 using Http.Service;
 using StackExchange.Redis;
@@ -10,12 +11,18 @@ namespace AdminTool.Services
         private readonly DbContext _dbContext;
         private readonly ILogger<UserService> _logger;
         private readonly RedisService _redisService;
+        private readonly SessionService _sessionService;
 
-        public UserService(DbContext dbContext, ILogger<UserService> logger, RedisService redisService)
+        public UserService(
+            DbContext dbContext,
+            ILogger<UserService> logger,
+            RedisService redisService,
+            SessionService sessionService)
         {
             _dbContext = dbContext;
             _logger = logger;
             _redisService = redisService;
+            _sessionService = sessionService;
         }
 
         public async Task<UserListResult> GetUsers(uint world, int page, int pageSize, string? searchTerm = null)
@@ -97,6 +104,18 @@ namespace AdminTool.Services
                 };
             }
 
+            var onlineIds = new HashSet<uint>();
+            try
+            {
+                var sessions = await _sessionService.GetAllSessions(world);
+                foreach (var session in sessions)
+                    onlineIds.Add(session.Uid);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogWarning(ex, "Failed to load online sessions for user list in world {World}", world);
+            }
+
             // Combine name/ban info with user details
             var resultUsers = new List<UserListItem>();
             foreach (var nameInfo in nameList)
@@ -106,6 +125,7 @@ namespace AdminTool.Services
                     userDetail.IsBanned = nameInfo.IsBanned == 1;
                     userDetail.BanReason = nameInfo.BanReason;
                     userDetail.BanExpireDate = nameInfo.BanExpireDate;
+                    userDetail.IsOnline = onlineIds.Contains(userDetail.Id);
                     resultUsers.Add(userDetail);
                 }
             }
@@ -122,7 +142,7 @@ namespace AdminTool.Services
 
         public async Task<UserDetail?> GetUserByName(uint world, string name)
         {
-            var userId = await _dbContext.Character.GetCharacterId(world, name);
+            var userId = await TryResolveUserIdAsync(world, name);
             if (!userId.HasValue)
                 return null;
 
@@ -146,6 +166,26 @@ namespace AdminTool.Services
                 BanReason = ban?.Reason,
                 BanExpireDate = ban?.ExpireDate
             };
+        }
+
+        /// <summary>
+        /// Resolves a character UID from an exact name or numeric UID string.
+        /// </summary>
+        public async Task<uint?> TryResolveUserIdAsync(uint world, string query)
+        {
+            if (string.IsNullOrWhiteSpace(query))
+                return null;
+
+            var term = query.Trim();
+
+            if (uint.TryParse(term, out var uid))
+            {
+                var character = await _dbContext.Character.Get(world, uid);
+                if (character != null)
+                    return uid;
+            }
+
+            return await _dbContext.Character.GetCharacterId(world, term);
         }
 
         public async Task<bool> IsOnline(uint world, string userName)
@@ -172,6 +212,81 @@ namespace AdminTool.Services
                 return false;
             }
         }
+
+        public async Task<DashboardUserStats> GetDashboardStatsAsync(uint world)
+        {
+            var stats = new DashboardUserStats();
+
+            try
+            {
+                await using var globalConn = _dbContext.GetGlobalConnection(world);
+                stats.TotalAccounts = await globalConn.QuerySingleAsync<int>("SELECT COUNT(*) FROM `name_registry`");
+                stats.BannedCount = await globalConn.QuerySingleAsync<int>(
+                    "SELECT COUNT(*) FROM `ban` WHERE `deleted` = 0");
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Failed to load dashboard account stats for world {World}", world);
+            }
+
+            try
+            {
+                var shardSize = _dbContext.GetShardDbSize(world);
+                for (int i = 0; i < shardSize; i++)
+                {
+                    await using var conn = _dbContext.GetDataConnection(world, i);
+                    stats.AdminCount += await conn.QuerySingleAsync<int>(
+                        "SELECT COUNT(*) FROM `user` WHERE `role` >= @minRole AND `deleted` = 0",
+                        new { minRole = (byte)Fb.Model.EnumValue.Role.Moderator });
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Failed to load admin count for world {World}", world);
+            }
+
+            try
+            {
+                var sessions = await _sessionService.GetAllSessions(world);
+                stats.OnlineCount = sessions.Count;
+
+                var onlineIds = sessions.Select(s => s.Uid).Distinct().Take(5).ToList();
+                if (onlineIds.Count > 0)
+                {
+                    var characters = await _dbContext.Character.GetMany(world, onlineIds);
+                    stats.OnlineUsers = onlineIds
+                        .Where(id => characters.ContainsKey(id))
+                        .Select(id =>
+                        {
+                            var ch = characters[id];
+                            return new OnlineUserItem { Id = ch.Id, Name = ch.Name, Level = ch.Level };
+                        })
+                        .ToList();
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Failed to load online users for world {World}", world);
+            }
+
+            return stats;
+        }
+    }
+
+    public class DashboardUserStats
+    {
+        public int TotalAccounts { get; set; }
+        public int OnlineCount { get; set; }
+        public int BannedCount { get; set; }
+        public int AdminCount { get; set; }
+        public List<OnlineUserItem> OnlineUsers { get; set; } = new();
+    }
+
+    public class OnlineUserItem
+    {
+        public uint Id { get; set; }
+        public string Name { get; set; } = string.Empty;
+        public ushort Level { get; set; }
     }
 
     public class UserListItem
@@ -191,6 +306,8 @@ namespace AdminTool.Services
         public DateTime UpdatedDate { get; set; }
 
         public bool IsBanned { get; set; }
+
+        public bool IsOnline { get; set; }
 
         public string? BanReason { get; set; }
 

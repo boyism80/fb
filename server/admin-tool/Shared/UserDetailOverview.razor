@@ -1,0 +1,204 @@
+@using AdminTool.Services
+@using Http.Model
+
+<div class="user-detail-overview">
+    <div class="user-detail-kpi-row">
+        <div class="user-detail-kpi-tile">
+            <div class="user-detail-kpi-head">
+                <span class="user-detail-kpi-label">Level</span>
+                <span class="material-symbols-outlined" aria-hidden="true">trending_up</span>
+            </div>
+            <span class="user-detail-kpi-value">@Character.Level</span>
+        </div>
+        <div class="user-detail-kpi-tile">
+            <div class="user-detail-kpi-head">
+                <span class="user-detail-kpi-label">Experience</span>
+                <span class="material-symbols-outlined" aria-hidden="true">stars</span>
+            </div>
+            @if (ExpInfo.IsMaxLevel)
+            {
+                <span class="user-detail-kpi-value">@ExpInfo.CurrentExp.ToString("N0")</span>
+            }
+            else
+            {
+                <span class="user-detail-kpi-value">
+                    @ExpInfo.ExpInCurrentLevel.ToString("N0")
+                    <span class="user-detail-kpi-sub">/ @ExpInfo.RequiredExpForLevel.ToString("N0")</span>
+                </span>
+            }
+        </div>
+        <div class="user-detail-kpi-tile">
+            <div class="user-detail-kpi-head">
+                <span class="user-detail-kpi-label">HP / MP</span>
+                <span class="material-symbols-outlined" aria-hidden="true">favorite</span>
+            </div>
+            <span class="user-detail-kpi-value">@Character.Hp <span class="user-detail-kpi-sub">/ @Character.Mp</span></span>
+        </div>
+        <div class="user-detail-kpi-tile">
+            <div class="user-detail-kpi-head">
+                <span class="user-detail-kpi-label">Position</span>
+                <span class="material-symbols-outlined" aria-hidden="true">location_on</span>
+            </div>
+            <span class="user-detail-kpi-value user-detail-kpi-value-text">@UserDetailDisplay.FormatMapName(Character.Map)</span>
+        </div>
+    </div>
+
+    <div class="user-detail-overview-grid">
+        <div class="card-bg stitch-form-card user-detail-account-card">
+            <div class="stitch-form-card-header">
+                <h2 class="dash-card-title">
+                    <span class="material-symbols-outlined" aria-hidden="true">badge</span>
+                    계정 정보
+                </h2>
+            </div>
+            <div class="user-detail-card-content">
+                <div class="user-detail-field-grid">
+                    <div class="user-detail-field">
+                        <span class="user-detail-field-label">UID</span>
+                        <span class="user-detail-field-value table-meta">@UserDetail.Id</span>
+                    </div>
+                    <div class="user-detail-field">
+                        <span class="user-detail-field-label">유저명</span>
+                        <span class="user-detail-field-value">@UserDetail.Name</span>
+                    </div>
+                    <div class="user-detail-field">
+                        <span class="user-detail-field-label">역할</span>
+                        <span class="user-detail-field-value">@UserDetailDisplay.FormatRole(Character.Role)</span>
+                    </div>
+                    <div class="user-detail-field">
+                        <span class="user-detail-field-label">직업</span>
+                        <span class="user-detail-field-value">@ClassName</span>
+                    </div>
+                    <div class="user-detail-field">
+                        <span class="user-detail-field-label">계정 생성</span>
+                        <span class="user-detail-field-value table-meta">@UserDetailDisplay.FormatDateTime(UserDetail.CreatedDate)</span>
+                    </div>
+                    <div class="user-detail-field">
+                        <span class="user-detail-field-label">최근 수정</span>
+                        <span class="user-detail-field-value table-meta">@UserDetailDisplay.FormatDateTime(UserDetail.UpdatedDate)</span>
+                    </div>
+                    <div class="user-detail-field">
+                        <span class="user-detail-field-label">최초 로그인</span>
+                        <span class="user-detail-field-value table-meta">@UserDetailDisplay.FormatDateTime(Character.FirstLoginDate)</span>
+                    </div>
+                    <div class="user-detail-field">
+                        <span class="user-detail-field-label">접속 상태</span>
+                        <span class="user-detail-field-value">
+                            @if (IsOnline)
+                            {
+                                <span class="user-detail-online"><span class="status-dot"></span> 온라인</span>
+                            }
+                            else
+                            {
+                                <span class="text-muted">오프라인</span>
+                            }
+                        </span>
+                    </div>
+                    <div class="user-detail-field">
+                        <span class="user-detail-field-label">이용 제한</span>
+                        <span class="user-detail-field-value">
+                            @if (UserDetail.IsBanned)
+                            {
+                                <span class="text-danger">제한 중</span>
+                            }
+                            else
+                            {
+                                <span>정상</span>
+                            }
+                        </span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card-bg stitch-form-card">
+            <div class="stitch-form-card-header">
+                <h2 class="dash-card-title">
+                    <span class="material-symbols-outlined" aria-hidden="true">person_check</span>
+                    캐릭터 요약
+                </h2>
+            </div>
+            <div class="user-detail-card-content user-detail-summary-body">
+                @if (!ExpInfo.IsMaxLevel)
+                {
+                    <div class="user-detail-exp-block">
+                        <div class="user-detail-exp-head">
+                            <span class="user-detail-exp-label">다음 레벨까지</span>
+                            <span class="user-detail-exp-pct table-meta">@ExpInfo.PercentText</span>
+                        </div>
+                        <div class="user-detail-progress-bar">
+                            <div class="user-detail-progress-fill" style="width: @ExpInfo.Percent.ToString("0.#", System.Globalization.CultureInfo.InvariantCulture)%"></div>
+                        </div>
+                        <span class="user-detail-exp-remain table-meta">@ExpInfo.RemainingExpToNextLevel.ToString("N0") EXP 남음</span>
+                    </div>
+                }
+                else
+                {
+                    <div class="user-detail-exp-block">
+                        <span class="user-detail-exp-label">경험치</span>
+                        <span class="user-detail-kpi-value user-detail-kpi-value-sm">@ExpInfo.CurrentExp.ToString("N0") (최대 레벨)</span>
+                    </div>
+                }
+
+                <div class="user-detail-field-grid user-detail-field-grid-compact">
+                    <div class="user-detail-field">
+                        <span class="user-detail-field-label">직업</span>
+                        <span class="user-detail-field-value">@ClassName</span>
+                    </div>
+                    <div class="user-detail-field">
+                        <span class="user-detail-field-label">위치</span>
+                        <span class="user-detail-field-value table-meta">
+                            @UserDetailDisplay.FormatMapName(Character.Map)
+                            (@Character.PositionX, @Character.PositionY)
+                        </span>
+                    </div>
+                    <div class="user-detail-field">
+                        <span class="user-detail-field-label">인벤토리</span>
+                        <span class="user-detail-field-value table-meta">@InventoryCount 개</span>
+                    </div>
+                    <div class="user-detail-field">
+                        <span class="user-detail-field-label">창고</span>
+                        <span class="user-detail-field-value table-meta">@StorageCount 개</span>
+                    </div>
+                </div>
+
+                <div class="user-detail-buff-chip">
+                    <div class="user-detail-buff-chip-left">
+                        <span class="material-symbols-outlined" aria-hidden="true">bolt</span>
+                        <span>버프 적용 중</span>
+                    </div>
+                    <span class="stitch-badge muted">@ActiveBuffCount 개</span>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@code {
+    [Parameter, EditorRequired]
+    public Character Character { get; set; } = null!;
+
+    [Parameter, EditorRequired]
+    public UserDetail UserDetail { get; set; } = null!;
+
+    [Parameter]
+    public bool IsOnline { get; set; }
+
+    [Parameter]
+    public int InventoryCount { get; set; }
+
+    [Parameter]
+    public int StorageCount { get; set; }
+
+    [Parameter]
+    public int StorageVaultCount { get; set; }
+
+    private CharacterExpInfo ExpInfo =>
+        UserDetailDisplay.GetExpInfo(Character.Class, Character.Level, Character.Exp);
+
+    private string ClassName =>
+        UserDetailDisplay.FormatClassName(Character.Class, Character.Promotion);
+
+    private int ActiveBuffCount =>
+        Character.Buffs?.Count(b => b.Time > 0) ?? 0;
+}

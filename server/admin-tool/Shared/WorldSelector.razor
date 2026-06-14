@@ -1,0 +1,85 @@
+<div class="world-selector">
+    <button type="button"
+            class="world-selector-trigger @(isOpen ? "open" : null)"
+            @onclick="ToggleOpen"
+            aria-expanded="@isOpen"
+            aria-haspopup="listbox"
+            aria-label="월드 선택">
+        <span class="material-symbols-outlined world-selector-icon" aria-hidden="true">dns</span>
+        <span class="world-selector-label">@GetDisplayName(SelectedWorld)</span>
+        <span class="material-symbols-outlined world-selector-chevron @(isOpen ? "open" : null)" aria-hidden="true">expand_more</span>
+    </button>
+
+    @if (isOpen)
+    {
+        <button type="button" class="world-selector-backdrop" @onclick="Close" aria-label="닫기"></button>
+        <div class="world-selector-menu" role="listbox">
+            <div class="world-selector-menu-header">월드 선택</div>
+            @if (Worlds != null)
+            {
+                @foreach (var worldId in Worlds)
+                {
+                    var isSelected = SelectedWorld == worldId;
+                    <button type="button"
+                            class="world-selector-item @(isSelected ? "active" : null)"
+                            role="option"
+                            aria-selected="@isSelected"
+                            @onclick="() => SelectWorld(worldId)">
+                        <div class="world-selector-item-text">
+                            <span class="world-selector-item-name">@GetDisplayName(worldId)</span>
+                            <span class="world-selector-item-meta">World @worldId</span>
+                        </div>
+                        @if (isSelected)
+                        {
+                            <span class="material-symbols-outlined world-selector-check" aria-hidden="true">check</span>
+                        }
+                    </button>
+                }
+            }
+        </div>
+    }
+</div>
+
+@code {
+    [Parameter]
+    public IReadOnlyList<uint>? Worlds { get; set; }
+
+    [Parameter]
+    public uint? SelectedWorld { get; set; }
+
+    [Parameter]
+    public EventCallback<uint?> SelectedWorldChanged { get; set; }
+
+    [Parameter]
+    public IReadOnlyDictionary<uint, string>? WorldNames { get; set; }
+
+    private bool isOpen;
+
+    private string GetDisplayName(uint? world)
+    {
+        if (!world.HasValue)
+            return "—";
+
+        if (WorldNames != null && WorldNames.TryGetValue(world.Value, out var name))
+            return name;
+
+        return $"World {world.Value}";
+    }
+
+    private void ToggleOpen()
+    {
+        isOpen = !isOpen;
+    }
+
+    private void Close()
+    {
+        isOpen = false;
+    }
+
+    private async Task SelectWorld(uint worldId)
+    {
+        SelectedWorld = worldId;
+        isOpen = false;
+        await SelectedWorldChanged.InvokeAsync(worldId);
+    }
+}

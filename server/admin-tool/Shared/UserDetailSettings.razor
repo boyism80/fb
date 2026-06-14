@@ -1,0 +1,68 @@
+@using AdminTool.Services
+@using Http.Model
+
+<div class="user-detail-settings">
+    <div class="card-bg stitch-form-card mb-4">
+        <div class="stitch-form-card-header">
+            <h2 class="dash-card-title">
+                <span class="material-symbols-outlined" aria-hidden="true">tune</span>
+                게임 옵션
+            </h2>
+        </div>
+        <div class="user-detail-card-content">
+            <p class="user-detail-settings-note">설정값은 읽기 전용입니다. 게임 내에서 변경됩니다.</p>
+            @if (Option != null)
+            {
+                <dl class="user-detail-dl user-detail-dl-2col">
+                    <div class="user-detail-dl-item"><dt>귓속말</dt><dd>@FormatBool(Option.Whisper)</dd></div>
+                    <div class="user-detail-dl-item"><dt>파티 초대</dt><dd>@FormatBool(Option.Group)</dd></div>
+                    <div class="user-detail-dl-item"><dt>외치기</dt><dd>@FormatBool(Option.Roar)</dd></div>
+                    <div class="user-detail-dl-item"><dt>월드 외치기</dt><dd>@FormatBool(Option.RoarWorlds)</dd></div>
+                    <div class="user-detail-dl-item"><dt>마법 이펙트</dt><dd>@FormatBool(Option.MagicEffect)</dd></div>
+                    <div class="user-detail-dl-item"><dt>날씨 이펙트</dt><dd>@FormatBool(Option.WeatherEffect)</dd></div>
+                    <div class="user-detail-dl-item"><dt>고정 이동</dt><dd>@FormatBool(Option.FixedMove)</dd></div>
+                    <div class="user-detail-dl-item"><dt>거래</dt><dd>@FormatBool(Option.Trade)</dd></div>
+                    <div class="user-detail-dl-item"><dt>빠른 이동</dt><dd>@FormatBool(Option.FastMove)</dd></div>
+                    <div class="user-detail-dl-item"><dt>효과음</dt><dd>@FormatBool(Option.EffectSound)</dd></div>
+                    <div class="user-detail-dl-item"><dt>PK 보호</dt><dd>@FormatBool(Option.PkProtect)</dd></div>
+                </dl>
+            }
+            else
+            {
+                <p class="text-muted mb-0">옵션 데이터가 없습니다. 기본값이 적용됩니다.</p>
+            }
+        </div>
+    </div>
+
+    <div class="card-bg stitch-form-card mb-4">
+        <div class="stitch-form-card-header">
+            <h2 class="dash-card-title">
+                <span class="material-symbols-outlined" aria-hidden="true">info</span>
+                계정 메타
+            </h2>
+        </div>
+        <div class="user-detail-card-content">
+            <dl class="user-detail-dl user-detail-dl-2col">
+                <div class="user-detail-dl-item"><dt>UID</dt><dd class="table-meta">@UserDetail.Id</dd></div>
+                <div class="user-detail-dl-item"><dt>월드</dt><dd class="table-meta">@Character.World</dd></div>
+                <div class="user-detail-dl-item"><dt>계정 생성</dt><dd class="table-meta">@UserDetailDisplay.FormatDateTime(UserDetail.CreatedDate)</dd></div>
+                <div class="user-detail-dl-item"><dt>최근 수정</dt><dd class="table-meta">@UserDetailDisplay.FormatDateTime(UserDetail.UpdatedDate)</dd></div>
+                <div class="user-detail-dl-item"><dt>최초 로그인</dt><dd class="table-meta">@UserDetailDisplay.FormatDateTime(Character.FirstLoginDate)</dd></div>
+                <div class="user-detail-dl-item"><dt>슈퍼하이드</dt><dd>@FormatBool(Character.SuperHide)</dd></div>
+            </dl>
+        </div>
+    </div>
+</div>
+
+@code {
+    [Parameter, EditorRequired]
+    public Character Character { get; set; } = null!;
+
+    [Parameter, EditorRequired]
+    public UserDetail UserDetail { get; set; } = null!;
+
+    [Parameter]
+    public Http.Model.Option? Option { get; set; }
+
+    private static string FormatBool(bool value) => value ? "켜짐" : "꺼짐";
+}

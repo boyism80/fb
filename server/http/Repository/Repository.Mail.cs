@@ -8,7 +8,8 @@ namespace Http.Reepository
 {
     public class MailRepository : IRepository
     {
-        private const string TempMailWriteUsersTable = "tmp_mail_write_users";
+        private const string TempMailWriteUsersTable    = "tmp_mail_write_users";
+        private const string TempMailDeliverContentTable = "tmp_mail_deliver_content";
 
         private readonly DbContext _dbContext;
 
@@ -35,22 +36,93 @@ namespace Http.Reepository
                 $"INSERT INTO {TempMailWriteUsersTable} (`user_id`) VALUES {userValues}");
         }
 
+        /// <summary>
+        /// Populates per-recipient rendered title/contents for system mail delivery.
+        /// Must stay on the same connection as <see cref="PopulateTempMailWriteUsersAsync"/>.
+        /// </summary>
+        private static async Task PopulateTempMailDeliverContentAsync(
+            MySqlConnection connection,
+            IReadOnlyDictionary<uint, (string Title, string Contents)> rendered)
+        {
+            if (connection.State != System.Data.ConnectionState.Open)
+                await connection.OpenAsync();
+
+            await connection.ExecuteAsync($"DROP TEMPORARY TABLE IF EXISTS {TempMailDeliverContentTable}");
+            await connection.ExecuteAsync(
+                $"CREATE TEMPORARY TABLE {TempMailDeliverContentTable} (" +
+                "`user_id` INT UNSIGNED NOT NULL, " +
+                "`title` NVARCHAR(64) NOT NULL, " +
+                "`contents` NVARCHAR(256) NOT NULL, " +
+                "PRIMARY KEY (`user_id`)" +
+                ") ENGINE = MEMORY");
+
+            foreach (var (userId, content) in rendered)
+            {
+                await connection.ExecuteAsync(
+                    $"INSERT INTO {TempMailDeliverContentTable} (`user_id`, `title`, `contents`) " +
+                    "VALUES (@userId, @title, @contents)",
+                    new { userId, title = content.Title, contents = content.Contents });
+            }
+        }
+
         public MailRepository(DbContext dbContext)
         {
             _dbContext = dbContext;
         }
 
-        public async Task<List<Mail>> GetList(uint world, uint user, ushort offset, ushort count)
+        public enum AdminMailFilter : byte
+        {
+            All = 0,
+            Unread = 1,
+            System = 2
+        }
+
+        public async Task<List<Mail>> GetSummaryList(uint world, uint user, ushort position, ushort count)
         {
             await using var conn = _dbContext.GetShardConnection(world, user);
             var dynamicParams = new DynamicParameters();
             dynamicParams.Add("user", user);
-            dynamicParams.Add("position", offset);
+            dynamicParams.Add("position", position);
             dynamicParams.Add("count", count);
-            var mails = await conn.QueryAsync<Http.Model.Mail>($"USP_MAIL_GET_LIST", dynamicParams, commandType: System.Data.CommandType.StoredProcedure);
+            var mails = await conn.QueryAsync<Mail>(
+                "USP_MAIL_GET_SUMMARY_LIST",
+                dynamicParams,
+                commandType: System.Data.CommandType.StoredProcedure);
 
             return mails.ToList();
         }
+
+        public async Task<List<Mail>> GetAdminList(uint world, uint user, int offset, int count, AdminMailFilter mailFilter)
+        {
+            await using var conn = _dbContext.GetShardConnection(world, user);
+            var dynamicParams = new DynamicParameters();
+            dynamicParams.Add("user", user);
+            dynamicParams.Add("offset", offset);
+            dynamicParams.Add("count", count);
+            dynamicParams.Add("mail_filter", (byte)mailFilter);
+            var mails = await conn.QueryAsync<Mail>(
+                "USP_MAIL_GET_LIST",
+                dynamicParams,
+                commandType: System.Data.CommandType.StoredProcedure);
+
+            return mails.ToList();
+        }
+
+        public async Task<int> CountByUser(uint world, uint user, AdminMailFilter mailFilter)
+        {
+            await using var conn = _dbContext.GetShardConnection(world, user);
+            var dynamicParams = new DynamicParameters();
+            dynamicParams.Add("user", user);
+            dynamicParams.Add("mail_filter", (byte)mailFilter);
+            return await conn.QueryFirstOrDefaultAsync<int>(
+                "USP_MAIL_COUNT_BY_USER",
+                dynamicParams,
+                commandType: System.Data.CommandType.StoredProcedure);
+        }
+
+        [Obsolete("Use GetSummaryList for game server or GetAdminList for admin tool.")]
+        public Task<List<Mail>> GetList(uint world, uint user, ushort offset, ushort count)
+            => GetSummaryList(world, user, offset, count);
 
         public async Task<Mail> Get(uint world, uint user, uint id)
         {
@@ -143,13 +215,24 @@ namespace Http.Reepository
                     if (userIds.Length == 0)
                         continue;
 
+                    var characters = await _dbContext.Character.GetMany(world, userIds);
+                    var rendered = new Dictionary<uint, (string Title, string Contents)>(userIds.Length);
+                    foreach (var userId in userIds)
+                    {
+                        characters.TryGetValue(userId, out var character);
+                        var context = new SystemMailRecipientContext(
+                            userId,
+                            character?.Name ?? string.Empty,
+                            character?.Level ?? 0);
+                        rendered[userId] = SystemMailTemplate.Render(title, contents, context);
+                    }
+
                     await PopulateTempMailWriteUsersAsync(connection, userIds);
+                    await PopulateTempMailDeliverContentAsync(connection, rendered);
 
                     var dynamicParams = new DynamicParameters();
                     dynamicParams.Add("system_mail_id", systemMailId);
                     dynamicParams.Add("sender", sender);
-                    dynamicParams.Add("title", title);
-                    dynamicParams.Add("contents", contents);
 
                     await using var reader = await connection.QueryMultipleAsync(
                         "USP_MAIL_DELIVER_SYSTEM_MANY",

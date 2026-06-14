@@ -23,41 +23,45 @@
 @inject IConfiguration Configuration
 @attribute [AuthorizeRole(Role.Admin)]
 
-<PageTitle>Users - Admin Tool</PageTitle>
+<PageTitle>유저 관리 - FB ADMIN</PageTitle>
 
 <div>
-    <div class="page-header mb-4">
-        <h1>User Management</h1>
-        <p class="text-muted">Search and manage user accounts</p>
+    <div class="page-header">
+        <h1>유저 관리</h1>
+        <p>계정 검색 및 관리</p>
     </div>
 
-    <div class="search-section mb-4">
-        <div class="row g-3 align-items-end">
-            <div class="col-lg-8 col-md-7">
-                <label for="searchInput" class="form-label">Search Users</label>
-                <div class="input-group input-group-lg">
-                    <span class="input-group-text bg-transparent border-end-0">
-                        <span class="oi oi-magnifying-glass" aria-hidden="true"></span>
-                    </span>
-                    <input type="text" id="searchInput" class="form-control search-input border-start-0" 
-                           placeholder="Enter username to search..." @bind="searchTerm"
-                           @bind:event="oninput" @onkeypress="HandleKeyPress" />
-                </div>
+    <div class="card-bg filter-toolbar">
+        <div class="filter-toolbar-left">
+            <div class="stitch-search-wrap">
+                <span class="material-symbols-outlined" aria-hidden="true">search</span>
+                <input type="text" id="searchInput" class="stitch-search"
+                       placeholder="UID 또는 유저명 검색" @bind="searchTerm"
+                       @bind:event="oninput" @onkeypress="HandleKeyPress" />
             </div>
-            <div class="col-lg-4 col-md-5">
-                <div class="d-flex gap-2">
-                    <button class="btn btn-primary flex-fill" type="button" @onclick="SearchUsers" disabled="@isLoading">
-                        @if (isLoading)
-                        {
-                            <span class="spinner-border spinner-border-sm me-2" role="status"></span>
-                        }
-                        <span class="oi oi-magnifying-glass me-2" aria-hidden="true"></span>Search
-                    </button>
-                    <button class="btn btn-outline-secondary" type="button" @onclick="ClearSearch" disabled="@isLoading">
-                        <span class="oi oi-x me-2" aria-hidden="true"></span>Clear
-                    </button>
-                </div>
-            </div>
+            <select class="stitch-select" @bind="statusFilter">
+                <option value="all">상태: 전체</option>
+                <option value="online">온라인</option>
+                <option value="offline">오프라인</option>
+                <option value="banned">밴</option>
+            </select>
+            <select class="stitch-select" @bind="roleFilter">
+                <option value="all">역할: 전체</option>
+                <option value="user">일반 유저</option>
+                <option value="staff">관리자</option>
+            </select>
+        </div>
+        <div class="filter-toolbar-right">
+            <button class="stitch-btn stitch-btn-neutral" type="button" @onclick="ClearSearch" disabled="@isLoading">
+                초기화
+            </button>
+            <button class="stitch-btn stitch-btn-primary" type="button" @onclick="SearchUsers" disabled="@isLoading">
+                @if (isLoading)
+                {
+                    <span class="spinner-border spinner-border-sm me-1" role="status"></span>
+                }
+                검색
+            </button>
         </div>
     </div>
 
@@ -81,119 +85,132 @@
     {
         <div class="text-center py-5">
             <div class="spinner-border text-primary" role="status" style="width: 3rem; height: 3rem;">
-                <span class="visually-hidden">Loading...</span>
+                <span class="visually-hidden">불러오는 중...</span>
             </div>
-            <p class="text-muted mt-3">Loading users...</p>
+            <p class="text-muted mt-3">유저 목록을 불러오는 중...</p>
         </div>
     }
-    else if (userList?.Users != null && userList.Users.Any())
+    else if (userList?.Users != null && FilteredUsers.Any())
     {
-        <div class="card">
-            <div class="card-header d-flex justify-content-between align-items-center">
-                <h5 class="mb-0">Users</h5>
-                <span class="badge bg-secondary">@userList.TotalCount total</span>
-            </div>
-            <div class="card-body">
-                <ul class="clean-list">
-                    @{
-                        int userIndex = (currentPage - 1) * pageSize + 1;
-                    }
-                    @foreach (var user in userList.Users)
-                    {
-                        <li class="clean-list-item">
-                            <span class="clean-list-item-number">@userIndex</span>
-                            <div class="clean-list-item-content">
-                                <div class="clean-list-item-main">
-                                    <strong>@user.Name</strong>
-                                    <span class="clean-list-item-secondary ms-2">
-                                        ID: @user.Id · @((Role)user.Role) · Level @user.Level · @user.Money.ToString("N0") gold
-                                    </span>
-                                </div>
-                                <div class="clean-list-item-secondary">
-                                    @if (user.IsBanned)
-                                    {
-                                        <span class="badge bg-danger">
-                                            Banned
-                                            @if (user.BanExpireDate.HasValue)
-                                            {
-                                                <span>(Until @user.BanExpireDate.Value.ToString("yyyy-MM-dd"))</span>
-                                            }
-                                            else
-                                            {
-                                                <span>(Permanent)</span>
-                                            }
-                                        </span>
-                                    }
-                                    else
-                                    {
-                                        <span class="badge bg-success">Active</span>
-                                    }
-                                    <span class="ms-2">@user.CreatedDate.ToString("yyyy-MM-dd HH:mm:ss")</span>
-                                </div>
-                            </div>
-                            <div class="clean-list-item-actions">
-                                <a href="/users/@user.Id/items" class="btn btn-sm btn-outline-secondary">Items</a>
-                                <button class="btn btn-sm btn-outline-secondary"
-                                        title="@GetChangeRoleButtonTitle(user)"
-                                        @onclick="() => ShowChangeRoleModal(user)"
-                                        disabled="@isProcessing">
-                                    Change Role
-                                </button>
-                                @if (user.IsBanned)
-                                {
-                                    <button class="btn btn-sm btn-outline-secondary" @onclick="() => ShowUnbanModal(user)"
-                                        disabled="@isProcessing">
-                                        Unban
-                                    </button>
-                                }
-                                else
-                                {
-                                    <button class="btn btn-sm btn-outline-secondary" @onclick="() => ShowBanModal(user)"
-                                        disabled="@isProcessing">
-                                        Ban
-                                    </button>
-                                }
-                            </div>
-                        </li>
-                        userIndex++;
-                    }
-                </ul>
+        <div class="card-bg data-table-card">
+            <div class="dash-table-wrap">
+                <table class="dash-table">
+                    <thead>
+                        <tr>
+                            <th style="width:3rem;">#</th>
+                            <th>유저명</th>
+                            <th>UID</th>
+                            <th style="text-align:right;width:4rem;">레벨</th>
+                            <th>역할</th>
+                            <th>상태</th>
+                            <th>최근접속</th>
+                            <th style="text-align:right;">작업</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @{
+                            int userIndex = (currentPage - 1) * pageSize + 1;
+                        }
+                        @foreach (var user in FilteredUsers)
+                        {
+                            <tr>
+                                <td class="table-meta">@userIndex</td>
+                                <td style="@(user.IsBanned ? "opacity:0.5;" : "")">
+                                    <a href="/users/@user.Id" class="user-name-link">@user.Name</a>
+                                </td>
+                                <td class="table-meta" style="@(user.IsBanned ? "opacity:0.5;" : "")">@user.Id</td>
+                                <td style="text-align:right;">@user.Level</td>
+                                <td class="table-meta">@FormatRole(user.Role)</td>
+                                <td>
+                                    <div class="table-status">
+                                        @if (user.IsBanned)
+                                        {
+                                            <span class="table-status-dot banned"></span>
+                                            <span>밴</span>
+                                        }
+                                        else if (user.IsOnline)
+                                        {
+                                            <span class="table-status-dot online"></span>
+                                            <span>온라인</span>
+                                        }
+                                        else
+                                        {
+                                            <span class="table-status-dot offline"></span>
+                                            <span>오프라인</span>
+                                        }
+                                    </div>
+                                </td>
+                                <td class="table-meta">@user.UpdatedDate.ToString("yyyy-MM-dd HH:mm:ss")</td>
+                                <td>
+                                    <div class="table-actions">
+                                        <a href="/users/@user.Id" class="text-link">상세</a>
+                                        <button class="text-link"
+                                                title="@GetChangeRoleButtonTitle(user)"
+                                                @onclick="() => ShowChangeRoleModal(user)"
+                                                disabled="@isProcessing">역할</button>
+                                        @if (user.IsBanned)
+                                        {
+                                            <button class="text-link" @onclick="() => ShowUnbanModal(user)"
+                                                disabled="@isProcessing">밴 해제</button>
+                                        }
+                                        else
+                                        {
+                                            <button class="text-link" @onclick="() => ShowBanModal(user)"
+                                                disabled="@isProcessing">밴</button>
+                                        }
+                                    </div>
+                                </td>
+                            </tr>
+                            userIndex++;
+                        }
+                    </tbody>
+                </table>
             </div>
         </div>
 
         @if (userList.TotalPages > 1)
         {
-            <div class="d-flex justify-content-between align-items-center mt-4">
-                <div class="text-muted">
-                    Showing @((currentPage - 1) * pageSize + 1) to @(Math.Min(currentPage * pageSize, userList.TotalCount)) of
-                    @userList.TotalCount users
+            <div class="page-footer-bar">
+                <div>
+                    @((currentPage - 1) * pageSize + 1) ~ @(Math.Min(currentPage * pageSize, userList.TotalCount)) / @(userList.TotalCount)명
                 </div>
                 <nav>
-                    <ul class="pagination mb-0">
-                        <li class="page-item @(currentPage <= 1 ? "disabled" : "")">
-                            <a class="page-link" href="#" @onclick="() => ChangePage(currentPage - 1)"
-                                @onclick:preventDefault>Previous</a>
+                    <ul class="stitch-pagination">
+                        <li>
+                            <a class="stitch-page-btn @(currentPage <= 1 ? "disabled" : "")" href="#"
+                               @onclick="() => ChangePage(currentPage - 1)" @onclick:preventDefault>
+                                <span class="material-symbols-outlined" style="font-size:1.125rem;">chevron_left</span>
+                            </a>
                         </li>
                         @for (int i = Math.Max(1, currentPage - 2); i <= Math.Min(userList.TotalPages, currentPage + 2); i++)
                         {
                             var pageNum = i;
-                            <li class="page-item @(currentPage == pageNum ? "active" : "")">
-                                <a class="page-link" href="#" @onclick="() => ChangePage(pageNum)" @onclick:preventDefault>@pageNum</a>
+                            <li>
+                                <a class="stitch-page-btn @(currentPage == pageNum ? "active" : "")" href="#"
+                                   @onclick="() => ChangePage(pageNum)" @onclick:preventDefault>@pageNum</a>
                             </li>
                         }
-                        <li class="page-item @(currentPage >= userList.TotalPages ? "disabled" : "")">
-                            <a class="page-link" href="#" @onclick="() => ChangePage(currentPage + 1)"
-                                @onclick:preventDefault>Next</a>
+                        <li>
+                            <a class="stitch-page-btn @(currentPage >= userList.TotalPages ? "disabled" : "")" href="#"
+                               @onclick="() => ChangePage(currentPage + 1)" @onclick:preventDefault>
+                                <span class="material-symbols-outlined" style="font-size:1.125rem;">chevron_right</span>
+                            </a>
                         </li>
                     </ul>
                 </nav>
             </div>
         }
     }
+    else if (!isLoading && userList?.Users != null && userList.Users.Any())
+    {
+        <div class="card-bg dash-card">
+            <p class="dash-empty">필터 조건에 맞는 유저가 없습니다.</p>
+        </div>
+    }
     else if (!isLoading)
     {
         <div class="alert alert-info">
-            No users found.
+            유저를 찾을 수 없습니다.
         </div>
     }
 </div>
@@ -201,42 +218,40 @@
 <!-- Ban Modal -->
 @if (showBanModal)
 {
-    <div class="modal show d-block" tabindex="-1" style="background-color: rgba(0,0,0,0.5);">
-        <div class="modal-dialog">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title">Ban User: @selectedUser?.Name</h5>
-                    <button type="button" class="btn-close" @onclick="CloseBanModal"></button>
-                </div>
-                <div class="modal-body">
+    <div class="stitch-modal-backdrop" tabindex="-1">
+        <div class="stitch-modal" @onclick:stopPropagation="true">
+            <div class="stitch-modal-header">
+                <h2 class="stitch-modal-title">유저 밴: @selectedUser?.Name</h2>
+                <button type="button" class="btn-close" @onclick="CloseBanModal"></button>
+            </div>
+            <div class="stitch-modal-body">
                     <EditForm Model="@banModel" OnValidSubmit="@HandleBan">
                         <DataAnnotationsValidator />
                         <div class="mb-3">
-                            <label for="banReason" class="form-label">Reason</label>
+                            <label for="banReason" class="form-label">사유</label>
                             <InputTextArea id="banReason" class="form-control" rows="3" @bind-Value="banModel.Reason" />
                             <ValidationMessage For="@(() => banModel.Reason)" />
                         </div>
                         <div class="mb-3">
-                            <label for="banDays" class="form-label">Ban Duration</label>
+                            <label for="banDays" class="form-label">밴 기간</label>
                             <InputSelect id="banDays" class="form-select" @bind-Value="banModel.Days">
-                                <option value="">Permanent</option>
-                                <option value="7">7 Days</option>
-                                <option value="15">15 Days</option>
-                                <option value="30">30 Days</option>
+                                <option value="">영구</option>
+                                <option value="7">7일</option>
+                                <option value="15">15일</option>
+                                <option value="30">30일</option>
                             </InputSelect>
                         </div>
-                        <div class="modal-footer">
-                            <button type="button" class="btn btn-secondary" @onclick="CloseBanModal">Cancel</button>
-                            <button type="submit" class="btn btn-danger" disabled="@isProcessing">
+                        <div class="stitch-modal-footer">
+                            <button type="button" class="stitch-btn stitch-btn-neutral" @onclick="CloseBanModal">취소</button>
+                            <button type="submit" class="stitch-btn stitch-btn-primary" disabled="@isProcessing">
                                 @if (isProcessing)
                                 {
                                     <span class="spinner-border spinner-border-sm me-2" role="status"></span>
                                 }
-                                Ban User
+                                밴 처리
                             </button>
                         </div>
                     </EditForm>
-                </div>
             </div>
         </div>
     </div>
@@ -245,28 +260,26 @@
 <!-- Unban Modal -->
 @if (showUnbanModal)
 {
-    <div class="modal show d-block" tabindex="-1" style="background-color: rgba(0,0,0,0.5);">
-        <div class="modal-dialog">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title">Unban User: @selectedUser?.Name</h5>
-                    <button type="button" class="btn-close" @onclick="CloseUnbanModal"></button>
-                </div>
-                <div class="modal-body">
-                    <p>Are you sure you want to unban this user?</p>
-                    @if (selectedUser != null && !string.IsNullOrEmpty(selectedUser.BanReason))
-                    {
-                        <p><strong>Current ban reason:</strong> @selectedUser.BanReason</p>
-                    }
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" @onclick="CloseUnbanModal">Cancel</button>
-                    <button type="button" class="btn btn-success" @onclick="HandleUnban" disabled="@isProcessing">
+    <div class="stitch-modal-backdrop" tabindex="-1">
+        <div class="stitch-modal" @onclick:stopPropagation="true">
+            <div class="stitch-modal-header">
+                <h2 class="stitch-modal-title">밴 해제: @selectedUser?.Name</h2>
+                <button type="button" class="btn-close" @onclick="CloseUnbanModal"></button>
+            </div>
+            <div class="stitch-modal-body">
+                <p>이 유저의 밴을 해제하시겠습니까?</p>
+                @if (selectedUser != null && !string.IsNullOrEmpty(selectedUser.BanReason))
+                {
+                    <p><strong>현재 밴 사유:</strong> @selectedUser.BanReason</p>
+                }
+                <div class="stitch-modal-footer">
+                    <button type="button" class="stitch-btn stitch-btn-neutral" @onclick="CloseUnbanModal">취소</button>
+                    <button type="button" class="stitch-btn stitch-btn-primary" @onclick="HandleUnban" disabled="@isProcessing">
                         @if (isProcessing)
                         {
                             <span class="spinner-border spinner-border-sm me-2" role="status"></span>
                         }
-                        Unban User
+                        밴 해제
                     </button>
                 </div>
             </div>
@@ -277,52 +290,50 @@
 <!-- Change Role Modal -->
 @if (showChangeRoleModal)
 {
-    <div class="modal show d-block" tabindex="-1" style="background-color: rgba(0,0,0,0.5);">
-        <div class="modal-dialog">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title">Change Role: @selectedUser?.Name</h5>
-                    <button type="button" class="btn-close" @onclick="CloseChangeRoleModal"></button>
-                </div>
-                <div class="modal-body">
-                    <EditForm Model="@roleModel" OnValidSubmit="@HandleChangeRole">
-                        <DataAnnotationsValidator />
+    <div class="stitch-modal-backdrop" tabindex="-1">
+        <div class="stitch-modal" @onclick:stopPropagation="true">
+            <div class="stitch-modal-header">
+                <h2 class="stitch-modal-title">역할 변경: @selectedUser?.Name</h2>
+                <button type="button" class="btn-close" @onclick="CloseChangeRoleModal"></button>
+            </div>
+            <div class="stitch-modal-body">
+                <EditForm Model="@roleModel" OnValidSubmit="@HandleChangeRole">
+                    <DataAnnotationsValidator />
+                    <div class="mb-3">
+                        <label for="currentRole" class="form-label">현재 역할</label>
+                        <input type="text" class="form-control" id="currentRole"
+                            value="@((Role)(selectedUser?.Role ?? (byte)Role.User))" readonly />
+                    </div>
+                    <div class="mb-3">
+                        <label for="newRole" class="form-label">새 역할</label>
+                        <InputSelect id="newRole" class="form-select" @bind-Value="roleModel.NewRoleString">
+                            @foreach (var role in GetAvailableRoles())
+                            {
+                                <option value="@((int)role)">@role</option>
+                            }
+                        </InputSelect>
+                        <ValidationMessage For="@(() => roleModel.NewRoleString)" />
+                    </div>
+                    @if (ShouldPromptForElevationSecret())
+                    {
                         <div class="mb-3">
-                            <label for="currentRole" class="form-label">Current Role</label>
-                            <input type="text" class="form-control" id="currentRole"
-                                value="@((Role)(selectedUser?.Role ?? (byte)Role.User))" readonly />
+                            <label for="elevationSecret" class="form-label">승격 비밀키</label>
+                            <InputText id="elevationSecret" type="password" class="form-control"
+                                       @bind-Value="roleModel.SecretKey" />
+                            <small class="text-muted">@GetElevationSecretMessage()</small>
                         </div>
-                        <div class="mb-3">
-                            <label for="newRole" class="form-label">New Role</label>
-                            <InputSelect id="newRole" class="form-select" @bind-Value="roleModel.NewRoleString">
-                                @foreach (var role in GetAvailableRoles())
-                                {
-                                    <option value="@((int)role)">@role</option>
-                                }
-                            </InputSelect>
-                            <ValidationMessage For="@(() => roleModel.NewRoleString)" />
-                        </div>
-                        @if (ShouldPromptForElevationSecret())
-                        {
-                            <div class="mb-3">
-                                <label for="elevationSecret" class="form-label">Elevation Secret</label>
-                                <InputText id="elevationSecret" type="password" class="form-control"
-                                           @bind-Value="roleModel.SecretKey" />
-                                <small class="text-muted">@GetElevationSecretMessage()</small>
-                            </div>
-                        }
-                        <div class="modal-footer">
-                            <button type="button" class="btn btn-secondary" @onclick="CloseChangeRoleModal">Cancel</button>
-                            <button type="submit" class="btn btn-warning" disabled="@isProcessing">
-                                @if (isProcessing)
-                                {
-                                    <span class="spinner-border spinner-border-sm me-2" role="status"></span>
-                                }
-                                Change Role
-                            </button>
-                        </div>
-                    </EditForm>
-                </div>
+                    }
+                    <div class="stitch-modal-footer">
+                        <button type="button" class="stitch-btn stitch-btn-neutral" @onclick="CloseChangeRoleModal">취소</button>
+                        <button type="submit" class="stitch-btn stitch-btn-primary" disabled="@isProcessing">
+                            @if (isProcessing)
+                            {
+                                <span class="spinner-border spinner-border-sm me-2" role="status"></span>
+                            }
+                            역할 변경
+                        </button>
+                    </div>
+                </EditForm>
             </div>
         </div>
     </div>
@@ -333,6 +344,8 @@
     private uint? selectedWorld { get; set; }
     private UserListResult? userList;
     private string searchTerm = string.Empty;
+    private string statusFilter = "all";
+    private string roleFilter = "all";
     private int currentPage = 1;
     private const int pageSize = 20;
     private bool isLoading = false;
@@ -521,6 +534,16 @@
 
     private async Task SearchUsers()
     {
+        if (selectedWorld.HasValue && !string.IsNullOrWhiteSpace(searchTerm))
+        {
+            var userId = await UserService.TryResolveUserIdAsync(selectedWorld.Value, searchTerm);
+            if (userId.HasValue)
+            {
+                Navigation.NavigateTo($"/users/{userId.Value}");
+                return;
+            }
+        }
+
         currentPage = 1;
         await LoadUsers();
         UpdateUsersUrl();
@@ -801,6 +824,41 @@
             isProcessing = false;
         }
     }
+
+    private IEnumerable<UserListItem> FilteredUsers
+    {
+        get
+        {
+            if (userList?.Users == null)
+                return Enumerable.Empty<UserListItem>();
+
+            IEnumerable<UserListItem> query = userList.Users;
+
+            if (statusFilter == "online")
+                query = query.Where(u => !u.IsBanned && u.IsOnline);
+            else if (statusFilter == "offline")
+                query = query.Where(u => !u.IsBanned && !u.IsOnline);
+            else if (statusFilter == "banned")
+                query = query.Where(u => u.IsBanned);
+
+            if (roleFilter == "user")
+                query = query.Where(u => u.Role == (byte)Role.User);
+            else if (roleFilter == "staff")
+                query = query.Where(u => u.Role >= (byte)Role.Moderator);
+
+            return query;
+        }
+    }
+
+    private static string FormatRole(byte role) => ((Role)role) switch
+    {
+        Role.User => "일반 유저",
+        Role.Moderator => "모더레이터",
+        Role.Admin => "관리자",
+        Role.Superadmin => "슈퍼관리자",
+        Role.Owner => "오너",
+        _ => role.ToString()
+    };
 
     private class BanModel
     {

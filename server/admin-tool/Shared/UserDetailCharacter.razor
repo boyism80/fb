@@ -1,0 +1,158 @@
+@using AdminTool.Services
+@using Http.Model
+
+<div class="user-detail-character">
+    <div class="user-detail-kpi-row">
+        <div class="user-detail-kpi-tile">
+            <div class="user-detail-kpi-head user-detail-kpi-head-inline">
+                <span class="material-symbols-outlined" aria-hidden="true">favorite</span>
+                <span class="user-detail-kpi-label">HP</span>
+            </div>
+            <span class="user-detail-kpi-value">
+                @Character.Hp
+                <span class="user-detail-kpi-sub">/ @(LevelAbility?.Hp ?? Character.BaseHp)</span>
+            </span>
+        </div>
+        <div class="user-detail-kpi-tile">
+            <div class="user-detail-kpi-head user-detail-kpi-head-inline">
+                <span class="material-symbols-outlined user-detail-mp-icon" aria-hidden="true">water_drop</span>
+                <span class="user-detail-kpi-label">MP</span>
+            </div>
+            <span class="user-detail-kpi-value user-detail-mp-value">
+                @Character.Mp
+                <span class="user-detail-kpi-sub">/ @(LevelAbility?.Mp ?? Character.BaseMp)</span>
+            </span>
+        </div>
+        <div class="user-detail-kpi-tile user-detail-kpi-tile-exp">
+            <div class="user-detail-kpi-head">
+                <div class="user-detail-kpi-head-inline">
+                    <span class="material-symbols-outlined" aria-hidden="true">star</span>
+                    <span class="user-detail-kpi-label">경험치 (EXP)</span>
+                </div>
+                @if (!ExpInfo.IsMaxLevel)
+                {
+                    <span class="user-detail-exp-pct table-meta">@ExpInfo.PercentText</span>
+                }
+            </div>
+            <span class="user-detail-kpi-value">@ExpInfo.CurrentExp.ToString("N0")</span>
+            @if (!ExpInfo.IsMaxLevel)
+            {
+                <div class="user-detail-progress-bar">
+                    <div class="user-detail-progress-fill" style="width: @ExpInfo.Percent.ToString("0.#", System.Globalization.CultureInfo.InvariantCulture)%"></div>
+                </div>
+                <span class="user-detail-exp-remain table-meta">
+                    @ExpInfo.ExpInCurrentLevel.ToString("N0") / @ExpInfo.RequiredExpForLevel.ToString("N0")
+                    · @ExpInfo.RemainingExpToNextLevel.ToString("N0") EXP 남음
+                </span>
+            }
+        </div>
+        <div class="user-detail-kpi-tile">
+            <div class="user-detail-kpi-head user-detail-kpi-head-inline">
+                <span class="material-symbols-outlined" aria-hidden="true">location_on</span>
+                <span class="user-detail-kpi-label">위치</span>
+            </div>
+            <div class="user-detail-location-value">
+                <span class="user-detail-kpi-value user-detail-kpi-value-text">@UserDetailDisplay.FormatMapName(Character.Map)</span>
+                <span class="user-detail-kpi-sub">(@Character.PositionX, @Character.PositionY)</span>
+            </div>
+        </div>
+    </div>
+
+    <div class="user-detail-character-grid">
+        <div class="card-bg stitch-form-card">
+            <div class="stitch-form-card-header">
+                <h2 class="dash-card-title">
+                    <span class="material-symbols-outlined" aria-hidden="true">badge</span>
+                    기본 스탯
+                </h2>
+            </div>
+            <div class="user-detail-card-content">
+                <div class="user-detail-field-grid">
+                    <div class="user-detail-field"><span class="user-detail-field-label">직업</span><span class="user-detail-field-value">@ClassName</span></div>
+                    <div class="user-detail-field"><span class="user-detail-field-label">승급</span><span class="user-detail-field-value">@UserDetailDisplay.FormatPromotion(Character.Promotion)</span></div>
+                    <div class="user-detail-field"><span class="user-detail-field-label">레벨</span><span class="user-detail-field-value table-meta">@Character.Level</span></div>
+                    <div class="user-detail-field"><span class="user-detail-field-label">Look</span><span class="user-detail-field-value table-meta">@Character.Look</span></div>
+                    <div class="user-detail-field"><span class="user-detail-field-label">성별</span><span class="user-detail-field-value">@UserDetailDisplay.FormatGender(Character.Gender)</span></div>
+                    <div class="user-detail-field"><span class="user-detail-field-label">국가</span><span class="user-detail-field-value">@UserDetailDisplay.FormatNation(Character.Nation)</span></div>
+                    <div class="user-detail-field"><span class="user-detail-field-label">신수</span><span class="user-detail-field-value">@UserDetailDisplay.FormatCreature(Character.Creature)</span></div>
+                    <div class="user-detail-field"><span class="user-detail-field-label">칭호</span><span class="user-detail-field-value">@(string.IsNullOrWhiteSpace(Character.Title) ? "-" : Character.Title)</span></div>
+                    <div class="user-detail-field"><span class="user-detail-field-label">상태</span><span class="user-detail-field-value user-detail-status-ok">@(Character.State == 0 ? "정상" : Character.State.ToString())</span></div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card-bg stitch-form-card">
+            <div class="stitch-form-card-header">
+                <h2 class="dash-card-title">
+                    <span class="material-symbols-outlined" aria-hidden="true">swords</span>
+                    전투/자원
+                </h2>
+            </div>
+            <div class="user-detail-card-content">
+                <div class="user-detail-field-grid">
+                    <div class="user-detail-field"><span class="user-detail-field-label">보유금</span><span class="user-detail-field-value table-meta">@UserDetailDisplay.FormatMoney(Character.Money) G</span></div>
+                    <div class="user-detail-field"><span class="user-detail-field-label">창고예치</span><span class="user-detail-field-value table-meta">@UserDetailDisplay.FormatMoney(Character.DepositedMoney) G</span></div>
+                    <div class="user-detail-field"><span class="user-detail-field-label">Base HP</span><span class="user-detail-field-value table-meta">@Character.BaseHp @(Character.AdditionalHp > 0 ? $"(+{Character.AdditionalHp})" : "")</span></div>
+                    <div class="user-detail-field"><span class="user-detail-field-label">Base MP</span><span class="user-detail-field-value table-meta">@Character.BaseMp @(Character.AdditionalMp > 0 ? $"(+{Character.AdditionalMp})" : "")</span></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="card-bg stitch-form-card">
+        <div class="stitch-form-card-header">
+            <h2 class="dash-card-title">
+                <span class="material-symbols-outlined" aria-hidden="true">bolt</span>
+                활성 버프
+            </h2>
+            <span class="stitch-badge">@ActiveBuffs.Count Active</span>
+        </div>
+        <div class="user-detail-card-content">
+            @if (ActiveBuffs.Any())
+            {
+                <div class="dash-table-wrap">
+                    <table class="dash-table">
+                        <thead>
+                            <tr>
+                                <th>버프명</th>
+                                <th>모델 ID</th>
+                                <th class="text-end">남은 시간</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var buff in ActiveBuffs)
+                            {
+                                <tr>
+                                    <td>@UserDetailDisplay.FormatBuffName(buff.Model)</td>
+                                    <td class="table-meta">@buff.Model</td>
+                                    <td class="table-meta text-end">@UserDetailDisplay.FormatBuffTime(buff.Time)</td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            }
+            else
+            {
+                <p class="text-muted mb-0">활성 버프가 없습니다.</p>
+            }
+        </div>
+    </div>
+</div>
+
+@code {
+    [Parameter, EditorRequired]
+    public Character Character { get; set; } = null!;
+
+    private CharacterExpInfo ExpInfo =>
+        UserDetailDisplay.GetExpInfo(Character.Class, Character.Level, Character.Exp);
+
+    private Fb.Model.Ability? LevelAbility =>
+        UserDetailDisplay.GetAbilityForLevel(Character.Class, Character.Level);
+
+    private string ClassName =>
+        UserDetailDisplay.FormatClassName(Character.Class, Character.Promotion);
+
+    private List<Buff> ActiveBuffs =>
+        Character.Buffs?.Where(b => b.Time > 0).ToList() ?? new List<Buff>();
+}

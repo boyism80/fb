@@ -284,6 +284,11 @@ public:
             return this->_owner->_value;
         }
 
+        const ValueType& value() const noexcept
+        {
+            return this->_owner->_value;
+        }
+
     private:
         friend class synchronized;
 

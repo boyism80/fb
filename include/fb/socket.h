@@ -146,6 +146,18 @@ protected:
     }
 
 public:
+    [[nodiscard]] bool prepare_outbound(fb::stream& out, bool encrypt = true, bool wrap = true)
+    {
+        if (encrypt && this->on_encrypt(out) == false)
+            return false;
+
+        if (wrap && this->on_wrap(out) == false)
+            return false;
+
+        return true;
+    }
+
+public:
     async::task<size_t> send(const fb::stream& stream, bool encrypt = true, bool wrap = true)
     {
         auto promise = std::make_shared<async::task_completion_source<size_t>>();

@@ -429,7 +429,7 @@ void mob::on_die(std::shared_ptr<object> from, DESTROY_TYPE destroy_type)
             // Group experience distribution
             auto server = &ch.server;
             {
-                auto  guard      = server->group.enter_read(group_id.value());
+                auto  guard      = server->groups.enter_read(group_id.value());
                 auto& group      = guard.value();
                 auto  nears      = group->nears(*map, ch.position());
                 auto  size       = nears.size();

@@ -1,103 +1,141 @@
 @page "/cache"
 @using Http.Service
 @using Microsoft.AspNetCore.Authorization
+@using System.Text.Json
 @inject CacheService CacheService
+@inject IJSRuntime JS
 @attribute [AuthorizeRole(Role.Admin)]
 
-<PageTitle>Cache Management - Admin Tool</PageTitle>
+<PageTitle>캐시 관리 - FB Admin</PageTitle>
 
-<div>
-    <div class="page-header mb-4">
-        <h1>Cache Management</h1>
-        <p class="text-muted">Clear Redis cache data across all shards</p>
+<div class="cache-page">
+    <div class="cache-page-header">
+        <h1>캐시 관리</h1>
     </div>
 
     @if (!string.IsNullOrEmpty(errorMessage))
     {
-        <div class="alert alert-danger alert-dismissible fade show" role="alert">
-            @errorMessage
-            <button type="button" class="btn-close" @onclick="() => errorMessage = null"></button>
-        </div>
-    }
-
-    @if (!string.IsNullOrEmpty(successMessage))
-    {
-        <div class="alert alert-success alert-dismissible fade show" role="alert">
-            @successMessage
-            <button type="button" class="btn-close" @onclick="() => successMessage = null"></button>
-        </div>
-    }
-
-    <div class="card">
-        <div class="card-header">
-            <h5 class="mb-0">Clear All Cache</h5>
-        </div>
-        <div class="card-body">
-            <p>
-                This operation will clear all cache data from Redis across all shards, including:
-            </p>
-            <ul>
-                <li>Cache entries (<code>fb:cache:*</code>)</li>
-                <li>Reference counts</li>
-                <li>Buffer keys</li>
-            </ul>
-            <p class="text-warning">
-                <strong>Warning:</strong> This operation cannot be undone. All cached data will be removed.
-            </p>
-            <button class="btn btn-danger" @onclick="HandleClearCache" disabled="@isProcessing">
-                @if (isProcessing)
-                {
-                    <span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
-                }
-                Clear All Cache
+        <div class="stitch-error-banner">
+            <div class="stitch-error-banner-content">
+                <span class="material-symbols-outlined">error</span>
+                <span>@errorMessage</span>
+            </div>
+            <button type="button" class="stitch-banner-dismiss" @onclick="() => errorMessage = null" aria-label="닫기">
+                <span class="material-symbols-outlined">close</span>
             </button>
         </div>
-    </div>
+    }
 
-    @if (lastClearResult.HasValue)
-    {
-        <div class="card mt-3">
-            <div class="card-header">
-                <h5 class="mb-0">Last Clear Result</h5>
+    <section class="cache-action-card">
+        <div class="cache-action-content">
+            <span class="material-symbols-outlined cache-action-icon">warning</span>
+            <h2>전체 캐시 삭제</h2>
+            <p>이 작업은 Redis 서버에 저장된 모든 캐시 데이터를 영구적으로 삭제합니다. 진행 중인 세션이나 임시 데이터가 손실될 수 있으므로 주의하여 진행하십시오.</p>
+        </div>
+        <button class="cache-clear-btn" @onclick="HandleClearCache" disabled="@isProcessing">
+            @if (isProcessing)
+            {
+                <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
+            }
+            else
+            {
+                <span class="material-symbols-outlined">delete</span>
+            }
+            전체 캐시 삭제
+        </button>
+    </section>
+
+    <section class="cache-results-section">
+        <h3 class="cache-results-heading">마지막 작업 결과</h3>
+        <div class="cache-stat-grid">
+            <div class="cache-stat-tile">
+                <span class="cache-stat-label">상태</span>
+                @if (lastClearResult.HasValue)
+                {
+                    <span class="cache-stat-status">
+                        <span class="status-dot"></span>
+                        완료됨
+                    </span>
+                }
+                else
+                {
+                    <span class="cache-stat-value cache-stat-muted">—</span>
+                }
             </div>
-            <div class="card-body">
-                <p class="mb-0">
-                    <strong>Keys deleted:</strong> @lastClearResult.Value.ToString("N0")
-                </p>
-                <small class="text-muted">Cleared at: @lastClearTime.ToString("yyyy-MM-dd HH:mm:ss")</small>
+            <div class="cache-stat-tile">
+                <span class="cache-stat-label">삭제된 키</span>
+                <span class="cache-stat-value">@(lastClearResult.HasValue ? lastClearResult.Value.ToString("N0") : "—")</span>
+            </div>
+            <div class="cache-stat-tile">
+                <span class="cache-stat-label">마지막 실행</span>
+                <span class="cache-stat-value">@(lastClearResult.HasValue ? lastClearTime.ToString("yyyy-MM-dd HH:mm:ss") : "—")</span>
             </div>
         </div>
-    }
+
+        <div class="stitch-terminal-panel">
+            <div class="stitch-terminal-header">
+                <span>실행 로그</span>
+                <button type="button" class="stitch-terminal-copy" @onclick="CopyLogAsync" disabled="@(!executionLog.Any())" aria-label="로그 복사">
+                    <span class="material-symbols-outlined">content_copy</span>
+                </button>
+            </div>
+            <div class="stitch-terminal-body">
+                @if (executionLog.Any())
+                {
+                    @foreach (var line in executionLog)
+                    {
+                        <div class="@(line.Contains("System ready") ? "terminal-ready" : null)">@line</div>
+                    }
+                }
+                else
+                {
+                    <div class="cache-log-empty">아직 실행 기록이 없습니다.</div>
+                }
+            </div>
+        </div>
+    </section>
 </div>
 
 @code {
-    private bool isProcessing = false;
+    private bool isProcessing;
     private string? errorMessage;
-    private string? successMessage;
     private int? lastClearResult;
     private DateTime lastClearTime;
+    private List<string> executionLog = new();
 
     private async Task HandleClearCache()
     {
         isProcessing = true;
         errorMessage = null;
-        successMessage = null;
+        executionLog = new List<string> { $"> FLUSHALL started at {DateTime.Now:yyyy-MM-dd HH:mm:ss}..." };
 
         try
         {
             var count = await CacheService.ClearCache();
             lastClearResult = count;
             lastClearTime = DateTime.Now;
-            successMessage = $"Cache cleared successfully. {count:N0} keys deleted.";
+            executionLog.Add("> FLUSHALL Async executed...");
+            executionLog.Add("> OK");
+            executionLog.Add($"> Deleted keys: {count:N0}");
+            executionLog.Add("> System ready.");
         }
         catch (Exception ex)
         {
-            errorMessage = $"Error clearing cache: {ex.Message}";
+            executionLog.Add($"> ERROR: {ex.Message}");
+            errorMessage = $"캐시 삭제 중 오류: {ex.Message}";
         }
         finally
         {
             isProcessing = false;
         }
     }
-}
 
+    private async Task CopyLogAsync()
+    {
+        if (!executionLog.Any())
+            return;
+
+        var text = string.Join("\n", executionLog);
+        await JS.InvokeVoidAsync("eval", $"navigator.clipboard.writeText({JsonSerializer.Serialize(text)})");
+    }
+}

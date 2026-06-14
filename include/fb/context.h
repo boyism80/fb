@@ -2,6 +2,7 @@
 #define __CONTEXT_H__
 
 #include <fb/async_local.h>
+#include <fb/outbound_buffer.h>
 
 #include <boost/uuid/uuid.hpp>
 #include <boost/uuid/uuid_generators.hpp>
@@ -12,7 +13,8 @@ namespace fb {
 
 struct context
 {
-    std::string transaction_id;
+    std::string     transaction_id;
+    outbound_buffer outbound;
 
     using local = async_local<context>;
 };

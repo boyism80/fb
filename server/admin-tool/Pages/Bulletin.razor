@@ -11,225 +11,222 @@
 @inject BulletinService BulletinService
 @attribute [AuthorizeRole(Role.Admin)]
 
-<PageTitle>Bulletin - Admin Tool</PageTitle>
+<PageTitle>게시판 관리 - FB Admin</PageTitle>
 
-<div>
-    <div class="page-header mb-4">
-        <h1>Bulletin Management</h1>
+<div class="bulletin-page">
+    <div class="page-header">
+        <h1>게시판 관리</h1>
     </div>
 
     @if (!string.IsNullOrEmpty(errorMessage))
     {
-        <div class="alert alert-danger alert-dismissible fade show" role="alert">
-            @errorMessage
-            <button type="button" class="btn-close" @onclick="() => errorMessage = null"></button>
+        <div class="stitch-error-banner">
+            <div class="stitch-error-banner-content">
+                <span class="material-symbols-outlined">error</span>
+                <span>@errorMessage</span>
+            </div>
+            <button type="button" class="stitch-banner-dismiss" @onclick="() => errorMessage = null" aria-label="닫기">
+                <span class="material-symbols-outlined">close</span>
+            </button>
         </div>
     }
 
     @if (!string.IsNullOrEmpty(successMessage))
     {
-        <div class="alert alert-success alert-dismissible fade show" role="alert">
-            @successMessage
-            <button type="button" class="btn-close" @onclick="() => successMessage = null"></button>
+        <div class="stitch-success-banner">
+            <div class="stitch-success-banner-content">
+                <span class="material-symbols-outlined">check_circle</span>
+                <span class="stitch-success-text">@successMessage</span>
+            </div>
+            <button type="button" class="stitch-banner-dismiss stitch-success-dismiss" @onclick="() => successMessage = null" aria-label="닫기">
+                <span class="material-symbols-outlined">close</span>
+            </button>
         </div>
     }
 
-    <div class="row">
-        <div class="col-md-3">
-            <div class="section-sidebar">
-                <h5 class="section-sidebar-title">Sections</h5>
-                @if (sections != null && sections.Any())
+    @if (sections != null && sections.Any())
+    {
+        <div class="bulletin-section-tabs">
+            @foreach (var sectionItem in sections)
+            {
+                <button type="button"
+                        class="bulletin-section-tab @(selectedBulletinSection == sectionItem.Key ? "active" : null)"
+                        @onclick="() => SelectSection(sectionItem.Key)">
+                    @sectionItem.Value.Name
+                </button>
+            }
+        </div>
+    }
+
+    @if (selectedBulletinSection.HasValue)
+    {
+        <div class="bulletin-toolbar">
+            <div class="bulletin-toolbar-left">
+                <select class="stitch-select" @bind="searchField">
+                    <option value="all">전체</option>
+                    <option value="title">제목</option>
+                    <option value="contents">내용</option>
+                    <option value="author">작성자</option>
+                </select>
+                <input type="text" class="stitch-input bulletin-search-input"
+                       placeholder="검색어 입력"
+                       @bind="searchQuery" @bind:event="oninput" @onkeypress="HandleSearchKeyPress" />
+                <button class="stitch-btn stitch-btn-surface" type="button" @onclick="SearchArticles" disabled="@isLoading">
+                    <span class="material-symbols-outlined">search</span>
+                    검색
+                </button>
+                @if (!string.IsNullOrWhiteSpace(searchQuery))
                 {
-                    <ul class="section-list">
-                        @foreach (var sectionItem in sections)
-                        {
-                            <li>
-                                <button type="button"
-                                        class="section-item @(selectedBulletinSection == sectionItem.Key ? "active" : "")"
-                                        @onclick="() => SelectSection(sectionItem.Key)">
-                                    @sectionItem.Value.Name
-                                </button>
-                            </li>
-                        }
-                    </ul>
+                    <button class="stitch-btn stitch-btn-neutral" type="button" @onclick="ClearSearch" disabled="@isLoading">
+                        초기화
+                    </button>
                 }
-                else
-                {
-                    <p class="text-muted">No sections available</p>
-                }
+            </div>
+            <div class="bulletin-toolbar-right">
+                <button class="stitch-btn stitch-btn-danger"
+                        @onclick="ShowBulkDeleteModal"
+                        disabled="@(isProcessing || !selectedArticleIds.Any())">
+                    <span class="material-symbols-outlined">delete</span>
+                    선택 삭제@(selectedArticleIds.Any() ? $" ({selectedArticleIds.Count})" : "")
+                </button>
+                <button class="stitch-btn stitch-btn-surface" @onclick="ShowWriteModal" disabled="@isProcessing">
+                    <span class="material-symbols-outlined">edit_document</span>
+                    글쓰기
+                </button>
             </div>
         </div>
 
-        <div class="col-md-9">
-            @if (selectedBulletinSection.HasValue)
-            {
-                <div class="card">
-                    <div class="card-header d-flex justify-content-between align-items-center">
-                        <h5 class="mb-0">Articles - @GetSectionName(selectedBulletinSection.Value)</h5>
-                        <button class="btn btn-primary btn-sm" @onclick="ShowWriteModal" disabled="@isProcessing">
-                            <span class="oi oi-plus" aria-hidden="true"></span> Write Article
-                        </button>
-                    </div>
-                    <div class="card-body">
-                        <div class="row mb-3">
-                            <div class="col-md-8">
-                                <div class="input-group">
-                                    <input type="text" class="form-control" placeholder="Search by title, contents, or author name..."
-                                           @bind="searchQuery" @bind:event="oninput" @onkeypress="HandleSearchKeyPress" />
-                                    <button class="btn btn-outline-secondary" type="button" @onclick="SearchArticles" disabled="@isLoading">
-                                        <span class="oi oi-magnifying-glass" aria-hidden="true"></span> Search
-                                    </button>
-                                    @if (!string.IsNullOrWhiteSpace(searchQuery))
-                                    {
-                                        <button class="btn btn-outline-secondary" type="button" @onclick="ClearSearch" disabled="@isLoading">
-                                            Clear
-                                        </button>
-                                    }
-                                </div>
-                            </div>
-                            <div class="col-md-4 text-end">
-                                @if (selectedArticleIds.Any())
-                                {
-                                    <button class="btn btn-danger btn-sm" @onclick="ShowBulkDeleteModal" disabled="@isProcessing">
-                                        <span class="oi oi-trash" aria-hidden="true"></span> Delete Selected (@selectedArticleIds.Count)
-                                    </button>
-                                }
-                            </div>
-                        </div>
-
-                        @if (isLoading)
-                        {
-                            <div class="text-center">
-                                <div class="spinner-border" role="status">
-                                    <span class="visually-hidden">Loading...</span>
-                                </div>
-                            </div>
-                        }
-                        else if (articles != null && articles.Any())
-                        {
-                            <div class="mb-3">
+        @if (isLoading)
+        {
+            <div class="bulletin-loading">
+                <div class="spinner-border" role="status">
+                    <span class="visually-hidden">불러오는 중...</span>
+                </div>
+            </div>
+        }
+        else if (articles != null && articles.Any())
+        {
+            <div class="stitch-table-card">
+                <table class="stitch-data-table bulletin-table">
+                    <thead>
+                        <tr>
+                            <th class="col-check">
                                 <input type="checkbox" @onchange="ToggleSelectAll" checked="@IsAllSelected" />
-                                <label class="ms-2 text-muted">Select All</label>
-                            </div>
-                            <ul class="clean-list">
-                                @{
-                                    int index = (currentPage - 1) * pageSize + 1;
-                                }
-                                @foreach (var article in articles)
-                                {
-                                    <li class="clean-list-item">
-                                        <input type="checkbox" checked="@selectedArticleIds.Contains(article.Id)"
-                                               @onchange="() => ToggleArticleSelection(article.Id)"
-                                               style="flex-shrink: 0;" />
-                                        <span class="clean-list-item-number">@index</span>
-                                        <div class="clean-list-item-content">
-                                            <div class="clean-list-item-main">
-                                                <a href="#" class="text-decoration-none"
-                                                   @onclick="() => ShowViewModal(article)"
-                                                   @onclick:preventDefault
-                                                   style="color: var(--text-primary); cursor: pointer;">
-                                                    @article.Title
-                                                </a>
-                                            </div>
-                                            <div class="clean-list-item-secondary">
-                                                @article.UserName · @article.CreatedDate.ToString("yyyy-MM-dd HH:mm:ss")
-                                            </div>
-                                        </div>
-                                        <div class="clean-list-item-actions">
-                                            <button class="btn btn-sm btn-outline-secondary"
-                                                    @onclick="() => ShowEditModal(article)" disabled="@isProcessing">
-                                                Edit
-                                            </button>
-                                            <button class="btn btn-sm btn-outline-secondary"
-                                                    @onclick="() => ShowDeleteModal(article)" disabled="@isProcessing">
-                                                Delete
-                                            </button>
-                                        </div>
-                                    </li>
-                                    index++;
-                                }
-                            </ul>
-
-                            @if (currentPage > 1 || (articles != null && articles.Count == pageSize))
-                            {
-                                <nav>
-                                    <ul class="pagination justify-content-center">
-                                        <li class="page-item @(currentPage <= 1 ? "disabled" : "")">
-                                            <a class="page-link" href="#" @onclick="() => ChangePage(currentPage - 1)"
-                                               @onclick:preventDefault>Previous</a>
-                                        </li>
-                                        <li class="page-item active">
-                                            <span class="page-link">Page @currentPage</span>
-                                        </li>
-                                        <li class="page-item @(articles == null || articles.Count < pageSize ? "disabled" : "")">
-                                            <a class="page-link" href="#" @onclick="() => ChangePage(currentPage + 1)"
-                                               @onclick:preventDefault>Next</a>
-                                        </li>
-                                    </ul>
-                                </nav>
-                            }
-
-                            <div class="text-center text-muted">
-                                Page @currentPage@(articles != null && articles.Count == pageSize ? " (more available)" : "")
-                            </div>
-                        }
-                        else if (!isLoading)
+                            </th>
+                            <th class="col-id">#</th>
+                            <th>제목</th>
+                            <th class="col-author">작성자</th>
+                            <th class="col-date">작성일</th>
+                            <th class="col-actions">작업</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var article in articles)
                         {
-                            <div class="alert alert-info">
-                                @(string.IsNullOrWhiteSpace(searchQuery) ? "No articles found in this section." : "No articles found matching your search.")
-                            </div>
+                            <tr>
+                                <td class="col-check">
+                                    <input type="checkbox" checked="@selectedArticleIds.Contains(article.Id)"
+                                           @onchange="() => ToggleArticleSelection(article.Id)" />
+                                </td>
+                                <td class="col-id">@article.Id</td>
+                                <td class="col-title">
+                                    <button type="button" class="bulletin-title-link"
+                                            @onclick="() => ShowViewModal(article)">
+                                        @article.Title
+                                    </button>
+                                </td>
+                                <td class="col-author">@article.UserName</td>
+                                <td class="col-date">@article.CreatedDate.ToString("yyyy-MM-dd")</td>
+                                <td class="col-actions">
+                                    <button type="button" class="bulletin-action-link"
+                                            @onclick="() => ShowEditModal(article)" disabled="@isProcessing">
+                                        수정
+                                    </button>
+                                    <button type="button" class="bulletin-action-link"
+                                            @onclick="() => ShowDeleteModal(article)" disabled="@isProcessing">
+                                        삭제
+                                    </button>
+                                </td>
+                            </tr>
                         }
-                    </div>
-                </div>
-            }
-            else
+                    </tbody>
+                </table>
+            </div>
+
+            @if (currentPage > 1 || (articles != null && articles.Count == pageSize))
             {
-                <div class="card">
-                    <div class="card-body">
-                        <p class="text-muted">Please select a section to view articles.</p>
-                    </div>
+                <div class="bulletin-pagination">
+                    <nav>
+                        <ul class="stitch-pagination bulletin-pagination-group">
+                            <li>
+                                <a class="stitch-page-btn @(currentPage <= 1 ? "disabled" : "")" href="#"
+                                   @onclick="() => ChangePage(currentPage - 1)" @onclick:preventDefault>
+                                    <span class="material-symbols-outlined">chevron_left</span>
+                                </a>
+                            </li>
+                            <li>
+                                <span class="stitch-page-btn active">@currentPage</span>
+                            </li>
+                            <li>
+                                <a class="stitch-page-btn @(articles == null || articles.Count < pageSize ? "disabled" : "")" href="#"
+                                   @onclick="() => ChangePage(currentPage + 1)" @onclick:preventDefault>
+                                    <span class="material-symbols-outlined">chevron_right</span>
+                                </a>
+                            </li>
+                        </ul>
+                    </nav>
                 </div>
             }
-        </div>
-    </div>
+        }
+        else if (!isLoading)
+        {
+            <div class="bulletin-empty">
+                @(string.IsNullOrWhiteSpace(searchQuery) ? "이 섹션에 게시글이 없습니다." : "검색 결과가 없습니다.")
+            </div>
+        }
+    }
+    else
+    {
+        <div class="bulletin-empty">섹션을 선택하세요.</div>
+    }
 </div>
 
 <!-- Write Article Modal -->
 @if (showWriteModal)
 {
-    <div class="modal show d-block" tabindex="-1" style="background-color: rgba(0,0,0,0.5);">
-        <div class="modal-dialog modal-lg">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title">Write Article - @GetSectionName(selectedBulletinSection!.Value)</h5>
-                    <button type="button" class="btn-close" @onclick="CloseWriteModal"></button>
-                </div>
-                <div class="modal-body">
-                    <EditForm Model="@writeModel" OnValidSubmit="@HandleWrite">
-                        <DataAnnotationsValidator />
-                        <div class="mb-3">
-                            <label for="writeTitle" class="form-label">Title</label>
-                            <InputText id="writeTitle" class="form-control" @bind-Value="writeModel.Title" />
-                            <ValidationMessage For="@(() => writeModel.Title)" />
-                        </div>
-                        <div class="mb-3">
-                            <label for="writeContents" class="form-label">Contents</label>
-                            <InputTextArea id="writeContents" class="form-control" rows="10"
-                                           @bind-Value="writeModel.Contents" />
-                            <ValidationMessage For="@(() => writeModel.Contents)" />
-                        </div>
-                        <div class="modal-footer">
-                            <button type="button" class="btn btn-secondary" @onclick="CloseWriteModal">Cancel</button>
-                            <button type="submit" class="btn btn-primary" disabled="@isProcessing">
-                                @if (isProcessing)
-                                {
-                                    <span class="spinner-border spinner-border-sm me-2" role="status"></span>
-                                }
-                                Write Article
-                            </button>
-                        </div>
-                    </EditForm>
-                </div>
+    <div class="stitch-modal-backdrop" tabindex="-1">
+        <div class="stitch-modal stitch-modal-lg" @onclick:stopPropagation="true">
+            <div class="stitch-modal-header">
+                <h2 class="stitch-modal-title">글쓰기 - @GetSectionName(selectedBulletinSection!.Value)</h2>
+                <button type="button" class="stitch-modal-close" @onclick="CloseWriteModal" aria-label="닫기">
+                    <span class="material-symbols-outlined">close</span>
+                </button>
+            </div>
+            <div class="stitch-modal-body">
+                <EditForm Model="@writeModel" OnValidSubmit="@HandleWrite">
+                    <DataAnnotationsValidator />
+                    <div class="mb-3">
+                        <label for="writeTitle" class="form-label">제목</label>
+                        <InputText id="writeTitle" class="form-control" @bind-Value="writeModel.Title" />
+                        <ValidationMessage For="@(() => writeModel.Title)" />
+                    </div>
+                    <div class="mb-3">
+                        <label for="writeContents" class="form-label">내용</label>
+                        <InputTextArea id="writeContents" class="form-control" rows="10"
+                                       @bind-Value="writeModel.Contents" />
+                        <ValidationMessage For="@(() => writeModel.Contents)" />
+                    </div>
+                    <div class="stitch-modal-footer">
+                        <button type="button" class="stitch-btn stitch-btn-neutral" @onclick="CloseWriteModal">취소</button>
+                        <button type="submit" class="stitch-btn stitch-btn-primary" disabled="@isProcessing">
+                            @if (isProcessing)
+                            {
+                                <span class="spinner-border spinner-border-sm me-2" role="status"></span>
+                            }
+                            등록
+                        </button>
+                    </div>
+                </EditForm>
             </div>
         </div>
     </div>
@@ -238,39 +235,39 @@
 <!-- Edit Article Modal -->
 @if (showEditModal && selectedArticle != null)
 {
-    <div class="modal show d-block" tabindex="-1" style="background-color: rgba(0,0,0,0.5);">
-        <div class="modal-dialog modal-lg">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title">Edit Article - @selectedArticle.Title</h5>
-                    <button type="button" class="btn-close" @onclick="CloseEditModal"></button>
-                </div>
-                <div class="modal-body">
-                    <EditForm Model="@editModel" OnValidSubmit="@HandleEdit">
-                        <DataAnnotationsValidator />
-                        <div class="mb-3">
-                            <label for="editTitle" class="form-label">Title</label>
-                            <InputText id="editTitle" class="form-control" @bind-Value="editModel.Title" />
-                            <ValidationMessage For="@(() => editModel.Title)" />
-                        </div>
-                        <div class="mb-3">
-                            <label for="editContents" class="form-label">Contents</label>
-                            <InputTextArea id="editContents" class="form-control" rows="10"
-                                           @bind-Value="editModel.Contents" />
-                            <ValidationMessage For="@(() => editModel.Contents)" />
-                        </div>
-                        <div class="modal-footer">
-                            <button type="button" class="btn btn-secondary" @onclick="CloseEditModal">Cancel</button>
-                            <button type="submit" class="btn btn-warning" disabled="@isProcessing">
-                                @if (isProcessing)
-                                {
-                                    <span class="spinner-border spinner-border-sm me-2" role="status"></span>
-                                }
-                                Update Article
-                            </button>
-                        </div>
-                    </EditForm>
-                </div>
+    <div class="stitch-modal-backdrop" tabindex="-1">
+        <div class="stitch-modal stitch-modal-lg" @onclick:stopPropagation="true">
+            <div class="stitch-modal-header">
+                <h2 class="stitch-modal-title">글 수정 - @selectedArticle.Title</h2>
+                <button type="button" class="stitch-modal-close" @onclick="CloseEditModal" aria-label="닫기">
+                    <span class="material-symbols-outlined">close</span>
+                </button>
+            </div>
+            <div class="stitch-modal-body">
+                <EditForm Model="@editModel" OnValidSubmit="@HandleEdit">
+                    <DataAnnotationsValidator />
+                    <div class="mb-3">
+                        <label for="editTitle" class="form-label">제목</label>
+                        <InputText id="editTitle" class="form-control" @bind-Value="editModel.Title" />
+                        <ValidationMessage For="@(() => editModel.Title)" />
+                    </div>
+                    <div class="mb-3">
+                        <label for="editContents" class="form-label">내용</label>
+                        <InputTextArea id="editContents" class="form-control" rows="10"
+                                       @bind-Value="editModel.Contents" />
+                        <ValidationMessage For="@(() => editModel.Contents)" />
+                    </div>
+                    <div class="stitch-modal-footer">
+                        <button type="button" class="stitch-btn stitch-btn-neutral" @onclick="CloseEditModal">취소</button>
+                        <button type="submit" class="stitch-btn stitch-btn-primary" disabled="@isProcessing">
+                            @if (isProcessing)
+                            {
+                                <span class="spinner-border spinner-border-sm me-2" role="status"></span>
+                            }
+                            수정
+                        </button>
+                    </div>
+                </EditForm>
             </div>
         </div>
     </div>
@@ -279,27 +276,44 @@
 <!-- View Article Modal -->
 @if (showViewModal && selectedArticle != null)
 {
-    <div class="modal show d-block" tabindex="-1" style="background-color: rgba(0,0,0,0.5);">
-        <div class="modal-dialog modal-lg">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title">@selectedArticle.Title</h5>
-                    <button type="button" class="btn-close" @onclick="CloseViewModal"></button>
+    <div class="stitch-modal-backdrop bulletin-detail-backdrop" tabindex="-1">
+        <div class="bulletin-detail-modal" @onclick:stopPropagation="true">
+            <header class="bulletin-detail-header">
+                <div class="bulletin-detail-heading">
+                    <span class="bulletin-detail-label">게시글</span>
+                    <h2 class="bulletin-detail-title">@selectedArticle.Title</h2>
                 </div>
-                <div class="modal-body">
-                    <div class="mb-3">
-                        <strong>Author:</strong> @selectedArticle.UserName<br />
-                        <strong>Created:</strong> @selectedArticle.CreatedDate.ToString("yyyy-MM-dd HH:mm:ss")
-                    </div>
-                    <hr />
-                    <div class="article-contents">
-                        @((MarkupString)(selectedArticle.Contents?.Replace("\n", "<br />") ?? ""))
-                    </div>
+                <button type="button" class="stitch-modal-close" @onclick="CloseViewModal" aria-label="닫기">
+                    <span class="material-symbols-outlined">close</span>
+                </button>
+            </header>
+            <div class="bulletin-detail-meta">
+                <div class="bulletin-detail-meta-item bulletin-detail-meta-author">
+                    <span class="material-symbols-outlined" aria-hidden="true">person</span>
+                    <span>@selectedArticle.UserName</span>
                 </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" @onclick="CloseViewModal">Close</button>
+                <div class="bulletin-detail-meta-item">
+                    <span class="material-symbols-outlined" aria-hidden="true">calendar_today</span>
+                    <span class="bulletin-detail-mono">@selectedArticle.CreatedDate.ToString("yyyy-MM-dd HH:mm:ss")</span>
+                </div>
+                <div class="bulletin-detail-meta-item">
+                    <span class="material-symbols-outlined" aria-hidden="true">tag</span>
+                    <span class="bulletin-detail-mono">#@selectedArticle.Id</span>
                 </div>
             </div>
+            <div class="bulletin-detail-divider"></div>
+            <div class="bulletin-detail-body">
+                <article class="bulletin-detail-content">
+                    @((MarkupString)(selectedArticle.Contents?.Replace("\n", "<br />") ?? ""))
+                </article>
+            </div>
+            <footer class="bulletin-detail-footer">
+                <button type="button" class="bulletin-detail-delete-link" @onclick="OpenDeleteFromView" disabled="@isProcessing">삭제</button>
+                <div class="bulletin-detail-footer-actions">
+                    <button type="button" class="stitch-btn stitch-btn-neutral" @onclick="OpenEditFromView" disabled="@isProcessing">수정</button>
+                    <button type="button" class="stitch-btn stitch-btn-surface" @onclick="CloseViewModal">닫기</button>
+                </div>
+            </footer>
         </div>
     </div>
 }
@@ -307,31 +321,29 @@
 <!-- Delete Article Modal -->
 @if (showDeleteModal && selectedArticle != null)
 {
-    <div class="modal show d-block" tabindex="-1" style="background-color: rgba(0,0,0,0.5);">
-        <div class="modal-dialog">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title">Delete Article</h5>
-                    <button type="button" class="btn-close" @onclick="CloseDeleteModal"></button>
+    <div class="stitch-modal-backdrop" tabindex="-1">
+        <div class="stitch-modal" @onclick:stopPropagation="true">
+            <div class="stitch-modal-header">
+                <h2 class="stitch-modal-title">글 삭제</h2>
+                <button type="button" class="stitch-modal-close" @onclick="CloseDeleteModal" aria-label="닫기">
+                    <span class="material-symbols-outlined">close</span>
+                </button>
+            </div>
+            <div class="stitch-modal-body">
+                <p>이 게시글을 삭제하시겠습니까?</p>
+                <div class="card-bg" style="padding:0.75rem 1rem;">
+                    <strong>제목:</strong> @selectedArticle.Title<br />
+                    <strong>작성자:</strong> @selectedArticle.UserName<br />
+                    <strong>ID:</strong> @selectedArticle.Id
                 </div>
-                <div class="modal-body">
-                    <p>Are you sure you want to delete this article?</p>
-                    <div class="card">
-                        <div class="card-body">
-                            <strong>Title:</strong> @selectedArticle.Title<br />
-                            <strong>Author:</strong> @selectedArticle.UserName<br />
-                            <strong>ID:</strong> @selectedArticle.Id
-                        </div>
-                    </div>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" @onclick="CloseDeleteModal">Cancel</button>
-                    <button type="button" class="btn btn-danger" @onclick="HandleDelete" disabled="@isProcessing">
+                <div class="stitch-modal-footer">
+                    <button type="button" class="stitch-btn stitch-btn-neutral" @onclick="CloseDeleteModal">취소</button>
+                    <button type="button" class="stitch-btn stitch-btn-primary" @onclick="HandleDelete" disabled="@isProcessing">
                         @if (isProcessing)
                         {
                             <span class="spinner-border spinner-border-sm me-2" role="status"></span>
                         }
-                        Delete
+                        삭제
                     </button>
                 </div>
             </div>
@@ -342,24 +354,24 @@
 <!-- Bulk Delete Modal -->
 @if (showBulkDeleteModal)
 {
-    <div class="modal show d-block" tabindex="-1" style="background-color: rgba(0,0,0,0.5);">
-        <div class="modal-dialog">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title">Delete Selected Articles</h5>
-                    <button type="button" class="btn-close" @onclick="CloseBulkDeleteModal"></button>
-                </div>
-                <div class="modal-body">
-                    <p>Are you sure you want to delete @selectedArticleIds.Count selected article(s)?</p>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" @onclick="CloseBulkDeleteModal">Cancel</button>
-                    <button type="button" class="btn btn-danger" @onclick="HandleBulkDelete" disabled="@isProcessing">
+    <div class="stitch-modal-backdrop" tabindex="-1">
+        <div class="stitch-modal" @onclick:stopPropagation="true">
+            <div class="stitch-modal-header">
+                <h2 class="stitch-modal-title">선택 삭제</h2>
+                <button type="button" class="stitch-modal-close" @onclick="CloseBulkDeleteModal" aria-label="닫기">
+                    <span class="material-symbols-outlined">close</span>
+                </button>
+            </div>
+            <div class="stitch-modal-body">
+                <p>선택한 @(selectedArticleIds.Count)개의 게시글을 삭제하시겠습니까?</p>
+                <div class="stitch-modal-footer">
+                    <button type="button" class="stitch-btn stitch-btn-neutral" @onclick="CloseBulkDeleteModal">취소</button>
+                    <button type="button" class="stitch-btn stitch-btn-primary" @onclick="HandleBulkDelete" disabled="@isProcessing">
                         @if (isProcessing)
                         {
                             <span class="spinner-border spinner-border-sm me-2" role="status"></span>
                         }
-                        Delete @selectedArticleIds.Count Article(s)
+                        @(selectedArticleIds.Count)개 삭제
                     </button>
                 </div>
             </div>
@@ -382,6 +394,7 @@
     private string? errorMessage;
     private string? successMessage;
     private string searchQuery = string.Empty;
+    private string searchField = "all";
 
     private bool showWriteModal = false;
     private bool showEditModal = false;
@@ -438,6 +451,7 @@
         selectedBulletinSection = section;
         currentPage = 1;
         searchQuery = string.Empty;
+        searchField = "all";
         selectedArticleIds.Clear();
         currentPosition = null;
         lastSearchQuery = null;
@@ -494,7 +508,8 @@
                 selectedWorld.Value,
                 selectedBulletinSection.Value,
                 position,
-                string.IsNullOrWhiteSpace(searchQuery) ? null : searchQuery);
+                string.IsNullOrWhiteSpace(searchQuery) ? null : searchQuery,
+                searchField);
 
             // Store position for next page calculation (last article ID - 1)
             if (articles != null && articles.Any())
@@ -522,6 +537,14 @@
         }
     }
 
+    private string GetSearchPlaceholder() => searchField switch
+    {
+        "title" => "제목 검색...",
+        "contents" => "내용 검색...",
+        "author" => "작성자명 검색...",
+        _ => "제목, 내용, 작성자 검색..."
+    };
+
     private async Task SearchArticles()
     {
         currentPage = 1;
@@ -534,6 +557,7 @@
     private async Task ClearSearch()
     {
         searchQuery = string.Empty;
+        searchField = "all";
         currentPage = 1;
         selectedArticleIds.Clear();
         currentPosition = null;
@@ -796,6 +820,25 @@
     {
         showViewModal = false;
         selectedArticle = null;
+    }
+
+    private async Task OpenEditFromView()
+    {
+        if (selectedArticle == null)
+            return;
+
+        var article = selectedArticle;
+        showViewModal = false;
+        await ShowEditModal(article);
+    }
+
+    private void OpenDeleteFromView()
+    {
+        if (selectedArticle == null)
+            return;
+
+        showViewModal = false;
+        showDeleteModal = true;
     }
 
     private void ShowDeleteModal(Http.Model.Bulletin article)

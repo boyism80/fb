@@ -3,6 +3,13 @@ FROM --platform=$BUILDPLATFORM ubuntu:24.04
 # Build type argument - Release as default for Dockerfile
 ARG BUILD_TYPE=Release
 
+# Pinned refs — keep in sync with tools/update-modules.bat
+ARG JSONCPP_REF=1.9.6
+ARG RABBITMQ_REF=v0.14.0
+ARG ZLIB_REF=v1.2.9
+ARG CPP_ASYNC_REF=v1.1.1
+ARG BOOST_REF=boost-1.84.0
+
 RUN apt-get update -y
 RUN apt-get upgrade -y
 RUN apt-get install git gcc-14 g++-14 gdb make cmake libssl-dev libstdc++-14-dev wget -y
@@ -12,76 +19,60 @@ RUN apt-get install libubsan1 -y
 
 
 WORKDIR /app
-RUN git clone https://github.com/open-source-parsers/jsoncpp
-WORKDIR /app/jsoncpp
-RUN git checkout 1.9.6
+RUN git clone --branch ${JSONCPP_REF} https://github.com/open-source-parsers/jsoncpp /app/jsoncpp
 WORKDIR /app/jsoncpp/build
-RUN cmake -DCMAKE_BUILD_TYPE=Release .. 
+RUN cmake -DCMAKE_BUILD_TYPE=Release ..
 RUN cmake --build . --parallel 32
 RUN make install
 
 WORKDIR /app
-RUN git clone https://github.com/alanxz/rabbitmq-c
-WORKDIR /app/rabbitmq-c
-RUN git checkout v0.14.0
+RUN git clone --branch ${RABBITMQ_REF} https://github.com/alanxz/rabbitmq-c /app/rabbitmq-c
 WORKDIR /app/rabbitmq-c/build
 RUN cmake .. -DENABLE_SSL_SUPPORT=OFF
 RUN cmake --build . --config Release --parallel 32
 RUN make install
 
+# No pinned ref in update-modules.bat; tracks fork default branch.
 WORKDIR /app
-RUN git clone --recursive https://github.com/boyism80/lua
+RUN git clone --recursive https://github.com/boyism80/lua /app/lua
 WORKDIR /app/lua/build
-RUN cmake -DCMAKE_BUILD_TYPE=Release .. 
+RUN cmake -DCMAKE_BUILD_TYPE=Release ..
 RUN cmake --build . --parallel 32
 RUN make install
 
 WORKDIR /app
-RUN git clone https://github.com/intel/zlib
-WORKDIR /app/zlib
-RUN git checkout v1.2.9
+RUN git clone --branch ${ZLIB_REF} https://github.com/intel/zlib /app/zlib
 WORKDIR /app/zlib/build
-RUN cmake -DCMAKE_BUILD_TYPE=Release .. 
+RUN cmake -DCMAKE_BUILD_TYPE=Release ..
 RUN cmake --build . --parallel 32
 RUN make install
 
+# No pinned ref in update-modules.bat; tracks fork default branch.
 WORKDIR /app
-RUN git clone https://github.com/boyism80/flatbuffers
+RUN git clone https://github.com/boyism80/flatbuffers /app/flatbuffers
 WORKDIR /app/flatbuffers/build
 RUN cmake .. -DFLATBUFFERS_BUILD_FLATC=OFF -DFLATBUFFERS_BUILD_TESTS=OFF
 RUN cmake --build . --config Release --parallel 32
 RUN make install
 
 WORKDIR /app
-RUN git clone https://github.com/boyism80/cpp-async
-WORKDIR /app/cpp-async
-RUN git checkout v1.1.0-fb
+RUN git clone --depth 1 --branch ${CPP_ASYNC_REF} https://github.com/boyism80/cpp-async /app/cpp-async
 RUN cp -r /app/cpp-async/include/async /usr/local/include/async
 
 WORKDIR /app
-RUN git clone https://github.com/boostorg/boost
+RUN git clone --branch ${BOOST_REF} https://github.com/boostorg/boost /app/boost
 WORKDIR /app/boost
-RUN git checkout boost-1.84.0
 RUN git submodule update --init --recursive
 RUN ./bootstrap.sh
 RUN ./b2
 RUN ./b2 install
-
-WORKDIR /app
-RUN git clone https://github.com/redis/hiredis.git
-WORKDIR /app/hiredis
-RUN git checkout v1.2.0
-WORKDIR /app/hiredis/build
-RUN cmake -DCMAKE_BUILD_TYPE=Release .. 
-RUN cmake --build . --parallel 32
-RUN make install
 
 # fb.lib
 WORKDIR /app
 COPY include ./include
 COPY server/fb ./fb
 WORKDIR /app/fb/build
-RUN cmake -DCMAKE_BUILD_TYPE=${BUILD_TYPE} .. 
+RUN cmake -DCMAKE_BUILD_TYPE=${BUILD_TYPE} ..
 RUN cmake --build . --parallel 32
 RUN make install
 

@@ -1,4 +1,4 @@
-﻿using Dapper;
+using Dapper;
 using Http.Model;
 using System.Collections.Concurrent;
 using System.Data;
@@ -206,7 +206,12 @@ namespace Http.Service
             return writes;
         }
 
-        public async Task<List<Bulletin>> GetArticleListAsync(uint world, uint section, ushort offset, string searchQuery = null)
+        public async Task<List<Bulletin>> GetArticleListAsync(
+            uint world,
+            uint section,
+            ushort offset,
+            string searchQuery = null,
+            string searchField = "all")
         {
             using var scope = _scopeFactory.CreateScope();
             var dbContext = scope.ServiceProvider.GetRequiredService<DbContext>();
@@ -230,17 +235,14 @@ namespace Http.Service
             }
             else
             {
-                // Search by title, contents, or author name
-                // Note: character table JOIN is not allowed as they may be in different databases
-                // For user name search, we first look up the user ID, then search by user ID
                 var searchPattern = $"%{searchQuery}%";
                 uint? userId = null;
 
-                // Try to find user ID by name if search query might be a user name
-                var foundUserId = await dbContext.Character.GetCharacterId(world, searchQuery);
-                if (foundUserId.HasValue)
+                if (searchField is "author" or "all")
                 {
-                    userId = foundUserId.Value;
+                    var foundUserId = await dbContext.Character.GetCharacterId(world, searchQuery);
+                    if (foundUserId.HasValue)
+                        userId = foundUserId.Value;
                 }
 
                 var sql = @"
@@ -249,22 +251,33 @@ namespace Http.Service
                     WHERE b.section = @section 
                       AND b.deleted = 0
                       AND @position >= b.id
-                      AND (b.title LIKE @search OR b.contents LIKE @search";
+                      AND (";
 
                 var dynamicParams = new DynamicParameters();
                 dynamicParams.Add("section", section);
                 dynamicParams.Add("search", searchPattern);
                 dynamicParams.Add("position", offset);
 
-                if (userId.HasValue)
+                var conditions = new List<string>();
+                if (searchField is "all" or "title")
+                    conditions.Add("b.title LIKE @search");
+                if (searchField is "all" or "contents")
+                    conditions.Add("b.contents LIKE @search");
+                if (searchField is "author" or "all")
                 {
-                    sql += " OR b.user = @userId";
-                    dynamicParams.Add("userId", userId.Value);
+                    if (userId.HasValue)
+                        conditions.Add("b.user = @userId");
+                    else if (searchField == "author")
+                        conditions.Add("1 = 0");
                 }
 
+                sql += string.Join(" OR ", conditions);
                 sql += @")
                     ORDER BY b.id DESC
                     LIMIT 20";
+
+                if (userId.HasValue)
+                    dynamicParams.Add("userId", userId.Value);
 
                 var articles = await conn.QueryAsync<Bulletin>(sql, dynamicParams);
                 articleList = articles.ToList();

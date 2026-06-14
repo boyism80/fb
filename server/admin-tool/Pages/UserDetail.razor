@@ -1,0 +1,302 @@
+@page "/users/{UserId:int}"
+@page "/users/{UserId:int}/{Tab}"
+@using AdminTool.Services
+@using Fb.Model.EnumValue
+@using Http.Model
+@using Http.Service
+@using Microsoft.AspNetCore.Authorization
+@inject UserDetailService UserDetailService
+@inject NavigationManager Navigation
+@attribute [AuthorizeRole(Role.Admin)]
+
+<PageTitle>유저 상세 - FB ADMIN</PageTitle>
+
+<HeadContent>
+    <link href="css/user-detail.css" rel="stylesheet" asp-append-version="true" />
+</HeadContent>
+
+<UserDetailShell UserId="UserId"
+                 Core="core"
+                 ActiveTab="@activeTab"
+                 IsLoading="isLoading"
+                 ErrorMessage="@errorMessage"
+                 OnDismissError="DismissError">
+    @if (core != null && !isLoading)
+    {
+        @switch (activeTab)
+        {
+            case "overview":
+                <UserDetailOverview Character="core.Character"
+                                    UserDetail="core.UserDetail"
+                                    IsOnline="core.IsOnline"
+                                    InventoryCount="itemCounts.Inventory"
+                                    StorageCount="itemCounts.Storage"
+                                    StorageVaultCount="itemCounts.StorageVaults" />
+                break;
+            case "character":
+                <UserDetailCharacter Character="core.Character" />
+                break;
+            case "items":
+                @if (items != null)
+                {
+                    <UserDetailItemsTab Items="items" />
+                }
+                else if (tabLoading)
+                {
+                    <TabLoading />
+                }
+                break;
+            case "progress":
+                @if (progress != null)
+                {
+                    <UserDetailProgress Progress="progress" />
+                }
+                else if (tabLoading)
+                {
+                    <TabLoading />
+                }
+                break;
+            case "social":
+                @if (social != null)
+                {
+                    <UserDetailSocial Social="social" SpouseName="spouseName" />
+                }
+                else if (tabLoading)
+                {
+                    <TabLoading />
+                }
+                break;
+            case "mail":
+                @if (mailData != null)
+                {
+                    <UserDetailMail Data="mailData"
+                                    OnFilterChanged="OnMailFilterChanged"
+                                    OnPageChanged="OnMailPageChanged" />
+                }
+                else if (tabLoading)
+                {
+                    <TabLoading />
+                }
+                break;
+            case "settings":
+                @if (optionsLoaded)
+                {
+                    <UserDetailSettings Character="core.Character"
+                                        UserDetail="core.UserDetail"
+                                        Option="options" />
+                }
+                else if (tabLoading)
+                {
+                    <TabLoading />
+                }
+                break;
+            default:
+                <div class="alert alert-warning">알 수 없는 탭입니다.</div>
+                break;
+        }
+    }
+</UserDetailShell>
+
+@code {
+    private static readonly HashSet<string> ValidTabs = new(StringComparer.OrdinalIgnoreCase)
+    {
+        "overview", "character", "items", "progress", "social", "mail", "settings"
+    };
+
+    [CascadingParameter(Name = "SelectedWorld")]
+    private uint? selectedWorld { get; set; }
+
+    [Parameter]
+    public int UserId { get; set; }
+
+    [Parameter]
+    public string? Tab { get; set; }
+
+    private UserDetailCore? core;
+    private UserDetailItemsData? items;
+    private UserDetailProgressData? progress;
+    private UserDetailSocialData? social;
+    private UserDetailMailData? mailData;
+    private int mailPage = 1;
+    private const int MailPageSize = 20;
+    private string mailFilter = "all";
+    private Http.Model.Option? options;
+    private bool optionsLoaded;
+    private string? spouseName;
+    private (int Inventory, int Storage, int StorageVaults) itemCounts;
+    private string activeTab = "overview";
+    private bool isLoading;
+    private bool tabLoading;
+    private string? errorMessage;
+    private string? loadedTabKey;
+
+    protected override async Task OnParametersSetAsync()
+    {
+        activeTab = NormalizeTab(Tab);
+        if (!ValidTabs.Contains(activeTab))
+        {
+            Navigation.NavigateTo($"/users/{UserId}/overview", replace: true);
+            return;
+        }
+
+        if (string.IsNullOrEmpty(Tab) && activeTab == "overview")
+        {
+            // /users/{id} without tab segment is valid
+        }
+
+        await LoadPageAsync();
+    }
+
+    private async Task LoadPageAsync()
+    {
+        if (!selectedWorld.HasValue)
+        {
+            errorMessage = "월드가 선택되지 않았습니다.";
+            return;
+        }
+
+        isLoading = core == null;
+        errorMessage = null;
+
+        try
+        {
+            if (core == null)
+            {
+                core = await UserDetailService.LoadCoreAsync(selectedWorld.Value, (uint)UserId);
+                if (core == null)
+                    return;
+
+                await LoadItemCountsAsync(selectedWorld.Value);
+            }
+
+            var tabKey = GetTabKey();
+            if (loadedTabKey == tabKey)
+                return;
+
+            tabLoading = true;
+            await LoadTabDataAsync(selectedWorld.Value, activeTab);
+            loadedTabKey = tabKey;
+        }
+        catch (Exception ex)
+        {
+            errorMessage = $"데이터를 불러오지 못했습니다: {ex.Message}";
+        }
+        finally
+        {
+            isLoading = false;
+            tabLoading = false;
+        }
+    }
+
+    private async Task LoadItemCountsAsync(uint world)
+    {
+        var itemData = await UserDetailService.LoadItemsAsync(world, (uint)UserId);
+        itemCounts = (
+            itemData.Inventory.Count,
+            itemData.Storage.Count,
+            itemData.Storage.Select(i => i.Stored).Distinct().Count());
+
+        if (activeTab == "items")
+            items = itemData;
+    }
+
+    private async Task LoadTabDataAsync(uint world, string tab)
+    {
+        switch (tab)
+        {
+            case "overview":
+                if (items == null)
+                    await LoadItemCountsAsync(world);
+                break;
+            case "items":
+                items = await UserDetailService.LoadItemsAsync(world, (uint)UserId);
+                itemCounts = (
+                    items.Inventory.Count,
+                    items.Storage.Count,
+                    items.Storage.Select(i => i.Stored).Distinct().Count());
+                break;
+            case "progress":
+                progress = await UserDetailService.LoadProgressAsync(world, (uint)UserId);
+                break;
+            case "social":
+                social = await UserDetailService.LoadSocialAsync(world, (uint)UserId, core?.RealtimeState);
+                if (social.Marriage?.SpouseId is uint spouseId)
+                    spouseName = await UserDetailService.ResolveCharacterNameAsync(world, spouseId);
+                break;
+            case "mail":
+                mailData = await UserDetailService.LoadMailPageAsync(
+                    world,
+                    (uint)UserId,
+                    mailPage,
+                    MailPageSize,
+                    mailFilter);
+                break;
+            case "settings":
+                options = await UserDetailService.LoadOptionsAsync(world, (uint)UserId);
+                optionsLoaded = true;
+                break;
+        }
+    }
+
+    private string GetTabKey()
+    {
+        if (activeTab == "mail")
+            return $"{selectedWorld}:{UserId}:{activeTab}:{mailFilter}:{mailPage}";
+
+        return $"{selectedWorld}:{UserId}:{activeTab}";
+    }
+
+    private async Task OnMailFilterChanged(string filter)
+    {
+        mailFilter = filter;
+        mailPage = 1;
+        await ReloadMailTabAsync();
+    }
+
+    private async Task OnMailPageChanged(int page)
+    {
+        mailPage = page;
+        await ReloadMailTabAsync();
+    }
+
+    private async Task ReloadMailTabAsync()
+    {
+        if (!selectedWorld.HasValue || activeTab != "mail")
+            return;
+
+        tabLoading = true;
+        errorMessage = null;
+
+        try
+        {
+            mailData = await UserDetailService.LoadMailPageAsync(
+                selectedWorld.Value,
+                (uint)UserId,
+                mailPage,
+                MailPageSize,
+                mailFilter);
+            loadedTabKey = GetTabKey();
+        }
+        catch (Exception ex)
+        {
+            errorMessage = $"메일을 불러오지 못했습니다: {ex.Message}";
+        }
+        finally
+        {
+            tabLoading = false;
+        }
+    }
+
+    private static string NormalizeTab(string? tab)
+    {
+        if (string.IsNullOrWhiteSpace(tab))
+            return "overview";
+
+        return tab.Trim().ToLowerInvariant();
+    }
+
+    private void DismissError()
+    {
+        errorMessage = null;
+    }
+}

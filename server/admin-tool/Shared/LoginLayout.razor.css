@@ -1,0 +1,86 @@
+.login-page {
+    min-height: 100vh;
+    background-color: var(--bg-page);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 2rem 16px;
+    box-sizing: border-box;
+}
+
+.login-page ::deep .login-wrap {
+    width: 100%;
+    max-width: 400px;
+}
+
+.login-page ::deep .login-logo {
+    font-size: var(--font-size-hero);
+    font-weight: 600;
+    text-align: center;
+    margin-bottom: 0.25rem;
+    letter-spacing: -0.03em;
+    color: var(--text-primary);
+}
+
+.login-page ::deep .login-subtitle {
+    text-align: center;
+    color: var(--text-secondary);
+    font-size: 0.8125rem;
+    margin-bottom: 1.5rem;
+}
+
+.login-page ::deep .login-card {
+    background-color: var(--bg-card);
+    border: 1px solid var(--border-color);
+    border-radius: 4px;
+    padding: 1.5rem;
+}
+
+.login-page ::deep .login-card .form-label {
+    font-size: 0.8125rem;
+    color: var(--text-secondary);
+}
+
+.login-page ::deep .login-card .form-control,
+.login-page ::deep .login-card .form-select {
+    background: var(--bg-page);
+    border: 1px solid var(--border-color);
+    color: var(--text-primary);
+    font-size: 0.8125rem;
+}
+
+.login-page ::deep .login-card .form-control:focus,
+.login-page ::deep .login-card .form-select:focus {
+    border-color: var(--text-primary);
+    box-shadow: none;
+}
+
+.login-page ::deep .login-error {
+    background-color: #1a1313;
+    border: 1px solid #4a2a2a;
+    color: var(--error-text);
+    border-radius: 4px;
+    padding: 0.75rem 1rem;
+    font-size: 1rem;
+    margin-bottom: 1rem;
+}
+
+.login-page ::deep .btn-login {
+    width: 100%;
+    color: var(--text-primary);
+    background-color: var(--btn-bg);
+    border: 1px solid var(--border-color);
+    border-radius: 4px;
+    font-weight: 500;
+    font-size: 1rem;
+    padding: 0.5rem 1rem;
+}
+
+.login-page ::deep .btn-login:hover {
+    background-color: var(--btn-hover);
+    color: var(--text-primary);
+}
+
+.login-page ::deep .btn-login:disabled {
+    opacity: 0.6;
+}

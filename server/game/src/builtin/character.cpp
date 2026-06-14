@@ -1789,7 +1789,7 @@ int builtin::character::builtin_group(lua_State* L)
             {
                 async::awaitable_then(lua->switching(), [lua, server, gid = group_id.value()](auto result) {
                     result();
-                    auto guard = server->group.enter_read(gid);
+                    auto guard = server->groups.enter_read(gid);
                     lua->pushobject(guard.value());
                     lua->resume(1);
                 });
@@ -1826,7 +1826,7 @@ int builtin::character::builtin_group(lua_State* L)
                 }
                 else
                 {
-                    auto guard = server->group.enter_read(group_id.value());
+                    auto guard = server->groups.enter_read(group_id.value());
                     lua->pushobject(guard.value());
                     return static_func(lua);
                 }
@@ -1868,7 +1868,7 @@ int builtin::character::builtin_create_group(lua_State* L)
 
         try
         {
-            co_await server->group.create(*shared, target);
+            co_await server->groups.create(*shared, target);
             co_await lua->switching();
             lua->pushboolean(true);
             lua->resume(1);
@@ -1930,7 +1930,7 @@ int builtin::character::builtin_clan(lua_State* L)
             {
                 async::awaitable_then(lua->switching(), [lua, server, cid = clan_id.value()](auto result) {
                     result();
-                    auto guard = server->clan.enter_read(cid);
+                    auto guard = server->clans.enter_read(cid);
                     lua->pushobject(guard.value());
                     lua->resume(1);
                 });
@@ -1971,7 +1971,7 @@ int builtin::character::builtin_clan(lua_State* L)
             {
                 async::awaitable_then(lua->switching(), [lua, server, cid = clan_id.value()](auto result) {
                     result();
-                    auto guard = server->clan.enter_read(cid);
+                    auto guard = server->clans.enter_read(cid);
                     lua->pushobject(guard.value());
                     lua->resume(1);
                 });
@@ -2021,7 +2021,7 @@ int builtin::character::builtin_create_clan(lua_State* L)
         }
         try
         {
-            co_await server->clan.create(*shared, name);
+            co_await server->clans.create(*shared, name);
             co_await lua->switching();
             lua->pushnil();
             lua->resume(1);
@@ -2075,7 +2075,7 @@ int builtin::character::builtin_destroy_clan(lua_State* L)
         }
         try
         {
-            co_await server->clan.destroy(*shared);
+            co_await server->clans.destroy(*shared);
             co_await lua->switching();
             lua->pushnil();
             lua->resume(1);

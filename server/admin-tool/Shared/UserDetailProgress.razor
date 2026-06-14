@@ -1,0 +1,169 @@
+@using AdminTool.Services
+@using Http.Model
+
+<div class="user-detail-progress">
+    <div class="card-bg stitch-form-card mb-4">
+        <div class="stitch-form-card-header">
+            <h2 class="dash-card-title">
+                <span class="material-symbols-outlined" aria-hidden="true">explore</span>
+                퀘스트
+            </h2>
+            <span class="stitch-badge">진행 @ActiveQuestCount · 완료 @CompletedQuestCount</span>
+        </div>
+        <div class="user-detail-card-content">
+            @if (Progress.Quests.Any())
+            {
+                <div class="dash-table-wrap">
+                    <table class="dash-table">
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>단계</th>
+                                <th>진행도</th>
+                                <th>상태</th>
+                                <th>파라미터</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var quest in Progress.Quests)
+                            {
+                                var progressPercent = GetQuestProgressPercent(quest);
+                                <tr>
+                                    <td class="table-meta">@quest.Id</td>
+                                    <td class="table-meta">@quest.Step</td>
+                                    <td>
+                                        <div class="user-detail-progress-bar-wrap">
+                                            <div class="user-detail-progress-bar">
+                                                <div class="user-detail-progress-fill @(quest.Completed ? "completed" : "")" style="width: @(progressPercent)%"></div>
+                                            </div>
+                                            <span class="user-detail-progress-pct table-meta">@progressPercent%</span>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        @if (quest.Completed)
+                                        {
+                                            <span class="text-muted">완료</span>
+                                        }
+                                        else
+                                        {
+                                            <span class="user-detail-status-active">진행중</span>
+                                        }
+                                    </td>
+                                    <td class="table-meta">@(string.IsNullOrWhiteSpace(quest.Param) ? "-" : quest.Param)</td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            }
+            else
+            {
+                <p class="text-muted mb-0">퀘스트 데이터가 없습니다.</p>
+            }
+        </div>
+    </div>
+
+    <div class="card-bg stitch-form-card mb-4">
+        <div class="stitch-form-card-header">
+            <h2 class="dash-card-title">
+                <span class="material-symbols-outlined" aria-hidden="true">auto_fix</span>
+                스펠
+            </h2>
+            <span class="stitch-badge">@Progress.Spells.Count</span>
+        </div>
+        <div class="user-detail-card-content">
+            @if (Progress.Spells.Any())
+            {
+                <div class="dash-table-wrap">
+                    <table class="dash-table">
+                        <thead>
+                            <tr>
+                                <th>슬롯</th>
+                                <th>모델 ID</th>
+                                <th>스펠명</th>
+                                <th>다음 사용</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var spell in Progress.Spells)
+                            {
+                                <tr>
+                                    <td>@spell.Slot</td>
+                                    <td class="table-meta">@spell.Model</td>
+                                    <td>@UserDetailDisplay.FormatSpellName(spell.Model)</td>
+                                    <td class="table-meta">@UserDetailDisplay.FormatDateTime(spell.Next)</td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            }
+            else
+            {
+                <p class="text-muted mb-0">스펠 데이터가 없습니다.</p>
+            }
+        </div>
+    </div>
+
+    <div class="card-bg stitch-form-card mb-4">
+        <div class="stitch-form-card-header">
+            <h2 class="dash-card-title">
+                <span class="material-symbols-outlined" aria-hidden="true">military_tech</span>
+                업적
+            </h2>
+            <span class="stitch-badge">@Progress.Achievements.Count</span>
+        </div>
+        <div class="user-detail-card-content">
+            @if (Progress.Achievements.Any())
+            {
+                <div class="dash-table-wrap">
+                    <table class="dash-table">
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>텍스트</th>
+                                <th>아이콘</th>
+                                <th>색상</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var achievement in Progress.Achievements)
+                            {
+                                <tr>
+                                    <td class="table-meta">@achievement.Id</td>
+                                    <td>@(string.IsNullOrWhiteSpace(achievement.Text) ? "-" : achievement.Text)</td>
+                                    <td class="table-meta">@achievement.Icon</td>
+                                    <td class="table-meta">@achievement.Color</td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            }
+            else
+            {
+                <p class="text-muted mb-0">업적 데이터가 없습니다.</p>
+            }
+        </div>
+    </div>
+</div>
+
+@code {
+    [Parameter, EditorRequired]
+    public UserDetailProgressData Progress { get; set; } = null!;
+
+    private int ActiveQuestCount => Progress.Quests.Count(q => !q.Completed);
+
+    private int CompletedQuestCount => Progress.Quests.Count(q => q.Completed);
+
+    private static int GetQuestProgressPercent(Quest quest)
+    {
+        if (quest.Completed)
+            return 100;
+
+        if (quest.Progress <= 100)
+            return (int)quest.Progress;
+
+        return Math.Min(99, (int)(quest.Progress % 100));
+    }
+}

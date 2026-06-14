@@ -5,69 +5,43 @@
 @using Microsoft.AspNetCore.Components.Forms
 @using Microsoft.AspNetCore.WebUtilities
 @using AdminTool.Authentication
+@using AdminTool.Services
 @inject AuthenticationStateProvider AuthenticationStateProvider
 @inject NavigationManager Navigation
+@inject UserService UserService
+@inject ThemeService ThemeService
+@inject IJSRuntime JS
 @inject IConfiguration Configuration
 
-<PageTitle>Admin Tool</PageTitle>
+<PageTitle>FB ADMIN</PageTitle>
 
 <div class="app-container">
     <header class="app-header">
-        <div class="header-top">
-            <div class="header-top-container">
-                <a class="logo" href="/">ADMIN TOOL</a>
-                <div class="header-center">
-                    <div class="header-search">
-                        <span class="oi oi-magnifying-glass"></span>
-                        <input type="text" class="search-input" placeholder="Search users..." @bind="globalSearchTerm"
-                               @bind:event="oninput" @onkeypress="HandleSearchKeyPress" />
-                    </div>
+        <div class="page-wrap">
+            <div class="header-top">
+                <a class="logo" href="/">FB ADMIN</a>
+                <div class="header-search input-bg">
+                    <span class="material-symbols-outlined" aria-hidden="true">search</span>
+                    <input type="text" class="search-input" placeholder="유저 검색..." @bind="globalSearchTerm"
+                           @bind:event="oninput" @onkeypress="HandleSearchKeyPress" />
                 </div>
                 <div class="header-actions">
-                    <div class="world-selector">
-                        <label for="world-select" class="world-label">Server:</label>
-                        <select id="world-select" class="form-select form-select-sm world-select" @bind="selectedWorld"
-                                @bind:after="OnWorldChanged">
-                            @if (worlds != null && worlds.Any())
-                            {
-                                @foreach (var worldId in worlds)
-                                {
-                                    var serverName = GetServerName(worldId);
-                                    <option value="@worldId">@serverName</option>
-                                }
-                            }
-                        </select>
-                    </div>
+                    <ThemeSelector />
+                    <WorldSelector Worlds="worlds"
+                                   WorldNames="worldToServerName"
+                                   SelectedWorld="selectedWorld"
+                                   SelectedWorldChanged="HandleWorldSelectedAsync" />
                     @if (isAuthenticated)
                     {
-                        <button class="btn btn-outline-secondary" @onclick="HandleLogout">Logout</button>
+                        <button class="btn-logout" @onclick="HandleLogout">로그아웃</button>
                     }
                     else
                     {
-                        <button class="btn btn-primary" @onclick="NavigateToLogin">Login</button>
+                        <button class="btn btn-neutral btn-sm" @onclick="NavigateToLogin">Login</button>
                     }
-                    <a href="https://github.com/boyism80/fb" target="_blank" rel="noopener noreferrer"
-                       class="header-link">Contact</a>
                 </div>
             </div>
-        </div>
-        <div class="header-info">
-            <div class="header-info-container">
-                <div class="info-text">
-                    <p>
-                        fb is a 2D MMORPG game server written in C++20. High-performance, microservices architecture with
-                        Lua scripting support.
-                    </p>
-                    <p>
-                        Created by <a href="https://github.com/boyism80" target="_blank" rel="noopener noreferrer"
-                                      class="info-link">boyism80</a>. <a href="https://github.com/boyism80/fb" target="_blank"
-                                                                         rel="noopener noreferrer" class="info-link">View on GitHub</a>
-                    </p>
-                </div>
-            </div>
-        </div>
-        <div class="header-nav">
-            <div class="header-nav-container">
+            <div class="header-nav">
                 <NavMenu />
             </div>
         </div>
@@ -75,7 +49,7 @@
 
     <main class="app-main">
         <CascadingValue Value="selectedWorld" Name="SelectedWorld">
-            <div class="content-wrapper">
+            <div class="page-wrap content-wrapper">
                 @Body
             </div>
         </CascadingValue>
@@ -96,18 +70,26 @@
         LoadWorldFromQuery();
     }
 
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            AuthenticationStateProvider.AuthenticationStateChanged += OnAuthenticationStateChanged;
+            Navigation.LocationChanged += OnLocationChanged;
+            await ThemeService.InitializeAsync(JS);
+        }
+    }
+
     private void LoadWorlds()
     {
         try
         {
-            // Load worlds from WorldServers section
             var worldServersSection = Configuration.GetSection("WorldServers");
             worlds = worldServersSection.GetChildren()
                 .Where(child => uint.TryParse(child.Key, out _))
                 .Select(child => uint.Parse(child.Key))
                 .ToList();
 
-            // Load world to server name mapping
             worldToServerName = worldServersSection.GetChildren()
                 .Where(child => uint.TryParse(child.Key, out _))
                 .ToDictionary(
@@ -116,7 +98,6 @@
         }
         catch (Exception ex)
         {
-            // Log error but don't break the layout
             System.Diagnostics.Debug.WriteLine($"Error loading worlds: {ex.Message}");
         }
     }
@@ -146,7 +127,6 @@
                 }
             }
 
-            // If no valid world in query or worlds not loaded yet, use first world as default
             if (worlds != null && worlds.Any() && !selectedWorld.HasValue)
             {
                 selectedWorld = worlds.First();
@@ -158,10 +138,12 @@
         }
     }
 
-    private void OnWorldChanged()
+    private Task HandleWorldSelectedAsync(uint? world)
     {
+        selectedWorld = world;
         UpdateUrlWithWorld();
         StateHasChanged();
+        return Task.CompletedTask;
     }
 
     private void UpdateUrlWithWorld()
@@ -177,11 +159,11 @@
             }
 
             var queryDict = queryParams.ToDictionary(
-            kvp => kvp.Key,
-            kvp => (string?)(kvp.Value.ToString() ?? string.Empty));
+                kvp => kvp.Key,
+                kvp => (string?)(kvp.Value.ToString() ?? string.Empty));
             var newQueryString = QueryHelpers.AddQueryString(
-            uri.GetLeftPart(UriPartial.Path),
-            queryDict);
+                uri.GetLeftPart(UriPartial.Path),
+                queryDict);
 
             Navigation.NavigateTo(newQueryString, false);
         }
@@ -189,16 +171,6 @@
         {
             System.Diagnostics.Debug.WriteLine($"Error updating URL with world: {ex.Message}");
         }
-    }
-
-    protected override Task OnAfterRenderAsync(bool firstRender)
-    {
-        if (firstRender)
-        {
-            AuthenticationStateProvider.AuthenticationStateChanged += OnAuthenticationStateChanged;
-            Navigation.LocationChanged += OnLocationChanged;
-        }
-        return Task.CompletedTask;
     }
 
     private async void OnAuthenticationStateChanged(Task<AuthenticationState> task)
@@ -213,17 +185,10 @@
         isAuthenticated = authState.User.Identity?.IsAuthenticated == true;
     }
 
-    private Task HandleSearchKeyPress(KeyboardEventArgs e)
+    private async Task HandleSearchKeyPress(KeyboardEventArgs e)
     {
         if (e.Key == "Enter" && !string.IsNullOrWhiteSpace(globalSearchTerm))
-        {
-            var query = new Dictionary<string, string?> { ["search"] = globalSearchTerm.Trim() };
-            if (selectedWorld.HasValue)
-                query["world"] = selectedWorld.Value.ToString();
-            var queryString = QueryHelpers.AddQueryString("/users", query);
-            Navigation.NavigateTo(queryString);
-        }
-        return Task.CompletedTask;
+            await UserSearchNavigation.NavigateFromSearchAsync(Navigation, UserService, selectedWorld, globalSearchTerm);
     }
 
     private void NavigateToLogin()

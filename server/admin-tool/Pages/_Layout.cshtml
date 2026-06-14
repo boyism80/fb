@@ -1,19 +1,43 @@
-﻿@using Microsoft.AspNetCore.Components.Web
-@namespace admin_tool.Pages
+@using Microsoft.AspNetCore.Components.Web
+@namespace AdminTool.Pages
 @addTagHelper *, Microsoft.AspNetCore.Mvc.TagHelpers
 
 <!DOCTYPE html>
-<html lang="en">
+<html lang="ko">
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <base href="~/" />
-    <link rel="stylesheet" href="css/bootstrap/bootstrap.min.css" />
-    <link href="css/site.css" rel="stylesheet" />
-    <link href="admin-tool.styles.css" rel="stylesheet" />
+    <link rel="stylesheet" href="css/bootstrap/bootstrap.min.css" asp-append-version="true" />
+    <link rel="stylesheet" href="css/open-iconic/font/css/open-iconic-bootstrap.min.css" asp-append-version="true" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400&display=swap" rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0" rel="stylesheet" />
+    <link href="css/site.css" rel="stylesheet" asp-append-version="true" />
+    <link href="admin-tool.styles.css" rel="stylesheet" asp-append-version="true" />
+    <script>
+        (function () {
+            var stored = localStorage.getItem('fb-admin-theme') || 'dark';
+            var resolved = stored;
+            if (stored === 'system') {
+                resolved = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+            } else if (stored !== 'light') {
+                resolved = 'dark';
+            }
+            document.documentElement.setAttribute('data-theme', resolved);
+            document.documentElement.setAttribute('data-theme-preference', stored);
+        })();
+    </script>
     <component type="typeof(HeadOutlet)" render-mode="ServerPrerendered" />
 </head>
-<body data-bs-theme="dark">
+<body>
+    <script>
+        (function () {
+            var theme = document.documentElement.getAttribute('data-theme') || 'dark';
+            document.body.setAttribute('data-bs-theme', theme === 'light' ? 'light' : 'dark');
+        })();
+    </script>
     @RenderBody()
 
     <div id="blazor-error-ui">
@@ -27,6 +51,7 @@
         <a class="dismiss">🗙</a>
     </div>
 
+    <script src="js/admin-theme.js" asp-append-version="true"></script>
     <script src="_framework/blazor.server.js"></script>
 </body>
 </html>

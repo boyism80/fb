@@ -12,6 +12,6 @@ async::task<void> destroy_clan::handle(const internal_resp::DestroyClan& message
     if (message.host == fb::config<uint32_t>("id"))
         co_return;
 
-    co_await this->server.clan.on_error(message.error);
-    co_await this->server.clan.on_destroyed(message.clan_id, message.clan_name);
+    co_await this->server.clans.on_error(message.error);
+    co_await this->server.clans.on_destroyed(message.clan_id, message.clan_name);
 }

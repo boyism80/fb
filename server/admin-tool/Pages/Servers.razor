@@ -11,158 +11,116 @@
 @inject IConfiguration Configuration
 @attribute [AuthorizeRole(Role.Admin)]
 
-<PageTitle>Server Status - Admin Tool</PageTitle>
+<PageTitle>서버 상태 - FB ADMIN</PageTitle>
 
-<div>
-    <div class="page-header mb-4">
-        <h1>Server Status</h1>
-        <p class="text-muted">Monitor and manage game servers</p>
+<div class="servers-page">
+    <div class="page-header">
+        <h1>서버 상태</h1>
+        <p>실시간 서버 하트비트 모니터링</p>
     </div>
-
     @if (!string.IsNullOrEmpty(errorMessage))
     {
-        <div class="alert alert-danger alert-dismissible fade show" role="alert">
-            @errorMessage
-            <button type="button" class="btn-close" @onclick="() => errorMessage = null"></button>
+        <div class="stitch-error-banner">
+            <div class="stitch-error-banner-content">
+                <span class="material-symbols-outlined">error</span>
+                <span>@errorMessage</span>
+            </div>
+            <button type="button" class="stitch-banner-dismiss" @onclick="() => errorMessage = null" aria-label="닫기">
+                <span class="material-symbols-outlined">close</span>
+            </button>
         </div>
     }
-
     @if (!string.IsNullOrEmpty(successMessage))
     {
-        <div class="alert alert-success alert-dismissible fade show" role="alert">
-            @successMessage
-            <button type="button" class="btn-close" @onclick="() => successMessage = null"></button>
+        <div class="stitch-success-banner">
+            <div class="stitch-success-banner-content">
+                <span class="material-symbols-outlined">check_circle</span>
+                <span class="stitch-success-text">@successMessage</span>
+            </div>
+            <button type="button" class="stitch-banner-dismiss stitch-success-dismiss" @onclick="() => successMessage = null" aria-label="닫기">
+                <span class="material-symbols-outlined">close</span>
+            </button>
         </div>
     }
-
-    <div class="mb-4">
-        <button class="btn btn-primary" @onclick="LoadServers" disabled="@isLoading">
-            @if (isLoading)
+    <div class="card-bg filter-toolbar">
+        <div class="filter-toolbar-left">
+            <span class="dash-card-title" style="margin:0;">실행 중인 서버 @(filteredServers?.Count ?? 0)개</span>
+            @if (!showAllWorlds && selectedWorld.HasValue)
             {
-                <span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
-                <span>Loading...</span>
+                <span class="servers-filter-scope">@GetWorldDisplayName(selectedWorld.Value)</span>
             }
-            else
+            else if (showAllWorlds)
             {
-                <span class="oi oi-reload me-2" aria-hidden="true"></span>
-                <span>Refresh</span>
+                <span class="servers-filter-scope">전체 월드</span>
             }
-        </button>
-    </div>
-
-    @if (servers != null)
-    {
-        <div class="card mb-4">
-            <div class="card-header">
-                <h5 class="mb-0">Running Servers (@servers.Count)</h5>
-            </div>
-            <div class="card-body">
-                @if (servers.Any())
+            <label class="stitch-filter-check">
+                <input type="checkbox" @bind="showAllWorlds" @bind:after="ApplyWorldFilter" />
+                <span>전체 월드 표시</span>
+            </label>
+        </div>
+        <div class="filter-toolbar-right">
+            <button class="stitch-btn stitch-btn-primary" @onclick="LoadServers" disabled="@isLoading">
+                @if (isLoading)
                 {
-                    <div class="table-responsive">
-                        <table class="table table-striped table-hover">
-                            <thead>
-                                <tr>
-                                    <th>Service</th>
-                                    <th>ID</th>
-                                    <th>Name</th>
-                                    <th>IP</th>
-                                    <th>Port</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                @foreach (var server in servers)
-                                {
-                                    <tr>
-                                        <td>@server.Service</td>
-                                        <td>@server.Id</td>
-                                        <td>@server.Name</td>
-                                        <td>@server.IP</td>
-                                        <td>@server.Port</td>
-                                    </tr>
-                                }
-                            </tbody>
-                        </table>
-                    </div>
+                    <span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
+                    <span>불러오는 중...</span>
                 }
                 else
                 {
-                    <p class="text-muted mb-0">No servers are currently running.</p>
+                    <span class="material-symbols-outlined" style="font-size:1rem;vertical-align:middle;margin-right:0.25rem;">refresh</span>
+                    <span>새로고침</span>
                 }
-            </div>
+            </button>
         </div>
-
-        <div class="card mb-4">
-            <div class="card-header">
-                <h5 class="mb-0">Server Controls</h5>
-            </div>
-            <div class="card-body">
-                <p class="text-muted mb-3">
-                    Send RabbitMQ notifications through <code>fb.system</code> to broadcast save or initiate shutdown across
-                    all game servers.
-                </p>
-                <div class="d-flex flex-wrap gap-2">
-                    <button class="btn btn-warning"
+    </div>
+    @if (filteredServers != null)
+    {
+        <div style="margin-bottom:var(--section-gap);">
+            <ServerStatusGroups Servers="filteredServers"
+                                ShowKpi="true"
+                                AllowExpand="true"
+                                ShowWorld="showAllWorlds"
+                                WorldNames="worldToServerName"
+                                EmptyMessage="@GetEmptyMessage()" />
+        </div>
+        <div class="dash-row-2">
+            <div class="card-bg dash-card dash-ops-panel">
+                <h2 class="dash-card-title">서버 제어</h2>
+                <p class="dash-ops-desc">RabbitMQ fb.system 채널을 통해 전체 게임 서버에 저장 또는 종료 명령을 전송합니다.</p>
+                <div class="dash-btn-grid">
+                    <button class="dash-ops-btn"
                             disabled="@(isSaveProcessing || !canSaveServers)"
                             @onclick="RequestServerSave">
-                        @if (isSaveProcessing)
-                        {
-                            <span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
-                            <span>Broadcasting Save...</span>
-                        }
-                        else
-                        {
-                            <span>Force Save All Servers</span>
-                        }
+                        @if (isSaveProcessing) { <span>저장 전송 중...</span> }
+                        else { <span>전체 저장</span> }
                     </button>
-                    <button class="btn btn-danger"
+                    <button class="dash-ops-btn"
                             disabled="@(isShutdownProcessing || !canShutdownServers)"
                             @onclick="RequestServerShutdown">
-                        @if (isShutdownProcessing)
-                        {
-                            <span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
-                            <span>Sending Shutdown...</span>
-                        }
-                        else
-                        {
-                            <span>Shutdown All Servers</span>
-                        }
+                        @if (isShutdownProcessing) { <span>종료 전송 중...</span> }
+                        else { <span>서버 종료</span> }
                     </button>
                 </div>
                 @if (!canSaveServers || !canShutdownServers)
                 {
-                    <p class="text-muted mt-2 mb-0">
-                        <small>
-                            Saving requires at least Admin role. Shutdown is limited to Superadmin or higher accounts.
-                        </small>
+                    <p class="dash-ops-hint">
+                        저장은 Admin 이상, 종료는 Superadmin 이상 권한이 필요합니다.
                     </p>
                 }
             </div>
-        </div>
-
-        <div class="card mb-4">
-            <div class="card-header">
-                <h5 class="mb-0">User Session Management</h5>
-            </div>
-            <div class="card-body">
-                <p class="text-muted">
-                    Clear all user sessions from Redis. This operation is only allowed when no servers are running.
-                </p>
-                <button class="btn btn-danger" @onclick="ClearSessions" disabled="@(isSessionProcessing || servers.Any())">
-                    @if (isSessionProcessing)
-                    {
-                        <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
-                        <span>Processing...</span>
-                    }
-                    else
-                    {
-                        <span>Clear User Sessions</span>
-                    }
-                </button>
-                @if (servers.Any())
+            <div class="card-bg dash-card dash-ops-panel">
+                <h2 class="dash-card-title">세션 관리</h2>
+                <p class="dash-ops-desc">Redis에 저장된 유저 세션을 초기화합니다. 서버가 실행 중일 때는 사용할 수 없습니다.</p>
+                <div class="dash-btn-grid dash-btn-grid-single">
+                    <button class="dash-ops-btn" @onclick="ClearSessions" disabled="@(isSessionProcessing || filteredServers.Any())">
+                        @if (isSessionProcessing) { <span>처리 중...</span> }
+                        else { <span>세션 초기화</span> }
+                    </button>
+                </div>
+                @if (filteredServers.Any())
                 {
-                    <p class="text-warning mt-2 mb-0">
-                        <small>Cannot clear sessions while servers are running. Please stop all servers first.</small>
+                    <p class="dash-ops-hint">
+                        서버가 실행 중이면 세션을 초기화할 수 없습니다.
                     </p>
                 }
             </div>
@@ -173,31 +131,57 @@
 @code {
     [CascadingParameter(Name = "SelectedWorld")]
     private uint? selectedWorld { get; set; }
-    private List<ServerStateService.ServerInfo>? servers;
-    private bool isLoading = false;
-    private bool isSessionProcessing = false;
-    private bool isSaveProcessing = false;
-    private bool isShutdownProcessing = false;
-    private bool canSaveServers = false;
-    private bool canShutdownServers = false;
+
+    private List<ServerStateService.ServerInfo>? allServers;
+    private List<ServerStateService.ServerInfo>? filteredServers;
+    private Dictionary<uint, string>? worldToServerName;
+    private bool showAllWorlds;
+    private bool isLoading;
+    private bool isSessionProcessing;
+    private bool isSaveProcessing;
+    private bool isShutdownProcessing;
+    private bool canSaveServers;
+    private bool canShutdownServers;
     private string? errorMessage;
     private string? successMessage;
 
     protected override async Task OnInitializedAsync()
     {
+        LoadWorldNames();
         await InitializePermissions();
         await LoadServers();
+    }
+
+    protected override void OnParametersSet()
+    {
+        if (allServers != null)
+            ApplyWorldFilter();
+    }
+
+    private void LoadWorldNames()
+    {
+        try
+        {
+            var worldServersSection = Configuration.GetSection("WorldServers");
+            worldToServerName = worldServersSection.GetChildren()
+                .Where(child => uint.TryParse(child.Key, out _))
+                .ToDictionary(
+                    child => uint.Parse(child.Key),
+                    child => child.Value ?? child.Key);
+        }
+        catch
+        {
+            worldToServerName = new Dictionary<uint, string>();
+        }
     }
 
     private async Task InitializePermissions()
     {
         var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
         var user = authState.User;
-
         canSaveServers = user.IsInRole(nameof(Role.Admin)) ||
                          user.IsInRole(nameof(Role.Superadmin)) ||
                          user.IsInRole(nameof(Role.Owner));
-
         canShutdownServers = user.IsInRole(nameof(Role.Superadmin)) ||
                              user.IsInRole(nameof(Role.Owner));
     }
@@ -207,14 +191,14 @@
         isLoading = true;
         errorMessage = null;
         successMessage = null;
-
         try
         {
-            servers = await ServerStateService.GetRunningServers();
+            allServers = await ServerStateService.GetRunningServers();
+            ApplyWorldFilter();
         }
         catch (Exception ex)
         {
-            errorMessage = $"Error loading servers: {ex.Message}";
+            errorMessage = $"서버 목록을 불러오지 못했습니다: {ex.Message}";
         }
         finally
         {
@@ -222,33 +206,75 @@
         }
     }
 
+    private void ApplyWorldFilter()
+    {
+        if (allServers == null)
+        {
+            filteredServers = null;
+            return;
+        }
+
+        if (showAllWorlds)
+        {
+            filteredServers = allServers;
+        }
+        else if (selectedWorld.HasValue)
+        {
+            filteredServers = allServers
+                .Where(server => server.World == selectedWorld.Value)
+                .ToList();
+        }
+        else
+        {
+            filteredServers = new List<ServerStateService.ServerInfo>();
+        }
+    }
+
+    private string GetWorldDisplayName(uint world)
+    {
+        if (worldToServerName != null && worldToServerName.TryGetValue(world, out var name))
+            return name;
+
+        return $"World {world}";
+    }
+
+    private string GetEmptyMessage()
+    {
+        if (!showAllWorlds && !selectedWorld.HasValue)
+            return "월드를 선택하세요.";
+
+        if (!showAllWorlds && selectedWorld.HasValue)
+            return $"{GetWorldDisplayName(selectedWorld.Value)}에 실행 중인 서버가 없습니다.";
+
+        return "현재 실행 중인 서버가 없습니다.";
+    }
+
     private async Task ClearSessions()
     {
         isSessionProcessing = true;
         errorMessage = null;
         successMessage = null;
-
         try
         {
             if (!selectedWorld.HasValue)
             {
-                errorMessage = "World is not selected.";
+                errorMessage = "월드가 선택되지 않았습니다.";
                 return;
             }
             var cleared = await CacheService.ClearUserSessions(selectedWorld.Value);
             if (cleared)
             {
-                successMessage = "User sessions have been cleared successfully.";
-                await LoadServers(); // Refresh server list
+                successMessage = "유저 세션이 초기화되었습니다.";
+                await LoadServers();
             }
             else
             {
-                errorMessage = "Cannot clear sessions while servers are running. Please stop all servers first.";
+                errorMessage = "서버가 실행 중이면 세션을 초기화할 수 없습니다. 먼저 모든 서버를 종료하세요.";
             }
         }
         catch (Exception ex)
         {
-            errorMessage = $"Error clearing sessions: {ex.Message}";
+            errorMessage = $"세션 초기화 중 오류: {ex.Message}";
         }
         finally
         {
@@ -260,29 +286,27 @@
     {
         if (!canSaveServers)
         {
-            errorMessage = "You do not have permission to force saves.";
+            errorMessage = "강제 저장 권한이 없습니다.";
             successMessage = null;
             return;
         }
-
         isSaveProcessing = true;
         errorMessage = null;
         successMessage = null;
-
         try
         {
             if (!selectedWorld.HasValue)
             {
-                errorMessage = "World is not selected.";
+                errorMessage = "월드가 선택되지 않았습니다.";
                 return;
             }
             var packet = new Response.BroadcastSave();
             await RabbitMqService.PublishAsync(packet, "amq.direct", $"fb.{selectedWorld.Value}.system");
-            successMessage = "Save instruction broadcasted to all game servers.";
+            successMessage = "전체 게임 서버에 저장 명령을 전송했습니다.";
         }
         catch (Exception ex)
         {
-            errorMessage = $"Failed to broadcast save: {ex.Message}";
+            errorMessage = $"저장 명령 전송 실패: {ex.Message}";
         }
         finally
         {
@@ -294,36 +318,31 @@
     {
         if (!canShutdownServers)
         {
-            errorMessage = "You do not have permission to shutdown servers.";
+            errorMessage = "서버 종료 권한이 없습니다.";
             successMessage = null;
             return;
         }
-
         isShutdownProcessing = true;
         errorMessage = null;
         successMessage = null;
-
         try
         {
             if (!selectedWorld.HasValue)
             {
-                errorMessage = "World is not selected.";
+                errorMessage = "월드가 선택되지 않았습니다.";
                 return;
             }
             var packet = new Response.Shutdown();
-            // Shutdown uses fb.global (no world prefix - all servers receive)
             await RabbitMqService.PublishAsync(packet, "amq.direct", "fb.global");
-            successMessage = "Shutdown instruction sent to all game servers.";
+            successMessage = "전체 게임 서버에 종료 명령을 전송했습니다.";
         }
         catch (Exception ex)
         {
-            errorMessage = $"Failed to send shutdown instruction: {ex.Message}";
+            errorMessage = $"종료 명령 전송 실패: {ex.Message}";
         }
         finally
         {
             isShutdownProcessing = false;
         }
     }
-
 }
-

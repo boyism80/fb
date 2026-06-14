@@ -18,7 +18,7 @@ async::task<bool> group::handle(fb::socket<character>& session, game_reqs::group
     auto weak = me->weak_from_this_as<character>();
     try
     {
-        co_await this->server.group.handle_action(*me, request.name);
+        co_await this->server.groups.handle_action(*me, request.name);
     }
     catch (std::exception& e)
     {

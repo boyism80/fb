@@ -93,73 +93,66 @@ private:
                        on_success = std::forward<OnSuccess>(on_success),
                        on_failure = std::forward<OnFailure>(on_failure)]() mutable {
             execution_context::pending(context);
-            async::awaitable_then((*fn_holder)(*this),
-                                  [=,
-                                   this,
-                                   on_success = std::move(on_success),
-                                   on_failure = std::move(on_failure),
-                                   &attempts,
-                                   &retry_func](async::awaitable_result<T> result) mutable {
-                                      try
-                                      {
-                                          if constexpr (std::is_same_v<T, void>)
-                                          {
-                                              result();
-                                              on_success();
-                                          }
-                                          else
-                                          {
-                                              on_success(result());
-                                          }
-                                      }
-                                      catch (const retry_exception&)
-                                      {
-                                          if (*attempts < retry_limit)
-                                          {
-                                              (*attempts)++;
-                                              async::awaitable_then(
-                                                  this->sleep(retry_delay),
-                                                  [=,
-                                                   this,
-                                                   on_success = std::move(on_success),
-                                                   on_failure = std::move(on_failure),
-                                                   &attempts,
-                                                   &retry_func](async::awaitable_result<void> sleep_result) mutable {
-                                                      try
-                                                      {
-                                                          sleep_result();
-                                                          {
-                                                              auto guard = this->_queue.enter_write();
-                                                              guard.value().push(*retry_func);
-                                                          }
-                                                      }
-                                                      catch (std::exception& e)
-                                                      {
-                                                          on_failure(e);
-                                                      }
-                                                      catch (...)
-                                                      {
-                                                          auto unknown = std::runtime_error("unknown error");
-                                                          on_failure(unknown);
-                                                      }
-                                                  });
-                                          }
-                                          else
-                                          {
-                                              auto exhausted = std::runtime_error("max retries exceeded");
-                                              on_failure(exhausted);
-                                          }
-                                      }
-                                      catch (std::exception& e)
-                                      {
-                                          on_failure(e);
-                                      }
-                                      catch (...)
-                                      {
-                                          auto unknown = std::runtime_error("unknown error");
-                                          on_failure(unknown);
-                                      }
-                                  });
+            async::awaitable_then(
+                (*fn_holder)(*this),
+                [=, this, on_success = std::move(on_success), on_failure = std::move(on_failure)](
+                    async::awaitable_result<T> result) mutable {
+                    try
+                    {
+                        if constexpr (std::is_same_v<T, void>)
+                        {
+                            result();
+                            on_success();
+                        }
+                        else
+                        {
+                            on_success(result());
+                        }
+                    }
+                    catch (const retry_exception&)
+                    {
+                        if (*attempts < retry_limit)
+                        {
+                            (*attempts)++;
+                            async::awaitable_then(
+                                this->sleep(retry_delay),
+                                [=, this, on_success = std::move(on_success), on_failure = std::move(on_failure)](
+                                    async::awaitable_result<void> sleep_result) mutable {
+                                    try
+                                    {
+                                        sleep_result();
+                                        {
+                                            auto guard = this->_queue.enter_write();
+                                            guard.value().push(*retry_func);
+                                        }
+                                    }
+                                    catch (std::exception& e)
+                                    {
+                                        on_failure(e);
+                                    }
+                                    catch (...)
+                                    {
+                                        auto unknown = std::runtime_error("unknown error");
+                                        on_failure(unknown);
+                                    }
+                                });
+                        }
+                        else
+                        {
+                            auto exhausted = std::runtime_error("max retries exceeded");
+                            on_failure(exhausted);
+                        }
+                    }
+                    catch (std::exception& e)
+                    {
+                        on_failure(e);
+                    }
+                    catch (...)
+                    {
+                        auto unknown = std::runtime_error("unknown error");
+                        on_failure(unknown);
+                    }
+                });
         };
 
         {
@@ -338,7 +331,7 @@ public:
                 promise->set_exception(std::make_exception_ptr(e));
             },
             [promise](ReturnType&& value) {
-                promise->set_value(value);
+                promise->set_value(std::move(value));
             },
             std::move(context));
         return promise->task();

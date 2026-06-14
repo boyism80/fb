@@ -1,0 +1,80 @@
+/* User detail page — loaded after site.css via UserDetail.razor HeadContent */
+
+.user-detail-overview,
+.user-detail-character,
+.user-detail-social,
+.user-detail-items,
+.user-detail-progress,
+.user-detail-mail,
+.user-detail-settings {
+    display: flex;
+    flex-direction: column;
+    gap: var(--section-gap);
+}
+
+.user-detail-kpi-tile {
+    padding: 1rem;
+    box-sizing: border-box;
+}
+
+.user-detail-page .stitch-form-card {
+    padding: 0;
+}
+
+.user-detail-page .stitch-form-card-header {
+    padding: 1rem 1.25rem;
+    margin-bottom: 0;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.user-detail-card-content {
+    padding: 1.25rem;
+    box-sizing: border-box;
+}
+
+.user-detail-summary-body {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+    padding: 1.25rem;
+    box-sizing: border-box;
+}
+
+.user-detail-field-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    row-gap: 1.5rem;
+    column-gap: 2rem;
+}
+
+.user-detail-field {
+    display: flex;
+    flex-direction: column;
+    gap: 0.375rem;
+    min-width: 0;
+}
+
+.user-detail-field-label {
+    font-size: 0.6875rem;
+    color: var(--text-secondary);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    font-weight: 500;
+}
+
+.user-detail-field-value {
+    font-size: 0.875rem;
+    color: var(--text-primary);
+    line-height: 1.4;
+}
+
+.user-detail-field-grid-compact {
+    grid-template-columns: 1fr;
+    row-gap: 1rem;
+}
+
+@media (max-width: 768px) {
+    .user-detail-field-grid {
+        grid-template-columns: 1fr;
+    }
+}

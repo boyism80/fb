@@ -127,7 +127,7 @@ int builtin::clan::builtin_title(lua_State* L)
                 if (shared_ptr == nullptr)
                     throw std::runtime_error("character is not alive");
 
-                co_await server->clan.set_title(*shared_ptr, title);
+                co_await server->clans.set_title(*shared_ptr, title);
                 co_await lua->switching();
                 lua->pushnil();
                 lua->resume(1);
@@ -199,7 +199,7 @@ int builtin::clan::builtin_join(lua_State* L)
             if (shared_ptr == nullptr)
                 throw std::runtime_error("inviter character is not alive");
 
-            co_await server->clan.join_member(*shared_ptr, target_name);
+            co_await server->clans.join_member(*shared_ptr, target_name);
             co_await lua->switching();
             lua->pushnil();
             lua->resume(1);
@@ -250,7 +250,7 @@ int builtin::clan::builtin_leave(lua_State* L)
             if (shared_ptr == nullptr)
                 throw std::runtime_error("leaver character is not alive");
 
-            co_await server->clan.leave_member(*shared_ptr);
+            co_await server->clans.leave_member(*shared_ptr);
             co_await lua->switching();
             lua->pushnil();
             lua->resume(1);
@@ -304,7 +304,7 @@ int builtin::clan::builtin_kick(lua_State* L)
             if (shared_ptr == nullptr)
                 throw std::runtime_error("kicker character is not alive");
 
-            co_await server->clan.kick_member(*shared_ptr, target);
+            co_await server->clans.kick_member(*shared_ptr, target);
             co_await lua->switching();
             lua->pushnil();
             lua->resume(1);
@@ -366,7 +366,7 @@ int builtin::clan::builtin_change_role(lua_State* L)
             if (shared_ptr == nullptr)
                 throw std::runtime_error("character is not alive");
 
-            co_await server->clan.change_role(*shared_ptr, target, role);
+            co_await server->clans.change_role(*shared_ptr, target, role);
             co_await lua->switching();
             lua->pushnil();
             lua->resume(1);
@@ -415,7 +415,7 @@ int builtin::clan::builtin_message(lua_State* L)
                         MESSAGE_TYPE      type) -> async::task<void> {
         try
         {
-            co_await server->clan.broadcast(clan_id, message, type);
+            co_await server->clans.broadcast(clan_id, message, type);
             co_await lua->switching();
             lua->pushnil();
             lua->resume(1);

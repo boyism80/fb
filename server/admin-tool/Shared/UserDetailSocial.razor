@@ -1,0 +1,161 @@
+@using AdminTool.Services
+
+<div class="user-detail-social">
+    <div class="user-detail-social-grid">
+        <div class="card-bg stitch-form-card">
+            <div class="stitch-form-card-header">
+                <h2 class="dash-card-title">
+                    <span class="material-symbols-outlined" aria-hidden="true">group</span>
+                    클랜
+                </h2>
+            </div>
+            <div class="user-detail-card-content">
+                @if (Social.Clan != null)
+                {
+                    <dl class="user-detail-dl">
+                        <div class="user-detail-dl-item"><dt>클랜 ID</dt><dd class="table-meta">@Social.Clan.Id</dd></div>
+                        <div class="user-detail-dl-item"><dt>클랜명</dt><dd>@Social.Clan.Name</dd></div>
+                        <div class="user-detail-dl-item"><dt>직위</dt><dd>@UserDetailDisplay.FormatClanRole(Social.Clan.Role)</dd></div>
+                        <div class="user-detail-dl-item"><dt>가입일</dt><dd class="table-meta">@UserDetailDisplay.FormatDateTime(Social.Clan.JoinedDate)</dd></div>
+                    </dl>
+                }
+                else
+                {
+                    <p class="text-muted mb-0">클랜에 소속되어 있지 않습니다.</p>
+                }
+            </div>
+        </div>
+
+        <div class="card-bg stitch-form-card">
+            <div class="stitch-form-card-header">
+                <h2 class="dash-card-title">
+                    <span class="material-symbols-outlined" aria-hidden="true">groups</span>
+                    파티
+                </h2>
+            </div>
+            <div class="user-detail-card-content">
+                @if (Social.Party != null)
+                {
+                    <dl class="user-detail-dl">
+                        <div class="user-detail-dl-item">
+                            <dt>상태</dt>
+                            <dd>@(Social.Party.IsMaster ? "파티장" : "파티원")</dd>
+                        </div>
+                        <div class="user-detail-dl-item">
+                            <dt>파티장</dt>
+                            <dd>
+                            <UserDetailLink UserId="Social.Party.MasterId" Name="@Social.Party.MasterName" />
+                            <span class="table-meta">(UID @Social.Party.MasterId)</span>
+                        </dd>
+                        </div>
+                        <div class="user-detail-dl-item">
+                            <dt>파티 ID</dt>
+                            <dd class="table-meta">@Social.Party.MasterId</dd>
+                        </div>
+                        <div class="user-detail-dl-item">
+                            <dt>인원</dt>
+                            <dd class="table-meta">@Social.Party.MemberCount 명</dd>
+                        </div>
+                    </dl>
+                }
+                else
+                {
+                    <p class="text-muted mb-0">파티에 소속되어 있지 않습니다.</p>
+                }
+            </div>
+        </div>
+    </div>
+
+    <div class="card-bg stitch-form-card">
+        <div class="stitch-form-card-header">
+            <h2 class="dash-card-title">
+                <span class="material-symbols-outlined" aria-hidden="true">favorite</span>
+                결혼
+            </h2>
+        </div>
+        <div class="user-detail-card-content">
+            @if (Social.Marriage?.SpouseId is uint spouseId)
+            {
+                <dl class="user-detail-dl user-detail-dl-3col">
+                    <div class="user-detail-dl-item">
+                        <dt>배우자</dt>
+                        <dd>
+                            <UserDetailLink UserId="spouseId" Name="@SpouseName" />
+                            <span class="table-meta">(UID @spouseId)</span>
+                        </dd>
+                    </div>
+                    <div class="user-detail-dl-item">
+                        <dt>이혼 횟수</dt>
+                        <dd class="table-meta">@Social.Marriage.DivorceCount</dd>
+                    </div>
+                    <div class="user-detail-dl-item">
+                        <dt>재결혼 가능일</dt>
+                        <dd class="table-meta">
+                            @(Social.Marriage.RemarriageAfter > DateTime.UtcNow
+                                ? UserDetailDisplay.FormatDateTime(Social.Marriage.RemarriageAfter)
+                                : "-")
+                        </dd>
+                    </div>
+                </dl>
+            }
+            else
+            {
+                <dl class="user-detail-dl user-detail-dl-3col">
+                    <div class="user-detail-dl-item"><dt>배우자</dt><dd>-</dd></div>
+                    <div class="user-detail-dl-item"><dt>이혼 횟수</dt><dd class="table-meta">@(Social.Marriage?.DivorceCount ?? 0)</dd></div>
+                    <div class="user-detail-dl-item"><dt>재결혼 가능일</dt><dd class="table-meta">-</dd></div>
+                </dl>
+            }
+        </div>
+    </div>
+
+    <div class="card-bg stitch-form-card">
+        <div class="stitch-form-card-header">
+            <h2 class="dash-card-title">
+                <span class="material-symbols-outlined" aria-hidden="true">storefront</span>
+                마켓 등록
+            </h2>
+            <span class="stitch-badge">@Social.MarketListings.Count</span>
+        </div>
+        <div class="user-detail-card-content">
+            @if (Social.MarketListings.Any())
+            {
+                <div class="dash-table-wrap">
+                    <table class="dash-table">
+                        <thead>
+                            <tr>
+                                <th>아이템</th>
+                                <th>수량</th>
+                                <th>가격</th>
+                                <th>등록일</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var listing in Social.MarketListings)
+                            {
+                                <tr>
+                                    <td>@UserDetailDisplay.FormatItemName(listing.ItemModel)</td>
+                                    <td>@listing.RemainingCount</td>
+                                    <td class="table-meta">@listing.Price.ToString("N0") G</td>
+                                    <td class="table-meta">@UserDetailDisplay.FormatDateTime(listing.CreatedDate)</td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            }
+            else
+            {
+                <p class="text-muted mb-0">활성 마켓 등록이 없습니다.</p>
+            }
+        </div>
+    </div>
+</div>
+
+@code {
+    [Parameter, EditorRequired]
+    public UserDetailSocialData Social { get; set; } = null!;
+
+    [Parameter]
+    public string? SpouseName { get; set; }
+}

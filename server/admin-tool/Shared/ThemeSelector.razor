@@ -1,0 +1,89 @@
+@using AdminTool.Services
+@inject ThemeService ThemeService
+@inject IJSRuntime JS
+@implements IDisposable
+
+<div class="theme-selector">
+    <button type="button"
+            class="theme-selector-trigger @(isOpen ? "open" : null)"
+            @onclick="ToggleOpen"
+            aria-expanded="@isOpen"
+            aria-haspopup="menu"
+            aria-label="테마 선택">
+        <span class="material-symbols-outlined" aria-hidden="true">@GetTriggerIcon()</span>
+    </button>
+
+    @if (isOpen)
+    {
+        <button type="button" class="theme-selector-backdrop" @onclick="Close" aria-label="닫기"></button>
+        <div class="theme-selector-menu" role="menu">
+            @foreach (var option in ThemeOptions)
+            {
+                var isSelected = ThemeService.Current == option.Value;
+                <button type="button"
+                        class="theme-selector-item @(isSelected ? "active" : null)"
+                        role="menuitemradio"
+                        aria-checked="@isSelected"
+                        @onclick="() => SelectTheme(option.Value)">
+                    <span>@option.Label</span>
+                    @if (isSelected)
+                    {
+                        <span class="material-symbols-outlined theme-selector-check" aria-hidden="true">check</span>
+                    }
+                </button>
+            }
+        </div>
+    }
+</div>
+
+@code {
+    private bool isOpen;
+
+    private static readonly (string Value, string Label)[] ThemeOptions =
+    {
+        (ThemeService.Light, "라이트"),
+        (ThemeService.Dark, "다크"),
+        (ThemeService.System, "시스템")
+    };
+
+    protected override void OnInitialized()
+    {
+        ThemeService.Changed += OnThemeChangedFromService;
+    }
+
+    private void OnThemeChangedFromService()
+    {
+        _ = InvokeAsync(StateHasChanged);
+    }
+
+    private void ToggleOpen()
+    {
+        isOpen = !isOpen;
+    }
+
+    private void Close()
+    {
+        isOpen = false;
+    }
+
+    private async Task SelectTheme(string theme)
+    {
+        isOpen = false;
+        await ThemeService.SetThemeAsync(JS, theme);
+    }
+
+    private string GetTriggerIcon()
+    {
+        return ThemeService.Current switch
+        {
+            ThemeService.Light => "light_mode",
+            ThemeService.System => "routine",
+            _ => "dark_mode"
+        };
+    }
+
+    public void Dispose()
+    {
+        ThemeService.Changed -= OnThemeChangedFromService;
+    }
+}

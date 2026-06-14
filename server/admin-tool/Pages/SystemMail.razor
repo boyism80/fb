@@ -1,4 +1,5 @@
 @page "/systemmail"
+@using AdminTool.Services
 @using AdminTool.Authentication
 @using Http.Service
 @using Http.Model
@@ -7,97 +8,172 @@
 @using System.ComponentModel.DataAnnotations
 @inject AuthenticationStateProvider AuthenticationStateProvider
 @inject DbContext DbContext
-@inject IConfiguration Configuration
+@inject AdminActivityLogService ActivityLog
 @attribute [AuthorizeRole(Role.Admin)]
 
-<PageTitle>System Mail - Admin Tool</PageTitle>
+<PageTitle>시스템 메일 - FB Admin</PageTitle>
 
-<div>
-    <div class="page-header mb-4">
-        <h1>System Mail</h1>
+<div class="system-mail-page">
+    <div class="page-header">
+        <h1>시스템 메일</h1>
+        <p>전체 유저에게 시스템 메일 발송</p>
     </div>
 
     @if (!string.IsNullOrEmpty(errorMessage))
     {
-        <div class="alert alert-danger alert-dismissible fade show" role="alert">
-            @errorMessage
-            <button type="button" class="btn-close" @onclick="() => errorMessage = null"></button>
+        <div class="stitch-error-banner">
+            <div class="stitch-error-banner-content">
+                <span class="material-symbols-outlined">error</span>
+                <span>@errorMessage</span>
+            </div>
+            <button type="button" class="stitch-banner-dismiss" @onclick="() => errorMessage = null" aria-label="닫기">
+                <span class="material-symbols-outlined">close</span>
+            </button>
         </div>
     }
 
     @if (!string.IsNullOrEmpty(successMessage))
     {
-        <div class="alert alert-success alert-dismissible fade show" role="alert">
-            @successMessage
-            <button type="button" class="btn-close" @onclick="() => successMessage = null"></button>
+        <div class="stitch-success-banner">
+            <div class="stitch-success-banner-content">
+                <span class="material-symbols-outlined">check_circle</span>
+                <span class="stitch-success-text">@successMessage</span>
+            </div>
+            <button type="button" class="stitch-banner-dismiss stitch-success-dismiss" @onclick="() => successMessage = null" aria-label="닫기">
+                <span class="material-symbols-outlined">close</span>
+            </button>
         </div>
     }
 
-    <div class="row">
-        <div class="col-md-8">
-            <div class="card">
-                <div class="card-header">
-                    <h5 class="mb-0">Create System Mail</h5>
+    <div class="system-mail-compose">
+        <div class="system-mail-form-card">
+            <EditForm Model="@mailModel" OnValidSubmit="@HandleSubmit">
+                <DataAnnotationsValidator />
+                <div class="system-mail-form-fields">
+                    <div class="system-mail-field">
+                        <label for="title" class="system-mail-label">제목</label>
+                        <InputText id="title" class="form-control system-mail-input" @bind-Value="mailModel.Title"
+                                   placeholder="제목 (예: {USER_NAME}님 안내)" />
+                        <ValidationMessage For="@(() => mailModel.Title)" />
+                    </div>
+                    <div class="system-mail-field">
+                        <label for="contents" class="system-mail-label">내용</label>
+                        <InputTextArea id="contents" class="form-control system-mail-textarea" rows="6"
+                            @bind-Value="mailModel.Contents" placeholder="본문 내용을 입력하세요..." />
+                        <ValidationMessage For="@(() => mailModel.Contents)" />
+                    </div>
+                    <div class="system-mail-field">
+                        <div class="system-mail-expire-row">
+                            <label for="expireDate" class="system-mail-label">만료일 (선택)</label>
+                            <span class="system-mail-hint">비워두면 만료 없음</span>
+                        </div>
+                        <InputDate id="expireDate" class="form-control system-mail-input" @bind-Value="expireDateValue" />
+                    </div>
                 </div>
-                <div class="card-body">
-                    <EditForm Model="@mailModel" OnValidSubmit="@HandleSubmit">
-                        <DataAnnotationsValidator />
-                        <div class="mb-3">
-                            <label for="title" class="form-label">Title</label>
-                            <InputText id="title" class="form-control" @bind-Value="mailModel.Title" />
-                            <ValidationMessage For="@(() => mailModel.Title)" />
-                        </div>
-                        <div class="mb-3">
-                            <label for="contents" class="form-label">Contents</label>
-                            <InputTextArea id="contents" class="form-control" rows="10"
-                                @bind-Value="mailModel.Contents" />
-                            <ValidationMessage For="@(() => mailModel.Contents)" />
-                        </div>
-                        <div class="mb-3">
-                            <label for="expireDate" class="form-label">Expire Date (Optional)</label>
-                            <InputDate id="expireDate" class="form-control" @bind-Value="expireDateValue" />
-                            <small class="form-text text-muted">Leave empty for no expiration</small>
-                        </div>
-                        <div class="d-grid gap-2 d-md-flex justify-content-md-end">
-                            <button type="button" class="btn btn-secondary" @onclick="ResetForm"
-                                disabled="@isProcessing">
-                                Reset
-                            </button>
-                            <button type="submit" class="btn btn-primary" disabled="@isProcessing">
-                                @if (isProcessing)
-                                {
-                                    <span class="spinner-border spinner-border-sm me-2" role="status"
-                                        aria-hidden="true"></span>
-                                }
-                                Create System Mail
-                            </button>
-                        </div>
-                    </EditForm>
+                <div class="system-mail-actions">
+                    <button type="button" class="system-mail-reset-btn" @onclick="ResetForm" disabled="@isProcessing">
+                        초기화
+                    </button>
+                    <button type="submit" class="stitch-btn stitch-btn-primary" disabled="@isProcessing">
+                        @if (isProcessing)
+                        {
+                            <span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
+                        }
+                        <span class="material-symbols-outlined" style="font-size:1rem;">send</span>
+                        전체 유저에게 발송
+                    </button>
                 </div>
-            </div>
+            </EditForm>
         </div>
-        <div class="col-md-4">
-            <div class="card">
-                <div class="card-header">
-                    <h5 class="mb-0">Information</h5>
-                </div>
-                <div class="card-body">
-                    <p><strong>Logged in as:</strong> @currentUserName</p>
-                    <p><strong>User ID:</strong> @currentUserId</p>
-                    <hr />
-                    <p class="text-muted small">
-                        System mails are sent to all users. The sender will be set to your logged-in user account.
-                    </p>
-                </div>
+
+        <aside class="system-mail-vars-card" aria-labelledby="system-mail-vars-title">
+            <div class="system-mail-vars-header">
+                <h2 id="system-mail-vars-title" class="system-mail-vars-title">시스템 변수</h2>
+                <span class="system-mail-vars-count">@SystemMailTemplate.Variables.Count</span>
             </div>
-        </div>
+            <p class="system-mail-vars-desc">제목·본문에 변수를 입력하면 유저별 메일 생성 시 치환됩니다.</p>
+            <div class="system-mail-vars-scroll">
+                <table class="system-mail-vars-table">
+                    <thead>
+                        <tr>
+                            <th class="system-mail-vars-col-token">변수</th>
+                            <th>설명</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var variable in SystemMailTemplate.Variables)
+                        {
+                            <tr>
+                                <td class="system-mail-vars-col-token">
+                                    <code class="system-mail-var-token">{@variable.Token}</code>
+                                </td>
+                                <td>@variable.Description</td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </aside>
     </div>
+
+    <section class="system-mail-history">
+        <div class="system-mail-history-header">
+            <h2 class="system-mail-history-title">발송 이력</h2>
+            <button type="button" class="system-mail-refresh-btn" @onclick="LoadHistory" aria-label="새로고침">
+                <span class="material-symbols-outlined">refresh</span>
+            </button>
+        </div>
+        @if (mailHistory.Any())
+        {
+            <div class="system-mail-table-wrap">
+                <table class="system-mail-table">
+                    <thead>
+                        <tr>
+                            <th class="col-id">ID</th>
+                            <th>제목</th>
+                            <th class="col-target">수신인</th>
+                            <th class="col-date">발송일</th>
+                            <th class="col-status">상태</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var entry in mailHistory)
+                        {
+                            <tr>
+                                <td>@FormatMailId(entry.Detail)</td>
+                                <td class="col-title">@entry.Summary</td>
+                                <td>@(entry.Target ?? "전체")</td>
+                                <td>@entry.Timestamp.ToString("yyyy-MM-dd HH:mm:ss")</td>
+                                <td>
+                                    @if (entry.Success)
+                                    {
+                                        <span class="system-mail-status-badge">완료</span>
+                                    }
+                                    else
+                                    {
+                                        <span class="system-mail-status-badge failed">실패</span>
+                                    }
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+            <p class="system-mail-history-meta">이 서버 세션 기준 · @(mailHistory.Count)건</p>
+        }
+        else
+        {
+            <div class="system-mail-table-wrap system-mail-empty">
+                발송 이력이 없습니다. (이 서버 세션 기준)
+            </div>
+        }
+    </section>
 </div>
 
 @code {
     [CascadingParameter(Name = "SelectedWorld")]
     private uint? selectedWorld { get; set; }
-    
+
     private SystemMailModel mailModel = new();
     private string? errorMessage;
     private string? successMessage;
@@ -105,6 +181,7 @@
     private uint currentUserId = 0;
     private string currentUserName = string.Empty;
     private DateTime? expireDateValue = null;
+    private List<AdminActivityEntry> mailHistory = new();
 
     protected override async Task OnInitializedAsync()
     {
@@ -115,15 +192,28 @@
             var userNameClaim = authState.User.FindFirst(System.Security.Claims.ClaimTypes.Name);
 
             if (userIdClaim != null && uint.TryParse(userIdClaim.Value, out var userId))
-            {
                 currentUserId = userId;
-            }
 
             if (userNameClaim != null)
-            {
                 currentUserName = userNameClaim.Value;
-            }
         }
+
+        LoadHistory();
+        await Task.CompletedTask;
+    }
+
+    private void LoadHistory()
+    {
+        mailHistory = ActivityLog.GetRecent("system_mail", 50).ToList();
+    }
+
+    private static string FormatMailId(string? detail)
+    {
+        if (string.IsNullOrWhiteSpace(detail))
+            return "—";
+        if (detail.StartsWith('#'))
+            return "M-" + detail.TrimStart('#');
+        return detail;
     }
 
     private async Task HandleSubmit()
@@ -145,17 +235,42 @@
                 errorMessage = "World is not selected.";
                 return;
             }
-            DateTime? expireDate = expireDateValue;
 
-            var systemMail = await DbContext.SystemMail.Write(selectedWorld.Value, currentUserId, mailModel.Title, mailModel.Contents, expireDate);
+            var systemMail = await DbContext.SystemMail.Write(
+                selectedWorld.Value,
+                currentUserId,
+                mailModel.Title,
+                mailModel.Contents,
+                expireDateValue);
             await DbContext.SaveChangesAsync();
 
-            successMessage = $"System mail has been created successfully. Mail ID: {systemMail.Id}";
+            ActivityLog.Add(new AdminActivityEntry
+            {
+                Category = "system_mail",
+                Summary = mailModel.Title.Trim(),
+                Detail = $"#{systemMail.Id}",
+                Actor = currentUserName,
+                Target = "전체",
+                Success = true
+            });
+            LoadHistory();
+
+            successMessage = $"시스템 메일이 발송되었습니다. (Mail ID: {systemMail.Id})";
             ResetForm();
         }
         catch (Exception ex)
         {
-            errorMessage = $"Error creating system mail: {ex.Message}";
+            ActivityLog.Add(new AdminActivityEntry
+            {
+                Category = "system_mail",
+                Summary = mailModel.Title.Trim(),
+                Detail = ex.Message,
+                Actor = currentUserName,
+                Target = "전체",
+                Success = false
+            });
+            LoadHistory();
+            errorMessage = $"시스템 메일 발송 중 오류: {ex.Message}";
         }
         finally
         {
@@ -169,7 +284,6 @@
         expireDateValue = null;
     }
 
-
     private class SystemMailModel
     {
         [Required(ErrorMessage = "Title is required")]
@@ -179,6 +293,5 @@
         [Required(ErrorMessage = "Contents is required")]
         [StringLength(256, ErrorMessage = "Contents must be 256 characters or less")]
         public string Contents { get; set; } = string.Empty;
-
     }
 }
