@@ -827,10 +827,10 @@ int builtin::server::builtin_mknpc(lua_State* L)
         if (map_model == nullptr)
             return 0;
 
-        if (server->map.contains(map_model->id) == false)
+        if (server->maps.contains(map_model->id) == false)
             return 0;
 
-        map = server->map[map_model->id];
+        map = server->maps[map_model->id];
     }
     else if (lua->is_userdata<fb::game::map>(2))
     {
@@ -844,10 +844,10 @@ int builtin::server::builtin_mknpc(lua_State* L)
         if (map_model == nullptr)
             return 0;
 
-        if (server->map.contains(map_model->id) == false)
+        if (server->maps.contains(map_model->id) == false)
             return 0;
 
-        map = server->map[map_model->id];
+        map = server->maps[map_model->id];
     }
     else
     {
@@ -925,7 +925,7 @@ int builtin::server::builtin_maps(lua_State* L)
     auto server = lua->env<fb::game::server>("server");
     lua->new_table();
     auto i = 1;
-    for (auto& [id, map] : server->map)
+    for (auto& [id, map] : server->maps)
     {
         lua->pushobject(map);
         lua_rawseti(L, -2, i++);

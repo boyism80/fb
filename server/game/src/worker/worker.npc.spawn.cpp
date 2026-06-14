@@ -27,17 +27,17 @@ void fb::game::npc_spawner::on_work(const fb::game::npc_spawner::input_type& val
     auto& spawn_model = value.get();
     auto& npc_model   = table::npc[spawn_model.npc];
     auto& map_model   = table::map[spawn_model.parent];
-    if (this->_server.map.contains(spawn_model.parent) == false)
+    if (this->_server.maps.contains(spawn_model.parent) == false)
         throw std::runtime_error(std::format(_TEXT(MESSAGE_ASSET_NPC_SPAWN_FAILED), npc_model.name, map_model.name));
 
-    auto map = this->_server.map[spawn_model.parent];
+    auto map = this->_server.maps[spawn_model.parent];
     if (map == nullptr || map->active == false)
         return;
 
     if (map->loaded() == false)
         return;
 
-    this->_server.map.spawn_npc(spawn_model);
+    this->_server.maps.spawn_npc(spawn_model);
 }
 
 void fb::game::npc_spawner::on_worked(const fb::game::npc_spawner::input_type& input, double percent)

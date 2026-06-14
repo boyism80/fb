@@ -1324,8 +1324,37 @@ async::task<void> character::whisper(std::string receiver_name, std::string mess
                                                   internal_reqs::Whisper{world, sender_name, receiver_name, message});
     co_await this->server.threads.switching(sender_weak);
 
-    auto guard = co_await this->server.characters.enter_read_async();
-    co_await guard.value().on_whisper(resp);
+    character::container::assert_whisper(resp.error, resp.to);
+
+    std::weak_ptr<character> receiver_weak;
+    {
+        auto guard    = co_await this->server.characters.enter_read_async();
+        auto receiver = guard.value().find(resp.to);
+        if (receiver == nullptr)
+            co_return;
+
+        receiver_weak = receiver->weak_from_this_as<character>();
+    }
+
+    auto before = this->server.threads.current();
+    co_await this->server.threads.switching(receiver_weak);
+
+    auto receiver = receiver_weak.lock();
+    if (receiver != nullptr)
+    {
+        receiver->message(std::format("{}> {}", resp.from, resp.message), MESSAGE_TYPE::NOTIFY);
+
+        auto recv_log             = Json::Value();
+        recv_log["sender_name"]   = UTF8(resp.from, PLATFORM::WINDOWS);
+        recv_log["receiver_id"]   = static_cast<Json::Int64>(receiver->id);
+        recv_log["receiver_name"] = UTF8(resp.to, PLATFORM::WINDOWS);
+        recv_log["message"]       = UTF8(resp.message, PLATFORM::WINDOWS);
+        this->server.log.write("whisper", recv_log);
+    }
+
+    if (before != nullptr)
+        co_await before->switching();
+
     this->message(std::format("{}< {}", receiver_name, message), MESSAGE_TYPE::NOTIFY);
 
     auto log_data             = Json::Value();

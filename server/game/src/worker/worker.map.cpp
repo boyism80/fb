@@ -20,7 +20,7 @@ fb::generator<map_loader::input_type> map_loader::on_ready()
 
 void map_loader::on_work(const map_loader::input_type& value)
 {
-    this->_server.map.load(value.get());
+    this->_server.maps.load(value.get());
 }
 
 void map_loader::on_worked(const map_loader::input_type& input, double percent)

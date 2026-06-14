@@ -20,7 +20,7 @@ namespace internal_reqs = fb::protocol::internal::request;
 
 server::server(boost::asio::io_context& io_context, uint16_t port) :
     fb::acceptor<character>(io_context, "GAME", port, fb::config<uint32_t>("http:max_concurrent", 500)),
-    map(*this, fb::config<uint32_t>("id")),
+    maps(*this, fb::config<uint32_t>("id")),
     listener(*this),
     characters(*this),
     clans(*this),
@@ -145,7 +145,7 @@ async::task<void> server::on_start()
         maps_division.insert({thread, std::vector<std::shared_ptr<fb::game::map>>{}});
     }
 
-    for (auto& [id, map] : this->map)
+    for (auto& [id, map] : this->maps)
     {
         auto thread = this->threads.modular(id);
         maps_division[thread].push_back(map);

@@ -102,21 +102,6 @@ void character::container::assert_whisper(uint32_t error, std::string_view to)
     }
 }
 
-async::task<void> character::container::on_whisper(const internal_resp::Whisper& resp) const
-{
-    this->assert_whisper(resp.error, resp.to);
-    co_await this->invoke(resp.to, [resp, this](auto& ch) {
-        ch->message(std::format("{}> {}", resp.from, resp.message), MESSAGE_TYPE::NOTIFY);
-
-        auto log_data             = Json::Value();
-        log_data["sender_name"]   = UTF8(resp.from, PLATFORM::WINDOWS);
-        log_data["receiver_id"]   = static_cast<Json::Int64>(ch->id);
-        log_data["receiver_name"] = UTF8(resp.to, PLATFORM::WINDOWS);
-        log_data["message"]       = UTF8(resp.message, PLATFORM::WINDOWS);
-        this->_server.log.write("whisper", log_data);
-    });
-}
-
 std::string character::container::build_ban_message(std::string_view                  reason,
                                                     const std::optional<std::string>& expire_date)
 {
@@ -130,33 +115,6 @@ std::string character::container::build_ban_message(std::string_view            
         ban_message += _TEXT(MESSAGE_ACCOUNT_BAN_PERMANENT);
 
     return ban_message;
-}
-
-async::task<void> character::container::on_ban(const internal_resp::Ban& message)
-{
-    auto ch = this->find(message.name);
-    if (ch == nullptr)
-        co_return;
-
-    auto weak = ch->weak_from_this_as<character>();
-    co_await this->_server.threads.switching(weak);
-    ch = weak.lock();
-    if (ch == nullptr)
-        co_return;
-
-    ch->message(build_ban_message(message.reason, message.expire_date), MESSAGE_TYPE::POPUP);
-
-    co_await ch->thread()->sleep(1s);
-
-    ch = weak.lock();
-    if (ch == nullptr)
-        co_return;
-
-    auto socket_ptr = ch->socket_ptr();
-    if (socket_ptr == nullptr)
-        co_return;
-
-    socket_ptr->close();
 }
 
 void character::container::on_kick_out(const internal_resp::KickOut& message)

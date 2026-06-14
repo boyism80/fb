@@ -222,7 +222,7 @@ async::task<void> character::container::invoke_async(std::string_view           
 }
 
 void character::container::foreach_enqueue(character_async_function_t&&        fn,
-                                           const std::vector<character_ptr_t>& characters)
+                                           const std::vector<character_ptr_t>& characters) const
 {
     auto group = std::unordered_map<fb::thread*, std::vector<std::weak_ptr<character>>>();
 
@@ -260,7 +260,7 @@ void character::container::foreach_enqueue(character_async_function_t&&        f
     }
 }
 
-void character::container::foreach_enqueue(character_async_function_t&& fn, character_predicate_t predict)
+void character::container::foreach_enqueue(character_async_function_t&& fn, character_predicate_t predict) const
 {
     auto targets = std::vector<character_ptr_t>();
     for (auto& [uid, ch] : this->_from_uid)
@@ -276,7 +276,7 @@ void character::container::foreach_enqueue(character_async_function_t&& fn, char
 
 void character::container::foreach_enqueue(const std::vector<std::string>& names,
                                            character_async_function_t&&    fn,
-                                           character_function_t_miss       miss)
+                                           character_function_t_miss       miss) const
 {
     auto targets = std::vector<character_ptr_t>();
     for (auto& name : names)

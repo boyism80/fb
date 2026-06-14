@@ -69,58 +69,65 @@ async::task<void> group::container::on_create(std::string                     ta
         [=, this](auto& group) -> async::task<void> {
             if (master_uid != 0)
             {
-                auto  guard         = co_await this->_server.characters.enter_write_async();
-                auto& characters    = guard.value();
-                auto  group_members = std::vector<std::shared_ptr<character>>();
-                auto  ch            = characters.find(master_uid);
-                if (ch != nullptr)
+                auto        group_members = std::vector<std::shared_ptr<character>>();
+                Json::Value log_data;
                 {
-                    auto weak = ch->template weak_from_this_as<character>();
-                    group->enter(weak);
-
-                    auto log_data              = Json::Value();
-                    log_data["character_id"]   = static_cast<Json::Int64>(ch->id);
-                    log_data["character_name"] = UTF8(ch->name(), PLATFORM::WINDOWS);
-                    log_data["group_id"]       = static_cast<Json::Int64>(group_id);
-                    this->_server.log.write("group_create", log_data);
-
-                    if (weak.expired() == false)
-                        group_members.push_back(ch);
-                }
-
-                for (const auto& invited_name : member_names)
-                {
-                    if (invited_name == master)
-                        continue;
-
-                    auto invited_ch = characters.find(invited_name);
-                    if (invited_ch != nullptr)
+                    auto  guard      = co_await this->_server.characters.enter_write_async();
+                    auto& characters = guard.value();
+                    auto  ch         = characters.find(master_uid);
+                    if (ch != nullptr)
                     {
-                        auto invited_weak = invited_ch->template weak_from_this_as<character>();
-                        if (invited_weak.expired() == false)
+                        auto weak = ch->template weak_from_this_as<character>();
+                        group->enter(weak);
+
+                        log_data["character_id"]   = static_cast<Json::Int64>(ch->id);
+                        log_data["character_name"] = UTF8(ch->name(), PLATFORM::WINDOWS);
+                        log_data["group_id"]       = static_cast<Json::Int64>(group_id);
+
+                        if (weak.expired() == false)
+                            group_members.push_back(ch);
+                    }
+
+                    for (const auto& invited_name : member_names)
+                    {
+                        if (invited_name == master)
+                            continue;
+
+                        auto invited_ch = characters.find(invited_name);
+                        if (invited_ch != nullptr)
                         {
-                            group->enter(invited_weak);
-                            group_members.push_back(invited_ch);
+                            auto invited_weak = invited_ch->template weak_from_this_as<character>();
+                            if (invited_weak.expired() == false)
+                            {
+                                group->enter(invited_weak);
+                                group_members.push_back(invited_ch);
+                            }
                         }
                     }
                 }
 
-                characters.foreach_enqueue(
-                    [group_id, member_names](auto& member_ptr) -> async::task<void> {
-                        member_ptr->group_id(group_id);
-                        for (const auto& other_member_name : member_names)
-                        {
-                            if (other_member_name == member_ptr->name())
-                                continue;
+                if (!log_data.empty())
+                    this->_server.log.write("group_create", log_data);
 
-                            member_ptr->message(std::format(_TEXT(MESSAGE_GROUP_JOINED), other_member_name),
-                                                MESSAGE_TYPE::STATE);
-                        }
+                {
+                    auto guard = this->_server.characters.enter_read();
+                    guard.value().foreach_enqueue(
+                        [group_id, member_names](auto& member_ptr) -> async::task<void> {
+                            member_ptr->group_id(group_id);
+                            for (const auto& other_member_name : member_names)
+                            {
+                                if (other_member_name == member_ptr->name())
+                                    continue;
 
-                        member_ptr->message(_TEXT(MESSAGE_GROUP_JOINED_SUCCESS), MESSAGE_TYPE::STATE);
-                        co_return;
-                    },
-                    group_members);
+                                member_ptr->message(std::format(_TEXT(MESSAGE_GROUP_JOINED), other_member_name),
+                                                    MESSAGE_TYPE::STATE);
+                            }
+
+                            member_ptr->message(_TEXT(MESSAGE_GROUP_JOINED_SUCCESS), MESSAGE_TYPE::STATE);
+                            co_return;
+                        },
+                        group_members);
+                }
             }
             co_return;
         },
@@ -142,37 +149,46 @@ async::task<void> group::container::on_enter(std::string                target,
         co_return;
     auto& group = guard.value();
 
-    auto  char_guard = co_await this->_server.characters.enter_write_async();
-    auto& characters = char_guard.value();
-    auto  ch         = characters.find(new_member_name);
-    if (ch == nullptr)
-        co_return;
+    std::weak_ptr<character> weak;
+    auto                     members = std::vector<std::shared_ptr<character>>();
+    uint32_t                 ch_id   = 0;
 
-    auto members = std::vector<std::shared_ptr<character>>();
-    for (auto& member_ptr : group->characters())
     {
-        members.push_back(member_ptr);
+        auto  char_guard = co_await this->_server.characters.enter_write_async();
+        auto& characters = char_guard.value();
+        auto  ch         = characters.find(new_member_name);
+        if (ch == nullptr)
+            co_return;
+
+        weak  = ch->template weak_from_this_as<character>();
+        ch_id = ch->id;
+
+        for (auto& member_ptr : group->characters())
+            members.push_back(member_ptr);
+
+        group->enter(weak);
+        group->add_member(new_member_name);
     }
 
-    characters.foreach_enqueue(
-        [new_member_name](auto& member) -> async::task<void> {
-            member->message(std::format(_TEXT(MESSAGE_GROUP_JOINED), new_member_name), MESSAGE_TYPE::STATE);
-            co_return;
-        },
-        members);
+    {
+        auto read_guard = this->_server.characters.enter_read();
+        read_guard.value().foreach_enqueue(
+            [new_member_name](auto& member) -> async::task<void> {
+                member->message(std::format(_TEXT(MESSAGE_GROUP_JOINED), new_member_name), MESSAGE_TYPE::STATE);
+                co_return;
+            },
+            members);
+    }
 
     auto log_data              = Json::Value();
-    log_data["character_id"]   = static_cast<Json::Int64>(ch->id);
+    log_data["character_id"]   = static_cast<Json::Int64>(ch_id);
     log_data["character_name"] = UTF8(new_member_name, PLATFORM::WINDOWS);
     log_data["group_id"]       = static_cast<Json::Int64>(group->id());
     this->_server.log.write("group_enter", log_data);
 
-    auto weak = ch->template weak_from_this_as<character>();
-    group->enter(weak);
-    group->add_member(new_member_name);
-
-    auto thread = this->_server.threads.current();
+    auto before = this->_server.threads.current();
     co_await this->_server.threads.switching(weak);
+
     auto ptr = weak.lock();
     if (ptr != nullptr)
     {
@@ -180,8 +196,8 @@ async::task<void> group::container::on_enter(std::string                target,
         ptr->message(_TEXT(MESSAGE_GROUP_JOINED_SUCCESS), MESSAGE_TYPE::STATE);
     }
 
-    if (thread != nullptr)
-        co_await thread->switching();
+    if (before != nullptr)
+        co_await before->switching();
 }
 
 async::task<void> group::container::on_leave(std::string                target,
@@ -199,16 +215,25 @@ async::task<void> group::container::on_leave(std::string                target,
 
     group->remove_member(deleted_member_name);
 
-    auto  char_guard    = co_await this->_server.characters.enter_write_async();
-    auto& characters    = char_guard.value();
-    auto  ch            = characters.find(deleted_member_name);
-    auto  before_thread = this->_server.threads.current();
-    if (ch != nullptr)
+    std::weak_ptr<character> weak;
+    uint32_t                 ch_id = 0;
     {
-        auto weak = ch->template weak_from_this_as<character>();
-        group->detach(weak);
+        auto  char_guard = co_await this->_server.characters.enter_write_async();
+        auto& characters = char_guard.value();
+        auto  ch         = characters.find(deleted_member_name);
+        if (ch != nullptr)
+        {
+            weak  = ch->template weak_from_this_as<character>();
+            ch_id = ch->id;
+            group->detach(weak);
+        }
+    }
 
+    if (weak.expired() == false)
+    {
+        auto before = this->_server.threads.current();
         co_await this->_server.threads.switching(weak);
+
         auto ptr = weak.lock();
         if (ptr != nullptr)
         {
@@ -217,27 +242,29 @@ async::task<void> group::container::on_leave(std::string                target,
         }
 
         auto log_data              = Json::Value();
-        log_data["character_id"]   = static_cast<Json::Int64>(ch->id);
+        log_data["character_id"]   = static_cast<Json::Int64>(ch_id);
         log_data["character_name"] = UTF8(deleted_member_name, PLATFORM::WINDOWS);
         log_data["group_id"]       = static_cast<Json::Int64>(group->id());
         this->_server.log.write("group_leave", log_data);
-        if (before_thread != nullptr)
-            co_await before_thread->switching();
+
+        if (before != nullptr)
+            co_await before->switching();
     }
 
     auto members = std::vector<std::shared_ptr<character>>();
     for (auto& member_ptr : group->characters())
-    {
         members.push_back(member_ptr);
-    }
 
     auto message = std::format(_TEXT(MESSAGE_GROUP_MEMBER_LEFT), deleted_member_name);
-    characters.foreach_enqueue(
-        [message](auto& member) -> async::task<void> {
-            member->message(message, MESSAGE_TYPE::STATE);
-            co_return;
-        },
-        members);
+    {
+        auto read_guard = this->_server.characters.enter_read();
+        read_guard.value().foreach_enqueue(
+            [message](auto& member) -> async::task<void> {
+                member->message(message, MESSAGE_TYPE::STATE);
+                co_return;
+            },
+            members);
+    }
 }
 
 async::task<void> group::container::on_kick(std::string                target,
@@ -255,16 +282,25 @@ async::task<void> group::container::on_kick(std::string                target,
 
     group->remove_member(deleted_member_name);
 
-    auto  char_guard    = co_await this->_server.characters.enter_write_async();
-    auto& characters    = char_guard.value();
-    auto  ch            = characters.find(deleted_member_name);
-    auto  before_thread = this->_server.threads.current();
-    if (ch != nullptr)
+    std::weak_ptr<character> weak;
+    uint32_t                 ch_id = 0;
     {
-        auto weak = ch->template weak_from_this_as<character>();
-        group->detach(weak);
+        auto  char_guard = co_await this->_server.characters.enter_write_async();
+        auto& characters = char_guard.value();
+        auto  ch         = characters.find(deleted_member_name);
+        if (ch != nullptr)
+        {
+            weak  = ch->template weak_from_this_as<character>();
+            ch_id = ch->id;
+            group->detach(weak);
+        }
+    }
 
+    if (weak.expired() == false)
+    {
+        auto before = this->_server.threads.current();
         co_await this->_server.threads.switching(weak);
+
         auto ptr = weak.lock();
         if (ptr != nullptr)
         {
@@ -273,27 +309,29 @@ async::task<void> group::container::on_kick(std::string                target,
         }
 
         auto log_data              = Json::Value();
-        log_data["character_id"]   = static_cast<Json::Int64>(ch->id);
+        log_data["character_id"]   = static_cast<Json::Int64>(ch_id);
         log_data["character_name"] = UTF8(deleted_member_name, PLATFORM::WINDOWS);
         log_data["group_id"]       = static_cast<Json::Int64>(group->id());
         this->_server.log.write("group_kick", log_data);
-        if (before_thread != nullptr)
-            co_await before_thread->switching();
+
+        if (before != nullptr)
+            co_await before->switching();
     }
 
     auto members = std::vector<std::shared_ptr<character>>();
     for (auto& member_ptr : group->characters())
-    {
         members.push_back(member_ptr);
-    }
 
     auto message = std::format(_TEXT(MESSAGE_GROUP_MEMBER_KICKED), deleted_member_name);
-    characters.foreach_enqueue(
-        [message](auto& member) -> async::task<void> {
-            member->message(message, MESSAGE_TYPE::STATE);
-            co_return;
-        },
-        members);
+    {
+        auto read_guard = this->_server.characters.enter_read();
+        read_guard.value().foreach_enqueue(
+            [message](auto& member) -> async::task<void> {
+                member->message(message, MESSAGE_TYPE::STATE);
+                co_return;
+            },
+            members);
+    }
 }
 
 async::task<void> group::container::on_destroyed(std::string actor, uint32_t group_id)

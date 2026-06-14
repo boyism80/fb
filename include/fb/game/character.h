@@ -31,7 +31,6 @@ class stream;
 }
 
 namespace fb::protocol::internal::response {
-class Whisper;
 class Ban;
 class Unban;
 class Broadcast;
@@ -352,9 +351,9 @@ public:
     async::task<void> foreach_async(character_async_function_t fn, const std::vector<character_ptr_t>& characters);
     async::task<void> foreach (const std::vector<std::string>& names, character_function_t fn, character_function_t_miss miss = nullptr);
     async::task<void> foreach_async(const std::vector<std::string>& names, character_async_function_t fn, character_function_t_miss miss = nullptr);
-    void              foreach_enqueue(character_async_function_t&& fn, character_predicate_t predict = nullptr);
-    void              foreach_enqueue(character_async_function_t&& fn, const std::vector<character_ptr_t>& characters);
-    void              foreach_enqueue(const std::vector<std::string>& names, character_async_function_t&& fn, character_function_t_miss miss = nullptr);
+    void              foreach_enqueue(character_async_function_t&& fn, character_predicate_t predict = nullptr) const;
+    void              foreach_enqueue(character_async_function_t&& fn, const std::vector<character_ptr_t>& characters) const;
+    void              foreach_enqueue(const std::vector<std::string>& names, character_async_function_t&& fn, character_function_t_miss miss = nullptr) const;
     async::task<void> invoke(std::string_view name, character_function_t fn, character_function_t_miss miss = nullptr) const;
     async::task<void> invoke_async(std::string_view name, character_async_function_t fn, character_function_t_miss miss = nullptr) const;
 
@@ -365,9 +364,7 @@ public:
     void              send(const fb::stream& stream, bool encrypt);
     [[nodiscard]] online_snapshot_t online_users() const;
 
-    async::task<void> on_whisper(const fb::protocol::internal::response::Whisper& resp) const;
-    static void       assert_whisper(uint32_t error, std::string_view to);
-    async::task<void> on_ban(const fb::protocol::internal::response::Ban& message);
+    static void assert_whisper(uint32_t error, std::string_view to);
     void                                                 on_kick_out(const fb::protocol::internal::response::KickOut& message);
     void                                                 on_start_maintenance(const fb::protocol::internal::response::StartMaintenance& message);
 

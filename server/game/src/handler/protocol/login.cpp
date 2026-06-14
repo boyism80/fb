@@ -164,7 +164,7 @@ async::task<std::shared_ptr<character>> login::init(const game_reqs::login& requ
     ch->stat.base_mp(resp.character.base_mp, false);
     ch->stat.mp(resp.character.mp, false);
 
-    auto thread = this->server.map[map]->thread();
+    auto thread = this->server.maps[map]->thread();
     ch->thread(thread);
     co_await thread->switching();
 
@@ -179,7 +179,7 @@ async::task<std::shared_ptr<character>> login::init(const game_reqs::login& requ
 
     session.data(ch);
 
-    if (co_await ch->map(this->server.map[map], fb::model::point16_t(position_x, position_y)) == false)
+    if (co_await ch->map(this->server.maps[map], fb::model::point16_t(position_x, position_y)) == false)
         co_return nullptr;
 
     for (auto& buff : resp.character.buffs)
