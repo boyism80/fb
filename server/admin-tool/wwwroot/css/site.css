@@ -2044,8 +2044,15 @@ button.text-link:disabled {
 }
 
 .server-instance-table tr {
-    border-bottom: 1px solid rgba(42, 42, 42, 0.6);
     height: 2rem;
+}
+
+.server-instance-table tbody td {
+    border-bottom: 1px solid var(--border-color);
+}
+
+.server-instance-table tbody tr:last-child td {
+    border-bottom: none;
 }
 
 .server-instance-table tr:hover {
@@ -2076,15 +2083,17 @@ button.text-link:disabled {
     color: var(--text-primary);
 }
 
-.server-instance-status {
+.server-instance-table th.server-instance-status,
+.server-instance-table td.server-instance-status {
     text-align: right;
     color: var(--accent-color);
     font-family: 'JetBrains Mono', ui-monospace, monospace;
     font-size: 0.6875rem;
+    white-space: nowrap;
 }
 
-.server-instance-status {
-    display: flex;
+.server-instance-status-inner {
+    display: inline-flex;
     align-items: center;
     justify-content: flex-end;
     gap: 0.375rem;

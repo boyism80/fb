@@ -44,7 +44,7 @@ async::task<bool> move::handle(fb::socket<character>&      session,
         case DSL::map:
         {
             auto params = fb::model::dsl::map(warp->dest.params);
-            auto map    = this->server.map[params.id];
+            auto map    = this->server.maps[params.id];
             std::ignore = co_await ch->map(map, fb::model::point16_t(params.x, params.y));
         }
         break;

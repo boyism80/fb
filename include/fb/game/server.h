@@ -9,7 +9,7 @@
 #include <fb/amqp.h>
 #include <fb/game/listener.h>
 #include <fb/game/thread_params.h>
-#include <fb/game/service/map.h>
+#include <fb/game/map.h>
 #include <fb/hash.h>
 #include <fb/game/group.h>
 #include <fb/game/clan.h>
@@ -110,7 +110,7 @@ public:
     fb::log_collector                      log;
     listener_impl                          listener;
     fb::synchronized<character::container> characters;
-    service::map                           map;
+    map::container                         maps;
     clan::container                        clans;
     group::container                       groups;
     service::mail                          mail;

@@ -20,14 +20,14 @@ async::task<bool> map_world::handle(fb::socket<character>& session, game_reqs::m
     auto& before = world[request.before];
     auto& after  = world[request.after];
 
-    if (ch->map() == this->server.map[after.map])
+    if (ch->map() == this->server.maps[after.map])
     {
         ch->update_map();
         ch->update_external(true);
     }
     else
     {
-        std::ignore = co_await ch->map(this->server.map[after.map], after.position);
+        std::ignore = co_await ch->map(this->server.maps[after.map], after.position);
     }
     co_return true;
 }

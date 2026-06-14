@@ -82,7 +82,7 @@ void listener_impl::on_update_map(character&                  ch,
                                   uint16_t                    crc)
 {
 
-    this->server.map.send_map_cache(ch, map, position, size, crc);
+    this->server.maps.send_map_cache(ch, map, position, size, crc);
 }
 
 void listener_impl::on_update_buff(character& ch, const buffs& buffs)

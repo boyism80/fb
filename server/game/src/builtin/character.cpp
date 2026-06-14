@@ -3972,7 +3972,7 @@ int fb::game::builtin::character::builtin_rezen_force(lua_State* L)
 
     auto is_global = lua->toboolean(2, false);
     if (is_global)
-        server->map.rezen_force();
+        server->maps.rezen_force();
     else
         map->rezen_force();
 

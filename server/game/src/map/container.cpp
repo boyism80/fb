@@ -1,6 +1,6 @@
 #include <fb/config.h>
 #include <fb/game/character.h>
-#include <fb/game/service/map.h>
+#include <fb/game/map.h>
 #include <fb/game/npc.h>
 #include <fb/game/server.h>
 #include <fb/game/thread_params.h>
@@ -12,7 +12,7 @@ using namespace fb::game;
 using table         = fb::model::table;
 namespace game_resp = fb::protocol::game::response;
 
-service::map::map(fb::game::server& server, uint32_t host) :
+map::container::container(fb::game::server& server, uint32_t host) :
     _update_cache(
         [](const fb::game::map::cache_bytes& cache_bytes) -> uint64_t {
             return cache_bytes.hash;
@@ -22,10 +22,10 @@ service::map::map(fb::game::server& server, uint32_t host) :
     host(host)
 { }
 
-service::map::~map()
+map::container::~container()
 { }
 
-bool service::map::load_data(uint32_t id, std::vector<char>& buffer)
+bool map::container::load_data(uint32_t id, std::vector<char>& buffer)
 {
     auto fname = std::format("maps/{:06}.map", id);
     auto file  = std::ifstream(fname, std::ios::binary);
@@ -38,7 +38,7 @@ bool service::map::load_data(uint32_t id, std::vector<char>& buffer)
     return true;
 }
 
-bool service::map::load_block(uint32_t id, std::vector<fb::model::point16_t>& buffer)
+bool map::container::load_block(uint32_t id, std::vector<fb::model::point16_t>& buffer)
 {
     auto fname = std::format("maps/{:06}.block", id);
     auto file  = std::ifstream(fname, std::ios::binary);
@@ -74,7 +74,7 @@ bool service::map::load_block(uint32_t id, std::vector<fb::model::point16_t>& bu
     return true;
 }
 
-void service::map::load(const fb::model::map& model)
+void map::container::load(const fb::model::map& model)
 {
     auto active    = (model.host == this->host);
     auto lazy_load = fb::config<bool>("lazy_load_maps", false);
@@ -105,7 +105,7 @@ void service::map::load(const fb::model::map& model)
     }
 }
 
-bool service::map::ensure_loaded(const std::shared_ptr<fb::game::map>& map)
+bool map::container::ensure_loaded(const std::shared_ptr<fb::game::map>& map)
 {
     if (map == nullptr)
         return false;
@@ -139,7 +139,7 @@ bool service::map::ensure_loaded(const std::shared_ptr<fb::game::map>& map)
     return true;
 }
 
-void service::map::spawn_npcs(const std::shared_ptr<fb::game::map>& map)
+void map::container::spawn_npcs(const std::shared_ptr<fb::game::map>& map)
 {
     if (table::npc_spawn.contains(map->model.id) == false)
         return;
@@ -150,7 +150,7 @@ void service::map::spawn_npcs(const std::shared_ptr<fb::game::map>& map)
     }
 }
 
-void service::map::spawn_npc(const fb::model::npc_spawn& spawn)
+void map::container::spawn_npc(const fb::model::npc_spawn& spawn)
 {
     if (this->contains(spawn.parent) == false)
         return;
@@ -165,7 +165,7 @@ void service::map::spawn_npc(const fb::model::npc_spawn& spawn)
     this->spawn_npc(spawn, map);
 }
 
-void service::map::spawn_npc(const fb::model::npc_spawn& spawn, const std::shared_ptr<fb::game::map>& map)
+void map::container::spawn_npc(const fb::model::npc_spawn& spawn, const std::shared_ptr<fb::game::map>& map)
 {
     auto& npc_model = table::npc[spawn.npc];
     auto  npc       = this->server.make<fb::game::npc>(npc_model);
@@ -183,7 +183,7 @@ void service::map::spawn_npc(const fb::model::npc_spawn& spawn, const std::share
     builder.enqueue();
 }
 
-std::shared_ptr<fb::game::map> service::map::name2map(std::string_view name) const
+std::shared_ptr<fb::game::map> map::container::name2map(std::string_view name) const
 {
     for (const auto& [id, map] : *this)
     {
@@ -194,7 +194,7 @@ std::shared_ptr<fb::game::map> service::map::name2map(std::string_view name) con
     return nullptr;
 }
 
-void service::map::rezen_force()
+void map::container::rezen_force()
 {
     for (auto& [id, thread] : this->server.threads)
     {
@@ -211,7 +211,7 @@ void service::map::rezen_force()
     }
 }
 
-void service::map::erase_map_cache(uint32_t map_id, const fb::model::point16_t& point)
+void map::container::erase_map_cache(uint32_t map_id, const fb::model::point16_t& point)
 {
     std::unique_lock lock(this->_update_cache_mutex);
 
@@ -237,11 +237,11 @@ void service::map::erase_map_cache(uint32_t map_id, const fb::model::point16_t& 
     }
 }
 
-void service::map::send_map_cache(character&                  ch,
-                                  const fb::game::map&        map,
-                                  const fb::model::point16_t& position,
-                                  const fb::model::size8_t&   size,
-                                  uint16_t                    crc)
+void map::container::send_map_cache(character&                  ch,
+                                    const fb::game::map&        map,
+                                    const fb::model::point16_t& position,
+                                    const fb::model::size8_t&   size,
+                                    uint16_t                    crc)
 {
     const auto hash = static_cast<uint64_t>(map.model.id) << 48 | static_cast<uint64_t>(position.x) << 32 |
                       static_cast<uint64_t>(position.y) << 16 | static_cast<uint64_t>(size.width) << 8 |
@@ -274,7 +274,7 @@ void service::map::send_map_cache(character&                  ch,
     });
 }
 
-void service::map::update_map_cache(uint32_t map_id, const fb::model::area<uint16_t>& area)
+void map::container::update_map_cache(uint32_t map_id, const fb::model::area<uint16_t>& area)
 {
     {
         std::unique_lock lock(this->_update_cache_mutex);
