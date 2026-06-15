@@ -545,16 +545,22 @@ int builtin::object::builtin_map(lua_State* L)
             lua_rawgeti(*lua_ctx, LUA_REGISTRYINDEX, holder->ref);
             holder->release();
 
-            lua_ctx->pushobject(*shared);
-            try
+            if (lua_isfunction(*lua_ctx, -1) == false)
             {
-                co_await lua_ctx->call(1, false);
-                co_return true;
-            }
-            catch (...)
-            {
+                lua_pop(*lua_ctx, 1);
                 co_return false;
             }
+
+            lua_ctx->pushobject(*shared);
+            if (lua_pcall(*lua_ctx, 1, 0, 0) != LUA_OK)
+            {
+                const char* raw = lua_tostring(*lua_ctx, -1);
+                if (raw != nullptr)
+                    fb::logger::warn("lua map callback error : {}", raw);
+                lua_pop(*lua_ctx, 1);
+                co_return false;
+            }
+            co_return true;
         };
     };
 
