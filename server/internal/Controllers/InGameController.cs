@@ -410,28 +410,24 @@ namespace Internal.Controllers
             };
         }
 
-        private T[] ReconcileSnapshot<T>(IEnumerable<T> request, IEnumerable<T> exists) where T : IModel, IRedisHashKey
+        private void ApplyHashEntitySnapshot<T>(
+            T[] request,
+            IReadOnlyList<T> existing,
+            Action<IReadOnlyList<T>> deleteMany,
+            Action<T[]> setMany) where T : class, IModel, IRedisHashKey
         {
             var src = request.ToDictionary(x => $"{x.GetRedisKey()}:{x.GetRedisField()}");
-            var dst = exists.ToDictionary(x => $"{x.GetRedisKey()}:{x.GetRedisField()}");
+            var dst = existing.ToDictionary(x => $"{x.GetRedisKey()}:{x.GetRedisField()}");
 
-            var deletedKeys = dst.Keys.Except(src.Keys).ToArray();
-            if (deletedKeys.Length > 0)
+            var removed = dst.Keys.Except(src.Keys).Select(k => dst[k]).ToList();
+            if (removed.Count > 0)
             {
-                _logger.LogWarning($"deleted keys : {string.Join(", ", deletedKeys)}");
+                _logger.LogWarning($"deleted keys : {string.Join(", ", removed.Select(x => $"{x.GetRedisKey()}:{x.GetRedisField()}"))}");
+                deleteMany(removed);
             }
 
-            foreach (var x in dst.Values)
-            {
-                x.Deleted = true;
-            }
-
-            foreach (var key in src.Keys.ToArray())
-            {
-                dst[key] = src[key];
-            }
-
-            return dst.Values.ToArray();
+            if (request.Length > 0)
+                setMany(request);
         }
 
         private void ApplyMarketplacePendingSnapshot(
@@ -440,8 +436,15 @@ namespace Internal.Controllers
             MarketplacePending[] request,
             IReadOnlyList<MarketplacePending> existing)
         {
-            var marketplacePendings = ReconcileSnapshot(request, existing);
-            _dbContext.MarketplacePending.Set(world, marketplacePendings);
+            var src = request.ToDictionary(x => x.PendingKey);
+            var existingByKey = existing.ToDictionary(x => x.PendingKey);
+
+            var removedKeys = existingByKey.Keys.Except(src.Keys).ToArray();
+            if (removedKeys.Length > 0)
+                _dbContext.MarketplacePending.Delete(world, userId, removedKeys);
+
+            if (src.Count > 0)
+                _dbContext.MarketplacePending.Set(world, src.Values.ToArray());
         }
 
         [HttpPost("save")]
@@ -543,8 +546,6 @@ namespace Internal.Controllers
                 var characterId = data.Character.Id;
                 if (!characters.TryGetValue(characterId, out var existingCharacter))
                     throw new Exception($"Character not found: {characterId}");
-                if (existingCharacter.Deleted)
-                    throw new Exception($"Character is deleted: {characterId}");
 
                 ApplyOneSavePayload(world, data,
                     itemsByOwner.GetValueOrDefault(characterId) ?? Array.Empty<Item>(),
@@ -576,20 +577,40 @@ namespace Internal.Controllers
             marriage.UpdatedDate = DateTime.Now;
             _dbContext.Marriage.Set(world, marriage);
 
-            var items = ReconcileSnapshot(_mapper.Map<Protocol.Item[], Item[]>(data.Items?.ToArray() ?? Array.Empty<Protocol.Item>()), existingItems);
-            _dbContext.Item.Set(world, items);
+            var items = _mapper.Map<Protocol.Item[], Item[]>(data.Items?.ToArray() ?? Array.Empty<Protocol.Item>());
+            ApplyHashEntitySnapshot(
+                items,
+                existingItems,
+                removed => _dbContext.Item.Delete(world, removed),
+                alive => _dbContext.Item.Set(world, alive));
 
-            var spells = ReconcileSnapshot(_mapper.Map<Protocol.Spell[], Spell[]>(data.Spells?.ToArray() ?? Array.Empty<Protocol.Spell>()), existingSpells);
-            _dbContext.Spell.Set(world, spells.ToArray());
+            var spells = _mapper.Map<Protocol.Spell[], Spell[]>(data.Spells?.ToArray() ?? Array.Empty<Protocol.Spell>());
+            ApplyHashEntitySnapshot(
+                spells,
+                existingSpells,
+                removed => _dbContext.Spell.Delete(world, removed),
+                alive => _dbContext.Spell.Set(world, alive));
 
-            var achievements = ReconcileSnapshot(_mapper.Map<Protocol.Achievement[], Achievement[]>(data.Achievements?.ToArray() ?? Array.Empty<Protocol.Achievement>()), existingAchievements);
-            _dbContext.Achievement.Set(world, achievements.ToArray());
+            var achievements = _mapper.Map<Protocol.Achievement[], Achievement[]>(data.Achievements?.ToArray() ?? Array.Empty<Protocol.Achievement>());
+            ApplyHashEntitySnapshot(
+                achievements,
+                existingAchievements,
+                removed => _dbContext.Achievement.Delete(world, removed),
+                alive => _dbContext.Achievement.Set(world, alive));
 
-            var quests = ReconcileSnapshot(_mapper.Map<Protocol.Quest[], Quest[]>(data.Quests?.ToArray() ?? Array.Empty<Protocol.Quest>()), existingQuests);
-            _dbContext.Quest.Set(world, quests.ToArray());
+            var quests = _mapper.Map<Protocol.Quest[], Quest[]>(data.Quests?.ToArray() ?? Array.Empty<Protocol.Quest>());
+            ApplyHashEntitySnapshot(
+                quests,
+                existingQuests,
+                removed => _dbContext.Quest.Delete(world, removed),
+                alive => _dbContext.Quest.Set(world, alive));
 
-            var storageBoxes = ReconcileSnapshot(_mapper.Map<Protocol.StorageBox[], StorageBox[]>(data.StorageBoxes?.ToArray() ?? Array.Empty<Protocol.StorageBox>()), existingStorageBoxes);
-            _dbContext.StorageBox.Set(world, storageBoxes);
+            var storageBoxes = _mapper.Map<Protocol.StorageBox[], StorageBox[]>(data.StorageBoxes?.ToArray() ?? Array.Empty<Protocol.StorageBox>());
+            ApplyHashEntitySnapshot(
+                storageBoxes,
+                existingStorageBoxes,
+                removed => _dbContext.StorageBox.Delete(world, removed),
+                alive => _dbContext.StorageBox.Set(world, alive));
 
             var marketplacePendings = _mapper.Map<Protocol.MarketplacePending[], MarketplacePending[]>(
                 data.MarketplacePendings?.ToArray() ?? Array.Empty<Protocol.MarketplacePending>());

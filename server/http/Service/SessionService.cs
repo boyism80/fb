@@ -14,6 +14,39 @@ namespace Http.Service
         private const int SessionTtlSeconds = 300; // 5 minutes
         private const int MinTtlSeconds = 240; // 4 minutes (minimum TTL before refresh)
 
+        private static readonly string GetAndDeleteSessionScript = """
+            local session = redis.call('hget', @key, @name)
+            if session ~= false then
+                redis.call('hdel', @key, @name)
+                return { 1, session }
+            else
+                return { 0 }
+            end
+            """;
+
+        private static readonly string LoginScript = """
+            local session = redis.call('hget', @key, @name)
+            if session ~= false then
+                redis.call('hdel', @key, @name)
+                return { 0, session }
+            else
+                redis.call('hset', @key, @name, @session)
+                redis.call('expire', @key, @ttl)
+                return { 1 }
+            end
+            """;
+
+        private static readonly string TryLoginScript = """
+            local session = redis.call('hget', @key, @name)
+            if session ~= false then
+                return { 0, session }
+            else
+                redis.call('hset', @key, @name, @session)
+                redis.call('expire', @key, @ttl)
+                return { 1 }
+            end
+            """;
+
         private static readonly string SessionTtlRefreshScript = """
             local key = KEYS[1]
             local new_ttl = tonumber(ARGV[1])
@@ -79,7 +112,7 @@ namespace Http.Service
             if (redis == null)
                 return null;
 
-            var redisResult = await redis.ScriptEvaluateAsync("get_and_delete_session.lua", new
+            var redisResult = await redis.EvalAsync(GetAndDeleteSessionScript, new
             {
                 key = new RedisKey(key),
                 name = name
@@ -100,14 +133,15 @@ namespace Http.Service
             if (redis == null)
                 return false;
 
-            string scriptName = force ? "login.lua" : "try_login.lua";
-            var redisResult = await redis.ScriptEvaluateAsync(scriptName, new
-            {
-                key = new RedisKey(key),
-                name = name,
-                session = JsonConvert.SerializeObject(session),
-                ttl = SessionTtlSeconds
-            });
+            var redisResult = await redis.EvalAsync(
+                force ? LoginScript : TryLoginScript,
+                new
+                {
+                    key = new RedisKey(key),
+                    name = name,
+                    session = JsonConvert.SerializeObject(session),
+                    ttl = SessionTtlSeconds
+                });
 
             var success = (bool)redisResult[0];
             if (success)
@@ -137,11 +171,10 @@ namespace Http.Service
                 var redis = _redisService.GetGlobalConnection(world);
                 if (redis == null)
                     return;
-                var script = LuaScript.Prepare(SessionTtlRefreshScript).Load(redis.GetServer());
-
-                await redis.Connection.ScriptEvaluateAsync(script.Hash,
-                    keys: [new RedisKey(key)],
-                    values: [(RedisValue)SessionTtlSeconds, (RedisValue)MinTtlSeconds]);
+                await redis.EvalAsync(
+                    SessionTtlRefreshScript,
+                    [new RedisKey(key)],
+                    [(RedisValue)SessionTtlSeconds, (RedisValue)MinTtlSeconds]);
             }
             catch
             {

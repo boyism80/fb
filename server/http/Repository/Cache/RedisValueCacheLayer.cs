@@ -6,20 +6,61 @@ using StackExchange.Redis;
 
 namespace Http.Reepository.Cache
 {
+    public enum RedisCacheLookupStatus
+    {
+        Miss = 0,
+        Hit = 1,
+        Pending = 2,
+    }
+
     /// <summary>
     /// L2 Redis cache layer for single-key (value) entities.
     /// </summary>
     public class RedisValueCacheLayer<TModel> where TModel : class, IModel
     {
-        private static readonly string UpdateValueExpiryScript = """
-            redis.call('set', @key, @value)
+        private static readonly string LookupValueScript = """
+            local CACHE_KEY = KEYS[1]
+            local COUNT_REFS = KEYS[2]
 
-            local contains_refs = redis.call('hexists', @cref, @key)
-            if contains_refs == 0 then
-                redis.call('expire', @key, @expiry)
+            local value = redis.call('GET', CACHE_KEY)
+            if value and value ~= '' then
+                return {1, value}
             end
 
-            return contains_refs
+            if redis.call('HEXISTS', COUNT_REFS, CACHE_KEY) == 1 then
+                return {2}
+            end
+
+            return {0}
+            """;
+
+        private static readonly string UpdateValueExpiryScript = """
+            local CACHE_KEY = @key
+            local COUNT_REFS = @cref
+            local EXPIRY = tonumber(@expiry)
+
+            if redis.call('hexists', COUNT_REFS, CACHE_KEY) == 1 then
+                return 0
+            end
+
+            redis.call('set', CACHE_KEY, @value)
+
+            local contains_refs = redis.call('hexists', COUNT_REFS, CACHE_KEY)
+            if contains_refs == 0 then
+                redis.call('expire', CACHE_KEY, EXPIRY)
+            end
+
+            return 1
+            """;
+
+        private static readonly string RemovePendingWriteBackScript = """
+            local CACHE_KEY = KEYS[1]
+            local COUNT_REFS = KEYS[2]
+
+            redis.call('hincrby', COUNT_REFS, CACHE_KEY, 1)
+            redis.call('del', CACHE_KEY)
+
+            return 1
             """;
 
         private static readonly string MultiValueGetScript = """
@@ -43,8 +84,6 @@ namespace Http.Reepository.Cache
             """;
 
         private readonly RedisService _redisService;
-        private readonly Dictionary<Service.Redis, LoadedLuaScript> _updateValueExpiryScripts = new Dictionary<Service.Redis, LoadedLuaScript>();
-        private readonly Dictionary<Service.Redis, LoadedLuaScript> _multiValueGetScripts = new Dictionary<Service.Redis, LoadedLuaScript>();
 
         public RedisValueCacheLayer(RedisService redisService)
         {
@@ -58,32 +97,36 @@ namespace Http.Reepository.Cache
                 : _redisService.GetShardConnection(world, hash.Value);
         }
 
-        public async Task<TModel> TryGetAsync(Service.Redis redis, RedisKey redisKey)
+        public async Task<(RedisCacheLookupStatus Status, TModel Value)> LookupAsync(Service.Redis redis, RedisKey redisKey)
         {
             if (redis == null)
-                return null;
+                return (RedisCacheLookupStatus.Miss, null);
 
-            return await redis.Connection.JsonGetAsync<TModel>(redisKey);
+            var result = (RedisResult[])await redis.EvalAsync(
+                LookupValueScript,
+                [redisKey, new RedisKey(Const.ReferenceCountKey)]);
+
+            var status = (RedisCacheLookupStatus)int.Parse(result[0].ToString());
+            if (status != RedisCacheLookupStatus.Hit)
+                return (status, null);
+
+            return (status, JsonConvert.DeserializeObject<TModel>(result[1].ToString()));
         }
 
-        public async Task WriteBackAsync(Service.Redis redis, RedisKey redisKey, TModel value)
+        public async Task<bool> WriteBackAsync(Service.Redis redis, RedisKey redisKey, TModel value)
         {
             if (redis == null)
-                return;
+                return false;
 
-            if (!_updateValueExpiryScripts.TryGetValue(redis, out var script))
-            {
-                script = LuaScript.Prepare(UpdateValueExpiryScript).Load(redis.GetServer());
-                _updateValueExpiryScripts[redis] = script;
-            }
-
-            await redis.Connection.ScriptEvaluateAsync(script, new
+            var result = await redis.EvalAsync(UpdateValueExpiryScript, new
             {
                 key = redisKey,
                 value = JsonConvert.SerializeObject(value),
                 cref = new RedisKey(Const.ReferenceCountKey),
                 expiry = (int)Const.CacheTimeToLive.TotalSeconds
             });
+
+            return int.Parse(result.ToString()) != 0;
         }
 
         public async Task SetAsync(Service.Redis redis, RedisKey redisKey, TModel value)
@@ -97,6 +140,16 @@ namespace Http.Reepository.Cache
                 cmd.Enqueue(trans => trans.KeyExpireAsync(redisKey, expiry: (TimeSpan?)null));
                 cmd.Enqueue(trans => trans.HashIncrementAsync(Const.ReferenceCountKey, redisKey.ToString()));
             });
+        }
+
+        public async Task RemovePendingWriteBackAsync(Service.Redis redis, RedisKey redisKey)
+        {
+            if (redis == null)
+                return;
+
+            await redis.EvalAsync(
+                RemovePendingWriteBackScript,
+                [redisKey, new RedisKey(Const.ReferenceCountKey)]);
         }
 
         public async Task<IReadOnlyList<(RedisKey RedisKey, string Json)>> TryGetManyAsync(
@@ -115,13 +168,7 @@ namespace Http.Reepository.Cache
             keys[redisKeys.Count] = Const.ReferenceCountKey;
             var values = new RedisValue[] { (int)Const.CacheTimeToLive.TotalSeconds };
 
-            if (!_multiValueGetScripts.TryGetValue(redis, out var multiGetScript))
-            {
-                multiGetScript = LuaScript.Prepare(MultiValueGetScript).Load(redis.GetServer());
-                _multiValueGetScripts[redis] = multiGetScript;
-            }
-
-            var multiResult = await redis.Connection.ScriptEvaluateAsync(multiGetScript.Hash, keys, values);
+            var multiResult = await redis.EvalAsync(MultiValueGetScript, keys, values);
             var elements = (RedisResult[])multiResult;
             for (var i = 0; i < redisKeys.Count; i++)
             {

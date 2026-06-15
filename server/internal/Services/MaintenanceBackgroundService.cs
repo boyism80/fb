@@ -14,6 +14,16 @@ namespace Internal.Services
         private const string LockKey = "fb:maintenance:background:lock";
         private const int LockTtlSeconds = 60; // Longer than processing interval to prevent overlap
 
+        private static readonly string AcquireMaintenanceLockScript = """
+            if redis.call('exists', @lock_key) == 0 then
+                redis.call('set', @lock_key, '1')
+                redis.call('expire', @lock_key, @ttl_seconds)
+                return 1
+            else
+                return 0
+            end
+            """;
+
         public MaintenanceBackgroundService(
             IServiceScopeFactory scopeFactory,
             RedisService redisService,
@@ -81,7 +91,7 @@ namespace Internal.Services
         {
             try
             {
-                var result = await redis.ScriptEvaluateAsync("acquire_maintenance_lock.lua", new
+                var result = await redis.EvalAsync(AcquireMaintenanceLockScript, new
                 {
                     lock_key = LockKey,
                     ttl_seconds = LockTtlSeconds

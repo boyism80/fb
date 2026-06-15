@@ -45,7 +45,7 @@ namespace Http.Reepository.Cache
 
             return fields.Values
                 .Select(x => JsonConvert.DeserializeObject<TModel>(x))
-                .Where(x => x != null && !x.Deleted);
+                .Where(x => x != null);
         }
 
         public void PutAll(RedisKey redisKey, Dictionary<string, string> fields)

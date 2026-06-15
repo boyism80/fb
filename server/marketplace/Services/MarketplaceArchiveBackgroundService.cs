@@ -16,6 +16,16 @@ namespace Marketplace.Services
         private static readonly TimeSpan RetryInterval = TimeSpan.FromMinutes(1);
         private const string LockKey = "fb:marketplace:archive:lock";
 
+        private static readonly string AcquireLockScript = """
+            if redis.call('exists', KEYS[1]) == 0 then
+                redis.call('set', KEYS[1], '1')
+                redis.call('expire', KEYS[1], ARGV[1])
+                return 1
+            else
+                return 0
+            end
+            """;
+
         public MarketplaceArchiveBackgroundService(
             IServiceScopeFactory scopeFactory,
             RedisService redisService,
@@ -34,20 +44,10 @@ namespace Marketplace.Services
                 {
                     // Use Lua script to atomically check and acquire lock
                     var redis = _redisService.GetUnifiedConnection();
-                    var acquireLockScript = @"
-                        if redis.call('exists', KEYS[1]) == 0 then
-                            redis.call('set', KEYS[1], '1')
-                            redis.call('expire', KEYS[1], ARGV[1])
-                            return 1
-                        else
-                            return 0
-                        end";
-                    var script = LuaScript.Prepare(acquireLockScript);
-                    var loadedScript = script.Load(redis.GetServer());
-                    var result = await redis.Connection.ScriptEvaluateAsync(
-                        loadedScript.Hash,
-                        new RedisKey[] { LockKey },
-                        new RedisValue[] { (int)ProcessingInterval.TotalSeconds });
+                    var result = await redis.EvalAsync(
+                        AcquireLockScript,
+                        [LockKey],
+                        [(int)ProcessingInterval.TotalSeconds]);
 
                     var lockAcquired = (int)result == 1;
 

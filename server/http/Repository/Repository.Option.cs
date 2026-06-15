@@ -1,4 +1,4 @@
-﻿using Http.Extension;
+using Http.Extension;
 using Http.Model;
 using Http.Service;
 
@@ -23,7 +23,7 @@ namespace Http.Reepository
         {
             return $"""
                 SELECT * FROM `option`
-                WHERE `uid` = {key.Uid}
+                WHERE `uid` = {key.Uid} AND `deleted` = 0
                 LIMIT 1;
                 """;
         }
@@ -65,7 +65,7 @@ namespace Http.Reepository
                     {value.FastMove.Escape()},
                     {value.EffectSound.Escape()},
                     {value.PkProtect.Escape()},
-                    {value.Deleted.Escape()},
+                    0,
                     {value.CreatedDate.Escape()},
                     {value.UpdatedDate.Escape()})
                 ON DUPLICATE KEY UPDATE 
@@ -80,7 +80,6 @@ namespace Http.Reepository
                     `fast_move`=VALUES(`fast_move`),
                     `effect_sound`=VALUES(`effect_sound`),
                     `pk_protect`=VALUES(`pk_protect`),
-                    `deleted`=VALUES(`deleted`),
                     `updated_date`=VALUES(`updated_date`);
                 """;
 

@@ -39,5 +39,10 @@ namespace Http.Reepository.Cache
         {
             _cache[ToKey(redisKey)] = json;
         }
+
+        public void Remove(RedisKey redisKey)
+        {
+            _cache.Remove(ToKey(redisKey));
+        }
     }
 }

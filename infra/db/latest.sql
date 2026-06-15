@@ -336,7 +336,6 @@ CREATE TABLE `marketplace_pending` (
   `expected_purchase_count` smallint unsigned NOT NULL DEFAULT '0',
   `expected_total_price` int unsigned NOT NULL DEFAULT '0',
   `character_id` int unsigned NOT NULL,
-  `deleted` tinyint(1) NOT NULL DEFAULT '0',
   `created_date` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
   `updated_date` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
   PRIMARY KEY (`user`,`pending_key`)

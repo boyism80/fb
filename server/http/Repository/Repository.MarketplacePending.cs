@@ -27,7 +27,7 @@ namespace Http.Reepository
         {
             return $"""
                 SELECT * FROM `marketplace_pending`
-                WHERE `user` = {key.User} AND `pending_key` = {key.PendingKey.Escape()} AND `deleted` = 0
+                WHERE `user` = {key.User} AND `pending_key` = {key.PendingKey.Escape()}
                 LIMIT 1;
                 """;
         }
@@ -36,13 +36,13 @@ namespace Http.Reepository
         {
             return $"""
                 SELECT * FROM `marketplace_pending`
-                WHERE `user` = {key.User} AND `deleted` = 0;
+                WHERE `user` = {key.User};
                 """;
         }
 
         protected override string OnSelectMany(IReadOnlyList<MarketplacePendingKey> keys)
         {
-            return $"SELECT * FROM `marketplace_pending` WHERE `user` IN ({string.Join(",", keys.Select(k => k.User))}) AND `deleted` = 0;";
+            return $"SELECT * FROM `marketplace_pending` WHERE `user` IN ({string.Join(",", keys.Select(k => k.User))});";
         }
 
         protected override MarketplacePendingKey GetKeyFromRow(MarketplacePending row)
@@ -66,6 +66,40 @@ namespace Http.Reepository
             return dict.ToDictionary(kv => kv.Key, kv => (IReadOnlyList<MarketplacePending>)kv.Value);
         }
 
+        public void Delete(uint world, uint user, IReadOnlyList<string> pendingKeys)
+        {
+            if (pendingKeys == null || pendingKeys.Count == 0)
+                return;
+
+            var keys = pendingKeys.Select(k => new MarketplacePendingKey
+            {
+                User = user,
+                PendingKey = k
+            }).ToArray();
+
+            Delete(world, keys);
+        }
+
+        protected override string OnDelete(MarketplacePendingKey key)
+        {
+            return $"""
+                DELETE FROM `marketplace_pending`
+                WHERE `user` = {key.User.Escape()} AND `pending_key` = {key.PendingKey.Escape()};
+                """;
+        }
+
+        protected override string OnDeleteMany(IReadOnlyList<MarketplacePendingKey> keys)
+        {
+            if (keys.Count == 0)
+                return string.Empty;
+
+            var user = keys[0].User;
+            return $"""
+                DELETE FROM `marketplace_pending`
+                WHERE `user` = {user.Escape()} AND `pending_key` IN ({string.Join(",", keys.Select(k => k.PendingKey.Escape()))});
+                """;
+        }
+
         protected override string OnUpsert(MarketplacePending value)
         {
             var attachmentsJson = JsonConvert.SerializeObject(value.Attachments ?? new List<Fb.Model.Dsl>());
@@ -81,7 +115,6 @@ namespace Http.Reepository
                     `expected_purchase_count`,
                     `expected_total_price`,
                     `character_id`,
-                    `deleted`,
                     `created_date`,
                     `updated_date`)
                 VALUES (
@@ -94,7 +127,6 @@ namespace Http.Reepository
                     {value.ExpectedPurchaseCount.Escape()},
                     {value.ExpectedTotalPrice.Escape()},
                     {value.CharacterId.Escape()},
-                    {value.Deleted.Escape()},
                     {value.CreatedDate.Escape()},
                     {value.UpdatedDate.Escape()})
                 ON DUPLICATE KEY UPDATE
@@ -105,7 +137,6 @@ namespace Http.Reepository
                     `expected_purchase_count`=VALUES(`expected_purchase_count`),
                     `expected_total_price`=VALUES(`expected_total_price`),
                     `character_id`=VALUES(`character_id`),
-                    `deleted`=VALUES(`deleted`),
                     `updated_date`=VALUES(`updated_date`);
                 """;
         }
@@ -128,7 +159,6 @@ namespace Http.Reepository
                          {item.ExpectedPurchaseCount.Escape()},
                          {item.ExpectedTotalPrice.Escape()},
                          {item.CharacterId.Escape()},
-                         {item.Deleted.Escape()},
                          {item.CreatedDate.Escape()},
                          {item.UpdatedDate.Escape()})
                         """;
@@ -145,7 +175,6 @@ namespace Http.Reepository
                     `expected_purchase_count`,
                     `expected_total_price`,
                     `character_id`,
-                    `deleted`,
                     `created_date`,
                     `updated_date`)
                 VALUES {string.Join(',', args)}
@@ -157,7 +186,6 @@ namespace Http.Reepository
                     `expected_purchase_count`=VALUES(`expected_purchase_count`),
                     `expected_total_price`=VALUES(`expected_total_price`),
                     `character_id`=VALUES(`character_id`),
-                    `deleted`=VALUES(`deleted`),
                     `updated_date`=VALUES(`updated_date`);
                 """;
         }

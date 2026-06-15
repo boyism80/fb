@@ -28,9 +28,6 @@ namespace Http.Reepository
 
         private static string GetLockKey(RedisKey key) => $"fb:lock:{key}";
 
-        private static TModel AsActive(TModel value) =>
-            value == null || value.Deleted ? null : value;
-
         private async Task<IEnumerable<TModel>> SyncCacheFromDatabase(uint world, Service.Redis redis, TKey key)
         {
             var mysqlValues = (await base.GetAll(world, key)).ToList();
@@ -39,8 +36,10 @@ namespace Http.Reepository
 
             foreach (var g in mysqlValues.GroupBy(x => x.GetRedisKey()))
             {
-                await _redis.WriteBackAsync(redis, g.Key, g);
-                _local.PutAll(g.Key, g.ToDictionary(x => x.GetRedisField().ToString(), x => JsonConvert.SerializeObject(x)));
+                if (await _redis.WriteBackAsync(redis, g.Key, g))
+                {
+                    _local.PutAll(g.Key, g.ToDictionary(x => x.GetRedisField().ToString(), x => JsonConvert.SerializeObject(x)));
+                }
             }
 
             return mysqlValues;
@@ -51,7 +50,7 @@ namespace Http.Reepository
             await using var _ = await _distributedLock.Lock(world, GetLockKey(key));
 
             if (_local.HasField(key.GetRedisKey(), key.GetRedisField()))
-                return AsActive(_local.TryGetField(key.GetRedisKey(), key.GetRedisField()));
+                return _local.TryGetField(key.GetRedisKey(), key.GetRedisField());
 
             var redis = _redis.GetConnection(world, key.GetHash());
             var redisValues = await _redis.TryGetAllAsync(redis, key.GetRedisKey());
@@ -59,14 +58,18 @@ namespace Http.Reepository
             {
                 _local.PutAll(key.GetRedisKey(), redisValues.ToDictionary(x => x.Key.ToString(), x => JsonConvert.SerializeObject(x.Value)));
                 if (redisValues.TryGetValue(key.GetRedisField(), out var redisValue))
-                    return AsActive(redisValue);
+                    return redisValue;
+            }
+            else
+            {
+                var keyStatus = await _redis.LookupHashKeyAsync(redis, key.GetRedisKey());
+                if (keyStatus == RedisCacheLookupStatus.Pending)
+                    return null;
             }
 
             var mysqlValues = await SyncCacheFromDatabase(world, redis, key);
-            var found = mysqlValues.FirstOrDefault(x =>
+            return mysqlValues.FirstOrDefault(x =>
                 x.GetRedisKey() == key.GetRedisKey() && x.GetRedisField() == key.GetRedisField());
-
-            return AsActive(found);
         }
 
         protected override async Task<IEnumerable<TModel>> GetAll(uint world, TKey key)
@@ -81,11 +84,14 @@ namespace Http.Reepository
             if (redisValues.Count > 0)
             {
                 _local.PutAll(key.GetRedisKey(), redisValues.ToDictionary(x => x.Key.ToString(), x => JsonConvert.SerializeObject(x.Value)));
-                return redisValues.Values.Where(x => !x.Deleted);
+                return redisValues.Values;
             }
 
-            var mysqlValues = await SyncCacheFromDatabase(world, redis, key);
-            return mysqlValues.Where(x => !x.Deleted);
+            var keyStatus = await _redis.LookupHashKeyAsync(redis, key.GetRedisKey());
+            if (keyStatus == RedisCacheLookupStatus.Pending)
+                return Array.Empty<TModel>();
+
+            return await SyncCacheFromDatabase(world, redis, key);
         }
 
         protected virtual async Task<IReadOnlyList<TModel>> GetMany(uint world, IReadOnlyList<TKey> keys)
@@ -131,15 +137,18 @@ namespace Http.Reepository
                         foreach (var json in fields.Values)
                         {
                             var model = JsonConvert.DeserializeObject<TModel>(json);
-                            var active = AsActive(model);
-                            if (active != null)
-                                result.Add(active);
+                            if (model != null)
+                                result.Add(model);
                         }
                     }
 
                     foreach (var key in localMiss)
                     {
-                        if (!hitKeys.Contains(key.GetRedisKey().ToString()))
+                        if (hitKeys.Contains(key.GetRedisKey().ToString()))
+                            continue;
+
+                        var keyStatus = await _redis.LookupHashKeyAsync(redis, key.GetRedisKey());
+                        if (keyStatus != RedisCacheLookupStatus.Pending)
                             missingKeys.Add(key);
                     }
                 }
@@ -163,15 +172,22 @@ namespace Http.Reepository
                     await using var _ = await _distributedLock.Lock(world, GetLockKey(key));
 
                     var redis = _redis.GetConnection(world, key.GetHash());
-                    if (redis != null)
+                    if (redis != null && await _redis.WriteBackAsync(redis, key.GetRedisKey(), list))
                     {
-                        await _redis.WriteBackAsync(redis, key.GetRedisKey(), list);
                         _local.PutAll(key.GetRedisKey(), list.ToDictionary(x => x.GetRedisField().ToString(), x => JsonConvert.SerializeObject(x)));
                     }
                 }
             }
 
             return result;
+        }
+
+        public void Delete(uint world, IReadOnlyList<TModel> values)
+        {
+            if (values == null || values.Count == 0)
+                return;
+
+            Delete(world, values.Select(v => (TKey)v).ToArray());
         }
 
         public override TModel Set(uint world, TModel value)
@@ -246,6 +262,64 @@ namespace Http.Reepository
             });
 
             return values;
+        }
+
+        public override void Delete(uint world, TKey key)
+        {
+            _buffer.Enqueue(async () =>
+            {
+                var redisKey = key.GetRedisKey();
+                var redis = _redis.GetConnection(world, key.GetHash());
+                if (redis == null)
+                    return;
+
+                await using (await _distributedLock.Lock(world, GetLockKey(redisKey)))
+                {
+                    await _redis.RemoveFieldsPendingWriteBackAsync(redis, redisKey, new[] { key.GetRedisField() });
+                    _local.RemoveField(redisKey, key.GetRedisField());
+                }
+
+                var sql = OnDelete(key);
+                await _dbExecuteService.Post(world, key.GetHash(), sql, redisKey.ToString());
+            });
+        }
+
+        public override void Delete(uint world, TKey[] keys)
+        {
+            if (keys == null || keys.Length == 0)
+                return;
+
+            _buffer.Enqueue(async () =>
+            {
+                foreach (var hashGroup in keys.GroupBy(k => k.GetHash()))
+                {
+                    var redis = _redis.GetConnection(world, hashGroup.Key);
+                    if (redis == null)
+                        continue;
+
+                    foreach (var redisKeyGroup in hashGroup.GroupBy(k => k.GetRedisKey()))
+                    {
+                        var redisKey = redisKeyGroup.Key;
+                        var keyList = redisKeyGroup.ToList();
+                        var fields = keyList.Select(k => k.GetRedisField()).ToList();
+
+                        await using (await _distributedLock.Lock(world, GetLockKey(redisKey)))
+                        {
+                            await _redis.RemoveFieldsPendingWriteBackAsync(redis, redisKey, fields);
+                            foreach (var field in fields)
+                            {
+                                _local.RemoveField(redisKey, field);
+                            }
+                        }
+
+                        var sql = OnDeleteMany(keyList);
+                        if (string.IsNullOrEmpty(sql))
+                            continue;
+
+                        await _dbExecuteService.Post(world, hashGroup.Key, sql, redisKey.ToString());
+                    }
+                }
+            });
         }
     }
 }

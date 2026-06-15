@@ -36,7 +36,8 @@ namespace Http.Reepository
             var sql = $"""
                 SELECT * FROM `achievement` WHERE 
                 `uid` = {key.Uid} AND
-                `id` = {key.Id}
+                `id` = {key.Id} AND
+                `deleted` = 0
                 LIMIT 1;
                 """;
 
@@ -47,14 +48,14 @@ namespace Http.Reepository
         {
             var sql = $"""
                 SELECT * FROM `achievement` WHERE
-                `uid` = {key.Uid};
+                `uid` = {key.Uid} AND `deleted` = 0;
                 """;
             return sql;
         }
 
         protected override string OnSelectMany(IReadOnlyList<AchievementKey> keys)
         {
-            return $"SELECT * FROM `achievement` WHERE `uid` IN ({string.Join(",", keys.Select(k => k.Uid))});";
+            return $"SELECT * FROM `achievement` WHERE `uid` IN ({string.Join(",", keys.Select(k => k.Uid))}) AND `deleted` = 0;";
         }
 
         protected override AchievementKey GetKeyFromRow(Achievement row)
@@ -95,14 +96,13 @@ namespace Http.Reepository
                         {value.Text.Escape()},
                         {value.Icon.Escape()},
                         {value.Color.Escape()},
-                        {value.Deleted.Escape()},
+                        0,
                         {value.CreatedDate.Escape()},
                         {value.UpdatedDate.Escape()})
                     ON DUPLICATE KEY UPDATE
                         `text`=VALUES(`text`),
                         `icon`=VALUES(`icon`),
                         `color`=VALUES(`color`),
-                        `deleted`=VALUES(`deleted`),
                         `updated_date`=VALUES(`updated_date`);
                     """;
 
@@ -119,7 +119,7 @@ namespace Http.Reepository
                          {achievement.Text.Escape()},
                          {achievement.Icon.Escape()},
                          {achievement.Color.Escape()},
-                         {achievement.Deleted.Escape()},
+                         0,
                          {achievement.CreatedDate.Escape()},
                          {achievement.UpdatedDate.Escape()})
                         """;
@@ -140,12 +140,33 @@ namespace Http.Reepository
                         `text`=VALUES(`text`),
                         `icon`=VALUES(`icon`),
                         `color`=VALUES(`color`),
-                        `deleted`=VALUES(`deleted`),
                         `created_date`=VALUES(`created_date`),
                         `updated_date`=VALUES(`updated_date`);
                     """;
 
             return sql;
+        }
+
+        protected override string OnDelete(AchievementKey key)
+        {
+            return $"""
+                UPDATE `achievement` SET `deleted` = 1, `updated_date` = NOW()
+                WHERE `uid` = {key.Uid.Escape()} AND `id` = {key.Id.Escape()} AND `deleted` = 0;
+                """;
+        }
+
+        protected override string OnDeleteMany(IReadOnlyList<AchievementKey> keys)
+        {
+            if (keys.Count == 0)
+                return string.Empty;
+
+            var conditions = keys.Select(k =>
+                $"(`uid` = {k.Uid.Escape()} AND `id` = {k.Id.Escape()})");
+
+            return $"""
+                UPDATE `achievement` SET `deleted` = 1, `updated_date` = NOW()
+                WHERE ({string.Join(" OR ", conditions)}) AND `deleted` = 0;
+                """;
         }
     }
 }

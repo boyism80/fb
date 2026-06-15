@@ -2,7 +2,6 @@ using Http.Model;
 using Http.Reepository.Cache;
 using Http.Service;
 using Newtonsoft.Json;
-using StackExchange.Redis;
 
 namespace Http.Reepository
 {
@@ -26,26 +25,31 @@ namespace Http.Reepository
 
         private static string GetLockKey(TKey key) => $"fb:lock:{key.GetRedisKey()}";
 
-        private static TModel AsActive(TModel value) =>
-            value == null || value.Deleted ? null : value;
-
         protected override async Task<TModel> Get(uint world, TKey key)
         {
             await using var _ = await _distributedLock.Lock(world, GetLockKey(key));
 
             if (_local.ContainsKey(key.GetRedisKey()))
-                return AsActive(_local.TryGet(key.GetRedisKey()));
+                return _local.TryGet(key.GetRedisKey());
 
             var redis = _redis.GetConnection(world, key.GetHash());
-            var redisValue = await _redis.TryGetAsync(redis, key.GetRedisKey());
-            if (redisValue != null)
-                return AsActive(redisValue);
+            var (status, redisValue) = await _redis.LookupAsync(redis, key.GetRedisKey());
+            if (status == RedisCacheLookupStatus.Pending)
+                return null;
+
+            if (status == RedisCacheLookupStatus.Hit)
+            {
+                _local.Put(key.GetRedisKey(), redisValue);
+                return redisValue;
+            }
 
             var dbValue = await base.Get(world, key);
             if (dbValue == null)
                 return null;
 
-            await _redis.WriteBackAsync(redis, key.GetRedisKey(), dbValue);
+            if (await _redis.WriteBackAsync(redis, key.GetRedisKey(), dbValue))
+                _local.Put(key.GetRedisKey(), dbValue);
+
             return dbValue;
         }
 
@@ -77,9 +81,7 @@ namespace Http.Reepository
                 {
                     if (_local.ContainsKey(key.GetRedisKey()))
                     {
-                        var localValue = AsActive(_local.TryGet(key.GetRedisKey()));
-                        if (localValue != null)
-                            result.Add(localValue);
+                        result.Add(_local.TryGet(key.GetRedisKey()));
                     }
                     else
                     {
@@ -98,17 +100,17 @@ namespace Http.Reepository
                         _local.PutRaw(redisKey, json);
 
                         var val = JsonConvert.DeserializeObject<TModel>(json);
-                        if (val == null)
-                            continue;
-
-                        var active = AsActive(val);
-                        if (active != null)
-                            result.Add(active);
+                        if (val != null)
+                            result.Add(val);
                     }
 
                     foreach (var key in localMiss)
                     {
-                        if (!hitKeys.Contains(key.GetRedisKey().ToString()))
+                        if (hitKeys.Contains(key.GetRedisKey().ToString()))
+                            continue;
+
+                        var (status, _) = await _redis.LookupAsync(redis, key.GetRedisKey());
+                        if (status != RedisCacheLookupStatus.Pending)
                             missingKeys.Add(key);
                     }
                 }
@@ -132,8 +134,8 @@ namespace Http.Reepository
                     await using var _ = await _distributedLock.Lock(world, GetLockKey(key));
 
                     var redis = _redis.GetConnection(world, key.GetHash());
-                    await _redis.WriteBackAsync(redis, key.GetRedisKey(), firstEntity);
-                    _local.Put(key.GetRedisKey(), firstEntity);
+                    if (await _redis.WriteBackAsync(redis, key.GetRedisKey(), firstEntity))
+                        _local.Put(key.GetRedisKey(), firstEntity);
                 }
             }
 
@@ -157,6 +159,60 @@ namespace Http.Reepository
                 await _dbExecuteService.Post(world, value.GetHash(), sql, value.GetRedisKey().ToString());
             });
             return value;
+        }
+
+        public override void Delete(uint world, TKey key)
+        {
+            _buffer.Enqueue(async () =>
+            {
+                var redisKey = key.GetRedisKey();
+                var redis = _redis.GetConnection(world, key.GetHash());
+                if (redis == null)
+                    return;
+
+                await using (await _distributedLock.Lock(world, GetLockKey(key)))
+                {
+                    await _redis.RemovePendingWriteBackAsync(redis, redisKey);
+                    _local.Remove(redisKey);
+                }
+
+                var sql = OnDelete(key);
+                await _dbExecuteService.Post(world, key.GetHash(), sql, redisKey.ToString());
+            });
+        }
+
+        public override void Delete(uint world, TKey[] keys)
+        {
+            if (keys == null || keys.Length == 0)
+                return;
+
+            _buffer.Enqueue(async () =>
+            {
+                foreach (var hashGroup in keys.GroupBy(k => k.GetHash()))
+                {
+                    var redis = _redis.GetConnection(world, hashGroup.Key);
+                    if (redis == null)
+                        continue;
+
+                    foreach (var key in hashGroup)
+                    {
+                        var redisKey = key.GetRedisKey();
+
+                        await using (await _distributedLock.Lock(world, GetLockKey(key)))
+                        {
+                            await _redis.RemovePendingWriteBackAsync(redis, redisKey);
+                            _local.Remove(redisKey);
+                        }
+                    }
+
+                    var sql = OnDeleteMany(hashGroup.ToList());
+                    if (string.IsNullOrEmpty(sql))
+                        continue;
+
+                    var refKey = hashGroup.First().GetRedisKey();
+                    await _dbExecuteService.Post(world, hashGroup.Key, sql, refKey.ToString());
+                }
+            });
         }
 
         public override sealed TModel[] Set(uint world, TModel[] values)

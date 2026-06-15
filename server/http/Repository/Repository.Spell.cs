@@ -36,7 +36,8 @@ namespace Http.Reepository
             var sql = $"""
                 SELECT * FROM `spell` WHERE 
                 `owner` = {key.Owner} AND
-                `slot` = {key.Slot}
+                `slot` = {key.Slot} AND
+                `deleted` = 0
                 LIMIT 1;
                 """;
 
@@ -47,14 +48,14 @@ namespace Http.Reepository
         {
             var sql = $"""
                 SELECT * FROM `spell` WHERE
-                `owner` = {key.Owner};
+                `owner` = {key.Owner} AND `deleted` = 0;
                 """;
             return sql;
         }
 
         protected override string OnSelectMany(IReadOnlyList<SpellKey> keys)
         {
-            return $"SELECT * FROM `spell` WHERE `owner` IN ({string.Join(",", keys.Select(k => k.Owner))});";
+            return $"SELECT * FROM `spell` WHERE `owner` IN ({string.Join(",", keys.Select(k => k.Owner))}) AND `deleted` = 0;";
         }
 
         protected override SpellKey GetKeyFromRow(Spell row)
@@ -93,13 +94,12 @@ namespace Http.Reepository
                         {value.Slot.Escape()},
                         {value.Model.Escape()},
                         {value.Next.Escape()},
-                        {value.Deleted.Escape()},
+                        0,
                         {value.CreatedDate.Escape()},
                         {value.UpdatedDate.Escape()})
                     ON DUPLICATE KEY UPDATE
                         `model`=VALUES(`model`),
                         `next`=VALUES(`next`),
-                        `deleted`=VALUES(`deleted`),
                         `updated_date`=VALUES(`updated_date`);
                     """;
 
@@ -115,7 +115,7 @@ namespace Http.Reepository
                          {spell.Slot.Escape()},
                          {spell.Model.Escape()},
                          {spell.Next.Escape()},
-                         {spell.Deleted.Escape()},
+                         0,
                          {spell.CreatedDate.Escape()},
                          {spell.UpdatedDate.Escape()})
                         """;
@@ -134,12 +134,33 @@ namespace Http.Reepository
                     ON DUPLICATE KEY UPDATE
                         `model`=VALUES(`model`),
                         `next`=VALUES(`next`),
-                        `deleted`=VALUES(`deleted`),
                         `created_date`=VALUES(`created_date`),
                         `updated_date`=VALUES(`updated_date`);
                     """;
 
             return sql;
+        }
+
+        protected override string OnDelete(SpellKey key)
+        {
+            return $"""
+                UPDATE `spell` SET `deleted` = 1, `updated_date` = NOW()
+                WHERE `owner` = {key.Owner.Escape()} AND `slot` = {key.Slot.Escape()} AND `deleted` = 0;
+                """;
+        }
+
+        protected override string OnDeleteMany(IReadOnlyList<SpellKey> keys)
+        {
+            if (keys.Count == 0)
+                return string.Empty;
+
+            var conditions = keys.Select(k =>
+                $"(`owner` = {k.Owner.Escape()} AND `slot` = {k.Slot.Escape()})");
+
+            return $"""
+                UPDATE `spell` SET `deleted` = 1, `updated_date` = NOW()
+                WHERE ({string.Join(" OR ", conditions)}) AND `deleted` = 0;
+                """;
         }
     }
 }

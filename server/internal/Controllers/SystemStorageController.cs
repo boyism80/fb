@@ -1,5 +1,6 @@
 using AutoMapper;
 using Fb.Model.EnumValue;
+using Http.Filters;
 using Http.Service;
 using Microsoft.AspNetCore.Mvc;
 using Newtonsoft.Json;
@@ -25,6 +26,7 @@ namespace Internal.Controllers
         }
 
         [HttpGet("{world}")]
+        [SuppressRequestLog]
         public async Task<Response.GetSystemStorageBoxes> GetSystemStorageBoxes(uint world, [FromQuery(Name = "offset")] uint offset = 0)
         {
             try

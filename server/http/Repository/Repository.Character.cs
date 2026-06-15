@@ -25,14 +25,14 @@ namespace Http.Reepository
         {
             return $"""
                 SELECT * FROM `user`
-                WHERE `id` = {key.Id}
+                WHERE `id` = {key.Id} AND `deleted` = 0
                 LIMIT 1;
                 """;
         }
 
         protected override string OnSelectMany(IReadOnlyList<CharacterKey> keys)
         {
-            return $"SELECT * FROM `user` WHERE `id` IN ({string.Join(",", keys.Select(k => k.Id))});";
+            return $"SELECT * FROM `user` WHERE `id` IN ({string.Join(",", keys.Select(k => k.Id))}) AND `deleted` = 0;";
         }
 
         protected override CharacterKey GetKeyFromRow(Character row)
@@ -139,7 +139,7 @@ namespace Http.Reepository
                     {value.Buffs.Escape()},
                     {value.Title.Escape()},
                     {value.SuperHide.Escape()},
-                    {value.Deleted.Escape()},
+                    0,
                     {value.CreatedDate.Escape()},
                     {value.UpdatedDate.Escape()},
                     {value.FirstLoginDate.Escape()})
@@ -181,7 +181,6 @@ namespace Http.Reepository
                     `buffs`=VALUES(`buffs`),
                     `title`=VALUES(`title`),
                     `super_hide`=VALUES(`super_hide`),
-                    `deleted`=VALUES(`deleted`),
                     `updated_date`=VALUES(`updated_date`),
                     `first_login_date`=COALESCE(VALUES(`first_login_date`), `first_login_date`);
                 """;

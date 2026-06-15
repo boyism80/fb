@@ -1,4 +1,5 @@
 using Google.FlatBuffers;
+using Http.Filters;
 using Http.Util;
 using Microsoft.AspNetCore.Mvc.Formatters;
 using Microsoft.Net.Http.Headers;
@@ -34,9 +35,7 @@ namespace Http.Formatter
                     case "application/json":
                         {
                             var protocol = JsonConvert.DeserializeObject(Encoding.UTF8.GetString(ms.ToArray()), context.ModelType) as IFlatBufferEx;
-                            var log = OnLog(protocol);
-                            if (log != null)
-                                logger.LogInformation(log);
+                            FlatBufferProtocolLog.Log(context.HttpContext, logger, protocol, OnLog);
 
                             return await InputFormatterResult.SuccessAsync(protocol);
                         }
@@ -46,9 +45,7 @@ namespace Http.Formatter
                             using (var reader = new BinaryReader(ms))
                             {
                                 var protocol = GetProtocol(reader);
-                                var log = OnLog(protocol);
-                                if (log != null)
-                                    logger.LogInformation(log);
+                                FlatBufferProtocolLog.Log(context.HttpContext, logger, protocol, OnLog);
                                 return await InputFormatterResult.SuccessAsync(protocol);
                             }
                         }
@@ -91,9 +88,7 @@ namespace Http.Formatter
 
             var sp = context.HttpContext.RequestServices;
             var logger = sp.GetRequiredService<ILogger<FlatBufferOutputFormatter>>();
-            var log = OnLog(protocol);
-            if (log != null)
-                logger.LogInformation(log);
+            FlatBufferProtocolLog.Log(context.HttpContext, logger, protocol, OnLog);
 
             switch (context.HttpContext.Request.ContentType)
             {
@@ -116,6 +111,25 @@ namespace Http.Formatter
         protected virtual string OnLog(IFlatBufferEx protocol)
         {
             return null;
+        }
+    }
+
+    internal static class FlatBufferProtocolLog
+    {
+        public static void Log(HttpContext httpContext, ILogger logger, IFlatBufferEx protocol, Func<IFlatBufferEx, string> onLog)
+        {
+            if (ShouldSuppressLog(httpContext))
+                return;
+
+            var log = onLog(protocol);
+            if (log != null)
+                logger.LogInformation(log);
+        }
+
+        private static bool ShouldSuppressLog(HttpContext httpContext)
+        {
+            var endpoint = httpContext.GetEndpoint();
+            return endpoint?.Metadata.GetMetadata<SuppressRequestLogAttribute>() != null;
         }
     }
 }

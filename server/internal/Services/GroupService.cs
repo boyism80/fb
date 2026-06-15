@@ -514,8 +514,7 @@ namespace Internal.Services
                 sync.Group = null;
                 _dbContext.CharacterRealtimeState.Set(world, sync);
 
-                group.Deleted = true;
-                _dbContext.Group.Set(world, group);
+                _dbContext.Group.Delete(world, group.Master);
 
                 await _dbContext.SaveChangesAsync();
 

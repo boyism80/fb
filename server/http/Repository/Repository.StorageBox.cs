@@ -35,7 +35,7 @@ namespace Http.Reepository
         {
             return $"""
                 SELECT * FROM `storage_box`
-                WHERE `user` = {key.User} AND `id` = {key.Id}
+                WHERE `user` = {key.User} AND `id` = {key.Id} AND `deleted` = 0
                 LIMIT 1;
                 """;
         }
@@ -44,13 +44,13 @@ namespace Http.Reepository
         {
             return $"""
                 SELECT * FROM `storage_box`
-                WHERE `user` = {key.User};
+                WHERE `user` = {key.User} AND `deleted` = 0;
                 """;
         }
 
         protected override string OnSelectMany(IReadOnlyList<StorageBoxKey> keys)
         {
-            return $"SELECT * FROM `storage_box` WHERE `user` IN ({string.Join(",", keys.Select(k => k.User))});";
+            return $"SELECT * FROM `storage_box` WHERE `user` IN ({string.Join(",", keys.Select(k => k.User))}) AND `deleted` = 0;";
         }
 
         protected override StorageBoxKey GetKeyFromRow(StorageBox row)
@@ -99,7 +99,7 @@ namespace Http.Reepository
                     {attachmentsJson.Escape()},
                     {value.Received.Escape()},
                     {value.ExpiredDate.Escape()},
-                    {value.Deleted.Escape()},
+                    0,
                     {value.CreatedDate.Escape()},
                     {value.UpdatedDate.Escape()})
                 ON DUPLICATE KEY UPDATE
@@ -109,7 +109,6 @@ namespace Http.Reepository
                     `attachments`=VALUES(`attachments`),
                     `received`=VALUES(`received`),
                     `expired_date`=VALUES(`expired_date`),
-                    `deleted`=VALUES(`deleted`),
                     `updated_date`=VALUES(`updated_date`);
                 """;
         }
@@ -128,7 +127,7 @@ namespace Http.Reepository
                          {attachmentsJson.Escape()},
                          {value.Received.Escape()},
                          {value.ExpiredDate.Escape()},
-                         {value.Deleted.Escape()},
+                         0,
                          {value.CreatedDate.Escape()},
                          {value.UpdatedDate.Escape()})
                         """;
@@ -155,10 +154,30 @@ namespace Http.Reepository
                     `attachments`=VALUES(`attachments`),
                     `received`=VALUES(`received`),
                     `expired_date`=VALUES(`expired_date`),
-                    `deleted`=VALUES(`deleted`),
                     `updated_date`=VALUES(`updated_date`);
+                """;
+        }
+
+        protected override string OnDelete(StorageBoxKey key)
+        {
+            return $"""
+                UPDATE `storage_box` SET `deleted` = 1, `updated_date` = NOW()
+                WHERE `user` = {key.User.Escape()} AND `id` = {key.Id.Escape()} AND `deleted` = 0;
+                """;
+        }
+
+        protected override string OnDeleteMany(IReadOnlyList<StorageBoxKey> keys)
+        {
+            if (keys.Count == 0)
+                return string.Empty;
+
+            var conditions = keys.Select(k =>
+                $"(`user` = {k.User.Escape()} AND `id` = {k.Id.Escape()})");
+
+            return $"""
+                UPDATE `storage_box` SET `deleted` = 1, `updated_date` = NOW()
+                WHERE ({string.Join(" OR ", conditions)}) AND `deleted` = 0;
                 """;
         }
     }
 }
-

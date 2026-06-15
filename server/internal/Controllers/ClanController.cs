@@ -134,7 +134,6 @@ namespace Internal.Controllers
                     Id = newClanId,
                     Name = request.Name,
                     Title = null,
-                    Deleted = false
                 });
 
                 _dbContext.ClanMember.Set(world, new ClanMember
@@ -223,15 +222,13 @@ namespace Internal.Controllers
                 if (master.Role != (uint)ClanRole.Master)
                     throw new LogicException(ErrorCode.ClanNoPrivilege);
 
-                master.Deleted = true;
-                _dbContext.ClanMember.Set(world, master);
+                _dbContext.ClanMember.Delete(world, master);
 
                 sync.Clan = null;
                 _dbContext.CharacterRealtimeState.Set(world, sync);
 
                 var oldTitle = clan.Title;
-                clan.Deleted = true;
-                _dbContext.Clan.Set(world, clan);
+                _dbContext.Clan.Delete(world, clan.Id);
 
                 await db.ExecuteAsync("USP_CLAN_NAME_DELETE", new
                 {
@@ -426,7 +423,6 @@ namespace Internal.Controllers
                     Clan = clan.Id,
                     Role = (uint)ClanRole.Mate,
                     User = invitee.Id,
-                    Deleted = false
                 });
 
                 inviteeSync.Clan = clan.Id;
@@ -514,8 +510,7 @@ namespace Internal.Controllers
                 if (member.Role == (uint)ClanRole.Master)
                     throw new LogicException(ErrorCode.ClanCannotLeaveeMaster);
 
-                member.Deleted = true;
-                _dbContext.ClanMember.Set(world, member);
+                _dbContext.ClanMember.Delete(world, member);
 
                 sync.Clan = null;
                 _dbContext.CharacterRealtimeState.Set(world, sync);
@@ -635,8 +630,7 @@ namespace Internal.Controllers
                     throw new LogicException(ErrorCode.ClanCannotLeaveeMaster);
 
                 // Remove target from clan
-                targetMember.Deleted = true;
-                _dbContext.ClanMember.Set(world, targetMember);
+                _dbContext.ClanMember.Delete(world, targetMember);
 
                 targetSync.Clan = null;
                 _dbContext.CharacterRealtimeState.Set(world, targetSync);

@@ -135,7 +135,6 @@ namespace Http.Service
                                 Contents = request.Contents,
                                 CreatedDate = DateTime.Now,
                                 UpdatedDate = DateTime.Now,
-                                Deleted = false
                             };
 
                             cacheItems[(bulletinSection, articleId)] = article;

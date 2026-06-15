@@ -17,6 +17,10 @@ namespace Http.Reepository.Cache
             local EXPIRY = tonumber(ARGV[1])
             local LENGTH = tonumber(ARGV[2])
 
+            if redis.call('hexists', COUNT_REFS, CACHE_KEY) == 1 then
+                return {0}
+            end
+
             local offset = 2
             for i = 1, LENGTH do
                 local field = ARGV[offset + i]
@@ -30,7 +34,7 @@ namespace Http.Reepository.Cache
                 redis.call('expire', CACHE_KEY, EXPIRY)
             end
 
-            return {contains_refs}
+            return {1}
             """;
 
         private static readonly string SetHashFieldScript = """
@@ -88,11 +92,36 @@ namespace Http.Reepository.Cache
             return out
             """;
 
+        private static readonly string LookupHashKeyScript = """
+            local CACHE_KEY = KEYS[1]
+            local COUNT_REFS = KEYS[2]
+
+            if redis.call('EXISTS', CACHE_KEY) == 1 then
+                return 1
+            end
+
+            if redis.call('HEXISTS', COUNT_REFS, CACHE_KEY) == 1 then
+                return 2
+            end
+
+            return 0
+            """;
+
+        private static readonly string RemoveFieldsPendingWriteBackScript = """
+            local CACHE_KEY = KEYS[1]
+            local COUNT_REFS = KEYS[2]
+            local LENGTH = tonumber(ARGV[1])
+
+            redis.call('hincrby', COUNT_REFS, CACHE_KEY, 1)
+
+            for i = 1, LENGTH do
+                redis.call('hdel', CACHE_KEY, ARGV[i + 1])
+            end
+
+            return 1
+            """;
+
         private readonly RedisService _redisService;
-        private readonly Dictionary<Service.Redis, LoadedLuaScript> _updateHashExpiryScripts = new Dictionary<Service.Redis, LoadedLuaScript>();
-        private readonly Dictionary<Service.Redis, LoadedLuaScript> _setHashFieldScripts = new Dictionary<Service.Redis, LoadedLuaScript>();
-        private readonly Dictionary<Service.Redis, LoadedLuaScript> _setHashFieldsScripts = new Dictionary<Service.Redis, LoadedLuaScript>();
-        private readonly Dictionary<Service.Redis, LoadedLuaScript> _multiHashGetScripts = new Dictionary<Service.Redis, LoadedLuaScript>();
 
         public RedisHashCacheLayer(RedisService redisService)
         {
@@ -130,14 +159,26 @@ namespace Http.Reepository.Cache
             return await redis.Connection.KeyExistsAsync(redisKey);
         }
 
-        public async Task WriteBackAsync(Service.Redis redis, RedisKey cacheKey, IEnumerable<TModel> values)
+        public async Task<RedisCacheLookupStatus> LookupHashKeyAsync(Service.Redis redis, RedisKey redisKey)
         {
             if (redis == null)
-                return;
+                return RedisCacheLookupStatus.Miss;
+
+            var result = await redis.EvalAsync(
+                LookupHashKeyScript,
+                [redisKey, new RedisKey(Const.ReferenceCountKey)]);
+
+            return (RedisCacheLookupStatus)int.Parse(result.ToString());
+        }
+
+        public async Task<bool> WriteBackAsync(Service.Redis redis, RedisKey cacheKey, IEnumerable<TModel> values)
+        {
+            if (redis == null)
+                return false;
 
             var dataGroup = values.ToDictionary(x => x.GetRedisField(), x => x);
             if (dataGroup.Count == 0)
-                return;
+                return false;
 
             var scriptValues = new List<RedisValue>
             {
@@ -150,15 +191,12 @@ namespace Http.Reepository.Cache
                 scriptValues.Add(JsonConvert.SerializeObject(entity));
             }
 
-            if (!_updateHashExpiryScripts.TryGetValue(redis, out var script))
-            {
-                script = LuaScript.Prepare(UpdateHashExpiryScript).Load(redis.GetServer());
-                _updateHashExpiryScripts[redis] = script;
-            }
+            var result = (RedisResult[])await redis.EvalAsync(
+                UpdateHashExpiryScript,
+                [cacheKey, new RedisKey(Const.ReferenceCountKey)],
+                scriptValues.ToArray());
 
-            await redis.Connection.ScriptEvaluateAsync(script.Hash,
-                keys: [cacheKey, new RedisKey(Const.ReferenceCountKey)],
-                values: scriptValues.ToArray());
+            return int.Parse(result[0].ToString()) != 0;
         }
 
         public async Task SetFieldAsync(Service.Redis redis, RedisKey cacheKey, RedisValue field, TModel value)
@@ -166,27 +204,16 @@ namespace Http.Reepository.Cache
             if (redis == null)
                 return;
 
-            if (!_setHashFieldScripts.TryGetValue(redis, out var script))
-            {
-                script = LuaScript.Prepare(SetHashFieldScript).Load(redis.GetServer());
-                _setHashFieldScripts[redis] = script;
-            }
-
-            await redis.Connection.ScriptEvaluateAsync(script.Hash,
-                keys: [cacheKey, new RedisKey(Const.ReferenceCountKey)],
-                values: [field, JsonConvert.SerializeObject(value)]);
+            await redis.EvalAsync(
+                SetHashFieldScript,
+                [cacheKey, new RedisKey(Const.ReferenceCountKey)],
+                [field, JsonConvert.SerializeObject(value)]);
         }
 
         public async Task SetFieldsAsync(Service.Redis redis, RedisKey cacheKey, IReadOnlyDictionary<RedisValue, TModel> values)
         {
             if (redis == null || values.Count == 0)
                 return;
-
-            if (!_setHashFieldsScripts.TryGetValue(redis, out var script))
-            {
-                script = LuaScript.Prepare(SetHashFieldsScript).Load(redis.GetServer());
-                _setHashFieldsScripts[redis] = script;
-            }
 
             var scriptValues = new List<RedisValue> { values.Count };
             foreach (var (field, val) in values)
@@ -195,9 +222,24 @@ namespace Http.Reepository.Cache
                 scriptValues.Add(JsonConvert.SerializeObject(val));
             }
 
-            await redis.Connection.ScriptEvaluateAsync(script.Hash,
-                keys: [cacheKey, new RedisKey(Const.ReferenceCountKey)],
-                values: scriptValues.ToArray());
+            await redis.EvalAsync(
+                SetHashFieldsScript,
+                [cacheKey, new RedisKey(Const.ReferenceCountKey)],
+                scriptValues.ToArray());
+        }
+
+        public async Task RemoveFieldsPendingWriteBackAsync(Service.Redis redis, RedisKey cacheKey, IReadOnlyList<RedisValue> fields)
+        {
+            if (redis == null || fields == null || fields.Count == 0)
+                return;
+
+            var scriptValues = new List<RedisValue> { fields.Count };
+            scriptValues.AddRange(fields);
+
+            await redis.EvalAsync(
+                RemoveFieldsPendingWriteBackScript,
+                [cacheKey, new RedisKey(Const.ReferenceCountKey)],
+                scriptValues.ToArray());
         }
 
         public async Task<IReadOnlyList<(RedisKey RedisKey, Dictionary<string, string> Fields)>> TryGetManyAsync(
@@ -216,13 +258,7 @@ namespace Http.Reepository.Cache
             keys[redisKeys.Count] = Const.ReferenceCountKey;
             var values = new RedisValue[] { (int)Const.CacheTimeToLive.TotalSeconds };
 
-            if (!_multiHashGetScripts.TryGetValue(redis, out var multiHashScript))
-            {
-                multiHashScript = LuaScript.Prepare(MultiHashGetScript).Load(redis.GetServer());
-                _multiHashGetScripts[redis] = multiHashScript;
-            }
-
-            var multiResult = await redis.Connection.ScriptEvaluateAsync(multiHashScript.Hash, keys, values);
+            var multiResult = await redis.EvalAsync(MultiHashGetScript, keys, values);
             var flat = (RedisResult[])multiResult;
             var idx = 0;
             for (var i = 0; i < redisKeys.Count; i++)

@@ -44,26 +44,29 @@ namespace Http.Reepository
                     {value.User.Escape()},
                     {value.Reason.Escape()},
                     {value.ExpireDate.Escape()},
-                    {value.Deleted.Escape()},
+                    0,
                     {value.CreatedDate.ToString("yyyy-MM-dd HH:mm:ss").Escape()},
                     {value.UpdatedDate.ToString("yyyy-MM-dd HH:mm:ss").Escape()})
                 ON DUPLICATE KEY UPDATE
                     `reason` = VALUES(`reason`),
                     `expire_date` = VALUES(`expire_date`),
-                    `deleted` = VALUES(`deleted`),
+                    `deleted` = 0,
                     `updated_date` = VALUES(`updated_date`);
                 """;
             return sql;
         }
 
-        public async Task Delete(uint world, uint userId)
+        protected override string OnDelete(BanKey key)
         {
-            var ban = await Get(world, userId);
-            if (ban == null)
-                return;
+            return $"""
+                UPDATE `ban` SET `deleted` = 1, `updated_date` = NOW()
+                WHERE `user` = {key.User.Escape()} AND `deleted` = 0;
+                """;
+        }
 
-            ban.Deleted = true;
-            Set(world, ban);
+        public void Delete(uint world, uint userId)
+        {
+            base.Delete(world, new BanKey { User = userId });
         }
     }
 }

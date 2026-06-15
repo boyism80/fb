@@ -35,7 +35,8 @@ namespace Http.Reepository
             return $""""
                 SELECT * FROM `quest` WHERE 
                 `user` = {key.User} AND
-                `id` = {key.Id}
+                `id` = {key.Id} AND
+                `deleted` = 0
                 LIMIT 1;
                 """";
         }
@@ -44,13 +45,13 @@ namespace Http.Reepository
         {
             return $"""
                 SELECT * FROM `quest` WHERE
-                `user` = {key.User};
+                `user` = {key.User} AND `deleted` = 0;
                 """;
         }
 
         protected override string OnSelectMany(IReadOnlyList<QuestKey> keys)
         {
-            return $"SELECT * FROM `quest` WHERE `user` IN ({string.Join(",", keys.Select(k => k.User))});";
+            return $"SELECT * FROM `quest` WHERE `user` IN ({string.Join(",", keys.Select(k => k.User))}) AND `deleted` = 0;";
         }
 
         protected override QuestKey GetKeyFromRow(Quest row)
@@ -93,7 +94,7 @@ namespace Http.Reepository
                     {value.Progress.Escape()},
                     {value.Completed.Escape()},
                     {value.Param.Escape()},
-                    {value.Deleted.Escape()},
+                    0,
                     {value.CreatedDate.Escape()},
                     {value.UpdatedDate.Escape()})
                 ON DUPLICATE KEY UPDATE 
@@ -101,7 +102,6 @@ namespace Http.Reepository
                     `progress`=VALUES(`progress`), 
                     `completed`=VALUES(`completed`),
                     `param`=VALUES(`param`),
-                    `deleted`=VALUES(`deleted`),
                     `updated_date`=VALUES(`updated_date`);
                 """;
 
@@ -119,7 +119,7 @@ namespace Http.Reepository
                          {item.Progress.Escape()},
                          {item.Completed.Escape()},
                          {item.Param.Escape()},
-                         {item.Deleted.Escape()},
+                         0,
                          {item.CreatedDate.Escape()},
                          {item.UpdatedDate.Escape()})
                         """;
@@ -142,11 +142,32 @@ namespace Http.Reepository
                         `progress`=VALUES(`progress`),
                         `completed`=VALUES(`completed`),
                         `param`=VALUES(`param`),
-                        `deleted`=VALUES(`deleted`),
                         `updated_date`=VALUES(`updated_date`);
                     """;
 
             return sql;
+        }
+
+        protected override string OnDelete(QuestKey key)
+        {
+            return $"""
+                UPDATE `quest` SET `deleted` = 1, `updated_date` = NOW()
+                WHERE `user` = {key.User.Escape()} AND `id` = {key.Id.Escape()} AND `deleted` = 0;
+                """;
+        }
+
+        protected override string OnDeleteMany(IReadOnlyList<QuestKey> keys)
+        {
+            if (keys.Count == 0)
+                return string.Empty;
+
+            var conditions = keys.Select(k =>
+                $"(`user` = {k.User.Escape()} AND `id` = {k.Id.Escape()})");
+
+            return $"""
+                UPDATE `quest` SET `deleted` = 1, `updated_date` = NOW()
+                WHERE ({string.Join(" OR ", conditions)}) AND `deleted` = 0;
+                """;
         }
     }
 }

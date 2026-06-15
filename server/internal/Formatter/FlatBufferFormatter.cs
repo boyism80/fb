@@ -20,34 +20,25 @@ namespace Internal.Formatter
             var type = Request.FlatBufferProtocolRouter.GetProtocolType(protocolType);
             return Activator.CreateInstance(type, bytes) as IFlatBufferEx;
         }
+
         protected override string OnLog(IFlatBufferEx protocol)
         {
             var protocolType = (Request.FlatBufferProtocolType)protocol.ProtocolType;
-            switch (protocolType)
-            {
-                case Request.FlatBufferProtocolType.Heartbeat:
-                    return null;
-                default:
-                    return $"Request {protocolType} < {JsonConvert.SerializeObject(protocol)}";
-            }
+            return $"Request {protocolType} < {JsonConvert.SerializeObject(protocol)}";
         }
     }
+
     public class FlatBufferOutputFormatter : Http.Formatter.FlatBufferOutputFormatter
     {
         public FlatBufferOutputFormatter()
         {
 
         }
+
         protected override string OnLog(IFlatBufferEx protocol)
         {
             var protocolType = (Response.FlatBufferProtocolType)protocol.ProtocolType;
-            switch (protocolType)
-            {
-                case Response.FlatBufferProtocolType.Heartbeat:
-                    return null;
-                default:
-                    return $"Response {protocolType} > {JsonConvert.SerializeObject(protocol)}";
-            }
+            return $"Response {protocolType} > {JsonConvert.SerializeObject(protocol)}";
         }
     }
 }
