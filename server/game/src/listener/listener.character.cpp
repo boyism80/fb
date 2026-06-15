@@ -111,7 +111,8 @@ void listener_impl::on_update(character& me, UPDATE_STATE_LEVEL level)
         me.send(game_resp::update_internal(me, level));
 }
 
-async::task<bool> listener_impl::on_transfer(character& me, map& map, const fb::model::point16_t& position)
+async::task<bool>
+listener_impl::on_transfer(character& me, map& map, const fb::model::point16_t& position, map_callback callback)
 {
     if (me.map() == nullptr)
         co_return false;
@@ -144,6 +145,12 @@ async::task<bool> listener_impl::on_transfer(character& me, map& map, const fb::
 
         default:
             throw std::runtime_error(std::format(_TEXT(MESSAGE_UNKNOWN_ERROR_WITH_CODE), resp.error));
+        }
+
+        if (callback)
+        {
+            if (co_await callback() == false)
+                co_return false;
         }
 
         auto commit_now = [this, ip = resp.ip, port = resp.port, map_id = map.model.id, pos_x = p.x, pos_y = p.y](

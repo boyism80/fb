@@ -2,6 +2,7 @@
 #include <fb/game/server.h>
 #include <fb/game/character.h>
 #include <fb/game/appearance.h>
+#include <async/awaitable_then.h>
 #include <async/propagation.h>
 
 using namespace fb::game;
@@ -493,76 +494,6 @@ int builtin::object::builtin_map(lua_State* L)
     if (obj == nullptr)
         return 0;
 
-    auto map      = std::shared_ptr<fb::game::map>(nullptr);
-    auto position = std::optional<fb::model::point16_t>{};
-    if (argc > 1)
-    {
-        if (lua->is_userdata<fb::game::map>(2))
-        {
-            map = lua->touserdata<fb::game::map>(2);
-        }
-        else if (lua->is_userdata<fb::model::map>(2))
-        {
-            auto model = lua->touserdata<fb::model::map>(2);
-            if (server->maps.contains(model->id))
-                map = server->maps[model->id];
-        }
-        else if (lua->is_number(2))
-        {
-            auto id = lua->tointeger(2);
-            if (server->maps.contains(id))
-                map = server->maps[id];
-        }
-        else if (lua->is_string(2))
-        {
-            map = server->maps.name2map(lua->tostring(2));
-        }
-        else
-        {
-        }
-
-        if (map == nullptr)
-        {
-            lua->pushstring(_TEXT(MESSAGE_MAP_INVALID));
-            return 1;
-        }
-
-        if (lua->is_table(3))
-        {
-            lua->rawgeti(3, 1);
-            auto x = (uint16_t)lua->tointeger(-1);
-            lua->remove(-1);
-
-            lua->rawgeti(3, 2);
-            auto y = (uint16_t)lua->tointeger(-1);
-            lua->remove(-1);
-
-            position = fb::model::point16_t{x, y};
-        }
-        else if (lua->is_number(3) && lua->is_number(4))
-        {
-            auto x   = (uint16_t)lua->tointeger(3);
-            auto y   = (uint16_t)lua->tointeger(4);
-            position = fb::model::point16_t{x, y};
-        }
-        else
-        {
-        }
-    }
-
-    static auto static_func = [](std::weak_ptr<fb::game::object>            weak,
-                                 std::shared_ptr<fb::game::map>             map,
-                                 const std::optional<fb::model::point16_t>& position) -> async::task<bool> {
-        auto shared = weak.lock();
-        if (shared == nullptr)
-            co_return false;
-
-        if (position.has_value())
-            co_return co_await shared->map(map, position.value());
-        else
-            co_return co_await shared->map(map);
-    };
-
     if (argc == 1)
     {
         auto weak = obj->weak_from_this_as<fb::game::object>();
@@ -577,29 +508,198 @@ int builtin::object::builtin_map(lua_State* L)
             });
         });
     }
-    else
-    {
-        auto weak       = obj->weak_from_this_as<fb::game::object>();
-        auto builder    = server->threads.new_builder(weak);
-        builder.context = fb::execution_context::token();
-        builder.func    = [=](auto& thread) -> async::task<void> {
-            async::awaitable_then(static_func(weak, map, position), [=](auto result) {
-                auto success = result();
-                lua->ensure_resume(
-                    *server,
-                    weak,
-                    [=]() {
-                        lua->pushboolean(success);
-                        return 1;
-                    },
-                    true);
-            });
-            co_return;
-        };
-        builder.enqueue();
 
-        return lua->yield(0);
+    struct lua_map_callback_ref
+    {
+        fb::lua::context* lua = nullptr;
+        int               ref = LUA_NOREF;
+
+        ~lua_map_callback_ref()
+        {
+            this->release();
+        }
+
+        void release()
+        {
+            if (this->lua != nullptr && this->ref != LUA_NOREF)
+            {
+                luaL_unref(*this->lua, LUA_REGISTRYINDEX, this->ref);
+                this->ref = LUA_NOREF;
+            }
+        }
+    };
+
+    const auto make_lua_map_callback = [](fb::lua::context*                     lua_ctx,
+                                          std::shared_ptr<lua_map_callback_ref> holder,
+                                          std::weak_ptr<fb::game::object>       object_weak) -> map_callback {
+        return [lua_ctx, holder, object_weak]() -> async::task<bool> {
+            auto shared = object_weak.lock();
+            if (shared == nullptr)
+                co_return false;
+
+            co_await lua_ctx->switching();
+
+            if (holder->ref == LUA_NOREF)
+                co_return false;
+
+            lua_rawgeti(*lua_ctx, LUA_REGISTRYINDEX, holder->ref);
+            holder->release();
+
+            lua_ctx->pushobject(*shared);
+            try
+            {
+                co_await lua_ctx->call(1, false);
+                co_return true;
+            }
+            catch (...)
+            {
+                co_return false;
+            }
+        };
+    };
+
+    const auto is_position_table = [](fb::lua::context* lua_ctx, int index) -> bool {
+        if (lua_ctx->is_table(index) == false)
+            return false;
+
+        lua_ctx->rawgeti(index, 1);
+        auto has_x = lua_ctx->is_number(-1);
+        lua_ctx->remove(-1);
+        if (has_x == false)
+            return false;
+
+        lua_ctx->rawgeti(index, 2);
+        auto has_y = lua_ctx->is_number(-1);
+        lua_ctx->remove(-1);
+        return has_y;
+    };
+
+    const auto parse_map_position_table = [](fb::lua::context* lua_ctx, int index) -> fb::model::point16_t {
+        lua_ctx->rawgeti(index, 1);
+        auto x = (uint16_t)lua_ctx->tointeger(-1);
+        lua_ctx->remove(-1);
+
+        lua_ctx->rawgeti(index, 2);
+        auto y = (uint16_t)lua_ctx->tointeger(-1);
+        lua_ctx->remove(-1);
+
+        return fb::model::point16_t{x, y};
+    };
+
+    const auto parse_map_option_table = [&](fb::lua::context*                      lua_ctx,
+                                            int                                    index,
+                                            map_options&                           opts,
+                                            std::shared_ptr<lua_map_callback_ref>& callback_ref,
+                                            std::weak_ptr<fb::game::object>        object_weak) {
+        if (lua_ctx->is_table(index) == false)
+            return;
+
+        ::lua_getfield(*lua_ctx, index, "callback");
+        if (lua_ctx->is_function(-1))
+        {
+            ::lua_pushvalue(*lua_ctx, -1);
+            callback_ref      = std::make_shared<lua_map_callback_ref>();
+            callback_ref->lua = lua_ctx;
+            callback_ref->ref = ::luaL_ref(*lua_ctx, LUA_REGISTRYINDEX);
+            opts.callback     = make_lua_map_callback(lua_ctx, callback_ref, object_weak);
+        }
+        ::lua_pop(*lua_ctx, 1);
+
+        ::lua_getfield(*lua_ctx, index, "notify");
+        if (lua_ctx->is_nil(-1) == false)
+            opts.notify = lua_ctx->toboolean(-1);
+        ::lua_pop(*lua_ctx, 1);
+    };
+
+    auto map             = std::shared_ptr<fb::game::map>(nullptr);
+    auto position        = std::optional<fb::model::point16_t>{};
+    auto options         = map_options{};
+    auto weak            = obj->weak_from_this_as<fb::game::object>();
+    auto callback_holder = std::shared_ptr<lua_map_callback_ref>{nullptr};
+
+    if (lua->is_userdata<fb::game::map>(2))
+    {
+        map = lua->touserdata<fb::game::map>(2);
     }
+    else if (lua->is_userdata<fb::model::map>(2))
+    {
+        auto model = lua->touserdata<fb::model::map>(2);
+        if (server->maps.contains(model->id))
+            map = server->maps[model->id];
+    }
+    else if (lua->is_number(2))
+    {
+        auto id = lua->tointeger(2);
+        if (server->maps.contains(id))
+            map = server->maps[id];
+    }
+    else if (lua->is_string(2))
+    {
+        map = server->maps.name2map(lua->tostring(2));
+    }
+
+    if (map == nullptr)
+    {
+        lua->pushstring(_TEXT(MESSAGE_MAP_INVALID));
+        return 1;
+    }
+
+    auto offset = 3;
+    if (argc >= offset)
+    {
+        if (is_position_table(lua, offset))
+        {
+            position  = parse_map_position_table(lua, offset);
+            offset   += 1;
+        }
+        else if (lua->is_number(offset) && lua->is_number(offset + 1))
+        {
+            auto x    = (uint16_t)lua->tointeger(offset);
+            auto y    = (uint16_t)lua->tointeger(offset + 1);
+            position  = fb::model::point16_t{x, y};
+            offset   += 2;
+        }
+        else if (lua->is_nil(offset))
+        {
+            offset += 1;
+        }
+    }
+
+    if (argc >= offset && lua->is_table(offset))
+        parse_map_option_table(lua, offset, options, callback_holder, weak);
+
+    static auto static_func = [](std::weak_ptr<fb::game::object>     weak,
+                                 std::shared_ptr<fb::game::map>      map,
+                                 std::optional<fb::model::point16_t> position,
+                                 map_options                         options) -> async::task<bool> {
+        auto shared = weak.lock();
+        if (shared == nullptr)
+            co_return false;
+
+        co_return co_await shared->map(map, position, std::move(options));
+    };
+
+    auto builder    = server->threads.new_builder(weak);
+    builder.context = fb::execution_context::token();
+    builder.func    = [=](auto& thread) -> async::task<void> {
+        async::awaitable_then(static_func(weak, map, position, options), [=](auto result) {
+            auto success = result();
+            if (callback_holder != nullptr && success == false)
+                callback_holder->release();
+            lua->ensure_resume(
+                *server,
+                weak,
+                [=]() {
+                    lua->pushboolean(success);
+                    return 1;
+                },
+                true);
+        });
+        co_return;
+    };
+    builder.enqueue();
+
+    return lua->yield(0);
 }
 
 int builtin::object::builtin_mkitem(lua_State* L)

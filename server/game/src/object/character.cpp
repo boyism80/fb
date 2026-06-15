@@ -134,10 +134,9 @@ OBJECT_TYPE character::what() const
     return OBJECT_TYPE::CHARACTER;
 }
 
-async::task<bool> character::map(std::shared_ptr<fb::game::map> map,
-                                 const fb::model::point16_t&    position,
-                                 DESTROY_TYPE                   destroy_type,
-                                 bool                           notify)
+async::task<bool> character::map(std::shared_ptr<fb::game::map>      map,
+                                 std::optional<fb::model::point16_t> position,
+                                 map_options                         options)
 {
     if (this->_thread == nullptr)
         co_return true;
@@ -155,10 +154,13 @@ async::task<bool> character::map(std::shared_ptr<fb::game::map> map,
 
     auto switch_process = (map != nullptr && map->active == false);
     auto new_map_id     = map != nullptr ? std::make_optional(map->model.id) : std::optional<uint32_t>();
-    auto new_position   = position;
+    auto new_position   = position.value_or(fb::model::point16_t{0, 0});
+    auto callback       = std::move(options.callback);
+    options.callback    = {};
+
     if (switch_process)
     {
-        auto result = co_await this->listener.on_transfer(*this, *map, position);
+        auto result = co_await this->listener.on_transfer(*this, *map, new_position, std::move(callback));
         if (result && old_map != map)
         {
             // Log map transfer event
@@ -183,8 +185,14 @@ async::task<bool> character::map(std::shared_ptr<fb::game::map> map,
         co_return result;
     }
 
-    if (co_await object::map(map, position) == false)
+    if (co_await object::map(map, position, std::move(options)) == false)
         co_return false;
+
+    if (callback)
+    {
+        if (co_await callback() == false)
+            co_return false;
+    }
 
     if (old_map != map)
     {
@@ -1139,7 +1147,7 @@ void character::ride(mob& horse)
         if (horse.map() != this->_map)
             throw std::runtime_error(_TEXT(MESSAGE_ERROR_UNKNOWN));
 
-        horse.map(nullptr);
+        std::ignore = horse.map(nullptr);
         this->state(STATE::RIDING);
         horse.kill();
         this->message(_TEXT(MESSAGE_RIDE_ON));
@@ -1599,7 +1607,7 @@ character::spawn_mob(const fb::model::mob& model, const fb::model::point16_t& po
     auto  params    = fb::game::mob::initial_params{.alive = true, .owner = owned ? this : nullptr};
     auto& mob_model = static_cast<const fb::model::mob&>(model);
     auto  mob       = std::make_shared<fb::game::mob>(this->server, mob_model, params);
-    mob->map(map, position, DESTROY_TYPE::DEFAULT, notify);
+    mob->map(map, position, {.notify = notify});
 
     if (owned)
         this->_spawned_mobs.push_back(mob);

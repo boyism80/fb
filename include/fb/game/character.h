@@ -188,7 +188,7 @@ public:
     [[nodiscard]] const fb::model::datetime&           created_date() const { return this->_created_date; }
     uint16_t                                           look() const override final;
     uint8_t                                            color() const override final;
-    [[nodiscard]] async::task<bool>                    map(std::shared_ptr<fb::game::map> map, const fb::model::point16_t& position, DESTROY_TYPE destroy_type = DESTROY_TYPE::DEFAULT, bool notify = true) override final;
+    [[nodiscard]] async::task<bool>                    map(std::shared_ptr<fb::game::map> map, std::optional<fb::model::point16_t> position = std::nullopt, map_options options = {}) override final;
     void                                               update_map(const fb::game::map& map) override final;
     void                                               update_bgm(uint16_t bgm, uint8_t volume) override final;
     void                                               update_position() override final;
@@ -421,7 +421,7 @@ public:
     virtual void              on_screen_refresh(character& ch)                                                                                                               = 0;
     virtual void              on_level_up(character& me)                                                                                                                     = 0;
     virtual void              on_update(character& me, UPDATE_STATE_LEVEL level = UPDATE_STATE_LEVEL::EXP_MONEY | UPDATE_STATE_LEVEL::CROWD_CONTROL)                         = 0;
-    virtual async::task<bool> on_transfer(character& me, fb::game::map& map, const fb::model::point16_t& position)                                                           = 0;
+    virtual async::task<bool> on_transfer(character& me, fb::game::map& map, const fb::model::point16_t& position, map_callback callback = {})                                  = 0;
     // clang-format on
 };
 

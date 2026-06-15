@@ -111,7 +111,7 @@ public:
     void                          on_dialog(character& me, const fb::game::object& obj, std::string_view message, uint32_t seq = 0xFFFFFFFD) override final;
     void                          on_dialog(character& me, const fb::model::object& obj, std::string_view message, std::string_view top, std::string_view bottom, int maxlen = 0xFF, bool prev = false, uint32_t seq = 0xFFFFFFFD) override final;
     void                          on_dialog(character& me, const fb::game::object& obj, std::string_view message, std::string_view top, std::string_view bottom, int maxlen = 0xFF, bool prev = false, uint32_t seq = 0xFFFFFFFD) override final;
-    async::task<bool>             on_transfer(character& me, fb::game::map& map, const fb::model::point16_t& position) override final;
+    async::task<bool>             on_transfer(character& me, fb::game::map& map, const fb::model::point16_t& position, map_callback callback = {}) override final;
     // clang-format on
 };
 
