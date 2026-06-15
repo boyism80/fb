@@ -26,27 +26,26 @@ namespace Http.Reepository
 
         private static string GetLockKey(TKey key) => $"fb:lock:{key.GetRedisKey()}";
 
+        private static TModel AsActive(TModel value) =>
+            value == null || value.Deleted ? null : value;
+
         protected override async Task<TModel> Get(uint world, TKey key)
         {
             await using var _ = await _distributedLock.Lock(world, GetLockKey(key));
 
-            var localValue = _local.TryGet(key.GetRedisKey());
-            if (localValue != null)
-                return localValue;
+            if (_local.ContainsKey(key.GetRedisKey()))
+                return AsActive(_local.TryGet(key.GetRedisKey()));
 
             var redis = _redis.GetConnection(world, key.GetHash());
             var redisValue = await _redis.TryGetAsync(redis, key.GetRedisKey());
             if (redisValue != null)
-                return redisValue;
+                return AsActive(redisValue);
 
             var dbValue = await base.Get(world, key);
             if (dbValue == null)
                 return null;
 
             await _redis.WriteBackAsync(redis, key.GetRedisKey(), dbValue);
-            if (dbValue.Deleted)
-                return null;
-
             return dbValue;
         }
 
@@ -76,10 +75,11 @@ namespace Http.Reepository
                 var localMiss = new List<TKey>();
                 foreach (var key in keyList)
                 {
-                    var localValue = _local.TryGet(key.GetRedisKey());
-                    if (localValue != null)
+                    if (_local.ContainsKey(key.GetRedisKey()))
                     {
-                        result.Add(localValue);
+                        var localValue = AsActive(_local.TryGet(key.GetRedisKey()));
+                        if (localValue != null)
+                            result.Add(localValue);
                     }
                     else
                     {
@@ -95,12 +95,15 @@ namespace Http.Reepository
 
                     foreach (var (redisKey, json) in redisHits)
                     {
+                        _local.PutRaw(redisKey, json);
+
                         var val = JsonConvert.DeserializeObject<TModel>(json);
-                        if (val == null || val.Deleted)
+                        if (val == null)
                             continue;
 
-                        result.Add(val);
-                        _local.PutRaw(redisKey, json);
+                        var active = AsActive(val);
+                        if (active != null)
+                            result.Add(active);
                     }
 
                     foreach (var key in localMiss)

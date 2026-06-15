@@ -63,11 +63,7 @@ namespace Http.Reepository.Cache
             if (redis == null)
                 return null;
 
-            var value = await redis.Connection.JsonGetAsync<TModel>(redisKey);
-            if (value == null || value.Deleted)
-                return null;
-
-            return value;
+            return await redis.Connection.JsonGetAsync<TModel>(redisKey);
         }
 
         public async Task WriteBackAsync(Service.Redis redis, RedisKey redisKey, TModel value)

@@ -440,15 +440,8 @@ namespace Internal.Controllers
             MarketplacePending[] request,
             IReadOnlyList<MarketplacePending> existing)
         {
-            var src = request.ToDictionary(x => x.PendingKey);
-            var existingByKey = existing.ToDictionary(x => x.PendingKey);
-
-            var removedKeys = existingByKey.Keys.Except(src.Keys).ToArray();
-            if (removedKeys.Length > 0)
-                _dbContext.MarketplacePending.DeleteMany(world, userId, removedKeys);
-
-            if (src.Count > 0)
-                _dbContext.MarketplacePending.Set(world, src.Values.ToArray());
+            var marketplacePendings = ReconcileSnapshot(request, existing);
+            _dbContext.MarketplacePending.Set(world, marketplacePendings);
         }
 
         [HttpPost("save")]

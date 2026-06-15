@@ -36,6 +36,7 @@ namespace Http.Service
                 User = userId,
                 Reason = reason,
                 ExpireDate = expireDate,
+                Deleted = false,
                 CreatedDate = DateTime.Now,
                 UpdatedDate = DateTime.Now
             };
