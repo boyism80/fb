@@ -160,8 +160,60 @@ async::task<bool> character::map(std::shared_ptr<fb::game::map>      map,
 
     if (switch_process)
     {
-        auto result = co_await this->listener.on_transfer(*this, *map, new_position, std::move(callback));
-        if (result && old_map != map)
+        if (this->map() == nullptr)
+            co_return false;
+
+        try
+        {
+            auto   world = fb::config<uint32_t>("world");
+            auto&& resp  = co_await this->server.http.post(
+                "internal",
+                "/in-game/transfer",
+                internal_reqs::Transfer{world, internal::Service::Game, map->model.host, this->name(), false});
+
+            switch (static_cast<ERROR_CODE>(resp.error))
+            {
+            case ERROR_CODE::NONE:
+                break;
+
+            case ERROR_CODE::SERVER_NOT_READY:
+                throw std::runtime_error(_TEXT(MESSAGE_NOT_READY_GAME_SERVER));
+
+            case ERROR_CODE::BANNED:
+                throw std::runtime_error(
+                    character::container::build_ban_message(resp.ban_reason, resp.ban_expire_date));
+
+            default:
+                throw std::runtime_error(std::format(_TEXT(MESSAGE_UNKNOWN_ERROR_WITH_CODE), resp.error));
+            }
+
+            if (callback)
+            {
+                if (co_await callback() == false)
+                    co_return false;
+            }
+
+            std::ignore = co_await this->map(nullptr);
+            co_await this->server.save(*this);
+
+            this->listener.on_transfer(*this, *map, new_position, resp.ip, resp.port);
+        }
+        catch (std::exception& e)
+        {
+            this->update_map();
+            this->update_external(true);
+            this->listener.on_message(*this, e.what(), MESSAGE_TYPE::STATE);
+            co_return false;
+        }
+        catch (boost::system::error_code& /*e*/)
+        {
+            this->update_map();
+            this->update_external(true);
+            this->listener.on_message(*this, _TEXT(MESSAGE_NOT_READY_GAME_SERVER), MESSAGE_TYPE::STATE);
+            co_return false;
+        }
+
+        if (old_map != map)
         {
             // Log map transfer event
             auto log_data              = Json::Value();
@@ -182,7 +234,7 @@ async::task<bool> character::map(std::shared_ptr<fb::game::map>      map,
             }
             this->server.log.write("map_transfer", log_data);
         }
-        co_return result;
+        co_return true;
     }
 
     if (co_await object::map(map, position, std::move(options)) == false)

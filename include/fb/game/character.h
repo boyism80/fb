@@ -421,7 +421,7 @@ public:
     virtual void              on_screen_refresh(character& ch)                                                                                                               = 0;
     virtual void              on_level_up(character& me)                                                                                                                     = 0;
     virtual void              on_update(character& me, UPDATE_STATE_LEVEL level = UPDATE_STATE_LEVEL::EXP_MONEY | UPDATE_STATE_LEVEL::CROWD_CONTROL)                         = 0;
-    virtual async::task<bool> on_transfer(character& me, fb::game::map& map, const fb::model::point16_t& position, map_callback callback = {})                                  = 0;
+    virtual void              on_transfer(character& me, fb::game::map& map, const fb::model::point16_t& position, std::string_view ip, uint16_t port)                       = 0;
     // clang-format on
 };
 
