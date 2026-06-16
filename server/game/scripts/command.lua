@@ -1158,8 +1158,8 @@ command_funcs = {
                     return true
                 end
                 time = tonumber(time)
-                if not time or time <= 0 then
-                    me:message("시간은 0보다 큰 숫자여야 합니다.")
+                if not time or time < 0 then
+                    me:message("시간은 0 이상의 숫자여야 합니다.")
                     return true
                 end
                 sleep(time)

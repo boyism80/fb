@@ -74,7 +74,11 @@ async::task<size_t> character::send(const fb::stream& stream, bool encrypt, bool
 
     const auto queued = wire.size();
 
-    auto* ctx = context::local::try_get();
+    auto frame = execution_context::current();
+    if (frame == nullptr)
+        co_return co_await this->send_immediate(stream, encrypt, wrap);
+
+    auto* ctx = frame->slot<context>(context::local::slot_id());
     if (ctx == nullptr)
         co_return co_await this->send_immediate(stream, encrypt, wrap);
 

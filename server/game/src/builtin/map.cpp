@@ -185,35 +185,40 @@ int builtin::map::builtin_movable(lua_State* L)
         return 1;
     }
 
-    auto weak = obj->weak_from_this_as<fb::game::object>();
-    return lua->ensure_yield(*server, weak, [=](auto is_yield) mutable {
+    auto weak     = obj->weak_from_this_as<fb::game::object>();
+    auto map_weak = map->weak_from_this_as<fb::game::map>();
+    auto result   = std::make_shared<bool>(false);
+    auto builder  = lua->new_co_builder(*server);
+    builder.weak  = weak;
+    builder.yield = [=]() -> async::task<void> {
         auto role = ROLE::USER;
         if (obj->is(OBJECT_TYPE::CHARACTER))
             role = static_cast<character*>(obj.get())->role();
 
+        auto pos = position;
         if (is_front)
-            position = obj->front_position(step);
+            pos = obj->front_position(step);
 
-        auto map_weak = map->weak_from_this_as<fb::game::map>();
-        return lua->ensure_yield(
-            *server,
-            map_weak,
-            [=](auto is_yield) {
-                auto result = map->movable(position, [=](const auto& obj) -> bool {
-                    if (obj.is(OBJECT_TYPE::CHARACTER) == false)
-                        return true;
+        co_await server->threads.switching(map_weak);
 
-                    auto& ch = static_cast<const character&>(obj);
-                    return !ch.hidden(role);
-                });
+        auto map_locked = map_weak.lock();
+        if (map_locked == nullptr)
+            co_return;
 
-                return lua->ensure_resume(*server, map_weak, [=]() {
-                    lua->pushboolean(result);
-                    return 1;
-                });
-            },
-            is_yield);
-    });
+        *result = map_locked->movable(pos, [=](const auto& near_obj) -> bool {
+            if (near_obj.is(OBJECT_TYPE::CHARACTER) == false)
+                return true;
+
+            auto& ch = static_cast<const character&>(near_obj);
+            return !ch.hidden(role);
+        });
+        co_return;
+    };
+    builder.resume = [=]() -> async::task<int> {
+        lua->pushboolean(*result);
+        co_return 1;
+    };
+    return builder.run();
 }
 
 int builtin::map::builtin_door(lua_State* L)
@@ -370,27 +375,30 @@ int builtin::map::builtin_at(lua_State* L)
     auto type     = lua->toenum(4, OBJECT_TYPE::OBJECT);
     auto position = fb::model::point16_t{x, y};
 
-    auto weak = map->weak_from_this_as<fb::game::map>();
-    return lua->ensure_yield(*server, weak, [=](auto is_yield) {
-        auto nears  = map->nears(fb::model::point16_t{x, y}, type);
-        auto result = std::shared_ptr<object>(nullptr);
+    auto weak          = map->weak_from_this_as<fb::game::map>();
+    auto result_holder = std::make_shared<std::shared_ptr<object>>(nullptr);
+    auto builder       = lua->new_co_builder(*server);
+    builder.weak       = weak;
+    builder.yield      = [=]() -> async::task<void> {
+        auto nears = map->nears(fb::model::point16_t{x, y}, type);
         for (const auto& obj : nears)
         {
             if (obj->position() == position)
             {
-                result = obj;
+                *result_holder = obj;
                 break;
             }
         }
-
-        return lua->ensure_resume(*server, weak, [=]() {
-            if (result == nullptr)
-                lua->pushnil();
-            else
-                lua->pushobject(result);
-            return 1;
-        });
-    });
+        co_return;
+    };
+    builder.resume = [=]() -> async::task<int> {
+        if (*result_holder == nullptr)
+            lua->pushnil();
+        else
+            lua->pushobject(*result_holder);
+        co_return 1;
+    };
+    return builder.run();
 }
 
 int builtin::map::builtin_block(lua_State* L)

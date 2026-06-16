@@ -131,6 +131,9 @@ std::shared_ptr<fb::timer> fb::thread::settimer(fb::timer::handle_callback_type&
 
 async::task<void> fb::thread::sleep(const fb::model::timespan& delay)
 {
+    if (delay.total_milliseconds() == 0)
+        co_return;
+
     auto promise = std::make_shared<async::task_completion_source<void>>();
     this->settimer(
         [promise](auto& datetime, auto thread_id) -> async::task<void> {
@@ -140,7 +143,7 @@ async::task<void> fb::thread::sleep(const fb::model::timespan& delay)
         delay,
         fb::timer::repeat_type::once);
 
-    return promise->task();
+    co_return co_await promise->task();
 }
 
 void fb::thread::enqueue(handle_func_type<void>&&  fn,
@@ -224,9 +227,11 @@ async::task<void> fb::thread::dispatch(handle_func_type<void>&& fn, async::propa
 
 async::task<void> fb::thread::switching()
 {
-    co_await this->dispatch([](auto& thread) -> async::task<void> {
-        co_return;
-    });
+    co_await this->dispatch(
+        [](auto& thread) -> async::task<void> {
+            co_return;
+        },
+        execution_context::token());
 }
 
 std::thread::id fb::thread::id() const

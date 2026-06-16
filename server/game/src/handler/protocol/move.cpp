@@ -62,7 +62,7 @@ async::task<bool> move::handle(fb::socket<character>&      session,
             ch->move(direction, position);
 
             auto params = fb::model::dsl::script(warp->dest.params);
-            auto lua    = fb::lua::new_context();
+            auto lua    = fb::lua::new_context(nullptr, {.auto_release = false});
             if (lua != nullptr)
             {
 #if defined DEBUG || defined _DEBUG
@@ -70,7 +70,7 @@ async::task<bool> move::handle(fb::socket<character>&      session,
 #endif
                 lua->func(params.function);
                 lua->pushobject(ch);
-                std::ignore = lua->call(1, false);
+                std::ignore = lua->call(1);
             }
         }
         break;

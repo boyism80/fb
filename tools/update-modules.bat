@@ -5,7 +5,7 @@ REM Pinned refs — keep server/fb/Dockerfile ARG defaults in sync when bumping 
 set JSONCPP_REF=1.9.6
 set RABBITMQ_REF=v0.14.0
 set ZLIB_REF=v1.2.9
-set CPP_ASYNC_REF=v1.1.1
+set CPP_ASYNC_REF=v1.1.2
 set BOOST_REF=boost-1.84.0
 
 mkdir library 2>nul
@@ -85,7 +85,9 @@ XCOPY flatbuffers\build\Debug\flatbuffers.lib %DEST%\lib\flatbuffersd.* /K /D /H
 XCOPY flatbuffers\build\Release\flatbuffers.lib %DEST%\lib\flatbuffers.* /K /D /H /Y
 ROBOCOPY flatbuffers\include\ %DEST%\include\ /E
 
-call :sync_cpp_async
+call :ensure_git_repo https://github.com/boyism80/cpp-async cpp-async %CPP_ASYNC_REF%
+ROBOCOPY cpp-async\include\async\ %DEST%\include\async\ *.h /MIR /NFL /NDL /NJH /NJS /NP
+if %ERRORLEVEL% GEQ 8 exit /b %ERRORLEVEL%
 
 call :ensure_git_repo https://github.com/boostorg/boost boost %BOOST_REF%
 PUSHD boost
@@ -119,13 +121,4 @@ if not exist "%~2" (
     git checkout "%~3"
     popd
 )
-exit /b 0
-
-REM Header-only: always refresh so version bumps apply on cached CI runners.
-:sync_cpp_async
-if exist cpp-async rmdir /s /q cpp-async
-git clone --depth 1 --branch %CPP_ASYNC_REF% https://github.com/boyism80/cpp-async cpp-async
-if not exist "%DEST%\include\async" mkdir "%DEST%\include\async"
-ROBOCOPY cpp-async\include\async\ %DEST%\include\async\ *.h /MIR /NFL /NDL /NJH /NJS /NP
-if %ERRORLEVEL% GEQ 8 exit /b %ERRORLEVEL%
 exit /b 0

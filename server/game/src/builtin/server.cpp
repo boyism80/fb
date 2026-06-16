@@ -47,13 +47,17 @@ int builtin::server::builtin_sleep(lua_State* L)
     if (lua == nullptr)
         return 0;
 
-    auto ms = (uint32_t)lua->tointeger(1);
-
+    auto ms     = (uint32_t)lua->tointeger(1);
     auto server = lua->env<fb::game::server>("server");
-    async::awaitable_then(server->sleep(std::chrono::milliseconds(ms)), [lua](auto result) {
-        lua->resume(0);
-    });
-    return lua->yield(0);
+
+    auto builder  = lua->new_co_builder(*server);
+    builder.yield = [=]() -> async::task<void> {
+        co_await server->sleep(std::chrono::milliseconds(ms));
+    };
+    builder.resume = []() -> async::task<int> {
+        co_return 0;
+    };
+    return builder.run();
 }
 
 /**
@@ -383,13 +387,22 @@ int builtin::server::builtin_name2ch(lua_State* L)
         return 1;
     }
 
-    auto weak = ch->template weak_from_this_as<character>();
-    return lua->ensure_yield(*server, weak, [=](auto is_yield) {
-        return lua->ensure_resume(*server, weak, [=]() {
-            lua->pushobject(ch);
-            return 1;
-        });
-    });
+    auto weak      = ch->template weak_from_this_as<character>();
+    auto ch_holder = std::make_shared<std::shared_ptr<character>>();
+    auto builder   = lua->new_co_builder(*server);
+    builder.weak   = weak;
+    builder.yield  = [=]() -> async::task<void> {
+        *ch_holder = weak.lock();
+        co_return;
+    };
+    builder.resume = [=]() -> async::task<int> {
+        if (*ch_holder == nullptr)
+            lua->pushnil();
+        else
+            lua->pushobject(*ch_holder);
+        co_return 1;
+    };
+    return builder.run();
 }
 
 int builtin::server::builtin_name2item(lua_State* L)
@@ -518,13 +531,22 @@ int builtin::server::builtin_id2ch(lua_State* L)
         return 0;
     }
 
-    auto weak = ch->template weak_from_this_as<character>();
-    return lua->ensure_yield(*server, weak, [=](auto /*is_yield*/) {
-        return lua->ensure_resume(*server, weak, [=]() {
-            lua->pushobject(ch);
-            return 1;
-        });
-    });
+    auto weak      = ch->template weak_from_this_as<character>();
+    auto ch_holder = std::make_shared<std::shared_ptr<character>>();
+    auto builder   = lua->new_co_builder(*server);
+    builder.weak   = weak;
+    builder.yield  = [=]() -> async::task<void> {
+        *ch_holder = weak.lock();
+        co_return;
+    };
+    builder.resume = [=]() -> async::task<int> {
+        if (*ch_holder == nullptr)
+            lua->pushnil();
+        else
+            lua->pushobject(*ch_holder);
+        co_return 1;
+    };
+    return builder.run();
 }
 
 int builtin::server::builtin_pursuit_sell(lua_State* L)
@@ -882,38 +904,22 @@ int builtin::server::builtin_mknpc(lua_State* L)
         y = (uint16_t)lua->tointeger(4);
     }
 
-    if (map->thread()->id() == std::this_thread::get_id())
-    {
-        auto weak = map->weak_from_this();
-        return lua->ensure_yield(*server, weak, [=](auto is_yield) {
-            // Use smart pointer for NPC creation
-            auto npc = server->make<fb::game::npc>(*model);
-            npc->direction(direction);
-            npc->map(map, fb::model::point16_t{x, y});
-
-            auto weak = npc->weak_from_this();
-            return lua->ensure_resume(*server, weak, [=]() {
-                lua->pushobject(npc);
-                return 1;
-            });
-        });
-    }
-    else
-    {
-        auto weak = map->weak_from_this();
-        return lua->ensure_yield(*server, weak, [=](auto is_yield) {
-            // Use smart pointer for NPC creation
-            auto npc = server->make<fb::game::npc>(*model);
-            npc->direction(direction);
-            npc->map(map, fb::model::point16_t{x, y});
-
-            auto weak = npc->weak_from_this();
-            return lua->ensure_resume(*server, weak, [=]() {
-                lua->pushobject(npc);
-                return 1;
-            });
-        });
-    }
+    auto weak       = map->weak_from_this();
+    auto npc_holder = std::make_shared<std::shared_ptr<fb::game::npc>>();
+    auto builder    = lua->new_co_builder(*server);
+    builder.weak    = weak;
+    builder.yield   = [=]() -> async::task<void> {
+        auto npc = server->make<fb::game::npc>(*model);
+        npc->direction(direction);
+        npc->map(map, fb::model::point16_t{x, y});
+        *npc_holder = npc;
+        co_return;
+    };
+    builder.resume = [=]() -> async::task<int> {
+        lua->pushobject(*npc_holder);
+        co_return 1;
+    };
+    return builder.run();
 }
 
 int builtin::server::builtin_maps(lua_State* L)

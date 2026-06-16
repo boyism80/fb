@@ -5,24 +5,27 @@
 #include <cstdint>
 #include <fb/stream.h>
 #include <memory>
-#include <unordered_map>
 
 namespace fb {
 
 class outbound_buffer
 {
 public:
+    outbound_buffer();
+    ~outbound_buffer();
+
+    outbound_buffer(const outbound_buffer&)             = delete;
+    outbound_buffer& operator= (const outbound_buffer&) = delete;
+    outbound_buffer(outbound_buffer&&)                  = default;
+    outbound_buffer& operator= (outbound_buffer&&)      = default;
+
     void append(std::shared_ptr<boost::asio::ip::tcp::socket> endpoint, fb::stream wire);
     void flush();
 
 private:
-    struct slot
-    {
-        std::shared_ptr<boost::asio::ip::tcp::socket> endpoint;
-        fb::stream                                    wire;
-    };
+    struct state;
 
-    std::unordered_map<uint32_t, slot> _pending;
+    std::shared_ptr<state> _state;
 
     static uint32_t endpoint_key(boost::asio::ip::tcp::socket& endpoint);
     void            write(std::shared_ptr<boost::asio::ip::tcp::socket> endpoint, std::shared_ptr<fb::stream> wire);

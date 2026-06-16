@@ -7,10 +7,10 @@
 
 using namespace fb::lua;
 
-context* fb::lua::new_context(context* parent)
+context* fb::lua::new_context(context* parent, call_options options)
 {
     auto& ist = context_pool::ist();
-    return ist.pop(parent);
+    return ist.pop(parent, options);
 }
 
 context* fb::lua::get(lua_State* ctx)
@@ -354,13 +354,22 @@ int context::argc()
     return lua_gettop(this->_ctx);
 }
 
-async::task<bool> context::call(int argc, bool auto_release, int* n)
+async::task<bool> context::call(int argc, int* retc)
 {
-    auto promise        = std::make_shared<async::task_completion_source<bool>>();
-    this->_promise      = promise;
-    this->_auto_release = auto_release;
-    this->resume(argc, n);
+    auto promise   = std::make_shared<async::task_completion_source<bool>>();
+    this->_promise = promise;
+    this->resume(argc, retc);
     return promise->task();
+}
+
+void fb::lua::context::options(call_options opts)
+{
+    this->_options = opts;
+}
+
+const call_options& fb::lua::context::options() const
+{
+    return this->_options;
 }
 
 void fb::lua::context::resume(int argc, int* n)
@@ -388,11 +397,12 @@ void fb::lua::context::resume(int argc, int* n)
         lua_pop(*this, 1);
         fb::logger::fatal(message);
 
-        auto promise = promise_type{this->_promise};
-        auto parent  = this->_parent;
+        auto promise            = promise_type{this->_promise};
+        auto parent             = this->_parent;
+        auto auto_resume_parent = this->_options.auto_resume_parent;
         root->revoke(*this);
 
-        if (parent != nullptr && lua_status(*parent) == LUA_YIELD)
+        if (parent != nullptr && lua_status(*parent) == LUA_YIELD && auto_resume_parent)
         {
             auto context = fb::execution_context::token();
             async::awaitable_then(parent->_initial_thread.switching(),
@@ -406,12 +416,13 @@ void fb::lua::context::resume(int argc, int* n)
     }
     else // LUA_OK: coroutine finished successfully.
     {
-        auto parent = this->_parent;
+        auto parent             = this->_parent;
+        auto auto_resume_parent = this->_options.auto_resume_parent;
         if (parent != nullptr)
         {
             auto context = fb::execution_context::token();
             async::awaitable_then(parent->_initial_thread.switching(),
-                                  [this, parent, n, context](async::awaitable_result<void> result) {
+                                  [this, parent, n, context, auto_resume_parent](async::awaitable_result<void> result) {
                                       result();
                                       fb::execution_context::pending(context);
 
@@ -419,12 +430,18 @@ void fb::lua::context::resume(int argc, int* n)
                                       if (n != nullptr)
                                           *n = argc;
 
-                                      lua_xmove(*this, *parent, argc);
-                                      if (lua_status(*parent) == LUA_YIELD)
-                                          parent->resume(argc);
+                                      if (auto_resume_parent)
+                                      {
+                                          lua_xmove(*this, *parent, argc);
+                                          if (lua_status(*parent) == LUA_YIELD)
+                                              parent->resume(argc);
+                                      }
                                   });
         }
-        if (this->_auto_release)
+        else if (n != nullptr)
+            *n = this->argc();
+
+        if (this->_options.auto_release)
             root->release(*this);
 
         this->_promise->set_value(true);
@@ -453,91 +470,132 @@ void context::release()
     }
 }
 
-int context::ensure_yield(fb::async_executor&                  executor,
-                          std::weak_ptr<fb::thread_switchable> weak,
-                          std::function<int(bool)>             fn,
-                          bool                                 no_yield)
+async::task<int> fb::lua::context::co_builder::run_pipeline(fb::async_executor& executor,
+                                                            std::optional<std::weak_ptr<fb::thread_switchable>> weak,
+                                                            context*                                            lua_ptr,
+                                                            std::function<async::task<void>()> yield_fn,
+                                                            std::function<async::task<int>()>  resume_fn)
 {
-    auto shared = weak.lock();
-    if (shared == nullptr)
-        return 0;
-
-    if (this->_initial_thread.id() == shared->thread()->id())
-    {
-        return fn(false);
-    }
-    else
-    {
-        auto context = fb::execution_context::token();
-        async::awaitable_then(executor.threads.switching(weak),
-                              [this, fn, context](async::awaitable_result<void> result) {
-                                  try
-                                  {
-                                      result();
-                                      fb::execution_context::pending(context);
-                                      return fn(true);
-                                  }
-                                  catch (std::exception& e)
-                                  {
-                                      fb::logger::fatal("lua error message : {}", e.what());
-                                      this->release();
-                                      return 0;
-                                  }
-                              });
-        if (no_yield)
-            return 0;
+    const auto abort_pipeline = [lua_ptr](const char* phase, const char* message) {
+        if (message != nullptr)
+            fb::logger::fatal("lua co_builder {} error: {}", phase, message);
         else
-            return this->yield(0);
+            fb::logger::fatal("lua co_builder {} error", phase);
+        lua_ptr->release();
+    };
+
+    if (weak.has_value())
+    {
+        try
+        {
+            co_await executor.threads.switching(*weak);
+        }
+        catch (const std::exception& e)
+        {
+            abort_pipeline("thread switch", e.what());
+            throw;
+        }
+        catch (...)
+        {
+            abort_pipeline("thread switch", nullptr);
+            throw;
+        }
+    }
+
+    try
+    {
+        co_await yield_fn();
+    }
+    catch (const std::exception& e)
+    {
+        abort_pipeline("yield", e.what());
+        throw;
+    }
+    catch (...)
+    {
+        abort_pipeline("yield", nullptr);
+        throw;
+    }
+
+    try
+    {
+        co_await lua_ptr->_initial_thread.switching();
+    }
+    catch (const std::exception& e)
+    {
+        abort_pipeline("lua thread switch", e.what());
+        throw;
+    }
+    catch (...)
+    {
+        abort_pipeline("lua thread switch", nullptr);
+        throw;
+    }
+
+    try
+    {
+        co_return co_await resume_fn();
+    }
+    catch (const std::exception& e)
+    {
+        abort_pipeline("resume", e.what());
+        throw;
+    }
+    catch (...)
+    {
+        abort_pipeline("resume", nullptr);
+        throw;
     }
 }
 
-int fb::lua::context::ensure_resume(fb::async_executor&                  executor,
-                                    std::weak_ptr<fb::thread_switchable> weak,
-                                    std::function<int()>                 fn,
-                                    bool                                 force_resume)
+fb::lua::context::co_builder::co_builder(context& lua, fb::async_executor& executor) :
+    _lua(lua),
+    _executor(executor)
+{ }
+
+int fb::lua::context::co_builder::run()
 {
-    auto shared = weak.lock();
-    if (shared == nullptr)
-        return 0;
-
-    if (this->_initial_thread.id() == std::this_thread::get_id())
+    if (this->weak.has_value())
     {
-        auto n = fn();
-        if (force_resume)
-        {
-            this->resume(n);
-            return n;
-        }
-        else
-        {
-            return n;
-        }
+        auto shared = this->weak->lock();
+        if (shared == nullptr)
+            return 0;
     }
+
+    auto yield_fn = this->yield ? this->yield : []() -> async::task<void> {
+        co_return;
+    };
+    auto resume_fn = this->resume ? this->resume : []() -> async::task<int> {
+        co_return 0;
+    };
+
+    int  sync_result = -1;
+    auto lua_ptr     = &this->_lua;
+
+    auto immediate = async::awaitable_then_immediate(
+        run_pipeline(this->_executor, this->weak, lua_ptr, std::move(yield_fn), std::move(resume_fn)),
+        [lua_ptr, &sync_result](async::awaitable_result<int> result, bool immediate) {
+            try
+            {
+                auto n = result();
+                if (immediate)
+                    sync_result = n;
+                else
+                    lua_ptr->resume(n);
+            }
+            catch (...)
+            { }
+        });
+
+    if (immediate)
+        return sync_result;
     else
-    {
-        auto context = fb::execution_context::token();
-        async::awaitable_then(this->_initial_thread.switching(),
-                              [this, fn, weak, context](async::awaitable_result<void> result) {
-                                  try
-                                  {
-                                      result();
+        return lua_ptr->yield(0);
+}
 
-                                      auto shared = weak.lock();
-                                      if (shared == nullptr)
-                                          throw std::runtime_error("object not alive");
-
-                                      fb::execution_context::pending(context);
-                                      auto n = fn();
-                                      this->resume(n);
-                                  }
-                                  catch (std::exception& e)
-                                  {
-                                      fb::logger::fatal("lua error message : {}", e.what());
-                                      this->release();
-                                  }
-                              });
-        return 0;
-    }
+fb::lua::context::co_builder fb::lua::context::new_co_builder(fb::async_executor& executor)
+{
+    return co_builder(*this, executor);
 }
 
 root::root(fb::thread& thread) :
@@ -611,7 +669,7 @@ bool root::dump(std::string_view path)
     return true;
 }
 
-context* root::pop(context* parent)
+context* root::pop(context* parent, call_options options)
 {
     if (this->idle.empty() == false)
     {
@@ -620,11 +678,12 @@ context* root::pop(context* parent)
         this->busy.insert({key, std::move(ctx)});
         this->idle.erase(key);
         this->busy[key]->parent(parent);
+        this->busy[key]->options(options);
         return this->busy[key].get();
     }
     else if (this->idle.size() + this->busy.size() < DEFAULT_POOL_SIZE)
     {
-        auto ptr = std::make_unique<fb::lua::thread>(*this, parent);
+        auto ptr = std::make_unique<fb::lua::thread>(*this, parent, options);
         auto key = (lua_State*)*ptr.get();
 
         if (this->idle.contains(key) || this->busy.contains(key))
@@ -653,6 +712,7 @@ void root::release(context& ctx)
 
         lua_settop(ctx, 0);
         ctx.parent(nullptr);
+        ctx.options(call_options{});
 
         // Force garbage collection before moving to idle pool
         lua_gc(ctx, LUA_GCCOLLECT, 0);
@@ -701,13 +761,13 @@ fb::lua::context_pool::~context_pool()
     // std::unique_ptr handles cleanup automatically
 }
 
-context* fb::lua::context_pool::pop(context* parent)
+context* fb::lua::context_pool::pop(context* parent, call_options options)
 {
     auto id = std::this_thread::get_id();
     if (this->_roots.contains(id) == false)
         return nullptr;
 
-    return this->_roots[id]->pop(parent);
+    return this->_roots[id]->pop(parent, options);
 }
 
 context* fb::lua::context_pool::get(lua_State* ctx)
@@ -752,10 +812,11 @@ fb::lua::context_pool& fb::lua::context_pool::ist()
     return *_ist;
 }
 
-thread::thread(context& owner, context* parent) :
+thread::thread(context& owner, context* parent, call_options options) :
     context(::lua_newthread(owner), owner, parent),
     ref(luaL_ref(owner, LUA_REGISTRYINDEX))
 {
+    this->options(options);
     lua_checkstack(*this, 10000);
 }
 

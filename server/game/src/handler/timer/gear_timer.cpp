@@ -10,7 +10,7 @@ async::task<void> gear_timer::handle(const fb::model::datetime& now, std::thread
 {
     auto thread = this->server.threads.at(id);
     auto params = thread->template data<thread_params>();
-    auto lua    = fb::lua::new_context();
+    auto lua    = fb::lua::new_context(nullptr, {.auto_release = false});
 
     for (auto& [_, map] : params->maps)
     {
@@ -59,7 +59,7 @@ async::task<void> gear_timer::handle(const fb::model::datetime& now, std::thread
                         lua->pushobject(ch);
                         lua->pushobject(equipment);
                     }
-                    std::ignore = co_await lua->call(2, false);
+                    std::ignore = co_await lua->call(2);
                     co_await this->server.threads.switching(weak);
                 }
                 catch (std::exception& e)

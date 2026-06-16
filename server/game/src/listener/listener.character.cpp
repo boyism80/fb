@@ -111,7 +111,11 @@ void listener_impl::on_update(character& me, UPDATE_STATE_LEVEL level)
         me.send(game_resp::update_internal(me, level));
 }
 
-void listener_impl::on_transfer(character& me, map& map, const fb::model::point16_t& position, std::string_view ip, uint16_t port)
+void listener_impl::on_transfer(character&                  me,
+                                map&                        map,
+                                const fb::model::point16_t& position,
+                                std::string_view            ip,
+                                uint16_t                    port)
 {
     auto stream = fb::stream();
     auto writer = fb::stream_writer<big_endian>(stream);

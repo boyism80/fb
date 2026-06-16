@@ -2,9 +2,29 @@
 #include <fb/outbound_buffer.h>
 
 #include <boost/asio.hpp>
+#include <mutex>
+#include <unordered_map>
 #include <utility>
 
 using namespace fb;
+
+struct outbound_buffer::state
+{
+    struct slot
+    {
+        std::shared_ptr<boost::asio::ip::tcp::socket> endpoint;
+        fb::stream                                    wire;
+    };
+
+    std::unordered_map<uint32_t, slot> pending;
+    std::recursive_mutex               mutex;
+};
+
+outbound_buffer::outbound_buffer() :
+    _state(std::make_shared<state>())
+{ }
+
+outbound_buffer::~outbound_buffer() = default;
 
 uint32_t outbound_buffer::endpoint_key(boost::asio::ip::tcp::socket& endpoint)
 {
@@ -34,9 +54,11 @@ void outbound_buffer::append(std::shared_ptr<boost::asio::ip::tcp::socket> endpo
     if (endpoint->is_open() == false)
         return;
 
-    const auto key  = outbound_buffer::endpoint_key(*endpoint);
-    auto&      slot = this->_pending[key];
+    const auto key = outbound_buffer::endpoint_key(*endpoint);
 
+    std::lock_guard lock(this->_state->mutex);
+
+    auto& slot = this->_state->pending[key];
     if (slot.endpoint == nullptr)
         slot.endpoint = std::move(endpoint);
 
@@ -45,11 +67,13 @@ void outbound_buffer::append(std::shared_ptr<boost::asio::ip::tcp::socket> endpo
 
 void outbound_buffer::flush()
 {
-    if (this->_pending.empty())
+    std::lock_guard lock(this->_state->mutex);
+
+    if (this->_state->pending.empty())
         return;
 
-    auto pending = std::move(this->_pending);
-    this->_pending.clear();
+    auto pending = std::move(this->_state->pending);
+    this->_state->pending.clear();
 
     for (auto& [key, slot] : pending)
     {
