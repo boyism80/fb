@@ -1,4 +1,5 @@
-﻿using StackExchange.Redis;
+﻿using Http.Redis;
+using StackExchange.Redis;
 using StackExchange.Redis.Extensions.Core.Configuration;
 using System.Text;
 
@@ -7,32 +8,11 @@ namespace Http.Service
     public class Redis
     {
         private readonly ConnectionMultiplexer _redis;
-        private readonly Dictionary<string, LoadedLuaScript> _loadedLuaScripts = new Dictionary<string, LoadedLuaScript>();
+        private readonly RedisScriptRunner _inlineScripts = new RedisScriptRunner();
 
         public Redis(RedisHost host)
         {
             _redis = ConnectionMultiplexer.Connect($"{host.Host}:{host.Port},abortConnect=false,connectTimeout=30000,responseTimeout=30000");
-
-            LoadScriptFiles(Path.Combine("Redis", "Script"));
-        }
-
-        private void LoadScriptFiles(string path)
-        {
-            if (!Directory.Exists(path))
-                return;
-
-            foreach (var file in Directory.GetFiles(path, "*.lua"))
-            {
-                var fileName = Path.GetFileName(file);
-                var script = LuaScript.Prepare(File.ReadAllText(file));
-                var loadedScript = script.Load(_redis.GetServer(_redis.GetEndPoints()[0]));
-                _loadedLuaScripts.Add(fileName, loadedScript);
-            }
-        }
-
-        public LoadedLuaScript GetLoadedLuaScript(string file)
-        {
-            return _loadedLuaScripts.GetValueOrDefault(file);
         }
 
         public IDatabase Connection
@@ -46,6 +26,16 @@ namespace Http.Service
         public IServer GetServer()
         {
             return _redis.GetServer(_redis.GetEndPoints()[0]);
+        }
+
+        public Task<RedisResult> EvalAsync(string source, RedisKey[] keys, RedisValue[] values = null)
+        {
+            return _inlineScripts.EvalAsync(this, source, keys, values);
+        }
+
+        public Task<RedisResult> EvalAsync(string source, object parameters)
+        {
+            return _inlineScripts.EvalAsync(this, source, parameters);
         }
     }
 

@@ -86,10 +86,9 @@ public:
     virtual bool                            active();
     virtual std::shared_ptr<fb::game::item> split(uint16_t count = 1);
     virtual void                            merge(std::shared_ptr<fb::game::item> item);
-    virtual async::task<bool>               map(map_ptr_t                   map,
-                                                const fb::model::point16_t& position,
-                                                DESTROY_TYPE                destroy_type = DESTROY_TYPE::DEFAULT,
-                                                bool                        notify       = true) override;
+    virtual async::task<bool>               map(map_ptr_t                           map,
+                                                std::optional<fb::model::point16_t> position = std::nullopt,
+                                                map_options                         options  = {}) override;
     std::shared_ptr<fb::game::appearance>   appearance() const override;
 
 public:

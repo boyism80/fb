@@ -30,10 +30,12 @@ function ON_ACTIVATED_1(me, item)
 
     math.randomseed(seed())
     local map = maps[math.random(1, #maps)]
-    me:map(map, function()
-        me:exchange(
-            { ['item'] = { ['낙랑의두루마리1'] = 1 } },
-            { ['item'] = { ['낙랑의두루마리2'] = 1, ['노란비서'] = 1, ['도톨'] = 2 } }
-        )
-    end)
+    me:map(map, nil, {
+        callback = function()
+            me:exchange(
+                { ['item'] = { ['낙랑의두루마리1'] = 1 } },
+                { ['item'] = { ['낙랑의두루마리2'] = 1, ['노란비서'] = 1, ['도톨'] = 2 } }
+            )
+        end,
+    })
 end

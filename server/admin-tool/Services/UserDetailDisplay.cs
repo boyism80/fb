@@ -58,6 +58,18 @@ namespace AdminTool.Services
             _ => creature.ToString()
         };
 
+        public static string FormatState(byte state) => ((State)state) switch
+        {
+            State.Normal => "일반",
+            State.Ghost => "사망",
+            State.Cloack => "투명",
+            State.Riding => "탑승",
+            State.Disguise => "변장",
+            State.HalfCloack => "반투명",
+            State.AdvCloack => "강투명",
+            _ => state.ToString()
+        };
+
         public static string FormatClanRole(uint role) => ((ClanRole)role) switch
         {
             ClanRole.Mate => "일원",

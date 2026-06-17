@@ -27,7 +27,7 @@ namespace AdminTool.Services
         public async Task<UserDetailCore?> LoadCoreAsync(uint world, uint userId)
         {
             var character = await _dbContext.Character.Get(world, userId);
-            if (character == null || character.Deleted)
+            if (character == null)
                 return null;
 
             var userDetail = await _userService.GetUserByName(world, character.Name);
@@ -69,18 +69,15 @@ namespace AdminTool.Services
         public async Task<UserDetailProgressData> LoadProgressAsync(uint world, uint userId)
         {
             var quests = (await _dbContext.Quest.Get(world, userId))
-                .Where(q => !q.Deleted)
                 .OrderBy(q => q.Completed)
                 .ThenBy(q => q.Id)
                 .ToList();
 
             var spells = (await _dbContext.Spell.Get(world, userId))
-                .Where(s => !s.Deleted)
                 .OrderBy(s => s.Slot)
                 .ToList();
 
             var achievements = (await _dbContext.Achievement.Get(world, userId))
-                .Where(a => !a.Deleted)
                 .OrderBy(a => a.Id)
                 .ToList();
 
@@ -108,7 +105,7 @@ namespace AdminTool.Services
                 {
                     var clan = await _dbContext.Clan.Get(world, clanId.Value);
                     var member = await _dbContext.ClanMember.Get(world, clanId.Value, userId);
-                    if (clan != null && !clan.Deleted)
+                    if (clan != null)
                     {
                         social.Clan = new UserClanInfo
                         {
@@ -137,7 +134,7 @@ namespace AdminTool.Services
             try
             {
                 var marriage = await _dbContext.Marriage.Get(world, userId);
-                if (marriage != null && !marriage.Deleted)
+                if (marriage != null)
                     social.Marriage = marriage;
             }
             catch (Exception ex)
@@ -217,9 +214,6 @@ namespace AdminTool.Services
             try
             {
                 var option = await _dbContext.Option.Get(world, userId);
-                if (option != null && option.Deleted)
-                    return null;
-
                 return option;
             }
             catch (Exception ex)
@@ -279,11 +273,11 @@ namespace AdminTool.Services
             else
             {
                 group = await _dbContext.Group.Get(world, userId);
-                if (group != null && !group.Deleted)
+                if (group != null)
                     masterId = userId;
             }
 
-            if (group == null || group.Deleted || !masterId.HasValue)
+            if (group == null || !masterId.HasValue)
                 return null;
 
             var members = group.Members ?? new List<uint>();

@@ -39,7 +39,8 @@ namespace Http.Reepository
                 `owner` = {key.Owner} AND
                 `index` = {key.Index} AND
                 `parts` = {key.Parts} AND
-                `stored` = {key.Stored}
+                `stored` = {key.Stored} AND
+                `deleted` = 0
                 LIMIT 1;
                 """";
         }
@@ -48,13 +49,13 @@ namespace Http.Reepository
         {
             return $"""
                 SELECT * FROM `item` WHERE
-                `owner` = {key.Owner};
+                `owner` = {key.Owner} AND `deleted` = 0;
                 """;
         }
 
         protected override string OnSelectMany(IReadOnlyList<ItemKey> keys)
         {
-            return $"SELECT * FROM `item` WHERE `owner` IN ({string.Join(",", keys.Select(k => k.Owner))});";
+            return $"SELECT * FROM `item` WHERE `owner` IN ({string.Join(",", keys.Select(k => k.Owner))}) AND `deleted` = 0;";
         }
 
         protected override ItemKey GetKeyFromRow(Item row)
@@ -101,7 +102,7 @@ namespace Http.Reepository
                     {value.Count.Escape()},
                     {value.Durability.Escape()},
                     {value.CustomName.Escape()},
-                    {value.Deleted.Escape()},
+                    0,
                     {value.CreatedDate.Escape()},
                     {value.UpdatedDate.Escape()})
                 ON DUPLICATE KEY UPDATE 
@@ -109,7 +110,6 @@ namespace Http.Reepository
                     `count`=VALUES(`count`), 
                     `durability`=VALUES(`durability`),
                     `custom_name`=VALUES(`custom_name`),
-                    `deleted`=VALUES(`deleted`),
                     `updated_date`=VALUES(`updated_date`);
                 """;
 
@@ -129,7 +129,7 @@ namespace Http.Reepository
                          {item.Count.Escape()},
                          {item.Durability.Escape()},
                          {item.CustomName.Escape()},
-                         {item.Deleted.Escape()},
+                         0,
                          {item.CreatedDate.Escape()},
                          {item.UpdatedDate.Escape()})
                         """;
@@ -154,11 +154,32 @@ namespace Http.Reepository
                         `count`=VALUES(`count`),
                         `durability`=VALUES(`durability`),
                         `custom_name`=VALUES(`custom_name`),
-                        `deleted`=VALUES(`deleted`),
                         `updated_date`=VALUES(`updated_date`);
                     """;
 
             return sql;
+        }
+
+        protected override string OnDelete(ItemKey key)
+        {
+            return $"""
+                UPDATE `item` SET `deleted` = 1, `updated_date` = NOW()
+                WHERE `owner` = {key.Owner.Escape()} AND `index` = {key.Index.Escape()} AND `parts` = {key.Parts.Escape()} AND `stored` = {key.Stored.Escape()} AND `deleted` = 0;
+                """;
+        }
+
+        protected override string OnDeleteMany(IReadOnlyList<ItemKey> keys)
+        {
+            if (keys.Count == 0)
+                return string.Empty;
+
+            var conditions = keys.Select(k =>
+                $"(`owner` = {k.Owner.Escape()} AND `index` = {k.Index.Escape()} AND `parts` = {k.Parts.Escape()} AND `stored` = {k.Stored.Escape()})");
+
+            return $"""
+                UPDATE `item` SET `deleted` = 1, `updated_date` = NOW()
+                WHERE ({string.Join(" OR ", conditions)}) AND `deleted` = 0;
+                """;
         }
     }
 }

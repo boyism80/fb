@@ -29,25 +29,22 @@ namespace Http.Reepository
 
         protected virtual string OnUpsert(TModel[] values) { throw new NotImplementedException(); }
 
+        protected virtual string OnDelete(TKey key) { throw new NotImplementedException(); }
+
+        protected virtual string OnDeleteMany(IReadOnlyList<TKey> keys) { throw new NotImplementedException(); }
+
         protected virtual async Task<TModel> Get(uint world, TKey key)
         {
             var hash = key.GetHash();
             await using var conn = hash == null ? _dbContext.GetGlobalConnection(world) : _dbContext.GetShardConnection(world, hash.Value);
-            var value = await conn.QuerySingleOrDefaultAsync<TModel>(OnSelect(key));
-            if (value == null)
-                return null;
-
-            if (value.Deleted)
-                return null;
-
-            return value;
+            return await conn.QuerySingleOrDefaultAsync<TModel>(OnSelect(key));
         }
 
         protected virtual async Task<IEnumerable<TModel>> GetAll(uint world, TKey key)
         {
             var hash = key.GetHash();
             await using var conn = hash == null ? _dbContext.GetGlobalConnection(world) : _dbContext.GetShardConnection(world, hash.Value);
-            return (await conn.QueryAsync<TModel>(OnSelectBulk(key))).Where(x => !x.Deleted);
+            return await conn.QueryAsync<TModel>(OnSelectBulk(key));
         }
 
         protected virtual string OnSelectMany(IReadOnlyList<TKey> keys) { throw new NotImplementedException(); }
@@ -66,7 +63,7 @@ namespace Http.Reepository
                 {
                     var sql = OnSelectMany(keyArray);
                     var rows = await connection.QueryAsync<TModel>(sql);
-                    foreach (var row in rows.Where(x => !x.Deleted))
+                    foreach (var row in rows)
                     {
                         var key = GetKeyFromRow(row);
                         if (!result.TryGetValue(key, out var list))
@@ -103,6 +100,33 @@ namespace Http.Reepository
             });
 
             return values;
+        }
+
+        public virtual void Delete(uint world, TKey key)
+        {
+            _buffer.Enqueue(async () =>
+            {
+                var hash = key.GetHash();
+                await using var conn = hash == null ? _dbContext.GetGlobalConnection(world) : _dbContext.GetShardConnection(world, hash.Value);
+                await conn.ExecuteAsync(OnDelete(key));
+            });
+        }
+
+        public virtual void Delete(uint world, TKey[] keys)
+        {
+            if (keys == null || keys.Length == 0)
+                return;
+
+            _buffer.Enqueue(async () =>
+            {
+                foreach (var (connection, keyArray) in _dbContext.GetShardConnections(world, keys, k => k.GetHash()))
+                {
+                    await using (connection)
+                    {
+                        await connection.ExecuteAsync(OnDeleteMany(keyArray));
+                    }
+                }
+            });
         }
 
         public async Task SaveChangesAsync()

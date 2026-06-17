@@ -105,61 +105,35 @@ int builtin::group::builtin_message(lua_State* L)
     auto type     = lua->toenum(3, MESSAGE_TYPE::STATE);
     auto group_id = group->id();
 
-    static auto fn = [](fb::lua::context* lua,
-                        fb::game::server* server,
-                        uint32_t          group_id,
-                        std::string_view  message,
-                        MESSAGE_TYPE      type) -> async::task<void> {
-        try
-        {
-            co_await server->groups.broadcast(group_id, message, type);
-            co_await lua->switching();
-            lua->pushnil();
-            lua->resume(1);
-        }
-        catch (std::exception& e)
-        {
-            auto what = std::string(e.what());
-            async::awaitable_then(lua->switching(), [lua, what](auto result) {
-                result();
-                lua->pushstring(what.c_str());
-                lua->resume(1);
-            });
-        }
-    };
-
-    // Use group's master character to determine the thread
     auto                                  master_name = group->master();
     character::container::character_ptr_t master_ch;
     {
         auto guard = server->characters.enter_read();
         master_ch  = guard.value().find(master_name);
     }
-    if (master_ch == nullptr)
-    {
-        // If master not found, fall back to current thread dispatch
-        auto thread = server->threads.current();
-        if (thread == nullptr)
+
+    auto error   = std::make_shared<std::optional<std::string>>();
+    auto builder = lua->new_co_builder(*server);
+    if (master_ch != nullptr)
+        builder.weak = master_ch->template weak_from_this_as<fb::game::character>();
+    builder.yield = [=]() -> async::task<void> {
+        try
         {
-            lua->pushstring("thread not found");
-            return 1;
+            co_await server->groups.broadcast(group_id, message, type);
         }
-
-        auto builder = thread->new_builder<void>();
-        builder.func = [=](auto&) -> async::task<void> {
-            co_await fn(lua, server, group_id, message, type);
-        };
-        builder.enqueue();
-        return lua->yield(1);
-    }
-
-    auto weak    = master_ch->template weak_from_this_as<fb::game::character>();
-    auto builder = server->threads.new_builder(weak);
-    builder.func = [=](auto&) -> async::task<void> {
-        co_await fn(lua, server, group_id, message, type);
+        catch (std::exception& e)
+        {
+            *error = e.what();
+        }
     };
-    builder.enqueue();
-    return lua->yield(1);
+    builder.resume = [=]() -> async::task<int> {
+        if (error->has_value())
+            lua->pushstring(error->value().c_str());
+        else
+            lua->pushnil();
+        co_return 1;
+    };
+    return builder.run();
 }
 
 int builtin::group::builtin_toggle(lua_State* L)
@@ -182,38 +156,30 @@ int builtin::group::builtin_toggle(lua_State* L)
     if (target_name.empty())
         return 0;
 
-    static auto fn = [](fb::lua::context*                    lua,
-                        fb::game::server*                    server,
-                        std::shared_ptr<fb::game::character> actor_shared,
-                        std::string_view                     target_name) -> async::task<void> {
+    auto actor_weak = actor->weak_from_this_as<fb::game::character>();
+    auto error      = std::make_shared<std::optional<std::string>>();
+    auto builder    = lua->new_co_builder(*server);
+    builder.weak    = actor_weak;
+    builder.yield   = [=]() -> async::task<void> {
         try
         {
+            auto actor_shared = actor_weak.lock();
             if (actor_shared == nullptr)
                 throw std::runtime_error("actor character is not alive");
 
             co_await server->groups.toggle_member(*actor_shared, target_name);
-            co_await lua->switching();
-            lua->pushnil();
-            lua->resume(1);
         }
         catch (std::exception& e)
         {
-            auto what = std::string(e.what());
-            async::awaitable_then(lua->switching(), [lua, what](auto result) {
-                result();
-                lua->pushstring(what.c_str());
-                lua->resume(1);
-            });
+            *error = e.what();
         }
     };
-
-    auto actor_shared = actor->shared_from_this_as<fb::game::character>();
-    auto actor_weak   = actor->weak_from_this_as<fb::game::character>();
-    auto builder      = server->threads.new_builder(actor_weak);
-    builder.func      = [=](auto&) -> async::task<void> {
-        co_await fn(lua, server, actor_shared, target_name);
+    builder.resume = [=]() -> async::task<int> {
+        if (error->has_value())
+            lua->pushstring(error->value().c_str());
+        else
+            lua->pushnil();
+        co_return 1;
     };
-    builder.enqueue();
-
-    return lua->yield(1);
+    return builder.run();
 }

@@ -35,7 +35,8 @@ namespace Http.Reepository
             return $""""
                 SELECT * FROM `clan_member` WHERE 
                 `clan` = {key.Clan} AND
-                `user` = {key.User}
+                `user` = {key.User} AND
+                `deleted` = 0
                 LIMIT 1;
                 """";
         }
@@ -49,7 +50,7 @@ namespace Http.Reepository
         {
             return $"""
                 SELECT * FROM `clan_member` WHERE
-                `clan` = {key.Clan};
+                `clan` = {key.Clan} AND `deleted` = 0;
                 """;
         }
 
@@ -67,12 +68,12 @@ namespace Http.Reepository
                     {value.Clan.Escape()},
                     {value.User.Escape()},
                     {value.Role.Escape()},
-                    {value.Deleted.Escape()},
+                    0,
                     {value.CreatedDate.Escape()},
                     {value.UpdatedDate.Escape()})
                 ON DUPLICATE KEY UPDATE 
                     `role`=VALUES(`role`),
-                    `deleted`=VALUES(`deleted`),
+                    `deleted` = 0,
                     `updated_date`=VALUES(`updated_date`);
                 """;
 
@@ -87,7 +88,7 @@ namespace Http.Reepository
                         ({member.Clan.Escape()},
                          {member.User.Escape()},
                          {member.Role.Escape()},
-                         {member.Deleted.Escape()},
+                         0,
                          {member.CreatedDate.Escape()},
                          {member.UpdatedDate.Escape()})
                         """;
@@ -104,11 +105,38 @@ namespace Http.Reepository
                     VALUES {string.Join(',', args)}
                     ON DUPLICATE KEY UPDATE
                         `role`=VALUES(`role`),
-                        `deleted`=VALUES(`deleted`),
+                        `deleted` = 0,
                         `updated_date`=VALUES(`updated_date`);
                     """;
 
             return sql;
+        }
+
+        protected override string OnDelete(ClanMemberKey key)
+        {
+            return $"""
+                UPDATE `clan_member` SET `deleted` = 1, `updated_date` = NOW()
+                WHERE `clan` = {key.Clan.Escape()} AND `user` = {key.User.Escape()} AND `deleted` = 0;
+                """;
+        }
+
+        protected override string OnDeleteMany(IReadOnlyList<ClanMemberKey> keys)
+        {
+            if (keys.Count == 0)
+                return string.Empty;
+
+            var conditions = keys.Select(k =>
+                $"(`clan` = {k.Clan.Escape()} AND `user` = {k.User.Escape()})");
+
+            return $"""
+                UPDATE `clan_member` SET `deleted` = 1, `updated_date` = NOW()
+                WHERE ({string.Join(" OR ", conditions)}) AND `deleted` = 0;
+                """;
+        }
+
+        public void Delete(uint world, ClanMember member)
+        {
+            base.Delete(world, new ClanMemberKey { Clan = member.Clan, User = member.User });
         }
     }
 }

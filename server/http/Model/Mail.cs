@@ -11,6 +11,5 @@ namespace Http.Model
         public uint? SystemMailId { get; set; }
         public DateTime CreatedDate { get; set; }
         public DateTime UpdatedDate { get; set; }
-        public bool Deleted { get; set; }
     }
 }

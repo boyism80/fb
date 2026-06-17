@@ -14,16 +14,15 @@ namespace Http.Reepository.Cache
 
         private static string ToKey(RedisKey redisKey) => redisKey.ToString();
 
+        public bool ContainsKey(RedisKey redisKey) =>
+            _cache.ContainsKey(ToKey(redisKey));
+
         public TModel TryGet(RedisKey redisKey)
         {
             if (!_cache.TryGetValue(ToKey(redisKey), out var json))
                 return null;
 
-            var value = JsonConvert.DeserializeObject<TModel>(json);
-            if (value == null || value.Deleted)
-                return null;
-
-            return value;
+            return JsonConvert.DeserializeObject<TModel>(json);
         }
 
         public bool TryGetRaw(RedisKey redisKey, out string json)
@@ -39,6 +38,11 @@ namespace Http.Reepository.Cache
         public void PutRaw(RedisKey redisKey, string json)
         {
             _cache[ToKey(redisKey)] = json;
+        }
+
+        public void Remove(RedisKey redisKey)
+        {
+            _cache.Remove(ToKey(redisKey));
         }
     }
 }

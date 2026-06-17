@@ -18,13 +18,23 @@ int builtin::spell::builtin_model(lua_State* L)
         return 0;
 
     auto server = lua->env<fb::game::server>("server");
-    auto argc   = lua->argc();
     auto spell  = lua->touserdata<fb::game::spell>(1);
     if (spell == nullptr)
         return 0;
 
-    lua->pushobject(spell->model);
-    return 1;
+    auto model_ptr = std::make_shared<const fb::model::spell*>();
+    auto weak      = const_cast<life&>(spell->owner).weak_from_this();
+    auto builder   = lua->new_co_builder(*server);
+    builder.weak   = weak;
+    builder.yield  = [=]() -> async::task<void> {
+        *model_ptr = &spell->model;
+        co_return;
+    };
+    builder.resume = [=]() -> async::task<int> {
+        lua->pushobject(**model_ptr);
+        co_return 1;
+    };
+    return builder.run();
 }
 
 int builtin::spell::builtin_delay(lua_State* L)
@@ -39,16 +49,34 @@ int builtin::spell::builtin_delay(lua_State* L)
     if (spell == nullptr)
         return 0;
 
+    auto weak    = const_cast<life&>(spell->owner).weak_from_this();
+    auto builder = lua->new_co_builder(*server);
+    builder.weak = weak;
+
     if (argc == 1)
     {
-        lua->pushinteger(spell->delay());
-        return 1;
+        auto delay    = std::make_shared<uint16_t>();
+        builder.yield = [=]() -> async::task<void> {
+            *delay = spell->delay();
+            co_return;
+        };
+        builder.resume = [=]() -> async::task<int> {
+            lua->pushinteger(*delay);
+            co_return 1;
+        };
     }
     else
     {
-        spell->delay(lua->tointeger(2));
-        return 0;
+        auto value    = static_cast<uint16_t>(lua->tointeger(2));
+        builder.yield = [=]() -> async::task<void> {
+            spell->delay(value);
+            co_return;
+        };
+        builder.resume = []() -> async::task<int> {
+            co_return 0;
+        };
     }
+    return builder.run();
 }
 
 int builtin::spell::builtin_delay2(lua_State* L)
@@ -58,13 +86,21 @@ int builtin::spell::builtin_delay2(lua_State* L)
         return 0;
 
     auto server = lua->env<fb::game::server>("server");
-    auto argc   = lua->argc();
     auto spell  = lua->touserdata<fb::game::spell>(1);
     if (spell == nullptr)
         return 0;
 
-    auto  delay = lua->tointeger(2);
-    auto& owner = const_cast<life&>(spell->owner);
-    owner.send(fb::protocol::game::response::spell_delay(*spell, delay));
-    return 0;
+    auto delay    = lua->tointeger(2);
+    auto weak     = const_cast<life&>(spell->owner).weak_from_this();
+    auto builder  = lua->new_co_builder(*server);
+    builder.weak  = weak;
+    builder.yield = [=]() -> async::task<void> {
+        auto& owner = const_cast<life&>(spell->owner);
+        owner.send(fb::protocol::game::response::spell_delay(*spell, delay));
+        co_return;
+    };
+    builder.resume = []() -> async::task<int> {
+        co_return 0;
+    };
+    return builder.run();
 }

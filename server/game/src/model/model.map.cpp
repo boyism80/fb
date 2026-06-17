@@ -1,7 +1,38 @@
 #include <fb/model/model.h>
 #include <fb/game/server.h>
+#include <random.h>
 #include <unordered_map>
 #include <shared_mutex>
+#include <optional>
+
+using namespace fb::model::enum_value;
+
+std::optional<fb::model::point16_t> fb::model::map::spawn_position() const
+{
+    if (this->teleport.empty())
+        return std::nullopt;
+
+    auto& dsl = this->teleport.at(random<uint32_t>(0, this->teleport.size() - 1));
+    switch (dsl.header)
+    {
+    case DSL::area:
+    {
+        auto params = fb::model::dsl::area(dsl.params);
+        auto x      = random<uint16_t>(params.left, params.right);
+        auto y      = random<uint16_t>(params.top, params.bottom);
+        return fb::model::point16_t{x, y};
+    }
+
+    case DSL::point:
+    {
+        auto params = fb::model::dsl::point(dsl.params);
+        return fb::model::point16_t{params.x, params.y};
+    }
+
+    default:
+        return std::nullopt;
+    }
+}
 
 fb::model::map* fb::model::__map::name2map(std::string_view name) const
 {

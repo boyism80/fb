@@ -1,4 +1,4 @@
-﻿using Http.Extension;
+using Http.Extension;
 using Http.Model;
 using Http.Service;
 
@@ -22,7 +22,7 @@ namespace Http.Reepository
         {
             return $"""
                 SELECT * FROM `clan`
-                WHERE `id` = {key.Id}
+                WHERE `id` = {key.Id} AND `deleted` = 0
                 LIMIT 1;
                 """;
         }
@@ -46,17 +46,29 @@ namespace Http.Reepository
                     {value.Id.Escape()},
                     {value.Name.Escape()},
                     {value.Title.Escape()},
-                    {value.Deleted.Escape()},
+                    0,
                     {value.CreatedDate.Escape()},
                     {value.UpdatedDate.Escape()})
                 ON DUPLICATE KEY UPDATE 
                     `name`=VALUES(`name`),
                     `title`=VALUES(`title`),
-                    `deleted`=VALUES(`deleted`),
                     `updated_date`=VALUES(`updated_date`);
                 """;
 
             return sql;
+        }
+
+        protected override string OnDelete(ClanKey key)
+        {
+            return $"""
+                UPDATE `clan` SET `deleted` = 1, `updated_date` = NOW()
+                WHERE `id` = {key.Id.Escape()} AND `deleted` = 0;
+                """;
+        }
+
+        public void Delete(uint world, uint id)
+        {
+            base.Delete(world, new ClanKey { Id = id });
         }
     }
 }

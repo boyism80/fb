@@ -31,28 +31,37 @@ int builtin::mob::builtin_target(lua_State* L)
 
     if (argc == 1)
     {
-        auto weak = mob->weak_from_this_as<fb::game::mob>();
-        return lua->ensure_yield(*server, weak, [=](auto is_yield) {
-            auto target = mob->target();
-            return lua->ensure_resume(*server, weak, [=]() {
-                if (target == nullptr)
-                    lua->pushnil();
-                else
-                    lua->pushobject(target);
-                return 1;
-            });
-        });
+        auto target_holder = std::make_shared<std::shared_ptr<fb::game::life>>();
+        auto weak          = mob->weak_from_this_as<fb::game::mob>();
+        auto builder       = lua->new_co_builder(*server);
+        builder.weak       = weak;
+        builder.yield      = [=]() -> async::task<void> {
+            *target_holder = mob->target();
+            co_return;
+        };
+        builder.resume = [=]() -> async::task<int> {
+            if (*target_holder == nullptr)
+                lua->pushnil();
+            else
+                lua->pushobject(*target_holder);
+            co_return 1;
+        };
+        return builder.run();
     }
     else
     {
-        auto target = lua->touserdata<fb::game::life>(2);
-        auto weak   = mob->weak_from_this_as<fb::game::mob>();
-        return lua->ensure_yield(*server, weak, [=](auto is_yield) {
+        auto target   = lua->touserdata<fb::game::life>(2);
+        auto weak     = mob->weak_from_this_as<fb::game::mob>();
+        auto builder  = lua->new_co_builder(*server);
+        builder.weak  = weak;
+        builder.yield = [=]() -> async::task<void> {
             mob->target(target);
-            return lua->ensure_resume(*server, weak, [=]() {
-                return 0;
-            });
-        });
+            co_return;
+        };
+        builder.resume = []() -> async::task<int> {
+            co_return 0;
+        };
+        return builder.run();
     }
 }
 
@@ -70,28 +79,37 @@ int builtin::mob::builtin_oblivion(lua_State* L)
 
     if (argc == 1)
     {
-        auto weak = mob->weak_from_this_as<fb::game::mob>();
-        return lua->ensure_yield(*server, weak, [=](auto is_yield) {
-            auto oblivion = mob->oblivion();
-            return lua->ensure_resume(*server, weak, [=]() {
-                if (oblivion == nullptr)
-                    lua->pushnil();
-                else
-                    lua->pushobject(oblivion);
-                return 1;
-            });
-        });
+        auto oblivion_holder = std::make_shared<std::shared_ptr<fb::game::life>>();
+        auto weak            = mob->weak_from_this_as<fb::game::mob>();
+        auto builder         = lua->new_co_builder(*server);
+        builder.weak         = weak;
+        builder.yield        = [=]() -> async::task<void> {
+            *oblivion_holder = mob->oblivion();
+            co_return;
+        };
+        builder.resume = [=]() -> async::task<int> {
+            if (*oblivion_holder == nullptr)
+                lua->pushnil();
+            else
+                lua->pushobject(*oblivion_holder);
+            co_return 1;
+        };
+        return builder.run();
     }
     else
     {
         auto oblivion = lua->touserdata<fb::game::life>(2);
         auto weak     = mob->weak_from_this_as<fb::game::mob>();
-        return lua->ensure_yield(*server, weak, [=](auto is_yield) {
+        auto builder  = lua->new_co_builder(*server);
+        builder.weak  = weak;
+        builder.yield = [=]() -> async::task<void> {
             mob->oblivion(oblivion);
-            return lua->ensure_resume(*server, weak, [=]() {
-                return 0;
-            });
-        });
+            co_return;
+        };
+        builder.resume = []() -> async::task<int> {
+            co_return 0;
+        };
+        return builder.run();
     }
 }
 
@@ -107,17 +125,22 @@ int builtin::mob::builtin_owner(lua_State* L)
     if (mob == nullptr)
         return 0;
 
-    auto weak = mob->weak_from_this_as<fb::game::mob>();
-    return lua->ensure_yield(*server, weak, [=](auto is_yield) {
-        return lua->ensure_resume(*server, weak, [=]() {
-            auto owner = mob->owner.lock();
-            if (owner == nullptr)
-                lua->pushnil();
-            else
-                lua->pushobject(owner);
-            return 1;
-        });
-    });
+    auto owner_holder = std::make_shared<std::shared_ptr<fb::game::character>>();
+    auto weak         = mob->weak_from_this_as<fb::game::mob>();
+    auto builder      = lua->new_co_builder(*server);
+    builder.weak      = weak;
+    builder.yield     = [=]() -> async::task<void> {
+        *owner_holder = mob->owner.lock();
+        co_return;
+    };
+    builder.resume = [=]() -> async::task<int> {
+        if (*owner_holder == nullptr)
+            lua->pushnil();
+        else
+            lua->pushobject(*owner_holder);
+        co_return 1;
+    };
+    return builder.run();
 }
 
 int builtin::mob::builtin_items(lua_State* L)
@@ -132,19 +155,24 @@ int builtin::mob::builtin_items(lua_State* L)
     if (mob == nullptr)
         return 0;
 
-    auto weak = mob->weak_from_this_as<fb::game::mob>();
-    return lua->ensure_yield(*server, weak, [=](auto is_yield) {
-        auto buffer = mob->items();
-        return lua->ensure_resume(*server, weak, [=]() {
-            lua->new_table();
-            auto i = 0;
-            for (const auto& item : buffer)
-            {
-                lua->pushobject(item);
-                lua_rawseti(L, -2, i + 1);
-                i++;
-            }
-            return 1;
-        });
-    });
+    auto buffer   = std::make_shared<fb::game::mob::item_vector_t>();
+    auto weak     = mob->weak_from_this_as<fb::game::mob>();
+    auto builder  = lua->new_co_builder(*server);
+    builder.weak  = weak;
+    builder.yield = [=]() -> async::task<void> {
+        *buffer = mob->items();
+        co_return;
+    };
+    builder.resume = [=]() -> async::task<int> {
+        lua->new_table();
+        auto i = 0;
+        for (const auto& item : *buffer)
+        {
+            lua->pushobject(item);
+            lua_rawseti(L, -2, i + 1);
+            i++;
+        }
+        co_return 1;
+    };
+    return builder.run();
 }

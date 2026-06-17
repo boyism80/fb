@@ -20,4 +20,3 @@ namespace Http.Model
         public DateTime? ExpireDate { get; set; }
     }
 }
-

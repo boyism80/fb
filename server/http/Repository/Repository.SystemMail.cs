@@ -1,4 +1,4 @@
-﻿using Dapper;
+using Dapper;
 using Http.Extension;
 using Http.Model;
 using Http.Service;
@@ -26,7 +26,7 @@ namespace Http.Reepository
             var allMails = await base.GetAll(world, new SystemMailKey { Id = 0 });
             var now = DateTime.Now;
             return allMails
-                .Where(m => m.Id >= offset && !m.Deleted && (m.ExpireDate == null || m.ExpireDate > now))
+                .Where(m => m.Id >= offset && (m.ExpireDate == null || m.ExpireDate > now))
                 .OrderByDescending(m => m.Id)
                 .ToList();
         }
@@ -35,7 +35,7 @@ namespace Http.Reepository
         {
             return $"""
                 SELECT * FROM `system_mail` WHERE 
-                `id` = {key.Id}
+                `id` = {key.Id} AND `deleted` = 0
                 LIMIT 1;
                 """;
         }
@@ -48,7 +48,7 @@ namespace Http.Reepository
         protected override string OnSelectBulk(SystemMailKey key)
         {
             return """
-                SELECT * FROM `system_mail`;
+                SELECT * FROM `system_mail` WHERE `deleted` = 0;
                 """;
         }
 
@@ -70,7 +70,7 @@ namespace Http.Reepository
                     {value.Title.Escape()},
                     {value.Contents.Escape()},
                     {value.ExpireDate.Escape()},
-                    {value.Deleted.Escape()},
+                    0,
                     {value.CreatedDate.Escape()},
                     {value.UpdatedDate.Escape()})
                 ON DUPLICATE KEY UPDATE 
@@ -78,7 +78,6 @@ namespace Http.Reepository
                     `title`=VALUES(`title`), 
                     `contents`=VALUES(`contents`), 
                     `expire_date`=VALUES(`expire_date`),
-                    `deleted`=VALUES(`deleted`),
                     `updated_date`=VALUES(`updated_date`);
                 """;
 
@@ -104,8 +103,7 @@ namespace Http.Reepository
                 Contents = contents,
                 ExpireDate = expireDate,
                 CreatedDate = DateTime.Now,
-                UpdatedDate = DateTime.Now,
-                Deleted = false
+                UpdatedDate = DateTime.Now
             };
 
             // Update Redis cache using the caching system

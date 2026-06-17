@@ -76,7 +76,7 @@ async::task<void> rezen::spawn(std::thread::id thread_id)
                 continue;
 
             mob->position(position, true);
-            std::ignore = co_await mob->map(map, position, DESTROY_TYPE::DEFAULT, false);
+            std::ignore = co_await mob->map(map, position, {.notify = false});
             break;
         }
 
@@ -508,7 +508,7 @@ async::task<void> mob::drop_items()
     auto& position = this->position();
     for (auto& item : this->_items)
     {
-        std::ignore = co_await item->map(map, position, DESTROY_TYPE::DEFAULT, false);
+        std::ignore = co_await item->map(map, position, {.notify = false});
         oids.push_back(item->oid());
     }
     this->_items.clear();
@@ -531,7 +531,7 @@ async::task<void> mob::drop_items()
                     continue;
 
                 auto item   = table::item[params.id].make(this->server);
-                std::ignore = co_await item->map(map, position, DESTROY_TYPE::DEFAULT, false);
+                std::ignore = co_await item->map(map, position, {.notify = false});
                 oids.push_back(item->oid());
             }
             break;

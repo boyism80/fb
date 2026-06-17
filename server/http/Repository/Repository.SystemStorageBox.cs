@@ -47,7 +47,6 @@ namespace Http.Reepository
             var now = DateTime.Now;
             return all
                 .Where(b => b.Id >= offset
-                            && !b.Deleted
                             && (b.ExpiredDate == null || b.ExpiredDate > now))
                 .OrderByDescending(b => b.Id)
                 .ToList();
@@ -57,7 +56,7 @@ namespace Http.Reepository
         {
             return $"""
                 SELECT * FROM `system_storage_box`
-                WHERE `id` = {key.Id}
+                WHERE `id` = {key.Id} AND `deleted` = 0
                 LIMIT 1;
                 """;
         }
@@ -70,7 +69,7 @@ namespace Http.Reepository
         protected override string OnSelectBulk(SystemStorageBoxKey key)
         {
             return """
-                SELECT * FROM `system_storage_box`;
+                SELECT * FROM `system_storage_box` WHERE `deleted` = 0;
                 """;
         }
 
@@ -98,7 +97,7 @@ namespace Http.Reepository
                     {attachmentsJson.Escape()},
                     {value.ExpiredDate.Escape()},
                     {value.ExternalRef.Escape()},
-                    {value.Deleted.Escape()},
+                    0,
                     {value.CreatedDate.Escape()},
                     {value.UpdatedDate.Escape()})
                 ON DUPLICATE KEY UPDATE
@@ -108,7 +107,6 @@ namespace Http.Reepository
                     `attachments`=VALUES(`attachments`),
                     `expired_date`=VALUES(`expired_date`),
                     `external_ref`=VALUES(`external_ref`),
-                    `deleted`=VALUES(`deleted`),
                     `updated_date`=VALUES(`updated_date`);
                 """;
         }
@@ -157,8 +155,7 @@ namespace Http.Reepository
                 ExpiredDate  = expireDate,
                 ExternalRef  = externalRef,
                 CreatedDate  = DateTime.Now,
-                UpdatedDate  = DateTime.Now,
-                Deleted      = false
+                UpdatedDate  = DateTime.Now
             };
 
             Set(world, box);

@@ -5,10 +5,7 @@ namespace Http.Model
     public interface IModel
     {
         DateTime CreatedDate { get; set; }
-
         DateTime UpdatedDate { get; set; }
-
-        bool Deleted { get; set; }
     }
 
     public interface IModelKey
@@ -32,9 +29,6 @@ namespace Http.Model
         { }
 
         public DateTime CreatedDate { get; set; } = DateTime.Now;
-
         public DateTime UpdatedDate { get; set; } = DateTime.Now;
-
-        public bool Deleted { get; set; } = false;
     }
 }

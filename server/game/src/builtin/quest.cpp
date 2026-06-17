@@ -35,23 +35,32 @@ int builtin::quest::builtin_step(lua_State* L)
     {
         auto new_step = lua->tointeger(2);
         auto weak     = owner->weak_from_this_as<fb::game::character>();
-        return lua->ensure_yield(*server, weak, [=](auto is_yield) {
+        auto builder  = lua->new_co_builder(*server);
+        builder.weak  = weak;
+        builder.yield = [=]() -> async::task<void> {
             quest->step(new_step);
-            return lua->ensure_resume(*server, weak, [=]() {
-                return 0;
-            });
-        });
+            co_return;
+        };
+        builder.resume = []() -> async::task<int> {
+            co_return 0;
+        };
+        return builder.run();
     }
     else
     {
-        auto weak = owner->weak_from_this_as<fb::game::character>();
-        return lua->ensure_yield(*server, weak, [=](auto is_yield) {
-            auto step_value = quest->step();
-            return lua->ensure_resume(*server, weak, [=]() {
-                lua->pushinteger(step_value);
-                return 1;
-            });
-        });
+        auto step_value = std::make_shared<uint32_t>();
+        auto weak       = owner->weak_from_this_as<fb::game::character>();
+        auto builder    = lua->new_co_builder(*server);
+        builder.weak    = weak;
+        builder.yield   = [=]() -> async::task<void> {
+            *step_value = quest->step();
+            co_return;
+        };
+        builder.resume = [=]() -> async::task<int> {
+            lua->pushinteger(*step_value);
+            co_return 1;
+        };
+        return builder.run();
     }
 }
 
@@ -75,23 +84,32 @@ int builtin::quest::builtin_progress(lua_State* L)
     {
         auto new_progress = lua->tointeger(2);
         auto weak         = owner->weak_from_this_as<fb::game::character>();
-        return lua->ensure_yield(*server, weak, [=](auto is_yield) {
+        auto builder      = lua->new_co_builder(*server);
+        builder.weak      = weak;
+        builder.yield     = [=]() -> async::task<void> {
             quest->progress(new_progress);
-            return lua->ensure_resume(*server, weak, [=]() {
-                return 0;
-            });
-        });
+            co_return;
+        };
+        builder.resume = []() -> async::task<int> {
+            co_return 0;
+        };
+        return builder.run();
     }
     else
     {
-        auto weak = owner->weak_from_this_as<fb::game::character>();
-        return lua->ensure_yield(*server, weak, [=](auto is_yield) {
-            auto progress_value = quest->progress();
-            return lua->ensure_resume(*server, weak, [=]() {
-                lua->pushinteger(progress_value);
-                return 1;
-            });
-        });
+        auto progress_value = std::make_shared<uint32_t>();
+        auto weak           = owner->weak_from_this_as<fb::game::character>();
+        auto builder        = lua->new_co_builder(*server);
+        builder.weak        = weak;
+        builder.yield       = [=]() -> async::task<void> {
+            *progress_value = quest->progress();
+            co_return;
+        };
+        builder.resume = [=]() -> async::task<int> {
+            lua->pushinteger(*progress_value);
+            co_return 1;
+        };
+        return builder.run();
     }
 }
 
@@ -113,25 +131,34 @@ int builtin::quest::builtin_param(lua_State* L)
 
     if (argc >= 2)
     {
-        auto param = lua->tostring(2);
-        auto weak  = owner->weak_from_this_as<fb::game::character>();
-        return lua->ensure_yield(*server, weak, [=](auto is_yield) {
+        auto param    = lua->tostring(2);
+        auto weak     = owner->weak_from_this_as<fb::game::character>();
+        auto builder  = lua->new_co_builder(*server);
+        builder.weak  = weak;
+        builder.yield = [=]() -> async::task<void> {
             quest->param(param);
-            return lua->ensure_resume(*server, weak, [=]() {
-                return 0;
-            });
-        });
+            co_return;
+        };
+        builder.resume = []() -> async::task<int> {
+            co_return 0;
+        };
+        return builder.run();
     }
     else
     {
-        auto weak = owner->weak_from_this_as<fb::game::character>();
-        return lua->ensure_yield(*server, weak, [=](auto is_yield) {
-            auto param_value = quest->param();
-            return lua->ensure_resume(*server, weak, [=]() {
-                lua->pushstring(param_value);
-                return 1;
-            });
-        });
+        auto param_value = std::make_shared<std::string>();
+        auto weak        = owner->weak_from_this_as<fb::game::character>();
+        auto builder     = lua->new_co_builder(*server);
+        builder.weak     = weak;
+        builder.yield    = [=]() -> async::task<void> {
+            *param_value = quest->param();
+            co_return;
+        };
+        builder.resume = [=]() -> async::task<int> {
+            lua->pushstring(param_value->c_str());
+            co_return 1;
+        };
+        return builder.run();
     }
 }
 
@@ -154,14 +181,19 @@ int builtin::quest::builtin_inc_progress(lua_State* L)
     if (value <= 0)
         return 0;
 
-    auto weak = owner->weak_from_this_as<fb::game::character>();
-    return lua->ensure_yield(*server, weak, [=](auto is_yield) {
-        auto result = quest->inc_progress(value);
-        return lua->ensure_resume(*server, weak, [=]() {
-            lua->pushboolean(result);
-            return 1;
-        });
-    });
+    auto weak     = owner->weak_from_this_as<fb::game::character>();
+    auto success  = std::make_shared<bool>();
+    auto builder  = lua->new_co_builder(*server);
+    builder.weak  = weak;
+    builder.yield = [=]() -> async::task<void> {
+        *success = quest->inc_progress(value);
+        co_return;
+    };
+    builder.resume = [=]() -> async::task<int> {
+        lua->pushboolean(*success);
+        co_return 1;
+    };
+    return builder.run();
 }
 
 int builtin::quest::builtin_inc_step(lua_State* L)
@@ -183,14 +215,19 @@ int builtin::quest::builtin_inc_step(lua_State* L)
     if (value <= 0)
         return 0;
 
-    auto weak = owner->weak_from_this_as<fb::game::character>();
-    return lua->ensure_yield(*server, weak, [=](auto is_yield) {
-        auto result = quest->inc_step(value);
-        return lua->ensure_resume(*server, weak, [=]() {
-            lua->pushboolean(result);
-            return 1;
-        });
-    });
+    auto weak     = owner->weak_from_this_as<fb::game::character>();
+    auto success  = std::make_shared<bool>();
+    auto builder  = lua->new_co_builder(*server);
+    builder.weak  = weak;
+    builder.yield = [=]() -> async::task<void> {
+        *success = quest->inc_step(value);
+        co_return;
+    };
+    builder.resume = [=]() -> async::task<int> {
+        lua->pushboolean(*success);
+        co_return 1;
+    };
+    return builder.run();
 }
 
 int builtin::quest::builtin_complete(lua_State* L)
@@ -208,14 +245,19 @@ int builtin::quest::builtin_complete(lua_State* L)
     if (owner == nullptr)
         return 0;
 
-    auto weak = owner->weak_from_this_as<fb::game::character>();
-    return lua->ensure_yield(*server, weak, [=](auto is_yield) {
-        auto result = quest->complete();
-        return lua->ensure_resume(*server, weak, [=]() {
-            lua->pushboolean(result);
-            return 1;
-        });
-    });
+    auto weak     = owner->weak_from_this_as<fb::game::character>();
+    auto success  = std::make_shared<bool>();
+    auto builder  = lua->new_co_builder(*server);
+    builder.weak  = weak;
+    builder.yield = [=]() -> async::task<void> {
+        *success = quest->complete();
+        co_return;
+    };
+    builder.resume = [=]() -> async::task<int> {
+        lua->pushboolean(*success);
+        co_return 1;
+    };
+    return builder.run();
 }
 
 int builtin::quest::builtin_completed(lua_State* L)
@@ -233,14 +275,19 @@ int builtin::quest::builtin_completed(lua_State* L)
     if (owner == nullptr)
         return 0;
 
-    auto weak = owner->weak_from_this_as<fb::game::character>();
-    return lua->ensure_yield(*server, weak, [=](auto is_yield) {
-        auto result = quest->completed();
-        return lua->ensure_resume(*server, weak, [=]() {
-            lua->pushboolean(result);
-            return 1;
-        });
-    });
+    auto weak     = owner->weak_from_this_as<fb::game::character>();
+    auto success  = std::make_shared<bool>();
+    auto builder  = lua->new_co_builder(*server);
+    builder.weak  = weak;
+    builder.yield = [=]() -> async::task<void> {
+        *success = quest->completed();
+        co_return;
+    };
+    builder.resume = [=]() -> async::task<int> {
+        lua->pushboolean(*success);
+        co_return 1;
+    };
+    return builder.run();
 }
 
 int builtin::quest::builtin_resume(lua_State* L)
@@ -258,12 +305,17 @@ int builtin::quest::builtin_resume(lua_State* L)
     if (owner == nullptr)
         return 0;
 
-    auto weak = owner->weak_from_this_as<fb::game::character>();
-    return lua->ensure_yield(*server, weak, [=](auto is_yield) {
-        auto result = quest->resume();
-        return lua->ensure_resume(*server, weak, [=]() {
-            lua->pushboolean(result);
-            return 1;
-        });
-    });
+    auto weak     = owner->weak_from_this_as<fb::game::character>();
+    auto success  = std::make_shared<bool>();
+    auto builder  = lua->new_co_builder(*server);
+    builder.weak  = weak;
+    builder.yield = [=]() -> async::task<void> {
+        *success = quest->resume();
+        co_return;
+    };
+    builder.resume = [=]() -> async::task<int> {
+        lua->pushboolean(*success);
+        co_return 1;
+    };
+    return builder.run();
 }

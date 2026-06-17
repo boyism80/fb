@@ -1,3 +1,4 @@
+using Http.Filters;
 using Http.Service;
 using Microsoft.AspNetCore.Mvc;
 using Request = fb.protocol._internal.request;
@@ -19,6 +20,7 @@ namespace Internal.Controllers
         }
 
         [HttpPost("heartbeat")]
+        [SuppressRequestLog]
         public async Task<Response.Heartbeat> Heartbeat(Request.Heartbeat request)
         {
             try

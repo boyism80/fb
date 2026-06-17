@@ -15,11 +15,13 @@ void service::schedule::init()
 {
     auto now = this->server.now();
 
+    uint32_t index = 0;
     for (const auto& entry : table::schedule)
     {
         auto next = entry.next_execution(now);
         if (next.has_value())
-            this->_tasks[entry.id] = next.value();
+            this->_tasks[index] = next.value();
+        ++index;
     }
 }
 
@@ -37,12 +39,19 @@ async::task<void> service::schedule::poll()
     auto now       = this->server.now();
     auto to_remove = std::vector<uint32_t>{};
 
-    for (auto& [schedule_id, next_execution] : this->_tasks)
+    for (auto& [schedule_index, next_execution] : this->_tasks)
     {
         if (now < next_execution)
             continue;
 
-        const auto& entry = table::schedule[schedule_id];
+        if (schedule_index >= table::schedule.size())
+        {
+            fb::logger::warn(std::format("Schedule index {} out of range", schedule_index));
+            to_remove.push_back(schedule_index);
+            continue;
+        }
+
+        const auto& entry = table::schedule[schedule_index];
 
         auto lua = fb::lua::new_context();
         if (lua != nullptr)
@@ -55,7 +64,7 @@ async::task<void> service::schedule::poll()
             }
             catch (std::exception& e)
             {
-                fb::logger::warn(std::format("Schedule {} script execution failed: {}", schedule_id, e.what()));
+                fb::logger::warn(std::format("Schedule {} script execution failed: {}", entry.id, e.what()));
             }
         }
 
@@ -64,18 +73,18 @@ async::task<void> service::schedule::poll()
             auto next_time = next_execution + entry.repeat.value();
 
             if (entry.date.end.has_value() && next_time > entry.date.end.value())
-                to_remove.push_back(schedule_id);
+                to_remove.push_back(schedule_index);
             else
                 next_execution = next_time;
         }
         else
         {
-            to_remove.push_back(schedule_id);
+            to_remove.push_back(schedule_index);
         }
     }
 
-    for (auto schedule_id : to_remove)
-        this->_tasks.erase(schedule_id);
+    for (auto schedule_index : to_remove)
+        this->_tasks.erase(schedule_index);
 
     co_return;
 }

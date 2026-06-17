@@ -39,7 +39,7 @@ async::task<bool> chat::handle(fb::socket<character>& session, game_reqs::chat& 
 
 async::task<bool> chat::try_command(character* ch, std::weak_ptr<character> weak, game_reqs::chat& request)
 {
-    auto lua = fb::lua::new_context();
+    auto lua = fb::lua::new_context(nullptr, {.auto_release = false});
     if (lua == nullptr)
         co_return false;
 
@@ -53,7 +53,7 @@ async::task<bool> chat::try_command(character* ch, std::weak_ptr<character> weak
     lua->pushobject(ch);
     lua->pushstring(request.message);
     lua->pushboolean(request.shout);
-    std::ignore = co_await lua->call(3, false);
+    std::ignore = co_await lua->call(3);
 
     if (weak.expired())
     {

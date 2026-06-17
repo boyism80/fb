@@ -87,7 +87,7 @@ namespace AdminTool.Services
             foreach (var userId in userIds)
             {
                 var character = await _dbContext.Character.Get(world, userId);
-                if (character == null || character.Deleted)
+                if (character == null)
                     continue;
 
                 userDetailsDict[userId] = new UserListItem
@@ -163,7 +163,7 @@ namespace AdminTool.Services
                 Money = character.Money,
                 CreatedDate = character.CreatedDate,
                 UpdatedDate = character.UpdatedDate,
-                IsBanned = ban != null && !ban.Deleted,
+                IsBanned = ban != null,
                 BanReason = ban?.Reason,
                 BanExpireDate = ban?.ExpireDate
             };

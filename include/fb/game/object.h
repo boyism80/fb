@@ -9,12 +9,23 @@
 #include <fb/game/spell.h>
 #include <random.h>
 #include <async/task.h>
+#include <functional>
+#include <optional>
 #include <shared_mutex>
 #include <string_view>
 
 namespace fb::game {
 
 using namespace fb::model::enum_value;
+
+using map_callback = std::function<async::task<bool>()>;
+
+struct map_options
+{
+    DESTROY_TYPE destroy_type = DESTROY_TYPE::DEFAULT;
+    bool         notify       = true;
+    map_callback callback     = {};
+};
 
 class server;
 class map;
@@ -110,8 +121,7 @@ public:
     bool                                        y(uint16_t value);
     DIRECTION                                   direction() const;
     bool                                        direction(DIRECTION value);
-    virtual async::task<bool>                   map(map_ptr map, DESTROY_TYPE destroy_type = DESTROY_TYPE::DEFAULT);
-    virtual async::task<bool>                   map(map_ptr map, const fb::model::point16_t& position, DESTROY_TYPE destroy_type = DESTROY_TYPE::DEFAULT, bool notify = true);
+    virtual async::task<bool>                   map(map_ptr map, std::optional<fb::model::point16_t> position = std::nullopt, map_options options = {});
     map_ptr                                     map() const;
     bool                                        sight(const fb::model::point16_t& position) const;
     bool                                        sight(const fb::game::object& object) const;

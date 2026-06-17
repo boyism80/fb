@@ -1,4 +1,5 @@
 using Fb.Model.EnumValue;
+using Http.Filters;
 using Http.Service;
 using Microsoft.AspNetCore.Mvc;
 using Protocol = fb.protocol._internal;
@@ -21,6 +22,7 @@ namespace Internal.Controllers
         }
 
         [HttpGet("{world}")]
+        [SuppressRequestLog]
         public async Task<Response.GetSystemMails> GetSystemMails(uint world, [FromQuery(Name = "offset")] uint offset = 0)
         {
             try

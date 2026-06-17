@@ -120,16 +120,16 @@ std::string login::build_ban_message(std::string_view reason, const std::optiona
     auto ban_message = std::string(_TEXT(MESSAGE_ACCOUNT_BANNED));
     if (!reason.empty())
     {
+        ban_message += '\n';
         ban_message += std::format(_TEXT(MESSAGE_ACCOUNT_BAN_REASON), reason);
     }
+
+    ban_message += '\n';
     if (expire_date.has_value())
-    {
         ban_message += std::format(_TEXT(MESSAGE_ACCOUNT_BAN_EXPIRE_DATE), expire_date.value());
-    }
     else
-    {
         ban_message += _TEXT(MESSAGE_ACCOUNT_BAN_PERMANENT);
-    }
+
     return ban_message;
 }
 

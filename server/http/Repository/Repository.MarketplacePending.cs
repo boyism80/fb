@@ -66,23 +66,38 @@ namespace Http.Reepository
             return dict.ToDictionary(kv => kv.Key, kv => (IReadOnlyList<MarketplacePending>)kv.Value);
         }
 
-        public void DeleteMany(uint world, uint user, IReadOnlyList<string> pendingKeys)
+        public void Delete(uint world, uint user, IReadOnlyList<string> pendingKeys)
         {
             if (pendingKeys == null || pendingKeys.Count == 0)
                 return;
 
-            var key = new MarketplacePendingKey
+            var keys = pendingKeys.Select(k => new MarketplacePendingKey
             {
                 User = user,
-                PendingKey = string.Empty
-            };
-            var fields = pendingKeys.Select(k => (RedisValue)k).ToList();
-            var sql = $"""
-                DELETE FROM `marketplace_pending`
-                WHERE `user` = {user} AND `pending_key` IN ({string.Join(",", pendingKeys.Select(k => k.Escape()))});
-                """;
+                PendingKey = k
+            }).ToArray();
 
-            DeleteFields(world, key, fields, sql);
+            Delete(world, keys);
+        }
+
+        protected override string OnDelete(MarketplacePendingKey key)
+        {
+            return $"""
+                DELETE FROM `marketplace_pending`
+                WHERE `user` = {key.User.Escape()} AND `pending_key` = {key.PendingKey.Escape()};
+                """;
+        }
+
+        protected override string OnDeleteMany(IReadOnlyList<MarketplacePendingKey> keys)
+        {
+            if (keys.Count == 0)
+                return string.Empty;
+
+            var user = keys[0].User;
+            return $"""
+                DELETE FROM `marketplace_pending`
+                WHERE `user` = {user.Escape()} AND `pending_key` IN ({string.Join(",", keys.Select(k => k.PendingKey.Escape()))});
+                """;
         }
 
         protected override string OnUpsert(MarketplacePending value)

@@ -14,6 +14,14 @@ namespace Http.Reepository.Cache
 
         private static string ToKey(RedisKey redisKey) => redisKey.ToString();
 
+        public bool HasField(RedisKey redisKey, RedisValue field)
+        {
+            if (!_cache.TryGetValue(ToKey(redisKey), out var fields))
+                return false;
+
+            return fields.ContainsKey(field.ToString());
+        }
+
         public TModel TryGetField(RedisKey redisKey, RedisValue field)
         {
             if (!_cache.TryGetValue(ToKey(redisKey), out var fields))
@@ -22,11 +30,7 @@ namespace Http.Reepository.Cache
             if (!fields.TryGetValue(field.ToString(), out var json))
                 return null;
 
-            var value = JsonConvert.DeserializeObject<TModel>(json);
-            if (value == null || value.Deleted)
-                return null;
-
-            return value;
+            return JsonConvert.DeserializeObject<TModel>(json);
         }
 
         public bool HasKey(RedisKey redisKey)
@@ -41,7 +45,7 @@ namespace Http.Reepository.Cache
 
             return fields.Values
                 .Select(x => JsonConvert.DeserializeObject<TModel>(x))
-                .Where(x => x != null && !x.Deleted);
+                .Where(x => x != null);
         }
 
         public void PutAll(RedisKey redisKey, Dictionary<string, string> fields)

@@ -24,6 +24,26 @@ namespace WriteBack.Service
         private readonly uint _world;
         private static readonly TimeSpan _delay = TimeSpan.FromSeconds(5);
         private const int BulkSize = 100;
+
+        private static readonly string EndOfRefScript = """
+            local COUNT_REFS = KEYS[1]
+            local EXPIRY = tonumber(ARGV[1])
+            local LENGTH = tonumber(ARGV[2])
+
+            for i = 1, LENGTH do
+                local field = ARGV[2 * i + 1]
+                local count = tonumber(ARGV[2 * i + 2])
+                if count == nil then
+                    count = 0
+                end
+                local ref = redis.call('hincrby', COUNT_REFS, field, -count)
+                if tonumber(ref) <= 0 then
+                    redis.call('hdel', COUNT_REFS, field)
+                    redis.call('expire', field, EXPIRY)
+                end
+            end
+            """;
+
         private IConnection _rabbitMqConnection;
 
         public WriteBackService(RedisService redisService,
@@ -312,9 +332,10 @@ namespace WriteBack.Service
                 var redisRefConn = mod == -1 ? _redisService.GetGlobalConnection(_world) : _redisService.GetDataConnection(_world, mod);
                 if (redisRefConn != null)
                 {
-                    await redisRefConn.ScriptEvaluateAsync("end_of_ref.lua",
-                        keys: [new RedisKey(Const.ReferenceCountKey)],
-                        values: [.. values]);
+                    await redisRefConn.EvalAsync(
+                        EndOfRefScript,
+                        [new RedisKey(Const.ReferenceCountKey)],
+                        [.. values]);
                 }
             }
             catch (Exception ex)

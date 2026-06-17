@@ -23,7 +23,7 @@ namespace Http.Reepository
         {
             return $"""
                 SELECT * FROM `group`
-                WHERE `master` = {key.Master}
+                WHERE `master` = {key.Master} AND `deleted` = 0
                 LIMIT 1;
                 """;
         }
@@ -45,16 +45,29 @@ namespace Http.Reepository
                 VALUES (
                     {value.Master.Escape()},
                     {JsonConvert.SerializeObject(value.Members).Escape()},
-                    {value.Deleted.Escape()},
+                    0,
                     {value.CreatedDate.Escape()},
                     {value.UpdatedDate.Escape()})
                 ON DUPLICATE KEY UPDATE 
                     `members`=VALUES(`members`),
-                    `deleted`=VALUES(`deleted`),
+                    `deleted` = 0,
                     `updated_date`=VALUES(`updated_date`);
                 """;
 
             return sql;
+        }
+
+        protected override string OnDelete(GroupKey key)
+        {
+            return $"""
+                UPDATE `group` SET `deleted` = 1, `updated_date` = NOW()
+                WHERE `master` = {key.Master.Escape()} AND `deleted` = 0;
+                """;
+        }
+
+        public void Delete(uint world, uint master)
+        {
+            base.Delete(world, new GroupKey { Master = master });
         }
     }
 }

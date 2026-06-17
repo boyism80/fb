@@ -445,54 +445,23 @@ fb::model::area<uint16_t> object::sight_area() const
     return object::sight_area(this->_position, this->_map);
 }
 
-async::task<bool> object::map(map_ptr map, DESTROY_TYPE destroy_type)
+async::task<bool> object::map(map_ptr map, std::optional<fb::model::point16_t> position, map_options options)
 {
     this->assert_thread();
 
-    if (map == nullptr)
-    {
-        co_return co_await this->map(map, fb::model::point16_t{0, 0}, destroy_type);
-    }
-    else
-    {
-        if (map->model.teleport.size() == 0)
-        {
-            co_return co_await this->map(map, fb::model::point16_t{0, 0}, destroy_type);
-        }
+    if (map != nullptr && position.has_value() == false)
+        position = map->model.spawn_position();
 
-        auto& dsl = map->model.teleport.at(random<uint32_t>(0, map->model.teleport.size() - 1));
-        switch (dsl.header)
-        {
-        case DSL::area:
-        {
-            auto params = fb::model::dsl::area(dsl.params);
-            auto x      = random<uint16_t>(params.left, params.right);
-            auto y      = random<uint16_t>(params.top, params.bottom);
-            co_return co_await this->map(map, fb::model::point16_t{x, y});
-        }
-        break;
-
-        case DSL::point:
-        {
-            auto params = fb::model::dsl::point(dsl.params);
-            co_return co_await this->map(map, fb::model::point16_t{params.x, params.y});
-        }
-        break;
-        }
-    }
-}
-
-async::task<bool> object::map(map_ptr map, const fb::model::point16_t& position, DESTROY_TYPE destroy_type, bool notify)
-{
-    this->assert_thread();
-
-    auto  weak    = this->weak_from_this_as<object>();
-    auto& context = this->server;
+    auto  weak         = this->weak_from_this_as<object>();
+    auto& context      = this->server;
+    auto  resolved     = position.value_or(fb::model::point16_t{0, 0});
+    auto  destroy_type = options.destroy_type;
+    auto  notify       = options.notify;
     try
     {
         if (this->_map == map)
         {
-            this->position(position, true);
+            this->position(resolved, true);
             co_return true;
         }
 
@@ -551,15 +520,19 @@ async::task<bool> object::map(map_ptr map, const fb::model::point16_t& position,
 
         // here the character is on some map.
         // set map to null.
-        auto before_position = fb::model::point16_t{position};
+        auto before_position = fb::model::point16_t{resolved};
         if (this->_map != nullptr)
         {
-            before_position.x = std::min<uint16_t>(position.x, map->width() - 1);
-            before_position.y = std::min<uint16_t>(position.y, map->height() - 1);
+            before_position.x = std::min<uint16_t>(resolved.x, map->width() - 1);
+            before_position.y = std::min<uint16_t>(resolved.y, map->height() - 1);
         }
 
         if (this->_map != nullptr)
-            std::ignore = co_await this->map(nullptr);
+        {
+            map_options leave_options;
+            leave_options.destroy_type = destroy_type;
+            std::ignore                = co_await this->map(nullptr, std::nullopt, leave_options);
+        }
 
         {
             auto _ = std::unique_lock(this->_map_lock);

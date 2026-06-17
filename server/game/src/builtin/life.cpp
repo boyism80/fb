@@ -80,13 +80,17 @@ int builtin::life::builtin_message(lua_State* L)
     auto message = lua->tostring(2);
     auto type    = lua->toenum(3, MESSAGE_TYPE::STATE);
 
-    auto weak = ch->weak_from_this();
-    return lua->ensure_yield(*server, weak, [=](auto is_yield) {
+    auto weak     = ch->weak_from_this();
+    auto builder  = lua->new_co_builder(*server);
+    builder.weak  = weak;
+    builder.yield = [=]() -> async::task<void> {
         ch->message(message, type);
-        return lua->ensure_resume(*server, weak, [=]() {
-            return 0;
-        });
-    });
+        co_return;
+    };
+    builder.resume = []() -> async::task<int> {
+        co_return 0;
+    };
+    return builder.run();
 }
 
 int builtin::life::builtin_hp(lua_State* L)
@@ -103,28 +107,35 @@ int builtin::life::builtin_hp(lua_State* L)
 
     if (argc == 1)
     {
-        auto weak = obj->weak_from_this();
-        return lua->ensure_yield(*server, weak, [=](auto is_yield) {
-            auto hp_value = obj->stat.hp();
-
-            return lua->ensure_resume(*server, weak, [=]() {
-                lua->pushinteger(hp_value);
-                return 1;
-            });
-        });
+        auto hp_value = std::make_shared<uint32_t>();
+        auto weak     = obj->weak_from_this();
+        auto builder  = lua->new_co_builder(*server);
+        builder.weak  = weak;
+        builder.yield = [=]() -> async::task<void> {
+            *hp_value = obj->stat.hp();
+            co_return;
+        };
+        builder.resume = [=]() -> async::task<int> {
+            lua->pushinteger(*hp_value);
+            co_return 1;
+        };
+        return builder.run();
     }
     else
     {
-        auto value  = (uint32_t)lua->tointeger(2);
-        auto notify = argc < 3 || lua->toboolean(3);
-        auto weak   = obj->weak_from_this();
-        return lua->ensure_yield(*server, weak, [=](auto is_yield) {
+        auto value    = (uint32_t)lua->tointeger(2);
+        auto notify   = argc < 3 || lua->toboolean(3);
+        auto weak     = obj->weak_from_this();
+        auto builder  = lua->new_co_builder(*server);
+        builder.weak  = weak;
+        builder.yield = [=]() -> async::task<void> {
             obj->stat.hp(value, notify);
-
-            return lua->ensure_resume(*server, weak, [=]() {
-                return 0;
-            });
-        });
+            co_return;
+        };
+        builder.resume = []() -> async::task<int> {
+            co_return 0;
+        };
+        return builder.run();
     }
 }
 
@@ -142,28 +153,35 @@ int builtin::life::builtin_mp(lua_State* L)
 
     if (argc == 1)
     {
-        auto weak = obj->weak_from_this();
-        return lua->ensure_yield(*server, weak, [=](auto is_yield) {
-            auto mp_value = obj->stat.mp();
-
-            return lua->ensure_resume(*server, weak, [=]() {
-                lua->pushinteger(mp_value);
-                return 1;
-            });
-        });
+        auto mp_value = std::make_shared<uint32_t>();
+        auto weak     = obj->weak_from_this();
+        auto builder  = lua->new_co_builder(*server);
+        builder.weak  = weak;
+        builder.yield = [=]() -> async::task<void> {
+            *mp_value = obj->stat.mp();
+            co_return;
+        };
+        builder.resume = [=]() -> async::task<int> {
+            lua->pushinteger(*mp_value);
+            co_return 1;
+        };
+        return builder.run();
     }
     else
     {
-        auto value  = (uint32_t)lua->tointeger(2);
-        auto notify = argc < 3 || lua->toboolean(3);
-        auto weak   = obj->weak_from_this();
-        return lua->ensure_yield(*server, weak, [=](auto is_yield) {
+        auto value    = (uint32_t)lua->tointeger(2);
+        auto notify   = argc < 3 || lua->toboolean(3);
+        auto weak     = obj->weak_from_this();
+        auto builder  = lua->new_co_builder(*server);
+        builder.weak  = weak;
+        builder.yield = [=]() -> async::task<void> {
             obj->stat.mp(value, notify);
-
-            return lua->ensure_resume(*server, weak, [=]() {
-                return 0;
-            });
-        });
+            co_return;
+        };
+        builder.resume = []() -> async::task<int> {
+            co_return 0;
+        };
+        return builder.run();
     }
 }
 
@@ -179,15 +197,19 @@ int builtin::life::builtin_heal(lua_State* L)
     if (obj == nullptr)
         return 0;
 
-    auto value  = (uint32_t)lua->tointeger(2);
-    auto notify = argc < 3 || lua->toboolean(3);
-    auto weak   = obj->weak_from_this();
-    return lua->ensure_yield(*server, weak, [=](auto is_yield) {
+    auto value    = (uint32_t)lua->tointeger(2);
+    auto notify   = argc < 3 || lua->toboolean(3);
+    auto weak     = obj->weak_from_this();
+    auto builder  = lua->new_co_builder(*server);
+    builder.weak  = weak;
+    builder.yield = [=]() -> async::task<void> {
         obj->stat.heal(value, nullptr, notify);
-        return lua->ensure_resume(*server, weak, [=]() {
-            return 0;
-        });
-    });
+        co_return;
+    };
+    builder.resume = []() -> async::task<int> {
+        co_return 0;
+    };
+    return builder.run();
 }
 
 int builtin::life::builtin_damage(lua_State* L)
@@ -243,13 +265,17 @@ int builtin::life::builtin_damage(lua_State* L)
         lua_pop(L, 1);
     }
 
-    auto weak = obj->weak_from_this();
-    return lua->ensure_yield(*server, weak, [=](auto is_yield) {
+    auto weak     = obj->weak_from_this();
+    auto builder  = lua->new_co_builder(*server);
+    builder.weak  = weak;
+    builder.yield = [=]() -> async::task<void> {
         obj->stat.damage(value, from, critical, rate, physical, fixed, notify);
-        return lua->ensure_resume(*server, weak, [=]() {
-            return 0;
-        });
-    });
+        co_return;
+    };
+    builder.resume = []() -> async::task<int> {
+        co_return 0;
+    };
+    return builder.run();
 }
 
 int builtin::life::builtin_mp_up(lua_State* L)
@@ -264,15 +290,19 @@ int builtin::life::builtin_mp_up(lua_State* L)
     if (obj == nullptr)
         return 0;
 
-    auto value  = (uint32_t)lua->tointeger(2);
-    auto notify = argc < 3 || lua->toboolean(3);
-    auto weak   = obj->weak_from_this();
-    return lua->ensure_yield(*server, weak, [=](auto is_yield) {
+    auto value    = (uint32_t)lua->tointeger(2);
+    auto notify   = argc < 3 || lua->toboolean(3);
+    auto weak     = obj->weak_from_this();
+    auto builder  = lua->new_co_builder(*server);
+    builder.weak  = weak;
+    builder.yield = [=]() -> async::task<void> {
         obj->stat.mp_up(value, nullptr, notify);
-        return lua->ensure_resume(*server, weak, [=]() {
-            return 0;
-        });
-    });
+        co_return;
+    };
+    builder.resume = []() -> async::task<int> {
+        co_return 0;
+    };
+    return builder.run();
 }
 
 int builtin::life::builtin_mp_down(lua_State* L)
@@ -287,15 +317,19 @@ int builtin::life::builtin_mp_down(lua_State* L)
     if (obj == nullptr)
         return 0;
 
-    auto value  = (uint32_t)lua->tointeger(2);
-    auto notify = argc < 3 || lua->toboolean(3);
-    auto weak   = obj->weak_from_this();
-    return lua->ensure_yield(*server, weak, [=](auto is_yield) {
+    auto value    = (uint32_t)lua->tointeger(2);
+    auto notify   = argc < 3 || lua->toboolean(3);
+    auto weak     = obj->weak_from_this();
+    auto builder  = lua->new_co_builder(*server);
+    builder.weak  = weak;
+    builder.yield = [=]() -> async::task<void> {
         obj->stat.mp_down(value, nullptr, notify);
-        return lua->ensure_resume(*server, weak, [=]() {
-            return 0;
-        });
-    });
+        co_return;
+    };
+    builder.resume = []() -> async::task<int> {
+        co_return 0;
+    };
+    return builder.run();
 }
 
 int builtin::life::builtin_action(lua_State* L)
@@ -314,12 +348,16 @@ int builtin::life::builtin_action(lua_State* L)
     auto duration = lua->tointeger(3, static_cast<int>(DURATION::SPELL));
     auto sound    = (uint8_t)lua->tointeger(4, (uint8_t)0x00);
     auto weak     = obj->weak_from_this();
-    return lua->ensure_yield(*server, weak, [=](auto is_yield) {
+    auto builder  = lua->new_co_builder(*server);
+    builder.weak  = weak;
+    builder.yield = [=]() -> async::task<void> {
         obj->action(ACTION(action), DURATION(duration), sound);
-        return lua->ensure_resume(*server, weak, [=]() {
-            return 0;
-        });
-    });
+        co_return;
+    };
+    builder.resume = []() -> async::task<int> {
+        co_return 0;
+    };
+    return builder.run();
 }
 
 int builtin::life::builtin_spell(lua_State* L)
@@ -336,54 +374,66 @@ int builtin::life::builtin_spell(lua_State* L)
 
     if (lua->is_number(2))
     {
-        auto index = (int)lua->tointeger(2);
-        auto weak  = obj->weak_from_this();
-        return lua->ensure_yield(*server, weak, [=](auto is_yield) {
-            auto spell = obj->spells[index];
+        auto index    = (int)lua->tointeger(2);
+        auto spell    = std::make_shared<std::shared_ptr<fb::game::spell>>();
+        auto weak     = obj->weak_from_this();
+        auto builder  = lua->new_co_builder(*server);
+        builder.weak  = weak;
+        builder.yield = [=]() -> async::task<void> {
+            *spell = obj->spells[index];
+            co_return;
+        };
+        builder.resume = [=]() -> async::task<int> {
+            if (*spell == nullptr)
+                lua->pushnil();
+            else
+                lua->pushobject(*spell);
 
-            return lua->ensure_resume(*server, weak, [=]() {
-                if (spell == nullptr)
-                    lua->pushnil();
-                else
-                    lua->pushobject(spell);
-
-                return 1;
-            });
-        });
+            co_return 1;
+        };
+        return builder.run();
     }
     else if (lua->is_string(2))
     {
-        auto name = lua->tostring(2);
-        auto weak = obj->weak_from_this();
-        return lua->ensure_yield(*server, weak, [=](auto is_yield) {
-            auto spell = obj->spells.find(name);
+        auto name     = lua->tostring(2);
+        auto spell    = std::make_shared<std::shared_ptr<fb::game::spell>>();
+        auto weak     = obj->weak_from_this();
+        auto builder  = lua->new_co_builder(*server);
+        builder.weak  = weak;
+        builder.yield = [=]() -> async::task<void> {
+            *spell = obj->spells.find(name);
+            co_return;
+        };
+        builder.resume = [=]() -> async::task<int> {
+            if (*spell == nullptr)
+                lua->pushnil();
+            else
+                lua->pushobject(*spell);
 
-            return lua->ensure_resume(*server, weak, [=]() {
-                if (spell == nullptr)
-                    lua->pushnil();
-                else
-                    lua->pushobject(spell);
-
-                return 1;
-            });
-        });
+            co_return 1;
+        };
+        return builder.run();
     }
     else if (lua->is_userdata<fb::model::spell>(2))
     {
-        auto model = lua->touserdata<fb::model::spell>(2);
-        auto weak  = obj->weak_from_this();
-        return lua->ensure_yield(*server, weak, [=](auto is_yield) {
-            auto spell = obj->spells.find(*model);
+        auto model    = lua->touserdata<fb::model::spell>(2);
+        auto spell    = std::make_shared<std::shared_ptr<fb::game::spell>>();
+        auto weak     = obj->weak_from_this();
+        auto builder  = lua->new_co_builder(*server);
+        builder.weak  = weak;
+        builder.yield = [=]() -> async::task<void> {
+            *spell = obj->spells.find(*model);
+            co_return;
+        };
+        builder.resume = [=]() -> async::task<int> {
+            if (*spell == nullptr)
+                lua->pushnil();
+            else
+                lua->pushobject(*spell);
 
-            return lua->ensure_resume(*server, weak, [=]() {
-                if (spell == nullptr)
-                    lua->pushnil();
-                else
-                    lua->pushobject(spell);
-
-                return 1;
-            });
-        });
+            co_return 1;
+        };
+        return builder.run();
     }
     else
     {
@@ -403,27 +453,30 @@ int builtin::life::builtin_spells(lua_State* L)
     if (obj == nullptr)
         return 0;
 
-    auto weak = obj->weak_from_this();
-    return lua->ensure_yield(*server, weak, [=](auto is_yield) {
-        auto buffer = std::vector<std::shared_ptr<fb::game::spell>>();
+    auto buffer   = std::make_shared<std::vector<std::shared_ptr<fb::game::spell>>>();
+    auto weak     = obj->weak_from_this();
+    auto builder  = lua->new_co_builder(*server);
+    builder.weak  = weak;
+    builder.yield = [=]() -> async::task<void> {
         for (int i = 0; i < CONTAINER_CAPACITY; i++)
         {
             auto spell = obj->spells[i];
             if (spell != nullptr)
-                buffer.push_back(spell);
+                buffer->push_back(spell);
+        }
+        co_return;
+    };
+    builder.resume = [=]() -> async::task<int> {
+        lua->new_table();
+        for (int i = 0; i < buffer->size(); i++)
+        {
+            lua->pushobject((*buffer)[i]);
+            lua_rawseti(L, -2, i + 1);
         }
 
-        return lua->ensure_resume(*server, weak, [=]() {
-            lua->new_table();
-            for (int i = 0; i < buffer.size(); i++)
-            {
-                lua->pushobject(buffer[i]);
-                lua_rawseti(L, -2, i + 1);
-            }
-
-            return 1;
-        });
-    });
+        co_return 1;
+    };
+    return builder.run();
 }
 
 int builtin::life::builtin_cast(lua_State* L)
@@ -450,40 +503,49 @@ int builtin::life::builtin_cast(lua_State* L)
     if (you == nullptr)
         return 0;
 
-    auto map = obj->map();
-    if (map == nullptr || map->objects.contains(you) == false)
-        return 0;
-
     auto name  = lua->tostring(offset++);
     auto spell = table::spell.name2spell(name);
     if (spell == nullptr)
         return 0;
 
-    auto x = lua::new_context();
-    if (x == nullptr)
-        return 0;
-
     auto count = 2;
-#if defined DEBUG || defined _DEBUG
-    x->load("scripts/spell.lua");
-    x->load(spell->script);
-#endif
-    x->func(spell->cast);
-    x->pushobject(obj);
-
     if (spell->type == SPELL_TYPE::TARGET)
-    {
-        if (you != nullptr)
-            x->pushobject(you);
-        else
-            x->pushnil();
-
         count++;
-    }
 
-    x->pushobject(spell);
-    std::ignore = x->call(count);
-    return 0;
+    auto weak     = obj->weak_from_this();
+    auto builder  = lua->new_co_builder(*server);
+    builder.weak  = weak;
+    builder.yield = [=]() -> async::task<void> {
+        auto map = obj->map();
+        if (map == nullptr || map->objects.contains(you) == false)
+            co_return;
+
+        auto x = lua::new_context();
+        if (x == nullptr)
+            co_return;
+
+#if defined DEBUG || defined _DEBUG
+        x->load("scripts/spell.lua");
+        x->load(spell->script);
+#endif
+        x->func(spell->cast);
+        x->pushobject(obj);
+
+        if (spell->type == SPELL_TYPE::TARGET)
+        {
+            if (you != nullptr)
+                x->pushobject(you);
+            else
+                x->pushnil();
+        }
+
+        x->pushobject(spell);
+        co_await x->call(count);
+    };
+    builder.resume = []() -> async::task<int> {
+        co_return 0;
+    };
+    return builder.run();
 }
 
 int builtin::life::builtin_cc(lua_State* L)
@@ -500,27 +562,34 @@ int builtin::life::builtin_cc(lua_State* L)
 
     if (argc == 1)
     {
-        auto weak = obj->weak_from_this();
-        return lua->ensure_yield(*server, weak, [=](auto is_yield) {
-            auto cc_value = static_cast<uint32_t>(obj->cc);
-
-            return lua->ensure_resume(*server, weak, [=]() {
-                lua->pushinteger(cc_value);
-                return 1;
-            });
-        });
+        auto cc_value = std::make_shared<uint32_t>();
+        auto weak     = obj->weak_from_this();
+        auto builder  = lua->new_co_builder(*server);
+        builder.weak  = weak;
+        builder.yield = [=]() -> async::task<void> {
+            *cc_value = static_cast<uint32_t>(obj->cc);
+            co_return;
+        };
+        builder.resume = [=]() -> async::task<int> {
+            lua->pushinteger(*cc_value);
+            co_return 1;
+        };
+        return builder.run();
     }
     else
     {
-        auto cc   = static_cast<CROWD_CONTROL>(lua->tointeger(2));
-        auto weak = obj->weak_from_this();
-        return lua->ensure_yield(*server, weak, [=](auto is_yield) {
+        auto cc       = static_cast<CROWD_CONTROL>(lua->tointeger(2));
+        auto weak     = obj->weak_from_this();
+        auto builder  = lua->new_co_builder(*server);
+        builder.weak  = weak;
+        builder.yield = [=]() -> async::task<void> {
             obj->cc.set(cc);
-
-            return lua->ensure_resume(*server, weak, [=]() {
-                return 0;
-            });
-        });
+            co_return;
+        };
+        builder.resume = []() -> async::task<int> {
+            co_return 0;
+        };
+        return builder.run();
     }
 }
 
@@ -538,27 +607,34 @@ int builtin::life::builtin_add_cc(lua_State* L)
 
     if (argc == 1)
     {
-        auto weak = obj->weak_from_this();
-        return lua->ensure_yield(*server, weak, [=](auto is_yield) {
-            auto cc_value = static_cast<uint32_t>(obj->cc);
-
-            return lua->ensure_resume(*server, weak, [=]() {
-                lua->pushinteger(cc_value);
-                return 1;
-            });
-        });
+        auto cc_value = std::make_shared<uint32_t>();
+        auto weak     = obj->weak_from_this();
+        auto builder  = lua->new_co_builder(*server);
+        builder.weak  = weak;
+        builder.yield = [=]() -> async::task<void> {
+            *cc_value = static_cast<uint32_t>(obj->cc);
+            co_return;
+        };
+        builder.resume = [=]() -> async::task<int> {
+            lua->pushinteger(*cc_value);
+            co_return 1;
+        };
+        return builder.run();
     }
     else
     {
-        auto cc   = static_cast<CROWD_CONTROL>(lua->tointeger(2));
-        auto weak = obj->weak_from_this();
-        return lua->ensure_yield(*server, weak, [=](auto is_yield) {
+        auto cc       = static_cast<CROWD_CONTROL>(lua->tointeger(2));
+        auto weak     = obj->weak_from_this();
+        auto builder  = lua->new_co_builder(*server);
+        builder.weak  = weak;
+        builder.yield = [=]() -> async::task<void> {
             obj->cc.add(cc);
-
-            return lua->ensure_resume(*server, weak, [=]() {
-                return 0;
-            });
-        });
+            co_return;
+        };
+        builder.resume = []() -> async::task<int> {
+            co_return 0;
+        };
+        return builder.run();
     }
 }
 
@@ -574,14 +650,18 @@ int builtin::life::builtin_remove_cc(lua_State* L)
     if (obj == nullptr)
         return 0;
 
-    auto cc   = static_cast<CROWD_CONTROL>(lua->tointeger(2));
-    auto weak = obj->weak_from_this();
-    return lua->ensure_yield(*server, weak, [=](auto is_yield) {
+    auto cc       = static_cast<CROWD_CONTROL>(lua->tointeger(2));
+    auto weak     = obj->weak_from_this();
+    auto builder  = lua->new_co_builder(*server);
+    builder.weak  = weak;
+    builder.yield = [=]() -> async::task<void> {
         obj->cc.remove(cc);
-        return lua->ensure_resume(*server, weak, [=]() {
-            return 0;
-        });
-    });
+        co_return;
+    };
+    builder.resume = []() -> async::task<int> {
+        co_return 0;
+    };
+    return builder.run();
 }
 
 int builtin::life::builtin_attack(lua_State* L)
@@ -598,22 +678,16 @@ int builtin::life::builtin_attack(lua_State* L)
 
     auto duration = lua->toenum(2, DURATION::ATTACK);
     auto weak     = obj->weak_from_this();
-    return lua->ensure_yield(*server, weak, [=](auto is_yield) {
-        async::awaitable_then(obj->attack(duration), [=](auto result) {
-            try
-            {
-                result();
-            }
-            catch (const std::exception& e)
-            {
-                // Nothing to do
-            }
-            lua->ensure_resume(*server, weak, [=]() {
-                return 0;
-            });
-        });
-        return 0;
-    });
+    auto builder  = lua->new_co_builder(*server);
+    builder.weak  = weak;
+    builder.yield = [=]() -> async::task<void> {
+        co_await obj->attack(duration);
+        co_return;
+    };
+    builder.resume = []() -> async::task<int> {
+        co_return 0;
+    };
+    return builder.run();
 }
 
 int builtin::life::builtin_damage_rate(lua_State* L)
@@ -630,27 +704,34 @@ int builtin::life::builtin_damage_rate(lua_State* L)
 
     if (argc == 1)
     {
-        auto weak = obj->weak_from_this();
-        return lua->ensure_yield(*server, weak, [=](auto is_yield) {
-            auto damage_rate_value = obj->damage_rate();
-
-            return lua->ensure_resume(*server, weak, [=]() {
-                lua->pushinteger(damage_rate_value);
-                return 1;
-            });
-        });
+        auto damage_rate_value = std::make_shared<uint32_t>();
+        auto weak              = obj->weak_from_this();
+        auto builder           = lua->new_co_builder(*server);
+        builder.weak           = weak;
+        builder.yield          = [=]() -> async::task<void> {
+            *damage_rate_value = obj->damage_rate();
+            co_return;
+        };
+        builder.resume = [=]() -> async::task<int> {
+            lua->pushinteger(*damage_rate_value);
+            co_return 1;
+        };
+        return builder.run();
     }
     else
     {
-        auto value = lua->tointeger(2);
-        auto weak  = obj->weak_from_this();
-        return lua->ensure_yield(*server, weak, [=](auto is_yield) {
+        auto value    = lua->tointeger(2);
+        auto weak     = obj->weak_from_this();
+        auto builder  = lua->new_co_builder(*server);
+        builder.weak  = weak;
+        builder.yield = [=]() -> async::task<void> {
             obj->damage_rate(value);
-
-            return lua->ensure_resume(*server, weak, [=]() {
-                return 0;
-            });
-        });
+            co_return;
+        };
+        builder.resume = []() -> async::task<int> {
+            co_return 0;
+        };
+        return builder.run();
     }
 }
 
@@ -668,27 +749,34 @@ int builtin::life::builtin_damage_derate(lua_State* L)
 
     if (argc == 1)
     {
-        auto weak = obj->weak_from_this();
-        return lua->ensure_yield(*server, weak, [=](auto is_yield) {
-            auto damage_derate_value = obj->damage_derate();
-
-            return lua->ensure_resume(*server, weak, [=]() {
-                lua->pushinteger(damage_derate_value);
-                return 1;
-            });
-        });
+        auto damage_derate_value = std::make_shared<uint32_t>();
+        auto weak                = obj->weak_from_this();
+        auto builder             = lua->new_co_builder(*server);
+        builder.weak             = weak;
+        builder.yield            = [=]() -> async::task<void> {
+            *damage_derate_value = obj->damage_derate();
+            co_return;
+        };
+        builder.resume = [=]() -> async::task<int> {
+            lua->pushinteger(*damage_derate_value);
+            co_return 1;
+        };
+        return builder.run();
     }
     else
     {
-        auto value = lua->tointeger(2);
-        auto weak  = obj->weak_from_this();
-        return lua->ensure_yield(*server, weak, [=](auto is_yield) {
+        auto value    = lua->tointeger(2);
+        auto weak     = obj->weak_from_this();
+        auto builder  = lua->new_co_builder(*server);
+        builder.weak  = weak;
+        builder.yield = [=]() -> async::task<void> {
             obj->damage_derate(value);
-
-            return lua->ensure_resume(*server, weak, [=]() {
-                return 0;
-            });
-        });
+            co_return;
+        };
+        builder.resume = []() -> async::task<int> {
+            co_return 0;
+        };
+        return builder.run();
     }
 }
 
@@ -706,27 +794,34 @@ int builtin::life::builtin_skill_damage_rate(lua_State* L)
 
     if (argc == 1)
     {
-        auto weak = obj->weak_from_this();
-        return lua->ensure_yield(*server, weak, [=](auto is_yield) {
-            auto skill_damage_rate_value = obj->skill_damage_rate();
-
-            return lua->ensure_resume(*server, weak, [=]() {
-                lua->pushinteger(skill_damage_rate_value);
-                return 1;
-            });
-        });
+        auto skill_damage_rate_value = std::make_shared<uint32_t>();
+        auto weak                    = obj->weak_from_this();
+        auto builder                 = lua->new_co_builder(*server);
+        builder.weak                 = weak;
+        builder.yield                = [=]() -> async::task<void> {
+            *skill_damage_rate_value = obj->skill_damage_rate();
+            co_return;
+        };
+        builder.resume = [=]() -> async::task<int> {
+            lua->pushinteger(*skill_damage_rate_value);
+            co_return 1;
+        };
+        return builder.run();
     }
     else
     {
-        auto value = lua->tointeger(2);
-        auto weak  = obj->weak_from_this();
-        return lua->ensure_yield(*server, weak, [=](auto is_yield) {
+        auto value    = lua->tointeger(2);
+        auto weak     = obj->weak_from_this();
+        auto builder  = lua->new_co_builder(*server);
+        builder.weak  = weak;
+        builder.yield = [=]() -> async::task<void> {
             obj->skill_damage_rate(value);
-
-            return lua->ensure_resume(*server, weak, [=]() {
-                return 0;
-            });
-        });
+            co_return;
+        };
+        builder.resume = []() -> async::task<int> {
+            co_return 0;
+        };
+        return builder.run();
     }
 }
 
@@ -744,27 +839,34 @@ int builtin::life::builtin_paralysis(lua_State* L)
 
     if (argc == 1)
     {
-        auto weak = obj->weak_from_this();
-        return lua->ensure_yield(*server, weak, [=](auto is_yield) {
-            auto paralysis_value = obj->paralysis();
-
-            return lua->ensure_resume(*server, weak, [=]() {
-                lua->pushboolean(paralysis_value);
-                return 1;
-            });
-        });
+        auto paralysis_value = std::make_shared<bool>();
+        auto weak            = obj->weak_from_this();
+        auto builder         = lua->new_co_builder(*server);
+        builder.weak         = weak;
+        builder.yield        = [=]() -> async::task<void> {
+            *paralysis_value = obj->paralysis();
+            co_return;
+        };
+        builder.resume = [=]() -> async::task<int> {
+            lua->pushboolean(*paralysis_value);
+            co_return 1;
+        };
+        return builder.run();
     }
     else
     {
-        auto value = lua->toboolean(2);
-        auto weak  = obj->weak_from_this();
-        return lua->ensure_yield(*server, weak, [=](auto is_yield) {
+        auto value    = lua->toboolean(2);
+        auto weak     = obj->weak_from_this();
+        auto builder  = lua->new_co_builder(*server);
+        builder.weak  = weak;
+        builder.yield = [=]() -> async::task<void> {
             obj->paralysis(value);
-
-            return lua->ensure_resume(*server, weak, [=]() {
-                return 0;
-            });
-        });
+            co_return;
+        };
+        builder.resume = []() -> async::task<int> {
+            co_return 0;
+        };
+        return builder.run();
     }
 }
 
@@ -782,27 +884,34 @@ int builtin::life::builtin_invincible(lua_State* L)
 
     if (argc == 1)
     {
-        auto weak = obj->weak_from_this();
-        return lua->ensure_yield(*server, weak, [=](auto is_yield) {
-            auto invincible_value = obj->invincible();
-
-            return lua->ensure_resume(*server, weak, [=]() {
-                lua->pushboolean(invincible_value);
-                return 1;
-            });
-        });
+        auto invincible_value = std::make_shared<bool>();
+        auto weak             = obj->weak_from_this();
+        auto builder          = lua->new_co_builder(*server);
+        builder.weak          = weak;
+        builder.yield         = [=]() -> async::task<void> {
+            *invincible_value = obj->invincible();
+            co_return;
+        };
+        builder.resume = [=]() -> async::task<int> {
+            lua->pushboolean(*invincible_value);
+            co_return 1;
+        };
+        return builder.run();
     }
     else
     {
-        auto value = lua->toboolean(2);
-        auto weak  = obj->weak_from_this();
-        return lua->ensure_yield(*server, weak, [=](auto is_yield) {
+        auto value    = lua->toboolean(2);
+        auto weak     = obj->weak_from_this();
+        auto builder  = lua->new_co_builder(*server);
+        builder.weak  = weak;
+        builder.yield = [=]() -> async::task<void> {
             obj->invincible(value);
-
-            return lua->ensure_resume(*server, weak, [=]() {
-                return 0;
-            });
-        });
+            co_return;
+        };
+        builder.resume = []() -> async::task<int> {
+            co_return 0;
+        };
+        return builder.run();
     }
 }
 
@@ -820,27 +929,34 @@ int builtin::life::builtin_cover(lua_State* L)
 
     if (argc == 1)
     {
-        auto weak = obj->weak_from_this();
-        return lua->ensure_yield(*server, weak, [=](auto is_yield) {
-            auto cover_value = obj->cover();
-
-            return lua->ensure_resume(*server, weak, [=]() {
-                lua->pushboolean(cover_value);
-                return 1;
-            });
-        });
+        auto cover_value = std::make_shared<bool>();
+        auto weak        = obj->weak_from_this();
+        auto builder     = lua->new_co_builder(*server);
+        builder.weak     = weak;
+        builder.yield    = [=]() -> async::task<void> {
+            *cover_value = obj->cover();
+            co_return;
+        };
+        builder.resume = [=]() -> async::task<int> {
+            lua->pushboolean(*cover_value);
+            co_return 1;
+        };
+        return builder.run();
     }
     else
     {
-        auto value = lua->toboolean(2);
-        auto weak  = obj->weak_from_this();
-        return lua->ensure_yield(*server, weak, [=](auto is_yield) {
+        auto value    = lua->toboolean(2);
+        auto weak     = obj->weak_from_this();
+        auto builder  = lua->new_co_builder(*server);
+        builder.weak  = weak;
+        builder.yield = [=]() -> async::task<void> {
             obj->cover(value);
-
-            return lua->ensure_resume(*server, weak, [=]() {
-                return 0;
-            });
-        });
+            co_return;
+        };
+        builder.resume = []() -> async::task<int> {
+            co_return 0;
+        };
+        return builder.run();
     }
 }
 
@@ -856,14 +972,19 @@ int builtin::life::builtin_base_hp(lua_State* L)
     if (obj == nullptr)
         return 0;
 
-    auto weak = obj->weak_from_this();
-    return lua->ensure_yield(*server, weak, [=](auto is_yield) {
-        auto value = obj->stat.base_hp();
-        return lua->ensure_resume(*server, weak, [=]() {
-            lua->pushinteger(value);
-            return 1;
-        });
-    });
+    auto value    = std::make_shared<uint32_t>();
+    auto weak     = obj->weak_from_this();
+    auto builder  = lua->new_co_builder(*server);
+    builder.weak  = weak;
+    builder.yield = [=]() -> async::task<void> {
+        *value = obj->stat.base_hp();
+        co_return;
+    };
+    builder.resume = [=]() -> async::task<int> {
+        lua->pushinteger(*value);
+        co_return 1;
+    };
+    return builder.run();
 }
 
 int builtin::life::builtin_buff_hp(lua_State* L)
@@ -880,27 +1001,34 @@ int builtin::life::builtin_buff_hp(lua_State* L)
 
     if (argc == 1)
     {
-        auto weak = obj->weak_from_this();
-        return lua->ensure_yield(*server, weak, [=](auto is_yield) {
-            auto buff_hp_value = obj->stat.buff_hp();
-
-            return lua->ensure_resume(*server, weak, [=]() {
-                lua->pushinteger(buff_hp_value);
-                return 1;
-            });
-        });
+        auto buff_hp_value = std::make_shared<int32_t>();
+        auto weak          = obj->weak_from_this();
+        auto builder       = lua->new_co_builder(*server);
+        builder.weak       = weak;
+        builder.yield      = [=]() -> async::task<void> {
+            *buff_hp_value = obj->stat.buff_hp();
+            co_return;
+        };
+        builder.resume = [=]() -> async::task<int> {
+            lua->pushinteger(*buff_hp_value);
+            co_return 1;
+        };
+        return builder.run();
     }
     else
     {
-        auto value = lua->tointeger(2);
-        auto weak  = obj->weak_from_this();
-        return lua->ensure_yield(*server, weak, [=](auto is_yield) {
+        auto value    = lua->tointeger(2);
+        auto weak     = obj->weak_from_this();
+        auto builder  = lua->new_co_builder(*server);
+        builder.weak  = weak;
+        builder.yield = [=]() -> async::task<void> {
             obj->stat.buff_hp(static_cast<int32_t>(value));
-
-            return lua->ensure_resume(*server, weak, [=]() {
-                return 0;
-            });
-        });
+            co_return;
+        };
+        builder.resume = []() -> async::task<int> {
+            co_return 0;
+        };
+        return builder.run();
     }
 }
 
@@ -915,15 +1043,19 @@ int builtin::life::builtin_maxhp(lua_State* L)
     if (obj == nullptr)
         return 0;
 
-    auto weak = obj->weak_from_this();
-    return lua->ensure_yield(*server, weak, [=](auto is_yield) {
-        auto maxhp_value = obj->stat.maxhp();
-
-        return lua->ensure_resume(*server, weak, [=]() {
-            lua->pushinteger(maxhp_value);
-            return 1;
-        });
-    });
+    auto maxhp_value = std::make_shared<uint32_t>();
+    auto weak        = obj->weak_from_this();
+    auto builder     = lua->new_co_builder(*server);
+    builder.weak     = weak;
+    builder.yield    = [=]() -> async::task<void> {
+        *maxhp_value = obj->stat.maxhp();
+        co_return;
+    };
+    builder.resume = [=]() -> async::task<int> {
+        lua->pushinteger(*maxhp_value);
+        co_return 1;
+    };
+    return builder.run();
 }
 
 int builtin::life::builtin_base_mp(lua_State* L)
@@ -937,15 +1069,19 @@ int builtin::life::builtin_base_mp(lua_State* L)
     if (obj == nullptr)
         return 0;
 
-    auto weak = obj->weak_from_this();
-    return lua->ensure_yield(*server, weak, [=](auto is_yield) {
-        auto base_mp_value = obj->stat.base_mp();
-
-        return lua->ensure_resume(*server, weak, [=]() {
-            lua->pushinteger(base_mp_value);
-            return 1;
-        });
-    });
+    auto base_mp_value = std::make_shared<uint32_t>();
+    auto weak          = obj->weak_from_this();
+    auto builder       = lua->new_co_builder(*server);
+    builder.weak       = weak;
+    builder.yield      = [=]() -> async::task<void> {
+        *base_mp_value = obj->stat.base_mp();
+        co_return;
+    };
+    builder.resume = [=]() -> async::task<int> {
+        lua->pushinteger(*base_mp_value);
+        co_return 1;
+    };
+    return builder.run();
 }
 
 int builtin::life::builtin_buff_mp(lua_State* L)
@@ -962,27 +1098,34 @@ int builtin::life::builtin_buff_mp(lua_State* L)
 
     if (argc == 1)
     {
-        auto weak = obj->weak_from_this();
-        return lua->ensure_yield(*server, weak, [=](auto is_yield) {
-            auto buff_mp_value = obj->stat.buff_mp();
-
-            return lua->ensure_resume(*server, weak, [=]() {
-                lua->pushinteger(buff_mp_value);
-                return 1;
-            });
-        });
+        auto buff_mp_value = std::make_shared<int32_t>();
+        auto weak          = obj->weak_from_this();
+        auto builder       = lua->new_co_builder(*server);
+        builder.weak       = weak;
+        builder.yield      = [=]() -> async::task<void> {
+            *buff_mp_value = obj->stat.buff_mp();
+            co_return;
+        };
+        builder.resume = [=]() -> async::task<int> {
+            lua->pushinteger(*buff_mp_value);
+            co_return 1;
+        };
+        return builder.run();
     }
     else
     {
-        auto value = lua->tointeger(2);
-        auto weak  = obj->weak_from_this();
-        return lua->ensure_yield(*server, weak, [=](auto is_yield) {
+        auto value    = lua->tointeger(2);
+        auto weak     = obj->weak_from_this();
+        auto builder  = lua->new_co_builder(*server);
+        builder.weak  = weak;
+        builder.yield = [=]() -> async::task<void> {
             obj->stat.buff_mp(static_cast<int32_t>(value));
-
-            return lua->ensure_resume(*server, weak, [=]() {
-                return 0;
-            });
-        });
+            co_return;
+        };
+        builder.resume = []() -> async::task<int> {
+            co_return 0;
+        };
+        return builder.run();
     }
 }
 
@@ -997,15 +1140,19 @@ int builtin::life::builtin_maxmp(lua_State* L)
     if (obj == nullptr)
         return 0;
 
-    auto weak = obj->weak_from_this();
-    return lua->ensure_yield(*server, weak, [=](auto is_yield) {
-        auto maxmp_value = obj->stat.maxmp();
-
-        return lua->ensure_resume(*server, weak, [=]() {
-            lua->pushinteger(maxmp_value);
-            return 1;
-        });
-    });
+    auto maxmp_value = std::make_shared<uint32_t>();
+    auto weak        = obj->weak_from_this();
+    auto builder     = lua->new_co_builder(*server);
+    builder.weak     = weak;
+    builder.yield    = [=]() -> async::task<void> {
+        *maxmp_value = obj->stat.maxmp();
+        co_return;
+    };
+    builder.resume = [=]() -> async::task<int> {
+        lua->pushinteger(*maxmp_value);
+        co_return 1;
+    };
+    return builder.run();
 }
 
 int builtin::life::builtin_base_str(lua_State* L)
@@ -1019,15 +1166,19 @@ int builtin::life::builtin_base_str(lua_State* L)
     if (obj == nullptr)
         return 0;
 
-    auto weak = obj->weak_from_this();
-    return lua->ensure_yield(*server, weak, [=](auto is_yield) {
-        auto base_str_value = obj->stat.base_str();
-
-        return lua->ensure_resume(*server, weak, [=]() {
-            lua->pushinteger(base_str_value);
-            return 1;
-        });
-    });
+    auto base_str_value = std::make_shared<uint8_t>();
+    auto weak           = obj->weak_from_this();
+    auto builder        = lua->new_co_builder(*server);
+    builder.weak        = weak;
+    builder.yield       = [=]() -> async::task<void> {
+        *base_str_value = obj->stat.base_str();
+        co_return;
+    };
+    builder.resume = [=]() -> async::task<int> {
+        lua->pushinteger(*base_str_value);
+        co_return 1;
+    };
+    return builder.run();
 }
 
 int builtin::life::builtin_buff_str(lua_State* L)
@@ -1044,27 +1195,34 @@ int builtin::life::builtin_buff_str(lua_State* L)
 
     if (argc == 1)
     {
-        auto weak = obj->weak_from_this();
-        return lua->ensure_yield(*server, weak, [=](auto is_yield) {
-            auto buff_str_value = obj->stat.buff_str();
-
-            return lua->ensure_resume(*server, weak, [=]() {
-                lua->pushinteger(buff_str_value);
-                return 1;
-            });
-        });
+        auto buff_str_value = std::make_shared<uint8_t>();
+        auto weak           = obj->weak_from_this();
+        auto builder        = lua->new_co_builder(*server);
+        builder.weak        = weak;
+        builder.yield       = [=]() -> async::task<void> {
+            *buff_str_value = obj->stat.buff_str();
+            co_return;
+        };
+        builder.resume = [=]() -> async::task<int> {
+            lua->pushinteger(*buff_str_value);
+            co_return 1;
+        };
+        return builder.run();
     }
     else
     {
-        auto value = lua->tointeger(2);
-        auto weak  = obj->weak_from_this();
-        return lua->ensure_yield(*server, weak, [=](auto is_yield) {
+        auto value    = lua->tointeger(2);
+        auto weak     = obj->weak_from_this();
+        auto builder  = lua->new_co_builder(*server);
+        builder.weak  = weak;
+        builder.yield = [=]() -> async::task<void> {
             obj->stat.buff_str(value);
-
-            return lua->ensure_resume(*server, weak, [=]() {
-                return 0;
-            });
-        });
+            co_return;
+        };
+        builder.resume = []() -> async::task<int> {
+            co_return 0;
+        };
+        return builder.run();
     }
 }
 
@@ -1079,15 +1237,19 @@ int builtin::life::builtin_str(lua_State* L)
     if (obj == nullptr)
         return 0;
 
-    auto weak = obj->weak_from_this();
-    return lua->ensure_yield(*server, weak, [=](auto is_yield) {
-        auto str_value = obj->stat.str();
-
-        return lua->ensure_resume(*server, weak, [=]() {
-            lua->pushinteger(str_value);
-            return 1;
-        });
-    });
+    auto str_value = std::make_shared<uint8_t>();
+    auto weak      = obj->weak_from_this();
+    auto builder   = lua->new_co_builder(*server);
+    builder.weak   = weak;
+    builder.yield  = [=]() -> async::task<void> {
+        *str_value = obj->stat.str();
+        co_return;
+    };
+    builder.resume = [=]() -> async::task<int> {
+        lua->pushinteger(*str_value);
+        co_return 1;
+    };
+    return builder.run();
 }
 
 int builtin::life::builtin_base_dex(lua_State* L)
@@ -1101,15 +1263,19 @@ int builtin::life::builtin_base_dex(lua_State* L)
     if (obj == nullptr)
         return 0;
 
-    auto weak = obj->weak_from_this();
-    return lua->ensure_yield(*server, weak, [=](auto is_yield) {
-        auto base_dex_value = obj->stat.base_dex();
-
-        return lua->ensure_resume(*server, weak, [=]() {
-            lua->pushinteger(base_dex_value);
-            return 1;
-        });
-    });
+    auto base_dex_value = std::make_shared<uint8_t>();
+    auto weak           = obj->weak_from_this();
+    auto builder        = lua->new_co_builder(*server);
+    builder.weak        = weak;
+    builder.yield       = [=]() -> async::task<void> {
+        *base_dex_value = obj->stat.base_dex();
+        co_return;
+    };
+    builder.resume = [=]() -> async::task<int> {
+        lua->pushinteger(*base_dex_value);
+        co_return 1;
+    };
+    return builder.run();
 }
 
 int builtin::life::builtin_buff_dex(lua_State* L)
@@ -1126,27 +1292,34 @@ int builtin::life::builtin_buff_dex(lua_State* L)
 
     if (argc == 1)
     {
-        auto weak = obj->weak_from_this();
-        return lua->ensure_yield(*server, weak, [=](auto is_yield) {
-            auto buff_dex_value = obj->stat.buff_dex();
-
-            return lua->ensure_resume(*server, weak, [=]() {
-                lua->pushinteger(buff_dex_value);
-                return 1;
-            });
-        });
+        auto buff_dex_value = std::make_shared<uint8_t>();
+        auto weak           = obj->weak_from_this();
+        auto builder        = lua->new_co_builder(*server);
+        builder.weak        = weak;
+        builder.yield       = [=]() -> async::task<void> {
+            *buff_dex_value = obj->stat.buff_dex();
+            co_return;
+        };
+        builder.resume = [=]() -> async::task<int> {
+            lua->pushinteger(*buff_dex_value);
+            co_return 1;
+        };
+        return builder.run();
     }
     else
     {
-        auto value = lua->tointeger(2);
-        auto weak  = obj->weak_from_this();
-        return lua->ensure_yield(*server, weak, [=](auto is_yield) {
+        auto value    = lua->tointeger(2);
+        auto weak     = obj->weak_from_this();
+        auto builder  = lua->new_co_builder(*server);
+        builder.weak  = weak;
+        builder.yield = [=]() -> async::task<void> {
             obj->stat.buff_dex(value);
-
-            return lua->ensure_resume(*server, weak, [=]() {
-                return 0;
-            });
-        });
+            co_return;
+        };
+        builder.resume = []() -> async::task<int> {
+            co_return 0;
+        };
+        return builder.run();
     }
 }
 
@@ -1161,15 +1334,19 @@ int builtin::life::builtin_dex(lua_State* L)
     if (obj == nullptr)
         return 0;
 
-    auto weak = obj->weak_from_this();
-    return lua->ensure_yield(*server, weak, [=](auto is_yield) {
-        auto dex_value = obj->stat.dex();
-
-        return lua->ensure_resume(*server, weak, [=]() {
-            lua->pushinteger(dex_value);
-            return 1;
-        });
-    });
+    auto dex_value = std::make_shared<uint8_t>();
+    auto weak      = obj->weak_from_this();
+    auto builder   = lua->new_co_builder(*server);
+    builder.weak   = weak;
+    builder.yield  = [=]() -> async::task<void> {
+        *dex_value = obj->stat.dex();
+        co_return;
+    };
+    builder.resume = [=]() -> async::task<int> {
+        lua->pushinteger(*dex_value);
+        co_return 1;
+    };
+    return builder.run();
 }
 
 int builtin::life::builtin_base_int(lua_State* L)
@@ -1183,15 +1360,19 @@ int builtin::life::builtin_base_int(lua_State* L)
     if (obj == nullptr)
         return 0;
 
-    auto weak = obj->weak_from_this();
-    return lua->ensure_yield(*server, weak, [=](auto is_yield) {
-        auto base_int_value = obj->stat.base_int();
-
-        return lua->ensure_resume(*server, weak, [=]() {
-            lua->pushinteger(base_int_value);
-            return 1;
-        });
-    });
+    auto base_int_value = std::make_shared<uint8_t>();
+    auto weak           = obj->weak_from_this();
+    auto builder        = lua->new_co_builder(*server);
+    builder.weak        = weak;
+    builder.yield       = [=]() -> async::task<void> {
+        *base_int_value = obj->stat.base_int();
+        co_return;
+    };
+    builder.resume = [=]() -> async::task<int> {
+        lua->pushinteger(*base_int_value);
+        co_return 1;
+    };
+    return builder.run();
 }
 
 int builtin::life::builtin_buff_int(lua_State* L)
@@ -1208,27 +1389,34 @@ int builtin::life::builtin_buff_int(lua_State* L)
 
     if (argc == 1)
     {
-        auto weak = obj->weak_from_this();
-        return lua->ensure_yield(*server, weak, [=](auto is_yield) {
-            auto buff_int_value = obj->stat.buff_int();
-
-            return lua->ensure_resume(*server, weak, [=]() {
-                lua->pushinteger(buff_int_value);
-                return 1;
-            });
-        });
+        auto buff_int_value = std::make_shared<uint8_t>();
+        auto weak           = obj->weak_from_this();
+        auto builder        = lua->new_co_builder(*server);
+        builder.weak        = weak;
+        builder.yield       = [=]() -> async::task<void> {
+            *buff_int_value = obj->stat.buff_int();
+            co_return;
+        };
+        builder.resume = [=]() -> async::task<int> {
+            lua->pushinteger(*buff_int_value);
+            co_return 1;
+        };
+        return builder.run();
     }
     else
     {
-        auto value = lua->tointeger(2);
-        auto weak  = obj->weak_from_this();
-        return lua->ensure_yield(*server, weak, [=](auto is_yield) {
+        auto value    = lua->tointeger(2);
+        auto weak     = obj->weak_from_this();
+        auto builder  = lua->new_co_builder(*server);
+        builder.weak  = weak;
+        builder.yield = [=]() -> async::task<void> {
             obj->stat.buff_int(value);
-
-            return lua->ensure_resume(*server, weak, [=]() {
-                return 0;
-            });
-        });
+            co_return;
+        };
+        builder.resume = []() -> async::task<int> {
+            co_return 0;
+        };
+        return builder.run();
     }
 }
 
@@ -1243,15 +1431,19 @@ int builtin::life::builtin_intelligence(lua_State* L)
     if (obj == nullptr)
         return 0;
 
-    auto weak = obj->weak_from_this();
-    return lua->ensure_yield(*server, weak, [=](auto is_yield) {
-        auto intelligence_value = obj->stat.intelligence();
-
-        return lua->ensure_resume(*server, weak, [=]() {
-            lua->pushinteger(intelligence_value);
-            return 1;
-        });
-    });
+    auto intelligence_value = std::make_shared<uint8_t>();
+    auto weak               = obj->weak_from_this();
+    auto builder            = lua->new_co_builder(*server);
+    builder.weak            = weak;
+    builder.yield           = [=]() -> async::task<void> {
+        *intelligence_value = obj->stat.intelligence();
+        co_return;
+    };
+    builder.resume = [=]() -> async::task<int> {
+        lua->pushinteger(*intelligence_value);
+        co_return 1;
+    };
+    return builder.run();
 }
 
 int builtin::life::builtin_base_phydef(lua_State* L)
@@ -1265,15 +1457,19 @@ int builtin::life::builtin_base_phydef(lua_State* L)
     if (obj == nullptr)
         return 0;
 
-    auto weak = obj->weak_from_this();
-    return lua->ensure_yield(*server, weak, [=](auto is_yield) {
-        auto base_phydef_value = obj->stat.base_phydef();
-
-        return lua->ensure_resume(*server, weak, [=]() {
-            lua->pushinteger(base_phydef_value);
-            return 1;
-        });
-    });
+    auto base_phydef_value = std::make_shared<int8_t>();
+    auto weak              = obj->weak_from_this();
+    auto builder           = lua->new_co_builder(*server);
+    builder.weak           = weak;
+    builder.yield          = [=]() -> async::task<void> {
+        *base_phydef_value = obj->stat.base_phydef();
+        co_return;
+    };
+    builder.resume = [=]() -> async::task<int> {
+        lua->pushinteger(*base_phydef_value);
+        co_return 1;
+    };
+    return builder.run();
 }
 
 int builtin::life::builtin_buff_phydef(lua_State* L)
@@ -1290,27 +1486,34 @@ int builtin::life::builtin_buff_phydef(lua_State* L)
 
     if (argc == 1)
     {
-        auto weak = obj->weak_from_this();
-        return lua->ensure_yield(*server, weak, [=](auto is_yield) {
-            auto buff_phydef_value = obj->stat.buff_phydef();
-
-            return lua->ensure_resume(*server, weak, [=]() {
-                lua->pushinteger(buff_phydef_value);
-                return 1;
-            });
-        });
+        auto buff_phydef_value = std::make_shared<int8_t>();
+        auto weak              = obj->weak_from_this();
+        auto builder           = lua->new_co_builder(*server);
+        builder.weak           = weak;
+        builder.yield          = [=]() -> async::task<void> {
+            *buff_phydef_value = obj->stat.buff_phydef();
+            co_return;
+        };
+        builder.resume = [=]() -> async::task<int> {
+            lua->pushinteger(*buff_phydef_value);
+            co_return 1;
+        };
+        return builder.run();
     }
     else
     {
-        auto value = lua->tointeger(2);
-        auto weak  = obj->weak_from_this();
-        return lua->ensure_yield(*server, weak, [=](auto is_yield) {
+        auto value    = lua->tointeger(2);
+        auto weak     = obj->weak_from_this();
+        auto builder  = lua->new_co_builder(*server);
+        builder.weak  = weak;
+        builder.yield = [=]() -> async::task<void> {
             obj->stat.buff_phydef(value);
-
-            return lua->ensure_resume(*server, weak, [=]() {
-                return 0;
-            });
-        });
+            co_return;
+        };
+        builder.resume = []() -> async::task<int> {
+            co_return 0;
+        };
+        return builder.run();
     }
 }
 
@@ -1325,15 +1528,19 @@ int builtin::life::builtin_phydef(lua_State* L)
     if (obj == nullptr)
         return 0;
 
-    auto weak = obj->weak_from_this();
-    return lua->ensure_yield(*server, weak, [=](auto is_yield) {
-        auto phydef_value = obj->stat.phydef();
-
-        return lua->ensure_resume(*server, weak, [=]() {
-            lua->pushinteger(phydef_value);
-            return 1;
-        });
-    });
+    auto phydef_value = std::make_shared<int8_t>();
+    auto weak         = obj->weak_from_this();
+    auto builder      = lua->new_co_builder(*server);
+    builder.weak      = weak;
+    builder.yield     = [=]() -> async::task<void> {
+        *phydef_value = obj->stat.phydef();
+        co_return;
+    };
+    builder.resume = [=]() -> async::task<int> {
+        lua->pushinteger(*phydef_value);
+        co_return 1;
+    };
+    return builder.run();
 }
 
 int builtin::life::builtin_base_magdef(lua_State* L)
@@ -1347,15 +1554,19 @@ int builtin::life::builtin_base_magdef(lua_State* L)
     if (obj == nullptr)
         return 0;
 
-    auto weak = obj->weak_from_this();
-    return lua->ensure_yield(*server, weak, [=](auto is_yield) {
-        auto base_magdef_value = obj->stat.base_magdef();
-
-        return lua->ensure_resume(*server, weak, [=]() {
-            lua->pushinteger(base_magdef_value);
-            return 1;
-        });
-    });
+    auto base_magdef_value = std::make_shared<int8_t>();
+    auto weak              = obj->weak_from_this();
+    auto builder           = lua->new_co_builder(*server);
+    builder.weak           = weak;
+    builder.yield          = [=]() -> async::task<void> {
+        *base_magdef_value = obj->stat.base_magdef();
+        co_return;
+    };
+    builder.resume = [=]() -> async::task<int> {
+        lua->pushinteger(*base_magdef_value);
+        co_return 1;
+    };
+    return builder.run();
 }
 
 int builtin::life::builtin_buff_magdef(lua_State* L)
@@ -1372,27 +1583,34 @@ int builtin::life::builtin_buff_magdef(lua_State* L)
 
     if (argc == 1)
     {
-        auto weak = obj->weak_from_this();
-        return lua->ensure_yield(*server, weak, [=](auto is_yield) {
-            auto buff_magdef_value = obj->stat.buff_magdef();
-
-            return lua->ensure_resume(*server, weak, [=]() {
-                lua->pushinteger(buff_magdef_value);
-                return 1;
-            });
-        });
+        auto buff_magdef_value = std::make_shared<int8_t>();
+        auto weak              = obj->weak_from_this();
+        auto builder           = lua->new_co_builder(*server);
+        builder.weak           = weak;
+        builder.yield          = [=]() -> async::task<void> {
+            *buff_magdef_value = obj->stat.buff_magdef();
+            co_return;
+        };
+        builder.resume = [=]() -> async::task<int> {
+            lua->pushinteger(*buff_magdef_value);
+            co_return 1;
+        };
+        return builder.run();
     }
     else
     {
-        auto value = lua->tointeger(2);
-        auto weak  = obj->weak_from_this();
-        return lua->ensure_yield(*server, weak, [=](auto is_yield) {
+        auto value    = lua->tointeger(2);
+        auto weak     = obj->weak_from_this();
+        auto builder  = lua->new_co_builder(*server);
+        builder.weak  = weak;
+        builder.yield = [=]() -> async::task<void> {
             obj->stat.buff_magdef(value);
-
-            return lua->ensure_resume(*server, weak, [=]() {
-                return 0;
-            });
-        });
+            co_return;
+        };
+        builder.resume = []() -> async::task<int> {
+            co_return 0;
+        };
+        return builder.run();
     }
 }
 
@@ -1407,15 +1625,19 @@ int builtin::life::builtin_magdef(lua_State* L)
     if (obj == nullptr)
         return 0;
 
-    auto weak = obj->weak_from_this();
-    return lua->ensure_yield(*server, weak, [=](auto is_yield) {
-        auto magdef_value = obj->stat.magdef();
-
-        return lua->ensure_resume(*server, weak, [=]() {
-            lua->pushinteger(magdef_value);
-            return 1;
-        });
-    });
+    auto magdef_value = std::make_shared<int8_t>();
+    auto weak         = obj->weak_from_this();
+    auto builder      = lua->new_co_builder(*server);
+    builder.weak      = weak;
+    builder.yield     = [=]() -> async::task<void> {
+        *magdef_value = obj->stat.magdef();
+        co_return;
+    };
+    builder.resume = [=]() -> async::task<int> {
+        lua->pushinteger(*magdef_value);
+        co_return 1;
+    };
+    return builder.run();
 }
 
 int builtin::life::builtin_base_dam(lua_State* L)
@@ -1429,15 +1651,19 @@ int builtin::life::builtin_base_dam(lua_State* L)
     if (obj == nullptr)
         return 0;
 
-    auto weak = obj->weak_from_this();
-    return lua->ensure_yield(*server, weak, [=](auto is_yield) {
-        auto base_dam_value = obj->stat.base_dam();
-
-        return lua->ensure_resume(*server, weak, [=]() {
-            lua->pushinteger(base_dam_value);
-            return 1;
-        });
-    });
+    auto base_dam_value = std::make_shared<uint8_t>();
+    auto weak           = obj->weak_from_this();
+    auto builder        = lua->new_co_builder(*server);
+    builder.weak        = weak;
+    builder.yield       = [=]() -> async::task<void> {
+        *base_dam_value = obj->stat.base_dam();
+        co_return;
+    };
+    builder.resume = [=]() -> async::task<int> {
+        lua->pushinteger(*base_dam_value);
+        co_return 1;
+    };
+    return builder.run();
 }
 
 int builtin::life::builtin_buff_dam(lua_State* L)
@@ -1454,27 +1680,34 @@ int builtin::life::builtin_buff_dam(lua_State* L)
 
     if (argc == 1)
     {
-        auto weak = obj->weak_from_this();
-        return lua->ensure_yield(*server, weak, [=](auto is_yield) {
-            auto buff_dam_value = obj->stat.buff_dam();
-
-            return lua->ensure_resume(*server, weak, [=]() {
-                lua->pushinteger(buff_dam_value);
-                return 1;
-            });
-        });
+        auto buff_dam_value = std::make_shared<int8_t>();
+        auto weak           = obj->weak_from_this();
+        auto builder        = lua->new_co_builder(*server);
+        builder.weak        = weak;
+        builder.yield       = [=]() -> async::task<void> {
+            *buff_dam_value = obj->stat.buff_dam();
+            co_return;
+        };
+        builder.resume = [=]() -> async::task<int> {
+            lua->pushinteger(*buff_dam_value);
+            co_return 1;
+        };
+        return builder.run();
     }
     else
     {
-        auto value = lua->tointeger(2);
-        auto weak  = obj->weak_from_this();
-        return lua->ensure_yield(*server, weak, [=](auto is_yield) {
+        auto value    = lua->tointeger(2);
+        auto weak     = obj->weak_from_this();
+        auto builder  = lua->new_co_builder(*server);
+        builder.weak  = weak;
+        builder.yield = [=]() -> async::task<void> {
             obj->stat.buff_dam(static_cast<int8_t>(value));
-
-            return lua->ensure_resume(*server, weak, [=]() {
-                return 0;
-            });
-        });
+            co_return;
+        };
+        builder.resume = []() -> async::task<int> {
+            co_return 0;
+        };
+        return builder.run();
     }
 }
 
@@ -1489,15 +1722,19 @@ int builtin::life::builtin_dam(lua_State* L)
     if (obj == nullptr)
         return 0;
 
-    auto weak = obj->weak_from_this();
-    return lua->ensure_yield(*server, weak, [=](auto is_yield) {
-        auto dam_value = obj->stat.dam();
-
-        return lua->ensure_resume(*server, weak, [=]() {
-            lua->pushinteger(dam_value);
-            return 1;
-        });
-    });
+    auto dam_value = std::make_shared<int8_t>();
+    auto weak      = obj->weak_from_this();
+    auto builder   = lua->new_co_builder(*server);
+    builder.weak   = weak;
+    builder.yield  = [=]() -> async::task<void> {
+        *dam_value = obj->stat.dam();
+        co_return;
+    };
+    builder.resume = [=]() -> async::task<int> {
+        lua->pushinteger(*dam_value);
+        co_return 1;
+    };
+    return builder.run();
 }
 
 int builtin::life::builtin_base_hit(lua_State* L)
@@ -1511,15 +1748,19 @@ int builtin::life::builtin_base_hit(lua_State* L)
     if (obj == nullptr)
         return 0;
 
-    auto weak = obj->weak_from_this();
-    return lua->ensure_yield(*server, weak, [=](auto is_yield) {
-        auto base_hit_value = obj->stat.base_hit();
-
-        return lua->ensure_resume(*server, weak, [=]() {
-            lua->pushinteger(base_hit_value);
-            return 1;
-        });
-    });
+    auto base_hit_value = std::make_shared<uint8_t>();
+    auto weak           = obj->weak_from_this();
+    auto builder        = lua->new_co_builder(*server);
+    builder.weak        = weak;
+    builder.yield       = [=]() -> async::task<void> {
+        *base_hit_value = obj->stat.base_hit();
+        co_return;
+    };
+    builder.resume = [=]() -> async::task<int> {
+        lua->pushinteger(*base_hit_value);
+        co_return 1;
+    };
+    return builder.run();
 }
 
 int builtin::life::builtin_buff_hit(lua_State* L)
@@ -1536,27 +1777,34 @@ int builtin::life::builtin_buff_hit(lua_State* L)
 
     if (argc == 1)
     {
-        auto weak = obj->weak_from_this();
-        return lua->ensure_yield(*server, weak, [=](auto is_yield) {
-            auto buff_hit_value = obj->stat.buff_hit();
-
-            return lua->ensure_resume(*server, weak, [=]() {
-                lua->pushinteger(buff_hit_value);
-                return 1;
-            });
-        });
+        auto buff_hit_value = std::make_shared<int8_t>();
+        auto weak           = obj->weak_from_this();
+        auto builder        = lua->new_co_builder(*server);
+        builder.weak        = weak;
+        builder.yield       = [=]() -> async::task<void> {
+            *buff_hit_value = obj->stat.buff_hit();
+            co_return;
+        };
+        builder.resume = [=]() -> async::task<int> {
+            lua->pushinteger(*buff_hit_value);
+            co_return 1;
+        };
+        return builder.run();
     }
     else
     {
-        auto value = lua->tointeger(2);
-        auto weak  = obj->weak_from_this();
-        return lua->ensure_yield(*server, weak, [=](auto is_yield) {
+        auto value    = lua->tointeger(2);
+        auto weak     = obj->weak_from_this();
+        auto builder  = lua->new_co_builder(*server);
+        builder.weak  = weak;
+        builder.yield = [=]() -> async::task<void> {
             obj->stat.buff_hit(static_cast<int8_t>(value));
-
-            return lua->ensure_resume(*server, weak, [=]() {
-                return 0;
-            });
-        });
+            co_return;
+        };
+        builder.resume = []() -> async::task<int> {
+            co_return 0;
+        };
+        return builder.run();
     }
 }
 
@@ -1571,15 +1819,19 @@ int builtin::life::builtin_hit(lua_State* L)
     if (obj == nullptr)
         return 0;
 
-    auto weak = obj->weak_from_this();
-    return lua->ensure_yield(*server, weak, [=](auto is_yield) {
-        auto hit_value = obj->stat.hit();
-
-        return lua->ensure_resume(*server, weak, [=]() {
-            lua->pushinteger(hit_value);
-            return 1;
-        });
-    });
+    auto hit_value = std::make_shared<int8_t>();
+    auto weak      = obj->weak_from_this();
+    auto builder   = lua->new_co_builder(*server);
+    builder.weak   = weak;
+    builder.yield  = [=]() -> async::task<void> {
+        *hit_value = obj->stat.hit();
+        co_return;
+    };
+    builder.resume = [=]() -> async::task<int> {
+        lua->pushinteger(*hit_value);
+        co_return 1;
+    };
+    return builder.run();
 }
 
 int builtin::life::builtin_normal_attack_damage(lua_State* L)
@@ -1595,15 +1847,20 @@ int builtin::life::builtin_normal_attack_damage(lua_State* L)
 
     obj->assert_thread();
 
-    auto size = lua->toenum(2, MOB_SIZE::SMALL);
-    auto weak = obj->weak_from_this();
-    return lua->ensure_yield(*server, weak, [=](auto is_yield) {
-        auto damage = obj->normal_attack_damage(size);
-        return lua->ensure_resume(*server, weak, [=]() {
-            lua->pushinteger(damage);
-            return 1;
-        });
-    });
+    auto size     = lua->toenum(2, MOB_SIZE::SMALL);
+    auto damage   = std::make_shared<uint32_t>();
+    auto weak     = obj->weak_from_this();
+    auto builder  = lua->new_co_builder(*server);
+    builder.weak  = weak;
+    builder.yield = [=]() -> async::task<void> {
+        *damage = obj->normal_attack_damage(size);
+        co_return;
+    };
+    builder.resume = [=]() -> async::task<int> {
+        lua->pushinteger(*damage);
+        co_return 1;
+    };
+    return builder.run();
 }
 
 int builtin::life::builtin_update(lua_State* L)
@@ -1618,13 +1875,17 @@ int builtin::life::builtin_update(lua_State* L)
     if (obj == nullptr)
         return 0;
 
-    auto level = argc >= 2 ? lua->toenum(2, UPDATE_STATE_LEVEL::HP_MP | UPDATE_STATE_LEVEL::BASED)
-                           : UPDATE_STATE_LEVEL::HP_MP | UPDATE_STATE_LEVEL::BASED;
-    auto weak  = obj->weak_from_this();
-    return lua->ensure_yield(*server, weak, [=](auto is_yield) {
+    auto level    = argc >= 2 ? lua->toenum(2, UPDATE_STATE_LEVEL::HP_MP | UPDATE_STATE_LEVEL::BASED)
+                              : UPDATE_STATE_LEVEL::HP_MP | UPDATE_STATE_LEVEL::BASED;
+    auto weak     = obj->weak_from_this();
+    auto builder  = lua->new_co_builder(*server);
+    builder.weak  = weak;
+    builder.yield = [=]() -> async::task<void> {
         obj->update(level);
-        return lua->ensure_resume(*server, weak, [=]() {
-            return 0;
-        });
-    });
+        co_return;
+    };
+    builder.resume = []() -> async::task<int> {
+        co_return 0;
+    };
+    return builder.run();
 }

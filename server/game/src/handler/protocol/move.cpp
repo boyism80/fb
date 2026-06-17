@@ -70,7 +70,7 @@ async::task<bool> move::handle(fb::socket<character>&      session,
 #endif
                 lua->func(params.function);
                 lua->pushobject(ch);
-                std::ignore = lua->call(1, false);
+                std::ignore = lua->call(1);
             }
         }
         break;

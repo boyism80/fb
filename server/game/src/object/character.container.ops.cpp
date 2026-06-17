@@ -107,8 +107,12 @@ std::string character::container::build_ban_message(std::string_view            
 {
     auto ban_message = std::string(_TEXT(MESSAGE_ACCOUNT_BANNED));
     if (!reason.empty())
+    {
+        ban_message += '\n';
         ban_message += std::format(_TEXT(MESSAGE_ACCOUNT_BAN_REASON), reason);
+    }
 
+    ban_message += '\n';
     if (expire_date.has_value())
         ban_message += std::format(_TEXT(MESSAGE_ACCOUNT_BAN_EXPIRE_DATE), expire_date.value());
     else

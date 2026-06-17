@@ -76,7 +76,7 @@
                     <div class="user-detail-field"><span class="user-detail-field-label">국가</span><span class="user-detail-field-value">@UserDetailDisplay.FormatNation(Character.Nation)</span></div>
                     <div class="user-detail-field"><span class="user-detail-field-label">신수</span><span class="user-detail-field-value">@UserDetailDisplay.FormatCreature(Character.Creature)</span></div>
                     <div class="user-detail-field"><span class="user-detail-field-label">칭호</span><span class="user-detail-field-value">@(string.IsNullOrWhiteSpace(Character.Title) ? "-" : Character.Title)</span></div>
-                    <div class="user-detail-field"><span class="user-detail-field-label">상태</span><span class="user-detail-field-value user-detail-status-ok">@(Character.State == 0 ? "정상" : Character.State.ToString())</span></div>
+                    <div class="user-detail-field"><span class="user-detail-field-label">상태</span><span class="user-detail-field-value user-detail-status-ok">@UserDetailDisplay.FormatState(Character.State)</span></div>
                 </div>
             </div>
         </div>

@@ -22,7 +22,7 @@ namespace Http.Reepository
         {
             return $"""
                 SELECT * FROM `character_realtime_state`
-                WHERE `uid` = {key.Uid}
+                WHERE `uid` = {key.Uid} AND `deleted` = 0
                 LIMIT 1;
                 """;
         }
@@ -46,13 +46,12 @@ namespace Http.Reepository
                     {value.Uid.Escape()},
                     {value.Group.Escape()},
                     {value.Clan.Escape()},
-                    {value.Deleted.Escape()},
+                    0,
                     {value.CreatedDate.Escape()},
                     {value.UpdatedDate.Escape()})
                 ON DUPLICATE KEY UPDATE 
                     `group`=VALUES(`group`),
                     `clan`=VALUES(`clan`),
-                    `deleted`=VALUES(`deleted`),
                     `updated_date`=VALUES(`updated_date`);
                 """;
 

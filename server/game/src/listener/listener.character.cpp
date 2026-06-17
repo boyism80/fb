@@ -111,93 +111,24 @@ void listener_impl::on_update(character& me, UPDATE_STATE_LEVEL level)
         me.send(game_resp::update_internal(me, level));
 }
 
-async::task<bool> listener_impl::on_transfer(character& me, map& map, const fb::model::point16_t& position)
+void listener_impl::on_transfer(character&                  me,
+                                map&                        map,
+                                const fb::model::point16_t& position,
+                                std::string_view            ip,
+                                uint16_t                    port)
 {
-    if (me.map() == nullptr)
-        co_return false;
+    auto stream = fb::stream();
+    auto writer = fb::stream_writer<big_endian>(stream);
+    writer.write<uint32_t>(me.id);
+    writer.write<std::string>(me.name());
+    writer.write<uint8_t>(1);
+    writer.write<uint16_t>(map.model.id);
+    writer.write<uint16_t>(position.x);
+    writer.write<uint16_t>(position.y);
 
-    auto weak  = me.weak_from_this_as<character>();
-    auto error = std::string();
-    auto p     = fb::model::point16_t{position};
-    try
-    {
-        auto   world = fb::config<uint32_t>("world");
-        auto&& resp  = co_await this->server.http.post(
-            "internal",
-            "/in-game/transfer",
-            internal_reqs::Transfer{world, internal::Service::Game, map.model.host, me.name(), false});
-        co_await this->server.threads.switching(weak);
-        if (weak.lock() == nullptr)
-            co_return false;
-        switch (static_cast<ERROR_CODE>(resp.error))
-        {
-        case ERROR_CODE::NONE:
-            break;
-
-        case ERROR_CODE::SERVER_NOT_READY:
-            throw std::runtime_error(_TEXT(MESSAGE_NOT_READY_GAME_SERVER));
-
-        case ERROR_CODE::BANNED:
-        {
-            throw std::runtime_error(character::container::build_ban_message(resp.ban_reason, resp.ban_expire_date));
-        }
-
-        default:
-            throw std::runtime_error(std::format(_TEXT(MESSAGE_UNKNOWN_ERROR_WITH_CODE), resp.error));
-        }
-
-        auto commit_now = [this, ip = resp.ip, port = resp.port, map_id = map.model.id, pos_x = p.x, pos_y = p.y](
-                              character& ch) -> async::task<void> {
-            std::ignore = co_await ch.map(nullptr);
-            co_await this->server.save(ch);
-
-            auto stream = fb::stream();
-            auto writer = fb::stream_writer<big_endian>(stream);
-            writer.write<uint32_t>(ch.id);
-            writer.write<std::string>(ch.name());
-            writer.write<uint8_t>(1);
-            writer.write<uint16_t>(map_id);
-            writer.write<uint16_t>(pos_x);
-            writer.write<uint16_t>(pos_y);
-
-            auto socket_ptr = ch.socket_ptr();
-            if (socket_ptr != nullptr)
-                std::ignore = this->server.transfer(*socket_ptr, ip, port, internal::Service::Game, stream);
-        };
-
-        auto builder = this->server.threads.new_builder(weak);
-        builder.func = [this, commit_now, weak](auto&) -> async::task<void> {
-            auto shared = weak.lock();
-            if (shared == nullptr)
-                co_return;
-
-            co_await commit_now(*shared);
-        };
-        builder.enqueue();
-        co_return true;
-    }
-    catch (std::exception& e)
-    {
-        auto shared = weak.lock();
-        if (shared != nullptr)
-        {
-            shared->update_map();
-            shared->update_external(true);
-            this->on_message(me, e.what(), MESSAGE_TYPE::STATE);
-        }
-        co_return false;
-    }
-    catch (boost::system::error_code& /*e*/)
-    {
-        auto shared = weak.lock();
-        if (shared != nullptr)
-        {
-            shared->update_map();
-            shared->update_external(true);
-            this->on_message(me, _TEXT(MESSAGE_NOT_READY_GAME_SERVER), MESSAGE_TYPE::STATE);
-        }
-        co_return false;
-    }
+    auto socket_ptr = me.socket_ptr();
+    if (socket_ptr != nullptr)
+        std::ignore = this->server.transfer(*socket_ptr, ip, port, internal::Service::Game, stream);
 }
 
 void listener_impl::on_update_map(character& ch, const fb::game::map& map)

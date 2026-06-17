@@ -23,14 +23,4 @@
     </None>
   </ItemGroup>
 
-  <ItemGroup>
-    <Folder Include="Redis\Script\" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <None Update="Redis\Script\*.lua">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
-  </ItemGroup>
-
 </Project>

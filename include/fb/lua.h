@@ -24,7 +24,9 @@ extern "C"
 #include <fb/synchronized.h>
 #include <async/task.h>
 #include <async/task_completion_source.h>
+#include <async/awaitable_then.h>
 #include <shared_mutex>
+#include <optional>
 #include <json/json.h>
 
 #define LUA_PROTOTYPE                                \
@@ -138,7 +140,13 @@ class context;
 class root;
 class thread;
 
-context* new_context(context* parent = nullptr);
+struct call_options
+{
+    bool auto_release       = true;
+    bool auto_resume_parent = true;
+};
+
+context* new_context(context* parent = nullptr, call_options options = {});
 
 context* get(lua_State* ctx);
 
@@ -245,7 +253,7 @@ public:
 private:
     context*     _parent = nullptr;
     promise_type _promise;
-    bool         _auto_release = false;
+    call_options _options;
 
 protected:
     lua_State*  _ctx = nullptr;
@@ -527,20 +535,43 @@ public:
 
 public:
     int                             argc();
-    [[nodiscard]] async::task<bool> call(int argc, bool auto_release = true, int* n = nullptr);
+    [[nodiscard]] async::task<bool> call(int argc, int* retc = nullptr);
     void                            resume(int argc, int* n = nullptr);
     int                             yield(int retc);
     void                            release();
     void                            parent(context* parent);
     context*                        parent() const;
-    int                             ensure_yield(fb::async_executor&                  executor,
-                                                 std::weak_ptr<fb::thread_switchable> weak,
-                                                 std::function<int(bool)>             fn,
-                                                 bool                                 no_yield = false);
-    int                             ensure_resume(fb::async_executor&                  executor,
-                                                  std::weak_ptr<fb::thread_switchable> weak,
-                                                  std::function<int()>                 fn,
-                                                  bool                                 force_resume = false);
+    void                            options(call_options opts);
+    const call_options&             options() const;
+
+public:
+    class co_builder
+    {
+        friend class context;
+
+    private:
+        context&            _lua;
+        fb::async_executor& _executor;
+
+    public:
+        std::optional<std::weak_ptr<fb::thread_switchable>> weak;
+        std::function<async::task<void>()>                  yield;
+        std::function<async::task<int>()>                   resume;
+
+    private:
+        explicit co_builder(context& lua, fb::async_executor& executor);
+
+        static async::task<std::optional<int>> run_pipeline(fb::async_executor& executor,
+                                                            std::optional<std::weak_ptr<fb::thread_switchable>> weak,
+                                                            context*                                            lua_ptr,
+                                                            std::function<async::task<void>()> yield_fn,
+                                                            std::function<async::task<int>()>  resume_fn);
+
+    public:
+        int run();
+    };
+
+    co_builder new_co_builder(fb::async_executor& executor);
 
 public:
     operator lua_State* () const;
@@ -590,7 +621,7 @@ public:
 
 public:
     bool        dump(std::string_view path);
-    context*    pop(context* parent);
+    context*    pop(context* parent, call_options options = {});
     context*    get(lua_State* ctx);
     void        release(context& ctx);
     void        revoke(context& ctx);
@@ -648,7 +679,7 @@ public:
     ~context_pool();
 
 public:
-    context* pop(context* parent);
+    context* pop(context* parent, call_options options = {});
     context* get(lua_State* ctx);
     void     setup(fb::thread_container& threads);
 
@@ -665,7 +696,7 @@ public:
     const int ref;
 
 public:
-    thread(context& owner, context* parent);
+    thread(context& owner, context* parent, call_options options = {});
     thread(const thread& other) = delete;
     thread(thread&& ctx);
     ~thread();

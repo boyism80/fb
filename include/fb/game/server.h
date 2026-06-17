@@ -147,7 +147,7 @@ public:
         if constexpr (std::is_same_v<T, object>)
         {
             auto shared_ptr = obj.template shared_from_this_as<object>();
-            std::ignore     = co_await shared_ptr->map(nullptr, fb::model::point16_t{0, 0}, destroy_type);
+            std::ignore     = co_await shared_ptr->map(nullptr, std::nullopt, { .destroy_type = destroy_type });
         }
         co_return;
     }
