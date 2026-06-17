@@ -48,7 +48,7 @@ int builtin::quest::builtin_step(lua_State* L)
     }
     else
     {
-        auto step_value = std::make_shared<int>();
+        auto step_value = std::make_shared<uint32_t>();
         auto weak       = owner->weak_from_this_as<fb::game::character>();
         auto builder    = lua->new_co_builder(*server);
         builder.weak    = weak;
@@ -97,7 +97,7 @@ int builtin::quest::builtin_progress(lua_State* L)
     }
     else
     {
-        auto progress_value = std::make_shared<int>();
+        auto progress_value = std::make_shared<uint32_t>();
         auto weak           = owner->weak_from_this_as<fb::game::character>();
         auto builder        = lua->new_co_builder(*server);
         builder.weak        = weak;

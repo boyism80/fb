@@ -63,7 +63,7 @@ public:
 
 protected:
 #ifdef _DEBUG
-    static constexpr auto DEFAULT_TIMEOUT  = 1h;
+    static constexpr auto DEFAULT_TIMEOUT  = 30s;
     static constexpr auto DEFAULT_INTERVAL = 100ms;
 #else
     static constexpr auto DEFAULT_TIMEOUT  = 10s;

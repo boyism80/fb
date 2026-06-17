@@ -19,19 +19,32 @@ int builtin::door::builtin_toggle(lua_State* L)
         return 0;
 
     auto server = lua->env<fb::game::server>("server");
-    auto argc   = lua->argc();
     auto door   = lua->touserdata<fb::game::door>(1);
+    if (door == nullptr)
+        return 0;
 
-    door->toggle();
-    lua->pushboolean(door->opened());
+    auto opened   = std::make_shared<bool>();
+    auto map      = server->maps[door->map.model.id];
+    auto weak     = map->weak_from_this_as<fb::game::map>();
+    auto builder  = lua->new_co_builder(*server);
+    builder.weak  = weak;
+    builder.yield = [=]() -> async::task<void> {
+        door->toggle();
+        *opened = door->opened();
 
-    const auto size = fb::model::size<uint16_t>(door->model.pairs.size(), 1);
-    const auto area = fb::model::area<uint16_t>(door->pivot.x,
-                                                door->pivot.y,
-                                                door->pivot.x + size.width,
-                                                door->pivot.y + size.height);
-    server->maps.update_map_cache(door->map.model.id, area);
-    return 1;
+        const auto size = fb::model::size<uint16_t>(door->model.pairs.size(), 1);
+        const auto area = fb::model::area<uint16_t>(door->pivot.x,
+                                                    door->pivot.y,
+                                                    door->pivot.x + size.width,
+                                                    door->pivot.y + size.height);
+        server->maps.update_map_cache(door->map.model.id, area);
+        co_return;
+    };
+    builder.resume = [=]() -> async::task<int> {
+        lua->pushboolean(*opened);
+        co_return 1;
+    };
+    return builder.run();
 }
 
 int builtin::door::builtin_locked(lua_State* L)
@@ -40,11 +53,25 @@ int builtin::door::builtin_locked(lua_State* L)
     if (lua == nullptr)
         return 0;
 
-    auto argc = lua->argc();
-    auto door = lua->touserdata<fb::game::door>(1);
+    auto server = lua->env<fb::game::server>("server");
+    auto door   = lua->touserdata<fb::game::door>(1);
+    if (door == nullptr)
+        return 0;
 
-    lua->pushboolean(door->locked());
-    return 1;
+    auto locked   = std::make_shared<bool>();
+    auto map      = server->maps[door->map.model.id];
+    auto weak     = map->weak_from_this_as<fb::game::map>();
+    auto builder  = lua->new_co_builder(*server);
+    builder.weak  = weak;
+    builder.yield = [=]() -> async::task<void> {
+        *locked = door->locked();
+        co_return;
+    };
+    builder.resume = [=]() -> async::task<int> {
+        lua->pushboolean(*locked);
+        co_return 1;
+    };
+    return builder.run();
 }
 
 int builtin::door::builtin_lock(lua_State* L)
@@ -53,13 +80,27 @@ int builtin::door::builtin_lock(lua_State* L)
     if (lua == nullptr)
         return 0;
 
-    auto argc  = lua->argc();
-    auto door  = lua->touserdata<fb::game::door>(1);
-    auto value = lua->toboolean(2);
+    auto server = lua->env<fb::game::server>("server");
+    auto door   = lua->touserdata<fb::game::door>(1);
+    if (door == nullptr)
+        return 0;
 
-    door->lock(value);
-    lua->pushboolean(door->locked());
-    return 1;
+    auto value    = lua->toboolean(2);
+    auto locked   = std::make_shared<bool>();
+    auto map      = server->maps[door->map.model.id];
+    auto weak     = map->weak_from_this_as<fb::game::map>();
+    auto builder  = lua->new_co_builder(*server);
+    builder.weak  = weak;
+    builder.yield = [=]() -> async::task<void> {
+        door->lock(value);
+        *locked = door->locked();
+        co_return;
+    };
+    builder.resume = [=]() -> async::task<int> {
+        lua->pushboolean(*locked);
+        co_return 1;
+    };
+    return builder.run();
 }
 
 int builtin::door::builtin_opened(lua_State* L)
@@ -68,9 +109,23 @@ int builtin::door::builtin_opened(lua_State* L)
     if (lua == nullptr)
         return 0;
 
-    auto argc = lua->argc();
-    auto door = lua->touserdata<fb::game::door>(1);
+    auto server = lua->env<fb::game::server>("server");
+    auto door   = lua->touserdata<fb::game::door>(1);
+    if (door == nullptr)
+        return 0;
 
-    lua->pushboolean(door->opened());
-    return 1;
+    auto opened   = std::make_shared<bool>();
+    auto map      = server->maps[door->map.model.id];
+    auto weak     = map->weak_from_this_as<fb::game::map>();
+    auto builder  = lua->new_co_builder(*server);
+    builder.weak  = weak;
+    builder.yield = [=]() -> async::task<void> {
+        *opened = door->opened();
+        co_return;
+    };
+    builder.resume = [=]() -> async::task<int> {
+        lua->pushboolean(*opened);
+        co_return 1;
+    };
+    return builder.run();
 }

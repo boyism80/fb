@@ -503,40 +503,49 @@ int builtin::life::builtin_cast(lua_State* L)
     if (you == nullptr)
         return 0;
 
-    auto map = obj->map();
-    if (map == nullptr || map->objects.contains(you) == false)
-        return 0;
-
     auto name  = lua->tostring(offset++);
     auto spell = table::spell.name2spell(name);
     if (spell == nullptr)
         return 0;
 
-    auto x = lua::new_context();
-    if (x == nullptr)
-        return 0;
-
     auto count = 2;
-#if defined DEBUG || defined _DEBUG
-    x->load("scripts/spell.lua");
-    x->load(spell->script);
-#endif
-    x->func(spell->cast);
-    x->pushobject(obj);
-
     if (spell->type == SPELL_TYPE::TARGET)
-    {
-        if (you != nullptr)
-            x->pushobject(you);
-        else
-            x->pushnil();
-
         count++;
-    }
 
-    x->pushobject(spell);
-    std::ignore = x->call(count);
-    return 0;
+    auto weak     = obj->weak_from_this();
+    auto builder  = lua->new_co_builder(*server);
+    builder.weak  = weak;
+    builder.yield = [=]() -> async::task<void> {
+        auto map = obj->map();
+        if (map == nullptr || map->objects.contains(you) == false)
+            co_return;
+
+        auto x = lua::new_context();
+        if (x == nullptr)
+            co_return;
+
+#if defined DEBUG || defined _DEBUG
+        x->load("scripts/spell.lua");
+        x->load(spell->script);
+#endif
+        x->func(spell->cast);
+        x->pushobject(obj);
+
+        if (spell->type == SPELL_TYPE::TARGET)
+        {
+            if (you != nullptr)
+                x->pushobject(you);
+            else
+                x->pushnil();
+        }
+
+        x->pushobject(spell);
+        co_await x->call(count);
+    };
+    builder.resume = []() -> async::task<int> {
+        co_return 0;
+    };
+    return builder.run();
 }
 
 int builtin::life::builtin_cc(lua_State* L)
@@ -695,7 +704,7 @@ int builtin::life::builtin_damage_rate(lua_State* L)
 
     if (argc == 1)
     {
-        auto damage_rate_value = std::make_shared<int>();
+        auto damage_rate_value = std::make_shared<uint32_t>();
         auto weak              = obj->weak_from_this();
         auto builder           = lua->new_co_builder(*server);
         builder.weak           = weak;
@@ -740,7 +749,7 @@ int builtin::life::builtin_damage_derate(lua_State* L)
 
     if (argc == 1)
     {
-        auto damage_derate_value = std::make_shared<int>();
+        auto damage_derate_value = std::make_shared<uint32_t>();
         auto weak                = obj->weak_from_this();
         auto builder             = lua->new_co_builder(*server);
         builder.weak             = weak;
@@ -785,7 +794,7 @@ int builtin::life::builtin_skill_damage_rate(lua_State* L)
 
     if (argc == 1)
     {
-        auto skill_damage_rate_value = std::make_shared<int>();
+        auto skill_damage_rate_value = std::make_shared<uint32_t>();
         auto weak                    = obj->weak_from_this();
         auto builder                 = lua->new_co_builder(*server);
         builder.weak                 = weak;
@@ -963,7 +972,7 @@ int builtin::life::builtin_base_hp(lua_State* L)
     if (obj == nullptr)
         return 0;
 
-    auto value    = std::make_shared<int>();
+    auto value    = std::make_shared<uint32_t>();
     auto weak     = obj->weak_from_this();
     auto builder  = lua->new_co_builder(*server);
     builder.weak  = weak;
@@ -1034,7 +1043,7 @@ int builtin::life::builtin_maxhp(lua_State* L)
     if (obj == nullptr)
         return 0;
 
-    auto maxhp_value = std::make_shared<int>();
+    auto maxhp_value = std::make_shared<uint32_t>();
     auto weak        = obj->weak_from_this();
     auto builder     = lua->new_co_builder(*server);
     builder.weak     = weak;
@@ -1060,7 +1069,7 @@ int builtin::life::builtin_base_mp(lua_State* L)
     if (obj == nullptr)
         return 0;
 
-    auto base_mp_value = std::make_shared<int>();
+    auto base_mp_value = std::make_shared<uint32_t>();
     auto weak          = obj->weak_from_this();
     auto builder       = lua->new_co_builder(*server);
     builder.weak       = weak;
@@ -1131,7 +1140,7 @@ int builtin::life::builtin_maxmp(lua_State* L)
     if (obj == nullptr)
         return 0;
 
-    auto maxmp_value = std::make_shared<int>();
+    auto maxmp_value = std::make_shared<uint32_t>();
     auto weak        = obj->weak_from_this();
     auto builder     = lua->new_co_builder(*server);
     builder.weak     = weak;
@@ -1157,7 +1166,7 @@ int builtin::life::builtin_base_str(lua_State* L)
     if (obj == nullptr)
         return 0;
 
-    auto base_str_value = std::make_shared<int>();
+    auto base_str_value = std::make_shared<uint8_t>();
     auto weak           = obj->weak_from_this();
     auto builder        = lua->new_co_builder(*server);
     builder.weak        = weak;
@@ -1186,7 +1195,7 @@ int builtin::life::builtin_buff_str(lua_State* L)
 
     if (argc == 1)
     {
-        auto buff_str_value = std::make_shared<int>();
+        auto buff_str_value = std::make_shared<uint8_t>();
         auto weak           = obj->weak_from_this();
         auto builder        = lua->new_co_builder(*server);
         builder.weak        = weak;
@@ -1228,7 +1237,7 @@ int builtin::life::builtin_str(lua_State* L)
     if (obj == nullptr)
         return 0;
 
-    auto str_value = std::make_shared<int>();
+    auto str_value = std::make_shared<uint8_t>();
     auto weak      = obj->weak_from_this();
     auto builder   = lua->new_co_builder(*server);
     builder.weak   = weak;
@@ -1254,7 +1263,7 @@ int builtin::life::builtin_base_dex(lua_State* L)
     if (obj == nullptr)
         return 0;
 
-    auto base_dex_value = std::make_shared<int>();
+    auto base_dex_value = std::make_shared<uint8_t>();
     auto weak           = obj->weak_from_this();
     auto builder        = lua->new_co_builder(*server);
     builder.weak        = weak;
@@ -1283,7 +1292,7 @@ int builtin::life::builtin_buff_dex(lua_State* L)
 
     if (argc == 1)
     {
-        auto buff_dex_value = std::make_shared<int>();
+        auto buff_dex_value = std::make_shared<uint8_t>();
         auto weak           = obj->weak_from_this();
         auto builder        = lua->new_co_builder(*server);
         builder.weak        = weak;
@@ -1325,7 +1334,7 @@ int builtin::life::builtin_dex(lua_State* L)
     if (obj == nullptr)
         return 0;
 
-    auto dex_value = std::make_shared<int>();
+    auto dex_value = std::make_shared<uint8_t>();
     auto weak      = obj->weak_from_this();
     auto builder   = lua->new_co_builder(*server);
     builder.weak   = weak;
@@ -1351,7 +1360,7 @@ int builtin::life::builtin_base_int(lua_State* L)
     if (obj == nullptr)
         return 0;
 
-    auto base_int_value = std::make_shared<int>();
+    auto base_int_value = std::make_shared<uint8_t>();
     auto weak           = obj->weak_from_this();
     auto builder        = lua->new_co_builder(*server);
     builder.weak        = weak;
@@ -1380,7 +1389,7 @@ int builtin::life::builtin_buff_int(lua_State* L)
 
     if (argc == 1)
     {
-        auto buff_int_value = std::make_shared<int>();
+        auto buff_int_value = std::make_shared<uint8_t>();
         auto weak           = obj->weak_from_this();
         auto builder        = lua->new_co_builder(*server);
         builder.weak        = weak;
@@ -1422,7 +1431,7 @@ int builtin::life::builtin_intelligence(lua_State* L)
     if (obj == nullptr)
         return 0;
 
-    auto intelligence_value = std::make_shared<int>();
+    auto intelligence_value = std::make_shared<uint8_t>();
     auto weak               = obj->weak_from_this();
     auto builder            = lua->new_co_builder(*server);
     builder.weak            = weak;
@@ -1448,7 +1457,7 @@ int builtin::life::builtin_base_phydef(lua_State* L)
     if (obj == nullptr)
         return 0;
 
-    auto base_phydef_value = std::make_shared<int>();
+    auto base_phydef_value = std::make_shared<int8_t>();
     auto weak              = obj->weak_from_this();
     auto builder           = lua->new_co_builder(*server);
     builder.weak           = weak;
@@ -1477,7 +1486,7 @@ int builtin::life::builtin_buff_phydef(lua_State* L)
 
     if (argc == 1)
     {
-        auto buff_phydef_value = std::make_shared<int>();
+        auto buff_phydef_value = std::make_shared<int8_t>();
         auto weak              = obj->weak_from_this();
         auto builder           = lua->new_co_builder(*server);
         builder.weak           = weak;
@@ -1519,7 +1528,7 @@ int builtin::life::builtin_phydef(lua_State* L)
     if (obj == nullptr)
         return 0;
 
-    auto phydef_value = std::make_shared<int>();
+    auto phydef_value = std::make_shared<int8_t>();
     auto weak         = obj->weak_from_this();
     auto builder      = lua->new_co_builder(*server);
     builder.weak      = weak;
@@ -1545,7 +1554,7 @@ int builtin::life::builtin_base_magdef(lua_State* L)
     if (obj == nullptr)
         return 0;
 
-    auto base_magdef_value = std::make_shared<int>();
+    auto base_magdef_value = std::make_shared<int8_t>();
     auto weak              = obj->weak_from_this();
     auto builder           = lua->new_co_builder(*server);
     builder.weak           = weak;
@@ -1574,7 +1583,7 @@ int builtin::life::builtin_buff_magdef(lua_State* L)
 
     if (argc == 1)
     {
-        auto buff_magdef_value = std::make_shared<int>();
+        auto buff_magdef_value = std::make_shared<int8_t>();
         auto weak              = obj->weak_from_this();
         auto builder           = lua->new_co_builder(*server);
         builder.weak           = weak;
@@ -1616,7 +1625,7 @@ int builtin::life::builtin_magdef(lua_State* L)
     if (obj == nullptr)
         return 0;
 
-    auto magdef_value = std::make_shared<int>();
+    auto magdef_value = std::make_shared<int8_t>();
     auto weak         = obj->weak_from_this();
     auto builder      = lua->new_co_builder(*server);
     builder.weak      = weak;
@@ -1642,7 +1651,7 @@ int builtin::life::builtin_base_dam(lua_State* L)
     if (obj == nullptr)
         return 0;
 
-    auto base_dam_value = std::make_shared<int>();
+    auto base_dam_value = std::make_shared<uint8_t>();
     auto weak           = obj->weak_from_this();
     auto builder        = lua->new_co_builder(*server);
     builder.weak        = weak;
@@ -1671,7 +1680,7 @@ int builtin::life::builtin_buff_dam(lua_State* L)
 
     if (argc == 1)
     {
-        auto buff_dam_value = std::make_shared<int>();
+        auto buff_dam_value = std::make_shared<int8_t>();
         auto weak           = obj->weak_from_this();
         auto builder        = lua->new_co_builder(*server);
         builder.weak        = weak;
@@ -1713,7 +1722,7 @@ int builtin::life::builtin_dam(lua_State* L)
     if (obj == nullptr)
         return 0;
 
-    auto dam_value = std::make_shared<int>();
+    auto dam_value = std::make_shared<int8_t>();
     auto weak      = obj->weak_from_this();
     auto builder   = lua->new_co_builder(*server);
     builder.weak   = weak;
@@ -1739,7 +1748,7 @@ int builtin::life::builtin_base_hit(lua_State* L)
     if (obj == nullptr)
         return 0;
 
-    auto base_hit_value = std::make_shared<int>();
+    auto base_hit_value = std::make_shared<uint8_t>();
     auto weak           = obj->weak_from_this();
     auto builder        = lua->new_co_builder(*server);
     builder.weak        = weak;
@@ -1768,7 +1777,7 @@ int builtin::life::builtin_buff_hit(lua_State* L)
 
     if (argc == 1)
     {
-        auto buff_hit_value = std::make_shared<int>();
+        auto buff_hit_value = std::make_shared<int8_t>();
         auto weak           = obj->weak_from_this();
         auto builder        = lua->new_co_builder(*server);
         builder.weak        = weak;
@@ -1810,7 +1819,7 @@ int builtin::life::builtin_hit(lua_State* L)
     if (obj == nullptr)
         return 0;
 
-    auto hit_value = std::make_shared<int>();
+    auto hit_value = std::make_shared<int8_t>();
     auto weak      = obj->weak_from_this();
     auto builder   = lua->new_co_builder(*server);
     builder.weak   = weak;
@@ -1839,7 +1848,7 @@ int builtin::life::builtin_normal_attack_damage(lua_State* L)
     obj->assert_thread();
 
     auto size     = lua->toenum(2, MOB_SIZE::SMALL);
-    auto damage   = std::make_shared<int>();
+    auto damage   = std::make_shared<uint32_t>();
     auto weak     = obj->weak_from_this();
     auto builder  = lua->new_co_builder(*server);
     builder.weak  = weak;

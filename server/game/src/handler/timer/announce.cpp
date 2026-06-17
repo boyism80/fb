@@ -9,7 +9,10 @@ announce::announce(fb::game::server& server) :
 
 async::task<void> announce::handle()
 {
-    auto i     = random<uint16_t>(0, table::announce.size());
+    if (table::announce.size() == 0)
+        co_return;
+
+    auto i     = random<uint16_t>(0, static_cast<uint16_t>(table::announce.size() - 1));
     auto guard = this->server.characters.enter_write();
     guard.value().broadcast(table::announce[i].message, MESSAGE_TYPE::WORLD);
     co_return;

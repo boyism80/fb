@@ -103,35 +103,26 @@ int builtin::server::builtin_now(lua_State* L)
             return 2;
         }
 
-        static auto fn =
-            [](fb::game::server* server, fb::lua::context* lua, std::string datetime, bool reset) -> async::task<void> {
-            auto   success = false;
-            auto   error   = std::string{};
-            auto   world   = fb::config<uint32_t>("world");
-            auto&& resp    = co_await server->http.post("internal",
+        auto success  = std::make_shared<bool>(false);
+        auto error    = std::make_shared<std::string>();
+        auto builder  = lua->new_co_builder(*server);
+        builder.yield = [=]() -> async::task<void> {
+            auto   world = fb::config<uint32_t>("world");
+            auto&& resp  = co_await server->http.post("internal",
                                                      "/in-game/set-datetime",
-                                                     internal_reqs::SetDateTime{world, datetime, reset});
+                                                     internal_reqs::SetDateTime{world, value, reset});
             if (resp.error == 0)
-            {
-                success = true;
-            }
+                *success = true;
             else
-            {
-                error = std::format("Set datetime failed with error code: {}", resp.error);
-            }
-
-            co_await lua->switching();
-            lua->pushboolean(success);
-            if (!success)
-                lua->pushstring(error);
-            lua->resume(success ? 1 : 2);
+                *error = std::format("Set datetime failed with error code: {}", resp.error);
         };
-
-        async::awaitable_then(fn(server, lua, value, reset), [lua](auto result) {
-            result();
-        });
-
-        return lua->yield(1);
+        builder.resume = [=]() -> async::task<int> {
+            lua->pushboolean(*success);
+            if (*success == false)
+                lua->pushstring(*error);
+            co_return *success ? 1 : 2;
+        };
+        return builder.run();
     }
 }
 
@@ -162,34 +153,28 @@ int builtin::server::builtin_time_forward(lua_State* L)
         return 2;
     }
 
-    auto        target = server->now() + delta;
-    static auto fn = [](fb::game::server* server, fb::lua::context* lua, std::string datetime) -> async::task<void> {
-        auto   success = false;
-        auto   error   = std::string{};
-        auto   world   = fb::config<uint32_t>("world");
-        auto&& resp    = co_await server->http.post("internal",
-                                                 "/in-game/set-datetime",
-                                                 internal_reqs::SetDateTime{world, datetime, false});
+    auto target   = server->now() + delta;
+    auto datetime = target.to_string();
+    auto success  = std::make_shared<bool>(false);
+    auto error    = std::make_shared<std::string>();
+    auto builder  = lua->new_co_builder(*server);
+    builder.yield = [=]() -> async::task<void> {
+        auto world = fb::config<uint32_t>("world");
+        auto resp  = co_await server->http.post("internal",
+                                               "/in-game/set-datetime",
+                                               internal_reqs::SetDateTime{world, datetime, false});
         if (resp.error == 0)
-        {
-            success = true;
-        }
+            *success = true;
         else
-        {
-            error = std::format("Set datetime failed with error code: {}", resp.error);
-        }
-
-        co_await lua->switching();
-        lua->pushboolean(success);
-        if (!success)
-            lua->pushstring(error);
-        lua->resume(success ? 1 : 2);
+            *error = std::format("Set datetime failed with error code: {}", resp.error);
     };
-
-    async::awaitable_then(fn(server, lua, target.to_string()), [lua](auto result) {
-        result();
-    });
-    return lua->yield(1);
+    builder.resume = [=]() -> async::task<int> {
+        lua->pushboolean(*success);
+        if (*success == false)
+            lua->pushstring(*error);
+        co_return *success ? 1 : 2;
+    };
+    return builder.run();
 }
 
 int builtin::server::builtin_time_backward(lua_State* L)
@@ -219,34 +204,28 @@ int builtin::server::builtin_time_backward(lua_State* L)
         return 2;
     }
 
-    auto        target = server->now() - delta;
-    static auto fn = [](fb::game::server* server, fb::lua::context* lua, std::string datetime) -> async::task<void> {
-        auto   success = false;
-        auto   error   = std::string{};
-        auto   world   = fb::config<uint32_t>("world");
-        auto&& resp    = co_await server->http.post("internal",
-                                                 "/in-game/set-datetime",
-                                                 internal_reqs::SetDateTime{world, datetime, false});
+    auto target   = server->now() - delta;
+    auto datetime = target.to_string();
+    auto success  = std::make_shared<bool>(false);
+    auto error    = std::make_shared<std::string>();
+    auto builder  = lua->new_co_builder(*server);
+    builder.yield = [=]() -> async::task<void> {
+        auto world = fb::config<uint32_t>("world");
+        auto resp  = co_await server->http.post("internal",
+                                               "/in-game/set-datetime",
+                                               internal_reqs::SetDateTime{world, datetime, false});
         if (resp.error == 0)
-        {
-            success = true;
-        }
+            *success = true;
         else
-        {
-            error = std::format("Set datetime failed with error code: {}", resp.error);
-        }
-
-        co_await lua->switching();
-        lua->pushboolean(success);
-        if (!success)
-            lua->pushstring(error);
-        lua->resume(success ? 1 : 2);
+            *error = std::format("Set datetime failed with error code: {}", resp.error);
     };
-
-    async::awaitable_then(fn(server, lua, target.to_string()), [lua](auto result) {
-        result();
-    });
-    return lua->yield(1);
+    builder.resume = [=]() -> async::task<int> {
+        lua->pushboolean(*success);
+        if (*success == false)
+            lua->pushstring(*error);
+        co_return *success ? 1 : 2;
+    };
+    return builder.run();
 }
 
 /**
@@ -970,15 +949,15 @@ int builtin::server::builtin_broadcast(lua_State* L)
     }
     else
     {
-        async::awaitable_then(
-            [server, text, type, broad_type]() -> async::task<void> {
-                auto guard = co_await server->characters.enter_write_async();
-                co_await guard.value().broadcast(text, type, broad_type);
-            }(),
-            [lua](auto result) {
-                lua->resume(0);
-            });
-        return lua->yield(0);
+        auto builder  = lua->new_co_builder(*server);
+        builder.yield = [=]() -> async::task<void> {
+            auto guard = co_await server->characters.enter_write_async();
+            co_await guard.value().broadcast(text, type, broad_type);
+        };
+        builder.resume = []() -> async::task<int> {
+            co_return 0;
+        };
+        return builder.run();
     }
 }
 
@@ -1019,35 +998,23 @@ int builtin::server::builtin_ban(lua_State* L)
     if (argc >= 4 && lua->is_nil(4) == false && lua->is_number(4))
         days = static_cast<uint32_t>(lua->tointeger(4));
 
-    static auto fn = [](fb::game::server*              server,
-                        fb::lua::context*              lua,
-                        std::string_view               name,
-                        std::string_view               reason,
-                        const std::optional<uint32_t>& days) -> async::task<void> {
-        auto   success = false;
-        auto   error   = std::string{};
-        auto&& resp    = co_await server->ban(name, reason, days);
+    auto success  = std::make_shared<bool>(false);
+    auto error    = std::make_shared<std::string>();
+    auto builder  = lua->new_co_builder(*server);
+    builder.yield = [=]() -> async::task<void> {
+        auto&& resp = co_await server->ban(name, reason, days);
         if (resp.error == 0)
-        {
-            success = true;
-        }
+            *success = true;
         else
-        {
-            error = std::format("Ban failed with error code: {}", resp.error);
-        }
-
-        co_await lua->switching();
-        lua->pushboolean(success);
-        if (!success)
-            lua->pushstring(error);
-        lua->resume(success ? 1 : 2);
+            *error = std::format("Ban failed with error code: {}", resp.error);
     };
-
-    async::awaitable_then(fn(server, lua, name, reason, days), [lua](auto result) {
-        result();
-    });
-
-    return lua->yield(1);
+    builder.resume = [=]() -> async::task<int> {
+        lua->pushboolean(*success);
+        if (*success == false)
+            lua->pushstring(*error);
+        co_return *success ? 1 : 2;
+    };
+    return builder.run();
 }
 
 int builtin::server::builtin_unban(lua_State* L)
@@ -1069,31 +1036,23 @@ int builtin::server::builtin_unban(lua_State* L)
 
     auto name = lua->tostring(2);
 
-    static auto fn = [](fb::game::server* server, fb::lua::context* lua, std::string_view name) -> async::task<void> {
-        auto   success = false;
-        auto   error   = std::string{};
-        auto&& resp    = co_await server->unban(name);
+    auto success  = std::make_shared<bool>(false);
+    auto error    = std::make_shared<std::string>();
+    auto builder  = lua->new_co_builder(*server);
+    builder.yield = [=]() -> async::task<void> {
+        auto&& resp = co_await server->unban(name);
         if (resp.error == 0)
-        {
-            success = true;
-        }
+            *success = true;
         else
-        {
-            error = std::format("Unban failed with error code: {}", resp.error);
-        }
-
-        co_await lua->switching();
-        lua->pushboolean(success);
-        if (!success)
-            lua->pushstring(error);
-        lua->resume(success ? 1 : 2);
+            *error = std::format("Unban failed with error code: {}", resp.error);
     };
-
-    async::awaitable_then(fn(server, lua, name), [lua](auto result) {
-        result();
-    });
-
-    return lua->yield(1);
+    builder.resume = [=]() -> async::task<int> {
+        lua->pushboolean(*success);
+        if (*success == false)
+            lua->pushstring(*error);
+        co_return *success ? 1 : 2;
+    };
+    return builder.run();
 }
 
 int builtin::server::builtin_regex(lua_State* L)
@@ -1176,36 +1135,28 @@ int builtin::server::builtin_exp_multiplier(lua_State* L)
     else
     {
         // Set multiplier - send request to internal server
-        auto value = lua->tonumber(1);
+        const double multiplier = static_cast<double>(lua->tonumber(1));
 
-        static auto fn = [](fb::game::server* server, fb::lua::context* lua, double value) -> async::task<void> {
-            auto   success = false;
-            auto   error   = std::string{};
-            auto   world   = fb::config<uint32_t>("world");
-            auto&& resp    = co_await server->http.post("internal",
-                                                     "/in-game/set-exp-multiplier",
-                                                     internal_reqs::SetExpMultiplier{world, value});
+        auto success  = std::make_shared<bool>(false);
+        auto error    = std::make_shared<std::string>();
+        auto builder  = lua->new_co_builder(*server);
+        builder.yield = [=]() -> async::task<void> {
+            auto world = fb::config<uint32_t>("world");
+            auto resp  = co_await server->http.post("internal",
+                                                   "/in-game/set-exp-multiplier",
+                                                   internal_reqs::SetExpMultiplier(world, multiplier));
             if (resp.error == 0)
-            {
-                success = true;
-            }
+                *success = true;
             else
-            {
-                error = std::format("Set exp multiplier failed with error code: {}", resp.error);
-            }
-
-            co_await lua->switching();
-            lua->pushboolean(success);
-            if (!success)
-                lua->pushstring(error);
-            lua->resume(success ? 1 : 2);
+                *error = std::format("Set exp multiplier failed with error code: {}", resp.error);
         };
-
-        async::awaitable_then(fn(server, lua, value), [lua](auto result) {
-            result();
-        });
-
-        return lua->yield(1);
+        builder.resume = [=]() -> async::task<int> {
+            lua->pushboolean(*success);
+            if (*success == false)
+                lua->pushstring(*error);
+            co_return *success ? 1 : 2;
+        };
+        return builder.run();
     }
 }
 
@@ -1228,38 +1179,28 @@ int builtin::server::builtin_drop_rate_multiplier(lua_State* L)
     else
     {
         // Set multiplier - send request to internal server
-        auto value = lua->tonumber(1);
+        const double multiplier = static_cast<double>(lua->tonumber(1));
 
-        static auto fn = [](fb::game::server* server, fb::lua::context* lua, double value) -> async::task<void> {
-            auto   success = false;
-            auto   error   = std::string{};
-            auto   world   = fb::config<uint32_t>("world");
-            auto&& resp    = co_await server->http.post("internal",
-                                                     "/in-game/set-drop-rate-multiplier",
-                                                     internal_reqs::SetDropRateMultiplier{world, value});
-
-            lua->pushboolean(resp.error == 0);
+        auto success  = std::make_shared<bool>(false);
+        auto error    = std::make_shared<std::string>();
+        auto builder  = lua->new_co_builder(*server);
+        builder.yield = [=]() -> async::task<void> {
+            auto world = fb::config<uint32_t>("world");
+            auto resp  = co_await server->http.post("internal",
+                                                   "/in-game/set-drop-rate-multiplier",
+                                                   internal_reqs::SetDropRateMultiplier(world, multiplier));
             if (resp.error == 0)
-            {
-                success = true;
-            }
+                *success = true;
             else
-            {
-                error = std::format("Set drop rate multiplier failed with error code: {}", resp.error);
-            }
-
-            co_await lua->switching();
-            lua->pushboolean(success);
-            if (!success)
-                lua->pushstring(error);
-            lua->resume(success ? 1 : 2);
+                *error = std::format("Set drop rate multiplier failed with error code: {}", resp.error);
         };
-
-        async::awaitable_then(fn(server, lua, value), [lua](auto result) {
-            result();
-        });
-
-        return lua->yield(1);
+        builder.resume = [=]() -> async::task<int> {
+            lua->pushboolean(*success);
+            if (*success == false)
+                lua->pushstring(*error);
+            co_return *success ? 1 : 2;
+        };
+        return builder.run();
     }
 }
 

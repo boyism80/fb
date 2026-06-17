@@ -470,11 +470,12 @@ void context::release()
     }
 }
 
-async::task<int> fb::lua::context::co_builder::run_pipeline(fb::async_executor& executor,
-                                                            std::optional<std::weak_ptr<fb::thread_switchable>> weak,
-                                                            context*                                            lua_ptr,
-                                                            std::function<async::task<void>()> yield_fn,
-                                                            std::function<async::task<int>()>  resume_fn)
+async::task<std::optional<int>>
+fb::lua::context::co_builder::run_pipeline(fb::async_executor&                                 executor,
+                                           std::optional<std::weak_ptr<fb::thread_switchable>> weak,
+                                           context*                                            lua_ptr,
+                                           std::function<async::task<void>()>                  yield_fn,
+                                           std::function<async::task<int>()>                   resume_fn)
 {
     const auto abort_pipeline = [lua_ptr](const char* phase, const char* message) {
         if (message != nullptr)
@@ -502,20 +503,26 @@ async::task<int> fb::lua::context::co_builder::run_pipeline(fb::async_executor& 
         }
     }
 
-    try
+    if (yield_fn)
     {
-        co_await yield_fn();
+        try
+        {
+            co_await yield_fn();
+        }
+        catch (const std::exception& e)
+        {
+            abort_pipeline("yield", e.what());
+            throw;
+        }
+        catch (...)
+        {
+            abort_pipeline("yield", nullptr);
+            throw;
+        }
     }
-    catch (const std::exception& e)
-    {
-        abort_pipeline("yield", e.what());
-        throw;
-    }
-    catch (...)
-    {
-        abort_pipeline("yield", nullptr);
-        throw;
-    }
+
+    if (!resume_fn)
+        co_return std::nullopt;
 
     try
     {
@@ -562,30 +569,42 @@ int fb::lua::context::co_builder::run()
             return 0;
     }
 
-    auto yield_fn = this->yield ? this->yield : []() -> async::task<void> {
-        co_return;
-    };
-    auto resume_fn = this->resume ? this->resume : []() -> async::task<int> {
-        co_return 0;
-    };
+    auto       yield_fn   = std::move(this->yield);
+    auto       resume_fn  = std::move(this->resume);
+    const auto has_resume = static_cast<bool>(resume_fn);
 
     int  sync_result = -1;
     auto lua_ptr     = &this->_lua;
 
     auto immediate = async::awaitable_then_immediate(
         run_pipeline(this->_executor, this->weak, lua_ptr, std::move(yield_fn), std::move(resume_fn)),
-        [lua_ptr, &sync_result](async::awaitable_result<int> result, bool immediate) {
+        [lua_ptr, &sync_result, has_resume](async::awaitable_result<std::optional<int>> result, bool immediate) {
+            if (has_resume == false)
+                return;
+
             try
             {
                 auto n = result();
+                if (n.has_value() == false)
+                    return;
+
                 if (immediate)
-                    sync_result = n;
+                    sync_result = *n;
                 else
-                    lua_ptr->resume(n);
+                    lua_ptr->resume(*n);
+            }
+            catch (const std::exception& e)
+            {
+                fb::logger::fatal("lua co_builder async completion error: {}", e.what());
             }
             catch (...)
-            { }
+            {
+                fb::logger::fatal("lua co_builder async completion error");
+            }
         });
+
+    if (has_resume == false)
+        return lua_ptr->yield(0);
 
     if (immediate)
         return sync_result;

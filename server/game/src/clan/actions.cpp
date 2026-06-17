@@ -74,6 +74,7 @@ async::task<void> clan::container::destroy(character& me)
 
     co_await this->on_error(resp.error);
     co_await this->on_destroyed(resp.clan_id, resp.clan_name);
+    me.clan_reset();
 }
 
 async::task<void> clan::container::join_member(character& inviter, std::string_view target_name)

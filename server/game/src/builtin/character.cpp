@@ -122,10 +122,19 @@ int builtin::character::builtin_uid(lua_State* L)
     if (ch == nullptr)
         return 0;
 
-    ch->assert_thread();
-
-    lua->pushinteger(ch->id);
-    return 1;
+    auto weak     = ch->weak_from_this_as<fb::game::character>();
+    auto uid      = std::make_shared<uint32_t>();
+    auto builder  = lua->new_co_builder(*server);
+    builder.weak  = weak;
+    builder.yield = [=]() -> async::task<void> {
+        *uid = ch->id;
+        co_return;
+    };
+    builder.resume = [=]() -> async::task<int> {
+        lua->pushinteger(*uid);
+        co_return 1;
+    };
+    return builder.run();
 }
 
 int builtin::character::builtin_look(lua_State* L)
@@ -464,12 +473,18 @@ int builtin::character::builtin_item(lua_State* L)
         }
     }
 
-    ch->listener.on_dialog(*ch, *model, message, items, oid);
-    if (ch->dialog != nullptr)
-        ch->dialog->release();
+    auto weak     = ch->weak_from_this_as<fb::game::character>();
+    auto builder  = lua->new_co_builder(*server);
+    builder.weak  = weak;
+    builder.yield = [=]() -> async::task<void> {
+        ch->listener.on_dialog(*ch, *model, message, items, oid);
+        if (ch->dialog != nullptr)
+            ch->dialog->release();
 
-    ch->dialog = lua;
-    return lua->yield(1);
+        ch->dialog = lua;
+        co_return;
+    };
+    return builder.run();
 }
 
 int builtin::character::builtin_items(lua_State* L)
@@ -533,8 +548,6 @@ int builtin::character::builtin_has_items(lua_State* L)
     if (ch == nullptr)
         return 0;
 
-    ch->assert_thread();
-
     auto required = std::vector<std::pair<std::string, uint16_t>>();
 
     if (lua->is_string(2) && lua->is_number(3))
@@ -578,8 +591,20 @@ int builtin::character::builtin_has_items(lua_State* L)
         required_models.push_back({model, min_count});
     }
 
-    lua->pushboolean(ch->items.has(required_models));
-    return 1;
+    auto server   = lua->env<fb::game::server>("server");
+    auto weak     = ch->weak_from_this_as<fb::game::character>();
+    auto result   = std::make_shared<bool>();
+    auto builder  = lua->new_co_builder(*server);
+    builder.weak  = weak;
+    builder.yield = [=]() -> async::task<void> {
+        *result = ch->items.has(required_models);
+        co_return;
+    };
+    builder.resume = [=]() -> async::task<int> {
+        lua->pushboolean(*result);
+        co_return 1;
+    };
+    return builder.run();
 }
 
 int builtin::character::builtin_equipments(lua_State* L)
@@ -1510,7 +1535,7 @@ int builtin::character::builtin_level(lua_State* L)
     if (argc == 1)
     {
         auto weak     = ch->weak_from_this_as<fb::game::character>();
-        auto level    = std::make_shared<int>();
+        auto level    = std::make_shared<uint8_t>();
         auto builder  = lua->new_co_builder(*server);
         builder.weak  = weak;
         builder.yield = [=]() -> async::task<void> {
@@ -1936,44 +1961,30 @@ int builtin::character::builtin_group(lua_State* L)
 
     if (argc < 2)
     {
-        static auto fn = [](fb::game::server*                  server,
-                            std::weak_ptr<fb::game::character> ch,
-                            fb::lua::context*                  lua) -> async::task<void> {
-            auto shared = ch.lock();
+        auto weak         = ch->weak_from_this_as<fb::game::character>();
+        auto group_holder = std::make_shared<std::shared_ptr<fb::game::group>>();
+        auto builder      = lua->new_co_builder(*server);
+        builder.weak      = weak;
+        builder.yield     = [=]() -> async::task<void> {
+            auto shared = weak.lock();
             if (shared == nullptr)
-            {
-                co_await lua->switching();
-                lua->pushnil();
-                lua->resume(1);
                 co_return;
-            }
 
             auto group_id = shared->group_id();
-            if (group_id.has_value() == false)
+            if (group_id.has_value())
             {
-                co_await lua->switching();
+                auto guard    = server->groups.enter_read(group_id.value());
+                *group_holder = guard.value();
+            }
+        };
+        builder.resume = [=]() -> async::task<int> {
+            if (*group_holder == nullptr)
                 lua->pushnil();
-                lua->resume(1);
-            }
             else
-            {
-                async::awaitable_then(lua->switching(), [lua, server, gid = group_id.value()](auto result) {
-                    result();
-                    auto guard = server->groups.enter_read(gid);
-                    lua->pushobject(guard.value());
-                    lua->resume(1);
-                });
-            }
-            co_return;
+                lua->pushobject(*group_holder);
+            co_return 1;
         };
-
-        auto weak    = ch->weak_from_this_as<fb::game::character>();
-        auto builder = server->threads.new_builder(weak);
-        builder.func = [=](auto&) -> async::task<void> {
-            co_await fn(server, weak, lua);
-        };
-        builder.enqueue();
-        return lua->yield(1);
+        return builder.run();
     }
     else if (lua->is_function(2))
     {
@@ -2039,46 +2050,38 @@ int builtin::character::builtin_create_group(lua_State* L)
     if (ch == nullptr)
         return 0;
 
-    auto name = lua->tostring(2);
-
-    static auto fn = [](fb::game::server*                  server,
-                        std::weak_ptr<fb::game::character> ch,
-                        fb::lua::context*                  lua,
-                        std::string                        target) -> async::task<void> {
-        auto shared = ch.lock();
+    auto name     = lua->tostring(2);
+    auto weak     = ch->weak_from_this_as<fb::game::character>();
+    auto dead     = std::make_shared<bool>(false);
+    auto success  = std::make_shared<bool>(false);
+    auto builder  = lua->new_co_builder(*server);
+    builder.weak  = weak;
+    builder.yield = [=]() -> async::task<void> {
+        auto shared = weak.lock();
         if (shared == nullptr)
         {
-            co_await lua->switching();
-            lua->pushnil();
-            lua->resume(1);
+            *dead = true;
             co_return;
         }
 
         try
         {
-            co_await server->groups.create(*shared, target);
-            co_await lua->switching();
-            lua->pushboolean(true);
-            lua->resume(1);
+            co_await server->groups.create(*shared, name);
+            *success = true;
         }
-        catch (std::exception& e)
+        catch (std::exception&)
         {
-            async::awaitable_then(lua->switching(), [lua](auto result) {
-                result();
-                lua->pushboolean(false);
-                lua->resume(1);
-            });
+            *success = false;
         }
     };
-
-    auto weak    = ch->weak_from_this_as<fb::game::character>();
-    auto builder = server->threads.new_builder(weak);
-    builder.func = [=](auto&) -> async::task<void> {
-        co_await fn(server, ch, lua, name);
+    builder.resume = [=]() -> async::task<int> {
+        if (*dead)
+            lua->pushnil();
+        else
+            lua->pushboolean(*success);
+        co_return 1;
     };
-    builder.enqueue();
-
-    return lua->yield(1);
+    return builder.run();
 }
 
 int builtin::character::builtin_clan(lua_State* L)
@@ -2095,85 +2098,75 @@ int builtin::character::builtin_clan(lua_State* L)
 
     if (argc < 2)
     {
-        static auto fn = [](fb::game::server*                  server,
-                            std::weak_ptr<fb::game::character> ch,
-                            fb::lua::context*                  lua) -> async::task<void> {
-            auto shared = ch.lock();
+        auto weak        = ch->weak_from_this_as<fb::game::character>();
+        auto clan_holder = std::make_shared<std::shared_ptr<fb::game::clan>>();
+        auto builder     = lua->new_co_builder(*server);
+        builder.weak     = weak;
+        builder.yield    = [=]() -> async::task<void> {
+            auto shared = weak.lock();
             if (shared == nullptr)
-            {
-                co_await lua->switching();
-                lua->pushnil();
-                lua->resume(1);
                 co_return;
-            }
 
             auto& clan_id = shared->clan_id();
-            if (clan_id.has_value() == false)
+            if (clan_id.has_value())
             {
-                co_await lua->switching();
+                auto guard = server->clans.try_enter_read(clan_id.value());
+                if (guard.has_value())
+                    *clan_holder = guard->value();
+            }
+        };
+        builder.resume = [=]() -> async::task<int> {
+            if (*clan_holder == nullptr)
                 lua->pushnil();
-                lua->resume(1);
-            }
             else
-            {
-                async::awaitable_then(lua->switching(), [lua, server, cid = clan_id.value()](auto result) {
-                    result();
-                    auto guard = server->clans.enter_read(cid);
-                    lua->pushobject(guard.value());
-                    lua->resume(1);
-                });
-            }
-            co_return;
+                lua->pushobject(*clan_holder);
+            co_return 1;
         };
-
-        auto weak    = ch->weak_from_this_as<fb::game::character>();
-        auto builder = server->threads.new_builder(weak);
-        builder.func = [=](auto&) -> async::task<void> {
-            co_await fn(server, ch, lua);
-        };
-        builder.enqueue();
-        return lua->yield(1);
+        return builder.run();
     }
     else if (lua->is_function(2))
     {
-        static auto fn = [](fb::game::server*                  server,
-                            std::weak_ptr<fb::game::character> ch,
-                            fb::lua::context*                  lua) -> async::task<void> {
-            auto shared = ch.lock();
-            if (shared == nullptr)
-            {
-                co_await lua->switching();
-                lua->pushnil();
-                lua->resume(1);
+        auto weak        = ch->weak_from_this_as<fb::game::character>();
+        auto ch_holder   = std::make_shared<std::shared_ptr<fb::game::character>>();
+        auto clan_holder = std::make_shared<std::shared_ptr<fb::game::clan>>();
+        auto builder     = lua->new_co_builder(*server);
+        builder.weak     = weak;
+        builder.yield    = [=]() -> async::task<void> {
+            auto locked = weak.lock();
+            if (locked == nullptr)
                 co_return;
-            }
 
-            auto& clan_id = shared->clan_id();
-            if (clan_id.has_value() == false)
+            *ch_holder    = locked;
+            auto& clan_id = locked->clan_id();
+            if (clan_id.has_value())
             {
-                co_await lua->switching();
+                auto guard = server->clans.try_enter_read(clan_id.value());
+                if (guard.has_value())
+                    *clan_holder = guard->value();
+            }
+        };
+        builder.resume = [=]() -> async::task<int> {
+            static auto static_func = [](fb::lua::context* ctx) {
+                lua_call(*ctx, 2, LUA_MULTRET);
+                ctx->remove(-ctx->argc());
+                return ctx->argc();
+            };
+
+            if (*ch_holder == nullptr)
+            {
                 lua->pushnil();
-                lua->resume(1);
+                lua->pushnil();
+                co_return static_func(lua);
             }
+
+            lua->pushobject(*ch_holder);
+            if (*clan_holder == nullptr)
+                lua->pushnil();
             else
-            {
-                async::awaitable_then(lua->switching(), [lua, server, cid = clan_id.value()](auto result) {
-                    result();
-                    auto guard = server->clans.enter_read(cid);
-                    lua->pushobject(guard.value());
-                    lua->resume(1);
-                });
-            }
+                lua->pushobject(*clan_holder);
+            co_return static_func(lua);
         };
-
-        auto weak    = ch->weak_from_this_as<fb::game::character>();
-        auto builder = server->threads.new_builder(weak);
-        builder.func = [=](auto&) -> async::task<void> {
-            co_await fn(server, ch, lua);
-        };
-        builder.enqueue();
-
-        return lua->yield(1);
+        return builder.run();
     }
     else
     {
@@ -2193,48 +2186,39 @@ int builtin::character::builtin_create_clan(lua_State* L)
     if (ch == nullptr)
         return 0;
 
-    auto name = lua->tostring(2);
-
-    static auto fn = [](fb::game::server*                  server,
-                        std::weak_ptr<fb::game::character> ch,
-                        fb::lua::context*                  lua,
-                        const std::string&                 name) -> async::task<void> {
-        auto shared = ch.lock();
+    auto name     = lua->tostring(2);
+    auto weak     = ch->weak_from_this_as<fb::game::character>();
+    auto dead     = std::make_shared<bool>(false);
+    auto error    = std::make_shared<std::optional<std::string>>();
+    auto builder  = lua->new_co_builder(*server);
+    builder.weak  = weak;
+    builder.yield = [=]() -> async::task<void> {
+        auto shared = weak.lock();
         if (shared == nullptr)
         {
-            co_await lua->switching();
-            lua->pushnil();
-            lua->resume(1);
+            *dead = true;
             co_return;
         }
+
         try
         {
             co_await server->clans.create(*shared, name);
-            co_await lua->switching();
-            lua->pushnil();
-            lua->resume(1);
         }
         catch (std::exception& e)
         {
-            auto what = std::string(e.what());
-            async::awaitable_then(lua->switching(), [lua, what](auto result) {
-                result();
-                lua->pushstring(what.c_str());
-                lua->resume(1);
-            });
+            *error = e.what();
         }
-        co_return;
     };
-
-    auto weak    = ch->weak_from_this_as<fb::game::character>();
-    auto builder = server->threads.new_builder(weak);
-    builder.func = [=](auto&) -> async::task<void> {
-        co_await fn(server, ch, lua, name);
-        co_return;
+    builder.resume = [=]() -> async::task<int> {
+        if (*dead)
+            lua->pushnil();
+        else if (error->has_value())
+            lua->pushstring(error->value().c_str());
+        else
+            lua->pushnil();
+        co_return 1;
     };
-    builder.enqueue();
-
-    return lua->yield(1);
+    return builder.run();
 }
 
 int builtin::character::builtin_destroy_clan(lua_State* L)
@@ -2249,46 +2233,38 @@ int builtin::character::builtin_destroy_clan(lua_State* L)
     if (ch == nullptr)
         return 0;
 
-    // Static function to isolate async operation and ensure parameter lifetime safety
-    static auto static_func = [](fb::game::server*                  server,
-                                 std::weak_ptr<fb::game::character> ch,
-                                 fb::lua::context*                  lua) -> async::task<void> {
-        auto shared = ch.lock();
+    auto weak     = ch->weak_from_this_as<fb::game::character>();
+    auto dead     = std::make_shared<bool>(false);
+    auto error    = std::make_shared<std::optional<std::string>>();
+    auto builder  = lua->new_co_builder(*server);
+    builder.weak  = weak;
+    builder.yield = [=]() -> async::task<void> {
+        auto shared = weak.lock();
         if (shared == nullptr)
         {
-            co_await lua->switching();
-            lua->pushnil();
-            lua->resume(1);
+            *dead = true;
             co_return;
         }
+
         try
         {
             co_await server->clans.destroy(*shared);
-            co_await lua->switching();
-            lua->pushnil();
-            lua->resume(1);
-            co_return;
         }
         catch (std::exception& e)
         {
-            auto what = std::string(e.what());
-            async::awaitable_then(lua->switching(), [lua, what](auto result) {
-                result();
-                lua->pushstring(what.c_str());
-                lua->resume(1);
-            });
-            co_return;
+            *error = e.what();
         }
     };
-
-    auto weak    = ch->weak_from_this_as<fb::game::character>();
-    auto builder = server->threads.new_builder(weak);
-    builder.func = [server, weak, lua](auto&) -> async::task<void> {
-        co_await static_func(server, weak, lua);
+    builder.resume = [=]() -> async::task<int> {
+        if (*dead)
+            lua->pushnil();
+        else if (error->has_value())
+            lua->pushstring(error->value().c_str());
+        else
+            lua->pushnil();
+        co_return 1;
     };
-    builder.enqueue();
-
-    return lua->yield(1);
+    return builder.run();
 }
 
 int builtin::character::builtin_achievements(lua_State* L)
@@ -2437,46 +2413,38 @@ int builtin::character::builtin_whisper(lua_State* L)
     auto to      = lua->tostring(2);
     auto message = lua->tostring(3);
 
-    static auto fn = [](fb::game::server*                  server,
-                        fb::lua::context*                  lua,
-                        std::weak_ptr<fb::game::character> ch,
-                        const std::string&                 to,
-                        const std::string&                 message) -> async::task<void> {
-        auto shared = ch.lock();
+    auto weak     = ch->weak_from_this_as<fb::game::character>();
+    auto dead     = std::make_shared<bool>(false);
+    auto error    = std::make_shared<std::optional<std::string>>();
+    auto builder  = lua->new_co_builder(*server);
+    builder.weak  = weak;
+    builder.yield = [=]() -> async::task<void> {
+        auto shared = weak.lock();
         if (shared == nullptr)
         {
-            co_await lua->switching();
-            lua->pushnil();
-            lua->resume(1);
+            *dead = true;
             co_return;
         }
 
         try
         {
             co_await shared->whisper(to, message);
-            co_await lua->switching();
-            lua->pushnil();
-            lua->resume(1);
         }
         catch (std::exception& e)
         {
-            auto what = std::string(e.what());
-            async::awaitable_then(lua->switching(), [lua, what](auto result) {
-                result();
-                lua->pushstring(what.c_str());
-                lua->resume(1);
-            });
+            *error = e.what();
         }
     };
-
-    auto weak    = ch->weak_from_this_as<fb::game::character>();
-    auto builder = server->threads.new_builder(weak);
-    builder.func = [=](auto&) -> async::task<void> {
-        co_await fn(server, lua, ch, to, message);
+    builder.resume = [=]() -> async::task<int> {
+        if (*dead)
+            lua->pushnil();
+        else if (error->has_value())
+            lua->pushstring(error->value().c_str());
+        else
+            lua->pushnil();
+        co_return 1;
     };
-    builder.enqueue();
-
-    return lua->yield(1);
+    return builder.run();
 }
 
 int builtin::character::builtin_nation(lua_State* L)
@@ -2666,7 +2634,7 @@ int builtin::character::builtin_weapon_damage(lua_State* L)
     if (argc == 1)
     {
         auto weak          = ch->weak_from_this_as<fb::game::character>();
-        auto weapon_damage = std::make_shared<uint8_t>();
+        auto weapon_damage = std::make_shared<uint16_t>();
         auto builder       = lua->new_co_builder(*server);
         builder.weak       = weak;
         builder.yield      = [=]() -> async::task<void> {
@@ -2881,7 +2849,7 @@ int builtin::character::builtin_base_hp(lua_State* L)
     if (argc == 1)
     {
         auto weak     = ch->weak_from_this_as<fb::game::character>();
-        auto base_hp  = std::make_shared<int>();
+        auto base_hp  = std::make_shared<uint32_t>();
         auto builder  = lua->new_co_builder(*server);
         builder.weak  = weak;
         builder.yield = [=]() -> async::task<void> {
@@ -2926,7 +2894,7 @@ int builtin::character::builtin_base_mp(lua_State* L)
     if (argc == 1)
     {
         auto weak     = ch->weak_from_this_as<fb::game::character>();
-        auto base_mp  = std::make_shared<int>();
+        auto base_mp  = std::make_shared<uint32_t>();
         auto builder  = lua->new_co_builder(*server);
         builder.weak  = weak;
         builder.yield = [=]() -> async::task<void> {
@@ -2971,7 +2939,7 @@ int builtin::character::builtin_base_str(lua_State* L)
     if (argc == 1)
     {
         auto weak     = ch->weak_from_this_as<fb::game::character>();
-        auto base_str = std::make_shared<int>();
+        auto base_str = std::make_shared<uint8_t>();
         auto builder  = lua->new_co_builder(*server);
         builder.weak  = weak;
         builder.yield = [=]() -> async::task<void> {
@@ -3016,7 +2984,7 @@ int builtin::character::builtin_base_dex(lua_State* L)
     if (argc == 1)
     {
         auto weak     = ch->weak_from_this_as<fb::game::character>();
-        auto base_dex = std::make_shared<int>();
+        auto base_dex = std::make_shared<uint8_t>();
         auto builder  = lua->new_co_builder(*server);
         builder.weak  = weak;
         builder.yield = [=]() -> async::task<void> {
@@ -3061,7 +3029,7 @@ int builtin::character::builtin_base_int(lua_State* L)
     if (argc == 1)
     {
         auto weak     = ch->weak_from_this_as<fb::game::character>();
-        auto base_int = std::make_shared<int>();
+        auto base_int = std::make_shared<uint8_t>();
         auto builder  = lua->new_co_builder(*server);
         builder.weak  = weak;
         builder.yield = [=]() -> async::task<void> {
@@ -3106,7 +3074,7 @@ int builtin::character::builtin_base_dam(lua_State* L)
     if (argc == 1)
     {
         auto weak     = ch->weak_from_this_as<fb::game::character>();
-        auto base_dam = std::make_shared<int>();
+        auto base_dam = std::make_shared<uint8_t>();
         auto builder  = lua->new_co_builder(*server);
         builder.weak  = weak;
         builder.yield = [=]() -> async::task<void> {
@@ -3151,7 +3119,7 @@ int builtin::character::builtin_base_hit(lua_State* L)
     if (argc == 1)
     {
         auto weak     = ch->weak_from_this_as<fb::game::character>();
-        auto base_hit = std::make_shared<int>();
+        auto base_hit = std::make_shared<uint8_t>();
         auto builder  = lua->new_co_builder(*server);
         builder.weak  = weak;
         builder.yield = [=]() -> async::task<void> {
@@ -3196,13 +3164,11 @@ int builtin::character::builtin_armor_color(lua_State* L)
     if (argc == 1)
     {
         auto weak     = ch->weak_from_this_as<fb::game::character>();
-        auto result   = std::make_shared<std::optional<uint16_t>>();
+        auto result   = std::make_shared<std::optional<uint8_t>>();
         auto builder  = lua->new_co_builder(*server);
         builder.weak  = weak;
         builder.yield = [=]() -> async::task<void> {
-            auto color = ch->armor_color();
-            if (color.has_value())
-                *result = color.value();
+            *result = ch->armor_color();
             co_return;
         };
         builder.resume = [=]() -> async::task<int> {
@@ -3216,7 +3182,7 @@ int builtin::character::builtin_armor_color(lua_State* L)
     }
     else
     {
-        auto value = std::optional<uint16_t>{};
+        auto value = std::optional<uint8_t>{};
         if (lua->is_number(2))
             value = lua->tointeger(2);
 
@@ -3501,7 +3467,6 @@ int builtin::character::builtin_ad(lua_State* L)
         return 0;
 
     auto server = lua->env<fb::game::server>("server");
-    auto argc   = lua->argc();
     auto ch     = lua->touserdata<fb::game::character>(1);
     if (ch == nullptr)
         return 0;
@@ -3510,8 +3475,18 @@ int builtin::character::builtin_ad(lua_State* L)
     auto height = lua->tointeger(3, 120);
     auto url    = lua->tostring(4, "http://www.google.com");
     auto time   = lua->tointeger(5, 60);
-    ch->send(fb::protocol::game::response::ad(width, height, url, time));
-    return 0;
+
+    auto weak     = ch->weak_from_this_as<fb::game::character>();
+    auto builder  = lua->new_co_builder(*server);
+    builder.weak  = weak;
+    builder.yield = [=]() -> async::task<void> {
+        ch->send(fb::protocol::game::response::ad(width, height, url, time));
+        co_return;
+    };
+    builder.resume = []() -> async::task<int> {
+        co_return 0;
+    };
+    return builder.run();
 }
 
 int builtin::character::builtin_web(lua_State* L)
@@ -3521,7 +3496,6 @@ int builtin::character::builtin_web(lua_State* L)
         return 0;
 
     auto server = lua->env<fb::game::server>("server");
-    auto argc   = lua->argc();
     auto ch     = lua->touserdata<fb::game::character>(1);
     if (ch == nullptr)
         return 0;
@@ -3529,8 +3503,18 @@ int builtin::character::builtin_web(lua_State* L)
     auto type    = lua->tointeger(2, 0);
     auto url     = lua->tostring(3, "http://www.google.com");
     auto message = lua->tostring(4, "default message");
-    ch->send(fb::protocol::game::response::web(type, url, message));
-    return 0;
+
+    auto weak     = ch->weak_from_this_as<fb::game::character>();
+    auto builder  = lua->new_co_builder(*server);
+    builder.weak  = weak;
+    builder.yield = [=]() -> async::task<void> {
+        ch->send(fb::protocol::game::response::web(type, url, message));
+        co_return;
+    };
+    builder.resume = []() -> async::task<int> {
+        co_return 0;
+    };
+    return builder.run();
 }
 
 int builtin::character::builtin_unknown_12(lua_State* L)
@@ -3538,14 +3522,27 @@ int builtin::character::builtin_unknown_12(lua_State* L)
     auto lua = fb::lua::get(L);
     if (lua == nullptr)
         return 0;
-    auto ch = lua->touserdata<fb::game::character>(1);
+
+    auto server = lua->env<fb::game::server>("server");
+    auto ch     = lua->touserdata<fb::game::character>(1);
     if (ch == nullptr)
         return 0;
+
     auto oid           = static_cast<uint32_t>(lua->tointeger(2, 0));
     auto party_slot    = static_cast<uint8_t>(lua->tointeger(3, 0));
     auto level_encoded = static_cast<uint8_t>(lua->tointeger(4, 1));
-    ch->send(fb::protocol::game::response::unknown_12(oid, party_slot, level_encoded));
-    return 0;
+
+    auto weak     = ch->weak_from_this_as<fb::game::character>();
+    auto builder  = lua->new_co_builder(*server);
+    builder.weak  = weak;
+    builder.yield = [=]() -> async::task<void> {
+        ch->send(fb::protocol::game::response::unknown_12(oid, party_slot, level_encoded));
+        co_return;
+    };
+    builder.resume = []() -> async::task<int> {
+        co_return 0;
+    };
+    return builder.run();
 }
 
 int builtin::character::builtin_unknown_26(lua_State* L)
@@ -3553,17 +3550,30 @@ int builtin::character::builtin_unknown_26(lua_State* L)
     auto lua = fb::lua::get(L);
     if (lua == nullptr)
         return 0;
-    auto ch = lua->touserdata<fb::game::character>(1);
+
+    auto server = lua->env<fb::game::server>("server");
+    auto ch     = lua->touserdata<fb::game::character>(1);
     if (ch == nullptr)
         return 0;
+
     auto flags     = static_cast<uint8_t>(lua->tointeger(2, 0));
     auto pos_x     = static_cast<int16_t>(lua->tointeger(3, 0));
     auto pos_y     = static_cast<int16_t>(lua->tointeger(4, 0));
     auto map_rel_x = static_cast<int16_t>(lua->tointeger(5, 0));
     auto map_rel_y = static_cast<int16_t>(lua->tointeger(6, 0));
     auto zone_slot = static_cast<uint8_t>(lua->tointeger(7, 0));
-    ch->send(fb::protocol::game::response::unknown_26(flags, pos_x, pos_y, map_rel_x, map_rel_y, zone_slot));
-    return 0;
+
+    auto weak     = ch->weak_from_this_as<fb::game::character>();
+    auto builder  = lua->new_co_builder(*server);
+    builder.weak  = weak;
+    builder.yield = [=]() -> async::task<void> {
+        ch->send(fb::protocol::game::response::unknown_26(flags, pos_x, pos_y, map_rel_x, map_rel_y, zone_slot));
+        co_return;
+    };
+    builder.resume = []() -> async::task<int> {
+        co_return 0;
+    };
+    return builder.run();
 }
 
 int builtin::character::builtin_ui(lua_State* L)
@@ -3571,13 +3581,26 @@ int builtin::character::builtin_ui(lua_State* L)
     auto lua = fb::lua::get(L);
     if (lua == nullptr)
         return 0;
-    auto ch = lua->touserdata<fb::game::character>(1);
+
+    auto server = lua->env<fb::game::server>("server");
+    auto ch     = lua->touserdata<fb::game::character>(1);
     if (ch == nullptr)
         return 0;
+
     using UI_SCREEN = fb::protocol::game::response::UI_SCREEN;
     auto screen     = static_cast<UI_SCREEN>(lua->tointeger(2, 0));
-    ch->send(fb::protocol::game::response::ui_screen(screen));
-    return 0;
+
+    auto weak     = ch->weak_from_this_as<fb::game::character>();
+    auto builder  = lua->new_co_builder(*server);
+    builder.weak  = weak;
+    builder.yield = [=]() -> async::task<void> {
+        ch->send(fb::protocol::game::response::ui_screen(screen));
+        co_return;
+    };
+    builder.resume = []() -> async::task<int> {
+        co_return 0;
+    };
+    return builder.run();
 }
 
 int builtin::character::builtin_item_throw_confirm(lua_State* L)
@@ -3585,12 +3608,25 @@ int builtin::character::builtin_item_throw_confirm(lua_State* L)
     auto lua = fb::lua::get(L);
     if (lua == nullptr)
         return 0;
-    auto ch = lua->touserdata<fb::game::character>(1);
+
+    auto server = lua->env<fb::game::server>("server");
+    auto ch     = lua->touserdata<fb::game::character>(1);
     if (ch == nullptr)
         return 0;
+
     auto slot = static_cast<uint8_t>(lua->tointeger(2, 0));
-    ch->send(fb::protocol::game::response::item_throw_confirm(slot));
-    return 0;
+
+    auto weak     = ch->weak_from_this_as<fb::game::character>();
+    auto builder  = lua->new_co_builder(*server);
+    builder.weak  = weak;
+    builder.yield = [=]() -> async::task<void> {
+        ch->send(fb::protocol::game::response::item_throw_confirm(slot));
+        co_return;
+    };
+    builder.resume = []() -> async::task<int> {
+        co_return 0;
+    };
+    return builder.run();
 }
 
 int builtin::character::builtin_freeze(lua_State* L)
@@ -3598,12 +3634,25 @@ int builtin::character::builtin_freeze(lua_State* L)
     auto lua = fb::lua::get(L);
     if (lua == nullptr)
         return 0;
-    auto ch = lua->touserdata<fb::game::character>(1);
+
+    auto server = lua->env<fb::game::server>("server");
+    auto ch     = lua->touserdata<fb::game::character>(1);
     if (ch == nullptr)
         return 0;
+
     auto freeze = lua->toboolean(2, false);
-    ch->send(fb::protocol::game::response::freeze(freeze));
-    return 0;
+
+    auto weak     = ch->weak_from_this_as<fb::game::character>();
+    auto builder  = lua->new_co_builder(*server);
+    builder.weak  = weak;
+    builder.yield = [=]() -> async::task<void> {
+        ch->send(fb::protocol::game::response::freeze(freeze));
+        co_return;
+    };
+    builder.resume = []() -> async::task<int> {
+        co_return 0;
+    };
+    return builder.run();
 }
 
 int builtin::character::builtin_friends_sync(lua_State* L)
@@ -3611,12 +3660,25 @@ int builtin::character::builtin_friends_sync(lua_State* L)
     auto lua = fb::lua::get(L);
     if (lua == nullptr)
         return 0;
-    auto ch = lua->touserdata<fb::game::character>(1);
+
+    auto server = lua->env<fb::game::server>("server");
+    auto ch     = lua->touserdata<fb::game::character>(1);
     if (ch == nullptr)
         return 0;
+
     auto enabled = static_cast<uint8_t>(lua->tointeger(2, 0));
-    ch->send(fb::protocol::game::response::friends_sync(enabled));
-    return 0;
+
+    auto weak     = ch->weak_from_this_as<fb::game::character>();
+    auto builder  = lua->new_co_builder(*server);
+    builder.weak  = weak;
+    builder.yield = [=]() -> async::task<void> {
+        ch->send(fb::protocol::game::response::friends_sync(enabled));
+        co_return;
+    };
+    builder.resume = []() -> async::task<int> {
+        co_return 0;
+    };
+    return builder.run();
 }
 
 int builtin::character::builtin_unknown_4B(lua_State* L)
@@ -3624,12 +3686,25 @@ int builtin::character::builtin_unknown_4B(lua_State* L)
     auto lua = fb::lua::get(L);
     if (lua == nullptr)
         return 0;
-    auto ch = lua->touserdata<fb::game::character>(1);
+
+    auto server = lua->env<fb::game::server>("server");
+    auto ch     = lua->touserdata<fb::game::character>(1);
     if (ch == nullptr)
         return 0;
+
     auto payload = lua->tostring(2, "");
-    ch->send(fb::protocol::game::response::unknown_4B(payload));
-    return 0;
+
+    auto weak     = ch->weak_from_this_as<fb::game::character>();
+    auto builder  = lua->new_co_builder(*server);
+    builder.weak  = weak;
+    builder.yield = [=]() -> async::task<void> {
+        ch->send(fb::protocol::game::response::unknown_4B(payload));
+        co_return;
+    };
+    builder.resume = []() -> async::task<int> {
+        co_return 0;
+    };
+    return builder.run();
 }
 
 int builtin::character::builtin_unknown_4D(lua_State* L)
@@ -3637,9 +3712,12 @@ int builtin::character::builtin_unknown_4D(lua_State* L)
     auto lua = fb::lua::get(L);
     if (lua == nullptr)
         return 0;
-    auto ch = lua->touserdata<fb::game::character>(1);
+
+    auto server = lua->env<fb::game::server>("server");
+    auto ch     = lua->touserdata<fb::game::character>(1);
     if (ch == nullptr)
         return 0;
+
     auto                       type = static_cast<uint8_t>(lua->tointeger(2, 0));
     std::array<std::string, 8> strings;
     const char*                default_str = "-";
@@ -3647,8 +3725,18 @@ int builtin::character::builtin_unknown_4D(lua_State* L)
     {
         strings[i] = lua->tostring(static_cast<int>(3 + i), default_str);
     }
-    ch->send(fb::protocol::game::response::unknown_4D(type, strings));
-    return 0;
+
+    auto weak     = ch->weak_from_this_as<fb::game::character>();
+    auto builder  = lua->new_co_builder(*server);
+    builder.weak  = weak;
+    builder.yield = [=]() -> async::task<void> {
+        ch->send(fb::protocol::game::response::unknown_4D(type, strings));
+        co_return;
+    };
+    builder.resume = []() -> async::task<int> {
+        co_return 0;
+    };
+    return builder.run();
 }
 
 int builtin::character::builtin_holyday_screen(lua_State* L)
@@ -3657,7 +3745,8 @@ int builtin::character::builtin_holyday_screen(lua_State* L)
     if (lua == nullptr)
         return 0;
 
-    auto ch = lua->touserdata<fb::game::character>(1);
+    auto server = lua->env<fb::game::server>("server");
+    auto ch     = lua->touserdata<fb::game::character>(1);
     if (ch == nullptr)
         return 0;
 
@@ -3676,9 +3765,20 @@ int builtin::character::builtin_holyday_screen(lua_State* L)
             y = static_cast<uint8_t>(lua->tointeger(-1));
         lua->pop(1);
     }
-    auto hair = ch->look();
-    ch->send(fb::protocol::game::response::holyday_screen(screen, hair, direction, fb::model::point<uint8_t>(x, y)));
-    return 0;
+
+    auto weak     = ch->weak_from_this_as<fb::game::character>();
+    auto builder  = lua->new_co_builder(*server);
+    builder.weak  = weak;
+    builder.yield = [=]() -> async::task<void> {
+        auto hair = ch->look();
+        ch->send(
+            fb::protocol::game::response::holyday_screen(screen, hair, direction, fb::model::point<uint8_t>(x, y)));
+        co_return;
+    };
+    builder.resume = []() -> async::task<int> {
+        co_return 0;
+    };
+    return builder.run();
 }
 
 int builtin::character::builtin_unknown_35(lua_State* L)
@@ -3686,11 +3786,23 @@ int builtin::character::builtin_unknown_35(lua_State* L)
     auto lua = fb::lua::get(L);
     if (lua == nullptr)
         return 0;
-    auto ch = lua->touserdata<fb::game::character>(1);
+
+    auto server = lua->env<fb::game::server>("server");
+    auto ch     = lua->touserdata<fb::game::character>(1);
     if (ch == nullptr)
         return 0;
-    ch->send(fb::protocol::game::response::unknown_35());
-    return 0;
+
+    auto weak     = ch->weak_from_this_as<fb::game::character>();
+    auto builder  = lua->new_co_builder(*server);
+    builder.weak  = weak;
+    builder.yield = [=]() -> async::task<void> {
+        ch->send(fb::protocol::game::response::unknown_35());
+        co_return;
+    };
+    builder.resume = []() -> async::task<int> {
+        co_return 0;
+    };
+    return builder.run();
 }
 
 int builtin::character::builtin_delay(lua_State* L)
@@ -3724,13 +3836,20 @@ int builtin::character::builtin_delay(lua_State* L)
     if (model == nullptr)
         return 0;
 
-    auto value = lua->tointeger(3);
-    auto spell = ch->spells.find(*model);
-    if (spell == nullptr)
-        return 0;
-
-    spell->delay(value);
-    return 0;
+    auto value    = lua->tointeger(3);
+    auto weak     = ch->weak_from_this_as<fb::game::character>();
+    auto builder  = lua->new_co_builder(*server);
+    builder.weak  = weak;
+    builder.yield = [=]() -> async::task<void> {
+        auto spell = ch->spells.find(*model);
+        if (spell != nullptr)
+            spell->delay(value);
+        co_return;
+    };
+    builder.resume = []() -> async::task<int> {
+        co_return 0;
+    };
+    return builder.run();
 }
 
 int builtin::character::builtin_birthday(lua_State* L)
@@ -3752,8 +3871,7 @@ int builtin::character::builtin_birthday(lua_State* L)
         auto builder  = lua->new_co_builder(*server);
         builder.weak  = weak;
         builder.yield = [=]() -> async::task<void> {
-            if (ch->birthday().has_value())
-                *result = ch->birthday().value();
+            *result = ch->birthday();
             co_return;
         };
         builder.resume = [=]() -> async::task<int> {
@@ -3789,7 +3907,6 @@ int builtin::character::builtin_active(lua_State* L)
         return 0;
 
     auto server = lua->env<fb::game::server>("server");
-    auto argc   = lua->argc();
     auto ch     = lua->touserdata<fb::game::character>(1);
     if (ch == nullptr)
         return 0;
@@ -3798,12 +3915,19 @@ int builtin::character::builtin_active(lua_State* L)
     if (item == nullptr)
         return 0;
 
-    auto slot = ch->items.index(item);
-    if (slot == 0xFF)
-        return 0;
-
-    ch->items.active(slot);
-    return 0;
+    auto weak     = ch->weak_from_this_as<fb::game::character>();
+    auto builder  = lua->new_co_builder(*server);
+    builder.weak  = weak;
+    builder.yield = [=]() -> async::task<void> {
+        auto slot = ch->items.index(item);
+        if (slot != 0xFF)
+            ch->items.active(slot);
+        co_return;
+    };
+    builder.resume = []() -> async::task<int> {
+        co_return 0;
+    };
+    return builder.run();
 }
 
 int builtin::character::builtin_super_hide(lua_State* L)
@@ -4032,8 +4156,10 @@ int fb::game::builtin::character::builtin_dialog(lua_State* L)
     auto button_prev = lua->toboolean(4, false);
     auto button_next = lua->toboolean(5, false);
 
-    auto builder = server->threads.new_builder(ch->weak_from_this_as<fb::game::character>());
-    builder.func = [=](auto& thread) -> async::task<void> {
+    auto weak     = ch->weak_from_this_as<fb::game::character>();
+    auto builder  = lua->new_co_builder(*server);
+    builder.weak  = weak;
+    builder.yield = [=]() -> async::task<void> {
         if (obj != nullptr)
             ch->listener.on_dialog(*ch, *obj, message, button_prev, button_next, oid);
         else if (model != nullptr)
@@ -4047,9 +4173,7 @@ int fb::game::builtin::character::builtin_dialog(lua_State* L)
         ch->dialog = lua;
         co_return;
     };
-    std::ignore = builder.dispatch();
-
-    return lua->yield(1);
+    return builder.run();
 }
 
 int fb::game::builtin::character::builtin_list(lua_State* L)
@@ -4137,8 +4261,10 @@ int fb::game::builtin::character::builtin_list(lua_State* L)
         menus.push_back(lua->tostring(-1));
     }
 
-    auto builder = server->threads.new_builder(ch->weak_from_this_as<fb::game::character>());
-    builder.func = [=](auto& thread) -> async::task<void> {
+    auto weak     = ch->weak_from_this_as<fb::game::character>();
+    auto builder  = lua->new_co_builder(*server);
+    builder.weak  = weak;
+    builder.yield = [=]() -> async::task<void> {
         if (appearance != nullptr)
             ch->listener
                 .on_dialog(*ch, std::unique_ptr<fb::game::appearance>(appearance), message, menus, button_prev, oid);
@@ -4153,9 +4279,7 @@ int fb::game::builtin::character::builtin_list(lua_State* L)
         ch->dialog = lua;
         co_return;
     };
-    std::ignore = builder.dispatch();
-
-    return lua->yield(1);
+    return builder.run();
 }
 
 int fb::game::builtin::character::builtin_input(lua_State* L)
@@ -4190,6 +4314,9 @@ int fb::game::builtin::character::builtin_input(lua_State* L)
 
     auto message = lua->tostring(3);
     auto argc    = lua->argc();
+    auto weak    = ch->weak_from_this_as<fb::game::character>();
+    auto builder = lua->new_co_builder(*server);
+    builder.weak = weak;
     if (argc > 3)
     {
         auto message_top = lua->tostring(4);
@@ -4197,8 +4324,7 @@ int fb::game::builtin::character::builtin_input(lua_State* L)
         auto maxlen      = (uint8_t)lua->tointeger(6, 0xFF);
         auto prev        = lua->toboolean(7, false);
 
-        auto builder = server->threads.new_builder(ch->weak_from_this_as<fb::game::character>());
-        builder.func = [=](auto& thread) -> async::task<void> {
+        builder.yield = [=]() -> async::task<void> {
             ch->listener.on_dialog(*ch, *model, message, message_top, message_bot, maxlen, prev, oid);
             if (ch->dialog != nullptr)
                 ch->dialog->release();
@@ -4206,12 +4332,10 @@ int fb::game::builtin::character::builtin_input(lua_State* L)
             ch->dialog = lua;
             co_return;
         };
-        std::ignore = builder.dispatch();
     }
     else
     {
-        auto builder = server->threads.new_builder(ch->weak_from_this_as<fb::game::character>());
-        builder.func = [=](auto& thread) -> async::task<void> {
+        builder.yield = [=]() -> async::task<void> {
             if (obj != nullptr)
                 ch->listener.on_dialog(*ch, *obj, message, oid);
             else
@@ -4223,10 +4347,8 @@ int fb::game::builtin::character::builtin_input(lua_State* L)
             ch->dialog = lua;
             co_return;
         };
-        std::ignore = builder.dispatch();
     }
-
-    return lua->yield(1);
+    return builder.run();
 }
 
 int fb::game::builtin::character::builtin_menu(lua_State* L)
@@ -4270,8 +4392,10 @@ int fb::game::builtin::character::builtin_menu(lua_State* L)
         menus.push_back(lua->tostring(-1));
     }
 
-    auto builder = server->threads.new_builder(ch->weak_from_this_as<fb::game::character>());
-    builder.func = [=](auto& thread) -> async::task<void> {
+    auto weak     = ch->weak_from_this_as<fb::game::character>();
+    auto builder  = lua->new_co_builder(*server);
+    builder.weak  = weak;
+    builder.yield = [=]() -> async::task<void> {
         if (obj != nullptr)
             ch->listener.on_dialog(*ch, *obj, message, menus, oid);
         else
@@ -4283,9 +4407,7 @@ int fb::game::builtin::character::builtin_menu(lua_State* L)
         ch->dialog = lua;
         co_return;
     };
-    std::ignore = builder.dispatch();
-
-    return lua->yield(1);
+    return builder.run();
 }
 
 int fb::game::builtin::character::builtin_slot(lua_State* L)
@@ -4328,8 +4450,10 @@ int fb::game::builtin::character::builtin_slot(lua_State* L)
         lua->pop(1);
     }
 
-    auto builder = server->threads.new_builder(ch->weak_from_this_as<fb::game::character>());
-    builder.func = [=](auto& thread) -> async::task<void> {
+    auto weak     = ch->weak_from_this_as<fb::game::character>();
+    auto builder  = lua->new_co_builder(*server);
+    builder.weak  = weak;
+    builder.yield = [=]() -> async::task<void> {
         if (obj != nullptr)
             ch->listener.on_dialog(*ch, *obj, message, slots, oid);
         else
@@ -4341,9 +4465,7 @@ int fb::game::builtin::character::builtin_slot(lua_State* L)
         ch->dialog = lua;
         co_return;
     };
-    std::ignore = builder.dispatch();
-
-    return lua->yield(1);
+    return builder.run();
 }
 
 int fb::game::builtin::character::builtin_rezen_force(lua_State* L)
@@ -4357,17 +4479,28 @@ int fb::game::builtin::character::builtin_rezen_force(lua_State* L)
     if (ch == nullptr)
         return 0;
 
-    auto map = ch->map();
-    if (map == nullptr)
-        return 0;
-
     auto is_global = lua->toboolean(2, false);
-    if (is_global)
-        server->maps.rezen_force();
-    else
-        map->rezen_force();
 
-    return 0;
+    auto weak     = ch->weak_from_this_as<fb::game::character>();
+    auto builder  = lua->new_co_builder(*server);
+    builder.weak  = weak;
+    builder.yield = [=]() -> async::task<void> {
+        if (is_global)
+        {
+            server->maps.rezen_force();
+        }
+        else
+        {
+            auto map = ch->map();
+            if (map != nullptr)
+                map->rezen_force();
+        }
+        co_return;
+    };
+    builder.resume = []() -> async::task<int> {
+        co_return 0;
+    };
+    return builder.run();
 }
 
 int fb::game::builtin::character::builtin_quest(lua_State* L)
@@ -4387,13 +4520,24 @@ int fb::game::builtin::character::builtin_quest(lua_State* L)
         return 1;
     }
 
-    auto id = lua->tointeger(2);
-    if (ch->quests.contains(id) == false)
-        lua->pushnil();
-    else
-        lua->pushobject(ch->quests[id]);
-
-    return 1;
+    auto id       = lua->tointeger(2);
+    auto weak     = ch->weak_from_this_as<fb::game::character>();
+    auto result   = std::make_shared<std::shared_ptr<fb::game::quest>>();
+    auto builder  = lua->new_co_builder(*server);
+    builder.weak  = weak;
+    builder.yield = [=]() -> async::task<void> {
+        if (ch->quests.contains(id))
+            *result = ch->quests[id];
+        co_return;
+    };
+    builder.resume = [=]() -> async::task<int> {
+        if (*result == nullptr)
+            lua->pushnil();
+        else
+            lua->pushobject(*result);
+        co_return 1;
+    };
+    return builder.run();
 }
 
 int fb::game::builtin::character::builtin_start_quest(lua_State* L)
@@ -4407,20 +4551,24 @@ int fb::game::builtin::character::builtin_start_quest(lua_State* L)
     if (ch == nullptr)
         return 0;
 
-    auto id = lua->tointeger(2);
-
-    if (ch->quests.start(id) == false)
-    {
-        lua->pushnil();
-        return 1;
-    }
-
-    if (ch->quests.contains(id) == false)
-        lua->pushnil();
-    else
-        lua->pushobject(ch->quests[id]);
-
-    return 1;
+    auto id       = lua->tointeger(2);
+    auto weak     = ch->weak_from_this_as<fb::game::character>();
+    auto result   = std::make_shared<std::shared_ptr<fb::game::quest>>();
+    auto builder  = lua->new_co_builder(*server);
+    builder.weak  = weak;
+    builder.yield = [=]() -> async::task<void> {
+        if (ch->quests.start(id) && ch->quests.contains(id))
+            *result = ch->quests[id];
+        co_return;
+    };
+    builder.resume = [=]() -> async::task<int> {
+        if (*result == nullptr)
+            lua->pushnil();
+        else
+            lua->pushobject(*result);
+        co_return 1;
+    };
+    return builder.run();
 }
 
 int fb::game::builtin::character::builtin_remove_quest(lua_State* L)
@@ -4440,23 +4588,38 @@ int fb::game::builtin::character::builtin_remove_quest(lua_State* L)
         return 1;
     }
 
+    std::optional<uint32_t> quest_id;
     if (lua->is_number(2))
     {
-        auto id = lua->tointeger(2);
-        lua->pushboolean(ch->quests.remove(id));
-        return 1;
+        quest_id = static_cast<uint32_t>(lua->tointeger(2));
     }
     else if (lua->is_userdata<fb::game::quest>(2))
     {
         auto quest = lua->touserdata<fb::game::quest>(2);
-        lua->pushboolean(ch->quests.remove(quest->id));
-        return 1;
+        if (quest != nullptr)
+            quest_id = quest->id;
     }
-    else
+
+    if (quest_id.has_value() == false)
     {
         lua->pushboolean(false);
         return 1;
     }
+
+    auto id       = quest_id.value();
+    auto weak     = ch->weak_from_this_as<fb::game::character>();
+    auto result   = std::make_shared<bool>();
+    auto builder  = lua->new_co_builder(*server);
+    builder.weak  = weak;
+    builder.yield = [=]() -> async::task<void> {
+        *result = ch->quests.remove(id);
+        co_return;
+    };
+    builder.resume = [=]() -> async::task<int> {
+        lua->pushboolean(*result);
+        co_return 1;
+    };
+    return builder.run();
 }
 
 int fb::game::builtin::character::builtin_reward(lua_State* L)
@@ -4465,7 +4628,8 @@ int fb::game::builtin::character::builtin_reward(lua_State* L)
     if (lua == nullptr)
         return 0;
 
-    auto ch = lua->touserdata<fb::game::character>(1);
+    auto server = lua->env<fb::game::server>("server");
+    auto ch     = lua->touserdata<fb::game::character>(1);
     if (ch == nullptr)
         return 0;
 
@@ -4482,9 +4646,20 @@ int fb::game::builtin::character::builtin_reward(lua_State* L)
         return 1;
     }
 
-    auto& reward = table::reward[reward_id];
-    lua->pushboolean(ch->reward(reward.dsl));
-    return 1;
+    auto reward_dsl = table::reward[reward_id].dsl;
+    auto weak       = ch->weak_from_this_as<fb::game::character>();
+    auto result     = std::make_shared<bool>();
+    auto builder    = lua->new_co_builder(*server);
+    builder.weak    = weak;
+    builder.yield   = [=]() -> async::task<void> {
+        *result = ch->reward(reward_dsl);
+        co_return;
+    };
+    builder.resume = [=]() -> async::task<int> {
+        lua->pushboolean(*result);
+        co_return 1;
+    };
+    return builder.run();
 }
 
 int builtin::character::builtin_send_system_mail(lua_State* L)
@@ -4517,24 +4692,16 @@ int builtin::character::builtin_send_system_mail(lua_State* L)
     if (argc >= 3 && lua->is_nil(3) == false && lua->is_string(3))
         expire_date = lua->tostring(3);
 
-    static auto fn = [](fb::game::server*                 server,
-                        fb::lua::context*                 lua,
-                        uint32_t                          sender,
-                        const std::string&                title,
-                        const std::string&                contents,
-                        const std::optional<std::string>& expire_date) -> async::task<void> {
-        auto success = co_await server->system_mail.create(sender, title, contents, expire_date);
-
-        co_await lua->switching();
-        lua->pushboolean(success);
-        lua->resume(1);
+    auto success  = std::make_shared<bool>(false);
+    auto builder  = lua->new_co_builder(*server);
+    builder.yield = [=]() -> async::task<void> {
+        *success = co_await server->system_mail.create(ch->id, title, contents, expire_date);
     };
-
-    async::awaitable_then(fn(server, lua, ch->id, title, contents, expire_date), [lua](auto result) {
-        result();
-    });
-
-    return lua->yield(1);
+    builder.resume = [=]() -> async::task<int> {
+        lua->pushboolean(*success);
+        co_return 1;
+    };
+    return builder.run();
 }
 
 int builtin::character::builtin_storage_entries(lua_State* L)
@@ -4679,40 +4846,39 @@ int builtin::character::builtin_marketplace_list(lua_State* L)
     auto price        = static_cast<uint32_t>(lua->tointeger(4));
     auto expire_hours = static_cast<uint16_t>(lua->tointeger(5, 72));
 
-    static auto fn = [](fb::lua::context*                  lua,
-                        fb::game::server*                  server,
-                        std::weak_ptr<fb::game::character> weak,
-                        uint8_t                            item_index,
-                        uint16_t                           count,
-                        uint32_t                           price,
-                        uint16_t                           expire_hours) -> async::task<void> {
+    auto weak           = ch->weak_from_this_as<fb::game::character>();
+    auto error          = std::make_shared<std::optional<std::string>>();
+    auto listing_holder = std::make_shared<std::optional<fb::game::marketplace::listing>>();
+    auto builder        = lua->new_co_builder(*server);
+    builder.weak        = weak;
+    builder.yield       = [=]() -> async::task<void> {
         try
         {
             auto shared = weak.lock();
             if (shared == nullptr)
                 throw std::runtime_error("Character is not alive");
 
-            auto listing = co_await shared->marketplace.list(item_index, count, price, expire_hours);
-            lua->pushnil(); // No error
-            listing.to_lua(lua);
+            listing_holder->emplace(co_await shared->marketplace.list(item_index, count, price, expire_hours));
         }
         catch (std::exception& e)
         {
-            lua->pushstring(e.what());
+            *error = e.what();
+        }
+    };
+    builder.resume = [=]() -> async::task<int> {
+        if (error->has_value())
+        {
+            lua->pushstring(error->value().c_str());
             lua->pushnil();
         }
-
-        lua->resume(2);
+        else
+        {
+            lua->pushnil();
+            listing_holder->value().to_lua(lua);
+        }
+        co_return 2;
     };
-
-    auto weak    = ch->weak_from_this_as<fb::game::character>();
-    auto builder = server->threads.new_builder(weak);
-    builder.func = [=](auto&) -> async::task<void> {
-        co_await fn(lua, server, weak, item_index, count, price, expire_hours);
-    };
-    builder.enqueue();
-
-    return lua->yield(2);
+    return builder.run();
 }
 
 int builtin::character::builtin_marketplace_cancel(lua_State* L)
@@ -4740,37 +4906,39 @@ int builtin::character::builtin_marketplace_cancel(lua_State* L)
         return 1;
     }
 
-    static auto fn = [](fb::lua::context*                  lua,
-                        fb::game::server*                  server,
-                        std::weak_ptr<fb::game::character> weak,
-                        const std::string&                 listing_id) -> async::task<void> {
+    auto weak     = ch->weak_from_this_as<fb::game::character>();
+    auto error    = std::make_shared<std::optional<std::string>>();
+    auto success  = std::make_shared<std::optional<bool>>();
+    auto builder  = lua->new_co_builder(*server);
+    builder.weak  = weak;
+    builder.yield = [=]() -> async::task<void> {
         try
         {
             auto shared = weak.lock();
             if (shared == nullptr)
                 throw std::runtime_error("Character is not alive");
 
-            auto success = co_await shared->marketplace.cancel(listing_id);
-            lua->pushnil(); // No error
-            lua->pushboolean(success);
+            *success = co_await shared->marketplace.cancel(listing_id);
         }
         catch (std::exception& e)
         {
-            lua->pushstring(e.what());
+            *error = e.what();
+        }
+    };
+    builder.resume = [=]() -> async::task<int> {
+        if (error->has_value())
+        {
+            lua->pushstring(error->value().c_str());
             lua->pushnil();
         }
-
-        lua->resume(2);
+        else
+        {
+            lua->pushnil();
+            lua->pushboolean(success->value_or(false));
+        }
+        co_return 2;
     };
-
-    auto weak    = ch->weak_from_this_as<fb::game::character>();
-    auto builder = server->threads.new_builder(weak);
-    builder.func = [=](auto&) -> async::task<void> {
-        co_await fn(lua, server, weak, listing_id);
-    };
-    builder.enqueue();
-
-    return lua->yield(2);
+    return builder.run();
 }
 
 int builtin::character::builtin_marketplace_purchase(lua_State* L)
@@ -4805,38 +4973,40 @@ int builtin::character::builtin_marketplace_purchase(lua_State* L)
         return 1;
     }
 
-    static auto fn = [](fb::lua::context*                  lua,
-                        fb::game::server*                  server,
-                        std::weak_ptr<fb::game::character> weak,
-                        const std::string&                 listing_id,
-                        uint16_t                           purchase_count) -> async::task<void> {
+    auto weak           = ch->weak_from_this_as<fb::game::character>();
+    auto error          = std::make_shared<std::optional<std::string>>();
+    auto listing_holder = std::make_shared<std::optional<fb::game::marketplace::listing>>();
+    auto builder        = lua->new_co_builder(*server);
+    builder.weak        = weak;
+    builder.yield       = [=]() -> async::task<void> {
         try
         {
             auto shared = weak.lock();
             if (shared == nullptr)
                 throw std::runtime_error("Character is not alive");
 
-            auto listing = co_await shared->marketplace.purchase(listing_id, purchase_count);
-            lua->pushnil(); // No error
-            listing.to_lua(lua);
+            listing_holder->emplace(
+                co_await shared->marketplace.purchase(listing_id, static_cast<uint16_t>(purchase_count)));
         }
         catch (std::exception& e)
         {
-            lua->pushstring(e.what());
+            *error = e.what();
+        }
+    };
+    builder.resume = [=]() -> async::task<int> {
+        if (error->has_value())
+        {
+            lua->pushstring(error->value().c_str());
             lua->pushnil();
         }
-
-        lua->resume(2);
+        else
+        {
+            lua->pushnil();
+            listing_holder->value().to_lua(lua);
+        }
+        co_return 2;
     };
-
-    auto weak    = ch->weak_from_this_as<fb::game::character>();
-    auto builder = server->threads.new_builder(weak);
-    builder.func = [=](auto&) -> async::task<void> {
-        co_await fn(lua, server, weak, listing_id, static_cast<uint16_t>(purchase_count));
-    };
-    builder.enqueue();
-
-    return lua->yield(2);
+    return builder.run();
 }
 
 int builtin::character::builtin_marketplace_search(lua_State* L)
@@ -4908,60 +5078,59 @@ int builtin::character::builtin_marketplace_search(lua_State* L)
     }
     lua->pop(1);
 
-    static auto fn = [](fb::lua::context*                  lua,
-                        fb::game::server*                  server,
-                        std::weak_ptr<fb::game::character> weak,
-                        marketplace::search_option         option) -> async::task<void> {
+    auto weak          = ch->weak_from_this_as<fb::game::character>();
+    auto error         = std::make_shared<std::optional<std::string>>();
+    auto result_holder = std::make_shared<std::optional<fb::game::marketplace::search_result>>();
+    auto builder       = lua->new_co_builder(*server);
+    builder.weak       = weak;
+    builder.yield      = [=]() -> async::task<void> {
         try
         {
             auto shared = weak.lock();
             if (shared == nullptr)
                 throw std::runtime_error("Character is not alive");
 
-            auto result = co_await shared->marketplace.search(option);
-            lua->pushnil(); // No error
-
-            // Create result table
-            lua->new_table();
-
-            // Push listings array
-            lua_pushstring(*lua, "listings");
-            lua->new_table();
-            for (size_t i = 0; i < result.listings.size(); i++)
-            {
-                lua->pushinteger(i + 1);
-                result.listings[i].to_lua(lua);
-                lua_settable(*lua, -3);
-            }
-            lua_settable(*lua, -3);
-
-            // Push total_count
-            lua_pushstring(*lua, "total_count");
-            lua->pushinteger(result.total_count);
-            lua_settable(*lua, -3);
-
-            // Push page
-            lua_pushstring(*lua, "page");
-            lua->pushinteger(result.page);
-            lua_settable(*lua, -3);
+            result_holder->emplace(co_await shared->marketplace.search(option));
         }
         catch (std::exception& e)
         {
-            lua->pushstring(e.what());
+            *error = e.what();
+        }
+    };
+    builder.resume = [=]() -> async::task<int> {
+        if (error->has_value())
+        {
+            lua->pushstring(error->value().c_str());
             lua->pushnil();
+            co_return 2;
         }
 
-        lua->resume(2);
-    };
+        lua->pushnil();
+        lua->new_table();
 
-    auto weak    = ch->weak_from_this_as<fb::game::character>();
-    auto builder = server->threads.new_builder(weak);
-    builder.func = [=](auto&) -> async::task<void> {
-        co_await fn(lua, server, weak, option);
-    };
-    builder.enqueue();
+        const auto& result = result_holder->value();
 
-    return lua->yield(2);
+        lua_pushstring(*lua, "listings");
+        lua->new_table();
+        for (size_t i = 0; i < result.listings.size(); i++)
+        {
+            lua->pushinteger(i + 1);
+            result.listings[i].to_lua(lua);
+            lua_settable(*lua, -3);
+        }
+        lua_settable(*lua, -3);
+
+        lua_pushstring(*lua, "total_count");
+        lua->pushinteger(result.total_count);
+        lua_settable(*lua, -3);
+
+        lua_pushstring(*lua, "page");
+        lua->pushinteger(result.page);
+        lua_settable(*lua, -3);
+
+        co_return 2;
+    };
+    return builder.run();
 }
 
 int builtin::character::builtin_marketplace_get_listings(lua_State* L)
@@ -5001,45 +5170,44 @@ int builtin::character::builtin_marketplace_get_listings(lua_State* L)
         return 1;
     }
 
-    static auto fn = [](fb::lua::context*                  lua,
-                        fb::game::server*                  server,
-                        std::weak_ptr<fb::game::character> weak,
-                        std::vector<std::string>           listing_ids) -> async::task<void> {
+    auto weak            = ch->weak_from_this_as<fb::game::character>();
+    auto error           = std::make_shared<std::optional<std::string>>();
+    auto listings_holder = std::make_shared<std::vector<fb::game::marketplace::listing>>();
+    auto builder         = lua->new_co_builder(*server);
+    builder.weak         = weak;
+    builder.yield        = [=]() -> async::task<void> {
         try
         {
             auto shared = weak.lock();
             if (shared == nullptr)
                 throw std::runtime_error("Character is not alive");
 
-            auto listings = co_await shared->marketplace.get_listings(listing_ids);
-            lua->pushnil(); // No error
-
-            // Create listings array
-            lua->new_table();
-            for (size_t i = 0; i < listings.size(); i++)
-            {
-                lua->pushinteger(i + 1);
-                listings[i].to_lua(lua);
-                lua_settable(*lua, -3);
-            }
+            *listings_holder = co_await shared->marketplace.get_listings(listing_ids);
         }
         catch (std::exception& e)
         {
-            lua->pushstring(e.what());
+            *error = e.what();
+        }
+    };
+    builder.resume = [=]() -> async::task<int> {
+        if (error->has_value())
+        {
+            lua->pushstring(error->value().c_str());
             lua->pushnil();
+            co_return 2;
         }
 
-        lua->resume(2);
+        lua->pushnil();
+        lua->new_table();
+        for (size_t i = 0; i < listings_holder->size(); i++)
+        {
+            lua->pushinteger(i + 1);
+            (*listings_holder)[i].to_lua(lua);
+            lua_settable(*lua, -3);
+        }
+        co_return 2;
     };
-
-    auto weak    = ch->weak_from_this_as<fb::game::character>();
-    auto builder = server->threads.new_builder(weak);
-    builder.func = [=](auto&) -> async::task<void> {
-        co_await fn(lua, server, weak, listing_ids);
-    };
-    builder.enqueue();
-
-    return lua->yield(2);
+    return builder.run();
 }
 
 int builtin::character::builtin_marketplace_pending_listings(lua_State* L)
@@ -5111,36 +5279,56 @@ int builtin::character::builtin_marriage(lua_State* L)
     if (lua == nullptr)
         return 0;
 
-    auto ch = lua->touserdata<fb::game::character>(1);
+    auto server = lua->env<fb::game::server>("server");
+    auto ch     = lua->touserdata<fb::game::character>(1);
     if (ch == nullptr)
         return 0;
 
-    ch->assert_thread();
+    struct marriage_snapshot
+    {
+        bool                    married     = false;
+        bool                    can_remarry = false;
+        std::optional<uint32_t> spouse_id;
+        std::string             spouse_name;
+        uint32_t                divorce_count = 0;
+    };
 
-    const auto& m           = ch->marriage();
-    bool        married     = m.spouse_id.has_value();
-    bool        can_remarry = !married && (ch->server.now() >= m.remarriage_after);
-
-    lua->new_table();
-    lua_pushstring(*lua, "married");
-    lua->pushboolean(married);
-    lua_settable(*lua, -3);
-    lua_pushstring(*lua, "spouse_id");
-    if (m.spouse_id.has_value())
-        lua->pushinteger(static_cast<int64_t>(m.spouse_id.value()));
-    else
-        lua->pushnil();
-    lua_settable(*lua, -3);
-    lua_pushstring(*lua, "spouse_name");
-    lua->pushstring(m.spouse_name);
-    lua_settable(*lua, -3);
-    lua_pushstring(*lua, "divorce_count");
-    lua->pushinteger(static_cast<int64_t>(m.divorce_count));
-    lua_settable(*lua, -3);
-    lua_pushstring(*lua, "can_remarry");
-    lua->pushboolean(can_remarry);
-    lua_settable(*lua, -3);
-    return 1;
+    auto weak     = ch->weak_from_this_as<fb::game::character>();
+    auto snapshot = std::make_shared<marriage_snapshot>();
+    auto builder  = lua->new_co_builder(*server);
+    builder.weak  = weak;
+    builder.yield = [=]() -> async::task<void> {
+        const auto& m           = ch->marriage();
+        snapshot->married       = m.spouse_id.has_value();
+        snapshot->can_remarry   = !snapshot->married && (ch->server.now() >= m.remarriage_after);
+        snapshot->spouse_id     = m.spouse_id;
+        snapshot->spouse_name   = m.spouse_name;
+        snapshot->divorce_count = m.divorce_count;
+        co_return;
+    };
+    builder.resume = [=]() -> async::task<int> {
+        lua->new_table();
+        lua_pushstring(*lua, "married");
+        lua->pushboolean(snapshot->married);
+        lua_settable(*lua, -3);
+        lua_pushstring(*lua, "spouse_id");
+        if (snapshot->spouse_id.has_value())
+            lua->pushinteger(static_cast<int64_t>(snapshot->spouse_id.value()));
+        else
+            lua->pushnil();
+        lua_settable(*lua, -3);
+        lua_pushstring(*lua, "spouse_name");
+        lua->pushstring(snapshot->spouse_name);
+        lua_settable(*lua, -3);
+        lua_pushstring(*lua, "divorce_count");
+        lua->pushinteger(static_cast<int64_t>(snapshot->divorce_count));
+        lua_settable(*lua, -3);
+        lua_pushstring(*lua, "can_remarry");
+        lua->pushboolean(snapshot->can_remarry);
+        lua_settable(*lua, -3);
+        co_return 1;
+    };
+    return builder.run();
 }
 
 int builtin::character::builtin_marry(lua_State* L)
@@ -5158,41 +5346,50 @@ int builtin::character::builtin_marry(lua_State* L)
         return 1;
     }
 
-    me->assert_thread();
+    auto weak     = me->weak_from_this_as<fb::game::character>();
+    auto error    = std::make_shared<std::optional<std::string>>();
+    auto builder  = lua->new_co_builder(*server);
+    builder.weak  = weak;
+    builder.yield = [=]() -> async::task<void> {
+        const auto& my_m  = me->marriage();
+        const auto& tar_m = target->marriage();
 
-    const auto& my_m  = me->marriage();
-    const auto& tar_m = target->marriage();
+        if (my_m.spouse_id.has_value())
+        {
+            *error = "already married";
+            co_return;
+        }
+        if (tar_m.spouse_id.has_value())
+        {
+            *error = "target already married";
+            co_return;
+        }
+        if (server->now() < my_m.remarriage_after)
+        {
+            *error = "remarriage cooldown";
+            co_return;
+        }
+        if (server->now() < tar_m.remarriage_after)
+        {
+            *error = "target remarriage cooldown";
+            co_return;
+        }
 
-    if (my_m.spouse_id.has_value())
-    {
-        lua->pushstring("already married");
-        return 1;
-    }
-    if (tar_m.spouse_id.has_value())
-    {
-        lua->pushstring("target already married");
-        return 1;
-    }
-    if (server->now() < my_m.remarriage_after)
-    {
-        lua->pushstring("remarriage cooldown");
-        return 1;
-    }
-    if (server->now() < tar_m.remarriage_after)
-    {
-        lua->pushstring("target remarriage cooldown");
-        return 1;
-    }
+        fb::game::marriage new_me(server->now(), target->id, target->name(), my_m.divorce_count);
+        fb::game::marriage new_tar(server->now(), me->id, me->name(), tar_m.divorce_count);
 
-    fb::game::marriage new_me(server->now(), target->id, target->name(), my_m.divorce_count);
-
-    fb::game::marriage new_tar(server->now(), me->id, me->name(), tar_m.divorce_count);
-
-    me->marriage(new_me);
-    target->marriage(new_tar);
-
-    lua->pushnil();
-    return 1;
+        me->marriage(new_me);
+        target->marriage(new_tar);
+        co_return;
+    };
+    builder.resume = [=]() -> async::task<int> {
+        if (error->has_value())
+            lua->pushstring(error->value());
+        else
+            lua->pushnil();
+        co_return 1;
+    };
+    return builder.run();
 }
 
 int builtin::character::builtin_divorce(lua_State* L)
@@ -5209,52 +5406,61 @@ int builtin::character::builtin_divorce(lua_State* L)
         return 1;
     }
 
-    me->assert_thread();
-
-    const auto& m = me->marriage();
-    if (!m.spouse_id.has_value())
-    {
-        lua->pushstring("not married");
-        return 1;
-    }
-
-    fb::game::character::container::character_ptr_t spouse;
-    {
-        auto guard = server->characters.enter_read();
-        spouse     = guard.value().find(m.spouse_id.value());
-    }
-
-    if (spouse == nullptr)
-    {
-        lua->pushstring("spouse not online");
-        return 1;
-    }
-
-    auto now = server->now();
-    now.add_days(7);
-
-    fb::game::marriage new_me(now, std::nullopt, "", m.divorce_count + 1);
-
-    fb::game::marriage new_tar(now, std::nullopt, "", spouse->marriage().divorce_count + 1);
-
-    me->marriage(new_me);
-    if (spouse->thread() == me->thread())
-    {
-        spouse->marriage(new_tar);
-    }
-    else
-    {
-        auto spouse_weak = spouse->weak_from_this_as<fb::game::character>();
-        auto builder     = server->threads.new_builder(spouse_weak);
-        builder.func     = [spouse_weak, new_tar](auto&) -> async::task<void> {
-            auto spouse_shared = spouse_weak.lock();
-            if (spouse_shared != nullptr)
-                spouse_shared->marriage(new_tar);
+    auto weak     = me->weak_from_this_as<fb::game::character>();
+    auto error    = std::make_shared<std::optional<std::string>>();
+    auto builder  = lua->new_co_builder(*server);
+    builder.weak  = weak;
+    builder.yield = [=]() -> async::task<void> {
+        const auto& m = me->marriage();
+        if (!m.spouse_id.has_value())
+        {
+            *error = "not married";
             co_return;
-        };
-        builder.enqueue();
-    }
+        }
 
-    lua->pushnil();
-    return 1;
+        fb::game::character::container::character_ptr_t spouse;
+        {
+            auto guard = server->characters.enter_read();
+            spouse     = guard.value().find(m.spouse_id.value());
+        }
+
+        if (spouse == nullptr)
+        {
+            *error = "spouse not online";
+            co_return;
+        }
+
+        auto now = server->now();
+        now.add_days(7);
+
+        fb::game::marriage new_me(now, std::nullopt, "", m.divorce_count + 1);
+        fb::game::marriage new_tar(now, std::nullopt, "", spouse->marriage().divorce_count + 1);
+
+        me->marriage(new_me);
+        if (spouse->thread() == me->thread())
+        {
+            spouse->marriage(new_tar);
+        }
+        else
+        {
+            auto spouse_weak = spouse->weak_from_this_as<fb::game::character>();
+            auto cross       = server->threads.new_builder(spouse_weak);
+            cross.func       = [spouse_weak, new_tar](auto&) -> async::task<void> {
+                auto spouse_shared = spouse_weak.lock();
+                if (spouse_shared != nullptr)
+                    spouse_shared->marriage(new_tar);
+                co_return;
+            };
+            cross.enqueue();
+        }
+        co_return;
+    };
+    builder.resume = [=]() -> async::task<int> {
+        if (error->has_value())
+            lua->pushstring(error->value());
+        else
+            lua->pushnil();
+        co_return 1;
+    };
+    return builder.run();
 }

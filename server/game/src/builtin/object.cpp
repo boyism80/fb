@@ -50,11 +50,19 @@ int builtin::object::builtin_model(lua_State* L)
     if (obj == nullptr)
         return 0;
 
-    obj->assert_thread();
-
-    auto& model = obj->based();
-    lua->pushobject(model);
-    return 1;
+    auto model_ptr = std::make_shared<const fb::model::object*>();
+    auto weak      = obj->weak_from_this_as<fb::game::object>();
+    auto builder   = lua->new_co_builder(*server);
+    builder.weak   = weak;
+    builder.yield  = [=]() -> async::task<void> {
+        *model_ptr = &obj->based();
+        co_return;
+    };
+    builder.resume = [=]() -> async::task<int> {
+        lua->pushobject(**model_ptr);
+        co_return 1;
+    };
+    return builder.run();
 }
 
 int builtin::object::builtin_oid(lua_State* L)
@@ -68,10 +76,19 @@ int builtin::object::builtin_oid(lua_State* L)
     if (obj == nullptr)
         return 0;
 
-    obj->assert_thread();
-
-    lua->pushinteger(obj->oid());
-    return 1;
+    auto oid      = std::make_shared<uint32_t>();
+    auto weak     = obj->weak_from_this_as<fb::game::object>();
+    auto builder  = lua->new_co_builder(*server);
+    builder.weak  = weak;
+    builder.yield = [=]() -> async::task<void> {
+        *oid = obj->oid();
+        co_return;
+    };
+    builder.resume = [=]() -> async::task<int> {
+        lua->pushinteger(*oid);
+        co_return 1;
+    };
+    return builder.run();
 }
 
 int builtin::object::builtin_eq(lua_State* L)
@@ -81,19 +98,27 @@ int builtin::object::builtin_eq(lua_State* L)
         return 0;
 
     auto server = lua->env<fb::game::server>("server");
-    auto argc   = lua->argc();
     auto me     = lua->touserdata<fb::game::object>(1);
     if (me == nullptr)
         return 0;
-    me->assert_thread();
 
     auto you = lua->touserdata<fb::game::object>(2);
     if (you == nullptr)
         return 0;
-    you->assert_thread();
 
-    lua->pushboolean(me->oid() == you->oid());
-    return 1;
+    auto result   = std::make_shared<bool>();
+    auto weak     = me->weak_from_this_as<fb::game::object>();
+    auto builder  = lua->new_co_builder(*server);
+    builder.weak  = weak;
+    builder.yield = [=]() -> async::task<void> {
+        *result = me->oid() == you->oid();
+        co_return;
+    };
+    builder.resume = [=]() -> async::task<int> {
+        lua->pushboolean(*result);
+        co_return 1;
+    };
+    return builder.run();
 }
 
 int builtin::object::builtin_tostring(lua_State* L)
@@ -106,10 +131,20 @@ int builtin::object::builtin_tostring(lua_State* L)
     auto me     = lua->touserdata<fb::game::object>(1);
     if (me == nullptr)
         return 0;
-    me->assert_thread();
 
-    lua->pushstring(me->name());
-    return 1;
+    auto name     = std::make_shared<std::string>();
+    auto weak     = me->weak_from_this_as<fb::game::object>();
+    auto builder  = lua->new_co_builder(*server);
+    builder.weak  = weak;
+    builder.yield = [=]() -> async::task<void> {
+        *name = me->name();
+        co_return;
+    };
+    builder.resume = [=]() -> async::task<int> {
+        lua->pushstring(*name);
+        co_return 1;
+    };
+    return builder.run();
 }
 
 int builtin::object::builtin_destroy(lua_State* L)
@@ -147,10 +182,19 @@ int builtin::object::builtin_name(lua_State* L)
     if (obj == nullptr)
         return 0;
 
-    obj->assert_thread();
-
-    lua->pushstring(obj->name());
-    return 1;
+    auto name     = std::make_shared<std::string>();
+    auto weak     = obj->weak_from_this_as<fb::game::object>();
+    auto builder  = lua->new_co_builder(*server);
+    builder.weak  = weak;
+    builder.yield = [=]() -> async::task<void> {
+        *name = obj->name();
+        co_return;
+    };
+    builder.resume = [=]() -> async::task<int> {
+        lua->pushstring(*name);
+        co_return 1;
+    };
+    return builder.run();
 }
 
 int builtin::object::builtin_sound(lua_State* L)
@@ -374,15 +418,28 @@ int builtin::object::builtin_buff(lua_State* L)
 
     auto seconds = (uint32_t)lua->tointeger(3);
     auto caster  = lua->touserdata<fb::game::object>(4);
-    auto buff    = obj->buffs.push_back(*model, seconds, caster);
-    if (buff == nullptr)
-    {
-        lua->pushnil();
-        return 1;
-    }
 
-    obj->send(fb::protocol::game::response::spell_buff(*buff));
-    return 1;
+    auto buff_holder = std::make_shared<std::shared_ptr<fb::game::buff>>();
+    auto weak        = obj->weak_from_this_as<fb::game::object>();
+    auto builder     = lua->new_co_builder(*server);
+    builder.weak     = weak;
+    builder.yield    = [=]() -> async::task<void> {
+        auto buff = obj->buffs.push_back(*model, seconds, caster);
+        if (buff != nullptr)
+        {
+            obj->send(fb::protocol::game::response::spell_buff(*buff));
+            *buff_holder = buff;
+        }
+        co_return;
+    };
+    builder.resume = [=]() -> async::task<int> {
+        if (*buff_holder == nullptr)
+            lua->pushnil();
+        else
+            lua->pushobject(*buff_holder);
+        co_return 1;
+    };
+    return builder.run();
 }
 
 int builtin::object::builtin_unbuff(lua_State* L)
@@ -396,39 +453,61 @@ int builtin::object::builtin_unbuff(lua_State* L)
     if (obj == nullptr)
         return 0;
 
-    obj->assert_thread();
+    enum class unbuff_mode
+    {
+        NONE,
+        BY_NAME,
+        BY_BUFF,
+        BY_SPELL,
+    };
+
+    auto mode     = unbuff_mode::NONE;
+    auto name     = std::string();
+    auto spell_id = uint32_t(0);
+    auto result   = std::make_shared<bool>(false);
+    auto weak     = obj->weak_from_this_as<fb::game::object>();
+    auto builder  = lua->new_co_builder(*server);
 
     if (lua->is_string(2))
     {
-        auto name  = lua->tostring(2);
-        auto model = table::spell.name2spell(name);
-        if (model == nullptr)
-            lua->pushboolean(false);
-        else
-            lua->pushboolean(obj->buffs.remove(*model));
+        mode = unbuff_mode::BY_NAME;
+        name = lua->tostring(2);
     }
     else if (lua->is_userdata<fb::game::buff>(2))
     {
         auto buff = lua->touserdata<fb::game::buff>(2);
         if (buff == nullptr)
             return 0;
-
-        lua->pushboolean(obj->buffs.remove(buff->model.id));
+        mode     = unbuff_mode::BY_BUFF;
+        spell_id = buff->model.id;
     }
     else if (lua->is_userdata<fb::model::spell>(2))
     {
         auto model = lua->touserdata<fb::model::spell>(2);
         if (model == nullptr)
             return 0;
-
-        lua->pushboolean(obj->buffs.remove(model->id));
-    }
-    else
-    {
-        lua->pushboolean(false);
+        mode     = unbuff_mode::BY_SPELL;
+        spell_id = model->id;
     }
 
-    return 1;
+    builder.weak  = weak;
+    builder.yield = [=]() -> async::task<void> {
+        if (mode == unbuff_mode::BY_NAME)
+        {
+            auto model = table::spell.name2spell(name);
+            *result    = model != nullptr && obj->buffs.remove(*model);
+        }
+        else if (mode == unbuff_mode::BY_BUFF || mode == unbuff_mode::BY_SPELL)
+        {
+            *result = obj->buffs.remove(spell_id);
+        }
+        co_return;
+    };
+    builder.resume = [=]() -> async::task<int> {
+        lua->pushboolean(*result);
+        co_return 1;
+    };
+    return builder.run();
 }
 
 int builtin::object::builtin_isbuff(lua_State* L)
@@ -442,54 +521,71 @@ int builtin::object::builtin_isbuff(lua_State* L)
     if (obj == nullptr)
         return 0;
 
-    obj->assert_thread();
+    struct buff_check
+    {
+        enum class type_t
+        {
+            NAME,
+            BUFF,
+            SPELL,
+        } type;
+        std::string name;
+        uint32_t    spell_id = 0;
+    };
 
-    auto argc = lua->argc();
+    auto checks = std::vector<buff_check>();
+    auto argc   = lua->argc();
     for (int i = 1; i < argc; i++)
     {
         if (lua->is_string(i + 1))
         {
-            auto name  = lua->tostring(i + 1);
-            auto model = table::spell.name2spell(name);
-            if (model == nullptr)
-                continue;
-
-            if (obj->buffs.contains(*model) == false)
-                continue;
-
-            lua->pushboolean(true);
-            return 1;
+            checks.push_back({buff_check::type_t::NAME, lua->tostring(i + 1), 0});
         }
-
-        if (lua->is_userdata<fb::game::buff>(i + 1))
+        else if (lua->is_userdata<fb::game::buff>(i + 1))
         {
             auto buff = lua->touserdata<fb::game::buff>(i + 1);
             if (buff == nullptr)
                 continue;
-
-            if (obj->buffs.contains(buff->model.id) == false)
-                continue;
-
-            lua->pushboolean(true);
-            return 1;
+            checks.push_back({buff_check::type_t::BUFF, "", buff->model.id});
         }
-
-        if (lua->is_userdata<fb::model::spell>(i + 1))
+        else if (lua->is_userdata<fb::model::spell>(i + 1))
         {
             auto model = lua->touserdata<fb::model::spell>(i + 1);
             if (model == nullptr)
                 continue;
-
-            if (obj->buffs.contains(model->id) == false)
-                continue;
-
-            lua->pushboolean(true);
-            return 1;
+            checks.push_back({buff_check::type_t::SPELL, "", model->id});
         }
     }
 
-    lua->pushboolean(false);
-    return 1;
+    auto found    = std::make_shared<bool>(false);
+    auto weak     = obj->weak_from_this_as<fb::game::object>();
+    auto builder  = lua->new_co_builder(*server);
+    builder.weak  = weak;
+    builder.yield = [=]() -> async::task<void> {
+        for (const auto& check : checks)
+        {
+            if (check.type == buff_check::type_t::NAME)
+            {
+                auto model = table::spell.name2spell(check.name);
+                if (model != nullptr && obj->buffs.contains(*model))
+                {
+                    *found = true;
+                    break;
+                }
+            }
+            else if (obj->buffs.contains(check.spell_id))
+            {
+                *found = true;
+                break;
+            }
+        }
+        co_return;
+    };
+    builder.resume = [=]() -> async::task<int> {
+        lua->pushboolean(*found);
+        co_return 1;
+    };
+    return builder.run();
 }
 
 int builtin::object::builtin_effect(lua_State* L)
@@ -749,24 +845,30 @@ int builtin::object::builtin_mkitem(lua_State* L)
     if (obj == nullptr)
         return 0;
 
-    obj->assert_thread();
-
     auto name  = lua->tostring(2);
     auto model = table::item.name2item(name);
     if (model == nullptr)
     {
         lua->pushnil();
-    }
-    else
-    {
-        auto server = lua->env<fb::game::server>("server");
-        auto item   = model->make(*server);
-        item->map(obj->map(), obj->position());
-        lua->pushobject(item);
-        std::ignore = server->send(*item, fb::protocol::game::response::update(*item), fb::game::scope::PIVOT);
+        return 1;
     }
 
-    return 1;
+    auto item_holder = std::make_shared<std::shared_ptr<fb::game::item>>();
+    auto weak        = obj->weak_from_this_as<fb::game::object>();
+    auto builder     = lua->new_co_builder(*server);
+    builder.weak     = weak;
+    builder.yield    = [=]() -> async::task<void> {
+        auto item = model->make(*server);
+        item->map(obj->map(), obj->position());
+        std::ignore  = server->send(*item, fb::protocol::game::response::update(*item), fb::game::scope::PIVOT);
+        *item_holder = item;
+        co_return;
+    };
+    builder.resume = [=]() -> async::task<int> {
+        lua->pushobject(*item_holder);
+        co_return 1;
+    };
+    return builder.run();
 }
 
 int builtin::object::builtin_sight_in(lua_State* L)
@@ -776,25 +878,30 @@ int builtin::object::builtin_sight_in(lua_State* L)
         return 0;
 
     auto server = lua->env<fb::game::server>("server");
-    auto argc   = lua->argc();
     auto obj    = lua->touserdata<fb::game::object>(1);
     if (obj == nullptr)
         return 0;
 
-    obj->assert_thread();
-
-    auto filter = static_cast<OBJECT_TYPE>(lua->tointeger(2, (int)OBJECT_TYPE::OBJECT));
-
-    lua->new_table();
-    const auto& objects = obj->sight_in(filter);
-
-    for (int i = 0; i < objects.size(); i++)
-    {
-        lua->pushobject(objects[i]);
-        lua->rawseti(-2, uint64_t(i + 1));
-    }
-
-    return 1;
+    auto filter   = static_cast<OBJECT_TYPE>(lua->tointeger(2, (int)OBJECT_TYPE::OBJECT));
+    auto objects  = std::make_shared<std::vector<fb::game::object::object_ptr>>();
+    auto weak     = obj->weak_from_this_as<fb::game::object>();
+    auto builder  = lua->new_co_builder(*server);
+    builder.weak  = weak;
+    builder.yield = [=]() -> async::task<void> {
+        for (const auto& entry : obj->sight_in(filter))
+            objects->push_back(entry);
+        co_return;
+    };
+    builder.resume = [=]() -> async::task<int> {
+        lua->new_table();
+        for (size_t i = 0; i < objects->size(); i++)
+        {
+            lua->pushobject((*objects)[i]);
+            lua->rawseti(-2, static_cast<int64_t>(i + 1));
+        }
+        co_return 1;
+    };
+    return builder.run();
 }
 
 int builtin::object::builtin_nears(lua_State* L)
@@ -809,17 +916,22 @@ int builtin::object::builtin_nears(lua_State* L)
     if (obj == nullptr)
         return 0;
 
-    obj->assert_thread();
-    auto map = obj->map();
-    if (map == nullptr)
-        return 0;
-
-    auto visit  = std::set<uint32_t>();
     auto filter = static_cast<OBJECT_TYPE>(lua->tointeger(2, (int)OBJECT_TYPE::OBJECT));
+
+    struct nears_params
+    {
+        bool                              use_points = false;
+        std::vector<fb::model::point16_t> points;
+        int                               width  = -1;
+        int                               height = -1;
+        bool                              all    = true;
+    };
+
+    auto params = nears_params{};
     if (argc >= 3 && lua->is_table(3))
     {
-        auto size   = lua->rawlen(3);
-        auto points = std::vector<fb::model::point16_t>{};
+        params.use_points = true;
+        auto size         = lua->rawlen(3);
         for (int i = 0; i < size; i++)
         {
             lua->rawgeti(3, i + 1);
@@ -831,76 +943,76 @@ int builtin::object::builtin_nears(lua_State* L)
             lua->rawgeti(-1, 2);
             auto y = lua->tointeger(-1);
             lua->remove(-1);
-            points.push_back(fb::model::point16_t(x, y));
+            params.points.push_back(fb::model::point16_t(x, y));
 
             lua->remove(-1);
         }
-
-        auto all = lua->toboolean(4, true);
-        lua->new_table();
-        const auto& objects = obj->nears(filter);
-        for (int i = 0; i < objects.size(); i++)
-        {
-            auto matched = false;
-            for (auto& point : points)
-            {
-                if (objects[i]->position() == point)
-                {
-                    matched = true;
-                    break;
-                }
-            }
-
-            if (!matched)
-                continue;
-
-            if (!all)
-            {
-                auto index = map->index(objects[i]->position());
-                if (visit.contains(index))
-                    continue;
-
-                visit.insert(index);
-            }
-
-            lua->pushobject(objects[i]);
-            lua->rawseti(-2, uint64_t(i + 1));
-        }
+        params.all = lua->toboolean(4, true);
     }
     else
     {
-        auto width  = lua->tointeger(3, -1);
-        auto height = lua->tointeger(4, -1);
-        auto all    = lua->toboolean(5, true);
+        params.width  = lua->tointeger(3, -1);
+        params.height = lua->tointeger(4, -1);
+        params.all    = lua->toboolean(5, true);
+    }
 
-        lua->new_table();
-        const auto& objects = obj->nears(filter);
-        for (int i = 0; i < objects.size(); i++)
+    auto objects  = std::make_shared<std::vector<fb::game::object::object_ptr>>();
+    auto weak     = obj->weak_from_this_as<fb::game::object>();
+    auto builder  = lua->new_co_builder(*server);
+    builder.weak  = weak;
+    builder.yield = [=]() -> async::task<void> {
+        auto map = obj->map();
+        if (map == nullptr)
+            co_return;
+
+        auto        visit = std::set<uint32_t>();
+        const auto& nears = obj->nears(filter);
+        for (size_t i = 0; i < nears.size(); i++)
         {
-            if (width != -1 && height != -1)
+            if (params.use_points)
             {
-                if (objects[i]->x() < obj->x() - width || objects[i]->x() > obj->x() + width)
+                auto matched = false;
+                for (auto& point : params.points)
+                {
+                    if (nears[i]->position() == point)
+                    {
+                        matched = true;
+                        break;
+                    }
+                }
+                if (!matched)
                     continue;
-
-                if (objects[i]->y() < obj->y() - height || objects[i]->y() > obj->y() + height)
+            }
+            else if (params.width != -1 && params.height != -1)
+            {
+                if (nears[i]->x() < obj->x() - params.width || nears[i]->x() > obj->x() + params.width)
+                    continue;
+                if (nears[i]->y() < obj->y() - params.height || nears[i]->y() > obj->y() + params.height)
                     continue;
             }
 
-            if (!all)
+            if (!params.all)
             {
-                auto index = map->index(objects[i]->position());
+                auto index = map->index(nears[i]->position());
                 if (visit.contains(index))
                     continue;
-
                 visit.insert(index);
             }
 
-            lua->pushobject(objects[i]);
-            lua->rawseti(-2, uint64_t(i + 1));
+            objects->push_back(nears[i]);
         }
-    }
-
-    return 1;
+        co_return;
+    };
+    builder.resume = [=]() -> async::task<int> {
+        lua->new_table();
+        for (size_t i = 0; i < objects->size(); i++)
+        {
+            lua->pushobject((*objects)[i]);
+            lua->rawseti(-2, static_cast<int64_t>(i + 1));
+        }
+        co_return 1;
+    };
+    return builder.run();
 }
 
 int builtin::object::builtin_front(lua_State* L)
@@ -910,21 +1022,27 @@ int builtin::object::builtin_front(lua_State* L)
         return 0;
 
     auto server = lua->env<fb::game::server>("server");
-    auto argc   = lua->argc();
     auto obj    = lua->touserdata<fb::game::object>(1);
     if (obj == nullptr)
         return 0;
 
-    obj->assert_thread();
-
-    auto filter = lua->toenum(2, OBJECT_TYPE::OBJECT);
-    auto front  = obj->forward(filter);
-    if (front == nullptr)
-        lua->pushnil();
-    else
-        lua->pushobject(front);
-
-    return 1;
+    auto filter   = lua->toenum(2, OBJECT_TYPE::OBJECT);
+    auto front    = std::make_shared<fb::game::object::object_ptr>();
+    auto weak     = obj->weak_from_this_as<fb::game::object>();
+    auto builder  = lua->new_co_builder(*server);
+    builder.weak  = weak;
+    builder.yield = [=]() -> async::task<void> {
+        *front = obj->forward(filter);
+        co_return;
+    };
+    builder.resume = [=]() -> async::task<int> {
+        if (*front == nullptr)
+            lua->pushnil();
+        else
+            lua->pushobject(*front);
+        co_return 1;
+    };
+    return builder.run();
 }
 
 int builtin::object::builtin_is(lua_State* L)
@@ -962,20 +1080,26 @@ int builtin::object::builtin_thread(lua_State* L)
         return 0;
 
     auto server = lua->env<fb::game::server>("server");
-    auto argc   = lua->argc();
     auto obj    = lua->touserdata<fb::game::object>(1);
     if (obj == nullptr)
         return 0;
 
-    obj->assert_thread();
-
-    auto active_thread = obj->thread();
-    if (active_thread == nullptr)
-        lua->pushnil();
-    else
-        lua->pushobject(active_thread);
-
-    return 1;
+    auto thread_holder = std::make_shared<fb::thread*>();
+    auto weak          = obj->weak_from_this_as<fb::game::object>();
+    auto builder       = lua->new_co_builder(*server);
+    builder.weak       = weak;
+    builder.yield      = [=]() -> async::task<void> {
+        *thread_holder = obj->thread();
+        co_return;
+    };
+    builder.resume = [=]() -> async::task<int> {
+        if (*thread_holder == nullptr)
+            lua->pushnil();
+        else
+            lua->pushobject(*thread_holder);
+        co_return 1;
+    };
+    return builder.run();
 }
 
 int builtin::object::builtin_near(lua_State* L)
@@ -985,32 +1109,36 @@ int builtin::object::builtin_near(lua_State* L)
         return 0;
 
     auto server = lua->env<fb::game::server>("server");
-    auto argc   = lua->argc();
     auto obj    = lua->touserdata<fb::game::object>(1);
     if (obj == nullptr)
         return 0;
 
-    obj->assert_thread();
-    auto map = obj->map();
-    if (map == nullptr)
-    {
-        lua->pushboolean(false);
-        return 1;
-    }
+    auto you      = lua->touserdata<fb::game::object>(2);
+    auto found    = std::make_shared<bool>(false);
+    auto weak     = obj->weak_from_this_as<fb::game::object>();
+    auto builder  = lua->new_co_builder(*server);
+    builder.weak  = weak;
+    builder.yield = [=]() -> async::task<void> {
+        auto map = obj->map();
+        if (map == nullptr)
+            co_return;
 
-    auto you   = lua->touserdata<fb::game::object>(2);
-    auto nears = map->nears(obj->position());
-    auto found = false;
-    for (const auto& x : nears)
-    {
-        if (you == x)
+        auto nears = map->nears(obj->position());
+        for (const auto& x : nears)
         {
-            found = true;
-            break;
+            if (you == x)
+            {
+                *found = true;
+                break;
+            }
         }
-    }
-    lua->pushboolean(found);
-    return 1;
+        co_return;
+    };
+    builder.resume = [=]() -> async::task<int> {
+        lua->pushboolean(*found);
+        co_return 1;
+    };
+    return builder.run();
 }
 
 int builtin::object::builtin_buffs(lua_State* L)
@@ -1024,18 +1152,26 @@ int builtin::object::builtin_buffs(lua_State* L)
     if (obj == nullptr)
         return 0;
 
-    lua->new_table();
-    auto i = 0;
-    for (auto& [_, buff] : obj->buffs)
-    {
-        lua->pushinteger(i + 1);
-        lua->pushobject(buff);
-        lua_settable(L, -3);
-
-        i++;
-    }
-
-    return 1;
+    auto buffs    = std::make_shared<std::vector<std::shared_ptr<fb::game::buff>>>();
+    auto weak     = obj->weak_from_this_as<fb::game::object>();
+    auto builder  = lua->new_co_builder(*server);
+    builder.weak  = weak;
+    builder.yield = [=]() -> async::task<void> {
+        for (auto& [_, buff] : obj->buffs)
+            buffs->push_back(buff);
+        co_return;
+    };
+    builder.resume = [=]() -> async::task<int> {
+        lua->new_table();
+        for (size_t i = 0; i < buffs->size(); i++)
+        {
+            lua->pushinteger(static_cast<int>(i + 1));
+            lua->pushobject((*buffs)[i]);
+            lua_settable(L, -3);
+        }
+        co_return 1;
+    };
+    return builder.run();
 }
 
 int builtin::object::builtin_hidden(lua_State* L)
@@ -1053,8 +1189,19 @@ int builtin::object::builtin_hidden(lua_State* L)
     if (you == nullptr)
         return 0;
 
-    lua->pushboolean(me->hidden(*you));
-    return 1;
+    auto result   = std::make_shared<bool>();
+    auto weak     = me->weak_from_this_as<fb::game::object>();
+    auto builder  = lua->new_co_builder(*server);
+    builder.weak  = weak;
+    builder.yield = [=]() -> async::task<void> {
+        *result = me->hidden(*you);
+        co_return;
+    };
+    builder.resume = [=]() -> async::task<int> {
+        lua->pushboolean(*result);
+        co_return 1;
+    };
+    return builder.run();
 }
 
 int builtin::object::builtin_script(lua_State* L)
@@ -1132,10 +1279,22 @@ int builtin::object::builtin_appearance(lua_State* L)
     if (lua == nullptr)
         return 0;
 
-    auto obj = lua->touserdata<fb::game::object>(1);
+    auto server = lua->env<fb::game::server>("server");
+    auto obj    = lua->touserdata<fb::game::object>(1);
     if (obj == nullptr)
         return 0;
 
-    obj->appearance()->to_lua(lua);
-    return 1;
+    auto appearance_holder = std::make_shared<std::shared_ptr<fb::game::appearance>>();
+    auto weak              = obj->weak_from_this_as<fb::game::object>();
+    auto builder           = lua->new_co_builder(*server);
+    builder.weak           = weak;
+    builder.yield          = [=]() -> async::task<void> {
+        *appearance_holder = obj->appearance();
+        co_return;
+    };
+    builder.resume = [=]() -> async::task<int> {
+        (*appearance_holder)->to_lua(lua);
+        co_return 1;
+    };
+    return builder.run();
 }

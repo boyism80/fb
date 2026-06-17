@@ -148,8 +148,8 @@ async::task<void> clan::container::on_destroyed(uint32_t clan_id, std::string cl
         auto guard   = this->_server.characters.enter_write();
         guard.value().foreach_enqueue(
             [message](auto& ch) -> async::task<void> {
-                ch->message(message, MESSAGE_TYPE::NOTIFY);
                 ch->clan_reset();
+                ch->message(message, MESSAGE_TYPE::NOTIFY);
                 co_return;
             },
             members);

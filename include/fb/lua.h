@@ -561,11 +561,11 @@ public:
     private:
         explicit co_builder(context& lua, fb::async_executor& executor);
 
-        static async::task<int> run_pipeline(fb::async_executor&                                 executor,
-                                             std::optional<std::weak_ptr<fb::thread_switchable>> weak,
-                                             context*                                            lua_ptr,
-                                             std::function<async::task<void>()>                  yield_fn,
-                                             std::function<async::task<int>()>                   resume_fn);
+        static async::task<std::optional<int>> run_pipeline(fb::async_executor& executor,
+                                                            std::optional<std::weak_ptr<fb::thread_switchable>> weak,
+                                                            context*                                            lua_ptr,
+                                                            std::function<async::task<void>()> yield_fn,
+                                                            std::function<async::task<int>()>  resume_fn);
 
     public:
         int run();
