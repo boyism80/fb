@@ -5,7 +5,7 @@ REM Pinned refs — keep server/fb/Dockerfile ARG defaults in sync when bumping 
 set JSONCPP_REF=1.9.6
 set RABBITMQ_REF=v0.14.0
 set ZLIB_REF=v1.2.9
-set CPP_ASYNC_REF=v1.1.2
+set CPP_ASYNC_REF=v1.1.3
 set BOOST_REF=boost-1.84.0
 
 mkdir library 2>nul
