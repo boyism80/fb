@@ -450,32 +450,7 @@ async::task<bool> object::map(map_ptr map, std::optional<fb::model::point16_t> p
     this->assert_thread();
 
     if (map != nullptr && position.has_value() == false)
-    {
-        if (map->model.teleport.size() == 0)
-        {
-            co_return co_await this->map(map, fb::model::point16_t{0, 0}, std::move(options));
-        }
-
-        auto& dsl = map->model.teleport.at(random<uint32_t>(0, map->model.teleport.size() - 1));
-        switch (dsl.header)
-        {
-        case DSL::area:
-        {
-            auto params = fb::model::dsl::area(dsl.params);
-            auto x      = random<uint16_t>(params.left, params.right);
-            auto y      = random<uint16_t>(params.top, params.bottom);
-            co_return co_await this->map(map, fb::model::point16_t{x, y}, std::move(options));
-        }
-        break;
-
-        case DSL::point:
-        {
-            auto params = fb::model::dsl::point(dsl.params);
-            co_return co_await this->map(map, fb::model::point16_t{params.x, params.y}, std::move(options));
-        }
-        break;
-        }
-    }
+        position = map->model.spawn_position();
 
     auto  weak         = this->weak_from_this_as<object>();
     auto& context      = this->server;

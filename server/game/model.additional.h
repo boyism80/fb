@@ -280,7 +280,10 @@ public:                                                                   \
 #define DECLARE_MAP_EXTENSION \
                               \
 public:                       \
-    LUA_PROTOTYPE
+    LUA_PROTOTYPE             \
+                              \
+public:                       \
+    std::optional<point16_t> spawn_position() const;
 
 #define DECLARE_MAP_CONTAINER_EXTENSION \
                                         \

@@ -810,6 +810,9 @@ int builtin::object::builtin_map(lua_State* L)
     if (argc >= offset && lua->is_table(offset))
         parse_map_option_table(lua, offset, options, callback_holder, weak);
 
+    if (position.has_value() == false)
+        position = map->model.spawn_position();
+
     auto success_holder = std::make_shared<bool>(false);
     auto builder        = lua->new_co_builder(*server);
     builder.weak        = weak;

@@ -158,9 +158,16 @@ async::task<bool> character::map(std::shared_ptr<fb::game::map>      map,
 
     auto switch_process = (map != nullptr && map->active == false);
     auto new_map_id     = map != nullptr ? std::make_optional(map->model.id) : std::optional<uint32_t>();
-    auto new_position   = position.value_or(fb::model::point16_t{0, 0});
-    auto callback       = std::move(options.callback);
-    options.callback    = {};
+    auto new_position   = fb::model::point16_t();
+    if (position.has_value())
+        new_position = position.value();
+    else if (map != nullptr)
+        new_position = map->model.spawn_position().value_or(fb::model::point16_t{0, 0});
+    else
+        new_position = fb::model::point16_t{0, 0};
+
+    auto callback    = std::move(options.callback);
+    options.callback = {};
 
     if (switch_process)
     {
