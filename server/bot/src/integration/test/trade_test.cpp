@@ -9,6 +9,7 @@
 #include <functional>
 
 using namespace std::chrono_literals;
+using namespace fb;
 
 namespace fb::bot::integration {
 
