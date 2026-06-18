@@ -2,6 +2,7 @@
 #include <boost/program_options.hpp>
 #include <fb/console.h>
 #include <fb/config.h>
+#include <fb/encoding.h>
 #include <fb/model/model.h>
 #include <fb/bot/test_mode.h>
 #include <fb/bot/bot_controller_factory.h>
@@ -13,7 +14,7 @@ namespace po = boost::program_options;
 int main(int argc, char** argv)
 {
 #ifdef _WIN32
-    fb::model::option::decoding(cp949);
+    fb::model::option::decoding(fb::cp949);
 #endif
 
     // Parse command line options
