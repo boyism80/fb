@@ -3,6 +3,7 @@
 
 using namespace std::chrono_literals;
 using namespace fb::bot::integration;
+using namespace fb;
 
 emotion_test::emotion_test(game_bot_controller& controller) :
     bot_integration_test(controller, 1) // Use only 1 bot

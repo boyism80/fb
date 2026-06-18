@@ -22,10 +22,8 @@ int builtin::mob::builtin_target(lua_State* L)
     auto lua = fb::lua::get(L);
     if (lua == nullptr)
         return 0;
-
-    auto server = lua->env<fb::game::server>("server");
-    auto argc   = lua->argc();
-    auto mob    = lua->touserdata<fb::game::mob>(1);
+    auto argc = lua->argc();
+    auto mob  = lua->touserdata<fb::game::mob>(1);
     if (mob == nullptr)
         return 0;
 
@@ -33,7 +31,7 @@ int builtin::mob::builtin_target(lua_State* L)
     {
         auto target_holder = std::make_shared<std::shared_ptr<fb::game::life>>();
         auto weak          = mob->weak_from_this_as<fb::game::mob>();
-        auto builder       = lua->new_co_builder(*server);
+        auto builder       = lua->new_co_builder();
         builder.weak       = weak;
         builder.yield      = [=]() -> async::task<void> {
             *target_holder = mob->target();
@@ -52,7 +50,7 @@ int builtin::mob::builtin_target(lua_State* L)
     {
         auto target   = lua->touserdata<fb::game::life>(2);
         auto weak     = mob->weak_from_this_as<fb::game::mob>();
-        auto builder  = lua->new_co_builder(*server);
+        auto builder  = lua->new_co_builder();
         builder.weak  = weak;
         builder.yield = [=]() -> async::task<void> {
             mob->target(target);
@@ -70,10 +68,8 @@ int builtin::mob::builtin_oblivion(lua_State* L)
     auto lua = fb::lua::get(L);
     if (lua == nullptr)
         return 0;
-
-    auto server = lua->env<fb::game::server>("server");
-    auto argc   = lua->argc();
-    auto mob    = lua->touserdata<fb::game::mob>(1);
+    auto argc = lua->argc();
+    auto mob  = lua->touserdata<fb::game::mob>(1);
     if (mob == nullptr)
         return 0;
 
@@ -81,7 +77,7 @@ int builtin::mob::builtin_oblivion(lua_State* L)
     {
         auto oblivion_holder = std::make_shared<std::shared_ptr<fb::game::life>>();
         auto weak            = mob->weak_from_this_as<fb::game::mob>();
-        auto builder         = lua->new_co_builder(*server);
+        auto builder         = lua->new_co_builder();
         builder.weak         = weak;
         builder.yield        = [=]() -> async::task<void> {
             *oblivion_holder = mob->oblivion();
@@ -100,7 +96,7 @@ int builtin::mob::builtin_oblivion(lua_State* L)
     {
         auto oblivion = lua->touserdata<fb::game::life>(2);
         auto weak     = mob->weak_from_this_as<fb::game::mob>();
-        auto builder  = lua->new_co_builder(*server);
+        auto builder  = lua->new_co_builder();
         builder.weak  = weak;
         builder.yield = [=]() -> async::task<void> {
             mob->oblivion(oblivion);
@@ -118,16 +114,14 @@ int builtin::mob::builtin_owner(lua_State* L)
     auto lua = fb::lua::get(L);
     if (lua == nullptr)
         return 0;
-
-    auto server = lua->env<fb::game::server>("server");
-    auto argc   = lua->argc();
-    auto mob    = lua->touserdata<fb::game::mob>(1);
+    auto argc = lua->argc();
+    auto mob  = lua->touserdata<fb::game::mob>(1);
     if (mob == nullptr)
         return 0;
 
     auto owner_holder = std::make_shared<std::shared_ptr<fb::game::character>>();
     auto weak         = mob->weak_from_this_as<fb::game::mob>();
-    auto builder      = lua->new_co_builder(*server);
+    auto builder      = lua->new_co_builder();
     builder.weak      = weak;
     builder.yield     = [=]() -> async::task<void> {
         *owner_holder = mob->owner.lock();
@@ -148,16 +142,14 @@ int builtin::mob::builtin_items(lua_State* L)
     auto lua = fb::lua::get(L);
     if (lua == nullptr)
         return 0;
-
-    auto server = lua->env<fb::game::server>("server");
-    auto argc   = lua->argc();
-    auto mob    = lua->touserdata<fb::game::mob>(1);
+    auto argc = lua->argc();
+    auto mob  = lua->touserdata<fb::game::mob>(1);
     if (mob == nullptr)
         return 0;
 
     auto buffer   = std::make_shared<fb::game::mob::item_vector_t>();
     auto weak     = mob->weak_from_this_as<fb::game::mob>();
-    auto builder  = lua->new_co_builder(*server);
+    auto builder  = lua->new_co_builder();
     builder.weak  = weak;
     builder.yield = [=]() -> async::task<void> {
         *buffer = mob->items();

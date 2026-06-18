@@ -98,10 +98,8 @@ int builtin::clan::builtin_title(lua_State* L)
     auto lua = fb::lua::get(L);
     if (lua == nullptr)
         return 0;
-
-    auto server = lua->env<fb::game::server>("server");
-    auto argc   = lua->argc();
-    auto clan   = lua->touserdata<fb::game::clan>(1);
+    auto argc = lua->argc();
+    auto clan = lua->touserdata<fb::game::clan>(1);
     if (clan == nullptr)
         return 0;
 
@@ -124,16 +122,17 @@ int builtin::clan::builtin_title(lua_State* L)
         auto weak_ptr = changer->weak_from_this_as<fb::game::character>();
         auto title    = lua->tostring(3);
         auto error    = std::make_shared<std::optional<std::string>>();
-        auto builder  = lua->new_co_builder(*server);
+        auto builder  = lua->new_co_builder();
         builder.weak  = weak_ptr;
         builder.yield = [=]() -> async::task<void> {
+            auto& server = static_cast<fb::game::server&>(lua->executor);
             try
             {
                 auto shared_ptr = weak_ptr.lock();
                 if (shared_ptr == nullptr)
                     throw std::runtime_error("character is not alive");
 
-                co_await server->clans.set_title(*shared_ptr, title);
+                co_await server.clans.set_title(*shared_ptr, title);
             }
             catch (std::exception& e)
             {
@@ -160,10 +159,8 @@ int builtin::clan::builtin_join(lua_State* L)
     auto lua = fb::lua::get(L);
     if (lua == nullptr)
         return 0;
-
-    auto server = lua->env<fb::game::server>("server");
-    auto argc   = lua->argc();
-    auto clan   = lua->touserdata<fb::game::clan>(1);
+    auto argc = lua->argc();
+    auto clan = lua->touserdata<fb::game::clan>(1);
     if (clan == nullptr)
         return 0;
 
@@ -183,16 +180,17 @@ int builtin::clan::builtin_join(lua_State* L)
 
     auto weak_ptr = inviter->weak_from_this_as<fb::game::character>();
     auto error    = std::make_shared<std::optional<std::string>>();
-    auto builder  = lua->new_co_builder(*server);
+    auto builder  = lua->new_co_builder();
     builder.weak  = weak_ptr;
     builder.yield = [=]() -> async::task<void> {
+        auto& server = static_cast<fb::game::server&>(lua->executor);
         try
         {
             auto shared_ptr = weak_ptr.lock();
             if (shared_ptr == nullptr)
                 throw std::runtime_error("inviter character is not alive");
 
-            co_await server->clans.join_member(*shared_ptr, target_name);
+            co_await server.clans.join_member(*shared_ptr, target_name);
         }
         catch (std::exception& e)
         {
@@ -214,10 +212,8 @@ int builtin::clan::builtin_leave(lua_State* L)
     auto lua = fb::lua::get(L);
     if (lua == nullptr)
         return 0;
-
-    auto server = lua->env<fb::game::server>("server");
-    auto argc   = lua->argc();
-    auto clan   = lua->touserdata<fb::game::clan>(1);
+    auto argc = lua->argc();
+    auto clan = lua->touserdata<fb::game::clan>(1);
     if (clan == nullptr)
         return 0;
 
@@ -227,16 +223,17 @@ int builtin::clan::builtin_leave(lua_State* L)
 
     auto weak_ptr = leaver->weak_from_this_as<fb::game::character>();
     auto error    = std::make_shared<std::optional<std::string>>();
-    auto builder  = lua->new_co_builder(*server);
+    auto builder  = lua->new_co_builder();
     builder.weak  = weak_ptr;
     builder.yield = [=]() -> async::task<void> {
+        auto& server = static_cast<fb::game::server&>(lua->executor);
         try
         {
             auto shared_ptr = weak_ptr.lock();
             if (shared_ptr == nullptr)
                 throw std::runtime_error("leaver character is not alive");
 
-            co_await server->clans.leave_member(*shared_ptr);
+            co_await server.clans.leave_member(*shared_ptr);
         }
         catch (std::exception& e)
         {
@@ -258,10 +255,8 @@ int builtin::clan::builtin_kick(lua_State* L)
     auto lua = fb::lua::get(L);
     if (lua == nullptr)
         return 0;
-
-    auto server = lua->env<fb::game::server>("server");
-    auto argc   = lua->argc();
-    auto clan   = lua->touserdata<fb::game::clan>(1);
+    auto argc = lua->argc();
+    auto clan = lua->touserdata<fb::game::clan>(1);
     if (clan == nullptr)
         return 0;
 
@@ -273,16 +268,17 @@ int builtin::clan::builtin_kick(lua_State* L)
 
     auto weak_ptr = kicker->weak_from_this_as<fb::game::character>();
     auto error    = std::make_shared<std::optional<std::string>>();
-    auto builder  = lua->new_co_builder(*server);
+    auto builder  = lua->new_co_builder();
     builder.weak  = weak_ptr;
     builder.yield = [=]() -> async::task<void> {
+        auto& server = static_cast<fb::game::server&>(lua->executor);
         try
         {
             auto shared_ptr = weak_ptr.lock();
             if (shared_ptr == nullptr)
                 throw std::runtime_error("kicker character is not alive");
 
-            co_await server->clans.kick_member(*shared_ptr, target);
+            co_await server.clans.kick_member(*shared_ptr, target);
         }
         catch (std::exception& e)
         {
@@ -304,10 +300,8 @@ int builtin::clan::builtin_change_role(lua_State* L)
     auto lua = fb::lua::get(L);
     if (lua == nullptr)
         return 0;
-
-    auto server = lua->env<fb::game::server>("server");
-    auto argc   = lua->argc();
-    auto clan   = lua->touserdata<fb::game::clan>(1);
+    auto argc = lua->argc();
+    auto clan = lua->touserdata<fb::game::clan>(1);
     if (clan == nullptr)
     {
         lua->pushstring("clan is not found");
@@ -326,16 +320,17 @@ int builtin::clan::builtin_change_role(lua_State* L)
 
     auto weak_ptr = changer->weak_from_this_as<fb::game::character>();
     auto error    = std::make_shared<std::optional<std::string>>();
-    auto builder  = lua->new_co_builder(*server);
+    auto builder  = lua->new_co_builder();
     builder.weak  = weak_ptr;
     builder.yield = [=]() -> async::task<void> {
+        auto& server = static_cast<fb::game::server&>(lua->executor);
         try
         {
             auto shared_ptr = weak_ptr.lock();
             if (shared_ptr == nullptr)
                 throw std::runtime_error("character is not alive");
 
-            co_await server->clans.change_role(*shared_ptr, target, role);
+            co_await server.clans.change_role(*shared_ptr, target, role);
         }
         catch (std::exception& e)
         {
@@ -357,10 +352,8 @@ int builtin::clan::builtin_message(lua_State* L)
     auto lua = fb::lua::get(L);
     if (lua == nullptr)
         return 0;
-
-    auto server = lua->env<fb::game::server>("server");
-    auto argc   = lua->argc();
-    auto clan   = lua->touserdata<fb::game::clan>(1);
+    auto argc = lua->argc();
+    auto clan = lua->touserdata<fb::game::clan>(1);
     if (clan == nullptr)
         return 0;
 
@@ -369,11 +362,12 @@ int builtin::clan::builtin_message(lua_State* L)
     auto clan_id = clan->id();
 
     auto error    = std::make_shared<std::optional<std::string>>();
-    auto builder  = lua->new_co_builder(*server);
+    auto builder  = lua->new_co_builder();
     builder.yield = [=]() -> async::task<void> {
+        auto& server = static_cast<fb::game::server&>(lua->executor);
         try
         {
-            co_await server->clans.broadcast(clan_id, message, type);
+            co_await server.clans.broadcast(clan_id, message, type);
         }
         catch (std::exception& e)
         {

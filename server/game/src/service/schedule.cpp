@@ -53,7 +53,7 @@ async::task<void> service::schedule::poll()
 
         const auto& entry = table::schedule[schedule_index];
 
-        auto lua = fb::lua::new_context();
+        auto lua = this->server.lua.new_context();
         if (lua != nullptr)
         {
             try

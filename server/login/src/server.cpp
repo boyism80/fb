@@ -1,14 +1,19 @@
 #include <boost/asio/high_resolution_timer.hpp>
 #include <fb/login/server.h>
+#include <fb/login/exception.h>
 #include <fb/login/handler.h>
 #include <fb/log_collector.h>
+#include <fb/console.h>
+#include <fb/encoding.h>
+#include <fb/protocol/flatbuffer/protocol.h>
+#include <fb/model/loader.h>
 #include <format>
 
 using namespace fb::login;
 
 namespace internal_reqs = fb::protocol::internal::request;
 
-server::server(boost::asio::io_context& io_context, uint16_t port) :
+fb::login::server::server(boost::asio::io_context& io_context, uint16_t port) :
     fb::acceptor<session>(io_context, "LOGIN", port, fb::config<uint32_t>("http:max_concurrent", 500)),
     log(fb::config<std::string>("amqp:log:ip"),
         fb::config<uint16_t>("amqp:log:port"),
@@ -25,10 +30,10 @@ server::server(boost::asio::io_context& io_context, uint16_t port) :
     this->handler.protocol.bind<fb::login::handler::protocol::change_password>();
 }
 
-server::~server()
+fb::login::server::~server()
 { }
 
-bool server::decrypt_policy(uint8_t opcode) const
+bool fb::login::server::decrypt_policy(uint8_t opcode) const
 {
     switch (opcode)
     {
@@ -40,9 +45,23 @@ bool server::decrypt_policy(uint8_t opcode) const
     }
 }
 
-async::task<void> server::on_start()
+async::task<void> fb::login::server::on_start()
 {
+#ifdef _WIN32
+    fb::model::option::decoding(fb::cp949);
+    fb::model::option::encoding(fb::utf8);
+    flatbuffers::option::encoding(fb::utf8);
+    flatbuffers::option::decoding(fb::cp949);
+#endif
+
+    co_await fb::model::loader(*this).run();
+
     co_await fb::acceptor<session>::on_start();
+
+    fb::console::set_mode(fb::console::mode::plain);
+#ifdef _WIN32
+    fb::model::option::decoding(nullptr);
+#endif
 
     this->bind_timer<fb::login::handler::timer::heart_beat>(1s);
     this->handler.amqp.bind<fb::login::handler::amqp::shutdown>("fb.global"); // Shutdown: all servers
@@ -50,7 +69,7 @@ async::task<void> server::on_start()
         std::format("fb.{}.global", fb::config<uint32_t>("world")));
 }
 
-async::task<void> server::update_status()
+async::task<void> fb::login::server::update_status()
 {
     try
     {
@@ -70,12 +89,12 @@ async::task<void> server::update_status()
     }
 }
 
-const fb::protocol::login::response::terms_agreement& server::agreement() const
+const fb::protocol::login::response::terms_agreement& fb::login::server::agreement() const
 {
     return this->_agreement;
 }
 
-void server::assert_account(std::string_view id, std::string_view pw) const
+void fb::login::server::assert_account(std::string_view id, std::string_view pw) const
 {
     auto id_str    = std::string(id);
     auto cp949     = CP949(id_str);
@@ -99,24 +118,24 @@ void server::assert_account(std::string_view id, std::string_view pw) const
         throw pw_exception(_TEXT(MESSAGE_ACCOUNT_PASSWORD_SIZE));
 }
 
-async::task<void> server::on_accepted(fb::socket<session>& socket)
+async::task<void> fb::login::server::on_accepted(fb::socket<session>& socket)
 {
     auto data = std::make_shared<session>();
     socket.data(data);
     co_return;
 }
 
-async::task<bool> server::on_connected(fb::socket<session>& socket)
+async::task<bool> fb::login::server::on_connected(fb::socket<session>& socket)
 {
     co_return true;
 }
 
-async::task<bool> server::on_disconnected(fb::socket<session>& socket)
+async::task<bool> fb::login::server::on_disconnected(fb::socket<session>& socket)
 {
     co_return false;
 }
 
-void server::on_init_amqp(fb::amqp::socket& amqp)
+void fb::login::server::on_init_amqp(fb::amqp::socket& amqp)
 {
     this->handler.amqp.declare_queue("amq.direct", "fb.global"); // Shutdown: all servers
     this->handler.amqp.declare_queue("amq.direct", std::format("fb.{}.global", fb::config<uint32_t>("world")));

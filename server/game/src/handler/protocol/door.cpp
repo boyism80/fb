@@ -15,7 +15,7 @@ async::task<bool> door::handle(fb::socket<character>& session, game_reqs::door& 
     if (ch->inited() == false)
         co_return true;
 
-    auto lua = fb::lua::new_context();
+    auto lua = this->server.lua.new_context();
     if (lua == nullptr)
         co_return true;
 

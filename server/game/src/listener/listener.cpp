@@ -193,14 +193,14 @@ void listener_impl::on_hide(object& me, DESTROY_TYPE destroy_type)
     switch (destroy_type)
     {
     case DESTROY_TYPE::DEFAULT:
-        std::ignore = this->server.send(me, game_resp::hide(me), scope::PIVOT, true);
+        std::ignore = this->server.send(me, game_resp::hide(me), scope::PIVOT, {.with_me = false});
         break;
 
     case DESTROY_TYPE::DEAD:
         if (me.is(OBJECT_TYPE::LIFE) == false)
             throw std::runtime_error("object must be life type");
 
-        std::ignore = this->server.send(me, game_resp::die(static_cast<life&>(me)), scope::PIVOT, true);
+        std::ignore = this->server.send(me, game_resp::die(static_cast<life&>(me)), scope::PIVOT, {.with_me = false});
         break;
     }
 }
@@ -224,7 +224,7 @@ void listener_impl::on_hide(object& me, object& you, DESTROY_TYPE destroy_type)
 
 void listener_impl::on_move(object& me, const fb::model::point16_t& before)
 {
-    std::ignore = this->server.send(me, game_resp::move(me, before), scope::PIVOT, true);
+    std::ignore = this->server.send(me, game_resp::move(me, before), scope::PIVOT, {.with_me = false});
 }
 
 void listener_impl::on_buff(object& me, buff& buff)

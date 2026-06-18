@@ -3,6 +3,7 @@
 #include <fb/bot/integration/gateway_controller.h>
 
 using namespace std::chrono_literals;
+using namespace fb;
 
 namespace fb::bot::integration {
 

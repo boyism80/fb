@@ -48,9 +48,7 @@ int builtin::model::map::builtin_root(lua_State* L)
     auto lua = fb::lua::get(L);
     if (lua == nullptr)
         return 0;
-
-    auto server = lua->env<fb::game::server>("server");
-    auto map    = lua->touserdata<fb::model::map>(1);
+    auto map = lua->touserdata<fb::model::map>(1);
     if (map == nullptr)
         return 0;
 
@@ -70,9 +68,7 @@ int builtin::model::map::builtin_cardinal(lua_State* L)
     auto lua = fb::lua::get(L);
     if (lua == nullptr)
         return 0;
-
-    auto server = lua->env<fb::game::server>("server");
-    auto argc   = lua->argc();
+    auto argc = lua->argc();
     if (argc != 2)
     {
         lua->pushnil();
@@ -134,9 +130,7 @@ int builtin::model::map::builtin_revive(lua_State* L)
     auto lua = fb::lua::get(L);
     if (lua == nullptr)
         return 0;
-
-    auto server = lua->env<fb::game::server>("server");
-    auto map    = lua->touserdata<fb::model::map>(1);
+    auto map = lua->touserdata<fb::model::map>(1);
     if (map == nullptr)
         return 0;
 
@@ -162,9 +156,7 @@ int builtin::model::map::builtin_option(lua_State* L)
     auto lua = fb::lua::get(L);
     if (lua == nullptr)
         return 0;
-
-    auto server = lua->env<fb::game::server>("server");
-    auto map    = lua->touserdata<fb::model::map>(1);
+    auto map = lua->touserdata<fb::model::map>(1);
     if (map == nullptr)
         return 0;
 

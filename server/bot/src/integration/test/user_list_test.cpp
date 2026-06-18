@@ -3,6 +3,7 @@
 
 using namespace std::chrono_literals;
 using namespace fb::bot::integration;
+using namespace fb;
 
 namespace game_reqs = fb::protocol::game::request;
 namespace game_resp = fb::protocol::game::response;

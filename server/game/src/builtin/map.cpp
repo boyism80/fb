@@ -28,14 +28,13 @@ int builtin::map::builtin_model(lua_State* L)
     if (lua == nullptr)
         return 0;
 
-    auto server = lua->env<fb::game::server>("server");
-    auto map    = lua->touserdata<fb::game::map>(1);
+    auto map = lua->touserdata<fb::game::map>(1);
     if (map == nullptr)
         return 0;
 
     auto model_ptr = std::make_shared<const fb::model::map*>();
     auto weak      = map->weak_from_this_as<fb::game::map>();
-    auto builder   = lua->new_co_builder(*server);
+    auto builder   = lua->new_co_builder();
     builder.weak   = weak;
     builder.yield  = [=]() -> async::task<void> {
         *model_ptr = &map->model;
@@ -54,14 +53,13 @@ int builtin::map::builtin_width(lua_State* L)
     if (lua == nullptr)
         return 0;
 
-    auto server = lua->env<fb::game::server>("server");
-    auto map    = lua->touserdata<fb::game::map>(1);
+    auto map = lua->touserdata<fb::game::map>(1);
     if (map == nullptr)
         return 0;
 
     auto width    = std::make_shared<uint16_t>();
     auto weak     = map->weak_from_this_as<fb::game::map>();
-    auto builder  = lua->new_co_builder(*server);
+    auto builder  = lua->new_co_builder();
     builder.weak  = weak;
     builder.yield = [=]() -> async::task<void> {
         *width = map->width();
@@ -80,14 +78,13 @@ int builtin::map::builtin_height(lua_State* L)
     if (lua == nullptr)
         return 0;
 
-    auto server = lua->env<fb::game::server>("server");
-    auto map    = lua->touserdata<fb::game::map>(1);
+    auto map = lua->touserdata<fb::game::map>(1);
     if (map == nullptr)
         return 0;
 
     auto height   = std::make_shared<uint16_t>();
     auto weak     = map->weak_from_this_as<fb::game::map>();
-    auto builder  = lua->new_co_builder(*server);
+    auto builder  = lua->new_co_builder();
     builder.weak  = weak;
     builder.yield = [=]() -> async::task<void> {
         *height = map->height();
@@ -106,15 +103,14 @@ int builtin::map::builtin_area(lua_State* L)
     if (lua == nullptr)
         return 0;
 
-    auto server = lua->env<fb::game::server>("server");
-    auto map    = lua->touserdata<fb::game::map>(1);
+    auto map = lua->touserdata<fb::game::map>(1);
     if (map == nullptr)
         return 0;
 
     auto width    = std::make_shared<uint16_t>();
     auto height   = std::make_shared<uint16_t>();
     auto weak     = map->weak_from_this_as<fb::game::map>();
-    auto builder  = lua->new_co_builder(*server);
+    auto builder  = lua->new_co_builder();
     builder.weak  = weak;
     builder.yield = [=]() -> async::task<void> {
         *width  = map->width();
@@ -135,15 +131,14 @@ int builtin::map::builtin_objects(lua_State* L)
     if (lua == nullptr)
         return 0;
 
-    auto server = lua->env<fb::game::server>("server");
-    auto map    = lua->touserdata<fb::game::map>(1);
+    auto map = lua->touserdata<fb::game::map>(1);
     if (map == nullptr)
         return 0;
 
     auto type     = lua->toenum(2, OBJECT_TYPE::OBJECT);
     auto objects  = std::make_shared<std::vector<std::shared_ptr<object>>>();
     auto weak     = map->weak_from_this_as<fb::game::map>();
-    auto builder  = lua->new_co_builder(*server);
+    auto builder  = lua->new_co_builder();
     builder.weak  = weak;
     builder.yield = [=]() -> async::task<void> {
         for (auto& [_, obj] : map->objects)
@@ -171,8 +166,7 @@ int builtin::map::builtin_nears(lua_State* L)
     if (lua == nullptr)
         return 0;
 
-    auto server = lua->env<fb::game::server>("server");
-    auto map    = lua->touserdata<fb::game::map>(1);
+    auto map = lua->touserdata<fb::game::map>(1);
     if (map == nullptr)
         return 0;
 
@@ -189,7 +183,7 @@ int builtin::map::builtin_nears(lua_State* L)
     auto type     = lua->toenum(3, OBJECT_TYPE::OBJECT);
     auto nears    = std::make_shared<std::vector<std::shared_ptr<object>>>();
     auto weak     = map->weak_from_this_as<fb::game::map>();
-    auto builder  = lua->new_co_builder(*server);
+    auto builder  = lua->new_co_builder();
     builder.weak  = weak;
     builder.yield = [=]() -> async::task<void> {
         *nears = map->nears(fb::model::point16_t{x, y}, type);
@@ -213,8 +207,7 @@ int builtin::map::builtin_movable(lua_State* L)
     if (lua == nullptr)
         return 0;
 
-    auto server = lua->env<fb::game::server>("server");
-    auto map    = lua->touserdata<fb::game::map>(1);
+    auto map = lua->touserdata<fb::game::map>(1);
     if (map == nullptr)
         return 0;
 
@@ -254,10 +247,11 @@ int builtin::map::builtin_movable(lua_State* L)
     auto weak     = obj->weak_from_this_as<fb::game::object>();
     auto map_weak = map->weak_from_this_as<fb::game::map>();
     auto result   = std::make_shared<bool>(false);
-    auto builder  = lua->new_co_builder(*server);
+    auto builder  = lua->new_co_builder();
     builder.weak  = weak;
     builder.yield = [=]() -> async::task<void> {
-        auto role = ROLE::USER;
+        auto& server = static_cast<fb::game::server&>(lua->executor);
+        auto  role   = ROLE::USER;
         if (obj->is(OBJECT_TYPE::CHARACTER))
             role = static_cast<character*>(obj.get())->role();
 
@@ -265,7 +259,7 @@ int builtin::map::builtin_movable(lua_State* L)
         if (is_front)
             pos = obj->front_position(step);
 
-        co_await server->threads.switching(map_weak);
+        co_await server.threads.switching(map_weak);
 
         auto map_locked = map_weak.lock();
         if (map_locked == nullptr)
@@ -293,8 +287,7 @@ int builtin::map::builtin_door(lua_State* L)
     if (lua == nullptr)
         return 0;
 
-    auto server = lua->env<fb::game::server>("server");
-    auto map    = lua->touserdata<fb::game::map>(1);
+    auto map = lua->touserdata<fb::game::map>(1);
     if (map == nullptr)
         return 0;
 
@@ -304,7 +297,7 @@ int builtin::map::builtin_door(lua_State* L)
 
     auto door_ptr = std::make_shared<fb::game::door*>();
     auto weak     = map->weak_from_this_as<fb::game::map>();
-    auto builder  = lua->new_co_builder(*server);
+    auto builder  = lua->new_co_builder();
     builder.weak  = weak;
     builder.yield = [=]() -> async::task<void> {
         *door_ptr = map->doors.find(*ch);
@@ -326,14 +319,13 @@ int builtin::map::builtin_doors(lua_State* L)
     if (lua == nullptr)
         return 0;
 
-    auto server = lua->env<fb::game::server>("server");
-    auto map    = lua->touserdata<fb::game::map>(1);
+    auto map = lua->touserdata<fb::game::map>(1);
     if (map == nullptr)
         return 0;
 
     auto doors    = std::make_shared<std::vector<fb::game::door*>>();
     auto weak     = map->weak_from_this_as<fb::game::map>();
-    auto builder  = lua->new_co_builder(*server);
+    auto builder  = lua->new_co_builder();
     builder.weak  = weak;
     builder.yield = [=]() -> async::task<void> {
         for (const auto& entry : map->doors)
@@ -358,8 +350,7 @@ int builtin::map::builtin_contains(lua_State* L)
     if (lua == nullptr)
         return 0;
 
-    auto server = lua->env<fb::game::server>("server");
-    auto map    = lua->touserdata<fb::game::map>(1);
+    auto map = lua->touserdata<fb::game::map>(1);
     if (map == nullptr)
         return 0;
 
@@ -369,7 +360,7 @@ int builtin::map::builtin_contains(lua_State* L)
 
     auto result   = std::make_shared<bool>(false);
     auto weak     = map->weak_from_this_as<fb::game::map>();
-    auto builder  = lua->new_co_builder(*server);
+    auto builder  = lua->new_co_builder();
     builder.weak  = weak;
     builder.yield = [=]() -> async::task<void> {
         for (auto& [fd, obj] : map->objects)
@@ -395,8 +386,7 @@ int builtin::map::builtin_belows(lua_State* L)
     if (lua == nullptr)
         return 0;
 
-    auto server = lua->env<fb::game::server>("server");
-    auto map    = lua->touserdata<fb::game::map>(1);
+    auto map = lua->touserdata<fb::game::map>(1);
     if (map == nullptr)
         return 0;
 
@@ -405,7 +395,7 @@ int builtin::map::builtin_belows(lua_State* L)
     auto type     = lua->toenum(4, OBJECT_TYPE::OBJECT);
     auto belows   = std::make_shared<std::vector<std::shared_ptr<object>>>();
     auto weak     = map->weak_from_this_as<fb::game::map>();
-    auto builder  = lua->new_co_builder(*server);
+    auto builder  = lua->new_co_builder();
     builder.weak  = weak;
     builder.yield = [=]() -> async::task<void> {
         for (const auto& below : map->belows(fb::model::point16_t(x, y), type))
@@ -431,9 +421,8 @@ int builtin::map::builtin_tile(lua_State* L)
     if (lua == nullptr)
         return 0;
 
-    auto server = lua->env<fb::game::server>("server");
-    auto argc   = lua->argc();
-    auto map    = lua->touserdata<fb::game::map>(1);
+    auto argc = lua->argc();
+    auto map  = lua->touserdata<fb::game::map>(1);
     if (map == nullptr)
         return 0;
 
@@ -444,15 +433,16 @@ int builtin::map::builtin_tile(lua_State* L)
     {
         auto value    = lua->tointeger(4);
         auto weak     = map->weak_from_this_as<fb::game::map>();
-        auto builder  = lua->new_co_builder(*server);
+        auto builder  = lua->new_co_builder();
         builder.weak  = weak;
         builder.yield = [=]() -> async::task<void> {
-            auto tile = (*map)(x, y);
+            auto& server = static_cast<fb::game::server&>(lua->executor);
+            auto  tile   = (*map)(x, y);
             if (tile != nullptr)
             {
                 tile->object    = value;
                 const auto area = fb::model::area<uint16_t>(x, y, x + 1, y + 1);
-                server->maps.update_map_cache(map->model.id, area);
+                server.maps.update_map_cache(map->model.id, area);
             }
             co_return;
         };
@@ -473,7 +463,7 @@ int builtin::map::builtin_tile(lua_State* L)
 
         auto snapshot = std::make_shared<tile_snapshot>();
         auto weak     = map->weak_from_this_as<fb::game::map>();
-        auto builder  = lua->new_co_builder(*server);
+        auto builder  = lua->new_co_builder();
         builder.weak  = weak;
         builder.yield = [=]() -> async::task<void> {
             auto tile = (*map)(x, y);
@@ -504,9 +494,8 @@ int builtin::map::builtin_at(lua_State* L)
     if (lua == nullptr)
         return 0;
 
-    auto server = lua->env<fb::game::server>("server");
-    auto argc   = lua->argc();
-    auto map    = lua->touserdata<fb::game::map>(1);
+    auto argc = lua->argc();
+    auto map  = lua->touserdata<fb::game::map>(1);
     if (map == nullptr)
         return 0;
 
@@ -517,7 +506,7 @@ int builtin::map::builtin_at(lua_State* L)
 
     auto weak          = map->weak_from_this_as<fb::game::map>();
     auto result_holder = std::make_shared<std::shared_ptr<object>>(nullptr);
-    auto builder       = lua->new_co_builder(*server);
+    auto builder       = lua->new_co_builder();
     builder.weak       = weak;
     builder.yield      = [=]() -> async::task<void> {
         auto nears = map->nears(fb::model::point16_t{x, y}, type);
@@ -547,9 +536,8 @@ int builtin::map::builtin_block(lua_State* L)
     if (lua == nullptr)
         return 0;
 
-    auto server = lua->env<fb::game::server>("server");
-    auto argc   = lua->argc();
-    auto map    = lua->touserdata<fb::game::map>(1);
+    auto argc = lua->argc();
+    auto map  = lua->touserdata<fb::game::map>(1);
     if (map == nullptr)
         return 0;
 
@@ -559,7 +547,7 @@ int builtin::map::builtin_block(lua_State* L)
     auto block_opt = set_block ? lua->toboolean(4) : false;
     auto result    = std::make_shared<bool>();
     auto weak      = map->weak_from_this_as<fb::game::map>();
-    auto builder   = lua->new_co_builder(*server);
+    auto builder   = lua->new_co_builder();
     builder.weak   = weak;
     builder.yield  = [=]() -> async::task<void> {
         if (set_block)
@@ -581,8 +569,7 @@ int builtin::map::builtin_bulk_update(lua_State* L)
     if (lua == nullptr)
         return 0;
 
-    auto server = lua->env<fb::game::server>("server");
-    auto map    = lua->touserdata<fb::game::map>(1);
+    auto map = lua->touserdata<fb::game::map>(1);
     if (map == nullptr)
         return 0;
 
@@ -602,7 +589,7 @@ int builtin::map::builtin_bulk_update(lua_State* L)
     }
 
     auto weak     = map->weak_from_this_as<fb::game::map>();
-    auto builder  = lua->new_co_builder(*server);
+    auto builder  = lua->new_co_builder();
     builder.weak  = weak;
     builder.yield = [=]() -> async::task<void> {
         map->bulk_update(oids);

@@ -159,7 +159,7 @@ bool fb::game::equipment::active()
     owner->items.add(before);
 
     // Execute equipment activation script
-    auto lua = fb::lua::new_context();
+    auto lua = this->server.lua.new_context();
     if (lua != nullptr)
     {
 #if defined DEBUG || defined _DEBUG

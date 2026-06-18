@@ -1,7 +1,7 @@
 #include <fb/game/server.h>
 #include <fb/leak.h>
 #include <fb/mst.h>
-#include <fb/game/worker.h>
+#include <async/awaitable_get.h>
 #include <boost/program_options.hpp>
 #include <filesystem>
 #ifdef _WIN32
@@ -12,8 +12,6 @@
 #endif
 
 using namespace fb;
-using namespace fb::model::enum_value;
-using table = fb::model::table;
 
 int main(int argc, char* argv[])
 {
@@ -55,10 +53,6 @@ int main(int argc, char* argv[])
 #ifdef _WIN32
         ::set_console_icon(IDI_BARAM);
         ::SetConsoleTitle(CONSOLE_TITLE);
-        fb::model::option::decoding(cp949);
-        fb::model::option::encoding(utf8);
-        flatbuffers::option::encoding(utf8);
-        flatbuffers::option::decoding(cp949);
 #endif
 
         auto io_context = boost::asio::io_context{};
@@ -68,59 +62,7 @@ int main(int argc, char* argv[])
             server->exit();
         });
 
-        table::npc.hook.build = [](const Json::Value& json) -> fb::model::npc* {
-            auto clone    = json;
-            clone["look"] = clone["look"].asUInt() + 0x7FFF;
-            return fb::model::build<fb::model::npc*>(clone);
-        };
-
-        table::mob.hook.build = [](const Json::Value& json) -> fb::model::mob* {
-            auto clone    = json;
-            clone["look"] = clone["look"].asUInt() + 0x7FFF;
-            return fb::model::build<fb::model::mob*>(clone);
-        };
-
-        table::item.hook.build = [](const Json::Value& json) -> fb::model::item* {
-            auto clone    = json;
-            clone["look"] = clone["look"].asUInt() + 0xBFFF;
-
-            auto type = fb::model::build<ITEM_TYPE>(clone["type"]);
-            switch (type)
-            {
-            case ITEM_TYPE::STUFF:
-                return fb::model::build<fb::model::item*>(clone);
-            case ITEM_TYPE::CASH:
-                return fb::model::build<fb::model::cash*>(clone);
-            case ITEM_TYPE::CONSUME:
-                return fb::model::build<fb::model::consume*>(clone);
-            case ITEM_TYPE::WEAPON:
-                return fb::model::build<fb::model::weapon*>(clone);
-            case ITEM_TYPE::ARMOR:
-                return fb::model::build<fb::model::armor*>(clone);
-            case ITEM_TYPE::HELMET:
-                return fb::model::build<fb::model::helmet*>(clone);
-            case ITEM_TYPE::RING:
-                return fb::model::build<fb::model::ring*>(clone);
-            case ITEM_TYPE::SHIELD:
-                return fb::model::build<fb::model::shield*>(clone);
-            case ITEM_TYPE::AUXILIARY:
-                return fb::model::build<fb::model::auxiliary*>(clone);
-            case ITEM_TYPE::PACKAGE:
-                return fb::model::build<fb::model::pack*>(clone);
-            default:
-                return nullptr;
-            }
-        };
-        fb::model::loader().run();
-        fb::game::map_loader(*server).run();
-        fb::game::script_loader(*server).run();
-        fb::game::npc_spawner(*server).run();
-
-        fb::console::set_mode(fb::console::mode::plain);
-#ifdef _WIN32
-        fb::model::option::decoding(nullptr);
-#endif
-        server->run();
+        async::awaitable_get(server->run());
     }
     catch (std::exception& e)
     {

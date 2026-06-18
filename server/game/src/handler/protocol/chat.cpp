@@ -39,7 +39,7 @@ async::task<bool> chat::handle(fb::socket<character>& session, game_reqs::chat& 
 
 async::task<bool> chat::try_command(character* ch, std::weak_ptr<character> weak, game_reqs::chat& request)
 {
-    auto lua = fb::lua::new_context(nullptr, {.auto_release = false});
+    auto lua = this->server.lua.new_context(nullptr, {.auto_release = false});
     if (lua == nullptr)
         co_return false;
 

@@ -16,15 +16,13 @@ int builtin::spell::builtin_model(lua_State* L)
     auto lua = fb::lua::get(L);
     if (lua == nullptr)
         return 0;
-
-    auto server = lua->env<fb::game::server>("server");
-    auto spell  = lua->touserdata<fb::game::spell>(1);
+    auto spell = lua->touserdata<fb::game::spell>(1);
     if (spell == nullptr)
         return 0;
 
     auto model_ptr = std::make_shared<const fb::model::spell*>();
     auto weak      = const_cast<life&>(spell->owner).weak_from_this();
-    auto builder   = lua->new_co_builder(*server);
+    auto builder   = lua->new_co_builder();
     builder.weak   = weak;
     builder.yield  = [=]() -> async::task<void> {
         *model_ptr = &spell->model;
@@ -42,15 +40,13 @@ int builtin::spell::builtin_delay(lua_State* L)
     auto lua = fb::lua::get(L);
     if (lua == nullptr)
         return 0;
-
-    auto server = lua->env<fb::game::server>("server");
-    auto argc   = lua->argc();
-    auto spell  = lua->touserdata<fb::game::spell>(1);
+    auto argc  = lua->argc();
+    auto spell = lua->touserdata<fb::game::spell>(1);
     if (spell == nullptr)
         return 0;
 
     auto weak    = const_cast<life&>(spell->owner).weak_from_this();
-    auto builder = lua->new_co_builder(*server);
+    auto builder = lua->new_co_builder();
     builder.weak = weak;
 
     if (argc == 1)
@@ -84,15 +80,13 @@ int builtin::spell::builtin_delay2(lua_State* L)
     auto lua = fb::lua::get(L);
     if (lua == nullptr)
         return 0;
-
-    auto server = lua->env<fb::game::server>("server");
-    auto spell  = lua->touserdata<fb::game::spell>(1);
+    auto spell = lua->touserdata<fb::game::spell>(1);
     if (spell == nullptr)
         return 0;
 
     auto delay    = lua->tointeger(2);
     auto weak     = const_cast<life&>(spell->owner).weak_from_this();
-    auto builder  = lua->new_co_builder(*server);
+    auto builder  = lua->new_co_builder();
     builder.weak  = weak;
     builder.yield = [=]() -> async::task<void> {
         auto& owner = const_cast<life&>(spell->owner);

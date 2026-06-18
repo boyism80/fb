@@ -11,6 +11,7 @@
 #include <fb/amqp_handler_registry.h>
 #include <fb/http_client.h>
 #include <fb/socket.h>
+#include <fb/lua.h>
 #include <iomanip>
 #include <mutex>
 #include <boost/stacktrace.hpp>
@@ -43,8 +44,9 @@ public:
         handler& operator= (const handler&) = delete;
     };
 
-    handler         handler;
-    fb::http_client http;
+    handler               handler;
+    fb::http_client       http;
+    fb::lua::context_pool lua;
 
 private:
     boost_timers        _timers;
@@ -59,7 +61,8 @@ protected:
         fb::async_executor(context, name, config<uint32_t>("thread:logic")),
         boost::asio::ip::tcp::acceptor(context, boost::asio::ip::tcp::endpoint(boost::asio::ip::tcp::v4(), port)),
         handler(*this),
-        http(*this, http_max_concurrent)
+        http(*this, http_max_concurrent),
+        lua(static_cast<fb::async_executor&>(*this))
     {
         static auto flag = std::once_flag{};
         std::call_once(flag, [port] {
@@ -388,9 +391,13 @@ protected:
 protected:
     virtual async::task<void> on_start()
     {
-        lua::build<lua::luable>();
-        lua::build<fb::thread, lua::luable>();
-        lua::build<fb::thread_switchable, lua::luable>();
+        for (auto& [_, root] : this->lua)
+        {
+            co_await root->switching();
+            root->build<lua::luable>();
+            root->build<fb::thread, lua::luable>();
+            root->build<fb::thread_switchable, lua::luable>();
+        }
         co_return;
     }
 
@@ -460,9 +467,10 @@ public:
     }
 
 public:
-    void run()
+    async::task<void> run()
     {
         this->_running = true;
+        co_await this->on_start();
         this->accept();
 
         auto threads = std::vector<std::thread>();
@@ -472,8 +480,6 @@ public:
                 this->io_context.run();
             }));
         }
-
-        async::awaitable_get(this->on_start());
 
         threads.push_back(std::thread([this]() {
             this->handler.amqp.on_initialize = [this](fb::amqp::socket& amqp) {
@@ -487,6 +493,7 @@ public:
         {
             thread.join();
         }
+        co_return;
     }
 
 public:

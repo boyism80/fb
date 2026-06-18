@@ -1,4 +1,5 @@
 #include <fb/login/handler/protocol/complete.h>
+#include <fb/login/exception.h>
 #include <fb/model/model.h>
 
 using namespace fb::login::handler::protocol;

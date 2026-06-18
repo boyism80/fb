@@ -17,15 +17,13 @@ int builtin::item::builtin_model(lua_State* L)
     auto lua = fb::lua::get(L);
     if (lua == nullptr)
         return 0;
-
-    auto server = lua->env<fb::game::server>("server");
-    auto item   = lua->touserdata<fb::game::item>(1);
+    auto item = lua->touserdata<fb::game::item>(1);
     if (item == nullptr)
         return 0;
 
     auto model_ptr = std::make_shared<const fb::model::item*>();
     auto weak      = item->weak_from_this_as<fb::game::item>();
-    auto builder   = lua->new_co_builder(*server);
+    auto builder   = lua->new_co_builder();
     builder.weak   = weak;
     builder.yield  = [=]() -> async::task<void> {
         *model_ptr = &item->based<fb::model::item>();
@@ -43,15 +41,13 @@ int builtin::item::builtin_count(lua_State* L)
     auto lua = fb::lua::get(L);
     if (lua == nullptr)
         return 0;
-
-    auto server = lua->env<fb::game::server>("server");
-    auto item   = lua->touserdata<fb::game::item>(1);
+    auto item = lua->touserdata<fb::game::item>(1);
     if (item == nullptr)
         return 0;
 
     auto count    = std::make_shared<uint16_t>();
     auto weak     = item->weak_from_this_as<fb::game::item>();
-    auto builder  = lua->new_co_builder(*server);
+    auto builder  = lua->new_co_builder();
     builder.weak  = weak;
     builder.yield = [=]() -> async::task<void> {
         *count = item->count();
@@ -69,15 +65,13 @@ int builtin::item::builtin_durability(lua_State* L)
     auto lua = fb::lua::get(L);
     if (lua == nullptr)
         return 0;
-
-    auto server = lua->env<fb::game::server>("server");
-    auto argc   = lua->argc();
-    auto item   = lua->touserdata<fb::game::item>(1);
+    auto argc = lua->argc();
+    auto item = lua->touserdata<fb::game::item>(1);
     if (item == nullptr)
         return 0;
 
     auto weak    = item->weak_from_this_as<fb::game::item>();
-    auto builder = lua->new_co_builder(*server);
+    auto builder = lua->new_co_builder();
 
     if (argc > 1)
     {
@@ -116,10 +110,8 @@ int builtin::item::builtin_rename(lua_State* L)
     auto lua = fb::lua::get(L);
     if (lua == nullptr)
         return 0;
-
-    auto server = lua->env<fb::game::server>("server");
-    auto argc   = lua->argc();
-    auto item   = lua->touserdata<fb::game::item>(1);
+    auto argc = lua->argc();
+    auto item = lua->touserdata<fb::game::item>(1);
     if (item == nullptr)
         return 0;
 
@@ -135,7 +127,7 @@ int builtin::item::builtin_rename(lua_State* L)
 
     if (argc > 1)
     {
-        auto builder = lua->new_co_builder(*server);
+        auto builder = lua->new_co_builder();
         builder.weak = weapon;
         if (lua->is_string(2))
         {
@@ -168,7 +160,7 @@ int builtin::item::builtin_rename(lua_State* L)
     else
     {
         auto custom_name = std::make_shared<std::optional<std::string>>();
-        auto builder     = lua->new_co_builder(*server);
+        auto builder     = lua->new_co_builder();
         builder.weak     = weapon;
         builder.yield    = [=]() -> async::task<void> {
             *custom_name = weapon.lock()->custom_name();

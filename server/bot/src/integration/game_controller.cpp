@@ -23,6 +23,7 @@
 #include <fb/bot/container.h>
 #include <fb/bot/gateway_controller.h>
 #include <fb/logger.h>
+#include <async/awaitable_get.h>
 
 using namespace fb::bot::integration;
 using table = fb::model::table;
@@ -89,7 +90,7 @@ void game_bot_controller::initialize()
         }
     };
 
-    fb::model::loader().run();
+    async::awaitable_get(fb::model::loader(this->container).run());
 
     // Set up integration test timer with different interval (slower for detailed testing)
     this->bind_timer(&game_bot_controller::on_timer, 1000ms);
