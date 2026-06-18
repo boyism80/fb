@@ -1,13 +1,16 @@
 #include <fb/game/server.h>
 #include <fb/game/worker.h>
+#include <mutex>
+#include <set>
 
 using table = fb::model::table;
 
 fb::game::script_loader::script_loader(fb::game::server& server) :
+    fb::parallel_worker<script_work>(server),
     _server(server)
 { }
 
-fb::generator<std::function<async::task<void>()>> fb::game::script_loader::on_ready()
+fb::generator<fb::game::script_work> fb::game::script_loader::on_ready()
 {
     fb::console::progress("Loading script files", 0);
 
@@ -71,48 +74,47 @@ fb::generator<std::function<async::task<void>()>> fb::game::script_loader::on_re
         scripts.push_back(v.script);
     }
 
-    static auto logs  = std::set<std::string>{};
-    static auto mutex = std::mutex{};
     for (auto& [_, root] : _server.lua)
     {
-        co_yield [root = root.get(), scripts = scripts]() -> async::task<void> {
-            auto& thread  = root->initial_thread();
-            auto  builder = thread.new_builder<void>();
-            builder.func  = [root, scripts](auto&) -> async::task<void> {
-                for (auto& script : scripts)
-                {
-                    try
-                    {
-                        root->dump(script);
-                    }
-                    catch (std::exception& e)
-                    {
-                        auto _ = std::lock_guard(mutex);
-                        if (logs.contains(e.what()) == false)
-                        {
-                            logs.insert(e.what());
-                            fb::console::comment("    - {}", e.what());
-                        }
-                    }
-                }
-                co_return;
-            };
-            co_return co_await builder.dispatch();
-        };
+        co_yield script_work{root.get(), scripts};
     }
 }
 
-void fb::game::script_loader::on_work(const std::function<async::task<void>()>& value)
+async::task<void> fb::game::script_loader::on_work(const script_work& work)
 {
-    async::awaitable_get(value());
+    auto& thread  = work.root->initial_thread();
+    auto  builder = thread.new_builder<void>();
+    builder.func  = [root = work.root, scripts = work.scripts](auto&) -> async::task<void> {
+        static auto logs  = std::set<std::string>{};
+        static auto mutex = std::mutex{};
+
+        for (auto& script : scripts)
+        {
+            try
+            {
+                root->dump(script);
+            }
+            catch (std::exception& e)
+            {
+                auto _ = std::lock_guard(mutex);
+                if (logs.contains(e.what()) == false)
+                {
+                    logs.insert(e.what());
+                    fb::console::comment("    - {}", e.what());
+                }
+            }
+        }
+        co_return;
+    };
+    co_await builder.dispatch();
 }
 
-void fb::game::script_loader::on_worked(const std::function<async::task<void>()>& input, double percent)
+void fb::game::script_loader::on_worked(const script_work& input, double percent)
 {
     fb::console::progress("Loading script files", percent);
 }
 
-void fb::game::script_loader::on_error(const std::function<async::task<void>()>& input, std::exception& e)
+void fb::game::script_loader::on_error(const script_work& input, std::exception& e)
 {
     fb::console::comment("    - {}", e.what());
 }

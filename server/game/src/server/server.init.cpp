@@ -6,7 +6,6 @@
 #include <fb/encoding.h>
 #include <fb/console.h>
 #include <fb/protocol/flatbuffer/protocol.h>
-#include <async/awaitable_get.h>
 #include <json/json.h>
 #include <format>
 
@@ -143,7 +142,7 @@ async::task<void> fb::game::server::init_thread_params()
 
     for (auto& async_task : async_tasks)
     {
-        async::awaitable_get(async_task);
+        co_await async_task;
     }
     co_return;
 }
@@ -289,9 +288,7 @@ fb::game::server::server(boost::asio::io_context& io_context, uint16_t port) :
         fb::config<uint32_t>("world")),
     _exp_multiplier(fb::config<double>("exp_multiplier")),
     _drop_rate_multiplier(fb::config<double>("drop_rate_multiplier"))
-{
-    async::awaitable_get(this->init_lua());
-}
+{ }
 
 fb::game::server::~server()
 { }
@@ -348,10 +345,12 @@ async::task<void> fb::game::server::on_start()
             return nullptr;
         }
     };
-    fb::model::loader().run();
-    map_loader(*this).run();
-    script_loader(*this).run();
-    npc_spawner(*this).run();
+
+    co_await this->init_lua();
+    co_await fb::model::loader(*this).run();
+    co_await map_loader(*this).run();
+    co_await script_loader(*this).run();
+    co_await npc_spawner(*this).run();
 
     fb::console::set_mode(fb::console::mode::plain);
 #ifdef _WIN32

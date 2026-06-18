@@ -1,6 +1,7 @@
 #include <fb/game/server.h>
 #include <fb/leak.h>
 #include <fb/mst.h>
+#include <async/awaitable_get.h>
 #include <boost/program_options.hpp>
 #include <filesystem>
 #ifdef _WIN32
@@ -61,7 +62,7 @@ int main(int argc, char* argv[])
             server->exit();
         });
 
-        server->run();
+        async::awaitable_get(server->run());
     }
     catch (std::exception& e)
     {

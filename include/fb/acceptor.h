@@ -467,10 +467,10 @@ public:
     }
 
 public:
-    void run()
+    async::task<void> run()
     {
         this->_running = true;
-        async::awaitable_get(this->on_start());
+        co_await this->on_start();
         this->accept();
 
         auto threads = std::vector<std::thread>();
@@ -493,6 +493,7 @@ public:
         {
             thread.join();
         }
+        co_return;
     }
 
 public:

@@ -1,15 +1,15 @@
 #ifndef __PARALLEL_WORKER_H__
 #define __PARALLEL_WORKER_H__
 
+#include <atomic>
 #include <memory>
-#include <vector>
-#include <unordered_map>
+#include <optional>
 #include <queue>
-#include <mutex>
-#include <future>
-#include <algorithm>
+#include <vector>
+#include <fb/async_executor.h>
 #include <fb/generator.h>
 #include <fb/synchronized.h>
+#include <async/task.h>
 
 namespace fb {
 
@@ -17,6 +17,12 @@ template <typename T, typename R = void>
 class parallel_worker
 {
 protected:
+    fb::async_executor& _executor;
+
+    explicit parallel_worker(fb::async_executor& executor) :
+        _executor(executor)
+    { }
+
     virtual fb::generator<T> on_ready()              = 0;
     virtual fb::generator<R> on_work(const T& value) = 0;
     virtual void             on_worked(const T& input, const R& output, double percent)
@@ -26,122 +32,99 @@ protected:
     virtual void on_finish(const std::vector<R>& result)
     { }
 
-public:
-    void run(std::vector<R>& result)
+    struct queued_item
     {
-        auto indices   = std::unordered_map<T*, int>();
-        auto processed = std::atomic<int>(0);
+        T        item;
+        uint32_t index;
+    };
 
-        auto queue  = fb::synchronized<std::queue<T>>();
-        auto buffer = fb::synchronized<std::unordered_map<uint32_t, std::unique_ptr<std::vector<R>>>>();
-
-        auto gen_ready = this->on_ready();
-        while (gen_ready.next())
+public:
+    async::task<void> run(std::vector<R>& result)
+    {
+        auto queue = fb::synchronized<std::queue<queued_item>>{};
+        auto count = uint32_t{0};
         {
-            auto input = gen_ready.value();
+            auto gen = this->on_ready();
+            while (gen.next())
             {
-                auto  guard = queue.enter_write();
-                auto& q     = guard.value();
-                q.push(input);
-                auto& added = q.back();
-                indices.insert({&added, indices.size()});
+                auto guard = queue.enter_write();
+                guard.value().push({std::move(gen.value()), count++});
             }
         }
 
-        double count = 0;
+        if (count == 0)
         {
-            auto guard = queue.enter_read();
-            count      = double(guard.value().size());
+            this->on_finish(result);
+            co_return;
         }
-        auto fn = [&, this]() {
+
+        auto processed      = std::atomic<uint32_t>{0};
+        auto outputs_buffer = std::vector<std::vector<R>>(count);
+        auto worker         = [this, &queue, count, &processed, &outputs_buffer]() -> async::task<void> {
             while (true)
             {
-                T*   input       = nullptr;
-                bool queue_empty = false;
+                auto work = std::optional<queued_item>{};
                 {
                     auto  guard = queue.enter_write();
                     auto& q     = guard.value();
                     if (q.empty())
-                    {
-                        queue_empty = true;
-                    }
-                    else
-                    {
-                        input = &q.front();
-                        q.pop();
-                    }
-                }
+                        break;
 
-                if (queue_empty)
-                    break;
-
-                auto index = indices.at(input);
-                {
-                    auto guard = buffer.enter_write();
-                    guard.value().insert({index, std::make_unique<std::vector<R>>()});
+                    work = std::move(q.front());
+                    q.pop();
                 }
 
                 try
                 {
-                    auto gen_work = this->on_work(*input);
-                    while (gen_work.next())
-                    {
-                        auto output = gen_work.value();
-                        {
-                            auto guard = buffer.enter_write();
-                            guard.value()[index]->push_back(output);
-                        }
-                    }
+                    auto outputs = std::vector<R>{};
+                    auto gen     = this->on_work(work->item);
+                    while (gen.next())
+                        outputs.push_back(gen.value());
 
-                    {
-                        auto guard = buffer.enter_read();
-                        for (auto& output : *guard.value().at(index))
-                        {
-                            this->on_worked(*input, output, (++processed * 100) / count);
-                        }
-                    }
+                    for (auto& output : outputs)
+                        this->on_worked(work->item, output, (++processed * 100.0) / static_cast<double>(count));
+
+                    outputs_buffer[work->index] = std::move(outputs);
                 }
                 catch (std::exception& e)
                 {
-                    this->on_error(*input, e);
                     processed++;
+                    this->on_error(work->item, e);
                 }
             }
+            co_return;
         };
 
-        auto tasks = std::vector<std::future<void>>();
-        for (int i = 0; i < std::thread::hardware_concurrency(); i++)
+        const auto thread_count = this->_executor.threads.count();
+        if (thread_count == 0)
         {
-            tasks.push_back(std::async(std::launch::async, fn));
+            co_await worker();
         }
-
-        for (auto& task : tasks)
+        else
         {
-            task.wait();
-        }
+            auto tasks = std::vector<async::task<void>>{};
+            tasks.reserve(thread_count);
 
-        auto keys = std::vector<uint32_t>{};
-        {
-            auto guard = buffer.enter_read();
-            for (auto& [k, _] : guard.value())
+            for (uint8_t i = 0; i < thread_count; ++i)
             {
-                keys.push_back(k);
+                auto& thread = *this->_executor.threads.at(i);
+                tasks.push_back(thread.dispatch([&worker](auto&) -> async::task<void> {
+                    co_return co_await worker();
+                }));
             }
-        }
-        std::sort(keys.begin(), keys.end());
 
+            for (auto& task : tasks)
+                co_await task;
+        }
+
+        for (auto& outputs : outputs_buffer)
         {
-            auto guard = buffer.enter_read();
-            for (auto k : keys)
-            {
-                for (auto& output : *guard.value().at(k))
-                {
-                    result.push_back(output);
-                }
-            }
+            for (auto& output : outputs)
+                result.push_back(std::move(output));
         }
 
         this->on_finish(result);
+        co_return;
     }
 };
 
@@ -149,9 +132,15 @@ template <typename T>
 class parallel_worker<T, void>
 {
 protected:
-    virtual fb::generator<T> on_ready()              = 0;
-    virtual void             on_work(const T& value) = 0;
-    virtual void             on_worked(const T& input, double percent)
+    fb::async_executor& _executor;
+
+    explicit parallel_worker(fb::async_executor& executor) :
+        _executor(executor)
+    { }
+
+    virtual fb::generator<T>  on_ready()              = 0;
+    virtual async::task<void> on_work(const T& value) = 0;
+    virtual void              on_worked(const T& input, double percent)
     { }
     virtual void on_error(const T& input, std::exception& e)
     { }
@@ -159,73 +148,80 @@ protected:
     { }
 
 public:
-    void run()
+    async::task<void> run()
     {
-        fb::synchronized<std::queue<T>> queue;
-        std::atomic<int>                processed{0};
-
-        auto gen = this->on_ready();
-        while (gen.next())
+        auto queue = fb::synchronized<std::queue<T>>{};
+        auto total = uint32_t{0};
         {
+            auto gen = this->on_ready();
+            while (gen.next())
             {
                 auto guard = queue.enter_write();
-                guard.value().push(gen.value());
+                guard.value().push(std::move(gen.value()));
+                total++;
             }
         }
 
-        double count = 0;
+        const auto count = static_cast<double>(total);
+        if (count == 0)
         {
-            auto guard = queue.enter_read();
-            count      = double(guard.value().size());
+            this->on_finish();
+            co_return;
         }
-        auto fn = [&, this]() {
+
+        auto processed = std::atomic<uint32_t>{0};
+        auto worker    = [this, &queue, count, &processed]() -> async::task<void> {
             while (true)
             {
-                auto input       = std::optional<T>{};
-                bool queue_empty = false;
+                auto item = std::optional<T>{};
                 {
                     auto  guard = queue.enter_write();
                     auto& q     = guard.value();
                     if (q.empty())
-                    {
-                        queue_empty = true;
-                    }
-                    else
-                    {
-                        input = std::move(q.front());
-                        q.pop();
-                    }
-                }
+                        break;
 
-                if (queue_empty)
-                    break;
+                    item = std::move(q.front());
+                    q.pop();
+                }
 
                 try
                 {
-                    this->on_work(input.value());
-                    auto current_progress = (++processed * 100) / count;
-                    this->on_worked(input.value(), current_progress);
+                    co_await this->on_work(*item);
+                    this->on_worked(*item, (++processed * 100.0) / count);
                 }
                 catch (std::exception& e)
                 {
                     processed++;
-                    this->on_error(input.value(), e);
+                    this->on_error(*item, e);
                 }
             }
+            co_return;
         };
 
-        auto tasks = std::vector<std::future<void>>();
-        for (int i = 0; i < std::thread::hardware_concurrency(); i++)
+        const auto thread_count = this->_executor.threads.count();
+        if (thread_count == 0)
         {
-            tasks.push_back(std::async(std::launch::async, fn));
+            co_await worker();
         }
-
-        for (auto& task : tasks)
+        else
         {
-            task.wait();
+            auto tasks = std::vector<async::task<void>>{};
+            tasks.reserve(thread_count);
+
+            for (uint8_t i = 0; i < thread_count; ++i)
+            {
+                auto& thread = *this->_executor.threads.at(i);
+                tasks.push_back(thread.dispatch([&worker](auto&) -> async::task<void> {
+                    co_return co_await worker();
+                }));
+            }
+
+            for (auto& task : tasks)
+                co_await task;
         }
 
         this->on_finish();
+        co_return;
     }
 };
 

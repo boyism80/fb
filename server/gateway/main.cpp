@@ -1,5 +1,6 @@
 #include <fb/gateway/server.h>
 #include <fb/socket.h>
+#include <async/awaitable_get.h>
 #include <iomanip>
 #include <iostream>
 #include <stdio.h>
@@ -69,7 +70,7 @@ int main(int argc, char** argv)
         });
 
         fb::console::set_mode(fb::console::mode::plain);
-        server->run();
+        async::awaitable_get(server->run());
     }
     catch (std::exception& e)
     {

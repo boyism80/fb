@@ -54,7 +54,7 @@ async::task<void> fb::login::server::on_start()
     flatbuffers::option::decoding(fb::cp949);
 #endif
 
-    fb::model::loader().run();
+    co_await fb::model::loader(*this).run();
 
     co_await fb::acceptor<session>::on_start();
 

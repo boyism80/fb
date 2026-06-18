@@ -3,12 +3,9 @@
 
 #include <fb/parallel_worker.h>
 #include <fb/model/model.h>
-
-using namespace fb;
+#include <async/task.h>
 
 namespace fb::model {
-
-class server;
 
 class loader : public fb::parallel_worker<std::reference_wrapper<fb::model::container>>
 {
@@ -16,7 +13,10 @@ public:
     using input_type = std::reference_wrapper<fb::model::container>;
 
 public:
-    loader()  = default;
+    explicit loader(fb::async_executor& executor) :
+        fb::parallel_worker<input_type>(executor)
+    { }
+
     ~loader() = default;
 
 protected:
@@ -33,9 +33,10 @@ protected:
         }
     }
 
-    void on_work(const input_type& value)
+    async::task<void> on_work(const input_type& value)
     {
         value.get().load();
+        co_return;
     }
 
     void on_worked(const input_type& input, double percent)

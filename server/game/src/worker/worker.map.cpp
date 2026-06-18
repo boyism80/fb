@@ -5,6 +5,7 @@ using namespace fb::game;
 using table = fb::model::table;
 
 map_loader::map_loader(server& server) :
+    fb::parallel_worker<input_type>(server),
     _server(server)
 { }
 
@@ -18,9 +19,10 @@ fb::generator<map_loader::input_type> map_loader::on_ready()
     }
 }
 
-void map_loader::on_work(const map_loader::input_type& value)
+async::task<void> map_loader::on_work(const map_loader::input_type& value)
 {
     this->_server.maps.load(value.get());
+    co_return;
 }
 
 void map_loader::on_worked(const map_loader::input_type& input, double percent)

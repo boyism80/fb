@@ -3,6 +3,11 @@
 
 #include <fb/model/loader.h>
 #include <filesystem>
+#include <async/task.h>
+
+namespace fb::lua {
+class root;
+}
 
 namespace fb::game {
 
@@ -22,7 +27,7 @@ public:
 
 protected:
     fb::generator<input_type> on_ready() override final;
-    void                      on_work(const input_type& value) override final;
+    async::task<void>         on_work(const input_type& value) override final;
     void                      on_worked(const input_type& input, double percent) override final;
     void                      on_error(const input_type& input, std::exception& e) override final;
     void                      on_finish() override final;
@@ -42,16 +47,20 @@ public:
 
 protected:
     fb::generator<input_type> on_ready() override final;
-    void                      on_work(const input_type& value) override final;
+    async::task<void>         on_work(const input_type& value) override final;
     void                      on_worked(const input_type& input, double percent) override final;
     void                      on_error(const input_type& input, std::exception& e) override final;
     void                      on_finish() override final;
 };
 
-class script_loader : public fb::parallel_worker<std::function<async::task<void>()>>
+struct script_work
 {
-    using ready_func_generator = fb::generator<std::function<async::task<void>()>>;
+    fb::lua::root*           root;
+    std::vector<std::string> scripts;
+};
 
+class script_loader : public fb::parallel_worker<script_work>
+{
 private:
     fb::game::server& _server;
 
@@ -60,11 +69,11 @@ public:
     ~script_loader() = default;
 
 protected:
-    ready_func_generator on_ready() override final;
-    void                 on_work(const std::function<async::task<void>()>& value) override final;
-    void                 on_worked(const std::function<async::task<void>()>& input, double percent) override final;
-    void                 on_error(const std::function<async::task<void>()>& input, std::exception& e) override final;
-    void                 on_finish() override final;
+    fb::generator<script_work> on_ready() override final;
+    async::task<void>          on_work(const script_work& value) override final;
+    void                       on_worked(const script_work& input, double percent) override final;
+    void                       on_error(const script_work& input, std::exception& e) override final;
+    void                       on_finish() override final;
 };
 
 } // namespace fb::game
