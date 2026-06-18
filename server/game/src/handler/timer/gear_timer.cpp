@@ -10,7 +10,7 @@ async::task<void> gear_timer::handle(const fb::model::datetime& now, std::thread
 {
     auto thread = this->server.threads.at(id);
     auto params = thread->template data<thread_params>();
-    auto lua    = fb::lua::new_context(nullptr, {.auto_release = false});
+    auto lua    = this->server.lua.new_context(nullptr, {.auto_release = false});
 
     for (auto& [_, map] : params->maps)
     {

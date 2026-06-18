@@ -71,15 +71,14 @@ fb::generator<std::function<async::task<void>()>> fb::game::script_loader::on_re
         scripts.push_back(v.script);
     }
 
-    static auto& ist   = fb::lua::context_pool::ist();
-    static auto  logs  = std::set<std::string>{};
-    static auto  mutex = std::mutex{};
-    for (auto& [_, root] : ist)
+    static auto logs  = std::set<std::string>{};
+    static auto mutex = std::mutex{};
+    for (auto& [_, root] : _server.lua)
     {
-        auto& thread = root->initial_thread();
-        co_yield [&thread, &root, scripts]() -> async::task<void> {
-            auto builder = thread.new_builder<void>();
-            builder.func = [&root, scripts](auto&) -> async::task<void> {
+        co_yield [root = root.get(), scripts = scripts]() -> async::task<void> {
+            auto& thread  = root->initial_thread();
+            auto  builder = thread.new_builder<void>();
+            builder.func  = [root, scripts](auto&) -> async::task<void> {
                 for (auto& script : scripts)
                 {
                     try

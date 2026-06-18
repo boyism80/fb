@@ -74,7 +74,7 @@ async::task<void> life::attack(DURATION duration)
 
     // Execute attack interaction script and get attack count
     uint32_t attack_count = 0;
-    auto     lua          = fb::lua::new_context();
+    auto     lua          = this->server.lua.new_context();
     if (lua != nullptr)
     {
 #if defined DEBUG || defined _DEBUG
@@ -103,7 +103,7 @@ async::task<void> life::attack(DURATION duration)
             // Execute weapon's on_attack script
             if (model.on_attack.empty() == false)
             {
-                auto weapon_lua = fb::lua::new_context();
+                auto weapon_lua = this->server.lua.new_context();
                 if (weapon_lua != nullptr)
                 {
 #if defined DEBUG || defined _DEBUG
@@ -145,7 +145,7 @@ bool life::active(fb::game::spell& spell, std::string_view message)
     if (spell.model.cast.empty())
         return false;
 
-    auto lua = fb::lua::new_context();
+    auto lua = this->server.lua.new_context();
     if (lua == nullptr)
         return false;
 
@@ -180,7 +180,7 @@ bool life::active(fb::game::spell& spell, uint32_t oid)
 bool life::active(fb::game::spell& spell, fb::game::object& to)
 {
     this->assert_thread();
-    auto lua = fb::lua::new_context();
+    auto lua = this->server.lua.new_context();
     if (lua == nullptr)
         return false;
 
@@ -212,7 +212,7 @@ bool life::active(fb::game::spell& spell, fb::game::object& to)
 bool life::active(fb::game::spell& spell)
 {
     this->assert_thread();
-    auto lua = fb::lua::new_context();
+    auto lua = this->server.lua.new_context();
     if (lua == nullptr)
         return false;
 

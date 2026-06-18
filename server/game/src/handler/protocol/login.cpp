@@ -276,7 +276,7 @@ async::task<std::shared_ptr<character>> login::init(const game_reqs::login& requ
         if (msg.empty() == false)
             ch->message(msg, MESSAGE_TYPE::STATE);
 
-        auto lua = fb::lua::new_context();
+        auto lua = this->server.lua.new_context();
         if (lua != nullptr)
         {
 #if defined DEBUG || defined _DEBUG

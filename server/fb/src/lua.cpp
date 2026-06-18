@@ -7,38 +7,19 @@
 
 using namespace fb::lua;
 
-context* fb::lua::new_context(context* parent, call_options options)
-{
-    auto& ist = context_pool::ist();
-    return ist.pop(parent, options);
-}
-
 context* fb::lua::get(lua_State* ctx)
 {
-    auto& ist = context_pool::ist();
-    return ist.get(ctx);
-}
+    if (ctx == nullptr)
+        return nullptr;
 
-async::task<void> fb::lua::build(std::string_view name, lua_CFunction fn)
-{
-    static auto& ist = context_pool::ist();
-    auto         n   = std::string{name};
-    for (auto& [_, root] : ist)
-    {
-        co_await root->switching();
-        root->build(n, fn);
-    }
-}
+    ::lua_getfield(ctx, LUA_REGISTRYINDEX, root::REGISTRY_KEY);
+    auto root_ptr = static_cast<fb::lua::root*>(::lua_touserdata(ctx, -1));
+    ::lua_pop(ctx, 1);
 
-async::task<void> fb::lua::dump(std::string_view path)
-{
-    static auto& ist = context_pool::ist();
-    auto         p   = std::string{path};
-    for (auto& [_, root] : ist)
-    {
-        co_await root->switching();
-        root->dump(p);
-    }
+    if (root_ptr == nullptr)
+        return nullptr;
+
+    return root_ptr->get(ctx);
 }
 
 luable::luable()
@@ -50,13 +31,15 @@ luable::luable(uint32_t id)
 luable::~luable()
 { }
 
-context::context(lua_State* ctx, fb::thread& initial_thread) :
+context::context(fb::async_executor& executor, lua_State* ctx, fb::thread& initial_thread) :
     _ctx(ctx),
+    executor(executor),
     _initial_thread(initial_thread)
 { }
 
-context::context(lua_State* ctx, context& owner, context* parent) :
+context::context(fb::async_executor& executor, lua_State* ctx, context& owner, context* parent) :
     _ctx(ctx),
+    executor(executor),
     _initial_thread(owner._initial_thread),
     _parent(parent),
     owner(&owner)
@@ -612,15 +595,17 @@ int fb::lua::context::co_builder::run()
         return lua_ptr->yield(0);
 }
 
-fb::lua::context::co_builder fb::lua::context::new_co_builder(fb::async_executor& executor)
+fb::lua::context::co_builder fb::lua::context::new_co_builder()
 {
-    return co_builder(*this, executor);
+    return co_builder(*this, this->executor);
 }
 
-root::root(fb::thread& thread) :
-    context(::luaL_newstate(), thread)
+root::root(fb::async_executor& executor, fb::thread& thread) :
+    context(executor, ::luaL_newstate(), thread)
 {
     luaL_openlibs(*this);
+    ::lua_pushlightuserdata(*this, this);
+    ::lua_setfield(*this, LUA_REGISTRYINDEX, root::REGISTRY_KEY);
 }
 
 root::~root()
@@ -702,7 +687,7 @@ context* root::pop(context* parent, call_options options)
     }
     else if (this->idle.size() + this->busy.size() < DEFAULT_POOL_SIZE)
     {
-        auto ptr = std::make_unique<fb::lua::thread>(*this, parent, options);
+        auto ptr = std::make_unique<fb::lua::thread>(this->executor, *this, parent, options);
         auto key = (lua_State*)*ptr.get();
 
         if (this->idle.contains(key) || this->busy.contains(key))
@@ -775,12 +760,19 @@ fb::thread& fb::lua::root::initial_thread()
     return this->_initial_thread;
 }
 
+fb::lua::context_pool::context_pool(fb::async_executor& executor) :
+    _executor(executor)
+{
+    for (auto& [id, thread] : executor.threads)
+        this->_roots.insert({id, std::make_unique<root>(executor, *thread)});
+}
+
 fb::lua::context_pool::~context_pool()
 {
     // std::unique_ptr handles cleanup automatically
 }
 
-context* fb::lua::context_pool::pop(context* parent, call_options options)
+context* fb::lua::context_pool::new_context(context* parent, call_options options)
 {
     auto id = std::this_thread::get_id();
     if (this->_roots.contains(id) == false)
@@ -789,24 +781,13 @@ context* fb::lua::context_pool::pop(context* parent, call_options options)
     return this->_roots[id]->pop(parent, options);
 }
 
-context* fb::lua::context_pool::get(lua_State* ctx)
+async::task<void> fb::lua::context_pool::dump(std::string_view path)
 {
-    auto id = std::this_thread::get_id();
-    if (this->_roots.contains(id) == false)
-        return nullptr;
-
-    return this->_roots[id]->get(ctx);
-}
-
-void fb::lua::context_pool::setup(fb::thread_container& threads)
-{
-    if (this->_threads != nullptr)
-        return;
-
-    this->_threads = &threads;
-    for (auto& [id, thread] : threads)
+    auto p = std::string{path};
+    for (auto& [_, root] : this->_roots)
     {
-        this->_roots.insert({id, std::make_unique<root>(*thread)});
+        co_await root->switching();
+        root->dump(p);
     }
 }
 
@@ -820,19 +801,8 @@ context_pool::base_type::iterator fb::lua::context_pool::end()
     return this->_roots.end();
 }
 
-fb::lua::context_pool& fb::lua::context_pool::ist()
-{
-    static std::once_flag                _flag;
-    static std::unique_ptr<context_pool> _ist;
-
-    std::call_once(_flag, [] {
-        _ist = std::make_unique<context_pool>();
-    });
-    return *_ist;
-}
-
-thread::thread(context& owner, context* parent, call_options options) :
-    context(::lua_newthread(owner), owner, parent),
+thread::thread(fb::async_executor& executor, context& owner, context* parent, call_options options) :
+    context(executor, ::lua_newthread(owner), owner, parent),
     ref(luaL_ref(owner, LUA_REGISTRYINDEX))
 {
     this->options(options);
@@ -840,7 +810,7 @@ thread::thread(context& owner, context* parent, call_options options) :
 }
 
 thread::thread(thread&& ctx) :
-    context(ctx._ctx, *ctx.owner, ctx.parent()),
+    context(ctx.executor, ctx._ctx, *ctx.owner, ctx.parent()),
     ref(ctx.ref)
 {
     lua_checkstack(*this, 10000);

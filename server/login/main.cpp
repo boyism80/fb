@@ -2,8 +2,6 @@
 #include <fb/config.h>
 #include <fb/console.h>
 #include <fb/leak.h>
-#include <fb/protocol/flatbuffer/protocol.h>
-#include <fb/model/loader.h>
 #include <boost/program_options.hpp>
 #include <filesystem>
 #ifndef _WIN32
@@ -54,10 +52,6 @@ int main(int argc, char** argv)
 #ifdef _WIN32
         ::set_console_icon(IDI_BARAM);
         ::SetConsoleTitle(CONSOLE_TITLE);
-        fb::model::option::decoding(cp949);
-        fb::model::option::encoding(utf8);
-        flatbuffers::option::encoding(utf8);
-        flatbuffers::option::decoding(cp949);
 #endif
 
         auto io_context = boost::asio::io_context{};
@@ -66,12 +60,7 @@ int main(int argc, char** argv)
         signals.async_wait([&server](const boost::system::error_code& ec, int signal_number) {
             server->exit();
         });
-        fb::model::loader().run();
 
-        fb::console::set_mode(fb::console::mode::plain);
-#ifdef _WIN32
-        fb::model::option::decoding(nullptr);
-#endif
         server->run();
     }
     catch (std::exception& e)

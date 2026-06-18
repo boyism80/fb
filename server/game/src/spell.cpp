@@ -308,7 +308,7 @@ bool buffs::push_back(const std::shared_ptr<buff>& buff)
     // Execute buff script
     if (buff->model.buff.empty() == false)
     {
-        auto lua = fb::lua::new_context();
+        auto lua = this->_owner.server.lua.new_context();
         if (lua != nullptr)
         {
             lua->func(buff->model.buff);
@@ -366,7 +366,7 @@ bool buffs::remove(uint32_t id)
     // Execute unbuff script
     if (buff->model.unbuff.empty() == false)
     {
-        auto lua = fb::lua::new_context();
+        auto lua = this->_owner.server.lua.new_context();
         if (lua != nullptr)
         {
             lua->func(buff->model.unbuff);

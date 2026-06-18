@@ -40,7 +40,7 @@ async::task<void> click::handle_f1(character* ch)
     if (fb::model::const_value::script::F1_EVENT_FUNC == "")
         co_return;
 
-    auto lua = fb::lua::new_context();
+    auto lua = this->server.lua.new_context();
     if (lua == nullptr)
         co_return;
 
@@ -60,7 +60,7 @@ async::task<void> click::handle_f2(character* ch)
     if (fb::model::const_value::script::F2_EVENT_FUNC == "")
         co_return;
 
-    auto lua = fb::lua::new_context();
+    auto lua = this->server.lua.new_context();
     if (lua == nullptr)
         co_return;
 
@@ -98,7 +98,7 @@ async::task<void> click::handle_object_click(character* ch, game_reqs::click& re
         if (model.script.empty())
             co_return;
 
-        auto lua = fb::lua::new_context();
+        auto lua = this->server.lua.new_context();
         if (lua == nullptr)
             co_return;
 

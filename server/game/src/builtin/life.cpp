@@ -66,10 +66,8 @@ int builtin::life::builtin_message(lua_State* L)
     auto lua = fb::lua::get(L);
     if (lua == nullptr)
         return 0;
-
-    auto server = lua->env<fb::game::server>("server");
-    auto argc   = lua->argc();
-    auto obj    = lua->touserdata<fb::game::life>(1);
+    auto argc = lua->argc();
+    auto obj  = lua->touserdata<fb::game::life>(1);
     if (obj == nullptr)
         return 0;
 
@@ -81,7 +79,7 @@ int builtin::life::builtin_message(lua_State* L)
     auto type    = lua->toenum(3, MESSAGE_TYPE::STATE);
 
     auto weak     = ch->weak_from_this();
-    auto builder  = lua->new_co_builder(*server);
+    auto builder  = lua->new_co_builder();
     builder.weak  = weak;
     builder.yield = [=]() -> async::task<void> {
         ch->message(message, type);
@@ -98,10 +96,8 @@ int builtin::life::builtin_hp(lua_State* L)
     auto lua = fb::lua::get(L);
     if (lua == nullptr)
         return 0;
-
-    auto server = lua->env<fb::game::server>("server");
-    auto argc   = lua->argc();
-    auto obj    = lua->touserdata<fb::game::life>(1);
+    auto argc = lua->argc();
+    auto obj  = lua->touserdata<fb::game::life>(1);
     if (obj == nullptr)
         return 0;
 
@@ -109,7 +105,7 @@ int builtin::life::builtin_hp(lua_State* L)
     {
         auto hp_value = std::make_shared<uint32_t>();
         auto weak     = obj->weak_from_this();
-        auto builder  = lua->new_co_builder(*server);
+        auto builder  = lua->new_co_builder();
         builder.weak  = weak;
         builder.yield = [=]() -> async::task<void> {
             *hp_value = obj->stat.hp();
@@ -126,7 +122,7 @@ int builtin::life::builtin_hp(lua_State* L)
         auto value    = (uint32_t)lua->tointeger(2);
         auto notify   = argc < 3 || lua->toboolean(3);
         auto weak     = obj->weak_from_this();
-        auto builder  = lua->new_co_builder(*server);
+        auto builder  = lua->new_co_builder();
         builder.weak  = weak;
         builder.yield = [=]() -> async::task<void> {
             obj->stat.hp(value, notify);
@@ -144,10 +140,8 @@ int builtin::life::builtin_mp(lua_State* L)
     auto lua = fb::lua::get(L);
     if (lua == nullptr)
         return 0;
-
-    auto server = lua->env<fb::game::server>("server");
-    auto argc   = lua->argc();
-    auto obj    = lua->touserdata<fb::game::life>(1);
+    auto argc = lua->argc();
+    auto obj  = lua->touserdata<fb::game::life>(1);
     if (obj == nullptr)
         return 0;
 
@@ -155,7 +149,7 @@ int builtin::life::builtin_mp(lua_State* L)
     {
         auto mp_value = std::make_shared<uint32_t>();
         auto weak     = obj->weak_from_this();
-        auto builder  = lua->new_co_builder(*server);
+        auto builder  = lua->new_co_builder();
         builder.weak  = weak;
         builder.yield = [=]() -> async::task<void> {
             *mp_value = obj->stat.mp();
@@ -172,7 +166,7 @@ int builtin::life::builtin_mp(lua_State* L)
         auto value    = (uint32_t)lua->tointeger(2);
         auto notify   = argc < 3 || lua->toboolean(3);
         auto weak     = obj->weak_from_this();
-        auto builder  = lua->new_co_builder(*server);
+        auto builder  = lua->new_co_builder();
         builder.weak  = weak;
         builder.yield = [=]() -> async::task<void> {
             obj->stat.mp(value, notify);
@@ -190,17 +184,15 @@ int builtin::life::builtin_heal(lua_State* L)
     auto lua = fb::lua::get(L);
     if (lua == nullptr)
         return 0;
-
-    auto server = lua->env<fb::game::server>("server");
-    auto argc   = lua->argc();
-    auto obj    = lua->touserdata<fb::game::life>(1);
+    auto argc = lua->argc();
+    auto obj  = lua->touserdata<fb::game::life>(1);
     if (obj == nullptr)
         return 0;
 
     auto value    = (uint32_t)lua->tointeger(2);
     auto notify   = argc < 3 || lua->toboolean(3);
     auto weak     = obj->weak_from_this();
-    auto builder  = lua->new_co_builder(*server);
+    auto builder  = lua->new_co_builder();
     builder.weak  = weak;
     builder.yield = [=]() -> async::task<void> {
         obj->stat.heal(value, nullptr, notify);
@@ -217,10 +209,8 @@ int builtin::life::builtin_damage(lua_State* L)
     auto lua = fb::lua::get(L);
     if (lua == nullptr)
         return 0;
-
-    auto server = lua->env<fb::game::server>("server");
-    auto argc   = lua->argc();
-    auto obj    = lua->touserdata<fb::game::life>(1);
+    auto argc = lua->argc();
+    auto obj  = lua->touserdata<fb::game::life>(1);
     if (obj == nullptr)
         return 0;
 
@@ -266,7 +256,7 @@ int builtin::life::builtin_damage(lua_State* L)
     }
 
     auto weak     = obj->weak_from_this();
-    auto builder  = lua->new_co_builder(*server);
+    auto builder  = lua->new_co_builder();
     builder.weak  = weak;
     builder.yield = [=]() -> async::task<void> {
         obj->stat.damage(value, from, critical, rate, physical, fixed, notify);
@@ -283,17 +273,15 @@ int builtin::life::builtin_mp_up(lua_State* L)
     auto lua = fb::lua::get(L);
     if (lua == nullptr)
         return 0;
-
-    auto server = lua->env<fb::game::server>("server");
-    auto argc   = lua->argc();
-    auto obj    = lua->touserdata<fb::game::life>(1);
+    auto argc = lua->argc();
+    auto obj  = lua->touserdata<fb::game::life>(1);
     if (obj == nullptr)
         return 0;
 
     auto value    = (uint32_t)lua->tointeger(2);
     auto notify   = argc < 3 || lua->toboolean(3);
     auto weak     = obj->weak_from_this();
-    auto builder  = lua->new_co_builder(*server);
+    auto builder  = lua->new_co_builder();
     builder.weak  = weak;
     builder.yield = [=]() -> async::task<void> {
         obj->stat.mp_up(value, nullptr, notify);
@@ -310,17 +298,15 @@ int builtin::life::builtin_mp_down(lua_State* L)
     auto lua = fb::lua::get(L);
     if (lua == nullptr)
         return 0;
-
-    auto server = lua->env<fb::game::server>("server");
-    auto argc   = lua->argc();
-    auto obj    = lua->touserdata<fb::game::life>(1);
+    auto argc = lua->argc();
+    auto obj  = lua->touserdata<fb::game::life>(1);
     if (obj == nullptr)
         return 0;
 
     auto value    = (uint32_t)lua->tointeger(2);
     auto notify   = argc < 3 || lua->toboolean(3);
     auto weak     = obj->weak_from_this();
-    auto builder  = lua->new_co_builder(*server);
+    auto builder  = lua->new_co_builder();
     builder.weak  = weak;
     builder.yield = [=]() -> async::task<void> {
         obj->stat.mp_down(value, nullptr, notify);
@@ -337,10 +323,8 @@ int builtin::life::builtin_action(lua_State* L)
     auto lua = fb::lua::get(L);
     if (lua == nullptr)
         return 0;
-
-    auto server = lua->env<fb::game::server>("server");
-    auto argc   = lua->argc();
-    auto obj    = lua->touserdata<fb::game::life>(1);
+    auto argc = lua->argc();
+    auto obj  = lua->touserdata<fb::game::life>(1);
     if (obj == nullptr)
         return 0;
 
@@ -348,7 +332,7 @@ int builtin::life::builtin_action(lua_State* L)
     auto duration = lua->tointeger(3, static_cast<int>(DURATION::SPELL));
     auto sound    = (uint8_t)lua->tointeger(4, (uint8_t)0x00);
     auto weak     = obj->weak_from_this();
-    auto builder  = lua->new_co_builder(*server);
+    auto builder  = lua->new_co_builder();
     builder.weak  = weak;
     builder.yield = [=]() -> async::task<void> {
         obj->action(ACTION(action), DURATION(duration), sound);
@@ -365,10 +349,8 @@ int builtin::life::builtin_spell(lua_State* L)
     auto lua = fb::lua::get(L);
     if (lua == nullptr)
         return 0;
-
-    auto server = lua->env<fb::game::server>("server");
-    auto argc   = lua->argc();
-    auto obj    = lua->touserdata<fb::game::life>(1);
+    auto argc = lua->argc();
+    auto obj  = lua->touserdata<fb::game::life>(1);
     if (obj == nullptr)
         return 0;
 
@@ -377,7 +359,7 @@ int builtin::life::builtin_spell(lua_State* L)
         auto index    = (int)lua->tointeger(2);
         auto spell    = std::make_shared<std::shared_ptr<fb::game::spell>>();
         auto weak     = obj->weak_from_this();
-        auto builder  = lua->new_co_builder(*server);
+        auto builder  = lua->new_co_builder();
         builder.weak  = weak;
         builder.yield = [=]() -> async::task<void> {
             *spell = obj->spells[index];
@@ -398,7 +380,7 @@ int builtin::life::builtin_spell(lua_State* L)
         auto name     = lua->tostring(2);
         auto spell    = std::make_shared<std::shared_ptr<fb::game::spell>>();
         auto weak     = obj->weak_from_this();
-        auto builder  = lua->new_co_builder(*server);
+        auto builder  = lua->new_co_builder();
         builder.weak  = weak;
         builder.yield = [=]() -> async::task<void> {
             *spell = obj->spells.find(name);
@@ -419,7 +401,7 @@ int builtin::life::builtin_spell(lua_State* L)
         auto model    = lua->touserdata<fb::model::spell>(2);
         auto spell    = std::make_shared<std::shared_ptr<fb::game::spell>>();
         auto weak     = obj->weak_from_this();
-        auto builder  = lua->new_co_builder(*server);
+        auto builder  = lua->new_co_builder();
         builder.weak  = weak;
         builder.yield = [=]() -> async::task<void> {
             *spell = obj->spells.find(*model);
@@ -446,16 +428,14 @@ int builtin::life::builtin_spells(lua_State* L)
     auto lua = fb::lua::get(L);
     if (lua == nullptr)
         return 0;
-
-    auto server = lua->env<fb::game::server>("server");
-    auto argc   = lua->argc();
-    auto obj    = lua->touserdata<fb::game::life>(1);
+    auto argc = lua->argc();
+    auto obj  = lua->touserdata<fb::game::life>(1);
     if (obj == nullptr)
         return 0;
 
     auto buffer   = std::make_shared<std::vector<std::shared_ptr<fb::game::spell>>>();
     auto weak     = obj->weak_from_this();
-    auto builder  = lua->new_co_builder(*server);
+    auto builder  = lua->new_co_builder();
     builder.weak  = weak;
     builder.yield = [=]() -> async::task<void> {
         for (int i = 0; i < CONTAINER_CAPACITY; i++)
@@ -484,8 +464,6 @@ int builtin::life::builtin_cast(lua_State* L)
     auto lua = fb::lua::get(L);
     if (lua == nullptr)
         return 0;
-
-    auto server = lua->env<fb::game::server>("server");
     auto argc   = lua->argc();
     auto offset = 1;
     auto obj    = lua->touserdata<fb::game::life>(offset++);
@@ -513,14 +491,14 @@ int builtin::life::builtin_cast(lua_State* L)
         count++;
 
     auto weak     = obj->weak_from_this();
-    auto builder  = lua->new_co_builder(*server);
+    auto builder  = lua->new_co_builder();
     builder.weak  = weak;
     builder.yield = [=]() -> async::task<void> {
         auto map = obj->map();
         if (map == nullptr || map->objects.contains(you) == false)
             co_return;
 
-        auto x = lua::new_context();
+        auto x = static_cast<fb::game::server&>(lua->executor).lua.new_context();
         if (x == nullptr)
             co_return;
 
@@ -553,10 +531,8 @@ int builtin::life::builtin_cc(lua_State* L)
     auto lua = fb::lua::get(L);
     if (lua == nullptr)
         return 0;
-
-    auto server = lua->env<fb::game::server>("server");
-    auto argc   = lua->argc();
-    auto obj    = lua->touserdata<fb::game::life>(1);
+    auto argc = lua->argc();
+    auto obj  = lua->touserdata<fb::game::life>(1);
     if (obj == nullptr)
         return 0;
 
@@ -564,7 +540,7 @@ int builtin::life::builtin_cc(lua_State* L)
     {
         auto cc_value = std::make_shared<uint32_t>();
         auto weak     = obj->weak_from_this();
-        auto builder  = lua->new_co_builder(*server);
+        auto builder  = lua->new_co_builder();
         builder.weak  = weak;
         builder.yield = [=]() -> async::task<void> {
             *cc_value = static_cast<uint32_t>(obj->cc);
@@ -580,7 +556,7 @@ int builtin::life::builtin_cc(lua_State* L)
     {
         auto cc       = static_cast<CROWD_CONTROL>(lua->tointeger(2));
         auto weak     = obj->weak_from_this();
-        auto builder  = lua->new_co_builder(*server);
+        auto builder  = lua->new_co_builder();
         builder.weak  = weak;
         builder.yield = [=]() -> async::task<void> {
             obj->cc.set(cc);
@@ -598,10 +574,8 @@ int builtin::life::builtin_add_cc(lua_State* L)
     auto lua = fb::lua::get(L);
     if (lua == nullptr)
         return 0;
-
-    auto server = lua->env<fb::game::server>("server");
-    auto argc   = lua->argc();
-    auto obj    = lua->touserdata<fb::game::life>(1);
+    auto argc = lua->argc();
+    auto obj  = lua->touserdata<fb::game::life>(1);
     if (obj == nullptr)
         return 0;
 
@@ -609,7 +583,7 @@ int builtin::life::builtin_add_cc(lua_State* L)
     {
         auto cc_value = std::make_shared<uint32_t>();
         auto weak     = obj->weak_from_this();
-        auto builder  = lua->new_co_builder(*server);
+        auto builder  = lua->new_co_builder();
         builder.weak  = weak;
         builder.yield = [=]() -> async::task<void> {
             *cc_value = static_cast<uint32_t>(obj->cc);
@@ -625,7 +599,7 @@ int builtin::life::builtin_add_cc(lua_State* L)
     {
         auto cc       = static_cast<CROWD_CONTROL>(lua->tointeger(2));
         auto weak     = obj->weak_from_this();
-        auto builder  = lua->new_co_builder(*server);
+        auto builder  = lua->new_co_builder();
         builder.weak  = weak;
         builder.yield = [=]() -> async::task<void> {
             obj->cc.add(cc);
@@ -643,16 +617,14 @@ int builtin::life::builtin_remove_cc(lua_State* L)
     auto lua = fb::lua::get(L);
     if (lua == nullptr)
         return 0;
-
-    auto server = lua->env<fb::game::server>("server");
-    auto argc   = lua->argc();
-    auto obj    = lua->touserdata<fb::game::life>(1);
+    auto argc = lua->argc();
+    auto obj  = lua->touserdata<fb::game::life>(1);
     if (obj == nullptr)
         return 0;
 
     auto cc       = static_cast<CROWD_CONTROL>(lua->tointeger(2));
     auto weak     = obj->weak_from_this();
-    auto builder  = lua->new_co_builder(*server);
+    auto builder  = lua->new_co_builder();
     builder.weak  = weak;
     builder.yield = [=]() -> async::task<void> {
         obj->cc.remove(cc);
@@ -669,16 +641,14 @@ int builtin::life::builtin_attack(lua_State* L)
     auto lua = fb::lua::get(L);
     if (lua == nullptr)
         return 0;
-
-    auto server = lua->env<fb::game::server>("server");
-    auto argc   = lua->argc();
-    auto obj    = lua->touserdata<fb::game::life>(1);
+    auto argc = lua->argc();
+    auto obj  = lua->touserdata<fb::game::life>(1);
     if (obj == nullptr)
         return 0;
 
     auto duration = lua->toenum(2, DURATION::ATTACK);
     auto weak     = obj->weak_from_this();
-    auto builder  = lua->new_co_builder(*server);
+    auto builder  = lua->new_co_builder();
     builder.weak  = weak;
     builder.yield = [=]() -> async::task<void> {
         co_await obj->attack(duration);
@@ -695,10 +665,8 @@ int builtin::life::builtin_damage_rate(lua_State* L)
     auto lua = fb::lua::get(L);
     if (lua == nullptr)
         return 0;
-
-    auto server = lua->env<fb::game::server>("server");
-    auto argc   = lua->argc();
-    auto obj    = lua->touserdata<fb::game::life>(1);
+    auto argc = lua->argc();
+    auto obj  = lua->touserdata<fb::game::life>(1);
     if (obj == nullptr)
         return 0;
 
@@ -706,7 +674,7 @@ int builtin::life::builtin_damage_rate(lua_State* L)
     {
         auto damage_rate_value = std::make_shared<uint32_t>();
         auto weak              = obj->weak_from_this();
-        auto builder           = lua->new_co_builder(*server);
+        auto builder           = lua->new_co_builder();
         builder.weak           = weak;
         builder.yield          = [=]() -> async::task<void> {
             *damage_rate_value = obj->damage_rate();
@@ -722,7 +690,7 @@ int builtin::life::builtin_damage_rate(lua_State* L)
     {
         auto value    = lua->tointeger(2);
         auto weak     = obj->weak_from_this();
-        auto builder  = lua->new_co_builder(*server);
+        auto builder  = lua->new_co_builder();
         builder.weak  = weak;
         builder.yield = [=]() -> async::task<void> {
             obj->damage_rate(value);
@@ -740,10 +708,8 @@ int builtin::life::builtin_damage_derate(lua_State* L)
     auto lua = fb::lua::get(L);
     if (lua == nullptr)
         return 0;
-
-    auto server = lua->env<fb::game::server>("server");
-    auto argc   = lua->argc();
-    auto obj    = lua->touserdata<fb::game::life>(1);
+    auto argc = lua->argc();
+    auto obj  = lua->touserdata<fb::game::life>(1);
     if (obj == nullptr)
         return 0;
 
@@ -751,7 +717,7 @@ int builtin::life::builtin_damage_derate(lua_State* L)
     {
         auto damage_derate_value = std::make_shared<uint32_t>();
         auto weak                = obj->weak_from_this();
-        auto builder             = lua->new_co_builder(*server);
+        auto builder             = lua->new_co_builder();
         builder.weak             = weak;
         builder.yield            = [=]() -> async::task<void> {
             *damage_derate_value = obj->damage_derate();
@@ -767,7 +733,7 @@ int builtin::life::builtin_damage_derate(lua_State* L)
     {
         auto value    = lua->tointeger(2);
         auto weak     = obj->weak_from_this();
-        auto builder  = lua->new_co_builder(*server);
+        auto builder  = lua->new_co_builder();
         builder.weak  = weak;
         builder.yield = [=]() -> async::task<void> {
             obj->damage_derate(value);
@@ -785,10 +751,8 @@ int builtin::life::builtin_skill_damage_rate(lua_State* L)
     auto lua = fb::lua::get(L);
     if (lua == nullptr)
         return 0;
-
-    auto server = lua->env<fb::game::server>("server");
-    auto argc   = lua->argc();
-    auto obj    = lua->touserdata<fb::game::life>(1);
+    auto argc = lua->argc();
+    auto obj  = lua->touserdata<fb::game::life>(1);
     if (obj == nullptr)
         return 0;
 
@@ -796,7 +760,7 @@ int builtin::life::builtin_skill_damage_rate(lua_State* L)
     {
         auto skill_damage_rate_value = std::make_shared<uint32_t>();
         auto weak                    = obj->weak_from_this();
-        auto builder                 = lua->new_co_builder(*server);
+        auto builder                 = lua->new_co_builder();
         builder.weak                 = weak;
         builder.yield                = [=]() -> async::task<void> {
             *skill_damage_rate_value = obj->skill_damage_rate();
@@ -812,7 +776,7 @@ int builtin::life::builtin_skill_damage_rate(lua_State* L)
     {
         auto value    = lua->tointeger(2);
         auto weak     = obj->weak_from_this();
-        auto builder  = lua->new_co_builder(*server);
+        auto builder  = lua->new_co_builder();
         builder.weak  = weak;
         builder.yield = [=]() -> async::task<void> {
             obj->skill_damage_rate(value);
@@ -830,10 +794,8 @@ int builtin::life::builtin_paralysis(lua_State* L)
     auto lua = fb::lua::get(L);
     if (lua == nullptr)
         return 0;
-
-    auto server = lua->env<fb::game::server>("server");
-    auto argc   = lua->argc();
-    auto obj    = lua->touserdata<fb::game::life>(1);
+    auto argc = lua->argc();
+    auto obj  = lua->touserdata<fb::game::life>(1);
     if (obj == nullptr)
         return 0;
 
@@ -841,7 +803,7 @@ int builtin::life::builtin_paralysis(lua_State* L)
     {
         auto paralysis_value = std::make_shared<bool>();
         auto weak            = obj->weak_from_this();
-        auto builder         = lua->new_co_builder(*server);
+        auto builder         = lua->new_co_builder();
         builder.weak         = weak;
         builder.yield        = [=]() -> async::task<void> {
             *paralysis_value = obj->paralysis();
@@ -857,7 +819,7 @@ int builtin::life::builtin_paralysis(lua_State* L)
     {
         auto value    = lua->toboolean(2);
         auto weak     = obj->weak_from_this();
-        auto builder  = lua->new_co_builder(*server);
+        auto builder  = lua->new_co_builder();
         builder.weak  = weak;
         builder.yield = [=]() -> async::task<void> {
             obj->paralysis(value);
@@ -875,10 +837,8 @@ int builtin::life::builtin_invincible(lua_State* L)
     auto lua = fb::lua::get(L);
     if (lua == nullptr)
         return 0;
-
-    auto server = lua->env<fb::game::server>("server");
-    auto argc   = lua->argc();
-    auto obj    = lua->touserdata<fb::game::life>(1);
+    auto argc = lua->argc();
+    auto obj  = lua->touserdata<fb::game::life>(1);
     if (obj == nullptr)
         return 0;
 
@@ -886,7 +846,7 @@ int builtin::life::builtin_invincible(lua_State* L)
     {
         auto invincible_value = std::make_shared<bool>();
         auto weak             = obj->weak_from_this();
-        auto builder          = lua->new_co_builder(*server);
+        auto builder          = lua->new_co_builder();
         builder.weak          = weak;
         builder.yield         = [=]() -> async::task<void> {
             *invincible_value = obj->invincible();
@@ -902,7 +862,7 @@ int builtin::life::builtin_invincible(lua_State* L)
     {
         auto value    = lua->toboolean(2);
         auto weak     = obj->weak_from_this();
-        auto builder  = lua->new_co_builder(*server);
+        auto builder  = lua->new_co_builder();
         builder.weak  = weak;
         builder.yield = [=]() -> async::task<void> {
             obj->invincible(value);
@@ -920,10 +880,8 @@ int builtin::life::builtin_cover(lua_State* L)
     auto lua = fb::lua::get(L);
     if (lua == nullptr)
         return 0;
-
-    auto server = lua->env<fb::game::server>("server");
-    auto argc   = lua->argc();
-    auto obj    = lua->touserdata<fb::game::life>(1);
+    auto argc = lua->argc();
+    auto obj  = lua->touserdata<fb::game::life>(1);
     if (obj == nullptr)
         return 0;
 
@@ -931,7 +889,7 @@ int builtin::life::builtin_cover(lua_State* L)
     {
         auto cover_value = std::make_shared<bool>();
         auto weak        = obj->weak_from_this();
-        auto builder     = lua->new_co_builder(*server);
+        auto builder     = lua->new_co_builder();
         builder.weak     = weak;
         builder.yield    = [=]() -> async::task<void> {
             *cover_value = obj->cover();
@@ -947,7 +905,7 @@ int builtin::life::builtin_cover(lua_State* L)
     {
         auto value    = lua->toboolean(2);
         auto weak     = obj->weak_from_this();
-        auto builder  = lua->new_co_builder(*server);
+        auto builder  = lua->new_co_builder();
         builder.weak  = weak;
         builder.yield = [=]() -> async::task<void> {
             obj->cover(value);
@@ -966,15 +924,14 @@ int builtin::life::builtin_base_hp(lua_State* L)
     if (lua == nullptr)
         return 0;
 
-    auto argc   = lua->argc();
-    auto server = lua->env<fb::game::server>("server");
-    auto obj    = lua->touserdata<fb::game::life>(1);
+    auto argc = lua->argc();
+    auto obj  = lua->touserdata<fb::game::life>(1);
     if (obj == nullptr)
         return 0;
 
     auto value    = std::make_shared<uint32_t>();
     auto weak     = obj->weak_from_this();
-    auto builder  = lua->new_co_builder(*server);
+    auto builder  = lua->new_co_builder();
     builder.weak  = weak;
     builder.yield = [=]() -> async::task<void> {
         *value = obj->stat.base_hp();
@@ -992,10 +949,8 @@ int builtin::life::builtin_buff_hp(lua_State* L)
     auto lua = fb::lua::get(L);
     if (lua == nullptr)
         return 0;
-
-    auto server = lua->env<fb::game::server>("server");
-    auto argc   = lua->argc();
-    auto obj    = lua->touserdata<fb::game::life>(1);
+    auto argc = lua->argc();
+    auto obj  = lua->touserdata<fb::game::life>(1);
     if (obj == nullptr)
         return 0;
 
@@ -1003,7 +958,7 @@ int builtin::life::builtin_buff_hp(lua_State* L)
     {
         auto buff_hp_value = std::make_shared<int32_t>();
         auto weak          = obj->weak_from_this();
-        auto builder       = lua->new_co_builder(*server);
+        auto builder       = lua->new_co_builder();
         builder.weak       = weak;
         builder.yield      = [=]() -> async::task<void> {
             *buff_hp_value = obj->stat.buff_hp();
@@ -1019,7 +974,7 @@ int builtin::life::builtin_buff_hp(lua_State* L)
     {
         auto value    = lua->tointeger(2);
         auto weak     = obj->weak_from_this();
-        auto builder  = lua->new_co_builder(*server);
+        auto builder  = lua->new_co_builder();
         builder.weak  = weak;
         builder.yield = [=]() -> async::task<void> {
             obj->stat.buff_hp(static_cast<int32_t>(value));
@@ -1037,15 +992,13 @@ int builtin::life::builtin_maxhp(lua_State* L)
     auto lua = fb::lua::get(L);
     if (lua == nullptr)
         return 0;
-
-    auto server = lua->env<fb::game::server>("server");
-    auto obj    = lua->touserdata<fb::game::life>(1);
+    auto obj = lua->touserdata<fb::game::life>(1);
     if (obj == nullptr)
         return 0;
 
     auto maxhp_value = std::make_shared<uint32_t>();
     auto weak        = obj->weak_from_this();
-    auto builder     = lua->new_co_builder(*server);
+    auto builder     = lua->new_co_builder();
     builder.weak     = weak;
     builder.yield    = [=]() -> async::task<void> {
         *maxhp_value = obj->stat.maxhp();
@@ -1063,15 +1016,13 @@ int builtin::life::builtin_base_mp(lua_State* L)
     auto lua = fb::lua::get(L);
     if (lua == nullptr)
         return 0;
-
-    auto server = lua->env<fb::game::server>("server");
-    auto obj    = lua->touserdata<fb::game::life>(1);
+    auto obj = lua->touserdata<fb::game::life>(1);
     if (obj == nullptr)
         return 0;
 
     auto base_mp_value = std::make_shared<uint32_t>();
     auto weak          = obj->weak_from_this();
-    auto builder       = lua->new_co_builder(*server);
+    auto builder       = lua->new_co_builder();
     builder.weak       = weak;
     builder.yield      = [=]() -> async::task<void> {
         *base_mp_value = obj->stat.base_mp();
@@ -1089,10 +1040,8 @@ int builtin::life::builtin_buff_mp(lua_State* L)
     auto lua = fb::lua::get(L);
     if (lua == nullptr)
         return 0;
-
-    auto server = lua->env<fb::game::server>("server");
-    auto argc   = lua->argc();
-    auto obj    = lua->touserdata<fb::game::life>(1);
+    auto argc = lua->argc();
+    auto obj  = lua->touserdata<fb::game::life>(1);
     if (obj == nullptr)
         return 0;
 
@@ -1100,7 +1049,7 @@ int builtin::life::builtin_buff_mp(lua_State* L)
     {
         auto buff_mp_value = std::make_shared<int32_t>();
         auto weak          = obj->weak_from_this();
-        auto builder       = lua->new_co_builder(*server);
+        auto builder       = lua->new_co_builder();
         builder.weak       = weak;
         builder.yield      = [=]() -> async::task<void> {
             *buff_mp_value = obj->stat.buff_mp();
@@ -1116,7 +1065,7 @@ int builtin::life::builtin_buff_mp(lua_State* L)
     {
         auto value    = lua->tointeger(2);
         auto weak     = obj->weak_from_this();
-        auto builder  = lua->new_co_builder(*server);
+        auto builder  = lua->new_co_builder();
         builder.weak  = weak;
         builder.yield = [=]() -> async::task<void> {
             obj->stat.buff_mp(static_cast<int32_t>(value));
@@ -1134,15 +1083,13 @@ int builtin::life::builtin_maxmp(lua_State* L)
     auto lua = fb::lua::get(L);
     if (lua == nullptr)
         return 0;
-
-    auto server = lua->env<fb::game::server>("server");
-    auto obj    = lua->touserdata<fb::game::life>(1);
+    auto obj = lua->touserdata<fb::game::life>(1);
     if (obj == nullptr)
         return 0;
 
     auto maxmp_value = std::make_shared<uint32_t>();
     auto weak        = obj->weak_from_this();
-    auto builder     = lua->new_co_builder(*server);
+    auto builder     = lua->new_co_builder();
     builder.weak     = weak;
     builder.yield    = [=]() -> async::task<void> {
         *maxmp_value = obj->stat.maxmp();
@@ -1160,15 +1107,13 @@ int builtin::life::builtin_base_str(lua_State* L)
     auto lua = fb::lua::get(L);
     if (lua == nullptr)
         return 0;
-
-    auto server = lua->env<fb::game::server>("server");
-    auto obj    = lua->touserdata<fb::game::life>(1);
+    auto obj = lua->touserdata<fb::game::life>(1);
     if (obj == nullptr)
         return 0;
 
     auto base_str_value = std::make_shared<uint8_t>();
     auto weak           = obj->weak_from_this();
-    auto builder        = lua->new_co_builder(*server);
+    auto builder        = lua->new_co_builder();
     builder.weak        = weak;
     builder.yield       = [=]() -> async::task<void> {
         *base_str_value = obj->stat.base_str();
@@ -1186,10 +1131,8 @@ int builtin::life::builtin_buff_str(lua_State* L)
     auto lua = fb::lua::get(L);
     if (lua == nullptr)
         return 0;
-
-    auto server = lua->env<fb::game::server>("server");
-    auto argc   = lua->argc();
-    auto obj    = lua->touserdata<fb::game::life>(1);
+    auto argc = lua->argc();
+    auto obj  = lua->touserdata<fb::game::life>(1);
     if (obj == nullptr)
         return 0;
 
@@ -1197,7 +1140,7 @@ int builtin::life::builtin_buff_str(lua_State* L)
     {
         auto buff_str_value = std::make_shared<uint8_t>();
         auto weak           = obj->weak_from_this();
-        auto builder        = lua->new_co_builder(*server);
+        auto builder        = lua->new_co_builder();
         builder.weak        = weak;
         builder.yield       = [=]() -> async::task<void> {
             *buff_str_value = obj->stat.buff_str();
@@ -1213,7 +1156,7 @@ int builtin::life::builtin_buff_str(lua_State* L)
     {
         auto value    = lua->tointeger(2);
         auto weak     = obj->weak_from_this();
-        auto builder  = lua->new_co_builder(*server);
+        auto builder  = lua->new_co_builder();
         builder.weak  = weak;
         builder.yield = [=]() -> async::task<void> {
             obj->stat.buff_str(value);
@@ -1231,15 +1174,13 @@ int builtin::life::builtin_str(lua_State* L)
     auto lua = fb::lua::get(L);
     if (lua == nullptr)
         return 0;
-
-    auto server = lua->env<fb::game::server>("server");
-    auto obj    = lua->touserdata<fb::game::life>(1);
+    auto obj = lua->touserdata<fb::game::life>(1);
     if (obj == nullptr)
         return 0;
 
     auto str_value = std::make_shared<uint8_t>();
     auto weak      = obj->weak_from_this();
-    auto builder   = lua->new_co_builder(*server);
+    auto builder   = lua->new_co_builder();
     builder.weak   = weak;
     builder.yield  = [=]() -> async::task<void> {
         *str_value = obj->stat.str();
@@ -1257,15 +1198,13 @@ int builtin::life::builtin_base_dex(lua_State* L)
     auto lua = fb::lua::get(L);
     if (lua == nullptr)
         return 0;
-
-    auto server = lua->env<fb::game::server>("server");
-    auto obj    = lua->touserdata<fb::game::life>(1);
+    auto obj = lua->touserdata<fb::game::life>(1);
     if (obj == nullptr)
         return 0;
 
     auto base_dex_value = std::make_shared<uint8_t>();
     auto weak           = obj->weak_from_this();
-    auto builder        = lua->new_co_builder(*server);
+    auto builder        = lua->new_co_builder();
     builder.weak        = weak;
     builder.yield       = [=]() -> async::task<void> {
         *base_dex_value = obj->stat.base_dex();
@@ -1283,10 +1222,8 @@ int builtin::life::builtin_buff_dex(lua_State* L)
     auto lua = fb::lua::get(L);
     if (lua == nullptr)
         return 0;
-
-    auto server = lua->env<fb::game::server>("server");
-    auto argc   = lua->argc();
-    auto obj    = lua->touserdata<fb::game::life>(1);
+    auto argc = lua->argc();
+    auto obj  = lua->touserdata<fb::game::life>(1);
     if (obj == nullptr)
         return 0;
 
@@ -1294,7 +1231,7 @@ int builtin::life::builtin_buff_dex(lua_State* L)
     {
         auto buff_dex_value = std::make_shared<uint8_t>();
         auto weak           = obj->weak_from_this();
-        auto builder        = lua->new_co_builder(*server);
+        auto builder        = lua->new_co_builder();
         builder.weak        = weak;
         builder.yield       = [=]() -> async::task<void> {
             *buff_dex_value = obj->stat.buff_dex();
@@ -1310,7 +1247,7 @@ int builtin::life::builtin_buff_dex(lua_State* L)
     {
         auto value    = lua->tointeger(2);
         auto weak     = obj->weak_from_this();
-        auto builder  = lua->new_co_builder(*server);
+        auto builder  = lua->new_co_builder();
         builder.weak  = weak;
         builder.yield = [=]() -> async::task<void> {
             obj->stat.buff_dex(value);
@@ -1328,15 +1265,13 @@ int builtin::life::builtin_dex(lua_State* L)
     auto lua = fb::lua::get(L);
     if (lua == nullptr)
         return 0;
-
-    auto server = lua->env<fb::game::server>("server");
-    auto obj    = lua->touserdata<fb::game::life>(1);
+    auto obj = lua->touserdata<fb::game::life>(1);
     if (obj == nullptr)
         return 0;
 
     auto dex_value = std::make_shared<uint8_t>();
     auto weak      = obj->weak_from_this();
-    auto builder   = lua->new_co_builder(*server);
+    auto builder   = lua->new_co_builder();
     builder.weak   = weak;
     builder.yield  = [=]() -> async::task<void> {
         *dex_value = obj->stat.dex();
@@ -1354,15 +1289,13 @@ int builtin::life::builtin_base_int(lua_State* L)
     auto lua = fb::lua::get(L);
     if (lua == nullptr)
         return 0;
-
-    auto server = lua->env<fb::game::server>("server");
-    auto obj    = lua->touserdata<fb::game::life>(1);
+    auto obj = lua->touserdata<fb::game::life>(1);
     if (obj == nullptr)
         return 0;
 
     auto base_int_value = std::make_shared<uint8_t>();
     auto weak           = obj->weak_from_this();
-    auto builder        = lua->new_co_builder(*server);
+    auto builder        = lua->new_co_builder();
     builder.weak        = weak;
     builder.yield       = [=]() -> async::task<void> {
         *base_int_value = obj->stat.base_int();
@@ -1380,10 +1313,8 @@ int builtin::life::builtin_buff_int(lua_State* L)
     auto lua = fb::lua::get(L);
     if (lua == nullptr)
         return 0;
-
-    auto server = lua->env<fb::game::server>("server");
-    auto argc   = lua->argc();
-    auto obj    = lua->touserdata<fb::game::life>(1);
+    auto argc = lua->argc();
+    auto obj  = lua->touserdata<fb::game::life>(1);
     if (obj == nullptr)
         return 0;
 
@@ -1391,7 +1322,7 @@ int builtin::life::builtin_buff_int(lua_State* L)
     {
         auto buff_int_value = std::make_shared<uint8_t>();
         auto weak           = obj->weak_from_this();
-        auto builder        = lua->new_co_builder(*server);
+        auto builder        = lua->new_co_builder();
         builder.weak        = weak;
         builder.yield       = [=]() -> async::task<void> {
             *buff_int_value = obj->stat.buff_int();
@@ -1407,7 +1338,7 @@ int builtin::life::builtin_buff_int(lua_State* L)
     {
         auto value    = lua->tointeger(2);
         auto weak     = obj->weak_from_this();
-        auto builder  = lua->new_co_builder(*server);
+        auto builder  = lua->new_co_builder();
         builder.weak  = weak;
         builder.yield = [=]() -> async::task<void> {
             obj->stat.buff_int(value);
@@ -1425,15 +1356,13 @@ int builtin::life::builtin_intelligence(lua_State* L)
     auto lua = fb::lua::get(L);
     if (lua == nullptr)
         return 0;
-
-    auto server = lua->env<fb::game::server>("server");
-    auto obj    = lua->touserdata<fb::game::life>(1);
+    auto obj = lua->touserdata<fb::game::life>(1);
     if (obj == nullptr)
         return 0;
 
     auto intelligence_value = std::make_shared<uint8_t>();
     auto weak               = obj->weak_from_this();
-    auto builder            = lua->new_co_builder(*server);
+    auto builder            = lua->new_co_builder();
     builder.weak            = weak;
     builder.yield           = [=]() -> async::task<void> {
         *intelligence_value = obj->stat.intelligence();
@@ -1451,15 +1380,13 @@ int builtin::life::builtin_base_phydef(lua_State* L)
     auto lua = fb::lua::get(L);
     if (lua == nullptr)
         return 0;
-
-    auto server = lua->env<fb::game::server>("server");
-    auto obj    = lua->touserdata<fb::game::life>(1);
+    auto obj = lua->touserdata<fb::game::life>(1);
     if (obj == nullptr)
         return 0;
 
     auto base_phydef_value = std::make_shared<int8_t>();
     auto weak              = obj->weak_from_this();
-    auto builder           = lua->new_co_builder(*server);
+    auto builder           = lua->new_co_builder();
     builder.weak           = weak;
     builder.yield          = [=]() -> async::task<void> {
         *base_phydef_value = obj->stat.base_phydef();
@@ -1477,10 +1404,8 @@ int builtin::life::builtin_buff_phydef(lua_State* L)
     auto lua = fb::lua::get(L);
     if (lua == nullptr)
         return 0;
-
-    auto server = lua->env<fb::game::server>("server");
-    auto argc   = lua->argc();
-    auto obj    = lua->touserdata<fb::game::life>(1);
+    auto argc = lua->argc();
+    auto obj  = lua->touserdata<fb::game::life>(1);
     if (obj == nullptr)
         return 0;
 
@@ -1488,7 +1413,7 @@ int builtin::life::builtin_buff_phydef(lua_State* L)
     {
         auto buff_phydef_value = std::make_shared<int8_t>();
         auto weak              = obj->weak_from_this();
-        auto builder           = lua->new_co_builder(*server);
+        auto builder           = lua->new_co_builder();
         builder.weak           = weak;
         builder.yield          = [=]() -> async::task<void> {
             *buff_phydef_value = obj->stat.buff_phydef();
@@ -1504,7 +1429,7 @@ int builtin::life::builtin_buff_phydef(lua_State* L)
     {
         auto value    = lua->tointeger(2);
         auto weak     = obj->weak_from_this();
-        auto builder  = lua->new_co_builder(*server);
+        auto builder  = lua->new_co_builder();
         builder.weak  = weak;
         builder.yield = [=]() -> async::task<void> {
             obj->stat.buff_phydef(value);
@@ -1522,15 +1447,13 @@ int builtin::life::builtin_phydef(lua_State* L)
     auto lua = fb::lua::get(L);
     if (lua == nullptr)
         return 0;
-
-    auto server = lua->env<fb::game::server>("server");
-    auto obj    = lua->touserdata<fb::game::life>(1);
+    auto obj = lua->touserdata<fb::game::life>(1);
     if (obj == nullptr)
         return 0;
 
     auto phydef_value = std::make_shared<int8_t>();
     auto weak         = obj->weak_from_this();
-    auto builder      = lua->new_co_builder(*server);
+    auto builder      = lua->new_co_builder();
     builder.weak      = weak;
     builder.yield     = [=]() -> async::task<void> {
         *phydef_value = obj->stat.phydef();
@@ -1548,15 +1471,13 @@ int builtin::life::builtin_base_magdef(lua_State* L)
     auto lua = fb::lua::get(L);
     if (lua == nullptr)
         return 0;
-
-    auto server = lua->env<fb::game::server>("server");
-    auto obj    = lua->touserdata<fb::game::life>(1);
+    auto obj = lua->touserdata<fb::game::life>(1);
     if (obj == nullptr)
         return 0;
 
     auto base_magdef_value = std::make_shared<int8_t>();
     auto weak              = obj->weak_from_this();
-    auto builder           = lua->new_co_builder(*server);
+    auto builder           = lua->new_co_builder();
     builder.weak           = weak;
     builder.yield          = [=]() -> async::task<void> {
         *base_magdef_value = obj->stat.base_magdef();
@@ -1574,10 +1495,8 @@ int builtin::life::builtin_buff_magdef(lua_State* L)
     auto lua = fb::lua::get(L);
     if (lua == nullptr)
         return 0;
-
-    auto server = lua->env<fb::game::server>("server");
-    auto argc   = lua->argc();
-    auto obj    = lua->touserdata<fb::game::life>(1);
+    auto argc = lua->argc();
+    auto obj  = lua->touserdata<fb::game::life>(1);
     if (obj == nullptr)
         return 0;
 
@@ -1585,7 +1504,7 @@ int builtin::life::builtin_buff_magdef(lua_State* L)
     {
         auto buff_magdef_value = std::make_shared<int8_t>();
         auto weak              = obj->weak_from_this();
-        auto builder           = lua->new_co_builder(*server);
+        auto builder           = lua->new_co_builder();
         builder.weak           = weak;
         builder.yield          = [=]() -> async::task<void> {
             *buff_magdef_value = obj->stat.buff_magdef();
@@ -1601,7 +1520,7 @@ int builtin::life::builtin_buff_magdef(lua_State* L)
     {
         auto value    = lua->tointeger(2);
         auto weak     = obj->weak_from_this();
-        auto builder  = lua->new_co_builder(*server);
+        auto builder  = lua->new_co_builder();
         builder.weak  = weak;
         builder.yield = [=]() -> async::task<void> {
             obj->stat.buff_magdef(value);
@@ -1619,15 +1538,13 @@ int builtin::life::builtin_magdef(lua_State* L)
     auto lua = fb::lua::get(L);
     if (lua == nullptr)
         return 0;
-
-    auto server = lua->env<fb::game::server>("server");
-    auto obj    = lua->touserdata<fb::game::life>(1);
+    auto obj = lua->touserdata<fb::game::life>(1);
     if (obj == nullptr)
         return 0;
 
     auto magdef_value = std::make_shared<int8_t>();
     auto weak         = obj->weak_from_this();
-    auto builder      = lua->new_co_builder(*server);
+    auto builder      = lua->new_co_builder();
     builder.weak      = weak;
     builder.yield     = [=]() -> async::task<void> {
         *magdef_value = obj->stat.magdef();
@@ -1645,15 +1562,13 @@ int builtin::life::builtin_base_dam(lua_State* L)
     auto lua = fb::lua::get(L);
     if (lua == nullptr)
         return 0;
-
-    auto server = lua->env<fb::game::server>("server");
-    auto obj    = lua->touserdata<fb::game::life>(1);
+    auto obj = lua->touserdata<fb::game::life>(1);
     if (obj == nullptr)
         return 0;
 
     auto base_dam_value = std::make_shared<uint8_t>();
     auto weak           = obj->weak_from_this();
-    auto builder        = lua->new_co_builder(*server);
+    auto builder        = lua->new_co_builder();
     builder.weak        = weak;
     builder.yield       = [=]() -> async::task<void> {
         *base_dam_value = obj->stat.base_dam();
@@ -1671,10 +1586,8 @@ int builtin::life::builtin_buff_dam(lua_State* L)
     auto lua = fb::lua::get(L);
     if (lua == nullptr)
         return 0;
-
-    auto server = lua->env<fb::game::server>("server");
-    auto argc   = lua->argc();
-    auto obj    = lua->touserdata<fb::game::life>(1);
+    auto argc = lua->argc();
+    auto obj  = lua->touserdata<fb::game::life>(1);
     if (obj == nullptr)
         return 0;
 
@@ -1682,7 +1595,7 @@ int builtin::life::builtin_buff_dam(lua_State* L)
     {
         auto buff_dam_value = std::make_shared<int8_t>();
         auto weak           = obj->weak_from_this();
-        auto builder        = lua->new_co_builder(*server);
+        auto builder        = lua->new_co_builder();
         builder.weak        = weak;
         builder.yield       = [=]() -> async::task<void> {
             *buff_dam_value = obj->stat.buff_dam();
@@ -1698,7 +1611,7 @@ int builtin::life::builtin_buff_dam(lua_State* L)
     {
         auto value    = lua->tointeger(2);
         auto weak     = obj->weak_from_this();
-        auto builder  = lua->new_co_builder(*server);
+        auto builder  = lua->new_co_builder();
         builder.weak  = weak;
         builder.yield = [=]() -> async::task<void> {
             obj->stat.buff_dam(static_cast<int8_t>(value));
@@ -1716,15 +1629,13 @@ int builtin::life::builtin_dam(lua_State* L)
     auto lua = fb::lua::get(L);
     if (lua == nullptr)
         return 0;
-
-    auto server = lua->env<fb::game::server>("server");
-    auto obj    = lua->touserdata<fb::game::life>(1);
+    auto obj = lua->touserdata<fb::game::life>(1);
     if (obj == nullptr)
         return 0;
 
     auto dam_value = std::make_shared<int8_t>();
     auto weak      = obj->weak_from_this();
-    auto builder   = lua->new_co_builder(*server);
+    auto builder   = lua->new_co_builder();
     builder.weak   = weak;
     builder.yield  = [=]() -> async::task<void> {
         *dam_value = obj->stat.dam();
@@ -1742,15 +1653,13 @@ int builtin::life::builtin_base_hit(lua_State* L)
     auto lua = fb::lua::get(L);
     if (lua == nullptr)
         return 0;
-
-    auto server = lua->env<fb::game::server>("server");
-    auto obj    = lua->touserdata<fb::game::life>(1);
+    auto obj = lua->touserdata<fb::game::life>(1);
     if (obj == nullptr)
         return 0;
 
     auto base_hit_value = std::make_shared<uint8_t>();
     auto weak           = obj->weak_from_this();
-    auto builder        = lua->new_co_builder(*server);
+    auto builder        = lua->new_co_builder();
     builder.weak        = weak;
     builder.yield       = [=]() -> async::task<void> {
         *base_hit_value = obj->stat.base_hit();
@@ -1768,10 +1677,8 @@ int builtin::life::builtin_buff_hit(lua_State* L)
     auto lua = fb::lua::get(L);
     if (lua == nullptr)
         return 0;
-
-    auto server = lua->env<fb::game::server>("server");
-    auto argc   = lua->argc();
-    auto obj    = lua->touserdata<fb::game::life>(1);
+    auto argc = lua->argc();
+    auto obj  = lua->touserdata<fb::game::life>(1);
     if (obj == nullptr)
         return 0;
 
@@ -1779,7 +1686,7 @@ int builtin::life::builtin_buff_hit(lua_State* L)
     {
         auto buff_hit_value = std::make_shared<int8_t>();
         auto weak           = obj->weak_from_this();
-        auto builder        = lua->new_co_builder(*server);
+        auto builder        = lua->new_co_builder();
         builder.weak        = weak;
         builder.yield       = [=]() -> async::task<void> {
             *buff_hit_value = obj->stat.buff_hit();
@@ -1795,7 +1702,7 @@ int builtin::life::builtin_buff_hit(lua_State* L)
     {
         auto value    = lua->tointeger(2);
         auto weak     = obj->weak_from_this();
-        auto builder  = lua->new_co_builder(*server);
+        auto builder  = lua->new_co_builder();
         builder.weak  = weak;
         builder.yield = [=]() -> async::task<void> {
             obj->stat.buff_hit(static_cast<int8_t>(value));
@@ -1813,15 +1720,13 @@ int builtin::life::builtin_hit(lua_State* L)
     auto lua = fb::lua::get(L);
     if (lua == nullptr)
         return 0;
-
-    auto server = lua->env<fb::game::server>("server");
-    auto obj    = lua->touserdata<fb::game::life>(1);
+    auto obj = lua->touserdata<fb::game::life>(1);
     if (obj == nullptr)
         return 0;
 
     auto hit_value = std::make_shared<int8_t>();
     auto weak      = obj->weak_from_this();
-    auto builder   = lua->new_co_builder(*server);
+    auto builder   = lua->new_co_builder();
     builder.weak   = weak;
     builder.yield  = [=]() -> async::task<void> {
         *hit_value = obj->stat.hit();
@@ -1839,9 +1744,7 @@ int builtin::life::builtin_normal_attack_damage(lua_State* L)
     auto lua = fb::lua::get(L);
     if (lua == nullptr)
         return 0;
-
-    auto server = lua->env<fb::game::server>("server");
-    auto obj    = lua->touserdata<fb::game::life>(1);
+    auto obj = lua->touserdata<fb::game::life>(1);
     if (obj == nullptr)
         return 0;
 
@@ -1850,7 +1753,7 @@ int builtin::life::builtin_normal_attack_damage(lua_State* L)
     auto size     = lua->toenum(2, MOB_SIZE::SMALL);
     auto damage   = std::make_shared<uint32_t>();
     auto weak     = obj->weak_from_this();
-    auto builder  = lua->new_co_builder(*server);
+    auto builder  = lua->new_co_builder();
     builder.weak  = weak;
     builder.yield = [=]() -> async::task<void> {
         *damage = obj->normal_attack_damage(size);
@@ -1868,17 +1771,15 @@ int builtin::life::builtin_update(lua_State* L)
     auto lua = fb::lua::get(L);
     if (lua == nullptr)
         return 0;
-
-    auto server = lua->env<fb::game::server>("server");
-    auto argc   = lua->argc();
-    auto obj    = lua->touserdata<fb::game::life>(1);
+    auto argc = lua->argc();
+    auto obj  = lua->touserdata<fb::game::life>(1);
     if (obj == nullptr)
         return 0;
 
     auto level    = argc >= 2 ? lua->toenum(2, UPDATE_STATE_LEVEL::HP_MP | UPDATE_STATE_LEVEL::BASED)
                               : UPDATE_STATE_LEVEL::HP_MP | UPDATE_STATE_LEVEL::BASED;
     auto weak     = obj->weak_from_this();
-    auto builder  = lua->new_co_builder(*server);
+    auto builder  = lua->new_co_builder();
     builder.weak  = weak;
     builder.yield = [=]() -> async::task<void> {
         obj->update(level);

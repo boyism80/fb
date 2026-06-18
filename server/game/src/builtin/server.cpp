@@ -47,12 +47,11 @@ int builtin::server::builtin_sleep(lua_State* L)
     if (lua == nullptr)
         return 0;
 
-    auto ms     = (uint32_t)lua->tointeger(1);
-    auto server = lua->env<fb::game::server>("server");
-
-    auto builder  = lua->new_co_builder(*server);
+    auto ms       = (uint32_t)lua->tointeger(1);
+    auto builder  = lua->new_co_builder();
     builder.yield = [=]() -> async::task<void> {
-        co_await server->sleep(std::chrono::milliseconds(ms));
+        auto& server = static_cast<fb::game::server&>(lua->executor);
+        co_await server.sleep(std::chrono::milliseconds(ms));
     };
     builder.resume = []() -> async::task<int> {
         co_return 0;
@@ -75,12 +74,12 @@ int builtin::server::builtin_now(lua_State* L)
     if (lua == nullptr)
         return 0;
 
-    auto server = lua->env<fb::game::server>("server");
-    auto argc   = lua->argc();
+    auto& srv  = static_cast<fb::game::server&>(lua->executor);
+    auto  argc = lua->argc();
 
     if (argc == 0)
     {
-        auto offset = server->now_offset();
+        auto offset = srv.now_offset();
         auto now_c  = std::chrono::system_clock::now() + std::chrono::milliseconds(offset.total_milliseconds());
         auto sec_since_epoch = std::chrono::duration_cast<std::chrono::seconds>(now_c.time_since_epoch()).count();
         lua->pushinteger(static_cast<lua_Integer>(sec_since_epoch));
@@ -105,12 +104,13 @@ int builtin::server::builtin_now(lua_State* L)
 
         auto success  = std::make_shared<bool>(false);
         auto error    = std::make_shared<std::string>();
-        auto builder  = lua->new_co_builder(*server);
+        auto builder  = lua->new_co_builder();
         builder.yield = [=]() -> async::task<void> {
-            auto   world = fb::config<uint32_t>("world");
-            auto&& resp  = co_await server->http.post("internal",
-                                                     "/in-game/set-datetime",
-                                                     internal_reqs::SetDateTime{world, value, reset});
+            auto&  server = static_cast<fb::game::server&>(lua->executor);
+            auto   world  = fb::config<uint32_t>("world");
+            auto&& resp   = co_await server.http.post("internal",
+                                                    "/in-game/set-datetime",
+                                                    internal_reqs::SetDateTime{world, value, reset});
             if (resp.error == 0)
                 *success = true;
             else
@@ -132,8 +132,8 @@ int builtin::server::builtin_time_forward(lua_State* L)
     if (lua == nullptr)
         return 0;
 
-    auto server = lua->env<fb::game::server>("server");
-    auto value  = lua->tostring(1);
+    auto& srv   = static_cast<fb::game::server&>(lua->executor);
+    auto  value = lua->tostring(1);
     if (value.empty())
     {
         lua->pushboolean(false);
@@ -153,16 +153,17 @@ int builtin::server::builtin_time_forward(lua_State* L)
         return 2;
     }
 
-    auto target   = server->now() + delta;
+    auto target   = srv.now() + delta;
     auto datetime = target.to_string();
     auto success  = std::make_shared<bool>(false);
     auto error    = std::make_shared<std::string>();
-    auto builder  = lua->new_co_builder(*server);
+    auto builder  = lua->new_co_builder();
     builder.yield = [=]() -> async::task<void> {
-        auto world = fb::config<uint32_t>("world");
-        auto resp  = co_await server->http.post("internal",
-                                               "/in-game/set-datetime",
-                                               internal_reqs::SetDateTime{world, datetime, false});
+        auto& server = static_cast<fb::game::server&>(lua->executor);
+        auto  world  = fb::config<uint32_t>("world");
+        auto  resp   = co_await server.http.post("internal",
+                                              "/in-game/set-datetime",
+                                              internal_reqs::SetDateTime{world, datetime, false});
         if (resp.error == 0)
             *success = true;
         else
@@ -183,8 +184,8 @@ int builtin::server::builtin_time_backward(lua_State* L)
     if (lua == nullptr)
         return 0;
 
-    auto server = lua->env<fb::game::server>("server");
-    auto value  = lua->tostring(1);
+    auto& srv   = static_cast<fb::game::server&>(lua->executor);
+    auto  value = lua->tostring(1);
     if (value.empty())
     {
         lua->pushboolean(false);
@@ -204,16 +205,17 @@ int builtin::server::builtin_time_backward(lua_State* L)
         return 2;
     }
 
-    auto target   = server->now() - delta;
+    auto target   = srv.now() - delta;
     auto datetime = target.to_string();
     auto success  = std::make_shared<bool>(false);
     auto error    = std::make_shared<std::string>();
-    auto builder  = lua->new_co_builder(*server);
+    auto builder  = lua->new_co_builder();
     builder.yield = [=]() -> async::task<void> {
-        auto world = fb::config<uint32_t>("world");
-        auto resp  = co_await server->http.post("internal",
-                                               "/in-game/set-datetime",
-                                               internal_reqs::SetDateTime{world, datetime, false});
+        auto& server = static_cast<fb::game::server&>(lua->executor);
+        auto  world  = fb::config<uint32_t>("world");
+        auto  resp   = co_await server.http.post("internal",
+                                              "/in-game/set-datetime",
+                                              internal_reqs::SetDateTime{world, datetime, false});
         if (resp.error == 0)
             *success = true;
         else
@@ -243,8 +245,8 @@ int builtin::server::builtin_datetime(lua_State* L)
     if (lua == nullptr)
         return 0;
 
-    auto server = lua->env<fb::game::server>("server");
-    auto dt     = server->now();
+    auto& srv = static_cast<fb::game::server&>(lua->executor);
+    auto  dt  = srv.now();
     lua_createtable(L, 0, 6);
     lua_pushinteger(L, static_cast<lua_Integer>(dt.year()));
     lua_setfield(L, -2, "year");
@@ -267,9 +269,8 @@ int builtin::server::builtin_name2mob(lua_State* L)
     if (lua == nullptr)
         return 0;
 
-    auto server = lua->env<fb::game::server>("server");
-    auto name   = lua->tostring(1);
-    auto mob    = table::mob.name2mob(name);
+    auto name = lua->tostring(1);
+    auto mob  = table::mob.name2mob(name);
 
     if (mob == nullptr)
     {
@@ -288,9 +289,8 @@ int builtin::server::builtin_name2spell(lua_State* L)
     if (lua == nullptr)
         return 0;
 
-    auto server = lua->env<fb::game::server>("server");
-    auto name   = lua->tostring(1);
-    auto spell  = table::spell.name2spell(name);
+    auto name  = lua->tostring(1);
+    auto spell = table::spell.name2spell(name);
 
     if (spell == nullptr)
     {
@@ -309,9 +309,8 @@ int builtin::server::builtin_name2npc(lua_State* L)
     if (lua == nullptr)
         return 0;
 
-    auto server = lua->env<fb::game::server>("server");
-    auto name   = lua->tostring(1);
-    auto npc    = table::npc.name2npc(name);
+    auto name = lua->tostring(1);
+    auto npc  = table::npc.name2npc(name);
 
     if (npc == nullptr)
     {
@@ -330,9 +329,8 @@ int builtin::server::builtin_name2map(lua_State* L)
     if (lua == nullptr)
         return 0;
 
-    auto server = lua->env<fb::game::server>("server");
-    auto name   = lua->tostring(1);
-    auto map    = table::map.name2map(name);
+    auto name = lua->tostring(1);
+    auto map  = table::map.name2map(name);
 
     if (map == nullptr)
     {
@@ -351,13 +349,13 @@ int builtin::server::builtin_name2ch(lua_State* L)
     if (lua == nullptr)
         return 0;
 
-    auto server = lua->env<fb::game::server>("server");
-    auto argc   = lua->argc();
-    auto name   = lua->tostring(1);
+    auto& srv  = static_cast<fb::game::server&>(lua->executor);
+    auto  argc = lua->argc();
+    auto  name = lua->tostring(1);
 
     character::container::character_ptr_t ch;
     {
-        auto guard = server->characters.enter_read();
+        auto guard = srv.characters.enter_read();
         ch         = guard.value().find(name);
     }
     if (ch == nullptr)
@@ -368,7 +366,7 @@ int builtin::server::builtin_name2ch(lua_State* L)
 
     auto weak      = ch->template weak_from_this_as<character>();
     auto ch_holder = std::make_shared<std::shared_ptr<character>>();
-    auto builder   = lua->new_co_builder(*server);
+    auto builder   = lua->new_co_builder();
     builder.weak   = weak;
     builder.yield  = [=]() -> async::task<void> {
         *ch_holder = weak.lock();
@@ -390,9 +388,8 @@ int builtin::server::builtin_name2item(lua_State* L)
     if (lua == nullptr)
         return 0;
 
-    auto server = lua->env<fb::game::server>("server");
-    auto name   = lua->tostring(1);
-    auto item   = table::item.name2item(name);
+    auto name = lua->tostring(1);
+    auto item = table::item.name2item(name);
 
     if (item == nullptr)
     {
@@ -411,9 +408,8 @@ int builtin::server::builtin_id2mob(lua_State* L)
     if (lua == nullptr)
         return 0;
 
-    auto server = lua->env<fb::game::server>("server");
-    auto id     = static_cast<uint32_t>(lua->tointeger(1));
-    auto mob    = const_cast<fb::model::mob*>(table::mob.find(id));
+    auto id  = static_cast<uint32_t>(lua->tointeger(1));
+    auto mob = const_cast<fb::model::mob*>(table::mob.find(id));
 
     if (mob == nullptr)
         lua->pushnil();
@@ -428,9 +424,8 @@ int builtin::server::builtin_id2spell(lua_State* L)
     if (lua == nullptr)
         return 0;
 
-    auto server = lua->env<fb::game::server>("server");
-    auto id     = static_cast<uint32_t>(lua->tointeger(1));
-    auto spell  = const_cast<fb::model::spell*>(table::spell.find(id));
+    auto id    = static_cast<uint32_t>(lua->tointeger(1));
+    auto spell = const_cast<fb::model::spell*>(table::spell.find(id));
 
     if (spell == nullptr)
         lua->pushnil();
@@ -445,9 +440,8 @@ int builtin::server::builtin_id2npc(lua_State* L)
     if (lua == nullptr)
         return 0;
 
-    auto server = lua->env<fb::game::server>("server");
-    auto id     = static_cast<uint32_t>(lua->tointeger(1));
-    auto npc    = const_cast<fb::model::npc*>(table::npc.find(id));
+    auto id  = static_cast<uint32_t>(lua->tointeger(1));
+    auto npc = const_cast<fb::model::npc*>(table::npc.find(id));
 
     if (npc == nullptr)
         lua->pushnil();
@@ -462,9 +456,8 @@ int builtin::server::builtin_id2map(lua_State* L)
     if (lua == nullptr)
         return 0;
 
-    auto server = lua->env<fb::game::server>("server");
-    auto id     = static_cast<uint32_t>(lua->tointeger(1));
-    auto map    = const_cast<fb::model::map*>(table::map.find(id));
+    auto id  = static_cast<uint32_t>(lua->tointeger(1));
+    auto map = const_cast<fb::model::map*>(table::map.find(id));
 
     if (map == nullptr)
         lua->pushnil();
@@ -479,9 +472,8 @@ int builtin::server::builtin_id2item(lua_State* L)
     if (lua == nullptr)
         return 0;
 
-    auto server = lua->env<fb::game::server>("server");
-    auto id     = static_cast<uint32_t>(lua->tointeger(1));
-    auto item   = const_cast<fb::model::item*>(table::item.find(id));
+    auto id   = static_cast<uint32_t>(lua->tointeger(1));
+    auto item = const_cast<fb::model::item*>(table::item.find(id));
 
     if (item == nullptr)
         lua->pushnil();
@@ -496,12 +488,12 @@ int builtin::server::builtin_id2ch(lua_State* L)
     if (lua == nullptr)
         return 0;
 
-    auto server = lua->env<fb::game::server>("server");
-    auto id     = static_cast<uint32_t>(lua->tointeger(1));
+    auto& srv = static_cast<fb::game::server&>(lua->executor);
+    auto  id  = static_cast<uint32_t>(lua->tointeger(1));
 
     character::container::character_ptr_t ch;
     {
-        auto guard = server->characters.enter_read();
+        auto guard = srv.characters.enter_read();
         ch         = guard.value().find(id);
     }
     if (ch == nullptr)
@@ -512,7 +504,7 @@ int builtin::server::builtin_id2ch(lua_State* L)
 
     auto weak      = ch->template weak_from_this_as<character>();
     auto ch_holder = std::make_shared<std::shared_ptr<character>>();
-    auto builder   = lua->new_co_builder(*server);
+    auto builder   = lua->new_co_builder();
     builder.weak   = weak;
     builder.yield  = [=]() -> async::task<void> {
         *ch_holder = weak.lock();
@@ -533,9 +525,6 @@ int builtin::server::builtin_pursuit_sell(lua_State* L)
     auto lua = fb::lua::get(L);
     if (lua == nullptr)
         return 0;
-
-    auto server = lua->env<fb::game::server>("server");
-
     lua->new_table();
     if (lua->is_nil(1))
         return 1;
@@ -574,7 +563,6 @@ int builtin::server::builtin_pursuit_sell_price(lua_State* L)
     if (lua == nullptr)
         return 0;
 
-    auto server  = lua->env<fb::game::server>("server");
     auto pursuit = lua->tointeger(1);
     auto name    = lua->tostring(2);
 
@@ -600,7 +588,6 @@ int builtin::server::builtin_pursuit_sell_name(lua_State* L)
     if (lua == nullptr)
         return 0;
 
-    auto server  = lua->env<fb::game::server>("server");
     auto pursuit = lua->tointeger(1);
 
     if (table::sell_attribute.contains(pursuit) == false)
@@ -616,7 +603,6 @@ int builtin::server::builtin_pursuit_buy(lua_State* L)
     if (lua == nullptr)
         return 0;
 
-    auto server  = lua->env<fb::game::server>("server");
     auto pursuit = lua->tointeger(1);
     lua->new_table();
     if (table::buy.contains(pursuit))
@@ -652,12 +638,12 @@ int builtin::server::builtin_timer(lua_State* L)
     if (lua == nullptr)
         return 0;
 
-    auto server   = lua->env<fb::game::server>("server");
-    auto value    = (uint32_t)lua->tointeger(1);
-    auto decrease = lua->toboolean(2);
+    auto& srv      = static_cast<fb::game::server&>(lua->executor);
+    auto  value    = (uint32_t)lua->tointeger(1);
+    auto  decrease = lua->toboolean(2);
 
     auto type  = decrease ? TIMER_TYPE::DECREASE : TIMER_TYPE::INCREASE;
-    auto guard = server->characters.enter_write();
+    auto guard = srv.characters.enter_write();
     guard.value().foreach_enqueue([value, type](auto& ch) -> async::task<void> {
         ch->timer(value, type);
         co_return;
@@ -671,10 +657,10 @@ int builtin::server::builtin_weather(lua_State* L)
     if (lua == nullptr)
         return 0;
 
-    auto server = lua->env<fb::game::server>("server");
-    auto value  = (uint32_t)lua->tointeger(1);
+    auto& srv   = static_cast<fb::game::server&>(lua->executor);
+    auto  value = (uint32_t)lua->tointeger(1);
 
-    auto guard = server->characters.enter_write();
+    auto guard = srv.characters.enter_write();
     guard.value().foreach_enqueue([value](auto& ch) -> async::task<void> {
         ch->weather(WEATHER_TYPE(value));
         co_return;
@@ -688,10 +674,10 @@ int builtin::server::builtin_bright(lua_State* L)
     if (lua == nullptr)
         return 0;
 
-    auto server = lua->env<fb::game::server>("server");
-    auto value  = (uint32_t)lua->tointeger(1);
+    auto& srv   = static_cast<fb::game::server&>(lua->executor);
+    auto  value = (uint32_t)lua->tointeger(1);
 
-    auto guard = server->characters.enter_write();
+    auto guard = srv.characters.enter_write();
     guard.value().foreach_enqueue([value](auto& ch) -> async::task<void> {
         ch->bright(value);
         co_return;
@@ -765,8 +751,7 @@ int builtin::server::builtin_name2class(lua_State* L)
     if (lua == nullptr)
         return 0;
 
-    auto server = lua->env<fb::game::server>("server");
-    auto name   = lua->tostring(1);
+    auto name = lua->tostring(1);
 
     auto cls       = CLASS::NONE;
     auto promotion = uint8_t{0};
@@ -784,7 +769,6 @@ int builtin::server::builtin_class2name(lua_State* L)
     if (lua == nullptr)
         return 0;
 
-    auto server    = lua->env<fb::game::server>("server");
     auto cls       = (uint8_t)lua->tointeger(1);
     auto promotion = (uint8_t)lua->tointeger(2);
     auto name      = std::string{};
@@ -802,8 +786,8 @@ int builtin::server::builtin_save(lua_State* L)
     if (lua == nullptr)
         return 0;
 
-    auto server = lua->env<fb::game::server>("server");
-    std::ignore = server->save();
+    auto& srv   = static_cast<fb::game::server&>(lua->executor);
+    std::ignore = srv.save();
     return 0;
 }
 
@@ -813,10 +797,10 @@ int builtin::server::builtin_mknpc(lua_State* L)
     if (lua == nullptr)
         return 0;
 
-    auto server = lua->env<fb::game::server>("server");
-    auto argc   = lua->argc();
-    auto name   = lua->tostring(1);
-    auto model  = table::npc.name2npc(name);
+    auto& srv   = static_cast<fb::game::server&>(lua->executor);
+    auto  argc  = lua->argc();
+    auto  name  = lua->tostring(1);
+    auto  model = table::npc.name2npc(name);
     if (model == nullptr)
         return 0;
 
@@ -828,10 +812,10 @@ int builtin::server::builtin_mknpc(lua_State* L)
         if (map_model == nullptr)
             return 0;
 
-        if (server->maps.contains(map_model->id) == false)
+        if (srv.maps.contains(map_model->id) == false)
             return 0;
 
-        map = server->maps[map_model->id];
+        map = srv.maps[map_model->id];
     }
     else if (lua->is_userdata<fb::game::map>(2))
     {
@@ -845,10 +829,10 @@ int builtin::server::builtin_mknpc(lua_State* L)
         if (map_model == nullptr)
             return 0;
 
-        if (server->maps.contains(map_model->id) == false)
+        if (srv.maps.contains(map_model->id) == false)
             return 0;
 
-        map = server->maps[map_model->id];
+        map = srv.maps[map_model->id];
     }
     else
     {
@@ -885,10 +869,11 @@ int builtin::server::builtin_mknpc(lua_State* L)
 
     auto weak       = map->weak_from_this();
     auto npc_holder = std::make_shared<std::shared_ptr<fb::game::npc>>();
-    auto builder    = lua->new_co_builder(*server);
+    auto builder    = lua->new_co_builder();
     builder.weak    = weak;
     builder.yield   = [=]() -> async::task<void> {
-        auto npc = server->make<fb::game::npc>(*model);
+        auto& server = static_cast<fb::game::server&>(lua->executor);
+        auto  npc    = server.make<fb::game::npc>(*model);
         npc->direction(direction);
         npc->map(map, fb::model::point16_t{x, y});
         *npc_holder = npc;
@@ -907,10 +892,10 @@ int builtin::server::builtin_maps(lua_State* L)
     if (lua == nullptr)
         return 0;
 
-    auto server = lua->env<fb::game::server>("server");
+    auto& srv = static_cast<fb::game::server&>(lua->executor);
     lua->new_table();
     auto i = 1;
-    for (auto& [id, map] : server->maps)
+    for (auto& [id, map] : srv.maps)
     {
         lua->pushobject(map);
         lua_rawseti(L, -2, i++);
@@ -924,8 +909,8 @@ int builtin::server::builtin_shutdown(lua_State* L)
     if (lua == nullptr)
         return 0;
 
-    auto server = lua->env<fb::game::server>("server");
-    std::ignore = server->http.post("internal", "/system/shutdown", internal_reqs::Shutdown{});
+    auto& srv   = static_cast<fb::game::server&>(lua->executor);
+    std::ignore = srv.http.post("internal", "/system/shutdown", internal_reqs::Shutdown{});
     return 0;
 }
 
@@ -935,23 +920,24 @@ int builtin::server::builtin_broadcast(lua_State* L)
     if (lua == nullptr)
         return 0;
 
-    auto server     = lua->env<fb::game::server>("server");
-    auto argc       = lua->argc();
-    auto text       = lua->tostring(1);
-    auto type       = lua->toenum(2, MESSAGE_TYPE::STATE);
-    auto broad_type = lua->toenum(3, BROADCAST_TYPE::GLOBAL);
+    auto& srv        = static_cast<fb::game::server&>(lua->executor);
+    auto  argc       = lua->argc();
+    auto  text       = lua->tostring(1);
+    auto  type       = lua->toenum(2, MESSAGE_TYPE::STATE);
+    auto  broad_type = lua->toenum(3, BROADCAST_TYPE::GLOBAL);
 
     if (broad_type == BROADCAST_TYPE::WORLD)
     {
-        auto guard = server->characters.enter_write();
+        auto guard = srv.characters.enter_write();
         guard.value().broadcast(text, type);
         return 0;
     }
     else
     {
-        auto builder  = lua->new_co_builder(*server);
+        auto builder  = lua->new_co_builder();
         builder.yield = [=]() -> async::task<void> {
-            auto guard = co_await server->characters.enter_write_async();
+            auto& server = static_cast<fb::game::server&>(lua->executor);
+            auto  guard  = co_await server.characters.enter_write_async();
             co_await guard.value().broadcast(text, type, broad_type);
         };
         builder.resume = []() -> async::task<int> {
@@ -967,9 +953,8 @@ int builtin::server::builtin_assert_alive(lua_State* L)
     if (lua == nullptr)
         return 0;
 
-    auto server = lua->env<fb::game::server>("server");
-    auto argc   = lua->argc();
-    auto obj    = lua->touserdata<fb::game::object>(1);
+    auto argc = lua->argc();
+    auto obj  = lua->touserdata<fb::game::object>(1);
 
     lua->pushboolean(obj != nullptr);
     return 1;
@@ -981,8 +966,7 @@ int builtin::server::builtin_ban(lua_State* L)
     if (lua == nullptr)
         return 0;
 
-    auto server = lua->env<fb::game::server>("server");
-    auto argc   = lua->argc();
+    auto argc = lua->argc();
 
     auto ch = lua->touserdata<fb::game::character>(1);
     if (ch == nullptr)
@@ -1000,9 +984,10 @@ int builtin::server::builtin_ban(lua_State* L)
 
     auto success  = std::make_shared<bool>(false);
     auto error    = std::make_shared<std::string>();
-    auto builder  = lua->new_co_builder(*server);
+    auto builder  = lua->new_co_builder();
     builder.yield = [=]() -> async::task<void> {
-        auto&& resp = co_await server->ban(name, reason, days);
+        auto&  server = static_cast<fb::game::server&>(lua->executor);
+        auto&& resp   = co_await server.ban(name, reason, days);
         if (resp.error == 0)
             *success = true;
         else
@@ -1023,8 +1008,7 @@ int builtin::server::builtin_unban(lua_State* L)
     if (lua == nullptr)
         return 0;
 
-    auto server = lua->env<fb::game::server>("server");
-    auto argc   = lua->argc();
+    auto argc = lua->argc();
 
     auto ch = lua->touserdata<fb::game::character>(1);
     if (ch == nullptr)
@@ -1038,9 +1022,10 @@ int builtin::server::builtin_unban(lua_State* L)
 
     auto success  = std::make_shared<bool>(false);
     auto error    = std::make_shared<std::string>();
-    auto builder  = lua->new_co_builder(*server);
+    auto builder  = lua->new_co_builder();
     builder.yield = [=]() -> async::task<void> {
-        auto&& resp = co_await server->unban(name);
+        auto&  server = static_cast<fb::game::server&>(lua->executor);
+        auto&& resp   = co_await server.unban(name);
         if (resp.error == 0)
             *success = true;
         else
@@ -1122,13 +1107,13 @@ int builtin::server::builtin_exp_multiplier(lua_State* L)
     if (lua == nullptr)
         return 0;
 
-    auto server = lua->env<fb::game::server>("server");
-    auto argc   = lua->argc();
+    auto& srv  = static_cast<fb::game::server&>(lua->executor);
+    auto  argc = lua->argc();
 
     if (argc == 0)
     {
         // Get multiplier
-        auto multiplier = server->exp_multiplier();
+        auto multiplier = srv.exp_multiplier();
         lua->pushnumber(multiplier);
         return 1;
     }
@@ -1139,12 +1124,13 @@ int builtin::server::builtin_exp_multiplier(lua_State* L)
 
         auto success  = std::make_shared<bool>(false);
         auto error    = std::make_shared<std::string>();
-        auto builder  = lua->new_co_builder(*server);
+        auto builder  = lua->new_co_builder();
         builder.yield = [=]() -> async::task<void> {
-            auto world = fb::config<uint32_t>("world");
-            auto resp  = co_await server->http.post("internal",
-                                                   "/in-game/set-exp-multiplier",
-                                                   internal_reqs::SetExpMultiplier(world, multiplier));
+            auto& server = static_cast<fb::game::server&>(lua->executor);
+            auto  world  = fb::config<uint32_t>("world");
+            auto  resp   = co_await server.http.post("internal",
+                                                  "/in-game/set-exp-multiplier",
+                                                  internal_reqs::SetExpMultiplier(world, multiplier));
             if (resp.error == 0)
                 *success = true;
             else
@@ -1166,13 +1152,13 @@ int builtin::server::builtin_drop_rate_multiplier(lua_State* L)
     if (lua == nullptr)
         return 0;
 
-    auto server = lua->env<fb::game::server>("server");
-    auto argc   = lua->argc();
+    auto& srv  = static_cast<fb::game::server&>(lua->executor);
+    auto  argc = lua->argc();
 
     if (argc == 0)
     {
         // Get multiplier
-        auto multiplier = server->drop_rate_multiplier();
+        auto multiplier = srv.drop_rate_multiplier();
         lua->pushnumber(multiplier);
         return 1;
     }
@@ -1183,12 +1169,13 @@ int builtin::server::builtin_drop_rate_multiplier(lua_State* L)
 
         auto success  = std::make_shared<bool>(false);
         auto error    = std::make_shared<std::string>();
-        auto builder  = lua->new_co_builder(*server);
+        auto builder  = lua->new_co_builder();
         builder.yield = [=]() -> async::task<void> {
-            auto world = fb::config<uint32_t>("world");
-            auto resp  = co_await server->http.post("internal",
-                                                   "/in-game/set-drop-rate-multiplier",
-                                                   internal_reqs::SetDropRateMultiplier(world, multiplier));
+            auto& server = static_cast<fb::game::server&>(lua->executor);
+            auto  world  = fb::config<uint32_t>("world");
+            auto  resp   = co_await server.http.post("internal",
+                                                  "/in-game/set-drop-rate-multiplier",
+                                                  internal_reqs::SetDropRateMultiplier(world, multiplier));
             if (resp.error == 0)
                 *success = true;
             else
@@ -1210,9 +1197,7 @@ int builtin::server::builtin_property(lua_State* L)
     if (lua == nullptr)
         return 0;
 
-    auto server = lua->env<fb::game::server>("server");
-    if (server == nullptr)
-        return 0;
+    auto& srv = static_cast<fb::game::server&>(lua->executor);
 
     auto argc = lua->argc();
     if (argc < 1)
@@ -1227,7 +1212,7 @@ int builtin::server::builtin_property(lua_State* L)
         Json::Value value;
         bool        found = false;
         {
-            auto guard = server->property.enter_read();
+            auto guard = srv.property.enter_read();
             auto it    = guard.value().find(key);
             if (it != guard.value().end())
             {
@@ -1261,7 +1246,7 @@ int builtin::server::builtin_property(lua_State* L)
             const char* s = lua_tostring(L, 2);
             Json::Value val(s ? s : "");
             {
-                auto guard         = server->property.enter_write();
+                auto guard         = srv.property.enter_write();
                 guard.value()[key] = val;
             }
         }
@@ -1269,7 +1254,7 @@ int builtin::server::builtin_property(lua_State* L)
         {
             double n = lua_tonumber(L, 2);
             {
-                auto guard         = server->property.enter_write();
+                auto guard         = srv.property.enter_write();
                 guard.value()[key] = Json::Value(n);
             }
         }
@@ -1277,7 +1262,7 @@ int builtin::server::builtin_property(lua_State* L)
         {
             bool b = lua_toboolean(L, 2) != 0;
             {
-                auto guard         = server->property.enter_write();
+                auto guard         = srv.property.enter_write();
                 guard.value()[key] = Json::Value(b);
             }
         }

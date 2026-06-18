@@ -90,6 +90,12 @@ enum class scope
     WORLD
 };
 
+struct send_option
+{
+    bool with_me = true;
+    bool encrypt = true;
+};
+
 class server : public fb::acceptor<fb::game::character>
 {
     friend class character::container;
@@ -128,7 +134,12 @@ public:
 
 private:
     internal::SavePayload save_payload(const character& ch) const;
-    async::task<void>     set_saved_before_shutdown_on_all();
+    async::task<void>     init_lua();
+    async::task<void>     init_thread_params();
+    void                  init_handlers();
+    void                  init_timers();
+    void                  init_amqp_handlers();
+    async::task<void>     init_script();
 
 public:
     // clang-format off
@@ -168,7 +179,7 @@ protected:
 
 public:
     // clang-format off
-    async::task<void>                           send(object& obj, const fb::protocol::header& header, fb::game::scope scope, bool exclude_self = false, bool encrypt = true);
+    async::task<void>                           send(object& obj, const fb::protocol::header& header, fb::game::scope scope, send_option options = {});
     async::task<void>                           save();
     async::task<void>                           save(character& ch);
     void                                        sync_time();

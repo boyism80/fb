@@ -42,7 +42,7 @@ async::task<void> buff_timer::handle(const fb::model::datetime& now, std::thread
 
                 if (buff->model.concast.empty() == false)
                 {
-                    auto lua = lua::new_context();
+                    auto lua = this->server.lua.new_context();
                     lua->func(buff->model.concast);
                     lua->pushobject(obj);
                     if (buff->caster == nullptr)

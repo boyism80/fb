@@ -50,7 +50,6 @@ extern "C"
 namespace fb {
 
 class thread;
-class thread_container;
 class thread_switchable;
 class async_executor;
 
@@ -146,13 +145,7 @@ struct call_options
     bool auto_resume_parent = true;
 };
 
-context* new_context(context* parent = nullptr, call_options options = {});
-
 context* get(lua_State* ctx);
-
-async::task<void> build(std::string_view name, lua_CFunction fn);
-
-async::task<void> dump(std::string_view path);
 
 class luable : public std::enable_shared_from_this<luable>
 {
@@ -260,16 +253,14 @@ protected:
     fb::thread& _initial_thread;
 
 public:
-    context* owner = nullptr;
+    fb::async_executor& executor;
+    context*            owner = nullptr;
 
 protected:
-    context(lua_State* ctx, fb::thread& initial_thread);
-
-    context(lua_State* ctx, context& owner, context* parent = nullptr);
-
+    context(fb::async_executor& executor, lua_State* ctx, fb::thread& initial_thread);
+    context(fb::async_executor& executor, lua_State* ctx, context& owner, context* parent = nullptr);
     context(const context&) = delete;
-
-    context(context&&) = delete;
+    context(context&&)      = delete;
 
 public:
     virtual ~context() = default;
@@ -571,7 +562,7 @@ public:
         int run();
     };
 
-    co_builder new_co_builder(fb::async_executor& executor);
+    co_builder new_co_builder();
 
 public:
     operator lua_State* () const;
@@ -596,6 +587,9 @@ public:
 class root : public context
 {
 public:
+    static constexpr const char* REGISTRY_KEY = "fb.root";
+
+public:
     using unique_lua_map = std::unordered_map<lua_State*, std::unique_ptr<thread>>;
     using bytecode_set   = std::unordered_map<std::string, std::vector<char>>;
 
@@ -611,7 +605,7 @@ public:
     unique_lua_map idle, busy;
 
 public:
-    root(fb::thread& thread);
+    root(fb::async_executor& executor, fb::thread& thread);
     root(const root&&) = delete;
     ~root();
 
@@ -667,27 +661,25 @@ public:
 class context_pool
 {
 public:
-    using base_type  = std::unordered_map<std::thread::id, std::unique_ptr<root>>;
-    using setup_func = std::function<void(root& lua)>;
+    using base_type = std::unordered_map<std::thread::id, std::unique_ptr<root>>;
 
 private:
-    base_type               _roots;
-    std::vector<setup_func> _setup_funcs;
-    fb::thread_container*   _threads;
+    base_type           _roots;
+    fb::async_executor& _executor;
 
 public:
+    context_pool(fb::async_executor& executor);
     ~context_pool();
 
+    context_pool(const context_pool&)             = delete;
+    context_pool& operator= (const context_pool&) = delete;
+
 public:
-    context* pop(context* parent, call_options options = {});
-    context* get(lua_State* ctx);
-    void     setup(fb::thread_container& threads);
+    context*          new_context(context* parent = nullptr, call_options options = {});
+    async::task<void> dump(std::string_view path);
 
     base_type::iterator begin();
     base_type::iterator end();
-
-public:
-    static context_pool& ist();
 };
 
 class thread : public context
@@ -696,44 +688,11 @@ public:
     const int ref;
 
 public:
-    thread(context& owner, context* parent, call_options options = {});
+    thread(fb::async_executor& executor, context& owner, context* parent, call_options options = {});
     thread(const thread& other) = delete;
     thread(thread&& ctx);
     ~thread();
 };
-
-template <typename T>
-async::task<void> build()
-{
-    auto& ist = context_pool::ist();
-    for (auto& [_, root] : ist)
-    {
-        co_await root->switching();
-        root->template build<T>();
-    }
-}
-
-template <typename T, typename B>
-async::task<void> build()
-{
-    auto& ist = context_pool::ist();
-    for (auto& [_, root] : ist)
-    {
-        co_await root->switching();
-        root->template build<T, B>();
-    }
-}
-
-template <typename T>
-async::task<void> env(const char* key, T* data)
-{
-    auto& ist = context_pool::ist();
-    for (auto& [_, root] : ist)
-    {
-        co_await root->switching();
-        root->env(key, data);
-    }
-}
 
 } // namespace fb::lua
 

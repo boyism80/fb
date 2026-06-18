@@ -17,9 +17,7 @@ int builtin::model::weapon::builtin_damage_small(lua_State* L)
     auto lua = fb::lua::get(L);
     if (lua == nullptr)
         return 0;
-
-    auto server = lua->env<fb::game::server>("server");
-    auto model  = lua->touserdata<fb::model::weapon>(1);
+    auto model = lua->touserdata<fb::model::weapon>(1);
 
     lua->pushinteger(model->damage_small.min);
     lua->pushinteger(model->damage_small.max);
@@ -31,9 +29,7 @@ int builtin::model::weapon::builtin_damage_large(lua_State* L)
     auto lua = fb::lua::get(L);
     if (lua == nullptr)
         return 0;
-
-    auto server = lua->env<fb::game::server>("server");
-    auto model  = lua->touserdata<fb::model::weapon>(1);
+    auto model = lua->touserdata<fb::model::weapon>(1);
 
     lua->pushinteger(model->damage_large.min);
     lua->pushinteger(model->damage_large.max);
@@ -45,9 +41,7 @@ int builtin::model::weapon::builtin_sound(lua_State* L)
     auto lua = fb::lua::get(L);
     if (lua == nullptr)
         return 0;
-
-    auto server = lua->env<fb::game::server>("server");
-    auto model  = lua->touserdata<fb::model::weapon>(1);
+    auto model = lua->touserdata<fb::model::weapon>(1);
 
     lua->pushinteger(model->sound);
     return 1;
@@ -58,9 +52,7 @@ int builtin::model::weapon::builtin_type(lua_State* L)
     auto lua = fb::lua::get(L);
     if (lua == nullptr)
         return 0;
-
-    auto server = lua->env<fb::game::server>("server");
-    auto model  = lua->touserdata<fb::model::weapon>(1);
+    auto model = lua->touserdata<fb::model::weapon>(1);
 
     lua->pushinteger(model->weapon_type());
     return 1;

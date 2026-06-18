@@ -21,10 +21,9 @@ int builtin::model::item::builtin_make(lua_State* L)
     auto lua = fb::lua::get(L);
     if (lua == nullptr)
         return 0;
-
-    auto server = lua->env<fb::game::server>("server");
-    auto model  = lua->touserdata<fb::model::item>(1);
-    auto object = model->make(*server);
+    auto& srv    = static_cast<fb::game::server&>(lua->executor);
+    auto  model  = lua->touserdata<fb::model::item>(1);
+    auto  object = model->make(srv);
 
     auto map = lua->touserdata<fb::game::map>(2);
     async::awaitable_get(object->map(map));

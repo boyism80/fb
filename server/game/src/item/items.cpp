@@ -93,7 +93,7 @@ std::shared_ptr<equipment> items::equipment_off(EQUIPMENT_PARTS parts)
     auto& model = equipment->based<fb::model::equipment>();
     if (model.on_deactivated.empty() == false)
     {
-        auto lua = fb::lua::new_context();
+        auto lua = owner->server.lua.new_context();
         if (lua != nullptr)
         {
 #if defined DEBUG || defined _DEBUG
@@ -1060,7 +1060,7 @@ void items::loot(bool boost)
         if (map == nullptr)
             return;
 
-        auto lua = fb::lua::new_context();
+        auto lua = owner->server.lua.new_context();
         if (lua != nullptr)
         {
 #if defined DEBUG || defined _DEBUG

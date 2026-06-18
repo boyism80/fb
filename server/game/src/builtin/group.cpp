@@ -94,10 +94,9 @@ int builtin::group::builtin_message(lua_State* L)
     auto lua = fb::lua::get(L);
     if (lua == nullptr)
         return 0;
-
-    auto server = lua->env<fb::game::server>("server");
-    auto argc   = lua->argc();
-    auto group  = lua->touserdata<fb::game::group>(1);
+    auto& srv   = static_cast<fb::game::server&>(lua->executor);
+    auto  argc  = lua->argc();
+    auto  group = lua->touserdata<fb::game::group>(1);
     if (group == nullptr)
         return 0;
 
@@ -108,18 +107,19 @@ int builtin::group::builtin_message(lua_State* L)
     auto                                  master_name = group->master();
     character::container::character_ptr_t master_ch;
     {
-        auto guard = server->characters.enter_read();
+        auto guard = srv.characters.enter_read();
         master_ch  = guard.value().find(master_name);
     }
 
     auto error   = std::make_shared<std::optional<std::string>>();
-    auto builder = lua->new_co_builder(*server);
+    auto builder = lua->new_co_builder();
     if (master_ch != nullptr)
         builder.weak = master_ch->template weak_from_this_as<fb::game::character>();
     builder.yield = [=]() -> async::task<void> {
+        auto& server = static_cast<fb::game::server&>(lua->executor);
         try
         {
-            co_await server->groups.broadcast(group_id, message, type);
+            co_await server.groups.broadcast(group_id, message, type);
         }
         catch (std::exception& e)
         {
@@ -141,10 +141,8 @@ int builtin::group::builtin_toggle(lua_State* L)
     auto lua = fb::lua::get(L);
     if (lua == nullptr)
         return 0;
-
-    auto server = lua->env<fb::game::server>("server");
-    auto argc   = lua->argc();
-    auto group  = lua->touserdata<fb::game::group>(1);
+    auto argc  = lua->argc();
+    auto group = lua->touserdata<fb::game::group>(1);
     if (group == nullptr)
         return 0;
 
@@ -158,16 +156,17 @@ int builtin::group::builtin_toggle(lua_State* L)
 
     auto actor_weak = actor->weak_from_this_as<fb::game::character>();
     auto error      = std::make_shared<std::optional<std::string>>();
-    auto builder    = lua->new_co_builder(*server);
+    auto builder    = lua->new_co_builder();
     builder.weak    = actor_weak;
     builder.yield   = [=]() -> async::task<void> {
+        auto& server = static_cast<fb::game::server&>(lua->executor);
         try
         {
             auto actor_shared = actor_weak.lock();
             if (actor_shared == nullptr)
                 throw std::runtime_error("actor character is not alive");
 
-            co_await server->groups.toggle_member(*actor_shared, target_name);
+            co_await server.groups.toggle_member(*actor_shared, target_name);
         }
         catch (std::exception& e)
         {

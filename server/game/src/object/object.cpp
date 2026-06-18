@@ -265,7 +265,7 @@ bool object::move(DIRECTION direction)
     auto before = this->_position;
     this->position(after);
 
-    auto lua = fb::lua::new_context();
+    auto lua = this->server.lua.new_context();
     if (lua != nullptr)
     {
 #if defined DEBUG || defined _DEBUG
@@ -325,7 +325,7 @@ bool object::direction(DIRECTION value)
 
     this->_direction = value;
 
-    auto lua = fb::lua::new_context();
+    auto lua = this->server.lua.new_context();
     if (lua != nullptr)
     {
 #if defined DEBUG || defined _DEBUG

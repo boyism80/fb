@@ -64,9 +64,7 @@ int builtin::model::mob::builtin_drop(lua_State* L)
     auto lua = fb::lua::get(L);
     if (lua == nullptr)
         return 0;
-
-    auto server = lua->env<fb::game::server>("server");
-    auto model  = lua->touserdata<fb::model::mob>(1);
+    auto model = lua->touserdata<fb::model::mob>(1);
     if (model == nullptr)
         return 0;
 

@@ -1976,13 +1976,3 @@ std::shared_ptr<fb::game::appearance> character::appearance() const
 
     return ptr;
 }
-
-bool character::saved_before_shutdown() const
-{
-    return this->_saved_before_shutdown;
-}
-
-void character::saved_before_shutdown(bool value)
-{
-    this->_saved_before_shutdown = value;
-}
