@@ -1,4 +1,5 @@
 #include <fb/login/handler/protocol/login.h>
+#include <fb/login/exception.h>
 #include <fb/encoding.h>
 #include <json/json.h>
 #include <format>

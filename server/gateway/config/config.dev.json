@@ -45,5 +45,9 @@
     },
     "http": {
         "max_concurrent": 500
+    },
+    "client": {
+        "version": 550,
+        "nation": 215
     }
 }

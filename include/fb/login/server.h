@@ -14,7 +14,6 @@
 #include <fb/acceptor.h>
 #include <fb/model/model.h>
 #include <fb/login/session.h>
-#include <fb/login/gateway.h>
 #include <fb/login/protocol.h>
 #include <fb/log_collector.h>
 #include <memory>
@@ -39,56 +38,6 @@ using namespace fb::protocol::internal::request;
 
 namespace internal      = fb::protocol::internal;
 namespace internal_resp = fb::protocol::internal::response;
-
-class login_exception : public std::runtime_error
-{
-private:
-    uint8_t _exc_type;
-
-public:
-    login_exception(uint8_t type, std::string_view what) :
-        std::runtime_error(std::string(what)),
-        _exc_type(type)
-    { }
-
-public:
-    uint8_t type() const
-    {
-        return this->_exc_type;
-    }
-};
-
-class id_exception : public login_exception
-{
-public:
-    id_exception(std::string_view what) :
-        login_exception(0x0E, what)
-    { }
-};
-
-class pw_exception : public login_exception
-{
-public:
-    pw_exception(std::string_view what) :
-        login_exception(0x0F, what)
-    { }
-};
-
-class newpw_exception : public login_exception
-{
-public:
-    newpw_exception(std::string_view what) :
-        login_exception(0x05, what)
-    { }
-};
-
-class btd_exception : public login_exception
-{
-public:
-    btd_exception() :
-        login_exception(0x1F, _TEXT(MESSAGE_ACCOUNT_INVALID_BIRTHDAY))
-    { }
-};
 
 class server : public fb::acceptor<fb::login::session>
 {

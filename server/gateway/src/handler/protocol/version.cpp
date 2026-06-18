@@ -1,8 +1,8 @@
 #include <fb/gateway/handler/protocol/version.h>
-#include <fb/gateway/util.h>
+#include <fb/config.h>
+#include <fb/model/model.h>
 
 using namespace fb::gateway::handler::protocol;
-using namespace fb::gateway::util;
 
 namespace gateway_resp = fb::protocol::gateway::response;
 
@@ -14,7 +14,11 @@ async::task<bool> version::handle(fb::socket<fb::gateway::session>& session, gat
 {
     try
     {
-        assert_client(request);
+        if (request.v != fb::config<uint16_t>("client:version"))
+            throw std::runtime_error(_TEXT(MESSAGE_CLIENT_VERSION_MISMATCH));
+
+        if (request.nation != fb::config<uint8_t>("client:nation"))
+            throw std::runtime_error(_TEXT(MESSAGE_CLIENT_NATION_INVALID));
 
         auto encryption = fb::encryption::generate();
         session.encryption(encryption);

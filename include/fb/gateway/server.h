@@ -3,7 +3,6 @@
 
 #include <fb/acceptor.h>
 #include <fb/gateway/session.h>
-#include <fb/gateway/util.h>
 #include <fb/protocol/flatbuffer/protocol.h>
 #include <fb/log_collector.h>
 #include <memory>

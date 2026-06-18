@@ -1,5 +1,6 @@
 #include <boost/asio/high_resolution_timer.hpp>
 #include <fb/login/server.h>
+#include <fb/login/exception.h>
 #include <fb/login/handler.h>
 #include <fb/log_collector.h>
 #include <format>
