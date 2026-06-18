@@ -47,6 +47,10 @@ module.exports = function () {
                 http: {
                     max_concurrent: 500
                 },
+                client: {
+                    version: conf.gateway.client.version,
+                    nation: conf.gateway.client.nation
+                },
             }
 
             for(const [worldName, worldConf] of Object.entries(conf.worlds)) {
