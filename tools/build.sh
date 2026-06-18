@@ -5,6 +5,8 @@ BUILD_TYPE=${1:-Debug}
 
 echo "Building with type: $BUILD_TYPE"
 
+bash "$(dirname "$0")/prune-build-cache.sh"
+
 pushd ..
 
 echo "Retrieving external IP..."
