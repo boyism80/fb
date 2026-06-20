@@ -3,6 +3,7 @@
 
 #include <random>
 #include <any>
+#include <memory>
 #include <fb/socket.h>
 #include <async/awaitable_get.h>
 #include <boost/endian/conversion.hpp>
@@ -106,6 +107,52 @@ public:
         }
     };
 
+    struct request_erased_context
+    {
+        using promise_type = async::task_completion_source<std::shared_ptr<fb::protocol::header>>;
+
+        std::shared_ptr<promise_type> promise;
+        std::shared_ptr<fb::timer>    timer;
+        std::weak_ptr<BotType>        bot_weak;
+        uint8_t                       hook_cmd;
+        std::atomic<bool>             completed{false};
+        const void*                   context_ptr;
+
+        request_erased_context(std::shared_ptr<BotType> bot, uint8_t opcode) :
+            promise(std::make_shared<promise_type>()),
+            bot_weak(bot),
+            hook_cmd(opcode),
+            context_ptr(this)
+        { }
+
+        void complete_success(std::shared_ptr<fb::protocol::header> response)
+        {
+            if (completed.exchange(true))
+                return;
+
+            if (timer)
+                timer->cancel();
+            promise->set_value(std::move(response));
+        }
+
+        void complete_timeout()
+        {
+            if (completed.exchange(true))
+                return;
+
+            if (auto bot = bot_weak.lock())
+            {
+                bot->remove_hook_by_context(hook_cmd, context_ptr);
+            }
+            promise->set_exception(std::make_exception_ptr(std::runtime_error("request timeout")));
+        }
+
+        async::task<std::shared_ptr<fb::protocol::header>> task()
+        {
+            return promise->task();
+        }
+    };
+
 public:
     bot_controller<BotType>& controller;
 
@@ -113,6 +160,25 @@ protected:
     bot(bot_controller<BotType>& controller, uint32_t id);
 
 public:
+    async::task<std::shared_ptr<fb::protocol::header>> request_by_opcode(
+        std::shared_ptr<BotType>                                                          target,
+        uint8_t                                                                           response_opcode,
+        const fb::protocol::header&                                                       protocol,
+        const std::function<bool(const fb::protocol::header& resp)>&                      condition,
+        const fb::model::timespan&                                                        timeout = 0s,
+        bool                                                                              encrypt = true,
+        bool                                                                              wrap    = true,
+        std::function<std::shared_ptr<fb::protocol::header>(const fb::protocol::header&)> clone   = nullptr);
+
+    async::task<std::shared_ptr<fb::protocol::header>> request_by_opcode(
+        uint8_t                                                                           response_opcode,
+        const fb::protocol::header&                                                       protocol,
+        const std::function<bool(const fb::protocol::header& resp)>&                      condition,
+        const fb::model::timespan&                                                        timeout = 0s,
+        bool                                                                              encrypt = true,
+        bool                                                                              wrap    = true,
+        std::function<std::shared_ptr<fb::protocol::header>(const fb::protocol::header&)> clone   = nullptr);
+
     template <typename ResponseType> async::task<ResponseType>
     request(std::shared_ptr<BotType>                             target,
             const fb::protocol::header&                          protocol,

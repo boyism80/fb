@@ -70,7 +70,7 @@ int main(int argc, char** argv)
         });
 
         fb::console::set_mode(fb::console::mode::plain);
-        async::awaitable_get(server->run());
+        server->run();
     }
     catch (std::exception& e)
     {

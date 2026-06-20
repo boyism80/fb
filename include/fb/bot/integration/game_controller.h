@@ -100,6 +100,9 @@ public:
         auto unique_lock = std::unique_lock<std::shared_mutex>(this->_hook_mutex);
         this->_test_hooks[test][ResponseType::opcode].push_back(hook_func);
     }
+
+    void hook_opcode(bot_integration_test* test, uint8_t opcode, hook_function fn);
+    void unhook_opcode(bot_integration_test* test, uint8_t opcode);
 };
 
 } // namespace fb::bot::integration

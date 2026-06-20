@@ -17,6 +17,7 @@ bot_integration_test::bot_integration_test(game_bot_controller& controller, uint
     this->controller.hook(this, this, &bot_integration_test::on_hook_sequence);
     this->controller.hook(this, this, &bot_integration_test::on_hook_position);
     this->controller.hook(this, this, &bot_integration_test::on_hook_update_external);
+    this->controller.hook(this, this, &bot_integration_test::on_hook_update_external_brief);
 }
 
 bot_integration_test::test_state bot_integration_test::get_state() const
@@ -42,7 +43,7 @@ bool bot_integration_test::is_running() const
 void bot_integration_test::on_bot_connected(std::shared_ptr<fb::bot::game_bot> bot)
 {
     this->_test_bots.push_back(bot);
-    fb::logger::debug("{}: Bot {} added to collection", this->name(), bot->fd());
+    this->try_notify_ready();
 }
 
 void bot_integration_test::on_bot_disconnected(std::shared_ptr<fb::bot::game_bot> bot)
@@ -75,11 +76,32 @@ bool bot_integration_test::is_ready() const
 
     for (auto& bot : bots)
     {
-        if (bot->inited() == false)
+        if (bot == nullptr)
+            return false;
+
+        if (bot->oid() == 0)
             return false;
     }
 
     return true;
+}
+
+void bot_integration_test::mark_bot_logged_in(game_bot& bot)
+{
+    if (bot.inited() == false)
+        bot.inited(true);
+}
+
+void bot_integration_test::try_notify_ready()
+{
+    if (this->is_ready() == false)
+        return;
+
+    if (this->get_state() != test_state::idle)
+        return;
+
+    this->set_state(test_state::ready);
+    this->notify_ready();
 }
 
 std::vector<std::shared_ptr<fb::bot::game_bot>> bot_integration_test::get_test_bots() const
@@ -258,40 +280,28 @@ bot_integration_test::parallel_scenarios(const std::vector<std::pair<uint32_t, s
 
 async::task<void> bot_integration_test::on_hook_sequence(fb::bot::game_bot& bot, const game_resp::id& resp)
 {
-    if (this->is_ready() == false)
-        co_return;
+    if (bot.oid() == resp.oid)
+        this->mark_bot_logged_in(bot);
 
-    if (this->get_state() == test_state::running)
-        co_return;
-
-    fb::logger::debug("{}: All bots ready, notifying controller", this->name());
-    this->set_state(test_state::ready);
-    this->notify_ready();
+    this->try_notify_ready();
     co_return;
 }
 
 async::task<void> bot_integration_test::on_hook_position(fb::bot::game_bot& bot, const game_resp::position& resp)
 {
-    if (this->is_ready() == false)
-        co_return;
-
-    if (this->get_state() == test_state::running)
-        co_return;
-
-    fb::logger::debug("{}: All bots ready, notifying controller", this->name());
-    this->set_state(test_state::ready);
-    this->notify_ready();
+    this->mark_bot_logged_in(bot);
+    this->try_notify_ready();
     co_return;
 }
 
 async::task<void> bot_integration_test::on_hook_update_external(fb::bot::game_bot&                      bot,
                                                                 const game_resp::update_external<true>& resp)
 {
+    if (bot.oid() == 0)
+        bot.set_oid(resp.oid);
+
     if (bot.inited() == false)
     {
-        bot.inited(true);
-        auto id = bot.id;
-
         auto reconnected_index = std::optional<uint32_t>{};
         auto it                = std::find_if(this->_test_bots.begin(), this->_test_bots.end(), [&bot](auto& b) {
             return b.get() == &bot;
@@ -317,124 +327,25 @@ async::task<void> bot_integration_test::on_hook_update_external(fb::bot::game_bo
         this->controller.invoke_transfer_context(bot.name(), bot.shared_from_this_as<game_bot>());
     }
 
-    if (this->is_ready() == false)
-        co_return;
+    this->mark_bot_logged_in(bot);
+    this->try_notify_ready();
+    co_return;
+}
 
-    if (this->get_state() >= test_state::running)
-        co_return;
+async::task<void> bot_integration_test::on_hook_update_external_brief(fb::bot::game_bot&                       bot,
+                                                                      const game_resp::update_external<false>& resp)
+{
+    if (bot.oid() == 0)
+        bot.set_oid(resp.oid);
 
-    fb::logger::debug("{}: All bots ready, notifying controller", this->name());
-    this->set_state(test_state::ready);
-    this->notify_ready();
+    if (bot.oid() == resp.oid)
+        this->mark_bot_logged_in(bot);
+
+    this->try_notify_ready();
     co_return;
 }
 
 async::task<void> bot_integration_test::sleep(std::chrono::milliseconds duration)
 {
     co_await this->controller.container.threads.current()->sleep(duration);
-}
-
-async::task<void> bot_integration_test::arrange_bots_in_line_formation()
-{
-    auto bots = this->get_test_bots();
-    for (int i = static_cast<int>(bots.size()) - 1; i >= 1; --i)
-    {
-        auto& bot = bots[i];
-
-        auto current_position = bot->position();
-        auto target_position  = current_position;
-        co_await bot->move(DIRECTION::RIGHT, i);
-
-        co_await bot->direction(DIRECTION::BOTTOM, DEFAULT_INTERVAL);
-        fb::logger::debug("Bot {} positioned at ({}, {}) facing BOTTOM",
-                          bot->name(),
-                          target_position.x,
-                          target_position.y);
-    }
-}
-
-async::task<void>
-bot_integration_test::arrange_bots_in_grid_formation(uint16_t start_x, uint16_t start_y, uint16_t end_x, uint16_t end_y)
-{
-    auto bots = this->get_test_bots();
-
-    // Calculate grid dimensions
-    auto grid_width  = end_x - start_x + 1;
-    auto grid_height = end_y - start_y + 1;
-
-    // Position bots in a 2D grid from (start_x, start_y) to (end_x, end_y)
-    for (int i = 0; i < static_cast<int>(bots.size()); ++i)
-    {
-        auto& bot = bots[i];
-
-        // Calculate grid position
-        int grid_x = start_x + (i % grid_width);
-        int grid_y = start_y + (i / grid_width);
-
-        // Move bot to calculated position
-        if (bot == bots.back())
-            co_await bot->map_move("낙랑의방", grid_x, grid_y, DEFAULT_TIMEOUT);
-        else
-            std::ignore = bot->map_move("낙랑의방", grid_x, grid_y, DEFAULT_TIMEOUT);
-
-        fb::logger::debug("Bot {} positioned at ({}, {}) facing BOTTOM",
-                          bot->fd(),
-                          bot->position().x,
-                          bot->position().y);
-    }
-}
-
-async::task<void> bot_integration_test::form_group()
-{
-    auto  bots   = this->get_test_bots();
-    auto& caster = bots.front();
-
-    // Caster invites all other bots to the group
-    for (size_t i = 1; i < bots.size(); ++i)
-    {
-        auto& target_bot = bots[i];
-        fb::logger::debug("Inviting bot {} to group", target_bot->name());
-
-        // Send group invitation
-        auto&& resp = co_await caster->request<game_resp::message>(
-            game_reqs::group{target_bot->name()},
-            [](auto& resp) -> bool {
-                if (resp.type != MESSAGE_TYPE::STATE)
-                    return false;
-
-                return resp.text.find("님 그룹에 참여") != std::string::npos;
-            },
-            DEFAULT_TIMEOUT);
-        caster->chat(resp.text);
-    }
-
-    fb::logger::debug("Group formation completed with {} members", bots.size());
-}
-
-async::task<void> bot_integration_test::cleanup_group()
-{
-    auto bots = this->get_test_bots();
-    fb::logger::debug("Cleaning up group formation");
-
-    // Cleanup group option for all bots
-    for (auto& bot : bots)
-    {
-        for (int i = 0; i < 2; i++)
-        {
-            std::ignore = co_await bot->request<game_resp::message>(
-                game_reqs::update_option(OPTION::GROUP, false),
-                [](auto& resp) -> bool {
-                    if (resp.type != MESSAGE_TYPE::STATE)
-                        return false;
-
-                    if (resp.text.find("그룹허가") == std::string::npos)
-                        return false;
-
-                    return true;
-                },
-                DEFAULT_TIMEOUT);
-        }
-    }
-
-    fb::logger::debug("Group cleanup completed");
 }

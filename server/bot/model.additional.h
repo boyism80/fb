@@ -2,6 +2,14 @@
 #define __MODEL_PREPROCESSOR_H__
 
 #include <fb/model/datetime.h>
+#include <fb/lua.h>
+
+#define DECLARE_MAP_INHERIT : public fb::lua::luable
+
+#define DECLARE_MAP_EXTENSION \
+                              \
+public:                       \
+    LUA_PROTOTYPE
 
 #define DECLARE_PROMOTION_CONTAINER_EXTENSION                                                             \
                                                                                                           \

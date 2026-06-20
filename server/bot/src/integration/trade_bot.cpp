@@ -37,8 +37,8 @@ async::task<void> trade_bot::deserialize(fb::stream_reader<big_endian>& reader)
 
     case trade_type::money:
     {
-        this->money_mine  = reader.read<uint8_t>() == 0x00;
-        this->money_money = reader.read<uint32_t>();
+        this->mine  = reader.read<uint8_t>() == 0x00;
+        this->money = reader.read<uint32_t>();
         reader.read<uint8_t>(); // trailing 0x00
         break;
     }

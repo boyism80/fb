@@ -36,8 +36,8 @@ public:
     bool        upload_mine;
 
     // trade_money data
-    uint32_t money_money;
-    bool     money_mine;
+    uint32_t money;
+    bool     mine;
 
     // trade_close data
     std::string close_message;

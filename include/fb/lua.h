@@ -439,8 +439,6 @@ public:
     std::string       metatable(int offset);
     std::string       basetable(std::string_view metaname);
     std::string       tostring(int offset, std::string_view default_value = "");
-    std::string       arg_string(int offset);
-    std::string       ret_string(int offset);
     async::task<void> switching();
     int               tointeger(int offset, int default_value = 0);
     lua_Integer       tonumber(int offset, lua_Integer default_value = 0);
@@ -455,11 +453,7 @@ public:
         else
             return static_cast<T>(lua_tointeger(*this, offset));
     }
-    int  arg_integer(int offset);
-    int  ret_integer(int offset);
     bool toboolean(int offset, bool default_value = false);
-    bool arg_boolean(int offset);
-    bool ret_boolean(int offset);
 
     template <typename T>
     bool is_userdata(int offset)
@@ -655,6 +649,27 @@ public:
     void build(std::string_view name, lua_CFunction fn)
     {
         lua_register(*this, std::string(name).c_str(), fn);
+    }
+
+    void package_path(std::string_view additional_path)
+    {
+        lua_getglobal(*this, "package");
+        lua_getfield(*this, -1, "path");
+        auto current = std::string(lua_tostring(*this, -1));
+        lua_pop(*this, 1);
+        auto updated = current + ";" + std::string(additional_path);
+        lua_pushstring(*this, updated.c_str());
+        lua_setfield(*this, -2, "path");
+        lua_pop(*this, 1);
+    }
+
+    void preload(std::string_view name, lua_CFunction fn)
+    {
+        lua_getglobal(*this, "package");
+        lua_getfield(*this, -1, "preload");
+        lua_pushcfunction(*this, fn);
+        lua_setfield(*this, -2, std::string(name).c_str());
+        lua_pop(*this, 2);
     }
 };
 

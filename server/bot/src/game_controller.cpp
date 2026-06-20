@@ -1,5 +1,6 @@
 #include <fb/bot/game_controller.h>
 #include <fb/bot/container.h>
+#include <fb/bot/integration/protocol_registry.h>
 
 using namespace fb::bot;
 
@@ -33,6 +34,8 @@ game_bot_controller::game_bot_controller(bot_container& container) :
     this->bind(&game_bot_controller::on_item_remove);
     this->bind(&game_bot_controller::on_internal_info);
     this->bind(&game_bot_controller::on_ping);
+
+    integration::protocol_registry::register_all();
 }
 
 bool game_bot_controller::decrypt_policy(int opcode) const
