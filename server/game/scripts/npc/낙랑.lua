@@ -1,6 +1,8 @@
+local quest = require('lib.quest')
+
 function main(me, npc)
-    local quest = me:quest(QUEST_NAKRANG_INTRO)
-    local already_got = (quest ~= nil and quest:completed())
+    local q = me:quest(quest.QUEST_NAKRANG_INTRO)
+    local already_got = (q ~= nil and q:completed())
     if already_got then
         me:dialog(npc, '두루마리를 열어보기\n위해서는 오른쪽의\n\'소지품(단축키i)\'을\n클릭하신 다음 제가 드린\n두루마리를 더블클릭하시면 됩니다.', false, false)
         return
@@ -37,14 +39,14 @@ function main(me, npc)
         goto NPC_0_0003
     end
 
-    if quest == nil then
-        quest = me:start_quest(QUEST_NAKRANG_INTRO)
-        if quest == nil then
+    if q == nil then
+        q = me:start_quest(quest.QUEST_NAKRANG_INTRO)
+        if q == nil then
             me:dialog(npc, '두루마리를 받을 수 없습니다.')
             return
         end
     end
-    quest:complete()
+    q:complete()
     local item = me:mkitem('낙랑의두루마리1', 1)
     me:dialog(item, '<낙랑의두루마리1>을 얻다!!!', false, false)
 end
@@ -304,51 +306,51 @@ function sample_cc(me, npc)
 end
 
 function sample_quest(me, npc)
-    local quest = me:quest(QUEST_NAKRANG_HUNT)
-    if quest == nil then
+    local q = me:quest(quest.QUEST_NAKRANG_HUNT)
+    if q == nil then
         if me:level() < 10 then
             me:dialog(npc, '레벨이 부족합니다.')
             return
         end
 
-        quest = me:start_quest(QUEST_NAKRANG_HUNT)
-        if quest == nil then
+        q = me:start_quest(quest.QUEST_NAKRANG_HUNT)
+        if q == nil then
             me:dialog(npc, '퀘스트 시작 실패')
             return
         end
-        quest:param('다람쥐')
+        q:param('다람쥐')
         me:dialog(npc, '퀘스트를 시작합니다. 다람쥐를 1마리 처치하세요.')
         return
     end
 
-    if quest:completed() then
+    if q:completed() then
         me:dialog(npc, '이미 퀘스트를 완료하셨습니다.')
         return
     end
 
-    local step = quest:step()
+    local step = q:step()
     if step == 0 then
-        local progress = quest:progress()
+        local progress = q:progress()
         local goal = 1
         if progress >= goal then
-            quest:inc_step(1)
-            quest:param('토끼')
+            q:inc_step(1)
+            q:param('토끼')
             me:dialog(npc, '잘 하셨습니다. 다음은 토끼를 2마리 잡으세요')
         else
             me:dialog(npc, string.format('다람쥐 처치 %d/%d', progress, goal))
         end
     elseif step == 1 then
-        local progress = quest:progress()
+        local progress = q:progress()
         local goal = 2
         if progress >= goal then
-            quest:inc_step(1)
-            quest:param('삽사리')
+            q:inc_step(1)
+            q:param('삽사리')
             me:dialog(npc, '잘 하셨습니다. 다음은 삽사리를 3마리 잡으세요')
         else
             me:dialog(npc, string.format('토끼 처치 %d/%d', progress, goal))
         end
     elseif step == 2 then
-        local progress = quest:progress()
+        local progress = q:progress()
         local goal = 3
         if progress >= goal then
             if not me:reward('quest1.step.3') then
@@ -356,7 +358,7 @@ function sample_quest(me, npc)
                 return
             end
 
-            quest:complete()
+            q:complete()
             me:dialog(npc, '퀘스트를 완료했습니다. 보상을 드렸습니다.')
         else
             me:dialog(npc, string.format('삽사리 처치 %d/%d', progress, goal))
@@ -369,7 +371,7 @@ function NPC_0(me, npc)
 end
 
 function sample_menu(me, npc)
-    local selected = me:menu(npc, '안녕하세요. 무엇을 도와드릴까요?', {'group','clan','whisper','send_mail','map','cc','quest'})
+    local selected = me:menu(npc, '안녕하세요. 무엇을 도와드릴까요?', {'group','clan','whisper','send_mail','map','cc','q'})
     if selected == nil then
         return
     end

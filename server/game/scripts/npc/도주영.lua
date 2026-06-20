@@ -1,16 +1,18 @@
+local quest = require('lib.quest')
+
 function NPC_110(me, npc)
-    local quest = me:quest(QUEST_DOJAEYOUNG_HERB)
-    if quest == nil then
+    local q = me:quest(quest.QUEST_DOJAEYOUNG_HERB)
+    if q == nil then
         me:dialog(npc, '더 예뻐질 방법이 없을까?', false, true)
         return
     end
 
-    if quest:step() < 5 then
+    if q:step() < 5 then
         me:dialog(npc, '더 예뻐질 방법이 없을까?', false, true)
         return
     end
 
-    if quest:step() == 5 then
+    if q:step() == 5 then
         ::NPC_110_0001::
         local btn = me:dialog(npc, '앗! ' .. me:name() .. '님 이시군요! 저희 아버지께서 저에게 인어의거울을 주셨는데, 잘 받았습니다.', false, true)
         if btn == DIALOG_RESULT.QUIT then
@@ -47,14 +49,14 @@ function NPC_110(me, npc)
         if sel ~= 0 then
             return
         end
-        quest:step(6)
+        q:step(6)
         me:push_achievement(9, '도주영의 부탁을 들어주자!', 7, 1)
         me:dialog(npc, '씨앗은 해파리 괴물들을 처치하면 얻을 수 있을거에요. 부디 제 부탁을 들어주시길. 그럼 몸조심하세요....', false, true)
         return
     end
 
-    if quest:step() == 6 then
-        local progress = quest:progress()
+    if q:step() == 6 then
+        local progress = q:progress()
         if progress >= 1 and progress <= 9 then
             me:dialog(npc, '정말 감사해요. 덕분에 도삭산이 많이 보기 좋아졌어요.', false, true)
             return
@@ -64,7 +66,7 @@ function NPC_110(me, npc)
                 me:dialog(npc, '소지품이 가득 차서 적막의목걸이를 받을 수 없어요.', false, true)
                 return
             end
-            quest:step(7)
+            q:step(7)
             me:push_achievement(9, '도삭산 300층 퀘스트 완료', 7, 1)
             me:dialog(npc, '흑..정말 감사드려요. 대신 제가 아끼는 물건을 하나 드리죠. 자..', false, true)
             return
@@ -73,7 +75,7 @@ function NPC_110(me, npc)
         return
     end
 
-    if quest:step() >= 7 then
+    if q:step() >= 7 then
         me:dialog(npc, '저번엔 정말 감사했어요. 덕분에 도삭산이 많이 보기가 좋아졌어요.', false, true)
     end
 end

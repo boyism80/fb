@@ -1,5 +1,7 @@
 -- 비영사천문 캐스팅
-function ON_CAST_1(me, spell, message)
+local spell = require('lib.spell')
+
+function ON_CAST_1(me, sp, message)
     local map = me:map()
     if map == nil then
         return
@@ -27,7 +29,7 @@ function ON_CAST_1(me, spell, message)
     local mp = 30
     local effect = nil
     local sound = 1
-    if spell_cast(me, me, spell, {mp=mp, sound=sound, effect=effect}) then
+    if spell.cast(me, me, sp, {mp=mp, sound=sound, effect=effect}) then
         local root = map:model():root()
         local cardinal = root:cardinal(input)
         if cardinal == nil then

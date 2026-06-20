@@ -1,3 +1,5 @@
+local server = require('lib.server')
+
 local ITEM_DEAD_CENTIPEDE = '죽은지네'
 local ITEM_DRIED_CENTIPEDE = '말린지네'
 
@@ -48,11 +50,11 @@ function NPC_239(me, npc)
         { ['item'] = { [ITEM_DEAD_CENTIPEDE] = count } },
         reward
     )
-    if code == EXCHANGE_RESULT.LACK_COST then
+    if code == server.EXCHANGE_RESULT.LACK_COST then
         me:dialog(npc, '지네가 너무 적어서 만들수 없을 것 같네..', false, false)
         return
     end
-    if code == EXCHANGE_RESULT.LACK_CAPACITY then
+    if code == server.EXCHANGE_RESULT.LACK_CAPACITY then
         me:dialog(npc, '소지품이 가득 차서 말린지네를 받을 수 없네.', false, false)
         return
     end

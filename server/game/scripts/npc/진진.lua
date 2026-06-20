@@ -1,5 +1,8 @@
+local quest = require('lib.quest')
+local server = require('lib.server')
+
 function NPC_118(me, npc)
-    local dq = me:quest(QUEST_DETECTIVE)
+    local dq = me:quest(quest.QUEST_DETECTIVE)
     if dq and not dq:completed() then
         local ds = dq:step()
         if ds == 7 then
@@ -166,10 +169,10 @@ function NPC_118(me, npc)
         end
     end
 
-    local quest = me:quest(QUEST_JINJIN)
-    local lighthouse = me:quest(QUEST_LIGHTHOUSE)
+    local q = me:quest(quest.QUEST_JINJIN)
+    local lighthouse = me:quest(quest.QUEST_LIGHTHOUSE)
 
-    if quest == nil then
+    if q == nil then
         if lighthouse == nil or lighthouse:completed() or lighthouse:step() ~= 1 then
             goto NPC_118_DEFAULT
         end
@@ -183,8 +186,8 @@ function NPC_118(me, npc)
         if sel == nil or sel ~= 0 then
             return
         end
-        quest = me:start_quest(QUEST_JINJIN)
-        if quest == nil then
+        q = me:start_quest(quest.QUEST_JINJIN)
+        if q == nil then
             me:dialog(npc, '퀘스트 시작 실패', false, true)
             return
         end
@@ -192,14 +195,14 @@ function NPC_118(me, npc)
             { ['item'] = { ['초보도시락'] = 1 } },
             { ['item'] = { ['선장의일기1'] = 1 } }
         )
-        if code == EXCHANGE_RESULT.LACK_COST then
+        if code == server.EXCHANGE_RESULT.LACK_COST then
             me:dialog(npc, '도시락을 가지고 있지 않으시군요.', false, true)
             return
-        elseif code == EXCHANGE_RESULT.LACK_CAPACITY then
+        elseif code == server.EXCHANGE_RESULT.LACK_CAPACITY then
             me:dialog(npc, '소지품이 가득 차서 선장의일기1을 줄 수 없네.', false, true)
             return
         end
-        quest:complete()
+        q:complete()
         lighthouse:step(2)
         me:push_achievement(32, '진백랑의 부탁을 들어주자. [2/6]', 7, 1)
         me:dialog(npc, '고맙소! 일이 급해서 도시락 만들 여유가 없었거든! 자, 이거라도 받으시오!', false, true)

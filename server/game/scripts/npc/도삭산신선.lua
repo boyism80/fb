@@ -1,7 +1,7 @@
-
+local quest = require('lib.quest')
 function NPC_369(me, npc)
-    local quest = me:quest(QUEST_DOJAECHUN)
-    local at_step_one = (quest and quest:step() == 1)
+    local q = me:quest(quest.QUEST_DOJAECHUN)
+    local at_step_one = (q and q:step() == 1)
 
     if not at_step_one then
         local msg = string.format("오 %s 자넨가? 언제 한번 우리와 바둑이라도 한번 두면 좋겠구먼..", me:name())

@@ -807,12 +807,13 @@ command_funcs = {
             ['privilege'] = ROLE.ADMIN,
             ['usage'] = '[seed] - 천상미궁/PK천상미궁 워프 셔플 (seed 생략 시 now() 사용)',
             ['command'] = function (me, args)
+                local sky_maze = require('lib.sky_maze')
                 local seed = args[1]
                 if seed ~= nil then
                     seed = tonumber(seed)
                 end
-                sky_maze_shuffle(seed)
-                pk_sky_maze_shuffle(seed)
+                sky_maze.shuffle(seed)
+                sky_maze.pk_shuffle(seed)
                 local msg = "천상미궁 / PK천상미궁 워프 셔플 적용되었습니다."
                 if seed ~= nil then
                     msg = msg .. " (seed=" .. tostring(seed) .. ")"
@@ -826,82 +827,7 @@ command_funcs = {
             ['privilege'] = ROLE.ADMIN,
             ['usage'] = '- 현재 셔플 기준 천상미궁시작~천상미궁비밀방 루트를 메시지로 출력',
             ['command'] = function (me, args)
-                if property("sky_maze_0") == nil then
-                    sky_maze_shuffle()
-                end
-                
-                local function sky_maze_next(pos, side)
-                    if side == 0 then
-                        local next_pos = pos - 5
-                        if next_pos <= 0 then next_pos = next_pos + 25 end
-                        return next_pos
-                    elseif side == 1 then
-                        if pos % 5 == 0 then return pos - 4 else return pos + 1 end
-                    elseif side == 2 then
-                        local next_pos = pos + 5
-                        if next_pos > 25 then next_pos = next_pos - 25 end
-                        return next_pos
-                    else
-                        local next_pos = pos - 1
-                        if next_pos % 5 == 0 then next_pos = next_pos + 5 end
-                        return next_pos
-                    end
-                end
-                local function sky_maze_neighbors(pos)
-                    local out = {}
-                    for side = 0, 3 do out[#out + 1] = sky_maze_next(pos, side) end
-                    return out
-                end
-                local function sky_maze_find_route_to_secret()
-                    local start_pos, goal_pos = 1, 25
-                    local parent = {}
-                    parent[start_pos] = -1
-                    local queue = { start_pos }
-                    local head = 1
-                    while head <= #queue do
-                        local cur = queue[head]
-                        head = head + 1
-                        if cur == goal_pos then break end
-                        local neighbors = sky_maze_neighbors(cur)
-                        for i = 1, #neighbors do
-                            local next_pos = neighbors[i]
-                            if parent[next_pos] == nil then
-                                parent[next_pos] = cur
-                                queue[#queue + 1] = next_pos
-                            end
-                        end
-                    end
-                    if parent[goal_pos] == nil then return {} end
-                    local path = {}
-                    local p = goal_pos
-                    while p ~= -1 do path[#path + 1] = p; p = parent[p] end
-                    local rev = {}
-                    for i = #path, 1, -1 do rev[#rev + 1] = path[i] end
-                    return rev
-                end
-                local path = sky_maze_find_route_to_secret()
-                if #path == 0 then
-                    me:message("No route to secret room (unreachable).", MESSAGE_TYPE.BROWN)
-                    return true
-                end
-                local route = { 0 }
-                for i = 1, #path do route[#route + 1] = path[i] end
-                route[#route + 1] = 26
-                local dir_names = { "북", "동", "남", "서" }
-                for i = 1, #route - 1 do
-                    local a = get_sky_maze_slot(route[i])
-                    local b = get_sky_maze_slot(route[i + 1])
-                    local dir_str = ""
-                    if route[i] >= 1 and route[i] <= 25 and route[i + 1] >= 1 and route[i + 1] <= 25 then
-                        for side = 0, 3 do
-                            if sky_maze_next(route[i], side) == route[i + 1] then
-                                dir_str = " (" .. dir_names[side + 1] .. ")"
-                                break
-                            end
-                        end
-                    end
-                    me:message((a or "?") .. dir_str .. " - " .. (b or "?"), MESSAGE_TYPE.BROWN)
-                end
+                require('lib.sky_maze').print_route(me)
                 return true
             end,
         },

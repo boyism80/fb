@@ -1,5 +1,7 @@
 -- 백호의희원 캐스팅
-function ON_CAST_4037(me, you, spell)
+local spell = require('lib.spell')
+
+function ON_CAST_4037(me, you, sp)
     local hp = me:mp()*2
     local mp = me:mp()//2
     local sound = 95
@@ -26,6 +28,6 @@ function ON_CAST_4037(me, you, spell)
             end
         end
     end
-    me:spell(spell):delay(delay)
-    spell_heal(me, you, spell, {hp=hp, mp=mp, sound=sound, effect=effect})
+    me:spell(sp):delay(delay)
+    spell.heal(me, you, sp, {hp=hp, mp=mp, sound=sound, effect=effect})
 end

@@ -1,12 +1,15 @@
 -- 낙랑의두루마리3 사용 스크립트
+local quest = require('lib.quest')
+local server = require('lib.server')
+
 local WEAPON_NAME = '초심자의목도'
 
 function ON_ACTIVATED_3(me, item)
-    local quest = me:quest(QUEST_NAKRANG3)
+    local q = me:quest(quest.QUEST_NAKRANG3)
     local btn
     local model = item:model()
 
-    if quest == nil or quest:completed() then
+    if q == nil or q:completed() then
         ::ON_ACTIVATED_3_0000::
         if me:gender() == GENDER.MALE then
             btn = me:dialog(model, '<임무>\n 목도착용\n\n<내용> \n도톨을 사용하는 방법은 잘 익히셨지요? 이번엔\n목도를 착용해 봅시다! 도톨과 같은 방법으로\n사용하시면 착용이 된답니다!! 자.. 시간은 5초\n드립니다!!\n\n<보상>\n 초심자의남자갑주, 경험치 50 (레벨5미만)', false, true)
@@ -27,17 +30,17 @@ function ON_ACTIVATED_3(me, item)
         if btn == DIALOG_RESULT.PREV then
             goto ON_ACTIVATED_3_0000
         end
-        if quest == nil then
-            quest = me:start_quest(QUEST_NAKRANG3)
-            if quest == nil then
+        if q == nil then
+            q = me:start_quest(quest.QUEST_NAKRANG3)
+            if q == nil then
                 return
             end
         end
-        quest:step(1)
+        q:step(1)
         return
     end
 
-    local step = quest:step()
+    local step = q:step()
     if step ~= 1 then
         return
     end
@@ -59,7 +62,7 @@ function ON_ACTIVATED_3(me, item)
         { ['item'] = { ['낙랑의두루마리3'] = 1 } },
         { ['item'] = { ['낙랑의두루마리4'] = 1, [armor_name] = 1 } }
     )
-    if code == EXCHANGE_RESULT.LACK_CAPACITY then
+    if code == server.EXCHANGE_RESULT.LACK_CAPACITY then
         me:dialog(model, '소지품이 가득 찼습니다.', false, false)
         return
     end
@@ -96,5 +99,5 @@ function ON_ACTIVATED_3(me, item)
         end
     end
 
-    quest:complete()
+    q:complete()
 end

@@ -1,3 +1,6 @@
+local quest = require('lib.quest')
+local server = require('lib.server')
+
 local ACHIEVEMENT_MOUNTAIN_GOD = 41
 local ITEM_FABRIC = '산신의비단'
 local ITEM_NEEDLE = '산신의바늘'
@@ -12,14 +15,14 @@ local CLOTH_CLASS = { '전사', '도적', '주술사', '도사', '전사', '도�
 local CLOTH_GENDER = { '남자', '남자', '남자', '남자', '여자', '여자', '여자', '여자' }
 
 function NPC_138(me, npc)
-    local quest = me:quest(QUEST_MOUNTAIN_GOD)
+    local q = me:quest(quest.QUEST_MOUNTAIN_GOD)
 
-    if quest ~= nil and quest:completed() then
+    if q ~= nil and q:completed() then
         me:dialog(npc, '제가 만들어 드린 산신의옷은 잘 사용하고 계신가요?', false, true)
         return
     end
 
-    if quest == nil then
+    if q == nil then
         ::NPC_138_0001::
         local btn = me:dialog(npc, '안녕하세요~ 도삭산 800층까지 오시다니.. 수고 많으셨겠습니다.\n\n800층 까지도 물론 힘들게 오셨겠지만, 801층 부터는 완전히 다른 세계가 펼쳐진답니다.', false, true)
         if btn == DIALOG_RESULT.QUIT then
@@ -56,27 +59,27 @@ function NPC_138(me, npc)
         if sel ~= 0 then
             return
         end
-        if quest == nil then
-            quest = me:start_quest(QUEST_MOUNTAIN_GOD)
-            if quest == nil then
+        if q == nil then
+            q = me:start_quest(quest.QUEST_MOUNTAIN_GOD)
+            if q == nil then
                 me:dialog(npc, '퀘스트 시작 실패', false, true)
                 return
             end
         end
-        quest:step(1)
+        q:step(1)
         me:push_achievement(ACHIEVEMENT_MOUNTAIN_GOD, '산신의보물지도를 찾자', 7, 25)
         me:dialog(npc, '그럼 보물을 찾으시면 저에게도 꼭 보여주셔야 됩니다!', false, true)
         return
     end
 
-    local step = quest:step()
+    local step = q:step()
     if step == 1 then
         if not me:has_items('산신의보물지도', 1) then
             me:dialog(npc, '아직 보물을 찾기 못하신 것 같군요. 801층 이후에는 책장들이 있는 곳이 있는데, 그중 어딘가 한군데에서 제가 보물지도를 본적이 있습니다. 아마 산신들의 귀중품을 숨겨놓은 곳을 표시해둔 것 같은데...', false, false)
             return
         end
         me:dialog(npc, '오오! 보물지도를 구하셨군요! 어서 빨리 보물을 찾아보시지요!', false, true)
-        quest:step(2)
+        q:step(2)
         return
     end
 
@@ -110,7 +113,7 @@ function NPC_138(me, npc)
             return
         end
         me:rmitem(ITEM_FABRIC, 1, ITEM_DELETE_TYPE.GIVE)
-        quest:step(3)
+        q:step(3)
         me:push_achievement(ACHIEVEMENT_MOUNTAIN_GOD, '산신의바늘을 구해 마석주에게 가져다주자.', 7, 25)
         return
     end
@@ -176,15 +179,15 @@ function NPC_138(me, npc)
             { ['item'] = { [ITEM_NEEDLE] = 1 } },
             { ['item'] = { [item_name] = 1 } }
         )
-        if code == EXCHANGE_RESULT.LACK_COST then
+        if code == server.EXCHANGE_RESULT.LACK_COST then
             me:dialog(npc, '산신의바늘을 아직 구하지 못하신거 같은데요?', false, false)
             return
         end
-        if code == EXCHANGE_RESULT.LACK_CAPACITY then
+        if code == server.EXCHANGE_RESULT.LACK_CAPACITY then
             me:dialog(npc, '소지품이 가득 차서 ' .. name_with(item_name, '을', '를') .. ' 받을 수 없습니다.', false, false)
             return
         end
-        quest:complete()
+        q:complete()
         me:push_achievement(ACHIEVEMENT_MOUNTAIN_GOD, '산신의옷을 만들다!', 6, 25)
         me:dialog(npc, '여기 있습니다! 멋진 옷을 만들게 되어 정말 기쁘군요!', false, true)
         return

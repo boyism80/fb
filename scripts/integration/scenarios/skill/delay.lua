@@ -1,86 +1,104 @@
-local resp     = require("integration.response")
-local protocol = require("integration.protocol")
-local skill    = require("integration.lib.skill")
+local spell_runner = require("integration.lib.spell_runner")
 
 local M = {}
+
+local resp = require("integration.response")
 
 local function parse_cooldown_seconds(message)
     return tonumber(message:match("^(%d+)초"))
 end
 
+local function build_groups(shared)
+    shared = shared or {}
+
+    return {
+        {
+            spell = "헬파이어",
+            cast_type = "TARGET",
+            oid = function(caster) return caster:oid() end,
+            position = function(caster) return shared.pos or caster:position() end,
+            variants = {
+                {
+                    name = "첫시전",
+                    response = resp.update_internal,
+                    pre = function(caster, _, state)
+                        caster:setup_bot_stats(10000000, 1000, 10000000, 1000)
+                        state.pos = caster:position()
+                    end,
+                    condition = function(packet)
+                        if packet.ch_mp == 0 then return true end
+                        return nil
+                    end,
+                    post = function(caster)
+                        caster:mp(1000)
+                        shared.pos = caster:position()
+                        return true
+                    end,
+                },
+                {
+                    name = "첫쿨다운",
+                    response = resp.message,
+                    condition = function(packet)
+                        if packet.type == "STATE"
+                            and packet.text:find("초 후에 사용할 수 있습니다", 1, true) ~= nil then
+                            return true
+                        end
+                        return nil
+                    end,
+                    post = function(_, _, _, packet)
+                        shared.first_cooldown = parse_cooldown_seconds(packet.text)
+                        return shared.first_cooldown ~= nil
+                    end,
+                },
+                {
+                    name = "레벨업후시전",
+                    response = resp.update_internal,
+                    pre = function(caster)
+                        caster:level(99)
+                        caster:create_item("용랑제구봉", 1)
+                        if caster:equip(0) == false then return false end
+                        caster:sleep(shared.first_cooldown * 1000)
+                        shared.pos = caster:position()
+                        return true
+                    end,
+                    condition = function(packet)
+                        if packet.ch_mp == 0 then return true end
+                        return nil
+                    end,
+                    post = function(caster)
+                        caster:mp(1000)
+                        shared.pos = caster:position()
+                        return true
+                    end,
+                },
+                {
+                    name = "두번째쿨다운",
+                    response = resp.message,
+                    condition = function(packet)
+                        if packet.type == "STATE"
+                            and packet.text:find("초 후에 사용할 수 있습니다", 1, true) ~= nil then
+                            return true
+                        end
+                        return nil
+                    end,
+                    post = function(_, _, _, packet)
+                        local second = parse_cooldown_seconds(packet.text)
+                        if second == nil then return false end
+                        return second == shared.first_cooldown - 4
+                    end,
+                },
+            },
+        },
+    }
+end
+
 function M.run(ctx, bot_index)
     local caster = ctx:bot(bot_index)
     log("debug", "SKILL COOLDOWN DELAY TEST STARTED")
-
-    caster:setup_bot_stats(10000000, 1000, 10000000, 1000)
-
-    local spell_slot = caster:learn_spell("헬파이어")
-    if spell_slot == 0xFF then
+    local shared = {}
+    if spell_runner.run_spell_groups(build_groups(shared), caster, nil) == false then
         return false
     end
-
-    local pos = caster:position()
-    caster:request(
-        resp.update_internal,
-        protocol.spell_cast("TARGET", spell_slot, "", caster:oid(), pos),
-        function(packet)
-            return packet.ch_mp == 0
-        end)
-
-    caster:mp(1000)
-
-    local resp2 = caster:request(
-        resp.message,
-        protocol.spell_cast("TARGET", spell_slot, "", caster:oid(), pos),
-        function(packet)
-            return packet.type == "STATE"
-                and packet.text:find("초 후에 사용할 수 있습니다", 1, true) ~= nil
-        end)
-
-    local first_cooldown = parse_cooldown_seconds(resp2.text)
-    if first_cooldown == nil then
-        return false
-    end
-
-    log("debug", "First cooldown time: " .. first_cooldown .. " seconds")
-    caster:level(99)
-    caster:create_item("용랑제구봉", 1)
-
-    if caster:equip(0) == false then
-        return false
-    end
-
-    caster:sleep(first_cooldown * 1000)
-
-    pos = caster:position()
-    caster:request(
-        resp.update_internal,
-        protocol.spell_cast("TARGET", spell_slot, "", caster:oid(), pos),
-        function(packet)
-            return packet.ch_mp == 0
-        end)
-
-    caster:mp(1000)
-
-    local resp3 = caster:request(
-        resp.message,
-        protocol.spell_cast("TARGET", spell_slot, "", caster:oid(), pos),
-        function(packet)
-            return packet.type == "STATE"
-                and packet.text:find("초 후에 사용할 수 있습니다", 1, true) ~= nil
-        end)
-
-    local second_cooldown = parse_cooldown_seconds(resp3.text)
-    if second_cooldown == nil then
-        return false
-    end
-
-    log("debug", "Second cooldown time: " .. second_cooldown .. " seconds")
-
-    if second_cooldown ~= first_cooldown - 4 then
-        return false
-    end
-
     log("debug", "SKILL COOLDOWN DELAY TEST COMPLETED")
     return true
 end

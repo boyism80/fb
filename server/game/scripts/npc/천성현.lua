@@ -1,3 +1,6 @@
+local quest = require('lib.quest')
+local server = require('lib.server')
+
 function NPC_90(me, npc)
     local sel = me:list(npc, '안녕하세요. 어떻게 오셨나요?', { '3차 승급을 원합니다' })
     if sel == nil or sel ~= 0 then
@@ -9,8 +12,8 @@ function NPC_90(me, npc)
         return
     end
 
-    local quest = me:quest(QUEST_PROMOTION_3RD)
-    if quest == nil then
+    local q = me:quest(quest.QUEST_PROMOTION_3RD)
+    if q == nil then
         sel = me:list(npc, '당신은 2차승급을 하신 분이시군요. ...제 이야기를 좀 들어보시겠어요?', {
             '네, 이야기 하세요.',
             '아니오. 음 바빠서.',
@@ -44,8 +47,8 @@ function NPC_90(me, npc)
             return
         end
 
-        local quest = me:quest(QUEST_PROMOTION_3RD)
-        if me:has_items('승급의서장', 1) or (quest and quest:step() >= 1) then
+        local q = me:quest(quest.QUEST_PROMOTION_3RD)
+        if me:has_items('승급의서장', 1) or (q and q:step() >= 1) then
             me:dialog(npc, '이미 증표를 드린 적이 있습니다. 잃어버리지 않도록 하십시오.', false, true)
             return
         end
@@ -53,9 +56,9 @@ function NPC_90(me, npc)
             me:dialog(npc, '소지품이 가득 차서 증표를 받을 수 없습니다.', false, true)
             return
         end
-        quest = me:start_quest(QUEST_PROMOTION_3RD)
-        if quest then
-            quest:step(1)
+        q = me:start_quest(quest.QUEST_PROMOTION_3RD)
+        if q then
+            q:step(1)
         end
 
         if me:dialog(npc, '제가 드린 이 증표는 절대 잃어버리셔선 안됩니다.', false, true) == DIALOG_RESULT.QUIT then
@@ -73,12 +76,12 @@ function NPC_90(me, npc)
         return
     end
 
-    if quest:completed() then
+    if q:completed() then
         return
     end
 
 
-    if quest:step() == 1 then
+    if q:step() == 1 then
         local materials = {['고대마법서\'상'] = 1, ['고대마법서\'하'] = 1}
         if not me:has_items(materials) then
             me:dialog(npc, '아직 고대마법서를 찾지 못하셨군요.', false, true)
@@ -89,7 +92,7 @@ function NPC_90(me, npc)
             me:dialog(npc, '고대마법서를 찾지 못하셨군요.', false, true)
             return
         end
-        quest:step(2)
+        q:step(2)
 
         local dialogs = {
             '아.. 길림성의 신수의 부탁을 들어주고 오셨나보군요..',
@@ -112,7 +115,7 @@ function NPC_90(me, npc)
         end
     end
 
-    if quest:step() == 2 then
+    if q:step() == 2 then
         local materials = {['암흑왕의봉인'] = 1}
         if not me:has_items(materials) then
             me:dialog(npc, '아직 암흑왕의봉인을 찾지 못하셨군요.', false, true)
@@ -127,15 +130,15 @@ function NPC_90(me, npc)
             { ['item'] = materials },
             { ['item'] = { ['천성현의증표'] = 1 } }
         )
-        if code == EXCHANGE_RESULT.LACK_COST then
+        if code == server.EXCHANGE_RESULT.LACK_COST then
             me:dialog(npc, '암흑왕의봉인을 찾지 못하셨군요.', false, true)
             return
         end
-        if code == EXCHANGE_RESULT.LACK_CAPACITY then
+        if code == server.EXCHANGE_RESULT.LACK_CAPACITY then
             me:dialog(npc, '소지품이 가득 차서 증표를 받을 수 없습니다.', false, true)
             return
         end
-        quest:complete()
+        q:complete()
 
         if me:dialog(npc, '그럼 제가 드리는 증표를 가지고 천상계로 가시면 당신을 다음 단계로 승급하도록 해드리겠습니다.', false, true) == DIALOG_RESULT.QUIT then
             return

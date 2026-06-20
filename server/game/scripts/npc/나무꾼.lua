@@ -1,12 +1,15 @@
+local quest = require('lib.quest')
+local server = require('lib.server')
+
 function NPC_180(me, npc)
     if me:level() < 30 then
         me:dialog(npc, '자네는 아직 나무를 하기엔 많이 부족해 보이는군.', false, true)
         return
     end
 
-    local quest = me:quest(QUEST_NAMGUN)
+    local q = me:quest(quest.QUEST_NAMGUN)
 
-    if quest == nil then
+    if q == nil then
         ::NPC_180_0001::
         local button = me:dialog(npc, '나무를 하러 오셨소? 이 근처는 나무가 많지는 않지만 좋은 나무가 많아서 나무 하기에 제격이지.', false, true)
         if button == DIALOG_RESULT.QUIT then
@@ -28,7 +31,7 @@ function NPC_180(me, npc)
         end
 
         if selected == 0 then
-            local q = me:start_quest(QUEST_NAMGUN)
+            local q = me:start_quest(quest.QUEST_NAMGUN)
             if q == nil then
                 me:dialog(npc, '퀘스트 시작 실패', false, true)
                 return
@@ -44,7 +47,7 @@ function NPC_180(me, npc)
         return
     end
 
-    if quest:completed() then
+    if q:completed() then
         me:dialog(npc, 'zzZ...zzZ...', false, true)
         return
     end
@@ -64,11 +67,11 @@ function NPC_180(me, npc)
         { ['money'] = 10000 },
         { ['item'] = { ['쇠도끼'] = 1 } }
     )
-    if code == EXCHANGE_RESULT.LACK_COST then
+    if code == server.EXCHANGE_RESULT.LACK_COST then
         me:dialog(npc, '돈이 부족한 것은 아니오?', false, true)
         return
     end
-    if code == EXCHANGE_RESULT.LACK_CAPACITY then
+    if code == server.EXCHANGE_RESULT.LACK_CAPACITY then
         me:dialog(npc, '소지품이 가득 차서 줄 수가 없네.', false, true)
         return
     end

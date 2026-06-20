@@ -1,9 +1,11 @@
 -- 바다의빛 캐스팅
-function ON_CAST_2005(me, you, spell)
+local spell = require('lib.spell')
+
+function ON_CAST_2005(me, you, sp)
     local mp = 30
     local effect = nil
     local sound = 19
-    if not spell_cast(me, you, spell, {mp=mp, sound=sound, effect=effect}) then
+    if not spell.cast(me, you, sp, {mp=mp, sound=sound, effect=effect}) then
         return
     end
 

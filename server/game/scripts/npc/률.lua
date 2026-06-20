@@ -1,8 +1,9 @@
-
+local quest = require('lib.quest')
+local server = require('lib.server')
 function NPC_555(me, npc)
-    local quest = me:quest(QUEST_BEGINNER_PATH)
-    if quest and (quest:step() == 7 or quest:completed()) then
-        warp_to_return_map(me)
+    local q = me:quest(quest.QUEST_BEGINNER_PATH)
+    if q and (q:step() == 7 or q:completed()) then
+        server.warp_to_return_map(me)
         return
     end
 
@@ -57,14 +58,14 @@ function NPC_555(me, npc)
         goto NPC_555_0013
     end
 
-    if quest == nil then
-        quest = me:start_quest(QUEST_BEGINNER_PATH)
-        if quest == nil then
+    if q == nil then
+        q = me:start_quest(quest.QUEST_BEGINNER_PATH)
+        if q == nil then
             me:dialog(npc, "퀘스트를 시작할 수 없습니다.", false, false)
             return
         end
     end
-    quest:step(7)
+    q:step(7)
     me:exp(me:exp() + 300)
 
     if me:mkitem("노란비서", 20) == nil then
@@ -72,5 +73,5 @@ function NPC_555(me, npc)
         return
     end
 
-    warp_to_return_map(me)
+    server.warp_to_return_map(me)
 end

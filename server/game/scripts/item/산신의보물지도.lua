@@ -1,3 +1,5 @@
+local quest = require('lib.quest')
+
 local TREASURE_SPOTS = {
     { map = '도삭산801층', x = 32, y = 4 },
     { map = '도삭산801층', x = 4, y = 5 },
@@ -12,12 +14,12 @@ local TREASURE_SPOTS = {
 }
 
 function ON_ACTIVATED_10134(me, item)
-    local quest = me:quest(QUEST_MOUNTAIN_GOD)
-    if quest == nil or quest:step() < 1 then
+    local q = me:quest(quest.QUEST_MOUNTAIN_GOD)
+    if q == nil or q:step() < 1 then
         return
     end
 
-    local param = quest:param() or ''
+    local param = q:param() or ''
 
     if param ~= '' and string.match(param, '^[^,]+,%d+,%d+$') then
         local parts = {}
@@ -33,6 +35,6 @@ function ON_ACTIVATED_10134(me, item)
     local idx = math.random(1, #TREASURE_SPOTS)
     local spot = TREASURE_SPOTS[idx]
     local new_param = string.format('%s,%d,%d', spot.map, spot.x, spot.y)
-    quest:param(new_param)
+    q:param(new_param)
     me:dialog(item:model(), spot.map .. ' ' .. tostring(spot.x) .. ', ' .. tostring(spot.y) .. '에 숨겨두다.', false, true)
 end

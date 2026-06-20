@@ -1,5 +1,7 @@
 -- 금강불체 캐스팅
-function ON_CAST_4011(me, spell)
+local spell = require('lib.spell')
+
+function ON_CAST_4011(me, sp)
     local mp = 600
     local effect = 50
     local sound = 84
@@ -21,18 +23,18 @@ function ON_CAST_4011(me, spell)
         return me:message('실패')
     end
 
-    if buff_cast(me, me, spell, {mp=0, sound=sound, effect=effect}) then
-        me:buff(spell, buff_time)
+    if spell.buff_cast(me, me, sp, {mp=0, sound=sound, effect=effect}) then
+        me:buff(sp, buff_time)
     end
 end
 
 -- 금강불체 버프 효과
-function ON_BUFF_4011(me, spell)
+function ON_BUFF_4011(me, sp)
     me:invincible(true)
 end
 
 -- 금강불체 버프 해제 효과
-function ON_UNBUFF_4011(me, spell)
+function ON_UNBUFF_4011(me, sp)
     me:invincible(false)
 
 end

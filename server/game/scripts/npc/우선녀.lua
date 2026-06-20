@@ -1,9 +1,12 @@
+local quest = require('lib.quest')
+local server = require('lib.server')
+
 function NPC_77(me, npc)
     local ACHIEVEMENT_CLEAR = 23
-    local quest = me:quest(QUEST_CLEAR_SHIELD)
+    local q = me:quest(quest.QUEST_CLEAR_SHIELD)
     local btn, sel
 
-    if quest == nil then
+    if q == nil then
         ::NPC_77_0001::
         btn = me:dialog(npc, '요즘 용궁을 드나드는 외분인들이 부쩍 늘었어요.\n\n그래서 용궁의 물이 점차 더러워 지고 있는 것 같아요.', false, true)
         if btn == DIALOG_RESULT.QUIT then
@@ -29,28 +32,28 @@ function NPC_77(me, npc)
         if sel ~= 0 then
             return
         end
-        quest = me:start_quest(QUEST_CLEAR_SHIELD)
-        if quest == nil then
+        q = me:start_quest(quest.QUEST_CLEAR_SHIELD)
+        if q == nil then
             me:dialog(npc, '퀘스트 시작 실패', false, true)
             return
         end
-        quest:step(1)
+        q:step(1)
         me:push_achievement(ACHIEVEMENT_CLEAR, '용궁정화 퀘스트를 받다.', 7, 1)
         me:dialog(npc, '고마워요.\n\n한시라도 빨리 정화하는 방법을 알아다 주세요.', false, true)
         return
     end
 
-    if quest:completed() then
+    if q:completed() then
         me:dialog(npc, me:name() .. '덕분에 용궁의 물이 깨끗해졌어요.', false, true)
         return
     end
 
-    if quest:step() == 1 or quest:step() == 2 then
+    if q:step() == 1 or q:step() == 2 then
         me:dialog(npc, '물을 정화시키는 방법은 랑구륜에게 가보시면 될거에요.', false, true)
         return
     end
 
-    if quest:step() == 3 then
+    if q:step() == 3 then
         if not me:has_items('정화비서', 1) then
             me:dialog(npc, '아직 물을 정화시키는 법을 알아오지 못하셨군요.', false, false)
             return
@@ -84,27 +87,27 @@ function NPC_77(me, npc)
         if btn == DIALOG_RESULT.QUIT then
             return
         end
-        quest:step(4)
+        q:step(4)
         me:rmitem('정화비서', 1, ITEM_DELETE_TYPE.GIVE)
         me:push_achievement(ACHIEVEMENT_CLEAR, '우선녀의 부탁을 들어주자.', 7, 1)
         return
     end
 
-    if quest:step() == 4 then
+    if q:step() == 4 then
         local code = me:exchange(
             { ['item'] = { ['숯의정화'] = 3 } },
             { ['item'] = { ['정화의방패'] = 1 } }
         )
-        if code == EXCHANGE_RESULT.LACK_COST then
+        if code == server.EXCHANGE_RESULT.LACK_COST then
             me:dialog(npc, '물을 정화하기 위해 숯의정화 3조각만 구해주세요.', false, false)
             return
         end
-        if code == EXCHANGE_RESULT.LACK_CAPACITY then
+        if code == server.EXCHANGE_RESULT.LACK_CAPACITY then
             me:dialog(npc, '소지품이 가득 차서 정화의방패를 받을 수 없습니다.', false, true)
             return
         end
-        quest:step(5)
-        quest:complete()
+        q:step(5)
+        q:complete()
         me:push_achievement(ACHIEVEMENT_CLEAR, '용궁정화에 성공하였다.', 7, 1)
         ::NPC_77_0008::
         btn = me:dialog(npc, '아. 이제야 용궁이 다시 깨끗함을 찾을 수 있겠네요.', true, true)

@@ -1,5 +1,7 @@
 -- 무형검 캐스팅
-function ON_CAST_2020(me, spell)
+local spell = require('lib.spell')
+
+function ON_CAST_2020(me, sp)
     local function preprocess(me, you)
         you:buff('무형술', 2, me)
     end
@@ -12,7 +14,7 @@ function ON_CAST_2020(me, spell)
     local message = '무형검'
 
     local front = me:front(OBJECT_TYPE.LIFE)
-    if not attack_cast(me, front, spell, {hp = hp, mp = mp, damage = damage, message = message, sound = sound, effect = effect, preprocess = preprocess}) then
+    if not spell.attack_cast(me, front, sp, {hp = hp, mp = mp, damage = damage, message = message, sound = sound, effect = effect, preprocess = preprocess}) then
         return
     end
 end

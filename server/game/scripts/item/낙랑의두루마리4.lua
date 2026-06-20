@@ -1,4 +1,7 @@
 -- 낙랑의두루마리4 사용 스크립트
+local quest = require('lib.quest')
+local server = require('lib.server')
+
 local HUNTING_MAPS = {
     ['부여왕초보사냥1'] = true,
     ['장훈왕초보사냥1'] = true,
@@ -25,11 +28,11 @@ local HUNTING_MAPS = {
 }
 
 function ON_ACTIVATED_4(me, item)
-    local quest = me:quest(QUEST_NAKRANG4)
+    local q = me:quest(quest.QUEST_NAKRANG4)
     local btn
     local model = item:model()
 
-    if quest == nil or quest:completed() then
+    if q == nil or q:completed() then
         ::ON_ACTIVATED_4_0000::
         btn = me:dialog(model, '<임무>\n 사냥터 찾아가기\n\n<내용>\n 이제, 목도를 사용할 곳을 찾아가봅시다!!\n본격적인 사냥을~~ 일단 주막에서 나오셔서,\n화면의 왼쪽 위의 조그만 사각형 버튼을\n누르시면 미니맵이 나옵니다.(단축키 *), 이것을\n참고하셔서 \'왕초보사냥터\'로 찾아오세요.\n\n<보상>\n 노란비서, 경험치 100 (레벨5미만)', true, true)
         if btn == DIALOG_RESULT.QUIT then
@@ -46,17 +49,17 @@ function ON_ACTIVATED_4(me, item)
         if btn == DIALOG_RESULT.PREV then
             goto ON_ACTIVATED_4_0000
         end
-        if quest == nil then
-            quest = me:start_quest(QUEST_NAKRANG4)
-            if quest == nil then
+        if q == nil then
+            q = me:start_quest(quest.QUEST_NAKRANG4)
+            if q == nil then
                 return
             end
         end
-        quest:step(1)
+        q:step(1)
         return
     end
 
-    local step = quest:step()
+    local step = q:step()
     if step ~= 1 then
         return
     end
@@ -97,7 +100,7 @@ function ON_ACTIVATED_4(me, item)
         { ['item'] = { ['낙랑의두루마리4'] = 1 } },
         { ['item'] = { ['낙랑의두루마리5'] = 1, ['노란비서'] = 10 }, ['exp'] = give_exp and 100 or 0 }
     )
-    if code == EXCHANGE_RESULT.LACK_CAPACITY then
+    if code == server.EXCHANGE_RESULT.LACK_CAPACITY then
         me:dialog(model, '소지품이 가득 찼습니다.', false, false)
         return
     end
@@ -107,5 +110,5 @@ function ON_ACTIVATED_4(me, item)
         me:dialog(model, '<보상>\n\'노란비서\',\n\'낙랑의두루마리5\'을 얻다!!!', false, true)
     end
 
-    quest:complete()
+    q:complete()
 end

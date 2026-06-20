@@ -1,21 +1,23 @@
 -- 노도성황 캐스팅
-function ON_CAST_3049(me, you, spell)
+local spell = require('lib.spell')
+
+function ON_CAST_3049(me, you, sp)
     local mp = 30
     local sound = 106
     local effect = 96
     local buff_time = 30
-    if debuff_cast(me, you, spell, {mp = mp, sound = sound, effect = effect}) then
-        you:buff(spell, buff_time, me)
+    if spell.debuff_cast(me, you, sp, {mp = mp, sound = sound, effect = effect}) then
+        you:buff(sp, buff_time, me)
     end
 end
 
 -- 노도성황 버프 효과
-function ON_BUFF_3049(me, spell)
+function ON_BUFF_3049(me, sp)
 
 end
 
 -- 노도성황 버프 해제 효과
-function ON_UNBUFF_3049(me, spell)
+function ON_UNBUFF_3049(me, sp)
 
 end
 

@@ -503,7 +503,6 @@ int builtin::life::builtin_cast(lua_State* L)
             co_return;
 
 #if defined DEBUG || defined _DEBUG
-        x->load("scripts/spell.lua");
         x->load(spell->script);
 #endif
         x->func(spell->cast);

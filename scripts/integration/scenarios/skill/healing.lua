@@ -1,100 +1,360 @@
-local resp     = require("integration.response")
-local protocol = require("integration.protocol")
-local skill    = require("integration.lib.skill")
+local resp = require("integration.response")
+local spell_runner = require("integration.lib.spell_runner")
 
 local M = {}
 
-local HEALING_SPELLS = {
-    { name = "누리의기원", type = "NORMAL", expected_hp_gain = 50,    expected_mp_cost = 30   },
-    { name = "하늘의기원", type = "NORMAL", expected_hp_gain = 200,   expected_mp_cost = 120  },
-    { name = "대지의기원", type = "TARGET", expected_hp_gain = 50,    expected_mp_cost = 50   },
-    { name = "동해의기원", type = "TARGET", expected_hp_gain = 100,   expected_mp_cost = 30   },
-    { name = "바다의기원", type = "NORMAL", expected_hp_gain = 100,   expected_mp_cost = 50   },
-    { name = "천공의기원", type = "TARGET", expected_hp_gain = 200,   expected_mp_cost = 100  },
-    { name = "구름의기원", type = "TARGET", expected_hp_gain = 500,   expected_mp_cost = 120  },
-    { name = "태양의기원", type = "TARGET", expected_hp_gain = 1000,  expected_mp_cost = 240  },
-    { name = "생명의기원", type = "TARGET", expected_hp_gain = 5000,  expected_mp_cost = 300  },
-    { name = "현자의기원", type = "TARGET", expected_hp_gain = 5000,  expected_mp_cost = 1000 },
-    { name = "신령의기원", type = "TARGET", expected_hp_gain = 10000, expected_mp_cost = 1000 },
-    { name = "봉황의기원", type = "TARGET", expected_hp_gain = 30000, expected_mp_cost = 10000},
-    { name = "천공의희원", type = "TARGET", expected_hp_gain = 200,   expected_mp_cost = 200  },
-    { name = "구름의희원", type = "TARGET", expected_hp_gain = 500,   expected_mp_cost = 480  },
-    { name = "태양의희원", type = "TARGET", expected_hp_gain = 1000,  expected_mp_cost = 960  },
+local resp = require("integration.response")
+local skill = require("integration.lib.skill")
+
+local CASES = {
+    {
+        name = "누리의기원",
+        response = resp.update_internal,
+        cast_type = "NORMAL",
+        pre = function(caster, _, state)
+            state.expected_hp = caster:hp() + 50
+            state.expected_mp = nil
+        end,
+        condition = function(packet, caster, target, state)
+            if state.expected_hp ~= nil and packet.ch_hp ~= state.expected_hp then
+                return nil
+            end
+            return true
+        end,
+    },
+    {
+        name = "하늘의기원",
+        response = resp.update_internal,
+        cast_type = "NORMAL",
+        pre = function(caster, _, state)
+            state.expected_hp = caster:hp() + 200
+            state.expected_mp = nil
+        end,
+        condition = function(packet, caster, target, state)
+            if state.expected_hp ~= nil and packet.ch_hp ~= state.expected_hp then
+                return nil
+            end
+            return true
+        end,
+    },
+    {
+        name = "대지의기원",
+        response = resp.update_internal,
+        cast_type = "TARGET",
+        oid = function(caster) return caster:oid() end,
+        position = function(caster) return caster:position() end,
+        pre = function(caster, _, state)
+            state.expected_hp = caster:hp() + 50
+            state.expected_mp = caster:mp() - 50
+        end,
+        condition = function(packet, caster, target, state)
+            if state.expected_hp ~= nil and packet.ch_hp ~= state.expected_hp then
+                return nil
+            end
+            if state.expected_mp ~= nil and packet.ch_mp ~= state.expected_mp then
+                return nil
+            end
+            return true
+        end,
+    },
+    {
+        name = "동해의기원",
+        response = resp.update_internal,
+        cast_type = "TARGET",
+        oid = function(caster) return caster:oid() end,
+        position = function(caster) return caster:position() end,
+        pre = function(caster, _, state)
+            state.expected_hp = caster:hp() + 100
+            state.expected_mp = caster:mp() - 30
+        end,
+        condition = function(packet, caster, target, state)
+            if state.expected_hp ~= nil and packet.ch_hp ~= state.expected_hp then
+                return nil
+            end
+            if state.expected_mp ~= nil and packet.ch_mp ~= state.expected_mp then
+                return nil
+            end
+            return true
+        end,
+    },
+    {
+        name = "바다의기원",
+        response = resp.update_internal,
+        cast_type = "NORMAL",
+        pre = function(caster, _, state)
+            state.expected_hp = caster:hp() + 100
+            state.expected_mp = nil
+        end,
+        condition = function(packet, caster, target, state)
+            if state.expected_hp ~= nil and packet.ch_hp ~= state.expected_hp then
+                return nil
+            end
+            return true
+        end,
+    },
+    {
+        name = "천공의기원",
+        response = resp.update_internal,
+        cast_type = "TARGET",
+        oid = function(caster) return caster:oid() end,
+        position = function(caster) return caster:position() end,
+        pre = function(caster, _, state)
+            state.expected_hp = caster:hp() + 200
+            state.expected_mp = caster:mp() - 100
+        end,
+        condition = function(packet, caster, target, state)
+            if state.expected_hp ~= nil and packet.ch_hp ~= state.expected_hp then
+                return nil
+            end
+            if state.expected_mp ~= nil and packet.ch_mp ~= state.expected_mp then
+                return nil
+            end
+            return true
+        end,
+    },
+    {
+        name = "구름의기원",
+        response = resp.update_internal,
+        cast_type = "TARGET",
+        oid = function(caster) return caster:oid() end,
+        position = function(caster) return caster:position() end,
+        pre = function(caster, _, state)
+            state.expected_hp = caster:hp() + 500
+            state.expected_mp = caster:mp() - 120
+        end,
+        condition = function(packet, caster, target, state)
+            if state.expected_hp ~= nil and packet.ch_hp ~= state.expected_hp then
+                return nil
+            end
+            if state.expected_mp ~= nil and packet.ch_mp ~= state.expected_mp then
+                return nil
+            end
+            return true
+        end,
+    },
+    {
+        name = "태양의기원",
+        response = resp.update_internal,
+        cast_type = "TARGET",
+        oid = function(caster) return caster:oid() end,
+        position = function(caster) return caster:position() end,
+        pre = function(caster, _, state)
+            state.expected_hp = caster:hp() + 1000
+            state.expected_mp = caster:mp() - 240
+        end,
+        condition = function(packet, caster, target, state)
+            if state.expected_hp ~= nil and packet.ch_hp ~= state.expected_hp then
+                return nil
+            end
+            if state.expected_mp ~= nil and packet.ch_mp ~= state.expected_mp then
+                return nil
+            end
+            return true
+        end,
+    },
+    {
+        name = "생명의기원",
+        response = resp.update_internal,
+        cast_type = "TARGET",
+        oid = function(caster) return caster:oid() end,
+        position = function(caster) return caster:position() end,
+        pre = function(caster, _, state)
+            state.expected_hp = caster:hp() + 5000
+            state.expected_mp = caster:mp() - 300
+        end,
+        condition = function(packet, caster, target, state)
+            if state.expected_hp ~= nil and packet.ch_hp ~= state.expected_hp then
+                return nil
+            end
+            if state.expected_mp ~= nil and packet.ch_mp ~= state.expected_mp then
+                return nil
+            end
+            return true
+        end,
+    },
+    {
+        name = "현자의기원",
+        response = resp.update_internal,
+        cast_type = "TARGET",
+        oid = function(caster) return caster:oid() end,
+        position = function(caster) return caster:position() end,
+        pre = function(caster, _, state)
+            state.expected_hp = caster:hp() + 5000
+            state.expected_mp = caster:mp() - 1000
+        end,
+        condition = function(packet, caster, target, state)
+            if state.expected_hp ~= nil and packet.ch_hp ~= state.expected_hp then
+                return nil
+            end
+            if state.expected_mp ~= nil and packet.ch_mp ~= state.expected_mp then
+                return nil
+            end
+            return true
+        end,
+    },
+    {
+        name = "신령의기원",
+        response = resp.update_internal,
+        cast_type = "TARGET",
+        oid = function(caster) return caster:oid() end,
+        position = function(caster) return caster:position() end,
+        pre = function(caster, _, state)
+            state.expected_hp = caster:hp() + 10000
+            state.expected_mp = caster:mp() - 1000
+        end,
+        condition = function(packet, caster, target, state)
+            if state.expected_hp ~= nil and packet.ch_hp ~= state.expected_hp then
+                return nil
+            end
+            if state.expected_mp ~= nil and packet.ch_mp ~= state.expected_mp then
+                return nil
+            end
+            return true
+        end,
+    },
+    {
+        name = "봉황의기원",
+        response = resp.update_internal,
+        cast_type = "TARGET",
+        oid = function(caster) return caster:oid() end,
+        position = function(caster) return caster:position() end,
+        pre = function(caster, _, state)
+            state.expected_hp = caster:hp() + 30000
+            state.expected_mp = caster:mp() - 10000
+        end,
+        condition = function(packet, caster, target, state)
+            if state.expected_hp ~= nil and packet.ch_hp ~= state.expected_hp then
+                return nil
+            end
+            if state.expected_mp ~= nil and packet.ch_mp ~= state.expected_mp then
+                return nil
+            end
+            return true
+        end,
+    },
+    {
+        name = "천공의희원",
+        response = resp.update_internal,
+        cast_type = "TARGET",
+        oid = function(caster) return caster:oid() end,
+        position = function(caster) return caster:position() end,
+        pre = function(caster, _, state)
+            state.expected_hp = caster:hp() + 200
+            state.expected_mp = caster:mp() - 200
+        end,
+        condition = function(packet, caster, target, state)
+            if state.expected_hp ~= nil and packet.ch_hp ~= state.expected_hp then
+                return nil
+            end
+            if state.expected_mp ~= nil and packet.ch_mp ~= state.expected_mp then
+                return nil
+            end
+            return true
+        end,
+    },
+    {
+        name = "구름의희원",
+        response = resp.update_internal,
+        cast_type = "TARGET",
+        oid = function(caster) return caster:oid() end,
+        position = function(caster) return caster:position() end,
+        pre = function(caster, _, state)
+            state.expected_hp = caster:hp() + 500
+            state.expected_mp = caster:mp() - 480
+        end,
+        condition = function(packet, caster, target, state)
+            if state.expected_hp ~= nil and packet.ch_hp ~= state.expected_hp then
+                return nil
+            end
+            if state.expected_mp ~= nil and packet.ch_mp ~= state.expected_mp then
+                return nil
+            end
+            return true
+        end,
+    },
+    {
+        name = "태양의희원",
+        response = resp.update_internal,
+        cast_type = "TARGET",
+        oid = function(caster) return caster:oid() end,
+        position = function(caster) return caster:position() end,
+        pre = function(caster, _, state)
+            state.expected_hp = caster:hp() + 1000
+            state.expected_mp = caster:mp() - 960
+        end,
+        condition = function(packet, caster, target, state)
+            if state.expected_hp ~= nil and packet.ch_hp ~= state.expected_hp then
+                return nil
+            end
+            if state.expected_mp ~= nil and packet.ch_mp ~= state.expected_mp then
+                return nil
+            end
+            return true
+        end,
+    },
+}
+
+local resp = require("integration.response")
+
+local BAEKHO_CASE = {
+    {
+        name = "백호의희원",
+        response = resp.update_internal,
+        cast_type = "TARGET",
+        oid = function(caster) return caster:oid() end,
+        position = function(caster) return caster:position() end,
+        pre = function(caster, _, state)
+            caster:mp(100)
+            caster:hp(50)
+
+            local current_mp = caster:mp()
+            local theoretical_hp_gain = current_mp * 2
+            local expected_mp_cost = math.floor(current_mp / 2)
+            local caster_max_hp = caster:base_hp()
+            local caster_current_hp = caster:hp()
+            local caster_recoverable_hp = caster_max_hp - caster_current_hp
+            local actual_expected_hp_gain = math.min(theoretical_hp_gain, caster_recoverable_hp)
+
+            if theoretical_hp_gain > caster_recoverable_hp then
+                local new_caster_hp = caster_max_hp - theoretical_hp_gain
+                if new_caster_hp < 1 then
+                    new_caster_hp = 1
+                end
+                caster:hp(new_caster_hp)
+                actual_expected_hp_gain = theoretical_hp_gain
+            end
+
+            state.expected_hp = caster:hp() + actual_expected_hp_gain
+            state.expected_mp = caster:mp() - expected_mp_cost
+        end,
+        condition = function(packet, _, _, state)
+            if state.expected_hp ~= nil and packet.ch_hp ~= state.expected_hp then
+                return nil
+            end
+            if state.expected_mp ~= nil and packet.ch_mp ~= state.expected_mp then
+                return nil
+            end
+            return true
+        end,
+    },
 }
 
 function M.run(ctx, bot_index)
     local caster = ctx:bot(bot_index)
     log("debug", "HEALING SPELL TEST STARTED")
-
     caster:setup_bot_stats(100000, 100000, 50)
-    caster:setup_bot_stats(100000, 100000, 50)
-
-    caster:learn_spells(skill.spell_names(HEALING_SPELLS))
     caster:base_hp(100000)
     caster:hp(50)
-
-    local spell_slot = 0
-    for _, spell in ipairs(HEALING_SPELLS) do
-        if spell.type == "NORMAL" then
-            local before_hp = caster:hp()
-            local expected_hp = before_hp + spell.expected_hp_gain
-
-            log("debug", "Testing " .. spell.name)
-            skill.request_update_internal(
-                caster, resp, protocol,
-                spell.type, spell_slot, "", 0, {0, 0},
-                expected_hp, nil)
-        else
-            local before_caster_hp = caster:hp()
-            local before_caster_mp = caster:mp()
-            local pos = caster:position()
-
-            log("debug", "Testing " .. spell.name)
-            skill.request_update_internal(
-                caster, resp, protocol,
-                spell.type, spell_slot, "", caster:oid(), pos,
-                before_caster_hp + spell.expected_hp_gain,
-                before_caster_mp - spell.expected_mp_cost)
-        end
-        spell_slot = spell_slot + 1
-    end
-
-    -- Dynamic spell: 백호의희원
-    local dynamic_slot = caster:learn_spell("백호의희원")
-    if dynamic_slot == 0xFF then
+    if spell_runner.run_cases(CASES, caster, nil) == false then
         return false
     end
-
-    caster:mp(100)
-    caster:hp(50)
-
-    local current_mp = caster:mp()
-    local theoretical_hp_gain = current_mp * 2
-    local expected_mp_cost = math.floor(current_mp / 2)
-    local caster_max_hp = caster:base_hp()
-    local caster_current_hp = caster:hp()
-    local caster_recoverable_hp = caster_max_hp - caster_current_hp
-    local actual_expected_hp_gain = math.min(theoretical_hp_gain, caster_recoverable_hp)
-
-    if theoretical_hp_gain > caster_recoverable_hp then
-        local new_caster_hp = caster_max_hp - theoretical_hp_gain
-        if new_caster_hp < 1 then
-            new_caster_hp = 1
-        end
-        caster:hp(new_caster_hp)
-        actual_expected_hp_gain = theoretical_hp_gain
+    local slot = caster:learn_spell("백호의희원")
+    if slot == 0xFF then
+        return false
     end
-
-    local before_caster_hp = caster:hp()
-    local before_caster_mp = caster:mp()
-    local pos = caster:position()
-
-    skill.request_update_internal(
-        caster, resp, protocol,
-        "TARGET", spell_slot, "", caster:oid(), pos,
-        before_caster_hp + actual_expected_hp_gain,
-        before_caster_mp - expected_mp_cost)
-
+    if spell_runner.run_case(BAEKHO_CASE[1], caster, nil, slot) == false then
+        return false
+    end
     log("debug", "All healing spell tests completed successfully!")
     return true
 end

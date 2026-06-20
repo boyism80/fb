@@ -1,4 +1,4 @@
-
+local server = require('lib.server')
 local function find_butterfly_item(me)
     for n = 10, 0, -1 do
         local name = "채집통 [" .. n .. " 마리]"
@@ -59,11 +59,11 @@ function NPC_359(me, npc)
                 reward = { ['item'] = { ["보통화면"] = 1, ["맛없는화면"] = 1 } }
             end
             code = me:exchange(cost, reward)
-            if code == EXCHANGE_RESULT.LACK_COST then
+            if code == server.EXCHANGE_RESULT.LACK_COST then
                 me:dialog(npc, "나비를 가져오시면 감사하겠어요.", false, false)
                 return
             end
-            if code == EXCHANGE_RESULT.LACK_CAPACITY then
+            if code == server.EXCHANGE_RESULT.LACK_CAPACITY then
                 me:dialog(npc, "소지품이 가득 차서 화면을 받을 수 없어요. 자리 좀 비우고 다시 오세요.", false, false)
                 return
             end

@@ -1,10 +1,12 @@
+local quest = require('lib.quest')
+
 function NPC_181(me, npc)
     local BURY_COUNT = 5
     local ACHIEVEMENT_GHOST = 29
-    local quest = me:quest(QUEST_GHOST)
+    local q = me:quest(quest.QUEST_GHOST)
     local btn, sel
 
-    if quest == nil then
+    if q == nil then
         ::NPC_181_0001::
         btn = me:dialog(npc, '혹시 자네도 이 이글거리는 기운이 보이는가? 집 전체에 귀기가 서려서 잠을 잘 수가 없군. 집값이 싸서 샀더니만 이런 귀신 붙은 집일 줄 몰랐어.', false, true)
         if btn == DIALOG_RESULT.QUIT then
@@ -38,13 +40,13 @@ function NPC_181(me, npc)
         if btn == DIALOG_RESULT.QUIT then
             return
         end
-        local quest = me:start_quest(QUEST_GHOST)
-        if quest == nil then
+        local q = me:start_quest(quest.QUEST_GHOST)
+        if q == nil then
             me:dialog(npc, '퀘스트 시작 실패', false, true)
             return
         end
-        quest:step(1)
-        quest:progress(0)
+        q:step(1)
+        q:progress(0)
         if me:mkitem('귀신퇴치부적', 5) == nil then
             me:dialog(npc, '소지품이 가득 차서 귀신퇴치부적을 받을 수 없습니다.', false, true)
             return
@@ -53,13 +55,13 @@ function NPC_181(me, npc)
         return
     end
 
-    if quest:completed() then
+    if q:completed() then
         me:dialog(npc, '자네 덕분에 집에 귀기가 많이 사라졌어. 고맙네.', false, true)
         return
     end
 
-    if quest:step() == 1 then
-        if quest:progress() < BURY_COUNT then
+    if q:step() == 1 then
+        if q:progress() < BURY_COUNT then
             me:dialog(npc, '아직 부적을 다 묻지 못한 것 같군.', false, true)
             return
         end
@@ -96,17 +98,17 @@ function NPC_181(me, npc)
         if btn == DIALOG_RESULT.QUIT then
             return
         end
-        quest:step(2)
+        q:step(2)
         return
     end
 
-    if quest:step() == 2 then
+    if q:step() == 2 then
         me:dialog(npc, '아직 마타님을 만나지 못한 것 같군', false, true)
         return
     end
 
-    if quest:step() == 3 then
-        if quest:progress() < BURY_COUNT then
+    if q:step() == 3 then
+        if q:progress() < BURY_COUNT then
             me:dialog(npc, '아직 부적을 모두 묻지 못한 모양이군?', false, true)
             return
         end
@@ -142,7 +144,7 @@ function NPC_181(me, npc)
             me:dialog(npc, '소지품이 가득 차서 명석부를 받을 수 없습니다.', false, true)
             return
         end
-        quest:complete()
+        q:complete()
         me:push_achievement(ACHIEVEMENT_GHOST, '안도의 부탁을 들어주었다.', 7, 6)
         return
     end

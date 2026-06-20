@@ -1,3 +1,6 @@
+local quest = require('lib.quest')
+local server = require('lib.server')
+
 local ACHIEVEMENT_DRAGON_KING = 19
 
 local function run_puffer_general_accept(me, npc)
@@ -47,11 +50,11 @@ local function run_puffer_general_accept(me, npc)
     if sel2 == nil or sel2 ~= 0 then
         return
     end
-    local quest = me:start_quest(QUEST_DRAGON_KING)
-    if quest == nil then
+    local q = me:start_quest(quest.QUEST_DRAGON_KING)
+    if q == nil then
         return
     end
-    quest:step(1)
+    q:step(1)
     me:push_achievement(ACHIEVEMENT_DRAGON_KING, "복어장군 생포 임무를 받다.", 7, 1)
     me:dialog(npc, "고맙네 어서 정보를 얻어오게나. 복홍이라면 복어장군이 어디있는지 알고 있을거라네.", false, true)
 end
@@ -95,10 +98,10 @@ local function run_puffer_general_complete(me, npc)
         me:base_dex(me:base_dex() + 1)
     end
     me:rmitem(item_document, 1, ITEM_DELETE_TYPE.GIVE)
-    local quest = me:quest(QUEST_DRAGON_KING)
-    if quest ~= nil then
-        quest:step(2)
-        quest:progress(0)
+    local q = me:quest(quest.QUEST_DRAGON_KING)
+    if q ~= nil then
+        q:step(2)
+        q:progress(0)
     end
     me:push_achievement(ACHIEVEMENT_DRAGON_KING, "복어장군 생포 임무 완료.", 7, 1)
     me:dialog(npc, "그럼 자네의 힘을 올려주도록 하겠네. 우옷!", false, true)
@@ -118,11 +121,11 @@ local function run_crab_general_accept(me, npc)
     if list_btn == DIALOG_RESULT.QUIT or sel == nil or sel ~= 0 then
         return
     end
-    local quest = me:quest(QUEST_DRAGON_KING)
-    if quest == nil then
+    local q = me:quest(quest.QUEST_DRAGON_KING)
+    if q == nil then
         return
     end
-    quest:step(3)
+    q:step(3)
     me:push_achievement(ACHIEVEMENT_DRAGON_KING, "게장군 생포 임무를 받다.", 7, 1)
     ::NPC_75_011::
     btn = me:dialog(npc, "고맙네, 내 듣기로 게장군이 더 강한 힘을 얻기 위해 근래 탈피를 했다더군.\n\n아직은 몸이 덜 굳어서 활동을 극히 자제하고 있을 걸세.", false, true)
@@ -140,13 +143,13 @@ local function run_crab_general_accept(me, npc)
 end
 
 local function run_crab_general_complete(me, npc)
-    local quest = me:quest(QUEST_DRAGON_KING)
-    if quest == nil or quest:progress() < 1 then
+    local q = me:quest(quest.QUEST_DRAGON_KING)
+    if q == nil or q:progress() < 1 then
         me:dialog(npc, "아직 게장군을 잡아오지 못한 모양이군..", false, false)
         return
     end
-    quest:step(4)
-    quest:progress(0)
+    q:step(4)
+    q:progress(0)
     me:mkitem("산해진미", 1)
     me:push_achievement(ACHIEVEMENT_DRAGON_KING, "게장군 생포 임무 완료.", 7, 1)
     local btn
@@ -179,21 +182,21 @@ local function run_octopus_general_accept(me, npc)
     if list_btn == DIALOG_RESULT.QUIT or sel == nil or sel ~= 0 then
         return
     end
-    local quest = me:quest(QUEST_DRAGON_KING)
-    if quest == nil then
+    local q = me:quest(quest.QUEST_DRAGON_KING)
+    if q == nil then
         return
     end
-    quest:step(5)
+    q:step(5)
     me:push_achievement(ACHIEVEMENT_DRAGON_KING, "문어장군 생포 임무를 받다", 7, 1)
     me:dialog(npc, "고맙네. 문어장군은 생김새가 산적같이 생긴 자인데...\n\n매우 포악하니 조심해야 하네", false, true)
 end
 
 local function run_octopus_general_complete(me, npc)
-    if me:quest(QUEST_DRAGON_KING) == nil or me:quest(QUEST_DRAGON_KING):progress() < 1 then
+    if me:quest(quest.QUEST_DRAGON_KING) == nil or me:quest(quest.QUEST_DRAGON_KING):progress() < 1 then
         me:dialog(npc, "아직 문어장군을 잡아오지 못했군..", false, false)
         return
     end
-    local quest = me:quest(QUEST_DRAGON_KING)
+    local q = me:quest(quest.QUEST_DRAGON_KING)
     local sel, list_btn = me:list(npc, "문어장군은 어디에 있고 왜 혼자 있나?", { "문어장군은 자신의 결백을 증명해 보이고 싶다고", "자결을 하였습니다." }, false)
     if list_btn == DIALOG_RESULT.QUIT or sel == nil or sel < 0 or sel > 1 then
         return
@@ -210,8 +213,8 @@ local function run_octopus_general_complete(me, npc)
     if list_btn == DIALOG_RESULT.QUIT or sel == nil or sel ~= 0 then
         return
     end
-    quest:step(6)
-    quest:progress(0)
+    q:step(6)
+    q:progress(0)
     me:mkitem("다문창", 1)
     me:push_achievement(ACHIEVEMENT_DRAGON_KING, "문어장군 생포 임무 완료.", 7, 1)
 end
@@ -236,13 +239,13 @@ local function run_seahorse_accept(me, npc)
     if list_btn == DIALOG_RESULT.QUIT or sel == nil or sel ~= 0 then
         return
     end
-    local quest = me:quest(QUEST_DRAGON_KING)
-    if quest == nil then
+    local q = me:quest(quest.QUEST_DRAGON_KING)
+    if q == nil then
         return
     end
-    quest:step(7)
-    quest:progress(0)
-    quest:param("")
+    q:step(7)
+    q:progress(0)
+    q:param("")
     me:push_achievement(ACHIEVEMENT_DRAGON_KING, "해마장군의 생포 임무를 받다", 7, 1)
     btn = me:dialog(npc, "고맙네. 자네가 도와 준다면 안심이라네.", false, true)
     if btn == DIALOG_RESULT.QUIT then
@@ -260,12 +263,12 @@ local function run_seahorse_accept(me, npc)
 end
 
 local function run_seahorse_complete(me, npc)
-    local quest = me:quest(QUEST_DRAGON_KING)
-    if quest == nil then
+    local q = me:quest(quest.QUEST_DRAGON_KING)
+    if q == nil then
         return
     end
-    local king_killed = (quest:param() == "1")
-    local soldier_count = quest:progress()
+    local king_killed = (q:param() == "1")
+    local soldier_count = q:progress()
     local is_taoist = (me:class() == CLASS.POET)
     if not king_killed then
         me:dialog(npc, "아직 해마장군을 쓰러트리지 못한 모양이군.", false, false)
@@ -275,9 +278,9 @@ local function run_seahorse_complete(me, npc)
         me:dialog(npc, "결국 해마장군을 쓰러트렸군. 고맙네. 이제 그의 주력부대를 소탕해주게.", false, false)
         return
     end
-    quest:step(8)
-    quest:progress(0)
-    quest:param("")
+    q:step(8)
+    q:progress(0)
+    q:param("")
     me:mkitem("진주반지", 1)
     me:push_achievement(ACHIEVEMENT_DRAGON_KING, "해마장군 생포 임무 완료.", 7, 1)
     local btn
@@ -340,19 +343,19 @@ local function run_mermaid_accept(me, npc)
     if list_btn == DIALOG_RESULT.QUIT or sel == nil or sel ~= 0 then
         return
     end
-    local quest = me:quest(QUEST_DRAGON_KING)
-    if quest == nil then
+    local q = me:quest(quest.QUEST_DRAGON_KING)
+    if q == nil then
         return
     end
-    quest:step(9)
-    quest:progress(0)
+    q:step(9)
+    q:progress(0)
     me:push_achievement(ACHIEVEMENT_DRAGON_KING, "인어장군 생포 임무를 받다.", 7, 1)
     me:dialog(npc, "역시 자네는 시원 시원 하구만, 이번 일을 잘 해 오면 성의의 표시를 하지.\n\n잘 부탁하네", false, true)
 end
 
 local function run_mermaid_complete(me, npc)
-    local quest = me:quest(QUEST_DRAGON_KING)
-    if quest == nil or quest:progress() < 1 then
+    local q = me:quest(quest.QUEST_DRAGON_KING)
+    if q == nil or q:progress() < 1 then
         me:dialog(npc, "아직 인어장군을 잡지 못하였군..", false, false)
         return
     end
@@ -400,8 +403,8 @@ local function run_mermaid_complete(me, npc)
     if list_btn == DIALOG_RESULT.QUIT or sel == nil or sel ~= 0 then
         return
     end
-    quest:step(10)
-    quest:progress(0)
+    q:step(10)
+    q:progress(0)
 end
 
 local function run_mermaid_turnin(me, npc)
@@ -413,22 +416,22 @@ local function run_mermaid_turnin(me, npc)
     if list_btn == DIALOG_RESULT.QUIT or sel == nil or sel ~= 0 then
         return
     end
-    local quest = me:quest(QUEST_DRAGON_KING)
-    if quest == nil then
+    local q = me:quest(quest.QUEST_DRAGON_KING)
+    if q == nil then
         return
     end
     local code = me:exchange(
         { ['item'] = { [ITEM_MERMAID_DOC_TRANSLATED] = 1 } },
         { ['item'] = { [ITEM_MERMAID_STAFF] = 1 } }
     )
-    if code == EXCHANGE_RESULT.LACK_COST then
+    if code == server.EXCHANGE_RESULT.LACK_COST then
         me:dialog(npc, "아이템을 제거할 수 없습니다.", false, false)
         return
-    elseif code == EXCHANGE_RESULT.LACK_CAPACITY then
+    elseif code == server.EXCHANGE_RESULT.LACK_CAPACITY then
         me:dialog(npc, "소지품이 가득 차서 지팡이를 줄 수 없네.", false, false)
         return
     end
-    quest:step(11)
+    q:step(11)
     me:push_achievement(ACHIEVEMENT_DRAGON_KING, "인어장군 생포 임무 완료.", 7, 1)
     me:dialog(npc, "고맙네. 이 지팡이를 받아 주게. 그리고 앞으로도 자주 용궁에 들러 주게.", false, true)
 end
@@ -475,13 +478,13 @@ local function run_shark_accept(me, npc)
     if list_btn == DIALOG_RESULT.QUIT or sel == nil or sel ~= 0 then
         return
     end
-    local quest = me:quest(QUEST_DRAGON_KING)
-    if quest == nil then
+    local q = me:quest(quest.QUEST_DRAGON_KING)
+    if q == nil then
         return
     end
-    quest:step(12)
-    quest:progress(0)
-    quest:param("0")
+    q:step(12)
+    q:progress(0)
+    q:param("0")
     me:push_achievement(ACHIEVEMENT_DRAGON_KING, "상어장군의 생포 임무를 받다. [1/2]", 7, 1)
     ::NPC_75_045::
     btn = me:dialog(npc, "정말 고맙네.\n\n마침 상어장군이 돌격대장을 함께 역임하고 있다고 하니, 그자를 제거하면 적의 기세가 한풀 꺽일걸세,", false, true)
@@ -498,8 +501,8 @@ local function run_shark_accept(me, npc)
 end
 
 local function run_shark_report(me, npc)
-    local quest = me:quest(QUEST_DRAGON_KING)
-    if quest == nil or quest:progress() < 1 then
+    local q = me:quest(quest.QUEST_DRAGON_KING)
+    if q == nil or q:progress() < 1 then
         me:dialog(npc, "아직 상어장군을 잡아오지 못한 모양이군..", false, false)
         return
     end
@@ -519,17 +522,17 @@ local function run_shark_report(me, npc)
     if list_btn == DIALOG_RESULT.QUIT or sel == nil or sel ~= 0 then
         return
     end
-    quest:step(13)
+    q:step(13)
     me:push_achievement(ACHIEVEMENT_DRAGON_KING, "상어장군의 생포 임무를 받다. [2/2]", 7, 1)
     me:dialog(npc, "그래주겠나? 그럼 다시한번 부탁하네.", false, true)
 end
 
 local function run_shark_complete(me, npc)
-    local quest = me:quest(QUEST_DRAGON_KING)
-    if quest == nil then
+    local q = me:quest(quest.QUEST_DRAGON_KING)
+    if q == nil then
         return
     end
-    local progress = quest:progress()
+    local progress = q:progress()
     local t = now()
     if progress == 2 then
         local btn
@@ -545,11 +548,11 @@ local function run_shark_complete(me, npc)
         if btn == DIALOG_RESULT.PREV then
             goto NPC_75_047
         end
-        quest:param(tostring(t + SHARK_ANGER_SEC))
-        quest:progress(0)
+        q:param(tostring(t + SHARK_ANGER_SEC))
+        q:progress(0)
         return
     end
-    local anger_end = tonumber(quest:param() or "")
+    local anger_end = tonumber(q:param() or "")
     if anger_end and t < anger_end then
         me:dialog(npc, "아직 내 화가 다 안풀렸으니 다음에 다시 오게!!!", false, true)
         return
@@ -579,9 +582,9 @@ local function run_shark_complete(me, npc)
     if btn == DIALOG_RESULT.PREV then
         goto NPC_75_050
     end
-    quest:step(14)
-    quest:progress(0)
-    quest:param("")
+    q:step(14)
+    q:progress(0)
+    q:param("")
     me:base_hp(me:base_hp() + 500)
     me:base_mp(me:base_mp() + 250)
     me:push_achievement(ACHIEVEMENT_DRAGON_KING, "상어장군 생포 임무 완료", 7, 1)
@@ -618,20 +621,20 @@ local function run_jellyfish_accept(me, npc)
     if list_btn == DIALOG_RESULT.QUIT or sel == nil or sel ~= 0 then
         return
     end
-    local quest = me:quest(QUEST_DRAGON_KING)
-    if quest == nil then
+    local q = me:quest(quest.QUEST_DRAGON_KING)
+    if q == nil then
         return
     end
-    quest:step(15)
-    quest:progress(0)
-    quest:param("0")
+    q:step(15)
+    q:progress(0)
+    q:param("0")
     me:push_achievement(ACHIEVEMENT_DRAGON_KING, "해파리장군 생포 임무를 받다.", 7, 1)
     me:dialog(npc, "이거 번번히 정말 고맙네. 그럼 부탁하겠네.", false, true)
 end
 
 local function run_jellyfish_report(me, npc)
-    local quest = me:quest(QUEST_DRAGON_KING)
-    if quest == nil or quest:progress() < 1 then
+    local q = me:quest(quest.QUEST_DRAGON_KING)
+    if q == nil or q:progress() < 1 then
         me:dialog(npc, "하직 해파리장군을 잡아오지 못한것 같군.", false, false)
         return
     end
@@ -651,7 +654,7 @@ local function run_jellyfish_report(me, npc)
     if list_btn == DIALOG_RESULT.QUIT or sel == nil or sel < 0 or sel > 1 then
         return
     end
-    quest:step(16)
+    q:step(16)
     me:push_achievement(ACHIEVEMENT_DRAGON_KING, "전략문서를 얻자.", 7, 1)
     me:dialog(npc, "그래주겠다면 정말 고맙네.", false, true)
 end
@@ -691,24 +694,24 @@ local function run_jellyfish_complete(me, npc)
     if btn == DIALOG_RESULT.PREV then
         goto NPC_75_065
     end
-    local quest = me:quest(QUEST_DRAGON_KING)
-    if quest == nil then
+    local q = me:quest(quest.QUEST_DRAGON_KING)
+    if q == nil then
         return
     end
     local code = me:exchange(
         { ['item'] = { [ITEM_JELLYFISH_STRATEGY] = 1 } },
         { ['item'] = { [ITEM_DRAGON_KING_RING] = 1 } }
     )
-    if code == EXCHANGE_RESULT.LACK_COST then
+    if code == server.EXCHANGE_RESULT.LACK_COST then
         me:dialog(npc, "아이템을 제거할 수 없습니다.", false, false)
         return
-    elseif code == EXCHANGE_RESULT.LACK_CAPACITY then
+    elseif code == server.EXCHANGE_RESULT.LACK_CAPACITY then
         me:dialog(npc, "소지품이 가득 차서 용왕의반지를 줄 수 없네.", false, false)
         return
     end
-    quest:step(17)
-    quest:progress(0)
-    quest:param("")
+    q:step(17)
+    q:progress(0)
+    q:param("")
     me:push_achievement(ACHIEVEMENT_DRAGON_KING, "해파리장군 생포 임무 완료.", 7, 1)
 end
 
@@ -775,12 +778,12 @@ local function run_crown_prince_accept(me, npc)
     if list_btn == DIALOG_RESULT.QUIT or sel == nil or sel ~= 0 then
         return
     end
-    local quest = me:quest(QUEST_DRAGON_KING)
-    if quest == nil then
+    local q = me:quest(quest.QUEST_DRAGON_KING)
+    if q == nil then
         return
     end
-    quest:step(18)
-    quest:progress(0)
+    q:step(18)
+    q:progress(0)
     me:push_achievement(ACHIEVEMENT_DRAGON_KING, "청의태자 생포 임무를 받다. [1/2]", 7, 1)
     ::NPC_75_074::
     btn = me:dialog(npc, "정말 고맙네. 고마워.", false, true)
@@ -826,21 +829,21 @@ local function run_crown_prince_turnin_orb(me, npc)
     if list_btn == DIALOG_RESULT.QUIT or sel == nil or sel ~= 0 then
         return
     end
-    local quest = me:quest(QUEST_DRAGON_KING)
-    if quest == nil then
+    local q = me:quest(quest.QUEST_DRAGON_KING)
+    if q == nil then
         return
     end
     me:rmitem(ITEM_ORB, 1, ITEM_DELETE_TYPE.GIVE)
-    quest:step(19)
+    q:step(19)
     me:push_achievement(ACHIEVEMENT_DRAGON_KING, "청의태자 생포 임무를 받다. [1/2]", 7, 1)
 end
 
 local function run_crown_prince_complete(me, npc)
-    local quest = me:quest(QUEST_DRAGON_KING)
-    if quest == nil then
+    local q = me:quest(quest.QUEST_DRAGON_KING)
+    if q == nil then
         return
     end
-    if quest:progress() < 2 then
+    if q:progress() < 2 then
         me:dialog(npc, "아직 청의태자를 잡아오지 못한 건가?", false, false)
         return
     end
@@ -893,9 +896,9 @@ local function run_crown_prince_complete(me, npc)
     if btn == DIALOG_RESULT.PREV then
         goto NPC_75_090
     end
-    quest:step(20)
-    quest:progress(0)
-    quest:complete()
+    q:step(20)
+    q:progress(0)
+    q:complete()
     me:mkitem(ITEM_DRAGON_KING_HELM, 1)
     me:push_achievement(ACHIEVEMENT_DRAGON_KING, "용궁 8대 반란 임무를 완수하다.", 6, 1)
     me:dialog(npc, "언제든지 용궁의 은인으로 반갑게 맞이할 테니 종종 놀러 오게나.", false, true)
@@ -903,7 +906,7 @@ end
 
 
 local function run_cidequest_yongwang(me, npc)
-    local q = me:quest(QUEST_CIDEQUEST)
+    local q = me:quest(quest.QUEST_CIDEQUEST)
     if q == nil then
         local sel, btn = me:list(npc, "이번 반란 사건으로 혼란한 틈을 타서 용궁의 보물이 사라져 버렸다네.\n\n그래서 이번에도 자네의 힘을 빌려야 할 것 같은데... 어떤가. 이번에도 해줄건가?", { "물론 해드려야죠.", "별로 하고싶지 않은데요." }, false)
         if btn == DIALOG_RESULT.QUIT or sel == nil then
@@ -912,7 +915,7 @@ local function run_cidequest_yongwang(me, npc)
         if sel == 0 then
             me:dialog(npc, "고맙군. 정말 고마워. \n\n 이번에 들어온 정보에 의하면 그 보물이 용궁 밖에 나타났다는 소리를 들었네.", false, true)
             me:dialog(npc, "아마 장돌뱅이한테 정보가 들어가지 않았나 생각하는데 잘 알아봐 주게나.", false, false)
-            q = me:start_quest(QUEST_CIDEQUEST)
+            q = me:start_quest(quest.QUEST_CIDEQUEST)
             if q == nil then
                 return
             end
@@ -955,10 +958,10 @@ local function run_cidequest_yongwang(me, npc)
             { ['item'] = { ["수정"] = 3, ["크리스탈"] = 3 } },
             { ['item'] = { [reward_item] = 1 } }
         )
-        if code == EXCHANGE_RESULT.LACK_COST then
+        if code == server.EXCHANGE_RESULT.LACK_COST then
             me:dialog(npc, "수정과 크리스탈 각 세개씩이라네...", false, false)
             return
-        elseif code == EXCHANGE_RESULT.LACK_CAPACITY then
+        elseif code == server.EXCHANGE_RESULT.LACK_CAPACITY then
             me:dialog(npc, "소지품이 가득 차서 받을 수 없네. 재료를 새로 모아오면 다시 만들어 주겠네.", false, false)
             return
         end
@@ -982,13 +985,13 @@ local function run_cidequest_yongwang(me, npc)
 end
 
 function NPC_75(me, npc)
-    local quest = me:quest(QUEST_DRAGON_KING)
-    if quest == nil then
+    local q = me:quest(quest.QUEST_DRAGON_KING)
+    if q == nil then
         run_puffer_general_accept(me, npc)
         return
     end
 
-    if quest:completed() then
+    if q:completed() then
         local sel, btn = me:list(npc, me:name() .. "이군. 반란을 막아준걸 정말 고맙게 생각하고 있네.", { "잘 지내셨습니까?", "심판의낫 만들기" }, false)
         if btn == DIALOG_RESULT.QUIT or sel == nil then
             return
@@ -1003,7 +1006,7 @@ function NPC_75(me, npc)
         return
     end
 
-    local step = quest:step()
+    local step = q:step()
     if step == 1 then
         run_puffer_general_complete(me, npc)
         return

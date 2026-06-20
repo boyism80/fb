@@ -16,12 +16,11 @@ fb::generator<fb::game::script_work> fb::game::script_loader::on_ready()
 
     auto scripts = std::vector<std::string>{};
     scripts.push_back("scripts/server.lua");
-    scripts.push_back("scripts/spell.lua");
-    scripts.push_back("scripts/npc.lua");
     scripts.push_back("scripts/interaction.lua");
     scripts.push_back("scripts/command.lua");
     scripts.push_back("scripts/script.lua");
     scripts.push_back("scripts/init.lua");
+    scripts.push_back("scripts/schedule/schedule.lua");
     scripts.push_back(fb::model::const_value::script::F1_EVENT_SCRIPT);
     scripts.push_back(fb::model::const_value::script::F2_EVENT_SCRIPT);
 

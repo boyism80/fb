@@ -1,4 +1,6 @@
 -- 얼음칼 공격 스크립트
+local spell = require('lib.spell')
+
 function ON_ATTACK_29(me, item)
     math.randomseed(seed())
     if math.random() > 0.3 then
@@ -10,7 +12,7 @@ function ON_ATTACK_29(me, item)
         return
     end
 
-    if front:isbuff(table.unpack(relative_buff_name('마비'))) then
+    if front:isbuff(table.unpack(spell.relative_buff_name('마비'))) then
         return
     end
 

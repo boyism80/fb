@@ -1,9 +1,11 @@
+local quest = require('lib.quest')
+
 function NPC_216(me, npc)
     local REWARD_PER_BAG = 5000
 
-    local quest = me:quest(QUEST_RED_CLAY)
+    local q = me:quest(quest.QUEST_RED_CLAY)
 
-    if quest == nil then
+    if q == nil then
         ::NPC_216_0000::
         local sel = me:list(npc, '안녕하신가? 시간 좀 내주실 수 있겠나?', { '네, 무슨 일이세요?', '죄송합니다. 바빠서 이만.' }, false)
         if sel == nil then
@@ -39,30 +41,30 @@ function NPC_216(me, npc)
             return
         end
 
-        quest = me:start_quest(QUEST_RED_CLAY)
-        if quest == nil then
+        q = me:start_quest(quest.QUEST_RED_CLAY)
+        if q == nil then
             me:dialog(npc, '퀘스트 시작 실패', false, true)
             return
         end
-        quest:progress(0)
+        q:progress(0)
 
         me:dialog(npc, '고맙네. 내가 필요로 하는 흙은 이렇게 생겼다네.\n\n고구려에서는 찾아볼 수 없는 것으로, 내가 적심토라 이름 붙혔지.\n냄세도 잘 기억해 두게나.\n\n괴수들이 있는 건처에서 적심토를 찾을 수 있을 것이네. 조심하게나.', false, true)
         return
     end
 
-    if quest:completed() then
+    if q:completed() then
         local sel = me:list(npc, '자네로군, 나를 도와 다시 적심토를 채집하겠나?', { '좋습니다. 누구시더라?' })
         if sel == nil or sel ~= 0 then
             return
         end
-        quest:resume()
-        quest:progress(0)
+        q:resume()
+        q:progress(0)
         me:erase_achievement(22)
         me:dialog(npc, '괴수들이 있는 근처에서 적심토를 찾을 수 있을 것이네. 조심하게나.', false, true)
         return
     end
 
-    local progress = quest:progress()
+    local progress = q:progress()
     if progress <= 0 then
         me:dialog(npc, '아직 적심토를 찾지 못한 모양이군. 괴수들이 있는 건처에서 구할수 있을걸세.', false, true)
         return
@@ -80,13 +82,13 @@ function NPC_216(me, npc)
     end
 
     me:money(me:money() + money)
-    quest:progress(0)
+    q:progress(0)
     me:erase_achievement(22)
 
     if selected == 0 then
         me:dialog(npc, '괴수들이 있는 근처에서 적심토를 찾을 수 있을 것이네. 조심하게나', false, true)
     else
-        quest:complete()
+        q:complete()
         me:dialog(npc, '알겠네.. 그럼 언제든지 채집을 하고 싶거든 다시 오게.', false, true)
     end
 end

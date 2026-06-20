@@ -1,3 +1,5 @@
+local spell = require('lib.spell')
+
 function ON_CAST_2015_LOOKUP(me, you, direction)
     local map = me:map()
     
@@ -28,14 +30,14 @@ function ON_CAST_2015_LOOKUP(me, you, direction)
 end
 
 -- 비영승보 캐스팅
-function ON_CAST_2015(me, spell)
+function ON_CAST_2015(me, sp)
     local err = me:assert({STATE.GHOST, STATE.RIDING})
     if err then
         me:message(err)
         return
     end
 
-    local front = front_exclude_item(me)
+    local front = spell.front_exclude_item(me)
     if front == nil then
         return
     end

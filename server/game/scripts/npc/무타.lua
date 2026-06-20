@@ -1,11 +1,13 @@
+local quest = require('lib.quest')
+
 function NPC_95(me, npc)
-    local quest = me:quest(QUEST_MUTA)
-    if quest == nil or quest:completed() then
+    local q = me:quest(quest.QUEST_MUTA)
+    if q == nil or q:completed() then
         me:dialog(npc, '자네도 이 심상치 않은 기운이 느껴지는가? 요사이, 이곳 저곳에서 불길한 징조가 나타나고 있었다네.', false, true)
         return
     end
     
-    local step = quest:step()
+    local step = q:step()
     if step == 0 then
         ::NPC_95_0001::
         if me:dialog(npc, '자네도 이 심상치 않은 기운이 느껴지는가? 용사이, 이곳 저곳에서 불길한 징조가 나타나고 있었다네. 곳곳의 풍수를 살펴보면 만물이 있어야 할 자리를 지키지 못하고 있으며, 별자리마저 알 수 없는 형태로 일그러져버렸네.', false, true) == DIALOG_RESULT.QUIT then
@@ -76,7 +78,7 @@ function NPC_95(me, npc)
             goto NPC_95_0007
         end
         
-        quest:step(1)
+        q:step(1)
         me:push_achievement(7, '소호 암살의 임무를 받다.', 7, 16)
         me:dialog(npc, '먼저 장안성 성곽 부근에 위치한 신전으로 가서, 소호를 물리치고 돌아오게.', false, true)
     end
@@ -87,7 +89,7 @@ function NPC_95(me, npc)
             return
         end
 
-        quest:step(2)
+        q:step(2)
         ::NPC_95_0009::
         btn = me:dialog(npc, '소호를 잘 물리쳐 주었네. 하지만, 이제 시작이라네.\n이번엔 전욱을 상대해야 하네.\n전욱의 신전이 위치한 곳은 국내성이네.', false, true)
         if btn == DIALOG_RESULT.QUIT then
@@ -109,7 +111,7 @@ function NPC_95(me, npc)
             return
         end
 
-        quest:step(3)
+        q:step(3)
         ::NPC_95_0011::
         btn = me:dialog(npc, '전욱까지 제거하다니, 잘 해주고 있네.\n하지만 아직은 갈 길이 멀다네.\n이번엔 제곡일세. 그의 신전은 부여성에 있다네.', false, true)
         if btn == DIALOG_RESULT.QUIT then
@@ -131,7 +133,7 @@ function NPC_95(me, npc)
             return
         end
 
-        quest:step(4)
+        q:step(4)
         ::NPC_95_0013::
         btn = me:dialog(npc, '제곡을 물리치다니, 대단하네.\n하지만, 다음 번 상대는 더욱 두려운 존재인 요제.\n아직 안심할 때가 아니지.\n요제의 신전은 좀 더 멀다네. 저~기 바다 건너 일본에 있지.', false, true)
         if btn == DIALOG_RESULT.QUIT then
@@ -153,7 +155,7 @@ function NPC_95(me, npc)
             return
         end
 
-        quest:step(5)
+        q:step(5)
         ::NPC_95_0015::
         btn = me:dialog(npc, '훌륭하네. 요제까지... 인간으로서 신과 대등하게 싸울 수 있다니. 탄복할 뿐일세.\n이제 마지막 상대는 오제의 수장인 순제, 그는 광동성 신전에서 찾을 수 있을 것이네.\n지금껏 잘 해주었지만, 오제의 우두머리인만큼 결코 만만치 않을 것이야.', false, true)
         if btn == DIALOG_RESULT.QUIT then
@@ -175,7 +177,7 @@ function NPC_95(me, npc)
             return
         end
 
-        quest:step(6)
+        q:step(6)
         ::NPC_95_0017::
         btn = me:dialog(npc, '대단하네! 드디어 오제를 모두 멸하였군.\n휴우~ 이것으로 끝난 것인가, 이제 반고의 기운이 사라지겠지...?!\n아니, 이것은? 이것이 어떻게 된 일이란 말인가?\n반고의 기운이 이토록 온 천지를 덮고 있다니... 어째서 이토록 증폭되고 있단 말인가!', false, true)
         if btn == DIALOG_RESULT.QUIT then
@@ -224,7 +226,7 @@ function NPC_95(me, npc)
             return
         end
 
-        quest:step(7)
+        q:step(7)
         ::NPC_95_0022::
         btn = me:dialog(npc, '자네를 다시 보게 되어 반가우면서도 놀랍기 그지 없네 그려.\n인간으로서 반고를 제압할 수 있는 자가 있을 줄은 나로선 상상하지도 못했었네.\n이로서, 멸절의 위기를 넘겼으니 기쁘긴 하네만, 우리가 추악한 욕심을 버리고 세상을 스스로 정화하지 못한다면 언젠가 이런 일이 다시 생길 수 있을 것이야.', false, true)
         if btn == DIALOG_RESULT.QUIT then

@@ -528,6 +528,7 @@ public:
     context*                        parent() const;
     void                            options(call_options opts);
     const call_options&             options() const;
+    void                            clear_loaded_modules();
 
 public:
     class co_builder

@@ -1,8 +1,11 @@
+local quest = require('lib.quest')
+local server = require('lib.server')
+
 function NPC_186(me, npc)
-    local quest = me:quest(QUEST_ALCOHOLIC_DRINK)
+    local q = me:quest(quest.QUEST_ALCOHOLIC_DRINK)
     local btn
 
-    if quest ~= nil and quest:step() == 3 then
+    if q ~= nil and q:step() == 3 then
         if me:has_items('청심사주', 1) then
             ::NPC_186_0001::
             btn = me:dialog(npc, '허허, 주경원이 청심사주를 만드는것을 자네가 도와주었지? 내 신통력으로 다 보고 있었지.', true, true)
@@ -21,15 +24,15 @@ function NPC_186(me, npc)
                 { ['item'] = { ['청심사주'] = 1 } },
                 { ['item'] = { ["고대금속조각'음"] = 1 } }
             )
-            if code == EXCHANGE_RESULT.LACK_COST then
+            if code == server.EXCHANGE_RESULT.LACK_COST then
                 me:dialog(npc, '청심사주를 가지고 있지 않으시군요.', false, true)
                 return
             end
-            if code == EXCHANGE_RESULT.LACK_CAPACITY then
+            if code == server.EXCHANGE_RESULT.LACK_CAPACITY then
                 me:dialog(npc, '소지품이 가득 차서 ' .. name_with("고대금속조각'음", '을', '를') .. ' 줄 수 없네.', false, true)
                 return
             end
-            quest:step(4)
+            q:step(4)
             me:push_achievement(40, '청심사주를 천선도사에게 전해주었다.', 7, 20)
             return
         end

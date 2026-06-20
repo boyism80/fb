@@ -1,3 +1,6 @@
+local quest = require('lib.quest')
+local server = require('lib.server')
+
 local ACHIEVEMENT_400 = 12
 local REQUIRED_ITEMS = {
     ['도삭산코뿔소발톱'] = 1,
@@ -7,9 +10,9 @@ local REQUIRED_ITEMS = {
 local REWARD_400 = '도삭산황금봉'
 
 function NPC_191(me, npc)
-    local quest = me:quest(QUEST_DOTAEYEON)
+    local q = me:quest(quest.QUEST_DOTAEYEON)
 
-    if quest == nil then
+    if q == nil then
         ::NPC_191_0001::
         local btn = me:dialog(npc, '안녕하시오~ 도삭산코뿔소말이오. 그놈 이빨과 발톱, 뿔 정말 단단하게 생기지 않았소?', false, true)
         if btn == DIALOG_RESULT.QUIT then
@@ -38,21 +41,21 @@ function NPC_191(me, npc)
         if sel ~= 0 then
             return
         end
-        if quest == nil then
-            quest = me:start_quest(QUEST_DOTAEYEON)
-            if quest == nil then
+        if q == nil then
+            q = me:start_quest(quest.QUEST_DOTAEYEON)
+            if q == nil then
                 me:dialog(npc, '퀘스트 시작 실패', false, true)
                 return
             end
         end
-        quest:step(1)
+        q:step(1)
         me:push_achievement(ACHIEVEMENT_400, '도태연의 부탁을 들어주자!', 7, 1)
         me:dialog(npc, '다시 한번 말하지만 도삭산코뿔소의 발톱,이빨,뿔 모두 구해다 줘야하오~\n\n하나라도 빠지면 내 선물을 줄 수 없으니 명심하게나. 그럼 몸조심하구려. 놈들이 정말 사납거든.', false, true)
         return
     end
 
-    local step = quest:step()
-    if quest:completed() or step > 1 then
+    local step = q:step()
+    if q:completed() or step > 1 then
         me:dialog(npc, '안녕하신가? 덕분에 아무 훌륭한 무기와 방어구를 제작했다네. 나중에 한번 구경 오시게나.', false, true)
     end
 
@@ -74,16 +77,16 @@ function NPC_191(me, npc)
             { ['item'] = REQUIRED_ITEMS },
             { ['item'] = { [REWARD_400] = 1 } }
         )
-        if code == EXCHANGE_RESULT.LACK_COST then
+        if code == server.EXCHANGE_RESULT.LACK_COST then
             me:dialog(npc, '아직 발톱, 이빨, 뿔을 다 구하지 못한 모양이군..', false, false)
             return
         end
-        if code == EXCHANGE_RESULT.LACK_CAPACITY then
+        if code == server.EXCHANGE_RESULT.LACK_CAPACITY then
             me:dialog(npc, '소지품이 가득 차서 ' .. name_with(REWARD_400, '을', '를') .. ' 받을 수 없습니다.', false, false)
             return
         end
         me:push_achievement(ACHIEVEMENT_400, '도삭산 400층 퀘스트 완료', 7, 1)
-        quest:step(2)
+        q:step(2)
         btn = me:dialog(npc, '자 여기 내가 주는 선물이오. 도삭산의 비밀에 관련된 것 같은데.. 언젠가 쓸 일이 있을 것이오.', false, true)
         if btn == DIALOG_RESULT.QUIT then
             return

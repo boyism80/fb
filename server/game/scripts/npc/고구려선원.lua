@@ -1,6 +1,9 @@
+local quest = require('lib.quest')
+local server = require('lib.server')
+
 function NPC_169(me, npc)
-    local quest = me:quest(QUEST_DRAGON_KING)
-    if quest == nil or quest:step() ~= 10 then
+    local q = me:quest(quest.QUEST_DRAGON_KING)
+    if q == nil or q:step() ~= 10 then
         me:dialog(npc, "안녕하신가? 여행이란 참 즐거운 일이지.", false, false)
         return
     end
@@ -70,11 +73,11 @@ function NPC_169(me, npc)
         { ['item'] = { ["내통문서"] = 1 } },
         { ['item'] = { ["번역된내통문서"] = 1 } }
     )
-    if code == EXCHANGE_RESULT.LACK_COST then
+    if code == server.EXCHANGE_RESULT.LACK_COST then
         me:dialog(npc, "안녕하신가? 여행이란 참 즐거운 일이지.", false, false)
         return
     end
-    if code == EXCHANGE_RESULT.LACK_CAPACITY then
+    if code == server.EXCHANGE_RESULT.LACK_CAPACITY then
         me:dialog(npc, "소지품이 가득 차서 번역된내통문서를 받을 수 없습니다.", false, false)
         return
     end

@@ -1,10 +1,11 @@
-
+local quest = require('lib.quest')
+local server = require('lib.server')
 local function run_sesi_2(me, npc)
     if property("sesi_rightnow") ~= 2 then
         return false
     end
-    local quest = me:quest(QUEST_BAEK_MONGYEON)
-    if quest == nil or quest:step() < 1 then
+    local q = me:quest(quest.QUEST_BAEK_MONGYEON)
+    if q == nil or q:step() < 1 then
         return false
     end
     if me:has_items("벌레쫓는부적", 2) then
@@ -73,11 +74,11 @@ local function run_sesi_5(me, npc)
         { ['money'] = 100 },
         { ['item'] = { ["창포"] = 1 } }
     )
-    if code == EXCHANGE_RESULT.LACK_COST then
+    if code == server.EXCHANGE_RESULT.LACK_COST then
         me:dialog(npc, "창포는 하나에 100원이에요.", false, true)
         return true
     end
-    if code == EXCHANGE_RESULT.LACK_CAPACITY then
+    if code == server.EXCHANGE_RESULT.LACK_CAPACITY then
         me:dialog(npc, "소지품이 가득 차서 창포를 줄 수 없습니다.", false, false)
         return true
     end
@@ -124,7 +125,7 @@ local function run_sesi_8(me, npc)
     if property("sesi_rightnow") ~= 8 then
         return false
     end
-    local quest = me:quest(QUEST_BAEKRIHYANG)
+    local q = me:quest(quest.QUEST_BAEKRIHYANG)
     local sel, list_btn = me:list(npc, "무슨일로 오셨나요?", { "벌초를 하고 왔어요", "식용호박이 없어서..." }, false)
     if list_btn == DIALOG_RESULT.QUIT then
         return true
@@ -137,7 +138,7 @@ local function run_sesi_8(me, npc)
         if btn == DIALOG_RESULT.QUIT then
             return true
         end
-        if quest == nil or quest:step() < 1 or quest:progress() < 1 then
+        if q == nil or q:step() < 1 or q:progress() < 1 then
             me:dialog(npc, "벌초를 하지 않으셨네요? 절 속이시면 안돼죠..", false, false)
             return true
         end
@@ -146,7 +147,7 @@ local function run_sesi_8(me, npc)
             me:dialog(npc, "소지품이 가득 차서 올게심니를 줄 수 없습니다.", false, false)
             return true
         end
-        quest:progress(0)
+        q:progress(0)
         return true
     end
     local btn = me:dialog(npc, "식용호박이 필요하시다구요.. 제가 가지고 있는 식용호박을 드리도록 하죠.", false, true)

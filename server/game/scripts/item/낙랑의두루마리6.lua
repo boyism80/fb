@@ -1,4 +1,6 @@
 -- 낙랑의두루마리6 사용 스크립트
+local server = require('lib.server')
+
 local function quiz_wrong_and_exit(me, model, wrong_msg)
     me:dialog(model, wrong_msg, false, true)
     me:dialog(model, '바람의나라에 대한 공부를\n조금 더 한 뒤 다시\n도전하세요!!!', false, true)
@@ -77,7 +79,7 @@ function ON_ACTIVATED_6(me, item)
         { ['item'] = { ['낙랑의두루마리6'] = 1 } },
         { ['item'] = { ['낙랑의두루마리7'] = 1, ['초심자의반지'] = 1 }, ['exp'] = give_exp and 400 or 0 }
     )
-    if code == EXCHANGE_RESULT.LACK_CAPACITY then
+    if code == server.EXCHANGE_RESULT.LACK_CAPACITY then
         me:dialog(model, '소지품이 가득 찼습니다.', false, false)
         return
     end

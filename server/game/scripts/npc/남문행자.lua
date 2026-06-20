@@ -1,8 +1,10 @@
+local quest = require('lib.quest')
+
 function NPC_135(me, npc)
-    local quest = me:quest(QUEST_SAILOR)
+    local q = me:quest(quest.QUEST_SAILOR)
     local btn
 
-    if quest ~= nil and quest:step() == 5 then
+    if q ~= nil and q:step() == 5 then
         ::NPC_135_0003::
         btn = me:dialog(npc, '안녕하신가! 여행은 즐거웠나? 난 지금 환상의의 섬으로 한번 더 가 보려고 한다네.', false, true)
         if btn == DIALOG_RESULT.QUIT then
@@ -16,11 +18,11 @@ function NPC_135(me, npc)
         if btn == DIALOG_RESULT.PREV then
             goto NPC_135_0003
         end
-        quest:step(6)
+        q:step(6)
         return
     end
 
-    if quest == nil or quest:step() ~= 1 then
+    if q == nil or q:step() ~= 1 then
         me:dialog(npc, '....', false, false)
         return
     end
@@ -39,5 +41,5 @@ function NPC_135(me, npc)
         goto NPC_135_0001
     end
 
-    quest:step(2)
+    q:step(2)
 end

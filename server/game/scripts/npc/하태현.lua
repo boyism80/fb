@@ -1,13 +1,16 @@
+local quest = require('lib.quest')
+local server = require('lib.server')
+
 local ACHIEVEMENT_700 = 15
 local REQUIRED_ITEM = { ['나무가면'] = 50 }
 local REWARD_ITEMS = { '진비투구', '경비투구', '법비모', '격비모' }
 local REWARD_CLASSES = { '전사', '도적', '주술사', '도사' }
 
 function NPC_190(me, npc)
-    local quest = me:quest(QUEST_HATAEHYUN)
+    local q = me:quest(quest.QUEST_HATAEHYUN)
     local btn
 
-    if quest == nil then
+    if q == nil then
         ::NPC_190_0001::
         btn = me:dialog(npc, '이곳까지 오시느라 수고하셨네요. 끝까지 올라가실 생각인가요? 음.. 계속 올라가실거라면 부탁하나 드리고 싶은데..', false, true)
         if btn == DIALOG_RESULT.QUIT then
@@ -40,23 +43,23 @@ function NPC_190(me, npc)
         if sel ~= 0 then
             return
         end
-        quest = me:start_quest(QUEST_HATAEHYUN)
-        if quest == nil then
+        q = me:start_quest(quest.QUEST_HATAEHYUN)
+        if q == nil then
             me:dialog(npc, '퀘스트 시작 실패', false, true)
             return
         end
-        quest:step(1)
+        q:step(1)
         me:push_achievement(ACHIEVEMENT_700, '하태현의 부탁을 들어주자!', 7, 1)
         me:dialog(npc, '그럼 전 ' .. me:name() .. '님만 기다리고 있을께요. 적어도 50개는 모아다 주셔야해요~ 그래야 종류별로. 부탁드릴께요.', false, true)
         return
     end
 
-    if quest:completed() then
+    if q:completed() then
         me:dialog(npc, '저번엔 정말 감사했습니다. 가면이 하나같이 모두 흥미롭군요.', false, true)
         return
     end
 
-    local step = quest:step()
+    local step = q:step()
     if step == 1 then
         if not me:has_items(REQUIRED_ITEM) then
             me:dialog(npc, '아직 나무가면이 별로 없네요.. 50개정도만 구해주세요~', false, false)
@@ -86,15 +89,15 @@ function NPC_190(me, npc)
                 { ['item'] = REQUIRED_ITEM },
                 { ['item'] = { [item_name] = 1 } }
             )
-            if code == EXCHANGE_RESULT.LACK_COST then
+            if code == server.EXCHANGE_RESULT.LACK_COST then
                 me:dialog(npc, '아직 나무가면이 별로 없네요.. 50개정도만 구해주세요~', false, false)
                 return
             end
-            if code == EXCHANGE_RESULT.LACK_CAPACITY then
+            if code == server.EXCHANGE_RESULT.LACK_CAPACITY then
                 me:dialog(npc, '소지품이 가득 차서 ' .. name_with(item_name, '을', '를') .. ' 받을 수 없습니다.', false, false)
                 return
             end
-            quest:complete()
+            q:complete()
             me:push_achievement(ACHIEVEMENT_700, '도삭산 700층 퀘스트 완료', 7, 1)
             btn = me:dialog(npc, item_name .. '는 ' .. class_name .. '분들을 위한 투구입니다.', false, true)
             if btn == DIALOG_RESULT.QUIT then

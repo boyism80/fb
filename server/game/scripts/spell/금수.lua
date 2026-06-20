@@ -1,5 +1,7 @@
 -- 금수 캐스팅
-function ON_CAST_2002(me, spell, name)
+local spell = require('lib.spell')
+
+function ON_CAST_2002(me, sp, name)
     local mobs = {
         ['고양이'] = 183 + 0x7FFF,
         ['새끼돼지'] = name2mob('꼬마돼지'):look(),
@@ -12,15 +14,15 @@ function ON_CAST_2002(me, spell, name)
     local effect = 3
     local sound = 25
     local buff_time = 60
-    spell_disguise(me, mobs, name, spell, {mp=mp, sound=sound, effect=effect, buff_time=buff_time})
+    spell.disguise(me, mobs, name, sp, {mp=mp, sound=sound, effect=effect, buff_time=buff_time})
 end
 
 -- 금수 버프 효과
-function ON_BUFF_2002(me, spell)
+function ON_BUFF_2002(me, sp)
     
 end
 
 -- 금수 버프 해제 효과
-function ON_UNBUFF_2002(me, spell)
+function ON_UNBUFF_2002(me, sp)
     me:mimic(nil)
 end

@@ -1,7 +1,10 @@
-function NPC_231(me, npc)
-    local quest = me:quest(QUEST_HWANGBIYEON)
+local quest = require('lib.quest')
+local server = require('lib.server')
 
-    if quest == nil then
+function NPC_231(me, npc)
+    local q = me:quest(quest.QUEST_HWANGBIYEON)
+
+    if q == nil then
         local btn = me:dialog(npc, '황궁을 견학하러 왔는가? 허허, 미안하네만 지금은 보시다시피 좀 어수선하다네.', false, true)
         if btn == DIALOG_RESULT.QUIT then
             return
@@ -55,26 +58,26 @@ function NPC_231(me, npc)
         if btn == DIALOG_RESULT.PREV then
             goto NPC_231_0003
         end
-        quest = me:start_quest(QUEST_HWANGBIYEON)
-        if quest == nil then
+        q = me:start_quest(quest.QUEST_HWANGBIYEON)
+        if q == nil then
             me:dialog(npc, '퀘스트 시작 실패', false, true)
             return
         end
-        quest:step(1)
+        q:step(1)
         me:push_achievement(39, '황비연을 만나러 상해로 가자.', 7, 2)
         return
     end
 
-    if quest:completed() then
+    if q:completed() then
         me:dialog(npc, '안녕하신가? 자네 덕분에 난 진급을하여 편한안 삶을 살고 있지. 정말 고맙네.', true, true)
     end
 
-    if quest:step() >= 1 and quest:step() <= 3 then
+    if q:step() >= 1 and q:step() <= 3 then
         me:dialog(npc, '한번 상해로 가보십시요. 황비연이 마지막으로 나타난 장소가 상해입니다.', true, true)
         return
     end
 
-    if quest:step() == 4 then
+    if q:step() == 4 then
         local sel, lb = me:list(npc, '황비연은 잡아왔는가?', { '그는 죽었고, 그의 머리띠를 가져왔습니다.', '아니오, 아직...' }, true)
         if lb == DIALOG_RESULT.QUIT or sel ~= 0 then
             return
@@ -100,15 +103,15 @@ function NPC_231(me, npc)
             { ['item'] = { ['황비연의머리띠'] = 1 } },
             { ['money'] = 100000 }
         )
-        if code == EXCHANGE_RESULT.LACK_COST then
+        if code == server.EXCHANGE_RESULT.LACK_COST then
             me:dialog(npc, '황비연의머리띠를 가져오세요.', false, false)
             return
         end
-        if code == EXCHANGE_RESULT.LACK_CAPACITY then
+        if code == server.EXCHANGE_RESULT.LACK_CAPACITY then
             me:dialog(npc, '금전을 받을 여유가 없군요.', false, false)
             return
         end
-        quest:complete()
+        q:complete()
         me:push_achievement(39, '의적 황비연 임무를 완벽히 수행하였다.', 7, 2)
         return
     end

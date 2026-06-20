@@ -4,6 +4,9 @@
 #include <fb/thread_container.h>
 #include <async/awaitable_then.h>
 #include <async/propagation.h>
+#include <string>
+#include <string_view>
+#include <vector>
 
 using namespace fb::lua;
 
@@ -429,6 +432,44 @@ int context::yield(int retc)
     return lua_yield(*this, retc);
 }
 
+void context::clear_loaded_modules()
+{
+    lua_getglobal(*this, "package");
+    if (lua_istable(*this, -1) == false)
+    {
+        lua_pop(*this, 1);
+        return;
+    }
+
+    lua_getfield(*this, -1, "loaded");
+    if (lua_istable(*this, -1) == false)
+    {
+        lua_pop(*this, 2);
+        return;
+    }
+
+    std::vector<std::string> keys;
+    lua_pushnil(*this);
+    while (lua_next(*this, -2) != 0)
+    {
+        if (lua_type(*this, -2) == LUA_TSTRING)
+        {
+            auto key = lua_tostring(*this, -2);
+            if (key != nullptr && std::string_view(key).starts_with("lib."))
+                keys.emplace_back(key);
+        }
+        lua_pop(*this, 1);
+    }
+
+    for (const auto& key : keys)
+    {
+        lua_pushnil(*this);
+        lua_setfield(*this, -2, key.c_str());
+    }
+
+    lua_pop(*this, 2);
+}
+
 void context::release()
 {
     auto root = static_cast<fb::lua::root*>(this->owner);
@@ -771,7 +812,12 @@ context* fb::lua::context_pool::new_context(context* parent, call_options option
     if (this->_roots.contains(id) == false)
         return nullptr;
 
-    return this->_roots[id]->pop(parent, options);
+    auto* ctx = this->_roots[id]->pop(parent, options);
+#if defined DEBUG || defined _DEBUG
+    if (ctx != nullptr)
+        ctx->clear_loaded_modules();
+#endif
+    return ctx;
 }
 
 async::task<void> fb::lua::context_pool::dump(std::string_view path)

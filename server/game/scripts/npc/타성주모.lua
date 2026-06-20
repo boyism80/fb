@@ -1,3 +1,6 @@
+local npc = require('lib.npc')
+local server = require('lib.server')
+
 local CHANGEITEM = {
     { source = { name = '낡은어전의칼', count = 10 },   dest = { name = '어전의칼', count = 1 } },
     { source = { name = '원숭이잔털', count = 10 },    dest = { name = '원숭이털', count = 1 } },
@@ -12,13 +15,13 @@ local CHANGEITEM = {
     { source = { name = '노회뭉치', count = 1 },       dest = { name = '노회', count = 10 } }
 }
 
-local function run_change_item(me, npc)
+local function run_change_item(me, npc_obj)
     local list_msg = '안쓰는 물건을 비슷한 종류의 다른 물건으로 바꿔주는 소일거리를 하고 있어요. 혹시 이런 물건 가지고 있으세요?'
     local list_options = {}
     for _, e in ipairs(CHANGEITEM) do
         list_options[#list_options + 1] = e.source.name
     end
-    local selected = me:list(npc, list_msg, list_options)
+    local selected = me:list(npc_obj, list_msg, list_options)
     if selected == nil then
         return false
     end
@@ -32,7 +35,7 @@ local function run_change_item(me, npc)
     local dest = entry.dest
 
     local confirm_msg = string.format('%s %d개를 가져오시면 %s %d개로 교환해 드려요. 하시겠어요?', src.name, src.count, dest.name, dest.count)
-    local confirm = me:list(npc, confirm_msg, { '예', '아뇨' })
+    local confirm = me:list(npc_obj, confirm_msg, { '예', '아뇨' })
     if confirm == nil then
         return false
     end
@@ -44,20 +47,20 @@ local function run_change_item(me, npc)
         { ['item'] = { [src.name] = src.count } },
         { ['item'] = { [dest.name] = dest.count } }
     )
-    if code == EXCHANGE_RESULT.LACK_COST then
-        me:dialog(npc, string.format('%s %d개를 가져오셔야 바꿔드려요.', src.name, src.count))
+    if code == server.EXCHANGE_RESULT.LACK_COST then
+        me:dialog(npc_obj, string.format('%s %d개를 가져오셔야 바꿔드려요.', src.name, src.count))
         return true
     end
-    if code == EXCHANGE_RESULT.LACK_CAPACITY then
-        me:dialog(npc, '소지품이 가득 차서 받을 수 없어요.', false, false)
+    if code == server.EXCHANGE_RESULT.LACK_CAPACITY then
+        me:dialog(npc_obj, '소지품이 가득 차서 받을 수 없어요.', false, false)
         return true
     end
     return true
 end
 
-function NPC_231(me, npc)
+function NPC_231(me, npc_obj)
 ::NPC_231_000::
-    local selected = me:list(npc, '안녕하세요. 어떻게 오셨나요?', {
+    local selected = me:list(npc_obj, '안녕하세요. 어떻게 오셨나요?', {
         '물건 사기',
         '물건 팔기',
         '금전 맡기기',
@@ -71,31 +74,31 @@ function NPC_231(me, npc)
     end
 
     if selected == 0 then
-        if NPC_SELL_DIALOG(me, npc) == DIALOG_RESULT.NEXT then
+        if npc.sell_dialog(me, npc_obj) == DIALOG_RESULT.NEXT then
             goto NPC_231_000
         end
     elseif selected == 1 then
-        if NPC_BUY_DIALOG(me, npc) == DIALOG_RESULT.NEXT then
+        if npc.buy_dialog(me, npc_obj) == DIALOG_RESULT.NEXT then
             goto NPC_231_000
         end
     elseif selected == 2 then
-        if NPC_HOLD_MONEY_DIALOG(me, npc) == DIALOG_RESULT.NEXT then
+        if npc.hold_money_dialog(me, npc_obj) == DIALOG_RESULT.NEXT then
             goto NPC_231_000
         end
     elseif selected == 3 then
-        if NPC_RETURN_MONEY_DIALOG(me, npc) == DIALOG_RESULT.NEXT then
+        if npc.return_money_dialog(me, npc_obj) == DIALOG_RESULT.NEXT then
             goto NPC_231_000
         end
     elseif selected == 4 then
-        if NPC_HOLD_ITEM_DIALOG(me, npc) == DIALOG_RESULT.NEXT then
+        if npc.hold_item_dialog(me, npc_obj) == DIALOG_RESULT.NEXT then
             goto NPC_231_000
         end
     elseif selected == 5 then
-        if NPC_RETURN_ITEM_DIALOG(me, npc) == DIALOG_RESULT.NEXT then
+        if npc.return_item_dialog(me, npc_obj) == DIALOG_RESULT.NEXT then
             goto NPC_231_000
         end
     elseif selected == 6 then
-        if run_change_item(me, npc) then
+        if run_change_item(me, npc_obj) then
             goto NPC_231_000
         end
     end

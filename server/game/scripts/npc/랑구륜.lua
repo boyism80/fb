@@ -1,3 +1,6 @@
+local quest = require('lib.quest')
+local server = require('lib.server')
+
 local function ranggyuryun_palgu(me, npc)
     local EIGHT_TRIGRAMS = { '건괘', '곤괘', '진괘', '감괘', '리괘', '태괘', '선괘', '간괘' }
     local btn, sel
@@ -45,11 +48,11 @@ local function ranggyuryun_palgu(me, npc)
         { ['item'] = materials },
         { ['item'] = { ['팔괘'] = 1 } }
     )
-    if code == EXCHANGE_RESULT.LACK_COST then
+    if code == server.EXCHANGE_RESULT.LACK_COST then
         me:dialog(npc, '아직 팔괘 재료를 다 모으지 못하셨군요.', false, true)
         return
     end
-    if code == EXCHANGE_RESULT.LACK_CAPACITY then
+    if code == server.EXCHANGE_RESULT.LACK_CAPACITY then
         me:dialog(npc, '소지품이 가득 차서 팔괘를 받을 수 없습니다.', false, true)
         return
     end
@@ -57,28 +60,28 @@ end
 
 local function ranggyuryun_pure_water(me, npc)
     local ACHIEVEMENT_CLEAR = 23
-    local quest = me:quest(QUEST_CLEAR_SHIELD)
+    local q = me:quest(quest.QUEST_CLEAR_SHIELD)
     local btn, sel
 
-    if quest == nil or (quest:step() ~= 1 and quest:step() ~= 2) then
+    if q == nil or (q:step() ~= 1 and q:step() ~= 2) then
         me:dialog(npc, '아, 홍옥의 그 광채...빛깔...맛...언제 생각해도 황홀하네.', false, false)
         return
     end
 
-    if quest:step() == 1 then
+    if q:step() == 1 then
         sel = me:list(npc, ' ', { '물을 정화시키는 방법을 아시나요?' })
         if sel == nil or sel ~= 0 then return end
         sel = me:list(npc, '물론 알고 있지요. 하지만 그 방법을 배우기 위해서는 대가가 필요하지요.', { '무슨 대가인가요?' })
         if sel == nil or sel ~= 0 then return end
         sel = me:list(npc, '신선한 사과를 먹어본지 참 오래 되었는데..가서 홍옥 3개만 가지고 오세요.', { '예. 알겠습니다.', '홍옥!! 차라리 내가 먹고 말지..' })
         if sel == nil or sel ~= 0 then return end
-        quest:step(2)
+        q:step(2)
         me:push_achievement(ACHIEVEMENT_CLEAR, '랑구륜의 부탁을 들어주자.', 7, 1)
         me:dialog(npc, '아참 전 국광보다는 홍옥을 좋아하니 꼭 홍옥으로 3개를 가져오세요.', false, false)
         return
     end
 
-    if quest:step() == 2 then
+    if q:step() == 2 then
         local materials = {['홍옥'] = 3}
         if not me:has_items(materials) then
             me:dialog(npc, '아직 홍옥 3개를 구하시지 못하신거군요.', false, false)
@@ -92,15 +95,15 @@ local function ranggyuryun_pure_water(me, npc)
             { ['item'] = materials },
             { ['item'] = { ['정화비서'] = 1 } }
         )
-        if code == EXCHANGE_RESULT.LACK_COST then
+        if code == server.EXCHANGE_RESULT.LACK_COST then
             me:dialog(npc, '아직 홍옥 3개를 구하시지 못하신거군요.', false, false)
             return
         end
-        if code == EXCHANGE_RESULT.LACK_CAPACITY then
+        if code == server.EXCHANGE_RESULT.LACK_CAPACITY then
             me:dialog(npc, '소지품이 가득 차서 정화비서를 받을 수 없습니다.', false, true)
             return
         end
-        quest:step(3)
+        q:step(3)
         me:push_achievement(ACHIEVEMENT_CLEAR, '랑구륜의 부탁을 들어주었다.', 7, 1)
         ::NPC_2_0030::
         btn = me:dialog(npc, '우물우물... 아... 역시 언제 먹어도 홍옥의 맛이 최고야.', false, true)

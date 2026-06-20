@@ -1,12 +1,15 @@
+local quest = require('lib.quest')
+local server = require('lib.server')
+
 function NPC_233(me, npc)
     if me:level() < 56 then
         me:dialog(npc, '(옆에 있는 아이를 보며 크게 한숨을 내쉰다.)', false, true)
         return
     end
 
-    local quest = me:quest(QUEST_SICK_CHILD)
+    local q = me:quest(quest.QUEST_SICK_CHILD)
 
-    if quest == nil then
+    if q == nil then
         local sel, btn = me:list(npc, '아... 가난이 원수지, 병든 네게 보약 한 첩 지어줄 형편도 못 되는구나! 이럴 때 네 아버지가 있었다면... 에휴...', { '저... 무슨 일이라도 있나요?', '아픈 사람이라도 있나? 뭐, 나랑은 상관없지...' }, true)
         if btn == DIALOG_RESULT.QUIT then
             return
@@ -31,12 +34,12 @@ function NPC_233(me, npc)
         if btn == DIALOG_RESULT.QUIT or sel ~= 0 then
             return
         end
-        quest = me:start_quest(QUEST_SICK_CHILD)
-        if quest == nil then
+        q = me:start_quest(quest.QUEST_SICK_CHILD)
+        if q == nil then
             me:dialog(npc, '퀘스트 시작 실패', false, true)
             return
         end
-        quest:step(1)
+        q:step(1)
         me:push_achievement(36, '아픈 아이를 위해 보약을 구하자.', 7, 1)
         ::NPC_233_COS003::
         btn = me:dialog(npc, '예? 정말이세요? 이렇게 고마울 데가...\n\n아시다시피 보약은 워낙 비싸서, 저희 형편으로는 지을 수가 없답니다.', true, true)
@@ -56,7 +59,7 @@ function NPC_233(me, npc)
         return
     end
 
-    if quest:step() == 1 then
+    if q:step() == 1 then
         if not me:has_items('삼전신보탕', 1) then
             me:dialog(npc, '보약은 장안성 푸줏간에 가보시면 될거예요.', false, true)
             return
@@ -70,14 +73,14 @@ function NPC_233(me, npc)
                 { ['item'] = { ['삼전신보탕'] = 1 } },
                 { ['item'] = { ['청자다람쥐인형'] = 1 } }
             )
-            if code == EXCHANGE_RESULT.LACK_COST then
+            if code == server.EXCHANGE_RESULT.LACK_COST then
                 me:dialog(npc, '보약은 장안성 푸줏간에 가보시면 될거예요.', false, true)
                 return
-            elseif code == EXCHANGE_RESULT.LACK_CAPACITY then
+            elseif code == server.EXCHANGE_RESULT.LACK_CAPACITY then
                 me:dialog(npc, '소지품이 가득 차서 청자다람쥐인형을 줄 수 없습니다.', false, true)
                 return
             end
-            quest:step(2)
+            q:step(2)
             me:push_achievement(36, '아픈 아이의 병을 치료해 주었다.', 7, 1)
             ::NPC_233_COS006::
             btn = me:dialog(npc, '감사합니다... 정말 감사합니다... 이 은혜 언젠가는 꼭 갚겠어요.......', true, true)
@@ -99,7 +102,7 @@ function NPC_233(me, npc)
         return
     end
 
-    if quest:step() == 0 then
+    if q:step() == 0 then
         local sel, btn = me:list(npc, '아... 가난이 원수지, 병든 네게 보약 한 첩 지어줄 형편도 못 되는구나! 이럴 때 네 아버지가 있었다면... 에휴...', { '저... 무슨 일이라도 있나요?', '아픈 사람이라도 있나? 뭐, 나랑은 상관없지...' }, true)
         if btn == DIALOG_RESULT.QUIT then
             return
@@ -124,7 +127,7 @@ function NPC_233(me, npc)
         if btn == DIALOG_RESULT.QUIT or sel ~= 0 then
             return
         end
-        quest:step(1)
+        q:step(1)
         me:push_achievement(36, '아픈 아이를 위해 보약을 구하자.', 7, 1)
         ::NPC_233_COS003B::
         btn = me:dialog(npc, '예? 정말이세요? 이렇게 고마울 데가...\n\n아시다시피 보약은 워낙 비싸서, 저희 형편으로는 지을 수가 없답니다.', true, true)

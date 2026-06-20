@@ -1,8 +1,8 @@
-
+local quest = require('lib.quest')
 function NPC_379(me, npc)
-    local quest = me:quest(QUEST_DETECTIVE)
+    local q = me:quest(quest.QUEST_DETECTIVE)
 
-    if quest == nil then
+    if q == nil then
         ::NPC_379_0001::
         local btn = me:dialog(npc, "아이구, 정말이지. 요즘들어 일거리만 끝도없이 끝도없이 쏟아진단 말이야.", false, true)
         if btn == DIALOG_RESULT.QUIT then
@@ -90,13 +90,13 @@ function NPC_379(me, npc)
             me:dialog(npc, "그렇고말고... 내 일은 내가 해야겠지.", false, false)
             return
         end
-        quest = me:start_quest(QUEST_DETECTIVE)
-        if quest == nil then
+        q = me:start_quest(quest.QUEST_DETECTIVE)
+        if q == nil then
             me:dialog(npc, "퀘스트를 시작할 수 없습니다.", false, false)
             return
         end
-        if quest then
-            quest:step(1)
+        if q then
+            q:step(1)
         end
         me:push_achievement(54, "문화재 유출범을 찾아라.", 7, 16)
         btn = me:dialog(npc, "좋았어! 그럼 이제부터 자네는 임시 수사관이야. 이 명찰을 달고 있으면 섬사람들이 수사에 협조해줄걸세.", false, true)
@@ -107,12 +107,12 @@ function NPC_379(me, npc)
         return
     end
 
-    if quest:completed() then
+    if q:completed() then
         me:dialog(npc, me:name() .. " 아닌가? 자네덕에 모든게 해결되어서 좋다고. 하하하!", false, false)
         return
     end
 
-    local step = quest:step()
+    local step = q:step()
 
     if step == 0 then
         local btn = me:dialog(npc, "아이구, 정말이지. 요즘들어 일거리만 끝도없이 끝도없이 쏟아진단 말이야.", false, true)
@@ -176,8 +176,8 @@ function NPC_379(me, npc)
                 goto NPC_379_0021
             end
             me:dialog(npc, "난생처음 들어보네! 세상에! 아..아이구! 혈..혈압이 머리 꼭대끼까지 솟아오르네...아이구 아이구;", false, false)
-            if quest then
-                quest:step(5)
+            if q then
+                q:step(5)
             end
         else
             me:dialog(npc, "준비중입니다.", false, false)
@@ -197,8 +197,8 @@ function NPC_379(me, npc)
                 return
             end
             me:dialog(npc, "부자들말고 따로 있을까? 하긴, 부자들만 외부 세상 물건에 관심 있으란 법은 없긴하지.", false, false)
-            if quest then
-                quest:step(11)
+            if q then
+                q:step(11)
             end
         elseif step == 15 then
             ::NPC_379_0040::
@@ -223,9 +223,9 @@ function NPC_379(me, npc)
                 goto NPC_379_0041
             end
             me:dialog(npc, "감사의 뜻으로 10만전을 드리지! 정말 수고했네! 큰일을 해냈어! 하하하하하하하!", false, true)
-            if quest then
-                quest:step(16)
-                quest:complete()
+            if q then
+                q:step(16)
+                q:complete()
             end
             me:money(me:money() + 100000)
             me:push_achievement(54, "명수사관 칭호를 획득!", 7, 16)

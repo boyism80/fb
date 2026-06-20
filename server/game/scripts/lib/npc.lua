@@ -1,93 +1,6 @@
-QUEST_NAKRANG_HUNT = 1
-QUEST_KING_JANGAN = 100
-QUEST_KING_BUYEO = 101
-QUEST_KING_GOGURYEO = 102
-QUEST_CROCODILE_BLOOD = 155
-QUEST_NAMGUN = 180
-QUEST_BONG_BOOK = 181
-QUEST_RED_CLAY = 182
-QUEST_TANGTANG = 183
-QUEST_JUNJUN = 184
-QUEST_JINJIN = 185
-QUEST_TUNGTUNG = 186
-QUEST_TONGTONG = 187
-QUEST_SAILOR = 188
-QUEST_MEOKYEOM = 189
-QUEST_LIGHTHOUSE = 190
-QUEST_TOTEM_CLOTHES = 191
-QUEST_ALCOHOLIC_DRINK = 192
-QUEST_MARTIAL = 193
-QUEST_SICK_CHILD = 194
-QUEST_HWANGBIYEON = 195
-QUEST_DOJAEYOUNG_HERB = 196
-QUEST_SAMJEONSIN = 197
-QUEST_GREATWALL = 199
-QUEST_HOO_KILL = 200
-QUEST_SELL_DOLL = 201
-QUEST_FIND_TOYS = 202
-QUEST_JOWANG = 203
-QUEST_DONUHAP = 204
-QUEST_PRINCESS_RING = 205
-QUEST_GHOST = 206
-QUEST_OXYGEN = 207
-QUEST_WATER_RING = 208
-QUEST_CLEAR_SHIELD = 209
-QUEST_DRAGON_KING = 210
-QUEST_WATER_BOTTLE = 211
-QUEST_PYOSIN = 212
-QUEST_HOLYTREE = 213
-QUEST_RABBIT_LIVER = 214
-QUEST_STRONGBOX = 216
-QUEST_GOOSE_EGG = 217
-QUEST_MOUNTAIN_GOD = 218
-QUEST_DOTAEYEON = 219
-QUEST_WOOGAPUNG = 220
-QUEST_HATAEHYUN = 221
-QUEST_NAKRANG_INTRO = 224
-QUEST_NAKRANG2 = 225
-QUEST_NAKRANG3 = 226
-QUEST_NAKRANG4 = 227
-QUEST_NAKRANG5 = 228
-QUEST_NAKRANG7 = 229
-QUEST_PROMOTION_3RD = 230
-QUEST_MUTA = 231
-QUEST_SHARK_WEAPON = 232
-QUEST_BAEK_MONGYEON = 233
-QUEST_ANCIENT_RELIC = 234
-QUEST_JINHWANG = 235
-QUEST_DOJAECHUN = 236
-QUEST_PAMASPIRI = 237
-QUEST_BEGINNER_PATH = 238
-QUEST_BAEKRIHYANG = 239
-QUEST_JANGAJI = 240
-QUEST_CHOOMO = 241
-QUEST_MADONG_APPLY = 242
-QUEST_CIDEQUEST = 243
-QUEST_GMD_SAVED = 244
-QUEST_BLUEEAR = 245
-QUEST_SILENCE = 246
-QUEST_JURY = 247
-QUEST_WOLF_CURSE = 248
-QUEST_MAGIC_BALL = 249
-QUEST_TOLUI_DAY = 250
-QUEST_DETECTIVE = 251
-QUEST_WANDO = 252
-QUEST_JAPAN_LEGEND_WEAPON = 253
-QUEST_SKULL_NECKLACE = 254
-QUEST_SKULL_NECKLACE_1 = 255
-QUEST_SKULL_NECKLACE_2 = 256
-QUEST_SKULL_NECKLACE_3 = 257
-QUEST_SKULL_NECKLACE_4 = 258
-QUEST_SKULL_NECKLACE_5 = 259
-QUEST_SKULL_NECKLACE_6 = 260
-QUEST_SKULL_NECKLACE_7 = 261
-QUEST_SKULL_NECKLACE_8 = 262
-QUEST_SKULL_NECKLACE_9 = 263
-QUEST_HWAHWA = 264
-QUEST_JINGOGYUN = 265
-QUEST_HWAHWA_SMILE = 266
+local M = {}
 
-function npc_revive(me, npc, discourteous)
+function M.revive(me, npc, discourteous)
     if me:state() ~= STATE.GHOST then
         return true
     end
@@ -118,7 +31,7 @@ function npc_revive(me, npc, discourteous)
     return true
 end
 
-function npc_appreciate(me, npc)
+function M.appreciate(me, npc)
     if me:state() == STATE.GHOST then
         return true
     end
@@ -132,7 +45,7 @@ function npc_appreciate(me, npc)
     return true
 end
 
-function npc_store_item_count(me, npc, name)
+function M.store_item_count(me, npc, name)
     local model = name2item(name)
     if model == nil then
         return true
@@ -148,7 +61,7 @@ function npc_store_item_count(me, npc, name)
     return true
 end
 
-function npc_store_item_list(me, npc)
+function M.store_item_list(me, npc)
     local items = me:stored_item()
     local count = #items
     if count == 0 then
@@ -173,7 +86,7 @@ function npc_store_item_list(me, npc)
     return true
 end
 
-function npc_rename_weapon(me, npc, from, to)
+function M.rename_weapon(me, npc, from, to)
     local model = name2item(from)
     if model == nil then
         return true
@@ -228,7 +141,7 @@ function npc_rename_weapon(me, npc, from, to)
     return true
 end
 
-function npc_deposited_money(me, npc)
+function M.deposited_money(me, npc)
 
     local stored = me:deposited_money()
     if stored == 0 then
@@ -239,7 +152,7 @@ function npc_deposited_money(me, npc)
     return true
 end
 
-function npc_deposit_money(me, npc, money)
+function M.deposit_money(me, npc, money)
     local my_money = me:money()
     if money == nil then
         money = my_money
@@ -267,7 +180,7 @@ function npc_deposit_money(me, npc, money)
     return true
 end
 
-function npc_withdraw_money(me, npc, money)
+function M.withdraw_money(me, npc, money)
     local deposited = me:deposited_money()
     if money == nil then
         money = deposited
@@ -299,7 +212,7 @@ function npc_withdraw_money(me, npc, money)
     return true
 end
 
-function npc_repair(me, npc, name)
+function M.repair(me, npc, name)
     local all = (name == nil)
     local items = {}
     if not all then
@@ -379,7 +292,7 @@ function npc_repair(me, npc, name)
     return true
 end
 
-function npc_store_item(me, npc, name, count)
+function M.store_item(me, npc, name, count)
     local model = name2item(name)
     if model == nil then
         npc:chat('뭘 맡아줘?')
@@ -426,7 +339,7 @@ function npc_store_item(me, npc, name, count)
     return true
 end
 
-function npc_retrieve_item(me, npc, name, count)
+function M.retrieve_item(me, npc, name, count)
     local model = name2item(name)
     if model == nil then
         npc:chat('뭘 돌려줘?')
@@ -476,7 +389,7 @@ function npc_retrieve_item(me, npc, name, count)
     return true
 end
 
-function npc_sell_item(me, npc, name, count)
+function M.sell_item(me, npc, name, count)
     local model = name2item(name)
     if model == nil then
         return true
@@ -528,7 +441,7 @@ function npc_sell_item(me, npc, name, count)
     return true
 end
 
-function npc_buy_item(me, npc, name, count)
+function M.buy_item(me, npc, name, count)
     if count == 0 then
         return true
     end
@@ -609,7 +522,7 @@ function npc_buy_item(me, npc, name, count)
     return true
 end
 
-function npc_sell_item_list(me, npc)
+function M.sell_item_list(me, npc)
     local limit = 3
     local names = {}
     local overflow = false
@@ -640,7 +553,7 @@ function npc_sell_item_list(me, npc)
     return false
 end
 
-function npc_buy_item_list(me, npc)
+function M.buy_item_list(me, npc)
     local limit = 3
     local names = {}
     local overflow = false
@@ -665,7 +578,7 @@ function npc_buy_item_list(me, npc)
     return false
 end
 
-function npc_sell_item_price(me, npc, name)
+function M.sell_item_price(me, npc, name)
     local price = npc:model():sell_price(name)
     if price == nil then
         npc:chat('그런 물건은 안 팝니다.')
@@ -676,7 +589,7 @@ function npc_sell_item_price(me, npc, name)
     return false
 end
 
-function npc_buy_item_price(me, npc, name)
+function M.buy_item_price(me, npc, name)
     local price = npc:model():buy_price(name)
     if price == nil then
         npc:chat('그런 물건은 안 삽니다.')
@@ -687,7 +600,7 @@ function npc_buy_item_price(me, npc, name)
     return false
 end
 
-function npc_count_item_by_name(me, item_name)
+function M.count_item_by_name(me, item_name)
     local total = 0
     local items = me:items()
     if items then
@@ -700,174 +613,7 @@ function npc_count_item_by_name(me, item_name)
     return total
 end
 
-function king_quest_on_mob_die(me, you)
-    local killed_name = me:model():name()
-    for _, qid in ipairs({ 100, 101, 102 }) do
-        local quest = you:quest(qid)
-        if quest ~= nil and quest:step() == 1 then
-            local param = quest:param() or ''
-            local mob_name = param:match('^([^,]+)') or param
-            if mob_name == killed_name and quest:progress() < 1 then
-                quest:inc_progress(1)
-                break
-            end
-        end
-    end
-end
-
-function king_quest_dialog(me, npc, opts)
-    if me:level() < opts.min_level then
-        me:dialog(npc, '감히 여기가 어디라고!', false, true)
-        return
-    end
-    if opts.nation ~= nil and me:nation() ~= opts.nation then
-        me:dialog(npc, opts.nation_reject_msg or '여기는 왕이 계시는 곳입니다.', false, true)
-        return
-    end
-
-    local quest = me:quest(opts.quest_id)
-    local btn
-
-    if quest == nil then
-        ::KING_START0::
-        btn = me:dialog(npc, '무례하게 폐하께 직접! 폐하께 전할 말씀은 나를 통해서 하시오!', true, true)
-        if btn == DIALOG_RESULT.QUIT then
-            return
-        end
-        ::KING_START1::
-        btn = me:dialog(npc, '폐하게 임무를 받으려고 하시는 겁니까? 임무를 완수하면 많은 경험치를 받으시겠지만, 하지 못하면 형벌을 받게 된다오!', true, true)
-        if btn == DIALOG_RESULT.QUIT then
-            return
-        end
-        if btn == DIALOG_RESULT.PREV then
-            goto KING_START0
-        end
-        local sel, lb = me:list(npc, '그래도 임무를 받으시려오?', { '네, 받겠습니다.', '무서워서 안되겠어요.' })
-        if lb == DIALOG_RESULT.QUIT then
-            return
-        end
-        if sel == nil or sel ~= 0 then
-            return
-        end
-
-        local level = me:level()
-        local pool = opts.pool_fn(level)
-        if pool == nil or #pool == 0 then
-            me:dialog(npc, '임무를 부여할 수 없소.', false, true)
-            return
-        end
-        local idx = math.random(1, #pool)
-        local mob_name = pool[idx]
-        local mob_model = name2mob(mob_name)
-        if mob_model == nil then
-            me:dialog(npc, '임무를 부여할 수 없소.', false, true)
-            return
-        end
-
-        quest = me:start_quest(opts.quest_id)
-        if quest == nil then
-            me:dialog(npc, '퀘스트 시작 실패', false, true)
-            return
-        end
-        quest:step(1)
-        quest:param(mob_name)
-        quest:progress(0)
-        me:push_achievement(opts.achievement_id, opts.king_name .. '에게 ' .. name_with(mob_name, '을', '를') .. ' 잡는 임무를 받음', 6, 17)
-        me:dialog(npc, '어명이오! ' .. name_with(mob_name, '을', '를') .. ' 잡으라는 폐하의 말씀이 있으셨소! 임무를 수행한 후에는 시간을 지체하지 말고 바로 황궁으로 돌아오시오!', false, true)
-        return
-    end
-
-    if quest:step() == 0 then
-        ::KING_START0B::
-        btn = me:dialog(npc, '무례하게 폐하께 직접! 폐하께 전할 말씀은 나를 통해서 하시오!', true, true)
-        if btn == DIALOG_RESULT.QUIT then
-            return
-        end
-        ::KING_START1B::
-        btn = me:dialog(npc, '폐하게 임무를 받으려고 하시는 겁니까? 임무를 완수하면 많은 경험치를 받으시겠지만, 하지 못하면 형벌을 받게 된다오!', true, true)
-        if btn == DIALOG_RESULT.QUIT then
-            return
-        end
-        if btn == DIALOG_RESULT.PREV then
-            goto KING_START0B
-        end
-        local sel, lb = me:list(npc, '그래도 임무를 받으시려오?', { '네, 받겠습니다.', '무서워서 안되겠어요.' })
-        if lb == DIALOG_RESULT.QUIT then
-            return
-        end
-        if sel == nil or sel ~= 0 then
-            return
-        end
-
-        local level = me:level()
-        local pool = opts.pool_fn(level)
-        if pool == nil or #pool == 0 then
-            me:dialog(npc, '임무를 부여할 수 없소.', false, true)
-            return
-        end
-        local idx = math.random(1, #pool)
-        local mob_name = pool[idx]
-        local mob_model = name2mob(mob_name)
-        if mob_model == nil then
-            me:dialog(npc, '임무를 부여할 수 없소.', false, true)
-            return
-        end
-
-        quest:step(1)
-        quest:param(mob_name)
-        quest:progress(0)
-        me:push_achievement(opts.achievement_id, opts.king_name .. '에게 ' .. name_with(mob_name, '을', '를') .. ' 잡는 임무를 받음', 6, 17)
-        me:dialog(npc, '어명이오! ' .. name_with(mob_name, '을', '를') .. ' 잡으라는 폐하의 말씀이 있으셨소! 임무를 수행한 후에는 시간을 지체하지 말고 바로 황궁으로 돌아오시오!', false, true)
-        return
-    end
-
-    if quest:step() == 1 then
-        if quest:progress() == 0 then
-            local mob_name = name_with(quest:param() or '', '을', '를')
-            btn = me:dialog(npc, string.format('네 이놈! %s 잡을 어명을 받고서 %s 잡지 않았구나!', mob_name, mob_name), false, true)
-            if btn == DIALOG_RESULT.QUIT then
-                return
-            end
-
-            local sel, btn = me:list(npc, '아직 임무를 완수하지도 않았으면서 왜 찾아왔느냐?', {'임무를 취소시켜 주십시오.', '임무를 완수하고 다시 오겠습니다.'})
-            if btn == DIALOG_RESULT.QUIT then
-                return
-            end
-
-            if sel == 1 then
-                return
-            end
-            
-            me:dialog(npc, '감히 폐하의 임무를 취소해달라고? 이놈에게 형벌을 가하라!', true, true)
-            me:sound(69)
-            me:effect(13)
-            me:buff('왕의저주', opts.curse_sec)
-            me:erase_achievement(opts.achievement_id)
-            quest:step(0)
-            quest:param('')
-            quest:progress(0)
-            me:dialog(npc, '이 형벌로 너의 임무가 지워졌으니, 다시 임무를 받을 수 있을 것이다.', false, true)
-            return
-        end
-
-        local mob_name = quest:param() or ''
-        local mob_model = name2mob(mob_name)
-        local base_exp = (mob_model ~= nil) and mob_model:exp() or 0
-        local rate = exp_multiplier()
-        local exp_amount = math.floor(base_exp * 10 * rate)
-        btn = me:dialog(npc, '어명을 받든 공을 높이 사신 폐하께서 그대에게 경험치 ' .. tostring(exp_amount) .. ' 을 하사하십니다.', true, true)
-        if btn == DIALOG_RESULT.QUIT then
-            return
-        end
-        me:exp(me:exp() + exp_amount)
-        quest:step(0)
-        quest:param('')
-        quest:progress(0)
-        me:dialog(npc, '어명을 받든 공을 높이 사신 폐하께서 그대에게 경험치를 하사하셨소.', false, true)
-    end
-end
-
-function npc_cloth_shop_dialog(me, npc, crystal_exchange)
+function M.cloth_shop_dialog(me, npc, crystal_exchange)
     local selected = me:list(npc, '안녕하세요. 어떻게 오셨나요?', {
         '물건 사기',
         '물건 팔기',
@@ -880,9 +626,9 @@ function npc_cloth_shop_dialog(me, npc, crystal_exchange)
     end
 
     if selected == 0 then
-        return NPC_SELL_DIALOG(me, npc) == DIALOG_RESULT.NEXT
+        return M.sell_dialog(me, npc) == DIALOG_RESULT.NEXT
     elseif selected == 1 then
-        return NPC_BUY_DIALOG(me, npc) == DIALOG_RESULT.NEXT
+        return M.buy_dialog(me, npc) == DIALOG_RESULT.NEXT
     elseif selected == 2 or selected == 3 then
         me:dialog(npc, '특별 이벤트 기간에만 가능합니다.')
         return true
@@ -905,7 +651,7 @@ function npc_cloth_shop_dialog(me, npc, crystal_exchange)
         end
         local entry = crystal_exchange[idx]
         local src = entry.source
-        local have = npc_count_item_by_name(me, src.name)
+        local have = M.count_item_by_name(me, src.name)
         if have < src.count then
             me:dialog(npc, src.name .. '가 부족합니다.')
             return true
@@ -925,7 +671,7 @@ local AMBER_STAR_EXCHANGE = {
     { source = { name = '연청호박보석', count = 5 }, dest = { name = '연청호박별', count = 1 } }
 }
 
-function npc_armor_shop_dialog(me, npc)
+function M.armor_shop_dialog(me, npc)
     local selected = me:list(npc, '안녕하세요. 어떻게 오셨나요?', {
         '물건 사기',
         '물건 팔기',
@@ -936,9 +682,9 @@ function npc_armor_shop_dialog(me, npc)
     end
 
     if selected == 0 then
-        return NPC_SELL_DIALOG(me, npc) == DIALOG_RESULT.NEXT
+        return M.sell_dialog(me, npc) == DIALOG_RESULT.NEXT
     elseif selected == 1 then
-        return NPC_BUY_DIALOG(me, npc) == DIALOG_RESULT.NEXT
+        return M.buy_dialog(me, npc) == DIALOG_RESULT.NEXT
     elseif selected == 2 then
         local list_options = {}
         for _, e in ipairs(AMBER_STAR_EXCHANGE) do
@@ -954,7 +700,7 @@ function npc_armor_shop_dialog(me, npc)
         end
         local entry = AMBER_STAR_EXCHANGE[idx]
         local src = entry.source
-        local have = npc_count_item_by_name(me, src.name)
+        local have = M.count_item_by_name(me, src.name)
         if have < src.count then
             me:dialog(npc, src.name .. '이(가) 부족합니다.')
             return true
@@ -967,7 +713,7 @@ function npc_armor_shop_dialog(me, npc)
     return true
 end
 
-function NPC_BUY_DIALOG(me, npc)
+function M.buy_dialog(me, npc)
     local purchase_list = {}
     for i, pair in pairs(pursuit_buy(npc:model():buy())) do
         local item, price = table.unpack(pair)
@@ -1026,7 +772,7 @@ function NPC_BUY_DIALOG(me, npc)
     return DIALOG_RESULT.NEXT
 end
 
-function NPC_SELL_DIALOG(me, npc)
+function M.sell_dialog(me, npc)
     local pursuit = npc:model():sell()
     if #pursuit == 0 then
         pursuit = nil
@@ -1110,7 +856,7 @@ function NPC_SELL_DIALOG(me, npc)
     end
 end
 
-function repairable_slots(me)
+function M.repairable_slots(me)
     local items = me:items()
     local slots = {}
     local count = 0
@@ -1136,8 +882,8 @@ end
 
 
 
-function NPC_REPAIR_DIALOG(me, npc)
-    local items = repairable_slots(me)
+function M.repair_dialog(me, npc)
+    local items = M.repairable_slots(me)
     if items == nil then
         return me:dialog(npc, '고칠 물건이 없는데요', false, true)
     end
@@ -1177,8 +923,8 @@ end
 
 
 
-function NPC_REPAIR_ALL_DIALOG(me, npc)
-    local items = repairable_slots(me)
+function M.repair_all_dialog(me, npc)
+    local items = M.repairable_slots(me)
     if items == nil then
         return me:dialog(npc, '고칠 물건이 없는데요', false, true)
     end
@@ -1221,7 +967,7 @@ end
 
 
 
-function NPC_HOLD_MONEY_DIALOG(me, npc)
+function M.hold_money_dialog(me, npc)
     local count = me:input(npc, '얼마나 맡아드릴까요?')
     if count == nil then
         return DIALOG_RESULT.NEXT
@@ -1250,7 +996,7 @@ end
 
 
 
-function NPC_HOLD_ITEM_DIALOG(me, npc)
+function M.hold_item_dialog(me, npc)
     local slots = {}
     local items = {}
     local my_items = me:items()
@@ -1315,7 +1061,7 @@ end
 
 
 
-function NPC_RETURN_MONEY_DIALOG(me, npc)
+function M.return_money_dialog(me, npc)
     local deposited_money = me:deposited_money()
     if deposited_money <= 0 then
         return me:dialog(npc, '돈을 보관하고 있지 않습니다.', false, true)
@@ -1348,7 +1094,7 @@ end
 
 
 
-function NPC_RETURN_ITEM_DIALOG(me, npc)
+function M.return_item_dialog(me, npc)
     local list = {}
     for _, stored_item in pairs(me:stored_item()) do
         local model = stored_item:model()
@@ -1404,7 +1150,7 @@ function NPC_RETURN_ITEM_DIALOG(me, npc)
     end
 end
 
-function NPC_RENAME_WEAPON_DIALOG(me, npc)
+function M.rename_weapon_dialog(me, npc)
     local slots = {}
     local items = {}
     for slot, item in pairs(me:items()) do
@@ -1462,7 +1208,7 @@ function NPC_RENAME_WEAPON_DIALOG(me, npc)
     return me:dialog(npc, string.format('%s의 이름을 %s 변경했습니다.', weapon:model():name(), name_with(name, '으로', '로')), false, true)
 end
 
-function NPC_BASIC_CLASS(me, npc, class, spells)
+function M.basic_class(me, npc, class, spells)
 ::NPC_BASIC_CLASS_000::
     local level = me:level()
     local class_name = class2name(class)
@@ -1802,7 +1548,7 @@ local function promotion_has_spell(me, spell_name)
     return false
 end
 
-function NPC_PROMOTION_SKILLS(me, npc, class)
+function M.promotion_skills(me, npc, class)
     if me:class() ~= class then
         me:dialog(npc, '당신은 더 이상 제가 수련을 도와드리지 않아도 될 만큼 성장하셨군요.', false, true)
         return
@@ -1857,7 +1603,7 @@ local PROMOTION_CLOTHES_ITEMS = {
     [CLASS.POET]    = { [GENDER.MALE] = '진인의영혼', [GENDER.FEMALE] = '진인의심장' },
 }
 
-function NPC_PROMOTION_CLOTHES(me, npc, class)
+function M.promotion_clothes(me, npc, class)
     if me:class() ~= class then
         me:dialog(npc, '당신은 더 이상 제가 수련을 도와드리지 않아도 될 만큼 성장하셨군요.', false, true)
         return
@@ -1890,7 +1636,7 @@ function NPC_PROMOTION_CLOTHES(me, npc, class)
     me:dialog(npc, name_with(item_name, '을', '를') .. ' 드렸습니다.', false, true)
 end
 
-function NPC_PROMOTION(me, npc, class)
+function M.promotion(me, npc, class)
     if me:class() ~= class then
         me:dialog(npc, '당신은 더 이상 제가 수련을 도와드리지 않아도 될 만큼 성장하셨군요.', false, true)
         return
@@ -1935,3 +1681,5 @@ function NPC_PROMOTION(me, npc, class)
     broadcast(string.format('(( [%s]님이 %s 승급하였습니다. 축하합니다! ))', me:name(), name_with(next_name, '으로', '로')), MESSAGE_TYPE.WORLD, BROADCAST_TYPE.WORLD)
     me:dialog(npc, '승급을 마쳤습니다. 더 높은 경지에 도전하시길 바랍니다.', false, true)
 end
+
+return M

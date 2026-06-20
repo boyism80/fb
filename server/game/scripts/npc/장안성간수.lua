@@ -1,7 +1,7 @@
-
+local quest = require('lib.quest')
 function NPC_543(me, npc)
-    local quest = me:quest(QUEST_JINHWANG)
-    if quest == nil or quest:step() ~= 1 then
+    local q = me:quest(quest.QUEST_JINHWANG)
+    if q == nil or q:step() ~= 1 then
         me:dialog(npc, "....", false, true)
         return
     end
@@ -50,5 +50,5 @@ function NPC_543(me, npc)
         return
     end
 
-    quest:step(2)
+    q:step(2)
 end

@@ -383,6 +383,7 @@ void lua_integration_test::init_lua()
 
     register_model_globals(lua);
     lua.build("log", fb::bot::builtin::integration_test::builtin_log);
+    lua.build("is_local_host", lua_is_local_host);
 }
 
 void lua_integration_test::load_script()

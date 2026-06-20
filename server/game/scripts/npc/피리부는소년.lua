@@ -1,16 +1,17 @@
-
+local quest = require('lib.quest')
+local server = require('lib.server')
 function NPC_489(me, npc)
-    local quest = me:quest(QUEST_PAMASPIRI)
-    if quest == nil then
+    local q = me:quest(quest.QUEST_PAMASPIRI)
+    if q == nil then
         me:dialog(npc, "삐리리- 삘릴리리- 삘릴리리리- 삐- 삐---\n내 피리 부는 솜씨가 어떠냐!", false, false)
         return
     end
-    if quest:completed() then
+    if q:completed() then
         me:dialog(npc, "사탕이 먹고 싶어.", false, false)
         return
     end
 
-    local step = quest:step()
+    local step = q:step()
     if step == 1 then
         ::NPC_489_0001::
         local sel, btn = me:list(npc, "삐리리- 삘릴리리- 삘릴리리리- 삐- 삐---\n내 피리 부는 솜씨가 어떠냐!", { "꼬마야, 그 피리 어디서 났니?", "되게 시끄럽네..." }, false)
@@ -54,7 +55,7 @@ function NPC_489(me, npc)
             goto NPC_489_0003
         end
 
-        quest:step(2)
+        q:step(2)
         me:push_achievement(48, "파마의 피리를 찾자(사탕을 구하자).", 7, 1)
 
         ::NPC_489_0005::
@@ -96,16 +97,16 @@ function NPC_489(me, npc)
             { ['item'] = { ["꿀사탕"] = 1 } },
             { ['item'] = { ["파마의피리"] = 1 } }
         )
-        if code == EXCHANGE_RESULT.LACK_COST then
+        if code == server.EXCHANGE_RESULT.LACK_COST then
             me:dialog(npc, "사탕을 가져오지 않으면 피리를 주지 않을테야!", false, false)
             return
         end
-        if code == EXCHANGE_RESULT.LACK_CAPACITY then
+        if code == server.EXCHANGE_RESULT.LACK_CAPACITY then
             me:dialog(npc, "소지품이 가득 차서 줄 수 없네요.", false, false)
             return
         end
 
-        quest:step(4)
+        q:step(4)
         me:push_achievement(48, "파마의 피리를 찾자(파마의 피리를 돌려주자).", 7, 1)
 
         ::NPC_489_0008::

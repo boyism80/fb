@@ -1,3 +1,6 @@
+local quest = require('lib.quest')
+local server = require('lib.server')
+
 function NPC_168(me, npc)
     local food_rewards = {
         ['바나나다발'] = { item = nil,  item_count = 0,  money = 500 },
@@ -27,10 +30,10 @@ function NPC_168(me, npc)
         ['비장의도시락'] = { item = '이가닌자의검',  item_count = 1,  money = 0 },
     }
     
-    local quest = me:quest(QUEST_MEOKYEOM)
+    local q = me:quest(quest.QUEST_MEOKYEOM)
     local btn
     
-    if quest == nil then
+    if q == nil then
         ::NPC_168_0001::
         btn = me:dialog(npc, '곧 우리 아버님이 환갑이 되시지. 아~ 이 못난 아들을 기르시느라 정말 고생 많이 하셨지. 이젠 내가 호강시켜 드려야 할 텐데... 오래오래 사셨으면 좋겠어.', false, true)
         if btn == DIALOG_RESULT.QUIT then
@@ -57,11 +60,11 @@ function NPC_168(me, npc)
         if sel ~= 0 then
             return
         end
-        if not me:start_quest(QUEST_MEOKYEOM) then
+        if not me:start_quest(quest.QUEST_MEOKYEOM) then
             return
         end
-        quest = me:quest(QUEST_MEOKYEOM)
-        quest:step(1)
+        q = me:quest(quest.QUEST_MEOKYEOM)
+        q:step(1)
         ::NPC_168_0020::
         btn = me:dialog(npc, '자네가 도와주겠다고? 허허! 그거 듣던 중 반가운 소리구만! 실은 자네에게 이런 이야기를 한 것도 자네를 유심히 보니 요리 깨나 해 본 사람 같아서였지. 허허허..', true, true)
         if btn == DIALOG_RESULT.PREV then
@@ -78,7 +81,7 @@ function NPC_168(me, npc)
         return
     end
 
-    if quest:step() == 0 then
+    if q:step() == 0 then
         ::NPC_168_0030::
         btn = me:dialog(npc, '곧 우리 아버님이 환갑이 되시지. 아~ 이 못난 아들을 기르시느라 정말 고생 많이 하셨지. 이젠 내가 호강시켜 드려야 할 텐데... 오래오래 사셨으면 좋겠어.', true, true)
         if btn == DIALOG_RESULT.QUIT then
@@ -105,11 +108,11 @@ function NPC_168(me, npc)
         if sel ~= 0 then
             return
         end
-        if not me:start_quest(QUEST_MEOKYEOM) then
+        if not me:start_quest(quest.QUEST_MEOKYEOM) then
             return
         end
-        quest = me:quest(QUEST_MEOKYEOM)
-        quest:step(1)
+        q = me:quest(quest.QUEST_MEOKYEOM)
+        q:step(1)
         ::NPC_168_0040::
         btn = me:dialog(npc, '자네가 도와주겠다고? 허허! 그거 듣던 중 반가운 소리구만! 실은 자네에게 이런 이야기를 한 것도 자네를 유심히 보니 요리 깨나 해 본 사람 같아서였지. 허허허..', true, true)
         if btn == DIALOG_RESULT.PREV then
@@ -188,10 +191,10 @@ function NPC_168(me, npc)
         { ['item'] = { [food_name] = 1 } },
         reward
     )
-    if code == EXCHANGE_RESULT.LACK_COST then
+    if code == server.EXCHANGE_RESULT.LACK_COST then
         me:dialog(npc, food_name .. '!! 그거 좋지... 하지만 자네는 그 요리를 가지고 있지 않은데? 어디 놔 두고 온 것은 아닌가? 쯧쯧...', false, false)
         return
-    elseif code == EXCHANGE_RESULT.LACK_CAPACITY then
+    elseif code == server.EXCHANGE_RESULT.LACK_CAPACITY then
         me:dialog(npc, '소지품이 가득 차서 보상을 줄 수 없네.', false, true)
         return
     end

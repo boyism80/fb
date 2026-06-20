@@ -1,17 +1,20 @@
+local quest = require('lib.quest')
+local server = require('lib.server')
+
 function NPC_232(me, npc)
-    local quest = me:quest(QUEST_HWANGBIYEON)
+    local q = me:quest(quest.QUEST_HWANGBIYEON)
 
-    if quest == nil then
+    if q == nil then
         me:dialog(npc, '안녕하신가요?', false, true)
         return
     end
 
-    if quest:step() == 0 then
+    if q:step() == 0 then
         me:dialog(npc, '안녕하신가요?', false, true)
         return
     end
 
-    if quest:step() == 1 then
+    if q:step() == 1 then
         ::NPC_232_0000::
         local sel, lb = me:list(npc, '안녕하십니까. 허허, 아까부터 뭔가 찾으시는 눈치신데... 뭘 그리 찾으시는지요?', { '황비연이라는 사람을 찾고 있습니다.', '아무 것도 아닙니다.' }, false)
         if lb == DIALOG_RESULT.QUIT or sel ~= 0 then
@@ -96,17 +99,17 @@ function NPC_232(me, npc)
             me:dialog(npc, '소지품이 가득 차서 노비문서를 줄 수 없습니다.', false, true)
             return
         end
-        quest:step(2)
+        q:step(2)
         me:push_achievement(39, '도삭산 100층으로가 노비문서를 전해주자.', 7, 16)
         return
     end
 
-    if quest:step() == 2 then
+    if q:step() == 2 then
         me:dialog(npc, '아직 도삭산 100층에 계신분을 만나지 못하셨나 보군요.', false, true)
         return
     end
 
-    if quest:step() == 3 then
+    if q:step() == 3 then
         if not me:has_items('보패', 1) then
             me:dialog(npc, '아직 도삭산 100층에 계신분을 만나지 못하셨나 보군요.', false, true)
             return
@@ -207,15 +210,15 @@ function NPC_232(me, npc)
             { ['item'] = { ['보패'] = 1 } },
             { ['item'] = { ['황비연의머리띠'] = 1 } }
         )
-        if code == EXCHANGE_RESULT.LACK_COST then
+        if code == server.EXCHANGE_RESULT.LACK_COST then
             me:dialog(npc, '보패를 가지고 있지 않으시군요.', false, true)
             return
         end
-        if code == EXCHANGE_RESULT.LACK_CAPACITY then
+        if code == server.EXCHANGE_RESULT.LACK_CAPACITY then
             me:dialog(npc, '소지품이 가득 차서 황비연의머리띠를 줄 수 없습니다.', false, true)
             return
         end
-        quest:step(4)
+        q:step(4)
         me:push_achievement(39, '황비연의머리띠를 관아에 가져가자.', 7, 16)
         return
     end

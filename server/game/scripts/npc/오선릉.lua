@@ -1,3 +1,6 @@
+local quest = require('lib.quest')
+local server = require('lib.server')
+
 function NPC_362(me, npc)
     local button = me:dialog(npc, "안녕하세요? 저는 오선릉입니다.", false, true)
     if button == DIALOG_RESULT.QUIT then
@@ -9,13 +12,13 @@ function NPC_362(me, npc)
         return
     end
 
-    local quest = me:quest(QUEST_BAEK_MONGYEON)
-    if quest == nil then
+    local q = me:quest(quest.QUEST_BAEK_MONGYEON)
+    if q == nil then
         me:dialog(npc, "준비중입니다.", false, false)
         return
     end
 
-    if quest:step() < 1 then
+    if q:step() < 1 then
         me:dialog(npc, "준비중입니다.", false, false)
         return
     end
@@ -23,7 +26,7 @@ function NPC_362(me, npc)
     local OSEONREUNG_REWARDS = { "티라노의알", "유리의장미", "유리의거울", "유리의팔찌", "유리의빗", "유리의안경" }
     local ACHIEVEMENT_OSEONREUNG = 56
 
-    if quest:progress() >= 1 then
+    if q:progress() >= 1 then
         if me:has_items("제기", 1) then
             me:dialog(npc, "준비중입니다.", false, false)
             return
@@ -57,14 +60,14 @@ function NPC_362(me, npc)
         local cost = { ['item'] = { ["연"] = 1, ["실패"] = 1, ["깨진김장독"] = 1, ["찌그러진냄비"] = 1, ["널"] = 1 } }
         local reward = { ['item'] = { [reward_name] = 1 } }
         local code = me:exchange(cost, reward)
-        if code == EXCHANGE_RESULT.LACK_COST then
+        if code == server.EXCHANGE_RESULT.LACK_COST then
             return
         end
-        if code == EXCHANGE_RESULT.LACK_CAPACITY then
+        if code == server.EXCHANGE_RESULT.LACK_CAPACITY then
             me:dialog(npc, "소지품이 가득 차서 " .. name_with(reward_name, '을', '를') .. " 받을 수 없어요. 자리 좀 비우고 다시 오세요.", false, false)
             return
         end
-        quest:progress(1)
+        q:progress(1)
         me:push_achievement(ACHIEVEMENT_OSEONREUNG, "오선릉에게 잡동사니를 전해주고 아이템을 받았다.", 7, 4)
         return
     end

@@ -1,5 +1,7 @@
 -- 소환 캐스팅
-function ON_CAST_4(me, spell, name)
+local spell = require('lib.spell')
+
+function ON_CAST_4(me, sp, name)
 
     if me:name() == name then
         me:message('나 자신을 소환할 수 없습니다.')
@@ -28,12 +30,12 @@ function ON_CAST_4(me, spell, name)
     local sound = 36
     local effect = 3
     local mp = 30
-    if spell_cast(me, nil, nil, {mp=mp}) then
-        local new_x, new_y = TELEPORT_LOOKUP(me, map, x, y, direction)
+    if spell.cast(me, nil, nil, {mp=mp}) then
+        local new_x, new_y = spell.TELEPORT_LOOKUP(me, map, x, y, direction)
         ch:map(map, new_x, new_y)
         me:action(ACTION.CAST_SPELL, DURATION.SPELL)
         me:sound(sound)
         me:effect(effect)
-        me:message(string.format('%s 외웠습니다.', name_with(spell:name())))
+        me:message(string.format('%s 외웠습니다.', name_with(sp:name())))
     end
 end

@@ -1,7 +1,10 @@
+local quest = require('lib.quest')
+local server = require('lib.server')
+
 local ITEM_BONG_BOOK = '봉래산전설'
 
 function NPC_117(me, npc)
-    local dq = me:quest(QUEST_DETECTIVE)
+    local dq = me:quest(quest.QUEST_DETECTIVE)
     if dq and not dq:completed() then
         local ds = dq:step()
         if ds == 3 or ds == 4 then
@@ -96,16 +99,16 @@ function NPC_117(me, npc)
     end
 
     ::NPC_117_BOOK::
-    local quest = me:quest(QUEST_BONG_BOOK)
+    local q = me:quest(quest.QUEST_BONG_BOOK)
     local has_book = me:has_items(ITEM_BONG_BOOK, 1)
 
-    if quest == nil then
+    if q == nil then
         local selected = me:list(npc, '내가 책 한권 드릴테니 한번 읽어나 보시게나.', { '예, 주세요.', '아니오, 책이라면 질색이라서..' })
         if selected == nil then
             return
         end
         if selected == 0 then
-            local q = me:start_quest(QUEST_BONG_BOOK)
+            local q = me:start_quest(quest.QUEST_BONG_BOOK)
             if q == nil then
                 me:dialog(npc, '퀘스트 시작 실패', false, true)
                 return
@@ -131,11 +134,11 @@ function NPC_117(me, npc)
             { ['money'] = 1000 },
             { ['item'] = { [ITEM_BONG_BOOK] = 1 } }
         )
-        if code == EXCHANGE_RESULT.LACK_COST then
+        if code == server.EXCHANGE_RESULT.LACK_COST then
             me:dialog(npc, '돈이 부족하지 않나?', false, true)
             return
         end
-        if code == EXCHANGE_RESULT.LACK_CAPACITY then
+        if code == server.EXCHANGE_RESULT.LACK_CAPACITY then
             me:dialog(npc, '소지품이 가득 차서 줄 수가 없네.', false, true)
             return
         end

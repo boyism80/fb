@@ -1,17 +1,17 @@
-
+local quest = require('lib.quest')
 function NPC_277(me, npc)
-    local quest = me:quest(QUEST_BEGINNER_PATH)
-    if quest == nil then
+    local q = me:quest(quest.QUEST_BEGINNER_PATH)
+    if q == nil then
         me:dialog(npc, "먼저 말하기도우미에게 다녀 오세요...", false, false)
         return
     end
 
-    if quest:completed() then
+    if q:completed() then
         me:dialog(npc, "똘똘이 도우미가 다음 방에서 기다리고 있습니다.", false, false)
         return
     end
 
-    local step = quest:step()
+    local step = q:step()
     if step >= 6 then
         me:dialog(npc, "똘똘이 도우미가 다음 방에서 기다리고 있습니다.", false, false)
         return
@@ -60,7 +60,7 @@ function NPC_277(me, npc)
             me:dialog(npc, "소지품이 가득 차서 목도를 줄 수 없습니다.", false, false)
             return
         end
-        quest:step(4)
+        q:step(4)
         me:dialog(npc, "모두 잡으면 '야호'라고 말해주세요.", false, false)
         return
     end
@@ -81,7 +81,7 @@ function NPC_277(me, npc)
         me:dialog(npc, "소지품이 가득 차서 갑옷을 줄 수 없습니다.", false, false)
         return
     end
-    quest:step(6)
+    q:step(6)
     me:exp(me:exp() + 200)
 
     me:dialog(npc, "갑옷은 방어력을 낮춰주는 역할을 하며, 방어력이 낮을수록 몬스터에게 입는 데미지가 줄어들게 됩니다.", false, true)

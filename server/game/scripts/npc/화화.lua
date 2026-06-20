@@ -1,4 +1,5 @@
-
+local quest = require('lib.quest')
+local server = require('lib.server')
 local function run_dialogs(me, npc, messages)
     for i, msg in ipairs(messages) do
         local prev = (i > 1)
@@ -20,7 +21,7 @@ local function in_hwahwa_time_window()
 end
 
 local function get_smile_count(me)
-    local q = me:quest(QUEST_HWAHWA_SMILE)
+    local q = me:quest(quest.QUEST_HWAHWA_SMILE)
     if not q then
         return 0
     end
@@ -28,9 +29,9 @@ local function get_smile_count(me)
 end
 
 local function add_smile(me, delta)
-    local q = me:quest(QUEST_HWAHWA_SMILE)
+    local q = me:quest(quest.QUEST_HWAHWA_SMILE)
     if not q then
-        q = me:start_quest(QUEST_HWAHWA_SMILE)
+        q = me:start_quest(quest.QUEST_HWAHWA_SMILE)
         if q == nil then
             return
         end
@@ -82,11 +83,11 @@ local function handle_jingogyun_2(me, npc, q_jingo)
             reward = { ['item'] = { ["탄생의씨앗"] = 1 } }
         end
         local code = me:exchange({ ['item'] = { ["해바라기씨"] = 1 } }, reward)
-        if code == EXCHANGE_RESULT.LACK_COST then
+        if code == server.EXCHANGE_RESULT.LACK_COST then
             me:dialog(npc, "해바라기씨앗을 가져와~", false, false)
             return true
         end
-        if code == EXCHANGE_RESULT.LACK_CAPACITY then
+        if code == server.EXCHANGE_RESULT.LACK_CAPACITY then
             me:dialog(npc, "소지품이 가득 차서 탄생의 씨앗을 줄 수 없어.", false, false)
             return true
         end
@@ -211,8 +212,8 @@ function NPC_126(me, npc)
         return
     end
 
-    local q_hwahwa = me:quest(QUEST_HWAHWA)
-    local q_jingo = me:quest(QUEST_JINGOGYUN)
+    local q_hwahwa = me:quest(quest.QUEST_HWAHWA)
+    local q_jingo = me:quest(quest.QUEST_JINGOGYUN)
     local jingo_step = (q_jingo and q_jingo:step()) or 0
     local hwahwa_friend = (q_hwahwa and q_hwahwa:step() >= 1)
     local smile = get_smile_count(me)
@@ -239,7 +240,7 @@ function NPC_126(me, npc)
             return
         end
         if sel == 0 then
-            local q = (not q_hwahwa) and me:start_quest(QUEST_HWAHWA) or me:quest(QUEST_HWAHWA)
+            local q = (not q_hwahwa) and me:start_quest(quest.QUEST_HWAHWA) or me:quest(quest.QUEST_HWAHWA)
             if q == nil then
                 return
             end
@@ -249,7 +250,7 @@ function NPC_126(me, npc)
             return
         end
         if sel == 1 then
-            local q = me:quest(QUEST_HWAHWA_SMILE)
+            local q = me:quest(quest.QUEST_HWAHWA_SMILE)
             if q and q:step() > 0 then
                 q:step(math.max(0, (q:step() or 0) - 50))
             end

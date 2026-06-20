@@ -1,3 +1,6 @@
+local quest = require('lib.quest')
+local server = require('lib.server')
+
 local ACHIEVEMENT_ACCEPT = 27
 local ACHIEVEMENT_DONE = 27
 local ITEM_OLD_SAFE = '낡은금고'
@@ -99,11 +102,11 @@ local function run_intro_and_accept(me, npc)
         return
     end
 
-    local quest = me:start_quest(QUEST_STRONGBOX)
-    if quest == nil then
+    local q = me:start_quest(quest.QUEST_STRONGBOX)
+    if q == nil then
         return
     end
-    quest:step(1)
+    q:step(1)
     me:push_achievement(ACHIEVEMENT_ACCEPT, '금고주인의 부탁을 들어주자.', 7, 1)
     me:mkitem(ITEM_OLD_SAFE, 1)
 end
@@ -113,16 +116,16 @@ local function run_turn_in(me, npc)
         { ['item'] = { [ITEM_OLD_ENVELOPE] = 1 } },
         { ['item'] = { [ITEM_BLACK_DAGGER] = 1 } }
     )
-    if code == EXCHANGE_RESULT.OK then
-        local quest = me:quest(QUEST_STRONGBOX)
-        if quest then
-            quest:complete()
+    if code == server.EXCHANGE_RESULT.OK then
+        local q = me:quest(quest.QUEST_STRONGBOX)
+        if q then
+            q:complete()
         end
         me:push_achievement(ACHIEVEMENT_DONE, '금고주인의 부탁을 들어주었다.', 6, 1)
         me:dialog(npc, '오! 봉투를 가져왔군. 수고했어. 설마했는데 정말 안 열어봤군. 좋았어! 내 아끼던 거지만 상으로 이 흑장단검을 주지. 중국에서 가져온 귀한 칼이야. 그럼 잘 가게!', false, true)
         return
     end
-    if code == EXCHANGE_RESULT.LACK_CAPACITY then
+    if code == server.EXCHANGE_RESULT.LACK_CAPACITY then
         me:dialog(npc, '소지품이 가득 차서 흑장단검을 받을 수 없습니다. 자리 좀 비우고 다시 오세요.', false, false)
         return
     end
@@ -144,9 +147,9 @@ local function run_turn_in(me, npc)
             me:buff('금고주인의저주', CURSE_BUFF_SEC)
             local dr = me:damage_derate()
             me:damage_derate(dr + CURSE_AC_PENALTY)
-            local quest = me:quest(QUEST_STRONGBOX)
-            if quest then
-                quest:step(2)
+            local q = me:quest(quest.QUEST_STRONGBOX)
+            if q then
+                q:step(2)
             end
         elseif sel == 1 then
             me:dialog(npc, '그런가? 그럼 서둘러주게.', false, false)
@@ -157,8 +160,8 @@ local function run_turn_in(me, npc)
 end
 
 local function run_cursed_forgiveness(me, npc)
-    local quest = me:quest(QUEST_STRONGBOX)
-    if quest == nil then
+    local q = me:quest(quest.QUEST_STRONGBOX)
+    if q == nil then
         return
     end
     me:dialog(npc, '.....', false, true)
@@ -197,7 +200,7 @@ local function run_cursed_forgiveness(me, npc)
         return
     end
 
-    quest:complete()
+    q:complete()
     me:mkitem(ITEM_BLACK_DAGGER, 1)
     me:push_achievement(ACHIEVEMENT_DONE, '금고주인의 부탁을 들어주었다.', 6, 1)
     ::NPC_172_0019::
@@ -213,20 +216,20 @@ local function run_cursed_forgiveness(me, npc)
 end
 
 function NPC_172(me, npc)
-    local quest = me:quest(QUEST_STRONGBOX)
-    if quest == nil then
+    local q = me:quest(quest.QUEST_STRONGBOX)
+    if q == nil then
         run_intro_and_accept(me, npc)
         return
     end
-    if quest:completed() then
+    if q:completed() then
         me:dialog(npc, '잘 지내시나? 저번엔 고마웠네.', false, true)
         return
     end
-    if quest:step() == 1 then
+    if q:step() == 1 then
         run_turn_in(me, npc)
         return
     end
-    if quest:step() == 2 then
+    if q:step() == 2 then
         run_cursed_forgiveness(me, npc)
     end
 end

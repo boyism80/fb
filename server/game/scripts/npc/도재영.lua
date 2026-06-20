@@ -1,7 +1,10 @@
+local quest = require('lib.quest')
+local server = require('lib.server')
+
 function NPC_107(me, npc)
 
     local options = {'황비연 퀘스트'}
-    local herb_quest = me:quest(QUEST_HWANGBIYEON)
+    local herb_quest = me:quest(quest.QUEST_HWANGBIYEON)
     if herb_quest ~= nil and herb_quest:step() == 2 then
         table.insert(options, '약초 퀘스트')
     end
@@ -28,12 +31,12 @@ function dojaeyoung_nobidocument(me, npc)
         return
     end
 
-    local quest = me:quest(QUEST_HWANGBIYEON)
-    if quest == nil then
+    local q = me:quest(quest.QUEST_HWANGBIYEON)
+    if q == nil then
         me:dialog(npc, '그건 아직 제게 맡기실 일이 없으신 것 같군요. 상해 쪽에서 부탁을 받고 오시면 말씀하세요.', false, true)
         return
     end
-    if quest:step() ~= 2 then
+    if q:step() ~= 2 then
         me:dialog(npc, '그건 아직 제게 맡기실 일이 없으신 것 같군요. 상해 쪽에서 부탁을 받고 오시면 말씀하세요.', false, true)
         return
     end
@@ -83,30 +86,30 @@ function dojaeyoung_nobidocument(me, npc)
         { ['item'] = { ['노비문서'] = 1 } },
         { ['item'] = { ['보패'] = 1 } }
     )
-    if code == EXCHANGE_RESULT.LACK_COST then
+    if code == server.EXCHANGE_RESULT.LACK_COST then
         me:dialog(npc, '노비문서를 가지고 있지 않으시군요.', false, true)
         return
     end
-    if code == EXCHANGE_RESULT.LACK_CAPACITY then
+    if code == server.EXCHANGE_RESULT.LACK_CAPACITY then
         me:dialog(npc, '소지품이 가득 차서 보패를 받을 수 없습니다.', false, true)
         return
     end
-    quest:step(3)
+    q:step(3)
     me:push_achievement(39, '보패를 가지고 다시 상해주민에게 가보자.', 7, 2)
 end
 
 function dojaeyoung_herb_quest(me, npc)
-    local quest = me:quest(QUEST_DOJAEYOUNG_HERB)
+    local q = me:quest(quest.QUEST_DOJAEYOUNG_HERB)
 
-    if quest == nil then
+    if q == nil then
         dojaeyoung_herb_start(me, npc)
         return
     end
-    if quest:step() == 0 then
+    if q:step() == 0 then
         dojaeyoung_herb_start(me, npc)
         return
     end
-    if quest:step() == 1 then
+    if q:step() == 1 then
         dojaeyoung_herb_turnin(me, npc)
         return
     end
@@ -142,12 +145,12 @@ function dojaeyoung_herb_start(me, npc)
     if sel ~= 0 then
         return
     end
-    local quest = me:start_quest(QUEST_DOJAEYOUNG_HERB)
-    if quest == nil then
+    local q = me:start_quest(quest.QUEST_DOJAEYOUNG_HERB)
+    if q == nil then
         me:dialog(npc, '퀘스트 시작 실패', false, true)
         return
     end
-    quest:step(1)
+    q:step(1)
     me:push_achievement(9, '도재영의 부탁을 들어주자!', 7, 1)
     ::NPC_107_0025::
     btn = me:dialog(npc, '아.. 정말 감사합니다. ' .. me:name() .. '님은 마음도 넓으신 분이시군요.', true, true)
@@ -162,8 +165,8 @@ function dojaeyoung_herb_start(me, npc)
 end
 
 function dojaeyoung_herb_turnin(me, npc)
-    local quest = me:quest(QUEST_DOJAEYOUNG_HERB)
-    if quest == nil or quest:step() ~= 1 then
+    local q = me:quest(quest.QUEST_DOJAEYOUNG_HERB)
+    if q == nil or q:step() ~= 1 then
         return
     end
     if not me:has_items({['약초잎사귀'] = 5, ['약초가지'] = 1}) then
@@ -178,15 +181,15 @@ function dojaeyoung_herb_turnin(me, npc)
         { ['item'] = { ['약초가지'] = 1, ['약초잎사귀'] = 5 } },
         { ['item'] = { ['강철의구두'] = 1 } }
     )
-    if code == EXCHANGE_RESULT.LACK_COST then
+    if code == server.EXCHANGE_RESULT.LACK_COST then
         me:dialog(npc, '아직 약초를 구를 구하시지 못하셨군요. 의사의 말로는 약초잎사귀 5개와 약초가지 1개가 있어야 한다고 합니다. 부탁드립니다.', false, true)
         return
     end
-    if code == EXCHANGE_RESULT.LACK_CAPACITY then
+    if code == server.EXCHANGE_RESULT.LACK_CAPACITY then
         me:dialog(npc, '소지품이 가득 차서 강철의구두를 줄 수 없습니다.', false, true)
         return
     end
-    quest:step(2)
+    q:step(2)
     me:push_achievement(9, '도삭산 100층 퀘스트 완료', 7, 1)
     me:dialog(npc, '약소하지만 보답으로 강철의구두를 드리겠습니다. 도삭산을 돌아다니시면서 조금이라도 도움이 되길 바랍니다. 그럼..', false, true)
 end

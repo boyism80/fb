@@ -1,7 +1,7 @@
-
+local quest = require('lib.quest')
 function NPC_279(me, npc)
-    local quest = me:quest(QUEST_BEGINNER_PATH)
-    if quest and (quest:step() == 7 or quest:completed()) then
+    local q = me:quest(quest.QUEST_BEGINNER_PATH)
+    if q and (q:step() == 7 or q:completed()) then
         me:dialog(npc, "준비가 되셨으면 노란비서를 사용해 보세요.\n그럼, 안녕히 가십시오.", false, false)
         return
     end
@@ -57,14 +57,14 @@ function NPC_279(me, npc)
         goto NPC_279_0005
     end
 
-    if quest == nil then
-        quest = me:start_quest(QUEST_BEGINNER_PATH)
-        if quest == nil then
+    if q == nil then
+        q = me:start_quest(quest.QUEST_BEGINNER_PATH)
+        if q == nil then
             me:dialog(npc, "퀘스트를 시작할 수 없습니다.", false, false)
             return
         end
     end
-    quest:step(7)
+    q:step(7)
     me:exp(me:exp() + 300)
 
     if me:mkitem("노란비서", 20) == nil then

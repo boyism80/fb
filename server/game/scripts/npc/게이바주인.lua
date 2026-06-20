@@ -1,3 +1,5 @@
+local server = require('lib.server')
+
 function NPC_342(me, npc)
     local exchanges = {
         { need = 30, item = "트렁크", msg = "좋아. 여기 트렁크를 주지. 하지만 별로 남자다운 의상은 아니군!" },
@@ -26,11 +28,11 @@ function NPC_342(me, npc)
         { ['item'] = { ["사랑의증표"] = ex.need } },
         { ['item'] = { [ex.item] = 1 } }
     )
-    if code == EXCHANGE_RESULT.LACK_COST then
+    if code == server.EXCHANGE_RESULT.LACK_COST then
         me:dialog(npc, insufficient_msg, false, false)
         goto NPC_342_000
     end
-    if code == EXCHANGE_RESULT.LACK_CAPACITY then
+    if code == server.EXCHANGE_RESULT.LACK_CAPACITY then
         me:dialog(npc, "소지품이 가득 차서 받을 수 없네요. 자리 좀 비우고 다시 오세요.", false, false)
         goto NPC_342_000
     end

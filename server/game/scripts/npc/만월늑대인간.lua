@@ -1,4 +1,4 @@
-
+local quest = require('lib.quest')
 local REQUIRED_ITEMS = {
     { "해골왕의뼈", 1 },
     { "유성지의보패", 1 },
@@ -7,12 +7,12 @@ local REQUIRED_ITEMS = {
 }
 
 function NPC_549(me, npc)
-    local quest = me:quest(QUEST_WOLF_CURSE)
-    if quest and quest:completed() then
+    local q = me:quest(quest.QUEST_WOLF_CURSE)
+    if q and q:completed() then
         me:dialog(npc, "증표는 이미 받았다. 의식이 준비되면 알려주겠지.", false, false)
         return
     end
-    local step = (quest and quest:step()) or 0
+    local step = (q and q:step()) or 0
 
     if step == 0 then
         local sel, list_btn = me:list(npc, "이 곳은 저주받은자들이 기거하는 곳...", { "당신은 누구신가요?" }, false)
@@ -20,13 +20,13 @@ function NPC_549(me, npc)
             return
         end
         if sel == 0 then
-            quest = me:start_quest(QUEST_WOLF_CURSE)
-            if quest == nil then
+            q = me:start_quest(quest.QUEST_WOLF_CURSE)
+            if q == nil then
                 me:dialog(npc, "퀘스트를 시작할 수 없습니다.", false, false)
                 return
             end
-            if quest then
-                quest:step(1)
+            if q then
+                q:step(1)
             end
         end
         return
@@ -37,8 +37,8 @@ function NPC_549(me, npc)
         if list_btn == DIALOG_RESULT.QUIT or sel == nil then
             return
         end
-        if quest then
-            quest:step(2)
+        if q then
+            q:step(2)
         end
         return
     end
@@ -48,8 +48,8 @@ function NPC_549(me, npc)
         if list_btn == DIALOG_RESULT.QUIT or sel == nil then
             return
         end
-        if quest then
-            quest:step(3)
+        if q then
+            q:step(3)
         end
         return
     end
@@ -59,8 +59,8 @@ function NPC_549(me, npc)
         if list_btn == DIALOG_RESULT.QUIT or sel == nil then
             return
         end
-        if quest then
-            quest:step(4)
+        if q then
+            q:step(4)
         end
         return
     end
@@ -70,8 +70,8 @@ function NPC_549(me, npc)
         if list_btn == DIALOG_RESULT.QUIT or sel == nil then
             return
         end
-        if quest then
-            quest:step(5)
+        if q then
+            q:step(5)
         end
         return
     end
@@ -81,8 +81,8 @@ function NPC_549(me, npc)
         if list_btn == DIALOG_RESULT.QUIT or sel == nil then
             return
         end
-        if quest then
-            quest:step(6)
+        if q then
+            q:step(6)
         end
         return
     end
@@ -92,8 +92,8 @@ function NPC_549(me, npc)
         if list_btn == DIALOG_RESULT.QUIT or sel == nil then
             return
         end
-        if quest then
-            quest:step(7)
+        if q then
+            q:step(7)
         end
         return
     end
@@ -103,8 +103,8 @@ function NPC_549(me, npc)
         if list_btn == DIALOG_RESULT.QUIT or sel == nil then
             return
         end
-        if quest then
-            quest:step(8)
+        if q then
+            q:step(8)
         end
         return
     end
@@ -114,8 +114,8 @@ function NPC_549(me, npc)
         if list_btn == DIALOG_RESULT.QUIT or sel == nil then
             return
         end
-        if quest then
-            quest:step(9)
+        if q then
+            q:step(9)
         end
         return
     end
@@ -125,8 +125,8 @@ function NPC_549(me, npc)
         if list_btn == DIALOG_RESULT.QUIT or sel == nil then
             return
         end
-        if quest then
-            quest:step(10)
+        if q then
+            q:step(10)
         end
         return
     end
@@ -136,8 +136,8 @@ function NPC_549(me, npc)
         if btn == DIALOG_RESULT.QUIT then
             return
         end
-        if quest then
-            quest:step(11)
+        if q then
+            q:step(11)
         end
         return
     end
@@ -166,8 +166,8 @@ function NPC_549(me, npc)
         end
     end
 
-    if quest then
-        quest:completed()
+    if q then
+        q:completed()
     end
     local x, y = npc:position()
     me:dialog(npc, "증표를 잘 받았다. 의식은 이곳의 기운이 맞을 때 진행되지.", false, false)

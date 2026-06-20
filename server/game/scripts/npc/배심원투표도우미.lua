@@ -1,8 +1,9 @@
-
+local quest = require('lib.quest')
+local server = require('lib.server')
 function NPC_339(me, npc)
-    local quest = me:quest(QUEST_JURY)
+    local q = me:quest(quest.QUEST_JURY)
 
-    if quest ~= nil and quest:step() == 1 then
+    if q ~= nil and q:step() == 1 then
         local sel, list_btn = me:list(npc, "당신은 투표를 모두 마치셨군요. 귀환하시겠습니까?", {
             "예. 지금 귀환하겠습니다.",
             "아니오. 조금 더 지켜보겠습니다.",
@@ -19,8 +20,8 @@ function NPC_339(me, npc)
             if not me:rmitem("노란비서", 1, ITEM_DELETE_TYPE.REDUCE) then
                 return
             end
-            quest:step(0)
-            if warp_to_return_map(me) == nil then
+            q:step(0)
+            if server.warp_to_return_map(me) == nil then
                 me:dialog(npc, "이동할 수 없습니다.", false, false)
             end
         elseif sel == 1 then
@@ -87,14 +88,14 @@ function NPC_339(me, npc)
     if vote_btn == DIALOG_RESULT.QUIT or vote_sel == nil then
         return
     end
-    if quest == nil then
-        quest = me:start_quest(QUEST_JURY)
-        if quest == nil then
+    if q == nil then
+        q = me:start_quest(quest.QUEST_JURY)
+        if q == nil then
             return
         end
     end
-    if quest then
-        quest:step(1)
+    if q then
+        q:step(1)
     end
     me:dialog(npc, "당신의 의견이 반영되었습니다.", false, true)
 end

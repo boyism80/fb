@@ -1,3 +1,5 @@
+local server = require('lib.server')
+
 local EXCHANGES = {
     { key = '보물열쇠1', item = '현철장갑', clothes = '장갑' },
     { key = '보물열쇠2', item = '속삭임팔찌', clothes = '팔찌' },
@@ -43,11 +45,11 @@ function NPC_214(me, npc)
         { ['item'] = { [ex.key] = 1 } },
         { ['item'] = { [ex.item] = 1 } }
     )
-    if code == EXCHANGE_RESULT.LACK_COST then
+    if code == server.EXCHANGE_RESULT.LACK_COST then
         me:dialog(npc, name_with(ex.key, '이', '가') .. ' 없지 않은가?!', false, false)
         return
     end
-    if code == EXCHANGE_RESULT.LACK_CAPACITY then
+    if code == server.EXCHANGE_RESULT.LACK_CAPACITY then
         me:dialog(npc, '소지품이 가득 차서 ' .. name_with(ex.item, '을', '를') .. ' 받을 수 없습니다.', false, false)
         return
     end

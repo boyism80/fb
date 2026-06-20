@@ -1,11 +1,11 @@
-
+local quest = require('lib.quest')
 function NPC_134(me, npc)
-    local quest = me:quest(QUEST_DETECTIVE)
-    if quest == nil or quest:completed() then
+    local q = me:quest(quest.QUEST_DETECTIVE)
+    if q == nil or q:completed() then
         me:dialog(npc, "준비중입니다.", false, false)
         return
     end
-    local step = quest:step()
+    local step = q:step()
 
     if step == 1 or step == 2 then
         local sel, list_btn = me:list(npc, "우와! 그거 수사관 명찰이잖아요!\n도대체 무슨 일이에요?!", {
@@ -25,7 +25,7 @@ function NPC_134(me, npc)
             if btn == DIALOG_RESULT.QUIT then
                 return
             end
-            quest:step(3)
+            q:step(3)
             me:dialog(npc, "잘 부탁드립니다, 수사관 나리... 헤헤헤.", false, false)
         elseif sel == 1 then
             me:dialog(npc, "여기서 기다리고 있을게요!", false, false)
@@ -49,7 +49,7 @@ function NPC_134(me, npc)
             if btn == DIALOG_RESULT.QUIT then
                 return
             end
-            quest:step(9)
+            q:step(9)
             me:dialog(npc, "홀어머니 모시느라 고생하시더니, 다행이지 뭐예요. 어떻게 그런 큰 돈을 모았는지는 아무도 모르지만요.", false, false)
         elseif sel == 1 then
             me:dialog(npc, "저 돌돌이를 믿어주세요~!", false, false)

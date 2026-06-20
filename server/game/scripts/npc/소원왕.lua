@@ -1,4 +1,4 @@
-
+local quest = require('lib.quest')
 local function do_sub2_start(me, npc)
     ::NPC_464_0001::
     local b = me:dialog(npc, "경계하실 것 없다. 상의하고 싶은 문제가 있는 것일 뿐이니까. 나를 도와주고 싶은건가.", false, true)
@@ -22,9 +22,9 @@ local function do_sub2_start(me, npc)
         return false
     end
     me:mkitem("원숭이편지", 1)
-    local q = me:quest(QUEST_SKULL_NECKLACE_2)
+    local q = me:quest(quest.QUEST_SKULL_NECKLACE_2)
     if q == nil then
-        q = me:start_quest(QUEST_SKULL_NECKLACE_2)
+        q = me:start_quest(quest.QUEST_SKULL_NECKLACE_2)
         if q == nil then
             return true
         end
@@ -50,7 +50,7 @@ local function do_sub2_complete(me, npc)
         return false
     end
     me:mkitem("비철단도", 1)
-    local q = me:quest(QUEST_SKULL_NECKLACE_2)
+    local q = me:quest(quest.QUEST_SKULL_NECKLACE_2)
     if q then
         q:step(3)
     end
@@ -58,7 +58,7 @@ local function do_sub2_complete(me, npc)
 end
 
 function NPC_464(me, npc)
-    local q2 = me:quest(QUEST_SKULL_NECKLACE_2)
+    local q2 = me:quest(quest.QUEST_SKULL_NECKLACE_2)
 
     if q2 == nil or q2:step() == 0 then
         if do_sub2_start(me, npc) then
@@ -79,7 +79,7 @@ function NPC_464(me, npc)
         return
     end
 
-    local main_q = me:quest(QUEST_SKULL_NECKLACE)
+    local main_q = me:quest(quest.QUEST_SKULL_NECKLACE)
     if main_q and main_q:step() == 33 then
         if not me:has_items("마른갈대", 1) then
             me:dialog(npc, "마른갈대를 구해서 왕들에게 하나씩 나누어 주게.", false, false)

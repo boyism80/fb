@@ -1,8 +1,10 @@
+local quest = require('lib.quest')
+
 function NPC_136(me, npc)
-    local quest = me:quest(QUEST_SAILOR)
+    local q = me:quest(quest.QUEST_SAILOR)
     local btn
 
-    if quest ~= nil and quest:step() == 6 then
+    if q ~= nil and q:step() == 6 then
         ::NPC_136_0001::
         btn = me:dialog(npc, '하하, 환상의 섬은 정말 즐거운 곳이었어. 그렇지 않나? 난 지금 그곳에서만 구할 수 있다는 특산품을 사러 가는 중일세.', false, true)
         if btn == DIALOG_RESULT.QUIT then
@@ -16,11 +18,11 @@ function NPC_136(me, npc)
         if btn == DIALOG_RESULT.QUIT then
             return
         end
-        quest:step(7)
+        q:step(7)
         return
     end
 
-    if quest == nil or quest:step() ~= 2 then
+    if q == nil or q:step() ~= 2 then
         me:dialog(npc, '....', false, false)
         return
     end
@@ -39,5 +41,5 @@ function NPC_136(me, npc)
         return
     end
 
-    quest:step(3)
+    q:step(3)
 end

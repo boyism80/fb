@@ -1,3 +1,5 @@
+local server = require('lib.server')
+
 local ITEM_DRAGON_SCALE = '용의비늘'
 local ITEM_SURYONG_SCALE = '수룡의비늘'
 local ITEM_HWARYONG_SCALE = '화룡의비늘'
@@ -172,11 +174,11 @@ local function run_appraise_dragon_scale(me, npc)
         { ['item'] = { [ITEM_DRAGON_SCALE] = 1 } },
         reward
     )
-    if code == EXCHANGE_RESULT.LACK_COST then
+    if code == server.EXCHANGE_RESULT.LACK_COST then
         me:dialog(npc, '아니! 이보게.. 나한테 거짓말을 해도 되는가? ' .. name_with(ITEM_DRAGON_SCALE, '이', '가') .. ' 없지 않은가. 썩 물러 가게!!!', false, false)
         return
     end
-    if code == EXCHANGE_RESULT.LACK_CAPACITY then
+    if code == server.EXCHANGE_RESULT.LACK_CAPACITY then
         me:dialog(npc, '소지품이 가득 차서 비늘을 받을 수 없군.', false, false)
         return
     end

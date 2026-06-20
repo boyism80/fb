@@ -1,4 +1,5 @@
-
+local quest = require('lib.quest')
+local server = require('lib.server')
 local function run_dialogs(me, npc, messages)
     for i, msg in ipairs(messages) do
         local prev = (i > 1)
@@ -71,7 +72,7 @@ local function handle_jingogyun_lt1(me, npc, q_jingo)
             return true
         end
         if not q_jingo then
-            q_jingo = me:start_quest(QUEST_JINGOGYUN)
+            q_jingo = me:start_quest(quest.QUEST_JINGOGYUN)
             if q_jingo == nil then
                 return true
             end
@@ -281,10 +282,10 @@ local function handle_jingogyun_4_to_8(me, npc, q_jingo)
             { ['item'] = { ["영력구슬"] = 1, ["고균의영검"] = 1 } },
             { ['item'] = { ["진'고균의영검"] = 1 } }
         )
-        if code == EXCHANGE_RESULT.LACK_COST then
+        if code == server.EXCHANGE_RESULT.LACK_COST then
             me:dialog(npc, "아이템을 제거할 수 없습니다.", false, false)
             return true
-        elseif code == EXCHANGE_RESULT.LACK_CAPACITY then
+        elseif code == server.EXCHANGE_RESULT.LACK_CAPACITY then
             me:dialog(npc, "소지품이 가득 차서 검을 줄 수 없네.", false, false)
             return true
         end
@@ -314,8 +315,8 @@ local function handle_jingogyun_ge9(me, npc, q_jingo)
 end
 
 function NPC_475(me, npc)
-    local q_hwahwa = me:quest(QUEST_HWAHWA)
-    local q_jingo = me:quest(QUEST_JINGOGYUN)
+    local q_hwahwa = me:quest(quest.QUEST_HWAHWA)
+    local q_jingo = me:quest(quest.QUEST_JINGOGYUN)
     local hwahwa_friend = (q_hwahwa and q_hwahwa:step() >= 1)
 
     if not hwahwa_friend then

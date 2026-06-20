@@ -1,3 +1,5 @@
+local server = require('lib.server')
+
 local function try_craft_weapon(me, npc, materials, price, reward_name)
     local materials_table = {}
     for _, m in ipairs(materials) do
@@ -12,11 +14,11 @@ local function try_craft_weapon(me, npc, materials, price, reward_name)
         cost['money'] = price
     end
     local code = me:exchange(cost, { ['item'] = { [reward_name] = 1 } })
-    if code == EXCHANGE_RESULT.LACK_COST then
+    if code == server.EXCHANGE_RESULT.LACK_COST then
         me:dialog(npc, '재료가 조금 부족한 것 같은데? 다시 한번 살펴봐.', false, true)
         return false
     end
-    if code == EXCHANGE_RESULT.LACK_CAPACITY then
+    if code == server.EXCHANGE_RESULT.LACK_CAPACITY then
         me:dialog(npc, '소지품이 가득 차서 ' .. name_with(reward_name, '은', '는') .. ' 줄 수 없네.', false, true)
         return false
     end

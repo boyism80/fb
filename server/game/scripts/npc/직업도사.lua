@@ -1,4 +1,7 @@
-function NPC_26(me, npc)
+local spell = require('lib.spell')
+local npc = require('lib.npc')
+
+function NPC_26(me, npc_obj)
 	local spells = {
 		['성황령'] = {
 			['level'] = 0,
@@ -20,7 +23,7 @@ function NPC_26(me, npc)
 			['desc'] = '자신의 체력을 약간 회복하는 기술로써, ',
 			['material'] = {{['name'] = '도토리', ['count'] = 20}, {['name'] = '토끼고기', ['count'] = 10}}
 		},
-		[CREATURE_SPELL(me:creature(), 1)] = {
+		[spell.CREATURE_SPELL(me:creature(), 1)] = {
 			['level'] = 12,
 			['desc'] = '신수의 속성을 가진 원거리 마법이네멀리서도 적을 공격할 수 있는 기술이네',
 			['material'] = {{['name'] = '도토리', ['count'] = 20}, {['name'] = '토끼고기', ['count'] = 10}}
@@ -172,5 +175,5 @@ function NPC_26(me, npc)
 		}
 	}
 
-	NPC_BASIC_CLASS(me, npc, CLASS.POET, spells)
+	npc.basic_class(me, npc_obj, CLASS.POET, spells)
 end

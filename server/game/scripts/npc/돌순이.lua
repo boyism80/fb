@@ -1,6 +1,6 @@
-
+local quest = require('lib.quest')
 function NPC_133(me, npc)
-    local q_jingo = me:quest(QUEST_JINGOGYUN)
+    local q_jingo = me:quest(quest.QUEST_JINGOGYUN)
     if q_jingo and q_jingo:step() == 5 then
         ::NPC_133_0001::
         local b = me:dialog(npc, "응? 영력구슬이요? 음, 다른 사람한테 줬는데... 아쉽게 되었네요. 헤헤헤.", false, true)
@@ -32,12 +32,12 @@ function NPC_133(me, npc)
         return
     end
 
-    local quest = me:quest(QUEST_DETECTIVE)
-    if quest == nil or quest:completed() then
+    local q = me:quest(quest.QUEST_DETECTIVE)
+    if q == nil or q:completed() then
         me:dialog(npc, "준비중입니다.", false, false)
         return
     end
-    local step = quest:step()
+    local step = q:step()
 
     if step == 1 or step == 2 then
         local sel, list_btn = me:list(npc, "우와! 그거 수사관 명찰이잖아요!\n도대체 무슨 일이에요?!", {
@@ -57,7 +57,7 @@ function NPC_133(me, npc)
             if btn == DIALOG_RESULT.QUIT then
                 return
             end
-            quest:step(2)
+            q:step(2)
             me:dialog(npc, "잘 부탁드립니다, 수사관 나리... 헤헤헤.", false, false)
         elseif sel == 1 then
             me:dialog(npc, "여기서 기다리고 있을게요!", false, false)
@@ -79,7 +79,7 @@ function NPC_133(me, npc)
             if btn == DIALOG_RESULT.QUIT then
                 return
             end
-            quest:step(12)
+            q:step(12)
             me:dialog(npc, "토템이 이 땅에서 점점 없어져서 정령들이 화가 났다나봐요, 히히히.", false, false)
         end
         return

@@ -1,4 +1,5 @@
-
+local quest = require('lib.quest')
+local server = require('lib.server')
 local function do_sub4_return_baby(me, npc)
     if not me:has_items("아기원숭이", 1) then
         me:dialog(npc, "퀘스트 오류입니다.\n아기원숭이 아이템이 없습니다.", false, false)
@@ -21,7 +22,7 @@ local function do_sub4_return_baby(me, npc)
         me:dialog(npc, "아이템을 제거할 수 없습니다.", false, false)
         return true
     end
-    local q4 = me:quest(QUEST_SKULL_NECKLACE_4)
+    local q4 = me:quest(quest.QUEST_SKULL_NECKLACE_4)
     if q4 then
         q4:step(2)
     end
@@ -75,9 +76,9 @@ local function do_sub5_start(me, npc)
     if b == DIALOG_RESULT.QUIT then
         return false
     end
-    local q5 = me:quest(QUEST_SKULL_NECKLACE_5)
+    local q5 = me:quest(quest.QUEST_SKULL_NECKLACE_5)
     if q5 == nil then
-        q5 = me:start_quest(QUEST_SKULL_NECKLACE_5)
+        q5 = me:start_quest(quest.QUEST_SKULL_NECKLACE_5)
         if q5 == nil then
             return true
         end
@@ -110,15 +111,15 @@ local function do_sub5_turnin(me, npc)
         { ['item'] = { ["원숭이편지"] = 1 } },
         { ['item'] = { ["바나나다발"] = 1 } }
     )
-    if code == EXCHANGE_RESULT.LACK_COST then
+    if code == server.EXCHANGE_RESULT.LACK_COST then
         me:dialog(npc, "아이템을 제거할 수 없습니다.", false, false)
         return true
     end
-    if code == EXCHANGE_RESULT.LACK_CAPACITY then
+    if code == server.EXCHANGE_RESULT.LACK_CAPACITY then
         me:dialog(npc, "소지품이 가득 차서 바나나다발을 받을 수 없습니다.", false, false)
         return true
     end
-    local q5 = me:quest(QUEST_SKULL_NECKLACE_5)
+    local q5 = me:quest(quest.QUEST_SKULL_NECKLACE_5)
     if q5 then
         q5:step(2)
     end
@@ -126,8 +127,8 @@ local function do_sub5_turnin(me, npc)
 end
 
 function NPC_467(me, npc)
-    local q4 = me:quest(QUEST_SKULL_NECKLACE_4)
-    local q5 = me:quest(QUEST_SKULL_NECKLACE_5)
+    local q4 = me:quest(quest.QUEST_SKULL_NECKLACE_4)
+    local q5 = me:quest(quest.QUEST_SKULL_NECKLACE_5)
 
     if q4 and q4:step() == 1 then
         if do_sub4_return_baby(me, npc) then
@@ -149,7 +150,7 @@ function NPC_467(me, npc)
         return
     end
 
-    local main_q = me:quest(QUEST_SKULL_NECKLACE)
+    local main_q = me:quest(quest.QUEST_SKULL_NECKLACE)
     if main_q and main_q:step() == 29 then
         if not me:has_items("마른갈대", 1) then
             me:dialog(npc, "마른갈대를 구해서 왕들에게 하나씩 나누어 주게.", false, false)

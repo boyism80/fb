@@ -1,3 +1,5 @@
+local server = require('lib.server')
+
 function NPC_400(me, npc)
     ::NPC_400_000::
     local sel, btn = me:list(npc, "무슨일로 찾아왔는가?", {
@@ -30,10 +32,10 @@ function NPC_400(me, npc)
         reward = { ['item'] = { ["금천지인패"] = 1 } }
     end
     local code = me:exchange({ ['item'] = required }, reward)
-    if code == EXCHANGE_RESULT.LACK_COST then
+    if code == server.EXCHANGE_RESULT.LACK_COST then
         me:dialog(npc, opt.need_msg, false, false)
         goto NPC_400_000
-    elseif code == EXCHANGE_RESULT.LACK_CAPACITY then
+    elseif code == server.EXCHANGE_RESULT.LACK_CAPACITY then
         me:dialog(npc, "소지품이 가득 차서 금천지인패를 받을 수 없네. 자리 좀 비우고 다시 오게.", false, false)
         goto NPC_400_000
     elseif reward == nil then

@@ -1,5 +1,7 @@
 -- 흡성대법 캐스팅
-function ON_CAST_2017(me, you, spell)
+local spell = require('lib.spell')
+
+function ON_CAST_2017(me, you, sp)
     local damage = 3000
     local mp = 60
     local sound = 38
@@ -14,5 +16,5 @@ function ON_CAST_2017(me, you, spell)
     end
     
     me:heal(math.min(damage, you:hp()))
-    spell_damage(me, you, spell, {damage=damage, mp=mp, sound=sound, effect=effect})
+    spell.damage(me, you, sp, {damage=damage, mp=mp, sound=sound, effect=effect})
 end

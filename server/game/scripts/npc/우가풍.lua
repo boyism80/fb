@@ -1,11 +1,14 @@
+local quest = require('lib.quest')
+local server = require('lib.server')
+
 local ACHIEVEMENT_600 = 14
 local REQUIRED_ITEM = { ['어머니의호롱불'] = 1 }
 local REWARD_600 = '수정해골'
 
 function NPC_193(me, npc)
-    local quest = me:quest(QUEST_WOOGAPUNG)
+    local q = me:quest(quest.QUEST_WOOGAPUNG)
 
-    if quest == nil then
+    if q == nil then
         ::NPC_193_0001::
         local btn = me:dialog(npc, '내 호롱불이..내 호롱불..', false, true)
         if btn == DIALOG_RESULT.QUIT then
@@ -38,12 +41,12 @@ function NPC_193(me, npc)
         if sel ~= 0 then
             return
         end
-        quest = me:start_quest(QUEST_WOOGAPUNG)
-        if quest == nil then
+        q = me:start_quest(quest.QUEST_WOOGAPUNG)
+        if q == nil then
             me:dialog(npc, '퀘스트 시작 실패', false, true)
             return
         end
-        quest:step(1)
+        q:step(1)
         me:push_achievement(ACHIEVEMENT_600, '우가풍의 부탁을 들어주자!', 7, 1)
         ::NPC_193_0005::
         btn = me:dialog(npc, '정말 고맙네. 그 마음만으로도. 문비는 무슈후슈들이 나오는 곳을 지나면 다른 녀석들과 함께 무리로 살고 있지.\n\n호롱불을 훔쳐간 녀석은 뭔가 좀 특이했네. 겉보기엔 분간이 잘 안되지만 문비 소굴을 다니다 보면 분명 만날수 있을거야.', false, true)
@@ -61,26 +64,26 @@ function NPC_193(me, npc)
         return
     end
 
-    if quest:completed() then
+    if q:completed() then
         me:dialog(npc, me:name() .. '씨 아닌가? 저번엔 정말 고마웠네. 덕분에 잠을 편안히 잘 수 있게 되었다네.', false, true)
         return
     end
 
-    local step = quest:step()
+    local step = q:step()
     if step == 1 then
         local code = me:exchange(
             { ['item'] = REQUIRED_ITEM },
             { ['item'] = { [REWARD_600] = 1 } }
         )
-        if code == EXCHANGE_RESULT.LACK_COST then
+        if code == server.EXCHANGE_RESULT.LACK_COST then
             me:dialog(npc, '아직 찾으시지 못하신것 같군. 문비는 무슈후슈들이 나오는 곳을 지나면 다른 녀석들과 함께 무리로 살고 있지.', false, false)
             return
         end
-        if code == EXCHANGE_RESULT.LACK_CAPACITY then
+        if code == server.EXCHANGE_RESULT.LACK_CAPACITY then
             me:dialog(npc, '소지품이 가득 차서 ' .. name_with(REWARD_600, '을', '를') .. ' 받을 수 없습니다.', false, false)
             return
         end
-        quest:complete()
+        q:complete()
         me:push_achievement(ACHIEVEMENT_600, '도삭산 600층 퀘스트 완료', 7, 1)
         ::NPC_193_0007::
         btn = me:dialog(npc, '이..이것은... 맞네! 어머니의 호롱불이 맞아! 정말 어떻게 감사의 말을 해야할지. 감사히 받겠소.\n\n대단하구려. 그녀석을 잡다니. 잠깐잠깐 이럴때가 아니지. 내 꼭 주고 싶은것이 있었는데.', false, true)

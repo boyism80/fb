@@ -1,5 +1,7 @@
 -- 극'백호참 캐스팅
-function ON_CAST_1022(me, spell)
+local spell = require('lib.spell')
+
+function ON_CAST_1022(me, sp)
     local effect = 164
     local sound = 88
     local hp = me:hp()//2
@@ -63,7 +65,7 @@ function ON_CAST_1022(me, spell)
         end
     end
 
-    if not attack_cast(me, targets, spell, {hp=hp, mp=mp, damage=damage, message=message, sound=sound, effect=effect}) then
+    if not spell.attack_cast(me, targets, sp, {hp=hp, mp=mp, damage=damage, message=message, sound=sound, effect=effect}) then
         return
     end
 end

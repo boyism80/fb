@@ -1,6 +1,9 @@
+local quest = require('lib.quest')
+local server = require('lib.server')
+
 function NPC_155(me, npc)
-    local quest = me:quest(QUEST_CROCODILE_BLOOD)
-    if quest == nil then
+    local q = me:quest(quest.QUEST_CROCODILE_BLOOD)
+    if q == nil then
         ::NPC_155_0001::
         local button = me:dialog(npc, '난 천선도사와 죽마고우인 수선도사라네. 이 친구가 압록강의 절경을 혼자보기 너무 아깝다며 날 데려오지 뭔가.', false, true)
         if button == DIALOG_RESULT.QUIT then
@@ -58,7 +61,7 @@ function NPC_155(me, npc)
             return
         end
 
-        local q = me:start_quest(QUEST_CROCODILE_BLOOD)
+        local q = me:start_quest(quest.QUEST_CROCODILE_BLOOD)
         if q == nil then
             me:dialog(npc, '퀘스트 시작 실패', false, true)
             return
@@ -98,7 +101,7 @@ function NPC_155(me, npc)
             return
         end
     else
-        if quest:completed() then
+        if q:completed() then
             me:dialog(npc, '저번엔 고마웠네. 덕분에 정화된 깨끗한 압록강을 다시볼수있어 기쁘네.', false, false)
             return
         end
@@ -123,15 +126,15 @@ function NPC_155(me, npc)
                 { ['item'] = { ['악어의피'] = 3 } },
                 { ['item'] = { ['수선도사의머리띠'] = 1 } }
             )
-            if code == EXCHANGE_RESULT.LACK_COST then
+            if code == server.EXCHANGE_RESULT.LACK_COST then
                 goto NPC_155_0030
             end
-            if code == EXCHANGE_RESULT.LACK_CAPACITY then
+            if code == server.EXCHANGE_RESULT.LACK_CAPACITY then
                 me:dialog(npc, '소지품이 가득 차서 머리띠를 줄 수 없네.', false, true)
                 return
             end
             me:push_achievement(155, '수선도사의 부탁을 들어주었다.', 6, 8)
-            quest:complete()
+            q:complete()
             
             local button = me:dialog(npc, '오. 정말 다 구해왔군 그래. 이걸로 압록강을 정화시킬수 있겠어. 아차 이건 내가쓰던 머리띠인데 유용하게 쓰게나.', false, true)
             if button == DIALOG_RESULT.QUIT then

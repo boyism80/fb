@@ -1,4 +1,4 @@
-
+local server = require('lib.server')
 local TICKET_NAME = "교환권"
 
 local REWARDS = {
@@ -18,11 +18,11 @@ local function do_exchange(me, npc, need_count, reward_name, reward_count)
         { ['item'] = { [TICKET_NAME] = need_count } },
         { ['item'] = { [reward_name] = reward_count } }
     )
-    if code == EXCHANGE_RESULT.LACK_COST then
+    if code == server.EXCHANGE_RESULT.LACK_COST then
         me:dialog(npc, "교환권이 부족하시네요.", false, false)
         return false
     end
-    if code == EXCHANGE_RESULT.LACK_CAPACITY then
+    if code == server.EXCHANGE_RESULT.LACK_CAPACITY then
         me:dialog(npc, "소지품이 가득 차서 " .. name_with(reward_name, '을', '를') .. " 드리지 못합니다. 자리 좀 비우고 다시 오세요.", false, false)
         return false
     end

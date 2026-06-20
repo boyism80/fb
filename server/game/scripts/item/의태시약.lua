@@ -1,5 +1,7 @@
+local spell = require('lib.spell')
+
 function ON_ACTIVATED_9050(me, item)
-    local front = front_exclude_item(me)
+    local front = spell.front_exclude_item(me)
     if front == nil then
         return
     end

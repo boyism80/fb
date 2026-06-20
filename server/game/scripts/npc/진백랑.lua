@@ -1,12 +1,15 @@
+local quest = require('lib.quest')
+local server = require('lib.server')
+
 function NPC_174(me, npc)
     local diary_names = {
         '선장의일기1', '선장의일기2', '선장의일기3', '선장의일기4', '선장의일기5',
         '선장의일기6', '선장의일기7', '선장의일기8', '선장의일기9', '선장의일기겉표지',
     }
-    local quest = me:quest(QUEST_LIGHTHOUSE)
+    local q = me:quest(quest.QUEST_LIGHTHOUSE)
     local btn
 
-    if quest == nil then
+    if q == nil then
         ::NPC_174_0001::
         btn = me:dialog(npc, '대륙의 기운이 느껴지는군. 자네라면 내 억울함을 풀어줄 수 있을지도 모르지.', false, true)
         if btn == DIALOG_RESULT.QUIT then
@@ -36,16 +39,16 @@ function NPC_174(me, npc)
         if btn == DIALOG_RESULT.QUIT then
             return
         end
-        quest = me:start_quest(QUEST_LIGHTHOUSE)
-        if quest == nil then
+        q = me:start_quest(quest.QUEST_LIGHTHOUSE)
+        if q == nil then
             return
         end
-        quest:step(1)
+        q:step(1)
         me:push_achievement(32, '진백랑의 부탁을 들어주자. [1/6]', 7, 1)
         return
     end
 
-    if quest:step() == 0 then
+    if q:step() == 0 then
         ::NPC_174_0010::
         btn = me:dialog(npc, '대륙의 기운이 느껴지는군. 자네라면 내 억울함을 풀어줄 수 있을지도 모르지.', false, true)
         if btn == DIALOG_RESULT.QUIT then
@@ -75,16 +78,16 @@ function NPC_174(me, npc)
         if btn == DIALOG_RESULT.QUIT then
             return
         end
-        quest = me:start_quest(QUEST_LIGHTHOUSE)
-        if quest == nil then
+        q = me:start_quest(quest.QUEST_LIGHTHOUSE)
+        if q == nil then
             return
         end
-        quest:step(1)
+        q:step(1)
         me:push_achievement(32, '진백랑의 부탁을 들어주자. [1/6]', 7, 1)
         return
     end
 
-    if quest:completed() then
+    if q:completed() then
         me:dialog(npc, '......', true, true)
         return
     end
@@ -119,15 +122,15 @@ function NPC_174(me, npc)
             { ['item'] = give_table },
             { ['item'] = { ['선장의일기장'] = 1, ['등대빛의검'] = 1 } }
         )
-        if code == EXCHANGE_RESULT.LACK_COST then
+        if code == server.EXCHANGE_RESULT.LACK_COST then
             me:dialog(npc, '아직 일기 아홉장과 겉표지를 구하지 못했나보군..', false, true)
             return
         end
-        if code == EXCHANGE_RESULT.LACK_CAPACITY then
+        if code == server.EXCHANGE_RESULT.LACK_CAPACITY then
             me:dialog(npc, '소지품이 가득 차서 보상을 줄 수 없네.', false, true)
             return
         end
-        quest:complete()
+        q:complete()
         me:push_achievement(32, '등대빛의검을 받다!', 6, 1)
         return
     end

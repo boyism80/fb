@@ -1,18 +1,21 @@
+local quest = require('lib.quest')
+local server = require('lib.server')
+
 function NPC_184(me, npc)
-    local quest = me:quest(QUEST_JOWANG)
+    local q = me:quest(quest.QUEST_JOWANG)
     local btn
 
-    if quest == nil then
+    if q == nil then
         me:dialog(npc, '안녕하시오. 장안성에는 무슨일로 오셨는가?', false, true)
         return
     end
 
-    if quest:completed() then
+    if q:completed() then
         me:dialog(npc, '흐음..', false, true)
         return
     end
 
-    if quest:step() == 0 then
+    if q:step() == 0 then
         local sel = me:list(npc, '자네는 왜 날 찾아왔나? 무슨 볼일이라도?', { '화기삼동충초돈유합의 달인이라 하여 찾아왔습니다.', '아닙니다...지나가는 길입니다.' })
         if sel == nil then
             return
@@ -34,12 +37,12 @@ function NPC_184(me, npc)
         if btn == DIALOG_RESULT.QUIT then
             return
         end
-        quest:step(1)
+        q:step(1)
         me:push_achievement(31, '돈유합의달인의 부탁을 들어주자. [1/2]', 7, 1)
         return
     end
 
-    if quest:step() == 1 then
+    if q:step() == 1 then
         local materials = {['동충하초'] = 1, ['인삼'] = 1}
         if not me:has_items(materials) then
             me:dialog(npc, '아직 재료가 부족한것 같소. 동충하초는 대방성입구, 인삼은 국경지대를 뒤져보면 나올걸세.', false, true)
@@ -67,12 +70,12 @@ function NPC_184(me, npc)
             return
         end
         me:rmitem(materials, ITEM_DELETE_TYPE.GIVE)
-        quest:step(2)
+        q:step(2)
         me:push_achievement(31, '돈유합의달인의 부탁을 들어주자. [2/2]', 7, 1)
         return
     end
 
-    if quest:step() == 2 then
+    if q:step() == 2 then
         local materials = {['동충하초'] = 1, ['인삼'] = 1, ['비둘기고기'] = 1, ['구기자'] = 1}
         if not me:has_items(materials) then
             me:dialog(npc, '아직 재료를 다 구하지 못했군. 재료는 동충하초,인삼,비둘기고기,구기자를 구해오게.', false, true)
@@ -88,15 +91,15 @@ function NPC_184(me, npc)
             { ['item'] = materials },
             { ['item'] = { ['화기삼동충초돈유합'] = 1 } }
         )
-        if code == EXCHANGE_RESULT.LACK_COST then
+        if code == server.EXCHANGE_RESULT.LACK_COST then
             me:dialog(npc, '아직 재료를 다 구하지 못하셨군요.', false, true)
             return
         end
-        if code == EXCHANGE_RESULT.LACK_CAPACITY then
+        if code == server.EXCHANGE_RESULT.LACK_CAPACITY then
             me:dialog(npc, '소지품이 가득 차서 화기삼동충초돈유합을 받을 수 없습니다.', false, true)
             return
         end
-        quest:step(3)
+        q:step(3)
         btn = me:dialog(npc, '자~ 다됐네. 귀환 음식이니 좋은 곳에 쓰도록 하게.', false, true)
         if btn == DIALOG_RESULT.QUIT then
             return

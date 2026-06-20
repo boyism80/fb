@@ -1,4 +1,4 @@
-
+local quest = require('lib.quest')
 local function do_sub3_give_medicine(me, npc)
     local sel, btn = me:list(npc, "모험가가 나에겐 무슨 일인가?", { "원숭이들이 약이 필요하다고 합니다." }, false)
     if btn == DIALOG_RESULT.QUIT or sel == nil or sel ~= 0 then
@@ -14,7 +14,7 @@ local function do_sub3_give_medicine(me, npc)
         return false
     end
     me:mkitem("좌황활력환", 1)
-    local q = me:quest(QUEST_SKULL_NECKLACE_3)
+    local q = me:quest(quest.QUEST_SKULL_NECKLACE_3)
     if q then
         q:step(2)
     end
@@ -22,7 +22,7 @@ local function do_sub3_give_medicine(me, npc)
 end
 
 function NPC_472(me, npc)
-    local q3 = me:quest(QUEST_SKULL_NECKLACE_3)
+    local q3 = me:quest(quest.QUEST_SKULL_NECKLACE_3)
 
     if q3 and q3:step() == 1 then
         if do_sub3_give_medicine(me, npc) then
@@ -31,7 +31,7 @@ function NPC_472(me, npc)
         return
     end
 
-    local main_q = me:quest(QUEST_SKULL_NECKLACE)
+    local main_q = me:quest(quest.QUEST_SKULL_NECKLACE)
     if main_q then
         local s = main_q:step()
         if s == 4 then

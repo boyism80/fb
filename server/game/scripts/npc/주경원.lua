@@ -1,8 +1,11 @@
+local quest = require('lib.quest')
+local server = require('lib.server')
+
 function NPC_241(me, npc)
-    local quest = me:quest(QUEST_ALCOHOLIC_DRINK)
+    local q = me:quest(quest.QUEST_ALCOHOLIC_DRINK)
     local btn
 
-    if quest == nil then
+    if q == nil then
         ::NPC_241_0001::
         btn = me:dialog(npc, '안녕하시오. ' .. me:name() .. '씨, 처음 뵙겠소. 난 여기 남양에서 뱀술을 만드는 주경원이라고 하오.', false, true)
         if btn == DIALOG_RESULT.QUIT then
@@ -37,17 +40,17 @@ function NPC_241(me, npc)
         if sel ~= 0 then
             return
         end
-        quest = me:start_quest(QUEST_ALCOHOLIC_DRINK)
-        if quest == nil then
+        q = me:start_quest(quest.QUEST_ALCOHOLIC_DRINK)
+        if q == nil then
             return
         end
-        quest:step(1)
+        q:step(1)
         me:push_achievement(40, '청심사주의 재료를 구하자.[1/2]', 7, 20)
         me:dialog(npc, '아아! 고맙네 고마워. 재료를 구해주면 내가 만든 술을 한병 주겠네.\n\n내가 만들려는 것은 그냥 뱀술이 아니고, \'청심사주\'라는 것이지. 보통 뱀술도 몸에 좋다고 하지만, 청심사주에 비할바는 아니야. 뱀고기 100개와 좋은뱀고기 5개를 농축하여 만든다네.', false, true)
         return
     end
 
-    if quest:step() == 0 then
+    if q:step() == 0 then
         ::NPC_241_0010::
         btn = me:dialog(npc, '안녕하시오. ' .. me:name() .. '씨, 처음 뵙겠소. 난 여기 남양에서 뱀술을 만드는 주경원이라고 하오.', false, true)
         if btn == DIALOG_RESULT.QUIT then
@@ -79,13 +82,13 @@ function NPC_241(me, npc)
         if sel ~= 0 then
             return
         end
-        quest:step(1)
+        q:step(1)
         me:push_achievement(40, '청심사주의 재료를 구하자.[1/2]', 7, 20)
         me:dialog(npc, '아아! 고맙네 고마워. 재료를 구해주면 내가 만든 술을 한병 주겠네.\n\n내가 만들려는 것은 그냥 뱀술이 아니고, \'청심사주\'라는 것이지. 보통 뱀술도 몸에 좋다고 하지만, 청심사주에 비할바는 아니야. 뱀고기 100개와 좋은뱀고기 5개를 농축하여 만든다네.', false, true)
         return
     end
 
-    if quest:step() == 1 then
+    if q:step() == 1 then
         if not me:has_items({['뱀고기'] = 100, ['좋은뱀고기'] = 5}) then
             me:dialog(npc, '청심사주를 만들기 위해선 뱀고기 100개와 좋은뱀고기 5개가 필요하네.', false, false)
             return
@@ -107,7 +110,7 @@ function NPC_241(me, npc)
         if sel == nil or sel ~= 0 then
             return
         end
-        quest:step(2)
+        q:step(2)
         me:push_achievement(40, '청심사주의 재료를 구하자.[2/2]', 7, 20)
         me:mkspell('청심초')
         me:rmitem({['뱀고기'] = 100, ['좋은뱀고기'] = 5}, ITEM_DELETE_TYPE.GIVE)
@@ -127,7 +130,7 @@ function NPC_241(me, npc)
         return
     end
 
-    if quest:step() == 2 then
+    if q:step() == 2 then
         local materials = {['기린의피'] = 1, ['청심초'] = 5}
         if not me:has_items(materials) then
             me:dialog(npc, '재료가 모자라군.. 기린의피와 청심초 5뿌리만 있다면 이젠 정말 만들수 있을 것이네.', false, false)
@@ -146,15 +149,15 @@ function NPC_241(me, npc)
             { ['item'] = materials },
             { ['item'] = { ['청심사주'] = 2 } }
         )
-        if code == EXCHANGE_RESULT.LACK_COST then
+        if code == server.EXCHANGE_RESULT.LACK_COST then
             me:dialog(npc, '재료가 모자라군.. 기린의피와 청심초 5뿌리만 있다면 이젠 정말 만들수 있을 것이네.', false, false)
             return
         end
-        if code == EXCHANGE_RESULT.LACK_CAPACITY then
+        if code == server.EXCHANGE_RESULT.LACK_CAPACITY then
             me:dialog(npc, '소지품이 가득 차서 ' .. name_with('청심사주', '을', '를') .. ' 줄 수 없네.', false, true)
             return
         end
-        quest:step(3)
+        q:step(3)
         me:push_achievement(40, '청심사주를 천선도사에게 전해주자.', 7, 20)
         return
     end

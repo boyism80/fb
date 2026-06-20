@@ -1,4 +1,4 @@
-
+local quest = require('lib.quest')
 local function do_sub9_start(me, npc)
     local sel, btn = me:list(npc, "요즘따라 인간들을 자주 만나시게 되시는도다.", { "이름을 가르쳐주세요.", "이곳의 상황은 좀 어떤가요?", "제가 도와드릴 일은 없을까요?" }, false)
     if btn == DIALOG_RESULT.QUIT or sel == nil then
@@ -39,9 +39,9 @@ local function do_sub9_start(me, npc)
         goto NPC_471_0002
     end
     me:mkitem("특제원숭이술", 1)
-    local q9 = me:quest(QUEST_SKULL_NECKLACE_9)
+    local q9 = me:quest(quest.QUEST_SKULL_NECKLACE_9)
     if q9 == nil then
-        q9 = me:start_quest(QUEST_SKULL_NECKLACE_9)
+        q9 = me:start_quest(quest.QUEST_SKULL_NECKLACE_9)
         if q9 == nil then
             return true
         end
@@ -67,7 +67,7 @@ local function do_sub9_complete(me, npc)
         goto NPC_471_0004
     end
     me:mkitem("거울방패", 1)
-    local q9 = me:quest(QUEST_SKULL_NECKLACE_9)
+    local q9 = me:quest(quest.QUEST_SKULL_NECKLACE_9)
     if q9 then
         q9:step(3)
     end
@@ -75,7 +75,7 @@ local function do_sub9_complete(me, npc)
 end
 
 function NPC_471(me, npc)
-    local q9 = me:quest(QUEST_SKULL_NECKLACE_9)
+    local q9 = me:quest(quest.QUEST_SKULL_NECKLACE_9)
 
     if q9 == nil or q9:step() == 0 then
         if do_sub9_start(me, npc) then
@@ -96,7 +96,7 @@ function NPC_471(me, npc)
         return
     end
 
-    local main_q = me:quest(QUEST_SKULL_NECKLACE)
+    local main_q = me:quest(quest.QUEST_SKULL_NECKLACE)
     if main_q and main_q:step() == 32 then
         if not me:has_items("마른갈대", 1) then
             me:dialog(npc, "마른갈대를 구해서 왕들에게 하나씩 나누어 주게.", false, false)

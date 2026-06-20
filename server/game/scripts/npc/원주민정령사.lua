@@ -1,5 +1,8 @@
+local quest = require('lib.quest')
+local server = require('lib.server')
+
 function NPC_113(me, npc)
-    local dq = me:quest(QUEST_DETECTIVE)
+    local dq = me:quest(quest.QUEST_DETECTIVE)
     if dq and not dq:completed() and dq:step() == 12 then
         local sel, list_btn = me:list(npc, "수사관이 왔는가? 올바른 기운이 느껴지는도다.", {
             "특별한 옷에 대해 듣고자 합니다.",
@@ -27,7 +30,7 @@ function NPC_113(me, npc)
         '황혼의갑주', '여명의연갑', '황혼의활복', '여명의도복',
         '황혼의도포', '여명의치마', '황혼의장삼', '여명의통옷',
     }
-    local quest = me:quest(QUEST_TOTEM_CLOTHES)
+    local q = me:quest(quest.QUEST_TOTEM_CLOTHES)
     local btn
 
     local function count_slots(items)
@@ -38,7 +41,7 @@ function NPC_113(me, npc)
         return n
     end
 
-    if quest == nil then
+    if q == nil then
         btn = me:dialog(npc, '황혼과 여명은 각각 해가 지고 뜨는 때...\n정령의 활동이 가장 활성화되는 때...', true, true)
         if btn == DIALOG_RESULT.QUIT then
             return
@@ -114,16 +117,16 @@ function NPC_113(me, npc)
             goto NPC_113_0006
         end
 
-        quest = me:start_quest(QUEST_TOTEM_CLOTHES)
-        if quest == nil then
+        q = me:start_quest(quest.QUEST_TOTEM_CLOTHES)
+        if q == nil then
             return
         end
-        quest:step(1)
+        q:step(1)
         me:push_achievement(42, '투명한 이슬을 구하자.', 7, 16)
         return
     end
 
-    if quest:step() == 0 then
+    if q:step() == 0 then
         btn = me:dialog(npc, '황혼과 여명은 각각 해가 지고 뜨는 때...\n정령의 활동이 가장 활성화되는 때...', true, true)
         if btn == DIALOG_RESULT.QUIT then
             return
@@ -196,12 +199,12 @@ function NPC_113(me, npc)
         if btn == DIALOG_RESULT.PREV then
             goto NPC_113_0013
         end
-        quest:step(1)
+        q:step(1)
         me:push_achievement(42, '투명한 이슬을 구하자.', 7, 16)
         return
     end
 
-    if quest:step() == 1 then
+    if q:step() == 1 then
         local has_all = true
         for _, name in ipairs(totem_names) do
             if count_slots(me:items(name)) < 3 then
@@ -229,7 +232,7 @@ function NPC_113(me, npc)
             end
         end
         me:rmitem('여신의이슬', 1, ITEM_DELETE_TYPE.GIVE)
-        quest:step(2)
+        q:step(2)
         me:push_achievement(42, '자연의인장을 구하자.', 7, 16)
 
         ::NPC_113_0015::
@@ -256,7 +259,7 @@ function NPC_113(me, npc)
         return
     end
 
-    if quest:step() == 2 then
+    if q:step() == 2 then
         if not me:has_items('자연의인장', 1) then
             me:dialog(npc, '그대는 아직 자연의인장을 구하지 못했다..', false, false)
             return
@@ -283,15 +286,15 @@ function NPC_113(me, npc)
             { ['item'] = { ['자연의인장'] = 1 } },
             { ['item'] = { [armor_name] = 1 } }
         )
-        if code == EXCHANGE_RESULT.LACK_COST then
+        if code == server.EXCHANGE_RESULT.LACK_COST then
             me:dialog(npc, '자연의인장을 가지고 있지 않으시군요.', false, true)
             return
         end
-        if code == EXCHANGE_RESULT.LACK_CAPACITY then
+        if code == server.EXCHANGE_RESULT.LACK_CAPACITY then
             me:dialog(npc, '소지품이 가득 차서 ' .. name_with(armor_name, '을', '를') .. ' 줄 수 없네.', false, true)
             return
         end
-        quest:step(3)
+        q:step(3)
         me:push_achievement(42, '정령의옷을 만들었다!', 7, 16)
         me:dialog(npc, name_with(armor_name, '이', '가') .. ' 완성되었다.. ' .. armor_name .. '에 깃든 정령들이 그대를 수호할 것이다...', true, true)
         return

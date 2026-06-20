@@ -1,4 +1,7 @@
 -- 낙랑의두루마리5 사용 스크립트
+local quest = require('lib.quest')
+local server = require('lib.server')
+
 local GOAL = 5
 
 local function parse_param(param)
@@ -12,16 +15,16 @@ local function parse_param(param)
     return math.min(tonumber(a) or 0, GOAL), math.min(tonumber(b) or 0, GOAL)
 end
 
-local function set_param(quest, squirrel, rabbit)
-    quest:param(string.format('%d,%d', math.min(squirrel, GOAL), math.min(rabbit, GOAL)))
+local function set_param(q, squirrel, rabbit)
+    q:param(string.format('%d,%d', math.min(squirrel, GOAL), math.min(rabbit, GOAL)))
 end
 
 function ON_ACTIVATED_5(me, item)
-    local quest = me:quest(QUEST_NAKRANG5)
+    local q = me:quest(quest.QUEST_NAKRANG5)
     local btn
     local model = item:model()
 
-    if quest == nil or quest:completed() then
+    if q == nil or q:completed() then
         ::ON_ACTIVATED_5_0000::
         btn = me:dialog(model, '<임무>\n 토끼와 다람쥐 사냥\n\n<내용>\n 이제, 사냥터에 왔으니 사냥을 해 봐야지요!!\n주변에, \'토끼\'와 \'다람쥐\'가 보이실 것입니다.\n일단 몬스터 앞에 서서 스페이스바를\n연타하시면 마구 공격합니다. \'토끼\' 5마리와\n\'다람쥐\' 5마리씩 사냥해보세요~\n\n<보상>\n 초심자의귀마개, 경험치 200 (레벨5미만)', true, true)
         if btn == DIALOG_RESULT.QUIT then
@@ -45,23 +48,23 @@ function ON_ACTIVATED_5(me, item)
         if btn == DIALOG_RESULT.PREV then
             goto ON_ACTIVATED_5_0001
         end
-        if quest == nil then
-            quest = me:start_quest(QUEST_NAKRANG5)
-            if quest == nil then
+        if q == nil then
+            q = me:start_quest(quest.QUEST_NAKRANG5)
+            if q == nil then
                 return
             end
         end
-        quest:step(1)
-        set_param(quest, 0, 0)
+        q:step(1)
+        set_param(q, 0, 0)
         return
     end
 
-    local step = quest:step()
+    local step = q:step()
     if step ~= 1 then
         return
     end
 
-    local squirrel, rabbit = parse_param(quest:param())
+    local squirrel, rabbit = parse_param(q:param())
 
     if squirrel >= GOAL and rabbit >= GOAL then
         ::ON_ACTIVATED_5_0002::
@@ -74,7 +77,7 @@ function ON_ACTIVATED_5(me, item)
             { ['item'] = { ['낙랑의두루마리5'] = 1 } },
             { ['item'] = { ['낙랑의두루마리6'] = 1, ['초심자의머리띠'] = 1 }, ['exp'] = give_exp and 200 or 0 }
         )
-        if code == EXCHANGE_RESULT.LACK_CAPACITY then
+        if code == server.EXCHANGE_RESULT.LACK_CAPACITY then
             me:dialog(model, '소지품이 가득 찼습니다.', false, false)
             return
         end
@@ -89,8 +92,8 @@ function ON_ACTIVATED_5(me, item)
         if btn == DIALOG_RESULT.PREV then
             goto ON_ACTIVATED_5_0002
         end
-        set_param(quest, 0, 0)
-        quest:complete()
+        set_param(q, 0, 0)
+        q:complete()
         return
     end
 

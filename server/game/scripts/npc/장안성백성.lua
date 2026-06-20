@@ -1,12 +1,12 @@
-
+local quest = require('lib.quest')
 function NPC_539(me, npc)
     if me:level() < 50 then
         return
     end
 
-    local quest = me:quest(QUEST_JINHWANG)
+    local q = me:quest(quest.QUEST_JINHWANG)
 
-    if quest == nil then
+    if q == nil then
         ::NPC_539_0000::
         local button = me:dialog(npc, "요즘 성내에는 이상한 소문이 돌고 있습니다. 황실의 기보인 진황보검이 사라졌다는 소문이죠. 황실전체가 진황보검을 되찾기위해 발칵 뒤집혔다는군요.", false, true)
         if button == DIALOG_RESULT.QUIT then
@@ -37,23 +37,23 @@ function NPC_539(me, npc)
             return
         end
 
-        quest = me:start_quest(QUEST_JINHWANG)
-        if quest == nil then
+        q = me:start_quest(quest.QUEST_JINHWANG)
+        if q == nil then
             return
         end
-        quest:step(1)
+        q:step(1)
         me:push_achievement(511, "진황보검을 찾아서 (북천좌상과 만나자)", 7, 20)
 
         me:dialog(npc, "그럼 일단 황실에 들어가 북천좌상님에게 진황보검에 대해 여쭈어보는게 좋겠네요.", false, true)
         return
     end
 
-    if quest:completed() then
+    if q:completed() then
         me:dialog(npc, "이미 진황보검을 찾아 황실에 바치셨잖나. 정말 대단하셨소.", false, false)
         return
     end
 
-    local step = quest:step()
+    local step = q:step()
 
     if step >= 1 and step <= 3 then
         me:dialog(npc, "그럼 일단 황실에 들어가 북천좌상님에게 진황보검에 대해 여쭈어보는게 좋겠네요.", false, true)
@@ -85,7 +85,7 @@ function NPC_539(me, npc)
             goto NPC_539_0005
         end
 
-        quest:step(5)
+        q:step(5)
         return
     end
 
@@ -97,7 +97,7 @@ function NPC_539(me, npc)
     if step == 10 then
         me:dialog(npc, "진황보검을 찾아서 황실에 돌려주셨다구요? 기어코 찾으셨군요! 정말 대단하시네요~ 찾으신것도 대단하지만 그 기보를 그냥 돌려주시다니. 정말 곧으신 분이군요.", false, true)
         me:push_achievement(511, "진황보검을 찾았다!", 7, 20)
-        quest:complete()
+        q:complete()
         return
     end
 end

@@ -1,4 +1,5 @@
-
+local quest = require('lib.quest')
+local server = require('lib.server')
 local function do_sub7_cure(me, npc)
     if not me:has_items("아픈아기원숭이", 1) then
         me:dialog(npc, "퀘스트 오류입니다.\n아픈아기원숭이 아이템이 없습니다.", false, false)
@@ -26,14 +27,14 @@ local function do_sub7_cure(me, npc)
         { ['item'] = { ["아픈아기원숭이"] = 1 } },
         { ['item'] = { ["건강한아기원숭이"] = 1 } }
     )
-    if code == EXCHANGE_RESULT.LACK_COST then
+    if code == server.EXCHANGE_RESULT.LACK_COST then
         me:dialog(npc, "아이템을 제거할 수 없습니다.", false, false)
         return true
-    elseif code == EXCHANGE_RESULT.LACK_CAPACITY then
+    elseif code == server.EXCHANGE_RESULT.LACK_CAPACITY then
         me:dialog(npc, "소지품이 가득 차서 건강한아기원숭이를 줄 수 없습니다.", false, false)
         return true
     end
-    local q7 = me:quest(QUEST_SKULL_NECKLACE_7)
+    local q7 = me:quest(quest.QUEST_SKULL_NECKLACE_7)
     if q7 then
         q7:step(2)
     end
@@ -97,9 +98,9 @@ local function do_sub1_start(me, npc)
     if b == DIALOG_RESULT.QUIT or not b then
         return false
     end
-    local q1 = me:quest(QUEST_SKULL_NECKLACE_1)
+    local q1 = me:quest(quest.QUEST_SKULL_NECKLACE_1)
     if q1 == nil then
-        q1 = me:start_quest(QUEST_SKULL_NECKLACE_1)
+        q1 = me:start_quest(quest.QUEST_SKULL_NECKLACE_1)
         if q1 == nil then
             me:dialog(npc, "퀘스트를 시작할 수 없습니다.", false, false)
             return true
@@ -138,14 +139,14 @@ local function do_sub1_turnin(me, npc)
         { ['item'] = { ["깨끗한얼음"] = 1 } },
         { ['item'] = { ["오도독망고과편"] = 1 } }
     )
-    if code == EXCHANGE_RESULT.LACK_COST then
+    if code == server.EXCHANGE_RESULT.LACK_COST then
         me:dialog(npc, "아이템을 제거할 수 없습니다.", false, false)
         return true
-    elseif code == EXCHANGE_RESULT.LACK_CAPACITY then
+    elseif code == server.EXCHANGE_RESULT.LACK_CAPACITY then
         me:dialog(npc, "소지품이 가득 차서 오도독망고과편을 줄 수 없습니다.", false, false)
         return true
     end
-    local q1 = me:quest(QUEST_SKULL_NECKLACE_1)
+    local q1 = me:quest(quest.QUEST_SKULL_NECKLACE_1)
     if q1 then
         q1:step(2)
     end
@@ -153,8 +154,8 @@ local function do_sub1_turnin(me, npc)
 end
 
 function NPC_463(me, npc)
-    local q7 = me:quest(QUEST_SKULL_NECKLACE_7)
-    local q1 = me:quest(QUEST_SKULL_NECKLACE_1)
+    local q7 = me:quest(quest.QUEST_SKULL_NECKLACE_7)
+    local q1 = me:quest(quest.QUEST_SKULL_NECKLACE_1)
 
     if q7 and q7:step() == 1 then
         if do_sub7_cure(me, npc) then
@@ -176,7 +177,7 @@ function NPC_463(me, npc)
         return
     end
 
-    local main_q = me:quest(QUEST_SKULL_NECKLACE)
+    local main_q = me:quest(quest.QUEST_SKULL_NECKLACE)
     if main_q then
         local s = main_q:step()
         if s == 8 then

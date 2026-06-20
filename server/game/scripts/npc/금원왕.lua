@@ -1,4 +1,5 @@
-
+local quest = require('lib.quest')
+local server = require('lib.server')
 local function do_sub8_start(me, npc)
     local sel, btn = me:list(npc, "요즘따라 인간들을 자주 만나시게 되시는도다.", { "이름을 가르쳐주세요.", "이곳의 상황은 좀 어떤가요?", "제가 도와드릴 일은 없을까요?" }, false)
     if btn == DIALOG_RESULT.QUIT or sel == nil then
@@ -38,9 +39,9 @@ local function do_sub8_start(me, npc)
     if b == DIALOG_RESULT.QUIT then
         return false
     end
-    local q8 = me:quest(QUEST_SKULL_NECKLACE_8)
+    local q8 = me:quest(quest.QUEST_SKULL_NECKLACE_8)
     if q8 == nil then
-        q8 = me:start_quest(QUEST_SKULL_NECKLACE_8)
+        q8 = me:start_quest(quest.QUEST_SKULL_NECKLACE_8)
         if q8 == nil then
             return true
         end
@@ -69,14 +70,14 @@ local function do_sub8_turnin(me, npc)
         { ['item'] = { ["두목의증표"] = 1 } },
         { ['item'] = { ["사각방패"] = 1 } }
     )
-    if code == EXCHANGE_RESULT.LACK_COST then
+    if code == server.EXCHANGE_RESULT.LACK_COST then
         me:dialog(npc, "아이템을 제거할 수 없습니다.", false, false)
         return true
-    elseif code == EXCHANGE_RESULT.LACK_CAPACITY then
+    elseif code == server.EXCHANGE_RESULT.LACK_CAPACITY then
         me:dialog(npc, "소지품이 가득 차서 사각방패를 줄 수 없습니다.", false, false)
         return true
     end
-    local q8 = me:quest(QUEST_SKULL_NECKLACE_8)
+    local q8 = me:quest(quest.QUEST_SKULL_NECKLACE_8)
     if q8 then
         q8:step(2)
     end
@@ -84,7 +85,7 @@ local function do_sub8_turnin(me, npc)
 end
 
 function NPC_470(me, npc)
-    local q8 = me:quest(QUEST_SKULL_NECKLACE_8)
+    local q8 = me:quest(quest.QUEST_SKULL_NECKLACE_8)
 
     if q8 == nil or q8:step() == 0 then
         if do_sub8_start(me, npc) then
@@ -100,7 +101,7 @@ function NPC_470(me, npc)
         return
     end
 
-    local main_q = me:quest(QUEST_SKULL_NECKLACE)
+    local main_q = me:quest(quest.QUEST_SKULL_NECKLACE)
     if main_q then
         local s = main_q:step()
         if s == 16 then

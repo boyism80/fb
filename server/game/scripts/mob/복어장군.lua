@@ -1,3 +1,5 @@
+local quest = require('lib.quest')
+
 function ON_MOB_DIE_1000(me, you)
     me:chat('asd')
     if you == nil or me == nil then
@@ -7,8 +9,8 @@ function ON_MOB_DIE_1000(me, you)
         return
     end
 
-    local quest = you:quest(QUEST_DRAGON_KING)
-    if quest == nil or quest:step() ~= 1 or quest:progress() < 1 then
+    local q = you:quest(quest.QUEST_DRAGON_KING)
+    if q == nil or q:step() ~= 1 or q:progress() < 1 then
         return
     end
     local item_doc = "태자전음문서"

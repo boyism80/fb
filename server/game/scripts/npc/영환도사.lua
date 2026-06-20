@@ -1,14 +1,15 @@
-
+local quest = require('lib.quest')
+local server = require('lib.server')
 function NPC_542(me, npc)
-    local quest = me:quest(QUEST_JINHWANG)
-    if quest == nil then
+    local q = me:quest(quest.QUEST_JINHWANG)
+    if q == nil then
         return
     end
-    if quest:completed() then
+    if q:completed() then
         return
     end
 
-    local step = quest:step()
+    local step = q:step()
     local button
 
     if step == 6 then
@@ -85,7 +86,7 @@ function NPC_542(me, npc)
         end
 
         me:push_achievement(511, "진황보검을 찾아서 (강시를 처리하자)", 7, 20)
-        quest:step(7)
+        q:step(7)
         return
     end
 
@@ -104,7 +105,7 @@ function NPC_542(me, npc)
             return
         end
 
-        quest:step(8)
+        q:step(8)
 
         ::NPC_542_0008::
         button = me:dialog(npc, "수고했네. 해내리라 믿었다네. 그럼 이제 강시의 왕을 처치해야겠군. 자네도 짐작했을텐데. 강시는 우두머리를 제거하면 힘이 약해져 모두 흩어지지.", false, true)
@@ -157,17 +158,17 @@ function NPC_542(me, npc)
         { ['item'] = { ["만년원귀의손톱"] = 1 } },
         { ['item'] = { ["혈황검"] = 1 } }
     )
-    if code == EXCHANGE_RESULT.LACK_COST then
+    if code == server.EXCHANGE_RESULT.LACK_COST then
         me:dialog(npc, "만년원귀의손톱이 없지 않은가.", false, false)
         return
     end
-    if code == EXCHANGE_RESULT.LACK_CAPACITY then
+    if code == server.EXCHANGE_RESULT.LACK_CAPACITY then
         me:dialog(npc, "소지품이 가득 차서 줄 수 없네.", false, false)
         return
     end
 
     me:push_achievement(511, "진황보검을 찾아서 (혈황검을 찾았다)", 7, 20)
-    quest:step(9)
+    q:step(9)
 
     ::NPC_542_0011::
     button = me:dialog(npc, "해냈군! 드디어 만년원귀를.. 내 나이가 들어 상대를 하지 못하는게 한이었는데. 자네가 날 대신해서 만년원귀를 물리쳐줬군", false, true)

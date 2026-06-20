@@ -1,5 +1,5 @@
-
-local function run_songpyeon_request(me, npc, quest)
+local quest = require('lib.quest')
+local function run_songpyeon_request(me, npc, q)
     local btn = me:dialog(npc, "송편재료가 필요하시다구요? 아... 세인이 언니에게 얘기듣고 오셨나보군요?", false, true)
     if btn == DIALOG_RESULT.QUIT then
         return
@@ -16,28 +16,28 @@ local function run_songpyeon_request(me, npc, quest)
     if btn == DIALOG_RESULT.QUIT then
         return
     end
-    if quest == nil then
-        quest = me:start_quest(QUEST_BAEKRIHYANG)
-        if quest == nil then
+    if q == nil then
+        q = me:start_quest(quest.QUEST_BAEKRIHYANG)
+        if q == nil then
             return
         end
     end
-    if quest and not quest:completed() then
-        quest:step(1)
-        quest:progress(0)
+    if q and not q:completed() then
+        q:step(1)
+        q:progress(0)
     end
 end
 
-local function run_weeding_handin(me, npc, quest)
-    if quest == nil or quest:step() < 1 then
+local function run_weeding_handin(me, npc, q)
+    if q == nil or q:step() < 1 then
         me:dialog(npc, "벌초를 하지 않으셨네요? 절 속이시면 안돼죠..", false, false)
         return
     end
-    if quest:progress() < 1 then
+    if q:progress() < 1 then
         me:dialog(npc, "벌초를 하지 않으셨네요? 절 속이시면 안돼죠..", false, false)
         return
     end
-    if quest:completed() then
+    if q:completed() then
         me:dialog(npc, "이미 송편재료를 받으셨죠. 세인이 언니에게 가서 맛있는 송편 만들어달라고 하세요. ^^", false, false)
         return
     end
@@ -68,8 +68,8 @@ local function run_weeding_handin(me, npc, quest)
         me:dialog(npc, "소지품이 가득 차서 재료를 줄 수 없습니다.", false, false)
         return
     end
-    quest:progress(0)
-    quest:complete()
+    q:progress(0)
+    q:complete()
 end
 
 function NPC_363(me, npc)
@@ -82,7 +82,7 @@ function NPC_363(me, npc)
         return
     end
 
-    local quest = me:quest(QUEST_BAEKRIHYANG)
+    local q = me:quest(quest.QUEST_BAEKRIHYANG)
     local sel, list_btn = me:list(npc, "무슨일로 절 찾아오셨나요?", {
         "송편재료가 필요해요.",
         "벌초를 하고 왔어요."
@@ -95,9 +95,9 @@ function NPC_363(me, npc)
     end
 
     if sel == 0 then
-        run_songpyeon_request(me, npc, quest)
+        run_songpyeon_request(me, npc, q)
         return
     end
 
-    run_weeding_handin(me, npc, quest)
+    run_weeding_handin(me, npc, q)
 end

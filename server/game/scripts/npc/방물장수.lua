@@ -1,11 +1,14 @@
+local quest = require('lib.quest')
+local server = require('lib.server')
+
 local WATER_BOTTLE_PRICE = 150000
 local VOUCHER_NAME = '물병보관증'
 local BOTTLE_NAME = '물병'
 
 function NPC_62(me, npc)
-    local quest = me:quest(QUEST_WATER_BOTTLE)
+    local q = me:quest(quest.QUEST_WATER_BOTTLE)
     
-    if quest == nil then
+    if q == nil then
         local btn = me:dialog(npc, '물병이 필요하신가요? 물병의 가격은 15만전입니다.', false, true)
         if btn == DIALOG_RESULT.QUIT then
             return
@@ -14,7 +17,7 @@ function NPC_62(me, npc)
         if sel == nil or sel ~= 0 then
             return
         end
-        local q = me:start_quest(QUEST_WATER_BOTTLE)
+        local q = me:start_quest(quest.QUEST_WATER_BOTTLE)
         if q == nil then
             me:dialog(npc, '퀘스트를 시작할 수 없습니다.', false, false)
             return
@@ -23,7 +26,7 @@ function NPC_62(me, npc)
         me:mkitem(VOUCHER_NAME, 1)
     end
     
-    if quest:completed() then
+    if q:completed() then
         me:dialog(npc, '이미 물병을 한번 받으셨군요.', false, true)
         return
     end
@@ -37,7 +40,7 @@ function NPC_62(me, npc)
         { ['item'] = { [VOUCHER_NAME] = 1 }, ['money'] = WATER_BOTTLE_PRICE },
         { ['item'] = { [BOTTLE_NAME] = 1 } }
     )
-    if code == EXCHANGE_RESULT.LACK_COST then
+    if code == server.EXCHANGE_RESULT.LACK_COST then
         if not me:has_items(VOUCHER_NAME, 1) then
             me:dialog(npc, '물병보관증을 가져오세요.', false, false)
         else
@@ -45,10 +48,10 @@ function NPC_62(me, npc)
         end
         return
     end
-    if code == EXCHANGE_RESULT.LACK_CAPACITY then
+    if code == server.EXCHANGE_RESULT.LACK_CAPACITY then
         me:dialog(npc, '소지품이 가득 차서 물병을 받을 수 없습니다.', false, false)
         return
     end
-    quest:complete()
+    q:complete()
     me:dialog(npc, '여기있습니다.', false, true)
 end

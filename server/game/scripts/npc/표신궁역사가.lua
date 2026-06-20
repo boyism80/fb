@@ -1,3 +1,6 @@
+local quest = require('lib.quest')
+local server = require('lib.server')
+
 local function pyosin_story(me, npc)
     local ACHIEVEMENT_PYOSIN = 30
     local story_items = {
@@ -8,10 +11,10 @@ local function pyosin_story(me, npc)
         { doc = '표신궁고문서5', diary = '대장군의일기5', money = 50000 },
         { doc = '표신궁고문서6', diary = '대장군의일기6', money = 60000 },
     }
-    local quest = me:quest(QUEST_PYOSIN)
+    local q = me:quest(quest.QUEST_PYOSIN)
     local btn, sel
     
-    if quest == nil then
+    if q == nil then
         ::NPC_250_0002::
         btn = me:dialog(npc, '헉! 누...누...... 누구시오!', false, true)
         if btn == DIALOG_RESULT.QUIT then 
@@ -91,23 +94,23 @@ local function pyosin_story(me, npc)
         if btn == DIALOG_RESULT.QUIT then 
             return
         end
-        quest = me:start_quest(QUEST_PYOSIN)
-        if quest == nil then
+        q = me:start_quest(quest.QUEST_PYOSIN)
+        if q == nil then
             me:dialog(npc, '퀘스트 시작 실패', false, true)
             return
         end
-        quest:step(1)
+        q:step(1)
         me:push_achievement(ACHIEVEMENT_PYOSIN, '표신궁고문서1을 구하자.', 7, 1)
         me:money(me:money() + 5000)
         return
     end
     
-    if quest:completed() then
+    if q:completed() then
         me:dialog(npc, '요즘 어떻게 지내시나? 당신 덕분에 내 연구에 많은 진척이 있었소. 정말 고맙소.', false, false)
         return
     end
     
-    local step = quest:step()
+    local step = q:step()
     if step == 1 then
         ::NPC_250_0013::
         btn = me:dialog(npc, '오, 살아 돌아왔구려! 반갑소. 정말 반갑소. 잘 돌아오셨소이다.', true, true)
@@ -152,15 +155,15 @@ local function pyosin_story(me, npc)
             { ['item'] = { [story_items[1].doc] = 1 } },
             { ['item'] = { [story_items[1].diary] = 1 }, ['money'] = story_items[1].money }
         )
-        if code == EXCHANGE_RESULT.LACK_COST then
+        if code == server.EXCHANGE_RESULT.LACK_COST then
             me:dialog(npc, '아직 동장군을 쓰러뜨리지 못한건가? 하긴.. 동장군을 쓰러뜨리는 것은 무리일수도 있지.', false, false)
             return
         end
-        if code == EXCHANGE_RESULT.LACK_CAPACITY then
+        if code == server.EXCHANGE_RESULT.LACK_CAPACITY then
             me:dialog(npc, '소지품이 가득 차서 대장군의일기1을 받을 수 없습니다.', false, true)
             return
         end
-        quest:step(2)
+        q:step(2)
         ::NPC_250_0018::
         btn = me:dialog(npc, '......음, 다 됐소. 여기 번역한 문서가 있으니 한번 읽어나 보시오. 보아하니 이것은 먼 옜날 이 땅을 통일했던 유명한 대장군의 일기인 것 같구려. 아까 이야기했던 오방장군도 이 대장군의 수하들이라오.', true, true)
         if btn == DIALOG_RESULT.QUIT then 
@@ -201,7 +204,7 @@ local function pyosin_story(me, npc)
         if btn == DIALOG_RESULT.PREV then 
             goto NPC_250_0022 
         end
-        quest:step(3)
+        q:step(3)
         me:push_achievement(ACHIEVEMENT_PYOSIN, '표신궁고문서2를 구하자.', 7, 1)
         return
     end
@@ -228,15 +231,15 @@ local function pyosin_story(me, npc)
             { ['item'] = { [story_items[2].doc] = 1 } },
             { ['item'] = { [story_items[2].diary] = 1 }, ['money'] = story_items[2].money }
         )
-        if code == EXCHANGE_RESULT.LACK_COST then
+        if code == server.EXCHANGE_RESULT.LACK_COST then
             me:dialog(npc, '아직 서장군 관련 문서를 쓰러뜨리지 못한 건가?', false, false)
             return
         end
-        if code == EXCHANGE_RESULT.LACK_CAPACITY then
+        if code == server.EXCHANGE_RESULT.LACK_CAPACITY then
             me:dialog(npc, '소지품이 가득 차서 대장군의일기2를 받을 수 없습니다.', false, true)
             return
         end
-        quest:step(4)
+        q:step(4)
         btn = me:dialog(npc, '...다 됐소. 한번 읽어 보시오. 역시 이 두번째 고문서는 대장군의 두번째 일기였소. 여기 약속한 사례도 받아가시구려.', true, true)
         if btn == DIALOG_RESULT.QUIT then 
             return
@@ -254,7 +257,7 @@ local function pyosin_story(me, npc)
         if btn == DIALOG_RESULT.QUIT then 
             return
         end
-        quest:step(5)
+        q:step(5)
         me:push_achievement(ACHIEVEMENT_PYOSIN, '표신궁고문서3을 구하자.', 7, 1)
         return
     end
@@ -289,15 +292,15 @@ local function pyosin_story(me, npc)
             { ['item'] = { [story_items[3].doc] = 1 } },
             { ['item'] = { [story_items[3].diary] = 1 }, ['money'] = story_items[3].money }
         )
-        if code == EXCHANGE_RESULT.LACK_COST then
+        if code == server.EXCHANGE_RESULT.LACK_COST then
             me:dialog(npc, '아직 남장군 관련 문서를 쓰러뜨리지 못한 건가?', false, false)
             return
         end
-        if code == EXCHANGE_RESULT.LACK_CAPACITY then
+        if code == server.EXCHANGE_RESULT.LACK_CAPACITY then
             me:dialog(npc, '소지품이 가득 차서 대장군의일기3을 받을 수 없습니다.', false, true)
             return
         end
-        quest:step(6)
+        q:step(6)
         me:push_achievement(ACHIEVEMENT_PYOSIN, '표신궁고문서4를 구하자.', 7, 1)
         btn = me:dialog(npc, '...으음... 다 됐소. 예상한 대로 세번째 고문서는 대장군의 세번째 일기였소. 한번 읽어 보시오. 대장군이 전투에서 크게 패하고 도망치던 때에 쓴 일기인 것 같소.', true, true)
         if btn == DIALOG_RESULT.QUIT then 
@@ -312,7 +315,7 @@ local function pyosin_story(me, npc)
         if btn == DIALOG_RESULT.QUIT then 
             return
         end
-        quest:step(7)
+        q:step(7)
         me:push_achievement(ACHIEVEMENT_PYOSIN, '표신궁고문서4를 구하자.', 7, 1)
         return
     end
@@ -339,15 +342,15 @@ local function pyosin_story(me, npc)
             { ['item'] = { [story_items[4].doc] = 1 } },
             { ['item'] = { [story_items[4].diary] = 1 }, ['money'] = story_items[4].money }
         )
-        if code == EXCHANGE_RESULT.LACK_COST then
+        if code == server.EXCHANGE_RESULT.LACK_COST then
             me:dialog(npc, '아직 북장군 관련 문서를 쓰러뜨리지 못한 건가?', false, false)
             return
         end
-        if code == EXCHANGE_RESULT.LACK_CAPACITY then
+        if code == server.EXCHANGE_RESULT.LACK_CAPACITY then
             me:dialog(npc, '소지품이 가득 차서 대장군의일기4를 받을 수 없습니다.', false, true)
             return
         end
-        quest:step(8)
+        q:step(8)
         me:push_achievement(ACHIEVEMENT_PYOSIN, '표신궁고문서5를 구하자.', 7, 1)
         btn = me:dialog(npc, '......다 됐소. 한번 읽어 보시오. 매번 고맙소. 여기 사례도 받아가구려.', true, true)
         if btn == DIALOG_RESULT.QUIT then 
@@ -362,7 +365,7 @@ local function pyosin_story(me, npc)
         if btn == DIALOG_RESULT.QUIT then 
             return
         end
-        quest:step(9)
+        q:step(9)
         me:push_achievement(ACHIEVEMENT_PYOSIN, '표신궁고문서5를 구하자.', 7, 1)
         return
     end
@@ -405,15 +408,15 @@ local function pyosin_story(me, npc)
             { ['item'] = { [story_items[5].doc] = 1 } },
             { ['item'] = { [story_items[5].diary] = 1 }, ['money'] = story_items[5].money }
         )
-        if code == EXCHANGE_RESULT.LACK_COST then
+        if code == server.EXCHANGE_RESULT.LACK_COST then
             me:dialog(npc, '아직 중앙장군 관련 문서를 쓰러뜨리지 못한 건가?', false, false)
             return
         end
-        if code == EXCHANGE_RESULT.LACK_CAPACITY then
+        if code == server.EXCHANGE_RESULT.LACK_CAPACITY then
             me:dialog(npc, '소지품이 가득 차서 대장군의일기5를 받을 수 없습니다.', false, true)
             return
         end
-        quest:step(10)
+        q:step(10)
         btn = me:dialog(npc, '굉장히 흥미로운 내용이 쓰여있소. 하지만 너무 신비한 내용이라 믿어지지 않는구려. 어찌 되었건 한 번 읽어 보시오.', false, false)
         return
     end
@@ -445,7 +448,7 @@ local function pyosin_story(me, npc)
         if btn == DIALOG_RESULT.PREV then 
             goto NPC_250_0044 
         end
-        quest:step(11)
+        q:step(11)
         me:push_achievement(ACHIEVEMENT_PYOSIN, '표신궁고문서6을 구하자.', 7, 1)
         return
     end
@@ -488,15 +491,15 @@ local function pyosin_story(me, npc)
             { ['item'] = { [story_items[6].doc] = 1 } },
             { ['item'] = { [story_items[6].diary] = 1 }, ['money'] = story_items[6].money }
         )
-        if code == EXCHANGE_RESULT.LACK_COST then
+        if code == server.EXCHANGE_RESULT.LACK_COST then
             me:dialog(npc, '아직 해당 문서를 쓰러뜨리지 못한 건가?', false, false)
             return
         end
-        if code == EXCHANGE_RESULT.LACK_CAPACITY then
+        if code == server.EXCHANGE_RESULT.LACK_CAPACITY then
             me:dialog(npc, '소지품이 가득 차서 대장군의일기6을 받을 수 없습니다.', false, true)
             return
         end
-        quest:step(12)
+        q:step(12)
         me:push_achievement(ACHIEVEMENT_PYOSIN, '표신궁고문서를 모두 구하다.', 7, 1)
         ::NPC_250_0050::
         btn = me:dialog(npc, '이런 무서운 일이... 으음... 이게 정말이라면 우리는 엄청난 사실을 알아낸 것일지도 모르겠소. 일단 읽어나 보시오. 여기 있소...', true, true)
@@ -548,7 +551,7 @@ local function pyosin_story(me, npc)
         if btn == DIALOG_RESULT.QUIT then 
             return
         end
-        quest:step(13)
+        q:step(13)
         me:push_achievement(ACHIEVEMENT_PYOSIN, '일기장을 전부 조합하자.', 7, 1)
         if me:mkitem('대장군의일기겉표지', 1) then
             me:dialog(npc, '여기 책 겉표지도 있으니 같이 조합하시면 될 거요!', false, false)
@@ -613,7 +616,7 @@ local function pyosin_story(me, npc)
             return
         end
         
-        quest:complete()
+        q:complete()
         me:push_achievement(ACHIEVEMENT_PYOSIN, '표신궁역사가의 부탁을 들어주다.', 6, 1)
         me:money(me:money() + 100000)
         return
@@ -668,11 +671,11 @@ local function pyosin_sell_docs(me, npc)
         { ['item'] = { [doc] = 1 } },
         { ['money'] = price }
     )
-    if code == EXCHANGE_RESULT.LACK_COST then
+    if code == server.EXCHANGE_RESULT.LACK_COST then
         me:dialog(npc, name_with(doc, '을', '를') .. ' 가지고 있지 않은데?', false, false)
         return
     end
-    if code == EXCHANGE_RESULT.LACK_CAPACITY then
+    if code == server.EXCHANGE_RESULT.LACK_CAPACITY then
         me:dialog(npc, '금전을 받을 여유가 없군요.', false, false)
         return
     end

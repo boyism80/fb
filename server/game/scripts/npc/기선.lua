@@ -1,3 +1,5 @@
+local server = require('lib.server')
+
 function NPC_289(me, npc)
     local button = me:dialog(npc, "옛날 함께 바둑을 두던 그 놈이 그립군... 홀홀...", false, true)
     if button == DIALOG_RESULT.QUIT then
@@ -16,10 +18,10 @@ function NPC_289(me, npc)
         { ['item'] = { ["황매주"] = 1 } },
         { ['item'] = { ["용의골무"] = 1 } }
     )
-    if code == EXCHANGE_RESULT.LACK_COST then
+    if code == server.EXCHANGE_RESULT.LACK_COST then
         return
     end
-    if code == EXCHANGE_RESULT.LACK_CAPACITY then
+    if code == server.EXCHANGE_RESULT.LACK_CAPACITY then
         return
     end
 

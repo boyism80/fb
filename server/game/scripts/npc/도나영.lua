@@ -1,7 +1,7 @@
-
+local quest = require('lib.quest')
 function NPC_370(me, npc)
-    local quest = me:quest(QUEST_DOJAECHUN)
-    local dojaechun_one = (quest and (quest:step() == 1 or quest:completed()))
+    local q = me:quest(quest.QUEST_DOJAECHUN)
+    local dojaechun_one = (q and (q:step() == 1 or q:completed()))
 
     if not dojaechun_one then
         ::NPC_370_0000::

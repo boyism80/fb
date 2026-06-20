@@ -1,4 +1,5 @@
-
+local quest = require('lib.quest')
+local server = require('lib.server')
 function NPC_307(me, npc)
     local d = me:dialog(npc, "비밀의 상점에 온 것을 환영하네. 여기선 방천화극을 팔고 있지...", false, true)
     if d == DIALOG_RESULT.QUIT then
@@ -31,11 +32,11 @@ function NPC_307(me, npc)
             { ['item'] = { ["작약주"] = 1 } },
             { ['item'] = { ["방천화극"] = 1 } }
         )
-        if code == EXCHANGE_RESULT.LACK_COST then
+        if code == server.EXCHANGE_RESULT.LACK_COST then
             me:dialog(npc, "뭐야? 아무것도 없질 않은가!!", false, false)
             return
         end
-        if code == EXCHANGE_RESULT.LACK_CAPACITY then
+        if code == server.EXCHANGE_RESULT.LACK_CAPACITY then
             me:dialog(npc, "소지품이 가득 차서 방천화극을 드리지 못합니다.", false, false)
             return
         end
@@ -48,11 +49,11 @@ function NPC_307(me, npc)
             { ['item'] = { ["신작약주"] = 1 } },
             { ['item'] = { ["전사방천화극"] = 1 } }
         )
-        if code == EXCHANGE_RESULT.LACK_COST then
+        if code == server.EXCHANGE_RESULT.LACK_COST then
             me:dialog(npc, "뭐야? 아무것도 없질 않은가!!", false, false)
             return
         end
-        if code == EXCHANGE_RESULT.LACK_CAPACITY then
+        if code == server.EXCHANGE_RESULT.LACK_CAPACITY then
             me:dialog(npc, "소지품이 가득 차서 전사방천화극을 드리지 못합니다.", false, false)
             return
         end
@@ -66,7 +67,7 @@ function NPC_307(me, npc)
     end
 
     if sel == 3 then
-        local q = me:quest(QUEST_CIDEQUEST)
+        local q = me:quest(quest.QUEST_CIDEQUEST)
         local pn = (q and q:progress()) or 0
         if pn == 2 then
             local l1, b1 = me:list(npc, " ", { "이봐요.", "당신이 용왕님의 보물을 가져갔다고 하던데.." }, false)
@@ -86,7 +87,7 @@ function NPC_307(me, npc)
                 return
             end
             if q == nil then
-                q = me:start_quest(QUEST_CIDEQUEST)
+                q = me:start_quest(quest.QUEST_CIDEQUEST)
                 if q == nil then
                     return
                 end

@@ -1,4 +1,5 @@
-
+local quest = require('lib.quest')
+local server = require('lib.server')
 function NPC_353(me, npc)
     ::NPC_353_0001::
     local btn = me:dialog(npc, "안녕하세요? 저는 백몽연입니다.", false, true)
@@ -10,7 +11,7 @@ function NPC_353(me, npc)
         return
     end
 
-    local quest = me:quest(QUEST_BAEK_MONGYEON)
+    local q = me:quest(quest.QUEST_BAEK_MONGYEON)
 
     ::NPC_353_0002::
     local sel, list_btn = me:list(npc, "안녕하세요?", {
@@ -60,7 +61,7 @@ function NPC_353(me, npc)
             return
         end
 
-        if quest == nil then
+        if q == nil then
             ::NPC_353_0007::
             local sel2, list_btn2 = me:list(npc, "세시마을 대청소하는거.. 좀 도와주시겠어요?", { "네 도와드려야죠.", "저는 청소는 잘 못해서.." }, true)
             if list_btn2 == DIALOG_RESULT.QUIT then
@@ -96,7 +97,7 @@ function NPC_353(me, npc)
     end
 
     if sel == 2 then
-        if quest and quest:completed() then
+        if q and q:completed() then
             me:dialog(npc, "감사합니다! 그럼 잘 쓰시고 좋은 봄날 맞으시길!", false, true)
             return
         end
@@ -152,7 +153,7 @@ function run_material_list(me, npc)
         return
     end
 
-    local q = me:start_quest(QUEST_BAEK_MONGYEON)
+    local q = me:start_quest(quest.QUEST_BAEK_MONGYEON)
     if q == nil then
         return
     end
@@ -161,8 +162,8 @@ function run_material_list(me, npc)
 end
 
 function run_hand_in(me, npc)
-    local quest = me:quest(QUEST_BAEK_MONGYEON)
-    if quest == nil or quest:completed() then
+    local q = me:quest(quest.QUEST_BAEK_MONGYEON)
+    if q == nil or q:completed() then
         return
     end
 
@@ -237,14 +238,14 @@ function run_hand_in(me, npc)
             { ['item'] = { ["벌레쫓는부적"] = 2 } },
             { ['item'] = { ["중화절부적"] = 1, ["세시마을비서"] = 10 } }
         )
-        if code == EXCHANGE_RESULT.LACK_COST then
+        if code == server.EXCHANGE_RESULT.LACK_COST then
             me:dialog(npc, "벌레쫓는부적은 저희 할아버지가 계신 촌장집에서 받아오시면 된답니다. 두 장을 받아와 주세요.", false, false)
             return
-        elseif code == EXCHANGE_RESULT.LACK_CAPACITY then
+        elseif code == server.EXCHANGE_RESULT.LACK_CAPACITY then
             me:dialog(npc, "소지품이 가득 차서 보상을 드리지 못합니다.", false, false)
             return
         end
-        quest:complete()
+        q:complete()
         me:dialog(npc, "다 받아오셨군요! 감사합니다!!", false, true)
         me:dialog(npc, "감사합니다.. 보답으로 제가 만든 부적과 비서를 드릴께요.", false, true)
         me:dialog(npc, "중화절부적은.. 가지고 있으면 옷이나 몸에 벼룩같은 벌레가 들지 말라고 가지고 다니는거구요, 일년동안 가지고 계시면 좋은일이 생길꺼에요.", false, true)
