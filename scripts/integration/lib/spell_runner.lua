@@ -226,7 +226,7 @@ function M.run_case(case, caster, target, slot, opts)
     end
 
     if case.post ~= nil then
-        local post_ok = case.post(caster, target, state, packet)
+        local post_ok = case.post(caster, target, state, packet, opts.ctx)
         if post_ok == false then
             log("debug", string.format("[spell_runner] %s post failed", case.name))
             return false

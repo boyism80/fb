@@ -25,6 +25,7 @@ game_bot_controller::game_bot_controller(bot_container& container) :
     this->bind(&game_bot_controller::on_die);
     this->bind(&game_bot_controller::on_buff);
     this->bind(&game_bot_controller::on_unbuff);
+    this->bind(&game_bot_controller::on_update_cc);
     this->bind(&game_bot_controller::on_update);
     this->bind(&game_bot_controller::on_map);
     this->bind(&game_bot_controller::on_transfer);
@@ -246,6 +247,12 @@ async::task<void> game_bot_controller::on_unbuff(game_bot& bot, const game_resp:
 {
     // Remove the buff from the bot's active buffs by name
     bot.remove_buff(response.buff_name);
+    co_return;
+}
+
+async::task<void> game_bot_controller::on_update_cc(game_bot& bot, const game_resp::update_cc& response)
+{
+    bot.set_crowd_control(static_cast<uint32_t>(response.cc));
     co_return;
 }
 

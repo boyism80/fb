@@ -174,6 +174,7 @@ IMPLEMENT_LUA_EXTENSION(game_bot, "fb.bot")
     {"level",                    builtin::game_bot::builtin_level},
     {"hp",                       builtin::game_bot::builtin_hp},
     {"mp",                       builtin::game_bot::builtin_mp},
+    {"crowd_control",            builtin::game_bot::builtin_crowd_control},
     {"base_hp",                  builtin::game_bot::builtin_base_hp},
     {"base_mp",                  builtin::game_bot::builtin_base_mp},
     {"str",                      builtin::game_bot::builtin_str},
@@ -550,6 +551,20 @@ int builtin::game_bot::builtin_hp(lua_State* L)
         co_return 0;
     };
     return builder.run();
+}
+
+int builtin::game_bot::builtin_crowd_control(lua_State* L)
+{
+    auto lua = fb::lua::get(L);
+    if (lua == nullptr)
+        return 0;
+
+    auto bot = lua->touserdata<fb::bot::game_bot>(1);
+    if (bot == nullptr)
+        return 0;
+
+    lua->pushinteger(static_cast<lua_Integer>(bot->crowd_control()));
+    return 1;
 }
 
 int builtin::game_bot::builtin_mp(lua_State* L)

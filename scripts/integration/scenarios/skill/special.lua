@@ -12,6 +12,7 @@ end
 
 local WEAPON_NAME = "목도"
 local NOT_READY_MESSAGE = "비바람이 휘몰아치고 있습니다."
+local NEARBY_MOB_CLEAR_RANGE = 3
 
 local function skip_on_local_host(spell_name)
     return function()
@@ -69,7 +70,7 @@ local SPECIAL_SPELLS = {
             return true
         end,
         post = function(caster)
-            caster:chat("/몬스터제거")
+            caster:chat(string.format("/몬스터범위제거 %d", NEARBY_MOB_CLEAR_RANGE))
             caster:clear_all_drop_items()
             caster:unequip("WEAPON")
             caster:clear_inventory()
@@ -198,7 +199,7 @@ local SPECIAL_SPELLS = {
             return nil
         end,
         post = function(caster)
-            caster:chat("/몬스터제거")
+            caster:chat(string.format("/몬스터범위제거 %d", NEARBY_MOB_CLEAR_RANGE))
             return true
         end,
     },

@@ -17,6 +17,7 @@ struct game_bot
     static int builtin_level(lua_State* L);
     static int builtin_hp(lua_State* L);
     static int builtin_mp(lua_State* L);
+    static int builtin_crowd_control(lua_State* L);
     static int builtin_base_hp(lua_State* L);
     static int builtin_base_mp(lua_State* L);
     static int builtin_str(lua_State* L);

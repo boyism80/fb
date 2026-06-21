@@ -1,4 +1,5 @@
 local spell_runner = require("integration.lib.spell_runner")
+local lib = require("integration.lib")
 
 local M = {}
 
@@ -69,7 +70,11 @@ local function build_cases(ctx)
 end
 
 function M.run(ctx, bot_index, target_index)
-    target_index = target_index or 5
+    target_index = target_index or lib.formation.skill_pair_target(bot_index)
+    if target_index == nil then
+        log("debug", "TELEPORT SPELL TEST requires a target bot")
+        return false
+    end
     local caster = ctx:bot(bot_index)
     local target = ctx:bot(target_index)
     log("debug", "TELEPORT SPELL TEST STARTED")

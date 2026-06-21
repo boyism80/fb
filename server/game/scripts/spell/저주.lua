@@ -19,5 +19,4 @@ end
 -- 저주 버프 해제 효과
 function ON_UNBUFF_3051(me, sp)
     me:buff_phydef(me:buff_phydef() - 30)
-
 end

@@ -527,7 +527,7 @@ command_funcs = {
         
         ['몬스터제거'] = {
             ['privilege'] = ROLE.ADMIN,
-            ['usage'] = '- 모든 몬스터 제거',
+            ['usage'] = '- 맵 내 모든 몬스터 제거',
             ['command'] = function (me, args)
                 local map = me:map()
                 if map == nil then
@@ -540,6 +540,88 @@ command_funcs = {
                     object:destroy()
                 end
                 
+                return true
+            end,
+        },
+
+        ['몬스터범위제거'] = {
+            ['privilege'] = ROLE.ADMIN,
+            ['usage'] = '<거리> - 시전자 주변 범위 내 몬스터 제거',
+            ['command'] = function (me, args)
+                local distance = tonumber(table.unpack(args))
+                if distance == nil or distance < 0 then
+                    me:message("사용법: /몬스터범위제거 <거리>")
+                    return true
+                end
+
+                local map = me:map()
+                if map == nil then
+                    me:message("맵에 있지 않습니다.")
+                    return true
+                end
+
+                local player_x, player_y = me:position()
+                local distance_squared = distance * distance
+                local removed_count = 0
+
+                local objects = map:objects(OBJECT_TYPE.MOB)
+                for _, object in ipairs(objects) do
+                    local mob_x, mob_y = object:position()
+                    local dx = mob_x - player_x
+                    local dy = mob_y - player_y
+                    if dx * dx + dy * dy <= distance_squared then
+                        object:destroy()
+                        removed_count = removed_count + 1
+                    end
+                end
+
+                if removed_count > 0 then
+                    me:message(string.format(
+                        "주변 %d칸 내 몬스터 %d마리를 제거했습니다.",
+                        distance, removed_count))
+                end
+
+                return true
+            end,
+        },
+
+        ['아이템범위제거'] = {
+            ['privilege'] = ROLE.ADMIN,
+            ['usage'] = '<거리> - 시전자 주변 범위 내 드롭 아이템 제거',
+            ['command'] = function (me, args)
+                local distance = tonumber(table.unpack(args))
+                if distance == nil or distance < 0 then
+                    me:message("사용법: /아이템범위제거 <거리>")
+                    return true
+                end
+
+                local map = me:map()
+                if map == nil then
+                    me:message("맵에 있지 않습니다.")
+                    return true
+                end
+
+                local player_x, player_y = me:position()
+                local distance_squared = distance * distance
+                local removed_count = 0
+
+                local objects = map:objects(OBJECT_TYPE.ITEM)
+                for _, object in ipairs(objects) do
+                    local item_x, item_y = object:position()
+                    local dx = item_x - player_x
+                    local dy = item_y - player_y
+                    if dx * dx + dy * dy <= distance_squared then
+                        object:destroy()
+                        removed_count = removed_count + 1
+                    end
+                end
+
+                if removed_count > 0 then
+                    me:message(string.format(
+                        "주변 %d칸 내 아이템 %d개를 제거했습니다.",
+                        distance, removed_count))
+                end
+
                 return true
             end,
         },

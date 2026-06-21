@@ -1,4 +1,5 @@
 local spell_runner = require("integration.lib.spell_runner")
+local lib = require("integration.lib")
 
 local M = {}
 
@@ -60,24 +61,51 @@ end,
     },
     {
         name = "부활",
-        response = resp.message,
+        response = resp.update_external_detailed,
         cast_type = "TARGET",
         pre = function(caster, target, state)
-            caster:set_current_hp_mp(10000, 10000)
-            target:set_current_hp_mp(10000, 10000)
-            state.expected_mp = caster:mp() - 300
+            caster:setup_bot_stats(100000, 100000)
+            target:setup_bot_stats(100000, 100000)
+            caster:set_current_hp_mp(caster:hp(), 1000)
+            target:set_current_hp_mp(50, target:mp())
+
+            state.hell_slot = caster:learn_spell("헬파이어")
+            if state.hell_slot == 0xFF then
+                return false
+            end
+
+            local pos = target:position()
+            local packet = caster:request(
+                resp.update_external_detailed,
+                protocol.spell_cast("TARGET", state.hell_slot, "", target:oid(), pos),
+                function(pkt)
+                    return pkt.oid == target:oid() and pkt.state == "GHOST"
+                end)
+            if packet == false or packet == nil then
+                return false
+            end
+
+            -- Hellfire consumes all current MP; 부활 requires 300 MP.
+            caster:set_current_hp_mp(caster:hp(), 1000)
+            return true
         end,
-condition = function(packet)
-    if packet.text == nil then
-        return nil
-    end
-    if skill.is_cast_ready(packet.text, "부활") then
-        return true
-    end
-    return false
-end,
-        post = function(caster, _, state)
-            return caster:mp() == state.expected_mp
+        condition = function(packet, _, target)
+            if packet.oid ~= target:oid() then
+                return nil
+            end
+            if packet.state == "NORMAL" then
+                return true
+            end
+            return nil
+        end,
+        post = function(caster, target, state, packet)
+            if packet.oid ~= target:oid() or packet.state ~= "NORMAL" then
+                return false
+            end
+            if state.hell_slot ~= nil and state.hell_slot ~= 0xFF then
+                caster:chat("/마법지우기 " .. state.hell_slot)
+            end
+            return true
         end,
     },
     {
@@ -192,10 +220,12 @@ end,
     },
 }
 
-M.TARGET_BOT_INDEX = 7
-
 function M.run(ctx, bot_index, target_index)
-    target_index = target_index or M.TARGET_BOT_INDEX
+    target_index = target_index or lib.formation.skill_pair_target(bot_index)
+    if target_index == nil then
+        log("debug", "TARGET SPELL TEST requires a target bot")
+        return false
+    end
     local caster = ctx:bot(bot_index)
     local target = ctx:bot(target_index)
     log("debug", "TARGET SPELL TEST STARTED")

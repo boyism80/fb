@@ -412,16 +412,11 @@ local CASES = {
 function M.run(ctx, bot_index)
     local caster = ctx:bot(bot_index)
     log("debug", "NEAR DAMAGE SPELL TEST STARTED")
-    caster:move("LEFT")
-    ctx:sleep(skill.DEFAULT_INTERVAL)
-    caster:direction("BOTTOM")
     caster:setup_bot_stats(100000, 100000)
     if spell_runner.run_cases(CASES, caster, nil) == false then
         return false
     end
     ctx:sleep(skill.DEFAULT_INTERVAL)
-    caster:move("RIGHT")
-    caster:direction("BOTTOM")
     log("debug", "NEAR DAMAGE SPELL TEST COMPLETED")
     return true
 end

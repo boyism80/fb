@@ -64,6 +64,9 @@ function M.run(ctx, bot_index)
         return false
     end
 
+    caster:clear_inventory()
+    caster:clear_all_drop_items()
+
     log("debug", "LOOT SPELL TEST COMPLETED")
     return true
 end

@@ -669,6 +669,15 @@ void marshal_lua_game_resp__internal_info(lua_State* L, const fb::protocol::head
 
     const auto& resp = static_cast<const game_resp::internal_info&>(header);
     lua->new_table();
+    lua->pushstring("phydef");
+    lua->pushinteger(resp.phydef);
+    lua->settable(-3);
+    lua->pushstring("dam");
+    lua->pushinteger(resp.dam);
+    lua->settable(-3);
+    lua->pushstring("hit");
+    lua->pushinteger(resp.hit);
+    lua->settable(-3);
     lua->pushstring("clan_name");
     lua->pushstring(resp.clan_name);
     lua->settable(-3);
@@ -1392,7 +1401,24 @@ void marshal_lua_game_resp__update_cc(lua_State* L, const fb::protocol::header& 
         return;
 
     const auto& resp = static_cast<const game_resp::update_cc&>(header);
+    const auto  cc   = static_cast<uint32_t>(resp.cc);
+
     lua->new_table();
+    lua->pushstring("cc");
+    lua->pushinteger(static_cast<lua_Integer>(cc));
+    lua->settable(-3);
+    lua->pushstring("direction");
+    lua->pushboolean((cc & static_cast<uint32_t>(fb::model::enum_value::CROWD_CONTROL::DIRECTION)) != 0);
+    lua->settable(-3);
+    lua->pushstring("sight");
+    lua->pushboolean((cc & static_cast<uint32_t>(fb::model::enum_value::CROWD_CONTROL::SIGHT)) != 0);
+    lua->settable(-3);
+    lua->pushstring("hear");
+    lua->pushboolean((cc & static_cast<uint32_t>(fb::model::enum_value::CROWD_CONTROL::HEAR)) != 0);
+    lua->settable(-3);
+    lua->pushstring("chat");
+    lua->pushboolean((cc & static_cast<uint32_t>(fb::model::enum_value::CROWD_CONTROL::CHAT)) != 0);
+    lua->settable(-3);
 }
 
 void marshal_lua_game_resp__update_external_false_(lua_State* L, const fb::protocol::header& header)
