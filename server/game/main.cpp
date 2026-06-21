@@ -62,7 +62,7 @@ int main(int argc, char* argv[])
             server->exit();
         });
 
-        async::awaitable_get(server->run());
+        server->run();
     }
     catch (std::exception& e)
     {

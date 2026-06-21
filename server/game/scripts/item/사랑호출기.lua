@@ -1,3 +1,5 @@
+local spell = require('lib.spell')
+
 function ON_ACTIVATED_10529(me, item)
     local m = me:marriage()
     if not m.married then
@@ -16,7 +18,7 @@ function ON_ACTIVATED_10529(me, item)
 
     local x, y = spouse:position()
     local direction = me:direction()
-    local new_x, new_y, direction = TELEPORT_LOOKUP(me, map, x, y, direction)
+    local new_x, new_y, direction = spell.TELEPORT_LOOKUP(me, map, x, y, direction)
     me:map(map, new_x, new_y)
     me:direction(direction)
 end

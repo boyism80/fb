@@ -1,11 +1,12 @@
-
+local quest = require('lib.quest')
+local server = require('lib.server')
 local COOLDOWN_SEC = 600
 local FLOWER_NAME = "추모국화"
 local BALLOON_NAME = "추모풍선"
 local BALLOON_CHANCE = 10
 
 local function next_available(me)
-    local q = me:quest(QUEST_CHOOMO)
+    local q = me:quest(quest.QUEST_CHOOMO)
     if q == nil then
         return 0
     end
@@ -21,9 +22,9 @@ local function set_cooldown(me)
     if not now_ts or now_ts <= 0 then
         return
     end
-    local q = me:quest(QUEST_CHOOMO)
+    local q = me:quest(quest.QUEST_CHOOMO)
     if q == nil then
-        q = me:start_quest(QUEST_CHOOMO)
+        q = me:start_quest(quest.QUEST_CHOOMO)
         if q == nil then
             return
         end
@@ -67,11 +68,11 @@ function NPC_553(me, npc)
         reward = { ['item'] = { [BALLOON_NAME] = 1 } }
     end
     local code = me:exchange({ ['item'] = { [FLOWER_NAME] = 1 } }, reward)
-    if code == EXCHANGE_RESULT.LACK_COST then
+    if code == server.EXCHANGE_RESULT.LACK_COST then
         me:dialog(npc, "고인에 대한 진심을 담아 꽃 한송이를 올리게나...", false, false)
         return
     end
-    if code == EXCHANGE_RESULT.LACK_CAPACITY then
+    if code == server.EXCHANGE_RESULT.LACK_CAPACITY then
         me:dialog(npc, "소지품이 가득 차서 풍선을 받을 수 없네.", false, false)
         return
     end

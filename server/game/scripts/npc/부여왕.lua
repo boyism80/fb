@@ -1,3 +1,5 @@
+local quest = require('lib.quest')
+
 function NPC_31(me, npc)
     local function pool_fn(level)
         if level < 70 then
@@ -8,8 +10,8 @@ function NPC_31(me, npc)
             return { '처녀귀신', '달걀귀신', '불귀신' }
         end
     end
-    king_quest_dialog(me, name2npc('부여경비대장') or npc, {
-        quest_id = QUEST_KING_BUYEO,
+    quest.king_dialog(me, name2npc('부여경비대장') or npc, {
+        quest_id = quest.QUEST_KING_BUYEO,
         min_level = 56,
         nation = NATION.BUYEO,
         nation_reject_msg = '여기는 부여왕이 계시는 곳입니다.',

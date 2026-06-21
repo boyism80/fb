@@ -5,5 +5,6 @@
 -- Initial battery stock for 시계장인 (restocked daily at 18:00 by ON_SCHEDULE_2)
 property("clock_time_item", 10)
 
-sky_maze_shuffle()
-pk_sky_maze_shuffle()
+local sky_maze = require('lib.sky_maze')
+sky_maze.shuffle()
+sky_maze.pk_shuffle()

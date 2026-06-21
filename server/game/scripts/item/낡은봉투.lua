@@ -1,4 +1,6 @@
 -- 낡은봉투 사용 스크립트
+local server = require('lib.server')
+
 function ON_ACTIVATED_10248(me, item)
     local model = item:model()
     local selected = me:list(model, '봉투를 여시겠습니까?', {'열지 않겠어. 약속은 지켜야해.', '열어봐야지. 약속보다는 궁금함이 먼저야.'})
@@ -14,7 +16,7 @@ function ON_ACTIVATED_10248(me, item)
         { ['item'] = { ['낡은봉투'] = 1 } },
         { ['item'] = { ['낡은연애편지'] = 1 } }
     )
-    if code ~= EXCHANGE_RESULT.OK then
+    if code ~= server.EXCHANGE_RESULT.OK then
         return
     end
     local added = me:item('낡은연애편지')

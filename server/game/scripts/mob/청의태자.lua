@@ -1,3 +1,5 @@
+local quest = require('lib.quest')
+
 function ON_MOB_DIE_1095(me, you)
     if you == nil or me == nil then
         return
@@ -6,12 +8,12 @@ function ON_MOB_DIE_1095(me, you)
         return
     end
 
-    local quest = you:quest(QUEST_DRAGON_KING)
-    if quest == nil then
+    local q = you:quest(quest.QUEST_DRAGON_KING)
+    if q == nil then
         return
     end
 
-    local step = quest:step()
+    local step = q:step()
     if step == 18 then
         local btn = you:dialog(me, "헉헉. 이게 어떻게 된 노릇이냐.", false, true)
         if btn == DIALOG_RESULT.QUIT then
@@ -37,7 +39,7 @@ function ON_MOB_DIE_1095(me, you)
             you:mkitem("여의주", 1)
             you:push_achievement(19, "청의태자를 생포하였다. [1/2]", 7, 0)
         end
-        quest:progress(1)
+        q:progress(1)
         return
     end
 
@@ -64,7 +66,7 @@ function ON_MOB_DIE_1095(me, you)
     if list_btn == DIALOG_RESULT.QUIT or sel == nil or sel ~= 0 then
         return
     end
-    quest:progress(2)
+    q:progress(2)
     you:push_achievement(19, "청의태자를 생포하였다. [2/2]", 7, 0)
     you:dialog(me, "아. 나의 꿈이....나의 야망이................", false, true)
 end

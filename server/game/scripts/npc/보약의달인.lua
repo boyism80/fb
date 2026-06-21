@@ -1,13 +1,16 @@
+local quest = require('lib.quest')
+local server = require('lib.server')
+
 function NPC_240(me, npc)
-    local quest_mother = me:quest(QUEST_SICK_CHILD)
-    local quest = me:quest(QUEST_SAMJEONSIN)
+    local quest_mother = me:quest(quest.QUEST_SICK_CHILD)
+    local q = me:quest(quest.QUEST_SAMJEONSIN)
 
     if quest_mother == nil or quest_mother:step() ~= 1 then
         me:dialog(npc, '장안성엔 어쩐일로 오셨나? 보약이라도 한 채 지어먹으러 오셨나?', true, true)
         return
     end
 
-    if quest == nil then
+    if q == nil then
         local sel, lb = me:list(npc, '무슨 일인가? 급한 일이라도 있는가?', { '실은 아픈 아이가 있는데...', '아니오, 아무 일도 아닙니다.' }, false)
         if lb == DIALOG_RESULT.QUIT or sel == nil or sel ~= 0 then
             return
@@ -37,22 +40,22 @@ function NPC_240(me, npc)
         if btn == DIALOG_RESULT.QUIT then
             return
         end
-        quest = me:start_quest(QUEST_SAMJEONSIN)
-        if quest == nil then
+        q = me:start_quest(quest.QUEST_SAMJEONSIN)
+        if q == nil then
             me:dialog(npc, '퀘스트 시작 실패', false, true)
             return
         end
-        quest:step(1)
+        q:step(1)
         me:push_achievement(36, '삼전보신탕 재료를 구하자.', 7, 1)
         return
     end
 
-    if quest:completed() then
+    if q:completed() then
         me:dialog(npc, '....', true, true)
         return
     end
 
-    if quest:step() == 0 then
+    if q:step() == 0 then
         local sel, lb = me:list(npc, '무슨 일인가? 급한 일이라도 있는가?', { '실은 아픈 아이가 있는데...', '아니오, 아무 일도 아닙니다.' }, false)
         if lb == DIALOG_RESULT.QUIT or sel == nil or sel ~= 0 then
             return
@@ -82,12 +85,12 @@ function NPC_240(me, npc)
         if btn == DIALOG_RESULT.QUIT then
             return
         end
-        quest:step(1)
+        q:step(1)
         me:push_achievement(36, '삼전보신탕 재료를 구하자.', 7, 1)
         return
     end
 
-    if quest:step() == 1 then
+    if q:step() == 1 then
         local materials = {['감초'] = 1, ['녹용'] = 1, ['국광'] = 1}
         if not me:has_items(materials) then
             me:dialog(npc, '삼전신보신탕을 만들기 위한 재료가 부족한 것 같네만. 녹용과 국광 그리고 감초가 있어야 제작이 가능하지.', false, true)
@@ -106,15 +109,15 @@ function NPC_240(me, npc)
             { ['item'] = materials },
             { ['item'] = { ['삼전신보탕'] = 1 } }
         )
-        if code == EXCHANGE_RESULT.LACK_COST then
+        if code == server.EXCHANGE_RESULT.LACK_COST then
             me:dialog(npc, '삼전신보신탕을 만들기 위한 재료가 부족한 것 같네만. 녹용과 국광 그리고 감초가 있어야 제작이 가능하지.', false, true)
             return
         end
-        if code == EXCHANGE_RESULT.LACK_CAPACITY then
+        if code == server.EXCHANGE_RESULT.LACK_CAPACITY then
             me:dialog(npc, '소지품이 가득 차서 삼전신보탕을 줄 수 없습니다.', false, true)
             return
         end
-        quest:step(2)
+        q:step(2)
         me:push_achievement(36, '삼전보신탕을 만들었다.', 7, 1)
         return
     end

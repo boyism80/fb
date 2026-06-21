@@ -1,4 +1,4 @@
-
+local server = require('lib.server')
 function NPC_576(me, npc)
     if property("goldarcon") ~= 36 then
         me:dialog(npc, "지금은 때가 아닙니다.", false, false)
@@ -24,11 +24,11 @@ function NPC_576(me, npc)
             { ['item'] = { ["황금도토리"] = 1 } },
             { ['item'] = { ["일반교환권"] = 1 } }
         )
-        if code == EXCHANGE_RESULT.LACK_COST then
+        if code == server.EXCHANGE_RESULT.LACK_COST then
             me:dialog(npc, "황금도토리가 없으시군요. 황금도토리를 가져오세요.", false, false)
             return
         end
-        if code == EXCHANGE_RESULT.LACK_CAPACITY then
+        if code == server.EXCHANGE_RESULT.LACK_CAPACITY then
             me:dialog(npc, "소지품이 가득 차서 일반교환권을 받을 수 없어요.", false, false)
             return
         end
@@ -41,11 +41,11 @@ function NPC_576(me, npc)
             { ['item'] = { ["황금도토리"] = 6 } },
             { ['item'] = { ["특별교환권"] = 1 } }
         )
-        if code == EXCHANGE_RESULT.LACK_COST then
+        if code == server.EXCHANGE_RESULT.LACK_COST then
             me:dialog(npc, "황금도토리가 없으시군요. 황금도토리를 가져오세요.", false, false)
             return
         end
-        if code == EXCHANGE_RESULT.LACK_CAPACITY then
+        if code == server.EXCHANGE_RESULT.LACK_CAPACITY then
             me:dialog(npc, "소지품이 가득 차서 특별교환권을 받을 수 없어요.", false, false)
             return
         end

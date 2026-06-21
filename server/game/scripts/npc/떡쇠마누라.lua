@@ -1,3 +1,5 @@
+local server = require('lib.server')
+
 local ITEM_FRUIT_SALAD = '과일화채'
 local REPAIRS = {
     { input = '웨딩드레스1', output = '웨딩드레스5' },
@@ -32,11 +34,11 @@ function NPC_237(me, npc)
         { ['item'] = { [ITEM_FRUIT_SALAD] = 1, [r.input] = 1 } },
         { ['item'] = { [r.output] = 1 } }
     )
-    if code == EXCHANGE_RESULT.LACK_COST then
+    if code == server.EXCHANGE_RESULT.LACK_COST then
         me:dialog(npc, '아이고, 더운데 재료도 없고 신경질나게 하지마!', false, false)
         return
     end
-    if code == EXCHANGE_RESULT.LACK_CAPACITY then
+    if code == server.EXCHANGE_RESULT.LACK_CAPACITY then
         me:dialog(npc, '소지품이 가득 차서 수선한 드레스를 받을 수 없어요.', false, false)
         return
     end

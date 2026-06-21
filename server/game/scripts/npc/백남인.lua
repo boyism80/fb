@@ -1,4 +1,4 @@
-
+local server = require('lib.server')
 function NPC_502(me, npc)
     local sesi = property("sesi_rightnow")
     if sesi == 1 then
@@ -35,11 +35,11 @@ function NPC_502(me, npc)
                 { ['item'] = { ["떡국"] = 1 } },
                 { ['item'] = { [armor] = 1 } }
             )
-            if code == EXCHANGE_RESULT.LACK_COST then
+            if code == server.EXCHANGE_RESULT.LACK_COST then
                 me:dialog(npc, " 이번해는 정말 바빠서 떡국 한 그릇도 먹지 못하고 있네요. 이거 참...", false, false)
                 return
             end
-            if code == EXCHANGE_RESULT.LACK_CAPACITY then
+            if code == server.EXCHANGE_RESULT.LACK_CAPACITY then
                 me:dialog(npc, "설빔을 지급할 수 없습니다.", false, false)
                 return
             end

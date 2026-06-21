@@ -1,4 +1,6 @@
-function NPC_22(me, npc)
+local npc = require('lib.npc')
+
+function NPC_22(me, npc_obj)
 
     local spells = {
         ['성황령'] = {
@@ -103,5 +105,5 @@ function NPC_22(me, npc)
         }
     }
 
-    NPC_BASIC_CLASS(me, npc, CLASS.WARRIOR, spells)
+    npc.basic_class(me, npc_obj, CLASS.WARRIOR, spells)
 end

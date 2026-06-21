@@ -1,4 +1,5 @@
-
+local quest = require('lib.quest')
+local server = require('lib.server')
 local function run_dialogs(me, npc, messages)
     for i, msg in ipairs(messages) do
         local prev = (i > 1)
@@ -266,11 +267,11 @@ local function handle_jingogyun_7(me, npc, q_jingo)
             { ['item'] = { ["바람의토템"] = 4 } },
             { ['item'] = { ["영력구슬"] = 1 } }
         )
-        if code == EXCHANGE_RESULT.LACK_COST then
+        if code == server.EXCHANGE_RESULT.LACK_COST then
             me:dialog(npc, "바람의토템 4개를 가져오면 바꿔줄께.", false, false)
             return true
         end
-        if code == EXCHANGE_RESULT.LACK_CAPACITY then
+        if code == server.EXCHANGE_RESULT.LACK_CAPACITY then
             me:dialog(npc, "소지품이 가득 차서 영력구슬을 받을 수 없어.", false, false)
             return true
         end
@@ -312,7 +313,7 @@ local function handle_jingogyun_ge8(me, npc)
 end
 
 function NPC_476(me, npc)
-    local q_jingo = me:quest(QUEST_JINGOGYUN)
+    local q_jingo = me:quest(quest.QUEST_JINGOGYUN)
     local step = (q_jingo and q_jingo:step()) or 0
 
     if step < 1 then

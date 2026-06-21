@@ -1,5 +1,7 @@
 -- 헬파이어 캐스팅
-function ON_CAST_3043(me, you, spell)
+local spell = require('lib.spell')
+
+function ON_CAST_3043(me, you, sp)
     if me:is(OBJECT_TYPE.CHARACTER) then
         local weapon = me:weapon()
         local delay = 7
@@ -21,12 +23,12 @@ function ON_CAST_3043(me, you, spell)
                 delay = delay - 4
             end
         end
-        me:spell(spell):delay(delay)
+        me:spell(sp):delay(delay)
     end
 
     local damage = math.floor(me:mp() * 1.5)
     local mp = me:mp()
     local sound = 73
     local effect = 8
-    spell_damage(me, you, spell, {damage=damage, mp=mp, sound=sound, effect=effect})
+    spell.damage(me, you, sp, {damage=damage, mp=mp, sound=sound, effect=effect})
 end

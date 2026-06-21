@@ -1,4 +1,6 @@
 -- 반고 공격
+local quest = require('lib.quest')
+
 function ON_MOB_ATTACK_1162(me, you)
     return false
 end
@@ -8,7 +10,7 @@ function ON_MOB_DIE_1162(me, you)
     if you == nil or not you:is(OBJECT_TYPE.CHARACTER) then
         return
     end
-    local q = you:quest(QUEST_MUTA)
+    local q = you:quest(quest.QUEST_MUTA)
     if q == nil or q:step() ~= 6 then
         return
     end

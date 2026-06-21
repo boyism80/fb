@@ -1,4 +1,4 @@
-
+local server = require('lib.server')
 function NPC_340(me, npc)
     if me:role() >= ROLE.ADMIN then
         local sel, btn = me:list(npc, "어떤 명령을 수행하시겠습니까?", {
@@ -22,7 +22,7 @@ function NPC_340(me, npc)
     end
 
     if sel == 0 then
-        if warp_to_return_map(me) == nil then
+        if server.warp_to_return_map(me) == nil then
             me:dialog(npc, "이동할 수 없습니다.", false, false)
         end
     elseif sel == 1 then

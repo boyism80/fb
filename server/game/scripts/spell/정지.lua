@@ -1,5 +1,7 @@
 -- 정지 (id 15). Add logic as needed.
-function ON_CAST_15(me, you, spell)
+local spell = require('lib.spell')
+
+function ON_CAST_15(me, you, sp)
     if not you:is(OBJECT_TYPE.CHARACTER) then
         me:message('걸리지 않습니다.')
         return
@@ -14,15 +16,15 @@ function ON_CAST_15(me, you, spell)
     local sound = 70
     local effect = 1
     local buff_time = 20
-    if debuff_cast(me, you, spell, {mp = mp, sound = sound, effect = effect}) then
-        you:buff(spell, buff_time, me)
+    if spell.debuff_cast(me, you, sp, {mp = mp, sound = sound, effect = effect}) then
+        you:buff(sp, buff_time, me)
     end
 end
 
-function ON_BUFF_15(me, spell)
+function ON_BUFF_15(me, sp)
     me:freeze(true)
 end
 
-function ON_UNBUFF_15(me, spell)
+function ON_UNBUFF_15(me, sp)
     me:freeze(false)
 end

@@ -1,6 +1,9 @@
+local quest = require('lib.quest')
+local server = require('lib.server')
+
 function NPC_235(me, npc)
-    local quest = me:quest(QUEST_PAMASPIRI)
-    if quest and quest:step() == 2 and not quest:completed() then
+    local q = me:quest(quest.QUEST_PAMASPIRI)
+    if q and q:step() == 2 and not q:completed() then
         ::NPC_235_0001::
         local sel, btn = me:list(npc, "누구세요? 제게 무슨 하실 말씀이라도...?", { "혹시 사탕 좀 가지고 있니?", "아무 일도 아니란다." }, false)
         if btn == DIALOG_RESULT.QUIT or sel == nil or sel == 1 then
@@ -20,7 +23,7 @@ function NPC_235(me, npc)
             me:dialog(npc, "소지품이 가득 차서 줄 수 없네요.", false, false)
             return
         end
-        quest:step(3)
+        q:step(3)
         me:push_achievement(48, "파마의 피리를 찾자(꼬마에게 사탕을 주자).", 7, 1)
         me:dialog(npc, "대신 다음에 시간이 되시면 제 장난감 찾는 일을 좀 도와주셔야 돼요. 아셨죠? 그럼 전 이만...", false, false)
         return
@@ -44,9 +47,9 @@ function NPC_235(me, npc)
 end
 
 function bokgeon_sell_doll(me, npc)
-    local quest = me:quest(QUEST_SELL_DOLL)
+    local q = me:quest(quest.QUEST_SELL_DOLL)
     
-    if quest == nil then
+    if q == nil then
         if not me:has_items('청자다람쥐인형', 1) then
             me:dialog(npc, '아흠.. 어디 재미있는 장난감이 없나..', false, true)
             return
@@ -76,8 +79,8 @@ function bokgeon_sell_doll(me, npc)
         if btn == DIALOG_RESULT.QUIT then
             return
         end
-        quest = me:start_quest(QUEST_SELL_DOLL)
-        if quest == nil then
+        q = me:start_quest(quest.QUEST_SELL_DOLL)
+        if q == nil then
             me:dialog(npc, '퀘스트 시작 실패', false, true)
             return
         end
@@ -85,15 +88,15 @@ function bokgeon_sell_doll(me, npc)
             { ['item'] = { ['청자다람쥐인형'] = 1 } },
             { ['money'] = 100000 }
         )
-        if code == EXCHANGE_RESULT.LACK_COST then
+        if code == server.EXCHANGE_RESULT.LACK_COST then
             me:dialog(npc, '청자다람쥐인형을 가져오세요.', false, true)
             return
         end
-        if code == EXCHANGE_RESULT.LACK_CAPACITY then
+        if code == server.EXCHANGE_RESULT.LACK_CAPACITY then
             me:dialog(npc, '금전을 받을 여유가 없군요.', false, true)
             return
         end
-        quest:complete()
+        q:complete()
         return
     end
     
@@ -101,9 +104,9 @@ function bokgeon_sell_doll(me, npc)
 end
 
 function bokgeon_find_toys(me, npc)
-    local quest = me:quest(QUEST_FIND_TOYS)
+    local q = me:quest(quest.QUEST_FIND_TOYS)
     
-    if quest == nil then
+    if q == nil then
         ::NPC_235_0020::
         local btn = me:dialog(npc, '아... 대체 어디 있지? 어디서 잃어버렸더라? 뒤적뒤적...', false, true)
         if btn == DIALOG_RESULT.QUIT then
@@ -149,8 +152,8 @@ function bokgeon_find_toys(me, npc)
         if btn == DIALOG_RESULT.QUIT then
             return
         end
-        quest = me:start_quest(QUEST_FIND_TOYS)
-        if quest == nil then
+        q = me:start_quest(quest.QUEST_FIND_TOYS)
+        if q == nil then
             me:dialog(npc, '퀘스트 시작 실패', false, true)
             return
         end
@@ -158,7 +161,7 @@ function bokgeon_find_toys(me, npc)
         return
     end
     
-    if quest:completed() then
+    if q:completed() then
         me:dialog(npc, '그 때는 정말 감사했습니다.', false, true)
         return
     end
@@ -178,15 +181,15 @@ function bokgeon_find_toys(me, npc)
             { ['item'] = materials },
             { ['item'] = { ['팔과탕'] = 10 } }
         )
-        if code == EXCHANGE_RESULT.LACK_COST then
+        if code == server.EXCHANGE_RESULT.LACK_COST then
             me:dialog(npc, '아직 재료를 다 모으지 못하셨군요.', false, true)
             return
         end
-        if code == EXCHANGE_RESULT.LACK_CAPACITY then
+        if code == server.EXCHANGE_RESULT.LACK_CAPACITY then
             me:dialog(npc, '소지품이 가득 차서 팔과탕을 받을 수 없습니다.', false, true)
             return
         end
-        quest:complete()
+        q:complete()
         me:erase_achievement(37)
         return
     else

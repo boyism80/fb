@@ -359,6 +359,9 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
+      - name: Verify integration protocol registry
+        run: python tools/codegen/integration_protocol/generate.py --check
+
       - name: Extract metadata
         id: meta
         uses: docker/metadata-action@v5

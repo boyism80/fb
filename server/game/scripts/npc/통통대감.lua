@@ -1,5 +1,8 @@
+local quest = require('lib.quest')
+local server = require('lib.server')
+
 function NPC_122(me, npc)
-    local dq = me:quest(QUEST_DETECTIVE)
+    local dq = me:quest(quest.QUEST_DETECTIVE)
     if dq and not dq:completed() and dq:step() == 5 then
         local sel, list_btn = me:list(npc, "이런! 반갑지 않은 손님이 또 오셨구만!", {
             "조염에게 준 귀중한 문화재는 어디서 난거죠?",
@@ -32,15 +35,15 @@ function NPC_122(me, npc)
         return
     end
 
-    local quest = me:quest(QUEST_TONGTONG)
-    local lighthouse = me:quest(QUEST_LIGHTHOUSE)
+    local q = me:quest(quest.QUEST_TONGTONG)
+    local lighthouse = me:quest(quest.QUEST_LIGHTHOUSE)
 
     if lighthouse == nil or lighthouse:completed() or lighthouse:step() ~= 3 then
         me:dialog(npc, '....', false, false)
         return
     end
 
-    if quest == nil then
+    if q == nil then
         local btn = me:dialog(npc, '안녕하신가, 나는 무기 수집가라네. 자네 대륙 사람 맞지?', false, true)
         if btn == DIALOG_RESULT.QUIT then
             return
@@ -52,7 +55,7 @@ function NPC_122(me, npc)
         if sel == nil or sel ~= 0 then
             return
         end
-        local q = me:start_quest(QUEST_TONGTONG)
+        local q = me:start_quest(quest.QUEST_TONGTONG)
         if q == nil then
             me:dialog(npc, '퀘스트 시작 실패', false, true)
             return
@@ -61,7 +64,7 @@ function NPC_122(me, npc)
         return
     end
 
-    if quest:completed() then
+    if q:completed() then
         me:dialog(npc, '흠..이 단단하고 묵직한 망치. 정말 쓸 곳이 많구만.', false, true)
         return
     end
@@ -80,15 +83,15 @@ function NPC_122(me, npc)
         { ['item'] = { ['망치'] = 1 } },
         { ['item'] = { ['선장의일기3'] = 1 } }
     )
-    if code == EXCHANGE_RESULT.LACK_COST then
+    if code == server.EXCHANGE_RESULT.LACK_COST then
         me:dialog(npc, '아직 망치라는 것을 구하지 못한것 같군?', false, true)
         return
     end
-    if code == EXCHANGE_RESULT.LACK_CAPACITY then
+    if code == server.EXCHANGE_RESULT.LACK_CAPACITY then
         me:dialog(npc, '소지품이 가득 차서 선장의일기3을 줄 수 없네.', false, true)
         return
     end
-    quest:complete()
+    q:complete()
     lighthouse:step(4)
     me:push_achievement(32, '진백랑의 부탁을 들어주자. [4/6]', 7, 1)
     me:dialog(npc, '이건 약속했던 누군가의 일기일세! 잘 가시게!', false, true)

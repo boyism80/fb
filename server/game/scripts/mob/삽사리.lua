@@ -1,9 +1,11 @@
 -- 삽사리 사망
+local quest = require('lib.quest')
+
 function ON_MOB_DIE_4(me, you)
-    local quest = you:quest(QUEST_NAKRANG_HUNT)
-    if quest ~= nil then
-        if me:model():name() == quest:param() then
-            quest:inc_progress()
+    local q = you:quest(quest.QUEST_NAKRANG_HUNT)
+    if q ~= nil then
+        if me:model():name() == q:param() then
+            q:inc_progress()
         end
     end
 end

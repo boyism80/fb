@@ -1,7 +1,7 @@
-
+local quest = require('lib.quest')
 function NPC_540(me, npc)
-    local quest = me:quest(QUEST_JINHWANG)
-    if quest == nil or quest:step() ~= 5 then
+    local q = me:quest(quest.QUEST_JINHWANG)
+    if q == nil or q:step() ~= 5 then
         me:dialog(npc, "에휴... 여행을 다녀왔더니 힘드네요.", false, true)
         return
     end
@@ -31,5 +31,5 @@ function NPC_540(me, npc)
     end
 
     me:push_achievement(511, "진황보검을 찾아서 (영환도사를 만나자)", 7, 20)
-    quest:step(6)
+    q:step(6)
 end

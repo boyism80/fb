@@ -1,10 +1,13 @@
+local quest = require('lib.quest')
+local server = require('lib.server')
+
 local ITEM_GOOSE_EGG = '기러기알'
 local MONEY_PER_EGG = 200
 
 function NPC_145(me, npc)
-    local quest = me:quest(QUEST_GOOSE_EGG)
+    local q = me:quest(quest.QUEST_GOOSE_EGG)
 
-    if quest == nil or quest:step() < 1 then
+    if q == nil or q:step() < 1 then
         ::NPC_145_0001::
         local sel, btn = me:list(npc, '아이고~ 이거 큰일이네! 어떡하지? 엉엉 울고싶다 정말.', { '무슨 일이세요?', '(그냥 지나친다)' }, false)
         if btn == DIALOG_RESULT.QUIT then
@@ -32,14 +35,14 @@ function NPC_145(me, npc)
         if sel ~= 0 then
             return
         end
-        if quest == nil then
-            quest = me:start_quest(QUEST_GOOSE_EGG)
-            if quest == nil then
+        if q == nil then
+            q = me:start_quest(quest.QUEST_GOOSE_EGG)
+            if q == nil then
                 me:dialog(npc, '퀘스트 시작 실패', false, true)
                 return
             end
         end
-        quest:step(1)
+        q:step(1)
         me:dialog(npc, '헛! 정말입니까? 꼭 좀 부탁드립니다.\n알을 찾아오시면 개당 200전씩 사례하겠습니다.', false, false)
         return
     end
@@ -64,10 +67,10 @@ function NPC_145(me, npc)
         { ['item'] = { [ITEM_GOOSE_EGG] = count } },
         { ['money'] = pay }
     )
-    if code == EXCHANGE_RESULT.LACK_COST then
+    if code == server.EXCHANGE_RESULT.LACK_COST then
         me:dialog(npc, '기러기알 없습니다.', false, false)
         return
-    elseif code == EXCHANGE_RESULT.LACK_CAPACITY then
+    elseif code == server.EXCHANGE_RESULT.LACK_CAPACITY then
         me:dialog(npc, '금전을 더이상 받을 수 없습니다.', false, false)
         return
     end

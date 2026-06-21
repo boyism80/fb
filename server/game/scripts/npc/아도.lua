@@ -1,15 +1,16 @@
-
+local quest = require('lib.quest')
+local server = require('lib.server')
 function NPC_447(me, npc)
-    local quest = me:quest(QUEST_BEGINNER_PATH)
-    if quest == nil then
+    local q = me:quest(quest.QUEST_BEGINNER_PATH)
+    if q == nil then
         me:dialog(npc, "먼저 앞의 도우미 분들의 도움을 받고 오세요.", false, false)
         return
     end
-    if quest:completed() then
+    if q:completed() then
         me:dialog(npc, "이제 직업의길로 가보시면 됩니다.", false, false)
         return
     end
-    local step = quest:step()
+    local step = q:step()
     if step < 7 then
         me:dialog(npc, "먼저 앞의 도우미 분들의 도움을 받고 오세요.", false, false)
         return
@@ -40,7 +41,7 @@ function NPC_447(me, npc)
             me:dialog(npc, "소지품이 가득 차서 웅담을 줄 수 없습니다.", false, false)
             return
         end
-        quest:step(8)
+        q:step(8)
         me:dialog(npc, "웅담 2개 받았다.", false, false)
         return
     end
@@ -61,7 +62,7 @@ function NPC_447(me, npc)
             me:dialog(npc, "소지품이 가득 찼습니다.", false, false)
             return
         end
-        quest:step(9)
+        q:step(9)
         me:dialog(npc, "동동주 1개, 막걸리 1개 받았다.", false, false)
         return
     end
@@ -70,7 +71,7 @@ function NPC_447(me, npc)
         if me:has_items("탁주", 1) then
             me:dialog(npc, "훌륭합니다! 조합까지 완벽히 하셨으니, 이제 다음 단계로 가셔도 문제가 없겠네요.", false, true)
             me:dialog(npc, "이제 직업의길로 보내드릴테니, 어떤 직업을 선택하실지 곰곰히 생각해 보시길 바랄게요. 그럼 안녕히~!", false, true)
-            quest:step(10)
+            q:step(10)
             me:exp(me:exp() + 600)
             me:mkitem("노란비서", 21)
             me:mkitem("직업의길비서", 1)
@@ -87,11 +88,11 @@ function NPC_447(me, npc)
                 { ['item'] = { ["도토리"] = 50 } },
                 { ['item'] = { ["동동주"] = 1, ["막걸리"] = 1 } }
             )
-            if code == EXCHANGE_RESULT.OK then
+            if code == server.EXCHANGE_RESULT.OK then
                 me:dialog(npc, "동동주와 막걸리를 하나씩 드렸으니, 이제 잃어버리지 않도록 조심하세요.", false, false)
-            elseif code == EXCHANGE_RESULT.LACK_COST then
+            elseif code == server.EXCHANGE_RESULT.LACK_COST then
                 me:dialog(npc, "도토리가 부족합니다.", false, false)
-            elseif code == EXCHANGE_RESULT.LACK_CAPACITY then
+            elseif code == server.EXCHANGE_RESULT.LACK_CAPACITY then
                 me:dialog(npc, "소지품이 가득 차서 동동주와 막걸리를 줄 수 없습니다.", false, false)
             end
             return

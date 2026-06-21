@@ -1,3 +1,5 @@
+local server = require('lib.server')
+
 function NPC_187(me, npc)
     local GRILL_ITEMS = { '감자', '고구마', '늑대고기' }
     local GRILL_COST = 2
@@ -40,11 +42,11 @@ function NPC_187(me, npc)
         { ['item'] = { [item_name] = GRILL_COST } },
         { ['item'] = { ['구운' .. item_name] = 1 } }
     )
-    if code == EXCHANGE_RESULT.LACK_COST then
+    if code == server.EXCHANGE_RESULT.LACK_COST then
         me:dialog(npc, name_with(item_name, '이', '가') .. ' 부족한 것 같은데?', false, true)
         return
     end
-    if code == EXCHANGE_RESULT.LACK_CAPACITY then
+    if code == server.EXCHANGE_RESULT.LACK_CAPACITY then
         me:dialog(npc, '소지품이 가득 차서 구운 음식을 줄 수 없네.', false, true)
         return
     end

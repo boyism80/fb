@@ -4,6 +4,9 @@
 #include <fb/thread_container.h>
 #include <async/awaitable_then.h>
 #include <async/propagation.h>
+#include <string>
+#include <string_view>
+#include <vector>
 
 using namespace fb::lua;
 
@@ -185,15 +188,6 @@ std::string context::tostring(int offset, std::string_view default_value)
     return CP949(x, PLATFORM::WINDOWS);
 }
 
-std::string context::arg_string(int offset)
-{
-    return tostring(offset);
-}
-std::string context::ret_string(int offset)
-{
-    return tostring(-offset);
-}
-
 int context::tointeger(int offset, int default_value)
 {
     if (this->argc() < offset)
@@ -213,16 +207,6 @@ lua_Integer context::tonumber(int offset, lua_Integer default_value)
         return lua_tonumber(*this, offset);
 }
 
-int context::arg_integer(int offset)
-{
-    return tointeger(offset);
-}
-
-int context::ret_integer(int offset)
-{
-    return tointeger(-offset);
-}
-
 bool context::toboolean(int offset, bool default_value)
 {
     if (this->argc() < offset)
@@ -231,16 +215,6 @@ bool context::toboolean(int offset, bool default_value)
         return default_value;
     else
         return lua_toboolean(*this, offset);
-}
-
-bool context::arg_boolean(int offset)
-{
-    return toboolean(offset);
-}
-
-bool context::ret_boolean(int offset)
-{
-    return toboolean(-offset);
 }
 
 bool context::is_string(int offset)
@@ -390,9 +364,20 @@ void fb::lua::context::resume(int argc, int* n)
             auto context = fb::execution_context::token();
             async::awaitable_then(parent->_initial_thread.switching(),
                                   [parent, context](async::awaitable_result<void> result) {
-                                      result();
-                                      fb::execution_context::pending(context);
-                                      parent->resume(0);
+                                      try
+                                      {
+                                          result();
+                                          fb::execution_context::pending(context);
+                                          parent->resume(0);
+                                      }
+                                      catch (std::exception& e)
+                                      {
+                                          fb::logger::fatal("lua co_builder async completion error: {}", e.what());
+                                      }
+                                      catch (...)
+                                      {
+                                          fb::logger::fatal("lua co_builder async completion error: non-std exception");
+                                      }
                                   });
         }
         promise->set_exception(std::make_exception_ptr(std::runtime_error(message)));
@@ -406,18 +391,29 @@ void fb::lua::context::resume(int argc, int* n)
             auto context = fb::execution_context::token();
             async::awaitable_then(parent->_initial_thread.switching(),
                                   [this, parent, n, context, auto_resume_parent](async::awaitable_result<void> result) {
-                                      result();
-                                      fb::execution_context::pending(context);
-
-                                      auto argc = this->argc();
-                                      if (n != nullptr)
-                                          *n = argc;
-
-                                      if (auto_resume_parent)
+                                      try
                                       {
-                                          lua_xmove(*this, *parent, argc);
-                                          if (lua_status(*parent) == LUA_YIELD)
-                                              parent->resume(argc);
+                                          result();
+                                          fb::execution_context::pending(context);
+
+                                          auto argc = this->argc();
+                                          if (n != nullptr)
+                                              *n = argc;
+
+                                          if (auto_resume_parent)
+                                          {
+                                              lua_xmove(*this, *parent, argc);
+                                              if (lua_status(*parent) == LUA_YIELD)
+                                                  parent->resume(argc);
+                                          }
+                                      }
+                                      catch (std::exception& e)
+                                      {
+                                          fb::logger::fatal("lua co_builder async completion error: {}", e.what());
+                                      }
+                                      catch (...)
+                                      {
+                                          fb::logger::fatal("lua co_builder async completion error: non-std exception");
                                       }
                                   });
         }
@@ -434,6 +430,44 @@ void fb::lua::context::resume(int argc, int* n)
 int context::yield(int retc)
 {
     return lua_yield(*this, retc);
+}
+
+void context::clear_loaded_modules()
+{
+    lua_getglobal(*this, "package");
+    if (lua_istable(*this, -1) == false)
+    {
+        lua_pop(*this, 1);
+        return;
+    }
+
+    lua_getfield(*this, -1, "loaded");
+    if (lua_istable(*this, -1) == false)
+    {
+        lua_pop(*this, 2);
+        return;
+    }
+
+    std::vector<std::string> keys;
+    lua_pushnil(*this);
+    while (lua_next(*this, -2) != 0)
+    {
+        if (lua_type(*this, -2) == LUA_TSTRING)
+        {
+            auto key = lua_tostring(*this, -2);
+            if (key != nullptr && std::string_view(key).starts_with("lib."))
+                keys.emplace_back(key);
+        }
+        lua_pop(*this, 1);
+    }
+
+    for (const auto& key : keys)
+    {
+        lua_pushnil(*this);
+        lua_setfield(*this, -2, key.c_str());
+    }
+
+    lua_pop(*this, 2);
 }
 
 void context::release()
@@ -582,7 +616,7 @@ int fb::lua::context::co_builder::run()
             }
             catch (...)
             {
-                fb::logger::fatal("lua co_builder async completion error");
+                fb::logger::fatal("lua co_builder async completion error: non-std exception");
             }
         });
 
@@ -778,7 +812,12 @@ context* fb::lua::context_pool::new_context(context* parent, call_options option
     if (this->_roots.contains(id) == false)
         return nullptr;
 
-    return this->_roots[id]->pop(parent, options);
+    auto* ctx = this->_roots[id]->pop(parent, options);
+#if defined DEBUG || defined _DEBUG
+    if (ctx != nullptr)
+        ctx->clear_loaded_modules();
+#endif
+    return ctx;
 }
 
 async::task<void> fb::lua::context_pool::dump(std::string_view path)

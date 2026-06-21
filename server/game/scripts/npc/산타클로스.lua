@@ -1,4 +1,4 @@
-
+local server = require('lib.server')
 function NPC_458(me, npc)
     local sel, btn = me:list(npc, "안녕하세요. 어떻게 오셨나요?", { "홍성초를 가져왔어요.", "산타양말" }, false)
     if btn == DIALOG_RESULT.QUIT then
@@ -22,11 +22,11 @@ function NPC_458(me, npc)
                 { ['item'] = { ["홍성초"] = 1 } },
                 { ['item'] = { ["빨간양말"] = 1 } }
             )
-            if code == EXCHANGE_RESULT.LACK_COST then
+            if code == server.EXCHANGE_RESULT.LACK_COST then
                 me:dialog(npc, "홍성초가 없는데?", false, false)
                 return
             end
-            if code == EXCHANGE_RESULT.LACK_CAPACITY then
+            if code == server.EXCHANGE_RESULT.LACK_CAPACITY then
                 me:dialog(npc, "소지품이 가득 차서 빨간양말을 드리지 못합니다.", false, false)
                 return
             end
@@ -58,11 +58,11 @@ function NPC_458(me, npc)
             { ['item'] = { ["빨간양말"] = need } },
             { ['item'] = { [reward_name] = 1 } }
         )
-        if code == EXCHANGE_RESULT.LACK_COST then
+        if code == server.EXCHANGE_RESULT.LACK_COST then
             me:dialog(npc, "안그래도 심란한데... 거짓말 말게나!!", false, false)
             return
         end
-        if code == EXCHANGE_RESULT.LACK_CAPACITY then
+        if code == server.EXCHANGE_RESULT.LACK_CAPACITY then
             me:dialog(npc, "소지품이 가득 차서 " .. reward_name .. "을(를) 드리지 못합니다.", false, false)
             return
         end

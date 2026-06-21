@@ -1,10 +1,13 @@
 -- 낙랑의두루마리2 사용 스크립트
+local quest = require('lib.quest')
+local server = require('lib.server')
+
 function ON_ACTIVATED_2(me, item)
-    local quest = me:quest(QUEST_NAKRANG2)
+    local q = me:quest(quest.QUEST_NAKRANG2)
     local btn
     local model = item:model()
 
-    if quest == nil or quest:completed() then
+    if q == nil or q:completed() then
         ::ON_ACTIVATED_2_0000::
         btn = me:dialog(model, '<임무>\n 도톨 2개 사용\n\n<내용>\n 첫번째 임무는 도톨을 사용하는 것!! 도톨\n2개를 드렸으니, 두루마리를 사용하듯이 이\n도톨도 사용해보세요!! 시간은 5초 드립니다!!\n\n<보상>\n 목도, 경험치 50 (레벨5미만)', false, true)
         if btn == DIALOG_RESULT.QUIT then
@@ -18,23 +21,23 @@ function ON_ACTIVATED_2(me, item)
         if btn == DIALOG_RESULT.PREV then
             goto ON_ACTIVATED_2_0000
         end
-        if quest == nil then
-            quest = me:start_quest(QUEST_NAKRANG2)
-            if quest == nil then
+        if q == nil then
+            q = me:start_quest(quest.QUEST_NAKRANG2)
+            if q == nil then
                 return
             end
         end
-        quest:step(1)
-        quest:progress(0)
+        q:step(1)
+        q:progress(0)
         return
     end
 
-    local step = quest:step()
+    local step = q:step()
     if step ~= 1 then
         return
     end
 
-    local progress = quest:progress()
+    local progress = q:progress()
     if progress < 2 then
         me:dialog(model, '실패하셨군요!! 좀 더 연습한 후 다시\n시도해보세요..', true, false)
         return
@@ -46,7 +49,7 @@ function ON_ACTIVATED_2(me, item)
         { ['item'] = { ['낙랑의두루마리2'] = 1 } },
         { ['item'] = { ['낙랑의두루마리3'] = 1, ['초심자의목도'] = 1 } }
     )
-    if code == EXCHANGE_RESULT.LACK_CAPACITY then
+    if code == server.EXCHANGE_RESULT.LACK_CAPACITY then
         me:dialog(model, '소지품이 가득 찼습니다.', false, false)
         return
     end
@@ -61,6 +64,6 @@ function ON_ACTIVATED_2(me, item)
         end
     end
 
-    quest:progress(0)
-    quest:complete()
+    q:progress(0)
+    q:complete()
 end

@@ -1,7 +1,10 @@
+local quest = require('lib.quest')
+local server = require('lib.server')
+
 function NPC_76(me, npc)
     local ACHIEVEMENT_WATER = 18
     local MIN_LEVEL = 36
-    local quest = me:quest(QUEST_WATER_RING)
+    local q = me:quest(quest.QUEST_WATER_RING)
     local btn, sel
 
     if me:level() < MIN_LEVEL then
@@ -9,7 +12,7 @@ function NPC_76(me, npc)
         return
     end
 
-    if quest == nil then
+    if q == nil then
         ::NPC_76_COS001::
         btn = me:dialog(npc, '안녕하세요? ' .. me:name() .. '님, 전 용왕님의 식사를 담당하고 있는 좌선녀라해요', true, true)
         if btn == DIALOG_RESULT.QUIT then
@@ -39,14 +42,14 @@ function NPC_76(me, npc)
             end
             return
         end
-        if quest == nil then
-            quest = me:start_quest(QUEST_WATER_RING)
-            if quest == nil then
+        if q == nil then
+            q = me:start_quest(quest.QUEST_WATER_RING)
+            if q == nil then
                 me:dialog(npc, '퀘스트 시작 실패', false, true)
                 return
             end
         end
-        quest:step(1)
+        q:step(1)
         me:push_achievement(ACHIEVEMENT_WATER, '좌선녀의 부탁을 들어주자.', 7, 1)
         ::NPC_76_COS005::
         btn = me:dialog(npc, me:name() .. '님 정말 감사합니다. 부탁드릴 재료는 [게등껍질][게집게][문어다리][해마꼬리]랍니다.', true, true)
@@ -60,7 +63,7 @@ function NPC_76(me, npc)
         return
     end
 
-    if quest:completed() then
+    if q:completed() then
         return
     end
 
@@ -79,14 +82,14 @@ function NPC_76(me, npc)
         { ['item'] = materials },
         { ['item'] = { ['인어반지'] = 1 } }
     )
-    if code == EXCHANGE_RESULT.LACK_COST then
+    if code == server.EXCHANGE_RESULT.LACK_COST then
         me:dialog(npc, '아직 재료를 다 모으지 못하신 것 같군요.. 재료는 [게등껍질][게집게][문어다리][해마꼬리]랍니다.', false, true)
         return
-    elseif code == EXCHANGE_RESULT.LACK_CAPACITY then
+    elseif code == server.EXCHANGE_RESULT.LACK_CAPACITY then
         me:dialog(npc, '소지품이 가득 차서 인어반지를 받을 수 없습니다.', false, true)
         return
     end
-    quest:complete()
+    q:complete()
     me:push_achievement(ACHIEVEMENT_WATER, '좌선녀의 부탁을 들어주었다.', 7, 1)
     btn = me:dialog(npc, '이 인어반지는 제 성의에요. 예전 인어장군님께 선물을 받은 것인데 공좌님의 성의에 꼭 보답하고 싶어서요.', false, true)
     if btn == DIALOG_RESULT.PREV then

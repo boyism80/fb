@@ -1,3 +1,5 @@
+local server = require('lib.server')
+
 function NPC_177(me, npc)
     local suffixes = { '장갑', '팔찌', '반지', '선류', '방패', '투구' }
     local btn
@@ -41,11 +43,11 @@ function NPC_177(me, npc)
         { ['item'] = materials },
         { ['item'] = { [item_result] = 1 } }
     )
-    if code == EXCHANGE_RESULT.LACK_COST then
+    if code == server.EXCHANGE_RESULT.LACK_COST then
         me:dialog(npc, '재료가 부족한 것 같은데?', false, false)
         return
     end
-    if code == EXCHANGE_RESULT.LACK_CAPACITY then
+    if code == server.EXCHANGE_RESULT.LACK_CAPACITY then
         me:dialog(npc, '소지품이 가득 차서 ' .. name_with(item_result, '을', '를') .. ' 줄 수 없네.', false, true)
         return
     end

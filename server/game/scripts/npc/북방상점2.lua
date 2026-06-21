@@ -1,16 +1,18 @@
-function NPC_102(me, npc)
+local npc = require('lib.npc')
+
+function NPC_102(me, npc_obj)
 ::NPC_102_000::
-    local selected = me:list(npc, '안녕하세요. 무엇을 도와드릴까요?', {'물건 사기', '물건 팔기'})
+    local selected = me:list(npc_obj, '안녕하세요. 무엇을 도와드릴까요?', {'물건 사기', '물건 팔기'})
     if selected == nil then
         return
     end
 
     if selected == 0 then
-        if NPC_SELL_DIALOG(me, npc) == DIALOG_RESULT.NEXT then
+        if npc.sell_dialog(me, npc_obj) == DIALOG_RESULT.NEXT then
             goto NPC_102_000
         end
     elseif selected == 1 then
-        if NPC_BUY_DIALOG(me, npc) == DIALOG_RESULT.NEXT then
+        if npc.buy_dialog(me, npc_obj) == DIALOG_RESULT.NEXT then
             goto NPC_102_000
         end
     else

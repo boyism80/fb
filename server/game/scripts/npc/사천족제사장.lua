@@ -1,3 +1,6 @@
+local quest = require('lib.quest')
+local server = require('lib.server')
+
 local ACHIEVEMENT_HOLYTREE = 5
 local COOLDOWN_SEC = 86400
 
@@ -14,18 +17,18 @@ function NPC_209(me, npc)
         return
     end
 
-    local quest = me:quest(QUEST_HOLYTREE)
-    if quest == nil then
-        quest = me:start_quest(QUEST_HOLYTREE)
-        if quest == nil then
+    local q = me:quest(quest.QUEST_HOLYTREE)
+    if q == nil then
+        q = me:start_quest(quest.QUEST_HOLYTREE)
+        if q == nil then
             return
         end
     end
 
-    local next_time = tonumber(quest:param() or '') or 0
+    local next_time = tonumber(q:param() or '') or 0
     local nt = now()
 
-    if quest:step() == 0 then
+    if q:step() == 0 then
         if next_time > 0 and nt < next_time then
             me:dialog(npc, (next_time - nt) .. '초 후에 다시 오세요.', false, false)
             return
@@ -51,13 +54,13 @@ function NPC_209(me, npc)
             goto NPC_209_0001
         end
         if sel == 0 then
-            quest:step(1)
+            q:step(1)
             me:dialog(npc, '신성한 나무들은 북방대초원 21~30층을 돌아다니다 보면 구할 수 있을겁니다.\n\n그럼 부탁드리겠습니다.', false, true)
         end
         return
     end
 
-    if quest:step() == 1 then
+    if q:step() == 1 then
         ::NPC_209_0020::
         local options = {}
         for i, t in ipairs(HOLYTREE_ITEMS) do
@@ -85,15 +88,15 @@ function NPC_209(me, npc)
             { ['item'] = { [item.name] = 1 } },
             { ['exp'] = give_exp }
         )
-        if code == EXCHANGE_RESULT.LACK_COST then
+        if code == server.EXCHANGE_RESULT.LACK_COST then
             me:dialog(npc, name_with(item.name, '이', '가') .. ' 없는데요?', false, false)
             return
         end
 
-        quest:param(tostring(nt + COOLDOWN_SEC))
-        quest:progress(quest:progress() + 1)
-        quest:step(0)
-        local count = quest:progress()
+        q:param(tostring(nt + COOLDOWN_SEC))
+        q:progress(q:progress() + 1)
+        q:step(0)
+        local count = q:progress()
         me:push_achievement(ACHIEVEMENT_HOLYTREE, '신성한나무를 ' .. count .. '회 가져다 주었다.', 7, count)
         me:dialog(npc, '감사합니다.\n\n하루 빨리 풍년이 찾아 올 수 있도록 몸과 마음을 다해 제를 올려야겠습니다.\n\n계속해서 잘 부탁드립니다.', false, false)
     end

@@ -1,8 +1,10 @@
+local quest = require('lib.quest')
+
 function NPC_175(me, npc)
-    local quest = me:quest(QUEST_MARTIAL)
+    local q = me:quest(quest.QUEST_MARTIAL)
     local btn
 
-    if quest == nil then
+    if q == nil then
         ::NPC_175_0001::
         btn = me:dialog(npc, '난 고구려의 무도가요. 얼마전부터 중국의 소림사에 대해 관심을 가지게 됐소. 정말 아무도 그 위치나 규모에 대해서 아는 사람이 없었소.', false, true)
         if btn == DIALOG_RESULT.QUIT then
@@ -23,18 +25,18 @@ function NPC_175(me, npc)
         if sel == nil or sel ~= 0 then
             return
         end
-        quest = me:start_quest(QUEST_MARTIAL)
-        if quest == nil then
+        q = me:start_quest(quest.QUEST_MARTIAL)
+        if q == nil then
             me:dialog(npc, '퀘스트 시작 실패', false, true)
             return
         end
-        quest:step(1)
+        q:step(1)
         me:push_achievement(26, '고구려무도가의 부탁을 들어주자.', 7, 1)
         me:dialog(npc, '고맙소! 자세한것은 모르지만 요즘 만리장성에 승려차림의 무술고수가 보인다는 소문이 있다오. 부탁하오.', false, true)
         return
     end
 
-    if quest:step() == 0 then
+    if q:step() == 0 then
         ::NPC_175_0003::
         btn = me:dialog(npc, '난 고구려의 무도가요. 얼마전부터 중국의 소림사에 대해 관심을 가지게 됐소. 정말 아무도 그 위치나 규모에 대해서 아는 사람이 없었소.', false, true)
         if btn == DIALOG_RESULT.QUIT then
@@ -55,13 +57,13 @@ function NPC_175(me, npc)
         if sel == nil or sel ~= 0 then
             return
         end
-        quest:step(1)
+        q:step(1)
         me:push_achievement(26, '고구려무도가의 부탁을 들어주자.', 7, 1)
         me:dialog(npc, '고맙소! 자세한것은 모르지만 요즘 만리장성에 승려차림의 무술고수가 보인다는 소문이 있다오. 부탁하오.', false, true)
         return
     end
 
-    if quest:step() < 4 then
+    if q:step() < 4 then
         local has_baekyeoljang = false
         for _, sp in pairs(me:spells() or {}) do
             if sp:model():name() == '백열장' then
@@ -94,7 +96,7 @@ function NPC_175(me, npc)
             me:dialog(npc, '소지품이 가득 차서 ' .. name_with('청동손목보호대', '을', '를') .. ' 줄 수 없네.', false, true)
             return
         end
-        quest:step(4)
+        q:step(4)
         me:dialog(npc, '고맙소.. 잘 돌아가시게..', false, true)
         return
     end

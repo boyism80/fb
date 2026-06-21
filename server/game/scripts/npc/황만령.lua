@@ -1,3 +1,6 @@
+local quest = require('lib.quest')
+local server = require('lib.server')
+
 local ACHIEVEMENT_500 = 13
 local REQUIRED_ITEMS = {
     ['도삭산살쾡이가죽'] = 300,
@@ -6,17 +9,17 @@ local REQUIRED_ITEMS = {
 local REWARD_500 = '수정의귀걸이'
 
 function NPC_106(me, npc)
-    local quest = me:quest(QUEST_DOTAEYEON)
-    if quest == nil then
+    local q = me:quest(quest.QUEST_DOTAEYEON)
+    if q == nil then
         return
     end
 
-    if quest:completed() then
+    if q:completed() then
         me:dialog(npc, '저번에 날 도와줘서 고마우이. 가죽은 아주 유용하게 사용하고 있다네.', false, true)
         return
     end
     
-    local step = quest:step()
+    local step = q:step()
     if step == 2 then
         ::NPC_106_0001::
         local btn = me:dialog(npc, me:name() .. '씨 아닌가, 400층의 아들이 코뿔소의 뿔등을 얻었다고 굉장히 좋아하더구만.', false, true)
@@ -50,7 +53,7 @@ function NPC_106(me, npc)
         if sel ~= 0 then
             return
         end
-        quest:step(3)
+        q:step(3)
         me:push_achievement(ACHIEVEMENT_500, '황만령의 부탁을 들어주자!', 7, 1)
         ::NPC_106_0005::
         btn = me:dialog(npc, '정말 고맙네.. 살쾡이와 악어는 가죽이 질겨서 쓸곳이 참 많단 말야. 살쾡이와 악어를 처치하고 올때 가죽도 좀 가져다 줄 수 있겠나?', false, true)
@@ -78,15 +81,15 @@ function NPC_106(me, npc)
             { ['item'] = REQUIRED_ITEMS },
             { ['item'] = { [REWARD_500] = 1 } }
         )
-        if code == EXCHANGE_RESULT.LACK_COST then
+        if code == server.EXCHANGE_RESULT.LACK_COST then
             me:dialog(npc, '아직 다 구하지 못한 모양이군.. 도삭산 살쾡이가죽 300개와 도삭산악어비늘 200개를 구해다주면 내 보물을 드리도록 하지.', false, false)
             return
         end
-        if code == EXCHANGE_RESULT.LACK_CAPACITY then
+        if code == server.EXCHANGE_RESULT.LACK_CAPACITY then
             me:dialog(npc, '소지품이 가득 차서 ' .. name_with(REWARD_500, '을', '를') .. ' 받을 수 없습니다.', false, false)
             return
         end
-        quest:complete()
+        q:complete()
         me:push_achievement(ACHIEVEMENT_500, '도삭산 500층 퀘스트 완료', 7, 1)
         btn = me:dialog(npc, '자 여기 내가 주는 선물이라네. 도와줘서 고맙네, 항상 좋은 일만 있게나!', false, true)
         if btn == DIALOG_RESULT.QUIT then

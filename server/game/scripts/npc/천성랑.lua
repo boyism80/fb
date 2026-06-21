@@ -1,4 +1,5 @@
-
+local quest = require('lib.quest')
+local server = require('lib.server')
 local PROMOTION_3RD_STATS = {
     [CLASS.WARRIOR] = { min_hp = 600000,  min_mp = 0 },
     [CLASS.ROGUE]   = { min_hp = 600000,  min_mp = 0 },
@@ -54,7 +55,7 @@ function NPC_96(me, npc)
     end
 
     if selected == 0 then
-        local q = me:quest(QUEST_MUTA)
+        local q = me:quest(quest.QUEST_MUTA)
         if me:has_items('반고의심장', 1) and q and not q:completed() and q:step() >= 7 then
             local choice = me:list(npc, '당신은 지금껏 수많은 수련을 거쳐 인간으로서 오르기 힘든 경지에 도달하셨고, 더욱이 세상을 종말로부터 보호하는 업적을 세우셨으니 진선으로 불리우시기에 부족함이 없습니다. 지금 바로 승급을 원하시나요?', {
                 '예',
@@ -71,10 +72,10 @@ function NPC_96(me, npc)
                 { ['item'] = { ['반고의심장'] = 1 } },
                 { ['item'] = { [weapon_name] = 1 } }
             )
-            if code == EXCHANGE_RESULT.LACK_COST then
+            if code == server.EXCHANGE_RESULT.LACK_COST then
                 return
             end
-            if code == EXCHANGE_RESULT.LACK_CAPACITY then
+            if code == server.EXCHANGE_RESULT.LACK_CAPACITY then
                 me:dialog(npc, '소지품이 가득 차서 무기를 드릴 수 없습니다.', false, true)
                 return
             end
@@ -90,7 +91,7 @@ function NPC_96(me, npc)
             me:dialog(npc, err_msg, false, true)
             return
         end
-        local q = me:start_quest(QUEST_MUTA)
+        local q = me:start_quest(quest.QUEST_MUTA)
         if q == nil then
             me:dialog(npc, '퀘스트를 시작할 수 없습니다.', false, true)
             return
@@ -113,11 +114,11 @@ function NPC_96(me, npc)
             { ['money'] = WEAPON_REISSUE_GOLD },
             { ['item'] = { [weapon_name] = 1 } }
         )
-        if code == EXCHANGE_RESULT.LACK_COST then
+        if code == server.EXCHANGE_RESULT.LACK_COST then
             me:dialog(npc, '금전 1천만 전이 필요합니다.', false, true)
             return
         end
-        if code == EXCHANGE_RESULT.LACK_CAPACITY then
+        if code == server.EXCHANGE_RESULT.LACK_CAPACITY then
             me:dialog(npc, '소지품이 가득 차서 무기를 드릴 수 없습니다.', false, true)
             return
         end

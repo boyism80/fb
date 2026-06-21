@@ -1,7 +1,8 @@
-
+local quest = require('lib.quest')
+local server = require('lib.server')
 function NPC_544(me, npc)
-    local quest = me:quest(QUEST_JINHWANG)
-    if quest == nil or quest:step() ~= 2 then
+    local q = me:quest(quest.QUEST_JINHWANG)
+    if q == nil or q:step() ~= 2 then
         return
     end
 
@@ -51,7 +52,7 @@ function NPC_544(me, npc)
         { ['item'] = required },
         { ['item'] = { ["천상복숭아"] = 1 } }
     )
-    if code == EXCHANGE_RESULT.LACK_COST then
+    if code == server.EXCHANGE_RESULT.LACK_COST then
         if not me:has_items("종이쪽지", 1) then
             me:dialog(npc, "퀘스트 오류입니다.\n\n운영자에게 문의하세요.", false, false)
         else
@@ -59,11 +60,11 @@ function NPC_544(me, npc)
         end
         return
     end
-    if code == EXCHANGE_RESULT.LACK_CAPACITY then
+    if code == server.EXCHANGE_RESULT.LACK_CAPACITY then
         me:dialog(npc, "소지품 칸을 2칸 이상 비워주세요.", false, false)
         return
     end
 
     me:push_achievement(511, "진황보검을 찾아서 (흉노족장로를 찾아가자)", 7, 20)
-    quest:step(3)
+    q:step(3)
 end

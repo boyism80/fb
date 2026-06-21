@@ -1,4 +1,5 @@
-
+local quest = require('lib.quest')
+local server = require('lib.server')
 local function do_sub6_start(me, npc)
     local sel, btn = me:list(npc, "요즘따라 인간들을 자주 만나시게 되시는도다.", { "이름을 가르쳐주세요.", "이곳의 상황은 좀 어떤가요?", "제가 도와드릴 일은 없을까요?" }, false)
     if btn == DIALOG_RESULT.QUIT or sel == nil then
@@ -29,9 +30,9 @@ local function do_sub6_start(me, npc)
     if b == DIALOG_RESULT.PREV or b == DIALOG_RESULT.QUIT then
         return false
     end
-    local q6 = me:quest(QUEST_SKULL_NECKLACE_6)
+    local q6 = me:quest(quest.QUEST_SKULL_NECKLACE_6)
     if q6 == nil then
-        q6 = me:start_quest(QUEST_SKULL_NECKLACE_6)
+        q6 = me:start_quest(quest.QUEST_SKULL_NECKLACE_6)
         if q6 == nil then
             return true
         end
@@ -59,15 +60,15 @@ local function do_sub6_turnin(me, npc)
         { ['item'] = { ["호박"] = 80 } },
         { ['item'] = { ["바다거북의알"] = 1 } }
     )
-    if code == EXCHANGE_RESULT.LACK_COST then
+    if code == server.EXCHANGE_RESULT.LACK_COST then
         me:dialog(npc, "아이템을 제거할 수 없습니다.", false, false)
         return true
     end
-    if code == EXCHANGE_RESULT.LACK_CAPACITY then
+    if code == server.EXCHANGE_RESULT.LACK_CAPACITY then
         me:dialog(npc, "소지품이 가득 차서 바다거북의알을 줄 수 없습니다.", false, false)
         return true
     end
-    local q6 = me:quest(QUEST_SKULL_NECKLACE_6)
+    local q6 = me:quest(quest.QUEST_SKULL_NECKLACE_6)
     if q6 then
         q6:step(2)
     end
@@ -75,7 +76,7 @@ local function do_sub6_turnin(me, npc)
 end
 
 function NPC_468(me, npc)
-    local q6 = me:quest(QUEST_SKULL_NECKLACE_6)
+    local q6 = me:quest(quest.QUEST_SKULL_NECKLACE_6)
 
     if q6 == nil or q6:step() == 0 then
         if do_sub6_start(me, npc) then
@@ -91,7 +92,7 @@ function NPC_468(me, npc)
         return
     end
 
-    local main_q = me:quest(QUEST_SKULL_NECKLACE)
+    local main_q = me:quest(quest.QUEST_SKULL_NECKLACE)
     if main_q then
         local s = main_q:step()
         if s == 20 then

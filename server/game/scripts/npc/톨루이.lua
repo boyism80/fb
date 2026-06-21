@@ -1,4 +1,5 @@
-
+local quest = require('lib.quest')
+local server = require('lib.server')
 local DOTOL_NAMES = {
     "황도톨", "적도톨", "연녹도톨", "녹도톨", "청도톨", "회도톨", "갈도톨", "연갈도톨",
     "연자도톨", "자도톨", "연청도톨", "황금도톨", "황왕도톨", "적왕도톨", "연녹왕도톨", "녹왕도톨",
@@ -29,8 +30,8 @@ function NPC_336(me, npc)
             goto NPC_336_0001
         end
 
-        local quest = me:quest(QUEST_TOLUI_DAY)
-        local last_day = (quest and quest:param() ~= "") and tonumber(quest:param()) or 0
+        local q = me:quest(quest.QUEST_TOLUI_DAY)
+        local last_day = (q and q:param() ~= "") and tonumber(q:param()) or 0
         if last_day == day then
             me:dialog(npc, "오늘은 이미 도톨을 구입하셨군요! 내일 다시 오세요.", false, false)
             return
@@ -57,17 +58,17 @@ function NPC_336(me, npc)
             me:dialog(npc, "금전 천전이 없으시군요!", false, false)
             return
         end
-        if quest == nil then
-            quest = me:start_quest(QUEST_TOLUI_DAY)
-            if quest == nil then
+        if q == nil then
+            q = me:start_quest(quest.QUEST_TOLUI_DAY)
+            if q == nil then
                 me:dialog(npc, "퀘스트를 시작할 수 없습니다.", false, false)
                 return
             end
         end
         me:money(me:money() - DOTOL_PRICE)
         me:mkitem(item_name, 1)
-        if quest then
-            quest:param(tostring(day))
+        if q then
+            q:param(tostring(day))
         end
         me:dialog(npc, item_name .. " 받았습니다.", false, false)
         return
@@ -102,11 +103,11 @@ function NPC_336(me, npc)
         { ['item'] = cost_items },
         { ['item'] = { ["칠지도"] = 1 } }
     )
-    if code == EXCHANGE_RESULT.LACK_COST then
+    if code == server.EXCHANGE_RESULT.LACK_COST then
         me:dialog(npc, "도톨을 건네지 못했습니다.", false, false)
         return
     end
-    if code == EXCHANGE_RESULT.LACK_CAPACITY then
+    if code == server.EXCHANGE_RESULT.LACK_CAPACITY then
         me:dialog(npc, "소지품이 가득 차서 칠지도를 받을 수 없습니다.", false, false)
         return
     end

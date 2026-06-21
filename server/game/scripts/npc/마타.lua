@@ -1,8 +1,10 @@
+local quest = require('lib.quest')
+
 function NPC_182(me, npc)
     local ACHIEVEMENT_GHOST = 29
-    local quest = me:quest(QUEST_GHOST)
+    local q = me:quest(quest.QUEST_GHOST)
 
-    if quest == nil or quest:step() ~= 2 then
+    if q == nil or q:step() ~= 2 then
         me:dialog(npc, '안녕하십니까? 저는 마타라고 합니다.', false, true)
         return
     end
@@ -24,7 +26,7 @@ function NPC_182(me, npc)
         me:dialog(npc, '소지품이 가득 차서 귀신퇴치부적을 받을 수 없습니다.', false, true)
         return
     end
-    quest:step(3)
-    quest:progress(0)
+    q:step(3)
+    q:progress(0)
     me:push_achievement(ACHIEVEMENT_GHOST, '귀신퇴치부적을 더 받다.', 7, 1)
 end

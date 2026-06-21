@@ -1,7 +1,8 @@
-
+local quest = require('lib.quest')
+local server = require('lib.server')
 function NPC_545(me, npc)
-    local quest = me:quest(QUEST_JINHWANG)
-    if quest == nil or quest:step() ~= 3 then
+    local q = me:quest(quest.QUEST_JINHWANG)
+    if q == nil or q:step() ~= 3 then
         return
     end
 
@@ -62,15 +63,15 @@ function NPC_545(me, npc)
         { ['item'] = { ["천상복숭아"] = 1 } },
         { ['item'] = { ["진랑검"] = 1 } }
     )
-    if code == EXCHANGE_RESULT.LACK_COST then
+    if code == server.EXCHANGE_RESULT.LACK_COST then
         me:dialog(npc, "천상복숭아가 없지 않은가.", false, false)
         return
     end
-    if code == EXCHANGE_RESULT.LACK_CAPACITY then
+    if code == server.EXCHANGE_RESULT.LACK_CAPACITY then
         me:dialog(npc, "소지품이 가득 차서 줄 수 없네.", false, false)
         return
     end
 
     me:push_achievement(511, "진황보검을 찾아서 (진랑검을 찾았다)", 7, 20)
-    quest:step(4)
+    q:step(4)
 end

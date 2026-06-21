@@ -2,6 +2,7 @@
 #define __BOT_GAME_H__
 
 #include <fb/bot/bot.h>
+#include <fb/lua.h>
 #include <fb/game/protocol.h>
 #include <shared_mutex>
 #include <set>
@@ -29,6 +30,8 @@ struct spawned_monster_info
 class game_bot : public bot<game_bot>
 {
 public:
+    LUA_PROTOTYPE
+
     using bot_controller_type = game_bot_controller;
 
     struct simple_item

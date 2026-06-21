@@ -1,3 +1,6 @@
+local quest = require('lib.quest')
+local server = require('lib.server')
+
 local ACHIEVEMENT_RABBIT_HINT = 20
 local MIN_LEVEL_RABBIT = 30
 local RABBIT_LIVER_ITEM = '토끼의간'
@@ -16,8 +19,8 @@ local function run_rabbit_liver_quest(me, npc)
         return
     end
 
-    local quest = me:quest(QUEST_RABBIT_LIVER)
-    if quest == nil then
+    local q = me:quest(quest.QUEST_RABBIT_LIVER)
+    if q == nil then
         ::NPC_144_0001::
         btn = me:dialog(npc, '휴우우.. 용왕님이 편찮으셔서 큰일입니다. 요즘 용궁은 용왕님이 편찮으셔서 다들 걱정하고 있답니다.', false, true)
         if btn == DIALOG_RESULT.QUIT then
@@ -44,11 +47,11 @@ local function run_rabbit_liver_quest(me, npc)
         if sel == nil or sel ~= 0 then
             return
         end
-        quest = me:start_quest(QUEST_RABBIT_LIVER)
-        if quest == nil then
+        q = me:start_quest(quest.QUEST_RABBIT_LIVER)
+        if q == nil then
             return
         end
-        quest:step(1)
+        q:step(1)
         me:push_achievement(ACHIEVEMENT_RABBIT_HINT, '토깽이의 행방을 알아보자.', 7, 1)
         ::NPC_144_0005::
         btn = me:dialog(npc, me:name() .. '님 정말 감사합니다.. 제발 토끼의 간을 구해 주세요.', false, true)
@@ -63,7 +66,7 @@ local function run_rabbit_liver_quest(me, npc)
         return
     end
 
-    if quest:completed() then
+    if q:completed() then
         me:dialog(npc, me:name() .. '님, 저번엔 정말 감사했습니다.', false, false)
         return
     end
@@ -87,10 +90,10 @@ local function run_rabbit_liver_quest(me, npc)
         { ['item'] = { [RABBIT_LIVER_ITEM] = 1 } },
         { ['item'] = { [REWARD_ITEM] = 1 } }
     )
-    if code == EXCHANGE_RESULT.LACK_COST or code == EXCHANGE_RESULT.LACK_CAPACITY then
+    if code == server.EXCHANGE_RESULT.LACK_COST or code == server.EXCHANGE_RESULT.LACK_CAPACITY then
         return
     end
-    quest:complete()
+    q:complete()
     me:push_achievement(ACHIEVEMENT_RABBIT_HINT, '거북장군의 부탁을 들어주었다.', 6, 1)
     ::NPC_144_0009::
     btn = me:dialog(npc, '아아.. 감사합니다. 이것으로 용왕님도 건강을 회복하실 수 있겠군요.', false, true)
@@ -118,7 +121,7 @@ local function run_shark_weapon_quest(me, npc)
         return
     end
 
-    local q = me:quest(QUEST_SHARK_WEAPON)
+    local q = me:quest(quest.QUEST_SHARK_WEAPON)
     if q == nil then
         if me:dialog(npc, '상어장군이 사용하던 무기의 제작법이 드디어 알려졌다는 소문이 있다네...\n\n그 무기의 제작 방법을 아는 사람이 았다는 것 같더군.', true, true) == DIALOG_RESULT.QUIT then
             return
@@ -130,7 +133,7 @@ local function run_shark_weapon_quest(me, npc)
         if sel == nil or sel ~= 0 then
             return
         end
-        q = me:start_quest(QUEST_SHARK_WEAPON)
+        q = me:start_quest(quest.QUEST_SHARK_WEAPON)
         if q == nil then
             return
         end
@@ -196,10 +199,10 @@ local function run_shark_weapon_quest(me, npc)
             reward = { ['item'] = { [SHARK_WEAPON_RESULT] = 1 } }
         end
         local code = me:exchange(cost, reward)
-        if code == EXCHANGE_RESULT.LACK_COST then
+        if code == server.EXCHANGE_RESULT.LACK_COST then
             return
         end
-        if code == EXCHANGE_RESULT.LACK_CAPACITY then
+        if code == server.EXCHANGE_RESULT.LACK_CAPACITY then
             me:dialog(npc, '소지품이 가득 차서 무기를 받을 수 없네.', false, false)
             return
         end

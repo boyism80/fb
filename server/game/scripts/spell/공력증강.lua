@@ -1,5 +1,7 @@
 -- 공력증강 캐스팅
-function ON_CAST_4002(me, spell)
+local spell = require('lib.spell')
+
+function ON_CAST_4002(me, sp)
     local mp = 30
     local effect = 11
     local sound = 65
@@ -16,7 +18,7 @@ function ON_CAST_4002(me, spell)
     me:mp_down(mp)
 
     local percent = 0.5 + ((me:int() / 255) * 0.5)
-    local success = boolean_random(percent)
+    local success = spell.boolean_random(percent)
     if not success then
         return me:message('정신집중에 실패하였습니다.')
     end
@@ -26,7 +28,7 @@ function ON_CAST_4002(me, spell)
     me:update()
     me:effect(effect)
     me:sound(sound)
-    me:message(string.format('%s 외웠습니다.', name_with(spell:name())))
+    me:message(string.format('%s 외웠습니다.', name_with(sp:name())))
     me:action(ACTION.CAST_SPELL, DURATION.SPELL, 1)
     return true
 end

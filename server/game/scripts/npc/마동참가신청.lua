@@ -1,4 +1,4 @@
-
+local quest = require('lib.quest')
 local CLASS_OPTIONS = { "검신", "패왕", "마신", "신선" }
 local SCHEDULE_OPTIONS = {
     { label = "1차예선 18일 / 2차예선 25일", value = "18/25" },
@@ -46,9 +46,9 @@ local function run_form(me, npc, class_name, partner, schedule)
         if sub ~= nil and sub >= 0 and sub < #CLASS_OPTIONS then
             class_name = CLASS_OPTIONS[sub + 1]
         end
-        local q = me:quest(QUEST_MADONG_APPLY)
+        local q = me:quest(quest.QUEST_MADONG_APPLY)
         if q == nil then
-            q = me:start_quest(QUEST_MADONG_APPLY)
+            q = me:start_quest(quest.QUEST_MADONG_APPLY)
         end
         if q then
             q:param(build_param(class_name, partner, schedule))
@@ -65,9 +65,9 @@ local function run_form(me, npc, class_name, partner, schedule)
         if type(raw) == "string" and raw ~= "" then
             partner = raw
         end
-        local q = me:quest(QUEST_MADONG_APPLY)
+        local q = me:quest(quest.QUEST_MADONG_APPLY)
         if q == nil then
-            q = me:start_quest(QUEST_MADONG_APPLY)
+            q = me:start_quest(quest.QUEST_MADONG_APPLY)
         end
         if q then
             q:param(build_param(class_name, partner, schedule))
@@ -88,9 +88,9 @@ local function run_form(me, npc, class_name, partner, schedule)
         if sub ~= nil and sub >= 0 and sub < #SCHEDULE_OPTIONS then
             schedule = SCHEDULE_OPTIONS[sub + 1].value
         end
-        local q = me:quest(QUEST_MADONG_APPLY)
+        local q = me:quest(quest.QUEST_MADONG_APPLY)
         if q == nil then
-            q = me:start_quest(QUEST_MADONG_APPLY)
+            q = me:start_quest(quest.QUEST_MADONG_APPLY)
         end
         if q then
             q:param(build_param(class_name, partner, schedule))
@@ -113,9 +113,9 @@ local function run_form(me, npc, class_name, partner, schedule)
             run_form(me, npc, class_name, partner, schedule)
             return
         end
-        local q = me:quest(QUEST_MADONG_APPLY)
+        local q = me:quest(quest.QUEST_MADONG_APPLY)
         if q == nil then
-            q = me:start_quest(QUEST_MADONG_APPLY)
+            q = me:start_quest(quest.QUEST_MADONG_APPLY)
             if q == nil then
                 me:dialog(npc, "제출에 실패했습니다.", false, false)
                 return
@@ -131,7 +131,7 @@ local function run_form(me, npc, class_name, partner, schedule)
 end
 
 function NPC_550(me, npc)
-    local q = me:quest(QUEST_MADONG_APPLY)
+    local q = me:quest(quest.QUEST_MADONG_APPLY)
     if q ~= nil and q:step() == 1 then
         local class_name, partner, schedule = parse_param(q:param())
         me:dialog(npc, "이미 제출하셨습니다.\n선택클래스:" .. class_name .. "\n파트너아이디:" .. partner .. "\n참여일:" .. schedule .. "", false, false)

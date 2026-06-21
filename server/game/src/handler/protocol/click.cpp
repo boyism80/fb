@@ -103,7 +103,6 @@ async::task<void> click::handle_object_click(character* ch, game_reqs::click& re
             co_return;
 
 #if defined DEBUG || defined _DEBUG
-        lua->load("scripts/npc.lua");
         lua->load(model.script);
 #endif
         lua->func(model.click);

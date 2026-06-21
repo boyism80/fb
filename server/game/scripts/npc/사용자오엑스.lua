@@ -1,6 +1,6 @@
-
-function NPC_309(me, npc)
-    local sel, btn = me:list(npc, "무엇을 도와드릴까요?", {
+local npc = require('lib.npc')
+function NPC_309(me, npc_obj)
+    local sel, btn = me:list(npc_obj, "무엇을 도와드릴까요?", {
         "물건 사기",
         "아무나오엑스입장",
         "이벤트오엑스입장",
@@ -10,7 +10,7 @@ function NPC_309(me, npc)
     end
 
     if sel == 0 then
-        if NPC_SELL_DIALOG(me, npc) == DIALOG_RESULT.QUIT then
+        if npc.sell_dialog(me, npc_obj) == DIALOG_RESULT.QUIT then
             return
         end
         return
@@ -21,7 +21,7 @@ function NPC_309(me, npc)
         if map then
             me:map(map, math.random(13, 15), math.random(2, 4))
         else
-            me:dialog(npc, "입장할 수 있는 장소가 없습니다.", false, false)
+            me:dialog(npc_obj, "입장할 수 있는 장소가 없습니다.", false, false)
         end
         return
     end
@@ -32,10 +32,10 @@ function NPC_309(me, npc)
             if map then
                 me:map(map, math.random(13, 15), math.random(2, 4))
             else
-                me:dialog(npc, "입장할 수 있는 장소가 없습니다.", false, false)
+                me:dialog(npc_obj, "입장할 수 있는 장소가 없습니다.", false, false)
             end
         else
-            me:dialog(npc, "OX퀴즈 입장 시간이 지나 입장하실 수 없습니다.", false, false)
+            me:dialog(npc_obj, "OX퀴즈 입장 시간이 지나 입장하실 수 없습니다.", false, false)
         end
     end
 end

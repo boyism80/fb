@@ -1,4 +1,4 @@
-
+local server = require('lib.server')
 function NPC_365(me, npc)
     local btn = me:dialog(npc, "어서오오시게나... 자네는 무슨 일로 이곳까지 찾아오게 되었나?.", false, true)
     if btn == DIALOG_RESULT.QUIT then
@@ -57,10 +57,10 @@ function NPC_365(me, npc)
             { ['item'] = { ["색비단"] = 1, ["꿩의깃털"] = 1 } },
             { ['item'] = { ["연등"] = 1 } }
         )
-        if code == EXCHANGE_RESULT.LACK_COST then
+        if code == server.EXCHANGE_RESULT.LACK_COST then
             me:dialog(npc, "연등을 만들기 위해서는 꿩의깃털, 색비단이 필요합니다.", false, false)
             return
-        elseif code == EXCHANGE_RESULT.LACK_CAPACITY then
+        elseif code == server.EXCHANGE_RESULT.LACK_CAPACITY then
             me:dialog(npc, "소지품이 가득 차서 연등을 줄 수 없습니다.", false, false)
             return
         end

@@ -1,11 +1,12 @@
-
+local quest = require('lib.quest')
+local server = require('lib.server')
 local function do_jungki(me, npc)
-    local quest = me:quest(QUEST_SHARK_WEAPON)
+    local q = me:quest(quest.QUEST_SHARK_WEAPON)
 
-    if quest  == nil then
+    if q  == nil then
     end
 
-    local step = quest:step()
+    local step = q:step()
     if step < 4 then
         me:dialog(npc, '자네는 아직 알 때가 아니군.', false, false)
         return
@@ -34,8 +35,8 @@ local function do_jungki(me, npc)
         if me:dialog(npc, '먼저 복어의심장 30개를 가지고 오게나.', false, false) == DIALOG_RESULT.QUIT then
             return
         end
-        if quest then
-            quest:step(5)
+        if q then
+            q:step(5)
         end
         me:push_achievement(24, '무달의 부탁을 들어주자. [1/5]', 7, 1)
         return
@@ -54,16 +55,16 @@ local function do_jungki(me, npc)
                 { ['item'] = { [s.item] = s.count } },
                 { ['item'] = { [s.reward] = 1 } }
             )
-            if code == EXCHANGE_RESULT.LACK_COST then
+            if code == server.EXCHANGE_RESULT.LACK_COST then
                 me:dialog(npc, s.item .. ' 갯수가 부족한 것은 아닌가? 30개가 필요하네.', false, false)
                 return
             end
-            if code == EXCHANGE_RESULT.LACK_CAPACITY then
+            if code == server.EXCHANGE_RESULT.LACK_CAPACITY then
                 me:dialog(npc, '소지품이 가득 차서 ' .. name_with(s.reward, '을', '를') .. ' 받을 수 없네.', false, false)
                 return
             end
-            if quest then
-                quest:step(s.step_in + 1)
+            if q then
+                q:step(s.step_in + 1)
             end
             me:push_achievement(24, s.legend, 7, 1)
             if s.next_msg then
@@ -138,7 +139,7 @@ function NPC_157(me, npc)
         return
     end
     if selected == 0 then
-        do_jungki(me, npc, quest, step)
+        do_jungki(me, npc, q, step)
         return
     end
     if selected == 1 then

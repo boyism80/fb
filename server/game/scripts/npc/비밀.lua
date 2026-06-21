@@ -1,11 +1,12 @@
-
+local quest = require('lib.quest')
+local server = require('lib.server')
 local ASSEMBLE_ITEMS = { "요술구슬", "상하막대", "좌우막대", "누름막대" }
 local ASSEMBLE_FEE = 100000
 local SELL_PRICE = 150000
 
 function NPC_378(me, npc)
-    local quest = me:quest(QUEST_MAGIC_BALL)
-    local param = (quest and quest:param()) or "0"
+    local q = me:quest(quest.QUEST_MAGIC_BALL)
+    local param = (q and q:param()) or "0"
 
     if param == "0" then
         if me:level() < 35 then
@@ -32,15 +33,15 @@ function NPC_378(me, npc)
         if btn == DIALOG_RESULT.QUIT then
             return
         end
-        if quest == nil then
-            quest = me:start_quest(QUEST_MAGIC_BALL)
-            if quest == nil then
+        if q == nil then
+            q = me:start_quest(quest.QUEST_MAGIC_BALL)
+            if q == nil then
                 me:dialog(npc, "퀘스트를 시작할 수 없습니다.", false, false)
                 return
             end
         end
-        if quest then
-            quest:param("1")
+        if q then
+            q:param("1")
         end
         return
     end
@@ -86,16 +87,16 @@ function NPC_378(me, npc)
                     { ['item'] = cost_item, ['money'] = ASSEMBLE_FEE },
                     { ['item'] = { ["요술놀이구슬"] = 1 } }
                 )
-                if code == EXCHANGE_RESULT.LACK_COST then
+                if code == server.EXCHANGE_RESULT.LACK_COST then
                     me:dialog(npc, "재료를 다 구해오지 않았잖아! 요술구슬과 상하막대, 좌우막대와 누름막대라네! 그리고 10만전도 말이야!", false, false)
                     return
                 end
-                if code == EXCHANGE_RESULT.LACK_CAPACITY then
+                if code == server.EXCHANGE_RESULT.LACK_CAPACITY then
                     me:dialog(npc, "소지품이 가득 차서 요술놀이구슬을 받을 수 없어요. 자리 좀 비우고 다시 오세요.", false, false)
                     return
                 end
-                if quest then
-                    quest:param("2")
+                if q then
+                    q:param("2")
                 end
                 me:dialog(npc, "자 여기 있네. 사실 말이야 바른 말이지. 내가 자금 사정이 급하지 않았더라면...\n\n(어쩐지 못미덥고 거짓말쟁이같은데다가 생색까지 내는 상인을 무시하고 돌아섰다.)", false, false)
             end
@@ -125,11 +126,11 @@ function NPC_378(me, npc)
                 { ['item'] = { ["요술놀이구슬"] = 1 } },
                 { ['money'] = SELL_PRICE }
             )
-            if code == EXCHANGE_RESULT.LACK_COST then
+            if code == server.EXCHANGE_RESULT.LACK_COST then
                 me:dialog(npc, "요술놀이구슬이 없지 않은가? 장난하나? 지금?", false, false)
                 return
             end
-            if code == EXCHANGE_RESULT.LACK_CAPACITY then
+            if code == server.EXCHANGE_RESULT.LACK_CAPACITY then
                 me:dialog(npc, "금전을 받을 여유가 없군요.", false, false)
                 return
             end
@@ -148,11 +149,11 @@ function NPC_378(me, npc)
             { ['item'] = cost_item, ['money'] = ASSEMBLE_FEE },
             { ['item'] = { ["요술놀이구슬"] = 1 } }
         )
-        if code == EXCHANGE_RESULT.LACK_COST then
+        if code == server.EXCHANGE_RESULT.LACK_COST then
             me:dialog(npc, "재료를 다 구해오지 않았잖아! 요술구슬과 상하막대, 좌우막대와 누름막대라네! 그리고 10만전도 말이야!", false, false)
             return
         end
-        if code == EXCHANGE_RESULT.LACK_CAPACITY then
+        if code == server.EXCHANGE_RESULT.LACK_CAPACITY then
             me:dialog(npc, "소지품이 가득 차서 요술놀이구슬을 받을 수 없어요. 자리 좀 비우고 다시 오세요.", false, false)
             return
         end

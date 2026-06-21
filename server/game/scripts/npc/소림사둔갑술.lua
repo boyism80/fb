@@ -1,4 +1,4 @@
-
+local server = require('lib.server')
 function NPC_374(me, npc)
     local btn = me:dialog(npc, "나무아미타불.. 소림사에 입문하신 수행자이시군요. 백열장의 수련은 잘 되고 계신지?", false, true)
     if btn == DIALOG_RESULT.QUIT then
@@ -164,11 +164,11 @@ function NPC_374(me, npc)
                 { ['money'] = 50000 },
                 { ['item'] = { ["소림오행진"] = 1 } }
             )
-            if code == EXCHANGE_RESULT.LACK_COST then
+            if code == server.EXCHANGE_RESULT.LACK_COST then
                 me:dialog(npc, "금전이 부족하군요.. 금전을 통해서 소림사의 유지에 쓰입니다.", false, true)
                 return
             end
-            if code == EXCHANGE_RESULT.LACK_CAPACITY then
+            if code == server.EXCHANGE_RESULT.LACK_CAPACITY then
                 me:dialog(npc, "소지품이 가득 차서 소림오행진을 받을 수 없습니다.", false, true)
                 return
             end
@@ -193,11 +193,11 @@ function NPC_374(me, npc)
                 { ['money'] = 500000 },
                 { ['item'] = { ["진소림오행진"] = 1 } }
             )
-            if code == EXCHANGE_RESULT.LACK_COST then
+            if code == server.EXCHANGE_RESULT.LACK_COST then
                 me:dialog(npc, "금전이 부족하군요.. 금전을 통해서 소림사의 유지에 쓰입니다.", false, true)
                 return
             end
-            if code == EXCHANGE_RESULT.LACK_CAPACITY then
+            if code == server.EXCHANGE_RESULT.LACK_CAPACITY then
                 me:dialog(npc, "소지품이 가득 차서 진소림오행진을 받을 수 없습니다.", false, true)
                 return
             end

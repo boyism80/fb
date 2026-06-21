@@ -1,3 +1,5 @@
+local quest = require('lib.quest')
+
 function NPC_30(me, npc)
     local function pool_fn(level)
         if level < 70 then
@@ -8,8 +10,8 @@ function NPC_30(me, npc)
             return { '몽달귀신', '독충', '빗자루귀신' }
         end
     end
-    king_quest_dialog(me, name2npc('고구려경비대장') or npc, {
-        quest_id = QUEST_KING_GOGURYEO,
+    quest.king_dialog(me, name2npc('고구려경비대장') or npc, {
+        quest_id = quest.QUEST_KING_GOGURYEO,
         min_level = 56,
         nation = NATION.GOGURYEO,
         nation_reject_msg = '여기는 고구려왕이 계시는 곳입니다.',

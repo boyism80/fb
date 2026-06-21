@@ -1,5 +1,7 @@
 -- 노획 캐스팅
-function ON_CAST_2008(me, spell)
+local spell = require('lib.spell')
+
+function ON_CAST_2008(me, sp)
     local map = me:map()
     if map == nil then
         return
@@ -8,7 +10,7 @@ function ON_CAST_2008(me, spell)
     local mp = 30
     local effect = nil
     local sound = 37
-    if not spell_cast(me, me, spell, {mp=mp, sound=sound, effect=effect}) then
+    if not spell.cast(me, me, sp, {mp=mp, sound=sound, effect=effect}) then
         return
     end
 

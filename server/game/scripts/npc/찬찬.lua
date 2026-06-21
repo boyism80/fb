@@ -1,11 +1,11 @@
-
+local quest = require('lib.quest')
 function NPC_119(me, npc)
-    local quest = me:quest(QUEST_DETECTIVE)
-    if quest == nil or quest:completed() then
+    local q = me:quest(quest.QUEST_DETECTIVE)
+    if q == nil or q:completed() then
         me:dialog(npc, "준비중입니다.", false, false)
         return
     end
-    local step = quest:step()
+    local step = q:step()
 
     if step == 13 then
         local sel, list_btn = me:list(npc, "진진 소식은 들었네... 가슴이 아프구먼.", {
@@ -30,7 +30,7 @@ function NPC_119(me, npc)
             if btn == DIALOG_RESULT.PREV then
                 goto NPC_119_0001
             end
-            quest:step(14)
+            q:step(14)
             me:dialog(npc, "그러고보니 배 이름이 참 묘했지. 은익...이라고 하더군. 숨은 날개라는 뜻도 가지고, 은밀한 이익이란 뜻도 가졌으니까 말야.", false, false)
         elseif sel == 1 then
             me:dialog(npc, "준비중입니다.", false, false)

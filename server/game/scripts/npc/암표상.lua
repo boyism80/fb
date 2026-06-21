@@ -1,3 +1,5 @@
+local server = require('lib.server')
+
 function NPC_53(me, npc)
     local TICKET_PRICE = 8000
 
@@ -32,11 +34,11 @@ function NPC_53(me, npc)
                 { ['money'] = TICKET_PRICE },
                 { ['item'] = { ['부여-일본쾌속승선권'] = 1 } }
             )
-            if code == EXCHANGE_RESULT.LACK_COST then
+            if code == server.EXCHANGE_RESULT.LACK_COST then
                 me:dialog(npc, '이 사람이! 돈이 없잖아 돈이!', false, true)
                 return
             end
-            if code == EXCHANGE_RESULT.LACK_CAPACITY then
+            if code == server.EXCHANGE_RESULT.LACK_CAPACITY then
                 me:dialog(npc, '소지품이 가득 차서 줄 수가 없네.', false, true)
                 return
             end
@@ -78,11 +80,11 @@ function NPC_53(me, npc)
                     { ['money'] = TICKET_PRICE },
                     { ['item'] = { ['노란비서'] = 1, ['부여-일본쾌속승선권'] = 1 } }
                 )
-                if code == EXCHANGE_RESULT.LACK_COST then
+                if code == server.EXCHANGE_RESULT.LACK_COST then
                     me:dialog(npc, '이 사람이! 돈이 없잖아 돈이!', false, true)
                     return
                 end
-                if code == EXCHANGE_RESULT.LACK_CAPACITY then
+                if code == server.EXCHANGE_RESULT.LACK_CAPACITY then
                     me:dialog(npc, '소지품이 가득 차서 줄 수가 없네.', false, true)
                     return
                 end

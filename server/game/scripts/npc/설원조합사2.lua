@@ -1,4 +1,4 @@
-
+local server = require('lib.server')
 local MATERIAL_NAME = "눈꽃얼음"
 local MATERIAL_COUNT = 10
 local REWARD_NAME = "눈꽃투구"
@@ -11,11 +11,11 @@ local function do_craft(me, npc)
         reward = { ['item'] = { [REWARD_NAME] = 1 } }
     end
     local code = me:exchange({ ['item'] = cost }, reward)
-    if code == EXCHANGE_RESULT.LACK_COST then
+    if code == server.EXCHANGE_RESULT.LACK_COST then
         me:dialog(npc, "눈꽃얼음이 없으신데요?", false, false)
         return false
     end
-    if code == EXCHANGE_RESULT.LACK_CAPACITY then
+    if code == server.EXCHANGE_RESULT.LACK_CAPACITY then
         me:dialog(npc, "소지품이 가득 차서 " .. REWARD_NAME .. "을 드리지 못합니다.", false, false)
         return true
     end

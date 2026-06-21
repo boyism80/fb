@@ -1,3 +1,6 @@
+local quest = require('lib.quest')
+local server = require('lib.server')
+
 function NPC_211(me, npc)
     local ACHIEVEMENT_OXYGEN = 4
     local MIN_LEVEL = 50
@@ -10,10 +13,10 @@ function NPC_211(me, npc)
         { item = '적산소괴의뿔', count = 30, money = 20000, next_name = '녹산소괴', next_count = 30, next_legend = '녹산소괴의 뿔을 30개 모아가자.' },
     }
 
-    local quest = me:quest(QUEST_OXYGEN)
+    local q = me:quest(quest.QUEST_OXYGEN)
     local btn, sel
 
-    if quest == nil then
+    if q == nil then
         ::NPC_211_0001::
         btn = me:dialog(npc, '외부에서 오신분이십니까? 남경 지역을 지나실때 조심하시기 바랍니다.', false, true)
         if btn == DIALOG_RESULT.QUIT then
@@ -64,22 +67,22 @@ function NPC_211(me, npc)
         if btn == DIALOG_RESULT.QUIT then
             return
         end
-        quest = me:start_quest(QUEST_OXYGEN)
-        if quest == nil then
+        q = me:start_quest(quest.QUEST_OXYGEN)
+        if q == nil then
             me:dialog(npc, '퀘스트 시작 실패', false, true)
             return
         end
-        quest:step(1)
+        q:step(1)
         me:push_achievement(ACHIEVEMENT_OXYGEN, '연청산소의 뿔을 50개 모아가자.', 7, 1)
         return
     end
 
-    if quest:completed() then
+    if q:completed() then
         me:dialog(npc, '외부에서 오신분이십니까? 남경 지역을 지나실때 조심하시기 바랍니다.', false, true)
         return
     end
 
-    local step = quest:step()
+    local step = q:step()
 
     if step >= 1 and step <= 5 then
         local t = tiers[step]
@@ -87,14 +90,14 @@ function NPC_211(me, npc)
             { ['item'] = { [t.item] = t.count } },
             { ['money'] = t.money }
         )
-        if code == EXCHANGE_RESULT.LACK_COST then
+        if code == server.EXCHANGE_RESULT.LACK_COST then
             me:dialog(npc, string.format('아직 %s %d개를 모아오지 못하신 것 같군요?', t.item, t.count), false, true)
             return
-        elseif code == EXCHANGE_RESULT.LACK_CAPACITY then
+        elseif code == server.EXCHANGE_RESULT.LACK_CAPACITY then
             me:dialog(npc, '소지품이 가득 차서 보상금을 받을 수 없습니다.', false, true)
             return
         end
-        quest:step(step + 1)
+        q:step(step + 1)
         me:push_achievement(ACHIEVEMENT_OXYGEN, t.next_legend, 7, 1)
         btn = me:dialog(npc, string.format('정말 수고하셨습니다. 보상금 여기있습니다. 다음은 %s입니다. %s의뿔 %d개를 모아와 주십시오.', t.next_name, t.next_name, t.next_count), false, true)
         if btn == DIALOG_RESULT.QUIT then
@@ -137,14 +140,14 @@ function NPC_211(me, npc)
             { ['item'] = { ['녹산소괴의뿔'] = 30 } },
             { ['money'] = 30000 }
         )
-        if code2 == EXCHANGE_RESULT.LACK_COST then
+        if code2 == server.EXCHANGE_RESULT.LACK_COST then
             me:dialog(npc, '아직 녹산소괴의뿔 30개를 모아오지 못하신 것 같군요?', false, true)
             return
-        elseif code2 == EXCHANGE_RESULT.LACK_CAPACITY then
+        elseif code2 == server.EXCHANGE_RESULT.LACK_CAPACITY then
             me:dialog(npc, '소지품이 가득 차서 보상금을 받을 수 없습니다.', false, true)
             return
         end
-        quest:step(7)
+        q:step(7)
         me:push_achievement(ACHIEVEMENT_OXYGEN, '산소괴왕의 뿔을 구하자.', 7, 1)
         me:dialog(npc, '산소괴왕은 다른 산소들과는 차원이 다릅니다. 더구나 잘 나타나지 않아 찾기가 더 힘들답니다.\n\n산소괴왕의뿔을 가져오시면 귀한 물건을 드리도록 하죠. 부디 조심하시기 바랍니다.', false, true)
         return
@@ -163,14 +166,14 @@ function NPC_211(me, npc)
             { ['item'] = { ['산소괴왕의뿔'] = 1 } },
             { ['item'] = { ['흑영패도'] = 1 } }
         )
-        if code3 == EXCHANGE_RESULT.LACK_COST then
+        if code3 == server.EXCHANGE_RESULT.LACK_COST then
             me:dialog(npc, '산소괴왕의뿔을 가지고 있지 않으시군요.', false, true)
             return
-        elseif code3 == EXCHANGE_RESULT.LACK_CAPACITY then
+        elseif code3 == server.EXCHANGE_RESULT.LACK_CAPACITY then
             me:dialog(npc, '소지품이 가득 차서 흑영패도를 받을 수 없습니다.', false, true)
             return
         end
-        quest:complete()
+        q:complete()
         me:push_achievement(ACHIEVEMENT_OXYGEN, '산소소탕 작전을 성공적으로 수행하였다.', 7, 1)
         btn = me:dialog(npc, '정말 감사드립니다. 그 보답으로 이 보검을 드리죠. 황제에게 특별히 하사받은것인데 저에겐 과분한 물건인듯 하군요.', false, true)
         if btn == DIALOG_RESULT.QUIT then

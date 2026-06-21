@@ -1,3 +1,5 @@
+local server = require('lib.server')
+
 function NPC_558(me, npc)
     if me:gender() == GENDER.FEMALE then
         local button = me:dialog(npc, "여자분들은 직녀에게 말을 걸어보세요.", false, false)
@@ -25,5 +27,5 @@ function NPC_558(me, npc)
     if me:mkitem("견우의지팡이", 1) == nil then
         return
     end
-    warp_to_return_map(me)
+    server.warp_to_return_map(me)
 end

@@ -1,4 +1,4 @@
-
+local quest = require('lib.quest')
 local PARENT_MAP_GWIMUN = "둔귀촌"
 
 function NPC_551(me, npc)
@@ -10,8 +10,8 @@ function NPC_551(me, npc)
             return
         end
     end
-    local quest = me:quest(QUEST_GMD_SAVED)
-    local saved_map = (quest and quest:param() and quest:param() ~= "") and quest:param() or "귀문암동대기실"
+    local q = me:quest(quest.QUEST_GMD_SAVED)
+    local saved_map = (q and q:param() and q:param() ~= "") and q:param() or "귀문암동대기실"
     local sel, btn = me:list(npc, "[" .. saved_map .. "]에 이동하려면 [귀문흑색부적]이 한개 필요하다네. 어떻게 하겠는가?", {
         "예. 보내주세요.",
         "아니오. 괜찮습니다.",
@@ -36,9 +36,9 @@ function NPC_551(me, npc)
         local x = math.random(10, 15)
         local y = math.random(12, 20)
         me:map(map, x, y)
-        quest = me:start_quest(QUEST_GMD_SAVED)
-        if quest then
-            quest:param("귀문암동대기실")
+        q = me:start_quest(quest.QUEST_GMD_SAVED)
+        if q then
+            q:param("귀문암동대기실")
         end
     else
         me:dialog(npc, "그래. 잘 생각해 보게나...", false, false)

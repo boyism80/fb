@@ -1,24 +1,6 @@
 #include <fb/bot/integration/game_controller.h>
-#include <fb/bot/integration/movement_test.h>
-#include <fb/bot/integration/attack_test.h>
-#include <fb/bot/integration/skill_test.h>
-#include <fb/bot/integration/bulletin_test.h>
-#include <fb/bot/integration/trade_test.h>
-#include <fb/bot/integration/communication_test.h>
-#include <fb/bot/integration/drop_loot_test.h>
-#include <fb/bot/integration/item_test.h>
-#include <fb/bot/integration/item_test.give.h>
-#include <fb/bot/integration/emotion_test.h>
-#include <fb/bot/integration/front_info_test.h>
-#include <fb/bot/integration/chat_interaction_test.h>
-#include <fb/bot/integration/user_list_test.h>
-#include <fb/bot/integration/swap_test.h>
-#include <fb/bot/integration/throw_test.h>
-#include <fb/bot/integration/worldmap_test.h>
-#include <fb/bot/integration/door_test.h>
-#include <fb/bot/integration/group_test.h>
-#include <fb/bot/integration/clan_test.h>
-#include <fb/bot/integration/marketplace_test.h>
+#include <fb/bot/integration/lua_integration_test.h>
+#include <fb/bot/integration/trade_bot.h>
 #include <fb/bot/game_bot.h>
 #include <fb/bot/container.h>
 #include <fb/bot/gateway_controller.h>
@@ -34,6 +16,9 @@ game_bot_controller::game_bot_controller(bot_container& container) :
     _current_test(nullptr)
 {
     // Bind integration test specific handlers
+    this->bind<trade_bot>([](game_bot& bot, trade_bot& protocol) -> async::task<void> {
+        co_return;
+    });
     this->bind(&game_bot_controller::on_time);
     this->bind(&game_bot_controller::on_state);
     this->bind(&game_bot_controller::on_message);
@@ -95,31 +80,9 @@ void game_bot_controller::initialize()
     // Set up integration test timer with different interval (slower for detailed testing)
     this->bind_timer(&game_bot_controller::on_timer, 1000ms);
 
-    auto local = fb::config<std::string_view>("ip") == "127.0.0.1";
-
-    // Create tests and add them to the queue
-    this->enqueue_test(std::make_unique<movement_test>(*this));
-    this->enqueue_test(std::make_unique<attack_test>(*this));
-    this->enqueue_test(std::make_unique<skill_test>(*this));
-    this->enqueue_test(std::make_unique<bulletin_test>(*this));
-    this->enqueue_test(std::make_unique<trade_test>(*this));
-    this->enqueue_test(std::make_unique<communication_test>(*this));
-    this->enqueue_test(std::make_unique<drop_loot_test>(*this));
-    this->enqueue_test(std::make_unique<item_test>(*this));
-    this->enqueue_test(std::make_unique<item_test_give>(*this));
-    this->enqueue_test(std::make_unique<emotion_test>(*this));
-    this->enqueue_test(std::make_unique<front_info_test>(*this));
-    this->enqueue_test(std::make_unique<chat_interaction_test>(*this));
-    this->enqueue_test(std::make_unique<user_list_test>(*this));
-    this->enqueue_test(std::make_unique<swap_test>(*this));
-    this->enqueue_test(std::make_unique<throw_test>(*this));
-    this->enqueue_test(std::make_unique<group_test>(*this));
-    this->enqueue_test(std::make_unique<clan_test>(*this));
-    this->enqueue_test(std::make_unique<marketplace_test>(*this));
-    if (!local)
+    for (auto& script : lua_integration_test::discover_scripts())
     {
-        this->enqueue_test(std::make_unique<worldmap_test>(*this));
-        this->enqueue_test(std::make_unique<door_test>(*this));
+        this->enqueue_test(std::make_unique<lua_integration_test>(*this, script));
     }
 
     // Log the test queue in a more manageable format
@@ -147,7 +110,6 @@ async::task<void> game_bot_controller::active_test()
 
     fb::logger::debug("Activating first test: '{}'", this->_current_test->name());
     std::ignore = this->_current_test->on_activated(*this);
-    fb::logger::debug("Test '{}' activated and ready to receive bot connections", this->_current_test->name());
 }
 
 void game_bot_controller::notify_test_ready()
@@ -240,6 +202,9 @@ async::task<void> game_bot_controller::on_sequence(game_bot& bot, const game_res
     // Integration test: Validate object ID consistency
     bot.set_oid(response.oid);
 
+    if (this->_current_test != nullptr)
+        this->_current_test->try_notify_ready();
+
     co_return;
 }
 
@@ -288,12 +253,8 @@ async::task<void> game_bot_controller::on_transfer(game_bot& bot, const fb::prot
 
 async::task<void> game_bot_controller::on_bot_connected(game_bot& bot)
 {
-    fb::logger::debug("Bot {} connected for integration testing", bot.fd());
-
-    // Notify current test about bot connection
     if (this->_current_test)
     {
-        // Use shared_from_this to get shared_ptr to game_bot
         std::shared_ptr<game_bot> bot_shared;
         {
             auto guard = this->_bots.enter_read();
@@ -302,16 +263,9 @@ async::task<void> game_bot_controller::on_bot_connected(game_bot& bot)
         }
 
         if (bot_shared)
-        {
-            // Let the current test decide whether to store this bot or not
             this->_current_test->on_bot_connected(bot_shared);
-            fb::logger::debug("Game bot {} connection notified to current test '{}'",
-                              bot.id,
-                              this->_current_test->name());
-        }
     }
 
-    // Integration test: Initialize test scenarios upon connection
     bot.send(fb::protocol::game::request::login(bot.transfer_buffer()), false, true);
 
     co_return;
@@ -350,6 +304,25 @@ async::task<void> game_bot_controller::on_integration_hook_execution(uint8_t    
             }
         }
     }
+}
+
+void game_bot_controller::hook_opcode(bot_integration_test* test, uint8_t opcode, hook_function fn)
+{
+    auto unique_lock = std::unique_lock<std::shared_mutex>(this->_hook_mutex);
+    this->_test_hooks[test][opcode].push_back(std::move(fn));
+}
+
+void game_bot_controller::unhook_opcode(bot_integration_test* test, uint8_t opcode)
+{
+    auto unique_lock = std::unique_lock<std::shared_mutex>(this->_hook_mutex);
+
+    auto test_it = this->_test_hooks.find(test);
+    if (test_it == this->_test_hooks.end())
+        return;
+
+    test_it->second.erase(opcode);
+    if (test_it->second.empty())
+        this->_test_hooks.erase(test_it);
 }
 
 void game_bot_controller::enqueue_test(std::unique_ptr<bot_integration_test> test)

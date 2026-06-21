@@ -1,3 +1,5 @@
+local quest = require('lib.quest')
+
 local ACHIEVEMENT_RABBIT_CAPTURE = 20
 local ITEM_RABBIT_LIVER = '토끼의간'
 
@@ -9,8 +11,8 @@ function ON_MOB_DIE_37(me, you)
         return
     end
 
-    local quest = you:quest(QUEST_RABBIT_LIVER)
-    if quest == nil or quest:step() ~= 2 then
+    local q = you:quest(quest.QUEST_RABBIT_LIVER)
+    if q == nil or q:step() ~= 2 then
         return
     end
     if you:has_items({ [ITEM_RABBIT_LIVER] = 1 }) then

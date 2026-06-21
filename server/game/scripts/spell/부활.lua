@@ -1,5 +1,7 @@
 -- 부활 캐스팅
-function ON_CAST_4014(me, you, spell)
+local spell = require('lib.spell')
+
+function ON_CAST_4014(me, you, sp)
     if not you:is(OBJECT_TYPE.LIFE) then
         me:message('걸리지 않습니다.')
         return false
@@ -14,7 +16,7 @@ function ON_CAST_4014(me, you, spell)
     if error ~= nil then
         return me:message(error)
     end
-    if not spell_cast(me, you, spell, {mp=300, sound=8, effect=11, no_assert=true}) then
+    if not spell.cast(me, you, sp, {mp=300, sound=8, effect=11, no_assert=true}) then
         return
     end
 

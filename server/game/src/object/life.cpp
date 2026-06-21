@@ -150,7 +150,6 @@ bool life::active(fb::game::spell& spell, std::string_view message)
         return false;
 
 #if defined DEBUG || defined _DEBUG
-    lua->load("scripts/spell.lua");
     lua->load(spell.model.script);
 #endif
     lua->func(spell.model.cast);
@@ -185,7 +184,6 @@ bool life::active(fb::game::spell& spell, fb::game::object& to)
         return false;
 
 #if defined DEBUG || defined _DEBUG
-    lua->load("scripts/spell.lua");
     lua->load(spell.model.script);
 #endif
     lua->func(spell.model.cast);
@@ -217,7 +215,6 @@ bool life::active(fb::game::spell& spell)
         return false;
 
 #if defined DEBUG || defined _DEBUG
-    lua->load("scripts/spell.lua");
     lua->load(spell.model.script);
 #endif
     lua->func(spell.model.cast);

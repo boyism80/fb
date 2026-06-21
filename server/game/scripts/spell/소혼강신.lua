@@ -1,5 +1,7 @@
 -- 소혼강신 캐스팅
-function ON_CAST_4001(me, spell, message)
+local spell = require('lib.spell')
+
+function ON_CAST_4001(me, sp, message)
     local map = me:map()
     if map == nil then
         return
@@ -32,7 +34,7 @@ function ON_CAST_4001(me, spell, message)
     local mp = 30
     local sound = 81
     local effect = nil
-    if not spell_cast(me, me, spell, {mp=mp, sound=sound, effect=effect}) then
+    if not spell.cast(me, me, sp, {mp=mp, sound=sound, effect=effect}) then
         return
     end
 

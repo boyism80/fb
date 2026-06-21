@@ -1,3 +1,5 @@
+local quest = require('lib.quest')
+
 function NPC_100(me, npc)
     local function pool_fn(level)
         if level < 71 then
@@ -8,8 +10,8 @@ function NPC_100(me, npc)
             return { '선비평민', '선비검객', '흉노평민', '흉노무사', '흉노전사' }
         end
     end
-    king_quest_dialog(me, name2npc('장안성경비대장') or npc, {
-        quest_id = QUEST_KING_JANGAN,
+    quest.king_dialog(me, name2npc('장안성경비대장') or npc, {
+        quest_id = quest.QUEST_KING_JANGAN,
         min_level = 99,
         achievement_id = 43,
         curse_sec = 600,

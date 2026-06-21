@@ -61,7 +61,6 @@ public:
     game_bot_controller& controller;
     const uint32_t       bot_count;
 
-protected:
 #ifdef _DEBUG
     static constexpr auto DEFAULT_TIMEOUT  = 30s;
     static constexpr auto DEFAULT_INTERVAL = 100ms;
@@ -78,6 +77,7 @@ public:
 
 private:
     async::task<void> execute_parallel_scenario(std::shared_ptr<parallel_scenarios_context> context, uint32_t index);
+    void              mark_bot_logged_in(game_bot& bot);
 
 protected:
     virtual generator<scenario_t> on_generate_scenario() = 0;
@@ -89,13 +89,10 @@ protected:
     virtual async::task<void>     on_hook_sequence(game_bot& bot, const game_resp::id& resp);
     virtual async::task<void>     on_hook_position(game_bot& bot, const game_resp::position& resp);
     virtual async::task<void>     on_hook_update_external(game_bot& bot, const game_resp::update_external<true>& resp);
+    virtual async::task<void>     on_hook_update_external_brief(game_bot&                                bot,
+                                                                const game_resp::update_external<false>& resp);
 
     [[nodiscard]] async::task<void> sleep(std::chrono::milliseconds duration);
-    [[nodiscard]] async::task<void> arrange_bots_in_line_formation();
-    [[nodiscard]] async::task<void>
-    arrange_bots_in_grid_formation(uint16_t start_x, uint16_t start_y, uint16_t end_x, uint16_t end_y);
-    [[nodiscard]] async::task<void> form_group();
-    [[nodiscard]] async::task<void> cleanup_group();
 
 public:
     test_state                             get_state() const;
@@ -105,6 +102,7 @@ public:
     virtual void                           on_bot_connected(std::shared_ptr<game_bot> bot);
     virtual void                           on_bot_disconnected(std::shared_ptr<game_bot> bot);
     void                                   notify_ready();
+    void                                   try_notify_ready();
     virtual bool                           is_ready() const;
     std::vector<std::shared_ptr<game_bot>> get_test_bots() const;
     virtual async::task<void>              on_activated(game_bot_controller& controller);

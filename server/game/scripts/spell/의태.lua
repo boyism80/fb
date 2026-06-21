@@ -1,17 +1,19 @@
 -- 의태 (id 14). Add logic as needed.
-function ON_CAST_14(me, you, spell)
+local spell = require('lib.spell')
+
+function ON_CAST_14(me, you, sp)
     local buff_time = 5
-    if buff_cast(me, me, spell) then
+    if spell.buff_cast(me, me, sp) then
         local appearance = you:appearance()
         me:mimic(appearance)
-        me:buff(spell, buff_time, me)
+        me:buff(sp, buff_time, me)
     end
 end
 
-function ON_BUFF_14(me, spell)
+function ON_BUFF_14(me, sp)
     -- TODO: implement
 end
 
-function ON_UNBUFF_14(me, spell)
+function ON_UNBUFF_14(me, sp)
     me:mimic(nil)
 end

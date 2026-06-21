@@ -1,3 +1,5 @@
+local server = require('lib.server')
+
 function NPC_338(me, npc)
     local sel, btn = me:list(npc, "귀환 하시겠습니까?", {"네. 나가고 싶어요!", "아니요. 아직 안나갈래요!"}, false)
     if btn == DIALOG_RESULT.QUIT then
@@ -15,7 +17,7 @@ function NPC_338(me, npc)
         if not me:rmitem("노란비서", 1, ITEM_DELETE_TYPE.REDUCE) then
             return
         end
-        warp_to_return_map(me)
+        server.warp_to_return_map(me)
     elseif sel == 1 then
         me:dialog(npc, "잘 생각하셨어요.", false, true)
     end

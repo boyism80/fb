@@ -1,21 +1,23 @@
+local quest = require('lib.quest')
+
 function NPC_176(me, npc)
-    local quest = me:quest(QUEST_MARTIAL)
+    local q = me:quest(quest.QUEST_MARTIAL)
     local btn
 
-    if quest == nil then
+    if q == nil then
         me:dialog(npc, '나무아비타불..', true, true)
         return
     end
-    if quest:step() >= 3 then
+    if q:step() >= 3 then
         me:dialog(npc, '나무아비타불..', true, true)
         return
     end
-    if quest:step() == 0 then
+    if q:step() == 0 then
         me:dialog(npc, '나무아비타불..', true, true)
         return
     end
 
-    if quest:step() == 1 then
+    if q:step() == 1 then
         ::NPC_176_0001::
         btn = me:dialog(npc, '안녕하십니까. 이런 곳에서 이국의 행인을 만나게 되다니, 이것도 다 인연이겠지요.', false, true)
         if btn == DIALOG_RESULT.QUIT then
@@ -109,7 +111,7 @@ function NPC_176(me, npc)
         if sel3 ~= 0 then
             return
         end
-        quest:step(2)
+        q:step(2)
         me:push_achievement(26, '소림사승려에게 비단을 가져다주자.', 7, 1)
         me:dialog(npc, '네 감사합니다. 이정도는 주지스님께서도 이해해 주시겠지요..\n\n그럼 무사히 다녀오시길.. 나무아미타불..', false, true)
         return
@@ -142,6 +144,6 @@ function NPC_176(me, npc)
     end
     me:mkspell('백열장')
     me:rmitem('고구려비단', 1, ITEM_DELETE_TYPE.GIVE)
-    quest:step(3)
+    q:step(3)
     me:push_achievement(26, '소림사의 비기를 배웠다.', 7, 1)
 end

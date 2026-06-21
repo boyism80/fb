@@ -1,15 +1,15 @@
-
+local quest = require('lib.quest')
 local function all_sub_quests_complete(me)
     local steps = {
-        [QUEST_SKULL_NECKLACE_1] = 2,
-        [QUEST_SKULL_NECKLACE_2] = 3,
-        [QUEST_SKULL_NECKLACE_3] = 3,
-        [QUEST_SKULL_NECKLACE_4] = 3,
-        [QUEST_SKULL_NECKLACE_5] = 2,
-        [QUEST_SKULL_NECKLACE_6] = 2,
-        [QUEST_SKULL_NECKLACE_7] = 3,
-        [QUEST_SKULL_NECKLACE_8] = 2,
-        [QUEST_SKULL_NECKLACE_9] = 3,
+        [quest.QUEST_SKULL_NECKLACE_1] = 2,
+        [quest.QUEST_SKULL_NECKLACE_2] = 3,
+        [quest.QUEST_SKULL_NECKLACE_3] = 3,
+        [quest.QUEST_SKULL_NECKLACE_4] = 3,
+        [quest.QUEST_SKULL_NECKLACE_5] = 2,
+        [quest.QUEST_SKULL_NECKLACE_6] = 2,
+        [quest.QUEST_SKULL_NECKLACE_7] = 3,
+        [quest.QUEST_SKULL_NECKLACE_8] = 2,
+        [quest.QUEST_SKULL_NECKLACE_9] = 3,
     }
     for qid, need_step in pairs(steps) do
         local q = me:quest(qid)
@@ -21,13 +21,13 @@ local function all_sub_quests_complete(me)
 end
 
 function NPC_474(me, npc)
-    local main = me:quest(QUEST_SKULL_NECKLACE)
+    local main = me:quest(quest.QUEST_SKULL_NECKLACE)
     local main_step = (main and main:step()) or 0
 
     if main == nil or main_step == 0 then
         if all_sub_quests_complete(me) then
             if main == nil then
-                main = me:start_quest(QUEST_SKULL_NECKLACE)
+                main = me:start_quest(quest.QUEST_SKULL_NECKLACE)
                 if main == nil then
                     me:dialog(npc, "퀘스트를 시작할 수 없습니다.", false, false)
                     return

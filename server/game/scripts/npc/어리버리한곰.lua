@@ -1,4 +1,4 @@
-
+local server = require('lib.server')
 function NPC_460(me, npc)
     if property("check") == 25 and me:has_items("훈제연어", 5) then
         local btn = me:dialog(npc, "난 깊은계곡을 지키고 있는 곰이다웅... 그런데 너는 보니까 임무를 수행중인것처럼 보이는데웅...?", false, true)
@@ -17,10 +17,10 @@ function NPC_460(me, npc)
                 { ['item'] = { ["훈제연어"] = 5 } },
                 { ['item'] = { ["당근케이크"] = 10 } }
             )
-            if code == EXCHANGE_RESULT.LACK_COST then
+            if code == server.EXCHANGE_RESULT.LACK_COST then
                 me:dialog(npc, "훈제연어를 잃어버린것같구웅! 분명 너는 임무에서 받은 훈제연어를 나한테 가져와야 했을텐데웅?", false, false)
                 return
-            elseif code == EXCHANGE_RESULT.LACK_CAPACITY then
+            elseif code == server.EXCHANGE_RESULT.LACK_CAPACITY then
                 me:dialog(npc, "소지품이 가득 차서 당근케이크를 줄 수 없겠다웅!", false, false)
                 return
             end

@@ -1,11 +1,14 @@
+local quest = require('lib.quest')
+local server = require('lib.server')
+
 function NPC_108(me, npc)
-    local quest = me:quest(QUEST_DOJAEYOUNG_HERB)
-    if quest == nil then
+    local q = me:quest(quest.QUEST_DOJAEYOUNG_HERB)
+    if q == nil then
         me:dialog(npc, '쿨럭..쿨럭..', false, true)
         return
     end
 
-    if quest:step() < 2 then
+    if q:step() < 2 then
         ::NPC_108_0001::
         local btn = me:dialog(npc, '쿨럭..쿨럭..', false, true)
         if btn == DIALOG_RESULT.QUIT then
@@ -19,7 +22,7 @@ function NPC_108(me, npc)
         return
     end
 
-    if quest:step() == 2 then
+    if q:step() == 2 then
         ::NPC_108_0010::
         local btn = me:dialog(npc, '오.. ' .. me:name() .. '씨 아닌가. 아들놈에게 약초를 구해셨다고 하더군요. 덕분에 내가 이렇게 건강을 되찾았소. 고맙구려.', true, true)
         if btn == DIALOG_RESULT.QUIT then
@@ -60,7 +63,7 @@ function NPC_108(me, npc)
         if sel ~= 0 then
             return
         end
-        quest:step(3)
+        q:step(3)
         me:push_achievement(9, '도성연의 부탁을 들어주자!', 7, 1)
         ::NPC_108_0015::
         btn = me:dialog(npc, '오오. 고맙소. 인어의방울..은 도삭산고양이인어가 가지고 있지 않을까? 고양이목에 방울달기라는 말도 있지 않소? 하하하. 농담이지만 말이지.', true, true)
@@ -85,7 +88,7 @@ function NPC_108(me, npc)
         return
     end
 
-    if quest:step() == 3 then
+    if q:step() == 3 then
         local btn
         if not me:has_items('인어의방울', 1) then
             local warp_sel, warp_btn = me:list(npc, '아직 인어의방울을 구하지 못하셨군. 지금 지름길로 292층으로 가시겠소?', { '네, 보내주십시오.', '나중에 가겠습니다.' })
@@ -129,7 +132,7 @@ function NPC_108(me, npc)
         if sel ~= 0 then
             return
         end
-        quest:step(4)
+        q:step(4)
         me:rmitem('인어의방울', 1, ITEM_DELETE_TYPE.GIVE)
         btn = me:dialog(npc, '정말 고맙소. 인어의거울은.. 도삭산이쁘니인어가 가지고 있으려나? 하하하', false, true)
         if btn == DIALOG_RESULT.QUIT then
@@ -145,7 +148,7 @@ function NPC_108(me, npc)
         return
     end
 
-    if quest:step() == 4 then
+    if q:step() == 4 then
         local btn
         if not me:has_items('인어의거울', 1) then
             local warp_sel, warp_btn = me:list(npc, '아직 인어의거울을 구하지 못하셨군. 지금 지름길로 292층으로 가시겠소?', { '네, 보내주십시오.', '나중에 가겠습니다.' })
@@ -174,15 +177,15 @@ function NPC_108(me, npc)
             { ['item'] = { ['인어의거울'] = 1 } },
             { ['item'] = { ['봉마의목걸이'] = 1 } }
         )
-        if code == EXCHANGE_RESULT.LACK_COST then
+        if code == server.EXCHANGE_RESULT.LACK_COST then
             me:dialog(npc, '인어의거울을 가지고 있지 않으시군요.', false, true)
             return
         end
-        if code == EXCHANGE_RESULT.LACK_CAPACITY then
+        if code == server.EXCHANGE_RESULT.LACK_CAPACITY then
             me:dialog(npc, '소지품이 가득 차서 봉마의목걸이를 받을 수 없습니다.', false, true)
             return
         end
-        quest:step(5)
+        q:step(5)
         me:push_achievement(9, '도삭산 200층 퀘스트 완료', 7, 1)
         me:dialog(npc, '뭐 어쨌든 기념으로 드릴테니.. 잘 쓰시오..\n\n그럼 건강하시오!', false, true)
         return

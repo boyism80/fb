@@ -17,7 +17,9 @@ public:
     init() = default;
 
 public:
+#ifndef BOT
     [[nodiscard]] async::task<void> serialize(fb::stream_writer<big_endian>& writer) const;
+#endif
 #ifdef BOT
     [[nodiscard]] async::task<void> deserialize(fb::stream_reader<big_endian>& reader);
 #endif

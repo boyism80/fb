@@ -1,12 +1,14 @@
+local quest = require('lib.quest')
+
 function cultural_property_quest(me, npc)
     local totem_names = { '번개의토템', '바람의토템', '대지의토템', '화염의토템' }
     local reward_at = { 5, 10, 15 }
     local reward_items = { '선장의일기5', '반룡곤', '가시나무봉' }
 
-    local quest = me:quest(QUEST_JUNJUN)
-    local lighthouse = me:quest(QUEST_LIGHTHOUSE)
+    local q = me:quest(quest.QUEST_JUNJUN)
+    local lighthouse = me:quest(quest.QUEST_LIGHTHOUSE)
 
-    if quest == nil then
+    if q == nil then
         if lighthouse == nil or lighthouse:completed() or lighthouse:step() ~= 5 then
             me:dialog(npc, '....', false, false)
             return
@@ -28,12 +30,12 @@ function cultural_property_quest(me, npc)
         if selected ~= 0 then
             return
         end
-        quest = me:start_quest(QUEST_JUNJUN)
-        if quest == nil then
+        q = me:start_quest(quest.QUEST_JUNJUN)
+        if q == nil then
             me:dialog(npc, '퀘스트 시작 실패', false, true)
             return
         end
-        quest:progress(0)
+        q:progress(0)
         ::NPC_115_0003::
         local last_btn = me:dialog(npc, '그럼 부탁하네. 주로 토템들이 도굴당하고 있는데.. 도굴꾼 들은 내가 잡는다쳐도, 아예 어디다 떨구고 잃어버린 것까지 찾아다닐 시간이 없어. \n\n토템들을 좀 찾아다 줬음 좋겠군.', false, true)
         if last_btn == DIALOG_RESULT.QUIT then
@@ -42,7 +44,7 @@ function cultural_property_quest(me, npc)
         return
     end
 
-    if quest:completed() then
+    if q:completed() then
         me:dialog(npc, '일은 정말 힘들군!', false, true)
         return
     end
@@ -63,15 +65,15 @@ function cultural_property_quest(me, npc)
             return
         end
         me:rmitem(item_name, 1, ITEM_DELETE_TYPE.GIVE)
-        quest:inc_progress(1)
-        me:push_achievement(33, string.format('문화재보호공무원에게 토템을 %d개 가져다 주었다.', quest:progress()), 7, 1)
+        q:inc_progress(1)
+        me:push_achievement(33, string.format('문화재보호공무원에게 토템을 %d개 가져다 주었다.', q:progress()), 7, 1)
         me:dialog(npc, '수고했네. 계속 힘내주게.', false, true)
         return
     end
 
     if selected == 1 then
-        local progress = quest:progress()
-        local step = quest:step()
+        local progress = q:progress()
+        local step = q:step()
         local next_tier = nil
         for i = 1, #reward_at do
             if progress >= reward_at[i] and step < i then
@@ -88,9 +90,9 @@ function cultural_property_quest(me, npc)
             me:dialog(npc, '소지품이 가득 차서 ' .. name_with(reward_name, '을', '를') .. ' 줄 수 없네.', false, true)
             return
         end
-        quest:step(next_tier)
+        q:step(next_tier)
         if next_tier == 3 then
-            quest:complete()
+            q:complete()
             if lighthouse ~= nil and not lighthouse:completed() then
                 lighthouse:step(6)
             end

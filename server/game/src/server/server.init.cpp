@@ -99,6 +99,9 @@ async::task<void> fb::game::server::init_lua()
 
         fb::model::lua::map_enum(lua);
         fb::model::lua::map_const(lua);
+
+        lua.package_path("scripts/?.lua");
+        lua.package_path("scripts/?/init.lua");
     }
 }
 

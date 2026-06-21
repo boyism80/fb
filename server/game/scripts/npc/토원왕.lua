@@ -1,4 +1,5 @@
-
+local quest = require('lib.quest')
+local server = require('lib.server')
 local function do_sub2_receive_letter(me, npc)
     if not me:has_items("원숭이편지", 1) then
         return false
@@ -19,7 +20,7 @@ local function do_sub2_receive_letter(me, npc)
         me:dialog(npc, "아이템을 제거할 수 없습니다.", false, false)
         return true
     end
-    local q2 = me:quest(QUEST_SKULL_NECKLACE_2)
+    local q2 = me:quest(quest.QUEST_SKULL_NECKLACE_2)
     if q2 then
         q2:step(2)
     end
@@ -43,9 +44,9 @@ local function do_sub3_start(me, npc)
     if b == DIALOG_RESULT.PREV or b == DIALOG_RESULT.QUIT then
         return false
     end
-    local q3 = me:quest(QUEST_SKULL_NECKLACE_3)
+    local q3 = me:quest(quest.QUEST_SKULL_NECKLACE_3)
     if q3 == nil then
-        q3 = me:start_quest(QUEST_SKULL_NECKLACE_3)
+        q3 = me:start_quest(quest.QUEST_SKULL_NECKLACE_3)
         if q3 == nil then
             return true
         end
@@ -73,14 +74,14 @@ local function do_sub3_turnin(me, npc)
         { ['item'] = { ["좌황활력환"] = 1 } },
         { ['item'] = { ["과일나라"] = 1 } }
     )
-    if code == EXCHANGE_RESULT.LACK_COST then
+    if code == server.EXCHANGE_RESULT.LACK_COST then
         me:dialog(npc, "아이템을 제거할 수 없습니다.", false, false)
         return true
-    elseif code == EXCHANGE_RESULT.LACK_CAPACITY then
+    elseif code == server.EXCHANGE_RESULT.LACK_CAPACITY then
         me:dialog(npc, "소지품이 가득 차서 과일나라를 줄 수 없습니다.", false, false)
         return true
     end
-    local q3 = me:quest(QUEST_SKULL_NECKLACE_3)
+    local q3 = me:quest(quest.QUEST_SKULL_NECKLACE_3)
     if q3 then
         q3:step(3)
     end
@@ -88,8 +89,8 @@ local function do_sub3_turnin(me, npc)
 end
 
 function NPC_465(me, npc)
-    local q2 = me:quest(QUEST_SKULL_NECKLACE_2)
-    local q3 = me:quest(QUEST_SKULL_NECKLACE_3)
+    local q2 = me:quest(quest.QUEST_SKULL_NECKLACE_2)
+    local q3 = me:quest(quest.QUEST_SKULL_NECKLACE_3)
 
     if q2 and q2:step() == 1 then
         if do_sub2_receive_letter(me, npc) then
@@ -116,7 +117,7 @@ function NPC_465(me, npc)
         return
     end
 
-    local main_q = me:quest(QUEST_SKULL_NECKLACE)
+    local main_q = me:quest(quest.QUEST_SKULL_NECKLACE)
     if main_q then
         local s = main_q:step()
         if s == 2 then

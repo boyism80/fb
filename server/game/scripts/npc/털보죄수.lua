@@ -1,13 +1,13 @@
-
+local quest = require('lib.quest')
 function NPC_392(me, npc)
-    local quest = me:quest(QUEST_SILENCE)
+    local q = me:quest(quest.QUEST_SILENCE)
 
-    if quest ~= nil then
-        local param = quest:param() or ""
+    if q ~= nil then
+        local param = q:param() or ""
         local solved = param:match("^%d+,%d+,(%d+)$")
         if solved == "1" then
             me:mkitem("담배", 1)
-            quest:param("")
+            q:param("")
             local btn = me:dialog(npc, "이야, 고맙네 고마워! 자네 덕분에 여자죄수의 큰 코를 납작하게 눌러 버릴 수 있었다네!", false, true)
             if btn == DIALOG_RESULT.QUIT then
                 return
@@ -16,7 +16,7 @@ function NPC_392(me, npc)
         end
     end
 
-    if quest == nil or quest:param() == "" or not quest:param():match("^%d+,%d+,0$") then
+    if q == nil or q:param() == "" or not q:param():match("^%d+,%d+,0$") then
         local btn = me:dialog(npc, "자네, 혹시 문제풀이를 잘 하는가? \\n 오랫동안 감옥에 있다보니 저 건너편에 앉아있는 여 죄수와 계산문제를 주고 받는게 내 삶의 낙이라네.", false, true)
         if btn == DIALOG_RESULT.QUIT then
             return
@@ -32,14 +32,14 @@ function NPC_392(me, npc)
 
         local a = math.random(1, 1000)
         local b = math.random(1, 1000)
-        if quest == nil then
-            quest = me:start_quest(QUEST_SILENCE)
-            if quest == nil then
+        if q == nil then
+            q = me:start_quest(quest.QUEST_SILENCE)
+            if q == nil then
                 return
             end
         end
-        if quest then
-            quest:param(string.format("%d,%d,0", a, b))
+        if q then
+            q:param(string.format("%d,%d,0", a, b))
         end
         btn = me:dialog(npc, string.format("자, 내가 풀어야할 문제는 \\n [ %d ] + [ %d ] = [ ? ] \\n 이라네. [?]의 답을 생각해 건너편 죄수에게 전해주게.", a, b), false, true)
         if btn == DIALOG_RESULT.QUIT then
@@ -48,7 +48,7 @@ function NPC_392(me, npc)
         return
     end
 
-    local param = quest:param() or ""
+    local param = q:param() or ""
     local a, b = param:match("^(%d+),(%d+),0$")
     if a and b then
         a = tonumber(a)

@@ -1,3 +1,5 @@
+local server = require('lib.server')
+
 local DRAGON_LOW_LINES = {
     { type_name = '용마', check_items = { '용마제일검', '용마제이검', '용마제삼검', '용마제사검', '용마제오검' }, success_items = { '용마제이검', '용마제삼검', '용마제사검', '용마제오검', '용마제육검' } },
     { type_name = '용천', check_items = { '용천제일검', '용천제이검', '용천제삼검', '용천제사검', '용천제오검' }, success_items = { '용천제이검', '용천제삼검', '용천제사검', '용천제오검', '용천제육검' } },
@@ -99,11 +101,11 @@ function NPC_139(me, npc)
     local roll = math.random(1, 100)
     local reward = (roll <= rate) and { ['item'] = { [success_item] = 1 } } or nil
     local code = me:exchange(cost, reward)
-    if code == EXCHANGE_RESULT.LACK_COST then
+    if code == server.EXCHANGE_RESULT.LACK_COST then
         me:dialog(npc, '자네는 아직 용무기를 각성시킬 준비가 완벽하지 못하군.', false, false)
         return
     end
-    if code == EXCHANGE_RESULT.LACK_CAPACITY then
+    if code == server.EXCHANGE_RESULT.LACK_CAPACITY then
         me:dialog(npc, '소지품이 가득 차서 ' .. name_with(success_item, '을', '를') .. ' 받을 수 없군.', false, false)
         return
     end

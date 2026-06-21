@@ -1,3 +1,5 @@
+local server = require('lib.server')
+
 function NPC_189(me, npc)
     local selected, button = me:list(npc, '안녕하세요. 어떻게 오셨나요?', {'방송쿠폰', '웨딩드레스 수선'})
     if button == DIALOG_RESULT.QUIT then
@@ -85,11 +87,11 @@ function NPC_189(me, npc)
             { ['item'] = cost },
             { ['item'] = { [result_name] = 1 } }
         )
-        if code == EXCHANGE_RESULT.LACK_COST then
+        if code == server.EXCHANGE_RESULT.LACK_COST then
             me:dialog(npc, '재료가 부족한데? 재료를 다 가져와야 수선해줄 수 있어.', false, true)
             return
         end
-        if code == EXCHANGE_RESULT.LACK_CAPACITY then
+        if code == server.EXCHANGE_RESULT.LACK_CAPACITY then
             me:dialog(npc, '소지품이 가득 차서 줄 수가 없네.', false, true)
             return
         end

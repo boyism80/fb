@@ -1,3 +1,5 @@
+local quest = require('lib.quest')
+
 function NPC_357(me, npc)
     local button = me:dialog(npc, "안녕하세요? 저는 백세인입니다.", false, true)
     if button == DIALOG_RESULT.QUIT then
@@ -9,13 +11,13 @@ function NPC_357(me, npc)
         return
     end
 
-    local quest = me:quest(QUEST_BAEK_MONGYEON)
-    if quest == nil then
+    local q = me:quest(quest.QUEST_BAEK_MONGYEON)
+    if q == nil then
         me:dialog(npc, "준비중입니다.", false, false)
         return
     end
 
-    if quest:step() < 1 then
+    if q:step() < 1 then
         me:dialog(npc, "준비중입니다.", false, false)
         return
     end

@@ -1,3 +1,5 @@
+local quest = require('lib.quest')
+
 function ON_MOB_DIE_1007(me, you)
     if you == nil or me == nil then
         return
@@ -6,8 +8,8 @@ function ON_MOB_DIE_1007(me, you)
         return
     end
 
-    local quest = you:quest(QUEST_DRAGON_KING)
-    if quest == nil or quest:step() ~= 16 then
+    local q = you:quest(quest.QUEST_DRAGON_KING)
+    if q == nil or q:step() ~= 16 then
         return
     end
 

@@ -1,4 +1,6 @@
 -- Return spell: warp to random tavern by nation
+local server = require('lib.server')
+
 function ON_CAST_5(me, spell)
     local sound = 33
     local mp = 30
@@ -13,7 +15,7 @@ function ON_CAST_5(me, spell)
     end
     me:mp_down(mp)
 
-    if warp_to_return_map(me) ~= nil then
+    if server.warp_to_return_map(me) ~= nil then
         return
     end
 

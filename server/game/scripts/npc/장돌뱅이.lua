@@ -1,9 +1,12 @@
+local quest = require('lib.quest')
+local server = require('lib.server')
+
 local ACHIEVEMENT_RABBIT_CATCH = 20
 local ITEM_NEURAEJINDO = '뇌진도'
 
 
 local function run_cidequest_jangdol(me, npc)
-    local q = me:quest(QUEST_CIDEQUEST)
+    local q = me:quest(quest.QUEST_CIDEQUEST)
     if q == nil or q:step() ~= 1 then
         me:dialog(npc, "지금은 대화할 때가 아닌 것 같군.", false, false)
         return
@@ -69,19 +72,19 @@ function NPC_159(me, npc)
             { ['item'] = { ["금은보화"] = 1 } },
             { ['money'] = 15000 }
         )
-        if code == EXCHANGE_RESULT.LACK_COST then
+        if code == server.EXCHANGE_RESULT.LACK_COST then
             me:dialog(npc, "금은보화를 가지고 있거든 말을 걸어주게나...", false, false)
             return
         end
-        if code == EXCHANGE_RESULT.LACK_CAPACITY then
+        if code == server.EXCHANGE_RESULT.LACK_CAPACITY then
             me:dialog(npc, "금전을 받을 여유가 없군요.", false, false)
             return
         end
         me:dialog(npc, "이 귀한것을 가지고 있다니... 자, 여기 만오천전을 줄테니 어서 가져가게나.", false, false)
         return
     end
-    local quest = me:quest(QUEST_RABBIT_LIVER)
-    if quest == nil then
+    local q = me:quest(quest.QUEST_RABBIT_LIVER)
+    if q == nil then
         me:dialog(npc, '지금은 이야기를 할 때가 아니군..', false, false)
         return
     end
@@ -125,7 +128,7 @@ function NPC_159(me, npc)
         me:dialog(npc, '뇌진도가 없지 않은가?', false, false)
         return
     end
-    quest:step(2)
+    q:step(2)
     me:rmitem(ITEM_NEURAEJINDO, 1, ITEM_DELETE_TYPE.GIVE)
     me:push_achievement(ACHIEVEMENT_RABBIT_CATCH, '토깽이를 생포하자.', 7, 1)
     ::NPC_159_0005::

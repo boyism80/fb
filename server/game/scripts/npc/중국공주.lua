@@ -1,7 +1,10 @@
-function NPC_143(me, npc)
-    local quest = me:quest(QUEST_PRINCESS_RING)
+local quest = require('lib.quest')
+local server = require('lib.server')
 
-    if quest == nil then
+function NPC_143(me, npc)
+    local q = me:quest(quest.QUEST_PRINCESS_RING)
+
+    if q == nil then
         ::NPC_143_0001::
         local btn = me:dialog(npc, '제가 강에서 배를 타다가 반지를 빠뜨리고 말았어요. 그 반지는 옆나라의 제 정혼자인 왕자가 준 반지라 잃어버리면 그 나라와의 관계까지 위험해질수 있어요.', false, true)
         if btn == DIALOG_RESULT.QUIT then
@@ -24,7 +27,7 @@ function NPC_143(me, npc)
             return
         end
         btn = me:dialog(npc, '정말 고마워요. 그럼 믿고 기다리죠.', false, true)
-        local q = me:start_quest(QUEST_PRINCESS_RING)
+        local q = me:start_quest(quest.QUEST_PRINCESS_RING)
         if q == nil then
             me:dialog(npc, '퀘스트 시작 실패', false, true)
             return
@@ -33,7 +36,7 @@ function NPC_143(me, npc)
         return
     end
 
-    if quest:completed() then
+    if q:completed() then
         me:dialog(npc, '저번엔 정말로 감사했습니다.', false, true)
         return
     end
@@ -50,14 +53,14 @@ function NPC_143(me, npc)
         { ['item'] = { ['공주의반지'] = 1 } },
         { ['item'] = { ['청옥반지'] = 1 } }
     )
-    if code == EXCHANGE_RESULT.LACK_COST then
+    if code == server.EXCHANGE_RESULT.LACK_COST then
         me:dialog(npc, '아직 제 반지가 없으신거같은데..', false, true)
         return
     end
-    if code == EXCHANGE_RESULT.LACK_CAPACITY then
+    if code == server.EXCHANGE_RESULT.LACK_CAPACITY then
         me:dialog(npc, '소지품이 가득 차서 청옥반지를 받을 수 없습니다.', false, true)
         return
     end
-    quest:complete()
+    q:complete()
     me:push_achievement(3, '잃어버린 공주의 반지를 되찾아 주다.', 7, 1)
 end

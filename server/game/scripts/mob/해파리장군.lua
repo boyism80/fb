@@ -1,3 +1,5 @@
+local quest = require('lib.quest')
+
 function ON_MOB_DIE_1093(me, you)
     if you == nil or me == nil then
         return
@@ -6,8 +8,8 @@ function ON_MOB_DIE_1093(me, you)
         return
     end
 
-    local quest = you:quest(QUEST_DRAGON_KING)
-    if quest == nil or quest:step() ~= 15 or quest:progress() ~= 0 then
+    local q = you:quest(quest.QUEST_DRAGON_KING)
+    if q == nil or q:step() ~= 15 or q:progress() ~= 0 then
         return
     end
 
@@ -41,7 +43,7 @@ function ON_MOB_DIE_1093(me, you)
         return
     end
 
-    quest:progress(1)
+    q:progress(1)
     you:push_achievement(19, "해파리장군을 생포하였다.", 7, 0)
 end
 

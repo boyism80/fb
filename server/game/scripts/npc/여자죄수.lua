@@ -1,7 +1,7 @@
-
+local quest = require('lib.quest')
 function NPC_393(me, npc)
-    local quest = me:quest(QUEST_SILENCE)
-    if quest == nil then
+    local q = me:quest(quest.QUEST_SILENCE)
+    if q == nil then
         local btn = me:dialog(npc, "무슨 문제를 낼까...", false, true)
         if btn == DIALOG_RESULT.QUIT then
             return
@@ -9,7 +9,7 @@ function NPC_393(me, npc)
         return
     end
 
-    local param = quest:param() or ""
+    local param = q:param() or ""
     local a, b, solved = param:match("^(%d+),(%d+),(%d+)$")
     if not a or not b or solved ~= "0" then
         local btn = me:dialog(npc, "무슨 문제를 낼까...", false, true)
@@ -33,7 +33,7 @@ function NPC_393(me, npc)
 
     local answer = tonumber(raw)
     if answer == expected then
-        quest:param(string.format("%d,%d,1", a, b))
+        q:param(string.format("%d,%d,1", a, b))
         local btn = me:dialog(npc, "음... 문제가 너무 쉬웠던 것 같네요. 하지만 털보죄수에게 많은 문제를 풀어보라고 했었는데, 다른 문제들은 못풀었을 거에요.", false, true)
         if btn == DIALOG_RESULT.QUIT then
             return

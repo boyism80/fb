@@ -96,6 +96,7 @@ private:
     async::task<void> on_die(game_bot& bot, const game_resp::die& response);
     async::task<void> on_buff(game_bot& bot, const game_resp::spell_buff& response);
     async::task<void> on_unbuff(game_bot& bot, const game_resp::spell_unbuff& response);
+    async::task<void> on_update_cc(game_bot& bot, const game_resp::update_cc& response);
     async::task<void> on_update(game_bot& bot, const game_resp::update& response);
     async::task<void> on_map(game_bot& bot, const game_resp::map_config& response);
     async::task<void> on_transfer(game_bot& bot, const fb::protocol::response::transfer& response);

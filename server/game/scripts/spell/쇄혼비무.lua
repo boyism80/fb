@@ -1,5 +1,7 @@
 -- 쇄혼비무 캐스팅
-function ON_CAST_1019(me, spell)
+local spell = require('lib.spell')
+
+function ON_CAST_1019(me, sp)
     local map = me:map()
     if map == nil then
         return
@@ -19,16 +21,16 @@ function ON_CAST_1019(me, spell)
 
     for i = 1, 3 do
         if not map:movable(me, i) then
-            return failed_attack_spell(me)
+            return spell.failed_attack(me)
         end
     end
 
-    local nears = nears_exclude_item(me)
+    local nears = spell.nears_exclude_item(me)
     local x, y = me:position()
     local direction = me:direction()
-    local front = front_obj(x, y, direction, 4, nears)
+    local front = spell.front_obj(x, y, direction, 4, nears)
     if front == nil then
-        return failed_attack_spell(me)
+        return spell.failed_attack(me)
     end
 
     if direction == DIRECTION.LEFT then
@@ -42,5 +44,5 @@ function ON_CAST_1019(me, spell)
     end 
     me:position(x, y)
 
-    attack_cast(me, front, spell, {hp = hp, mp = 0, damage = damage, message = message, sound = sound, effect = effect})
+    spell.attack_cast(me, front, sp, {hp = hp, mp = 0, damage = damage, message = message, sound = sound, effect = effect})
 end

@@ -1,8 +1,9 @@
-
+local quest = require('lib.quest')
+local server = require('lib.server')
 local COOLDOWN_SEC = 82800
 
 local function next_available(me)
-    local q = me:quest(QUEST_JANGAJI)
+    local q = me:quest(quest.QUEST_JANGAJI)
     if q == nil then
         return 0
     end
@@ -18,9 +19,9 @@ local function set_cooldown(me)
     if not now_ts or now_ts <= 0 then
         return
     end
-    local q = me:quest(QUEST_JANGAJI)
+    local q = me:quest(quest.QUEST_JANGAJI)
     if q == nil then
-        q = me:start_quest(QUEST_JANGAJI)
+        q = me:start_quest(quest.QUEST_JANGAJI)
         if q == nil then
             return
         end
@@ -35,11 +36,11 @@ local function do_exchange(me, npc, need_count, reward_name)
         { ['item'] = { ["잔가지"] = need_count } },
         { ['item'] = { [reward_name] = 1 } }
     )
-    if code == EXCHANGE_RESULT.LACK_COST then
+    if code == server.EXCHANGE_RESULT.LACK_COST then
         me:dialog(npc, "잔가지를 몇개만 주워다 주시면 제가 가진 나뭇가지들을 드리겠습니다. 잘 부탁 드리겠습니다.", false, false)
         return
     end
-    if code == EXCHANGE_RESULT.LACK_CAPACITY then
+    if code == server.EXCHANGE_RESULT.LACK_CAPACITY then
         me:dialog(npc, "소지품이 가득 차서 나무를 줄 수 없습니다.", false, false)
         return
     end

@@ -1,3 +1,5 @@
+local quest = require('lib.quest')
+
 function ON_MOB_DIE_1089(me, you)
     if you == nil or me == nil then
         return
@@ -6,8 +8,8 @@ function ON_MOB_DIE_1089(me, you)
         return
     end
 
-    local quest = you:quest(QUEST_DRAGON_KING)
-    if quest == nil or quest:step() ~= 9 then
+    local q = you:quest(quest.QUEST_DRAGON_KING)
+    if q == nil or q:step() ~= 9 then
         return
     end
 
@@ -51,7 +53,7 @@ function ON_MOB_DIE_1089(me, you)
         return
     end
 
-    quest:progress(1)
+    q:progress(1)
     if not you:has_items("내통문서", 1) then
         you:mkitem("내통문서", 1)
         you:push_achievement(19, "내통문서를 얻다.", 7, 0)

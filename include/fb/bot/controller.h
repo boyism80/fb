@@ -5,6 +5,7 @@
 #include <fb/bot/container.h>
 #include <fb/synchronized.h>
 #include <fb/protocol/header.h>
+#include <format>
 
 namespace fb::bot {
 
@@ -34,11 +35,56 @@ public:
     using handle_func = std::function<async::task<void>(BotType&, fb::protocol::header&)>;
     using deserilze_func =
         std::function<async::task<std::shared_ptr<fb::protocol::header>>(fb::stream_reader<big_endian>&)>;
+    using response_cloner_fn = std::function<std::shared_ptr<fb::protocol::header>(const fb::protocol::header&)>;
 
 private:
     std::unordered_map<uint8_t, handle_func>    _handler;
     std::unordered_map<uint8_t, deserilze_func> _deserializer;
     std::shared_mutex                           _handler_mutex;
+
+    inline static std::unordered_map<uint8_t, response_cloner_fn>     _response_cloners;
+    inline static std::unordered_map<std::string, response_cloner_fn> _typed_response_cloners;
+    inline static std::shared_mutex                                   _cloner_mutex;
+
+    template <typename ResponseType> static void register_opcode_response_cloner()
+    {
+        auto unique_lock = std::unique_lock<std::shared_mutex>(_cloner_mutex);
+        if (_response_cloners.contains(ResponseType::opcode))
+            return;
+
+        _response_cloners[ResponseType::opcode] =
+            [](const fb::protocol::header& header) -> std::shared_ptr<fb::protocol::header> {
+            return std::make_shared<ResponseType>(static_cast<const ResponseType&>(header));
+        };
+    }
+
+public:
+    static void register_response_cloner(std::string_view type_key, response_cloner_fn fn)
+    {
+        auto unique_lock                               = std::unique_lock<std::shared_mutex>(_cloner_mutex);
+        _typed_response_cloners[std::string(type_key)] = std::move(fn);
+    }
+
+    static std::shared_ptr<fb::protocol::header> clone_response(uint8_t opcode, const fb::protocol::header& header)
+    {
+        auto shared_lock = std::shared_lock<std::shared_mutex>(_cloner_mutex);
+        auto it          = _response_cloners.find(opcode);
+        if (it == _response_cloners.end())
+            throw std::runtime_error(std::format("response opcode {:#04x} is not registered", opcode));
+
+        return it->second(header);
+    }
+
+    static std::shared_ptr<fb::protocol::header> clone_response_by_type(std::string_view            type_key,
+                                                                        const fb::protocol::header& header)
+    {
+        auto shared_lock = std::shared_lock<std::shared_mutex>(_cloner_mutex);
+        auto it          = _typed_response_cloners.find(std::string(type_key));
+        if (it == _typed_response_cloners.end())
+            throw std::runtime_error(std::format("response type {} is not registered", type_key));
+
+        return it->second(header);
+    }
 
 protected:
     fb::synchronized<std::unordered_map<uint32_t, std::shared_ptr<BotType>>> _bots;
@@ -121,7 +167,7 @@ public:
                 return;
         }
 
-        this->bind<ResponseType>([](BotType& bot, const ResponseType& protocol) -> async::task<void> {
+        this->bind<ResponseType>([](BotType& bot, ResponseType& protocol) -> async::task<void> {
             co_return;
         });
     }
@@ -289,6 +335,8 @@ public:
         static_assert(std::is_same_v<decltype(ResponseType::opcode), const uint8_t>,
                       "ResponseType must have 'static constexpr uint8_t header' member");
 
+        register_opcode_response_cloner<ResponseType>();
+
         auto unique_lock = std::unique_lock<std::shared_mutex>(this->_handler_mutex);
 
         this->_deserializer.insert(
@@ -378,19 +426,20 @@ bot<BotType>::bot(bot_controller<BotType>& bot_controller, uint32_t id) :
 { }
 
 template <typename BotType>
-template <typename ResponseType>
-async::task<ResponseType> bot<BotType>::request(std::shared_ptr<BotType>                             target,
-                                                const fb::protocol::header&                          protocol,
-                                                const std::function<bool(const ResponseType& resp)>& condition,
-                                                const fb::model::timespan&                           timeout,
-                                                bool                                                 encrypt,
-                                                bool                                                 wrap)
+async::task<std::shared_ptr<fb::protocol::header>>
+bot<BotType>::request_by_opcode(std::shared_ptr<BotType>                                     target,
+                                uint8_t                                                      response_opcode,
+                                const fb::protocol::header&                                  protocol,
+                                const std::function<bool(const fb::protocol::header& resp)>& condition,
+                                const fb::model::timespan&                                   timeout,
+                                bool                                                         encrypt,
+                                bool                                                         wrap,
+                                std::function<std::shared_ptr<fb::protocol::header>(const fb::protocol::header&)> clone)
 {
-    target->controller.template ensure_handler_registered<ResponseType>();
+    static_cast<base_bot_controller&>(target->controller).ensure_handler_registered(response_opcode);
 
     auto self_ptr = std::static_pointer_cast<BotType>(target->shared_from_this());
-    auto context =
-        std::make_shared<typename BotType::template request_context<ResponseType>>(self_ptr, ResponseType::opcode);
+    auto context  = std::make_shared<request_erased_context>(self_ptr, response_opcode);
 
     if (timeout > 0s)
     {
@@ -409,22 +458,28 @@ async::task<ResponseType> bot<BotType>::request(std::shared_ptr<BotType>        
         builder.enqueue();
     }
 
-    if (target->_hooks.contains(ResponseType::opcode) == false)
-        target->_hooks.insert({ResponseType::opcode, {}});
+    if (target->_hooks.contains(response_opcode) == false)
+        target->_hooks.insert({response_opcode, {}});
 
-    target->_hooks[ResponseType::opcode].push_back(hook_params{.condition =
-                                                                   [context, condition](const auto& opcode) {
-                                                                       auto& protocol =
-                                                                           static_cast<const ResponseType&>(opcode);
-                                                                       return condition(protocol);
-                                                                   },
-                                                               .matched =
-                                                                   [context](const auto& opcode) {
-                                                                       auto& protocol =
-                                                                           static_cast<const ResponseType&>(opcode);
-                                                                       context->complete_success(protocol);
-                                                                   },
-                                                               .context_ptr = context.get()});
+    target->_hooks[response_opcode].push_back(
+        hook_params{.condition =
+                        [condition](const auto& opcode) {
+                            return condition(opcode);
+                        },
+                    .matched =
+                        [context, response_opcode, clone = std::move(clone)](const auto& opcode) {
+                            std::shared_ptr<fb::protocol::header> response;
+                            if (clone)
+                            {
+                                response = clone(opcode);
+                            }
+                            else
+                            {
+                                response = bot_controller<BotType>::clone_response(response_opcode, opcode);
+                            }
+                            context->complete_success(std::move(response));
+                        },
+                    .context_ptr = context.get()});
 
     async::awaitable_then(this->send(protocol, encrypt, wrap), [](auto result) {
         try
@@ -436,7 +491,55 @@ async::task<ResponseType> bot<BotType>::request(std::shared_ptr<BotType>        
             fb::logger::fatal(e.what());
         }
     });
-    return context->task();
+    co_return co_await context->task();
+}
+
+template <typename BotType>
+async::task<std::shared_ptr<fb::protocol::header>>
+bot<BotType>::request_by_opcode(uint8_t                                                      response_opcode,
+                                const fb::protocol::header&                                  protocol,
+                                const std::function<bool(const fb::protocol::header& resp)>& condition,
+                                const fb::model::timespan&                                   timeout,
+                                bool                                                         encrypt,
+                                bool                                                         wrap,
+                                std::function<std::shared_ptr<fb::protocol::header>(const fb::protocol::header&)> clone)
+{
+    co_return co_await this->request_by_opcode(this->shared_from_this_as<BotType>(),
+                                               response_opcode,
+                                               protocol,
+                                               condition,
+                                               timeout,
+                                               encrypt,
+                                               wrap,
+                                               std::move(clone));
+}
+
+template <typename BotType>
+template <typename ResponseType>
+async::task<ResponseType> bot<BotType>::request(std::shared_ptr<BotType>                             target,
+                                                const fb::protocol::header&                          protocol,
+                                                const std::function<bool(const ResponseType& resp)>& condition,
+                                                const fb::model::timespan&                           timeout,
+                                                bool                                                 encrypt,
+                                                bool                                                 wrap)
+{
+    target->controller.template ensure_handler_registered<ResponseType>();
+
+    auto response = co_await this->request_by_opcode(
+        target,
+        ResponseType::opcode,
+        protocol,
+        [&condition](const fb::protocol::header& resp) {
+            return condition(static_cast<const ResponseType&>(resp));
+        },
+        timeout,
+        encrypt,
+        wrap,
+        [](const fb::protocol::header& header) -> std::shared_ptr<fb::protocol::header> {
+            return std::make_shared<ResponseType>(static_cast<const ResponseType&>(header));
+        });
+
+    co_return *static_cast<ResponseType*>(response.get());
 }
 
 template <typename BotType>

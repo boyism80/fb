@@ -1,5 +1,6 @@
 #include <fb/bot/game_controller.h>
 #include <fb/bot/container.h>
+#include <fb/bot/integration/protocol_registry.h>
 
 using namespace fb::bot;
 
@@ -24,6 +25,7 @@ game_bot_controller::game_bot_controller(bot_container& container) :
     this->bind(&game_bot_controller::on_die);
     this->bind(&game_bot_controller::on_buff);
     this->bind(&game_bot_controller::on_unbuff);
+    this->bind(&game_bot_controller::on_update_cc);
     this->bind(&game_bot_controller::on_update);
     this->bind(&game_bot_controller::on_map);
     this->bind(&game_bot_controller::on_transfer);
@@ -33,6 +35,8 @@ game_bot_controller::game_bot_controller(bot_container& container) :
     this->bind(&game_bot_controller::on_item_remove);
     this->bind(&game_bot_controller::on_internal_info);
     this->bind(&game_bot_controller::on_ping);
+
+    integration::protocol_registry::register_all();
 }
 
 bool game_bot_controller::decrypt_policy(int opcode) const
@@ -243,6 +247,12 @@ async::task<void> game_bot_controller::on_unbuff(game_bot& bot, const game_resp:
 {
     // Remove the buff from the bot's active buffs by name
     bot.remove_buff(response.buff_name);
+    co_return;
+}
+
+async::task<void> game_bot_controller::on_update_cc(game_bot& bot, const game_resp::update_cc& response)
+{
+    bot.set_crowd_control(static_cast<uint32_t>(response.cc));
     co_return;
 }
 

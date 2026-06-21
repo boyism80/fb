@@ -1,4 +1,5 @@
-
+local quest = require('lib.quest')
+local server = require('lib.server')
 function NPC_451(me, npc)
     local CLASS_TO_WEAPON = {
         [CLASS.WARRIOR] = "진월신검",
@@ -23,8 +24,8 @@ function NPC_451(me, npc)
         return w:model():name()
     end
 
-    local quest = me:quest(QUEST_JAPAN_LEGEND_WEAPON)
-    local first_visit = (quest == nil or quest:step() == 0)
+    local q = me:quest(quest.QUEST_JAPAN_LEGEND_WEAPON)
+    local first_visit = (q == nil or q:step() == 0)
 
     if first_visit then
         if get_equipped_weapon_name() ~= weapon_name then
@@ -73,15 +74,15 @@ function NPC_451(me, npc)
         if button == DIALOG_RESULT.QUIT then
             return
         end
-        if quest == nil then
-            quest = me:start_quest(QUEST_JAPAN_LEGEND_WEAPON)
-            if quest == nil then
+        if q == nil then
+            q = me:start_quest(quest.QUEST_JAPAN_LEGEND_WEAPON)
+            if q == nil then
                 me:dialog(npc, "퀘스트를 시작할 수 없습니다.", false, false)
                 return
             end
         end
-        if quest ~= nil then
-            quest:step(1)
+        if q ~= nil then
+            q:step(1)
         end
         return
     end
@@ -195,11 +196,11 @@ function NPC_451(me, npc)
         { ['item'] = { ["낡은망치"] = 1, ["금강석"] = 1, [unequipped] = 1 } },
         { ['item'] = { [weapon_new] = 1 } }
     )
-    if code == EXCHANGE_RESULT.LACK_COST then
+    if code == server.EXCHANGE_RESULT.LACK_COST then
         me:dialog(npc, "낡은망치나 금강석, 무기를 제거할 수 없소.", false, false)
         return
     end
-    if code == EXCHANGE_RESULT.LACK_CAPACITY then
+    if code == server.EXCHANGE_RESULT.LACK_CAPACITY then
         me:dialog(npc, "소지품이 가득 차서 새 무기를 줄 수 없소.", false, false)
         return
     end

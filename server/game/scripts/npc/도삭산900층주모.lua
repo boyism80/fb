@@ -1,6 +1,8 @@
-function NPC_91(me, npc)
+local npc = require('lib.npc')
+
+function NPC_91(me, npc_obj)
 ::NPC_91_000::
-    local selected = me:list(npc, '안녕하세요. 어떻게 오셨나요?', {
+    local selected = me:list(npc_obj, '안녕하세요. 어떻게 오셨나요?', {
         '물건 사기',
         '물건 팔기',
         '금전 맡기기',
@@ -13,35 +15,35 @@ function NPC_91(me, npc)
     end
 
     if selected == 0 then
-        if NPC_SELL_DIALOG(me, npc) == DIALOG_RESULT.NEXT then
+        if npc.sell_dialog(me, npc_obj) == DIALOG_RESULT.NEXT then
             goto NPC_91_000
         end
     elseif selected == 1 then
-        if NPC_BUY_DIALOG(me, npc) == DIALOG_RESULT.NEXT then
+        if npc.buy_dialog(me, npc_obj) == DIALOG_RESULT.NEXT then
             goto NPC_91_000
         end
     elseif selected == 2 then
-        if NPC_HOLD_MONEY_DIALOG(me, npc) == DIALOG_RESULT.NEXT then
+        if npc.hold_money_dialog(me, npc_obj) == DIALOG_RESULT.NEXT then
             goto NPC_91_000
         end
     elseif selected == 3 then
-        if NPC_RETURN_MONEY_DIALOG(me, npc) == DIALOG_RESULT.NEXT then
+        if npc.return_money_dialog(me, npc_obj) == DIALOG_RESULT.NEXT then
             goto NPC_91_000
         end
     elseif selected == 4 then
-        if NPC_HOLD_ITEM_DIALOG(me, npc) == DIALOG_RESULT.NEXT then
+        if npc.hold_item_dialog(me, npc_obj) == DIALOG_RESULT.NEXT then
             goto NPC_91_000
         end
     elseif selected == 5 then
-        if NPC_RETURN_ITEM_DIALOG(me, npc) == DIALOG_RESULT.NEXT then
+        if npc.return_item_dialog(me, npc_obj) == DIALOG_RESULT.NEXT then
             goto NPC_91_000
         end
     end
 end
 
-function NPC_260(me, npc)
+function NPC_260(me, npc_obj)
 ::NPC_260_000::
-    local selected = me:list(npc, '안녕하세요. 어떻게 오셨나요?', {
+    local selected = me:list(npc_obj, '안녕하세요. 어떻게 오셨나요?', {
         '물건 사기',
         '물건 팔기',
         '금전 맡기기',
@@ -54,27 +56,27 @@ function NPC_260(me, npc)
     end
 
     if selected == 0 then
-        if NPC_SELL_DIALOG(me, npc) == DIALOG_RESULT.NEXT then
+        if npc.sell_dialog(me, npc_obj) == DIALOG_RESULT.NEXT then
             goto NPC_260_000
         end
     elseif selected == 1 then
-        if NPC_BUY_DIALOG(me, npc) == DIALOG_RESULT.NEXT then
+        if npc.buy_dialog(me, npc_obj) == DIALOG_RESULT.NEXT then
             goto NPC_260_000
         end
     elseif selected == 2 then
-        if NPC_HOLD_MONEY_DIALOG(me, npc) == DIALOG_RESULT.NEXT then
+        if npc.hold_money_dialog(me, npc_obj) == DIALOG_RESULT.NEXT then
             goto NPC_260_000
         end
     elseif selected == 3 then
-        if NPC_RETURN_MONEY_DIALOG(me, npc) == DIALOG_RESULT.NEXT then
+        if npc.return_money_dialog(me, npc_obj) == DIALOG_RESULT.NEXT then
             goto NPC_260_000
         end
     elseif selected == 4 then
-        if NPC_HOLD_ITEM_DIALOG(me, npc) == DIALOG_RESULT.NEXT then
+        if npc.hold_item_dialog(me, npc_obj) == DIALOG_RESULT.NEXT then
             goto NPC_260_000
         end
     elseif selected == 5 then
-        if NPC_RETURN_ITEM_DIALOG(me, npc) == DIALOG_RESULT.NEXT then
+        if npc.return_item_dialog(me, npc_obj) == DIALOG_RESULT.NEXT then
             goto NPC_260_000
         end
     end

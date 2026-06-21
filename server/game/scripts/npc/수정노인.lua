@@ -1,4 +1,4 @@
-
+local server = require('lib.server')
 local MATERIAL = "수정"
 local RING_NAMES = { "수정반지1", "수정반지2", "수정반지3", "수정반지4", "수정반지5" }
 
@@ -57,11 +57,11 @@ function NPC_569(me, npc)
         { ['item'] = { [MATERIAL] = need_count } },
         { ['item'] = { [reward_name] = 1 } }
     )
-    if code == EXCHANGE_RESULT.LACK_COST then
+    if code == server.EXCHANGE_RESULT.LACK_COST then
         me:dialog(npc, "음... 자네는 가진 " .. MATERIAL .. "이 부족한 것 같군...", false, false)
         return
     end
-    if code == EXCHANGE_RESULT.LACK_CAPACITY then
+    if code == server.EXCHANGE_RESULT.LACK_CAPACITY then
         me:dialog(npc, "소지품이 가득 차서 " .. reward_name .. "을 드리지 못합니다.", false, false)
         return
     end

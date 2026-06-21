@@ -1,4 +1,5 @@
-
+local quest = require('lib.quest')
+local server = require('lib.server')
 local BEAD_OPTIONS = {
     { "갈색구슬조각", "고대금속결정'양" },
     { "자색구슬조각", "고대금속결정'양" },
@@ -56,7 +57,7 @@ local function run_quest_accept(me, npc)
     if btn == DIALOG_RESULT.PREV then
         goto NPC_367_0014
     end
-    local q = me:start_quest(QUEST_ANCIENT_RELIC)
+    local q = me:start_quest(quest.QUEST_ANCIENT_RELIC)
     if q == nil then
         me:dialog(npc, "퀘스트를 시작할 수 없습니다.", false, false)
         return
@@ -122,11 +123,11 @@ local function run_bead_exchange(me, npc)
         { ['item'] = { [bead_item] = count } },
         reward
     )
-    if code == EXCHANGE_RESULT.LACK_COST then
+    if code == server.EXCHANGE_RESULT.LACK_COST then
         me:dialog(npc, bead_item .. " " .. name_with(bead_item, '이', '가') .. " 부족하지 않은가?", false, false)
         return
     end
-    if code == EXCHANGE_RESULT.LACK_CAPACITY then
+    if code == server.EXCHANGE_RESULT.LACK_CAPACITY then
         me:dialog(npc, "소지품이 가득 차서 " .. name_with(reward_item, '을', '를') .. " 받을 수 없네.", false, false)
         return
     end
@@ -135,8 +136,8 @@ local function run_bead_exchange(me, npc)
 end
 
 local function run_help_excavation(me, npc)
-    local quest = me:quest(QUEST_ANCIENT_RELIC)
-    if quest == nil then
+    local q = me:quest(quest.QUEST_ANCIENT_RELIC)
+    if q == nil then
         run_quest_accept(me, npc)
         return
     end

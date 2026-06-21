@@ -1,5 +1,7 @@
 -- 누리의빛 캐스팅
-function ON_CAST_2001(me, spell)
+local spell = require('lib.spell')
+
+function ON_CAST_2001(me, sp)
     local you = me:front()
     if you == nil then
         return
@@ -8,7 +10,7 @@ function ON_CAST_2001(me, spell)
     local mp = 30
     local effect = nil
     local sound = 19
-    if not spell_cast(me, you, spell, {mp=mp, sound=sound, effect=effect}) then
+    if not spell.cast(me, you, sp, {mp=mp, sound=sound, effect=effect}) then
         return
     end
 

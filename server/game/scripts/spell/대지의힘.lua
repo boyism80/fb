@@ -1,5 +1,7 @@
 -- 대지의힘 캐스팅
-function ON_CAST_3001(me, you, spell)
+local spell = require('lib.spell')
+
+function ON_CAST_3001(me, you, sp)
     if not you:is(OBJECT_TYPE.CHARACTER) then
         return me:message('걸리지 않습니다.')
     end
@@ -8,17 +10,17 @@ function ON_CAST_3001(me, you, spell)
     local sound = 21
     local effect = 11
     local buff_time = 5
-    if buff_cast(me, you, spell, {mp = mp, sound = sound, effect = effect}) then
-        you:buff(spell, buff_time, me)
+    if spell.buff_cast(me, you, sp, {mp = mp, sound = sound, effect = effect}) then
+        you:buff(sp, buff_time, me)
     end
 end
 
 -- 대지의힘 버프 효과
-function ON_BUFF_3001(me, spell)
+function ON_BUFF_3001(me, sp)
     me:buff_str(me:buff_str()+3)
 end
 
 -- 대지의힘 버프 해제 효과
-function ON_UNBUFF_3001(me, spell)
+function ON_UNBUFF_3001(me, sp)
     me:buff_str(me:buff_str()-3)
 end
