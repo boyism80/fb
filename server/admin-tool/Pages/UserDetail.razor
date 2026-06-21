@@ -5,7 +5,13 @@
 @using Http.Model
 @using Http.Service
 @using Microsoft.AspNetCore.Authorization
+@using Microsoft.AspNetCore.Components.Forms
+@using System.ComponentModel.DataAnnotations
+@using Response = fb.protocol._internal.response
 @inject UserDetailService UserDetailService
+@inject BanService BanService
+@inject DbContext DbContext
+@inject RabbitMqService RabbitMqService
 @inject NavigationManager Navigation
 @attribute [AuthorizeRole(Role.Admin)]
 
@@ -20,7 +26,12 @@
                  ActiveTab="@activeTab"
                  IsLoading="isLoading"
                  ErrorMessage="@errorMessage"
-                 OnDismissError="DismissError">
+                 SuccessMessage="@successMessage"
+                 IsBanProcessing="isBanProcessing"
+                 OnDismissError="DismissError"
+                 OnDismissSuccess="DismissSuccess"
+                 OnBan="ShowBanModal"
+                 OnUnban="ShowUnbanModal">
     @if (core != null && !isLoading)
     {
         @switch (activeTab)
@@ -97,6 +108,76 @@
     }
 </UserDetailShell>
 
+@if (showBanModal)
+{
+    <div class="stitch-modal-backdrop" tabindex="-1">
+        <div class="stitch-modal" @onclick:stopPropagation="true">
+            <div class="stitch-modal-header">
+                <h2 class="stitch-modal-title">유저 밴: @core?.Character.Name</h2>
+                <button type="button" class="btn-close" @onclick="CloseBanModal"></button>
+            </div>
+            <div class="stitch-modal-body">
+                <EditForm Model="@banModel" OnValidSubmit="@HandleBan">
+                    <DataAnnotationsValidator />
+                    <div class="mb-3">
+                        <label for="detailBanReason" class="form-label">사유</label>
+                        <InputTextArea id="detailBanReason" class="form-control" rows="3" @bind-Value="banModel.Reason" />
+                        <ValidationMessage For="@(() => banModel.Reason)" />
+                    </div>
+                    <div class="mb-3">
+                        <label for="detailBanDays" class="form-label">밴 기간</label>
+                        <InputSelect id="detailBanDays" class="form-select" @bind-Value="banModel.Days">
+                            <option value="">영구</option>
+                            <option value="7">7일</option>
+                            <option value="15">15일</option>
+                            <option value="30">30일</option>
+                        </InputSelect>
+                    </div>
+                    <div class="stitch-modal-footer">
+                        <button type="button" class="stitch-btn stitch-btn-neutral" @onclick="CloseBanModal">취소</button>
+                        <button type="submit" class="stitch-btn stitch-btn-primary" disabled="@isBanProcessing">
+                            @if (isBanProcessing)
+                            {
+                                <span class="spinner-border spinner-border-sm me-2" role="status"></span>
+                            }
+                            밴 처리
+                        </button>
+                    </div>
+                </EditForm>
+            </div>
+        </div>
+    </div>
+}
+
+@if (showUnbanModal)
+{
+    <div class="stitch-modal-backdrop" tabindex="-1">
+        <div class="stitch-modal" @onclick:stopPropagation="true">
+            <div class="stitch-modal-header">
+                <h2 class="stitch-modal-title">밴 해제: @core?.Character.Name</h2>
+                <button type="button" class="btn-close" @onclick="CloseUnbanModal"></button>
+            </div>
+            <div class="stitch-modal-body">
+                <p>이 유저의 밴을 해제하시겠습니까?</p>
+                @if (core != null && !string.IsNullOrEmpty(core.UserDetail.BanReason))
+                {
+                    <p><strong>현재 밴 사유:</strong> @core.UserDetail.BanReason</p>
+                }
+                <div class="stitch-modal-footer">
+                    <button type="button" class="stitch-btn stitch-btn-neutral" @onclick="CloseUnbanModal">취소</button>
+                    <button type="button" class="stitch-btn stitch-btn-primary" @onclick="HandleUnban" disabled="@isBanProcessing">
+                        @if (isBanProcessing)
+                        {
+                            <span class="spinner-border spinner-border-sm me-2" role="status"></span>
+                        }
+                        밴 해제
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+}
+
 @code {
     private static readonly HashSet<string> ValidTabs = new(StringComparer.OrdinalIgnoreCase)
     {
@@ -127,7 +208,12 @@
     private string activeTab = "overview";
     private bool isLoading;
     private bool tabLoading;
+    private bool isBanProcessing;
+    private bool showBanModal;
+    private bool showUnbanModal;
+    private BanModel banModel = new();
     private string? errorMessage;
+    private string? successMessage;
     private string? loadedTabKey;
 
     protected override async Task OnParametersSetAsync()
@@ -298,5 +384,126 @@
     private void DismissError()
     {
         errorMessage = null;
+    }
+
+    private void DismissSuccess()
+    {
+        successMessage = null;
+    }
+
+    private void ShowBanModal()
+    {
+        banModel = new BanModel();
+        showBanModal = true;
+    }
+
+    private void CloseBanModal()
+    {
+        showBanModal = false;
+        banModel = new BanModel();
+    }
+
+    private void ShowUnbanModal()
+    {
+        showUnbanModal = true;
+    }
+
+    private void CloseUnbanModal()
+    {
+        showUnbanModal = false;
+    }
+
+    private async Task ReloadCoreAsync()
+    {
+        if (!selectedWorld.HasValue)
+            return;
+
+        core = await UserDetailService.LoadCoreAsync(selectedWorld.Value, (uint)UserId);
+        loadedTabKey = null;
+        await LoadPageAsync();
+    }
+
+    private async Task HandleBan()
+    {
+        if (core == null || !selectedWorld.HasValue)
+            return;
+
+        isBanProcessing = true;
+        errorMessage = null;
+        successMessage = null;
+
+        try
+        {
+            uint? days = null;
+            if (!string.IsNullOrWhiteSpace(banModel.Days) && uint.TryParse(banModel.Days, out var parsedDays))
+                days = parsedDays;
+
+            var result = await BanService.Ban(selectedWorld.Value, core.Character.Name, banModel.Reason, days);
+            await DbContext.SaveChangesAsync();
+
+            var response = new Response.Ban
+            {
+                Name = core.Character.Name,
+                Reason = banModel.Reason,
+                ExpireDate = result.ExpireDate?.ToString("yyyy-MM-dd HH:mm:ss"),
+                Error = (uint)result.Error
+            };
+            await RabbitMqService.PublishAsync(response, "amq.direct", $"fb.{selectedWorld.Value}.ban");
+
+            successMessage = $"User {core.Character.Name} has been banned successfully.";
+            CloseBanModal();
+            await ReloadCoreAsync();
+        }
+        catch (Exception ex)
+        {
+            errorMessage = $"Error banning user: {ex.Message}";
+        }
+        finally
+        {
+            isBanProcessing = false;
+        }
+    }
+
+    private async Task HandleUnban()
+    {
+        if (core == null || !selectedWorld.HasValue)
+            return;
+
+        isBanProcessing = true;
+        errorMessage = null;
+        successMessage = null;
+
+        try
+        {
+            var result = await BanService.Unban(selectedWorld.Value, core.Character.Name);
+            await DbContext.SaveChangesAsync();
+
+            var response = new Response.Unban
+            {
+                Name = core.Character.Name,
+                Error = (uint)result.Error
+            };
+            await RabbitMqService.PublishAsync(response, "amq.direct", $"fb.{selectedWorld.Value}.unban");
+
+            successMessage = $"User {core.Character.Name} has been unbanned successfully.";
+            CloseUnbanModal();
+            await ReloadCoreAsync();
+        }
+        catch (Exception ex)
+        {
+            errorMessage = $"Error unbanning user: {ex.Message}";
+        }
+        finally
+        {
+            isBanProcessing = false;
+        }
+    }
+
+    private class BanModel
+    {
+        [Required(ErrorMessage = "Ban reason is required")]
+        public string Reason { get; set; } = string.Empty;
+
+        public string? Days { get; set; }
     }
 }

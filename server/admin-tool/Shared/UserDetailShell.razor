@@ -16,6 +16,14 @@
         </div>
     }
 
+    @if (!string.IsNullOrEmpty(SuccessMessage))
+    {
+        <div class="alert alert-success alert-dismissible fade show" role="alert">
+            @SuccessMessage
+            <button type="button" class="btn-close" @onclick="OnDismissSuccess"></button>
+        </div>
+    }
+
     @if (IsLoading)
     {
         <div class="text-center py-5">
@@ -93,6 +101,26 @@
                 <span class="material-symbols-outlined" aria-hidden="true">redeem</span>
                 아이템 지급
             </a>
+            @if (Core.UserDetail.IsBanned)
+            {
+                <button type="button"
+                        class="stitch-btn stitch-btn-primary user-detail-ban-btn"
+                        @onclick="OnUnban"
+                        disabled="@IsBanProcessing">
+                    <span class="material-symbols-outlined" aria-hidden="true">check_circle</span>
+                    밴 해제
+                </button>
+            }
+            else
+            {
+                <button type="button"
+                        class="stitch-btn stitch-btn-danger user-detail-ban-btn"
+                        @onclick="OnBan"
+                        disabled="@IsBanProcessing">
+                    <span class="material-symbols-outlined" aria-hidden="true">block</span>
+                    밴
+                </button>
+            }
             <a href="/users" class="stitch-btn stitch-btn-neutral">유저 목록</a>
         </div>
 
@@ -145,7 +173,22 @@
     public string? ErrorMessage { get; set; }
 
     [Parameter]
+    public string? SuccessMessage { get; set; }
+
+    [Parameter]
     public EventCallback OnDismissError { get; set; }
+
+    [Parameter]
+    public EventCallback OnDismissSuccess { get; set; }
+
+    [Parameter]
+    public EventCallback OnBan { get; set; }
+
+    [Parameter]
+    public EventCallback OnUnban { get; set; }
+
+    [Parameter]
+    public bool IsBanProcessing { get; set; }
 
     [Parameter]
     public RenderFragment? ChildContent { get; set; }
