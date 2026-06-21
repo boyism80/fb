@@ -133,22 +133,7 @@ test_suite {
                         ctx = ctx, causer = 1,
                     }) end,
                 },
-                -- direction 3 (pair): bot 3 causer, bot 4 target at (6, 12), (7, 12)
-                [3] = {
-                    function(ctx) return run_scenario({
-                        scope = "bot3", name = "healing", run = healing.run,
-                        ctx = ctx, causer = 3,
-                    }) end,
-                    function(ctx) return run_scenario({
-                        scope = "bot3", name = "loot", run = loot.run,
-                        ctx = ctx, causer = 3,
-                    }) end,
-                    function(ctx) return run_scenario({
-                        scope = "bot3", name = "buff", run = buff.run,
-                        ctx = ctx, causer = 3, pair = true,
-                    }) end,
-                },
-                -- direction 4 (pair): bot 5 causer, bot 6 target at (13, 12), (14, 12)
+                -- direction 3 (pair): bot 5 causer, bot 6 target at (6, 12), (7, 12)
                 [5] = {
                     function(ctx) return run_scenario({
                         scope = "bot5", name = "teleport", run = teleport.run,
@@ -165,6 +150,21 @@ test_suite {
                     function(ctx) return run_scenario({
                         scope = "bot5", name = "special", run = special.run,
                         ctx = ctx, causer = 5,
+                    }) end,
+                },
+                -- direction 4 (pair): bot 3 causer, bot 4 target at (13, 12), (14, 12)
+                [3] = {
+                    function(ctx) return run_scenario({
+                        scope = "bot3", name = "healing", run = healing.run,
+                        ctx = ctx, causer = 3,
+                    }) end,
+                    function(ctx) return run_scenario({
+                        scope = "bot3", name = "loot", run = loot.run,
+                        ctx = ctx, causer = 3,
+                    }) end,
+                    function(ctx) return run_scenario({
+                        scope = "bot3", name = "buff", run = buff.run,
+                        ctx = ctx, causer = 3, pair = true,
                     }) end,
                 },
             },

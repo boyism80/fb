@@ -1006,7 +1006,7 @@ local CASES = {
                 end
             end
             
-            caster:sleep(5000)
+            caster:sleep(3000)
             caster:chat("/몬스터범위제거 1")
             caster:sleep(500)
             

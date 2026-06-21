@@ -7,13 +7,13 @@ local DEFAULT_Y   = 6
 -- Skill parallel layout (7 bots):
 --   direction 1: solo bot at (6, 6)
 --   direction 2: causer + target at (13, 6), (14, 6)
---   direction 3: causer + target at (6, 12), (7, 12)
---   direction 4: causer + target at (13, 12), (14, 12)
+--   direction 3: causer + target at (6, 12), (7, 12) — bots 5, 6
+--   direction 4: causer + target at (13, 12), (14, 12) — bots 3, 4
 local SKILL_PARALLEL_LAYOUT = {
     { bots = {0}, positions = {{6, 6}} },
     { bots = {1, 2}, positions = {{13, 6}, {14, 6}} },
-    { bots = {3, 4}, positions = {{6, 12}, {7, 12}} },
-    { bots = {5, 6}, positions = {{13, 12}, {14, 12}} },
+    { bots = {5, 6}, positions = {{6, 12}, {7, 12}} },
+    { bots = {3, 4}, positions = {{13, 12}, {14, 12}} },
 }
 
 M.SKILL_PARALLEL_BOT_COUNT = 7

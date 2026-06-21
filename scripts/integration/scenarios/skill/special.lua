@@ -11,18 +11,7 @@ local function slog(fmt, ...)
 end
 
 local WEAPON_NAME = "목도"
-local NOT_READY_MESSAGE = "비바람이 휘몰아치고 있습니다."
 local NEARBY_MOB_CLEAR_RANGE = 3
-
-local function skip_on_local_host(spell_name)
-    return function()
-        if is_local_host() then
-            slog("%s skipped on local host", spell_name)
-            return true
-        end
-        return false
-    end
-end
 
 local function root_revive_for_map_id(map_id)
     local map_model = id2map(map_id)
@@ -77,51 +66,6 @@ local SPECIAL_SPELLS = {
             caster:move("TOP", 2)
             caster:direction("BOTTOM")
             return true
-        end,
-    },
-    {
-        name = "귀환",
-        response = resp.message,
-        cast_type = "NORMAL",
-        should_skip = skip_on_local_host("귀환"),
-        oid = function() return 0 end,
-        position = function() return {0, 0} end,
-        condition = function(packet)
-            if packet.type ~= "STATE" then
-                return nil
-            end
-            return true
-        end,
-        post = function(caster, _, _, packet)
-            if packet.text ~= NOT_READY_MESSAGE then
-                return false
-            end
-            caster:chat("/맵이동 낙랑의방 6 6")
-            return true
-        end,
-    },
-    {
-        name = "비영사천문",
-        response = resp.message,
-        cast_type = "INPUT",
-        message = "동",
-        should_skip = skip_on_local_host("비영사천문"),
-        oid = function() return 0 end,
-        position = function() return {0, 0} end,
-        pre = function(caster, _, state)
-            state.before = caster:position()
-        end,
-        condition = function(packet)
-            if packet.type ~= "STATE" then
-                return nil
-            end
-            return true
-        end,
-        post = function(caster, _, state, packet)
-            if skill.is_cast_ready(packet.text, "비영사천문") == false then
-                return false
-            end
-            return skill.positions_equal(caster:position(), state.before)
         end,
     },
     {
