@@ -359,8 +359,16 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
+      - name: Ensure Python 3
+        run: |
+          if ! command -v python3 >/dev/null 2>&1; then
+            sudo apt-get update
+            sudo apt-get install -y python3
+          fi
+          python3 --version
+
       - name: Verify integration protocol registry
-        run: python tools/codegen/integration_protocol/generate.py --check
+        run: python3 tools/codegen/integration_protocol/generate.py --check
 
       - name: Extract metadata
         id: meta
