@@ -1,4 +1,0 @@
--- 단기흑수 공격
-function ON_MOB_ATTACK_1224(me, you)
-
-end

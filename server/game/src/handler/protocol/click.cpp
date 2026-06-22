@@ -40,14 +40,11 @@ async::task<void> click::handle_f1(character* ch)
     if (fb::model::const_value::script::F1_EVENT_FUNC == "")
         co_return;
 
-    auto lua = this->server.lua.new_context();
-    if (lua == nullptr)
+    auto lua = this->server.lua.new_ctx_guard(fb::model::const_value::script::F1_EVENT_SCRIPT,
+                                              fb::model::const_value::script::F1_EVENT_FUNC);
+    if (!lua)
         co_return;
 
-#if defined DEBUG || defined _DEBUG
-    lua->load(fb::model::const_value::script::F1_EVENT_SCRIPT);
-#endif
-    lua->func(fb::model::const_value::script::F1_EVENT_FUNC);
     lua->pushobject(ch);
     std::ignore = lua->call(1);
 }
@@ -60,14 +57,11 @@ async::task<void> click::handle_f2(character* ch)
     if (fb::model::const_value::script::F2_EVENT_FUNC == "")
         co_return;
 
-    auto lua = this->server.lua.new_context();
-    if (lua == nullptr)
+    auto lua = this->server.lua.new_ctx_guard(fb::model::const_value::script::F2_EVENT_SCRIPT,
+                                              fb::model::const_value::script::F2_EVENT_FUNC);
+    if (!lua)
         co_return;
 
-#if defined DEBUG || defined _DEBUG
-    lua->load(fb::model::const_value::script::F2_EVENT_SCRIPT);
-#endif
-    lua->func(fb::model::const_value::script::F2_EVENT_FUNC);
     lua->pushobject(ch);
     std::ignore = lua->call(1);
 }
@@ -95,17 +89,13 @@ async::task<void> click::handle_object_click(character* ch, game_reqs::click& re
     case OBJECT_TYPE::NPC:
     {
         auto& model = static_cast<npc&>(*you).based<fb::model::npc>();
-        if (model.script.empty())
+        auto  path  = std::format("scripts/npc/{}.lua", model.id);
+        auto  func  = std::format("NPC_{}", model.id);
+
+        auto lua = this->server.lua.new_ctx_guard(path, func);
+        if (!lua)
             co_return;
 
-        auto lua = this->server.lua.new_context();
-        if (lua == nullptr)
-            co_return;
-
-#if defined DEBUG || defined _DEBUG
-        lua->load(model.script);
-#endif
-        lua->func(model.click);
         lua->pushobject(ch);
         lua->pushobject(static_cast<npc&>(*you));
         std::ignore = lua->call(2);

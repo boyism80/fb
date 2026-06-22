@@ -5,6 +5,10 @@ local M = {}
 
 M.DEFAULT_MAX_ATTEMPTS = 100
 
+local function log_fail(fmt, ...)
+    log("fatal", string.format(fmt, ...))
+end
+
 function M.case_names(cases)
     local names = {}
     for _, case in ipairs(cases) do
@@ -64,7 +68,7 @@ function M.run_spell_group(group, caster, target, slot, opts)
                 case.name, slot))
 
             if M.run_case(case, caster, target, slot, opts) == false then
-                log("debug", string.format("[spell_runner] case=%s FAILED", case.name))
+                log_fail("[spell_runner] case=%s FAILED", case.name)
                 return false
             end
         end
@@ -99,9 +103,7 @@ function M.run_spell_groups(groups, caster, target, opts)
                 group.spell, slot))
 
             if M.run_spell_group(group, caster, target, slot, opts) == false then
-                log("debug", string.format(
-                    "[spell_runner] spell=%s FAILED",
-                    group.spell))
+                log_fail("[spell_runner] spell=%s FAILED", group.spell)
                 return false
             end
 
@@ -178,16 +180,14 @@ function M.run_case(case, caster, target, slot, opts)
     while true do
         attempt = attempt + 1
         if attempt > max_attempts then
-            log("debug", string.format(
-                "[spell_runner] %s exceeded max attempts (%d)",
-                case.name, max_attempts))
+            log_fail("[spell_runner] %s exceeded max attempts (%d)", case.name, max_attempts)
             return false
         end
 
         if case.pre ~= nil then
             local pre_ok = case.pre(caster, target, state)
             if pre_ok == false then
-                log("debug", string.format("[spell_runner] %s pre failed", case.name))
+                log_fail("[spell_runner] %s pre failed", case.name)
                 return false
             end
         end
@@ -199,7 +199,7 @@ function M.run_case(case, caster, target, slot, opts)
 
             local cast_ok = case.cast(caster, target, slot, state)
             if cast_ok == false then
-                log("debug", string.format("[spell_runner] %s cast failed", case.name))
+                log_fail("[spell_runner] %s cast failed", case.name)
                 return false
             end
 
@@ -211,7 +211,7 @@ function M.run_case(case, caster, target, slot, opts)
 
         local user_condition = case.condition
         if user_condition == nil then
-            log("debug", string.format("[spell_runner] %s missing condition", case.name))
+            log_fail("[spell_runner] %s missing condition", case.name)
             return false
         end
 
@@ -243,7 +243,7 @@ function M.run_case(case, caster, target, slot, opts)
     if case.post ~= nil then
         local post_ok = case.post(caster, target, state, packet, opts.ctx)
         if post_ok == false then
-            log("debug", string.format("[spell_runner] %s post failed", case.name))
+            log_fail("[spell_runner] %s post failed", case.name)
             return false
         end
     end
@@ -275,7 +275,7 @@ function M.run_cases(cases, caster, target, opts)
 
             log("debug", string.format("[spell_runner] case=%s START slot=%d", case.name, slot))
             if M.run_case(case, caster, target, slot, opts) == false then
-                log("debug", string.format("[spell_runner] case=%s FAILED", case.name))
+                log_fail("[spell_runner] case=%s FAILED", case.name)
                 return false
             end
 

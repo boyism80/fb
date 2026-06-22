@@ -18,7 +18,7 @@ local function run_step(ctx, bot, step, ...)
     if ok then
         log("debug", "Clan: " ..string.format("step '%s' PASSED on bot '%s'", step, bot_name))
     else
-        log("debug", "Clan: " ..string.format("step '%s' FAILED on bot '%s', response=%q", step, bot_name, response or ""))
+        log("fatal", "Clan: " ..string.format("step '%s' FAILED on bot '%s', response=%q", step, bot_name, response or ""))
     end
     return ok
 end
@@ -46,7 +46,7 @@ test_suite {
             log("debug", "Clan: " .."scenario 1 (clan creation) started")
             local bot0 = ctx:bot(0)
             if run_step(ctx, bot0, "create_clan") == false then
-                log("debug", "Clan: " .."scenario 1 FAILED at create_clan")
+                log("fatal", "Clan: " .."scenario 1 FAILED at create_clan")
                 return false
             end
             log("debug", "Clan: " .."scenario 1 completed successfully")
@@ -57,7 +57,7 @@ test_suite {
             log("debug", "Clan: " .."scenario 2 (clan title) started")
             local bot0 = ctx:bot(0)
             if run_step(ctx, bot0, "set_title") == false then
-                log("debug", "Clan: " .."scenario 2 FAILED at set_title")
+                log("fatal", "Clan: " .."scenario 2 FAILED at set_title")
                 return false
             end
             log("debug", "Clan: " .."scenario 2 completed successfully")
@@ -69,11 +69,11 @@ test_suite {
             local bot0 = ctx:bot(0)
             local bot1 = ctx:bot(1)
             if run_step(ctx, bot0, "invite", bot1:name()) == false then
-                log("debug", "Clan: " .."scenario 3 FAILED at invite")
+                log("fatal", "Clan: " .."scenario 3 FAILED at invite")
                 return false
             end
             if run_step(ctx, bot1, "verify_member", bot0:name()) == false then
-                log("debug", "Clan: " .."scenario 3 FAILED at verify_member")
+                log("fatal", "Clan: " .."scenario 3 FAILED at verify_member")
                 return false
             end
             log("debug", "Clan: " .."scenario 3 completed successfully")
@@ -87,23 +87,23 @@ test_suite {
             local bot2 = ctx:bot(2)
             local bot3 = ctx:bot(3)
             if run_step(ctx, bot1, "invite_fail", bot2:name()) == false then
-                log("debug", "Clan: " .."scenario 4 FAILED at invite_fail")
+                log("fatal", "Clan: " .."scenario 4 FAILED at invite_fail")
                 return false
             end
             if run_step(ctx, bot0, "promote_deputy", bot1:name()) == false then
-                log("debug", "Clan: " .."scenario 4 FAILED at promote_deputy")
+                log("fatal", "Clan: " .."scenario 4 FAILED at promote_deputy")
                 return false
             end
             if run_step(ctx, bot1, "invite", bot2:name()) == false then
-                log("debug", "Clan: " .."scenario 4 FAILED at invite")
+                log("fatal", "Clan: " .."scenario 4 FAILED at invite")
                 return false
             end
             if run_step(ctx, bot1, "change_role_fail", bot2:name(), "3") == false then
-                log("debug", "Clan: " .."scenario 4 FAILED at change_role_fail (deputy)")
+                log("fatal", "Clan: " .."scenario 4 FAILED at change_role_fail (deputy)")
                 return false
             end
             if run_step(ctx, bot1, "change_role_fail", bot3:name(), "0") == false then
-                log("debug", "Clan: " .."scenario 4 FAILED at change_role_fail (non-member)")
+                log("fatal", "Clan: " .."scenario 4 FAILED at change_role_fail (non-member)")
                 return false
             end
             log("debug", "Clan: " .."scenario 4 completed successfully")
@@ -116,15 +116,15 @@ test_suite {
             local bot1 = ctx:bot(1)
             local bot2 = ctx:bot(2)
             if run_step(ctx, bot2, "change_title_fail", "MateTitle") == false then
-                log("debug", "Clan: " .."scenario 5 FAILED at change_title_fail (mate)")
+                log("fatal", "Clan: " .."scenario 5 FAILED at change_title_fail (mate)")
                 return false
             end
             if run_step(ctx, bot1, "change_title_fail", "DeputyTitle") == false then
-                log("debug", "Clan: " .."scenario 5 FAILED at change_title_fail (deputy)")
+                log("fatal", "Clan: " .."scenario 5 FAILED at change_title_fail (deputy)")
                 return false
             end
             if run_step(ctx, bot0, "change_title", "MasterTitle") == false then
-                log("debug", "Clan: " .."scenario 5 FAILED at change_title")
+                log("fatal", "Clan: " .."scenario 5 FAILED at change_title")
                 return false
             end
             log("debug", "Clan: " .."scenario 5 completed successfully")
@@ -137,19 +137,19 @@ test_suite {
             local bot1 = ctx:bot(1)
             local bot2 = ctx:bot(2)
             if run_step(ctx, bot2, "kick_fail", bot1:name()) == false then
-                log("debug", "Clan: " .."scenario 6 FAILED at kick_fail")
+                log("fatal", "Clan: " .."scenario 6 FAILED at kick_fail")
                 return false
             end
             if run_step(ctx, bot2, "leave") == false then
-                log("debug", "Clan: " .."scenario 6 FAILED at leave")
+                log("fatal", "Clan: " .."scenario 6 FAILED at leave")
                 return false
             end
             if run_step(ctx, bot0, "kick", bot1:name()) == false then
-                log("debug", "Clan: " .."scenario 6 FAILED at kick")
+                log("fatal", "Clan: " .."scenario 6 FAILED at kick")
                 return false
             end
             if run_step(ctx, bot0, "destroy_clan") == false then
-                log("debug", "Clan: " .."scenario 6 FAILED at destroy_clan")
+                log("fatal", "Clan: " .."scenario 6 FAILED at destroy_clan")
                 return false
             end
             log("debug", "Clan: " .."scenario 6 completed successfully")

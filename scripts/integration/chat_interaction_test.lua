@@ -39,7 +39,7 @@ local function test_scenario_1(ctx, index)
         end)
     log("debug", string.format("Chat[%d]: %s", index, "scenario 1: sold 5 pumpkins, money=" .. tostring(bot:money())))
     if bot:money() < expected_money then
-        log("debug", string.format("Chat[%d]: %s", index, "scenario 1 FAILED: money after selling 5"))
+        log("fatal", string.format("Chat[%d]: %s", index, "scenario 1 FAILED: money after selling 5"))
         return false
     end
 
@@ -53,7 +53,7 @@ local function test_scenario_1(ctx, index)
         end)
     log("debug", string.format("Chat[%d]: %s", index, "scenario 1: sold all pumpkins, money=" .. tostring(bot:money())))
     if bot:money() < expected_money then
-        log("debug", string.format("Chat[%d]: %s", index, "scenario 1 FAILED: money after selling all"))
+        log("fatal", string.format("Chat[%d]: %s", index, "scenario 1 FAILED: money after selling all"))
         return false
     end
 
@@ -66,7 +66,7 @@ local function test_scenario_1(ctx, index)
         end)
     log("debug", string.format("Chat[%d]: %s", index, "scenario 1: deposited money, money=" .. tostring(bot:money())))
     if bot:money() ~= 0 then
-        log("debug", string.format("Chat[%d]: %s", index, "scenario 1 FAILED: money not zero after deposit"))
+        log("fatal", string.format("Chat[%d]: %s", index, "scenario 1 FAILED: money not zero after deposit"))
         return false
     end
 
@@ -79,7 +79,7 @@ local function test_scenario_1(ctx, index)
         end)
     log("debug", string.format("Chat[%d]: %s", index, "scenario 1: withdrew money, money=" .. tostring(bot:money())))
     if bot:money() <= 0 then
-        log("debug", string.format("Chat[%d]: %s", index, "scenario 1 FAILED: money not restored"))
+        log("fatal", string.format("Chat[%d]: %s", index, "scenario 1 FAILED: money not restored"))
         return false
     end
 
@@ -241,7 +241,7 @@ local function test_scenario_3(ctx, index)
         end)
     log("debug", string.format("Chat[%d]: %s", index, "scenario 3: thank you done, hp=" .. tostring(bot:hp()) .. " base_hp=" .. tostring(bot:base_hp())))
     if bot:hp() ~= bot:base_hp() then
-        log("debug", string.format("Chat[%d]: %s", index, "scenario 3 FAILED: hp not restored to base"))
+        log("fatal", string.format("Chat[%d]: %s", index, "scenario 3 FAILED: hp not restored to base"))
         return false
     end
 
@@ -292,7 +292,7 @@ local function test_scenario_4(ctx, index)
     if ok then
         log("debug", string.format("Chat[%d]: %s", index, "scenario 4 completed successfully"))
     else
-        log("debug", string.format("Chat[%d]: %s", index, "scenario 4 FAILED: unexpected message"))
+        log("fatal", string.format("Chat[%d]: %s", index, "scenario 4 FAILED: unexpected message"))
     end
     return ok
 end

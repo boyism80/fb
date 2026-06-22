@@ -4,17 +4,12 @@ local function execute_mob_spell_hit(me, you, spell)
     if not you:is(OBJECT_TYPE.MOB) then
         return true
     end
-    
+
     local model = you:model()
-    local script = model:script()
-    if script == nil then
-        return true
-    end
-    local func = model:on_spell_hit()
-    if func == nil then
-        return true
-    end
-    local result = you:script(script, func, me, spell)
+    local id = model:id()
+    local path = string.format('scripts/mob/%d.lua', id)
+    local func = string.format('ON_MOB_SPELL_HIT_%d', id)
+    local result = you:script(path, func, me, spell)
     if result == nil then
         return true -- continue
     else

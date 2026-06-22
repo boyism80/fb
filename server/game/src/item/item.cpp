@@ -163,20 +163,13 @@ bool item::active()
         std::ignore = this->_container->remove(this->shared_from_this_as<fb::game::item>());
 
     auto& model = this->based<fb::model::item>();
-    if (model.script.empty())
-        return false;
-
-    if (model.on_activated.empty())
-        return false;
+    auto  path  = std::format("scripts/item/{}.lua", model.id);
+    auto  func  = std::format("ON_ACTIVATED_{}", model.id);
 
     // Execute item activation script
-    auto lua = this->server.lua.new_context();
-    if (lua != nullptr)
+    auto lua = this->server.lua.new_ctx_guard(path, func);
+    if (lua)
     {
-#if defined DEBUG || defined _DEBUG
-        lua->load(model.script);
-#endif
-        lua->func(model.on_activated);
         lua->pushobject(*owner);
         lua->pushobject(*this);
         std::ignore = lua->call(2);

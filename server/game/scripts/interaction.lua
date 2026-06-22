@@ -2,8 +2,7 @@
 local lib = require('lib.interaction')
 local spell = require('lib.spell')
 local npc = require('lib.npc')
-
-local on_npc_chat
+local command = require('lib.command')
 
 function on_attack(me, additional_attack)
     local map = me:map()
@@ -213,14 +212,6 @@ function on_move(me)
     if me:is(OBJECT_TYPE.CHARACTER) then
         local quest = require('lib.quest')
         quest.red_clay_on_move(me)
-        quest.cheongsimcho_on_move(me)
-        quest.greatwall_repair_on_move(me)
-        quest.crown_prince_toys_on_move(me)
-        quest.dongchung_insam_on_move(me)
-        quest.ghost_talisman_on_move(me)
-        quest.goddess_dew_on_move(me)
-        quest.manrihyang_seed_on_move(me)
-        quest.mountain_treasure_map_on_move(me)
         quest.mountain_treasure_fabric_on_move(me)
     end
 end
@@ -235,11 +226,11 @@ function on_chat(me, message, shout)
         args = lib.string_split(message, ' ')
 
         local cmd = args[1]
-        if command_funcs[cmd] == nil then
+        if command.functions[cmd] == nil then
             return false
         end
         
-        local cmd_data = command_funcs[cmd]
+        local cmd_data = command.functions[cmd]
         local cmd_func = nil
         local required_privilege = ROLE.USER
         

@@ -134,11 +134,8 @@ async::task<bool> mob::call_script()
     this->update_target();
 
     auto& model = this->based<fb::model::mob>();
-    if (model.script.empty())
-        co_return true;
-
-    if (model.on_attack.empty())
-        co_return true;
+    auto  path  = std::format("scripts/mob/{}.lua", model.id);
+    auto  func  = std::format("ON_MOB_ATTACK_{}", model.id);
 
     if (this->_attack_thread != nullptr)
         co_return false;
@@ -147,10 +144,20 @@ async::task<bool> mob::call_script()
     if (this->_attack_thread == nullptr)
         co_return true;
 
-#if defined DEBUG || defined _DEBUG
-    this->_attack_thread->load(model.script);
-#endif
-    this->_attack_thread->func(model.on_attack);
+    if (this->_attack_thread->load(path) == false)
+    {
+        this->_attack_thread->release();
+        this->_attack_thread = nullptr;
+        co_return true;
+    }
+
+    if (this->_attack_thread->func(func) == false)
+    {
+        this->_attack_thread->release();
+        this->_attack_thread = nullptr;
+        co_return true;
+    }
+
     this->_attack_thread->pushobject(this);
 
     if (this->_target.expired() == false)
@@ -173,11 +180,12 @@ async::task<bool> mob::call_script()
         fb::logger::warn(e.what());
     }
 
+    this->_attack_thread = nullptr;
+
     auto shared = weak.lock();
     if (shared == nullptr)
         co_return false;
 
-    this->_attack_thread = nullptr;
     co_return true;
 }
 
@@ -459,43 +467,38 @@ void mob::kill(std::shared_ptr<object> from, DESTROY_TYPE destroy_type)
     life::kill(from, destroy_type);
 
     auto& model = this->based<fb::model::mob>();
-    if (model.script.empty() == false && model.on_die.empty() == false)
-    {
-        auto lua = this->server.lua.new_context();
-        if (lua != nullptr)
-        {
-#if defined DEBUG || defined _DEBUG
-            lua->load(model.script);
-#endif
-            lua->func(model.on_die);
-            lua->pushobject(*this);
-            if (from != nullptr)
-                lua->pushobject(from);
-            else
-                lua->pushnil();
+    auto  path  = std::format("scripts/mob/{}.lua", model.id);
+    auto  func  = std::format("ON_MOB_DIE_{}", model.id);
 
-            this->invincible(true);
-            async::awaitable_then(lua->call(2), [this, from, destroy_type](async::awaitable_result<bool> result) {
-                try
-                {
-                    result();
-                    this->on_die(from, destroy_type);
-                }
-                catch (std::exception& e)
-                {
-                    fb::logger::fatal("error in mob on_die: {}", e.what());
-                }
-                catch (...)
-                {
-                    fb::logger::fatal("unknown error in mob on_die");
-                }
-            });
-        }
-    }
-    else
+    auto lua = this->server.lua.new_ctx_guard(path, func);
+    if (!lua)
     {
         this->on_die(from, destroy_type);
+        return;
     }
+
+    lua->pushobject(*this);
+    if (from != nullptr)
+        lua->pushobject(from);
+    else
+        lua->pushnil();
+
+    this->invincible(true);
+    async::awaitable_then(lua->call(2), [this, from, destroy_type](async::awaitable_result<bool> result) {
+        try
+        {
+            result();
+            this->on_die(from, destroy_type);
+        }
+        catch (std::exception& e)
+        {
+            fb::logger::fatal("error in mob on_die: {}", e.what());
+        }
+        catch (...)
+        {
+            fb::logger::fatal("unknown error in mob on_die");
+        }
+    });
 }
 
 async::task<void> mob::drop_items()

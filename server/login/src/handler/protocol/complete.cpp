@@ -3,6 +3,7 @@
 #include <fb/model/model.h>
 
 using namespace fb::login::handler::protocol;
+using namespace fb::model;
 
 namespace internal_reqs = fb::protocol::internal::request;
 
@@ -21,6 +22,19 @@ async::task<bool> complete::handle(fb::socket<fb::login::session>&         sessi
         auto session_data = session.data();
         if (session_data->pk == -1)
             throw std::exception();
+
+        auto nation = static_cast<NATION>(request.nation);
+        if (nation != NATION::GOGURYEO && nation != NATION::BUYEO)
+            throw id_exception(_TEXT(MESSAGE_CLIENT_NATION_INVALID));
+
+        auto gender = static_cast<GENDER>(request.gender);
+        if (gender != GENDER::MALE && gender != GENDER::FEMALE)
+            throw id_exception(_TEXT(MESSAGE_CLIENT_GENDER_INVALID));
+
+        auto creature = static_cast<CREATURE>(request.creature);
+        if (creature != CREATURE::PHOENIX && creature != CREATURE::TIGER && creature != CREATURE::TURTLE &&
+            creature != CREATURE::DRAGON)
+            throw id_exception(_TEXT(MESSAGE_CLIENT_CREATURE_INVALID));
 
         auto   world    = fb::config<uint32_t>("world");
         auto&& response = co_await this->server.http.post("internal",

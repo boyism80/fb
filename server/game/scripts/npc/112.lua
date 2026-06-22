@@ -1,0 +1,4 @@
+-- npc: 원주민장로
+function NPC_112(me, npc)
+    
+end

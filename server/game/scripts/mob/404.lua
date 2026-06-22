@@ -1,0 +1,5 @@
+-- mob: 갈충
+-- 갈충 사망
+function ON_MOB_DIE_404(me, you)
+
+end

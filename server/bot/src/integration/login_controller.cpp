@@ -60,7 +60,7 @@ async::task<void> login_bot_controller::on_agreement(login_bot& bot, const login
 
             uint8_t hair     = std::uniform_int_distribution<>(0, 101)(gen);
             uint8_t gender   = std::uniform_int_distribution<>(0, 1)(gen);
-            uint8_t nation   = std::uniform_int_distribution<>(0, 1)(gen);
+            uint8_t nation   = std::uniform_int_distribution<>(1, 2)(gen);
             uint8_t creature = std::uniform_int_distribution<>(0, 3)(gen);
 
             while (true)

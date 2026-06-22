@@ -1,0 +1,5 @@
+-- mob: 킹콩
+-- 킹콩 사망
+function ON_MOB_DIE_426(me, you)
+
+end

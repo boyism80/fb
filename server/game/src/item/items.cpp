@@ -91,20 +91,16 @@ std::shared_ptr<equipment> items::equipment_off(EQUIPMENT_PARTS parts)
 
     // Execute equipment deactivation script
     auto& model = equipment->based<fb::model::equipment>();
-    if (model.on_deactivated.empty() == false)
+    auto  path  = std::format("scripts/item/{}.lua", model.id);
+    auto  func  = std::format("ON_DEACTIVATED_{}", model.id);
+
+    auto lua = owner->server.lua.new_ctx_guard(path, func);
+    if (lua)
     {
-        auto lua = owner->server.lua.new_context();
-        if (lua != nullptr)
-        {
-#if defined DEBUG || defined _DEBUG
-            lua->load(model.script);
-#endif
-            lua->func(model.on_deactivated);
-            lua->pushobject(*owner);
-            lua->pushinteger(parts);
-            lua->pushobject(*equipment);
-            std::ignore = lua->call(3);
-        }
+        lua->pushobject(*owner);
+        lua->pushinteger(parts);
+        lua->pushobject(*equipment);
+        std::ignore = lua->call(3);
     }
 
     // Call listener for packet response
@@ -1060,13 +1056,9 @@ void items::loot(bool boost)
         if (map == nullptr)
             return;
 
-        auto lua = owner->server.lua.new_context();
-        if (lua != nullptr)
+        auto lua = owner->server.lua.new_ctx_guard("scripts/interaction.lua", "on_loot");
+        if (lua)
         {
-#if defined DEBUG || defined _DEBUG
-            lua->load("scripts/interaction.lua");
-#endif
-            lua->func("on_loot");
             lua->pushobject(*owner);
             std::ignore = lua->call(1);
         }

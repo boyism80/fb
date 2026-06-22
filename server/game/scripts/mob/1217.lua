@@ -1,0 +1,5 @@
+-- mob: 수로설괴주
+-- 수로설괴주 공격
+function ON_MOB_ATTACK_1217(me, you)
+
+end

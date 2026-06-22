@@ -1205,10 +1205,9 @@ int builtin::object::builtin_script(lua_State* L)
         fb::lua::context* ctx = nullptr;
     };
 
-    auto child_holder   = std::make_shared<script_child>();
-    auto retc_holder    = std::make_shared<int>(0);
-    auto obj_holder     = std::make_shared<std::shared_ptr<fb::game::object>>();
-    auto on_same_thread = std::make_shared<bool>(obj->thread() == srv.threads.current());
+    auto child_holder = std::make_shared<script_child>();
+    auto retc_holder  = std::make_shared<int>(0);
+    auto obj_holder   = std::make_shared<std::shared_ptr<fb::game::object>>();
 
     auto builder  = lua->new_co_builder();
     builder.weak  = weak;
@@ -1228,17 +1227,35 @@ int builtin::object::builtin_script(lua_State* L)
         if (new_lua == nullptr)
             co_return;
 
-        if (*on_same_thread)
-            new_lua->load(file);
-        else
-            new_lua->load(std::format("scripts/{}", file));
+        auto path = file;
+        if (path.starts_with("scripts/") == false)
+            path = std::format("scripts/{}", file);
 
-        new_lua->func(func);
+        if (new_lua->load(path) == false)
+        {
+            new_lua->release();
+            co_return;
+        }
+
+        if (new_lua->func(func) == false)
+        {
+            new_lua->release();
+            co_return;
+        }
+
         new_lua->pushobject(*obj_holder);
         lua_xmove(*lua, *new_lua, argc - 3);
 
         child_holder->ctx = new_lua;
-        co_await new_lua->call(argc - 2, retc_holder.get());
+        try
+        {
+            co_await new_lua->call(argc - 2, retc_holder.get());
+        }
+        catch (...)
+        {
+            child_holder->ctx = nullptr;
+            throw;
+        }
     };
     builder.resume = [=]() -> async::task<int> {
         auto new_lua = child_holder->ctx;

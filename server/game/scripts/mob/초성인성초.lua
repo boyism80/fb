@@ -1,4 +1,0 @@
--- 초성인성초 사망
-function ON_MOB_DIE_67(me, you)
-
-end

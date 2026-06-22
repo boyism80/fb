@@ -1,4 +1,0 @@
--- 청류산신 공격
-function ON_MOB_ATTACK_1024(me, you)
-
-end

@@ -1,0 +1,5 @@
+-- mob: 불구미호
+-- 불구미호 사망
+function ON_MOB_DIE_320(me, you)
+
+end

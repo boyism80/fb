@@ -1,4 +1,0 @@
--- 록란조 지속 효과
-function ON_CONCAST_6015(me, caster, buff)
-
-end

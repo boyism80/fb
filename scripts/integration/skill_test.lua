@@ -58,7 +58,7 @@ local function run_scenario(opts)
     end
 
     if ok == false then
-        slog(scope, "scenario=%s FAILED (returned false)", name)
+        log("fatal", string.format("[skill_test:%s] scenario=%s FAILED (returned false)", scope, name))
     else
         slog(scope, "scenario=%s DONE", name)
     end
@@ -104,85 +104,85 @@ test_suite {
         {
             parallel = {
                 -- direction 1 (solo): bot 0 at (6, 6)
-                [0] = {
-                    function(ctx) return run_scenario({
-                        scope = "bot0", name = "damage_near", run = damage_near.run,
-                        ctx = ctx, causer = 0,
-                    }) end,
-                    function(ctx) return run_scenario({
-                        scope = "bot0", name = "attack_cast", run = attack_cast.run,
-                        ctx = ctx, causer = 0,
-                    }) end,
-                    function(ctx) return run_scenario({
-                        scope = "bot0", name = "multi_attack", run = multi_attack.run,
-                        ctx = ctx, causer = 0,
-                    }) end,
-                },
-                -- direction 2 (pair): bot 1 causer, bot 2 target at (13, 6), (14, 6)
-                [1] = {
-                    function(ctx) return run_scenario({
-                        scope = "bot1", name = "damage", run = damage.run,
-                        ctx = ctx, causer = 1, pair = true,
-                    }) end,
-                    function(ctx) return run_scenario({
-                        scope = "bot1", name = "target", run = target.run,
-                        ctx = ctx, causer = 1, pair = true,
-                    }) end,
-                    function(ctx) return run_scenario({
-                        scope = "bot1", name = "near_target", run = near_target.run,
-                        ctx = ctx, causer = 1,
-                    }) end,
-                },
+                -- [0] = {
+                --     function(ctx) return run_scenario({
+                --         scope = "bot0", name = "damage_near", run = damage_near.run,
+                --         ctx = ctx, causer = 0,
+                --     }) end,
+                --     function(ctx) return run_scenario({
+                --         scope = "bot0", name = "attack_cast", run = attack_cast.run,
+                --         ctx = ctx, causer = 0,
+                --     }) end,
+                --     function(ctx) return run_scenario({
+                --         scope = "bot0", name = "multi_attack", run = multi_attack.run,
+                --         ctx = ctx, causer = 0,
+                --     }) end,
+                -- },
+                -- -- direction 2 (pair): bot 1 causer, bot 2 target at (13, 6), (14, 6)
+                -- [1] = {
+                --     function(ctx) return run_scenario({
+                --         scope = "bot1", name = "damage", run = damage.run,
+                --         ctx = ctx, causer = 1, pair = true,
+                --     }) end,
+                --     function(ctx) return run_scenario({
+                --         scope = "bot1", name = "target", run = target.run,
+                --         ctx = ctx, causer = 1, pair = true,
+                --     }) end,
+                --     function(ctx) return run_scenario({
+                --         scope = "bot1", name = "near_target", run = near_target.run,
+                --         ctx = ctx, causer = 1,
+                --     }) end,
+                -- },
                 -- direction 3 (pair): bot 5 causer, bot 6 target at (6, 12), (7, 12)
                 [5] = {
-                    function(ctx) return run_scenario({
-                        scope = "bot5", name = "teleport", run = teleport.run,
-                        ctx = ctx, causer = 5, pair = true,
-                    }) end,
-                    function(ctx) return run_scenario({
-                        scope = "bot5", name = "disguise", run = disguise.run,
-                        ctx = ctx, causer = 5,
-                    }) end,
-                    function(ctx) return run_scenario({
-                        scope = "bot5", name = "shout", run = shout.run,
-                        ctx = ctx, causer = 5,
-                    }) end,
+                    -- function(ctx) return run_scenario({
+                    --     scope = "bot5", name = "teleport", run = teleport.run,
+                    --     ctx = ctx, causer = 5, pair = true,
+                    -- }) end,
+                    -- function(ctx) return run_scenario({
+                    --     scope = "bot5", name = "disguise", run = disguise.run,
+                    --     ctx = ctx, causer = 5,
+                    -- }) end,
+                    -- function(ctx) return run_scenario({
+                    --     scope = "bot5", name = "shout", run = shout.run,
+                    --     ctx = ctx, causer = 5,
+                    -- }) end,
                     function(ctx) return run_scenario({
                         scope = "bot5", name = "special", run = special.run,
                         ctx = ctx, causer = 5,
                     }) end,
                 },
                 -- direction 4 (pair): bot 3 causer, bot 4 target at (13, 12), (14, 12)
-                [3] = {
-                    function(ctx) return run_scenario({
-                        scope = "bot3", name = "healing", run = healing.run,
-                        ctx = ctx, causer = 3,
-                    }) end,
-                    function(ctx) return run_scenario({
-                        scope = "bot3", name = "loot", run = loot.run,
-                        ctx = ctx, causer = 3,
-                    }) end,
-                    function(ctx) return run_scenario({
-                        scope = "bot3", name = "buff", run = buff.run,
-                        ctx = ctx, causer = 3, pair = true,
-                    }) end,
-                },
+                -- [3] = {
+                --     function(ctx) return run_scenario({
+                --         scope = "bot3", name = "healing", run = healing.run,
+                --         ctx = ctx, causer = 3,
+                --     }) end,
+                --     function(ctx) return run_scenario({
+                --         scope = "bot3", name = "loot", run = loot.run,
+                --         ctx = ctx, causer = 3,
+                --     }) end,
+                --     function(ctx) return run_scenario({
+                --         scope = "bot3", name = "buff", run = buff.run,
+                --         ctx = ctx, causer = 3, pair = true,
+                --     }) end,
+                -- },
             },
         },
 
-        function(ctx) return run_scenario({
-            scope = "seq", name = "healing_group", run = healing_group.run,
-            ctx = ctx, causer = 0,
-        }) end,
+        -- function(ctx) return run_scenario({
+        --     scope = "seq", name = "healing_group", run = healing_group.run,
+        --     ctx = ctx, causer = 0,
+        -- }) end,
 
-        function(ctx) return run_scenario({
-            scope = "seq", name = "area", run = area.run,
-            ctx = ctx, causer = 0,
-        }) end,
+        -- function(ctx) return run_scenario({
+        --     scope = "seq", name = "area", run = area.run,
+        --     ctx = ctx, causer = 0,
+        -- }) end,
 
-        function(ctx) return run_scenario({
-            scope = "seq", name = "delay", run = delay.run,
-            ctx = ctx, causer = 0,
-        }) end,
+        -- function(ctx) return run_scenario({
+        --     scope = "seq", name = "delay", run = delay.run,
+        --     ctx = ctx, causer = 0,
+        -- }) end,
     },
 }

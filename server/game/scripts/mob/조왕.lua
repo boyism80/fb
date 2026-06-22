@@ -1,4 +1,0 @@
--- 조왕 사망
-function ON_MOB_DIE_1072(me, you)
-
-end

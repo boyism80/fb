@@ -400,7 +400,8 @@ void lua_integration_test::load_script()
     lua_pushcclosure(L, lua_test_suite, 1);
     lua_setglobal(L, "test_suite");
 
-    this->_lua_root->execute(_script_path);
+    if (this->_lua_root->execute(_script_path) == false)
+        return;
 }
 
 async::task<void> lua_integration_test::on_activated(game_bot_controller& controller)

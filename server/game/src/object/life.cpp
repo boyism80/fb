@@ -74,18 +74,12 @@ async::task<void> life::attack(DURATION duration)
 
     // Execute attack interaction script and get attack count
     uint32_t attack_count = 0;
-    auto     lua          = this->server.lua.new_context();
-    if (lua != nullptr)
+    auto     lua          = this->server.lua.new_ctx_guard("scripts/interaction.lua", "on_attack");
+    if (lua)
     {
-#if defined DEBUG || defined _DEBUG
-        lua->load("scripts/interaction.lua");
-#endif
-        lua->func("on_attack");
         lua->pushobject(*this);
         if (co_await lua->call(1))
-        {
             attack_count = (uint32_t)lua->tointeger(1);
-        }
     }
 
     // Call listener for packet response
@@ -99,21 +93,15 @@ async::task<void> life::attack(DURATION duration)
         if (weapon != nullptr)
         {
             auto& model = weapon->based<fb::model::weapon>();
+            auto  path  = std::format("scripts/item/{}.lua", model.id);
+            auto  func  = std::format("ON_ATTACK_{}", model.id);
 
-            // Execute weapon's on_attack script
-            if (model.on_attack.empty() == false)
+            auto weapon_lua = this->server.lua.new_ctx_guard(path, func);
+            if (weapon_lua)
             {
-                auto weapon_lua = this->server.lua.new_context();
-                if (weapon_lua != nullptr)
-                {
-#if defined DEBUG || defined _DEBUG
-                    weapon_lua->load(model.script);
-#endif
-                    weapon_lua->func(model.on_attack);
-                    weapon_lua->pushobject(ch);
-                    weapon_lua->pushobject(weapon);
-                    std::ignore = weapon_lua->call(2);
-                }
+                weapon_lua->pushobject(ch);
+                weapon_lua->pushobject(weapon);
+                std::ignore = weapon_lua->call(2);
             }
 
             // Handle weapon durability
@@ -142,17 +130,14 @@ bool life::active(fb::game::spell& spell, std::string_view message)
 {
     this->assert_thread();
 
-    if (spell.model.cast.empty())
+    auto& model = spell.model;
+    auto  path  = std::format("scripts/spell/{}.lua", model.id);
+    auto  func  = std::format("ON_CAST_{}", model.id);
+
+    auto lua = this->server.lua.new_ctx_guard(path, func);
+    if (!lua)
         return false;
 
-    auto lua = this->server.lua.new_context();
-    if (lua == nullptr)
-        return false;
-
-#if defined DEBUG || defined _DEBUG
-    lua->load(spell.model.script);
-#endif
-    lua->func(spell.model.cast);
     if (spell.model.type != SPELL_TYPE::INPUT)
         return false;
 
@@ -179,14 +164,14 @@ bool life::active(fb::game::spell& spell, uint32_t oid)
 bool life::active(fb::game::spell& spell, fb::game::object& to)
 {
     this->assert_thread();
-    auto lua = this->server.lua.new_context();
-    if (lua == nullptr)
+    auto& model = spell.model;
+    auto  path  = std::format("scripts/spell/{}.lua", model.id);
+    auto  func  = std::format("ON_CAST_{}", model.id);
+
+    auto lua = this->server.lua.new_ctx_guard(path, func);
+    if (!lua)
         return false;
 
-#if defined DEBUG || defined _DEBUG
-    lua->load(spell.model.script);
-#endif
-    lua->func(spell.model.cast);
     if (spell.model.type != SPELL_TYPE::TARGET)
         return false;
 
@@ -210,14 +195,14 @@ bool life::active(fb::game::spell& spell, fb::game::object& to)
 bool life::active(fb::game::spell& spell)
 {
     this->assert_thread();
-    auto lua = this->server.lua.new_context();
-    if (lua == nullptr)
+    auto& model = spell.model;
+    auto  path  = std::format("scripts/spell/{}.lua", model.id);
+    auto  func  = std::format("ON_CAST_{}", model.id);
+
+    auto lua = this->server.lua.new_ctx_guard(path, func);
+    if (!lua)
         return false;
 
-#if defined DEBUG || defined _DEBUG
-    lua->load(spell.model.script);
-#endif
-    lua->func(spell.model.cast);
     if (spell.model.type != SPELL_TYPE::NORMAL)
         return false;
 

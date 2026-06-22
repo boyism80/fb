@@ -1,0 +1,3 @@
+-- mob: 이벤트인면충
+function ON_MOB_DIE_1248(me, you)
+end

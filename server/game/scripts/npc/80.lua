@@ -1,0 +1,4 @@
+-- npc: 배
+function NPC_80(me, npc)
+    
+end

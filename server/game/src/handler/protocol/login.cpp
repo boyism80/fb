@@ -276,13 +276,9 @@ async::task<std::shared_ptr<character>> login::init(const game_reqs::login& requ
         if (msg.empty() == false)
             ch->message(msg, MESSAGE_TYPE::STATE);
 
-        auto lua = this->server.lua.new_context();
-        if (lua != nullptr)
+        auto lua = this->server.lua.new_ctx_guard("scripts/interaction.lua", "on_login");
+        if (lua)
         {
-#if defined DEBUG || defined _DEBUG
-            lua->load("scripts/interaction.lua");
-#endif
-            lua->func("on_login");
             lua->pushobject(ch);
             lua->pushboolean(ch->is_first_login());
             std::ignore = lua->call(2);

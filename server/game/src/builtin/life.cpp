@@ -498,14 +498,13 @@ int builtin::life::builtin_cast(lua_State* L)
         if (map == nullptr || map->objects.contains(you) == false)
             co_return;
 
-        auto x = static_cast<fb::game::server&>(lua->executor).lua.new_context();
-        if (x == nullptr)
+        auto path = std::format("scripts/spell/{}.lua", spell->id);
+        auto func = std::format("ON_CAST_{}", spell->id);
+
+        auto x = static_cast<fb::game::server&>(lua->executor).lua.new_ctx_guard(path, func);
+        if (!x)
             co_return;
 
-#if defined DEBUG || defined _DEBUG
-        x->load(spell->script);
-#endif
-        x->func(spell->cast);
         x->pushobject(obj);
 
         if (spell->type == SPELL_TYPE::TARGET)

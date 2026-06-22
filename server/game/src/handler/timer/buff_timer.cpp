@@ -1,4 +1,5 @@
 #include <fb/game/handler/timer/buff_timer.h>
+#include <format>
 
 using namespace fb::game::handler::timer;
 
@@ -40,19 +41,21 @@ async::task<void> buff_timer::handle(const fb::model::datetime& now, std::thread
                     continue;
                 }
 
-                if (buff->model.concast.empty() == false)
-                {
-                    auto lua = this->server.lua.new_context();
-                    lua->func(buff->model.concast);
-                    lua->pushobject(obj);
-                    if (buff->caster == nullptr)
-                        lua->pushnil();
-                    else
-                        lua->pushobject(buff->caster);
-                    lua->pushobject(buff);
-                    std::ignore = co_await lua->call(3);
+                auto& model = buff->model;
+                auto  path  = std::format("scripts/spell/{}.lua", model.id);
+                auto  func  = std::format("ON_CONCAST_{}", model.id);
+
+                auto lua = this->server.lua.new_ctx_guard(path, func);
+                if (!lua)
                     continue;
-                }
+
+                lua->pushobject(obj);
+                if (buff->caster == nullptr)
+                    lua->pushnil();
+                else
+                    lua->pushobject(buff->caster);
+                lua->pushobject(buff);
+                std::ignore = co_await lua->call(3);
             }
 
             for (auto& buff : ended_buffs)

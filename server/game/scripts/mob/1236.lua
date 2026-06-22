@@ -1,0 +1,3 @@
+-- mob: 이벤트철거인
+function ON_MOB_DIE_1236(me, you)
+end

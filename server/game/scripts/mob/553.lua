@@ -1,0 +1,5 @@
+-- mob: 무슈후슈'태
+-- 무슈후슈'태 사망
+function ON_MOB_DIE_553(me, you)
+
+end

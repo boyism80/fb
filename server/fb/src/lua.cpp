@@ -313,6 +313,8 @@ int context::argc()
 
 async::task<bool> context::call(int argc, int* retc)
 {
+    this->_call_engaged = true;
+
     auto promise   = std::make_shared<async::task_completion_source<bool>>();
     this->_promise = promise;
     this->resume(argc, retc);
@@ -327,6 +329,16 @@ void fb::lua::context::options(call_options opts)
 const call_options& fb::lua::context::options() const
 {
     return this->_options;
+}
+
+bool fb::lua::context::call_engaged() const
+{
+    return this->_call_engaged;
+}
+
+void fb::lua::context::clear_call_engaged()
+{
+    this->_call_engaged = false;
 }
 
 void fb::lua::context::resume(int argc, int* n)
@@ -665,22 +677,18 @@ bool root::dump(std::string_view path)
 
     auto path_str = std::string(path);
 
-    // Atomic check-and-load: prevent race conditions
-    if (this->_bytecodes.contains(path_str))
-        return true;
+    if (auto cached = this->_bytecodes.find(path_str); cached != this->_bytecodes.end())
+        return cached->second.empty() == false;
 
-    // Load file outside the callback to avoid nested locking issues
     if (luaL_loadfile(*this, path_str.c_str()) != LUA_OK)
     {
-        auto error = lua_tostring(*this, -1);
         context::pop(1); // pop error message
-        throw std::runtime_error(error);
+        this->_bytecodes[path_str] = std::vector<char>{};
+        return false;
     }
 
-    // Prepare bytecode container
     this->_bytecodes[path_str] = std::vector<char>();
 
-    // Dump bytecode directly into the container
     void*      params[] = {&this->_bytecodes[path_str]};
     const auto callback = [](lua_State* ctx, const void* bytes, size_t size, void* p) {
         auto params    = static_cast<void**>(p);
@@ -698,9 +706,9 @@ bool root::dump(std::string_view path)
 
     if (lua_pcall(*this, 0, LUA_MULTRET, 0) != LUA_OK)
     {
-        auto error = lua_tostring(*this, -1);
         context::pop(1);
-        throw std::runtime_error(error ? error : "lua_pcall failed");
+        this->_bytecodes[path_str].clear();
+        return false;
     }
     lua_settop(*this, 0);
 
@@ -751,6 +759,7 @@ void root::release(context& ctx)
         lua_settop(ctx, 0);
         ctx.parent(nullptr);
         ctx.options(call_options{});
+        ctx.clear_call_engaged();
 
         // Force garbage collection before moving to idle pool
         lua_gc(ctx, LUA_GCCOLLECT, 0);
@@ -781,6 +790,7 @@ void root::revoke(context& ctx)
     if (it == this->busy.end())
         return;
 
+    ctx.clear_call_engaged();
     this->busy.erase(it);
 }
 
@@ -818,6 +828,58 @@ context* fb::lua::context_pool::new_context(context* parent, call_options option
         ctx->clear_loaded_modules();
 #endif
     return ctx;
+}
+
+context_guard fb::lua::context_pool::new_ctx_guard(context* parent, call_options options)
+{
+    return context_guard(this->new_context(parent, options));
+}
+
+context_guard fb::lua::context_pool::new_ctx_guard(std::string_view path,
+                                                   std::string_view func,
+                                                   context*         parent,
+                                                   call_options     options)
+{
+    auto* ctx = this->new_context(parent, options);
+    if (ctx == nullptr)
+        return context_guard{};
+
+    if (ctx->load(path) == false || ctx->func(func) == false)
+    {
+        ctx->release();
+        return context_guard{};
+    }
+
+    return context_guard{ctx};
+}
+
+fb::lua::context_guard::context_guard(context* ctx) :
+    _ctx(ctx)
+{ }
+
+fb::lua::context_guard::~context_guard()
+{
+    if (this->_ctx != nullptr && this->_ctx->call_engaged() == false)
+        this->_ctx->release();
+}
+
+fb::lua::context_guard::context_guard(context_guard&& other) noexcept :
+    _ctx(other._ctx)
+{
+    other._ctx = nullptr;
+}
+
+fb::lua::context_guard& fb::lua::context_guard::operator= (context_guard&& other) noexcept
+{
+    if (this != &other)
+    {
+        if (this->_ctx != nullptr && this->_ctx->call_engaged() == false)
+            this->_ctx->release();
+
+        this->_ctx = other._ctx;
+        other._ctx = nullptr;
+    }
+    return *this;
 }
 
 async::task<void> fb::lua::context_pool::dump(std::string_view path)

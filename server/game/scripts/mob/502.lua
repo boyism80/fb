@@ -1,0 +1,3 @@
+-- mob: 녹북극곰
+function ON_MOB_DIE_502(me, you)
+end

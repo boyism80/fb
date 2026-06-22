@@ -11,7 +11,12 @@ local MESSAGE_TRADE_FAILED               = "교환에 실패했습니다."
 local DEFAULT_INTERVAL = 100
 
 local function tlog(fmt, ...)
-    log("debug", string.format("trade: " .. fmt, ...))
+    local message = string.format("trade: " .. fmt, ...)
+    if message:find("FAILED", 1, true) ~= nil then
+        log("fatal", message)
+    else
+        log("debug", message)
+    end
 end
 
 local function log_bot(bot, label)

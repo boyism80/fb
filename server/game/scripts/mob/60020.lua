@@ -1,0 +1,3 @@
+-- mob: 콩다람쥐
+function ON_MOB_DIE_60020(me, you)
+end

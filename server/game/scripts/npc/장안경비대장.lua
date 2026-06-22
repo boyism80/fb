@@ -1,6 +1,0 @@
-function NPC_601(me, npc)
-    local button = me:dialog(npc, "폐하께 전할 말씀은 나를 통해서 하시오!", false, false)
-    if button == DIALOG_RESULT.QUIT then
-        return
-    end
-end

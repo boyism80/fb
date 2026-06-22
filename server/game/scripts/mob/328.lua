@@ -1,0 +1,5 @@
+-- mob: 적호
+-- 적호 사망
+function ON_MOB_DIE_328(me, you)
+
+end

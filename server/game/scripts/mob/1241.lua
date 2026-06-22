@@ -1,0 +1,3 @@
+-- mob: 이벤트도깨비왕
+function ON_MOB_DIE_1241(me, you)
+end

@@ -212,6 +212,31 @@ namespace Internal.Controllers
         {
             try
             {
+                if (request.Nation != (byte)Nation.Goguryeo && request.Nation != (byte)Nation.Buyeo)
+                {
+                    return new Response.MakeCharacter
+                    {
+                        Success = false
+                    };
+                }
+
+                if (request.Gender != (byte)Gender.Male && request.Gender != (byte)Gender.Female)
+                {
+                    return new Response.MakeCharacter
+                    {
+                        Success = false
+                    };
+                }
+
+                if (request.Creature != (byte)Creature.Phoenix && request.Creature != (byte)Creature.Tiger &&
+                    request.Creature != (byte)Creature.Turtle && request.Creature != (byte)Creature.Dragon)
+                {
+                    return new Response.MakeCharacter
+                    {
+                        Success = false
+                    };
+                }
+
                 var world = request.World;
                 var ch = await _dbContext.Character.Get(world, request.Uid) ??
                     throw new Exception($"user {request.Uid} not found");

@@ -1,4 +1,0 @@
--- 도깨비불 사망
-function ON_MOB_DIE_372(me, you)
-
-end

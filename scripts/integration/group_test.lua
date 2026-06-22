@@ -4,7 +4,13 @@ local protocol = require("integration.protocol")
 local skill    = require("integration.lib.skill")
 
 local function progress(bot, message)
-    log("debug", message)
+    local level = "debug"
+    if message:find("FAILED", 1, true) ~= nil
+        and message:find("AS EXPECTED", 1, true) == nil
+        and message:find("SUCCESS:", 1, true) == nil then
+        level = "fatal"
+    end
+    log(level, message)
     bot:chat("=== " .. message .. " ===")
 end
 
