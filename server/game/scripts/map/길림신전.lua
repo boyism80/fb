@@ -1,4 +1,4 @@
-local server = require('lib.server')
+local enum = require('lib.enum')
 
 function ON_MAP_GUILLIM_TEMPLE(me)
     local reward_by_offer = {
@@ -40,12 +40,12 @@ function ON_MAP_GUILLIM_TEMPLE(me)
             { ['item'] = { [offer_name] = 1 } },
             { ['item'] = { [reward_name] = 1 } }
         )
-        if code == server.EXCHANGE_RESULT.LACK_COST then
+        if code == enum.EXCHANGE_RESULT.LACK_COST then
             me:dialog(nil, '지금 감히 난에게 거짓말을 하는 것이냐! 썩 물러가거라.', false, true)
             me:map(name2map('길림성'), 0, 0)
             return
         end
-        if code ~= server.EXCHANGE_RESULT.OK then
+        if code ~= enum.EXCHANGE_RESULT.OK then
             return
         end
         if selected == 0 then

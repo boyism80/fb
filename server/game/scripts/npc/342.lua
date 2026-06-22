@@ -1,5 +1,5 @@
 -- npc: 게이바주인
-local server = require('lib.server')
+local enum = require('lib.enum')
 
 function NPC_342(me, npc)
     local exchanges = {
@@ -29,11 +29,11 @@ function NPC_342(me, npc)
         { ['item'] = { ["사랑의증표"] = ex.need } },
         { ['item'] = { [ex.item] = 1 } }
     )
-    if code == server.EXCHANGE_RESULT.LACK_COST then
+    if code == enum.EXCHANGE_RESULT.LACK_COST then
         me:dialog(npc, insufficient_msg, false, false)
         goto NPC_342_000
     end
-    if code == server.EXCHANGE_RESULT.LACK_CAPACITY then
+    if code == enum.EXCHANGE_RESULT.LACK_CAPACITY then
         me:dialog(npc, "소지품이 가득 차서 받을 수 없네요. 자리 좀 비우고 다시 오세요.", false, false)
         goto NPC_342_000
     end

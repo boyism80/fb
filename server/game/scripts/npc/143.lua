@@ -1,6 +1,6 @@
 -- npc: 중국공주
 local quest = require('lib.quest')
-local server = require('lib.server')
+local enum = require('lib.enum')
 
 function NPC_143(me, npc)
     local q = me:quest(quest.QUEST_PRINCESS_RING)
@@ -54,11 +54,11 @@ function NPC_143(me, npc)
         { ['item'] = { ['공주의반지'] = 1 } },
         { ['item'] = { ['청옥반지'] = 1 } }
     )
-    if code == server.EXCHANGE_RESULT.LACK_COST then
+    if code == enum.EXCHANGE_RESULT.LACK_COST then
         me:dialog(npc, '아직 제 반지가 없으신거같은데..', false, true)
         return
     end
-    if code == server.EXCHANGE_RESULT.LACK_CAPACITY then
+    if code == enum.EXCHANGE_RESULT.LACK_CAPACITY then
         me:dialog(npc, '소지품이 가득 차서 청옥반지를 받을 수 없습니다.', false, true)
         return
     end

@@ -1,6 +1,6 @@
 -- npc: 일본전설대장장이
 local quest = require('lib.quest')
-local server = require('lib.server')
+local enum = require('lib.enum')
 function NPC_451(me, npc)
     local CLASS_TO_WEAPON = {
         [CLASS.WARRIOR] = "진월신검",
@@ -197,11 +197,11 @@ function NPC_451(me, npc)
         { ['item'] = { ["낡은망치"] = 1, ["금강석"] = 1, [unequipped] = 1 } },
         { ['item'] = { [weapon_new] = 1 } }
     )
-    if code == server.EXCHANGE_RESULT.LACK_COST then
+    if code == enum.EXCHANGE_RESULT.LACK_COST then
         me:dialog(npc, "낡은망치나 금강석, 무기를 제거할 수 없소.", false, false)
         return
     end
-    if code == server.EXCHANGE_RESULT.LACK_CAPACITY then
+    if code == enum.EXCHANGE_RESULT.LACK_CAPACITY then
         me:dialog(npc, "소지품이 가득 차서 새 무기를 줄 수 없소.", false, false)
         return
     end

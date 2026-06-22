@@ -1,55 +1,9 @@
 -- npc: 낙랑
 local quest = require('lib.quest')
+local npc_lib = require('lib.npc')
 
 function main(me, npc)
-    local q = me:quest(quest.QUEST_NAKRANG_INTRO)
-    local already_got = (q ~= nil and q:completed())
-    if already_got then
-        me:dialog(npc, '두루마리를 열어보기\n위해서는 오른쪽의\n\'소지품(단축키i)\'을\n클릭하신 다음 제가 드린\n두루마리를 더블클릭하시면 됩니다.', false, false)
-        return
-    end
-
-    local btn
-    ::NPC_0_0001::
-    btn = me:dialog(npc, me:name() .. '님, 안녕하세요?\n바람의나라에 오신 것을\n환영합니다!!!', false, true)
-    if btn == DIALOG_RESULT.QUIT then
-        return
-    end
-    ::NPC_0_0002::
-    btn = me:dialog(npc, '드넓은 바람의 세계로 가시기\n전에 \'두루마리\'를 하나\n드릴테니, 시작하시기 전에\n꼭!! 열어 보세요..', true, true)
-    if btn == DIALOG_RESULT.QUIT then
-        return
-    end
-    if btn == DIALOG_RESULT.PREV then
-        goto NPC_0_0001
-    end
-    ::NPC_0_0003::
-    btn = me:dialog(npc, '열어보기 위해서는 오른쪽의\n\'소지품(단축키i)\'을\n클릭하신 다음 제가 드린\n두루마리를 더블클릭하시면\n됩니다.', true, true)
-    if btn == DIALOG_RESULT.QUIT then
-        return
-    end
-    if btn == DIALOG_RESULT.PREV then
-        goto NPC_0_0002
-    end
-    ::NPC_0_0004::
-    btn = me:dialog(npc, '자. 그럼, 머나먼 모험의\n길을 떠나 보시기 바랍니다~\n제가 드리는 두루마리 꼭!!!\n열어보세요!!!', false, true)
-    if btn == DIALOG_RESULT.QUIT then
-        return
-    end
-    if btn == DIALOG_RESULT.PREV then
-        goto NPC_0_0003
-    end
-
-    if q == nil then
-        q = me:start_quest(quest.QUEST_NAKRANG_INTRO)
-        if q == nil then
-            me:dialog(npc, '두루마리를 받을 수 없습니다.')
-            return
-        end
-    end
-    q:complete()
-    local item = me:mkitem('낙랑의두루마리1', 1)
-    me:dialog(item, '<낙랑의두루마리1>을 얻다!!!', false, false)
+    npc_lib.nakrang_intro(me, npc)
 end
 
 function sample_group(me, npc)

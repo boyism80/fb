@@ -1,6 +1,6 @@
 -- npc: 하태현
 local quest = require('lib.quest')
-local server = require('lib.server')
+local enum = require('lib.enum')
 
 local ACHIEVEMENT_700 = 15
 local REQUIRED_ITEM = { ['나무가면'] = 50 }
@@ -90,11 +90,11 @@ function NPC_190(me, npc)
                 { ['item'] = REQUIRED_ITEM },
                 { ['item'] = { [item_name] = 1 } }
             )
-            if code == server.EXCHANGE_RESULT.LACK_COST then
+            if code == enum.EXCHANGE_RESULT.LACK_COST then
                 me:dialog(npc, '아직 나무가면이 별로 없네요.. 50개정도만 구해주세요~', false, false)
                 return
             end
-            if code == server.EXCHANGE_RESULT.LACK_CAPACITY then
+            if code == enum.EXCHANGE_RESULT.LACK_CAPACITY then
                 me:dialog(npc, '소지품이 가득 차서 ' .. name_with(item_name, '을', '를') .. ' 받을 수 없습니다.', false, false)
                 return
             end

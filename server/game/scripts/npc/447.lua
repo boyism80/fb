@@ -1,6 +1,6 @@
 -- npc: 아도
 local quest = require('lib.quest')
-local server = require('lib.server')
+local enum = require('lib.enum')
 function NPC_447(me, npc)
     local q = me:quest(quest.QUEST_BEGINNER_PATH)
     if q == nil then
@@ -89,11 +89,11 @@ function NPC_447(me, npc)
                 { ['item'] = { ["도토리"] = 50 } },
                 { ['item'] = { ["동동주"] = 1, ["막걸리"] = 1 } }
             )
-            if code == server.EXCHANGE_RESULT.OK then
+            if code == enum.EXCHANGE_RESULT.OK then
                 me:dialog(npc, "동동주와 막걸리를 하나씩 드렸으니, 이제 잃어버리지 않도록 조심하세요.", false, false)
-            elseif code == server.EXCHANGE_RESULT.LACK_COST then
+            elseif code == enum.EXCHANGE_RESULT.LACK_COST then
                 me:dialog(npc, "도토리가 부족합니다.", false, false)
-            elseif code == server.EXCHANGE_RESULT.LACK_CAPACITY then
+            elseif code == enum.EXCHANGE_RESULT.LACK_CAPACITY then
                 me:dialog(npc, "소지품이 가득 차서 동동주와 막걸리를 줄 수 없습니다.", false, false)
             end
             return

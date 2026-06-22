@@ -1,5 +1,5 @@
 -- npc: 얼음돌이
-local server = require('lib.server')
+local enum = require('lib.enum')
 
 local ICE_NAME = '얼음'
 local CLEAN_ICE_NAME = '깨끗한얼음'
@@ -39,14 +39,14 @@ local function run_ice_wash(me, npc)
         { ['item'] = { [ICE_NAME] = 1 } },
         reward
     )
-    if code == server.EXCHANGE_RESULT.LACK_COST then
+    if code == enum.EXCHANGE_RESULT.LACK_COST then
         btn = me:dialog(npc, '얼음을 구해오시면 씻어드리지요.', true, true)
         if btn == DIALOG_RESULT.PREV then
             goto NPC_57_0001
         end
         return nil
     end
-    if code == server.EXCHANGE_RESULT.LACK_CAPACITY then
+    if code == enum.EXCHANGE_RESULT.LACK_CAPACITY then
         btn = me:dialog(npc, '소지품이 가득 차서 깨끗한얼음을 받을 수 없어요.', false, true)
         return nil
     end
@@ -93,14 +93,14 @@ local function run_ice_split(me, npc)
         { ['item'] = { [ICE_NAME] = num } },
         { ['item'] = { [SMALL_ICE_NAME] = num * 10 } }
     )
-    if code == server.EXCHANGE_RESULT.LACK_COST then
+    if code == enum.EXCHANGE_RESULT.LACK_COST then
         local btn = me:dialog(npc, '얼음이 부족합니다.', true, true)
         if btn == DIALOG_RESULT.PREV then
             return DIALOG_RESULT.PREV
         end
         return nil
     end
-    if code == server.EXCHANGE_RESULT.LACK_CAPACITY then
+    if code == enum.EXCHANGE_RESULT.LACK_CAPACITY then
         local btn = me:dialog(npc, '소지품이 가득 차서 작은얼음을 받을 수 없어요.', true, true)
         if btn == DIALOG_RESULT.PREV then
             return DIALOG_RESULT.PREV

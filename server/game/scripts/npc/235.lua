@@ -1,6 +1,6 @@
 -- npc: 복건성태자
 local quest = require('lib.quest')
-local server = require('lib.server')
+local enum = require('lib.enum')
 
 function NPC_235(me, npc)
     local q = me:quest(quest.QUEST_PAMASPIRI)
@@ -89,11 +89,11 @@ function bokgeon_sell_doll(me, npc)
             { ['item'] = { ['청자다람쥐인형'] = 1 } },
             { ['money'] = 100000 }
         )
-        if code == server.EXCHANGE_RESULT.LACK_COST then
+        if code == enum.EXCHANGE_RESULT.LACK_COST then
             me:dialog(npc, '청자다람쥐인형을 가져오세요.', false, true)
             return
         end
-        if code == server.EXCHANGE_RESULT.LACK_CAPACITY then
+        if code == enum.EXCHANGE_RESULT.LACK_CAPACITY then
             me:dialog(npc, '금전을 받을 여유가 없군요.', false, true)
             return
         end
@@ -182,11 +182,11 @@ function bokgeon_find_toys(me, npc)
             { ['item'] = materials },
             { ['item'] = { ['팔과탕'] = 10 } }
         )
-        if code == server.EXCHANGE_RESULT.LACK_COST then
+        if code == enum.EXCHANGE_RESULT.LACK_COST then
             me:dialog(npc, '아직 재료를 다 모으지 못하셨군요.', false, true)
             return
         end
-        if code == server.EXCHANGE_RESULT.LACK_CAPACITY then
+        if code == enum.EXCHANGE_RESULT.LACK_CAPACITY then
             me:dialog(npc, '소지품이 가득 차서 팔과탕을 받을 수 없습니다.', false, true)
             return
         end

@@ -1,6 +1,6 @@
 -- npc: 고대유물연구가
 local quest = require('lib.quest')
-local server = require('lib.server')
+local enum = require('lib.enum')
 local BEAD_OPTIONS = {
     { "갈색구슬조각", "고대금속결정'양" },
     { "자색구슬조각", "고대금속결정'양" },
@@ -124,11 +124,11 @@ local function run_bead_exchange(me, npc)
         { ['item'] = { [bead_item] = count } },
         reward
     )
-    if code == server.EXCHANGE_RESULT.LACK_COST then
+    if code == enum.EXCHANGE_RESULT.LACK_COST then
         me:dialog(npc, bead_item .. " " .. name_with(bead_item, '이', '가') .. " 부족하지 않은가?", false, false)
         return
     end
-    if code == server.EXCHANGE_RESULT.LACK_CAPACITY then
+    if code == enum.EXCHANGE_RESULT.LACK_CAPACITY then
         me:dialog(npc, "소지품이 가득 차서 " .. name_with(reward_item, '을', '를') .. " 받을 수 없네.", false, false)
         return
     end

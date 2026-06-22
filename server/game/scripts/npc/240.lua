@@ -1,6 +1,6 @@
 -- npc: 보약의달인
 local quest = require('lib.quest')
-local server = require('lib.server')
+local enum = require('lib.enum')
 
 function NPC_240(me, npc)
     local quest_mother = me:quest(quest.QUEST_SICK_CHILD)
@@ -110,11 +110,11 @@ function NPC_240(me, npc)
             { ['item'] = materials },
             { ['item'] = { ['삼전신보탕'] = 1 } }
         )
-        if code == server.EXCHANGE_RESULT.LACK_COST then
+        if code == enum.EXCHANGE_RESULT.LACK_COST then
             me:dialog(npc, '삼전신보신탕을 만들기 위한 재료가 부족한 것 같네만. 녹용과 국광 그리고 감초가 있어야 제작이 가능하지.', false, true)
             return
         end
-        if code == server.EXCHANGE_RESULT.LACK_CAPACITY then
+        if code == enum.EXCHANGE_RESULT.LACK_CAPACITY then
             me:dialog(npc, '소지품이 가득 차서 삼전신보탕을 줄 수 없습니다.', false, true)
             return
         end

@@ -1,5 +1,5 @@
 -- npc: 오단미
-local server = require('lib.server')
+local enum = require('lib.enum')
 function NPC_355(me, npc)
     if property("sesi_rightnow") ~= 5 then
         local btn = me:dialog(npc, "안녕하세요? 저는 오단미입니다.", false, true)
@@ -71,11 +71,11 @@ function NPC_355(me, npc)
             { ['item'] = { ["창포"] = 1 } },
             reward
         )
-        if code == server.EXCHANGE_RESULT.LACK_COST then
+        if code == enum.EXCHANGE_RESULT.LACK_COST then
             me:dialog(npc, "창포를 가지고 오세요.", false, false)
             return
         end
-        if code == server.EXCHANGE_RESULT.LACK_CAPACITY then
+        if code == enum.EXCHANGE_RESULT.LACK_CAPACITY then
             me:dialog(npc, "소지품이 가득 차서 받을 수 없어요. 자리 좀 비우고 다시 오세요.", false, false)
             return
         end
@@ -119,14 +119,14 @@ function NPC_355(me, npc)
             { ['item'] = { ["창포뿌리"] = 5 } },
             { ['item'] = { ["비녀"] = 1 } }
         )
-        if code == server.EXCHANGE_RESULT.LACK_COST then
+        if code == enum.EXCHANGE_RESULT.LACK_COST then
             btn = me:dialog(npc, "창포뿌리 다섯개를 가져오시면 비녀를 만들어 드릴게요.", false, true)
             if btn == DIALOG_RESULT.QUIT then
                 return
             end
             return
         end
-        if code == server.EXCHANGE_RESULT.LACK_CAPACITY then
+        if code == enum.EXCHANGE_RESULT.LACK_CAPACITY then
             me:dialog(npc, "소지품이 가득 차서 비녀를 받을 수 없어요. 자리 좀 비우고 다시 오세요.", false, false)
             return
         end

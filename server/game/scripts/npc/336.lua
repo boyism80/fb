@@ -1,6 +1,6 @@
 -- npc: 톨루이
 local quest = require('lib.quest')
-local server = require('lib.server')
+local enum = require('lib.enum')
 local DOTOL_NAMES = {
     "황도톨", "적도톨", "연녹도톨", "녹도톨", "청도톨", "회도톨", "갈도톨", "연갈도톨",
     "연자도톨", "자도톨", "연청도톨", "황금도톨", "황왕도톨", "적왕도톨", "연녹왕도톨", "녹왕도톨",
@@ -104,11 +104,11 @@ function NPC_336(me, npc)
         { ['item'] = cost_items },
         { ['item'] = { ["칠지도"] = 1 } }
     )
-    if code == server.EXCHANGE_RESULT.LACK_COST then
+    if code == enum.EXCHANGE_RESULT.LACK_COST then
         me:dialog(npc, "도톨을 건네지 못했습니다.", false, false)
         return
     end
-    if code == server.EXCHANGE_RESULT.LACK_CAPACITY then
+    if code == enum.EXCHANGE_RESULT.LACK_CAPACITY then
         me:dialog(npc, "소지품이 가득 차서 칠지도를 받을 수 없습니다.", false, false)
         return
     end

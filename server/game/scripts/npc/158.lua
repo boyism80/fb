@@ -1,6 +1,6 @@
 -- npc: 무두
 local quest = require('lib.quest')
-local server = require('lib.server')
+local enum = require('lib.enum')
 
 function NPC_158(me, npc)
 ::NPC_158_0001::
@@ -52,11 +52,11 @@ function NPC_158(me, npc)
                 { ['item'] = required_jungki },
                 { ['item'] = { ['무기제조법'] = 1 } }
             )
-            if ex_code == server.EXCHANGE_RESULT.LACK_COST then
+            if ex_code == enum.EXCHANGE_RESULT.LACK_COST then
                 me:dialog(npc, '아직 용궁의정기를 다 모으지 못했나 보군..', false, false)
                 goto NPC_158_0001
             end
-            if ex_code == server.EXCHANGE_RESULT.LACK_CAPACITY then
+            if ex_code == enum.EXCHANGE_RESULT.LACK_CAPACITY then
                 me:dialog(npc, '소지품이 가득 차서 무기제조법을 받을 수 없네. 자리 좀 비우고 다시 오게.', false, false)
                 goto NPC_158_0001
             end

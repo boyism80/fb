@@ -1,6 +1,6 @@
 -- npc: 화원왕
 local quest = require('lib.quest')
-local server = require('lib.server')
+local enum = require('lib.enum')
 local function do_sub9_receive_wine(me, npc)
     if not me:has_items("특제원숭이술", 1) then
         me:dialog(npc, "퀘스트 오류입니다.\n특제원숭이술 아이템이 없습니다.", false, false)
@@ -86,10 +86,10 @@ local function do_sub7_complete(me, npc)
         { ['item'] = { ["건강한아기원숭이"] = 1 } },
         { ['item'] = { ["초코바나나"] = 1 } }
     )
-    if code == server.EXCHANGE_RESULT.LACK_COST then
+    if code == enum.EXCHANGE_RESULT.LACK_COST then
         me:dialog(npc, "아이템을 제거할 수 없습니다.", false, false)
         return true
-    elseif code == server.EXCHANGE_RESULT.LACK_CAPACITY then
+    elseif code == enum.EXCHANGE_RESULT.LACK_CAPACITY then
         me:dialog(npc, "소지품이 가득 차서 초코바나나를 줄 수 없습니다.", false, false)
         return true
     end

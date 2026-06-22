@@ -1,6 +1,6 @@
 -- npc: 주경원
 local quest = require('lib.quest')
-local server = require('lib.server')
+local enum = require('lib.enum')
 
 function NPC_241(me, npc)
     local q = me:quest(quest.QUEST_ALCOHOLIC_DRINK)
@@ -150,11 +150,11 @@ function NPC_241(me, npc)
             { ['item'] = materials },
             { ['item'] = { ['청심사주'] = 2 } }
         )
-        if code == server.EXCHANGE_RESULT.LACK_COST then
+        if code == enum.EXCHANGE_RESULT.LACK_COST then
             me:dialog(npc, '재료가 모자라군.. 기린의피와 청심초 5뿌리만 있다면 이젠 정말 만들수 있을 것이네.', false, false)
             return
         end
-        if code == server.EXCHANGE_RESULT.LACK_CAPACITY then
+        if code == enum.EXCHANGE_RESULT.LACK_CAPACITY then
             me:dialog(npc, '소지품이 가득 차서 ' .. name_with('청심사주', '을', '를') .. ' 줄 수 없네.', false, true)
             return
         end

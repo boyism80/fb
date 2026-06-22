@@ -1,6 +1,6 @@
 -- npc: 우가풍
 local quest = require('lib.quest')
-local server = require('lib.server')
+local enum = require('lib.enum')
 
 local ACHIEVEMENT_600 = 14
 local REQUIRED_ITEM = { ['어머니의호롱불'] = 1 }
@@ -76,11 +76,11 @@ function NPC_193(me, npc)
             { ['item'] = REQUIRED_ITEM },
             { ['item'] = { [REWARD_600] = 1 } }
         )
-        if code == server.EXCHANGE_RESULT.LACK_COST then
+        if code == enum.EXCHANGE_RESULT.LACK_COST then
             me:dialog(npc, '아직 찾으시지 못하신것 같군. 문비는 무슈후슈들이 나오는 곳을 지나면 다른 녀석들과 함께 무리로 살고 있지.', false, false)
             return
         end
-        if code == server.EXCHANGE_RESULT.LACK_CAPACITY then
+        if code == enum.EXCHANGE_RESULT.LACK_CAPACITY then
             me:dialog(npc, '소지품이 가득 차서 ' .. name_with(REWARD_600, '을', '를') .. ' 받을 수 없습니다.', false, false)
             return
         end

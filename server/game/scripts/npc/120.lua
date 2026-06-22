@@ -1,6 +1,6 @@
 -- npc: 탕탕대감
 local quest = require('lib.quest')
-local server = require('lib.server')
+local enum = require('lib.enum')
 
 function NPC_120(me, npc)
     local q = me:quest(quest.QUEST_TANGTANG)
@@ -50,10 +50,10 @@ function NPC_120(me, npc)
         { ['item'] = { ['태존도'] = 1 } },
         { ['item'] = { ['선장의일기4'] = 1 } }
     )
-    if code == server.EXCHANGE_RESULT.LACK_COST then
+    if code == enum.EXCHANGE_RESULT.LACK_COST then
         me:dialog(npc, '아직 태존도를 구하지 못한건가?', false, true)
         return
-    elseif code == server.EXCHANGE_RESULT.LACK_CAPACITY then
+    elseif code == enum.EXCHANGE_RESULT.LACK_CAPACITY then
         me:dialog(npc, '소지품이 가득 차서 선장의일기4를 줄 수 없네.', false, true)
         return
     end

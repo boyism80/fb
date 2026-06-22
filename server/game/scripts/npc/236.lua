@@ -1,6 +1,6 @@
 -- npc: 남천좌상
 local quest = require('lib.quest')
-local server = require('lib.server')
+local enum = require('lib.enum')
 
 function NPC_236(me, npc)
     local BONE_COUNT = 500
@@ -130,11 +130,11 @@ function NPC_236(me, npc)
             { ['item'] = { ['마계천신의뼈'] = 1 } },
             { ['item'] = { ['강철투구'] = 1 } }
         )
-        if code == server.EXCHANGE_RESULT.LACK_COST then
+        if code == enum.EXCHANGE_RESULT.LACK_COST then
             me:dialog(npc, '마계천신의뼈를 가지고 있지 않으시군요.', false, true)
             return
         end
-        if code == server.EXCHANGE_RESULT.LACK_CAPACITY then
+        if code == enum.EXCHANGE_RESULT.LACK_CAPACITY then
             me:dialog(npc, '소지품이 가득 차서 강철투구를 받을 수 없습니다.', false, true)
             return
         end

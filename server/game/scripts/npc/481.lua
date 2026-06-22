@@ -1,5 +1,5 @@
 -- npc: 초패
-local server = require('lib.server')
+local enum = require('lib.enum')
 
 function NPC_481(me, npc)
     if not me:has_items({ ["한왕"] = 1, ["초왕"] = 1 }) then
@@ -21,14 +21,14 @@ function NPC_481(me, npc)
         reward = { ['item'] = { ["황매주"] = 1 } }
     end
     local code = me:exchange(cost, reward)
-    if code == server.EXCHANGE_RESULT.LACK_COST then
+    if code == enum.EXCHANGE_RESULT.LACK_COST then
         local btn = me:dialog(npc, "님 아이템복사 버그로 영정임", false, true)
         if btn == DIALOG_RESULT.QUIT then
             return
         end
         return
     end
-    if code == server.EXCHANGE_RESULT.LACK_CAPACITY then
+    if code == enum.EXCHANGE_RESULT.LACK_CAPACITY then
         me:dialog(npc, "소지품이 가득 차서 황매주를 받을 수 없네.", false, true)
         return
     end

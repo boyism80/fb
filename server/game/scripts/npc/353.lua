@@ -1,6 +1,6 @@
 -- npc: 백몽연
 local quest = require('lib.quest')
-local server = require('lib.server')
+local enum = require('lib.enum')
 function NPC_353(me, npc)
     ::NPC_353_0001::
     local btn = me:dialog(npc, "안녕하세요? 저는 백몽연입니다.", false, true)
@@ -239,10 +239,10 @@ function run_hand_in(me, npc)
             { ['item'] = { ["벌레쫓는부적"] = 2 } },
             { ['item'] = { ["중화절부적"] = 1, ["세시마을비서"] = 10 } }
         )
-        if code == server.EXCHANGE_RESULT.LACK_COST then
+        if code == enum.EXCHANGE_RESULT.LACK_COST then
             me:dialog(npc, "벌레쫓는부적은 저희 할아버지가 계신 촌장집에서 받아오시면 된답니다. 두 장을 받아와 주세요.", false, false)
             return
-        elseif code == server.EXCHANGE_RESULT.LACK_CAPACITY then
+        elseif code == enum.EXCHANGE_RESULT.LACK_CAPACITY then
             me:dialog(npc, "소지품이 가득 차서 보상을 드리지 못합니다.", false, false)
             return
         end

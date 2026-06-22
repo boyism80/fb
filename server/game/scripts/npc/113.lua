@@ -1,6 +1,6 @@
 -- npc: 원주민정령사
 local quest = require('lib.quest')
-local server = require('lib.server')
+local enum = require('lib.enum')
 
 function NPC_113(me, npc)
     local dq = me:quest(quest.QUEST_DETECTIVE)
@@ -287,11 +287,11 @@ function NPC_113(me, npc)
             { ['item'] = { ['자연의인장'] = 1 } },
             { ['item'] = { [armor_name] = 1 } }
         )
-        if code == server.EXCHANGE_RESULT.LACK_COST then
+        if code == enum.EXCHANGE_RESULT.LACK_COST then
             me:dialog(npc, '자연의인장을 가지고 있지 않으시군요.', false, true)
             return
         end
-        if code == server.EXCHANGE_RESULT.LACK_CAPACITY then
+        if code == enum.EXCHANGE_RESULT.LACK_CAPACITY then
             me:dialog(npc, '소지품이 가득 차서 ' .. name_with(armor_name, '을', '를') .. ' 줄 수 없네.', false, true)
             return
         end

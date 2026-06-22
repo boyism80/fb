@@ -1,6 +1,6 @@
 -- npc: 영환도사
 local quest = require('lib.quest')
-local server = require('lib.server')
+local enum = require('lib.enum')
 function NPC_542(me, npc)
     local q = me:quest(quest.QUEST_JINHWANG)
     if q == nil then
@@ -159,11 +159,11 @@ function NPC_542(me, npc)
         { ['item'] = { ["만년원귀의손톱"] = 1 } },
         { ['item'] = { ["혈황검"] = 1 } }
     )
-    if code == server.EXCHANGE_RESULT.LACK_COST then
+    if code == enum.EXCHANGE_RESULT.LACK_COST then
         me:dialog(npc, "만년원귀의손톱이 없지 않은가.", false, false)
         return
     end
-    if code == server.EXCHANGE_RESULT.LACK_CAPACITY then
+    if code == enum.EXCHANGE_RESULT.LACK_CAPACITY then
         me:dialog(npc, "소지품이 가득 차서 줄 수 없네.", false, false)
         return
     end

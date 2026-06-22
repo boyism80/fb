@@ -1,6 +1,6 @@
 -- npc: 미궁무기장인
 local quest = require('lib.quest')
-local server = require('lib.server')
+local enum = require('lib.enum')
 function NPC_307(me, npc)
     local d = me:dialog(npc, "비밀의 상점에 온 것을 환영하네. 여기선 방천화극을 팔고 있지...", false, true)
     if d == DIALOG_RESULT.QUIT then
@@ -33,11 +33,11 @@ function NPC_307(me, npc)
             { ['item'] = { ["작약주"] = 1 } },
             { ['item'] = { ["방천화극"] = 1 } }
         )
-        if code == server.EXCHANGE_RESULT.LACK_COST then
+        if code == enum.EXCHANGE_RESULT.LACK_COST then
             me:dialog(npc, "뭐야? 아무것도 없질 않은가!!", false, false)
             return
         end
-        if code == server.EXCHANGE_RESULT.LACK_CAPACITY then
+        if code == enum.EXCHANGE_RESULT.LACK_CAPACITY then
             me:dialog(npc, "소지품이 가득 차서 방천화극을 드리지 못합니다.", false, false)
             return
         end
@@ -50,11 +50,11 @@ function NPC_307(me, npc)
             { ['item'] = { ["신작약주"] = 1 } },
             { ['item'] = { ["전사방천화극"] = 1 } }
         )
-        if code == server.EXCHANGE_RESULT.LACK_COST then
+        if code == enum.EXCHANGE_RESULT.LACK_COST then
             me:dialog(npc, "뭐야? 아무것도 없질 않은가!!", false, false)
             return
         end
-        if code == server.EXCHANGE_RESULT.LACK_CAPACITY then
+        if code == enum.EXCHANGE_RESULT.LACK_CAPACITY then
             me:dialog(npc, "소지품이 가득 차서 전사방천화극을 드리지 못합니다.", false, false)
             return
         end

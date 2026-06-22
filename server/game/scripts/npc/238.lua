@@ -1,5 +1,5 @@
 -- npc: 채희
-local server = require('lib.server')
+local enum = require('lib.enum')
 
 function NPC_238(me, npc)
     local button = me:dialog(npc, '시원한 과일 화채를 만들어 드립니다.', false, true)
@@ -12,11 +12,11 @@ function NPC_238(me, npc)
         { ['item'] = cost },
         { ['item'] = { ['과일화채'] = 1 } }
     )
-    if code == server.EXCHANGE_RESULT.LACK_COST then
+    if code == enum.EXCHANGE_RESULT.LACK_COST then
         me:dialog(npc, '과일 화채의 재료는 홍옥 5개, 국광 5개, 깨끗한얼음 10개, 참수박 2개가 필요합니다.', false, true)
         return
     end
-    if code == server.EXCHANGE_RESULT.LACK_CAPACITY then
+    if code == enum.EXCHANGE_RESULT.LACK_CAPACITY then
         me:dialog(npc, '소지품이 가득 차서 과일화채를 받을 수 없습니다.', false, true)
         return
     end

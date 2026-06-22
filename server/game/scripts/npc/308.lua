@@ -1,5 +1,5 @@
 -- npc: 간수장
-local server = require('lib.server')
+local enum = require('lib.enum')
 
 function NPC_308(me, npc)
     local button = me:dialog(npc, "엣헴...", false, true)
@@ -25,11 +25,11 @@ function NPC_308(me, npc)
         { ['money'] = 250000 },
         reward
     )
-    if code == server.EXCHANGE_RESULT.LACK_COST then
+    if code == enum.EXCHANGE_RESULT.LACK_COST then
         me:dialog(npc, me:name() .. "놈아 장사 하루이틀 해 보냐, 일단 돈 이십오만전을 주면 생각해 보겠다.", false, false)
         return
     end
-    if code == server.EXCHANGE_RESULT.LACK_CAPACITY then
+    if code == enum.EXCHANGE_RESULT.LACK_CAPACITY then
         me:dialog(npc, "소지품이 가득 차서 받을 수 없네.", false, false)
         return
     end

@@ -1,6 +1,6 @@
 -- npc: 수선도사
 local quest = require('lib.quest')
-local server = require('lib.server')
+local enum = require('lib.enum')
 
 function NPC_155(me, npc)
     local q = me:quest(quest.QUEST_CROCODILE_BLOOD)
@@ -127,10 +127,10 @@ function NPC_155(me, npc)
                 { ['item'] = { ['악어의피'] = 3 } },
                 { ['item'] = { ['수선도사의머리띠'] = 1 } }
             )
-            if code == server.EXCHANGE_RESULT.LACK_COST then
+            if code == enum.EXCHANGE_RESULT.LACK_COST then
                 goto NPC_155_0030
             end
-            if code == server.EXCHANGE_RESULT.LACK_CAPACITY then
+            if code == enum.EXCHANGE_RESULT.LACK_CAPACITY then
                 me:dialog(npc, '소지품이 가득 차서 머리띠를 줄 수 없네.', false, true)
                 return
             end

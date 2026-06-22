@@ -1,6 +1,6 @@
 -- npc: 인랑
 local quest = require('lib.quest')
-local server = require('lib.server')
+local enum = require('lib.enum')
 local function run_dialogs(me, npc, messages)
     for i, msg in ipairs(messages) do
         local prev = (i > 1)
@@ -283,10 +283,10 @@ local function handle_jingogyun_4_to_8(me, npc, q_jingo)
             { ['item'] = { ["영력구슬"] = 1, ["고균의영검"] = 1 } },
             { ['item'] = { ["진'고균의영검"] = 1 } }
         )
-        if code == server.EXCHANGE_RESULT.LACK_COST then
+        if code == enum.EXCHANGE_RESULT.LACK_COST then
             me:dialog(npc, "아이템을 제거할 수 없습니다.", false, false)
             return true
-        elseif code == server.EXCHANGE_RESULT.LACK_CAPACITY then
+        elseif code == enum.EXCHANGE_RESULT.LACK_CAPACITY then
             me:dialog(npc, "소지품이 가득 차서 검을 줄 수 없네.", false, false)
             return true
         end

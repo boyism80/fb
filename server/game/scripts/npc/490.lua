@@ -1,5 +1,5 @@
 -- npc: 경품상
-local server = require('lib.server')
+local enum = require('lib.enum')
 local function run_wedding_dress_sale(me, npc)
     local btn = me:dialog(npc, "안녕하세요? 특별 이벤트 기간중에 희귀 웨딩드레스를 판매하고 있습니다.", false, true)
     if btn == DIALOG_RESULT.QUIT then
@@ -95,11 +95,11 @@ local function run_wedding_dress_sale(me, npc)
                 { ['item'] = { ["웨딩드레스12"] = 1, ["웨딩드레스18"] = 1 } },
                 { ['item'] = { ["웨딩드레스22"] = 1 } }
             )
-            if code == server.EXCHANGE_RESULT.LACK_COST then
+            if code == enum.EXCHANGE_RESULT.LACK_COST then
                 me:dialog(npc, "웨딩드레스가 없으신데요?", false, false)
                 return
             end
-            if code == server.EXCHANGE_RESULT.LACK_CAPACITY then
+            if code == enum.EXCHANGE_RESULT.LACK_CAPACITY then
                 me:dialog(npc, "소지품이 가득 차서 웨딩드레스22를 드리지 못합니다.", false, false)
                 return
             end
@@ -123,11 +123,11 @@ local function run_wedding_dress_sale(me, npc)
                 { ['item'] = { ["웨딩드레스18"] = 1, ["웨딩드레스22"] = 1 } },
                 { ['item'] = { ["웨딩드레스25"] = 1 } }
             )
-            if code == server.EXCHANGE_RESULT.LACK_COST then
+            if code == enum.EXCHANGE_RESULT.LACK_COST then
                 me:dialog(npc, "웨딩드레스가 없으신데요?", false, false)
                 return
             end
-            if code == server.EXCHANGE_RESULT.LACK_CAPACITY then
+            if code == enum.EXCHANGE_RESULT.LACK_CAPACITY then
                 me:dialog(npc, "소지품이 가득 차서 웨딩드레스25를 드리지 못합니다.", false, false)
                 return
             end
@@ -157,7 +157,7 @@ local function run_garimbin_wing_exchange(me, npc)
             { ['item'] = { ["웨딩드레스25"] = 1, ["천사의깃털"] = 10 } },
             { ['item'] = { ["가릉빈가의날개옷"] = 1 } }
         )
-        if code == server.EXCHANGE_RESULT.LACK_COST then
+        if code == enum.EXCHANGE_RESULT.LACK_COST then
             if not me:has_items("웨딩드레스25", 1) then
                 me:dialog(npc, "웨딩드레스가 없으신데요?", false, false)
             else
@@ -165,7 +165,7 @@ local function run_garimbin_wing_exchange(me, npc)
             end
             return
         end
-        if code == server.EXCHANGE_RESULT.LACK_CAPACITY then
+        if code == enum.EXCHANGE_RESULT.LACK_CAPACITY then
             me:dialog(npc, "소지품이 가득 차서 가릉빈가의날개옷을 드리지 못합니다.", false, false)
             return
         end

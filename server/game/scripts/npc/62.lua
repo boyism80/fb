@@ -1,6 +1,6 @@
 -- npc: 방물장수
 local quest = require('lib.quest')
-local server = require('lib.server')
+local enum = require('lib.enum')
 
 local WATER_BOTTLE_PRICE = 150000
 local VOUCHER_NAME = '물병보관증'
@@ -41,7 +41,7 @@ function NPC_62(me, npc)
         { ['item'] = { [VOUCHER_NAME] = 1 }, ['money'] = WATER_BOTTLE_PRICE },
         { ['item'] = { [BOTTLE_NAME] = 1 } }
     )
-    if code == server.EXCHANGE_RESULT.LACK_COST then
+    if code == enum.EXCHANGE_RESULT.LACK_COST then
         if not me:has_items(VOUCHER_NAME, 1) then
             me:dialog(npc, '물병보관증을 가져오세요.', false, false)
         else
@@ -49,7 +49,7 @@ function NPC_62(me, npc)
         end
         return
     end
-    if code == server.EXCHANGE_RESULT.LACK_CAPACITY then
+    if code == enum.EXCHANGE_RESULT.LACK_CAPACITY then
         me:dialog(npc, '소지품이 가득 차서 물병을 받을 수 없습니다.', false, false)
         return
     end

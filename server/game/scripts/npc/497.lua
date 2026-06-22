@@ -1,5 +1,5 @@
 -- npc: 바람돌이
-local server = require('lib.server')
+local enum = require('lib.enum')
 
 function NPC_497(me, npc)
     if property("sesi_rightnow") ~= 1 then
@@ -58,11 +58,11 @@ function NPC_497(me, npc)
     end
     local reward = { ['item'] = { [reward_name] = 1 } }
     local code = me:exchange(cost, reward)
-    if code == server.EXCHANGE_RESULT.LACK_COST then
+    if code == enum.EXCHANGE_RESULT.LACK_COST then
         me:dialog(npc, "다섯 색깔의 모든 바람개비를 가져오셔야 해요.", false, false)
         return
     end
-    if code == server.EXCHANGE_RESULT.LACK_CAPACITY then
+    if code == enum.EXCHANGE_RESULT.LACK_CAPACITY then
         me:dialog(npc, "소지품이 가득 차서 바람개비를 받을 수 없어요.", false, false)
         return
     end

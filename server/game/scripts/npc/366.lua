@@ -1,5 +1,5 @@
 -- npc: 일본통신사
-local server = require('lib.server')
+local enum = require('lib.enum')
 local NEED_ITEMS = {
     ["황도톨"] = 1, ["적도톨"] = 1, ["연녹도톨"] = 1, ["녹도톨"] = 1,
     ["청도톨"] = 1, ["회도톨"] = 1, ["갈도톨"] = 1, ["연갈도톨"] = 1,
@@ -36,10 +36,10 @@ function NPC_366(me, npc)
         { ['item'] = NEED_ITEMS },
         { ['item'] = { [REWARD_NAME] = 1 } }
     )
-    if code == server.EXCHANGE_RESULT.LACK_COST then
+    if code == enum.EXCHANGE_RESULT.LACK_COST then
         me:dialog(npc, "24일간 모은 도톨 24종류를 가지고 오셔야 합니다.", false, false)
         return
-    elseif code == server.EXCHANGE_RESULT.LACK_CAPACITY then
+    elseif code == enum.EXCHANGE_RESULT.LACK_CAPACITY then
         me:dialog(npc, "소지품이 가득 차서 칠지도를 드리지 못합니다. 도톨은 돌려드렸습니다.", false, false)
         return
     end

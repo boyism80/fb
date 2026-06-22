@@ -1,5 +1,5 @@
 -- npc: 흉노장로
-local server = require('lib.server')
+local enum = require('lib.enum')
 local POTION_PREFIXES = { "적", "황", "청", "녹" }
 
 function NPC_407(me, npc)
@@ -49,7 +49,7 @@ function NPC_407(me, npc)
         { ['item'] = { [button_str] = 2, ["검정깃발"] = 1 } },
         { ['item'] = { [reward_name] = 1 } }
     )
-    if code == server.EXCHANGE_RESULT.LACK_COST then
+    if code == enum.EXCHANGE_RESULT.LACK_COST then
         if not me:has_items(button_str, 2) then
             me:dialog(npc, "아니 자네," .. button_str .. " 2개가 없지 않은가.", false, false)
         elseif not me:has_items("검정깃발", 1) then
@@ -59,7 +59,7 @@ function NPC_407(me, npc)
         end
         return
     end
-    if code == server.EXCHANGE_RESULT.LACK_CAPACITY then
+    if code == enum.EXCHANGE_RESULT.LACK_CAPACITY then
         me:dialog(npc, "소지품이 가득 차서 줄 수 없네.", false, false)
         return
     end

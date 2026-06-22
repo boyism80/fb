@@ -1,6 +1,6 @@
 -- npc: 사천족제사장
 local quest = require('lib.quest')
-local server = require('lib.server')
+local enum = require('lib.enum')
 
 local ACHIEVEMENT_HOLYTREE = 5
 local COOLDOWN_SEC = 86400
@@ -89,7 +89,7 @@ function NPC_209(me, npc)
             { ['item'] = { [item.name] = 1 } },
             { ['exp'] = give_exp }
         )
-        if code == server.EXCHANGE_RESULT.LACK_COST then
+        if code == enum.EXCHANGE_RESULT.LACK_COST then
             me:dialog(npc, name_with(item.name, '이', '가') .. ' 없는데요?', false, false)
             return
         end

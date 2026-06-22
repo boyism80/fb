@@ -1,6 +1,6 @@
 -- item: 낙랑의두루마리6
 -- 낙랑의두루마리6 사용 스크립트
-local server = require('lib.server')
+local enum = require('lib.enum')
 
 local function quiz_wrong_and_exit(me, model, wrong_msg)
     me:dialog(model, wrong_msg, false, true)
@@ -80,7 +80,7 @@ function ON_ACTIVATED_6(me, item)
         { ['item'] = { ['낙랑의두루마리6'] = 1 } },
         { ['item'] = { ['낙랑의두루마리7'] = 1, ['초심자의반지'] = 1 }, ['exp'] = give_exp and 400 or 0 }
     )
-    if code == server.EXCHANGE_RESULT.LACK_CAPACITY then
+    if code == enum.EXCHANGE_RESULT.LACK_CAPACITY then
         me:dialog(model, '소지품이 가득 찼습니다.', false, false)
         return
     end

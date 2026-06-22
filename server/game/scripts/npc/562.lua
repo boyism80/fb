@@ -1,6 +1,6 @@
 -- npc: 자철공
 local quest = require('lib.quest')
-local server = require('lib.server')
+local enum = require('lib.enum')
 local REQUIRED_ITEMS = { ["자철석"] = 1, ["무슈후슈의뿔"] = 10 }
 
 function NPC_562(me, npc)
@@ -109,11 +109,11 @@ function NPC_562(me, npc)
             { ['item'] = REQUIRED_ITEMS },
             { ['item'] = { ["지남침"] = 1 } }
         )
-        if code == server.EXCHANGE_RESULT.LACK_COST then
+        if code == enum.EXCHANGE_RESULT.LACK_COST then
             me:dialog(npc, "재료가 부족합니다.", false, false)
             return
         end
-        if code == server.EXCHANGE_RESULT.LACK_CAPACITY then
+        if code == enum.EXCHANGE_RESULT.LACK_CAPACITY then
             me:dialog(npc, "소지품이 가득 차서 지남침을 드리지 못합니다. 재료는 돌려드리겠네.", false, false)
             return
         end

@@ -1,6 +1,6 @@
 -- npc: 대원왕
 local quest = require('lib.quest')
-local server = require('lib.server')
+local enum = require('lib.enum')
 local function do_sub7_cure(me, npc)
     if not me:has_items("아픈아기원숭이", 1) then
         me:dialog(npc, "퀘스트 오류입니다.\n아픈아기원숭이 아이템이 없습니다.", false, false)
@@ -28,10 +28,10 @@ local function do_sub7_cure(me, npc)
         { ['item'] = { ["아픈아기원숭이"] = 1 } },
         { ['item'] = { ["건강한아기원숭이"] = 1 } }
     )
-    if code == server.EXCHANGE_RESULT.LACK_COST then
+    if code == enum.EXCHANGE_RESULT.LACK_COST then
         me:dialog(npc, "아이템을 제거할 수 없습니다.", false, false)
         return true
-    elseif code == server.EXCHANGE_RESULT.LACK_CAPACITY then
+    elseif code == enum.EXCHANGE_RESULT.LACK_CAPACITY then
         me:dialog(npc, "소지품이 가득 차서 건강한아기원숭이를 줄 수 없습니다.", false, false)
         return true
     end
@@ -140,10 +140,10 @@ local function do_sub1_turnin(me, npc)
         { ['item'] = { ["깨끗한얼음"] = 1 } },
         { ['item'] = { ["오도독망고과편"] = 1 } }
     )
-    if code == server.EXCHANGE_RESULT.LACK_COST then
+    if code == enum.EXCHANGE_RESULT.LACK_COST then
         me:dialog(npc, "아이템을 제거할 수 없습니다.", false, false)
         return true
-    elseif code == server.EXCHANGE_RESULT.LACK_CAPACITY then
+    elseif code == enum.EXCHANGE_RESULT.LACK_CAPACITY then
         me:dialog(npc, "소지품이 가득 차서 오도독망고과편을 줄 수 없습니다.", false, false)
         return true
     end

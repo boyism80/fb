@@ -1,6 +1,6 @@
 -- npc: 추모NPC
 local quest = require('lib.quest')
-local server = require('lib.server')
+local enum = require('lib.enum')
 local COOLDOWN_SEC = 600
 local FLOWER_NAME = "추모국화"
 local BALLOON_NAME = "추모풍선"
@@ -69,11 +69,11 @@ function NPC_553(me, npc)
         reward = { ['item'] = { [BALLOON_NAME] = 1 } }
     end
     local code = me:exchange({ ['item'] = { [FLOWER_NAME] = 1 } }, reward)
-    if code == server.EXCHANGE_RESULT.LACK_COST then
+    if code == enum.EXCHANGE_RESULT.LACK_COST then
         me:dialog(npc, "고인에 대한 진심을 담아 꽃 한송이를 올리게나...", false, false)
         return
     end
-    if code == server.EXCHANGE_RESULT.LACK_CAPACITY then
+    if code == enum.EXCHANGE_RESULT.LACK_CAPACITY then
         me:dialog(npc, "소지품이 가득 차서 풍선을 받을 수 없네.", false, false)
         return
     end

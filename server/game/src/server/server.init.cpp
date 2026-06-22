@@ -75,7 +75,6 @@ async::task<void> fb::game::server::init_lua()
         lua.build("assert_alive", builtin::server::builtin_assert_alive);
         lua.build("pursuit_sell", builtin::server::builtin_pursuit_sell);
         lua.build("pursuit_sell_price", builtin::server::builtin_pursuit_sell_price);
-        lua.build("pursuit_sell_name", builtin::server::builtin_pursuit_sell_name);
         lua.build("pursuit_buy", builtin::server::builtin_pursuit_buy);
         lua.build("timer", builtin::server::builtin_timer);
         lua.build("weather", builtin::server::builtin_weather);

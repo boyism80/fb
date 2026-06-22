@@ -1,6 +1,6 @@
 -- npc: 천성현
 local quest = require('lib.quest')
-local server = require('lib.server')
+local enum = require('lib.enum')
 
 function NPC_90(me, npc)
     local sel = me:list(npc, '안녕하세요. 어떻게 오셨나요?', { '3차 승급을 원합니다' })
@@ -131,11 +131,11 @@ function NPC_90(me, npc)
             { ['item'] = materials },
             { ['item'] = { ['천성현의증표'] = 1 } }
         )
-        if code == server.EXCHANGE_RESULT.LACK_COST then
+        if code == enum.EXCHANGE_RESULT.LACK_COST then
             me:dialog(npc, '암흑왕의봉인을 찾지 못하셨군요.', false, true)
             return
         end
-        if code == server.EXCHANGE_RESULT.LACK_CAPACITY then
+        if code == enum.EXCHANGE_RESULT.LACK_CAPACITY then
             me:dialog(npc, '소지품이 가득 차서 증표를 받을 수 없습니다.', false, true)
             return
         end

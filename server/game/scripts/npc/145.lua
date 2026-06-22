@@ -1,6 +1,6 @@
 -- npc: 말단선원
 local quest = require('lib.quest')
-local server = require('lib.server')
+local enum = require('lib.enum')
 
 local ITEM_GOOSE_EGG = '기러기알'
 local MONEY_PER_EGG = 200
@@ -68,10 +68,10 @@ function NPC_145(me, npc)
         { ['item'] = { [ITEM_GOOSE_EGG] = count } },
         { ['money'] = pay }
     )
-    if code == server.EXCHANGE_RESULT.LACK_COST then
+    if code == enum.EXCHANGE_RESULT.LACK_COST then
         me:dialog(npc, '기러기알 없습니다.', false, false)
         return
-    elseif code == server.EXCHANGE_RESULT.LACK_CAPACITY then
+    elseif code == enum.EXCHANGE_RESULT.LACK_CAPACITY then
         me:dialog(npc, '금전을 더이상 받을 수 없습니다.', false, false)
         return
     end

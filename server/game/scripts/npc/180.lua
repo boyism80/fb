@@ -1,6 +1,6 @@
 -- npc: 나무꾼
 local quest = require('lib.quest')
-local server = require('lib.server')
+local enum = require('lib.enum')
 
 function NPC_180(me, npc)
     if me:level() < 30 then
@@ -68,11 +68,11 @@ function NPC_180(me, npc)
         { ['money'] = 10000 },
         { ['item'] = { ['쇠도끼'] = 1 } }
     )
-    if code == server.EXCHANGE_RESULT.LACK_COST then
+    if code == enum.EXCHANGE_RESULT.LACK_COST then
         me:dialog(npc, '돈이 부족한 것은 아니오?', false, true)
         return
     end
-    if code == server.EXCHANGE_RESULT.LACK_CAPACITY then
+    if code == enum.EXCHANGE_RESULT.LACK_CAPACITY then
         me:dialog(npc, '소지품이 가득 차서 줄 수가 없네.', false, true)
         return
     end

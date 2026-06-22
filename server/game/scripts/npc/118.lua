@@ -1,6 +1,6 @@
 -- npc: 진진
 local quest = require('lib.quest')
-local server = require('lib.server')
+local enum = require('lib.enum')
 
 function NPC_118(me, npc)
     local dq = me:quest(quest.QUEST_DETECTIVE)
@@ -196,10 +196,10 @@ function NPC_118(me, npc)
             { ['item'] = { ['초보도시락'] = 1 } },
             { ['item'] = { ['선장의일기1'] = 1 } }
         )
-        if code == server.EXCHANGE_RESULT.LACK_COST then
+        if code == enum.EXCHANGE_RESULT.LACK_COST then
             me:dialog(npc, '도시락을 가지고 있지 않으시군요.', false, true)
             return
-        elseif code == server.EXCHANGE_RESULT.LACK_CAPACITY then
+        elseif code == enum.EXCHANGE_RESULT.LACK_CAPACITY then
             me:dialog(npc, '소지품이 가득 차서 선장의일기1을 줄 수 없네.', false, true)
             return
         end

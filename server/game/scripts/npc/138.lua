@@ -1,6 +1,6 @@
 -- npc: 마석주
 local quest = require('lib.quest')
-local server = require('lib.server')
+local enum = require('lib.enum')
 
 local ACHIEVEMENT_MOUNTAIN_GOD = 41
 local ITEM_FABRIC = '산신의비단'
@@ -180,11 +180,11 @@ function NPC_138(me, npc)
             { ['item'] = { [ITEM_NEEDLE] = 1 } },
             { ['item'] = { [item_name] = 1 } }
         )
-        if code == server.EXCHANGE_RESULT.LACK_COST then
+        if code == enum.EXCHANGE_RESULT.LACK_COST then
             me:dialog(npc, '산신의바늘을 아직 구하지 못하신거 같은데요?', false, false)
             return
         end
-        if code == server.EXCHANGE_RESULT.LACK_CAPACITY then
+        if code == enum.EXCHANGE_RESULT.LACK_CAPACITY then
             me:dialog(npc, '소지품이 가득 차서 ' .. name_with(item_name, '을', '를') .. ' 받을 수 없습니다.', false, false)
             return
         end

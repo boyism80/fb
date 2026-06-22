@@ -1,6 +1,6 @@
 -- npc: 조염
 local quest = require('lib.quest')
-local server = require('lib.server')
+local enum = require('lib.enum')
 
 local ITEM_BONG_BOOK = '봉래산전설'
 
@@ -135,11 +135,11 @@ function NPC_117(me, npc)
             { ['money'] = 1000 },
             { ['item'] = { [ITEM_BONG_BOOK] = 1 } }
         )
-        if code == server.EXCHANGE_RESULT.LACK_COST then
+        if code == enum.EXCHANGE_RESULT.LACK_COST then
             me:dialog(npc, '돈이 부족하지 않나?', false, true)
             return
         end
-        if code == server.EXCHANGE_RESULT.LACK_CAPACITY then
+        if code == enum.EXCHANGE_RESULT.LACK_CAPACITY then
             me:dialog(npc, '소지품이 가득 차서 줄 수가 없네.', false, true)
             return
         end

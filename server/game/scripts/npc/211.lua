@@ -1,6 +1,6 @@
 -- npc: 산소소탕대장
 local quest = require('lib.quest')
-local server = require('lib.server')
+local enum = require('lib.enum')
 
 function NPC_211(me, npc)
     local ACHIEVEMENT_OXYGEN = 4
@@ -91,10 +91,10 @@ function NPC_211(me, npc)
             { ['item'] = { [t.item] = t.count } },
             { ['money'] = t.money }
         )
-        if code == server.EXCHANGE_RESULT.LACK_COST then
+        if code == enum.EXCHANGE_RESULT.LACK_COST then
             me:dialog(npc, string.format('아직 %s %d개를 모아오지 못하신 것 같군요?', t.item, t.count), false, true)
             return
-        elseif code == server.EXCHANGE_RESULT.LACK_CAPACITY then
+        elseif code == enum.EXCHANGE_RESULT.LACK_CAPACITY then
             me:dialog(npc, '소지품이 가득 차서 보상금을 받을 수 없습니다.', false, true)
             return
         end
@@ -141,10 +141,10 @@ function NPC_211(me, npc)
             { ['item'] = { ['녹산소괴의뿔'] = 30 } },
             { ['money'] = 30000 }
         )
-        if code2 == server.EXCHANGE_RESULT.LACK_COST then
+        if code2 == enum.EXCHANGE_RESULT.LACK_COST then
             me:dialog(npc, '아직 녹산소괴의뿔 30개를 모아오지 못하신 것 같군요?', false, true)
             return
-        elseif code2 == server.EXCHANGE_RESULT.LACK_CAPACITY then
+        elseif code2 == enum.EXCHANGE_RESULT.LACK_CAPACITY then
             me:dialog(npc, '소지품이 가득 차서 보상금을 받을 수 없습니다.', false, true)
             return
         end
@@ -167,10 +167,10 @@ function NPC_211(me, npc)
             { ['item'] = { ['산소괴왕의뿔'] = 1 } },
             { ['item'] = { ['흑영패도'] = 1 } }
         )
-        if code3 == server.EXCHANGE_RESULT.LACK_COST then
+        if code3 == enum.EXCHANGE_RESULT.LACK_COST then
             me:dialog(npc, '산소괴왕의뿔을 가지고 있지 않으시군요.', false, true)
             return
-        elseif code3 == server.EXCHANGE_RESULT.LACK_CAPACITY then
+        elseif code3 == enum.EXCHANGE_RESULT.LACK_CAPACITY then
             me:dialog(npc, '소지품이 가득 차서 흑영패도를 받을 수 없습니다.', false, true)
             return
         end

@@ -1,6 +1,6 @@
 -- npc: 오선릉
 local quest = require('lib.quest')
-local server = require('lib.server')
+local enum = require('lib.enum')
 
 function NPC_362(me, npc)
     local button = me:dialog(npc, "안녕하세요? 저는 오선릉입니다.", false, true)
@@ -61,10 +61,10 @@ function NPC_362(me, npc)
         local cost = { ['item'] = { ["연"] = 1, ["실패"] = 1, ["깨진김장독"] = 1, ["찌그러진냄비"] = 1, ["널"] = 1 } }
         local reward = { ['item'] = { [reward_name] = 1 } }
         local code = me:exchange(cost, reward)
-        if code == server.EXCHANGE_RESULT.LACK_COST then
+        if code == enum.EXCHANGE_RESULT.LACK_COST then
             return
         end
-        if code == server.EXCHANGE_RESULT.LACK_CAPACITY then
+        if code == enum.EXCHANGE_RESULT.LACK_CAPACITY then
             me:dialog(npc, "소지품이 가득 차서 " .. name_with(reward_name, '을', '를') .. " 받을 수 없어요. 자리 좀 비우고 다시 오세요.", false, false)
             return
         end

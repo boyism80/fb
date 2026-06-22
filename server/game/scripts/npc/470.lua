@@ -1,6 +1,6 @@
 -- npc: 금원왕
 local quest = require('lib.quest')
-local server = require('lib.server')
+local enum = require('lib.enum')
 local function do_sub8_start(me, npc)
     local sel, btn = me:list(npc, "요즘따라 인간들을 자주 만나시게 되시는도다.", { "이름을 가르쳐주세요.", "이곳의 상황은 좀 어떤가요?", "제가 도와드릴 일은 없을까요?" }, false)
     if btn == DIALOG_RESULT.QUIT or sel == nil then
@@ -71,10 +71,10 @@ local function do_sub8_turnin(me, npc)
         { ['item'] = { ["두목의증표"] = 1 } },
         { ['item'] = { ["사각방패"] = 1 } }
     )
-    if code == server.EXCHANGE_RESULT.LACK_COST then
+    if code == enum.EXCHANGE_RESULT.LACK_COST then
         me:dialog(npc, "아이템을 제거할 수 없습니다.", false, false)
         return true
-    elseif code == server.EXCHANGE_RESULT.LACK_CAPACITY then
+    elseif code == enum.EXCHANGE_RESULT.LACK_CAPACITY then
         me:dialog(npc, "소지품이 가득 차서 사각방패를 줄 수 없습니다.", false, false)
         return true
     end

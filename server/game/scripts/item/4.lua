@@ -1,7 +1,7 @@
 -- item: 낙랑의두루마리4
 -- 낙랑의두루마리4 사용 스크립트
 local quest = require('lib.quest')
-local server = require('lib.server')
+local enum = require('lib.enum')
 
 local HUNTING_MAPS = {
     ['부여왕초보사냥1'] = true,
@@ -101,7 +101,7 @@ function ON_ACTIVATED_4(me, item)
         { ['item'] = { ['낙랑의두루마리4'] = 1 } },
         { ['item'] = { ['낙랑의두루마리5'] = 1, ['노란비서'] = 10 }, ['exp'] = give_exp and 100 or 0 }
     )
-    if code == server.EXCHANGE_RESULT.LACK_CAPACITY then
+    if code == enum.EXCHANGE_RESULT.LACK_CAPACITY then
         me:dialog(model, '소지품이 가득 찼습니다.', false, false)
         return
     end

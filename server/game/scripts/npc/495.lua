@@ -1,5 +1,5 @@
 -- npc: 출발도우미
-local server = require('lib.server')
+local enum = require('lib.enum')
 local MAP_ID_LOBBY = 12010
 local MAP_ID_GAME = 12011
 local MAP_ID_FINISH = 12016
@@ -83,7 +83,7 @@ function NPC_495(me, npc)
                     { ['item'] = SURVIVE_ITEMS },
                     { ['item'] = { ["서바이벌증표"] = 1 } }
                 )
-                if code == server.EXCHANGE_RESULT.LACK_COST then
+                if code == enum.EXCHANGE_RESULT.LACK_COST then
                     local lack = {}
                     if not me:has_items("노란비서", 1) then lack[#lack + 1] = "노란비서" end
                     if not me:has_items("소환비서", 1) then lack[#lack + 1] = "소환비서" end
@@ -95,7 +95,7 @@ function NPC_495(me, npc)
                         me:dialog(npc, "아이템을 건네지 못했습니다.", false, false)
                     end
                     return
-                elseif code == server.EXCHANGE_RESULT.LACK_CAPACITY then
+                elseif code == enum.EXCHANGE_RESULT.LACK_CAPACITY then
                     me:dialog(npc, "소지품이 가득 차서 증표를 줄 수 없습니다.", false, false)
                     return
                 end

@@ -1,6 +1,6 @@
 -- npc: 도성연
 local quest = require('lib.quest')
-local server = require('lib.server')
+local enum = require('lib.enum')
 
 function NPC_108(me, npc)
     local q = me:quest(quest.QUEST_DOJAEYOUNG_HERB)
@@ -178,11 +178,11 @@ function NPC_108(me, npc)
             { ['item'] = { ['인어의거울'] = 1 } },
             { ['item'] = { ['봉마의목걸이'] = 1 } }
         )
-        if code == server.EXCHANGE_RESULT.LACK_COST then
+        if code == enum.EXCHANGE_RESULT.LACK_COST then
             me:dialog(npc, '인어의거울을 가지고 있지 않으시군요.', false, true)
             return
         end
-        if code == server.EXCHANGE_RESULT.LACK_CAPACITY then
+        if code == enum.EXCHANGE_RESULT.LACK_CAPACITY then
             me:dialog(npc, '소지품이 가득 차서 봉마의목걸이를 받을 수 없습니다.', false, true)
             return
         end

@@ -1,6 +1,6 @@
 -- npc: 우선녀
 local quest = require('lib.quest')
-local server = require('lib.server')
+local enum = require('lib.enum')
 
 function NPC_77(me, npc)
     local ACHIEVEMENT_CLEAR = 23
@@ -99,11 +99,11 @@ function NPC_77(me, npc)
             { ['item'] = { ['숯의정화'] = 3 } },
             { ['item'] = { ['정화의방패'] = 1 } }
         )
-        if code == server.EXCHANGE_RESULT.LACK_COST then
+        if code == enum.EXCHANGE_RESULT.LACK_COST then
             me:dialog(npc, '물을 정화하기 위해 숯의정화 3조각만 구해주세요.', false, false)
             return
         end
-        if code == server.EXCHANGE_RESULT.LACK_CAPACITY then
+        if code == enum.EXCHANGE_RESULT.LACK_CAPACITY then
             me:dialog(npc, '소지품이 가득 차서 정화의방패를 받을 수 없습니다.', false, true)
             return
         end

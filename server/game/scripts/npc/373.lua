@@ -1,5 +1,5 @@
 -- npc: 소림사술장수
-local server = require('lib.server')
+local enum = require('lib.enum')
 local OPTIONS = {
     { item = "동동주", cost = 200 },
     { item = "팔십세주", cost = 4000 },
@@ -21,11 +21,11 @@ function NPC_373(me, npc)
         { ['money'] = opt.cost },
         { ['item'] = { [opt.item] = 1 } }
     )
-    if code == server.EXCHANGE_RESULT.LACK_COST then
+    if code == enum.EXCHANGE_RESULT.LACK_COST then
         me:dialog(npc, "안타깝지만 자네 수중에 충분한 돈이 없구만. 돈을 가지고 다시 찾아오시오.", false, true)
         return
     end
-    if code == server.EXCHANGE_RESULT.LACK_CAPACITY then
+    if code == enum.EXCHANGE_RESULT.LACK_CAPACITY then
         me:dialog(npc, "소지품이 가득 차서 줄 수 없구만.", false, false)
         return
     end

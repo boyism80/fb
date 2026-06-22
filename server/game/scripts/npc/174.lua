@@ -1,6 +1,6 @@
 -- npc: 진백랑
 local quest = require('lib.quest')
-local server = require('lib.server')
+local enum = require('lib.enum')
 
 function NPC_174(me, npc)
     local diary_names = {
@@ -123,11 +123,11 @@ function NPC_174(me, npc)
             { ['item'] = give_table },
             { ['item'] = { ['선장의일기장'] = 1, ['등대빛의검'] = 1 } }
         )
-        if code == server.EXCHANGE_RESULT.LACK_COST then
+        if code == enum.EXCHANGE_RESULT.LACK_COST then
             me:dialog(npc, '아직 일기 아홉장과 겉표지를 구하지 못했나보군..', false, true)
             return
         end
-        if code == server.EXCHANGE_RESULT.LACK_CAPACITY then
+        if code == enum.EXCHANGE_RESULT.LACK_CAPACITY then
             me:dialog(npc, '소지품이 가득 차서 보상을 줄 수 없네.', false, true)
             return
         end

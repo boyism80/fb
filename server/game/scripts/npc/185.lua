@@ -1,6 +1,6 @@
 -- npc: 표신궁역사가
 local quest = require('lib.quest')
-local server = require('lib.server')
+local enum = require('lib.enum')
 
 local function pyosin_story(me, npc)
     local ACHIEVEMENT_PYOSIN = 30
@@ -156,11 +156,11 @@ local function pyosin_story(me, npc)
             { ['item'] = { [story_items[1].doc] = 1 } },
             { ['item'] = { [story_items[1].diary] = 1 }, ['money'] = story_items[1].money }
         )
-        if code == server.EXCHANGE_RESULT.LACK_COST then
+        if code == enum.EXCHANGE_RESULT.LACK_COST then
             me:dialog(npc, '아직 동장군을 쓰러뜨리지 못한건가? 하긴.. 동장군을 쓰러뜨리는 것은 무리일수도 있지.', false, false)
             return
         end
-        if code == server.EXCHANGE_RESULT.LACK_CAPACITY then
+        if code == enum.EXCHANGE_RESULT.LACK_CAPACITY then
             me:dialog(npc, '소지품이 가득 차서 대장군의일기1을 받을 수 없습니다.', false, true)
             return
         end
@@ -232,11 +232,11 @@ local function pyosin_story(me, npc)
             { ['item'] = { [story_items[2].doc] = 1 } },
             { ['item'] = { [story_items[2].diary] = 1 }, ['money'] = story_items[2].money }
         )
-        if code == server.EXCHANGE_RESULT.LACK_COST then
+        if code == enum.EXCHANGE_RESULT.LACK_COST then
             me:dialog(npc, '아직 서장군 관련 문서를 쓰러뜨리지 못한 건가?', false, false)
             return
         end
-        if code == server.EXCHANGE_RESULT.LACK_CAPACITY then
+        if code == enum.EXCHANGE_RESULT.LACK_CAPACITY then
             me:dialog(npc, '소지품이 가득 차서 대장군의일기2를 받을 수 없습니다.', false, true)
             return
         end
@@ -293,11 +293,11 @@ local function pyosin_story(me, npc)
             { ['item'] = { [story_items[3].doc] = 1 } },
             { ['item'] = { [story_items[3].diary] = 1 }, ['money'] = story_items[3].money }
         )
-        if code == server.EXCHANGE_RESULT.LACK_COST then
+        if code == enum.EXCHANGE_RESULT.LACK_COST then
             me:dialog(npc, '아직 남장군 관련 문서를 쓰러뜨리지 못한 건가?', false, false)
             return
         end
-        if code == server.EXCHANGE_RESULT.LACK_CAPACITY then
+        if code == enum.EXCHANGE_RESULT.LACK_CAPACITY then
             me:dialog(npc, '소지품이 가득 차서 대장군의일기3을 받을 수 없습니다.', false, true)
             return
         end
@@ -343,11 +343,11 @@ local function pyosin_story(me, npc)
             { ['item'] = { [story_items[4].doc] = 1 } },
             { ['item'] = { [story_items[4].diary] = 1 }, ['money'] = story_items[4].money }
         )
-        if code == server.EXCHANGE_RESULT.LACK_COST then
+        if code == enum.EXCHANGE_RESULT.LACK_COST then
             me:dialog(npc, '아직 북장군 관련 문서를 쓰러뜨리지 못한 건가?', false, false)
             return
         end
-        if code == server.EXCHANGE_RESULT.LACK_CAPACITY then
+        if code == enum.EXCHANGE_RESULT.LACK_CAPACITY then
             me:dialog(npc, '소지품이 가득 차서 대장군의일기4를 받을 수 없습니다.', false, true)
             return
         end
@@ -409,11 +409,11 @@ local function pyosin_story(me, npc)
             { ['item'] = { [story_items[5].doc] = 1 } },
             { ['item'] = { [story_items[5].diary] = 1 }, ['money'] = story_items[5].money }
         )
-        if code == server.EXCHANGE_RESULT.LACK_COST then
+        if code == enum.EXCHANGE_RESULT.LACK_COST then
             me:dialog(npc, '아직 중앙장군 관련 문서를 쓰러뜨리지 못한 건가?', false, false)
             return
         end
-        if code == server.EXCHANGE_RESULT.LACK_CAPACITY then
+        if code == enum.EXCHANGE_RESULT.LACK_CAPACITY then
             me:dialog(npc, '소지품이 가득 차서 대장군의일기5를 받을 수 없습니다.', false, true)
             return
         end
@@ -492,11 +492,11 @@ local function pyosin_story(me, npc)
             { ['item'] = { [story_items[6].doc] = 1 } },
             { ['item'] = { [story_items[6].diary] = 1 }, ['money'] = story_items[6].money }
         )
-        if code == server.EXCHANGE_RESULT.LACK_COST then
+        if code == enum.EXCHANGE_RESULT.LACK_COST then
             me:dialog(npc, '아직 해당 문서를 쓰러뜨리지 못한 건가?', false, false)
             return
         end
-        if code == server.EXCHANGE_RESULT.LACK_CAPACITY then
+        if code == enum.EXCHANGE_RESULT.LACK_CAPACITY then
             me:dialog(npc, '소지품이 가득 차서 대장군의일기6을 받을 수 없습니다.', false, true)
             return
         end
@@ -672,11 +672,11 @@ local function pyosin_sell_docs(me, npc)
         { ['item'] = { [doc] = 1 } },
         { ['money'] = price }
     )
-    if code == server.EXCHANGE_RESULT.LACK_COST then
+    if code == enum.EXCHANGE_RESULT.LACK_COST then
         me:dialog(npc, name_with(doc, '을', '를') .. ' 가지고 있지 않은데?', false, false)
         return
     end
-    if code == server.EXCHANGE_RESULT.LACK_CAPACITY then
+    if code == enum.EXCHANGE_RESULT.LACK_CAPACITY then
         me:dialog(npc, '금전을 받을 여유가 없군요.', false, false)
         return
     end

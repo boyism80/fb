@@ -1,6 +1,17 @@
 -- npc: 떼보
 local npc = require('lib.npc')
-local server = require('lib.server')
+local enum = require('lib.enum')
+
+local SELL_CATEGORIES = {
+    { '전사용 갑주류', 11 },
+    { '전사용 비늘갑주류', 12 },
+    { '도적용 도복류', 13 },
+    { '도적용 갑옷류', 14 },
+    { '주술사용 치마류', 15 },
+    { '주술사용 도포류', 16 },
+    { '도사용 장삼류', 17 },
+    { '남자용 투구류', 18 },
+}
 
 local AMBER_STAR = {
     { base = '황호박', label = '황호박별입니다.' },
@@ -12,21 +23,22 @@ local AMBER_STAR = {
     { base = '자호박', label = '자호박별입니다.' },
 }
 
-local function run_amber_star(me, npc_obj)
+local function craft_amber_star(me, ch)
     local options = {}
-    for i = 1, 7 do
+    for i = 1, #AMBER_STAR do
         options[i] = AMBER_STAR[i].label
     end
-    local sel, btn = me:list(npc_obj, '어떤 색깔의 호박별을 만드시겠어요?', options, true)
+    local sel, btn = me:list(ch, '어떤 색깔의 호박별을 만드시겠어요?', options, true)
     if btn == DIALOG_RESULT.QUIT then
-        return false
+        return DIALOG_RESULT.QUIT
     end
     if btn == DIALOG_RESULT.PREV then
-        return true
+        return DIALOG_RESULT.NEXT
     end
     if sel == nil or sel < 0 or sel > 6 then
-        return false
+        return DIALOG_RESULT.QUIT
     end
+
     local p = AMBER_STAR[sel + 1]
     local gem = p.base .. '보석'
     local star = p.base .. '별'
@@ -34,61 +46,28 @@ local function run_amber_star(me, npc_obj)
         { ['item'] = { [gem] = 5 } },
         { ['item'] = { [star] = 1 } }
     )
-    if code == server.EXCHANGE_RESULT.LACK_COST then
-        me:dialog(npc_obj, name_with(gem, '이', '가') .. ' 부족합니다.', false, false)
-        return
+    if code == enum.EXCHANGE_RESULT.LACK_COST then
+        return me:dialog(ch, name_with(gem, '이', '가') .. ' 부족합니다.', false, true)
     end
-    if code == server.EXCHANGE_RESULT.LACK_CAPACITY then
-        me:dialog(npc_obj, '소지품이 가득 차서 ' .. name_with(star, '을', '를') .. ' 받을 수 없어요.', false, false)
-        return
+    if code == enum.EXCHANGE_RESULT.LACK_CAPACITY then
+        return me:dialog(ch, '소지품이 가득 차서 ' .. name_with(star, '을', '를') .. ' 받을 수 없어요.', false, true)
     end
-    me:dialog(npc_obj, name_with(star, '을', '를') .. ' 만들어드렸습니다.', false, true)
-    return false
-end
-
-function NPC_15(me, npc_obj)
-::NPC_15_0001::
-    local sel, btn = me:list(npc_obj, '안녕하세요. 무엇을 도와드릴까요?', {'물건 사기', '물건 팔기'}, false)
-    if btn == DIALOG_RESULT.QUIT then
-        return
-    end
-    if sel == nil then
-        return
-    end
-
-    if sel == 0 then
-        if npc.sell_dialog(me, npc_obj) == DIALOG_RESULT.NEXT then
-            goto NPC_15_0001
-        end
-    elseif sel == 1 then
-        if npc.buy_dialog(me, npc_obj) == DIALOG_RESULT.NEXT then
-            goto NPC_15_0001
-        end
-    else
-
-    end
+    return me:dialog(ch, name_with(star, '을', '를') .. ' 만들어드렸습니다.', false, true)
 end
 
 function NPC_16(me, npc_obj)
-::NPC_16_0001::
-    local sel, btn = me:list(npc_obj, '안녕하세요. 어떻게 오셨나요?', { '물건 사기', '물건 팔기', '호박별만들기' }, false)
-    if btn == DIALOG_RESULT.QUIT then
-        return
-    end
-    if sel == nil then
-        return
-    end
-    if sel == 0 then
-        if npc.sell_dialog(me, npc_obj) == DIALOG_RESULT.NEXT then
-            goto NPC_16_0001
-        end
-    elseif sel == 1 then
-        if npc.buy_dialog(me, npc_obj) == DIALOG_RESULT.NEXT then
-            goto NPC_16_0001
-        end
-    elseif sel == 2 then
-        if run_amber_star(me, npc_obj) then
-            goto NPC_16_0001
-        end
-    end
+    npc.shop(me, npc_obj, {
+        greeting = '안녕하세요. 어떻게 오셨나요?',
+        menu = {
+            { '물건 사기', function(me, ch)
+                return npc.show_sell_menu(me, ch, SELL_CATEGORIES)
+            end },
+            { '물건 팔기', function(me, ch)
+                return npc.show_buy_menu(me, ch)
+            end },
+            { '호박별만들기', function(me, ch)
+                return craft_amber_star(me, ch)
+            end },
+        },
+    })
 end

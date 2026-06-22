@@ -1,6 +1,6 @@
 -- item: 낡은금고
 -- 낡은금고 사용 스크립트
-local server = require('lib.server')
+local enum = require('lib.enum')
 
 function ON_ACTIVATED_20097(me, item)
 	local model = item:model()
@@ -13,7 +13,7 @@ function ON_ACTIVATED_20097(me, item)
 		{ ['item'] = { ['낡은금고'] = 1, ['무쇠망치'] = 1 } },
 		{ ['item'] = { ['낡은봉투'] = 1 } }
 	)
-	if code == server.EXCHANGE_RESULT.LACK_CAPACITY then
+	if code == enum.EXCHANGE_RESULT.LACK_CAPACITY then
 		me:dialog(model, '소지품이 가득 찼습니다.')
 		return
 	end

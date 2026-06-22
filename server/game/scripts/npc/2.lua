@@ -1,6 +1,6 @@
 -- npc: 랑구륜
 local quest = require('lib.quest')
-local server = require('lib.server')
+local enum = require('lib.enum')
 
 local function ranggyuryun_palgu(me, npc)
     local EIGHT_TRIGRAMS = { '건괘', '곤괘', '진괘', '감괘', '리괘', '태괘', '선괘', '간괘' }
@@ -49,11 +49,11 @@ local function ranggyuryun_palgu(me, npc)
         { ['item'] = materials },
         { ['item'] = { ['팔괘'] = 1 } }
     )
-    if code == server.EXCHANGE_RESULT.LACK_COST then
+    if code == enum.EXCHANGE_RESULT.LACK_COST then
         me:dialog(npc, '아직 팔괘 재료를 다 모으지 못하셨군요.', false, true)
         return
     end
-    if code == server.EXCHANGE_RESULT.LACK_CAPACITY then
+    if code == enum.EXCHANGE_RESULT.LACK_CAPACITY then
         me:dialog(npc, '소지품이 가득 차서 팔괘를 받을 수 없습니다.', false, true)
         return
     end
@@ -96,11 +96,11 @@ local function ranggyuryun_pure_water(me, npc)
             { ['item'] = materials },
             { ['item'] = { ['정화비서'] = 1 } }
         )
-        if code == server.EXCHANGE_RESULT.LACK_COST then
+        if code == enum.EXCHANGE_RESULT.LACK_COST then
             me:dialog(npc, '아직 홍옥 3개를 구하시지 못하신거군요.', false, false)
             return
         end
-        if code == server.EXCHANGE_RESULT.LACK_CAPACITY then
+        if code == enum.EXCHANGE_RESULT.LACK_CAPACITY then
             me:dialog(npc, '소지품이 가득 차서 정화비서를 받을 수 없습니다.', false, true)
             return
         end

@@ -1,6 +1,6 @@
 -- npc: 장안성장군
 local quest = require('lib.quest')
-local server = require('lib.server')
+local enum = require('lib.enum')
 
 function NPC_231(me, npc)
     local q = me:quest(quest.QUEST_HWANGBIYEON)
@@ -104,11 +104,11 @@ function NPC_231(me, npc)
             { ['item'] = { ['황비연의머리띠'] = 1 } },
             { ['money'] = 100000 }
         )
-        if code == server.EXCHANGE_RESULT.LACK_COST then
+        if code == enum.EXCHANGE_RESULT.LACK_COST then
             me:dialog(npc, '황비연의머리띠를 가져오세요.', false, false)
             return
         end
-        if code == server.EXCHANGE_RESULT.LACK_CAPACITY then
+        if code == enum.EXCHANGE_RESULT.LACK_CAPACITY then
             me:dialog(npc, '금전을 받을 여유가 없군요.', false, false)
             return
         end

@@ -582,21 +582,6 @@ int builtin::server::builtin_pursuit_sell_price(lua_State* L)
     return 0;
 }
 
-int builtin::server::builtin_pursuit_sell_name(lua_State* L)
-{
-    auto lua = fb::lua::get(L);
-    if (lua == nullptr)
-        return 0;
-
-    auto pursuit = lua->tointeger(1);
-
-    if (table::sell_attribute.contains(pursuit) == false)
-        return 0;
-
-    lua->pushstring(table::sell_attribute[pursuit].group);
-    return 1;
-}
-
 int builtin::server::builtin_pursuit_buy(lua_State* L)
 {
     auto lua = fb::lua::get(L);

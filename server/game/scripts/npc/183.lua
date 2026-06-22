@@ -1,6 +1,6 @@
 -- npc: 조왕의동생
 local quest = require('lib.quest')
-local server = require('lib.server')
+local enum = require('lib.enum')
 
 function NPC_183(me, npc)
     local q = me:quest(quest.QUEST_JOWANG)
@@ -73,11 +73,11 @@ function NPC_183(me, npc)
         { ['item'] = { ['화기삼동충초돈유합'] = 1 } },
         { ['item'] = { ['자양강장요리'] = 1 } }
     )
-    if code == server.EXCHANGE_RESULT.LACK_COST then
+    if code == enum.EXCHANGE_RESULT.LACK_COST then
         me:dialog(npc, '아직 화기삼동충초돈유합을 구하지 못하셨나보군요.', false, true)
         return
     end
-    if code == server.EXCHANGE_RESULT.LACK_CAPACITY then
+    if code == enum.EXCHANGE_RESULT.LACK_CAPACITY then
         me:dialog(npc, '소지품이 가득 차서 자양강장요리를 받을 수 없습니다.', false, true)
         return
     end

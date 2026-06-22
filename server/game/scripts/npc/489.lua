@@ -1,6 +1,6 @@
 -- npc: 피리부는소년
 local quest = require('lib.quest')
-local server = require('lib.server')
+local enum = require('lib.enum')
 function NPC_489(me, npc)
     local q = me:quest(quest.QUEST_PAMASPIRI)
     if q == nil then
@@ -98,11 +98,11 @@ function NPC_489(me, npc)
             { ['item'] = { ["꿀사탕"] = 1 } },
             { ['item'] = { ["파마의피리"] = 1 } }
         )
-        if code == server.EXCHANGE_RESULT.LACK_COST then
+        if code == enum.EXCHANGE_RESULT.LACK_COST then
             me:dialog(npc, "사탕을 가져오지 않으면 피리를 주지 않을테야!", false, false)
             return
         end
-        if code == server.EXCHANGE_RESULT.LACK_CAPACITY then
+        if code == enum.EXCHANGE_RESULT.LACK_CAPACITY then
             me:dialog(npc, "소지품이 가득 차서 줄 수 없네요.", false, false)
             return
         end

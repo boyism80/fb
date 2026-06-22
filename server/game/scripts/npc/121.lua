@@ -1,6 +1,6 @@
 -- npc: 퉁퉁대감
 local quest = require('lib.quest')
-local server = require('lib.server')
+local enum = require('lib.enum')
 
 function NPC_121(me, npc)
     local q = me:quest(quest.QUEST_TUNGTUNG)
@@ -44,11 +44,11 @@ function NPC_121(me, npc)
         { ['item'] = { ['호박'] = 10 } },
         { ['item'] = { ['선장의일기2'] = 1 } }
     )
-    if code == server.EXCHANGE_RESULT.LACK_COST then
+    if code == enum.EXCHANGE_RESULT.LACK_COST then
         me:dialog(npc, '아직 호박 열 개를 구하지 못했군.', false, true)
         return
     end
-    if code == server.EXCHANGE_RESULT.LACK_CAPACITY then
+    if code == enum.EXCHANGE_RESULT.LACK_CAPACITY then
         me:dialog(npc, '소지품이 가득 차서 선장의일기2를 줄 수 없네.', false, true)
         return
     end

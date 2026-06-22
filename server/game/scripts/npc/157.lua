@@ -1,6 +1,6 @@
 -- npc: 무달
 local quest = require('lib.quest')
-local server = require('lib.server')
+local enum = require('lib.enum')
 local function do_jungki(me, npc)
     local q = me:quest(quest.QUEST_SHARK_WEAPON)
 
@@ -56,11 +56,11 @@ local function do_jungki(me, npc)
                 { ['item'] = { [s.item] = s.count } },
                 { ['item'] = { [s.reward] = 1 } }
             )
-            if code == server.EXCHANGE_RESULT.LACK_COST then
+            if code == enum.EXCHANGE_RESULT.LACK_COST then
                 me:dialog(npc, s.item .. ' 갯수가 부족한 것은 아닌가? 30개가 필요하네.', false, false)
                 return
             end
-            if code == server.EXCHANGE_RESULT.LACK_CAPACITY then
+            if code == enum.EXCHANGE_RESULT.LACK_CAPACITY then
                 me:dialog(npc, '소지품이 가득 차서 ' .. name_with(s.reward, '을', '를') .. ' 받을 수 없네.', false, false)
                 return
             end

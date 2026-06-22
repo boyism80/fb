@@ -1,6 +1,6 @@
 -- npc: 천성랑
 local quest = require('lib.quest')
-local server = require('lib.server')
+local enum = require('lib.enum')
 local PROMOTION_3RD_STATS = {
     [CLASS.WARRIOR] = { min_hp = 600000,  min_mp = 0 },
     [CLASS.ROGUE]   = { min_hp = 600000,  min_mp = 0 },
@@ -73,10 +73,10 @@ function NPC_96(me, npc)
                 { ['item'] = { ['반고의심장'] = 1 } },
                 { ['item'] = { [weapon_name] = 1 } }
             )
-            if code == server.EXCHANGE_RESULT.LACK_COST then
+            if code == enum.EXCHANGE_RESULT.LACK_COST then
                 return
             end
-            if code == server.EXCHANGE_RESULT.LACK_CAPACITY then
+            if code == enum.EXCHANGE_RESULT.LACK_CAPACITY then
                 me:dialog(npc, '소지품이 가득 차서 무기를 드릴 수 없습니다.', false, true)
                 return
             end
@@ -115,11 +115,11 @@ function NPC_96(me, npc)
             { ['money'] = WEAPON_REISSUE_GOLD },
             { ['item'] = { [weapon_name] = 1 } }
         )
-        if code == server.EXCHANGE_RESULT.LACK_COST then
+        if code == enum.EXCHANGE_RESULT.LACK_COST then
             me:dialog(npc, '금전 1천만 전이 필요합니다.', false, true)
             return
         end
-        if code == server.EXCHANGE_RESULT.LACK_CAPACITY then
+        if code == enum.EXCHANGE_RESULT.LACK_CAPACITY then
             me:dialog(npc, '소지품이 가득 차서 무기를 드릴 수 없습니다.', false, true)
             return
         end

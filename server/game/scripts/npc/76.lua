@@ -1,6 +1,6 @@
 -- npc: 좌선녀
 local quest = require('lib.quest')
-local server = require('lib.server')
+local enum = require('lib.enum')
 
 function NPC_76(me, npc)
     local ACHIEVEMENT_WATER = 18
@@ -83,10 +83,10 @@ function NPC_76(me, npc)
         { ['item'] = materials },
         { ['item'] = { ['인어반지'] = 1 } }
     )
-    if code == server.EXCHANGE_RESULT.LACK_COST then
+    if code == enum.EXCHANGE_RESULT.LACK_COST then
         me:dialog(npc, '아직 재료를 다 모으지 못하신 것 같군요.. 재료는 [게등껍질][게집게][문어다리][해마꼬리]랍니다.', false, true)
         return
-    elseif code == server.EXCHANGE_RESULT.LACK_CAPACITY then
+    elseif code == enum.EXCHANGE_RESULT.LACK_CAPACITY then
         me:dialog(npc, '소지품이 가득 차서 인어반지를 받을 수 없습니다.', false, true)
         return
     end

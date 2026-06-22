@@ -1,7 +1,7 @@
 -- item: 낙랑의두루마리7
 -- 낙랑의두루마리7 사용 스크립트
 local quest = require('lib.quest')
-local server = require('lib.server')
+local enum = require('lib.enum')
 
 local GOAL_LEVEL = 5
 
@@ -51,7 +51,7 @@ function ON_ACTIVATED_7(me, item)
             { ['item'] = { ['낙랑의두루마리7'] = 1 } },
             { ['item'] = { ['낙랑의두루마리8'] = 1, ['초심자의방패'] = 1 } }
         )
-        if code == server.EXCHANGE_RESULT.LACK_CAPACITY then
+        if code == enum.EXCHANGE_RESULT.LACK_CAPACITY then
             me:dialog(model, '소지품이 가득 찼습니다.', false, false)
             return
         end

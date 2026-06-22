@@ -1,6 +1,6 @@
 -- npc: 장돌뱅이
 local quest = require('lib.quest')
-local server = require('lib.server')
+local enum = require('lib.enum')
 
 local ACHIEVEMENT_RABBIT_CATCH = 20
 local ITEM_NEURAEJINDO = '뇌진도'
@@ -73,11 +73,11 @@ function NPC_159(me, npc)
             { ['item'] = { ["금은보화"] = 1 } },
             { ['money'] = 15000 }
         )
-        if code == server.EXCHANGE_RESULT.LACK_COST then
+        if code == enum.EXCHANGE_RESULT.LACK_COST then
             me:dialog(npc, "금은보화를 가지고 있거든 말을 걸어주게나...", false, false)
             return
         end
-        if code == server.EXCHANGE_RESULT.LACK_CAPACITY then
+        if code == enum.EXCHANGE_RESULT.LACK_CAPACITY then
             me:dialog(npc, "금전을 받을 여유가 없군요.", false, false)
             return
         end

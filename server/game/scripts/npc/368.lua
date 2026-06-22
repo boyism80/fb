@@ -1,6 +1,6 @@
 -- npc: 도삭산대신선
 local quest = require('lib.quest')
-local server = require('lib.server')
+local enum = require('lib.enum')
 function NPC_368(me, npc)
     local q = me:quest(quest.QUEST_DOJAECHUN)
     if q == nil then
@@ -50,11 +50,11 @@ function NPC_368(me, npc)
         { ['item'] = { ["신선의책"] = 1 } },
         { ['item'] = { ["도삭산의서"] = 1 } }
     )
-    if code == server.EXCHANGE_RESULT.LACK_COST then
+    if code == enum.EXCHANGE_RESULT.LACK_COST then
         me:dialog(npc, "신선의책이 없지 않은가.", false, false)
         return
     end
-    if code == server.EXCHANGE_RESULT.LACK_CAPACITY then
+    if code == enum.EXCHANGE_RESULT.LACK_CAPACITY then
         me:dialog(npc, "소지품이 가득 차서 줄 수 없네.", false, false)
         return
     end

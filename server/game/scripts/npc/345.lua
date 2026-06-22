@@ -1,5 +1,5 @@
 -- npc: 해골NPC
-local server = require('lib.server')
+local enum = require('lib.enum')
 local TICKET_NAME = "교환권"
 local TICKET_COUNT = 2
 local REWARDS = {
@@ -14,11 +14,11 @@ local function do_exchange(me, npc, reward_name)
         { ['item'] = { [TICKET_NAME] = TICKET_COUNT } },
         { ['item'] = { [reward_name] = 1 } }
     )
-    if code == server.EXCHANGE_RESULT.LACK_COST then
+    if code == enum.EXCHANGE_RESULT.LACK_COST then
         me:dialog(npc, "교환권이 부족하시네요.", false, false)
         return false
     end
-    if code == server.EXCHANGE_RESULT.LACK_CAPACITY then
+    if code == enum.EXCHANGE_RESULT.LACK_CAPACITY then
         me:dialog(npc, "소지품이 가득 차서 " .. reward_name .. "을 드리지 못합니다.", false, false)
         return false
     end

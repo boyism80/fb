@@ -1,5 +1,5 @@
 -- npc: 북극상인
-local server = require('lib.server')
+local enum = require('lib.enum')
 local VOUCHER_BASE_PRICE = 500000
 local VOUCHER_PRICE_PER_WEEK = 10000
 local REF_TIMESTAMP = 1510704000
@@ -55,11 +55,11 @@ function NPC_600(me, npc)
             { ['money'] = price },
             { ['item'] = { ["비패교환증"] = 1 } }
         )
-        if code == server.EXCHANGE_RESULT.LACK_COST then
+        if code == enum.EXCHANGE_RESULT.LACK_COST then
             me:dialog(npc, string.format("아니! 누굴 놀리나!! %d전이 없지 않나!! 장난하지 말게!!", price), false, false)
             return
         end
-        if code == server.EXCHANGE_RESULT.LACK_CAPACITY then
+        if code == enum.EXCHANGE_RESULT.LACK_CAPACITY then
             me:dialog(npc, "소지품이 가득 차서 비패교환증을 줄 수 없습니다.", false, false)
             return
         end
@@ -97,11 +97,11 @@ function NPC_600(me, npc)
             { ['item'] = { ["비패교환증"] = 1 } },
             { ['item'] = { [name] = 1 } }
         )
-        if code == server.EXCHANGE_RESULT.LACK_COST then
+        if code == enum.EXCHANGE_RESULT.LACK_COST then
             me:dialog(npc, "비패교환증을 제출할 수 없습니다.", false, false)
             return
         end
-        if code == server.EXCHANGE_RESULT.LACK_CAPACITY then
+        if code == enum.EXCHANGE_RESULT.LACK_CAPACITY then
             me:dialog(npc, "소지품이 가득 차서 문파비패를 줄 수 없습니다.", false, false)
             return
         end

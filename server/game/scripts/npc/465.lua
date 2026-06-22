@@ -1,6 +1,6 @@
 -- npc: 토원왕
 local quest = require('lib.quest')
-local server = require('lib.server')
+local enum = require('lib.enum')
 local function do_sub2_receive_letter(me, npc)
     if not me:has_items("원숭이편지", 1) then
         return false
@@ -75,10 +75,10 @@ local function do_sub3_turnin(me, npc)
         { ['item'] = { ["좌황활력환"] = 1 } },
         { ['item'] = { ["과일나라"] = 1 } }
     )
-    if code == server.EXCHANGE_RESULT.LACK_COST then
+    if code == enum.EXCHANGE_RESULT.LACK_COST then
         me:dialog(npc, "아이템을 제거할 수 없습니다.", false, false)
         return true
-    elseif code == server.EXCHANGE_RESULT.LACK_CAPACITY then
+    elseif code == enum.EXCHANGE_RESULT.LACK_CAPACITY then
         me:dialog(npc, "소지품이 가득 차서 과일나라를 줄 수 없습니다.", false, false)
         return true
     end

@@ -1,5 +1,5 @@
 -- npc: 크리스탈노인
-local server = require('lib.server')
+local enum = require('lib.enum')
 local MATERIAL = "크리스탈"
 local RING_NAMES = { "크리스탈반지1", "크리스탈반지2", "크리스탈반지3", "크리스탈반지4", "크리스탈반지5" }
 
@@ -58,11 +58,11 @@ function NPC_570(me, npc)
         { ['item'] = { [MATERIAL] = need_count } },
         { ['item'] = { [reward_name] = 1 } }
     )
-    if code == server.EXCHANGE_RESULT.LACK_COST then
+    if code == enum.EXCHANGE_RESULT.LACK_COST then
         me:dialog(npc, "음... 자네는 가진 " .. MATERIAL .. "이 부족한 것 같군...", false, false)
         return
     end
-    if code == server.EXCHANGE_RESULT.LACK_CAPACITY then
+    if code == enum.EXCHANGE_RESULT.LACK_CAPACITY then
         me:dialog(npc, "소지품이 가득 차서 " .. reward_name .. "을 드리지 못합니다.", false, false)
         return
     end

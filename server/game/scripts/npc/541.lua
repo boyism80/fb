@@ -1,6 +1,6 @@
 -- npc: 북천좌상
 local quest = require('lib.quest')
-local server = require('lib.server')
+local enum = require('lib.enum')
 function NPC_541(me, npc)
     local q = me:quest(quest.QUEST_JINHWANG)
     if q == nil then
@@ -40,7 +40,7 @@ function NPC_541(me, npc)
         { ['item'] = { ["진랑검"] = 1, ["혈황검"] = 1 } },
         { ['item'] = { ["강철손목보호대"] = 1 } }
     )
-    if code == server.EXCHANGE_RESULT.LACK_COST then
+    if code == enum.EXCHANGE_RESULT.LACK_COST then
         if not me:has_items("진랑검", 1) or not me:has_items("혈황검", 1) then
             me:dialog(npc, "퀘스트 오류입니다.\n\n운영자에게 문의하세요.\n(*진랑검, 혈황검이 없을 경우 나타나는 메시지 입니다.)", false, false)
         else
@@ -48,7 +48,7 @@ function NPC_541(me, npc)
         end
         return
     end
-    if code == server.EXCHANGE_RESULT.LACK_CAPACITY then
+    if code == enum.EXCHANGE_RESULT.LACK_CAPACITY then
         me:dialog(npc, "소지품이 가득 차서 줄 수 없네.", false, false)
         return
     end

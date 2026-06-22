@@ -1,6 +1,6 @@
 -- npc: 병든아이어머니
 local quest = require('lib.quest')
-local server = require('lib.server')
+local enum = require('lib.enum')
 
 function NPC_233(me, npc)
     if me:level() < 56 then
@@ -74,10 +74,10 @@ function NPC_233(me, npc)
                 { ['item'] = { ['삼전신보탕'] = 1 } },
                 { ['item'] = { ['청자다람쥐인형'] = 1 } }
             )
-            if code == server.EXCHANGE_RESULT.LACK_COST then
+            if code == enum.EXCHANGE_RESULT.LACK_COST then
                 me:dialog(npc, '보약은 장안성 푸줏간에 가보시면 될거예요.', false, true)
                 return
-            elseif code == server.EXCHANGE_RESULT.LACK_CAPACITY then
+            elseif code == enum.EXCHANGE_RESULT.LACK_CAPACITY then
                 me:dialog(npc, '소지품이 가득 차서 청자다람쥐인형을 줄 수 없습니다.', false, true)
                 return
             end

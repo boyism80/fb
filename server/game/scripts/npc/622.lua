@@ -1,5 +1,5 @@
 -- npc: 요선도인
-local server = require('lib.server')
+local enum = require('lib.enum')
 function NPC_622(me, npc)
     local button = me:dialog(npc, "백두촌이 이상한 기운으로 뒤덮혀 정령들이 이성을 잃기 전 까지만 해도, 나는 그들의 신령한 기운을 모아 이런저런 무기와 장비를 만들곤 했었소.", true, true)
     if button == DIALOG_RESULT.QUIT then
@@ -60,7 +60,7 @@ function NPC_622(me, npc)
             reward = { ['item'] = { [r.product] = 1 } }
         end
         local code = me:exchange({ ['item'] = cost_7 }, reward)
-        if code == server.EXCHANGE_RESULT.LACK_COST then
+        if code == enum.EXCHANGE_RESULT.LACK_COST then
             if not me:has_items(r.main, 100) then
                 me:dialog(npc, r.main .. "이 부족합니다.", false, false)
             elseif not me:has_items(other, 100) then
@@ -70,7 +70,7 @@ function NPC_622(me, npc)
             end
             return
         end
-        if code == server.EXCHANGE_RESULT.LACK_CAPACITY then
+        if code == enum.EXCHANGE_RESULT.LACK_CAPACITY then
             me:dialog(npc, "소지품이 가득 차서 [" .. r.product .. "]를 줄 수 없소.", false, false)
             return
         end
@@ -104,7 +104,7 @@ function NPC_622(me, npc)
             reward = { ['item'] = { ["칠요구륜"] = 1 } }
         end
         local code = me:exchange({ ['item'] = cost_chil }, reward)
-        if code == server.EXCHANGE_RESULT.LACK_COST then
+        if code == enum.EXCHANGE_RESULT.LACK_COST then
             for _, name in ipairs(STONES) do
                 if not me:has_items(name, 100) then
                     me:dialog(npc, "[" .. name .. "]이 부족합니다.", false, false)
@@ -114,7 +114,7 @@ function NPC_622(me, npc)
             me:dialog(npc, "지석이 부족하오.", false, false)
             return
         end
-        if code == server.EXCHANGE_RESULT.LACK_CAPACITY then
+        if code == enum.EXCHANGE_RESULT.LACK_CAPACITY then
             me:dialog(npc, "소지품이 가득 차서 [칠요구륜]을 줄 수 없소.", false, false)
             return
         end
@@ -148,7 +148,7 @@ function NPC_622(me, npc)
             reward = { ['item'] = { ["팔세지도"] = 1 } }
         end
         local code = me:exchange({ ['item'] = cost_pal }, reward)
-        if code == server.EXCHANGE_RESULT.LACK_COST then
+        if code == enum.EXCHANGE_RESULT.LACK_COST then
             if not me:has_items("팔요지석", 100) then
                 me:dialog(npc, "[팔요지석]이 부족합니다.", false, false)
             else
@@ -162,7 +162,7 @@ function NPC_622(me, npc)
             end
             return
         end
-        if code == server.EXCHANGE_RESULT.LACK_CAPACITY then
+        if code == enum.EXCHANGE_RESULT.LACK_CAPACITY then
             me:dialog(npc, "소지품이 가득 차서 [팔세지도]를 줄 수 없소.", false, false)
             return
         end
@@ -214,7 +214,7 @@ function NPC_622(me, npc)
             reward = { ['item'] = { [product] = 1 } }
         end
         local code = me:exchange({ ['item'] = cost_nine }, reward)
-        if code == server.EXCHANGE_RESULT.LACK_COST then
+        if code == enum.EXCHANGE_RESULT.LACK_COST then
             for _, name in ipairs(need_nine) do
                 if not me:has_items(name, 1) then
                     me:dialog(npc, "[" .. name .. "]가 부족합니다.", false, false)
@@ -224,7 +224,7 @@ function NPC_622(me, npc)
             me:dialog(npc, "재료가 부족하오.", false, false)
             return
         end
-        if code == server.EXCHANGE_RESULT.LACK_CAPACITY then
+        if code == enum.EXCHANGE_RESULT.LACK_CAPACITY then
             me:dialog(npc, "소지품이 가득 차서 [" .. product .. "]를 줄 수 없소.", false, false)
             return
         end

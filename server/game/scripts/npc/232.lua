@@ -1,6 +1,6 @@
 -- npc: 상해주민
 local quest = require('lib.quest')
-local server = require('lib.server')
+local enum = require('lib.enum')
 
 function NPC_232(me, npc)
     local q = me:quest(quest.QUEST_HWANGBIYEON)
@@ -211,11 +211,11 @@ function NPC_232(me, npc)
             { ['item'] = { ['보패'] = 1 } },
             { ['item'] = { ['황비연의머리띠'] = 1 } }
         )
-        if code == server.EXCHANGE_RESULT.LACK_COST then
+        if code == enum.EXCHANGE_RESULT.LACK_COST then
             me:dialog(npc, '보패를 가지고 있지 않으시군요.', false, true)
             return
         end
-        if code == server.EXCHANGE_RESULT.LACK_CAPACITY then
+        if code == enum.EXCHANGE_RESULT.LACK_CAPACITY then
             me:dialog(npc, '소지품이 가득 차서 황비연의머리띠를 줄 수 없습니다.', false, true)
             return
         end

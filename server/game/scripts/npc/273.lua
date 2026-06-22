@@ -1,6 +1,6 @@
 -- npc: 마타제자
 local quest = require('lib.quest')
-local server = require('lib.server')
+local enum = require('lib.enum')
 function NPC_273(me, npc)
     local q = me:quest(quest.QUEST_PAMASPIRI)
     if q == nil then
@@ -108,10 +108,10 @@ function NPC_273(me, npc)
             { ['item'] = { ["파마의피리"] = 1 } },
             { ['item'] = { ["마반경"] = 1 } }
         )
-        if code == server.EXCHANGE_RESULT.LACK_COST then
+        if code == enum.EXCHANGE_RESULT.LACK_COST then
             me:dialog(npc, "파마의피리가 없어 보이네요.", false, false)
             return
-        elseif code == server.EXCHANGE_RESULT.LACK_CAPACITY then
+        elseif code == enum.EXCHANGE_RESULT.LACK_CAPACITY then
             me:dialog(npc, "소지품이 가득 차서 줄 수 없네요.", false, false)
             return
         end

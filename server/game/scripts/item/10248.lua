@@ -1,6 +1,6 @@
 -- item: 낡은봉투
 -- 낡은봉투 사용 스크립트
-local server = require('lib.server')
+local enum = require('lib.enum')
 
 function ON_ACTIVATED_10248(me, item)
     local model = item:model()
@@ -17,7 +17,7 @@ function ON_ACTIVATED_10248(me, item)
         { ['item'] = { ['낡은봉투'] = 1 } },
         { ['item'] = { ['낡은연애편지'] = 1 } }
     )
-    if code ~= server.EXCHANGE_RESULT.OK then
+    if code ~= enum.EXCHANGE_RESULT.OK then
         return
     end
     local added = me:item('낡은연애편지')

@@ -1,5 +1,5 @@
 -- npc: 백의장인
-local server = require('lib.server')
+local enum = require('lib.enum')
 
 local DRAGON_AWAKEN_RATES = { 20, 8, 2 }
 
@@ -171,11 +171,11 @@ local function run_amber_weapon_craft(me, npc, colors)
         { ['item'] = { [star_item] = 1, ['죽은지네'] = 1 } },
         { ['item'] = { [result_name] = 1 } }
     )
-    if code == server.EXCHANGE_RESULT.LACK_COST then
+    if code == enum.EXCHANGE_RESULT.LACK_COST then
         me:dialog(npc, '재료를 다시 한번 살펴보게. ' .. color_name .. '별과 죽은지네가 있어야 제작할 수 있다네.', false, false)
         return DIALOG_RESULT.NEXT
     end
-    if code == server.EXCHANGE_RESULT.LACK_CAPACITY then
+    if code == enum.EXCHANGE_RESULT.LACK_CAPACITY then
         me:dialog(npc, '소지품이 가득 차서 ' .. name_with(result_name, '을', '를') .. ' 받을 수 없네.', false, false)
         return DIALOG_RESULT.NEXT
     end

@@ -1,6 +1,6 @@
 -- npc: 먹염
 local quest = require('lib.quest')
-local server = require('lib.server')
+local enum = require('lib.enum')
 
 function NPC_168(me, npc)
     local food_rewards = {
@@ -192,10 +192,10 @@ function NPC_168(me, npc)
         { ['item'] = { [food_name] = 1 } },
         reward
     )
-    if code == server.EXCHANGE_RESULT.LACK_COST then
+    if code == enum.EXCHANGE_RESULT.LACK_COST then
         me:dialog(npc, food_name .. '!! 그거 좋지... 하지만 자네는 그 요리를 가지고 있지 않은데? 어디 놔 두고 온 것은 아닌가? 쯧쯧...', false, false)
         return
-    elseif code == server.EXCHANGE_RESULT.LACK_CAPACITY then
+    elseif code == enum.EXCHANGE_RESULT.LACK_CAPACITY then
         me:dialog(npc, '소지품이 가득 차서 보상을 줄 수 없네.', false, true)
         return
     end

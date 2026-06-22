@@ -1,6 +1,6 @@
 -- npc: 도태연
 local quest = require('lib.quest')
-local server = require('lib.server')
+local enum = require('lib.enum')
 
 local ACHIEVEMENT_400 = 12
 local REQUIRED_ITEMS = {
@@ -78,11 +78,11 @@ function NPC_191(me, npc)
             { ['item'] = REQUIRED_ITEMS },
             { ['item'] = { [REWARD_400] = 1 } }
         )
-        if code == server.EXCHANGE_RESULT.LACK_COST then
+        if code == enum.EXCHANGE_RESULT.LACK_COST then
             me:dialog(npc, '아직 발톱, 이빨, 뿔을 다 구하지 못한 모양이군..', false, false)
             return
         end
-        if code == server.EXCHANGE_RESULT.LACK_CAPACITY then
+        if code == enum.EXCHANGE_RESULT.LACK_CAPACITY then
             me:dialog(npc, '소지품이 가득 차서 ' .. name_with(REWARD_400, '을', '를') .. ' 받을 수 없습니다.', false, false)
             return
         end

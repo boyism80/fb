@@ -1,5 +1,5 @@
 -- npc: 혜방스님
-local server = require('lib.server')
+local enum = require('lib.enum')
 local function yeondeung_list()
     local opts = {}
     opts[1] = "연등 2개를 연등1로 교환 해 주세요."
@@ -42,11 +42,11 @@ function NPC_364(me, npc)
         { ['item'] = { [source_name] = 2 } },
         { ['item'] = { [target_name] = 1 } }
     )
-    if code == server.EXCHANGE_RESULT.LACK_COST then
+    if code == enum.EXCHANGE_RESULT.LACK_COST then
         me:dialog(npc, "연등이 없으시군요....", false, false)
         return
     end
-    if code == server.EXCHANGE_RESULT.LACK_CAPACITY then
+    if code == enum.EXCHANGE_RESULT.LACK_CAPACITY then
         me:dialog(npc, "소지품이 가득 차서 연등을 드리지 못합니다.", false, false)
         return
     end
