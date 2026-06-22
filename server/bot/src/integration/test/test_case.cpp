@@ -148,12 +148,25 @@ async::task<void> bot_integration_test::on_initialize(game_bot_controller& contr
     }
 }
 
+async::task<bool> bot_integration_test::check_should_skip()
+{
+    co_return false;
+}
+
 async::task<bool> bot_integration_test::execute()
 {
     if (this->get_state() == test_state::running || this->get_state() == test_state::completed)
         co_return false;
 
     this->set_state(test_state::running);
+
+    if (co_await this->check_should_skip())
+    {
+        fb::logger::debug("{}: test skipped by should_skip", this->name());
+        co_await this->on_finished();
+        this->set_state(test_state::completed);
+        co_return true;
+    }
 
     auto failed         = false;
     auto scenario_index = 0;

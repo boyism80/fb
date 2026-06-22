@@ -192,6 +192,21 @@ function M.run_case(case, caster, target, slot, opts)
             end
         end
 
+        if case.cast ~= nil then
+            log("debug", string.format(
+                "[spell_runner] %s custom cast attempt=%d slot=%d",
+                case.name, attempt, slot))
+
+            local cast_ok = case.cast(caster, target, slot, state)
+            if cast_ok == false then
+                log("debug", string.format("[spell_runner] %s cast failed", case.name))
+                return false
+            end
+
+            packet = state.packet
+            break
+        end
+
         cast_type, message, oid, position = resolve_cast_params(case, caster, target, state)
 
         local user_condition = case.condition

@@ -89,7 +89,7 @@ int lua_register_test(lua_State* L)
     return 0;
 }
 
-int lua_is_local_host(lua_State* L)
+int lua_localhost(lua_State* L)
 {
     auto local = fb::config<std::string_view>("ip") == "127.0.0.1";
     lua_pushboolean(L, local);
@@ -154,6 +154,7 @@ lua_integration_test::suite_def parse_suite_table(lua_State* L, int table_index)
     store_callback("on_parallel_scenario_started", suite.on_parallel_scenario_started_ref);
     store_callback("on_parallel_scenario_finished", suite.on_parallel_scenario_finished_ref);
     store_callback("on_finished", suite.on_finished_ref);
+    store_callback("should_skip", suite.should_skip_ref);
 
     if (lua_getfield(L, idx, "scenarios"); lua_istable(L, -1))
     {
@@ -236,6 +237,7 @@ void release_suite_refs(lua_State* L, lua_integration_test::suite_def& suite)
     unref(suite.on_parallel_scenario_started_ref);
     unref(suite.on_parallel_scenario_finished_ref);
     unref(suite.on_finished_ref);
+    unref(suite.should_skip_ref);
 
     for (auto& scenario : suite.scenarios)
     {
@@ -328,8 +330,8 @@ std::vector<std::filesystem::path> lua_integration_test::discover_scripts()
     lua_pushcclosure(L, lua_register_test, 1);
     lua_setglobal(L, "register_test");
 
-    lua_pushcfunction(L, lua_is_local_host);
-    lua_setglobal(L, "is_local_host");
+    lua_pushcfunction(L, lua_localhost);
+    lua_setglobal(L, "localhost");
 
     append_package_path(L, "../../scripts/?.lua;../../scripts/?/init.lua;scripts/?.lua;scripts/?/init.lua");
 
@@ -383,7 +385,7 @@ void lua_integration_test::init_lua()
 
     register_model_globals(lua);
     lua.build("log", fb::bot::builtin::integration_test::builtin_log);
-    lua.build("is_local_host", lua_is_local_host);
+    lua.build("localhost", lua_localhost);
 }
 
 void lua_integration_test::load_script()
@@ -703,6 +705,14 @@ async::task<void> lua_integration_test::on_finished()
         co_await this->run_lua_void(this->_suite.on_finished_ref);
 
     co_await bot_integration_test::on_finished();
+}
+
+async::task<bool> lua_integration_test::check_should_skip()
+{
+    if (this->_suite.should_skip_ref == LUA_NOREF)
+        co_return false;
+
+    co_return co_await this->run_lua_function(this->_suite.should_skip_ref);
 }
 
 } // namespace fb::bot::integration

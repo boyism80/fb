@@ -11,7 +11,22 @@ local function slog(fmt, ...)
 end
 
 local WEAPON_NAME = "목도"
+local NOT_READY_MESSAGE = "비바람이 휘몰아치고 있습니다."
+local NAKRANG_ROOM = "낙랑의방"
 local NEARBY_MOB_CLEAR_RANGE = 3
+
+local function restore_nakrang_room(caster)
+    local map_model = id2map(caster:map())
+    if map_model == nil then
+        slog("restore_nakrang_room: id2map(%d) not found", caster:map())
+        return false
+    end
+
+    if map_model:name() ~= NAKRANG_ROOM then
+        caster:transfer(protocol.chat(false, "/맵이동 " .. NAKRANG_ROOM .. " 6 6"))
+    end
+    return true
+end
 
 local function root_revive_for_map_id(map_id)
     local map_model = id2map(map_id)
@@ -66,6 +81,68 @@ local SPECIAL_SPELLS = {
             caster:move("TOP", 2)
             caster:direction("BOTTOM")
             return true
+        end,
+    },
+    {
+        name = "귀환",
+        cast = function(caster, _, slot, state)
+            if localhost() then
+                local packet = caster:request(
+                    resp.message,
+                    protocol.spell_cast("NORMAL", slot, "", 0, {0, 0}),
+                    function(p)
+                        return p.type == "STATE"
+                    end)
+                state.packet = packet
+                return packet.text == NOT_READY_MESSAGE
+            end
+
+            caster:transfer(protocol.spell_cast("NORMAL", slot, "", 0, {0, 0}))
+            return true
+        end,
+        post = function(caster, _, state)
+            if localhost() then
+                if state.packet == nil or state.packet.text ~= NOT_READY_MESSAGE then
+                    return false
+                end
+                caster:chat("/맵이동 " .. NAKRANG_ROOM .. " 6 6")
+                return true
+            end
+
+            return restore_nakrang_room(caster)
+        end,
+    },
+    {
+        name = "비영사천문",
+        cast = function(caster, _, slot, state)
+            state.before = caster:position()
+
+            if not localhost() then
+                caster:transfer(protocol.chat(false, "/맵이동 국내성"))
+            end
+
+            local packet = caster:request(
+                resp.message,
+                protocol.spell_cast("INPUT", slot, "동", 0, {0, 0}),
+                function(p)
+                    return p.type == "STATE"
+                end)
+            state.packet = packet
+
+            if skill.is_cast_ready(packet.text, "비영사천문") == false then
+                return false
+            end
+
+            if localhost() then
+                return skill.positions_equal(caster:position(), state.before)
+            end
+
+            if skill.positions_equal(caster:position(), state.before) then
+                slog("비영사천문: position unchanged after cast")
+                return false
+            end
+
+            return restore_nakrang_room(caster)
         end,
     },
     {

@@ -6,6 +6,14 @@ test_suite {
     name      = "Worldmap Test",
     bot_count = 1,
 
+    should_skip = function(_ctx)
+        if localhost() then
+            log("debug", "Worldmap test skipped on local host (requires server transfer)")
+            return true
+        end
+        return false
+    end,
+
     scenarios = {
         function(ctx)
             log("debug", "Starting worldmap test")

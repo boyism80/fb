@@ -16,6 +16,14 @@ test_suite {
     name      = "Door Test",
     bot_count = 1,
 
+    should_skip = function(_ctx)
+        if localhost() then
+            log("debug", "Door test skipped on local host (requires server transfer)")
+            return true
+        end
+        return false
+    end,
+
     scenarios = {
         function(ctx)
             local bot = ctx:bot(0)

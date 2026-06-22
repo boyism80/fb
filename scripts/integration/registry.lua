@@ -19,8 +19,5 @@ register_test("throw_test")
 register_test("group_test")
 register_test("clan_test")
 register_test("marketplace_test")
-
--- if is_local_host() == false then
---     register_test("worldmap_test")
---     register_test("door_test")
--- end
+register_test("worldmap_test")
+register_test("door_test")
