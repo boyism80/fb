@@ -554,6 +554,56 @@ void mob::assert_thread() const
         return;
 }
 
+bool mob::is_cardinally_adjacent(const fb::model::point16_t& a, const fb::model::point16_t& b)
+{
+    auto dx = static_cast<int>(a.x) - static_cast<int>(b.x);
+    auto dy = static_cast<int>(a.y) - static_cast<int>(b.y);
+
+    if (dx == 0 && (dy == 1 || dy == -1))
+        return true;
+
+    if (dy == 0 && (dx == 1 || dx == -1))
+        return true;
+
+    return false;
+}
+
+bool mob::is_cover_barrier_cell(const fb::model::point16_t& cell, const fb::model::point16_t& cover_center)
+{
+    if (cell == cover_center)
+        return true;
+
+    return mob::is_cardinally_adjacent(cell, cover_center);
+}
+
+bool mob::cover_blocks_move(const fb::game::map&        map,
+                            const fb::model::point16_t& from,
+                            const fb::model::point16_t& to) const
+{
+    for (const auto* pivot : {&from, &to})
+    {
+        for (auto& obj : map.nears(*pivot, OBJECT_TYPE::LIFE))
+        {
+            if (obj.get() == this)
+                continue;
+
+            auto life = std::static_pointer_cast<fb::game::life>(obj);
+            if (life->cover() == false)
+                continue;
+
+            const auto& cover_center = life->position();
+
+            if (mob::is_cardinally_adjacent(from, cover_center))
+                return true;
+
+            if (mob::is_cover_barrier_cell(to, cover_center))
+                return true;
+        }
+    }
+
+    return false;
+}
+
 bool mob::move(DIRECTION direction)
 {
     this->assert_thread();
@@ -561,29 +611,11 @@ bool mob::move(DIRECTION direction)
     if (map == nullptr)
         return false;
 
-    auto position = this->side_position(direction);
-    for (auto& obj : map->nears(position, OBJECT_TYPE::LIFE))
-    {
-        if (obj.get() == this)
-            continue;
+    const auto& from     = this->position();
+    const auto  position = this->side_position(direction);
 
-        auto life = std::static_pointer_cast<fb::game::life>(obj);
-        if (life->cover() == false)
-            continue;
-
-        const auto& life_position = life->position();
-        if (life_position.x > 0 && life_position.x - 1 == position.x && life_position.y == position.y)
-            return false;
-
-        if (life_position.x < map->width() - 1 && life_position.x + 1 == position.x && life_position.y == position.y)
-            return false;
-
-        if (life_position.y > 0 && life_position.y - 1 == position.y && life_position.x == position.x)
-            return false;
-
-        if (life_position.y < map->height() - 1 && life_position.y + 1 == position.y && life_position.x == position.x)
-            return false;
-    }
+    if (this->cover_blocks_move(*map, from, position))
+        return false;
 
     return fb::game::object::move(direction);
 }

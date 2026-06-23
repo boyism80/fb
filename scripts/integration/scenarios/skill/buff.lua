@@ -11,6 +11,11 @@ local ATTACK_INTERVAL = 100
 local ATTACK_MAX_LOOPS = 300
 local MOB_CLEAR_RANGE = 2
 local MOB_NAME = "다람쥐"
+local COVER_MOB_OFFSETS = {{-1, 0}, {1, 0}, {0, -1}, {0, 1}}
+local COVER_WAIT_MS = 3000
+local CHAPYE_MP = 100
+local LURE_MP = 50
+local OBLIVION_MP = 60
 
 local function request_phydef(bot)
     local info = bot:request(
@@ -30,7 +35,7 @@ local function make_phydef_debuff_case(name, mp_cost, phydef_delta, dispel_name,
         name = name,
         response = resp.update_internal,
         cast_type = "TARGET",
-        clear_target_buffs_on_retry = false,
+        reset_buffs = false,
         oid = function(_, target) return target:oid() end,
         position = function(_, target) return target:position() end,
         pre = function(caster, target, state)
@@ -130,6 +135,32 @@ local function lure_mob(caster, lure_slot, mob)
     return lure_ok ~= false and lure_ok ~= nil
 end
 
+local function cast_oblivion_on_mob(caster, oblivion_slot, mob, state)
+    state.expected_mp = state.expected_mp - OBLIVION_MP
+    local result = caster:request(
+        resp.update_internal,
+        protocol.spell_cast("TARGET", oblivion_slot, "", mob.oid, mob.position),
+        function(packet)
+            return packet.ch_mp == state.expected_mp
+        end)
+    if result == false or result == nil then
+        return false
+    end
+    if caster:mp() ~= state.expected_mp then
+        return false
+    end
+    return true
+end
+
+local function finish_cover_oblivion_test(caster, target, state, ok)
+    caster:chat(string.format("/몬스터범위제거 %d", MOB_CLEAR_RANGE))
+    caster:chat(string.format("/아이템범위제거 %d", MOB_CLEAR_RANGE))
+    caster:remove_buffs()
+    restore_target_position(target, state)
+    state.mobs = nil
+    return ok
+end
+
 local function attack_until_mobs_dead(caster, ctx, mob_oids, label)
     local dead = {}
     
@@ -196,7 +227,7 @@ local function make_directional_attack_case(name, mob_offsets)
         name = name,
         response = resp.message,
         cast_type = "NORMAL",
-        clear_target_buffs_on_retry = false,
+        reset_buffs = false,
         pre = function(caster, target, state)
             caster:set_current_hp_mp(10000, 10000)
             caster:direction("BOTTOM")
@@ -275,13 +306,17 @@ local CASES = {
         name = "중독",
         response = resp.message,
         cast_type = "TARGET",
+        reset_buffs = false,
         oid = function(_, target) return target:oid() end,
         position = function(_, target) return target:position() end,
         pre = function(caster, target, state)
             caster:set_current_hp_mp(10000, 10000)
             target:set_current_hp_mp(10000, 10000)
+            target:remove_buffs()
             state.buff_target = target
             state.expected_mp = caster:mp() - 30
+            state.dispel_name = "해독"
+            state.dispel_mp = 30
         end,
         condition = function(packet)
             if packet.text == nil then
@@ -292,13 +327,41 @@ local CASES = {
             end
             return false
         end,
-        post = function(caster, _, state)
+        post = function(caster, target, state)
             if caster:mp() ~= state.expected_mp then
                 return false
             end
-            state.buff_target:request(resp.spell_buff, protocol.self_info(), function(packet)
+
+            local buff_result = state.buff_target:request(resp.spell_buff, protocol.self_info(), function(packet)
                 return packet.name == "중독"
             end)
+            if buff_result == false or buff_result == nil then
+                return false
+            end
+
+            local dispel_slot = caster:learn_spell(state.dispel_name)
+            if dispel_slot == 0xFF then
+                return false
+            end
+
+            state.expected_mp_dispel = state.expected_mp - state.dispel_mp
+            local dispel_result = caster:request_on(
+                target,
+                resp.message,
+                protocol.spell_cast("TARGET", dispel_slot, "", target:oid(), target:position()),
+                function(pkt)
+                    if pkt.text == nil then
+                        return false
+                    end
+                    return pkt.text:find("중독 해제", 1, true) ~= nil
+                end)
+
+            if dispel_result == false or dispel_result == nil then
+                return false
+            end
+
+            caster:mp(state.expected_mp_dispel)
+
             state.buff_target:remove_buffs()
             return true
         end,
@@ -307,7 +370,7 @@ local CASES = {
         name = "절망",
         response = resp.update_cc,
         cast_type = "TARGET",
-        clear_target_buffs_on_retry = false,
+        reset_buffs = false,
         oid = function(caster) return caster:oid() end,
         position = function(caster) return caster:position() end,
         pre = function(caster, _, state)
@@ -374,7 +437,7 @@ local CASES = {
         name = "마비",
         response = resp.update_internal,
         cast_type = "TARGET",
-        clear_target_buffs_on_retry = false,
+        reset_buffs = false,
         oid = function(_, target) return target:oid() end,
         position = function(_, target) return target:position() end,
         pre = function(caster, target, state)
@@ -598,10 +661,39 @@ local CASES = {
         name = "차폐",
         response = resp.message,
         cast_type = "NORMAL",
-        pre = function(caster, _, state)
+        reset_buffs = false,
+        pre = function(caster, target, state)
             caster:set_current_hp_mp(10000, 10000)
-            state.buff_target = caster
-            state.expected_mp = caster:mp() - 100
+            caster:direction("BOTTOM")
+
+            if state.lure_slot == nil then
+                state.lure_slot = caster:learn_spell("유인")
+                state.oblivion_slot = caster:learn_spell("망각")
+                if state.lure_slot == 0xFF or state.oblivion_slot == 0xFF then
+                    return false
+                end
+            end
+
+            if offset_target_aside(target, state) == false then
+                return false
+            end
+
+            caster:chat(string.format("/몬스터범위제거 %d", MOB_CLEAR_RANGE))
+
+            if state.mobs == nil then
+                state.mobs = {}
+                for _, offset in ipairs(COVER_MOB_OFFSETS) do
+                    local mob = caster:spawn_monster_relative(MOB_NAME, offset[1], offset[2])
+                    if mob == nil or mob.oid == nil then
+                        return false
+                    end
+                    table.insert(state.mobs, mob)
+                end
+                state.caster_hp_before = caster:hp()
+            end
+
+            state.expected_mp = caster:mp() - CHAPYE_MP
+            return true
         end,
         condition = function(packet)
             if packet.text == nil then
@@ -612,15 +704,50 @@ local CASES = {
             end
             return false
         end,
-        post = function(caster, _, state)
-            if caster:mp() ~= state.expected_mp then
-                return false
+        post = function(caster, target, state, _, ctx)
+            if ctx == nil then
+                return finish_cover_oblivion_test(caster, target, state, false)
             end
-            state.buff_target:request(resp.spell_buff, protocol.self_info(), function(packet)
+            if caster:mp() ~= state.expected_mp then
+                return finish_cover_oblivion_test(caster, target, state, false)
+            end
+
+            local buff_result = caster:request(resp.spell_buff, protocol.self_info(), function(packet)
                 return packet.name == "차폐"
             end)
-            state.buff_target:remove_buffs()
-            return true
+            if buff_result == false or buff_result == nil then
+                return finish_cover_oblivion_test(caster, target, state, false)
+            end
+
+            for i, mob in ipairs(state.mobs) do
+                if lure_mob(caster, state.lure_slot, mob) == false then
+                    log("debug", string.format("[차폐] lure failed mob=%d oid=%s", i, tostring(mob.oid)))
+                    return finish_cover_oblivion_test(caster, target, state, false)
+                end
+                state.expected_mp = state.expected_mp - LURE_MP
+
+                if cast_oblivion_on_mob(caster, state.oblivion_slot, mob, state) == false then
+                    log("debug", string.format(
+                        "[차폐] 망각 failed mob=%d oid=%s expected_mp=%s actual_mp=%d",
+                        i,
+                        tostring(mob.oid),
+                        tostring(state.expected_mp),
+                        caster:mp()))
+                    return finish_cover_oblivion_test(caster, target, state, false)
+                end
+            end
+
+            caster:sleep(COVER_WAIT_MS)
+
+            if caster:hp() ~= state.caster_hp_before then
+                log("debug", string.format(
+                    "[차폐] caster hp changed before=%d after=%d",
+                    state.caster_hp_before,
+                    caster:hp()))
+                return finish_cover_oblivion_test(caster, target, state, false)
+            end
+
+            return finish_cover_oblivion_test(caster, target, state, true)
         end,
     },
     {
@@ -946,7 +1073,7 @@ local CASES = {
         name = "금강불체",
         response = resp.message,
         cast_type = "NORMAL",
-        clear_target_buffs_on_retry = false,
+        reset_buffs = false,
         pre = function(caster, _, state)
             if state.lure_slot == nil then
                 caster:setup_bot_stats(100000, 100000)
@@ -1081,10 +1208,6 @@ local CASES = {
             state.buff_target:remove_buffs()
             return true
         end,
-    },
-    {
-        name = "망각",
-        skip = true,
     },
     {
         name = "대지의힘",

@@ -36,6 +36,7 @@ struct game_bot
     static int builtin_item_base_price(lua_State* L);
     static int builtin_remove_buffs(lua_State* L);
     static int builtin_request(lua_State* L);
+    static int builtin_request_on(lua_State* L);
     static int builtin_chat(lua_State* L);
     static int builtin_move(lua_State* L);
     static int builtin_direction(lua_State* L);
