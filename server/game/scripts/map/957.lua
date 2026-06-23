@@ -1,4 +1,4 @@
--- map id: 957
+-- map: 남경1
 local quest = require('lib.quest')
 
 function ON_MAP_MOVE_957(me)

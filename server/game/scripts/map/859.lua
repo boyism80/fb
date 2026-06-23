@@ -1,4 +1,4 @@
--- map id: 859
+-- map: 만리장성4
 local quest = require('lib.quest')
 
 function ON_MAP_MOVE_859(me)

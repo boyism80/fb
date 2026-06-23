@@ -1,4 +1,4 @@
--- map id: 672
+-- map: 대방성입구
 local quest = require('lib.quest')
 
 function ON_MAP_MOVE_672(me)

@@ -1,4 +1,4 @@
--- map id: 968
+-- map: 상해2
 local quest = require('lib.quest')
 
 function ON_MAP_MOVE_968(me)

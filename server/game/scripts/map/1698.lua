@@ -1,4 +1,4 @@
--- map id: 1698
+-- map: 폭염도
 local quest = require('lib.quest')
 
 function ON_MAP_MOVE_1698(me)

@@ -1,4 +1,4 @@
--- map id: 1108
+-- map: 도삭산309층
 local quest = require('lib.quest')
 
 function ON_MAP_MOVE_1108(me)

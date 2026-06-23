@@ -1,4 +1,4 @@
--- map id: 671
+-- map: 국경지대
 local quest = require('lib.quest')
 
 function ON_MAP_MOVE_671(me)

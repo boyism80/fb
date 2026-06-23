@@ -1,4 +1,4 @@
--- map id: 14500
+-- map: 복건성
 local quest = require('lib.quest')
 
 function ON_MAP_MOVE_14500(me)

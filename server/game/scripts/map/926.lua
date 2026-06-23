@@ -1,4 +1,4 @@
--- map id: 926
+-- map: 강서성
 local quest = require('lib.quest')
 
 function ON_MAP_MOVE_926(me)
