@@ -833,30 +833,33 @@ M.functions = {
         
         ['아이템생성'] = {
             ['privilege'] = ROLE.ADMIN,
-            ['usage'] = '<아이템이름> [개수] [저장여부] - 아이템 생성',
+            ['usage'] = '<아이템이름> [개수] [유효시간(초)] - 아이템 생성',
             ['command'] = function (me, args)
-                local name, count, store = table.unpack(args)
+                local name = args[1]
                 if not name then
-                    me:message("사용법: /아이템생성 <아이템이름> [개수] [저장여부]")
+                    me:message("사용법: /아이템생성 <아이템이름> [개수] [유효시간(초)]")
                     return true
                 end
-                
-                if count == nil then
-                    count = 1
-                else
-                    count = tonumber(count)
+
+                local count = 1
+                if args[2] ~= nil then
+                    count = tonumber(args[2])
                     if not count or count < 1 then
                         me:message("개수는 1 이상의 숫자여야 합니다.")
                         return true
                     end
                 end
-                
-                if store == nil then
-                    store = true
-                else
-                    store = tonumber(store) == 1
+
+                local expire_sec = nil
+                if args[3] ~= nil then
+                    expire_sec = tonumber(args[3])
+                    if expire_sec == nil or expire_sec < 1 then
+                        me:message("유효시간은 1 이상의 숫자(초)여야 합니다.")
+                        return true
+                    end
                 end
-                me:mkitem(name, count, store)
+
+                me:mkitem(name, count, true, expire_sec)
                 return true
             end,
         },

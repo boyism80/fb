@@ -8,7 +8,7 @@ namespace fb::game {
 class ring : public equipment
 {
 public:
-    ring(fb::game::server& server, const fb::model::ring& model);
+    ring(fb::game::server& server, const fb::model::ring& model, const initial_params& params = {});
     ring(const ring& right);
     ~ring();
 };

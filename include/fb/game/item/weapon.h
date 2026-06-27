@@ -25,7 +25,7 @@ private:
     std::optional<std::string> _custom_name;
 
 public:
-    weapon(fb::game::server& server, const fb::model::weapon& model);
+    weapon(fb::game::server& server, const fb::model::weapon& model, const initial_params& params = {});
     weapon(const fb::game::weapon& right);
     ~weapon();
 

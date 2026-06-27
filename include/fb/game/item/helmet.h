@@ -8,7 +8,7 @@ namespace fb::game {
 class helmet : public equipment
 {
 public:
-    helmet(fb::game::server& server, const fb::model::helmet& model);
+    helmet(fb::game::server& server, const fb::model::helmet& model, const initial_params& params = {});
     helmet(const helmet& right);
     ~helmet();
 };

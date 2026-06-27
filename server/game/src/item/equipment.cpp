@@ -4,8 +4,10 @@
 
 using table = fb::model::table;
 
-fb::game::equipment::equipment(fb::game::server& server, const fb::model::equipment& model) :
-    item(server, model)
+fb::game::equipment::equipment(fb::game::server&           server,
+                               const fb::model::equipment& model,
+                               const initial_params&       params) :
+    item(server, model, params)
 {
     this->_durability = model.durability;
 }

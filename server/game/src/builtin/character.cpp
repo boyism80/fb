@@ -718,9 +718,10 @@ int builtin::character::builtin_mkitem(lua_State* L)
     if (store == false)
         return builtin::object::builtin_mkitem(L);
 
-    auto weak        = ch->weak_from_this_as<fb::game::character>();
-    auto id_to_count = std::unordered_map<uint32_t, uint16_t>();
-    auto single_item = !lua->is_table(2);
+    auto expire_seconds = lua->is_number(5) ? static_cast<int64_t>(lua->tointeger(5)) : 0;
+    auto weak           = ch->weak_from_this_as<fb::game::character>();
+    auto id_to_count    = std::unordered_map<uint32_t, uint16_t>();
+    auto single_item    = !lua->is_table(2);
 
     if (lua->is_table(2))
     {
@@ -774,11 +775,15 @@ int builtin::character::builtin_mkitem(lua_State* L)
             co_return;
         }
 
+        std::optional<fb::model::datetime> expire_time = std::nullopt;
+        if (expire_seconds > 0)
+            expire_time = server.now() + fb::model::timespan(std::chrono::seconds(expire_seconds));
+
         auto items = std::vector<std::shared_ptr<fb::game::item>>();
         for (auto& [id, count] : id_to_count)
         {
             auto& model = table::item[id];
-            auto  item  = model.make(server, count);
+            auto  item  = model.make(server, count, expire_time);
             if (item != nullptr)
                 items.push_back(std::move(item));
         }

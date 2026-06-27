@@ -11,7 +11,7 @@ private:
     uint32_t _durability = 0;
 
 public:
-    pack(fb::game::server& server, const fb::model::pack& model);
+    pack(fb::game::server& server, const fb::model::pack& model, const initial_params& params = {});
     pack(const pack& right);
     ~pack();
 

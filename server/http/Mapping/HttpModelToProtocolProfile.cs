@@ -55,7 +55,9 @@ namespace Http.Mapping
 
             CreateMap<Http.Model.Item, Protocol.Item>()
                 .ForMember(x => x.User, x => x.MapFrom(u => u.Owner))
-                .ReverseMap();
+                .ForMember(x => x.ExpireTime, x => x.MapFrom(u => u.ExpireTime.HasValue ? u.ExpireTime.Value.ToString("yyyy-MM-dd HH:mm:ss") : null))
+                .ReverseMap()
+                .ForMember(x => x.ExpireTime, x => x.MapFrom(u => string.IsNullOrEmpty(u.ExpireTime) ? null : (DateTime?)DateTime.Parse(u.ExpireTime)));
 
             CreateMap<Http.Model.Achievement, Protocol.Achievement>()
                 .ForMember(x => x.User, x => x.MapFrom(u => u.Uid))

@@ -37,7 +37,8 @@ public:
     struct initial_params : fb::game::object::initial_params
     {
     public:
-        uint16_t count = 1;
+        uint16_t                           count       = 1;
+        std::optional<fb::model::datetime> expire_time = std::nullopt;
     };
 
 public:
@@ -53,6 +54,9 @@ protected:
     items*                  _container    = nullptr;
     std::optional<uint32_t> _death_uid    = std::nullopt;
     nullable_time           _dropped_time = std::nullopt;
+
+public:
+    const std::optional<fb::model::datetime> expire_time = std::nullopt;
 
 public:
     listener_t& listener;
@@ -90,6 +94,7 @@ public:
                                                 std::optional<fb::model::point16_t> position = std::nullopt,
                                                 map_options                         options  = {}) override;
     std::shared_ptr<fb::game::appearance>   appearance() const override;
+    bool                                    expired() const;
 
 public:
     void container(fb::game::items* container);

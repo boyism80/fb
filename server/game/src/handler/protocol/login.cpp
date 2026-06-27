@@ -38,8 +38,11 @@ void login::init_items(const std::vector<internal::Item>& response, character& c
 {
     for (auto& x : response)
     {
-        auto item = table::item[x.model].make(this->server);
-        item->count(x.count);
+        std::optional<fb::model::datetime> expire_time = std::nullopt;
+        if (x.expire_time.has_value())
+            expire_time = fb::model::datetime(x.expire_time.value());
+
+        auto item = table::item[x.model].make(this->server, x.count, expire_time);
 
         if (x.durability.has_value())
             item->durability(x.durability.value());

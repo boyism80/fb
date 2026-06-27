@@ -2,8 +2,8 @@
 
 using namespace fb::game;
 
-armor::armor(fb::game::server& server, const fb::model::armor& model) :
-    equipment(server, model)
+armor::armor(fb::game::server& server, const fb::model::armor& model, const initial_params& params) :
+    equipment(server, model, params)
 { }
 
 armor::armor(const armor& right) :

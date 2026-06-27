@@ -107,6 +107,7 @@ public:
     bool                          swap(uint8_t src, uint8_t dst) override;
     item_ptr                      remove(uint8_t index, uint16_t count = 1, ITEM_DELETE_TYPE attr = ITEM_DELETE_TYPE::NONE, bool detach = true);
     item_ptr                      remove(item_ptr item, uint16_t count = 1, ITEM_DELETE_TYPE attr = ITEM_DELETE_TYPE::NONE, bool detach = true);
+    void                          remove_expired();
     bool                          is_rewardable(const std::unordered_map<uint32_t, uint16_t>& items, uint32_t money = 0) const;
     bool                          is_rewardable(const std::vector<fb::model::dsl>& items) const;
     exchange_result               exchange(const std::unordered_map<uint32_t, uint16_t>& cost_items, uint32_t cost_money, const std::unordered_map<uint32_t, uint16_t>& reward_items, uint32_t reward_money);

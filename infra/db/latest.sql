@@ -184,6 +184,7 @@ CREATE TABLE `item` (
   `count` smallint unsigned DEFAULT '1',
   `durability` int unsigned DEFAULT NULL,
   `custom_name` varchar(32) DEFAULT NULL,
+  `expire_time` datetime DEFAULT NULL,
   `deleted` tinyint NOT NULL DEFAULT '0',
   `created_date` datetime NOT NULL,
   `updated_date` datetime NOT NULL,

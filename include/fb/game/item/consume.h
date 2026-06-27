@@ -8,7 +8,7 @@ namespace fb::game {
 class consume : public item
 {
 public:
-    consume(fb::game::server& server, const fb::model::consume& model, uint16_t count = 1);
+    consume(fb::game::server& server, const fb::model::consume& model, const initial_params& params = {});
     consume(const consume& right);
     ~consume();
 

@@ -23,6 +23,14 @@ bool fb::model::item::attr(ITEM_ATTRIBUTE flag) const
     return ((uint32_t)this->attr() & (uint32_t)flag) == (uint32_t)flag;
 }
 
+std::optional<fb::model::datetime> fb::model::item::expire_time(const fb::model::datetime& now) const
+{
+    if (this->duration.has_value() == false)
+        return std::nullopt;
+
+    return now + this->duration.value();
+}
+
 fb::model::item* fb::model::__item::name2item(std::string_view name) const
 {
     static auto cache       = std::unordered_map<std::string, fb::model::item*>{};
@@ -97,52 +105,81 @@ std::vector<fb::model::item*> fb::model::__item::name2item_prefix(std::string_vi
     return result;
 }
 
-std::shared_ptr<fb::game::item> fb::model::item::make(fb::game::server& server, uint16_t count) const
+std::shared_ptr<fb::game::item> fb::model::item::make(fb::game::server&                  server,
+                                                      uint16_t                           count,
+                                                      std::optional<fb::model::datetime> expire_time) const
 {
-    return server.make<fb::game::item>(*this, fb::game::item::initial_params{.count = count});
+    return server.make<fb::game::item>(*this,
+                                       fb::game::item::initial_params{.count = count, .expire_time = expire_time});
 }
 
-std::shared_ptr<fb::game::item> fb::model::cash::make(fb::game::server& server, uint16_t count) const
+std::shared_ptr<fb::game::item> fb::model::cash::make(fb::game::server&                  server,
+                                                      uint16_t                           count,
+                                                      std::optional<fb::model::datetime> expire_time) const
 {
     return server.make<fb::game::cash>(count);
 }
 
-std::shared_ptr<fb::game::item> fb::model::consume::make(fb::game::server& server, uint16_t count) const
+std::shared_ptr<fb::game::item> fb::model::consume::make(fb::game::server&                  server,
+                                                         uint16_t                           count,
+                                                         std::optional<fb::model::datetime> expire_time) const
 {
-    return server.make<fb::game::consume>(*this, count);
+    return server.make<fb::game::consume>(*this,
+                                          fb::game::item::initial_params{.count = count, .expire_time = expire_time});
 }
 
-std::shared_ptr<fb::game::item> fb::model::pack::make(fb::game::server& server, uint16_t count) const
+std::shared_ptr<fb::game::item> fb::model::pack::make(fb::game::server&                  server,
+                                                      uint16_t                           count,
+                                                      std::optional<fb::model::datetime> expire_time) const
 {
-    return server.make<fb::game::pack>(*this);
+    return server.make<fb::game::pack>(*this,
+                                       fb::game::item::initial_params{.count = count, .expire_time = expire_time});
 }
 
-std::shared_ptr<fb::game::item> fb::model::weapon::make(fb::game::server& server, uint16_t count) const
+std::shared_ptr<fb::game::item> fb::model::weapon::make(fb::game::server&                  server,
+                                                        uint16_t                           count,
+                                                        std::optional<fb::model::datetime> expire_time) const
 {
-    return server.make<fb::game::weapon>(*this);
+    return server.make<fb::game::weapon>(*this,
+                                         fb::game::item::initial_params{.count = count, .expire_time = expire_time});
 }
 
-std::shared_ptr<fb::game::item> fb::model::armor::make(fb::game::server& server, uint16_t count) const
+std::shared_ptr<fb::game::item> fb::model::armor::make(fb::game::server&                  server,
+                                                       uint16_t                           count,
+                                                       std::optional<fb::model::datetime> expire_time) const
 {
-    return server.make<fb::game::armor>(*this);
+    return server.make<fb::game::armor>(*this,
+                                        fb::game::item::initial_params{.count = count, .expire_time = expire_time});
 }
 
-std::shared_ptr<fb::game::item> fb::model::helmet::make(fb::game::server& server, uint16_t count) const
+std::shared_ptr<fb::game::item> fb::model::helmet::make(fb::game::server&                  server,
+                                                        uint16_t                           count,
+                                                        std::optional<fb::model::datetime> expire_time) const
 {
-    return server.make<fb::game::helmet>(*this);
+    return server.make<fb::game::helmet>(*this,
+                                         fb::game::item::initial_params{.count = count, .expire_time = expire_time});
 }
 
-std::shared_ptr<fb::game::item> fb::model::shield::make(fb::game::server& server, uint16_t count) const
+std::shared_ptr<fb::game::item> fb::model::shield::make(fb::game::server&                  server,
+                                                        uint16_t                           count,
+                                                        std::optional<fb::model::datetime> expire_time) const
 {
-    return server.make<fb::game::shield>(*this);
+    return server.make<fb::game::shield>(*this,
+                                         fb::game::item::initial_params{.count = count, .expire_time = expire_time});
 }
 
-std::shared_ptr<fb::game::item> fb::model::ring::make(fb::game::server& server, uint16_t count) const
+std::shared_ptr<fb::game::item> fb::model::ring::make(fb::game::server&                  server,
+                                                      uint16_t                           count,
+                                                      std::optional<fb::model::datetime> expire_time) const
 {
-    return server.make<fb::game::ring>(*this);
+    return server.make<fb::game::ring>(*this,
+                                       fb::game::item::initial_params{.count = count, .expire_time = expire_time});
 }
 
-std::shared_ptr<fb::game::item> fb::model::auxiliary::make(fb::game::server& server, uint16_t count) const
+std::shared_ptr<fb::game::item> fb::model::auxiliary::make(fb::game::server&                  server,
+                                                           uint16_t                           count,
+                                                           std::optional<fb::model::datetime> expire_time) const
 {
-    return server.make<fb::game::auxiliary>(*this);
+    return server.make<fb::game::auxiliary>(*this,
+                                            fb::game::item::initial_params{.count = count, .expire_time = expire_time});
 }

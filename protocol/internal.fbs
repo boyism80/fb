@@ -96,6 +96,7 @@ table Item {
     count: ushort;
     durability: uint?;
     custom_name: string?;
+    expire_time: string?;
 }
 
 table Spell {

@@ -7,12 +7,14 @@ using namespace fb::game;
 item::item(fb::game::server& server, const fb::model::item& model, const initial_params& params) :
     object(server, model, params),
     listener(server.listener),
-    _count(std::clamp<uint16_t>(params.count, 1, model.capacity))
+    _count(std::clamp<uint16_t>(params.count, 1, model.capacity)),
+    expire_time(params.expire_time.has_value() ? params.expire_time : model.expire_time(server.now()))
 { }
 
 item::item(const item& right) :
-    object(right.server, right._model, initial_params{.count = right._count}),
-    listener(right.listener)
+    object(right.server, right._model, initial_params{.count = right._count, .expire_time = right.expire_time}),
+    listener(right.listener),
+    expire_time(right.expire_time)
 { }
 
 item::~item()
@@ -185,7 +187,7 @@ std::shared_ptr<fb::game::item> item::split(uint16_t count)
     if (model.attr(ITEM_ATTRIBUTE::BUNDLE) && this->_count > count)
     {
         this->_count -= count;
-        return std::static_pointer_cast<fb::game::item>(model.make(this->server, count));
+        return std::static_pointer_cast<fb::game::item>(model.make(this->server, count, this->expire_time));
     }
     else
     {
@@ -279,10 +281,21 @@ fb::protocol::internal::Item item::to_protocol(EQUIPMENT_PARTS parts) const
     result.count       = this->_count;
     result.durability  = this->durability();
     result.custom_name = std::nullopt;
+    if (this->expire_time.has_value())
+        result.expire_time = this->expire_time.value().to_string();
     return result;
 }
 
 std::shared_ptr<fb::game::appearance> item::appearance() const
 {
     throw std::runtime_error("appearance() not implemented");
+}
+
+bool item::expired() const
+{
+    if (this->expire_time.has_value() == false)
+        return false;
+
+    auto now = this->server.now();
+    return this->expire_time.value() < now;
 }

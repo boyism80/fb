@@ -18,6 +18,7 @@
                                 <th>아이템명</th>
                                 <th>수량</th>
                                 <th>내구도</th>
+                                <th>만료시간</th>
                                 <th>커스텀명</th>
                             </tr>
                         </thead>
@@ -30,6 +31,7 @@
                                     <td>@UserDetailDisplay.FormatItemName(item.Model)</td>
                                     <td>@item.Count</td>
                                     <td>@(item.Durability?.ToString() ?? "-")</td>
+                                    <td class="table-meta">@UserDetailDisplay.FormatDateTime(item.ExpireTime)</td>
                                     <td>@(string.IsNullOrEmpty(item.CustomName) ? "-" : item.CustomName)</td>
                                 </tr>
                             }
@@ -61,6 +63,7 @@
                                 <th>아이템명</th>
                                 <th>수량</th>
                                 <th>내구도</th>
+                                <th>만료시간</th>
                                 <th>커스텀명</th>
                             </tr>
                         </thead>
@@ -73,6 +76,7 @@
                                     <td>@UserDetailDisplay.FormatItemName(item.Model)</td>
                                     <td>@item.Count</td>
                                     <td>@(item.Durability?.ToString() ?? "-")</td>
+                                    <td class="table-meta">@UserDetailDisplay.FormatDateTime(item.ExpireTime)</td>
                                     <td>@(string.IsNullOrEmpty(item.CustomName) ? "-" : item.CustomName)</td>
                                 </tr>
                             }
@@ -105,6 +109,7 @@
                                 <th>아이템명</th>
                                 <th>수량</th>
                                 <th>내구도</th>
+                                <th>만료시간</th>
                                 <th>커스텀명</th>
                             </tr>
                         </thead>
@@ -118,6 +123,7 @@
                                     <td>@UserDetailDisplay.FormatItemName(item.Model)</td>
                                     <td>@item.Count</td>
                                     <td>@(item.Durability?.ToString() ?? "-")</td>
+                                    <td class="table-meta">@UserDetailDisplay.FormatDateTime(item.ExpireTime)</td>
                                     <td>@(string.IsNullOrEmpty(item.CustomName) ? "-" : item.CustomName)</td>
                                 </tr>
                             }

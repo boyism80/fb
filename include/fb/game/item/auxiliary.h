@@ -8,7 +8,7 @@ namespace fb::game {
 class auxiliary : public equipment
 {
 public:
-    auxiliary(fb::game::server& server, const fb::model::auxiliary& model);
+    auxiliary(fb::game::server& server, const fb::model::auxiliary& model, const initial_params& params = {});
     auxiliary(const fb::game::auxiliary& right);
     ~auxiliary();
 };

@@ -98,53 +98,65 @@ public:                                                                         
 public:                        \
     LUA_PROTOTYPE
 
-#define DECLARE_ITEM_EXTENSION                                                      \
-                                                                                    \
-public:                                                                             \
-    LUA_PROTOTYPE                                                                   \
-                                                                                    \
-public:                                                                             \
-    OVERRIDE_OBJECT_TYPE(enum_value::OBJECT_TYPE::ITEM)                             \
-                                                                                    \
-public:                                                                             \
-    virtual enum_value::ITEM_ATTRIBUTE attr() const;                                \
-    bool                               attr(enum_value::ITEM_ATTRIBUTE flag) const; \
-                                                                                    \
-public:                                                                             \
-    virtual std::shared_ptr<fb::game::item> make(fb::game::server& server, uint16_t count = 1) const;
+#define DECLARE_ITEM_EXTENSION                                                                       \
+                                                                                                     \
+public:                                                                                              \
+    LUA_PROTOTYPE                                                                                    \
+                                                                                                     \
+public:                                                                                              \
+    OVERRIDE_OBJECT_TYPE(enum_value::OBJECT_TYPE::ITEM)                                              \
+                                                                                                     \
+public:                                                                                              \
+    virtual enum_value::ITEM_ATTRIBUTE attr() const;                                                 \
+    bool                               attr(enum_value::ITEM_ATTRIBUTE flag) const;                  \
+    std::optional<fb::model::datetime> expire_time(const fb::model::datetime& now) const;            \
+                                                                                                     \
+public:                                                                                              \
+    virtual std::shared_ptr<fb::game::item> make(fb::game::server&                  server,          \
+                                                 uint16_t                           count       = 1, \
+                                                 std::optional<fb::model::datetime> expire_time = std::nullopt) const;
 
-#define DECLARE_CASH_EXTENSION                                                                               \
-                                                                                                             \
-public:                                                                                                      \
-    std::shared_ptr<fb::game::item> make(fb::game::server& server, uint16_t count = 1) const override final; \
-                                                                                                             \
-    virtual enum_value::ITEM_ATTRIBUTE attr() const                                                          \
-    {                                                                                                        \
-        return enum_value::ITEM_ATTRIBUTE::CASH;                                                             \
+#define DECLARE_CASH_EXTENSION                                                                          \
+                                                                                                        \
+public:                                                                                                 \
+    std::shared_ptr<fb::game::item> make(fb::game::server&                  server,                     \
+                                         uint16_t                           count       = 1,            \
+                                         std::optional<fb::model::datetime> expire_time = std::nullopt) \
+        const override              final;                                                              \
+                                                                                                        \
+    virtual enum_value::ITEM_ATTRIBUTE attr() const                                                     \
+    {                                                                                                   \
+        return enum_value::ITEM_ATTRIBUTE::CASH;                                                        \
     }
 
-#define DECLARE_CONSUME_EXTENSION                                                                            \
-                                                                                                             \
-public:                                                                                                      \
-    std::shared_ptr<fb::game::item> make(fb::game::server& server, uint16_t count = 1) const override final; \
-                                                                                                             \
-    virtual enum_value::ITEM_ATTRIBUTE attr() const                                                          \
-    {                                                                                                        \
-        auto attr = enum_value::ITEM_ATTRIBUTE::CONSUME;                                                     \
-        if (this->capacity > 1)                                                                              \
-            attr = enum_value::ITEM_ATTRIBUTE(attr | enum_value::ITEM_ATTRIBUTE::BUNDLE);                    \
-                                                                                                             \
-        return attr;                                                                                         \
+#define DECLARE_CONSUME_EXTENSION                                                                       \
+                                                                                                        \
+public:                                                                                                 \
+    std::shared_ptr<fb::game::item> make(fb::game::server&                  server,                     \
+                                         uint16_t                           count       = 1,            \
+                                         std::optional<fb::model::datetime> expire_time = std::nullopt) \
+        const override              final;                                                              \
+                                                                                                        \
+    virtual enum_value::ITEM_ATTRIBUTE attr() const                                                     \
+    {                                                                                                   \
+        auto attr = enum_value::ITEM_ATTRIBUTE::CONSUME;                                                \
+        if (this->capacity > 1)                                                                         \
+            attr = enum_value::ITEM_ATTRIBUTE(attr | enum_value::ITEM_ATTRIBUTE::BUNDLE);               \
+                                                                                                        \
+        return attr;                                                                                    \
     }
 
-#define DECLARE_PACK_EXTENSION                                                                               \
-                                                                                                             \
-public:                                                                                                      \
-    std::shared_ptr<fb::game::item> make(fb::game::server& server, uint16_t count = 1) const override final; \
-                                                                                                             \
-    virtual enum_value::ITEM_ATTRIBUTE attr() const                                                          \
-    {                                                                                                        \
-        return enum_value::ITEM_ATTRIBUTE::PACK;                                                             \
+#define DECLARE_PACK_EXTENSION                                                                          \
+                                                                                                        \
+public:                                                                                                 \
+    std::shared_ptr<fb::game::item> make(fb::game::server&                  server,                     \
+                                         uint16_t                           count       = 1,            \
+                                         std::optional<fb::model::datetime> expire_time = std::nullopt) \
+        const override              final;                                                              \
+                                                                                                        \
+    virtual enum_value::ITEM_ATTRIBUTE attr() const                                                     \
+    {                                                                                                   \
+        return enum_value::ITEM_ATTRIBUTE::PACK;                                                        \
     }
 
 #define DECLARE_EQUIPMENT_EXTENSION                   \
@@ -158,87 +170,105 @@ public:                                               \
         return enum_value::ITEM_ATTRIBUTE::EQUIPMENT; \
     }
 
-#define DECLARE_WEAPON_EXTENSION                                                                             \
-                                                                                                             \
-public:                                                                                                      \
-    LUA_PROTOTYPE                                                                                            \
-                                                                                                             \
-public:                                                                                                      \
-    std::shared_ptr<fb::game::item> make(fb::game::server& server, uint16_t count = 1) const override final; \
-                                                                                                             \
-    virtual enum_value::ITEM_ATTRIBUTE attr() const                                                          \
-    {                                                                                                        \
-        return enum_value::ITEM_ATTRIBUTE::WEAPON;                                                           \
-    }                                                                                                        \
-    enum_value::WEAPON_TYPE weapon_type() const                                                              \
-    {                                                                                                        \
-        switch (this->dress / 10000)                                                                         \
-        {                                                                                                    \
-        case 0:                                                                                              \
-            return enum_value::WEAPON_TYPE::NORMAL;                                                          \
-                                                                                                             \
-        case 1:                                                                                              \
-            return enum_value::WEAPON_TYPE::SPEAR;                                                           \
-                                                                                                             \
-        case 2:                                                                                              \
-            return enum_value::WEAPON_TYPE::BOW;                                                             \
-                                                                                                             \
-        case 3:                                                                                              \
-            return enum_value::WEAPON_TYPE::FAN;                                                             \
-                                                                                                             \
-        default:                                                                                             \
-            return enum_value::WEAPON_TYPE::UNKNOWN;                                                         \
-        }                                                                                                    \
+#define DECLARE_WEAPON_EXTENSION                                                                        \
+                                                                                                        \
+public:                                                                                                 \
+    LUA_PROTOTYPE                                                                                       \
+                                                                                                        \
+public:                                                                                                 \
+    std::shared_ptr<fb::game::item> make(fb::game::server&                  server,                     \
+                                         uint16_t                           count       = 1,            \
+                                         std::optional<fb::model::datetime> expire_time = std::nullopt) \
+        const override              final;                                                              \
+                                                                                                        \
+    virtual enum_value::ITEM_ATTRIBUTE attr() const                                                     \
+    {                                                                                                   \
+        return enum_value::ITEM_ATTRIBUTE::WEAPON;                                                      \
+    }                                                                                                   \
+    enum_value::WEAPON_TYPE weapon_type() const                                                         \
+    {                                                                                                   \
+        switch (this->dress / 10000)                                                                    \
+        {                                                                                               \
+        case 0:                                                                                         \
+            return enum_value::WEAPON_TYPE::NORMAL;                                                     \
+                                                                                                        \
+        case 1:                                                                                         \
+            return enum_value::WEAPON_TYPE::SPEAR;                                                      \
+                                                                                                        \
+        case 2:                                                                                         \
+            return enum_value::WEAPON_TYPE::BOW;                                                        \
+                                                                                                        \
+        case 3:                                                                                         \
+            return enum_value::WEAPON_TYPE::FAN;                                                        \
+                                                                                                        \
+        default:                                                                                        \
+            return enum_value::WEAPON_TYPE::UNKNOWN;                                                    \
+        }                                                                                               \
     }
 
-#define DECLARE_ARMOR_EXTENSION                                                                              \
-                                                                                                             \
-public:                                                                                                      \
-    std::shared_ptr<fb::game::item> make(fb::game::server& server, uint16_t count = 1) const override final; \
-                                                                                                             \
-    virtual enum_value::ITEM_ATTRIBUTE attr() const                                                          \
-    {                                                                                                        \
-        return enum_value::ITEM_ATTRIBUTE::ARMOR;                                                            \
+#define DECLARE_ARMOR_EXTENSION                                                                         \
+                                                                                                        \
+public:                                                                                                 \
+    std::shared_ptr<fb::game::item> make(fb::game::server&                  server,                     \
+                                         uint16_t                           count       = 1,            \
+                                         std::optional<fb::model::datetime> expire_time = std::nullopt) \
+        const override              final;                                                              \
+                                                                                                        \
+    virtual enum_value::ITEM_ATTRIBUTE attr() const                                                     \
+    {                                                                                                   \
+        return enum_value::ITEM_ATTRIBUTE::ARMOR;                                                       \
     }
 
-#define DECLARE_HELMET_EXTENSION                                                                             \
-                                                                                                             \
-public:                                                                                                      \
-    std::shared_ptr<fb::game::item> make(fb::game::server& server, uint16_t count = 1) const override final; \
-                                                                                                             \
-    virtual enum_value::ITEM_ATTRIBUTE attr() const                                                          \
-    {                                                                                                        \
-        return enum_value::ITEM_ATTRIBUTE::HELMET;                                                           \
+#define DECLARE_HELMET_EXTENSION                                                                        \
+                                                                                                        \
+public:                                                                                                 \
+    std::shared_ptr<fb::game::item> make(fb::game::server&                  server,                     \
+                                         uint16_t                           count       = 1,            \
+                                         std::optional<fb::model::datetime> expire_time = std::nullopt) \
+        const override              final;                                                              \
+                                                                                                        \
+    virtual enum_value::ITEM_ATTRIBUTE attr() const                                                     \
+    {                                                                                                   \
+        return enum_value::ITEM_ATTRIBUTE::HELMET;                                                      \
     }
 
-#define DECLARE_SHIELD_EXTENSION                                                                             \
-                                                                                                             \
-public:                                                                                                      \
-    std::shared_ptr<fb::game::item> make(fb::game::server& server, uint16_t count = 1) const override final; \
-                                                                                                             \
-    virtual enum_value::ITEM_ATTRIBUTE attr() const                                                          \
-    {                                                                                                        \
-        return enum_value::ITEM_ATTRIBUTE::SHIELD;                                                           \
+#define DECLARE_SHIELD_EXTENSION                                                                        \
+                                                                                                        \
+public:                                                                                                 \
+    std::shared_ptr<fb::game::item> make(fb::game::server&                  server,                     \
+                                         uint16_t                           count       = 1,            \
+                                         std::optional<fb::model::datetime> expire_time = std::nullopt) \
+        const override              final;                                                              \
+                                                                                                        \
+    virtual enum_value::ITEM_ATTRIBUTE attr() const                                                     \
+    {                                                                                                   \
+        return enum_value::ITEM_ATTRIBUTE::SHIELD;                                                      \
     }
 
-#define DECLARE_RING_EXTENSION                                                                               \
-                                                                                                             \
-public:                                                                                                      \
-    std::shared_ptr<fb::game::item> make(fb::game::server& server, uint16_t count = 1) const override final; \
-                                                                                                             \
-    virtual enum_value::ITEM_ATTRIBUTE attr() const                                                          \
-    {                                                                                                        \
-        return enum_value::ITEM_ATTRIBUTE::RING;                                                             \
+#define DECLARE_RING_EXTENSION                                                                          \
+                                                                                                        \
+public:                                                                                                 \
+    std::shared_ptr<fb::game::item> make(fb::game::server&                  server,                     \
+                                         uint16_t                           count       = 1,            \
+                                         std::optional<fb::model::datetime> expire_time = std::nullopt) \
+        const override              final;                                                              \
+                                                                                                        \
+    virtual enum_value::ITEM_ATTRIBUTE attr() const                                                     \
+    {                                                                                                   \
+        return enum_value::ITEM_ATTRIBUTE::RING;                                                        \
     }
 
-#define DECLARE_AUXILIARY_EXTENSION                                                                          \
-                                                                                                             \
-public:                                                                                                      \
-    std::shared_ptr<fb::game::item> make(fb::game::server& server, uint16_t count = 1) const override final; \
-                                                                                                             \
-    virtual enum_value::ITEM_ATTRIBUTE attr() const                                                          \
-    {                                                                                                        \
-        return enum_value::ITEM_ATTRIBUTE::AUXILIARY;                                                        \
+#define DECLARE_AUXILIARY_EXTENSION                                                                     \
+                                                                                                        \
+public:                                                                                                 \
+    std::shared_ptr<fb::game::item> make(fb::game::server&                  server,                     \
+                                         uint16_t                           count       = 1,            \
+                                         std::optional<fb::model::datetime> expire_time = std::nullopt) \
+        const override              final;                                                              \
+                                                                                                        \
+    virtual enum_value::ITEM_ATTRIBUTE attr() const                                                     \
+    {                                                                                                   \
+        return enum_value::ITEM_ATTRIBUTE::AUXILIARY;                                                   \
     }
 
 #define DECLARE_NPC_EXTENSION                          \
