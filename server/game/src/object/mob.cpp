@@ -180,12 +180,11 @@ async::task<bool> mob::call_script()
         fb::logger::warn(e.what());
     }
 
-    this->_attack_thread = nullptr;
-
     auto shared = weak.lock();
     if (shared == nullptr)
         co_return false;
 
+    this->_attack_thread = nullptr;
     co_return true;
 }
 
