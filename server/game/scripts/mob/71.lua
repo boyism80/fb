@@ -1,0 +1,5 @@
+-- mob: 흑구렁이
+-- 흑구렁이 사망
+function ON_MOB_DIE_71(me, you)
+
+end

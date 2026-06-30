@@ -1,4 +1,0 @@
--- 도삭산흑코뿔소 사망
-function ON_MOB_DIE_594(me, you)
-
-end

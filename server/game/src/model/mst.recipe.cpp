@@ -17,8 +17,6 @@ fb::model::recipe_node* fb::model::recipe_node::find(uint32_t id) const
         auto& data = node->data;
         if (data.id == id)
             return static_cast<fb::model::recipe_node*>(node);
-
-        return nullptr;
     }
 
     return nullptr;
@@ -31,8 +29,6 @@ fb::model::recipe_node* fb::model::recipe_node::find(const fb::model::dsl::item&
         auto& data = node->data;
         if (data.id == item.id && data.count == item.count)
             return static_cast<fb::model::recipe_node*>(node);
-
-        return nullptr;
     }
 
     return nullptr;

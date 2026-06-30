@@ -13,5 +13,6 @@ ARG SERVICE
 ENV SERVICE=$SERVICE
 COPY --from=build /app/dist/${SERVICE} /app
 COPY --from=ghcr.io/boyism80/fb/data:latest /fb/data/json/server/ /app/json/
+COPY infra/db/migrations /app/migrations
 WORKDIR /app
 ENTRYPOINT ["sh", "-c", "dotnet ${SERVICE}.dll"]

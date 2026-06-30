@@ -1,0 +1,5 @@
+-- mob: 도삭산고양인어
+-- 도삭산고양인어 사망
+function ON_MOB_DIE_587(me, you)
+
+end

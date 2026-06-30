@@ -38,8 +38,11 @@ void login::init_items(const std::vector<internal::Item>& response, character& c
 {
     for (auto& x : response)
     {
-        auto item = table::item[x.model].make(this->server);
-        item->count(x.count);
+        std::optional<fb::model::datetime> expire_time = std::nullopt;
+        if (x.expire_time.has_value())
+            expire_time = fb::model::datetime(x.expire_time.value());
+
+        auto item = table::item[x.model].make(this->server, x.count, expire_time);
 
         if (x.durability.has_value())
             item->durability(x.durability.value());
@@ -276,13 +279,9 @@ async::task<std::shared_ptr<character>> login::init(const game_reqs::login& requ
         if (msg.empty() == false)
             ch->message(msg, MESSAGE_TYPE::STATE);
 
-        auto lua = this->server.lua.new_context();
-        if (lua != nullptr)
+        auto lua = this->server.lua.new_ctx_guard("scripts/interaction.lua", "on_login");
+        if (lua)
         {
-#if defined DEBUG || defined _DEBUG
-            lua->load("scripts/interaction.lua");
-#endif
-            lua->func("on_login");
             lua->pushobject(ch);
             lua->pushboolean(ch->is_first_login());
             std::ignore = lua->call(2);

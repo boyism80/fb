@@ -10,7 +10,7 @@ namespace AdminTool.Services
 
         public string Current { get; private set; } = Dark;
 
-        public event Action? Changed;
+        public event Action Changed;
 
         public async Task InitializeAsync(IJSRuntime js)
         {

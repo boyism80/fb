@@ -193,6 +193,7 @@ IMPLEMENT_LUA_EXTENSION(game_bot, "fb.bot")
     {"item_base_price",          builtin::game_bot::builtin_item_base_price},
     {"remove_buffs",             builtin::game_bot::builtin_remove_buffs},
     {"request",                  builtin::game_bot::builtin_request},
+    {"request_on",               builtin::game_bot::builtin_request_on},
     {"chat",                     builtin::game_bot::builtin_chat},
     {"move",                     builtin::game_bot::builtin_move},
     {"direction",                builtin::game_bot::builtin_direction},
@@ -862,6 +863,103 @@ int builtin::game_bot::builtin_request(lua_State* L)
                                                       true,
                                                       true,
                                                       std::move(clone));
+
+        luaL_unref(L_state, LUA_REGISTRYINDEX, validator_ref);
+    };
+    builder.resume = [lua, result, response_entry]() -> async::task<int> {
+        if (*result == nullptr)
+        {
+            lua->pushboolean(false);
+            co_return 1;
+        }
+        response_entry->marshal_lua(static_cast<lua_State*>(*lua), **result);
+        co_return 1;
+    };
+    return builder.run();
+}
+
+int builtin::game_bot::builtin_request_on(lua_State* L)
+{
+    auto lua = fb::lua::get(L);
+    if (lua == nullptr)
+        return 0;
+
+    auto sender = lua->touserdata<fb::bot::game_bot>(1);
+    if (sender == nullptr)
+        return 0;
+
+    auto listener = lua->touserdata<fb::bot::game_bot>(2);
+    if (listener == nullptr)
+        return 0;
+
+    auto* response_entry = lua_protocol::to_response_token(L, 3);
+    auto  request        = lua_protocol::to_request(L, 4);
+    if (lua->argc() < 5 || lua->is_function(5) == false)
+        return luaL_error(L, "request_on(target, response, packet, validator) requires a function as fourth argument");
+
+    if (auto* message = unified_response_opcode_error(response_entry->opcode))
+        return luaL_error(L, "%s", message);
+
+    lua_pushvalue(L, 5);
+    auto validator_ref = luaL_ref(L, LUA_REGISTRYINDEX);
+
+    auto timeout = fb::model::timespan(INTEGRATION_DEFAULT_TIMEOUT);
+    if (lua->argc() >= 6 && lua->is_nil(6) == false)
+        timeout = fb::model::timespan(std::chrono::milliseconds(static_cast<int>(require_integer<int>(L, lua, 6))));
+
+    auto sender_ptr   = sender;
+    auto listener_ptr = listener;
+    auto result       = std::make_shared<std::shared_ptr<fb::protocol::header>>();
+
+    auto builder  = lua->new_co_builder();
+    builder.yield = [lua, sender_ptr, listener_ptr, response_entry, request, validator_ref, timeout, result]()
+        -> async::task<void> {
+        auto* L_state = static_cast<lua_State*>(*lua);
+
+        if (sender_ptr == nullptr || listener_ptr == nullptr)
+        {
+            luaL_unref(L_state, LUA_REGISTRYINDEX, validator_ref);
+            co_return;
+        }
+
+        if (response_entry->ensure_registered != nullptr)
+            response_entry->ensure_registered(static_cast<game_bot_controller&>(listener_ptr->controller));
+
+        auto condition = [lua, validator_ref, response_entry](const fb::protocol::header& header) -> bool {
+            auto* L_state = static_cast<lua_State*>(*lua);
+            auto* lua_ctx = fb::lua::get(L_state);
+            if (lua_ctx == nullptr)
+                return false;
+
+            response_entry->marshal_lua(L_state, header);
+
+            lua_rawgeti(L_state, LUA_REGISTRYINDEX, validator_ref);
+            lua_pushvalue(L_state, -2);
+            if (lua_pcall(L_state, 1, 1, 0) != LUA_OK)
+            {
+                auto err = lua_ctx->tostring(-1);
+                fb::logger::fatal("request_on validator failed: {}", err.empty() ? "unknown error" : err);
+                lua_ctx->pop(2);
+                return false;
+            }
+
+            auto accepted = lua_ctx->toboolean(-1);
+            lua_ctx->pop(2);
+            return accepted;
+        };
+
+        std::function<std::shared_ptr<fb::protocol::header>(const fb::protocol::header&)> clone;
+        if (response_entry->clone != nullptr)
+            clone = response_entry->clone;
+
+        *result = co_await sender_ptr->request_by_opcode(listener_ptr,
+                                                         response_entry->opcode,
+                                                         *request,
+                                                         condition,
+                                                         timeout,
+                                                         true,
+                                                         true,
+                                                         std::move(clone));
 
         luaL_unref(L_state, LUA_REGISTRYINDEX, validator_ref);
     };

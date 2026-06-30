@@ -1,0 +1,4 @@
+-- npc: 천층상점
+function NPC_165(me, npc)
+    
+end

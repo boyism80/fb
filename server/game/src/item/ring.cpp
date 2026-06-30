@@ -2,8 +2,8 @@
 
 using namespace fb::game;
 
-ring::ring(fb::game::server& server, const fb::model::ring& model) :
-    equipment(server, model)
+ring::ring(fb::game::server& server, const fb::model::ring& model, const initial_params& params) :
+    equipment(server, model, params)
 { }
 
 ring::ring(const ring& right) :

@@ -5,8 +5,8 @@
 
 using namespace fb::game;
 
-pack::pack(fb::game::server& server, const fb::model::pack& model) :
-    fb::game::item(server, model)
+pack::pack(fb::game::server& server, const fb::model::pack& model, const initial_params& params) :
+    fb::game::item(server, model, params)
 {
     this->_durability = model.durability;
 }

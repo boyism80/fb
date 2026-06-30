@@ -35,6 +35,26 @@ test_suite {
 
         function(ctx)
             local bot1 = ctx:bot(0)
+            local input = "씨발련아 꺼져라"
+            local filtered = "어머련아 가세요라"
+
+            log("debug", "Starting blocked word filter chat test")
+            bot1:request(
+                resp.chat,
+                protocol.chat(false, input),
+                function(packet)
+                    local expected = bot1:name() .. ": " .. filtered
+                    return packet.text == expected
+                        and packet.oid == bot1:oid()
+                        and packet.type == "NORMAL"
+                end)
+
+            log("debug", "Blocked word filter chat test PASSED")
+            return true
+        end,
+
+        function(ctx)
+            local bot1 = ctx:bot(0)
             local message = "HELLO EVERYONE, THIS IS A SHOUT TEST!"
 
             log("debug", "Starting shout chat test")

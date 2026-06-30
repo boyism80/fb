@@ -613,107 +613,46 @@ function M.count_item_by_name(me, item_name)
     return total
 end
 
-function M.cloth_shop_dialog(me, npc, crystal_exchange)
-    local selected = me:list(npc, '안녕하세요. 어떻게 오셨나요?', {
-        '물건 사기',
-        '물건 팔기',
-        '끈옷판매',
-        '산타클로스옷판매',
-        '호박결정만들기'
-    })
-    if selected == nil then
+local function shop_continue(result)
+    if result == nil then
         return false
     end
-
-    if selected == 0 then
-        return M.sell_dialog(me, npc) == DIALOG_RESULT.NEXT
-    elseif selected == 1 then
-        return M.buy_dialog(me, npc) == DIALOG_RESULT.NEXT
-    elseif selected == 2 or selected == 3 then
-        me:dialog(npc, '특별 이벤트 기간에만 가능합니다.')
-        return true
-    elseif selected == 4 then
-        if crystal_exchange == nil or #crystal_exchange == 0 then
-            me:dialog(npc, '호박결정 만들기는 추가 구현이 필요합니다.')
-            return true
-        end
-        local list_options = {}
-        for _, e in ipairs(crystal_exchange) do
-            list_options[#list_options + 1] = e.dest.name .. '입니다.'
-        end
-        local choice = me:list(npc, '어떤 색깔의 호박결정을 만드시겠어요?', list_options)
-        if choice == nil then
-            return true
-        end
-        local idx = choice + 1
-        if idx < 1 or idx > #crystal_exchange then
-            return true
-        end
-        local entry = crystal_exchange[idx]
-        local src = entry.source
-        local have = M.count_item_by_name(me, src.name)
-        if have < src.count then
-            me:dialog(npc, src.name .. '가 부족합니다.')
-            return true
-        end
-        me:rmitem(src.name, src.count, ITEM_DELETE_TYPE.GIVE)
-        me:mkitem(entry.dest.name, entry.dest.count)
-        me:dialog(npc, entry.dest.name .. ' 만들어드렸습니다.')
+    if result == true then
         return true
     end
-    return true
+    return result == DIALOG_RESULT.NEXT
 end
 
-local AMBER_STAR_EXCHANGE = {
-    { source = { name = '연갈호박보석', count = 5 }, dest = { name = '연갈호박별', count = 1 } },
-    { source = { name = '연녹호박보석', count = 5 }, dest = { name = '연녹호박별', count = 1 } },
-    { source = { name = '연자호박보석', count = 5 }, dest = { name = '연자호박별', count = 1 } },
-    { source = { name = '연청호박보석', count = 5 }, dest = { name = '연청호박별', count = 1 } }
-}
-
-function M.armor_shop_dialog(me, npc)
-    local selected = me:list(npc, '안녕하세요. 어떻게 오셨나요?', {
-        '물건 사기',
-        '물건 팔기',
-        '연호박별만들기'
-    })
-    if selected == nil then
-        return false
+function M.shop(me, npc, config)
+    local greeting = config.greeting or '안녕하세요. 무엇을 도와드릴까요?'
+    local menu = config.menu
+    if menu == nil then
+        return
     end
 
-    if selected == 0 then
-        return M.sell_dialog(me, npc) == DIALOG_RESULT.NEXT
-    elseif selected == 1 then
-        return M.buy_dialog(me, npc) == DIALOG_RESULT.NEXT
-    elseif selected == 2 then
-        local list_options = {}
-        for _, e in ipairs(AMBER_STAR_EXCHANGE) do
-            list_options[#list_options + 1] = e.dest.name .. '입니다.'
+    while true do
+        local labels = {}
+        for i = 1, #menu do
+            labels[i] = menu[i][1]
         end
-        local choice = me:list(npc, '어떤 색깔의 호박별을 만드시겠어요?', list_options)
-        if choice == nil then
-            return true
+
+        local selected = me:list(npc, greeting, labels)
+        if selected == nil then
+            return
         end
-        local idx = choice + 1
-        if idx < 1 or idx > #AMBER_STAR_EXCHANGE then
-            return true
+
+        local entry = menu[selected + 1]
+        if entry == nil then
+            return
         end
-        local entry = AMBER_STAR_EXCHANGE[idx]
-        local src = entry.source
-        local have = M.count_item_by_name(me, src.name)
-        if have < src.count then
-            me:dialog(npc, src.name .. '이(가) 부족합니다.')
-            return true
+
+        if not shop_continue(entry[2](me, npc)) then
+            return
         end
-        me:rmitem(src.name, src.count, ITEM_DELETE_TYPE.GIVE)
-        me:mkitem(entry.dest.name, entry.dest.count)
-        me:dialog(npc, entry.dest.name .. ' 만들어드렸습니다.')
-        return true
     end
-    return true
 end
 
-function M.buy_dialog(me, npc)
+function M.show_buy_menu(me, npc)
     local purchase_list = {}
     for i, pair in pairs(pursuit_buy(npc:model():buy())) do
         local item, price = table.unpack(pair)
@@ -772,26 +711,21 @@ function M.buy_dialog(me, npc)
     return DIALOG_RESULT.NEXT
 end
 
-function M.sell_dialog(me, npc)
-    local pursuit = npc:model():sell()
-    if #pursuit == 0 then
-        pursuit = nil
-    elseif #pursuit > 1 then
-        local menu = {}
-        for _, sell in pairs(pursuit) do
-            table.insert(menu, pursuit_sell_name(sell))
+local function show_sell_catalog(me, npc, sell_id)
+    local pursuit = sell_id
+    if pursuit == nil then
+        local sells = npc:model():sell()
+        if #sells == 0 then
+            pursuit = nil
+        elseif #sells == 1 then
+            pursuit = sells[1]
+        else
+            return DIALOG_RESULT.NEXT
         end
-        local selected, button = me:list(npc, '무엇을 사시겠어요?', menu, true)
-        if selected == nil then
-            if button == DIALOG_RESULT.QUIT then
-                return DIALOG_RESULT.QUIT
-            else
-                return DIALOG_RESULT.NEXT
-            end
-        end
-        pursuit = pursuit[selected+1]
-    else
-        pursuit = pursuit[1]
+    end
+
+    if pursuit == nil then
+        return DIALOG_RESULT.NEXT
     end
 
     local list = pursuit_sell(pursuit)
@@ -856,6 +790,27 @@ function M.sell_dialog(me, npc)
     end
 end
 
+function M.show_sell_menu(me, npc, categories)
+    if categories ~= nil then
+        local labels = {}
+        for i = 1, #categories do
+            labels[i] = categories[i][1]
+        end
+
+        local selected, button = me:list(npc, '무엇을 사시겠어요?', labels, true)
+        if selected == nil then
+            if button == DIALOG_RESULT.QUIT then
+                return DIALOG_RESULT.QUIT
+            end
+            return DIALOG_RESULT.NEXT
+        end
+
+        return show_sell_catalog(me, npc, categories[selected + 1][2])
+    end
+
+    return show_sell_catalog(me, npc)
+end
+
 function M.repairable_slots(me)
     local items = me:items()
     local slots = {}
@@ -882,7 +837,7 @@ end
 
 
 
-function M.repair_dialog(me, npc)
+function M.show_repair_menu(me, npc)
     local items = M.repairable_slots(me)
     if items == nil then
         return me:dialog(npc, '고칠 물건이 없는데요', false, true)
@@ -923,7 +878,7 @@ end
 
 
 
-function M.repair_all_dialog(me, npc)
+function M.show_repair_all_menu(me, npc)
     local items = M.repairable_slots(me)
     if items == nil then
         return me:dialog(npc, '고칠 물건이 없는데요', false, true)
@@ -967,7 +922,7 @@ end
 
 
 
-function M.hold_money_dialog(me, npc)
+function M.show_hold_money_menu(me, npc)
     local count = me:input(npc, '얼마나 맡아드릴까요?')
     if count == nil then
         return DIALOG_RESULT.NEXT
@@ -996,7 +951,7 @@ end
 
 
 
-function M.hold_item_dialog(me, npc)
+function M.show_hold_item_menu(me, npc)
     local slots = {}
     local items = {}
     local my_items = me:items()
@@ -1061,7 +1016,7 @@ end
 
 
 
-function M.return_money_dialog(me, npc)
+function M.show_return_money_menu(me, npc)
     local deposited_money = me:deposited_money()
     if deposited_money <= 0 then
         return me:dialog(npc, '돈을 보관하고 있지 않습니다.', false, true)
@@ -1094,7 +1049,7 @@ end
 
 
 
-function M.return_item_dialog(me, npc)
+function M.show_return_item_menu(me, npc)
     local list = {}
     for _, stored_item in pairs(me:stored_item()) do
         local model = stored_item:model()
@@ -1150,7 +1105,7 @@ function M.return_item_dialog(me, npc)
     end
 end
 
-function M.rename_weapon_dialog(me, npc)
+function M.show_rename_weapon_menu(me, npc)
     local slots = {}
     local items = {}
     for slot, item in pairs(me:items()) do
@@ -1680,6 +1635,122 @@ function M.promotion(me, npc, class)
     me:promotion(from_promotion + 1)
     broadcast(string.format('(( [%s]님이 %s 승급하였습니다. 축하합니다! ))', me:name(), name_with(next_name, '으로', '로')), MESSAGE_TYPE.WORLD, BROADCAST_TYPE.WORLD)
     me:dialog(npc, '승급을 마쳤습니다. 더 높은 경지에 도전하시길 바랍니다.', false, true)
+end
+
+function M.revive_oath(me, npc)
+    if me:state() ~= STATE.GHOST then
+        return me:dialog(npc, '사망 상태가 아닐 때 나오는 메시지')
+    end
+
+    if me:menu(npc, '생명의 소중함을 그렇게 일러왔거늘... 앞으로돋 사소한 일에 목숨을걸지 않으리라고 내가 어떻게 믿을 수 있겠느냐? 또 생명을 잃고 나를 찾아오지 않겠다고 맹세할 수 있겠느냐?', {'예', '아니오'}) ~= 0 then
+        return me:dialog(npc, '부활 대답 거부 메시지')
+    end
+
+    if me:menu(npc, '싸움은 싸움을 부르고, 피는 반드시 피를 보게 되느니라. 이번의 죽음도 네 책임이라는 것을 진심으로 느끼고 반성하고 있느냐?', {'예', '아니오'}) ~= 0 then
+        return me:dialog(npc, '부활 대답 거부 메시지')
+    end
+
+    if me:menu(npc, '그렇다면 잃은 물건과 경험치도 다 네 욕심에서 비롯되었음을 인정하겠느냐?', {'예', '아니오'}) ~= 0 then
+        return me:dialog(npc, '부활 대답 거부 메시지')
+    end
+
+    if me:menu(npc, '네가 새로 생명을 얻게 되더라도 절대로 무고한 생명을 해치지 않을 것을 맹세하느냐?', {'예', '아니오'}) ~= 0 then
+        return me:dialog(npc, '부활 대답 거부 메시지')
+    end
+
+    me:dialog(npc, '너의 각오를 믿고 새로운 생명을 내리노니 나에게 한 맹세를 잊지 말고 하루하루를 신께 감사하는 마음으로 살아가도록 하여라.')
+    me:state(STATE.NORMAL)
+    me:hp(50)
+end
+
+function M.boss_challenge_gate(me, npc)
+    local button = me:dialog(npc, '내게 도전하고 싶거든, 먼저 병사들을 모두 물리치고 오너라.', false, false)
+    if button == DIALOG_RESULT.QUIT then
+        return
+    end
+end
+
+function M.yut_game(me, npc)
+    local YUT_COST = 10
+
+    local function yut_result()
+        local r = math.random(1, 16)
+        if r == 1 then
+            return '도', false
+        elseif r >= 2 and r <= 4 then
+            return '개', false
+        elseif r >= 5 and r <= 10 then
+            return '걸', false
+        elseif r >= 11 and r <= 14 then
+            return '윷', true
+        elseif r == 15 then
+            return '모', true
+        else
+            return '빽도', false
+        end
+    end
+
+    if me:money() < YUT_COST then
+        npc:chat(string.format('%s: [%s]님. 금전이 부족하시네요. 10전을 가져오세요.', npc:model():name(), me:name()))
+        return
+    end
+
+    me:money(me:money() - YUT_COST)
+    local pae, again = yut_result()
+    local plus = again and ' 한 번 더 던지세요.' or ''
+    npc:chat(string.format('%s: [%s]님. %s 나왔습니다.%s', npc:model():name(), me:name(), pae, plus))
+end
+
+function M.nakrang_intro(me, npc)
+    local quest = require('lib.quest')
+    local q = me:quest(quest.QUEST_NAKRANG_INTRO)
+    local already_got = (q ~= nil and q:completed())
+    if already_got then
+        me:dialog(npc, '두루마리를 열어보기\n위해서는 오른쪽의\n\'소지품(단축키i)\'을\n클릭하신 다음 제가 드린\n두루마리를 더블클릭하시면 됩니다.', false, false)
+        return
+    end
+
+    local btn
+    ::nakrang_intro_1::
+    btn = me:dialog(npc, me:name() .. '님, 안녕하세요?\n바람의나라에 오신 것을\n환영합니다!!!', false, true)
+    if btn == DIALOG_RESULT.QUIT then
+        return
+    end
+    ::nakrang_intro_2::
+    btn = me:dialog(npc, '드넓은 바람의 세계로 가시기\n전에 \'두루마리\'를 하나\n드릴테니, 시작하시기 전에\n꼭!! 열어 보세요..', true, true)
+    if btn == DIALOG_RESULT.QUIT then
+        return
+    end
+    if btn == DIALOG_RESULT.PREV then
+        goto nakrang_intro_1
+    end
+    ::nakrang_intro_3::
+    btn = me:dialog(npc, '열어보기 위해서는 오른쪽의\n\'소지품(단축키i)\'을\n클릭하신 다음 제가 드린\n두루마리를 더블클릭하시면\n됩니다.', true, true)
+    if btn == DIALOG_RESULT.QUIT then
+        return
+    end
+    if btn == DIALOG_RESULT.PREV then
+        goto nakrang_intro_2
+    end
+    ::nakrang_intro_4::
+    btn = me:dialog(npc, '자. 그럼, 머나먼 모험의\n길을 떠나 보시기 바랍니다~\n제가 드리는 두루마리 꼭!!!\n열어보세요!!!', false, true)
+    if btn == DIALOG_RESULT.QUIT then
+        return
+    end
+    if btn == DIALOG_RESULT.PREV then
+        goto nakrang_intro_3
+    end
+
+    if q == nil then
+        q = me:start_quest(quest.QUEST_NAKRANG_INTRO)
+        if q == nil then
+            me:dialog(npc, '두루마리를 받을 수 없습니다.')
+            return
+        end
+    end
+    q:complete()
+    local item = me:mkitem('낙랑의두루마리1', 1)
+    me:dialog(item, '<낙랑의두루마리1>을 얻다!!!', false, false)
 end
 
 return M

@@ -150,15 +150,15 @@
     [CascadingParameter(Name = "SelectedWorld")]
     private uint? selectedWorld { get; set; }
 
-    private MarketplaceListResult? listResult;
-    private MarketplaceStats? stats;
+    private MarketplaceListResult listResult;
+    private MarketplaceStats stats;
     private string sellerSearch = string.Empty;
     private string statusFilter = string.Empty;
     private string sortOrder = "newest";
     private int currentPage = 1;
     private const int pageSize = 20;
     private bool isLoading;
-    private string? errorMessage;
+    private string errorMessage;
 
     protected override async Task OnInitializedAsync()
     {

@@ -33,9 +33,9 @@ namespace AdminTool.Services
         public DateTime Timestamp { get; set; } = DateTime.Now;
         public string Category { get; set; } = string.Empty;
         public string Summary { get; set; } = string.Empty;
-        public string? Detail { get; set; }
-        public string? Actor { get; set; }
-        public string? Target { get; set; }
+        public string Detail { get; set; }
+        public string Actor { get; set; }
+        public string Target { get; set; }
         public bool Success { get; set; } = true;
     }
 }

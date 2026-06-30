@@ -65,6 +65,7 @@ async::task<bool> dialog::handle(fb::socket<character>& session, game_reqs::dial
         break;
 
     default:
+        lua->release();
         break;
     }
 

@@ -90,6 +90,7 @@ namespace Http.Reepository
                     `count`,
                     `durability`,
                     `custom_name`,
+                    `expire_time`,
                     `deleted`,
                     `created_date`,
                     `updated_date`)
@@ -102,6 +103,7 @@ namespace Http.Reepository
                     {value.Count.Escape()},
                     {value.Durability.Escape()},
                     {value.CustomName.Escape()},
+                    {value.ExpireTime.Escape()},
                     0,
                     {value.CreatedDate.Escape()},
                     {value.UpdatedDate.Escape()})
@@ -110,6 +112,7 @@ namespace Http.Reepository
                     `count`=VALUES(`count`), 
                     `durability`=VALUES(`durability`),
                     `custom_name`=VALUES(`custom_name`),
+                    `expire_time`=VALUES(`expire_time`),
                     `updated_date`=VALUES(`updated_date`);
                 """;
 
@@ -129,6 +132,7 @@ namespace Http.Reepository
                          {item.Count.Escape()},
                          {item.Durability.Escape()},
                          {item.CustomName.Escape()},
+                         {item.ExpireTime.Escape()},
                          0,
                          {item.CreatedDate.Escape()},
                          {item.UpdatedDate.Escape()})
@@ -145,6 +149,7 @@ namespace Http.Reepository
                         `count`,
                         `durability`,
                         `custom_name`,
+                        `expire_time`,
                         `deleted`,
                         `created_date`,
                         `updated_date`)
@@ -154,6 +159,7 @@ namespace Http.Reepository
                         `count`=VALUES(`count`),
                         `durability`=VALUES(`durability`),
                         `custom_name`=VALUES(`custom_name`),
+                        `expire_time`=VALUES(`expire_time`),
                         `updated_date`=VALUES(`updated_date`);
                     """;
 

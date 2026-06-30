@@ -400,6 +400,94 @@
     border-bottom: 1px solid var(--border-color);
 }
 
+.dash-table th.sortable-th {
+    padding: 0;
+    cursor: pointer;
+    user-select: none;
+    transition: background 0.15s, color 0.15s;
+}
+
+.dash-table th.sortable-th:hover {
+    background: var(--bg-hover);
+}
+
+.dash-table th.sortable-th-active {
+    color: var(--accent-color);
+}
+
+.sortable-header {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.25rem;
+    width: 100%;
+    padding: 0.375rem 0.75rem;
+    box-sizing: border-box;
+    white-space: nowrap;
+}
+
+.dash-table .col-level {
+    width: 5.5rem;
+    min-width: 5.5rem;
+    text-align: right;
+    white-space: nowrap;
+}
+
+.sortable-header-end {
+    justify-content: flex-end;
+}
+
+.sort-indicator {
+    display: inline-flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    gap: 2px;
+    flex-shrink: 0;
+    width: 0.625rem;
+    height: 1rem;
+    margin-left: 0.125rem;
+}
+
+.sort-indicator::before,
+.sort-indicator::after {
+    content: '';
+    display: block;
+    width: 0;
+    height: 0;
+    border-left: 4px solid transparent;
+    border-right: 4px solid transparent;
+}
+
+.sort-indicator::before {
+    border-bottom: 4px solid var(--text-secondary);
+    opacity: 0.35;
+}
+
+.sort-indicator::after {
+    border-top: 4px solid var(--text-secondary);
+    opacity: 0.35;
+}
+
+.sort-indicator.sort-asc::before {
+    border-bottom-color: var(--accent-color);
+    opacity: 1;
+}
+
+.sort-indicator.sort-desc::after {
+    border-top-color: var(--accent-color);
+    opacity: 1;
+}
+
+.sortable-th:hover .sort-indicator::before,
+.sortable-th:hover .sort-indicator::after {
+    opacity: 0.55;
+}
+
+.sortable-th:hover .sort-indicator.sort-asc::before,
+.sortable-th:hover .sort-indicator.sort-desc::after {
+    opacity: 1;
+}
+
 .stitch-data-table td,
 .dash-table td,
 .bulletin-table td,
@@ -4266,6 +4354,10 @@ a.dashboard-card:hover,
 .user-detail-grant-btn .material-symbols-outlined {
     font-size: 1.125rem;
     color: var(--accent-color);
+}
+
+.user-detail-ban-btn .material-symbols-outlined {
+    font-size: 1.125rem;
 }
 
 .user-detail-name {

@@ -197,7 +197,7 @@ namespace AdminTool.Services
         /// <summary>
         /// Returns level ability row from ability table (HP/MP caps for the level).
         /// </summary>
-        public static Ability? GetAbilityForLevel(byte classValue, byte level)
+        public static Ability GetAbilityForLevel(byte classValue, byte level)
         {
             var cls = (Class)classValue;
             if (Table.Ability.TryGetValue(cls, out var classAbilities)

@@ -139,6 +139,7 @@ private:
     void                  init_handlers();
     void                  init_timers();
     void                  init_amqp_handlers();
+    async::task<void>     init_map_scripts();
     async::task<void>     init_script();
 
 public:

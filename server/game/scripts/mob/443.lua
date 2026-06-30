@@ -1,0 +1,5 @@
+-- mob: 두꺼비
+-- 두꺼비 사망
+function ON_MOB_DIE_443(me, you)
+
+end

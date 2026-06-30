@@ -59,6 +59,11 @@ WORKDIR /app
 RUN git clone --depth 1 --branch ${CPP_ASYNC_REF} https://github.com/boyism80/cpp-async /app/cpp-async
 RUN cp -r /app/cpp-async/include/async /usr/local/include/async
 
+# No pinned ref in update-modules.bat; tracks default branch.
+WORKDIR /app
+RUN git clone https://github.com/cjgdev/aho_corasick /app/aho_corasick
+RUN cp -r /app/aho_corasick/src/aho_corasick /usr/local/include/aho_corasick
+
 WORKDIR /app
 RUN git clone --branch ${BOOST_REF} https://github.com/boostorg/boost /app/boost
 WORKDIR /app/boost

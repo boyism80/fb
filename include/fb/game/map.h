@@ -7,6 +7,7 @@
 #include <fb/game/object.h>
 #include <fb/game/sector.h>
 #include <fb/shard_container.h>
+#include <atomic>
 #include <shared_mutex>
 
 namespace fb::model {
@@ -47,6 +48,7 @@ private:
     fb::model::size16_t      _size  = fb::model::size16_t(0, 0);
     unique_tiles             _tiles = nullptr;
     std::shared_ptr<sectors> _sectors;
+    std::atomic<bool>        _init_script_invoked{false};
 
 public:
     const fb::game::server& server;
@@ -132,14 +134,18 @@ public:
     ~container();
 
 private:
-    static bool load_data(uint32_t id, std::vector<char>& buffer);
-    static bool load_block(uint32_t id, std::vector<fb::model::point16_t>& buffer);
-    void        spawn_npcs(const std::shared_ptr<fb::game::map>& map);
-    void        spawn_npc(const fb::model::npc_spawn& spawn, const std::shared_ptr<fb::game::map>& map);
+    static bool       load_data(uint32_t id, std::vector<char>& buffer);
+    static bool       load_block(uint32_t id, std::vector<fb::model::point16_t>& buffer);
+    void              spawn_npcs(const std::shared_ptr<fb::game::map>& map);
+    void              spawn_npc(const fb::model::npc_spawn& spawn, const std::shared_ptr<fb::game::map>& map);
+    bool              try_mark_init_script(const std::shared_ptr<fb::game::map>& map);
+    async::task<void> run_init_script(const std::shared_ptr<fb::game::map>& map);
 
 public:
     void                           load(const fb::model::map& model);
     bool                           ensure_loaded(const std::shared_ptr<fb::game::map>& map);
+    void                           invoke_init_script(const std::shared_ptr<fb::game::map>& map);
+    async::task<void>              invoke_init_script_wait(const std::shared_ptr<fb::game::map>& map);
     void                           spawn_npc(const fb::model::npc_spawn& spawn);
     std::shared_ptr<fb::game::map> name2map(std::string_view name) const;
 

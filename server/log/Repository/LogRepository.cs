@@ -87,7 +87,7 @@ namespace Log.Repository
                     timestampStr = DateTimeOffset.UtcNow.ToString("yyyy-MM-dd HH:mm:ss");
                 }
 
-                string? transactionId = null;
+                string transactionId = null;
                 if (log.TryGetProperty("transaction_id", out var txn) &&
                     txn.ValueKind == JsonValueKind.String)
                 {
@@ -125,7 +125,7 @@ namespace Log.Repository
             public string Event { get; set; } = string.Empty;
             public string ServerId { get; set; } = string.Empty;
             public string ServerName { get; set; } = string.Empty;
-            public string? TransactionId { get; set; }
+            public string TransactionId { get; set; }
             public string Data { get; set; } = "{}";
         }
     }

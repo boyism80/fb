@@ -28,7 +28,6 @@ struct server
     static int builtin_id2item(lua_State* L);
     static int builtin_pursuit_sell(lua_State* L);
     static int builtin_pursuit_sell_price(lua_State* L);
-    static int builtin_pursuit_sell_name(lua_State* L);
     static int builtin_pursuit_buy(lua_State* L);
     static int builtin_timer(lua_State* L);
     static int builtin_weather(lua_State* L);

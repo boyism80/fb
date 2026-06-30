@@ -108,6 +108,7 @@ public:
     virtual async::task<void>              on_activated(game_bot_controller& controller);
     virtual async::task<void>              on_initialize(game_bot_controller& controller);
     virtual async::task<void>              on_finished();
+    virtual async::task<bool>              check_should_skip();
     async::task<bool>                      execute();
     virtual std::string                    name() const = 0;
 };

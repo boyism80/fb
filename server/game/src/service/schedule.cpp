@@ -53,20 +53,12 @@ async::task<void> service::schedule::poll()
 
         const auto& entry = table::schedule[schedule_index];
 
-        auto lua = this->server.lua.new_context();
-        if (lua != nullptr)
-        {
-            try
-            {
-                lua->load(entry.script);
-                lua->func(entry.func);
-                std::ignore = co_await lua->call(0);
-            }
-            catch (std::exception& e)
-            {
-                fb::logger::warn(std::format("Schedule {} script execution failed: {}", entry.id, e.what()));
-            }
-        }
+        if (entry.script.empty() || entry.func.empty())
+            continue;
+
+        auto lua = this->server.lua.new_ctx_guard(entry.script, entry.func);
+        if (lua)
+            std::ignore = co_await lua->call(0);
 
         if (entry.repeat.has_value())
         {

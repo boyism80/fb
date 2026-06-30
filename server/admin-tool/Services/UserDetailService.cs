@@ -24,7 +24,7 @@ namespace AdminTool.Services
             _logger = logger;
         }
 
-        public async Task<UserDetailCore?> LoadCoreAsync(uint world, uint userId)
+        public async Task<UserDetailCore> LoadCoreAsync(uint world, uint userId)
         {
             var character = await _dbContext.Character.Get(world, userId);
             if (character == null)
@@ -35,7 +35,7 @@ namespace AdminTool.Services
                 return null;
 
             var isOnline = await _userService.IsOnline(world, character.Name);
-            CharacterRealtimeState? realtimeState = null;
+            CharacterRealtimeState realtimeState = null;
 
             try
             {
@@ -89,7 +89,7 @@ namespace AdminTool.Services
             };
         }
 
-        public async Task<UserDetailSocialData> LoadSocialAsync(uint world, uint userId, CharacterRealtimeState? realtimeState)
+        public async Task<UserDetailSocialData> LoadSocialAsync(uint world, uint userId, CharacterRealtimeState realtimeState)
         {
             var social = new UserDetailSocialData();
 
@@ -209,7 +209,7 @@ namespace AdminTool.Services
             };
         }
 
-        public async Task<Option?> LoadOptionsAsync(uint world, uint userId)
+        public async Task<Option> LoadOptionsAsync(uint world, uint userId)
         {
             try
             {
@@ -223,7 +223,7 @@ namespace AdminTool.Services
             }
         }
 
-        public async Task<string?> ResolveCharacterNameAsync(uint world, uint userId)
+        public async Task<string> ResolveCharacterNameAsync(uint world, uint userId)
         {
             try
             {
@@ -261,10 +261,10 @@ namespace AdminTool.Services
             }
         }
 
-        private async Task<UserPartyInfo?> LoadPartyAsync(uint world, uint userId, CharacterRealtimeState? realtimeState)
+        private async Task<UserPartyInfo> LoadPartyAsync(uint world, uint userId, CharacterRealtimeState realtimeState)
         {
             uint? masterId = realtimeState?.Group;
-            Group? group = null;
+            Group group = null;
 
             if (masterId.HasValue)
             {
@@ -309,7 +309,7 @@ namespace AdminTool.Services
 
         public bool IsOnline { get; set; }
 
-        public CharacterRealtimeState? RealtimeState { get; set; }
+        public CharacterRealtimeState RealtimeState { get; set; }
     }
 
     public class UserDetailItemsData
@@ -332,11 +332,11 @@ namespace AdminTool.Services
 
     public class UserDetailSocialData
     {
-        public UserClanInfo? Clan { get; set; }
+        public UserClanInfo Clan { get; set; }
 
-        public UserPartyInfo? Party { get; set; }
+        public UserPartyInfo Party { get; set; }
 
-        public Marriage? Marriage { get; set; }
+        public Marriage Marriage { get; set; }
 
         public List<MarketplaceListingItem> MarketListings { get; set; } = new();
     }

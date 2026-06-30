@@ -17,7 +17,7 @@ function run(ctx, index)
 
             if entry.has_condition == false then
                 if bot:equip(0) == false then
-                    log("debug", string.format("[%d] Equip failed: %s (no condition)", seq + 1, entry.name))
+                    log("fatal", string.format("[%d] Equip failed: %s (no condition)", seq + 1, entry.name))
                     return false
                 end
                 equipped = true
@@ -30,7 +30,7 @@ function run(ctx, index)
 
                 bot:apply_item_condition(entry.name)
                 if bot:equip(0) == false then
-                    log("debug", string.format("[%d] Equip failed: %s (condition applied)", seq + 1, entry.name))
+                    log("fatal", string.format("[%d] Equip failed: %s (condition applied)", seq + 1, entry.name))
                     return false
                 end
                 equipped = true

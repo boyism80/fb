@@ -59,9 +59,9 @@
 @code {
     private bool isAuthenticated = false;
     private string globalSearchTerm = string.Empty;
-    private List<uint>? worlds;
+    private List<uint> worlds;
     private uint? selectedWorld;
-    private Dictionary<uint, string>? worldToServerName;
+    private Dictionary<uint, string> worldToServerName;
 
     protected override async Task OnInitializedAsync()
     {
@@ -160,7 +160,7 @@
 
             var queryDict = queryParams.ToDictionary(
                 kvp => kvp.Key,
-                kvp => (string?)(kvp.Value.ToString() ?? string.Empty));
+                kvp => (string)(kvp.Value.ToString() ?? string.Empty));
             var newQueryString = QueryHelpers.AddQueryString(
                 uri.GetLeftPart(UriPartial.Path),
                 queryDict);
@@ -205,7 +205,7 @@
         }
     }
 
-    private void OnLocationChanged(object? sender, LocationChangedEventArgs e)
+    private void OnLocationChanged(object sender, LocationChangedEventArgs e)
     {
         LoadWorldFromQuery();
         StateHasChanged();

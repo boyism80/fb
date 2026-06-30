@@ -1,4 +1,0 @@
--- 수로처녀귀신 공격
-function ON_MOB_ATTACK_1223(me, you)
-
-end

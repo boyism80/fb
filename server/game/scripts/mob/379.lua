@@ -1,0 +1,5 @@
+-- mob: 일본밀정'검
+-- 일본밀정'검 사망
+function ON_MOB_DIE_379(me, you)
+
+end

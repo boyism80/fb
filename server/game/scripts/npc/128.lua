@@ -1,0 +1,15 @@
+-- npc: 환상의섬잡화상
+local npc = require('lib.npc')
+
+function NPC_128(me, npc_obj)
+    npc.shop(me, npc_obj, {
+        menu = {
+            { '물건 사기', function(me, ch)
+                return npc.show_sell_menu(me, ch)
+            end },
+            { '물건 팔기', function(me, ch)
+                return npc.show_buy_menu(me, ch)
+            end },
+        },
+    })
+end

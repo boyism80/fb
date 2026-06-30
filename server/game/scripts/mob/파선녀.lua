@@ -1,4 +1,0 @@
--- 파선녀 사망
-function ON_MOB_DIE_486(me, you)
-
-end

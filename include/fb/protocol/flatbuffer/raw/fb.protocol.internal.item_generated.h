@@ -33,7 +33,8 @@ struct Item FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
     VT_MODEL = 12,
     VT_COUNT = 14,
     VT_DURABILITY = 16,
-    VT_CUSTOM_NAME = 18
+    VT_CUSTOM_NAME = 18,
+    VT_EXPIRE_TIME = 20
   };
   uint32_t user() const {
     return GetField<uint32_t>(VT_USER, 0);
@@ -59,6 +60,9 @@ struct Item FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
   const ::flatbuffers::String *custom_name() const {
     return GetPointer<const ::flatbuffers::String *>(VT_CUSTOM_NAME);
   }
+  const ::flatbuffers::String *expire_time() const {
+    return GetPointer<const ::flatbuffers::String *>(VT_EXPIRE_TIME);
+  }
   bool Verify(::flatbuffers::Verifier &verifier) const {
     return VerifyTableStart(verifier) &&
            VerifyField<uint32_t>(verifier, VT_USER, 4) &&
@@ -71,6 +75,8 @@ struct Item FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
            verifier.VerifyTable(durability()) &&
            VerifyOffset(verifier, VT_CUSTOM_NAME) &&
            verifier.VerifyString(custom_name()) &&
+           VerifyOffset(verifier, VT_EXPIRE_TIME) &&
+           verifier.VerifyString(expire_time()) &&
            verifier.EndTable();
   }
 };
@@ -103,6 +109,9 @@ struct ItemBuilder {
   void add_custom_name(::flatbuffers::Offset<::flatbuffers::String> custom_name) {
     fbb_.AddOffset(Item::VT_CUSTOM_NAME, custom_name);
   }
+  void add_expire_time(::flatbuffers::Offset<::flatbuffers::String> expire_time) {
+    fbb_.AddOffset(Item::VT_EXPIRE_TIME, expire_time);
+  }
   explicit ItemBuilder(::flatbuffers::FlatBufferBuilder &_fbb)
         : fbb_(_fbb) {
     start_ = fbb_.StartTable();
@@ -123,8 +132,10 @@ inline ::flatbuffers::Offset<Item> CreateItem(
     uint32_t model = 0,
     uint16_t count = 0,
     ::flatbuffers::Offset<nullable::nullable_uint> durability = 0,
-    ::flatbuffers::Offset<::flatbuffers::String> custom_name = 0) {
+    ::flatbuffers::Offset<::flatbuffers::String> custom_name = 0,
+    ::flatbuffers::Offset<::flatbuffers::String> expire_time = 0) {
   ItemBuilder builder_(_fbb);
+  builder_.add_expire_time(expire_time);
   builder_.add_custom_name(custom_name);
   builder_.add_durability(durability);
   builder_.add_model(model);
@@ -145,8 +156,10 @@ inline ::flatbuffers::Offset<Item> CreateItemDirect(
     uint32_t model = 0,
     uint16_t count = 0,
     ::flatbuffers::Offset<nullable::nullable_uint> durability = 0,
-    const char *custom_name = nullptr) {
+    const char *custom_name = nullptr,
+    const char *expire_time = nullptr) {
   auto custom_name__ = custom_name ? _fbb.CreateString(custom_name) : 0;
+  auto expire_time__ = expire_time ? _fbb.CreateString(expire_time) : 0;
   return fb::protocol::internal::raw::CreateItem(
       _fbb,
       user,
@@ -156,7 +169,8 @@ inline ::flatbuffers::Offset<Item> CreateItemDirect(
       model,
       count,
       durability,
-      custom_name__);
+      custom_name__,
+      expire_time__);
 }
 
 inline const fb::protocol::internal::raw::Item *GetItem(const void *buf) {

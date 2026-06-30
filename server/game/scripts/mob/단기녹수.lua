@@ -1,4 +1,0 @@
--- 단기녹수 공격
-function ON_MOB_ATTACK_1220(me, you)
-
-end

@@ -7,6 +7,7 @@ namespace fb::game::builtin::model {
 
 struct object
 {
+    static int builtin_id(lua_State* L);
     static int builtin_name(lua_State* L);
     static int builtin_look(lua_State* L);
     static int builtin_color(lua_State* L);
@@ -29,6 +30,7 @@ struct item
     static int builtin_repair_price(lua_State* L);
     static int builtin_rename_price(lua_State* L);
     static int builtin_storage_fee(lua_State* L);
+    static int builtin_trade(lua_State* L);
 };
 
 struct equipment
@@ -60,8 +62,6 @@ struct mob
     static int builtin_damage(lua_State* L);
     static int builtin_drop(lua_State* L);
     static int builtin_exp(lua_State* L);
-    static int builtin_script(lua_State* L);
-    static int builtin_on_spell_hit(lua_State* L);
 };
 
 struct map

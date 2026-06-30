@@ -6,8 +6,8 @@
 
 using namespace fb::game;
 
-consume::consume(fb::game::server& server, const fb::model::consume& model, uint16_t count) :
-    fb::game::item(server, model, initial_params{.count = count})
+consume::consume(fb::game::server& server, const fb::model::consume& model, const initial_params& params) :
+    fb::game::item(server, model, params)
 { }
 
 consume::consume(const consume& right) :

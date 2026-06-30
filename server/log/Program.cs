@@ -1,4 +1,5 @@
-﻿using Http.Service;
+using Http.Migration;
+using Http.Service;
 using Log.Repository;
 using Log.Worker;
 using Microsoft.Extensions.DependencyInjection;
@@ -13,8 +14,9 @@ namespace Log
         {
             Dapper.DefaultTypeMap.MatchNamesWithUnderscores = true;
             var host = Host.CreateDefaultBuilder(args)
-                .ConfigureServices(services =>
+                .ConfigureServices((context, services) =>
                 {
+                    services.AddDatabaseMigrations(context.Configuration);
                     services.AddSingleton<DbContext>();
                     services.AddScoped<LogRepository>();
                     services.AddLogging(builder =>
@@ -27,6 +29,7 @@ namespace Log
                 .UseConsoleLifetime()
                 .Build();
 
+            await DatabaseMigrationHost.RunAsync(host.Services, MigrationProfile.Log);
             await host.RunAsync();
         }
     }

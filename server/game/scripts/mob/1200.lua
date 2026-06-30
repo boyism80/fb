@@ -1,0 +1,5 @@
+-- mob: 표신궁문위
+-- 표신궁문위 공격
+function ON_MOB_ATTACK_1200(me, you)
+
+end

@@ -8,7 +8,7 @@ namespace fb::game {
 class armor : public equipment
 {
 public:
-    armor(fb::game::server& server, const fb::model::armor& model);
+    armor(fb::game::server& server, const fb::model::armor& model, const initial_params& params = {});
     armor(const fb::game::armor& right);
     ~armor();
 };

@@ -1,5 +1,5 @@
 local npc = require('lib.npc')
-local server = require('lib.server')
+local enum = require('lib.enum')
 
 local CHANGEITEM = {
     { source = { name = '낡은어전의칼', count = 10 },   dest = { name = '어전의칼', count = 1 } },
@@ -47,11 +47,11 @@ local function run_change_item(me, npc_obj)
         { ['item'] = { [src.name] = src.count } },
         { ['item'] = { [dest.name] = dest.count } }
     )
-    if code == server.EXCHANGE_RESULT.LACK_COST then
+    if code == enum.EXCHANGE_RESULT.LACK_COST then
         me:dialog(npc_obj, string.format('%s %d개를 가져오셔야 바꿔드려요.', src.name, src.count))
         return true
     end
-    if code == server.EXCHANGE_RESULT.LACK_CAPACITY then
+    if code == enum.EXCHANGE_RESULT.LACK_CAPACITY then
         me:dialog(npc_obj, '소지품이 가득 차서 받을 수 없어요.', false, false)
         return true
     end
@@ -59,47 +59,32 @@ local function run_change_item(me, npc_obj)
 end
 
 function NPC_231(me, npc_obj)
-::NPC_231_000::
-    local selected = me:list(npc_obj, '안녕하세요. 어떻게 오셨나요?', {
-        '물건 사기',
-        '물건 팔기',
-        '금전 맡기기',
-        '금전 되찾기',
-        '물건 맡기기',
-        '물건 되찾기',
-        '안쓰는 물건 교환'
+    npc.shop(me, npc_obj, {
+        greeting = '안녕하세요. 어떻게 오셨나요?',
+        menu = {
+            { '물건 사기', function(me, ch)
+                return npc.show_sell_menu(me, ch)
+            end },
+            { '물건 팔기', function(me, ch)
+                return npc.show_buy_menu(me, ch)
+            end },
+            { '금전 맡기기', function(me, ch)
+                return npc.show_hold_money_menu(me, ch)
+            end },
+            { '금전 되찾기', function(me, ch)
+                return npc.show_return_money_menu(me, ch)
+            end },
+            { '물건 맡기기', function(me, ch)
+                return npc.show_hold_item_menu(me, ch)
+            end },
+            { '물건 되찾기', function(me, ch)
+                return npc.show_return_item_menu(me, ch)
+            end },
+            { '안쓰는 물건 교환', function(me, ch)
+                if run_change_item(me, ch) then
+                    return DIALOG_RESULT.NEXT
+                end
+            end },
+        },
     })
-    if selected == nil then
-        return
-    end
-
-    if selected == 0 then
-        if npc.sell_dialog(me, npc_obj) == DIALOG_RESULT.NEXT then
-            goto NPC_231_000
-        end
-    elseif selected == 1 then
-        if npc.buy_dialog(me, npc_obj) == DIALOG_RESULT.NEXT then
-            goto NPC_231_000
-        end
-    elseif selected == 2 then
-        if npc.hold_money_dialog(me, npc_obj) == DIALOG_RESULT.NEXT then
-            goto NPC_231_000
-        end
-    elseif selected == 3 then
-        if npc.return_money_dialog(me, npc_obj) == DIALOG_RESULT.NEXT then
-            goto NPC_231_000
-        end
-    elseif selected == 4 then
-        if npc.hold_item_dialog(me, npc_obj) == DIALOG_RESULT.NEXT then
-            goto NPC_231_000
-        end
-    elseif selected == 5 then
-        if npc.return_item_dialog(me, npc_obj) == DIALOG_RESULT.NEXT then
-            goto NPC_231_000
-        end
-    elseif selected == 6 then
-        if run_change_item(me, npc_obj) then
-            goto NPC_231_000
-        end
-    end
 end

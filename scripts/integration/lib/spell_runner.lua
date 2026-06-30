@@ -1,9 +1,26 @@
 local protocol = require("integration.protocol")
+local resp = require("integration.response")
 local skill = require("integration.lib.skill")
 
 local M = {}
 
 M.DEFAULT_MAX_ATTEMPTS = 100
+
+local function log_fail(fmt, ...)
+    log("fatal", string.format(fmt, ...))
+end
+
+local function progress(caster, fmt, ...)
+    local message = string.format(fmt, ...)
+    local level = "debug"
+    if message:find("FAILED", 1, true) ~= nil then
+        level = "fatal"
+    end
+    log(level, string.format("[spell_runner] %s", message))
+    if caster ~= nil then
+        caster:chat(message)
+    end
+end
 
 function M.case_names(cases)
     local names = {}
@@ -59,12 +76,8 @@ function M.run_spell_group(group, caster, target, slot, opts)
     for _, variant in ipairs(group.variants) do
         local case = M.build_case_from_variant(group, variant)
         if not case.skip then
-            log("debug", string.format(
-                "[spell_runner] case=%s START slot=%d",
-                case.name, slot))
-
             if M.run_case(case, caster, target, slot, opts) == false then
-                log("debug", string.format("[spell_runner] case=%s FAILED", case.name))
+                log_fail("[spell_runner] case=%s FAILED", case.name)
                 return false
             end
         end
@@ -79,6 +92,7 @@ function M.run_spell_groups(groups, caster, target, opts)
     if not opts.skip_learn_spells then
         local names = M.spell_group_names(groups)
         if #names > 0 then
+            progress(caster, "LEARNING %d SPELLS", #names)
             caster:learn_spells(names)
         end
     end
@@ -94,16 +108,15 @@ function M.run_spell_groups(groups, caster, target, opts)
                 slot = next_slot
             end
 
-            log("debug", string.format(
-                "[spell_runner] spell=%s START slot=%d",
-                group.spell, slot))
+            progress(caster, "SPELL %s START slot=%d", group.spell, slot)
 
             if M.run_spell_group(group, caster, target, slot, opts) == false then
-                log("debug", string.format(
-                    "[spell_runner] spell=%s FAILED",
-                    group.spell))
+                progress(caster, "SPELL %s FAILED", group.spell)
+                log_fail("[spell_runner] spell=%s FAILED", group.spell)
                 return false
             end
+
+            progress(caster, "SPELL %s OK", group.spell)
 
             if group.slot == nil then
                 next_slot = next_slot + 1
@@ -171,32 +184,50 @@ function M.run_case(case, caster, target, slot, opts)
     local cast_type, message, oid, position
 
     if case.should_skip ~= nil and case.should_skip(caster, target, state) == true then
-        log("debug", string.format("[spell_runner] %s skipped by should_skip", case.name))
+        progress(caster, "CASE %s SKIPPED", case.name)
         return true
     end
+
+    progress(caster, "CASE %s RUN slot=%d", case.name, slot)
 
     while true do
         attempt = attempt + 1
         if attempt > max_attempts then
-            log("debug", string.format(
-                "[spell_runner] %s exceeded max attempts (%d)",
-                case.name, max_attempts))
+            progress(caster, "CASE %s FAILED max attempts (%d)", case.name, max_attempts)
+            log_fail("[spell_runner] %s exceeded max attempts (%d)", case.name, max_attempts)
             return false
         end
 
         if case.pre ~= nil then
+            progress(caster, "CASE %s pre attempt=%d", case.name, attempt)
             local pre_ok = case.pre(caster, target, state)
             if pre_ok == false then
-                log("debug", string.format("[spell_runner] %s pre failed", case.name))
+                progress(caster, "CASE %s FAILED pre", case.name)
+                log_fail("[spell_runner] %s pre failed", case.name)
                 return false
             end
+        end
+
+        if case.cast ~= nil then
+            progress(caster, "CASE %s custom cast attempt=%d slot=%d", case.name, attempt, slot)
+
+            local cast_ok = case.cast(caster, target, slot, state)
+            if cast_ok == false then
+                progress(caster, "CASE %s FAILED cast", case.name)
+                log_fail("[spell_runner] %s cast failed", case.name)
+                return false
+            end
+
+            packet = state.packet
+            break
         end
 
         cast_type, message, oid, position = resolve_cast_params(case, caster, target, state)
 
         local user_condition = case.condition
         if user_condition == nil then
-            log("debug", string.format("[spell_runner] %s missing condition", case.name))
+            progress(caster, "CASE %s FAILED missing condition", case.name)
+            log_fail("[spell_runner] %s missing condition", case.name)
             return false
         end
 
@@ -204,9 +235,8 @@ function M.run_case(case, caster, target, slot, opts)
             return user_condition(pkt, caster, target, state)
         end)
 
-        log("debug", string.format(
-            "[spell_runner] %s attempt=%d slot=%d type=%s oid=%s",
-            case.name, attempt, slot, cast_type, tostring(oid)))
+        progress(caster, "CASE %s cast attempt=%d slot=%d type=%s",
+            case.name, attempt, slot, cast_type)
 
         packet = caster:request(
             case.response,
@@ -214,10 +244,13 @@ function M.run_case(case, caster, target, slot, opts)
             wrapped)
 
         if should_retry() then
-            log("debug", string.format(
-                "[spell_runner] %s retry attempt=%d text=%s",
-                case.name, attempt, tostring(packet and packet.text)))
-            if target ~= nil and target ~= caster and case.clear_target_buffs_on_retry ~= false then
+            local retry_text = packet and packet.text or ""
+            if #retry_text > 40 then
+                retry_text = retry_text:sub(1, 40) .. "..."
+            end
+            progress(caster, "CASE %s RETRY attempt=%d text=%s",
+                case.name, attempt, retry_text)
+            if target ~= nil and target ~= caster and case.reset_buffs ~= false then
                 target:remove_buffs()
             end
         else
@@ -226,14 +259,19 @@ function M.run_case(case, caster, target, slot, opts)
     end
 
     if case.post ~= nil then
+        if case.response == resp.message and state.expected_mp ~= nil then
+            caster:mp(state.expected_mp)
+        end
+        progress(caster, "CASE %s post", case.name)
         local post_ok = case.post(caster, target, state, packet, opts.ctx)
         if post_ok == false then
-            log("debug", string.format("[spell_runner] %s post failed", case.name))
+            progress(caster, "CASE %s FAILED post", case.name)
+            log_fail("[spell_runner] %s post failed", case.name)
             return false
         end
     end
 
-    log("debug", string.format("[spell_runner] %s ok attempts=%d", case.name, attempt))
+    progress(caster, "CASE %s OK attempts=%d", case.name, attempt)
     return true
 end
 
@@ -243,6 +281,7 @@ function M.run_cases(cases, caster, target, opts)
     if not opts.skip_learn_spells then
         local names = M.case_names(cases)
         if #names > 0 then
+            progress(caster, "LEARNING %d SPELLS", #names)
             caster:learn_spells(names)
         end
     end
@@ -258,9 +297,8 @@ function M.run_cases(cases, caster, target, opts)
                 slot = next_slot
             end
 
-            log("debug", string.format("[spell_runner] case=%s START slot=%d", case.name, slot))
             if M.run_case(case, caster, target, slot, opts) == false then
-                log("debug", string.format("[spell_runner] case=%s FAILED", case.name))
+                log_fail("[spell_runner] case=%s FAILED", case.name)
                 return false
             end
 

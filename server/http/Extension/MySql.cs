@@ -14,7 +14,7 @@ namespace Http.Extension
             return EscapeNonNull(obj.Value);
         }
 
-        public static string Escape(this string? obj)
+        public static string Escape(this string obj)
         {
             if (obj is null)
                 return "NULL";

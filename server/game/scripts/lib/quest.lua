@@ -183,10 +183,8 @@ end
 function M.cheongsimcho_on_move(me)
     local ITEM_CHEONGSIMCHO = '청심초'
     local CHEONGSIMCHO_MAX = 5
-    -- local NAMGYEONG_MAP_ID_MIN = name2map('남경1'):id()
-    -- local NAMGYEONG_MAP_ID_MAX = name2map('남경10'):id()
-    local NAMGYEONG_MAP_ID_MIN = 0
-    local NAMGYEONG_MAP_ID_MAX = 1
+    local NAMGYEONG_MAP_ID_MIN = 957
+    local NAMGYEONG_MAP_ID_MAX = 966
 
     local quest = me:quest(M.QUEST_ALCOHOLIC_DRINK)
     if quest == nil or quest:completed() then
@@ -707,49 +705,6 @@ function M.manrihyang_seed_on_move(me)
     end
 end
 
---- When at the treasure location (quest param "map,x,y"), give 산신의비단 and set param to "got". M.QUEST_MOUNTAIN_GOD step 2.
-function M.mountain_treasure_fabric_on_move(me)
-    local quest = me:quest(M.QUEST_MOUNTAIN_GOD)
-    if quest == nil or quest:step() ~= 2 then
-        return
-    end
-
-    local param = quest:param()
-    local parts = {}
-    for p in string.gmatch(param, '[^,]+') do
-        table.insert(parts, p)
-    end
-    if #parts ~= 3 then
-        return
-    end
-
-    local map_name = parts[1]
-    local target_x = tonumber(parts[2])
-    local target_y = tonumber(parts[3])
-    if target_x == nil or target_y == nil then
-        return
-    end
-
-    local map = me:map()
-    if map == nil then
-        return
-    end
-    if map:model():name() ~= map_name then
-        return
-    end
-
-    local x, y = me:position()
-    if x ~= target_x or y ~= target_y then
-        return
-    end
-
-    me:rmitem('산신의보물지도', 1)
-    me:mkitem('산신의비단', 1)
-
-    quest:param('got')
-    me:dialog(nil, '산신의비단을 발견했다!', false, true)
-end
-
 function M.mountain_treasure_map_on_move(me)
     local quest = me:quest(M.QUEST_MOUNTAIN_GOD)
     if quest == nil then
@@ -812,6 +767,49 @@ function M.mountain_treasure_map_on_move(me)
     end
 
     me:dialog(name2item('산신의보물지도'), '산신의보물지도를 발견했다!', false, false)
+end
+
+--- When at the treasure location (quest param "map,x,y"), give 산신의비단 and set param to "got". M.QUEST_MOUNTAIN_GOD step 2.
+function M.mountain_treasure_fabric_on_move(me)
+    local quest = me:quest(M.QUEST_MOUNTAIN_GOD)
+    if quest == nil or quest:step() ~= 2 then
+        return
+    end
+
+    local param = quest:param()
+    local parts = {}
+    for p in string.gmatch(param, '[^,]+') do
+        table.insert(parts, p)
+    end
+    if #parts ~= 3 then
+        return
+    end
+
+    local map_name = parts[1]
+    local target_x = tonumber(parts[2])
+    local target_y = tonumber(parts[3])
+    if target_x == nil or target_y == nil then
+        return
+    end
+
+    local map = me:map()
+    if map == nil then
+        return
+    end
+    if map:model():name() ~= map_name then
+        return
+    end
+
+    local x, y = me:position()
+    if x ~= target_x or y ~= target_y then
+        return
+    end
+
+    me:rmitem('산신의보물지도', 1)
+    me:mkitem('산신의비단', 1)
+
+    quest:param('got')
+    me:dialog(nil, '산신의비단을 발견했다!', false, true)
 end
 
 function M.king_on_mob_die(me, you)

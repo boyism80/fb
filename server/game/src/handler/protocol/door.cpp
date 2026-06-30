@@ -15,15 +15,10 @@ async::task<bool> door::handle(fb::socket<character>& session, game_reqs::door& 
     if (ch->inited() == false)
         co_return true;
 
-    auto lua = this->server.lua.new_context();
-    if (lua == nullptr)
+    auto lua = this->server.lua.new_ctx_guard("scripts/interaction.lua", "on_door");
+    if (!lua)
         co_return true;
 
-#if defined DEBUG || defined _DEBUG
-    lua->load("scripts/interaction.lua");
-#endif
-
-    lua->func("on_door");
     lua->pushobject(ch);
     std::ignore = co_await lua->call(1);
     co_return true;

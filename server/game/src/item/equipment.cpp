@@ -4,8 +4,10 @@
 
 using table = fb::model::table;
 
-fb::game::equipment::equipment(fb::game::server& server, const fb::model::equipment& model) :
-    item(server, model)
+fb::game::equipment::equipment(fb::game::server&           server,
+                               const fb::model::equipment& model,
+                               const initial_params&       params) :
+    item(server, model, params)
 {
     this->_durability = model.durability;
 }
@@ -159,13 +161,9 @@ bool fb::game::equipment::active()
     owner->items.add(before);
 
     // Execute equipment activation script
-    auto lua = this->server.lua.new_context();
-    if (lua != nullptr)
+    auto lua = this->server.lua.new_ctx_guard("scripts/interaction.lua", "on_equipment_active");
+    if (lua)
     {
-#if defined DEBUG || defined _DEBUG
-        lua->load("scripts/interaction.lua");
-#endif
-        lua->func("on_equipment_active");
         lua->pushobject(owner);
         lua->pushinteger(parts);
         lua->pushobject(*this);

@@ -196,10 +196,10 @@
     [CascadingParameter(Name = "SelectedWorld")]
     private uint? selectedWorld { get; set; }
     private MaintenanceScheduleModel scheduleModel = new();
-    private List<MaintenanceSchedule>? schedules;
-    private MaintenanceInfo? currentMaintenanceInfo;
-    private string? errorMessage;
-    private string? successMessage;
+    private List<MaintenanceSchedule> schedules;
+    private MaintenanceInfo currentMaintenanceInfo;
+    private string errorMessage;
+    private string successMessage;
     private bool isProcessing;
     private bool isLoading;
     private DateTime lastCheckedAt = DateTime.Now;

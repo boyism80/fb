@@ -8,7 +8,7 @@ namespace fb::game {
 class shield : public equipment
 {
 public:
-    shield(fb::game::server& server, const fb::model::shield& model);
+    shield(fb::game::server& server, const fb::model::shield& model, const initial_params& params = {});
     shield(const shield& right);
     ~shield();
 };

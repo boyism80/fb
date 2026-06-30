@@ -3,6 +3,7 @@
 #include <fb/game/server.h>
 #include <fb/model/model.h>
 #include <fb/game/object.h>
+#include <format>
 
 using namespace fb::game;
 
@@ -265,15 +266,26 @@ bool object::move(DIRECTION direction)
     auto before = this->_position;
     this->position(after);
 
-    auto lua = this->server.lua.new_context();
-    if (lua != nullptr)
     {
-#if defined DEBUG || defined _DEBUG
-        lua->load("scripts/interaction.lua");
-#endif
-        lua->func("on_move");
-        lua->pushobject(*this);
-        std::ignore = lua->call(1);
+        auto lua = this->server.lua.new_ctx_guard("scripts/interaction.lua", "on_move");
+        if (lua)
+        {
+            lua->pushobject(*this);
+            std::ignore = lua->call(1);
+        }
+    }
+
+    {
+        auto& map_model = this->_map->model;
+        auto  path      = std::format("scripts/map/{}.lua", map_model.id);
+        auto  func      = std::format("ON_MAP_MOVE_{}", map_model.id);
+
+        auto map_lua = this->server.lua.new_ctx_guard(path, func);
+        if (map_lua)
+        {
+            map_lua->pushobject(*this);
+            std::ignore = map_lua->call(1);
+        }
     }
 
     this->listener.on_move(*this, before);
@@ -325,13 +337,9 @@ bool object::direction(DIRECTION value)
 
     this->_direction = value;
 
-    auto lua = this->server.lua.new_context();
-    if (lua != nullptr)
+    auto lua = this->server.lua.new_ctx_guard("scripts/interaction.lua", "on_direction");
+    if (lua)
     {
-#if defined DEBUG || defined _DEBUG
-        lua->load("scripts/interaction.lua");
-#endif
-        lua->func("on_direction");
         lua->pushobject(*this);
         std::ignore = lua->call(1);
     }
@@ -346,6 +354,22 @@ std::shared_ptr<fb::game::map> object::map() const
     this->assert_thread();
     auto _ = std::shared_lock(this->_map_lock);
     return this->_map;
+}
+
+async::task<void> object::invoke_map_character_hook(const fb::model::map& map_model, std::string_view hook)
+{
+    if (this->is(OBJECT_TYPE::CHARACTER) == false)
+        co_return;
+
+    auto path = std::format("scripts/map/{}.lua", map_model.id);
+    auto func = std::format("{}{}", hook, map_model.id);
+
+    auto lua = this->server.lua.new_ctx_guard(path, func);
+    if (!lua)
+        co_return;
+
+    lua->pushobject(*this);
+    std::ignore = co_await lua->call(1);
 }
 
 void object::update_sector()
@@ -470,6 +494,9 @@ async::task<bool> object::map(map_ptr map, std::optional<fb::model::point16_t> p
         // and set default map(id = 0) and position(1, 1)
         if (map == nullptr)
         {
+            if (this->_map != nullptr)
+                co_await this->invoke_map_character_hook(this->_map->model, "ON_MAP_LEAVE_");
+
             // broadcast near characters
             for (const auto& x : this->_map->nears(this->_position))
             {
@@ -580,6 +607,8 @@ async::task<bool> object::map(map_ptr map, std::optional<fb::model::point16_t> p
                 obj->update_external(*this, true);
             }
         }
+
+        co_await this->invoke_map_character_hook(map->model, "ON_MAP_ENTER_");
 
         co_return true;
     }

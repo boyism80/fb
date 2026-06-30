@@ -80,8 +80,9 @@ public:
     virtual ~object();
 
 private:
-    void        update_sector();
-    static bool sight(const fb::model::point16_t me, const fb::model::point16_t you, const map_ptr& map);
+    void              update_sector();
+    async::task<void> invoke_map_character_hook(const fb::model::map& map_model, std::string_view hook);
+    static bool       sight(const fb::model::point16_t me, const fb::model::point16_t you, const map_ptr& map);
     static fb::model::area<uint16_t> sight_area(const fb::model::point16_t& position, const map_ptr& map);
 
 public:

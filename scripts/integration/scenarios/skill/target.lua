@@ -45,16 +45,32 @@ local CASES = {
             caster:set_current_hp_mp(10000, 10000)
             target:set_current_hp_mp(10000, 10000)
             state.expected_mp = caster:mp() - 30
+            state.target_name = target:name()
         end,
-condition = function(packet)
-    if packet.text == nil then
-        return nil
-    end
-    if skill.is_cast_ready(packet.text, "대지의빛") then
-        return true
-    end
-    return false
-end,
+        condition = function(packet, _, _, state)
+            if packet.text == nil then
+                return nil
+            end
+            if packet.type ~= "POPUP" then
+                return nil
+            end
+            if packet.text:find(state.target_name, 1, true) == nil then
+                return nil
+            end
+            if packet.text:find("레벨", 1, true) == nil then
+                return nil
+            end
+            if packet.text:find("힘", 1, true) == nil then
+                return nil
+            end
+            if packet.text:find("민첩성", 1, true) == nil then
+                return nil
+            end
+            if packet.text:find("지능", 1, true) == nil then
+                return nil
+            end
+            return true
+        end,
         post = function(caster, _, state)
             return caster:mp() == state.expected_mp
         end,

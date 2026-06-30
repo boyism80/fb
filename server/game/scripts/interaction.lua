@@ -2,8 +2,7 @@
 local lib = require('lib.interaction')
 local spell = require('lib.spell')
 local npc = require('lib.npc')
-
-local on_npc_chat
+local command = require('lib.command')
 
 function on_attack(me, additional_attack)
     local map = me:map()
@@ -213,14 +212,6 @@ function on_move(me)
     if me:is(OBJECT_TYPE.CHARACTER) then
         local quest = require('lib.quest')
         quest.red_clay_on_move(me)
-        quest.cheongsimcho_on_move(me)
-        quest.greatwall_repair_on_move(me)
-        quest.crown_prince_toys_on_move(me)
-        quest.dongchung_insam_on_move(me)
-        quest.ghost_talisman_on_move(me)
-        quest.goddess_dew_on_move(me)
-        quest.manrihyang_seed_on_move(me)
-        quest.mountain_treasure_map_on_move(me)
         quest.mountain_treasure_fabric_on_move(me)
     end
 end
@@ -229,17 +220,431 @@ function on_direction(me)
     lib.any_action(me)
 end
 
+-- Gatekeeper NPC name -> { totem name (e.g. "청룡"), totem_key (e.g. "dragon") } for "~참가" chat.
+local GATEKEEPER_BY_NAME = {
+    ["주작성문지기"] = { "주작", "bird" },
+    ["청룡성문지기"] = { "청룡", "dragon" },
+    ["현무성문지기"] = { "현무", "turtle" },
+    ["백호성문지기"] = { "백호", "tiger" },
+}
+
+local function run_gatekeeper_entrance(me, npc_obj, totem_name_kr, totem_key)
+    local clan = me:clan()
+    if not clan then
+        me:dialog(npc_obj, '가입된 문파가 없습니다.')
+        return true
+    end
+    if me:state() == STATE.GHOST then
+        me:dialog(npc_obj, '유령은 참가할 수 없습니다.')
+        return true
+    end
+    local occupant = (_G.clan_castle_occupant or {})[totem_key] or ''
+    local siege_start = _G.clan_siege_start or 0
+    local siege_map = _G.clan_siege_map or ''
+    local clan_name = clan:name()
+    local castle_name = totem_name_kr .. '성'
+    local map_entrance = name2map(totem_name_kr .. '성입구')
+    local map_inner = name2map(totem_name_kr .. '의성')
+    if not map_entrance then
+        me:dialog(npc_obj, '입장할 수 있는 맵이 없습니다.')
+        return true
+    end
+    if clan_name == occupant then
+        if siege_start == 0 and map_inner then
+            me:map(map_inner, math.random(11, 17), math.random(4, 11))
+        else
+            me:map(map_entrance, math.random(49, 57), math.random(145, 148))
+        end
+        return true
+    end
+    if siege_map == castle_name then
+        me:map(map_entrance, math.random(49, 57), math.random(145, 148))
+        return true
+    end
+    me:dialog(npc_obj, string.format('현재 %s 공성이 진행중이지 않습니다.', castle_name))
+    return true
+end
+
+local function run_black_flag(me, npc_obj)
+    if me:dialog(npc_obj, '아니, 내가 검정깃발을 가지고 있다는걸 어떻게 알았나.. 으음...', false, true) == DIALOG_RESULT.QUIT then
+        return true
+    end
+    if me:dialog(npc_obj, '그냥 줄순 없고.. 5000전만 내게. 그럼 검정깃발을 하나 주지.', true, true) == DIALOG_RESULT.QUIT then
+        return true
+    end
+    local selected, button = me:list(npc_obj, '어때? 5000전에 검정깃발 하나 사길 텐가?', { '네, 주십시오.', '안 살래요' })
+    if button == DIALOG_RESULT.QUIT then
+        return true
+    end
+    if selected ~= 0 then
+        return true
+    end
+    local BLACK_FLAG_PRICE = 5000
+    if me:money() < BLACK_FLAG_PRICE then
+        me:dialog(npc_obj, '돈이 모자랍니다.', false, true)
+        return true
+    end
+    if me:mkitem('검정깃발', 1) == nil then
+        me:dialog(npc_obj, '공간이 부족합니다.', false, true)
+        return true
+    end
+    me:money(me:money() - BLACK_FLAG_PRICE)
+    me:dialog(npc_obj, '검정깃발을 받았습니다.', false, false)
+    return true
+end
+
+local npc_chat_handlers = {
+    {
+        priority = 10,
+        anchors = { '산다', '줘', '주세요' },
+        pattern = lib.CHAT_REGEX.BUY,
+        condition = function(npc_obj)
+            return #npc_obj:model():sell() > 0
+        end,
+        func = function(me, npc_obj, params)
+            local count = 1
+            if params.count ~= nil then
+                count = tonumber(params.count)
+            end
+            return npc.sell_item(me, npc_obj, params.name, count)
+        end,
+    },
+    {
+        priority = 20,
+        anchors = { '판다', '팜', '팔게' },
+        pattern = lib.CHAT_REGEX.SELL,
+        condition = function(npc_obj)
+            return npc_obj:model():buy() ~= nil
+        end,
+        func = function(me, npc_obj, params)
+            local count = nil
+            if params.all ~= nil then
+                count = nil
+            elseif params.count ~= nil then
+                count = tonumber(params.count)
+            else
+                count = 1
+            end
+            return npc.buy_item(me, npc_obj, params.name, count)
+        end,
+    },
+    {
+        priority = 30,
+        anchors = { '고쳐', '수리' },
+        pattern = lib.CHAT_REGEX.REPAIR,
+        condition = function(npc_obj)
+            local interaction = npc_obj:model():interaction()
+            return (interaction & NPC_INTERACTION.REPAIR) == NPC_INTERACTION.REPAIR
+        end,
+        func = function(me, npc_obj, params)
+            if params.all ~= nil then
+                return npc.repair(me, npc_obj, nil)
+            elseif params.name ~= nil then
+                return npc.repair(me, npc_obj, params.name)
+            else
+                return false
+            end
+        end,
+    },
+    {
+        priority = 40,
+        anchors = { '맡아' },
+        pattern = lib.CHAT_REGEX.DEPOSIT_MONEY,
+        condition = function(npc_obj)
+            local interaction = npc_obj:model():interaction()
+            return (interaction & NPC_INTERACTION.DEPOSIT_MONEY) == NPC_INTERACTION.DEPOSIT_MONEY
+        end,
+        func = function(me, npc_obj, params)
+            local money = nil
+            if params.all ~= nil then
+                money = me:money()
+            elseif params.money ~= nil then
+                money = tonumber(params.money)
+            else
+                return false
+            end
+            return npc.deposit_money(me, npc_obj, money)
+        end,
+    },
+    {
+        priority = 50,
+        anchors = { '돌려' },
+        pattern = lib.CHAT_REGEX.WITHDRAW_MONEY,
+        condition = function(npc_obj)
+            local interaction = npc_obj:model():interaction()
+            return (interaction & NPC_INTERACTION.DEPOSIT_MONEY) == NPC_INTERACTION.DEPOSIT_MONEY
+        end,
+        func = function(me, npc_obj, params)
+            local money = nil
+            if params.all ~= nil then
+                money = nil
+            elseif params.money ~= nil then
+                money = tonumber(params.money)
+            else
+                return false
+            end
+            return npc.withdraw_money(me, npc_obj, money)
+        end,
+    },
+    {
+        priority = 60,
+        anchors = { '맡아' },
+        pattern = lib.CHAT_REGEX.STORE_ITEM,
+        condition = function(npc_obj)
+            local interaction = npc_obj:model():interaction()
+            return (interaction & NPC_INTERACTION.STORE_ITEM) == NPC_INTERACTION.STORE_ITEM
+        end,
+        func = function(me, npc_obj, params)
+            local count = nil
+            if params.all ~= nil then
+                count = nil
+            elseif params.count ~= nil then
+                count = tonumber(params.count)
+            else
+                count = 1
+            end
+            return npc.store_item(me, npc_obj, params.name, count)
+        end,
+    },
+    {
+        priority = 70,
+        anchors = { '돌려' },
+        pattern = lib.CHAT_REGEX.RETRIEVE_ITEM,
+        condition = function(npc_obj)
+            local interaction = npc_obj:model():interaction()
+            return (interaction & NPC_INTERACTION.STORE_ITEM) == NPC_INTERACTION.STORE_ITEM
+        end,
+        func = function(me, npc_obj, params)
+            local count = nil
+            if params.all ~= nil then
+                count = nil
+            elseif params.count ~= nil then
+                count = tonumber(params.count)
+            else
+                count = 1
+            end
+            return npc.retrieve_item(me, npc_obj, params.name, count)
+        end,
+    },
+    {
+        priority = 80,
+        anchors = { '파니', '파냐', '팔고' },
+        pattern = lib.CHAT_REGEX.SELL_LIST,
+        condition = function(npc_obj)
+            return #npc_obj:model():sell() > 0
+        end,
+        func = function(me, npc_obj, params)
+            return npc.sell_item_list(me, npc_obj)
+        end,
+    },
+    {
+        priority = 90,
+        anchors = { '사니', '사냐', '사고' },
+        pattern = lib.CHAT_REGEX.BUY_LIST,
+        condition = function(npc_obj)
+            return npc_obj:model():buy() ~= nil
+        end,
+        func = function(me, npc_obj, params)
+            return npc.buy_item_list(me, npc_obj)
+        end,
+    },
+    {
+        priority = 100,
+        anchors = { '얼마' },
+        pattern = lib.CHAT_REGEX.SELL_PRICE,
+        condition = function(npc_obj)
+            return #npc_obj:model():sell() > 0
+        end,
+        func = function(me, npc_obj, params)
+            return npc.sell_item_price(me, npc_obj, params.name)
+        end,
+    },
+    {
+        priority = 110,
+        anchors = { '얼마에' },
+        pattern = lib.CHAT_REGEX.BUY_PRICE,
+        condition = function(npc_obj)
+            return npc_obj:model():buy() ~= nil
+        end,
+        func = function(me, npc_obj, params)
+            return npc.buy_item_price(me, npc_obj, params.name)
+        end,
+    },
+    {
+        priority = 120,
+        anchors = { '맡고' },
+        pattern = lib.CHAT_REGEX.DEPOSITED_MONEY,
+        condition = function(npc_obj)
+            local interaction = npc_obj:model():interaction()
+            return (interaction & NPC_INTERACTION.DEPOSIT_MONEY) == NPC_INTERACTION.DEPOSIT_MONEY
+        end,
+        func = function(me, npc_obj, params)
+            return npc.deposited_money(me, npc_obj)
+        end,
+    },
+    {
+        priority = 130,
+        anchors = { '명명', '이름을' },
+        pattern = lib.CHAT_REGEX.RENAME_WEAPON,
+        condition = function(npc_obj)
+            local interaction = npc_obj:model():interaction()
+            return (interaction & NPC_INTERACTION.RENAME) == NPC_INTERACTION.RENAME
+        end,
+        func = function(me, npc_obj, params)
+            return npc.rename_weapon(me, npc_obj, params.weapon, params.name)
+        end,
+    },
+    {
+        priority = 140,
+        anchors = { '맡고' },
+        pattern = lib.CHAT_REGEX.HOLD_ITEM_LIST,
+        condition = function(npc_obj)
+            local interaction = npc_obj:model():interaction()
+            return (interaction & NPC_INTERACTION.STORE_ITEM) == NPC_INTERACTION.STORE_ITEM
+        end,
+        func = function(me, npc_obj, params)
+            return npc.store_item_list(me, npc_obj)
+        end,
+    },
+    {
+        priority = 150,
+        anchors = { '맡고', '몇', '얼마나' },
+        pattern = lib.CHAT_REGEX.HOLD_ITEM_COUNT,
+        condition = function(npc_obj)
+            local interaction = npc_obj:model():interaction()
+            return (interaction & NPC_INTERACTION.STORE_ITEM) == NPC_INTERACTION.STORE_ITEM
+        end,
+        func = function(me, npc_obj, params)
+            return npc.store_item_count(me, npc_obj, params.name)
+        end,
+    },
+    {
+        priority = 160,
+        anchors = { '살려' },
+        pattern = lib.CHAT_REGEX.REVIVE,
+        condition = function(npc_obj)
+            local interaction = npc_obj:model():interaction()
+            return (interaction & NPC_INTERACTION.REVIVE) == NPC_INTERACTION.REVIVE
+        end,
+        func = function(me, npc_obj, params)
+            return npc.revive(me, npc_obj, params.no ~= nil)
+        end,
+    },
+    {
+        priority = 170,
+        anchors = { '감사합니다', '고맙습니다' },
+        literal = true,
+        condition = function(npc_obj)
+            local interaction = npc_obj:model():interaction()
+            return (interaction & NPC_INTERACTION.REVIVE) == NPC_INTERACTION.REVIVE
+        end,
+        func = function(me, npc_obj, params)
+            return npc.appreciate(me, npc_obj)
+        end,
+    },
+    {
+        priority = 180,
+        anchors = { '참가' },
+        literal = true,
+        condition = function(npc_obj)
+            return GATEKEEPER_BY_NAME[npc_obj:model():name()] ~= nil
+        end,
+        func = function(me, npc_obj, params)
+            local name = npc_obj:model():name()
+            local info = GATEKEEPER_BY_NAME[name]
+            return run_gatekeeper_entrance(me, npc_obj, info[1], info[2])
+        end,
+    },
+    {
+        priority = 190,
+        anchors = { '검정깃발' },
+        literal = true,
+        condition = function(npc_obj)
+            return npc_obj:model():name() == '장안성대장간'
+        end,
+        func = function(me, npc_obj, params)
+            return run_black_flag(me, npc_obj)
+        end,
+    },
+}
+
+local npc_chat_handlers_by_anchor = {}
+
+for _, handler in ipairs(npc_chat_handlers) do
+    for _, anchor in ipairs(handler.anchors) do
+        local bucket = npc_chat_handlers_by_anchor[anchor]
+        if bucket == nil then
+            bucket = {}
+            npc_chat_handlers_by_anchor[anchor] = bucket
+        end
+        table.insert(bucket, handler)
+    end
+end
+
+local function collect_npc_chat_handlers(message)
+    local seen = {}
+    local candidates = {}
+
+    for anchor, handlers in pairs(npc_chat_handlers_by_anchor) do
+        if string.find(message, anchor, 1, true) ~= nil then
+            for _, handler in ipairs(handlers) do
+                if seen[handler] == nil then
+                    seen[handler] = true
+                    table.insert(candidates, handler)
+                end
+            end
+        end
+    end
+
+    table.sort(candidates, function(a, b)
+        return a.priority < b.priority
+    end)
+
+    return candidates
+end
+
+local function dispatch_npc_chat(me, npcs, message)
+    local candidates = collect_npc_chat_handlers(message)
+
+    for _, handler in ipairs(candidates) do
+        local params = nil
+        if handler.literal then
+            params = {}
+        else
+            params = regex(handler.pattern, message)
+            if params == nil then
+                goto continue_handler
+            end
+        end
+
+        for _, npc_obj in ipairs(npcs) do
+            if handler.condition ~= nil then
+                if not handler.condition(npc_obj) then
+                    goto continue_npc
+                end
+            end
+            if handler.func(me, npc_obj, params) then
+                return true
+            end
+            ::continue_npc::
+        end
+        ::continue_handler::
+    end
+
+    return false
+end
+
 function on_chat(me, message, shout)
     if string.sub(message, 1, 1) == '/' then
         message = string.sub(message, 2, string.len(message))
         args = lib.string_split(message, ' ')
 
         local cmd = args[1]
-        if command_funcs[cmd] == nil then
+        if command.functions[cmd] == nil then
             return false
         end
         
-        local cmd_data = command_funcs[cmd]
+        local cmd_data = command.functions[cmd]
         local cmd_func = nil
         local required_privilege = ROLE.USER
         
@@ -268,7 +673,7 @@ function on_npc_chat(me, message, shout)
     if map == nil then
         return false
     end
-    
+
     local npcs = {}
     if shout then
         npcs = map:objects(OBJECT_TYPE.NPC)
@@ -276,295 +681,12 @@ function on_npc_chat(me, message, shout)
         local x, y = me:position()
         npcs = map:nears({x, y}, OBJECT_TYPE.NPC)
     end
-    
+
     if #npcs == 0 then
         return false
     end
 
-    -- Gatekeeper NPC name -> { totem name (e.g. "청룡"), totem_key (e.g. "dragon") } for "~참가" chat.
-    local GATEKEEPER_BY_NAME = {
-        ["주작성문지기"] = { "주작", "bird" },
-        ["청룡성문지기"] = { "청룡", "dragon" },
-        ["현무성문지기"] = { "현무", "turtle" },
-        ["백호성문지기"] = { "백호", "tiger" },
-    }
-
-    local function run_gatekeeper_entrance(me, npc_obj, totem_name_kr, totem_key)
-        local clan = me:clan()
-        if not clan then
-            me:dialog(npc_obj, '가입된 문파가 없습니다.')
-            return true
-        end
-        if me:state() == STATE.GHOST then
-            me:dialog(npc_obj, '유령은 참가할 수 없습니다.')
-            return true
-        end
-        local occupant = (_G.clan_castle_occupant or {})[totem_key] or ''
-        local siege_start = _G.clan_siege_start or 0
-        local siege_map = _G.clan_siege_map or ''
-        local clan_name = clan:name()
-        local castle_name = totem_name_kr .. '성'
-        local map_entrance = name2map(totem_name_kr .. '성입구')
-        local map_inner = name2map(totem_name_kr .. '의성')
-        if not map_entrance then
-            me:dialog(npc_obj, '입장할 수 있는 맵이 없습니다.')
-            return true
-        end
-        if clan_name == occupant then
-            if siege_start == 0 and map_inner then
-                me:map(map_inner, math.random(11, 17), math.random(4, 11))
-            else
-                me:map(map_entrance, math.random(49, 57), math.random(145, 148))
-            end
-            return true
-        end
-        if siege_map == castle_name then
-            me:map(map_entrance, math.random(49, 57), math.random(145, 148))
-            return true
-        end
-        me:dialog(npc_obj, string.format('현재 %s 공성이 진행중이지 않습니다.', castle_name))
-        return true
-    end
-    
-    local regex_handlers = {
-        { pattern = lib.CHAT_REGEX.BUY, condition = function(npc_obj)
-            local model = npc_obj:model()
-            local sell = model:sell()
-            return #sell > 0
-        end, func = function(npc_obj, params)
-            local name = params.name
-            local count = 1
-            if params.count ~= nil then
-                count = tonumber(params.count)
-            end
-            return npc.sell_item(me, npc_obj, name, count)
-        end },
-        { pattern = lib.CHAT_REGEX.SELL, condition = function(npc_obj)
-            local model = npc_obj:model()
-            local buy = model:buy()
-            return buy ~= nil
-        end, func = function(npc_obj, params)
-            local name = params.name
-            local count = nil
-            if params.all ~= nil then
-                count = nil
-            elseif params.count ~= nil then
-                count = tonumber(params.count)
-            else
-                count = 1
-            end
-            return npc.buy_item(me, npc_obj, name, count)
-        end },
-        { pattern = lib.CHAT_REGEX.REPAIR, condition = function(npc_obj)
-            local model = npc_obj:model()
-            local interaction = model:interaction()
-            return (interaction & NPC_INTERACTION.REPAIR) == NPC_INTERACTION.REPAIR
-        end, func = function(npc_obj, params)
-            if params.all ~= nil then
-                return npc.repair(me, npc_obj, nil)
-            elseif params.name ~= nil then
-                return npc.repair(me, npc_obj, params.name)
-            else
-                return false
-            end
-        end },
-        { pattern = lib.CHAT_REGEX.DEPOSIT_MONEY, condition = function(npc_obj)
-            local model = npc_obj:model()
-            local interaction = model:interaction()
-            return (interaction & NPC_INTERACTION.DEPOSIT_MONEY) == NPC_INTERACTION.DEPOSIT_MONEY
-        end, func = function(npc_obj, params)
-            local money = nil
-            if params.all ~= nil then
-                money = me:money()
-            elseif params.money ~= nil then
-                money = tonumber(params.money)
-            else
-                return false
-            end
-
-            return npc.deposit_money(me, npc_obj, money)
-        end },
-        { pattern = lib.CHAT_REGEX.WITHDRAW_MONEY, condition = function(npc_obj)
-            local model = npc_obj:model()
-            local interaction = model:interaction()
-            return (interaction & NPC_INTERACTION.DEPOSIT_MONEY) == NPC_INTERACTION.DEPOSIT_MONEY
-        end, func = function(npc_obj, params)
-            local money = nil
-            if params.all ~= nil then
-                money = nil
-            elseif params.money ~= nil then
-                money = tonumber(params.money)
-            else
-                return false
-            end
-
-            return npc.withdraw_money(me, npc_obj, money)
-        end },
-        { pattern = lib.CHAT_REGEX.STORE_ITEM, condition = function(npc_obj)
-            local model = npc_obj:model()
-            local interaction = model:interaction()
-            return (interaction & NPC_INTERACTION.STORE_ITEM) == NPC_INTERACTION.STORE_ITEM
-        end, func = function(npc_obj, params)
-            local name = params.name
-            local count = nil
-            if params.all ~= nil then
-                count = nil
-            elseif params.count ~= nil then
-                count = tonumber(params.count)
-            else
-                count = 1
-            end
-            return npc.store_item(me, npc_obj, name, count)
-        end },
-        { pattern = lib.CHAT_REGEX.RETRIEVE_ITEM, condition = function(npc_obj)
-            local model = npc_obj:model()
-            local interaction = model:interaction()
-            return (interaction & NPC_INTERACTION.STORE_ITEM) == NPC_INTERACTION.STORE_ITEM
-        end, func = function(npc_obj, params)
-            local name = params.name
-            local count = nil
-            if params.all ~= nil then
-                count = nil
-            elseif params.count ~= nil then
-                count = tonumber(params.count)
-            else
-                count = 1
-            end
-            return npc.retrieve_item(me, npc_obj, name, count)
-        end },
-        { pattern = lib.CHAT_REGEX.SELL_LIST, condition = function(npc_obj)
-            local model = npc_obj:model()
-            local sell = model:sell()
-            return #sell > 0
-        end, func = function(npc_obj, params)
-            return npc.sell_item_list(me, npc_obj)
-        end },
-        { pattern = lib.CHAT_REGEX.BUY_LIST, condition = function(npc_obj)
-            local model = npc_obj:model()
-            local buy = model:buy()
-            return buy ~= nil
-        end, func = function(npc_obj, params)
-            return npc.buy_item_list(me, npc_obj)
-        end },
-        { pattern = lib.CHAT_REGEX.SELL_PRICE, condition = function(npc_obj)
-            local model = npc_obj:model()
-            local sell = model:sell()
-            return #sell > 0
-        end, func = function(npc_obj, params)
-            local name = params.name
-            return npc.sell_item_price(me, npc_obj, name)
-        end },
-        { pattern = lib.CHAT_REGEX.BUY_PRICE, condition = function(npc_obj)
-            local model = npc_obj:model()
-            local buy = model:buy()
-            return buy ~= nil
-        end, func = function(npc_obj, params)
-            local name = params.name
-            return npc.buy_item_price(me, npc_obj, name)
-        end },
-        { pattern = lib.CHAT_REGEX.DEPOSITED_MONEY, condition = function(npc_obj)
-            local model = npc_obj:model()
-            local interaction = model:interaction()
-            return (interaction & NPC_INTERACTION.DEPOSIT_MONEY) == NPC_INTERACTION.DEPOSIT_MONEY
-        end, func = function(npc_obj, params)
-            return npc.deposited_money(me, npc_obj)
-        end },
-        { pattern = lib.CHAT_REGEX.RENAME_WEAPON, condition = function(npc_obj)
-            local model = npc_obj:model()
-            local interaction = model:interaction()
-            return (interaction & NPC_INTERACTION.RENAME) == NPC_INTERACTION.RENAME
-        end, func = function(npc_obj, params)
-            local from = params.weapon
-            local to = params.name
-            return npc.rename_weapon(me, npc_obj, from, to)
-        end },
-        { pattern = lib.CHAT_REGEX.HOLD_ITEM_LIST, condition = function(npc_obj)
-            local model = npc_obj:model()
-            local interaction = model:interaction()
-            return (interaction & NPC_INTERACTION.STORE_ITEM) == NPC_INTERACTION.STORE_ITEM
-        end, func = function(npc_obj, params)
-            return npc.store_item_list(me, npc_obj)
-        end },
-        { pattern = lib.CHAT_REGEX.HOLD_ITEM_COUNT, condition = function(npc_obj)
-            local model = npc_obj:model()
-            local interaction = model:interaction()
-            return (interaction & NPC_INTERACTION.STORE_ITEM) == NPC_INTERACTION.STORE_ITEM
-        end, func = function(npc_obj, params)
-            local name = params.name
-            return npc.store_item_count(me, npc_obj, name)
-        end },
-        { pattern = lib.CHAT_REGEX.REVIVE, condition = function(npc_obj)
-            local model = npc_obj:model()
-            local interaction = model:interaction()
-            return (interaction & NPC_INTERACTION.REVIVE) == NPC_INTERACTION.REVIVE
-        end, func = function(npc_obj, params)
-            local discourteous = params.no ~= nil
-            return npc.revive(me, npc_obj, discourteous)
-        end },
-        { pattern = lib.CHAT_REGEX.APPRECIATE, condition = function(npc_obj)
-            local model = npc_obj:model()
-            local interaction = model:interaction()
-            return (interaction & NPC_INTERACTION.REVIVE) == NPC_INTERACTION.REVIVE
-        end, func = function(npc_obj, params)
-            return npc.appreciate(me, npc_obj)
-        end },
-        { pattern = lib.CHAT_REGEX.JOIN_CASTLE, condition = function(npc_obj)
-            local name = npc_obj:model():name()
-            return GATEKEEPER_BY_NAME[name] ~= nil
-        end, func = function(npc_obj, params)
-            local name = npc_obj:model():name()
-            local info = GATEKEEPER_BY_NAME[name]
-            return run_gatekeeper_entrance(me, npc_obj, info[1], info[2])
-        end },
-        { pattern = lib.CHAT_REGEX.BLACK_FLAG, condition = function(npc_obj)
-            return npc_obj:model():name() == '장안성대장간'
-        end, func = function(npc_obj, params)
-            if me:dialog(npc_obj, '아니, 내가 검정깃발을 가지고 있다는걸 어떻게 알았나.. 으음...', false, true) == DIALOG_RESULT.QUIT then
-                return true
-            end
-            if me:dialog(npc_obj, '그냥 줄순 없고.. 5000전만 내게. 그럼 검정깃발을 하나 주지.', true, true) == DIALOG_RESULT.QUIT then
-                return true
-            end
-            local selected, button = me:list(npc_obj, '어때? 5000전에 검정깃발 하나 사길 텐가?', { '네, 주십시오.', '안 살래요' })
-            if button == DIALOG_RESULT.QUIT then
-                return true
-            end
-            if selected ~= 0 then
-                return true
-            end
-            local BLACK_FLAG_PRICE = 5000
-            if me:money() < BLACK_FLAG_PRICE then
-                me:dialog(npc_obj, '돈이 모자랍니다.', false, true)
-                return true
-            end
-            if me:mkitem('검정깃발', 1) == nil then
-                me:dialog(npc_obj, '공간이 부족합니다.', false, true)
-                return true
-            end
-            me:money(me:money() - BLACK_FLAG_PRICE)
-            me:dialog(npc_obj, '검정깃발을 받았습니다.', false, false)
-            return true
-        end },
-    }
-
-    for _, handler in ipairs(regex_handlers) do
-        local params = regex(handler.pattern, message)
-        if params ~= nil then
-            for _, npc_obj in ipairs(npcs) do
-                if handler.condition ~= nil then
-                    if not handler.condition(npc_obj) then
-                        goto continue
-                    end
-                end
-                if handler.func(npc_obj, params) then
-                    return true
-                end
-                ::continue::
-            end
-        end
-    end
-    
-    return false
+    return dispatch_npc_chat(me, npcs, message)
 end
 
 local function make_baram_birth_label()

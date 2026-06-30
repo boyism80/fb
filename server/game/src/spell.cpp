@@ -306,16 +306,15 @@ bool buffs::push_back(const std::shared_ptr<buff>& buff)
     this->insert({model.id, buff});
 
     // Execute buff script
-    if (buff->model.buff.empty() == false)
+    auto path = std::format("scripts/spell/{}.lua", model.id);
+    auto func = std::format("ON_BUFF_{}", model.id);
+
+    auto lua = this->_owner.server.lua.new_ctx_guard(path, func);
+    if (lua)
     {
-        auto lua = this->_owner.server.lua.new_context();
-        if (lua != nullptr)
-        {
-            lua->func(buff->model.buff);
-            lua->pushobject(this->_owner);
-            lua->pushobject(buff->model);
-            std::ignore = lua->call(2);
-        }
+        lua->pushobject(this->_owner);
+        lua->pushobject(buff->model);
+        std::ignore = lua->call(2);
     }
 
     // Call listener for packet response
@@ -364,16 +363,16 @@ bool buffs::remove(uint32_t id)
         return false;
 
     // Execute unbuff script
-    if (buff->model.unbuff.empty() == false)
+    auto& model = buff->model;
+    auto  path  = std::format("scripts/spell/{}.lua", model.id);
+    auto  func  = std::format("ON_UNBUFF_{}", model.id);
+
+    auto lua = this->_owner.server.lua.new_ctx_guard(path, func);
+    if (lua)
     {
-        auto lua = this->_owner.server.lua.new_context();
-        if (lua != nullptr)
-        {
-            lua->func(buff->model.unbuff);
-            lua->pushobject(this->_owner);
-            lua->pushobject(buff->model);
-            std::ignore = lua->call(2);
-        }
+        lua->pushobject(this->_owner);
+        lua->pushobject(buff->model);
+        std::ignore = lua->call(2);
     }
 
     // Call listener for packet response

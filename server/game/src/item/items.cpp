@@ -91,20 +91,16 @@ std::shared_ptr<equipment> items::equipment_off(EQUIPMENT_PARTS parts)
 
     // Execute equipment deactivation script
     auto& model = equipment->based<fb::model::equipment>();
-    if (model.on_deactivated.empty() == false)
+    auto  path  = std::format("scripts/item/{}.lua", model.id);
+    auto  func  = std::format("ON_DEACTIVATED_{}", model.id);
+
+    auto lua = owner->server.lua.new_ctx_guard(path, func);
+    if (lua)
     {
-        auto lua = owner->server.lua.new_context();
-        if (lua != nullptr)
-        {
-#if defined DEBUG || defined _DEBUG
-            lua->load(model.script);
-#endif
-            lua->func(model.on_deactivated);
-            lua->pushobject(*owner);
-            lua->pushinteger(parts);
-            lua->pushobject(*equipment);
-            std::ignore = lua->call(3);
-        }
+        lua->pushobject(*owner);
+        lua->pushinteger(parts);
+        lua->pushobject(*equipment);
+        std::ignore = lua->call(3);
     }
 
     // Call listener for packet response
@@ -1060,13 +1056,9 @@ void items::loot(bool boost)
         if (map == nullptr)
             return;
 
-        auto lua = owner->server.lua.new_context();
-        if (lua != nullptr)
+        auto lua = owner->server.lua.new_ctx_guard("scripts/interaction.lua", "on_loot");
+        if (lua)
         {
-#if defined DEBUG || defined _DEBUG
-            lua->load("scripts/interaction.lua");
-#endif
-            lua->func("on_loot");
             lua->pushobject(*owner);
             std::ignore = lua->call(1);
         }
@@ -1195,6 +1187,78 @@ std::shared_ptr<item> items::remove(std::shared_ptr<item> item, uint16_t count, 
         return nullptr;
 
     return this->remove(index, count, attr, detach);
+}
+
+void items::remove_expired()
+{
+    auto owner = this->_owner.lock();
+    if (owner == nullptr)
+        return;
+
+    owner->assert_thread();
+
+    auto expired_items = std::vector<std::shared_ptr<item>>();
+    for (int i = 0; i < CONTAINER_CAPACITY;)
+    {
+        auto item = this->at(i);
+        if (item != nullptr && item->expired())
+        {
+            auto expired = this->remove(i, item->count(), ITEM_DELETE_TYPE::NONE);
+            if (expired == nullptr)
+                continue;
+
+            owner->message(std::format("{} 아이템이 만료되었습니다.", expired->based<fb::model::item>().name));
+            std::ignore = expired->destroy();
+            continue;
+        }
+
+        ++i;
+    }
+
+    for (auto& [parts, equipment] : this->equipments())
+    {
+        if (equipment != nullptr && equipment->expired())
+        {
+            auto expired = this->equipment_off(parts);
+            if (expired == nullptr)
+                continue;
+
+            expired_items.push_back(expired);
+        }
+    }
+
+    for (int i = static_cast<int>(this->_stored.size()) - 1; i >= 0; --i)
+    {
+        auto stored = this->_stored.at(i);
+        if (stored == nullptr)
+            continue;
+
+        if (stored->expired() == false)
+            continue;
+
+        expired_items.push_back(stored);
+        this->_stored.erase(this->_stored.begin() + i);
+    }
+
+    for (auto& expired : expired_items)
+    {
+        if (expired == nullptr)
+            continue;
+
+        auto& model = expired->based<fb::model::item>();
+        owner->message(std::format("{} 아이템이 만료되었습니다.", model.name));
+
+        auto log_data              = Json::Value();
+        log_data["character_id"]   = static_cast<Json::Int64>(owner->id);
+        log_data["character_name"] = UTF8(owner->name(), PLATFORM::WINDOWS);
+        log_data["item_id"]        = static_cast<Json::Int64>(model.id);
+        log_data["item_name"]      = UTF8(model.name, PLATFORM::WINDOWS);
+        log_data["count"]          = static_cast<Json::Int64>(expired->count());
+        owner->server.log.write("item_remove", log_data);
+
+        expired->container(nullptr);
+        std::ignore = expired->destroy();
+    }
 }
 
 bool items::swap(uint8_t src, uint8_t dst)

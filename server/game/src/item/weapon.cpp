@@ -1,8 +1,8 @@
 #include <fb/game/server.h>
 #include <fb/game/item.h>
 
-fb::game::weapon::weapon(fb::game::server& server, const fb::model::weapon& model) :
-    equipment(server, model)
+fb::game::weapon::weapon(fb::game::server& server, const fb::model::weapon& model, const initial_params& params) :
+    equipment(server, model, params)
 { }
 
 fb::game::weapon::weapon(const weapon& right) :

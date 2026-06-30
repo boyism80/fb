@@ -51,6 +51,7 @@ public:
         int                        on_parallel_scenario_started_ref{LUA_NOREF};
         int                        on_parallel_scenario_finished_ref{LUA_NOREF};
         int                        on_finished_ref{LUA_NOREF};
+        int                        should_skip_ref{LUA_NOREF};
         std::vector<scenario_item> scenarios;
     };
 
@@ -94,6 +95,7 @@ protected:
     async::task<void>     on_parallel_scenario_started(uint32_t id) override;
     async::task<void>     on_parallel_scenario_finished(uint32_t id) override;
     async::task<void>     on_finished() override;
+    async::task<bool>     check_should_skip() override;
 
 private:
     void init_lua();

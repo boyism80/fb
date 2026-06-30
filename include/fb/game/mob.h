@@ -80,6 +80,11 @@ private:
     [[nodiscard]] async::task<bool> call_script();
     void                            AI(const fb::model::datetime& now);
     void                            on_die(std::shared_ptr<fb::game::object> from, DESTROY_TYPE destroy_type);
+    static bool is_cardinally_adjacent(const fb::model::point16_t& a, const fb::model::point16_t& b);
+    static bool is_cover_barrier_cell(const fb::model::point16_t& cell, const fb::model::point16_t& cover_center);
+    bool        cover_blocks_move(const fb::game::map&        map,
+                                  const fb::model::point16_t& from,
+                                  const fb::model::point16_t& to) const;
 
 public:
     bool near_target(const std::shared_ptr<fb::game::life>& target, DIRECTION& out) const;

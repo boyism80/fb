@@ -58,7 +58,7 @@ local function run_scenario(opts)
     end
 
     if ok == false then
-        slog(scope, "scenario=%s FAILED (returned false)", name)
+        log("fatal", string.format("[skill_test:%s] scenario=%s FAILED (returned false)", scope, name))
     else
         slog(scope, "scenario=%s DONE", name)
     end

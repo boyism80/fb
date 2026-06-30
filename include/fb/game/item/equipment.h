@@ -17,7 +17,7 @@ protected:
     uint32_t _durability = 0;
 
 protected:
-    equipment(fb::game::server& server, const fb::model::equipment& model);
+    equipment(fb::game::server& server, const fb::model::equipment& model, const initial_params& params = {});
     equipment(const fb::game::equipment& right);
 
 public:

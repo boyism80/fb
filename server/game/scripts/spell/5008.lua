@@ -1,0 +1,5 @@
+-- spell: 강제이동
+-- 강제이동 캐스팅
+function ON_CAST_5008(me, spell)
+
+end

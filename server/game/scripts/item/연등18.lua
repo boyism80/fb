@@ -1,2 +1,0 @@
-function ON_DEACTIVATED_3535(me, item)
-end

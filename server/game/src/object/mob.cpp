@@ -134,11 +134,8 @@ async::task<bool> mob::call_script()
     this->update_target();
 
     auto& model = this->based<fb::model::mob>();
-    if (model.script.empty())
-        co_return true;
-
-    if (model.on_attack.empty())
-        co_return true;
+    auto  path  = std::format("scripts/mob/{}.lua", model.id);
+    auto  func  = std::format("ON_MOB_ATTACK_{}", model.id);
 
     if (this->_attack_thread != nullptr)
         co_return false;
@@ -147,10 +144,20 @@ async::task<bool> mob::call_script()
     if (this->_attack_thread == nullptr)
         co_return true;
 
-#if defined DEBUG || defined _DEBUG
-    this->_attack_thread->load(model.script);
-#endif
-    this->_attack_thread->func(model.on_attack);
+    if (this->_attack_thread->load(path) == false)
+    {
+        this->_attack_thread->release();
+        this->_attack_thread = nullptr;
+        co_return true;
+    }
+
+    if (this->_attack_thread->func(func) == false)
+    {
+        this->_attack_thread->release();
+        this->_attack_thread = nullptr;
+        co_return true;
+    }
+
     this->_attack_thread->pushobject(this);
 
     if (this->_target.expired() == false)
@@ -459,43 +466,38 @@ void mob::kill(std::shared_ptr<object> from, DESTROY_TYPE destroy_type)
     life::kill(from, destroy_type);
 
     auto& model = this->based<fb::model::mob>();
-    if (model.script.empty() == false && model.on_die.empty() == false)
-    {
-        auto lua = this->server.lua.new_context();
-        if (lua != nullptr)
-        {
-#if defined DEBUG || defined _DEBUG
-            lua->load(model.script);
-#endif
-            lua->func(model.on_die);
-            lua->pushobject(*this);
-            if (from != nullptr)
-                lua->pushobject(from);
-            else
-                lua->pushnil();
+    auto  path  = std::format("scripts/mob/{}.lua", model.id);
+    auto  func  = std::format("ON_MOB_DIE_{}", model.id);
 
-            this->invincible(true);
-            async::awaitable_then(lua->call(2), [this, from, destroy_type](async::awaitable_result<bool> result) {
-                try
-                {
-                    result();
-                    this->on_die(from, destroy_type);
-                }
-                catch (std::exception& e)
-                {
-                    fb::logger::fatal("error in mob on_die: {}", e.what());
-                }
-                catch (...)
-                {
-                    fb::logger::fatal("unknown error in mob on_die");
-                }
-            });
-        }
-    }
-    else
+    auto lua = this->server.lua.new_ctx_guard(path, func);
+    if (!lua)
     {
         this->on_die(from, destroy_type);
+        return;
     }
+
+    lua->pushobject(*this);
+    if (from != nullptr)
+        lua->pushobject(from);
+    else
+        lua->pushnil();
+
+    this->invincible(true);
+    async::awaitable_then(lua->call(2), [this, from, destroy_type](async::awaitable_result<bool> result) {
+        try
+        {
+            result();
+            this->on_die(from, destroy_type);
+        }
+        catch (std::exception& e)
+        {
+            fb::logger::fatal("error in mob on_die: {}", e.what());
+        }
+        catch (...)
+        {
+            fb::logger::fatal("unknown error in mob on_die");
+        }
+    });
 }
 
 async::task<void> mob::drop_items()
@@ -551,6 +553,56 @@ void mob::assert_thread() const
         return;
 }
 
+bool mob::is_cardinally_adjacent(const fb::model::point16_t& a, const fb::model::point16_t& b)
+{
+    auto dx = static_cast<int>(a.x) - static_cast<int>(b.x);
+    auto dy = static_cast<int>(a.y) - static_cast<int>(b.y);
+
+    if (dx == 0 && (dy == 1 || dy == -1))
+        return true;
+
+    if (dy == 0 && (dx == 1 || dx == -1))
+        return true;
+
+    return false;
+}
+
+bool mob::is_cover_barrier_cell(const fb::model::point16_t& cell, const fb::model::point16_t& cover_center)
+{
+    if (cell == cover_center)
+        return true;
+
+    return mob::is_cardinally_adjacent(cell, cover_center);
+}
+
+bool mob::cover_blocks_move(const fb::game::map&        map,
+                            const fb::model::point16_t& from,
+                            const fb::model::point16_t& to) const
+{
+    for (const auto* pivot : {&from, &to})
+    {
+        for (auto& obj : map.nears(*pivot, OBJECT_TYPE::LIFE))
+        {
+            if (obj.get() == this)
+                continue;
+
+            auto life = std::static_pointer_cast<fb::game::life>(obj);
+            if (life->cover() == false)
+                continue;
+
+            const auto& cover_center = life->position();
+
+            if (mob::is_cardinally_adjacent(from, cover_center))
+                return true;
+
+            if (mob::is_cover_barrier_cell(to, cover_center))
+                return true;
+        }
+    }
+
+    return false;
+}
+
 bool mob::move(DIRECTION direction)
 {
     this->assert_thread();
@@ -558,29 +610,11 @@ bool mob::move(DIRECTION direction)
     if (map == nullptr)
         return false;
 
-    auto position = this->side_position(direction);
-    for (auto& obj : map->nears(position, OBJECT_TYPE::LIFE))
-    {
-        if (obj.get() == this)
-            continue;
+    const auto& from     = this->position();
+    const auto  position = this->side_position(direction);
 
-        auto life = std::static_pointer_cast<fb::game::life>(obj);
-        if (life->cover() == false)
-            continue;
-
-        const auto& life_position = life->position();
-        if (life_position.x > 0 && life_position.x - 1 == position.x && life_position.y == position.y)
-            return false;
-
-        if (life_position.x < map->width() - 1 && life_position.x + 1 == position.x && life_position.y == position.y)
-            return false;
-
-        if (life_position.y > 0 && life_position.y - 1 == position.y && life_position.x == position.x)
-            return false;
-
-        if (life_position.y < map->height() - 1 && life_position.y + 1 == position.y && life_position.x == position.x)
-            return false;
-    }
+    if (this->cover_blocks_move(*map, from, position))
+        return false;
 
     return fb::game::object::move(direction);
 }

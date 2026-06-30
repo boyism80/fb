@@ -7,7 +7,11 @@ module.exports = {
         const resources = []
         const internalConf = conf.internal
         const appLabels = { app: "internal" }
+        const autoMigration = !!(conf.database && conf.database.autoMigration)
         const config = {
+            "Database": {
+                "AutoMigration": autoMigration
+            },
             "Logging": {
                 "LogLevel": {
                     "Default": "Information",

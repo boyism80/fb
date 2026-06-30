@@ -75,7 +75,6 @@ async::task<void> fb::game::server::init_lua()
         lua.build("assert_alive", builtin::server::builtin_assert_alive);
         lua.build("pursuit_sell", builtin::server::builtin_pursuit_sell);
         lua.build("pursuit_sell_price", builtin::server::builtin_pursuit_sell_price);
-        lua.build("pursuit_sell_name", builtin::server::builtin_pursuit_sell_name);
         lua.build("pursuit_buy", builtin::server::builtin_pursuit_buy);
         lua.build("timer", builtin::server::builtin_timer);
         lua.build("weather", builtin::server::builtin_weather);
@@ -208,6 +207,7 @@ void fb::game::server::init_timers()
     this->bind_thread_timer<fb::game::handler::timer::mob_action_timer>(100ms);
     this->bind_thread_timer<fb::game::handler::timer::mob_respawn_timer>(1s);
     this->bind_thread_timer<fb::game::handler::timer::buff_timer>(1s);
+    this->bind_thread_timer<fb::game::handler::timer::expired_item_timer>(10s);
     this->bind_thread_timer<fb::game::handler::timer::gear_timer>(1s);
     this->bind_thread_timer<fb::game::handler::timer::soliloquy_timer>(1s);
     this->bind_thread_timer<fb::game::handler::timer::save_timer>(std::chrono::seconds(fb::config<uint32_t>("save")));
@@ -245,6 +245,24 @@ void fb::game::server::init_amqp_handlers()
         std::format("fb.{}.game.{}", world, fb::config<uint32_t>("id")));
 }
 
+async::task<void> fb::game::server::init_map_scripts()
+{
+    auto async_tasks = std::vector<async::task<void>>();
+    for (auto& [id, map] : this->maps)
+    {
+        if (map->active == false || map->loaded() == false)
+            continue;
+
+        async_tasks.push_back(this->maps.invoke_init_script_wait(map));
+    }
+
+    for (auto& async_task : async_tasks)
+    {
+        co_await async_task;
+    }
+    co_return;
+}
+
 async::task<void> fb::game::server::init_script()
 {
     auto* init_thread = this->threads.least_loaded();
@@ -253,17 +271,11 @@ async::task<void> fb::game::server::init_script()
 
     auto builder = init_thread->new_builder<void>();
     builder.func = [this](auto&) -> async::task<void> {
-        auto lua = this->lua.new_context();
-        if (lua != nullptr)
+        auto lua = this->lua.new_ctx_guard();
+        if (lua)
         {
-            try
-            {
-                lua->load("scripts/init.lua");
-            }
-            catch (std::exception& e)
-            {
-                fb::logger::warn("Server init script failed: {}", e.what());
-            }
+            if (lua->load("scripts/init.lua") == false)
+                fb::logger::warn("Server init script failed: cannot load scripts/init.lua");
         }
         co_return;
     };
@@ -361,6 +373,7 @@ async::task<void> fb::game::server::on_start()
 #endif
 
     co_await this->init_thread_params();
+    co_await this->init_map_scripts();
     this->init_handlers();
     this->init_timers();
     this->init_amqp_handlers();

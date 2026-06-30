@@ -1,5 +1,7 @@
 #include <fb/game/server.h>
 #include <fb/game/worker.h>
+#include <filesystem>
+#include <format>
 #include <mutex>
 #include <set>
 
@@ -17,35 +19,31 @@ fb::generator<fb::game::script_work> fb::game::script_loader::on_ready()
     auto scripts = std::vector<std::string>{};
     scripts.push_back("scripts/server.lua");
     scripts.push_back("scripts/interaction.lua");
-    scripts.push_back("scripts/command.lua");
     scripts.push_back("scripts/script.lua");
     scripts.push_back("scripts/init.lua");
     scripts.push_back("scripts/schedule/schedule.lua");
     scripts.push_back(fb::model::const_value::script::F1_EVENT_SCRIPT);
     scripts.push_back(fb::model::const_value::script::F2_EVENT_SCRIPT);
 
-    for (auto& [k, v] : table::spell)
+    for (auto& [id, v] : table::spell)
     {
-        if (v.script.empty())
-            continue;
-
-        scripts.push_back(v.script);
+        auto path = std::format("scripts/spell/{}.lua", id);
+        if (std::filesystem::exists(path))
+            scripts.push_back(path);
     }
 
-    for (auto& [k, v] : table::item)
+    for (auto& [id, v] : table::item)
     {
-        if (v.script.empty())
-            continue;
-
-        scripts.push_back(v.script);
+        auto path = std::format("scripts/item/{}.lua", id);
+        if (std::filesystem::exists(path))
+            scripts.push_back(path);
     }
 
-    for (auto& [k, v] : table::npc)
+    for (auto& [id, v] : table::npc)
     {
-        if (v.script.empty())
-            continue;
-
-        scripts.push_back(v.script);
+        auto path = std::format("scripts/npc/{}.lua", id);
+        if (std::filesystem::exists(path))
+            scripts.push_back(path);
     }
 
     auto host = fb::config<uint8_t>("id");
@@ -65,12 +63,18 @@ fb::generator<fb::game::script_work> fb::game::script_loader::on_ready()
         }
     }
 
-    for (auto& [k, v] : table::mob)
+    for (auto& [id, v] : table::mob)
     {
-        if (v.script.empty())
-            continue;
+        auto path = std::format("scripts/mob/{}.lua", id);
+        if (std::filesystem::exists(path))
+            scripts.push_back(path);
+    }
 
-        scripts.push_back(v.script);
+    for (auto& [id, v] : table::map)
+    {
+        auto path = std::format("scripts/map/{}.lua", id);
+        if (std::filesystem::exists(path))
+            scripts.push_back(path);
     }
 
     for (auto& [_, root] : _server.lua)
@@ -89,18 +93,15 @@ async::task<void> fb::game::script_loader::on_work(const script_work& work)
 
         for (auto& script : scripts)
         {
-            try
+            if (root->dump(script))
+                continue;
+
+            auto message = std::format("cannot load script {}", script);
+            auto _       = std::lock_guard(mutex);
+            if (logs.contains(message) == false)
             {
-                root->dump(script);
-            }
-            catch (std::exception& e)
-            {
-                auto _ = std::lock_guard(mutex);
-                if (logs.contains(e.what()) == false)
-                {
-                    logs.insert(e.what());
-                    fb::console::comment("    - {}", e.what());
-                }
+                logs.insert(message);
+                fb::console::comment("    - {}", message);
             }
         }
         co_return;

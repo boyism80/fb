@@ -1,0 +1,5 @@
+-- mob: 뇌신'자
+-- 뇌신'자 사망
+function ON_MOB_DIE_566(me, you)
+
+end

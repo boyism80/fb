@@ -62,13 +62,12 @@ async::task<bool> move::handle(fb::socket<character>&      session,
             ch->move(direction, position);
 
             auto params = fb::model::dsl::script(warp->dest.params);
-            auto lua    = this->server.lua.new_context();
-            if (lua != nullptr)
+            if (params.path.empty() || params.function.empty())
+                break;
+
+            auto lua = this->server.lua.new_ctx_guard(params.path, params.function);
+            if (lua)
             {
-#if defined DEBUG || defined _DEBUG
-                lua->load(params.path);
-#endif
-                lua->func(params.function);
                 lua->pushobject(ch);
                 std::ignore = lua->call(1);
             }

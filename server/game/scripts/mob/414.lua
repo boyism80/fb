@@ -1,0 +1,5 @@
+-- mob: 식인종추장
+-- 식인종추장 사망
+function ON_MOB_DIE_414(me, you)
+
+end

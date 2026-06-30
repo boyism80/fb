@@ -145,6 +145,8 @@ struct call_options
     bool auto_resume_parent = true;
 };
 
+class context_guard;
+
 context* get(lua_State* ctx);
 
 class luable : public std::enable_shared_from_this<luable>
@@ -240,6 +242,8 @@ public:
 
 class context
 {
+    friend class context_guard;
+
 public:
     using promise_type = std::shared_ptr<async::task_completion_source<bool>>;
 
@@ -247,6 +251,7 @@ private:
     context*     _parent = nullptr;
     promise_type _promise;
     call_options _options;
+    bool         _call_engaged = false;
 
 protected:
     lua_State*  _ctx = nullptr;
@@ -266,22 +271,21 @@ public:
     virtual ~context() = default;
 
 public:
-    context operator= (context&) = delete;
-
+    context operator= (context&)       = delete;
     context operator= (const context&) = delete;
 
 public:
     template <class... Args>
-    context& load(std::string_view fmt, Args&&... args);
+    bool load(std::string_view fmt, Args&&... args);
     template <class... Args>
-    context&                          execute(std::string_view fmt, Args&&... args);
-    template <class... Args> context& func(std::string_view fmt, Args&&... args);
-    context&                          pushstring(std::string_view value);
-    context&                          pushinteger(lua_Integer value);
-    context&                          pushnumber(lua_Number value);
-    context&                          pushnil();
-    context&                          pushboolean(bool value);
-    context&                          pushjson(const Json::Value& json);
+    bool                          execute(std::string_view fmt, Args&&... args);
+    template <class... Args> bool func(std::string_view fmt, Args&&... args);
+    context&                      pushstring(std::string_view value);
+    context&                      pushinteger(lua_Integer value);
+    context&                      pushnumber(lua_Number value);
+    context&                      pushnil();
+    context&                      pushboolean(bool value);
+    context&                      pushjson(const Json::Value& json);
 
     template <typename T>
     context& pushobject(const T& value)
@@ -519,16 +523,18 @@ public:
     bool next(int offset);
 
 public:
-    int                             argc();
-    [[nodiscard]] async::task<bool> call(int argc, int* retc = nullptr);
-    void                            resume(int argc, int* n = nullptr);
-    int                             yield(int retc);
-    void                            release();
-    void                            parent(context* parent);
-    context*                        parent() const;
-    void                            options(call_options opts);
-    const call_options&             options() const;
-    void                            clear_loaded_modules();
+    int                 argc();
+    async::task<bool>   call(int argc, int* retc = nullptr);
+    void                resume(int argc, int* n = nullptr);
+    int                 yield(int retc);
+    void                release();
+    void                parent(context* parent);
+    context*            parent() const;
+    void                options(call_options opts);
+    const call_options& options() const;
+    bool                call_engaged() const;
+    void                clear_call_engaged();
+    void                clear_loaded_modules();
 
 public:
     class co_builder
@@ -576,6 +582,38 @@ public:
     {
         ::lua_pushlightuserdata(*this, (void*)data);
         ::lua_setfield(*this, LUA_REGISTRYINDEX, key);
+    }
+};
+
+class context_guard
+{
+private:
+    context* _ctx = nullptr;
+
+public:
+    context_guard() = default;
+    explicit context_guard(context* ctx);
+    ~context_guard();
+
+    context_guard(context_guard&& other) noexcept;
+    context_guard& operator= (context_guard&& other) noexcept;
+    context_guard(const context_guard&)             = delete;
+    context_guard& operator= (const context_guard&) = delete;
+
+public:
+    context* get() const
+    {
+        return this->_ctx;
+    }
+
+    context* operator->() const
+    {
+        return this->_ctx;
+    }
+
+    explicit operator bool () const
+    {
+        return this->_ctx != nullptr;
     }
 };
 
@@ -691,7 +729,10 @@ public:
     context_pool& operator= (const context_pool&) = delete;
 
 public:
-    context*          new_context(context* parent = nullptr, call_options options = {});
+    context*      new_context(context* parent = nullptr, call_options options = {});
+    context_guard new_ctx_guard(context* parent = nullptr, call_options options = {});
+    context_guard
+    new_ctx_guard(std::string_view path, std::string_view func, context* parent = nullptr, call_options options = {});
     async::task<void> dump(std::string_view path);
 
     base_type::iterator begin();
@@ -719,87 +760,93 @@ void lua_pushinteger(lua_State* L, T value)
 }
 
 template <class... Args>
-fb::lua::context& fb::lua::context::load(std::string_view fmt, Args&&... args)
+bool fb::lua::context::load(std::string_view fmt, Args&&... args)
 {
     auto fname = std::vformat(fmt, std::make_format_args(args...));
+    if (fname.empty())
+        return false;
+
 #if defined DEBUG || defined _DEBUG
     if (luaL_dofile(*this, fname.c_str()) != LUA_OK)
     {
-        auto error = lua_tostring(*this, -1);
-        this->pop(1); // pop error message
-        throw std::runtime_error(error);
+        this->pop(1);
+        return false;
     }
+    return true;
 #else
+    if (this->owner == nullptr)
+        return false;
+
     auto root = static_cast<fb::lua::root*>(this->owner);
-    root->dump(fname);
+    if (auto cached = root->_bytecodes.find(fname); cached != root->_bytecodes.end())
+        return cached->second.empty() == false;
 
-    auto it = root->_bytecodes.find(fname);
-    if (it == root->_bytecodes.end())
-        throw std::runtime_error(std::format("cannot find script {}", fname));
-
-    const auto& bytes = it->second;
-    if (luaL_loadbuffer(*this, bytes.data(), bytes.size(), 0))
-        throw std::runtime_error(std::format("cannot load script {}", fname));
-
-    if (lua_pcall(*this, 0, LUA_MULTRET, 0))
-        throw std::runtime_error(std::format("cannot run script {}", fname));
-
+    return root->dump(fname);
 #endif
-    return *this;
 }
 
 template <class... Args>
-fb::lua::context& fb::lua::context::execute(std::string_view fmt, Args&&... args)
+bool fb::lua::context::execute(std::string_view fmt, Args&&... args)
 {
     auto fname = std::vformat(fmt, std::make_format_args(args...));
+    if (fname.empty())
+        return false;
+
 #if defined DEBUG || defined _DEBUG
-    // DEBUG mode: load and execute file directly every time
     if (luaL_loadfile(*this, fname.c_str()) != LUA_OK)
     {
-        auto error = lua_tostring(*this, -1);
-        this->pop(1); // pop error message
-        throw std::runtime_error(error);
+        this->pop(1);
+        return false;
     }
 
     if (lua_pcall(*this, 0, LUA_MULTRET, 0) != LUA_OK)
     {
-        auto error = lua_tostring(*this, -1);
-        this->pop(1); // pop error message
-        throw std::runtime_error(error);
+        this->pop(1);
+        return false;
     }
+    return true;
 #else
-    // Release mode: cache bytecode and load from cache
+    if (this->owner == nullptr)
+        return false;
+
     auto root = static_cast<fb::lua::root*>(this->owner);
-    root->dump(fname);
+    if (root->dump(fname) == false)
+        return false;
 
     auto it = root->_bytecodes.find(fname);
-    if (it == root->_bytecodes.end())
-        throw std::runtime_error(std::format("cannot find script {}", fname));
+    if (it == root->_bytecodes.end() || it->second.empty())
+        return false;
 
     const auto& bytes = it->second;
-    if (luaL_loadbuffer(*this, bytes.data(), bytes.size(), 0) != LUA_OK)
+    if (luaL_loadbuffer(*this, bytes.data(), bytes.size(), fname.c_str()) != LUA_OK)
     {
-        auto error = lua_tostring(*this, -1);
-        this->pop(1); // pop error message
-        throw std::runtime_error(std::format("cannot load script {}", fname));
+        this->pop(1);
+        return false;
     }
 
     if (lua_pcall(*this, 0, LUA_MULTRET, 0) != LUA_OK)
     {
-        auto error = lua_tostring(*this, -1);
-        this->pop(1); // pop error message
-        throw std::runtime_error(std::format("cannot run script {}", fname));
+        this->pop(1);
+        return false;
     }
+    return true;
 #endif
-    return *this;
 }
 
 template <class... Args>
-fb::lua::context& fb::lua::context::func(std::string_view fmt, Args&&... args)
+bool fb::lua::context::func(std::string_view fmt, Args&&... args)
 {
     auto fname = std::vformat(fmt, std::make_format_args(args...));
+    if (fname.empty())
+        return false;
+
     lua_getglobal(*this, fname.c_str());
-    return *this;
+    if (lua_type(*this, -1) != LUA_TFUNCTION)
+    {
+        this->pop(1);
+        return false;
+    }
+    return true;
 }
 
 #endif // !__LUA_H__

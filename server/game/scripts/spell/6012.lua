@@ -1,0 +1,5 @@
+-- spell: 결혼체크
+-- 결혼체크 버프 해제 효과
+function ON_UNBUFF_6012(me, spell)
+
+end

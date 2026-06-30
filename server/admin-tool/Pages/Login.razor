@@ -61,10 +61,10 @@
 
 @code {
     private LoginModel loginModel = new();
-    private string? ErrorMessage;
+    private string ErrorMessage;
     private bool isLoading = false;
-    private List<string>? serverNames;
-    private Dictionary<string, uint>? serverNameToWorld;
+    private List<string> serverNames;
+    private Dictionary<string, uint> serverNameToWorld;
     private string selectedServerName = string.Empty;
 
     protected override async Task OnInitializedAsync()

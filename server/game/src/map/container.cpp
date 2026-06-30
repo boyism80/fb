@@ -116,27 +116,85 @@ bool map::container::ensure_loaded(const std::shared_ptr<fb::game::map>& map)
     if (map->active == false)
         return false;
 
-    auto _ = std::lock_guard(this->_mutex);
-
-    if (map->loaded())
-        return true;
-
-    auto binary = std::vector<char>();
-    auto blocks = std::vector<fb::model::point16_t>();
-    if (load_data(map->model.id, binary) == false)
-        return false;
-
-    if (load_block(map->model.id, blocks) == false)
-        fb::logger::warn("{} ({})", _TEXT(MESSAGE_ASSET_CANNOT_LOAD_MAP_BLOCK), map->model.name);
-
-    map->load_tiles(binary.data(), binary.size());
-    for (const auto& block : blocks)
+    auto loaded_now = false;
     {
-        map->block(block.x, block.y, true);
+        auto _ = std::lock_guard(this->_mutex);
+
+        if (map->loaded())
+            return true;
+
+        auto binary = std::vector<char>();
+        auto blocks = std::vector<fb::model::point16_t>();
+        if (load_data(map->model.id, binary) == false)
+            return false;
+
+        if (load_block(map->model.id, blocks) == false)
+            fb::logger::warn("{} ({})", _TEXT(MESSAGE_ASSET_CANNOT_LOAD_MAP_BLOCK), map->model.name);
+
+        map->load_tiles(binary.data(), binary.size());
+        for (const auto& block : blocks)
+        {
+            map->block(block.x, block.y, true);
+        }
+
+        loaded_now = true;
     }
 
-    this->spawn_npcs(map);
+    if (loaded_now)
+    {
+        this->spawn_npcs(map);
+        this->invoke_init_script(map);
+    }
+
     return true;
+}
+
+bool map::container::try_mark_init_script(const std::shared_ptr<fb::game::map>& map)
+{
+    if (map == nullptr || map->active == false || map->loaded() == false)
+        return false;
+
+    auto expected = false;
+    return map->_init_script_invoked.compare_exchange_strong(expected, true);
+}
+
+async::task<void> map::container::run_init_script(const std::shared_ptr<fb::game::map>& map)
+{
+    auto path = std::format("scripts/map/{}.lua", map->model.id);
+    auto func = std::format("ON_MAP_INIT_{}", map->model.id);
+
+    auto lua = this->server.lua.new_ctx_guard(path, func);
+    if (!lua)
+        co_return;
+
+    lua->pushobject(map);
+    std::ignore = lua->call(1);
+
+    co_return;
+}
+
+void map::container::invoke_init_script(const std::shared_ptr<fb::game::map>& map)
+{
+    if (this->try_mark_init_script(map) == false)
+        return;
+
+    auto builder = map->thread()->new_builder<void>();
+    builder.func = [this, map](auto&) -> async::task<void> {
+        co_await this->run_init_script(map);
+    };
+    builder.enqueue();
+}
+
+async::task<void> map::container::invoke_init_script_wait(const std::shared_ptr<fb::game::map>& map)
+{
+    if (this->try_mark_init_script(map) == false)
+        co_return;
+
+    auto builder = map->thread()->new_builder<void>();
+    builder.func = [this, map](auto&) -> async::task<void> {
+        co_await this->run_init_script(map);
+    };
+    co_await builder.dispatch();
 }
 
 void map::container::spawn_npcs(const std::shared_ptr<fb::game::map>& map)

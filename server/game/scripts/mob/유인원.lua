@@ -1,4 +1,0 @@
--- 유인원 사망
-function ON_MOB_DIE_427(me, you)
-
-end

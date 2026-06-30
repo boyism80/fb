@@ -98,12 +98,42 @@
                     <thead>
                         <tr>
                             <th style="width:3rem;">#</th>
-                            <th>유저명</th>
-                            <th>UID</th>
-                            <th style="text-align:right;width:4rem;">레벨</th>
-                            <th>역할</th>
-                            <th>상태</th>
-                            <th>최근접속</th>
+                            <th class="@GetSortHeaderClass("name")" @onclick='() => ToggleSort("name")'>
+                                <span class="sortable-header">
+                                    <span>유저명</span>
+                                    <span class="sort-indicator @GetSortIndicatorClass("name")" aria-hidden="true"></span>
+                                </span>
+                            </th>
+                            <th class="@GetSortHeaderClass("id")" @onclick='() => ToggleSort("id")'>
+                                <span class="sortable-header">
+                                    <span>UID</span>
+                                    <span class="sort-indicator @GetSortIndicatorClass("id")" aria-hidden="true"></span>
+                                </span>
+                            </th>
+                            <th class="@($"{GetSortHeaderClass("level")} col-level")" @onclick='() => ToggleSort("level")'>
+                                <span class="sortable-header sortable-header-end">
+                                    <span>레벨</span>
+                                    <span class="sort-indicator @GetSortIndicatorClass("level")" aria-hidden="true"></span>
+                                </span>
+                            </th>
+                            <th class="@GetSortHeaderClass("role")" @onclick='() => ToggleSort("role")'>
+                                <span class="sortable-header">
+                                    <span>역할</span>
+                                    <span class="sort-indicator @GetSortIndicatorClass("role")" aria-hidden="true"></span>
+                                </span>
+                            </th>
+                            <th class="@GetSortHeaderClass("status")" @onclick='() => ToggleSort("status")'>
+                                <span class="sortable-header">
+                                    <span>상태</span>
+                                    <span class="sort-indicator @GetSortIndicatorClass("status")" aria-hidden="true"></span>
+                                </span>
+                            </th>
+                            <th class="@GetSortHeaderClass("updatedDate")" @onclick='() => ToggleSort("updatedDate")'>
+                                <span class="sortable-header">
+                                    <span>최근접속</span>
+                                    <span class="sort-indicator @GetSortIndicatorClass("updatedDate")" aria-hidden="true"></span>
+                                </span>
+                            </th>
                             <th style="text-align:right;">작업</th>
                         </tr>
                     </thead>
@@ -119,7 +149,7 @@
                                     <a href="/users/@user.Id" class="user-name-link">@user.Name</a>
                                 </td>
                                 <td class="table-meta" style="@(user.IsBanned ? "opacity:0.5;" : "")">@user.Id</td>
-                                <td style="text-align:right;">@user.Level</td>
+                                <td class="col-level">@user.Level</td>
                                 <td class="table-meta">@FormatRole(user.Role)</td>
                                 <td>
                                     <div class="table-status">
@@ -342,21 +372,23 @@
 @code {
     [CascadingParameter(Name = "SelectedWorld")]
     private uint? selectedWorld { get; set; }
-    private UserListResult? userList;
+    private UserListResult userList;
     private string searchTerm = string.Empty;
     private string statusFilter = "all";
     private string roleFilter = "all";
     private int currentPage = 1;
     private const int pageSize = 20;
+    private string sortColumn = "id";
+    private bool sortDescending = true;
     private bool isLoading = false;
     private bool isProcessing = false;
-    private string? errorMessage;
-    private string? successMessage;
+    private string errorMessage;
+    private string successMessage;
 
     private bool showBanModal = false;
     private bool showUnbanModal = false;
     private bool showChangeRoleModal = false;
-    private UserListItem? selectedUser;
+    private UserListItem selectedUser;
     private BanModel banModel = new();
     private RoleModel roleModel = new();
     private Role currentUserRole = Role.User;
@@ -487,6 +519,13 @@
                 searchTerm = searchValue.ToString() ?? string.Empty;
             if (queryParams.TryGetValue("page", out var pageValue) && int.TryParse(pageValue, out var page) && page >= 1)
                 currentPage = page;
+            if (queryParams.TryGetValue("sort", out var sortValue))
+                sortColumn = UserService.NormalizeSortColumn(sortValue.ToString());
+            if (queryParams.TryGetValue("dir", out var dirValue))
+            {
+                var dir = dirValue.ToString()?.ToLowerInvariant();
+                sortDescending = dir != "asc";
+            }
         }
         catch { /* ignore URL parse errors */ }
     }
@@ -495,13 +534,18 @@
     {
         try
         {
-            var query = new Dictionary<string, string?>();
+            var query = new Dictionary<string, string>();
             if (selectedWorld.HasValue)
                 query["world"] = selectedWorld.Value.ToString();
             if (!string.IsNullOrWhiteSpace(searchTerm))
                 query["search"] = searchTerm;
             if (currentPage > 1)
                 query["page"] = currentPage.ToString();
+            if (!string.Equals(sortColumn, "id", StringComparison.Ordinal) || !sortDescending)
+            {
+                query["sort"] = sortColumn;
+                query["dir"] = sortDescending ? "desc" : "asc";
+            }
             var url = Microsoft.AspNetCore.WebUtilities.QueryHelpers.AddQueryString("/users", query);
             Navigation.NavigateTo(url);
         }
@@ -520,7 +564,13 @@
                 errorMessage = "World is not selected.";
                 return;
             }
-            userList = await UserService.GetUsers(selectedWorld.Value, currentPage, pageSize, string.IsNullOrWhiteSpace(searchTerm) ? null : searchTerm);
+            userList = await UserService.GetUsers(
+                selectedWorld.Value,
+                currentPage,
+                pageSize,
+                string.IsNullOrWhiteSpace(searchTerm) ? null : searchTerm,
+                sortColumn,
+                sortDescending);
         }
         catch (Exception ex)
         {
@@ -850,6 +900,39 @@
         }
     }
 
+    private async Task ToggleSort(string column)
+    {
+        var normalized = UserService.NormalizeSortColumn(column);
+        if (sortColumn == normalized)
+        {
+            sortDescending = !sortDescending;
+        }
+        else
+        {
+            sortColumn = normalized;
+            sortDescending = normalized is "name" or "role" or "status" ? false : true;
+        }
+
+        currentPage = 1;
+        await LoadUsers();
+        UpdateUsersUrl();
+    }
+
+    private string GetSortHeaderClass(string column)
+    {
+        var normalized = UserService.NormalizeSortColumn(column);
+        return sortColumn == normalized ? "sortable-th sortable-th-active" : "sortable-th";
+    }
+
+    private string GetSortIndicatorClass(string column)
+    {
+        var normalized = UserService.NormalizeSortColumn(column);
+        if (sortColumn != normalized)
+            return "";
+
+        return sortDescending ? "sort-desc" : "sort-asc";
+    }
+
     private static string FormatRole(byte role) => ((Role)role) switch
     {
         Role.User => "일반 유저",
@@ -865,7 +948,7 @@
         [System.ComponentModel.DataAnnotations.Required(ErrorMessage = "Ban reason is required")]
         public string Reason { get; set; } = string.Empty;
 
-        public string? Days { get; set; }
+        public string Days { get; set; }
     }
 
 

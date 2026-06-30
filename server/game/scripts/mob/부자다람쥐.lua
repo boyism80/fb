@@ -1,4 +1,0 @@
--- 부자다람쥐 사망
-function ON_MOB_DIE_96(me, you)
-
-end

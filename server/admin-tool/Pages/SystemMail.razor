@@ -175,8 +175,8 @@
     private uint? selectedWorld { get; set; }
 
     private SystemMailModel mailModel = new();
-    private string? errorMessage;
-    private string? successMessage;
+    private string errorMessage;
+    private string successMessage;
     private bool isProcessing = false;
     private uint currentUserId = 0;
     private string currentUserName = string.Empty;
@@ -207,7 +207,7 @@
         mailHistory = ActivityLog.GetRecent("system_mail", 50).ToList();
     }
 
-    private static string FormatMailId(string? detail)
+    private static string FormatMailId(string detail)
     {
         if (string.IsNullOrWhiteSpace(detail))
             return "—";

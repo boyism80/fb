@@ -1,0 +1,3 @@
+-- mob: 천년원혼
+function ON_MOB_DIE_1596(me, you)
+end

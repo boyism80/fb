@@ -1,0 +1,5 @@
+-- spell: 삼성선풍각
+-- 삼성선풍각 (id 122). Add logic as needed.
+function ON_CAST_122(me, you, spell)
+    -- TODO: implement
+end

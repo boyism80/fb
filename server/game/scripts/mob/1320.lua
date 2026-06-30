@@ -1,0 +1,3 @@
+-- mob: 실험몬스터
+function ON_MOB_DIE_1320(me, you)
+end
