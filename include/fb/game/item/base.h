@@ -38,7 +38,7 @@ public:
     {
     public:
         uint16_t                           count       = 1;
-        std::optional<fb::model::datetime> expire_time = std::nullopt;
+        std::optional<fb::model::datetime> expire_time;
     };
 
 public:
