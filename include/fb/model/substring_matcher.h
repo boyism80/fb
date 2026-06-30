@@ -1,6 +1,10 @@
 #ifndef FB_MODEL_SUBSTRING_MATCHER_H
 #define FB_MODEL_SUBSTRING_MATCHER_H
 
+// aho_corasick.hpp uses std::numeric_limits without including <limits>.
+// Newer libstdc++ no longer pulls it in transitively, so include it first.
+#include <limits>
+
 #include <aho_corasick/aho_corasick.hpp>
 
 #include <algorithm>
@@ -54,9 +58,9 @@ public:
         if (emits.empty())
             return text;
 
-        std::sort(emits.begin(),
-                  emits.end(),
-                  [](const auto& lhs, const auto& rhs) { return lhs.get_start() < rhs.get_start(); });
+        std::sort(emits.begin(), emits.end(), [](const auto& lhs, const auto& rhs) {
+            return lhs.get_start() < rhs.get_start();
+        });
 
         auto filtered = std::string{};
         filtered.reserve(text.size());
