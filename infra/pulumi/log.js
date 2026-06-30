@@ -6,10 +6,14 @@ module.exports = {
 
         const resources = []
         const appLabels = { app: "log" }
+        const autoMigration = !!(conf.database && conf.database.autoMigration)
         for(const [worldName, worldConf] of Object.entries(conf.worlds)) {
             if (!worldConf.log) continue
             const config = {
                 "World": parseInt(worldConf.id),
+                "Database": {
+                    "AutoMigration": autoMigration
+                },
                 "Logging": {
                     "LogLevel": {
                         "Default": "Information",

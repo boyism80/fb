@@ -1,12 +1,13 @@
 using Dapper;
 using Http.Extension;
+using Http.Migration;
 using Http.Service;
 using Http.Worker;
 
 namespace Http;
 public class Program
 {
-    public static void Main(string[] args)
+    public static async Task Main(string[] args)
     {
         Dapper.DefaultTypeMap.MatchNamesWithUnderscores = true;
         SqlMapper.AddTypeHandler(typeof(List<uint>), new JsonTypeHandler());
@@ -16,6 +17,7 @@ public class Program
         SqlMapper.AddTypeHandler(typeof(Http.Model.Mimicry), new JsonTypeHandler());
 
         var builder = WebApplication.CreateBuilder(args);
+        builder.AddDatabaseMigrations();
         builder.Logging.ClearProviders();
         builder.Logging.AddConsole();
 
@@ -53,6 +55,7 @@ public class Program
         builder.Services.AddScoped<Internal.Services.GroupService>();
 
         var app = builder.Build();
+        await DatabaseMigrationHost.RunAsync(app.Services, MigrationProfile.Internal);
         app.MapHealthChecks("/health");
         var logger = app.Services.GetRequiredService<ILogger<DataTableLoader>>();
         var dataTableLoader = new DataTableLoader(logger);
@@ -70,6 +73,6 @@ public class Program
 
         app.MapControllers();
 
-        app.Run();
+        await app.RunAsync();
     }
 }

@@ -1,5 +1,6 @@
 using Dapper;
 using Http.Extension;
+using Http.Migration;
 using Http.Service;
 using Marketplace.Formatter;
 
@@ -7,7 +8,7 @@ namespace Marketplace;
 
 public class Program
 {
-    public static void Main(string[] args)
+    public static async Task Main(string[] args)
     {
         Dapper.DefaultTypeMap.MatchNamesWithUnderscores = true;
         SqlMapper.AddTypeHandler(typeof(List<uint>), new JsonTypeHandler());
@@ -16,6 +17,7 @@ public class Program
         SqlMapper.AddTypeHandler(typeof(Dictionary<string, List<Fb.Model.Dsl>>), new JsonTypeHandler());
 
         var builder = WebApplication.CreateBuilder(args);
+        builder.AddDatabaseMigrations();
         builder.Logging.ClearProviders();
         builder.Logging.AddConsole();
 
@@ -61,6 +63,7 @@ public class Program
         builder.Services.AddHealthChecks();
 
         var app = builder.Build();
+        await DatabaseMigrationHost.RunAsync(app.Services, MigrationProfile.Marketplace);
         app.MapHealthChecks("/health");
 
         // Load data tables
@@ -78,7 +81,7 @@ public class Program
         app.UseAuthorization();
         app.MapControllers();
 
-        app.Run();
+        await app.RunAsync();
     }
 }
 

@@ -17,4 +17,11 @@
     </None>
   </ItemGroup>
 
+  <ItemGroup>
+    <None Include="..\..\infra\db\migrations\**\*.sql">
+      <Link>migrations\%(RecursiveDir)%(Filename)%(Extension)</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
+
 </Project>

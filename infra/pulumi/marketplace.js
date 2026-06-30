@@ -8,7 +8,11 @@ module.exports = {
         const ports = []
         const marketplaceConf = conf.marketplace
         const appLabels = { app: "marketplace" }
+        const autoMigration = !!(conf.database && conf.database.autoMigration)
         const config = {
+            "Database": {
+                "AutoMigration": autoMigration
+            },
             "Logging": {
                 "LogLevel": {
                     "Default": "Information",
