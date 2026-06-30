@@ -259,7 +259,7 @@ function M.list(me, npc)
     for slot, item in pairs(me:items()) do
         if item ~= nil then
             local model = item:model()
-            if model ~= nil then
+            if model ~= nil and model:trade() then
                 local item_name = model:name()
                 if item:count() > 1 then
                     item_name = string.format('%s x%d', item_name, item:count())
@@ -291,6 +291,16 @@ function M.list(me, npc)
         goto MARKETPLACE_LIST
     end
     local selected_model = selected_item:model()
+    if selected_model == nil or not selected_model:trade() then
+        local button = me:dialog(npc, '등록할 수 없는 아이템입니다.', true, true)
+        if button == DIALOG_RESULT.QUIT then
+            return false
+        end
+        if button == DIALOG_RESULT.PREV then
+            goto MARKETPLACE_LIST
+        end
+        goto MARKETPLACE_LIST
+    end
     local count = 1
     
     if selected_model:attr(ITEM_ATTRIBUTE.BUNDLE) then

@@ -60,6 +60,30 @@ public class MarketplaceService : IMarketplaceService
             throw new LogicException(ErrorCode.MarketplaceIdAlreadyExists);
         }
 
+        if (!Table.Item.TryGetValue(itemModel, out var itemDefinition))
+        {
+            await _logService.WriteAsync("marketplace_list_failed", new
+            {
+                character_id = characterId,
+                listing_id = listingId,
+                item_model = itemModel,
+                error = "item_model_not_found"
+            });
+            throw new LogicException(ErrorCode.MarketplaceItemNotFound);
+        }
+
+        if (!itemDefinition.Trade)
+        {
+            await _logService.WriteAsync("marketplace_list_failed", new
+            {
+                character_id = characterId,
+                listing_id = listingId,
+                item_model = itemModel,
+                error = "item_not_tradeable"
+            });
+            throw new LogicException(ErrorCode.MarketplaceItemNotTradeable);
+        }
+
         // Check listing limit for seller
         var activeListingCount = await _dbContext.Marketplace.CountActiveListingsBySellerAsync(characterId);
         if (activeListingCount >= Fb.Model.ConstValue.Marketplace.ListingLimit)

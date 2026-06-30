@@ -14,6 +14,7 @@ IMPLEMENT_LUA_EXTENSION(fb::model::item, "fb.model.item")
 {"repair_price",        builtin::model::item::builtin_repair_price},
 {"rename_price",        builtin::model::item::builtin_rename_price},
 {"storage_fee",         builtin::model::item::builtin_storage_fee},
+{"trade",               builtin::model::item::builtin_trade},
 END_LUA_EXTENSION; // clang-format on
 
 int builtin::model::item::builtin_make(lua_State* L)
@@ -168,5 +169,16 @@ int builtin::model::item::builtin_storage_fee(lua_State* L)
     {
         lua->pushnil();
     }
+    return 1;
+}
+
+int builtin::model::item::builtin_trade(lua_State* L)
+{
+    auto lua = fb::lua::get(L);
+    if (lua == nullptr)
+        return 0;
+
+    auto model = lua->touserdata<fb::model::item>(1);
+    lua->pushboolean(model->trade);
     return 1;
 }

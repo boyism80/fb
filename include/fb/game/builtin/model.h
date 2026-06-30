@@ -30,6 +30,7 @@ struct item
     static int builtin_repair_price(lua_State* L);
     static int builtin_rename_price(lua_State* L);
     static int builtin_storage_fee(lua_State* L);
+    static int builtin_trade(lua_State* L);
 };
 
 struct equipment

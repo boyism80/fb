@@ -55,6 +55,9 @@ async::task<marketplace::listing> marketplace::list(uint8_t slot, uint16_t count
     if (item->count() < count)
         throw std::runtime_error(_TEXT(MESSAGE_MARKETPLACE_INSUFFICIENT_ITEM_COUNT));
 
+    if (model.trade == false)
+        throw std::runtime_error(_TEXT(MESSAGE_EXCEPTION_CANNOT_REGISTER_ITEM));
+
     // Build request item data
     auto durability  = item->durability();
     auto custom_name = std::optional<std::string>{};
