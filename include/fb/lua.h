@@ -523,18 +523,18 @@ public:
     bool next(int offset);
 
 public:
-    int                             argc();
-    [[nodiscard]] async::task<bool> call(int argc, int* retc = nullptr);
-    void                            resume(int argc, int* n = nullptr);
-    int                             yield(int retc);
-    void                            release();
-    void                            parent(context* parent);
-    context*                        parent() const;
-    void                            options(call_options opts);
-    const call_options&             options() const;
-    bool                            call_engaged() const;
-    void                            clear_call_engaged();
-    void                            clear_loaded_modules();
+    int                 argc();
+    async::task<bool>   call(int argc, int* retc = nullptr);
+    void                resume(int argc, int* n = nullptr);
+    int                 yield(int retc);
+    void                release();
+    void                parent(context* parent);
+    context*            parent() const;
+    void                options(call_options opts);
+    const call_options& options() const;
+    bool                call_engaged() const;
+    void                clear_call_engaged();
+    void                clear_loaded_modules();
 
 public:
     class co_builder
