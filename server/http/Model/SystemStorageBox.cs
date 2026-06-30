@@ -6,7 +6,7 @@ namespace Http.Model
     public class SystemStorageBoxKey : BaseModel, IRedisHashKey
     {
         public required uint Id { get; set; }
-        public uint? GetHash() => 0;
+        public uint? GetHash() => null;
 
         public RedisKey GetRedisKey() => "fb:cache:system_storage_box";
 
