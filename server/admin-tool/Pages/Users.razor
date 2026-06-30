@@ -372,7 +372,7 @@
 @code {
     [CascadingParameter(Name = "SelectedWorld")]
     private uint? selectedWorld { get; set; }
-    private UserListResult? userList;
+    private UserListResult userList;
     private string searchTerm = string.Empty;
     private string statusFilter = "all";
     private string roleFilter = "all";
@@ -382,13 +382,13 @@
     private bool sortDescending = true;
     private bool isLoading = false;
     private bool isProcessing = false;
-    private string? errorMessage;
-    private string? successMessage;
+    private string errorMessage;
+    private string successMessage;
 
     private bool showBanModal = false;
     private bool showUnbanModal = false;
     private bool showChangeRoleModal = false;
-    private UserListItem? selectedUser;
+    private UserListItem selectedUser;
     private BanModel banModel = new();
     private RoleModel roleModel = new();
     private Role currentUserRole = Role.User;
@@ -534,7 +534,7 @@
     {
         try
         {
-            var query = new Dictionary<string, string?>();
+            var query = new Dictionary<string, string>();
             if (selectedWorld.HasValue)
                 query["world"] = selectedWorld.Value.ToString();
             if (!string.IsNullOrWhiteSpace(searchTerm))
@@ -948,7 +948,7 @@
         [System.ComponentModel.DataAnnotations.Required(ErrorMessage = "Ban reason is required")]
         public string Reason { get; set; } = string.Empty;
 
-        public string? Days { get; set; }
+        public string Days { get; set; }
     }
 
 

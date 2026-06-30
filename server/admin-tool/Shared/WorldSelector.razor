@@ -42,7 +42,7 @@
 
 @code {
     [Parameter]
-    public IReadOnlyList<uint>? Worlds { get; set; }
+    public IReadOnlyList<uint> Worlds { get; set; }
 
     [Parameter]
     public uint? SelectedWorld { get; set; }
@@ -51,7 +51,7 @@
     public EventCallback<uint?> SelectedWorldChanged { get; set; }
 
     [Parameter]
-    public IReadOnlyDictionary<uint, string>? WorldNames { get; set; }
+    public IReadOnlyDictionary<uint, string> WorldNames { get; set; }
 
     private bool isOpen;
 

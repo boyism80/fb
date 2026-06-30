@@ -191,19 +191,19 @@
     public int UserId { get; set; }
 
     [Parameter]
-    public string? Tab { get; set; }
+    public string Tab { get; set; }
 
-    private UserDetailCore? core;
-    private UserDetailItemsData? items;
-    private UserDetailProgressData? progress;
-    private UserDetailSocialData? social;
-    private UserDetailMailData? mailData;
+    private UserDetailCore core;
+    private UserDetailItemsData items;
+    private UserDetailProgressData progress;
+    private UserDetailSocialData social;
+    private UserDetailMailData mailData;
     private int mailPage = 1;
     private const int MailPageSize = 20;
     private string mailFilter = "all";
-    private Http.Model.Option? options;
+    private Http.Model.Option options;
     private bool optionsLoaded;
-    private string? spouseName;
+    private string spouseName;
     private (int Inventory, int Storage, int StorageVaults) itemCounts;
     private string activeTab = "overview";
     private bool isLoading;
@@ -212,9 +212,9 @@
     private bool showBanModal;
     private bool showUnbanModal;
     private BanModel banModel = new();
-    private string? errorMessage;
-    private string? successMessage;
-    private string? loadedTabKey;
+    private string errorMessage;
+    private string successMessage;
+    private string loadedTabKey;
 
     protected override async Task OnParametersSetAsync()
     {
@@ -373,7 +373,7 @@
         }
     }
 
-    private static string NormalizeTab(string? tab)
+    private static string NormalizeTab(string tab)
     {
         if (string.IsNullOrWhiteSpace(tab))
             return "overview";
@@ -504,6 +504,6 @@
         [Required(ErrorMessage = "Ban reason is required")]
         public string Reason { get; set; } = string.Empty;
 
-        public string? Days { get; set; }
+        public string Days { get; set; }
     }
 }

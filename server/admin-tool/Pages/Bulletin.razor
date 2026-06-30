@@ -383,16 +383,16 @@
     [CascadingParameter(Name = "SelectedWorld")]
     private uint? selectedWorld { get; set; }
 
-    private Dictionary<uint, Fb.Model.Bulletin>? sections;
+    private Dictionary<uint, Fb.Model.Bulletin> sections;
     private uint? selectedBulletinSection;
-    private List<Http.Model.Bulletin>? articles;
+    private List<Http.Model.Bulletin> articles;
     private int currentPage = 1;
     private const int pageSize = 20;
     private int totalPages = 1;
     private bool isLoading = false;
     private bool isProcessing = false;
-    private string? errorMessage;
-    private string? successMessage;
+    private string errorMessage;
+    private string successMessage;
     private string searchQuery = string.Empty;
     private string searchField = "all";
 
@@ -401,13 +401,13 @@
     private bool showViewModal = false;
     private bool showDeleteModal = false;
     private bool showBulkDeleteModal = false;
-    private Http.Model.Bulletin? selectedArticle;
+    private Http.Model.Bulletin selectedArticle;
     private WriteModel writeModel = new();
     private EditModel editModel = new();
     private HashSet<uint> selectedArticleIds = new();
     private uint currentUserId = 0;
     private ushort? currentPosition = null;
-    private string? lastSearchQuery = null;
+    private string lastSearchQuery = null;
     private uint? lastSelectedSection = null;
 
     protected override async Task OnInitializedAsync()

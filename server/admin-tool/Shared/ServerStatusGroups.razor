@@ -118,7 +118,7 @@ else
 
 @code {
     [Parameter]
-    public List<ServerStateService.ServerInfo>? Servers { get; set; }
+    public List<ServerStateService.ServerInfo> Servers { get; set; }
 
     [Parameter]
     public bool ShowKpi { get; set; } = true;
@@ -133,7 +133,7 @@ else
     public bool ShowWorld { get; set; }
 
     [Parameter]
-    public IReadOnlyDictionary<uint, string>? WorldNames { get; set; }
+    public IReadOnlyDictionary<uint, string> WorldNames { get; set; }
 
     [Parameter]
     public string EmptyMessage { get; set; } = "실행 중인 서버가 없습니다.";

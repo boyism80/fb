@@ -161,7 +161,7 @@
     public int UserId { get; set; }
 
     [Parameter]
-    public UserDetailCore? Core { get; set; }
+    public UserDetailCore Core { get; set; }
 
     [Parameter]
     public string ActiveTab { get; set; } = "overview";
@@ -170,10 +170,10 @@
     public bool IsLoading { get; set; }
 
     [Parameter]
-    public string? ErrorMessage { get; set; }
+    public string ErrorMessage { get; set; }
 
     [Parameter]
-    public string? SuccessMessage { get; set; }
+    public string SuccessMessage { get; set; }
 
     [Parameter]
     public EventCallback OnDismissError { get; set; }
@@ -191,7 +191,7 @@
     public bool IsBanProcessing { get; set; }
 
     [Parameter]
-    public RenderFragment? ChildContent { get; set; }
+    public RenderFragment ChildContent { get; set; }
 
     private static readonly (string Key, string Label)[] Tabs =
     {

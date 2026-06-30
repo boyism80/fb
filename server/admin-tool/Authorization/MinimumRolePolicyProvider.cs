@@ -15,7 +15,7 @@ namespace AdminTool.Authorization
             _fallbackProvider = new DefaultAuthorizationPolicyProvider(options);
         }
 
-        public Task<AuthorizationPolicy?> GetPolicyAsync(string policyName)
+        public Task<AuthorizationPolicy> GetPolicyAsync(string policyName)
         {
             if (policyName.StartsWith(PolicyPrefix, StringComparison.OrdinalIgnoreCase))
             {
@@ -25,7 +25,7 @@ namespace AdminTool.Authorization
                     var policy = new AuthorizationPolicyBuilder()
                         .AddRequirements(new MinimumRoleRequirement(minimumRole))
                         .Build();
-                    return Task.FromResult<AuthorizationPolicy?>(policy);
+                    return Task.FromResult<AuthorizationPolicy>(policy);
                 }
             }
 
@@ -34,6 +34,6 @@ namespace AdminTool.Authorization
 
         public Task<AuthorizationPolicy> GetDefaultPolicyAsync() => _fallbackProvider.GetDefaultPolicyAsync();
 
-        public Task<AuthorizationPolicy?> GetFallbackPolicyAsync() => _fallbackProvider.GetFallbackPolicyAsync();
+        public Task<AuthorizationPolicy> GetFallbackPolicyAsync() => _fallbackProvider.GetFallbackPolicyAsync();
     }
 }

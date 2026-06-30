@@ -19,7 +19,7 @@ namespace AdminTool.Services
             uint? world,
             int page,
             int pageSize,
-            string? sellerIdText = null,
+            string sellerIdText = null,
             byte? status = null,
             string sortOrder = "newest")
         {

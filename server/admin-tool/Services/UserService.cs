@@ -29,8 +29,8 @@ namespace AdminTool.Services
             uint world,
             int page,
             int pageSize,
-            string? searchTerm = null,
-            string? sortBy = null,
+            string searchTerm = null,
+            string sortBy = null,
             bool sortDescending = true)
         {
             var column = NormalizeSortColumn(sortBy);
@@ -48,7 +48,7 @@ namespace AdminTool.Services
             uint world,
             int page,
             int pageSize,
-            string? searchTerm,
+            string searchTerm,
             string sortColumn,
             bool sortDescending)
         {
@@ -104,11 +104,11 @@ namespace AdminTool.Services
             uint world,
             int page,
             int pageSize,
-            string? searchTerm,
+            string searchTerm,
             string sortColumn,
             bool sortDescending)
         {
-            HashSet<uint>? searchIds = null;
+            HashSet<uint> searchIds = null;
             if (!string.IsNullOrWhiteSpace(searchTerm))
             {
                 await using var globalConn = _dbContext.GetGlobalConnection(world);
@@ -133,7 +133,7 @@ namespace AdminTool.Services
             }
 
             var onlineIds = await LoadOnlineUserIdsAsync(world);
-            HashSet<uint>? bannedIds = null;
+            HashSet<uint> bannedIds = null;
             if (sortColumn == "status")
             {
                 bannedIds = await LoadAllBannedUserIdsAsync(world);
@@ -203,7 +203,7 @@ namespace AdminTool.Services
             };
         }
 
-        private async Task<List<UserSortRow>> LoadUserSortRowsAsync(uint world, HashSet<uint>? filterIds)
+        private async Task<List<UserSortRow>> LoadUserSortRowsAsync(uint world, HashSet<uint> filterIds)
         {
             var shardSize = _dbContext.GetShardDbSize(world);
             var rows = new List<UserSortRow>();
@@ -287,7 +287,7 @@ namespace AdminTool.Services
             string sortColumn,
             bool sortDescending,
             HashSet<uint> onlineIds,
-            HashSet<uint>? bannedIds)
+            HashSet<uint> bannedIds)
         {
             IEnumerable<UserSortRow> ordered = sortColumn switch
             {
@@ -334,7 +334,7 @@ namespace AdminTool.Services
             };
         }
 
-        public static string NormalizeSortColumn(string? sortBy)
+        public static string NormalizeSortColumn(string sortBy)
         {
             return sortBy?.Trim().ToLowerInvariant() switch
             {
@@ -348,7 +348,7 @@ namespace AdminTool.Services
             };
         }
 
-        public async Task<UserDetail?> GetUserByName(uint world, string name)
+        public async Task<UserDetail> GetUserByName(uint world, string name)
         {
             var userId = await TryResolveUserIdAsync(world, name);
             if (!userId.HasValue)
@@ -546,7 +546,7 @@ namespace AdminTool.Services
 
         public bool IsOnline { get; set; }
 
-        public string? BanReason { get; set; }
+        public string BanReason { get; set; }
 
         public DateTime? BanExpireDate { get; set; }
     }
@@ -569,7 +569,7 @@ namespace AdminTool.Services
 
         public bool IsBanned { get; set; }
 
-        public string? BanReason { get; set; }
+        public string BanReason { get; set; }
 
         public DateTime? BanExpireDate { get; set; }
     }

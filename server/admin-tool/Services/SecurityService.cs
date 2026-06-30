@@ -12,7 +12,7 @@ namespace AdminTool.Services
             _elevationSecret = options.Value?.ElevationSecret ?? string.Empty;
         }
 
-        public bool IsValidElevationSecret(string? secret)
+        public bool IsValidElevationSecret(string secret)
         {
             if (string.IsNullOrEmpty(_elevationSecret))
                 return false;

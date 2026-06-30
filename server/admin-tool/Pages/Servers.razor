@@ -132,9 +132,9 @@
     [CascadingParameter(Name = "SelectedWorld")]
     private uint? selectedWorld { get; set; }
 
-    private List<ServerStateService.ServerInfo>? allServers;
-    private List<ServerStateService.ServerInfo>? filteredServers;
-    private Dictionary<uint, string>? worldToServerName;
+    private List<ServerStateService.ServerInfo> allServers;
+    private List<ServerStateService.ServerInfo> filteredServers;
+    private Dictionary<uint, string> worldToServerName;
     private bool showAllWorlds;
     private bool isLoading;
     private bool isSessionProcessing;
@@ -142,8 +142,8 @@
     private bool isShutdownProcessing;
     private bool canSaveServers;
     private bool canShutdownServers;
-    private string? errorMessage;
-    private string? successMessage;
+    private string errorMessage;
+    private string successMessage;
 
     protected override async Task OnInitializedAsync()
     {

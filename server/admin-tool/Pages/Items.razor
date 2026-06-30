@@ -230,14 +230,14 @@
     private uint? selectedWorld { get; set; }
 
     private StoragePendingForm model = new();
-    private string? errorMessage;
-    private string? successMessage;
+    private string errorMessage;
+    private string successMessage;
     private bool isProcessing;
     private List<AdminActivityEntry> grantHistory = new();
 
     private string itemSearchText = string.Empty;
     private bool showItemSuggestions = false;
-    private Fb.Model.Item? selectedItem = null;
+    private Fb.Model.Item selectedItem = null;
     private int? itemQuantity = 1;
     private List<Fb.Model.Item> allItems = new();
 
@@ -568,7 +568,7 @@
         public bool IsGlobal { get; set; } = true;
 
         [StringLength(32, ErrorMessage = "User name must be 32 characters or less.")]
-        public string? UserName { get; set; }
+        public string UserName { get; set; }
 
         public DateTime? ExpiredDate { get; set; }
 
