@@ -22,6 +22,7 @@ db/json
 .vscode
 build
 tools/library
+/library
 tools/map-split/*.txt
 */config
 tools/runner/settings.json

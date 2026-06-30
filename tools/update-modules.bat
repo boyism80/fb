@@ -89,6 +89,11 @@ call :ensure_git_repo https://github.com/boyism80/cpp-async cpp-async %CPP_ASYNC
 ROBOCOPY cpp-async\include\async\ %DEST%\include\async\ *.h /MIR /NFL /NDL /NJH /NJS /NP
 if %ERRORLEVEL% GEQ 8 exit /b %ERRORLEVEL%
 
+REM No pinned ref; tracks default branch.
+call :ensure_git_repo https://github.com/cjgdev/aho_corasick aho_corasick
+ROBOCOPY aho_corasick\src\aho_corasick\ %DEST%\include\aho_corasick\ *.hpp /MIR /NFL /NDL /NJH /NJS /NP
+if %ERRORLEVEL% GEQ 8 exit /b %ERRORLEVEL%
+
 call :ensure_git_repo https://github.com/boostorg/boost boost %BOOST_REF%
 PUSHD boost
 git submodule update --init --recursive

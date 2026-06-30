@@ -1,6 +1,8 @@
 #ifndef __MODEL_PREPROCESSOR_H__
 #define __MODEL_PREPROCESSOR_H__
 
+#include <fb/model/substring_matcher.h>
+
 #ifdef DELETE
 #undef DELETE
 #endif
@@ -363,10 +365,18 @@ public:                                                                         
     const fb::model::buy* find(uint32_t pursuit, const fb::model::item& item) const; \
     const fb::model::buy* find(const fb::model::npc& npc, const fb::model::item& item) const;
 
+#define DECLARE_BLOCKED_WORD_CONTAINER_CUSTOM_CONSTRUCTOR \
+    __blocked_word();                                     \
+    __blocked_word(const __blocked_word&) = delete;       \
+    ~__blocked_word() = default;
+
 #define DECLARE_BLOCKED_WORD_CONTAINER_EXTENSION \
                                                  \
 public:                                          \
-    std::string filter(std::string_view message) const;
+    std::string filter(std::string_view message) const; \
+                                                   \
+private:                                           \
+    fb::model::substring_matcher _matcher;
 
 #define DECLARE_RECIPE_EXTENSION                       \
                                                        \

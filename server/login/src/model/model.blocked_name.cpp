@@ -1,23 +1,17 @@
 #include <model.additional.h>
-#include <fb/model/model.h>
-#include <string>
 
-/**
- * @brief Checks if the given name contains any blocked substring
- *
- * This method iterates through all blocked names in the table and checks
- * if any of them appears as a substring within the input name.
- *
- * @param name The name to check for blocked substrings
- * @return true if the name contains any blocked substring, false otherwise
- */
+#include <fb/model/model.h>
+#include <fb/model/substring_matcher.h>
+
+fb::model::__blocked_name::__blocked_name() :
+    fb::model::kv_container<std::string, fb::model::blocked_name>(std::string_view("json/blocked_name.json"))
+{
+    this->hook.built = [this](auto& value) {
+        this->_matcher.add_pattern(value.id);
+    };
+}
+
 bool fb::model::__blocked_name::contains_substring(std::string_view name) const
 {
-    for (auto& [key, blocked] : *this)
-    {
-        if (name.find(blocked.id) != std::string::npos)
-            return true;
-    }
-
-    return false;
+    return this->_matcher.contains(name);
 }
