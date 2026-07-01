@@ -239,13 +239,25 @@ async::task<void> game_bot_controller::on_map(game_bot& bot, const game_resp::ma
 
 async::task<void> game_bot_controller::on_transfer(game_bot& bot, const fb::protocol::response::transfer& response)
 {
-    // Integration test: Validate server transfer mechanics
-    bot.close();
-
-    // TODO: Add transfer validation and test continuation logic
-    auto created  = this->create(response.parameter);
     auto ip       = boost::asio::ip::address_v4(boost::endian::endian_reverse(response.ip));
     auto endpoint = boost::asio::ip::tcp::endpoint(ip, response.port);
+
+    fb::logger::debug("bot transfer protocol [integration]: bot={} bot_id={} endpoint={}:{} param_bytes={}",
+                      bot.name(),
+                      bot.id,
+                      ip.to_string(),
+                      response.port,
+                      response.parameter.size());
+
+    bot.close();
+
+    auto created = this->create(response.parameter);
+    fb::logger::debug("bot transfer reconnect [integration]: bot={} old_bot_id={} new_bot_id={} endpoint={}:{}",
+                      created->name(),
+                      bot.id,
+                      created->id,
+                      ip.to_string(),
+                      response.port);
     created->connect(endpoint);
 
     co_return;
@@ -266,6 +278,12 @@ async::task<void> game_bot_controller::on_bot_connected(game_bot& bot)
             this->_current_test->on_bot_connected(bot_shared);
     }
 
+    fb::logger::debug("bot transfer login send: bot={} bot_id={} transfer_buffer_bytes={} inited={}",
+                      bot.name(),
+                      bot.id,
+                      bot.transfer_buffer().size(),
+                      bot.inited());
+
     bot.send(fb::protocol::game::request::login(bot.transfer_buffer()), false, true);
 
     co_return;
@@ -273,7 +291,10 @@ async::task<void> game_bot_controller::on_bot_connected(game_bot& bot)
 
 async::task<void> game_bot_controller::on_bot_disconnected(game_bot& bot)
 {
-    fb::logger::debug("Bot {} disconnected from integration testing", bot.name());
+    fb::logger::debug("Bot {} disconnected from integration testing (bot_id={} inited={})",
+                      bot.name(),
+                      bot.id,
+                      bot.inited());
 
     // Integration test: Collect test results and perform cleanup
     // TODO: Generate test report for this bot session

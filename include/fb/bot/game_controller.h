@@ -4,6 +4,7 @@
 #include <fb/bot/controller.h>
 #include <fb/game/protocol.h>
 #include <fb/bot/game_bot.h>
+#include <fb/logger.h>
 
 namespace fb::bot {
 
@@ -49,6 +50,8 @@ public:
         {
             if (completed.exchange(true))
                 return;
+
+            fb::logger::warn("bot transfer timeout: bot={}", name);
 
             if (auto controller = controller_weak.lock())
                 controller->remove_transfer_context(name);
@@ -139,6 +142,7 @@ private:
 public:
     bool register_transfer_context(const fb::protocol::header& protocol, std::shared_ptr<transfer_context> context);
     void remove_transfer_context(std::string name);
+    bool has_transfer_context(std::string_view name) const;
     bool invoke_transfer_context(std::string name, std::shared_ptr<game_bot> bot);
 };
 

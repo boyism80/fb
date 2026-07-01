@@ -1,6 +1,7 @@
 #include <fb/bot/game_controller.h>
 #include <fb/bot/container.h>
 #include <fb/bot/integration/protocol_registry.h>
+#include <fb/logger.h>
 
 using namespace fb::bot;
 
@@ -204,11 +205,26 @@ async::task<void> game_bot_controller::on_map(game_bot& bot, const game_resp::ma
 
 async::task<void> game_bot_controller::on_transfer(game_bot& bot, const fb::protocol::response::transfer& response)
 {
-    bot.close();
-
-    auto created  = this->create(response.parameter);
     auto ip       = boost::asio::ip::address_v4(boost::endian::endian_reverse(response.ip));
     auto endpoint = boost::asio::ip::tcp::endpoint(ip, response.port);
+
+    fb::logger::debug("bot transfer protocol: bot={} bot_id={} endpoint={}:{} param_bytes={} pending_contexts={}",
+                      bot.name(),
+                      bot.id,
+                      ip.to_string(),
+                      response.port,
+                      response.parameter.size(),
+                      this->_transfer_contexts.size());
+
+    bot.close();
+
+    auto created = this->create(response.parameter);
+    fb::logger::debug("bot transfer reconnect: bot={} old_bot_id={} new_bot_id={} endpoint={}:{}",
+                      created->name(),
+                      bot.id,
+                      created->id,
+                      ip.to_string(),
+                      response.port);
     created->connect(endpoint);
 
     co_return;
@@ -297,21 +313,53 @@ bool game_bot_controller::register_transfer_context(const fb::protocol::header& 
 {
     auto name = context->name;
     if (this->_transfer_contexts.contains(name))
+    {
+        fb::logger::warn("bot transfer register rejected: bot={} (duplicate context)", name);
         return false;
+    }
 
     this->_transfer_contexts.insert({name, context});
+    fb::logger::debug("bot transfer register: bot={} pending_contexts={}",
+                      name,
+                      this->_transfer_contexts.size());
     return true;
 }
 
 void game_bot_controller::remove_transfer_context(std::string name)
 {
-    this->_transfer_contexts.erase(name);
+    const auto erased = this->_transfer_contexts.erase(name);
+    if (erased > 0)
+    {
+        fb::logger::debug("bot transfer remove: bot={} pending_contexts={}",
+                          name,
+                          this->_transfer_contexts.size());
+    }
+    else
+    {
+        fb::logger::debug("bot transfer remove skipped: bot={} (no pending context)", name);
+    }
+}
+
+bool game_bot_controller::has_transfer_context(std::string_view name) const
+{
+    return this->_transfer_contexts.contains(std::string(name));
 }
 
 bool game_bot_controller::invoke_transfer_context(std::string name, std::shared_ptr<game_bot> bot)
 {
     if (this->_transfer_contexts.contains(name) == false)
+    {
+        fb::logger::warn("bot transfer invoke skipped: bot={} bot_id={} (no pending context, pending_contexts={})",
+                         name,
+                         bot != nullptr ? bot->id : 0,
+                         this->_transfer_contexts.size());
         return false;
+    }
+
+    fb::logger::debug("bot transfer complete: bot={} bot_id={} pending_contexts_before={}",
+                      name,
+                      bot != nullptr ? bot->id : 0,
+                      this->_transfer_contexts.size());
 
     auto context = this->_transfer_contexts[name];
     this->_transfer_contexts.erase(name);
@@ -328,7 +376,17 @@ game_bot::transfer(const fb::protocol::header& protocol, const fb::model::timesp
         this->name(),
         this->controller.weak_from_this_as<game_bot_controller>());
     auto& controller = static_cast<game_bot_controller&>(this->controller);
-    controller.register_transfer_context(protocol, context);
+    if (controller.register_transfer_context(protocol, context) == false)
+    {
+        fb::logger::warn("bot transfer start aborted: bot={} (failed to register context)", this->name());
+        promise->set_exception(std::make_exception_ptr(std::runtime_error("duplicate transfer context")));
+        return promise->task();
+    }
+
+    fb::logger::debug("bot transfer start: bot={} bot_id={} timeout_ms={}",
+                      this->name(),
+                      this->id,
+                      timeout.total_milliseconds());
 
     // Set up timeout timer if specified
     if (timeout > 0s)

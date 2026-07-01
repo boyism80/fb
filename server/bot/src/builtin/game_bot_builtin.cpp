@@ -1091,28 +1091,31 @@ int builtin::game_bot::builtin_transfer(lua_State* L)
     auto request = lua_protocol::to_request(L, 2);
     auto bot_ptr = bot;
 
+    auto weak_slot = static_cast<std::weak_ptr<fb::bot::game_bot>*>(lua_touserdata(*lua, 1));
+    if (weak_slot == nullptr)
+        return 0;
+
+    auto result = std::make_shared<std::shared_ptr<fb::bot::game_bot>>();
+
     auto builder  = lua->new_co_builder();
-    builder.yield = [lua, bot_ptr, request]() -> async::task<void> {
+    builder.yield = [bot_ptr, request, result]() -> async::task<void> {
         if (bot_ptr == nullptr)
             co_return;
 
-        auto result = co_await bot_ptr->transfer(*request, INTEGRATION_DEFAULT_TIMEOUT);
-        if (result == nullptr)
-            co_return;
-
-        auto* L_state = static_cast<lua_State*>(*lua);
-        auto* lua_ctx = fb::lua::get(L_state);
-        if (lua_ctx == nullptr || lua_ctx->is_obj(1) == false)
-            co_return;
-
-        auto allocated = static_cast<std::weak_ptr<fb::bot::game_bot>*>(lua_touserdata(L_state, 1));
-        if (allocated == nullptr)
-            co_return;
-
-        allocated->~weak_ptr<fb::bot::game_bot>();
-        new (allocated) std::weak_ptr<fb::bot::game_bot>(result);
+        *result = co_await bot_ptr->transfer(*request, INTEGRATION_DEFAULT_TIMEOUT);
     };
-    builder.resume = []() -> async::task<int> {
+    builder.resume = [weak_slot, result]() -> async::task<int> {
+        if (*result == nullptr)
+            co_return 0;
+
+        if (weak_slot == nullptr)
+        {
+            fb::logger::warn("builtin transfer: userdata not updated (null weak_slot)");
+            co_return 0;
+        }
+
+        weak_slot->~weak_ptr<fb::bot::game_bot>();
+        new (weak_slot) std::weak_ptr<fb::bot::game_bot>(*result);
         co_return 0;
     };
     return builder.run();

@@ -16,28 +16,33 @@ local NAKRANG_ROOM = "낙랑의방"
 local NEARBY_MOB_CLEAR_RANGE = 3
 
 local function restore_position(caster, map_name, position)
+    slog("restore_position: enter target=%s pos=(%s,%s)",
+        tostring(map_name),
+        tostring(position and position[1]),
+        tostring(position and position[2]))
+
     if map_name == nil or position == nil then
         slog("restore_position: missing map_name or position")
         return false
     end
 
-    local map_model = id2map(caster:map())
+    local map_id = caster:map()
+    local map_model = id2map(map_id)
     if map_model == nil then
-        slog("restore_position: id2map(%d) not found", caster:map())
+        slog("restore_position: id2map(%d) not found", map_id)
         return false
     end
 
-    if map_model:name() == map_name and skill.positions_equal(caster:position(), position) then
-        return true
-    end
+    local current = caster:position()
+    local current_name = map_model:name()
+    slog("restore_position: current map=%s (id=%d) pos=(%d,%d) target map=%s pos=(%d,%d)",
+        current_name, map_id, current[1], current[2],
+        map_name, position[1], position[2])
 
-    if map_model:name() == map_name then
-        caster:map_move(map_name, position[1], position[2])
-        return true
-    end
-
-    caster:transfer(protocol.chat(false, string.format(
-        "/맵이동 %s %d %d", map_name, position[1], position[2])))
+    local cmd = string.format("/맵이동 %s %d %d", map_name, position[1], position[2])
+    slog("restore_position: branch=transfer cmd=%s", cmd)
+    caster:transfer(protocol.chat(false, cmd))
+    slog("restore_position: transfer returned")
     return true
 end
 
