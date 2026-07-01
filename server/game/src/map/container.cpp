@@ -228,17 +228,70 @@ void map::container::spawn_npc(const fb::model::npc_spawn& spawn, const std::sha
     auto& npc_model = table::npc[spawn.npc];
     auto  npc       = this->server.make<fb::game::npc>(npc_model);
     auto  weak      = npc->weak_from_this_as<fb::game::npc>();
+    auto  position  = spawn.position;
+    auto  direction = spawn.direction;
     auto  fn        = [](std::shared_ptr<fb::game::npc> npc,
                  std::shared_ptr<fb::game::map> map,
-                 const fb::model::npc_spawn&    spawn_model) -> async::task<void> {
-        std::ignore = co_await npc->map(map, spawn_model.position);
-        npc->direction(spawn_model.direction);
+                 fb::model::point16_t           position,
+                 DIRECTION                      direction) -> async::task<void> {
+        std::ignore = co_await npc->map(map, position);
+        npc->direction(direction);
     };
     auto builder = this->server.threads.new_builder(weak);
-    builder.func = [fn, npc, map, &spawn](auto&) -> async::task<void> {
-        co_await fn(npc, map, spawn);
+    builder.func = [fn, npc, map, position, direction](auto&) -> async::task<void> {
+        co_await fn(npc, map, position, direction);
     };
     builder.enqueue();
+}
+
+async::task<void> map::container::cleanup()
+{
+    auto maps_division = std::unordered_map<fb::thread*, std::vector<std::shared_ptr<fb::game::map>>>{};
+    for (auto& [id, map] : *this)
+    {
+        std::ignore = id;
+        if (map->loaded() == false)
+            continue;
+
+        auto thread = map->thread();
+        if (thread == nullptr)
+            continue;
+
+        maps_division[thread].push_back(map);
+    }
+
+    auto tasks = std::vector<async::task<void>>{};
+    for (auto& [thread, maps] : maps_division)
+    {
+        auto builder = thread->new_builder<void>();
+        builder.func = [maps = std::move(maps)](auto&) -> async::task<void> {
+            for (const auto& map : maps)
+            {
+                auto objects = std::vector<std::shared_ptr<fb::game::object>>{};
+                for (auto& [seq, obj] : map->objects)
+                {
+                    std::ignore = seq;
+                    if (obj->is(OBJECT_TYPE::CHARACTER))
+                        continue;
+
+                    objects.push_back(obj);
+                }
+
+                for (auto& obj : objects)
+                {
+                    co_await obj->destroy();
+                }
+            }
+            co_return;
+        };
+        tasks.push_back(builder.dispatch());
+    }
+
+    for (auto& task : tasks)
+    {
+        co_await task;
+    }
+    co_return;
 }
 
 std::shared_ptr<fb::game::map> map::container::name2map(std::string_view name) const

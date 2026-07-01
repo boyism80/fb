@@ -147,6 +147,7 @@ public:
     void                           invoke_init_script(const std::shared_ptr<fb::game::map>& map);
     async::task<void>              invoke_init_script_wait(const std::shared_ptr<fb::game::map>& map);
     void                           spawn_npc(const fb::model::npc_spawn& spawn);
+    async::task<void>              cleanup();
     std::shared_ptr<fb::game::map> name2map(std::string_view name) const;
 
     void rezen_force();
