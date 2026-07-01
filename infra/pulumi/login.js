@@ -74,7 +74,7 @@ module.exports = function () {
                         max: 16
                     },
                     http: {
-                        max_concurrent: 500
+                        max_concurrent: 128
                     }
                 }
 

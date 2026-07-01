@@ -66,6 +66,6 @@
         "max": 14
     },
     "http": {
-        "max_concurrent": 500
+        "max_concurrent": 128
     }
 }

@@ -57,7 +57,7 @@ protected:
     socket_container_sync _sockets;
 
 protected:
-    acceptor(boost::asio::io_context& context, std::string_view name, uint16_t port, size_t http_max_concurrent = 500) :
+    acceptor(boost::asio::io_context& context, std::string_view name, uint16_t port, size_t http_max_concurrent = 128) :
         fb::async_executor(context, name, config<uint32_t>("thread:logic")),
         boost::asio::ip::tcp::acceptor(context, boost::asio::ip::tcp::endpoint(boost::asio::ip::tcp::v4(), port)),
         handler(*this),

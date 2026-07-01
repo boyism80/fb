@@ -50,6 +50,6 @@
     "exp_multiplier": 100.0,
     "drop_rate_multiplier": 100.0,
     "http": {
-        "max_concurrent": 500
+        "max_concurrent": 128
     }
 }
