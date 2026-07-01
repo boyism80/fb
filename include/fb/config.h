@@ -8,7 +8,6 @@
 #include <fstream>
 #include <json/json.h>
 #include <sstream>
-#include <mutex>
 #include <format>
 #include <filesystem>
 #include <boost/program_options.hpp>
@@ -156,6 +155,27 @@ inline void set_config_path(std::string_view path)
     config_path_storage(path, true);
 }
 
+inline Json::Value& config_root()
+{
+    static Json::Value root;
+    return root;
+}
+
+inline void load_config_file()
+{
+    auto config_path = get_config_path();
+    if (config_path.empty())
+        throw std::runtime_error("Config system not initialized. Call init_config() or set_config_path() first.");
+
+    auto ifstream = std::ifstream(config_path);
+    if (ifstream.is_open() == false)
+        throw std::runtime_error("cannot load config file " + config_path);
+
+    Json::Reader reader;
+    if (reader.parse(ifstream, config_root()) == false)
+        throw std::runtime_error("cannot parse json config file " + config_path);
+}
+
 inline bool init_config(std::string_view config_path)
 {
     try
@@ -167,6 +187,7 @@ inline bool init_config(std::string_view config_path)
         }
 
         set_config_path(config_path);
+        load_config_file();
         return true;
     }
     catch (const std::exception& e)
@@ -178,37 +199,10 @@ inline bool init_config(std::string_view config_path)
 
 inline static const Json::Value& config_node(std::string_view k)
 {
-    static std::once_flag flag;
-    static Json::Value    ist;
+    if (get_config_path().empty())
+        throw std::runtime_error("Config system not initialized. Call init_config() or set_config_path() first.");
 
-    std::call_once(flag, [] {
-        auto config_path = get_config_path();
-        if (config_path.empty())
-            throw std::runtime_error("Config system not initialized. Call init_config() or set_config_path() first.");
-
-        auto ifstream = std::ifstream{};
-        try
-        {
-            ifstream.open(config_path);
-            if (ifstream.is_open() == false)
-                throw std::runtime_error("cannot load config file " + config_path);
-
-            Json::Reader reader;
-            if (reader.parse(ifstream, ist) == false)
-                throw std::runtime_error("cannot parse json config file " + config_path);
-
-            ifstream.close();
-        }
-        catch (std::exception& e)
-        {
-            if (ifstream.is_open())
-                ifstream.close();
-
-            throw e;
-        }
-    });
-
-    const auto* node    = &ist;
+    const auto* node    = &config_root();
     auto        sstream = std::istringstream{std::string(k)};
     auto        buffer  = std::string{};
     while (std::getline(sstream, buffer, ':'))
