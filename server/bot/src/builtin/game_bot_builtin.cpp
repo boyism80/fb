@@ -27,7 +27,7 @@ constexpr auto INTEGRATION_DEFAULT_TIMEOUT = 30s;
 constexpr auto INTEGRATION_DEFAULT_TIMEOUT = 10s;
 #endif
 
-[[noreturn]] void lua_arg_error(lua_State* L, int index, const char* expected)
+void lua_arg_error(lua_State* L, int index, const char* expected)
 {
     luaL_error(L, "argument %d must be %s", index, expected);
 }
