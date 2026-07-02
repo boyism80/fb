@@ -192,7 +192,7 @@ function on_door(me)
     local key = me:item('파란열쇠')
     local locked = door:locked()
     if door:locked() and key == nil then
-        me:message('문이 잠겨있습니다.')
+        me:message('문이 잠겼습니다.')
         return
     end
 
