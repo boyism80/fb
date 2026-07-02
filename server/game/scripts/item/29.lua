@@ -1,7 +1,8 @@
 -- item: 얼음칼
--- 얼음칼 공격 스크립트
+
 local spell = require('lib.spell')
 
+-- 얼음칼 공격 스크립트
 function ON_ATTACK_29(me, item)
     math.randomseed(seed())
     if math.random() > 0.3 then

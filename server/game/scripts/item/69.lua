@@ -1,4 +1,5 @@
 -- item: 월아검
+
 -- 월아검 공격 스크립트
 function ON_ATTACK_69(me, item)
     math.randomseed(seed())

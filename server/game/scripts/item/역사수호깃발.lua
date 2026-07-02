@@ -1,9 +1,0 @@
--- 역사수호깃발 사용 스크립트
-function ON_ACTIVATED_247(me, item)
-
-end
-
--- 역사수호깃발 해제 스크립트
-function ON_DEACTIVATED_247(me, item)
-
-end

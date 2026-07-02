@@ -1,4 +1,5 @@
 -- item: [손상]용천제팔검
+
 -- [손상]용천제팔검 공격 스크립트
 function ON_ATTACK_288(me, item)
 

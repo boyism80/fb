@@ -1,4 +1,5 @@
 -- item: 낙랑의두루마리1
+
 -- 낙랑의두루마리1 사용 스크립트
 function ON_ACTIVATED_1(me, item)
     ::NAK_1::

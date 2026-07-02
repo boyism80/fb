@@ -1,10 +1,12 @@
 -- item: 낙랑의두루마리3
--- 낙랑의두루마리3 사용 스크립트
+
 local quest = require('lib.quest')
+
 local enum = require('lib.enum')
 
 local WEAPON_NAME = '초심자의목도'
 
+-- 낙랑의두루마리3 사용 스크립트
 function ON_ACTIVATED_3(me, item)
     local q = me:quest(quest.QUEST_NAKRANG3)
     local btn

@@ -1,4 +1,5 @@
 -- item: 소환비서
+
 -- 소환비서 사용 스크립트
 function ON_ACTIVATED_4001(me, item)
     local front = me:front(OBJECT_TYPE.CHARACTER)

@@ -1,12 +1,16 @@
 -- item: 낙랑의두루마리6
--- 낙랑의두루마리6 사용 스크립트
+
 local enum = require('lib.enum')
 
 local function quiz_wrong_and_exit(me, model, wrong_msg)
+
     me:dialog(model, wrong_msg, false, true)
+
     me:dialog(model, '바람의나라에 대한 공부를\n조금 더 한 뒤 다시\n도전하세요!!!', false, true)
+
 end
 
+-- 낙랑의두루마리6 사용 스크립트
 function ON_ACTIVATED_6(me, item)
     local model = item:model()
     local btn

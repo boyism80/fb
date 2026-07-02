@@ -1,4 +1,5 @@
 -- item: 파란열쇠
+
 -- 파란열쇠 사용 스크립트
 function ON_ACTIVATED_20211(me, item)
     local map = me:map()

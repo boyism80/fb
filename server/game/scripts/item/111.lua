@@ -1,4 +1,5 @@
 -- item: 영웅의칼'염
+
 -- 영웅의칼'염 사용 스크립트
 function ON_ACTIVATED_111(me, item)
 

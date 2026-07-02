@@ -1,0 +1,11 @@
+-- item: 민첩의투구4
+
+-- 민첩의투구4 사용 스크립트
+function ON_ACTIVATED_1365(me, item)
+
+end
+
+-- 민첩의투구4 해제 스크립트
+function ON_DEACTIVATED_1365(me, item)
+
+end

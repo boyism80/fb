@@ -1,6 +1,8 @@
 -- item: 사랑호출기
+
 local spell = require('lib.spell')
 
+-- 사랑호출기 사용 스크립트
 function ON_ACTIVATED_10529(me, item)
     local m = me:marriage()
     if not m.married then
@@ -24,5 +26,6 @@ function ON_ACTIVATED_10529(me, item)
     me:direction(direction)
 end
 
+-- 사랑호출기 해제 스크립트
 function ON_DEACTIVATED_10529(me, item)
 end

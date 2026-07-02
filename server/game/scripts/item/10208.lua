@@ -1,4 +1,5 @@
 -- item: 대장군의일기통합본
+
 -- 대장군의일기통합본 사용 스크립트
 function ON_ACTIVATED_10208(me, item)
     local model = item:model()

@@ -1,4 +1,5 @@
 -- item: 도삭산600층비서
+
 -- 도삭산600층비서 사용 스크립트
 function ON_ACTIVATED_4015(me, item)
     if me:map('도삭산600층주막') then

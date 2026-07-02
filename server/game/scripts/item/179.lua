@@ -1,4 +1,5 @@
 -- item: 거미독창
+
 -- 거미독창 사용 스크립트
 function ON_ACTIVATED_179(me, item)
 
