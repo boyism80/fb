@@ -3,6 +3,7 @@
 
 #include <atomic>
 #include <chrono>
+#include <format>
 #include <functional>
 #include <map>
 #include <mutex>
@@ -11,7 +12,12 @@
 #include <string_view>
 #include <vector>
 #include <boost/asio/awaitable.hpp>
+#include <boost/asio/co_spawn.hpp>
+#include <boost/asio/connect.hpp>
 #include <boost/asio/io_context.hpp>
+#include <boost/asio/ip/tcp.hpp>
+#include <boost/asio/steady_timer.hpp>
+#include <boost/asio/use_awaitable.hpp>
 #include <boost/beast/core.hpp>
 #include <boost/beast/http.hpp>
 #include <boost/beast/version.hpp>
@@ -68,6 +74,188 @@ private:
         });
     }
 
+    struct http_endpoint
+    {
+        std::string host;
+        std::string port;
+    };
+
+    static http_endpoint parse_http_endpoint(std::string host_url)
+    {
+        if (host_url.rfind("http://", 0) == 0)
+            host_url.erase(0, 7);
+        else if (host_url.rfind("https://", 0) == 0)
+            host_url.erase(0, 8);
+
+        const auto colon_pos = host_url.find(':');
+        if (colon_pos == std::string::npos)
+            return {.host = std::move(host_url), .port = "80"};
+
+        return {.host = host_url.substr(0, colon_pos), .port = host_url.substr(colon_pos + 1)};
+    }
+
+    class http_request_deadline
+    {
+    public:
+        http_request_deadline(boost::asio::any_io_executor        executor,
+                              boost::asio::ip::tcp::socket&       socket,
+                              std::chrono::steady_clock::duration timeout) :
+            _socket(socket),
+            _timer(std::move(executor))
+        {
+            _timer.expires_after(timeout);
+            _timer.async_wait([this](const boost::system::error_code& ec) {
+                if (ec || _released.load(std::memory_order_acquire))
+                    return;
+
+                boost::system::error_code cancel_ec;
+                _socket.cancel(cancel_ec);
+            });
+        }
+
+        void release()
+        {
+            if (_released.load(std::memory_order_acquire))
+                return;
+
+            _released.store(true, std::memory_order_release);
+            boost::system::error_code ec;
+            _timer.cancel(ec);
+        }
+
+        ~http_request_deadline()
+        {
+            release();
+        }
+
+    private:
+        boost::asio::ip::tcp::socket& _socket;
+        boost::asio::steady_timer     _timer;
+        std::atomic<bool>             _released{false};
+    };
+
+    static void close_http_socket(boost::asio::ip::tcp::socket& socket)
+    {
+        boost::system::error_code ec;
+        socket.shutdown(boost::asio::ip::tcp::socket::shutdown_both, ec);
+        socket.close(ec);
+    }
+
+    static std::vector<uint8_t>
+    response_body_bytes(const boost::beast::http::response<boost::beast::http::dynamic_body>& res)
+    {
+        auto body_bytes = std::vector<uint8_t>{};
+        if (res.body().size() > 0)
+            body_bytes.reserve(res.body().size());
+
+        for (const auto& seq : res.body().data())
+        {
+            const auto buf      = seq;
+            const auto data_ptr = static_cast<const uint8_t*>(buf.data());
+            body_bytes.insert(body_bytes.end(), data_ptr, data_ptr + buf.size());
+        }
+
+        return body_bytes;
+    }
+
+    template <typename Request>
+    boost::asio::awaitable<std::vector<uint8_t>> exchange_http_async(boost::asio::io_context&            io_context,
+                                                                     const http_endpoint&                endpoint,
+                                                                     std::chrono::steady_clock::duration timeout,
+                                                                     Request                             request)
+    {
+        auto resolver = boost::asio::ip::tcp::resolver{io_context};
+        auto socket   = boost::asio::ip::tcp::socket{io_context};
+
+        http_request_deadline deadline{io_context.get_executor(), socket, timeout};
+
+        const auto results = co_await resolver.async_resolve(endpoint.host, endpoint.port, boost::asio::use_awaitable);
+        co_await boost::asio::async_connect(socket, results, boost::asio::use_awaitable);
+
+        co_await boost::beast::http::async_write(socket, request, boost::asio::use_awaitable);
+
+        auto buffer = boost::beast::flat_buffer{};
+        auto res    = boost::beast::http::response<boost::beast::http::dynamic_body>{};
+        co_await boost::beast::http::async_read(socket, buffer, res, boost::asio::use_awaitable);
+
+        deadline.release();
+        close_http_socket(socket);
+
+        co_return response_body_bytes(res);
+    }
+
+    static std::runtime_error wrap_http_error(std::string_view operation, const std::exception& e)
+    {
+        return std::runtime_error(std::format("HTTP {} request failed: {}", operation, e.what()));
+    }
+
+    boost::asio::awaitable<std::vector<uint8_t>> boost_get_raw_async(std::string                         host,
+                                                                     std::string                         path,
+                                                                     std::map<std::string, std::string>  headers,
+                                                                     std::chrono::steady_clock::duration timeout)
+    {
+        try
+        {
+            auto& io_context = static_cast<boost::asio::io_context&>(this->_executor);
+            auto  endpoint   = parse_http_endpoint(std::move(host));
+
+            auto req =
+                boost::beast::http::request<boost::beast::http::empty_body>{boost::beast::http::verb::get,
+                                                                            url_encode(UTF8(path, PLATFORM::WINDOWS)),
+                                                                            11};
+            req.set(boost::beast::http::field::host, endpoint.host);
+            req.set(boost::beast::http::field::user_agent, BOOST_BEAST_VERSION_STRING);
+            for (const auto& [name, value] : headers)
+                req.set(name, value);
+
+            co_return co_await exchange_http_async(io_context, endpoint, timeout, std::move(req));
+        }
+        catch (const std::exception& e)
+        {
+            throw wrap_http_error("GET", e);
+        }
+        catch (...)
+        {
+            throw std::runtime_error("HTTP GET request failed: Unknown error occurred");
+        }
+    }
+
+    boost::asio::awaitable<std::vector<uint8_t>> boost_post_raw_async(std::string                         host,
+                                                                      std::string                         path,
+                                                                      std::map<std::string, std::string>  headers,
+                                                                      std::chrono::steady_clock::duration timeout,
+                                                                      std::vector<uint8_t>                body)
+    {
+        try
+        {
+            auto& io_context = static_cast<boost::asio::io_context&>(this->_executor);
+            auto  endpoint   = parse_http_endpoint(std::move(host));
+
+            auto req = boost::beast::http::request<boost::beast::http::vector_body<uint8_t>>{
+                boost::beast::http::verb::post,
+                url_encode(UTF8(path, PLATFORM::WINDOWS)),
+                11};
+
+            req.set(boost::beast::http::field::host, endpoint.host);
+            req.set(boost::beast::http::field::user_agent, BOOST_BEAST_VERSION_STRING);
+            for (const auto& [name, value] : headers)
+                req.set(name, value);
+
+            req.body() = std::move(body);
+            req.prepare_payload();
+
+            co_return co_await exchange_http_async(io_context, endpoint, timeout, std::move(req));
+        }
+        catch (const std::exception& e)
+        {
+            throw wrap_http_error("POST", e);
+        }
+        catch (...)
+        {
+            throw std::runtime_error("HTTP POST request failed: Unknown error occurred");
+        }
+    }
+
 public:
     /**
      * Constructs the HTTP client with an external concurrency limit.
@@ -83,157 +271,6 @@ public:
     http_client& operator= (const http_client&) = delete;
     ~http_client()                              = default;
 
-private:
-    boost::asio::awaitable<std::vector<uint8_t>> boost_get_raw_async(std::string                         host,
-                                                                     std::string                         path,
-                                                                     std::map<std::string, std::string>  headers,
-                                                                     std::chrono::steady_clock::duration timeout)
-    {
-        try
-        {
-            auto raw_host = host;
-            if (raw_host.rfind("http://", 0) == 0)
-                raw_host.erase(0, 7);
-            else if (raw_host.rfind("https://", 0) == 0)
-                raw_host.erase(0, 8);
-
-            auto const colon_pos = raw_host.find(':');
-            auto const host_name = (colon_pos == std::string::npos ? raw_host : raw_host.substr(0, colon_pos));
-            auto const port = (colon_pos == std::string::npos ? std::string("80") : raw_host.substr(colon_pos + 1));
-
-            auto& io_context = static_cast<boost::asio::io_context&>(this->_executor);
-            auto  resolver   = boost::asio::ip::tcp::resolver{io_context};
-            auto  stream     = boost::beast::tcp_stream{io_context};
-
-            stream.expires_after(timeout);
-            auto const results = co_await resolver.async_resolve(host_name, port, boost::asio::use_awaitable);
-            co_await stream.async_connect(results, boost::asio::use_awaitable);
-
-            auto req =
-                boost::beast::http::request<boost::beast::http::empty_body>{boost::beast::http::verb::get,
-                                                                            url_encode(UTF8(path, PLATFORM::WINDOWS)),
-                                                                            11};
-            req.set(boost::beast::http::field::host, host_name);
-            req.set(boost::beast::http::field::user_agent, BOOST_BEAST_VERSION_STRING);
-            for (auto const& h : headers)
-            {
-                req.set(h.first, h.second);
-            }
-
-            stream.expires_after(timeout);
-            co_await boost::beast::http::async_write(stream, req, boost::asio::use_awaitable);
-
-            auto buffer = boost::beast::flat_buffer{};
-            auto res    = boost::beast::http::response<boost::beast::http::dynamic_body>{};
-            stream.expires_after(timeout);
-            co_await boost::beast::http::async_read(stream, buffer, res, boost::asio::use_awaitable);
-
-            auto body_bytes = std::vector<uint8_t>{};
-            if (res.body().size() > 0)
-            {
-                body_bytes.reserve(res.body().size());
-            }
-            for (auto const& seq : res.body().data())
-            {
-                auto buf      = seq; // boost::asio::const_buffer
-                auto data_ptr = static_cast<const uint8_t*>(buf.data());
-                body_bytes.insert(body_bytes.end(), data_ptr, data_ptr + buf.size());
-            }
-
-            auto ec = boost::beast::error_code{};
-            stream.socket().shutdown(boost::asio::ip::tcp::socket::shutdown_both, ec);
-
-            co_return body_bytes;
-        }
-        catch (const std::exception& e)
-        {
-            throw std::runtime_error(std::format("HTTP GET request failed: {}", e.what()));
-        }
-        catch (...)
-        {
-            throw std::runtime_error("HTTP GET request failed: Unknown error occurred");
-        }
-    }
-
-private:
-    boost::asio::awaitable<std::vector<uint8_t>> boost_post_raw_async(std::string                         host,
-                                                                      std::string                         path,
-                                                                      std::map<std::string, std::string>  headers,
-                                                                      std::chrono::steady_clock::duration timeout,
-                                                                      std::vector<uint8_t>                body)
-    {
-        try
-        {
-            auto raw_host = host;
-            if (raw_host.rfind("http://", 0) == 0)
-                raw_host.erase(0, 7);
-            else if (raw_host.rfind("https://", 0) == 0)
-                raw_host.erase(0, 8);
-
-            auto const colon_pos = raw_host.find(':');
-            auto const host_name = (colon_pos == std::string::npos ? raw_host : raw_host.substr(0, colon_pos));
-            auto const port = (colon_pos == std::string::npos ? std::string("80") : raw_host.substr(colon_pos + 1));
-
-            auto& io_context = static_cast<boost::asio::io_context&>(this->_executor);
-            auto  resolver   = boost::asio::ip::tcp::resolver{io_context};
-            auto  stream     = boost::beast::tcp_stream{io_context};
-
-            stream.expires_after(timeout);
-            auto const results = co_await resolver.async_resolve(host_name, port, boost::asio::use_awaitable);
-            co_await stream.async_connect(results, boost::asio::use_awaitable);
-
-            auto req = boost::beast::http::request<boost::beast::http::vector_body<uint8_t>>{
-                boost::beast::http::verb::post,
-                url_encode(UTF8(path, PLATFORM::WINDOWS)),
-                11};
-
-            req.set(boost::beast::http::field::host, host_name);
-            req.set(boost::beast::http::field::user_agent, BOOST_BEAST_VERSION_STRING);
-
-            for (auto const& h : headers)
-            {
-                req.set(h.first, h.second);
-            }
-
-            req.body() = body;
-            req.prepare_payload();
-
-            stream.expires_after(timeout);
-            co_await boost::beast::http::async_write(stream, req, boost::asio::use_awaitable);
-
-            auto buffer = boost::beast::flat_buffer{};
-            auto res    = boost::beast::http::response<boost::beast::http::dynamic_body>{};
-            stream.expires_after(timeout);
-            co_await boost::beast::http::async_read(stream, buffer, res, boost::asio::use_awaitable);
-
-            auto body_bytes = std::vector<uint8_t>{};
-            if (res.body().size() > 0)
-            {
-                body_bytes.reserve(res.body().size());
-            }
-            for (auto const& seq : res.body().data())
-            {
-                auto const buf      = seq;
-                auto const data_ptr = static_cast<const uint8_t*>(buf.data());
-                body_bytes.insert(body_bytes.end(), data_ptr, data_ptr + buf.size());
-            }
-
-            auto ec = boost::beast::error_code{};
-            stream.socket().shutdown(boost::asio::ip::tcp::socket::shutdown_both, ec);
-
-            co_return body_bytes;
-        }
-        catch (const std::exception& e)
-        {
-            throw std::runtime_error(std::format("HTTP request failed: {}", e.what()));
-        }
-        catch (...)
-        {
-            throw std::runtime_error("HTTP request failed: Unknown error occurred");
-        }
-    }
-
-public:
     template <typename T> async::task<T> get(std::string_view service, std::string_view path)
     {
         auto  service_str = std::string(service);
