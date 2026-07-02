@@ -221,6 +221,18 @@ async::task<void> service::system_storage::create(uint32_t                      
 
 async::task<void> service::system_storage::poll_and_deliver()
 {
+    character::container::online_snapshot_t online_users;
+    {
+        auto guard   = this->server.characters.enter_read();
+        online_users = guard.value().online_users();
+    }
+
+    const auto now = this->server.now();
+    prune_expired_boxes(this->_pending_boxes, now);
+
+    if (online_users.empty())
+        co_return;
+
     auto        max_box_id = uint32_t{0};
     const auto  world      = fb::config<uint32_t>("world");
     const auto& fetch_url  = std::format("/storage/system/{}?offset={}", world, this->_poll_offset);
@@ -230,7 +242,6 @@ async::task<void> service::system_storage::poll_and_deliver()
         auto&& resp = co_await this->server.http.get<internal_resp::GetSystemStorageBoxes>("internal", fetch_url);
         if (resp.error == 0)
         {
-            const auto now = this->server.now();
             for (const auto& dto : resp.boxes)
             {
                 auto box = from_system_storage_dto(dto);
@@ -256,14 +267,6 @@ async::task<void> service::system_storage::poll_and_deliver()
 
     if (max_box_id > 0)
         this->_poll_offset = max_box_id + 1;
-
-    const auto                              now = this->server.now();
-    character::container::online_snapshot_t online_users;
-    {
-        auto guard   = this->server.characters.enter_read();
-        online_users = guard.value().online_users();
-    }
-    prune_expired_boxes(this->_pending_boxes, now);
 
     for (const auto& box : this->_pending_boxes)
     {

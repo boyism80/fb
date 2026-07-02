@@ -92,6 +92,71 @@ void bot_integration_test::mark_bot_logged_in(game_bot& bot)
         bot.inited(true);
 }
 
+void bot_integration_test::try_complete_transfer(game_bot& bot)
+{
+    const auto source_bot_id = bot.transfer_from_bot_id();
+    if (source_bot_id == 0)
+        return;
+
+    if (this->controller.has_transfer_context(source_bot_id) == false)
+        return;
+
+    auto reconnected_index = std::optional<uint32_t>{};
+    auto it                = std::find_if(this->_test_bots.begin(), this->_test_bots.end(), [&bot](auto& b) {
+        return b.get() == &bot;
+    });
+    for (uint32_t i = 0; i < this->_test_bots.size(); i++)
+    {
+        auto& b = this->_test_bots[i];
+        if (&bot == b.get())
+            continue;
+
+        if (b->id == source_bot_id)
+        {
+            reconnected_index = i;
+            break;
+        }
+    }
+
+    fb::logger::debug(
+        "bot transfer hook: test={} bot={} bot_id={} source_bot_id={} oid={} inited={} reconnected_index={}",
+        this->name(),
+        bot.name(),
+        bot.id,
+        source_bot_id,
+        bot.oid(),
+        bot.inited(),
+        reconnected_index.has_value() ? std::to_string(reconnected_index.value()) : "none");
+
+    if (reconnected_index.has_value() && it != this->_test_bots.end())
+    {
+        this->_test_bots[reconnected_index.value()] = std::move(*it);
+        this->_test_bots.erase(it);
+
+        const auto invoked =
+            this->controller.invoke_transfer_context(source_bot_id, bot.shared_from_this_as<game_bot>());
+        if (invoked)
+            bot.set_transfer_from_bot_id(0);
+        else
+        {
+            fb::logger::warn(
+                "bot transfer hook: test={} bot={} bot_id={} source_bot_id={} invoke_transfer_context failed",
+                this->name(),
+                bot.name(),
+                bot.id,
+                source_bot_id);
+        }
+    }
+    else
+    {
+        fb::logger::debug("bot transfer hook skipped: test={} bot={} bot_id={} source_bot_id={} (awaiting reconnect)",
+                          this->name(),
+                          bot.name(),
+                          bot.id,
+                          source_bot_id);
+    }
+}
+
 void bot_integration_test::try_notify_ready()
 {
     if (this->is_ready() == false)
@@ -313,32 +378,7 @@ async::task<void> bot_integration_test::on_hook_update_external(fb::bot::game_bo
     if (bot.oid() == 0)
         bot.set_oid(resp.oid);
 
-    if (bot.inited() == false)
-    {
-        auto reconnected_index = std::optional<uint32_t>{};
-        auto it                = std::find_if(this->_test_bots.begin(), this->_test_bots.end(), [&bot](auto& b) {
-            return b.get() == &bot;
-        });
-        for (int i = 0; i < this->_test_bots.size(); i++)
-        {
-            auto& b = this->_test_bots[i];
-            if (&bot == b.get())
-                continue;
-
-            if (b->name() == bot.name())
-            {
-                reconnected_index = i;
-                break;
-            }
-        }
-
-        if (reconnected_index.has_value())
-        {
-            this->_test_bots[reconnected_index.value()] = std::move(*it);
-            this->_test_bots.erase(it);
-        }
-        this->controller.invoke_transfer_context(bot.name(), bot.shared_from_this_as<game_bot>());
-    }
+    this->try_complete_transfer(bot);
 
     this->mark_bot_logged_in(bot);
     this->try_notify_ready();
@@ -350,6 +390,8 @@ async::task<void> bot_integration_test::on_hook_update_external_brief(fb::bot::g
 {
     if (bot.oid() == 0)
         bot.set_oid(resp.oid);
+
+    this->try_complete_transfer(bot);
 
     if (bot.oid() == resp.oid)
         this->mark_bot_logged_in(bot);

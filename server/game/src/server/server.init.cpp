@@ -283,7 +283,7 @@ async::task<void> fb::game::server::init_script()
 }
 
 fb::game::server::server(boost::asio::io_context& io_context, uint16_t port) :
-    fb::acceptor<character>(io_context, "GAME", port, fb::config<uint32_t>("http:max_concurrent", 500)),
+    fb::acceptor<character>(io_context, "GAME", port, fb::config<uint32_t>("http:max_concurrent", 128)),
     maps(*this, fb::config<uint32_t>("id")),
     listener(*this),
     characters(*this),

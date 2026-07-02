@@ -57,7 +57,7 @@ protected:
     socket_container_sync _sockets;
 
 protected:
-    acceptor(boost::asio::io_context& context, std::string_view name, uint16_t port, size_t http_max_concurrent = 500) :
+    acceptor(boost::asio::io_context& context, std::string_view name, uint16_t port, size_t http_max_concurrent = 128) :
         fb::async_executor(context, name, config<uint32_t>("thread:logic")),
         boost::asio::ip::tcp::acceptor(context, boost::asio::ip::tcp::endpoint(boost::asio::ip::tcp::v4(), port)),
         handler(*this),
@@ -205,10 +205,16 @@ private:
         {
             fb::logger::fatal(e.what());
         }
+
+        if (socket.is_open())
+            socket.close();
+
         auto fd = socket.fd();
         {
-            auto guard = this->_sockets.enter_write();
-            guard.value().erase(fd);
+            auto  guard = this->_sockets.enter_write();
+            auto& v     = guard.value();
+            if (auto it = v.find(fd); it != v.end() && it->second.get() == &socket)
+                v.erase(it);
         }
     }
 
@@ -226,26 +232,28 @@ private:
 
     async::task<void> on_socket_closed(fb::socket<T>& socket)
     {
+        auto socket_ptr = socket.template shared_from_this_as<fb::socket<T>>();
+
+        if (socket_ptr->data() != nullptr)
+        {
+            try
+            {
+                auto weak = socket_ptr->template weak_from_this_as<fb::socket<T>>();
+                co_await this->threads.switching(weak);
+            }
+            catch (std::exception& e)
+            {
+                fb::logger::fatal("failed to switch thread context: {}", e.what());
+            }
+            catch (...)
+            {
+                fb::logger::fatal("failed to switch thread context: unknown exception");
+            }
+        }
+
         try
         {
-            if (socket.data() == nullptr)
-                co_return;
-
-            auto weak = socket.template weak_from_this_as<fb::socket<T>>();
-            co_await this->threads.switching(weak);
-        }
-        catch (std::exception& e)
-        {
-            fb::logger::fatal("failed to switch thread context: {}", e.what());
-        }
-        catch (...)
-        {
-            fb::logger::fatal("failed to switch thread context: unknown exception");
-        }
-
-        try
-        {
-            co_await this->erase(socket);
+            co_await this->erase(*socket_ptr);
         }
         catch (std::exception& e)
         {
@@ -278,18 +286,29 @@ private:
                     auto  fd    = socket_ptr->fd();
                     auto  guard = this->_sockets.enter_write();
                     auto& v     = guard.value();
-                    if (v.contains(fd))
+                    if (auto it = v.find(fd); it != v.end())
                     {
-                        fb::logger::warn(std::format("socket already exists. fd: {}", fd));
-                        v.erase(fd);
+                        if (it->second.get() != socket_ptr.get())
+                        {
+                            fb::logger::warn(std::format("socket already exists. fd: {}", fd));
+                            auto stale = it->second;
+                            v.erase(it);
+                            if (stale->is_open())
+                                stale->close();
+                        }
                     }
 
-                    v.insert({fd, socket_ptr});
+                    v.insert_or_assign(fd, socket_ptr);
                 }
 
                 async::awaitable_get(this->on_connected(*socket_ptr));
 
-                boost::asio::co_spawn(*this, socket_ptr->recv(), boost::asio::detached);
+                boost::asio::co_spawn(
+                    *this,
+                    [socket_ptr]() -> boost::asio::awaitable<void> {
+                        co_await socket_ptr->recv();
+                    },
+                    boost::asio::detached);
                 this->accept();
             }
             catch (std::exception& e)

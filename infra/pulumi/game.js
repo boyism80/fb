@@ -56,7 +56,7 @@ module.exports = function () {
                         exp_multiplier: 1.0,
                         drop_rate_multiplier: 1.0,
                         http: {
-                            max_concurrent: 500
+                            max_concurrent: 128
                         }
                     }
 

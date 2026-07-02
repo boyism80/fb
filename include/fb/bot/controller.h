@@ -5,6 +5,7 @@
 #include <fb/bot/container.h>
 #include <fb/synchronized.h>
 #include <fb/protocol/header.h>
+#include <fb/logger.h>
 #include <format>
 
 namespace fb::bot {
@@ -440,6 +441,11 @@ bot<BotType>::request_by_opcode(std::shared_ptr<BotType>                        
 
     auto self_ptr = std::static_pointer_cast<BotType>(target->shared_from_this());
     auto context  = std::make_shared<request_erased_context>(self_ptr, response_opcode);
+
+    fb::logger::debug("bot request start: bot_id={} response_opcode=0x{:02X} timeout_ms={}",
+                      target->id,
+                      response_opcode,
+                      timeout.total_milliseconds());
 
     if (timeout > 0s)
     {

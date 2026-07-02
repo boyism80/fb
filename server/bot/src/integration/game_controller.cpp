@@ -181,8 +181,37 @@ async::task<void> game_bot_controller::on_time(game_bot& bot, const game_resp::t
 
 async::task<void> game_bot_controller::on_state(game_bot& bot, const game_resp::update_internal& response)
 {
-    // Integration test: Validate state consistency
-    // TODO: Add state validation logic
+    if (ENUM_IN(response.level, UPDATE_STATE_LEVEL::BASED))
+    {
+        bot.set_nation(response.ch_nation);
+        bot.set_creature(response.ch_creature);
+        bot.set_level(response.ch_level);
+        bot.set_base_hp(response.ch_base_hp);
+        bot.set_base_mp(response.ch_base_mp);
+        bot.set_strength(response.ch_strength);
+        bot.set_intelligence(response.ch_intelligence);
+        bot.set_dexterity(response.ch_dexterity);
+    }
+
+    if (ENUM_IN(response.level, UPDATE_STATE_LEVEL::HP_MP))
+    {
+        bot.set_hp(response.ch_hp);
+        bot.set_mp(response.ch_mp);
+    }
+
+    if (ENUM_IN(response.level, UPDATE_STATE_LEVEL::EXP_MONEY))
+    {
+        bot.set_exp(response.ch_exp);
+        bot.set_money(response.ch_money);
+    }
+
+    if (ENUM_IN(response.level, UPDATE_STATE_LEVEL::CROWD_CONTROL))
+    {
+        bot.set_crowd_control(response.ch_crowd_control);
+    }
+
+    bot.set_mail_count(response.ch_mail);
+    bot.set_fast_move(response.ch_fast_move);
     co_return;
 }
 
@@ -239,13 +268,26 @@ async::task<void> game_bot_controller::on_map(game_bot& bot, const game_resp::ma
 
 async::task<void> game_bot_controller::on_transfer(game_bot& bot, const fb::protocol::response::transfer& response)
 {
-    // Integration test: Validate server transfer mechanics
-    bot.close();
-
-    // TODO: Add transfer validation and test continuation logic
-    auto created  = this->create(response.parameter);
     auto ip       = boost::asio::ip::address_v4(boost::endian::endian_reverse(response.ip));
     auto endpoint = boost::asio::ip::tcp::endpoint(ip, response.port);
+
+    fb::logger::debug("bot transfer protocol [integration]: bot={} bot_id={} endpoint={}:{} param_bytes={}",
+                      bot.name(),
+                      bot.id,
+                      ip.to_string(),
+                      response.port,
+                      response.parameter.size());
+
+    bot.close();
+
+    auto created = this->create(response.parameter);
+    created->set_transfer_from_bot_id(bot.id);
+    fb::logger::debug("bot transfer reconnect [integration]: bot={} old_bot_id={} new_bot_id={} endpoint={}:{}",
+                      created->name(),
+                      bot.id,
+                      created->id,
+                      ip.to_string(),
+                      response.port);
     created->connect(endpoint);
 
     co_return;
@@ -266,6 +308,12 @@ async::task<void> game_bot_controller::on_bot_connected(game_bot& bot)
             this->_current_test->on_bot_connected(bot_shared);
     }
 
+    fb::logger::debug("bot transfer login send: bot={} bot_id={} transfer_buffer_bytes={} inited={}",
+                      bot.name(),
+                      bot.id,
+                      bot.transfer_buffer().size(),
+                      bot.inited());
+
     bot.send(fb::protocol::game::request::login(bot.transfer_buffer()), false, true);
 
     co_return;
@@ -273,7 +321,10 @@ async::task<void> game_bot_controller::on_bot_connected(game_bot& bot)
 
 async::task<void> game_bot_controller::on_bot_disconnected(game_bot& bot)
 {
-    fb::logger::debug("Bot {} disconnected from integration testing", bot.name());
+    fb::logger::debug("Bot {} disconnected from integration testing (bot_id={} inited={})",
+                      bot.name(),
+                      bot.id,
+                      bot.inited());
 
     // Integration test: Collect test results and perform cleanup
     // TODO: Generate test report for this bot session

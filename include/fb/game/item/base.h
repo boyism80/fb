@@ -37,7 +37,7 @@ public:
     struct initial_params : fb::game::object::initial_params
     {
     public:
-        uint16_t                           count       = 1;
+        uint16_t                           count = 1;
         std::optional<fb::model::datetime> expire_time;
     };
 

@@ -11,7 +11,7 @@ using namespace std::chrono_literals;
 namespace internal_reqs = fb::protocol::internal::request;
 
 server::server(boost::asio::io_context& io_context, uint16_t port) :
-    fb::acceptor<session>(io_context, "GATEWAY", port, fb::config<uint32_t>("http:max_concurrent", 500)),
+    fb::acceptor<session>(io_context, "GATEWAY", port, fb::config<uint32_t>("http:max_concurrent", 128)),
     log(fb::config<std::string>("amqp:log:ip"),
         fb::config<uint16_t>("amqp:log:port"),
         fb::config<std::string>("amqp:log:uid"),

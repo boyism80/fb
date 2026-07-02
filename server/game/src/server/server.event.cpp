@@ -7,6 +7,7 @@
 
 using namespace fb::game;
 using namespace fb::model::enum_value;
+using namespace std::chrono_literals;
 
 namespace game_reqs     = fb::protocol::game::request;
 namespace internal      = fb::protocol::internal;
@@ -134,6 +135,25 @@ async::task<bool> fb::game::server::on_disconnected(fb::socket<character>& socke
 async::task<void> fb::game::server::on_exit()
 {
     co_await this->save();
+
+    while (true)
+    {
+        auto pending = size_t{0};
+        for (uint8_t i = 0; i < this->threads.count(); ++i)
+        {
+            auto thread = this->threads.at(i);
+            if (thread != nullptr)
+                pending += thread->queue_size();
+        }
+
+        if (pending == 0)
+            break;
+
+        co_await this->sleep(10ms);
+    }
+
+    co_await this->maps.cleanup();
+    co_return;
 }
 
 uint32_t fb::game::server::thread_id(const fb::socket<character>& socket) const

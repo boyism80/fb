@@ -1,8 +1,20 @@
 #include <fb/bot/integration/login_controller.h>
 #include <fb/bot/login_bot.h>
 #include <fb/bot/game_controller.h>
+#include <fb/logger.h>
 
+using namespace std::chrono_literals;
 using namespace fb::bot::integration;
+
+namespace {
+
+#ifdef _DEBUG
+constexpr auto LOGIN_REQUEST_TIMEOUT = 30s;
+#else
+constexpr auto LOGIN_REQUEST_TIMEOUT = 10s;
+#endif
+
+} // namespace
 
 login_bot_controller::login_bot_controller(bot_container& container) :
     fb::bot::login_bot_controller(container)
@@ -20,39 +32,33 @@ void login_bot_controller::initialize()
 async::task<void> login_bot_controller::on_agreement(login_bot& bot, const login_resp::terms_agreement& response)
 {
     // Integration test: Validate authentication flow with controlled test accounts
-    auto           id     = bot.generate_id();
-    auto           exists = false;
-    constexpr auto pw     = "admin123";
+    auto           id = bot.generate_id();
+    constexpr auto pw = "admin123";
 
     try
     {
         auto thread = bot.thread();
 
-        // TODO: Add authentication flow validation logic
+        fb::logger::debug("login flow start: bot_id={} account={}", bot.id, id);
+
         while (true)
         {
-            auto&& resp = co_await bot.request<login_resp::message>(fb::protocol::login::request::create(id, pw));
+            fb::logger::debug("login create request: bot_id={} account={}", bot.id, id);
+            auto&& resp = co_await bot.request<login_resp::message>(fb::protocol::login::request::create(id, pw),
+                                                                    LOGIN_REQUEST_TIMEOUT);
 
             if (resp.type == 0x00)
                 break;
 
             if (resp.type == 0x0E)
             {
-                if (resp.text == fb::model::const_value::string::MESSAGE_ACCOUNT_ALREADY_EXISTS)
-                {
-                    exists = true;
-                    break;
-                }
-                else
-                {
-                    id = bot.generate_id();
-                }
+                fb::logger::debug("login create rejected: bot_id={} account={} text={}", bot.id, id, resp.text);
+                id = bot.generate_id();
             }
 
             co_await thread->sleep(100ms);
         }
 
-        if (exists == false)
         {
             // Integration test: Validate account creation with specific test parameters
             std::random_device rd;
@@ -63,36 +69,43 @@ async::task<void> login_bot_controller::on_agreement(login_bot& bot, const login
             uint8_t nation   = std::uniform_int_distribution<>(1, 2)(gen);
             uint8_t creature = std::uniform_int_distribution<>(0, 3)(gen);
 
+            fb::logger::debug("login complete request: bot_id={} account={}", bot.id, id);
             while (true)
             {
                 auto&& resp = co_await bot.request<login_resp::message>(
-                    fb::protocol::login::request::complete{hair, gender, nation, creature});
+                    fb::protocol::login::request::complete{hair, gender, nation, creature},
+                    LOGIN_REQUEST_TIMEOUT);
 
                 if (resp.type == 0x00)
                     break;
 
+                fb::logger::debug("login complete rejected: bot_id={} type=0x{:02X} text={}",
+                                  bot.id,
+                                  resp.type,
+                                  resp.text);
                 co_await thread->sleep(100ms);
             }
 
             // TODO: Validate character creation parameters
         }
 
-        // Integration test: Validate login authentication
+        fb::logger::debug("login auth request: bot_id={} account={}", bot.id, id);
         while (true)
         {
-            auto&& resp = co_await bot.request<login_resp::message>(fb::protocol::login::request::login{id, pw});
+            auto&& resp = co_await bot.request<login_resp::message>(fb::protocol::login::request::login{id, pw},
+                                                                    LOGIN_REQUEST_TIMEOUT);
             if (resp.type == 0x00)
                 break;
 
+            fb::logger::debug("login auth rejected: bot_id={} type=0x{:02X} text={}", bot.id, resp.type, resp.text);
             co_await thread->sleep(1000ms);
         }
 
-        // TODO: Validate successful authentication and session establishment
+        fb::logger::debug("login flow done: bot_id={} account={}", bot.id, id);
     }
     catch (std::exception& e)
     {
-        // TODO: Log authentication errors for test analysis
-        std::cout << e.what() << std::endl;
+        fb::logger::fatal("login flow failed: bot_id={} account={} error={}", bot.id, id, e.what());
     }
 
     co_return;
@@ -100,13 +113,13 @@ async::task<void> login_bot_controller::on_agreement(login_bot& bot, const login
 
 async::task<void> login_bot_controller::on_transfer(login_bot& bot, const fb_resp::transfer& response)
 {
-    // Integration test: Validate login-to-game server transition
-    bot.close();
-
-    // TODO: Add transfer validation and test continuation logic
-    auto created  = this->container.game->create(response.parameter);
     auto ip       = boost::asio::ip::address_v4(boost::endian::endian_reverse(response.ip));
     auto endpoint = boost::asio::ip::tcp::endpoint(ip, response.port);
+    fb::logger::debug("login transfer: bot_id={} game={}:{}", bot.id, ip.to_string(), response.port);
+
+    bot.close();
+
+    auto created = this->container.game->create(response.parameter);
     created->connect(endpoint);
 
     // TODO: Validate seamless transition to game server

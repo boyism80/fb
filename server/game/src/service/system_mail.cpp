@@ -76,6 +76,21 @@ fb::async_generator<void> service::system_mail::delivery_coroutine()
 {
     while (true)
     {
+        character::container::online_snapshot_t online_users;
+        {
+            auto guard   = this->server.characters.enter_read();
+            online_users = guard.value().online_users();
+        }
+
+        const auto now = this->server.now();
+        prune_expired_mails(this->_pending_mails, now);
+
+        if (online_users.empty())
+        {
+            co_await fb::async_suspend{};
+            continue;
+        }
+
         auto        max_mail_id = uint32_t{0};
         const auto  world       = fb::config<uint32_t>("world");
         const auto& fetch_url   = std::format("/mail/system/{}?offset={}", world, this->_poll_offset);
@@ -85,7 +100,6 @@ fb::async_generator<void> service::system_mail::delivery_coroutine()
             auto&& resp = co_await this->server.http.get<internal_resp::GetSystemMails>("internal", fetch_url);
             if (resp.error == 0)
             {
-                const auto now = this->server.now();
                 for (const auto& dto : resp.mails)
                 {
                     auto mail = from_system_mail_dto(dto);
@@ -111,14 +125,6 @@ fb::async_generator<void> service::system_mail::delivery_coroutine()
 
         if (max_mail_id > 0)
             this->_poll_offset = max_mail_id + 1;
-
-        const auto                              now = this->server.now();
-        character::container::online_snapshot_t online_users;
-        {
-            auto guard   = this->server.characters.enter_read();
-            online_users = guard.value().online_users();
-        }
-        prune_expired_mails(this->_pending_mails, now);
 
         for (const auto& mail : this->_pending_mails)
         {

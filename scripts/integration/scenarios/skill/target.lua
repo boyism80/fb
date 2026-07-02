@@ -10,8 +10,6 @@ local skill = require("integration.lib.skill")
 local CASES = {
     {
         name = "공력주입",
-        response = resp.update_internal,
-        cast_type = "TARGET",
         pre = function(caster, target, state)
             caster:setup_bot_stats(100000, 100000)
             target:setup_bot_stats(100000, 100000)
@@ -20,21 +18,26 @@ local CASES = {
             state.injected = caster:mp()
             state.target_before_mp = target:mp()
         end,
-        condition = function(packet)
-            if packet.ch_mp == 0 then
-                return true
-            end
-            return nil
-        end,
-        post = function(caster, target, state, packet)
-            if packet.ch_mp ~= 0 then
+        cast = function(caster, target, slot, state)
+            local expected = math.min(target:base_mp(), state.target_before_mp + state.injected)
+            local target_result = caster:request_on(
+                target,
+                resp.update_internal,
+                protocol.spell_cast("TARGET", slot, "", target:oid(), target:position()),
+                function(p)
+                    return p.ch_mp == expected
+                end)
+            if target_result == false or target_result == nil then
                 return false
             end
-            local expected = math.min(target:base_mp(), state.target_before_mp + state.injected)
-            local result = target:request(resp.update_internal, protocol.self_info(), function(p)
-                return p.ch_mp == expected
-            end)
-            return result ~= false and result ~= nil
+
+            caster:sleep(1000)
+
+            if caster:mp() ~= 0 then
+                return false
+            end
+            state.packet = target_result
+            return true
         end,
     },
     {
