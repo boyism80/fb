@@ -97,9 +97,7 @@ public:
 
             if (auto bot = bot_weak.lock())
             {
-                fb::logger::warn("bot request timeout: bot_id={} response_opcode=0x{:02X}",
-                                 bot->id,
-                                 hook_cmd);
+                fb::logger::warn("bot request timeout: bot_id={} response_opcode=0x{:02X}", bot->id, hook_cmd);
                 bot->remove_hook_by_context(hook_cmd, context_ptr);
             }
             else
@@ -150,9 +148,7 @@ public:
 
             if (auto bot = bot_weak.lock())
             {
-                fb::logger::warn("bot request timeout: bot_id={} response_opcode=0x{:02X}",
-                                 bot->id,
-                                 hook_cmd);
+                fb::logger::warn("bot request timeout: bot_id={} response_opcode=0x{:02X}", bot->id, hook_cmd);
                 bot->remove_hook_by_context(hook_cmd, context_ptr);
             }
             else

@@ -368,14 +368,14 @@ public:                                                                         
 #define DECLARE_BLOCKED_WORD_CONTAINER_CUSTOM_CONSTRUCTOR \
     __blocked_word();                                     \
     __blocked_word(const __blocked_word&) = delete;       \
-    ~__blocked_word() = default;
+    ~__blocked_word()                     = default;
 
-#define DECLARE_BLOCKED_WORD_CONTAINER_EXTENSION \
-                                                 \
-public:                                          \
+#define DECLARE_BLOCKED_WORD_CONTAINER_EXTENSION        \
+                                                        \
+public:                                                 \
     std::string filter(std::string_view message) const; \
-                                                   \
-private:                                           \
+                                                        \
+private:                                                \
     fb::model::substring_matcher _matcher;
 
 #define DECLARE_RECIPE_EXTENSION                       \
