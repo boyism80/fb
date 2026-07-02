@@ -219,6 +219,7 @@ async::task<void> game_bot_controller::on_transfer(game_bot& bot, const fb::prot
     bot.close();
 
     auto created = this->create(response.parameter);
+    created->set_transfer_from_bot_id(bot.id);
     fb::logger::debug("bot transfer reconnect: bot={} old_bot_id={} new_bot_id={} endpoint={}:{}",
                       created->name(),
                       bot.id,
@@ -311,58 +312,59 @@ async::task<void> game_bot_controller::on_ping(game_bot& bot, const game_resp::p
 bool game_bot_controller::register_transfer_context(const fb::protocol::header&       protocol,
                                                     std::shared_ptr<transfer_context> context)
 {
-    auto name = context->name;
-    if (this->_transfer_contexts.contains(name))
+    auto source_bot_id = context->source_bot_id;
+    if (this->_transfer_contexts.contains(source_bot_id))
     {
-        fb::logger::warn("bot transfer register rejected: bot={} (duplicate context)", name);
+        fb::logger::warn("bot transfer register rejected: source_bot_id={} (duplicate context)", source_bot_id);
         return false;
     }
 
-    this->_transfer_contexts.insert({name, context});
-    fb::logger::debug("bot transfer register: bot={} pending_contexts={}",
-                      name,
+    this->_transfer_contexts.insert({source_bot_id, context});
+    fb::logger::debug("bot transfer register: source_bot_id={} pending_contexts={}",
+                      source_bot_id,
                       this->_transfer_contexts.size());
     return true;
 }
 
-void game_bot_controller::remove_transfer_context(std::string name)
+void game_bot_controller::remove_transfer_context(uint32_t source_bot_id)
 {
-    const auto erased = this->_transfer_contexts.erase(name);
+    const auto erased = this->_transfer_contexts.erase(source_bot_id);
     if (erased > 0)
     {
-        fb::logger::debug("bot transfer remove: bot={} pending_contexts={}",
-                          name,
+        fb::logger::debug("bot transfer remove: source_bot_id={} pending_contexts={}",
+                          source_bot_id,
                           this->_transfer_contexts.size());
     }
     else
     {
-        fb::logger::debug("bot transfer remove skipped: bot={} (no pending context)", name);
+        fb::logger::debug("bot transfer remove skipped: source_bot_id={} (no pending context)", source_bot_id);
     }
 }
 
-bool game_bot_controller::has_transfer_context(std::string_view name) const
+bool game_bot_controller::has_transfer_context(uint32_t source_bot_id) const
 {
-    return this->_transfer_contexts.contains(std::string(name));
+    return this->_transfer_contexts.contains(source_bot_id);
 }
 
-bool game_bot_controller::invoke_transfer_context(std::string name, std::shared_ptr<game_bot> bot)
+bool game_bot_controller::invoke_transfer_context(uint32_t source_bot_id, std::shared_ptr<game_bot> bot)
 {
-    if (this->_transfer_contexts.contains(name) == false)
+    if (this->_transfer_contexts.contains(source_bot_id) == false)
     {
-        fb::logger::warn("bot transfer invoke skipped: bot={} bot_id={} (no pending context, pending_contexts={})",
-                         name,
-                         bot != nullptr ? bot->id : 0,
-                         this->_transfer_contexts.size());
+        fb::logger::warn(
+            "bot transfer invoke skipped: source_bot_id={} bot_id={} (no pending context, pending_contexts={})",
+            source_bot_id,
+            bot != nullptr ? bot->id : 0,
+            this->_transfer_contexts.size());
         return false;
     }
 
-    fb::logger::debug("bot transfer complete: bot={} bot_id={} pending_contexts_before={}",
-                      name,
+    fb::logger::debug("bot transfer complete: source_bot_id={} bot_id={} pending_contexts_before={}",
+                      source_bot_id,
                       bot != nullptr ? bot->id : 0,
                       this->_transfer_contexts.size());
 
-    auto context = this->_transfer_contexts[name];
-    this->_transfer_contexts.erase(name);
+    auto context = this->_transfer_contexts[source_bot_id];
+    this->_transfer_contexts.erase(source_bot_id);
     context->complete_success(bot);
     return true;
 }
@@ -373,7 +375,7 @@ game_bot::transfer(const fb::protocol::header& protocol, const fb::model::timesp
     auto promise = std::make_shared<async::task_completion_source<std::shared_ptr<game_bot>>>();
     auto context = std::make_shared<game_bot_controller::transfer_context>(
         promise,
-        this->name(),
+        this->id,
         this->controller.weak_from_this_as<game_bot_controller>());
     auto& controller = static_cast<game_bot_controller&>(this->controller);
     if (controller.register_transfer_context(protocol, context) == false)

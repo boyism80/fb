@@ -82,6 +82,16 @@ const fb::stream& game_bot::transfer_buffer() const
     return this->_transfer_buffer;
 }
 
+uint32_t game_bot::transfer_from_bot_id() const
+{
+    return this->_transfer_from_bot_id;
+}
+
+void game_bot::set_transfer_from_bot_id(uint32_t value)
+{
+    this->_transfer_from_bot_id = value;
+}
+
 DIRECTION game_bot::direction() const
 {
     return this->_direction;
@@ -697,7 +707,10 @@ async::task<void> game_bot::change_mp(uint32_t mp, std::chrono::milliseconds tim
 async::task<void> game_bot::direction(DIRECTION direction, std::chrono::milliseconds timeout)
 {
     if (this->_direction == direction)
+    {
+        fb::logger::debug("bot direction skipped: bot_id={} already facing {}", this->id, enum_tostring(direction));
         co_return;
+    }
 
     try
     {
@@ -708,8 +721,13 @@ async::task<void> game_bot::direction(DIRECTION direction, std::chrono::millisec
             },
             timeout);
     }
-    catch (std::exception&)
-    { }
+    catch (const std::exception& e)
+    {
+        fb::logger::warn("bot direction failed: bot_id={} direction={} error={}",
+                         this->id,
+                         enum_tostring(direction),
+                         e.what());
+    }
 }
 
 async::task<void> game_bot::process_random_pattern(const fb::model::datetime& now)

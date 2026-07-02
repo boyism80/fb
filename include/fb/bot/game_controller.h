@@ -24,15 +24,15 @@ public:
 
         std::shared_ptr<promise_type>      promise;
         std::shared_ptr<fb::timer>         timer;
-        std::string                        name;
+        uint32_t                           source_bot_id;
         std::atomic<bool>                  completed;
         std::weak_ptr<game_bot_controller> controller_weak;
 
         transfer_context(std::shared_ptr<promise_type>      promise,
-                         std::string                        name,
+                         uint32_t                           source_bot_id,
                          std::weak_ptr<game_bot_controller> controller) :
             promise(promise),
-            name(name),
+            source_bot_id(source_bot_id),
             controller_weak(controller)
         { }
 
@@ -51,10 +51,10 @@ public:
             if (completed.exchange(true))
                 return;
 
-            fb::logger::warn("bot transfer timeout: bot={}", name);
+            fb::logger::warn("bot transfer timeout: source_bot_id={}", source_bot_id);
 
             if (auto controller = controller_weak.lock())
-                controller->remove_transfer_context(name);
+                controller->remove_transfer_context(source_bot_id);
 
             promise->set_exception(std::make_exception_ptr(std::runtime_error("request timeout")));
         }
@@ -66,7 +66,7 @@ public:
     };
 
 private:
-    std::unordered_map<std::string, std::shared_ptr<transfer_context>> _transfer_contexts;
+    std::unordered_map<uint32_t, std::shared_ptr<transfer_context>> _transfer_contexts;
 
 protected:
     game_bot_controller(bot_container& container);
@@ -106,7 +106,7 @@ private:
     template <bool Detailed> async::task<void> on_update_external(game_bot&                                   bot,
                                                                   const game_resp::update_external<Detailed>& response)
     {
-        if (bot.oid() != response.oid)
+        if (bot.oid() != 0 && bot.oid() != response.oid)
             co_return;
 
         if constexpr (Detailed)
@@ -141,9 +141,9 @@ private:
 
 public:
     bool register_transfer_context(const fb::protocol::header& protocol, std::shared_ptr<transfer_context> context);
-    void remove_transfer_context(std::string name);
-    bool has_transfer_context(std::string_view name) const;
-    bool invoke_transfer_context(std::string name, std::shared_ptr<game_bot> bot);
+    void remove_transfer_context(uint32_t source_bot_id);
+    bool has_transfer_context(uint32_t source_bot_id) const;
+    bool invoke_transfer_context(uint32_t source_bot_id, std::shared_ptr<game_bot> bot);
 };
 
 } // namespace fb::bot

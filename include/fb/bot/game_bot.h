@@ -89,10 +89,11 @@ private:
     uint32_t                        _oid = 0;
     point<uint16_t>                 _position;
     fb::stream                      _transfer_buffer;
-    DIRECTION                       _direction = DIRECTION::BOTTOM;
-    uint16_t                        _look      = 0;
-    uint8_t                         _color     = 0;
-    bool                            _dead      = false;
+    uint32_t                        _transfer_from_bot_id = 0;
+    DIRECTION                       _direction            = DIRECTION::BOTTOM;
+    uint16_t                        _look                 = 0;
+    uint8_t                         _color                = 0;
+    bool                            _dead                 = false;
     std::set<std::string>           _active_buffs;
     std::map<uint8_t, simple_item>  _items;
     std::map<uint8_t, simple_spell> _spells;
@@ -159,6 +160,9 @@ public:
     void inited(bool value);
 
     const fb::stream& transfer_buffer() const;
+
+    uint32_t transfer_from_bot_id() const;
+    void     set_transfer_from_bot_id(uint32_t value);
 
     DIRECTION direction() const;
     void      set_direction(DIRECTION value);

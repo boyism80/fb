@@ -181,8 +181,37 @@ async::task<void> game_bot_controller::on_time(game_bot& bot, const game_resp::t
 
 async::task<void> game_bot_controller::on_state(game_bot& bot, const game_resp::update_internal& response)
 {
-    // Integration test: Validate state consistency
-    // TODO: Add state validation logic
+    if (ENUM_IN(response.level, UPDATE_STATE_LEVEL::BASED))
+    {
+        bot.set_nation(response.ch_nation);
+        bot.set_creature(response.ch_creature);
+        bot.set_level(response.ch_level);
+        bot.set_base_hp(response.ch_base_hp);
+        bot.set_base_mp(response.ch_base_mp);
+        bot.set_strength(response.ch_strength);
+        bot.set_intelligence(response.ch_intelligence);
+        bot.set_dexterity(response.ch_dexterity);
+    }
+
+    if (ENUM_IN(response.level, UPDATE_STATE_LEVEL::HP_MP))
+    {
+        bot.set_hp(response.ch_hp);
+        bot.set_mp(response.ch_mp);
+    }
+
+    if (ENUM_IN(response.level, UPDATE_STATE_LEVEL::EXP_MONEY))
+    {
+        bot.set_exp(response.ch_exp);
+        bot.set_money(response.ch_money);
+    }
+
+    if (ENUM_IN(response.level, UPDATE_STATE_LEVEL::CROWD_CONTROL))
+    {
+        bot.set_crowd_control(response.ch_crowd_control);
+    }
+
+    bot.set_mail_count(response.ch_mail);
+    bot.set_fast_move(response.ch_fast_move);
     co_return;
 }
 
@@ -252,6 +281,7 @@ async::task<void> game_bot_controller::on_transfer(game_bot& bot, const fb::prot
     bot.close();
 
     auto created = this->create(response.parameter);
+    created->set_transfer_from_bot_id(bot.id);
     fb::logger::debug("bot transfer reconnect [integration]: bot={} old_bot_id={} new_bot_id={} endpoint={}:{}",
                       created->name(),
                       bot.id,

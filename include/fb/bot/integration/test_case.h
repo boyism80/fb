@@ -78,6 +78,7 @@ public:
 private:
     async::task<void> execute_parallel_scenario(std::shared_ptr<parallel_scenarios_context> context, uint32_t index);
     void              mark_bot_logged_in(game_bot& bot);
+    void              try_complete_transfer(game_bot& bot);
 
 protected:
     virtual generator<scenario_t> on_generate_scenario() = 0;
