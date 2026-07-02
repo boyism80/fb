@@ -30,6 +30,9 @@ local CASES = {
             if target_result == false or target_result == nil then
                 return false
             end
+
+            caster:sleep(1000)
+
             if caster:mp() ~= 0 then
                 return false
             end
