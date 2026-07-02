@@ -1,4 +1,5 @@
 -- item: 청일기창
+
 -- 청일기창 사용 스크립트
 function ON_ACTIVATED_87(me, item)
 

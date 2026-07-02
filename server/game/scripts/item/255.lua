@@ -1,4 +1,5 @@
 -- item: 용마제칠검
+
 -- 용마제칠검 공격 스크립트
 function ON_ATTACK_255(me, item)
     math.randomseed(seed())

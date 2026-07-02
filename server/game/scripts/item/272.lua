@@ -1,4 +1,5 @@
 -- item: 용랑제육봉
+
 -- 용랑제육봉 공격 스크립트
 function ON_ATTACK_272(me, item)
     math.randomseed(seed())

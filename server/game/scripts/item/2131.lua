@@ -1,4 +1,5 @@
 -- item: 시력회복의귀걸이
+
 -- 시력회복의귀걸이 사용 스크립트
 function ON_ACTIVATED_2131(me, item)
 

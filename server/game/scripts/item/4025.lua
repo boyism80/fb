@@ -1,4 +1,5 @@
 -- item: 신부여성비서
+
 -- 신부여성비서 사용 스크립트
 function ON_ACTIVATED_4025(me, item)
 	local maps = {'신부여성주막', '신부여서쪽주막', '신부여서쪽주막2'}

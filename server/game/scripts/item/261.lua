@@ -1,4 +1,5 @@
 -- item: 용천제사검
+
 -- 용천제사검 공격 스크립트
 function ON_ATTACK_261(me, item)
     math.randomseed(seed())

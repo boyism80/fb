@@ -1,7 +1,8 @@
 -- item: 낡은금고
--- 낡은금고 사용 스크립트
+
 local enum = require('lib.enum')
 
+-- 낡은금고 사용 스크립트
 function ON_ACTIVATED_20097(me, item)
 	local model = item:model()
 	if me:item('무쇠망치') == nil then

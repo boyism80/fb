@@ -1,25 +1,38 @@
 -- item: 낙랑의두루마리5
--- 낙랑의두루마리5 사용 스크립트
+
 local quest = require('lib.quest')
+
 local enum = require('lib.enum')
 
 local GOAL = 5
 
 local function parse_param(param)
+
     if param == nil or param == '' then
+
         return 0, 0
+
     end
+
     local a, b = param:match('^(%d+),(%d+)$')
+
     if not a or not b then
+
         return 0, 0
+
     end
+
     return math.min(tonumber(a) or 0, GOAL), math.min(tonumber(b) or 0, GOAL)
+
 end
 
 local function set_param(q, squirrel, rabbit)
+
     q:param(string.format('%d,%d', math.min(squirrel, GOAL), math.min(rabbit, GOAL)))
+
 end
 
+-- 낙랑의두루마리5 사용 스크립트
 function ON_ACTIVATED_5(me, item)
     local q = me:quest(quest.QUEST_NAKRANG5)
     local btn

@@ -1,26 +1,42 @@
 -- item: 낙랑의두루마리8
--- 낙랑의두루마리8 사용 스크립트
+
 local CLASS_MAP_BY_NATION = {
+
     [NATION.GOGURYEO] = {
+
         '검성태백',
+
         '현자해두',
+
         '태성마로',
+
         '신선진선',
+
     },
+
     [NATION.BUYEO] = {
+
         '검성예백',
+
         '현자처연',
+
         '태성마서',
+
         '신선선후',
+
     },
+
 }
 
 local CLASS_NAMES = { '전사', '주술사', '도적', '도사' }
+
 local CLASS_MASTERS = { '예백', '처연', '마서', '선후' }
 
 local WARP_X_MIN, WARP_X_MAX = 3, 8
+
 local WARP_Y_MIN, WARP_Y_MAX = 5, 8
 
+-- 낙랑의두루마리8 사용 스크립트
 function ON_ACTIVATED_8(me, item)
     local btn
     local model = item:model()

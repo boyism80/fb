@@ -1,4 +1,5 @@
 -- item: 백형도
+
 -- 백형도 사용 스크립트
 function ON_ACTIVATED_100(me, item)
 

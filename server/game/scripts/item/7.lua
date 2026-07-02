@@ -1,10 +1,12 @@
 -- item: 낙랑의두루마리7
--- 낙랑의두루마리7 사용 스크립트
+
 local quest = require('lib.quest')
+
 local enum = require('lib.enum')
 
 local GOAL_LEVEL = 5
 
+-- 낙랑의두루마리7 사용 스크립트
 function ON_ACTIVATED_7(me, item)
     local q = me:quest(quest.QUEST_NAKRANG7)
     local btn

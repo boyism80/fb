@@ -1,4 +1,5 @@
 -- item: 낡은연애편지
+
 -- 낡은연애편지 사용 스크립트
 function ON_ACTIVATED_10249(me, item)
     local model = item:model()

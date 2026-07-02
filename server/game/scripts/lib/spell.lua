@@ -304,7 +304,7 @@ function M.cast(me, you, spell, opts)
         end
     end
     
-    if me:mp() == 0 or me:mp() < mp then
+    if me:mp() < mp then
         me:message("마력이 부족합니다.")
         return false
     end
@@ -353,7 +353,7 @@ function M.buff_cast(me, you, spell, opts)
         return false
     end
     
-    if me:mp() == 0 or me:mp() < mp then
+    if me:mp() < mp then
         me:message('마력이 부족합니다.')
         return false
     end
@@ -471,7 +471,7 @@ function M.attack_cast(me, you, spell, opts)
         return false
     end
     
-    if me:mp() == 0 or me:mp() < mp then
+    if me:mp() < mp then
         me:message("마력이 부족합니다.")
         return false
     end
@@ -550,7 +550,7 @@ function M.damage(me, you, spell, opts)
         return false
     end
     
-    if me:mp() == 0 or me:mp() < mp then
+    if me:mp() < mp then
         me:message("마력이 부족합니다.")
         return false
     end
@@ -582,7 +582,7 @@ function M.damage_near(me, spell, opts)
     local mp = opts.mp or 0
     local sound = opts.sound
     local effect = opts.effect
-    if me:mp() == 0 or me:mp() < mp then
+    if me:mp() < mp then
         me:message('마력이 부족합니다.')
         return false
     end
@@ -609,7 +609,7 @@ function M.damage_near_target(me, you, spell, opts)
     local mp = opts.mp or 0
     local sound = opts.sound
     local effect = opts.effect
-    if me:mp() == 0 or me:mp() < mp then
+    if me:mp() < mp then
         me:message('마력이 부족합니다.')
         return false
     end
@@ -651,7 +651,7 @@ function M.damage_area(me, you, spell, opts)
             return false
         end
     end
-    if me:mp() == 0 or me:mp() < mp then
+    if me:mp() < mp then
         me:message('마력이 부족합니다.')
         return false
     end
@@ -732,7 +732,7 @@ function M.heal_near(me, you, spell, opts)
         me:message('대상이 올바르지 않습니다.')
         return false
     end
-    if me:mp() == 0 or me:mp() < mp then
+    if me:mp() < mp then
         me:message('마력이 모자랍니다.')
         return false
     end
@@ -780,7 +780,7 @@ function M.heal_group(me, spell, opts)
         me:message('가입된 그룹이 없습니다.')
         return false
     end
-    if me:mp() == 0 or me:mp() < mp then
+    if me:mp() < mp then
         me:message('마력이 모자랍니다.')
         return false
     end
@@ -904,7 +904,7 @@ end
 
 function M.weapon_damage(me, mp, message, damage)
     local mp = 60
-    if me:mp() == 0 or me:mp() < mp then
+    if me:mp() < mp then
         me:message('마력이 부족합니다.')
         return false
     end

@@ -1,4 +1,5 @@
 -- item: 진용형도
+
 -- 진용형도 사용 스크립트
 function ON_ACTIVATED_97(me, item)
 

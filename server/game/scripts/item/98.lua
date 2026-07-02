@@ -1,4 +1,5 @@
 -- item: 흑형도
+
 -- 흑형도 사용 스크립트
 function ON_ACTIVATED_98(me, item)
 

@@ -1,4 +1,5 @@
 -- item: 검성기검
+
 -- 검성기검 사용 스크립트
 function ON_ACTIVATED_176(me, item)
 

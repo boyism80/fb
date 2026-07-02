@@ -1,4 +1,5 @@
 -- item: 대장군의일기3
+
 -- 대장군의일기3 사용 스크립트
 function ON_ACTIVATED_10203(me, item)
     local model = item:model()

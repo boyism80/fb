@@ -2,6 +2,7 @@ local formation = require("integration.lib.formation")
 local equipment = require("integration.scenarios.item.equipment")
 local overflow  = require("integration.scenarios.item.equipment_overflow")
 local combine   = require("integration.scenarios.item.combine")
+local active    = require("integration.scenarios.item.active")
 
 local BOT_COUNT = 33
 
@@ -56,6 +57,10 @@ test_suite {
 
         function(ctx)
             return combine.run_failure(ctx)
+        end,
+
+        function(ctx)
+            return active.run(ctx)
         end,
     },
 }

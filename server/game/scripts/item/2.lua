@@ -1,8 +1,10 @@
 -- item: 낙랑의두루마리2
--- 낙랑의두루마리2 사용 스크립트
+
 local quest = require('lib.quest')
+
 local enum = require('lib.enum')
 
+-- 낙랑의두루마리2 사용 스크립트
 function ON_ACTIVATED_2(me, item)
     local q = me:quest(quest.QUEST_NAKRANG2)
     local btn
