@@ -32,9 +32,8 @@ void login_bot_controller::initialize()
 async::task<void> login_bot_controller::on_agreement(login_bot& bot, const login_resp::terms_agreement& response)
 {
     // Integration test: Validate authentication flow with controlled test accounts
-    auto           id     = bot.generate_id();
-    auto           exists = false;
-    constexpr auto pw     = "admin123";
+    auto           id = bot.generate_id();
+    constexpr auto pw = "admin123";
 
     try
     {
@@ -54,21 +53,12 @@ async::task<void> login_bot_controller::on_agreement(login_bot& bot, const login
             if (resp.type == 0x0E)
             {
                 fb::logger::debug("login create rejected: bot_id={} account={} text={}", bot.id, id, resp.text);
-                if (resp.text == fb::model::const_value::string::MESSAGE_ACCOUNT_ALREADY_EXISTS)
-                {
-                    exists = true;
-                    break;
-                }
-                else
-                {
-                    id = bot.generate_id();
-                }
+                id = bot.generate_id();
             }
 
             co_await thread->sleep(100ms);
         }
 
-        if (exists == false)
         {
             // Integration test: Validate account creation with specific test parameters
             std::random_device rd;
@@ -102,8 +92,8 @@ async::task<void> login_bot_controller::on_agreement(login_bot& bot, const login
         fb::logger::debug("login auth request: bot_id={} account={}", bot.id, id);
         while (true)
         {
-            auto&& resp =
-                co_await bot.request<login_resp::message>(fb::protocol::login::request::login{id, pw}, LOGIN_REQUEST_TIMEOUT);
+            auto&& resp = co_await bot.request<login_resp::message>(fb::protocol::login::request::login{id, pw},
+                                                                    LOGIN_REQUEST_TIMEOUT);
             if (resp.type == 0x00)
                 break;
 
