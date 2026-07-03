@@ -81,8 +81,9 @@ void listener_impl::on_update_map(character&                  ch,
                                   const fb::model::size8_t&   size,
                                   uint16_t                    crc)
 {
-
-    this->server.maps.send_map_cache(ch, map, position, size, crc);
+    auto stream = this->server.maps.map_update_stream(ch, map, position, size, crc);
+    if (stream.has_value())
+        ch.send(*stream);
 }
 
 void listener_impl::on_update_buff(character& ch, const buffs& buffs)
@@ -277,4 +278,58 @@ void listener_impl::on_bright(character& ch, uint8_t value)
 void listener_impl::on_update_id(character& ch)
 {
     ch.send(game_resp::id(ch));
+}
+
+void listener_impl::on_ping(character& ch, uint32_t token)
+{
+    ch.send(fb::protocol::game::response::ping(token));
+}
+
+void listener_impl::on_save(character& ch)
+{
+    ch.send(game_resp::save());
+}
+
+void listener_impl::on_bulk_update(character& ch, const std::vector<object*>& objects)
+{
+    ch.send(game_resp::update(objects));
+}
+
+void listener_impl::on_ad(character& ch, uint32_t width, uint32_t height, std::string_view url, uint8_t time)
+{
+    ch.send(game_resp::ad(width, height, std::string(url), time));
+}
+
+void listener_impl::on_web(character& ch, uint8_t type, std::string_view url, std::string_view message)
+{
+    ch.send(game_resp::web(type, std::string(url), std::string(message)));
+}
+
+void listener_impl::on_ui(character& ch, uint8_t screen)
+{
+    ch.send(game_resp::ui_screen(static_cast<game_resp::UI_SCREEN>(screen)));
+}
+
+void listener_impl::on_item_throw_confirm(character& ch, uint8_t slot)
+{
+    ch.send(game_resp::item_throw_confirm(slot));
+}
+
+void listener_impl::on_freeze(character& ch, bool value)
+{
+    ch.send(game_resp::freeze(value));
+}
+
+void listener_impl::on_friends_sync(character& ch, uint8_t enabled)
+{
+    ch.send(game_resp::friends_sync(enabled));
+}
+
+void listener_impl::on_holyday_screen(character&                       ch,
+                                      uint8_t                          screen,
+                                      uint8_t                          hair,
+                                      fb::model::enum_value::DIRECTION direction,
+                                      const fb::model::point<uint8_t>& position)
+{
+    ch.send(game_resp::holyday_screen(screen, hair, direction, position));
 }

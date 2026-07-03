@@ -4356,6 +4356,7 @@ a.dashboard-card:hover,
     color: var(--accent-color);
 }
 
+.user-detail-role-btn .material-symbols-outlined,
 .user-detail-ban-btn .material-symbols-outlined {
     font-size: 1.125rem;
 }

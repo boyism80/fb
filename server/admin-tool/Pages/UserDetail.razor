@@ -1,17 +1,23 @@
 @page "/users/{UserId:int}"
 @page "/users/{UserId:int}/{Tab}"
 @using AdminTool.Services
+@using AdminTool.Authentication
 @using Fb.Model.EnumValue
 @using Http.Model
 @using Http.Service
 @using Microsoft.AspNetCore.Authorization
+@using Microsoft.AspNetCore.Components.Authorization
 @using Microsoft.AspNetCore.Components.Forms
 @using System.ComponentModel.DataAnnotations
 @using Response = fb.protocol._internal.response
 @inject UserDetailService UserDetailService
+@inject UserService UserService
 @inject BanService BanService
 @inject DbContext DbContext
 @inject RabbitMqService RabbitMqService
+@inject AuthenticationStateProvider AuthenticationStateProvider
+@inject SecurityService SecurityService
+@inject LogService LogService
 @inject NavigationManager Navigation
 @attribute [AuthorizeRole(Role.Admin)]
 
@@ -28,10 +34,13 @@
                  ErrorMessage="@errorMessage"
                  SuccessMessage="@successMessage"
                  IsBanProcessing="isBanProcessing"
+                 IsRoleProcessing="isRoleProcessing"
+                 ChangeRoleButtonTitle="@changeRoleButtonTitle"
                  OnDismissError="DismissError"
                  OnDismissSuccess="DismissSuccess"
                  OnBan="ShowBanModal"
-                 OnUnban="ShowUnbanModal">
+                 OnUnban="ShowUnbanModal"
+                 OnChangeRole="ShowChangeRoleModal">
     @if (core != null && !isLoading)
     {
         @switch (activeTab)
@@ -178,6 +187,57 @@
     </div>
 }
 
+@if (showChangeRoleModal)
+{
+    <div class="stitch-modal-backdrop" tabindex="-1">
+        <div class="stitch-modal" @onclick:stopPropagation="true">
+            <div class="stitch-modal-header">
+                <h2 class="stitch-modal-title">역할 변경: @core?.Character.Name</h2>
+                <button type="button" class="btn-close" @onclick="CloseChangeRoleModal"></button>
+            </div>
+            <div class="stitch-modal-body">
+                <EditForm Model="@roleModel" OnValidSubmit="@HandleChangeRole">
+                    <DataAnnotationsValidator />
+                    <div class="mb-3">
+                        <label for="detailCurrentRole" class="form-label">현재 역할</label>
+                        <input type="text" class="form-control" id="detailCurrentRole"
+                               value="@UserDetailDisplay.FormatRole(core?.Character.Role ?? Role.User)" readonly />
+                    </div>
+                    <div class="mb-3">
+                        <label for="detailNewRole" class="form-label">새 역할</label>
+                        <InputSelect id="detailNewRole" class="form-select" @bind-Value="roleModel.NewRoleString">
+                            @foreach (var role in GetAvailableRoles())
+                            {
+                                <option value="@((int)role)">@UserDetailDisplay.FormatRole(role)</option>
+                            }
+                        </InputSelect>
+                        <ValidationMessage For="@(() => roleModel.NewRoleString)" />
+                    </div>
+                    @if (ShouldPromptForElevationSecret())
+                    {
+                        <div class="mb-3">
+                            <label for="detailElevationSecret" class="form-label">승격 비밀키</label>
+                            <InputText id="detailElevationSecret" type="password" class="form-control"
+                                       @bind-Value="roleModel.SecretKey" />
+                            <small class="text-muted">@GetElevationSecretMessage()</small>
+                        </div>
+                    }
+                    <div class="stitch-modal-footer">
+                        <button type="button" class="stitch-btn stitch-btn-neutral" @onclick="CloseChangeRoleModal">취소</button>
+                        <button type="submit" class="stitch-btn stitch-btn-primary" disabled="@isRoleProcessing">
+                            @if (isRoleProcessing)
+                            {
+                                <span class="spinner-border spinner-border-sm me-2" role="status"></span>
+                            }
+                            역할 변경
+                        </button>
+                    </div>
+                </EditForm>
+            </div>
+        </div>
+    </div>
+}
+
 @code {
     private static readonly HashSet<string> ValidTabs = new(StringComparer.OrdinalIgnoreCase)
     {
@@ -209,12 +269,24 @@
     private bool isLoading;
     private bool tabLoading;
     private bool isBanProcessing;
+    private bool isRoleProcessing;
     private bool showBanModal;
     private bool showUnbanModal;
+    private bool showChangeRoleModal;
     private BanModel banModel = new();
+    private RoleModel roleModel = new();
+    private Role currentUserRole = Role.User;
+    private uint currentUserId;
+    private uint? loginWorld;
+    private string changeRoleButtonTitle = "Change user role";
     private string errorMessage;
     private string successMessage;
     private string loadedTabKey;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadCurrentUserRole();
+    }
 
     protected override async Task OnParametersSetAsync()
     {
@@ -252,6 +324,7 @@
                 if (core == null)
                     return;
 
+                changeRoleButtonTitle = GetChangeRoleButtonTitle();
                 await LoadItemCountsAsync(selectedWorld.Value);
             }
 
@@ -413,12 +486,233 @@
         showUnbanModal = false;
     }
 
+    private void ShowChangeRoleModal()
+    {
+        if (core == null)
+            return;
+
+        roleModel = new RoleModel
+        {
+            NewRoleString = ((int)core.Character.Role).ToString(),
+            SecretKey = string.Empty
+        };
+        showChangeRoleModal = true;
+    }
+
+    private void CloseChangeRoleModal()
+    {
+        showChangeRoleModal = false;
+        roleModel = new RoleModel();
+    }
+
+    private async Task LoadCurrentUserRole()
+    {
+        var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
+        if (authState.User.Identity?.IsAuthenticated != true)
+            return;
+
+        var roleClaim = authState.User.FindFirst(System.Security.Claims.ClaimTypes.Role);
+        var idClaim = authState.User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier);
+        var loginWorldClaim = authState.User.FindFirst(CustomAuthenticationStateProvider.LoginWorldClaimType);
+        if (idClaim != null && uint.TryParse(idClaim.Value, out var uid))
+        {
+            currentUserId = uid;
+        }
+        if (roleClaim != null && Enum.TryParse<Role>(roleClaim.Value, out var role))
+        {
+            currentUserRole = role;
+        }
+        if (loginWorldClaim != null && uint.TryParse(loginWorldClaim.Value, out var world))
+        {
+            loginWorld = world;
+        }
+    }
+
+    private bool IsSelfUser()
+    {
+        return core != null
+            && core.Character.Id == currentUserId
+            && loginWorld.HasValue
+            && selectedWorld.HasValue
+            && selectedWorld.Value == loginWorld.Value;
+    }
+
+    private bool CanModifyUser()
+    {
+        if (core == null)
+            return false;
+
+        return core.Character.Role < currentUserRole;
+    }
+
+    private bool RequiresElevationForTarget()
+    {
+        if (IsSelfUser())
+            return false;
+
+        return !CanModifyUser();
+    }
+
+    private bool SelectedRoleExceedsCurrent()
+    {
+        if (!int.TryParse(roleModel?.NewRoleString, out var newRoleInt) || !Enum.IsDefined(typeof(Role), newRoleInt))
+            return false;
+
+        var newRole = (Role)newRoleInt;
+        return newRole > currentUserRole;
+    }
+
+    private bool ShouldPromptForElevationSecret()
+    {
+        if (core == null)
+            return false;
+
+        return RequiresElevationForTarget() || SelectedRoleExceedsCurrent();
+    }
+
+    private string GetElevationSecretMessage()
+    {
+        if (core == null)
+            return string.Empty;
+
+        if (RequiresElevationForTarget())
+            return "Target user has an equal or higher role. Provide the elevation secret to proceed.";
+
+        if (SelectedRoleExceedsCurrent())
+            return "Assigning a role higher than your own requires the elevation secret.";
+
+        return "Provide the elevation secret to continue.";
+    }
+
+    private string GetChangeRoleButtonTitle()
+    {
+        if (IsSelfUser())
+            return "Modify your own role. The elevation secret is required only for promotions.";
+
+        return RequiresElevationForTarget()
+            ? "Requires elevation secret to modify this user."
+            : "Change user role";
+    }
+
+    private static List<Role> GetAvailableRoles()
+    {
+        return Enum.GetValues<Role>().ToList();
+    }
+
+    private async Task HandleChangeRole()
+    {
+        if (core == null)
+            return;
+
+        var targetRole = core.Character.Role;
+        var isSelf = IsSelfUser();
+
+        if (!selectedWorld.HasValue)
+        {
+            errorMessage = "World is not selected.";
+            CloseChangeRoleModal();
+            return;
+        }
+        if (await UserService.IsOnline(selectedWorld.Value, core.Character.Name))
+        {
+            errorMessage = "Cannot change role while the user is online. Please try again after they log out.";
+            CloseChangeRoleModal();
+            return;
+        }
+
+        if (!int.TryParse(roleModel.NewRoleString, out var newRoleInt) || !Enum.IsDefined(typeof(Role), newRoleInt))
+        {
+            errorMessage = "Invalid role selected.";
+            CloseChangeRoleModal();
+            return;
+        }
+
+        var newRole = (Role)newRoleInt;
+
+        var hasStandardPrivilege = (targetRole < currentUserRole || isSelf) && newRole <= currentUserRole;
+        if (!hasStandardPrivilege)
+        {
+            var providedSecret = roleModel.SecretKey?.Trim();
+            if (string.IsNullOrWhiteSpace(providedSecret))
+            {
+                errorMessage = "Elevation secret is required for this operation.";
+                return;
+            }
+
+            if (!SecurityService.IsValidElevationSecret(providedSecret))
+            {
+                errorMessage = "Elevation secret is invalid.";
+                return;
+            }
+        }
+
+        isRoleProcessing = true;
+        errorMessage = null;
+        successMessage = null;
+
+        try
+        {
+            var character = await DbContext.Character.Get(selectedWorld.Value, core.Character.Id);
+            if (character == null)
+            {
+                errorMessage = "Character not found.";
+                CloseChangeRoleModal();
+                return;
+            }
+
+            var oldRole = character.Role;
+            character.Role = newRole;
+            character.UpdatedDate = DateTime.Now;
+            DbContext.Character.Set(selectedWorld.Value, character);
+            await DbContext.SaveChangesAsync();
+
+            await LogService.WriteAsync("role_change", new
+            {
+                target_account_name = character.Name,
+                target_uid = character.Id,
+                old_role = oldRole.ToString(),
+                new_role = newRole.ToString(),
+                changer_uid = currentUserId,
+                is_self = isSelf
+            });
+
+            if (isSelf)
+            {
+                if (AuthenticationStateProvider is CustomAuthenticationStateProvider customProvider)
+                {
+                    var authData = new AuthData
+                    {
+                        UserId = currentUserId,
+                        UserName = character.Name,
+                        Role = newRole.ToString(),
+                        LoginWorld = loginWorld
+                    };
+                    await customProvider.MarkUserAsAuthenticated(authData);
+                }
+                currentUserRole = newRole;
+            }
+
+            successMessage = $"User {core.Character.Name}'s role has been changed to {UserDetailDisplay.FormatRole(newRole)} successfully.";
+            CloseChangeRoleModal();
+            await ReloadCoreAsync();
+        }
+        catch (Exception ex)
+        {
+            errorMessage = $"Error changing role: {ex.Message}";
+        }
+        finally
+        {
+            isRoleProcessing = false;
+        }
+    }
+
     private async Task ReloadCoreAsync()
     {
         if (!selectedWorld.HasValue)
             return;
 
         core = await UserDetailService.LoadCoreAsync(selectedWorld.Value, (uint)UserId);
+        changeRoleButtonTitle = GetChangeRoleButtonTitle();
         loadedTabKey = null;
         await LoadPageAsync();
     }
@@ -505,5 +799,13 @@
         public string Reason { get; set; } = string.Empty;
 
         public string Days { get; set; }
+    }
+
+    private class RoleModel
+    {
+        [Required(ErrorMessage = "Role is required")]
+        public string NewRoleString { get; set; } = "0";
+
+        public string SecretKey { get; set; } = string.Empty;
     }
 }

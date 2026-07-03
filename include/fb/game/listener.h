@@ -112,6 +112,17 @@ public:
     void                          on_dialog(character& me, const fb::model::object& obj, std::string_view message, std::string_view top, std::string_view bottom, int maxlen = 0xFF, bool prev = false, uint32_t seq = 0xFFFFFFFD) override final;
     void                          on_dialog(character& me, const fb::game::object& obj, std::string_view message, std::string_view top, std::string_view bottom, int maxlen = 0xFF, bool prev = false, uint32_t seq = 0xFFFFFFFD) override final;
     void                          on_transfer(character& me, fb::game::map& map, const fb::model::point16_t& position, std::string_view ip, uint16_t port) override final;
+    void                          on_ping(character& ch, uint32_t token) override final;
+    void                          on_save(character& ch) override final;
+    void                          on_bulk_update(character& ch, const std::vector<object*>& objects) override final;
+    void                          on_ad(character& ch, uint32_t width, uint32_t height, std::string_view url, uint8_t time) override final;
+    void                          on_web(character& ch, uint8_t type, std::string_view url, std::string_view message) override final;
+    void                          on_ui(character& ch, uint8_t screen) override final;
+    void                          on_item_throw_confirm(character& ch, uint8_t slot) override final;
+    void                          on_freeze(character& ch, bool value) override final;
+    void                          on_friends_sync(character& ch, uint8_t enabled) override final;
+    void                          on_holyday_screen(character& ch, uint8_t screen, uint8_t hair, fb::model::enum_value::DIRECTION direction, const fb::model::point<uint8_t>& position) override final;
+    void                          on_spell_delay(life& me, const spell& spell, uint32_t delay) override final;
     // clang-format on
 };
 

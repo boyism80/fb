@@ -9,6 +9,15 @@ bash "$(dirname "$0")/prune-build-cache.sh"
 
 pushd ..
 
+echo "Tearing down existing infrastructure..."
+pushd infra/pulumi
+pulumi down -y
+if [ $? -ne 0 ]; then
+    echo "pulumi down failed"
+    exit $?
+fi
+popd
+
 echo "Retrieving external IP..."
 EXTERNAL_IP=$(curl -s https://ifconfig.me)
 
@@ -69,6 +78,10 @@ if [ $? -ne 0 ]; then
 fi
 pushd infra/pulumi
 pulumi config set --secret host "$EXTERNAL_IP"
-pulumi down -y && pulumi up -y
+pulumi up -y
+if [ $? -ne 0 ]; then
+    echo "pulumi up failed"
+    exit $?
+fi
 popd
 popd

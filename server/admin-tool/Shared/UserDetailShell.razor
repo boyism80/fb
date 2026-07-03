@@ -101,12 +101,20 @@
                 <span class="material-symbols-outlined" aria-hidden="true">redeem</span>
                 아이템 지급
             </a>
+            <button type="button"
+                    class="stitch-btn stitch-btn-neutral user-detail-role-btn"
+                    @onclick="OnChangeRole"
+                    disabled="@IsActionProcessing"
+                    title="@ChangeRoleButtonTitle">
+                <span class="material-symbols-outlined" aria-hidden="true">shield_person</span>
+                역할
+            </button>
             @if (Core.UserDetail.IsBanned)
             {
                 <button type="button"
                         class="stitch-btn stitch-btn-primary user-detail-ban-btn"
                         @onclick="OnUnban"
-                        disabled="@IsBanProcessing">
+                        disabled="@IsActionProcessing">
                     <span class="material-symbols-outlined" aria-hidden="true">check_circle</span>
                     밴 해제
                 </button>
@@ -116,7 +124,7 @@
                 <button type="button"
                         class="stitch-btn stitch-btn-danger user-detail-ban-btn"
                         @onclick="OnBan"
-                        disabled="@IsBanProcessing">
+                        disabled="@IsActionProcessing">
                     <span class="material-symbols-outlined" aria-hidden="true">block</span>
                     밴
                 </button>
@@ -188,10 +196,21 @@
     public EventCallback OnUnban { get; set; }
 
     [Parameter]
+    public EventCallback OnChangeRole { get; set; }
+
+    [Parameter]
     public bool IsBanProcessing { get; set; }
 
     [Parameter]
+    public bool IsRoleProcessing { get; set; }
+
+    [Parameter]
+    public string ChangeRoleButtonTitle { get; set; } = "Change user role";
+
+    [Parameter]
     public RenderFragment ChildContent { get; set; }
+
+    private bool IsActionProcessing => IsBanProcessing || IsRoleProcessing;
 
     private static readonly (string Key, string Label)[] Tabs =
     {

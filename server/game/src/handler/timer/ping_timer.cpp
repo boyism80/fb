@@ -1,5 +1,4 @@
 #include <fb/game/handler/timer/ping_timer.h>
-#include <fb/game/protocol/ping.h>
 #include <fb/game/thread_params.h>
 #include <fb/logger.h>
 #include <random>
@@ -50,7 +49,7 @@ async::task<void> ping_timer::handle(const fb::model::datetime& now, std::thread
             state.token          = dist(rng);
             state.last_ping_time = now;
             state.pong_received  = false;
-            ch->send(fb::protocol::game::response::ping(state.token));
+            ch->ping(state.token);
         }
         catch (const std::exception& e)
         {

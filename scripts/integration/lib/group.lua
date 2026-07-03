@@ -1,6 +1,8 @@
 local resp     = require("integration.response")
 local protocol = require("integration.protocol")
 
+local MESSAGE_GROUP_DISBANDED = "그룹 해체"
+
 local M = {}
 
 function M.form(ctx)
@@ -16,6 +18,16 @@ function M.form(ctx)
             end)
         log("debug", r.text)
     end
+end
+
+function M.disband(leader)
+    local name = leader:name()
+    return leader:request(
+        resp.message,
+        protocol.group(name),
+        function(packet)
+            return packet.type == "STATE" and packet.text == MESSAGE_GROUP_DISBANDED
+        end)
 end
 
 function M.cleanup(ctx)

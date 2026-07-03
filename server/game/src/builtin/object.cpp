@@ -414,10 +414,7 @@ int builtin::object::builtin_buff(lua_State* L)
     builder.yield    = [=]() -> async::task<void> {
         auto buff = obj->buffs.push_back(*model, seconds, caster);
         if (buff != nullptr)
-        {
-            obj->send(fb::protocol::game::response::spell_buff(*buff));
             *buff_holder = buff;
-        }
         co_return;
     };
     builder.resume = [=]() -> async::task<int> {
@@ -847,8 +844,7 @@ int builtin::object::builtin_mkitem(lua_State* L)
     builder.yield    = [=]() -> async::task<void> {
         auto& server = static_cast<fb::game::server&>(lua->executor);
         auto  item   = model->make(server);
-        item->map(obj->map(), obj->position());
-        std::ignore  = server.send(*item, fb::protocol::game::response::update(*item), fb::game::scope::PIVOT);
+        std::ignore  = co_await item->map(obj->map(), obj->position());
         *item_holder = item;
         co_return;
     };

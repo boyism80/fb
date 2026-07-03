@@ -4,7 +4,6 @@
 using namespace fb::game::handler::protocol;
 
 namespace game_reqs = fb::protocol::game::request;
-namespace game_resp = fb::protocol::game::response;
 
 click::click(fb::game::server& server) :
     fb::handler::protocol<fb::game::server, game_reqs::click>(server)
@@ -83,7 +82,7 @@ async::task<void> click::handle_object_click(character* ch, game_reqs::click& re
         break;
 
     case OBJECT_TYPE::MOB:
-        ch->send(game_resp::message(static_cast<mob&>(*you).name(), MESSAGE_TYPE::STATE));
+        ch->message(static_cast<mob&>(*you).name(), MESSAGE_TYPE::STATE);
         break;
 
     case OBJECT_TYPE::NPC:

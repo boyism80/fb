@@ -1622,6 +1622,69 @@ void character::weather(WEATHER_TYPE weather)
     this->listener.on_weather(*this, weather);
 }
 
+void character::ping(uint32_t token)
+{
+    this->assert_thread();
+    this->listener.on_ping(*this, token);
+}
+
+void character::save_ack()
+{
+    this->assert_thread();
+    this->listener.on_save(*this);
+}
+
+void character::bulk_objects_update(const std::vector<object*>& objects)
+{
+    this->assert_thread();
+    this->listener.on_bulk_update(*this, objects);
+}
+
+void character::ad(uint32_t width, uint32_t height, std::string_view url, uint8_t time)
+{
+    this->assert_thread();
+    this->listener.on_ad(*this, width, height, url, time);
+}
+
+void character::web(uint8_t type, std::string_view url, std::string_view message)
+{
+    this->assert_thread();
+    this->listener.on_web(*this, type, url, message);
+}
+
+void character::ui(uint8_t screen)
+{
+    this->assert_thread();
+    this->listener.on_ui(*this, screen);
+}
+
+void character::item_throw_confirm(uint8_t slot)
+{
+    this->assert_thread();
+    this->listener.on_item_throw_confirm(*this, slot);
+}
+
+void character::freeze(bool value)
+{
+    this->assert_thread();
+    this->listener.on_freeze(*this, value);
+}
+
+void character::friends_sync(uint8_t enabled)
+{
+    this->assert_thread();
+    this->listener.on_friends_sync(*this, enabled);
+}
+
+void character::holyday_screen(uint8_t                          screen,
+                               uint8_t                          hair,
+                               fb::model::enum_value::DIRECTION direction,
+                               const fb::model::point<uint8_t>& position)
+{
+    this->assert_thread();
+    this->listener.on_holyday_screen(*this, screen, hair, direction, position);
+}
+
 void character::update_id()
 {
     this->listener.on_update_id(*this);

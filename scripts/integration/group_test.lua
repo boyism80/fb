@@ -135,6 +135,44 @@ test_suite {
             end
             progress(leader, "CORRECTLY PREVENTED NON-MASTER FROM INVITING TO GROUP")
 
+            progress(leader, "GROUP MASTER DISBANDING GROUP")
+            local member_disbanded = false
+            ctx:hook("message", function(_, bot, packet)
+                if bot:name() == bots[1]:name()
+                    and packet.type == "STATE"
+                    and packet.text == "그룹 해체" then
+                    member_disbanded = true
+                end
+            end)
+
+            if lib.group.disband(bots[0]) == false then
+                ctx:unhook("message")
+                progress(leader, "FAILED TO DISBAND GROUP")
+                return false
+            end
+            progress(leader, "GROUP MASTER SUCCESSFULLY DISBANDED GROUP")
+
+            local waited_ms = 0
+            local max_wait_ms = 3000
+            while member_disbanded == false and waited_ms < max_wait_ms do
+                ctx:sleep(skill.DEFAULT_INTERVAL)
+                waited_ms = waited_ms + skill.DEFAULT_INTERVAL
+            end
+            ctx:unhook("message")
+
+            if member_disbanded == false then
+                progress(leader, "FAILED: MEMBER DID NOT RECEIVE DISBAND MESSAGE")
+                return false
+            end
+            progress(bots[1], bots[1]:name() .. " RECEIVED DISBAND MESSAGE")
+
+            progress(leader, "VERIFYING NEW GROUP CAN BE FORMED AFTER DISBAND")
+            if bots[0]:invite_group(bots[2]) == false then
+                progress(leader, "FAILED TO INVITE AFTER DISBAND")
+                return false
+            end
+            progress(leader, "SUCCESSFULLY FORMED NEW GROUP AFTER DISBAND")
+
             progress(leader, "GROUP SCENARIO 2 TEST COMPLETED SUCCESSFULLY")
             return true
         end,

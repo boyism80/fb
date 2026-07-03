@@ -3433,7 +3433,7 @@ int builtin::character::builtin_ad(lua_State* L)
     auto builder  = lua->new_co_builder();
     builder.weak  = weak;
     builder.yield = [=]() -> async::task<void> {
-        ch->send(fb::protocol::game::response::ad(width, height, url, time));
+        ch->ad(width, height, url, time);
         co_return;
     };
     builder.resume = []() -> async::task<int> {
@@ -3460,7 +3460,7 @@ int builtin::character::builtin_web(lua_State* L)
     auto builder  = lua->new_co_builder();
     builder.weak  = weak;
     builder.yield = [=]() -> async::task<void> {
-        ch->send(fb::protocol::game::response::web(type, url, message));
+        ch->web(type, url, message);
         co_return;
     };
     builder.resume = []() -> async::task<int> {
@@ -3543,7 +3543,7 @@ int builtin::character::builtin_ui(lua_State* L)
     auto builder  = lua->new_co_builder();
     builder.weak  = weak;
     builder.yield = [=]() -> async::task<void> {
-        ch->send(fb::protocol::game::response::ui_screen(screen));
+        ch->ui(static_cast<uint8_t>(screen));
         co_return;
     };
     builder.resume = []() -> async::task<int> {
@@ -3568,7 +3568,7 @@ int builtin::character::builtin_item_throw_confirm(lua_State* L)
     auto builder  = lua->new_co_builder();
     builder.weak  = weak;
     builder.yield = [=]() -> async::task<void> {
-        ch->send(fb::protocol::game::response::item_throw_confirm(slot));
+        ch->item_throw_confirm(slot);
         co_return;
     };
     builder.resume = []() -> async::task<int> {
@@ -3593,7 +3593,7 @@ int builtin::character::builtin_freeze(lua_State* L)
     auto builder  = lua->new_co_builder();
     builder.weak  = weak;
     builder.yield = [=]() -> async::task<void> {
-        ch->send(fb::protocol::game::response::freeze(freeze));
+        ch->freeze(freeze);
         co_return;
     };
     builder.resume = []() -> async::task<int> {
@@ -3618,7 +3618,7 @@ int builtin::character::builtin_friends_sync(lua_State* L)
     auto builder  = lua->new_co_builder();
     builder.weak  = weak;
     builder.yield = [=]() -> async::task<void> {
-        ch->send(fb::protocol::game::response::friends_sync(enabled));
+        ch->friends_sync(enabled);
         co_return;
     };
     builder.resume = []() -> async::task<int> {
@@ -3714,8 +3714,7 @@ int builtin::character::builtin_holyday_screen(lua_State* L)
     builder.weak  = weak;
     builder.yield = [=]() -> async::task<void> {
         auto hair = ch->look();
-        ch->send(
-            fb::protocol::game::response::holyday_screen(screen, hair, direction, fb::model::point<uint8_t>(x, y)));
+        ch->holyday_screen(screen, hair, direction, fb::model::point<uint8_t>(x, y));
         co_return;
     };
     builder.resume = []() -> async::task<int> {

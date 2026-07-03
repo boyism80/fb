@@ -69,8 +69,9 @@ public:
 
 struct spells::listener_t
 {
-    virtual void on_spell_update(life& me, uint8_t index) = 0;
-    virtual void on_spell_remove(life& me, uint8_t index) = 0;
+    virtual void on_spell_update(life& me, uint8_t index)                     = 0;
+    virtual void on_spell_remove(life& me, uint8_t index)                     = 0;
+    virtual void on_spell_delay(life& me, const spell& spell, uint32_t delay) = 0;
 };
 
 class buff : public ::fb::lua::luable
