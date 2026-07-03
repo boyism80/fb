@@ -192,6 +192,7 @@ IMPLEMENT_LUA_EXTENSION(game_bot, "fb.bot")
     {"has_item_by_name",         builtin::game_bot::builtin_has_item_by_name},
     {"item_base_price",          builtin::game_bot::builtin_item_base_price},
     {"remove_buffs",             builtin::game_bot::builtin_remove_buffs},
+    {"has_buff",                 builtin::game_bot::builtin_has_buff},
     {"request",                  builtin::game_bot::builtin_request},
     {"request_on",               builtin::game_bot::builtin_request_on},
     {"chat",                     builtin::game_bot::builtin_chat},
@@ -459,6 +460,21 @@ int builtin::game_bot::builtin_remove_buffs(lua_State* L)
 
     bot->remove_buffs();
     return 0;
+}
+
+int builtin::game_bot::builtin_has_buff(lua_State* L)
+{
+    auto lua = fb::lua::get(L);
+    if (lua == nullptr)
+        return 0;
+
+    auto bot = lua->touserdata<fb::bot::game_bot>(1);
+    if (bot == nullptr)
+        return 0;
+
+    auto name = lua->tostring(2);
+    lua->pushboolean(bot->has_buff(name));
+    return 1;
 }
 
 int builtin::game_bot::builtin_money(lua_State* L)
