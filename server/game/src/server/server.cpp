@@ -121,7 +121,7 @@ async::task<void> fb::game::server::save(character& ch)
     std::ignore  = co_await this->http.post("internal", "/in-game/save", internal_reqs::Save{world, payload});
 
     co_await this->threads.switching(weak);
-    ch.send(game_resp::save());
+    ch.save_ack();
 }
 
 async::task<internal_resp::Ban> fb::game::server::ban(std::string_view               name,
@@ -250,7 +250,7 @@ async::task<void> fb::game::server::save()
 
                 for (size_t i = offset; i < chunk_end; i++)
                 {
-                    characters[i]->send(game_resp::save());
+                    characters[i]->save_ack();
                 }
             }
             co_return;

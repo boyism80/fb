@@ -285,6 +285,16 @@ public:
     void                                               timer(uint32_t time, TIMER_TYPE type);
     void                                               weather(WEATHER_TYPE weather);
     void                                               bright(uint8_t value);
+    void                                               ping(uint32_t token);
+    void                                               save_ack();
+    void                                               bulk_objects_update(const std::vector<object*>& objects);
+    void                                               ad(uint32_t width, uint32_t height, std::string_view url, uint8_t time);
+    void                                               web(uint8_t type, std::string_view url, std::string_view message);
+    void                                               ui(uint8_t screen);
+    void                                               item_throw_confirm(uint8_t slot);
+    void                                               freeze(bool value);
+    void                                               friends_sync(uint8_t enabled);
+    void                                               holyday_screen(uint8_t screen, uint8_t hair, fb::model::enum_value::DIRECTION direction, const fb::model::point<uint8_t>& position);
     void                                               weapon_damage(uint16_t value);
     uint16_t                                           weapon_damage() const;
     void                                               detect(bool value);
@@ -335,35 +345,33 @@ public:
 
 public:
     // clang-format off
-    size_t            size() const;
-    bool              insert(character_ptr_t ch);
-    void              remove(character_ptr_t ch);
-    character_ptr_t   find(uint32_t uid) const;
-    character_ptr_t   find(std::string_view name) const;
-    bool              contains(std::string_view name) const;
-    bool              contains(uint32_t uid) const;
-    async::task<void> foreach (character_function_t fn, character_predicate_t predicate = nullptr);
-    async::task<void> foreach (character_function_t fn, const std::vector<character_ptr_t>& characters);
-    async::task<void> foreach_async(character_async_function_t fn, character_predicate_t predict = nullptr);
-    async::task<void> foreach_async(character_async_function_t fn, const std::vector<character_ptr_t>& characters);
-    async::task<void> foreach (const std::vector<std::string>& names, character_function_t fn, character_function_t_miss miss = nullptr);
-    async::task<void> foreach_async(const std::vector<std::string>& names, character_async_function_t fn, character_function_t_miss miss = nullptr);
-    void              foreach_enqueue(character_async_function_t&& fn, character_predicate_t predict = nullptr) const;
-    void              foreach_enqueue(character_async_function_t&& fn, const std::vector<character_ptr_t>& characters) const;
-    void              foreach_enqueue(const std::vector<std::string>& names, character_async_function_t&& fn, character_function_t_miss miss = nullptr) const;
-    async::task<void> invoke(std::string_view name, character_function_t fn, character_function_t_miss miss = nullptr) const;
-    async::task<void> invoke_async(std::string_view name, character_async_function_t fn, character_function_t_miss miss = nullptr) const;
-    void              broadcast(std::string_view message, MESSAGE_TYPE type);
-    async::task<void> broadcast(std::string_view message, MESSAGE_TYPE type, BROADCAST_TYPE broadcast_type);
-    async::task<void> on_broadcast(const fb::protocol::internal::response::Broadcast& resp);
-    void              update_time(uint8_t hours);
-    void              send(const fb::stream& stream, bool encrypt);
-    [[nodiscard]] online_snapshot_t online_users() const;
-
-    static void assert_whisper(uint32_t error, std::string_view to);
-    void                                                 on_kick_out(const fb::protocol::internal::response::KickOut& message);
-    void                                                 on_start_maintenance(const fb::protocol::internal::response::StartMaintenance& message);
-
+    size_t             size() const;
+    bool               insert(character_ptr_t ch);
+    void               remove(character_ptr_t ch);
+    character_ptr_t    find(uint32_t uid) const;
+    character_ptr_t    find(std::string_view name) const;
+    bool               contains(std::string_view name) const;
+    bool               contains(uint32_t uid) const;
+    async::task<void>  foreach (character_function_t fn, character_predicate_t predicate = nullptr);
+    async::task<void>  foreach (character_function_t fn, const std::vector<character_ptr_t>& characters);
+    async::task<void>  foreach_async(character_async_function_t fn, character_predicate_t predict = nullptr);
+    async::task<void>  foreach_async(character_async_function_t fn, const std::vector<character_ptr_t>& characters);
+    async::task<void>  foreach (const std::vector<std::string>& names, character_function_t fn, character_function_t_miss miss = nullptr);
+    async::task<void>  foreach_async(const std::vector<std::string>& names, character_async_function_t fn, character_function_t_miss miss = nullptr);
+    void               foreach_enqueue(character_async_function_t&& fn, character_predicate_t predict = nullptr) const;
+    void               foreach_enqueue(character_async_function_t&& fn, const std::vector<character_ptr_t>& characters) const;
+    void               foreach_enqueue(const std::vector<std::string>& names, character_async_function_t&& fn, character_function_t_miss miss = nullptr) const;
+    async::task<void>  invoke(std::string_view name, character_function_t fn, character_function_t_miss miss = nullptr) const;
+    async::task<void>  invoke_async(std::string_view name, character_async_function_t fn, character_function_t_miss miss = nullptr) const;
+    void               broadcast(std::string_view message, MESSAGE_TYPE type);
+    async::task<void>  broadcast(std::string_view message, MESSAGE_TYPE type, BROADCAST_TYPE broadcast_type);
+    async::task<void>  on_broadcast(const fb::protocol::internal::response::Broadcast& resp);
+    void               update_time(uint8_t hours);
+    void               send(const fb::stream& stream, bool encrypt);
+    online_snapshot_t  online_users() const;
+    static void        assert_whisper(uint32_t error, std::string_view to);
+    void               on_kick_out(const fb::protocol::internal::response::KickOut& message);
+    void               on_start_maintenance(const fb::protocol::internal::response::StartMaintenance& message);
     static std::string build_ban_message(std::string_view reason, const std::optional<std::string>& expire_date);
     // clang-format on
 
@@ -389,35 +397,45 @@ struct character::listener_t : public virtual life::listener_t,
 {
 public:
     // clang-format off
-    virtual void              on_message(character& me, std::string_view message, MESSAGE_TYPE type = MESSAGE_TYPE::STATE)                                                   = 0;
-    virtual void              on_option_changed(character& me, OPTION option, bool enabled)                                                                                  = 0;
-    virtual void              on_update_option(character& me)                                                                                                                = 0;
-    virtual void              on_update_map(character& ch, const fb::game::map& map)                                                                                         = 0;
-    virtual void              on_update_map(character& ch, const fb::game::map& map, const fb::model::point16_t& begin, const fb::model::size8_t& size, uint16_t crc)        = 0;
-    virtual void              on_update_bgm(character& ch, uint16_t bgm, uint8_t volume)                                                                                     = 0;
-    virtual void              on_update_buff(character& ch, const fb::game::buffs& buffs)                                                                                    = 0;
-    virtual void              on_update_internal(character& ch)                                                                                                              = 0;
-    virtual void              on_update_time(character& ch, uint16_t hours)                                                                                                  = 0;
-    virtual void              on_browse_character(character& ch, const character& target)                                                                                    = 0;
-    virtual void              on_item_tooltip(character& ch, const item& item, uint16_t position)                                                                            = 0;
-    virtual void              on_show_user_list(character& ch)                                                                                                               = 0;
-    virtual void              on_show_bulletin(character& ch)                                                                                                                = 0;
-    virtual void              on_show_bulletin(character& ch, const fb::model::bulletin& section, const std::list<bulletin::article>& articles, BULLETIN_BUTTON_ENABLE flag) = 0;
-    virtual void              on_show_bulletin(character& ch, const bulletin::article& value, BULLETIN_BUTTON_ENABLE flag)                                                   = 0;
-    virtual void              on_show_mail_box(character& ch, const std::vector<mail_box::summary>& mails, MAIL_BUTTON_ENABLE flag)                                          = 0;
-    virtual void              on_show_mail_box(character& ch, const mail_box::mail& mail, MAIL_BUTTON_ENABLE flag)                                                           = 0;
-    virtual void              on_show_bulletin_message(character& ch, std::string_view message, bool success, BULLETIN_MESSAGE_TYPE action) = 0;
-    virtual void              on_show_world_map(character& ch, uint32_t id, uint16_t index)                                                                                  = 0;
-    virtual void              on_timer(character& ch, uint32_t time, TIMER_TYPE type)                                                                                        = 0;
-    virtual void              on_weather(character& ch, WEATHER_TYPE weather)                                                                                                = 0;
-    virtual void              on_bright(character& ch, uint8_t value)                                                                                                        = 0;
-    virtual void              on_update_id(character& ch)                                                                                                                    = 0;
-    virtual void              on_character_init(character& ch)                                                                                                               = 0;
-    virtual void              on_update_position(character& ch)                                                                                                              = 0;
-    virtual void              on_screen_refresh(character& ch)                                                                                                               = 0;
-    virtual void              on_level_up(character& me)                                                                                                                     = 0;
-    virtual void              on_update(character& me, UPDATE_STATE_LEVEL level = UPDATE_STATE_LEVEL::EXP_MONEY | UPDATE_STATE_LEVEL::CROWD_CONTROL)                         = 0;
-    virtual void              on_transfer(character& me, fb::game::map& map, const fb::model::point16_t& position, std::string_view ip, uint16_t port)                       = 0;
+    virtual void              on_message(character& me, std::string_view message, MESSAGE_TYPE type = MESSAGE_TYPE::STATE)                                                            = 0;
+    virtual void              on_option_changed(character& me, OPTION option, bool enabled)                                                                                           = 0;
+    virtual void              on_update_option(character& me)                                                                                                                         = 0;
+    virtual void              on_update_map(character& ch, const fb::game::map& map)                                                                                                  = 0;
+    virtual void              on_update_map(character& ch, const fb::game::map& map, const fb::model::point16_t& begin, const fb::model::size8_t& size, uint16_t crc)                 = 0;
+    virtual void              on_update_bgm(character& ch, uint16_t bgm, uint8_t volume)                                                                                              = 0;
+    virtual void              on_update_buff(character& ch, const fb::game::buffs& buffs)                                                                                             = 0;
+    virtual void              on_update_internal(character& ch)                                                                                                                       = 0;
+    virtual void              on_update_time(character& ch, uint16_t hours)                                                                                                           = 0;
+    virtual void              on_browse_character(character& ch, const character& target)                                                                                             = 0;
+    virtual void              on_item_tooltip(character& ch, const item& item, uint16_t position)                                                                                     = 0;
+    virtual void              on_show_user_list(character& ch)                                                                                                                        = 0;
+    virtual void              on_show_bulletin(character& ch)                                                                                                                         = 0;
+    virtual void              on_show_bulletin(character& ch, const fb::model::bulletin& section, const std::list<bulletin::article>& articles, BULLETIN_BUTTON_ENABLE flag)          = 0;
+    virtual void              on_show_bulletin(character& ch, const bulletin::article& value, BULLETIN_BUTTON_ENABLE flag)                                                            = 0;
+    virtual void              on_show_mail_box(character& ch, const std::vector<mail_box::summary>& mails, MAIL_BUTTON_ENABLE flag)                                                   = 0;
+    virtual void              on_show_mail_box(character& ch, const mail_box::mail& mail, MAIL_BUTTON_ENABLE flag)                                                                    = 0;
+    virtual void              on_show_bulletin_message(character& ch, std::string_view message, bool success, BULLETIN_MESSAGE_TYPE action)                                           = 0;
+    virtual void              on_show_world_map(character& ch, uint32_t id, uint16_t index)                                                                                           = 0;
+    virtual void              on_timer(character& ch, uint32_t time, TIMER_TYPE type)                                                                                                 = 0;
+    virtual void              on_weather(character& ch, WEATHER_TYPE weather)                                                                                                         = 0;
+    virtual void              on_bright(character& ch, uint8_t value)                                                                                                                 = 0;
+    virtual void              on_update_id(character& ch)                                                                                                                             = 0;
+    virtual void              on_character_init(character& ch)                                                                                                                        = 0;
+    virtual void              on_update_position(character& ch)                                                                                                                       = 0;
+    virtual void              on_screen_refresh(character& ch)                                                                                                                        = 0;
+    virtual void              on_level_up(character& me)                                                                                                                              = 0;
+    virtual void              on_update(character& me, UPDATE_STATE_LEVEL level = UPDATE_STATE_LEVEL::EXP_MONEY | UPDATE_STATE_LEVEL::CROWD_CONTROL)                                  = 0;
+    virtual void              on_transfer(character& me, fb::game::map& map, const fb::model::point16_t& position, std::string_view ip, uint16_t port)                                = 0;
+    virtual void              on_ping(character& ch, uint32_t token)                                                                                                                  = 0;
+    virtual void              on_save(character& ch)                                                                                                                                  = 0;
+    virtual void              on_bulk_update(character& ch, const std::vector<object*>& objects)                                                                                      = 0;
+    virtual void              on_ad(character& ch, uint32_t width, uint32_t height, std::string_view url, uint8_t time)                                                               = 0;
+    virtual void              on_web(character& ch, uint8_t type, std::string_view url, std::string_view message)                                                                     = 0;
+    virtual void              on_ui(character& ch, uint8_t screen)                                                                                                                    = 0;
+    virtual void              on_item_throw_confirm(character& ch, uint8_t slot)                                                                                                      = 0;
+    virtual void              on_freeze(character& ch, bool value)                                                                                                                    = 0;
+    virtual void              on_friends_sync(character& ch, uint8_t enabled)                                                                                                         = 0;
+    virtual void              on_holyday_screen(character& ch, uint8_t screen, uint8_t hair, fb::model::enum_value::DIRECTION  direction, const fb::model::point<uint8_t>&  position) = 0;
     // clang-format on
 };
 

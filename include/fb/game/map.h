@@ -8,6 +8,7 @@
 #include <fb/game/sector.h>
 #include <fb/shard_container.h>
 #include <atomic>
+#include <optional>
 #include <shared_mutex>
 
 namespace fb::model {
@@ -150,14 +151,14 @@ public:
     async::task<void>              cleanup();
     std::shared_ptr<fb::game::map> name2map(std::string_view name) const;
 
-    void rezen_force();
-    void erase_map_cache(uint32_t map_id, const fb::model::point16_t& point);
-    void send_map_cache(character&                  ch,
-                        const fb::game::map&        map,
-                        const fb::model::point16_t& position,
-                        const fb::model::size8_t&   size,
-                        uint16_t                    crc);
-    void update_map_cache(uint32_t map_id, const fb::model::area<uint16_t>& area);
+    void                      rezen_force();
+    void                      erase_map_cache(uint32_t map_id, const fb::model::point16_t& point);
+    std::optional<fb::stream> map_update_stream(character&                  ch,
+                                                const fb::game::map&        map,
+                                                const fb::model::point16_t& position,
+                                                const fb::model::size8_t&   size,
+                                                uint16_t                    crc);
+    void                      update_map_cache(uint32_t map_id, const fb::model::area<uint16_t>& area);
 };
 
 } // namespace fb::game

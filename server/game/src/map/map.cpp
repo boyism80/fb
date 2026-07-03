@@ -349,7 +349,7 @@ void map::bulk_update(const std::vector<uint32_t>& oids)
 
         if (!changed_objects.empty())
         {
-            target->send(fb::protocol::game::response::update(changed_objects));
+            target->bulk_objects_update(changed_objects);
         }
     }
 }

@@ -348,31 +348,32 @@ void map::container::erase_map_cache(uint32_t map_id, const fb::model::point16_t
     }
 }
 
-void map::container::send_map_cache(character&                  ch,
-                                    const fb::game::map&        map,
-                                    const fb::model::point16_t& position,
-                                    const fb::model::size8_t&   size,
-                                    uint16_t                    crc)
+std::optional<fb::stream> map::container::map_update_stream(character&                  ch,
+                                                            const fb::game::map&        map,
+                                                            const fb::model::point16_t& position,
+                                                            const fb::model::size8_t&   size,
+                                                            uint16_t                    crc)
 {
     const auto hash = static_cast<uint64_t>(map.model.id) << 48 | static_cast<uint64_t>(position.x) << 32 |
                       static_cast<uint64_t>(position.y) << 16 | static_cast<uint64_t>(size.width) << 8 |
                       static_cast<uint64_t>(size.height);
 
-    auto send_cache_bytes = [&ch, crc](const auto& cache_bytes) {
+    std::optional<fb::stream> stream;
+    auto                      apply_cache_bytes = [&stream, crc](const auto& cache_bytes) {
         if (cache_bytes.crc == crc)
             return;
 
-        ch.send(fb::stream(cache_bytes.bytes.data(), cache_bytes.bytes.size()));
+        stream = fb::stream(cache_bytes.bytes.data(), cache_bytes.bytes.size());
     };
 
     {
         std::shared_lock lock(this->_update_cache_mutex);
-        if (this->_update_cache.try_read(hash, send_cache_bytes))
-            return;
+        if (this->_update_cache.try_read(hash, apply_cache_bytes))
+            return stream;
     }
 
     std::unique_lock lock(this->_update_cache_mutex);
-    this->_update_cache.write(hash, send_cache_bytes, [&map, &position, &size, hash]() {
+    this->_update_cache.write(hash, apply_cache_bytes, [&map, &position, &size, hash]() {
         auto bytes = fb::game::map::cache_bytes();
         bytes.hash = hash;
         bytes.crc  = 0;
@@ -383,6 +384,8 @@ void map::container::send_map_cache(character&                  ch,
         bytes.crc   = resp.crc;
         return bytes;
     });
+
+    return stream;
 }
 
 void map::container::update_map_cache(uint32_t map_id, const fb::model::area<uint16_t>& area)
