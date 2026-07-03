@@ -1,4 +1,4 @@
-#include <fb/game/protocol/bulletin/bulletin.h>
+#include <fb/game/protocol/bulletin.h>
 
 namespace fb::protocol::game::request {
 
