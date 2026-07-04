@@ -76,7 +76,7 @@ public:
                 }
             }
         };
-        auto worker = [this, &queue, &report_progress, &outputs_buffer]() -> async::task<void> {
+        auto worker = [this, &queue, &report_progress, &outputs_buffer, &processed]() -> async::task<void> {
             while (true)
             {
                 auto work = std::optional<queued_item>{};
