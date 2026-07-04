@@ -669,6 +669,17 @@ jobs:
             Write-Host "Warning: server\game\scripts not found"
           }
 
+      - name: Copy json
+        shell: powershell
+        run: |
+          if (Test-Path "server\game\json") {
+            if (Test-Path "build\json") { Remove-Item "build\json" -Recurse -Force }
+            New-Item -ItemType Directory -Force -Path "build\json" | Out-Null
+            Copy-Item -Path "server\game\json\*" -Destination "build\json" -Recurse -Force
+          } else {
+            Write-Host "Warning: server\game\json not found"
+          }
+
       - name: Copy config files
         shell: powershell
         run: |
@@ -702,12 +713,27 @@ jobs:
             build/marketplace
             build/maps
             build/scripts
+            build/json
             build/config.gateway.json
             build/config.login.json
             build/config.game.json
           retention-days: 7
 
-      - name: Zip the downloaded artifact
+      - name: Prepare dist package
+        shell: powershell
+        run: |
+          $distZip = "dist_zip"
+          if (Test-Path $distZip) { Remove-Item $distZip -Recurse -Force }
+          New-Item -ItemType Directory -Force -Path $distZip | Out-Null
+
+          Copy-Item build\gateway.exe, build\login.exe, build\game.exe -Destination $distZip
+          Copy-Item build\internal -Destination (Join-Path $distZip "internal") -Recurse
+          Copy-Item build\write-back -Destination (Join-Path $distZip "write-back") -Recurse
+          if (Test-Path build\maps) { Copy-Item build\maps -Destination (Join-Path $distZip "maps") -Recurse }
+          if (Test-Path build\scripts) { Copy-Item build\scripts -Destination (Join-Path $distZip "scripts") -Recurse }
+          if (Test-Path build\json) { Copy-Item build\json -Destination (Join-Path $distZip "json") -Recurse }
+
+      - name: Zip dist package
         shell: powershell
         run: |
           Compress-Archive -Path dist_zip\* -DestinationPath dist.zip -Force
