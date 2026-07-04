@@ -1,0 +1,51 @@
+{
+    "id": 0,
+    "ip": "__FB_HOST__",
+    "name": "gateway",
+    "port": 3001,
+    "thread": {
+        "logic": 12,
+        "io": 12
+    },
+    "entrypoints": [
+        {
+            "name": "로그인서버",
+            "desc": "World 1",
+            "ip": "__FB_HOST__",
+            "port": 3002
+        }
+    ],
+    "internal": {
+        "ip": "internal",
+        "port": 3000
+    },
+    "log": {
+        "level": [
+            "debug",
+            "info",
+            "warn",
+            "fatal"
+        ]
+    },
+    "amqp": {
+        "internal": {
+            "ip": "rabbitmq",
+            "port": 5672,
+            "uid": "guest",
+            "pwd": "guest"
+        },
+        "log": {
+            "ip": "rabbitmq",
+            "port": 5672,
+            "uid": "guest",
+            "pwd": "guest"
+        }
+    },
+    "http": {
+        "max_concurrent": 128
+    },
+    "client": {
+        "version": 550,
+        "nation": 215
+    }
+}

@@ -1,0 +1,279 @@
+# Local development stack for fb (single world).
+# From repo root:
+#   bash tools/compose-config.sh
+#   bash tools/compose-build.sh
+#   docker compose -f infra/compose/docker-compose.yml --profile infra --profile app up -d
+
+name: fb
+
+services:
+  mysql:
+    profiles: [infra, app]
+    image: mysql:8.0
+    environment:
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:-admin}
+    ports:
+      - "${MYSQL_PORT:-3306}:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD-SHELL", "mysqladmin ping -h 127.0.0.1 -uroot -p$$MYSQL_ROOT_PASSWORD || exit 1"]
+      interval: 5s
+      timeout: 5s
+      retries: 30
+      start_period: 30s
+    networks:
+      - fb
+
+  redis:
+    profiles: [infra, app]
+    image: redis:7-alpine
+    ports:
+      - "${REDIS_PORT:-6379}:6379"
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+    networks:
+      - fb
+
+  rabbitmq:
+    profiles: [infra, app]
+    image: rabbitmq:3-management-alpine
+    ports:
+      - "${RABBITMQ_PORT:-5672}:5672"
+      - "${RABBITMQ_MGMT_PORT:-15672}:15672"
+    healthcheck:
+      test: ["CMD", "rabbitmq-diagnostics", "-q", "ping"]
+      interval: 5s
+      timeout: 10s
+      retries: 30
+      start_period: 30s
+    networks:
+      - fb
+
+  internal:
+    profiles: [app]
+    image: fb/internal:local
+    build:
+      context: ../..
+      dockerfile: server/http/Dockerfile
+      args:
+        SERVICE: internal
+        BUILD_TYPE: ${BUILD_TYPE:-Release}
+        DATA_IMAGE: fb/data:local
+    depends_on:
+      mysql:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+    environment:
+      ASPNETCORE_ENVIRONMENT: Development
+      ASPNETCORE_HTTP_PORTS: "3000"
+    volumes:
+      - ./config/internal/appsettings.Development.json:/app/appsettings.Development.json:ro
+    ports:
+      - "${INTERNAL_PORT:-3000}:3000"
+    networks:
+      - fb
+
+  write-back:
+    profiles: [app]
+    image: fb/write-back:local
+    build:
+      context: ../..
+      dockerfile: server/http/Dockerfile
+      args:
+        SERVICE: write-back
+        BUILD_TYPE: ${BUILD_TYPE:-Release}
+        DATA_IMAGE: fb/data:local
+    depends_on:
+      mysql:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+      internal:
+        condition: service_started
+    environment:
+      ASPNETCORE_ENVIRONMENT: Development
+    volumes:
+      - ./config/write-back/appsettings.Development.json:/app/appsettings.Development.json:ro
+    networks:
+      - fb
+
+  log:
+    profiles: [app]
+    image: fb/log:local
+    build:
+      context: ../..
+      dockerfile: server/http/Dockerfile
+      args:
+        SERVICE: log
+        BUILD_TYPE: ${BUILD_TYPE:-Release}
+        DATA_IMAGE: fb/data:local
+    depends_on:
+      mysql:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+    environment:
+      ASPNETCORE_ENVIRONMENT: Development
+    volumes:
+      - ./config/log/appsettings.Development.json:/app/appsettings.Development.json:ro
+    networks:
+      - fb
+
+  marketplace:
+    profiles: [app]
+    image: fb/marketplace:local
+    build:
+      context: ../..
+      dockerfile: server/http/Dockerfile
+      args:
+        SERVICE: marketplace
+        BUILD_TYPE: ${BUILD_TYPE:-Release}
+        DATA_IMAGE: fb/data:local
+    depends_on:
+      mysql:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+      internal:
+        condition: service_started
+    environment:
+      ASPNETCORE_ENVIRONMENT: Development
+      ASPNETCORE_HTTP_PORTS: "3010"
+    volumes:
+      - ./config/marketplace/appsettings.Development.json:/app/appsettings.Development.json:ro
+    ports:
+      - "${MARKETPLACE_PORT:-3010}:3010"
+    networks:
+      - fb
+
+  admin-tool:
+    profiles: [app]
+    image: fb/admin-tool:local
+    build:
+      context: ../..
+      dockerfile: server/http/Dockerfile
+      args:
+        SERVICE: admin-tool
+        BUILD_TYPE: ${BUILD_TYPE:-Release}
+        DATA_IMAGE: fb/data:local
+    depends_on:
+      mysql:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+      internal:
+        condition: service_started
+    environment:
+      ASPNETCORE_ENVIRONMENT: Development
+      ASPNETCORE_HTTP_PORTS: "3020"
+    volumes:
+      - ./config/admin-tool/appsettings.Development.json:/app/appsettings.Development.json:ro
+    ports:
+      - "${ADMIN_TOOL_PORT:-3020}:3020"
+    networks:
+      - fb
+
+  gateway:
+    profiles: [app]
+    image: fb/gateway:local
+    build:
+      context: ../..
+      dockerfile: server/gateway/Dockerfile
+      args:
+        BUILD_TYPE: ${BUILD_TYPE:-Release}
+        BUILD_IMAGE: fb/build:local
+    command: ["./gateway", "-c", "config.json"]
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
+      internal:
+        condition: service_started
+    volumes:
+      - ./config/gateway/config.json:/app/config.json:ro
+    ports:
+      - "${GATEWAY_PORT:-3001}:3001"
+    networks:
+      - fb
+
+  login:
+    profiles: [app]
+    image: fb/login:local
+    build:
+      context: ../..
+      dockerfile: server/login/Dockerfile
+      args:
+        BUILD_TYPE: ${BUILD_TYPE:-Release}
+        BUILD_IMAGE: fb/build:local
+        DATA_IMAGE: fb/data:local
+    command: ["./login", "-c", "config.json"]
+    depends_on:
+      mysql:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+      internal:
+        condition: service_started
+    volumes:
+      - ./config/login/config.json:/app/config.json:ro
+    ports:
+      - "${LOGIN_PORT:-3002}:3002"
+    networks:
+      - fb
+
+  game:
+    profiles: [app]
+    image: fb/game:local
+    build:
+      context: ../..
+      dockerfile: server/game/Dockerfile
+      args:
+        BUILD_TYPE: ${BUILD_TYPE:-Release}
+        BUILD_IMAGE: fb/build:local
+        DATA_IMAGE: fb/data:local
+    command: ["./game", "-c", "config.json"]
+    depends_on:
+      mysql:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+      internal:
+        condition: service_started
+      login:
+        condition: service_started
+      marketplace:
+        condition: service_started
+    volumes:
+      - ./config/game/config.json:/app/config.json:ro
+    ports:
+      - "${GAME_PORT:-3004}:3004"
+    networks:
+      - fb
+
+networks:
+  fb:
+    name: fb-dev
+
+volumes:
+  mysql_data:
+  redis_data:
