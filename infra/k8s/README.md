@@ -26,7 +26,7 @@ infra/k8s/
 | `gateway`, `login-dev`, `game-dev-0` | StatefulSet | 1 each |
 | `internal`, `log-dev`, `write-back-dev`, `marketplace`, `admin-tool` | Deployment | 1 each |
 
-~19 pods total. Production (Pulumi) scales shards/replicas up using the same naming pattern.
+Production (Pulumi) scales shards/replicas up using the same naming pattern.
 
 ## Prerequisites
 
