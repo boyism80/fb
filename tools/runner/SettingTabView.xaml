@@ -7,8 +7,7 @@
         <converter:SettingSectionVisibilityConverter x:Key="SettingSectionVisibility" />
     </UserControl.Resources>
 
-    <Grid Margin="0,10,0,0"
-          IsEnabled="{Binding IsEnableSettingTab}">
+    <Grid Margin="0,10,0,0">
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="200" />
             <ColumnDefinition Width="Auto" />
@@ -45,6 +44,7 @@
                 Background="#303947" />
 
         <ScrollViewer Grid.Column="2"
+                      IsEnabled="{Binding IsEnableSettingTab}"
                       VerticalScrollBarVisibility="Auto"
                       Padding="0,0,0,20">
             <Grid MaxWidth="960">
