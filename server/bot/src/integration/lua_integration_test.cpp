@@ -555,7 +555,7 @@ async::task<bool> lua_integration_test::run_lua_function(int func_ref)
     bool result = false;
     try
     {
-        co_await ctx->call(1);
+        std::ignore = co_await ctx->call(1);
 
         if (ctx->argc() >= 1)
             result = ctx->toboolean(-1);
@@ -604,7 +604,7 @@ async::task<void> lua_integration_test::run_lua_void(int func_ref, std::optional
 
     try
     {
-        co_await ctx->call(nargs);
+        std::ignore = co_await ctx->call(nargs);
     }
     catch (const std::exception& e)
     {
