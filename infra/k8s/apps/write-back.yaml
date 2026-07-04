@@ -1,0 +1,27 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: write-back-dev
+  namespace: fb
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: write-back
+  template:
+    metadata:
+      labels:
+        app: write-back
+    spec:
+      containers:
+        - name: write-back
+          image: fb/write-back:local
+          imagePullPolicy: IfNotPresent
+          volumeMounts:
+            - name: config-volume
+              mountPath: /app/appsettings.json
+              subPath: appsettings.json
+      volumes:
+        - name: config-volume
+          configMap:
+            name: write-back-dev

@@ -1,0 +1,62 @@
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: game-dev-0
+  namespace: fb
+spec:
+  serviceName: game
+  replicas: 1
+  selector:
+    matchLabels:
+      app: game
+  template:
+    metadata:
+      labels:
+        app: game
+    spec:
+      containers:
+        - name: game
+          image: fb/game:local
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 30030
+              name: game-0
+          command: ["./game"]
+          args: ["-c", "config.json"]
+          volumeMounts:
+            - name: config-volume
+              mountPath: /app/config.json
+              subPath: config.json
+          readinessProbe:
+            tcpSocket:
+              port: game-0
+            initialDelaySeconds: 10
+            periodSeconds: 5
+            timeoutSeconds: 3
+            failureThreshold: 3
+          livenessProbe:
+            tcpSocket:
+              port: game-0
+            initialDelaySeconds: 30
+            periodSeconds: 10
+            timeoutSeconds: 3
+            failureThreshold: 3
+      volumes:
+        - name: config-volume
+          configMap:
+            name: game-dev-0
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: game
+  namespace: fb
+spec:
+  type: NodePort
+  selector:
+    app: game
+  ports:
+    - name: game-dev-0
+      port: 30030
+      targetPort: game-0
+      nodePort: 30030

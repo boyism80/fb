@@ -1,0 +1,62 @@
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: login-dev
+  namespace: fb
+spec:
+  serviceName: login
+  replicas: 1
+  selector:
+    matchLabels:
+      app: login
+  template:
+    metadata:
+      labels:
+        app: login
+    spec:
+      containers:
+        - name: login
+          image: fb/login:local
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 30010
+              name: login-0
+          command: ["./login"]
+          args: ["-c", "config.json"]
+          volumeMounts:
+            - name: config-volume
+              mountPath: /app/config.json
+              subPath: config.json
+          readinessProbe:
+            tcpSocket:
+              port: login-0
+            initialDelaySeconds: 10
+            periodSeconds: 5
+            timeoutSeconds: 3
+            failureThreshold: 3
+          livenessProbe:
+            tcpSocket:
+              port: login-0
+            initialDelaySeconds: 30
+            periodSeconds: 10
+            timeoutSeconds: 3
+            failureThreshold: 3
+      volumes:
+        - name: config-volume
+          configMap:
+            name: login-dev
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: login
+  namespace: fb
+spec:
+  type: NodePort
+  selector:
+    app: login
+  ports:
+    - name: login-dev
+      port: 30010
+      targetPort: login-0
+      nodePort: 30010

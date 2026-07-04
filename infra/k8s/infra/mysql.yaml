@@ -1,0 +1,437 @@
+# Per-world global MySQL (dev world, minimal: 1 global + 1 data + 1 log + unified)
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: mysql-dev-global
+  namespace: fb
+spec:
+  type: ClusterIP
+  selector:
+    app: mysql
+    section: dev
+    type: global
+  ports:
+    - name: mysql-dev-global
+      port: 3306
+      targetPort: m0
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: mysql-dev-global-nodeport
+  namespace: fb
+spec:
+  type: NodePort
+  selector:
+    app: mysql
+    section: dev
+    type: global
+  ports:
+    - name: mysql-dev-global
+      port: 3306
+      targetPort: m0
+      nodePort: 30100
+---
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: mysql-dev-global
+  namespace: fb
+spec:
+  serviceName: mysql-dev-global
+  replicas: 1
+  selector:
+    matchLabels:
+      app: mysql
+      section: dev
+      type: global
+  template:
+    metadata:
+      labels:
+        app: mysql
+        section: dev
+        type: global
+    spec:
+      affinity:
+        nodeAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+            - weight: 100
+              preference:
+                matchExpressions:
+                  - key: infra
+                    operator: In
+                    values: ["true"]
+      containers:
+        - name: mysql
+          image: mysql:8.4.3
+          args: ["--mysql-native-password=ON"]
+          ports:
+            - containerPort: 3306
+              name: m0
+          env:
+            - name: MYSQL_ROOT_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: mysql-secret
+                  key: MYSQL_ROOT_PASSWORD
+            - name: MYSQL_USER
+              valueFrom:
+                secretKeyRef:
+                  name: mysql-secret
+                  key: MYSQL_USER
+            - name: MYSQL_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: mysql-secret
+                  key: MYSQL_PASSWORD
+          volumeMounts:
+            - name: data-volume-dev-global
+              mountPath: /var/lib/mysql
+            - name: init-sql-volume
+              mountPath: /docker-entrypoint-initdb.d
+          readinessProbe:
+            exec:
+              command: ["mysqladmin", "ping", "-h", "127.0.0.1", "-ufb", "-padmin"]
+            initialDelaySeconds: 20
+            periodSeconds: 5
+          livenessProbe:
+            exec:
+              command: ["mysqladmin", "ping", "-h", "127.0.0.1", "-ufb", "-padmin"]
+            initialDelaySeconds: 30
+            periodSeconds: 10
+      volumes:
+        - name: data-volume-dev-global
+          hostPath:
+            path: /mnt/fb/mysql/dev/global
+            type: DirectoryOrCreate
+        - name: init-sql-volume
+          configMap:
+            name: init-sql
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: mysql-dev
+  namespace: fb
+spec:
+  type: ClusterIP
+  selector:
+    app: mysql
+    section: dev
+    type: data
+  ports:
+    - name: mysql-dev-0
+      port: 3307
+      targetPort: m1
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: mysql-dev-nodeport
+  namespace: fb
+spec:
+  type: NodePort
+  selector:
+    app: mysql
+    section: dev
+    type: data
+  ports:
+    - name: mysql-dev-0
+      port: 3307
+      targetPort: m1
+      nodePort: 30101
+---
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: mysql-dev-0
+  namespace: fb
+spec:
+  serviceName: mysql-dev
+  replicas: 1
+  selector:
+    matchLabels:
+      app: mysql
+      section: dev
+      type: data
+  template:
+    metadata:
+      labels:
+        app: mysql
+        section: dev
+        type: data
+    spec:
+      affinity:
+        nodeAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+            - weight: 100
+              preference:
+                matchExpressions:
+                  - key: infra
+                    operator: In
+                    values: ["true"]
+      containers:
+        - name: mysql
+          image: mysql:8.4.3
+          args: ["--mysql-native-password=ON"]
+          ports:
+            - containerPort: 3306
+              name: m1
+          env:
+            - name: MYSQL_ROOT_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: mysql-secret
+                  key: MYSQL_ROOT_PASSWORD
+            - name: MYSQL_USER
+              valueFrom:
+                secretKeyRef:
+                  name: mysql-secret
+                  key: MYSQL_USER
+            - name: MYSQL_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: mysql-secret
+                  key: MYSQL_PASSWORD
+          volumeMounts:
+            - name: data-volume-dev-0
+              mountPath: /var/lib/mysql
+            - name: init-sql-volume
+              mountPath: /docker-entrypoint-initdb.d
+          readinessProbe:
+            exec:
+              command: ["mysqladmin", "ping", "-h", "127.0.0.1", "-ufb", "-padmin"]
+            initialDelaySeconds: 20
+            periodSeconds: 5
+          livenessProbe:
+            exec:
+              command: ["mysqladmin", "ping", "-h", "127.0.0.1", "-ufb", "-padmin"]
+            initialDelaySeconds: 30
+            periodSeconds: 10
+      volumes:
+        - name: data-volume-dev-0
+          hostPath:
+            path: /mnt/fb/mysql/dev/0
+            type: DirectoryOrCreate
+        - name: init-sql-volume
+          configMap:
+            name: init-sql
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: mysql-dev-log
+  namespace: fb
+spec:
+  type: ClusterIP
+  selector:
+    app: mysql
+    section: dev
+    type: log
+  ports:
+    - name: mysql-dev-log-0
+      port: 3310
+      targetPort: m2
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: mysql-dev-log-nodeport
+  namespace: fb
+spec:
+  type: NodePort
+  selector:
+    app: mysql
+    section: dev
+    type: log
+  ports:
+    - name: mysql-dev-log-0
+      port: 3310
+      targetPort: m2
+      nodePort: 30104
+---
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: mysql-dev-log-0
+  namespace: fb
+spec:
+  serviceName: mysql-dev-log
+  replicas: 1
+  selector:
+    matchLabels:
+      app: mysql
+      section: dev
+      type: log
+  template:
+    metadata:
+      labels:
+        app: mysql
+        section: dev
+        type: log
+    spec:
+      affinity:
+        nodeAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+            - weight: 100
+              preference:
+                matchExpressions:
+                  - key: infra
+                    operator: In
+                    values: ["true"]
+      containers:
+        - name: mysql
+          image: mysql:8.4.3
+          args: ["--mysql-native-password=ON"]
+          ports:
+            - containerPort: 3306
+              name: m2
+          env:
+            - name: MYSQL_ROOT_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: mysql-secret
+                  key: MYSQL_ROOT_PASSWORD
+            - name: MYSQL_USER
+              valueFrom:
+                secretKeyRef:
+                  name: mysql-secret
+                  key: MYSQL_USER
+            - name: MYSQL_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: mysql-secret
+                  key: MYSQL_PASSWORD
+          volumeMounts:
+            - name: data-volume-dev-log-0
+              mountPath: /var/lib/mysql
+            - name: init-sql-volume
+              mountPath: /docker-entrypoint-initdb.d
+          readinessProbe:
+            exec:
+              command: ["mysqladmin", "ping", "-h", "127.0.0.1", "-ufb", "-padmin"]
+            initialDelaySeconds: 20
+            periodSeconds: 5
+          livenessProbe:
+            exec:
+              command: ["mysqladmin", "ping", "-h", "127.0.0.1", "-ufb", "-padmin"]
+            initialDelaySeconds: 30
+            periodSeconds: 10
+      volumes:
+        - name: data-volume-dev-log-0
+          hostPath:
+            path: /mnt/fb/mysql/dev/log/0
+            type: DirectoryOrCreate
+        - name: init-sql-volume
+          configMap:
+            name: init-sql
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: mysql-unified
+  namespace: fb
+spec:
+  type: ClusterIP
+  selector:
+    app: mysql
+    section: unified
+    type: data
+  ports:
+    - name: mysql-unified
+      port: 3500
+      targetPort: m3
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: mysql-unified-nodeport
+  namespace: fb
+spec:
+  type: NodePort
+  selector:
+    app: mysql
+    section: unified
+    type: data
+  ports:
+    - name: mysql-unified
+      port: 3500
+      targetPort: m3
+      nodePort: 31000
+---
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: mysql-unified
+  namespace: fb
+spec:
+  serviceName: mysql-unified
+  replicas: 1
+  selector:
+    matchLabels:
+      app: mysql
+      section: unified
+      type: data
+  template:
+    metadata:
+      labels:
+        app: mysql
+        section: unified
+        type: data
+    spec:
+      affinity:
+        nodeAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+            - weight: 100
+              preference:
+                matchExpressions:
+                  - key: infra
+                    operator: In
+                    values: ["true"]
+      containers:
+        - name: mysql
+          image: mysql:8.4.3
+          args: ["--mysql-native-password=ON"]
+          ports:
+            - containerPort: 3306
+              name: m3
+          env:
+            - name: MYSQL_ROOT_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: mysql-secret
+                  key: MYSQL_ROOT_PASSWORD
+            - name: MYSQL_USER
+              valueFrom:
+                secretKeyRef:
+                  name: mysql-secret
+                  key: MYSQL_USER
+            - name: MYSQL_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: mysql-secret
+                  key: MYSQL_PASSWORD
+          volumeMounts:
+            - name: data-volume-unified
+              mountPath: /var/lib/mysql
+            - name: init-sql-volume
+              mountPath: /docker-entrypoint-initdb.d
+          readinessProbe:
+            exec:
+              command: ["mysqladmin", "ping", "-h", "127.0.0.1", "-ufb", "-padmin"]
+            initialDelaySeconds: 20
+            periodSeconds: 5
+          livenessProbe:
+            exec:
+              command: ["mysqladmin", "ping", "-h", "127.0.0.1", "-ufb", "-padmin"]
+            initialDelaySeconds: 30
+            periodSeconds: 10
+      volumes:
+        - name: data-volume-unified
+          hostPath:
+            path: /mnt/fb/mysql/unified
+            type: DirectoryOrCreate
+        - name: init-sql-volume
+          configMap:
+            name: init-sql

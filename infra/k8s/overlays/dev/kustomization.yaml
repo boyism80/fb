@@ -1,0 +1,61 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+namespace: fb
+
+resources:
+  - ../../base
+  - ../../infra
+  - ../../apps
+
+configMapGenerator:
+  - name: internal
+    files:
+      - appsettings.k8s.json=config/internal/appsettings.k8s.json
+  - name: write-back-dev
+    files:
+      - appsettings.json=config/write-back-dev/appsettings.json
+  - name: log-dev
+    files:
+      - appsettings.json=config/log-dev/appsettings.json
+  - name: marketplace
+    files:
+      - appsettings.k8s.json=config/marketplace/appsettings.k8s.json
+  - name: admin-tool
+    files:
+      - appsettings.k8s.json=config/admin-tool/appsettings.k8s.json
+  - name: gateway
+    files:
+      - config.json=config/gateway/config.json
+  - name: login-dev
+    files:
+      - config.json=config/login-dev/config.json
+  - name: game-dev-0
+    files:
+      - config.json=config/game-dev-0/config.json
+
+images:
+  - name: fb/internal
+    newName: fb/internal
+    newTag: local
+  - name: fb/write-back
+    newName: fb/write-back
+    newTag: local
+  - name: fb/log
+    newName: fb/log
+    newTag: local
+  - name: fb/marketplace
+    newName: fb/marketplace
+    newTag: local
+  - name: fb/admin-tool
+    newName: fb/admin-tool
+    newTag: local
+  - name: fb/gateway
+    newName: fb/gateway
+    newTag: local
+  - name: fb/login
+    newName: fb/login
+    newTag: local
+  - name: fb/game
+    newName: fb/game
+    newTag: local

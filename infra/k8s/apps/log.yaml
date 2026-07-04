@@ -1,0 +1,50 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: log-dev
+  namespace: fb
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: log
+  template:
+    metadata:
+      labels:
+        app: log
+    spec:
+      containers:
+        - name: log
+          image: fb/log:local
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 80
+              name: log
+          env:
+            - name: ASPNETCORE_HTTP_PORTS
+              value: "80"
+            - name: HOSTNAME
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.name
+          volumeMounts:
+            - name: config-volume
+              mountPath: /app/appsettings.json
+              subPath: appsettings.json
+      volumes:
+        - name: config-volume
+          configMap:
+            name: log-dev
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: log-dev
+  namespace: fb
+spec:
+  type: ClusterIP
+  selector:
+    app: log
+  ports:
+    - port: 80
+      targetPort: log
