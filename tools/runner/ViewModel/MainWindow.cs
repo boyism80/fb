@@ -1238,31 +1238,13 @@ namespace Runner.ViewModel
                 File.WriteAllText(Path.Combine([gatewayDir, $"config_gateway.json"]), gatewayConf.ToString(Formatting.Indented));
 
                 var internalConf = new JObject();
+                internalConf["Database"] = JObject.FromObject(new { AutoMigration = true });
                 internalConf["Logging"] = new JObject();
                 internalConf["Logging"]["LogLevel"] = new JObject();
                 internalConf["Logging"]["LogLevel"]["Default"] = "Information";
                 internalConf["Logging"]["LogLevel"]["Microsoft.AspNetCore"] = "Warning";
 
-                var internalMySql = new JObject();
-                if (MySQL.Count > 0)
-                {
-                    var first = MySQL[0];
-                    internalMySql["unified"] = $"Server={first.IP};Port={first.Port};User ID={first.ID}; Password={first.PW}; Database=fb";
-                }
-                var internalMySqlWorlds = new JObject();
-                var world1MySql = new JObject();
-                var dataConnStrings = new JArray();
-                foreach (var db in MySQL)
-                    dataConnStrings.Add($"Server={db.IP};Port={db.Port};User ID={db.ID}; Password={db.PW}; Database=fb");
-                if (MySQL.Count > 0)
-                {
-                    var first = MySQL[0];
-                    world1MySql["global"] = $"Server={first.IP};Port={first.Port};User ID={first.ID}; Password={first.PW}; Database=fb";
-                    if (dataConnStrings.Count > 0)
-                        world1MySql["data"] = dataConnStrings;
-                }
-                internalMySqlWorlds["1"] = world1MySql;
-                internalMySql["worlds"] = internalMySqlWorlds;
+                var internalMySql = BuildMySqlWithUnified();
                 internalConf["ConnectionStrings"] = new JObject();
                 internalConf["ConnectionStrings"]["MySql"] = internalMySql;
 
@@ -1302,21 +1284,7 @@ namespace Runner.ViewModel
                 wbConf["Logging"]["LogLevel"]["Default"] = "Information";
                 wbConf["Logging"]["LogLevel"]["Microsoft.AspNetCore"] = "Warning";
 
-                var wbMySql = new JObject();
-                var wbMySqlWorlds = new JObject();
-                var wbWorld1MySql = new JObject();
-                var wbDataConnStrings = new JArray();
-                foreach (var db in MySQL)
-                    wbDataConnStrings.Add($"Server={db.IP};Port={db.Port};User ID={db.ID}; Password={db.PW}; Database=fb");
-                if (MySQL.Count > 0)
-                {
-                    var first = MySQL[0];
-                    wbWorld1MySql["global"] = $"Server={first.IP};Port={first.Port};User ID={first.ID}; Password={first.PW}; Database=fb";
-                    if (wbDataConnStrings.Count > 0)
-                        wbWorld1MySql["data"] = wbDataConnStrings;
-                }
-                wbMySqlWorlds["1"] = wbWorld1MySql;
-                wbMySql["worlds"] = wbMySqlWorlds;
+                var wbMySql = BuildMySqlWorldOnly();
                 wbConf["ConnectionStrings"] = new JObject();
                 wbConf["ConnectionStrings"]["MySql"] = wbMySql;
 
@@ -1352,21 +1320,7 @@ namespace Runner.ViewModel
                 logConf["Logging"]["LogLevel"]["Default"] = "Information";
                 logConf["Logging"]["LogLevel"]["Microsoft.AspNetCore"] = "Warning";
 
-                var logMySql = new JObject();
-                var logMySqlWorlds = new JObject();
-                var logWorld1MySql = new JObject();
-                var logDataConnStrings = new JArray();
-                foreach (var db in MySQL)
-                    logDataConnStrings.Add($"Server={db.IP};Port={db.Port};User ID={db.ID}; Password={db.PW}; Database=fb");
-                if (MySQL.Count > 0)
-                {
-                    var first = MySQL[0];
-                    logWorld1MySql["global"] = $"Server={first.IP};Port={first.Port};User ID={first.ID}; Password={first.PW}; Database=fb";
-                    if (logDataConnStrings.Count > 0)
-                        logWorld1MySql["data"] = logDataConnStrings;
-                }
-                logMySqlWorlds["1"] = logWorld1MySql;
-                logMySql["worlds"] = logMySqlWorlds;
+                var logMySql = BuildLogMySql();
                 logConf["ConnectionStrings"] = new JObject();
                 logConf["ConnectionStrings"]["MySql"] = logMySql;
 
@@ -2000,6 +1954,69 @@ namespace Runner.ViewModel
                 ID = "root",
                 PW = "admin"
             }));
+        }
+
+        private const string RunnerWorldId = "1";
+
+        private static string BuildMySqlConnectionString(MySqlConnection db, string database) =>
+            $"Server={db.IP};Port={db.Port};User ID={db.ID}; Password={db.PW}; Database={database}";
+
+        private JObject BuildMySqlWithUnified()
+        {
+            var mySql = new JObject();
+            if (MySQL.Count == 0)
+                return mySql;
+
+            var globalHost = MySQL[0];
+            mySql["unified"] = BuildMySqlConnectionString(globalHost, "fb-unified");
+            mySql["worlds"] = new JObject { [RunnerWorldId] = BuildMySqlWorld(globalHost) };
+            return mySql;
+        }
+
+        private JObject BuildMySqlWorldOnly()
+        {
+            var mySql = new JObject();
+            if (MySQL.Count == 0)
+                return mySql;
+
+            mySql["worlds"] = new JObject { [RunnerWorldId] = BuildMySqlWorld(MySQL[0]) };
+            return mySql;
+        }
+
+        private JObject BuildMySqlWorld(MySqlConnection globalHost)
+        {
+            var world = new JObject
+            {
+                ["global"] = BuildMySqlConnectionString(globalHost, "fb-1-global"),
+            };
+
+            var data = new JArray();
+            for (var i = 1; i < MySQL.Count; i++)
+                data.Add(BuildMySqlConnectionString(MySQL[i], $"fb-1-data-{i - 1}"));
+
+            if (data.Count > 0)
+                world["data"] = data;
+
+            return world;
+        }
+
+        private JObject BuildLogMySql()
+        {
+            var mySql = new JObject();
+            if (MySQL.Count == 0)
+                return mySql;
+
+            var globalHost = MySQL[0];
+            var world = new JObject
+            {
+                ["global"] = BuildMySqlConnectionString(globalHost, "fb-1-global"),
+                ["data"] = new JArray
+                {
+                    BuildMySqlConnectionString(globalHost, "fb-1-log-0"),
+                },
+            };
+            mySql["worlds"] = new JObject { [RunnerWorldId] = world };
+            return mySql;
         }
 
         private void KillProcesses()
