@@ -199,6 +199,9 @@ void listener_impl::on_show_user_list(character& ch)
             if (ptr == nullptr)
                 continue;
 
+            if (ptr->hidden(ch))
+                continue;
+
             users.push_back(ptr);
         };
 
