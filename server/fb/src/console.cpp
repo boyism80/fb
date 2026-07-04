@@ -146,6 +146,18 @@ void console::down(uint8_t line)
 void console::progress(std::string_view text, float progress)
 {
     auto _ = std::lock_guard(_mutex);
+    if (progress <= 0.f)
+    {
+        _max_progress = 0.f;
+    }
+    else if (progress < _max_progress)
+    {
+        return;
+    }
+    else
+    {
+        _max_progress = progress;
+    }
     _current_policy->progress(text, progress);
 }
 

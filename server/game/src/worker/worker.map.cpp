@@ -37,5 +37,6 @@ void map_loader::on_error(const map_loader::input_type& input, std::exception& e
 
 void map_loader::on_finish()
 {
+    fb::console::progress("Loading map files", 100.f);
     fb::console::newline();
 }

@@ -46,16 +46,16 @@ public:
     using object_ptr   = std::shared_ptr<object>;
 
 private:
-    fb::model::size16_t      _size  = fb::model::size16_t(0, 0);
-    unique_tiles             _tiles = nullptr;
-    std::shared_ptr<sectors> _sectors;
-    std::atomic<bool>        _init_script_invoked{false};
+    fb::model::size16_t _size  = fb::model::size16_t(0, 0);
+    unique_tiles        _tiles = nullptr;
+    std::atomic<bool>   _init_script_invoked{false};
 
 public:
     const fb::game::server& server;
     const fb::model::map&   model;
     object::container       objects = object::container(*this);
     door::container         doors   = door::container(*this);
+    sector::container       sectors = sector::container(*this);
     const bool              active;
 
 public:
@@ -84,7 +84,6 @@ public:
     bool                            movable_forward(const object& object, uint16_t step = 1) const;
     const fb::model::warp*          warpable(const fb::model::point16_t& position) const;
     bool                            is_active() const;
-    std::shared_ptr<sector>         sector_at(const fb::model::point16_t& position);
     std::vector<object_ptr>         nears(const fb::model::point16_t& pivot, OBJECT_TYPE type = OBJECT_TYPE::OBJECT) const;
     std::vector<object_ptr>         belows(const fb::model::point16_t& pivot, OBJECT_TYPE type = OBJECT_TYPE::OBJECT) const;
     void                            bulk_update(const std::vector<uint32_t>& oids);

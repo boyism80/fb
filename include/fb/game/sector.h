@@ -2,13 +2,11 @@
 #define __SECTOR_H__
 
 #include <fb/game/object.h>
-#include <set>
+#include <vector>
 
 namespace fb::game {
 
 class map;
-class character;
-class sectors;
 
 class sector : private std::vector<std::shared_ptr<object>>
 {
@@ -16,7 +14,7 @@ private:
     using super = std::vector<std::shared_ptr<object>>;
 
 public:
-    friend class sectors;
+    class container;
 
 public:
     using super::at;
@@ -31,56 +29,71 @@ public:
 private:
     const uint32_t _id              = 0;
     uint32_t       _character_count = 0;
-    bool           _activated       = false;
 
 public:
-    sector(uint32_t id);
+    explicit sector(uint32_t id);
     ~sector();
 
 public:
     void     push(std::shared_ptr<object> object);
     void     erase(std::shared_ptr<object> object);
     uint32_t id() const;
-    bool     is_active() const;
+    bool     occupied() const;
+
+private:
+    friend class container;
 };
 
-class sectors
+class sector::container
 {
-public:
-    using shared_sectors = std::vector<std::shared_ptr<sector>>;
-
 private:
-    const fb::model::size16_t _map_size = fb::model::size16_t(0, 0);
-    const fb::model::size16_t _size     = fb::model::size16_t(0, 0);
-    const uint32_t            _rows     = 0;
-    const uint32_t            _columns  = 0;
-    const uint32_t            _count    = 0;
-    shared_sectors            _pool;
+    fb::game::map&      _map;
+    std::vector<sector> _pool;
+    fb::model::size16_t _map_size  = fb::model::size16_t(0, 0);
+    fb::model::size16_t _cell_size = fb::model::size16_t(0, 0);
+    uint32_t            _rows      = 0;
+    uint32_t            _columns   = 0;
 
 public:
-    sectors(const fb::model::size16_t& map_size, const fb::model::size16_t& size);
-    sectors(const sectors&) = delete;
-    sectors(sectors&&)      = delete;
-    ~sectors()              = default;
+    using iterator       = std::vector<sector>::iterator;
+    using const_iterator = std::vector<sector>::const_iterator;
 
 public:
-    sectors& operator= (sectors& other)       = delete;
-    sectors& operator= (const sectors& other) = delete;
-
-private:
-    uint32_t                          index(const fb::model::point16_t& position) const;
-    std::set<std::shared_ptr<sector>> active_sectors() const;
-
-public:
-    std::shared_ptr<sector> at(const fb::model::point16_t& position) const;
-    std::shared_ptr<sector> at(uint32_t index) const;
+    explicit container(fb::game::map& map);
+    container(const container&)             = delete;
+    container(container&&)                  = delete;
+    container& operator= (const container&) = delete;
+    container& operator= (container&&)      = delete;
+    ~container()                            = default;
 
 public:
-    std::vector<std::shared_ptr<sector>> nears(uint32_t index) const;
-    std::vector<std::shared_ptr<sector>> nears(const fb::model::point16_t& pivot) const;
+    iterator       begin();
+    iterator       end();
+    const_iterator begin() const;
+    const_iterator end() const;
+    size_t         size() const;
+
+public:
+    bool loaded() const;
+    void load(const fb::model::size16_t& map_size, const fb::model::size16_t& cell_size);
+
+    bool                       activated(uint32_t index) const;
+    bool                       activated(const sector& sector) const;
+    bool                       any_occupied() const;
+    std::vector<const sector*> actives() const;
+
+    sector*       at(const fb::model::point16_t& position);
+    const sector* at(const fb::model::point16_t& position) const;
+    sector*       at(uint32_t index);
+    const sector* at(uint32_t index) const;
+
+    std::vector<const sector*>           nears(uint32_t index) const;
+    std::vector<const sector*>           nears(const fb::model::point16_t& pivot) const;
     std::vector<std::shared_ptr<object>> objects(const fb::model::point16_t& pivot, OBJECT_TYPE type) const;
     std::vector<std::shared_ptr<object>> objects(OBJECT_TYPE type) const;
-    bool                                 is_active() const;
+
+private:
+    uint32_t index(const fb::model::point16_t& position) const;
 };
 
 } // namespace fb::game

@@ -377,20 +377,26 @@ void object::update_sector()
     this->assert_thread();
 
     auto before = this->_sector;
-    auto after  = this->_map->sector_at(this->_position);
+    auto after  = this->_map->sectors.at(this->_position);
     if (before == after)
         return;
 
     if (before)
-        before->erase(std::static_pointer_cast<fb::game::object>(this->shared_from_this()));
+        before->erase(this->shared_from_this_as<object>());
 
-    this->_sector.reset();
+    this->_sector = nullptr;
     if (this->_map == nullptr)
         return;
 
     this->_sector = after;
     if (after)
-        after->push(std::static_pointer_cast<fb::game::object>(this->shared_from_this()));
+        after->push(this->shared_from_this_as<object>());
+}
+
+bool object::active_sector() const
+{
+    this->assert_thread();
+    return this->_sector != nullptr && this->_map->sectors.activated(*this->_sector);
 }
 
 bool object::sight(const fb::model::point16_t& position) const
@@ -512,7 +518,7 @@ async::task<bool> object::map(map_ptr map, std::optional<fb::model::point16_t> p
             if (this->_sector != nullptr)
             {
                 this->_sector->erase(this->shared_from_this_as<object>());
-                this->_sector.reset();
+                this->_sector = nullptr;
             }
 
             // Call listener for packet response

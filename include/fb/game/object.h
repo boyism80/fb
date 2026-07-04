@@ -34,7 +34,6 @@ class buffs;
 class objects;
 class items;
 class sector;
-class sectors;
 class appearance;
 
 class object : public fb::thread_switchable
@@ -56,8 +55,8 @@ public:
     friend fb::game::items;
 
 private:
-    std::shared_ptr<fb::game::sector> _sector;
-    mutable std::shared_mutex         _map_lock;
+    fb::game::sector*         _sector = nullptr;
+    mutable std::shared_mutex _map_lock;
 
 protected:
     uint32_t                 _oid = 0;
@@ -124,6 +123,7 @@ public:
     bool                                        direction(DIRECTION value);
     virtual async::task<bool>                   map(map_ptr map, std::optional<fb::model::point16_t> position = std::nullopt, map_options options = {});
     map_ptr                                     map() const;
+    bool                                        active_sector() const;
     bool                                        sight(const fb::model::point16_t& position) const;
     bool                                        sight(const fb::game::object& object) const;
     fb::model::area<uint16_t>                   sight_area() const;

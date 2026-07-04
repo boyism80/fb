@@ -1,4 +1,7 @@
 #include <fb/game/handler/timer/mob_action_timer.h>
+#include <fb/game/mob.h>
+#include <fb/game/sector.h>
+#include <fb/game/thread_params.h>
 
 using namespace fb::game::handler::timer;
 
@@ -16,22 +19,29 @@ async::task<void> mob_action_timer::handle(const fb::model::datetime& now, std::
         if (map->active == false)
             continue;
 
-        if (map->is_active() == false)
-            continue;
-
-        for (auto& [_, obj] : map->objects)
+        for (const sector* sector : map->sectors.actives())
         {
-            if (obj->is(OBJECT_TYPE::MOB) == false)
-                continue;
+            auto targets = std::vector<std::shared_ptr<fb::game::mob>>();
+            targets.reserve(sector->size());
 
-            auto mob = std::static_pointer_cast<fb::game::mob>(obj);
-            if (mob->alive() == false)
-                continue;
+            for (const auto& obj : *sector)
+            {
+                if (obj->is(OBJECT_TYPE::MOB) == false)
+                    continue;
 
-            if (mob->paralysis())
-                continue;
+                targets.push_back(std::static_pointer_cast<fb::game::mob>(obj));
+            }
 
-            std::ignore = mob->action(now);
+            for (const auto& mob : targets)
+            {
+                if (mob->alive() == false)
+                    continue;
+
+                if (mob->paralysis())
+                    continue;
+
+                std::ignore = mob->action(now);
+            }
         }
     }
     co_return;

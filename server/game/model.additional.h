@@ -41,7 +41,6 @@
     class item;                       \
     class items;                      \
     class sector;                     \
-    class sectors;                    \
     struct listener;                  \
     class appearance;                 \
     }
