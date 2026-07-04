@@ -1514,7 +1514,7 @@ int builtin::game_bot::builtin_spawn_monsters_relative(lua_State* L)
     builder.yield = [bot_ptr, name, positions]() -> async::task<void> {
         if (bot_ptr == nullptr)
             co_return;
-        co_await bot_ptr->spawn_monsters_relative(name, positions, INTEGRATION_DEFAULT_TIMEOUT);
+        std::ignore = co_await bot_ptr->spawn_monsters_relative(name, positions, INTEGRATION_DEFAULT_TIMEOUT);
     };
     builder.resume = []() -> async::task<int> {
         co_return 0;

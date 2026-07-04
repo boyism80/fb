@@ -683,7 +683,7 @@ jobs:
             # .NET services load tables from json/ under their publish output (see DataTableLoader)
             $jsonConsumers = @("internal", "admin-tool", "marketplace")
             foreach ($svc in $jsonConsumers) {
-              $dest = Join-Path "build" $svc "json"
+              $dest = Join-Path (Join-Path "build" $svc) "json"
               if (Test-Path $dest) { Remove-Item $dest -Recurse -Force }
               New-Item -ItemType Directory -Force -Path $dest | Out-Null
               Copy-Item -Path "build\json\*" -Destination $dest -Recurse -Force
