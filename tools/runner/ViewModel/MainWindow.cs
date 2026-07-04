@@ -877,7 +877,7 @@ namespace Runner.ViewModel
                     StandardOutputEncoding = Encoding.UTF8,
                     StandardErrorEncoding = Encoding.UTF8,
                     FileName = "cmd.exe",
-                    Arguments = @"/C pushd tools & call update-data.bat true & popd & robocopy /NP /NFL game\\json\\ build\\dist\\json\\ & robocopy /NP /NFL internal\\json\\ build\\dist\\internal\\json\\"
+                    Arguments = @"/C pushd tools & call update-data.bat true & popd & robocopy /NP /NFL server\game\json\ build\dist\json\ & robocopy /NP /NFL server\internal\json\ build\dist\internal\json\"
                 }
             };
 
@@ -1020,6 +1020,16 @@ namespace Runner.ViewModel
 
                 if (SaveInterval == 0)
                     throw new InvalidOperationException("서버 저장 주기는 1초 이상이어야 합니다.");
+
+                if (string.IsNullOrEmpty(WorkingDirectory) || Directory.Exists(WorkingDirectory) == false)
+                    throw new InvalidOperationException("Working directory가 설정되지 않았거나 존재하지 않습니다.");
+
+                EnsureDistJsonDirectory(
+                    Path.Combine(WorkingDirectory, "build", "dist", "json"),
+                    "게임");
+                EnsureDistJsonDirectory(
+                    Path.Combine(WorkingDirectory, "build", "dist", "internal", "json"),
+                    "Internal");
 
                 foreach (var mysql in MySQL)
                 {
@@ -1446,6 +1456,24 @@ namespace Runner.ViewModel
             {
                 PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(IsEnableEdit)));
                 PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(RunButtonText)));
+            }
+        }
+
+        private static void EnsureDistJsonDirectory(string jsonDir, string displayName)
+        {
+            const string updateDataHint =
+                "Runner 메뉴에서 파일 → 업데이트 → 데이터를 실행하세요.";
+
+            if (Directory.Exists(jsonDir) == false)
+            {
+                throw new InvalidOperationException(
+                    $"{displayName} JSON 폴더가 없습니다.{Environment.NewLine}{jsonDir}{Environment.NewLine}{Environment.NewLine}{updateDataHint}{Environment.NewLine}또는 패치/빌드 후 다시 시작하세요.");
+            }
+
+            if (Directory.EnumerateFiles(jsonDir, "*.json", SearchOption.TopDirectoryOnly).Any() == false)
+            {
+                throw new InvalidOperationException(
+                    $"{displayName} JSON 폴더에 .json 파일이 없습니다.{Environment.NewLine}{jsonDir}{Environment.NewLine}{Environment.NewLine}{updateDataHint}");
             }
         }
 
