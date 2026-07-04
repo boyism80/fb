@@ -6,9 +6,9 @@ PUSHD data-converter
 SET DISABLE_TTY=%1
 
 IF "%1" == "true" (
-	dotnet publish -c Release /p:DefineConstants=DISABLED_TTY -o bin
+	dotnet publish ExcelTableConverter.csproj -c Release /p:DefineConstants=DISABLED_TTY -o bin
 ) ELSE (
-	dotnet publish -c Release -o bin
+	dotnet publish ExcelTableConverter.csproj -c Release -o bin
 )
 
 if ERRORLEVEL 1 GOTO END

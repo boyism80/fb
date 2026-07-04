@@ -7,7 +7,6 @@ on:
       - release/**
     paths-ignore:
       - '**.md'
-      - 'wiki/**'
 
 env:
   REGISTRY: ghcr.io
@@ -676,6 +675,16 @@ jobs:
             if (Test-Path "build\json") { Remove-Item "build\json" -Recurse -Force }
             New-Item -ItemType Directory -Force -Path "build\json" | Out-Null
             Copy-Item -Path "server\game\json\*" -Destination "build\json" -Recurse -Force
+
+            # .NET services load tables from json/ under their publish output (see DataTableLoader)
+            $jsonConsumers = @("internal", "admin-tool", "marketplace")
+            foreach ($svc in $jsonConsumers) {
+              $dest = Join-Path "build" $svc "json"
+              if (Test-Path $dest) { Remove-Item $dest -Recurse -Force }
+              New-Item -ItemType Directory -Force -Path $dest | Out-Null
+              Copy-Item -Path "build\json\*" -Destination $dest -Recurse -Force
+              Write-Host "Synced build\json to build\$svc\json"
+            }
           } else {
             Write-Host "Warning: server\game\json not found"
           }
