@@ -1616,48 +1616,41 @@ namespace Runner.ViewModel
             if (!Directory.Exists(destDir))
                 Directory.CreateDirectory(destDir);
 
-            List<string> entryNames;
-            using (var archive = ZipFile.OpenRead(zipPath))
-            {
-                entryNames = archive.Entries
-                    .Where(e => !string.IsNullOrEmpty(e.Name))
-                    .Select(e => e.FullName)
-                    .ToList();
-            }
-
-            int totalFiles = entryNames.Count;
-            int extractedCount = 0;
-
             await Task.Run(() =>
             {
-                Parallel.ForEach(
-                    entryNames,
-                    new ParallelOptions { MaxDegreeOfParallelism = Environment.ProcessorCount },
-                    entryName =>
+                using var fs = new FileStream(zipPath, FileMode.Open, FileAccess.Read, FileShare.Read);
+                using var archive = new ZipArchive(fs, ZipArchiveMode.Read, leaveOpen: false);
+
+                var entries = archive.Entries
+                    .Where(e => !string.IsNullOrEmpty(e.Name))
+                    .ToList();
+
+                var totalFiles = entries.Count;
+                progressCallback(0, totalFiles, string.Empty);
+
+                var extractedCount = 0;
+                foreach (var entry in entries)
+                {
+                    var destinationPath = Path.Combine(destDir, entry.FullName);
+                    var destinationDir = Path.GetDirectoryName(destinationPath);
+                    if (string.IsNullOrEmpty(destinationDir) == false)
+                        Directory.CreateDirectory(destinationDir);
+
+                    using (var entryStream = entry.Open())
+                    using (var fileStream = new FileStream(
+                               destinationPath,
+                               FileMode.Create,
+                               FileAccess.Write,
+                               FileShare.None,
+                               bufferSize: 65536,
+                               useAsync: false))
                     {
-                        using (var fs = new FileStream(zipPath, FileMode.Open, FileAccess.Read, FileShare.Read))
-                        using (var localArchive = new ZipArchive(fs, ZipArchiveMode.Read, leaveOpen: false))
-                        {
-                            var entry = localArchive.GetEntry(entryName);
-                            var destinationPath = Path.Combine(destDir, entry.FullName);
-                            Directory.CreateDirectory(Path.GetDirectoryName(destinationPath));
+                        entryStream.CopyTo(fileStream);
+                    }
 
-                            using (var entryStream = entry.Open())
-                            using (var fileStream = new FileStream(
-                                       destinationPath,
-                                       FileMode.Create,
-                                       FileAccess.Write,
-                                       FileShare.None,
-                                       bufferSize: 65536,
-                                       useAsync: false))
-                            {
-                                entryStream.CopyTo(fileStream);
-                            }
-                        }
-
-                        int count = Interlocked.Increment(ref extractedCount);
-                        progressCallback(count, totalFiles, entryName);
-                    });
+                    extractedCount++;
+                    progressCallback(extractedCount, totalFiles, entry.FullName);
+                }
             });
         }
 
@@ -1737,11 +1730,31 @@ namespace Runner.ViewModel
                         BuildLog += $"Extracting ZIP to: {distDir}{Environment.NewLine}";
                     });
 
+                    long lastExtractProgressTicks = 0;
+                    const int extractProgressIntervalMs = 300;
+
                     await ExtractZipAsync(zipPath, distDir, (count, total, entryName) =>
                     {
-                        Application.Current.Dispatcher.Invoke(() =>
+                        if (count == 0)
                         {
-                            BuildLog += $"Extracted {count}/{total}: {entryName}{Environment.NewLine}";
+                            _ = Application.Current.Dispatcher.InvokeAsync(() =>
+                            {
+                                BuildLog += $"Extracting {total} files...{Environment.NewLine}";
+                            });
+                            return;
+                        }
+
+                        var now = Environment.TickCount64;
+                        var isComplete = count >= total;
+                        if (!isComplete && now - lastExtractProgressTicks < extractProgressIntervalMs)
+                            return;
+
+                        lastExtractProgressTicks = now;
+                        _ = Application.Current.Dispatcher.InvokeAsync(() =>
+                        {
+                            BuildLog += isComplete
+                                ? $"Extracted {count}/{total} (complete){Environment.NewLine}"
+                                : $"Extracted {count}/{total}{Environment.NewLine}";
                         });
                     });
 
