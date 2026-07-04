@@ -47,7 +47,7 @@ void map::load_tiles(const void* data, size_t size)
         this->_tiles[i].object = reader.read<uint16_t>();
     }
 
-    this->_sectors = std::make_unique<sectors>(this->_size, fb::model::size16_t(MAX_SCREEN_WIDTH, MAX_SCREEN_HEIGHT));
+    this->sectors.load(this->_size, fb::model::size16_t(MAX_SCREEN_WIDTH, MAX_SCREEN_HEIGHT));
     this->update_door();
 }
 
@@ -177,6 +177,28 @@ bool map::movable(const fb::model::point16_t& position, const std::function<bool
     if (this->doors.contains(index) && this->doors.at(index)->opened() == false)
         return false;
 
+    if (this->sectors.loaded())
+    {
+        if (auto sector = this->sectors.at(position))
+        {
+            for (const auto& obj : *sector)
+            {
+                if (obj->position() != position)
+                    continue;
+
+                if (obj->is(OBJECT_TYPE::ITEM))
+                    continue;
+
+                if (predicate(*obj) == false)
+                    continue;
+
+                return false;
+            }
+        }
+
+        return true;
+    }
+
     for (const auto& [key, value] : this->objects)
     {
         if (value->is(OBJECT_TYPE::ITEM))
@@ -250,29 +272,21 @@ const fb::model::warp* map::warpable(const fb::model::point16_t& position) const
 
 bool map::is_active() const
 {
-    if (this->_sectors == nullptr)
+    if (this->sectors.loaded() == false)
         return false;
 
     if (this->objects.size() == 0)
         return false;
 
-    return this->_sectors->is_active();
-}
-
-std::shared_ptr<fb::game::sector> map::sector_at(const fb::model::point16_t& position)
-{
-    if (this->_sectors == nullptr)
-        return nullptr;
-
-    return this->_sectors->at(position);
+    return this->sectors.any_occupied();
 }
 
 std::vector<std::shared_ptr<fb::game::object>> map::nears(const fb::model::point16_t& pivot, OBJECT_TYPE type) const
 {
-    if (this->_sectors == nullptr)
+    if (this->sectors.loaded() == false)
         return std::vector<std::shared_ptr<fb::game::object>>{};
-    else
-        return this->_sectors->objects(pivot, type);
+
+    return this->sectors.objects(pivot, type);
 }
 
 std::vector<std::shared_ptr<fb::game::object>> map::belows(const fb::model::point16_t& pivot, OBJECT_TYPE type) const
@@ -280,10 +294,10 @@ std::vector<std::shared_ptr<fb::game::object>> map::belows(const fb::model::poin
     auto objects = std::vector<std::shared_ptr<fb::game::object>>();
     try
     {
-        if (this->_sectors == nullptr)
+        auto sector = this->sectors.at(pivot);
+        if (sector == nullptr)
             throw std::exception();
 
-        auto sector = this->_sectors->at(pivot);
         for (auto& obj : *sector)
         {
             if (obj->is(type))
@@ -306,9 +320,9 @@ void map::bulk_update(const std::vector<uint32_t>& oids)
         return;
 
     // Use unordered_set for better performance (O(1) vs O(log n))
-    auto sectors = std::unordered_set<std::shared_ptr<fb::game::sector>>();
-    auto targets = std::unordered_set<std::shared_ptr<fb::game::character>>();
-    auto oid_set = std::unordered_set<uint32_t>(oids.begin(), oids.end());
+    auto affected = std::unordered_set<const sector*>();
+    auto targets  = std::unordered_set<std::shared_ptr<fb::game::character>>();
+    auto oid_set  = std::unordered_set<uint32_t>(oids.begin(), oids.end());
 
     // Collect sectors containing changed objects
     for (auto oid : oids)
@@ -317,14 +331,12 @@ void map::bulk_update(const std::vector<uint32_t>& oids)
         if (obj == nullptr)
             continue;
 
-        for (const auto& sector : this->_sectors->nears(obj->position()))
-        {
-            sectors.insert(sector);
-        }
+        for (const sector* sector : this->sectors.nears(obj->position()))
+            affected.insert(sector);
     }
 
     // Collect all characters in affected sectors
-    for (const auto& sector : sectors)
+    for (const auto& sector : affected)
     {
         for (const auto& obj : *sector)
         {
