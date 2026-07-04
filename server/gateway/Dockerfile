@@ -1,4 +1,6 @@
-FROM --platform=$BUILDPLATFORM ghcr.io/boyism80/fb/build AS build
+ARG BUILD_IMAGE=ghcr.io/boyism80/fb/build
+
+FROM --platform=$BUILDPLATFORM ${BUILD_IMAGE} AS build
 
 # Build type argument - Release as default for Dockerfile
 ARG BUILD_TYPE=Release
@@ -11,7 +13,7 @@ WORKDIR /app/gateway/build
 RUN cmake -DCMAKE_BUILD_TYPE=${BUILD_TYPE} ..
 RUN cmake --build . --config ${BUILD_TYPE} --parallel 32
 
-FROM --platform=$BUILDPLATFORM ghcr.io/boyism80/fb/build
+FROM --platform=$BUILDPLATFORM ${BUILD_IMAGE}
 WORKDIR /app
 COPY --from=build /app/gateway/build/app ./gateway
 
