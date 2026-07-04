@@ -51,6 +51,7 @@ protected:
 
     void on_finish()
     {
+        fb::console::progress("Loading data files", 100.f);
         fb::console::newline();
     }
 };

@@ -130,6 +130,7 @@ private:
 
 private:
     inline static std::recursive_mutex _mutex;
+    inline static float                _max_progress = 0.f;
     inline static uint16_t             _width, _height;
     inline static bool                 _system_tty;       ///< System TTY capability
     inline static mode                 _mode = mode::tty; ///< User-configured output mode

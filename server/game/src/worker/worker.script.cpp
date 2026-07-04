@@ -121,5 +121,6 @@ void fb::game::script_loader::on_error(const script_work& input, std::exception&
 
 void fb::game::script_loader::on_finish()
 {
+    fb::console::progress("Loading script files", 100.f);
     fb::console::newline();
 }

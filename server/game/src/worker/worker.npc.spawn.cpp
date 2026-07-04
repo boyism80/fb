@@ -54,5 +54,6 @@ void fb::game::npc_spawner::on_error(const fb::game::npc_spawner::input_type& in
 
 void fb::game::npc_spawner::on_finish()
 {
+    fb::console::progress("Loading npc spawns", 100.f);
     fb::console::newline();
 }

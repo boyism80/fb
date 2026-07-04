@@ -5,6 +5,7 @@
 #include <memory>
 #include <optional>
 #include <queue>
+#include <type_traits>
 #include <vector>
 #include <fb/async_executor.h>
 #include <fb/generator.h>
@@ -58,9 +59,24 @@ public:
             co_return;
         }
 
-        auto processed      = std::atomic<uint32_t>{0};
-        auto outputs_buffer = std::vector<std::vector<R>>(count);
-        auto worker         = [this, &queue, count, &processed, &outputs_buffer]() -> async::task<void> {
+        auto processed       = std::atomic<uint32_t>{0};
+        auto max_displayed   = std::atomic<uint32_t>{0};
+        auto outputs_buffer  = std::vector<std::vector<R>>(count);
+        auto report_progress = [this, count, &processed, &max_displayed](const T& item, const R& output) {
+            const auto current = ++processed;
+            const auto percent = (current * 100.0) / static_cast<double>(count);
+            auto       prev    = max_displayed.load(std::memory_order_relaxed);
+            while (current > prev)
+            {
+                if (max_displayed.compare_exchange_weak(prev, current, std::memory_order_relaxed))
+                {
+                    if (max_displayed.load(std::memory_order_relaxed) == current)
+                        this->on_worked(item, output, percent);
+                    break;
+                }
+            }
+        };
+        auto worker = [this, &queue, &report_progress, &outputs_buffer]() -> async::task<void> {
             while (true)
             {
                 auto work = std::optional<queued_item>{};
@@ -82,14 +98,17 @@ public:
                         outputs.push_back(gen.value());
 
                     for (auto& output : outputs)
-                        this->on_worked(work->item, output, (++processed * 100.0) / static_cast<double>(count));
+                        report_progress(work->item, output);
 
                     outputs_buffer[work->index] = std::move(outputs);
                 }
                 catch (std::exception& e)
                 {
-                    processed++;
                     this->on_error(work->item, e);
+                    if constexpr (std::is_default_constructible_v<R>)
+                        report_progress(work->item, R{});
+                    else
+                        ++processed;
                 }
             }
             co_return;
@@ -169,8 +188,23 @@ public:
             co_return;
         }
 
-        auto processed = std::atomic<uint32_t>{0};
-        auto worker    = [this, &queue, count, &processed]() -> async::task<void> {
+        auto processed       = std::atomic<uint32_t>{0};
+        auto max_displayed   = std::atomic<uint32_t>{0};
+        auto report_progress = [this, count, &processed, &max_displayed](const T& item) {
+            const auto current = ++processed;
+            const auto percent = (current * 100.0) / count;
+            auto       prev    = max_displayed.load(std::memory_order_relaxed);
+            while (current > prev)
+            {
+                if (max_displayed.compare_exchange_weak(prev, current, std::memory_order_relaxed))
+                {
+                    if (max_displayed.load(std::memory_order_relaxed) == current)
+                        this->on_worked(item, percent);
+                    break;
+                }
+            }
+        };
+        auto worker = [this, &queue, &report_progress]() -> async::task<void> {
             while (true)
             {
                 auto item = std::optional<T>{};
@@ -187,13 +221,12 @@ public:
                 try
                 {
                     co_await this->on_work(*item);
-                    this->on_worked(*item, (++processed * 100.0) / count);
                 }
                 catch (std::exception& e)
                 {
-                    processed++;
                     this->on_error(*item, e);
                 }
+                report_progress(*item);
             }
             co_return;
         };
