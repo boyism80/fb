@@ -1,0 +1,9 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: init-sql
+  namespace: fb
+data:
+  init-user.sql: |
+    GRANT ALL PRIVILEGES ON *.* TO 'fb'@'%' WITH GRANT OPTION;
+    FLUSH PRIVILEGES;

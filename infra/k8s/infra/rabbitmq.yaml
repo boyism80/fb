@@ -1,0 +1,327 @@
+# RabbitMQ internal + log (Pulumi-aligned: headless + ClusterIP + NodePort per instance)
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: rabbitmq-internal-config
+  namespace: fb
+data:
+  enabled_plugins: "[rabbitmq_management,rabbitmq_peer_discovery_k8s,rabbitmq_sharding]."
+  rabbitmq.conf: |
+    cluster_formation.peer_discovery_backend = rabbit_peer_discovery_k8s
+    cluster_formation.k8s.host = kubernetes.default.svc.cluster.local
+    cluster_formation.k8s.address_type = hostname
+    cluster_formation.k8s.service_name = rabbitmq-internal-headless
+    cluster_formation.node_cleanup.interval = 60
+    cluster_formation.node_cleanup.only_log_warning = true
+    cluster_partition_handling = autoheal
+  rabbitmq-env.conf: |
+    RABBITMQ_SERVER_ERL_ARGS="+S 8:8"
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: rabbitmq-internal-headless
+  namespace: fb
+spec:
+  clusterIP: None
+  selector:
+    app: rabbitmq
+    type: internal
+  ports:
+    - name: amqp
+      port: 5672
+      targetPort: 5672
+    - name: management
+      port: 15672
+      targetPort: 15672
+    - name: epmd
+      port: 4369
+      targetPort: 4369
+---
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: rabbitmq-internal
+  namespace: fb
+spec:
+  serviceName: rabbitmq-internal-headless
+  replicas: 1
+  podManagementPolicy: OrderedReady
+  selector:
+    matchLabels:
+      app: rabbitmq
+      type: internal
+  template:
+    metadata:
+      labels:
+        app: rabbitmq
+        type: internal
+    spec:
+      serviceAccountName: rabbitmq
+      affinity:
+        nodeAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+            - weight: 100
+              preference:
+                matchExpressions:
+                  - key: infra
+                    operator: In
+                    values: ["true"]
+      containers:
+        - name: rabbitmq
+          image: rabbitmq:4.0.2-management
+          ports:
+            - name: amqp
+              containerPort: 5672
+            - name: management
+              containerPort: 15672
+            - name: epmd
+              containerPort: 4369
+          env:
+            - name: RABBITMQ_DEFAULT_USER
+              value: fb
+            - name: RABBITMQ_DEFAULT_PASS
+              value: admin
+            - name: RABBITMQ_ERLANG_COOKIE
+              value: secret-cookie
+            - name: RABBITMQ_USE_LONGNAME
+              value: "true"
+            - name: K8S_SERVICE_NAME
+              value: rabbitmq-internal-headless
+            - name: K8S_HOSTNAME_SUFFIX
+              value: .rabbitmq-internal-headless.fb.svc.cluster.local
+            - name: MY_POD_NAME
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.name
+            - name: MY_POD_NAMESPACE
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.namespace
+          command: ["/bin/bash", "-c"]
+          args:
+            - |
+              export RABBITMQ_NODENAME=rabbit@$MY_POD_NAME.rabbitmq-internal-headless.$MY_POD_NAMESPACE.svc.cluster.local
+              export RABBITMQ_SERVER_ERL_ARGS="+S 8:8"
+              exec docker-entrypoint.sh rabbitmq-server
+          volumeMounts:
+            - name: config
+              mountPath: /etc/rabbitmq
+          readinessProbe:
+            exec:
+              command: ["rabbitmq-diagnostics", "ping"]
+            initialDelaySeconds: 20
+            periodSeconds: 10
+            timeoutSeconds: 5
+          livenessProbe:
+            exec:
+              command: ["rabbitmq-diagnostics", "ping"]
+            initialDelaySeconds: 60
+            periodSeconds: 30
+            timeoutSeconds: 10
+      volumes:
+        - name: config
+          configMap:
+            name: rabbitmq-internal-config
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: rabbitmq-internal
+  namespace: fb
+spec:
+  type: ClusterIP
+  selector:
+    app: rabbitmq
+    type: internal
+  ports:
+    - name: amqp
+      port: 5700
+      targetPort: 5672
+    - name: management
+      port: 15700
+      targetPort: 15672
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: rabbitmq-internal-nodeport
+  namespace: fb
+spec:
+  type: NodePort
+  selector:
+    app: rabbitmq
+    type: internal
+  ports:
+    - name: amqp
+      port: 5700
+      targetPort: 5672
+      nodePort: 31020
+    - name: management
+      port: 15700
+      targetPort: 15672
+      nodePort: 31021
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: rabbitmq-log-config
+  namespace: fb
+data:
+  enabled_plugins: "[rabbitmq_management,rabbitmq_peer_discovery_k8s,rabbitmq_sharding]."
+  rabbitmq.conf: |
+    cluster_formation.peer_discovery_backend = rabbit_peer_discovery_k8s
+    cluster_formation.k8s.host = kubernetes.default.svc.cluster.local
+    cluster_formation.k8s.address_type = hostname
+    cluster_formation.k8s.service_name = rabbitmq-log-headless
+    cluster_formation.node_cleanup.interval = 60
+    cluster_formation.node_cleanup.only_log_warning = true
+    cluster_partition_handling = autoheal
+  rabbitmq-env.conf: |
+    RABBITMQ_SERVER_ERL_ARGS="+S 8:8"
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: rabbitmq-log-headless
+  namespace: fb
+spec:
+  clusterIP: None
+  selector:
+    app: rabbitmq
+    type: log
+  ports:
+    - name: amqp
+      port: 5672
+      targetPort: 5672
+    - name: management
+      port: 15672
+      targetPort: 15672
+    - name: epmd
+      port: 4369
+      targetPort: 4369
+---
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: rabbitmq-log
+  namespace: fb
+spec:
+  serviceName: rabbitmq-log-headless
+  replicas: 1
+  podManagementPolicy: OrderedReady
+  selector:
+    matchLabels:
+      app: rabbitmq
+      type: log
+  template:
+    metadata:
+      labels:
+        app: rabbitmq
+        type: log
+    spec:
+      serviceAccountName: rabbitmq
+      affinity:
+        nodeAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+            - weight: 100
+              preference:
+                matchExpressions:
+                  - key: infra
+                    operator: In
+                    values: ["true"]
+      containers:
+        - name: rabbitmq
+          image: rabbitmq:4.0.2-management
+          ports:
+            - name: amqp
+              containerPort: 5672
+            - name: management
+              containerPort: 15672
+            - name: epmd
+              containerPort: 4369
+          env:
+            - name: RABBITMQ_DEFAULT_USER
+              value: fb
+            - name: RABBITMQ_DEFAULT_PASS
+              value: admin
+            - name: RABBITMQ_ERLANG_COOKIE
+              value: secret-cookie
+            - name: RABBITMQ_USE_LONGNAME
+              value: "true"
+            - name: K8S_SERVICE_NAME
+              value: rabbitmq-log-headless
+            - name: K8S_HOSTNAME_SUFFIX
+              value: .rabbitmq-log-headless.fb.svc.cluster.local
+            - name: MY_POD_NAME
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.name
+            - name: MY_POD_NAMESPACE
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.namespace
+          command: ["/bin/bash", "-c"]
+          args:
+            - |
+              export RABBITMQ_NODENAME=rabbit@$MY_POD_NAME.rabbitmq-log-headless.$MY_POD_NAMESPACE.svc.cluster.local
+              export RABBITMQ_SERVER_ERL_ARGS="+S 8:8"
+              exec docker-entrypoint.sh rabbitmq-server
+          volumeMounts:
+            - name: config
+              mountPath: /etc/rabbitmq
+          readinessProbe:
+            exec:
+              command: ["rabbitmq-diagnostics", "ping"]
+            initialDelaySeconds: 20
+            periodSeconds: 10
+            timeoutSeconds: 5
+          livenessProbe:
+            exec:
+              command: ["rabbitmq-diagnostics", "ping"]
+            initialDelaySeconds: 60
+            periodSeconds: 30
+            timeoutSeconds: 10
+      volumes:
+        - name: config
+          configMap:
+            name: rabbitmq-log-config
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: rabbitmq-log
+  namespace: fb
+spec:
+  type: ClusterIP
+  selector:
+    app: rabbitmq
+    type: log
+  ports:
+    - name: amqp
+      port: 5701
+      targetPort: 5672
+    - name: management
+      port: 15701
+      targetPort: 15672
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: rabbitmq-log-nodeport
+  namespace: fb
+spec:
+  type: NodePort
+  selector:
+    app: rabbitmq
+    type: log
+  ports:
+    - name: amqp
+      port: 5701
+      targetPort: 5672
+      nodePort: 31022
+    - name: management
+      port: 15701
+      targetPort: 15672
+      nodePort: 31023

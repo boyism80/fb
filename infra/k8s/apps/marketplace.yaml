@@ -1,0 +1,62 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: marketplace
+  namespace: fb
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: marketplace
+  template:
+    metadata:
+      labels:
+        app: marketplace
+    spec:
+      containers:
+        - name: marketplace
+          image: fb/marketplace:local
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 80
+              name: marketplace
+          env:
+            - name: ASPNETCORE_ENVIRONMENT
+              value: k8s
+            - name: ASPNETCORE_HTTP_PORTS
+              value: "80"
+          volumeMounts:
+            - name: config-volume
+              mountPath: /app/appsettings.k8s.json
+              subPath: appsettings.k8s.json
+          startupProbe:
+            httpGet:
+              path: /health
+              port: 80
+            initialDelaySeconds: 10
+            periodSeconds: 5
+            failureThreshold: 30
+          readinessProbe:
+            httpGet:
+              path: /health
+              port: 80
+            periodSeconds: 5
+      volumes:
+        - name: config-volume
+          configMap:
+            name: marketplace
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: marketplace
+  namespace: fb
+spec:
+  type: NodePort
+  selector:
+    app: marketplace
+  ports:
+    - name: marketplace
+      port: 80
+      targetPort: marketplace
+      nodePort: 30220

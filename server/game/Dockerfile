@@ -1,4 +1,7 @@
-FROM --platform=$BUILDPLATFORM ghcr.io/boyism80/fb/build AS build
+ARG BUILD_IMAGE=ghcr.io/boyism80/fb/build
+ARG DATA_IMAGE=ghcr.io/boyism80/fb/data:latest
+
+FROM --platform=$BUILDPLATFORM ${BUILD_IMAGE} AS build
 
 # Build type argument - Release as default for Dockerfile
 ARG BUILD_TYPE=Release
@@ -15,13 +18,15 @@ WORKDIR /app/game/build
 RUN cmake -DCMAKE_BUILD_TYPE=${BUILD_TYPE} ..
 RUN cmake --build . --config ${BUILD_TYPE} --parallel 32
 
-FROM --platform=$BUILDPLATFORM ghcr.io/boyism80/fb/build
+FROM ${DATA_IMAGE} AS data
+
+FROM --platform=$BUILDPLATFORM ${BUILD_IMAGE}
 
 WORKDIR /app
 COPY --from=build /app/game/build/app ./game
 COPY --from=build /app/maps/ ./maps/
 COPY server/game/scripts/ ./scripts/
-COPY --from=ghcr.io/boyism80/fb/data:latest /fb/data/json/server/ ./json/
+COPY --from=data /fb/data/json/server/ ./json/
 
 WORKDIR /app
 CMD ["./game"]

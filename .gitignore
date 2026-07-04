@@ -37,3 +37,9 @@ server/**/*.filters
 .fake
 x64
 CMakeFiles
+
+infra/compose/.env
+infra/compose/config/gateway/config.json
+infra/compose/config/login/config.json
+infra/compose/config/game/config.json
+infra/k8s/config/fb-host.env

@@ -1,0 +1,13 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+resources:
+  - secrets.yaml
+  - internal.yaml
+  - write-back.yaml
+  - log.yaml
+  - marketplace.yaml
+  - admin-tool.yaml
+  - gateway.yaml
+  - login.yaml
+  - game.yaml

@@ -1,0 +1,50 @@
+{
+    "id": 0,
+    "name": "game-dev-0",
+    "world": 1,
+    "delay": 5,
+    "ip": "127.0.0.1",
+    "port": 30030,
+    "thread": {
+        "logic": 32,
+        "io": 12
+    },
+    "save": 600,
+    "internal": {
+        "ip": "internal",
+        "port": 80
+    },
+    "marketplace": {
+        "ip": "marketplace",
+        "port": 80
+    },
+    "login": {
+        "ip": "127.0.0.1",
+        "port": 30010
+    },
+    "amqp": {
+        "internal": {
+            "ip": "rabbitmq-internal",
+            "port": 5700,
+            "uid": "fb",
+            "pwd": "admin"
+        },
+        "log": {
+            "ip": "rabbitmq-log",
+            "port": 5701,
+            "uid": "fb",
+            "pwd": "admin"
+        }
+    },
+    "log": {
+        "ip": "log-dev",
+        "port": 80,
+        "level": ["info", "warn", "fatal"]
+    },
+    "lazy_load_maps": false,
+    "exp_multiplier": 1.0,
+    "drop_rate_multiplier": 1.0,
+    "http": {
+        "max_concurrent": 128
+    }
+}

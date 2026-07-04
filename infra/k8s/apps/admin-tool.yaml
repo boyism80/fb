@@ -1,0 +1,62 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: admin-tool
+  namespace: fb
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: admin-tool
+  template:
+    metadata:
+      labels:
+        app: admin-tool
+    spec:
+      containers:
+        - name: admin-tool
+          image: fb/admin-tool:local
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 80
+              name: admin-tool
+          env:
+            - name: ASPNETCORE_ENVIRONMENT
+              value: k8s
+            - name: ASPNETCORE_HTTP_PORTS
+              value: "80"
+          volumeMounts:
+            - name: config-volume
+              mountPath: /app/appsettings.k8s.json
+              subPath: appsettings.k8s.json
+          startupProbe:
+            httpGet:
+              path: /health
+              port: 80
+            initialDelaySeconds: 10
+            periodSeconds: 5
+            failureThreshold: 30
+          readinessProbe:
+            httpGet:
+              path: /health
+              port: 80
+            periodSeconds: 5
+      volumes:
+        - name: config-volume
+          configMap:
+            name: admin-tool
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: admin-tool
+  namespace: fb
+spec:
+  type: NodePort
+  selector:
+    app: admin-tool
+  ports:
+    - name: admin-tool
+      port: 80
+      targetPort: admin-tool
+      nodePort: 30210

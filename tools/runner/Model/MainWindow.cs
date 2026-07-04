@@ -30,6 +30,8 @@ namespace Runner.Model
     public class GatewaySetting
     {
         public required ushort Port { get; set; }
+        public ushort ClientVersion { get; set; } = 550;
+        public byte ClientNation { get; set; } = 215;
     }
 
     public class LoginSetting
@@ -48,6 +50,16 @@ namespace Runner.Model
     public class InternalSetting
     {
         public required ushort Port { get; set; }
+    }
+
+    public class MarketplaceSetting
+    {
+        public ushort Port { get; set; } = 3010;
+    }
+
+    public class AdminToolSetting
+    {
+        public ushort Port { get; set; } = 30210;
     }
 
     public class MainWindow
@@ -74,6 +86,8 @@ namespace Runner.Model
         {
             Port = 3000
         };
+        public MarketplaceSetting Marketplace { get; set; } = new MarketplaceSetting();
+        public AdminToolSetting AdminTool { get; set; } = new AdminToolSetting();
         public DateTime LastBuildDate { get; set; }
         public string WorkingDirectory { get; set; }
         public string ExternalIP { get; set; }
@@ -107,6 +121,14 @@ namespace Runner.Model
             try
             {
                 var model = JsonConvert.DeserializeObject<MainWindow>(File.ReadAllText(path));
+                if (model.Gateway.ClientVersion == 0)
+                    model.Gateway.ClientVersion = 550;
+                if (model.Gateway.ClientNation == 0)
+                    model.Gateway.ClientNation = 215;
+                if (model.Marketplace.Port == 0)
+                    model.Marketplace.Port = 3010;
+                if (model.AdminTool.Port == 0)
+                    model.AdminTool.Port = 30210;
                 model.Window = window;
                 return model;
             }

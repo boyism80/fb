@@ -2,6 +2,7 @@ using Microsoft.Win32;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using Runner.Command;
+using Runner.Service;
 using System.Buffers;
 using System.Collections.ObjectModel;
 using System.Collections.Specialized;
@@ -13,6 +14,7 @@ using System.Net.Http;
 using System.Net.Sockets;
 using System.Text;
 using System.Windows;
+using System.Windows.Data;
 using System.Windows.Input;
 
 namespace Runner.ViewModel
@@ -23,7 +25,10 @@ namespace Runner.ViewModel
         Game,
         Login,
         Internal,
-        WriteBack
+        WriteBack,
+        Log,
+        Marketplace,
+        AdminTool
     }
 
     public class ServerProcess
@@ -137,6 +142,16 @@ namespace Runner.ViewModel
             get => Model.Port;
             set => Model.Port = value;
         }
+        public ushort ClientVersion
+        {
+            get => Model.ClientVersion;
+            set => Model.ClientVersion = value;
+        }
+        public byte ClientNation
+        {
+            get => Model.ClientNation;
+            set => Model.ClientNation = value;
+        }
 
         public GatewaySetting(Model.GatewaySetting model)
         {
@@ -201,6 +216,16 @@ namespace Runner.ViewModel
             get => Model.Internal.Port;
             set => Model.Internal.Port = value;
         }
+        public ushort MarketplacePort
+        {
+            get => Model.Marketplace.Port;
+            set => Model.Marketplace.Port = value;
+        }
+        public ushort AdminToolPort
+        {
+            get => Model.AdminTool.Port;
+            set => Model.AdminTool.Port = value;
+        }
         public GatewaySetting Gateway { get; set; }
         public ObservableCollection<LoginSetting> Login { get; set; } = new ObservableCollection<LoginSetting>();
         public ObservableCollection<GameSetting> Game { get; set; } = new ObservableCollection<GameSetting>();
@@ -240,8 +265,51 @@ namespace Runner.ViewModel
             {
                 _isConverting = value;
                 PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(IsEnableEdit)));
+                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(IsEnableRun)));
+                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(RunButtonText)));
+                RecomputeCanBuild();
             }
         }
+
+        private bool _isCheckingInfrastructure;
+        public bool IsCheckingInfrastructure
+        {
+            get => _isCheckingInfrastructure;
+            set
+            {
+                _isCheckingInfrastructure = value;
+                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(IsCheckingInfrastructure)));
+                RecomputeCanBuild();
+            }
+        }
+
+        public ObservableCollection<InfraCheckItem> InfrastructureChecks { get; } = new();
+
+        private string _infrastructureSummary = string.Empty;
+        public string InfrastructureSummary
+        {
+            get => _infrastructureSummary;
+            set
+            {
+                _infrastructureSummary = value;
+                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(InfrastructureSummary)));
+            }
+        }
+
+        private bool _canBuild;
+        public bool CanBuild
+        {
+            get => _canBuild;
+            set
+            {
+                _canBuild = value;
+                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(CanBuild)));
+            }
+        }
+
+        private bool _infrastructureLoaded;
+        private CancellationTokenSource? _infraCheckCts;
+        private InfraCheckResult? _lastInfraResult;
         public bool IsEnableEdit
         {
             get
@@ -293,6 +361,11 @@ namespace Runner.ViewModel
         public bool IsEnableRun => BuildProcess == null;
         public bool IsRunning => Servers.SelectMany(x => x.Processes).Any();
         public bool IsEnableSettingTab => !IsRunning;
+
+        public ObservableCollection<SettingNavItem> SettingNavItems { get; } = new();
+        public ICollectionView SettingNavView { get; private set; }
+        public SettingSection SelectedSettingSection { get; set; } = SettingSection.Directory;
+
         public string RunButtonText
         {
             get
@@ -407,6 +480,7 @@ namespace Runner.ViewModel
         public ICommand NewGame { get; private set; }
         public ICommand FindWorkingDirectory { get; private set; }
         public ICommand PatchCommand { get; private set; }
+        public ICommand BuildCommand { get; private set; }
         public ICommand RunCommand { get; private set; }
         public ICommand DeleteMySQL { get; private set; }
         public ICommand DeleteRedis { get; private set; }
@@ -456,6 +530,7 @@ namespace Runner.ViewModel
             Servers.CollectionChanged += Servers_CollectionChanged;
 
             Gateway = new GatewaySetting(Model.Gateway);
+            InitSettingNav();
             SetMinimizeCommand = new RelayCommand(OnSetMinimize);
             SetMaximizeCommand = new RelayCommand(OnSetMaximize);
             CloseCommand = new RelayCommand(OnClose);
@@ -465,6 +540,7 @@ namespace Runner.ViewModel
             NewGame = new RelayCommand(OnNewGame);
             FindWorkingDirectory = new RelayCommand(OnFindWorkingDirectory);
             PatchCommand = new RelayCommand(OnPatch);
+            BuildCommand = new RelayCommand(OnBuild);
             RunCommand = new RelayCommand(OnRun);
             DeleteMySQL = new RelayCommand(OnDeleteMySQL);
             DeleteRedis = new RelayCommand(OnDeleteRedis);
@@ -477,10 +553,270 @@ namespace Runner.ViewModel
             UpdateScript = new RelayCommand(OnUpdateScript);
         }
 
+        private void InitSettingNav()
+        {
+            SettingNavItems.Add(new SettingNavItem("일반", "Directory", SettingSection.Directory));
+            SettingNavItems.Add(new SettingNavItem("인프라", "Infrastructure", SettingSection.Infrastructure));
+            SettingNavItems.Add(new SettingNavItem("서버", "Gateway", SettingSection.Gateway));
+            SettingNavItems.Add(new SettingNavItem("서버", "Login", SettingSection.Login));
+            SettingNavItems.Add(new SettingNavItem("서버", "Game", SettingSection.Game));
+            SettingNavItems.Add(new SettingNavItem("서버", "Internal", SettingSection.Internal));
+            SettingNavItems.Add(new SettingNavItem("서버", "Marketplace", SettingSection.Marketplace));
+            SettingNavItems.Add(new SettingNavItem("서버", "Admin Tool", SettingSection.AdminTool));
+
+            SettingNavView = CollectionViewSource.GetDefaultView(SettingNavItems);
+            SettingNavView.GroupDescriptions.Add(new PropertyGroupDescription(nameof(SettingNavItem.Group)));
+        }
+
         private void Servers_CollectionChanged(object sender, NotifyCollectionChangedEventArgs e)
         {
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(IsRunning)));
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(IsEnableSettingTab)));
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(IsEnableEdit)));
+            RecomputeCanBuild();
+        }
+
+        public async Task EnsureInfrastructureCheckedAsync()
+        {
+            if (_infrastructureLoaded)
+                return;
+
+            _infrastructureLoaded = true;
+            await RefreshInfrastructureAsync();
+        }
+
+        public async Task RefreshInfrastructureAsync()
+        {
+            if (IsCheckingInfrastructure)
+                return;
+
+            _infraCheckCts?.Cancel();
+            _infraCheckCts = new CancellationTokenSource();
+            var ct = _infraCheckCts.Token;
+
+            IsCheckingInfrastructure = true;
+            InfrastructureSummary = "인프라 확인 중...";
+
+            var items = BuildInfrastructureCheckItems();
+            Application.Current.Dispatcher.Invoke(() =>
+            {
+                InfrastructureChecks.Clear();
+                foreach (var item in items)
+                {
+                    item.Status = InfraCheckStatus.Checking;
+                    InfrastructureChecks.Add(item);
+                }
+            });
+
+            InfraCheckResult? result = null;
+
+            try
+            {
+                result = await Task.Run(async () =>
+                    await InfrastructureChecker.CheckAllAsync(Model, items, null, ct), ct);
+
+                Application.Current.Dispatcher.Invoke(() =>
+                {
+                    InfrastructureChecks.Clear();
+                    foreach (var item in items)
+                        InfrastructureChecks.Add(item);
+                });
+            }
+            catch (OperationCanceledException)
+            {
+                InfrastructureSummary = "인프라 확인이 취소되었습니다.";
+            }
+            catch (Exception ex)
+            {
+                InfrastructureSummary = $"인프라 확인 오류: {ex.Message}";
+            }
+            finally
+            {
+                IsCheckingInfrastructure = false;
+            }
+
+            if (result != null)
+                Application.Current.Dispatcher.Invoke(() => UpdateInfrastructureSummary(result));
+        }
+
+        private List<InfraCheckItem> BuildInfrastructureCheckItems()
+        {
+            var items = new List<InfraCheckItem>
+            {
+                new("workdir", "Working Directory", InfraCheckGroup.Repository),
+                new("git", "Git", InfraCheckGroup.Repository),
+                new("submodules", "Git submodules", InfraCheckGroup.Repository),
+                new("update_modules_script", "update-modules.bat", InfraCheckGroup.Repository),
+                new("cmake", "CMake 3.28 or later", InfraCheckGroup.Toolchain),
+                new("msvc", "MSVC (VS 2022 or later)", InfraCheckGroup.Toolchain),
+                new("dotnet", ".NET SDK 8.0 or later", InfraCheckGroup.Toolchain),
+                new("disk", "Disk space", InfraCheckGroup.Toolchain),
+                new("dependency", "Native dependencies", InfraCheckGroup.NativeArtifacts),
+            };
+
+            foreach (var mysql in MySQL)
+            {
+                var index = MySQL.IndexOf(mysql);
+                items.Add(new InfraCheckItem($"mysql_{index}", $"MySQL ({mysql.Name})", InfraCheckGroup.Runtime)
+                {
+                    Detail = $"{mysql.IP}:{mysql.Port}"
+                });
+            }
+
+            for (var i = 0; i < Redis.Count; i++)
+            {
+                var redis = Redis[i];
+                items.Add(new InfraCheckItem($"redis_{i}", $"Redis ({redis.IP})", InfraCheckGroup.Runtime)
+                {
+                    Detail = $"{redis.IP}:{redis.Port}"
+                });
+            }
+
+            items.Add(new InfraCheckItem("rabbitmq", "RabbitMQ", InfraCheckGroup.Runtime)
+            {
+                Detail = $"{RabbitMq.IP}:{RabbitMq.Port}"
+            });
+
+            return items;
+        }
+
+        private void UpdateInfrastructureSummary(InfraCheckResult result)
+        {
+            _lastInfraResult = result;
+
+            var warnings = result.Items.Count(i => i.Status == InfraCheckStatus.Warning);
+            if (result.CanBuild)
+            {
+                InfrastructureSummary = warnings > 0
+                    ? $"{result.RequiredPassed}/{result.RequiredTotal} 통과 ({warnings} 경고)"
+                    : $"{result.RequiredPassed}/{result.RequiredTotal} 통과";
+            }
+            else
+            {
+                InfrastructureSummary = $"{result.RequiredPassed}/{result.RequiredTotal} 통과 - 빌드 불가";
+            }
+
+            RecomputeCanBuild();
+        }
+
+        private void RecomputeCanBuild()
+        {
+            CanBuild = (_lastInfraResult?.CanBuild ?? false)
+                && !IsConverting
+                && !IsRunning
+                && !IsCheckingInfrastructure;
+        }
+
+        private string GetBuildBlockReason()
+        {
+            var failures = InfrastructureChecks
+                .Where(i => i.Required && i.Status == InfraCheckStatus.Fail)
+                .Select(i => string.IsNullOrWhiteSpace(i.Message) ? i.Name : $"{i.Name}: {i.Message}")
+                .ToList();
+
+            if (failures.Count > 0)
+                return string.Join(Environment.NewLine, failures);
+
+            if (IsRunning)
+                return "서버가 실행 중입니다. 서버를 종료한 후 다시 시도하세요.";
+
+            if (IsConverting)
+                return "패치 또는 빌드가 진행 중입니다.";
+
+            if (IsCheckingInfrastructure)
+                return "인프라 확인이 진행 중입니다.";
+
+            if (_lastInfraResult == null)
+                return "인프라 확인이 아직 완료되지 않았습니다.";
+
+            if (_lastInfraResult.CanBuild == false)
+                return $"필수 인프라 {_lastInfraResult.RequiredPassed}/{_lastInfraResult.RequiredTotal} 항목만 통과했습니다.";
+
+            return "빌드를 시작할 수 없습니다.";
+        }
+
+        private void OnBuild(object obj)
+        {
+            _ = OnBuildAsync();
+        }
+
+        private async Task OnBuildAsync()
+        {
+            if (IsConverting || IsCheckingInfrastructure)
+                return;
+
+            if (IsRunning)
+            {
+                MessageBox.Show("서버가 실행 중입니다. 빌드하기 전에 서버를 종료하세요.", "빌드");
+                return;
+            }
+
+            await RefreshInfrastructureAsync();
+
+            if (CanBuild == false)
+            {
+                MessageBox.Show(
+                    GetBuildBlockReason(),
+                    "빌드 불가",
+                    MessageBoxButton.OK,
+                    MessageBoxImage.Warning);
+                return;
+            }
+
+            var confirm = MessageBox.Show(
+                "build\\dist 폴더의 기존 바이너리를 로컬에서 빌드한 결과로 덮어씁니다." + Environment.NewLine + Environment.NewLine +
+                "• 예상 소요 시간: 30분~1시간 이상 (최초 native 의존성 빌드 시 더 길 수 있음)" + Environment.NewLine +
+                "• gateway.exe, login.exe, game.exe 및 .NET 서비스가 교체됩니다" + Environment.NewLine +
+                "• 진행 중에는 패치/시작 버튼을 사용할 수 없습니다" + Environment.NewLine + Environment.NewLine +
+                "계속하시겠습니까?",
+                "로컬 빌드 확인",
+                MessageBoxButton.YesNo,
+                MessageBoxImage.Question,
+                MessageBoxResult.No);
+
+            if (confirm != MessageBoxResult.Yes)
+                return;
+
+            if (string.IsNullOrWhiteSpace(WorkingDirectory) || Directory.Exists(WorkingDirectory) == false)
+            {
+                MessageBox.Show("Working directory가 올바르지 않습니다.", "빌드");
+                return;
+            }
+
+            IsConverting = true;
+            SelectedProcess = null;
+            BuildLog = string.Empty;
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(MainText)));
+
+            try
+            {
+                await Task.Run(async () =>
+                {
+                    await LocalBuildRunner.RunAsync(
+                        WorkingDirectory,
+                        InfrastructureChecker.VcvarsAllPath,
+                        line => Application.Current.Dispatcher.Invoke(() => BuildLog += line),
+                        CancellationToken.None);
+                });
+
+                LastBuildDate = DateTime.Now;
+                BuildLog += $"Build completed at {LastBuildDate}{Environment.NewLine}";
+                MessageBox.Show("로컬 빌드가 완료되었습니다.", "완료");
+            }
+            catch (BuildFailedException ex)
+            {
+                BuildLog += $"Build failed ({ex.StepName}): {ex.Message}{Environment.NewLine}";
+                MessageBox.Show($"빌드 실패 ({ex.StepName}):{Environment.NewLine}{ex.Message}", "오류", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
+            catch (Exception ex)
+            {
+                BuildLog += $"Build error: {ex}{Environment.NewLine}";
+                MessageBox.Show(ex.Message, "오류", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
+            finally
+            {
+                IsConverting = false;
+            }
         }
 
         private void InitPoints_CollectionChanged(object sender, NotifyCollectionChangedEventArgs e)
@@ -643,6 +979,12 @@ namespace Runner.ViewModel
                 if (InternalPort == 0)
                     throw new InvalidOperationException("Internal 서버 포트가 설정되지 않았습니다.");
 
+                if (MarketplacePort == 0)
+                    throw new InvalidOperationException("Marketplace 서버 포트가 설정되지 않았습니다.");
+
+                if (AdminToolPort == 0)
+                    throw new InvalidOperationException("Admin Tool 서버 포트가 설정되지 않았습니다.");
+
                 if (string.IsNullOrEmpty(ExternalIP))
                     throw new InvalidOperationException("IP가 설정되지 않았습니다.");
 
@@ -747,8 +1089,6 @@ namespace Runner.ViewModel
                     });
                     conf["log"] = JObject.FromObject(new
                     {
-                        ip = ExternalIP,
-                        port = (ushort)3005,
                         level = new JArray("debug", "info", "warn", "fatal")
                     });
                     conf["init"] = new JObject();
@@ -777,6 +1117,10 @@ namespace Runner.ViewModel
                     {
                         min = MinPwLength,
                         max = MaxPwLength
+                    });
+                    conf["http"] = JObject.FromObject(new
+                    {
+                        max_concurrent = 128
                     });
                     File.WriteAllText(Path.Combine([loginDir, $"config_login_{i}.json"]), conf.ToString(Formatting.Indented));
                 }
@@ -808,7 +1152,7 @@ namespace Runner.ViewModel
                     conf["marketplace"] = JObject.FromObject(new
                     {
                         ip = ExternalIP,
-                        port = (ushort)3010
+                        port = MarketplacePort
                     });
                     conf["login"] = JObject.FromObject(new
                     {
@@ -821,8 +1165,6 @@ namespace Runner.ViewModel
                     conf["amqp"] = gameAmqp;
                     conf["log"] = JObject.FromObject(new
                     {
-                        ip = ExternalIP,
-                        port = (ushort)3005,
                         level = new JArray("debug", "info", "warn", "fatal")
                     });
                     conf["lazy_load_maps"] = true;
@@ -850,8 +1192,6 @@ namespace Runner.ViewModel
                 });
                 gatewayConf["log"] = JObject.FromObject(new
                 {
-                    ip = ExternalIP,
-                    port = (ushort)3005,
                     level = new JArray("debug", "info", "warn", "fatal")
                 });
                 gatewayConf["entrypoints"] = new JArray();
@@ -875,6 +1215,15 @@ namespace Runner.ViewModel
                 gatewayAmqp["internal"] = JObject.FromObject(new { ip = RabbitMq.IP, port = RabbitMq.Port, uid = RabbitMq.ID, pwd = RabbitMq.PW });
                 gatewayAmqp["log"] = JObject.FromObject(new { ip = RabbitMq.IP, port = RabbitMq.Port, uid = RabbitMq.ID, pwd = RabbitMq.PW });
                 gatewayConf["amqp"] = gatewayAmqp;
+                gatewayConf["http"] = JObject.FromObject(new
+                {
+                    max_concurrent = 128
+                });
+                gatewayConf["client"] = JObject.FromObject(new
+                {
+                    version = Gateway.ClientVersion,
+                    nation = Gateway.ClientNation
+                });
 
                 File.WriteAllText(Path.Combine([gatewayDir, $"config_gateway.json"]), gatewayConf.ToString(Formatting.Indented));
 
@@ -985,6 +1334,91 @@ namespace Runner.ViewModel
                 wbConf["Log"] = JObject.FromObject(new { Enabled = true, ServerId = "0", ServerName = "write-back" });
                 File.WriteAllText(Path.Combine([WorkingDirectory, "build", "dist", "write-back", "appsettings.write-back.json"]), wbConf.ToString(Formatting.Indented));
 
+                var logConf = new JObject();
+                logConf["Database"] = JObject.FromObject(new { AutoMigration = true });
+                logConf["World"] = 1;
+                logConf["Logging"] = new JObject();
+                logConf["Logging"]["LogLevel"] = new JObject();
+                logConf["Logging"]["LogLevel"]["Default"] = "Information";
+                logConf["Logging"]["LogLevel"]["Microsoft.AspNetCore"] = "Warning";
+
+                var logMySql = new JObject();
+                var logMySqlWorlds = new JObject();
+                var logWorld1MySql = new JObject();
+                var logDataConnStrings = new JArray();
+                foreach (var db in MySQL)
+                    logDataConnStrings.Add($"Server={db.IP};Port={db.Port};User ID={db.ID}; Password={db.PW}; Database=fb");
+                if (MySQL.Count > 0)
+                {
+                    var first = MySQL[0];
+                    logWorld1MySql["global"] = $"Server={first.IP};Port={first.Port};User ID={first.ID}; Password={first.PW}; Database=fb";
+                    if (logDataConnStrings.Count > 0)
+                        logWorld1MySql["data"] = logDataConnStrings;
+                }
+                logMySqlWorlds["1"] = logWorld1MySql;
+                logMySql["worlds"] = logMySqlWorlds;
+                logConf["ConnectionStrings"] = new JObject();
+                logConf["ConnectionStrings"]["MySql"] = logMySql;
+
+                var logRabbit = new JObject();
+                logRabbit["Internal"] = JObject.FromObject(new { Host = RabbitMq.IP, Port = RabbitMq.Port, Uid = RabbitMq.ID, Pwd = RabbitMq.PW });
+                logRabbit["Log"] = JObject.FromObject(new { Host = RabbitMq.IP, Port = RabbitMq.Port, Uid = RabbitMq.ID, Pwd = RabbitMq.PW });
+                logConf["RabbitMQ"] = logRabbit;
+                File.WriteAllText(Path.Combine([WorkingDirectory, "build", "dist", "log", "appsettings.log.json"]), logConf.ToString(Formatting.Indented));
+
+                var marketplaceConf = new JObject();
+                marketplaceConf["Database"] = JObject.FromObject(new { AutoMigration = true });
+                marketplaceConf["Logging"] = new JObject();
+                marketplaceConf["Logging"]["LogLevel"] = new JObject();
+                marketplaceConf["Logging"]["LogLevel"]["Default"] = "Information";
+                marketplaceConf["Logging"]["LogLevel"]["Microsoft.AspNetCore"] = "Warning";
+                marketplaceConf["ConnectionStrings"] = new JObject();
+                marketplaceConf["ConnectionStrings"]["MySql"] = internalMySql.DeepClone();
+                marketplaceConf["Redis"] = internalRedis.DeepClone();
+                marketplaceConf["RabbitMQ"] = internalRabbit.DeepClone();
+                marketplaceConf["Log"] = JObject.FromObject(new { Enabled = true, ServerId = "0", ServerName = "marketplace" });
+                marketplaceConf["Marketplace"] = JObject.FromObject(new { UseSharding = false });
+                marketplaceConf["Urls"] = $"http://127.0.0.1:{MarketplacePort}";
+                File.WriteAllText(Path.Combine([WorkingDirectory, "build", "dist", "marketplace", "appsettings.marketplace.json"]), marketplaceConf.ToString(Formatting.Indented));
+
+                var adminToolConf = new JObject();
+                adminToolConf["DetailedErrors"] = true;
+                adminToolConf["Logging"] = new JObject();
+                adminToolConf["Logging"]["LogLevel"] = new JObject();
+                adminToolConf["Logging"]["LogLevel"]["Default"] = "Information";
+                adminToolConf["Logging"]["LogLevel"]["Microsoft.AspNetCore"] = "Warning";
+                adminToolConf["ConnectionStrings"] = new JObject();
+                adminToolConf["ConnectionStrings"]["MySql"] = internalMySql.DeepClone();
+                adminToolConf["Redis"] = internalRedis.DeepClone();
+                adminToolConf["RabbitMQ"] = internalRabbit.DeepClone();
+                adminToolConf["WorldServers"] = new JObject
+                {
+                    ["1"] = Login[0].Name
+                };
+                adminToolConf["Log"] = JObject.FromObject(new { Enabled = true, ServerId = "0", ServerName = "admin-tool" });
+                adminToolConf["Security"] = JObject.FromObject(new { ElevationSecret = "admin" });
+                File.WriteAllText(Path.Combine([WorkingDirectory, "build", "dist", "admin-tool", "appsettings.admin-tool.json"]), adminToolConf.ToString(Formatting.Indented));
+
+                var inter = new ProcessGroup { Type = ServerType.Internal };
+                inter.Processes.Add(ExecDotNet("internal", InternalPort));
+                Servers.Add(inter);
+
+                var logGroup = new ProcessGroup { Type = ServerType.Log };
+                logGroup.Processes.Add(ExecDotNet("log"));
+                Servers.Add(logGroup);
+
+                var wb = new ProcessGroup { Type = ServerType.WriteBack };
+                wb.Processes.Add(ExecDotNet("write-back"));
+                Servers.Add(wb);
+
+                var marketplaceGroup = new ProcessGroup { Type = ServerType.Marketplace };
+                marketplaceGroup.Processes.Add(ExecDotNet("marketplace", MarketplacePort));
+                Servers.Add(marketplaceGroup);
+
+                var adminToolGroup = new ProcessGroup { Type = ServerType.AdminTool };
+                adminToolGroup.Processes.Add(ExecDotNet("admin-tool", AdminToolPort));
+                Servers.Add(adminToolGroup);
+
                 var gateway = new ProcessGroup { Type = ServerType.Gateway };
                 gateway.Processes.Add(ExecCPP("gateway.exe", "gateway", "config_gateway"));
                 Servers.Add(gateway);
@@ -1003,14 +1437,6 @@ namespace Runner.ViewModel
                     game.Processes.Add(ExecCPP("game.exe", $"game-{i}", $"config_game_{setting.ID}"));
                 }
                 Servers.Add(game);
-
-                var inter = new ProcessGroup { Type = ServerType.Internal };
-                inter.Processes.Add(ExecDotNet("internal", InternalPort));
-                Servers.Add(inter);
-
-                var wb = new ProcessGroup { Type = ServerType.WriteBack };
-                wb.Processes.Add(ExecDotNet("write-back"));
-                Servers.Add(wb);
             }
             catch (Exception e)
             {
@@ -1331,7 +1757,7 @@ namespace Runner.ViewModel
                     var subDirs = new[] { "json", "maps", "scripts" };
                     foreach (var sub in subDirs)
                     {
-                        var sourceDir = Path.Combine(WorkingDirectory, "game", sub);
+                        var sourceDir = Path.Combine(WorkingDirectory, "server", "game", sub);
                         var targetDir = Path.Combine(distDir, sub);
 
                         if (Directory.Exists(targetDir))
@@ -1557,6 +1983,8 @@ namespace Runner.ViewModel
 
         public void Dispose()
         {
+            _infraCheckCts?.Cancel();
+            _infraCheckCts?.Dispose();
             KillProcesses();
         }
 

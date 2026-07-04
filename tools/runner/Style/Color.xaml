@@ -46,6 +46,9 @@
     <Color x:Key="Error">#d12b19</Color>
     <SolidColorBrush x:Key="ErrorBrush" Color="{StaticResource Error}" />
 
+    <Color x:Key="Warning">#e6a700</Color>
+    <SolidColorBrush x:Key="WarningBrush" Color="{StaticResource Warning}" />
+
 
     <Color x:Key="MenuBorderColor">Transparent</Color>
     <SolidColorBrush x:Key="MenuBorderColorBrush" Color="{StaticResource MenuBorderColor}" />

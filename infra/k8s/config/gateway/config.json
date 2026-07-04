@@ -1,0 +1,48 @@
+{
+    "id": 0,
+    "name": "gateway",
+    "ip": "127.0.0.1",
+    "port": 30000,
+    "thread": {
+        "logic": 12,
+        "io": 12
+    },
+    "log": {
+        "ip": "log-dev",
+        "port": 80,
+        "level": ["info", "warn", "fatal"]
+    },
+    "entrypoints": [
+        {
+            "name": "Dev World",
+            "desc": "World 1",
+            "ip": "127.0.0.1",
+            "port": 30010
+        }
+    ],
+    "internal": {
+        "ip": "internal",
+        "port": 80
+    },
+    "amqp": {
+        "internal": {
+            "ip": "rabbitmq-internal",
+            "port": 5700,
+            "uid": "fb",
+            "pwd": "admin"
+        },
+        "log": {
+            "ip": "rabbitmq-log",
+            "port": 5701,
+            "uid": "fb",
+            "pwd": "admin"
+        }
+    },
+    "http": {
+        "max_concurrent": 128
+    },
+    "client": {
+        "version": 550,
+        "nation": 215
+    }
+}

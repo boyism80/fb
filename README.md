@@ -8,23 +8,15 @@ This repository contains **server code and deployment tooling only**. It does no
 
 ## Getting started
 
-| Goal | Guide |
+| OS | Guide |
 |------|-------|
-| Run locally on Windows | [Installation (Windows)](https://github.com/boyism80/fb/wiki/Installation-Windows) |
-| Deploy on Linux (Docker + Kubernetes) | [Installation (Linux)](https://github.com/boyism80/fb/wiki/Installation-Linux) |
-| Understand the design | [Architecture](https://github.com/boyism80/fb/wiki/Architecture) |
+| Windows | [Installation (Windows)](https://github.com/boyism80/fb/wiki/Installation-Windows) |
+| Linux | [Installation (Linux)](https://github.com/boyism80/fb/wiki/Installation-Linux) |
+
 
 ## Documentation
 
-Full documentation lives in the [project wiki](https://github.com/boyism80/fb/wiki).
-
-- [Technology Stack](https://github.com/boyism80/fb/wiki/Technology-Stack)
-- [Map Division](https://github.com/boyism80/fb/wiki/Map-Division) · [Thread Model](https://github.com/boyism80/fb/wiki/Thread-Model)
-- [Builtin functions](https://github.com/boyism80/fb/wiki/builtin) (Lua scripting reference)
-
-## License
-
-This project is licensed under the [GNU General Public License v3.0](LICENSE).
+Full documentation lives in the [wiki](https://github.com/boyism80/fb/wiki).
 
 ## Contact
 
