@@ -220,7 +220,12 @@
                                        VerticalAlignment="Center"
                                        Foreground="{StaticResource MainTextBrush}"
                                        Margin="0 0 10 0" />
+                            <Button Content="빌드"
+                                    Margin="0 0 5 0"
+                                    IsEnabled="{Binding IsEnableEdit}"
+                                    Command="{Binding BuildCommand}" />
                             <Button Content="패치"
+                                    Margin="0 0 5 0"
                                     IsEnabled="{Binding IsEnableEdit}"
                                     Command="{Binding PatchCommand}" />
                             <Button Content="{Binding RunButtonText}"
@@ -238,640 +243,93 @@
                                      TextChanged="TextBox_TextChanged"
                                      Text="{Binding MainText, Mode=OneWay}" />
                         </Border>
-                        <TreeView Grid.Row="1"
-                                  Grid.Column="1"
-                                  Background="Transparent"
-                                  ItemsSource="{Binding Servers}"
-                                  SelectedItemChanged="TreeView_SelectedItemChanged">
-                            <TreeView.ItemTemplate>
-                                <HierarchicalDataTemplate ItemsSource="{Binding Processes}">
-                                    <TextBlock Text="{Binding Name}"
-                                               Foreground="{StaticResource MainTextBrush}" />
-                                </HierarchicalDataTemplate>
-                            </TreeView.ItemTemplate>
-                            <TreeView.ItemContainerStyle>
-                                <Style TargetType="{x:Type TreeViewItem}">
-                                    <Setter Property="Foreground"
-                                            Value="{StaticResource MainTextBrush}" />
-                                </Style>
-                            </TreeView.ItemContainerStyle>
-                        </TreeView>
+                        <Grid Grid.Row="1"
+                              Grid.Column="1">
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto" />
+                                <RowDefinition Height="*" />
+                            </Grid.RowDefinitions>
+
+                            <Border Grid.Row="0"
+                                    Background="{StaticResource PanelBackgroundLightBrush}"
+                                    BorderBrush="#303947"
+                                    BorderThickness="0 0 0 1"
+                                    Padding="8"
+                                    Margin="0 0 0 4">
+                                <Grid>
+                                    <Grid.RowDefinitions>
+                                        <RowDefinition Height="Auto" />
+                                        <RowDefinition Height="Auto" />
+                                        <RowDefinition Height="Auto" />
+                                    </Grid.RowDefinitions>
+
+                                    <TextBlock Grid.Row="0"
+                                               Text="인프라 상태"
+                                               FontWeight="Bold"
+                                               Foreground="{StaticResource MainTextBrush}"
+                                               Margin="0 0 0 6" />
+
+                                    <ScrollViewer Grid.Row="1"
+                                                  VerticalScrollBarVisibility="Auto"
+                                                  MaxHeight="180">
+                                        <ItemsControl ItemsSource="{Binding InfrastructureChecks}">
+                                            <ItemsControl.ItemTemplate>
+                                                <DataTemplate>
+                                                    <Grid Margin="0 2">
+                                                        <Grid.ColumnDefinitions>
+                                                            <ColumnDefinition Width="18" />
+                                                            <ColumnDefinition Width="*" />
+                                                        </Grid.ColumnDefinitions>
+                                                        <TextBlock Text="{Binding StatusGlyph}"
+                                                                   Foreground="{Binding StatusBrush}"
+                                                                   FontSize="{StaticResource FontSizeSmall}"
+                                                                   VerticalAlignment="Top" />
+                                                        <StackPanel Grid.Column="1">
+                                                            <TextBlock Text="{Binding Name}"
+                                                                       Foreground="{StaticResource MainTextBrush}"
+                                                                       FontSize="{StaticResource FontSizeSmall}" />
+                                                            <TextBlock Text="{Binding Detail}"
+                                                                       Foreground="{StaticResource SemiTextBrush}"
+                                                                       FontSize="{StaticResource FontSizeSmall}"
+                                                                       TextTrimming="CharacterEllipsis" />
+                                                        </StackPanel>
+                                                    </Grid>
+                                                </DataTemplate>
+                                            </ItemsControl.ItemTemplate>
+                                        </ItemsControl>
+                                    </ScrollViewer>
+
+                                    <TextBlock Grid.Row="2"
+                                               Text="{Binding InfrastructureSummary}"
+                                               Foreground="{StaticResource SemiTextBrush}"
+                                               FontSize="{StaticResource FontSizeSmall}"
+                                               Margin="0 6 0 0"
+                                               TextWrapping="Wrap" />
+                                </Grid>
+                            </Border>
+
+                            <TreeView Grid.Row="1"
+                                      Background="Transparent"
+                                      ItemsSource="{Binding Servers}"
+                                      SelectedItemChanged="TreeView_SelectedItemChanged">
+                                <TreeView.ItemTemplate>
+                                    <HierarchicalDataTemplate ItemsSource="{Binding Processes}">
+                                        <TextBlock Text="{Binding Name}"
+                                                   Foreground="{StaticResource MainTextBrush}" />
+                                    </HierarchicalDataTemplate>
+                                </TreeView.ItemTemplate>
+                                <TreeView.ItemContainerStyle>
+                                    <Style TargetType="{x:Type TreeViewItem}">
+                                        <Setter Property="Foreground"
+                                                Value="{StaticResource MainTextBrush}" />
+                                    </Style>
+                                </TreeView.ItemContainerStyle>
+                            </TreeView>
+                        </Grid>
                     </Grid>
                 </TabItem>
                 <TabItem Header="Setting">
-                    <ScrollViewer VerticalScrollBarVisibility="Auto"
-                                  Padding="0 0 0 30">
-                        <StackPanel Orientation="Vertical"
-                                    Margin="20 0"
-                                    IsEnabled="{Binding IsEnableSettingTab}">
-                            <StackPanel Orientation="Vertical">
-                                <Border BorderBrush="#303947"
-                                        BorderThickness="0 0 0 1"
-                                        Padding="0 3"
-                                        Margin="0 25 0 10">
-                                    <TextBlock Text="Directory"
-                                               FontSize="{StaticResource FontSizeLarge}"
-                                               Foreground="{StaticResource MainTextBrush}"
-                                               Margin="0 0 0 10" />
-                                </Border>
-                                <Grid>
-                                    <Grid.RowDefinitions>
-                                        <RowDefinition Height="*" />
-                                        <RowDefinition Height="*" />
-                                    </Grid.RowDefinitions>
-                                    <Grid.ColumnDefinitions>
-                                        <ColumnDefinition Width="*" />
-                                        <ColumnDefinition Width="*" />
-                                        <ColumnDefinition Width="6*" />
-                                        <ColumnDefinition Width="*" />
-                                    </Grid.ColumnDefinitions>
-
-                                    <TextBlock Text="IP"
-                                               VerticalAlignment="Center"
-                                               Grid.Row="0"
-                                               Grid.Column="0" />
-                                    <TextBox Text="{Binding ExternalIP}"
-                                             Tag="127.0.0.1"
-                                             Grid.Row="0"
-                                             Grid.Column="1"
-                                             Margin="0 2 0 2"
-                                             Grid.ColumnSpan="2" />
-
-                                    <TextBlock Text="위치"
-                                               VerticalAlignment="Center"
-                                               Grid.Row="1"
-                                               Grid.Column="0" />
-                                    <TextBox Text="{Binding WorkingDirectory}"
-                                             Tag="Enter your 'fb' path"
-                                             Grid.Row="1"
-                                             Grid.Column="1"
-                                             Margin="0 2 0 2"
-                                             Grid.ColumnSpan="2" />
-                                    <Button Content="추가"
-                                            Grid.Row="1"
-                                            Grid.Column="3"
-                                            Margin="10 0 0 0"
-                                            VerticalAlignment="Center"
-                                            Command="{Binding FindWorkingDirectory}" />
-                                </Grid>
-
-
-
-                                <Border BorderBrush="#303947"
-                                        BorderThickness="0 0 0 1"
-                                        Padding="0 3"
-                                        Margin="0 25 0 10">
-                                    <TextBlock Text="MySQL"
-                                               FontSize="{StaticResource FontSizeLarge}"
-                                               Foreground="{StaticResource MainTextBrush}"
-                                               Margin="0 0 0 10" />
-                                </Border>
-                                <DataGrid ItemsSource="{Binding MySQL}">
-                                    <DataGrid.ContextMenu>
-                                        <ContextMenu>
-                                            <MenuItem Header="제거"
-                                                      Command="{Binding DeleteMySQL}"
-                                                      CommandParameter="{Binding RelativeSource={RelativeSource AncestorType=ContextMenu}, Path=PlacementTarget.SelectedItem}" />
-                                        </ContextMenu>
-                                    </DataGrid.ContextMenu>
-                                    <DataGrid.Columns>
-                                        <DataGridTemplateColumn Header="NAME">
-                                            <DataGridTemplateColumn.CellTemplate>
-                                                <DataTemplate>
-                                                    <TextBox IsReadOnly="True"
-                                                             Text="{Binding Name}" />
-                                                </DataTemplate>
-                                            </DataGridTemplateColumn.CellTemplate>
-                                        </DataGridTemplateColumn>
-                                        <DataGridTemplateColumn Header="IP">
-                                            <DataGridTemplateColumn.CellTemplate>
-                                                <DataTemplate>
-                                                    <TextBox Text="{Binding IP,UpdateSourceTrigger=PropertyChanged, Mode=TwoWay}"
-                                                             Tag="127.0.0.1"
-                                                             Width="128" />
-                                                </DataTemplate>
-                                            </DataGridTemplateColumn.CellTemplate>
-                                        </DataGridTemplateColumn>
-                                        <DataGridTemplateColumn Header="PORT">
-                                            <DataGridTemplateColumn.CellTemplate>
-                                                <DataTemplate>
-                                                    <TextBox Text="{Binding Port,UpdateSourceTrigger=PropertyChanged, Mode=TwoWay}"
-                                                             Tag="3306"
-                                                             Width="64" />
-                                                </DataTemplate>
-                                            </DataGridTemplateColumn.CellTemplate>
-                                        </DataGridTemplateColumn>
-                                        <DataGridTemplateColumn Header="ID">
-                                            <DataGridTemplateColumn.CellTemplate>
-                                                <DataTemplate>
-                                                    <TextBox Text="{Binding ID,UpdateSourceTrigger=PropertyChanged, Mode=TwoWay}"
-                                                             Tag="fb"
-                                                             Width="128" />
-                                                </DataTemplate>
-                                            </DataGridTemplateColumn.CellTemplate>
-                                        </DataGridTemplateColumn>
-                                        <DataGridTemplateColumn Header="PWD">
-                                            <DataGridTemplateColumn.CellTemplate>
-                                                <DataTemplate>
-                                                    <TextBox Text="{Binding PW,UpdateSourceTrigger=PropertyChanged, Mode=TwoWay}"
-                                                             Tag="admin"
-                                                             Width="128" />
-                                                </DataTemplate>
-                                            </DataGridTemplateColumn.CellTemplate>
-                                        </DataGridTemplateColumn>
-                                    </DataGrid.Columns>
-                                </DataGrid>
-                                <WrapPanel HorizontalAlignment="Right">
-                                    <Button Content="추가"
-                                            Margin="0 10 0 0"
-                                            Command="{Binding NewMySQL}"
-                                            CommandParameter="{Binding RelativeSource={RelativeSource AncestorType=ContextMenu}, Path=PlacementTarget.SelectedItem}" />
-                                </WrapPanel>
-
-                                <Grid>
-                                    <Grid.RowDefinitions>
-                                        <RowDefinition Height="*" />
-                                        <RowDefinition Height="*" />
-                                        <RowDefinition Height="*" />
-                                    </Grid.RowDefinitions>
-
-                                    <Grid.ColumnDefinitions>
-                                        <ColumnDefinition Width="*" />
-                                        <ColumnDefinition Width="*" />
-                                        <ColumnDefinition Width="*" />
-                                    </Grid.ColumnDefinitions>
-                                </Grid>
-
-                                <Border BorderBrush="#303947"
-                                        BorderThickness="0 0 0 1"
-                                        Padding="0 3"
-                                        Margin="0 25 0 10">
-                                    <TextBlock Text="Redis"
-                                               FontSize="{StaticResource FontSizeLarge}"
-                                               Foreground="{StaticResource MainTextBrush}"
-                                               Margin="0 0 0 10" />
-                                </Border>
-                                <DataGrid ItemsSource="{Binding Redis}"
-                                          IsReadOnly="True">
-                                    <DataGrid.ContextMenu>
-                                        <ContextMenu>
-                                            <MenuItem Header="제거"
-                                                      Command="{Binding DeleteRedis}"
-                                                      CommandParameter="{Binding RelativeSource={RelativeSource AncestorType=ContextMenu}, Path=PlacementTarget.SelectedItem}" />
-                                        </ContextMenu>
-                                    </DataGrid.ContextMenu>
-                                    <DataGrid.Columns>
-                                        <DataGridTemplateColumn Header="IP">
-                                            <DataGridTemplateColumn.CellTemplate>
-                                                <DataTemplate>
-                                                    <TextBox Text="{Binding IP,UpdateSourceTrigger=PropertyChanged, Mode=TwoWay}"
-                                                             Tag="127.0.0.1"
-                                                             Width="128" />
-                                                </DataTemplate>
-                                            </DataGridTemplateColumn.CellTemplate>
-                                        </DataGridTemplateColumn>
-                                        <DataGridTemplateColumn Header="PORT">
-                                            <DataGridTemplateColumn.CellTemplate>
-                                                <DataTemplate>
-                                                    <TextBox Text="{Binding Port,UpdateSourceTrigger=PropertyChanged, Mode=TwoWay}"
-                                                             Tag="6379" />
-                                                </DataTemplate>
-                                            </DataGridTemplateColumn.CellTemplate>
-                                        </DataGridTemplateColumn>
-                                    </DataGrid.Columns>
-                                </DataGrid>
-                                <WrapPanel HorizontalAlignment="Right">
-                                    <Button Content="추가"
-                                            Margin="0 10 0 0"
-                                            Command="{Binding NewRedis}"
-                                            CommandParameter="{Binding RelativeSource={RelativeSource AncestorType=ContextMenu}, Path=PlacementTarget.SelectedItem}" />
-                                </WrapPanel>
-
-                                <Border BorderBrush="#303947"
-                                        BorderThickness="0 0 0 1"
-                                        Padding="0 3"
-                                        Margin="0 25 0 10">
-                                    <TextBlock Text="RabbitMQ"
-                                               FontSize="{StaticResource FontSizeLarge}"
-                                               Foreground="{StaticResource MainTextBrush}"
-                                               Margin="0 0 0 10" />
-                                </Border>
-                                <Grid>
-                                    <Grid.RowDefinitions>
-                                        <RowDefinition Height="*" />
-                                        <RowDefinition Height="*" />
-                                        <RowDefinition Height="*" />
-                                        <RowDefinition Height="*" />
-                                    </Grid.RowDefinitions>
-                                    <Grid.ColumnDefinitions>
-                                        <ColumnDefinition Width="*" />
-                                        <ColumnDefinition Width="*" />
-                                        <ColumnDefinition Width="8*" />
-                                    </Grid.ColumnDefinitions>
-
-                                    <TextBlock Text="IP"
-                                               VerticalAlignment="Center"
-                                               Grid.Row="0"
-                                               Grid.Column="0" />
-                                    <TextBox Text="{Binding RabbitMq.IP}"
-                                             Tag="127.0.0.1"
-                                             Grid.Row="0"
-                                             Grid.Column="1"
-                                             Margin="0 2 0 2" />
-
-                                    <TextBlock Text="포트"
-                                               VerticalAlignment="Center"
-                                               Grid.Row="1"
-                                               Grid.Column="0" />
-                                    <TextBox Text="{Binding RabbitMq.Port}"
-                                             Tag="5672"
-                                             Grid.Row="1"
-                                             Grid.Column="1"
-                                             Margin="0 2 0 2" />
-
-                                    <TextBlock Text="ID"
-                                               VerticalAlignment="Center"
-                                               Grid.Row="2"
-                                               Grid.Column="0" />
-                                    <TextBox Text="{Binding RabbitMq.ID}"
-                                             Grid.Row="2"
-                                             Grid.Column="1"
-                                             Margin="0 2 0 2" />
-
-                                    <TextBlock Text="암호"
-                                               VerticalAlignment="Center"
-                                               Grid.Row="3"
-                                               Grid.Column="0" />
-                                    <TextBox Text="{Binding RabbitMq.PW}"
-                                             Grid.Row="3"
-                                             Grid.Column="1"
-                                             Margin="0 2 0 2" />
-                                </Grid>
-
-                                <Border BorderBrush="#303947"
-                                        BorderThickness="0 0 0 1"
-                                        Padding="0 3"
-                                        Margin="0 25 0 10">
-                                    <TextBlock Text="Gateway"
-                                               FontSize="{StaticResource FontSizeLarge}"
-                                               Foreground="{StaticResource MainTextBrush}"
-                                               Margin="0 0 0 10" />
-                                </Border>
-                                <Grid>
-                                    <Grid.RowDefinitions>
-                                        <RowDefinition Height="*" />
-                                    </Grid.RowDefinitions>
-                                    <Grid.ColumnDefinitions>
-                                        <ColumnDefinition Width="*" />
-                                        <ColumnDefinition Width="*" />
-                                        <ColumnDefinition Width="8*" />
-                                        <ColumnDefinition Width="Auto" />
-                                    </Grid.ColumnDefinitions>
-
-                                    <TextBlock Text="포트"
-                                               VerticalAlignment="Center"
-                                               Grid.Row="0"
-                                               Grid.Column="0" />
-                                    <TextBox Text="{Binding Gateway.Port}"
-                                             Tag="3001"
-                                             Grid.Row="0"
-                                             Grid.Column="1"
-                                             Margin="0 2 0 2" />
-                                </Grid>
-
-                                <Border BorderBrush="#303947"
-                                        BorderThickness="0 0 0 1"
-                                        Padding="0 3"
-                                        Margin="0 25 0 10">
-                                    <TextBlock Text="Login"
-                                               FontSize="{StaticResource FontSizeLarge}"
-                                               Foreground="{StaticResource MainTextBrush}"
-                                               Margin="0 0 0 10" />
-                                </Border>
-
-                                <Grid>
-                                    <Grid.RowDefinitions>
-                                        <RowDefinition Height="Auto" />
-                                        <RowDefinition Height="*" />
-                                        <RowDefinition Height="Auto" />
-                                        <RowDefinition Height="*" />
-                                        <RowDefinition Height="*" />
-                                        <RowDefinition Height="*" />
-                                        <RowDefinition Height="*" />
-                                        <RowDefinition Height="*" />
-                                        <RowDefinition Height="*" />
-                                    </Grid.RowDefinitions>
-                                    <Grid.ColumnDefinitions>
-                                        <ColumnDefinition Width="*" />
-                                        <ColumnDefinition Width="2*" />
-                                        <ColumnDefinition Width="2*" />
-                                        <ColumnDefinition Width="8*" />
-                                        <ColumnDefinition Width="Auto" />
-                                    </Grid.ColumnDefinitions>
-
-                                    <TextBlock Text="이용약관"
-                                               VerticalAlignment="Center"
-                                               Grid.Row="0"
-                                               Grid.Column="0" />
-                                    <TextBox Text="{Binding Agreement}"
-                                             Tag="Enter your agreement message."
-                                             Grid.Row="0"
-                                             Grid.Column="1"
-                                             Grid.ColumnSpan="3"
-                                             Height="200"
-                                             TextWrapping="Wrap"
-                                             AcceptsReturn="True"
-                                             Margin="0 2 0 2" />
-
-                                    <TextBlock Text="시작맵"
-                                               VerticalAlignment="Center"
-                                               Grid.Row="1"
-                                               Grid.Column="0" />
-                                    <TextBox Text="{Binding InitMap}"
-                                             Tag="Enter initial map id"
-                                             Grid.Row="1"
-                                             Grid.Column="1"
-                                             Margin="0 2 0 2" />
-                                    <TextBlock Text="시작위치"
-                                               VerticalAlignment="Center"
-                                               Grid.Row="2"
-                                               Grid.Column="0" />
-                                    <StackPanel Orientation="Vertical"
-                                                Grid.Row="2"
-                                                Grid.Column="1"
-                                                Grid.ColumnSpan="2">
-                                        <DataGrid ItemsSource="{Binding InitPoints}"
-                                                  IsReadOnly="True"
-                                                  Margin="0 5 0 0">
-                                            <DataGrid.ContextMenu>
-                                                <ContextMenu>
-                                                    <MenuItem Header="제거"
-                                                              Command="{Binding DeleteInitPoint}"
-                                                              CommandParameter="{Binding RelativeSource={RelativeSource AncestorType=ContextMenu}, Path=PlacementTarget.SelectedItem}" />
-                                                </ContextMenu>
-                                            </DataGrid.ContextMenu>
-                                            <DataGrid.Columns>
-                                                <DataGridTemplateColumn Header="X"
-                                                                        Width="*">
-                                                    <DataGridTemplateColumn.CellTemplate>
-                                                        <DataTemplate>
-                                                            <TextBox Text="{Binding X,UpdateSourceTrigger=PropertyChanged, Mode=TwoWay}"
-                                                                     Margin="0 2 0 2" />
-                                                        </DataTemplate>
-                                                    </DataGridTemplateColumn.CellTemplate>
-                                                </DataGridTemplateColumn>
-                                                <DataGridTemplateColumn Header="Y"
-                                                                        Width="*">
-                                                    <DataGridTemplateColumn.CellTemplate>
-                                                        <DataTemplate>
-                                                            <TextBox Text="{Binding Y,UpdateSourceTrigger=PropertyChanged, Mode=TwoWay}"
-                                                                     Margin="0 2 0 2" />
-                                                        </DataTemplate>
-                                                    </DataGridTemplateColumn.CellTemplate>
-                                                </DataGridTemplateColumn>
-                                            </DataGrid.Columns>
-                                        </DataGrid>
-                                        <WrapPanel HorizontalAlignment="Right">
-                                            <Button Content="추가"
-                                                    Margin="0 10 0 0"
-                                                    Command="{Binding NewInitPoint}" />
-                                        </WrapPanel>
-                                    </StackPanel>
-
-                                    <TextBlock Text="체력"
-                                               VerticalAlignment="Center"
-                                               Grid.Row="3"
-                                               Grid.Column="0" />
-                                    <TextBox Text="{Binding BaseHP}"
-                                             Tag="기본 체력"
-                                             Grid.Row="3"
-                                             Grid.Column="1"
-                                             Margin="0 2 10 2" />
-                                    <TextBox Text="{Binding AdditionalHP}"
-                                             Tag="추가 체력 범위"
-                                             Grid.Row="3"
-                                             Grid.Column="2"
-                                             Margin="0 2 10 2" />
-
-                                    <TextBlock Text="마력"
-                                               VerticalAlignment="Center"
-                                               Grid.Row="4"
-                                               Grid.Column="0" />
-                                    <TextBox Text="{Binding BaseMP}"
-                                             Tag="기본 마력"
-                                             Grid.Row="4"
-                                             Grid.Column="1"
-                                             Margin="0 2 10 2" />
-                                    <TextBox Text="{Binding AdditionalMP}"
-                                             Tag="추가 마력 범위"
-                                             Grid.Row="4"
-                                             Grid.Column="2"
-                                             Margin="0 2 10 2" />
-
-                                    <TextBlock Text="영문 아이디"
-                                               VerticalAlignment="Center"
-                                               Grid.Row="5"
-                                               Grid.Column="0" />
-                                    <CheckBox Content="허용"
-                                              Grid.Row="5"
-                                              Grid.Column="1"
-                                              Foreground="{StaticResource MainTextBrush}"
-                                              Margin="0 5 0 5"
-                                              IsChecked="{Binding AllowForeignName}" />
-
-                                    <TextBlock Text="관리자 권한"
-                                               VerticalAlignment="Center"
-                                               Grid.Row="6"
-                                               Grid.Column="0" />
-                                    <CheckBox Content="활성화"
-                                              Grid.Row="6"
-                                              Grid.Column="1"
-                                              Foreground="{StaticResource MainTextBrush}"
-                                              Margin="0 5 0 5"
-                                              IsChecked="{Binding AdminMode}" />
-
-                                    <TextBlock Text="이름 길이"
-                                               VerticalAlignment="Center"
-                                               Grid.Row="7"
-                                               Grid.Column="0" />
-                                    <TextBox Text="{Binding MinIdLength}"
-                                             Tag="최소길이"
-                                             Grid.Row="7"
-                                             Grid.Column="1"
-                                             Margin="0 2 10 2" />
-                                    <TextBox Text="{Binding MaxIdLength}"
-                                             Tag="최대길이"
-                                             Grid.Row="7"
-                                             Grid.Column="2"
-                                             Margin="0 2 10 2" />
-
-                                    <TextBlock Text="암호 길이"
-                                               VerticalAlignment="Center"
-                                               Grid.Row="8"
-                                               Grid.Column="0" />
-                                    <TextBox Text="{Binding MinPwLength}"
-                                             Tag="최소길이"
-                                             Grid.Row="8"
-                                             Grid.Column="1"
-                                             Margin="0 2 10 2" />
-                                    <TextBox Text="{Binding MaxPwLength}"
-                                             Tag="최대길이"
-                                             Grid.Row="8"
-                                             Grid.Column="2"
-                                             Margin="0 2 10 2" />
-                                </Grid>
-
-                                <DataGrid ItemsSource="{Binding Login}"
-                                          IsReadOnly="True"
-                                          Margin="0 5 0 0">
-                                    <DataGrid.ContextMenu>
-                                        <ContextMenu>
-                                            <MenuItem Header="제거"
-                                                      Command="{Binding DeleteLogin}"
-                                                      CommandParameter="{Binding RelativeSource={RelativeSource AncestorType=ContextMenu}, Path=PlacementTarget.SelectedItem}" />
-                                        </ContextMenu>
-                                    </DataGrid.ContextMenu>
-                                    <DataGrid.Columns>
-                                        <DataGridTemplateColumn Header="Name"
-                                                                Width="*">
-                                            <DataGridTemplateColumn.CellTemplate>
-                                                <DataTemplate>
-                                                    <TextBox Text="{Binding Name,UpdateSourceTrigger=PropertyChanged, Mode=TwoWay}"
-                                                             Margin="0 2 0 2" />
-                                                </DataTemplate>
-                                            </DataGridTemplateColumn.CellTemplate>
-                                        </DataGridTemplateColumn>
-                                        <DataGridTemplateColumn Header="PORT"
-                                                                Width="*">
-                                            <DataGridTemplateColumn.CellTemplate>
-                                                <DataTemplate>
-                                                    <TextBox Text="{Binding Port,UpdateSourceTrigger=PropertyChanged, Mode=TwoWay}"
-                                                             Margin="0 2 0 2" />
-                                                </DataTemplate>
-                                            </DataGridTemplateColumn.CellTemplate>
-                                        </DataGridTemplateColumn>
-                                        <DataGridTemplateColumn Header="Desc"
-                                                                Width="8*">
-                                            <DataGridTemplateColumn.CellTemplate>
-                                                <DataTemplate>
-                                                    <TextBox Text="{Binding Desc,UpdateSourceTrigger=PropertyChanged, Mode=TwoWay}"
-                                                             Margin="0 2 0 2" />
-                                                </DataTemplate>
-                                            </DataGridTemplateColumn.CellTemplate>
-                                        </DataGridTemplateColumn>
-                                    </DataGrid.Columns>
-                                </DataGrid>
-                                <WrapPanel HorizontalAlignment="Right">
-                                    <Button Content="추가"
-                                            Margin="0 10 0 0"
-                                            Command="{Binding NewLogin}" />
-                                </WrapPanel>
-
-                                <Border BorderBrush="#303947"
-                                        BorderThickness="0 0 0 1"
-                                        Padding="0 3"
-                                        Margin="0 25 0 10">
-                                    <TextBlock Text="Game"
-                                               FontSize="{StaticResource FontSizeLarge}"
-                                               Foreground="{StaticResource MainTextBrush}"
-                                               Margin="0 0 0 10" />
-                                </Border>
-
-                                <Grid>
-                                    <Grid.RowDefinitions>
-                                        <RowDefinition Height="*" />
-                                    </Grid.RowDefinitions>
-                                    <Grid.ColumnDefinitions>
-                                        <ColumnDefinition Width="*" />
-                                        <ColumnDefinition Width="*" />
-                                        <ColumnDefinition Width="8*" />
-                                        <ColumnDefinition Width="Auto" />
-                                    </Grid.ColumnDefinitions>
-
-                                    <TextBlock Text="서버 저장 주기"
-                                               VerticalAlignment="Center"
-                                               Grid.Row="0"
-                                               Grid.Column="0" />
-                                    <TextBox Text="{Binding SaveInterval,UpdateSourceTrigger=PropertyChanged, Mode=TwoWay}"
-                                             Tag="600"
-                                             Width="64"
-                                             Grid.Row="0"
-                                             Grid.Column="1"
-                                             HorizontalAlignment="Left"
-                                             Margin="0 2 0 2" />
-                                </Grid>
-
-                                <DataGrid ItemsSource="{Binding Game}"
-                                          IsReadOnly="True"
-                                          Margin="0 5 0 0">
-                                    <DataGrid.ContextMenu>
-                                        <ContextMenu>
-                                            <MenuItem Header="제거"
-                                                      Command="{Binding DeleteGame}"
-                                                      CommandParameter="{Binding RelativeSource={RelativeSource AncestorType=ContextMenu}, Path=PlacementTarget.SelectedItem}" />
-                                        </ContextMenu>
-                                    </DataGrid.ContextMenu>
-                                    <DataGrid.Columns>
-                                        <DataGridTemplateColumn Header="ID">
-                                            <DataGridTemplateColumn.CellTemplate>
-                                                <DataTemplate>
-                                                    <TextBox Text="{Binding ID,UpdateSourceTrigger=PropertyChanged, Mode=TwoWay}"
-                                                             Margin="0 2 0 2" />
-                                                </DataTemplate>
-                                            </DataGridTemplateColumn.CellTemplate>
-                                        </DataGridTemplateColumn>
-                                        <DataGridTemplateColumn Header="PORT">
-                                            <DataGridTemplateColumn.CellTemplate>
-                                                <DataTemplate>
-                                                    <TextBox Text="{Binding Port,UpdateSourceTrigger=PropertyChanged, Mode=TwoWay}"
-                                                             Width="64"
-                                                             Margin="0 2 0 2" />
-                                                </DataTemplate>
-                                            </DataGridTemplateColumn.CellTemplate>
-                                        </DataGridTemplateColumn>
-                                    </DataGrid.Columns>
-                                </DataGrid>
-                                <WrapPanel HorizontalAlignment="Right">
-                                    <Button Content="추가"
-                                            Margin="0 10 0 0"
-                                            Command="{Binding NewGame}" />
-                                </WrapPanel>
-
-                                <Border BorderBrush="#303947"
-                                        BorderThickness="0 0 0 1"
-                                        Padding="0 3"
-                                        Margin="0 25 0 10">
-                                    <TextBlock Text="Internal"
-                                               FontSize="{StaticResource FontSizeLarge}"
-                                               Foreground="{StaticResource MainTextBrush}"
-                                               Margin="0 0 0 10" />
-                                </Border>
-                                <Grid>
-                                    <Grid.RowDefinitions>
-                                        <RowDefinition Height="*" />
-                                    </Grid.RowDefinitions>
-                                    <Grid.ColumnDefinitions>
-                                        <ColumnDefinition Width="*" />
-                                        <ColumnDefinition Width="*" />
-                                        <ColumnDefinition Width="8*" />
-                                        <ColumnDefinition Width="Auto" />
-                                    </Grid.ColumnDefinitions>
-
-                                    <TextBlock Text="포트"
-                                               VerticalAlignment="Center"
-                                               Grid.Row="0"
-                                               Grid.Column="0" />
-                                    <TextBox Text="{Binding InternalPort,UpdateSourceTrigger=PropertyChanged, Mode=TwoWay}"
-                                             Tag="3000"
-                                             Width="64"
-                                             Grid.Row="0"
-                                             Grid.Column="1"
-                                             HorizontalAlignment="Left"
-                                             Margin="0 2 0 2" />
-                                </Grid>
-                            </StackPanel>
-                        </StackPanel>
-                    </ScrollViewer>
+                    <local:SettingTabView />
                 </TabItem>
             </TabControl>
         </DockPanel>

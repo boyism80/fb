@@ -3,6 +3,7 @@
                     xmlns:i="http://schemas.microsoft.com/expression/2010/interactivity"
                     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
                     xmlns:uc="clr-namespace:Runner.Control"
+                    xmlns:behavior="clr-namespace:Runner.Behavior"
                     xmlns:mwt="clr-namespace:Microsoft.Windows.Themes;assembly=PresentationFramework.Aero2">
     <ResourceDictionary.MergedDictionaries>
         <ResourceDictionary Source="Color.xaml" />
@@ -1359,6 +1360,8 @@
                 Value="False" />
         <Setter Property="GridLinesVisibility"
                 Value="None" />
+        <Setter Property="behavior:DataGridScrollBehavior.IsEnabled"
+                Value="True" />
     </Style>
 
     <Style TargetType="DataGridColumnHeader">
