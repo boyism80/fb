@@ -359,6 +359,7 @@ namespace Internal.Controllers
             var ch = await _dbContext.Character.Get(world, uid);
             var items = await _dbContext.Item.Get(world, uid);
             var spells = await _dbContext.Spell.Get(world, uid);
+            var matchmakingSkills = await _dbContext.MatchmakingSkill.Get(world, uid);
             var achievements = await _dbContext.Achievement.Get(world, uid);
             var quests = await _dbContext.Quest.Get(world, uid);
             var storageBoxes = await _dbContext.StorageBox.Get(world, uid);
@@ -396,6 +397,7 @@ namespace Internal.Controllers
                 Marriage = marriageProtocol,
                 Items = items.Select(_mapper.Map<Protocol.Item>).ToList(),
                 Spells = spells.Select(_mapper.Map<Protocol.Spell>).ToList(),
+                MatchmakingSkills = matchmakingSkills.Select(_mapper.Map<Protocol.MatchmakingSkill>).ToList(),
                 Achievements = achievements.Select(_mapper.Map<Protocol.Achievement>).ToList(),
                 Quests = quests.Select(_mapper.Map<Protocol.Quest>).ToList(),
                 StorageBoxes = storageBoxes
@@ -464,6 +466,7 @@ namespace Internal.Controllers
                     character_name = request.Payload.Character.Name,
                     item_count = request.Payload.Items?.Count ?? 0,
                     spell_count = request.Payload.Spells?.Count ?? 0,
+                    matchmaking_skill_count = request.Payload.MatchmakingSkills?.Count ?? 0,
                     achievement_count = request.Payload.Achievements?.Count ?? 0,
                     quest_count = request.Payload.Quests?.Count ?? 0,
                     storage_box_count = request.Payload.StorageBoxes?.Count ?? 0
@@ -590,6 +593,11 @@ namespace Internal.Controllers
                 existingSpells,
                 removed => _dbContext.Spell.Delete(world, removed),
                 alive => _dbContext.Spell.Set(world, alive));
+
+            var matchmakingSkills = _mapper.Map<Protocol.MatchmakingSkill[], MatchmakingSkill[]>(
+                data.MatchmakingSkills?.ToArray() ?? Array.Empty<Protocol.MatchmakingSkill>());
+            if (matchmakingSkills.Length > 0)
+                _dbContext.MatchmakingSkill.Set(world, matchmakingSkills);
 
             var achievements = _mapper.Map<Protocol.Achievement[], Achievement[]>(data.Achievements?.ToArray() ?? Array.Empty<Protocol.Achievement>());
             ApplyHashEntitySnapshot(

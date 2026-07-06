@@ -53,6 +53,13 @@ namespace Http.Mapping
                 .ForMember(x => x.Next, x => x.MapFrom(u => u.Next.ToString("yyyy-MM-dd HH:mm:ss")))
                 .ReverseMap();
 
+            CreateMap<Http.Model.MatchmakingSkill, Protocol.MatchmakingSkill>()
+                .ForMember(x => x.User, x => x.MapFrom(u => u.CharacterId))
+                .ReverseMap()
+                .ForMember(x => x.CharacterId, x => x.MapFrom(u => u.User))
+                .ForMember(x => x.CreatedDate, x => x.Ignore())
+                .ForMember(x => x.UpdatedDate, x => x.Ignore());
+
             CreateMap<Http.Model.Item, Protocol.Item>()
                 .ForMember(x => x.User, x => x.MapFrom(u => u.Owner))
                 .ForMember(x => x.ExpireTime, x => x.MapFrom(u => u.ExpireTime.HasValue ? u.ExpireTime.Value.ToString("yyyy-MM-dd HH:mm:ss") : null))
