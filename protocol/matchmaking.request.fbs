@@ -1,0 +1,32 @@
+include "matchmaking.fbs";
+
+namespace fb.protocol.matchmaking.request;
+
+table Register {
+    match_type: uint;
+    entries: [fb.protocol.matchmaking.RegistryEntry];
+}
+
+table Unregister {
+    match_type: uint;
+    registry_id: string;
+    world: uint;
+    character_id: uint;
+}
+
+table Confirm {
+    match_id: string;
+    world: uint;
+    character_id: uint;
+}
+
+table Decline {
+    match_id: string;
+    world: uint;
+    character_id: uint;
+}
+
+table Status {
+    world: uint;
+    character_id: uint;
+}

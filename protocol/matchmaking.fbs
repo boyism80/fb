@@ -1,0 +1,23 @@
+namespace fb.protocol.matchmaking;
+
+table RegistryEntry {
+    world: uint;
+    character_id: uint;
+    mu: double;
+    sigma: double;
+}
+
+table MatchRegistry {
+    registry_id: string;
+    entries: [RegistryEntry];
+}
+
+table MatchTeam {
+    registries: [MatchRegistry];
+}
+
+table RegistryOutcomeEntry {
+    registry_id: string;
+    outcome: ubyte;
+    entries: [RegistryEntry];
+}

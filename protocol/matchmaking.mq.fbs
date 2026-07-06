@@ -1,0 +1,23 @@
+include "matchmaking.fbs";
+
+namespace fb.protocol.matchmaking.mq;
+
+table Proposed {
+    match_id: string;
+    match_type: uint;
+    confirm_deadline: string;
+    teams: [fb.protocol.matchmaking.MatchTeam];
+}
+
+table Ready {
+    match_id: string;
+    match_type: uint;
+    teams: [fb.protocol.matchmaking.MatchTeam];
+}
+
+table Dissolved {
+    match_id: string;
+    match_type: uint;
+    reason: ubyte;
+    registry_outcomes: [fb.protocol.matchmaking.RegistryOutcomeEntry];
+}

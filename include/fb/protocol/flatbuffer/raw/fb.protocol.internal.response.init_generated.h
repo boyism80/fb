@@ -18,6 +18,7 @@ static_assert(FLATBUFFERS_VERSION_MAJOR == 25 &&
 #include "fb.protocol.internal.item_generated.h"
 #include "fb.protocol.internal.marketplacepending_generated.h"
 #include "fb.protocol.internal.marriage_generated.h"
+#include "fb.protocol.internal.matchmakingskill_generated.h"
 #include "fb.protocol.internal.option_generated.h"
 #include "fb.protocol.internal.quest_generated.h"
 #include "fb.protocol.internal.spell_generated.h"
@@ -42,12 +43,13 @@ struct Init FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
     VT_CLAN = 10,
     VT_ITEMS = 12,
     VT_SPELLS = 14,
-    VT_OPTION = 16,
-    VT_ACHIEVEMENTS = 18,
-    VT_QUESTS = 20,
-    VT_STORAGE_BOXES = 22,
-    VT_MARKETPLACE_PENDINGS = 24,
-    VT_MAIL = 26
+    VT_MATCHMAKING_SKILLS = 16,
+    VT_OPTION = 18,
+    VT_ACHIEVEMENTS = 20,
+    VT_QUESTS = 22,
+    VT_STORAGE_BOXES = 24,
+    VT_MARKETPLACE_PENDINGS = 26,
+    VT_MAIL = 28
   };
   const fb::protocol::internal::raw::Character *character() const {
     return GetPointer<const fb::protocol::internal::raw::Character *>(VT_CHARACTER);
@@ -66,6 +68,9 @@ struct Init FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
   }
   const ::flatbuffers::Vector<::flatbuffers::Offset<fb::protocol::internal::raw::Spell>> *spells() const {
     return GetPointer<const ::flatbuffers::Vector<::flatbuffers::Offset<fb::protocol::internal::raw::Spell>> *>(VT_SPELLS);
+  }
+  const ::flatbuffers::Vector<::flatbuffers::Offset<fb::protocol::internal::raw::MatchmakingSkill>> *matchmaking_skills() const {
+    return GetPointer<const ::flatbuffers::Vector<::flatbuffers::Offset<fb::protocol::internal::raw::MatchmakingSkill>> *>(VT_MATCHMAKING_SKILLS);
   }
   const fb::protocol::internal::raw::Option *option() const {
     return GetPointer<const fb::protocol::internal::raw::Option *>(VT_OPTION);
@@ -101,6 +106,9 @@ struct Init FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
            VerifyOffset(verifier, VT_SPELLS) &&
            verifier.VerifyVector(spells()) &&
            verifier.VerifyVectorOfTables(spells()) &&
+           VerifyOffset(verifier, VT_MATCHMAKING_SKILLS) &&
+           verifier.VerifyVector(matchmaking_skills()) &&
+           verifier.VerifyVectorOfTables(matchmaking_skills()) &&
            VerifyOffset(verifier, VT_OPTION) &&
            verifier.VerifyTable(option()) &&
            VerifyOffset(verifier, VT_ACHIEVEMENTS) &&
@@ -142,6 +150,9 @@ struct InitBuilder {
   void add_spells(::flatbuffers::Offset<::flatbuffers::Vector<::flatbuffers::Offset<fb::protocol::internal::raw::Spell>>> spells) {
     fbb_.AddOffset(Init::VT_SPELLS, spells);
   }
+  void add_matchmaking_skills(::flatbuffers::Offset<::flatbuffers::Vector<::flatbuffers::Offset<fb::protocol::internal::raw::MatchmakingSkill>>> matchmaking_skills) {
+    fbb_.AddOffset(Init::VT_MATCHMAKING_SKILLS, matchmaking_skills);
+  }
   void add_option(::flatbuffers::Offset<fb::protocol::internal::raw::Option> option) {
     fbb_.AddOffset(Init::VT_OPTION, option);
   }
@@ -179,6 +190,7 @@ inline ::flatbuffers::Offset<Init> CreateInit(
     ::flatbuffers::Offset<nullable::nullable_uint> clan = 0,
     ::flatbuffers::Offset<::flatbuffers::Vector<::flatbuffers::Offset<fb::protocol::internal::raw::Item>>> items = 0,
     ::flatbuffers::Offset<::flatbuffers::Vector<::flatbuffers::Offset<fb::protocol::internal::raw::Spell>>> spells = 0,
+    ::flatbuffers::Offset<::flatbuffers::Vector<::flatbuffers::Offset<fb::protocol::internal::raw::MatchmakingSkill>>> matchmaking_skills = 0,
     ::flatbuffers::Offset<fb::protocol::internal::raw::Option> option = 0,
     ::flatbuffers::Offset<::flatbuffers::Vector<::flatbuffers::Offset<fb::protocol::internal::raw::Achievement>>> achievements = 0,
     ::flatbuffers::Offset<::flatbuffers::Vector<::flatbuffers::Offset<fb::protocol::internal::raw::Quest>>> quests = 0,
@@ -192,6 +204,7 @@ inline ::flatbuffers::Offset<Init> CreateInit(
   builder_.add_quests(quests);
   builder_.add_achievements(achievements);
   builder_.add_option(option);
+  builder_.add_matchmaking_skills(matchmaking_skills);
   builder_.add_spells(spells);
   builder_.add_items(items);
   builder_.add_clan(clan);
@@ -209,6 +222,7 @@ inline ::flatbuffers::Offset<Init> CreateInitDirect(
     ::flatbuffers::Offset<nullable::nullable_uint> clan = 0,
     const std::vector<::flatbuffers::Offset<fb::protocol::internal::raw::Item>> *items = nullptr,
     const std::vector<::flatbuffers::Offset<fb::protocol::internal::raw::Spell>> *spells = nullptr,
+    const std::vector<::flatbuffers::Offset<fb::protocol::internal::raw::MatchmakingSkill>> *matchmaking_skills = nullptr,
     ::flatbuffers::Offset<fb::protocol::internal::raw::Option> option = 0,
     const std::vector<::flatbuffers::Offset<fb::protocol::internal::raw::Achievement>> *achievements = nullptr,
     const std::vector<::flatbuffers::Offset<fb::protocol::internal::raw::Quest>> *quests = nullptr,
@@ -217,6 +231,7 @@ inline ::flatbuffers::Offset<Init> CreateInitDirect(
     uint32_t mail = 0) {
   auto items__ = items ? _fbb.CreateVector<::flatbuffers::Offset<fb::protocol::internal::raw::Item>>(*items) : 0;
   auto spells__ = spells ? _fbb.CreateVector<::flatbuffers::Offset<fb::protocol::internal::raw::Spell>>(*spells) : 0;
+  auto matchmaking_skills__ = matchmaking_skills ? _fbb.CreateVector<::flatbuffers::Offset<fb::protocol::internal::raw::MatchmakingSkill>>(*matchmaking_skills) : 0;
   auto achievements__ = achievements ? _fbb.CreateVector<::flatbuffers::Offset<fb::protocol::internal::raw::Achievement>>(*achievements) : 0;
   auto quests__ = quests ? _fbb.CreateVector<::flatbuffers::Offset<fb::protocol::internal::raw::Quest>>(*quests) : 0;
   auto storage_boxes__ = storage_boxes ? _fbb.CreateVector<::flatbuffers::Offset<fb::protocol::internal::raw::StorageBox>>(*storage_boxes) : 0;
@@ -229,6 +244,7 @@ inline ::flatbuffers::Offset<Init> CreateInitDirect(
       clan,
       items__,
       spells__,
+      matchmaking_skills__,
       option,
       achievements__,
       quests__,
