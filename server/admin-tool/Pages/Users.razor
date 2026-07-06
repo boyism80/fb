@@ -39,13 +39,13 @@
                        placeholder="UID 또는 유저명 검색" @bind="searchTerm"
                        @bind:event="oninput" @onkeypress="HandleKeyPress" />
             </div>
-            <select class="stitch-select" @bind="statusFilter">
+            <select class="stitch-select" @bind="statusFilter" @bind:after="OnFiltersChanged">
                 <option value="all">상태: 전체</option>
                 <option value="online">온라인</option>
                 <option value="offline">오프라인</option>
                 <option value="banned">밴</option>
             </select>
-            <select class="stitch-select" @bind="roleFilter">
+            <select class="stitch-select" @bind="roleFilter" @bind:after="OnFiltersChanged">
                 <option value="all">역할: 전체</option>
                 <option value="user">일반 유저</option>
                 <option value="staff">관리자</option>
@@ -90,7 +90,7 @@
             <p class="text-muted mt-3">유저 목록을 불러오는 중...</p>
         </div>
     }
-    else if (userList?.Users != null && FilteredUsers.Any())
+    else if (userList?.Users != null && userList.Users.Any())
     {
         <div class="card-bg data-table-card">
             <div class="dash-table-wrap">
@@ -141,7 +141,7 @@
                         @{
                             int userIndex = (currentPage - 1) * pageSize + 1;
                         }
-                        @foreach (var user in FilteredUsers)
+                        @foreach (var user in userList.Users)
                         {
                             <tr>
                                 <td class="table-meta">@userIndex</td>
@@ -231,7 +231,7 @@
             </div>
         }
     }
-    else if (!isLoading && userList?.Users != null && userList.Users.Any())
+    else if (!isLoading && userList != null && HasActiveFilters() && userList.TotalCount == 0)
     {
         <div class="card-bg dash-card">
             <p class="dash-empty">필터 조건에 맞는 유저가 없습니다.</p>
@@ -570,7 +570,9 @@
                 pageSize,
                 string.IsNullOrWhiteSpace(searchTerm) ? null : searchTerm,
                 sortColumn,
-                sortDescending);
+                sortDescending,
+                statusFilter,
+                roleFilter);
         }
         catch (Exception ex)
         {
@@ -602,10 +604,28 @@
     private async Task ClearSearch()
     {
         searchTerm = string.Empty;
+        statusFilter = "all";
+        roleFilter = "all";
         currentPage = 1;
         await LoadUsers();
         UpdateUsersUrl();
     }
+
+    private async Task OnFiltersChanged()
+    {
+        currentPage = 1;
+        await LoadUsers();
+        UpdateUsersUrl();
+    }
+
+    private static bool HasActiveFilters(string statusFilter, string roleFilter, string searchTerm)
+    {
+        return !string.Equals(statusFilter, "all", StringComparison.OrdinalIgnoreCase)
+            || !string.Equals(roleFilter, "all", StringComparison.OrdinalIgnoreCase)
+            || !string.IsNullOrWhiteSpace(searchTerm);
+    }
+
+    private bool HasActiveFilters() => HasActiveFilters(statusFilter, roleFilter, searchTerm);
 
     private async Task HandleKeyPress(KeyboardEventArgs e)
     {
@@ -872,31 +892,6 @@
         finally
         {
             isProcessing = false;
-        }
-    }
-
-    private IEnumerable<UserListItem> FilteredUsers
-    {
-        get
-        {
-            if (userList?.Users == null)
-                return Enumerable.Empty<UserListItem>();
-
-            IEnumerable<UserListItem> query = userList.Users;
-
-            if (statusFilter == "online")
-                query = query.Where(u => !u.IsBanned && u.IsOnline);
-            else if (statusFilter == "offline")
-                query = query.Where(u => !u.IsBanned && !u.IsOnline);
-            else if (statusFilter == "banned")
-                query = query.Where(u => u.IsBanned);
-
-            if (roleFilter == "user")
-                query = query.Where(u => u.Role == (byte)Role.User);
-            else if (roleFilter == "staff")
-                query = query.Where(u => u.Role >= (byte)Role.Moderator);
-
-            return query;
         }
     }
 

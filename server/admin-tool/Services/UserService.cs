@@ -31,9 +31,24 @@ namespace AdminTool.Services
             int pageSize,
             string searchTerm = null,
             string sortBy = null,
-            bool sortDescending = true)
+            bool sortDescending = true,
+            string statusFilter = "all",
+            string roleFilter = "all")
         {
             var column = NormalizeSortColumn(sortBy);
+            if (HasUserListFilters(statusFilter, roleFilter))
+            {
+                return await GetUsersFilteredAsync(
+                    world,
+                    page,
+                    pageSize,
+                    searchTerm,
+                    column,
+                    sortDescending,
+                    statusFilter,
+                    roleFilter);
+            }
+
             if (column is "id" or "name")
             {
                 return await GetUsersSortedByNameRegistryAsync(
@@ -42,6 +57,129 @@ namespace AdminTool.Services
 
             return await GetUsersSortedByCharacterFieldAsync(
                 world, page, pageSize, searchTerm, column, sortDescending);
+        }
+
+        private static bool HasUserListFilters(string statusFilter, string roleFilter)
+        {
+            return !string.Equals(statusFilter, "all", StringComparison.OrdinalIgnoreCase)
+                || !string.Equals(roleFilter, "all", StringComparison.OrdinalIgnoreCase);
+        }
+
+        private async Task<UserListResult> GetUsersFilteredAsync(
+            uint world,
+            int page,
+            int pageSize,
+            string searchTerm,
+            string sortColumn,
+            bool sortDescending,
+            string statusFilter,
+            string roleFilter)
+        {
+            HashSet<uint> searchIds = null;
+            if (!string.IsNullOrWhiteSpace(searchTerm))
+            {
+                await using var globalConn = _dbContext.GetGlobalConnection(world);
+                var ids = await globalConn.QueryAsync<uint>(
+                    """
+                    SELECT `id`
+                    FROM `name_registry`
+                    WHERE `name` LIKE @searchTerm
+                    """,
+                    new { searchTerm = $"%{searchTerm}%" });
+                searchIds = ids.ToHashSet();
+                if (searchIds.Count == 0)
+                {
+                    return EmptyUserListResult(page, pageSize);
+                }
+            }
+
+            var sortRows = await LoadUserSortRowsAsync(world, searchIds);
+            if (sortRows.Count == 0)
+            {
+                return EmptyUserListResult(page, pageSize);
+            }
+
+            var onlineIds = await LoadOnlineUserIdsAsync(world);
+            var bannedIds = await LoadAllBannedUserIdsAsync(world);
+            sortRows = ApplyUserListFilters(sortRows, statusFilter, roleFilter, onlineIds, bannedIds);
+            if (sortRows.Count == 0)
+            {
+                return EmptyUserListResult(page, pageSize);
+            }
+
+            Dictionary<uint, string> nameById = null;
+            if (sortColumn == "name")
+            {
+                nameById = await LoadNamesByIdsAsync(world, sortRows.Select(r => r.Id).ToList());
+            }
+
+            var sortedIds = SortUserSortRows(sortRows, sortColumn, sortDescending, onlineIds, bannedIds, nameById)
+                .Select(r => r.Id)
+                .ToList();
+
+            var totalCount = sortedIds.Count;
+            var offset = (page - 1) * pageSize;
+            var pageIds = sortedIds.Skip(offset).Take(pageSize).ToList();
+            if (!pageIds.Any())
+            {
+                return EmptyUserListResult(page, pageSize, totalCount);
+            }
+
+            return await BuildUserListResultAsync(world, page, pageSize, totalCount, pageIds);
+        }
+
+        private async Task<Dictionary<uint, string>> LoadNamesByIdsAsync(uint world, IReadOnlyList<uint> userIds)
+        {
+            if (userIds == null || userIds.Count == 0)
+            {
+                return new Dictionary<uint, string>();
+            }
+
+            await using var globalConn = _dbContext.GetGlobalConnection(world);
+            var rows = await globalConn.QueryAsync<NameInfo>(
+                $"""
+                SELECT
+                    `id` AS Id,
+                    `name` AS Name
+                FROM `name_registry`
+                WHERE `id` IN ({string.Join(',', userIds)})
+                """);
+
+            return rows.ToDictionary(row => row.Id, row => row.Name);
+        }
+
+        private static List<UserSortRow> ApplyUserListFilters(
+            List<UserSortRow> rows,
+            string statusFilter,
+            string roleFilter,
+            HashSet<uint> onlineIds,
+            HashSet<uint> bannedIds)
+        {
+            IEnumerable<UserSortRow> query = rows;
+
+            if (string.Equals(statusFilter, "online", StringComparison.OrdinalIgnoreCase))
+            {
+                query = query.Where(row => !bannedIds.Contains(row.Id) && onlineIds.Contains(row.Id));
+            }
+            else if (string.Equals(statusFilter, "offline", StringComparison.OrdinalIgnoreCase))
+            {
+                query = query.Where(row => !bannedIds.Contains(row.Id) && !onlineIds.Contains(row.Id));
+            }
+            else if (string.Equals(statusFilter, "banned", StringComparison.OrdinalIgnoreCase))
+            {
+                query = query.Where(row => bannedIds.Contains(row.Id));
+            }
+
+            if (string.Equals(roleFilter, "user", StringComparison.OrdinalIgnoreCase))
+            {
+                query = query.Where(row => row.Role == (byte)Fb.Model.EnumValue.Role.User);
+            }
+            else if (string.Equals(roleFilter, "staff", StringComparison.OrdinalIgnoreCase))
+            {
+                query = query.Where(row => row.Role >= (byte)Fb.Model.EnumValue.Role.Moderator);
+            }
+
+            return query.ToList();
         }
 
         private async Task<UserListResult> GetUsersSortedByNameRegistryAsync(
@@ -287,10 +425,14 @@ namespace AdminTool.Services
             string sortColumn,
             bool sortDescending,
             HashSet<uint> onlineIds,
-            HashSet<uint> bannedIds)
+            HashSet<uint> bannedIds,
+            Dictionary<uint, string> nameById = null)
         {
             IEnumerable<UserSortRow> ordered = sortColumn switch
             {
+                "name" => sortDescending
+                    ? rows.OrderByDescending(r => nameById?.GetValueOrDefault(r.Id) ?? string.Empty)
+                    : rows.OrderBy(r => nameById?.GetValueOrDefault(r.Id) ?? string.Empty),
                 "level" => sortDescending
                     ? rows.OrderByDescending(r => r.Level)
                     : rows.OrderBy(r => r.Level),
