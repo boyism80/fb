@@ -33,6 +33,7 @@ async::task<void> fb::game::server::init_lua()
         lua.build<fb::game::spell, fb::lua::luable>();
         lua.build<fb::game::buff, fb::lua::luable>();
         lua.build<fb::game::map, fb::thread_switchable>();
+        lua.build<fb::game::matchmaker, fb::lua::luable>();
         lua.build<fb::game::group, fb::thread_switchable>();
         lua.build<fb::game::object, fb::thread_switchable>();
         lua.build<fb::game::life, fb::game::object>();
@@ -220,6 +221,7 @@ void fb::game::server::init_timers()
 
 void fb::game::server::init_amqp_handlers()
 {
+    // clang-format off
     auto world     = config<uint32_t>("world");
     auto host_name = std::format("fb.{}.game.{}", world, config<uint32_t>("id"));
     this->handler.amqp.bind<fb::game::handler::amqp::kick_out>(host_name);
@@ -241,8 +243,12 @@ void fb::game::server::init_amqp_handlers()
     this->handler.amqp.bind<fb::game::handler::amqp::set_exp_multiplier>(std::format("fb.{}.global", world));
     this->handler.amqp.bind<fb::game::handler::amqp::set_drop_rate_multiplier>(std::format("fb.{}.global", world));
     this->handler.amqp.bind<fb::game::handler::amqp::set_datetime>(std::format("fb.{}.global", world));
-    this->handler.amqp.bind<fb::game::handler::amqp::start_maintenance>(
-        std::format("fb.{}.game.{}", world, fb::config<uint32_t>("id")));
+    this->handler.amqp.bind<fb::game::handler::amqp::start_maintenance>(std::format("fb.{}.game.{}", world, fb::config<uint32_t>("id")));
+    auto matchmaking_route = std::format("fb.{}.matchmaking", world);
+    this->handler.amqp.bind<fb::game::handler::amqp::matchmaking_proposed>(matchmaking_route);
+    this->handler.amqp.bind<fb::game::handler::amqp::matchmaking_ready>(matchmaking_route);
+    this->handler.amqp.bind<fb::game::handler::amqp::matchmaking_dissolved>(matchmaking_route);
+    // clang-format on
 }
 
 async::task<void> fb::game::server::init_map_scripts()

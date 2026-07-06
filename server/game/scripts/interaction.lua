@@ -818,3 +818,139 @@ function on_login(me, first_login)
     goto BIRTHDAY_MUST_SET
 end
 
+-- Matchmaking events (see server/game/src/matchmaker.cpp, handler/amqp/matchmaking_*.cpp)
+-- reason: 0=timeout, 1=decline
+-- outcome: 0=excluded, 1=requeued
+local matchmaking_states = {}
+
+local function matchmaking_confirm_seconds(confirm_deadline)
+    local y, mo, d, h, mi, se = confirm_deadline:match('^(%d+)-(%d+)-(%d+) (%d+):(%d+):(%d+)$')
+    if y == nil then
+        return 0
+    end
+    -- Parse absolute deadline string from matchmaking server (not for current time).
+    local deadline = os.time({
+        year = tonumber(y),
+        month = tonumber(mo),
+        day = tonumber(d),
+        hour = tonumber(h),
+        min = tonumber(mi),
+        sec = tonumber(se),
+    })
+    return math.max(0, deadline - now())
+end
+
+local function matchmaking_clear_timer(me)
+    me:timer(0, false)
+end
+
+local function matchmaking_state(me)
+    local uid = me:uid()
+    local state = matchmaking_states[uid]
+    if state == nil then
+        state = {}
+        matchmaking_states[uid] = state
+    end
+    return state
+end
+
+local function matchmaking_clear_state(me)
+    matchmaking_states[me:uid()] = nil
+end
+
+function on_matchmaking_register(me, match_type, registry_id)
+    local state = matchmaking_state(me)
+    local now_ts = now()
+    state.queue_started_at = now_ts
+    state.elapsed_seconds = 0
+    me:timer(1200, false)
+    me:message(string.format('매치메이킹 대기를 시작했습니다. (유형: %d)', match_type), MESSAGE_TYPE.STATE)
+end
+
+function on_matchmaking_unregister(me, match_type, registry_id)
+    matchmaking_clear_timer(me)
+    matchmaking_clear_state(me)
+    me:message(string.format('매치메이킹 대기를 취소했습니다. (유형: %d)', match_type), MESSAGE_TYPE.STATE)
+end
+
+function on_matchmaking_decline(me, match_id, match_type)
+    matchmaking_clear_timer(me)
+    matchmaking_clear_state(me)
+    me:message(string.format('매치를 거절했습니다. (유형: %d)', match_type), MESSAGE_TYPE.STATE)
+end
+
+function on_matchmaking_confirm(me, match_id, match_type)
+    me:message(string.format('매치 참여를 수락했습니다. (유형: %d)', match_type), MESSAGE_TYPE.STATE)
+end
+
+function on_matchmaking_proposed(me, match_id, match_type, confirm_deadline)
+    local state = matchmaking_state(me)
+    local now_ts = now()
+    if state.queue_started_at ~= nil then
+        state.elapsed_seconds = now_ts - state.queue_started_at
+    else
+        state.elapsed_seconds = 0
+    end
+    local confirm_seconds = matchmaking_confirm_seconds(confirm_deadline)
+    me:timer(confirm_seconds, true)
+    me:message(
+        string.format('매치가 제안되었습니다. %d초 안에 수락해 주세요. (유형: %d)', confirm_seconds, match_type),
+        MESSAGE_TYPE.STATE
+    )
+
+    local npc = name2npc('낙랑')
+    local selected, button = me:list(npc, '매치를 찾았습니다. 참여하시겠습니까?', {'예', '아니오'}, false)
+    if button == DIALOG_RESULT.QUIT or selected == nil then
+        return
+    end
+
+    if selected == 0 then
+        local err = me:matchmaker():confirm()
+        if err ~= nil then
+            me:message(err, MESSAGE_TYPE.STATE)
+        end
+    else
+        local err = me:matchmaker():decline()
+        if err ~= nil then
+            me:message(err, MESSAGE_TYPE.STATE)
+        end
+    end
+end
+
+function on_matchmaking_ready(me, match_id, match_type)
+    matchmaking_clear_timer(me)
+    matchmaking_clear_state(me)
+    me:message(string.format('매치가 성사되었습니다. (유형: %d)', match_type), MESSAGE_TYPE.STATE)
+end
+
+function on_matchmaking_dissolved(me, match_id, match_type, reason, outcome)
+    if outcome == 1 then
+        local state = matchmaking_state(me)
+        local elapsed = state.elapsed_seconds or 0
+        state.queue_started_at = now() - elapsed
+        me:timer(1200, false)
+        if reason == 0 then
+            me:message(
+                string.format('상대가 응답하지 않아 대기를 이어갑니다. (유형: %d)', match_type),
+                MESSAGE_TYPE.STATE
+            )
+        else
+            me:message(
+                string.format('다른 플레이어가 거절하여 대기를 이어갑니다. (유형: %d)', match_type),
+                MESSAGE_TYPE.STATE
+            )
+        end
+    else
+        local had_state = matchmaking_states[me:uid()] ~= nil
+        matchmaking_clear_timer(me)
+        matchmaking_clear_state(me)
+        if not had_state then
+            return
+        end
+        if reason == 0 then
+            me:message(string.format('응답 시간이 초과되어 대기가 종료되었습니다. (유형: %d)', match_type), MESSAGE_TYPE.STATE)
+        else
+            me:message(string.format('매치가 취소되었습니다. (유형: %d)', match_type), MESSAGE_TYPE.STATE)
+        end
+    end
+end

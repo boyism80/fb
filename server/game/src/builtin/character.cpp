@@ -72,6 +72,7 @@ IMPLEMENT_LUA_EXTENSION(character, "fb.game.character")
 {"world",                        builtin::character::builtin_world},
 {"ad",                           builtin::character::builtin_ad},
 {"web",                          builtin::character::builtin_web},
+{"timer",                        builtin::character::builtin_timer},
 {"birthday",                     builtin::character::builtin_birthday},
 {"active",                       builtin::character::builtin_active},
 {"super_hide",                   builtin::character::builtin_super_hide},
@@ -84,6 +85,7 @@ IMPLEMENT_LUA_EXTENSION(character, "fb.game.character")
 {"slot",                         builtin::character::builtin_slot},
 {"rezen_force",                  builtin::character::builtin_rezen_force},
 {"quest",                        builtin::character::builtin_quest},
+{"matchmaker",                   builtin::character::builtin_matchmaker},
 {"start_quest",                  builtin::character::builtin_start_quest},
 {"remove_quest",                 builtin::character::builtin_remove_quest},
 {"reward",                       builtin::character::builtin_reward},
@@ -3442,6 +3444,35 @@ int builtin::character::builtin_ad(lua_State* L)
     return builder.run();
 }
 
+int builtin::character::builtin_timer(lua_State* L)
+{
+    auto lua = fb::lua::get(L);
+    if (lua == nullptr)
+        return 0;
+
+    auto ch = lua->touserdata<fb::game::character>(1);
+    if (ch == nullptr)
+        return 0;
+
+    auto value    = static_cast<uint32_t>(lua->tointeger(2));
+    auto decrease = lua->toboolean(3);
+    auto type     = decrease ? TIMER_TYPE::DECREASE : TIMER_TYPE::INCREASE;
+
+    auto weak     = ch->weak_from_this_as<fb::game::character>();
+    auto builder  = lua->new_co_builder();
+    builder.weak  = weak;
+    builder.yield = [weak, value, type]() -> async::task<void> {
+        auto ptr = weak.lock();
+        if (ptr != nullptr)
+            ptr->timer(value, type);
+        co_return;
+    };
+    builder.resume = []() -> async::task<int> {
+        co_return 0;
+    };
+    return builder.run();
+}
+
 int builtin::character::builtin_web(lua_State* L)
 {
     auto lua = fb::lua::get(L);
@@ -4432,6 +4463,20 @@ int fb::game::builtin::character::builtin_rezen_force(lua_State* L)
         co_return 0;
     };
     return builder.run();
+}
+
+int fb::game::builtin::character::builtin_matchmaker(lua_State* L)
+{
+    auto lua = fb::lua::get(L);
+    if (lua == nullptr)
+        return 0;
+
+    auto ch = lua->touserdata<fb::game::character>(1);
+    if (ch == nullptr)
+        return 0;
+
+    lua->pushobject(&ch->matchmaker);
+    return 1;
 }
 
 int fb::game::builtin::character::builtin_quest(lua_State* L)

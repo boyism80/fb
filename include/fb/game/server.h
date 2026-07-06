@@ -74,6 +74,10 @@ REGISTER_RESPONSE(fb::protocol::marketplace::request::Purchase, fb::protocol::ma
 REGISTER_RESPONSE(fb::protocol::marketplace::request::Search, fb::protocol::marketplace::response::Search)
 REGISTER_RESPONSE(fb::protocol::marketplace::request::GetListings, fb::protocol::marketplace::response::GetListings)
 REGISTER_RESPONSE(fb::protocol::marketplace::request::GetPurchases, fb::protocol::marketplace::response::GetPurchases)
+REGISTER_RESPONSE(fb::protocol::matchmaking::request::Register, fb::protocol::matchmaking::response::Register)
+REGISTER_RESPONSE(fb::protocol::matchmaking::request::Unregister, fb::protocol::matchmaking::response::Unregister)
+REGISTER_RESPONSE(fb::protocol::matchmaking::request::Confirm, fb::protocol::matchmaking::response::Confirm)
+REGISTER_RESPONSE(fb::protocol::matchmaking::request::Decline, fb::protocol::matchmaking::response::Decline)
 // clang-format on
 
 namespace fb::game {

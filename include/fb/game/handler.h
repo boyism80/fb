@@ -61,6 +61,9 @@
 #include <fb/game/handler/amqp/set_drop_rate_multiplier.h>
 #include <fb/game/handler/amqp/set_datetime.h>
 #include <fb/game/handler/amqp/start_maintenance.h>
+#include <fb/game/handler/amqp/matchmaking_proposed.h>
+#include <fb/game/handler/amqp/matchmaking_ready.h>
+#include <fb/game/handler/amqp/matchmaking_dissolved.h>
 
 #include <fb/game/handler/timer/heart_beat.h>
 #include <fb/game/handler/timer/update_time.h>

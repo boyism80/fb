@@ -240,19 +240,50 @@ M.functions = {
     
     ['타이머'] = {
         ['privilege'] = ROLE.ADMIN,
-        ['usage'] = '<시간(초)> - 타이머 설정',
+        ['usage'] = '<시간(초)> [증가|감소] - 타이머 설정 (기본: 감소)',
         ['command'] = function (me, args)
-            local time = table.unpack(args)
-            if not time then
-                me:message("사용법: /타이머 <시간(초)>")
+            local time_arg = args[1]
+            local mode_arg = args[2]
+            if not time_arg then
+                me:message("사용법: /타이머 <시간(초)> [증가|감소]")
                 return true
             end
-            time = tonumber(time)
-            if not time or time <= 0 then
+            local time = tonumber(time_arg)
+            if not time or time < 0 then
                 me:message("시간은 0보다 큰 숫자여야 합니다.")
                 return true
             end
-            timer(time, true)
+
+            local decrease = true
+            if mode_arg then
+                if mode_arg == '증가' then
+                    decrease = false
+                elseif mode_arg == '감소' then
+                    decrease = true
+                else
+                    me:message("사용법: /타이머 <시간(초)> [증가|감소]")
+                    return true
+                end
+            end
+
+            me:timer(time, decrease)
+            return true
+        end,
+    },
+
+    ['매치수락'] = {
+        ['privilege'] = ROLE.USER,
+        ['usage'] = '- 제안된 매치 수락',
+        ['command'] = function (me, args)
+            if #args > 0 then
+                me:message("사용법: /매치수락")
+                return true
+            end
+
+            local err = me:matchmaker():confirm()
+            if err ~= nil then
+                me:message(err, MESSAGE_TYPE.STATE)
+            end
             return true
         end,
     },

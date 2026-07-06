@@ -18,6 +18,10 @@
         "ip": "127.0.0.1",
         "port": 3010
     },
+    "matchmaking": {
+        "ip": "127.0.0.1",
+        "port": 3340
+    },
     "log": {
         "level": [
             "debug",

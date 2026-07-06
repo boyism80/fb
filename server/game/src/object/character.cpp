@@ -22,6 +22,7 @@ character::character(fb::game::server& server, const initial_params& params) :
     stat(*this),
     storage_box(*this),
     marketplace(*this),
+    matchmaker(*this),
     life(server,
          table::life[0],
          stat,

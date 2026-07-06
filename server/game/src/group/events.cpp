@@ -237,6 +237,7 @@ async::task<void> group::container::on_leave(std::string                target,
         auto ptr = weak.lock();
         if (ptr != nullptr)
         {
+            co_await ptr->matchmaker.unregister_queue(true);
             ptr->group_reset();
             ptr->message(_TEXT(MESSAGE_GROUP_LEFT_SUCCESS), MESSAGE_TYPE::STATE);
         }
@@ -304,6 +305,7 @@ async::task<void> group::container::on_kick(std::string                target,
         auto ptr = weak.lock();
         if (ptr != nullptr)
         {
+            co_await ptr->matchmaker.unregister_queue(true);
             ptr->group_reset();
             ptr->message(_TEXT(MESSAGE_GROUP_KICKED), MESSAGE_TYPE::STATE);
         }
@@ -342,6 +344,7 @@ async::task<void> group::container::on_destroyed(std::string actor, uint32_t gro
 
         auto guard = this->_server.characters.enter_write();
         guard.value().foreach_enqueue(members, [](auto& ch) -> async::task<void> {
+            co_await ch->matchmaker.unregister_queue(true);
             ch->group_reset();
             ch->message(_TEXT(MESSAGE_GROUP_DISBANDED), MESSAGE_TYPE::STATE);
             co_return;

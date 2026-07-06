@@ -77,6 +77,11 @@ void login::init_spells(const std::vector<internal::Spell>& response, character&
     }
 }
 
+void login::init_matchmaker(const std::vector<internal::MatchmakingSkill>& response, character& ch)
+{
+    ch.matchmaker.load(response);
+}
+
 void login::init_quests(const std::vector<fb::protocol::internal::Quest>& response, fb::game::character& ch)
 {
     for (auto& x : response)
@@ -259,6 +264,7 @@ async::task<std::shared_ptr<character>> login::init(const game_reqs::login& requ
     ch->mail_box.unread_count(resp.mail);
     this->init_items(resp.items, *ch);
     this->init_spells(resp.spells, *ch);
+    this->init_matchmaker(resp.matchmaking_skills, *ch);
     this->init_achievements(resp.achievements, *ch);
     this->init_quests(resp.quests, *ch);
     this->init_marketplace(resp.marketplace_pendings, *ch);

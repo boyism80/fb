@@ -2,13 +2,14 @@
 local enum = require('lib.enum')
 local storage = require('lib.storage')
 local marketplace = require('lib.marketplace')
+local matchmaking = require('lib.matchmaking')
 local sky_maze = require('lib.sky_maze')
 
 function ON_F1_EVENT(me)
     local npc = name2npc('낙랑')
 
 ::F1_MENU::
-    local selected = me:list(npc, '무엇을 도와드릴까요?', {'통합보관함', '거래소'})
+    local selected = me:list(npc, '무엇을 도와드릴까요?', {'통합보관함', '거래소', '매치메이킹'})
     if selected == nil then
         return
     end
@@ -19,6 +20,10 @@ function ON_F1_EVENT(me)
         end
     elseif selected == 1 then
         if marketplace.handle(me, npc) == false then
+            return
+        end
+    elseif selected == 2 then
+        if matchmaking.handle(me, npc) == false then
             return
         end
     end

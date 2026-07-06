@@ -19,6 +19,7 @@
 #include <fb/game/storage.h>
 #include <fb/game/marketplace.h>
 #include <fb/game/marriage.h>
+#include <fb/game/matchmaker.h>
 #include <fb/game/appearance.h>
 #include <set>
 #include <string_view>
@@ -123,6 +124,7 @@ public:
     fb::game::mail_box    mail_box = fb::game::mail_box(*this);
     fb::game::storage_box storage_box;
     fb::game::marketplace marketplace;
+    fb::game::matchmaker  matchmaker;
     fb::lua::context*     dialog = nullptr;
     achievement_map_t     achievements;
     listener_t&           listener;
