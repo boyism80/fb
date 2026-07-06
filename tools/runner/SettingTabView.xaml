@@ -747,6 +747,32 @@
                     </Border>
                 </StackPanel>
 
+                <!-- Matchmaking -->
+                <StackPanel Visibility="{Binding SelectedSettingSection, Converter={StaticResource SettingSectionVisibility}, ConverterParameter=Matchmaking}">
+                    <Border Style="{StaticResource SettingPanel}">
+                        <StackPanel>
+                            <TextBlock Text="Matchmaking"
+                                       Style="{StaticResource SettingPanelTitle}"
+                                       Margin="0,0,0,10" />
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="120" />
+                                    <ColumnDefinition Width="240" />
+                                </Grid.ColumnDefinitions>
+                                <TextBlock Text="포트"
+                                           Style="{StaticResource SettingLabel}"
+                                           Grid.Column="0" />
+                                <TextBox Text="{Binding MatchmakingPort, UpdateSourceTrigger=PropertyChanged, Mode=TwoWay}"
+                                         Tag="3340"
+                                         Width="72"
+                                         HorizontalAlignment="Left"
+                                         Grid.Column="1"
+                                         Margin="0,4" />
+                            </Grid>
+                        </StackPanel>
+                    </Border>
+                </StackPanel>
+
                 <!-- Admin Tool -->
                 <StackPanel Visibility="{Binding SelectedSettingSection, Converter={StaticResource SettingSectionVisibility}, ConverterParameter=AdminTool}">
                     <Border Style="{StaticResource SettingPanel}">

@@ -544,12 +544,61 @@ jobs:
           build-args: |
             SERVICE=marketplace
 
+  matchmaking:
+    runs-on: [self-hosted, linux, build]
+    permissions:
+      contents: read
+      packages: write
+    needs: build-linux
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v5
+        with:
+          submodules: true
+
+      - name: Prune stale BuildKit cache
+        run: bash tools/prune-build-cache.sh
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v4
+        with:
+         version: latest
+
+      - name: Login to ghcr
+        uses: docker/login-action@v4
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Extract metadata
+        id: meta
+        uses: docker/metadata-action@v6
+        with:
+          images: ${{ env.REGISTRY }}/${{ github.repository }}/matchmaking
+          flavor: |
+            latest=true
+
+      - name: Build matchmaking server
+        uses: docker/build-push-action@v7
+        env:
+          DOCKER_BUILD_RECORD_UPLOAD: false
+          DOCKER_BUILD_SUMMARY: false
+        with:
+          platforms: linux/amd64
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          cache-from: type=registry,ref=${{ env.REGISTRY }}/${{ github.repository }}/matchmaking:buildcache
+          cache-to: type=registry,ref=${{ env.REGISTRY }}/${{ github.repository }}/matchmaking:buildcache,mode=max
+          file: server/matchmaking/Dockerfile
+
   cleanup-cache:
     runs-on: [self-hosted, linux, build]
     permissions:
       contents: read
       packages: write
-    needs: [build-linux, internal, write-back, gateway, login, game, bot, admin-tool, log, marketplace]
+    needs: [build-linux, internal, write-back, gateway, login, game, bot, admin-tool, log, marketplace, matchmaking]
     steps:
       - name: Checkout repository
         uses: actions/checkout@v5
@@ -562,7 +611,7 @@ jobs:
     permissions:
       contents: read
       packages: write
-    needs: [internal, write-back, bot, gateway, login, game, admin-tool, log, marketplace]
+    needs: [internal, write-back, bot, gateway, login, game, admin-tool, log, marketplace, matchmaking]
     steps:
       - name: Checkout repository
         uses: actions/checkout@v5
@@ -650,6 +699,9 @@ jobs:
       - name: Build marketplace
         run: dotnet publish server/marketplace/marketplace.csproj -c Release -o build/marketplace
 
+      - name: Build matchmaking
+        run: dotnet publish server/matchmaking/matchmaking.csproj -c Release -o build/matchmaking
+
       - name: Extract maps
         shell: powershell
         run: |
@@ -681,7 +733,7 @@ jobs:
             Copy-Item -Path "server\game\json\*" -Destination "build\json" -Recurse -Force
 
             # .NET services load tables from json/ under their publish output (see DataTableLoader)
-            $jsonConsumers = @("internal", "admin-tool", "marketplace")
+            $jsonConsumers = @("internal", "admin-tool", "marketplace", "matchmaking")
             foreach ($svc in $jsonConsumers) {
               $dest = Join-Path (Join-Path "build" $svc) "json"
               if (Test-Path $dest) { Remove-Item $dest -Recurse -Force }
@@ -724,6 +776,7 @@ jobs:
             build/admin-tool
             build/log
             build/marketplace
+            build/matchmaking
             build/maps
             build/scripts
             build/json
@@ -744,6 +797,7 @@ jobs:
           Copy-Item build\write-back -Destination (Join-Path $distZip "write-back") -Recurse
           Copy-Item build\log -Destination (Join-Path $distZip "log") -Recurse
           Copy-Item build\marketplace -Destination (Join-Path $distZip "marketplace") -Recurse
+          Copy-Item build\matchmaking -Destination (Join-Path $distZip "matchmaking") -Recurse
           Copy-Item build\admin-tool -Destination (Join-Path $distZip "admin-tool") -Recurse
           if (Test-Path build\maps) { Copy-Item build\maps -Destination (Join-Path $distZip "maps") -Recurse }
           if (Test-Path build\scripts) { Copy-Item build\scripts -Destination (Join-Path $distZip "scripts") -Recurse }

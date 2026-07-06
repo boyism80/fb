@@ -161,6 +161,28 @@ services:
     networks:
       - fb
 
+  matchmaking:
+    profiles: [app]
+    image: fb/matchmaking:local
+    build:
+      context: ../..
+      dockerfile: server/matchmaking/Dockerfile
+      args:
+        BUILD_TYPE: ${BUILD_TYPE:-Release}
+        DATA_IMAGE: fb/data:local
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
+    environment:
+      ASPNETCORE_ENVIRONMENT: Development
+      ASPNETCORE_HTTP_PORTS: "3340"
+    volumes:
+      - ./config/matchmaking/appsettings.Development.json:/app/appsettings.Development.json:ro
+    ports:
+      - "${MATCHMAKING_PORT:-3340}:3340"
+    networks:
+      - fb
+
   admin-tool:
     profiles: [app]
     image: fb/admin-tool:local
@@ -262,6 +284,8 @@ services:
       login:
         condition: service_started
       marketplace:
+        condition: service_started
+      matchmaking:
         condition: service_started
     volumes:
       - ./config/game/config.json:/app/config.json:ro

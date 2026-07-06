@@ -57,6 +57,11 @@ namespace Runner.Model
         public ushort Port { get; set; } = 3010;
     }
 
+    public class MatchmakingSetting
+    {
+        public ushort Port { get; set; } = 3340;
+    }
+
     public class AdminToolSetting
     {
         public ushort Port { get; set; } = 30210;
@@ -87,6 +92,7 @@ namespace Runner.Model
             Port = 3000
         };
         public MarketplaceSetting Marketplace { get; set; } = new MarketplaceSetting();
+        public MatchmakingSetting Matchmaking { get; set; } = new MatchmakingSetting();
         public AdminToolSetting AdminTool { get; set; } = new AdminToolSetting();
         public DateTime LastBuildDate { get; set; }
         public string WorkingDirectory { get; set; }
@@ -127,6 +133,8 @@ namespace Runner.Model
                     model.Gateway.ClientNation = 215;
                 if (model.Marketplace.Port == 0)
                     model.Marketplace.Port = 3010;
+                if (model.Matchmaking.Port == 0)
+                    model.Matchmaking.Port = 3340;
                 if (model.AdminTool.Port == 0)
                     model.AdminTool.Port = 30210;
                 model.Window = window;

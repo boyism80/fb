@@ -9,6 +9,7 @@ namespace Runner.ViewModel
         Game,
         Internal,
         Marketplace,
+        Matchmaking,
         AdminTool
     }
 

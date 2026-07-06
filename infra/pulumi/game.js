@@ -32,6 +32,10 @@ module.exports = function () {
                             ip: "marketplace",
                             port: conf.marketplace.port.cluster
                         },
+                        matchmaking: {
+                            ip: "matchmaking",
+                            port: conf.matchmaking.port.cluster
+                        },
                         login: { ip: conf.host, port: worldConf.login.port },
                         amqp: {
                             internal: {

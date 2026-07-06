@@ -1957,6 +1957,13 @@
             "node": 30220
         }
     },
+    "matchmaking": {
+        "replicas": 1,
+        "port": {
+            "cluster": 80,
+            "node": 30240
+        }
+    },
     "admin-tool": {
         "replicas": 1,
         "port": {
