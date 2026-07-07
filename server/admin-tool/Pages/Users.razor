@@ -39,17 +39,6 @@
                        placeholder="UID 또는 유저명 검색" @bind="searchTerm"
                        @bind:event="oninput" @onkeypress="HandleKeyPress" />
             </div>
-            <select class="stitch-select" @bind="statusFilter" @bind:after="OnFiltersChanged">
-                <option value="all">상태: 전체</option>
-                <option value="online">온라인</option>
-                <option value="offline">오프라인</option>
-                <option value="banned">밴</option>
-            </select>
-            <select class="stitch-select" @bind="roleFilter" @bind:after="OnFiltersChanged">
-                <option value="all">역할: 전체</option>
-                <option value="user">일반 유저</option>
-                <option value="staff">관리자</option>
-            </select>
         </div>
         <div class="filter-toolbar-right">
             <button class="stitch-btn stitch-btn-neutral" type="button" @onclick="ClearSearch" disabled="@isLoading">
@@ -98,42 +87,12 @@
                     <thead>
                         <tr>
                             <th style="width:3rem;">#</th>
-                            <th class="@GetSortHeaderClass("name")" @onclick='() => ToggleSort("name")'>
-                                <span class="sortable-header">
-                                    <span>유저명</span>
-                                    <span class="sort-indicator @GetSortIndicatorClass("name")" aria-hidden="true"></span>
-                                </span>
-                            </th>
-                            <th class="@GetSortHeaderClass("id")" @onclick='() => ToggleSort("id")'>
-                                <span class="sortable-header">
-                                    <span>UID</span>
-                                    <span class="sort-indicator @GetSortIndicatorClass("id")" aria-hidden="true"></span>
-                                </span>
-                            </th>
-                            <th class="@($"{GetSortHeaderClass("level")} col-level")" @onclick='() => ToggleSort("level")'>
-                                <span class="sortable-header sortable-header-end">
-                                    <span>레벨</span>
-                                    <span class="sort-indicator @GetSortIndicatorClass("level")" aria-hidden="true"></span>
-                                </span>
-                            </th>
-                            <th class="@GetSortHeaderClass("role")" @onclick='() => ToggleSort("role")'>
-                                <span class="sortable-header">
-                                    <span>역할</span>
-                                    <span class="sort-indicator @GetSortIndicatorClass("role")" aria-hidden="true"></span>
-                                </span>
-                            </th>
-                            <th class="@GetSortHeaderClass("status")" @onclick='() => ToggleSort("status")'>
-                                <span class="sortable-header">
-                                    <span>상태</span>
-                                    <span class="sort-indicator @GetSortIndicatorClass("status")" aria-hidden="true"></span>
-                                </span>
-                            </th>
-                            <th class="@GetSortHeaderClass("updatedDate")" @onclick='() => ToggleSort("updatedDate")'>
-                                <span class="sortable-header">
-                                    <span>최근접속</span>
-                                    <span class="sort-indicator @GetSortIndicatorClass("updatedDate")" aria-hidden="true"></span>
-                                </span>
-                            </th>
+                            <th>유저명</th>
+                            <th>UID</th>
+                            <th class="col-level">레벨</th>
+                            <th>역할</th>
+                            <th>상태</th>
+                            <th>최근접속</th>
                             <th style="text-align:right;">작업</th>
                         </tr>
                     </thead>
@@ -231,10 +190,10 @@
             </div>
         }
     }
-    else if (!isLoading && userList != null && HasActiveFilters() && userList.TotalCount == 0)
+    else if (!isLoading && userList != null && !string.IsNullOrWhiteSpace(searchTerm) && userList.TotalCount == 0)
     {
         <div class="card-bg dash-card">
-            <p class="dash-empty">필터 조건에 맞는 유저가 없습니다.</p>
+            <p class="dash-empty">검색 조건에 맞는 유저가 없습니다.</p>
         </div>
     }
     else if (!isLoading)
@@ -374,12 +333,8 @@
     private uint? selectedWorld { get; set; }
     private UserListResult userList;
     private string searchTerm = string.Empty;
-    private string statusFilter = "all";
-    private string roleFilter = "all";
     private int currentPage = 1;
     private const int pageSize = 20;
-    private string sortColumn = "id";
-    private bool sortDescending = true;
     private bool isLoading = false;
     private bool isProcessing = false;
     private string errorMessage;
@@ -519,13 +474,6 @@
                 searchTerm = searchValue.ToString() ?? string.Empty;
             if (queryParams.TryGetValue("page", out var pageValue) && int.TryParse(pageValue, out var page) && page >= 1)
                 currentPage = page;
-            if (queryParams.TryGetValue("sort", out var sortValue))
-                sortColumn = UserService.NormalizeSortColumn(sortValue.ToString());
-            if (queryParams.TryGetValue("dir", out var dirValue))
-            {
-                var dir = dirValue.ToString()?.ToLowerInvariant();
-                sortDescending = dir != "asc";
-            }
         }
         catch { /* ignore URL parse errors */ }
     }
@@ -541,11 +489,6 @@
                 query["search"] = searchTerm;
             if (currentPage > 1)
                 query["page"] = currentPage.ToString();
-            if (!string.Equals(sortColumn, "id", StringComparison.Ordinal) || !sortDescending)
-            {
-                query["sort"] = sortColumn;
-                query["dir"] = sortDescending ? "desc" : "asc";
-            }
             var url = Microsoft.AspNetCore.WebUtilities.QueryHelpers.AddQueryString("/users", query);
             Navigation.NavigateTo(url);
         }
@@ -568,11 +511,7 @@
                 selectedWorld.Value,
                 currentPage,
                 pageSize,
-                string.IsNullOrWhiteSpace(searchTerm) ? null : searchTerm,
-                sortColumn,
-                sortDescending,
-                statusFilter,
-                roleFilter);
+                string.IsNullOrWhiteSpace(searchTerm) ? null : searchTerm);
         }
         catch (Exception ex)
         {
@@ -604,28 +543,10 @@
     private async Task ClearSearch()
     {
         searchTerm = string.Empty;
-        statusFilter = "all";
-        roleFilter = "all";
         currentPage = 1;
         await LoadUsers();
         UpdateUsersUrl();
     }
-
-    private async Task OnFiltersChanged()
-    {
-        currentPage = 1;
-        await LoadUsers();
-        UpdateUsersUrl();
-    }
-
-    private static bool HasActiveFilters(string statusFilter, string roleFilter, string searchTerm)
-    {
-        return !string.Equals(statusFilter, "all", StringComparison.OrdinalIgnoreCase)
-            || !string.Equals(roleFilter, "all", StringComparison.OrdinalIgnoreCase)
-            || !string.IsNullOrWhiteSpace(searchTerm);
-    }
-
-    private bool HasActiveFilters() => HasActiveFilters(statusFilter, roleFilter, searchTerm);
 
     private async Task HandleKeyPress(KeyboardEventArgs e)
     {
@@ -893,39 +814,6 @@
         {
             isProcessing = false;
         }
-    }
-
-    private async Task ToggleSort(string column)
-    {
-        var normalized = UserService.NormalizeSortColumn(column);
-        if (sortColumn == normalized)
-        {
-            sortDescending = !sortDescending;
-        }
-        else
-        {
-            sortColumn = normalized;
-            sortDescending = normalized is "name" or "role" or "status" ? false : true;
-        }
-
-        currentPage = 1;
-        await LoadUsers();
-        UpdateUsersUrl();
-    }
-
-    private string GetSortHeaderClass(string column)
-    {
-        var normalized = UserService.NormalizeSortColumn(column);
-        return sortColumn == normalized ? "sortable-th sortable-th-active" : "sortable-th";
-    }
-
-    private string GetSortIndicatorClass(string column)
-    {
-        var normalized = UserService.NormalizeSortColumn(column);
-        if (sortColumn != normalized)
-            return "";
-
-        return sortDescending ? "sort-desc" : "sort-asc";
     }
 
     private static string FormatRole(byte role) => ((Role)role) switch
