@@ -49,6 +49,8 @@ private:
     std::optional<std::string>                      _pending_match_id;
     std::optional<enrollment_state>                 _enrollment;
 
+    void enqueue_squad_unregister(uint32_t match_type, std::string_view registry_id);
+
 public:
     explicit matchmaker(character& owner);
 

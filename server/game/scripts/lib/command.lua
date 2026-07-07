@@ -271,23 +271,6 @@ M.functions = {
         end,
     },
 
-    ['매치수락'] = {
-        ['privilege'] = ROLE.USER,
-        ['usage'] = '- 제안된 매치 수락',
-        ['command'] = function (me, args)
-            if #args > 0 then
-                me:message("사용법: /매치수락")
-                return true
-            end
-
-            local err = me:matchmaker():confirm()
-            if err ~= nil then
-                me:message(err, MESSAGE_TYPE.STATE)
-            end
-            return true
-        end,
-    },
-
     ['현재시간'] = {
         ['privilege'] = ROLE.ADMIN,
         ['usage'] = '[YYYY-MM-DD HH:MM:SS] - 현재 서버 시간 조회/설정',

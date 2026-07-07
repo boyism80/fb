@@ -344,7 +344,8 @@ async::task<void> group::container::on_destroyed(std::string actor, uint32_t gro
 
         auto guard = this->_server.characters.enter_write();
         guard.value().foreach_enqueue(members, [](auto& ch) -> async::task<void> {
-            co_await ch->matchmaker.unregister_queue(true);
+            if (ch->matchmaker.enrolled())
+                co_await ch->matchmaker.unregister_queue(true);
             ch->group_reset();
             ch->message(_TEXT(MESSAGE_GROUP_DISBANDED), MESSAGE_TYPE::STATE);
             co_return;

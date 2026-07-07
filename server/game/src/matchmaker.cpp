@@ -109,11 +109,15 @@ bool matchmaker::clear_pending_match_id_if(std::string_view match_id)
 
 bool matchmaker::enrolled() const
 {
+    this->owner.assert_thread();
+
     return this->_enrollment.has_value();
 }
 
 std::optional<std::string_view> matchmaker::registry_id() const
 {
+    this->owner.assert_thread();
+
     if (!this->_enrollment.has_value())
         return std::nullopt;
 
@@ -122,6 +126,8 @@ std::optional<std::string_view> matchmaker::registry_id() const
 
 void matchmaker::set_enrollment(uint32_t match_type, std::string registry_id)
 {
+    this->owner.assert_thread();
+
     this->_enrollment = enrollment_state{
         .match_type  = match_type,
         .registry_id = std::move(registry_id),
@@ -130,7 +136,38 @@ void matchmaker::set_enrollment(uint32_t match_type, std::string registry_id)
 
 void matchmaker::clear_enrollment()
 {
+    this->owner.assert_thread();
+
     this->_enrollment = std::nullopt;
+}
+
+void matchmaker::enqueue_squad_unregister(uint32_t match_type, std::string_view registry_id)
+{
+    this->owner.assert_thread();
+
+    auto registry_id_str = std::string(registry_id);
+    auto owner_id        = this->owner.id;
+    auto guard           = this->owner.server.characters.enter_read();
+    guard.value().foreach_enqueue(
+        [registry_id_str, match_type](auto& ch) -> async::task<void> {
+            auto id = ch->matchmaker.registry_id();
+            if (id.has_value() == false || id.value() != registry_id_str)
+                co_return;
+
+            auto lua = ch->server.lua.new_ctx_guard("scripts/interaction.lua", "on_matchmaking_unregister");
+            if (lua)
+            {
+                lua->pushobject(ch);
+                lua->pushinteger(match_type);
+                lua->pushstring(registry_id_str.c_str());
+                std::ignore = lua->call(3);
+            }
+            ch->matchmaker.clear_enrollment();
+            co_return;
+        },
+        [owner_id](const character::container::character_ptr_t& ch) {
+            return ch->id != owner_id;
+        });
 }
 
 async::task<void> matchmaker::unregister_queue(bool quiet)
@@ -140,11 +177,12 @@ async::task<void> matchmaker::unregister_queue(bool quiet)
     if (!this->_enrollment.has_value())
         co_return;
 
-    auto  enrollment   = this->_enrollment.value();
-    auto  registry_id  = enrollment.registry_id;
-    auto  world        = fb::config<uint32_t>("world");
-    auto& match_type   = enrollment.match_type;
-    auto  character_id = this->owner.id;
+    auto enrollment   = this->_enrollment.value();
+    auto registry_id  = enrollment.registry_id;
+    auto world        = fb::config<uint32_t>("world");
+    auto match_type   = enrollment.match_type;
+    auto character_id = this->owner.id;
+    this->clear_enrollment();
 
     try
     {
@@ -163,6 +201,7 @@ async::task<void> matchmaker::unregister_queue(bool quiet)
             }
             else
             {
+                this->set_enrollment(match_type, registry_id);
                 throw std::runtime_error(enum_tostring(static_cast<fb::model::enum_value::ERROR_CODE>(resp.error)));
             }
         }
@@ -170,36 +209,17 @@ async::task<void> matchmaker::unregister_queue(bool quiet)
     catch (const std::exception& e)
     {
         if (quiet)
+        {
             fb::logger::warn("matchmaking unregister failed for character {}: {}", character_id, e.what());
+        }
         else
+        {
+            this->set_enrollment(match_type, registry_id);
             throw;
+        }
     }
 
-    {
-        auto registry_id_str = registry_id;
-        auto owner_id        = this->owner.id;
-        auto guard           = this->owner.server.characters.enter_read();
-        guard.value().foreach_enqueue(
-            [registry_id_str, match_type](auto& ch) -> async::task<void> {
-                auto lua = ch->server.lua.new_ctx_guard("scripts/interaction.lua", "on_matchmaking_unregister");
-                if (lua)
-                {
-                    lua->pushobject(ch);
-                    lua->pushinteger(match_type);
-                    lua->pushstring(registry_id_str.c_str());
-                    std::ignore = lua->call(3);
-                }
-                ch->matchmaker.clear_enrollment();
-                co_return;
-            },
-            [registry_id_str, owner_id](const character::container::character_ptr_t& ch) {
-                if (ch->id == owner_id)
-                    return false;
-
-                auto id = ch->matchmaker.registry_id();
-                return id.has_value() && id.value() == registry_id_str;
-            });
-    }
+    this->enqueue_squad_unregister(match_type, registry_id);
 
     {
         auto ptr = this->owner.weak_from_this_as<character>().lock();
@@ -216,7 +236,6 @@ async::task<void> matchmaker::unregister_queue(bool quiet)
         }
     }
 
-    this->clear_enrollment();
     co_return;
 }
 
@@ -319,9 +338,11 @@ async::task<void> matchmaker::decline_queue(std::string_view match_id, bool quie
 
     this->clear_pending_match_id_if(match_id);
 
+    auto squad_notify = this->_enrollment;
+
     if (!quiet)
     {
-        auto match_type = this->_enrollment.has_value() ? this->_enrollment->match_type : 0;
+        auto match_type = squad_notify.has_value() ? squad_notify->match_type : 0;
         auto ptr        = this->owner.weak_from_this_as<character>().lock();
         if (ptr != nullptr)
         {
@@ -337,35 +358,12 @@ async::task<void> matchmaker::decline_queue(std::string_view match_id, bool quie
         }
     }
 
-    if (this->_enrollment.has_value())
+    if (squad_notify.has_value())
     {
-        auto registry_id_str = this->_enrollment->registry_id;
-        auto match_type      = this->_enrollment->match_type;
-        auto owner_id        = this->owner.id;
-        auto guard           = this->owner.server.characters.enter_read();
-        guard.value().foreach_enqueue(
-            [registry_id_str, match_type](auto& ch) -> async::task<void> {
-                auto lua = ch->server.lua.new_ctx_guard("scripts/interaction.lua", "on_matchmaking_unregister");
-                if (lua)
-                {
-                    lua->pushobject(ch);
-                    lua->pushinteger(match_type);
-                    lua->pushstring(registry_id_str.c_str());
-                    std::ignore = lua->call(3);
-                }
-                ch->matchmaker.clear_enrollment();
-                co_return;
-            },
-            [registry_id_str, owner_id](const character::container::character_ptr_t& ch) {
-                if (ch->id == owner_id)
-                    return false;
-
-                auto id = ch->matchmaker.registry_id();
-                return id.has_value() && id.value() == registry_id_str;
-            });
+        this->clear_enrollment();
+        this->enqueue_squad_unregister(squad_notify->match_type, squad_notify->registry_id);
     }
 
-    this->clear_enrollment();
     co_return;
 }
 
