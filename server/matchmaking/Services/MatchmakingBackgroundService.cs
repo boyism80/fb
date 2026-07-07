@@ -7,12 +7,12 @@ namespace Matchmaking.Services;
 
 public sealed class MatchmakingBackgroundService : BackgroundService
 {
-    private readonly MatchMaker<CharacterRegistryEntry> _matchMaker;
+    private readonly CharacterMatchMaker _matchMaker;
     private readonly MatchmakingOptions _options;
     private readonly ILogger<MatchmakingBackgroundService> _logger;
 
     public MatchmakingBackgroundService(
-        MatchMaker<CharacterRegistryEntry> matchMaker,
+        CharacterMatchMaker matchMaker,
         IOptions<MatchmakingOptions> options,
         ILogger<MatchmakingBackgroundService> logger)
     {
@@ -30,6 +30,7 @@ public sealed class MatchmakingBackgroundService : BackgroundService
             try
             {
                 await _matchMaker.TickMatchmakingAsync(stoppingToken);
+                _matchMaker.LogSaturatedQueues(_logger);
             }
             catch (Exception ex)
             {

@@ -77,6 +77,39 @@ public sealed class RegistryQueue<TEntry>
         }
     }
 
+    public int WaitingEntryCount
+    {
+        get
+        {
+            lock (_lock)
+            {
+                return TotalEntryCount();
+            }
+        }
+    }
+
+    public int RequiredEntryCount => (int)(_config.MemberCount * _config.TeamCount);
+
+    public string Describe()
+    {
+        lock (_lock)
+        {
+            if (_byCreatedDate.Count == 0)
+            {
+                return "empty";
+            }
+
+            var registries = _byCreatedDate.Select(registry =>
+            {
+                var entryIds = string.Join(",", registry.Entries.Select(entry => entry.EntryId));
+                return $"registry={registry.Id:N} entries=[{entryIds}]";
+            });
+
+            return
+                $"registries={_byCreatedDate.Count} entries={TotalEntryCount()} need={RequiredEntryCount} [{string.Join("; ", registries)}]";
+        }
+    }
+
     public List<Match<TEntry>> TryFormMatch()
     {
         lock (_lock)

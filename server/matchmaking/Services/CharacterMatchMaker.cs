@@ -37,11 +37,18 @@ public sealed class CharacterMatchMaker : MatchMaker<CharacterRegistryEntry>
         ProposedMatchResult<CharacterRegistryEntry> args,
         CancellationToken cancellationToken)
     {
+        var participants = args.Match.AllRegistries
+            .SelectMany(registry => registry.Entries)
+            .Select(entry => entry.EntryId)
+            .ToList();
+
         _logger.LogInformation(
-            "Match {MatchId} awaiting confirmation for match type {MatchType}, deadline {ConfirmDeadline}",
+            "Match {MatchId} awaiting confirmation for matchType={MatchType} deadline={ConfirmDeadline} participants=[{Participants}] queue={QueueSnapshot}",
             args.Match.MatchId,
             args.Match.MatchType,
-            args.ConfirmDeadline);
+            args.ConfirmDeadline,
+            string.Join(",", participants),
+            DescribeQueues());
 
         var message = new fb.protocol.matchmaking.mq.Proposed
         {
@@ -77,10 +84,16 @@ public sealed class CharacterMatchMaker : MatchMaker<CharacterRegistryEntry>
         DissolvedMatchResult<CharacterRegistryEntry> result,
         CancellationToken cancellationToken)
     {
+        var outcomes = result.Outcomes.Select(outcome =>
+            $"{outcome.RegistryId:N}:{(outcome.Requeued ? "requeued" : "excluded")}").ToList();
+
         _logger.LogInformation(
-            "Match {MatchId} dissolved due to {Reason}",
+            "Match {MatchId} dissolved matchType={MatchType} reason={Reason} outcomes=[{Outcomes}] queue={QueueSnapshot}",
             result.Match.MatchId,
-            result.Reason);
+            result.Match.MatchType,
+            result.Reason,
+            string.Join(",", outcomes),
+            DescribeQueues());
 
         var message = new fb.protocol.matchmaking.mq.Dissolved
         {
@@ -114,11 +127,18 @@ public sealed class CharacterMatchMaker : MatchMaker<CharacterRegistryEntry>
 
             try
             {
+                var routingKey = $"fb.{world}.matchmaking";
                 await _rabbitMqService.PublishAsync(
                     message,
                     "amq.direct",
-                    $"fb.{world}.matchmaking",
+                    routingKey,
                     cancellationToken);
+
+                _logger.LogInformation(
+                    "Published matchmaking message type={MessageType} exchange=amq.direct routingKey={RoutingKey} participants=[{Participants}]",
+                    message.GetType().Name,
+                    routingKey,
+                    string.Join(",", match.AllRegistries.SelectMany(registry => registry.Entries).Select(entry => entry.EntryId)));
             }
             catch (Exception ex)
             {
