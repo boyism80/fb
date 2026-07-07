@@ -11,7 +11,6 @@
 
 #include <memory>
 #include <string>
-#include <type_traits>
 
 using namespace std::chrono_literals;
 using namespace fb::bot::integration;
@@ -160,7 +159,7 @@ int bot_request_dialog_impl(lua_State* L)
         }
 
         // condition: push response table on the suspended coroutine's stack, call validator
-        auto condition = [lua, validator_ref, bot_ptr](const ResponseType& resp) -> bool {
+        auto condition = [lua, validator_ref](const ResponseType& resp) -> bool {
             PushFn(lua, resp); // push onto the coroutine stack (suspended, safe to do)
 
             auto* L_state = static_cast<lua_State*>(*lua);
@@ -175,24 +174,6 @@ int bot_request_dialog_impl(lua_State* L)
             }
             auto accepted = lua_toboolean(L_state, -1) != 0;
             lua_pop(L_state, 2);
-
-            if (!accepted)
-            {
-                if constexpr (std::is_same_v<ResponseType, dialog_ext_bot>)
-                {
-                    fb::logger::debug("dialog_ext rejected: bot_id={} type={} message={}",
-                                      bot_ptr != nullptr ? bot_ptr->id : 0,
-                                      dialog_ext_type_name(resp.type),
-                                      resp.message);
-                }
-                else if constexpr (std::is_same_v<ResponseType, dialog_bot>)
-                {
-                    fb::logger::debug("dialog rejected: bot_id={} type={} message={}",
-                                      bot_ptr != nullptr ? bot_ptr->id : 0,
-                                      dialog_type_name(resp.type),
-                                      resp.message);
-                }
-            }
 
             return accepted;
         };

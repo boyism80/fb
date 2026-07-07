@@ -33,20 +33,7 @@ public class MatchmakingController : ControllerBase
                 .Select(CharacterRegistryEntry.FromProtocol)
                 .ToList();
 
-            var entryIds = string.Join(",", entries.Select(entry => entry.EntryId));
-            _logger.LogInformation(
-                "Register request matchType={MatchType} entries=[{EntryIds}]",
-                request.MatchType,
-                entryIds);
-
             var registryId = _matchMaker.Enroll(request.MatchType, entries);
-
-            _logger.LogInformation(
-                "Register success matchType={MatchType} registryId={RegistryId} entries=[{EntryIds}] queue={QueueSnapshot}",
-                request.MatchType,
-                registryId,
-                entryIds,
-                _matchMaker.DescribeQueues());
 
             return new Response.Register
             {
@@ -56,12 +43,6 @@ public class MatchmakingController : ControllerBase
         }
         catch (LogicException e)
         {
-            _logger.LogWarning(
-                "Register rejected matchType={MatchType} error={Error} queue={QueueSnapshot}",
-                request.MatchType,
-                e.Error,
-                _matchMaker.DescribeQueues());
-
             return new Response.Register
             {
                 RegistryId = string.Empty,
@@ -92,24 +73,12 @@ public class MatchmakingController : ControllerBase
             }
 
             var entryId = CharacterRegistryEntry.ToEntryId(request.World, request.CharacterId);
-            _logger.LogInformation(
-                "Unregister request matchType={MatchType} registryId={RegistryId} entryId={EntryId}",
-                request.MatchType,
-                registryId,
-                entryId);
 
             await _matchMaker.UnenrollAsync(
                 request.MatchType,
                 registryId,
                 entryId,
                 cancellationToken);
-
-            _logger.LogInformation(
-                "Unregister success matchType={MatchType} registryId={RegistryId} entryId={EntryId} queue={QueueSnapshot}",
-                request.MatchType,
-                registryId,
-                entryId,
-                _matchMaker.DescribeQueues());
 
             return new Response.Unregister
             {
@@ -119,14 +88,6 @@ public class MatchmakingController : ControllerBase
         }
         catch (LogicException e)
         {
-            _logger.LogWarning(
-                "Unregister rejected matchType={MatchType} registryId={RegistryId} characterId={CharacterId} error={Error} queue={QueueSnapshot}",
-                request.MatchType,
-                request.RegistryId,
-                request.CharacterId,
-                e.Error,
-                _matchMaker.DescribeQueues());
-
             return new Response.Unregister
             {
                 Success = false,
@@ -158,13 +119,6 @@ public class MatchmakingController : ControllerBase
                 matchId,
                 CharacterRegistryEntry.ToEntryId(request.World, request.CharacterId),
                 cancellationToken);
-
-            _logger.LogInformation(
-                "Confirm success matchId={MatchId} entryId={EntryId} finalized={MatchFinalized} queue={QueueSnapshot}",
-                matchId,
-                CharacterRegistryEntry.ToEntryId(request.World, request.CharacterId),
-                matchFinalized,
-                _matchMaker.DescribeQueues());
 
             return new Response.Confirm
             {
@@ -205,12 +159,6 @@ public class MatchmakingController : ControllerBase
                 matchId,
                 CharacterRegistryEntry.ToEntryId(request.World, request.CharacterId),
                 cancellationToken);
-
-            _logger.LogInformation(
-                "Decline success matchId={MatchId} entryId={EntryId} queue={QueueSnapshot}",
-                matchId,
-                CharacterRegistryEntry.ToEntryId(request.World, request.CharacterId),
-                _matchMaker.DescribeQueues());
 
             return new Response.Decline
             {

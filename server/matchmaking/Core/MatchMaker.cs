@@ -3,7 +3,6 @@ using Fb.Model.EnumValue;
 using Http;
 using Matchmaking.Model;
 using Matchmaking.Options;
-using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 
 namespace Matchmaking.Core;
@@ -216,40 +215,6 @@ public class MatchMaker<TEntry>
         }
 
         await RaiseMatchDissolvedAsync(result, cancellationToken);
-    }
-
-    public string DescribeQueues()
-    {
-        lock (_lock)
-        {
-            if (_registryQueues.Count == 0)
-            {
-                return "queues=empty";
-            }
-
-            return string.Join(
-                "; ",
-                _registryQueues.Select(entry => $"matchType={entry.Key} {entry.Value.Describe()}"));
-        }
-    }
-
-    public void LogSaturatedQueues(ILogger logger)
-    {
-        lock (_lock)
-        {
-            foreach (var (matchType, queue) in _registryQueues)
-            {
-                if (queue.WaitingEntryCount < queue.RequiredEntryCount)
-                {
-                    continue;
-                }
-
-                logger.LogWarning(
-                    "Matchmaking queue has enough entries but no match was formed: matchType={MatchType} {QueueSnapshot}",
-                    matchType,
-                    queue.Describe());
-            }
-        }
     }
 
     public MatchmakingStatus GetStatus(string entryId)
