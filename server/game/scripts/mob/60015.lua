@@ -1,3 +1,3 @@
 -- mob: 엄호수거북
-function ON_MOB_DIE_60015(me)
-end
+-- function ON_MOB_DIE_60015(me)
+-- end

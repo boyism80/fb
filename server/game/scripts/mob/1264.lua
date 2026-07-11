@@ -1,3 +1,3 @@
 -- mob: 이벤트용왕용마
-function ON_MOB_DIE_1264(me)
-end
+-- function ON_MOB_DIE_1264(me)
+-- end

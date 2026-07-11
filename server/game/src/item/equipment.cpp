@@ -161,7 +161,7 @@ bool fb::game::equipment::active()
     owner->items.add(before);
 
     // Execute equipment activation script
-    auto lua = this->server.lua.new_ctx_guard("scripts/interaction.lua", "on_equipment_active");
+    auto lua = this->server.lua.open("scripts/interaction.lua", "on_equipment_active");
     if (lua)
     {
         lua->pushobject(owner);

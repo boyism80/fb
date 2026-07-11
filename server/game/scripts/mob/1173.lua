@@ -23,5 +23,5 @@ function ON_MOB_KILL_1173(me, mobs)
     me:mkitem('소호의증표', 1)
 end
 
-function ON_MOB_DIE_1173(me)
-end
+-- function ON_MOB_DIE_1173(me)
+-- end

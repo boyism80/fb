@@ -1,3 +1,3 @@
 -- mob: 이벤트길림장군
-function ON_MOB_DIE_1234(me)
-end
+-- function ON_MOB_DIE_1234(me)
+-- end

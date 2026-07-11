@@ -16,11 +16,11 @@ function ON_ATTACK_277(me, item)
 end
 
 -- 용겸제이봉 사용 스크립트
-function ON_ACTIVATED_277(me, item)
-
-end
+-- function ON_ACTIVATED_277(me, item)
+--
+-- end
 
 -- 용겸제이봉 해제 스크립트
-function ON_DEACTIVATED_277(me, item)
-
-end
+-- function ON_DEACTIVATED_277(me, item)
+--
+-- end

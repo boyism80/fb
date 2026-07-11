@@ -163,7 +163,7 @@ async::task<void> map::container::run_init_script(const std::shared_ptr<fb::game
     auto path = std::format("scripts/map/{}.lua", map->model.id);
     auto func = std::format("ON_MAP_INIT_{}", map->model.id);
 
-    auto lua = this->server.lua.new_ctx_guard(path, func);
+    auto lua = this->server.lua.open(path, func);
     if (!lua)
         co_return;
 

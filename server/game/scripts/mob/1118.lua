@@ -6,5 +6,5 @@ function ON_MOB_KILL_1118(me, mobs)
     quest.king_on_mob_kill(me, mobs)
 end
 
-function ON_MOB_DIE_1118(me)
-end
+-- function ON_MOB_DIE_1118(me)
+-- end

@@ -309,7 +309,7 @@ bool buffs::push_back(const std::shared_ptr<buff>& buff)
     auto path = std::format("scripts/spell/{}.lua", model.id);
     auto func = std::format("ON_BUFF_{}", model.id);
 
-    auto lua = this->_owner.server.lua.new_ctx_guard(path, func);
+    auto lua = this->_owner.server.lua.open(path, func);
     if (lua)
     {
         lua->pushobject(this->_owner);
@@ -367,7 +367,7 @@ bool buffs::remove(uint32_t id)
     auto  path  = std::format("scripts/spell/{}.lua", model.id);
     auto  func  = std::format("ON_UNBUFF_{}", model.id);
 
-    auto lua = this->_owner.server.lua.new_ctx_guard(path, func);
+    auto lua = this->_owner.server.lua.open(path, func);
     if (lua)
     {
         lua->pushobject(this->_owner);

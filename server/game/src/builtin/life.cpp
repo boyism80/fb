@@ -547,7 +547,7 @@ int builtin::life::builtin_cast(lua_State* L)
         auto path = std::format("scripts/spell/{}.lua", spell->id);
         auto func = std::format("ON_CAST_{}", spell->id);
 
-        auto x = static_cast<fb::game::server&>(lua->executor).lua.new_ctx_guard(path, func);
+        auto x = static_cast<fb::game::server&>(lua->executor).lua.open(path, func);
         if (!x)
             co_return;
 

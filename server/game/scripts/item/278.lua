@@ -16,11 +16,11 @@ function ON_ATTACK_278(me, item)
 end
 
 -- 용겸제삼봉 사용 스크립트
-function ON_ACTIVATED_278(me, item)
-
-end
+-- function ON_ACTIVATED_278(me, item)
+--
+-- end
 
 -- 용겸제삼봉 해제 스크립트
-function ON_DEACTIVATED_278(me, item)
-
-end
+-- function ON_DEACTIVATED_278(me, item)
+--
+-- end

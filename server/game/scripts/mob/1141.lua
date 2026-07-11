@@ -5,6 +5,6 @@ function ON_MOB_ATTACK_1141(me, you)
 end
 
 -- 해골왕 사망
-function ON_MOB_DIE_1141(me)
-
-end
+-- function ON_MOB_DIE_1141(me)
+--
+-- end

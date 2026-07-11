@@ -1,11 +1,11 @@
 -- item: 용설봉
 
 -- 용설봉 사용 스크립트
-function ON_ACTIVATED_78(me, item)
-
-end
+-- function ON_ACTIVATED_78(me, item)
+--
+-- end
 
 -- 용설봉 해제 스크립트
-function ON_DEACTIVATED_78(me, item)
-
-end
+-- function ON_DEACTIVATED_78(me, item)
+--
+-- end

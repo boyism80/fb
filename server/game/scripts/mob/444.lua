@@ -1,5 +1,5 @@
 -- mob: 일본게
 -- 일본게 사망
-function ON_MOB_DIE_444(me)
-
-end
+-- function ON_MOB_DIE_444(me)
+--
+-- end

@@ -5,6 +5,6 @@ function ON_MOB_ATTACK_1130(me, you)
 end
 
 -- 파괴왕 사망
-function ON_MOB_DIE_1130(me)
-
-end
+-- function ON_MOB_DIE_1130(me)
+--
+-- end

@@ -94,7 +94,7 @@ std::shared_ptr<equipment> items::equipment_off(EQUIPMENT_PARTS parts)
     auto  path  = std::format("scripts/item/{}.lua", model.id);
     auto  func  = std::format("ON_DEACTIVATED_{}", model.id);
 
-    auto lua = owner->server.lua.new_ctx_guard(path, func);
+    auto lua = owner->server.lua.open(path, func);
     if (lua)
     {
         lua->pushobject(*owner);
@@ -1056,7 +1056,7 @@ void items::loot(bool boost)
         if (map == nullptr)
             return;
 
-        auto lua = owner->server.lua.new_ctx_guard("scripts/interaction.lua", "on_loot");
+        auto lua = owner->server.lua.open("scripts/interaction.lua", "on_loot");
         if (lua)
         {
             lua->pushobject(*owner);

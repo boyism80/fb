@@ -16,11 +16,11 @@ function ON_ATTACK_69(me, item)
 end
 
 -- 월아검 사용 스크립트
-function ON_ACTIVATED_69(me, item)
-
-end
+-- function ON_ACTIVATED_69(me, item)
+--
+-- end
 
 -- 월아검 해제 스크립트
-function ON_DEACTIVATED_69(me, item)
-
-end
+-- function ON_DEACTIVATED_69(me, item)
+--
+-- end

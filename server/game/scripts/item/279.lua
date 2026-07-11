@@ -16,11 +16,11 @@ function ON_ATTACK_279(me, item)
 end
 
 -- 용겸제사봉 사용 스크립트
-function ON_ACTIVATED_279(me, item)
-
-end
+-- function ON_ACTIVATED_279(me, item)
+--
+-- end
 
 -- 용겸제사봉 해제 스크립트
-function ON_DEACTIVATED_279(me, item)
-
-end
+-- function ON_DEACTIVATED_279(me, item)
+--
+-- end

@@ -277,7 +277,7 @@ async::task<void> fb::game::server::init_script()
 
     auto builder = init_thread->new_builder<void>();
     builder.func = [this](auto&) -> async::task<void> {
-        auto lua = this->lua.new_ctx_guard();
+        auto lua = this->lua.open();
         if (lua)
         {
             if (lua->load("scripts/init.lua") == false)

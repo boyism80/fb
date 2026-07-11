@@ -145,8 +145,6 @@ struct call_options
     bool auto_resume_parent = true;
 };
 
-class context_guard;
-
 context* get(lua_State* ctx);
 
 class luable : public std::enable_shared_from_this<luable>
@@ -242,7 +240,38 @@ public:
 
 class context
 {
-    friend class context_guard;
+public:
+    class guard
+    {
+    private:
+        context* _ctx = nullptr;
+
+    public:
+        guard() = default;
+        explicit guard(context* ctx);
+        ~guard();
+
+        guard(guard&& other) noexcept;
+        guard& operator= (guard&& other) noexcept;
+        guard(const guard&)             = delete;
+        guard& operator= (const guard&) = delete;
+
+    public:
+        context* get() const
+        {
+            return this->_ctx;
+        }
+
+        context* operator->() const
+        {
+            return this->_ctx;
+        }
+
+        explicit operator bool () const
+        {
+            return this->_ctx != nullptr;
+        }
+    };
 
 public:
     using promise_type = std::shared_ptr<async::task_completion_source<bool>>;
@@ -585,38 +614,6 @@ public:
     }
 };
 
-class context_guard
-{
-private:
-    context* _ctx = nullptr;
-
-public:
-    context_guard() = default;
-    explicit context_guard(context* ctx);
-    ~context_guard();
-
-    context_guard(context_guard&& other) noexcept;
-    context_guard& operator= (context_guard&& other) noexcept;
-    context_guard(const context_guard&)             = delete;
-    context_guard& operator= (const context_guard&) = delete;
-
-public:
-    context* get() const
-    {
-        return this->_ctx;
-    }
-
-    context* operator->() const
-    {
-        return this->_ctx;
-    }
-
-    explicit operator bool () const
-    {
-        return this->_ctx != nullptr;
-    }
-};
-
 class root : public context
 {
 public:
@@ -729,14 +726,15 @@ public:
     context_pool& operator= (const context_pool&) = delete;
 
 public:
-    context*      new_context(context* parent = nullptr, call_options options = {});
-    context_guard new_ctx_guard(context* parent = nullptr, call_options options = {});
-    context_guard
-    new_ctx_guard(std::string_view path, std::string_view func, context* parent = nullptr, call_options options = {});
-    async::task<void> dump(std::string_view path);
+    // clang-format off
+    context*            new_context(context* parent = nullptr, call_options options = {});
+    context::guard      open(context* parent = nullptr, call_options options = {});
+    context::guard      open(std::string_view path, std::string_view func, context* parent = nullptr, call_options options = {});
+    async::task<void>   dump(std::string_view path);
 
     base_type::iterator begin();
     base_type::iterator end();
+    // clang-format on
 };
 
 class thread : public context
@@ -750,6 +748,13 @@ public:
     thread(thread&& ctx);
     ~thread();
 };
+
+// Debug: warn once when a script file exists but fails to load.
+// Missing files are silent (optional hooks). No-op in release.
+void report_load_failed(std::string_view path);
+// Debug: warn once when a loaded script is missing the expected entry function.
+// No-op in release.
+void report_func_missing(std::string_view path, std::string_view func);
 
 } // namespace fb::lua
 
@@ -770,6 +775,7 @@ bool fb::lua::context::load(std::string_view fmt, Args&&... args)
     if (luaL_dofile(*this, fname.c_str()) != LUA_OK)
     {
         this->pop(1);
+        fb::lua::report_load_failed(fname);
         return false;
     }
     return true;

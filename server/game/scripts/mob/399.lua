@@ -1,5 +1,5 @@
 -- mob: 황충
 -- 황충 사망
-function ON_MOB_DIE_399(me)
-
-end
+-- function ON_MOB_DIE_399(me)
+--
+-- end

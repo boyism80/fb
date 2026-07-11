@@ -13,14 +13,14 @@ function ON_CAST_4018(me, sp)
 end
 
 -- 파력무참 버프 효과
-function ON_BUFF_4018(me, sp)
-
-end
+-- function ON_BUFF_4018(me, sp)
+--
+-- end
 
 -- 파력무참 버프 해제 효과
-function ON_UNBUFF_4018(me, sp)
-
-end
+-- function ON_UNBUFF_4018(me, sp)
+--
+-- end
 
 -- 파력무참 지속 효과
 function ON_CONCAST_4018(me, caster, buff)

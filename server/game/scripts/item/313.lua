@@ -1,11 +1,11 @@
 -- item: 삼식천부연봉
 
 -- 삼식천부연봉 사용 스크립트
-function ON_ACTIVATED_313(me, item)
-
-end
+-- function ON_ACTIVATED_313(me, item)
+--
+-- end
 
 -- 삼식천부연봉 해제 스크립트
-function ON_DEACTIVATED_313(me, item)
-
-end
+-- function ON_DEACTIVATED_313(me, item)
+--
+-- end

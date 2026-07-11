@@ -1521,7 +1521,7 @@ async::task<void> character::settle_kills(mob_vector dead)
     {
         auto path = std::format("scripts/mob/{}.lua", id);
         auto func = std::format("ON_MOB_KILL_{}", id);
-        auto lua  = this->server.lua.new_ctx_guard(path, func);
+        auto lua  = this->server.lua.open(path, func);
         if (lua)
         {
             lua->pushobject(*self);

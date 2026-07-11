@@ -14,5 +14,5 @@ function ON_MOB_KILL_4(me, mobs)
     end
 end
 
-function ON_MOB_DIE_4(me)
-end
+-- function ON_MOB_DIE_4(me)
+-- end

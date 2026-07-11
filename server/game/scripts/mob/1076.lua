@@ -1,5 +1,5 @@
 -- mob: 복수리
 -- 복수리 사망
-function ON_MOB_DIE_1076(me)
-
-end
+-- function ON_MOB_DIE_1076(me)
+--
+-- end

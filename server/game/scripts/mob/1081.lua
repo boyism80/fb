@@ -21,13 +21,13 @@ function ON_MOB_KILL_1081(me, mobs)
     end
 
     q:progress(1)
-    me:push_achievement(19, "게장군을 생포했다!", 7, 0)
+    me:push_achievement(19, "게장군을 생포했다!", 7, 1)
 end
 
-function ON_MOB_DIE_1081(me)
-end
+-- function ON_MOB_DIE_1081(me)
+-- end
 
 -- 게장군 공격
-function ON_MOB_ATTACK_1081(me, you)
-
-end
+-- function ON_MOB_ATTACK_1081(me, you)
+--
+-- end

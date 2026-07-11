@@ -21,5 +21,5 @@ function ON_MOB_KILL_1085(me, mobs)
     end
 end
 
-function ON_MOB_DIE_1085(me)
-end
+-- function ON_MOB_DIE_1085(me)
+-- end

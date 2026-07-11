@@ -23,5 +23,5 @@ function ON_MOB_KILL_1170(me, mobs)
     me:mkitem('전욱의증표', 1)
 end
 
-function ON_MOB_DIE_1170(me)
-end
+-- function ON_MOB_DIE_1170(me)
+-- end

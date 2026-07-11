@@ -66,5 +66,5 @@ function ON_MOB_KILL_1(me, mobs)
     run_beginner_path_squirrel(me, #mobs)
 end
 
-function ON_MOB_DIE_1(me)
-end
+-- function ON_MOB_DIE_1(me)
+-- end

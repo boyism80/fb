@@ -13,14 +13,14 @@ function ON_CAST_3059(me, you, sp)
 end
 
 -- 중독 버프 효과
-function ON_BUFF_3059(me, sp)
-
-end
+-- function ON_BUFF_3059(me, sp)
+--
+-- end
 
 -- 중독 버프 해제 효과
-function ON_UNBUFF_3059(me, sp)
-
-end
+-- function ON_UNBUFF_3059(me, sp)
+--
+-- end
 
 -- 중독 지속 효과
 function ON_CONCAST_3059(me, caster, buff)

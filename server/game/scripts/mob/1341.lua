@@ -1,3 +1,3 @@
 -- mob: 하늘나비
-function ON_MOB_DIE_1341(me)
-end
+-- function ON_MOB_DIE_1341(me)
+-- end

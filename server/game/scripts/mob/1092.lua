@@ -22,7 +22,7 @@ function ON_MOB_KILL_1092(me, mobs)
             return
         end
         q:progress(1)
-        me:push_achievement(19, "상어장군을 생포하였다. [1/2]", 7, 0)
+        me:push_achievement(19, "상어장군을 생포하였다. [1/2]", 7, 1)
         return
     end
 
@@ -43,18 +43,18 @@ function ON_MOB_KILL_1092(me, mobs)
     if sel == 0 then
         q:progress(2)
         me:mkitem("금은보화", 1)
-        me:push_achievement(19, "상어장군을 놓아주다.", 7, 0)
+        me:push_achievement(19, "상어장군을 놓아주다.", 7, 1)
         me:dialog(mob, "감사합니다. 자 이걸 받아주십시오. 그럼 전 사라지겠습니다.", false, true)
     else
         q:progress(1)
-        me:push_achievement(19, "상어장군을 생포하였다. [2/2]", 7, 0)
+        me:push_achievement(19, "상어장군을 생포하였다. [2/2]", 7, 1)
     end
 end
 
-function ON_MOB_DIE_1092(me)
-end
+-- function ON_MOB_DIE_1092(me)
+-- end
 
 -- 상어장군 공격
-function ON_MOB_ATTACK_1092(me, you)
-
-end
+-- function ON_MOB_ATTACK_1092(me, you)
+--
+-- end

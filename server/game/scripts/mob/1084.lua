@@ -61,13 +61,13 @@ function ON_MOB_KILL_1084(me, mobs)
     end
 
     q:progress(1)
-    me:push_achievement(19, "문어장군을 생포하였다!", 7, 0)
+    me:push_achievement(19, "문어장군을 생포하였다!", 7, 1)
 end
 
-function ON_MOB_DIE_1084(me)
-end
+-- function ON_MOB_DIE_1084(me)
+-- end
 
 -- 문어장군 공격
-function ON_MOB_ATTACK_1084(me, you)
-
-end
+-- function ON_MOB_ATTACK_1084(me, you)
+--
+-- end

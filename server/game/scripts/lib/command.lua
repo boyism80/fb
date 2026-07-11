@@ -1508,27 +1508,33 @@ M.functions = {
         
         ['업적'] = {
             ['privilege'] = ROLE.ADMIN,
-            ['usage'] = '<텍스트> <아이콘> <색상> - 업적 추가',
+            ['usage'] = '<ID> <텍스트> <아이콘> <색상> - 업적 추가',
             ['command'] = function (me, args)
-                local text, icon, color = table.unpack(args)
-                if not text or not icon or not color then
-                    me:message("사용법: /업적 <텍스트> <아이콘> <색상>")
+                local id, text, icon, color = table.unpack(args)
+                if not id or not text or not icon or not color then
+                    me:message("사용법: /업적 <ID> <텍스트> <아이콘> <색상>")
+                    return true
+                end
+
+                id = tonumber(id)
+                if id == nil or id < 0 then
+                    me:message("업적 ID는 0 이상의 숫자여야 합니다.")
                     return true
                 end
                 
                 icon = tonumber(icon)
-                if not icon or icon < 0 then
+                if icon == nil or icon < 0 then
                     me:message("아이콘 ID는 0 이상의 숫자여야 합니다.")
                     return true
                 end
                 
                 color = tonumber(color)
-                if not color or color < 0 then
+                if color == nil or color < 0 then
                     me:message("색상 ID는 0 이상의 숫자여야 합니다.")
                     return true
                 end
                 
-                me:push_achievement(text, icon, color)
+                me:push_achievement(id, text, icon, color)
                 return true
             end,
         },
@@ -1647,20 +1653,23 @@ M.functions = {
                     return true
                 end
                 step = tonumber(step)
-                if not step or step < 0 then
+                if step == nil or step < 0 then
                     me:message("스텝은 0 이상의 숫자여야 합니다.")
                     return true
                 end
                 progress = tonumber(progress)
-                if not progress or progress < 0 then
+                if progress == nil or progress < 0 then
                     me:message("진행도는 0 이상의 숫자여야 합니다.")
                     return true
                 end
-                param = tostring(param)
+                param = tostring(param or '')
                 local quest = me:quest(id)
                 if not quest then
-                    me:message("해당 퀘스트를 보유하고 있지 않습니다. 퀘스트를 먼저 수락하세요.")
-                    return true
+                    quest = me:start_quest(id)
+                    if not quest then
+                        me:message("퀘스트를 시작할 수 없습니다.")
+                        return true
+                    end
                 end
                 quest:step(step)
                 quest:progress(progress)

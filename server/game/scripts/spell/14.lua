@@ -11,9 +11,9 @@ function ON_CAST_14(me, you, sp)
     end
 end
 
-function ON_BUFF_14(me, sp)
-    -- TODO: implement
-end
+-- function ON_BUFF_14(me, sp)
+--     -- TODO: implement
+-- end
 
 function ON_UNBUFF_14(me, sp)
     me:mimic(nil)

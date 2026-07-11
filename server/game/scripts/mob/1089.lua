@@ -58,14 +58,14 @@ function ON_MOB_KILL_1089(me, mobs)
     q:progress(1)
     if not me:has_items("내통문서", 1) then
         me:mkitem("내통문서", 1)
-        me:push_achievement(19, "내통문서를 얻다.", 7, 0)
+        me:push_achievement(19, "내통문서를 얻다.", 7, 1)
     end
 end
 
-function ON_MOB_DIE_1089(me)
-end
+-- function ON_MOB_DIE_1089(me)
+-- end
 
 -- 인어장군 공격
-function ON_MOB_ATTACK_1089(me, you)
-
-end
+-- function ON_MOB_ATTACK_1089(me, you)
+--
+-- end

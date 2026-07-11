@@ -39,7 +39,7 @@ async::task<bool> chat::handle(fb::socket<character>& session, game_reqs::chat& 
 
 async::task<bool> chat::try_command(character* ch, std::weak_ptr<character> weak, game_reqs::chat& request)
 {
-    auto lua = this->server.lua.new_ctx_guard("scripts/interaction.lua", "on_chat", nullptr, {.auto_release = false});
+    auto lua = this->server.lua.open("scripts/interaction.lua", "on_chat", nullptr, {.auto_release = false});
     if (!lua)
         co_return false;
 

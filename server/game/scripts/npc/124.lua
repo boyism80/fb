@@ -1,4 +1,4 @@
 -- npc: 폭염왕장식품
-function NPC_124(me, npc)
-    
-end
+-- function NPC_124(me, npc)
+--
+-- end

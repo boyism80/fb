@@ -5,6 +5,6 @@ function ON_MOB_ATTACK_1025(me, you)
 end
 
 -- 산신대왕 사망
-function ON_MOB_DIE_1025(me)
-
-end
+-- function ON_MOB_DIE_1025(me)
+--
+-- end

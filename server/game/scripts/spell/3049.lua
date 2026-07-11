@@ -13,14 +13,14 @@ function ON_CAST_3049(me, you, sp)
 end
 
 -- 노도성황 버프 효과
-function ON_BUFF_3049(me, sp)
-
-end
+-- function ON_BUFF_3049(me, sp)
+--
+-- end
 
 -- 노도성황 버프 해제 효과
-function ON_UNBUFF_3049(me, sp)
-
-end
+-- function ON_UNBUFF_3049(me, sp)
+--
+-- end
 
 -- 노도성황 지속 효과
 function ON_CONCAST_3049(me, caster, buff)

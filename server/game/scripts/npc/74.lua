@@ -1,4 +1,4 @@
 -- npc: 테스트4
-function NPC_74(me, npc)
-    
-end
+-- function NPC_74(me, npc)
+--
+-- end

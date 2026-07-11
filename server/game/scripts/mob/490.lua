@@ -1,5 +1,5 @@
 -- mob: 견원귀
 -- 견원귀 사망
-function ON_MOB_DIE_490(me)
-
-end
+-- function ON_MOB_DIE_490(me)
+--
+-- end

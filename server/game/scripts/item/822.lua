@@ -1,11 +1,11 @@
 -- item: 금여자갑주
 
 -- 금여자갑주 사용 스크립트
-function ON_ACTIVATED_822(me, item)
-
-end
+-- function ON_ACTIVATED_822(me, item)
+--
+-- end
 
 -- 금여자갑주 해제 스크립트
-function ON_DEACTIVATED_822(me, item)
-
-end
+-- function ON_DEACTIVATED_822(me, item)
+--
+-- end

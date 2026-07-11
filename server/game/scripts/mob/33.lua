@@ -1,5 +1,5 @@
 -- mob: 뱀왕
 -- 뱀왕 사망
-function ON_MOB_DIE_33(me)
-
-end
+-- function ON_MOB_DIE_33(me)
+--
+-- end

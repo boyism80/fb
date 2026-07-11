@@ -4,11 +4,55 @@
 #include <fb/thread_container.h>
 #include <async/awaitable_then.h>
 #include <async/propagation.h>
+#include <filesystem>
+#include <format>
+#include <mutex>
+#include <set>
 #include <string>
 #include <string_view>
 #include <vector>
 
 using namespace fb::lua;
+
+void fb::lua::report_load_failed(std::string_view path)
+{
+#if defined DEBUG || defined _DEBUG
+    if (path.empty())
+        return;
+
+    // Optional hooks may omit the file entirely — stay silent.
+    if (std::filesystem::exists(std::string(path)) == false)
+        return;
+
+    static auto logs  = std::set<std::string>{};
+    static auto mutex = std::mutex{};
+    auto        key   = std::string(path);
+    auto        _     = std::lock_guard(mutex);
+    if (logs.contains(key))
+        return;
+
+    logs.insert(key);
+    fb::logger::warn("cannot load script {}", path);
+#endif
+}
+
+void fb::lua::report_func_missing(std::string_view path, std::string_view func)
+{
+#if defined DEBUG || defined _DEBUG
+    if (path.empty() || func.empty())
+        return;
+
+    static auto logs  = std::set<std::string>{};
+    static auto mutex = std::mutex{};
+    auto        key   = std::format("{}#{}", path, func);
+    auto        _     = std::lock_guard(mutex);
+    if (logs.contains(key))
+        return;
+
+    logs.insert(key);
+    fb::logger::warn("script function missing: {} in {}", func, path);
+#endif
+}
 
 context* fb::lua::get(lua_State* ctx)
 {
@@ -830,46 +874,51 @@ context* fb::lua::context_pool::new_context(context* parent, call_options option
     return ctx;
 }
 
-context_guard fb::lua::context_pool::new_ctx_guard(context* parent, call_options options)
+context::guard fb::lua::context_pool::open(context* parent, call_options options)
 {
-    return context_guard(this->new_context(parent, options));
+    return context::guard(this->new_context(parent, options));
 }
 
-context_guard fb::lua::context_pool::new_ctx_guard(std::string_view path,
-                                                   std::string_view func,
-                                                   context*         parent,
-                                                   call_options     options)
+context::guard
+fb::lua::context_pool::open(std::string_view path, std::string_view func, context* parent, call_options options)
 {
     auto* ctx = this->new_context(parent, options);
     if (ctx == nullptr)
-        return context_guard{};
+        return context::guard{};
 
-    if (ctx->load(path) == false || ctx->func(func) == false)
+    if (ctx->load(path) == false)
     {
         ctx->release();
-        return context_guard{};
+        return context::guard{};
     }
 
-    return context_guard{ctx};
+    if (ctx->func(func) == false)
+    {
+        fb::lua::report_func_missing(path, func);
+        ctx->release();
+        return context::guard{};
+    }
+
+    return context::guard{ctx};
 }
 
-fb::lua::context_guard::context_guard(context* ctx) :
+fb::lua::context::guard::guard(context* ctx) :
     _ctx(ctx)
 { }
 
-fb::lua::context_guard::~context_guard()
+fb::lua::context::guard::~guard()
 {
     if (this->_ctx != nullptr && this->_ctx->call_engaged() == false)
         this->_ctx->release();
 }
 
-fb::lua::context_guard::context_guard(context_guard&& other) noexcept :
+fb::lua::context::guard::guard(context::guard&& other) noexcept :
     _ctx(other._ctx)
 {
     other._ctx = nullptr;
 }
 
-fb::lua::context_guard& fb::lua::context_guard::operator= (context_guard&& other) noexcept
+fb::lua::context::guard& fb::lua::context::guard::operator= (context::guard&& other) noexcept
 {
     if (this != &other)
     {

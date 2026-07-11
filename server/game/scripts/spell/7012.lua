@@ -1,5 +1,5 @@
 -- spell: 토깽이포획
 -- 토깽이포획 지속 효과
-function ON_CONCAST_7012(me, caster, buff)
-
-end
+-- function ON_CONCAST_7012(me, caster, buff)
+--
+-- end

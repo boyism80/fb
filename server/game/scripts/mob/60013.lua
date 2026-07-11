@@ -1,3 +1,3 @@
 -- mob: 마리
-function ON_MOB_DIE_60013(me)
-end
+-- function ON_MOB_DIE_60013(me)
+-- end

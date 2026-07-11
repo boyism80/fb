@@ -267,7 +267,7 @@ bool object::move(DIRECTION direction)
     this->position(after);
 
     {
-        auto lua = this->server.lua.new_ctx_guard("scripts/interaction.lua", "on_move");
+        auto lua = this->server.lua.open("scripts/interaction.lua", "on_move");
         if (lua)
         {
             lua->pushobject(*this);
@@ -280,7 +280,7 @@ bool object::move(DIRECTION direction)
         auto  path      = std::format("scripts/map/{}.lua", map_model.id);
         auto  func      = std::format("ON_MAP_MOVE_{}", map_model.id);
 
-        auto map_lua = this->server.lua.new_ctx_guard(path, func);
+        auto map_lua = this->server.lua.open(path, func);
         if (map_lua)
         {
             map_lua->pushobject(*this);
@@ -337,7 +337,7 @@ bool object::direction(DIRECTION value)
 
     this->_direction = value;
 
-    auto lua = this->server.lua.new_ctx_guard("scripts/interaction.lua", "on_direction");
+    auto lua = this->server.lua.open("scripts/interaction.lua", "on_direction");
     if (lua)
     {
         lua->pushobject(*this);
@@ -364,7 +364,7 @@ async::task<void> object::invoke_map_character_hook(const fb::model::map& map_mo
     auto path = std::format("scripts/map/{}.lua", map_model.id);
     auto func = std::format("{}{}", hook, map_model.id);
 
-    auto lua = this->server.lua.new_ctx_guard(path, func);
+    auto lua = this->server.lua.open(path, func);
     if (!lua)
         co_return;
 

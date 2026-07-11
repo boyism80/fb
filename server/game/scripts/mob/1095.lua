@@ -39,7 +39,7 @@ function ON_MOB_KILL_1095(me, mobs)
         end
         if not me:has_items("여의주", 1) then
             me:mkitem("여의주", 1)
-            me:push_achievement(19, "청의태자를 생포하였다. [1/2]", 7, 0)
+            me:push_achievement(19, "청의태자를 생포하였다. [1/2]", 7, 1)
         end
         q:progress(1)
         return
@@ -69,12 +69,12 @@ function ON_MOB_KILL_1095(me, mobs)
         return
     end
     q:progress(2)
-    me:push_achievement(19, "청의태자를 생포하였다. [2/2]", 7, 0)
+    me:push_achievement(19, "청의태자를 생포하였다. [2/2]", 7, 1)
     me:dialog(mob, "아. 나의 꿈이....나의 야망이................", false, true)
 end
 
-function ON_MOB_DIE_1095(me)
-end
+-- function ON_MOB_DIE_1095(me)
+-- end
 
 -- 청의태자 공격
 function ON_MOB_ATTACK_1095(me, you)

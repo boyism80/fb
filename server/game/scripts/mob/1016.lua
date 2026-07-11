@@ -5,6 +5,6 @@ function ON_MOB_ATTACK_1016(me, you)
 end
 
 -- 도삭산흉노전사 사망
-function ON_MOB_DIE_1016(me)
-
-end
+-- function ON_MOB_DIE_1016(me)
+--
+-- end

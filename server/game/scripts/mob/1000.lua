@@ -21,13 +21,13 @@ function ON_MOB_KILL_1000(me, mobs)
     end
 
     me:mkitem(item_doc, 1)
-    me:push_achievement(19, "복어장군을 생포하였다!", 7, 0)
+    me:push_achievement(19, "복어장군을 생포하였다!", 7, 1)
 end
 
-function ON_MOB_DIE_1000(me)
-end
+-- function ON_MOB_DIE_1000(me)
+-- end
 
 -- 복어장군 공격
-function ON_MOB_ATTACK_1000(me, you)
-
-end
+-- function ON_MOB_ATTACK_1000(me, you)
+--
+-- end

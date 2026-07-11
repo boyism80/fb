@@ -5,6 +5,6 @@ function ON_MOB_ATTACK_1111(me, you)
 end
 
 -- 용마 사망
-function ON_MOB_DIE_1111(me)
-
-end
+-- function ON_MOB_DIE_1111(me)
+--
+-- end

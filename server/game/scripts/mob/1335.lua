@@ -1,3 +1,3 @@
 -- mob: 나비
-function ON_MOB_DIE_1335(me)
-end
+-- function ON_MOB_DIE_1335(me)
+-- end

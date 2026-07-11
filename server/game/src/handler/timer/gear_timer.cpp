@@ -66,7 +66,10 @@ async::task<void> gear_timer::handle(const fb::model::datetime& now, std::thread
                         continue;
 
                     if (lua->func(func) == false)
+                    {
+                        fb::lua::report_func_missing(path, func);
                         continue;
+                    }
 
                     lua->pushobject(ch);
                     lua->pushobject(equipment);

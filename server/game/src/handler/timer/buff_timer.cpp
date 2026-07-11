@@ -45,7 +45,7 @@ async::task<void> buff_timer::handle(const fb::model::datetime& now, std::thread
                 auto  path  = std::format("scripts/spell/{}.lua", model.id);
                 auto  func  = std::format("ON_CONCAST_{}", model.id);
 
-                auto lua = this->server.lua.new_ctx_guard(path, func);
+                auto lua = this->server.lua.open(path, func);
                 if (!lua)
                     continue;
 

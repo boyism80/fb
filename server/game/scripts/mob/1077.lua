@@ -83,5 +83,5 @@ function ON_MOB_KILL_1077(me, mobs)
     q:progress(1)
 end
 
-function ON_MOB_DIE_1077(me)
-end
+-- function ON_MOB_DIE_1077(me)
+-- end

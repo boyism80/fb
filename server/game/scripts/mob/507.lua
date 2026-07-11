@@ -1,5 +1,5 @@
 -- mob: 도적산타
 -- 도적산타 사망
-function ON_MOB_DIE_507(me)
-
-end
+-- function ON_MOB_DIE_507(me)
+--
+-- end

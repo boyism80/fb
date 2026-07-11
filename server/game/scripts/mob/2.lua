@@ -64,5 +64,5 @@ function ON_MOB_KILL_2(me, mobs)
     run_beginner_path_rabbit(me, #mobs)
 end
 
-function ON_MOB_DIE_2(me)
-end
+-- function ON_MOB_DIE_2(me)
+-- end

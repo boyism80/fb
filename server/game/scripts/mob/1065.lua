@@ -1,5 +1,5 @@
 -- mob: 청웅
 -- 청웅 사망
-function ON_MOB_DIE_1065(me)
-
-end
+-- function ON_MOB_DIE_1065(me)
+--
+-- end

@@ -13,14 +13,14 @@ function ON_CAST_4016(me, sp)
 end
 
 -- 신령지익 버프 효과
-function ON_BUFF_4016(me, sp)
-
-end
+-- function ON_BUFF_4016(me, sp)
+--
+-- end
 
 -- 신령지익 버프 해제 효과
-function ON_UNBUFF_4016(me, sp)
-
-end
+-- function ON_UNBUFF_4016(me, sp)
+--
+-- end
 
 -- 신령지익 지속 효과
 function ON_CONCAST_4016(me, caster, buff)

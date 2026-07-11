@@ -13,11 +13,11 @@ function ON_CAST_2025(me, sp)
 end
 
 -- 전혈 버프 효과
-function ON_BUFF_2025(me, sp)
-
-end
+-- function ON_BUFF_2025(me, sp)
+--
+-- end
 
 -- 전혈 버프 해제 효과
-function ON_UNBUFF_2025(me, sp)
-
-end
+-- function ON_UNBUFF_2025(me, sp)
+--
+-- end

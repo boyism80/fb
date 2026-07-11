@@ -169,7 +169,7 @@ bool item::active()
     auto  func  = std::format("ON_ACTIVATED_{}", model.id);
 
     // Execute item activation script
-    auto lua = this->server.lua.new_ctx_guard(path, func);
+    auto lua = this->server.lua.open(path, func);
     if (lua)
     {
         lua->pushobject(*owner);

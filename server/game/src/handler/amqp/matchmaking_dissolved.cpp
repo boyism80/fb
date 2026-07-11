@@ -37,7 +37,7 @@ async::task<void> matchmaking_dissolved::handle(const fb::protocol::matchmaking:
                 if (outcome_value == 0)
                     ch->matchmaker.clear_enrollment();
 
-                auto lua = ch->server.lua.new_ctx_guard("scripts/interaction.lua", "on_matchmaking_dissolved");
+                auto lua = ch->server.lua.open("scripts/interaction.lua", "on_matchmaking_dissolved");
                 if (lua)
                 {
                     lua->pushobject(ch);

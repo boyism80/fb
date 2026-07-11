@@ -1235,6 +1235,7 @@ int builtin::object::builtin_script(lua_State* L)
 
         if (new_lua->func(func) == false)
         {
+            fb::lua::report_func_missing(path, func);
             new_lua->release();
             co_return;
         }

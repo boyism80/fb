@@ -1,5 +1,5 @@
 -- mob: 괴성'녹
 -- 괴성'녹 사망
-function ON_MOB_DIE_562(me)
-
-end
+-- function ON_MOB_DIE_562(me)
+--
+-- end

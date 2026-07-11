@@ -1,3 +1,3 @@
 -- mob: 풍적진원
-function ON_MOB_DIE_618(me)
-end
+-- function ON_MOB_DIE_618(me)
+-- end

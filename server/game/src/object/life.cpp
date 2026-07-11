@@ -115,7 +115,7 @@ async::task<void> life::settle_deaths(mob_vector dead)
     {
         auto path = std::format("scripts/mob/{}.lua", id);
         auto func = std::format("ON_MOB_DIE_{}", id);
-        auto lua  = this->server.lua.new_ctx_guard(path, func);
+        auto lua  = this->server.lua.open(path, func);
         if (lua)
         {
             lua->pushobject(*mobs.front());
@@ -170,7 +170,7 @@ async::task<void> life::attack(DURATION duration)
 
     // Execute attack interaction script and get attack count
     uint32_t attack_count = 0;
-    auto     lua          = this->server.lua.new_ctx_guard("scripts/interaction.lua", "on_attack");
+    auto     lua          = this->server.lua.open("scripts/interaction.lua", "on_attack");
     if (lua)
     {
         lua->pushobject(*this);
@@ -192,7 +192,7 @@ async::task<void> life::attack(DURATION duration)
             auto  path  = std::format("scripts/item/{}.lua", model.id);
             auto  func  = std::format("ON_ATTACK_{}", model.id);
 
-            auto weapon_lua = this->server.lua.new_ctx_guard(path, func);
+            auto weapon_lua = this->server.lua.open(path, func);
             if (weapon_lua)
             {
                 weapon_lua->pushobject(ch);
@@ -230,7 +230,7 @@ bool life::active(fb::game::spell& spell, std::string_view message)
     auto  path  = std::format("scripts/spell/{}.lua", model.id);
     auto  func  = std::format("ON_CAST_{}", model.id);
 
-    auto lua = this->server.lua.new_ctx_guard(path, func);
+    auto lua = this->server.lua.open(path, func);
     if (!lua)
         return false;
 
@@ -264,7 +264,7 @@ bool life::active(fb::game::spell& spell, fb::game::object& to)
     auto  path  = std::format("scripts/spell/{}.lua", model.id);
     auto  func  = std::format("ON_CAST_{}", model.id);
 
-    auto lua = this->server.lua.new_ctx_guard(path, func);
+    auto lua = this->server.lua.open(path, func);
     if (!lua)
         return false;
 
@@ -295,7 +295,7 @@ bool life::active(fb::game::spell& spell)
     auto  path  = std::format("scripts/spell/{}.lua", model.id);
     auto  func  = std::format("ON_CAST_{}", model.id);
 
-    auto lua = this->server.lua.new_ctx_guard(path, func);
+    auto lua = this->server.lua.open(path, func);
     if (!lua)
         return false;
 

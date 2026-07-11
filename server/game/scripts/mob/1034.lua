@@ -5,6 +5,6 @@ function ON_MOB_ATTACK_1034(me, you)
 end
 
 -- 도삭산풍석 사망
-function ON_MOB_DIE_1034(me)
-
-end
+-- function ON_MOB_DIE_1034(me)
+--
+-- end

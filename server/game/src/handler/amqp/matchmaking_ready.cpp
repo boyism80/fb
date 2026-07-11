@@ -36,7 +36,7 @@ async::task<void> matchmaking_ready::handle(const fb::protocol::matchmaking::mq:
                     ch->matchmaker.clear_pending_match_id_if(match_id);
                     ch->matchmaker.clear_enrollment();
 
-                    auto lua = ch->server.lua.new_ctx_guard("scripts/interaction.lua", "on_matchmaking_ready");
+                    auto lua = ch->server.lua.open("scripts/interaction.lua", "on_matchmaking_ready");
                     if (lua)
                     {
                         lua->pushobject(ch);

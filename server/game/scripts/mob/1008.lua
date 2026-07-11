@@ -27,5 +27,5 @@ function ON_MOB_KILL_1008(me, mobs)
     me:dialog(item, "휴.. 드디어 전략문서를 구했다.", false, true)
 end
 
-function ON_MOB_DIE_1008(me)
-end
+-- function ON_MOB_DIE_1008(me)
+-- end

@@ -13,11 +13,11 @@ function ON_CAST_1006(me, sp)
 end
 
 -- 후면공격 버프 효과
-function ON_BUFF_1006(me, sp)
-
-end
+-- function ON_BUFF_1006(me, sp)
+--
+-- end
 
 -- 후면공격 버프 해제 효과
-function ON_UNBUFF_1006(me, sp)
-
-end
+-- function ON_UNBUFF_1006(me, sp)
+--
+-- end

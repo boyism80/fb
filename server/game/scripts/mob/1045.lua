@@ -5,6 +5,6 @@ function ON_MOB_ATTACK_1045(me, you)
 end
 
 -- 수렴귀 사망
-function ON_MOB_DIE_1045(me)
-
-end
+-- function ON_MOB_DIE_1045(me)
+--
+-- end

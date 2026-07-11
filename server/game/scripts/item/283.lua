@@ -16,11 +16,11 @@ function ON_ATTACK_283(me, item)
 end
 
 -- 용겸제팔봉 사용 스크립트
-function ON_ACTIVATED_283(me, item)
-
-end
+-- function ON_ACTIVATED_283(me, item)
+--
+-- end
 
 -- 용겸제팔봉 해제 스크립트
-function ON_DEACTIVATED_283(me, item)
-
-end
+-- function ON_DEACTIVATED_283(me, item)
+--
+-- end

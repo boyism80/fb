@@ -14,11 +14,11 @@ function ON_ATTACK_256(me, item)
 end
 
 -- 용마제팔검 사용 스크립트
-function ON_ACTIVATED_256(me, item)
-
-end
+-- function ON_ACTIVATED_256(me, item)
+--
+-- end
 
 -- 용마제팔검 해제 스크립트
-function ON_DEACTIVATED_256(me, item)
-
-end
+-- function ON_DEACTIVATED_256(me, item)
+--
+-- end

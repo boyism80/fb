@@ -1,5 +1,5 @@
 -- mob: 적북극사슴
 -- 적북극사슴 사망
-function ON_MOB_DIE_508(me)
-
-end
+-- function ON_MOB_DIE_508(me)
+--
+-- end

@@ -1,5 +1,5 @@
 -- spell: 성려멸주
 -- 성려멸주 캐스팅
-function ON_CAST_3042(me, spell)
-
-end
+-- function ON_CAST_3042(me, spell)
+--
+-- end

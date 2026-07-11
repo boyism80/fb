@@ -65,7 +65,7 @@ async::task<bool> move::handle(fb::socket<character>&      session,
             if (params.path.empty() || params.function.empty())
                 break;
 
-            auto lua = this->server.lua.new_ctx_guard(params.path, params.function);
+            auto lua = this->server.lua.open(params.path, params.function);
             if (lua)
             {
                 lua->pushobject(ch);

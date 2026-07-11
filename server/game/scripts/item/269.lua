@@ -16,11 +16,11 @@ function ON_ATTACK_269(me, item)
 end
 
 -- 용랑제삼봉 사용 스크립트
-function ON_ACTIVATED_269(me, item)
-
-end
+-- function ON_ACTIVATED_269(me, item)
+--
+-- end
 
 -- 용랑제삼봉 해제 스크립트
-function ON_DEACTIVATED_269(me, item)
-
-end
+-- function ON_DEACTIVATED_269(me, item)
+--
+-- end

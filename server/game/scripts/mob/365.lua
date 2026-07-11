@@ -1,5 +1,5 @@
 -- mob: 흑령
 -- 흑령 사망
-function ON_MOB_DIE_365(me)
-
-end
+-- function ON_MOB_DIE_365(me)
+--
+-- end

@@ -14,11 +14,11 @@ function ON_ATTACK_263(me, item)
 end
 
 -- 용천제육검 사용 스크립트
-function ON_ACTIVATED_263(me, item)
-
-end
+-- function ON_ACTIVATED_263(me, item)
+--
+-- end
 
 -- 용천제육검 해제 스크립트
-function ON_DEACTIVATED_263(me, item)
-
-end
+-- function ON_DEACTIVATED_263(me, item)
+--
+-- end

@@ -1,5 +1,5 @@
 -- mob: 최가
 -- 최가 사망
-function ON_MOB_DIE_1064(me)
-
-end
+-- function ON_MOB_DIE_1064(me)
+--
+-- end

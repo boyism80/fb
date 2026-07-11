@@ -1,4 +1,4 @@
 -- npc: 흑천
-function NPC_33(me, npc)
-    
-end
+-- function NPC_33(me, npc)
+--
+-- end

@@ -1,4 +1,4 @@
 -- npc: 성문문지기5
-function NPC_246(me, npc)
-    
-end
+-- function NPC_246(me, npc)
+--
+-- end

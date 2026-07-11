@@ -14,11 +14,11 @@ function ON_ATTACK_257(me, item)
 end
 
 -- 용마제구검 사용 스크립트
-function ON_ACTIVATED_257(me, item)
-
-end
+-- function ON_ACTIVATED_257(me, item)
+--
+-- end
 
 -- 용마제구검 해제 스크립트
-function ON_DEACTIVATED_257(me, item)
-
-end
+-- function ON_DEACTIVATED_257(me, item)
+--
+-- end

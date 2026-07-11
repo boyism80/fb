@@ -1,3 +1,3 @@
 -- mob: 암석
-function ON_MOB_DIE_1310(me)
-end
+-- function ON_MOB_DIE_1310(me)
+-- end

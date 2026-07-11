@@ -154,7 +154,7 @@ void matchmaker::enqueue_squad_unregister(uint32_t match_type, std::string_view 
             if (id.has_value() == false || id.value() != registry_id_str)
                 co_return;
 
-            auto lua = ch->server.lua.new_ctx_guard("scripts/interaction.lua", "on_matchmaking_unregister");
+            auto lua = ch->server.lua.open("scripts/interaction.lua", "on_matchmaking_unregister");
             if (lua)
             {
                 lua->pushobject(ch);
@@ -225,7 +225,7 @@ async::task<void> matchmaker::unregister_queue(bool quiet)
         auto ptr = this->owner.weak_from_this_as<character>().lock();
         if (ptr != nullptr)
         {
-            auto lua = this->owner.server.lua.new_ctx_guard("scripts/interaction.lua", "on_matchmaking_unregister");
+            auto lua = this->owner.server.lua.open("scripts/interaction.lua", "on_matchmaking_unregister");
             if (lua)
             {
                 lua->pushobject(ptr);
@@ -284,7 +284,7 @@ async::task<void> matchmaker::confirm_queue(std::string_view match_id, bool quie
         if (ptr != nullptr)
         {
             auto match_id_str = std::string(match_id);
-            auto lua = this->owner.server.lua.new_ctx_guard("scripts/interaction.lua", "on_matchmaking_confirm");
+            auto lua          = this->owner.server.lua.open("scripts/interaction.lua", "on_matchmaking_confirm");
             if (lua)
             {
                 lua->pushobject(ptr);
@@ -347,7 +347,7 @@ async::task<void> matchmaker::decline_queue(std::string_view match_id, bool quie
         if (ptr != nullptr)
         {
             auto match_id_str = std::string(match_id);
-            auto lua = this->owner.server.lua.new_ctx_guard("scripts/interaction.lua", "on_matchmaking_decline");
+            auto lua          = this->owner.server.lua.open("scripts/interaction.lua", "on_matchmaking_decline");
             if (lua)
             {
                 lua->pushobject(ptr);
@@ -461,7 +461,7 @@ async::task<void> matchmaker::register_queue(uint32_t match_type)
 
                 ptr->matchmaker.set_enrollment(match_type, registry_id_str);
 
-                auto lua = ptr->server.lua.new_ctx_guard("scripts/interaction.lua", "on_matchmaking_register");
+                auto lua = ptr->server.lua.open("scripts/interaction.lua", "on_matchmaking_register");
                 if (lua)
                 {
                     lua->pushobject(ptr);
@@ -476,7 +476,7 @@ async::task<void> matchmaker::register_queue(uint32_t match_type)
     }
 
     {
-        auto lua = this->owner.server.lua.new_ctx_guard("scripts/interaction.lua", "on_matchmaking_register");
+        auto lua = this->owner.server.lua.open("scripts/interaction.lua", "on_matchmaking_register");
         if (lua)
         {
             lua->pushobject(self);

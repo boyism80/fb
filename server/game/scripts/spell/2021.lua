@@ -1,8 +1,8 @@
 -- spell: 무형술
 -- 무형술 캐스팅
-function ON_CAST_2021(me, you, spell)
-
-end
+-- function ON_CAST_2021(me, you, spell)
+--
+-- end
 
 -- 무형술 버프 효과
 function ON_BUFF_2021(me, spell)

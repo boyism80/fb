@@ -16,11 +16,11 @@ function ON_ATTACK_282(me, item)
 end
 
 -- 용겸제칠봉 사용 스크립트
-function ON_ACTIVATED_282(me, item)
-
-end
+-- function ON_ACTIVATED_282(me, item)
+--
+-- end
 
 -- 용겸제칠봉 해제 스크립트
-function ON_DEACTIVATED_282(me, item)
-
-end
+-- function ON_DEACTIVATED_282(me, item)
+--
+-- end

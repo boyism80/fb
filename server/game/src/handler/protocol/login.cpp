@@ -285,7 +285,7 @@ async::task<std::shared_ptr<character>> login::init(const game_reqs::login& requ
         if (msg.empty() == false)
             ch->message(msg, MESSAGE_TYPE::STATE);
 
-        auto lua = this->server.lua.new_ctx_guard("scripts/interaction.lua", "on_login");
+        auto lua = this->server.lua.open("scripts/interaction.lua", "on_login");
         if (lua)
         {
             lua->pushobject(ch);

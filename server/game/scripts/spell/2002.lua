@@ -19,9 +19,9 @@ function ON_CAST_2002(me, sp, name)
 end
 
 -- 금수 버프 효과
-function ON_BUFF_2002(me, sp)
-    
-end
+-- function ON_BUFF_2002(me, sp)
+--
+-- end
 
 -- 금수 버프 해제 효과
 function ON_UNBUFF_2002(me, sp)

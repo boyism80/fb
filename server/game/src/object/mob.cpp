@@ -153,6 +153,7 @@ async::task<bool> mob::call_script()
 
     if (this->_attack_thread->func(func) == false)
     {
+        fb::lua::report_func_missing(path, func);
         this->_attack_thread->release();
         this->_attack_thread = nullptr;
         co_return true;

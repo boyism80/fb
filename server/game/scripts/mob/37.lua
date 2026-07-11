@@ -47,9 +47,9 @@ function ON_MOB_KILL_37(me, mobs)
     end
 
     me:mkitem(ITEM_RABBIT_LIVER, 1)
-    me:push_achievement(ACHIEVEMENT_RABBIT_CAPTURE, '토깽이를 성공적으로 포획했다!', 7, 0)
+    me:push_achievement(ACHIEVEMENT_RABBIT_CAPTURE, '토깽이를 성공적으로 포획했다!', 7, 1)
     me:dialog(mob, '으으윽..', false, false)
 end
 
-function ON_MOB_DIE_37(me)
-end
+-- function ON_MOB_DIE_37(me)
+-- end

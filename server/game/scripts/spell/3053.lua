@@ -24,7 +24,7 @@ function ON_UNBUFF_3053(me, sp)
 end
 
 -- 절망 지속 효과
-function ON_CONCAST_3053(me, caster, buff)
-
-end
+-- function ON_CONCAST_3053(me, caster, buff)
+--
+-- end
 

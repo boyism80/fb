@@ -23,5 +23,5 @@ function ON_MOB_KILL_1162(me, mobs)
     me:mkitem('반고의심장', 1)
 end
 
-function ON_MOB_DIE_1162(me)
-end
+-- function ON_MOB_DIE_1162(me)
+-- end

@@ -1,5 +1,5 @@
 -- mob: 자달걀귀신
 -- 자달걀귀신 사망
-function ON_MOB_DIE_393(me)
-
-end
+-- function ON_MOB_DIE_393(me)
+--
+-- end

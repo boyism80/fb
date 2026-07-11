@@ -5,6 +5,6 @@ function ON_MOB_ATTACK_1047(me, you)
 end
 
 -- 운랑 사망
-function ON_MOB_DIE_1047(me)
-
-end
+-- function ON_MOB_DIE_1047(me)
+--
+-- end

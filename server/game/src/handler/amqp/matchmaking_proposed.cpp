@@ -38,7 +38,7 @@ async::task<void> matchmaking_proposed::handle(const fb::protocol::matchmaking::
                     {
                         ch->matchmaker.set_pending_match_id(match_id);
 
-                        auto lua = ch->server.lua.new_ctx_guard("scripts/interaction.lua", "on_matchmaking_proposed");
+                        auto lua = ch->server.lua.open("scripts/interaction.lua", "on_matchmaking_proposed");
                         if (lua)
                         {
                             lua->pushobject(ch);

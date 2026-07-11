@@ -27,5 +27,5 @@ function ON_ACTIVATED_10529(me, item)
 end
 
 -- 사랑호출기 해제 스크립트
-function ON_DEACTIVATED_10529(me, item)
-end
+-- function ON_DEACTIVATED_10529(me, item)
+-- end
