@@ -401,103 +401,30 @@ uint32_t mob::normal_attack_damage(MOB_SIZE size) const
     return model.damage.min + (std::rand() % difference);
 }
 
-void mob::on_die(std::shared_ptr<object> from, DESTROY_TYPE destroy_type)
+void mob::kill(DESTROY_TYPE destroy_type)
 {
     this->assert_thread();
-    this->listener.on_dead(*this, from);
-
-    // Drop items when mob dies
-    std::ignore = this->drop_items();
-
-    // Handle spawned mob ownership
-    auto owner = this->owner.lock();
-    if (owner != nullptr)
-    {
-        owner->detach_spawned_mob(*this);
-        return;
-    }
-
-    // Handle experience distribution
-    if (from != nullptr && from->is(OBJECT_TYPE::MOB))
-        from = std::static_pointer_cast<fb::game::mob>(from)->owner.lock();
-
-    if (from == nullptr)
-        return;
-
-    if (owner == nullptr && from->is(OBJECT_TYPE::CHARACTER))
-    {
-        auto& ch       = static_cast<character&>(*from);
-        auto& group_id = ch.group_id();
-        auto  map      = ch.map();
-        auto  exp      = this->based<fb::model::mob>().exp;
-
-        if (group_id.has_value() && map != nullptr)
-        {
-            // Group experience distribution
-            auto server = &ch.server;
-            {
-                auto  guard      = server->groups.enter_read(group_id.value());
-                auto& group      = guard.value();
-                auto  nears      = group->nears(*map, ch.position());
-                auto  size       = nears.size();
-                auto  divide_exp = exp / size;
-                for (auto& member : nears)
-                {
-                    auto shared_ptr = member.lock();
-                    if (shared_ptr == nullptr)
-                        continue;
-
-                    shared_ptr->add_exp(divide_exp, true, true);
-                }
-            }
-        }
-        else
-        {
-            // Solo experience
-            ch.add_exp(exp, true, true);
-        }
-    }
+    life::kill(destroy_type);
     std::ignore = this->destroy(destroy_type);
 }
 
-void mob::kill(std::shared_ptr<object> from, DESTROY_TYPE destroy_type)
+async::task<void> mob::damage_to(const damage_list& targets, const damage_opts& opts)
 {
     this->assert_thread();
-    life::kill(from, destroy_type);
 
-    auto& model = this->based<fb::model::mob>();
-    auto  path  = std::format("scripts/mob/{}.lua", model.id);
-    auto  func  = std::format("ON_MOB_DIE_{}", model.id);
+    // Damage is always applied as this mob (not redirected to owner).
+    auto dead = this->damage_targets(targets, opts);
+    if (dead.empty())
+        co_return;
 
-    auto lua = this->server.lua.new_ctx_guard(path, func);
-    if (!lua)
+    auto owner = this->owner.lock();
+    if (owner != nullptr)
     {
-        this->on_die(from, destroy_type);
-        return;
+        co_await owner->settle_kills(std::move(dead));
+        co_return;
     }
 
-    lua->pushobject(*this);
-    if (from != nullptr)
-        lua->pushobject(from);
-    else
-        lua->pushnil();
-
-    this->invincible(true);
-    async::awaitable_then(lua->call(2), [this, from, destroy_type](async::awaitable_result<bool> result) {
-        try
-        {
-            result();
-            this->on_die(from, destroy_type);
-        }
-        catch (std::exception& e)
-        {
-            fb::logger::fatal("error in mob on_die: {}", e.what());
-        }
-        catch (...)
-        {
-            fb::logger::fatal("unknown error in mob on_die");
-        }
-    });
+    co_await this->settle_deaths(std::move(dead));
 }
 
 async::task<void> mob::drop_items()

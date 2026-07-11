@@ -1,5 +1,5 @@
 -- mob: 적달걀귀신
 -- 적달걀귀신 사망
-function ON_MOB_DIE_396(me, you)
+function ON_MOB_DIE_396(me)
 
 end

@@ -1,5 +1,5 @@
 -- mob: 도삭산황소
 -- 도삭산황소 사망
-function ON_MOB_DIE_576(me, you)
+function ON_MOB_DIE_576(me)
 
 end

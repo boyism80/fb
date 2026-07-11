@@ -1,5 +1,5 @@
 -- mob: 마계천신
 -- 마계천신 사망
-function ON_MOB_DIE_537(me, you)
+function ON_MOB_DIE_537(me)
 
 end

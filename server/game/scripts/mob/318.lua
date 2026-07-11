@@ -1,5 +1,5 @@
 -- mob: 홍돼지
 -- 홍돼지 사망
-function ON_MOB_DIE_318(me, you)
+function ON_MOB_DIE_318(me)
 
 end

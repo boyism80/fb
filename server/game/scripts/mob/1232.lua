@@ -1,3 +1,3 @@
 -- mob: 이벤트백호왕
-function ON_MOB_DIE_1232(me, you)
+function ON_MOB_DIE_1232(me)
 end

@@ -1,5 +1,5 @@
 -- mob: 명중의다람쥐
 -- 명중의다람쥐 사망
-function ON_MOB_DIE_86(me, you)
+function ON_MOB_DIE_86(me)
 
 end

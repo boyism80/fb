@@ -1,3 +1,3 @@
 -- mob: 지하대나무
-function ON_MOB_DIE_1319(me, you)
+function ON_MOB_DIE_1319(me)
 end

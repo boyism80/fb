@@ -1,5 +1,5 @@
 -- mob: 목요의정
-function ON_MOB_DIE_1554(me, you)
+function ON_MOB_DIE_1554(me)
 end
 
 function ON_MOB_ATTACK_1554(me, you)

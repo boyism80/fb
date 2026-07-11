@@ -1,5 +1,5 @@
 -- mob: 속역자룡
-function ON_MOB_DIE_1546(me, you)
+function ON_MOB_DIE_1546(me)
 end
 
 function ON_MOB_ATTACK_1546(me, you)

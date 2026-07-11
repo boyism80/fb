@@ -1,5 +1,5 @@
 -- mob: 고래4
-function ON_MOB_DIE_1291(me, you)
+function ON_MOB_DIE_1291(me)
 end
 
 function ON_MOB_ATTACK_1291(me, you)

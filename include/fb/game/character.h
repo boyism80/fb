@@ -48,6 +48,7 @@ class character : public life
     friend class group;
     friend class character_stat;
     friend class server;
+    friend class mob;
 
 public:
     using object::map;
@@ -197,7 +198,11 @@ public:
     fb::thread*                                        thread() const override final;
     void                                               assert_thread() const override final;
     void                                               update(UPDATE_STATE_LEVEL value = UPDATE_STATE_LEVEL::EXP_MONEY | UPDATE_STATE_LEVEL::CROWD_CONTROL) override final;
-    void                                               kill(std::shared_ptr<fb::game::object> from = nullptr, DESTROY_TYPE destroy_type = DESTROY_TYPE::DEFAULT) override final;
+    void                                               kill(DESTROY_TYPE destroy_type = DESTROY_TYPE::DEFAULT) override final;
+    void                                               notify_death(std::shared_ptr<fb::game::object> killer = nullptr);
+    async::task<void>                                  damage_to(const damage_list& targets, const damage_opts& opts = {}) override final;
+    async::task<void>                                  settle_kills(mob_vector dead);
+    void                                               award_exp(const fb::game::mob& mob);
     void                                               update_id() override final;
     bool                                               super_hide() const override final;
     bool                                               hidden(const fb::game::object& target) const override final;

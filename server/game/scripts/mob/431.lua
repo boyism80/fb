@@ -1,5 +1,5 @@
 -- mob: 황소
 -- 황소 사망
-function ON_MOB_DIE_431(me, you)
+function ON_MOB_DIE_431(me)
 
 end

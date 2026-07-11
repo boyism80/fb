@@ -1,3 +1,3 @@
 -- mob: 붉은나비
-function ON_MOB_DIE_1340(me, you)
+function ON_MOB_DIE_1340(me)
 end

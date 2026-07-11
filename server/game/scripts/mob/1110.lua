@@ -5,6 +5,6 @@ function ON_MOB_ATTACK_1110(me, you)
 end
 
 -- 용랑 사망
-function ON_MOB_DIE_1110(me, you)
+function ON_MOB_DIE_1110(me)
 
 end

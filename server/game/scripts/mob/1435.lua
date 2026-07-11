@@ -1,5 +1,5 @@
 -- mob: 선풍각수련도우미
-function ON_MOB_DIE_1435(me, you)
+function ON_MOB_DIE_1435(me)
     
 end
 

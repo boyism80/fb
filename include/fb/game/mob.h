@@ -79,7 +79,6 @@ private:
     std::weak_ptr<fb::game::life>   find_target();
     [[nodiscard]] async::task<bool> call_script();
     void                            AI(const fb::model::datetime& now);
-    void                            on_die(std::shared_ptr<fb::game::object> from, DESTROY_TYPE destroy_type);
     static bool is_cardinally_adjacent(const fb::model::point16_t& a, const fb::model::point16_t& b);
     static bool is_cover_barrier_cell(const fb::model::point16_t& cell, const fb::model::point16_t& cover_center);
     bool        cover_blocks_move(const fb::game::map&        map,
@@ -102,7 +101,8 @@ public:
     std::shared_ptr<fb::game::life> update_target();
     virtual bool                    available() const;
     uint32_t                        normal_attack_damage(MOB_SIZE size) const override final;
-    void                            kill(std::shared_ptr<fb::game::object> from = nullptr, DESTROY_TYPE destroy_type = DESTROY_TYPE::DEFAULT) override final;
+    void                            kill(DESTROY_TYPE destroy_type = DESTROY_TYPE::DEFAULT) override final;
+    async::task<void>               damage_to(const damage_list& targets, const damage_opts& opts = {}) override final;
     async::task<void>               drop_items();
     void                            assert_thread() const override final;
     bool                            move(DIRECTION direction) override final;

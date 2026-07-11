@@ -9,16 +9,16 @@ function ON_MOB_ATTACK_1217(me, you)
 end
 
 -- 수로설괴주 사망
-function ON_MOB_DIE_1217(me, you)
+function ON_MOB_DIE_1217(me)
 
 end
 
 -- 수로설괴주 사망
-function ON_MOB_DIE_1217(me, you)
+function ON_MOB_DIE_1217(me)
 
 end
 
 -- 수로설괴주 사망
-function ON_MOB_DIE_1217(me, you)
+function ON_MOB_DIE_1217(me)
 
 end

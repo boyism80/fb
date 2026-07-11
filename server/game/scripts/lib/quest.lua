@@ -812,10 +812,13 @@ function M.mountain_treasure_fabric_on_move(me)
     me:dialog(nil, '산신의비단을 발견했다!', false, true)
 end
 
-function M.king_on_mob_die(me, you)
-    local killed_name = me:model():name()
+function M.king_on_mob_kill(me, mobs)
+    if me == nil or mobs == nil or #mobs == 0 then
+        return
+    end
+    local killed_name = mobs[1]:model():name()
     for _, qid in ipairs({ 100, 101, 102 }) do
-        local quest = you:quest(qid)
+        local quest = me:quest(qid)
         if quest ~= nil and quest:step() == 1 then
             local param = quest:param() or ''
             local mob_name = param:match('^([^,]+)') or param
@@ -825,6 +828,14 @@ function M.king_on_mob_die(me, you)
             end
         end
     end
+end
+
+-- Legacy alias; prefer king_on_mob_kill(me, mobs)
+function M.king_on_mob_die(mob, you)
+    if you == nil then
+        return
+    end
+    M.king_on_mob_kill(you, { mob })
 end
 
 function M.king_dialog(me, npc, opts)

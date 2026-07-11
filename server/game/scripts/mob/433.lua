@@ -1,5 +1,5 @@
 -- mob: 소왕
 -- 소왕 사망
-function ON_MOB_DIE_433(me, you)
+function ON_MOB_DIE_433(me)
 
 end

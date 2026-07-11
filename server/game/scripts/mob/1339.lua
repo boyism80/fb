@@ -1,3 +1,3 @@
 -- mob: 노랑나비
-function ON_MOB_DIE_1339(me, you)
+function ON_MOB_DIE_1339(me)
 end

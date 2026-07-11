@@ -1,5 +1,5 @@
 -- mob: 토끼왕
 -- 토끼왕 사망
-function ON_MOB_DIE_28(me, you)
+function ON_MOB_DIE_28(me)
 
 end

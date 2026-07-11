@@ -1,5 +1,5 @@
 -- mob: 방어의뱀
 -- 방어의뱀 사망
-function ON_MOB_DIE_110(me, you)
+function ON_MOB_DIE_110(me)
 
 end

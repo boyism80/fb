@@ -1,3 +1,3 @@
 -- mob: 오엑스
-function ON_MOB_DIE_1231(me, you)
+function ON_MOB_DIE_1231(me)
 end

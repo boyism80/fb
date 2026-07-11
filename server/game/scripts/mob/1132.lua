@@ -1,5 +1,5 @@
 -- mob: 파성
 -- 파성 사망
-function ON_MOB_DIE_1132(me, you)
+function ON_MOB_DIE_1132(me)
 
 end

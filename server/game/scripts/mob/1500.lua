@@ -1,5 +1,5 @@
 -- mob: 황담비
-function ON_MOB_DIE_1500(me, you)
+function ON_MOB_DIE_1500(me)
 end
 
 function ON_MOB_ATTACK_1500(me, you)

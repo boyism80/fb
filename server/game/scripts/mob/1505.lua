@@ -1,5 +1,5 @@
 -- mob: 백두산노루
-function ON_MOB_DIE_1505(me, you)
+function ON_MOB_DIE_1505(me)
 end
 
 function ON_MOB_ATTACK_1505(me, you)

@@ -5,6 +5,6 @@ function ON_MOB_ATTACK_1100(me, you)
 end
 
 -- 범지 사망
-function ON_MOB_DIE_1100(me, you)
+function ON_MOB_DIE_1100(me)
 
 end

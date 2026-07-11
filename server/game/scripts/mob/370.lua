@@ -1,5 +1,5 @@
 -- mob: 원령
 -- 원령 사망
-function ON_MOB_DIE_370(me, you)
+function ON_MOB_DIE_370(me)
 
 end

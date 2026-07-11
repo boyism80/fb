@@ -1,5 +1,5 @@
 -- mob: 파란박쥐
 -- 파란박쥐 사망
-function ON_MOB_DIE_306(me, you)
+function ON_MOB_DIE_306(me)
 
 end

@@ -1,3 +1,3 @@
 -- mob: 이벤트진룡
-function ON_MOB_DIE_1257(me, you)
+function ON_MOB_DIE_1257(me)
 end

@@ -1,5 +1,5 @@
 -- mob: 북극곰
 -- 북극곰 사망
-function ON_MOB_DIE_497(me, you)
+function ON_MOB_DIE_497(me)
 
 end

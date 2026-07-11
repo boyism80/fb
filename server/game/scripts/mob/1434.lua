@@ -1,5 +1,5 @@
 -- mob: 백열장수련도우미
-function ON_MOB_DIE_1434(me, you)
+function ON_MOB_DIE_1434(me)
 
 end
 

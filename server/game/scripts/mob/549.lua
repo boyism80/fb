@@ -1,5 +1,5 @@
 -- mob: 무슈후슈'녹
 -- 무슈후슈'녹 사망
-function ON_MOB_DIE_549(me, you)
+function ON_MOB_DIE_549(me)
 
 end

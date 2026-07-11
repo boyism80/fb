@@ -1,5 +1,5 @@
 -- mob: 자충
 -- 자충 사망
-function ON_MOB_DIE_407(me, you)
+function ON_MOB_DIE_407(me)
 
 end

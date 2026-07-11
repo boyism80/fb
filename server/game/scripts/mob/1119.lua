@@ -1,5 +1,5 @@
 -- mob: 백현귀랑
 -- 백현귀랑 사망
-function ON_MOB_DIE_1119(me, you)
+function ON_MOB_DIE_1119(me)
 
 end

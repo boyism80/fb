@@ -1,3 +1,3 @@
 -- mob: 이벤트박가
-function ON_MOB_DIE_1247(me, you)
+function ON_MOB_DIE_1247(me)
 end

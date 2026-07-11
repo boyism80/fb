@@ -13,6 +13,7 @@
 #include <chrono>
 #include <format>
 #include <macro.h>
+#include <unordered_map>
 
 using namespace fb::game;
 using namespace fb::model;
@@ -1469,16 +1470,20 @@ void character::update(UPDATE_STATE_LEVEL value)
     this->listener.on_update(*this, value);
 }
 
-void character::kill(std::shared_ptr<fb::game::object> from, DESTROY_TYPE destroy_type)
+void character::kill(DESTROY_TYPE destroy_type)
 {
     this->assert_thread();
-    life::kill(from, destroy_type);
+    life::kill(destroy_type);
 
     this->death_penalty();
     this->state(STATE::GHOST);
-    this->listener.on_dead(*this, from);
+}
 
-    // Log death event
+void character::notify_death(std::shared_ptr<fb::game::object> killer)
+{
+    this->assert_thread();
+    this->listener.on_dead(*this, killer);
+
     auto log_data              = Json::Value();
     log_data["character_id"]   = static_cast<Json::Int64>(this->id);
     log_data["character_name"] = UTF8(this->name(), PLATFORM::WINDOWS);
@@ -1490,13 +1495,112 @@ void character::kill(std::shared_ptr<fb::game::object> from, DESTROY_TYPE destro
         log_data["position_x"] = this->position().x;
         log_data["position_y"] = this->position().y;
     }
-    if (from != nullptr && from->is(OBJECT_TYPE::CHARACTER))
+    if (killer != nullptr && killer->is(OBJECT_TYPE::CHARACTER))
     {
-        auto& killer            = static_cast<character&>(*from);
-        log_data["killer_id"]   = static_cast<Json::Int64>(killer.id);
-        log_data["killer_name"] = UTF8(killer.name(), PLATFORM::WINDOWS);
+        auto& killer_ch         = static_cast<character&>(*killer);
+        log_data["killer_id"]   = static_cast<Json::Int64>(killer_ch.id);
+        log_data["killer_name"] = UTF8(killer_ch.name(), PLATFORM::WINDOWS);
     }
     this->server.log.write("death", log_data);
+}
+
+async::task<void> character::settle_kills(mob_vector dead)
+{
+    this->assert_thread();
+
+    auto groups = std::unordered_map<uint32_t, mob_vector>{};
+    for (auto& m : dead)
+    {
+        if (m == nullptr)
+            continue;
+        groups[m->based<fb::model::mob>().id].push_back(m);
+    }
+
+    auto self = this->shared_from_this_as<character>();
+    for (auto& [id, mobs] : groups)
+    {
+        auto path = std::format("scripts/mob/{}.lua", id);
+        auto func = std::format("ON_MOB_KILL_{}", id);
+        auto lua  = this->server.lua.new_ctx_guard(path, func);
+        if (lua)
+        {
+            lua->pushobject(*self);
+            lua->new_table();
+            for (auto i = 0; i < static_cast<int>(mobs.size()); i++)
+            {
+                lua->pushobject(*mobs[i]);
+                lua->rawseti(-2, i + 1);
+            }
+
+            try
+            {
+                std::ignore = co_await lua->call(2);
+            }
+            catch (std::exception& e)
+            {
+                fb::logger::fatal("error in ON_MOB_KILL_{}: {}", id, e.what());
+            }
+            catch (...)
+            {
+                fb::logger::fatal("unknown error in ON_MOB_KILL_{}", id);
+            }
+        }
+
+        for (auto& m : mobs)
+        {
+            auto owner = m->owner.lock();
+            if (owner != nullptr)
+            {
+                owner->detach_spawned_mob(*m);
+                m->kill(DESTROY_TYPE::DEAD);
+                continue;
+            }
+
+            this->listener.on_dead(*m, self);
+            co_await m->drop_items();
+            this->award_exp(*m);
+            m->kill(DESTROY_TYPE::DEAD);
+        }
+    }
+}
+
+void character::award_exp(const fb::game::mob& mob)
+{
+    this->assert_thread();
+
+    auto& group_id = this->group_id();
+    auto  map      = this->map();
+    auto  exp      = mob.based<fb::model::mob>().exp;
+
+    if (group_id.has_value() && map != nullptr)
+    {
+        auto  guard      = this->server.groups.enter_read(group_id.value());
+        auto& group      = guard.value();
+        auto  nears      = group->nears(*map, this->position());
+        auto  size       = nears.size();
+        auto  divide_exp = exp / size;
+        for (auto& member : nears)
+        {
+            auto shared_ptr = member.lock();
+            if (shared_ptr == nullptr)
+                continue;
+
+            shared_ptr->add_exp(divide_exp, true, true);
+        }
+    }
+    else
+    {
+        this->add_exp(exp, true, true);
+    }
+}
+
+async::task<void> character::damage_to(const damage_list& targets, const damage_opts& opts)
+{
+    this->assert_thread();
+    auto dead = this->damage_targets(targets, opts);
+    if (dead.empty() == false)
+        co_await this->settle_kills(std::move(dead));
+    co_return;
 }
 
 fb::protocol::internal::Character character::to_protocol() const

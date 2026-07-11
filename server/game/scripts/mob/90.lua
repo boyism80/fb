@@ -1,5 +1,5 @@
 -- mob: 힘의다람쥐
 -- 힘의다람쥐 사망
-function ON_MOB_DIE_90(me, you)
+function ON_MOB_DIE_90(me)
 
 end

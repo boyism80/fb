@@ -7,13 +7,21 @@ function ON_MOB_ATTACK_1167(me, you)
 end
 
 -- 제곡 사망
-function ON_MOB_DIE_1167(me, you)
-    if you == nil or not you:is(OBJECT_TYPE.CHARACTER) then
+function ON_MOB_KILL_1167(me, mobs)
+    if me == nil or mobs == nil or #mobs == 0 then
         return
     end
-    local q = you:quest(quest.QUEST_MUTA)
+    local mob = mobs[1]
+    if not me:is(OBJECT_TYPE.CHARACTER) then
+        return
+    end
+
+    local q = me:quest(quest.QUEST_MUTA)
     if q == nil or q:step() ~= 3 then
         return
     end
-    you:mkitem('제곡의증표', 1)
+    me:mkitem('제곡의증표', 1)
+end
+
+function ON_MOB_DIE_1167(me)
 end

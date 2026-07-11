@@ -1,5 +1,5 @@
 -- mob: 수룡
 -- 수룡 사망
-function ON_MOB_DIE_1049(me, you)
+function ON_MOB_DIE_1049(me)
 
 end

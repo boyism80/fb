@@ -1,5 +1,5 @@
 -- mob: 민첩의다람쥐
 -- 민첩의다람쥐 사망
-function ON_MOB_DIE_91(me, you)
+function ON_MOB_DIE_91(me)
 
 end

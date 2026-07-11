@@ -1,5 +1,5 @@
 -- mob: 진녹악어
 -- 진녹악어 사망
-function ON_MOB_DIE_131(me, you)
+function ON_MOB_DIE_131(me)
 
 end

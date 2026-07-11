@@ -1,3 +1,3 @@
 -- mob: 북방목
-function ON_MOB_DIE_1331(me, you)
+function ON_MOB_DIE_1331(me)
 end

@@ -1,5 +1,5 @@
 -- mob: 견우
-function ON_MOB_DIE_60005(me, you)
+function ON_MOB_DIE_60005(me)
 end
 
 function ON_MOB_ATTACK_60005(me, you)

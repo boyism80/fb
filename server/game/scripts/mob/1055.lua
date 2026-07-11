@@ -5,6 +5,6 @@ function ON_MOB_ATTACK_1055(me, you)
 end
 
 -- 야월진랑 사망
-function ON_MOB_DIE_1055(me, you)
+function ON_MOB_DIE_1055(me)
 
 end
