@@ -85,6 +85,10 @@ life::mob_vector life::damage_targets(const damage_list& targets, const damage_o
         if (target->is(OBJECT_TYPE::MOB))
         {
             auto m = std::static_pointer_cast<mob>(target);
+            // Already settling ON_MOB_KILL / ON_MOB_DIE — do not re-enter kill flow.
+            if (m->invincible())
+                continue;
+
             m->invincible(true);
             dead.push_back(m);
         }
