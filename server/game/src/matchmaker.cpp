@@ -147,8 +147,7 @@ void matchmaker::enqueue_squad_unregister(uint32_t match_type, std::string_view 
 
     auto registry_id_str = std::string(registry_id);
     auto owner_id        = this->owner.id;
-    auto guard           = this->owner.server.characters.enter_read();
-    guard.value().foreach_enqueue(
+    this->owner.server.characters.foreach_enqueue(
         [registry_id_str, match_type](auto& ch) -> async::task<void> {
             auto id = ch->matchmaker.registry_id();
             if (id.has_value() == false || id.value() != registry_id_str)
@@ -406,11 +405,9 @@ async::task<void> matchmaker::register_queue(uint32_t match_type)
         auto member_names = group.members();
         participants.reserve(member_names.size());
 
-        auto  guard      = this->owner.server.characters.enter_read();
-        auto& characters = guard.value();
         for (auto& name : member_names)
         {
-            auto ch = characters.find(name);
+            auto ch = this->owner.server.characters.find(name);
             if (ch == nullptr)
                 throw std::runtime_error(_TEXT(MESSAGE_GROUP_CANNOT_FIND_TARGET));
 

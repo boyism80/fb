@@ -3,6 +3,7 @@
 #include <fb/game/npc.h>
 #include <fb/game/object.h>
 #include <fb/game/map.h>
+#include <fb/logger.h>
 
 using namespace fb::game::handler::timer;
 
@@ -30,7 +31,14 @@ async::task<void> soliloquy_timer::handle(const fb::model::datetime& now, std::t
                 continue;
 
             auto npc = std::static_pointer_cast<fb::game::npc>(obj);
-            npc->soliloquy();
+            try
+            {
+                co_await npc->soliloquy();
+            }
+            catch (const std::exception& e)
+            {
+                fb::logger::fatal("soliloquy failed (oid={}): {}", npc->oid(), e.what());
+            }
         }
     }
 

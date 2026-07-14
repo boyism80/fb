@@ -2,6 +2,7 @@
 #define __AI_H__
 
 #include <fb/model/model.h>
+#include <async/task.h>
 #include <unordered_map>
 
 namespace fb::game {
@@ -30,7 +31,7 @@ private:
 
 public:
     virtual ~ai() = default;
-    virtual bool               execute(mob& mob_obj, const datetime& now);
+    virtual async::task<bool>  execute(mob& mob_obj, const datetime& now);
     virtual MOB_ATTACK_TYPE    get_type() const = 0;
     virtual void               on_damage(mob& mob_obj, std::shared_ptr<life> attacker, const datetime& now);
     static std::unique_ptr<ai> create(MOB_ATTACK_TYPE attack_type);
@@ -42,7 +43,7 @@ protected:
     bool                  should_ignore_attacker(const mob& mob_obj, std::shared_ptr<life> attacker) const;
     bool                  should_maintain_target(const mob& mob_obj, const datetime& now) const;
     void                  record_damage(std::shared_ptr<life> attacker, const datetime& now);
-    void                  run_from_target(mob& mob_obj, std::shared_ptr<life> target);
+    async::task<void>     run_from_target(mob& mob_obj, std::shared_ptr<life> target);
 };
 
 } // namespace fb::game

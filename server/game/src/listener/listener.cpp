@@ -1,5 +1,7 @@
 #include <fb/game/listener.h>
 #include <fb/game/server.h>
+#include <fb/logger.h>
+#include <tuple>
 
 using namespace fb::game;
 using table = fb::model::table;
@@ -10,7 +12,7 @@ listener_impl::listener_impl(fb::game::server& server) :
     server(server)
 { }
 
-void listener_impl::send_update_appearance(object& obj, const fb::model::appearance& appearance)
+async::task<void> listener_impl::send_update_appearance(object& obj, const fb::model::appearance& appearance)
 {
     auto serializer = game_resp::appearance_serializer<true>{
         .oid         = obj.oid(),
@@ -30,7 +32,7 @@ void listener_impl::send_update_appearance(object& obj, const fb::model::appeara
                                            appearance.shield_color,
                                            appearance.disguise)};
 
-    std::ignore = this->server.send(obj, game_resp::update_external<true>(serializer), scope::PIVOT);
+    co_await this->server.send(obj, game_resp::update_external<true>(serializer), scope::PIVOT);
 }
 
 void listener_impl::on_create(object& me)
@@ -43,10 +45,10 @@ void listener_impl::on_destroy(object& me)
     return;
 }
 
-void listener_impl::on_chat(object& me, std::string_view message, CHAT_TYPE chat_type)
+async::task<void> listener_impl::on_chat(object& me, std::string_view message, CHAT_TYPE chat_type)
 {
     if (me.is(OBJECT_TYPE::ITEM))
-        return;
+        co_return;
 
     auto scp = scope::PIVOT;
     switch (chat_type)
@@ -60,15 +62,15 @@ void listener_impl::on_chat(object& me, std::string_view message, CHAT_TYPE chat
         break;
     }
 
-    std::ignore = this->server.send(me, game_resp::chat(me, message, chat_type), scp);
+    co_await this->server.send(me, game_resp::chat(me, message, chat_type), scp);
 }
 
-void listener_impl::on_direction(object& me)
+async::task<void> listener_impl::on_direction(object& me)
 {
-    std::ignore = this->server.send(me, game_resp::direction(me), scope::PIVOT);
+    co_await this->server.send(me, game_resp::direction(me), scope::PIVOT);
 }
 
-void listener_impl::on_update_external(object& me, bool detailed)
+async::task<void> listener_impl::on_update_external(object& me, bool detailed)
 {
     switch (me.what())
     {
@@ -76,7 +78,7 @@ void listener_impl::on_update_external(object& me, bool detailed)
     {
         auto map = me.map();
         if (map == nullptr)
-            return;
+            co_return;
 
         for (auto& obj : map->nears(me.position(), OBJECT_TYPE::CHARACTER))
         {
@@ -84,10 +86,19 @@ void listener_impl::on_update_external(object& me, bool detailed)
                 continue;
 
             auto you = std::static_pointer_cast<character>(obj);
-            if (detailed)
-                you->send(game_resp::update_external<true>(static_cast<character&>(me), *you));
-            else
-                you->send(game_resp::update_external<false>(static_cast<character&>(me), *you));
+            try
+            {
+                if (detailed)
+                    std::ignore =
+                        co_await you->send(game_resp::update_external<true>(static_cast<character&>(me), *you));
+                else
+                    std::ignore =
+                        co_await you->send(game_resp::update_external<false>(static_cast<character&>(me), *you));
+            }
+            catch (const std::exception& e)
+            {
+                fb::logger::fatal("on_update_external recipient failed (oid={}): {}", you->oid(), e.what());
+            }
         }
     }
     break;
@@ -99,11 +110,11 @@ void listener_impl::on_update_external(object& me, bool detailed)
         if (model.appearance.has_value())
         {
             auto& app = table::appearance[model.appearance.value()];
-            this->send_update_appearance(npc, app);
+            co_await this->send_update_appearance(npc, app);
         }
         else
         {
-            std::ignore = this->server.send(me, game_resp::update(me), scope::PIVOT);
+            co_await this->server.send(me, game_resp::update(me), scope::PIVOT);
         }
     }
     break;
@@ -115,36 +126,36 @@ void listener_impl::on_update_external(object& me, bool detailed)
         if (model.appearance.has_value())
         {
             auto& app = table::appearance[model.appearance.value()];
-            this->send_update_appearance(mob, app);
+            co_await this->send_update_appearance(mob, app);
         }
         else
         {
-            std::ignore = this->server.send(me, game_resp::update(me), scope::PIVOT);
+            co_await this->server.send(me, game_resp::update(me), scope::PIVOT);
         }
     }
     break;
 
     default:
     {
-        std::ignore = this->server.send(me, game_resp::update(me), scope::PIVOT);
+        co_await this->server.send(me, game_resp::update(me), scope::PIVOT);
     }
     break;
     }
 }
 
-void listener_impl::on_update_external(object& me, object& you, bool detailed)
+async::task<void> listener_impl::on_update_external(object& me, object& you, bool detailed)
 {
     if (me.hidden(you))
-        return;
+        co_return;
 
     switch (me.what())
     {
     case OBJECT_TYPE::CHARACTER:
     {
         if (detailed)
-            you.send(game_resp::update_external<true>(static_cast<character&>(me), you));
+            std::ignore = co_await you.send(game_resp::update_external<true>(static_cast<character&>(me), you));
         else
-            you.send(game_resp::update_external<false>(static_cast<character&>(me), you));
+            std::ignore = co_await you.send(game_resp::update_external<false>(static_cast<character&>(me), you));
     }
     break;
 
@@ -155,11 +166,11 @@ void listener_impl::on_update_external(object& me, object& you, bool detailed)
         if (model.appearance.has_value())
         {
             auto& app = table::appearance[model.appearance.value()];
-            this->send_update_appearance(npc, app);
+            co_await this->send_update_appearance(npc, app);
         }
         else
         {
-            you.send(game_resp::update(me));
+            std::ignore = co_await you.send(game_resp::update(me));
         }
     }
     break;
@@ -171,79 +182,80 @@ void listener_impl::on_update_external(object& me, object& you, bool detailed)
         if (model.appearance.has_value())
         {
             auto& app = table::appearance[model.appearance.value()];
-            this->send_update_appearance(mob, app);
+            co_await this->send_update_appearance(mob, app);
         }
         else
         {
-            you.send(game_resp::update(me));
+            std::ignore = co_await you.send(game_resp::update(me));
         }
     }
     break;
 
     default:
     {
-        you.send(game_resp::update(me));
+        std::ignore = co_await you.send(game_resp::update(me));
     }
     break;
     }
 }
 
-void listener_impl::on_hide(object& me, DESTROY_TYPE destroy_type)
+async::task<void> listener_impl::on_hide(object& me, DESTROY_TYPE destroy_type)
 {
     switch (destroy_type)
     {
     case DESTROY_TYPE::DEFAULT:
-        std::ignore = this->server.send(me, game_resp::hide(me), scope::PIVOT, {.with_me = false});
+        co_await this->server.send(me, game_resp::hide(me), scope::PIVOT, {.with_me = false});
         break;
 
     case DESTROY_TYPE::DEAD:
         if (me.is(OBJECT_TYPE::LIFE) == false)
             throw std::runtime_error("object must be life type");
 
-        std::ignore = this->server.send(me, game_resp::die(static_cast<life&>(me)), scope::PIVOT, {.with_me = false});
+        co_await this->server.send(me, game_resp::die(static_cast<life&>(me)), scope::PIVOT, {.with_me = false});
         break;
     }
 }
 
-void listener_impl::on_hide(object& me, object& you, DESTROY_TYPE destroy_type)
+async::task<void> listener_impl::on_hide(object& me, object& you, DESTROY_TYPE destroy_type)
 {
     switch (destroy_type)
     {
     case DESTROY_TYPE::DEFAULT:
-        you.send(game_resp::hide(me));
+        std::ignore = co_await you.send(game_resp::hide(me));
         break;
 
     case DESTROY_TYPE::DEAD:
         if (me.is(OBJECT_TYPE::LIFE) == false)
             throw std::runtime_error("object must be life type");
 
-        you.send(game_resp::die(static_cast<life&>(me)));
+        std::ignore = co_await you.send(game_resp::die(static_cast<life&>(me)));
         break;
     }
 }
 
-void listener_impl::on_move(object& me, const fb::model::point16_t& before)
+async::task<void> listener_impl::on_move(object& me, const fb::model::point16_t& before)
 {
-    std::ignore = this->server.send(me, game_resp::move(me, before), scope::PIVOT, {.with_me = false});
+    co_await this->server.send(me, game_resp::move(me, before), scope::PIVOT, {.with_me = false});
 }
 
-void listener_impl::on_buff(object& me, buff& buff)
+async::task<void> listener_impl::on_buff(object& me, buff& buff)
 {
-    me.send(fb::protocol::game::response::spell_buff(buff));
+    std::ignore = co_await me.send(fb::protocol::game::response::spell_buff(buff));
 }
 
-void listener_impl::on_unbuff(object& me, buff& buff)
+async::task<void> listener_impl::on_unbuff(object& me, buff& buff)
 {
-    me.send(game_resp::spell_unbuff(buff));
+    std::ignore = co_await me.send(game_resp::spell_unbuff(buff));
 }
 
-void listener_impl::on_sound(object& me, SOUND sound)
+async::task<void> listener_impl::on_sound(object& me, SOUND sound)
 {
-    std::ignore = this->server.send(me, game_resp::sound(me, sound), scope::PIVOT);
+    co_await this->server.send(me, game_resp::sound(me, sound), scope::PIVOT);
 }
-void listener_impl::on_effect(object& me, uint8_t value)
+
+async::task<void> listener_impl::on_effect(object& me, uint8_t value)
 {
-    std::ignore = this->server.send(me, game_resp::effect(me, value), scope::PIVOT);
+    co_await this->server.send(me, game_resp::effect(me, value), scope::PIVOT);
 }
 
 void listener_impl::on_map_leave(object& me, const fb::game::map& map)

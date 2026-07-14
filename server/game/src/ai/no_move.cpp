@@ -1,14 +1,15 @@
 #include <fb/game/ai/no_move.h>
 #include <fb/game/character.h>
 #include <fb/game/map.h>
+#include <tuple>
 
 using namespace fb::game;
 
-bool no_move_ai::execute(mob& mob_obj, const datetime& now)
+async::task<bool> no_move_ai::execute(mob& mob_obj, const datetime& now)
 {
     // Try owner following first
-    if (super::execute(mob_obj, now))
-        return true;
+    if (co_await super::execute(mob_obj, now))
+        co_return true;
 
     // Clean up expired damage records
     super::cleanup_expired_damage(now);
@@ -28,17 +29,17 @@ bool no_move_ai::execute(mob& mob_obj, const datetime& now)
 
     // No movement if no target, just stay in place
     if (target == nullptr)
-        return true;
+        co_return true;
 
     // If target is in range, attack without moving
     DIRECTION attack_dir;
     if (mob_obj.near_target(target, attack_dir))
     {
-        mob_obj.direction(attack_dir);
-        mob_obj.attack();
+        std::ignore = co_await mob_obj.direction(attack_dir);
+        co_await mob_obj.attack();
     }
 
-    return true;
+    co_return true;
 }
 
 MOB_ATTACK_TYPE no_move_ai::get_type() const

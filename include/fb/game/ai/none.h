@@ -13,8 +13,8 @@ private:
     using datetime = fb::model::datetime;
 
 public:
-    bool            execute(mob& mob_obj, const datetime& now) override;
-    MOB_ATTACK_TYPE get_type() const override;
+    async::task<bool> execute(mob& mob_obj, const datetime& now) override;
+    MOB_ATTACK_TYPE   get_type() const override;
 };
 } // namespace fb::game
 

@@ -2,10 +2,12 @@
 #include <fb/game/server.h>
 #include <fb/encoding.h>
 #include <fb/config.h>
+#include <fb/logger.h>
 #include <fb/protocol/flatbuffer/protocol.h>
 #include <macro.h>
 #include <json/json.h>
 #include <format>
+#include <tuple>
 
 using namespace fb::game;
 using namespace std::chrono_literals;
@@ -13,11 +15,18 @@ namespace game_resp     = fb::protocol::game::response;
 namespace internal_resp = fb::protocol::internal::response;
 namespace internal_reqs = fb::protocol::internal::request;
 
-void character::container::broadcast(std::string_view message, MESSAGE_TYPE type)
+async::task<void> character::container::broadcast(std::string_view message, MESSAGE_TYPE type)
 {
     auto message_str = std::string(message);
-    this->foreach_enqueue([message_str, type](auto& ch) -> async::task<void> {
-        ch->message(message_str, type);
+    co_await this->foreach_async([message_str, type](auto& ch) -> async::task<void> {
+        try
+        {
+            co_await ch->message(message_str, type);
+        }
+        catch (const std::exception& e)
+        {
+            fb::logger::fatal("broadcast message failed for {}: {}", ch->name(), e.what());
+        }
         co_return;
     });
 }
@@ -38,8 +47,7 @@ async::task<void> character::container::broadcast(std::string_view message,
     }
     else
     {
-        auto guard = this->_server.characters.enter_write();
-        guard.value().broadcast(message_str, type);
+        co_await this->broadcast(message_str, type);
     }
 
     co_return;
@@ -47,41 +55,38 @@ async::task<void> character::container::broadcast(std::string_view message,
 
 async::task<void> character::container::on_broadcast(const internal_resp::Broadcast& resp)
 {
-    this->broadcast(resp.message, static_cast<MESSAGE_TYPE>(resp.type));
+    co_await this->broadcast(resp.message, static_cast<MESSAGE_TYPE>(resp.type));
     co_return;
 }
 
-void character::container::update_time(uint8_t hours)
+async::task<void> character::container::update_time(uint8_t hours)
 {
-    this->foreach_enqueue([hours](auto& ch) -> async::task<void> {
-        ch->update_time(hours);
+    co_await this->foreach_async([hours](auto& ch) -> async::task<void> {
+        try
+        {
+            co_await ch->update_time(hours);
+        }
+        catch (const std::exception& e)
+        {
+            fb::logger::fatal("update_time failed for {}: {}", ch->name(), e.what());
+        }
         co_return;
     });
 }
 
-void character::container::send(const fb::stream& stream, bool encrypt)
+async::task<void> character::container::send(const fb::stream& stream, bool encrypt)
 {
-    this->foreach_enqueue([stream, encrypt](auto& ch) -> async::task<void> {
-        std::ignore = ch->send(stream, encrypt);
+    co_await this->foreach_async([stream, encrypt](auto& ch) -> async::task<void> {
+        try
+        {
+            std::ignore = co_await ch->send(stream, encrypt);
+        }
+        catch (const std::exception& e)
+        {
+            fb::logger::fatal("container::send failed for {}: {}", ch->name(), e.what());
+        }
         co_return;
     });
-}
-
-character::container::online_snapshot_t character::container::online_users() const
-{
-    auto users = online_snapshot_t{};
-    users.reserve(this->_from_uid.size());
-
-    for (auto it = this->cbegin(); it != this->cend(); ++it)
-    {
-        const auto& ch = it->second;
-        if (ch == nullptr)
-            continue;
-
-        users.emplace(it->first, ch->created_date());
-    }
-
-    return users;
 }
 
 void character::container::assert_whisper(uint32_t error, std::string_view to)
@@ -142,7 +147,7 @@ void character::container::on_start_maintenance(const internal_resp::StartMainte
         if (socket_ptr == nullptr)
             co_return;
 
-        ch->message(message, MESSAGE_TYPE::STATE);
+        co_await ch->message(message, MESSAGE_TYPE::STATE);
         socket_ptr->close();
     });
 }

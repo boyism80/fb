@@ -5,6 +5,7 @@
 #include <fb/model/datetime.h>
 #include <string_view>
 #include <unordered_map>
+#include <tuple>
 
 using namespace fb::game;
 using table = fb::model::table;
@@ -172,7 +173,7 @@ int builtin::character::builtin_look(lua_State* L)
         auto builder  = lua->new_co_builder();
         builder.weak  = weak;
         builder.yield = [=]() -> async::task<void> {
-            ch->look(value);
+            co_await ch->look(value);
             co_return;
         };
         builder.resume = []() -> async::task<int> {
@@ -216,7 +217,7 @@ int builtin::character::builtin_color(lua_State* L)
         auto builder  = lua->new_co_builder();
         builder.weak  = weak;
         builder.yield = [=]() -> async::task<void> {
-            ch->color(value);
+            co_await ch->color(value);
             co_return;
         };
         builder.resume = []() -> async::task<int> {
@@ -260,7 +261,7 @@ int builtin::character::builtin_gender(lua_State* L)
         auto builder  = lua->new_co_builder();
         builder.weak  = weak;
         builder.yield = [=]() -> async::task<void> {
-            ch->gender(gender);
+            co_await ch->gender(gender);
             co_return;
         };
         builder.resume = []() -> async::task<int> {
@@ -472,7 +473,7 @@ int builtin::character::builtin_item(lua_State* L)
     auto builder  = lua->new_co_builder();
     builder.weak  = weak;
     builder.yield = [=]() -> async::task<void> {
-        ch->listener.on_dialog(*ch, *model, message, items, oid);
+        co_await ch->listener.on_dialog(*ch, *model, message, items, oid);
         if (ch->dialog != nullptr)
             ch->dialog->release();
 
@@ -654,7 +655,7 @@ int builtin::character::builtin_equipment_off(lua_State* L)
     auto builder  = lua->new_co_builder();
     builder.weak  = weak;
     builder.yield = [=]() -> async::task<void> {
-        *slot = ch->items.inactive(parts);
+        *slot = co_await ch->items.inactive(parts);
         if (*slot != 0xFF)
             *item = ch->items.at(*slot);
         co_return;
@@ -692,7 +693,7 @@ int builtin::character::builtin_item_drop(lua_State* L)
     auto builder  = lua->new_co_builder();
     builder.weak  = weak;
     builder.yield = [=]() -> async::task<void> {
-        *dropped = ch->items.drop(index - 1, drop_all ? 1 : -1);
+        *dropped = co_await ch->items.drop(index - 1, drop_all ? 1 : -1);
         co_return;
     };
     builder.resume = [=]() -> async::task<int> {
@@ -789,7 +790,7 @@ int builtin::character::builtin_mkitem(lua_State* L)
             if (item != nullptr)
                 items.push_back(std::move(item));
         }
-        auto slots = ch->items.add(items, true);
+        auto slots = co_await ch->items.add(items, true);
         for (auto slot : slots)
             result_items->push_back(ch->items[slot]);
         co_return;
@@ -871,9 +872,9 @@ int builtin::character::builtin_rmitem(lua_State* L)
                     for (const auto& [model, cnt] : to_remove)
                     {
                         auto index   = ch->items.index(*model);
-                        auto dropped = ch->items.remove(index, cnt, delete_attr);
+                        auto dropped = co_await ch->items.remove(index, cnt, delete_attr);
                         if (dropped != nullptr)
-                            std::ignore = dropped->destroy();
+                            co_await dropped->destroy();
                     }
                     *success = true;
                 }
@@ -912,11 +913,11 @@ int builtin::character::builtin_rmitem(lua_State* L)
                 if (found != nullptr && found->count() >= count)
                 {
                     auto dropped =
-                        ch->items.remove(ch->items.index(item->based<fb::model::item>()), count, delete_attr);
+                        co_await ch->items.remove(ch->items.index(item->based<fb::model::item>()), count, delete_attr);
                     if (dropped != nullptr)
                     {
-                        std::ignore = dropped->destroy();
-                        *success    = true;
+                        co_await dropped->destroy();
+                        *success = true;
                     }
                 }
             }
@@ -950,11 +951,11 @@ int builtin::character::builtin_rmitem(lua_State* L)
                 if (found != nullptr && found->count() >= count)
                 {
                     auto index   = ch->items.index(*model);
-                    auto dropped = ch->items.remove(index, count, delete_attr);
+                    auto dropped = co_await ch->items.remove(index, count, delete_attr);
                     if (dropped != nullptr)
                     {
-                        std::ignore = dropped->destroy();
-                        *success    = true;
+                        co_await dropped->destroy();
+                        *success = true;
                     }
                 }
             }
@@ -983,11 +984,11 @@ int builtin::character::builtin_rmitem(lua_State* L)
                 auto item = ch->items.at(index);
                 if (item != nullptr && item->count() >= count)
                 {
-                    auto dropped = ch->items.remove(index, count, delete_attr);
+                    auto dropped = co_await ch->items.remove(index, count, delete_attr);
                     if (dropped != nullptr)
                     {
-                        std::ignore = dropped->destroy();
-                        *success    = true;
+                        co_await dropped->destroy();
+                        *success = true;
                     }
                 }
             }
@@ -1025,11 +1026,11 @@ int builtin::character::builtin_rmitem(lua_State* L)
                 if (found != nullptr && found->count() >= count)
                 {
                     auto index   = ch->items.index(*model);
-                    auto dropped = ch->items.remove(index, count, delete_attr);
+                    auto dropped = co_await ch->items.remove(index, count, delete_attr);
                     if (dropped != nullptr)
                     {
-                        std::ignore = dropped->destroy();
-                        *success    = true;
+                        co_await dropped->destroy();
+                        *success = true;
                     }
                 }
             }
@@ -1162,13 +1163,13 @@ int builtin::character::builtin_exchange(lua_State* L)
         }
         else
         {
-            *result = ch->items.exchange(cost_items, cost_money, reward_items, reward_money);
+            *result = co_await ch->items.exchange(cost_items, cost_money, reward_items, reward_money);
             if (*result == exchange_result::ok)
             {
                 if (cost_exp > 0)
-                    ch->reduce_exp(cost_exp);
+                    std::ignore = co_await ch->reduce_exp(cost_exp);
                 if (reward_exp > 0)
-                    ch->add_exp(reward_exp, false, true);
+                    std::ignore = co_await ch->add_exp(reward_exp, false, true);
             }
         }
         co_return;
@@ -1214,7 +1215,7 @@ int builtin::character::builtin_state(lua_State* L)
         auto builder  = lua->new_co_builder();
         builder.weak  = weak;
         builder.yield = [=]() -> async::task<void> {
-            ch->state(value);
+            co_await ch->state(value);
             co_return;
         };
         builder.resume = []() -> async::task<int> {
@@ -1325,7 +1326,7 @@ int builtin::character::builtin_mimic(lua_State* L)
             auto builder  = lua->new_co_builder();
             builder.weak  = weak;
             builder.yield = [=]() -> async::task<void> {
-                ch->mimicry(std::nullopt);
+                co_await ch->mimicry(std::nullopt);
                 co_return;
             };
             builder.resume = []() -> async::task<int> {
@@ -1409,7 +1410,7 @@ int builtin::character::builtin_mimic(lua_State* L)
         auto builder  = lua->new_co_builder();
         builder.weak  = weak;
         builder.yield = [=]() -> async::task<void> {
-            ch->mimicry(std::move(appearance));
+            co_await ch->mimicry(std::move(appearance));
             co_return;
         };
         builder.resume = []() -> async::task<int> {
@@ -1878,7 +1879,7 @@ int builtin::character::builtin_store_item(lua_State* L)
     builder.yield = [=]() -> async::task<void> {
         auto index = ch->items.index(item);
         if (index != 0xFF)
-            *success = ch->items.store(index, count);
+            *success = co_await ch->items.store(index, count);
         co_return;
     };
     builder.resume = [=]() -> async::task<int> {
@@ -1912,7 +1913,7 @@ int builtin::character::builtin_retrieve_item(lua_State* L)
         {
             if (stored_items[i] == item)
             {
-                *returned = ch->items.retrieve(static_cast<uint8_t>(i), count);
+                *returned = co_await ch->items.retrieve(static_cast<uint8_t>(i), count);
                 break;
             }
         }
@@ -2584,7 +2585,7 @@ int builtin::character::builtin_gain(lua_State* L)
     auto builder  = lua->new_co_builder();
     builder.weak  = weak;
     builder.yield = [=]() -> async::task<void> {
-        ch->items.add(items, true);
+        std::ignore = co_await ch->items.add(items, true);
         co_return;
     };
     builder.resume = []() -> async::task<int> {
@@ -2671,7 +2672,7 @@ int builtin::character::builtin_detect(lua_State* L)
         auto builder  = lua->new_co_builder();
         builder.weak  = weak;
         builder.yield = [=]() -> async::task<void> {
-            ch->detect(value);
+            co_await ch->detect(value);
             co_return;
         };
         builder.resume = []() -> async::task<int> {
@@ -2838,7 +2839,8 @@ int builtin::character::builtin_base_hp(lua_State* L)
         auto builder  = lua->new_co_builder();
         builder.weak  = weak;
         builder.yield = [=]() -> async::task<void> {
-            ch->stat.base_hp(value);
+            co_await ch->stat.base_hp(value, false);
+            co_await ch->update(UPDATE_STATE_LEVEL::BASED);
             co_return;
         };
         builder.resume = []() -> async::task<int> {
@@ -2882,7 +2884,8 @@ int builtin::character::builtin_base_mp(lua_State* L)
         auto builder  = lua->new_co_builder();
         builder.weak  = weak;
         builder.yield = [=]() -> async::task<void> {
-            ch->stat.base_mp(value);
+            co_await ch->stat.base_mp(value, false);
+            co_await ch->update(UPDATE_STATE_LEVEL::BASED);
             co_return;
         };
         builder.resume = []() -> async::task<int> {
@@ -2926,7 +2929,8 @@ int builtin::character::builtin_base_str(lua_State* L)
         auto builder  = lua->new_co_builder();
         builder.weak  = weak;
         builder.yield = [=]() -> async::task<void> {
-            ch->stat.base_str(value);
+            co_await ch->stat.base_str(value, false);
+            co_await ch->update(UPDATE_STATE_LEVEL::BASED);
             co_return;
         };
         builder.resume = []() -> async::task<int> {
@@ -2970,7 +2974,8 @@ int builtin::character::builtin_base_dex(lua_State* L)
         auto builder  = lua->new_co_builder();
         builder.weak  = weak;
         builder.yield = [=]() -> async::task<void> {
-            ch->stat.base_dex(value);
+            co_await ch->stat.base_dex(value, false);
+            co_await ch->update(UPDATE_STATE_LEVEL::BASED);
             co_return;
         };
         builder.resume = []() -> async::task<int> {
@@ -3014,7 +3019,8 @@ int builtin::character::builtin_base_int(lua_State* L)
         auto builder  = lua->new_co_builder();
         builder.weak  = weak;
         builder.yield = [=]() -> async::task<void> {
-            ch->stat.base_int(value);
+            co_await ch->stat.base_int(value, false);
+            co_await ch->update(UPDATE_STATE_LEVEL::BASED);
             co_return;
         };
         builder.resume = []() -> async::task<int> {
@@ -3152,7 +3158,7 @@ int builtin::character::builtin_armor_color(lua_State* L)
         auto builder  = lua->new_co_builder();
         builder.weak  = weak;
         builder.yield = [=]() -> async::task<void> {
-            ch->armor_color(value);
+            co_await ch->armor_color(value);
             co_return;
         };
         builder.resume = []() -> async::task<int> {
@@ -3202,7 +3208,7 @@ int builtin::character::builtin_weapon_color(lua_State* L)
         auto builder  = lua->new_co_builder();
         builder.weak  = weak;
         builder.yield = [=]() -> async::task<void> {
-            ch->weapon_color(value);
+            co_await ch->weapon_color(value);
             co_return;
         };
         builder.resume = []() -> async::task<int> {
@@ -3252,7 +3258,7 @@ int builtin::character::builtin_shield_color(lua_State* L)
         auto builder  = lua->new_co_builder();
         builder.weak  = weak;
         builder.yield = [=]() -> async::task<void> {
-            ch->shield_color(value);
+            co_await ch->shield_color(value);
             co_return;
         };
         builder.resume = []() -> async::task<int> {
@@ -3283,7 +3289,7 @@ int builtin::character::builtin_mkspell(lua_State* L)
     auto builder  = lua->new_co_builder();
     builder.weak  = weak;
     builder.yield = [=]() -> async::task<void> {
-        *slot = ch->spells.add(*model);
+        *slot = co_await ch->spells.add(*model);
         co_return;
     };
     builder.resume = [=]() -> async::task<int> {
@@ -3318,7 +3324,7 @@ int builtin::character::builtin_rmspell(lua_State* L)
                 if (spell == nullptr)
                     continue;
 
-                ch->spells.remove(i);
+                std::ignore = co_await ch->spells.remove(i);
             }
             co_return;
         };
@@ -3334,7 +3340,7 @@ int builtin::character::builtin_rmspell(lua_State* L)
         auto builder  = lua->new_co_builder();
         builder.weak  = weak;
         builder.yield = [=]() -> async::task<void> {
-            ch->spells.remove(slot);
+            std::ignore = co_await ch->spells.remove(slot);
             co_return;
         };
         builder.resume = []() -> async::task<int> {
@@ -3364,7 +3370,7 @@ int builtin::character::builtin_rmspell(lua_State* L)
             }
 
             if (slot != 0xFF)
-                ch->spells.remove(slot);
+                std::ignore = co_await ch->spells.remove(slot);
             co_return;
         };
         builder.resume = []() -> async::task<int> {
@@ -3400,7 +3406,7 @@ int builtin::character::builtin_world(lua_State* L)
                 auto builder  = lua->new_co_builder();
                 builder.weak  = weak;
                 builder.yield = [=]() -> async::task<void> {
-                    ch->show_world_map(id, index);
+                    co_await ch->show_world_map(id, index);
                     co_return;
                 };
                 builder.resume = [=]() -> async::task<int> {
@@ -3435,7 +3441,7 @@ int builtin::character::builtin_ad(lua_State* L)
     auto builder  = lua->new_co_builder();
     builder.weak  = weak;
     builder.yield = [=]() -> async::task<void> {
-        ch->ad(width, height, url, time);
+        co_await ch->ad(width, height, url, time);
         co_return;
     };
     builder.resume = []() -> async::task<int> {
@@ -3464,7 +3470,7 @@ int builtin::character::builtin_timer(lua_State* L)
     builder.yield = [weak, value, type]() -> async::task<void> {
         auto ptr = weak.lock();
         if (ptr != nullptr)
-            ptr->timer(value, type);
+            co_await ptr->timer(value, type);
         co_return;
     };
     builder.resume = []() -> async::task<int> {
@@ -3491,7 +3497,7 @@ int builtin::character::builtin_web(lua_State* L)
     auto builder  = lua->new_co_builder();
     builder.weak  = weak;
     builder.yield = [=]() -> async::task<void> {
-        ch->web(type, url, message);
+        co_await ch->web(type, url, message);
         co_return;
     };
     builder.resume = []() -> async::task<int> {
@@ -3518,7 +3524,7 @@ int builtin::character::builtin_unknown_12(lua_State* L)
     auto builder  = lua->new_co_builder();
     builder.weak  = weak;
     builder.yield = [=]() -> async::task<void> {
-        ch->send(fb::protocol::game::response::unknown_12(oid, party_slot, level_encoded));
+        std::ignore = co_await ch->send(fb::protocol::game::response::unknown_12(oid, party_slot, level_encoded));
         co_return;
     };
     builder.resume = []() -> async::task<int> {
@@ -3548,7 +3554,8 @@ int builtin::character::builtin_unknown_26(lua_State* L)
     auto builder  = lua->new_co_builder();
     builder.weak  = weak;
     builder.yield = [=]() -> async::task<void> {
-        ch->send(fb::protocol::game::response::unknown_26(flags, pos_x, pos_y, map_rel_x, map_rel_y, zone_slot));
+        std::ignore = co_await ch->send(
+            fb::protocol::game::response::unknown_26(flags, pos_x, pos_y, map_rel_x, map_rel_y, zone_slot));
         co_return;
     };
     builder.resume = []() -> async::task<int> {
@@ -3574,7 +3581,7 @@ int builtin::character::builtin_ui(lua_State* L)
     auto builder  = lua->new_co_builder();
     builder.weak  = weak;
     builder.yield = [=]() -> async::task<void> {
-        ch->ui(static_cast<uint8_t>(screen));
+        co_await ch->ui(static_cast<uint8_t>(screen));
         co_return;
     };
     builder.resume = []() -> async::task<int> {
@@ -3599,7 +3606,7 @@ int builtin::character::builtin_item_throw_confirm(lua_State* L)
     auto builder  = lua->new_co_builder();
     builder.weak  = weak;
     builder.yield = [=]() -> async::task<void> {
-        ch->item_throw_confirm(slot);
+        co_await ch->item_throw_confirm(slot);
         co_return;
     };
     builder.resume = []() -> async::task<int> {
@@ -3624,7 +3631,7 @@ int builtin::character::builtin_freeze(lua_State* L)
     auto builder  = lua->new_co_builder();
     builder.weak  = weak;
     builder.yield = [=]() -> async::task<void> {
-        ch->freeze(freeze);
+        co_await ch->freeze(freeze);
         co_return;
     };
     builder.resume = []() -> async::task<int> {
@@ -3649,7 +3656,7 @@ int builtin::character::builtin_friends_sync(lua_State* L)
     auto builder  = lua->new_co_builder();
     builder.weak  = weak;
     builder.yield = [=]() -> async::task<void> {
-        ch->friends_sync(enabled);
+        co_await ch->friends_sync(enabled);
         co_return;
     };
     builder.resume = []() -> async::task<int> {
@@ -3674,7 +3681,7 @@ int builtin::character::builtin_unknown_4B(lua_State* L)
     auto builder  = lua->new_co_builder();
     builder.weak  = weak;
     builder.yield = [=]() -> async::task<void> {
-        ch->send(fb::protocol::game::response::unknown_4B(payload));
+        std::ignore = co_await ch->send(fb::protocol::game::response::unknown_4B(payload));
         co_return;
     };
     builder.resume = []() -> async::task<int> {
@@ -3705,7 +3712,7 @@ int builtin::character::builtin_unknown_4D(lua_State* L)
     auto builder  = lua->new_co_builder();
     builder.weak  = weak;
     builder.yield = [=]() -> async::task<void> {
-        ch->send(fb::protocol::game::response::unknown_4D(type, strings));
+        std::ignore = co_await ch->send(fb::protocol::game::response::unknown_4D(type, strings));
         co_return;
     };
     builder.resume = []() -> async::task<int> {
@@ -3745,7 +3752,7 @@ int builtin::character::builtin_holyday_screen(lua_State* L)
     builder.weak  = weak;
     builder.yield = [=]() -> async::task<void> {
         auto hair = ch->look();
-        ch->holyday_screen(screen, hair, direction, fb::model::point<uint8_t>(x, y));
+        co_await ch->holyday_screen(screen, hair, direction, fb::model::point<uint8_t>(x, y));
         co_return;
     };
     builder.resume = []() -> async::task<int> {
@@ -3768,7 +3775,7 @@ int builtin::character::builtin_unknown_35(lua_State* L)
     auto builder  = lua->new_co_builder();
     builder.weak  = weak;
     builder.yield = [=]() -> async::task<void> {
-        ch->send(fb::protocol::game::response::unknown_35());
+        std::ignore = co_await ch->send(fb::protocol::game::response::unknown_35());
         co_return;
     };
     builder.resume = []() -> async::task<int> {
@@ -3890,7 +3897,7 @@ int builtin::character::builtin_active(lua_State* L)
     builder.yield = [=]() -> async::task<void> {
         auto slot = ch->items.index(item);
         if (slot != 0xFF)
-            ch->items.active(slot);
+            std::ignore = co_await ch->items.active(slot);
         co_return;
     };
     builder.resume = []() -> async::task<int> {
@@ -3933,7 +3940,7 @@ int builtin::character::builtin_super_hide(lua_State* L)
         auto builder  = lua->new_co_builder();
         builder.weak  = weak;
         builder.yield = [=]() -> async::task<void> {
-            ch->super_hide(value);
+            co_await ch->super_hide(value);
             co_return;
         };
         builder.resume = []() -> async::task<int> {
@@ -3968,7 +3975,7 @@ int builtin::character::builtin_send_mail(lua_State* L)
     builder.weak  = weak;
     builder.yield = [=]() -> async::task<void> {
         auto& server = static_cast<fb::game::server&>(lua->executor);
-        std::ignore  = server.mail.send(*ch, to, title, contents);
+        co_await server.mail.send(*ch, to, title, contents);
         co_return;
     };
     builder.resume = []() -> async::task<int> {
@@ -4041,10 +4048,30 @@ int fb::game::builtin::character::builtin_teleport(lua_State* L)
 
     if (ch->thread() == target->thread())
     {
-        auto map    = target->map();
-        std::ignore = ch->map(map, target->position());
-        lua->pushboolean(true);
-        return 1;
+        auto success_holder = std::make_shared<bool>(false);
+        auto builder        = lua->new_co_builder();
+        builder.weak        = ch_weak;
+        builder.yield       = [=]() -> async::task<void> {
+            auto target_locked = target_weak.lock();
+            if (target_locked == nullptr)
+                co_return;
+
+            auto map = target_locked->map();
+            if (map == nullptr)
+                throw std::runtime_error("teleport target has no map");
+
+            auto ch_locked = ch_weak.lock();
+            if (ch_locked == nullptr)
+                co_return;
+
+            *success_holder = co_await ch_locked->map(map, target_locked->position());
+            co_return;
+        };
+        builder.resume = [=]() -> async::task<int> {
+            lua->pushboolean(*success_holder);
+            co_return 1;
+        };
+        return builder.run();
     }
     else
     {
@@ -4127,11 +4154,11 @@ int fb::game::builtin::character::builtin_dialog(lua_State* L)
     builder.weak  = weak;
     builder.yield = [=]() -> async::task<void> {
         if (obj != nullptr)
-            ch->listener.on_dialog(*ch, *obj, message, button_prev, button_next, oid);
+            co_await ch->listener.on_dialog(*ch, *obj, message, button_prev, button_next, oid);
         else if (model != nullptr)
-            ch->listener.on_dialog(*ch, *model, message, button_prev, button_next, oid);
+            co_await ch->listener.on_dialog(*ch, *model, message, button_prev, button_next, oid);
         else
-            ch->listener.on_dialog(*ch, message, button_prev, button_next, oid);
+            co_await ch->listener.on_dialog(*ch, message, button_prev, button_next, oid);
 
         if (ch->dialog != nullptr)
             ch->dialog->release();
@@ -4231,12 +4258,12 @@ int fb::game::builtin::character::builtin_list(lua_State* L)
     builder.weak  = weak;
     builder.yield = [=]() -> async::task<void> {
         if (appearance != nullptr)
-            ch->listener
+            co_await ch->listener
                 .on_dialog(*ch, std::unique_ptr<fb::game::appearance>(appearance), message, menus, button_prev, oid);
         else if (obj != nullptr)
-            ch->listener.on_dialog(*ch, *obj, message, menus, button_prev, oid);
+            co_await ch->listener.on_dialog(*ch, *obj, message, menus, button_prev, oid);
         else
-            ch->listener.on_dialog(*ch, *model, message, menus, button_prev, oid);
+            co_await ch->listener.on_dialog(*ch, *model, message, menus, button_prev, oid);
 
         if (ch->dialog != nullptr)
             ch->dialog->release();
@@ -4289,7 +4316,7 @@ int fb::game::builtin::character::builtin_input(lua_State* L)
         auto prev        = lua->toboolean(7, false);
 
         builder.yield = [=]() -> async::task<void> {
-            ch->listener.on_dialog(*ch, *model, message, message_top, message_bot, maxlen, prev, oid);
+            co_await ch->listener.on_dialog(*ch, *model, message, message_top, message_bot, maxlen, prev, oid);
             if (ch->dialog != nullptr)
                 ch->dialog->release();
 
@@ -4301,9 +4328,9 @@ int fb::game::builtin::character::builtin_input(lua_State* L)
     {
         builder.yield = [=]() -> async::task<void> {
             if (obj != nullptr)
-                ch->listener.on_dialog(*ch, *obj, message, oid);
+                co_await ch->listener.on_dialog(*ch, *obj, message, oid);
             else
-                ch->listener.on_dialog(*ch, *model, message, oid);
+                co_await ch->listener.on_dialog(*ch, *model, message, oid);
 
             if (ch->dialog != nullptr)
                 ch->dialog->release();
@@ -4360,9 +4387,9 @@ int fb::game::builtin::character::builtin_menu(lua_State* L)
     builder.weak  = weak;
     builder.yield = [=]() -> async::task<void> {
         if (obj != nullptr)
-            ch->listener.on_dialog(*ch, *obj, message, menus, oid);
+            co_await ch->listener.on_dialog(*ch, *obj, message, menus, oid);
         else
-            ch->listener.on_dialog(*ch, *model, message, menus, oid);
+            co_await ch->listener.on_dialog(*ch, *model, message, menus, oid);
 
         if (ch->dialog != nullptr)
             ch->dialog->release();
@@ -4417,9 +4444,9 @@ int fb::game::builtin::character::builtin_slot(lua_State* L)
     builder.weak  = weak;
     builder.yield = [=]() -> async::task<void> {
         if (obj != nullptr)
-            ch->listener.on_dialog(*ch, *obj, message, slots, oid);
+            co_await ch->listener.on_dialog(*ch, *obj, message, slots, oid);
         else
-            ch->listener.on_dialog(*ch, *model, message, slots, oid);
+            co_await ch->listener.on_dialog(*ch, *model, message, slots, oid);
 
         if (ch->dialog != nullptr)
             ch->dialog->release();
@@ -4624,7 +4651,7 @@ int fb::game::builtin::character::builtin_reward(lua_State* L)
     auto builder    = lua->new_co_builder();
     builder.weak    = weak;
     builder.yield   = [=]() -> async::task<void> {
-        *result = ch->reward(reward_dsl);
+        *result = co_await ch->reward(reward_dsl);
         co_return;
     };
     builder.resume = [=]() -> async::task<int> {
@@ -4784,7 +4811,7 @@ int builtin::character::builtin_receive_storage_reward(lua_State* L)
     auto builder  = lua->new_co_builder();
     builder.weak  = weak;
     builder.yield = [=]() -> async::task<void> {
-        *success = ch->storage_box.receive_reward(entry_id);
+        *success = co_await ch->storage_box.receive_reward(entry_id);
         co_return;
     };
     builder.resume = [=]() -> async::task<int> {
@@ -5383,11 +5410,7 @@ int builtin::character::builtin_divorce(lua_State* L)
             co_return;
         }
 
-        fb::game::character::container::character_ptr_t spouse;
-        {
-            auto guard = server.characters.enter_read();
-            spouse     = guard.value().find(m.spouse_id.value());
-        }
+        auto spouse = server.characters.find(m.spouse_id.value());
 
         if (spouse == nullptr)
         {

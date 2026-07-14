@@ -26,11 +26,10 @@ public:
     const fb::model::spell& model;
 
 public:
-    spell(const fb::game::server& server,
-          const fb::game::life&   owner,
-          const fb::model::spell& model,
-          uint16_t                delay = 0);
+    // clang-format off
+    spell(const fb::game::server& server, const fb::game::life& owner, const fb::model::spell& model, uint16_t delay = 0);
     ~spell();
+    // clang-format on
 
 public:
     void                       delay(uint16_t value);
@@ -59,19 +58,21 @@ public:
     std::shared_ptr<fb::game::spell> find(const fb::model::spell& model) const;
 
 public:
-    uint8_t add(std::shared_ptr<fb::game::spell> element) override;
-    uint8_t add(std::shared_ptr<fb::game::spell> element, uint8_t index) override;
-    uint8_t add(const fb::model::spell& model, uint8_t slot, uint16_t delay);
-    uint8_t add(const fb::model::spell& model);
-    bool    remove(uint8_t index) override;
-    bool    swap(uint8_t src, uint8_t dst) override;
+    async::task<uint8_t> add(std::shared_ptr<fb::game::spell> element);
+    async::task<uint8_t> add(std::shared_ptr<fb::game::spell> element, uint8_t index);
+    async::task<uint8_t> add(const fb::model::spell& model, uint8_t slot, uint16_t delay);
+    async::task<uint8_t> add(const fb::model::spell& model);
+    async::task<bool>    remove(uint8_t index);
+    async::task<bool>    swap(uint8_t src, uint8_t dst);
 };
 
 struct spells::listener_t
 {
-    virtual void on_spell_update(life& me, uint8_t index)                     = 0;
-    virtual void on_spell_remove(life& me, uint8_t index)                     = 0;
-    virtual void on_spell_delay(life& me, const spell& spell, uint32_t delay) = 0;
+    // clang-format off
+    virtual async::task<void> on_spell_update(life& me, uint8_t index) = 0;
+    virtual async::task<void> on_spell_remove(life& me, uint8_t index) = 0;
+    virtual async::task<void> on_spell_delay(life& me, const spell& spell, uint32_t delay) = 0;
+    // clang-format on
 };
 
 class buff : public ::fb::lua::luable
@@ -89,11 +90,10 @@ public:
     const fb::model::datetime start;
 
 public:
-    buff(const fb::game::server& server,
-         const fb::model::spell& model,
-         const fb::game::object* caster,
-         uint32_t                seconds);
+    // clang-format off
+    buff(const fb::game::server& server, const fb::model::spell& model, const fb::game::object* caster, uint32_t seconds);
     ~buff();
+    // clang-format on
 
 public:
     const fb::model::timespan& duration() const;
@@ -126,15 +126,15 @@ public:
     ~buffs();
 
 private:
-    bool push_back(const std::shared_ptr<buff>& buff);
+    async::task<bool> push_back(const std::shared_ptr<buff>& buff);
 
 public:
-    bool                  contains(const fb::model::spell& model) const;
-    std::shared_ptr<buff> push_back(const fb::model::spell&                  spell,
-                                    uint32_t                                 seconds,
-                                    const std::shared_ptr<fb::game::object>& caster = nullptr);
-    bool                  remove(uint32_t id);
-    bool                  remove(const fb::model::spell& spell);
+    // clang-format off
+    bool                               contains(const fb::model::spell& model) const;
+    async::task<std::shared_ptr<buff>> push_back(const fb::model::spell& spell, uint32_t seconds, const std::shared_ptr<fb::game::object>& caster = nullptr);
+    async::task<bool>                  remove(uint32_t id);
+    async::task<bool>                  remove(const fb::model::spell& spell);
+    // clang-format on
 
 public:
     std::shared_ptr<buff> operator[] (uint32_t id) const;

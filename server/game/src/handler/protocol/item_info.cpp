@@ -19,6 +19,6 @@ async::task<bool> item_info::handle(fb::socket<character>& session, game_reqs::i
     if (item == nullptr)
         co_return false;
 
-    ch->item_tooltip(*item, request.position);
+    co_await ch->item_tooltip(*item, request.position);
     co_return true;
 }

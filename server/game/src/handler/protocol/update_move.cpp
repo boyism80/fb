@@ -22,7 +22,7 @@ async::task<bool> update_move::handle(fb::socket<character>& session, game_reqs:
 
     auto move_handler = fb::game::handler::protocol::move(this->server);
     if (co_await move_handler.handle(session, request.direction, request.position))
-        ch->update_map(*map, request.begin, request.size, request.crc);
+        co_await ch->update_map(*map, request.begin, request.size, request.crc);
 
     co_return true;
 }

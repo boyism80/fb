@@ -80,18 +80,18 @@ public:
     ~mob();
 
 private:
+    // clang-format off
     std::weak_ptr<fb::game::life>   find_target();
     [[nodiscard]] async::task<bool> call_script();
-    void                            AI(const fb::model::datetime& now);
-    static bool is_cardinally_adjacent(const fb::model::point16_t& a, const fb::model::point16_t& b);
-    static bool is_cover_barrier_cell(const fb::model::point16_t& cell, const fb::model::point16_t& cover_center);
-    bool        cover_blocks_move(const fb::game::map&        map,
-                                  const fb::model::point16_t& from,
-                                  const fb::model::point16_t& to) const;
+    async::task<void>               AI(const fb::model::datetime& now);
+    static bool                     is_cardinally_adjacent(const fb::model::point16_t& a, const fb::model::point16_t& b);
+    static bool                     is_cover_barrier_cell(const fb::model::point16_t& cell, const fb::model::point16_t& cover_center);
+    bool                            cover_blocks_move(const fb::game::map& map, const fb::model::point16_t& from, const fb::model::point16_t& to) const;
+    // clang-format on
 
 public:
-    bool near_target(const std::shared_ptr<fb::game::life>& target, DIRECTION& out) const;
-    bool move_step(const fb::model::point16_t& position);
+    bool              near_target(const std::shared_ptr<fb::game::life>& target, DIRECTION& out) const;
+    async::task<bool> move_step(const fb::model::point16_t& position);
 
 public:
     // clang-format off
@@ -105,11 +105,11 @@ public:
     std::shared_ptr<fb::game::life> update_target();
     virtual bool                    available() const;
     uint32_t                        normal_attack_damage(MOB_SIZE size) const override final;
-    void                            kill(DESTROY_TYPE destroy_type = DESTROY_TYPE::DEFAULT) override final;
+    async::task<void>               kill(DESTROY_TYPE destroy_type = DESTROY_TYPE::DEFAULT) override final;
     async::task<void>               damage_to(const damage_list& targets, const damage_opts& opts = {}) override final;
     async::task<void>               drop_items();
     void                            assert_thread() const override final;
-    bool                            move(DIRECTION direction) override final;
+    async::task<bool>               move(DIRECTION direction) override final;
     const item_vector_t&            items() const;
     bool                            push_item(std::shared_ptr<fb::game::item> item);
     bool                            hidden(const fb::game::object& target) const override final;

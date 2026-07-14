@@ -4,6 +4,7 @@
 #include <fb/encoding.h>
 #include <json/json.h>
 #include <format>
+#include <tuple>
 
 using namespace fb::game;
 using namespace fb::model::enum_value;
@@ -48,7 +49,7 @@ async::task<bool> fb::game::server::on_disconnected(fb::socket<character>& socke
     auto weak = ch->weak_from_this_as<character>();
 
     if (ch->trade.trading())
-        ch->trade.cancel();
+        std::ignore = co_await ch->trade.cancel();
 
     fb::logger::info("{} has disconnected.", ch->name());
 
@@ -116,13 +117,10 @@ async::task<bool> fb::game::server::on_disconnected(fb::socket<character>& socke
             this->clans.write(clan_id.value(), [weak](auto& clan) {
                 clan->detach(weak);
             });
-            ptr->clan_reset();
+            co_await ptr->clan_reset();
         }
 
-        {
-            auto guard = this->characters.enter_write();
-            guard.value().remove(ptr);
-        }
+        this->characters.remove(ptr);
         co_await ch->destroy();
         socket.data(nullptr);
     }

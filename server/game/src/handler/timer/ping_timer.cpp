@@ -23,25 +23,24 @@ async::task<void> ping_timer::handle(const fb::model::datetime& now, std::thread
     static thread_local std::mt19937        rng(std::random_device{}());
     std::uniform_int_distribution<uint32_t> dist(0, UINT32_MAX);
 
-    for (auto& [uid, ch] : params->characters)
-    {
+    co_await params->characters.foreach_async([now, ping_interval, &dist](auto& ch) -> async::task<void> {
         if (ch == nullptr)
-            continue;
+            co_return;
 
         auto socket_ptr = ch->socket_ptr();
         if (socket_ptr == nullptr || !socket_ptr->is_open())
-            continue;
+            co_return;
 
         auto& state   = ch->ping_state();
         auto  elapsed = now - state.last_ping_time;
         if (elapsed < ping_interval)
-            continue;
+            co_return;
 
         if (!state.pong_received)
         {
             fb::logger::info("Disconnecting character {} (no pong within {}s)", ch->name(), 5);
             socket_ptr->close();
-            continue;
+            co_return;
         }
 
         try
@@ -49,13 +48,14 @@ async::task<void> ping_timer::handle(const fb::model::datetime& now, std::thread
             state.token          = dist(rng);
             state.last_ping_time = now;
             state.pong_received  = false;
-            ch->ping(state.token);
+            co_await ch->ping(state.token);
         }
         catch (const std::exception& e)
         {
             fb::logger::fatal("ping_timer error for character {}: {}", ch->id, e.what());
         }
-    }
+        co_return;
+    });
 
     co_return;
 }

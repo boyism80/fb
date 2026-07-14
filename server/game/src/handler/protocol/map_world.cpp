@@ -22,8 +22,8 @@ async::task<bool> map_world::handle(fb::socket<character>& session, game_reqs::m
 
     if (ch->map() == this->server.maps[after.map])
     {
-        ch->update_map();
-        ch->update_external(true);
+        co_await ch->update_map();
+        co_await ch->update_external(true);
     }
     else
     {

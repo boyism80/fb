@@ -70,10 +70,10 @@ std::shared_ptr<fb::game::object> object::container::at(uint32_t i)
     return this->_ptrs.at(i);
 }
 
-void object::container::push(fb::game::object& obj)
+async::task<void> object::container::push(fb::game::object& obj)
 {
     auto seq = this->allocate_seq();
-    obj.oid(seq);
+    co_await obj.oid(seq);
 
     this->_ptrs.insert({seq, std::static_pointer_cast<fb::game::object>(obj.shared_from_this())});
 }

@@ -23,13 +23,13 @@ async::task<bool> update_option::handle(fb::socket<character>& session, game_req
         if (request.ride)
         {
             if (ch->state() == STATE::RIDING)
-                ch->unride();
+                co_await ch->unride();
             else
-                ch->ride();
+                co_await ch->ride();
         }
         else
         {
-            ch->update_option();
+            co_await ch->update_option();
         }
         break;
 
@@ -67,9 +67,9 @@ async::task<bool> update_option::handle(fb::socket<character>& session, game_req
             co_return true;
 
         if (resp.success == false)
-            ptr->message(_TEXT(MESSAGE_OPTION_UPDATE_FAILED));
+            co_await ptr->message(_TEXT(MESSAGE_OPTION_UPDATE_FAILED));
 
-        ptr->option(option, next);
+        co_await ptr->option(option, next);
         break;
     }
     co_return true;

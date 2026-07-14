@@ -16,8 +16,6 @@ async::task<void> matchmaking_dissolved::handle(const fb::protocol::matchmaking:
     auto match_type = message.match_type;
     auto reason     = message.reason;
 
-    auto  guard      = this->server.characters.enter_write();
-    auto& characters = guard.value();
     for (auto& outcome : message.registry_outcomes)
     {
         for (auto& entry : outcome.entries)
@@ -25,7 +23,7 @@ async::task<void> matchmaking_dissolved::handle(const fb::protocol::matchmaking:
             if (entry.world != world)
                 continue;
 
-            auto ch = characters.find(entry.character_id);
+            auto ch = this->server.characters.find(entry.character_id);
             if (ch == nullptr)
                 continue;
 

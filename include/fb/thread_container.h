@@ -13,6 +13,7 @@
 #include <memory>
 #include <stdexcept>
 #include <type_traits>
+#include <tuple>
 
 namespace fb {
 
@@ -252,7 +253,10 @@ private:
                 }
                 else
                 {
-                    co_await retry.dispatch();
+                    if constexpr (std::is_same_v<T, void>)
+                        co_await retry.dispatch();
+                    else
+                        std::ignore = co_await retry.dispatch();
                 }
 
                 if constexpr (std::is_same_v<T, void>)

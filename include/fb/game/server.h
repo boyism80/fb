@@ -117,18 +117,18 @@ private:
     double              _drop_rate_multiplier;
 
 public:
-    fb::log_collector                      log;
-    listener_impl                          listener;
-    fb::synchronized<character::container> characters;
-    map::container                         maps;
-    clan::container                        clans;
-    group::container                       groups;
-    service::mail                          mail;
-    service::bulletin                      bulletin;
-    service::system_storage                system_storage;
-    service::system_mail                   system_mail;
-    service::schedule                      schedules;
-    service::property                      property;
+    fb::log_collector       log;
+    listener_impl           listener;
+    character::container    characters;
+    map::container          maps;
+    clan::container         clans;
+    group::container        groups;
+    service::mail           mail;
+    service::bulletin       bulletin;
+    service::system_storage system_storage;
+    service::system_mail    system_mail;
+    service::schedule       schedules;
+    service::property       property;
 
 public:
     server(boost::asio::io_context& io_context, uint16_t port);
@@ -171,34 +171,36 @@ public:
 
 protected:
     // clang-format off
-    uint8_t                                     id() const override final;
-    internal::Service                           service() const override final;
-    bool                                        decrypt_policy(uint8_t opcode) const override final;
-    bool                                        assert_tps(const fb::socket<character>& socket) const override final;
-    void                                        on_init_amqp(fb::amqp::socket& amqp) override final;
-    async::task<void>                           on_start() override final;
-    async::task<void>                           on_exit() override final;
-    async::task<bool>                           on_connected(fb::socket<character>& ch) override final;
-    async::task<bool>                           on_disconnected(fb::socket<character>& ch) override final;
+    uint8_t           id() const override final;
+    internal::Service service() const override final;
+    bool              decrypt_policy(uint8_t opcode) const override final;
+    bool              assert_tps(const fb::socket<character>& socket) const override final;
+    void              on_init_amqp(fb::amqp::socket& amqp) override final;
+    async::task<void> on_start() override final;
+    async::task<void> on_exit() override final;
+    async::task<bool> on_connected(fb::socket<character>& ch) override final;
+    async::task<bool> on_disconnected(fb::socket<character>& ch) override final;
     // clang-format on
 
 public:
     // clang-format off
-    async::task<void>                           send(object& obj, const fb::protocol::header& header, fb::game::scope scope, send_option options = {});
-    async::task<void>                           save();
-    async::task<void>                           save(character& ch);
-    void                                        sync_time();
-    async::task<internal_resp::Ban>             ban(std::string_view name, std::string_view reason, const std::optional<uint32_t>& days);
-    async::task<internal_resp::Unban>           unban(std::string_view name);
+    [[nodiscard]] async::task<void>   send(object& obj, const fb::protocol::header& header, fb::game::scope scope, send_option options = {});
+    async::task<void>                 save();
+    async::task<void>                 save(character& ch);
+    async::task<void>                 sync_time();
+    async::task<internal_resp::Ban>   ban(std::string_view name, std::string_view reason, const std::optional<uint32_t>& days);
+    async::task<internal_resp::Unban> unban(std::string_view name);
+    // clang-format on
 
 public:
-    virtual uint32_t                            thread_id(const fb::socket<character>& socket) const;
-    const fb::model::datetime&                  time() const;
-    async::task<void>                           update_status();
-    double                                      exp_multiplier() const;
-    void                                        exp_multiplier(double value);
-    double                                      drop_rate_multiplier() const;
-    void                                        drop_rate_multiplier(double value);
+    // clang-format off
+    virtual uint32_t           thread_id(const fb::socket<character>& socket) const;
+    const fb::model::datetime& time() const;
+    async::task<void>          update_status();
+    double                     exp_multiplier() const;
+    void                       exp_multiplier(double value);
+    double                     drop_rate_multiplier() const;
+    void                       drop_rate_multiplier(double value);
     // clang-format on
 };
 

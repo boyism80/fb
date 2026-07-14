@@ -18,23 +18,18 @@ async::task<void> whisper::handle(const internal_resp::Whisper& message)
 
     fb::game::character::container::assert_whisper(message.error, message.to);
 
-    std::weak_ptr<fb::game::character> weak;
-    {
-        auto guard = co_await this->server.characters.enter_read_async();
-        auto ch    = guard.value().find(message.to);
-        if (ch == nullptr)
-            co_return;
+    auto ch = this->server.characters.find(message.to);
+    if (ch == nullptr)
+        co_return;
 
-        weak = ch->weak_from_this_as<fb::game::character>();
-    }
-
+    auto weak   = ch->weak_from_this_as<fb::game::character>();
     auto before = this->server.threads.current();
     co_await this->server.threads.switching(weak);
 
-    auto ch = weak.lock();
+    ch = weak.lock();
     if (ch != nullptr)
     {
-        ch->message(std::format("{}> {}", message.from, message.message), fb::game::MESSAGE_TYPE::NOTIFY);
+        co_await ch->message(std::format("{}> {}", message.from, message.message), fb::game::MESSAGE_TYPE::NOTIFY);
 
         auto log_data             = Json::Value();
         log_data["sender_name"]   = UTF8(message.from, PLATFORM::WINDOWS);

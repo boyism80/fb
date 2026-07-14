@@ -4,6 +4,7 @@
 #include <shared_mutex>
 #include <functional>
 #include <queue>
+#include <vector>
 #include <atomic>
 #include <mutex>
 #include <memory>
@@ -121,24 +122,39 @@ public:
     void unlock()
     {
         this->_writer.store(false, std::memory_order_release);
-        std::lock_guard lk(this->_mutex);
 
-        if (!this->_writer_waiters.empty())
+        std::shared_ptr<async::task_completion_source<void>>              next_writer;
+        std::vector<std::shared_ptr<async::task_completion_source<void>>> readers;
         {
-            auto next = this->_writer_waiters.front();
-            this->_writer_waiters.pop();
-            this->_writer.store(true, std::memory_order_release);
-            next->set_value();
+            std::lock_guard lk(this->_mutex);
+
+            if (!this->_writer_waiters.empty())
+            {
+                next_writer = this->_writer_waiters.front();
+                this->_writer_waiters.pop();
+                this->_writer.store(true, std::memory_order_release);
+            }
+            else
+            {
+                while (!this->_reader_waiters.empty())
+                {
+                    readers.push_back(this->_reader_waiters.front());
+                    this->_reader_waiters.pop();
+                    this->_reader_count.fetch_add(1, std::memory_order_relaxed);
+                }
+            }
+        }
+
+        // Resume waiters outside the mutex. set_value() may run completions on this
+        // thread, and those completions can re-enter lock/unlock_shared.
+        if (next_writer)
+        {
+            next_writer->set_value();
             return;
         }
 
-        while (!this->_reader_waiters.empty())
-        {
-            auto reader = this->_reader_waiters.front();
-            this->_reader_waiters.pop();
-            this->_reader_count.fetch_add(1, std::memory_order_relaxed);
+        for (auto& reader : readers)
             reader->set_value();
-        }
     }
 
     bool try_lock_shared()

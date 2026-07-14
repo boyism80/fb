@@ -12,8 +12,8 @@ private:
     using datetime = fb::model::datetime;
 
 public:
-    bool            execute(mob& mob_obj, const datetime& now) override final;
-    MOB_ATTACK_TYPE get_type() const override final;
+    async::task<bool> execute(mob& mob_obj, const datetime& now) override final;
+    MOB_ATTACK_TYPE   get_type() const override final;
 };
 } // namespace fb::game
 

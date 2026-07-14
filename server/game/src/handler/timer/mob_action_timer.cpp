@@ -41,7 +41,7 @@ async::task<void> mob_action_timer::handle(const fb::model::datetime& now, std::
                 if (mob->paralysis())
                     continue;
 
-                std::ignore = mob->action(now);
+                co_await mob->action(now);
             }
         }
     }

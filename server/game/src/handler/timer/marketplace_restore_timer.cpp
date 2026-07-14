@@ -12,10 +12,9 @@ async::task<void> marketplace_restore_timer::handle(const fb::model::datetime& n
     auto thread = this->server.threads.at(id);
     auto params = thread->template data<thread_params>();
 
-    for (auto& [id, character] : params->characters)
-    {
+    co_await params->characters.foreach ([](auto& character) {
         std::ignore = character->marketplace.restore();
-    }
+    });
 
     co_return;
 }

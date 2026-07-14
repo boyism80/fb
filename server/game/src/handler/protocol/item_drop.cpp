@@ -1,5 +1,6 @@
 #include <fb/game/handler/protocol/item_drop.h>
 #include <fb/game/server.h>
+#include <tuple>
 
 using namespace fb::game::handler::protocol;
 
@@ -15,6 +16,6 @@ async::task<bool> item_drop::handle(fb::socket<character>& session, game_reqs::i
     if (ch->inited() == false)
         co_return true;
 
-    ch->items.drop(request.index, request.all ? -1 : 1);
+    std::ignore = co_await ch->items.drop(request.index, request.all ? -1 : 1);
     co_return true;
 }

@@ -1,5 +1,6 @@
 #include <fb/game/handler/protocol/move.h>
 #include <fb/game/server.h>
+#include <tuple>
 
 using namespace fb::game::handler::protocol;
 using namespace fb::model;
@@ -24,7 +25,7 @@ async::task<bool> move::handle(fb::socket<character>&      session,
 
     if (ch->paralysis() || ch->cover())
     {
-        ch->update_position();
+        co_await ch->update_position();
         co_return true;
     }
 
@@ -34,8 +35,8 @@ async::task<bool> move::handle(fb::socket<character>&      session,
     {
         if (ch->condition(warp->condition) == false)
         {
-            ch->message(_TEXT(MESSAGE_WARP_CANNOT_ACCESS));
-            ch->update_position();
+            co_await ch->message(_TEXT(MESSAGE_WARP_CANNOT_ACCESS));
+            co_await ch->update_position();
             co_return true;
         }
 
@@ -53,13 +54,13 @@ async::task<bool> move::handle(fb::socket<character>&      session,
         {
             auto  params = fb::model::dsl::world(warp->dest.params);
             auto& world  = table::world[params.id][params.index];
-            ch->show_world_map(params.id, params.index);
+            co_await ch->show_world_map(params.id, params.index);
         }
         break;
 
         case DSL::script:
         {
-            ch->move(direction, position);
+            std::ignore = co_await ch->move(direction, position);
 
             auto params = fb::model::dsl::script(warp->dest.params);
             if (params.path.empty() || params.function.empty())
@@ -80,7 +81,7 @@ async::task<bool> move::handle(fb::socket<character>&      session,
     }
     else
     {
-        ch->move(direction, position);
+        std::ignore = co_await ch->move(direction, position);
     }
     co_return true;
 }

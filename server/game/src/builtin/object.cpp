@@ -4,6 +4,7 @@
 #include <fb/game/appearance.h>
 #include <async/awaitable_then.h>
 #include <async/propagation.h>
+#include <tuple>
 
 using namespace fb::game;
 using table = fb::model::table;
@@ -157,7 +158,7 @@ int builtin::object::builtin_destroy(lua_State* L)
     auto builder  = lua->new_co_builder();
     builder.weak  = weak;
     builder.yield = [=]() -> async::task<void> {
-        std::ignore = obj->destroy();
+        co_await obj->destroy();
         co_return;
     };
     builder.resume = []() -> async::task<int> {
@@ -206,7 +207,7 @@ int builtin::object::builtin_sound(lua_State* L)
     auto builder  = lua->new_co_builder();
     builder.weak  = weak;
     builder.yield = [=]() -> async::task<void> {
-        obj->sound(sound);
+        co_await obj->sound(sound);
         co_return;
     };
     builder.resume = []() -> async::task<int> {
@@ -266,7 +267,7 @@ int builtin::object::builtin_position(lua_State* L)
         auto builder  = lua->new_co_builder();
         builder.weak  = weak;
         builder.yield = [=]() -> async::task<void> {
-            obj->position(x, y, true);
+            std::ignore = co_await obj->position(x, y, true);
             co_return;
         };
         builder.resume = []() -> async::task<int> {
@@ -338,7 +339,7 @@ int builtin::object::builtin_direction(lua_State* L)
         auto builder   = lua->new_co_builder();
         builder.weak   = weak;
         builder.yield  = [=]() -> async::task<void> {
-            obj->direction(direction);
+            std::ignore = co_await obj->direction(direction);
             co_return;
         };
         builder.resume = []() -> async::task<int> {
@@ -368,7 +369,7 @@ int builtin::object::builtin_chat(lua_State* L)
     builder.weak  = weak;
     builder.yield = [=]() -> async::task<void> {
         if (obj->is(OBJECT_TYPE::ITEM) == false)
-            obj->chat(message, type, decorate);
+            co_await obj->chat(message, type, decorate);
         co_return;
     };
     builder.resume = []() -> async::task<int> {
@@ -412,7 +413,7 @@ int builtin::object::builtin_buff(lua_State* L)
     auto builder     = lua->new_co_builder();
     builder.weak     = weak;
     builder.yield    = [=]() -> async::task<void> {
-        auto buff = obj->buffs.push_back(*model, seconds, caster);
+        auto buff = co_await obj->buffs.push_back(*model, seconds, caster);
         if (buff != nullptr)
             *buff_holder = buff;
         co_return;
@@ -479,11 +480,11 @@ int builtin::object::builtin_unbuff(lua_State* L)
         if (mode == unbuff_mode::BY_NAME)
         {
             auto model = table::spell.name2spell(name);
-            *result    = model != nullptr && obj->buffs.remove(*model);
+            *result    = model != nullptr && co_await obj->buffs.remove(*model);
         }
         else if (mode == unbuff_mode::BY_BUFF || mode == unbuff_mode::BY_SPELL)
         {
-            *result = obj->buffs.remove(spell_id);
+            *result = co_await obj->buffs.remove(spell_id);
         }
         co_return;
     };
@@ -586,7 +587,7 @@ int builtin::object::builtin_effect(lua_State* L)
     auto builder  = lua->new_co_builder();
     builder.weak  = weak;
     builder.yield = [=]() -> async::task<void> {
-        obj->effect(effect);
+        co_await obj->effect(effect);
         co_return;
     };
     builder.resume = []() -> async::task<int> {
@@ -1251,7 +1252,7 @@ int builtin::object::builtin_script(lua_State* L)
         child_holder->ctx = new_lua;
         try
         {
-            co_await new_lua->call(argc - 2, retc_holder.get());
+            std::ignore = co_await new_lua->call(argc - 2, retc_holder.get());
         }
         catch (...)
         {

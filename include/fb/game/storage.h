@@ -1,5 +1,6 @@
 #ifndef FB_GAME_STORAGE_H
 #define FB_GAME_STORAGE_H
+#include <async/task.h>
 #include <fb/model/datetime.h>
 #include <fb/model/model.h>
 #include <optional>
@@ -40,15 +41,16 @@ private:
 
 public:
     explicit storage_box(character& owner);
+    // clang-format off
     void                                            init(const std::vector<entry>& entries);
-    void                                            apply_delivered(const std::vector<entry>& delivered);
+    async::task<void>                               apply_delivered(const std::vector<entry>& delivered);
     bool                                            contains_system_box(uint32_t system_storage_box_id) const;
-    bool                                            receive_reward(uint32_t entry_id);
+    async::task<bool>                               receive_reward(uint32_t entry_id);
     const entry_map&                                entries() const;
     uint32_t                                        next_sequence() const;
     void                                            set_sequence(uint32_t value);
-    std::vector<fb::protocol::internal::StorageBox> to_save_dtos(uint32_t                   user_id,
-                                                                 const fb::model::datetime& now) const;
+    std::vector<fb::protocol::internal::StorageBox> to_save_dtos(uint32_t user_id, const fb::model::datetime& now) const;
+    // clang-format on
 };
 } // namespace fb::game
 #endif // FB_GAME_STORAGE_H

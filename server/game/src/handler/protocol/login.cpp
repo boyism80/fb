@@ -8,6 +8,7 @@
 #include <json/json.h>
 #include <sstream>
 #include <chrono>
+#include <tuple>
 
 using namespace fb::game::handler::protocol;
 using namespace fb::game;
@@ -19,22 +20,22 @@ login::login(fb::game::server& server) :
     fb::handler::protocol<fb::game::server, game_reqs::login>(server)
 { }
 
-void login::init_option(const internal::Option& response, fb::game::character& ch)
+async::task<void> login::init_option(const internal::Option& response, fb::game::character& ch)
 {
-    ch.option(OPTION::WHISPER, response.whisper, false);
-    ch.option(OPTION::GROUP, response.group, false);
-    ch.option(OPTION::ROAR, response.roar, false);
-    ch.option(OPTION::ROAR_WORLDS, response.roar_worlds, false);
-    ch.option(OPTION::MAGIC_EFFECT, response.magic_effect, false);
-    ch.option(OPTION::WEATHER_EFFECT, response.weather_effect, false);
-    ch.option(OPTION::FIXED_MOVE, response.fixed_move, false);
-    ch.option(OPTION::TRADE, response.trade, false);
-    ch.option(OPTION::FAST_MOVE, response.fast_move, false);
-    ch.option(OPTION::EFFECT_SOUND, response.effect_sound, false);
-    ch.option(OPTION::PK_PROTECT, response.pk_protect, false);
+    co_await ch.option(OPTION::WHISPER, response.whisper, false);
+    co_await ch.option(OPTION::GROUP, response.group, false);
+    co_await ch.option(OPTION::ROAR, response.roar, false);
+    co_await ch.option(OPTION::ROAR_WORLDS, response.roar_worlds, false);
+    co_await ch.option(OPTION::MAGIC_EFFECT, response.magic_effect, false);
+    co_await ch.option(OPTION::WEATHER_EFFECT, response.weather_effect, false);
+    co_await ch.option(OPTION::FIXED_MOVE, response.fixed_move, false);
+    co_await ch.option(OPTION::TRADE, response.trade, false);
+    co_await ch.option(OPTION::FAST_MOVE, response.fast_move, false);
+    co_await ch.option(OPTION::EFFECT_SOUND, response.effect_sound, false);
+    co_await ch.option(OPTION::PK_PROTECT, response.pk_protect, false);
 }
 
-void login::init_items(const std::vector<internal::Item>& response, character& ch)
+async::task<void> login::init_items(const std::vector<internal::Item>& response, character& ch)
 {
     for (auto& x : response)
     {
@@ -48,18 +49,19 @@ void login::init_items(const std::vector<internal::Item>& response, character& c
             item->durability(x.durability.value());
 
         if (x.stored != -1)
-            ch.items.store(item);
+            std::ignore = co_await ch.items.store(item);
         else if (x.parts == static_cast<uint32_t>(EQUIPMENT_PARTS::UNKNOWN))
-            ch.items.add(item, x.index);
+            std::ignore = co_await ch.items.add(item, x.index);
         else
-            ch.items.wear((EQUIPMENT_PARTS)x.parts, std::static_pointer_cast<fb::game::equipment>(item));
+            std::ignore =
+                co_await ch.items.wear((EQUIPMENT_PARTS)x.parts, std::static_pointer_cast<fb::game::equipment>(item));
 
         if (x.custom_name.has_value() && item->based<fb::model::item>().attr(ITEM_ATTRIBUTE::WEAPON))
-            static_cast<weapon*>(item.get())->custom_name(x.custom_name.value());
+            co_await static_cast<weapon*>(item.get())->custom_name(x.custom_name.value());
     }
 }
 
-void login::init_spells(const std::vector<internal::Spell>& response, character& ch)
+async::task<void> login::init_spells(const std::vector<internal::Spell>& response, character& ch)
 {
     for (auto& x : response)
     {
@@ -73,7 +75,7 @@ void login::init_spells(const std::vector<internal::Spell>& response, character&
             sec += (delay.milliseconds() > 0 ? 1 : 0);
         else
             sec = 0;
-        ch.spells.add(model, x.slot, sec);
+        std::ignore = co_await ch.spells.add(model, x.slot, sec);
     }
 }
 
@@ -199,10 +201,10 @@ async::task<std::shared_ptr<character>> login::init(const game_reqs::login& requ
     auto weak = ch->weak_from_this_as<character>();
     co_await this->server.threads.switching(weak);
     ch->items.deposited(resp.character.deposited_money);
-    ch->stat.base_hp(resp.character.base_hp, false);
-    ch->stat.hp(resp.character.hp, false);
-    ch->stat.base_mp(resp.character.base_mp, false);
-    ch->stat.mp(resp.character.mp, false);
+    co_await ch->stat.base_hp(resp.character.base_hp, false);
+    co_await ch->stat.hp(resp.character.hp, false);
+    co_await ch->stat.base_mp(resp.character.base_mp, false);
+    co_await ch->stat.mp(resp.character.mp, false);
 
     auto thread = this->server.maps[map]->thread();
     ch->thread(thread);
@@ -225,7 +227,7 @@ async::task<std::shared_ptr<character>> login::init(const game_reqs::login& requ
     for (auto& buff : resp.character.buffs)
     {
         auto& model = table::spell[buff.model];
-        ch->buffs.push_back(model, buff.time);
+        std::ignore = co_await ch->buffs.push_back(model, buff.time);
     }
 
     if (resp.group.has_value())
@@ -248,11 +250,7 @@ async::task<std::shared_ptr<character>> login::init(const game_reqs::login& requ
         }
     }
 
-    bool inserted = false;
-    {
-        auto guard = this->server.characters.enter_write();
-        inserted   = guard.value().insert(ch);
-    }
+    bool inserted = this->server.characters.insert(ch);
     if (inserted == false)
     {
         fb::logger::fatal(
@@ -261,15 +259,15 @@ async::task<std::shared_ptr<character>> login::init(const game_reqs::login& requ
         co_return nullptr;
     }
 
-    ch->mail_box.unread_count(resp.mail);
-    this->init_items(resp.items, *ch);
-    this->init_spells(resp.spells, *ch);
+    co_await ch->mail_box.unread_count(resp.mail);
+    co_await this->init_items(resp.items, *ch);
+    co_await this->init_spells(resp.spells, *ch);
     this->init_matchmaker(resp.matchmaking_skills, *ch);
     this->init_achievements(resp.achievements, *ch);
     this->init_quests(resp.quests, *ch);
     this->init_marketplace(resp.marketplace_pendings, *ch);
     this->init_storage(resp, *ch);
-    this->init_option(resp.option, *ch);
+    co_await this->init_option(resp.option, *ch);
     ch->marriage(fb::game::marriage(resp.marriage.remarriage_after.empty()
                                         ? this->server.now()
                                         : fb::model::datetime(resp.marriage.remarriage_after),
@@ -277,13 +275,13 @@ async::task<std::shared_ptr<character>> login::init(const game_reqs::login& requ
                                     resp.marriage.spouse_name,
                                     resp.marriage.divorce_count));
 
-    ch->init();
-    ch->update_time(this->server.time().hours());
+    co_await ch->init();
+    co_await ch->update_time(this->server.time().hours());
     if (request.from == internal::Service::Login)
     {
         auto msg = this->elapsed_message(resp.character.updated_date);
         if (msg.empty() == false)
-            ch->message(msg, MESSAGE_TYPE::STATE);
+            co_await ch->message(msg, MESSAGE_TYPE::STATE);
 
         auto lua = this->server.lua.open("scripts/interaction.lua", "on_login");
         if (lua)
@@ -296,8 +294,8 @@ async::task<std::shared_ptr<character>> login::init(const game_reqs::login& requ
 
     co_await this->server.system_storage.sync(*ch);
 
-    ch->update(UPDATE_STATE_LEVEL::ALL);
-    ch->update_option();
+    co_await ch->update(UPDATE_STATE_LEVEL::ALL);
+    co_await ch->update_option();
     co_return ch;
 }
 
@@ -351,11 +349,7 @@ async::task<bool> login::handle(fb::socket<character>& session, game_reqs::login
     session.encryption(request.enc_type, request.enc_key);
     fb::logger::info("{} has connected.", request.name);
 
-    bool exists = false;
-    {
-        auto guard = this->server.characters.enter_read();
-        exists     = guard.value().find(request.id) != nullptr;
-    }
+    bool exists = this->server.characters.find(request.id) != nullptr;
     if (exists)
     {
         fb::logger::fatal(

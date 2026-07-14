@@ -18,8 +18,8 @@ private:
     static const fb::model::cash& match_model(fb::game::server& server, uint32_t value);
 
 public:
-    std::shared_ptr<fb::game::cash> replace(uint32_t value);
-    uint32_t                        reduce(uint32_t value);
+    async::task<std::shared_ptr<fb::game::cash>> replace(uint32_t value);
+    async::task<uint32_t>                        reduce(uint32_t value);
 
     bool        empty() const;
     std::string inven_name() const override;

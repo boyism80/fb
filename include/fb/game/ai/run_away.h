@@ -20,8 +20,8 @@ private:
     datetime _target_lock_time;
 
 public:
-    bool            execute(mob& mob_obj, const datetime& now) override;
-    MOB_ATTACK_TYPE get_type() const override;
+    async::task<bool> execute(mob& mob_obj, const datetime& now) override;
+    MOB_ATTACK_TYPE   get_type() const override;
 };
 } // namespace fb::game
 

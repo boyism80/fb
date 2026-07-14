@@ -15,8 +15,6 @@ async::task<void> matchmaking_ready::handle(const fb::protocol::matchmaking::mq:
     auto match_id   = message.match_id;
     auto match_type = message.match_type;
 
-    auto  guard      = this->server.characters.enter_write();
-    auto& characters = guard.value();
     for (auto& team : message.teams)
     {
         for (auto& registry : team.registries)
@@ -26,7 +24,7 @@ async::task<void> matchmaking_ready::handle(const fb::protocol::matchmaking::mq:
                 if (entry.world != world)
                     continue;
 
-                auto ch = characters.find(entry.character_id);
+                auto ch = this->server.characters.find(entry.character_id);
                 if (ch == nullptr)
                     continue;
 

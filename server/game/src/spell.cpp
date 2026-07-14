@@ -96,18 +96,18 @@ std::shared_ptr<fb::game::spell> fb::game::spells::find(const fb::model::spell& 
     return nullptr;
 }
 
-uint8_t spells::add(std::shared_ptr<spell> element)
+async::task<uint8_t> spells::add(std::shared_ptr<spell> element)
 {
     auto owner = this->_owner.lock();
     if (owner == nullptr)
-        return 0xFF;
+        co_return 0xFF;
 
     owner->assert_thread();
 
-    auto index = super::add(element);
+    auto index = co_await super::add(element);
     if (index != 0xFF)
     {
-        owner->listener.on_spell_update(*owner, index);
+        co_await owner->listener.on_spell_update(*owner, index);
 
         // Log spell add event (only for characters)
         if (owner->is(OBJECT_TYPE::CHARACTER))
@@ -123,20 +123,20 @@ uint8_t spells::add(std::shared_ptr<spell> element)
         }
     }
 
-    return index;
+    co_return index;
 }
 
-uint8_t spells::add(std::shared_ptr<spell> element, uint8_t index)
+async::task<uint8_t> spells::add(std::shared_ptr<spell> element, uint8_t index)
 {
     auto owner = this->_owner.lock();
     if (owner == nullptr)
-        return 0xFF;
+        co_return 0xFF;
 
     owner->assert_thread();
 
-    if (super::add(element, index) != 0xFF)
+    if (co_await super::add(element, index) != 0xFF)
     {
-        owner->listener.on_spell_update(*owner, index);
+        co_await owner->listener.on_spell_update(*owner, index);
 
         // Log spell add event (only for characters)
         if (owner->is(OBJECT_TYPE::CHARACTER))
@@ -152,48 +152,48 @@ uint8_t spells::add(std::shared_ptr<spell> element, uint8_t index)
         }
     }
 
-    return index;
+    co_return index;
 }
 
-uint8_t spells::add(const fb::model::spell& model, uint8_t slot, uint16_t delay)
+async::task<uint8_t> spells::add(const fb::model::spell& model, uint8_t slot, uint16_t delay)
 {
     auto owner = this->_owner.lock();
     if (owner == nullptr)
-        return 0xFF;
+        co_return 0xFF;
 
     owner->assert_thread();
 
     auto& server  = owner->server;
     auto  created = server.make<spell>(*owner, model, delay);
-    return this->add(created, slot);
+    co_return co_await this->add(created, slot);
 }
 
-uint8_t spells::add(const fb::model::spell& model)
+async::task<uint8_t> spells::add(const fb::model::spell& model)
 {
     auto owner = this->_owner.lock();
     if (owner == nullptr)
-        return 0xFF;
+        co_return 0xFF;
 
     owner->assert_thread();
 
     auto& server  = owner->server;
     auto  created = server.make<spell>(*owner, model, 0);
-    return this->add(created);
+    co_return co_await this->add(created);
 }
 
-bool spells::remove(uint8_t index)
+async::task<bool> spells::remove(uint8_t index)
 {
     auto owner = this->_owner.lock();
     if (owner == nullptr)
-        return false;
+        co_return false;
 
     owner->assert_thread();
 
-    auto success = super::remove(index);
+    auto success = co_await super::remove(index);
 
     if (success)
     {
-        owner->listener.on_spell_remove(*owner, index);
+        co_await owner->listener.on_spell_remove(*owner, index);
 
         // Log spell remove event (only for characters)
         if (owner->is(OBJECT_TYPE::CHARACTER))
@@ -210,33 +210,33 @@ bool spells::remove(uint8_t index)
         }
     }
 
-    return success;
+    co_return success;
 }
 
-bool spells::swap(uint8_t src, uint8_t dst)
+async::task<bool> spells::swap(uint8_t src, uint8_t dst)
 {
     auto owner = this->_owner.lock();
     if (owner == nullptr)
-        return false;
+        co_return false;
 
     owner->assert_thread();
 
-    if (super::swap(src, dst) == false)
-        return false;
+    if (co_await super::swap(src, dst) == false)
+        co_return false;
 
     const auto right = this->at(src);
     if (right != nullptr)
-        owner->listener.on_spell_update(*owner, src);
+        co_await owner->listener.on_spell_update(*owner, src);
     else
-        owner->listener.on_spell_remove(*owner, src);
+        co_await owner->listener.on_spell_remove(*owner, src);
 
     const auto left = this->at(dst);
     if (left != nullptr)
-        owner->listener.on_spell_update(*owner, dst);
+        co_await owner->listener.on_spell_update(*owner, dst);
     else
-        owner->listener.on_spell_remove(*owner, dst);
+        co_await owner->listener.on_spell_remove(*owner, dst);
 
-    return true;
+    co_return true;
 }
 
 buff::buff(const fb::game::server& server, const fb::model::spell& model, const object* caster, uint32_t seconds) :
@@ -295,13 +295,13 @@ bool buffs::contains(const fb::model::spell& model) const
     return this->contains(model.id);
 }
 
-bool buffs::push_back(const std::shared_ptr<buff>& buff)
+async::task<bool> buffs::push_back(const std::shared_ptr<buff>& buff)
 {
     this->_owner.assert_thread();
 
     auto& model = buff->model;
     if (this->contains(model.id))
-        return false;
+        co_return false;
 
     this->insert({model.id, buff});
 
@@ -318,14 +318,14 @@ bool buffs::push_back(const std::shared_ptr<buff>& buff)
     }
 
     // Call listener for packet response
-    this->_owner.listener.on_buff(this->_owner, *buff);
+    co_await this->_owner.listener.on_buff(this->_owner, *buff);
 
-    return true;
+    co_return true;
 }
 
-std::shared_ptr<buff> buffs::push_back(const fb::model::spell&                  model,
-                                       uint32_t                                 seconds,
-                                       const std::shared_ptr<fb::game::object>& caster)
+async::task<std::shared_ptr<buff>> buffs::push_back(const fb::model::spell&                  model,
+                                                    uint32_t                                 seconds,
+                                                    const std::shared_ptr<fb::game::object>& caster)
 {
     this->_owner.assert_thread();
 
@@ -333,7 +333,7 @@ std::shared_ptr<buff> buffs::push_back(const fb::model::spell&                  
     {
         auto& buff = this->at(model.id);
         buff->remaining(std::chrono::seconds(seconds));
-        return buff;
+        co_return buff;
     }
 
     auto& server  = this->_owner.server;
@@ -341,26 +341,26 @@ std::shared_ptr<buff> buffs::push_back(const fb::model::spell&                  
     if (created == nullptr)
     {
         fb::logger::warn("Failed to create buff for {}", model.name);
-        return nullptr;
+        co_return nullptr;
     }
-    else if (this->push_back(created) == false)
+    else if (co_await this->push_back(created) == false)
     {
-        std::ignore = server.destroy(*created);
-        return nullptr;
+        co_await server.destroy(*created);
+        co_return nullptr;
     }
     else
     {
-        return created;
+        co_return created;
     }
 }
 
-bool buffs::remove(uint32_t id)
+async::task<bool> buffs::remove(uint32_t id)
 {
     this->_owner.assert_thread();
 
     auto buff = this->operator[] (id);
     if (buff == nullptr)
-        return false;
+        co_return false;
 
     // Execute unbuff script
     auto& model = buff->model;
@@ -376,25 +376,25 @@ bool buffs::remove(uint32_t id)
     }
 
     // Call listener for packet response
-    this->_owner.listener.on_unbuff(this->_owner, *buff);
+    co_await this->_owner.listener.on_unbuff(this->_owner, *buff);
 
     // Show unbuff message for characters
     if (this->_owner.is(OBJECT_TYPE::CHARACTER))
     {
         auto& ch = static_cast<character&>(this->_owner);
-        ch.message(std::format(_TEXT(MESSAGE_SPELL_UNBUFF), buff->model.name));
+        co_await ch.message(std::format(_TEXT(MESSAGE_SPELL_UNBUFF), buff->model.name));
     }
 
     this->erase(id);
-    std::ignore = this->_owner.server.destroy(*buff);
-    return true;
+    co_await this->_owner.server.destroy(*buff);
+    co_return true;
 }
 
-bool buffs::remove(const fb::model::spell& spell)
+async::task<bool> buffs::remove(const fb::model::spell& spell)
 {
     this->_owner.assert_thread();
 
-    return this->remove(spell.id);
+    co_return co_await this->remove(spell.id);
 }
 
 std::shared_ptr<buff> buffs::operator[] (uint32_t id) const

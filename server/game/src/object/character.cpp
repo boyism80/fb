@@ -14,6 +14,7 @@
 #include <format>
 #include <macro.h>
 #include <unordered_map>
+#include <tuple>
 
 using namespace fb::game;
 using namespace fb::model;
@@ -157,7 +158,7 @@ async::task<bool> character::map(std::shared_ptr<fb::game::map>      map,
         auto routed = this->server.maps.choice_entry(*this, map);
         if (routed == nullptr)
         {
-            this->listener.on_message(*this, "그룹에 가입해야 입장할 수 있습니다.", MESSAGE_TYPE::STATE);
+            co_await this->listener.on_message(*this, "그룹에 가입해야 입장할 수 있습니다.", MESSAGE_TYPE::STATE);
             co_return false;
         }
         map = routed;
@@ -166,7 +167,7 @@ async::task<bool> character::map(std::shared_ptr<fb::game::map>      map,
     if (this->_map != map)
     {
         if (this->trade.trading())
-            this->trade.cancel();
+            std::ignore = co_await this->trade.cancel();
     }
 
     auto switch_process = (map != nullptr && map->active == false);
@@ -187,6 +188,8 @@ async::task<bool> character::map(std::shared_ptr<fb::game::map>      map,
         if (this->map() == nullptr)
             co_return false;
 
+        auto error_msg    = std::optional<std::string>{};
+        auto need_recover = false;
         try
         {
             auto   world = fb::config<uint32_t>("world");
@@ -224,16 +227,28 @@ async::task<bool> character::map(std::shared_ptr<fb::game::map>      map,
         }
         catch (std::exception& e)
         {
-            this->update_map();
-            this->update_external(true);
-            this->listener.on_message(*this, e.what(), MESSAGE_TYPE::STATE);
-            co_return false;
+            error_msg    = e.what();
+            need_recover = true;
         }
         catch (boost::system::error_code& /*e*/)
         {
-            this->update_map();
-            this->update_external(true);
-            this->listener.on_message(*this, _TEXT(MESSAGE_NOT_READY_GAME_SERVER), MESSAGE_TYPE::STATE);
+            error_msg    = _TEXT(MESSAGE_NOT_READY_GAME_SERVER);
+            need_recover = true;
+        }
+
+        if (need_recover)
+        {
+            co_await this->update_map();
+            try
+            {
+                co_await this->update_external(true);
+            }
+            catch (const std::exception& ue)
+            {
+                fb::logger::fatal("character::map update_external failed: {}", ue.what());
+            }
+            if (error_msg.has_value())
+                co_await this->listener.on_message(*this, error_msg.value(), MESSAGE_TYPE::STATE);
             co_return false;
         }
 
@@ -353,6 +368,8 @@ void character::role(ROLE value)
 async::task<void> character::attack(DURATION duration)
 {
     this->assert_thread();
+
+    auto error = std::optional<std::string>{};
     try
     {
         this->assert_state({STATE::RIDING, STATE::GHOST});
@@ -360,23 +377,30 @@ async::task<void> character::attack(DURATION duration)
     }
     catch (const std::exception& e)
     {
-        this->message(e.what());
+        error = e.what();
     }
+
+    if (error.has_value())
+        co_await this->message(error.value());
 }
 
-void character::action(ACTION action, DURATION duration, uint8_t sound)
+async::task<void> character::action(ACTION action, DURATION duration, uint8_t sound)
 {
     this->assert_thread();
 
+    auto error = std::optional<std::string>{};
     try
     {
         this->assert_state({STATE::GHOST, STATE::RIDING});
-        life::action(action, duration, sound);
+        co_await life::action(action, duration, sound);
     }
     catch (std::exception& e)
     {
-        this->message(e.what());
+        error = e.what();
     }
+
+    if (error.has_value())
+        co_await this->message(error.value());
 }
 
 const std::string& character::name() const
@@ -416,16 +440,16 @@ uint16_t character::look() const
     return this->_look;
 }
 
-void character::look(uint16_t value)
+async::task<void> character::look(uint16_t value)
 {
     this->assert_thread();
 
     if (this->_look == value)
-        return;
+        co_return;
 
     auto old_look = this->_look;
     this->_look   = value;
-    this->update_external(true);
+    co_await this->update_external(true);
 
     auto log_data              = Json::Value();
     log_data["character_id"]   = static_cast<Json::Int64>(this->id);
@@ -442,12 +466,12 @@ uint8_t character::color() const
     return this->_color;
 }
 
-void character::color(uint8_t value)
+async::task<void> character::color(uint8_t value)
 {
     this->assert_thread();
 
     this->_color = value;
-    this->update_external(true);
+    co_await this->update_external(true);
 }
 
 std::optional<uint8_t> character::armor_color() const
@@ -457,12 +481,12 @@ std::optional<uint8_t> character::armor_color() const
     return this->_armor_color;
 }
 
-void character::armor_color(std::optional<uint8_t> value)
+async::task<void> character::armor_color(std::optional<uint8_t> value)
 {
     this->assert_thread();
 
     this->_armor_color = value;
-    this->update_external(true);
+    co_await this->update_external(true);
 }
 
 std::optional<uint8_t> character::weapon_color() const
@@ -472,12 +496,12 @@ std::optional<uint8_t> character::weapon_color() const
     return this->_weapon_color;
 }
 
-void character::weapon_color(std::optional<uint8_t> value)
+async::task<void> character::weapon_color(std::optional<uint8_t> value)
 {
     this->assert_thread();
 
     this->_weapon_color = value;
-    this->update_external(true);
+    co_await this->update_external(true);
 }
 
 std::optional<uint8_t> character::shield_color() const
@@ -487,12 +511,12 @@ std::optional<uint8_t> character::shield_color() const
     return this->_shield_color;
 }
 
-void character::shield_color(std::optional<uint8_t> value)
+async::task<void> character::shield_color(std::optional<uint8_t> value)
 {
     this->assert_thread();
 
     this->_shield_color = value;
-    this->update_external(true);
+    co_await this->update_external(true);
 }
 
 const std::optional<character_appearance>& character::mimicry() const
@@ -501,12 +525,12 @@ const std::optional<character_appearance>& character::mimicry() const
     return this->_mimicry;
 }
 
-void character::mimicry(std::optional<character_appearance> value)
+async::task<void> character::mimicry(std::optional<character_appearance> value)
 {
     this->assert_thread();
 
     this->_mimicry = std::move(value);
-    this->update_external(true);
+    co_await this->update_external(true);
 }
 
 NATION character::nation() const
@@ -556,16 +580,16 @@ uint8_t character::level() const
     return this->_level;
 }
 
-void character::level(uint8_t value)
+async::task<void> character::level(uint8_t value)
 {
     this->assert_thread();
 
     if (this->_level == value)
-        return;
+        co_return;
 
     auto old_level = this->_level;
     this->_level   = value;
-    this->update(UPDATE_STATE_LEVEL::ALL);
+    co_await this->update(UPDATE_STATE_LEVEL::ALL);
 
     auto log_data              = Json::Value();
     log_data["character_id"]   = static_cast<Json::Int64>(this->id);
@@ -575,28 +599,30 @@ void character::level(uint8_t value)
     this->server.log.write("level_change", log_data);
 }
 
-bool character::level_up()
+async::task<bool> character::level_up()
 {
     this->assert_thread();
 
     if (this->max_level())
-        return false;
+        co_return false;
 
     auto& ability = table::ability[this->_class][this->_level];
     {
         auto batch = this->batch_update();
-        this->stat.base_str(this->stat.base_str() + ability.strength);
-        this->stat.base_int(this->stat.base_int() + ability.intelligence);
-        this->stat.base_dex(this->stat.base_dex() + ability.dexterity);
-        this->stat.base_hp(this->stat.base_hp() + ability.hp + std::rand() % 10);
-        this->stat.base_mp(this->stat.base_mp() + ability.mp + std::rand() % 10);
-        this->stat.hp(this->stat.base_hp());
-        this->stat.mp(this->stat.base_mp());
+        co_await this->stat.base_str(this->stat.base_str() + ability.strength, false);
+        co_await this->stat.base_int(this->stat.base_int() + ability.intelligence, false);
+        co_await this->stat.base_dex(this->stat.base_dex() + ability.dexterity, false);
+        co_await this->stat.base_hp(this->stat.base_hp() + ability.hp + std::rand() % 10, false);
+        co_await this->stat.base_mp(this->stat.base_mp() + ability.mp + std::rand() % 10, false);
+        co_await this->stat.hp(this->stat.base_hp(), false);
+        co_await this->stat.mp(this->stat.base_mp(), false);
+        co_await this->update(UPDATE_STATE_LEVEL::BASED | UPDATE_STATE_LEVEL::HP_MP);
+        co_await batch.commit();
     }
 
     auto old_level = this->_level;
-    this->level(this->_level + 1);
-    this->message(_TEXT(MESSAGE_LEVEL_UP));
+    co_await this->level(this->_level + 1);
+    co_await this->message(_TEXT(MESSAGE_LEVEL_UP));
 
     // Log level up event
     auto log_data              = Json::Value();
@@ -608,8 +634,8 @@ bool character::level_up()
     log_data["base_mp"]        = static_cast<Json::Int64>(this->stat.base_mp());
     this->server.log.write("level_up", log_data);
 
-    this->listener.on_level_up(*this);
-    return true;
+    co_await this->listener.on_level_up(*this);
+    co_return true;
 }
 
 bool character::max_level() const
@@ -626,16 +652,16 @@ GENDER character::gender() const
     return this->_gender;
 }
 
-void character::gender(GENDER value)
+async::task<void> character::gender(GENDER value)
 {
     this->assert_thread();
 
     if (this->_gender == value)
-        return;
+        co_return;
 
     auto old_gender = this->_gender;
     this->_gender   = value;
-    this->update_external(true);
+    co_await this->update_external(true);
 
     auto log_data              = Json::Value();
     log_data["character_id"]   = static_cast<Json::Int64>(this->id);
@@ -682,17 +708,17 @@ STATE character::state_to(const fb::game::object& to, STATE state) const
     return state;
 }
 
-void character::state(STATE value)
+async::task<void> character::state(STATE value)
 {
     this->assert_thread();
 
     if (value == STATE::DISGUISE)
-        return;
+        co_return;
 
     auto old_state = this->_state;
     this->_state   = value;
 
-    this->update_external(true);
+    co_await this->update_external(true);
 
     // Log revive event (state change from GHOST to NORMAL)
     if (old_state == STATE::GHOST && value == STATE::NORMAL)
@@ -719,16 +745,16 @@ CLASS character::cls() const
     return this->_class;
 }
 
-void character::cls(CLASS value)
+async::task<void> character::cls(CLASS value)
 {
     this->assert_thread();
 
     if (this->_class == value)
-        return;
+        co_return;
 
     auto old_class = this->_class;
     this->_class   = value;
-    this->update_id();
+    co_await this->update_id();
 
     auto log_data              = Json::Value();
     log_data["character_id"]   = static_cast<Json::Int64>(this->id);
@@ -769,18 +795,18 @@ uint32_t character::exp() const
     return this->_experience;
 }
 
-void character::exp(uint32_t value)
+async::task<void> character::exp(uint32_t value)
 {
     this->assert_thread();
 
     if (this->_experience == value)
-        return;
+        co_return;
 
     this->_experience = value;
-    this->update(UPDATE_STATE_LEVEL::EXP_MONEY);
+    co_await this->update(UPDATE_STATE_LEVEL::EXP_MONEY);
 }
 
-uint32_t character::add_exp(uint32_t value, bool limit, bool notify)
+async::task<uint32_t> character::add_exp(uint32_t value, bool limit, bool notify)
 {
     this->assert_thread();
 
@@ -792,7 +818,8 @@ uint32_t character::add_exp(uint32_t value, bool limit, bool notify)
         value = this->limited_exp(value);
 
     auto capacity = 0xFFFFFFFF - this->_experience;
-    auto lack     = 0;
+    auto lack     = 0u;
+    auto error    = std::optional<std::string>{};
 
     try
     {
@@ -812,15 +839,15 @@ uint32_t character::add_exp(uint32_t value, bool limit, bool notify)
             if (value > capacity)
             {
                 lack = value - capacity;
-                this->exp(this->_experience + capacity);
+                co_await this->exp(this->_experience + capacity);
             }
             else
             {
-                this->exp(this->_experience + value);
+                co_await this->exp(this->_experience + value);
             }
 
             if (notify)
-                this->message(std::format(_TEXT(MESSAGE_EXP_GAINED), value, int(this->experience_percent())));
+                co_await this->message(std::format(_TEXT(MESSAGE_EXP_GAINED), value, int(this->experience_percent())));
         }
 
         if (table::ability.contains(this->_class) == false)
@@ -838,7 +865,7 @@ uint32_t character::add_exp(uint32_t value, bool limit, bool notify)
             if (this->_experience < table::ability.stacked_exp(this->_class, this->_level))
                 break;
 
-            if (this->level_up() == false)
+            if (co_await this->level_up() == false)
                 break;
         }
 
@@ -847,13 +874,16 @@ uint32_t character::add_exp(uint32_t value, bool limit, bool notify)
     }
     catch (std::exception& e)
     {
-        this->message(e.what());
+        error = e.what();
     }
 
-    return lack;
+    if (error.has_value())
+        co_await this->message(error.value());
+
+    co_return lack;
 }
 
-uint32_t character::reduce_exp(uint32_t value)
+async::task<uint32_t> character::reduce_exp(uint32_t value)
 {
     this->assert_thread();
 
@@ -861,14 +891,14 @@ uint32_t character::reduce_exp(uint32_t value)
     {
         uint32_t lack     = value - this->_experience;
         this->_experience = 0;
-        this->update(UPDATE_STATE_LEVEL::EXP_MONEY);
-        return lack;
+        co_await this->update(UPDATE_STATE_LEVEL::EXP_MONEY);
+        co_return lack;
     }
     else
     {
         this->_experience -= value;
-        this->update(UPDATE_STATE_LEVEL::EXP_MONEY);
-        return 0;
+        co_await this->update(UPDATE_STATE_LEVEL::EXP_MONEY);
+        co_return 0;
     }
 }
 
@@ -913,16 +943,16 @@ uint32_t character::money() const
     return this->_money;
 }
 
-void character::money(uint32_t value)
+async::task<void> character::money(uint32_t value)
 {
     this->assert_thread();
 
     if (this->_money == value)
-        return;
+        co_return;
 
     auto old_money = this->_money;
     this->_money   = value;
-    this->update(UPDATE_STATE_LEVEL::EXP_MONEY);
+    co_await this->update(UPDATE_STATE_LEVEL::EXP_MONEY);
 
     // Log money changed event
     auto log_data              = Json::Value();
@@ -934,7 +964,7 @@ void character::money(uint32_t value)
     this->server.log.write("money_changed", log_data);
 }
 
-uint32_t character::money_add(uint32_t value) // Returns remaining value that could not be added
+async::task<uint32_t> character::money_add(uint32_t value) // Returns remaining value that could not be added
 {
     this->assert_thread();
 
@@ -942,53 +972,57 @@ uint32_t character::money_add(uint32_t value) // Returns remaining value that co
     uint32_t lack     = 0;
     if (value > capacity)
     {
-        this->money(this->_money + capacity);
+        co_await this->money(this->_money + capacity);
         lack = value - capacity;
     }
     else
     {
-        this->money(this->_money + value);
+        co_await this->money(this->_money + value);
     }
 
-    return lack;
+    co_return lack;
 }
 
-void character::money_reduce(uint32_t value)
+async::task<void> character::money_reduce(uint32_t value)
 {
     this->assert_thread();
     value = std::min(this->_money, value);
-    this->money(this->_money - value);
+    co_await this->money(this->_money - value);
 }
 
-fb::game::cash* character::money_drop(uint32_t value)
+async::task<fb::game::cash*> character::money_drop(uint32_t value)
 {
     this->assert_thread();
 
+    auto error = std::optional<std::string>{};
     try
     {
         this->assert_state({STATE::RIDING, STATE::GHOST});
 
         if (value == 0)
-            return 0;
+            co_return nullptr;
 
         value = std::min(this->_money, value);
-        this->money_reduce(value);
+        co_await this->money_reduce(value);
 
         // TODO: Phase 3 - Convert to smart pointer return type
         // For now, use make_shared but return raw pointer for compatibility
         auto cash_shared = this->server.make<fb::game::cash>(value);
         auto cash        = cash_shared.get();
-        cash->map(this->_map, this->_position);
-        this->action(ACTION::PICKUP, DURATION::PICKUP);
-        this->message(_TEXT(MESSAGE_MONEY_DROP));
-        return cash;
+        std::ignore      = co_await cash->map(this->_map, this->_position);
+        co_await this->action(ACTION::PICKUP, DURATION::PICKUP);
+        co_await this->message(_TEXT(MESSAGE_MONEY_DROP));
+        co_return cash;
     }
     catch (std::exception& e)
     {
-        this->message(e.what());
+        error = e.what();
     }
 
-    return 0;
+    if (error.has_value())
+        co_await this->message(error.value());
+
+    co_return nullptr;
 }
 
 bool character::option(OPTION key) const
@@ -1002,26 +1036,26 @@ bool character::option(OPTION key) const
     return this->_options[opt];
 }
 
-void character::option(OPTION key, bool value, bool notify)
+async::task<void> character::option(OPTION key, bool value, bool notify)
 {
     this->assert_thread();
 
     auto opt = static_cast<uint8_t>(key);
     if (opt == 0 || opt > static_cast<uint8_t>(OPTION::EFFECT_SOUND))
-        return;
+        co_return;
 
     if (this->_options[opt] == value)
-        return;
+        co_return;
 
-    this->update(UPDATE_STATE_LEVEL::EXP_MONEY | UPDATE_STATE_LEVEL::CROWD_CONTROL);
+    co_await this->update(UPDATE_STATE_LEVEL::EXP_MONEY | UPDATE_STATE_LEVEL::CROWD_CONTROL);
     this->_options[opt] = value;
-    this->update_option();
+    co_await this->update_option();
 
     if (notify)
-        this->listener.on_option_changed(*this, key, value);
+        co_await this->listener.on_option_changed(*this, key, value);
 }
 
-bool character::option_toggle(OPTION key, bool notify)
+async::task<bool> character::option_toggle(OPTION key, bool notify)
 {
     this->assert_thread();
 
@@ -1029,67 +1063,69 @@ bool character::option_toggle(OPTION key, bool notify)
     if (opt == 0 || opt > static_cast<uint8_t>(OPTION::EFFECT_SOUND))
         throw std::runtime_error(std::format("invalid setting key : {:#x}", opt));
 
-    this->option(key, !this->_options[opt], notify);
-    return this->_options[opt];
+    co_await this->option(key, !this->_options[opt], notify);
+    co_return this->_options[opt];
 }
 
-void character::update_option()
+async::task<void> character::update_option()
 {
-    this->listener.on_update_option(*this);
+    co_await this->listener.on_update_option(*this);
 }
 
-void character::update_map(const fb::game::map& map)
+async::task<void> character::update_map(const fb::game::map& map)
 {
-    this->listener.on_update_map(*this, map);
+    co_await this->listener.on_update_map(*this, map);
 }
 
-void character::update_map()
+async::task<void> character::update_map()
 {
     if (this->_map != nullptr)
-        this->update_map(*this->_map);
+        co_await this->update_map(*this->_map);
 }
 
-void character::update_map(const fb::game::map&        map,
-                           const fb::model::point16_t& begin,
-                           const fb::model::size8_t&   size,
-                           uint16_t                    crc)
+async::task<void> character::update_map(const fb::game::map&        map,
+                                        const fb::model::point16_t& begin,
+                                        const fb::model::size8_t&   size,
+                                        uint16_t                    crc)
 {
-    this->listener.on_update_map(*this, map, begin, size, crc);
+    co_await this->listener.on_update_map(*this, map, begin, size, crc);
 }
 
-void character::update_bgm(uint16_t bgm, uint8_t volume)
+async::task<void> character::update_bgm(uint16_t bgm, uint8_t volume)
 {
-    this->listener.on_update_bgm(*this, bgm, volume);
+    co_await this->listener.on_update_bgm(*this, bgm, volume);
 }
 
-void character::update_buff()
+async::task<void> character::update_buff()
 {
-    this->listener.on_update_buff(*this, this->buffs);
+    co_await this->listener.on_update_buff(*this, this->buffs);
+    co_return;
 }
 
-void character::update_internal()
+async::task<void> character::update_internal()
 {
-    this->listener.on_update_internal(*this);
+    co_await this->listener.on_update_internal(*this);
+    co_return;
 }
 
-void character::update_time(uint16_t hours)
+async::task<void> character::update_time(uint16_t hours)
 {
-    this->listener.on_update_time(*this, hours);
+    co_await this->listener.on_update_time(*this, hours);
 }
 
-void character::init()
+async::task<void> character::init()
 {
-    this->listener.on_character_init(*this);
+    co_await this->listener.on_character_init(*this);
 }
 
-void character::update_position()
+async::task<void> character::update_position()
 {
-    this->listener.on_update_position(*this);
+    co_await this->listener.on_update_position(*this);
 }
 
-void character::screen_refresh()
+async::task<void> character::screen_refresh()
 {
-    this->listener.on_screen_refresh(*this);
+    co_await this->listener.on_screen_refresh(*this);
 }
 
 const std::string& character::title() const
@@ -1147,12 +1183,12 @@ void character::clan_id(std::optional<uint32_t> value)
     this->_clan_id = value;
 }
 
-void character::clan_reset()
+async::task<void> character::clan_reset()
 {
     this->assert_thread();
 
     this->_clan_id.reset();
-    this->update_external(false);
+    co_await this->update_external(false);
 }
 
 void character::assert_state(STATE value) const
@@ -1179,37 +1215,38 @@ void character::assert_state(const std::vector<STATE>& values) const
     }
 }
 
-bool character::move(const fb::model::point16_t& before)
+async::task<bool> character::move(const fb::model::point16_t& before)
 {
     this->assert_thread();
 
-    return this->move(this->_direction, before);
+    co_return co_await this->move(this->_direction, before);
 }
 
-bool character::move(DIRECTION direction, const fb::model::point16_t& before)
+async::task<bool> character::move(DIRECTION direction, const fb::model::point16_t& before)
 {
     this->assert_thread();
 
     if (this->_position != before)
     {
-        this->update_position();
-        return false;
+        co_await this->update_position();
+        co_return false;
     }
-    else if (object::move(direction) == false)
+    else if (co_await object::move(direction) == false)
     {
-        this->update_position();
-        return false;
+        co_await this->update_position();
+        co_return false;
     }
     else
     {
-        return true;
+        co_return true;
     }
 }
 
-void character::ride(mob& horse)
+async::task<void> character::ride(mob& horse)
 {
     this->assert_thread();
 
+    auto error = std::optional<std::string>{};
     try
     {
         this->assert_state({STATE::GHOST, STATE::DISGUISE});
@@ -1223,21 +1260,25 @@ void character::ride(mob& horse)
         if (horse.map() != this->_map)
             throw std::runtime_error(_TEXT(MESSAGE_ERROR_UNKNOWN));
 
-        std::ignore = horse.map(nullptr);
-        this->state(STATE::RIDING);
-        horse.kill();
-        this->message(_TEXT(MESSAGE_RIDE_ON));
+        std::ignore = co_await horse.map(nullptr);
+        co_await this->state(STATE::RIDING);
+        co_await horse.kill();
+        co_await this->message(_TEXT(MESSAGE_RIDE_ON));
     }
     catch (std::exception& e)
     {
-        this->message(e.what());
+        error = e.what();
     }
+
+    if (error.has_value())
+        co_await this->message(error.value());
 }
 
-void character::ride()
+async::task<void> character::ride()
 {
     this->assert_thread();
 
+    auto error = std::optional<std::string>{};
     try
     {
         this->assert_state({STATE::GHOST, STATE::DISGUISE});
@@ -1246,18 +1287,22 @@ void character::ride()
         if (front == nullptr)
             throw std::runtime_error(_TEXT(MESSAGE_EXCEPTION_NO_CONVEYANCE));
 
-        this->ride(static_cast<mob&>(*front));
+        co_await this->ride(static_cast<mob&>(*front));
     }
     catch (std::exception& e)
     {
-        this->message(e.what());
+        error = e.what();
     }
+
+    if (error.has_value())
+        co_await this->message(error.value());
 }
 
-void character::unride()
+async::task<void> character::unride()
 {
     this->assert_thread();
 
+    auto error = std::optional<std::string>{};
     try
     {
         this->assert_state({STATE::GHOST, STATE::DISGUISE});
@@ -1266,15 +1311,18 @@ void character::unride()
 
         auto& model = table::mob[fb::model::const_value::mob::horse];
         auto  horse = this->server.make<mob>(model, mob::initial_params{.alive = true});
-        horse->map(this->_map, this->front_position());
+        std::ignore = co_await horse->map(this->_map, this->front_position());
 
-        this->state(STATE::NORMAL);
-        this->message(_TEXT(MESSAGE_RIDE_OFF));
+        co_await this->state(STATE::NORMAL);
+        co_await this->message(_TEXT(MESSAGE_RIDE_OFF));
     }
     catch (std::exception& e)
     {
-        this->message(e.what());
+        error = e.what();
     }
+
+    if (error.has_value())
+        co_await this->message(error.value());
 }
 
 bool character::alive() const
@@ -1363,10 +1411,10 @@ bool character::condition(const std::vector<fb::model::dsl>& conditions) const
     return true;
 }
 
-void character::message(std::string_view message, MESSAGE_TYPE type)
+async::task<void> character::message(std::string_view message, MESSAGE_TYPE type)
 {
     this->assert_thread();
-    this->listener.on_message(*this, message, type);
+    co_await this->listener.on_message(*this, message, type);
 }
 
 async::task<void> character::whisper(std::string receiver_name, std::string message)
@@ -1388,8 +1436,8 @@ async::task<void> character::whisper(std::string receiver_name, std::string mess
                 throw std::runtime_error(std::format(_TEXT(MESSAGE_WHISPER_DISABLED_TARGET), receiver_name));
 
             auto target_name = receiver->name();
-            receiver->message(std::format("{}\" {}", sender_name, message), MESSAGE_TYPE::NOTIFY);
-            this->message(std::format("{}< {}", target_name, message), MESSAGE_TYPE::NOTIFY);
+            co_await receiver->message(std::format("{}\" {}", sender_name, message), MESSAGE_TYPE::NOTIFY);
+            co_await this->message(std::format("{}< {}", target_name, message), MESSAGE_TYPE::NOTIFY);
 
             auto log_data             = Json::Value();
             log_data["sender_id"]     = static_cast<Json::Int64>(this->id);
@@ -1410,23 +1458,18 @@ async::task<void> character::whisper(std::string receiver_name, std::string mess
 
     character::container::assert_whisper(resp.error, resp.to);
 
-    std::weak_ptr<character> receiver_weak;
-    {
-        auto guard    = co_await this->server.characters.enter_read_async();
-        auto receiver = guard.value().find(resp.to);
-        if (receiver == nullptr)
-            co_return;
+    auto receiver = this->server.characters.find(resp.to);
+    if (receiver == nullptr)
+        co_return;
 
-        receiver_weak = receiver->weak_from_this_as<character>();
-    }
-
-    auto before = this->server.threads.current();
+    auto receiver_weak = receiver->weak_from_this_as<character>();
+    auto before        = this->server.threads.current();
     co_await this->server.threads.switching(receiver_weak);
 
-    auto receiver = receiver_weak.lock();
+    receiver = receiver_weak.lock();
     if (receiver != nullptr)
     {
-        receiver->message(std::format("{}> {}", resp.from, resp.message), MESSAGE_TYPE::NOTIFY);
+        co_await receiver->message(std::format("{}> {}", resp.from, resp.message), MESSAGE_TYPE::NOTIFY);
 
         auto recv_log             = Json::Value();
         recv_log["sender_name"]   = UTF8(resp.from, PLATFORM::WINDOWS);
@@ -1439,7 +1482,7 @@ async::task<void> character::whisper(std::string receiver_name, std::string mess
     if (before != nullptr)
         co_await before->switching();
 
-    this->message(std::format("{}< {}", receiver_name, message), MESSAGE_TYPE::NOTIFY);
+    co_await this->message(std::format("{}< {}", receiver_name, message), MESSAGE_TYPE::NOTIFY);
 
     auto log_data             = Json::Value();
     log_data["sender_id"]     = static_cast<Json::Int64>(this->id);
@@ -1468,32 +1511,32 @@ void character::assert_thread() const
     object::assert_thread();
 }
 
-void character::update(UPDATE_STATE_LEVEL value)
+async::task<void> character::update(UPDATE_STATE_LEVEL value)
 {
     this->assert_thread();
 
     if (this->_batch_mode)
     {
         this->_pending_update |= value;
-        return;
+        co_return;
     }
 
-    this->listener.on_update(*this, value);
+    co_await this->listener.on_update(*this, value);
 }
 
-void character::kill(DESTROY_TYPE destroy_type)
+async::task<void> character::kill(DESTROY_TYPE destroy_type)
 {
     this->assert_thread();
-    life::kill(destroy_type);
+    co_await life::kill(destroy_type);
 
-    this->death_penalty();
-    this->state(STATE::GHOST);
+    co_await this->death_penalty();
+    co_await this->state(STATE::GHOST);
 }
 
-void character::notify_death(std::shared_ptr<fb::game::object> killer)
+async::task<void> character::notify_death(std::shared_ptr<fb::game::object> killer)
 {
     this->assert_thread();
-    this->listener.on_dead(*this, killer);
+    co_await this->listener.on_dead(*this, killer);
 
     auto log_data              = Json::Value();
     log_data["character_id"]   = static_cast<Json::Int64>(this->id);
@@ -1563,19 +1606,19 @@ async::task<void> character::settle_kills(mob_vector dead)
             if (owner != nullptr)
             {
                 owner->detach_spawned_mob(*m);
-                m->kill(DESTROY_TYPE::DEAD);
+                co_await m->kill(DESTROY_TYPE::DEAD);
                 continue;
             }
 
             this->listener.on_dead(*m, self);
             co_await m->drop_items();
-            this->award_exp(*m);
-            m->kill(DESTROY_TYPE::DEAD);
+            co_await this->award_exp(*m);
+            co_await m->kill(DESTROY_TYPE::DEAD);
         }
     }
 }
 
-void character::award_exp(const fb::game::mob& mob)
+async::task<void> character::award_exp(const fb::game::mob& mob)
 {
     this->assert_thread();
 
@@ -1596,19 +1639,19 @@ void character::award_exp(const fb::game::mob& mob)
             if (shared_ptr == nullptr)
                 continue;
 
-            shared_ptr->add_exp(divide_exp, true, true);
+            std::ignore = co_await shared_ptr->add_exp(divide_exp, true, true);
         }
     }
     else
     {
-        this->add_exp(exp, true, true);
+        std::ignore = co_await this->add_exp(exp, true, true);
     }
 }
 
 async::task<void> character::damage_to(const damage_list& targets, const damage_opts& opts)
 {
     this->assert_thread();
-    auto dead = this->damage_targets(targets, opts);
+    auto dead = co_await this->damage_targets(targets, opts);
     if (dead.empty() == false)
         co_await this->settle_kills(std::move(dead));
     co_return;
@@ -1709,14 +1752,16 @@ void character::marriage(const fb::game::marriage& value)
     this->_marriage = value;
 }
 
-void character::browse_ch(const character& ch)
+async::task<void> character::browse_ch(const character& ch)
 {
-    this->listener.on_browse_character(*this, ch);
+    co_await this->listener.on_browse_character(*this, ch);
+    co_return;
 }
 
-void character::item_tooltip(const item& item, uint16_t position)
+async::task<void> character::item_tooltip(const item& item, uint16_t position)
 {
-    this->listener.on_item_tooltip(*this, item, position);
+    co_await this->listener.on_item_tooltip(*this, item, position);
+    co_return;
 }
 
 async::task<void> character::show_user_list()
@@ -1725,86 +1770,98 @@ async::task<void> character::show_user_list()
     co_await this->listener.on_show_user_list(*this);
 }
 
-void character::show_world_map(uint32_t id, uint16_t index)
+async::task<void> character::show_world_map(uint32_t id, uint16_t index)
 {
-    this->listener.on_show_world_map(*this, id, index);
+    co_await this->listener.on_show_world_map(*this, id, index);
+    co_return;
 }
 
-void character::timer(uint32_t time, TIMER_TYPE type)
+async::task<void> character::timer(uint32_t time, TIMER_TYPE type)
 {
-    this->listener.on_timer(*this, time, type);
+    co_await this->listener.on_timer(*this, time, type);
+    co_return;
 }
-void character::weather(WEATHER_TYPE weather)
+async::task<void> character::weather(WEATHER_TYPE weather)
 {
-    this->listener.on_weather(*this, weather);
+    co_await this->listener.on_weather(*this, weather);
+    co_return;
 }
 
-void character::ping(uint32_t token)
+async::task<void> character::ping(uint32_t token)
 {
     this->assert_thread();
-    this->listener.on_ping(*this, token);
+    co_await this->listener.on_ping(*this, token);
+    co_return;
 }
 
-void character::save_ack()
+async::task<void> character::save_ack()
 {
     this->assert_thread();
-    this->listener.on_save(*this);
+    co_await this->listener.on_save(*this);
+    co_return;
 }
 
-void character::bulk_objects_update(const std::vector<object*>& objects)
+async::task<void> character::bulk_objects_update(const std::vector<object*>& objects)
 {
     this->assert_thread();
-    this->listener.on_bulk_update(*this, objects);
+    co_await this->listener.on_bulk_update(*this, objects);
 }
 
-void character::ad(uint32_t width, uint32_t height, std::string_view url, uint8_t time)
+async::task<void> character::ad(uint32_t width, uint32_t height, std::string_view url, uint8_t time)
 {
     this->assert_thread();
-    this->listener.on_ad(*this, width, height, url, time);
+    co_await this->listener.on_ad(*this, width, height, url, time);
+    co_return;
 }
 
-void character::web(uint8_t type, std::string_view url, std::string_view message)
+async::task<void> character::web(uint8_t type, std::string_view url, std::string_view message)
 {
     this->assert_thread();
-    this->listener.on_web(*this, type, url, message);
+    co_await this->listener.on_web(*this, type, url, message);
+    co_return;
 }
 
-void character::ui(uint8_t screen)
+async::task<void> character::ui(uint8_t screen)
 {
     this->assert_thread();
-    this->listener.on_ui(*this, screen);
+    co_await this->listener.on_ui(*this, screen);
+    co_return;
 }
 
-void character::item_throw_confirm(uint8_t slot)
+async::task<void> character::item_throw_confirm(uint8_t slot)
 {
     this->assert_thread();
-    this->listener.on_item_throw_confirm(*this, slot);
+    co_await this->listener.on_item_throw_confirm(*this, slot);
+    co_return;
 }
 
-void character::freeze(bool value)
+async::task<void> character::freeze(bool value)
 {
     this->assert_thread();
-    this->listener.on_freeze(*this, value);
+    co_await this->listener.on_freeze(*this, value);
+    co_return;
 }
 
-void character::friends_sync(uint8_t enabled)
+async::task<void> character::friends_sync(uint8_t enabled)
 {
     this->assert_thread();
-    this->listener.on_friends_sync(*this, enabled);
+    co_await this->listener.on_friends_sync(*this, enabled);
+    co_return;
 }
 
-void character::holyday_screen(uint8_t                          screen,
-                               uint8_t                          hair,
-                               fb::model::enum_value::DIRECTION direction,
-                               const fb::model::point<uint8_t>& position)
+async::task<void> character::holyday_screen(uint8_t                          screen,
+                                            uint8_t                          hair,
+                                            fb::model::enum_value::DIRECTION direction,
+                                            const fb::model::point<uint8_t>& position)
 {
     this->assert_thread();
-    this->listener.on_holyday_screen(*this, screen, hair, direction, position);
+    co_await this->listener.on_holyday_screen(*this, screen, hair, direction, position);
+    co_return;
 }
 
-void character::update_id()
+async::task<void> character::update_id()
 {
-    this->listener.on_update_id(*this);
+    co_await this->listener.on_update_id(*this);
 }
 
 void character::weapon_damage(uint16_t value)
@@ -1819,7 +1876,7 @@ uint16_t character::weapon_damage() const
     return this->_weapon_damage;
 }
 
-void character::detect(bool value)
+async::task<void> character::detect(bool value)
 {
     this->assert_thread();
     this->_detect = value;
@@ -1830,8 +1887,10 @@ void character::detect(bool value)
         if (ch->state() != STATE::CLOACK && ch->state() != STATE::ADV_CLOACK)
             continue;
 
-        ch->update_external(*this, true);
+        co_await ch->update_external(*this, true);
     }
+
+    co_return;
 }
 
 bool character::detect() const
@@ -1888,9 +1947,9 @@ bool character::detach_spawned_mob(fb::game::mob& mob)
     return false;
 }
 
-void character::bright(uint8_t value)
+async::task<void> character::bright(uint8_t value)
 {
-    this->listener.on_bright(*this, value);
+    co_await this->listener.on_bright(*this, value);
 }
 
 bool character::super_hide() const
@@ -1898,7 +1957,7 @@ bool character::super_hide() const
     return this->_super_hide;
 }
 
-void character::super_hide(bool enabled)
+async::task<void> character::super_hide(bool enabled)
 {
     this->assert_thread();
     this->_super_hide = enabled;
@@ -1907,16 +1966,16 @@ void character::super_hide(bool enabled)
         for (auto& obj : this->nears(OBJECT_TYPE::CHARACTER))
         {
             if (this->hidden(*obj))
-                this->hide(*obj);
+                co_await this->hide(*obj);
             else
-                this->update_external(*obj, false);
+                co_await this->update_external(*obj, false);
         }
     }
     else
     {
         for (auto& obj : this->nears(OBJECT_TYPE::CHARACTER))
         {
-            this->update_external(*obj, false);
+            co_await this->update_external(*obj, false);
         }
     }
 }
@@ -1960,7 +2019,7 @@ async::task<void> character::death_penalty()
     }
     for (auto k : buff_keys)
     {
-        this->buffs.remove(k);
+        std::ignore = co_await this->buffs.remove(k);
     }
 
     auto money = this->money();
@@ -1986,16 +2045,16 @@ async::task<void> character::death_penalty()
             auto  equipment       = std::static_pointer_cast<fb::game::equipment>(item);
             auto& equipment_model = equipment->based<fb::model::equipment>();
             auto  penalty         = equipment_model.durability * fb::model::const_value::death_penalty::durability;
-            if (equipment->durability_down(penalty))
+            if (co_await equipment->durability_down(penalty))
             {
-                this->items.remove(i, 1, ITEM_DELETE_TYPE::DESTROY);
+                std::ignore = co_await this->items.remove(i, 1, ITEM_DELETE_TYPE::DESTROY);
                 continue;
             }
         }
 
         if (ENUM_IN(model.death_penalty, DEATH_PENALTY::DROP))
         {
-            this->items.drop(i, item->count(), false, ITEM_DELETE_TYPE::NONE);
+            std::ignore = co_await this->items.drop(i, item->count(), false, ITEM_DELETE_TYPE::NONE);
             item->container(nullptr);
             item->death_uid(this->id);
             std::ignore = co_await item->map(this->map(), this->position());
@@ -2009,25 +2068,25 @@ async::task<void> character::death_penalty()
 
         auto& model   = equipment->based<fb::model::equipment>();
         auto  penalty = model.durability * fb::model::const_value::death_penalty::durability;
-        if (equipment->durability_down(penalty))
+        if (co_await equipment->durability_down(penalty))
         {
-            this->items.equipment_off(parts);
-            this->message(std::format(_TEXT(MESSAGE_EQUIPMENT_BROKEN), equipment->name()));
+            std::ignore = co_await this->items.equipment_off(parts);
+            co_await this->message(std::format(_TEXT(MESSAGE_EQUIPMENT_BROKEN), equipment->name()));
             equipment.reset();
             continue;
         }
 
         if (ENUM_IN(model.death_penalty, DEATH_PENALTY::DROP))
         {
-            this->items.equipment_off(parts);
+            std::ignore = co_await this->items.equipment_off(parts);
             equipment->container(nullptr);
             equipment->death_uid(this->id);
             std::ignore = co_await equipment->map(this->map(), this->position());
         }
         else if (this->items.free())
         {
-            this->items.equipment_off(parts);
-            this->items.add(equipment);
+            std::ignore = co_await this->items.equipment_off(parts);
+            std::ignore = co_await this->items.add(equipment);
         }
     }
 
@@ -2041,17 +2100,17 @@ async::task<void> character::death_penalty()
         penalty = std::min(gained, penalty);
         if (penalty > 0)
         {
-            this->exp(this->exp() - penalty);
-            this->message(std::format(_TEXT(MESSAGE_EXP_LOST), penalty));
+            co_await this->exp(this->exp() - penalty);
+            co_await this->message(std::format(_TEXT(MESSAGE_EXP_LOST), penalty));
         }
     }
 }
 
-bool character::reward(const std::vector<fb::model::dsl>& reward)
+async::task<bool> character::reward(const std::vector<fb::model::dsl>& reward)
 {
     this->assert_thread();
     if (this->items.is_rewardable(reward) == false)
-        return false;
+        co_return false;
 
     auto money = 0;
     auto exp   = 0;
@@ -2083,9 +2142,9 @@ bool character::reward(const std::vector<fb::model::dsl>& reward)
                 *params.custom_name != "null" && model.attr(ITEM_ATTRIBUTE::WEAPON))
             {
                 auto weapon = std::static_pointer_cast<fb::game::weapon>(item);
-                weapon->custom_name(*params.custom_name);
+                co_await weapon->custom_name(*params.custom_name);
             }
-            this->items.add(item);
+            std::ignore = co_await this->items.add(item);
             break;
         }
         case fb::model::enum_value::DSL::money:
@@ -2106,12 +2165,12 @@ bool character::reward(const std::vector<fb::model::dsl>& reward)
     }
 
     if (exp > 0)
-        this->add_exp(exp, false, true);
+        std::ignore = co_await this->add_exp(exp, false, true);
 
     if (money > 0)
-        this->money_add(money);
+        std::ignore = co_await this->money_add(money);
 
-    return true;
+    co_return true;
 }
 
 std::shared_ptr<fb::socket<character>> character::socket_ptr() const

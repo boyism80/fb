@@ -35,13 +35,13 @@ async::task<bool> item_combine::handle(fb::socket<character>& session, game_reqs
     auto found = table::recipe.find(dsl);
     if (found == nullptr)
     {
-        ch->message(_TEXT(MESSAGE_NO_RECIPE));
+        co_await ch->message(_TEXT(MESSAGE_NO_RECIPE));
         co_return true;
     }
 
     if (found->success.size() > ch->items.free_size() + found->source.size())
     {
-        ch->message(_TEXT(MESSAGE_EXCEPTION_INVENTORY_OVERFLOW));
+        co_await ch->message(_TEXT(MESSAGE_EXCEPTION_INVENTORY_OVERFLOW));
         co_return true;
     }
 
@@ -70,9 +70,9 @@ async::task<bool> item_combine::handle(fb::socket<character>& session, game_reqs
     // Remove source items (always consumed regardless of success/failure)
     for (auto& [item, count] : items_to_remove)
     {
-        auto deleted = ch->items.remove(item, count);
+        auto deleted = co_await ch->items.remove(item, count);
         if (deleted != nullptr)
-            std::ignore = deleted->destroy();
+            co_await deleted->destroy();
     }
 
     // Calculate success/failure probability
@@ -90,13 +90,13 @@ async::task<bool> item_combine::handle(fb::socket<character>& session, game_reqs
             auto item  = this->server.make<fb::game::item>(table::item[params.id]);
             auto count = std::min<uint16_t>(model.capacity, remain);
             item->count(count);
-            ch->items.add(item);
-            remain -= count;
+            std::ignore  = co_await ch->items.add(item);
+            remain      -= count;
         }
     }
 
     auto& message = success ? _TEXT(MESSAGE_MIX_SUCCESS) : _TEXT(MESSAGE_MIX_FAILED);
-    ch->message(message);
+    co_await ch->message(message);
 
     // Log item combine event
     auto log_data              = Json::Value();

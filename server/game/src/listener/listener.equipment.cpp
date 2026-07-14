@@ -1,85 +1,130 @@
 #include <fb/game/server.h>
+
 #include <fb/model/model.h>
+#include <tuple>
 
 using namespace fb::game;
 
 namespace game_resp = fb::protocol::game::response;
 
-void listener_impl::on_equipment_on(character& me, item& item, EQUIPMENT_PARTS parts)
+async::task<void> listener_impl::on_equipment_on(character& me, item& item, EQUIPMENT_PARTS parts)
+
 {
-    me.send(game_resp::item_update_slot(me, parts));
-    me.sound(SOUND::EQUIPMENT_ON);
+
+    std::ignore = co_await me.send(game_resp::item_update_slot(me, parts));
+
+    co_await me.sound(SOUND::EQUIPMENT_ON);
 
     std::stringstream sstream;
+
     switch (parts)
+
     {
+
     case EQUIPMENT_PARTS::WEAPON:
+
         sstream << _TEXT(MESSAGE_EQUIPMENT_PART_WEAPON);
+
         break;
 
     case EQUIPMENT_PARTS::ARMOR:
+
         sstream << _TEXT(MESSAGE_EQUIPMENT_PART_ARMOR);
+
         break;
 
     case EQUIPMENT_PARTS::SHIELD:
+
         sstream << _TEXT(MESSAGE_EQUIPMENT_PART_SHIELD);
+
         break;
 
     case EQUIPMENT_PARTS::HELMET:
+
         sstream << _TEXT(MESSAGE_EQUIPMENT_PART_HELMET);
+
         break;
 
     case EQUIPMENT_PARTS::LEFT_HAND:
+
         sstream << _TEXT(MESSAGE_EQUIPMENT_PART_LEFT_HAND);
+
         break;
 
     case EQUIPMENT_PARTS::RIGHT_HAND:
+
         sstream << _TEXT(MESSAGE_EQUIPMENT_PART_RIGHT_HAND);
+
         break;
 
     case EQUIPMENT_PARTS::LEFT_AUX:
+
         sstream << _TEXT(MESSAGE_EQUIPMENT_PART_LEFT_AUX);
+
         break;
 
     case EQUIPMENT_PARTS::RIGHT_AUX:
+
         sstream << _TEXT(MESSAGE_EQUIPMENT_PART_RIGHT_AUX);
+
         break;
     }
 
     sstream << item.name();
-    me.message(sstream.str(), MESSAGE_TYPE::STATE);
+
+    co_await me.message(sstream.str(), MESSAGE_TYPE::STATE);
 
     sstream.str(std::string());
+
     sstream << std::format(_TEXT(MESSAGE_EQUIPMENT_STAT_ARMOR),
+
                            me.stat.phydef(),
+
                            me.stat.regenerative(),
+
                            me.stat.magdef());
-    me.message(sstream.str(), MESSAGE_TYPE::STATE);
+
+    co_await me.message(sstream.str(), MESSAGE_TYPE::STATE);
 }
 
-void listener_impl::on_equipment_off(character& me, EQUIPMENT_PARTS parts, fb::game::equipment& equipment)
+async::task<void> listener_impl::on_equipment_off(character& me, EQUIPMENT_PARTS parts, fb::game::equipment& equipment)
+
 {
-    me.sound(SOUND::EQUIPMENT_OFF);
+
+    co_await me.sound(SOUND::EQUIPMENT_OFF);
 }
 
-void listener_impl::on_durability_down(character& me, fb::game::equipment& equipment, uint32_t before, uint32_t after)
+async::task<void>
+listener_impl::on_durability_down(character& me, fb::game::equipment& equipment, uint32_t before, uint32_t after)
+
 {
-    auto& model          = equipment.based<fb::model::equipment>();
-    auto  percent_before = (uint8_t)std::ceil((before * 100) / (double)model.durability);
-    auto  percent_after  = (uint8_t)std::ceil((after * 100) / (double)model.durability);
+
+    auto& model = equipment.based<fb::model::equipment>();
+
+    auto percent_before = (uint8_t)std::ceil((before * 100) / (double)model.durability);
+
+    auto percent_after = (uint8_t)std::ceil((after * 100) / (double)model.durability);
 
     if (percent_before == percent_after)
-        return;
+
+        co_return;
 
     if (percent_before < percent_after)
-        return;
+
+        co_return;
 
     if (after == 0)
+
     {
-        me.message(std::format(_TEXT(MESSAGE_EQUIPMENT_DURABILITY_EXHAUSTED), equipment.name()));
+
+        co_await me.message(std::format(_TEXT(MESSAGE_EQUIPMENT_DURABILITY_EXHAUSTED), equipment.name()));
     }
+
     else if (percent_after % 5 == 0 || percent_after < 5 || percent_before - percent_after >= 5)
+
     {
-        me.message(std::format(_TEXT(MESSAGE_EQUIPMENT_DURABILITY_REMAINING), equipment.name(), percent_after));
+
+        co_await me.message(
+            std::format(_TEXT(MESSAGE_EQUIPMENT_DURABILITY_REMAINING), equipment.name(), percent_after));
     }
 }

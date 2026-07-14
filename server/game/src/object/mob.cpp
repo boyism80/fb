@@ -4,6 +4,7 @@
 #include <fb/game/map.h>
 #include <fb/game/mob.h>
 #include <fb/game/ai.h>
+#include <tuple>
 
 using namespace fb::game;
 using table = fb::model::table;
@@ -65,8 +66,8 @@ async::task<void> rezen::spawn(std::thread::id thread_id)
         auto mob = this->_server.make<fb::game::mob>(table::mob[this->model.mob],
                                                      mob::initial_params{.alive = true, .rezen = this});
 
-        mob->direction(DIRECTION(std::rand() % 4));
-        mob->stat.heal(mob->stat.base_hp());
+        std::ignore = co_await mob->direction(DIRECTION(std::rand() % 4));
+        std::ignore = co_await mob->stat.heal(mob->stat.base_hp());
 
         while (true)
         {
@@ -81,7 +82,7 @@ async::task<void> rezen::spawn(std::thread::id thread_id)
             if (map->blocked(position.x, position.y))
                 continue;
 
-            mob->position(position, true);
+            std::ignore = co_await mob->position(position, true);
             std::ignore = co_await mob->map(map, position, {.notify = false});
             break;
         }
@@ -100,7 +101,7 @@ async::task<void> rezen::spawn(std::thread::id thread_id)
     {
         oids.push_back(mob->oid());
     }
-    map->bulk_update(oids);
+    co_await map->bulk_update(oids);
 
     this->_respawn_time.reset();
 }
@@ -123,8 +124,9 @@ mob::mob(fb::game::server& server, const fb::model::mob& model, const initial_pa
     this->hidden(!params.alive);
     if (params.alive)
     {
-        this->stat.heal(this->stat.base_hp());
-        this->stat.mp_up(this->stat.base_mp());
+        // Constructor cannot await; notify=false so these eager tasks complete without send.
+        this->stat.hp(this->stat.base_hp(), false);
+        this->stat.mp_up(this->stat.base_mp(), nullptr, false);
     }
 }
 
@@ -200,7 +202,7 @@ async::task<void> mob::action(fb::model::datetime now)
     if (co_await this->call_script() == false)
         co_return;
 
-    this->AI(now);
+    co_await this->AI(now);
 }
 
 const fb::model::datetime& mob::action_time() const
@@ -338,54 +340,54 @@ bool mob::near_target(const std::shared_ptr<fb::game::life>& target, DIRECTION& 
     return false;
 }
 
-bool mob::move_step(const fb::model::point16_t& position)
+async::task<bool> mob::move_step(const fb::model::point16_t& position)
 {
     this->assert_thread();
     auto x_axis = bool(std::rand() % 2);
     if (x_axis)
     {
-        if (this->_position.x > position.x && this->move(DIRECTION::LEFT))
-            return true;
-        if (this->_position.x < position.x && this->move(DIRECTION::RIGHT))
-            return true;
-        if (this->_position.y > position.y && this->move(DIRECTION::TOP))
-            return true;
-        if (this->_position.y < position.y && this->move(DIRECTION::BOTTOM))
-            return true;
+        if (this->_position.x > position.x && co_await this->move(DIRECTION::LEFT))
+            co_return true;
+        if (this->_position.x < position.x && co_await this->move(DIRECTION::RIGHT))
+            co_return true;
+        if (this->_position.y > position.y && co_await this->move(DIRECTION::TOP))
+            co_return true;
+        if (this->_position.y < position.y && co_await this->move(DIRECTION::BOTTOM))
+            co_return true;
     }
     else
     {
-        if (this->_position.y > position.y && this->move(DIRECTION::TOP))
-            return true;
-        if (this->_position.y < position.y && this->move(DIRECTION::BOTTOM))
-            return true;
-        if (this->_position.x > position.x && this->move(DIRECTION::LEFT))
-            return true;
-        if (this->_position.x < position.x && this->move(DIRECTION::RIGHT))
-            return true;
+        if (this->_position.y > position.y && co_await this->move(DIRECTION::TOP))
+            co_return true;
+        if (this->_position.y < position.y && co_await this->move(DIRECTION::BOTTOM))
+            co_return true;
+        if (this->_position.x > position.x && co_await this->move(DIRECTION::LEFT))
+            co_return true;
+        if (this->_position.x < position.x && co_await this->move(DIRECTION::RIGHT))
+            co_return true;
     }
 
-    return false;
+    co_return false;
 }
 
-void mob::AI(const fb::model::datetime& now)
+async::task<void> mob::AI(const fb::model::datetime& now)
 {
     this->assert_thread();
 
     if (this->_attack_thread != nullptr)
-        return;
+        co_return;
 
     if (ENUM_IN(static_cast<CROWD_CONTROL>(this->cc), CROWD_CONTROL::SIGHT))
-        return;
+        co_return;
 
     auto& model = this->based<fb::model::mob>();
     if (now < this->_action_time + model.speed)
-        return;
+        co_return;
 
     // Execute AI strategy if available
     if (this->_ai_strategy)
     {
-        this->_ai_strategy->execute(*this, now);
+        std::ignore        = co_await this->_ai_strategy->execute(*this, now);
         this->_action_time = now;
     }
 
@@ -408,11 +410,11 @@ uint32_t mob::normal_attack_damage(MOB_SIZE size) const
     return model.damage.min + (std::rand() % difference);
 }
 
-void mob::kill(DESTROY_TYPE destroy_type)
+async::task<void> mob::kill(DESTROY_TYPE destroy_type)
 {
     this->assert_thread();
-    life::kill(destroy_type);
-    std::ignore = this->destroy(destroy_type);
+    co_await life::kill(destroy_type);
+    co_await this->destroy(destroy_type);
 }
 
 async::task<void> mob::damage_to(const damage_list& targets, const damage_opts& opts)
@@ -420,7 +422,7 @@ async::task<void> mob::damage_to(const damage_list& targets, const damage_opts& 
     this->assert_thread();
 
     // Damage is always applied as this mob (not redirected to owner).
-    auto dead = this->damage_targets(targets, opts);
+    auto dead = co_await this->damage_targets(targets, opts);
     if (dead.empty())
         co_return;
 
@@ -476,7 +478,7 @@ async::task<void> mob::drop_items()
     }
 
     if (!oids.empty())
-        this->map()->bulk_update(oids);
+        co_await this->map()->bulk_update(oids);
 }
 
 void mob::assert_thread() const
@@ -537,20 +539,20 @@ bool mob::cover_blocks_move(const fb::game::map&        map,
     return false;
 }
 
-bool mob::move(DIRECTION direction)
+async::task<bool> mob::move(DIRECTION direction)
 {
     this->assert_thread();
     auto map = this->map();
     if (map == nullptr)
-        return false;
+        co_return false;
 
     const auto& from     = this->position();
     const auto  position = this->side_position(direction);
 
     if (this->cover_blocks_move(*map, from, position))
-        return false;
+        co_return false;
 
-    return fb::game::object::move(direction);
+    co_return co_await fb::game::object::move(direction);
 }
 
 const std::vector<std::shared_ptr<fb::game::item>>& mob::items() const

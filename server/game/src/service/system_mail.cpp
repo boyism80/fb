@@ -76,16 +76,10 @@ fb::async_generator<void> service::system_mail::delivery_coroutine()
 {
     while (true)
     {
-        character::container::online_snapshot_t online_users;
-        {
-            auto guard   = this->server.characters.enter_read();
-            online_users = guard.value().online_users();
-        }
-
         const auto now = this->server.now();
         prune_expired_mails(this->_pending_mails, now);
 
-        if (online_users.empty())
+        if (this->server.characters.size() == 0)
         {
             co_await fb::async_suspend{};
             continue;
@@ -131,14 +125,9 @@ fb::async_generator<void> service::system_mail::delivery_coroutine()
             if (expired(mail, now))
                 continue;
 
-            auto eligible = std::vector<uint32_t>{};
-            eligible.reserve(online_users.size());
-
-            for (const auto& [user_id, created_date] : online_users)
-            {
-                if (created_date < mail.created_date)
-                    eligible.push_back(user_id);
-            }
+            auto eligible = this->server.characters.collect_ids([&](const auto& ch) {
+                return ch->created_date() < mail.created_date;
+            });
 
             for (std::size_t i = 0; i < eligible.size(); i += chunk_limit)
             {

@@ -22,20 +22,20 @@ crowd_control::crowd_control(life& owner, crowd_control&& other) :
     _value(std::move(other._value))
 { }
 
-CROWD_CONTROL crowd_control::add(CROWD_CONTROL value)
+async::task<CROWD_CONTROL> crowd_control::add(CROWD_CONTROL value)
 {
     this->_owner.assert_thread();
     this->_value = CROWD_CONTROL(this->_value | value);
-    this->_owner.update(UPDATE_STATE_LEVEL::CROWD_CONTROL);
-    return this->_value;
+    co_await this->_owner.update(UPDATE_STATE_LEVEL::CROWD_CONTROL);
+    co_return this->_value;
 }
 
-CROWD_CONTROL crowd_control::remove(CROWD_CONTROL value)
+async::task<CROWD_CONTROL> crowd_control::remove(CROWD_CONTROL value)
 {
     this->_owner.assert_thread();
     this->_value = CROWD_CONTROL(this->_value & ~value);
-    this->_owner.update(UPDATE_STATE_LEVEL::CROWD_CONTROL);
-    return this->_value;
+    co_await this->_owner.update(UPDATE_STATE_LEVEL::CROWD_CONTROL);
+    co_return this->_value;
 }
 
 bool crowd_control::contains(CROWD_CONTROL value) const
@@ -44,18 +44,18 @@ bool crowd_control::contains(CROWD_CONTROL value) const
     return uint32_t(this->_value) & uint32_t(value);
 }
 
-void crowd_control::clear()
+async::task<void> crowd_control::clear()
 {
     this->_owner.assert_thread();
     this->_value = CROWD_CONTROL::NONE;
-    this->_owner.update(UPDATE_STATE_LEVEL::CROWD_CONTROL);
+    co_await this->_owner.update(UPDATE_STATE_LEVEL::CROWD_CONTROL);
 }
 
-void crowd_control::set(CROWD_CONTROL value)
+async::task<void> crowd_control::set(CROWD_CONTROL value)
 {
     this->_owner.assert_thread();
     this->_value = value;
-    this->_owner.update(UPDATE_STATE_LEVEL::CROWD_CONTROL);
+    co_await this->_owner.update(UPDATE_STATE_LEVEL::CROWD_CONTROL);
 }
 
 crowd_control::operator CROWD_CONTROL () const

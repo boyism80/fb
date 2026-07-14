@@ -1,6 +1,7 @@
 #include <fb/game/server.h>
 #include <fb/game/map.h>
 #include <fb/game/thread_params.h>
+#include <fb/logger.h>
 #include <algorithm>
 
 using namespace fb::game;
@@ -341,10 +342,10 @@ std::vector<std::shared_ptr<fb::game::object>> map::belows(const fb::model::poin
     return objects;
 }
 
-void map::bulk_update(const std::vector<uint32_t>& oids)
+async::task<void> map::bulk_update(const std::vector<uint32_t>& oids)
 {
     if (oids.empty())
-        return;
+        co_return;
 
     // Use unordered_set for better performance (O(1) vs O(log n))
     auto affected = std::unordered_set<const sector*>();
@@ -388,9 +389,17 @@ void map::bulk_update(const std::vector<uint32_t>& oids)
 
         if (!changed_objects.empty())
         {
-            target->bulk_objects_update(changed_objects);
+            try
+            {
+                co_await target->bulk_objects_update(changed_objects);
+            }
+            catch (const std::exception& e)
+            {
+                fb::logger::fatal("bulk_update failed for {}: {}", target->name(), e.what());
+            }
         }
     }
+    co_return;
 }
 
 void map::rezen_force() const

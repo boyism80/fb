@@ -1,7 +1,9 @@
 #include <fb/game/server.h>
 #include <fb/game/handler.h>
 #include <fb/log_collector.h>
+#include <fb/logger.h>
 #include <json/json.h>
+#include <tuple>
 
 using namespace fb::game;
 
@@ -32,12 +34,32 @@ fb::game::server::send(object& object, const fb::protocol::header& header, fb::g
     if (shared_ptr == nullptr)
         co_return;
 
+    auto send_to = [stream, encrypt = options.encrypt](auto& ch) -> async::task<void> {
+        try
+        {
+            std::ignore = co_await ch->send(stream, encrypt);
+        }
+        catch (const std::exception& e)
+        {
+            fb::logger::fatal("server::send recipient failed (oid={}): {}", ch->oid(), e.what());
+        }
+        co_return;
+    };
+
+    auto fanout = [this, send_to](std::vector<std::shared_ptr<character>> recipients) -> async::task<void> {
+        if (recipients.empty())
+            co_return;
+
+        co_await this->characters.foreach_async(send_to, recipients);
+    };
+
     switch (scope)
     {
     case fb::game::scope::PIVOT:
     {
-        if (options.with_me)
-            shared_ptr->send(stream, options.encrypt);
+        auto recipients = std::vector<std::shared_ptr<character>>{};
+        if (options.with_me && shared_ptr->is(OBJECT_TYPE::CHARACTER))
+            recipients.push_back(std::static_pointer_cast<character>(shared_ptr));
 
         for (auto& x : shared_ptr->nears(OBJECT_TYPE::CHARACTER, true))
         {
@@ -47,8 +69,23 @@ fb::game::server::send(object& object, const fb::protocol::header& header, fb::g
             if (shared_ptr->hidden(*x))
                 continue;
 
-            x->send(stream, options.encrypt);
+            recipients.push_back(std::static_pointer_cast<character>(x));
         }
+
+        // Non-character pivot source: still notify self (object::send is a no-op).
+        if (options.with_me && shared_ptr->is(OBJECT_TYPE::CHARACTER) == false)
+        {
+            try
+            {
+                std::ignore = co_await shared_ptr->send(stream, options.encrypt);
+            }
+            catch (const std::exception& e)
+            {
+                fb::logger::fatal("server::send recipient failed (oid={}): {}", shared_ptr->oid(), e.what());
+            }
+        }
+
+        co_await fanout(std::move(recipients));
     }
     break;
 
@@ -62,14 +99,18 @@ fb::game::server::send(object& object, const fb::protocol::header& header, fb::g
         if (group_id.has_value() == false)
             co_return;
 
+        auto recipients = std::vector<std::shared_ptr<character>>{};
         {
             auto  guard = this->groups.enter_read(group_id.value());
             auto& group = guard.value();
-            for (auto& shared_ptr : group->characters())
+            for (auto& member : group->characters())
             {
-                shared_ptr->send(stream, options.encrypt);
+                if (member != nullptr)
+                    recipients.push_back(member);
             }
         }
+
+        co_await fanout(std::move(recipients));
     }
     break;
 
@@ -79,35 +120,40 @@ fb::game::server::send(object& object, const fb::protocol::header& header, fb::g
         if (map == nullptr)
             co_return;
 
+        auto recipients = std::vector<std::shared_ptr<character>>{};
         for (const auto& [seq, obj] : map->objects)
         {
             if (!options.with_me && obj->oid() == shared_ptr->oid())
                 continue;
 
-            obj->send(stream, options.encrypt);
+            if (obj == nullptr || obj->is(OBJECT_TYPE::CHARACTER) == false)
+                continue;
+
+            recipients.push_back(std::static_pointer_cast<character>(obj));
         }
+
+        co_await fanout(std::move(recipients));
     }
     break;
 
     case fb::game::scope::WORLD:
     {
-        auto guard = this->characters.enter_write();
-        guard.value().send(stream, options.encrypt);
+        co_await this->characters.foreach_async(send_to);
     }
     break;
     }
 }
 
-void fb::game::server::sync_time()
+async::task<void> fb::game::server::sync_time()
 {
     auto updated = this->now();
     if (this->_time.hours() != updated.hours())
     {
-        auto guard = this->characters.enter_write();
-        guard.value().update_time(updated.hours());
+        co_await this->characters.update_time(updated.hours());
     }
 
     this->_time = updated;
+    co_return;
 }
 
 async::task<void> fb::game::server::save(character& ch)
@@ -121,7 +167,7 @@ async::task<void> fb::game::server::save(character& ch)
     std::ignore  = co_await this->http.post("internal", "/in-game/save", internal_reqs::Save{world, payload});
 
     co_await this->threads.switching(weak);
-    ch.save_ack();
+    co_await ch.save_ack();
 }
 
 async::task<internal_resp::Ban> fb::game::server::ban(std::string_view               name,
@@ -230,14 +276,13 @@ async::task<void> fb::game::server::save()
             auto payloads   = std::vector<internal::SavePayload>{};
             characters.reserve(params->characters.size());
             payloads.reserve(params->characters.size());
-            for (auto& [cid, character] : params->characters)
-            {
+            co_await params->characters.foreach ([&](auto& character) {
                 if (!character->inited())
-                    continue;
+                    return;
 
                 characters.push_back(character.get());
                 payloads.push_back(this->save_payload(*character));
-            }
+            });
 
             const size_t total = payloads.size();
             for (size_t offset = 0; offset < total; offset += SAVE_BATCH_CHUNK_SIZE)
@@ -252,7 +297,7 @@ async::task<void> fb::game::server::save()
 
                 for (size_t i = offset; i < chunk_end; i++)
                 {
-                    characters[i]->save_ack();
+                    co_await characters[i]->save_ack();
                 }
             }
             co_return;

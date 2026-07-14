@@ -4,6 +4,7 @@
 #include <fb/model/model.h>
 #include <fb/encoding.h>
 #include <json/json.h>
+#include <tuple>
 
 using namespace fb::game;
 
@@ -28,17 +29,18 @@ std::shared_ptr<fb::game::character> trade::you() const
     return this->_you.lock();
 }
 
-bool trade::begin(std::shared_ptr<fb::game::character> you)
+async::task<bool> trade::begin(std::shared_ptr<fb::game::character> you)
 {
     auto owner = this->_owner.lock();
     if (owner == nullptr)
-        return false;
+        co_return false;
 
+    auto error = std::optional<std::string>{};
     try
     {
         // Try to trade with yourself
         if (owner->id == you->id)
-            return false;
+            co_return false;
 
         // The owner has refused the trade
         if (owner->option(OPTION::TRADE) == false)
@@ -50,7 +52,7 @@ bool trade::begin(std::shared_ptr<fb::game::character> you)
 
         // The trade is already in progress
         if (this->trading())
-            return false;
+            co_return false;
 
         // The partner is already trading
         if (you->trade.trading())
@@ -66,37 +68,40 @@ bool trade::begin(std::shared_ptr<fb::game::character> you)
 
         this->_you      = you->weak_from_this_as<character>();
         you->trade._you = owner->weak_from_this_as<character>();
-        owner->listener.on_trade_begin(*owner, *you);
-        you->listener.on_trade_begin(*you, *owner);
+        co_await owner->listener.on_trade_begin(*owner, *you);
+        co_await you->listener.on_trade_begin(*you, *owner);
 
-        return true;
+        co_return true;
     }
     catch (std::exception& e)
     {
-        owner->message(e.what(), MESSAGE_TYPE::STATE);
+        error = e.what();
     }
-    return false;
+
+    if (error.has_value())
+        co_await owner->message(error.value(), MESSAGE_TYPE::STATE);
+    co_return false;
 }
 
-void trade::end()
+async::task<void> trade::end()
 {
     auto owner = this->_owner.lock();
     if (owner == nullptr)
-        return;
+        co_return;
 
     auto you = this->_you.lock();
     if (you != nullptr)
     {
         auto& trade = you->trade;
         trade._you.reset();
-        trade.end();
+        co_await trade.end();
         this->_you.reset();
     }
 
     this->_locked = false;
     if (this->_money > 0)
     {
-        owner->money_add(this->_money);
+        std::ignore  = co_await owner->money_add(this->_money);
         this->_money = 0;
     }
 
@@ -107,7 +112,7 @@ void trade::end()
             continue;
 
         item->trade_count(0);
-        owner->items.update(index);
+        std::ignore = co_await owner->items.update(index);
     }
     this->_items.clear();
 }
@@ -118,16 +123,17 @@ bool trade::trading() const
     return you != nullptr;
 }
 
-bool trade::up_item(uint8_t index)
+async::task<bool> trade::up_item(uint8_t index)
 {
     auto owner = this->_owner.lock();
     if (owner == nullptr)
-        return false;
+        co_return false;
 
     auto you = this->_you.lock();
     if (you == nullptr)
-        return false;
+        co_return false;
 
+    auto error = std::optional<std::string>{};
     try
     {
         auto item = owner->items[index];
@@ -146,51 +152,57 @@ bool trade::up_item(uint8_t index)
         {
             // Attempt to trade bundle-type item
             this->_selected = index;
-            owner->listener.on_trade_bundle(*owner);
-            return true;
+            co_await owner->listener.on_trade_bundle(*owner);
+            co_return true;
         }
 
         // Attempt to trade single item
         item->trade_count(1);
         auto order = this->add(index);
         if (order == 0xFF)
-            return false;
+            co_return false;
 
-        owner->items.update(index);
-        owner->listener.on_trade_item(*owner, *you, order, *this->item(index));
-        return true;
+        std::ignore = co_await owner->items.update(index);
+        co_await owner->listener.on_trade_item(*owner, *you, order, *this->item(index));
+        co_return true;
     }
     catch (std::exception& e)
     {
-        owner->message(e.what(), MESSAGE_TYPE::POPUP);
+        error = e.what();
     }
-    return false;
+
+    if (error.has_value())
+        co_await owner->message(error.value(), MESSAGE_TYPE::POPUP);
+    co_return false;
 }
 
-bool trade::up_money(uint32_t money)
+async::task<bool> trade::up_money(uint32_t money)
 {
     auto owner = this->_owner.lock();
     if (owner == nullptr)
-        return false;
+        co_return false;
 
     auto you = this->_you.lock();
     if (you == nullptr)
-        return false;
+        co_return false;
 
+    auto error = std::optional<std::string>{};
     try
     {
         this->_money = std::min<uint32_t>(owner->money(), money);
-        owner->update(UPDATE_STATE_LEVEL::EXP_MONEY);
-        owner->listener.on_trade_money(*owner, *you, this->_money);
+        co_await owner->update(UPDATE_STATE_LEVEL::EXP_MONEY);
+        co_await owner->listener.on_trade_money(*owner, *you, this->_money);
 
-        return true;
+        co_return true;
     }
     catch (std::exception& e)
     {
-        owner->message(e.what(), MESSAGE_TYPE::POPUP);
-        return false;
+        error = e.what();
     }
-    return false;
+
+    if (error.has_value())
+        co_await owner->message(error.value(), MESSAGE_TYPE::POPUP);
+    co_return false;
 }
 
 uint32_t trade::money() const
@@ -198,16 +210,17 @@ uint32_t trade::money() const
     return this->_money;
 }
 
-bool trade::count(uint16_t count)
+async::task<bool> trade::count(uint16_t count)
 {
     auto owner = this->_owner.lock();
     if (owner == nullptr)
-        return false;
+        co_return false;
 
     auto you = this->_you.lock();
     if (you == nullptr)
-        return false;
+        co_return false;
 
+    auto error = std::optional<std::string>{};
     try
     {
         if (this->trading() == false)
@@ -226,50 +239,57 @@ bool trade::count(uint16_t count)
             throw std::runtime_error(_TEXT(MESSAGE_TRADE_INVALID_COUNT));
 
         item->trade_count(item->trade_count() + count);
-        owner->items.update(this->_selected);
+        std::ignore = co_await owner->items.update(this->_selected);
 
         auto order = this->add(this->_selected);
-        owner->listener.on_trade_item(*owner, *you, order, *this->item(this->_selected));
+        co_await owner->listener.on_trade_item(*owner, *you, order, *this->item(this->_selected));
 
         this->_selected = 0xFF;
-        return true;
+        co_return true;
     }
     catch (std::exception& e)
     {
-        owner->message(e.what(), MESSAGE_TYPE::POPUP);
+        error = e.what();
     }
-    return false;
+
+    if (error.has_value())
+        co_await owner->message(error.value(), MESSAGE_TYPE::POPUP);
+    co_return false;
 }
 
-bool trade::cancel()
+async::task<bool> trade::cancel()
 {
     auto owner = this->_owner.lock();
     if (owner == nullptr)
-        return false;
+        co_return false;
 
     auto you = this->_you.lock();
     if (you == nullptr)
-        return false;
+        co_return false;
 
+    auto error = std::optional<std::string>{};
     try
     {
         if (this->trading() == false)
             throw std::runtime_error(_TEXT(MESSAGE_TRADE_NOT_TRADING));
 
-        this->restore();
-        you->trade.restore();
+        co_await this->restore();
+        co_await you->trade.restore();
 
-        owner->listener.on_trade_cancel(*owner, *you);
+        co_await owner->listener.on_trade_cancel(*owner, *you);
 
-        this->end();
-        return true;
+        co_await this->end();
+        co_return true;
     }
     catch (std::exception& e)
     {
-        this->end();
-        owner->message(e.what(), MESSAGE_TYPE::POPUP);
-        return false;
+        error = e.what();
     }
+
+    co_await this->end();
+    if (error.has_value())
+        co_await owner->message(error.value(), MESSAGE_TYPE::POPUP);
+    co_return false;
 }
 
 uint8_t trade::add(uint8_t index)
@@ -281,16 +301,16 @@ uint8_t trade::add(uint8_t index)
     if (this->_items.contains(index))
         return this->_items.at(index);
 
-    auto order = this->_items.size();
+    auto order = static_cast<uint8_t>(this->_items.size());
     this->_items.insert({index, order});
     return order;
 }
 
-void trade::restore()
+async::task<void> trade::restore()
 {
     auto owner = this->_owner.lock();
     if (owner == nullptr)
-        return;
+        co_return;
 
     for (auto& [index, order] : this->_items)
     {
@@ -299,12 +319,12 @@ void trade::restore()
             continue;
 
         item->trade_count(0);
-        owner->items.update(index);
+        std::ignore = co_await owner->items.update(index);
     }
     this->_items.clear();
 
     this->_money = 0;
-    owner->update(UPDATE_STATE_LEVEL::EXP_MONEY);
+    co_await owner->update(UPDATE_STATE_LEVEL::EXP_MONEY);
 }
 
 std::shared_ptr<fb::game::item> trade::find(const fb::model::item& item) const
@@ -365,12 +385,13 @@ void trade::assert_exchange(const trade& trade) const
         throw std::runtime_error(_TEXT(MESSAGE_ITEM_FULL));
 }
 
-void trade::exchange(trade& trade1, trade& trade2)
+async::task<void> trade::exchange(trade& trade1, trade& trade2)
 {
-    static auto push_buffer = [](trade& trade, std::vector<std::shared_ptr<fb::game::item>>& buffer) -> uint32_t {
+    static auto push_buffer = [](trade&                                        trade,
+                                 std::vector<std::shared_ptr<fb::game::item>>& buffer) -> async::task<uint32_t> {
         auto owner = trade._owner.lock();
         if (owner == nullptr)
-            return 0;
+            co_return 0;
 
         for (auto& [index, order] : trade._items)
         {
@@ -383,7 +404,7 @@ void trade::exchange(trade& trade1, trade& trade2)
 
             auto split = item->split(trade_count);
             if (split == item)
-                owner->items.remove(item, item->count(), ITEM_DELETE_TYPE::NONE, true);
+                std::ignore = co_await owner->items.remove(item, item->count(), ITEM_DELETE_TYPE::NONE, true);
 
             buffer.push_back(split);
         }
@@ -391,49 +412,50 @@ void trade::exchange(trade& trade1, trade& trade2)
         auto money   = trade._money;
         trade._money = 0;
         owner->money_reduce(money);
-        return money;
+        co_return money;
     };
 
     trade1.assert_exchange(trade2);
     trade2.assert_exchange(trade1);
 
     auto buffer1 = std::vector<std::shared_ptr<fb::game::item>>();
-    auto money1  = push_buffer(trade1, buffer1);
+    auto money1  = co_await push_buffer(trade1, buffer1);
 
     auto buffer2 = std::vector<std::shared_ptr<fb::game::item>>();
-    auto money2  = push_buffer(trade2, buffer2);
+    auto money2  = co_await push_buffer(trade2, buffer2);
 
     auto owner1 = trade1._owner.lock();
     if (owner1 == nullptr)
-        return;
+        co_return;
 
     auto owner2 = trade2._owner.lock();
     if (owner2 == nullptr)
-        return;
+        co_return;
 
     for (auto& item : buffer2)
     {
-        owner1->items.add(item);
+        std::ignore = co_await owner1->items.add(item);
     }
-    owner1->money_add(money2);
+    std::ignore = co_await owner1->money_add(money2);
 
     for (auto& item : buffer1)
     {
-        owner2->items.add(item);
+        std::ignore = co_await owner2->items.add(item);
     }
-    owner2->money_add(money1);
+    std::ignore = co_await owner2->money_add(money1);
 }
 
-bool trade::lock()
+async::task<bool> trade::lock()
 {
     auto owner = this->_owner.lock();
     if (owner == nullptr)
-        return false;
+        co_return false;
 
     auto you = this->_you.lock();
     if (you == nullptr)
-        return false;
+        co_return false;
 
+    auto failed = false;
     try
     {
         if (this->trading() == false)
@@ -442,18 +464,18 @@ bool trade::lock()
         this->_locked = true;
         if (you->trade._locked == false) // Peer has not confirmed yet
         {
-            owner->listener.on_trade_lock(*owner, *you);
-            return true;
+            co_await owner->listener.on_trade_lock(*owner, *you);
+            co_return true;
         }
 
-        this->exchange(*this, you->trade);
+        co_await this->exchange(*this, you->trade);
 
         // Call listener for packet response
-        owner->listener.on_trade_success(*owner, *you);
+        co_await owner->listener.on_trade_success(*owner, *you);
 
         // Update state after successful trade
-        owner->update(UPDATE_STATE_LEVEL::EXP_MONEY);
-        you->update(UPDATE_STATE_LEVEL::EXP_MONEY);
+        co_await owner->update(UPDATE_STATE_LEVEL::EXP_MONEY);
+        co_await you->update(UPDATE_STATE_LEVEL::EXP_MONEY);
 
         // Log trade completion
         auto log_data               = Json::Value();
@@ -501,16 +523,21 @@ bool trade::lock()
         }
         owner->server.log.write("trade_complete", log_data);
 
-        this->end();
-        return true;
+        co_await this->end();
+        co_return true;
     }
     catch (std::exception& e)
     {
-        owner->listener.on_trade_failed(*owner, *you);
-
-        this->end();
-        return false;
+        std::ignore = e;
+        failed      = true;
     }
+
+    if (failed)
+    {
+        co_await owner->listener.on_trade_failed(*owner, *you);
+        co_await this->end();
+    }
+    co_return false;
 }
 
 const std::vector<std::shared_ptr<fb::game::item>> trade::items() const

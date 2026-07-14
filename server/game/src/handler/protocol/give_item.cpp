@@ -28,6 +28,7 @@ async::task<bool> give_item::handle(fb::socket<character>& session, game_reqs::g
 
     auto  count = request.all ? item->count() : 1;
     auto& model = item->based<fb::model::item>();
+    auto  error = std::optional<std::string>{};
 
     try
     {
@@ -52,13 +53,14 @@ async::task<bool> give_item::handle(fb::socket<character>& session, game_reqs::g
                     throw std::runtime_error(_TEXT(MESSAGE_ITEM_TARGET_INVENTORY_FULL));
             }
 
-            item = me->items.remove(item, count, ITEM_DELETE_TYPE::GIVE);
+            item = co_await me->items.remove(item, count, ITEM_DELETE_TYPE::GIVE);
             if (count == 1)
-                you->message(std::format(_TEXT(MESSAGE_ITEM_GIVE_SINGLE), me->name(), name_with(item->name())));
+                co_await you->message(
+                    std::format(_TEXT(MESSAGE_ITEM_GIVE_SINGLE), me->name(), name_with(item->name())));
             else
-                you->message(
+                co_await you->message(
                     std::format(_TEXT(MESSAGE_ITEM_GIVE_MULTIPLE), me->name(), name_with(item->name()), count));
-            you->items.add(item);
+            std::ignore = co_await you->items.add(item);
         }
         break;
 
@@ -68,7 +70,7 @@ async::task<bool> give_item::handle(fb::socket<character>& session, game_reqs::g
             if (mob->items().size() >= CONTAINER_CAPACITY)
                 throw std::runtime_error(_TEXT(MESSAGE_ITEM_CANNOT_GIVE_ANYMORE));
 
-            item = me->items.remove(item, count, ITEM_DELETE_TYPE::GIVE, true);
+            item = co_await me->items.remove(item, count, ITEM_DELETE_TYPE::GIVE, true);
             mob->push_item(item);
         }
         break;
@@ -79,8 +81,11 @@ async::task<bool> give_item::handle(fb::socket<character>& session, game_reqs::g
     }
     catch (std::exception& e)
     {
-        me->message(e.what());
+        error = e.what();
     }
+
+    if (error.has_value())
+        co_await me->message(error.value());
 
     co_return true;
 }

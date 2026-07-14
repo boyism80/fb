@@ -152,17 +152,17 @@ std::optional<uint32_t> fb::game::item::death_uid() const
     return this->_death_uid;
 }
 
-bool item::active()
+async::task<bool> item::active()
 {
     auto owner = this->owner();
     if (owner == nullptr)
-        return false;
+        co_return false;
 
     if (this->_container == nullptr)
-        return false;
+        co_return false;
 
     if (this->empty())
-        std::ignore = this->_container->remove(this->shared_from_this_as<fb::game::item>());
+        std::ignore = co_await this->_container->remove(this->shared_from_this_as<fb::game::item>());
 
     auto& model = this->based<fb::model::item>();
     auto  path  = std::format("scripts/item/{}.lua", model.id);
@@ -177,8 +177,8 @@ bool item::active()
         std::ignore = lua->call(2);
     }
 
-    this->listener.on_item_active(*owner, *this);
-    return true;
+    co_await this->listener.on_item_active(*owner, *this);
+    co_return true;
 }
 
 std::shared_ptr<fb::game::item> item::split(uint16_t count)
@@ -195,31 +195,31 @@ std::shared_ptr<fb::game::item> item::split(uint16_t count)
     }
 }
 
-void item::merge(std::shared_ptr<fb::game::item> item)
+async::task<void> item::merge(std::shared_ptr<fb::game::item> item)
 {
     if (this->_container == nullptr)
-        return;
+        co_return;
 
     auto& model = this->based<fb::model::item>();
     if (model.attr(ITEM_ATTRIBUTE::BUNDLE) == false)
-        return;
+        co_return;
 
     if (model != item->based())
-        return;
+        co_return;
 
     auto owner = this->owner();
     if (owner == nullptr)
-        return;
+        co_return;
 
     auto before = this->_count;
     auto remain = this->fill(item->count());
     item->count(remain);
 
     if (before != this->_count)
-        this->listener.on_item_update(*owner, owner->items.index(this->shared_from_this_as<fb::game::item>()));
+        co_await this->listener.on_item_update(*owner, owner->items.index(this->shared_from_this_as<fb::game::item>()));
 
     if (remain > 0 && this->_count == model.capacity)
-        owner->message(_TEXT(MESSAGE_ITEM_CANNOT_PICKUP_ANYMORE));
+        co_await owner->message(_TEXT(MESSAGE_ITEM_CANNOT_PICKUP_ANYMORE));
 }
 
 fb::thread* fb::game::item::thread() const

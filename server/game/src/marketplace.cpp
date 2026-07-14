@@ -100,7 +100,7 @@ async::task<marketplace::listing> marketplace::list(uint8_t slot, uint16_t count
                                                          .expected_total_price    = 0});
 
     // Remove item from inventory and deduct listing fee BEFORE API call
-    std::ignore = this->_owner.items.remove(slot, count, ITEM_DELETE_TYPE::REMOVED);
+    std::ignore = co_await this->_owner.items.remove(slot, count, ITEM_DELETE_TYPE::REMOVED);
     this->_owner.money_reduce(listing_fee);
 
     // Log before API call (after deduction)
@@ -289,6 +289,9 @@ async::task<marketplace::listing> marketplace::purchase(std::string_view listing
     // Send purchase request to marketplace server
     auto world           = fb::config<uint32_t>("world");
     auto unhandled_error = true;
+    auto restore_money   = false;
+    auto character_gone  = false;
+    auto error_what      = std::string{};
 
     try
     {
@@ -350,34 +353,45 @@ async::task<marketplace::listing> marketplace::purchase(std::string_view listing
     catch (const std::exception& e)
     {
         if (weak.expired())
-            throw std::runtime_error(_TEXT(MESSAGE_MARKETPLACE_CHARACTER_EXPIRED));
-
-        if (unhandled_error)
         {
-            // HTTP exception (timeout, connection error, etc.) - system error
-            // Money already deducted, DSL is already saved for recovery
-            auto log_data            = Json::Value();
-            log_data["character_id"] = static_cast<Json::Int64>(this->_owner.id);
-            log_data["listing_id"]   = listing_id_copy;
-            log_data["purchase_id"]  = purchase_id;
-            log_data["error"]        = e.what();
-            this->_owner.server.log.write("marketplace_purchase_failed", log_data);
+            character_gone = true;
         }
         else
         {
-            // Logical error - restore money
-            this->_owner.money_add(expected_price);
-            this->_pending_listings.erase(purchase_id); // Remove DSL as purchase definitely failed
-            auto log_data            = Json::Value();
-            log_data["character_id"] = static_cast<Json::Int64>(this->_owner.id);
-            log_data["listing_id"]   = listing_id_copy;
-            log_data["purchase_id"]  = purchase_id;
-            log_data["error"]        = e.what();
-            this->_owner.server.log.write("marketplace_purchase_failed", log_data);
+            error_what = e.what();
+            if (unhandled_error)
+            {
+                // HTTP exception (timeout, connection error, etc.) - system error
+                // Money already deducted, DSL is already saved for recovery
+                auto log_data            = Json::Value();
+                log_data["character_id"] = static_cast<Json::Int64>(this->_owner.id);
+                log_data["listing_id"]   = listing_id_copy;
+                log_data["purchase_id"]  = purchase_id;
+                log_data["error"]        = error_what;
+                this->_owner.server.log.write("marketplace_purchase_failed", log_data);
+            }
+            else
+            {
+                // Logical error - restore money
+                restore_money = true;
+                this->_pending_listings.erase(purchase_id); // Remove DSL as purchase definitely failed
+                auto log_data            = Json::Value();
+                log_data["character_id"] = static_cast<Json::Int64>(this->_owner.id);
+                log_data["listing_id"]   = listing_id_copy;
+                log_data["purchase_id"]  = purchase_id;
+                log_data["error"]        = error_what;
+                this->_owner.server.log.write("marketplace_purchase_failed", log_data);
+            }
         }
-
-        throw std::runtime_error(std::format(_TEXT(MESSAGE_MARKETPLACE_FAILED_TO_PURCHASE_ITEM_WITH_ERROR), e.what()));
     }
+
+    if (character_gone)
+        throw std::runtime_error(_TEXT(MESSAGE_MARKETPLACE_CHARACTER_EXPIRED));
+
+    if (restore_money)
+        std::ignore = co_await this->_owner.money_add(expected_price);
+
+    throw std::runtime_error(std::format(_TEXT(MESSAGE_MARKETPLACE_FAILED_TO_PURCHASE_ITEM_WITH_ERROR), error_what));
 }
 
 async::task<marketplace::search_result> marketplace::search(const search_option& option)

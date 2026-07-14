@@ -83,7 +83,7 @@ void storage_box::init(const std::vector<entry>& entries)
     }
 }
 
-void storage_box::apply_delivered(const std::vector<entry>& delivered)
+async::task<void> storage_box::apply_delivered(const std::vector<entry>& delivered)
 {
     this->_owner.assert_thread();
 
@@ -126,10 +126,12 @@ void storage_box::apply_delivered(const std::vector<entry>& delivered)
         this->_owner.server.log.write("storage_box_entry_add", log_data);
 
         if (!e.title.empty())
-            this->_owner.message(std::format(_TEXT(MESSAGE_STORAGE_BOX_REWARD_ADDED), e.title), MESSAGE_TYPE::STATE);
+            co_await this->_owner.message(std::format(_TEXT(MESSAGE_STORAGE_BOX_REWARD_ADDED), e.title),
+                                          MESSAGE_TYPE::STATE);
         else
-            this->_owner.message(_TEXT(MESSAGE_STORAGE_BOX_REWARD_ADDED_NO_TITLE), MESSAGE_TYPE::STATE);
+            co_await this->_owner.message(_TEXT(MESSAGE_STORAGE_BOX_REWARD_ADDED_NO_TITLE), MESSAGE_TYPE::STATE);
     }
+    co_return;
 }
 
 bool storage_box::contains_system_box(uint32_t system_storage_box_id) const
@@ -142,23 +144,23 @@ bool storage_box::contains_system_box(uint32_t system_storage_box_id) const
     });
 }
 
-bool storage_box::receive_reward(uint32_t entry_id)
+async::task<bool> storage_box::receive_reward(uint32_t entry_id)
 {
     this->_owner.assert_thread();
 
     auto it = this->_entries.find(entry_id);
     if (it == this->_entries.end())
-        return false;
+        co_return false;
 
     if (it->second.received)
-        return false;
+        co_return false;
 
     auto now = this->_owner.server.now();
     if (it->second.expire_date.has_value() && it->second.expire_date.value() < now)
-        return false;
+        co_return false;
 
-    if (this->_owner.reward(it->second.attachments) == false)
-        return false;
+    if (co_await this->_owner.reward(it->second.attachments) == false)
+        co_return false;
 
     auto log_data              = Json::Value();
     log_data["character_id"]   = static_cast<Json::Int64>(this->_owner.id);
@@ -174,7 +176,7 @@ bool storage_box::receive_reward(uint32_t entry_id)
     this->_owner.server.log.write("storage_box_attachment_receive", log_data);
 
     it->second.received = true;
-    return true;
+    co_return true;
 }
 
 const storage_box::entry_map& storage_box::entries() const

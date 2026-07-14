@@ -7,21 +7,22 @@ mail_box::mail_box(character& owner) :
     owner(owner)
 { }
 
-void mail_box::show(const std::vector<summary>& summaries, MAIL_BUTTON_ENABLE flag)
+async::task<void> mail_box::show(const std::vector<summary>& summaries, MAIL_BUTTON_ENABLE flag)
 {
     this->owner.assert_thread();
-    this->owner.listener.on_show_mail_box(this->owner, summaries, flag);
-}
-void mail_box::show(const mail& mail, MAIL_BUTTON_ENABLE flag)
-{
-    this->owner.assert_thread();
-    this->owner.listener.on_show_mail_box(this->owner, mail, flag);
+    co_await this->owner.listener.on_show_mail_box(this->owner, summaries, flag);
 }
 
-void mail_box::message(std::string_view message, bool success, BULLETIN_MESSAGE_TYPE action)
+async::task<void> mail_box::show(const mail& mail, MAIL_BUTTON_ENABLE flag)
 {
     this->owner.assert_thread();
-    this->owner.listener.on_show_bulletin_message(this->owner, message, success, action);
+    co_await this->owner.listener.on_show_mail_box(this->owner, mail, flag);
+}
+
+async::task<void> mail_box::message(std::string_view message, bool success, BULLETIN_MESSAGE_TYPE action)
+{
+    this->owner.assert_thread();
+    co_await this->owner.listener.on_show_bulletin_message(this->owner, message, success, action);
 }
 
 uint16_t mail_box::unread_count() const
@@ -30,12 +31,13 @@ uint16_t mail_box::unread_count() const
     return this->_unread_count;
 }
 
-void mail_box::unread_count(uint16_t value)
+async::task<void> mail_box::unread_count(uint16_t value)
 {
     this->owner.assert_thread();
     if (this->_unread_count != value)
     {
         this->_unread_count = value;
-        this->owner.update(UPDATE_STATE_LEVEL::MINIMUM);
+        co_await this->owner.update(UPDATE_STATE_LEVEL::MINIMUM);
     }
+    co_return;
 }

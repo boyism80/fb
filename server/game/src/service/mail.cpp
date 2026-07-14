@@ -69,9 +69,9 @@ mail_box::mail service::mail::to_mail(const fb::protocol::internal::Mail& mail)
     };
 }
 
-void service::mail::apply_received(character& ch, uint16_t unread, const mail_box::summary& snapshot)
+async::task<void> service::mail::apply_received(character& ch, uint16_t unread, const mail_box::summary& snapshot)
 {
-    ch.mail_box.unread_count(unread);
+    co_await ch.mail_box.unread_count(unread);
 
     auto log_data            = Json::Value();
     log_data["character_id"] = static_cast<Json::Int64>(ch.id);
@@ -79,18 +79,18 @@ void service::mail::apply_received(character& ch, uint16_t unread, const mail_bo
     log_data["mail_id"]      = static_cast<Json::Int64>(snapshot.id);
     log_data["title"]        = UTF8(snapshot.title, PLATFORM::WINDOWS);
     this->server.log.write("mail_receive", log_data);
+    co_return;
 }
 
 async::task<void> service::mail::on_received(uint32_t user_id, uint16_t unread, const mail_box::summary& snapshot)
 {
-    auto guard = this->server.characters.enter_write();
-    auto ch    = guard.value().find(user_id);
+    auto ch = this->server.characters.find(user_id);
     if (ch != nullptr)
     {
         auto weak    = ch->template weak_from_this_as<character>();
         auto builder = this->server.threads.new_builder(weak);
         builder.func = [this, ch, unread, snapshot](auto&) -> async::task<void> {
-            this->apply_received(*ch, unread, snapshot);
+            co_await this->apply_received(*ch, unread, snapshot);
             co_return;
         };
         builder.enqueue();
@@ -105,12 +105,10 @@ async::task<void> service::mail::on_received_batch(const std::vector<mail_box::s
     if (snapshots.empty())
         co_return;
 
-    auto       guard      = this->server.characters.enter_write();
-    auto&      characters = guard.value();
-    const auto count      = snapshots.size();
+    const auto count = snapshots.size();
     for (size_t i = 0; i < count; ++i)
     {
-        auto ch = characters.find(user_ids[i]);
+        auto ch = this->server.characters.find(user_ids[i]);
         if (ch == nullptr)
             continue;
 
@@ -119,7 +117,7 @@ async::task<void> service::mail::on_received_batch(const std::vector<mail_box::s
         auto snapshot = snapshots[i];
         auto builder  = this->server.threads.new_builder(weak);
         builder.func  = [this, ch, unread, snapshot](auto&) -> async::task<void> {
-            this->apply_received(*ch, unread, snapshot);
+            co_await this->apply_received(*ch, unread, snapshot);
             co_return;
         };
         builder.enqueue();
@@ -185,7 +183,7 @@ async::task<mail_box::mail> service::mail::read(character& ch, uint16_t id)
         throw std::runtime_error("character expired while reading mail");
 
     this->on_error(resp.error);
-    ptr->mail_box.unread_count(resp.unread);
+    co_await ptr->mail_box.unread_count(resp.unread);
     co_return to_mail(resp.mail);
 }
 
@@ -201,6 +199,6 @@ async::task<void> service::mail::remove(character& ch, uint16_t id)
         throw std::runtime_error("character expired while deleting mail");
 
     this->on_error(resp.error);
-    ptr->mail_box.unread_count(resp.unread);
+    co_await ptr->mail_box.unread_count(resp.unread);
     co_return;
 }

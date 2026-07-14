@@ -446,7 +446,7 @@ int builtin::map::builtin_tile(lua_State* L)
             {
                 tile->object    = value;
                 const auto area = fb::model::area<uint16_t>(x, y, x + 1, y + 1);
-                server.maps.update_map_cache(map->id, area);
+                co_await server.maps.update_map_cache(map->id, area);
             }
             co_return;
         };
@@ -596,7 +596,7 @@ int builtin::map::builtin_bulk_update(lua_State* L)
     auto builder  = lua->new_co_builder();
     builder.weak  = weak;
     builder.yield = [=]() -> async::task<void> {
-        map->bulk_update(oids);
+        co_await map->bulk_update(oids);
         co_return;
     };
     builder.resume = []() -> async::task<int> {

@@ -28,9 +28,9 @@ public:
     ~npc();
 
 public:
-    void           soliloquy();
-    void           assert_thread() const override final;
-    appearance_ptr appearance() const override;
+    async::task<void> soliloquy();
+    void              assert_thread() const override final;
+    appearance_ptr    appearance() const override;
 };
 
 } // namespace fb::game

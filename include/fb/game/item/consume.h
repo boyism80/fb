@@ -13,7 +13,7 @@ public:
     ~consume();
 
 public:
-    bool active() override;
+    async::task<bool> active() override;
 };
 
 } // namespace fb::game

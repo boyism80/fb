@@ -22,10 +22,11 @@ async::task<bool> whisper::handle(fb::socket<character>& session, game_reqs::whi
 
     if (me->role() == ROLE::USER && ENUM_IN(map->model.option, MAP_OPTION::DISABLE_WHISPER))
     {
-        me->message(_TEXT(MESSAGE_WHISPER_DISABLED_AREA));
+        co_await me->message(_TEXT(MESSAGE_WHISPER_DISABLED_AREA));
         co_return true;
     }
 
+    auto error = std::optional<std::string>{};
     try
     {
         co_await me->whisper(request.name, request.message);
@@ -35,9 +36,14 @@ async::task<bool> whisper::handle(fb::socket<character>& session, game_reqs::whi
     }
     catch (std::exception& e)
     {
+        error = e.what();
+    }
+
+    if (error.has_value())
+    {
         auto ptr = weak.lock();
         if (ptr != nullptr)
-            ptr->message(e.what(), MESSAGE_TYPE::NOTIFY);
+            co_await ptr->message(error.value(), MESSAGE_TYPE::NOTIFY);
     }
     co_return true;
 }

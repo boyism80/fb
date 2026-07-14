@@ -88,11 +88,9 @@ void service::system_storage::on_deliver(const std::vector<uint32_t>& user_ids, 
 
     auto entry = box.to_entry();
 
-    auto  guard      = this->server.characters.enter_write();
-    auto& characters = guard.value();
     for (const auto user_id : user_ids)
     {
-        auto ch = characters.find(user_id);
+        auto ch = this->server.characters.find(user_id);
         if (ch == nullptr)
             continue;
 
@@ -106,7 +104,7 @@ void service::system_storage::on_deliver(const std::vector<uint32_t>& user_ids, 
             if (ptr->storage_box.contains_system_box(box_id))
                 co_return;
 
-            ptr->storage_box.apply_delivered({entry});
+            co_await ptr->storage_box.apply_delivered({entry});
             co_return;
         };
         builder.enqueue();
@@ -168,7 +166,7 @@ async::task<void> service::system_storage::sync(character& ch)
         }
 
         if (!batch.empty())
-            ptr->storage_box.apply_delivered(batch);
+            co_await ptr->storage_box.apply_delivered(batch);
     }
     catch (const std::exception& e)
     {
@@ -221,16 +219,10 @@ async::task<void> service::system_storage::create(uint32_t                      
 
 async::task<void> service::system_storage::poll_and_deliver()
 {
-    character::container::online_snapshot_t online_users;
-    {
-        auto guard   = this->server.characters.enter_read();
-        online_users = guard.value().online_users();
-    }
-
     const auto now = this->server.now();
     prune_expired_boxes(this->_pending_boxes, now);
 
-    if (online_users.empty())
+    if (this->server.characters.size() == 0)
         co_return;
 
     auto        max_box_id = uint32_t{0};
@@ -279,14 +271,9 @@ async::task<void> service::system_storage::poll_and_deliver()
         }
         else
         {
-            auto eligible = std::vector<uint32_t>{};
-            eligible.reserve(online_users.size());
-
-            for (const auto& [user_id, created_date] : online_users)
-            {
-                if (created_date < box.created_date)
-                    eligible.push_back(user_id);
-            }
+            auto eligible = this->server.characters.collect_ids([&](const auto& ch) {
+                return ch->created_date() < box.created_date;
+            });
 
             this->on_deliver(eligible, box);
         }

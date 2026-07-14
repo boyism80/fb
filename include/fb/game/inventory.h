@@ -4,6 +4,7 @@
 #include <stdlib.h>
 #include <memory>
 #include <array>
+#include <async/task.h>
 
 namespace fb { namespace game {
 
@@ -51,41 +52,41 @@ public:
         return this->_elements[index];
     }
 
-    virtual uint8_t add(std::shared_ptr<T> element)
+    virtual async::task<uint8_t> add(std::shared_ptr<T> element)
     {
         auto next_slot = this->next();
         if (next_slot != 0xFF)
         {
             this->_elements[next_slot] = element;
         }
-        return next_slot;
+        co_return next_slot;
     }
 
-    virtual uint8_t add(std::shared_ptr<T> element, uint8_t index)
+    virtual async::task<uint8_t> add(std::shared_ptr<T> element, uint8_t index)
     {
         if (this->_elements[index] != nullptr)
-            return 0xFF;
+            co_return 0xFF;
         this->_elements[index] = element;
-        return index;
+        co_return index;
     }
 
-    virtual bool remove(uint8_t index)
+    virtual async::task<bool> remove(uint8_t index)
     {
         auto element = this->at(index);
         if (element == nullptr)
-            return false;
+            co_return false;
         this->_elements[index] = nullptr;
-        return true;
+        co_return true;
     }
 
-    virtual bool swap(uint8_t src, uint8_t dst)
+    virtual async::task<bool> swap(uint8_t src, uint8_t dst)
     {
         if (src == dst)
-            return false;
+            co_return false;
         if (src > CONTAINER_CAPACITY - 1 || dst > CONTAINER_CAPACITY - 1)
-            return false;
+            co_return false;
         std::swap(this->_elements[src], this->_elements[dst]);
-        return true;
+        co_return true;
     }
 
     bool free() const

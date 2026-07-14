@@ -2,6 +2,7 @@
 #define __CROWD_CONTROL_H__
 
 #include <fb/model/model.h>
+#include <async/task.h>
 
 namespace fb::game {
 
@@ -23,11 +24,11 @@ public:
     ~crowd_control() = default;
 
 public:
-    CROWD_CONTROL add(CROWD_CONTROL value);
-    CROWD_CONTROL remove(CROWD_CONTROL value);
-    bool          contains(CROWD_CONTROL value) const;
-    void          clear();
-    void          set(CROWD_CONTROL value);
+    async::task<CROWD_CONTROL> add(CROWD_CONTROL value);
+    async::task<CROWD_CONTROL> remove(CROWD_CONTROL value);
+    bool                       contains(CROWD_CONTROL value) const;
+    async::task<void>          clear();
+    async::task<void>          set(CROWD_CONTROL value);
 
     operator CROWD_CONTROL () const;
     operator uint32_t () const;

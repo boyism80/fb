@@ -1,6 +1,7 @@
 #include <algorithm>
 #include <fb/game/server.h>
 #include <fb/game/item.h>
+#include <tuple>
 
 using table = fb::model::table;
 
@@ -29,15 +30,15 @@ std::string fb::game::equipment::trade_name() const
     return sstream.str();
 }
 
-bool fb::game::equipment::active()
+async::task<bool> fb::game::equipment::active()
 {
     if (this->_container == nullptr)
-        return false;
+        co_return false;
 
     auto before = std::shared_ptr<fb::game::item>();
     auto owner  = this->_container->owner();
     if (owner == nullptr)
-        return false;
+        co_return false;
 
     auto  parts = EQUIPMENT_PARTS::UNKNOWN;
     auto& model = this->based<fb::model::equipment>();
@@ -106,22 +107,22 @@ bool fb::game::equipment::active()
     switch (model.attr())
     {
     case ITEM_ATTRIBUTE::WEAPON:
-        before = owner->items.weapon(this->shared_from_this_as<fb::game::weapon>());
+        before = co_await owner->items.weapon(this->shared_from_this_as<fb::game::weapon>());
         parts  = EQUIPMENT_PARTS::WEAPON;
         break;
 
     case ITEM_ATTRIBUTE::ARMOR:
-        before = owner->items.armor(this->shared_from_this_as<fb::game::armor>());
+        before = co_await owner->items.armor(this->shared_from_this_as<fb::game::armor>());
         parts  = EQUIPMENT_PARTS::ARMOR;
         break;
 
     case ITEM_ATTRIBUTE::SHIELD:
-        before = owner->items.shield(this->shared_from_this_as<fb::game::shield>());
+        before = co_await owner->items.shield(this->shared_from_this_as<fb::game::shield>());
         parts  = EQUIPMENT_PARTS::SHIELD;
         break;
 
     case ITEM_ATTRIBUTE::HELMET:
-        before = owner->items.helmet(this->shared_from_this_as<fb::game::helmet>());
+        before = co_await owner->items.helmet(this->shared_from_this_as<fb::game::helmet>());
         parts  = EQUIPMENT_PARTS::HELMET;
         break;
 
@@ -135,7 +136,7 @@ bool fb::game::equipment::active()
             parts = EQUIPMENT_PARTS::RIGHT_HAND;
         }
 
-        before = owner->items.ring(this->shared_from_this_as<fb::game::ring>());
+        before = co_await owner->items.ring(this->shared_from_this_as<fb::game::ring>());
         break;
 
     case ITEM_ATTRIBUTE::AUXILIARY:
@@ -148,17 +149,19 @@ bool fb::game::equipment::active()
             parts = EQUIPMENT_PARTS::RIGHT_AUX;
         }
 
-        before = owner->items.auxiliary(this->shared_from_this_as<fb::game::auxiliary>());
+        before = co_await owner->items.auxiliary(this->shared_from_this_as<fb::game::auxiliary>());
         break;
 
     default:
         throw std::runtime_error(_TEXT(MESSAGE_EQUIPMENT_INVALID_TYPE));
     }
 
-    fb::game::item::active();
+    std::ignore = co_await fb::game::item::active();
 
-    owner->items.remove(this->shared_from_this_as<fb::game::item>(), 1, ITEM_DELETE_TYPE::NONE, false);
-    owner->items.add(before);
+    std::ignore =
+        co_await owner->items.remove(this->shared_from_this_as<fb::game::item>(), 1, ITEM_DELETE_TYPE::NONE, false);
+    if (before != nullptr)
+        std::ignore = co_await owner->items.add(before);
 
     // Execute equipment activation script
     auto lua = this->server.lua.open("scripts/interaction.lua", "on_equipment_active");
@@ -171,9 +174,9 @@ bool fb::game::equipment::active()
     }
 
     // Call listener for packet response
-    owner->listener.on_equipment_on(*owner, *this, parts);
+    co_await owner->listener.on_equipment_on(*owner, *this, parts);
 
-    return true;
+    co_return true;
 }
 
 std::optional<uint32_t> fb::game::equipment::durability() const
@@ -187,14 +190,14 @@ void fb::game::equipment::durability(uint32_t value)
     this->_durability = std::max(uint32_t(0), std::min(model.durability, value));
 }
 
-bool fb::game::equipment::durability_down(uint32_t value)
+async::task<bool> fb::game::equipment::durability_down(uint32_t value)
 {
-    if (this->_container != nullptr)
-        return false;
+    if (this->_container == nullptr)
+        co_return false;
 
     auto owner = this->_container->owner();
     if (owner == nullptr)
-        return false;
+        co_return false;
 
     auto& model  = this->based<fb::model::equipment>();
     auto  before = this->_durability;
@@ -208,8 +211,8 @@ bool fb::game::equipment::durability_down(uint32_t value)
         this->_durability -= value;
     }
 
-    owner->listener.on_durability_down(*owner, *this, before, this->_durability);
-    return this->_durability == 0;
+    co_await owner->listener.on_durability_down(*owner, *this, before, this->_durability);
+    co_return this->_durability == 0;
 }
 
 std::string fb::game::equipment::mid_message() const

@@ -1,6 +1,7 @@
 #ifndef __MAP_H__
 #define __MAP_H__
 
+#include <async/task.h>
 #include <fb/container.h>
 #include <fb/config.h>
 #include <fb/game/door.h>
@@ -96,7 +97,7 @@ public:
     bool                            is_active() const;
     std::vector<object_ptr>         nears(const fb::model::point16_t& pivot, OBJECT_TYPE type = OBJECT_TYPE::OBJECT) const;
     std::vector<object_ptr>         belows(const fb::model::point16_t& pivot, OBJECT_TYPE type = OBJECT_TYPE::OBJECT) const;
-    void                            bulk_update(const std::vector<uint32_t>& oids);
+    async::task<void>               bulk_update(const std::vector<uint32_t>& oids);
     void                            rezen_force() const;
     fb::thread*                     thread() const override;
     virtual bool                    is_instance() const;
@@ -162,24 +163,27 @@ public:
     ~container();
 
 private:
-    static bool       load_data(uint32_t id, std::vector<char>& buffer);
-    static bool       load_block(uint32_t id, std::vector<fb::model::point16_t>& buffer);
-    void              spawn_npcs(const std::shared_ptr<fb::game::map>& map);
-    void              spawn_npc(const fb::model::npc_spawn& spawn, const std::shared_ptr<fb::game::map>& map);
-    bool              try_mark_init_script(const std::shared_ptr<fb::game::map>& map);
-    async::task<void> run_init_script(const std::shared_ptr<fb::game::map>& map);
-    void              append_snapshot(const std::shared_ptr<fb::game::map>& map);
-    void              remove_snapshot(uint32_t id);
-    uint32_t          allocate_id(registry& registry);
-    uint32_t          allocate_slot(slot_pool& pool);
-    void              release_slot(uint32_t model_id, uint32_t slot, const std::shared_ptr<fb::game::map>& map);
-    void              register_slot(uint32_t model_id, uint32_t slot, const std::shared_ptr<fb::game::map>& map);
-    void              unregister_group_instance(const std::shared_ptr<fb::game::map>& map);
+    // clang-format off
+    static bool                    load_data(uint32_t id, std::vector<char>& buffer);
+    static bool                    load_block(uint32_t id, std::vector<fb::model::point16_t>& buffer);
+    void                           spawn_npcs(const std::shared_ptr<fb::game::map>& map);
+    void                           spawn_npc(const fb::model::npc_spawn& spawn, const std::shared_ptr<fb::game::map>& map);
+    bool                           try_mark_init_script(const std::shared_ptr<fb::game::map>& map);
+    async::task<void>              run_init_script(const std::shared_ptr<fb::game::map>& map);
+    void                           append_snapshot(const std::shared_ptr<fb::game::map>& map);
+    void                           remove_snapshot(uint32_t id);
+    uint32_t                       allocate_id(registry& registry);
+    uint32_t                       allocate_slot(slot_pool& pool);
+    void                           release_slot(uint32_t model_id, uint32_t slot, const std::shared_ptr<fb::game::map>& map);
+    void                           register_slot(uint32_t model_id, uint32_t slot, const std::shared_ptr<fb::game::map>& map);
+    void                           unregister_group_instance(const std::shared_ptr<fb::game::map>& map);
     std::shared_ptr<fb::game::map> create_instance(const std::shared_ptr<fb::game::map>& source, uint32_t slot);
     std::shared_ptr<fb::game::map> choice_by_capacity(const std::shared_ptr<fb::game::map>& source);
     std::shared_ptr<fb::game::map> choice_by_group(character& ch, const std::shared_ptr<fb::game::map>& source);
+    // clang-format on
 
 public:
+    // clang-format off
     bool                              contains(uint32_t id) const;
     std::shared_ptr<fb::game::map>    find(uint32_t id) const;
     std::shared_ptr<fb::game::map>    operator[] (uint32_t id) const;
@@ -199,12 +203,9 @@ public:
     async::task<void>                 destroy(const std::shared_ptr<fb::game::map>& map);
     void                              rezen_force();
     void                              erase_map_cache(uint32_t map_id, const fb::model::point16_t& point);
-    std::optional<fb::stream>         map_update_stream(character&                  ch,
-                                                        const fb::game::map&        map,
-                                                        const fb::model::point16_t& position,
-                                                        const fb::model::size8_t&   size,
-                                                        uint16_t                    crc);
-    void                              update_map_cache(uint32_t map_id, const fb::model::area<uint16_t>& area);
+    std::optional<fb::stream>         map_update_stream(character& ch, const fb::game::map& map, const fb::model::point16_t& position, const fb::model::size8_t& size, uint16_t crc);
+    async::task<void>                 update_map_cache(uint32_t map_id, const fb::model::area<uint16_t>& area);
+    // clang-format on
 };
 
 } // namespace fb::game

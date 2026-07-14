@@ -24,13 +24,13 @@ public:
     virtual ~equipment();
 
 public:
-    bool active() override;
+    async::task<bool> active() override;
 
 public:
     std::optional<uint32_t> durability() const;
     void                    durability(uint32_t value);
 
-    bool durability_down(uint32_t value);
+    async::task<bool> durability_down(uint32_t value);
 
 protected:
     virtual std::string mid_message() const;
@@ -45,9 +45,11 @@ public:
 
 struct equipment::listener_t : public virtual fb::game::item::listener_t
 {
-    virtual void on_equipment_on(character& me, item& item, EQUIPMENT_PARTS parts)                                  = 0;
-    virtual void on_equipment_off(character& me, EQUIPMENT_PARTS parts, fb::game::equipment& equipment)             = 0;
-    virtual void on_durability_down(character& me, fb::game::equipment& equipment, uint32_t before, uint32_t after) = 0;
+    // clang-format off
+    virtual async::task<void> on_equipment_on(character& me, item& item, EQUIPMENT_PARTS parts) = 0;
+    virtual async::task<void> on_equipment_off(character& me, EQUIPMENT_PARTS parts, fb::game::equipment& equipment) = 0;
+    virtual async::task<void> on_durability_down(character& me, fb::game::equipment& equipment, uint32_t before, uint32_t after) = 0;
+    // clang-format on
 };
 
 } // namespace fb::game
