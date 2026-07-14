@@ -64,7 +64,7 @@ public:
     void                          on_screen_refresh(character& ch) override final;
     void                          on_browse_character(character& ch, const character& target) override final;
     void                          on_item_tooltip(character& ch, const fb::game::item& item, uint16_t position) override final;
-    void                          on_show_user_list(character& ch) override final;
+    async::task<void>             on_show_user_list(character& ch) override final;
     void                          on_show_bulletin(character& ch) override final;
     void                          on_show_bulletin(character& ch, const fb::model::bulletin& section, const std::list<fb::game::bulletin::article>& articles, BULLETIN_BUTTON_ENABLE flag) override final;
     void                          on_show_bulletin(character& ch, const fb::game::bulletin::article& value, BULLETIN_BUTTON_ENABLE flag) override final;

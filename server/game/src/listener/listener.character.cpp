@@ -1,5 +1,6 @@
 #include <fb/game/server.h>
 #include <fb/model/model.h>
+#include <mutex>
 
 using namespace fb::game;
 
@@ -189,24 +190,48 @@ void listener_impl::on_item_tooltip(character& ch, const item& item, uint16_t po
     ch.send(game_resp::item_tip(position, item.tip_message()));
 }
 
-void listener_impl::on_show_user_list(character& ch)
+async::task<void> listener_impl::on_show_user_list(character& ch)
 {
-    this->server.access_sockets([this, &ch](const auto& sockets) {
-        auto users = std::vector<std::shared_ptr<fb::game::character>>{};
-        for (auto& [_, socket] : sockets)
+    using user_data = game_resp::user_list::user_data;
+
+    auto targets = std::vector<std::shared_ptr<fb::game::character>>{};
+    {
+        auto guard = co_await this->server.characters.enter_read_async();
+        targets.reserve(guard.value().size());
+        for (const auto& [_, ptr] : guard.value())
         {
-            auto ptr = socket->data_ptr();
-            if (ptr == nullptr)
-                continue;
+            if (ptr != nullptr)
+                targets.push_back(ptr);
+        }
+    }
 
-            if (ptr->hidden(ch))
-                continue;
+    auto users  = std::make_shared<std::vector<user_data>>();
+    auto mutex  = std::make_shared<std::mutex>();
+    auto viewer = ch.shared_from_this_as<character>();
+    users->reserve(targets.size());
 
-            users.push_back(ptr);
-        };
+    co_await this->server.characters.foreach_async(
+        [users, mutex, viewer](auto& other) -> async::task<void> {
+            if (other->hidden(*viewer))
+                co_return;
 
-        ch.send(game_resp::user_list(ch, std::move(users)));
-    });
+            auto entry      = user_data{};
+            entry.nation    = static_cast<uint8_t>(other->nation());
+            entry.cls       = static_cast<uint8_t>(other->cls());
+            entry.promotion = other->promotion();
+            entry.level     = other->level();
+            entry.color     = (other.get() == viewer.get()) ? static_cast<uint8_t>(0x88) : static_cast<uint8_t>(0x0F);
+            entry.name      = other->name();
+
+            {
+                auto lock = std::lock_guard(*mutex);
+                users->push_back(std::move(entry));
+            }
+            co_return;
+        },
+        targets);
+
+    co_await ch.send(game_resp::user_list(std::move(*users)));
 }
 
 void listener_impl::on_show_bulletin(character& ch)

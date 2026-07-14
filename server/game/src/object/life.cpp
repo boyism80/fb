@@ -79,7 +79,8 @@ life::mob_vector life::damage_targets(const damage_list& targets, const damage_o
             continue;
 
         target->stat.damage(value, attacker, opts.critical, opts.rate, opts.physical, opts.fixed, opts.notify);
-        if (target->alive())
+        // character::alive() means "not ghost", so death must be detected by HP.
+        if (target->stat.hp() != 0)
             continue;
 
         if (target->is(OBJECT_TYPE::MOB))
@@ -95,6 +96,9 @@ life::mob_vector life::damage_targets(const damage_list& targets, const damage_o
         else if (target->is(OBJECT_TYPE::CHARACTER))
         {
             auto ch = std::static_pointer_cast<character>(target);
+            if (ch->alive() == false)
+                continue;
+
             ch->kill(DESTROY_TYPE::DEAD);
             ch->notify_death(attacker);
         }

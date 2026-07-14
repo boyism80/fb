@@ -1719,9 +1719,10 @@ void character::item_tooltip(const item& item, uint16_t position)
     this->listener.on_item_tooltip(*this, item, position);
 }
 
-void character::show_user_list()
+async::task<void> character::show_user_list()
 {
-    this->listener.on_show_user_list(*this);
+    this->assert_thread();
+    co_await this->listener.on_show_user_list(*this);
 }
 
 void character::show_world_map(uint32_t id, uint16_t index)

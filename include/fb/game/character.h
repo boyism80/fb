@@ -287,7 +287,7 @@ public:
     void                                               thread(fb::thread* value);
     void                                               browse_ch(const character& ch);
     void                                               item_tooltip(const item& iteem, uint16_t position);
-    void                                               show_user_list();
+    async::task<void>                                  show_user_list();
     void                                               show_world_map(uint32_t id, uint16_t index);
     void                                               timer(uint32_t time, TIMER_TYPE type);
     void                                               weather(WEATHER_TYPE weather);
@@ -415,7 +415,7 @@ public:
     virtual void              on_update_time(character& ch, uint16_t hours)                                                                                                           = 0;
     virtual void              on_browse_character(character& ch, const character& target)                                                                                             = 0;
     virtual void              on_item_tooltip(character& ch, const item& item, uint16_t position)                                                                                     = 0;
-    virtual void              on_show_user_list(character& ch)                                                                                                                        = 0;
+    virtual async::task<void> on_show_user_list(character& ch)                                                                                                                        = 0;
     virtual void              on_show_bulletin(character& ch)                                                                                                                         = 0;
     virtual void              on_show_bulletin(character& ch, const fb::model::bulletin& section, const std::list<bulletin::article>& articles, BULLETIN_BUTTON_ENABLE flag)          = 0;
     virtual void              on_show_bulletin(character& ch, const bulletin::article& value, BULLETIN_BUTTON_ENABLE flag)                                                            = 0;

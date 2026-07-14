@@ -23,13 +23,10 @@ async::task<void> user_list::deserialize(fb::stream_reader<big_endian>& reader)
 namespace fb::protocol::game::response {
 
 #ifndef BOT
-user_list::user_list(const character& me, std::vector<std::shared_ptr<fb::game::character>>&& users) :
-    me(me),
-    users(users)
+user_list::user_list(std::vector<user_data>&& users) :
+    users(std::move(users))
 { }
-#endif
 
-#ifndef BOT
 async::task<void> user_list::serialize(fb::stream_writer<big_endian>& writer) const
 {
     co_await header::serialize(writer);
@@ -38,14 +35,12 @@ async::task<void> user_list::serialize(fb::stream_writer<big_endian>& writer) co
     writer.write<uint16_t>((uint16_t)this->users.size());
     writer.write<uint8_t>(0x00);
 
-    for (const auto& ch : this->users)
+    for (const auto& user : this->users)
     {
-        auto& name = ch->name();
-
-        writer.write<uint8_t>(0x10 * static_cast<int>(ch->nation()) + static_cast<int>(ch->cls()));
-        writer.write<uint8_t>(0x10 * static_cast<int>(ch->promotion()) + static_cast<int>(ch->level()));
-        writer.write<uint8_t>((&me == ch.get()) ? 0x88 : 0x0F);
-        writer.write<std::string, uint8_t>(name);
+        writer.write<uint8_t>(0x10 * user.nation + user.cls);
+        writer.write<uint8_t>(0x10 * user.promotion + user.level);
+        writer.write<uint8_t>(user.color);
+        writer.write<std::string, uint8_t>(user.name);
     }
 }
 #else

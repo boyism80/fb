@@ -566,6 +566,15 @@ async::task<bool> object::map(map_ptr map, std::optional<fb::model::point16_t> p
 
         if (this->_map != nullptr)
         {
+            if (this->_map->model.id == map->model.id)
+            {
+                for (const auto& x : this->_map->nears(this->_position))
+                {
+                    if (x.get() != this)
+                        x->hide(*this);
+                }
+            }
+
             map_options leave_options;
             leave_options.destroy_type = destroy_type;
             std::ignore                = co_await this->map(nullptr, std::nullopt, leave_options);

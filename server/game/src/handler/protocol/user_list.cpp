@@ -15,6 +15,6 @@ async::task<bool> user_list::handle(fb::socket<character>& session, game_reqs::u
     if (ch->inited() == false)
         co_return true;
 
-    ch->show_user_list();
+    co_await ch->show_user_list();
     co_return true;
 }
