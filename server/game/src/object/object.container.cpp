@@ -1,4 +1,5 @@
 #include <fb/game/object.h>
+#include <fb/game/map.h>
 #include <fb/thread.h>
 
 using namespace fb::game;
@@ -103,10 +104,18 @@ fb::game::object* object::container::try_pop(uint32_t seq)
     ptr.reset();
     this->_ptrs.erase(seq);
 
-    // Add removed sequence to reuse queue
-    async::awaitable_then(thread->sleep(5s), [this, seq](auto result) {
+    // Instance maps are ephemeral: no delayed oid hold. Source maps keep the 5s delay
+    // so clients do not reuse the same oid while the leave animation is finishing.
+    if (this->owner.is_instance())
+    {
         this->_available_seq.push(seq);
-    });
+    }
+    else
+    {
+        async::awaitable_then(thread->sleep(5s), [this, seq](auto result) {
+            this->_available_seq.push(seq);
+        });
+    }
 
     return raw;
 }

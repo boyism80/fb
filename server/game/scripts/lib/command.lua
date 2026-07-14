@@ -134,19 +134,28 @@ M.functions = {
     
     ['맵이동'] = {
         ['privilege'] = ROLE.ADMIN,
-        ['usage'] = '<맵이름> [x] [y] - 맵 이동',
+        ['usage'] = '<맵이름> [x] [y] [slot] - 맵 이동',
         ['command'] = function (me, args)
-            local map, x, y = table.unpack(args)
-            if not map then
-                me:message("사용법: /맵이동 <맵이름> [x] [y]")
+            local name, x, y, slot = table.unpack(args)
+            if not name then
+                me:message("사용법: /맵이동 <맵이름> [x] [y] [slot]")
                 return true
             end
-            
-            if name2map(map) == nil then
-                me:message(string.format("존재하지 않는 맵입니다: %s", map))
+
+            local model = name2map(name)
+            if model == nil then
+                me:message(string.format("존재하지 않는 맵입니다: %s", name))
                 return true
             end
-            
+
+            if slot ~= nil then
+                slot = tonumber(slot)
+                if not slot or slot < 1 then
+                    me:message("슬롯은 1 이상의 숫자여야 합니다.")
+                    return true
+                end
+            end
+
             if x ~= nil and y ~= nil then
                 x = tonumber(x)
                 y = tonumber(y)
@@ -154,6 +163,18 @@ M.functions = {
                     me:message("좌표는 숫자여야 합니다.")
                     return true
                 end
+            end
+
+            local map = model
+            if slot ~= nil then
+                map = model:instance(slot)
+                if map == nil then
+                    me:message(string.format("인스턴스 맵을 생성할 수 없습니다: %s (slot %d)", name, slot))
+                    return true
+                end
+            end
+
+            if x ~= nil and y ~= nil then
                 me:map(map, x, y)
             else
                 me:map(map)

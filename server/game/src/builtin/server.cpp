@@ -880,7 +880,7 @@ int builtin::server::builtin_maps(lua_State* L)
     auto& srv = static_cast<fb::game::server&>(lua->executor);
     lua->new_table();
     auto i = 1;
-    for (auto& [id, map] : srv.maps)
+    for (auto& map : *srv.maps.snapshot())
     {
         lua->pushobject(map);
         lua_rawseti(L, -2, i++);

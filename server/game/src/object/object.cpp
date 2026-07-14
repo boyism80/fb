@@ -534,6 +534,7 @@ async::task<bool> object::map(map_ptr map, std::optional<fb::model::point16_t> p
                     auto params = thread->template data<thread_params>();
                     params->characters.remove(ch.shared_from_this_as<character>());
                 }
+                this->_map->on_character_leave();
             }
 
             {
@@ -546,6 +547,9 @@ async::task<bool> object::map(map_ptr map, std::optional<fb::model::point16_t> p
         }
 
         if (map->active == false)
+            co_return false;
+
+        if (map->closing())
             co_return false;
 
         if (this->server.maps.ensure_loaded(map) == false)
@@ -597,6 +601,8 @@ async::task<bool> object::map(map_ptr map, std::optional<fb::model::point16_t> p
 
         // insert character into map cache
         this->_map->objects.push(*this);
+        if (this->is(OBJECT_TYPE::CHARACTER))
+            map->on_character_enter();
         this->update_map(*map);
         this->update_position();
         if (notify)

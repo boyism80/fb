@@ -1,12 +1,15 @@
 #include <fb/config.h>
 #include <fb/game/character.h>
+#include <fb/game/instance_map.h>
 #include <fb/game/map.h>
+#include <fb/game/mob.h>
 #include <fb/game/npc.h>
 #include <fb/game/server.h>
 #include <fb/game/thread_params.h>
 #include <fb/model/model.h>
 #include <fb/stream_reader.h>
 #include <fb/stream_writer.h>
+#include <algorithm>
 
 using namespace fb::game;
 using table         = fb::model::table;
@@ -24,6 +27,122 @@ map::container::container(fb::game::server& server, uint32_t host) :
 
 map::container::~container()
 { }
+
+bool map::container::contains(uint32_t id) const
+{
+    return this->_maps.read([&](const registry& registry) {
+        return registry.contains(id);
+    });
+}
+
+std::shared_ptr<fb::game::map> map::container::find(uint32_t id) const
+{
+    return this->_maps.read([&](const registry& registry) {
+        return registry.find(id);
+    });
+}
+
+std::shared_ptr<fb::game::map> map::container::operator[] (uint32_t id) const
+{
+    auto found = this->find(id);
+    if (found == nullptr)
+        throw std::runtime_error(std::format("map {} does not exists", id));
+
+    return found;
+}
+
+std::shared_ptr<const map::container::snapshot_t> map::container::snapshot() const
+{
+    return this->_snapshot.load();
+}
+
+void map::container::append_snapshot(const std::shared_ptr<fb::game::map>& map)
+{
+    auto prev = this->_snapshot.load();
+    auto next = std::make_shared<snapshot_t>(*prev);
+    next->push_back(map);
+    this->_snapshot.store(next);
+}
+
+void map::container::remove_snapshot(uint32_t id)
+{
+    auto prev = this->_snapshot.load();
+    auto next = std::make_shared<snapshot_t>();
+    next->reserve(prev->size());
+    for (const auto& map : *prev)
+    {
+        if (map->id != id)
+            next->push_back(map);
+    }
+    this->_snapshot.store(next);
+}
+
+void map::container::insert(const std::shared_ptr<fb::game::map>& map)
+{
+    this->_maps.write([&](registry& registry) {
+        registry.push(map->id, map);
+        this->_sequence = std::max(this->_sequence, map->id + 1);
+    });
+    this->append_snapshot(map);
+}
+
+void map::container::erase(uint32_t id)
+{
+    this->_maps.write([&](registry& registry) {
+        auto map = registry.find(id);
+        if (map != nullptr && map->is_instance())
+            this->release_slot(map->model.id, map->slot(), map);
+
+        registry.erase(id);
+        this->_available_seq.push(id);
+    });
+    this->remove_snapshot(id);
+}
+
+uint32_t map::container::allocate_id(registry& registry)
+{
+    while (this->_available_seq.empty() == false)
+    {
+        auto id = this->_available_seq.front();
+        this->_available_seq.pop();
+        if (registry.contains(id) == false)
+            return id;
+    }
+
+    return this->_sequence++;
+}
+
+uint32_t map::container::allocate_slot(slot_pool& pool)
+{
+    while (pool.available.empty() == false)
+    {
+        auto slot = *pool.available.begin();
+        pool.available.erase(pool.available.begin());
+        if (pool.by_slot.contains(slot) == false)
+            return slot;
+    }
+
+    return pool.next++;
+}
+
+void map::container::release_slot(uint32_t model_id, uint32_t slot, const std::shared_ptr<fb::game::map>& map)
+{
+    auto& pool = this->_slot_pools[model_id];
+    auto  it   = pool.by_slot.find(slot);
+    if (it == pool.by_slot.end() || it->second != map)
+        return;
+
+    pool.by_slot.erase(it);
+    pool.available.insert(slot);
+}
+
+void map::container::register_slot(uint32_t model_id, uint32_t slot, const std::shared_ptr<fb::game::map>& map)
+{
+    auto& pool = this->_slot_pools[model_id];
+    pool.available.erase(slot);
+    pool.by_slot[slot] = map;
+    pool.next          = std::max(pool.next, slot + 1);
+}
 
 bool map::container::load_data(uint32_t id, std::vector<char>& buffer)
 {
@@ -90,6 +209,7 @@ void map::container::load(const fb::model::map& model)
     }
 
     auto map = std::make_shared<fb::game::map>(this->server,
+                                               model.id,
                                                model,
                                                active,
                                                binary.empty() ? nullptr : binary.data(),
@@ -99,10 +219,7 @@ void map::container::load(const fb::model::map& model)
         map->block(block.x, block.y, true);
     }
 
-    {
-        auto _ = std::lock_guard(this->_mutex);
-        this->push(model.id, map);
-    }
+    this->insert(map);
 }
 
 bool map::container::ensure_loaded(const std::shared_ptr<fb::game::map>& map)
@@ -118,7 +235,7 @@ bool map::container::ensure_loaded(const std::shared_ptr<fb::game::map>& map)
 
     auto loaded_now = false;
     {
-        auto _ = std::lock_guard(this->_mutex);
+        auto _ = std::lock_guard(this->_load_mutex);
 
         if (map->loaded())
             return true;
@@ -247,9 +364,8 @@ void map::container::spawn_npc(const fb::model::npc_spawn& spawn, const std::sha
 async::task<void> map::container::cleanup()
 {
     auto maps_division = std::unordered_map<fb::thread*, std::vector<std::shared_ptr<fb::game::map>>>{};
-    for (auto& [id, map] : *this)
+    for (const auto& map : *this->snapshot())
     {
-        std::ignore = id;
         if (map->loaded() == false)
             continue;
 
@@ -296,13 +412,196 @@ async::task<void> map::container::cleanup()
 
 std::shared_ptr<fb::game::map> map::container::name2map(std::string_view name) const
 {
-    for (const auto& [id, map] : *this)
+    for (const auto& map : *this->snapshot())
     {
         if (map->model.name == name)
             return map;
     }
 
     return nullptr;
+}
+
+std::shared_ptr<fb::game::map> map::container::create_instance(const std::shared_ptr<fb::game::map>&    source,
+                                                               uint32_t                                 slot,
+                                                               const std::vector<char>&                 binary,
+                                                               const std::vector<fb::model::point16_t>& blocks)
+{
+    auto created = false;
+    auto map     = this->_maps.write([&](registry& registry) {
+        auto& pool = this->_slot_pools[source->model.id];
+        auto  it   = pool.by_slot.find(slot);
+        if (it != pool.by_slot.end() && it->second != nullptr && it->second->closing() == false)
+            return it->second;
+
+        if (it != pool.by_slot.end() && it->second != nullptr && it->second->closing())
+            pool.by_slot.erase(it);
+
+        auto id = this->allocate_id(registry);
+        auto map =
+            std::make_shared<fb::game::instance_map>(this->server, id, slot, source, binary.data(), binary.size());
+        for (const auto& block : blocks)
+        {
+            map->block(block.x, block.y, true);
+        }
+        registry.push(id, map);
+        this->_sequence = std::max(this->_sequence, id + 1);
+        this->register_slot(source->model.id, slot, map);
+        created = true;
+        return std::static_pointer_cast<fb::game::map>(map);
+    });
+
+    if (created == false)
+        return map;
+
+    this->append_snapshot(map);
+
+    auto builder = map->thread()->new_builder<void>();
+    builder.func = [this, map](auto& thread) -> async::task<void> {
+        auto params = thread.template data<thread_params>();
+        params->add_map(map);
+        if (table::mob_spawn.contains(map->model.id))
+        {
+            for (auto& spawn : table::mob_spawn[map->model.id])
+            {
+                params->rezens.push_back(std::make_unique<fb::game::rezen>(this->server, spawn, map));
+            }
+        }
+        co_return;
+    };
+    builder.enqueue();
+
+    this->spawn_npcs(map);
+    this->invoke_init_script(map);
+
+    return map;
+}
+
+std::shared_ptr<fb::game::map> map::container::clone(const std::shared_ptr<fb::game::map>& source)
+{
+    if (source == nullptr)
+        return nullptr;
+
+    auto root = source->is_instance() ? source->source() : source;
+    if (root == nullptr)
+        return nullptr;
+
+    auto binary = std::vector<char>();
+    auto blocks = std::vector<fb::model::point16_t>();
+    if (load_data(root->model.id, binary) == false)
+        return nullptr;
+
+    if (load_block(root->model.id, blocks) == false)
+        fb::logger::warn("{} ({})", _TEXT(MESSAGE_ASSET_CANNOT_LOAD_MAP_BLOCK), root->model.name);
+
+    auto slot = this->_maps.write([&](registry&) {
+        return this->allocate_slot(this->_slot_pools[root->model.id]);
+    });
+
+    return this->create_instance(root, slot, binary, blocks);
+}
+
+std::shared_ptr<fb::game::map> map::container::ensure_instance(const std::shared_ptr<fb::game::map>& source,
+                                                               uint32_t                              slot)
+{
+    if (source == nullptr || slot == 0)
+        return nullptr;
+
+    auto root = source->is_instance() ? source->source() : source;
+    if (root == nullptr)
+        return nullptr;
+
+    auto existing = this->_maps.write([&](registry&) -> std::shared_ptr<fb::game::map> {
+        auto& pool = this->_slot_pools[root->model.id];
+        auto  it   = pool.by_slot.find(slot);
+        if (it == pool.by_slot.end() || it->second == nullptr)
+            return nullptr;
+
+        if (it->second->closing())
+        {
+            pool.by_slot.erase(it);
+            return nullptr;
+        }
+
+        return it->second;
+    });
+    if (existing != nullptr)
+        return existing;
+
+    auto binary = std::vector<char>();
+    auto blocks = std::vector<fb::model::point16_t>();
+    if (load_data(root->model.id, binary) == false)
+        return nullptr;
+
+    if (load_block(root->model.id, blocks) == false)
+        fb::logger::warn("{} ({})", _TEXT(MESSAGE_ASSET_CANNOT_LOAD_MAP_BLOCK), root->model.name);
+
+    return this->create_instance(root, slot, binary, blocks);
+}
+
+async::task<void> map::container::destroy(const std::shared_ptr<fb::game::map>& map)
+{
+    if (map == nullptr || map->is_instance() == false)
+        co_return;
+
+    if (map->begin_destroy() == false)
+        co_return;
+
+    auto thread = map->thread();
+    if (thread == nullptr)
+        co_return;
+
+    auto characters = std::make_shared<std::vector<std::shared_ptr<fb::game::character>>>();
+    {
+        auto builder = thread->new_builder<void>();
+        builder.func = [map, characters](auto&) -> async::task<void> {
+            auto objects = std::vector<std::shared_ptr<fb::game::object>>{};
+            for (auto& [seq, obj] : map->objects)
+            {
+                objects.push_back(obj);
+            }
+
+            for (auto& obj : objects)
+            {
+                if (obj->is(OBJECT_TYPE::CHARACTER))
+                    characters->push_back(std::static_pointer_cast<fb::game::character>(obj));
+                else
+                    co_await obj->destroy();
+            }
+            co_return;
+        };
+        co_await builder.dispatch();
+    }
+
+    auto source = map->source();
+    for (auto& character : *characters)
+    {
+        auto weak    = character->weak_from_this_as<fb::game::object>();
+        auto builder = this->server.threads.new_builder(weak);
+        builder.func = [character, source](auto&) -> async::task<void> {
+            std::ignore = co_await character->map(source, std::nullopt);
+        };
+        co_await builder.dispatch();
+    }
+
+    {
+        auto builder = thread->new_builder<void>();
+        builder.func = [map](auto& thread) -> async::task<void> {
+            auto  params = thread.template data<thread_params>();
+            auto& rezens = params->rezens;
+            rezens.erase(std::remove_if(rezens.begin(),
+                                        rezens.end(),
+                                        [id = map->id](const auto& rezen) {
+                                            return rezen->map_id() == id;
+                                        }),
+                         rezens.end());
+            params->remove_map(map->id);
+            co_return;
+        };
+        co_await builder.dispatch();
+    }
+
+    this->erase(map->id);
+    co_return;
 }
 
 void map::container::rezen_force()
@@ -314,7 +613,7 @@ void map::container::rezen_force()
             auto params = thread.template data<thread_params>();
             for (auto& rezen : params->rezens)
             {
-                rezen.force_spawn(thread.id());
+                rezen->force_spawn(thread.id());
             }
             co_return;
         };
@@ -354,6 +653,18 @@ std::optional<fb::stream> map::container::map_update_stream(character&          
                                                             const fb::model::size8_t&   size,
                                                             uint16_t                    crc)
 {
+    if (map.is_instance())
+    {
+        auto bytes  = std::vector<uint8_t>();
+        auto writer = fb::stream_writer<big_endian>(bytes);
+        auto resp   = game_resp::map_update(map, position, size);
+        std::ignore = resp.serialize(writer);
+        if (resp.crc == crc)
+            return std::nullopt;
+
+        return fb::stream(bytes.data(), bytes.size());
+    }
+
     const auto hash = static_cast<uint64_t>(map.model.id) << 48 | static_cast<uint64_t>(position.x) << 32 |
                       static_cast<uint64_t>(position.y) << 16 | static_cast<uint64_t>(size.width) << 8 |
                       static_cast<uint64_t>(size.height);

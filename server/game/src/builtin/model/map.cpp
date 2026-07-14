@@ -13,6 +13,8 @@ IMPLEMENT_LUA_EXTENSION(fb::model::map, "fb.model.map")
 {"cardinal",            builtin::model::map::builtin_cardinal},
 {"revive",              builtin::model::map::builtin_revive},
 {"option",              builtin::model::map::builtin_option},
+{"clone",               builtin::model::map::builtin_clone},
+{"instance",            builtin::model::map::builtin_instance},
 END_LUA_EXTENSION; // clang-format on
 
 int builtin::model::map::builtin_id(lua_State* L)
@@ -162,4 +164,74 @@ int builtin::model::map::builtin_option(lua_State* L)
 
     lua->pushinteger(map->option);
     return 1;
+}
+
+int builtin::model::map::builtin_clone(lua_State* L)
+{
+    auto lua = fb::lua::get(L);
+    if (lua == nullptr)
+        return 0;
+
+    auto model = lua->touserdata<fb::model::map>(1);
+    if (model == nullptr)
+        return 0;
+
+    auto& server = static_cast<fb::game::server&>(lua->executor);
+    if (server.maps.contains(model->id) == false)
+        return 0;
+
+    auto source   = server.maps[model->id];
+    auto holder   = std::make_shared<std::shared_ptr<fb::game::map>>();
+    auto weak     = source->weak_from_this_as<fb::game::map>();
+    auto builder  = lua->new_co_builder();
+    builder.weak  = weak;
+    builder.yield = [=, server = &server]() -> async::task<void> {
+        *holder = server->maps.clone(source);
+        co_return;
+    };
+    builder.resume = [=]() -> async::task<int> {
+        if (*holder == nullptr)
+            lua->pushnil();
+        else
+            lua->pushobject(*holder);
+        co_return 1;
+    };
+    return builder.run();
+}
+
+int builtin::model::map::builtin_instance(lua_State* L)
+{
+    auto lua = fb::lua::get(L);
+    if (lua == nullptr)
+        return 0;
+
+    auto model = lua->touserdata<fb::model::map>(1);
+    if (model == nullptr)
+        return 0;
+
+    if (lua->argc() < 2 || lua->is_number(2) == false)
+        return 0;
+
+    auto& server = static_cast<fb::game::server&>(lua->executor);
+    if (server.maps.contains(model->id) == false)
+        return 0;
+
+    auto slot     = static_cast<uint32_t>(lua->tointeger(2));
+    auto source   = server.maps[model->id];
+    auto holder   = std::make_shared<std::shared_ptr<fb::game::map>>();
+    auto weak     = source->weak_from_this_as<fb::game::map>();
+    auto builder  = lua->new_co_builder();
+    builder.weak  = weak;
+    builder.yield = [=, server = &server]() -> async::task<void> {
+        *holder = server->maps.ensure_instance(source, slot);
+        co_return;
+    };
+    builder.resume = [=]() -> async::task<int> {
+        if (*holder == nullptr)
+            lua->pushnil();
+        else
+            lua->pushobject(*holder);
+        co_return 1;
+    };
+    return builder.run();
 }

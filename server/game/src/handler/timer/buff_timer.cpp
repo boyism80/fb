@@ -12,7 +12,8 @@ async::task<void> buff_timer::handle(const fb::model::datetime& now, std::thread
     auto thread = this->server.threads.at(id);
     auto params = thread->template data<thread_params>();
 
-    for (auto& [_, map] : params->maps)
+    auto view = params->map_view;
+    for (auto& map : *view)
     {
         if (map->active == false)
             continue;

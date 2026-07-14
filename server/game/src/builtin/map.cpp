@@ -20,6 +20,10 @@ IMPLEMENT_LUA_EXTENSION(map, "fb.game.map")
 {"at",                  builtin::map::builtin_at},
 {"block",               builtin::map::builtin_block},
 {"bulk_update",         builtin::map::builtin_bulk_update},
+{"instance",            builtin::map::builtin_instance},
+{"slot",                builtin::map::builtin_slot},
+{"clone",               builtin::map::builtin_clone},
+{"destroy",             builtin::map::builtin_destroy},
 END_LUA_EXTENSION; // clang-format on
 
 int builtin::map::builtin_model(lua_State* L)
@@ -442,7 +446,7 @@ int builtin::map::builtin_tile(lua_State* L)
             {
                 tile->object    = value;
                 const auto area = fb::model::area<uint16_t>(x, y, x + 1, y + 1);
-                server.maps.update_map_cache(map->model.id, area);
+                server.maps.update_map_cache(map->id, area);
             }
             co_return;
         };
@@ -597,6 +601,121 @@ int builtin::map::builtin_bulk_update(lua_State* L)
     };
     builder.resume = []() -> async::task<int> {
         co_return 0;
+    };
+    return builder.run();
+}
+
+int builtin::map::builtin_instance(lua_State* L)
+{
+    auto lua = fb::lua::get(L);
+    if (lua == nullptr)
+        return 0;
+
+    auto map = lua->touserdata<fb::game::map>(1);
+    if (map == nullptr)
+        return 0;
+
+    if (lua->argc() < 2 || lua->is_number(2) == false)
+    {
+        lua->pushboolean(map->is_instance());
+        return 1;
+    }
+
+    auto slot     = static_cast<uint32_t>(lua->tointeger(2));
+    auto server   = &static_cast<fb::game::server&>(lua->executor);
+    auto holder   = std::make_shared<std::shared_ptr<fb::game::map>>();
+    auto weak     = map->weak_from_this_as<fb::game::map>();
+    auto builder  = lua->new_co_builder();
+    builder.weak  = weak;
+    builder.yield = [=]() -> async::task<void> {
+        auto source = map->is_instance() ? map->source() : map->weak_from_this_as<fb::game::map>().lock();
+        if (source == nullptr)
+            co_return;
+
+        *holder = server->maps.ensure_instance(source, slot);
+        co_return;
+    };
+    builder.resume = [=]() -> async::task<int> {
+        if (*holder == nullptr)
+            lua->pushnil();
+        else
+            lua->pushobject(*holder);
+        co_return 1;
+    };
+    return builder.run();
+}
+
+int builtin::map::builtin_slot(lua_State* L)
+{
+    auto lua = fb::lua::get(L);
+    if (lua == nullptr)
+        return 0;
+
+    auto map = lua->touserdata<fb::game::map>(1);
+    if (map == nullptr)
+        return 0;
+
+    lua->pushinteger(map->slot());
+    return 1;
+}
+
+int builtin::map::builtin_clone(lua_State* L)
+{
+    auto lua = fb::lua::get(L);
+    if (lua == nullptr)
+        return 0;
+
+    auto map = lua->touserdata<fb::game::map>(1);
+    if (map == nullptr)
+        return 0;
+
+    auto server   = &static_cast<fb::game::server&>(lua->executor);
+    auto holder   = std::make_shared<std::shared_ptr<fb::game::map>>();
+    auto weak     = map->weak_from_this_as<fb::game::map>();
+    auto builder  = lua->new_co_builder();
+    builder.weak  = weak;
+    builder.yield = [=]() -> async::task<void> {
+        auto source = map->is_instance() ? map->source() : map->weak_from_this_as<fb::game::map>().lock();
+        if (source == nullptr)
+            co_return;
+
+        *holder = server->maps.clone(source);
+        co_return;
+    };
+    builder.resume = [=]() -> async::task<int> {
+        if (*holder == nullptr)
+            lua->pushnil();
+        else
+            lua->pushobject(*holder);
+        co_return 1;
+    };
+    return builder.run();
+}
+
+int builtin::map::builtin_destroy(lua_State* L)
+{
+    auto lua = fb::lua::get(L);
+    if (lua == nullptr)
+        return 0;
+
+    auto map = lua->touserdata<fb::game::map>(1);
+    if (map == nullptr)
+        return 0;
+
+    auto server   = &static_cast<fb::game::server&>(lua->executor);
+    auto result   = std::make_shared<bool>(false);
+    auto builder  = lua->new_co_builder();
+    builder.yield = [=]() -> async::task<void> {
+        if (map->is_instance())
+        {
+            co_await server->maps.destroy(map);
+            *result = true;
+        }
+        co_return;
+    };
+    builder.resume = [=]() -> async::task<int> {
+        lua->pushboolean(*result);
+        co_return 1;
     };
     return builder.run();
 }

@@ -8,11 +8,18 @@
 using namespace fb::game;
 using table = fb::model::table;
 
-rezen::rezen(server& server, const fb::model::mob_spawn& model) :
+rezen::rezen(server& server, const fb::model::mob_spawn& model, const std::shared_ptr<fb::game::map>& map) :
     _server(server),
+    _map(map),
     model(model)
 {
     this->_respawn_time = this->_server.now();
+}
+
+uint32_t rezen::map_id() const
+{
+    auto map = this->_map.lock();
+    return map != nullptr ? map->id : 0;
 }
 
 void rezen::decrease()
@@ -26,10 +33,10 @@ void rezen::decrease()
 
 async::task<void> rezen::spawn(std::thread::id thread_id)
 {
-    if (this->_server.maps.contains(this->model.parent) == false)
+    auto map = this->_map.lock();
+    if (map == nullptr)
         co_return;
 
-    auto map = this->_server.maps[this->model.parent];
     if (map->active == false)
         co_return;
 
@@ -65,7 +72,6 @@ async::task<void> rezen::spawn(std::thread::id thread_id)
         {
             auto width    = this->model.end.x - this->model.begin.x;
             auto height   = this->model.end.y - this->model.begin.y;
-            auto map      = this->_server.maps[this->model.parent];
             auto position = fb::model::point16_t(this->model.begin.x + (width > 0 ? std::rand() % width : 0),
                                                  this->model.begin.y + (height > 0 ? std::rand() % height : 0));
 

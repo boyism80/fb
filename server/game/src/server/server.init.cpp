@@ -114,9 +114,9 @@ async::task<void> fb::game::server::init_thread_params()
         maps_division.insert({thread, std::vector<std::shared_ptr<fb::game::map>>{}});
     }
 
-    for (auto& [id, map] : this->maps)
+    for (const auto& map : *this->maps.snapshot())
     {
-        auto thread = this->threads.modular(id);
+        auto thread = this->threads.modular(map->id);
         maps_division[thread].push_back(map);
     }
 
@@ -128,12 +128,12 @@ async::task<void> fb::game::server::init_thread_params()
             auto params = std::make_unique<thread_params>(*this);
             for (const auto& map : maps)
             {
-                params->maps.insert({map->model.id, map});
+                params->add_map(map);
                 if (table::mob_spawn.contains(map->model.id))
                 {
                     for (auto& spawn : table::mob_spawn[map->model.id])
                     {
-                        params->rezens.push_back(fb::game::rezen(*this, spawn));
+                        params->rezens.push_back(std::make_unique<fb::game::rezen>(*this, spawn, map));
                     }
                 }
             }
@@ -254,7 +254,7 @@ void fb::game::server::init_amqp_handlers()
 async::task<void> fb::game::server::init_map_scripts()
 {
     auto async_tasks = std::vector<async::task<void>>();
-    for (auto& [id, map] : this->maps)
+    for (const auto& map : *this->maps.snapshot())
     {
         if (map->active == false || map->loaded() == false)
             continue;

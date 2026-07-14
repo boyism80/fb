@@ -13,10 +13,13 @@ using namespace std::chrono_literals;
 class character;
 class ai;
 
+class map;
+
 class rezen
 {
 private:
     fb::game::server&                  _server;
+    std::weak_ptr<fb::game::map>       _map;
     uint16_t                           _count = 0;
     std::optional<fb::model::datetime> _respawn_time;
 
@@ -24,9 +27,10 @@ public:
     const fb::model::mob_spawn& model;
 
 public:
-    rezen(fb::game::server& server, const fb::model::mob_spawn& model);
+    rezen(fb::game::server& server, const fb::model::mob_spawn& model, const std::shared_ptr<fb::game::map>& map);
     ~rezen() = default;
 
+    uint32_t                        map_id() const;
     void                            decrease();
     [[nodiscard]] async::task<void> spawn(std::thread::id thread_id);
     void                            force_spawn(std::thread::id thread_id);

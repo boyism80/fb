@@ -5,7 +5,13 @@
 using namespace fb::game;
 using table = fb::model::table;
 
-map::map(fb::game::server& server, const fb::model::map& model, bool active, const void* data, size_t size) :
+map::map(fb::game::server&     server,
+         uint32_t              id,
+         const fb::model::map& model,
+         bool                  active,
+         const void*           data,
+         size_t                size) :
+    id(id),
     server(server),
     model(model),
     active(active),
@@ -373,12 +379,12 @@ void map::rezen_force() const
         return;
 
     auto builder = thread->new_builder<void>();
-    builder.func = [map_id = this->model.id](auto& thread) -> async::task<void> {
+    builder.func = [map_id = this->id](auto& thread) -> async::task<void> {
         auto params = thread.template data<thread_params>();
         for (auto& rezen : params->rezens)
         {
-            if (rezen.model.parent == map_id)
-                rezen.force_spawn(thread.id());
+            if (rezen->map_id() == map_id)
+                rezen->force_spawn(thread.id());
         }
         co_return;
     };
@@ -387,7 +393,38 @@ void map::rezen_force() const
 
 fb::thread* map::thread() const
 {
-    return this->server.threads.modular(this->model.id);
+    return this->server.threads.modular(this->id);
+}
+
+bool map::is_instance() const
+{
+    return false;
+}
+
+std::shared_ptr<fb::game::map> map::source() const
+{
+    return nullptr;
+}
+
+uint32_t map::slot() const
+{
+    return 0;
+}
+
+bool map::closing() const
+{
+    return false;
+}
+
+void map::on_character_enter()
+{ }
+
+void map::on_character_leave()
+{ }
+
+bool map::begin_destroy()
+{
+    return false;
 }
 
 map::tile* map::operator() (uint16_t x, uint16_t y) const
