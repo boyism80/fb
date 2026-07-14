@@ -15,6 +15,8 @@ IMPLEMENT_LUA_EXTENSION(fb::model::map, "fb.model.map")
 {"option",              builtin::model::map::builtin_option},
 {"clone",               builtin::model::map::builtin_clone},
 {"instance",            builtin::model::map::builtin_instance},
+{"instance_rule",       builtin::model::map::builtin_instance_rule},
+{"instance_capacity",   builtin::model::map::builtin_instance_capacity},
 END_LUA_EXTENSION; // clang-format on
 
 int builtin::model::map::builtin_id(lua_State* L)
@@ -234,4 +236,34 @@ int builtin::model::map::builtin_instance(lua_State* L)
         co_return 1;
     };
     return builder.run();
+}
+int builtin::model::map::builtin_instance_rule(lua_State* L)
+{
+    auto lua = fb::lua::get(L);
+    if (lua == nullptr)
+        return 0;
+
+    auto model = lua->touserdata<fb::model::map>(1);
+    if (model == nullptr)
+        return 0;
+
+    lua->pushinteger(static_cast<lua_Integer>(model->instance_rule));
+    return 1;
+}
+
+int builtin::model::map::builtin_instance_capacity(lua_State* L)
+{
+    auto lua = fb::lua::get(L);
+    if (lua == nullptr)
+        return 0;
+
+    auto model = lua->touserdata<fb::model::map>(1);
+    if (model == nullptr)
+        return 0;
+
+    if (model->instance_capacity.has_value() == false)
+        lua->pushnil();
+    else
+        lua->pushinteger(model->instance_capacity.value());
+    return 1;
 }

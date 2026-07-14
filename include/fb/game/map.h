@@ -51,9 +51,10 @@ public:
     using object_ptr   = std::shared_ptr<object>;
 
 private:
-    fb::model::size16_t _size  = fb::model::size16_t(0, 0);
-    unique_tiles        _tiles = nullptr;
-    std::atomic<bool>   _init_script_invoked{false};
+    fb::model::size16_t   _size  = fb::model::size16_t(0, 0);
+    unique_tiles          _tiles = nullptr;
+    std::atomic<bool>     _init_script_invoked{false};
+    std::atomic<uint32_t> _character_count{0};
 
 public:
     const uint32_t          id;
@@ -68,6 +69,9 @@ public:
     map(fb::game::server& server, uint32_t id, const fb::model::map& model, bool active, const void* data, size_t size);
     map(const fb::game::map&) = delete;
     virtual ~map();
+
+protected:
+    void copy_tiles(const fb::game::map& source);
 
 private:
     void load_tiles(const void* data, size_t size);
@@ -102,6 +106,7 @@ public:
     virtual void                    on_character_enter();
     virtual void                    on_character_leave();
     virtual bool                    begin_destroy();
+    uint32_t                        character_count() const;
     // clang-format on
 
 public:
@@ -136,12 +141,14 @@ private:
         std::unordered_map<uint32_t, std::shared_ptr<fb::game::map>> by_slot;
     };
 
-    fb::synchronized<registry>                             _maps;
-    uint32_t                                               _sequence = 1;
-    std::queue<uint32_t>                                   _available_seq;
-    std::unordered_map<uint32_t, slot_pool>                _slot_pools;
-    std::mutex                                             _load_mutex;
-    mutable std::atomic<std::shared_ptr<const snapshot_t>> _snapshot{std::make_shared<snapshot_t>()};
+    fb::synchronized<registry>                                   _maps;
+    uint32_t                                                     _sequence = 1;
+    std::queue<uint32_t>                                         _available_seq;
+    std::unordered_map<uint32_t, slot_pool>                      _slot_pools;
+    std::unordered_map<uint32_t, std::shared_ptr<fb::game::map>> _group_instances;
+    std::mutex                                                   _load_mutex;
+    std::mutex                                                   _entry_mutex;
+    mutable std::atomic<std::shared_ptr<const snapshot_t>>       _snapshot{std::make_shared<snapshot_t>()};
 
     fb::sharded_container<fb::game::map::cache_bytes, 1024, uint64_t> _update_cache;
     mutable std::shared_mutex                                         _update_cache_mutex;
@@ -167,10 +174,10 @@ private:
     uint32_t          allocate_slot(slot_pool& pool);
     void              release_slot(uint32_t model_id, uint32_t slot, const std::shared_ptr<fb::game::map>& map);
     void              register_slot(uint32_t model_id, uint32_t slot, const std::shared_ptr<fb::game::map>& map);
-    std::shared_ptr<fb::game::map> create_instance(const std::shared_ptr<fb::game::map>&    source,
-                                                   uint32_t                                 slot,
-                                                   const std::vector<char>&                 binary,
-                                                   const std::vector<fb::model::point16_t>& blocks);
+    void              unregister_group_instance(const std::shared_ptr<fb::game::map>& map);
+    std::shared_ptr<fb::game::map> create_instance(const std::shared_ptr<fb::game::map>& source, uint32_t slot);
+    std::shared_ptr<fb::game::map> choice_by_capacity(const std::shared_ptr<fb::game::map>& source);
+    std::shared_ptr<fb::game::map> choice_by_group(character& ch, const std::shared_ptr<fb::game::map>& source);
 
 public:
     bool                              contains(uint32_t id) const;
@@ -188,6 +195,7 @@ public:
     std::shared_ptr<fb::game::map>    name2map(std::string_view name) const;
     std::shared_ptr<fb::game::map>    clone(const std::shared_ptr<fb::game::map>& source);
     std::shared_ptr<fb::game::map>    ensure_instance(const std::shared_ptr<fb::game::map>& source, uint32_t slot);
+    std::shared_ptr<fb::game::map>    choice_entry(character& ch, const std::shared_ptr<fb::game::map>& dest);
     async::task<void>                 destroy(const std::shared_ptr<fb::game::map>& map);
     void                              rezen_force();
     void                              erase_map_cache(uint32_t map_id, const fb::model::point16_t& point);

@@ -174,10 +174,12 @@ M.functions = {
                 end
             end
 
+            -- Without slot always land on S; never CAPACITY/GROUP auto-route to an unknown C.
+            local opts = { skip_instance_rule = true }
             if x ~= nil and y ~= nil then
-                me:map(map, x, y)
+                me:map(map, x, y, opts)
             else
-                me:map(map)
+                me:map(map, opts)
             end
             return true
         end,

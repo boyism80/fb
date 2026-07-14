@@ -22,9 +22,10 @@ using map_callback = std::function<async::task<bool>()>;
 
 struct map_options
 {
-    DESTROY_TYPE destroy_type = DESTROY_TYPE::DEFAULT;
-    bool         notify       = true;
-    map_callback callback     = {};
+    DESTROY_TYPE destroy_type       = DESTROY_TYPE::DEFAULT;
+    bool         notify             = true;
+    bool         skip_instance_rule = false;
+    map_callback callback           = {};
 };
 
 class server;

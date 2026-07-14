@@ -1,6 +1,7 @@
 #include <fb/game/server.h>
 #include <fb/game/map.h>
 #include <fb/game/thread_params.h>
+#include <algorithm>
 
 using namespace fb::game;
 using table = fb::model::table;
@@ -52,6 +53,26 @@ void map::load_tiles(const void* data, size_t size)
         this->_tiles[i].id     = reader.read<uint16_t>();
         this->_tiles[i].object = reader.read<uint16_t>();
     }
+
+    this->sectors.load(this->_size, fb::model::size16_t(MAX_SCREEN_WIDTH, MAX_SCREEN_HEIGHT));
+    this->update_door();
+}
+
+void map::copy_tiles(const fb::game::map& source)
+{
+    if (this->loaded())
+        return;
+
+    if (source.loaded() == false || source._tiles == nullptr)
+        throw std::runtime_error(std::format(_TEXT(MESSAGE_MAP_INVALID_DATA), this->model.name));
+
+    this->_size   = source._size;
+    auto map_size = static_cast<uint32_t>(this->_size.width) * static_cast<uint32_t>(this->_size.height);
+    this->_tiles  = std::make_unique<tile[]>(map_size);
+    if (this->_tiles == nullptr)
+        throw std::runtime_error(std::format(_TEXT(MESSAGE_MAP_TILE_ALLOCATION_FAILED), this->model.name));
+
+    std::copy_n(source._tiles.get(), map_size, this->_tiles.get());
 
     this->sectors.load(this->_size, fb::model::size16_t(MAX_SCREEN_WIDTH, MAX_SCREEN_HEIGHT));
     this->update_door();
@@ -417,14 +438,28 @@ bool map::closing() const
 }
 
 void map::on_character_enter()
-{ }
+{
+    this->_character_count.fetch_add(1, std::memory_order_relaxed);
+}
 
 void map::on_character_leave()
-{ }
+{
+    auto previous = this->_character_count.load(std::memory_order_relaxed);
+    while (previous > 0)
+    {
+        if (this->_character_count.compare_exchange_weak(previous, previous - 1, std::memory_order_relaxed))
+            return;
+    }
+}
 
 bool map::begin_destroy()
 {
     return false;
+}
+
+uint32_t map::character_count() const
+{
+    return this->_character_count.load(std::memory_order_relaxed);
 }
 
 map::tile* map::operator() (uint16_t x, uint16_t y) const

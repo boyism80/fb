@@ -152,6 +152,17 @@ async::task<bool> character::map(std::shared_ptr<fb::game::map>      map,
     auto old_map      = this->_map;
     auto old_position = this->_position;
 
+    if (map != nullptr && this->_map != map && options.skip_instance_rule == false)
+    {
+        auto routed = this->server.maps.choice_entry(*this, map);
+        if (routed == nullptr)
+        {
+            this->listener.on_message(*this, "그룹에 가입해야 입장할 수 있습니다.", MESSAGE_TYPE::STATE);
+            co_return false;
+        }
+        map = routed;
+    }
+
     if (this->_map != map)
     {
         if (this->trade.trading())

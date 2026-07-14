@@ -240,6 +240,19 @@ async::task<void> group::container::on_leave(std::string                target,
             co_await ptr->matchmaker.unregister_queue(true);
             ptr->group_reset();
             ptr->message(_TEXT(MESSAGE_GROUP_LEFT_SUCCESS), MESSAGE_TYPE::STATE);
+
+            auto map = ptr->map();
+            if (map != nullptr && map->is_instance() &&
+                map->model.instance_rule == fb::model::enum_value::INSTANCE_RULE_TYPE::GROUP)
+            {
+                auto source = map->source();
+                if (source != nullptr)
+                {
+                    map_options opts;
+                    opts.skip_instance_rule = true;
+                    std::ignore             = co_await ptr->map(source, std::nullopt, opts);
+                }
+            }
         }
 
         auto log_data              = Json::Value();
@@ -308,6 +321,19 @@ async::task<void> group::container::on_kick(std::string                target,
             co_await ptr->matchmaker.unregister_queue(true);
             ptr->group_reset();
             ptr->message(_TEXT(MESSAGE_GROUP_KICKED), MESSAGE_TYPE::STATE);
+
+            auto map = ptr->map();
+            if (map != nullptr && map->is_instance() &&
+                map->model.instance_rule == fb::model::enum_value::INSTANCE_RULE_TYPE::GROUP)
+            {
+                auto source = map->source();
+                if (source != nullptr)
+                {
+                    map_options opts;
+                    opts.skip_instance_rule = true;
+                    std::ignore             = co_await ptr->map(source, std::nullopt, opts);
+                }
+            }
         }
 
         auto log_data              = Json::Value();
@@ -348,6 +374,19 @@ async::task<void> group::container::on_destroyed(std::string actor, uint32_t gro
                 co_await ch->matchmaker.unregister_queue(true);
             ch->group_reset();
             ch->message(_TEXT(MESSAGE_GROUP_DISBANDED), MESSAGE_TYPE::STATE);
+
+            auto map = ch->map();
+            if (map != nullptr && map->is_instance() &&
+                map->model.instance_rule == fb::model::enum_value::INSTANCE_RULE_TYPE::GROUP)
+            {
+                auto source = map->source();
+                if (source != nullptr)
+                {
+                    map_options opts;
+                    opts.skip_instance_rule = true;
+                    std::ignore             = co_await ch->map(source, std::nullopt, opts);
+                }
+            }
             co_return;
         });
     });

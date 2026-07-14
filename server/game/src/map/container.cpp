@@ -88,15 +88,19 @@ void map::container::insert(const std::shared_ptr<fb::game::map>& map)
 
 void map::container::erase(uint32_t id)
 {
+    std::shared_ptr<fb::game::map> erased;
     this->_maps.write([&](registry& registry) {
-        auto map = registry.find(id);
-        if (map != nullptr && map->is_instance())
-            this->release_slot(map->model.id, map->slot(), map);
+        erased = registry.find(id);
+        if (erased != nullptr && erased->is_instance())
+            this->release_slot(erased->model.id, erased->slot(), erased);
 
         registry.erase(id);
         this->_available_seq.push(id);
     });
     this->remove_snapshot(id);
+
+    if (erased != nullptr && erased->is_instance())
+        this->unregister_group_instance(erased);
 }
 
 uint32_t map::container::allocate_id(registry& registry)
@@ -421,10 +425,8 @@ std::shared_ptr<fb::game::map> map::container::name2map(std::string_view name) c
     return nullptr;
 }
 
-std::shared_ptr<fb::game::map> map::container::create_instance(const std::shared_ptr<fb::game::map>&    source,
-                                                               uint32_t                                 slot,
-                                                               const std::vector<char>&                 binary,
-                                                               const std::vector<fb::model::point16_t>& blocks)
+std::shared_ptr<fb::game::map> map::container::create_instance(const std::shared_ptr<fb::game::map>& source,
+                                                               uint32_t                              slot)
 {
     auto created = false;
     auto map     = this->_maps.write([&](registry& registry) {
@@ -436,13 +438,8 @@ std::shared_ptr<fb::game::map> map::container::create_instance(const std::shared
         if (it != pool.by_slot.end() && it->second != nullptr && it->second->closing())
             pool.by_slot.erase(it);
 
-        auto id = this->allocate_id(registry);
-        auto map =
-            std::make_shared<fb::game::instance_map>(this->server, id, slot, source, binary.data(), binary.size());
-        for (const auto& block : blocks)
-        {
-            map->block(block.x, block.y, true);
-        }
+        auto id  = this->allocate_id(registry);
+        auto map = std::make_shared<fb::game::instance_map>(this->server, id, slot, source);
         registry.push(id, map);
         this->_sequence = std::max(this->_sequence, id + 1);
         this->register_slot(source->model.id, slot, map);
@@ -485,19 +482,14 @@ std::shared_ptr<fb::game::map> map::container::clone(const std::shared_ptr<fb::g
     if (root == nullptr)
         return nullptr;
 
-    auto binary = std::vector<char>();
-    auto blocks = std::vector<fb::model::point16_t>();
-    if (load_data(root->model.id, binary) == false)
+    if (this->ensure_loaded(root) == false)
         return nullptr;
-
-    if (load_block(root->model.id, blocks) == false)
-        fb::logger::warn("{} ({})", _TEXT(MESSAGE_ASSET_CANNOT_LOAD_MAP_BLOCK), root->model.name);
 
     auto slot = this->_maps.write([&](registry&) {
         return this->allocate_slot(this->_slot_pools[root->model.id]);
     });
 
-    return this->create_instance(root, slot, binary, blocks);
+    return this->create_instance(root, slot);
 }
 
 std::shared_ptr<fb::game::map> map::container::ensure_instance(const std::shared_ptr<fb::game::map>& source,
@@ -527,15 +519,120 @@ std::shared_ptr<fb::game::map> map::container::ensure_instance(const std::shared
     if (existing != nullptr)
         return existing;
 
-    auto binary = std::vector<char>();
-    auto blocks = std::vector<fb::model::point16_t>();
-    if (load_data(root->model.id, binary) == false)
+    if (this->ensure_loaded(root) == false)
         return nullptr;
 
-    if (load_block(root->model.id, blocks) == false)
-        fb::logger::warn("{} ({})", _TEXT(MESSAGE_ASSET_CANNOT_LOAD_MAP_BLOCK), root->model.name);
+    return this->create_instance(root, slot);
+}
 
-    return this->create_instance(root, slot, binary, blocks);
+void map::container::unregister_group_instance(const std::shared_ptr<fb::game::map>& map)
+{
+    auto lock = std::lock_guard(this->_entry_mutex);
+    for (auto it = this->_group_instances.begin(); it != this->_group_instances.end();)
+    {
+        if (it->second == map)
+            it = this->_group_instances.erase(it);
+        else
+            ++it;
+    }
+}
+
+std::shared_ptr<fb::game::map> map::container::choice_by_capacity(const std::shared_ptr<fb::game::map>& source)
+{
+    auto capacity = source->model.instance_capacity;
+    if (capacity.has_value() == false || capacity.value() == 0)
+        return source;
+
+    auto limit = capacity.value();
+    if (source->character_count() < limit)
+        return source;
+
+    auto existing = this->_maps.write([&](registry&) -> std::shared_ptr<fb::game::map> {
+        auto& pool = this->_slot_pools[source->model.id];
+        for (uint32_t slot = 1; slot < pool.next; ++slot)
+        {
+            auto it = pool.by_slot.find(slot);
+            if (it == pool.by_slot.end() || it->second == nullptr)
+                continue;
+
+            if (it->second->closing())
+                continue;
+
+            if (it->second->character_count() < limit)
+                return it->second;
+        }
+        return nullptr;
+    });
+    if (existing != nullptr)
+        return existing;
+
+    return this->clone(source);
+}
+
+std::shared_ptr<fb::game::map> map::container::choice_by_group(character&                            ch,
+                                                               const std::shared_ptr<fb::game::map>& source)
+{
+    auto group_id = ch.group_id();
+    if (group_id.has_value() == false)
+        return nullptr;
+
+    auto gid = group_id.value();
+    {
+        auto lock = std::lock_guard(this->_entry_mutex);
+        auto it   = this->_group_instances.find(gid);
+        if (it != this->_group_instances.end() && it->second != nullptr && it->second->closing() == false)
+            return it->second;
+    }
+
+    auto created = this->clone(source);
+    if (created == nullptr)
+        return nullptr;
+
+    {
+        auto lock = std::lock_guard(this->_entry_mutex);
+        auto it   = this->_group_instances.find(gid);
+        if (it != this->_group_instances.end() && it->second != nullptr && it->second->closing() == false)
+        {
+            auto winner = it->second;
+            // Lost the creation race; drop the unused empty instance.
+            auto builder = created->thread()->new_builder<void>();
+            builder.func = [this, created](auto&) -> async::task<void> {
+                co_await this->destroy(created);
+            };
+            builder.enqueue();
+            return winner;
+        }
+
+        this->_group_instances[gid] = created;
+    }
+
+    return created;
+}
+
+std::shared_ptr<fb::game::map> map::container::choice_entry(character& ch, const std::shared_ptr<fb::game::map>& dest)
+{
+    if (dest == nullptr)
+        return nullptr;
+
+    // Explicit instance target bypasses systemic routing.
+    if (dest->is_instance())
+        return dest;
+
+    auto source = dest;
+    switch (source->model.instance_rule)
+    {
+    case fb::model::enum_value::INSTANCE_RULE_TYPE::NONE:
+        return source;
+
+    case fb::model::enum_value::INSTANCE_RULE_TYPE::CAPACITY:
+        return this->choice_by_capacity(source);
+
+    case fb::model::enum_value::INSTANCE_RULE_TYPE::GROUP:
+        return this->choice_by_group(ch, source);
+
+    default:
+        return source;
+    }
 }
 
 async::task<void> map::container::destroy(const std::shared_ptr<fb::game::map>& map)
@@ -578,7 +675,9 @@ async::task<void> map::container::destroy(const std::shared_ptr<fb::game::map>& 
         auto weak    = character->weak_from_this_as<fb::game::object>();
         auto builder = this->server.threads.new_builder(weak);
         builder.func = [character, source](auto&) -> async::task<void> {
-            std::ignore = co_await character->map(source, std::nullopt);
+            map_options opts;
+            opts.skip_instance_rule = true;
+            std::ignore             = co_await character->map(source, std::nullopt, opts);
         };
         co_await builder.dispatch();
     }

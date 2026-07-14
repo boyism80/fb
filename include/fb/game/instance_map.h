@@ -13,15 +13,9 @@ private:
     bool                           _activated  = false;
     bool                           _closing    = false;
     bool                           _destroying = false;
-    uint32_t                       _characters = 0;
 
 public:
-    instance_map(fb::game::server&                     server,
-                 uint32_t                              id,
-                 uint32_t                              slot,
-                 const std::shared_ptr<fb::game::map>& source,
-                 const void*                           data,
-                 size_t                                size);
+    instance_map(fb::game::server& server, uint32_t id, uint32_t slot, const std::shared_ptr<fb::game::map>& source);
     ~instance_map();
 
 public:

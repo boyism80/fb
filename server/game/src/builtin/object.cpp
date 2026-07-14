@@ -733,6 +733,11 @@ int builtin::object::builtin_map(lua_State* L)
         if (lua_ctx->is_nil(-1) == false)
             opts.notify = lua_ctx->toboolean(-1);
         ::lua_pop(*lua_ctx, 1);
+
+        ::lua_getfield(*lua_ctx, index, "skip_instance_rule");
+        if (lua_ctx->is_nil(-1) == false)
+            opts.skip_instance_rule = lua_ctx->toboolean(-1);
+        ::lua_pop(*lua_ctx, 1);
     };
 
     auto map             = std::shared_ptr<fb::game::map>(nullptr);

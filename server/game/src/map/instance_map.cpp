@@ -6,13 +6,13 @@ using namespace fb::game;
 instance_map::instance_map(fb::game::server&                     server,
                            uint32_t                              id,
                            uint32_t                              slot,
-                           const std::shared_ptr<fb::game::map>& source,
-                           const void*                           data,
-                           size_t                                size) :
-    map(server, id, source->model, true, data, size),
+                           const std::shared_ptr<fb::game::map>& source) :
+    map(server, id, source->model, true, nullptr, 0),
     _source(source),
     _slot(slot)
-{ }
+{
+    this->copy_tiles(*source);
+}
 
 instance_map::~instance_map()
 { }
@@ -42,14 +42,13 @@ void instance_map::on_character_enter()
     if (this->_closing)
         return;
 
+    map::on_character_enter();
     this->_activated = true;
-    this->_characters++;
 }
 
 void instance_map::on_character_leave()
 {
-    if (this->_characters > 0)
-        this->_characters--;
+    map::on_character_leave();
 
     if (this->_closing)
         return;
@@ -57,7 +56,7 @@ void instance_map::on_character_leave()
     if (this->_activated == false)
         return;
 
-    if (this->_characters > 0)
+    if (this->character_count() > 0)
         return;
 
     this->_closing = true;
