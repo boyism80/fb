@@ -36,6 +36,12 @@ protected:
 public:
     virtual ~async_executor() = default;
 
+public:
+    bool running() const
+    {
+        return this->_running;
+    }
+
 protected:
     template <typename Class>
     void bind_timer(async::task<void> (Class::*fn)(void), std::chrono::steady_clock::duration interval)

@@ -89,7 +89,41 @@ void run_bot_test(std::string_view config_path)
             io->run();
         });
     }
+
+    // When containers exit, release work_guards so io_context::run / join can finish.
+    auto watcher = std::thread([&bot_containers, &guards, &ios]() {
+        while (true)
+        {
+            auto any_running = false;
+            for (auto& container : bot_containers)
+            {
+                if (container->running())
+                {
+                    any_running = true;
+                    break;
+                }
+            }
+
+            if (any_running == false)
+                break;
+
+            std::this_thread::sleep_for(100ms);
+        }
+
+        for (auto& guard : guards)
+        {
+            guard->reset();
+        }
+        for (auto& io : ios)
+        {
+            io->stop();
+        }
+    });
+
     threads.join();
+
+    if (watcher.joinable())
+        watcher.join();
 
     exit = true;
 

@@ -279,7 +279,11 @@ public:
 
         try
         {
+            // Keep this socket alive across close handling so map erase cannot destroy
+            // the object while recv is still suspended in async_await_task.
+            auto keep_alive = this->template shared_from_this_as<fb::socket<T>>();
             co_await fb::async_await_task(this->_handle_closed(*this), boost::asio::use_awaitable);
+            std::ignore = keep_alive;
         }
         catch (std::exception& e)
         {

@@ -313,19 +313,33 @@ public:
 
     async::task<void> on_closed(fb::socket<>& socket)
     {
-        auto& bot    = static_cast<BotType&>(static_cast<base_bot&>(socket));
-        auto  thread = bot.thread();
+        auto& raw_bot = static_cast<BotType&>(static_cast<base_bot&>(socket));
+        auto  bot_id  = raw_bot.id;
+        auto  thread  = raw_bot.thread();
+
+        // Keep the bot alive while close handling (and the awaiting recv) finish.
+        // Erasing the last map entry without this destroys the object mid-co_await.
+        std::shared_ptr<BotType> bot_ptr;
+        {
+            auto guard = this->_bots.enter_read();
+            auto it    = guard.value().find(bot_id);
+            if (it != guard.value().end())
+                bot_ptr = it->second;
+        }
+
         co_await thread->switching();
 
-        co_await this->on_bot_disconnected(bot);
+        if (bot_ptr != nullptr)
+            co_await this->on_bot_disconnected(*bot_ptr);
 
         {
             auto guard = this->_bots.enter_write();
-            guard.value().erase(bot.id);
+            guard.value().erase(bot_id);
         }
 
         auto params = thread->template data<bot_thread_params>();
-        params->bots.erase(bot.id);
+        if (params != nullptr)
+            params->bots.erase(bot_id);
     }
 
     template <typename ResponseType> void bind(std::function<async::task<void>(BotType&, ResponseType&)>&& fn)

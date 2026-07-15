@@ -39,6 +39,8 @@ void async_executor::exit()
         timer->cancel();
     }
 
-    this->threads.exit();
+    // Stop IO before marking logic threads as exiting so in-flight socket close
+    // handlers can still be resumed via thread queue while IO unwinds.
     this->io_context.stop();
+    this->threads.exit();
 }
