@@ -622,7 +622,7 @@ int builtin::server::builtin_timer(lua_State* L)
 
     auto type = decrease ? TIMER_TYPE::DECREASE : TIMER_TYPE::INCREASE;
     srv.characters.foreach_enqueue([value, type](auto& ch) -> async::task<void> {
-        co_await ch->timer(value, type);
+        ch->timer(value, type);
         co_return;
     });
     return 0;
@@ -638,7 +638,7 @@ int builtin::server::builtin_weather(lua_State* L)
     auto  value = (uint32_t)lua->tointeger(1);
 
     srv.characters.foreach_enqueue([value](auto& ch) -> async::task<void> {
-        co_await ch->weather(WEATHER_TYPE(value));
+        ch->weather(WEATHER_TYPE(value));
         co_return;
     });
     return 0;
@@ -654,7 +654,7 @@ int builtin::server::builtin_bright(lua_State* L)
     auto  value = (uint32_t)lua->tointeger(1);
 
     srv.characters.foreach_enqueue([value](auto& ch) -> async::task<void> {
-        co_await ch->bright(value);
+        ch->bright(value);
         co_return;
     });
     return 0;
@@ -856,7 +856,7 @@ int builtin::server::builtin_mknpc(lua_State* L)
     builder.yield   = [=]() -> async::task<void> {
         auto& server = static_cast<fb::game::server&>(lua->executor);
         auto  npc    = server.make<fb::game::npc>(*model);
-        std::ignore  = co_await npc->direction(direction);
+        std::ignore  = npc->direction(direction);
         std::ignore  = co_await npc->map(map, fb::model::point16_t{x, y});
         *npc_holder  = npc;
         co_return;
@@ -910,15 +910,8 @@ int builtin::server::builtin_broadcast(lua_State* L)
 
     if (broad_type == BROADCAST_TYPE::WORLD)
     {
-        auto builder  = lua->new_co_builder();
-        builder.yield = [=]() -> async::task<void> {
-            auto& server = static_cast<fb::game::server&>(lua->executor);
-            co_await server.characters.broadcast(text, type);
-        };
-        builder.resume = []() -> async::task<int> {
-            co_return 0;
-        };
-        return builder.run();
+        srv.characters.broadcast(text, type);
+        return 0;
     }
     else
     {
@@ -926,6 +919,7 @@ int builtin::server::builtin_broadcast(lua_State* L)
         builder.yield = [=]() -> async::task<void> {
             auto& server = static_cast<fb::game::server&>(lua->executor);
             co_await server.characters.broadcast(text, type, broad_type);
+            co_return;
         };
         builder.resume = []() -> async::task<int> {
             co_return 0;

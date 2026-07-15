@@ -20,22 +20,22 @@ login::login(fb::game::server& server) :
     fb::handler::protocol<fb::game::server, game_reqs::login>(server)
 { }
 
-async::task<void> login::init_option(const internal::Option& response, fb::game::character& ch)
+void login::init_option(const internal::Option& response, fb::game::character& ch)
 {
-    co_await ch.option(OPTION::WHISPER, response.whisper, false);
-    co_await ch.option(OPTION::GROUP, response.group, false);
-    co_await ch.option(OPTION::ROAR, response.roar, false);
-    co_await ch.option(OPTION::ROAR_WORLDS, response.roar_worlds, false);
-    co_await ch.option(OPTION::MAGIC_EFFECT, response.magic_effect, false);
-    co_await ch.option(OPTION::WEATHER_EFFECT, response.weather_effect, false);
-    co_await ch.option(OPTION::FIXED_MOVE, response.fixed_move, false);
-    co_await ch.option(OPTION::TRADE, response.trade, false);
-    co_await ch.option(OPTION::FAST_MOVE, response.fast_move, false);
-    co_await ch.option(OPTION::EFFECT_SOUND, response.effect_sound, false);
-    co_await ch.option(OPTION::PK_PROTECT, response.pk_protect, false);
+    ch.option(OPTION::WHISPER, response.whisper, false);
+    ch.option(OPTION::GROUP, response.group, false);
+    ch.option(OPTION::ROAR, response.roar, false);
+    ch.option(OPTION::ROAR_WORLDS, response.roar_worlds, false);
+    ch.option(OPTION::MAGIC_EFFECT, response.magic_effect, false);
+    ch.option(OPTION::WEATHER_EFFECT, response.weather_effect, false);
+    ch.option(OPTION::FIXED_MOVE, response.fixed_move, false);
+    ch.option(OPTION::TRADE, response.trade, false);
+    ch.option(OPTION::FAST_MOVE, response.fast_move, false);
+    ch.option(OPTION::EFFECT_SOUND, response.effect_sound, false);
+    ch.option(OPTION::PK_PROTECT, response.pk_protect, false);
 }
 
-async::task<void> login::init_items(const std::vector<internal::Item>& response, character& ch)
+void login::init_items(const std::vector<internal::Item>& response, character& ch)
 {
     for (auto& x : response)
     {
@@ -49,19 +49,18 @@ async::task<void> login::init_items(const std::vector<internal::Item>& response,
             item->durability(x.durability.value());
 
         if (x.stored != -1)
-            std::ignore = co_await ch.items.store(item);
+            std::ignore = ch.items.store(item);
         else if (x.parts == static_cast<uint32_t>(EQUIPMENT_PARTS::UNKNOWN))
-            std::ignore = co_await ch.items.add(item, x.index);
+            std::ignore = ch.items.add(item, x.index);
         else
-            std::ignore =
-                co_await ch.items.wear((EQUIPMENT_PARTS)x.parts, std::static_pointer_cast<fb::game::equipment>(item));
+            std::ignore = ch.items.wear((EQUIPMENT_PARTS)x.parts, std::static_pointer_cast<fb::game::equipment>(item));
 
         if (x.custom_name.has_value() && item->based<fb::model::item>().attr(ITEM_ATTRIBUTE::WEAPON))
-            co_await static_cast<weapon*>(item.get())->custom_name(x.custom_name.value());
+            static_cast<weapon*>(item.get())->custom_name(x.custom_name.value());
     }
 }
 
-async::task<void> login::init_spells(const std::vector<internal::Spell>& response, character& ch)
+void login::init_spells(const std::vector<internal::Spell>& response, character& ch)
 {
     for (auto& x : response)
     {
@@ -75,7 +74,7 @@ async::task<void> login::init_spells(const std::vector<internal::Spell>& respons
             sec += (delay.milliseconds() > 0 ? 1 : 0);
         else
             sec = 0;
-        std::ignore = co_await ch.spells.add(model, x.slot, sec);
+        std::ignore = ch.spells.add(model, x.slot, sec);
     }
 }
 
@@ -201,10 +200,10 @@ async::task<std::shared_ptr<character>> login::init(const game_reqs::login& requ
     auto weak = ch->weak_from_this_as<character>();
     co_await this->server.threads.switching(weak);
     ch->items.deposited(resp.character.deposited_money);
-    co_await ch->stat.base_hp(resp.character.base_hp, false);
-    co_await ch->stat.hp(resp.character.hp, false);
-    co_await ch->stat.base_mp(resp.character.base_mp, false);
-    co_await ch->stat.mp(resp.character.mp, false);
+    ch->stat.base_hp(resp.character.base_hp, false);
+    ch->stat.hp(resp.character.hp, false);
+    ch->stat.base_mp(resp.character.base_mp, false);
+    ch->stat.mp(resp.character.mp, false);
 
     auto thread = this->server.maps[map]->thread();
     ch->thread(thread);
@@ -259,15 +258,15 @@ async::task<std::shared_ptr<character>> login::init(const game_reqs::login& requ
         co_return nullptr;
     }
 
-    co_await ch->mail_box.unread_count(resp.mail);
-    co_await this->init_items(resp.items, *ch);
-    co_await this->init_spells(resp.spells, *ch);
+    ch->mail_box.unread_count(resp.mail);
+    this->init_items(resp.items, *ch);
+    this->init_spells(resp.spells, *ch);
     this->init_matchmaker(resp.matchmaking_skills, *ch);
     this->init_achievements(resp.achievements, *ch);
     this->init_quests(resp.quests, *ch);
     this->init_marketplace(resp.marketplace_pendings, *ch);
     this->init_storage(resp, *ch);
-    co_await this->init_option(resp.option, *ch);
+    this->init_option(resp.option, *ch);
     ch->marriage(fb::game::marriage(resp.marriage.remarriage_after.empty()
                                         ? this->server.now()
                                         : fb::model::datetime(resp.marriage.remarriage_after),
@@ -275,13 +274,13 @@ async::task<std::shared_ptr<character>> login::init(const game_reqs::login& requ
                                     resp.marriage.spouse_name,
                                     resp.marriage.divorce_count));
 
-    co_await ch->init();
-    co_await ch->update_time(this->server.time().hours());
+    ch->init();
+    ch->update_time(this->server.time().hours());
     if (request.from == internal::Service::Login)
     {
         auto msg = this->elapsed_message(resp.character.updated_date);
         if (msg.empty() == false)
-            co_await ch->message(msg, MESSAGE_TYPE::STATE);
+            ch->message(msg, MESSAGE_TYPE::STATE);
 
         auto lua = this->server.lua.open("scripts/interaction.lua", "on_login");
         if (lua)
@@ -294,8 +293,8 @@ async::task<std::shared_ptr<character>> login::init(const game_reqs::login& requ
 
     co_await this->server.system_storage.sync(*ch);
 
-    co_await ch->update(UPDATE_STATE_LEVEL::ALL);
-    co_await ch->update_option();
+    ch->update(UPDATE_STATE_LEVEL::ALL);
+    ch->update_option();
     co_return ch;
 }
 

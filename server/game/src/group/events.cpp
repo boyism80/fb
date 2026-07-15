@@ -114,11 +114,11 @@ async::task<void> group::container::on_create(std::string                     ta
                             if (other_member_name == member_ptr->name())
                                 continue;
 
-                            co_await member_ptr->message(std::format(_TEXT(MESSAGE_GROUP_JOINED), other_member_name),
-                                                         MESSAGE_TYPE::STATE);
+                            member_ptr->message(std::format(_TEXT(MESSAGE_GROUP_JOINED), other_member_name),
+                                                MESSAGE_TYPE::STATE);
                         }
 
-                        co_await member_ptr->message(_TEXT(MESSAGE_GROUP_JOINED_SUCCESS), MESSAGE_TYPE::STATE);
+                        member_ptr->message(_TEXT(MESSAGE_GROUP_JOINED_SUCCESS), MESSAGE_TYPE::STATE);
                         co_return;
                     },
                     group_members);
@@ -159,7 +159,7 @@ async::task<void> group::container::on_enter(std::string                target,
 
     this->_server.characters.foreach_enqueue(
         [new_member_name](auto& member) -> async::task<void> {
-            co_await member->message(std::format(_TEXT(MESSAGE_GROUP_JOINED), new_member_name), MESSAGE_TYPE::STATE);
+            member->message(std::format(_TEXT(MESSAGE_GROUP_JOINED), new_member_name), MESSAGE_TYPE::STATE);
             co_return;
         },
         members);
@@ -177,7 +177,7 @@ async::task<void> group::container::on_enter(std::string                target,
     if (ptr != nullptr)
     {
         ptr->group_id(group->id());
-        co_await ptr->message(_TEXT(MESSAGE_GROUP_JOINED_SUCCESS), MESSAGE_TYPE::STATE);
+        ptr->message(_TEXT(MESSAGE_GROUP_JOINED_SUCCESS), MESSAGE_TYPE::STATE);
     }
 
     if (before != nullptr)
@@ -219,7 +219,7 @@ async::task<void> group::container::on_leave(std::string                target,
         {
             co_await ptr->matchmaker.unregister_queue(true);
             ptr->group_reset();
-            co_await ptr->message(_TEXT(MESSAGE_GROUP_LEFT_SUCCESS), MESSAGE_TYPE::STATE);
+            ptr->message(_TEXT(MESSAGE_GROUP_LEFT_SUCCESS), MESSAGE_TYPE::STATE);
 
             auto map = ptr->map();
             if (map != nullptr && map->is_instance() &&
@@ -252,7 +252,7 @@ async::task<void> group::container::on_leave(std::string                target,
     auto message = std::format(_TEXT(MESSAGE_GROUP_MEMBER_LEFT), deleted_member_name);
     this->_server.characters.foreach_enqueue(
         [message](auto& member) -> async::task<void> {
-            co_await member->message(message, MESSAGE_TYPE::STATE);
+            member->message(message, MESSAGE_TYPE::STATE);
             co_return;
         },
         members);
@@ -293,7 +293,7 @@ async::task<void> group::container::on_kick(std::string                target,
         {
             co_await ptr->matchmaker.unregister_queue(true);
             ptr->group_reset();
-            co_await ptr->message(_TEXT(MESSAGE_GROUP_KICKED), MESSAGE_TYPE::STATE);
+            ptr->message(_TEXT(MESSAGE_GROUP_KICKED), MESSAGE_TYPE::STATE);
 
             auto map = ptr->map();
             if (map != nullptr && map->is_instance() &&
@@ -326,7 +326,7 @@ async::task<void> group::container::on_kick(std::string                target,
     auto message = std::format(_TEXT(MESSAGE_GROUP_MEMBER_KICKED), deleted_member_name);
     this->_server.characters.foreach_enqueue(
         [message](auto& member) -> async::task<void> {
-            co_await member->message(message, MESSAGE_TYPE::STATE);
+            member->message(message, MESSAGE_TYPE::STATE);
             co_return;
         },
         members);
@@ -342,7 +342,7 @@ async::task<void> group::container::on_destroyed(std::string actor, uint32_t gro
             if (ch->matchmaker.enrolled())
                 co_await ch->matchmaker.unregister_queue(true);
             ch->group_reset();
-            co_await ch->message(_TEXT(MESSAGE_GROUP_DISBANDED), MESSAGE_TYPE::STATE);
+            ch->message(_TEXT(MESSAGE_GROUP_DISBANDED), MESSAGE_TYPE::STATE);
 
             auto map = ch->map();
             if (map != nullptr && map->is_instance() &&
@@ -377,7 +377,7 @@ async::task<void> group::container::on_broadcast(uint32_t group_id, std::string 
 
     this->_server.characters.foreach_enqueue(
         [message, type](auto& member) -> async::task<void> {
-            co_await member->message(message, static_cast<MESSAGE_TYPE>(type));
+            member->message(message, static_cast<MESSAGE_TYPE>(type));
             co_return;
         },
         members);

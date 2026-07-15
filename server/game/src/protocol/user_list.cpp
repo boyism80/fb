@@ -3,17 +3,16 @@
 namespace fb::protocol::game::request {
 
 #ifdef BOT
-async::task<void> user_list::serialize(fb::stream_writer<big_endian>& writer) const
+void user_list::serialize(fb::stream_writer<big_endian>& writer) const
 {
-    co_await header::serialize(writer);
+    header::serialize(writer);
     writer.write<uint8_t>(opcode);
     writer.write<uint8_t>(0);
-    co_return;
 }
 #else
-async::task<void> user_list::deserialize(fb::stream_reader<big_endian>& reader)
+void user_list::deserialize(fb::stream_reader<big_endian>& reader)
 {
-    co_await header::deserialize(reader);
+    header::deserialize(reader);
     auto unknown = reader.read<uint8_t>();
 }
 #endif
@@ -27,9 +26,9 @@ user_list::user_list(std::vector<user_data>&& users) :
     users(std::move(users))
 { }
 
-async::task<void> user_list::serialize(fb::stream_writer<big_endian>& writer) const
+void user_list::serialize(fb::stream_writer<big_endian>& writer) const
 {
-    co_await header::serialize(writer);
+    header::serialize(writer);
     writer.write<uint8_t>(opcode);
     writer.write<uint16_t>((uint16_t)this->users.size());
     writer.write<uint16_t>((uint16_t)this->users.size());
@@ -44,9 +43,9 @@ async::task<void> user_list::serialize(fb::stream_writer<big_endian>& writer) co
     }
 }
 #else
-async::task<void> user_list::deserialize(fb::stream_reader<big_endian>& reader)
+void user_list::deserialize(fb::stream_reader<big_endian>& reader)
 {
-    co_await header::deserialize(reader);
+    header::deserialize(reader);
     auto user_count = reader.read<uint16_t>();
     reader.read<uint16_t>(); // user_count (duplicate)
     reader.read<uint8_t>();  // 0x00

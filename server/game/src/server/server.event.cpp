@@ -49,7 +49,7 @@ async::task<bool> fb::game::server::on_disconnected(fb::socket<character>& socke
     auto weak = ch->weak_from_this_as<character>();
 
     if (ch->trade.trading())
-        std::ignore = co_await ch->trade.cancel();
+        std::ignore = ch->trade.cancel();
 
     fb::logger::info("{} has disconnected.", ch->name());
 
@@ -117,7 +117,7 @@ async::task<bool> fb::game::server::on_disconnected(fb::socket<character>& socke
             this->clans.write(clan_id.value(), [weak](auto& clan) {
                 clan->detach(weak);
             });
-            co_await ptr->clan_reset();
+            ptr->clan_reset();
         }
 
         this->characters.remove(ptr);

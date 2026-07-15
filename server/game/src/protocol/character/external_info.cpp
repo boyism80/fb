@@ -14,9 +14,9 @@ external_info::external_info(const fb::game::character& ch, const fb::game::obje
 #endif
 
 #ifndef BOT
-async::task<void> external_info::serialize(fb::stream_writer<big_endian>& writer) const
+void external_info::serialize(fb::stream_writer<big_endian>& writer) const
 {
-    co_await header::serialize(writer);
+    header::serialize(writer);
     writer.write<uint8_t>(opcode);
     writer.write<std::string>(this->ch.title());
 
@@ -117,9 +117,9 @@ async::task<void> external_info::serialize(fb::stream_writer<big_endian>& writer
     writer.write<uint8_t>(0x00);
 }
 #else
-async::task<void> external_info::deserialize(fb::stream_reader<big_endian>& reader)
+void external_info::deserialize(fb::stream_reader<big_endian>& reader)
 {
-    co_await header::deserialize(reader);
+    header::deserialize(reader);
     this->title      = reader.read<std::string, uint8_t>();
     this->clan_name  = reader.read<std::string, uint8_t>();
     this->clan_title = reader.read<std::string, uint8_t>();

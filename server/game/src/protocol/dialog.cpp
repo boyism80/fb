@@ -3,9 +3,9 @@
 namespace fb::protocol::game::request {
 
 #ifndef BOT
-async::task<void> dialog::deserialize(fb::stream_reader<big_endian>& reader)
+void dialog::deserialize(fb::stream_reader<big_endian>& reader)
 {
-    co_await header::deserialize(reader);
+    header::deserialize(reader);
     this->interaction = static_cast<fb::game::dialog::interaction>(reader.read<uint8_t>());
     switch (static_cast<fb::game::dialog::interaction>(this->interaction))
     {
@@ -79,9 +79,9 @@ async::task<void> dialog::deserialize(fb::stream_reader<big_endian>& reader)
     }
 }
 #else
-async::task<void> dialog::serialize(fb::stream_writer<big_endian>& writer) const
+void dialog::serialize(fb::stream_writer<big_endian>& writer) const
 {
-    co_await header::serialize(writer);
+    header::serialize(writer);
     writer.write<uint8_t>(opcode);
     writer.write<uint8_t>(static_cast<uint8_t>(this->interaction));
 

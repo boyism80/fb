@@ -3,17 +3,17 @@
 namespace fb::protocol::game::response {
 
 #ifndef BOT
-async::task<void> trade_lock::serialize(fb::stream_writer<big_endian>& writer) const
+void trade_lock::serialize(fb::stream_writer<big_endian>& writer) const
 {
-    co_await header::serialize(writer);
+    header::serialize(writer);
     writer.write<uint8_t>(opcode);
     writer.write<uint8_t>(0x05);
     writer.write<uint8_t>(0x00);
 }
 #else
-async::task<void> trade_lock::deserialize(fb::stream_reader<big_endian>& reader)
+void trade_lock::deserialize(fb::stream_reader<big_endian>& reader)
 {
-    co_await header::deserialize(reader);
+    header::deserialize(reader);
     reader.read<uint8_t>(); // 0x05
     reader.read<uint8_t>(); // 0x00
 }

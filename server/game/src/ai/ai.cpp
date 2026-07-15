@@ -7,7 +7,6 @@
 #include <fb/game/character.h>
 #include <fb/game/life.h>
 #include <fb/game/map.h>
-#include <tuple>
 
 using namespace fb::game;
 
@@ -35,11 +34,11 @@ std::unique_ptr<ai> ai::create(MOB_ATTACK_TYPE attack_type)
     }
 }
 
-async::task<bool> ai::execute(mob& mob_obj, const datetime& now)
+bool ai::execute(mob& mob_obj, const datetime& now)
 {
     auto owner = mob_obj.owner.lock();
     if (owner == nullptr || owner->map() != mob_obj.map())
-        co_return false;
+        return false;
 
     auto target = mob_obj.target();
     if (target != nullptr)
@@ -47,14 +46,13 @@ async::task<bool> ai::execute(mob& mob_obj, const datetime& now)
         DIRECTION direction;
         if (mob_obj.near_target(target, direction))
         {
-            std::ignore = co_await mob_obj.direction(direction);
-            co_await mob_obj.attack();
+            mob_obj.direction(direction);
+            mob_obj.attack();
         }
         else
         {
-            if (co_await mob_obj.move_step(target->position()) == false)
-                std::ignore =
-                    co_await mob_obj.move(DIRECTION(std::rand() % 4)); // Random move if can't step towards owner
+            if (!mob_obj.move_step(target->position()))
+                mob_obj.move(DIRECTION(std::rand() % 4)); // Random move if can't step towards owner
         }
     }
     else
@@ -62,17 +60,16 @@ async::task<bool> ai::execute(mob& mob_obj, const datetime& now)
         DIRECTION direction;
         if (mob_obj.near_target(owner, direction))
         {
-            std::ignore = co_await mob_obj.direction(direction);
+            mob_obj.direction(direction);
         }
         else
         {
-            if (co_await mob_obj.move_step(owner->position()) == false)
-                std::ignore =
-                    co_await mob_obj.move(DIRECTION(std::rand() % 4)); // Random move if can't step towards owner
+            if (!mob_obj.move_step(owner->position()))
+                mob_obj.move(DIRECTION(std::rand() % 4)); // Random move if can't step towards owner
         }
     }
 
-    co_return owner != nullptr;
+    return owner != nullptr;
 }
 
 void ai::on_damage(mob& mob_obj, std::shared_ptr<life> attacker, const datetime& now)
@@ -257,10 +254,10 @@ void ai::record_damage(std::shared_ptr<life> attacker, const datetime& now)
     record.second  = now;
 }
 
-async::task<void> ai::run_from_target(mob& mob_obj, std::shared_ptr<life> target)
+void ai::run_from_target(mob& mob_obj, std::shared_ptr<life> target)
 {
     if (target == nullptr)
-        co_return;
+        return;
 
     auto repeat = std::rand() % 2;
     auto count  = repeat ? 2 : 1;
@@ -284,7 +281,7 @@ async::task<void> ai::run_from_target(mob& mob_obj, std::shared_ptr<life> target
         }
 
         // Move in chosen direction
-        if (co_await mob_obj.move(run_dir) == false)
-            std::ignore = co_await mob_obj.move(DIRECTION(std::rand() % 4));
+        if (!mob_obj.move(run_dir))
+            mob_obj.move(DIRECTION(std::rand() % 4));
     }
 }

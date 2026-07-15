@@ -25,9 +25,9 @@ endpoint::endpoint(const endpoint& right) :
 namespace fb::protocol::gateway::request {
 
 #ifndef BOT
-async::task<void> server_list::deserialize(fb::stream_reader<big_endian>& reader)
+void server_list::deserialize(fb::stream_reader<big_endian>& reader)
 {
-    co_await header::deserialize(reader);
+    header::deserialize(reader);
     this->action = reader.read<uint8_t>();
     if (action == 0x00)
         this->index = reader.read<uint8_t>();
@@ -38,9 +38,9 @@ server_list::server_list(uint8_t action, uint8_t index) :
     index(index)
 { }
 
-async::task<void> server_list::serialize(fb::stream_writer<big_endian>& writer) const
+void server_list::serialize(fb::stream_writer<big_endian>& writer) const
 {
-    co_await header::serialize(writer);
+    header::serialize(writer);
     writer.write<uint8_t>(opcode);
     writer.write<uint8_t>(this->action);
 
@@ -60,9 +60,9 @@ server_list::server_list(const std::vector<fb::protocol::gateway::endpoint>& ser
 #endif
 
 #ifndef BOT
-async::task<void> server_list::serialize(fb::stream_writer<big_endian>& writer) const
+void server_list::serialize(fb::stream_writer<big_endian>& writer) const
 {
-    co_await header::serialize(writer);
+    header::serialize(writer);
     auto formats = fb::stream();
     {
         auto writer = fb::stream_writer<big_endian>(formats);
@@ -87,9 +87,9 @@ async::task<void> server_list::serialize(fb::stream_writer<big_endian>& writer) 
     writer.write<uint8_t>(0);
 }
 #else
-async::task<void> server_list::deserialize(fb::stream_reader<big_endian>& reader)
+void server_list::deserialize(fb::stream_reader<big_endian>& reader)
 {
-    co_await header::deserialize(reader);
+    header::deserialize(reader);
     auto count = reader.read<uint8_t>();
 }
 #endif

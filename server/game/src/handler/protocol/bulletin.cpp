@@ -62,7 +62,7 @@ async::task<bool> bulletin::handle(fb::socket<character>& session, game_reqs::bu
 
 async::task<void> bulletin::handle_sections(character* ch)
 {
-    co_await ch->bulletin.show();
+    ch->bulletin.show();
     co_return;
 }
 
@@ -84,7 +84,7 @@ async::task<void> bulletin::handle_articles(character* ch, std::weak_ptr<charact
             if (ptr->level() >= fb::model::const_value::mail::REQUIRED_LEVEL)
                 flag |= MAIL_BUTTON_ENABLE::NEW;
 
-            co_await ptr->mail_box.show(summaries, flag);
+            ptr->mail_box.show(summaries, flag);
         }
         else
         {
@@ -100,7 +100,7 @@ async::task<void> bulletin::handle_articles(character* ch, std::weak_ptr<charact
             if (ptr->condition(model.condition))
                 flag |= BULLETIN_BUTTON_ENABLE::WRITE;
 
-            co_await ptr->bulletin.show(model, articles, flag);
+            ptr->bulletin.show(model, articles, flag);
         }
     }
     catch (std::exception& e)
@@ -112,7 +112,7 @@ async::task<void> bulletin::handle_articles(character* ch, std::weak_ptr<charact
     {
         auto ptr = weak.lock();
         if (ptr != nullptr)
-            co_await ptr->message(error.value());
+            ptr->message(error.value());
     }
 }
 
@@ -133,7 +133,7 @@ async::task<void> bulletin::handle_article(character* ch, std::weak_ptr<characte
             if (ptr->level() >= fb::model::const_value::mail::REQUIRED_LEVEL)
                 flag |= MAIL_BUTTON_ENABLE::NEW;
 
-            co_await ptr->mail_box.show(mail, flag);
+            ptr->mail_box.show(mail, flag);
 
             if (!mail.read)
             {
@@ -160,7 +160,7 @@ async::task<void> bulletin::handle_article(character* ch, std::weak_ptr<characte
             if (ptr->condition(table::bulletin[article.section].condition))
                 flag |= BULLETIN_BUTTON_ENABLE::WRITE;
 
-            co_await ptr->bulletin.show(article, flag);
+            ptr->bulletin.show(article, flag);
         }
     }
     catch (std::exception& e)
@@ -174,9 +174,9 @@ async::task<void> bulletin::handle_article(character* ch, std::weak_ptr<characte
         if (ptr != nullptr)
         {
             if (mail)
-                co_await ptr->mail_box.message(error.value(), false, BULLETIN_MESSAGE_TYPE::READ);
+                ptr->mail_box.message(error.value(), false, BULLETIN_MESSAGE_TYPE::READ);
             else
-                co_await ptr->bulletin.message(error.value(), false, BULLETIN_MESSAGE_TYPE::READ);
+                ptr->bulletin.message(error.value(), false, BULLETIN_MESSAGE_TYPE::READ);
         }
     }
 }
@@ -192,7 +192,7 @@ async::task<void> bulletin::handle_write(character* ch, std::weak_ptr<character>
         if (ptr == nullptr)
             co_return;
 
-        co_await ptr->bulletin.message(_TEXT(MESSAGE_BULLETIN_WRITE), true, BULLETIN_MESSAGE_TYPE::WRITE);
+        ptr->bulletin.message(_TEXT(MESSAGE_BULLETIN_WRITE), true, BULLETIN_MESSAGE_TYPE::WRITE);
 
         auto log_data              = Json::Value();
         log_data["character_id"]   = static_cast<Json::Int64>(ptr->id);
@@ -210,7 +210,7 @@ async::task<void> bulletin::handle_write(character* ch, std::weak_ptr<character>
     {
         auto ptr = weak.lock();
         if (ptr != nullptr)
-            co_await ptr->bulletin.message(error.value(), false, BULLETIN_MESSAGE_TYPE::WRITE);
+            ptr->bulletin.message(error.value(), false, BULLETIN_MESSAGE_TYPE::WRITE);
     }
 }
 
@@ -227,7 +227,7 @@ async::task<void> bulletin::handle_delete(character* ch, std::weak_ptr<character
             auto ptr = weak.lock();
             if (ptr == nullptr)
                 co_return;
-            co_await ptr->mail_box.message(_TEXT(MESSAGE_BULLETIN_SUCCESS_DELETE), true, BULLETIN_MESSAGE_TYPE::DELETE);
+            ptr->mail_box.message(_TEXT(MESSAGE_BULLETIN_SUCCESS_DELETE), true, BULLETIN_MESSAGE_TYPE::DELETE);
 
             auto log_data              = Json::Value();
             log_data["character_id"]   = static_cast<Json::Int64>(ptr->id);
@@ -242,7 +242,7 @@ async::task<void> bulletin::handle_delete(character* ch, std::weak_ptr<character
             auto ptr = weak.lock();
             if (ptr == nullptr)
                 co_return;
-            co_await ptr->bulletin.message(_TEXT(MESSAGE_BULLETIN_SUCCESS_DELETE), true, BULLETIN_MESSAGE_TYPE::DELETE);
+            ptr->bulletin.message(_TEXT(MESSAGE_BULLETIN_SUCCESS_DELETE), true, BULLETIN_MESSAGE_TYPE::DELETE);
 
             auto log_data              = Json::Value();
             log_data["character_id"]   = static_cast<Json::Int64>(ptr->id);
@@ -263,9 +263,9 @@ async::task<void> bulletin::handle_delete(character* ch, std::weak_ptr<character
         if (ptr != nullptr)
         {
             if (mail)
-                co_await ptr->mail_box.message(error.value(), false, BULLETIN_MESSAGE_TYPE::DELETE);
+                ptr->mail_box.message(error.value(), false, BULLETIN_MESSAGE_TYPE::DELETE);
             else
-                co_await ptr->bulletin.message(error.value(), false, BULLETIN_MESSAGE_TYPE::DELETE);
+                ptr->bulletin.message(error.value(), false, BULLETIN_MESSAGE_TYPE::DELETE);
         }
     }
 }
@@ -285,7 +285,7 @@ async::task<void> bulletin::handle_mail(character* ch, std::weak_ptr<character> 
         if (ptr->level() >= fb::model::const_value::mail::REQUIRED_LEVEL)
             flag |= MAIL_BUTTON_ENABLE::NEW;
 
-        co_await ptr->mail_box.show(summaries, flag);
+        ptr->mail_box.show(summaries, flag);
     }
     catch (std::exception& e)
     {
@@ -296,7 +296,7 @@ async::task<void> bulletin::handle_mail(character* ch, std::weak_ptr<character> 
     {
         auto ptr = weak.lock();
         if (ptr != nullptr)
-            co_await ptr->message(error.value());
+            ptr->message(error.value());
     }
 }
 
@@ -305,12 +305,12 @@ async::task<void> bulletin::handle_send_mail(character* ch, std::weak_ptr<charac
     auto error = std::optional<std::string>{};
     try
     {
-        co_await this->server.mail.send(*ch, request.user, request.title, request.contents);
+        this->server.mail.send(*ch, request.user, request.title, request.contents);
         co_await this->server.threads.switching(weak);
         auto ptr = weak.lock();
         if (ptr == nullptr)
             co_return;
-        co_await ptr->mail_box.message(_TEXT(MESSAGE_MAIL_SENT), true, BULLETIN_MESSAGE_TYPE::WRITE);
+        ptr->mail_box.message(_TEXT(MESSAGE_MAIL_SENT), true, BULLETIN_MESSAGE_TYPE::WRITE);
 
         auto log_data             = Json::Value();
         log_data["sender_id"]     = static_cast<Json::Int64>(ptr->id);
@@ -328,6 +328,6 @@ async::task<void> bulletin::handle_send_mail(character* ch, std::weak_ptr<charac
     {
         auto ptr = weak.lock();
         if (ptr != nullptr)
-            co_await ptr->mail_box.message(error.value(), false, BULLETIN_MESSAGE_TYPE::WRITE);
+            ptr->mail_box.message(error.value(), false, BULLETIN_MESSAGE_TYPE::WRITE);
     }
 }

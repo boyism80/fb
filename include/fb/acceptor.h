@@ -133,7 +133,7 @@ private:
                 }
                 else
                 {
-                    auto protocol = co_await this->handler.protocol.get_deserializer(opcode)(reader);
+                    auto protocol = this->handler.protocol.get_deserializer(opcode)(reader);
                     auto fd       = socket.fd();
                     auto weak     = socket.template weak_from_this_as<fb::socket<T>>();
                     auto builder  = this->threads.new_builder(weak);
@@ -338,7 +338,7 @@ public:
         auto stream = fb::stream();
         {
             auto writer = fb::stream_writer<big_endian>(stream);
-            co_await fb::protocol::response::transfer(ip, port, params).serialize(writer);
+            fb::protocol::response::transfer(ip, port, params).serialize(writer);
         }
 
         encryption.wrap(stream);
@@ -366,7 +366,7 @@ public:
         auto stream = fb::stream();
         {
             auto writer = fb::stream_writer<big_endian>(stream);
-            co_await fb::protocol::response::transfer(ip, port, header).serialize(writer);
+            fb::protocol::response::transfer(ip, port, header).serialize(writer);
         }
 
         encryption.wrap(stream);
@@ -478,7 +478,7 @@ public:
     {
         auto stream = fb::stream();
         auto writer = fb::stream_writer<big_endian>(stream);
-        co_await response.serialize(writer);
+        response.serialize(writer);
         if (stream.empty())
             co_return 0;
 

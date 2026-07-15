@@ -3,15 +3,15 @@
 namespace fb::protocol::game::request {
 
 #ifdef BOT
-async::task<void> self_info::serialize(fb::stream_writer<big_endian>& writer) const
+void self_info::serialize(fb::stream_writer<big_endian>& writer) const
 {
-    co_await header::serialize(writer);
+    header::serialize(writer);
     writer.write<uint8_t>(opcode);
 }
 #else
-async::task<void> self_info::deserialize(fb::stream_reader<big_endian>& reader)
+void self_info::deserialize(fb::stream_reader<big_endian>& reader)
 {
-    co_await header::deserialize(reader);
+    header::deserialize(reader);
 }
 #endif
 } // namespace fb::protocol::game::request

@@ -1,4 +1,4 @@
-#include <fb/game/service/system_storage.h>
+﻿#include <fb/game/service/system_storage.h>
 #include <fb/game/server.h>
 #include <fb/game/character.h>
 #include <fb/config.h>
@@ -104,7 +104,7 @@ void service::system_storage::on_deliver(const std::vector<uint32_t>& user_ids, 
             if (ptr->storage_box.contains_system_box(box_id))
                 co_return;
 
-            co_await ptr->storage_box.apply_delivered({entry});
+            ptr->storage_box.apply_delivered({entry});
             co_return;
         };
         builder.enqueue();
@@ -166,7 +166,7 @@ async::task<void> service::system_storage::sync(character& ch)
         }
 
         if (!batch.empty())
-            co_await ptr->storage_box.apply_delivered(batch);
+            ptr->storage_box.apply_delivered(batch);
     }
     catch (const std::exception& e)
     {

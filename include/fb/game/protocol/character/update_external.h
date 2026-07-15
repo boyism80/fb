@@ -201,16 +201,16 @@ private:
 
 public:
 #ifndef BOT
-    [[nodiscard]] async::task<void> serialize(fb::stream_writer<big_endian>& writer) const
+    void serialize(fb::stream_writer<big_endian>& writer) const
     {
-        co_await header::serialize(writer);
+        header::serialize(writer);
         writer.write<uint8_t>(opcode); // Use compile-time constant header
         this->serializer.serialize(writer);
     }
 #else
-    [[nodiscard]] async::task<void> deserialize(fb::stream_reader<big_endian>& reader)
+    void deserialize(fb::stream_reader<big_endian>& reader)
     {
-        co_await header::deserialize(reader);
+        header::deserialize(reader);
 
         if constexpr (Detailed)
         {

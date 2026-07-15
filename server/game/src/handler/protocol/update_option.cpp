@@ -29,7 +29,7 @@ async::task<bool> update_option::handle(fb::socket<character>& session, game_req
         }
         else
         {
-            co_await ch->update_option();
+            ch->update_option();
         }
         break;
 
@@ -67,9 +67,9 @@ async::task<bool> update_option::handle(fb::socket<character>& session, game_req
             co_return true;
 
         if (resp.success == false)
-            co_await ptr->message(_TEXT(MESSAGE_OPTION_UPDATE_FAILED));
+            ptr->message(_TEXT(MESSAGE_OPTION_UPDATE_FAILED));
 
-        co_await ptr->option(option, next);
+        ptr->option(option, next);
         break;
     }
     co_return true;

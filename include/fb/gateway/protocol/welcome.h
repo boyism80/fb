@@ -14,7 +14,7 @@ public:
     welcome() = default;
 
 public:
-    [[nodiscard]] async::task<void> deserialize(fb::stream_reader<big_endian>& reader);
+    void deserialize(fb::stream_reader<big_endian>& reader);
 };
 
 } // namespace fb::protocol::gateway::response

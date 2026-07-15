@@ -37,7 +37,7 @@ int builtin::door::builtin_toggle(lua_State* L)
                                                     door->pivot.y,
                                                     door->pivot.x + size.width,
                                                     door->pivot.y + size.height);
-        co_await server.maps.update_map_cache(door->map.id, area);
+        server.maps.update_map_cache(door->map.id, area);
         co_return;
     };
     builder.resume = [=]() -> async::task<int> {

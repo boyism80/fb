@@ -137,6 +137,7 @@ public:
     ~server();
 
 private:
+    // clang-format off
     internal::SavePayload save_payload(const character& ch) const;
     async::task<void>     init_lua();
     async::task<void>     init_thread_params();
@@ -145,6 +146,7 @@ private:
     void                  init_amqp_handlers();
     async::task<void>     init_map_scripts();
     async::task<void>     init_script();
+    // clang-format on
 
 public:
     // clang-format off
@@ -184,10 +186,10 @@ protected:
 
 public:
     // clang-format off
-    [[nodiscard]] async::task<void>   send(object& obj, const fb::protocol::header& header, fb::game::scope scope, send_option options = {});
+    void                              send(object& obj, const fb::protocol::header& header, fb::game::scope scope, send_option options = {});
     async::task<void>                 save();
     async::task<void>                 save(character& ch);
-    async::task<void>                 sync_time();
+    void                              sync_time();
     async::task<internal_resp::Ban>   ban(std::string_view name, std::string_view reason, const std::optional<uint32_t>& days);
     async::task<internal_resp::Unban> unban(std::string_view name);
     // clang-format on

@@ -18,7 +18,7 @@ async::task<bool> item_inactive::handle(fb::socket<character>& session, game_req
 
     if (ch->items.free_size() == 0)
     {
-        co_await ch->message(_TEXT(MESSAGE_EXCEPTION_INVENTORY_OVERFLOW));
+        ch->message(_TEXT(MESSAGE_EXCEPTION_INVENTORY_OVERFLOW));
         co_return true;
     }
 

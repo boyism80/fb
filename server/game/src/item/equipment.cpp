@@ -1,7 +1,6 @@
 #include <algorithm>
 #include <fb/game/server.h>
 #include <fb/game/item.h>
-#include <tuple>
 
 using table = fb::model::table;
 
@@ -107,22 +106,22 @@ async::task<bool> fb::game::equipment::active()
     switch (model.attr())
     {
     case ITEM_ATTRIBUTE::WEAPON:
-        before = co_await owner->items.weapon(this->shared_from_this_as<fb::game::weapon>());
+        before = owner->items.weapon(this->shared_from_this_as<fb::game::weapon>());
         parts  = EQUIPMENT_PARTS::WEAPON;
         break;
 
     case ITEM_ATTRIBUTE::ARMOR:
-        before = co_await owner->items.armor(this->shared_from_this_as<fb::game::armor>());
+        before = owner->items.armor(this->shared_from_this_as<fb::game::armor>());
         parts  = EQUIPMENT_PARTS::ARMOR;
         break;
 
     case ITEM_ATTRIBUTE::SHIELD:
-        before = co_await owner->items.shield(this->shared_from_this_as<fb::game::shield>());
+        before = owner->items.shield(this->shared_from_this_as<fb::game::shield>());
         parts  = EQUIPMENT_PARTS::SHIELD;
         break;
 
     case ITEM_ATTRIBUTE::HELMET:
-        before = co_await owner->items.helmet(this->shared_from_this_as<fb::game::helmet>());
+        before = owner->items.helmet(this->shared_from_this_as<fb::game::helmet>());
         parts  = EQUIPMENT_PARTS::HELMET;
         break;
 
@@ -136,7 +135,7 @@ async::task<bool> fb::game::equipment::active()
             parts = EQUIPMENT_PARTS::RIGHT_HAND;
         }
 
-        before = co_await owner->items.ring(this->shared_from_this_as<fb::game::ring>());
+        before = owner->items.ring(this->shared_from_this_as<fb::game::ring>());
         break;
 
     case ITEM_ATTRIBUTE::AUXILIARY:
@@ -149,7 +148,7 @@ async::task<bool> fb::game::equipment::active()
             parts = EQUIPMENT_PARTS::RIGHT_AUX;
         }
 
-        before = co_await owner->items.auxiliary(this->shared_from_this_as<fb::game::auxiliary>());
+        before = owner->items.auxiliary(this->shared_from_this_as<fb::game::auxiliary>());
         break;
 
     default:
@@ -158,10 +157,8 @@ async::task<bool> fb::game::equipment::active()
 
     std::ignore = co_await fb::game::item::active();
 
-    std::ignore =
-        co_await owner->items.remove(this->shared_from_this_as<fb::game::item>(), 1, ITEM_DELETE_TYPE::NONE, false);
-    if (before != nullptr)
-        std::ignore = co_await owner->items.add(before);
+    owner->items.remove(this->shared_from_this_as<fb::game::item>(), 1, ITEM_DELETE_TYPE::NONE, false);
+    std::ignore = co_await owner->items.add(before);
 
     // Execute equipment activation script
     auto lua = this->server.lua.open("scripts/interaction.lua", "on_equipment_active");
@@ -174,7 +171,7 @@ async::task<bool> fb::game::equipment::active()
     }
 
     // Call listener for packet response
-    co_await owner->listener.on_equipment_on(*owner, *this, parts);
+    owner->listener.on_equipment_on(*owner, *this, parts);
 
     co_return true;
 }
@@ -190,14 +187,14 @@ void fb::game::equipment::durability(uint32_t value)
     this->_durability = std::max(uint32_t(0), std::min(model.durability, value));
 }
 
-async::task<bool> fb::game::equipment::durability_down(uint32_t value)
+bool fb::game::equipment::durability_down(uint32_t value)
 {
-    if (this->_container == nullptr)
-        co_return false;
+    if (this->_container != nullptr)
+        return false;
 
     auto owner = this->_container->owner();
     if (owner == nullptr)
-        co_return false;
+        return false;
 
     auto& model  = this->based<fb::model::equipment>();
     auto  before = this->_durability;
@@ -211,8 +208,8 @@ async::task<bool> fb::game::equipment::durability_down(uint32_t value)
         this->_durability -= value;
     }
 
-    co_await owner->listener.on_durability_down(*owner, *this, before, this->_durability);
-    co_return this->_durability == 0;
+    owner->listener.on_durability_down(*owner, *this, before, this->_durability);
+    return this->_durability == 0;
 }
 
 std::string fb::game::equipment::mid_message() const

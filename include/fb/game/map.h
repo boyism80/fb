@@ -75,8 +75,10 @@ protected:
     void copy_tiles(const fb::game::map& source);
 
 private:
+    // clang-format off
     void load_tiles(const void* data, size_t size);
     void update_door();
+    // clang-format on
 
 public:
     // clang-format off
@@ -97,7 +99,7 @@ public:
     bool                            is_active() const;
     std::vector<object_ptr>         nears(const fb::model::point16_t& pivot, OBJECT_TYPE type = OBJECT_TYPE::OBJECT) const;
     std::vector<object_ptr>         belows(const fb::model::point16_t& pivot, OBJECT_TYPE type = OBJECT_TYPE::OBJECT) const;
-    async::task<void>               bulk_update(const std::vector<uint32_t>& oids);
+    void                            bulk_update(const std::vector<uint32_t>& oids);
     void                            rezen_force() const;
     fb::thread*                     thread() const override;
     virtual bool                    is_instance() const;
@@ -159,8 +161,10 @@ public:
     const uint32_t    host;
 
 public:
+    // clang-format off
     container(fb::game::server& server, uint32_t host);
     ~container();
+    // clang-format on
 
 private:
     // clang-format off
@@ -204,7 +208,7 @@ public:
     void                              rezen_force();
     void                              erase_map_cache(uint32_t map_id, const fb::model::point16_t& point);
     std::optional<fb::stream>         map_update_stream(character& ch, const fb::game::map& map, const fb::model::point16_t& position, const fb::model::size8_t& size, uint16_t crc);
-    async::task<void>                 update_map_cache(uint32_t map_id, const fb::model::area<uint16_t>& area);
+    void                              update_map_cache(uint32_t map_id, const fb::model::area<uint16_t>& area);
     // clang-format on
 };
 

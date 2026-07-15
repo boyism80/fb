@@ -73,8 +73,10 @@ public:
     fb::game::buffs   buffs;
 
 protected:
+    // clang-format off
     object(fb::game::server& server, const fb::model::object& model, const initial_params& c);
     object(const object& right);
+    // clang-format on
 
 public:
     virtual ~object();
@@ -97,62 +99,62 @@ public:
 
 public:
     // clang-format off
-    [[nodiscard]] virtual async::task<void>   destroy(DESTROY_TYPE destroy_type = DESTROY_TYPE::DEFAULT);
-    [[nodiscard]] virtual async::task<size_t> send(const fb::stream& stream, bool encrypt = true, bool wrap = true);
-    [[nodiscard]] virtual async::task<size_t> send(const fb::protocol::header& response, bool encrypt = true, bool wrap = true);
-    uint32_t                                  oid() const;
-    async::task<void>                         oid(uint32_t value);
-    const fb::model::object&                  based() const;
-    bool                                      is(OBJECT_TYPE type) const;
-    virtual const std::string&                name() const;
-    virtual uint16_t                          look() const;
-    virtual uint8_t                           color() const;
-    virtual OBJECT_TYPE                       what() const;
-    virtual async::task<void>                 update_external(bool detailed);
-    virtual async::task<void>                 update_external(object& you, bool detailed);
-    virtual bool                              super_hide() const;
-    virtual bool                              hidden(const object& target) const;
-    async::task<void>                         chat(std::string_view message, CHAT_TYPE chat_type = CHAT_TYPE::NORMAL, bool decorate = true);
-    const fb::model::point16_t&               position() const;
-    virtual async::task<bool>                 position(uint16_t x, uint16_t y, bool refresh = false);
-    virtual async::task<bool>                 position(const fb::model::point16_t position, bool refresh = false);
-    async::task<bool>                         move();
-    virtual async::task<bool>                 move(DIRECTION direction);
-    uint16_t                                  x() const;
-    async::task<bool>                         x(uint16_t value);
-    uint16_t                                  y() const;
-    async::task<bool>                         y(uint16_t value);
-    DIRECTION                                 direction() const;
-    async::task<bool>                         direction(DIRECTION value);
-    virtual async::task<bool>                 map(map_ptr map, std::optional<fb::model::point16_t> position = std::nullopt, map_options options = {});
-    map_ptr                                   map() const;
-    bool                                      active_sector() const;
-    bool                                      sight(const fb::model::point16_t& position) const;
-    bool                                      sight(const fb::game::object& object) const;
-    fb::model::area<uint16_t>                 sight_area() const;
-    fb::model::point16_t                      side_position(DIRECTION direction, int step = 1) const;
-    fb::model::point16_t                      front_position(int step = 1) const;
-    object_ptr                                side(DIRECTION direction, OBJECT_TYPE type = OBJECT_TYPE::OBJECT) const;
-    std::vector<object_ptr>                   sides(DIRECTION direction, OBJECT_TYPE type = OBJECT_TYPE::OBJECT) const;
-    object_ptr                                forward(OBJECT_TYPE type = OBJECT_TYPE::OBJECT) const;
-    std::vector<object_ptr>                   forwards(OBJECT_TYPE type = OBJECT_TYPE::OBJECT) const;
-    double                                    distance(const object& right) const;
-    uint32_t                                  distance_sqrt(const object& right) const;
-    virtual bool                              condition(const std::vector<fb::model::dsl>& conditions) const;
-    virtual bool                              available() const;
-    virtual async::task<void>                 hide(DESTROY_TYPE destroy_type = DESTROY_TYPE::DEFAULT);
-    virtual async::task<void>                 hide(fb::game::object& to, DESTROY_TYPE destroy_type = DESTROY_TYPE::DEFAULT);
-    std::vector<object_ptr>                   sight_in(OBJECT_TYPE type = OBJECT_TYPE::OBJECT) const;
-    std::vector<object_ptr>                   nears(OBJECT_TYPE type = OBJECT_TYPE::OBJECT, bool contains_super_hide = false) const;
-    void                                      thread(fb::thread* value);
-    virtual fb::thread*                       thread() const override;
-    virtual async::task<void>                 update_id();
-    virtual async::task<void>                 update_map(const fb::game::map& map);
-    virtual async::task<void>                 update_bgm(uint16_t bgm, uint8_t volume);
-    virtual async::task<void>                 update_position();
-    async::task<void>                         sound(SOUND sound);
-    async::task<void>                         effect(uint8_t value);
-    virtual appearance_ptr                    appearance() const = 0;
+    [[nodiscard]] virtual async::task<void> destroy(DESTROY_TYPE destroy_type = DESTROY_TYPE::DEFAULT);
+    virtual size_t                          send(const fb::stream& stream, bool encrypt = true, bool wrap = true);
+    virtual size_t                          send(const fb::protocol::header& response, bool encrypt = true, bool wrap = true);
+    uint32_t                                oid() const;
+    void                                    oid(uint32_t value);
+    const fb::model::object&                based() const;
+    bool                                    is(OBJECT_TYPE type) const;
+    virtual const std::string&              name() const;
+    virtual uint16_t                        look() const;
+    virtual uint8_t                         color() const;
+    virtual OBJECT_TYPE                     what() const;
+    virtual void                            update_external(bool detailed);
+    virtual void                            update_external(object& you, bool detailed);
+    virtual bool                            super_hide() const;
+    virtual bool                            hidden(const object& target) const;
+    void                                    chat(std::string_view message, CHAT_TYPE chat_type = CHAT_TYPE::NORMAL, bool decorate = true);
+    const fb::model::point16_t&             position() const;
+    virtual bool                            position(uint16_t x, uint16_t y, bool refresh = false);
+    virtual bool                            position(const fb::model::point16_t position, bool refresh = false);
+    bool                                    move();
+    virtual bool                            move(DIRECTION direction);
+    uint16_t                                x() const;
+    bool                                    x(uint16_t value);
+    uint16_t                                y() const;
+    bool                                    y(uint16_t value);
+    DIRECTION                               direction() const;
+    bool                                    direction(DIRECTION value);
+    virtual async::task<bool>               map(map_ptr map, std::optional<fb::model::point16_t> position = std::nullopt, map_options options = {});
+    map_ptr                                 map() const;
+    bool                                    active_sector() const;
+    bool                                    sight(const fb::model::point16_t& position) const;
+    bool                                    sight(const fb::game::object& object) const;
+    fb::model::area<uint16_t>               sight_area() const;
+    fb::model::point16_t                    side_position(DIRECTION direction, int step = 1) const;
+    fb::model::point16_t                    front_position(int step = 1) const;
+    object_ptr                              side(DIRECTION direction, OBJECT_TYPE type = OBJECT_TYPE::OBJECT) const;
+    std::vector<object_ptr>                 sides(DIRECTION direction, OBJECT_TYPE type = OBJECT_TYPE::OBJECT) const;
+    object_ptr                              forward(OBJECT_TYPE type = OBJECT_TYPE::OBJECT) const;
+    std::vector<object_ptr>                 forwards(OBJECT_TYPE type = OBJECT_TYPE::OBJECT) const;
+    double                                  distance(const object& right) const;
+    uint32_t                                distance_sqrt(const object& right) const;
+    virtual bool                            condition(const std::vector<fb::model::dsl>& conditions) const;
+    virtual bool                            available() const;
+    virtual void                            hide(DESTROY_TYPE destroy_type = DESTROY_TYPE::DEFAULT);
+    virtual void                            hide(fb::game::object& to, DESTROY_TYPE destroy_type = DESTROY_TYPE::DEFAULT);
+    std::vector<object_ptr>                 sight_in(OBJECT_TYPE type = OBJECT_TYPE::OBJECT) const;
+    std::vector<object_ptr>                 nears(OBJECT_TYPE type = OBJECT_TYPE::OBJECT, bool contains_super_hide = false) const;
+    void                                    thread(fb::thread* value);
+    virtual fb::thread*                     thread() const override;
+    virtual void                            update_id();
+    virtual void                            update_map(const fb::game::map& map);
+    virtual void                            update_bgm(uint16_t bgm, uint8_t volume);
+    virtual void                            update_position();
+    void                                    sound(SOUND sound);
+    void                                    effect(uint8_t value);
+    virtual appearance_ptr                  appearance() const = 0;
     // clang-format on
 
 public:
@@ -163,21 +165,21 @@ public:
 struct object::listener_t
 {
     // clang-format off
-    virtual async::task<void> on_chat(fb::game::object& me, std::string_view message, CHAT_TYPE chat_type = CHAT_TYPE::NORMAL) = 0;
-    virtual async::task<void> on_direction(fb::game::object& me) = 0;
-    virtual async::task<void> on_update_external(fb::game::object& me, bool detailed) = 0;
-    virtual async::task<void> on_update_external(fb::game::object& me, fb::game::object& you, bool detailed) = 0;
-    virtual async::task<void> on_hide(fb::game::object& me, DESTROY_TYPE destroy_type = DESTROY_TYPE::DEFAULT) = 0;
-    virtual async::task<void> on_hide(fb::game::object& me, fb::game::object& you, DESTROY_TYPE destroy_type) = 0;
-    virtual async::task<void> on_move(fb::game::object& me, const fb::model::point16_t& before) = 0;
-    virtual async::task<void> on_buff(fb::game::object& me, fb::game::buff& buff) = 0;
-    virtual async::task<void> on_unbuff(fb::game::object& me, fb::game::buff& buff) = 0;
-    virtual void              on_create(fb::game::object& me) = 0;
-    virtual void              on_destroy(fb::game::object& me) = 0;
-    virtual async::task<void> on_sound(fb::game::object& ch, SOUND sound) = 0;
-    virtual async::task<void> on_effect(fb::game::object& ch, uint8_t value) = 0;
-    virtual void              on_map_leave(fb::game::object& me, const fb::game::map& map) = 0;
-    virtual void              on_map_enter(fb::game::object& me, const fb::game::map& map) = 0;
+    virtual void on_chat(fb::game::object& me, std::string_view message, CHAT_TYPE chat_type = CHAT_TYPE::NORMAL) = 0;
+    virtual void on_direction(fb::game::object& me)                                                               = 0;
+    virtual void on_update_external(fb::game::object& me, bool detailed)                                          = 0;
+    virtual void on_update_external(fb::game::object& me, fb::game::object& you, bool detailed)                   = 0;
+    virtual void on_hide(fb::game::object& me, DESTROY_TYPE destroy_type = DESTROY_TYPE::DEFAULT)                 = 0;
+    virtual void on_hide(fb::game::object& me, fb::game::object& you, DESTROY_TYPE destroy_type)                  = 0;
+    virtual void on_move(fb::game::object& me, const fb::model::point16_t& before)                                = 0;
+    virtual void on_buff(fb::game::object& me, fb::game::buff& buff)                                              = 0;
+    virtual void on_unbuff(fb::game::object& me, fb::game::buff& buff)                                            = 0;
+    virtual void on_create(fb::game::object& me)                                                                  = 0;
+    virtual void on_destroy(fb::game::object& me)                                                                 = 0;
+    virtual void on_sound(fb::game::object& ch, SOUND sound)                                                      = 0;
+    virtual void on_effect(fb::game::object& ch, uint8_t value)                                                   = 0;
+    virtual void on_map_leave(fb::game::object& me, const fb::game::map& map)                                     = 0;
+    virtual void on_map_enter(fb::game::object& me, const fb::game::map& map)                                     = 0;
     // clang-format on
 };
 
@@ -214,21 +216,25 @@ private:
     uint32_t allocate_seq();
 
 public:
+    // clang-format off
     iterator                begin();
     iterator                end();
     const_iterator          begin() const;
     const_iterator          end() const;
     uint32_t                size() const;
     std::shared_ptr<object> at(uint32_t i);
-    async::task<void>       push(object& obj);
+    void                    push(object& obj);
     object&                 pop(uint32_t fd);
     object&                 pop(object& obj);
     object*                 try_pop(uint32_t fd);
     object*                 try_pop(object& obj);
+    // clang-format on
 
+    // clang-format off
     void foreach (OBJECT_TYPE type, const handle_predicate_type& fn);
     bool contains(const std::shared_ptr<object>& obj) const;
     bool contains(uint32_t fd) const;
+    // clang-format on
 
 public:
     object* operator[] (uint32_t fd);

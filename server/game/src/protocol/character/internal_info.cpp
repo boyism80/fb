@@ -8,9 +8,9 @@ using table = fb::model::table;
 using namespace fb::protocol::game::response;
 
 #ifndef BOT
-async::task<void> internal_info::serialize(fb::stream_writer<big_endian>& writer) const
+void internal_info::serialize(fb::stream_writer<big_endian>& writer) const
 {
-    co_await header::serialize(writer);
+    header::serialize(writer);
     writer.write<uint8_t>(opcode);
     writer.write<int8_t>(this->ch.stat.phydef());
     writer.write<int8_t>(this->ch.stat.dam());
@@ -98,9 +98,9 @@ async::task<void> internal_info::serialize(fb::stream_writer<big_endian>& writer
     writer.write<uint8_t>(0x00);
 }
 #else
-async::task<void> internal_info::deserialize(fb::stream_reader<big_endian>& reader)
+void internal_info::deserialize(fb::stream_reader<big_endian>& reader)
 {
-    co_await header::deserialize(reader);
+    header::deserialize(reader);
     this->phydef       = reader.read<int8_t>();
     this->dam          = reader.read<int8_t>();
     this->hit          = reader.read<int8_t>();

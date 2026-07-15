@@ -21,7 +21,7 @@ async::task<bool> spell_cast::handle(fb::socket<character>& session, game_reqs::
 
     if (ch->role() == ROLE::USER && ENUM_IN(map->model.option, MAP_OPTION::DISABLE_SPELL))
     {
-        co_await ch->message(_TEXT(MESSAGE_SPELL_DISABLED_AREA));
+        ch->message(_TEXT(MESSAGE_SPELL_DISABLED_AREA));
         co_return true;
     }
 
@@ -35,7 +35,7 @@ async::task<bool> spell_cast::handle(fb::socket<character>& session, game_reqs::
     auto delay = spell->delay();
     if (delay > 0)
     {
-        co_await ch->message(std::format(_TEXT(MESSAGE_SPELL_DELAY), delay));
+        ch->message(std::format(_TEXT(MESSAGE_SPELL_DELAY), delay));
         co_return true;
     }
 

@@ -141,8 +141,8 @@ async::task<void> clan::container::on_destroyed(uint32_t clan_id, std::string cl
         auto message = std::format(_TEXT(MESSAGE_CLAN_DISBANDED), clan_name);
         this->_server.characters.foreach_enqueue(
             [message](auto& ch) -> async::task<void> {
-                co_await ch->clan_reset();
-                co_await ch->message(message, MESSAGE_TYPE::NOTIFY);
+                ch->clan_reset();
+                ch->message(message, MESSAGE_TYPE::NOTIFY);
                 co_return;
             },
             members);
@@ -169,7 +169,7 @@ async::task<void> clan::container::on_broadcast(uint32_t clan_id, std::string me
 
     this->_server.characters.foreach_enqueue(
         [message, type](auto& member) -> async::task<void> {
-            co_await member->message(message, static_cast<MESSAGE_TYPE>(type));
+            member->message(message, static_cast<MESSAGE_TYPE>(type));
             co_return;
         },
         members);
@@ -234,8 +234,7 @@ async::task<void> clan::container::on_join(uint32_t clan_id, std::optional<std::
 
     this->_server.characters.foreach_enqueue(
         [joined_member_name](auto& member) -> async::task<void> {
-            co_await member->message(std::format(_TEXT(MESSAGE_CLAN_MEMBER_JOINED), joined_member_name),
-                                     MESSAGE_TYPE::NOTIFY);
+            member->message(std::format(_TEXT(MESSAGE_CLAN_MEMBER_JOINED), joined_member_name), MESSAGE_TYPE::NOTIFY);
             co_return;
         },
         members);
@@ -249,8 +248,8 @@ async::task<void> clan::container::on_join(uint32_t clan_id, std::optional<std::
         if (ptr != nullptr)
         {
             ptr->clan_id(clan->id());
-            co_await ptr->update_external(false);
-            co_await ptr->message(std::format(_TEXT(MESSAGE_CLAN_JOINED_SUCCESS), clan->name()), MESSAGE_TYPE::NOTIFY);
+            ptr->update_external(false);
+            ptr->message(std::format(_TEXT(MESSAGE_CLAN_JOINED_SUCCESS), clan->name()), MESSAGE_TYPE::NOTIFY);
         }
 
         if (before != nullptr)
@@ -294,9 +293,9 @@ async::task<void> clan::container::on_leave(uint32_t clan_id, std::optional<std:
         auto ptr = weak.lock();
         if (ptr != nullptr)
         {
-            co_await ptr->clan_reset();
-            co_await ptr->update_external(false);
-            co_await ptr->message(_TEXT(MESSAGE_CLAN_LEFT), MESSAGE_TYPE::NOTIFY);
+            ptr->clan_reset();
+            ptr->update_external(false);
+            ptr->message(_TEXT(MESSAGE_CLAN_LEFT), MESSAGE_TYPE::NOTIFY);
         }
 
         if (before != nullptr)
@@ -324,7 +323,7 @@ async::task<void> clan::container::on_leave(uint32_t clan_id, std::optional<std:
     auto message = std::format(_TEXT(MESSAGE_CLAN_MEMBER_LEFT), deleted_member_name);
     this->_server.characters.foreach_enqueue(
         [message](auto& member) -> async::task<void> {
-            co_await member->message(message, MESSAGE_TYPE::NOTIFY);
+            member->message(message, MESSAGE_TYPE::NOTIFY);
             co_return;
         },
         members);
@@ -359,9 +358,9 @@ async::task<void> clan::container::on_kick(uint32_t clan_id, std::optional<std::
         auto ptr = weak.lock();
         if (ptr != nullptr)
         {
-            co_await ptr->clan_reset();
-            co_await ptr->update_external(false);
-            co_await ptr->message(_TEXT(MESSAGE_CLAN_KICKED), MESSAGE_TYPE::NOTIFY);
+            ptr->clan_reset();
+            ptr->update_external(false);
+            ptr->message(_TEXT(MESSAGE_CLAN_KICKED), MESSAGE_TYPE::NOTIFY);
         }
 
         if (before != nullptr)
@@ -389,7 +388,7 @@ async::task<void> clan::container::on_kick(uint32_t clan_id, std::optional<std::
     auto message = std::format(_TEXT(MESSAGE_CLAN_MEMBER_KICKED), deleted_member_name);
     this->_server.characters.foreach_enqueue(
         [message](auto& member) -> async::task<void> {
-            co_await member->message(message, MESSAGE_TYPE::NOTIFY);
+            member->message(message, MESSAGE_TYPE::NOTIFY);
             co_return;
         },
         members);
@@ -422,7 +421,7 @@ async::task<void> clan::container::on_change_role(uint32_t                   cla
             auto message = std::format(_TEXT(MESSAGE_CLAN_ROLE_CHANGED), old_role.value(), new_role.value());
             this->_server.characters.foreach_enqueue(
                 [message](auto& target_member) -> async::task<void> {
-                    co_await target_member->message(message, MESSAGE_TYPE::NOTIFY);
+                    target_member->message(message, MESSAGE_TYPE::NOTIFY);
                     co_return;
                 },
                 targets);
@@ -449,7 +448,7 @@ async::task<void> clan::container::on_change_role(uint32_t                   cla
                                    new_role.value());
         this->_server.characters.foreach_enqueue(
             [message](auto& member_ptr) -> async::task<void> {
-                co_await member_ptr->message(message, MESSAGE_TYPE::NOTIFY);
+                member_ptr->message(message, MESSAGE_TYPE::NOTIFY);
                 co_return;
             },
             members);

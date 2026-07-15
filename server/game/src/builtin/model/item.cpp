@@ -52,8 +52,8 @@ int builtin::model::item::builtin_make(lua_State* L)
     auto builder       = lua->new_co_builder();
     builder.weak       = weak;
     builder.yield      = [=]() -> async::task<void> {
-        std::ignore    = co_await object->map(map);
-        std::ignore    = co_await object->position(x, y);
+        std::ignore = co_await object->map(map);
+        object->position(x, y);
         *object_holder = object;
         co_return;
     };

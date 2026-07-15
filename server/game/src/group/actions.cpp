@@ -249,7 +249,7 @@ async::task<void> group::container::handle_action(character& actor, std::string_
                 {
                     auto actor_ptr = weak.lock();
                     if (actor_ptr != nullptr)
-                        co_await actor_ptr->message(_TEXT(MESSAGE_GROUP_NOT_OWNER));
+                        actor_ptr->message(_TEXT(MESSAGE_GROUP_NOT_OWNER));
 
                     co_return;
                 }
@@ -273,6 +273,6 @@ async::task<void> group::container::handle_action(character& actor, std::string_
         }
 
         if (error.has_value() && weak.expired() == false)
-            co_await actor.message(error.value(), MESSAGE_TYPE::STATE);
+            actor.message(error.value(), MESSAGE_TYPE::STATE);
     }
 }

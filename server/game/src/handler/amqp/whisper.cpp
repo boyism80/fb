@@ -29,7 +29,7 @@ async::task<void> whisper::handle(const internal_resp::Whisper& message)
     ch = weak.lock();
     if (ch != nullptr)
     {
-        co_await ch->message(std::format("{}> {}", message.from, message.message), fb::game::MESSAGE_TYPE::NOTIFY);
+        ch->message(std::format("{}> {}", message.from, message.message), fb::game::MESSAGE_TYPE::NOTIFY);
 
         auto log_data             = Json::Value();
         log_data["sender_name"]   = UTF8(message.from, PLATFORM::WINDOWS);

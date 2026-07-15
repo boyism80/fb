@@ -9,6 +9,6 @@ broadcast_save::broadcast_save(fb::game::server& server) :
 
 async::task<void> broadcast_save::handle(const internal_resp::BroadcastSave& message)
 {
-    std::ignore = this->server.save();
+    co_await this->server.save();
     co_return;
 }

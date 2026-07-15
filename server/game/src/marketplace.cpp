@@ -100,7 +100,7 @@ async::task<marketplace::listing> marketplace::list(uint8_t slot, uint16_t count
                                                          .expected_total_price    = 0});
 
     // Remove item from inventory and deduct listing fee BEFORE API call
-    std::ignore = co_await this->_owner.items.remove(slot, count, ITEM_DELETE_TYPE::REMOVED);
+    std::ignore = this->_owner.items.remove(slot, count, ITEM_DELETE_TYPE::REMOVED);
     this->_owner.money_reduce(listing_fee);
 
     // Log before API call (after deduction)
@@ -389,7 +389,7 @@ async::task<marketplace::listing> marketplace::purchase(std::string_view listing
         throw std::runtime_error(_TEXT(MESSAGE_MARKETPLACE_CHARACTER_EXPIRED));
 
     if (restore_money)
-        std::ignore = co_await this->_owner.money_add(expected_price);
+        std::ignore = this->_owner.money_add(expected_price);
 
     throw std::runtime_error(std::format(_TEXT(MESSAGE_MARKETPLACE_FAILED_TO_PURCHASE_ITEM_WITH_ERROR), error_what));
 }

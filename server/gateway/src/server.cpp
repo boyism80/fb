@@ -43,7 +43,7 @@ uint32_t server::endpoint_crc() const
     return this->_endpoint_crc;
 }
 
-async::task<void> server::load_entries()
+void server::load_entries()
 {
     // Load gateway list
     auto& entrypoints = fb::config<>("entrypoints");
@@ -56,7 +56,7 @@ async::task<void> server::load_entries()
     }
 
     auto writer = fb::stream_writer<big_endian>(this->_endpoint_bytes);
-    co_await fb::protocol::gateway::response::server_list(this->_entrypoints).serialize(writer);
+    fb::protocol::gateway::response::server_list(this->_entrypoints).serialize(writer);
     this->_endpoint_crc = this->_endpoint_bytes.crc();
 }
 
@@ -99,7 +99,8 @@ async::task<void> server::on_start()
     writer.write<uint8_t>(0x7E);
     writer.write<uint8_t>(0x1B);
     writer.write((const void*)message, strlen(message));
-    co_await this->load_entries();
+    this->load_entries();
+    co_return;
 }
 
 async::task<void> server::on_accepted(fb::socket<session>& socket)

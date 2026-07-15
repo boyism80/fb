@@ -2,9 +2,9 @@
 
 namespace fb::protocol::gateway::response {
 
-async::task<void> welcome::deserialize(fb::stream_reader<big_endian>& reader)
+void welcome::deserialize(fb::stream_reader<big_endian>& reader)
 {
-    co_await header::deserialize(reader);
+    header::deserialize(reader);
 }
 
 } // namespace fb::protocol::gateway::response

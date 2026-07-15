@@ -11,9 +11,9 @@ update_hp::update_hp(const fb::game::life& me, uint32_t damage, bool critical) :
 #endif
 
 #ifndef BOT
-async::task<void> update_hp::serialize(fb::stream_writer<big_endian>& writer) const
+void update_hp::serialize(fb::stream_writer<big_endian>& writer) const
 {
-    co_await header::serialize(writer);
+    header::serialize(writer);
 
     auto percent = (uint8_t)std::ceil((this->me.stat.hp() / static_cast<double>(this->me.stat.base_hp())) * 100);
     writer.write<uint8_t>(opcode);
@@ -24,9 +24,9 @@ async::task<void> update_hp::serialize(fb::stream_writer<big_endian>& writer) co
     writer.write<uint8_t>(0x00);
 }
 #else
-async::task<void> update_hp::deserialize(fb::stream_reader<big_endian>& reader)
+void update_hp::deserialize(fb::stream_reader<big_endian>& reader)
 {
-    co_await header::deserialize(reader);
+    header::deserialize(reader);
     this->oid      = reader.read<uint32_t>();
     this->critical = reader.read<uint8_t>();
     this->percent  = reader.read<uint8_t>();

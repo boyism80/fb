@@ -47,19 +47,24 @@ std::string cash::inven_name() const
 async::task<std::shared_ptr<cash>> cash::replace(uint32_t value)
 {
     std::shared_ptr<cash> result = nullptr;
-    if (this->empty() == false)
+    if (this->empty())
+    {
+        result = nullptr;
+    }
+    else
+    {
         result = this->server.make<cash>(value);
-
+    }
     co_await this->destroy();
     co_return result;
 }
 
 async::task<uint32_t> cash::reduce(uint32_t value)
 {
-    uint32_t reduce_amount = std::min<uint32_t>(this->value, value);
-    auto     remain        = this->value - reduce_amount;
-    auto     replaced      = co_await this->replace(remain);
-    co_return replaced != nullptr ? replaced->value : 0;
+    uint32_t reduce = std::min<uint32_t>(this->value, value);
+
+    std::ignore = co_await this->replace(this->value - reduce);
+    co_return this->value;
 }
 
 bool cash::empty() const

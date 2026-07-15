@@ -6,7 +6,6 @@
 #include <optional>
 #include <string>
 #include <string_view>
-#include <async/task.h>
 #include <fb/model/model.h>
 
 namespace fb::game {
@@ -29,10 +28,10 @@ public:
 
 public:
     // clang-format off
-    async::task<void> show();
-    async::task<void> show(const fb::model::bulletin& model, const std::list<article>& articles, BULLETIN_BUTTON_ENABLE flag);
-    async::task<void> show(const article& article, BULLETIN_BUTTON_ENABLE flag);
-    async::task<void> message(std::string_view message, bool success, BULLETIN_MESSAGE_TYPE action);
+    void show();
+    void show(const fb::model::bulletin& model, const std::list<article>& articles, BULLETIN_BUTTON_ENABLE flag);
+    void show(const article& article, BULLETIN_BUTTON_ENABLE flag);
+    void message(std::string_view message, bool success, BULLETIN_MESSAGE_TYPE action);
     // clang-format on
 };
 

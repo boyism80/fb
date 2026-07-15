@@ -35,13 +35,13 @@ async::task<bool> item_combine::handle(fb::socket<character>& session, game_reqs
     auto found = table::recipe.find(dsl);
     if (found == nullptr)
     {
-        co_await ch->message(_TEXT(MESSAGE_NO_RECIPE));
+        ch->message(_TEXT(MESSAGE_NO_RECIPE));
         co_return true;
     }
 
     if (found->success.size() > ch->items.free_size() + found->source.size())
     {
-        co_await ch->message(_TEXT(MESSAGE_EXCEPTION_INVENTORY_OVERFLOW));
+        ch->message(_TEXT(MESSAGE_EXCEPTION_INVENTORY_OVERFLOW));
         co_return true;
     }
 
@@ -70,7 +70,7 @@ async::task<bool> item_combine::handle(fb::socket<character>& session, game_reqs
     // Remove source items (always consumed regardless of success/failure)
     for (auto& [item, count] : items_to_remove)
     {
-        auto deleted = co_await ch->items.remove(item, count);
+        auto deleted = ch->items.remove(item, count);
         if (deleted != nullptr)
             co_await deleted->destroy();
     }
@@ -96,7 +96,7 @@ async::task<bool> item_combine::handle(fb::socket<character>& session, game_reqs
     }
 
     auto& message = success ? _TEXT(MESSAGE_MIX_SUCCESS) : _TEXT(MESSAGE_MIX_FAILED);
-    co_await ch->message(message);
+    ch->message(message);
 
     // Log item combine event
     auto log_data              = Json::Value();

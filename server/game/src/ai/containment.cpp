@@ -2,15 +2,14 @@
 #include <fb/game/mob.h>
 #include <fb/game/map.h>
 #include <fb/game/character.h>
-#include <tuple>
 
 using namespace fb::game;
 using namespace fb::model::enum_value;
 
-async::task<bool> containment_ai::execute(mob& mob_obj, const datetime& now)
+bool containment_ai::execute(mob& mob_obj, const datetime& now)
 {
-    if (co_await super::execute(mob_obj, now))
-        co_return true;
+    if (super::execute(mob_obj, now))
+        return true;
 
     super::cleanup_expired_damage(now);
 
@@ -27,25 +26,25 @@ async::task<bool> containment_ai::execute(mob& mob_obj, const datetime& now)
 
     if (target == nullptr)
     {
-        std::ignore = co_await mob_obj.move(DIRECTION(std::rand() % 4));
-        co_return true;
+        mob_obj.move(DIRECTION(std::rand() % 4));
+        return true;
     }
 
     // If target is in range, attack
     DIRECTION attack_dir;
     if (mob_obj.near_target(target, attack_dir))
     {
-        std::ignore = co_await mob_obj.direction(attack_dir);
-        co_await mob_obj.attack();
+        mob_obj.direction(attack_dir);
+        mob_obj.attack();
     }
     else
     {
         // Move towards target
-        if (co_await mob_obj.move_step(target->position()) == false)
-            std::ignore = co_await mob_obj.move(DIRECTION(std::rand() % 4));
+        if (!mob_obj.move_step(target->position()))
+            mob_obj.move(DIRECTION(std::rand() % 4));
     }
 
-    co_return true;
+    return true;
 }
 
 MOB_ATTACK_TYPE containment_ai::get_type() const

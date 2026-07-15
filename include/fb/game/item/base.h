@@ -63,8 +63,8 @@ public:
 
 public:
     // clang-format off
-    item(fb::game::server& server, const fb::model::item& model, const initial_params& params = initial_params{.count = 1});
-    item(const item& right);
+            item(fb::game::server& server, const fb::model::item& model, const initial_params& params = initial_params{.count = 1});
+            item(const item& right);
     virtual ~item();
     // clang-format on
 
@@ -90,7 +90,7 @@ public:
     virtual bool                            empty() const;
     virtual async::task<bool>               active();
     virtual std::shared_ptr<fb::game::item> split(uint16_t count = 1);
-    virtual async::task<void>               merge(std::shared_ptr<fb::game::item> item);
+    virtual void                            merge(std::shared_ptr<fb::game::item> item);
     virtual async::task<bool>               map(map_ptr_t map, std::optional<fb::model::point16_t> position = std::nullopt, map_options options = {}) override;
     std::shared_ptr<fb::game::appearance>   appearance() const override;
     bool                                    expired() const;

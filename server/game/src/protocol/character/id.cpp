@@ -9,9 +9,9 @@ id::id(const fb::game::character& ch) :
 #endif
 
 #ifndef BOT
-async::task<void> id::serialize(fb::stream_writer<big_endian>& writer) const
+void id::serialize(fb::stream_writer<big_endian>& writer) const
 {
-    co_await header::serialize(writer);
+    header::serialize(writer);
     writer.write<uint8_t>(opcode);
     writer.write<uint32_t>(this->ch.oid());
     writer.write<uint32_t>(static_cast<uint32_t>(this->ch.direction())); // side
@@ -20,9 +20,9 @@ async::task<void> id::serialize(fb::stream_writer<big_endian>& writer) const
     writer.write<uint8_t>(0x00);
 }
 #else
-async::task<void> id::deserialize(fb::stream_reader<big_endian>& reader)
+void id::deserialize(fb::stream_reader<big_endian>& reader)
 {
-    co_await header::deserialize(reader);
+    header::deserialize(reader);
     this->oid       = reader.read<uint32_t>();
     this->direction = reader.read<uint32_t>();
     this->cls       = reader.read<uint8_t>();

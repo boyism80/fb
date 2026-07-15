@@ -27,12 +27,14 @@ public:
     ~recipe_node() = default;
 
 private:
+    // clang-format off
     const fb::model::dsl::item&    init(uint32_t id, uint32_t count);
     fb::generator<recipe_ref_type> find(const std::vector<fb::model::dsl::item>& source, int i);
     recipe_node*                   find(uint32_t id) const;
     recipe_node*                   find(const fb::model::dsl::item& item) const;
     recipe_node&                   add(const fb::model::dsl::item& item);
-    void compact(const std::vector<fb::model::dsl::item>& source, std::vector<fb::model::dsl::item>& dest);
+    void                           compact(const std::vector<fb::model::dsl::item>& source, std::vector<fb::model::dsl::item>& dest);
+    // clang-format on
 
 public:
     void                           add(const fb::model::recipe& recipe);

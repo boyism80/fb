@@ -3,9 +3,9 @@
 namespace fb::protocol::game::request {
 
 #ifndef BOT
-async::task<void> bulletin::deserialize(fb::stream_reader<big_endian>& reader)
+void bulletin::deserialize(fb::stream_reader<big_endian>& reader)
 {
-    co_await header::deserialize(reader);
+    header::deserialize(reader);
     this->action = (BULLETIN_ACTION)reader.read<uint8_t>();
 
     switch (this->action)
@@ -56,9 +56,9 @@ bulletin::bulletin(BULLETIN_ACTION  action,
     user(std::string(user))
 { }
 
-async::task<void> bulletin::serialize(fb::stream_writer<big_endian>& writer) const
+void bulletin::serialize(fb::stream_writer<big_endian>& writer) const
 {
-    co_await header::serialize(writer);
+    header::serialize(writer);
     writer.write<uint8_t>(opcode);
     writer.write<uint8_t>((uint8_t)this->action);
     switch (this->action)

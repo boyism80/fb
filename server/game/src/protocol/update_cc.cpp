@@ -3,9 +3,9 @@
 namespace fb::protocol::game::response {
 
 #ifndef BOT
-async::task<void> update_cc::serialize(fb::stream_writer<big_endian>& writer) const
+void update_cc::serialize(fb::stream_writer<big_endian>& writer) const
 {
-    co_await header::serialize(writer);
+    header::serialize(writer);
     writer.write<uint8_t>(opcode);
     writer.write<bool>(this->life.cc.contains(CROWD_CONTROL::DIRECTION));
     writer.write<bool>(this->life.cc.contains(CROWD_CONTROL::SIGHT));
@@ -13,9 +13,9 @@ async::task<void> update_cc::serialize(fb::stream_writer<big_endian>& writer) co
     writer.write<bool>(this->life.cc.contains(CROWD_CONTROL::CHAT));
 }
 #else
-async::task<void> update_cc::deserialize(fb::stream_reader<big_endian>& reader)
+void update_cc::deserialize(fb::stream_reader<big_endian>& reader)
 {
-    co_await header::deserialize(reader);
+    header::deserialize(reader);
     auto d   = reader.read<bool>();
     auto s   = reader.read<bool>();
     auto h   = reader.read<bool>();

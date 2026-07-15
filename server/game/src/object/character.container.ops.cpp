@@ -2,12 +2,10 @@
 #include <fb/game/server.h>
 #include <fb/encoding.h>
 #include <fb/config.h>
-#include <fb/logger.h>
 #include <fb/protocol/flatbuffer/protocol.h>
 #include <macro.h>
 #include <json/json.h>
 #include <format>
-#include <tuple>
 
 using namespace fb::game;
 using namespace std::chrono_literals;
@@ -15,18 +13,11 @@ namespace game_resp     = fb::protocol::game::response;
 namespace internal_resp = fb::protocol::internal::response;
 namespace internal_reqs = fb::protocol::internal::request;
 
-async::task<void> character::container::broadcast(std::string_view message, MESSAGE_TYPE type)
+void character::container::broadcast(std::string_view message, MESSAGE_TYPE type)
 {
     auto message_str = std::string(message);
-    co_await this->foreach_async([message_str, type](auto& ch) -> async::task<void> {
-        try
-        {
-            co_await ch->message(message_str, type);
-        }
-        catch (const std::exception& e)
-        {
-            fb::logger::fatal("broadcast message failed for {}: {}", ch->name(), e.what());
-        }
+    this->foreach_enqueue([message_str, type](auto& ch) -> async::task<void> {
+        ch->message(message_str, type);
         co_return;
     });
 }
@@ -47,7 +38,7 @@ async::task<void> character::container::broadcast(std::string_view message,
     }
     else
     {
-        co_await this->broadcast(message_str, type);
+        this->broadcast(message_str, type);
     }
 
     co_return;
@@ -55,36 +46,22 @@ async::task<void> character::container::broadcast(std::string_view message,
 
 async::task<void> character::container::on_broadcast(const internal_resp::Broadcast& resp)
 {
-    co_await this->broadcast(resp.message, static_cast<MESSAGE_TYPE>(resp.type));
+    this->broadcast(resp.message, static_cast<MESSAGE_TYPE>(resp.type));
     co_return;
 }
 
-async::task<void> character::container::update_time(uint8_t hours)
+void character::container::update_time(uint8_t hours)
 {
-    co_await this->foreach_async([hours](auto& ch) -> async::task<void> {
-        try
-        {
-            co_await ch->update_time(hours);
-        }
-        catch (const std::exception& e)
-        {
-            fb::logger::fatal("update_time failed for {}: {}", ch->name(), e.what());
-        }
+    this->foreach_enqueue([hours](auto& ch) -> async::task<void> {
+        ch->update_time(hours);
         co_return;
     });
 }
 
-async::task<void> character::container::send(const fb::stream& stream, bool encrypt)
+void character::container::send(const fb::stream& stream, bool encrypt)
 {
-    co_await this->foreach_async([stream, encrypt](auto& ch) -> async::task<void> {
-        try
-        {
-            std::ignore = co_await ch->send(stream, encrypt);
-        }
-        catch (const std::exception& e)
-        {
-            fb::logger::fatal("container::send failed for {}: {}", ch->name(), e.what());
-        }
+    this->foreach_enqueue([stream, encrypt](auto& ch) -> async::task<void> {
+        ch->send(stream, encrypt);
         co_return;
     });
 }
@@ -147,7 +124,7 @@ void character::container::on_start_maintenance(const internal_resp::StartMainte
         if (socket_ptr == nullptr)
             co_return;
 
-        co_await ch->message(message, MESSAGE_TYPE::STATE);
+        ch->message(message, MESSAGE_TYPE::STATE);
         socket_ptr->close();
     });
 }

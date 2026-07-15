@@ -22,6 +22,6 @@ async::task<bool> map_update::handle(fb::socket<character>& session, game_reqs::
     if (map == nullptr)
         co_return true;
 
-    co_await ch->update_map(*map, request.begin, request.size, request.crc);
+    ch->update_map(*map, request.begin, request.size, request.crc);
     co_return true;
 }

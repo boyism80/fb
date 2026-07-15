@@ -37,8 +37,8 @@ async::task<bool> give_money::handle(fb::socket<character>& session, game_reqs::
             if (money == 0)
                 throw std::runtime_error(_TEXT(MESSAGE_MONEY_TARGET_CANNOT_RECEIVE));
 
-            std::ignore = co_await you->money_add(money);
-            co_await you->message(std::format(_TEXT(MESSAGE_MONEY_GIVE), me->name(), money));
+            std::ignore = you->money_add(money);
+            you->message(std::format(_TEXT(MESSAGE_MONEY_GIVE), me->name(), money));
         }
         break;
 
@@ -57,7 +57,7 @@ async::task<bool> give_money::handle(fb::socket<character>& session, game_reqs::
             co_return true;
         }
 
-        co_await me->money_reduce(money);
+        me->money_reduce(money);
     }
     catch (std::exception& e)
     {
@@ -65,6 +65,6 @@ async::task<bool> give_money::handle(fb::socket<character>& session, game_reqs::
     }
 
     if (error.has_value())
-        co_await me->message(error.value());
+        me->message(error.value());
     co_return true;
 }

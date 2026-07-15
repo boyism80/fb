@@ -33,7 +33,7 @@ async::task<bool> chat::handle(fb::socket<character>& session, game_reqs::chat& 
     if (map == nullptr)
         co_return true;
 
-    co_await handle_normal_chat(ch, request, map);
+    handle_normal_chat(ch, request, map);
     co_return true;
 }
 
@@ -79,16 +79,14 @@ async::task<bool> chat::try_command(character* ch, std::weak_ptr<character> weak
     co_return true;
 }
 
-async::task<void> chat::handle_normal_chat(character*                            ch,
-                                           game_reqs::chat&                      request,
-                                           const std::shared_ptr<fb::game::map>& map)
+void chat::handle_normal_chat(character* ch, game_reqs::chat& request, const std::shared_ptr<fb::game::map>& map)
 {
     if (map == nullptr)
-        co_return;
+        return;
 
     auto message = fb::model::table::blocked_word.filter(request.message);
     auto type    = request.shout ? CHAT_TYPE::SHOUT : CHAT_TYPE::NORMAL;
-    co_await ch->chat(message, type, true);
+    ch->chat(message, type, true);
 
     auto log_data              = Json::Value();
     log_data["character_id"]   = static_cast<Json::Int64>(ch->id);

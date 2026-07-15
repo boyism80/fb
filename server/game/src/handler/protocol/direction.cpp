@@ -15,7 +15,7 @@ async::task<bool> direction::handle(fb::socket<character>& session, game_reqs::d
     if (ch->inited() == false)
         co_return true;
 
-    if (co_await ch->direction(request.value) == false)
+    if (ch->direction(request.value) == false)
         co_return false;
 
     co_return true;

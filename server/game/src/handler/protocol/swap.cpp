@@ -20,13 +20,13 @@ async::task<bool> swap::handle(fb::socket<character>& session, game_reqs::swap& 
     {
     case SWAP_TYPE::SPELL:
     {
-        std::ignore = co_await ch->spells.swap(request.src - 1, request.dst - 1);
+        std::ignore = ch->spells.swap(request.src - 1, request.dst - 1);
         break;
     }
 
     case SWAP_TYPE::ITEM:
     {
-        std::ignore = co_await ch->items.swap(request.src - 1, request.dst - 1);
+        std::ignore = ch->items.swap(request.src - 1, request.dst - 1);
         break;
     }
 

@@ -48,7 +48,7 @@ async::task<void> ping_timer::handle(const fb::model::datetime& now, std::thread
             state.token          = dist(rng);
             state.last_ping_time = now;
             state.pong_received  = false;
-            co_await ch->ping(state.token);
+            ch->ping(state.token);
         }
         catch (const std::exception& e)
         {

@@ -2,7 +2,6 @@
 #include <fb/game/server.h>
 #include <fb/game/item.h>
 #include <fb/model/model.h>
-#include <tuple>
 
 using namespace fb::game;
 
@@ -55,9 +54,9 @@ async::task<bool> pack::active()
         this->count(0);
 
     auto shared = this->shared_from_this_as<fb::game::item>();
-    co_await owner->listener.on_item_update(*owner, this->_container->index(shared));
+    owner->listener.on_item_update(*owner, this->_container->index(shared));
     if (this->empty())
-        std::ignore = co_await this->_container->remove(shared, 0xFF, ITEM_DELETE_TYPE::REDUCE);
+        std::ignore = this->_container->remove(shared, 0xFF, ITEM_DELETE_TYPE::REDUCE);
 
     co_return true;
 }

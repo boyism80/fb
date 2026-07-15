@@ -26,11 +26,11 @@ std::shared_ptr<character> items::owner() const
     return this->_owner.lock();
 }
 
-async::task<std::shared_ptr<equipment>> items::equipment_off(EQUIPMENT_PARTS parts)
+std::shared_ptr<equipment> items::equipment_off(EQUIPMENT_PARTS parts)
 {
     auto owner = this->_owner.lock();
     if (owner == nullptr)
-        co_return nullptr;
+        return nullptr;
 
     auto equipment = std::shared_ptr<fb::game::equipment>{nullptr};
     switch (parts)
@@ -85,9 +85,9 @@ async::task<std::shared_ptr<equipment>> items::equipment_off(EQUIPMENT_PARTS par
     }
 
     if (equipment == nullptr)
-        co_return nullptr;
+        return nullptr;
 
-    co_await owner->update(UPDATE_STATE_LEVEL::ALL);
+    owner->update(UPDATE_STATE_LEVEL::ALL);
 
     // Execute equipment deactivation script
     auto& model = equipment->based<fb::model::equipment>();
@@ -104,10 +104,10 @@ async::task<std::shared_ptr<equipment>> items::equipment_off(EQUIPMENT_PARTS par
     }
 
     // Call listener for packet response
-    co_await owner->listener.on_equipment_off(*owner, parts, *equipment);
+    owner->listener.on_equipment_off(*owner, parts, *equipment);
 
-    co_await owner->update_external(true);
-    co_return equipment;
+    owner->update_external(true);
+    return equipment;
 }
 
 async::task<uint8_t> items::add(std::shared_ptr<item> item)
@@ -126,6 +126,7 @@ async::task<std::vector<uint8_t>> items::add(const std::vector<std::shared_ptr<i
         co_return std::vector<uint8_t>();
 
     auto indices = std::vector<uint8_t>();
+    auto updates = std::unordered_map<uint8_t, std::shared_ptr<item>>();
 
     for (auto& item : items)
     {
@@ -141,7 +142,7 @@ async::task<std::vector<uint8_t>> items::add(const std::vector<std::shared_ptr<i
                 auto diff = owner->server.now() - drop_time.value();
                 if (diff < fb::model::const_value::death_penalty::warmth_time)
                 {
-                    co_await owner->message(_TEXT(MESSAGE_ITEM_DEATH_PENALTY_WARMTH));
+                    owner->message(_TEXT(MESSAGE_ITEM_DEATH_PENALTY_WARMTH));
                     break;
                 }
             }
@@ -152,7 +153,7 @@ async::task<std::vector<uint8_t>> items::add(const std::vector<std::shared_ptr<i
         {
             auto cash   = std::static_pointer_cast<fb::game::cash>(item);
             auto before = cash->value;
-            auto remain = co_await owner->money_add(cash->value);
+            auto remain = owner->money_add(cash->value);
             if (remain != before)
             {
                 if (remain > 0)
@@ -167,10 +168,10 @@ async::task<std::vector<uint8_t>> items::add(const std::vector<std::shared_ptr<i
                 }
             }
 
-            co_await owner->update(UPDATE_STATE_LEVEL::EXP_MONEY);
+            owner->update(UPDATE_STATE_LEVEL::EXP_MONEY);
             if (remain != 0)
             {
-                co_await owner->message(_TEXT(MESSAGE_MONEY_FULL));
+                owner->message(_TEXT(MESSAGE_MONEY_FULL));
                 if (stop_if_remained)
                     break;
             }
@@ -180,9 +181,10 @@ async::task<std::vector<uint8_t>> items::add(const std::vector<std::shared_ptr<i
             auto exists = model.attr(ITEM_ATTRIBUTE::BUNDLE) ? this->find(model) : nullptr;
             if (exists != nullptr)
             {
-                co_await exists->merge(item);
+                exists->merge(item);
 
                 auto index = this->index(exists);
+                updates.insert({index, exists});
                 indices.push_back(index);
 
                 if (item->empty())
@@ -195,15 +197,16 @@ async::task<std::vector<uint8_t>> items::add(const std::vector<std::shared_ptr<i
                 auto index = this->next();
                 if (index == 0xFF)
                 {
-                    co_await owner->message(_TEXT(MESSAGE_ITEM_FULL));
+                    owner->message(_TEXT(MESSAGE_ITEM_FULL));
                     break;
                 }
 
-                std::ignore = co_await this->add(item, index);
+                std::ignore = this->add(item, index);
 
                 if (item->_map != nullptr)
                     std::ignore = co_await item->map(nullptr);
 
+                updates.insert({index, item});
                 indices.push_back(index);
             }
         }
@@ -211,20 +214,20 @@ async::task<std::vector<uint8_t>> items::add(const std::vector<std::shared_ptr<i
     co_return indices;
 }
 
-async::task<uint8_t> items::add(std::shared_ptr<item> item, uint8_t index)
+uint8_t items::add(std::shared_ptr<item> item, uint8_t index)
 {
     auto owner = this->_owner.lock();
     if (owner == nullptr)
-        co_return 0xFF;
+        return 0xFF;
 
-    if (co_await super::add(item, index) == 0xFF)
-        co_return 0xFF;
+    if (super::add(item, index) == 0xFF)
+        return 0xFF;
 
     item->container(this);
     item->death_uid(std::nullopt);
     if (item->empty() == false)
     {
-        co_await owner->listener.on_item_update(*owner, index);
+        owner->listener.on_item_update(*owner, index);
 
         // Log item gain event (only for non-cash items)
         auto& model = item->based<fb::model::item>();
@@ -241,14 +244,14 @@ async::task<uint8_t> items::add(std::shared_ptr<item> item, uint8_t index)
         }
     }
 
-    co_return index;
+    return index;
 }
 
-async::task<bool> items::store(std::shared_ptr<item> item)
+bool items::store(std::shared_ptr<item> item)
 {
     auto owner = this->_owner.lock();
     if (owner == nullptr)
-        co_return false;
+        return false;
 
     owner->assert_thread();
 
@@ -275,7 +278,7 @@ async::task<bool> items::store(std::shared_ptr<item> item)
             auto stored   = *found;
             auto capacity = 0xFFFF - stored->count();
             if (item->count() > capacity)
-                co_return false;
+                return false;
 
             stored->count(stored->count() + item->count());
         }
@@ -296,7 +299,7 @@ async::task<bool> items::store(std::shared_ptr<item> item)
     log_data["count"]          = static_cast<Json::Int64>(count);
     owner->server.log.write("item_deposit", log_data);
 
-    co_return true;
+    return true;
 }
 
 async::task<bool> items::store(uint8_t index, uint16_t count)
@@ -314,8 +317,8 @@ async::task<bool> items::store(uint8_t index, uint16_t count)
     if (item->count() < count)
         co_return false;
 
-    auto deleted = co_await this->remove(item, count, ITEM_DELETE_TYPE::NONE, false);
-    auto result  = co_await this->store(deleted);
+    auto deleted = this->remove(item, count, ITEM_DELETE_TYPE::NONE, false);
+    auto result  = this->store(deleted);
     if (result == false)
         std::ignore = co_await this->add(deleted);
 
@@ -368,7 +371,7 @@ const std::vector<std::shared_ptr<item>>& items::stored() const
     return this->_stored;
 }
 
-async::task<std::shared_ptr<item>> items::retrieve(uint8_t index, uint16_t count)
+async::task<items::item_ptr> items::retrieve(uint8_t index, uint16_t count)
 {
     auto owner = this->_owner.lock();
     if (owner == nullptr)
@@ -442,7 +445,7 @@ async::task<std::shared_ptr<item>> items::retrieve(uint8_t index, uint16_t count
     }
 }
 
-async::task<std::shared_ptr<item>> items::retrieve(std::string_view name, uint16_t count)
+async::task<items::item_ptr> items::retrieve(std::string_view name, uint16_t count)
 {
     auto owner = this->_owner.lock();
     if (owner == nullptr)
@@ -459,7 +462,7 @@ async::task<std::shared_ptr<item>> items::retrieve(std::string_view name, uint16
     co_return nullptr;
 }
 
-async::task<std::shared_ptr<item>> items::retrieve(const fb::model::item& item, uint16_t count)
+async::task<items::item_ptr> items::retrieve(const fb::model::item& item, uint16_t count)
 {
     auto owner = this->_owner.lock();
     if (owner == nullptr)
@@ -571,13 +574,12 @@ uint32_t items::withdraw(uint32_t value)
     return lack;
 }
 
-async::task<std::shared_ptr<item>> items::active(uint8_t index)
+async::task<items::item_ptr> items::active(uint8_t index)
 {
     auto owner = this->_owner.lock();
     if (owner == nullptr)
         co_return nullptr;
 
-    auto error = std::optional<std::string>{};
     try
     {
         owner->assert_state({STATE::RIDING, STATE::GHOST});
@@ -603,11 +605,8 @@ async::task<std::shared_ptr<item>> items::active(uint8_t index)
     }
     catch (std::exception& e)
     {
-        error = e.what();
+        owner->message(e.what());
     }
-
-    if (error.has_value())
-        co_await owner->message(error.value());
     co_return nullptr;
 }
 
@@ -616,7 +615,7 @@ async::task<uint8_t> items::inactive(EQUIPMENT_PARTS parts)
     if (this->free() == false)
         co_return 0xFF;
 
-    auto item = co_await this->equipment_off(parts);
+    auto item = this->equipment_off(parts);
     if (item == nullptr)
         co_return 0xFF;
 
@@ -669,29 +668,29 @@ std::vector<uint8_t> items::index_all(const std::shared_ptr<item>& item) const
     return result;
 }
 
-async::task<bool> items::update(uint8_t index) const
+bool items::update(uint8_t index) const
 {
     auto owner = this->_owner.lock();
     if (owner == nullptr)
-        co_return false;
+        return false;
 
     auto item = this->at(index);
     if (item == nullptr)
-        co_return false;
+        return false;
 
     auto remained = item->count() - item->trade_count();
     if (remained == 0)
-        co_await owner->listener.on_item_remove(*owner, index, ITEM_DELETE_TYPE::NONE);
+        owner->listener.on_item_remove(*owner, index, ITEM_DELETE_TYPE::NONE);
     else
-        co_await owner->listener.on_item_update(*owner, index);
-    co_return true;
+        owner->listener.on_item_update(*owner, index);
+    return true;
 }
 
-async::task<std::shared_ptr<equipment>> items::wear(EQUIPMENT_PARTS parts, std::shared_ptr<equipment> item)
+std::shared_ptr<equipment> items::wear(EQUIPMENT_PARTS parts, std::shared_ptr<equipment> item)
 {
     auto owner = this->_owner.lock();
     if (owner == nullptr)
-        co_return nullptr;
+        return nullptr;
 
     if (item != nullptr)
         item->container(this);
@@ -699,30 +698,28 @@ async::task<std::shared_ptr<equipment>> items::wear(EQUIPMENT_PARTS parts, std::
     switch (parts) // EQUIPMENT_PARTS
     {
     case EQUIPMENT_PARTS::WEAPON:
-        co_return co_await owner->items.weapon(std::static_pointer_cast<fb::game::weapon>(item));
+        return owner->items.weapon(std::static_pointer_cast<fb::game::weapon>(item));
 
     case EQUIPMENT_PARTS::ARMOR:
-        co_return co_await owner->items.armor(std::static_pointer_cast<fb::game::armor>(item));
+        return owner->items.armor(std::static_pointer_cast<fb::game::armor>(item));
 
     case EQUIPMENT_PARTS::SHIELD:
-        co_return co_await owner->items.shield(std::static_pointer_cast<fb::game::shield>(item));
+        return owner->items.shield(std::static_pointer_cast<fb::game::shield>(item));
 
     case EQUIPMENT_PARTS::HELMET:
-        co_return co_await owner->items.helmet(std::static_pointer_cast<fb::game::helmet>(item));
+        return owner->items.helmet(std::static_pointer_cast<fb::game::helmet>(item));
 
     case EQUIPMENT_PARTS::LEFT_HAND:
-        co_return co_await owner->items.ring(std::static_pointer_cast<fb::game::ring>(item), EQUIPMENT_POSITION::LEFT);
+        return owner->items.ring(std::static_pointer_cast<fb::game::ring>(item), EQUIPMENT_POSITION::LEFT);
 
     case EQUIPMENT_PARTS::RIGHT_HAND:
-        co_return co_await owner->items.ring(std::static_pointer_cast<fb::game::ring>(item), EQUIPMENT_POSITION::RIGHT);
+        return owner->items.ring(std::static_pointer_cast<fb::game::ring>(item), EQUIPMENT_POSITION::RIGHT);
 
     case EQUIPMENT_PARTS::LEFT_AUX:
-        co_return co_await owner->items.auxiliary(std::static_pointer_cast<fb::game::auxiliary>(item),
-                                                  EQUIPMENT_POSITION::LEFT);
+        return owner->items.auxiliary(std::static_pointer_cast<fb::game::auxiliary>(item), EQUIPMENT_POSITION::LEFT);
 
     case EQUIPMENT_PARTS::RIGHT_AUX:
-        co_return co_await owner->items.auxiliary(std::static_pointer_cast<fb::game::auxiliary>(item),
-                                                  EQUIPMENT_POSITION::RIGHT);
+        return owner->items.auxiliary(std::static_pointer_cast<fb::game::auxiliary>(item), EQUIPMENT_POSITION::RIGHT);
 
     default:
         throw std::runtime_error("invalid equipment parts");
@@ -738,17 +735,17 @@ std::shared_ptr<weapon> items::weapon() const
     return this->_weapon;
 }
 
-async::task<std::shared_ptr<weapon>> items::weapon(std::shared_ptr<fb::game::weapon> weapon)
+std::shared_ptr<weapon> items::weapon(std::shared_ptr<fb::game::weapon> weapon)
 {
     auto owner = this->_owner.lock();
     if (owner == nullptr)
-        co_return nullptr;
+        return nullptr;
 
     auto before = this->_weapon;
 
     this->_weapon = weapon;
-    co_await owner->update_external(false);
-    co_return before;
+    owner->update_external(false);
+    return before;
 }
 
 std::shared_ptr<armor> items::armor() const
@@ -760,17 +757,18 @@ std::shared_ptr<armor> items::armor() const
     return this->_armor;
 }
 
-async::task<std::shared_ptr<armor>> items::armor(std::shared_ptr<fb::game::armor> armor)
+std::shared_ptr<armor> items::armor(std::shared_ptr<fb::game::armor> armor)
 {
     auto owner = this->_owner.lock();
     if (owner == nullptr)
-        co_return nullptr;
+        return nullptr;
 
     auto before = this->_armor;
 
     this->_armor = armor;
-    co_await owner->update_external(false);
-    co_return before;
+    owner->update_external(false);
+
+    return before;
 }
 
 std::shared_ptr<shield> items::shield() const
@@ -782,17 +780,18 @@ std::shared_ptr<shield> items::shield() const
     return this->_shield;
 }
 
-async::task<std::shared_ptr<shield>> items::shield(std::shared_ptr<fb::game::shield> shield)
+std::shared_ptr<shield> items::shield(std::shared_ptr<fb::game::shield> shield)
 {
     auto owner = this->_owner.lock();
     if (owner == nullptr)
-        co_return nullptr;
+        return nullptr;
 
     auto before = this->_shield;
 
     this->_shield = shield;
-    co_await owner->update_external(false);
-    co_return before;
+    owner->update_external(false);
+
+    return before;
 }
 
 std::shared_ptr<helmet> items::helmet() const
@@ -804,17 +803,18 @@ std::shared_ptr<helmet> items::helmet() const
     return this->_helmet;
 }
 
-async::task<std::shared_ptr<helmet>> items::helmet(std::shared_ptr<fb::game::helmet> helmet)
+std::shared_ptr<helmet> items::helmet(std::shared_ptr<fb::game::helmet> helmet)
 {
     auto owner = this->_owner.lock();
     if (owner == nullptr)
-        co_return nullptr;
+        return nullptr;
 
     auto before = this->_helmet;
 
     this->_helmet = helmet;
-    co_await owner->update_external(false);
-    co_return before;
+    owner->update_external(false);
+
+    return before;
 }
 
 std::shared_ptr<ring> items::ring(EQUIPMENT_POSITION position) const
@@ -826,36 +826,37 @@ std::shared_ptr<ring> items::ring(EQUIPMENT_POSITION position) const
     return this->_rings[static_cast<int>(position)];
 }
 
-async::task<std::shared_ptr<ring>> items::ring(std::shared_ptr<fb::game::ring> ring)
+std::shared_ptr<ring> items::ring(std::shared_ptr<fb::game::ring> ring)
 {
     auto owner = this->_owner.lock();
     if (owner == nullptr)
-        co_return nullptr;
+        return nullptr;
 
     std::shared_ptr<fb::game::ring> before = nullptr;
 
     if (this->_rings[static_cast<int>(EQUIPMENT_POSITION::LEFT)] == nullptr)
     {
-        before = co_await this->ring(ring, EQUIPMENT_POSITION::LEFT);
+        before = this->ring(ring, EQUIPMENT_POSITION::LEFT);
     }
     else
     {
-        before = co_await this->ring(ring, EQUIPMENT_POSITION::RIGHT);
+        before = this->ring(ring, EQUIPMENT_POSITION::RIGHT);
     }
-    co_return before;
+    return before;
 }
 
-async::task<std::shared_ptr<ring>> items::ring(std::shared_ptr<fb::game::ring> ring, EQUIPMENT_POSITION position)
+std::shared_ptr<ring> items::ring(std::shared_ptr<fb::game::ring> ring, EQUIPMENT_POSITION position)
 {
     auto owner = this->_owner.lock();
     if (owner == nullptr)
-        co_return nullptr;
+        return nullptr;
 
     auto before = this->_rings[static_cast<int>(position)];
 
     this->_rings[static_cast<int>(position)] = ring;
-    co_await owner->update_external(false);
-    co_return before;
+    owner->update_external(false);
+
+    return before;
 }
 
 std::shared_ptr<auxiliary> items::auxiliary(EQUIPMENT_POSITION position) const
@@ -867,37 +868,37 @@ std::shared_ptr<auxiliary> items::auxiliary(EQUIPMENT_POSITION position) const
     return this->_auxiliaries[static_cast<int>(position)];
 }
 
-async::task<std::shared_ptr<auxiliary>> items::auxiliary(std::shared_ptr<fb::game::auxiliary> auxiliary)
+std::shared_ptr<auxiliary> items::auxiliary(std::shared_ptr<fb::game::auxiliary> auxiliary)
 {
     auto owner = this->_owner.lock();
     if (owner == nullptr)
-        co_return nullptr;
+        return nullptr;
 
     std::shared_ptr<fb::game::auxiliary> before = nullptr;
 
     if (this->_auxiliaries[static_cast<int>(EQUIPMENT_POSITION::LEFT)] == nullptr)
     {
-        before = co_await this->auxiliary(auxiliary, EQUIPMENT_POSITION::LEFT);
+        before = this->auxiliary(auxiliary, EQUIPMENT_POSITION::LEFT);
     }
     else
     {
-        before = co_await this->auxiliary(auxiliary, EQUIPMENT_POSITION::RIGHT);
+        before = this->auxiliary(auxiliary, EQUIPMENT_POSITION::RIGHT);
     }
 
-    co_return before;
+    return before;
 }
 
-async::task<std::shared_ptr<auxiliary>> items::auxiliary(std::shared_ptr<fb::game::auxiliary> auxiliary,
-                                                         EQUIPMENT_POSITION                   position)
+std::shared_ptr<auxiliary> items::auxiliary(std::shared_ptr<fb::game::auxiliary> auxiliary, EQUIPMENT_POSITION position)
 {
     auto owner = this->_owner.lock();
     if (owner == nullptr)
-        co_return nullptr;
+        return nullptr;
 
     auto before                                    = this->_auxiliaries[static_cast<int>(position)];
     this->_auxiliaries[static_cast<int>(position)] = auxiliary;
-    co_await owner->update_external(false);
-    co_return before;
+    owner->update_external(false);
+
+    return before;
 }
 
 std::shared_ptr<item> items::find(std::string_view name) const
@@ -1006,13 +1007,12 @@ bool items::has(const std::vector<std::pair<const fb::model::item*, uint16_t>>& 
     return true;
 }
 
-async::task<std::shared_ptr<item>> items::drop(uint8_t index, uint8_t count, bool action, ITEM_DELETE_TYPE delete_type)
+async::task<items::item_ptr> items::drop(uint8_t index, uint8_t count, bool action, ITEM_DELETE_TYPE delete_type)
 {
     auto owner = this->_owner.lock();
     if (owner == nullptr)
         co_return nullptr;
 
-    auto error = std::optional<std::string>{};
     try
     {
         if (action)
@@ -1026,24 +1026,21 @@ async::task<std::shared_ptr<item>> items::drop(uint8_t index, uint8_t count, boo
         if (model.trade == false)
             throw std::runtime_error(_TEXT(MESSAGE_EXCEPTION_CANNOT_DROP_ITEM));
 
-        auto dropped = co_await this->remove(item, count, delete_type);
+        auto dropped = this->remove(item, count, delete_type);
         if (dropped != nullptr)
         {
             std::ignore = co_await dropped->map(owner->map(), owner->position());
 
             if (action)
-                co_await owner->action(ACTION::PICKUP, DURATION::PICKUP);
+                owner->action(ACTION::PICKUP, DURATION::PICKUP);
         }
 
         co_return dropped;
     }
     catch (std::exception& e)
     {
-        error = e.what();
+        owner->message(e.what());
     }
-
-    if (error.has_value())
-        co_await owner->message(error.value());
     co_return nullptr;
 }
 
@@ -1053,7 +1050,6 @@ async::task<void> items::loot(bool boost)
     if (owner == nullptr)
         co_return;
 
-    auto error = std::optional<std::string>{};
     try
     {
         auto map = owner->map();
@@ -1068,7 +1064,7 @@ async::task<void> items::loot(bool boost)
         }
 
         owner->assert_state({STATE::GHOST, STATE::RIDING});
-        co_await owner->action(ACTION::PICKUP, DURATION::PICKUP);
+        owner->action(ACTION::PICKUP, DURATION::PICKUP);
 
         // Pick up items in reverse order
         auto belows = std::vector<std::shared_ptr<item>>();
@@ -1091,11 +1087,8 @@ async::task<void> items::loot(bool boost)
     }
     catch (std::exception& e)
     {
-        error = e.what();
+        owner->message(e.what());
     }
-
-    if (error.has_value())
-        co_await owner->message(error.value());
 }
 
 async::task<bool> items::throws(uint8_t index, bool all)
@@ -1104,7 +1097,6 @@ async::task<bool> items::throws(uint8_t index, bool all)
     if (owner == nullptr)
         co_return false;
 
-    auto error = std::optional<std::string>{};
     try
     {
         auto item = owner->items.at(index);
@@ -1120,7 +1112,7 @@ async::task<bool> items::throws(uint8_t index, bool all)
             throw std::exception();
 
         auto count    = all ? item->count() : 1;
-        auto dropped  = co_await this->remove(index, count, ITEM_DELETE_TYPE::THROW);
+        auto dropped  = this->remove(index, count, ITEM_DELETE_TYPE::THROW);
         auto position = owner->position();
         for (int i = 0; i < 7; i++)
         {
@@ -1133,29 +1125,26 @@ async::task<bool> items::throws(uint8_t index, bool all)
             }
         }
 
-        co_await owner->listener.on_item_throws(*owner, *dropped, position);
+        owner->listener.on_item_throws(*owner, *dropped, position);
         std::ignore = co_await dropped->map(map, position);
         co_return true;
     }
     catch (std::exception& e)
     {
-        error = e.what();
+        owner->message(e.what());
     }
-
-    if (error.has_value())
-        co_await owner->message(error.value());
     co_return false;
 }
 
-async::task<std::shared_ptr<item>> items::remove(uint8_t index, uint16_t count, ITEM_DELETE_TYPE attr, bool detach)
+std::shared_ptr<item> items::remove(uint8_t index, uint16_t count, ITEM_DELETE_TYPE attr, bool detach)
 {
     auto owner = this->_owner.lock();
     if (owner == nullptr)
-        co_return nullptr;
+        return nullptr;
 
     auto item = this->at(index);
     if (item == nullptr)
-        co_return nullptr;
+        return nullptr;
 
     auto splitted = item->split(count);
     if (splitted == item)
@@ -1163,8 +1152,8 @@ async::task<std::shared_ptr<item>> items::remove(uint8_t index, uint16_t count, 
         if (detach)
             splitted->_container = nullptr;
 
-        std::ignore = co_await inventory<fb::game::item>::remove(index);
-        co_await owner->listener.on_item_remove(*owner, index, attr);
+        std::ignore = inventory<fb::game::item>::remove(index);
+        owner->listener.on_item_remove(*owner, index, attr);
 
         // Log item remove event (only for non-cash items)
         auto& model = item->based<fb::model::item>();
@@ -1182,22 +1171,22 @@ async::task<std::shared_ptr<item>> items::remove(uint8_t index, uint16_t count, 
         }
     }
 
-    co_await owner->listener.on_item_update(*owner, index);
-    co_return splitted;
+    auto current = this->at(index);
+    owner->listener.on_item_update(*owner, index);
+    return splitted;
 }
 
-async::task<std::shared_ptr<item>>
-items::remove(std::shared_ptr<item> item, uint16_t count, ITEM_DELETE_TYPE attr, bool detach)
+std::shared_ptr<item> items::remove(std::shared_ptr<item> item, uint16_t count, ITEM_DELETE_TYPE attr, bool detach)
 {
     auto owner = this->_owner.lock();
     if (owner == nullptr)
-        co_return nullptr;
+        return nullptr;
 
     auto index = this->index(item);
     if (index == 0xFF)
-        co_return nullptr;
+        return nullptr;
 
-    co_return co_await this->remove(index, count, attr, detach);
+    return this->remove(index, count, attr, detach);
 }
 
 async::task<void> items::remove_expired()
@@ -1214,11 +1203,11 @@ async::task<void> items::remove_expired()
         auto item = this->at(i);
         if (item != nullptr && item->expired())
         {
-            auto expired = co_await this->remove(i, item->count(), ITEM_DELETE_TYPE::NONE);
+            auto expired = this->remove(i, item->count(), ITEM_DELETE_TYPE::NONE);
             if (expired == nullptr)
                 continue;
 
-            co_await owner->message(std::format("{} 아이템이 만료되었습니다.", expired->based<fb::model::item>().name));
+            owner->message(std::format("{} 아이템이 만료되었습니다.", expired->based<fb::model::item>().name));
             co_await expired->destroy();
             continue;
         }
@@ -1230,7 +1219,7 @@ async::task<void> items::remove_expired()
     {
         if (equipment != nullptr && equipment->expired())
         {
-            auto expired = co_await this->equipment_off(parts);
+            auto expired = this->equipment_off(parts);
             if (expired == nullptr)
                 continue;
 
@@ -1257,7 +1246,7 @@ async::task<void> items::remove_expired()
             continue;
 
         auto& model = expired->based<fb::model::item>();
-        co_await owner->message(std::format("{} 아이템이 만료되었습니다.", model.name));
+        owner->message(std::format("{} 아이템이 만료되었습니다.", model.name));
 
         auto log_data              = Json::Value();
         log_data["character_id"]   = static_cast<Json::Int64>(owner->id);
@@ -1272,29 +1261,29 @@ async::task<void> items::remove_expired()
     }
 }
 
-async::task<bool> items::swap(uint8_t src, uint8_t dst)
+bool items::swap(uint8_t src, uint8_t dst)
 {
     auto owner = this->_owner.lock();
     if (owner == nullptr)
-        co_return false;
+        return false;
 
-    if (co_await inventory<item>::swap(src, dst) == false)
-        co_return false;
+    if (inventory<item>::swap(src, dst) == false)
+        return false;
 
     const auto right = this->at(src);
     if (right != nullptr)
-        co_await owner->listener.on_item_update(*owner, src);
+        owner->listener.on_item_update(*owner, src);
     else
-        co_await owner->listener.on_item_remove(*owner, src);
+        owner->listener.on_item_remove(*owner, src);
 
     const auto left = this->at(dst);
     if (left != nullptr)
-        co_await owner->listener.on_item_update(*owner, dst);
+        owner->listener.on_item_update(*owner, dst);
     else
-        co_await owner->listener.on_item_remove(*owner, dst);
+        owner->listener.on_item_remove(*owner, dst);
 
-    co_await owner->listener.on_item_swap(*owner, src, dst);
-    co_return true;
+    owner->listener.on_item_swap(*owner, src, dst);
+    return true;
 }
 
 bool items::is_rewardable(const std::unordered_map<uint32_t, uint16_t>& items, uint32_t money) const
@@ -1460,7 +1449,7 @@ async::task<exchange_result> items::exchange(const std::unordered_map<uint32_t, 
     if (available_slots < required_size)
         co_return exchange_result::lack_capacity;
 
-    co_await owner->money_reduce(cost_money);
+    owner->money_reduce(cost_money);
 
     for (auto& [id, cost_count] : cost_items)
     {
@@ -1485,7 +1474,7 @@ async::task<exchange_result> items::exchange(const std::unordered_map<uint32_t, 
             }
 
             uint16_t to_remove = std::min(in_slot, remaining);
-            auto     removed   = co_await this->remove(index, to_remove, ITEM_DELETE_TYPE::GIVE, true);
+            auto     removed   = this->remove(index, to_remove, ITEM_DELETE_TYPE::GIVE, true);
             if (removed != nullptr)
                 co_await removed->destroy();
             remaining -= to_remove;
@@ -1495,7 +1484,7 @@ async::task<exchange_result> items::exchange(const std::unordered_map<uint32_t, 
         }
     }
 
-    std::ignore = co_await owner->money_add(reward_money);
+    owner->money_add(reward_money);
 
     for (auto& [id, count] : reward_items)
     {

@@ -33,9 +33,8 @@ template <typename BotType>
 class bot_controller : public base_bot_controller
 {
 public:
-    using handle_func = std::function<async::task<void>(BotType&, fb::protocol::header&)>;
-    using deserilze_func =
-        std::function<async::task<std::shared_ptr<fb::protocol::header>>(fb::stream_reader<big_endian>&)>;
+    using handle_func        = std::function<async::task<void>(BotType&, fb::protocol::header&)>;
+    using deserilze_func     = std::function<std::shared_ptr<fb::protocol::header>(fb::stream_reader<big_endian>&)>;
     using response_cloner_fn = std::function<std::shared_ptr<fb::protocol::header>(const fb::protocol::header&)>;
 
 private:
@@ -144,8 +143,8 @@ protected:
             return;
 
         this->_deserializer[opcode] =
-            [](fb::stream_reader<big_endian>& reader) -> async::task<std::shared_ptr<fb::protocol::header>> {
-            co_return nullptr;
+            [](fb::stream_reader<big_endian>& reader) -> std::shared_ptr<fb::protocol::header> {
+            return nullptr;
         };
 
         this->_handler[opcode] = [](BotType& bot, const fb::protocol::header& protocol) -> async::task<void> {
@@ -256,14 +255,14 @@ public:
                     }
                     else
                     {
-                        deserializer = [](fb::stream_reader<big_endian>& reader)
-                            -> async::task<std::shared_ptr<fb::protocol::header>> {
-                            co_return nullptr;
+                        deserializer =
+                            [](fb::stream_reader<big_endian>& reader) -> std::shared_ptr<fb::protocol::header> {
+                            return nullptr;
                         };
                     }
                 }
 
-                protocol = co_await deserializer(reader);
+                protocol = deserializer(reader);
                 if (protocol != nullptr)
                 {
                     auto weak = bot.template weak_from_this_as<BotType>();
@@ -340,12 +339,11 @@ public:
 
         auto unique_lock = std::unique_lock<std::shared_mutex>(this->_handler_mutex);
 
-        this->_deserializer.insert(
-            {ResponseType::opcode, [](auto& reader) -> async::task<std::shared_ptr<fb::protocol::header>> {
-                 auto protocol = std::make_shared<ResponseType>();
-                 co_await protocol->deserialize(reader);
-                 co_return protocol;
-             }});
+        this->_deserializer.insert({ResponseType::opcode, [](auto& reader) -> std::shared_ptr<fb::protocol::header> {
+                                        auto protocol = std::make_shared<ResponseType>();
+                                        protocol->deserialize(reader);
+                                        return protocol;
+                                    }});
 
         this->_handler.insert(
             {ResponseType::opcode, [this, fn = std::move(fn)](auto& bot, auto& header) -> async::task<void> {

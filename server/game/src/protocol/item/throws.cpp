@@ -2,17 +2,17 @@
 
 namespace fb::protocol::game::request {
 #ifdef BOT
-async::task<void> item_throws::serialize(fb::stream_writer<big_endian>& writer) const
+void item_throws::serialize(fb::stream_writer<big_endian>& writer) const
 {
-    co_await header::serialize(writer);
+    header::serialize(writer);
     writer.write<uint8_t>(opcode);
     writer.write<bool>(this->all);
     writer.write<uint8_t>(this->index + 1);
 }
 #else
-async::task<void> item_throws::deserialize(fb::stream_reader<big_endian>& reader)
+void item_throws::deserialize(fb::stream_reader<big_endian>& reader)
 {
-    co_await header::deserialize(reader);
+    header::deserialize(reader);
     this->all   = reader.read<bool>();
     this->index = reader.read<uint8_t>() - 1;
 }
@@ -32,9 +32,9 @@ item_throws::item_throws(const fb::game::character&        ch,
 #endif
 
 #ifndef BOT
-async::task<void> item_throws::serialize(fb::stream_writer<big_endian>& writer) const
+void item_throws::serialize(fb::stream_writer<big_endian>& writer) const
 {
-    co_await header::serialize(writer);
+    header::serialize(writer);
     writer.write<uint8_t>(opcode);
     writer.write<uint32_t>(this->ch.oid());
     writer.write<uint16_t>(this->item.look());
@@ -49,9 +49,9 @@ async::task<void> item_throws::serialize(fb::stream_writer<big_endian>& writer) 
     writer.write<uint8_t>(0x00);
 }
 #else
-async::task<void> item_throws::deserialize(fb::stream_reader<big_endian>& reader)
+void item_throws::deserialize(fb::stream_reader<big_endian>& reader)
 {
-    co_await header::deserialize(reader);
+    header::deserialize(reader);
     this->ch_oid   = reader.read<uint32_t>();
     this->look     = reader.read<uint16_t>();
     this->color    = reader.read<uint8_t>();

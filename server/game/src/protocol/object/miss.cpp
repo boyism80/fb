@@ -3,16 +3,16 @@
 namespace fb::protocol::game::request {
 
 #ifdef BOT
-async::task<void> miss::serialize(fb::stream_writer<big_endian>& writer) const
+void miss::serialize(fb::stream_writer<big_endian>& writer) const
 {
-    co_await header::serialize(writer);
+    header::serialize(writer);
     writer.write<uint8_t>(opcode);
     writer.write<uint32_t>(this->oid);
 }
 #else
-async::task<void> miss::deserialize(fb::stream_reader<big_endian>& reader)
+void miss::deserialize(fb::stream_reader<big_endian>& reader)
 {
-    co_await header::deserialize(reader);
+    header::deserialize(reader);
     this->oid = reader.read<uint32_t>();
 }
 #endif

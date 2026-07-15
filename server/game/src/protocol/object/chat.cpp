@@ -3,9 +3,9 @@
 namespace fb::protocol::game::request {
 
 #ifndef BOT
-async::task<void> chat::deserialize(fb::stream_reader<big_endian>& reader)
+void chat::deserialize(fb::stream_reader<big_endian>& reader)
 {
-    co_await header::deserialize(reader);
+    header::deserialize(reader);
     this->shout   = reader.read<bool>();
     this->message = reader.read<std::string, uint8_t>();
 }
@@ -15,9 +15,9 @@ chat::chat(bool shout, std::string_view message) :
     message(std::string(message))
 { }
 
-async::task<void> chat::serialize(fb::stream_writer<big_endian>& writer) const
+void chat::serialize(fb::stream_writer<big_endian>& writer) const
 {
-    co_await header::serialize(writer);
+    header::serialize(writer);
     writer.write<uint8_t>(opcode);
     writer.write<bool>(this->shout);
     writer.write<std::string, uint8_t>(this->message);
@@ -37,18 +37,18 @@ chat::chat(const fb::game::object& me, std::string_view text, CHAT_TYPE type) :
 #endif
 
 #ifndef BOT
-async::task<void> chat::serialize(fb::stream_writer<big_endian>& writer) const
+void chat::serialize(fb::stream_writer<big_endian>& writer) const
 {
-    co_await header::serialize(writer);
+    header::serialize(writer);
     writer.write<uint8_t>(opcode);
     writer.write<uint8_t>(static_cast<uint8_t>(this->type));
     writer.write<uint32_t>(this->me.oid());
     writer.write<std::string>(this->text);
 }
 #else
-async::task<void> chat::deserialize(fb::stream_reader<big_endian>& reader)
+void chat::deserialize(fb::stream_reader<big_endian>& reader)
 {
-    co_await header::deserialize(reader);
+    header::deserialize(reader);
     this->type = (CHAT_TYPE)reader.read<uint8_t>();
     this->oid  = reader.read<uint32_t>();
     this->text = reader.read<std::string, uint8_t>();

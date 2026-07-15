@@ -5,9 +5,9 @@ namespace fb::protocol::game::request {
 using namespace fb::model::enum_value;
 
 #ifndef BOT // server only
-async::task<void> map_update::deserialize(fb::stream_reader<big_endian>& reader)
+void map_update::deserialize(fb::stream_reader<big_endian>& reader)
 {
-    co_await header::deserialize(reader);
+    header::deserialize(reader);
     this->begin.x     = reader.read<uint16_t>();
     this->begin.y     = reader.read<uint16_t>();
     this->size.width  = reader.read<uint8_t>();
@@ -15,9 +15,9 @@ async::task<void> map_update::deserialize(fb::stream_reader<big_endian>& reader)
     this->crc         = reader.read<uint16_t>();
 }
 #else // bot only
-async::task<void> map_update::serialize(fb::stream_writer<big_endian>& writer) const
+void map_update::serialize(fb::stream_writer<big_endian>& writer) const
 {
-    co_await header::serialize(writer);
+    header::serialize(writer);
     writer.write<uint16_t>(this->begin_x);
     writer.write<uint16_t>(this->begin_y);
     writer.write<uint8_t>(this->width);
@@ -33,9 +33,9 @@ namespace fb::protocol::game::response {
 using namespace fb::model::enum_value;
 
 #ifndef BOT
-async::task<void> map_update::serialize(fb::stream_writer<big_endian>& writer) const
+void map_update::serialize(fb::stream_writer<big_endian>& writer) const
 {
-    co_await header::serialize(writer);
+    header::serialize(writer);
     writer.write<uint8_t>(opcode);
 
     if (this->map.model.effect == MAP_EFFECT_TYPE::NONE)
@@ -73,9 +73,9 @@ async::task<void> map_update::serialize(fb::stream_writer<big_endian>& writer) c
     }
 }
 #else
-async::task<void> map_update::deserialize(fb::stream_reader<big_endian>& reader)
+void map_update::deserialize(fb::stream_reader<big_endian>& reader)
 {
-    co_await header::deserialize(reader);
+    header::deserialize(reader);
 
     uint8_t effect_flag = reader.read<uint8_t>();
     if (effect_flag == 0x04)

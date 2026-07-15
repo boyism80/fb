@@ -25,17 +25,15 @@ void life::on_init()
     this->spells.owner(this->shared_from_this_as<life>());
 }
 
-async::task<void> life::update(UPDATE_STATE_LEVEL value)
-{
-    co_return;
-}
+void life::update(UPDATE_STATE_LEVEL value)
+{ }
 
-async::task<void> life::update_hp(uint32_t diff, bool critical, bool notify)
+void life::update_hp(uint32_t diff, bool critical, bool notify)
 {
     if (!notify)
-        co_return;
+        return;
 
-    co_await this->listener.on_update_hp(*this, diff, critical);
+    this->listener.on_update_hp(*this, diff, critical);
 }
 
 life::batch_update_guard life::batch_update()
@@ -54,38 +52,22 @@ life::batch_update_guard::batch_update_guard(life& owner) :
 life::batch_update_guard::~batch_update_guard()
 {
     this->_owner.assert_thread();
-    if (this->_committed)
-        return;
-
-    this->_owner._batch_mode     = false;
-    this->_owner._pending_update = UPDATE_STATE_LEVEL::MINIMUM;
-}
-
-async::task<void> life::batch_update_guard::commit()
-{
-    this->_owner.assert_thread();
-    if (this->_committed)
-        co_return;
-
-    this->_committed         = true;
     this->_owner._batch_mode = false;
     if (this->_owner._pending_update != UPDATE_STATE_LEVEL::MINIMUM)
     {
         auto pending                 = this->_owner._pending_update;
         this->_owner._pending_update = UPDATE_STATE_LEVEL::MINIMUM;
-        co_await this->_owner.update(pending);
+        this->_owner.update(pending);
     }
-    co_return;
 }
 
-async::task<void> life::kill(DESTROY_TYPE destroy_type)
+void life::kill(DESTROY_TYPE destroy_type)
 {
     this->assert_thread();
-    co_await this->stat.hp(0, false);
-    co_return;
+    this->stat.hp(0, false);
 }
 
-async::task<life::mob_vector> life::damage_targets(const damage_list& targets, const damage_opts& opts)
+life::mob_vector life::damage_targets(const damage_list& targets, const damage_opts& opts)
 {
     this->assert_thread();
 
@@ -97,8 +79,7 @@ async::task<life::mob_vector> life::damage_targets(const damage_list& targets, c
         if (target == nullptr)
             continue;
 
-        std::ignore = co_await target->stat
-                          .damage(value, attacker, opts.critical, opts.rate, opts.physical, opts.fixed, opts.notify);
+        target->stat.damage(value, attacker, opts.critical, opts.rate, opts.physical, opts.fixed, opts.notify);
         // character::alive() means "not ghost", so death must be detected by HP.
         if (target->stat.hp() != 0)
             continue;
@@ -119,12 +100,12 @@ async::task<life::mob_vector> life::damage_targets(const damage_list& targets, c
             if (ch->alive() == false)
                 continue;
 
-            co_await ch->kill(DESTROY_TYPE::DEAD);
-            co_await ch->notify_death(attacker);
+            ch->kill(DESTROY_TYPE::DEAD);
+            ch->notify_death(attacker);
         }
     }
 
-    co_return dead;
+    return dead;
 }
 
 async::task<void> life::settle_deaths(mob_vector dead)
@@ -167,13 +148,15 @@ async::task<void> life::settle_deaths(mob_vector dead)
             if (owner != nullptr)
             {
                 owner->detach_spawned_mob(*m);
-                co_await m->kill(DESTROY_TYPE::DEAD);
+                m->kill(DESTROY_TYPE::DEAD);
+                co_await m->destroy(DESTROY_TYPE::DEAD);
                 continue;
             }
 
-            co_await this->listener.on_dead(*m, nullptr);
+            this->listener.on_dead(*m, nullptr);
             co_await m->drop_items();
-            co_await m->kill(DESTROY_TYPE::DEAD);
+            m->kill(DESTROY_TYPE::DEAD);
+            co_await m->destroy(DESTROY_TYPE::DEAD);
         }
     }
 }
@@ -181,7 +164,7 @@ async::task<void> life::settle_deaths(mob_vector dead)
 async::task<void> life::damage_to(const damage_list& targets, const damage_opts& opts)
 {
     this->assert_thread();
-    auto dead = co_await this->damage_targets(targets, opts);
+    auto dead = this->damage_targets(targets, opts);
     if (dead.empty() == false)
         co_await this->settle_deaths(std::move(dead));
     co_return;
@@ -207,7 +190,7 @@ async::task<void> life::attack(DURATION duration)
     }
 
     // Call listener for packet response
-    co_await this->listener.on_attack(*this, duration);
+    this->listener.on_attack(*this, duration);
 
     // Handle weapon durability and script logic
     if (this->is(OBJECT_TYPE::CHARACTER))
@@ -229,13 +212,14 @@ async::task<void> life::attack(DURATION duration)
             }
 
             // Handle weapon durability
-            if (attack_count > 0 && co_await weapon->durability_down(attack_count))
+            if (attack_count > 0 && weapon->durability_down(attack_count))
             {
-                co_await ch->message(std::format(_TEXT(MESSAGE_EQUIPMENT_BROKEN), weapon->name()));
-                std::ignore = co_await ch->items.equipment_off(EQUIPMENT_PARTS::WEAPON);
+                ch->message(std::format(_TEXT(MESSAGE_EQUIPMENT_BROKEN), weapon->name()));
+                std::ignore = ch->items.equipment_off(EQUIPMENT_PARTS::WEAPON);
             }
         }
     }
+    co_return;
 }
 
 uint32_t life::exp() const
@@ -336,9 +320,9 @@ bool life::active(fb::game::spell& spell)
     return true;
 }
 
-async::task<void> life::action(ACTION action, DURATION duration, uint8_t sound)
+void life::action(ACTION action, DURATION duration, uint8_t sound)
 {
-    co_await this->listener.on_action(*this, action, duration, sound);
+    this->listener.on_action(*this, action, duration, sound);
 }
 
 bool life::calculate_critical(life& you) const

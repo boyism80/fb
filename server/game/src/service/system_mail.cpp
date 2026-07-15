@@ -68,7 +68,7 @@ async::task<bool> service::system_mail::create(uint32_t                         
 
 async::task<void> service::system_mail::poll_and_deliver()
 {
-    std::ignore = co_await this->_delivery.next();
+    std::ignore = this->_delivery.next();
     co_return;
 }
 

@@ -3,9 +3,7 @@
 #include <fb/game/server.h>
 #include <fb/model/model.h>
 #include <fb/game/object.h>
-#include <fb/logger.h>
 #include <format>
-#include <tuple>
 
 using namespace fb::game;
 
@@ -66,16 +64,16 @@ OBJECT_TYPE object::what() const
     return this->_model.what();
 }
 
-async::task<void> object::update_external(bool detailed)
+void object::update_external(bool detailed)
 {
     this->assert_thread();
-    co_await this->listener.on_update_external(*this, detailed);
+    this->listener.on_update_external(*this, detailed);
 }
 
-async::task<void> object::update_external(object& to, bool detailed)
+void object::update_external(object& to, bool detailed)
 {
     this->assert_thread();
-    co_await this->listener.on_update_external(*this, to, detailed);
+    this->listener.on_update_external(*this, to, detailed);
 }
 
 bool object::super_hide() const
@@ -98,16 +96,16 @@ async::task<void> object::destroy(DESTROY_TYPE destroy_type)
     co_await this->server.destroy(*this, destroy_type);
 }
 
-async::task<size_t> object::send(const fb::stream& stream, bool encrypt, bool wrap)
+size_t object::send(const fb::stream& stream, bool encrypt, bool wrap)
 {
     this->assert_thread();
-    co_return 0;
+    return 0;
 }
 
-async::task<size_t> object::send(const fb::protocol::header& response, bool encrypt, bool wrap)
+size_t object::send(const fb::protocol::header& response, bool encrypt, bool wrap)
 {
     this->assert_thread();
-    co_return 0;
+    return 0;
 }
 
 uint32_t object::oid() const
@@ -120,15 +118,15 @@ uint32_t object::oid() const
     return this->_oid;
 }
 
-async::task<void> object::oid(uint32_t value)
+void object::oid(uint32_t value)
 {
     this->assert_thread();
 
     this->_oid = value;
-    co_await this->update_id();
+    this->update_id();
 }
 
-async::task<void> object::chat(std::string_view message, CHAT_TYPE chat_type, bool decorate)
+void object::chat(std::string_view message, CHAT_TYPE chat_type, bool decorate)
 {
     this->assert_thread();
 
@@ -146,11 +144,11 @@ async::task<void> object::chat(std::string_view message, CHAT_TYPE chat_type, bo
             break;
         }
 
-        co_await this->listener.on_chat(*this, decorated, chat_type);
+        this->listener.on_chat(*this, decorated, chat_type);
     }
     else
     {
-        co_await this->listener.on_chat(*this, message, chat_type);
+        this->listener.on_chat(*this, message, chat_type);
     }
 }
 
@@ -161,34 +159,25 @@ const fb::model::point16_t& object::position() const
     return this->_position;
 }
 
-async::task<bool> object::position(uint16_t x, uint16_t y, bool refresh)
+bool object::position(uint16_t x, uint16_t y, bool refresh)
 {
     this->assert_thread();
 
     if (this->_map == nullptr)
-        co_return false;
+        return false;
 
     if (this->_position.x == x && this->_position.y == y)
-        co_return true;
+        return true;
 
     auto before       = this->_position;
     this->_position.x = std::max(0, std::min(this->_map->width() - 1, int32_t(x)));
     this->_position.y = std::max(0, std::min(this->_map->height() - 1, int32_t(y)));
 
     if (refresh)
-        co_await this->update_position();
+        this->update_position();
 
     if (sight(before, this->_position, this->_map) == false)
-    {
-        try
-        {
-            co_await this->update_external(*this, true);
-        }
-        catch (const std::exception& e)
-        {
-            fb::logger::fatal("object::position update_external(self) failed (oid={}): {}", this->oid(), e.what());
-        }
-    }
+        this->update_external(*this, true);
 
     this->update_sector();
 
@@ -200,27 +189,13 @@ async::task<bool> object::position(uint16_t x, uint16_t y, bool refresh)
         // I left the other object's sight
         if (obj->sight(before) && !obj->sight(*this))
         {
-            try
-            {
-                co_await this->hide(*obj);
-            }
-            catch (const std::exception& e)
-            {
-                fb::logger::fatal("object::position hide failed (oid={}): {}", this->oid(), e.what());
-            }
+            this->hide(*obj);
         }
 
         // Other object left my sight
         if (sight(before, obj->_position, this->_map) && !this->sight(*obj))
         {
-            try
-            {
-                co_await obj->hide(*this);
-            }
-            catch (const std::exception& e)
-            {
-                fb::logger::fatal("object::position peer hide failed (oid={}): {}", obj->oid(), e.what());
-            }
+            obj->hide(*this);
         }
     }
 
@@ -236,27 +211,11 @@ async::task<bool> object::position(uint16_t x, uint16_t y, bool refresh)
 
             if (!before_sight && after_sight) // I entered the other object's sight
             {
-                try
-                {
-                    co_await this->update_external(*obj, true);
-                }
-                catch (const std::exception& e)
-                {
-                    fb::logger::fatal("object::position update_external failed (oid={}): {}", this->oid(), e.what());
-                }
+                this->update_external(*obj, true);
             }
             else if (refresh && before_sight && after_sight) // Force refresh while already in sight
             {
-                try
-                {
-                    co_await this->update_external(*obj, true);
-                }
-                catch (const std::exception& e)
-                {
-                    fb::logger::fatal("object::position refresh update_external failed (oid={}): {}",
-                                      this->oid(),
-                                      e.what());
-                }
+                this->update_external(*obj, true);
             }
             else
             {
@@ -268,53 +227,44 @@ async::task<bool> object::position(uint16_t x, uint16_t y, bool refresh)
         {
             if (!sight(before, obj->_position, this->_map) && this->sight(*obj))
             {
-                try
-                {
-                    co_await obj->update_external(*this, true);
-                }
-                catch (const std::exception& e)
-                {
-                    fb::logger::fatal("object::position peer update_external failed (oid={}): {}",
-                                      obj->oid(),
-                                      e.what());
-                }
+                obj->update_external(*this, true);
             }
         }
     }
 
-    co_return true;
+    return true;
 }
 
-async::task<bool> object::position(const fb::model::point16_t position, bool refresh)
+bool object::position(const fb::model::point16_t position, bool refresh)
 {
     this->assert_thread();
 
-    co_return co_await this->position(position.x, position.y, refresh);
+    return this->position(position.x, position.y, refresh);
 }
 
-async::task<bool> object::move()
+bool object::move()
 {
     this->assert_thread();
 
-    co_return co_await this->move(this->_direction);
+    return this->move(this->_direction);
 }
 
-async::task<bool> object::move(DIRECTION direction)
+bool object::move(DIRECTION direction)
 {
     this->assert_thread();
 
     if (this->_map == nullptr)
-        co_return false;
+        return false;
 
     auto after = this->side_position(direction);
     if (this->_map->movable(*this, after) == false)
-        co_return false;
+        return false;
 
-    if (co_await this->direction(direction) == false)
-        co_return false;
+    if (this->direction(direction) == false)
+        return false;
 
     auto before = this->_position;
-    std::ignore = co_await this->position(after);
+    this->position(after);
 
     {
         auto lua = this->server.lua.open("scripts/interaction.lua", "on_move");
@@ -338,9 +288,9 @@ async::task<bool> object::move(DIRECTION direction)
         }
     }
 
-    co_await this->listener.on_move(*this, before);
+    this->listener.on_move(*this, before);
 
-    co_return true;
+    return true;
 }
 
 uint16_t object::x() const
@@ -350,11 +300,11 @@ uint16_t object::x() const
     return this->_position.x;
 }
 
-async::task<bool> object::x(uint16_t value)
+bool object::x(uint16_t value)
 {
     this->assert_thread();
 
-    co_return co_await this->position(value, this->_position.y);
+    return this->position(value, this->_position.y);
 }
 
 uint16_t object::y() const
@@ -364,11 +314,11 @@ uint16_t object::y() const
     return this->_position.y;
 }
 
-async::task<bool> object::y(uint16_t value)
+bool object::y(uint16_t value)
 {
     this->assert_thread();
 
-    co_return co_await this->position(this->_position.x, value);
+    return this->position(this->_position.x, value);
 }
 
 DIRECTION object::direction() const
@@ -378,12 +328,12 @@ DIRECTION object::direction() const
     return this->_direction;
 }
 
-async::task<bool> object::direction(DIRECTION value)
+bool object::direction(DIRECTION value)
 {
     this->assert_thread();
 
     if (value != DIRECTION::LEFT && value != DIRECTION::TOP && value != DIRECTION::RIGHT && value != DIRECTION::BOTTOM)
-        co_return false;
+        return false;
 
     this->_direction = value;
 
@@ -394,9 +344,9 @@ async::task<bool> object::direction(DIRECTION value)
         std::ignore = lua->call(1);
     }
 
-    co_await this->listener.on_direction(*this);
+    this->listener.on_direction(*this);
 
-    co_return true;
+    return true;
 }
 
 std::shared_ptr<fb::game::map> object::map() const
@@ -541,7 +491,7 @@ async::task<bool> object::map(map_ptr map, std::optional<fb::model::point16_t> p
     {
         if (this->_map == map)
         {
-            std::ignore = co_await this->position(resolved, true);
+            this->position(resolved, true);
             co_return true;
         }
 
@@ -556,17 +506,8 @@ async::task<bool> object::map(map_ptr map, std::optional<fb::model::point16_t> p
             // broadcast near characters
             for (const auto& x : this->_map->nears(this->_position))
             {
-                if (x.get() == this)
-                    continue;
-
-                try
-                {
-                    co_await this->hide(*x, destroy_type);
-                }
-                catch (const std::exception& e)
-                {
-                    fb::logger::fatal("object::map hide failed (oid={}): {}", this->oid(), e.what());
-                }
+                if (x.get() != this)
+                    this->hide(*x, destroy_type);
             }
 
             // erase cache of map
@@ -629,17 +570,8 @@ async::task<bool> object::map(map_ptr map, std::optional<fb::model::point16_t> p
             {
                 for (const auto& x : this->_map->nears(this->_position))
                 {
-                    if (x.get() == this)
-                        continue;
-
-                    try
-                    {
-                        co_await x->hide(*this);
-                    }
-                    catch (const std::exception& e)
-                    {
-                        fb::logger::fatal("object::map peer hide failed (oid={}): {}", x->oid(), e.what());
-                    }
+                    if (x.get() != this)
+                        x->hide(*this);
                 }
             }
 
@@ -677,23 +609,14 @@ async::task<bool> object::map(map_ptr map, std::optional<fb::model::point16_t> p
         this->update_sector();
 
         // insert character into map cache
-        co_await this->_map->objects.push(*this);
+        this->_map->objects.push(*this);
         if (this->is(OBJECT_TYPE::CHARACTER))
             map->on_character_enter();
-        co_await this->update_map(*map);
-        co_await this->update_position();
+        this->update_map(*map);
+        this->update_position();
         if (notify)
-        {
-            try
-            {
-                co_await this->update_external(true);
-            }
-            catch (const std::exception& e)
-            {
-                fb::logger::fatal("object::map update_external failed (oid={}): {}", this->oid(), e.what());
-            }
-        }
-        co_await this->update_bgm(map->model.bgm, 100);
+            this->update_external(true);
+        this->update_bgm(map->model.bgm, 100);
 
         if (notify)
         {
@@ -702,14 +625,7 @@ async::task<bool> object::map(map_ptr map, std::optional<fb::model::point16_t> p
                 if (obj.get() == this)
                     continue;
 
-                try
-                {
-                    co_await obj->update_external(*this, true);
-                }
-                catch (const std::exception& e)
-                {
-                    fb::logger::fatal("object::map peer update_external failed (oid={}): {}", obj->oid(), e.what());
-                }
+                obj->update_external(*this, true);
             }
         }
 
@@ -916,14 +832,14 @@ bool object::available() const
     return true;
 }
 
-async::task<void> object::hide(DESTROY_TYPE destroy_type)
+void object::hide(DESTROY_TYPE destroy_type)
 {
-    co_await this->listener.on_hide(*this, destroy_type);
+    this->listener.on_hide(*this, destroy_type);
 }
 
-async::task<void> object::hide(object& to, DESTROY_TYPE destroy_type)
+void object::hide(object& to, DESTROY_TYPE destroy_type)
 {
-    co_await this->listener.on_hide(*this, to, destroy_type);
+    this->listener.on_hide(*this, to, destroy_type);
 }
 
 void object::thread(fb::thread* value)
@@ -944,34 +860,26 @@ fb::thread* object::thread() const
         return this->server.threads.modular(this->_model.id);
 }
 
-async::task<void> object::update_id()
+void object::update_id()
+{ }
+
+void object::update_map(const fb::game::map& map)
+{ }
+
+void object::update_bgm(uint16_t bgm, uint8_t volume)
+{ }
+
+void object::update_position()
+{ }
+
+void object::sound(SOUND sound)
 {
-    co_return;
+    this->listener.on_sound(*this, sound);
 }
 
-async::task<void> object::update_map(const fb::game::map& map)
+void object::effect(uint8_t value)
 {
-    co_return;
-}
-
-async::task<void> object::update_bgm(uint16_t bgm, uint8_t volume)
-{
-    co_return;
-}
-
-async::task<void> object::update_position()
-{
-    co_return;
-}
-
-async::task<void> object::sound(SOUND sound)
-{
-    co_await this->listener.on_sound(*this, sound);
-}
-
-async::task<void> object::effect(uint8_t value)
-{
-    co_await this->listener.on_effect(*this, value);
+    this->listener.on_effect(*this, value);
 }
 
 bool object::operator== (const object& right) const

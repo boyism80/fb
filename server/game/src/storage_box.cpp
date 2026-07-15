@@ -83,7 +83,7 @@ void storage_box::init(const std::vector<entry>& entries)
     }
 }
 
-async::task<void> storage_box::apply_delivered(const std::vector<entry>& delivered)
+void storage_box::apply_delivered(const std::vector<entry>& delivered)
 {
     this->_owner.assert_thread();
 
@@ -126,12 +126,10 @@ async::task<void> storage_box::apply_delivered(const std::vector<entry>& deliver
         this->_owner.server.log.write("storage_box_entry_add", log_data);
 
         if (!e.title.empty())
-            co_await this->_owner.message(std::format(_TEXT(MESSAGE_STORAGE_BOX_REWARD_ADDED), e.title),
-                                          MESSAGE_TYPE::STATE);
+            this->_owner.message(std::format(_TEXT(MESSAGE_STORAGE_BOX_REWARD_ADDED), e.title), MESSAGE_TYPE::STATE);
         else
-            co_await this->_owner.message(_TEXT(MESSAGE_STORAGE_BOX_REWARD_ADDED_NO_TITLE), MESSAGE_TYPE::STATE);
+            this->_owner.message(_TEXT(MESSAGE_STORAGE_BOX_REWARD_ADDED_NO_TITLE), MESSAGE_TYPE::STATE);
     }
-    co_return;
 }
 
 bool storage_box::contains_system_box(uint32_t system_storage_box_id) const

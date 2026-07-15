@@ -40,9 +40,9 @@ public:
 
 public:
 #ifdef BOT
-    [[nodiscard]] async::task<void> serialize(fb::stream_writer<big_endian>& writer) const;
+    void serialize(fb::stream_writer<big_endian>& writer) const;
 #else
-    [[nodiscard]] async::task<void> deserialize(fb::stream_reader<big_endian>& reader);
+    void deserialize(fb::stream_reader<big_endian>& reader);
 #endif
 };
 
@@ -80,9 +80,9 @@ public:
 
 public:
 #ifndef BOT
-    [[nodiscard]] async::task<void> serialize(fb::stream_writer<big_endian>& writer) const;
+    void serialize(fb::stream_writer<big_endian>& writer) const;
 #else
-    [[nodiscard]] async::task<void> deserialize(fb::stream_reader<big_endian>& reader);
+    void deserialize(fb::stream_reader<big_endian>& reader);
 #endif
 };
 

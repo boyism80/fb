@@ -133,7 +133,7 @@ int builtin::item::builtin_rename(lua_State* L)
         {
             auto name     = lua->tostring(2);
             builder.yield = [=]() -> async::task<void> {
-                co_await weapon.lock()->custom_name(name);
+                weapon.lock()->custom_name(name);
                 co_return;
             };
             builder.resume = []() -> async::task<int> {
@@ -143,7 +143,7 @@ int builtin::item::builtin_rename(lua_State* L)
         else if (lua->is_nil(2))
         {
             builder.yield = [=]() -> async::task<void> {
-                co_await weapon.lock()->reset_custom_name();
+                weapon.lock()->reset_custom_name();
                 co_return;
             };
             builder.resume = []() -> async::task<int> {

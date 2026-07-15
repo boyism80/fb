@@ -8,6 +8,6 @@ update_time::update_time(fb::game::server& server) :
 
 async::task<void> update_time::handle()
 {
-    co_await this->server.sync_time();
+    this->server.sync_time();
     co_return;
 }

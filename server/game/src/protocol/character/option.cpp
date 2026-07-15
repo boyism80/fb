@@ -9,9 +9,9 @@ option::option(const fb::game::character& ch) :
 #endif
 
 #ifndef BOT
-async::task<void> option::serialize(fb::stream_writer<big_endian>& writer) const
+void option::serialize(fb::stream_writer<big_endian>& writer) const
 {
-    co_await header::serialize(writer);
+    header::serialize(writer);
     writer.write<uint8_t>(opcode);
     writer.write<uint8_t>(this->ch.option(OPTION::WEATHER_EFFECT)); // weather
     writer.write<uint8_t>(this->ch.option(OPTION::MAGIC_EFFECT));   // magic effect
@@ -21,9 +21,9 @@ async::task<void> option::serialize(fb::stream_writer<big_endian>& writer) const
     writer.write<uint8_t>(0x00);
 }
 #else
-async::task<void> option::deserialize(fb::stream_reader<big_endian>& reader)
+void option::deserialize(fb::stream_reader<big_endian>& reader)
 {
-    co_await header::deserialize(reader);
+    header::deserialize(reader);
     this->weather_effect = reader.read<uint8_t>();
     this->magic_effect   = reader.read<uint8_t>();
     this->roar_worlds    = reader.read<uint8_t>();

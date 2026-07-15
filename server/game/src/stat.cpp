@@ -169,33 +169,30 @@ uint32_t fb::game::stat::hp() const
     return this->_hp;
 }
 
-async::task<void> fb::game::stat::hp(uint32_t value, bool notify)
+void fb::game::stat::hp(uint32_t value, bool notify)
 {
     this->owner.assert_thread();
     this->_hp = value;
     if (notify)
-        co_await this->owner.update(UPDATE_STATE_LEVEL::HP_MP);
-    co_return;
+        this->owner.update(UPDATE_STATE_LEVEL::HP_MP);
 }
 
-async::task<uint32_t> fb::game::stat::heal(uint32_t value, fb::game::object* from, bool notify)
+uint32_t fb::game::stat::heal(uint32_t value, fb::game::object* from, bool notify)
 {
     this->owner.assert_thread();
     auto before = this->hp();
-    co_await this->hp(this->hp() + std::min(value, this->maxhp() - this->hp()), false);
-    if (notify)
-        co_await this->owner.update(UPDATE_STATE_LEVEL::HP_MP);
-    co_await this->owner.update_hp(this->hp() - before, false, notify);
-    co_return this->hp() - before;
+    this->hp(this->hp() + std::min(value, this->maxhp() - this->hp()), notify);
+    this->owner.update_hp(this->hp() - before, false, notify);
+    return this->hp() - before;
 }
 
-async::task<uint32_t> fb::game::stat::damage(uint32_t                          value,
-                                             std::shared_ptr<fb::game::object> from,
-                                             bool                              critical,
-                                             float                             rate,
-                                             bool                              physical,
-                                             bool                              fixed,
-                                             bool                              notify)
+uint32_t fb::game::stat::damage(uint32_t                          value,
+                                std::shared_ptr<fb::game::object> from,
+                                bool                              critical,
+                                float                             rate,
+                                bool                              physical,
+                                bool                              fixed,
+                                bool                              notify)
 {
     this->owner.assert_thread();
     if (from != nullptr && from->is(OBJECT_TYPE::CHARACTER))
@@ -211,7 +208,7 @@ async::task<uint32_t> fb::game::stat::damage(uint32_t                          v
     }
 
     if (this->owner.invincible())
-        co_return 0;
+        return 0;
 
     uint32_t final_value = value;
     if (!fixed && from != nullptr && from->is(OBJECT_TYPE::LIFE))
@@ -221,11 +218,9 @@ async::task<uint32_t> fb::game::stat::damage(uint32_t                          v
     }
 
     auto before = this->hp();
-    co_await this->hp(this->hp() - std::min(final_value, this->hp()), false);
-    if (notify)
-        co_await this->owner.update(UPDATE_STATE_LEVEL::HP_MP);
-    co_await this->owner.update_hp(before - this->hp(), critical, notify);
-    co_return before - this->hp();
+    this->hp(this->hp() - std::min(final_value, this->hp()), notify);
+    this->owner.update_hp(before - this->hp(), critical, notify);
+    return before - this->hp();
 }
 
 uint32_t fb::game::stat::mp() const
@@ -234,29 +229,28 @@ uint32_t fb::game::stat::mp() const
     return this->_mp;
 }
 
-async::task<void> fb::game::stat::mp(uint32_t value, bool notify)
+void fb::game::stat::mp(uint32_t value, bool notify)
 {
     this->owner.assert_thread();
     this->_mp = value;
     if (notify)
-        co_await this->owner.update(UPDATE_STATE_LEVEL::HP_MP);
-    co_return;
+        this->owner.update(UPDATE_STATE_LEVEL::HP_MP);
 }
 
-async::task<uint32_t> fb::game::stat::mp_up(uint32_t value, fb::game::object* from, bool notify)
+uint32_t fb::game::stat::mp_up(uint32_t value, fb::game::object* from, bool notify)
 {
     this->owner.assert_thread();
     auto before = this->mp();
-    co_await this->mp(this->mp() + std::min(value, this->maxmp() - this->mp()), notify);
-    co_return this->mp() - before;
+    this->mp(this->mp() + std::min(value, this->maxmp() - this->mp()), notify);
+    return this->mp() - before;
 }
 
-async::task<uint32_t> fb::game::stat::mp_down(uint32_t value, fb::game::object* from, bool notify)
+uint32_t fb::game::stat::mp_down(uint32_t value, fb::game::object* from, bool notify)
 {
     this->owner.assert_thread();
     auto before = this->mp();
-    co_await this->mp(this->mp() - std::min(value, this->mp()), notify);
-    co_return before - this->mp();
+    this->mp(this->mp() - std::min(value, this->mp()), notify);
+    return before - this->mp();
 }
 
 uint32_t fb::game::stat::maxhp() const
@@ -376,17 +370,17 @@ character_stat::character_stat(character& owner) :
     owner(owner)
 { }
 
-async::task<void> character_stat::base_hp(uint32_t value, bool notify)
+void character_stat::base_hp(uint32_t value, bool notify)
 {
     this->owner.assert_thread();
 
     if (this->_max_hp == value)
-        co_return;
+        return;
 
     auto old_base_hp = this->_max_hp;
     this->_max_hp    = value;
     if (notify)
-        co_await this->owner.update(UPDATE_STATE_LEVEL::BASED);
+        this->owner.update(UPDATE_STATE_LEVEL::BASED);
 
     auto log_data              = Json::Value();
     log_data["character_id"]   = static_cast<Json::Int64>(this->owner.id);
@@ -394,20 +388,19 @@ async::task<void> character_stat::base_hp(uint32_t value, bool notify)
     log_data["old_base_hp"]    = static_cast<Json::Int64>(old_base_hp);
     log_data["new_base_hp"]    = static_cast<Json::Int64>(value);
     this->owner.server.log.write("base_hp_change", log_data);
-    co_return;
 }
 
-async::task<void> character_stat::base_mp(uint32_t value, bool notify)
+void character_stat::base_mp(uint32_t value, bool notify)
 {
     this->owner.assert_thread();
 
     if (this->_max_mp == value)
-        co_return;
+        return;
 
     auto old_base_mp = this->_max_mp;
     this->_max_mp    = value;
     if (notify)
-        co_await this->owner.update(UPDATE_STATE_LEVEL::BASED);
+        this->owner.update(UPDATE_STATE_LEVEL::BASED);
 
     auto log_data              = Json::Value();
     log_data["character_id"]   = static_cast<Json::Int64>(this->owner.id);
@@ -415,43 +408,38 @@ async::task<void> character_stat::base_mp(uint32_t value, bool notify)
     log_data["old_base_mp"]    = static_cast<Json::Int64>(old_base_mp);
     log_data["new_base_mp"]    = static_cast<Json::Int64>(value);
     this->owner.server.log.write("base_mp_change", log_data);
-    co_return;
 }
 
-async::task<void> character_stat::base_str(uint8_t value, bool notify)
+void character_stat::base_str(uint8_t value, bool notify)
 {
     this->owner.assert_thread();
     this->_str = value;
     if (notify)
-        co_await this->owner.update(UPDATE_STATE_LEVEL::BASED);
-    co_return;
+        this->owner.update(UPDATE_STATE_LEVEL::BASED);
 }
 
-async::task<void> character_stat::base_dex(uint8_t value, bool notify)
+void character_stat::base_dex(uint8_t value, bool notify)
 {
     this->owner.assert_thread();
     this->_dex = value;
     if (notify)
-        co_await this->owner.update(UPDATE_STATE_LEVEL::BASED);
-    co_return;
+        this->owner.update(UPDATE_STATE_LEVEL::BASED);
 }
 
-async::task<void> character_stat::base_int(uint8_t value, bool notify)
+void character_stat::base_int(uint8_t value, bool notify)
 {
     this->owner.assert_thread();
     this->_int = value;
     if (notify)
-        co_await this->owner.update(UPDATE_STATE_LEVEL::BASED);
-    co_return;
+        this->owner.update(UPDATE_STATE_LEVEL::BASED);
 }
 
-async::task<void> character_stat::base_phydef(int8_t value, bool notify)
+void character_stat::base_phydef(int8_t value, bool notify)
 {
     this->owner.assert_thread();
     this->_phydef = value;
     if (notify)
-        co_await this->owner.update(UPDATE_STATE_LEVEL::BASED);
-    co_return;
+        this->owner.update(UPDATE_STATE_LEVEL::BASED);
 }
 
 void character_stat::base_magdef(int8_t value, bool notify)
@@ -761,22 +749,22 @@ uint32_t character_stat::regenerative() const
     return base + additional;
 }
 
-async::task<uint32_t> character_stat::damage(uint32_t                          value,
-                                             std::shared_ptr<fb::game::object> from,
-                                             bool                              critical,
-                                             float                             rate,
-                                             bool                              physical,
-                                             bool                              fixed,
-                                             bool                              notify)
+uint32_t character_stat::damage(uint32_t                          value,
+                                std::shared_ptr<fb::game::object> from,
+                                bool                              critical,
+                                float                             rate,
+                                bool                              physical,
+                                bool                              fixed,
+                                bool                              notify)
 {
     this->owner.assert_thread();
 
     if (this->owner.alive() == false)
-        co_return 0;
+        return 0;
 
-    auto result = co_await fb::game::stat::damage(value, from, critical, rate, physical, fixed, notify);
+    auto result = fb::game::stat::damage(value, from, critical, rate, physical, fixed, notify);
     if (from == nullptr)
-        co_return result;
+        return result;
 
     for (const auto& mob : this->owner.spawned_mobs())
     {
@@ -790,7 +778,7 @@ async::task<uint32_t> character_stat::damage(uint32_t                          v
     }
 
     if (this->hp() == 0)
-        co_return result;
+        return result;
 
     for (auto& [parts, equipment] : this->owner.items.equipments())
     {
@@ -802,14 +790,14 @@ async::task<uint32_t> character_stat::damage(uint32_t                          v
             continue;
 
         auto& model = equipment->based<fb::model::equipment>();
-        if (co_await equipment->durability_down(1))
+        if (equipment->durability_down(1))
         {
-            auto equipment = co_await this->owner.items.equipment_off(parts);
-            co_await this->owner.message(std::format(_TEXT(MESSAGE_EQUIPMENT_BROKEN), equipment->name()));
+            auto equipment = this->owner.items.equipment_off(parts);
+            this->owner.message(std::format(_TEXT(MESSAGE_EQUIPMENT_BROKEN), equipment->name()));
             equipment.reset();
         }
     }
-    co_return result;
+    return result;
 }
 
 mob_stat::mob_stat(mob& owner) :
@@ -901,19 +889,19 @@ uint32_t mob_stat::base_regenerative() const
     return 0;
 }
 
-async::task<uint32_t> mob_stat::damage(uint32_t                value,
-                                       std::shared_ptr<object> from,
-                                       bool                    critical,
-                                       float                   rate,
-                                       bool                    physical,
-                                       bool                    fixed,
-                                       bool                    notify)
+uint32_t mob_stat::damage(uint32_t                value,
+                          std::shared_ptr<object> from,
+                          bool                    critical,
+                          float                   rate,
+                          bool                    physical,
+                          bool                    fixed,
+                          bool                    notify)
 {
     this->owner.assert_thread();
 
-    auto result = co_await fb::game::stat::damage(value, from, critical, rate, physical, fixed, notify);
+    auto result = fb::game::stat::damage(value, from, critical, rate, physical, fixed, notify);
     if (!this->owner.alive())
-        co_return result;
+        return result;
 
     // Handle damage in AI strategy
     if (this->owner._ai_strategy && from && from->is(OBJECT_TYPE::LIFE))
@@ -923,5 +911,5 @@ async::task<uint32_t> mob_stat::damage(uint32_t                value,
                                             this->owner.server.now());
     }
 
-    co_return result;
+    return result;
 }

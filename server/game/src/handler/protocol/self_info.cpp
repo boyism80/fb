@@ -15,7 +15,7 @@ async::task<bool> self_info::handle(fb::socket<character>& session, game_reqs::s
     if (ch->inited() == false)
         co_return true;
 
-    co_await ch->update_internal();
-    co_await ch->update_buff();
+    ch->update_internal();
+    ch->update_buff();
     co_return true;
 }

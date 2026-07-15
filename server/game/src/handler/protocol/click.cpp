@@ -78,11 +78,11 @@ async::task<void> click::handle_object_click(character* ch, game_reqs::click& re
     switch (you->what())
     {
     case OBJECT_TYPE::CHARACTER:
-        co_await ch->browse_ch(static_cast<character&>(*you));
+        ch->browse_ch(static_cast<character&>(*you));
         break;
 
     case OBJECT_TYPE::MOB:
-        co_await ch->message(static_cast<mob&>(*you).name(), MESSAGE_TYPE::STATE);
+        ch->message(static_cast<mob&>(*you).name(), MESSAGE_TYPE::STATE);
         break;
 
     case OBJECT_TYPE::NPC:

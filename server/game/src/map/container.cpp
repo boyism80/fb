@@ -358,7 +358,7 @@ void map::container::spawn_npc(const fb::model::npc_spawn& spawn, const std::sha
                  fb::model::point16_t           position,
                  DIRECTION                      direction) -> async::task<void> {
         std::ignore = co_await npc->map(map, position);
-        std::ignore = co_await npc->direction(direction);
+        npc->direction(direction);
     };
     auto builder = this->server.threads.new_builder(weak);
     builder.func = [fn, npc, map, position, direction](auto&) -> async::task<void> {
@@ -759,7 +759,7 @@ std::optional<fb::stream> map::container::map_update_stream(character&          
         auto bytes  = std::vector<uint8_t>();
         auto writer = fb::stream_writer<big_endian>(bytes);
         auto resp   = game_resp::map_update(map, position, size);
-        std::ignore = resp.serialize(writer);
+        resp.serialize(writer);
         if (resp.crc == crc)
             return std::nullopt;
 
@@ -792,15 +792,15 @@ std::optional<fb::stream> map::container::map_update_stream(character&          
 
         auto writer = fb::stream_writer<big_endian>(bytes.bytes);
         auto resp   = game_resp::map_update(map, position, size);
-        std::ignore = resp.serialize(writer);
-        bytes.crc   = resp.crc;
+        resp.serialize(writer);
+        bytes.crc = resp.crc;
         return bytes;
     });
 
     return stream;
 }
 
-async::task<void> map::container::update_map_cache(uint32_t map_id, const fb::model::area<uint16_t>& area)
+void map::container::update_map_cache(uint32_t map_id, const fb::model::area<uint16_t>& area)
 {
     {
         std::unique_lock lock(this->_update_cache_mutex);
@@ -832,7 +832,7 @@ async::task<void> map::container::update_map_cache(uint32_t map_id, const fb::mo
 
     auto map_ptr = this->find(map_id);
     if (map_ptr == nullptr)
-        co_return;
+        return;
 
     const auto& map     = *map_ptr;
     auto        viewers = std::vector<std::shared_ptr<character>>{};
@@ -852,14 +852,6 @@ async::task<void> map::container::update_map_cache(uint32_t map_id, const fb::mo
 
     for (const auto& ch : viewers)
     {
-        try
-        {
-            co_await ch->update_map(map, begin, size);
-        }
-        catch (const std::exception& e)
-        {
-            fb::logger::fatal("update_map_cache failed for {}: {}", ch->name(), e.what());
-        }
+        ch->update_map(map, begin, size);
     }
-    co_return;
 }

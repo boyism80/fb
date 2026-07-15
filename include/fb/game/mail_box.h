@@ -5,7 +5,6 @@
 #include <stdint.h>
 #include <optional>
 #include <string>
-#include <async/task.h>
 #include <fb/model/model.h>
 
 namespace fb::game {
@@ -31,11 +30,13 @@ public:
     ~mail_box() = default;
 
 public:
-    async::task<void> show(const std::vector<summary>& summaries, MAIL_BUTTON_ENABLE flag);
-    async::task<void> show(const mail& mail, MAIL_BUTTON_ENABLE flag);
-    async::task<void> message(std::string_view message, bool success, BULLETIN_MESSAGE_TYPE action);
-    uint16_t          unread_count() const;
-    async::task<void> unread_count(uint16_t value);
+    // clang-format off
+    void     show(const std::vector<summary>& summaries, MAIL_BUTTON_ENABLE flag);
+    void     show(const mail& mail, MAIL_BUTTON_ENABLE flag);
+    void     message(std::string_view message, bool success, BULLETIN_MESSAGE_TYPE action);
+    uint16_t unread_count() const;
+    void     unread_count(uint16_t value);
+    // clang-format on
 };
 
 struct mail_box::summary

@@ -3,7 +3,6 @@
 #include <fb/game/item.h>
 #include <fb/encoding.h>
 #include <json/json.h>
-#include <tuple>
 
 using namespace fb::game;
 
@@ -33,9 +32,9 @@ async::task<bool> consume::active()
     std::ignore = co_await fb::game::item::active();
     this->_count--;
 
-    co_await owner->action(ACTION::EAT, DURATION::EAT);
-    co_await owner->sound(SOUND::EAT);
-    co_await owner->listener.on_item_update(*owner, owner->items.index(this->shared_from_this_as<fb::game::item>()));
+    owner->action(ACTION::EAT, DURATION::EAT);
+    owner->sound(SOUND::EAT);
+    owner->listener.on_item_update(*owner, owner->items.index(this->shared_from_this_as<fb::game::item>()));
 
     // Log item consume event
     auto log_data               = Json::Value();
@@ -47,8 +46,7 @@ async::task<bool> consume::active()
     owner->server.log.write("item_consume", log_data);
 
     if (this->empty())
-        std::ignore =
-            co_await owner->items.remove(this->shared_from_this_as<fb::game::item>(), -1, ITEM_DELETE_TYPE::EAT);
+        std::ignore = owner->items.remove(this->shared_from_this_as<fb::game::item>(), -1, ITEM_DELETE_TYPE::EAT);
 
     co_return true;
 }

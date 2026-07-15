@@ -90,7 +90,7 @@ int builtin::spell::builtin_delay2(lua_State* L)
     builder.weak  = weak;
     builder.yield = [=]() -> async::task<void> {
         auto& owner = const_cast<life&>(spell->owner);
-        co_await owner.listener.on_spell_delay(owner, *spell, delay);
+        owner.listener.on_spell_delay(owner, *spell, delay);
         co_return;
     };
     builder.resume = []() -> async::task<int> {

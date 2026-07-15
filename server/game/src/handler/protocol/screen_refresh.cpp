@@ -15,6 +15,6 @@ async::task<bool> screen_refresh::handle(fb::socket<character>& session, game_re
     if (ch->inited() == false)
         co_return true;
 
-    co_await ch->screen_refresh();
+    ch->screen_refresh();
     co_return true;
 }

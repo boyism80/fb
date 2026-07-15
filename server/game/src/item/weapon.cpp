@@ -55,36 +55,36 @@ const std::optional<std::string>& fb::game::weapon::custom_name() const
     return this->_custom_name;
 }
 
-async::task<void> fb::game::weapon::custom_name(std::string_view name)
+void fb::game::weapon::custom_name(std::string_view name)
 {
     this->_custom_name = std::string(name);
 
     if (this->_container == nullptr)
-        co_return;
+        return;
 
     auto owner = this->_container->owner();
     if (owner == nullptr)
-        co_return;
+        return;
 
     auto index = this->_container->index(this->shared_from_this_as<fb::game::item>());
     if (index != 0xFF && owner != nullptr)
-        co_await owner->listener.on_item_update(*owner, index);
+        owner->listener.on_item_update(*owner, index);
 }
 
-async::task<void> fb::game::weapon::reset_custom_name()
+void fb::game::weapon::reset_custom_name()
 {
-    if (this->_container == nullptr)
-        co_return;
-
     auto owner = this->_container->owner();
     if (owner == nullptr)
-        co_return;
+        return;
+
+    if (this->_container == nullptr)
+        return;
 
     this->_custom_name.reset();
 
     auto index = this->_container->index(this->shared_from_this_as<fb::game::item>());
     if (index != 0xFF)
-        co_await owner->listener.on_item_update(*owner, index);
+        owner->listener.on_item_update(*owner, index);
 }
 
 fb::protocol::internal::Item fb::game::weapon::to_protocol(EQUIPMENT_PARTS parts) const

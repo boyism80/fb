@@ -39,7 +39,7 @@ async::task<void> afk_timer::handle(const fb::model::datetime& now, std::thread:
 
         try
         {
-            co_await ch->action(ACTION::SLEEP, DURATION::EMOTION);
+            ch->action(ACTION::SLEEP, DURATION::EMOTION);
             ch->update_last_afk_time();
         }
         catch (std::exception& e)

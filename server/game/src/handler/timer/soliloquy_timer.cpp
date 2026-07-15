@@ -33,7 +33,7 @@ async::task<void> soliloquy_timer::handle(const fb::model::datetime& now, std::t
             auto npc = std::static_pointer_cast<fb::game::npc>(obj);
             try
             {
-                co_await npc->soliloquy();
+                npc->soliloquy();
             }
             catch (const std::exception& e)
             {

@@ -83,7 +83,7 @@ int builtin::life::builtin_message(lua_State* L)
     auto builder  = lua->new_co_builder();
     builder.weak  = weak;
     builder.yield = [=]() -> async::task<void> {
-        co_await ch->message(message, type);
+        ch->message(message, type);
         co_return;
     };
     builder.resume = []() -> async::task<int> {
@@ -126,9 +126,9 @@ int builtin::life::builtin_hp(lua_State* L)
         auto builder  = lua->new_co_builder();
         builder.weak  = weak;
         builder.yield = [=]() -> async::task<void> {
-            co_await obj->stat.hp(value, false);
+            obj->stat.hp(value, false);
             if (notify)
-                co_await obj->update(UPDATE_STATE_LEVEL::HP_MP);
+                obj->update(UPDATE_STATE_LEVEL::HP_MP);
             co_return;
         };
         builder.resume = []() -> async::task<int> {
@@ -172,9 +172,9 @@ int builtin::life::builtin_mp(lua_State* L)
         auto builder  = lua->new_co_builder();
         builder.weak  = weak;
         builder.yield = [=]() -> async::task<void> {
-            co_await obj->stat.mp(value, false);
+            obj->stat.mp(value, false);
             if (notify)
-                co_await obj->update(UPDATE_STATE_LEVEL::HP_MP);
+                obj->update(UPDATE_STATE_LEVEL::HP_MP);
             co_return;
         };
         builder.resume = []() -> async::task<int> {
@@ -200,7 +200,7 @@ int builtin::life::builtin_heal(lua_State* L)
     auto builder  = lua->new_co_builder();
     builder.weak  = weak;
     builder.yield = [=]() -> async::task<void> {
-        std::ignore = co_await obj->stat.heal(value, nullptr, notify);
+        std::ignore = obj->stat.heal(value, nullptr, notify);
         co_return;
     };
     builder.resume = []() -> async::task<int> {
@@ -335,9 +335,9 @@ int builtin::life::builtin_mp_up(lua_State* L)
     auto builder  = lua->new_co_builder();
     builder.weak  = weak;
     builder.yield = [=]() -> async::task<void> {
-        std::ignore = co_await obj->stat.mp_up(value, nullptr, false);
+        std::ignore = obj->stat.mp_up(value, nullptr, false);
         if (notify)
-            co_await obj->update(UPDATE_STATE_LEVEL::HP_MP);
+            obj->update(UPDATE_STATE_LEVEL::HP_MP);
         co_return;
     };
     builder.resume = []() -> async::task<int> {
@@ -362,9 +362,9 @@ int builtin::life::builtin_mp_down(lua_State* L)
     auto builder  = lua->new_co_builder();
     builder.weak  = weak;
     builder.yield = [=]() -> async::task<void> {
-        std::ignore = co_await obj->stat.mp_down(value, nullptr, false);
+        std::ignore = obj->stat.mp_down(value, nullptr, false);
         if (notify)
-            co_await obj->update(UPDATE_STATE_LEVEL::HP_MP);
+            obj->update(UPDATE_STATE_LEVEL::HP_MP);
         co_return;
     };
     builder.resume = []() -> async::task<int> {
@@ -390,7 +390,7 @@ int builtin::life::builtin_action(lua_State* L)
     auto builder  = lua->new_co_builder();
     builder.weak  = weak;
     builder.yield = [=]() -> async::task<void> {
-        co_await obj->action(ACTION(action), DURATION(duration), sound);
+        obj->action(ACTION(action), DURATION(duration), sound);
         co_return;
     };
     builder.resume = []() -> async::task<int> {
@@ -612,7 +612,7 @@ int builtin::life::builtin_cc(lua_State* L)
         auto builder  = lua->new_co_builder();
         builder.weak  = weak;
         builder.yield = [=]() -> async::task<void> {
-            co_await obj->cc.set(cc);
+            obj->cc.set(cc);
             co_return;
         };
         builder.resume = []() -> async::task<int> {
@@ -655,7 +655,7 @@ int builtin::life::builtin_add_cc(lua_State* L)
         auto builder  = lua->new_co_builder();
         builder.weak  = weak;
         builder.yield = [=]() -> async::task<void> {
-            std::ignore = co_await obj->cc.add(cc);
+            std::ignore = obj->cc.add(cc);
             co_return;
         };
         builder.resume = []() -> async::task<int> {
@@ -680,7 +680,7 @@ int builtin::life::builtin_remove_cc(lua_State* L)
     auto builder  = lua->new_co_builder();
     builder.weak  = weak;
     builder.yield = [=]() -> async::task<void> {
-        std::ignore = co_await obj->cc.remove(cc);
+        std::ignore = obj->cc.remove(cc);
         co_return;
     };
     builder.resume = []() -> async::task<int> {
@@ -1835,7 +1835,7 @@ int builtin::life::builtin_update(lua_State* L)
     auto builder  = lua->new_co_builder();
     builder.weak  = weak;
     builder.yield = [=]() -> async::task<void> {
-        co_await obj->update(level);
+        obj->update(level);
         co_return;
     };
     builder.resume = []() -> async::task<int> {

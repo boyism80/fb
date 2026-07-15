@@ -22,8 +22,8 @@ async::task<void> ban::handle(const internal_resp::Ban& message)
     if (ch == nullptr)
         co_return;
 
-    co_await ch->message(fb::game::character::container::build_ban_message(message.reason, message.expire_date),
-                         fb::game::MESSAGE_TYPE::POPUP);
+    ch->message(fb::game::character::container::build_ban_message(message.reason, message.expire_date),
+                fb::game::MESSAGE_TYPE::POPUP);
 
     co_await ch->thread()->sleep(1s);
 
