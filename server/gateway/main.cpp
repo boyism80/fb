@@ -1,6 +1,5 @@
 #include <fb/gateway/server.h>
 #include <fb/socket.h>
-#include <async/awaitable_get.h>
 #include <iomanip>
 #include <iostream>
 #include <stdio.h>

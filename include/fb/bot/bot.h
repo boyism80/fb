@@ -5,7 +5,6 @@
 #include <any>
 #include <memory>
 #include <fb/socket.h>
-#include <async/awaitable_get.h>
 #include <boost/endian/conversion.hpp>
 #include <fb/model/model.h>
 #include <fb/bot/hook_params.h>

@@ -2,7 +2,6 @@
 #define __ASYNC_EXECUTOR_H__
 
 #include <boost/asio.hpp>
-#include <async/awaitable_get.h>
 #include <async/awaitable_then.h>
 #include <fb/hash.h>
 #include <fb/synchronized.h>

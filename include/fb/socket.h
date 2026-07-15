@@ -13,7 +13,7 @@
 #include <fb/logger.h>
 #include <async/task.h>
 #include <async/task_completion_source.h>
-#include <async/awaitable_get.h>
+#include <fb/asio_task.h>
 #include <fb/async_executor.h>
 #include <fb/thread.h>
 #include <fb/model/datetime.h>
@@ -243,7 +243,7 @@ public:
                 auto writer = fb::stream_writer<big_endian>(this->_stream);
                 writer.write(this->_buffer.data(), bytes_transferred);
 
-                async::awaitable_get(this->_handle_received(*this, this->_stream));
+                co_await fb::async_await_task(this->_handle_received(*this, this->_stream), boost::asio::use_awaitable);
                 if (this->is_open() == false)
                     throw std::runtime_error("disconnected");
             }
@@ -279,11 +279,15 @@ public:
 
         try
         {
-            std::ignore = this->_handle_closed(*this);
+            co_await fb::async_await_task(this->_handle_closed(*this), boost::asio::use_awaitable);
         }
         catch (std::exception& e)
         {
             fb::logger::fatal("handle_closed exception: {}", e.what());
+        }
+        catch (...)
+        {
+            fb::logger::fatal("handle_closed exception: unknown");
         }
     }
 
