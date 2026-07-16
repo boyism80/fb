@@ -12,7 +12,7 @@ function NPC_339(me, npc)
         if list_btn == DIALOG_RESULT.QUIT or sel == nil then
             return
         end
-        if sel == 0 then
+        if sel == 1 then
             me:dialog(npc, "안녕히 가십시오.", false, true)
             if not me:has_items("노란비서", 1) then
                 me:dialog(npc, "만일의 사태를 대비하기 위해 노란비서를 지참해 주시기 바랍니다.", false, false)
@@ -25,7 +25,7 @@ function NPC_339(me, npc)
             if server.warp_to_return_map(me) == nil then
                 me:dialog(npc, "이동할 수 없습니다.", false, false)
             end
-        elseif sel == 1 then
+        elseif sel == 2 then
             me:dialog(npc, "남아서 다른 의견을 더 들어보는 것도 좋은 일이지요.", false, true)
         end
         return
@@ -67,7 +67,7 @@ function NPC_339(me, npc)
     if list_btn == DIALOG_RESULT.QUIT or sel == nil then
         return
     end
-    if sel == 1 then
+    if sel == 2 then
         me:dialog(npc, "재판정은 당신의 의견을 존중합니다. 그러나 배심원 투표에 있어서는 당신의 참여는 투표에 적합하지 않은 것 같군요.", false, false)
         return
     end

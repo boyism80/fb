@@ -10,7 +10,7 @@ function NPC_338(me, npc)
         return
     end
 
-    if sel == 0 then
+    if sel == 1 then
         if not me:has_items("노란비서", 1) then
             me:dialog(npc, "만일의 사태를 대비하기 위해 노란비서를 지참해 주시기 바랍니다.", false, false)
             return
@@ -19,7 +19,7 @@ function NPC_338(me, npc)
             return
         end
         server.warp_to_return_map(me)
-    elseif sel == 1 then
+    elseif sel == 2 then
         me:dialog(npc, "잘 생각하셨어요.", false, true)
     end
 end

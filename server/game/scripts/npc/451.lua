@@ -52,7 +52,7 @@ function NPC_451(me, npc)
         if btn == DIALOG_RESULT.QUIT or sel == nil then
             return
         end
-        if sel == 1 then
+        if sel == 2 then
             local b = me:dialog(npc, "그래... 생각이 바뀌면 다시 찾아오게나.", false, false)
             if b == DIALOG_RESULT.QUIT then
                 return
@@ -96,7 +96,7 @@ function NPC_451(me, npc)
     if btn == DIALOG_RESULT.QUIT or sel == nil then
         return
     end
-    if sel == 1 then
+    if sel == 2 then
         local b = me:dialog(npc, "준비가 되면 나를 찾아 오시게나...", false, false)
         if b == DIALOG_RESULT.QUIT then
             return
@@ -135,13 +135,13 @@ function NPC_451(me, npc)
 
     local weapon_cur = weapon_name
     local weapon_new
-    if list_sel == 0 then
+    if list_sel == 1 then
         weapon_cur = "진월신검"
         weapon_new = "진일신검"
-    elseif list_sel == 1 then
+    elseif list_sel == 2 then
         weapon_cur = "청월기창"
         weapon_new = "청일기창"
-    elseif list_sel == 2 then
+    elseif list_sel == 3 then
         weapon_cur = "황화곤봉"
         weapon_new = "황염곤봉"
     else

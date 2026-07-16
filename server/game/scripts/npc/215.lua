@@ -41,7 +41,7 @@ function NPC_215(me, npc)
         if lb == DIALOG_RESULT.QUIT then
             return
         end
-        if sel == nil or sel ~= 0 then
+        if sel == nil or sel ~= 1 then
             return
         end
         q = me:start_quest(quest.QUEST_GREATWALL)
@@ -73,7 +73,7 @@ function NPC_215(me, npc)
         if lb == DIALOG_RESULT.QUIT then
             return
         end
-        if sel == nil or sel ~= 0 then
+        if sel == nil or sel ~= 1 then
             return
         end
         q:step(1)
@@ -106,7 +106,7 @@ function NPC_215(me, npc)
 
     local next_step = step + 1
     q:step(next_step)
-    if rewards[step + 1] == nil then
+    if rewards[step] == nil then
         q:complete()
         me:push_achievement(21, '만리장성 수리에 성공하다.', 7, 1)
     end

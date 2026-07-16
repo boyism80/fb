@@ -18,10 +18,10 @@ function NPC_117(me, npc)
             if list_btn == DIALOG_RESULT.QUIT or sel == nil then
                 return
             end
-            if sel == 0 then
+            if sel == 1 then
                 goto NPC_117_BOOK
             end
-            if sel == 1 then
+            if sel == 2 then
                 local btn = me:dialog(npc, "아, 이거? 이 섬의 부자들이 우리 중국과의 교역을 시작한 기념으로 내게 선물해줬다네.", false, true)
                 if btn == DIALOG_RESULT.QUIT then
                     return
@@ -31,7 +31,7 @@ function NPC_117(me, npc)
                     return
                 end
                 dq:step(4)
-            elseif sel == 2 then
+            elseif sel == 3 then
                 local btn = me:dialog(npc, "부자들이란... 변혁을 두려워하지 않는 사람들이더군. 외국 문물을 받아들이는데 망설임이 없었어.", false, true)
                 if btn == DIALOG_RESULT.QUIT then
                     return
@@ -63,7 +63,7 @@ function NPC_117(me, npc)
             if list_btn == DIALOG_RESULT.QUIT or sel == nil then
                 return
             end
-            if sel == 0 then
+            if sel == 1 then
                 dq:step(7)
                 me:dialog(npc, "응? 그럴리가! 부자 대감들이 이렇게 무역 허가증까지 제출했는걸?", false, false)
             end
@@ -78,7 +78,7 @@ function NPC_117(me, npc)
             if list_btn == DIALOG_RESULT.QUIT or sel == nil then
                 return
             end
-            if sel == 0 then
+            if sel == 1 then
                 ::NPC_117_0001::
                 local btn = me:dialog(npc, "뭣이?! 감히 나를 속이고 밀수선을 부르다니! 이런 발칙한 사람들을 봤나!", false, true)
                 if btn == DIALOG_RESULT.QUIT then
@@ -108,7 +108,7 @@ function NPC_117(me, npc)
         if selected == nil then
             return
         end
-        if selected == 0 then
+        if selected == 1 then
             local q = me:start_quest(quest.QUEST_BONG_BOOK)
             if q == nil then
                 me:dialog(npc, '퀘스트 시작 실패', false, true)
@@ -128,7 +128,7 @@ function NPC_117(me, npc)
     if not has_book then
         me:dialog(npc, '뭐야? 책을 잃어버려? 이런 고약한.. 내 저번엔 다시 줬지만, 이번엔 그냥은 못주겠네.', true, true)
         local selected = me:list(npc, '1000전을 내면 다시 한권 주지.', { '봉래산전설을 다시 읽고싶어요. 1000전에 주세요.', '돈이 없어서..' })
-        if selected == nil or selected ~= 0 then
+        if selected == nil or selected ~= 1 then
             return
         end
         local code = me:exchange(

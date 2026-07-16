@@ -31,7 +31,7 @@ function NPC_600(me, npc)
         return
     end
 
-    if sel == 0 then
+    if sel == 1 then
         local price = voucher_price()
         local d = me:dialog(npc, string.format("음 .. 비패교환증을 구입하러 왔단 말이지. 비패교환증을 사기 위해서는 %d전이 필요하다네. 서버가 시작된 이래로 계속해서 값이 증가하지.", price), false, true)
         if d == DIALOG_RESULT.QUIT then
@@ -44,11 +44,11 @@ function NPC_600(me, npc)
         if btn2 == DIALOG_RESULT.QUIT then
             return
         end
-        if sel2 == 1 then
+        if sel2 == 2 then
             me:dialog(npc, "그래, 잘 가게나~", false, false)
             return
         end
-        if sel2 ~= 0 then
+        if sel2 ~= 1 then
             goto MENU
         end
         local code = me:exchange(
@@ -66,7 +66,7 @@ function NPC_600(me, npc)
         goto MENU
     end
 
-    if sel == 1 then
+    if sel == 2 then
         local d = me:dialog(npc, "음 .. 문파비패를 구입하러 왔단 말이지. 문파비패를 사기 위해서는 비패교환증이 필요한데...", false, true)
         if d == DIALOG_RESULT.QUIT then
             return
@@ -88,11 +88,11 @@ function NPC_600(me, npc)
         if btn2 == DIALOG_RESULT.PREV then
             goto MENU
         end
-        if sel2 == nil or sel2 < 0 or sel2 > 4 then
+        if sel2 == nil or sel2 < 1 or sel2 > 4 then
             goto MENU
         end
         local names = { "파랑문파비패", "노랑문파비패", "초록문파비패", "보라문파비패", "연두문파비패" }
-        local name = names[sel2 + 1]
+        local name = names[sel2]
         local code = me:exchange(
             { ['item'] = { ["비패교환증"] = 1 } },
             { ['item'] = { [name] = 1 } }

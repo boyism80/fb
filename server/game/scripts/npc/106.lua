@@ -47,11 +47,11 @@ function NPC_106(me, npc)
         if list_btn == DIALOG_RESULT.QUIT then
             return
         end
-        if sel == 1 then
+        if sel == 2 then
             me:dialog(npc, '그런가? 그럼 좀 더 기다려봐야겠군..', false, false)
             return
         end
-        if sel ~= 0 then
+        if sel ~= 1 then
             return
         end
         q:step(3)

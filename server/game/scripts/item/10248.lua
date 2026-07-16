@@ -10,7 +10,7 @@ function ON_ACTIVATED_10248(me, item)
         return
     end
 
-    if selected == 0 then
+    if selected == 1 then
         return
     end
 

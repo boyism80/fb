@@ -20,7 +20,7 @@ function NPC_576(me, npc)
         return
     end
 
-    if sel == 0 then
+    if sel == 1 then
         local code = me:exchange(
             { ['item'] = { ["황금도토리"] = 1 } },
             { ['item'] = { ["일반교환권"] = 1 } }
@@ -37,7 +37,7 @@ function NPC_576(me, npc)
         return
     end
 
-    if sel == 1 then
+    if sel == 2 then
         local code = me:exchange(
             { ['item'] = { ["황금도토리"] = 6 } },
             { ['item'] = { ["특별교환권"] = 1 } }
@@ -54,7 +54,7 @@ function NPC_576(me, npc)
         return
     end
 
-    if sel == 2 then
+    if sel == 3 then
         me:dialog(npc, "저는 세시간에 한번 찾아온답니다. 제가 사라지면, 세시간 뒤에 저를 다시 찾아주세요.", false, false)
     end
 end

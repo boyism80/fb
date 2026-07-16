@@ -214,7 +214,7 @@ local function run_buy_hp(me, npc)
     local promotion = me:promotion()
     local base_hp = me:base_hp()
     local caps = HP_PROMOTION_CAP[profile]
-    if caps and caps[promotion + 1] and base_hp >= caps[promotion + 1] then
+    if caps and caps[promotion] and base_hp >= caps[promotion] then
         me:dialog(npc, '아직도 승급을 하지 않았다니. 일단 승급을 한 뒤에 다시 오도록!', false, true)
         return true
     end
@@ -299,7 +299,7 @@ local function run_buy_mp(me, npc)
     local promotion = me:promotion()
     local base_mp = me:base_mp()
     local caps = MP_PROMOTION_CAP[profile]
-    if caps and caps[promotion + 1] and base_mp >= caps[promotion + 1] then
+    if caps and caps[promotion] and base_mp >= caps[promotion] then
         me:dialog(npc, '더 이상 올릴 수 없습니다.', false, true)
         return true
     end
@@ -342,15 +342,15 @@ end
 
 local function run_change_face(me, npc)
     local index, button = me:list(npc, '지금의 모습을 벗어나 새로운 얼굴을 갖기를 원하고 있나?', {'예', '아니오'})
-    if index ~= 0 then
+    if index ~= 1 then
         return false
     end
     index, button = me:list(npc, '사회에서 물의를 빚고 숨어서 지내려는 것은 아니겠지?', {'아닙니다.', '예. 잠시 숨어서....'})
-    if index ~= 0 then
+    if index ~= 1 then
         return false
     end
     index, button = me:list(npc, '수술을 하려면 말일세, 백만전의 금이 필요하다네.. 가지고 있는가?', {'예', '아니오'})
-    if index ~= 0 then
+    if index ~= 1 then
         return false
     end
 
@@ -394,7 +394,7 @@ local function run_change_face(me, npc)
             return false
         end
 
-        if index == 0 then
+        if index == 1 then
             if me:dialog(npc, '그럼 네 얼굴을 그 모습을 고쳐주도록 하지.', false, true) == DIALOG_RESULT.QUIT then
                 return false
             end
@@ -414,11 +414,11 @@ local function run_change_face(me, npc)
                 return false
             end
             return true
-        elseif index == 1 then
-            hair = (hair - 1 + 102) % 102
         elseif index == 2 then
-            hair = (hair + 1) % 102
+            hair = (hair - 1 + 102) % 102
         elseif index == 3 then
+            hair = (hair + 1) % 102
+        elseif index == 4 then
             me:dialog(npc, '수술 포기')
             return false
         end
@@ -445,7 +445,7 @@ local function run_change_gender(me, npc)
     if list_btn == DIALOG_RESULT.QUIT then
         return false
     end
-    if index ~= 0 then
+    if index ~= 1 then
         return false
     end
 
@@ -508,7 +508,7 @@ local function run_change_gender(me, npc)
     if list_btn == DIALOG_RESULT.QUIT then
         return false
     end
-    if index ~= 0 then
+    if index ~= 1 then
         return false
     end
 
@@ -539,31 +539,31 @@ function NPC_28(me, npc)
         if button == DIALOG_RESULT.QUIT then
             return
         end
-        if index == 0 then
+        if index == 1 then
             if not run_buy_stat(me, npc, 'str', '힘') then
                 return
             end
-        elseif index == 1 then
+        elseif index == 2 then
             if not run_buy_stat(me, npc, 'int', '지력') then
                 return
             end
-        elseif index == 2 then
+        elseif index == 3 then
             if not run_buy_stat(me, npc, 'dex', '민첩성') then
                 return
             end
-        elseif index == 3 then
+        elseif index == 4 then
             if not run_buy_hp(me, npc) then
                 return
             end
-        elseif index == 4 then
+        elseif index == 5 then
             if not run_buy_mp(me, npc) then
                 return
             end
-        elseif index == 5 then
+        elseif index == 6 then
             if not run_change_face(me, npc) then
                 return
             end
-        elseif index == 6 then
+        elseif index == 7 then
             if not run_change_gender(me, npc) then
                 return
             end

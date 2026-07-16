@@ -18,7 +18,7 @@ function ON_MOB_KILL_1092(me, mobs)
     local step = q:step()
     if step == 12 and q:progress() == 0 then
         local sel, list_btn = me:list(mob, "으윽... 비록 나는 잡힐지언정 우리 군사들의 사기는 절대 꺽이지 않을 것이다.", { "닥쳐라", "어서 나를 따라서 용왕님을 뵈러 가자." }, false)
-        if list_btn == DIALOG_RESULT.QUIT or sel == nil or sel < 0 or sel > 1 then
+        if list_btn == DIALOG_RESULT.QUIT or sel == nil or sel < 1 or sel > 2 then
             return
         end
         q:progress(1)
@@ -40,7 +40,7 @@ function ON_MOB_KILL_1092(me, mobs)
     if list_btn == DIALOG_RESULT.QUIT or sel == nil then
         return
     end
-    if sel == 0 then
+    if sel == 1 then
         q:progress(2)
         me:mkitem("금은보화", 1)
         me:push_achievement(19, "상어장군을 놓아주다.", 7, 1)

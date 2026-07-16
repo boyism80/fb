@@ -23,14 +23,14 @@ function NPC_237(me, npc)
     if list_btn == DIALOG_RESULT.QUIT then
         return
     end
-    if sel == nil or sel == 3 then
+    if sel == nil or sel == 4 then
         return
     end
-    if sel < 0 or sel > 2 then
+    if sel < 1 or sel > 2 then
         return
     end
 
-    local r = REPAIRS[sel + 1]
+    local r = REPAIRS[sel]
     local code = me:exchange(
         { ['item'] = { [ITEM_FRUIT_SALAD] = 1, [r.input] = 1 } },
         { ['item'] = { [r.output] = 1 } }

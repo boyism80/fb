@@ -17,7 +17,7 @@ local function run_hunt_event_entry(me, npc)
     if list_btn == DIALOG_RESULT.QUIT or sel == nil then
         return
     end
-    if sel == 1 then
+    if sel == 2 then
         me:dialog(npc, "안녕히 가십시오.", false, false)
         return
     end

@@ -276,7 +276,7 @@ local function run_black_flag(me, npc_obj)
     if button == DIALOG_RESULT.QUIT then
         return true
     end
-    if selected ~= 0 then
+    if selected ~= 1 then
         return true
     end
     local BLACK_FLAG_PRICE = 5000
@@ -810,7 +810,7 @@ function on_login(me, first_login)
         goto BIRTHDAY_INPUT
     end
 
-    if sel == 0 then
+    if sel == 1 then
         me:birthday(birthday)
         return
     end
@@ -904,7 +904,7 @@ function on_matchmaking_proposed(me, match_id, match_type, confirm_deadline)
         return
     end
 
-    if selected == 0 then
+    if selected == 1 then
         local err = me:matchmaker():confirm()
         if err ~= nil then
             me:message(err, MESSAGE_TYPE.STATE)

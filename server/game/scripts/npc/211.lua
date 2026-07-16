@@ -44,8 +44,8 @@ function NPC_211(me, npc)
         if btn == DIALOG_RESULT.PREV then
             goto NPC_211_0011
         end
-        if sel == nil or sel ~= 0 then
-            if sel == 1 then
+        if sel == nil or sel ~= 1 then
+            if sel == 2 then
                 me:dialog(npc, '그러시군요.. 가시는 길 조심히 살펴서 가세요.', false, true)
             end
             return
@@ -131,8 +131,8 @@ function NPC_211(me, npc)
         end
         ::NPC_211_0032::
         sel = me:list(npc, '산소괴왕을 처리해주시겠습니까?', { '알겠습니다. 제가 처리해보도록 하죠.', '죄송합니다. 그건 저에게 무리일듯하군요.' }, false)
-        if sel == nil or sel ~= 0 then
-            if sel == 1 then
+        if sel == nil or sel ~= 1 then
+            if sel == 2 then
                 me:dialog(npc, '그러시다면야 할 수 없죠.', false, true)
             end
             return

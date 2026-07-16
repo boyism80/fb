@@ -12,7 +12,7 @@ function NPC_216(me, npc)
         if sel == nil then
             return
         end
-        if sel ~= 0 then
+        if sel ~= 1 then
             return
         end
 
@@ -38,7 +38,7 @@ function NPC_216(me, npc)
         if sel == nil then
             return
         end
-        if sel ~= 0 then
+        if sel ~= 1 then
             return
         end
 
@@ -55,7 +55,7 @@ function NPC_216(me, npc)
 
     if q:completed() then
         local sel = me:list(npc, '자네로군, 나를 도와 다시 적심토를 채집하겠나?', { '좋습니다. 누구시더라?' })
-        if sel == nil or sel ~= 0 then
+        if sel == nil or sel ~= 1 then
             return
         end
         q:resume()
@@ -73,7 +73,7 @@ function NPC_216(me, npc)
 
     local money = progress * REWARD_PER_BAG
     local selected = me:list(npc, string.format('자네가 가져온 적심토 %d 꾸러미에 대한 보상으로 %d 전을 주겠네. 괜찮은가?', progress, money), { '좋습니다.', '지금은 싫습니다.' })
-    if selected == nil or selected ~= 0 then
+    if selected == nil or selected ~= 1 then
         return
     end
 
@@ -86,7 +86,7 @@ function NPC_216(me, npc)
     q:progress(0)
     me:erase_achievement(22)
 
-    if selected == 0 then
+    if selected == 1 then
         me:dialog(npc, '괴수들이 있는 근처에서 적심토를 찾을 수 있을 것이네. 조심하게나', false, true)
     else
         q:complete()

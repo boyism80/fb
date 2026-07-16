@@ -17,7 +17,7 @@ function NPC_501(me, npc)
         return
     end
 
-    if sel == 0 then
+    if sel == 1 then
         me:map(129, math.random(13, 17), math.random(45, 47))
     end
 end

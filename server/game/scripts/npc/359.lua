@@ -33,7 +33,7 @@ function NPC_359(me, npc)
         return
     end
 
-    if sel == 0 then
+    if sel == 1 then
         btn = me:dialog(npc, "삼짇날은 음력 3월 3일이에요. 날씨가 포근하고 개나리와 진달래가 만발하는 시기에 있는 명절이랍니다.", false, true)
         if btn == DIALOG_RESULT.QUIT then
             return
@@ -46,7 +46,7 @@ function NPC_359(me, npc)
         return
     end
 
-    if sel == 1 then
+    if sel == 2 then
         local item_name = find_butterfly_item(me)
         if item_name then
             local num = tonumber(item_name:match("%[(%d+)%]"))
@@ -103,7 +103,7 @@ function NPC_359(me, npc)
         if sub_btn == DIALOG_RESULT.QUIT or sub_sel == nil then
             return
         end
-        if sub_sel == 0 then
+        if sub_sel == 1 then
             btn = me:dialog(npc, "와아 감사합니다!! 나비채랑 채집통은 선릉이 오빠한테 있는데.. 창고 있는 섣달집에요.", false, true)
             if btn == DIALOG_RESULT.QUIT then
                 return

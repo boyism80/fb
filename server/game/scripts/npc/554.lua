@@ -13,7 +13,7 @@ function NPC_554(me, npc)
         return
     end
 
-    if sel == 0 then
+    if sel == 1 then
         button = me:dialog(npc, "준비중입니다.", false, false)
         if button == DIALOG_RESULT.QUIT then
             return

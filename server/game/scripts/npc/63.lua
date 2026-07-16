@@ -37,11 +37,11 @@ end
 local function do_hair_style(me, npc)
     local tier_menu = hair_tier_menu()
     local tier_sel = me:list(npc, '가격에 따라 다른 머리모양을 해드릴 수 있습니다.\n\n원하시는 가격을 선택해주세요.', tier_menu, false)
-    if tier_sel == nil or tier_sel < 0 or tier_sel >= #HAIR_STYLE_TIERS then
+    if tier_sel == nil or tier_sel < 1 or tier_sel >= #HAIR_STYLE_TIERS then
         return
     end
 
-    local tier = HAIR_STYLE_TIERS[tier_sel + 1]
+    local tier = HAIR_STYLE_TIERS[tier_sel]
     local label, price, face_min, face_max = tier[1], tier[2], tier[3], tier[4]
     local face = face_min
     local hair_color = me:color()
@@ -57,7 +57,7 @@ local function do_hair_style(me, npc)
             return
         end
 
-        if sel == 0 then
+        if sel == 1 then
             local money = me:money()
             if money < price then
                 me:dialog(npc, '금액이 ' .. (price - money) .. '전 부족합니다.', false, false)
@@ -69,7 +69,7 @@ local function do_hair_style(me, npc)
             return
         end
 
-        if sel == 1 then
+        if sel == 2 then
             face = face + 1
             if face <= face_max then
             else
@@ -80,7 +80,7 @@ local function do_hair_style(me, npc)
                 if again == nil then
                     return
                 end
-                if again == 0 then
+                if again == 1 then
                     face = face_min
                 else
                     return
@@ -101,12 +101,12 @@ local function do_hair_dye(me, npc)
         dye_menu[i] = opt[1]
     end
     local choice = me:list(npc, '원하는 염색을 선택해라', dye_menu, false)
-    if choice == nil or choice < 0 or choice >= #DYE_OPTIONS then
+    if choice == nil or choice < 1 or choice >= #DYE_OPTIONS then
         return
     end
 
     local color_index = choice
-    local cost = DYE_OPTIONS[choice + 1][2]
+    local cost = DYE_OPTIONS[choice][2]
     local money = me:money()
     if money < cost then
         me:dialog(npc, '금액이 ' .. (cost - money) .. '전 부족합니다.', false, false)
@@ -126,9 +126,9 @@ function NPC_63(me, npc)
     if index == nil then
         return
     end
-    if index == 0 then
+    if index == 1 then
         do_hair_style(me, npc)
-    elseif index == 1 then
+    elseif index == 2 then
         do_hair_dye(me, npc)
     end
 end

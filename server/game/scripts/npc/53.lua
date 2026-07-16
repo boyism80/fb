@@ -19,13 +19,13 @@ function NPC_53(me, npc)
         goto NPC_53_0001
     end
 
-    if selected == 0 then
+    if selected == 1 then
         local selected2, button2 = me:list(npc, '부여-일본쾌속승선권.. 한장에 8000원에 드리지. 어때?', {'8000원에 사죠.', '너무 비싼데...'}, false)
         if button2 == DIALOG_RESULT.QUIT then
             return
         end
 
-        if selected2 == 0 then
+        if selected2 == 1 then
             button = me:dialog(npc, '그래? 그럼 표 한장 드릴께..', false, true)
             if button == DIALOG_RESULT.QUIT then
                 return
@@ -45,7 +45,7 @@ function NPC_53(me, npc)
             end
             me:dialog(npc, '그럼 일본 잘갔다와~ 나중에 또 보자고..', false, true)
             return
-        elseif selected2 == 1 then
+        elseif selected2 == 2 then
             ::NPC_53_0003::
             button = me:dialog(npc, '너무 비싸다고? 얼마까지 알아보고 왔어? 에이.. 하나도 안 남는데..', false, true)
             if button == DIALOG_RESULT.QUIT then
@@ -70,7 +70,7 @@ function NPC_53(me, npc)
                 goto NPC_53_0004
             end
 
-            if selected3 == 0 then
+            if selected3 == 1 then
                 ::NPC_53_0006::
                 button = me:dialog(npc, '그래그래. 잘 생각한거야. 그럼 볼까나....', false, true)
                 if button == DIALOG_RESULT.QUIT then
@@ -91,12 +91,12 @@ function NPC_53(me, npc)
                 end
                 me:dialog(npc, '그럼 일본 잘갔다와~ 나중에 또 보자고..', false, true)
                 return
-            elseif selected3 == 1 then
+            elseif selected3 == 2 then
                 me:dialog(npc, '관심없음 그냥 가구.. 다른데 알아봐. 더 싼데 있나..', false, true)
                 return
             end
         end
-    elseif selected == 1 then
+    elseif selected == 2 then
         me:dialog(npc, '어허.. 이 사람 보게? 안사면 안사는거지 왜 사람을 사기꾼으로 몰고 그래!', false, true)
         return
     end

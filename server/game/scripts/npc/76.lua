@@ -37,8 +37,8 @@ function NPC_76(me, npc)
         end
         ::NPC_76_COS004::
         sel = me:list(npc, '제가 부탁하는 재료를 구해주실 수 있나요?', { '아.물론입니다.', '죄송하지만 바빠서...' })
-        if sel == nil or sel ~= 0 then
-            if sel == 1 then
+        if sel == nil or sel ~= 1 then
+            if sel == 2 then
                 me:dialog(npc, '흠..그러신가요..', false, true)
             end
             return

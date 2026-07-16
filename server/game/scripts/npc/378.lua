@@ -56,17 +56,17 @@ function NPC_378(me, npc)
         if list_btn == DIALOG_RESULT.QUIT or sel == nil then
             return
         end
-        if sel == 0 then
+        if sel == 1 then
             me:dialog(npc, "뭐라구! 지금 제정신으로 하는 소리인가! 내가 여기 상거래 허가를 얻기위해 도대체 얼마나 많은 뇌물을 뿌렸는지 모르는군!", false, true)
             me:dialog(npc, "음? 아니아니, 방금 그 말은 잊어주게. 어흠어흠흠... 나는 한 사람의 자랑스러운 상인으로서 좋은 물건은 세상 모든 사람들이 사서 쓸 수 있도록 공급해야한다는 나의 철학을 지켜야만 하네. 따라서 여기에서 포기할 순 없지!", false, true)
             me:dialog(npc, "(어쩐지 못미덥고 거짓말쟁이같은 상인은 황급하게 말을 바꾸고 끝맺었다.)", false, false)
             return
         end
-        if sel == 1 then
+        if sel == 2 then
             me:dialog(npc, "그럼 수고해주게나.", false, false)
             return
         end
-        if sel == 2 then
+        if sel == 3 then
             local sel2, list_btn2 = me:list(npc, "자, 10만전에 조립을 부탁하겠나? 응? 자 어쩔 생각이지? 응? 어서 말해보시게.", {
                 "아 그래요? 그럼 괴물퇴치 비용을 지불해주세요.",
                 "10만전이라... 자, 그럼 10만전에 조립해주세요.",
@@ -74,12 +74,12 @@ function NPC_378(me, npc)
             if list_btn2 == DIALOG_RESULT.QUIT or sel2 == nil then
                 return
             end
-            if sel2 == 0 then
+            if sel2 == 1 then
                 me:dialog(npc, "뭐? 뭐라구! 괴물 퇴치 비용을 달라구! 아니, 이런 치사스런 사람을 봤나! 너무한거 아닌가! 남의 불행을 이용하다니!\n\n이런 천인공노할 사람을 봤나! 세상에나! 세상에나! 아이고, 억울해! 억울해서 배가 다 아프고, 머리까지 아프네!", false, true)
                 me:dialog(npc, "(어쩐지 못미덥고 거짓말쟁이에 치사스럽고 천인공노할 상인의 분노를 무시해버렸다.)", false, false)
                 return
             end
-            if sel2 == 1 then
+            if sel2 == 2 then
                 local cost_item = {}
                 for _, name in ipairs(ASSEMBLE_ITEMS) do
                     cost_item[name] = 1
@@ -112,7 +112,7 @@ function NPC_378(me, npc)
     if list_btn == DIALOG_RESULT.QUIT or sel == nil then
         return
     end
-    if sel == 0 then
+    if sel == 1 then
         me:dialog(npc, "오, 그래? 필요없는가 본데, 내가 사줄 수도 있지. 이야, 이미 사람 손탄거라 비싸고 주고 싶어도 비싸게는 못줘.", false, true)
         me:dialog(npc, "아니, 뭐. 아직 보급형이 나오지 않아서 등록비도 만만찮고 말이야. 사실 말이야 바른 말이지. 이런 물건은 높으신 분이나 그 자제분들이나 가지고 노는 물품이라구. 어떤가? 지금이라면 내가 인심 팍팍 써서 30만전에 사주지.", false, true)
         local sel2, list_btn2 = me:list(npc, "자 이런 기회는 다시 없다구. 이걸 어디가서 팔겠냐구. 응? 자자, 나한테 팔아", {
@@ -122,7 +122,7 @@ function NPC_378(me, npc)
         if list_btn2 == DIALOG_RESULT.QUIT or sel2 == nil then
             return
         end
-        if sel2 == 0 then
+        if sel2 == 1 then
             local code = me:exchange(
                 { ['item'] = { ["요술놀이구슬"] = 1 } },
                 { ['money'] = SELL_PRICE }
@@ -141,7 +141,7 @@ function NPC_378(me, npc)
         end
         return
     end
-    if sel == 1 then
+    if sel == 2 then
         local cost_item = {}
         for _, name in ipairs(ASSEMBLE_ITEMS) do
             cost_item[name] = 1

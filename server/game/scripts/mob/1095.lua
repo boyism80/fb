@@ -22,11 +22,11 @@ function ON_MOB_KILL_1095(me, mobs)
             return
         end
         local sel, list_btn = me:list(mob, "나의 완벽했던 계획이 도대체 어디서부터 어그러졌단 말인가...", { "완벽한 계획?" }, false)
-        if list_btn == DIALOG_RESULT.QUIT or sel == nil or sel ~= 0 then
+        if list_btn == DIALOG_RESULT.QUIT or sel == nil or sel ~= 1 then
             return
         end
         sel, list_btn = me:list(mob, " ", { "그런 일이 과연 성공할 것이라고 믿었는가?" }, false)
-        if list_btn == DIALOG_RESULT.QUIT or sel == nil or sel ~= 0 then
+        if list_btn == DIALOG_RESULT.QUIT or sel == nil or sel ~= 1 then
             return
         end
         btn = me:dialog(mob, "이대로 죽을수는 없다. 아직 나에게는 여의주가 남아있다.", false, true)
@@ -49,11 +49,11 @@ function ON_MOB_KILL_1095(me, mobs)
         return
     end
     local sel, list_btn = me:list(mob, "으윽. 이계로까지 도망갔다 온 나를 어떻게 발견했지...", { "네놈이 아무리 날고 뛰어봐야 용왕님이" }, false)
-    if list_btn == DIALOG_RESULT.QUIT or sel == nil or sel ~= 0 then
+    if list_btn == DIALOG_RESULT.QUIT or sel == nil or sel ~= 1 then
         return
     end
     sel, list_btn = me:list(mob, " ", { "너에 대해 모든걸 알고 계신다." }, false)
-    if list_btn == DIALOG_RESULT.QUIT or sel == nil or sel ~= 0 then
+    if list_btn == DIALOG_RESULT.QUIT or sel == nil or sel ~= 1 then
         return
     end
     local btn = me:dialog(mob, "이대로 죽을수는 없다. 아직 나에게는 여의주가 남아있다.", false, true)
@@ -65,7 +65,7 @@ function ON_MOB_KILL_1095(me, mobs)
         return
     end
     sel, list_btn = me:list(mob, "으윽, 으아아아악.", { "헛. 이럴수가!!!" }, false)
-    if list_btn == DIALOG_RESULT.QUIT or sel == nil or sel ~= 0 then
+    if list_btn == DIALOG_RESULT.QUIT or sel == nil or sel ~= 1 then
         return
     end
     q:progress(2)

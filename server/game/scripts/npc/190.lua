@@ -37,11 +37,11 @@ function NPC_190(me, npc)
         if list_btn == DIALOG_RESULT.QUIT then
             return
         end
-        if sel == 1 then
+        if sel == 2 then
             me:dialog(npc, '그러시군요.. 안타깝네요..', false, false)
             return
         end
-        if sel ~= 0 then
+        if sel ~= 1 then
             return
         end
         q = me:start_quest(quest.QUEST_HATAEHYUN)
@@ -83,9 +83,9 @@ function NPC_190(me, npc)
         if list_btn2 == DIALOG_RESULT.QUIT then
             return
         end
-        if sel2 >= 0 and sel2 <= 3 then
-            local item_name = REWARD_ITEMS[sel2 + 1]
-            local class_name = REWARD_CLASSES[sel2 + 1]
+        if sel2 >= 0 and sel2 <= 4 then
+            local item_name = REWARD_ITEMS[sel2]
+            local class_name = REWARD_CLASSES[sel2]
             local code = me:exchange(
                 { ['item'] = REQUIRED_ITEM },
                 { ['item'] = { [item_name] = 1 } }
@@ -110,7 +110,7 @@ function NPC_190(me, npc)
             end
             return
         end
-        if sel2 == 4 then
+        if sel2 == 5 then
             ::NPC_190_0008::
             btn = me:dialog(name2item('진비투구'), '진비투구는 전사를 위한 투구입니다.', false, true)
             if btn == DIALOG_RESULT.QUIT then

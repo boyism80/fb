@@ -20,7 +20,7 @@ function NPC_32(me, npc)
     if btn == DIALOG_RESULT.PREV then
         goto NPC_32_0001
     end
-    if sel ~= 0 then
+    if sel ~= 1 then
         return
     end
     ::NPC_32_0003::
@@ -47,7 +47,7 @@ function NPC_32(me, npc)
     if btn == DIALOG_RESULT.PREV then
         goto NPC_32_0004
     end
-    if sel ~= 0 then
+    if sel ~= 1 then
         return
     end
     if me:money() < 20000 then

@@ -13,7 +13,7 @@ function NPC_121(me, npc)
 
     if q == nil then
         local selected = me:list(npc, "대륙 사람이로군. 듣기에 대륙에는 '호박'이라는 예쁜 게 있다더군. 그거 열 개만 구해다 줄 수 있을까?", { '네, 구해드리지요.', '아니오, 바빠서..' })
-        if selected == nil or selected ~= 0 then
+        if selected == nil or selected ~= 1 then
             return
         end
         local q = me:start_quest(quest.QUEST_TUNGTUNG)

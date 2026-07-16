@@ -20,7 +20,7 @@ function NPC_174(me, npc)
         if lb == DIALOG_RESULT.QUIT then
             return
         end
-        if sel == nil or sel ~= 0 then
+        if sel == nil or sel ~= 1 then
             return
         end
         ::NPC_174_0003::
@@ -59,7 +59,7 @@ function NPC_174(me, npc)
         if lb == DIALOG_RESULT.QUIT then
             return
         end
-        if sel == nil or sel ~= 0 then
+        if sel == nil or sel ~= 1 then
             return
         end
         ::NPC_174_0011::

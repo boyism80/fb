@@ -78,7 +78,7 @@ function NPC_495(me, npc)
             if list_btn == DIALOG_RESULT.QUIT or sel == nil then
                 return
             end
-            if sel == 0 then
+            if sel == 1 then
                 local code = me:exchange(
                     { ['item'] = SURVIVE_ITEMS },
                     { ['item'] = { ["서바이벌증표"] = 1 } }
@@ -113,7 +113,7 @@ function NPC_495(me, npc)
             if list_btn == DIALOG_RESULT.QUIT or sel == nil then
                 return
             end
-            if sel == 0 then
+            if sel == 1 then
                 local exit_map = name2map("부여성")
                 if exit_map then
                     me:map(exit_map, 70, 140)
@@ -130,7 +130,7 @@ function NPC_495(me, npc)
         if list_btn == DIALOG_RESULT.QUIT or sel == nil then
             return
         end
-        if sel == 0 then
+        if sel == 1 then
             me:dialog(npc, "[서바이벌달리기] 에서는 몬스터에게 단 한대만 맞더라도, 바로 사망을 하게 됩니다.\n\n하지만 죽음에 따른 패널티는 따로 없으니 너무 걱정은 하지 않으셔도 됩니다.\n그럼 입장시켜 드리겠습니다.", false, false)
             local game_map = name2map("서바이벌달리기")
             if game_map then
@@ -138,13 +138,13 @@ function NPC_495(me, npc)
                 local y = 5 + math.random(0, 3)
                 me:map(game_map, x, y)
             end
-        elseif sel == 2 then
+        elseif sel == 3 then
             me:dialog(npc, "퇴장하시겠다구요? [서바이벌증표]를 회수하고, 퇴장을 도와드리겠습니다.", false, true)
             local sel2, list_btn2 = me:list(npc, "서바이벌증표를 회수합니다.", { "네. 퇴장합니다.", "아니오. 이따가요." }, false)
             if list_btn2 == DIALOG_RESULT.QUIT or sel2 == nil then
                 return
             end
-            if sel2 == 0 then
+            if sel2 == 1 then
                 if me:rmitem("서바이벌증표", 1, ITEM_DELETE_TYPE.GIVE) then
                     local exit_map = name2map("부여성")
                     if exit_map then
@@ -180,7 +180,7 @@ function NPC_495(me, npc)
     if list_btn == DIALOG_RESULT.QUIT or sel == nil then
         return
     end
-    if sel == 0 then
+    if sel == 1 then
         local lobby = name2map("서바이벌대기실")
         if lobby then
             local x = math.random(45, 55)

@@ -30,15 +30,15 @@ local function run_cidequest_jangdol(me, npc)
     if b1 == DIALOG_RESULT.QUIT or list_1 == nil then
         return
     end
-    if list_1 ~= 0 then
+    if list_1 ~= 1 then
         return
     end
     local list_2, b2 = me:list(npc, "물론 알고 있지.", { "그렇다면 가르쳐 주실 수 있으신지요?" }, false)
-    if b2 == DIALOG_RESULT.QUIT or list_2 == nil or list_2 ~= 0 then
+    if b2 == DIALOG_RESULT.QUIT or list_2 == nil or list_2 ~= 1 then
         return
     end
     local list_3, b3 = me:list(npc, "이 사람아. 세상에 공짜가 어디있는가?.", { "..." }, false)
-    if b3 == DIALOG_RESULT.QUIT or list_3 == nil or list_3 ~= 0 then
+    if b3 == DIALOG_RESULT.QUIT or list_3 == nil or list_3 ~= 1 then
         return
     end
     local list_4, b4 = me:list(npc, "뇌진도를 가지고 온다면 내 어디 있는지 말해주지.", { "좋습니다.", "뇌진도를 가지고 오겠습니다." }, false)
@@ -60,15 +60,15 @@ function NPC_159(me, npc)
     if main_btn == DIALOG_RESULT.QUIT or main_sel == nil then
         return
     end
-    if main_sel == 0 or main_sel == 1 then
+    if main_sel == 1 or main_sel == 2 then
         me:dialog(npc, "준비중입니다.", false, false)
         return
     end
-    if main_sel == 3 then
+    if main_sel == 4 then
         run_cidequest_jangdol(me, npc)
         return
     end
-    if main_sel == 4 then
+    if main_sel == 5 then
         local code = me:exchange(
             { ['item'] = { ["금은보화"] = 1 } },
             { ['money'] = 15000 }
@@ -95,7 +95,7 @@ function NPC_159(me, npc)
         return
     end
 
-    if sel == 0 then
+    if sel == 1 then
         ::NPC_159_0001::
         local btn = me:dialog(npc, '음.. 거북장군에게서 토끼의간을 구해오라는 부탁을 받았단 말아지. 그런데 그 토끼는 정말 희귀한 토끼라네. 보통토끼와는 다르지', false, true)
         if btn == DIALOG_RESULT.QUIT then
@@ -119,7 +119,7 @@ function NPC_159(me, npc)
         end
         ::NPC_159_0004::
         local choice, list_btn = me:list(npc, '흐흐흐...', { '원하는게 뭡니까' }, false)
-        if choice == nil or choice ~= 0 then
+        if choice == nil or choice ~= 1 then
             return
         end
         me:dialog(npc, '요즘 한창 장사가 되는 물건이 뇌진도라네.. 그걸 하나 구해오면 내 분명히 자네에게 그 토끼가 출현하는 장소를 가르쳐 줌세.', false, false)

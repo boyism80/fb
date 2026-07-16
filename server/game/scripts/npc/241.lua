@@ -32,13 +32,13 @@ function NPC_241(me, npc)
         if lb == DIALOG_RESULT.QUIT then
             return
         end
-        if sel == nil or sel == 1 then
-            if sel == 1 then
+        if sel == nil or sel == 2 then
+            if sel == 2 then
                 me:dialog(npc, '그건 용납할 수 없네! 나는 오로지 뱀술만을 만들 것이네!', false, false)
             end
             return
         end
-        if sel ~= 0 then
+        if sel ~= 1 then
             return
         end
         q = me:start_quest(quest.QUEST_ALCOHOLIC_DRINK)
@@ -76,11 +76,11 @@ function NPC_241(me, npc)
         if lb == DIALOG_RESULT.QUIT then
             return
         end
-        if sel == nil or sel == 1 then
+        if sel == nil or sel == 2 then
             me:dialog(npc, '그건 용납할 수 없네! 나는 오로지 뱀술만을 만들 것이네!', false, false)
             return
         end
-        if sel ~= 0 then
+        if sel ~= 1 then
             return
         end
         q:step(1)
@@ -108,7 +108,7 @@ function NPC_241(me, npc)
             goto NPC_241_0020
         end
         local sel = me:list(npc, '이 일을 어쩐다....', { '내친김에 나머지 재료도 제가 구해다 드리지요.', '에이, 이젠 저도 몰라요.' }, false)
-        if sel == nil or sel ~= 0 then
+        if sel == nil or sel ~= 1 then
             return
         end
         q:step(2)

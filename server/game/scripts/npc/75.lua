@@ -16,7 +16,7 @@ local function run_puffer_general_accept(me, npc)
     if list_btn == DIALOG_RESULT.QUIT then
         return
     end
-    if sel == nil or sel ~= 0 then
+    if sel == nil or sel ~= 1 then
         return
     end
     ::NPC_75_002::
@@ -48,7 +48,7 @@ local function run_puffer_general_accept(me, npc)
     if list_btn2 == DIALOG_RESULT.QUIT then
         return
     end
-    if sel2 == nil or sel2 ~= 0 then
+    if sel2 == nil or sel2 ~= 1 then
         return
     end
     local q = me:start_quest(quest.QUEST_DRAGON_KING)
@@ -88,12 +88,12 @@ local function run_puffer_general_complete(me, npc)
     if gift_btn == DIALOG_RESULT.PREV then
         goto NPC_75_007
     end
-    if gift_sel == nil or gift_sel < 0 or gift_sel > 2 then
+    if gift_sel == nil or gift_sel < 1 or gift_sel > 3 then
         return
     end
-    if gift_sel == 0 then
+    if gift_sel == 1 then
         me:base_str(me:base_str() + 1)
-    elseif gift_sel == 1 then
+    elseif gift_sel == 2 then
         me:base_int(me:base_int() + 1)
     else
         me:base_dex(me:base_dex() + 1)
@@ -119,7 +119,7 @@ local function run_crab_general_accept(me, npc)
         return
     end
     local sel, list_btn = me:list(npc, "이번에는 내 직접 게장군을 심문해 볼 터이니 게장군을 생포해 줄 수 있겠나?", { "좋습니다.", "별로여..." }, false)
-    if list_btn == DIALOG_RESULT.QUIT or sel == nil or sel ~= 0 then
+    if list_btn == DIALOG_RESULT.QUIT or sel == nil or sel ~= 1 then
         return
     end
     local q = me:quest(quest.QUEST_DRAGON_KING)
@@ -180,7 +180,7 @@ local function run_octopus_general_accept(me, npc)
         return
     end
     local sel, list_btn = me:list(npc, "그래서 말인데, 자네가 이번에는 문어장군을 좀 잡아들일 수 있겠나?", { "걱정 마십시오!!!.", "별로 안 내키는데요..." }, false)
-    if list_btn == DIALOG_RESULT.QUIT or sel == nil or sel ~= 0 then
+    if list_btn == DIALOG_RESULT.QUIT or sel == nil or sel ~= 1 then
         return
     end
     local q = me:quest(quest.QUEST_DRAGON_KING)
@@ -199,19 +199,19 @@ local function run_octopus_general_complete(me, npc)
     end
     local q = me:quest(quest.QUEST_DRAGON_KING)
     local sel, list_btn = me:list(npc, "문어장군은 어디에 있고 왜 혼자 있나?", { "문어장군은 자신의 결백을 증명해 보이고 싶다고", "자결을 하였습니다." }, false)
-    if list_btn == DIALOG_RESULT.QUIT or sel == nil or sel < 0 or sel > 1 then
+    if list_btn == DIALOG_RESULT.QUIT or sel == nil or sel < 1 or sel > 2 then
         return
     end
     sel, list_btn = me:list(npc, "뭐라? 자결을?", { "그렇습니다.", "용왕님에게 의심을 받을 바에야 죽어서", "결백을 증명해 보이는 길을 택하겠다고 하며", "자결을 하며 이 다문창을 전해주라 하였습니다" }, false)
-    if list_btn == DIALOG_RESULT.QUIT or sel == nil or sel < 0 or sel > 3 then
+    if list_btn == DIALOG_RESULT.QUIT or sel == nil or sel < 1 or sel > 4 then
         return
     end
     sel, list_btn = me:list(npc, "음..그래? 안타깝네 그려.. 허나, 죽음으로 밝혀지는 건 아무것도 없네.", { "..." }, true)
-    if list_btn == DIALOG_RESULT.QUIT or sel == nil or sel ~= 0 then
+    if list_btn == DIALOG_RESULT.QUIT or sel == nil or sel ~= 1 then
         return
     end
     sel, list_btn = me:list(npc, "이 다문창은 문어장군이 가장 아끼던 무기인데, 자네가 보관해 두게나.", { "고맙습니다." }, false)
-    if list_btn == DIALOG_RESULT.QUIT or sel == nil or sel ~= 0 then
+    if list_btn == DIALOG_RESULT.QUIT or sel == nil or sel ~= 1 then
         return
     end
     q:step(6)
@@ -229,7 +229,7 @@ local function run_seahorse_accept(me, npc)
         return
     end
     local sel, list_btn = me:list(npc, "오...어서오게. 내가 자네를 얼마나 찾았는지 자넨 알고 있었나?.", { "무슨 급한 일이 있으신지요?" }, false)
-    if list_btn == DIALOG_RESULT.QUIT or sel == nil or sel ~= 0 then
+    if list_btn == DIALOG_RESULT.QUIT or sel == nil or sel ~= 1 then
         return
     end
     local btn = me:dialog(npc, "이번 반란에 대한 새로운 정보를 얻었네.\n\n그동안 자네가 내 부탁을 아주 잘 그리고 훌륭하게 들어 주었기 때문에 이번에도 자네의 도움을 좀 얻어볼까 해서야.", false, true)
@@ -237,7 +237,7 @@ local function run_seahorse_accept(me, npc)
         return
     end
     sel, list_btn = me:list(npc, "어떤가. 또다시 내 부탁을 좀 들어주겠나?", { "물론이지요.", "죄송합니다만..바뻐서..." }, false)
-    if list_btn == DIALOG_RESULT.QUIT or sel == nil or sel ~= 0 then
+    if list_btn == DIALOG_RESULT.QUIT or sel == nil or sel ~= 1 then
         return
     end
     local q = me:quest(quest.QUEST_DRAGON_KING)
@@ -341,7 +341,7 @@ local function run_mermaid_accept(me, npc)
         goto NPC_75_034
     end
     local sel, list_btn = me:list(npc, "그러니 이번에 자네가 인어장군에게 정보를 좀 얻어 올 수 있겠나?", { "그 정도야 가뿐하지요.", "이번만은 좀 힘들 것 같군요..." }, false)
-    if list_btn == DIALOG_RESULT.QUIT or sel == nil or sel ~= 0 then
+    if list_btn == DIALOG_RESULT.QUIT or sel == nil or sel ~= 1 then
         return
     end
     local q = me:quest(quest.QUEST_DRAGON_KING)
@@ -361,15 +361,15 @@ local function run_mermaid_complete(me, npc)
         return
     end
     local sel, list_btn = me:list(npc, "그래, 인어장군 일은 어떻게 되었나?", { "인어장군을 사로잡아 물어보니", "반란의 죄를 인정하였습니다." }, false)
-    if list_btn == DIALOG_RESULT.QUIT or sel == nil or sel < 0 or sel > 1 then
+    if list_btn == DIALOG_RESULT.QUIT or sel == nil or sel < 1 or sel > 2 then
         return
     end
     sel, list_btn = me:list(npc, "그래? 음..역시.. 그래서 지금 인어장군은 어디에 있나?", { "그게, 인어장군 어미가 많이 아프셔서", "임종을 지켜보기를 간곡히 부탁하길래", "여기 이 내통문서를 받고 풀어주었습니다.", "어미일이 끝나는대로 용왕님을 찾아와서", "죄를 달게 받는다고 했습니다." }, false)
-    if list_btn == DIALOG_RESULT.QUIT or sel == nil or sel < 0 or sel > 4 then
+    if list_btn == DIALOG_RESULT.QUIT or sel == nil or sel < 1 or sel > 5 then
         return
     end
     sel, list_btn = me:list(npc, "음.. 그렇군, 그 내통문서를 이리 줘 보게", { "..." }, false)
-    if list_btn == DIALOG_RESULT.QUIT or sel == nil or sel ~= 0 then
+    if list_btn == DIALOG_RESULT.QUIT or sel == nil or sel ~= 1 then
         return
     end
     if not me:has_items(ITEM_MERMAID_DOC, 1) then
@@ -377,31 +377,31 @@ local function run_mermaid_complete(me, npc)
         return
     end
     sel, list_btn = me:list(npc, "음.. 아무래도 자네가 속은 듯 하네.", { "..." }, false)
-    if list_btn == DIALOG_RESULT.QUIT or sel == nil or sel ~= 0 then
+    if list_btn == DIALOG_RESULT.QUIT or sel == nil or sel ~= 1 then
         return
     end
     sel, list_btn = me:list(npc, "이 문서를 도저히 알아 볼 수 없는 언어로 되어 있네 그려, 동방언어가 아니라 아마 서방언어인 듯 싶은데..", { "..." }, true)
-    if list_btn == DIALOG_RESULT.QUIT or sel == nil or sel ~= 0 then
+    if list_btn == DIALOG_RESULT.QUIT or sel == nil or sel ~= 1 then
         return
     end
     sel, list_btn = me:list(npc, "아무래도 인어장군은 자네나 내가 이 문서의 내용을 알아 볼 수 없다는 것을\n짐작하고 쉽게 내어 준 것 같네.", { "..." }, false)
-    if list_btn == DIALOG_RESULT.QUIT or sel == nil or sel ~= 0 then
+    if list_btn == DIALOG_RESULT.QUIT or sel == nil or sel ~= 1 then
         return
     end
     sel, list_btn = me:list(npc, "아마도 어미의 일도 거짓일테지. 인어장군, 역시 간사하구나, 저런 저런...", { "아니, 그게 정말이옵니까? 이리 줘 보십시오." }, false)
-    if list_btn == DIALOG_RESULT.QUIT or sel == nil or sel ~= 0 then
+    if list_btn == DIALOG_RESULT.QUIT or sel == nil or sel ~= 1 then
         return
     end
     sel, list_btn = me:list(npc, " ", { "This is the secret document....", "으허..이게 도대체 무슨 말인지..", "제 실수로 인어장군을 그냥 놓아 주었군요.", "아마도 인어장군은 지금쯤", "어디론가 모습을 감추었겠네요." }, false)
-    if list_btn == DIALOG_RESULT.QUIT or sel == nil or sel < 0 or sel > 4 then
+    if list_btn == DIALOG_RESULT.QUIT or sel == nil or sel < 1 or sel > 5 then
         return
     end
     sel, list_btn = me:list(npc, " ", { "제 부주의로 인한 것이니,", "제가 반드시 이 문서를 번역해 오겠습니다.", "이것도 분명 언어이니", "누군가가 번역할 수 있겠지요" }, false)
-    if list_btn == DIALOG_RESULT.QUIT or sel == nil or sel < 0 or sel > 3 then
+    if list_btn == DIALOG_RESULT.QUIT or sel == nil or sel < 1 or sel > 4 then
         return
     end
     sel, list_btn = me:list(npc, "그래, 자네만 믿고 기다리겠네. 아마 중요한 정보가 담겨 있을 것이야.", { "최선을 다하겠습니다." }, false)
-    if list_btn == DIALOG_RESULT.QUIT or sel == nil or sel ~= 0 then
+    if list_btn == DIALOG_RESULT.QUIT or sel == nil or sel ~= 1 then
         return
     end
     q:step(10)
@@ -414,7 +414,7 @@ local function run_mermaid_turnin(me, npc)
         return
     end
     local sel, list_btn = me:list(npc, "오.. 내통문서를 번역해 왔나 보군.", { "네, 여기 있습니다." }, false)
-    if list_btn == DIALOG_RESULT.QUIT or sel == nil or sel ~= 0 then
+    if list_btn == DIALOG_RESULT.QUIT or sel == nil or sel ~= 1 then
         return
     end
     local q = me:quest(quest.QUEST_DRAGON_KING)
@@ -446,7 +446,7 @@ local function run_shark_accept(me, npc)
         return
     end
     local sel, list_btn = me:list(npc, "오. 마침 적절할 때 잘 왔네.", { "무슨 일이신가요?" }, false)
-    if list_btn == DIALOG_RESULT.QUIT or sel == nil or sel ~= 0 then
+    if list_btn == DIALOG_RESULT.QUIT or sel == nil or sel ~= 1 then
         return
     end
     local btn
@@ -476,7 +476,7 @@ local function run_shark_accept(me, npc)
         goto NPC_75_042
     end
     sel, list_btn = me:list(npc, "그래서 자네가 적들의 기세를 좀 꺽어주지 않겠는가?", { "매우 쉬운 일이군요.", "저 개인이 무슨 힘이 있어서...." }, false)
-    if list_btn == DIALOG_RESULT.QUIT or sel == nil or sel ~= 0 then
+    if list_btn == DIALOG_RESULT.QUIT or sel == nil or sel ~= 1 then
         return
     end
     local q = me:quest(quest.QUEST_DRAGON_KING)
@@ -508,11 +508,11 @@ local function run_shark_report(me, npc)
         return
     end
     local sel, list_btn = me:list(npc, "그래 상어장군을 잡아왔는가?", { "예. 여기있습니다." }, false)
-    if list_btn == DIALOG_RESULT.QUIT or sel == nil or sel ~= 0 then
+    if list_btn == DIALOG_RESULT.QUIT or sel == nil or sel ~= 1 then
         return
     end
     sel, list_btn = me:list(npc, "아니, 저자는 상어장군이 아니지 않은가?", { "예? 분명히 저자가", "자신의 입으로 상어장군이라고 했는데..." }, true)
-    if list_btn == DIALOG_RESULT.QUIT or sel == nil or sel < 0 or sel > 1 then
+    if list_btn == DIALOG_RESULT.QUIT or sel == nil or sel < 1 or sel > 2 then
         return
     end
     local btn = me:dialog(npc, "저자는 상어장군의 심복인 상어장수라네. 자네가 저자의 농간에 속았구만.", false, true)
@@ -520,7 +520,7 @@ local function run_shark_report(me, npc)
         return
     end
     sel, list_btn = me:list(npc, " ", { "이런. 제가 다시 가서 잡아오도록 하겠습니다." }, false)
-    if list_btn == DIALOG_RESULT.QUIT or sel == nil or sel ~= 0 then
+    if list_btn == DIALOG_RESULT.QUIT or sel == nil or sel ~= 1 then
         return
     end
     q:step(13)
@@ -601,7 +601,7 @@ local function run_jellyfish_accept(me, npc)
         return
     end
     local sel, list_btn = me:list(npc, "이거 번번히 신세를 져서 미안하구만.", { "또 무슨 일이 있으신가 보지요?" }, false)
-    if list_btn == DIALOG_RESULT.QUIT or sel == nil or sel ~= 0 then
+    if list_btn == DIALOG_RESULT.QUIT or sel == nil or sel ~= 1 then
         return
     end
     local btn
@@ -619,7 +619,7 @@ local function run_jellyfish_accept(me, npc)
         goto NPC_75_053
     end
     sel, list_btn = me:list(npc, "자네가 나서서 그 정보를 좀 알아와 줄 수 있는가?", { "물론입니다.", "별로 내키지 않는군요." }, false)
-    if list_btn == DIALOG_RESULT.QUIT or sel == nil or sel ~= 0 then
+    if list_btn == DIALOG_RESULT.QUIT or sel == nil or sel ~= 1 then
         return
     end
     local q = me:quest(quest.QUEST_DRAGON_KING)
@@ -640,19 +640,19 @@ local function run_jellyfish_report(me, npc)
         return
     end
     local sel, list_btn = me:list(npc, "해파리장군을 잡아왔는가?", { "예" }, false)
-    if list_btn == DIALOG_RESULT.QUIT or sel == nil or sel ~= 0 then
+    if list_btn == DIALOG_RESULT.QUIT or sel == nil or sel ~= 1 then
         return
     end
     sel, list_btn = me:list(npc, "그럼 적의 전략문서는 어디 있는가?", { "미처 발견하지 못했습니다." }, false)
-    if list_btn == DIALOG_RESULT.QUIT or sel == nil or sel ~= 0 then
+    if list_btn == DIALOG_RESULT.QUIT or sel == nil or sel ~= 1 then
         return
     end
     sel, list_btn = me:list(npc, "음. 아마도 해파리 장군이 잡히기 직전에 측근들에게 넘겨주었을 걸세.", { "..." }, false)
-    if list_btn == DIALOG_RESULT.QUIT or sel == nil or sel ~= 0 then
+    if list_btn == DIALOG_RESULT.QUIT or sel == nil or sel ~= 1 then
         return
     end
     sel, list_btn = me:list(npc, "머저 해파리부하를 여러마리 잡고나서 해파리수하를 닥달해보면 겁을 집어먹고 줄 것일세.", { "그렇다면 제가 가서", "그 전략문서를 찾아오도록 하겠습니다." }, false)
-    if list_btn == DIALOG_RESULT.QUIT or sel == nil or sel < 0 or sel > 1 then
+    if list_btn == DIALOG_RESULT.QUIT or sel == nil or sel < 1 or sel > 2 then
         return
     end
     q:step(16)
@@ -672,7 +672,7 @@ local function run_jellyfish_complete(me, npc)
     end
     ::NPC_75_061::
     local sel, list_btn = me:list(npc, "음....으으으........으윽...", { "앗! 무슨 일이십니까?" }, false)
-    if list_btn == DIALOG_RESULT.QUIT or sel == nil or sel ~= 0 then
+    if list_btn == DIALOG_RESULT.QUIT or sel == nil or sel ~= 1 then
         return
     end
     btn = me:dialog(npc, "처...청의태자가 반란의 수괴였다니.....믿을 수 없어.....이럴수가....", false, true)
@@ -680,7 +680,7 @@ local function run_jellyfish_complete(me, npc)
         return
     end
     sel, list_btn = me:list(npc, "가만히 기다리면 저절로 자신의 손에 들어갈 용왕의 자리가 그렇게도 탐이 냈단 말인가....아....", { "고정하시지요." }, false)
-    if list_btn == DIALOG_RESULT.QUIT or sel == nil or sel ~= 0 then
+    if list_btn == DIALOG_RESULT.QUIT or sel == nil or sel ~= 1 then
         return
     end
     btn = me:dialog(npc, "여하튼 자네에게 커다란 빚을 지는구만,", false, true)
@@ -726,7 +726,7 @@ local function run_crown_prince_accept(me, npc)
         return
     end
     local sel, list_btn = me:list(npc, "으음. 이제서야 겨우 충격에서 회복되는군.", { "괜찮으십니까?" }, false)
-    if list_btn == DIALOG_RESULT.QUIT or sel == nil or sel ~= 0 then
+    if list_btn == DIALOG_RESULT.QUIT or sel == nil or sel ~= 1 then
         return
     end
     local btn
@@ -776,7 +776,7 @@ local function run_crown_prince_accept(me, npc)
         goto NPC_75_071
     end
     sel, list_btn = me:list(npc, "그래서 말인데 자네가 도와주던 김에 확실히 좀 도와주겠는가?", { "끝을 보는 게 옳겠지요.", "남의 가족사에는 끼고 싶지 않아요." }, false)
-    if list_btn == DIALOG_RESULT.QUIT or sel == nil or sel ~= 0 then
+    if list_btn == DIALOG_RESULT.QUIT or sel == nil or sel ~= 1 then
         return
     end
     local q = me:quest(quest.QUEST_DRAGON_KING)
@@ -803,31 +803,31 @@ local function run_crown_prince_turnin_orb(me, npc)
         return
     end
     local sel, list_btn = me:list(npc, "그래 청의태자는 어떻게 되었는가?", { "청의태자는 그만 여의주의 힘을" }, false)
-    if list_btn == DIALOG_RESULT.QUIT or sel == nil or sel ~= 0 then
+    if list_btn == DIALOG_RESULT.QUIT or sel == nil or sel ~= 1 then
         return
     end
     sel, list_btn = me:list(npc, " ", { ",견디지 못하고 사라져 버렸습니다." }, false)
-    if list_btn == DIALOG_RESULT.QUIT or sel == nil or sel ~= 0 then
+    if list_btn == DIALOG_RESULT.QUIT or sel == nil or sel ~= 1 then
         return
     end
     sel, list_btn = me:list(npc, "그래. 그렇다면 여의주를 나에게 되돌려 주게나.", { "예. 여기있습니다.", "아니. 드릴 수 없습니다." }, false)
-    if list_btn == DIALOG_RESULT.QUIT or sel == nil or sel ~= 0 then
+    if list_btn == DIALOG_RESULT.QUIT or sel == nil or sel ~= 1 then
         return
     end
     sel, list_btn = me:list(npc, "앗. 이러수가.", { "왜 그러십니까?" }, false)
-    if list_btn == DIALOG_RESULT.QUIT or sel == nil or sel ~= 0 then
+    if list_btn == DIALOG_RESULT.QUIT or sel == nil or sel ~= 1 then
         return
     end
     sel, list_btn = me:list(npc, "청의태자는 아직 죽은 것이 아니었다네.", { "헉. 그렇다면......" }, false)
-    if list_btn == DIALOG_RESULT.QUIT or sel == nil or sel ~= 0 then
+    if list_btn == DIALOG_RESULT.QUIT or sel == nil or sel ~= 1 then
         return
     end
     sel, list_btn = me:list(npc, "청의태자가 죽기 직전에 여의주의 힘을 피해서 잠시 아공간으로 사라졌던 모양이야.", { "그럴수가..." }, false)
-    if list_btn == DIALOG_RESULT.QUIT or sel == nil or sel ~= 0 then
+    if list_btn == DIALOG_RESULT.QUIT or sel == nil or sel ~= 1 then
         return
     end
     sel, list_btn = me:list(npc, "어서 가서 그자를 잡아다 주게.", { "예. 알겠습니다." }, false)
-    if list_btn == DIALOG_RESULT.QUIT or sel == nil or sel ~= 0 then
+    if list_btn == DIALOG_RESULT.QUIT or sel == nil or sel ~= 1 then
         return
     end
     local q = me:quest(quest.QUEST_DRAGON_KING)
@@ -850,15 +850,15 @@ local function run_crown_prince_complete(me, npc)
     end
     local btn
     local sel, list_btn = me:list(npc, "오오. 청의태자를 잡아왔는가", { "......" }, false)
-    if list_btn == DIALOG_RESULT.QUIT or sel == nil or sel ~= 0 then
+    if list_btn == DIALOG_RESULT.QUIT or sel == nil or sel ~= 1 then
         return
     end
     sel, list_btn = me:list(npc, " ", { "...청의태자를 잡았으나 여의주를" }, false)
-    if list_btn == DIALOG_RESULT.QUIT or sel == nil or sel ~= 0 then
+    if list_btn == DIALOG_RESULT.QUIT or sel == nil or sel ~= 1 then
         return
     end
     sel, list_btn = me:list(npc, " ", { "사용하다가 사라져버렸습니다." }, false)
-    if list_btn == DIALOG_RESULT.QUIT or sel == nil or sel ~= 0 then
+    if list_btn == DIALOG_RESULT.QUIT or sel == nil or sel ~= 1 then
         return
     end
     btn = me:dialog(npc, "그렇다면 둘이 함께 여의주의 힘을 사용한 모양이로군.", false, true)
@@ -866,7 +866,7 @@ local function run_crown_prince_complete(me, npc)
         return
     end
     sel, list_btn = me:list(npc, "둘이 나눠서 여의주의 힘을 받으면 버틸 수 있을 것이라고 믿었던 모양이군. 어리석구나...어리석어...", { "그런데 여의주의 힘이 무엇인가요?" }, false)
-    if list_btn == DIALOG_RESULT.QUIT or sel == nil or sel ~= 0 then
+    if list_btn == DIALOG_RESULT.QUIT or sel == nil or sel ~= 1 then
         return
     end
     ::NPC_75_088::
@@ -913,7 +913,7 @@ local function run_cidequest_yongwang(me, npc)
         if btn == DIALOG_RESULT.QUIT or sel == nil then
             return
         end
-        if sel == 0 then
+        if sel == 1 then
             me:dialog(npc, "고맙군. 정말 고마워. \n\n 이번에 들어온 정보에 의하면 그 보물이 용궁 밖에 나타났다는 소리를 들었네.", false, true)
             me:dialog(npc, "아마 장돌뱅이한테 정보가 들어가지 않았나 생각하는데 잘 알아봐 주게나.", false, false)
             q = me:start_quest(quest.QUEST_CIDEQUEST)
@@ -997,11 +997,11 @@ function NPC_75(me, npc)
         if btn == DIALOG_RESULT.QUIT or sel == nil then
             return
         end
-        if sel == 0 then
+        if sel == 1 then
             me:dialog(npc, "자네 덕분에 아주 잘 지내고 있다네. 언제든 놀러 오게나.", false, false)
             return
         end
-        if sel == 1 then
+        if sel == 2 then
             run_cidequest_yongwang(me, npc)
         end
         return

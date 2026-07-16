@@ -16,12 +16,12 @@ local function run_ox_admin(me, ch)
         return DIALOG_RESULT.NEXT
     end
 
-    if sub_sel == 0 then
+    if sub_sel == 1 then
         local m = me:map()
         m:block(7, 13, false)
         m:block(21, 13, false)
         return me:dialog(ch, '출입구를 열었습니다.', false, true)
-    elseif sub_sel == 1 then
+    elseif sub_sel == 2 then
         local m = me:map()
         m:block(7, 13, true)
         m:block(21, 13, true)

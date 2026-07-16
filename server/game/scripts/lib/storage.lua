@@ -91,7 +91,7 @@ function M.handle(me, npc)
         goto STORAGE_LIST
     end
     
-    current_entry = entries[entry_index + 1]
+    current_entry = entries[entry_index]
     if current_entry == nil then
         goto STORAGE_LIST
     end
@@ -138,15 +138,12 @@ function M.handle(me, npc)
         goto ENTRY_DETAIL
     end
 
-    if receive_selected ~= 0 then
+    if receive_selected ~= 1 then
         goto STORAGE_LIST
     end
 
-    me:message(string.format('[storage] receive begin id=%d', current_entry.id), MESSAGE_TYPE.STATE)
     local success = me:receive_storage_reward(current_entry.id)
-    me:message(string.format('[storage] receive end id=%d success=%s', current_entry.id, tostring(success)), MESSAGE_TYPE.STATE)
     if success then
-        me:message('[storage] show success dialog', MESSAGE_TYPE.STATE)
         local button = me:dialog(npc, '보상이 지급되었습니다.', true, true)
         if button == DIALOG_RESULT.QUIT then
             return false
@@ -155,7 +152,6 @@ function M.handle(me, npc)
             goto STORAGE_LIST
         end
     else
-        me:message('[storage] show fail dialog', MESSAGE_TYPE.STATE)
         local button = me:dialog(npc, '수령 조건이 맞지 않습니다. 확인 후 다시 시도해주세요.', true, true)
         if button == DIALOG_RESULT.QUIT then
             return false

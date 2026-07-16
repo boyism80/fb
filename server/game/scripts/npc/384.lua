@@ -42,7 +42,7 @@ function NPC_384(me, npc)
         goto NPC_384_0004
     end
 
-    if sel == 0 then
+    if sel == 1 then
         ::NPC_384_0006::
         btn = me:dialog(npc, "그래. 백열장을 다시 배우고 싶으면 그 댓가로 10만전을 시주해야 한다네. 그리고 자네가 수련했던 백열장의 모든 기억은 사라진다네.", false, true)
         if btn == DIALOG_RESULT.QUIT then
@@ -56,7 +56,7 @@ function NPC_384(me, npc)
         if list_btn2 == DIALOG_RESULT.PREV then
             goto NPC_384_0006
         end
-        if sel2 == 0 then
+        if sel2 == 1 then
             if me:money() < BAEKYEOL_PRICE then
                 me:dialog(npc, "뭔가? 자네는 시주할 금액이 없는 것 같은데?", false, false)
                 return
@@ -72,7 +72,7 @@ function NPC_384(me, npc)
         return
     end
 
-    if sel == 1 then
+    if sel == 2 then
         ::NPC_384_0008::
         btn = me:dialog(npc, "그래. 선풍각을 다시 배우고 싶으면 그 댓가로 20만전을 시주해야 한다네. 그리고 자네가 수련했던 선풍각의 모든 기억은 사라진다네.", false, true)
         if btn == DIALOG_RESULT.QUIT then
@@ -86,7 +86,7 @@ function NPC_384(me, npc)
         if list_btn2 == DIALOG_RESULT.PREV then
             goto NPC_384_0008
         end
-        if sel2 == 0 then
+        if sel2 == 1 then
             if me:money() < SEONPUNG_PRICE then
                 me:dialog(npc, "뭔가? 자네는 시주할 금액이 없는 것 같은데?", false, false)
                 return

@@ -14,11 +14,11 @@ function NPC_407(me, npc)
         "청비약을 만들고 싶습니다.",
         "녹비약을 만들고 싶습니다.",
     }, false)
-    if list_btn == DIALOG_RESULT.QUIT or sel == nil or sel < 0 or sel > 3 then
+    if list_btn == DIALOG_RESULT.QUIT or sel == nil or sel < 1 or sel > 4 then
         return
     end
 
-    local prefix = POTION_PREFIXES[sel + 1]
+    local prefix = POTION_PREFIXES[sel]
     local button_str = prefix .. "호박단추"
 
     button = me:dialog(npc, prefix .. "비약을 만들기 위해선 " .. button_str .. " 2개가 필요하다네.", false, true)
@@ -39,7 +39,7 @@ function NPC_407(me, npc)
         return
     end
 
-    if sel2 == 1 then
+    if sel2 == 2 then
         me:dialog(npc, "비약을 만들고 싶으면 어서 구해오게.", false, false)
         return
     end

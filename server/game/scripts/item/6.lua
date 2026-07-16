@@ -51,7 +51,7 @@ function ON_ACTIVATED_6(me, item)
     if list_btn2 == DIALOG_RESULT.QUIT then
         return
     end
-    if sel2 ~= 2 then
+    if sel2 ~= 3 then
         quiz_wrong_and_exit(me, model, '틀렸습니다!! 바람의나라\n운영자는 아이디 뒤에 영문자\n\'GM\'이 붙습니다.')
         return
     end
@@ -61,7 +61,7 @@ function ON_ACTIVATED_6(me, item)
     if list_btn3 == DIALOG_RESULT.QUIT then
         return
     end
-    if sel3 ~= 2 then
+    if sel3 ~= 3 then
         quiz_wrong_and_exit(me, model, '틀렸습니다!! 바람의나라\n운영자는 절대로 비밀번호를\n묻지 않습니다. 따라서\n절대로 알려주면 안됩니다.')
         return
     end
@@ -71,7 +71,7 @@ function ON_ACTIVATED_6(me, item)
     if list_btn4 == DIALOG_RESULT.QUIT then
         return
     end
-    if sel4 ~= 0 then
+    if sel4 ~= 1 then
         quiz_wrong_and_exit(me, model, '틀렸습니다!! F2는\n순위리스트, F10은 설정의\n단축키입니다.')
         return
     end

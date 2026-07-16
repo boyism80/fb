@@ -31,7 +31,7 @@ function NPC_180(me, npc)
             return
         end
 
-        if selected == 0 then
+        if selected == 1 then
             local q = me:start_quest(quest.QUEST_NAMGUN)
             if q == nil then
                 me:dialog(npc, '퀘스트 시작 실패', false, true)
@@ -60,7 +60,7 @@ function NPC_180(me, npc)
     if list_button == DIALOG_RESULT.PREV then
         return
     end
-    if selected ~= 0 then
+    if selected ~= 1 then
         return
     end
 

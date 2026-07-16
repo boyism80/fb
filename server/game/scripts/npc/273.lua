@@ -9,7 +9,7 @@ function NPC_273(me, npc)
         if btn == DIALOG_RESULT.QUIT then
             return
         end
-        if sel == nil or sel == 1 then
+        if sel == nil or sel == 2 then
             return
         end
         
@@ -39,7 +39,7 @@ function NPC_273(me, npc)
         if btn == DIALOG_RESULT.PREV then
             goto NPC_273_0011
         end
-        if sel == nil or sel == 1 then
+        if sel == nil or sel == 2 then
             me:dialog(npc, "하긴 제 잘못이겠죠...", false, false)
             return
         end

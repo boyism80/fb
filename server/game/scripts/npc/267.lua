@@ -10,7 +10,7 @@ function NPC_267_CONFIRM_TEAMMATE(me, teammate_name, npc)
         return false
     end
 
-    if selected == 1 then
+    if selected == 2 then
         me:dialog(npc, '확인했다. 그럼 잠시 기다리고 있도록 하여라.', false, true)
         return true
     else
@@ -53,7 +53,7 @@ function NPC_267(me, npc)
             return
         end
 
-        if selected == 1 then
+        if selected == 2 then
             break
         end
 

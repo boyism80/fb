@@ -15,12 +15,12 @@ function NPC_214(me, npc)
         return
     end
 
-    if sel == 1 then
+    if sel == 2 then
         me:dialog(npc, '허허.. 싱겁기는....', false, false)
         return
     end
 
-    if sel ~= 0 then
+    if sel ~= 1 then
         return
     end
 
@@ -41,7 +41,7 @@ function NPC_214(me, npc)
         return
     end
 
-    local ex = EXCHANGES[key_opt + 1]
+    local ex = EXCHANGES[key_opt]
     local code = me:exchange(
         { ['item'] = { [ex.key] = 1 } },
         { ['item'] = { [ex.item] = 1 } }

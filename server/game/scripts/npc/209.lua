@@ -51,10 +51,10 @@ function NPC_209(me, npc)
         if sel == nil then
             return
         end
-        if sel == 1 then
+        if sel == 2 then
             goto NPC_209_0001
         end
-        if sel == 0 then
+        if sel == 1 then
             q:step(1)
             me:dialog(npc, '신성한 나무들은 북방대초원 21~30층을 돌아다니다 보면 구할 수 있을겁니다.\n\n그럼 부탁드리겠습니다.', false, true)
         end
@@ -68,15 +68,15 @@ function NPC_209(me, npc)
             options[i] = name_with(t.name, '을', '를') .. ' 가지고 왔습니다.'
         end
         local list2 = me:list(npc, '이렇게 열심히 제를 올리는데 언제쯤 흉년이 멈추려나..', options, false)
-        if list2 == nil or list2 < 0 or list2 >= #HOLYTREE_ITEMS then
+        if list2 == nil or list2 < 1 or list2 > #HOLYTREE_ITEMS then
             return
         end
-        local item = HOLYTREE_ITEMS[list2 + 1]
+        local item = HOLYTREE_ITEMS[list2]
         local confirm = me:list(npc, '풍년을 위한 제를 올릴 수 있도록 저에게 ' .. name_with(item.name, '을', '를') .. ' 주시겠습니까?', { '네. 드릴께요.', '아니요. 제가 쓸데가 있어서요.' }, false)
         if confirm == nil then
             return
         end
-        if confirm ~= 0 then
+        if confirm ~= 1 then
             return
         end
         if me:group() ~= nil then

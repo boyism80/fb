@@ -18,7 +18,7 @@ function NPC_120(me, npc)
         end
 
         local selected = me:list(npc, '다른 나라의 무기를 연구중인데, 그 태존도가 좀 필요해. 구해다주겠나?', { '네, 구해다 드리겠습니다.', '싫습니다.' })
-        if selected == nil or selected ~= 0 then
+        if selected == nil or selected ~= 1 then
             return
         end
 

@@ -34,7 +34,7 @@ function M.handle(me, npc)
         if selected == nil then
             return true
         end
-        if selected == 0 then
+        if selected == 1 then
             local err = mm:unregister()
             if err ~= nil then
                 me:dialog(npc, err, false, true)
@@ -59,7 +59,7 @@ function M.handle(me, npc)
         return true
     end
 
-    local queue = queues()[selected + 1]
+    local queue = queues()[selected]
     if queue == nil then
         return true
     end
@@ -71,7 +71,7 @@ function M.handle(me, npc)
     if confirm_button == DIALOG_RESULT.PREV then
         return true
     end
-    if confirm_selected == nil or confirm_selected ~= 0 then
+    if confirm_selected == nil or confirm_selected ~= 1 then
         return true
     end
 

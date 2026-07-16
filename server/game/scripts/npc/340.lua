@@ -22,11 +22,11 @@ function NPC_340(me, npc)
         return
     end
 
-    if sel == 0 then
+    if sel == 1 then
         if server.warp_to_return_map(me) == nil then
             me:dialog(npc, "이동할 수 없습니다.", false, false)
         end
-    elseif sel == 1 then
+    elseif sel == 2 then
         me:dialog(npc, "잘 생각하셨어요.", false, true)
     end
 end

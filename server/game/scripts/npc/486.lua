@@ -31,11 +31,11 @@ function NPC_486(me, npc)
         return
     end
 
-    if sel == 0 or sel == 1 then
+    if sel == 1 or sel == 2 then
         me:dialog(npc, "이미 참여 하셨네요. 한 계정에 한번만 참여가 가능합니다. (참여 기능은 준비중입니다.)", false, false)
-    elseif sel == 3 or sel == 4 or sel == 5 or sel == 6 then
+    elseif sel == 4 or sel == 5 or sel == 6 or sel == 7 then
         me:dialog(npc, "준비중입니다.", false, false)
-    elseif sel == 7 then
+    elseif sel == 8 then
         me:dialog(npc, "당첨여부 확인은 준비중입니다.", false, false)
     else
         me:dialog(npc, "준비중입니다.", false, false)

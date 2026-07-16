@@ -2,12 +2,12 @@ local lib      = require("integration.lib")
 local protocol = require("integration.protocol")
 
 local F1_OID            = 0xFFFFFFFF
-local F1_STORAGE_INDEX  = 0
-local F1_GRANT_INDEX    = 3
-local GRANT_TARGET_USER = 1
-local GRANT_REWARD_ITEM = 0
-local GRANT_REWARD_NONE = 3
-local RECEIVE_YES       = 0
+local F1_STORAGE_INDEX  = 1
+local F1_GRANT_INDEX    = 4
+local GRANT_TARGET_USER = 2
+local GRANT_REWARD_ITEM = 1
+local GRANT_REWARD_NONE = 4
+local RECEIVE_YES       = 1
 
 -- NORMAL dialog resumes with request.action (not button).
 -- Must match fb::model::enum_value::DIALOG_RESULT.
@@ -54,7 +54,7 @@ local function find_list_index(packet, text)
     end
     for i, name in ipairs(packet.list_lists) do
         if name == text then
-            return i - 1
+            return i
         end
     end
     return nil

@@ -8,7 +8,7 @@ local function marriage_npc(me, npc)
         return
     end
 
-    if selected == 0 then
+    if selected == 1 then
         if m.married then
             me:dialog(npc, '이미 결혼을 하셨습니다.')
             return
@@ -70,7 +70,7 @@ local function marriage_npc(me, npc)
         end
 
         local yes_or_no = found:menu(npc, string.format('정말 %s님과 결혼하시겠습니까?', me:name()), { '예', '아뇨' })
-        if yes_or_no == 0 then
+        if yes_or_no == 1 then
             local err = me:marry(found)
             if err ~= nil then
                 me:dialog(npc, err)
@@ -82,7 +82,7 @@ local function marriage_npc(me, npc)
         else
             me:dialog(npc, string.format('%s님이 거절하셨습니다.', found:name()))
         end
-    elseif selected == 1 then
+    elseif selected == 2 then
         if not m.married then
             me:dialog(npc, '결혼을 한 사람만이 이혼을 할 수 있습니다.')
             return
@@ -95,7 +95,7 @@ local function marriage_npc(me, npc)
         end
 
         local yes_or_no = spouse:menu(npc, string.format('%s님이 이혼을 요청했습니다. 수락하시겠습니까?', me:name()), { '예', '아뇨' })
-        if yes_or_no == 0 then
+        if yes_or_no == 1 then
             local err = me:divorce()
             if err ~= nil then
                 me:dialog(npc, err)

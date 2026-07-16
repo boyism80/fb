@@ -47,7 +47,7 @@ function NPC_155(me, npc)
             return
         end
 
-        if selected == 1 then
+        if selected == 2 then
             me:dialog(npc, '다시 한번 생각해보게. 머지않아 이 압록강이 푸른빛을 잃게 될지도 모르네. 정말 큰일이군.', false, true)
             return
         end

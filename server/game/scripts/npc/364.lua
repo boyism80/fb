@@ -4,7 +4,7 @@ local function yeondeung_list()
     local opts = {}
     opts[1] = "연등 2개를 연등1로 교환 해 주세요."
     for i = 1, 30 do
-        opts[i + 1] = string.format("연등%d 2개를 연등%d로 교환 해 주세요.", i, i + 1)
+        opts[i] = string.format("연등%d 2개를 연등%d로 교환 해 주세요.", i, i + 1)
     end
     opts[32] = "아뇨 됐습니다..."
     return opts
@@ -30,12 +30,12 @@ function NPC_364(me, npc)
         return
     end
 
-    if sel == 31 then
+    if sel == 32 then
         me:dialog(npc, "안녕히 가십시오...", false, false)
         return
     end
 
-    local source_name = (sel == 0) and "연등" or ("연등" .. sel)
+    local source_name = (sel == 1) and "연등" or ("연등" .. sel)
     local target_name = "연등" .. (sel + 1)
 
     local code = me:exchange(

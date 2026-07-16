@@ -20,10 +20,10 @@ local function ranggyuryun_palgu(me, npc)
         goto NPC_2_0001
     end
     sel = me:list(npc, '8개의 괘를 팔괘로 바꾸시겠어요?', { '네', '아니요, 팔괘가 다 없어요...' })
-    if sel == nil or sel == 0 then
+    if sel == nil or sel == 1 then
         return
     end
-    if sel == 2 then
+    if sel == 3 then
         me:dialog(npc, '다음엔 팔괘를 다 모아오세요...', false, false)
         return
     end
@@ -71,11 +71,11 @@ local function ranggyuryun_pure_water(me, npc)
 
     if q:step() == 1 then
         sel = me:list(npc, ' ', { '물을 정화시키는 방법을 아시나요?' })
-        if sel == nil or sel ~= 0 then return end
+        if sel == nil or sel ~= 1 then return end
         sel = me:list(npc, '물론 알고 있지요. 하지만 그 방법을 배우기 위해서는 대가가 필요하지요.', { '무슨 대가인가요?' })
-        if sel == nil or sel ~= 0 then return end
+        if sel == nil or sel ~= 1 then return end
         sel = me:list(npc, '신선한 사과를 먹어본지 참 오래 되었는데..가서 홍옥 3개만 가지고 오세요.', { '예. 알겠습니다.', '홍옥!! 차라리 내가 먹고 말지..' })
-        if sel == nil or sel ~= 0 then return end
+        if sel == nil or sel ~= 1 then return end
         q:step(2)
         me:push_achievement(ACHIEVEMENT_CLEAR, '랑구륜의 부탁을 들어주자.', 7, 1)
         me:dialog(npc, '아참 전 국광보다는 홍옥을 좋아하니 꼭 홍옥으로 3개를 가져오세요.', false, false)
@@ -127,15 +127,15 @@ end
 function NPC_2(me, npc)
     local sel = me:list(npc, '안녕하세요. 어떻게 오셨나요?', { '팔괘', '순수한물', '황금호박무기만들기' })
     if sel == nil then return end
-    if sel == 0 then
+    if sel == 1 then
         ranggyuryun_palgu(me, npc)
         return
     end
-    if sel == 1 then
+    if sel == 2 then
         ranggyuryun_pure_water(me, npc)
         return
     end
-    if sel == 2 then
+    if sel == 3 then
         ranggyuryun_golden_amber(me, npc)
     end
 end

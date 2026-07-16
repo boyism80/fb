@@ -21,7 +21,7 @@ function NPC_236(me, npc)
             return
         end
         local sel = me:list(npc, '자네가 후를 퇴치하여 주지 않겠나? 제발 부탁하네.', { '그러죠. 제가 처리하겠습니다!!', '저보다 나은 적임자가 분명 있을겁니다.' }, false)
-        if sel == nil or sel ~= 0 then
+        if sel == nil or sel ~= 1 then
             return
         end
         ::NPC_236_0003::
@@ -72,7 +72,7 @@ function NPC_236(me, npc)
             return
         end
         local sel = me:list(npc, '마계천신의뼈를 가져와줄 수 있겠나?', { '물론이죠! 다시는 되살아나지 못하도록 해야합니다.', '그런것까지 제가 할 필요는 없는것 같군요.' }, false)
-        if sel == nil or sel ~= 0 then
+        if sel == nil or sel ~= 1 then
             return
         end
         q:step(2)

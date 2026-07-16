@@ -54,7 +54,7 @@ local function handle_jingogyun_4(me, npc, q_jingo)
     if btn == DIALOG_RESULT.QUIT or sel == nil then
         return true
     end
-    if sel == 0 or sel == 1 then
+    if sel == 1 or sel == 2 then
         run_dialogs(me, npc, {
             "고균의영검은 잘 쓰고 있니?",
             "뭐? 고균의 영력구슬? 음... 미안해, 마지막으로 가지고 있던건 돌순이를 줬어.",
@@ -78,7 +78,7 @@ local function handle_jingogyun_2(me, npc, q_jingo)
     if btn == DIALOG_RESULT.QUIT or sel == nil then
         return true
     end
-    if sel == 0 then
+    if sel == 1 then
         local reward = nil
         if math.random(1, 1000) < 12 then
             reward = { ['item'] = { ["탄생의씨앗"] = 1 } }
@@ -106,7 +106,7 @@ local function handle_jingogyun_2(me, npc, q_jingo)
         end
         return true
     end
-    if sel == 1 then
+    if sel == 2 then
         run_dialogs(me, npc, {
             "음. 폭염왕은 부하 거미들을 시켜서 해바라기씨를 모으고 있어.",
             "인성초들은 선택받은 해바라기 씨에서 태어나거든. 폭염왕은 그렇게",
@@ -114,7 +114,7 @@ local function handle_jingogyun_2(me, npc, q_jingo)
         })
         return true
     end
-    if sel == 2 then
+    if sel == 3 then
         me:dialog(npc, "응 잘가~", false, false)
         return true
     end
@@ -130,7 +130,7 @@ local function do_frolic(me, npc)
     if btn == DIALOG_RESULT.QUIT or sel == nil then
         return
     end
-    if sel == 0 then
+    if sel == 1 then
         if me:has_items("비장의도시락", 1) and me:rmitem("비장의도시락", 1, ITEM_DELETE_TYPE.GIVE) then
             add_smile(me, 40)
             run_dialogs(me, npc, {
@@ -143,7 +143,7 @@ local function do_frolic(me, npc)
         end
         return
     end
-    if sel == 1 then
+    if sel == 2 then
         me:dialog(npc, "가위 바위 보? 음, 좋아! 절대 지지 않을거야!", false, true)
         local s2, b2 = me:list(npc, "가위...바위....보!", {
             "가위를 낸다.",
@@ -177,7 +177,7 @@ local function do_frolic(me, npc)
         end
         return
     end
-    if sel == 2 then
+    if sel == 3 then
         local r = math.random(1, 1000)
         if r <= 2 then
             run_dialogs(me, npc, {
@@ -240,7 +240,7 @@ function NPC_126(me, npc)
         if btn == DIALOG_RESULT.QUIT or sel == nil then
             return
         end
-        if sel == 0 then
+        if sel == 1 then
             local q = (not q_hwahwa) and me:start_quest(quest.QUEST_HWAHWA) or me:quest(quest.QUEST_HWAHWA)
             if q == nil then
                 return
@@ -250,7 +250,7 @@ function NPC_126(me, npc)
             me:dialog(npc, "선물 하나 줄게!\n\n가지고 있는게 이것뿐이라...\n닳지않도록 조심히 써야 되~", false, false)
             return
         end
-        if sel == 1 then
+        if sel == 2 then
             local q = me:quest(quest.QUEST_HWAHWA_SMILE)
             if q and q:step() > 0 then
                 q:step(math.max(0, (q:step() or 0) - 50))
@@ -279,7 +279,7 @@ function NPC_126(me, npc)
         if btn == DIALOG_RESULT.QUIT or sel == nil then
             return
         end
-        if sel == 0 then
+        if sel == 1 then
             if not run_dialogs(me, npc, {
                 "그래?! 돌순이랑 친구였구나. 반가워, 나도 돌순이 친구야. 내 이름은 화화라고해.\n\n이쁜 이름이지? 이미 죽어서 이름이 이뻐도 아무 소용없긴 하지만...",
                 "헤헤헤, 아무튼 만나서 다행이다. 돌순이가 오지 않는 날엔 하루종일 쓸쓸하거든.\n\n나는 옛날에 폐허 동굴에서 죽어서 친구가 없었거든. 그래서 죽어서도 친구를 사귀고 싶어.",
@@ -294,12 +294,12 @@ function NPC_126(me, npc)
             if btn2 == DIALOG_RESULT.QUIT or sel2 == nil then
                 return
             end
-            if sel2 == 0 or sel2 == 1 then
+            if sel2 == 1 or sel2 == 2 then
                 do_frolic(me, npc)
             end
             return
         end
-        if sel == 1 then
+        if sel == 2 then
             me:dialog(npc, "뭐? 그게 무슨말이니?", false, false)
             return
         end

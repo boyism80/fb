@@ -119,7 +119,7 @@ function NPC_57(me, npc)
     if sel == nil then
         return
     end
-    if sel == 0 then
+    if sel == 1 then
         local r = run_ice_wash(me, npc)
         if r == DIALOG_RESULT.PREV then
             goto NPC_57_START

@@ -94,12 +94,12 @@ local function run_weapon_info_loop(me, npc)
         if weapon_lb == DIALOG_RESULT.PREV then
             goto NPC_274_0010
         end
-        if weapon_sel == 7 then
+        if weapon_sel == 8 then
             me:dialog(npc, "잘 가게나...", false, false)
             return
         end
 
-        if weapon_sel == 0 then
+        if weapon_sel == 1 then
             local r = run_weapon_three_dialogs(me, npc,
                 "진성검을 북방대초원 지역에서 나오는 물건들로 만들어진다네. 비록 만들기는 어렵지만 엄청난 힘을 가지고 있는 검이지...",
                 "그 푸르게 빛나는 검신엔 주작의 영혼이 봉해져 있다고 전해지네... 누구든지 일단 진성검을 갖게 되면 엄청난 힘을 얻을 수 있을걸세...",
@@ -107,7 +107,7 @@ local function run_weapon_info_loop(me, npc)
             if r == false then
                 return
             end
-        elseif weapon_sel == 1 then
+        elseif weapon_sel == 2 then
             local r = run_weapon_three_dialogs(me, npc,
                 "백진도는 진성검과 마찬가지로 북방대초원 지역에서 나오는 물건들로 만들어진다네.. 이 칼도 만들기는 어렵지만 엄청난 힘을 가지고 있지..",
                 "백진도의 도신은 백호의 기운으로 만들어져 있네. 백진도를 들고 있으면 피어오르는 백호의 기운을 느낄 수 있다네...",
@@ -115,7 +115,7 @@ local function run_weapon_info_loop(me, npc)
             if r == false then
                 return
             end
-        elseif weapon_sel == 2 then
+        elseif weapon_sel == 3 then
             local r = run_weapon_three_dialogs(me, npc,
                 "용설봉도 북방대초원 지역에서 나오는 물건들로 만들어지지.. 이 봉을 들게 되면 신성한 기운이 느껴진다네...",
                 "따라서 용설봉에는 청룡의 지혜가 담겨있네. 최강의 공격 주술을 구사하기 위해서는 반드시 용설봉의 도움이 필요할것이야...",
@@ -123,7 +123,7 @@ local function run_weapon_info_loop(me, npc)
             if r == false then
                 return
             end
-        elseif weapon_sel == 3 then
+        elseif weapon_sel == 4 then
             local r = run_weapon_three_dialogs(me, npc,
                 "진선장도 북방대초원 지역에서 나오는 물건들로 만들어진다네... 진선장을 들면 생명력이 느껴진다네..",
                 "진선장에는 현무의 기운이 담겨 있어서, 진선장을 들고 있으면 현무의 강력한 생명력을 느낄 수 있다고 전해지네...",
@@ -131,9 +131,9 @@ local function run_weapon_info_loop(me, npc)
             if r == false then
                 return
             end
-        elseif weapon_sel == 4 then
-            me:dialog(npc, "백화검이라... 백화검을 만드는 데에는 세가지 재료가 필요하다네... 하지만 지금은 때가 아니야... 미안하네...", false, false)
         elseif weapon_sel == 5 then
+            me:dialog(npc, "백화검이라... 백화검을 만드는 데에는 세가지 재료가 필요하다네... 하지만 지금은 때가 아니야... 미안하네...", false, false)
+        elseif weapon_sel == 6 then
             me:dialog(npc, "빙룡검은 백화검과 정반대의 속성을 지닌 검일세... 하지만 역시 지금은 때가 아닐세... 미안하네...", false, false)
         else
             local r = run_weapon_three_dialogs(me, npc,
@@ -156,12 +156,12 @@ function NPC_274(me, npc)
         return
     end
 
-    if sel == 0 then
+    if sel == 1 then
         me:dialog(npc, "zzzzzzzz", false, false)
         return
     end
 
-    if sel ~= 1 then
+    if sel ~= 2 then
         return
     end
 
@@ -173,7 +173,7 @@ function NPC_274(me, npc)
         return
     end
 
-    if sel2 == 1 then
+    if sel2 == 2 then
         me:dialog(npc, "잘 가게...", false, false)
         return
     end
@@ -206,17 +206,17 @@ function NPC_274(me, npc)
         goto NPC_274_0004
     end
 
-    if sel3 == 3 then
+    if sel3 == 4 then
         me:dialog(npc, "잘 가게...", false, false)
         return
     end
 
-    if sel3 == 1 then
+    if sel3 == 2 then
         run_pardon_placeholder(me, npc)
         return
     end
 
-    if sel3 == 2 then
+    if sel3 == 3 then
         run_nation_change(me, npc)
         return
     end

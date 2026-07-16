@@ -14,7 +14,7 @@ function NPC_374(me, npc)
         return
     end
 
-    if sel == 0 then
+    if sel == 1 then
         btn = me:dialog(npc, "이전에 고서적을 보던중에, 일본의 닌자라는 집단이 사용하는 '둔갑술'에 대해서 본 적이 있습니다.", false, true)
         if btn == DIALOG_RESULT.QUIT then
             return
@@ -31,7 +31,7 @@ function NPC_374(me, npc)
         return
     end
 
-    if sel == 1 then
+    if sel == 2 then
         btn = me:dialog(npc, "간단한 둔갑술은 제가 가르쳐드릴수 있습니다만, 특별한 모습으로 변하고 싶으시다면 소림오행진을 착용하고 직접 가서 모습을 확인하셔야합니다.", false, true)
         if btn == DIALOG_RESULT.QUIT then
             return
@@ -47,7 +47,7 @@ function NPC_374(me, npc)
             return
         end
 
-        if sel2 == 0 then
+        if sel2 == 1 then
             if me:spell("소림경수둔갑술") then
                 me:dialog(npc, "이미 배운 마법이군요.", false, false)
                 return
@@ -82,7 +82,7 @@ function NPC_374(me, npc)
             end
             me:money(me:money() - 200)
             me:mkspell("소림경수둔갑술")
-        elseif sel2 == 1 then
+        elseif sel2 == 2 then
             if me:spell("소림천구둔갑술") then
                 me:dialog(npc, "이미 배운 마법이군요.", false, false)
                 return
@@ -113,7 +113,7 @@ function NPC_374(me, npc)
             end
             me:money(me:money() - 1000)
             me:mkspell("소림천구둔갑술")
-        elseif sel2 == 2 then
+        elseif sel2 == 3 then
             if me:spell("소림후둔갑술") then
                 me:dialog(npc, "이미 배운 마법이군요.", false, false)
                 return
@@ -144,7 +144,7 @@ function NPC_374(me, npc)
             end
             me:money(me:money() - 5000)
             me:mkspell("소림후둔갑술")
-        elseif sel2 == 3 then
+        elseif sel2 == 4 then
             btn = me:dialog(npc, "강시는 제가 수행을 하던때에는 나타나지 않아서 모습을 알지 못한답니다.", false, true)
             if btn == DIALOG_RESULT.QUIT then
                 return
@@ -173,7 +173,7 @@ function NPC_374(me, npc)
                 me:dialog(npc, "소지품이 가득 차서 소림오행진을 받을 수 없습니다.", false, true)
                 return
             end
-        elseif sel2 == 4 then
+        elseif sel2 == 5 then
             btn = me:dialog(npc, "다른 모습으로 변하시고 싶으시다구요.. 저는 잘 모르겠습니다만, 형태에 따라서 어떤 동물이나 사람으로 변할 수 있다고 합니다. 하지만 안되는 경우가 더 많을 것이니, 수련을 통해 하나하나 찾는 수 밖에 없습니다.", false, true)
             if btn == DIALOG_RESULT.QUIT then
                 return

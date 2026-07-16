@@ -30,11 +30,11 @@ function NPC_462(me, npc)
         "흉노족9",
         "흉노족10",
     }, false)
-    if list_btn == DIALOG_RESULT.QUIT or sel == nil or sel < 0 or sel > 4 then
+    if list_btn == DIALOG_RESULT.QUIT or sel == nil or sel < 1 or sel > 5 then
         return
     end
 
-    local opt = WARP_OPTIONS[sel + 1]
+    local opt = WARP_OPTIONS[sel]
     local map = name2map(opt[2])
     if map == nil then
         return

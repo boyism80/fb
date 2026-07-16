@@ -32,8 +32,8 @@ function NPC_570(me, npc)
     if sel == nil then
         return
     end
-    local need_count = sel + 1
-    local reward_name = RING_NAMES[sel + 1]
+    local need_count = sel
+    local reward_name = RING_NAMES[sel]
 
     ::NPC_570_0003::
     d = me:dialog(npc, "그래... " .. reward_name .. "을 만들고 싶다는 말이지?", false, true)
@@ -49,7 +49,7 @@ function NPC_570(me, npc)
     if confirm_btn == DIALOG_RESULT.PREV then
         goto NPC_570_0003
     end
-    if confirm ~= 0 then
+    if confirm ~= 1 then
         me:dialog(npc, "그래, 생각이 바뀐다면 다시 오게나. 허허...", false, false)
         return
     end

@@ -5,8 +5,8 @@ local protocol = require("integration.protocol")
 local MESSAGE_WAIT_MS = 10000
 local LISTENER_ARM_MS = 500
 local F1_OID = 0xFFFFFFFF
-local MATCH_MENU_INDEX = 2
-local MATCH2_TYPE_INDEX = 1
+local MATCH_MENU_INDEX = 3
+local MATCH2_TYPE_INDEX = 2
 local REGISTER_CONFIRM_TIMEOUT_MS = 10000
 
 local MSG_NOT_GROUP_MASTER = "그룹장만 매치메이킹을 이용할 수 있습니다."
@@ -65,7 +65,7 @@ local function f1_register_match2(bot)
 
     local packet = bot:request(
         resp.message,
-        protocol.dialog("LIST", 0, "", 0, 0, "", "NEXT"),
+        protocol.dialog("LIST", 0, "", 1, 0, "", "NEXT"),
         function(p)
             return p.type == "STATE"
                 and p.text ~= nil
@@ -116,7 +116,7 @@ local function confirm_proposal_dialog(bot)
 
     local confirm_packet = bot:request(
         resp.message,
-        protocol.dialog("LIST", 0, "", 0, 0, "", "NEXT"),
+        protocol.dialog("LIST", 0, "", 1, 0, "", "NEXT"),
         function(p)
             return p.type == "STATE"
                 and p.text ~= nil

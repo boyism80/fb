@@ -47,11 +47,11 @@ local function run_ice_sword(me, npc)
     if sel == nil then
         return false
     end
-    if sel == 0 then
+    if sel == 1 then
         me:dialog(npc, '얼음칼은 얼음으로 만들어진 칼로써 적을 마비시킬 수 있는 능력을 가지고 있지. 단점이 있다면 수리가 안된다고 해야하나? 허허..', false, true)
         return true
     end
-    if sel == 1 then
+    if sel == 2 then
         if not me:has_items(ITEM_ICE, ICE_SWORD_COST) then
             me:dialog(npc, '얼음칼을 만들기 위해선 얼음 100개가 필요하네.', false, false)
             return true
@@ -81,7 +81,7 @@ local function run_ice_sword(me, npc)
         end
         return true
     end
-    if sel == 2 then
+    if sel == 3 then
         me:dialog(npc, '허허..싱겁기는..', false, true)
         return true
     end
@@ -100,31 +100,31 @@ local function run_spirit_summon_shark_weapon(me, npc)
     local step = q:step()
     if step == 1 then
         local sel = me:list(npc, ' ', { '혹시 상어장군...' }, false)
-        if sel == nil or sel ~= 0 then
+        if sel == nil or sel ~= 1 then
             return
         end
         sel = me:list(npc, '아 그만 말해도 알겠네..한두명이 말해야 말이지.', { '...' }, false)
-        if sel == nil or sel ~= 0 then
+        if sel == nil or sel ~= 1 then
             return
         end
         sel = me:list(npc, '상어장군 이야기 하는 거지?', { '예 그렇습니다.' }, false)
-        if sel == nil or sel ~= 0 then
+        if sel == nil or sel ~= 1 then
             return
         end
         sel = me:list(npc, '물론 내가 알고 있기는 한데 말이야 그렇게 쉽게 알려 줄수는 없다네..', { '...' }, false)
-        if sel == nil or sel ~= 0 then
+        if sel == nil or sel ~= 1 then
             return
         end
         sel = me:list(npc, '내가 매일같이 쉴 시간도 없이 여기 서 있느냐고 무척이나 몸이 허해져서 말이야.', { '...' }, false)
-        if sel == nil or sel ~= 0 then
+        if sel == nil or sel ~= 1 then
             return
         end
         sel = me:list(npc, '보약이라도 한재 지어먹어야 할 것 같아.', { '!!!' }, false)
-        if sel == nil or sel ~= 0 then
+        if sel == nil or sel ~= 1 then
             return
         end
         sel = me:list(npc, '그래서 말인데 자네가 용왕님께 지어드렸던 보약의 재료를 가지고 오면 내 방법을 알려주도록 하지.', { '헉..별수없군요...', '차라리 모르고 말지..' }, false)
-        if sel == nil or sel ~= 0 then
+        if sel == nil or sel ~= 1 then
             return
         end
         q:step(2)
@@ -184,17 +184,17 @@ local function run_amber_helmet_craft(me, npc, colors, has_prev)
     if btn == DIALOG_RESULT.PREV then
         return DIALOG_RESULT.PREV
     end
-    if sel == nil or sel < 0 or sel >= #colors then
+    if sel == nil or sel < 1 or sel >= #colors then
         return DIALOG_RESULT.QUIT
     end
-    local color_name = colors[sel + 1].color
+    local color_name = colors[sel].color
     local gem_name = color_name .. '보석'
     local helmet_name = color_name .. '투구'
     local confirm_opt, confirm_btn = me:list(npc, '그래.. ' .. gem_name .. '으로 어떤 아이템을 만들텐가?', { color_name .. '투구입니다.' }, false)
     if confirm_btn == DIALOG_RESULT.QUIT then
         return DIALOG_RESULT.QUIT
     end
-    if confirm_opt ~= 0 then
+    if confirm_opt ~= 1 then
         return DIALOG_RESULT.NEXT
     end
     local code = me:exchange(
@@ -225,13 +225,13 @@ function NPC_156(me, npc)
     if sel == nil then
         return
     end
-    if sel == 0 then
+    if sel == 1 then
         if run_ice_sword(me, npc) == false then
             return
         end
-    elseif sel == 1 then
-        run_spirit_summon_shark_weapon(me, npc)
     elseif sel == 2 then
+        run_spirit_summon_shark_weapon(me, npc)
+    elseif sel == 3 then
         local r = run_amber_helmet_craft(me, npc, AMBER_HELMET_COLORS, true)
         if r == DIALOG_RESULT.QUIT then
             return
@@ -239,7 +239,7 @@ function NPC_156(me, npc)
         if r == DIALOG_RESULT.PREV then
             goto NPC_156_0001
         end
-    elseif sel == 3 then
+    elseif sel == 4 then
         local r = run_amber_helmet_craft(me, npc, LIGHT_AMBER_HELMET_COLORS, true)
         if r == DIALOG_RESULT.QUIT then
             return
@@ -247,7 +247,7 @@ function NPC_156(me, npc)
         if r == DIALOG_RESULT.PREV then
             goto NPC_156_0001
         end
-    elseif sel == 4 then
+    elseif sel == 5 then
         local r = run_amber_helmet_craft(me, npc, GOLD_AMBER_HELMET_COLORS, true)
         if r == DIALOG_RESULT.QUIT then
             return

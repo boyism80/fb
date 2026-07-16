@@ -18,7 +18,7 @@ local function craft_amber_star_exchange(me, ch, exchange_list)
         return DIALOG_RESULT.NEXT
     end
 
-    local idx = choice + 1
+    local idx = choice
     if idx < 1 or idx > #exchange_list then
         return DIALOG_RESULT.NEXT
     end

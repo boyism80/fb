@@ -869,7 +869,7 @@ function M.king_dialog(me, npc, opts)
         if lb == DIALOG_RESULT.QUIT then
             return
         end
-        if sel == nil or sel ~= 0 then
+        if sel == nil or sel ~= 1 then
             return
         end
 
@@ -918,7 +918,7 @@ function M.king_dialog(me, npc, opts)
         if lb == DIALOG_RESULT.QUIT then
             return
         end
-        if sel == nil or sel ~= 0 then
+        if sel == nil or sel ~= 1 then
             return
         end
 

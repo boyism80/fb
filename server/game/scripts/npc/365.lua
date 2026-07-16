@@ -22,7 +22,7 @@ function NPC_365(me, npc)
         return
     end
 
-    if sel == 0 then
+    if sel == 1 then
         btn = me:dialog(npc, "음력 4월 8일은 부처님이 세상에 오신날입니다. '석가탄신일', '석탄일', '불탄일', '관불절', '초파일' 등의 많은 명칭이 있습니다.", false, true)
         if btn == DIALOG_RESULT.QUIT then
             return
@@ -35,7 +35,7 @@ function NPC_365(me, npc)
         return
     end
 
-    if sel == 1 then
+    if sel == 2 then
         btn = me:dialog(npc, "연등을 만들기 위해선 꿩의 꼬리깃털과 색비단이 필요합니다. 꿩은 지금쯤 세시밭에 나타날때가 된 것 같네요.", false, true)
         if btn == DIALOG_RESULT.QUIT then
             return
@@ -48,7 +48,7 @@ function NPC_365(me, npc)
         return
     end
 
-    if sel == 2 then
+    if sel == 3 then
         btn = me:dialog(npc, "꿩의 깃털과 색비단을 가져오셨나요?", false, true)
         if btn == DIALOG_RESULT.QUIT then
             return

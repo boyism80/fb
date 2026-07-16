@@ -15,7 +15,7 @@ local function run_wedding_dress_sale(me, npc)
     if list_btn == DIALOG_RESULT.QUIT or sel == nil then
         return
     end
-    if sel == 0 then
+    if sel == 1 then
         btn = me:dialog(npc, "웨딩드레스14의 가격은 200만전입니다.", false, true)
         if btn == DIALOG_RESULT.QUIT then
             return
@@ -24,7 +24,7 @@ local function run_wedding_dress_sale(me, npc)
         if buy_btn == DIALOG_RESULT.QUIT or buy_sel == nil then
             return
         end
-        if buy_sel == 0 then
+        if buy_sel == 1 then
             if me:money() < 2000000 then
                 me:dialog(npc, "돈이 부족하시네요.", false, false)
                 return
@@ -37,7 +37,7 @@ local function run_wedding_dress_sale(me, npc)
         end
         return
     end
-    if sel == 1 then
+    if sel == 2 then
         btn = me:dialog(npc, "웨딩드레스12의 가격은 5000만전입니다.", false, true)
         if btn == DIALOG_RESULT.QUIT then
             return
@@ -46,7 +46,7 @@ local function run_wedding_dress_sale(me, npc)
         if buy_btn == DIALOG_RESULT.QUIT or buy_sel == nil then
             return
         end
-        if buy_sel == 0 then
+        if buy_sel == 1 then
             if me:money() < 50000000 then
                 me:dialog(npc, "돈이 부족하시네요.", false, false)
                 return
@@ -59,7 +59,7 @@ local function run_wedding_dress_sale(me, npc)
         end
         return
     end
-    if sel == 2 then
+    if sel == 3 then
         btn = me:dialog(npc, "웨딩드레스18의 가격은 1억전입니다.", false, true)
         if btn == DIALOG_RESULT.QUIT then
             return
@@ -68,7 +68,7 @@ local function run_wedding_dress_sale(me, npc)
         if buy_btn == DIALOG_RESULT.QUIT or buy_sel == nil then
             return
         end
-        if buy_sel == 0 then
+        if buy_sel == 1 then
             if me:money() < 100000000 then
                 me:dialog(npc, "돈이 부족하시네요.", false, false)
                 return
@@ -81,7 +81,7 @@ local function run_wedding_dress_sale(me, npc)
         end
         return
     end
-    if sel == 3 then
+    if sel == 4 then
         btn = me:dialog(npc, "웨딩드레스12와 웨딩드레스18을 가져오시면 웨딩드레스22로 교환해드립니다.", false, true)
         if btn == DIALOG_RESULT.QUIT then
             return
@@ -90,7 +90,7 @@ local function run_wedding_dress_sale(me, npc)
         if ex_btn == DIALOG_RESULT.QUIT or ex_sel == nil then
             return
         end
-        if ex_sel == 0 then
+        if ex_sel == 1 then
             local code = me:exchange(
                 { ['item'] = { ["웨딩드레스12"] = 1, ["웨딩드레스18"] = 1 } },
                 { ['item'] = { ["웨딩드레스22"] = 1 } }
@@ -109,7 +109,7 @@ local function run_wedding_dress_sale(me, npc)
         end
         return
     end
-    if sel == 4 then
+    if sel == 5 then
         btn = me:dialog(npc, "웨딩드레스18과 웨딩드레스22를 가져오시면 웨딩드레스25로 교환해드립니다.", false, true)
         if btn == DIALOG_RESULT.QUIT then
             return
@@ -118,7 +118,7 @@ local function run_wedding_dress_sale(me, npc)
         if ex_btn == DIALOG_RESULT.QUIT or ex_sel == nil then
             return
         end
-        if ex_sel == 0 then
+        if ex_sel == 1 then
             local code = me:exchange(
                 { ['item'] = { ["웨딩드레스18"] = 1, ["웨딩드레스22"] = 1 } },
                 { ['item'] = { ["웨딩드레스25"] = 1 } }
@@ -152,7 +152,7 @@ local function run_garimbin_wing_exchange(me, npc)
     if list_btn == DIALOG_RESULT.QUIT or sel == nil then
         return
     end
-    if sel == 0 then
+    if sel == 1 then
         local code = me:exchange(
             { ['item'] = { ["웨딩드레스25"] = 1, ["천사의깃털"] = 10 } },
             { ['item'] = { ["가릉빈가의날개옷"] = 1 } }
@@ -183,11 +183,11 @@ function NPC_490(me, npc)
     if btn == DIALOG_RESULT.QUIT or sel == nil then
         return
     end
-    if sel == 0 then
+    if sel == 1 then
         run_wedding_dress_sale(me, npc)
         return
     end
-    if sel == 1 then
+    if sel == 2 then
         run_garimbin_wing_exchange(me, npc)
         return
     end

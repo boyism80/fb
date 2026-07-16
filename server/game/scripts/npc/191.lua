@@ -39,7 +39,7 @@ function NPC_191(me, npc)
         if list_btn == DIALOG_RESULT.QUIT then
             return
         end
-        if sel ~= 0 then
+        if sel ~= 1 then
             return
         end
         if q == nil then

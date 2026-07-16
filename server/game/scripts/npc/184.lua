@@ -21,7 +21,7 @@ function NPC_184(me, npc)
         if sel == nil then
             return
         end
-        if sel ~= 0 then
+        if sel ~= 1 then
             me:dialog(npc, '허허. 그러시오?', false, true)
             return
         end

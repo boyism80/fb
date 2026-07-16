@@ -19,7 +19,7 @@ function NPC_489(me, npc)
         if btn == DIALOG_RESULT.QUIT then
             return
         end
-        if sel == nil or sel == 1 then
+        if sel == nil or sel == 2 then
             return
         end
 
@@ -31,7 +31,7 @@ function NPC_489(me, npc)
         if btn == DIALOG_RESULT.PREV then
             goto NPC_489_0001
         end
-        if sel == nil or sel == 1 then
+        if sel == nil or sel == 2 then
             return
         end
 
@@ -43,7 +43,7 @@ function NPC_489(me, npc)
         if btn == DIALOG_RESULT.PREV then
             goto NPC_489_0002
         end
-        if sel == nil or sel == 1 then
+        if sel == nil or sel == 2 then
             return
         end
 
@@ -89,7 +89,7 @@ function NPC_489(me, npc)
         if btn == DIALOG_RESULT.QUIT then
             return
         end
-        if sel == nil or sel == 1 then
+        if sel == nil or sel == 2 then
             me:dialog(npc, "난 사탕이 먹고 싶단 말이야!", false, false)
             return
         end

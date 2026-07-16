@@ -24,7 +24,7 @@ function NPC_98(me, npc)
         goto NPC_98_0002
     end
 
-    if selected == 1 then
+    if selected == 2 then
         return
     end
 
@@ -37,7 +37,7 @@ function NPC_98(me, npc)
         goto NPC_98_0003
     end
 
-    local map = name2map(map_names[selected+1])
+    local map = name2map(map_names[selected])
     if map == nil then
         me:dialog(npc, '존재하지 않는 맵입니다.', false, true)
         return

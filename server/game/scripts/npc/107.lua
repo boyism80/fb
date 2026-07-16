@@ -15,7 +15,7 @@ function NPC_107(me, npc)
         return
     end
     
-    if selected == 0 then
+    if selected == 1 then
         dojaeyoung_nobidocument(me, npc)
     else
         dojaeyoung_herb_quest(me, npc)
@@ -28,7 +28,7 @@ function dojaeyoung_nobidocument(me, npc)
         return
     end
 
-    if selected == 1 then
+    if selected == 2 then
         return
     end
 
@@ -47,7 +47,7 @@ function dojaeyoung_nobidocument(me, npc)
     end
 
     local sel, lb = me:list(npc, '아니, 이것은... 얼마 전에 풀어 줬던 황비연의 노비문서군요. 생각납니다. 여기서 일하던 노비였는데, 참 의협심이 강한 청년이였죠. 그는 잘 있나요?', { '예, 실은...' }, true)
-    if lb == DIALOG_RESULT.QUIT or sel ~= 0 then
+    if lb == DIALOG_RESULT.QUIT or sel ~= 1 then
         return
     end
     ::NPC_107_0001::
@@ -64,7 +64,7 @@ function dojaeyoung_nobidocument(me, npc)
         return
     end
     sel, lb = me:list(npc, '지금 보니 그 때 황비연을 저희 집안 노비 신세에서 풀어준 것이 잘한 일이었다는 생각이 드는군요.', { '.....' }, false)
-    if lb == DIALOG_RESULT.QUIT or sel ~= 0 then
+    if lb == DIALOG_RESULT.QUIT or sel ~= 1 then
         return
     end
     ::NPC_107_0011::
@@ -139,11 +139,11 @@ function dojaeyoung_herb_start(me, npc)
     if lb == DIALOG_RESULT.PREV then
         goto NPC_107_0021
     end
-    if sel == 1 then
+    if sel == 2 then
         me:dialog(npc, '그렇죠..이 약초들을 어떻게 구하면 좋으련지..', false, true)
         return
     end
-    if sel ~= 0 then
+    if sel ~= 1 then
         return
     end
     local q = me:start_quest(quest.QUEST_DOJAEYOUNG_HERB)

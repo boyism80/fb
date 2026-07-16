@@ -7,7 +7,7 @@ function NPC_189(me, npc)
         return
     end
 
-    if selected == 0 then
+    if selected == 1 then
         button = me:dialog(npc, '방송쿠폰은 나만이 팔고 있지. 호호홋...', false, true)
         if button == DIALOG_RESULT.QUIT then
             return
@@ -18,7 +18,7 @@ function NPC_189(me, npc)
             return
         end
 
-        if selected == 0 then
+        if selected == 1 then
             if me:level() < 21 then
                 me:dialog(npc, '21레벨 구매가 가능합니다.', false, true)
                 return
@@ -41,7 +41,7 @@ function NPC_189(me, npc)
         return
     end
 
-    if selected == 1 then
+    if selected == 2 then
         button = me:dialog(npc, '웨딩드레스를 수선하고 싶다고? 그렇다면 웨딩드레스1,2,3,4,5,6,7 과 말린지네 7개를 가져온다면 수선해주도록 하지.', false, true)
         if button == DIALOG_RESULT.QUIT then
             return
@@ -52,7 +52,7 @@ function NPC_189(me, npc)
             return
         end
 
-        if selected ~= 0 then
+        if selected ~= 1 then
             return
         end
 

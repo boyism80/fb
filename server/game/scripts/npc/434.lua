@@ -33,11 +33,11 @@ function NPC_434(me, npc)
     if btn == DIALOG_RESULT.QUIT then
         return
     end
-    if sel == 1 then
+    if sel == 2 then
         me:dialog(npc, "잘 생각 하셨습니다.", false, false)
         return
     end
-    if sel ~= 0 then
+    if sel ~= 1 then
         return
     end
 
@@ -58,11 +58,11 @@ function NPC_434(me, npc)
     if btn == DIALOG_RESULT.QUIT then
         return
     end
-    if sel == 1 then
+    if sel == 2 then
         me:dialog(npc, "잘 생각 하셨습니다.", false, false)
         return
     end
-    if sel ~= 0 then
+    if sel ~= 1 then
         return
     end
 

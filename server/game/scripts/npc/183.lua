@@ -28,7 +28,7 @@ function NPC_183(me, npc)
             return
         end
         local sel = me:list(npc, '날 좀 도와주지 않겠는가?', { '물론입니다. 부인의 몸조리에나 신경쓰십시오.', '죄송합니다만 그런일까지 할 시간이 없군요.' }, false)
-        if sel == nil or sel ~= 0 then
+        if sel == nil or sel ~= 1 then
             me:dialog(npc, '그렇다면 할 수 없군요..', false, true)
             return
         end

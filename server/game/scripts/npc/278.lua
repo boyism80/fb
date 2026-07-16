@@ -51,11 +51,11 @@ function NPC_278(me, npc)
     if btn == DIALOG_RESULT.QUIT then
         return
     end
-    if sel == nil or sel == 10 then
+    if sel == nil or sel == 11 then
         return
     end
 
-    if sel == 7 then
+    if sel == 8 then
         button = me:dialog(npc, "바람의나라에서 신수란 각각 사방을 상징하는 '좌-청룡', '우-백호', '북-주작', '남-현무'로 구성됩니다.", false, true)
         if button == DIALOG_RESULT.QUIT then
             return
@@ -66,7 +66,7 @@ function NPC_278(me, npc)
         end
         button = me:dialog(npc, "신수는 한번 선택하시면 다시는 바꿀 수 없습니다.", false, true)
     else
-        button = me:dialog(npc, answers[sel + 1], false, true)
+        button = me:dialog(npc, answers[sel], false, true)
     end
     if button == DIALOG_RESULT.QUIT then
         return

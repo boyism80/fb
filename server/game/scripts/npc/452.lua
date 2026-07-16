@@ -23,19 +23,19 @@ function NPC_452(me, npc)
         return
     end
 
-    if sel == 0 then
+    if sel == 1 then
         me:dialog(npc, "천상계에서 난다는 천도복숭아는, 우리 반신들의 능력을 강화시켜 준다네.", false, false)
         return
     end
-    if sel == 1 then
+    if sel == 2 then
         me:dialog(npc, "기여자 조회는 준비중입니다.", false, false)
         return
     end
-    if sel == 2 then
+    if sel == 3 then
         me:dialog(npc, "천도복숭아 바치기는 준비중입니다.", false, false)
         return
     end
-    if sel == 3 then
+    if sel == 4 then
         me:dialog(npc, "기여자 보상 수령은 준비중입니다.", false, false)
         return
     end

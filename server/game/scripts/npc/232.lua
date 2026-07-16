@@ -18,7 +18,7 @@ function NPC_232(me, npc)
     if q:step() == 1 then
         ::NPC_232_0000::
         local sel, lb = me:list(npc, '안녕하십니까. 허허, 아까부터 뭔가 찾으시는 눈치신데... 뭘 그리 찾으시는지요?', { '황비연이라는 사람을 찾고 있습니다.', '아무 것도 아닙니다.' }, false)
-        if lb == DIALOG_RESULT.QUIT or sel ~= 0 then
+        if lb == DIALOG_RESULT.QUIT or sel ~= 1 then
             return
         end
         ::NPC_232_0001::
@@ -37,11 +37,11 @@ function NPC_232(me, npc)
         if lb == DIALOG_RESULT.PREV then
             goto NPC_232_0001
         end
-        if sel == 0 then
+        if sel == 1 then
             me:dialog(npc, '황비연이 현상금이 높긴 하죠... 하지만 쉽게 잡기는 어려울 겁니다.', false, true)
             return
         end
-        if sel ~= 1 then
+        if sel ~= 2 then
             return
         end
         ::NPC_232_0003::
@@ -77,7 +77,7 @@ function NPC_232(me, npc)
             return
         end
         sel, lb = me:list(npc, '...자, 어떻습니까?', { '알겠습니다, 그렇게 하죠.', '싫습니다. 어째 꺼림칙하군요.' }, false)
-        if lb == DIALOG_RESULT.QUIT or sel ~= 0 then
+        if lb == DIALOG_RESULT.QUIT or sel ~= 1 then
             return
         end
         ::NPC_232_0020::
@@ -117,7 +117,7 @@ function NPC_232(me, npc)
         end
         ::NPC_232_0023::
         local sel, lb = me:list(npc, '문서는 전해 주고 오셨는지요?', { '예, 확실히 전해 줬습니다.', '아니오, 아직...' }, false)
-        if lb == DIALOG_RESULT.QUIT or sel ~= 0 then
+        if lb == DIALOG_RESULT.QUIT or sel ~= 1 then
             return
         end
         ::NPC_232_0024::
@@ -130,7 +130,7 @@ function NPC_232(me, npc)
         end
         ::NPC_232_0025::
         sel, lb = me:list(npc, '예? 도재영님이 이것을 제게 전해달라고 하셨다고요? 정말입니까?', { '예, 당신을 자랑스러워하셨습니다. 황비연씨.' }, true)
-        if lb == DIALOG_RESULT.QUIT or sel ~= 0 then
+        if lb == DIALOG_RESULT.QUIT or sel ~= 1 then
             return
         end
         if lb == DIALOG_RESULT.PREV then
@@ -146,7 +146,7 @@ function NPC_232(me, npc)
         end
         ::NPC_232_0027::
         sel, lb = me:list(npc, '자, 이제 저를 체포하셔서 관아에 넘겨 주십시오.', { '그럴 수는 없습니다.' }, true)
-        if lb == DIALOG_RESULT.QUIT or sel ~= 0 then
+        if lb == DIALOG_RESULT.QUIT or sel ~= 1 then
             return
         end
         if lb == DIALOG_RESULT.PREV then
@@ -154,7 +154,7 @@ function NPC_232(me, npc)
         end
         ::NPC_232_0028::
         sel, lb = me:list(npc, '예? 무슨 말씀이신지...', { '당신은 의적으로서 많은 사람을 도왔죠.' }, true)
-        if lb == DIALOG_RESULT.QUIT or sel ~= 0 then
+        if lb == DIALOG_RESULT.QUIT or sel ~= 1 then
             return
         end
         if lb == DIALOG_RESULT.PREV then
@@ -162,7 +162,7 @@ function NPC_232(me, npc)
         end
         ::NPC_232_0029::
         sel, lb = me:list(npc, '......', { '그런 사람을 체포할 수는 없습니다.' }, true)
-        if lb == DIALOG_RESULT.QUIT or sel ~= 0 then
+        if lb == DIALOG_RESULT.QUIT or sel ~= 1 then
             return
         end
         if lb == DIALOG_RESULT.PREV then
@@ -170,7 +170,7 @@ function NPC_232(me, npc)
         end
         ::NPC_232_0030::
         sel, lb = me:list(npc, '음......하지만 의적이라고는 해도 도둑질은 나쁜 일입니다. 저는 죗값을 치러야 합니다.', { '앞으로 좋은 일을 더 많이 하시면 되지 않겠습니까?' }, true)
-        if lb == DIALOG_RESULT.QUIT or sel ~= 0 then
+        if lb == DIALOG_RESULT.QUIT or sel ~= 1 then
             return
         end
         if lb == DIALOG_RESULT.PREV then

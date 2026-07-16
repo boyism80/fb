@@ -28,11 +28,11 @@ function NPC_176(me, npc)
         if sel == nil then
             return
         end
-        if sel == 1 then
+        if sel == 2 then
             me:dialog(npc, '그런가요?', true, true)
             return
         end
-        if sel ~= 0 then
+        if sel ~= 1 then
             return
         end
         ::NPC_176_0010::
@@ -63,7 +63,7 @@ function NPC_176(me, npc)
         if sel2 == nil then
             return
         end
-        if sel2 == 0 then
+        if sel2 == 1 then
             ::NPC_176_0020::
             btn = me:dialog(npc, '진심이십니까? 그럼 제가 고구려에 다녀올때까지 기다려주시겠죠? 그 이후로 소림사로 돌아가서 몇년간 속세와 인연을 끊고 수련을 계속 하십시다.', true, true)
             if btn == DIALOG_RESULT.PREV then
@@ -82,7 +82,7 @@ function NPC_176(me, npc)
             end
             return
         end
-        if sel2 ~= 1 then
+        if sel2 ~= 2 then
             return
         end
         ::NPC_176_0030::
@@ -105,11 +105,11 @@ function NPC_176(me, npc)
         if sel3 == nil then
             return
         end
-        if sel3 == 1 then
+        if sel3 == 2 then
             me:dialog(npc, '그러시군요.. 그거 아쉽게 됬네요.', true, true)
             return
         end
-        if sel3 ~= 0 then
+        if sel3 ~= 1 then
             return
         end
         q:step(2)

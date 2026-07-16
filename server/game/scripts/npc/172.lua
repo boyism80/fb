@@ -26,7 +26,7 @@ local function run_intro_and_accept(me, npc)
     if btn == DIALOG_RESULT.PREV then
         goto NPC_172_0001
     end
-    if sel == nil or sel ~= 0 then
+    if sel == nil or sel ~= 1 then
         return
     end
     ::NPC_172_0003::
@@ -42,7 +42,7 @@ local function run_intro_and_accept(me, npc)
     if btn == DIALOG_RESULT.PREV then
         goto NPC_172_0003
     end
-    if sel == nil or sel ~= 0 then
+    if sel == nil or sel ~= 1 then
         return
     end
     ::NPC_172_0005::
@@ -66,7 +66,7 @@ local function run_intro_and_accept(me, npc)
     if btn == DIALOG_RESULT.PREV then
         goto NPC_172_0006
     end
-    if sel == nil or sel ~= 0 then
+    if sel == nil or sel ~= 1 then
         return
     end
     ::NPC_172_0008::
@@ -90,7 +90,7 @@ local function run_intro_and_accept(me, npc)
     if btn == DIALOG_RESULT.PREV then
         goto NPC_172_0009
     end
-    if sel == nil or sel ~= 0 then
+    if sel == nil or sel ~= 1 then
         return
     end
     ::NPC_172_0011::
@@ -139,7 +139,7 @@ local function run_turn_in(me, npc)
             return
         end
 
-        if sel == 0 then
+        if sel == 1 then
             local btn = me:dialog(npc, '이...이놈! 내가 그렇게 말했는데 결국 봉투를 열어봤구나! 나쁜 놈! 약속을 어기다니! 에잇! 말한대로 보수는 없다!', false, true)
             if btn == DIALOG_RESULT.QUIT then
                 return
@@ -152,7 +152,7 @@ local function run_turn_in(me, npc)
             if q then
                 q:step(2)
             end
-        elseif sel == 1 then
+        elseif sel == 2 then
             me:dialog(npc, '그런가? 그럼 서둘러주게.', false, false)
         end
         return
@@ -196,7 +196,7 @@ local function run_cursed_forgiveness(me, npc)
     if btn == DIALOG_RESULT.PREV then
         goto NPC_172_0017
     end
-    if sel == nil or sel ~= 0 then
+    if sel == nil or sel ~= 1 then
         me:dialog(npc, '반성의 여지가 없군! 얘기는 끝일세!', false, false)
         return
     end

@@ -24,11 +24,11 @@ function NPC_379(me, npc)
         if list_btn == DIALOG_RESULT.QUIT or sel == nil then
             return
         end
-        if sel == 0 then
+        if sel == 1 then
             me:dialog(npc, "에휴... ?", false, false)
             return
         end
-        if sel == 1 then
+        if sel == 2 then
             me:dialog(npc, "자네가 좀 도와줬으면 좋겠는데...", false, false)
             return
         end
@@ -59,7 +59,7 @@ function NPC_379(me, npc)
         if list_btn == DIALOG_RESULT.QUIT or sel == nil then
             return
         end
-        if sel == 0 then
+        if sel == 1 then
             me:dialog(npc, "자네가 좀 도와줬으면 좋겠는데...", false, false)
             return
         end
@@ -87,7 +87,7 @@ function NPC_379(me, npc)
         if list_btn == DIALOG_RESULT.QUIT or sel == nil then
             return
         end
-        if sel == 0 then
+        if sel == 1 then
             me:dialog(npc, "그렇고말고... 내 일은 내가 해야겠지.", false, false)
             return
         end
@@ -138,11 +138,11 @@ function NPC_379(me, npc)
         return
     end
 
-    if sel == 2 then
+    if sel == 3 then
         return
     end
 
-    if sel == 0 then
+    if sel == 1 then
         if step == 1 then
             ::NPC_379_0010::
             local btn = me:dialog(npc, "일단 여태까지 자네가 추리해온 것처럼 가장 수상한건 부자 대감들이네.", false, true)
@@ -186,7 +186,7 @@ function NPC_379(me, npc)
         return
     end
 
-    if sel == 1 then
+    if sel == 2 then
         if step == 10 then
             ::NPC_379_0030::
             local btn = me:dialog(npc, "밀수선은 다만 물건만 가지러 오지는 않을게야. 그래서야 수지타산이 맞지 않을테니까.", false, true)

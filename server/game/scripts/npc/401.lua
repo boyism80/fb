@@ -16,7 +16,7 @@ function NPC_401(me, npc)
         return
     end
 
-    if sel == 0 then
+    if sel == 1 then
         local reward = nil
         if math.random(1, 100) <= 60 then
             reward = { ['item'] = { ["은천지인패"] = 1 } }
@@ -37,7 +37,7 @@ function NPC_401(me, npc)
         else
             me:dialog(npc, "멋지게 성공했군. 하하하...", false, false)
         end
-    elseif sel == 1 then
+    elseif sel == 2 then
         me:dialog(npc, "난 은으로된 천패, 지패, 인패는 합칠 수 있지만, 천지패와 인패를 합친다던가, 천인패와 지패를 합치는 건 못한다네.", false, false)
     end
     goto NPC_401_000

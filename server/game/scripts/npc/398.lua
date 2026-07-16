@@ -21,11 +21,11 @@ function NPC_398(me, npc)
         { required = { ["녹비약(소)"] = 1, ["동지인패"] = 1, ["동천패"] = 1 }, need_msg = "동지인패와 동천패를 합치기 위해선 '녹비약(소)'가 필요하다네.. 자네는 가지고 있지 않군.." },
     }
 
-    if sel < 0 or sel > 2 then
+    if sel < 1 or sel > 2 then
         goto NPC_398_000
     end
 
-    local opt = options[sel + 1]
+    local opt = options[sel]
     local required = opt.required
 
     local reward = nil

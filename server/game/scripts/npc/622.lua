@@ -35,8 +35,8 @@ function NPC_622(me, npc)
         return
     end
 
-    if sel >= 0 and sel <= 6 then
-        local r = RECIPES_7[sel + 1]
+    if sel >= 0 and sel <= 7 then
+        local r = RECIPES_7[sel]
         local d = me:dialog(npc, r.desc, false, true)
         if d == DIALOG_RESULT.QUIT then
             return
@@ -45,7 +45,7 @@ function NPC_622(me, npc)
         if sub_btn == DIALOG_RESULT.QUIT or sub_sel == nil then
             return
         end
-        local other = STONES[sub_sel + 1]
+        local other = STONES[sub_sel]
         if other == r.main then
             me:dialog(npc, "같은 기운의 지석으로 만들 수 없소. 다른 것을 선택 해 주시오.", false, false)
             return
@@ -82,7 +82,7 @@ function NPC_622(me, npc)
         return
     end
 
-    if sel == 7 then
+    if sel == 8 then
         local d = me:dialog(npc, "칠요구륜은 모든 정령들의 기운을 혼합한 팔찌로써 모든 직업을 위한 팔찌라고 말할 수 있소..\n\n또한 모든의 기운이 불안정하게 담겨있으므로 모든 요일지석 100개가 필요하오.", false, true)
         if d == DIALOG_RESULT.QUIT then
             return
@@ -91,7 +91,7 @@ function NPC_622(me, npc)
         if sub_btn == DIALOG_RESULT.QUIT or sub_sel == nil then
             return
         end
-        if sub_sel == 1 then
+        if sub_sel == 2 then
             me:dialog(npc, "생각이 바뀌거든 다시 찾아 오시오...", false, false)
             return
         end
@@ -126,7 +126,7 @@ function NPC_622(me, npc)
         return
     end
 
-    if sel == 8 then
+    if sel == 9 then
         local d = me:dialog(npc, "팔세지도는 모든 팔요의 기운이 담긴 칼날형 방패로써, 매우 만들기가 어렵소.\n\n또한 팔요의 기운이 불안정하게 담겨있으므로 팔요지석 100개와 모든 요일지석 100개가 필요하오.", false, true)
         if d == DIALOG_RESULT.QUIT then
             return
@@ -135,7 +135,7 @@ function NPC_622(me, npc)
         if sub_btn == DIALOG_RESULT.QUIT or sub_sel == nil then
             return
         end
-        if sub_sel == 1 then
+        if sub_sel == 2 then
             me:dialog(npc, "생각이 바뀌거든 다시 찾아 오시오...", false, false)
             return
         end
@@ -174,7 +174,7 @@ function NPC_622(me, npc)
         return
     end
 
-    if sel == 9 then
+    if sel == 10 then
         local d = me:dialog(npc, "팔요천의 옷은 모든 정령의 힘이 궁극으로 합쳐진 옷이오.", false, true)
         if d == DIALOG_RESULT.QUIT then
             return
@@ -199,7 +199,7 @@ function NPC_622(me, npc)
         if sub_btn == DIALOG_RESULT.QUIT or sub_sel == nil then
             return
         end
-        if sub_sel == 1 then
+        if sub_sel == 2 then
             me:dialog(npc, "생각이 바뀌거든 다시 찾아 오시오...", false, false)
             return
         end

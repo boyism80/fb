@@ -23,8 +23,8 @@ function NPC_181(me, npc)
         end
         ::NPC_181_0003::
         sel = me:list(npc, '그래서 조금 전까지는 부적을 묻고 있는 중이였는데, 나 혼자서는 안되겠더구만. 보다시피 나 혼자 살기에는 집이 좀 넓어서 말이야.', { '제가 좀 도와 드리죠.', '열심히 붙이세요. 전 나가봐야겠네요.' })
-        if sel == nil or sel ~= 0 then
-            if sel == 1 then
+        if sel == nil or sel ~= 1 then
+            if sel == 2 then
                 me:dialog(npc, '아이고. 이 많은 부적을 언제 다 묻는담...', false, true)
             end
             return
@@ -81,8 +81,8 @@ function NPC_181(me, npc)
         end
         ::NPC_181_0008::
         sel = me:list(npc, '이를 어쩐다...', { '제가 그 고승을 만나고 오겠습니다.', '아무래도 너무 힘들어서 안되겠네요. 전 이만...' })
-        if sel == nil or sel ~= 0 then
-            if sel == 1 then
+        if sel == nil or sel ~= 1 then
+            if sel == 2 then
                 me:dialog(npc, '이를 어쩐다...', false, true)
             end
             return

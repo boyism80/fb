@@ -25,7 +25,7 @@ local function run_change_item(me, npc_obj)
     if selected == nil then
         return false
     end
-    local idx = selected + 1
+    local idx = selected
     if idx < 1 or idx > #CHANGEITEM then
         return true
     end
@@ -39,7 +39,7 @@ local function run_change_item(me, npc_obj)
     if confirm == nil then
         return false
     end
-    if confirm ~= 0 then
+    if confirm ~= 1 then
         return true
     end
 

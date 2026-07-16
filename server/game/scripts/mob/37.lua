@@ -22,13 +22,13 @@ function ON_MOB_KILL_37(me, mobs)
     end
 
     local sel, list_btn = me:list(mob, '여보시오. 여보시오. 왜 나를 때려 잡으려 한 단 말이오?', { '나는 네 간이 필요하다' }, false)
-    if sel == nil or sel ~= 0 then
+    if sel == nil or sel ~= 1 then
         return
     end
 
     local msg2 = string.format('하하하.. 여보시오 %s님, 내 간이 얼마나 중요한 것인데 그것을 가지고 다닌단 말이오?', me:name())
     sel, list_btn = me:list(mob, msg2, { '그렇다면 네 간은 지금 어디에 있단 말이냐?' }, false)
-    if sel == nil or sel ~= 0 then
+    if sel == nil or sel ~= 1 then
         return
     end
 
@@ -42,7 +42,7 @@ function ON_MOB_KILL_37(me, mobs)
         return
     end
     
-    if sel ~= 1 then
+    if sel ~= 2 then
         return
     end
 

@@ -20,11 +20,11 @@ function NPC_342(me, npc)
     if btn == DIALOG_RESULT.QUIT then
         return
     end
-    if sel == nil or sel < 0 or sel > 3 then
+    if sel == nil or sel < 1 or sel > 3 then
         return
     end
 
-    local ex = exchanges[sel + 1]
+    local ex = exchanges[sel]
     local code = me:exchange(
         { ['item'] = { ["사랑의증표"] = ex.need } },
         { ['item'] = { [ex.item] = 1 } }

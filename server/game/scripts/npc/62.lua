@@ -15,7 +15,7 @@ function NPC_62(me, npc)
             return
         end
         local sel = me:list(npc, '물병을 구입하시겠습니까?', { '예', '아니오' }, false)
-        if sel == nil or sel ~= 0 then
+        if sel == nil or sel ~= 1 then
             return
         end
         local q = me:start_quest(quest.QUEST_WATER_BOTTLE)

@@ -16,12 +16,12 @@ function ON_MOB_KILL_1089(me, mobs)
     end
 
     local sel, list_btn = me:list(mob, "네...네놈은 누구냐?", { "용왕님의 부탁을 받고", "너를 사로 잡아 용왕님께 데려가려 왔다." }, false)
-    if list_btn == DIALOG_RESULT.QUIT or sel == nil or sel < 0 or sel > 1 then
+    if list_btn == DIALOG_RESULT.QUIT or sel == nil or sel < 1 or sel > 2 then
         return
     end
 
     sel, list_btn = me:list(mob, "요..용왕님께서 나를?", { "그래, 네가 반란을 꾀한 사실을", "용왕님은 다 알고 계신다.", "또, 다른 장군들을 반란에", "끌어 들인 사실도 알고 계신다", "용왕님 앞으로 가서 모든걸 털어놓도록 해라." }, false)
-    if list_btn == DIALOG_RESULT.QUIT or sel == nil or sel < 0 or sel > 4 then
+    if list_btn == DIALOG_RESULT.QUIT or sel == nil or sel < 1 or sel > 5 then
         return
     end
 
@@ -31,27 +31,27 @@ function ON_MOB_KILL_1089(me, mobs)
     end
 
     sel, list_btn = me:list(mob, "그러니, 며칠 후 내가 용왕님께 직접 찾아 뵈올 테니 오늘은 그냥 돌아가시면 안되오?", { "흥! 그 말을 내가 어떻게 믿으라는 소리냐?", "또, 용왕님께는 뭐라 말하고?" }, false)
-    if list_btn == DIALOG_RESULT.QUIT or sel == nil or sel < 0 or sel > 1 then
+    if list_btn == DIALOG_RESULT.QUIT or sel == nil or sel < 1 or sel > 2 then
         return
     end
 
     sel, list_btn = me:list(mob, "그동안 반란에 가담하였던 자들과 중요한 내용이 적힌 내통문서를 줄 터이니,", { "..." }, false)
-    if list_btn == DIALOG_RESULT.QUIT or sel == nil or sel ~= 0 then
+    if list_btn == DIALOG_RESULT.QUIT or sel == nil or sel ~= 1 then
         return
     end
 
     sel, list_btn = me:list(mob, "이것을 용왕님에게 전해주면 될 것이오. 부탁이오", { "좋다. 이리 가지고 오너라.", "아니 절대 믿을 수 없다!" }, false)
-    if list_btn == DIALOG_RESULT.QUIT or sel == nil or sel ~= 0 then
+    if list_btn == DIALOG_RESULT.QUIT or sel == nil or sel ~= 1 then
         return
     end
 
     sel, list_btn = me:list(mob, "여기 내통문서가 있소.", { "..." }, false)
-    if list_btn == DIALOG_RESULT.QUIT or sel == nil or sel ~= 0 then
+    if list_btn == DIALOG_RESULT.QUIT or sel == nil or sel ~= 1 then
         return
     end
 
     sel, list_btn = me:list(mob, "내 어미를 돌보고 바로 용왕님께 찾아갈터이니 그만 놓아 주시오.", { "알겠다. 내통문서도 받았으니 우선 이것을", "용왕님께 전해주겠다.", "네 어미를 돌보고 반드시 용왕님을 찾아 오너라" }, false)
-    if list_btn == DIALOG_RESULT.QUIT or sel == nil or sel < 0 or sel > 2 then
+    if list_btn == DIALOG_RESULT.QUIT or sel == nil or sel < 1 or sel > 3 then
         return
     end
 

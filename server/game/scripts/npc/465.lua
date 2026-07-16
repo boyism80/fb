@@ -30,7 +30,7 @@ end
 
 local function do_sub3_start(me, npc)
     local sel, btn = me:list(npc, "고민이시다... 정말 고민이시다...", { "무슨 일이신가요?" }, false)
-    if btn == DIALOG_RESULT.QUIT or sel == nil or sel ~= 0 then
+    if btn == DIALOG_RESULT.QUIT or sel == nil or sel ~= 1 then
         return false
     end
     local b = me:dialog(npc, "요즘 원숭이들이 병에 걸려서 고민이시다. 정말로 고민이시다.", true, true)

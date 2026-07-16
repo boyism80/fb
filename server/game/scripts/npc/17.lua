@@ -143,11 +143,11 @@ local function run_dragon_scale_info(me, npc)
     if sel == nil then
         return
     end
-    if sel == 1 then
+    if sel == 2 then
         me:dialog(npc, '그래? 그럼..자네 마음대로 하시게! 마음대로... 흥흥!!', false, false)
         return
     end
-    if sel ~= 0 then
+    if sel ~= 1 then
         return
     end
     run_dragon_location_info(me, npc)
@@ -202,9 +202,9 @@ function NPC_17(me, npc)
     if sel == nil then
         return
     end
-    if sel == 0 then
+    if sel == 1 then
         run_dragon_scale_info(me, npc)
-    elseif sel == 1 then
+    elseif sel == 2 then
         run_appraise_dragon_scale(me, npc)
     end
 end

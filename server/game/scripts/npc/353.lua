@@ -30,7 +30,7 @@ function NPC_353(me, npc)
         return
     end
 
-    if sel == 0 then
+    if sel == 1 then
         ::NPC_353_0003::
         btn = me:dialog(npc, "중화절은 음력 2월 1일입니다. 봄이 시작되는 때이기 때문에 창고나 부엌같은 곳을 모두 말끔히 청소하지요.", false, true)
         if btn == DIALOG_RESULT.QUIT then
@@ -55,7 +55,7 @@ function NPC_353(me, npc)
         return
     end
 
-    if sel == 1 then
+    if sel == 2 then
         ::NPC_353_0006::
         btn = me:dialog(npc, "제가 중화절에 대청소하는 일을 맡아서 하고 있는데요, 마을 곳곳의 잡동사니들을 다 모아 오려니까 정말 힘이드네요.", false, true)
         if btn == DIALOG_RESULT.QUIT then
@@ -71,8 +71,8 @@ function NPC_353(me, npc)
             if list_btn2 == DIALOG_RESULT.PREV then
                 goto NPC_353_0006
             end
-            if sel2 == nil or sel2 ~= 0 then
-                if sel2 == 1 then
+            if sel2 == nil or sel2 ~= 1 then
+                if sel2 == 2 then
                     me:dialog(npc, "아... 그렇다면 어쩔 수 없죠. 혹시 마음이 바뀌면 다시 알려주세요.", false, false)
                 end
                 return
@@ -97,7 +97,7 @@ function NPC_353(me, npc)
         return
     end
 
-    if sel == 2 then
+    if sel == 3 then
         if q and q:completed() then
             me:dialog(npc, "감사합니다! 그럼 잘 쓰시고 좋은 봄날 맞으시길!", false, true)
             return
@@ -146,11 +146,11 @@ function run_material_list(me, npc)
     if list_btn == DIALOG_RESULT.PREV then
         goto NPC_353_0011
     end
-    if sel == 0 then
+    if sel == 1 then
         run_material_list(me, npc)
         return
     end
-    if sel ~= 1 then
+    if sel ~= 2 then
         return
     end
 
@@ -181,7 +181,7 @@ function run_hand_in(me, npc)
         return
     end
 
-    if sel == 0 then
+    if sel == 1 then
         if not me:has_items("연", 1) then
             me:dialog(npc, "연은 동지집의 수인이에게 받아오시면 된답니다.", false, false)
             return
@@ -199,7 +199,7 @@ function run_hand_in(me, npc)
         return
     end
 
-    if sel == 1 then
+    if sel == 2 then
         if not me:has_items("제기", 1) then
             me:dialog(npc, "제기는 섣달집의 선릉이에게 받아오시면 된답니다.", false, false)
             return
@@ -217,7 +217,7 @@ function run_hand_in(me, npc)
         return
     end
 
-    if sel == 2 then
+    if sel == 3 then
         if not me:has_items("널", 1) then
             me:dialog(npc, "널은 설날집의 제 어머니에게 받아오시면 된답니다.", false, false)
             return
@@ -234,7 +234,7 @@ function run_hand_in(me, npc)
         return
     end
 
-    if sel == 3 then
+    if sel == 4 then
         local code = me:exchange(
             { ['item'] = { ["벌레쫓는부적"] = 2 } },
             { ['item'] = { ["중화절부적"] = 1, ["세시마을비서"] = 10 } }

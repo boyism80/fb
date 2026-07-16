@@ -7,11 +7,11 @@ function NPC_196(me, npc)
     if btn == DIALOG_RESULT.QUIT or sel == nil then
         return
     end
-    if sel == 0 then
+    if sel == 1 then
         run_schedule_dialog(me, npc, '고구려에서 고균도로', '고균도')
         return
     end
-    if sel ~= 1 then
+    if sel ~= 2 then
         return
     end
 
@@ -43,11 +43,11 @@ function NPC_196(me, npc)
     if list_btn == DIALOG_RESULT.PREV then
         goto NPC_196_0001
     end
-    if board_sel == 1 then
+    if board_sel == 2 then
         me:dialog(npc, '네, 안녕히 가십시오.', false, true)
         return
     end
-    if board_sel ~= 0 then
+    if board_sel ~= 1 then
         return
     end
 

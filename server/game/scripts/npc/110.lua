@@ -47,7 +47,7 @@ function NPC_110(me, npc)
         if sel == nil then
             return
         end
-        if sel ~= 0 then
+        if sel ~= 1 then
             return
         end
         q:step(6)

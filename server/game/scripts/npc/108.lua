@@ -57,11 +57,11 @@ function NPC_108(me, npc)
         if sel == nil then
             return
         end
-        if sel == 1 then
+        if sel == 2 then
             me:dialog(npc, '허허.. 바쁘시다면 할 수 없군요.', false, true)
             return
         end
-        if sel ~= 0 then
+        if sel ~= 1 then
             return
         end
         q:step(3)
@@ -80,7 +80,7 @@ function NPC_108(me, npc)
             return
         end
         local warp_sel, warp_btn = me:list(npc, '지금 지름길로 292층으로 가시겠소?', { '네, 보내주십시오.', '나중에 가겠습니다.' })
-        if warp_btn ~= DIALOG_RESULT.QUIT and warp_sel == 0 then
+        if warp_btn ~= DIALOG_RESULT.QUIT and warp_sel == 1 then
             local map = name2map('도삭산292층')
             if map ~= nil then
                 me:map(map, {16, 37})
@@ -93,7 +93,7 @@ function NPC_108(me, npc)
         local btn
         if not me:has_items('인어의방울', 1) then
             local warp_sel, warp_btn = me:list(npc, '아직 인어의방울을 구하지 못하셨군. 지금 지름길로 292층으로 가시겠소?', { '네, 보내주십시오.', '나중에 가겠습니다.' })
-            if warp_btn ~= DIALOG_RESULT.QUIT and warp_sel == 0 then
+            if warp_btn ~= DIALOG_RESULT.QUIT and warp_sel == 1 then
                 local map = name2map('도삭산292층')
                 if map ~= nil then
                     me:map(map, {16, 37})
@@ -126,11 +126,11 @@ function NPC_108(me, npc)
         if sel == nil then
             return
         end
-        if sel == 1 then
+        if sel == 2 then
             me:dialog(npc, '그런가? 흐음..딸이 하도 칭얼대서 말이지..', false, true)
             return
         end
-        if sel ~= 0 then
+        if sel ~= 1 then
             return
         end
         q:step(4)
@@ -140,7 +140,7 @@ function NPC_108(me, npc)
             return
         end
         local warp_sel, warp_btn = me:list(npc, '지금 지름길로 292층에 가시겠소?', { '네, 보내주십시오.', '나중에 가겠습니다.' })
-        if warp_btn ~= DIALOG_RESULT.QUIT and warp_sel == 0 then
+        if warp_btn ~= DIALOG_RESULT.QUIT and warp_sel == 1 then
             local map = name2map('도삭산292층')
             if map ~= nil then
                 me:map(map, {16, 37})
@@ -153,7 +153,7 @@ function NPC_108(me, npc)
         local btn
         if not me:has_items('인어의거울', 1) then
             local warp_sel, warp_btn = me:list(npc, '아직 인어의거울을 구하지 못하셨군. 지금 지름길로 292층으로 가시겠소?', { '네, 보내주십시오.', '나중에 가겠습니다.' })
-            if warp_btn ~= DIALOG_RESULT.QUIT and warp_sel == 0 then
+            if warp_btn ~= DIALOG_RESULT.QUIT and warp_sel == 1 then
                 local map = name2map('도삭산292층')
                 if map ~= nil then
                     me:map(map, {16, 37})

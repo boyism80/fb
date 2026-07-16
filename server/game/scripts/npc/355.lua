@@ -19,7 +19,7 @@ function NPC_355(me, npc)
         return
     end
 
-    if sel == 0 then
+    if sel == 1 then
         local btn = me:dialog(npc, "음력 5월 5일은 단오에요.", false, true)
         if btn == DIALOG_RESULT.QUIT then
             return
@@ -51,7 +51,7 @@ function NPC_355(me, npc)
         return
     end
 
-    if sel == 1 then
+    if sel == 2 then
         local btn = me:dialog(npc, "창포를 구해오셨나요?", false, true)
         if btn == DIALOG_RESULT.QUIT then
             return
@@ -106,7 +106,7 @@ function NPC_355(me, npc)
         return
     end
 
-    if sel == 2 then
+    if sel == 3 then
         local btn = me:dialog(npc, "창포뿌리를 다섯개나 모으셨어요? 그럼 제가 비녀를 만들어 드릴께요.", false, true)
         if btn == DIALOG_RESULT.QUIT then
             return
@@ -134,7 +134,7 @@ function NPC_355(me, npc)
         return
     end
 
-    if sel == 3 then
+    if sel == 4 then
         if me:isbuff("반짝반짝") then
             me:mkitem("망개떡", 1)
             btn = me:dialog(npc, "제가 떡을 준비했는데.. 배고플때 드세요. ^^", false, true)

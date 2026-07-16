@@ -95,7 +95,7 @@ function NPC_363(me, npc)
         return
     end
 
-    if sel == 0 then
+    if sel == 1 then
         run_songpyeon_request(me, npc, q)
         return
     end

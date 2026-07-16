@@ -17,7 +17,7 @@ function NPC_491(me, npc)
         return
     end
 
-    if sel == 0 then
+    if sel == 1 then
         if me:mkitem(item_name, 1) == nil then
             return
         end

@@ -20,7 +20,7 @@ function NPC_551(me, npc)
     if btn == DIALOG_RESULT.QUIT or sel == nil then
         return
     end
-    if sel == 0 then
+    if sel == 1 then
         if not me:has_items("귀문흑색부적", 1) then
             me:dialog(npc, "자네는 귀문흑색부적을 가지고 있지 않은 것 같군...", false, false)
             return

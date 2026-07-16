@@ -35,11 +35,11 @@ function NPC_193(me, npc)
         if list_btn == DIALOG_RESULT.QUIT then
             return
         end
-        if sel == 1 then
+        if sel == 2 then
             me:dialog(npc, '그렇지만.. 그게 잘 안된다네..', false, false)
             return
         end
-        if sel ~= 0 then
+        if sel ~= 1 then
             return
         end
         q = me:start_quest(quest.QUEST_WOOGAPUNG)

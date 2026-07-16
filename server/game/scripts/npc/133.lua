@@ -49,7 +49,7 @@ function NPC_133(me, npc)
         if list_btn == DIALOG_RESULT.QUIT or sel == nil then
             return
         end
-        if sel == 0 then
+        if sel == 1 then
             local btn = me:dialog(npc, "네! 뭐든지 도와드릴게요!", false, true)
             if btn == DIALOG_RESULT.QUIT then
                 return
@@ -60,7 +60,7 @@ function NPC_133(me, npc)
             end
             q:step(2)
             me:dialog(npc, "잘 부탁드립니다, 수사관 나리... 헤헤헤.", false, false)
-        elseif sel == 1 then
+        elseif sel == 2 then
             me:dialog(npc, "여기서 기다리고 있을게요!", false, false)
         else
             me:dialog(npc, "저 요리같은거 할 줄 몰라요~!", false, false)
@@ -75,7 +75,7 @@ function NPC_133(me, npc)
         if list_btn == DIALOG_RESULT.QUIT or sel == nil then
             return
         end
-        if sel == 0 then
+        if sel == 1 then
             local btn = me:dialog(npc, "친구가 그러는데, 정령사가 굉장히 화난 모양이에요.", false, true)
             if btn == DIALOG_RESULT.QUIT then
                 return

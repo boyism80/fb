@@ -26,11 +26,11 @@ function NPC_77(me, npc)
         if sel == nil then
             return
         end
-        if sel == 1 then
+        if sel == 2 then
             me:dialog(npc, '별로..내키지가 않아서...', false, true)
             return
         end
-        if sel ~= 0 then
+        if sel ~= 1 then
             return
         end
         q = me:start_quest(quest.QUEST_CLEAR_SHIELD)

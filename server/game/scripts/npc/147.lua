@@ -41,7 +41,7 @@ function NPC_147(me, npc)
     if list_btn == DIALOG_RESULT.PREV then
         goto NPC_147_0012
     end
-    if sel == nil or sel ~= 0 then
+    if sel == nil or sel ~= 1 then
         return
     end
     local required_table = { ['현철'] = 1, ['오독산'] = 1 }

@@ -84,7 +84,7 @@ local function run_dragon_weapon_awaken(me, npc)
     if list_btn == DIALOG_RESULT.PREV then
         goto NPC_140_0003
     end
-    if sel ~= 0 then
+    if sel ~= 1 then
         return false
     end
     ::NPC_140_0005::
@@ -99,10 +99,10 @@ local function run_dragon_weapon_awaken(me, npc)
     if type_btn == DIALOG_RESULT.PREV then
         goto NPC_140_0004
     end
-    if type_sel < 0 or type_sel >= #DRAGON_WEAPON_LINES then
+    if type_sel < 1 or type_sel >= #DRAGON_WEAPON_LINES then
         return false
     end
-    local line = DRAGON_WEAPON_LINES[type_sel + 1]
+    local line = DRAGON_WEAPON_LINES[type_sel]
     ::NPC_140_0006::
     local grade_sel, grade_btn = me:list(npc, '어떤 무기를 각성할건가?', line.options, true)
     if grade_btn == DIALOG_RESULT.QUIT or grade_sel == nil then
@@ -114,10 +114,10 @@ local function run_dragon_weapon_awaken(me, npc)
     if grade_sel < 0 or grade_sel >= 3 then
         return false
     end
-    local check_item = line.options[grade_sel + 1]
-    local success_item = line.success[grade_sel + 1]
-    local failed_item = line.failed[grade_sel + 1]
-    local rate = DRAGON_AWAKEN_RATES[grade_sel + 1]
+    local check_item = line.options[grade_sel]
+    local success_item = line.success[grade_sel]
+    local failed_item = line.failed[grade_sel]
+    local rate = DRAGON_AWAKEN_RATES[grade_sel]
     if not me:has_items({ ['얼음'] = 1, ['은나무가지'] = 1, [check_item] = 1 }) or me:base_hp() < 1000 then
         me:dialog(npc, '자네는 아직 용무기를 각성시킬 준비가 모자라군.', false, false)
         return true
@@ -153,7 +153,7 @@ local function run_amber_weapon_craft(me, npc, colors)
     if color_sel == nil or color_sel < 0 or color_sel >= #colors then
         return DIALOG_RESULT.QUIT
     end
-    local color_name = colors[color_sel + 1].color
+    local color_name = colors[color_sel].color
     local weapon_opts = {}
     for _, w in ipairs(WEAPON_NAMES) do
         weapon_opts[#weapon_opts + 1] = color_name .. w .. '입니다.'
@@ -162,11 +162,11 @@ local function run_amber_weapon_craft(me, npc, colors)
     if weapon_btn == DIALOG_RESULT.PREV then
         return DIALOG_RESULT.PREV
     end
-    if weapon_sel == nil or weapon_sel < 0 or weapon_sel >= #WEAPON_NAMES then
+    if weapon_sel == nil or weapon_sel < 1 or weapon_sel >= #WEAPON_NAMES then
         return DIALOG_RESULT.QUIT
     end
     local star_item = color_name .. '별'
-    local result_name = color_name .. WEAPON_NAMES[weapon_sel + 1]
+    local result_name = color_name .. WEAPON_NAMES[weapon_sel]
     local code = me:exchange(
         { ['item'] = { [star_item] = 1, ['죽은지네'] = 1 } },
         { ['item'] = { [result_name] = 1 } }
@@ -179,7 +179,7 @@ local function run_amber_weapon_craft(me, npc, colors)
         me:dialog(npc, '소지품이 가득 차서 ' .. name_with(result_name, '을', '를') .. ' 받을 수 없네.', false, false)
         return DIALOG_RESULT.NEXT
     end
-    me:dialog(npc, name_with(color_name .. '별', '으로', '로') .. ' ' .. color_name .. WEAPON_NAMES[weapon_sel + 1] .. ' 만들어주었네.', false, false)
+    me:dialog(npc, name_with(color_name .. '별', '으로', '로') .. ' ' .. color_name .. WEAPON_NAMES[weapon_sel] .. ' 만들어주었네.', false, false)
     return DIALOG_RESULT.NEXT
 end
 
@@ -197,11 +197,11 @@ function NPC_140(me, npc)
     if main_opt == nil then
         return
     end
-    if main_opt == 0 then
+    if main_opt == 1 then
         if run_dragon_weapon_awaken(me, npc) == false then
             return
         end
-    elseif main_opt == 1 then
+    elseif main_opt == 2 then
         local r = run_amber_weapon_craft(me, npc, AMBER_COLORS)
         if r == DIALOG_RESULT.QUIT then
             return
@@ -209,7 +209,7 @@ function NPC_140(me, npc)
         if r == DIALOG_RESULT.PREV then
             goto NPC_140_START
         end
-    elseif main_opt == 2 then
+    elseif main_opt == 3 then
         local r = run_amber_weapon_craft(me, npc, LIGHT_AMBER_COLORS)
         if r == DIALOG_RESULT.QUIT then
             return

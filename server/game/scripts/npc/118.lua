@@ -23,7 +23,7 @@ function NPC_118(me, npc)
             if list_btn == DIALOG_RESULT.PREV then
                 goto NPC_118_0001
             end
-            if sel == 0 then
+            if sel == 1 then
                 dq:step(8)
                 me:dialog(npc, "아..아니, 난 별로 할 말..두 없구! 아! 바빠! 바쁘다니까!", false, false)
             else
@@ -39,7 +39,7 @@ function NPC_118(me, npc)
             if list_btn == DIALOG_RESULT.QUIT or sel == nil then
                 return
             end
-            if sel == 1 then
+            if sel == 2 then
                 return
             end
             sel, list_btn = me:list(npc, "주..주었다구, 돈자루를..! 줏..줏은 것 뿐이야!", {
@@ -49,7 +49,7 @@ function NPC_118(me, npc)
             if list_btn == DIALOG_RESULT.QUIT or sel == nil then
                 return
             end
-            if sel == 1 then
+            if sel == 2 then
                 return
             end
             sel, list_btn = me:list(npc, "아..아냐, 줏..줏었다기 보다는 수고비로..", {
@@ -59,7 +59,7 @@ function NPC_118(me, npc)
             if list_btn == DIALOG_RESULT.QUIT or sel == nil then
                 return
             end
-            if sel == 1 then
+            if sel == 2 then
                 return
             end
             sel, list_btn = me:list(npc, "나..난 시키는대로 했을 뿐이야! 나..난!", {
@@ -69,7 +69,7 @@ function NPC_118(me, npc)
             if list_btn == DIALOG_RESULT.QUIT or sel == nil then
                 return
             end
-            if sel == 1 then
+            if sel == 2 then
                 return
             end
             sel, list_btn = me:list(npc, "으..아냐, 난 아무 말도 안했어! 안했다구!", {
@@ -79,7 +79,7 @@ function NPC_118(me, npc)
             if list_btn == DIALOG_RESULT.QUIT or sel == nil then
                 return
             end
-            if sel == 1 then
+            if sel == 2 then
                 return
             end
             sel, list_btn = me:list(npc, "다..다 알고 왔다니? 뭐..뭘 알고 와?", {
@@ -89,7 +89,7 @@ function NPC_118(me, npc)
             if list_btn == DIALOG_RESULT.QUIT or sel == nil then
                 return
             end
-            if sel == 1 then
+            if sel == 2 then
                 return
             end
             sel, list_btn = me:list(npc, "나..나쁜 짓이라니! 나..난 그런짓 안했어!", {
@@ -101,7 +101,7 @@ function NPC_118(me, npc)
             if list_btn == DIALOG_RESULT.QUIT or sel == nil then
                 return
             end
-            if sel == 0 or sel == 2 or sel == 3 then
+            if sel == 1 or sel == 3 or sel == 4 then
                 me:dialog(npc, "어..얼른 가슈!", false, false)
                 return
             end
@@ -112,7 +112,7 @@ function NPC_118(me, npc)
             if list_btn == DIALOG_RESULT.QUIT or sel == nil then
                 return
             end
-            if sel == 1 then
+            if sel == 2 then
                 return
             end
             sel, list_btn = me:list(npc, "저..정말인데..", {
@@ -124,7 +124,7 @@ function NPC_118(me, npc)
             if list_btn == DIALOG_RESULT.QUIT or sel == nil then
                 return
             end
-            if sel == 0 or sel == 1 or sel == 2 then
+            if sel == 1 or sel == 2 or sel == 3 then
                 me:dialog(npc, "어..얼른 가슈!", false, false)
                 return
             end
@@ -135,7 +135,7 @@ function NPC_118(me, npc)
             if list_btn == DIALOG_RESULT.QUIT or sel == nil then
                 return
             end
-            if sel == 0 then
+            if sel == 1 then
                 me:dialog(npc, "나..난 정말 죄 없어!", false, false)
                 return
             end
@@ -184,7 +184,7 @@ function NPC_118(me, npc)
         if lb == DIALOG_RESULT.QUIT then
             return
         end
-        if sel == nil or sel ~= 0 then
+        if sel == nil or sel ~= 1 then
             return
         end
         q = me:start_quest(quest.QUEST_JINJIN)

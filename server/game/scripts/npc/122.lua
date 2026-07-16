@@ -13,7 +13,7 @@ function NPC_122(me, npc)
         if list_btn == DIALOG_RESULT.QUIT or sel == nil then
             return
         end
-        if sel == 0 then
+        if sel == 1 then
             ::NPC_122_0000::
             local btn = me:dialog(npc, "그건 모조품이라구! 아니, 그럼 내가 진짜를 줬을 줄 알았어? 허참! 어이가 없구만!", false, true)
             if btn == DIALOG_RESULT.QUIT then
@@ -28,7 +28,7 @@ function NPC_122(me, npc)
             end
             dq:step(6)
             me:dialog(npc, "에이! 진진처럼 게으르고 굼뜨고 못미더운 사람들 같으니라구!", false, false)
-        elseif sel == 1 then
+        elseif sel == 2 then
             me:dialog(npc, "준비중입니다.", false, false)
         else
             me:dialog(npc, "그러시군요.", false, false)
@@ -53,7 +53,7 @@ function NPC_122(me, npc)
         if lb == DIALOG_RESULT.QUIT then
             return
         end
-        if sel == nil or sel ~= 0 then
+        if sel == nil or sel ~= 1 then
             return
         end
         local q = me:start_quest(quest.QUEST_TONGTONG)

@@ -9,7 +9,7 @@ function NPC_394(me, npc)
         return
     end
 
-    if sel == 0 then
+    if sel == 1 then
         local button = me:dialog(npc, "여기 만리장성을 짓게한 진시황에 대해서 알고 있나? 진시황은 항상 불노불사의 약을 찾아다녔지. 영원히 살기 위해서 말일세.", false, true)
         if button == DIALOG_RESULT.QUIT then
             return
@@ -42,7 +42,7 @@ function NPC_394(me, npc)
         if button == DIALOG_RESULT.QUIT then
             return
         end
-    elseif sel == 1 then
+    elseif sel == 2 then
         local button = me:dialog(npc, "지금 우리 중국의 황제께서 흉노족때문에 고심하고 계신다고 하던데..", false, false)
         if button == DIALOG_RESULT.QUIT then
             return

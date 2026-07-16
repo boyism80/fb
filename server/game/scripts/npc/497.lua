@@ -40,7 +40,7 @@ function NPC_497(me, npc)
         return
     end
 
-    if sel == 1 then
+    if sel == 2 then
         me:dialog(npc, "저도 소중한 창포물과, 염색을 하려고 따둔 꽃을 힘들게 구했단 말이에요! 싫으면 마세요!", false, false)
         return
     end

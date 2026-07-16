@@ -9,12 +9,12 @@ function NPC_402(me, npc)
         return
     end
 
-    if sel == 0 then
+    if sel == 1 then
         local button = me:dialog(npc, "비약은.. 말 그대로 비밀의 약품이지. 소문에는 천지인의 패들을 서로 합치는데 비약이 필요하다고 하더군.", false, true)
         if button == DIALOG_RESULT.QUIT then
             return
         end
-    elseif sel == 1 then
+    elseif sel == 2 then
         local messages = {
             "선비족 녀석들.. 고구려와 중국을 왕래하는 상인들을 습격한다고 하더라고. 나쁜놈들..",
             "고구려쪽 어딘가에 가면 선녀들이 사는 곳이 있다고 하던데.. 정말일까?",

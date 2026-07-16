@@ -122,6 +122,41 @@ void push_dialog(fb::lua::context* lua, const dialog_bot& resp)
     lua->pushstring("item_pursuit");
     lua->pushinteger(resp.item_pursuit);
     lua->settable(-3);
+
+    lua->pushstring("item_items");
+    lua->new_table();
+    for (size_t i = 0; i < resp.item_items.size(); ++i)
+    {
+        lua->pushinteger(static_cast<lua_Integer>(i + 1));
+        lua->new_table();
+        lua->pushstring("look");
+        lua->pushinteger(resp.item_items[i].look);
+        lua->settable(-3);
+        lua->pushstring("color");
+        lua->pushinteger(resp.item_items[i].color);
+        lua->settable(-3);
+        lua->pushstring("value");
+        lua->pushinteger(resp.item_items[i].value);
+        lua->settable(-3);
+        lua->pushstring("name");
+        lua->pushstring(resp.item_items[i].name);
+        lua->settable(-3);
+        lua->pushstring("desc");
+        lua->pushstring(resp.item_items[i].desc);
+        lua->settable(-3);
+        lua->settable(-3);
+    }
+    lua->settable(-3);
+
+    lua->pushstring("slot_slots");
+    lua->new_table();
+    for (size_t i = 0; i < resp.slot_slots.size(); ++i)
+    {
+        lua->pushinteger(static_cast<lua_Integer>(i + 1));
+        lua->pushinteger(resp.slot_slots[i]);
+        lua->settable(-3);
+    }
+    lua->settable(-3);
 }
 
 template <typename ResponseType, void (*PushFn)(fb::lua::context*, const ResponseType&)>
@@ -141,11 +176,16 @@ int bot_request_dialog_impl(lua_State* L)
     lua_pushvalue(L, 3);
     auto validator_ref = luaL_ref(L, LUA_REGISTRYINDEX);
 
-    auto bot_ptr = bot;
-    auto result  = std::make_shared<ResponseType>();
+    auto timeout = fb::model::timespan(INTEGRATION_DEFAULT_TIMEOUT);
+    if (lua->argc() >= 4 && lua->is_nil(4) == false)
+        timeout = fb::model::timespan(std::chrono::milliseconds(static_cast<int>(lua->tointeger(4))));
+
+    auto bot_ptr  = bot;
+    auto result   = std::make_shared<std::optional<ResponseType>>();
+    auto timed_out = std::make_shared<bool>(false);
 
     auto builder  = lua->new_co_builder();
-    builder.yield = [lua, bot_ptr, request, validator_ref, result]() -> async::task<void> {
+    builder.yield = [lua, bot_ptr, request, validator_ref, timeout, result, timed_out]() -> async::task<void> {
         auto* L_state = static_cast<lua_State*>(*lua);
 
         auto cleanup = [L_state, validator_ref]() {
@@ -178,11 +218,23 @@ int bot_request_dialog_impl(lua_State* L)
             return accepted;
         };
 
-        *result = co_await bot_ptr->request<ResponseType>(*request, condition, INTEGRATION_DEFAULT_TIMEOUT);
+        try
+        {
+            result->emplace(co_await bot_ptr->request<ResponseType>(*request, condition, timeout));
+        }
+        catch (const std::exception&)
+        {
+            *timed_out = true;
+        }
         cleanup();
     };
-    builder.resume = [lua, result]() -> async::task<int> {
-        PushFn(lua, *result);
+    builder.resume = [lua, result, timed_out]() -> async::task<int> {
+        if (*timed_out || result->has_value() == false)
+        {
+            lua->pushnil();
+            co_return 1;
+        }
+        PushFn(lua, result->value());
         co_return 1;
     };
     return builder.run();

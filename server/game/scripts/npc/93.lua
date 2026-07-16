@@ -8,7 +8,7 @@ local SUMMON_ITEMS = {
 
 function NPC_93(me, npc)
     local sel = me:list(npc, '....', { '파괴왕 소환' }, false)
-    if sel == nil or sel ~= 0 then
+    if sel == nil or sel ~= 1 then
         return
     end
     local items = {}

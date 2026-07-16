@@ -23,7 +23,7 @@ function M.handle(me, npc)
         return true
     end
 
-    local is_global = (target_sel == 0)
+    local is_global = (target_sel == 1)
     local user_name = nil
     if is_global == false then
         user_name = me:input(npc, '캐릭터 이름을 입력하세요.')
@@ -60,7 +60,7 @@ function M.handle(me, npc)
         return true
     end
 
-    if reward_sel == 0 then
+    if reward_sel == 1 then
         local item_name = me:input(npc, '아이템 이름을 입력하세요.')
         if item_name == nil or item_name == '' then
             me:dialog(npc, '아이템 이름이 필요합니다.', false, true)
@@ -80,7 +80,7 @@ function M.handle(me, npc)
 
         attachments['item'][item_name] = (attachments['item'][item_name] or 0) + count
         goto REWARD_MENU
-    elseif reward_sel == 1 then
+    elseif reward_sel == 2 then
         local count_raw = me:input(npc, '경험치를 입력하세요.')
         local count = parse_positive_number(count_raw)
         if count == nil then
@@ -89,7 +89,7 @@ function M.handle(me, npc)
         end
         attachments['exp'] = attachments['exp'] + count
         goto REWARD_MENU
-    elseif reward_sel == 2 then
+    elseif reward_sel == 3 then
         local count_raw = me:input(npc, '금전을 입력하세요.')
         local count = parse_positive_number(count_raw)
         if count == nil then

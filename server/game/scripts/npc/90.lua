@@ -4,7 +4,7 @@ local enum = require('lib.enum')
 
 function NPC_90(me, npc)
     local sel = me:list(npc, '안녕하세요. 어떻게 오셨나요?', { '3차 승급을 원합니다' })
-    if sel == nil or sel ~= 0 then
+    if sel == nil or sel ~= 1 then
         return
     end
 
@@ -22,7 +22,7 @@ function NPC_90(me, npc)
         if sel == nil then
             return
         end
-        if sel ~= 0 then
+        if sel ~= 1 then
             return
         end
 
@@ -40,7 +40,7 @@ function NPC_90(me, npc)
         end
 
         sel = me:list(npc, '당신이 이것을 조사해 주시겠습니까?', { '네, 제가 조사하겠습니다.' })
-        if sel == nil or sel ~= 0 then
+        if sel == nil or sel ~= 1 then
             return
         end
 

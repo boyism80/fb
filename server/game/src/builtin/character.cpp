@@ -5083,7 +5083,7 @@ int builtin::character::builtin_marketplace_list(lua_State* L)
         return 1;
     }
 
-    auto item_index   = static_cast<uint8_t>(lua->tointeger(2));
+    auto item_index   = static_cast<uint8_t>(lua->tointeger(2) - 1);
     auto count        = static_cast<uint16_t>(lua->tointeger(3));
     auto price        = static_cast<uint32_t>(lua->tointeger(4));
     auto expire_hours = static_cast<uint16_t>(lua->tointeger(5, 72));

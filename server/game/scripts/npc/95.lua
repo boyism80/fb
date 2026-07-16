@@ -41,7 +41,7 @@ function NPC_95(me, npc)
         if list_btn == DIALOG_RESULT.PREV then
             goto NPC_95_0003
         end
-        if choice ~= 0 then
+        if choice ~= 1 then
             me:dialog(npc, '그렇다면 어쩔 수 없지.', false, true)
             return
         end

@@ -13,7 +13,7 @@ function NPC_154(me, npc)
         return
     end
 
-    if sel == 0 then
+    if sel == 1 then
         if me:spell("백열장") then
             local d = me:dialog(npc, "당신은 백열장을 배워 수련중이군요..", false, true)
             if d == DIALOG_RESULT.QUIT then
@@ -41,7 +41,7 @@ function NPC_154(me, npc)
         if btn2 == DIALOG_RESULT.QUIT or sel2 == nil then
             return
         end
-        if sel2 == 0 then
+        if sel2 == 1 then
             if me:money() < 10000 then
                 me:dialog(npc, "안타깝지만 자네 수중에 충분한 돈이 없구만. 돈을 가지고 다시 찾아오시오.", false, false)
                 return
@@ -63,7 +63,7 @@ function NPC_154(me, npc)
         return
     end
 
-    if sel == 1 then
+    if sel == 2 then
         if me:spell("선풍각") then
             me:dialog(npc, "선풍각을 배워 수련중이구려. 선풍각은 수련에 따라 얼마든지 강해진다오. 수련을 게을리 하지 마시길. 나무아미타불..", false, false)
             return
@@ -89,7 +89,7 @@ function NPC_154(me, npc)
         if btn2 == DIALOG_RESULT.QUIT or sel2 == nil then
             return
         end
-        if sel2 == 0 then
+        if sel2 == 1 then
             if me:money() < 20000 then
                 me:dialog(npc, "안타깝지만 자네 수중에 충분한 돈이 없구만. 돈을 가지고 다시 찾아오시오.", false, false)
                 return

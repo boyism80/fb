@@ -50,7 +50,7 @@ function NPC_473(me, npc)
     if btn == DIALOG_RESULT.PREV then
         goto NPC_473_0005
     end
-    if sel == 1 then
+    if sel == 2 then
         return
     end
     if me:money() < 10000 then

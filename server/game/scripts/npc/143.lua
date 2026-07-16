@@ -21,8 +21,8 @@ function NPC_143(me, npc)
         end
         ::NPC_143_0003::
         local sel = me:list(npc, '제발 부탁드려요. 반지를 찾아주세요.', { '걱정마세요. 제가 꼭 찾아드리죠.', '흠. 전 물을 싫어해서요. 죄송하네요.' }, false)
-        if sel == nil or sel == 1 then
-            if sel == 1 then
+        if sel == nil or sel == 2 then
+            if sel == 2 then
                 me:dialog(npc, '그러시다면야.. 이를 어쩐담...', false, true)
             end
             return

@@ -25,11 +25,11 @@ function NPC_177(me, npc)
     if button == DIALOG_RESULT.PREV then
         goto NPC_177_0001
     end
-    if sel < 0 or sel >= #suffixes then
+    if sel < 1 or sel >= #suffixes then
         return
     end
 
-    local suffix = suffixes[sel + 1]
+    local suffix = suffixes[sel]
     local item_tainted = '문신' .. suffix
     local item_result = '주술' .. suffix
 

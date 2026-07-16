@@ -28,16 +28,16 @@ local function main_menu(me, npc)
     if index == nil then
         return
     end
-    if index == 0 then
+    if index == 1 then
         do_hair_style(me, npc)
-    elseif index == 1 then
+    elseif index == 2 then
         do_hair_dye(me, npc)
     end
 end
 
 function do_hair_style(me, npc)
     local index = me:list(npc, '가격에 따라 다른 머리모양을 해드릴 수 있습니다.\n\n원하시는 가격을 선택해주세요.', {'10만전'}, false)
-    if index == nil or index ~= 0 then
+    if index == nil or index ~= 1 then
         return
     end
     
@@ -55,7 +55,7 @@ function do_hair_style(me, npc)
             return
         end
         
-        if sel == 0 then
+        if sel == 1 then
             local money = me:money()
             if money < HAIR_STYLE_PRICE then
                 me:dialog(npc, '금액이 ' .. (HAIR_STYLE_PRICE - money) .. '전 부족합니다.', false, false)
@@ -67,7 +67,7 @@ function do_hair_style(me, npc)
             return
         end
         
-        if sel == 1 then
+        if sel == 2 then
             face = face + 1
             if face <= HAIR_STYLE_MAX then
             else
@@ -78,7 +78,7 @@ function do_hair_style(me, npc)
                 if again == nil then
                     return
                 end
-                if again == 0 then
+                if again == 1 then
                     face = HAIR_STYLE_MIN
                 else
                     return
@@ -99,12 +99,12 @@ function do_hair_dye(me, npc)
         dye_menu[i] = opt[1]
     end
     local choice = me:list(npc, '원하는 염색을 선택해라', dye_menu, false)
-    if choice == nil or choice < 0 or choice >= #DYE_OPTIONS then
+    if choice == nil or choice < 1 or choice >= #DYE_OPTIONS then
         return
     end
     
     local color_index = choice
-    local cost = DYE_OPTIONS[choice + 1][2]
+    local cost = DYE_OPTIONS[choice][2]
     local money = me:money()
     if money < cost then
         me:dialog(npc, '금액이 ' .. (cost - money) .. '전 부족합니다.', false, false)

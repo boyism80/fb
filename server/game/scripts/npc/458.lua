@@ -9,7 +9,7 @@ function NPC_458(me, npc)
         return
     end
 
-    if sel == 0 then
+    if sel == 1 then
         local d = me:dialog(npc, "이번 크리스마스 트리를 장식할 홍성초가 부족한데... 어떻게 해야 한담...", false, true)
         if d == DIALOG_RESULT.QUIT then
             return
@@ -18,7 +18,7 @@ function NPC_458(me, npc)
         if sub_btn == DIALOG_RESULT.QUIT then
             return
         end
-        if sub == 0 then
+        if sub == 1 then
             local code = me:exchange(
                 { ['item'] = { ["홍성초"] = 1 } },
                 { ['item'] = { ["빨간양말"] = 1 } }
@@ -38,7 +38,7 @@ function NPC_458(me, npc)
         return
     end
 
-    if sel == 1 then
+    if sel == 2 then
         local d = me:dialog(npc, "아니 글쎄... 빨간양말에 선물을 담아 나누어 주어야 하는데, 그만 빨간양말을 잃어버렸지 뭔가! 이걸 어떻게 해야 한담...", false, true)
         if d == DIALOG_RESULT.QUIT then
             return
@@ -53,8 +53,8 @@ function NPC_458(me, npc)
         if sub == nil then
             return
         end
-        local need = (sub == 0) and 100 or 200
-        local reward_name = (sub == 0) and "산타모자" or "산타클로스옷"
+        local need = (sub == 1) and 100 or 200
+        local reward_name = (sub == 1) and "산타모자" or "산타클로스옷"
         local code = me:exchange(
             { ['item'] = { ["빨간양말"] = need } },
             { ['item'] = { [reward_name] = 1 } }

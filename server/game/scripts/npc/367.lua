@@ -74,11 +74,11 @@ local function run_bead_exchange(me, npc)
     if list_btn == DIALOG_RESULT.QUIT or sel == nil then
         return
     end
-    if sel == 1 then
+    if sel == 2 then
         me:dialog(npc, "그렇군. 힘내서 좀 도와주게나..", false, false)
         return
     end
-    if sel ~= 0 then
+    if sel ~= 1 then
         return
     end
 
@@ -88,11 +88,11 @@ local function run_bead_exchange(me, npc)
         "청색구슬조각입니다.",
         "녹색구슬조각입니다."
     }, true)
-    if list_btn == DIALOG_RESULT.QUIT or sel == nil or sel < 0 or sel > 3 then
+    if list_btn == DIALOG_RESULT.QUIT or sel == nil or sel < 1 or sel > 4 then
         return
     end
-    local bead_item = BEAD_OPTIONS[sel + 1][1]
-    local reward_item = BEAD_OPTIONS[sel + 1][2]
+    local bead_item = BEAD_OPTIONS[sel][1]
+    local reward_item = BEAD_OPTIONS[sel][2]
     local prompt = string.format("그래, %s 몇개를 %s으로 교환하시겠는가?  ", bead_item, reward_item)
     local var = me:input(npc, prompt)
     if var == nil or var == "" then
@@ -169,11 +169,11 @@ local function run_intro_and_list(me, npc)
     if list_btn == DIALOG_RESULT.PREV then
         goto NPC_367_0001
     end
-    if sel == 0 then
+    if sel == 1 then
         run_help_excavation(me, npc)
         return
     end
-    if sel == 1 then
+    if sel == 2 then
         run_decline(me, npc)
         return
     end

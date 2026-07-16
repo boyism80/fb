@@ -40,7 +40,7 @@ local function find_list_index(list_packet, option_text)
     end
     for i, text in ipairs(lists) do
         if text == option_text then
-            return i - 1
+            return i
         end
     end
     return nil

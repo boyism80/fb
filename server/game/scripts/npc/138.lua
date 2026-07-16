@@ -57,7 +57,7 @@ function NPC_138(me, npc)
         if list_btn == DIALOG_RESULT.QUIT then
             return
         end
-        if sel ~= 0 then
+        if sel ~= 1 then
             return
         end
         if q == nil then
@@ -97,7 +97,7 @@ function NPC_138(me, npc)
         if list_btn == DIALOG_RESULT.QUIT then
             return
         end
-        if sel ~= 0 then
+        if sel ~= 1 then
             return
         end
         ::NPC_138_0020::
@@ -157,12 +157,12 @@ function NPC_138(me, npc)
         if list_btn == DIALOG_RESULT.QUIT then
             return
         end
-        if sel == nil or sel < 0 or sel > 7 then
+        if sel == nil or sel < 1 or sel > 7 then
             return
         end
-        local item_name = CLOTH_ITEMS[sel + 1]
-        local class_name = CLOTH_CLASS[sel + 1]
-        local gender = CLOTH_GENDER[sel + 1]
+        local item_name = CLOTH_ITEMS[sel]
+        local class_name = CLOTH_CLASS[sel]
+        local gender = CLOTH_GENDER[sel]
         ::NPC_138_0040::
         btn = me:dialog(npc, name_with(item_name, '는', '은') .. ' ' .. gender .. ' ' .. class_name .. '들을 위한 옷입니다.', false, true)
         if btn == DIALOG_RESULT.QUIT then

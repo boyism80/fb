@@ -34,7 +34,7 @@ function NPC_539(me, npc)
         if list_btn == DIALOG_RESULT.PREV then
             goto NPC_539_0001
         end
-        if sel == nil or sel ~= 0 then
+        if sel == nil or sel ~= 1 then
             return
         end
 

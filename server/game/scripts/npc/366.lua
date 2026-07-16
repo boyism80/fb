@@ -24,11 +24,11 @@ function NPC_366(me, npc)
     if btn == DIALOG_RESULT.QUIT then
         return
     end
-    if sel == 1 then
+    if sel == 2 then
         me:dialog(npc, "준비가 되거든 다시 오세요...", false, false)
         return
     end
-    if sel ~= 0 then
+    if sel ~= 1 then
         return
     end
 

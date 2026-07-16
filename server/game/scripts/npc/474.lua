@@ -49,17 +49,17 @@ function NPC_474(me, npc)
         if btn == DIALOG_RESULT.QUIT or sel == nil then
             return
         end
-        if sel == 0 then
+        if sel == 1 then
             me:dialog(npc, "나의 이름은 알아서 뭐하시려고 그러시는가?", false, false)
             return
         end
-        if sel == 1 then
+        if sel == 2 then
             me:dialog(npc, "이 곳의 상황은 본래와 다를바 없으시다.", false, false)
             return
         end
         ::NPC_474_0009::
         sel, btn = me:list(npc, "음? 하하하. 고마운 말씀이시다. 진심이신가?", { "네, 꼭 도와드릴께요.", "아뇨, 그만 둘래요." }, true)
-        if btn == DIALOG_RESULT.QUIT or sel == nil or sel ~= 0 then
+        if btn == DIALOG_RESULT.QUIT or sel == nil or sel ~= 1 then
             me:dialog(npc, "장난을 치는 사람은 싫어한다.", false, false)
             return
         end
@@ -84,7 +84,7 @@ function NPC_474(me, npc)
         end
         ::NPC_474_0012::
         sel, btn = me:list(npc, "그래도 좋은가?", { "네, 괜찮습니다.", "다시 생각해볼래요." }, true)
-        if btn == DIALOG_RESULT.QUIT or sel == nil or sel ~= 0 then
+        if btn == DIALOG_RESULT.QUIT or sel == nil or sel ~= 1 then
             return
         end
         if btn == DIALOG_RESULT.PREV then

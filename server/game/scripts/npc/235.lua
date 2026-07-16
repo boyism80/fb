@@ -37,11 +37,11 @@ function NPC_235(me, npc)
     if sel == nil then
         return
     end
-    if sel == 0 then
+    if sel == 1 then
         bokgeon_sell_doll(me, npc)
         return
     end
-    if sel == 1 then
+    if sel == 2 then
         bokgeon_find_toys(me, npc)
         return
     end
@@ -65,7 +65,7 @@ function bokgeon_sell_doll(me, npc)
         if btn == DIALOG_RESULT.PREV then
             goto NPC_235_0008
         end
-        if sel == nil or sel ~= 0 then
+        if sel == nil or sel ~= 1 then
             return
         end
         ::NPC_235_0010::
@@ -117,7 +117,7 @@ function bokgeon_find_toys(me, npc)
         if btn == DIALOG_RESULT.PREV then
             goto NPC_235_0020
         end
-        if sel == nil or sel ~= 0 then
+        if sel == nil or sel ~= 1 then
             return
         end
         ::NPC_235_0018::
@@ -130,7 +130,7 @@ function bokgeon_find_toys(me, npc)
         if btn == DIALOG_RESULT.PREV then
             goto NPC_235_0018
         end
-        if sel == nil or sel ~= 0 then
+        if sel == nil or sel ~= 1 then
             return
         end
         ::NPC_235_0021::

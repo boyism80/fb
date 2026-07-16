@@ -64,11 +64,11 @@ local function run_sesi_5(me, npc)
     if list_btn == DIALOG_RESULT.QUIT then
         return true
     end
-    if sel == 1 then
+    if sel == 2 then
         me:dialog(npc, "흥.. 시름 말구..", false, true)
         return true
     end
-    if sel ~= 0 then
+    if sel ~= 1 then
         return true
     end
     local code = me:exchange(
@@ -98,7 +98,7 @@ local function run_sesi_7(me, npc)
     if sel == nil then
         return true
     end
-    if sel == 0 then
+    if sel == 1 then
         local btn = me:dialog(npc, "그물이 필요하시다구요.. 제가 모아놓은 그물을 드리도록 하죠.", false, true)
         if btn == DIALOG_RESULT.QUIT then
             return true
@@ -134,7 +134,7 @@ local function run_sesi_8(me, npc)
     if sel == nil then
         return true
     end
-    if sel == 0 then
+    if sel == 1 then
         local btn = me:dialog(npc, "벌초를 하고 오셨어요?", false, true)
         if btn == DIALOG_RESULT.QUIT then
             return true

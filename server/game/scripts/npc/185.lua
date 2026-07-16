@@ -23,10 +23,10 @@ local function pyosin_story(me, npc)
         end
         ::NPC_250_0003::
         sel = me:list(npc, '...사람이였구려. 이거 실례했소이다. 여긴 인적이 드문 곳이라 아무도 오질 않지요. 혹시 귀신은 아닌가 해서 그만 놀라고 말았소이다. 허허.', { '귀신? 귀신이 나옵니까?', '놀래켜서 죄송합니다. 전 이만...' })
-        if sel == nil or sel == 0 then 
+        if sel == nil or sel == 1 then 
             return
         end
-        if sel == 2 then
+        if sel == 3 then
             me:dialog(npc, '아니네. 허허. 그럼 잘가보게.', false, false)
             return
         end
@@ -53,10 +53,10 @@ local function pyosin_story(me, npc)
         end
         ::NPC_250_0007::
         sel = me:list(npc, '음... 이런 곳을 돌아다니는 것을 보니 당신도 보통 사람은 아닌 것 같소만... 혹시 당신, 표신궁을 탐험할 생각으로 온거요?', { '예, 표신궁을 탐험하려고 왔습니다.', '어휴, 위험할 것 같아서 안되겠어요.' })
-        if sel == nil or sel == 0 then 
+        if sel == nil or sel == 1 then 
             return
         end
-        if sel == 2 then
+        if sel == 3 then
             me:dialog(npc, '당신도 그렇게 생각하시오? 그럼 부디 몸조심하시게.', false, false)
             return
         end
@@ -75,10 +75,10 @@ local function pyosin_story(me, npc)
         end
         ::NPC_250_0010::
         sel = me:list(npc, '표신궁에는 여러가지 고문서들이 있을 거요. 이 고문서들을 내게 가져와 주면 내용을 해석해주는 것은 물론이고, 자료를 제공한 대가 또한 지불하겠소, 어떠시오?', { '예, 기꺼이 도와드리겠습니다.', '음, 그렇게 위험한 곳에는 가고 싶지 않군요.' })
-        if sel == nil or sel == 0 then 
+        if sel == nil or sel == 1 then 
             return
         end
-        if sel == 2 then
+        if sel == 3 then
             me:dialog(npc, '하긴.. 보통 위험한 일이 아니니 다음에 기회가 되면 도와주시게.', false, false)
             return
         end
@@ -120,10 +120,10 @@ local function pyosin_story(me, npc)
         end
         ::NPC_250_0014::
         sel = me:list(npc, '그래, 표신궁에서 고문서를 찾아 오셨소?', { '동장군의 원령을 물리치고 고문서를 가져왔습니다.', '아뇨, 아직...' })
-        if sel == nil or sel == 0 then 
+        if sel == nil or sel == 1 then 
             return
         end
-        if sel == 2 then
+        if sel == 3 then
             me:dialog(npc, '그렇군. 너무 서두르지는 않아도 되니 천천히 하시게나.', false, false)
             return
         end
@@ -588,10 +588,10 @@ local function pyosin_story(me, npc)
         end
         ::NPC_250_0061::
         sel = me:list(npc, '게다가, 그 날짜가 이제 얼마 남지 않았구려. 으으음......', { '그럴 수가...!' })
-        if sel == nil or sel == 0 then 
+        if sel == nil or sel == 1 then 
             return
         end
-        if sel ~= 1 then 
+        if sel ~= 2 then 
             return
         end
         ::NPC_250_0062::
@@ -651,10 +651,10 @@ local function pyosin_sell_docs(me, npc)
         return
     end
     sel = me:list(npc, '그래. 어떤 고문서를 팔겠는가?', list_names)
-    if sel == nil or sel < 0 or sel > 5 then 
+    if sel == nil or sel < 1 or sel > 5 then 
         return
     end
-    local item = sell_items[sel + 1]
+    local item = sell_items[sel]
     local doc = item.name
     local price = item.price
     if not me:has_items(doc, 1) then
@@ -665,7 +665,7 @@ local function pyosin_sell_docs(me, npc)
     if confirm == nil then 
         return
     end
-    if confirm ~= 0 then 
+    if confirm ~= 1 then 
         return
     end
     local code = me:exchange(
@@ -689,14 +689,14 @@ function NPC_185(me, npc)
         return
     end
     local sel = me:list(npc, '......', { '표신궁에 관한 이야기를 한다.', '표신궁고문서를 판다.' })
-    if sel == nil or sel == 0 then 
-        return
-    end
-    if sel == 1 then
-        pyosin_story(me, npc)
+    if sel == nil or sel == 1 then 
         return
     end
     if sel == 2 then
+        pyosin_story(me, npc)
+        return
+    end
+    if sel == 3 then
         pyosin_sell_docs(me, npc)
     end
 end

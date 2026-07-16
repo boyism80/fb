@@ -29,7 +29,7 @@ function NPC_251(me, npc)
         return
     end
 
-    if sel == 0 then
+    if sel == 1 then
         if has_spell then
             local d = me:dialog(npc, "자네는 이미 금강퇴를 수련중이군.. 금강퇴는 다른 마법과 다르게 꾸준한 수련이 필요한 무술일세.", false, false)
             if d == DIALOG_RESULT.QUIT then
@@ -44,7 +44,7 @@ function NPC_251(me, npc)
         if btn2 == DIALOG_RESULT.QUIT or sel2 == nil then
             return
         end
-        if sel2 == 1 then
+        if sel2 == 2 then
             me:dialog(npc, "그대 뜻이 그렇다면 어쩔수 없지. 앞길에 부처님의 뜻이 따르길...", false, false)
             return
         end
@@ -66,7 +66,7 @@ function NPC_251(me, npc)
         return
     end
 
-    if sel == 1 then
+    if sel == 2 then
         if not has_spell then
             me:dialog(npc, "자네는 금강퇴를 아직 배우지 않았구려. 일단 전수부터 받아야 수련을 할 수 있다오.", false, false)
             return
@@ -79,7 +79,7 @@ function NPC_251(me, npc)
         return
     end
 
-    if sel == 2 then
+    if sel == 3 then
         local info = {
             "우선 금강퇴라는 무공은 바로 앞의 적에게 자신의 체력을 깍아 강력한 타격을 입히는 기술이오.",
             "어떤 무공이든 수련을 위해서는 계속 반복하여 시전하는 길밖에는 없소. 수련을 원하면 내가 각단계에 맞는 수련의서를 줄 것이오.",

@@ -15,7 +15,7 @@ function NPC_233(me, npc)
         if btn == DIALOG_RESULT.QUIT then
             return
         end
-        if sel ~= 0 then
+        if sel ~= 1 then
             return
         end
         ::NPC_233_COS001::
@@ -32,7 +32,7 @@ function NPC_233(me, npc)
             goto NPC_233_COS001
         end
         sel, btn = me:list(npc, '이대로 가다간 혹시 이 애가 아예 말을 못하게 되는 건 아닐까 겁이 덜컥 나서, 저도 모르게 그만 소리를 내어 한탄하고 말았군요...', { '그런 가엾은 일이... 제가 도와드리겠습니다!', '그래요? 뭐, 저랑은 상관없는 일이니까 전 이만..' }, true)
-        if btn == DIALOG_RESULT.QUIT or sel ~= 0 then
+        if btn == DIALOG_RESULT.QUIT or sel ~= 1 then
             return
         end
         q = me:start_quest(quest.QUEST_SICK_CHILD)
@@ -69,7 +69,7 @@ function NPC_233(me, npc)
         if btn == DIALOG_RESULT.QUIT then
             return
         end
-        if sel == 0 then
+        if sel == 1 then
             local code = me:exchange(
                 { ['item'] = { ['삼전신보탕'] = 1 } },
                 { ['item'] = { ['청자다람쥐인형'] = 1 } }
@@ -97,7 +97,7 @@ function NPC_233(me, npc)
                 goto NPC_233_COS006
             end
             me:dialog(npc, '오래된 장난감이니 누군가 장난감을 수집하는 사람이라도 있다면, 비싸게 팔 수 있을 거예요.', true, true)
-        elseif sel == 1 then
+        elseif sel == 2 then
             me:dialog(npc, '저... 그.. 그게...', false, true)
         end
         return
@@ -108,7 +108,7 @@ function NPC_233(me, npc)
         if btn == DIALOG_RESULT.QUIT then
             return
         end
-        if sel ~= 0 then
+        if sel ~= 1 then
             return
         end
         ::NPC_233_COS001B::
@@ -125,7 +125,7 @@ function NPC_233(me, npc)
             goto NPC_233_COS001B
         end
         sel, btn = me:list(npc, '이대로 가다간 혹시 이 애가 아예 말을 못하게 되는 건 아닐까 겁이 덜컥 나서, 저도 모르게 그만 소리를 내어 한탄하고 말았군요...', { '그런 가엾은 일이... 제가 도와드리겠습니다!', '그래요? 뭐, 저랑은 상관없는 일이니까 전 이만..' }, true)
-        if btn == DIALOG_RESULT.QUIT or sel ~= 0 then
+        if btn == DIALOG_RESULT.QUIT or sel ~= 1 then
             return
         end
         q:step(1)

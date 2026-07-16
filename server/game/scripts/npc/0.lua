@@ -12,7 +12,7 @@ function sample_group(me, npc)
         return
     end
 
-    if selected == 0 then
+    if selected == 1 then
         local name = me:input(npc, '그룹 초대할 유저')
         local group = me:group()
         if group == nil then
@@ -39,7 +39,7 @@ function sample_group(me, npc)
                 me:dialog(npc, '그룹에 초대할 수 없습니다.')
             end
         end
-    elseif selected == 1 then
+    elseif selected == 2 then
         local group = me:group()
         if group == nil then
             me:dialog(npc, '그룹 없음')
@@ -82,7 +82,7 @@ function sample_clan(me, npc)
             return
         end
 
-        if selected == 0 then
+        if selected == 1 then
             local title = me:input(npc, '문파 칭호 입력', '문파 칭호는', '입니다.', 12, true)
             clan = me:clan()
             if clan == nil then
@@ -96,7 +96,7 @@ function sample_clan(me, npc)
             else
                 me:dialog(npc, '문파 칭호 변경 성공')
             end
-        elseif selected == 1 then
+        elseif selected == 2 then
             local error = me:destroy_clan()
             if error ~= nil then
                 me:dialog(npc, error)
@@ -104,7 +104,7 @@ function sample_clan(me, npc)
                 me:dialog(npc, '클랜 제거 성공')
             end
 
-        elseif selected == 2 then
+        elseif selected == 3 then
             local map = me:map()
             if map == nil then
                 return
@@ -126,7 +126,7 @@ function sample_clan(me, npc)
             end
 
             local yes_or_no = found:menu(npc, string.format('%s 문파에 가입?', clan_name), {'네', '아니오'})
-            if yes_or_no == 0 then
+            if yes_or_no == 1 then
                 clan = me:clan()
                 if clan == nil then
                     found:dialog(npc, '클랜 없음')
@@ -143,7 +143,7 @@ function sample_clan(me, npc)
             else
                 me:dialog(npc, string.format('%s가 거절함', found:name()))
             end
-        elseif selected == 3 then
+        elseif selected == 4 then
             local clan = me:clan()
             if clan == nil then
                 me:dialog(npc, '클랜 없음')
@@ -156,7 +156,7 @@ function sample_clan(me, npc)
             else
                 me:dialog(npc, '클랜 탈퇴 성공')
             end
-        elseif selected == 4 then
+        elseif selected == 5 then
             local name = me:input(npc, '상대 이름 입력')
             clan = me:clan()
             if clan == nil then
@@ -170,7 +170,7 @@ function sample_clan(me, npc)
             else
                 me:dialog(npc, '추방했음')
             end
-        elseif selected == 5 then
+        elseif selected == 6 then
             clan = me:clan()
             if clan == nil then
                 me:dialog(npc, '클랜 없음')
@@ -185,7 +185,7 @@ function sample_clan(me, npc)
             else
                 me:dialog(npc, '직책 변경 성공')
             end
-        elseif selected == 6 then
+        elseif selected == 7 then
             local message = me:input(npc, '내용')
             clan = me:clan()
             if clan == nil then
@@ -243,13 +243,13 @@ function sample_cc(me, npc)
 
     local current = me:cc()
     local cc = CROWD_CONTROL.NONE
-    if selected == 0 then
+    if selected == 1 then
         cc = CROWD_CONTROL.DIRECTION
-    elseif selected == 1 then
-        cc = CROWD_CONTROL.SIGHT
     elseif selected == 2 then
-        cc = CROWD_CONTROL.CHAT
+        cc = CROWD_CONTROL.SIGHT
     elseif selected == 3 then
+        cc = CROWD_CONTROL.CHAT
+    elseif selected == 4 then
         cc = CROWD_CONTROL.HEAR
     end
 
@@ -330,25 +330,25 @@ function sample_menu(me, npc)
     if selected == nil then
         return
     end
-    if selected == 0 then
+    if selected == 1 then
         return sample_group(me, npc)
     end
-    if selected == 1 then
+    if selected == 2 then
         return sample_clan(me, npc)
     end
-    if selected == 2 then
+    if selected == 3 then
         return sample_whisper(me, npc)
     end
-    if selected == 3 then
+    if selected == 4 then
         return sample_send_mail(me, npc)
     end
-    if selected == 4 then
+    if selected == 5 then
         return sample_map(me, npc)
     end
-    if selected == 5 then
+    if selected == 6 then
         return sample_cc(me, npc)
     end
-    if selected == 6 then
+    if selected == 7 then
         return sample_quest(me, npc)
     end
 end

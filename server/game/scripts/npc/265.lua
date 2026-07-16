@@ -13,12 +13,12 @@ function NPC_265(me, npc)
     end
 
     local warp_direct = false
-    if sel == 1 then
+    if sel == 2 then
         local selected, button = me:list(npc, '바로 운랑의방으로 입장하려면 참나무껍질을 바쳐야하오 입장하겠소?', { '네. 입장할래요.', '아니요. 아깝네요.' })
         if button == DIALOG_RESULT.QUIT then
             return
         end
-        if selected ~= 0 then
+        if selected ~= 1 then
             return
         end
         
@@ -36,7 +36,7 @@ function NPC_265(me, npc)
         return
     end
 
-    if selected ~= 0 then
+    if selected ~= 1 then
         local map = nil
         local position = {x = 0, y = 0}
         if warp_direct then
@@ -49,7 +49,7 @@ function NPC_265(me, npc)
         me:map(map, position)
     end
 
-    if selected == 1 then
+    if selected == 2 then
         return
     end
 end

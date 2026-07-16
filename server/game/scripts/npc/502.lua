@@ -10,7 +10,7 @@ function NPC_502(me, npc)
         if list_btn == DIALOG_RESULT.QUIT or sel == nil then
             return
         end
-        if sel == 0 then
+        if sel == 1 then
             local btn = me:dialog(npc, " 정월 대보름은 1월 15일 입니다. 말 그대로 1월의 보름이라는 뜻입니다. 1월을 정월이라고 하지요.", false, true)
             if btn == DIALOG_RESULT.QUIT then
                 return
@@ -30,7 +30,7 @@ function NPC_502(me, npc)
             me:dialog(npc, " 달맞이 하실땐 꼭 설빔을 입고 가세요..", false, false)
             return
         end
-        if sel == 1 then
+        if sel == 2 then
             local armor = (me:gender() == GENDER.MALE) and "남자설빔" or "여자설빔"
             local code = me:exchange(
                 { ['item'] = { ["떡국"] = 1 } },

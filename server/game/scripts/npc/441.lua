@@ -36,11 +36,11 @@ local function run_snow_helmet_info(me, npc)
     if btn == DIALOG_RESULT.QUIT then
         return
     end
-    if sel == 1 then
+    if sel == 2 then
         me:dialog(npc, "천만에요. 그럼 좋은하루 되세요~", false, false)
         return
     end
-    if sel ~= 0 then
+    if sel ~= 1 then
         return
     end
 
@@ -65,11 +65,11 @@ local function run_snow_helmet_info(me, npc)
     if btn == DIALOG_RESULT.QUIT then
         return
     end
-    if sel == 1 then
+    if sel == 2 then
         me:dialog(npc, "언제든 마음이 바뀌면 다시 찾아오십시오.", false, false)
         return
     end
-    if sel == 0 then
+    if sel == 1 then
         me:dialog(npc, "눈꽃투구 가공 기능은 현재 준비 중입니다. 잠시 후 다시 찾아와 주세요.", false, false)
     end
 end
@@ -89,11 +89,11 @@ function NPC_441(me, npc)
     if btn == DIALOG_RESULT.QUIT then
         return
     end
-    if sel == 0 then
+    if sel == 1 then
         run_snow_helmet_info(me, npc)
         return
     end
-    if sel == 1 or sel == 2 then
+    if sel == 2 or sel == 3 then
         me:dialog(npc, "준비중인 컨텐츠 입니다.", false, false)
     end
 end

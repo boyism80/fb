@@ -17,7 +17,7 @@ function NPC_119(me, npc)
         if list_btn == DIALOG_RESULT.QUIT or sel == nil then
             return
         end
-        if sel == 0 then
+        if sel == 1 then
             ::NPC_119_0001::
             local btn = me:dialog(npc, "음, 진진이 대륙 식재료를 팔겠다길래. 한 밤 중에 잠도 못자고 바닷가로 나갔지 뭔가.", false, true)
             if btn == DIALOG_RESULT.QUIT then
@@ -33,7 +33,7 @@ function NPC_119(me, npc)
             end
             q:step(14)
             me:dialog(npc, "그러고보니 배 이름이 참 묘했지. 은익...이라고 하더군. 숨은 날개라는 뜻도 가지고, 은밀한 이익이란 뜻도 가졌으니까 말야.", false, false)
-        elseif sel == 1 then
+        elseif sel == 2 then
             me:dialog(npc, "준비중입니다.", false, false)
         else
             me:dialog(npc, "그럼 이만.", false, false)

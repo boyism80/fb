@@ -11,7 +11,7 @@ function NPC_499(me, npc)
         return
     end
 
-    if sel == 0 then
+    if sel == 1 then
         local btn = me:dialog(npc, "안녕하세요? " .. me:name() .. "님. 남북무한대전에 오신 것을 환영합니다.", false, true)
         if btn == DIALOG_RESULT.QUIT then
             return
@@ -47,17 +47,17 @@ function NPC_499(me, npc)
         goto NPC_499_MENU
     end
 
-    if sel == 1 then
+    if sel == 2 then
         me:dialog(npc, "남북무한대전 참가 신청은 공지된 일정에만 가능합니다. 현재는 진행 시간이 아니거나 준비중입니다.", false, true)
         goto NPC_499_MENU
     end
 
-    if sel == 2 then
+    if sel == 3 then
         me:dialog(npc, "남북무한대전 현황 조회는 현재 준비중입니다.", false, true)
         goto NPC_499_MENU
     end
 
-    if sel == 3 then
+    if sel == 4 then
         local ns_start = property("ns_start")
         if ns_start == 2 then
             local winner = property("ns_winner_team")

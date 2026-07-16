@@ -14,11 +14,11 @@ function NPC_231(me, npc)
         if lb == DIALOG_RESULT.QUIT then
             return
         end
-        if sel == 1 then
+        if sel == 2 then
             me:dialog(npc, '허허.. 싱겁기는..', false, true)
             return
         end
-        if sel ~= 0 then
+        if sel ~= 1 then
             return
         end
         btn = me:dialog(npc, '음... 황비연이라는 자는 요즘 기승을 부리고 있는 신출귀몰한 도둑이지. 자칭 의적으로, 검은 머리띠를 두르고 나타나 탐관오리들의 재물을 훔쳐 가난한 사람들에게 나눠 준다는군.', true, true)
@@ -26,7 +26,7 @@ function NPC_231(me, npc)
             return
         end
         sel, lb = me:list(npc, '백성들도 황비연에게 도움을 많이 받고 있는 모양이야. 그에 대해 물으면 다들 모른다고 잡아떼더군. 허허, 이거야 원...', { '의적이군요? 그럼 슬쩍 눈감아줘도 되지 않을까요?', '고생이 많으시네요. 저는 바쁜 일이 있어서 이만..' }, true)
-        if lb == DIALOG_RESULT.QUIT or sel ~= 0 then
+        if lb == DIALOG_RESULT.QUIT or sel ~= 1 then
             return
         end
         ::NPC_231_0001::
@@ -43,7 +43,7 @@ function NPC_231(me, npc)
             goto NPC_231_0001
         end
         sel, lb = me:list(npc, '그래서 지금도 황비연을 잡으려고 수색중인데, 정말 신출귀몰하더군. 도저히 잡을 수가 없어...', { '저도 협조하겠습니다. 황비연을 만나보고 싶군요.', '솔직히 잡히지 말았으면 좋겠군요. 그럼 전 이만..' }, true)
-        if lb == DIALOG_RESULT.QUIT or sel ~= 0 then
+        if lb == DIALOG_RESULT.QUIT or sel ~= 1 then
             return
         end
         ::NPC_231_0003::
@@ -80,7 +80,7 @@ function NPC_231(me, npc)
 
     if q:step() == 4 then
         local sel, lb = me:list(npc, '황비연은 잡아왔는가?', { '그는 죽었고, 그의 머리띠를 가져왔습니다.', '아니오, 아직...' }, true)
-        if lb == DIALOG_RESULT.QUIT or sel ~= 0 then
+        if lb == DIALOG_RESULT.QUIT or sel ~= 1 then
             return
         end
         if not me:has_items('황비연의머리띠', 1) then

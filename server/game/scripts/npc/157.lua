@@ -15,14 +15,14 @@ local function do_jungki(me, npc)
     
     if step == 4 then
         local sel = me:list(npc, '무슨 일인가?', { '용궁의정기를 만들줄 아십니까?' }, false)
-        if sel == nil or sel ~= 0 then
+        if sel == nil or sel ~= 1 then
             return
         end
-        if me:list(npc, '물론 만들줄은 아네만...그리 쉽게 만들수는 없다네..', { '!!!' }, false) ~= 0 then
+        if me:list(npc, '물론 만들줄은 아네만...그리 쉽게 만들수는 없다네..', { '!!!' }, false) ~= 1 then
             return
         end
         ::NPC_157_0000::
-        if me:list(npc, '그래도 만들고 싶은가?', { '물론이지요.', '아니요. 포기할래요.' }, false) ~= 0 then
+        if me:list(npc, '그래도 만들고 싶은가?', { '물론이지요.', '아니요. 포기할래요.' }, false) ~= 1 then
             return
         end
         ::NPC_157_0001::
@@ -87,7 +87,7 @@ local function do_armor_infinite(me, npc)
     if pay_sel == nil then
         return
     end
-    if pay_sel ~= 0 then
+    if pay_sel ~= 1 then
         return
     end
     local money = me:money()
@@ -99,13 +99,13 @@ local function do_armor_infinite(me, npc)
     if team_sel == nil then
         return
     end
-    if team_sel == 0 then
+    if team_sel == 1 then
         me:armor_color(10)
-    elseif team_sel == 1 then
-        me:armor_color(31)
     elseif team_sel == 2 then
-        me:armor_color(17)
+        me:armor_color(31)
     elseif team_sel == 3 then
+        me:armor_color(17)
+    elseif team_sel == 4 then
         me:armor_color(11)
     end
     me:money(money - price)
@@ -127,7 +127,7 @@ local function do_armor_normal(me, npc)
     if sel == nil then
         return
     end
-    if sel ~= 0 then
+    if sel ~= 1 then
         return
     end
     me:armor_color(nil)
@@ -139,15 +139,15 @@ function NPC_157(me, npc)
     if selected == nil then
         return
     end
-    if selected == 0 then
+    if selected == 1 then
         do_jungki(me, npc, q, step)
         return
     end
-    if selected == 1 then
+    if selected == 2 then
         do_armor_infinite(me, npc)
         return
     end
-    if selected == 2 then
+    if selected == 3 then
         do_armor_normal(me, npc)
         return
     end

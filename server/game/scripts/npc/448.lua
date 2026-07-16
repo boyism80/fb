@@ -84,7 +84,7 @@ function NPC_448(me, npc)
         if list_btn == DIALOG_RESULT.QUIT or sel == nil then
             return
         end
-        if sel == 0 then
+        if sel == 1 then
             do_warp(me, me:nation(), 1)
         else
             me:dialog(npc, "그럼 조금 더 다양한 직업들을 둘러보고 오세요.", false, true)
@@ -113,7 +113,7 @@ function NPC_448(me, npc)
         if list_btn == DIALOG_RESULT.QUIT or sel == nil then
             return
         end
-        if sel == 0 then
+        if sel == 1 then
             do_warp(me, me:nation(), 2)
         else
             me:dialog(npc, "그럼 조금 더 다양한 직업들을 둘러보고 오세요.", false, true)
@@ -146,7 +146,7 @@ function NPC_448(me, npc)
         if list_btn == DIALOG_RESULT.QUIT or sel == nil then
             return
         end
-        if sel == 0 then
+        if sel == 1 then
             do_warp(me, me:nation(), 3)
         else
             me:dialog(npc, "그럼 조금 더 다양한 직업들을 둘러보고 오세요.", false, true)
@@ -183,7 +183,7 @@ function NPC_448(me, npc)
         if list_btn == DIALOG_RESULT.QUIT or sel == nil then
             return
         end
-        if sel == 0 then
+        if sel == 1 then
             do_warp(me, me:nation(), 4)
         else
             me:dialog(npc, "그럼 조금 더 다양한 직업들을 둘러보고 오세요.", false, true)

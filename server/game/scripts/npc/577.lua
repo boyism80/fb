@@ -16,7 +16,7 @@ local function run_normal_exchange(me, npc)
     if btn == DIALOG_RESULT.QUIT or sel == nil then
         return
     end
-    if sel ~= 0 then
+    if sel ~= 1 then
         return
     end
     local idx = math.random(1, #NORMAL_EXCHANGE_REWARDS)
@@ -66,7 +66,7 @@ local function run_special_exchange(me, npc)
     if btn == DIALOG_RESULT.QUIT or sel == nil then
         return
     end
-    if sel ~= 0 then
+    if sel ~= 1 then
         return
     end
     local idx = math.random(1, #SPECIAL_EXCHANGE_REWARDS)

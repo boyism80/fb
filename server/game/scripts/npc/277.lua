@@ -70,7 +70,7 @@ function NPC_277(me, npc)
     if btn == DIALOG_RESULT.QUIT then
         return
     end
-    if sel == nil or sel == 1 then
+    if sel == nil or sel == 2 then
         me:dialog(npc, "토끼와 다람쥐를 각각 5마리를 사냥 해 보세요.", false, false)
         return
     end

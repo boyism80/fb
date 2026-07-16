@@ -16,7 +16,7 @@ function NPC_404(me, npc)
         return
     end
 
-    if sel == 0 then
+    if sel == 1 then
         local reward = nil
         if math.random(1, 100) <= 50 then
             reward = { ['item'] = { ["금천지인패"] = 1 } }
@@ -37,7 +37,7 @@ function NPC_404(me, npc)
         else
             me:dialog(npc, "멋지게 성공했군. 하하하...", false, false)
         end
-    elseif sel == 1 then
+    elseif sel == 2 then
         me:dialog(npc, "고구려엔 왈숙네라는 주모가 있다면서? 어떤 주모이길래 중국에 까지 소문이 나는걸까?", false, false)
     end
     goto NPC_404_000

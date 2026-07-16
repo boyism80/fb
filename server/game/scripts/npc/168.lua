@@ -52,13 +52,13 @@ function NPC_168(me, npc)
         if lb == DIALOG_RESULT.QUIT then
             return
         end
-        if sel == nil or sel == 1 then
-            if sel == 1 then
+        if sel == nil or sel == 2 then
+            if sel == 2 then
                 me:dialog(npc, '그렇다면 좋겠지만 찬찬은 너무 멀리 있어서 말이지...', false, false)
             end
             return
         end
-        if sel ~= 0 then
+        if sel ~= 1 then
             return
         end
         if not me:start_quest(quest.QUEST_MEOKYEOM) then
@@ -100,13 +100,13 @@ function NPC_168(me, npc)
         if lb == DIALOG_RESULT.QUIT then
             return
         end
-        if sel == nil or sel == 1 then
-            if sel == 1 then
+        if sel == nil or sel == 2 then
+            if sel == 2 then
                 me:dialog(npc, '그렇다면 좋겠지만 찬찬은 너무 멀리 있어서 말이지...', false, false)
             end
             return
         end
-        if sel ~= 0 then
+        if sel ~= 1 then
             return
         end
         if not me:start_quest(quest.QUEST_MEOKYEOM) then
@@ -135,11 +135,11 @@ function NPC_168(me, npc)
     if sel == nil then
         return
     end
-    if sel == 1 then
+    if sel == 2 then
         me:dialog(npc, '흠.. 곧 환갑잔치가 시작하니 조금만 서둘러 주게.', false, false)
         return
     end
-    if sel ~= 0 then
+    if sel ~= 1 then
         return
     end
 

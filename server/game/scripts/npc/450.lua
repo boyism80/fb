@@ -70,11 +70,11 @@ function NPC_450(me, npc)
     if list_btn == DIALOG_RESULT.QUIT then
         return
     end
-    if sel == 0 then
+    if sel == 1 then
         me:dialog(npc, "아아.. 그렇습니까. 부디 몸 조심하시길 바랍니다.", false, false)
         return
     end
-    if sel ~= 1 then
+    if sel ~= 2 then
         return
     end
 
@@ -104,11 +104,11 @@ function NPC_450(me, npc)
     if list_btn == DIALOG_RESULT.PREV then
         goto NPC_450_0020
     end
-    if sel == 0 then
+    if sel == 1 then
         me:dialog(npc, "아아.. 그렇습니까. 부디 몸 조심하시길 바랍니다.", false, false)
         return
     end
-    if sel ~= 1 then
+    if sel ~= 2 then
         return
     end
 
@@ -140,19 +140,19 @@ function NPC_450(me, npc)
         goto NPC_450_0030
     end
 
-    if sel == 0 then
+    if sel == 1 then
         do_exchange(me, npc, 100, "백현목")
         return
     end
-    if sel == 1 then
+    if sel == 2 then
         do_exchange(me, npc, 200, "자현목")
         return
     end
-    if sel == 2 then
+    if sel == 3 then
         do_exchange(me, npc, 500, "노송의가지")
         return
     end
-    if sel == 3 then
+    if sel == 4 then
         local map = me:map()
         local map_name = (map and map:model()) and map:model():name() or "이곳"
         me:dialog(npc, string.format("잔가지는 이곳 [%s]에서 나무를 베어 얻으실 수 있습니다.", map_name), false, true)

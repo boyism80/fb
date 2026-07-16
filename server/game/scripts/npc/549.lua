@@ -20,7 +20,7 @@ function NPC_549(me, npc)
         if list_btn == DIALOG_RESULT.QUIT or sel == nil then
             return
         end
-        if sel == 0 then
+        if sel == 1 then
             q = me:start_quest(quest.QUEST_WOLF_CURSE)
             if q == nil then
                 me:dialog(npc, "퀘스트를 시작할 수 없습니다.", false, false)
@@ -155,7 +155,7 @@ function NPC_549(me, npc)
     if list_btn == DIALOG_RESULT.QUIT or sel == nil then
         return
     end
-    if sel ~= 0 then
+    if sel ~= 1 then
         return
     end
 

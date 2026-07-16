@@ -28,7 +28,7 @@ function cultural_property_quest(me, npc)
         if list_btn == DIALOG_RESULT.PREV then
             goto NPC_115_0001
         end
-        if selected ~= 0 then
+        if selected ~= 1 then
             return
         end
         q = me:start_quest(quest.QUEST_JUNJUN)
@@ -55,12 +55,12 @@ function cultural_property_quest(me, npc)
         return
     end
 
-    if selected == 0 then
+    if selected == 1 then
         local totem_sel = me:list(npc, '그래..어떤 토템을 가지고 왔는가?', { '번개의토템', '바람의토템', '대지의토템', '화염의토템' })
         if totem_sel == nil or totem_sel < 0 or totem_sel >= #totem_names then
             return
         end
-        local item_name = totem_names[totem_sel + 1]
+        local item_name = totem_names[totem_sel]
         if not me:has_items(item_name, 1) then
             me:dialog(npc, name_with(item_name, '이', '가') .. ' 없는데?', false, true)
             return
@@ -72,7 +72,7 @@ function cultural_property_quest(me, npc)
         return
     end
 
-    if selected == 1 then
+    if selected == 2 then
         local progress = q:progress()
         local step = q:step()
         local next_tier = nil
@@ -110,7 +110,7 @@ function NPC_115(me, npc)
         return
     end
 
-    if selected == 0 then
+    if selected == 1 then
         cultural_property_quest(me, npc)
     end
 end

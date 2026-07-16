@@ -93,15 +93,15 @@ function ON_ACTIVATED_8(me, item)
     if list_btn == DIALOG_RESULT.QUIT then
         return
     end
-    if sel == 4 then
+    if sel == 5 then
         me:dialog(model, '네.. 그럼 심사숙고 해 보신\n뒤 결정하세요..', false, true)
         return
     end
-    if sel == nil or sel < 0 or sel > 3 then
+    if sel == nil or sel < 1 or sel > 3 then
         return
     end
 
-    local class_idx = sel + 1
+    local class_idx = sel
     local classname = CLASS_NAMES[class_idx]
     local classmaster = CLASS_MASTERS[class_idx]
 

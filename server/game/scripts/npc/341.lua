@@ -8,12 +8,12 @@ function NPC_341(me, npc)
         return
     end
 
-    if sel == 0 then
+    if sel == 1 then
         local map = name2map("복불복몬스터토토")
         if map then
             me:map(map, math.random(20, 25), math.random(10, 20))
         end
-    elseif sel == 1 then
+    elseif sel == 2 then
         me:dialog(npc, "정답입니다.", false, true)
     end
 end

@@ -9,7 +9,7 @@ function NPC_399(me, npc)
         return
     end
 
-    if sel == 0 then
+    if sel == 1 then
         local button = me:dialog(npc, "금, 은, 동은 모두 금속이 아닌가? 화려한 금은 부귀, 영화를 상징하고, 단단한 은은 영원을 상징하고, 이곳저곳에 쓸모가 많은 동은 문명을 상징한다네.", false, true)
         if button == DIALOG_RESULT.QUIT then
             return
@@ -22,7 +22,7 @@ function NPC_399(me, npc)
         if button == DIALOG_RESULT.QUIT then
             return
         end
-    elseif sel == 1 then
+    elseif sel == 2 then
         local messages = {
             "흉노족 두령은 생긴건 무섭게 생겼지만 알고보면 말이 잘 통하는 똑똑한 사람이라던데.. 역시 사람은 겉만 보곤 알 수 없는건가?",
             "자네, 부여성 왕궁엔 가보았는가? 요즘은 부여성의 왕궁에 일반인도 출입이 가능하다고 하던데..",

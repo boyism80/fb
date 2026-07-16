@@ -39,13 +39,13 @@ local function run_form(me, npc, class_name, partner, schedule)
         return
     end
 
-    if sel == 0 then
+    if sel == 1 then
         local sub, sub_btn = me:list(npc, "마동최강자전에 참여하실 클래스를 선택하여 주세요. (파트너와 충분한 협의 후 신청하시길 바랍니다.)", CLASS_OPTIONS, false)
         if sub_btn == DIALOG_RESULT.QUIT then
             return
         end
         if sub ~= nil and sub >= 0 and sub < #CLASS_OPTIONS then
-            class_name = CLASS_OPTIONS[sub + 1]
+            class_name = CLASS_OPTIONS[sub]
         end
         local q = me:quest(quest.QUEST_MADONG_APPLY)
         if q == nil then
@@ -58,7 +58,7 @@ local function run_form(me, npc, class_name, partner, schedule)
         return
     end
 
-    if sel == 1 then
+    if sel == 2 then
         local raw = me:input(npc, "파트너의 아이디를 입력하여 주십시오.", "파트너의 아이디는", "입니다.", 20, false)
         if raw == DIALOG_RESULT.QUIT then
             return
@@ -77,7 +77,7 @@ local function run_form(me, npc, class_name, partner, schedule)
         return
     end
 
-    if sel == 2 then
+    if sel == 3 then
         local sched_labels = {}
         for i = 1, #SCHEDULE_OPTIONS do
             sched_labels[i] = SCHEDULE_OPTIONS[i].label
@@ -87,7 +87,7 @@ local function run_form(me, npc, class_name, partner, schedule)
             return
         end
         if sub ~= nil and sub >= 0 and sub < #SCHEDULE_OPTIONS then
-            schedule = SCHEDULE_OPTIONS[sub + 1].value
+            schedule = SCHEDULE_OPTIONS[sub].value
         end
         local q = me:quest(quest.QUEST_MADONG_APPLY)
         if q == nil then
@@ -100,7 +100,7 @@ local function run_form(me, npc, class_name, partner, schedule)
         return
     end
 
-    if sel == 3 then
+    if sel == 4 then
         if class_name == "" or partner == "" or schedule == "" then
             me:dialog(npc, "클래스, 파트너 아이디, 참여일정을 모두 입력해 주세요.", false, false)
             run_form(me, npc, class_name, partner, schedule)
@@ -110,7 +110,7 @@ local function run_form(me, npc, class_name, partner, schedule)
         if confirm_btn == DIALOG_RESULT.QUIT then
             return
         end
-        if confirm ~= 0 then
+        if confirm ~= 1 then
             run_form(me, npc, class_name, partner, schedule)
             return
         end

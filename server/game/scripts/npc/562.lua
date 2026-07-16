@@ -16,7 +16,7 @@ function NPC_562(me, npc)
         if list_btn == DIALOG_RESULT.QUIT or sel == nil then
             return
         end
-        if sel == 0 then
+        if sel == 1 then
             local dialog_btn = me:dialog(npc, "지남침은 나침반이라고도 하는 물건으로 안에 들어있는 침이 언제 어디서든 남북을 가리키고 있다오.", false, true)
             if dialog_btn == DIALOG_RESULT.QUIT then
                 return
@@ -26,11 +26,11 @@ function NPC_562(me, npc)
             end
             return
         end
-        if sel == 2 then
+        if sel == 3 then
             me:dialog(npc, "갑옷은 팔지 않네!!", false, false)
             return
         end
-        if sel == 1 then
+        if sel == 2 then
             ::NPC_562_0001::
             local dialog_btn = me:dialog(npc, "지남침을 구하고 싶다고? 만드는것은 그렇게 어려운일이 아닐세. 시간도 별로 걸리지 않고.", true, true)
             if dialog_btn == DIALOG_RESULT.QUIT then

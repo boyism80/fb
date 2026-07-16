@@ -21,7 +21,7 @@ local function run_clock_purchase(me, npc)
         goto NPC_250_0002
     end
     local confirm = me:list(npc, '1만전을 내고 나에게 시계를 사겠나?', { '네, 살래요.', '안살래요.' }, false)
-    if confirm == nil or confirm ~= 0 then
+    if confirm == nil or confirm ~= 1 then
         return
     end
     local code = me:exchange(
@@ -52,7 +52,7 @@ local function run_battery_purchase(me, npc)
 
     local msg = string.format('건전지는 하나당 %d전이고, 현재 건전지는 %d개 있다네. 구입할텐가?', BATTERY_PRICE, stock)
     local choice = me:list(npc, msg, { '네, 건전지 주세요.', '아니요, 아직 시계의 수명이 넉넉해서요.' }, false)
-    if choice == nil or choice ~= 0 then
+    if choice == nil or choice ~= 1 then
         return
     end
 
@@ -83,9 +83,9 @@ function NPC_250(me, npc)
         return
     end
 
-    if sel == 0 then
+    if sel == 1 then
         run_clock_purchase(me, npc)
-    elseif sel == 1 then
+    elseif sel == 2 then
         run_battery_purchase(me, npc)
     end
 end

@@ -16,7 +16,7 @@ function NPC_139(me, npc)
     if btn == DIALOG_RESULT.QUIT then
         return
     end
-    if sel == nil or sel ~= 0 then
+    if sel == nil or sel ~= 1 then
         return
     end
 
@@ -58,11 +58,11 @@ function NPC_139(me, npc)
     if confirm_sel == nil then
         return
     end
-    if confirm_sel == 1 then
+    if confirm_sel == 2 then
         me:dialog(npc, '그래, 자네 판단이 맞을수도 있을걸세.\n\n나도 나 자신을 믿을수 없으니말일세.\n\n그럼 가보게나.', false, false)
         return
     end
-    if confirm_sel ~= 0 then
+    if confirm_sel ~= 1 then
         return
     end
 
@@ -78,11 +78,11 @@ function NPC_139(me, npc)
     if type_btn == DIALOG_RESULT.PREV then
         goto NPC_139_0004
     end
-    if type_sel == nil or type_sel < 0 or type_sel >= #DRAGON_LOW_LINES then
+    if type_sel == nil or type_sel < 1 or type_sel >= #DRAGON_LOW_LINES then
         return
     end
 
-    local line = DRAGON_LOW_LINES[type_sel + 1]
+    local line = DRAGON_LOW_LINES[type_sel]
     local grade_sel, grade_btn = me:list(npc, '각성시킬 용무기를 고르게', line.check_items, false)
     if grade_btn == DIALOG_RESULT.QUIT then
         return
@@ -94,9 +94,9 @@ function NPC_139(me, npc)
         return
     end
 
-    local check_item = line.check_items[grade_sel + 1]
-    local success_item = line.success_items[grade_sel + 1]
-    local rate = SUCCESS_RATES[grade_sel + 1]
+    local check_item = line.check_items[grade_sel]
+    local success_item = line.success_items[grade_sel]
+    local rate = SUCCESS_RATES[grade_sel]
 
     local cost = { ['item'] = { ['은나무가지'] = 1, [check_item] = 1 } }
     local roll = math.random(1, 100)

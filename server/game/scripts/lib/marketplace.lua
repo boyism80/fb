@@ -13,19 +13,19 @@ function M.handle(me, npc)
         return true
     end
     
-    if marketplace_selected == 0 then
+    if marketplace_selected == 1 then
         local result = M.search(me, npc)
         if result == false then
             return false
         end
         goto MARKETPLACE_MENU
-    elseif marketplace_selected == 1 then
+    elseif marketplace_selected == 2 then
         local result = M.list(me, npc)
         if result == false then
             return false
         end
         goto MARKETPLACE_MENU
-    elseif marketplace_selected == 2 then
+    elseif marketplace_selected == 3 then
         local result = M.cancel(me, npc)
         if result == false then
             return false
@@ -149,7 +149,7 @@ function M.search(me, npc)
             goto MARKETPLACE_SEARCH
         end
         
-        selected_listing = listing_map[selected_name][selected_index + 1]
+        selected_listing = listing_map[selected_name][selected_index]
     end
     
     if selected_listing == nil then
@@ -225,7 +225,7 @@ function M.search(me, npc)
             goto MARKETPLACE_SEARCH
         end
         
-        if confirm_selected ~= 0 then
+        if confirm_selected ~= 1 then
             goto MARKETPLACE_SEARCH
         end
     end
@@ -285,7 +285,7 @@ function M.list(me, npc)
     if slot_index == nil then
         return
     end
-    
+
     local selected_item = items[slot_index]
     if selected_item == nil then
         goto MARKETPLACE_LIST
@@ -354,11 +354,11 @@ function M.list(me, npc)
         goto MARKETPLACE_LIST
     end
     
-    if confirm_selected ~= 0 then
+    if confirm_selected ~= 1 then
         goto MARKETPLACE_LIST
     end
     
-    local list_error, list_result = me:marketplace_list(slot_index - 1, count, price)
+    local list_error, list_result = me:marketplace_list(slot_index, count, price)
     if list_error ~= nil then
         local button = me:dialog(npc, '등록 실패: ' .. list_error, true, true)
         if button == DIALOG_RESULT.QUIT then
@@ -476,7 +476,7 @@ function M.cancel(me, npc)
             goto MARKETPLACE_CANCEL
         end
         
-        selected_listing = listing_map[selected_name][cancel_selected_index + 1]
+        selected_listing = listing_map[selected_name][cancel_selected_index]
     end
     
     if selected_listing == nil then
@@ -494,7 +494,7 @@ function M.cancel(me, npc)
         goto MARKETPLACE_CANCEL
     end
     
-    if confirm_selected ~= 0 then
+    if confirm_selected ~= 1 then
         goto MARKETPLACE_CANCEL
     end
     

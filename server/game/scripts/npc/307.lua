@@ -28,7 +28,7 @@ function NPC_307(me, npc)
         return
     end
 
-    if sel == 0 then
+    if sel == 1 then
         local code = me:exchange(
             { ['item'] = { ["작약주"] = 1 } },
             { ['item'] = { ["방천화극"] = 1 } }
@@ -45,7 +45,7 @@ function NPC_307(me, npc)
         return
     end
 
-    if sel == 1 then
+    if sel == 2 then
         local code = me:exchange(
             { ['item'] = { ["신작약주"] = 1 } },
             { ['item'] = { ["전사방천화극"] = 1 } }
@@ -62,12 +62,12 @@ function NPC_307(me, npc)
         return
     end
 
-    if sel == 2 then
+    if sel == 3 then
         me:dialog(npc, "잘 가게나...", false, false)
         return
     end
 
-    if sel == 3 then
+    if sel == 4 then
         local q = me:quest(quest.QUEST_CIDEQUEST)
         local pn = (q and q:progress()) or 0
         if pn == 2 then

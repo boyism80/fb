@@ -22,7 +22,7 @@ function NPC_408(me, npc)
         return
     end
 
-    if sel == 1 then
+    if sel == 2 then
         me:dialog(npc, "음... 뭐 생각이 바뀌면 언제라도 오게나.", false, false)
         return
     end

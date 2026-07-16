@@ -68,17 +68,17 @@ function NPC_167(me, npc)
     if list == nil then
         return
     end
-    if list == 2 then
+    if list == 3 then
         me:dialog(npc, '별로 좋은게 없어보인다니? 한번 사용은 해봤나? 한번 써본다면 그런 말은 나오지 않을걸?', false, true)
         return
     end
 
-    if list == 0 then
+    if list == 1 then
         local list_2 = me:list(npc, '탁월한 선택! 지금까지 이 창에 맞고 중독되지 않은 몬스터는 없었지!', { '만들어주세요', '음, 다시 생각해볼래요' })
         if list_2 == nil then
             return
         end
-        if list_2 == 1 then
+        if list_2 == 2 then
             me:dialog(npc, '그래, 조금 더 생각해보고 오라구.', false, true)
             return
         end
@@ -90,7 +90,7 @@ function NPC_167(me, npc)
         if list_3 == nil then
             return
         end
-        if list_3 == 1 then
+        if list_3 == 2 then
             me:dialog(npc, '또 그세 마음이 바뀐거야? 그럼 나중에 꼭 오라구!', false, true)
             return
         end
@@ -100,12 +100,12 @@ function NPC_167(me, npc)
         return
     end
 
-    if list == 1 then
+    if list == 2 then
         local list_2 = me:list(npc, '탁월한 안목! 어떤 적이라해도 저주를 걸어버리는 검이지!', { '만들어주세요', '음, 다시 생각해볼래요' })
         if list_2 == nil then
             return
         end
-        if list_2 == 1 then
+        if list_2 == 2 then
             me:dialog(npc, '그래, 조금 더 생각해보고 오라구.', false, true)
             return
         end
@@ -117,7 +117,7 @@ function NPC_167(me, npc)
         if list_3 == nil then
             return
         end
-        if list_3 == 1 then
+        if list_3 == 2 then
             me:dialog(npc, '또 그세 마음이 바뀐거야? 그럼 나중에 꼭 오라구!', false, true)
             return
         end

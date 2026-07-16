@@ -14,7 +14,7 @@ function NPC_169(me, npc)
     end
 
     local sel, list_btn = me:list(npc, "무슨 일인가?", { "혹시 이 문서에 적힌", "내용을 알아볼 수 있는지요?" }, false)
-    if list_btn == DIALOG_RESULT.QUIT or sel == nil or sel < 0 or sel > 1 then
+    if list_btn == DIALOG_RESULT.QUIT or sel == nil or sel < 1 or sel > 2 then
         return
     end
 
@@ -34,12 +34,12 @@ function NPC_169(me, npc)
     end
 
     sel, list_btn = me:list(npc, "우리 동방 언어와는 근본적으로 틀리지.", { "그럼 이것을 알아보실 수 있는지요?" }, false)
-    if list_btn == DIALOG_RESULT.QUIT or sel == nil or sel ~= 0 then
+    if list_btn == DIALOG_RESULT.QUIT or sel == nil or sel ~= 1 then
         return
     end
 
     sel, list_btn = me:list(npc, "하하..물론 가능하지...헌데...", { "......" }, false)
-    if list_btn == DIALOG_RESULT.QUIT or sel == nil or sel ~= 0 then
+    if list_btn == DIALOG_RESULT.QUIT or sel == nil or sel ~= 1 then
         return
     end
 
@@ -66,7 +66,7 @@ function NPC_169(me, npc)
     end
 
     sel, list_btn = me:list(npc, " ", { "정말 고맙습니다.", "일본에 자주 왔다갔다 하는데,", "항상 말이 없어 매우 무뚝뚝하고", "무서우신 분인 줄 알았는데", "참 친절하신 분이시군요." }, false)
-    if list_btn == DIALOG_RESULT.QUIT or sel == nil or sel < 0 or sel > 4 then
+    if list_btn == DIALOG_RESULT.QUIT or sel == nil or sel < 1 or sel > 5 then
         return
     end
 

@@ -40,7 +40,7 @@ function NPC_553(me, npc)
     if btn == DIALOG_RESULT.QUIT then
         return
     end
-    if sel == 0 then
+    if sel == 1 then
         local d = me:dialog(npc, "오늘은 6월 25일, 비통한 날, 민족의 아픔이 있는 날 이라네...", false, true)
         if d == DIALOG_RESULT.QUIT then
             return
@@ -52,7 +52,7 @@ function NPC_553(me, npc)
         me:dialog(npc, "오늘이 무슨 날인지 한번쯤 생각해 보는 시간을 가졌으면 한다네...", false, false)
         return
     end
-    if sel ~= 1 then
+    if sel ~= 2 then
         return
     end
 

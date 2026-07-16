@@ -5,7 +5,7 @@ function NPC_72(me, npc)
         return
     end
 
-    if selected == 0 then
+    if selected == 1 then
         ::NPC_72_0001::
         button = me:dialog(npc, '그래, 여길 들어가고 싶단 말이지?', false, true)
         if button == DIALOG_RESULT.QUIT then
@@ -47,7 +47,7 @@ function NPC_72(me, npc)
             goto NPC_72_0004
         end
 
-        if selected == 1 then
+        if selected == 2 then
             me:dialog(npc, '잘 생각 했네. 잘가게...', false, false)
             return
         end
@@ -84,7 +84,7 @@ function NPC_72(me, npc)
             goto NPC_72_0007
         end
 
-        if selected == 1 then
+        if selected == 2 then
             return
         end
 
@@ -102,7 +102,7 @@ function NPC_72(me, npc)
         local y = 12 + math.random(1, 5)
         me:map(map, {x, y})
 
-    elseif selected == 1 then
+    elseif selected == 2 then
         ::NPC_72_0010::
         button = me:dialog(npc, '그래, 무슨일이지?', false, true)
         if button == DIALOG_RESULT.QUIT then
@@ -144,7 +144,7 @@ function NPC_72(me, npc)
             goto NPC_72_0013
         end
 
-        if selected == 1 then
+        if selected == 2 then
             me:dialog(npc, '잘 생각 했네. 잘가게...', false, false)
             return
         end

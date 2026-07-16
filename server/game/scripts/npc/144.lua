@@ -45,7 +45,7 @@ local function run_rabbit_liver_quest(me, npc)
         end
         ::NPC_144_0004::
         local sel, list_btn = me:list(npc, '구해주시겠습니까?', { '당연히 구해다 드려야죠.', '요즘 좀 바빠서..' }, false)
-        if sel == nil or sel ~= 0 then
+        if sel == nil or sel ~= 1 then
             return
         end
         q = me:start_quest(quest.QUEST_RABBIT_LIVER)
@@ -84,7 +84,7 @@ local function run_rabbit_liver_quest(me, npc)
     end
     ::NPC_144_0008::
     local sel, list_btn = me:list(npc, '토끼의 간을 주시겠어요?', { '네, 가져가세요.', '아뇨.. 제가 가지고 있을래요.' }, false)
-    if sel == nil or sel ~= 0 then
+    if sel == nil or sel ~= 1 then
         return
     end
     local code = me:exchange(
@@ -131,7 +131,7 @@ local function run_shark_weapon_quest(me, npc)
             return
         end
         local sel = me:list(npc, '자네가 좀 알아봐 줄 수 있는가?', { '물론입니다...', '별로 흥미가 안내켜서..' }, false)
-        if sel == nil or sel ~= 0 then
+        if sel == nil or sel ~= 1 then
             return
         end
         q = me:start_quest(quest.QUEST_SHARK_WEAPON)
@@ -235,7 +235,7 @@ function NPC_144(me, npc)
     if sel == nil then
         return
     end
-    if sel == 0 then
+    if sel == 1 then
         run_rabbit_liver_quest(me, npc)
     else
         run_shark_weapon_quest(me, npc)

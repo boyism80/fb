@@ -13,8 +13,8 @@ function NPC_113(me, npc)
         if list_btn == DIALOG_RESULT.QUIT or sel == nil then
             return
         end
-        if sel == 0 then
-        elseif sel == 1 then
+        if sel == 1 then
+        elseif sel == 2 then
             local btn = me:dialog(npc, "정령들이 화를 내고 있다. 아, 정령들이 집으로 삼는 토템들이 이 섬을 떠나는구나.", false, true)
             if btn == DIALOG_RESULT.QUIT then return end
             dq:step(13)
@@ -51,7 +51,7 @@ function NPC_113(me, npc)
         if lb == DIALOG_RESULT.QUIT then
             return
         end
-        if sel == nil or sel ~= 0 then
+        if sel == nil or sel ~= 1 then
             return
         end
         ::NPC_113_0001::
@@ -136,7 +136,7 @@ function NPC_113(me, npc)
         if lb == DIALOG_RESULT.QUIT then
             return
         end
-        if sel == nil or sel ~= 0 then
+        if sel == nil or sel ~= 1 then
             return
         end
         ::NPC_113_0008::
@@ -278,11 +278,11 @@ function NPC_113(me, npc)
         if sel == nil then
             return
         end
-        if sel < 0 or sel >= #armor_names then
+        if sel < 1 or sel >= #armor_names then
             return
         end
 
-        local armor_name = armor_names[sel + 1]
+        local armor_name = armor_names[sel]
         local code = me:exchange(
             { ['item'] = { ['자연의인장'] = 1 } },
             { ['item'] = { [armor_name] = 1 } }

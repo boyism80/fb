@@ -9,7 +9,7 @@ function NPC_158(me, npc)
         return
     end
 
-    if index == 0 then
+    if index == 1 then
         local q = me:quest(quest.QUEST_SHARK_WEAPON)
         if q == nil then
             me:dialog(npc, '자네는 아직 알 때가 아니군.', false, false)
@@ -73,14 +73,14 @@ function NPC_158(me, npc)
         goto NPC_158_0001
     end
 
-    if index == 1 then
+    if index == 2 then
         local price = 1000
         index = me:list(npc, string.format('무한에 참여하시려면 염색비 %d전을 내시고 무한 복장을 하셔야 합니다. %d전을 내시겠습니까?', price, price), {'예', '아니오'})
         if index == nil then
             return
         end
 
-        if index ~= 0 then
+        if index ~= 1 then
             return
         end
 
@@ -89,13 +89,13 @@ function NPC_158(me, npc)
             return
         end
 
-        if index == 0 then
+        if index == 1 then
             me:armor_color(10);
-        elseif index == 1 then
-            me:armor_color(31);
         elseif index == 2 then
-            me:armor_color(17);
+            me:armor_color(31);
         elseif index == 3 then
+            me:armor_color(17);
+        elseif index == 4 then
             me:armor_color(11);
         else
         end
@@ -123,13 +123,13 @@ function NPC_158(me, npc)
 
         goto NPC_158_0001
 
-    elseif index == 2 then
+    elseif index == 3 then
     	index = me:list(npc, '일반 복장으로 바꿔드릴까요?', {'예', '아니오'})
     	if index == nil then
     		return
     	end
 
-    	if index ~= 0 then
+    	if index ~= 1 then
     		return
     	end
 

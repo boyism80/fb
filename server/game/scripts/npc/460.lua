@@ -13,7 +13,7 @@ function NPC_460(me, npc)
         if list_btn == DIALOG_RESULT.QUIT or sel == nil then
             return
         end
-        if sel == 0 then
+        if sel == 1 then
             local code = me:exchange(
                 { ['item'] = { ["훈제연어"] = 5 } },
                 { ['item'] = { ["당근케이크"] = 10 } }
@@ -50,7 +50,7 @@ function NPC_460(me, npc)
         return
     end
 
-    if sel == 4 then
+    if sel == 5 then
         me:dialog(npc, "세상의 다양한 물건을 모으고 있으니... 다음에 새로 모은게 있으면 알려주겠다웅.", false, false)
         return
     end

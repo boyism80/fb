@@ -15,14 +15,14 @@ function NPC_187(me, npc)
     if list == nil then
         return
     end
-    if list == 3 then
+    if list == 4 then
         return
     end
-    if list < 0 or list > 2 then
+    if list < 1 or list > 3 then
         return
     end
 
-    local item_name = GRILL_ITEMS[list + 1]
+    local item_name = GRILL_ITEMS[list]
     ::NPC_187_0003::
     btn = me:dialog(npc, item_name .. '! 그거 좋지. 감자는 구우면 씹기도 좋고, 고소한 맛이 더 살아난다네.', true, true)
     if btn == DIALOG_RESULT.QUIT then

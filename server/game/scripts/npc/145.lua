@@ -14,7 +14,7 @@ function NPC_145(me, npc)
         if btn == DIALOG_RESULT.QUIT then
             return
         end
-        if sel ~= 0 then
+        if sel ~= 1 then
             return
         end
         ::NPC_145_0010::
@@ -33,7 +33,7 @@ function NPC_145(me, npc)
         if btn == DIALOG_RESULT.PREV then
             goto NPC_145_0010
         end
-        if sel ~= 0 then
+        if sel ~= 1 then
             return
         end
         if q == nil then
@@ -52,7 +52,7 @@ function NPC_145(me, npc)
     if btn == DIALOG_RESULT.QUIT then
         return
     end
-    if sel ~= 0 then
+    if sel ~= 1 then
         return
     end
 

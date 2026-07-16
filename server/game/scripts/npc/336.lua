@@ -48,7 +48,7 @@ function NPC_336(me, npc)
             return
         end
         local sel, list_btn = me:list(npc, "[" .. item_name .. "] " .. name_with(item_name, '을', '를') .. " 1천전에 구입하시겠습니까?", { "예", "아니오" }, false)
-        if list_btn == DIALOG_RESULT.QUIT or sel == nil or sel ~= 0 then
+        if list_btn == DIALOG_RESULT.QUIT or sel == nil or sel ~= 1 then
             return
         end
         if me:has_items(item_name, 1) then
@@ -93,7 +93,7 @@ function NPC_336(me, npc)
         return
     end
     local sel, list_btn = me:list(npc, "스물 네가지 색의 도톨을 가져 오셨다면, 일주일간 사용이 가능한 [칠지도]라는 무기와 교환 해 드리겠습니다.", { "예", "아니오" }, false)
-    if list_btn == DIALOG_RESULT.QUIT or sel == nil or sel ~= 0 then
+    if list_btn == DIALOG_RESULT.QUIT or sel == nil or sel ~= 1 then
         return
     end
     local cost_items = {}

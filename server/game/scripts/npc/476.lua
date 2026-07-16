@@ -71,7 +71,7 @@ local function handle_jingogyun_1(me, npc, q_jingo)
     if btn == DIALOG_RESULT.QUIT or sel == nil then
         return true
     end
-    if sel == 1 then
+    if sel == 2 then
         run_dialogs(me, npc, {
             "음, 아니래. 무늬만 우리편이래.",
             "싫다. 정말 싫어.",
@@ -83,7 +83,7 @@ local function handle_jingogyun_1(me, npc, q_jingo)
         })
         return true
     end
-    if sel == 0 then
+    if sel == 1 then
         run_dialogs(me, npc, {
             "우리편이 맞다. 우리편이 맞다.",
             "그래그래, 참 착하게 생겼다. 참 착하게 생겼다.",
@@ -99,7 +99,7 @@ local function handle_jingogyun_1(me, npc, q_jingo)
     if btn == DIALOG_RESULT.QUIT or sel == nil then
         return true
     end
-    if sel == 0 then
+    if sel == 1 then
         if not run_dialogs(me, npc, {
             "잠깐? 잠깐이라고?",
             "잠시만 이라는 뜻일거야.",
@@ -117,7 +117,7 @@ local function handle_jingogyun_1(me, npc, q_jingo)
         if sub_btn == DIALOG_RESULT.QUIT or sub_sel == nil then
             return true
         end
-        if sub_sel == 0 then
+        if sub_sel == 1 then
             run_dialogs(me, npc, {
                 "그래, 만나서 반가워. 나는 꽃잎이 화려해서 화사화사라고 해.",
                 "나도 만나서 반가워. 나는 잎맥이 오른쪽으로 쏠려서 오른이라고 해.",
@@ -125,7 +125,7 @@ local function handle_jingogyun_1(me, npc, q_jingo)
                 "안녕안녕. 반가워. 나는 꽃잎이 얌전해서 수수라고 해.",
                 "(인성초들의 인사를 받았지만, 누가 누구인지 분간하기 힘들었다.)",
             })
-        elseif sub_sel == 1 then
+        elseif sub_sel == 2 then
             run_dialogs(me, npc, {
                 "우리? 우리들은 폭염왕에 대항하고 있기 때문이야.",
                 "우리들이야 말로 진정한 인성초. 사람을 공격하고 있는 우리 동족들은 폭염왕에게 지배당하고 있는거야.",
@@ -138,7 +138,7 @@ local function handle_jingogyun_1(me, npc, q_jingo)
                 "닭이 밝구나. 닭이 밝아.",
                 "(인성초들의 노래는 아름답긴 했지만, 어딘가 슬픔이 느껴지기도 했다.)",
             })
-        elseif sub_sel == 2 then
+        elseif sub_sel == 3 then
             run_dialogs(me, npc, {
                 "우리는 폭염왕에 대항해야해. 자유를 되찾아야해.",
                 "그래, 맞아. 행복했던 시절로 돌아가야해.",
@@ -158,7 +158,7 @@ local function handle_jingogyun_1(me, npc, q_jingo)
         end
         return true
     end
-    if sel == 2 then
+    if sel == 3 then
         run_dialogs(me, npc, {
             "대단해! 역시 화화와 진인랑의 친구다워!",
             "그래, 정말 대단해! 정말 대단해! 이런 인간은 참 오랜만이야!",
@@ -174,7 +174,7 @@ local function handle_jingogyun_1(me, npc, q_jingo)
         end
         return true
     end
-    if sel == 3 then
+    if sel == 4 then
         run_dialogs(me, npc, {
             "들었어? 도와준다고 했어. 나중에 도와준다고 했다.",
             "나도 들었어. 나중에 꼭 도와준다고 했어.",
@@ -235,11 +235,11 @@ local function handle_jingogyun_6(me, npc, q_jingo)
     if btn == DIALOG_RESULT.QUIT or sel == nil then
         return true
     end
-    if sel == 1 then
+    if sel == 2 then
         me:dialog(npc, "안돼.", false, false)
         return true
     end
-    if sel == 0 and q_jingo then
+    if sel == 1 and q_jingo then
         q_jingo:step(7)
     end
     run_dialogs(me, npc, {
@@ -259,11 +259,11 @@ local function handle_jingogyun_7(me, npc, q_jingo)
     if btn == DIALOG_RESULT.QUIT or sel == nil then
         return true
     end
-    if sel == 1 then
+    if sel == 2 then
         me:dialog(npc, "어서 다녀와.", false, false)
         return true
     end
-    if sel == 0 then
+    if sel == 1 then
         local code = me:exchange(
             { ['item'] = { ["바람의토템"] = 4 } },
             { ['item'] = { ["영력구슬"] = 1 } }
