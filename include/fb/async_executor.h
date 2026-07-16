@@ -2,7 +2,6 @@
 #define __ASYNC_EXECUTOR_H__
 
 #include <boost/asio.hpp>
-#include <async/awaitable_get.h>
 #include <async/awaitable_then.h>
 #include <fb/hash.h>
 #include <fb/synchronized.h>
@@ -36,6 +35,12 @@ protected:
 
 public:
     virtual ~async_executor() = default;
+
+public:
+    bool running() const
+    {
+        return this->_running;
+    }
 
 protected:
     template <typename Class>

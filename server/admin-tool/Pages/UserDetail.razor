@@ -79,7 +79,7 @@
             case "social":
                 @if (social != null)
                 {
-                    <UserDetailSocial Social="social" SpouseName="spouseName" />
+                    <UserDetailSocial Social="social" SpouseName="@spouseName" />
                 }
                 else if (tabLoading)
                 {
@@ -92,6 +92,16 @@
                     <UserDetailMail Data="mailData"
                                     OnFilterChanged="OnMailFilterChanged"
                                     OnPageChanged="OnMailPageChanged" />
+                }
+                else if (tabLoading)
+                {
+                    <TabLoading />
+                }
+                break;
+            case "matchmaking":
+                @if (matchmaking != null)
+                {
+                    <UserDetailMatchmaking Data="matchmaking" />
                 }
                 else if (tabLoading)
                 {
@@ -241,7 +251,7 @@
 @code {
     private static readonly HashSet<string> ValidTabs = new(StringComparer.OrdinalIgnoreCase)
     {
-        "overview", "character", "items", "progress", "social", "mail", "settings"
+        "overview", "character", "items", "progress", "social", "mail", "matchmaking", "settings"
     };
 
     [CascadingParameter(Name = "SelectedWorld")]
@@ -258,6 +268,7 @@
     private UserDetailProgressData progress;
     private UserDetailSocialData social;
     private UserDetailMailData mailData;
+    private UserDetailMatchmakingData matchmaking;
     private int mailPage = 1;
     private const int MailPageSize = 20;
     private string mailFilter = "all";
@@ -282,6 +293,8 @@
     private string errorMessage;
     private string successMessage;
     private string loadedTabKey;
+    private int? loadedUserId;
+    private uint? loadedPageWorld;
 
     protected override async Task OnInitializedAsync()
     {
@@ -302,7 +315,39 @@
             // /users/{id} without tab segment is valid
         }
 
+        if (loadedUserId != UserId || loadedPageWorld != selectedWorld)
+        {
+            ResetPageState();
+            loadedUserId = UserId;
+            loadedPageWorld = selectedWorld;
+        }
+
         await LoadPageAsync();
+    }
+
+    private void ResetPageState()
+    {
+        core = null;
+        items = null;
+        progress = null;
+        social = null;
+        mailData = null;
+        matchmaking = null;
+        options = null;
+        optionsLoaded = false;
+        spouseName = null;
+        loadedTabKey = null;
+        itemCounts = default;
+        mailPage = 1;
+        mailFilter = "all";
+        errorMessage = null;
+        successMessage = null;
+        showBanModal = false;
+        showUnbanModal = false;
+        showChangeRoleModal = false;
+        banModel = new BanModel();
+        roleModel = new RoleModel();
+        changeRoleButtonTitle = "Change user role";
     }
 
     private async Task LoadPageAsync()
@@ -389,6 +434,9 @@
                     mailPage,
                     MailPageSize,
                     mailFilter);
+                break;
+            case "matchmaking":
+                matchmaking = await UserDetailService.LoadMatchmakingAsync(world, (uint)UserId);
                 break;
             case "settings":
                 options = await UserDetailService.LoadOptionsAsync(world, (uint)UserId);
@@ -711,9 +759,9 @@
         if (!selectedWorld.HasValue)
             return;
 
-        core = await UserDetailService.LoadCoreAsync(selectedWorld.Value, (uint)UserId);
-        changeRoleButtonTitle = GetChangeRoleButtonTitle();
-        loadedTabKey = null;
+        ResetPageState();
+        loadedUserId = UserId;
+        loadedPageWorld = selectedWorld;
         await LoadPageAsync();
     }
 

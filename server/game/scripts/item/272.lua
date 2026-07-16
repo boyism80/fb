@@ -16,11 +16,11 @@ function ON_ATTACK_272(me, item)
 end
 
 -- 용랑제육봉 사용 스크립트
-function ON_ACTIVATED_272(me, item)
-
-end
+-- function ON_ACTIVATED_272(me, item)
+--
+-- end
 
 -- 용랑제육봉 해제 스크립트
-function ON_DEACTIVATED_272(me, item)
-
-end
+-- function ON_DEACTIVATED_272(me, item)
+--
+-- end

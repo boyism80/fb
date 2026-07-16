@@ -1,0 +1,56 @@
+@using AdminTool.Services
+
+<div class="user-detail-matchmaking">
+    <div class="card-bg stitch-form-card mb-4">
+        <div class="stitch-form-card-header">
+            <h2 class="dash-card-title">
+                <span class="material-symbols-outlined" aria-hidden="true">leaderboard</span>
+                MMR
+            </h2>
+            <span class="stitch-badge">@Data.Skills.Count</span>
+        </div>
+        <div class="user-detail-card-content">
+            @if (Data.Skills.Any())
+            {
+                <div class="dash-table-wrap">
+                    <table class="dash-table">
+                        <thead>
+                            <tr>
+                                <th>타입 ID</th>
+                                <th>매치 타입</th>
+                                <th>형식</th>
+                                <th>μ (mu)</th>
+                                <th>σ (sigma)</th>
+                                <th>유효 레이팅</th>
+                                <th>최종 수정</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var skill in Data.Skills)
+                            {
+                                <tr>
+                                    <td class="table-meta">@skill.MatchType</td>
+                                    <td>@skill.MatchTypeName</td>
+                                    <td class="table-meta">@skill.MatchFormat</td>
+                                    <td class="table-meta">@UserDetailDisplay.FormatMatchmakingRating(skill.Mu)</td>
+                                    <td class="table-meta">@UserDetailDisplay.FormatMatchmakingRating(skill.Sigma)</td>
+                                    <td class="table-meta">@UserDetailDisplay.FormatMatchmakingRating(skill.EffectiveRating)</td>
+                                    <td class="table-meta">@UserDetailDisplay.FormatDateTime(skill.UpdatedDate)</td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            }
+            else
+            {
+                <p class="text-muted mb-0">저장된 매치메이킹 스킬 데이터가 없습니다.</p>
+            }
+        </div>
+    </div>
+</div>
+
+@code {
+    [Parameter, EditorRequired]
+    public UserDetailMatchmakingData Data { get; set; } = null!;
+}

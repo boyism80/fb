@@ -53,6 +53,13 @@ namespace Http.Mapping
                 .ForMember(x => x.Next, x => x.MapFrom(u => u.Next.ToString("yyyy-MM-dd HH:mm:ss")))
                 .ReverseMap();
 
+            CreateMap<Http.Model.MatchmakingSkill, Protocol.MatchmakingSkill>()
+                .ForMember(x => x.User, x => x.MapFrom(u => u.CharacterId))
+                .ReverseMap()
+                .ForMember(x => x.CharacterId, x => x.MapFrom(u => u.User))
+                .ForMember(x => x.CreatedDate, x => x.Ignore())
+                .ForMember(x => x.UpdatedDate, x => x.Ignore());
+
             CreateMap<Http.Model.Item, Protocol.Item>()
                 .ForMember(x => x.User, x => x.MapFrom(u => u.Owner))
                 .ForMember(x => x.ExpireTime, x => x.MapFrom(u => u.ExpireTime.HasValue ? u.ExpireTime.Value.ToString("yyyy-MM-dd HH:mm:ss") : null))
@@ -126,7 +133,6 @@ namespace Http.Mapping
 
             CreateMap<Http.Model.SystemStorageBox, Protocol.SystemStorageBox>()
                 .ForMember(x => x.Attachments, x => x.Ignore())
-                .ForMember(x => x.User, x => x.MapFrom(u => u.User ?? 0))
                 .ForMember(x => x.Title, x => x.MapFrom(u => u.Title ?? string.Empty))
                 .ForMember(x => x.ExpiredDate, x => x.MapFrom(u => u.ExpiredDate.HasValue ? u.ExpiredDate.Value.ToString("yyyy-MM-dd HH:mm:ss") : null))
                 .ForMember(x => x.CreatedDate, x => x.MapFrom(u => u.CreatedDate.ToString("yyyy-MM-dd HH:mm:ss")))

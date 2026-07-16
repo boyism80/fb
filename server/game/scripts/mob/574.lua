@@ -1,5 +1,5 @@
 -- mob: 녹산소괴
 -- 녹산소괴 사망
-function ON_MOB_DIE_574(me, you)
-
-end
+-- function ON_MOB_DIE_574(me)
+--
+-- end

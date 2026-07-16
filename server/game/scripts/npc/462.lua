@@ -9,13 +9,13 @@ local WARP_OPTIONS = {
 
 function NPC_462(me, npc)
 ::NPC_462_0000::
-    local button = me:dialog(npc, "황제께서 흉노를 토벌하기 위해 그대들을 파견했건만, 여전히 모든 흉노를 토벌하기에는 역부족이었다네.", false, true)
+    local button = me:dialog(npc, "황제께서 흉노를 토벌하기 위해 그대들을 파견했건만, 여전히 모든 흉노를 토벌하기에는 역부족이었다네.", { prev = false, next = true })
     if button == DIALOG_RESULT.QUIT then
         return
     end
 
 ::NPC_462_0001::
-    button = me:dialog(npc, "여전히 저 깊은 골짜기에는 흉노족의 놈들이 장안성을 침공하기 위해 세를 기르고 있다네.", true, true)
+    button = me:dialog(npc, "여전히 저 깊은 골짜기에는 흉노족의 놈들이 장안성을 침공하기 위해 세를 기르고 있다네.", { prev = true, next = true })
     if button == DIALOG_RESULT.QUIT then
         return
     end
@@ -29,12 +29,12 @@ function NPC_462(me, npc)
         "흉노족8",
         "흉노족9",
         "흉노족10",
-    }, false)
-    if list_btn == DIALOG_RESULT.QUIT or sel == nil or sel < 0 or sel > 4 then
+    }, { prev = false })
+    if list_btn == DIALOG_RESULT.QUIT or sel == nil or sel < 1 or sel > 5 then
         return
     end
 
-    local opt = WARP_OPTIONS[sel + 1]
+    local opt = WARP_OPTIONS[sel]
     local map = name2map(opt[2])
     if map == nil then
         return

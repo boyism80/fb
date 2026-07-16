@@ -30,11 +30,13 @@ public:
     ~mail_box() = default;
 
 public:
+    // clang-format off
     void     show(const std::vector<summary>& summaries, MAIL_BUTTON_ENABLE flag);
     void     show(const mail& mail, MAIL_BUTTON_ENABLE flag);
     void     message(std::string_view message, bool success, BULLETIN_MESSAGE_TYPE action);
     uint16_t unread_count() const;
     void     unread_count(uint16_t value);
+    // clang-format on
 };
 
 struct mail_box::summary

@@ -14,11 +14,11 @@ function ON_ATTACK_259(me, item)
 end
 
 -- 용천제이검 사용 스크립트
-function ON_ACTIVATED_259(me, item)
-
-end
+-- function ON_ACTIVATED_259(me, item)
+--
+-- end
 
 -- 용천제이검 해제 스크립트
-function ON_DEACTIVATED_259(me, item)
-
-end
+-- function ON_DEACTIVATED_259(me, item)
+--
+-- end

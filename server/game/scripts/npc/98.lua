@@ -1,13 +1,13 @@
 -- npc: 용노인
 function NPC_98(me, npc)
     ::NPC_98_0001::
-    local button = me:dialog(npc, '용왕의침소로 이동하기 위해서는, 어금니 4개가 필요하네.', false, true)
+    local button = me:dialog(npc, '용왕의침소로 이동하기 위해서는, 어금니 4개가 필요하네.', { prev = false, next = true })
     if button == DIALOG_RESULT.QUIT then
         return
     end
 
     ::NPC_98_0002::
-    button = me:dialog(npc, '어금니의 이름들은 각각 알고 왔겠지?', true, true)
+    button = me:dialog(npc, '어금니의 이름들은 각각 알고 왔겠지?', { prev = true, next = true })
     if button == DIALOG_RESULT.QUIT then
         return
     end
@@ -16,7 +16,7 @@ function NPC_98(me, npc)
     end
 
     ::NPC_98_0003::
-    local selected, button = me:list(npc, '지금 준비되어 있나?\n참고로 그룹원이 있으면 같이 이동된다네.', {'네', '아니요'}, true)
+    local selected, button = me:list(npc, '지금 준비되어 있나?\n참고로 그룹원이 있으면 같이 이동된다네.', {'네', '아니요'}, { prev = true })
     if button == DIALOG_RESULT.QUIT then
         return
     end
@@ -24,12 +24,12 @@ function NPC_98(me, npc)
         goto NPC_98_0002
     end
 
-    if selected == 1 then
+    if selected == 2 then
         return
     end
 
     local map_names = {'용왕용마의침소', '용왕용천의침소', '용왕용랑의침소', '용왕용겸의침소'}
-    selected, button = me:list(npc, '어디로 이동하겠는가?', map_names, true)
+    selected, button = me:list(npc, '어디로 이동하겠는가?', map_names, { prev = true })
     if button == DIALOG_RESULT.QUIT then
         return
     end
@@ -37,9 +37,9 @@ function NPC_98(me, npc)
         goto NPC_98_0003
     end
 
-    local map = name2map(map_names[selected+1])
+    local map = name2map(map_names[selected])
     if map == nil then
-        me:dialog(npc, '존재하지 않는 맵입니다.', false, true)
+        me:dialog(npc, '존재하지 않는 맵입니다.', { prev = false, next = true })
         return
     end
 
@@ -55,7 +55,7 @@ function NPC_98(me, npc)
     end
 
     if not me:has_items(required_table) then
-        me:dialog(npc, '아직 어금니가 준비되지 않았는데?', false, true)
+        me:dialog(npc, '아직 어금니가 준비되지 않았는데?', { prev = false, next = true })
         return
     end
 

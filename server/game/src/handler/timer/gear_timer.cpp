@@ -13,7 +13,8 @@ async::task<void> gear_timer::handle(const fb::model::datetime& now, std::thread
     auto params = thread->template data<thread_params>();
     auto lua    = this->server.lua.new_context(nullptr, {.auto_release = false});
 
-    for (auto& [_, map] : params->maps)
+    auto view = params->map_view;
+    for (auto& map : *view)
     {
         if (map->active == false)
             continue;
@@ -66,7 +67,10 @@ async::task<void> gear_timer::handle(const fb::model::datetime& now, std::thread
                         continue;
 
                     if (lua->func(func) == false)
+                    {
+                        fb::lua::report_func_missing(path, func);
                         continue;
+                    }
 
                     lua->pushobject(ch);
                     lua->pushobject(equipment);

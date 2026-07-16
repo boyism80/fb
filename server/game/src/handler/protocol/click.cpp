@@ -39,8 +39,8 @@ async::task<void> click::handle_f1(character* ch)
     if (fb::model::const_value::script::F1_EVENT_FUNC == "")
         co_return;
 
-    auto lua = this->server.lua.new_ctx_guard(fb::model::const_value::script::F1_EVENT_SCRIPT,
-                                              fb::model::const_value::script::F1_EVENT_FUNC);
+    auto lua = this->server.lua.open(fb::model::const_value::script::F1_EVENT_SCRIPT,
+                                     fb::model::const_value::script::F1_EVENT_FUNC);
     if (!lua)
         co_return;
 
@@ -56,8 +56,8 @@ async::task<void> click::handle_f2(character* ch)
     if (fb::model::const_value::script::F2_EVENT_FUNC == "")
         co_return;
 
-    auto lua = this->server.lua.new_ctx_guard(fb::model::const_value::script::F2_EVENT_SCRIPT,
-                                              fb::model::const_value::script::F2_EVENT_FUNC);
+    auto lua = this->server.lua.open(fb::model::const_value::script::F2_EVENT_SCRIPT,
+                                     fb::model::const_value::script::F2_EVENT_FUNC);
     if (!lua)
         co_return;
 
@@ -91,7 +91,7 @@ async::task<void> click::handle_object_click(character* ch, game_reqs::click& re
         auto  path  = std::format("scripts/npc/{}.lua", model.id);
         auto  func  = std::format("NPC_{}", model.id);
 
-        auto lua = this->server.lua.new_ctx_guard(path, func);
+        auto lua = this->server.lua.open(path, func);
         if (!lua)
             co_return;
 

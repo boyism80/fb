@@ -76,6 +76,11 @@ if [ $? -ne 0 ]; then
     echo "build fb/marketplace failed"
     exit $?
 fi
+sudo docker buildx build --progress=plain --push --tag ghcr.io/boyism80/fb/matchmaking:latest --build-arg BUILD_TYPE=$BUILD_TYPE -f server/matchmaking/Dockerfile .
+if [ $? -ne 0 ]; then
+    echo "build fb/matchmaking failed"
+    exit $?
+fi
 pushd infra/pulumi
 pulumi config set --secret host "$EXTERNAL_IP"
 pulumi up -y

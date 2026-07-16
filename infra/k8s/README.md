@@ -24,7 +24,7 @@ infra/k8s/
 | `redis-unified`, `redis-dev-global`, `redis-dev-0` | StatefulSet | 1 each |
 | `rabbitmq-internal`, `rabbitmq-log` | StatefulSet | 1 each |
 | `gateway`, `login-dev`, `game-dev-0` | StatefulSet | 1 each |
-| `internal`, `log-dev`, `write-back-dev`, `marketplace`, `admin-tool` | Deployment | 1 each |
+| `internal`, `log-dev`, `write-back-dev`, `marketplace`, `matchmaking`, `admin-tool` | Deployment | 1 each |
 
 Production (Pulumi) scales shards/replicas up using the same naming pattern.
 
@@ -70,6 +70,7 @@ kubectl -n fb get pods
 | Internal | 30200 |
 | Admin Tool | 30210 |
 | Marketplace | 30220 |
+| Matchmaking | 30240 |
 | MySQL unified | 31000 |
 | Redis unified | 31010 |
 | RabbitMQ internal AMQP | 31020 |

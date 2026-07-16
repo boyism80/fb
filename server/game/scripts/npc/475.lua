@@ -5,7 +5,7 @@ local function run_dialogs(me, npc, messages)
     for i, msg in ipairs(messages) do
         local prev = (i > 1)
         local next = (i < #messages)
-        local b = me:dialog(npc, msg, prev, next)
+        local b = me:dialog(npc, msg, { prev = prev, next = next })
         if b == DIALOG_RESULT.QUIT or b == DIALOG_RESULT.PREV then
             return false
         end
@@ -15,9 +15,9 @@ end
 
 local function handle_hwahwa_not_friend(me, npc)
     if math.random(1, 2) == 1 then
-        me:dialog(npc, "음? 처음 맡아보는 사람 냄새군. 이 섬에 사는 사람이 아닌듯 한데... 흠.", false, false)
+        me:dialog(npc, "음? 처음 맡아보는 사람 냄새군. 이 섬에 사는 사람이 아닌듯 한데... 흠.", { prev = false, next = false })
     else
-        me:dialog(npc, "나는 늑대들의 진실한 왕, 인랑이다. 이곳에서 당장 사라지도록 해.", false, false)
+        me:dialog(npc, "나는 늑대들의 진실한 왕, 인랑이다. 이곳에서 당장 사라지도록 해.", { prev = false, next = false })
     end
     return true
 end
@@ -28,12 +28,12 @@ local function handle_jingogyun_lt1(me, npc, q_jingo)
         return false
     end
     ::NPC_475_0001::
-    local b = me:dialog(npc, "화화의 내음이 잔뜩 묻어있군. 아주 오랜 시간동안 화화와 알고 지냈음이 틀림 없어.", false, true)
+    local b = me:dialog(npc, "화화의 내음이 잔뜩 묻어있군. 아주 오랜 시간동안 화화와 알고 지냈음이 틀림 없어.", { prev = false, next = true })
     if b == DIALOG_RESULT.QUIT then
         return true
     end
     ::NPC_475_0002::
-    b = me:dialog(npc, "그래, 화화의 친구라고 믿어도 좋겠군. 넌 누구지? 외부인이면서 어째서 죽은 자와 친구하고", true, true)
+    b = me:dialog(npc, "그래, 화화의 친구라고 믿어도 좋겠군. 넌 누구지? 외부인이면서 어째서 죽은 자와 친구하고", { prev = true, next = true })
     if b == DIALOG_RESULT.QUIT then
         return true
     end
@@ -41,7 +41,7 @@ local function handle_jingogyun_lt1(me, npc, q_jingo)
         goto NPC_475_0001
     end
     ::NPC_475_0003::
-    b = me:dialog(npc, "저 사악한 무리들과 싸우고 있는거지? 무엇을 위해서? 무엇을 바라고 이곳에 서있는건가?", true, true)
+    b = me:dialog(npc, "저 사악한 무리들과 싸우고 있는거지? 무엇을 위해서? 무엇을 바라고 이곳에 서있는건가?", { prev = true, next = true })
     if b == DIALOG_RESULT.QUIT then
         return true
     end
@@ -51,11 +51,11 @@ local function handle_jingogyun_lt1(me, npc, q_jingo)
     local sel, btn = me:list(npc, "대답해라. 도대체 이 곳으로 찾아온 이유가 무엇인지 말해라!", {
         "무슨 소리야? 난 부와 명성을 원할 뿐이다.",
         "나는 이 섬에 정의와 희망을 세우기 위해 왔다.",
-    }, false)
+    }, { prev = false })
     if btn == DIALOG_RESULT.QUIT or sel == nil then
         return true
     end
-    if sel == 0 then
+    if sel == 1 then
         run_dialogs(me, npc, {
             "뭣이? 이런 내 지인지감도 많이 녹슬었단 말인가. 하긴, 고균, 그 친구가 죽은 이후로",
             "인간들은 모두 타락해버렸지. 하하하, 허무토다, 친구여! 이것이 자네가 구한 세상이라니 말이야!",
@@ -63,7 +63,7 @@ local function handle_jingogyun_lt1(me, npc, q_jingo)
         })
         return true
     end
-    if sel == 1 then
+    if sel == 2 then
         if not run_dialogs(me, npc, {
             "그래? 하지만, 내가 순순히 그 말을 믿을거라 생각하면 오산이야. 나는 고균이 아니면, 어떤 사람도 믿지 않으니까.",
             "만약 네가 진정 그런 마음을 갖고 있다면, 남들을 위한 봉사정도야 기꺼이 할 수 있겠지? 고균또한 주변의 기대에",
@@ -107,11 +107,11 @@ local function handle_jingogyun_3(me, npc, q_jingo)
         "화화와는 어떤 사이에요?",
         "저기 인성초들 말고도 다른 반란군이 있나요?",
     }
-    local sel, btn = me:list(npc, "친구, 그래, 건강하게 지내고 있나? 오늘은 무슨 일이지? ", list_opts, false)
+    local sel, btn = me:list(npc, "친구, 그래, 건강하게 지내고 있나? 오늘은 무슨 일이지? ", list_opts, { prev = false })
     if btn == DIALOG_RESULT.QUIT or sel == nil then
         return true
     end
-    if sel == 0 then
+    if sel == 1 then
         if not run_dialogs(me, npc, {
             "음? 고균의 영검? 그걸 자네가 어떻게 알고 있지? 설마 화화에게서 받았나? 허... 화화가 정말 친한 친구라고 인정한 모양이군.",
             "쉽게 말해서 고균이 자신의 부하들을 위해 만들어주었던 검일세. 중국인가 하는 나라에서 온 선박에서 섬주민이 되기로 마음먹은",
@@ -124,11 +124,11 @@ local function handle_jingogyun_3(me, npc, q_jingo)
         local sub_sel, sub_btn = me:list(npc, "음, 고균의 영검에 대해 뭐 더 알고 싶은게 있나? ", {
             "이게 그렇게 대단한 검인가요?",
             "뭐랄까 어딘가 부족한 느낌이 들어요.",
-        }, false)
+        }, { prev = false })
         if sub_btn == DIALOG_RESULT.QUIT or sub_sel == nil then
             return true
         end
-        if sub_sel == 0 then
+        if sub_sel == 1 then
             run_dialogs(me, npc, {
                 "글쎄, 그동안 동굴 속에서 많이 부식된 것처럼 보이긴 하겠지만... 여기에는 그 처절했던 독립의 의지가 깃들어 있어.",
                 "비록 전성기의 모습을 갖추지 못하고 있긴 하지만, 그것만으로도 힘이 나지 않는가? 아니면, 양쪽 3개의 날로 방어하고",
@@ -148,7 +148,7 @@ local function handle_jingogyun_3(me, npc, q_jingo)
         end
         return true
     end
-    if sel == 1 then
+    if sel == 2 then
         run_dialogs(me, npc, {
             "응? 절벽에 보이는 인랑? 하하하하하하하! 뭐라고 이야기해야 할까. 뭐, 간단히 말해서 진인랑은 진인랑이지.",
             "나는 몇 백년 전에 늑대들의 왕자리를 버렸어. 지금 왕자를 노리고 서로 다투고 있는 인랑들은 쉽게 말해서",
@@ -159,7 +159,7 @@ local function handle_jingogyun_3(me, npc, q_jingo)
         })
         return true
     end
-    if sel == 2 then
+    if sel == 3 then
         run_dialogs(me, npc, {
             "고균! 그 이름만 들어도 나는 마음이 설렌다네. 내가 이 인랑의 이름을 걸고 존경하는 유일한 인간이야.",
             "상상을 해보게. 대부분의 인간들은 너무 약하고 너무 겁도 잘 먹지. 고균도 마찬가지야. 고균또한 약한 인간에 지나지 않았네.",
@@ -192,7 +192,7 @@ local function handle_jingogyun_3(me, npc, q_jingo)
         })
         return true
     end
-    if sel == 3 then
+    if sel == 4 then
         run_dialogs(me, npc, {
             "폭염왕! 이름만 들어도 분노가 머리끝까지 치솟아 오르는 이름이지! 아아, 그 날 하늘이 우리를 조금만 더 도왔더라면!!",
             "이 섬은 원래 인간과 우리들이 공존하며 살고 있었네. 서로 서로를 간섭치 않으면서, 자유롭게 말이야. 우리 늑대들은 낮에는",
@@ -207,7 +207,7 @@ local function handle_jingogyun_3(me, npc, q_jingo)
         })
         return true
     end
-    if sel == 4 then
+    if sel == 5 then
         run_dialogs(me, npc, {
             "재미있는 이야기? 음, 좀 곤란하군. 나는 원체 시끄러운걸 싫어해서 말이지. 젊을 적에는 참 시끄럽게 놀고 돌아다니긴 했지만...",
             "그렇게 재미없게 살아온 것도 아닌데, 딱 떠오르는 이야기가 없군. 아, 그러고 보니, 꽤 오래전의 이야기지만, 혹시 찬찬이라고 아나?",
@@ -217,7 +217,7 @@ local function handle_jingogyun_3(me, npc, q_jingo)
         })
         return true
     end
-    if sel == 5 then
+    if sel == 6 then
         run_dialogs(me, npc, {
             "아, 화화... 그 소녀말이로군. 참 안타까운 과거를 가진 소녀지. 성불하려면 친구 만명을 사귀어야 한다더군.",
             "하지만, 어디 친구가 그리 쉽게 구해지던가. 화화에게는 기껏해야 자네와 돌순이 정도겠지. 참으로 불행한 소녀야",
@@ -227,7 +227,7 @@ local function handle_jingogyun_3(me, npc, q_jingo)
         })
         return true
     end
-    if sel == 6 then
+    if sel == 7 then
         run_dialogs(me, npc, {
             "응? 반란군이라니? 우리는 독립군이라고 불러주게나. 힘적으로 열세이긴 하지만, 우린 단 한번도 폭염왕을 지배자로 받아들인 적도",
             "그 힘 아래 무릎꿇은 적도 없다네. 아시다시피 폭염왕은 우리 힘으로 저 화산굴에 봉인까지 했었으니까 말이야. 음, 우리 독립군은",
@@ -250,11 +250,11 @@ local function handle_jingogyun_4_to_8(me, npc, q_jingo)
     local sel, btn = me:list(npc, "어서오게, 친구여. 그간 잘 지냈는가?", {
         "고균의 영력구슬은 어디있죠?",
         "고균의 영검에 영력을 불어넣어주세요.",
-    }, false)
+    }, { prev = false })
     if btn == DIALOG_RESULT.QUIT or sel == nil then
         return true
     end
-    if sel == 0 then
+    if sel == 1 then
         run_dialogs(me, npc, {
             "글쎄... 고균이 부하들에게 나누어준 물품이라 전쟁때 다 쓰고 얼마 남지 않았었어.",
             "내 것도 다 써버렸고... 흠, 아, 화화는 틈나는대로 섬 온 구석을 돌아다니는 취미가 있으니까",
@@ -262,13 +262,13 @@ local function handle_jingogyun_4_to_8(me, npc, q_jingo)
         })
         return true
     end
-    if sel == 1 then
+    if sel == 2 then
         if not me:has_items("영력구슬", 1) then
-            me:dialog(npc, "고균의 영검에 영력을 불어넣기 위해서는 영력구슬이 필요하지.", false, false)
+            me:dialog(npc, "고균의 영검에 영력을 불어넣기 위해서는 영력구슬이 필요하지.", { prev = false, next = false })
             return true
         end
         if not me:has_items("고균의영검", 1) then
-            me:dialog(npc, "고균의 영검을 가져오면 영력을 불어넣어 주지.", false, false)
+            me:dialog(npc, "고균의 영검을 가져오면 영력을 불어넣어 주지.", { prev = false, next = false })
             return true
         end
         if not run_dialogs(me, npc, {
@@ -284,10 +284,10 @@ local function handle_jingogyun_4_to_8(me, npc, q_jingo)
             { ['item'] = { ["진'고균의영검"] = 1 } }
         )
         if code == enum.EXCHANGE_RESULT.LACK_COST then
-            me:dialog(npc, "아이템을 제거할 수 없습니다.", false, false)
+            me:dialog(npc, "아이템을 제거할 수 없습니다.", { prev = false, next = false })
             return true
         elseif code == enum.EXCHANGE_RESULT.LACK_CAPACITY then
-            me:dialog(npc, "소지품이 가득 차서 검을 줄 수 없네.", false, false)
+            me:dialog(npc, "소지품이 가득 차서 검을 줄 수 없네.", { prev = false, next = false })
             return true
         end
         if q_jingo then
@@ -338,5 +338,5 @@ function NPC_475(me, npc)
         return
     end
 
-    me:dialog(npc, "준비중입니다.", false, false)
+    me:dialog(npc, "준비중입니다.", { prev = false, next = false })
 end

@@ -1,0 +1,219 @@
+using Fb.Model.EnumValue;
+using Http;
+using Matchmaking.Core;
+using Matchmaking.Model;
+using Matchmaking.Services;
+using Microsoft.AspNetCore.Mvc;
+using Request = fb.protocol.matchmaking.request;
+using Response = fb.protocol.matchmaking.response;
+
+namespace Matchmaking.Controllers;
+
+[ApiController]
+[Route("matchmaking")]
+public class MatchmakingController : ControllerBase
+{
+    private readonly ILogger<MatchmakingController> _logger;
+    private readonly MatchMaker<CharacterRegistryEntry> _matchMaker;
+
+    public MatchmakingController(
+        ILogger<MatchmakingController> logger,
+        MatchMaker<CharacterRegistryEntry> matchMaker)
+    {
+        _logger = logger;
+        _matchMaker = matchMaker;
+    }
+
+    [HttpPost("register")]
+    public Response.Register Register(Request.Register request)
+    {
+        try
+        {
+            var entries = (request.Entries ?? new List<fb.protocol.matchmaking.RegistryEntry>())
+                .Select(CharacterRegistryEntry.FromProtocol)
+                .ToList();
+
+            var registryId = _matchMaker.Enroll(request.MatchType, entries);
+
+            return new Response.Register
+            {
+                RegistryId = registryId.ToString(),
+                Error = (uint)ErrorCode.None
+            };
+        }
+        catch (LogicException e)
+        {
+            return new Response.Register
+            {
+                RegistryId = string.Empty,
+                Error = (uint)e.Error
+            };
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Matchmaking register failed");
+            return new Response.Register
+            {
+                RegistryId = string.Empty,
+                Error = (uint)ErrorCode.Unhandled
+            };
+        }
+    }
+
+    [HttpPost("unregister")]
+    public async Task<Response.Unregister> Unregister(
+        Request.Unregister request,
+        CancellationToken cancellationToken)
+    {
+        try
+        {
+            if (!Guid.TryParse(request.RegistryId, out var registryId))
+            {
+                throw new LogicException(ErrorCode.MatchmakingRegistryNotFound);
+            }
+
+            var entryId = CharacterRegistryEntry.ToEntryId(request.World, request.CharacterId);
+
+            await _matchMaker.UnenrollAsync(
+                request.MatchType,
+                registryId,
+                entryId,
+                cancellationToken);
+
+            return new Response.Unregister
+            {
+                Success = true,
+                Error = (uint)ErrorCode.None
+            };
+        }
+        catch (LogicException e)
+        {
+            return new Response.Unregister
+            {
+                Success = false,
+                Error = (uint)e.Error
+            };
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Matchmaking unregister failed");
+            return new Response.Unregister
+            {
+                Success = false,
+                Error = (uint)ErrorCode.Unhandled
+            };
+        }
+    }
+
+    [HttpPost("confirm")]
+    public async Task<Response.Confirm> Confirm(Request.Confirm request, CancellationToken cancellationToken)
+    {
+        try
+        {
+            if (!Guid.TryParse(request.MatchId, out var matchId))
+            {
+                throw new LogicException(ErrorCode.MatchmakingMatchNotFound);
+            }
+
+            var matchFinalized = await _matchMaker.ConfirmAsync(
+                matchId,
+                CharacterRegistryEntry.ToEntryId(request.World, request.CharacterId),
+                cancellationToken);
+
+            return new Response.Confirm
+            {
+                Error = (uint)ErrorCode.None,
+                MatchFinalized = matchFinalized
+            };
+        }
+        catch (LogicException e)
+        {
+            return new Response.Confirm
+            {
+                Error = (uint)e.Error,
+                MatchFinalized = false
+            };
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Matchmaking confirm failed");
+            return new Response.Confirm
+            {
+                Error = (uint)ErrorCode.Unhandled,
+                MatchFinalized = false
+            };
+        }
+    }
+
+    [HttpPost("decline")]
+    public async Task<Response.Decline> Decline(Request.Decline request, CancellationToken cancellationToken)
+    {
+        try
+        {
+            if (!Guid.TryParse(request.MatchId, out var matchId))
+            {
+                throw new LogicException(ErrorCode.MatchmakingMatchNotFound);
+            }
+
+            await _matchMaker.DeclineAsync(
+                matchId,
+                CharacterRegistryEntry.ToEntryId(request.World, request.CharacterId),
+                cancellationToken);
+
+            return new Response.Decline
+            {
+                Error = (uint)ErrorCode.None
+            };
+        }
+        catch (LogicException e)
+        {
+            return new Response.Decline
+            {
+                Error = (uint)e.Error
+            };
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Matchmaking decline failed");
+            return new Response.Decline
+            {
+                Error = (uint)ErrorCode.Unhandled
+            };
+        }
+    }
+
+    [HttpPost("status")]
+    public Response.Status Status(Request.Status request)
+    {
+        try
+        {
+            var status = _matchMaker.GetStatus(
+                CharacterRegistryEntry.ToEntryId(request.World, request.CharacterId));
+
+            return new Response.Status
+            {
+                InQueue = status.InQueue,
+                MatchType = status.MatchType,
+                RegistryId = status.RegistryId == Guid.Empty ? string.Empty : status.RegistryId.ToString(),
+                PendingMatchId = status.PendingMatchId?.ToString() ?? string.Empty,
+                ConfirmDeadline = status.ConfirmDeadline?.ToString("yyyy-MM-dd HH:mm:ss") ?? string.Empty,
+                Error = (uint)ErrorCode.None
+            };
+        }
+        catch (LogicException e)
+        {
+            return new Response.Status
+            {
+                Error = (uint)e.Error
+            };
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Matchmaking status failed");
+            return new Response.Status
+            {
+                Error = (uint)ErrorCode.Unhandled
+            };
+        }
+    }
+}

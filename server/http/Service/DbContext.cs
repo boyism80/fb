@@ -43,6 +43,8 @@ namespace Http.Service
 
         public MarketplacePendingRepository MarketplacePending => Bind<MarketplacePendingRepository>();
 
+        public MatchmakingSkillRepository MatchmakingSkill => Bind<MatchmakingSkillRepository>();
+
 
         public MySqlConnection GetUnifiedConnection()
         {
@@ -175,8 +177,6 @@ namespace Http.Service
                     yield return (GetDataConnection(world, g.Key), g.ToArray());
             }
         }
-
-
 
         public async Task SaveChangesAsync()
         {

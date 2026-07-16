@@ -1,3 +1,3 @@
 -- mob: 이벤트겁살파수
-function ON_MOB_DIE_1237(me, you)
-end
+-- function ON_MOB_DIE_1237(me)
+-- end

@@ -1,6 +1,6 @@
 -- npc: 길림미로보초
 function NPC_265(me, npc)
-    if me:dialog(npc, '멈춰라!\n이곳은 이제 아무나 들이지 말라는 어명이 있었네.\n어떤 몰상식한 자가 이곳에서 한몫 잡아 보려고 다른 사람들에게 피해를 줬다는데, 요즘 사람들은 왜 이렇게 자기 생각만 하는지 모르겠네.. 에휴~\n그나저나 무엇을 하려던 참인가?', false, true) == DIALOG_RESULT.QUIT then
+    if me:dialog(npc, '멈춰라!\n이곳은 이제 아무나 들이지 말라는 어명이 있었네.\n어떤 몰상식한 자가 이곳에서 한몫 잡아 보려고 다른 사람들에게 피해를 줬다는데, 요즘 사람들은 왜 이렇게 자기 생각만 하는지 모르겠네.. 에휴~\n그나저나 무엇을 하려던 참인가?', { prev = false, next = true }) == DIALOG_RESULT.QUIT then
         return
     end
 
@@ -13,12 +13,12 @@ function NPC_265(me, npc)
     end
 
     local warp_direct = false
-    if sel == 1 then
+    if sel == 2 then
         local selected, button = me:list(npc, '바로 운랑의방으로 입장하려면 참나무껍질을 바쳐야하오 입장하겠소?', { '네. 입장할래요.', '아니요. 아깝네요.' })
         if button == DIALOG_RESULT.QUIT then
             return
         end
-        if selected ~= 0 then
+        if selected ~= 1 then
             return
         end
         
@@ -36,7 +36,7 @@ function NPC_265(me, npc)
         return
     end
 
-    if selected ~= 0 then
+    if selected ~= 1 then
         local map = nil
         local position = {x = 0, y = 0}
         if warp_direct then
@@ -49,7 +49,7 @@ function NPC_265(me, npc)
         me:map(map, position)
     end
 
-    if selected == 1 then
+    if selected == 2 then
         return
     end
 end

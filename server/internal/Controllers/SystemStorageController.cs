@@ -58,7 +58,6 @@ namespace Internal.Controllers
                 if (!string.IsNullOrEmpty(request.ExpireDate) && DateTime.TryParse(request.ExpireDate, out var parsedDate))
                     expireDate = parsedDate;
 
-                uint? user = request.User != 0 ? request.User : null;
                 var attachments = string.IsNullOrWhiteSpace(request.Attachments)
                     ? new List<Fb.Model.Dsl>()
                     : (JsonConvert.DeserializeObject<List<Fb.Model.Dsl>>(request.Attachments) ?? new List<Fb.Model.Dsl>());
@@ -68,7 +67,6 @@ namespace Internal.Controllers
                 var box = await _storageService.CreateSystemStorageAsync(request.World,
                     request.Title,
                     request.Message,
-                    user,
                     expireDate,
                     attachments,
                     externalRef);
@@ -83,6 +81,40 @@ namespace Internal.Controllers
             {
                 return new Response.WriteSystemStorageBox
                 {
+                    Error = (uint)ErrorCode.Unhandled
+                };
+            }
+        }
+
+        [HttpPost("deliver")]
+        public async Task<Response.DeliverSystemStorage> DeliverSystemStorage(Request.DeliverSystemStorage request)
+        {
+            try
+            {
+                var users = request.Users ?? new List<uint>();
+                var written = await _storageService.DeliverSystemStorageAsync(request.World,
+                    request.SystemStorageBoxId,
+                    users,
+                    request.Host);
+
+                var entries = written.Select(box => new Protocol.StorageWriteEntry
+                {
+                    User = box.User,
+                    Box  = _mapper.Map<Protocol.StorageBox>(box)
+                }).ToList();
+
+                return new Response.DeliverSystemStorage
+                {
+                    Entries = entries,
+                    Host    = request.Host,
+                    Error   = (uint)ErrorCode.None
+                };
+            }
+            catch (Exception)
+            {
+                return new Response.DeliverSystemStorage
+                {
+                    Host  = request.Host,
                     Error = (uint)ErrorCode.Unhandled
                 };
             }

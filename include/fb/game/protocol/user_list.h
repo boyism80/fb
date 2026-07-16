@@ -4,9 +4,8 @@
 #include <fb/protocol/header.h>
 #include <fb/model/model.h>
 #include <fb/socket.h>
-#ifndef BOT
-#include <fb/game/character.h>
-#endif
+#include <string>
+#include <vector>
 
 namespace fb::protocol::game::request {
 #ifndef BOT
@@ -24,9 +23,9 @@ public:
 
 public:
 #ifdef BOT
-    [[nodiscard]] async::task<void> serialize(fb::stream_writer<big_endian>& writer) const;
+    void serialize(fb::stream_writer<big_endian>& writer) const;
 #else
-    [[nodiscard]] async::task<void> deserialize(fb::stream_reader<big_endian>& reader);
+    void deserialize(fb::stream_reader<big_endian>& reader);
 #endif
 };
 
@@ -43,7 +42,6 @@ public:
     static constexpr uint8_t opcode = 0x36;
 
 public:
-#ifdef BOT
     struct user_data
     {
         uint8_t     nation;
@@ -55,23 +53,19 @@ public:
     };
 
     std::vector<user_data> users;
-#else
-    const character&                                  me;
-    std::vector<std::shared_ptr<fb::game::character>> users;
-#endif
 
 public:
 #ifdef BOT
     user_list() = default;
 #else
-    user_list(const character& me, std::vector<std::shared_ptr<fb::game::character>>&& users);
+    user_list(std::vector<user_data>&& users);
 #endif
 
 public:
 #ifndef BOT
-    [[nodiscard]] async::task<void> serialize(fb::stream_writer<big_endian>& writer) const;
+    void serialize(fb::stream_writer<big_endian>& writer) const;
 #else
-    [[nodiscard]] async::task<void> deserialize(fb::stream_reader<big_endian>& reader);
+    void deserialize(fb::stream_reader<big_endian>& reader);
 #endif
 };
 

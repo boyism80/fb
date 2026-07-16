@@ -4,6 +4,7 @@
 #include <fb/game/appearance.h>
 #include <async/awaitable_then.h>
 #include <async/propagation.h>
+#include <tuple>
 
 using namespace fb::game;
 using table = fb::model::table;
@@ -157,7 +158,7 @@ int builtin::object::builtin_destroy(lua_State* L)
     auto builder  = lua->new_co_builder();
     builder.weak  = weak;
     builder.yield = [=]() -> async::task<void> {
-        std::ignore = obj->destroy();
+        co_await obj->destroy();
         co_return;
     };
     builder.resume = []() -> async::task<int> {
@@ -266,7 +267,7 @@ int builtin::object::builtin_position(lua_State* L)
         auto builder  = lua->new_co_builder();
         builder.weak  = weak;
         builder.yield = [=]() -> async::task<void> {
-            obj->position(x, y, true);
+            std::ignore = obj->position(x, y, true);
             co_return;
         };
         builder.resume = []() -> async::task<int> {
@@ -338,7 +339,7 @@ int builtin::object::builtin_direction(lua_State* L)
         auto builder   = lua->new_co_builder();
         builder.weak   = weak;
         builder.yield  = [=]() -> async::task<void> {
-            obj->direction(direction);
+            std::ignore = obj->direction(direction);
             co_return;
         };
         builder.resume = []() -> async::task<int> {
@@ -412,7 +413,7 @@ int builtin::object::builtin_buff(lua_State* L)
     auto builder     = lua->new_co_builder();
     builder.weak     = weak;
     builder.yield    = [=]() -> async::task<void> {
-        auto buff = obj->buffs.push_back(*model, seconds, caster);
+        auto buff = co_await obj->buffs.push_back(*model, seconds, caster);
         if (buff != nullptr)
             *buff_holder = buff;
         co_return;
@@ -479,11 +480,14 @@ int builtin::object::builtin_unbuff(lua_State* L)
         if (mode == unbuff_mode::BY_NAME)
         {
             auto model = table::spell.name2spell(name);
-            *result    = model != nullptr && obj->buffs.remove(*model);
+            if (model == nullptr)
+                *result = false;
+            else
+                *result = co_await obj->buffs.remove(*model);
         }
         else if (mode == unbuff_mode::BY_BUFF || mode == unbuff_mode::BY_SPELL)
         {
-            *result = obj->buffs.remove(spell_id);
+            *result = co_await obj->buffs.remove(spell_id);
         }
         co_return;
     };
@@ -732,6 +736,11 @@ int builtin::object::builtin_map(lua_State* L)
         ::lua_getfield(*lua_ctx, index, "notify");
         if (lua_ctx->is_nil(-1) == false)
             opts.notify = lua_ctx->toboolean(-1);
+        ::lua_pop(*lua_ctx, 1);
+
+        ::lua_getfield(*lua_ctx, index, "skip_instance_rule");
+        if (lua_ctx->is_nil(-1) == false)
+            opts.skip_instance_rule = lua_ctx->toboolean(-1);
         ::lua_pop(*lua_ctx, 1);
     };
 
@@ -1235,6 +1244,7 @@ int builtin::object::builtin_script(lua_State* L)
 
         if (new_lua->func(func) == false)
         {
+            fb::lua::report_func_missing(path, func);
             new_lua->release();
             co_return;
         }
@@ -1245,7 +1255,7 @@ int builtin::object::builtin_script(lua_State* L)
         child_holder->ctx = new_lua;
         try
         {
-            co_await new_lua->call(argc - 2, retc_holder.get());
+            std::ignore = co_await new_lua->call(argc - 2, retc_holder.get());
         }
         catch (...)
         {

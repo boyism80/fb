@@ -12,11 +12,11 @@ local function run_normal_exchange(me, npc)
     local sel, btn = me:list(npc, "일반교환권을 제가 가지고 있는 아이템과 교환 해 드려요.", {
         "예 교환해 주세요.",
         "아니오. 싫어요."
-    }, false)
+    }, { prev = false })
     if btn == DIALOG_RESULT.QUIT or sel == nil then
         return
     end
-    if sel ~= 0 then
+    if sel ~= 1 then
         return
     end
     local idx = math.random(1, #NORMAL_EXCHANGE_REWARDS)
@@ -26,13 +26,13 @@ local function run_normal_exchange(me, npc)
         { ['item'] = { [entry[1]] = entry[2] } }
     )
     if code == enum.EXCHANGE_RESULT.LACK_COST then
-        me:dialog(npc, "일반교환권이 없으시군요. 일반교환권을 가져오세요.", false, false)
+        me:dialog(npc, "일반교환권이 없으시군요. 일반교환권을 가져오세요.", { prev = false, next = false })
         return
     elseif code == enum.EXCHANGE_RESULT.LACK_CAPACITY then
-        me:dialog(npc, "소지품이 가득 차서 보상을 드릴 수 없습니다.", false, false)
+        me:dialog(npc, "소지품이 가득 차서 보상을 드릴 수 없습니다.", { prev = false, next = false })
         return
     end
-    me:dialog(npc, "일반교환권를 제가 가진 [" .. entry[1] .. "]으로 교환해 드렸어요.", false, false)
+    me:dialog(npc, "일반교환권를 제가 가진 [" .. entry[1] .. "]으로 교환해 드렸어요.", { prev = false, next = false })
 end
 
 local SPECIAL_EXCHANGE_REWARDS = {
@@ -62,11 +62,11 @@ local function run_special_exchange(me, npc)
     local sel, btn = me:list(npc, "특별교환권을 제가 가지고 있는 아이템과 교환 해 드려요.", {
         "예 교환해 주세요.",
         "아니오. 싫어요."
-    }, false)
+    }, { prev = false })
     if btn == DIALOG_RESULT.QUIT or sel == nil then
         return
     end
-    if sel ~= 0 then
+    if sel ~= 1 then
         return
     end
     local idx = math.random(1, #SPECIAL_EXCHANGE_REWARDS)
@@ -76,13 +76,13 @@ local function run_special_exchange(me, npc)
         { ['item'] = { [entry[1]] = entry[2] } }
     )
     if code == enum.EXCHANGE_RESULT.LACK_COST then
-        me:dialog(npc, "특별교환권이 없으시군요. 특별교환권을 가져오세요.", false, false)
+        me:dialog(npc, "특별교환권이 없으시군요. 특별교환권을 가져오세요.", { prev = false, next = false })
         return
     elseif code == enum.EXCHANGE_RESULT.LACK_CAPACITY then
-        me:dialog(npc, "소지품이 가득 차서 보상을 드릴 수 없습니다.", false, false)
+        me:dialog(npc, "소지품이 가득 차서 보상을 드릴 수 없습니다.", { prev = false, next = false })
         return
     end
-    me:dialog(npc, "특별교환권를 제가 가진 [" .. entry[1] .. "]으로 교환해 드렸어요.", false, false)
+    me:dialog(npc, "특별교환권를 제가 가진 [" .. entry[1] .. "]으로 교환해 드렸어요.", { prev = false, next = false })
 end
 
 function NPC_577(me, npc)
@@ -98,7 +98,7 @@ function NPC_577(me, npc)
         return
     end
     if map_name == "고구려경품상4" then
-        me:dialog(npc, ".............", false, false)
+        me:dialog(npc, ".............", { prev = false, next = false })
         return
     end
 end

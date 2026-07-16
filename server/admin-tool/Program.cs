@@ -27,6 +27,7 @@ builder.Services.AddSingleton<RedisService>();
 builder.Services.AddSingleton<RedisDistributedLockService>();
 builder.Services.AddSingleton<RabbitMqService>();
 builder.Services.AddSingleton<LogService>();
+builder.Services.AddHttpAutoMapper();
 builder.Services.AddSingleton<SessionService>();
 builder.Services.AddSingleton<WriteBackService>();
 builder.Services.AddScoped<DbContext>();

@@ -1,3 +1,3 @@
 -- mob: 콩고
-function ON_MOB_DIE_616(me, you)
-end
+-- function ON_MOB_DIE_616(me)
+-- end

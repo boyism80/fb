@@ -14,11 +14,11 @@ function ON_ATTACK_250(me, item)
 end
 
 -- 용마제이검 사용 스크립트
-function ON_ACTIVATED_250(me, item)
-
-end
+-- function ON_ACTIVATED_250(me, item)
+--
+-- end
 
 -- 용마제이검 해제 스크립트
-function ON_DEACTIVATED_250(me, item)
-
-end
+-- function ON_DEACTIVATED_250(me, item)
+--
+-- end

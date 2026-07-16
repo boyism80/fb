@@ -1,4 +1,4 @@
 -- npc: 고구려경비대장
-function NPC_67(me, npc)
-    
-end
+-- function NPC_67(me, npc)
+--
+-- end

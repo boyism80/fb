@@ -1,5 +1,5 @@
 -- spell: 해마장군잡기
 -- 해마장군잡기 캐스팅
-function ON_CAST_7006(me, spell)
-
-end
+-- function ON_CAST_7006(me, spell)
+--
+-- end

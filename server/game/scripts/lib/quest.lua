@@ -246,7 +246,7 @@ function M.cheongsimcho_on_move(me)
     end
     local obj = name2item('청심초')
     if obj ~= nil then
-        me:dialog(obj, '청심초를 구했다!', true, true)
+        me:dialog(obj, '청심초를 구했다!', { prev = true, next = true })
     else
         me:chat('청심초를 구했다!')
     end
@@ -303,14 +303,14 @@ function M.greatwall_repair_on_move(me)
         return
     end
 
-    local btn = me:dialog(nil, '엇! 만리장성이 부숴져 가고 있군. 어서 고쳐야 할텐데...', false, true)
+    local btn = me:dialog(nil, '엇! 만리장성이 부숴져 가고 있군. 어서 고쳐야 할텐데...', { prev = false, next = true })
     if btn == DIALOG_RESULT.QUIT then
         return
     end
 
     local brick = me:item('벽돌')
     if brick == nil or brick:count() < 1 then
-        me:dialog(nil, '이런.. 벽돌이 없잖아! 벽돌을 사 와야 겠군..', false, true)
+        me:dialog(nil, '이런.. 벽돌이 없잖아! 벽돌을 사 와야 겠군..', { prev = false, next = true })
         return
     end
 
@@ -318,9 +318,9 @@ function M.greatwall_repair_on_move(me)
     if math.random(1, 100) <= 70 then
         quest:inc_progress(1)
         me:push_achievement(GREATWALL_ACHIEVEMENT_ID, string.format('만리장성을 %d번 고치다.', quest:progress()), 7, 1)
-        me:dialog(nil, '좋아.. 잘 고쳐진 것 같군..', false, true)
+        me:dialog(nil, '좋아.. 잘 고쳐진 것 같군..', { prev = false, next = true })
     else
-        me:dialog(nil, '앗!! 벽돌이 부숴졌잖아! 이런.. 다시해야겠군.', false, true)
+        me:dialog(nil, '앗!! 벽돌이 부숴졌잖아! 이런.. 다시해야겠군.', { prev = false, next = true })
     end
 end
 
@@ -547,7 +547,7 @@ function M.ghost_talisman_on_move(me)
 
     me:rmitem('귀신퇴치부적', 1, ITEM_DELETE_TYPE.GIVE)
     quest:inc_progress(1)
-    me:dialog(nil, '이 바닥에 부적을 묻으면 귀신의 기운이 약간 약해질 것이다.', false, true)
+    me:dialog(nil, '이 바닥에 부적을 묻으면 귀신의 기운이 약간 약해질 것이다.', { prev = false, next = true })
 end
 
 function M.goddess_dew_on_move(me)
@@ -617,17 +617,17 @@ function M.goddess_dew_on_move(me)
             return
         end
         me:push_achievement(DEW_ACHIEVEMENT_ID, '여신의이슬을 만들었다.', 7, 16)
-        me:dialog(nil, '투명한 이슬을 얻었다! 여신의 이슬이 완성되었다!', true, true)
+        me:dialog(nil, '투명한 이슬을 얻었다! 여신의 이슬이 완성되었다!', { prev = true, next = true })
         return
     end
 
     if math.random(1, 10) <= 9 then
         me:push_achievement(DEW_ACHIEVEMENT_ID, string.format('투명한 이슬을 %d개 구했다.', water), 7, 16)
-        me:dialog(nil, '투명한 이슬을 발견했다!\n\n조심조심... 투명한 이슬을 담자.', true, true)
+        me:dialog(nil, '투명한 이슬을 발견했다!\n\n조심조심... 투명한 이슬을 담자.', { prev = true, next = true })
     else
         water = water - 1
         quest:param(string.format('%d,%d,0,%d', x, y, water))
-        me:dialog(nil, '아뿔사! 투명한 이슬을 흘려버렸다!', true, true)
+        me:dialog(nil, '아뿔사! 투명한 이슬을 흘려버렸다!', { prev = true, next = true })
     end
 end
 
@@ -766,7 +766,7 @@ function M.mountain_treasure_map_on_move(me)
         return
     end
 
-    me:dialog(name2item('산신의보물지도'), '산신의보물지도를 발견했다!', false, false)
+    me:dialog(name2item('산신의보물지도'), '산신의보물지도를 발견했다!', { prev = false, next = false })
 end
 
 --- When at the treasure location (quest param "map,x,y"), give 산신의비단 and set param to "got". M.QUEST_MOUNTAIN_GOD step 2.
@@ -809,13 +809,16 @@ function M.mountain_treasure_fabric_on_move(me)
     me:mkitem('산신의비단', 1)
 
     quest:param('got')
-    me:dialog(nil, '산신의비단을 발견했다!', false, true)
+    me:dialog(nil, '산신의비단을 발견했다!', { prev = false, next = true })
 end
 
-function M.king_on_mob_die(me, you)
-    local killed_name = me:model():name()
+function M.king_on_mob_kill(me, mobs)
+    if me == nil or mobs == nil or #mobs == 0 then
+        return
+    end
+    local killed_name = mobs[1]:model():name()
     for _, qid in ipairs({ 100, 101, 102 }) do
-        local quest = you:quest(qid)
+        local quest = me:quest(qid)
         if quest ~= nil and quest:step() == 1 then
             local param = quest:param() or ''
             local mob_name = param:match('^([^,]+)') or param
@@ -827,13 +830,21 @@ function M.king_on_mob_die(me, you)
     end
 end
 
+-- Legacy alias; prefer king_on_mob_kill(me, mobs)
+function M.king_on_mob_die(mob, you)
+    if you == nil then
+        return
+    end
+    M.king_on_mob_kill(you, { mob })
+end
+
 function M.king_dialog(me, npc, opts)
     if me:level() < opts.min_level then
-        me:dialog(npc, '감히 여기가 어디라고!', false, true)
+        me:dialog(npc, '감히 여기가 어디라고!', { prev = false, next = true })
         return
     end
     if opts.nation ~= nil and me:nation() ~= opts.nation then
-        me:dialog(npc, opts.nation_reject_msg or '여기는 왕이 계시는 곳입니다.', false, true)
+        me:dialog(npc, opts.nation_reject_msg or '여기는 왕이 계시는 곳입니다.', { prev = false, next = true })
         return
     end
 
@@ -842,12 +853,12 @@ function M.king_dialog(me, npc, opts)
 
     if quest == nil then
         ::KING_START0::
-        btn = me:dialog(npc, '무례하게 폐하께 직접! 폐하께 전할 말씀은 나를 통해서 하시오!', true, true)
+        btn = me:dialog(npc, '무례하게 폐하께 직접! 폐하께 전할 말씀은 나를 통해서 하시오!', { prev = true, next = true })
         if btn == DIALOG_RESULT.QUIT then
             return
         end
         ::KING_START1::
-        btn = me:dialog(npc, '폐하게 임무를 받으려고 하시는 겁니까? 임무를 완수하면 많은 경험치를 받으시겠지만, 하지 못하면 형벌을 받게 된다오!', true, true)
+        btn = me:dialog(npc, '폐하게 임무를 받으려고 하시는 겁니까? 임무를 완수하면 많은 경험치를 받으시겠지만, 하지 못하면 형벌을 받게 된다오!', { prev = true, next = true })
         if btn == DIALOG_RESULT.QUIT then
             return
         end
@@ -858,45 +869,45 @@ function M.king_dialog(me, npc, opts)
         if lb == DIALOG_RESULT.QUIT then
             return
         end
-        if sel == nil or sel ~= 0 then
+        if sel == nil or sel ~= 1 then
             return
         end
 
         local level = me:level()
         local pool = opts.pool_fn(level)
         if pool == nil or #pool == 0 then
-            me:dialog(npc, '임무를 부여할 수 없소.', false, true)
+            me:dialog(npc, '임무를 부여할 수 없소.', { prev = false, next = true })
             return
         end
         local idx = math.random(1, #pool)
         local mob_name = pool[idx]
         local mob_model = name2mob(mob_name)
         if mob_model == nil then
-            me:dialog(npc, '임무를 부여할 수 없소.', false, true)
+            me:dialog(npc, '임무를 부여할 수 없소.', { prev = false, next = true })
             return
         end
 
         quest = me:start_quest(opts.quest_id)
         if quest == nil then
-            me:dialog(npc, '퀘스트 시작 실패', false, true)
+            me:dialog(npc, '퀘스트 시작 실패', { prev = false, next = true })
             return
         end
         quest:step(1)
         quest:param(mob_name)
         quest:progress(0)
         me:push_achievement(opts.achievement_id, opts.king_name .. '에게 ' .. name_with(mob_name, '을', '를') .. ' 잡는 임무를 받음', 6, 17)
-        me:dialog(npc, '어명이오! ' .. name_with(mob_name, '을', '를') .. ' 잡으라는 폐하의 말씀이 있으셨소! 임무를 수행한 후에는 시간을 지체하지 말고 바로 황궁으로 돌아오시오!', false, true)
+        me:dialog(npc, '어명이오! ' .. name_with(mob_name, '을', '를') .. ' 잡으라는 폐하의 말씀이 있으셨소! 임무를 수행한 후에는 시간을 지체하지 말고 바로 황궁으로 돌아오시오!', { prev = false, next = true })
         return
     end
 
     if quest:step() == 0 then
         ::KING_START0B::
-        btn = me:dialog(npc, '무례하게 폐하께 직접! 폐하께 전할 말씀은 나를 통해서 하시오!', true, true)
+        btn = me:dialog(npc, '무례하게 폐하께 직접! 폐하께 전할 말씀은 나를 통해서 하시오!', { prev = true, next = true })
         if btn == DIALOG_RESULT.QUIT then
             return
         end
         ::KING_START1B::
-        btn = me:dialog(npc, '폐하게 임무를 받으려고 하시는 겁니까? 임무를 완수하면 많은 경험치를 받으시겠지만, 하지 못하면 형벌을 받게 된다오!', true, true)
+        btn = me:dialog(npc, '폐하게 임무를 받으려고 하시는 겁니까? 임무를 완수하면 많은 경험치를 받으시겠지만, 하지 못하면 형벌을 받게 된다오!', { prev = true, next = true })
         if btn == DIALOG_RESULT.QUIT then
             return
         end
@@ -907,21 +918,21 @@ function M.king_dialog(me, npc, opts)
         if lb == DIALOG_RESULT.QUIT then
             return
         end
-        if sel == nil or sel ~= 0 then
+        if sel == nil or sel ~= 1 then
             return
         end
 
         local level = me:level()
         local pool = opts.pool_fn(level)
         if pool == nil or #pool == 0 then
-            me:dialog(npc, '임무를 부여할 수 없소.', false, true)
+            me:dialog(npc, '임무를 부여할 수 없소.', { prev = false, next = true })
             return
         end
         local idx = math.random(1, #pool)
         local mob_name = pool[idx]
         local mob_model = name2mob(mob_name)
         if mob_model == nil then
-            me:dialog(npc, '임무를 부여할 수 없소.', false, true)
+            me:dialog(npc, '임무를 부여할 수 없소.', { prev = false, next = true })
             return
         end
 
@@ -929,14 +940,14 @@ function M.king_dialog(me, npc, opts)
         quest:param(mob_name)
         quest:progress(0)
         me:push_achievement(opts.achievement_id, opts.king_name .. '에게 ' .. name_with(mob_name, '을', '를') .. ' 잡는 임무를 받음', 6, 17)
-        me:dialog(npc, '어명이오! ' .. name_with(mob_name, '을', '를') .. ' 잡으라는 폐하의 말씀이 있으셨소! 임무를 수행한 후에는 시간을 지체하지 말고 바로 황궁으로 돌아오시오!', false, true)
+        me:dialog(npc, '어명이오! ' .. name_with(mob_name, '을', '를') .. ' 잡으라는 폐하의 말씀이 있으셨소! 임무를 수행한 후에는 시간을 지체하지 말고 바로 황궁으로 돌아오시오!', { prev = false, next = true })
         return
     end
 
     if quest:step() == 1 then
         if quest:progress() == 0 then
             local mob_name = name_with(quest:param() or '', '을', '를')
-            btn = me:dialog(npc, string.format('네 이놈! %s 잡을 어명을 받고서 %s 잡지 않았구나!', mob_name, mob_name), false, true)
+            btn = me:dialog(npc, string.format('네 이놈! %s 잡을 어명을 받고서 %s 잡지 않았구나!', mob_name, mob_name), { prev = false, next = true })
             if btn == DIALOG_RESULT.QUIT then
                 return
             end
@@ -950,7 +961,7 @@ function M.king_dialog(me, npc, opts)
                 return
             end
             
-            me:dialog(npc, '감히 폐하의 임무를 취소해달라고? 이놈에게 형벌을 가하라!', true, true)
+            me:dialog(npc, '감히 폐하의 임무를 취소해달라고? 이놈에게 형벌을 가하라!', { prev = true, next = true })
             me:sound(69)
             me:effect(13)
             me:buff('왕의저주', opts.curse_sec)
@@ -958,7 +969,7 @@ function M.king_dialog(me, npc, opts)
             quest:step(0)
             quest:param('')
             quest:progress(0)
-            me:dialog(npc, '이 형벌로 너의 임무가 지워졌으니, 다시 임무를 받을 수 있을 것이다.', false, true)
+            me:dialog(npc, '이 형벌로 너의 임무가 지워졌으니, 다시 임무를 받을 수 있을 것이다.', { prev = false, next = true })
             return
         end
 
@@ -967,7 +978,7 @@ function M.king_dialog(me, npc, opts)
         local base_exp = (mob_model ~= nil) and mob_model:exp() or 0
         local rate = exp_multiplier()
         local exp_amount = math.floor(base_exp * 10 * rate)
-        btn = me:dialog(npc, '어명을 받든 공을 높이 사신 폐하께서 그대에게 경험치 ' .. tostring(exp_amount) .. ' 을 하사하십니다.', true, true)
+        btn = me:dialog(npc, '어명을 받든 공을 높이 사신 폐하께서 그대에게 경험치 ' .. tostring(exp_amount) .. ' 을 하사하십니다.', { prev = true, next = true })
         if btn == DIALOG_RESULT.QUIT then
             return
         end
@@ -975,7 +986,7 @@ function M.king_dialog(me, npc, opts)
         quest:step(0)
         quest:param('')
         quest:progress(0)
-        me:dialog(npc, '어명을 받든 공을 높이 사신 폐하께서 그대에게 경험치를 하사하셨소.', false, true)
+        me:dialog(npc, '어명을 받든 공을 높이 사신 폐하께서 그대에게 경험치를 하사하셨소.', { prev = false, next = true })
     end
 end
 

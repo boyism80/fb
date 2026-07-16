@@ -7,13 +7,13 @@ login::login(const fb::stream& params)
 {
     auto clone  = fb::stream{params};
     auto reader = fb::stream_reader<big_endian>{clone};
-    async::awaitable_get(this->deserialize(reader));
+    this->deserialize(reader);
 }
 #endif
 
-async::task<void> login::serialize(fb::stream_writer<big_endian>& writer) const
+void login::serialize(fb::stream_writer<big_endian>& writer) const
 {
-    co_await header::serialize(writer);
+    header::serialize(writer);
     writer.write<uint8_t>(opcode);
     writer.write<uint8_t>(this->enc_type);
     writer.write<uint8_t>(this->key_size);
@@ -31,9 +31,9 @@ async::task<void> login::serialize(fb::stream_writer<big_endian>& writer) const
     }
 }
 
-async::task<void> login::deserialize(fb::stream_reader<big_endian>& reader)
+void login::deserialize(fb::stream_reader<big_endian>& reader)
 {
-    co_await header::deserialize(reader);
+    header::deserialize(reader);
     // base
     this->enc_type = reader.read<uint8_t>();
     this->key_size = reader.read<uint8_t>();

@@ -26,6 +26,7 @@ async::task<bool> whisper::handle(fb::socket<character>& session, game_reqs::whi
         co_return true;
     }
 
+    auto error = std::optional<std::string>{};
     try
     {
         co_await me->whisper(request.name, request.message);
@@ -35,9 +36,14 @@ async::task<bool> whisper::handle(fb::socket<character>& session, game_reqs::whi
     }
     catch (std::exception& e)
     {
+        error = e.what();
+    }
+
+    if (error.has_value())
+    {
         auto ptr = weak.lock();
         if (ptr != nullptr)
-            ptr->message(e.what(), MESSAGE_TYPE::NOTIFY);
+            ptr->message(error.value(), MESSAGE_TYPE::NOTIFY);
     }
     co_return true;
 }

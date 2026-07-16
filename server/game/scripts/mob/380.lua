@@ -1,5 +1,5 @@
 -- mob: 일본밀정'유
 -- 일본밀정'유 사망
-function ON_MOB_DIE_380(me, you)
-
-end
+-- function ON_MOB_DIE_380(me)
+--
+-- end

@@ -5,6 +5,6 @@ function ON_MOB_ATTACK_1033(me, you)
 end
 
 -- 도삭산청의태자 사망
-function ON_MOB_DIE_1033(me, you)
-
-end
+-- function ON_MOB_DIE_1033(me)
+--
+-- end

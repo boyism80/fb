@@ -26,18 +26,14 @@ struct WriteSystemStorageBox FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Ta
   typedef WriteSystemStorageBoxBuilder Builder;
   enum FlatBuffersVTableOffset FLATBUFFERS_VTABLE_UNDERLYING_TYPE {
     VT_WORLD = 4,
-    VT_USER = 6,
-    VT_TITLE = 8,
-    VT_MESSAGE = 10,
-    VT_ATTACHMENTS = 12,
-    VT_EXPIRE_DATE = 14,
-    VT_EXTERNAL_REF = 16
+    VT_TITLE = 6,
+    VT_MESSAGE = 8,
+    VT_ATTACHMENTS = 10,
+    VT_EXPIRE_DATE = 12,
+    VT_EXTERNAL_REF = 14
   };
   uint32_t world() const {
     return GetField<uint32_t>(VT_WORLD, 0);
-  }
-  uint32_t user() const {
-    return GetField<uint32_t>(VT_USER, 0);
   }
   const ::flatbuffers::String *title() const {
     return GetPointer<const ::flatbuffers::String *>(VT_TITLE);
@@ -57,7 +53,6 @@ struct WriteSystemStorageBox FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Ta
   bool Verify(::flatbuffers::Verifier &verifier) const {
     return VerifyTableStart(verifier) &&
            VerifyField<uint32_t>(verifier, VT_WORLD, 4) &&
-           VerifyField<uint32_t>(verifier, VT_USER, 4) &&
            VerifyOffset(verifier, VT_TITLE) &&
            verifier.VerifyString(title()) &&
            VerifyOffset(verifier, VT_MESSAGE) &&
@@ -78,9 +73,6 @@ struct WriteSystemStorageBoxBuilder {
   ::flatbuffers::uoffset_t start_;
   void add_world(uint32_t world) {
     fbb_.AddElement<uint32_t>(WriteSystemStorageBox::VT_WORLD, world, 0);
-  }
-  void add_user(uint32_t user) {
-    fbb_.AddElement<uint32_t>(WriteSystemStorageBox::VT_USER, user, 0);
   }
   void add_title(::flatbuffers::Offset<::flatbuffers::String> title) {
     fbb_.AddOffset(WriteSystemStorageBox::VT_TITLE, title);
@@ -111,7 +103,6 @@ struct WriteSystemStorageBoxBuilder {
 inline ::flatbuffers::Offset<WriteSystemStorageBox> CreateWriteSystemStorageBox(
     ::flatbuffers::FlatBufferBuilder &_fbb,
     uint32_t world = 0,
-    uint32_t user = 0,
     ::flatbuffers::Offset<::flatbuffers::String> title = 0,
     ::flatbuffers::Offset<::flatbuffers::String> message = 0,
     ::flatbuffers::Offset<::flatbuffers::String> attachments = 0,
@@ -123,7 +114,6 @@ inline ::flatbuffers::Offset<WriteSystemStorageBox> CreateWriteSystemStorageBox(
   builder_.add_attachments(attachments);
   builder_.add_message(message);
   builder_.add_title(title);
-  builder_.add_user(user);
   builder_.add_world(world);
   return builder_.Finish();
 }
@@ -131,7 +121,6 @@ inline ::flatbuffers::Offset<WriteSystemStorageBox> CreateWriteSystemStorageBox(
 inline ::flatbuffers::Offset<WriteSystemStorageBox> CreateWriteSystemStorageBoxDirect(
     ::flatbuffers::FlatBufferBuilder &_fbb,
     uint32_t world = 0,
-    uint32_t user = 0,
     const char *title = nullptr,
     const char *message = nullptr,
     const char *attachments = nullptr,
@@ -145,7 +134,6 @@ inline ::flatbuffers::Offset<WriteSystemStorageBox> CreateWriteSystemStorageBoxD
   return fb::protocol::internal::request::raw::CreateWriteSystemStorageBox(
       _fbb,
       world,
-      user,
       title__,
       message__,
       attachments__,

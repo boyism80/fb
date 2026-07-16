@@ -106,6 +106,13 @@ table Spell {
     next: string;
 }
 
+table MatchmakingSkill {
+    user: uint;
+    match_type: uint;
+    mu: double;
+    sigma: double;
+}
+
 table Buff
 {
     model: uint;
@@ -261,7 +268,6 @@ table StorageWriteEntry {
 
 table SystemStorageBox {
     id: uint;
-    user: uint;
     title: string;
     message: string;
     attachments: string;
@@ -276,8 +282,8 @@ table SavePayload {
     marriage: Marriage;
     items: [Item];
     spells: [Spell];
+    matchmaking_skills: [MatchmakingSkill];
     achievements: [Achievement];
     quests: [Quest];
-    storage_boxes: [StorageBox];
     marketplace_pendings: [MarketplacePending];
 }

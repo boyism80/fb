@@ -14,9 +14,9 @@ spell_buff::spell_buff(const fb::game::buff& buff) :
 #endif
 
 #ifndef BOT
-async::task<void> spell_buff::serialize(fb::stream_writer<big_endian>& writer) const
+void spell_buff::serialize(fb::stream_writer<big_endian>& writer) const
 {
-    co_await header::serialize(writer);
+    header::serialize(writer);
     writer.write<uint8_t>(opcode);
     writer.write<std::string>(this->name);
     auto duration_ms = this->duration.total_milliseconds();
@@ -25,9 +25,9 @@ async::task<void> spell_buff::serialize(fb::stream_writer<big_endian>& writer) c
     writer.write<uint32_t>(static_cast<uint32_t>(duration_ms / 1000));
 }
 #else
-async::task<void> spell_buff::deserialize(fb::stream_reader<big_endian>& reader)
+void spell_buff::deserialize(fb::stream_reader<big_endian>& reader)
 {
-    co_await header::deserialize(reader);
+    header::deserialize(reader);
     this->name     = reader.read<std::string, uint8_t>();
     this->duration = fb::model::timespan{std::chrono::seconds(reader.read<uint32_t>())};
 }

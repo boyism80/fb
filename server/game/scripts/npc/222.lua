@@ -8,7 +8,7 @@ local function marriage_npc(me, npc)
         return
     end
 
-    if selected == 0 then
+    if selected == 1 then
         if m.married then
             me:dialog(npc, '이미 결혼을 하셨습니다.')
             return
@@ -41,7 +41,7 @@ local function marriage_npc(me, npc)
         end
 
         if found == nil then
-            me:dialog(npc, name .. '님은 현재 접속 중이 아닙니다.')
+            me:dialog(npc, name .. '님은 근처에 없습니다.')
             return
         end
 
@@ -69,20 +69,21 @@ local function marriage_npc(me, npc)
             return
         end
 
+        me:dialog(npc, string.format('%s님에게 의사를 묻고 있습니다.', found:name()), { immediate = true })
         local yes_or_no = found:menu(npc, string.format('정말 %s님과 결혼하시겠습니까?', me:name()), { '예', '아뇨' })
-        if yes_or_no == 0 then
+        if yes_or_no == 1 then
             local err = me:marry(found)
             if err ~= nil then
-                me:dialog(npc, err)
-                found:dialog(npc, err)
+                me:dialog(npc, err, { immediate = true })
+                found:dialog(npc, err, { immediate = true })
             else
-                me:dialog(npc, string.format('%s님과 결혼했습니다.', found:name()))
-                found:dialog(npc, string.format('%s님과 결혼했습니다.', me:name()))
+                me:dialog(npc, string.format('%s님과 결혼했습니다.', found:name()), { immediate = true })
+                found:dialog(npc, string.format('%s님과 결혼했습니다.', me:name()), { immediate = true })
             end
         else
             me:dialog(npc, string.format('%s님이 거절하셨습니다.', found:name()))
         end
-    elseif selected == 1 then
+    elseif selected == 2 then
         if not m.married then
             me:dialog(npc, '결혼을 한 사람만이 이혼을 할 수 있습니다.')
             return
@@ -94,15 +95,16 @@ local function marriage_npc(me, npc)
             return
         end
 
+        me:dialog(npc, string.format('%s님에게 의사를 묻고 있습니다.', spouse:name()), { immediate = true })
         local yes_or_no = spouse:menu(npc, string.format('%s님이 이혼을 요청했습니다. 수락하시겠습니까?', me:name()), { '예', '아뇨' })
-        if yes_or_no == 0 then
+        if yes_or_no == 1 then
             local err = me:divorce()
             if err ~= nil then
-                me:dialog(npc, err)
-                spouse:dialog(npc, err)
+                me:dialog(npc, err, { immediate = true })
+                spouse:dialog(npc, err, { immediate = true })
             else
-                me:dialog(npc, '이혼이 완료되었습니다. 7일 후 재혼이 가능합니다.')
-                spouse:dialog(npc, '이혼이 완료되었습니다. 7일 후 재혼이 가능합니다.')
+                me:dialog(npc, '이혼이 완료되었습니다. 7일 후 재혼이 가능합니다.', { immediate = true })
+                spouse:dialog(npc, '이혼이 완료되었습니다. 7일 후 재혼이 가능합니다.', { immediate = true })
             end
         else
             me:dialog(npc, string.format('%s님이 거절하셨습니다.', spouse:name()))

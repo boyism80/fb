@@ -5,6 +5,6 @@ function ON_MOB_ATTACK_1147(me, you)
 end
 
 -- 선중 사망
-function ON_MOB_DIE_1147(me, you)
-
-end
+-- function ON_MOB_DIE_1147(me)
+--
+-- end

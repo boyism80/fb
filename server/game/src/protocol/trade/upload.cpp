@@ -11,9 +11,9 @@ trade_upload::trade_upload(uint8_t index, const fb::game::item& item, bool mine)
 #endif
 
 #ifndef BOT
-async::task<void> trade_upload::serialize(fb::stream_writer<big_endian>& writer) const
+void trade_upload::serialize(fb::stream_writer<big_endian>& writer) const
 {
-    co_await header::serialize(writer);
+    header::serialize(writer);
     writer.write<uint8_t>(opcode);
     writer.write<uint8_t>(0x02);
     writer.write<bool>(!this->mine);
@@ -24,9 +24,9 @@ async::task<void> trade_upload::serialize(fb::stream_writer<big_endian>& writer)
     writer.write<uint8_t>(0x00);
 }
 #else
-async::task<void> trade_upload::deserialize(fb::stream_reader<big_endian>& reader)
+void trade_upload::deserialize(fb::stream_reader<big_endian>& reader)
 {
-    co_await header::deserialize(reader);
+    header::deserialize(reader);
     reader.read<uint8_t>(); // 0x02
     this->mine  = !reader.read<bool>();
     this->index = reader.read<uint8_t>();

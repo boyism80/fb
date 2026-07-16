@@ -13,9 +13,9 @@ update::update(const std::vector<fb::game::object*>& objects) :
 #endif
 
 #ifndef BOT
-async::task<void> update::serialize(fb::stream_writer<big_endian>& writer) const
+void update::serialize(fb::stream_writer<big_endian>& writer) const
 {
-    co_await header::serialize(writer);
+    header::serialize(writer);
     writer.write<uint8_t>(opcode);
     writer.write<uint16_t>((uint16_t)this->objects.size());
 
@@ -35,9 +35,9 @@ async::task<void> update::serialize(fb::stream_writer<big_endian>& writer) const
     writer.write<uint8_t>(0);
 }
 #else
-async::task<void> update::deserialize(fb::stream_reader<big_endian>& reader)
+void update::deserialize(fb::stream_reader<big_endian>& reader)
 {
-    co_await header::deserialize(reader);
+    header::deserialize(reader);
 
     // Read object count
     this->object_count = reader.read<uint16_t>();

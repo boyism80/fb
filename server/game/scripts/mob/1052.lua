@@ -5,6 +5,6 @@ function ON_MOB_ATTACK_1052(me, you)
 end
 
 -- 뇌랑 사망
-function ON_MOB_DIE_1052(me, you)
-
-end
+-- function ON_MOB_DIE_1052(me)
+--
+-- end

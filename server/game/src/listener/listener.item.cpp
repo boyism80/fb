@@ -27,7 +27,7 @@ void listener_impl::on_item_active(character& me, item& item)
 void listener_impl::on_item_throws(character& me, item& item, const fb::model::point16_t& to)
 {
     if (me.position() != to)
-        std::ignore = this->server.send(me, game_resp::item_throws(me, item, to), scope::PIVOT);
+        this->server.send(me, game_resp::item_throws(me, item, to), scope::PIVOT);
     else
-        std::ignore = this->server.send(me, game_resp::action(me, ACTION::ATTACK, DURATION::THROW), scope::PIVOT);
+        this->server.send(me, game_resp::action(me, ACTION::ATTACK, DURATION::THROW), scope::PIVOT);
 }

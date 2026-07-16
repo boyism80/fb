@@ -22,8 +22,8 @@ local function sample_clan(me, npc)
             return
         end
 
-        if selected == 0 then
-            local title = me:input(npc, '문파 칭호 입력', '문파 칭호는', '입니다.', 12, true)
+        if selected == 1 then
+            local title = me:input(npc, '문파 칭호 입력', { top = '문파 칭호는', bottom = '입니다.', maxlen = 12, prev = true })
             clan = me:clan()
             if clan == nil then
                 me:dialog(npc, '클랜 없음')
@@ -36,7 +36,7 @@ local function sample_clan(me, npc)
             else
                 me:dialog(npc, '문파 칭호 변경 성공')
             end
-        elseif selected == 1 then
+        elseif selected == 2 then
             local error = me:destroy_clan()
             if error ~= nil then
                 me:dialog(npc, error)
@@ -44,7 +44,7 @@ local function sample_clan(me, npc)
                 me:dialog(npc, '클랜 제거 성공')
             end
 
-        elseif selected == 2 then
+        elseif selected == 3 then
             local map = me:map()
             if map == nil then
                 return
@@ -65,8 +65,9 @@ local function sample_clan(me, npc)
                 return
             end
 
+            me:dialog(npc, string.format('%s님에게 의사를 묻고 있습니다.', found:name()), { immediate = true })
             local yes_or_no = found:menu(npc, string.format('%s 문파에 가입?', clan_name), {'네', '아니오'})
-            if yes_or_no == 0 then
+            if yes_or_no == 1 then
                 clan = me:clan()
                 if clan == nil then
                     found:dialog(npc, '클랜 없음')
@@ -77,13 +78,13 @@ local function sample_clan(me, npc)
                 if error ~= nil then
                     found:dialog(npc, error)
                 else
-                    found:dialog(npc, string.format('%s 문파에 가입됨', clan_name))
-                    me:dialog(npc, string.format('%s가 승락함', found:name()))
+                    found:dialog(npc, string.format('%s 문파에 가입됨', clan_name), { immediate = true })
+                    me:dialog(npc, string.format('%s가 승락함', found:name()), { immediate = true })
                 end
             else
                 me:dialog(npc, string.format('%s가 거절함', found:name()))
             end
-        elseif selected == 3 then
+        elseif selected == 4 then
             local clan = me:clan()
             if clan == nil then
                 me:dialog(npc, '클랜 없음')
@@ -96,7 +97,7 @@ local function sample_clan(me, npc)
             else
                 me:dialog(npc, '클랜 탈퇴 성공')
             end
-        elseif selected == 4 then
+        elseif selected == 5 then
             local name = me:input(npc, '상대 이름 입력')
             clan = me:clan()
             if clan == nil then
@@ -110,7 +111,7 @@ local function sample_clan(me, npc)
             else
                 me:dialog(npc, '추방했음')
             end
-        elseif selected == 5 then
+        elseif selected == 6 then
             clan = me:clan()
             if clan == nil then
                 me:dialog(npc, '클랜 없음')
@@ -125,7 +126,7 @@ local function sample_clan(me, npc)
             else
                 me:dialog(npc, '직책 변경 성공')
             end
-        elseif selected == 6 then
+        elseif selected == 7 then
             local message = me:input(npc, '내용')
             clan = me:clan()
             if clan == nil then

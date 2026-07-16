@@ -51,7 +51,7 @@ public:
         return this->_elements[index];
     }
 
-    virtual uint8_t add(std::shared_ptr<T> element)
+    uint8_t add(std::shared_ptr<T> element)
     {
         auto next_slot = this->next();
         if (next_slot != 0xFF)

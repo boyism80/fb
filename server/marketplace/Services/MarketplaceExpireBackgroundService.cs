@@ -196,11 +196,11 @@ namespace Marketplace.Services
                 ? string.Format(Fb.Model.ConstValue.String.MessageMarketplaceListingExpiredMessageWithFee.ToCSharpFormat(), itemName, listing.RemainingCount, registrationFee)
                 : string.Format(Fb.Model.ConstValue.String.MessageMarketplaceListingExpiredMessage.ToCSharpFormat(), itemName, listing.RemainingCount);
 
-            await storageService.CreateSystemStorageAsync(
+            await storageService.CreateStorageBoxAsync(
                 listing.World,
+                listing.SellerId,
                 Fb.Model.ConstValue.String.MessageMarketplaceListingExpiredTitle,
                 message,
-                listing.SellerId,
                 attachments: attachments,
                 externalRef: $"marketplace:expire:{listing.Id}");
 

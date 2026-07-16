@@ -24,11 +24,11 @@ function ON_ATTACK_29(me, item)
 end
 
 -- 얼음칼 사용 스크립트
-function ON_ACTIVATED_29(me, item)
-
-end
+-- function ON_ACTIVATED_29(me, item)
+--
+-- end
 
 -- 얼음칼 해제 스크립트
-function ON_DEACTIVATED_29(me, item)
-
-end
+-- function ON_DEACTIVATED_29(me, item)
+--
+-- end

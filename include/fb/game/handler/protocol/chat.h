@@ -21,8 +21,10 @@ public:
     async::task<bool> handle(fb::socket<character>& session, game_reqs::chat& request) override;
 
 private:
+    // clang-format off
     async::task<bool> try_command(character* ch, std::weak_ptr<character> weak, game_reqs::chat& request);
-    void handle_normal_chat(character* ch, game_reqs::chat& request, const std::shared_ptr<fb::game::map>& map);
+    void              handle_normal_chat(character* ch, game_reqs::chat& request, const std::shared_ptr<fb::game::map>& map);
+    // clang-format on
 };
 
 } // namespace fb::game::handler::protocol

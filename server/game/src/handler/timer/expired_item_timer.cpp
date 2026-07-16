@@ -13,23 +13,23 @@ async::task<void> expired_item_timer::handle(const fb::model::datetime& now, std
     auto thread = this->server.threads.at(id);
     auto params = thread->template data<thread_params>();
 
-    for (auto& [_, ch] : params->characters)
-    {
+    co_await params->characters.foreach_async([](auto& ch) -> async::task<void> {
         if (ch == nullptr)
-            continue;
+            co_return;
 
         if (ch->inited() == false)
-            continue;
+            co_return;
 
         try
         {
-            ch->items.remove_expired();
+            co_await ch->items.remove_expired();
         }
         catch (std::exception& e)
         {
             fb::logger::warn("expired_item_timer error for character {}: {}", ch->id, e.what());
         }
-    }
+        co_return;
+    });
 
     co_return;
 }

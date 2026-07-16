@@ -134,19 +134,28 @@ M.functions = {
     
     ['맵이동'] = {
         ['privilege'] = ROLE.ADMIN,
-        ['usage'] = '<맵이름> [x] [y] - 맵 이동',
+        ['usage'] = '<맵이름> [x] [y] [slot] - 맵 이동',
         ['command'] = function (me, args)
-            local map, x, y = table.unpack(args)
-            if not map then
-                me:message("사용법: /맵이동 <맵이름> [x] [y]")
+            local name, x, y, slot = table.unpack(args)
+            if not name then
+                me:message("사용법: /맵이동 <맵이름> [x] [y] [slot]")
                 return true
             end
-            
-            if name2map(map) == nil then
-                me:message(string.format("존재하지 않는 맵입니다: %s", map))
+
+            local model = name2map(name)
+            if model == nil then
+                me:message(string.format("존재하지 않는 맵입니다: %s", name))
                 return true
             end
-            
+
+            if slot ~= nil then
+                slot = tonumber(slot)
+                if not slot or slot < 1 then
+                    me:message("슬롯은 1 이상의 숫자여야 합니다.")
+                    return true
+                end
+            end
+
             if x ~= nil and y ~= nil then
                 x = tonumber(x)
                 y = tonumber(y)
@@ -154,9 +163,23 @@ M.functions = {
                     me:message("좌표는 숫자여야 합니다.")
                     return true
                 end
-                me:map(map, x, y)
+            end
+
+            local map = model
+            if slot ~= nil then
+                map = model:instance(slot)
+                if map == nil then
+                    me:message(string.format("인스턴스 맵을 생성할 수 없습니다: %s (slot %d)", name, slot))
+                    return true
+                end
+            end
+
+            -- Without slot always land on S; never CAPACITY/GROUP auto-route to an unknown C.
+            local opts = { skip_instance_rule = true }
+            if x ~= nil and y ~= nil then
+                me:map(map, x, y, opts)
             else
-                me:map(map)
+                me:map(map, opts)
             end
             return true
         end,
@@ -240,19 +263,33 @@ M.functions = {
     
     ['타이머'] = {
         ['privilege'] = ROLE.ADMIN,
-        ['usage'] = '<시간(초)> - 타이머 설정',
+        ['usage'] = '<시간(초)> [증가|감소] - 타이머 설정 (기본: 감소)',
         ['command'] = function (me, args)
-            local time = table.unpack(args)
-            if not time then
-                me:message("사용법: /타이머 <시간(초)>")
+            local time_arg = args[1]
+            local mode_arg = args[2]
+            if not time_arg then
+                me:message("사용법: /타이머 <시간(초)> [증가|감소]")
                 return true
             end
-            time = tonumber(time)
-            if not time or time <= 0 then
+            local time = tonumber(time_arg)
+            if not time or time < 0 then
                 me:message("시간은 0보다 큰 숫자여야 합니다.")
                 return true
             end
-            timer(time, true)
+
+            local decrease = true
+            if mode_arg then
+                if mode_arg == '증가' then
+                    decrease = false
+                elseif mode_arg == '감소' then
+                    decrease = true
+                else
+                    me:message("사용법: /타이머 <시간(초)> [증가|감소]")
+                    return true
+                end
+            end
+
+            me:timer(time, decrease)
             return true
         end,
     },
@@ -1494,27 +1531,33 @@ M.functions = {
         
         ['업적'] = {
             ['privilege'] = ROLE.ADMIN,
-            ['usage'] = '<텍스트> <아이콘> <색상> - 업적 추가',
+            ['usage'] = '<ID> <텍스트> <아이콘> <색상> - 업적 추가',
             ['command'] = function (me, args)
-                local text, icon, color = table.unpack(args)
-                if not text or not icon or not color then
-                    me:message("사용법: /업적 <텍스트> <아이콘> <색상>")
+                local id, text, icon, color = table.unpack(args)
+                if not id or not text or not icon or not color then
+                    me:message("사용법: /업적 <ID> <텍스트> <아이콘> <색상>")
+                    return true
+                end
+
+                id = tonumber(id)
+                if id == nil or id < 0 then
+                    me:message("업적 ID는 0 이상의 숫자여야 합니다.")
                     return true
                 end
                 
                 icon = tonumber(icon)
-                if not icon or icon < 0 then
+                if icon == nil or icon < 0 then
                     me:message("아이콘 ID는 0 이상의 숫자여야 합니다.")
                     return true
                 end
                 
                 color = tonumber(color)
-                if not color or color < 0 then
+                if color == nil or color < 0 then
                     me:message("색상 ID는 0 이상의 숫자여야 합니다.")
                     return true
                 end
                 
-                me:push_achievement(text, icon, color)
+                me:push_achievement(id, text, icon, color)
                 return true
             end,
         },
@@ -1633,20 +1676,23 @@ M.functions = {
                     return true
                 end
                 step = tonumber(step)
-                if not step or step < 0 then
+                if step == nil or step < 0 then
                     me:message("스텝은 0 이상의 숫자여야 합니다.")
                     return true
                 end
                 progress = tonumber(progress)
-                if not progress or progress < 0 then
+                if progress == nil or progress < 0 then
                     me:message("진행도는 0 이상의 숫자여야 합니다.")
                     return true
                 end
-                param = tostring(param)
+                param = tostring(param or '')
                 local quest = me:quest(id)
                 if not quest then
-                    me:message("해당 퀘스트를 보유하고 있지 않습니다. 퀘스트를 먼저 수락하세요.")
-                    return true
+                    quest = me:start_quest(id)
+                    if not quest then
+                        me:message("퀘스트를 시작할 수 없습니다.")
+                        return true
+                    end
                 end
                 quest:step(step)
                 quest:progress(progress)
@@ -1863,6 +1909,26 @@ M.functions = {
                     end
                     drop_rate_multiplier(value)
                     me:message(string.format("드롭률 배율을 %.2fx로 설정했습니다. (모든 게임 서버에 적용됩니다)", value), MESSAGE_TYPE.BROWN)
+                end
+                return true
+            end,
+        },
+
+        ['HTTP지연'] = {
+            ['privilege'] = ROLE.ADMIN,
+            ['usage'] = '[밀리초] - HTTP 응답 지연 조회/설정 (테스트용)',
+            ['command'] = function (me, args)
+                if #args == 0 then
+                    local delay = http_response_delay()
+                    me:message(string.format("현재 HTTP 응답 지연: %dms", delay), MESSAGE_TYPE.BROWN)
+                else
+                    local value = tonumber(table.unpack(args))
+                    if not value or value < 0 then
+                        me:message("지연 시간은 0 이상의 숫자여야 합니다.")
+                        return true
+                    end
+                    http_response_delay(value)
+                    me:message(string.format("HTTP 응답 지연을 %dms로 설정했습니다. (이 서버에만 적용됩니다)", value), MESSAGE_TYPE.BROWN)
                 end
                 return true
             end,

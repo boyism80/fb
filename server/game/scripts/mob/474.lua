@@ -5,6 +5,6 @@ function ON_MOB_ATTACK_474(me, you)
 end
 
 -- 문위 사망
-function ON_MOB_DIE_474(me, you)
-
-end
+-- function ON_MOB_DIE_474(me)
+--
+-- end

@@ -9,9 +9,9 @@ position::position(const fb::game::character& ch) :
 #endif
 
 #ifndef BOT
-async::task<void> position::serialize(fb::stream_writer<big_endian>& writer) const
+void position::serialize(fb::stream_writer<big_endian>& writer) const
 {
-    co_await header::serialize(writer);
+    header::serialize(writer);
     writer.write<uint8_t>(opcode);
     writer.write<uint16_t>(this->ch.x()); // Actual x position
     writer.write<uint16_t>(this->ch.y()); // Actual y position
@@ -39,9 +39,9 @@ async::task<void> position::serialize(fb::stream_writer<big_endian>& writer) con
     writer.write<uint8_t>(0x00);
 }
 #else
-async::task<void> position::deserialize(fb::stream_reader<big_endian>& reader)
+void position::deserialize(fb::stream_reader<big_endian>& reader)
 {
-    co_await header::deserialize(reader);
+    header::deserialize(reader);
     this->abs.x = reader.read<uint16_t>();
     this->abs.y = reader.read<uint16_t>();
     this->rel.x = reader.read<uint16_t>();

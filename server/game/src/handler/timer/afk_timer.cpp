@@ -20,43 +20,34 @@ async::task<void> afk_timer::handle(const fb::model::datetime& now, std::thread:
     auto thread = this->server.threads.at(id);
     auto params = thread->template data<thread_params>();
 
-    // Iterate through all characters in this thread
-    for (auto& [uid, ch] : params->characters)
-    {
+    co_await params->characters.foreach_async([now, idle_threshold, action_interval](auto& ch) -> async::task<void> {
         if (ch == nullptr)
-            continue;
+            co_return;
 
-        // Check if socket is still open
         auto socket_ptr = ch->socket_ptr();
         if (socket_ptr == nullptr || !socket_ptr->is_open())
-            continue;
+            co_return;
 
-        // Calculate elapsed time since last packet
         const auto& last_packet_time = socket_ptr->last_packet_time();
         auto        elapsed          = now - last_packet_time;
-
-        // Check if 5 minutes (300 seconds) have passed since last packet
         if (elapsed < idle_threshold)
-            continue;
+            co_return;
 
-        // Check if 10 seconds have passed since last idle action
         auto action_elapsed = now - ch->last_afk_time();
-
         if (action_elapsed < action_interval)
-            continue;
+            co_return;
 
-        // Execute attack action (temporary, will be changed to SLEEP when available)
         try
         {
             ch->action(ACTION::SLEEP, DURATION::EMOTION);
-            // Update last idle action time only for timer-triggered actions
             ch->update_last_afk_time();
         }
         catch (std::exception& e)
         {
             fb::logger::fatal("afk_timer error for character {}: {}", ch->id, e.what());
         }
-    }
+        co_return;
+    });
 
     co_return;
 }

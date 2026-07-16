@@ -13,14 +13,14 @@ function ON_CAST_3059(me, you, sp)
 end
 
 -- 중독 버프 효과
-function ON_BUFF_3059(me, sp)
-
-end
+-- function ON_BUFF_3059(me, sp)
+--
+-- end
 
 -- 중독 버프 해제 효과
-function ON_UNBUFF_3059(me, sp)
-
-end
+-- function ON_UNBUFF_3059(me, sp)
+--
+-- end
 
 -- 중독 지속 효과
 function ON_CONCAST_3059(me, caster, buff)
@@ -28,5 +28,5 @@ function ON_CONCAST_3059(me, caster, buff)
     if damage > me:hp() - 100 then
         damage = math.max(0, me:hp() - 100)
     end
-    me:damage(damage, caster, { critical = false, rate = caster:skill_damage_rate() / 1000.0, physical = false })
+    caster:damage_to(me, damage, { critical = false, rate = caster:skill_damage_rate() / 1000.0, physical = false })
 end

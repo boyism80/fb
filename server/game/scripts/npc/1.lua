@@ -1,4 +1,4 @@
 -- npc: 비도
-function NPC_1(me, npc)
-    
-end
+-- function NPC_1(me, npc)
+--
+-- end

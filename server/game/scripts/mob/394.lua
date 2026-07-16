@@ -1,5 +1,5 @@
 -- mob: 연청달걀귀신
 -- 연청달걀귀신 사망
-function ON_MOB_DIE_394(me, you)
-
-end
+-- function ON_MOB_DIE_394(me)
+--
+-- end

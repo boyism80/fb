@@ -3,9 +3,9 @@
 namespace fb::protocol::game::response {
 
 #ifndef BOT
-async::task<void> ad::serialize(fb::stream_writer<big_endian>& writer) const
+void ad::serialize(fb::stream_writer<big_endian>& writer) const
 {
-    co_await header::serialize(writer);
+    header::serialize(writer);
     writer.write<uint8_t>(opcode);
     writer.write<std::string, uint16_t>(this->url);
     writer.write<uint16_t>(this->width);
@@ -14,9 +14,9 @@ async::task<void> ad::serialize(fb::stream_writer<big_endian>& writer) const
     writer.write<uint8_t>(0x00);
 }
 #else
-async::task<void> ad::deserialize(fb::stream_reader<big_endian>& reader)
+void ad::deserialize(fb::stream_reader<big_endian>& reader)
 {
-    co_await header::deserialize(reader);
+    header::deserialize(reader);
     this->url    = reader.read<std::string, uint16_t>();
     this->width  = reader.read<uint16_t>();
     this->height = reader.read<uint16_t>();

@@ -12,9 +12,6 @@ bool system_storage_box::expired(const fb::model::datetime& now) const
 
 bool system_storage_box::eligible_for(const character& ch) const
 {
-    if (this->user.has_value())
-        return ch.id == this->user.value();
-
     return ch.created_date() < this->created_date;
 }
 

@@ -22,6 +22,10 @@ struct map
     static int builtin_at(lua_State* L);
     static int builtin_block(lua_State* L);
     static int builtin_bulk_update(lua_State* L);
+    static int builtin_instance(lua_State* L);
+    static int builtin_slot(lua_State* L);
+    static int builtin_clone(lua_State* L);
+    static int builtin_destroy(lua_State* L);
 };
 
 } // namespace fb::game::builtin

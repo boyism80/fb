@@ -1,0 +1,62 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: matchmaking
+  namespace: fb
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: matchmaking
+  template:
+    metadata:
+      labels:
+        app: matchmaking
+    spec:
+      containers:
+        - name: matchmaking
+          image: fb/matchmaking:local
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 80
+              name: matchmaking
+          env:
+            - name: ASPNETCORE_ENVIRONMENT
+              value: k8s
+            - name: ASPNETCORE_HTTP_PORTS
+              value: "80"
+          volumeMounts:
+            - name: config-volume
+              mountPath: /app/appsettings.k8s.json
+              subPath: appsettings.k8s.json
+          startupProbe:
+            httpGet:
+              path: /health
+              port: 80
+            initialDelaySeconds: 10
+            periodSeconds: 5
+            failureThreshold: 30
+          readinessProbe:
+            httpGet:
+              path: /health
+              port: 80
+            periodSeconds: 5
+      volumes:
+        - name: config-volume
+          configMap:
+            name: matchmaking
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: matchmaking
+  namespace: fb
+spec:
+  type: NodePort
+  selector:
+    app: matchmaking
+  ports:
+    - name: matchmaking
+      port: 80
+      targetPort: matchmaking
+      nodePort: 30240

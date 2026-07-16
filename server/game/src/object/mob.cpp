@@ -8,11 +8,18 @@
 using namespace fb::game;
 using table = fb::model::table;
 
-rezen::rezen(server& server, const fb::model::mob_spawn& model) :
+rezen::rezen(server& server, const fb::model::mob_spawn& model, const std::shared_ptr<fb::game::map>& map) :
     _server(server),
+    _map(map),
     model(model)
 {
     this->_respawn_time = this->_server.now();
+}
+
+uint32_t rezen::map_id() const
+{
+    auto map = this->_map.lock();
+    return map != nullptr ? map->id : 0;
 }
 
 void rezen::decrease()
@@ -26,10 +33,10 @@ void rezen::decrease()
 
 async::task<void> rezen::spawn(std::thread::id thread_id)
 {
-    if (this->_server.maps.contains(this->model.parent) == false)
+    auto map = this->_map.lock();
+    if (map == nullptr)
         co_return;
 
-    auto map = this->_server.maps[this->model.parent];
     if (map->active == false)
         co_return;
 
@@ -65,7 +72,6 @@ async::task<void> rezen::spawn(std::thread::id thread_id)
         {
             auto width    = this->model.end.x - this->model.begin.x;
             auto height   = this->model.end.y - this->model.begin.y;
-            auto map      = this->_server.maps[this->model.parent];
             auto position = fb::model::point16_t(this->model.begin.x + (width > 0 ? std::rand() % width : 0),
                                                  this->model.begin.y + (height > 0 ? std::rand() % height : 0));
 
@@ -117,8 +123,10 @@ mob::mob(fb::game::server& server, const fb::model::mob& model, const initial_pa
     this->hidden(!params.alive);
     if (params.alive)
     {
-        this->stat.heal(this->stat.base_hp());
-        this->stat.mp_up(this->stat.base_mp());
+        // Do not notify during construction: server::send uses weak_from_this
+        // which throws bad_weak_ptr before make_shared finishes.
+        this->stat.hp(this->stat.base_hp(), false);
+        this->stat.mp_up(this->stat.base_mp(), nullptr, false);
     }
 }
 
@@ -153,6 +161,7 @@ async::task<bool> mob::call_script()
 
     if (this->_attack_thread->func(func) == false)
     {
+        fb::lua::report_func_missing(path, func);
         this->_attack_thread->release();
         this->_attack_thread = nullptr;
         co_return true;
@@ -401,103 +410,36 @@ uint32_t mob::normal_attack_damage(MOB_SIZE size) const
     return model.damage.min + (std::rand() % difference);
 }
 
-void mob::on_die(std::shared_ptr<object> from, DESTROY_TYPE destroy_type)
+void mob::kill(DESTROY_TYPE destroy_type)
 {
     this->assert_thread();
-    this->listener.on_dead(*this, from);
+    // Destroy must be awaited by the caller (settle_deaths / settle_kills / ride).
+    life::kill(destroy_type);
+}
 
-    // Drop items when mob dies
-    std::ignore = this->drop_items();
+async::task<void> mob::damage_to(const damage_list& targets)
+{
+    co_await this->damage_to(targets, damage_opts{});
+    co_return;
+}
 
-    // Handle spawned mob ownership
+async::task<void> mob::damage_to(const damage_list& targets, const damage_opts& opts)
+{
+    this->assert_thread();
+
+    // Damage is always applied as this mob (not redirected to owner).
+    auto dead = this->damage_targets(targets, opts);
+    if (dead.empty())
+        co_return;
+
     auto owner = this->owner.lock();
     if (owner != nullptr)
     {
-        owner->detach_spawned_mob(*this);
-        return;
+        co_await owner->settle_kills(std::move(dead));
+        co_return;
     }
 
-    // Handle experience distribution
-    if (from != nullptr && from->is(OBJECT_TYPE::MOB))
-        from = std::static_pointer_cast<fb::game::mob>(from)->owner.lock();
-
-    if (from == nullptr)
-        return;
-
-    if (owner == nullptr && from->is(OBJECT_TYPE::CHARACTER))
-    {
-        auto& ch       = static_cast<character&>(*from);
-        auto& group_id = ch.group_id();
-        auto  map      = ch.map();
-        auto  exp      = this->based<fb::model::mob>().exp;
-
-        if (group_id.has_value() && map != nullptr)
-        {
-            // Group experience distribution
-            auto server = &ch.server;
-            {
-                auto  guard      = server->groups.enter_read(group_id.value());
-                auto& group      = guard.value();
-                auto  nears      = group->nears(*map, ch.position());
-                auto  size       = nears.size();
-                auto  divide_exp = exp / size;
-                for (auto& member : nears)
-                {
-                    auto shared_ptr = member.lock();
-                    if (shared_ptr == nullptr)
-                        continue;
-
-                    shared_ptr->add_exp(divide_exp, true, true);
-                }
-            }
-        }
-        else
-        {
-            // Solo experience
-            ch.add_exp(exp, true, true);
-        }
-    }
-    std::ignore = this->destroy(destroy_type);
-}
-
-void mob::kill(std::shared_ptr<object> from, DESTROY_TYPE destroy_type)
-{
-    this->assert_thread();
-    life::kill(from, destroy_type);
-
-    auto& model = this->based<fb::model::mob>();
-    auto  path  = std::format("scripts/mob/{}.lua", model.id);
-    auto  func  = std::format("ON_MOB_DIE_{}", model.id);
-
-    auto lua = this->server.lua.new_ctx_guard(path, func);
-    if (!lua)
-    {
-        this->on_die(from, destroy_type);
-        return;
-    }
-
-    lua->pushobject(*this);
-    if (from != nullptr)
-        lua->pushobject(from);
-    else
-        lua->pushnil();
-
-    this->invincible(true);
-    async::awaitable_then(lua->call(2), [this, from, destroy_type](async::awaitable_result<bool> result) {
-        try
-        {
-            result();
-            this->on_die(from, destroy_type);
-        }
-        catch (std::exception& e)
-        {
-            fb::logger::fatal("error in mob on_die: {}", e.what());
-        }
-        catch (...)
-        {
-            fb::logger::fatal("unknown error in mob on_die");
-        }
-    });
+    co_await this->settle_deaths(std::move(dead));
 }
 
 async::task<void> mob::drop_items()

@@ -4,6 +4,7 @@
 #include <fb/logger.h>
 #include <fb/game/protocol.h>
 #include <fb/config.h>
+#include <chrono>
 #include <format>
 
 using namespace std::chrono_literals;
@@ -58,10 +59,38 @@ void bot_integration_test::notify_ready()
 
 async::task<void> bot_integration_test::on_finished()
 {
-    for (auto& bot : this->get_test_bots())
+    auto                  bots = this->get_test_bots();
+    std::vector<uint32_t> bot_ids;
+    for (auto& bot : bots)
     {
-        if (bot)
-            bot->close();
+        if (bot == nullptr)
+            continue;
+
+        bot_ids.push_back(bot->id);
+        bot->close();
+    }
+
+    auto deadline = std::chrono::steady_clock::now() + 10s;
+    while (true)
+    {
+        auto remaining = size_t{0};
+        for (auto id : bot_ids)
+        {
+            if (this->controller.contains(id))
+                remaining++;
+        }
+
+        if (remaining == 0)
+            break;
+
+        if (std::chrono::steady_clock::now() >= deadline)
+            break;
+
+        auto thread = this->controller.container.threads.at(0);
+        if (thread == nullptr)
+            break;
+
+        co_await thread->sleep(50ms);
     }
 
     fb::logger::debug("{} test finished - all bots disconnected", this->name());

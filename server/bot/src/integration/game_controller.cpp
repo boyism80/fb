@@ -75,6 +75,7 @@ void game_bot_controller::initialize()
         }
     };
 
+    // Sync boundary between bot init thread and async-cpp (model loader).
     async::awaitable_get(fb::model::loader(this->container).run());
 
     // Set up integration test timer with different interval (slower for detailed testing)

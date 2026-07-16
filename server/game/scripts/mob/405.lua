@@ -1,5 +1,5 @@
 -- mob: 연갈충
 -- 연갈충 사망
-function ON_MOB_DIE_405(me, you)
-
-end
+-- function ON_MOB_DIE_405(me)
+--
+-- end

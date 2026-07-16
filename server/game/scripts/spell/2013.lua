@@ -13,11 +13,11 @@ function ON_CAST_2013(me, sp)
 end
 
 -- 분신 버프 효과
-function ON_BUFF_2013(me, sp)
-
-end
+-- function ON_BUFF_2013(me, sp)
+--
+-- end
 
 -- 분신 버프 해제 효과
-function ON_UNBUFF_2013(me, sp)
-
-end
+-- function ON_UNBUFF_2013(me, sp)
+--
+-- end

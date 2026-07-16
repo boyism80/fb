@@ -1,6 +1,6 @@
 -- npc: 금화상인
 function NPC_386(me, npc)
-    local button = me:dialog(npc, "안녕하세요? 금화를 특별한 아이템으로 교환해 드리는 금화교환 도우미라고 해요.", false, true)
+    local button = me:dialog(npc, "안녕하세요? 금화를 특별한 아이템으로 교환해 드리는 금화교환 도우미라고 해요.", { prev = false, next = true })
     if button == DIALOG_RESULT.QUIT then
         return
     end
@@ -12,10 +12,10 @@ function NPC_386(me, npc)
         "경험치 관련",
         "편의 아이템",
         "(기간한정) 금화 아이템 환불"
-    }, false)
+    }, { prev = false })
     if list_btn == DIALOG_RESULT.QUIT or sel == nil then
         return
     end
 
-    me:dialog(npc, "준비중입니다.", false, false)
+    me:dialog(npc, "준비중입니다.", { prev = false, next = false })
 end

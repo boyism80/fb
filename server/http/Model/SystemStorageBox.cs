@@ -15,7 +15,6 @@ namespace Http.Model
 
     public class SystemStorageBox : SystemStorageBoxKey, IModel
     {
-        public uint? User { get; set; }
         public string Title { get; set; } = string.Empty;
         public string Message { get; set; } = string.Empty;
         public List<Dsl> Attachments { get; set; } = new List<Dsl>();

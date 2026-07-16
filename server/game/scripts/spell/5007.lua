@@ -1,5 +1,5 @@
 -- spell: 감시
 -- 감시 캐스팅
-function ON_CAST_5007(me, spell)
-
-end
+-- function ON_CAST_5007(me, spell)
+--
+-- end

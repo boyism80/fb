@@ -18,9 +18,9 @@ static_assert(FLATBUFFERS_VERSION_MAJOR == 25 &&
 #include "fb.protocol.internal.item_generated.h"
 #include "fb.protocol.internal.marketplacepending_generated.h"
 #include "fb.protocol.internal.marriage_generated.h"
+#include "fb.protocol.internal.matchmakingskill_generated.h"
 #include "fb.protocol.internal.quest_generated.h"
 #include "fb.protocol.internal.spell_generated.h"
-#include "fb.protocol.internal.storagebox_generated.h"
 
 namespace fb {
 namespace protocol {
@@ -37,9 +37,9 @@ struct SavePayload FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
     VT_MARRIAGE = 6,
     VT_ITEMS = 8,
     VT_SPELLS = 10,
-    VT_ACHIEVEMENTS = 12,
-    VT_QUESTS = 14,
-    VT_STORAGE_BOXES = 16,
+    VT_MATCHMAKING_SKILLS = 12,
+    VT_ACHIEVEMENTS = 14,
+    VT_QUESTS = 16,
     VT_MARKETPLACE_PENDINGS = 18
   };
   const fb::protocol::internal::raw::Character *character() const {
@@ -54,14 +54,14 @@ struct SavePayload FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
   const ::flatbuffers::Vector<::flatbuffers::Offset<fb::protocol::internal::raw::Spell>> *spells() const {
     return GetPointer<const ::flatbuffers::Vector<::flatbuffers::Offset<fb::protocol::internal::raw::Spell>> *>(VT_SPELLS);
   }
+  const ::flatbuffers::Vector<::flatbuffers::Offset<fb::protocol::internal::raw::MatchmakingSkill>> *matchmaking_skills() const {
+    return GetPointer<const ::flatbuffers::Vector<::flatbuffers::Offset<fb::protocol::internal::raw::MatchmakingSkill>> *>(VT_MATCHMAKING_SKILLS);
+  }
   const ::flatbuffers::Vector<::flatbuffers::Offset<fb::protocol::internal::raw::Achievement>> *achievements() const {
     return GetPointer<const ::flatbuffers::Vector<::flatbuffers::Offset<fb::protocol::internal::raw::Achievement>> *>(VT_ACHIEVEMENTS);
   }
   const ::flatbuffers::Vector<::flatbuffers::Offset<fb::protocol::internal::raw::Quest>> *quests() const {
     return GetPointer<const ::flatbuffers::Vector<::flatbuffers::Offset<fb::protocol::internal::raw::Quest>> *>(VT_QUESTS);
-  }
-  const ::flatbuffers::Vector<::flatbuffers::Offset<fb::protocol::internal::raw::StorageBox>> *storage_boxes() const {
-    return GetPointer<const ::flatbuffers::Vector<::flatbuffers::Offset<fb::protocol::internal::raw::StorageBox>> *>(VT_STORAGE_BOXES);
   }
   const ::flatbuffers::Vector<::flatbuffers::Offset<fb::protocol::internal::raw::MarketplacePending>> *marketplace_pendings() const {
     return GetPointer<const ::flatbuffers::Vector<::flatbuffers::Offset<fb::protocol::internal::raw::MarketplacePending>> *>(VT_MARKETPLACE_PENDINGS);
@@ -78,15 +78,15 @@ struct SavePayload FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
            VerifyOffset(verifier, VT_SPELLS) &&
            verifier.VerifyVector(spells()) &&
            verifier.VerifyVectorOfTables(spells()) &&
+           VerifyOffset(verifier, VT_MATCHMAKING_SKILLS) &&
+           verifier.VerifyVector(matchmaking_skills()) &&
+           verifier.VerifyVectorOfTables(matchmaking_skills()) &&
            VerifyOffset(verifier, VT_ACHIEVEMENTS) &&
            verifier.VerifyVector(achievements()) &&
            verifier.VerifyVectorOfTables(achievements()) &&
            VerifyOffset(verifier, VT_QUESTS) &&
            verifier.VerifyVector(quests()) &&
            verifier.VerifyVectorOfTables(quests()) &&
-           VerifyOffset(verifier, VT_STORAGE_BOXES) &&
-           verifier.VerifyVector(storage_boxes()) &&
-           verifier.VerifyVectorOfTables(storage_boxes()) &&
            VerifyOffset(verifier, VT_MARKETPLACE_PENDINGS) &&
            verifier.VerifyVector(marketplace_pendings()) &&
            verifier.VerifyVectorOfTables(marketplace_pendings()) &&
@@ -110,14 +110,14 @@ struct SavePayloadBuilder {
   void add_spells(::flatbuffers::Offset<::flatbuffers::Vector<::flatbuffers::Offset<fb::protocol::internal::raw::Spell>>> spells) {
     fbb_.AddOffset(SavePayload::VT_SPELLS, spells);
   }
+  void add_matchmaking_skills(::flatbuffers::Offset<::flatbuffers::Vector<::flatbuffers::Offset<fb::protocol::internal::raw::MatchmakingSkill>>> matchmaking_skills) {
+    fbb_.AddOffset(SavePayload::VT_MATCHMAKING_SKILLS, matchmaking_skills);
+  }
   void add_achievements(::flatbuffers::Offset<::flatbuffers::Vector<::flatbuffers::Offset<fb::protocol::internal::raw::Achievement>>> achievements) {
     fbb_.AddOffset(SavePayload::VT_ACHIEVEMENTS, achievements);
   }
   void add_quests(::flatbuffers::Offset<::flatbuffers::Vector<::flatbuffers::Offset<fb::protocol::internal::raw::Quest>>> quests) {
     fbb_.AddOffset(SavePayload::VT_QUESTS, quests);
-  }
-  void add_storage_boxes(::flatbuffers::Offset<::flatbuffers::Vector<::flatbuffers::Offset<fb::protocol::internal::raw::StorageBox>>> storage_boxes) {
-    fbb_.AddOffset(SavePayload::VT_STORAGE_BOXES, storage_boxes);
   }
   void add_marketplace_pendings(::flatbuffers::Offset<::flatbuffers::Vector<::flatbuffers::Offset<fb::protocol::internal::raw::MarketplacePending>>> marketplace_pendings) {
     fbb_.AddOffset(SavePayload::VT_MARKETPLACE_PENDINGS, marketplace_pendings);
@@ -139,15 +139,15 @@ inline ::flatbuffers::Offset<SavePayload> CreateSavePayload(
     ::flatbuffers::Offset<fb::protocol::internal::raw::Marriage> marriage = 0,
     ::flatbuffers::Offset<::flatbuffers::Vector<::flatbuffers::Offset<fb::protocol::internal::raw::Item>>> items = 0,
     ::flatbuffers::Offset<::flatbuffers::Vector<::flatbuffers::Offset<fb::protocol::internal::raw::Spell>>> spells = 0,
+    ::flatbuffers::Offset<::flatbuffers::Vector<::flatbuffers::Offset<fb::protocol::internal::raw::MatchmakingSkill>>> matchmaking_skills = 0,
     ::flatbuffers::Offset<::flatbuffers::Vector<::flatbuffers::Offset<fb::protocol::internal::raw::Achievement>>> achievements = 0,
     ::flatbuffers::Offset<::flatbuffers::Vector<::flatbuffers::Offset<fb::protocol::internal::raw::Quest>>> quests = 0,
-    ::flatbuffers::Offset<::flatbuffers::Vector<::flatbuffers::Offset<fb::protocol::internal::raw::StorageBox>>> storage_boxes = 0,
     ::flatbuffers::Offset<::flatbuffers::Vector<::flatbuffers::Offset<fb::protocol::internal::raw::MarketplacePending>>> marketplace_pendings = 0) {
   SavePayloadBuilder builder_(_fbb);
   builder_.add_marketplace_pendings(marketplace_pendings);
-  builder_.add_storage_boxes(storage_boxes);
   builder_.add_quests(quests);
   builder_.add_achievements(achievements);
+  builder_.add_matchmaking_skills(matchmaking_skills);
   builder_.add_spells(spells);
   builder_.add_items(items);
   builder_.add_marriage(marriage);
@@ -161,15 +161,15 @@ inline ::flatbuffers::Offset<SavePayload> CreateSavePayloadDirect(
     ::flatbuffers::Offset<fb::protocol::internal::raw::Marriage> marriage = 0,
     const std::vector<::flatbuffers::Offset<fb::protocol::internal::raw::Item>> *items = nullptr,
     const std::vector<::flatbuffers::Offset<fb::protocol::internal::raw::Spell>> *spells = nullptr,
+    const std::vector<::flatbuffers::Offset<fb::protocol::internal::raw::MatchmakingSkill>> *matchmaking_skills = nullptr,
     const std::vector<::flatbuffers::Offset<fb::protocol::internal::raw::Achievement>> *achievements = nullptr,
     const std::vector<::flatbuffers::Offset<fb::protocol::internal::raw::Quest>> *quests = nullptr,
-    const std::vector<::flatbuffers::Offset<fb::protocol::internal::raw::StorageBox>> *storage_boxes = nullptr,
     const std::vector<::flatbuffers::Offset<fb::protocol::internal::raw::MarketplacePending>> *marketplace_pendings = nullptr) {
   auto items__ = items ? _fbb.CreateVector<::flatbuffers::Offset<fb::protocol::internal::raw::Item>>(*items) : 0;
   auto spells__ = spells ? _fbb.CreateVector<::flatbuffers::Offset<fb::protocol::internal::raw::Spell>>(*spells) : 0;
+  auto matchmaking_skills__ = matchmaking_skills ? _fbb.CreateVector<::flatbuffers::Offset<fb::protocol::internal::raw::MatchmakingSkill>>(*matchmaking_skills) : 0;
   auto achievements__ = achievements ? _fbb.CreateVector<::flatbuffers::Offset<fb::protocol::internal::raw::Achievement>>(*achievements) : 0;
   auto quests__ = quests ? _fbb.CreateVector<::flatbuffers::Offset<fb::protocol::internal::raw::Quest>>(*quests) : 0;
-  auto storage_boxes__ = storage_boxes ? _fbb.CreateVector<::flatbuffers::Offset<fb::protocol::internal::raw::StorageBox>>(*storage_boxes) : 0;
   auto marketplace_pendings__ = marketplace_pendings ? _fbb.CreateVector<::flatbuffers::Offset<fb::protocol::internal::raw::MarketplacePending>>(*marketplace_pendings) : 0;
   return fb::protocol::internal::raw::CreateSavePayload(
       _fbb,
@@ -177,9 +177,9 @@ inline ::flatbuffers::Offset<SavePayload> CreateSavePayloadDirect(
       marriage,
       items__,
       spells__,
+      matchmaking_skills__,
       achievements__,
       quests__,
-      storage_boxes__,
       marketplace_pendings__);
 }
 

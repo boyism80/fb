@@ -51,7 +51,7 @@ public:
             if (completed.exchange(true))
                 return;
 
-            fb::logger::warn("bot transfer timeout: source_bot_id={}", source_bot_id);
+            fb::logger::fatal("bot transfer timeout: source_bot_id={}", source_bot_id);
 
             if (auto controller = controller_weak.lock())
                 controller->remove_transfer_context(source_bot_id);

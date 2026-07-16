@@ -262,14 +262,17 @@ async::task<void> group::container::handle_action(character& actor, std::string_
     co_await this->_server.threads.switching(weak);
     if (action)
     {
+        auto error = std::optional<std::string>{};
         try
         {
             co_await action(actor, target_name_str);
         }
         catch (std::exception& e)
         {
-            if (weak.expired() == false)
-                actor.message(e.what(), MESSAGE_TYPE::STATE);
+            error = e.what();
         }
+
+        if (error.has_value() && weak.expired() == false)
+            actor.message(error.value(), MESSAGE_TYPE::STATE);
     }
 }

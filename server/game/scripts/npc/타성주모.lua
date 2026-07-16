@@ -25,7 +25,7 @@ local function run_change_item(me, npc_obj)
     if selected == nil then
         return false
     end
-    local idx = selected + 1
+    local idx = selected
     if idx < 1 or idx > #CHANGEITEM then
         return true
     end
@@ -39,7 +39,7 @@ local function run_change_item(me, npc_obj)
     if confirm == nil then
         return false
     end
-    if confirm ~= 0 then
+    if confirm ~= 1 then
         return true
     end
 
@@ -52,7 +52,7 @@ local function run_change_item(me, npc_obj)
         return true
     end
     if code == enum.EXCHANGE_RESULT.LACK_CAPACITY then
-        me:dialog(npc_obj, '소지품이 가득 차서 받을 수 없어요.', false, false)
+        me:dialog(npc_obj, '소지품이 가득 차서 받을 수 없어요.', { prev = false, next = false })
         return true
     end
     return true

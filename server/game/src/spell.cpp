@@ -309,7 +309,7 @@ bool buffs::push_back(const std::shared_ptr<buff>& buff)
     auto path = std::format("scripts/spell/{}.lua", model.id);
     auto func = std::format("ON_BUFF_{}", model.id);
 
-    auto lua = this->_owner.server.lua.new_ctx_guard(path, func);
+    auto lua = this->_owner.server.lua.open(path, func);
     if (lua)
     {
         lua->pushobject(this->_owner);
@@ -323,9 +323,9 @@ bool buffs::push_back(const std::shared_ptr<buff>& buff)
     return true;
 }
 
-std::shared_ptr<buff> buffs::push_back(const fb::model::spell&                  model,
-                                       uint32_t                                 seconds,
-                                       const std::shared_ptr<fb::game::object>& caster)
+async::task<std::shared_ptr<buff>> buffs::push_back(const fb::model::spell&                  model,
+                                                    uint32_t                                 seconds,
+                                                    const std::shared_ptr<fb::game::object>& caster)
 {
     this->_owner.assert_thread();
 
@@ -333,7 +333,7 @@ std::shared_ptr<buff> buffs::push_back(const fb::model::spell&                  
     {
         auto& buff = this->at(model.id);
         buff->remaining(std::chrono::seconds(seconds));
-        return buff;
+        co_return buff;
     }
 
     auto& server  = this->_owner.server;
@@ -341,33 +341,33 @@ std::shared_ptr<buff> buffs::push_back(const fb::model::spell&                  
     if (created == nullptr)
     {
         fb::logger::warn("Failed to create buff for {}", model.name);
-        return nullptr;
+        co_return nullptr;
     }
     else if (this->push_back(created) == false)
     {
-        std::ignore = server.destroy(*created);
-        return nullptr;
+        co_await server.destroy(*created);
+        co_return nullptr;
     }
     else
     {
-        return created;
+        co_return created;
     }
 }
 
-bool buffs::remove(uint32_t id)
+async::task<bool> buffs::remove(uint32_t id)
 {
     this->_owner.assert_thread();
 
     auto buff = this->operator[] (id);
     if (buff == nullptr)
-        return false;
+        co_return false;
 
     // Execute unbuff script
     auto& model = buff->model;
     auto  path  = std::format("scripts/spell/{}.lua", model.id);
     auto  func  = std::format("ON_UNBUFF_{}", model.id);
 
-    auto lua = this->_owner.server.lua.new_ctx_guard(path, func);
+    auto lua = this->_owner.server.lua.open(path, func);
     if (lua)
     {
         lua->pushobject(this->_owner);
@@ -386,15 +386,15 @@ bool buffs::remove(uint32_t id)
     }
 
     this->erase(id);
-    std::ignore = this->_owner.server.destroy(*buff);
-    return true;
+    co_await this->_owner.server.destroy(*buff);
+    co_return true;
 }
 
-bool buffs::remove(const fb::model::spell& spell)
+async::task<bool> buffs::remove(const fb::model::spell& spell)
 {
     this->_owner.assert_thread();
 
-    return this->remove(spell.id);
+    co_return co_await this->remove(spell.id);
 }
 
 std::shared_ptr<buff> buffs::operator[] (uint32_t id) const

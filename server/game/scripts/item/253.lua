@@ -14,11 +14,11 @@ function ON_ATTACK_253(me, item)
 end
 
 -- 용마제오검 사용 스크립트
-function ON_ACTIVATED_253(me, item)
-
-end
+-- function ON_ACTIVATED_253(me, item)
+--
+-- end
 
 -- 용마제오검 해제 스크립트
-function ON_DEACTIVATED_253(me, item)
-
-end
+-- function ON_DEACTIVATED_253(me, item)
+--
+-- end

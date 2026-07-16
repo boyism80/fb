@@ -1,5 +1,5 @@
 -- mob: 녹눈괴물
 -- 녹눈괴물 사망
-function ON_MOB_DIE_501(me, you)
-
-end
+-- function ON_MOB_DIE_501(me)
+--
+-- end

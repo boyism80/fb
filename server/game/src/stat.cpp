@@ -778,10 +778,7 @@ uint32_t character_stat::damage(uint32_t                          value,
     }
 
     if (this->hp() == 0)
-    {
-        this->owner.kill(from, DESTROY_TYPE::DEAD);
         return result;
-    }
 
     for (auto& [parts, equipment] : this->owner.items.equipments())
     {
@@ -904,10 +901,7 @@ uint32_t mob_stat::damage(uint32_t                value,
 
     auto result = fb::game::stat::damage(value, from, critical, rate, physical, fixed, notify);
     if (!this->owner.alive())
-    {
-        this->owner.kill(from, DESTROY_TYPE::DEAD);
         return result;
-    }
 
     // Handle damage in AI strategy
     if (this->owner._ai_strategy && from && from->is(OBJECT_TYPE::LIFE))

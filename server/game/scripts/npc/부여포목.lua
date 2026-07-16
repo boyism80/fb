@@ -18,7 +18,7 @@ local function craft_amber_crystal(me, ch, exchange_list)
         return DIALOG_RESULT.NEXT
     end
 
-    local idx = choice + 1
+    local idx = choice
     if idx < 1 or idx > #exchange_list then
         return DIALOG_RESULT.NEXT
     end
@@ -31,12 +31,12 @@ local function craft_amber_crystal(me, ch, exchange_list)
         { ['item'] = { [dest.name] = dest.count } }
     )
     if code == enum.EXCHANGE_RESULT.LACK_COST then
-        return me:dialog(ch, name_with(src.name, '이', '가') .. ' 부족합니다.', false, true)
+        return me:dialog(ch, name_with(src.name, '이', '가') .. ' 부족합니다.', { prev = false, next = true })
     end
     if code == enum.EXCHANGE_RESULT.LACK_CAPACITY then
-        return me:dialog(ch, '소지품이 가득 차서 ' .. name_with(dest.name, '을', '를') .. ' 받을 수 없어요.', false, true)
+        return me:dialog(ch, '소지품이 가득 차서 ' .. name_with(dest.name, '을', '를') .. ' 받을 수 없어요.', { prev = false, next = true })
     end
-    return me:dialog(ch, name_with(dest.name, '을', '를') .. ' 만들어드렸습니다.', false, true)
+    return me:dialog(ch, name_with(dest.name, '을', '를') .. ' 만들어드렸습니다.', { prev = false, next = true })
 end
 
 function NPC_232(me, npc_obj)
@@ -50,10 +50,10 @@ function NPC_232(me, npc_obj)
                 return npc.show_buy_menu(me, ch)
             end },
             { '끈옷판매', function(me, ch)
-                return me:dialog(ch, '특별 이벤트 기간에만 가능합니다.', false, true)
+                return me:dialog(ch, '특별 이벤트 기간에만 가능합니다.', { prev = false, next = true })
             end },
             { '산타클로스옷판매', function(me, ch)
-                return me:dialog(ch, '특별 이벤트 기간에만 가능합니다.', false, true)
+                return me:dialog(ch, '특별 이벤트 기간에만 가능합니다.', { prev = false, next = true })
             end },
             { '호박결정만들기', function(me, ch)
                 return craft_amber_crystal(me, ch, AMBER_CRYSTAL_EXCHANGE)

@@ -1,0 +1,31 @@
+include "matchmaking.fbs";
+
+namespace fb.protocol.matchmaking.response;
+
+table Register {
+    registry_id: string;
+    error: uint;
+}
+
+table Unregister {
+    success: bool;
+    error: uint;
+}
+
+table Confirm {
+    error: uint;
+    match_finalized: bool;
+}
+
+table Decline {
+    error: uint;
+}
+
+table Status {
+    in_queue: bool;
+    match_type: uint;
+    registry_id: string;
+    pending_match_id: string;
+    confirm_deadline: string;
+    error: uint;
+}

@@ -38,8 +38,7 @@ async::task<void> character::container::broadcast(std::string_view message,
     }
     else
     {
-        auto guard = this->_server.characters.enter_write();
-        guard.value().broadcast(message_str, type);
+        this->broadcast(message_str, type);
     }
 
     co_return;
@@ -62,26 +61,9 @@ void character::container::update_time(uint8_t hours)
 void character::container::send(const fb::stream& stream, bool encrypt)
 {
     this->foreach_enqueue([stream, encrypt](auto& ch) -> async::task<void> {
-        std::ignore = ch->send(stream, encrypt);
+        ch->send(stream, encrypt);
         co_return;
     });
-}
-
-character::container::online_snapshot_t character::container::online_users() const
-{
-    auto users = online_snapshot_t{};
-    users.reserve(this->_from_uid.size());
-
-    for (auto it = this->cbegin(); it != this->cend(); ++it)
-    {
-        const auto& ch = it->second;
-        if (ch == nullptr)
-            continue;
-
-        users.emplace(it->first, ch->created_date());
-    }
-
-    return users;
 }
 
 void character::container::assert_whisper(uint32_t error, std::string_view to)

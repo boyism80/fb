@@ -3,9 +3,9 @@
 namespace fb::protocol::game::request {
 
 #ifdef BOT // bot only
-async::task<void> trade::serialize(fb::stream_writer<big_endian>& writer) const
+void trade::serialize(fb::stream_writer<big_endian>& writer) const
 {
-    co_await header::serialize(writer);
+    header::serialize(writer);
     writer.write<uint8_t>(opcode);
     writer.write<uint8_t>(static_cast<uint8_t>(this->action));
     writer.write<uint32_t>(this->oid);
@@ -26,9 +26,9 @@ async::task<void> trade::serialize(fb::stream_writer<big_endian>& writer) const
     }
 }
 #else // server only
-async::task<void> trade::deserialize(fb::stream_reader<big_endian>& reader)
+void trade::deserialize(fb::stream_reader<big_endian>& reader)
 {
-    co_await header::deserialize(reader);
+    header::deserialize(reader);
     this->action = static_cast<fb::game::trade::state>(reader.read<uint8_t>());
     this->oid    = reader.read<uint32_t>();
     switch (this->action)

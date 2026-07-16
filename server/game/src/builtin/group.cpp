@@ -105,11 +105,7 @@ int builtin::group::builtin_message(lua_State* L)
     auto group_id = group->id();
 
     auto                                  master_name = group->master();
-    character::container::character_ptr_t master_ch;
-    {
-        auto guard = srv.characters.enter_read();
-        master_ch  = guard.value().find(master_name);
-    }
+    character::container::character_ptr_t master_ch   = srv.characters.find(master_name);
 
     auto error   = std::make_shared<std::optional<std::string>>();
     auto builder = lua->new_co_builder();

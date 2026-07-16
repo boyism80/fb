@@ -13,5 +13,5 @@ function ON_ACTIVATED_9050(me, item)
 end
 
 -- 의태시약 해제 스크립트
-function ON_DEACTIVATED_9050(me, item)
-end
+-- function ON_DEACTIVATED_9050(me, item)
+-- end

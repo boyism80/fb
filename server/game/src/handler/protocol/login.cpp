@@ -8,6 +8,7 @@
 #include <json/json.h>
 #include <sstream>
 #include <chrono>
+#include <tuple>
 
 using namespace fb::game::handler::protocol;
 using namespace fb::game;
@@ -48,11 +49,11 @@ void login::init_items(const std::vector<internal::Item>& response, character& c
             item->durability(x.durability.value());
 
         if (x.stored != -1)
-            ch.items.store(item);
+            std::ignore = ch.items.store(item);
         else if (x.parts == static_cast<uint32_t>(EQUIPMENT_PARTS::UNKNOWN))
-            ch.items.add(item, x.index);
+            std::ignore = ch.items.add(item, x.index);
         else
-            ch.items.wear((EQUIPMENT_PARTS)x.parts, std::static_pointer_cast<fb::game::equipment>(item));
+            std::ignore = ch.items.wear((EQUIPMENT_PARTS)x.parts, std::static_pointer_cast<fb::game::equipment>(item));
 
         if (x.custom_name.has_value() && item->based<fb::model::item>().attr(ITEM_ATTRIBUTE::WEAPON))
             static_cast<weapon*>(item.get())->custom_name(x.custom_name.value());
@@ -73,8 +74,13 @@ void login::init_spells(const std::vector<internal::Spell>& response, character&
             sec += (delay.milliseconds() > 0 ? 1 : 0);
         else
             sec = 0;
-        ch.spells.add(model, x.slot, sec);
+        std::ignore = ch.spells.add(model, x.slot, sec);
     }
+}
+
+void login::init_matchmaker(const std::vector<internal::MatchmakingSkill>& response, character& ch)
+{
+    ch.matchmaker.load(response);
 }
 
 void login::init_quests(const std::vector<fb::protocol::internal::Quest>& response, fb::game::character& ch)
@@ -220,7 +226,7 @@ async::task<std::shared_ptr<character>> login::init(const game_reqs::login& requ
     for (auto& buff : resp.character.buffs)
     {
         auto& model = table::spell[buff.model];
-        ch->buffs.push_back(model, buff.time);
+        std::ignore = co_await ch->buffs.push_back(model, buff.time);
     }
 
     if (resp.group.has_value())
@@ -243,11 +249,7 @@ async::task<std::shared_ptr<character>> login::init(const game_reqs::login& requ
         }
     }
 
-    bool inserted = false;
-    {
-        auto guard = this->server.characters.enter_write();
-        inserted   = guard.value().insert(ch);
-    }
+    bool inserted = this->server.characters.insert(ch);
     if (inserted == false)
     {
         fb::logger::fatal(
@@ -259,6 +261,7 @@ async::task<std::shared_ptr<character>> login::init(const game_reqs::login& requ
     ch->mail_box.unread_count(resp.mail);
     this->init_items(resp.items, *ch);
     this->init_spells(resp.spells, *ch);
+    this->init_matchmaker(resp.matchmaking_skills, *ch);
     this->init_achievements(resp.achievements, *ch);
     this->init_quests(resp.quests, *ch);
     this->init_marketplace(resp.marketplace_pendings, *ch);
@@ -279,7 +282,7 @@ async::task<std::shared_ptr<character>> login::init(const game_reqs::login& requ
         if (msg.empty() == false)
             ch->message(msg, MESSAGE_TYPE::STATE);
 
-        auto lua = this->server.lua.new_ctx_guard("scripts/interaction.lua", "on_login");
+        auto lua = this->server.lua.open("scripts/interaction.lua", "on_login");
         if (lua)
         {
             lua->pushobject(ch);
@@ -345,11 +348,7 @@ async::task<bool> login::handle(fb::socket<character>& session, game_reqs::login
     session.encryption(request.enc_type, request.enc_key);
     fb::logger::info("{} has connected.", request.name);
 
-    bool exists = false;
-    {
-        auto guard = this->server.characters.enter_read();
-        exists     = guard.value().find(request.id) != nullptr;
-    }
+    bool exists = this->server.characters.find(request.id) != nullptr;
     if (exists)
     {
         fb::logger::fatal(

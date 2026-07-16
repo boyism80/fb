@@ -1,5 +1,5 @@
 -- mob: 흑해골
 -- 흑해골 사망
-function ON_MOB_DIE_359(me, you)
-
-end
+-- function ON_MOB_DIE_359(me)
+--
+-- end

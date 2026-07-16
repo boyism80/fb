@@ -11,9 +11,9 @@ map_worlds::map_worlds(uint32_t id, uint16_t index) :
 #endif
 
 #ifndef BOT
-async::task<void> map_worlds::serialize(fb::stream_writer<big_endian>& writer) const
+void map_worlds::serialize(fb::stream_writer<big_endian>& writer) const
 {
-    co_await header::serialize(writer);
+    header::serialize(writer);
     writer.write<uint8_t>(opcode);
 
     auto& attr   = table::world_attribute[this->id];
@@ -50,9 +50,9 @@ async::task<void> map_worlds::serialize(fb::stream_writer<big_endian>& writer) c
     }
 }
 #else
-async::task<void> map_worlds::deserialize(fb::stream_reader<big_endian>& reader)
+void map_worlds::deserialize(fb::stream_reader<big_endian>& reader)
 {
-    co_await header::deserialize(reader);
+    header::deserialize(reader);
     this->key         = reader.read<std::string, uint8_t>();
     this->world_count = reader.read<uint8_t>();
     this->index       = reader.read<uint8_t>();

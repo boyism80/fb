@@ -26,6 +26,8 @@
 #include <fb/stream_writer.h>
 #include <fb/config.h>
 #include <fb/async_executor.h>
+#include <fb/model/datetime.h>
+#include <fb/thread.h>
 
 #define REGISTER_RESPONSE(Request, Response) \
     template <> struct response_of<Request>  \
@@ -50,6 +52,21 @@ private:
     std::mutex               _queue_mutex;
     std::queue<pending_task> _queue;
     std::atomic<size_t>      _in_flight{0};
+    std::atomic<int64_t>     _response_delay_ms{0};
+
+    [[nodiscard]] async::task<void> apply_response_delay(fb::thread* thread)
+    {
+        if (thread == nullptr)
+            co_return;
+
+        co_await thread->switching();
+
+        auto delay_ms = this->_response_delay_ms.load(std::memory_order_relaxed);
+        if (delay_ms <= 0)
+            co_return;
+
+        co_await thread->sleep(fb::model::timespan(std::chrono::milliseconds(delay_ms)));
+    }
 
     void process_pending()
     {
@@ -271,6 +288,16 @@ public:
     http_client& operator= (const http_client&) = delete;
     ~http_client()                              = default;
 
+    void response_delay(const fb::model::timespan& value)
+    {
+        this->_response_delay_ms.store(value.total_milliseconds(), std::memory_order_relaxed);
+    }
+
+    fb::model::timespan response_delay() const
+    {
+        return fb::model::timespan(std::chrono::milliseconds(this->_response_delay_ms.load(std::memory_order_relaxed)));
+    }
+
     template <typename T> async::task<T> get(std::string_view service, std::string_view path)
     {
         auto  service_str = std::string(service);
@@ -279,8 +306,7 @@ public:
         auto  path_str    = std::string(path);
         auto  thread      = this->_executor.threads.current();
         auto  result      = co_await this->boost_get_async<T>(host, path_str);
-        if (thread != nullptr)
-            co_await thread->switching();
+        co_await this->apply_response_delay(thread);
         co_return result;
     }
 
@@ -346,8 +372,7 @@ public:
         auto  path_str    = std::string(path);
         auto  thread      = this->_executor.threads.current();
         auto  result      = co_await this->boost_post_async<Request>(host, path_str, request);
-        if (thread != nullptr)
-            co_await thread->switching();
+        co_await this->apply_response_delay(thread);
         co_return result;
     }
 
@@ -364,8 +389,7 @@ public:
         auto path_str = std::string(path);
         auto thread   = this->_executor.threads.current();
         co_await this->boost_post_binary_async(url_str, path_str, data);
-        if (thread != nullptr)
-            co_await thread->switching();
+        co_await this->apply_response_delay(thread);
     }
 
 private:

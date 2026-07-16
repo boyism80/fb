@@ -10,6 +10,6 @@ function ON_UNBUFF_4017(me, spell)
 end
 
 -- 신령지익진 지속 효과
-function ON_CONCAST_4017(me, caster, buff)
-
-end
+-- function ON_CONCAST_4017(me, caster, buff)
+--
+-- end

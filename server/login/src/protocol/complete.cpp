@@ -3,9 +3,9 @@
 namespace fb::protocol::login::request {
 
 #ifndef BOT
-async::task<void> complete::deserialize(fb::stream_reader<big_endian>& reader)
+void complete::deserialize(fb::stream_reader<big_endian>& reader)
 {
-    co_await header::deserialize(reader);
+    header::deserialize(reader);
     this->hair     = reader.read<uint8_t>();
     this->gender   = reader.read<uint8_t>();
     this->nation   = reader.read<uint8_t>();
@@ -19,9 +19,9 @@ complete::complete(uint8_t hair, uint8_t gender, uint8_t nation, uint8_t creatur
     creature(creature)
 { }
 
-async::task<void> complete::serialize(fb::stream_writer<big_endian>& writer) const
+void complete::serialize(fb::stream_writer<big_endian>& writer) const
 {
-    co_await header::serialize(writer);
+    header::serialize(writer);
     writer.write<uint8_t>(opcode);
     writer.write<uint8_t>(this->hair);
     writer.write<uint8_t>(this->gender);

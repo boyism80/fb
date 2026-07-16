@@ -30,7 +30,7 @@ void listener_impl::send_update_appearance(object& obj, const fb::model::appeara
                                            appearance.shield_color,
                                            appearance.disguise)};
 
-    std::ignore = this->server.send(obj, game_resp::update_external<true>(serializer), scope::PIVOT);
+    this->server.send(obj, game_resp::update_external<true>(serializer), scope::PIVOT);
 }
 
 void listener_impl::on_create(object& me)
@@ -60,12 +60,12 @@ void listener_impl::on_chat(object& me, std::string_view message, CHAT_TYPE chat
         break;
     }
 
-    std::ignore = this->server.send(me, game_resp::chat(me, message, chat_type), scp);
+    this->server.send(me, game_resp::chat(me, message, chat_type), scp);
 }
 
 void listener_impl::on_direction(object& me)
 {
-    std::ignore = this->server.send(me, game_resp::direction(me), scope::PIVOT);
+    this->server.send(me, game_resp::direction(me), scope::PIVOT);
 }
 
 void listener_impl::on_update_external(object& me, bool detailed)
@@ -103,7 +103,7 @@ void listener_impl::on_update_external(object& me, bool detailed)
         }
         else
         {
-            std::ignore = this->server.send(me, game_resp::update(me), scope::PIVOT);
+            this->server.send(me, game_resp::update(me), scope::PIVOT);
         }
     }
     break;
@@ -119,14 +119,14 @@ void listener_impl::on_update_external(object& me, bool detailed)
         }
         else
         {
-            std::ignore = this->server.send(me, game_resp::update(me), scope::PIVOT);
+            this->server.send(me, game_resp::update(me), scope::PIVOT);
         }
     }
     break;
 
     default:
     {
-        std::ignore = this->server.send(me, game_resp::update(me), scope::PIVOT);
+        this->server.send(me, game_resp::update(me), scope::PIVOT);
     }
     break;
     }
@@ -193,14 +193,14 @@ void listener_impl::on_hide(object& me, DESTROY_TYPE destroy_type)
     switch (destroy_type)
     {
     case DESTROY_TYPE::DEFAULT:
-        std::ignore = this->server.send(me, game_resp::hide(me), scope::PIVOT, {.with_me = false});
+        this->server.send(me, game_resp::hide(me), scope::PIVOT, {.with_me = false});
         break;
 
     case DESTROY_TYPE::DEAD:
         if (me.is(OBJECT_TYPE::LIFE) == false)
             throw std::runtime_error("object must be life type");
 
-        std::ignore = this->server.send(me, game_resp::die(static_cast<life&>(me)), scope::PIVOT, {.with_me = false});
+        this->server.send(me, game_resp::die(static_cast<life&>(me)), scope::PIVOT, {.with_me = false});
         break;
     }
 }
@@ -224,7 +224,7 @@ void listener_impl::on_hide(object& me, object& you, DESTROY_TYPE destroy_type)
 
 void listener_impl::on_move(object& me, const fb::model::point16_t& before)
 {
-    std::ignore = this->server.send(me, game_resp::move(me, before), scope::PIVOT, {.with_me = false});
+    this->server.send(me, game_resp::move(me, before), scope::PIVOT, {.with_me = false});
 }
 
 void listener_impl::on_buff(object& me, buff& buff)
@@ -239,11 +239,11 @@ void listener_impl::on_unbuff(object& me, buff& buff)
 
 void listener_impl::on_sound(object& me, SOUND sound)
 {
-    std::ignore = this->server.send(me, game_resp::sound(me, sound), scope::PIVOT);
+    this->server.send(me, game_resp::sound(me, sound), scope::PIVOT);
 }
 void listener_impl::on_effect(object& me, uint8_t value)
 {
-    std::ignore = this->server.send(me, game_resp::effect(me, value), scope::PIVOT);
+    this->server.send(me, game_resp::effect(me, value), scope::PIVOT);
 }
 
 void listener_impl::on_map_leave(object& me, const fb::game::map& map)

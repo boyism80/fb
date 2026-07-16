@@ -10,9 +10,9 @@ sound::sound(const fb::game::object& me, SOUND value) :
 #endif
 
 #ifndef BOT
-async::task<void> sound::serialize(fb::stream_writer<big_endian>& writer) const
+void sound::serialize(fb::stream_writer<big_endian>& writer) const
 {
-    co_await header::serialize(writer);
+    header::serialize(writer);
     writer.write<uint8_t>(opcode);
     writer.write<uint8_t>(0x00);
     writer.write<uint8_t>(0x03);
@@ -26,9 +26,9 @@ async::task<void> sound::serialize(fb::stream_writer<big_endian>& writer) const
     writer.write<uint16_t>(0xCCCC);
 }
 #else
-async::task<void> sound::deserialize(fb::stream_reader<big_endian>& reader)
+void sound::deserialize(fb::stream_reader<big_endian>& reader)
 {
-    co_await header::deserialize(reader);
+    header::deserialize(reader);
     reader.read<uint8_t>(); // 0x00
     reader.read<uint8_t>(); // 0x03
     this->value = static_cast<SOUND>(reader.read<uint16_t>());

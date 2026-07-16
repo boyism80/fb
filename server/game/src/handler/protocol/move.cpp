@@ -1,5 +1,6 @@
 #include <fb/game/handler/protocol/move.h>
 #include <fb/game/server.h>
+#include <tuple>
 
 using namespace fb::game::handler::protocol;
 using namespace fb::model;
@@ -59,13 +60,13 @@ async::task<bool> move::handle(fb::socket<character>&      session,
 
         case DSL::script:
         {
-            ch->move(direction, position);
+            std::ignore = ch->move(direction, position);
 
             auto params = fb::model::dsl::script(warp->dest.params);
             if (params.path.empty() || params.function.empty())
                 break;
 
-            auto lua = this->server.lua.new_ctx_guard(params.path, params.function);
+            auto lua = this->server.lua.open(params.path, params.function);
             if (lua)
             {
                 lua->pushobject(ch);
@@ -80,7 +81,7 @@ async::task<bool> move::handle(fb::socket<character>&      session,
     }
     else
     {
-        ch->move(direction, position);
+        std::ignore = ch->move(direction, position);
     }
     co_return true;
 }

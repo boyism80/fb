@@ -1,6 +1,8 @@
 using Fb.Model;
 using Fb.Model.EnumValue;
 using Http.Model;
+using System.Reflection;
+using System.Runtime.Serialization;
 
 namespace AdminTool.Services
 {
@@ -170,6 +172,59 @@ namespace AdminTool.Services
         }
 
         public static string FormatMoney(ulong value) => value.ToString("N0");
+
+        public static string FormatMatchFormat(uint matchType)
+        {
+            try
+            {
+                if (!Enum.IsDefined(typeof(Fb.Model.EnumValue.MatchType), (int)matchType))
+                    return "-";
+
+                var enumValue = (Fb.Model.EnumValue.MatchType)matchType;
+                if (Table.Matchmaking.TryGetValue(enumValue, out var config) && config != null)
+                {
+                    if (config.MemberCount > 0 && config.TeamCount == 2)
+                        return $"{config.MemberCount}v{config.MemberCount}";
+                }
+            }
+            catch
+            {
+                // ignore lookup errors
+            }
+
+            return "-";
+        }
+
+        public static string FormatMatchTypeName(uint matchType)
+        {
+            if (!Enum.IsDefined(typeof(Fb.Model.EnumValue.MatchType), (int)matchType))
+                return $"UNKNOWN_{matchType}";
+
+            var enumValue = (Fb.Model.EnumValue.MatchType)matchType;
+            var member = typeof(Fb.Model.EnumValue.MatchType).GetMember(enumValue.ToString()).FirstOrDefault();
+            var enumMember = member?.GetCustomAttribute<EnumMemberAttribute>();
+            if (!string.IsNullOrWhiteSpace(enumMember?.Value))
+                return enumMember.Value;
+
+            return enumValue.ToString();
+        }
+
+        public static string FormatMatchType(uint matchType)
+        {
+            var name = FormatMatchTypeName(matchType);
+            var format = FormatMatchFormat(matchType);
+            if (format == "-")
+                return name;
+
+            return $"{name} ({format})";
+        }
+
+        public static string FormatMatchmakingRating(double value) => value.ToString("0.###");
+
+        public static double GetEffectiveMatchmakingRating(double mu, double sigma, double sigmaFactor = 3.0)
+        {
+            return mu - (sigmaFactor * sigma);
+        }
 
         /// <summary>
         /// Resolves display class name from promotion table (same as game server table::promotion[class][promotion].name).

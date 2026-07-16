@@ -10,9 +10,9 @@ update_internal::update_internal(const fb::game::character& ch, UPDATE_STATE_LEV
 #endif
 
 #ifndef BOT
-async::task<void> update_internal::serialize(fb::stream_writer<big_endian>& writer) const
+void update_internal::serialize(fb::stream_writer<big_endian>& writer) const
 {
-    co_await header::serialize(writer);
+    header::serialize(writer);
     writer.write<uint8_t>(opcode);
     writer.write<uint8_t>(static_cast<uint8_t>(this->level));
 
@@ -60,9 +60,9 @@ async::task<void> update_internal::serialize(fb::stream_writer<big_endian>& writ
     writer.write<uint8_t>(0x00);
 }
 #else
-async::task<void> update_internal::deserialize(fb::stream_reader<big_endian>& reader)
+void update_internal::deserialize(fb::stream_reader<big_endian>& reader)
 {
-    co_await header::deserialize(reader);
+    header::deserialize(reader);
     this->level = static_cast<fb::model::enum_value::UPDATE_STATE_LEVEL>(reader.read<uint8_t>());
     if (ENUM_IN(this->level, UPDATE_STATE_LEVEL::BASED))
     {

@@ -12,6 +12,6 @@ function ON_UNBUFF_4019(me, spell)
 end
 
 -- 파력무참진 지속 효과
-function ON_CONCAST_4019(me, caster, buff)
-
-end
+-- function ON_CONCAST_4019(me, caster, buff)
+--
+-- end

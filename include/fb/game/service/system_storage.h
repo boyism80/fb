@@ -4,15 +4,16 @@
 #include <fb/game/storage.h>
 #include <fb/game/system_storage_box.h>
 #include <fb/model/model.h>
+#include <optional>
 #include <string>
 #include <string_view>
-#include <tuple>
 #include <vector>
 #include <cstdint>
 
 namespace fb::protocol::internal {
 class StorageBox;
 class SystemStorageBox;
+class StorageWriteEntry;
 } // namespace fb::protocol::internal
 
 namespace fb::game {
@@ -26,8 +27,9 @@ class system_storage
 {
 private:
     static system_storage_box from_system_storage_dto(const fb::protocol::internal::SystemStorageBox& dto);
-    static storage_box::entry from_login_storage_box(const fb::protocol::internal::StorageBox& dto);
-    static void prune_expired_boxes(std::vector<system_storage_box>& boxes, const fb::model::datetime& now);
+    static storage_box::entry from_storage_box_dto(const fb::protocol::internal::StorageBox& dto);
+    static void        prune_expired_boxes(std::vector<system_storage_box>& boxes, const fb::model::datetime& now);
+    static std::string attachments_to_json(const std::vector<fb::model::dsl>& attachments);
 
     uint32_t                        _poll_offset = 0;
     std::vector<system_storage_box> _pending_boxes;
@@ -38,15 +40,35 @@ public:
 public:
     explicit system_storage(fb::game::server& server);
 
-    async::task<void> create(uint32_t                           user_id,
+    /// Personal storage box via internal `/storage/write` (uid).
+    async::task<bool> create(uint32_t                           user_id,
                              std::string_view                   external_ref,
                              std::string_view                   title,
                              std::string_view                   message,
-                             const std::vector<fb::model::dsl>& attachments);
+                             const std::vector<fb::model::dsl>& attachments,
+                             const std::optional<std::string>&  expire_date = std::nullopt);
+
+    /// Personal storage box via internal `/storage/write` (name; resolved on internal).
+    async::task<bool> create(std::string_view                   user_name,
+                             std::string_view                   title,
+                             std::string_view                   message,
+                             const std::vector<fb::model::dsl>& attachments,
+                             const std::optional<std::string>&  expire_date  = std::nullopt,
+                             std::string_view                   external_ref = "");
+
+    /// Global system storage template via internal `/storage/system`.
+    async::task<bool> create_system(std::string_view                   title,
+                                    std::string_view                   message,
+                                    const std::vector<fb::model::dsl>& attachments,
+                                    const std::optional<std::string>&  expire_date  = std::nullopt,
+                                    std::string_view                   external_ref = "");
+
     async::task<void> sync(character& ch);
     async::task<void> poll_and_deliver();
 
-    void on_deliver(const std::vector<uint32_t>& user_ids, const system_storage_box& box);
+    void apply_entries(const std::vector<storage_box::entry>& entries, const std::vector<uint32_t>& user_ids);
+    void apply_write_box(const fb::protocol::internal::StorageBox& dto);
+    void apply_deliver_entries(const std::vector<fb::protocol::internal::StorageWriteEntry>& entries);
     void init_character(character& ch, const std::vector<storage_box::entry>& entries);
     void init_from_login(character& ch, const std::vector<fb::protocol::internal::StorageBox>& boxes);
 };

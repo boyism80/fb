@@ -1,3 +1,4 @@
+using Dapper;
 using Http.Extension;
 using Http.Model;
 using Http.Service;
@@ -14,21 +15,67 @@ namespace Http.Reepository
         {
         }
 
-        public Task<StorageBox> Get(uint world, uint user, uint id)
+        public async Task<uint> AllocateNextIdAsync(uint world, uint user)
         {
-            return base.Get(world, new StorageBoxKey
+            await using var conn = _dbContext.GetShardConnection(world, user);
+            await conn.OpenAsync();
+            await using var tx = await conn.BeginTransactionAsync();
+
+            var current = await conn.QuerySingleOrDefaultAsync<uint?>(
+                """
+                SELECT `id` FROM `storage_box_sequence`
+                WHERE `user` = @user
+                FOR UPDATE;
+                """,
+                new { user },
+                tx);
+
+            uint newId;
+            if (current == null)
+            {
+                newId = 1;
+                await conn.ExecuteAsync(
+                    """
+                    INSERT INTO `storage_box_sequence` (`user`, `id`)
+                    VALUES (@user, @newId);
+                    """,
+                    new { user, newId },
+                    tx);
+            }
+            else
+            {
+                newId = current.Value + 1;
+                await conn.ExecuteAsync(
+                    """
+                    UPDATE `storage_box_sequence`
+                    SET `id` = @newId
+                    WHERE `user` = @user;
+                    """,
+                    new { user, newId },
+                    tx);
+            }
+
+            await tx.CommitAsync();
+            return newId;
+        }
+
+        public async Task<StorageBox> Get(uint world, uint user, uint id)
+        {
+            var box = await base.Get(world, new StorageBoxKey
             {
                 User = user,
                 Id = id
             });
+            return IsExpired(box) ? null : box;
         }
 
-        public Task<IEnumerable<StorageBox>> Get(uint world, uint user)
+        public async Task<IEnumerable<StorageBox>> Get(uint world, uint user)
         {
-            return base.GetAll(world, new StorageBoxKey
+            var boxes = await base.GetAll(world, new StorageBoxKey
             {
                 User = user
             });
+            return boxes.Where(b => !IsExpired(b));
         }
 
         protected override string OnSelect(StorageBoxKey key)
@@ -36,6 +83,7 @@ namespace Http.Reepository
             return $"""
                 SELECT * FROM `storage_box`
                 WHERE `user` = {key.User} AND `id` = {key.Id} AND `deleted` = 0
+                  AND (`expired_date` IS NULL OR `expired_date` > NOW())
                 LIMIT 1;
                 """;
         }
@@ -44,13 +92,19 @@ namespace Http.Reepository
         {
             return $"""
                 SELECT * FROM `storage_box`
-                WHERE `user` = {key.User} AND `deleted` = 0;
+                WHERE `user` = {key.User} AND `deleted` = 0
+                  AND (`expired_date` IS NULL OR `expired_date` > NOW());
                 """;
         }
 
         protected override string OnSelectMany(IReadOnlyList<StorageBoxKey> keys)
         {
-            return $"SELECT * FROM `storage_box` WHERE `user` IN ({string.Join(",", keys.Select(k => k.User))}) AND `deleted` = 0;";
+            return $"""
+                SELECT * FROM `storage_box`
+                WHERE `user` IN ({string.Join(",", keys.Select(k => k.User))})
+                  AND `deleted` = 0
+                  AND (`expired_date` IS NULL OR `expired_date` > NOW());
+                """;
         }
 
         protected override StorageBoxKey GetKeyFromRow(StorageBox row)
@@ -66,11 +120,19 @@ namespace Http.Reepository
             var keys = ownerIds.Distinct().Select(uid => new StorageBoxKey { User = uid }).ToList();
             var list = await base.GetMany(world, keys);
             var dict = keys.Distinct().ToDictionary(k => k.User, _ => (IList<StorageBox>)new List<StorageBox>());
-            foreach (var b in list)
+            foreach (var b in list.Where(b => !IsExpired(b)))
             {
                 dict[b.User].Add(b);
             }
             return dict.ToDictionary(kv => kv.Key, kv => (IReadOnlyList<StorageBox>)kv.Value);
+        }
+
+        private static bool IsExpired(StorageBox box)
+        {
+            if (box == null)
+                return true;
+
+            return box.ExpiredDate.HasValue && box.ExpiredDate.Value <= DateTime.Now;
         }
 
         protected override string OnUpsert(StorageBox value)
@@ -161,8 +223,8 @@ namespace Http.Reepository
         protected override string OnDelete(StorageBoxKey key)
         {
             return $"""
-                UPDATE `storage_box` SET `deleted` = 1, `updated_date` = NOW()
-                WHERE `user` = {key.User.Escape()} AND `id` = {key.Id.Escape()} AND `deleted` = 0;
+                DELETE FROM `storage_box`
+                WHERE `user` = {key.User.Escape()} AND `id` = {key.Id.Escape()};
                 """;
         }
 
@@ -175,8 +237,8 @@ namespace Http.Reepository
                 $"(`user` = {k.User.Escape()} AND `id` = {k.Id.Escape()})");
 
             return $"""
-                UPDATE `storage_box` SET `deleted` = 1, `updated_date` = NOW()
-                WHERE ({string.Join(" OR ", conditions)}) AND `deleted` = 0;
+                DELETE FROM `storage_box`
+                WHERE ({string.Join(" OR ", conditions)});
                 """;
         }
     }

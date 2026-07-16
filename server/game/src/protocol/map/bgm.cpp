@@ -10,9 +10,9 @@ map_bgm::map_bgm(uint16_t bgm, uint8_t volume) :
 #endif
 
 #ifndef BOT
-async::task<void> map_bgm::serialize(fb::stream_writer<big_endian>& writer) const
+void map_bgm::serialize(fb::stream_writer<big_endian>& writer) const
 {
-    co_await header::serialize(writer);
+    header::serialize(writer);
     writer.write<uint8_t>(opcode);
 
     writer.write<uint8_t>(0x01);
@@ -27,9 +27,9 @@ async::task<void> map_bgm::serialize(fb::stream_writer<big_endian>& writer) cons
     writer.write<uint8_t>(0x00);
 }
 #else
-async::task<void> map_bgm::deserialize(fb::stream_reader<big_endian>& reader)
+void map_bgm::deserialize(fb::stream_reader<big_endian>& reader)
 {
-    co_await header::deserialize(reader);
+    header::deserialize(reader);
     reader.read<uint8_t>(); // 0x01
     reader.read<uint8_t>(); // 0x05
     this->bgm = reader.read<uint16_t>();

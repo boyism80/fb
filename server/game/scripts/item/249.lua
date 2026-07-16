@@ -14,11 +14,11 @@ function ON_ATTACK_249(me, item)
 end
 
 -- 용마제일검 사용 스크립트
-function ON_ACTIVATED_249(me, item)
-
-end
+-- function ON_ACTIVATED_249(me, item)
+--
+-- end
 
 -- 용마제일검 해제 스크립트
-function ON_DEACTIVATED_249(me, item)
-
-end
+-- function ON_DEACTIVATED_249(me, item)
+--
+-- end

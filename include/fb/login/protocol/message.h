@@ -31,17 +31,17 @@ public:
 
 public:
 #ifndef BOT
-    [[nodiscard]] async::task<void> serialize(fb::stream_writer<big_endian>& writer) const
+    void serialize(fb::stream_writer<big_endian>& writer) const
     {
-        co_await header::serialize(writer);
+        header::serialize(writer);
         writer.write<uint8_t>(opcode);
         writer.write<uint8_t>(this->type);
         writer.write<std::string, uint8_t>(this->text);
     }
 #else
-    [[nodiscard]] async::task<void> deserialize(fb::stream_reader<big_endian>& reader)
+    void deserialize(fb::stream_reader<big_endian>& reader)
     {
-        co_await header::deserialize(reader);
+        header::deserialize(reader);
         this->type = reader.read<uint8_t>();
         this->text = reader.read<std::string, uint8_t>();
     }

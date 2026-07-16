@@ -284,16 +284,17 @@ public:
                                                 std::function<void(ReturnType&&)>&& callback,
                                                 async::propagation::token           context = {})
     {
-        auto  guard = this->_queue.enter_write();
-        auto& queue = guard.value();
-        queue.push([fn       = std::move(fn),
-                    error    = std::move(error),
-                    callback = std::move(callback),
-                    context  = std::move(context),
+        auto  fn_holder = std::make_shared<handle_func_type<ReturnType>>(std::move(fn));
+        auto  guard     = this->_queue.enter_write();
+        auto& queue     = guard.value();
+        queue.push([fn_holder = std::move(fn_holder),
+                    error     = std::move(error),
+                    callback  = std::move(callback),
+                    context   = std::move(context),
                     this]() {
             execution_context::pending(context);
-            async::awaitable_then(fn(*this),
-                                  [fn = std::move(fn), error = std::move(error), callback = std::move(callback)](
+            async::awaitable_then((*fn_holder)(*this),
+                                  [fn_holder, error = std::move(error), callback = std::move(callback)](
                                       async::awaitable_result<ReturnType> result) {
                                       try
                                       {

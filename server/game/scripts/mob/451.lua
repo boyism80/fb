@@ -5,6 +5,6 @@ function ON_MOB_ATTACK_451(me, you)
 end
 
 -- 마옥 사망
-function ON_MOB_DIE_451(me, you)
-
-end
+-- function ON_MOB_DIE_451(me)
+--
+-- end

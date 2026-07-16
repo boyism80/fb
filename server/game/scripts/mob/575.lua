@@ -5,6 +5,6 @@ function ON_MOB_ATTACK_575(me, you)
 end
 
 -- 산소괴왕 사망
-function ON_MOB_DIE_575(me, you)
-
-end
+-- function ON_MOB_DIE_575(me)
+--
+-- end

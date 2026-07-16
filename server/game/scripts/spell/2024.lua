@@ -13,14 +13,14 @@ function ON_CAST_2024(me, sp)
 end
 
 -- 운기 버프 효과
-function ON_BUFF_2024(me, sp)
-
-end
+-- function ON_BUFF_2024(me, sp)
+--
+-- end
 
 -- 운기 버프 해제 효과
-function ON_UNBUFF_2024(me, sp)
-
-end
+-- function ON_UNBUFF_2024(me, sp)
+--
+-- end
 
 -- 운기 지속 효과
 function ON_CONCAST_2024(me, caster, buff)

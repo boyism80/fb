@@ -67,6 +67,7 @@ struct character
     static int builtin_world(lua_State* L);
     static int builtin_ad(lua_State* L);
     static int builtin_web(lua_State* L);
+    static int builtin_timer(lua_State* L);
     static int builtin_delay(lua_State* L);
     static int builtin_birthday(lua_State* L);
     static int builtin_active(lua_State* L);
@@ -80,10 +81,13 @@ struct character
     static int builtin_slot(lua_State* L);
     static int builtin_rezen_force(lua_State* L);
     static int builtin_quest(lua_State* L);
+    static int builtin_matchmaker(lua_State* L);
     static int builtin_start_quest(lua_State* L);
     static int builtin_remove_quest(lua_State* L);
     static int builtin_reward(lua_State* L);
     static int builtin_send_system_mail(lua_State* L);
+    static int builtin_send_storage_box(lua_State* L);
+    static int builtin_send_system_storage_box(lua_State* L);
     static int builtin_storage_entries(lua_State* L);
     static int builtin_receive_storage_reward(lua_State* L);
     static int builtin_marketplace_list(lua_State* L);

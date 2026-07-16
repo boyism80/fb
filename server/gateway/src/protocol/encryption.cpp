@@ -20,9 +20,9 @@ encryption::encryption(const fb::encryption& cryptor, uint32_t crc) :
 #endif
 
 #ifndef BOT
-async::task<void> encryption::serialize(fb::stream_writer<big_endian>& writer) const
+void encryption::serialize(fb::stream_writer<big_endian>& writer) const
 {
-    co_await header::serialize(writer);
+    header::serialize(writer);
     writer.write<uint8_t>(opcode);
     writer.write<uint8_t>(0x00);
     writer.write<uint32_t>(this->crc);
@@ -32,9 +32,9 @@ async::task<void> encryption::serialize(fb::stream_writer<big_endian>& writer) c
     writer.write<uint8_t>(0x00);
 }
 #else
-async::task<void> encryption::deserialize(fb::stream_reader<big_endian>& reader)
+void encryption::deserialize(fb::stream_reader<big_endian>& reader)
 {
-    co_await header::deserialize(reader);
+    header::deserialize(reader);
     reader.read<uint8_t>();
 
     auto crc     = reader.read<uint32_t>();

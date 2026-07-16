@@ -1,6 +1,7 @@
 #include <fb/game/server.h>
 #include <fb/model/model.h>
 #include <fb/game/builtin/model.h>
+#include <tuple>
 
 using namespace fb::game;
 
@@ -27,25 +28,43 @@ int builtin::model::item::builtin_make(lua_State* L)
     auto  object = model->make(srv);
 
     auto map = lua->touserdata<fb::game::map>(2);
-    async::awaitable_get(object->map(map));
 
+    auto x = uint16_t{0};
+    auto y = uint16_t{0};
     if (lua->is_table(3))
     {
         lua->rawgeti(3, 1);
-        object->x((uint16_t)lua->tointeger(-1));
+        x = (uint16_t)lua->tointeger(-1);
         lua->remove(-1);
 
         lua->rawgeti(3, 2);
-        object->y((uint16_t)lua->tointeger(-1));
+        y = (uint16_t)lua->tointeger(-1);
         lua->remove(-1);
     }
     else
     {
-        object->position((uint16_t)lua->tointeger(3), (uint16_t)lua->tointeger(4));
+        x = (uint16_t)lua->tointeger(3);
+        y = (uint16_t)lua->tointeger(4);
     }
 
-    lua->pushobject(object);
-    return 1;
+    auto object_holder = std::make_shared<decltype(object)>();
+    auto weak          = object->weak_from_this_as<fb::game::object>();
+    auto builder       = lua->new_co_builder();
+    builder.weak       = weak;
+    builder.yield      = [=]() -> async::task<void> {
+        std::ignore = co_await object->map(map);
+        object->position(x, y);
+        *object_holder = object;
+        co_return;
+    };
+    builder.resume = [=]() -> async::task<int> {
+        if (*object_holder == nullptr)
+            lua->pushnil();
+        else
+            lua->pushobject(*object_holder);
+        co_return 1;
+    };
+    return builder.run();
 }
 
 int builtin::model::item::builtin_attr(lua_State* L)
@@ -77,7 +96,6 @@ int builtin::model::item::builtin_price(lua_State* L)
     auto lua = fb::lua::get(L);
     if (lua == nullptr)
         return 0;
-
     auto model = lua->touserdata<fb::model::item>(1);
     lua->pushinteger(model->price);
     return 1;

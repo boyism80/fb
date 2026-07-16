@@ -266,7 +266,7 @@ local function test_scenario_4(ctx, index)
 
     log("debug", string.format("Chat[%d]: %s", index, "scenario 4: dialog LIST step 1 (expect list)"))
     bot:request_dialog_ext(
-        protocol.dialog("LIST", 0, "", 0, 0, "", "NEXT"),
+        protocol.dialog("LIST", 0, "", 1, 0, "", "NEXT"),
         function(packet)
             return packet.type == "list"
         end)
@@ -274,7 +274,7 @@ local function test_scenario_4(ctx, index)
 
     log("debug", string.format("Chat[%d]: %s", index, "scenario 4: dialog LIST step 2 (expect item)"))
     bot:request_dialog(
-        protocol.dialog("LIST", 0, "", 0, 0, "", "NEXT"),
+        protocol.dialog("LIST", 0, "", 1, 0, "", "NEXT"),
         function(packet)
             return packet.type == "item"
         end)

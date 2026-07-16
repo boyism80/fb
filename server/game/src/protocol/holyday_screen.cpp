@@ -3,9 +3,9 @@
 namespace fb::protocol::game::response {
 
 #ifndef BOT
-async::task<void> holyday_screen::serialize(fb::stream_writer<big_endian>& writer) const
+void holyday_screen::serialize(fb::stream_writer<big_endian>& writer) const
 {
-    co_await header::serialize(writer);
+    header::serialize(writer);
     writer.write<uint8_t>(opcode);
     writer.write<uint16_t>(this->screen);
     writer.write<uint8_t>(0);
@@ -15,9 +15,9 @@ async::task<void> holyday_screen::serialize(fb::stream_writer<big_endian>& write
     writer.write<uint8_t>(this->position.y);
 }
 #else
-async::task<void> holyday_screen::deserialize(fb::stream_reader<big_endian>& reader)
+void holyday_screen::deserialize(fb::stream_reader<big_endian>& reader)
 {
-    co_await header::deserialize(reader);
+    header::deserialize(reader);
     this->screen = reader.read<uint8_t>();
     (void)reader.read<uint8_t>(); // pad
     this->hair       = reader.read<uint8_t>();

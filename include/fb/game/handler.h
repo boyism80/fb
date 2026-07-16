@@ -54,13 +54,18 @@
 #include <fb/game/handler/amqp/broadcast_clan.h>
 #include <fb/game/handler/amqp/write_mail.h>
 #include <fb/game/handler/amqp/write_mails.h>
+#include <fb/game/handler/amqp/write_storage_box.h>
 #include <fb/game/handler/amqp/deliver_system_mail.h>
+#include <fb/game/handler/amqp/deliver_system_storage.h>
 #include <fb/game/handler/amqp/ban.h>
 #include <fb/game/handler/amqp/broadcast_save.h>
 #include <fb/game/handler/amqp/set_exp_multiplier.h>
 #include <fb/game/handler/amqp/set_drop_rate_multiplier.h>
 #include <fb/game/handler/amqp/set_datetime.h>
 #include <fb/game/handler/amqp/start_maintenance.h>
+#include <fb/game/handler/amqp/matchmaking_proposed.h>
+#include <fb/game/handler/amqp/matchmaking_ready.h>
+#include <fb/game/handler/amqp/matchmaking_dissolved.h>
 
 #include <fb/game/handler/timer/heart_beat.h>
 #include <fb/game/handler/timer/update_time.h>

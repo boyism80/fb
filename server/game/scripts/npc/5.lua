@@ -14,19 +14,19 @@ function NPC_5(me, npc_obj)
     if sel == nil then
         return
     end
-    if sel == 0 then
+    if sel == 1 then
         if me:promotion() >= 3 then
-            me:dialog(npc_obj, '당신은 더 이상 제가 수련을 도와드리지 않아도 될 만큼 성장하셨군요.', false, true)
+            me:dialog(npc_obj, '당신은 더 이상 제가 수련을 도와드리지 않아도 될 만큼 성장하셨군요.', { prev = false, next = true })
         else
             npc.promotion(me, npc_obj, CLASS.POET)
         end
         return
     end
-    if sel == 1 then
+    if sel == 2 then
         npc.promotion_skills(me, npc_obj, CLASS.POET)
         return
     end
-    if sel == 2 then
+    if sel == 3 then
         npc.promotion_clothes(me, npc_obj, CLASS.POET)
     end
 end

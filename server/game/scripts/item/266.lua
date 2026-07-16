@@ -14,11 +14,11 @@ function ON_ATTACK_266(me, item)
 end
 
 -- 용천제구검 사용 스크립트
-function ON_ACTIVATED_266(me, item)
-
-end
+-- function ON_ACTIVATED_266(me, item)
+--
+-- end
 
 -- 용천제구검 해제 스크립트
-function ON_DEACTIVATED_266(me, item)
-
-end
+-- function ON_DEACTIVATED_266(me, item)
+--
+-- end

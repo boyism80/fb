@@ -65,7 +65,7 @@ function M.handle(me, npc)
 ::STORAGE_LIST::
     entries = me:storage_entries()
     if entries == nil or #entries == 0 then
-        local button = me:dialog(npc, '보관함에 보관된 항목이 없습니다.', true, true)
+        local button = me:dialog(npc, '보관함에 보관된 항목이 없습니다.', { prev = true, next = true })
         if button == DIALOG_RESULT.QUIT then
             return false
         end
@@ -80,7 +80,7 @@ function M.handle(me, npc)
         table.insert(entry_list, entry.title ~= nil and entry.title ~= '' and entry.title or entry.message)
     end
     
-    local entry_index, button = me:list(npc, '통합보관함', entry_list, true)
+    local entry_index, button = me:list(npc, '통합보관함', entry_list, { prev = true })
     if button == DIALOG_RESULT.QUIT then
         return false
     end
@@ -91,7 +91,7 @@ function M.handle(me, npc)
         goto STORAGE_LIST
     end
     
-    current_entry = entries[entry_index + 1]
+    current_entry = entries[entry_index]
     if current_entry == nil then
         goto STORAGE_LIST
     end
@@ -99,9 +99,9 @@ function M.handle(me, npc)
 ::ENTRY_DETAIL::
     local detail_header = current_entry.title ~= nil and current_entry.title ~= '' and current_entry.title or '보관함 보상'
     local detail_message = build_detail_message(current_entry)
-    
+
     if not has_attachments(current_entry) then
-        local detail_button = me:dialog(npc, detail_header .. '\n' .. detail_message, true, true)
+        local detail_button = me:dialog(npc, detail_header .. '\n' .. detail_message, { prev = true, next = true })
         if detail_button == DIALOG_RESULT.QUIT then
             return false
         end
@@ -110,8 +110,8 @@ function M.handle(me, npc)
         end
         goto STORAGE_LIST
     end
-    
-    local detail_button = me:dialog(npc, detail_header .. '\n' .. detail_message, true, true)
+
+    local detail_button = me:dialog(npc, detail_header .. '\n' .. detail_message, { prev = true, next = true })
     if detail_button == DIALOG_RESULT.QUIT then
         return false
     end
@@ -121,13 +121,13 @@ function M.handle(me, npc)
     if detail_button ~= DIALOG_RESULT.NEXT then
         goto STORAGE_LIST
     end
-    
+
     if current_entry.received then
         goto STORAGE_LIST
     end
-    
+
 ::RECEIVE_CONFIRM::
-    local receive_selected, receive_button = me:list(npc, '보상을 수령하시겠습니까?', {'예', '아니오'}, true)
+    local receive_selected, receive_button = me:list(npc, '보상을 수령하시겠습니까?', {'예', '아니오'}, { prev = true })
     if receive_button == DIALOG_RESULT.QUIT then
         return false
     end
@@ -137,14 +137,14 @@ function M.handle(me, npc)
     if receive_selected == nil then
         goto ENTRY_DETAIL
     end
-    
-    if receive_selected ~= 0 then
+
+    if receive_selected ~= 1 then
         goto STORAGE_LIST
     end
-    
+
     local success = me:receive_storage_reward(current_entry.id)
     if success then
-        local button = me:dialog(npc, '보상이 지급되었습니다.', true, true)
+        local button = me:dialog(npc, '보상이 지급되었습니다.', { prev = true, next = true })
         if button == DIALOG_RESULT.QUIT then
             return false
         end
@@ -152,7 +152,7 @@ function M.handle(me, npc)
             goto STORAGE_LIST
         end
     else
-        local button = me:dialog(npc, '수령 조건이 맞지 않습니다. 확인 후 다시 시도해주세요.', true, true)
+        local button = me:dialog(npc, '수령 조건이 맞지 않습니다. 확인 후 다시 시도해주세요.', { prev = true, next = true })
         if button == DIALOG_RESULT.QUIT then
             return false
         end

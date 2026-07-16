@@ -71,7 +71,7 @@ function M.damage(me, you, rate, sound)
     if sound ~= nil then
         you:sound(sound)
     end
-    you:damage(me:normal_attack_damage(size), me, { critical = critical, rate = rate })
+    me:damage_to(you, me:normal_attack_damage(size), { critical = critical, rate = rate })
 end
 
 function M.any_action(me)

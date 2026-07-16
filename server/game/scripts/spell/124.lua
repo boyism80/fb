@@ -1,5 +1,5 @@
 -- spell: 오성선풍각
 -- 오성선풍각 (id 124). Add logic as needed.
-function ON_CAST_124(me, you, spell)
-    -- TODO: implement
-end
+-- function ON_CAST_124(me, you, spell)
+--     -- TODO: implement
+-- end

@@ -3,18 +3,18 @@ local quest = require('lib.quest')
 function NPC_540(me, npc)
     local q = me:quest(quest.QUEST_JINHWANG)
     if q == nil or q:step() ~= 5 then
-        me:dialog(npc, "에휴... 여행을 다녀왔더니 힘드네요.", false, true)
+        me:dialog(npc, "에휴... 여행을 다녀왔더니 힘드네요.", { prev = false, next = true })
         return
     end
 
     ::NPC_540_0000::
-    local button = me:dialog(npc, "안녕하세요. 전 방금 영환도사님과 중국 서쪽을 여행하고 오는 길입니다. 목숨이 위험했던 때도 있었지만 정말 신기한 여행을 했답니다.", false, true)
+    local button = me:dialog(npc, "안녕하세요. 전 방금 영환도사님과 중국 서쪽을 여행하고 오는 길입니다. 목숨이 위험했던 때도 있었지만 정말 신기한 여행을 했답니다.", { prev = false, next = true })
     if button == DIALOG_RESULT.QUIT then
         return
     end
 
     ::NPC_540_0001::
-    button = me:dialog(npc, "진황보검이요? 그런건 잘 모르겠는데.. 아! 여행도중 영환도사님이 검을 하나 발견하셨는데 범상치 않은것이라 하셨던 것이 기억나는군요.", true, true)
+    button = me:dialog(npc, "진황보검이요? 그런건 잘 모르겠는데.. 아! 여행도중 영환도사님이 검을 하나 발견하셨는데 범상치 않은것이라 하셨던 것이 기억나는군요.", { prev = true, next = true })
     if button == DIALOG_RESULT.QUIT then
         return
     end
@@ -23,7 +23,7 @@ function NPC_540(me, npc)
     end
 
     ::NPC_540_0002::
-    button = me:dialog(npc, "영환도사님을 찾아가보세요. 곧 또 여행을 떠나실테니 서두르시는게 좋을듯하네요.", false, true)
+    button = me:dialog(npc, "영환도사님을 찾아가보세요. 곧 또 여행을 떠나실테니 서두르시는게 좋을듯하네요.", { prev = false, next = true })
     if button == DIALOG_RESULT.QUIT then
         return
     end

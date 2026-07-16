@@ -80,7 +80,6 @@ namespace Http.Reepository
             return $"""
                 INSERT INTO `system_storage_box` (
                     `id`,
-                    `user`,
                     `title`,
                     `message`,
                     `attachments`,
@@ -91,7 +90,6 @@ namespace Http.Reepository
                     `updated_date`)
                 VALUES (
                     {value.Id.Escape()},
-                    {value.User.Escape()},
                     {value.Title.Escape()},
                     {value.Message.Escape()},
                     {attachmentsJson.Escape()},
@@ -101,7 +99,6 @@ namespace Http.Reepository
                     {value.CreatedDate.Escape()},
                     {value.UpdatedDate.Escape()})
                 ON DUPLICATE KEY UPDATE
-                    `user`=VALUES(`user`),
                     `title`=VALUES(`title`),
                     `message`=VALUES(`message`),
                     `attachments`=VALUES(`attachments`),
@@ -112,7 +109,6 @@ namespace Http.Reepository
         }
 
         public async Task<SystemStorageBox> Write(uint world,
-            uint? user,
             string title,
             string message,
             List<Fb.Model.Dsl> attachments,
@@ -129,15 +125,14 @@ namespace Http.Reepository
             var attachmentsJson = JsonConvert.SerializeObject(attachments ?? new List<Fb.Model.Dsl>());
 
             var query = """
-                INSERT INTO system_storage_box (`user`, title, message, attachments, expired_date, external_ref, deleted, created_date, updated_date)
-                VALUES (@user, @title, @message, CAST(@attachmentsJson AS JSON), @expireDate, @externalRef, 0, NOW(), NOW());
+                INSERT INTO system_storage_box (title, message, attachments, expired_date, external_ref, deleted, created_date, updated_date)
+                VALUES (@title, @message, CAST(@attachmentsJson AS JSON), @expireDate, @externalRef, 0, NOW(), NOW());
                 SELECT LAST_INSERT_ID();
                 """;
 
             await using var conn = _dbContext.GetGlobalConnection(world);
             var id = await conn.QueryFirstOrDefaultAsync<uint>(query, new
             {
-                user,
                 title,
                 message,
                 attachmentsJson,
@@ -148,7 +143,6 @@ namespace Http.Reepository
             var box = new SystemStorageBox
             {
                 Id           = id,
-                User         = user,
                 Title        = title,
                 Message      = message,
                 Attachments  = attachments ?? new List<Fb.Model.Dsl>(),

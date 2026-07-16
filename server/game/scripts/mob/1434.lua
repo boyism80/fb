@@ -1,7 +1,7 @@
 -- mob: 백열장수련도우미
-function ON_MOB_DIE_1434(me, you)
-
-end
+-- function ON_MOB_DIE_1434(me)
+--
+-- end
 
 function ON_MOB_SPELL_HIT_1434(me, you, spell)
     me:hp(me:maxhp())

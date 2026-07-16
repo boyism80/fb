@@ -83,8 +83,7 @@ void service::mail::apply_received(character& ch, uint16_t unread, const mail_bo
 
 async::task<void> service::mail::on_received(uint32_t user_id, uint16_t unread, const mail_box::summary& snapshot)
 {
-    auto guard = this->server.characters.enter_write();
-    auto ch    = guard.value().find(user_id);
+    auto ch = this->server.characters.find(user_id);
     if (ch != nullptr)
     {
         auto weak    = ch->template weak_from_this_as<character>();
@@ -105,12 +104,10 @@ async::task<void> service::mail::on_received_batch(const std::vector<mail_box::s
     if (snapshots.empty())
         co_return;
 
-    auto       guard      = this->server.characters.enter_write();
-    auto&      characters = guard.value();
-    const auto count      = snapshots.size();
+    const auto count = snapshots.size();
     for (size_t i = 0; i < count; ++i)
     {
-        auto ch = characters.find(user_ids[i]);
+        auto ch = this->server.characters.find(user_ids[i]);
         if (ch == nullptr)
             continue;
 

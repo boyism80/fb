@@ -1,5 +1,6 @@
 #include <fb/game/handler/protocol/swap.h>
 #include <fb/game/server.h>
+#include <tuple>
 
 using namespace fb::game::handler::protocol;
 
@@ -19,13 +20,13 @@ async::task<bool> swap::handle(fb::socket<character>& session, game_reqs::swap& 
     {
     case SWAP_TYPE::SPELL:
     {
-        ch->spells.swap(request.src - 1, request.dst - 1);
+        std::ignore = ch->spells.swap(request.src - 1, request.dst - 1);
         break;
     }
 
     case SWAP_TYPE::ITEM:
     {
-        ch->items.swap(request.src - 1, request.dst - 1);
+        std::ignore = ch->items.swap(request.src - 1, request.dst - 1);
         break;
     }
 

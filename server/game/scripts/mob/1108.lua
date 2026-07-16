@@ -5,6 +5,6 @@ function ON_MOB_ATTACK_1108(me, you)
 end
 
 -- 진룡 사망
-function ON_MOB_DIE_1108(me, you)
-
-end
+-- function ON_MOB_DIE_1108(me)
+--
+-- end

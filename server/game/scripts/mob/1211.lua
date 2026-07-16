@@ -5,6 +5,6 @@ function ON_MOB_ATTACK_1211(me, you)
 end
 
 -- 서장군의망령 사망
-function ON_MOB_DIE_1211(me, you)
-
-end
+-- function ON_MOB_DIE_1211(me)
+--
+-- end

@@ -14,11 +14,11 @@ function ON_ATTACK_260(me, item)
 end
 
 -- 용천제삼검 사용 스크립트
-function ON_ACTIVATED_260(me, item)
-
-end
+-- function ON_ACTIVATED_260(me, item)
+--
+-- end
 
 -- 용천제삼검 해제 스크립트
-function ON_DEACTIVATED_260(me, item)
-
-end
+-- function ON_DEACTIVATED_260(me, item)
+--
+-- end

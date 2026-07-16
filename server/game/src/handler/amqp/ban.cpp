@@ -11,19 +11,14 @@ ban::ban(fb::game::server& server) :
 
 async::task<void> ban::handle(const internal_resp::Ban& message)
 {
-    std::weak_ptr<fb::game::character> weak;
-    {
-        auto guard = co_await this->server.characters.enter_write_async();
-        auto ch    = guard.value().find(message.name);
-        if (ch == nullptr)
-            co_return;
+    auto ch = this->server.characters.find(message.name);
+    if (ch == nullptr)
+        co_return;
 
-        weak = ch->weak_from_this_as<fb::game::character>();
-    }
-
+    auto weak = ch->weak_from_this_as<fb::game::character>();
     co_await this->server.threads.switching(weak);
 
-    auto ch = weak.lock();
+    ch = weak.lock();
     if (ch == nullptr)
         co_return;
 

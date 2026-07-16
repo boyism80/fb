@@ -2,7 +2,7 @@ local M = {}
 
 function M.handle(me, npc)
 ::MARKETPLACE_MENU::
-    local marketplace_selected, button = me:list(npc, '거래소 메뉴', {'검색', '등록', '취소'}, true)
+    local marketplace_selected, button = me:list(npc, '거래소 메뉴', {'검색', '등록', '취소'}, { prev = true })
     if button == DIALOG_RESULT.QUIT then
         return false
     end
@@ -13,19 +13,19 @@ function M.handle(me, npc)
         return true
     end
     
-    if marketplace_selected == 0 then
+    if marketplace_selected == 1 then
         local result = M.search(me, npc)
         if result == false then
             return false
         end
         goto MARKETPLACE_MENU
-    elseif marketplace_selected == 1 then
+    elseif marketplace_selected == 2 then
         local result = M.list(me, npc)
         if result == false then
             return false
         end
         goto MARKETPLACE_MENU
-    elseif marketplace_selected == 2 then
+    elseif marketplace_selected == 3 then
         local result = M.cancel(me, npc)
         if result == false then
             return false
@@ -48,7 +48,7 @@ function M.search(me, npc)
     
     local error, result = me:marketplace_search(search_option)
     if error ~= nil then
-        local button = me:dialog(npc, '검색 중 오류가 발생했습니다: ' .. error, true, true)
+        local button = me:dialog(npc, '검색 중 오류가 발생했습니다: ' .. error, { prev = true, next = true })
         if button == DIALOG_RESULT.QUIT then
             return false
         end
@@ -59,7 +59,7 @@ function M.search(me, npc)
     end
     
     if result == nil or result.listings == nil or #result.listings == 0 then
-        local button = me:dialog(npc, '검색 결과가 없습니다.', true, true)
+        local button = me:dialog(npc, '검색 결과가 없습니다.', { prev = true, next = true })
         if button == DIALOG_RESULT.QUIT then
             return false
         end
@@ -84,7 +84,7 @@ function M.search(me, npc)
     end
     
     if #item_list == 0 then
-        local button = me:dialog(npc, '검색 결과가 없습니다.', true, true)
+        local button = me:dialog(npc, '검색 결과가 없습니다.', { prev = true, next = true })
         if button == DIALOG_RESULT.QUIT then
             return false
         end
@@ -138,7 +138,7 @@ function M.search(me, npc)
             table.insert(listing_list, display_text)
         end
         
-        local selected_index, button = me:list(npc, '같은 아이템이 여러 개 있습니다. 선택해주세요.', listing_list, true)
+        local selected_index, button = me:list(npc, '같은 아이템이 여러 개 있습니다. 선택해주세요.', listing_list, { prev = true })
         if button == DIALOG_RESULT.QUIT then
             return
         end
@@ -149,7 +149,7 @@ function M.search(me, npc)
             goto MARKETPLACE_SEARCH
         end
         
-        selected_listing = listing_map[selected_name][selected_index + 1]
+        selected_listing = listing_map[selected_name][selected_index]
     end
     
     if selected_listing == nil then
@@ -167,7 +167,7 @@ function M.search(me, npc)
         
         purchase_count = tonumber(count_input)
         if purchase_count == nil or purchase_count <= 0 or purchase_count > selected_listing.item_data.count then
-            local button = me:dialog(npc, '올바른 수량을 입력해주세요.', true, true)
+            local button = me:dialog(npc, '올바른 수량을 입력해주세요.', { prev = true, next = true })
             if button == DIALOG_RESULT.QUIT then
                 return false
             end
@@ -214,7 +214,7 @@ function M.search(me, npc)
         end
         warning_text = warning_text .. '\n정말 구매하시겠습니까?'
         
-        local confirm_selected, confirm_button = me:list(npc, warning_text, {'예', '아니오'}, true)
+        local confirm_selected, confirm_button = me:list(npc, warning_text, {'예', '아니오'}, { prev = true })
         if confirm_button == DIALOG_RESULT.QUIT then
             return false
         end
@@ -225,14 +225,14 @@ function M.search(me, npc)
             goto MARKETPLACE_SEARCH
         end
         
-        if confirm_selected ~= 0 then
+        if confirm_selected ~= 1 then
             goto MARKETPLACE_SEARCH
         end
     end
     
     local purchase_error, purchase_result = me:marketplace_purchase(selected_listing.id, purchase_count)
     if purchase_error ~= nil then
-        local button = me:dialog(npc, '구매 실패: ' .. purchase_error, true, true)
+        local button = me:dialog(npc, '구매 실패: ' .. purchase_error, { prev = true, next = true })
         if button == DIALOG_RESULT.QUIT then
             return false
         end
@@ -242,7 +242,7 @@ function M.search(me, npc)
         return true
     end
     
-    local button = me:dialog(npc, '구매가 완료되었습니다.', true, true)
+    local button = me:dialog(npc, '구매가 완료되었습니다.', { prev = true, next = true })
     if button == DIALOG_RESULT.QUIT then
         return false
     end
@@ -271,7 +271,7 @@ function M.list(me, npc)
     end
     
     if #slots == 0 then
-        local button = me:dialog(npc, '등록할 수 있는 아이템이 없습니다.', true, true)
+        local button = me:dialog(npc, '등록할 수 있는 아이템이 없습니다.', { prev = true, next = true })
         if button == DIALOG_RESULT.QUIT then
             return false
         end
@@ -285,14 +285,14 @@ function M.list(me, npc)
     if slot_index == nil then
         return
     end
-    
+
     local selected_item = items[slot_index]
     if selected_item == nil then
         goto MARKETPLACE_LIST
     end
     local selected_model = selected_item:model()
     if selected_model == nil or not selected_model:trade() then
-        local button = me:dialog(npc, '등록할 수 없는 아이템입니다.', true, true)
+        local button = me:dialog(npc, '등록할 수 없는 아이템입니다.', { prev = true, next = true })
         if button == DIALOG_RESULT.QUIT then
             return false
         end
@@ -311,7 +311,7 @@ function M.list(me, npc)
         
         count = tonumber(count_input)
         if count == nil or count <= 0 or count > selected_item:count() then
-            local button = me:dialog(npc, '올바른 수량을 입력해주세요.', true, true)
+            local button = me:dialog(npc, '올바른 수량을 입력해주세요.', { prev = true, next = true })
             if button == DIALOG_RESULT.QUIT then
                 return false
             end
@@ -329,7 +329,7 @@ function M.list(me, npc)
     
     local price = tonumber(price_input)
     if price == nil or price <= 0 then
-        local button = me:dialog(npc, '올바른 가격을 입력해주세요.', true, true)
+        local button = me:dialog(npc, '올바른 가격을 입력해주세요.', { prev = true, next = true })
         if button == DIALOG_RESULT.QUIT then
             return false
         end
@@ -343,7 +343,7 @@ function M.list(me, npc)
     local listing_fee = math.floor(total_sale_amount * 0.05)
     
     local fee_message = string.format('판매금액의 5%%인 %d전이 수수료로 부과됩니다.\n등록하시겠습니까?', listing_fee)
-    local confirm_selected, confirm_button = me:list(npc, fee_message, {'예', '아니오'}, true)
+    local confirm_selected, confirm_button = me:list(npc, fee_message, {'예', '아니오'}, { prev = true })
     if confirm_button == DIALOG_RESULT.QUIT then
         return false
     end
@@ -354,13 +354,13 @@ function M.list(me, npc)
         goto MARKETPLACE_LIST
     end
     
-    if confirm_selected ~= 0 then
+    if confirm_selected ~= 1 then
         goto MARKETPLACE_LIST
     end
     
-    local list_error, list_result = me:marketplace_list(slot_index - 1, count, price)
+    local list_error, list_result = me:marketplace_list(slot_index, count, price)
     if list_error ~= nil then
-        local button = me:dialog(npc, '등록 실패: ' .. list_error, true, true)
+        local button = me:dialog(npc, '등록 실패: ' .. list_error, { prev = true, next = true })
         if button == DIALOG_RESULT.QUIT then
             return false
         end
@@ -370,7 +370,7 @@ function M.list(me, npc)
         return true
     end
     
-    local button = me:dialog(npc, '등록이 완료되었습니다.', true, true)
+    local button = me:dialog(npc, '등록이 완료되었습니다.', { prev = true, next = true })
     if button == DIALOG_RESULT.QUIT then
         return false
     end
@@ -388,7 +388,7 @@ function M.cancel(me, npc)
     
     local error, result = me:marketplace_search(my_listings_option)
     if error ~= nil then
-        local button = me:dialog(npc, '내 등록 물품 조회 중 오류가 발생했습니다: ' .. error, true, true)
+        local button = me:dialog(npc, '내 등록 물품 조회 중 오류가 발생했습니다: ' .. error, { prev = true, next = true })
         if button == DIALOG_RESULT.QUIT then
             return false
         end
@@ -399,7 +399,7 @@ function M.cancel(me, npc)
     end
     
     if result == nil or result.listings == nil or #result.listings == 0 then
-        local button = me:dialog(npc, '등록한 물품이 없습니다.', true, true)
+        local button = me:dialog(npc, '등록한 물품이 없습니다.', { prev = true, next = true })
         if button == DIALOG_RESULT.QUIT then
             return false
         end
@@ -424,7 +424,7 @@ function M.cancel(me, npc)
     end
     
     if #item_list == 0 then
-        local button = me:dialog(npc, '등록한 물품이 없습니다.', true, true)
+        local button = me:dialog(npc, '등록한 물품이 없습니다.', { prev = true, next = true })
         if button == DIALOG_RESULT.QUIT then
             return false
         end
@@ -465,7 +465,7 @@ function M.cancel(me, npc)
             table.insert(listing_list, display_text)
         end
         
-        local cancel_selected_index, cancel_button = me:list(npc, '같은 아이템이 여러 개 있습니다. 선택해주세요.', listing_list, true)
+        local cancel_selected_index, cancel_button = me:list(npc, '같은 아이템이 여러 개 있습니다. 선택해주세요.', listing_list, { prev = true })
         if cancel_button == DIALOG_RESULT.QUIT then
             return
         end
@@ -476,14 +476,14 @@ function M.cancel(me, npc)
             goto MARKETPLACE_CANCEL
         end
         
-        selected_listing = listing_map[selected_name][cancel_selected_index + 1]
+        selected_listing = listing_map[selected_name][cancel_selected_index]
     end
     
     if selected_listing == nil then
         goto MARKETPLACE_CANCEL
     end
     
-    local confirm_selected, confirm_button = me:list(npc, '수수료를 반환받지 못합니다. 정말 취소하시겠습니까?', {'예', '아니오'}, true)
+    local confirm_selected, confirm_button = me:list(npc, '수수료를 반환받지 못합니다. 정말 취소하시겠습니까?', {'예', '아니오'}, { prev = true })
     if confirm_button == DIALOG_RESULT.QUIT then
         return
     end
@@ -494,13 +494,13 @@ function M.cancel(me, npc)
         goto MARKETPLACE_CANCEL
     end
     
-    if confirm_selected ~= 0 then
+    if confirm_selected ~= 1 then
         goto MARKETPLACE_CANCEL
     end
     
     local cancel_error, cancel_result = me:marketplace_cancel(selected_listing.id)
     if cancel_error ~= nil then
-        local button = me:dialog(npc, '취소 실패: ' .. cancel_error, true, true)
+        local button = me:dialog(npc, '취소 실패: ' .. cancel_error, { prev = true, next = true })
         if button == DIALOG_RESULT.QUIT then
             return false
         end
@@ -510,7 +510,7 @@ function M.cancel(me, npc)
         goto MARKETPLACE_CANCEL
     end
     
-    local button = me:dialog(npc, '취소가 완료되었습니다.', true, true)
+    local button = me:dialog(npc, '취소가 완료되었습니다.', { prev = true, next = true })
     if button == DIALOG_RESULT.QUIT then
         return false
     end

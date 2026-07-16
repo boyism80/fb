@@ -68,7 +68,8 @@ async::task<void> bulletin::handle_sections(character* ch)
 
 async::task<void> bulletin::handle_articles(character* ch, std::weak_ptr<character> weak, game_reqs::bulletin& request)
 {
-    auto mail = request.section == 0xFFFF;
+    auto mail  = request.section == 0xFFFF;
+    auto error = std::optional<std::string>{};
     try
     {
         if (mail)
@@ -104,15 +105,21 @@ async::task<void> bulletin::handle_articles(character* ch, std::weak_ptr<charact
     }
     catch (std::exception& e)
     {
+        error = e.what();
+    }
+
+    if (error.has_value())
+    {
         auto ptr = weak.lock();
         if (ptr != nullptr)
-            ptr->message(e.what());
+            ptr->message(error.value());
     }
 }
 
 async::task<void> bulletin::handle_article(character* ch, std::weak_ptr<character> weak, game_reqs::bulletin& request)
 {
-    auto mail = request.section == 0xFFFF;
+    auto mail  = request.section == 0xFFFF;
+    auto error = std::optional<std::string>{};
     try
     {
         if (mail)
@@ -158,19 +165,25 @@ async::task<void> bulletin::handle_article(character* ch, std::weak_ptr<characte
     }
     catch (std::exception& e)
     {
+        error = e.what();
+    }
+
+    if (error.has_value())
+    {
         auto ptr = weak.lock();
         if (ptr != nullptr)
         {
             if (mail)
-                ptr->mail_box.message(e.what(), false, BULLETIN_MESSAGE_TYPE::READ);
+                ptr->mail_box.message(error.value(), false, BULLETIN_MESSAGE_TYPE::READ);
             else
-                ptr->bulletin.message(e.what(), false, BULLETIN_MESSAGE_TYPE::READ);
+                ptr->bulletin.message(error.value(), false, BULLETIN_MESSAGE_TYPE::READ);
         }
     }
 }
 
 async::task<void> bulletin::handle_write(character* ch, std::weak_ptr<character> weak, game_reqs::bulletin& request)
 {
+    auto error = std::optional<std::string>{};
     try
     {
         co_await this->server.bulletin.write(*ch, request.section, request.title, request.contents);
@@ -190,15 +203,21 @@ async::task<void> bulletin::handle_write(character* ch, std::weak_ptr<character>
     }
     catch (std::exception& e)
     {
+        error = e.what();
+    }
+
+    if (error.has_value())
+    {
         auto ptr = weak.lock();
         if (ptr != nullptr)
-            ptr->bulletin.message(e.what(), false, BULLETIN_MESSAGE_TYPE::WRITE);
+            ptr->bulletin.message(error.value(), false, BULLETIN_MESSAGE_TYPE::WRITE);
     }
 }
 
 async::task<void> bulletin::handle_delete(character* ch, std::weak_ptr<character> weak, game_reqs::bulletin& request)
 {
-    auto mail = request.section == 0xFFFF;
+    auto mail  = request.section == 0xFFFF;
+    auto error = std::optional<std::string>{};
     try
     {
         if (mail)
@@ -235,19 +254,25 @@ async::task<void> bulletin::handle_delete(character* ch, std::weak_ptr<character
     }
     catch (std::exception& e)
     {
+        error = e.what();
+    }
+
+    if (error.has_value())
+    {
         auto ptr = weak.lock();
         if (ptr != nullptr)
         {
             if (mail)
-                ptr->mail_box.message(e.what(), false, BULLETIN_MESSAGE_TYPE::DELETE);
+                ptr->mail_box.message(error.value(), false, BULLETIN_MESSAGE_TYPE::DELETE);
             else
-                ptr->bulletin.message(e.what(), false, BULLETIN_MESSAGE_TYPE::DELETE);
+                ptr->bulletin.message(error.value(), false, BULLETIN_MESSAGE_TYPE::DELETE);
         }
     }
 }
 
 async::task<void> bulletin::handle_mail(character* ch, std::weak_ptr<character> weak, game_reqs::bulletin& request)
 {
+    auto error = std::optional<std::string>{};
     try
     {
         auto&& summaries = co_await this->server.mail.list(*ch, 0xFFFF, fb::model::const_value::mail::COUNT_PER_PAGE);
@@ -264,17 +289,23 @@ async::task<void> bulletin::handle_mail(character* ch, std::weak_ptr<character> 
     }
     catch (std::exception& e)
     {
+        error = e.what();
+    }
+
+    if (error.has_value())
+    {
         auto ptr = weak.lock();
         if (ptr != nullptr)
-            ptr->message(e.what());
+            ptr->message(error.value());
     }
 }
 
 async::task<void> bulletin::handle_send_mail(character* ch, std::weak_ptr<character> weak, game_reqs::bulletin& request)
 {
+    auto error = std::optional<std::string>{};
     try
     {
-        co_await this->server.mail.send(*ch, request.user, request.title, request.contents);
+        this->server.mail.send(*ch, request.user, request.title, request.contents);
         co_await this->server.threads.switching(weak);
         auto ptr = weak.lock();
         if (ptr == nullptr)
@@ -290,8 +321,13 @@ async::task<void> bulletin::handle_send_mail(character* ch, std::weak_ptr<charac
     }
     catch (std::exception& e)
     {
+        error = e.what();
+    }
+
+    if (error.has_value())
+    {
         auto ptr = weak.lock();
         if (ptr != nullptr)
-            ptr->mail_box.message(e.what(), false, BULLETIN_MESSAGE_TYPE::WRITE);
+            ptr->mail_box.message(error.value(), false, BULLETIN_MESSAGE_TYPE::WRITE);
     }
 }

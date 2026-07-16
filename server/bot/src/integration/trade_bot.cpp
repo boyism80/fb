@@ -3,9 +3,9 @@
 
 namespace fb::bot::integration {
 
-async::task<void> trade_bot::deserialize(fb::stream_reader<big_endian>& reader)
+void trade_bot::deserialize(fb::stream_reader<big_endian>& reader)
 {
-    co_await header::deserialize(reader);
+    header::deserialize(reader);
     this->type = static_cast<trade_type>(reader.read<uint8_t>());
 
     switch (this->type)

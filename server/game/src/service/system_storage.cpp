@@ -1,4 +1,4 @@
-#include <fb/game/service/system_storage.h>
+﻿#include <fb/game/service/system_storage.h>
 #include <fb/game/server.h>
 #include <fb/game/character.h>
 #include <fb/config.h>
@@ -23,9 +23,6 @@ system_storage_box service::system_storage::from_system_storage_dto(const fb::pr
         .created_date = fb::model::datetime(dto.created_date),
     };
 
-    if (dto.user != 0)
-        box.user = dto.user;
-
     if (dto.expired_date.has_value() && !dto.expired_date.value().empty())
         box.expire_date = fb::model::datetime(dto.expired_date.value());
 
@@ -35,7 +32,7 @@ system_storage_box service::system_storage::from_system_storage_dto(const fb::pr
     return box;
 }
 
-storage_box::entry service::system_storage::from_login_storage_box(const fb::protocol::internal::StorageBox& dto)
+storage_box::entry service::system_storage::from_storage_box_dto(const fb::protocol::internal::StorageBox& dto)
 {
     auto box = storage_box::entry{};
     box.id   = dto.id;
@@ -77,33 +74,49 @@ void service::system_storage::prune_expired_boxes(std::vector<system_storage_box
                 boxes.end());
 }
 
+std::string service::system_storage::attachments_to_json(const std::vector<fb::model::dsl>& attachments)
+{
+    auto json_array = Json::Value(Json::arrayValue);
+    for (const auto& dsl : attachments)
+    {
+        json_array.append(dsl.to_json());
+    }
+
+    auto builder           = Json::StreamWriterBuilder{};
+    builder["emitUTF8"]    = true;
+    builder["indentation"] = "";
+    auto writer            = std::unique_ptr<Json::StreamWriter>(builder.newStreamWriter());
+    auto stream            = std::ostringstream{};
+    writer->write(json_array, &stream);
+    return stream.str();
+}
+
 service::system_storage::system_storage(fb::game::server& server) :
     server(server)
 { }
 
-void service::system_storage::on_deliver(const std::vector<uint32_t>& user_ids, const system_storage_box& box)
+void service::system_storage::apply_entries(const std::vector<storage_box::entry>& entries,
+                                            const std::vector<uint32_t>&           user_ids)
 {
-    if (user_ids.empty())
+    if (entries.empty() || entries.size() != user_ids.size())
         return;
 
-    auto entry = box.to_entry();
-
-    auto  guard      = this->server.characters.enter_write();
-    auto& characters = guard.value();
-    for (const auto user_id : user_ids)
+    for (size_t i = 0; i < entries.size(); ++i)
     {
-        auto ch = characters.find(user_id);
+        auto ch = this->server.characters.find(user_ids[i]);
         if (ch == nullptr)
             continue;
 
         auto weak    = ch->template weak_from_this_as<character>();
+        auto entry   = entries[i];
         auto builder = this->server.threads.new_builder(weak);
-        builder.func = [weak, box_id = box.id, entry](auto&) -> async::task<void> {
+        builder.func = [weak, entry](auto&) -> async::task<void> {
             auto ptr = weak.lock();
             if (ptr == nullptr)
                 co_return;
 
-            if (ptr->storage_box.contains_system_box(box_id))
+            if (entry.system_storage_box_id.has_value() &&
+                ptr->storage_box.contains_system_box(entry.system_storage_box_id.value()))
                 co_return;
 
             ptr->storage_box.apply_delivered({entry});
@@ -111,6 +124,35 @@ void service::system_storage::on_deliver(const std::vector<uint32_t>& user_ids, 
         };
         builder.enqueue();
     }
+}
+
+void service::system_storage::apply_write_box(const fb::protocol::internal::StorageBox& dto)
+{
+    auto entry = from_storage_box_dto(dto);
+    auto user  = dto.user != 0 ? dto.user : 0u;
+    if (user == 0)
+        return;
+
+    this->apply_entries({entry}, {user});
+}
+
+void service::system_storage::apply_deliver_entries(
+    const std::vector<fb::protocol::internal::StorageWriteEntry>& entries)
+{
+    auto converted = std::vector<storage_box::entry>{};
+    auto user_ids  = std::vector<uint32_t>{};
+    converted.reserve(entries.size());
+    user_ids.reserve(entries.size());
+
+    for (const auto& entry : entries)
+    {
+        const auto& box     = entry.box;
+        const auto  user_id = box.user != 0 ? box.user : entry.user;
+        user_ids.push_back(user_id);
+        converted.push_back(from_storage_box_dto(box));
+    }
+
+    this->apply_entries(converted, user_ids);
 }
 
 void service::system_storage::init_character(character& ch, const std::vector<storage_box::entry>& entries)
@@ -125,7 +167,7 @@ void service::system_storage::init_from_login(character&                        
     entries.reserve(boxes.size());
     for (const auto& dto : boxes)
     {
-        entries.push_back(from_login_storage_box(dto));
+        entries.push_back(from_storage_box_dto(dto));
     }
 
     this->init_character(ch, entries);
@@ -149,8 +191,8 @@ async::task<void> service::system_storage::sync(character& ch)
         if (resp.error != 0)
             co_return;
 
-        const auto now   = this->server.now();
-        auto       batch = std::vector<storage_box::entry>{};
+        const auto now = this->server.now();
+        auto       ids = std::vector<uint32_t>{};
 
         for (const auto& dto : resp.boxes)
         {
@@ -164,11 +206,22 @@ async::task<void> service::system_storage::sync(character& ch)
             if (ptr->storage_box.contains_system_box(box.id))
                 continue;
 
-            batch.push_back(box.to_entry());
+            try
+            {
+                auto&& deliver_resp = co_await this->server.http.post(
+                    "internal",
+                    "/storage/system/deliver",
+                    internal_reqs::DeliverSystemStorage{world, box.id, {ptr->id}, fb::config<uint32_t>("id")});
+                if (deliver_resp.error != 0)
+                    fb::logger::warn("DeliverSystemStorage sync failed for box {}: error {}",
+                                     box.id,
+                                     deliver_resp.error);
+            }
+            catch (const std::exception& e)
+            {
+                fb::logger::warn("DeliverSystemStorage sync request failed for box {}: {}", box.id, e.what());
+            }
         }
-
-        if (!batch.empty())
-            ptr->storage_box.apply_delivered(batch);
     }
     catch (const std::exception& e)
     {
@@ -178,59 +231,131 @@ async::task<void> service::system_storage::sync(character& ch)
     co_return;
 }
 
-async::task<void> service::system_storage::create(uint32_t                           user_id,
+async::task<bool> service::system_storage::create(uint32_t                           user_id,
                                                   std::string_view                   external_ref,
                                                   std::string_view                   title,
                                                   std::string_view                   message,
-                                                  const std::vector<fb::model::dsl>& attachments)
+                                                  const std::vector<fb::model::dsl>& attachments,
+                                                  const std::optional<std::string>&  expire_date)
 {
-    const auto world = fb::config<uint32_t>("world");
+    const auto world            = fb::config<uint32_t>("world");
+    const auto attachments_json = attachments_to_json(attachments);
 
-    auto attachments_json = std::string{};
+    try
     {
-        auto json_array = Json::Value(Json::arrayValue);
-        for (const auto& dsl : attachments)
+        auto&& resp = co_await this->server.http.post(
+            "internal",
+            "/storage/write",
+            internal_reqs::WriteStorageBox{world,
+                                           user_id,
+                                           std::nullopt,
+                                           std::string(title),
+                                           std::string(message),
+                                           attachments_json,
+                                           expire_date,
+                                           external_ref.empty() ? std::nullopt
+                                                                : std::make_optional(std::string(external_ref)),
+                                           fb::config<uint32_t>("id")});
+
+        if (resp.error != 0)
         {
-            json_array.append(dsl.to_json());
+            fb::logger::warn("WriteStorageBox failed for {}: error {}", external_ref, resp.error);
+            co_return false;
         }
 
-        auto builder           = Json::StreamWriterBuilder{};
-        builder["emitUTF8"]    = true;
-        builder["indentation"] = "";
-        auto writer            = std::unique_ptr<Json::StreamWriter>(builder.newStreamWriter());
-        auto stream            = std::ostringstream{};
-        writer->write(json_array, &stream);
-        attachments_json = stream.str();
+        co_return true;
     }
+    catch (const std::exception& e)
+    {
+        fb::logger::warn("WriteStorageBox request failed for {}: {}", external_ref, e.what());
+        co_return false;
+    }
+}
 
-    auto&& resp = co_await this->server.http.post("internal",
-                                                  "/storage/system",
-                                                  internal_reqs::WriteSystemStorageBox{world,
-                                                                                       user_id,
-                                                                                       std::string(title),
-                                                                                       std::string(message),
-                                                                                       attachments_json,
-                                                                                       std::nullopt,
-                                                                                       std::string(external_ref)});
+async::task<bool> service::system_storage::create(std::string_view                   user_name,
+                                                  std::string_view                   title,
+                                                  std::string_view                   message,
+                                                  const std::vector<fb::model::dsl>& attachments,
+                                                  const std::optional<std::string>&  expire_date,
+                                                  std::string_view                   external_ref)
+{
+    const auto world            = fb::config<uint32_t>("world");
+    const auto attachments_json = attachments_to_json(attachments);
 
-    if (resp.error != 0)
-        fb::logger::warn("WriteSystemStorageBox failed for {}: error {}", external_ref, resp.error);
+    try
+    {
+        auto&& resp = co_await this->server.http.post(
+            "internal",
+            "/storage/write",
+            internal_reqs::WriteStorageBox{world,
+                                           0,
+                                           std::make_optional(std::string(user_name)),
+                                           std::string(title),
+                                           std::string(message),
+                                           attachments_json,
+                                           expire_date,
+                                           external_ref.empty() ? std::nullopt
+                                                                : std::make_optional(std::string(external_ref)),
+                                           fb::config<uint32_t>("id")});
 
-    co_return;
+        if (resp.error != 0)
+        {
+            fb::logger::warn("WriteStorageBox failed for name {}: error {}", user_name, resp.error);
+            co_return false;
+        }
+
+        co_return true;
+    }
+    catch (const std::exception& e)
+    {
+        fb::logger::warn("WriteStorageBox request failed for name {}: {}", user_name, e.what());
+        co_return false;
+    }
+}
+
+async::task<bool> service::system_storage::create_system(std::string_view                   title,
+                                                         std::string_view                   message,
+                                                         const std::vector<fb::model::dsl>& attachments,
+                                                         const std::optional<std::string>&  expire_date,
+                                                         std::string_view                   external_ref)
+{
+    const auto world            = fb::config<uint32_t>("world");
+    const auto attachments_json = attachments_to_json(attachments);
+
+    try
+    {
+        auto&& resp = co_await this->server.http.post(
+            "internal",
+            "/storage/system",
+            internal_reqs::WriteSystemStorageBox{world,
+                                                 std::string(title),
+                                                 std::string(message),
+                                                 attachments_json,
+                                                 expire_date,
+                                                 external_ref.empty() ? std::nullopt
+                                                                      : std::make_optional(std::string(external_ref))});
+
+        if (resp.error != 0)
+        {
+            fb::logger::warn("WriteSystemStorageBox failed for {}: error {}", external_ref, resp.error);
+            co_return false;
+        }
+
+        co_return true;
+    }
+    catch (const std::exception& e)
+    {
+        fb::logger::warn("WriteSystemStorageBox request failed for {}: {}", external_ref, e.what());
+        co_return false;
+    }
 }
 
 async::task<void> service::system_storage::poll_and_deliver()
 {
-    character::container::online_snapshot_t online_users;
-    {
-        auto guard   = this->server.characters.enter_read();
-        online_users = guard.value().online_users();
-    }
-
     const auto now = this->server.now();
     prune_expired_boxes(this->_pending_boxes, now);
 
-    if (online_users.empty())
+    if (this->server.characters.size() == 0)
         co_return;
 
     auto        max_box_id = uint32_t{0};
@@ -268,27 +393,39 @@ async::task<void> service::system_storage::poll_and_deliver()
     if (max_box_id > 0)
         this->_poll_offset = max_box_id + 1;
 
+    static constexpr size_t chunk_limit = 100;
     for (const auto& box : this->_pending_boxes)
     {
         if (box.expired(now))
             continue;
 
-        if (box.user.has_value())
-        {
-            this->on_deliver({box.user.value()}, box);
-        }
-        else
-        {
-            auto eligible = std::vector<uint32_t>{};
-            eligible.reserve(online_users.size());
+        auto eligible = this->server.characters.collect_ids([&](const auto& ch) {
+            return ch->created_date() < box.created_date;
+        });
 
-            for (const auto& [user_id, created_date] : online_users)
+        for (std::size_t i = 0; i < eligible.size(); i += chunk_limit)
+        {
+            const auto end         = std::min(i + chunk_limit, eligible.size());
+            auto       chunk_users = std::vector<uint32_t>{};
+            chunk_users.assign(eligible.begin() + static_cast<std::ptrdiff_t>(i),
+                               eligible.begin() + static_cast<std::ptrdiff_t>(end));
+
+            try
             {
-                if (created_date < box.created_date)
-                    eligible.push_back(user_id);
+                auto&& resp =
+                    co_await this->server.http.post("internal",
+                                                    "/storage/system/deliver",
+                                                    internal_reqs::DeliverSystemStorage{world,
+                                                                                        box.id,
+                                                                                        std::move(chunk_users),
+                                                                                        fb::config<uint32_t>("id")});
+                if (resp.error != 0)
+                    fb::logger::warn("DeliverSystemStorage failed for box {}: error {}", box.id, resp.error);
             }
-
-            this->on_deliver(eligible, box);
+            catch (const std::exception& e)
+            {
+                fb::logger::warn("DeliverSystemStorage request failed for box {}: {}", box.id, e.what());
+            }
         }
     }
 

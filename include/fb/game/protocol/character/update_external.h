@@ -144,7 +144,7 @@ public:
 
             if (ch.items.armor() != nullptr)
             {
-                serializer.appearance.armor = ch.items.armor()->based<fb::model::armor>().dress;
+                serializer.appearance.armor = static_cast<uint8_t>(ch.items.armor()->based<fb::model::armor>().dress);
                 if (serializer.appearance.armor_color.has_value() == false)
                     serializer.appearance.armor_color = ch.items.armor()->based<fb::model::armor>().color;
             }
@@ -201,16 +201,16 @@ private:
 
 public:
 #ifndef BOT
-    [[nodiscard]] async::task<void> serialize(fb::stream_writer<big_endian>& writer) const
+    void serialize(fb::stream_writer<big_endian>& writer) const
     {
-        co_await header::serialize(writer);
+        header::serialize(writer);
         writer.write<uint8_t>(opcode); // Use compile-time constant header
         this->serializer.serialize(writer);
     }
 #else
-    [[nodiscard]] async::task<void> deserialize(fb::stream_reader<big_endian>& reader)
+    void deserialize(fb::stream_reader<big_endian>& reader)
     {
-        co_await header::deserialize(reader);
+        header::deserialize(reader);
 
         if constexpr (Detailed)
         {

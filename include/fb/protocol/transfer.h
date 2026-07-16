@@ -34,9 +34,9 @@ public:
 
 public:
 #ifndef BOT
-    [[nodiscard]] async::task<void> serialize(fb::stream_writer<big_endian>& writer) const
+    void serialize(fb::stream_writer<big_endian>& writer) const
     {
-        co_await header::serialize(writer);
+        header::serialize(writer);
         writer.write<uint8_t>(opcode);
         writer.write<uint32_t>(this->ip);
         writer.write<uint16_t>(this->port);
@@ -44,9 +44,9 @@ public:
         writer.write(this->parameter);
     }
 #else
-    [[nodiscard]] async::task<void> deserialize(fb::stream_reader<big_endian>& reader)
+    void deserialize(fb::stream_reader<big_endian>& reader)
     {
-        co_await header::deserialize(reader);
+        header::deserialize(reader);
         this->ip   = reader.read<uint32_t>();
         this->port = reader.read<uint16_t>();
 

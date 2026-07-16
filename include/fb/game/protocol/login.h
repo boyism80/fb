@@ -4,7 +4,6 @@
 #include <fb/protocol/header.h>
 #include <fb/model/model.h>
 #include <fb/protocol/flatbuffer/protocol.h>
-#include <async/awaitable_get.h>
 
 namespace fb::protocol::game::request {
 
@@ -42,8 +41,8 @@ public:
 #endif
 
 public:
-    [[nodiscard]] async::task<void> serialize(fb::stream_writer<big_endian>& writer) const;
-    [[nodiscard]] async::task<void> deserialize(fb::stream_reader<big_endian>& reader);
+    void serialize(fb::stream_writer<big_endian>& writer) const;
+    void deserialize(fb::stream_reader<big_endian>& reader);
 };
 
 } // namespace fb::protocol::game::request

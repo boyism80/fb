@@ -20,8 +20,10 @@ private:
     datetime _target_lock_time;
 
 public:
+    // clang-format off
     bool            execute(mob& mob_obj, const datetime& now) override;
     MOB_ATTACK_TYPE get_type() const override;
+    // clang-format on
 };
 } // namespace fb::game
 

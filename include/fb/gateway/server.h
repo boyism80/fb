@@ -40,7 +40,7 @@ public:
     uint32_t                     endpoint_crc() const;
 
 private:
-    [[nodiscard]] async::task<void> load_entries();
+    void load_entries();
 
 private:
     fb::stream make_crt_stream(const fb::encryption& encryption);

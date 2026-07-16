@@ -365,7 +365,7 @@ void trade::assert_exchange(const trade& trade) const
         throw std::runtime_error(_TEXT(MESSAGE_ITEM_FULL));
 }
 
-void trade::exchange(trade& trade1, trade& trade2)
+async::task<void> trade::exchange(trade& trade1, trade& trade2)
 {
     static auto push_buffer = [](trade& trade, std::vector<std::shared_ptr<fb::game::item>>& buffer) -> uint32_t {
         auto owner = trade._owner.lock();
@@ -405,34 +405,34 @@ void trade::exchange(trade& trade1, trade& trade2)
 
     auto owner1 = trade1._owner.lock();
     if (owner1 == nullptr)
-        return;
+        co_return;
 
     auto owner2 = trade2._owner.lock();
     if (owner2 == nullptr)
-        return;
+        co_return;
 
     for (auto& item : buffer2)
     {
-        owner1->items.add(item);
+        std::ignore = co_await owner1->items.add(item);
     }
     owner1->money_add(money2);
 
     for (auto& item : buffer1)
     {
-        owner2->items.add(item);
+        std::ignore = co_await owner2->items.add(item);
     }
     owner2->money_add(money1);
 }
 
-bool trade::lock()
+async::task<bool> trade::lock()
 {
     auto owner = this->_owner.lock();
     if (owner == nullptr)
-        return false;
+        co_return false;
 
     auto you = this->_you.lock();
     if (you == nullptr)
-        return false;
+        co_return false;
 
     try
     {
@@ -443,10 +443,10 @@ bool trade::lock()
         if (you->trade._locked == false) // Peer has not confirmed yet
         {
             owner->listener.on_trade_lock(*owner, *you);
-            return true;
+            co_return true;
         }
 
-        this->exchange(*this, you->trade);
+        co_await this->exchange(*this, you->trade);
 
         // Call listener for packet response
         owner->listener.on_trade_success(*owner, *you);
@@ -502,14 +502,14 @@ bool trade::lock()
         owner->server.log.write("trade_complete", log_data);
 
         this->end();
-        return true;
+        co_return true;
     }
     catch (std::exception& e)
     {
         owner->listener.on_trade_failed(*owner, *you);
 
         this->end();
-        return false;
+        co_return false;
     }
 }
 

@@ -152,14 +152,14 @@ std::optional<uint32_t> fb::game::item::death_uid() const
     return this->_death_uid;
 }
 
-bool item::active()
+async::task<bool> item::active()
 {
     auto owner = this->owner();
     if (owner == nullptr)
-        return false;
+        co_return false;
 
     if (this->_container == nullptr)
-        return false;
+        co_return false;
 
     if (this->empty())
         std::ignore = this->_container->remove(this->shared_from_this_as<fb::game::item>());
@@ -169,7 +169,7 @@ bool item::active()
     auto  func  = std::format("ON_ACTIVATED_{}", model.id);
 
     // Execute item activation script
-    auto lua = this->server.lua.new_ctx_guard(path, func);
+    auto lua = this->server.lua.open(path, func);
     if (lua)
     {
         lua->pushobject(*owner);
@@ -178,7 +178,7 @@ bool item::active()
     }
 
     this->listener.on_item_active(*owner, *this);
-    return true;
+    co_return true;
 }
 
 std::shared_ptr<fb::game::item> item::split(uint16_t count)

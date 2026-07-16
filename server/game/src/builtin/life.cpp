@@ -2,6 +2,7 @@
 #include <fb/game/builtin/object.h>
 #include <fb/game/builtin/life.h>
 #include <fb/game/map.h>
+#include <tuple>
 
 using namespace fb::game;
 using namespace fb::model;
@@ -13,7 +14,7 @@ IMPLEMENT_LUA_EXTENSION(fb::game::life, "fb.game.life")
 {"hp",                   builtin::life::builtin_hp},
 {"mp",                   builtin::life::builtin_mp},
 {"heal",                 builtin::life::builtin_heal},
-{"damage",               builtin::life::builtin_damage},
+{"damage_to",            builtin::life::builtin_damage_to},
 {"mp_up",                builtin::life::builtin_mp_up},
 {"mp_down",              builtin::life::builtin_mp_down},
 {"action",               builtin::life::builtin_action},
@@ -125,7 +126,9 @@ int builtin::life::builtin_hp(lua_State* L)
         auto builder  = lua->new_co_builder();
         builder.weak  = weak;
         builder.yield = [=]() -> async::task<void> {
-            obj->stat.hp(value, notify);
+            obj->stat.hp(value, false);
+            if (notify)
+                obj->update(UPDATE_STATE_LEVEL::HP_MP);
             co_return;
         };
         builder.resume = []() -> async::task<int> {
@@ -169,7 +172,9 @@ int builtin::life::builtin_mp(lua_State* L)
         auto builder  = lua->new_co_builder();
         builder.weak  = weak;
         builder.yield = [=]() -> async::task<void> {
-            obj->stat.mp(value, notify);
+            obj->stat.mp(value, false);
+            if (notify)
+                obj->update(UPDATE_STATE_LEVEL::HP_MP);
             co_return;
         };
         builder.resume = []() -> async::task<int> {
@@ -195,7 +200,7 @@ int builtin::life::builtin_heal(lua_State* L)
     auto builder  = lua->new_co_builder();
     builder.weak  = weak;
     builder.yield = [=]() -> async::task<void> {
-        obj->stat.heal(value, nullptr, notify);
+        std::ignore = obj->stat.heal(value, nullptr, notify);
         co_return;
     };
     builder.resume = []() -> async::task<int> {
@@ -204,63 +209,109 @@ int builtin::life::builtin_heal(lua_State* L)
     return builder.run();
 }
 
-int builtin::life::builtin_damage(lua_State* L)
+int builtin::life::builtin_damage_to(lua_State* L)
 {
+    // me:damage_to(you, damage[, opts])
+    // me:damage_to({{you, damage}, ...}[, opts])
     auto lua = fb::lua::get(L);
     if (lua == nullptr)
         return 0;
+
     auto argc = lua->argc();
-    auto obj  = lua->touserdata<fb::game::life>(1);
-    if (obj == nullptr)
+    auto me   = lua->touserdata<fb::game::life>(1);
+    if (me == nullptr)
         return 0;
 
-    auto  value    = (uint32_t)lua->tointeger(2);
-    auto  from     = lua->touserdata<fb::game::life>(3);
-    bool  critical = false;
-    float rate     = 1.0f;
-    bool  physical = true;
-    bool  fixed    = false;
+    auto opts     = fb::game::life::damage_opts{};
+    auto targets  = std::make_shared<fb::game::life::damage_list>();
+    auto opts_idx = 0;
 
-    auto notify = true;
-    if (argc >= 4 && lua_istable(L, 4))
+    if (argc >= 3 && lua->is_userdata<fb::game::life>(2))
+    {
+        auto you = lua->touserdata<fb::game::life>(2);
+        if (you == nullptr)
+            return 0;
+        auto value = static_cast<uint32_t>(lua->tointeger(3));
+        targets->emplace_back(you, value);
+        opts_idx = 4;
+    }
+    else if (argc >= 2 && lua_istable(L, 2))
+    {
+        auto len = static_cast<int>(lua_rawlen(L, 2));
+        for (auto i = 1; i <= len; i++)
+        {
+            lua_rawgeti(L, 2, i);
+            if (!lua_istable(L, -1))
+            {
+                lua_pop(L, 1);
+                continue;
+            }
+
+            lua_rawgeti(L, -1, 1);
+            auto you = lua->touserdata<fb::game::life>(-1);
+            lua_pop(L, 1);
+
+            lua_rawgeti(L, -1, 2);
+            auto value = static_cast<uint32_t>(lua_tointeger(L, -1));
+            lua_pop(L, 1);
+
+            lua_pop(L, 1);
+            if (you == nullptr)
+                continue;
+
+            targets->emplace_back(you, value);
+        }
+        opts_idx = 3;
+    }
+    else
+    {
+        return 0;
+    }
+
+    if (opts_idx > 0 && opts_idx <= argc && lua_istable(L, opts_idx))
     {
         lua_pushstring(L, "critical");
-        lua_rawget(L, 4);
+        lua_rawget(L, opts_idx);
         if (!lua_isnil(L, -1))
-            critical = lua_toboolean(L, -1) != 0;
+            opts.critical = lua_toboolean(L, -1) != 0;
         lua_pop(L, 1);
 
         lua_pushstring(L, "rate");
-        lua_rawget(L, 4);
+        lua_rawget(L, opts_idx);
         if (!lua_isnil(L, -1))
-            rate = static_cast<float>(lua_tonumber(L, -1));
+            opts.rate = static_cast<float>(lua_tonumber(L, -1));
         lua_pop(L, 1);
 
         lua_pushstring(L, "physical");
-        lua_rawget(L, 4);
+        lua_rawget(L, opts_idx);
         if (!lua_isnil(L, -1))
-            physical = lua_toboolean(L, -1) != 0;
+            opts.physical = lua_toboolean(L, -1) != 0;
         lua_pop(L, 1);
 
         lua_pushstring(L, "fixed");
-        lua_rawget(L, 4);
+        lua_rawget(L, opts_idx);
         if (!lua_isnil(L, -1))
-            fixed = lua_toboolean(L, -1) != 0;
+            opts.fixed = lua_toboolean(L, -1) != 0;
         lua_pop(L, 1);
 
         lua_pushstring(L, "notify");
-        lua_rawget(L, 4);
+        lua_rawget(L, opts_idx);
         if (!lua_isnil(L, -1))
-            notify = lua_toboolean(L, -1) != 0;
+            opts.notify = lua_toboolean(L, -1) != 0;
         lua_pop(L, 1);
     }
 
-    auto weak     = obj->weak_from_this();
+    if (targets->empty())
+        return 0;
+
+    auto weak     = me->weak_from_this();
     auto builder  = lua->new_co_builder();
     builder.weak  = weak;
     builder.yield = [=]() -> async::task<void> {
-        obj->stat.damage(value, from, critical, rate, physical, fixed, notify);
-        co_return;
+        auto attacker = std::static_pointer_cast<fb::game::life>(weak.lock());
+        if (attacker == nullptr)
+            co_return;
+        co_await attacker->damage_to(*targets, opts);
     };
     builder.resume = []() -> async::task<int> {
         co_return 0;
@@ -284,7 +335,9 @@ int builtin::life::builtin_mp_up(lua_State* L)
     auto builder  = lua->new_co_builder();
     builder.weak  = weak;
     builder.yield = [=]() -> async::task<void> {
-        obj->stat.mp_up(value, nullptr, notify);
+        std::ignore = obj->stat.mp_up(value, nullptr, false);
+        if (notify)
+            obj->update(UPDATE_STATE_LEVEL::HP_MP);
         co_return;
     };
     builder.resume = []() -> async::task<int> {
@@ -309,7 +362,9 @@ int builtin::life::builtin_mp_down(lua_State* L)
     auto builder  = lua->new_co_builder();
     builder.weak  = weak;
     builder.yield = [=]() -> async::task<void> {
-        obj->stat.mp_down(value, nullptr, notify);
+        std::ignore = obj->stat.mp_down(value, nullptr, false);
+        if (notify)
+            obj->update(UPDATE_STATE_LEVEL::HP_MP);
         co_return;
     };
     builder.resume = []() -> async::task<int> {
@@ -501,7 +556,7 @@ int builtin::life::builtin_cast(lua_State* L)
         auto path = std::format("scripts/spell/{}.lua", spell->id);
         auto func = std::format("ON_CAST_{}", spell->id);
 
-        auto x = static_cast<fb::game::server&>(lua->executor).lua.new_ctx_guard(path, func);
+        auto x = static_cast<fb::game::server&>(lua->executor).lua.open(path, func);
         if (!x)
             co_return;
 
@@ -516,7 +571,7 @@ int builtin::life::builtin_cast(lua_State* L)
         }
 
         x->pushobject(spell);
-        co_await x->call(count);
+        std::ignore = co_await x->call(count);
     };
     builder.resume = []() -> async::task<int> {
         co_return 0;
@@ -600,7 +655,7 @@ int builtin::life::builtin_add_cc(lua_State* L)
         auto builder  = lua->new_co_builder();
         builder.weak  = weak;
         builder.yield = [=]() -> async::task<void> {
-            obj->cc.add(cc);
+            std::ignore = obj->cc.add(cc);
             co_return;
         };
         builder.resume = []() -> async::task<int> {
@@ -625,7 +680,7 @@ int builtin::life::builtin_remove_cc(lua_State* L)
     auto builder  = lua->new_co_builder();
     builder.weak  = weak;
     builder.yield = [=]() -> async::task<void> {
-        obj->cc.remove(cc);
+        std::ignore = obj->cc.remove(cc);
         co_return;
     };
     builder.resume = []() -> async::task<int> {

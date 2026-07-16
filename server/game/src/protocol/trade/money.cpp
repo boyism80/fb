@@ -10,9 +10,9 @@ trade_money::trade_money(uint32_t money, bool mine) :
 #endif
 
 #ifndef BOT
-async::task<void> trade_money::serialize(fb::stream_writer<big_endian>& writer) const
+void trade_money::serialize(fb::stream_writer<big_endian>& writer) const
 {
-    co_await header::serialize(writer);
+    header::serialize(writer);
     writer.write<uint8_t>(opcode);
     writer.write<uint8_t>(0x03);
     writer.write<bool>(!this->mine);
@@ -20,9 +20,9 @@ async::task<void> trade_money::serialize(fb::stream_writer<big_endian>& writer) 
     writer.write<uint8_t>(0x00);
 }
 #else
-async::task<void> trade_money::deserialize(fb::stream_reader<big_endian>& reader)
+void trade_money::deserialize(fb::stream_reader<big_endian>& reader)
 {
-    co_await header::deserialize(reader);
+    header::deserialize(reader);
     reader.read<uint8_t>(); // 0x03
     this->mine  = !reader.read<bool>();
     this->money = reader.read<uint32_t>();

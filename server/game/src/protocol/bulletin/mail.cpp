@@ -8,9 +8,9 @@ bulletin_mail::bulletin_mail(const Mail& mail, MAIL_BUTTON_ENABLE flag) :
     flag(flag)
 { }
 
-async::task<void> bulletin_mail::serialize(fb::stream_writer<big_endian>& writer) const
+void bulletin_mail::serialize(fb::stream_writer<big_endian>& writer) const
 {
-    co_await header::serialize(writer);
+    header::serialize(writer);
     auto dt = fb::model::datetime(mail.created_date);
 
     writer.write<uint8_t>(opcode);
@@ -26,9 +26,9 @@ async::task<void> bulletin_mail::serialize(fb::stream_writer<big_endian>& writer
     writer.write<uint8_t>(0x00);
 }
 #else
-async::task<void> bulletin_mail::deserialize(fb::stream_reader<big_endian>& reader)
+void bulletin_mail::deserialize(fb::stream_reader<big_endian>& reader)
 {
-    co_await header::deserialize(reader);
+    header::deserialize(reader);
     reader.read<uint8_t>(); // 0x05
     this->flag = static_cast<MAIL_BUTTON_ENABLE>(reader.read<uint8_t>());
     reader.read<uint8_t>(); // 0x00

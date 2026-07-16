@@ -7,6 +7,7 @@
 @using Microsoft.AspNetCore.WebUtilities
 @attribute [AuthorizeRole(Role.Admin)]
 @inject StorageService StorageService
+@inject DbContext DbContext
 @inject AdminActivityLogService ActivityLog
 @inject NavigationManager Navigation
 
@@ -502,29 +503,59 @@
                 return;
             }
 
-            var result = await StorageService.CreateSystemStorageAsync(
-                selectedWorld.Value,
-                model.Title.Trim(),
-                model.Message.Trim(),
-                model.IsGlobal ? null : model.UserName?.Trim(),
-                model.ExpiredDate,
-                model.Attachments);
-
-            var targetLabel = model.IsGlobal ? "전체" : (model.UserName ?? "—");
-            var detail = $"#{result.Id} · {model.Title} · 첨부 {model.Attachments.Count}건";
-            ActivityLog.Add(new AdminActivityEntry
+            if (model.IsGlobal)
             {
-                Category = "item_grant",
-                Summary = model.IsGlobal ? "전체 지급" : "유저 지급",
-                Detail = detail,
-                Target = targetLabel,
-                Success = true
-            });
-            LoadGrantHistory();
+                var result = await StorageService.CreateSystemStorageAsync(
+                    selectedWorld.Value,
+                    model.Title.Trim(),
+                    model.Message.Trim(),
+                    model.ExpiredDate,
+                    model.Attachments);
 
-            successMessage = result.User.HasValue
-                ? $"아이템 지급이 완료되었습니다. (Storage ID: #{result.Id}, 유저: {result.User.Value})"
-                : $"아이템 지급이 완료되었습니다. (Storage ID: #{result.Id}, 전체 유저)";
+                var detail = $"#{result.Id} · {model.Title} · 첨부 {model.Attachments.Count}건";
+                ActivityLog.Add(new AdminActivityEntry
+                {
+                    Category = "item_grant",
+                    Summary = "전체 지급",
+                    Detail = detail,
+                    Target = "전체",
+                    Success = true
+                });
+                LoadGrantHistory();
+
+                successMessage = $"아이템 지급이 완료되었습니다. (System Storage ID: #{result.Id}, 전체 유저)";
+            }
+            else
+            {
+                var userName = model.UserName?.Trim();
+                var userId = await DbContext.Character.GetCharacterId(selectedWorld.Value, userName);
+                if (userId.HasValue == false)
+                {
+                    errorMessage = $"Character '{userName}' not found.";
+                    return;
+                }
+
+                var result = await StorageService.CreateStorageBoxAsync(
+                    selectedWorld.Value,
+                    userId.Value,
+                    model.Title.Trim(),
+                    model.Message.Trim(),
+                    model.Attachments,
+                    model.ExpiredDate);
+
+                var detail = $"#{result.Id} · {model.Title} · 첨부 {model.Attachments.Count}건";
+                ActivityLog.Add(new AdminActivityEntry
+                {
+                    Category = "item_grant",
+                    Summary = "유저 지급",
+                    Detail = detail,
+                    Target = userName ?? "—",
+                    Success = true
+                });
+                LoadGrantHistory();
+
+                successMessage = $"아이템 지급이 완료되었습니다. (Storage ID: #{result.Id}, 유저: {result.User})";
+            }
             ResetForm();
         }
         catch (Exception ex)

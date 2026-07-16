@@ -9,7 +9,6 @@ kick_out::kick_out(fb::game::server& server) :
 
 async::task<void> kick_out::handle(const internal_resp::KickOut& message)
 {
-    auto guard = this->server.characters.enter_write();
-    guard.value().on_kick_out(message);
+    this->server.characters.on_kick_out(message);
     co_return;
 }

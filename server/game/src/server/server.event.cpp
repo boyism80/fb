@@ -4,6 +4,7 @@
 #include <fb/encoding.h>
 #include <json/json.h>
 #include <format>
+#include <tuple>
 
 using namespace fb::game;
 using namespace fb::model::enum_value;
@@ -48,7 +49,7 @@ async::task<bool> fb::game::server::on_disconnected(fb::socket<character>& socke
     auto weak = ch->weak_from_this_as<character>();
 
     if (ch->trade.trading())
-        ch->trade.cancel();
+        std::ignore = ch->trade.cancel();
 
     fb::logger::info("{} has disconnected.", ch->name());
 
@@ -85,6 +86,8 @@ async::task<bool> fb::game::server::on_disconnected(fb::socket<character>& socke
     auto ptr = weak.lock();
     if (ptr != nullptr)
     {
+        co_await ptr->matchmaker.unregister_queue(true);
+
         // Log logout event
         auto log_data              = Json::Value();
         log_data["character_id"]   = static_cast<Json::Int64>(ptr->id);
@@ -117,10 +120,7 @@ async::task<bool> fb::game::server::on_disconnected(fb::socket<character>& socke
             ptr->clan_reset();
         }
 
-        {
-            auto guard = this->characters.enter_write();
-            guard.value().remove(ptr);
-        }
+        this->characters.remove(ptr);
         co_await ch->destroy();
         socket.data(nullptr);
     }
@@ -179,5 +179,7 @@ void fb::game::server::on_init_amqp(fb::amqp::socket& amqp)
     this->handler.amqp.declare_queue("amq.direct", std::format("fb.{}.group", world));
     this->handler.amqp.declare_queue("amq.direct", std::format("fb.{}.clan", world));
     this->handler.amqp.declare_queue("amq.direct", std::format("fb.{}.mail", world));
+    this->handler.amqp.declare_queue("amq.direct", std::format("fb.{}.storage", world));
     this->handler.amqp.declare_queue("amq.direct", std::format("fb.{}.ban", world));
+    this->handler.amqp.declare_queue("amq.direct", std::format("fb.{}.matchmaking", world));
 }

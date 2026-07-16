@@ -1,5 +1,5 @@
 -- mob: 은여우
 -- 은여우 사망
-function ON_MOB_DIE_1011(me, you)
-
-end
+-- function ON_MOB_DIE_1011(me)
+--
+-- end

@@ -12,7 +12,8 @@ async::task<void> buff_timer::handle(const fb::model::datetime& now, std::thread
     auto thread = this->server.threads.at(id);
     auto params = thread->template data<thread_params>();
 
-    for (auto& [_, map] : params->maps)
+    auto view = params->map_view;
+    for (auto& map : *view)
     {
         if (map->active == false)
             continue;
@@ -45,7 +46,7 @@ async::task<void> buff_timer::handle(const fb::model::datetime& now, std::thread
                 auto  path  = std::format("scripts/spell/{}.lua", model.id);
                 auto  func  = std::format("ON_CONCAST_{}", model.id);
 
-                auto lua = this->server.lua.new_ctx_guard(path, func);
+                auto lua = this->server.lua.open(path, func);
                 if (!lua)
                     continue;
 
@@ -60,7 +61,7 @@ async::task<void> buff_timer::handle(const fb::model::datetime& now, std::thread
 
             for (auto& buff : ended_buffs)
             {
-                std::ignore = obj->buffs.remove(buff->model);
+                std::ignore = co_await obj->buffs.remove(buff->model);
             }
         }
     }

@@ -22,6 +22,7 @@ namespace Runner.Service
             ("server/write-back/write-back.csproj", "write-back"),
             ("server/log/log.csproj", "log"),
             ("server/marketplace/marketplace.csproj", "marketplace"),
+            ("server/matchmaking/matchmaking.csproj", "matchmaking"),
             ("server/admin-tool/admin-tool.csproj", "admin-tool"),
         };
 

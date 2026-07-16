@@ -15,6 +15,6 @@ async::task<bool> loot::handle(fb::socket<character>& session, game_reqs::loot& 
     if (ch->inited() == false)
         co_return true;
 
-    ch->items.loot(request.boost);
+    co_await ch->items.loot(request.boost);
     co_return true;
 }

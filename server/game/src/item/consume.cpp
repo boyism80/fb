@@ -17,19 +17,19 @@ consume::consume(const consume& right) :
 consume::~consume()
 { }
 
-bool consume::active()
+async::task<bool> consume::active()
 {
     if (this->_container == nullptr)
-        return false;
+        co_return false;
 
     auto owner = this->_container->owner();
     if (owner == nullptr)
-        return false;
+        co_return false;
 
     if (this->_count == 0)
-        return false;
+        co_return false;
 
-    fb::game::item::active();
+    std::ignore = co_await fb::game::item::active();
     this->_count--;
 
     owner->action(ACTION::EAT, DURATION::EAT);
@@ -48,5 +48,5 @@ bool consume::active()
     if (this->empty())
         std::ignore = owner->items.remove(this->shared_from_this_as<fb::game::item>(), -1, ITEM_DELETE_TYPE::EAT);
 
-    return true;
+    co_return true;
 }

@@ -9,8 +9,8 @@ function ON_CAST_35(me, you, sp)
     spell.damage(me, you, sp, { damage = damage, mp = mp, sound = sound, effect = effect })
 end
 
-function ON_BUFF_35(me, sp)
-end
+-- function ON_BUFF_35(me, sp)
+-- end
 
-function ON_UNBUFF_35(me, sp)
-end
+-- function ON_UNBUFF_35(me, sp)
+-- end

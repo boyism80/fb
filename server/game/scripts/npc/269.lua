@@ -1,6 +1,6 @@
 -- npc: 테스트1
 function NPC_269(me, npc)
-    local button = me:dialog(npc, "준비중입니다.", false, false)
+    local button = me:dialog(npc, "준비중입니다.", { prev = false, next = false })
     if button == DIALOG_RESULT.QUIT then
         return
     end

@@ -5,6 +5,6 @@ function ON_MOB_ATTACK_1113(me, you)
 end
 
 -- 용왕용겸 사망
-function ON_MOB_DIE_1113(me, you)
-
-end
+-- function ON_MOB_DIE_1113(me)
+--
+-- end

@@ -1,5 +1,6 @@
 #include <fb/game/handler/protocol/trade.h>
 #include <fb/game/server.h>
+#include <tuple>
 
 using namespace fb::game::handler::protocol;
 
@@ -26,27 +27,27 @@ async::task<bool> trade::handle(fb::socket<character>& session, game_reqs::trade
     switch (request.action)
     {
     case fb::game::trade::state::REQUEST:
-        me->trade.begin(you->shared_from_this_as<character>());
+        std::ignore = me->trade.begin(you->shared_from_this_as<character>());
         break;
 
     case fb::game::trade::state::UP_ITEM:
-        me->trade.up_item(request.parameter.index - 1);
+        std::ignore = me->trade.up_item(request.parameter.index - 1);
         break;
 
     case fb::game::trade::state::ITEM_COUNT:
-        me->trade.count(request.parameter.count);
+        std::ignore = me->trade.count(request.parameter.count);
         break;
 
     case fb::game::trade::state::UP_MONEY:
-        me->trade.up_money(request.parameter.money);
+        std::ignore = me->trade.up_money(request.parameter.money);
         break;
 
     case fb::game::trade::state::CANCEL:
-        me->trade.cancel();
+        std::ignore = me->trade.cancel();
         break;
 
     case fb::game::trade::state::LOCK:
-        me->trade.lock();
+        std::ignore = co_await me->trade.lock();
         break;
     }
 

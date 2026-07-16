@@ -15,7 +15,7 @@ async::task<bool> door::handle(fb::socket<character>& session, game_reqs::door& 
     if (ch->inited() == false)
         co_return true;
 
-    auto lua = this->server.lua.new_ctx_guard("scripts/interaction.lua", "on_door");
+    auto lua = this->server.lua.open("scripts/interaction.lua", "on_door");
     if (!lua)
         co_return true;
 

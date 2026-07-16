@@ -23,9 +23,9 @@ async::task<bool> update_option::handle(fb::socket<character>& session, game_req
         if (request.ride)
         {
             if (ch->state() == STATE::RIDING)
-                ch->unride();
+                co_await ch->unride();
             else
-                ch->ride();
+                co_await ch->ride();
         }
         else
         {

@@ -1,11 +1,11 @@
 -- item: 연두색비늘여자갑주
 
 -- 연두색비늘여자갑주 사용 스크립트
-function ON_ACTIVATED_611(me, item)
-
-end
+-- function ON_ACTIVATED_611(me, item)
+--
+-- end
 
 -- 연두색비늘여자갑주 해제 스크립트
-function ON_DEACTIVATED_611(me, item)
-
-end
+-- function ON_DEACTIVATED_611(me, item)
+--
+-- end

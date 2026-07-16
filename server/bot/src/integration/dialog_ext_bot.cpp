@@ -3,9 +3,9 @@
 
 namespace fb::bot::integration {
 
-async::task<void> dialog_ext_bot::deserialize(fb::stream_reader<big_endian>& reader)
+void dialog_ext_bot::deserialize(fb::stream_reader<big_endian>& reader)
 {
-    co_await header::deserialize(reader);
+    header::deserialize(reader);
     uint8_t type_byte = reader.read<uint8_t>();
     this->type        = static_cast<dialog_ext_type>(type_byte);
 

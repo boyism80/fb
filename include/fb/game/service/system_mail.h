@@ -33,20 +33,21 @@ private:
     std::vector<fb::game::system_mail> _pending_mails;
     fb::async_generator<void>          _delivery;
 
+private:
+    // clang-format off
     static fb::game::system_mail from_system_mail_dto(const fb::protocol::internal::SystemMail& dto);
     static bool                  expired(const fb::game::system_mail& mail, const fb::model::datetime& now);
-    static void prune_expired_mails(std::vector<fb::game::system_mail>& mails, const fb::model::datetime& now);
-
-    fb::async_generator<void> delivery_coroutine();
+    static void                  prune_expired_mails(std::vector<fb::game::system_mail>& mails, const fb::model::datetime& now);
+    fb::async_generator<void>    delivery_coroutine();
+    // clang-format on
 
 public:
     explicit system_mail(fb::game::server& server);
 
-    async::task<bool> create(uint32_t                          sender,
-                             std::string_view                  title,
-                             std::string_view                  contents,
-                             const std::optional<std::string>& expire_date);
+    // clang-format off
+    async::task<bool> create(uint32_t sender, std::string_view title, std::string_view contents, const std::optional<std::string>& expire_date);
     async::task<void> poll_and_deliver();
+    // clang-format on
 };
 
 } // namespace fb::game::service

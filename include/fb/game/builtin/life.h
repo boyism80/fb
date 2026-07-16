@@ -11,7 +11,7 @@ struct life
     static int builtin_hp(lua_State* L);
     static int builtin_mp(lua_State* L);
     static int builtin_heal(lua_State* L);
-    static int builtin_damage(lua_State* L);
+    static int builtin_damage_to(lua_State* L);
     static int builtin_mp_up(lua_State* L);
     static int builtin_mp_down(lua_State* L);
     static int builtin_action(lua_State* L);

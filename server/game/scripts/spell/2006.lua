@@ -16,9 +16,9 @@ function ON_CAST_2006(me, sp, name)
 end
 
 -- 야수 버프 효과
-function ON_BUFF_2006(me, sp)
-
-end
+-- function ON_BUFF_2006(me, sp)
+--
+-- end
 
 -- 야수 버프 해제 효과
 function ON_UNBUFF_2006(me, sp)

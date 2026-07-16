@@ -8,7 +8,7 @@ function NPC_397(me, npc)
         "장안성은 세상에서 제일 크고 멋진 성이 아닐까?",
     }
     local msg = messages[math.random(1, #messages)]
-    local button = me:dialog(npc, msg, false, false)
+    local button = me:dialog(npc, msg, { prev = false, next = false })
     if button == DIALOG_RESULT.QUIT then
         return
     end

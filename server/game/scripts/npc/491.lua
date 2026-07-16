@@ -2,7 +2,7 @@
 function NPC_491(me, npc)
     local item_name = "노란비서"
     if me:has_items(item_name, 1) then
-        local button = me:dialog(npc, string.format("%s님은 이미 %s를 가지고 계시네요.", me:name(), item_name), false, false)
+        local button = me:dialog(npc, string.format("%s님은 이미 %s를 가지고 계시네요.", me:name(), item_name), { prev = false, next = false })
         if button == DIALOG_RESULT.QUIT then
             return
         end
@@ -17,11 +17,11 @@ function NPC_491(me, npc)
         return
     end
 
-    if sel == 0 then
+    if sel == 1 then
         if me:mkitem(item_name, 1) == nil then
             return
         end
-        local button = me:dialog(npc, "자, 여기 하나 드릴게요.", false, false)
+        local button = me:dialog(npc, "자, 여기 하나 드릴게요.", { prev = false, next = false })
         if button == DIALOG_RESULT.QUIT then
             return
         end

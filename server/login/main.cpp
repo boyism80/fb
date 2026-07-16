@@ -2,7 +2,6 @@
 #include <fb/config.h>
 #include <fb/console.h>
 #include <fb/leak.h>
-#include <async/awaitable_get.h>
 #include <boost/program_options.hpp>
 #include <filesystem>
 #ifndef _WIN32

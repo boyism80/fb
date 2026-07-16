@@ -21,6 +21,9 @@ configMapGenerator:
   - name: marketplace
     files:
       - appsettings.k8s.json=config/marketplace/appsettings.k8s.json
+  - name: matchmaking
+    files:
+      - appsettings.k8s.json=config/matchmaking/appsettings.k8s.json
   - name: admin-tool
     files:
       - appsettings.k8s.json=config/admin-tool/appsettings.k8s.json
@@ -46,6 +49,9 @@ images:
     newTag: local
   - name: fb/marketplace
     newName: fb/marketplace
+    newTag: local
+  - name: fb/matchmaking
+    newName: fb/matchmaking
     newTag: local
   - name: fb/admin-tool
     newName: fb/admin-tool

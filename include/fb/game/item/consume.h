@@ -8,12 +8,14 @@ namespace fb::game {
 class consume : public item
 {
 public:
+    // clang-format off
     consume(fb::game::server& server, const fb::model::consume& model, const initial_params& params = {});
     consume(const consume& right);
     ~consume();
+    // clang-format on
 
 public:
-    bool active() override;
+    [[nodiscard]] async::task<bool> active() override;
 };
 
 } // namespace fb::game

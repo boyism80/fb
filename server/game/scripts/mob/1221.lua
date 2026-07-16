@@ -1,5 +1,5 @@
 -- mob: 수로유루제
 -- 수로유루제 공격
-function ON_MOB_ATTACK_1221(me, you)
-
-end
+-- function ON_MOB_ATTACK_1221(me, you)
+--
+-- end

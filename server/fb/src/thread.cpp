@@ -151,16 +151,17 @@ void fb::thread::enqueue(handle_func_type<void>&&  fn,
                          std::function<void()>&&   callback,
                          async::propagation::token context)
 {
-    auto  guard = this->_queue.enter_write();
-    auto& queue = guard.value();
-    queue.push([fn       = std::move(fn),
-                error    = std::move(error),
-                callback = std::move(callback),
-                context  = std::move(context),
+    auto  fn_holder = std::make_shared<handle_func_type<void>>(std::move(fn));
+    auto  guard     = this->_queue.enter_write();
+    auto& queue     = guard.value();
+    queue.push([fn_holder = std::move(fn_holder),
+                error     = std::move(error),
+                callback  = std::move(callback),
+                context   = std::move(context),
                 this]() {
         execution_context::pending(context);
-        async::awaitable_then(fn(*this),
-                              [fn = std::move(fn), error = std::move(error), callback = std::move(callback)](
+        async::awaitable_then((*fn_holder)(*this),
+                              [fn_holder, error = std::move(error), callback = std::move(callback)](
                                   async::awaitable_result<void> result) {
                                   try
                                   {
@@ -189,11 +190,12 @@ void fb::thread::enqueue(handle_func_type<void>&&  fn,
 
 async::task<void> fb::thread::dispatch(handle_func_type<void>&& fn, async::propagation::token context)
 {
-    auto promise = std::make_shared<async::task_completion_source<void>>();
+    auto promise   = std::make_shared<async::task_completion_source<void>>();
+    auto fn_holder = std::make_shared<handle_func_type<void>>(std::move(fn));
     if (this->id() == std::this_thread::get_id())
     {
         execution_context::pending(context);
-        async::awaitable_then(fn(*this), [promise](auto result) {
+        async::awaitable_then((*fn_holder)(*this), [fn_holder, promise](auto result) {
             try
             {
                 result();
@@ -212,7 +214,7 @@ async::task<void> fb::thread::dispatch(handle_func_type<void>&& fn, async::propa
     else
     {
         this->enqueue(
-            std::move(fn),
+            std::move(*fn_holder),
             [promise](std::exception& e) {
                 promise->set_exception(std::make_exception_ptr(e));
             },

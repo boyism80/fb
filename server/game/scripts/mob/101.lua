@@ -1,5 +1,5 @@
 -- mob: 방어의돼지
 -- 방어의돼지 사망
-function ON_MOB_DIE_101(me, you)
-
-end
+-- function ON_MOB_DIE_101(me)
+--
+-- end

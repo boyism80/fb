@@ -13,7 +13,7 @@ async::task<void> mob_respawn_timer::handle(const fb::model::datetime& now, std:
 
     for (auto& rezen : params->rezens)
     {
-        std::ignore = rezen.spawn(id);
+        co_await rezen->spawn(id);
     }
     co_return;
 }

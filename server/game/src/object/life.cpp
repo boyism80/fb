@@ -1,9 +1,13 @@
 #include <fb/game/server.h>
 #include <fb/game/life.h>
+#include <fb/game/mob.h>
+#include <fb/game/character.h>
 #include <fb/game/map.h>
 #include <fb/model/model.h>
 #include <fb/encoding.h>
 #include <json/json.h>
+#include <unordered_map>
+#include <tuple>
 
 using namespace fb::game;
 
@@ -57,10 +61,119 @@ life::batch_update_guard::~batch_update_guard()
     }
 }
 
-void life::kill(std::shared_ptr<fb::game::object> from, DESTROY_TYPE destroy_type)
+void life::kill(DESTROY_TYPE destroy_type)
 {
     this->assert_thread();
-    this->stat.hp(0);
+    this->stat.hp(0, false);
+}
+
+life::mob_vector life::damage_targets(const damage_list& targets, const damage_opts& opts)
+{
+    this->assert_thread();
+
+    auto attacker = this->shared_from_this_as<life>();
+    auto dead     = mob_vector{};
+
+    for (auto& [target, value] : targets)
+    {
+        if (target == nullptr)
+            continue;
+
+        target->stat.damage(value, attacker, opts.critical, opts.rate, opts.physical, opts.fixed, opts.notify);
+        // character::alive() means "not ghost", so death must be detected by HP.
+        if (target->stat.hp() != 0)
+            continue;
+
+        if (target->is(OBJECT_TYPE::MOB))
+        {
+            auto m = std::static_pointer_cast<mob>(target);
+            // Already settling ON_MOB_KILL / ON_MOB_DIE — do not re-enter kill flow.
+            if (m->invincible())
+                continue;
+
+            m->invincible(true);
+            dead.push_back(m);
+        }
+        else if (target->is(OBJECT_TYPE::CHARACTER))
+        {
+            auto ch = std::static_pointer_cast<character>(target);
+            if (ch->alive() == false)
+                continue;
+
+            ch->kill(DESTROY_TYPE::DEAD);
+            ch->notify_death(attacker);
+        }
+    }
+
+    return dead;
+}
+
+async::task<void> life::settle_deaths(mob_vector dead)
+{
+    this->assert_thread();
+
+    auto groups = std::unordered_map<uint32_t, mob_vector>{};
+    for (auto& m : dead)
+    {
+        if (m == nullptr)
+            continue;
+        groups[m->based<fb::model::mob>().id].push_back(m);
+    }
+
+    for (auto& [id, mobs] : groups)
+    {
+        auto path = std::format("scripts/mob/{}.lua", id);
+        auto func = std::format("ON_MOB_DIE_{}", id);
+        auto lua  = this->server.lua.open(path, func);
+        if (lua)
+        {
+            lua->pushobject(*mobs.front());
+            try
+            {
+                std::ignore = co_await lua->call(1);
+            }
+            catch (std::exception& e)
+            {
+                fb::logger::fatal("error in ON_MOB_DIE_{}: {}", id, e.what());
+            }
+            catch (...)
+            {
+                fb::logger::fatal("unknown error in ON_MOB_DIE_{}", id);
+            }
+        }
+
+        for (auto& m : mobs)
+        {
+            auto owner = m->owner.lock();
+            if (owner != nullptr)
+            {
+                owner->detach_spawned_mob(*m);
+                m->kill(DESTROY_TYPE::DEAD);
+                co_await m->destroy(DESTROY_TYPE::DEAD);
+                continue;
+            }
+
+            this->listener.on_dead(*m, nullptr);
+            co_await m->drop_items();
+            m->kill(DESTROY_TYPE::DEAD);
+            co_await m->destroy(DESTROY_TYPE::DEAD);
+        }
+    }
+}
+
+async::task<void> life::damage_to(const damage_list& targets)
+{
+    co_await this->damage_to(targets, damage_opts{});
+    co_return;
+}
+
+async::task<void> life::damage_to(const damage_list& targets, const damage_opts& opts)
+{
+    this->assert_thread();
+    auto dead = this->damage_targets(targets, opts);
+    if (dead.empty() == false)
+        co_await this->settle_deaths(std::move(dead));
+    co_return;
 }
 
 async::task<void> life::attack(DURATION duration)
@@ -74,7 +187,7 @@ async::task<void> life::attack(DURATION duration)
 
     // Execute attack interaction script and get attack count
     uint32_t attack_count = 0;
-    auto     lua          = this->server.lua.new_ctx_guard("scripts/interaction.lua", "on_attack");
+    auto     lua          = this->server.lua.open("scripts/interaction.lua", "on_attack");
     if (lua)
     {
         lua->pushobject(*this);
@@ -96,7 +209,7 @@ async::task<void> life::attack(DURATION duration)
             auto  path  = std::format("scripts/item/{}.lua", model.id);
             auto  func  = std::format("ON_ATTACK_{}", model.id);
 
-            auto weapon_lua = this->server.lua.new_ctx_guard(path, func);
+            auto weapon_lua = this->server.lua.open(path, func);
             if (weapon_lua)
             {
                 weapon_lua->pushobject(ch);
@@ -108,10 +221,11 @@ async::task<void> life::attack(DURATION duration)
             if (attack_count > 0 && weapon->durability_down(attack_count))
             {
                 ch->message(std::format(_TEXT(MESSAGE_EQUIPMENT_BROKEN), weapon->name()));
-                ch->items.equipment_off(EQUIPMENT_PARTS::WEAPON);
+                std::ignore = ch->items.equipment_off(EQUIPMENT_PARTS::WEAPON);
             }
         }
     }
+    co_return;
 }
 
 uint32_t life::exp() const
@@ -134,7 +248,7 @@ bool life::active(fb::game::spell& spell, std::string_view message)
     auto  path  = std::format("scripts/spell/{}.lua", model.id);
     auto  func  = std::format("ON_CAST_{}", model.id);
 
-    auto lua = this->server.lua.new_ctx_guard(path, func);
+    auto lua = this->server.lua.open(path, func);
     if (!lua)
         return false;
 
@@ -168,7 +282,7 @@ bool life::active(fb::game::spell& spell, fb::game::object& to)
     auto  path  = std::format("scripts/spell/{}.lua", model.id);
     auto  func  = std::format("ON_CAST_{}", model.id);
 
-    auto lua = this->server.lua.new_ctx_guard(path, func);
+    auto lua = this->server.lua.open(path, func);
     if (!lua)
         return false;
 
@@ -199,7 +313,7 @@ bool life::active(fb::game::spell& spell)
     auto  path  = std::format("scripts/spell/{}.lua", model.id);
     auto  func  = std::format("ON_CAST_{}", model.id);
 
-    auto lua = this->server.lua.new_ctx_guard(path, func);
+    auto lua = this->server.lua.open(path, func);
     if (!lua)
         return false;
 

@@ -5,6 +5,6 @@ function ON_MOB_ATTACK_1097(me, you)
 end
 
 -- 범목 사망
-function ON_MOB_DIE_1097(me, you)
-
-end
+-- function ON_MOB_DIE_1097(me)
+--
+-- end

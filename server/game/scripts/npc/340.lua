@@ -6,27 +6,27 @@ function NPC_340(me, npc)
             "몬스터생성",
             "출입구닫기",
             "초기화",
-        }, false)
+        }, { prev = false })
         if btn == DIALOG_RESULT.QUIT or sel == nil then
             return
         end
-        me:dialog(npc, "준비중입니다.", false, false)
+        me:dialog(npc, "준비중입니다.", { prev = false, next = false })
         return
     end
 
     local sel, btn = me:list(npc, "귀환 하시겠습니까?", {
         "네. 나가고 싶어요!",
         "아니요. 아직 안나갈래요!",
-    }, false)
+    }, { prev = false })
     if btn == DIALOG_RESULT.QUIT or sel == nil then
         return
     end
 
-    if sel == 0 then
+    if sel == 1 then
         if server.warp_to_return_map(me) == nil then
-            me:dialog(npc, "이동할 수 없습니다.", false, false)
+            me:dialog(npc, "이동할 수 없습니다.", { prev = false, next = false })
         end
-    elseif sel == 1 then
-        me:dialog(npc, "잘 생각하셨어요.", false, true)
+    elseif sel == 2 then
+        me:dialog(npc, "잘 생각하셨어요.", { prev = false, next = true })
     end
 end

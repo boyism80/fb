@@ -3,6 +3,7 @@
 #include <fb/game/thread_params.h>
 #include <fb/context.h>
 #include <fb/model/model.h>
+#include <fb/logger.h>
 #include <stdexcept>
 #include <fb/encoding.h>
 #include <fb/config.h>
@@ -13,6 +14,7 @@
 #include <chrono>
 #include <format>
 #include <macro.h>
+#include <unordered_map>
 
 using namespace fb::game;
 using namespace fb::model;
@@ -22,6 +24,7 @@ character::character(fb::game::server& server, const initial_params& params) :
     stat(*this),
     storage_box(*this),
     marketplace(*this),
+    matchmaker(*this),
     life(server,
          table::life[0],
          stat,
@@ -58,15 +61,13 @@ void character::on_init()
     this->quests.owner(this->shared_from_this_as<character>());
 }
 
-async::task<size_t> character::send(const fb::stream& stream, bool encrypt, bool wrap)
+size_t character::send(const fb::stream& stream, bool encrypt, bool wrap)
 {
     this->assert_thread();
 
     auto socket_ptr = this->_socket.lock();
     if (socket_ptr == nullptr || !socket_ptr->is_open())
-    {
-        co_return 0;
-    }
+        return 0;
 
     auto wire = fb::stream(stream);
     if (socket_ptr->prepare_outbound(wire, encrypt, wrap) == false)
@@ -76,33 +77,37 @@ async::task<size_t> character::send(const fb::stream& stream, bool encrypt, bool
 
     auto frame = execution_context::current();
     if (frame == nullptr)
-        co_return co_await this->send_immediate(stream, encrypt, wrap);
+    {
+        fb::logger::warn("character::send dropped: no execution_context (name={}, bytes={})", this->name(), queued);
+        return 0;
+    }
 
     auto* ctx = frame->slot<context>(context::local::slot_id());
     if (ctx == nullptr)
-        co_return co_await this->send_immediate(stream, encrypt, wrap);
+    {
+        fb::logger::warn("character::send dropped: no outbound context (name={}, bytes={})", this->name(), queued);
+        return 0;
+    }
 
     const auto endpoint =
         std::shared_ptr<boost::asio::ip::tcp::socket>(socket_ptr,
                                                       static_cast<boost::asio::ip::tcp::socket*>(socket_ptr.get()));
     ctx->outbound.append(endpoint, std::move(wire));
-    co_return queued;
+    return queued;
 }
 
-async::task<size_t> character::send(const fb::protocol::header& response, bool encrypt, bool wrap)
+size_t character::send(const fb::protocol::header& response, bool encrypt, bool wrap)
 {
     this->assert_thread();
 
     auto socket_ptr = this->_socket.lock();
     if (socket_ptr == nullptr || !socket_ptr->is_open())
-    {
-        co_return 0;
-    }
+        return 0;
 
     auto stream = fb::stream();
     auto writer = fb::stream_writer<big_endian>(stream);
-    co_await response.serialize(writer);
-    co_return co_await this->send(stream, encrypt, wrap);
+    response.serialize(writer);
+    return this->send(stream, encrypt, wrap);
 }
 
 async::task<size_t> character::send_immediate(const fb::stream& stream, bool encrypt, bool wrap)
@@ -149,6 +154,17 @@ async::task<bool> character::map(std::shared_ptr<fb::game::map>      map,
 
     auto old_map      = this->_map;
     auto old_position = this->_position;
+
+    if (map != nullptr && this->_map != map && options.skip_instance_rule == false)
+    {
+        auto routed = this->server.maps.choice_entry(*this, map);
+        if (routed == nullptr)
+        {
+            this->listener.on_message(*this, "그룹에 가입해야 입장할 수 있습니다.", MESSAGE_TYPE::STATE);
+            co_return false;
+        }
+        map = routed;
+    }
 
     if (this->_map != map)
     {
@@ -207,7 +223,7 @@ async::task<bool> character::map(std::shared_ptr<fb::game::map>      map,
             std::ignore = co_await this->map(nullptr);
             co_await this->server.save(*this);
 
-            this->listener.on_transfer(*this, *map, new_position, resp.ip, resp.port);
+            co_await this->listener.on_transfer(*this, *map, new_position, resp.ip, resp.port);
         }
         catch (std::exception& e)
         {
@@ -349,6 +365,7 @@ async::task<void> character::attack(DURATION duration)
     {
         this->message(e.what());
     }
+    co_return;
 }
 
 void character::action(ACTION action, DURATION duration, uint8_t sound)
@@ -947,7 +964,7 @@ void character::money_reduce(uint32_t value)
     this->money(this->_money - value);
 }
 
-fb::game::cash* character::money_drop(uint32_t value)
+async::task<fb::game::cash*> character::money_drop(uint32_t value)
 {
     this->assert_thread();
 
@@ -956,7 +973,7 @@ fb::game::cash* character::money_drop(uint32_t value)
         this->assert_state({STATE::RIDING, STATE::GHOST});
 
         if (value == 0)
-            return 0;
+            co_return nullptr;
 
         value = std::min(this->_money, value);
         this->money_reduce(value);
@@ -965,17 +982,17 @@ fb::game::cash* character::money_drop(uint32_t value)
         // For now, use make_shared but return raw pointer for compatibility
         auto cash_shared = this->server.make<fb::game::cash>(value);
         auto cash        = cash_shared.get();
-        cash->map(this->_map, this->_position);
+        std::ignore      = co_await cash->map(this->_map, this->_position);
         this->action(ACTION::PICKUP, DURATION::PICKUP);
         this->message(_TEXT(MESSAGE_MONEY_DROP));
-        return cash;
+        co_return cash;
     }
     catch (std::exception& e)
     {
         this->message(e.what());
     }
 
-    return 0;
+    co_return nullptr;
 }
 
 bool character::option(OPTION key) const
@@ -1193,7 +1210,7 @@ bool character::move(DIRECTION direction, const fb::model::point16_t& before)
     }
 }
 
-void character::ride(mob& horse)
+async::task<void> character::ride(mob& horse)
 {
     this->assert_thread();
 
@@ -1210,9 +1227,10 @@ void character::ride(mob& horse)
         if (horse.map() != this->_map)
             throw std::runtime_error(_TEXT(MESSAGE_ERROR_UNKNOWN));
 
-        std::ignore = horse.map(nullptr);
+        std::ignore = co_await horse.map(nullptr);
         this->state(STATE::RIDING);
         horse.kill();
+        co_await horse.destroy();
         this->message(_TEXT(MESSAGE_RIDE_ON));
     }
     catch (std::exception& e)
@@ -1221,7 +1239,7 @@ void character::ride(mob& horse)
     }
 }
 
-void character::ride()
+async::task<void> character::ride()
 {
     this->assert_thread();
 
@@ -1233,7 +1251,7 @@ void character::ride()
         if (front == nullptr)
             throw std::runtime_error(_TEXT(MESSAGE_EXCEPTION_NO_CONVEYANCE));
 
-        this->ride(static_cast<mob&>(*front));
+        co_await this->ride(static_cast<mob&>(*front));
     }
     catch (std::exception& e)
     {
@@ -1241,7 +1259,7 @@ void character::ride()
     }
 }
 
-void character::unride()
+async::task<void> character::unride()
 {
     this->assert_thread();
 
@@ -1253,7 +1271,7 @@ void character::unride()
 
         auto& model = table::mob[fb::model::const_value::mob::horse];
         auto  horse = this->server.make<mob>(model, mob::initial_params{.alive = true});
-        horse->map(this->_map, this->front_position());
+        std::ignore = co_await horse->map(this->_map, this->front_position());
 
         this->state(STATE::NORMAL);
         this->message(_TEXT(MESSAGE_RIDE_OFF));
@@ -1397,20 +1415,15 @@ async::task<void> character::whisper(std::string receiver_name, std::string mess
 
     character::container::assert_whisper(resp.error, resp.to);
 
-    std::weak_ptr<character> receiver_weak;
-    {
-        auto guard    = co_await this->server.characters.enter_read_async();
-        auto receiver = guard.value().find(resp.to);
-        if (receiver == nullptr)
-            co_return;
+    auto receiver = this->server.characters.find(resp.to);
+    if (receiver == nullptr)
+        co_return;
 
-        receiver_weak = receiver->weak_from_this_as<character>();
-    }
-
-    auto before = this->server.threads.current();
+    auto receiver_weak = receiver->weak_from_this_as<character>();
+    auto before        = this->server.threads.current();
     co_await this->server.threads.switching(receiver_weak);
 
-    auto receiver = receiver_weak.lock();
+    receiver = receiver_weak.lock();
     if (receiver != nullptr)
     {
         receiver->message(std::format("{}> {}", resp.from, resp.message), MESSAGE_TYPE::NOTIFY);
@@ -1468,16 +1481,20 @@ void character::update(UPDATE_STATE_LEVEL value)
     this->listener.on_update(*this, value);
 }
 
-void character::kill(std::shared_ptr<fb::game::object> from, DESTROY_TYPE destroy_type)
+void character::kill(DESTROY_TYPE destroy_type)
 {
     this->assert_thread();
-    life::kill(from, destroy_type);
+    life::kill(destroy_type);
 
     this->death_penalty();
     this->state(STATE::GHOST);
-    this->listener.on_dead(*this, from);
+}
 
-    // Log death event
+void character::notify_death(std::shared_ptr<fb::game::object> killer)
+{
+    this->assert_thread();
+    this->listener.on_dead(*this, killer);
+
     auto log_data              = Json::Value();
     log_data["character_id"]   = static_cast<Json::Int64>(this->id);
     log_data["character_name"] = UTF8(this->name(), PLATFORM::WINDOWS);
@@ -1489,13 +1506,120 @@ void character::kill(std::shared_ptr<fb::game::object> from, DESTROY_TYPE destro
         log_data["position_x"] = this->position().x;
         log_data["position_y"] = this->position().y;
     }
-    if (from != nullptr && from->is(OBJECT_TYPE::CHARACTER))
+    if (killer != nullptr && killer->is(OBJECT_TYPE::CHARACTER))
     {
-        auto& killer            = static_cast<character&>(*from);
-        log_data["killer_id"]   = static_cast<Json::Int64>(killer.id);
-        log_data["killer_name"] = UTF8(killer.name(), PLATFORM::WINDOWS);
+        auto& killer_ch         = static_cast<character&>(*killer);
+        log_data["killer_id"]   = static_cast<Json::Int64>(killer_ch.id);
+        log_data["killer_name"] = UTF8(killer_ch.name(), PLATFORM::WINDOWS);
     }
     this->server.log.write("death", log_data);
+}
+
+async::task<void> character::settle_kills(mob_vector dead)
+{
+    this->assert_thread();
+
+    auto groups = std::unordered_map<uint32_t, mob_vector>{};
+    for (auto& m : dead)
+    {
+        if (m == nullptr)
+            continue;
+        groups[m->based<fb::model::mob>().id].push_back(m);
+    }
+
+    auto self = this->shared_from_this_as<character>();
+    for (auto& [id, mobs] : groups)
+    {
+        auto path = std::format("scripts/mob/{}.lua", id);
+        auto func = std::format("ON_MOB_KILL_{}", id);
+        auto lua  = this->server.lua.open(path, func);
+        if (lua)
+        {
+            lua->pushobject(*self);
+            lua->new_table();
+            for (auto i = 0; i < static_cast<int>(mobs.size()); i++)
+            {
+                lua->pushobject(*mobs[i]);
+                lua->rawseti(-2, i + 1);
+            }
+
+            try
+            {
+                std::ignore = co_await lua->call(2);
+            }
+            catch (std::exception& e)
+            {
+                fb::logger::fatal("error in ON_MOB_KILL_{}: {}", id, e.what());
+            }
+            catch (...)
+            {
+                fb::logger::fatal("unknown error in ON_MOB_KILL_{}", id);
+            }
+        }
+
+        for (auto& m : mobs)
+        {
+            auto owner = m->owner.lock();
+            if (owner != nullptr)
+            {
+                owner->detach_spawned_mob(*m);
+                m->kill(DESTROY_TYPE::DEAD);
+                co_await m->destroy(DESTROY_TYPE::DEAD);
+                continue;
+            }
+
+            this->listener.on_dead(*m, self);
+            co_await m->drop_items();
+            this->award_exp(*m);
+            m->kill(DESTROY_TYPE::DEAD);
+            co_await m->destroy(DESTROY_TYPE::DEAD);
+        }
+    }
+}
+
+void character::award_exp(const fb::game::mob& mob)
+{
+    this->assert_thread();
+
+    auto& group_id = this->group_id();
+    auto  map      = this->map();
+    auto  exp      = mob.based<fb::model::mob>().exp;
+
+    if (group_id.has_value() && map != nullptr)
+    {
+        auto  guard      = this->server.groups.enter_read(group_id.value());
+        auto& group      = guard.value();
+        auto  nears      = group->nears(*map, this->position());
+        auto  size       = nears.size();
+        auto  divide_exp = exp / size;
+        for (auto& member : nears)
+        {
+            auto shared_ptr = member.lock();
+            if (shared_ptr == nullptr)
+                continue;
+
+            shared_ptr->add_exp(divide_exp, true, true);
+        }
+    }
+    else
+    {
+        this->add_exp(exp, true, true);
+    }
+}
+
+async::task<void> character::damage_to(const damage_list& targets)
+{
+    co_await this->damage_to(targets, damage_opts{});
+    co_return;
+}
+
+async::task<void> character::damage_to(const damage_list& targets, const damage_opts& opts)
+{
+    this->assert_thread();
+    auto dead = this->damage_targets(targets, opts);
+    if (dead.empty() == false)
+        co_await this->settle_kills(std::move(dead));
+    co_return;
 }
 
 fb::protocol::internal::Character character::to_protocol() const
@@ -1603,9 +1727,10 @@ void character::item_tooltip(const item& item, uint16_t position)
     this->listener.on_item_tooltip(*this, item, position);
 }
 
-void character::show_user_list()
+async::task<void> character::show_user_list()
 {
-    this->listener.on_show_user_list(*this);
+    this->assert_thread();
+    co_await this->listener.on_show_user_list(*this);
 }
 
 void character::show_world_map(uint32_t id, uint16_t index)
@@ -1722,23 +1847,23 @@ bool character::detect() const
     return this->_detect;
 }
 
-std::shared_ptr<fb::game::mob>
+async::task<std::shared_ptr<fb::game::mob>>
 character::spawn_mob(const fb::model::mob& model, const fb::model::point16_t& position, bool owned, bool notify)
 {
     this->assert_thread();
     auto map = this->_map;
     if (map == nullptr)
-        return nullptr;
+        co_return nullptr;
 
     auto  params    = fb::game::mob::initial_params{.alive = true, .owner = owned ? this : nullptr};
     auto& mob_model = static_cast<const fb::model::mob&>(model);
     auto  mob       = std::make_shared<fb::game::mob>(this->server, mob_model, params);
-    mob->map(map, position, {.notify = notify});
+    std::ignore     = co_await mob->map(map, position, {.notify = notify});
 
     if (owned)
         this->_spawned_mobs.push_back(mob);
 
-    return mob;
+    co_return mob;
 }
 
 const std::vector<std::shared_ptr<fb::game::mob>>& character::spawned_mobs() const
@@ -1843,7 +1968,7 @@ async::task<void> character::death_penalty()
     }
     for (auto k : buff_keys)
     {
-        this->buffs.remove(k);
+        std::ignore = co_await this->buffs.remove(k);
     }
 
     auto money = this->money();
@@ -1878,10 +2003,9 @@ async::task<void> character::death_penalty()
 
         if (ENUM_IN(model.death_penalty, DEATH_PENALTY::DROP))
         {
-            this->items.drop(i, item->count(), false, ITEM_DELETE_TYPE::NONE);
-            item->container(nullptr);
-            item->death_uid(this->id);
-            std::ignore = co_await item->map(this->map(), this->position());
+            auto dropped = co_await this->items.drop(i, item->count(), false, ITEM_DELETE_TYPE::NONE);
+            if (dropped != nullptr)
+                dropped->death_uid(this->id);
         }
     }
 
@@ -1910,7 +2034,7 @@ async::task<void> character::death_penalty()
         else if (this->items.free())
         {
             this->items.equipment_off(parts);
-            this->items.add(equipment);
+            std::ignore = co_await this->items.add(equipment);
         }
     }
 
@@ -1930,11 +2054,11 @@ async::task<void> character::death_penalty()
     }
 }
 
-bool character::reward(const std::vector<fb::model::dsl>& reward)
+async::task<bool> character::reward(const std::vector<fb::model::dsl>& reward)
 {
     this->assert_thread();
     if (this->items.is_rewardable(reward) == false)
-        return false;
+        co_return false;
 
     auto money = 0;
     auto exp   = 0;
@@ -1968,7 +2092,7 @@ bool character::reward(const std::vector<fb::model::dsl>& reward)
                 auto weapon = std::static_pointer_cast<fb::game::weapon>(item);
                 weapon->custom_name(*params.custom_name);
             }
-            this->items.add(item);
+            std::ignore = co_await this->items.add(item);
             break;
         }
         case fb::model::enum_value::DSL::money:
@@ -1994,7 +2118,7 @@ bool character::reward(const std::vector<fb::model::dsl>& reward)
     if (money > 0)
         this->money_add(money);
 
-    return true;
+    co_return true;
 }
 
 std::shared_ptr<fb::socket<character>> character::socket_ptr() const

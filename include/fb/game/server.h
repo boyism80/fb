@@ -62,6 +62,10 @@ REGISTER_RESPONSE(fb::protocol::internal::request::Whisper, fb::protocol::intern
 REGISTER_RESPONSE(fb::protocol::internal::request::Transfer, fb::protocol::internal::response::Transfer)
 REGISTER_RESPONSE(fb::protocol::internal::request::UpdateFriends, fb::protocol::internal::response::UpdateFriends)
 REGISTER_RESPONSE(fb::protocol::internal::request::WriteSystemStorageBox, fb::protocol::internal::response::WriteSystemStorageBox)
+REGISTER_RESPONSE(fb::protocol::internal::request::WriteStorageBox, fb::protocol::internal::response::WriteStorageBox)
+REGISTER_RESPONSE(fb::protocol::internal::request::ClaimStorageBox, fb::protocol::internal::response::ClaimStorageBox)
+REGISTER_RESPONSE(fb::protocol::internal::request::UnclaimStorageBox, fb::protocol::internal::response::UnclaimStorageBox)
+REGISTER_RESPONSE(fb::protocol::internal::request::DeliverSystemStorage, fb::protocol::internal::response::DeliverSystemStorage)
 REGISTER_RESPONSE(fb::protocol::internal::request::WriteSystemMail, fb::protocol::internal::response::WriteSystemMail)
 REGISTER_RESPONSE(fb::protocol::internal::request::Ban, fb::protocol::internal::response::Ban)
 REGISTER_RESPONSE(fb::protocol::internal::request::Unban, fb::protocol::internal::response::Unban)
@@ -74,6 +78,10 @@ REGISTER_RESPONSE(fb::protocol::marketplace::request::Purchase, fb::protocol::ma
 REGISTER_RESPONSE(fb::protocol::marketplace::request::Search, fb::protocol::marketplace::response::Search)
 REGISTER_RESPONSE(fb::protocol::marketplace::request::GetListings, fb::protocol::marketplace::response::GetListings)
 REGISTER_RESPONSE(fb::protocol::marketplace::request::GetPurchases, fb::protocol::marketplace::response::GetPurchases)
+REGISTER_RESPONSE(fb::protocol::matchmaking::request::Register, fb::protocol::matchmaking::response::Register)
+REGISTER_RESPONSE(fb::protocol::matchmaking::request::Unregister, fb::protocol::matchmaking::response::Unregister)
+REGISTER_RESPONSE(fb::protocol::matchmaking::request::Confirm, fb::protocol::matchmaking::response::Confirm)
+REGISTER_RESPONSE(fb::protocol::matchmaking::request::Decline, fb::protocol::matchmaking::response::Decline)
 // clang-format on
 
 namespace fb::game {
@@ -113,18 +121,18 @@ private:
     double              _drop_rate_multiplier;
 
 public:
-    fb::log_collector                      log;
-    listener_impl                          listener;
-    fb::synchronized<character::container> characters;
-    map::container                         maps;
-    clan::container                        clans;
-    group::container                       groups;
-    service::mail                          mail;
-    service::bulletin                      bulletin;
-    service::system_storage                system_storage;
-    service::system_mail                   system_mail;
-    service::schedule                      schedules;
-    service::property                      property;
+    fb::log_collector       log;
+    listener_impl           listener;
+    character::container    characters;
+    map::container          maps;
+    clan::container         clans;
+    group::container        groups;
+    service::mail           mail;
+    service::bulletin       bulletin;
+    service::system_storage system_storage;
+    service::system_mail    system_mail;
+    service::schedule       schedules;
+    service::property       property;
 
 public:
     server(boost::asio::io_context& io_context, uint16_t port);
@@ -133,6 +141,7 @@ public:
     ~server();
 
 private:
+    // clang-format off
     internal::SavePayload save_payload(const character& ch) const;
     async::task<void>     init_lua();
     async::task<void>     init_thread_params();
@@ -141,6 +150,7 @@ private:
     void                  init_amqp_handlers();
     async::task<void>     init_map_scripts();
     async::task<void>     init_script();
+    // clang-format on
 
 public:
     // clang-format off
@@ -167,34 +177,36 @@ public:
 
 protected:
     // clang-format off
-    uint8_t                                     id() const override final;
-    internal::Service                           service() const override final;
-    bool                                        decrypt_policy(uint8_t opcode) const override final;
-    bool                                        assert_tps(const fb::socket<character>& socket) const override final;
-    void                                        on_init_amqp(fb::amqp::socket& amqp) override final;
-    async::task<void>                           on_start() override final;
-    async::task<void>                           on_exit() override final;
-    async::task<bool>                           on_connected(fb::socket<character>& ch) override final;
-    async::task<bool>                           on_disconnected(fb::socket<character>& ch) override final;
+    uint8_t           id() const override final;
+    internal::Service service() const override final;
+    bool              decrypt_policy(uint8_t opcode) const override final;
+    bool              assert_tps(const fb::socket<character>& socket) const override final;
+    void              on_init_amqp(fb::amqp::socket& amqp) override final;
+    async::task<void> on_start() override final;
+    async::task<void> on_exit() override final;
+    async::task<bool> on_connected(fb::socket<character>& ch) override final;
+    async::task<bool> on_disconnected(fb::socket<character>& ch) override final;
     // clang-format on
 
 public:
     // clang-format off
-    async::task<void>                           send(object& obj, const fb::protocol::header& header, fb::game::scope scope, send_option options = {});
-    async::task<void>                           save();
-    async::task<void>                           save(character& ch);
-    void                                        sync_time();
-    async::task<internal_resp::Ban>             ban(std::string_view name, std::string_view reason, const std::optional<uint32_t>& days);
-    async::task<internal_resp::Unban>           unban(std::string_view name);
+    void                              send(object& obj, const fb::protocol::header& header, fb::game::scope scope, send_option options = {});
+    async::task<void>                 save();
+    async::task<void>                 save(character& ch);
+    void                              sync_time();
+    async::task<internal_resp::Ban>   ban(std::string_view name, std::string_view reason, const std::optional<uint32_t>& days);
+    async::task<internal_resp::Unban> unban(std::string_view name);
+    // clang-format on
 
 public:
-    virtual uint32_t                            thread_id(const fb::socket<character>& socket) const;
-    const fb::model::datetime&                  time() const;
-    async::task<void>                           update_status();
-    double                                      exp_multiplier() const;
-    void                                        exp_multiplier(double value);
-    double                                      drop_rate_multiplier() const;
-    void                                        drop_rate_multiplier(double value);
+    // clang-format off
+    virtual uint32_t           thread_id(const fb::socket<character>& socket) const;
+    const fb::model::datetime& time() const;
+    async::task<void>          update_status();
+    double                     exp_multiplier() const;
+    void                       exp_multiplier(double value);
+    double                     drop_rate_multiplier() const;
+    void                       drop_rate_multiplier(double value);
     // clang-format on
 };
 

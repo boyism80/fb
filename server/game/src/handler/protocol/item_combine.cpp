@@ -72,7 +72,7 @@ async::task<bool> item_combine::handle(fb::socket<character>& session, game_reqs
     {
         auto deleted = ch->items.remove(item, count);
         if (deleted != nullptr)
-            std::ignore = deleted->destroy();
+            co_await deleted->destroy();
     }
 
     // Calculate success/failure probability
@@ -90,8 +90,8 @@ async::task<bool> item_combine::handle(fb::socket<character>& session, game_reqs
             auto item  = this->server.make<fb::game::item>(table::item[params.id]);
             auto count = std::min<uint16_t>(model.capacity, remain);
             item->count(count);
-            ch->items.add(item);
-            remain -= count;
+            std::ignore  = co_await ch->items.add(item);
+            remain      -= count;
         }
     }
 

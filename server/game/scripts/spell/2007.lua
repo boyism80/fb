@@ -16,9 +16,9 @@ function ON_CAST_2007(me, sp, name)
 end
 
 -- 맹수 버프 효과
-function ON_BUFF_2007(me, sp)
-
-end
+-- function ON_BUFF_2007(me, sp)
+--
+-- end
 
 -- 맹수 버프 해제 효과
 function ON_UNBUFF_2007(me, sp)

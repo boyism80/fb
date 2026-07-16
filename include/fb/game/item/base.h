@@ -62,13 +62,14 @@ public:
     listener_t& listener;
 
 public:
-    item(fb::game::server&      server,
-         const fb::model::item& model,
-         const initial_params&  params = initial_params{.count = 1});
-    item(const item& right);
+    // clang-format off
+            item(fb::game::server& server, const fb::model::item& model, const initial_params& params = initial_params{.count = 1});
+            item(const item& right);
     virtual ~item();
+    // clang-format on
 
 public:
+    // clang-format off
     std::shared_ptr<fb::game::character>    owner() const;
     uint16_t                                fill(uint16_t count);
     uint16_t                                free_space() const;
@@ -87,14 +88,13 @@ public:
     virtual std::string                     inven_name() const;
     virtual std::string                     trade_name() const;
     virtual bool                            empty() const;
-    virtual bool                            active();
+    virtual async::task<bool>               active();
     virtual std::shared_ptr<fb::game::item> split(uint16_t count = 1);
     virtual void                            merge(std::shared_ptr<fb::game::item> item);
-    virtual async::task<bool>               map(map_ptr_t                           map,
-                                                std::optional<fb::model::point16_t> position = std::nullopt,
-                                                map_options                         options  = {}) override;
+    virtual async::task<bool>               map(map_ptr_t map, std::optional<fb::model::point16_t> position = std::nullopt, map_options options = {}) override;
     std::shared_ptr<fb::game::appearance>   appearance() const override;
     bool                                    expired() const;
+    // clang-format on
 
 public:
     void container(fb::game::items* container);

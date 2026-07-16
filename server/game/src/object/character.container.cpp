@@ -1,7 +1,7 @@
 #include <fb/game/character.h>
 #include <fb/game/server.h>
 #include <atomic>
-
+#include <shared_mutex>
 using namespace fb::game;
 
 character::container::container(fb::game::server& server) :
@@ -10,11 +10,13 @@ character::container::container(fb::game::server& server) :
 
 size_t character::container::size() const
 {
+    auto _ = std::shared_lock(this->_mutex);
     return this->_from_uid.size();
 }
 
 bool character::container::insert(character_ptr_t ch)
 {
+    auto _ = std::unique_lock(this->_mutex);
     if (this->_from_uid.contains(ch->id) || this->_from_name.contains(ch->name()))
         return false;
 
@@ -25,30 +27,60 @@ bool character::container::insert(character_ptr_t ch)
 
 void character::container::remove(character_ptr_t ch)
 {
+    auto _ = std::unique_lock(this->_mutex);
     this->_from_uid.erase(ch->id);
     this->_from_name.erase(ch->name());
 }
 
 character::container::character_ptr_t character::container::find(uint32_t uid) const
 {
+    auto _  = std::shared_lock(this->_mutex);
     auto it = this->_from_uid.find(uid);
     return it != this->_from_uid.end() ? it->second : nullptr;
 }
 
 bool character::container::contains(std::string_view name) const
 {
+    auto _ = std::shared_lock(this->_mutex);
     return this->_from_name.contains(std::string(name));
 }
 
 bool character::container::contains(uint32_t uid) const
 {
+    auto _ = std::shared_lock(this->_mutex);
     return this->_from_uid.contains(uid);
 }
 
 character::container::character_ptr_t character::container::find(std::string_view name) const
 {
+    auto _  = std::shared_lock(this->_mutex);
     auto it = this->_from_name.find(std::string(name));
     return it != this->_from_name.end() ? it->second : nullptr;
+}
+
+std::vector<character::container::character_ptr_t> character::container::snapshot(character_predicate_t predict) const
+{
+    auto _       = std::shared_lock(this->_mutex);
+    auto targets = std::vector<character_ptr_t>{};
+    targets.reserve(this->_from_uid.size());
+    for (auto& [uid, ch] : this->_from_uid)
+    {
+        if (predict != nullptr && predict(ch) == false)
+            continue;
+
+        targets.push_back(ch);
+    }
+    return targets;
+}
+
+std::vector<uint32_t> character::container::collect_ids(character_predicate_t predict) const
+{
+    auto targets = this->snapshot(std::move(predict));
+    auto ids     = std::vector<uint32_t>{};
+    ids.reserve(targets.size());
+    for (auto& ch : targets)
+        ids.push_back(ch->id);
+    return ids;
 }
 
 async::task<void> character::container::foreach (character_function_t fn, character_predicate_t predict)
@@ -61,17 +93,11 @@ async::task<void> character::container::foreach (character_function_t fn, charac
         std::move(predict));
 }
 
-async::task<void> character::container::foreach_async(character_async_function_t fn, character_predicate_t predict)
+async::task<void> character::container::foreach_async(character_async_function_t fn,
+                                                      character_predicate_t      predict) const
 {
-    auto targets = std::vector<character_ptr_t>();
-    for (auto& [uid, ch] : this->_from_uid)
-    {
-        if (predict != nullptr && predict(ch) == false)
-            continue;
-
-        targets.push_back(ch);
-    }
-
+    // Snapshot under lock, then fan out without holding the mutex across await.
+    auto targets = this->snapshot(std::move(predict));
     co_await this->foreach_async(std::move(fn), std::move(targets));
 }
 
@@ -87,7 +113,7 @@ async::task<void> character::container::foreach (character_function_t           
 }
 
 async::task<void> character::container::foreach_async(character_async_function_t          fn,
-                                                      const std::vector<character_ptr_t>& characters)
+                                                      const std::vector<character_ptr_t>& characters) const
 {
     auto before    = this->_server.threads.current();
     auto weak_ptrs = std::vector<std::weak_ptr<character>>();
@@ -158,7 +184,7 @@ async::task<void> character::container::foreach (const std::vector<std::string>&
 
 async::task<void> character::container::foreach_async(const std::vector<std::string>& names,
                                                       character_async_function_t      fn,
-                                                      character_function_t_miss       miss)
+                                                      character_function_t_miss       miss) const
 {
     auto targets = std::vector<character_ptr_t>();
     for (auto& name : names)
@@ -262,16 +288,7 @@ void character::container::foreach_enqueue(character_async_function_t&&        f
 
 void character::container::foreach_enqueue(character_async_function_t&& fn, character_predicate_t predict) const
 {
-    auto targets = std::vector<character_ptr_t>();
-    for (auto& [uid, ch] : this->_from_uid)
-    {
-        if (predict != nullptr && predict(ch) == false)
-            continue;
-
-        targets.push_back(ch);
-    }
-
-    this->foreach_enqueue(std::move(fn), std::move(targets));
+    this->foreach_enqueue(std::move(fn), this->snapshot(std::move(predict)));
 }
 
 void character::container::foreach_enqueue(const std::vector<std::string>& names,
@@ -313,50 +330,20 @@ character::container::character_ptr_t character::container::operator[] (std::str
     return ch;
 }
 
-const character::container::character_ptr_t& character::container::operator[] (uint32_t uid) const
+character::container::character_ptr_t character::container::operator[] (uint32_t uid) const
 {
-    auto it = this->_from_uid.find(uid);
-    if (it == this->_from_uid.end())
+    auto ch = this->find(uid);
+    if (ch == nullptr)
         throw std::out_of_range("out of range exception");
 
-    return it->second;
+    return ch;
 }
 
-const character::container::character_ptr_t& character::container::operator[] (std::string_view name) const
+character::container::character_ptr_t character::container::operator[] (std::string_view name) const
 {
-    auto it = this->_from_name.find(std::string(name));
-    if (it == this->_from_name.end())
+    auto ch = this->find(name);
+    if (ch == nullptr)
         throw std::out_of_range("out of range exception");
 
-    return it->second;
-}
-
-character::container::iterator character::container::begin()
-{
-    return this->_from_uid.begin();
-}
-
-character::container::iterator character::container::end()
-{
-    return this->_from_uid.end();
-}
-
-character::container::const_iterator character::container::begin() const
-{
-    return this->_from_uid.begin();
-}
-
-character::container::const_iterator character::container::end() const
-{
-    return this->_from_uid.end();
-}
-
-character::container::const_iterator character::container::cbegin() const
-{
-    return this->_from_uid.cbegin();
-}
-
-character::container::const_iterator character::container::cend() const
-{
-    return this->_from_uid.cend();
+    return ch;
 }

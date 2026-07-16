@@ -7,6 +7,7 @@ resources:
   - write-back.yaml
   - log.yaml
   - marketplace.yaml
+  - matchmaking.yaml
   - admin-tool.yaml
   - gateway.yaml
   - login.yaml

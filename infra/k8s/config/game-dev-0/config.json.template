@@ -18,6 +18,10 @@
         "ip": "marketplace",
         "port": 80
     },
+    "matchmaking": {
+        "ip": "matchmaking",
+        "port": 80
+    },
     "login": {
         "ip": "__FB_HOST__",
         "port": 30010

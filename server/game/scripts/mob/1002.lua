@@ -1,5 +1,5 @@
 -- mob: 인면충
 -- 인면충 사망
-function ON_MOB_DIE_1002(me, you)
-
-end
+-- function ON_MOB_DIE_1002(me)
+--
+-- end

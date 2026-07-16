@@ -5,6 +5,6 @@ function ON_MOB_ATTACK_1029(me, you)
 end
 
 -- 도삭산선우 사망
-function ON_MOB_DIE_1029(me, you)
-
-end
+-- function ON_MOB_DIE_1029(me)
+--
+-- end

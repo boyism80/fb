@@ -3,9 +3,9 @@
 namespace fb::protocol::game::request {
 
 #ifndef BOT
-async::task<void> loot::deserialize(fb::stream_reader<big_endian>& reader)
+void loot::deserialize(fb::stream_reader<big_endian>& reader)
 {
-    co_await header::deserialize(reader);
+    header::deserialize(reader);
     this->boost = bool(reader.read<uint8_t>());
 }
 #else
@@ -13,9 +13,9 @@ loot::loot(bool boost) :
     boost(boost)
 { }
 
-async::task<void> loot::serialize(fb::stream_writer<big_endian>& writer) const
+void loot::serialize(fb::stream_writer<big_endian>& writer) const
 {
-    co_await header::serialize(writer);
+    header::serialize(writer);
     writer.write<uint8_t>(opcode);
     writer.write<uint8_t>(this->boost);
 }

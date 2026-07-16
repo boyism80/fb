@@ -6,6 +6,7 @@
 .user-detail-items,
 .user-detail-progress,
 .user-detail-mail,
+.user-detail-matchmaking,
 .user-detail-settings {
     display: flex;
     flex-direction: column;

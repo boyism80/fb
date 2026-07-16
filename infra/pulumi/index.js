@@ -12,6 +12,7 @@ const bot = require('./bot')
 const adminTool = require('./admin-tool')
 const log = require('./log')
 const marketplace = require('./marketplace')
+const matchmaking = require('./matchmaking')
 const fs = require('fs');
 const path = require('path')
 
@@ -50,9 +51,10 @@ const writeBackResources = wb.setup(namespace, conf, allInfraResources)
 const adminToolResources = adminTool.setup(namespace, conf, allInfraResources)
 const logResources = log.setup(namespace, conf, allInfraResources)
 const marketplaceResources = marketplace.setup(namespace, conf, allInfraResources)
+const matchmakingResources = matchmaking.setup(namespace, conf, allInfraResources)
 
-// Setup login, gateway, game after internal and marketplace are ready
-const allHttpResources = [].concat(internalResources || [], marketplaceResources || [])
+// Setup login, gateway, game after internal, marketplace, and matchmaking are ready
+const allHttpResources = [].concat(internalResources || [], marketplaceResources || [], matchmakingResources || [])
 const gatewayResources = gateway.setup(namespace, conf, allHttpResources)
 const loginResources = login.setup(namespace, conf, allHttpResources)
 const gameResources = game.setup(namespace, conf, allHttpResources)

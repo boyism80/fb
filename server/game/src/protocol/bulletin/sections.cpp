@@ -12,9 +12,9 @@ bulletin_sections::bulletin_sections()
 #endif
 
 #ifndef BOT
-async::task<void> bulletin_sections::serialize(fb::stream_writer<big_endian>& writer) const
+void bulletin_sections::serialize(fb::stream_writer<big_endian>& writer) const
 {
-    co_await header::serialize(writer);
+    header::serialize(writer);
     auto size = table::bulletin.size();
 
     writer.write<uint8_t>(opcode);
@@ -37,9 +37,9 @@ async::task<void> bulletin_sections::serialize(fb::stream_writer<big_endian>& wr
     }
 }
 #else
-async::task<void> bulletin_sections::deserialize(fb::stream_reader<big_endian>& reader)
+void bulletin_sections::deserialize(fb::stream_reader<big_endian>& reader)
 {
-    co_await header::deserialize(reader);
+    header::deserialize(reader);
     reader.read<uint8_t>();
     auto size = reader.read<uint16_t>();
     for (auto i = 0; i < size; i++)

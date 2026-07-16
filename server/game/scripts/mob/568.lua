@@ -1,5 +1,5 @@
 -- mob: 뇌신왕
 -- 뇌신왕 사망
-function ON_MOB_DIE_568(me, you)
-
-end
+-- function ON_MOB_DIE_568(me)
+--
+-- end

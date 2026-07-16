@@ -1,5 +1,5 @@
 -- mob: 지네
 -- 지네 사망
-function ON_MOB_DIE_1216(me, you)
-
-end
+-- function ON_MOB_DIE_1216(me)
+--
+-- end

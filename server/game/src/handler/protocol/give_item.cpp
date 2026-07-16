@@ -28,6 +28,7 @@ async::task<bool> give_item::handle(fb::socket<character>& session, game_reqs::g
 
     auto  count = request.all ? item->count() : 1;
     auto& model = item->based<fb::model::item>();
+    auto  error = std::optional<std::string>{};
 
     try
     {
@@ -58,7 +59,7 @@ async::task<bool> give_item::handle(fb::socket<character>& session, game_reqs::g
             else
                 you->message(
                     std::format(_TEXT(MESSAGE_ITEM_GIVE_MULTIPLE), me->name(), name_with(item->name()), count));
-            you->items.add(item);
+            std::ignore = co_await you->items.add(item);
         }
         break;
 
@@ -79,8 +80,11 @@ async::task<bool> give_item::handle(fb::socket<character>& session, game_reqs::g
     }
     catch (std::exception& e)
     {
-        me->message(e.what());
+        error = e.what();
     }
+
+    if (error.has_value())
+        me->message(error.value());
 
     co_return true;
 }

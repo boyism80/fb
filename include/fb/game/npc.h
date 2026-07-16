@@ -23,14 +23,18 @@ private:
     uint16_t _soliloquy_time;
 
 public:
+    // clang-format off
     npc(fb::game::server& server, const fb::model::npc& model);
     npc(const npc& right);
     ~npc();
+    // clang-format on
 
 public:
+    // clang-format off
     void           soliloquy();
     void           assert_thread() const override final;
     appearance_ptr appearance() const override;
+    // clang-format on
 };
 
 } // namespace fb::game

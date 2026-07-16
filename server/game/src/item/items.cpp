@@ -94,7 +94,7 @@ std::shared_ptr<equipment> items::equipment_off(EQUIPMENT_PARTS parts)
     auto  path  = std::format("scripts/item/{}.lua", model.id);
     auto  func  = std::format("ON_DEACTIVATED_{}", model.id);
 
-    auto lua = owner->server.lua.new_ctx_guard(path, func);
+    auto lua = owner->server.lua.open(path, func);
     if (lua)
     {
         lua->pushobject(*owner);
@@ -110,20 +110,20 @@ std::shared_ptr<equipment> items::equipment_off(EQUIPMENT_PARTS parts)
     return equipment;
 }
 
-uint8_t items::add(std::shared_ptr<item> item)
+async::task<uint8_t> items::add(std::shared_ptr<item> item)
 {
-    auto&& result = this->add(std::vector<std::shared_ptr<fb::game::item>>{item});
+    auto&& result = co_await this->add(std::vector<std::shared_ptr<fb::game::item>>{item});
     if (result.empty())
-        return 0xFF;
+        co_return 0xFF;
     else
-        return result[0];
+        co_return result[0];
 }
 
-std::vector<uint8_t> items::add(const std::vector<std::shared_ptr<item>>& items, bool stop_if_remained)
+async::task<std::vector<uint8_t>> items::add(const std::vector<std::shared_ptr<item>>& items, bool stop_if_remained)
 {
     auto owner = this->_owner.lock();
     if (owner == nullptr)
-        return std::vector<uint8_t>();
+        co_return std::vector<uint8_t>();
 
     auto indices = std::vector<uint8_t>();
     auto updates = std::unordered_map<uint8_t, std::shared_ptr<item>>();
@@ -158,13 +158,13 @@ std::vector<uint8_t> items::add(const std::vector<std::shared_ptr<item>>& items,
             {
                 if (remain > 0)
                 {
-                    auto new_cash = cash->replace(remain);
+                    auto new_cash = co_await cash->replace(remain);
                     if (new_cash != nullptr)
-                        std::ignore = new_cash->map(owner->map(), owner->position());
+                        std::ignore = co_await new_cash->map(owner->map(), owner->position());
                 }
                 else
                 {
-                    std::ignore = cash->destroy();
+                    co_await cash->destroy();
                 }
             }
 
@@ -188,7 +188,7 @@ std::vector<uint8_t> items::add(const std::vector<std::shared_ptr<item>>& items,
                 indices.push_back(index);
 
                 if (item->empty())
-                    std::ignore = item->destroy();
+                    co_await item->destroy();
                 else if (stop_if_remained)
                     break;
             }
@@ -204,14 +204,14 @@ std::vector<uint8_t> items::add(const std::vector<std::shared_ptr<item>>& items,
                 std::ignore = this->add(item, index);
 
                 if (item->_map != nullptr)
-                    std::ignore = item->map(nullptr);
+                    std::ignore = co_await item->map(nullptr);
 
                 updates.insert({index, item});
                 indices.push_back(index);
             }
         }
     }
-    return std::ref(indices);
+    co_return indices;
 }
 
 uint8_t items::add(std::shared_ptr<item> item, uint8_t index)
@@ -302,46 +302,46 @@ bool items::store(std::shared_ptr<item> item)
     return true;
 }
 
-bool items::store(uint8_t index, uint16_t count)
+async::task<bool> items::store(uint8_t index, uint16_t count)
 {
     auto owner = this->_owner.lock();
     if (owner == nullptr)
-        return false;
+        co_return false;
 
     owner->assert_thread();
 
     auto item = this->at(index);
     if (item == nullptr)
-        return false;
+        co_return false;
 
     if (item->count() < count)
-        return false;
+        co_return false;
 
     auto deleted = this->remove(item, count, ITEM_DELETE_TYPE::NONE, false);
     auto result  = this->store(deleted);
     if (result == false)
-        this->add(deleted);
+        std::ignore = co_await this->add(deleted);
 
-    return result;
+    co_return result;
 }
 
-bool items::store(std::string_view name, uint16_t count)
+async::task<bool> items::store(std::string_view name, uint16_t count)
 {
     auto owner = this->_owner.lock();
     if (owner == nullptr)
-        return false;
+        co_return false;
 
     owner->assert_thread();
 
     auto item = this->find(name);
     if (item == nullptr)
-        return false;
+        co_return false;
 
     auto index = this->index(item);
     if (index == 0xFF)
-        return false;
+        co_return false;
 
-    return this->store(index, count);
+    co_return co_await this->store(index, count);
 }
 
 std::shared_ptr<item> items::stored(const fb::model::item& item) const
@@ -371,24 +371,24 @@ const std::vector<std::shared_ptr<item>>& items::stored() const
     return this->_stored;
 }
 
-std::shared_ptr<item> items::retrieve(uint8_t index, uint16_t count)
+async::task<items::item_ptr> items::retrieve(uint8_t index, uint16_t count)
 {
     auto owner = this->_owner.lock();
     if (owner == nullptr)
-        return nullptr;
+        co_return nullptr;
 
     owner->assert_thread();
 
     if (index > this->_stored.size() - 1)
-        return nullptr;
+        co_return nullptr;
 
     if (this->free() == false)
-        return nullptr;
+        co_return nullptr;
 
     auto stored       = this->_stored.at(index);
     auto stored_count = stored->count();
     if (stored_count < count)
-        return nullptr;
+        co_return nullptr;
 
     auto& model     = stored->based<fb::model::item>();
     auto  item_id   = model.id;
@@ -398,10 +398,10 @@ std::shared_ptr<item> items::retrieve(uint8_t index, uint16_t count)
     if (exists != nullptr)
     {
         if (exists->count() + count > model.capacity)
-            return nullptr;
+            co_return nullptr;
 
         stored->count(stored_count - count);
-        auto added_slot = this->add(stored->based<fb::model::item>().make(owner->server, count));
+        auto added_slot = co_await this->add(stored->based<fb::model::item>().make(owner->server, count));
         if (stored->empty())
         {
             auto i = this->_stored.begin() + index;
@@ -419,18 +419,18 @@ std::shared_ptr<item> items::retrieve(uint8_t index, uint16_t count)
         log_data["count"]          = static_cast<Json::Int64>(count);
         owner->server.log.write("item_retrieve", log_data);
 
-        return retrieved;
+        co_return retrieved;
     }
     else
     {
         if (this->free() == false)
-            return nullptr;
+            co_return nullptr;
 
         auto item = stored->split(count);
         if (item == stored)
             this->_stored.erase(this->_stored.begin() + index);
 
-        this->add(item);
+        std::ignore = co_await this->add(item);
 
         // Log item retrieve event
         auto log_data              = Json::Value();
@@ -441,15 +441,15 @@ std::shared_ptr<item> items::retrieve(uint8_t index, uint16_t count)
         log_data["count"]          = static_cast<Json::Int64>(count);
         owner->server.log.write("item_retrieve", log_data);
 
-        return item;
+        co_return item;
     }
 }
 
-std::shared_ptr<item> items::retrieve(std::string_view name, uint16_t count)
+async::task<items::item_ptr> items::retrieve(std::string_view name, uint16_t count)
 {
     auto owner = this->_owner.lock();
     if (owner == nullptr)
-        return nullptr;
+        co_return nullptr;
 
     owner->assert_thread();
 
@@ -457,16 +457,16 @@ std::shared_ptr<item> items::retrieve(std::string_view name, uint16_t count)
     {
         auto& model = this->_stored[i]->template based<fb::model::item>();
         if (model.name == name)
-            return this->retrieve(static_cast<uint8_t>(i), count);
+            co_return co_await this->retrieve(static_cast<uint8_t>(i), count);
     }
-    return nullptr;
+    co_return nullptr;
 }
 
-std::shared_ptr<item> items::retrieve(const fb::model::item& item, uint16_t count)
+async::task<items::item_ptr> items::retrieve(const fb::model::item& item, uint16_t count)
 {
     auto owner = this->_owner.lock();
     if (owner == nullptr)
-        return nullptr;
+        co_return nullptr;
 
     owner->assert_thread();
 
@@ -474,9 +474,9 @@ std::shared_ptr<item> items::retrieve(const fb::model::item& item, uint16_t coun
     {
         auto& model = this->_stored[i]->template based<fb::model::item>();
         if (model == item)
-            return this->retrieve(static_cast<uint8_t>(i), count);
+            co_return co_await this->retrieve(static_cast<uint8_t>(i), count);
     }
-    return nullptr;
+    co_return nullptr;
 }
 
 uint32_t items::deposited() const
@@ -574,11 +574,11 @@ uint32_t items::withdraw(uint32_t value)
     return lack;
 }
 
-std::shared_ptr<item> items::active(uint8_t index)
+async::task<items::item_ptr> items::active(uint8_t index)
 {
     auto owner = this->_owner.lock();
     if (owner == nullptr)
-        return nullptr;
+        co_return nullptr;
 
     try
     {
@@ -586,41 +586,41 @@ std::shared_ptr<item> items::active(uint8_t index)
 
         auto item = this->at(index);
         if (item == nullptr)
-            return nullptr;
+            co_return nullptr;
 
-        auto weak = item->weak_from_this_as<fb::game::item>();
-        item->active();
+        auto weak   = item->weak_from_this_as<fb::game::item>();
+        std::ignore = co_await item->active();
         if (weak.lock() == nullptr)
-            return nullptr;
+            co_return nullptr;
 
         if (item->empty())
         {
-            std::ignore = item->destroy();
-            return nullptr;
+            co_await item->destroy();
+            co_return nullptr;
         }
         else
         {
-            return item;
+            co_return item;
         }
     }
     catch (std::exception& e)
     {
         owner->message(e.what());
     }
-    return nullptr;
+    co_return nullptr;
 }
 
-uint8_t items::inactive(EQUIPMENT_PARTS parts)
+async::task<uint8_t> items::inactive(EQUIPMENT_PARTS parts)
 {
     if (this->free() == false)
-        return 0xFF;
+        co_return 0xFF;
 
     auto item = this->equipment_off(parts);
     if (item == nullptr)
-        return 0xFF;
+        co_return 0xFF;
 
-    auto slot = this->add(item);
-    return slot;
+    auto slot = co_await this->add(item);
+    co_return slot;
 }
 
 uint8_t items::index(const fb::model::item& model) const
@@ -1007,11 +1007,11 @@ bool items::has(const std::vector<std::pair<const fb::model::item*, uint16_t>>& 
     return true;
 }
 
-std::shared_ptr<item> items::drop(uint8_t index, uint8_t count, bool action, ITEM_DELETE_TYPE delete_type)
+async::task<items::item_ptr> items::drop(uint8_t index, uint8_t count, bool action, ITEM_DELETE_TYPE delete_type)
 {
     auto owner = this->_owner.lock();
     if (owner == nullptr)
-        return nullptr;
+        co_return nullptr;
 
     try
     {
@@ -1020,7 +1020,7 @@ std::shared_ptr<item> items::drop(uint8_t index, uint8_t count, bool action, ITE
 
         auto item = this->at(index);
         if (item == nullptr)
-            return nullptr;
+            co_return nullptr;
 
         auto& model = item->based<fb::model::item>();
         if (model.trade == false)
@@ -1029,34 +1029,34 @@ std::shared_ptr<item> items::drop(uint8_t index, uint8_t count, bool action, ITE
         auto dropped = this->remove(item, count, delete_type);
         if (dropped != nullptr)
         {
-            std::ignore = dropped->map(owner->map(), owner->position());
+            std::ignore = co_await dropped->map(owner->map(), owner->position());
 
             if (action)
                 owner->action(ACTION::PICKUP, DURATION::PICKUP);
         }
 
-        return dropped;
+        co_return dropped;
     }
     catch (std::exception& e)
     {
         owner->message(e.what());
     }
-    return nullptr;
+    co_return nullptr;
 }
 
-void items::loot(bool boost)
+async::task<void> items::loot(bool boost)
 {
     auto owner = this->_owner.lock();
     if (owner == nullptr)
-        return;
+        co_return;
 
     try
     {
         auto map = owner->map();
         if (map == nullptr)
-            return;
+            co_return;
 
-        auto lua = owner->server.lua.new_ctx_guard("scripts/interaction.lua", "on_loot");
+        auto lua = owner->server.lua.open("scripts/interaction.lua", "on_loot");
         if (lua)
         {
             lua->pushobject(*owner);
@@ -1078,11 +1078,11 @@ void items::loot(bool boost)
         }
         else if (boost)
         {
-            std::ignore = owner->items.add(belows, true);
+            std::ignore = co_await owner->items.add(belows, true);
         }
         else
         {
-            std::ignore = owner->items.add(belows.front());
+            std::ignore = co_await owner->items.add(belows.front());
         }
     }
     catch (std::exception& e)
@@ -1091,17 +1091,17 @@ void items::loot(bool boost)
     }
 }
 
-bool items::throws(uint8_t index, bool all)
+async::task<bool> items::throws(uint8_t index, bool all)
 {
     auto owner = this->_owner.lock();
     if (owner == nullptr)
-        return false;
+        co_return false;
 
     try
     {
         auto item = owner->items.at(index);
         if (item == nullptr)
-            return false;
+            co_return false;
 
         auto& model = item->based<fb::model::item>();
         if (model.trade == false)
@@ -1126,14 +1126,14 @@ bool items::throws(uint8_t index, bool all)
         }
 
         owner->listener.on_item_throws(*owner, *dropped, position);
-        std::ignore = dropped->map(map, position);
-        return true;
+        std::ignore = co_await dropped->map(map, position);
+        co_return true;
     }
     catch (std::exception& e)
     {
         owner->message(e.what());
     }
-    return false;
+    co_return false;
 }
 
 std::shared_ptr<item> items::remove(uint8_t index, uint16_t count, ITEM_DELETE_TYPE attr, bool detach)
@@ -1189,11 +1189,11 @@ std::shared_ptr<item> items::remove(std::shared_ptr<item> item, uint16_t count, 
     return this->remove(index, count, attr, detach);
 }
 
-void items::remove_expired()
+async::task<void> items::remove_expired()
 {
     auto owner = this->_owner.lock();
     if (owner == nullptr)
-        return;
+        co_return;
 
     owner->assert_thread();
 
@@ -1208,7 +1208,7 @@ void items::remove_expired()
                 continue;
 
             owner->message(std::format("{} 아이템이 만료되었습니다.", expired->based<fb::model::item>().name));
-            std::ignore = expired->destroy();
+            co_await expired->destroy();
             continue;
         }
 
@@ -1257,7 +1257,7 @@ void items::remove_expired()
         owner->server.log.write("item_remove", log_data);
 
         expired->container(nullptr);
-        std::ignore = expired->destroy();
+        co_await expired->destroy();
     }
 }
 
@@ -1356,17 +1356,17 @@ bool items::is_rewardable(const std::vector<fb::model::dsl>& items) const
     return this->is_rewardable(buffer, money);
 }
 
-exchange_result items::exchange(const std::unordered_map<uint32_t, uint16_t>& cost_items,
-                                uint32_t                                      cost_money,
-                                const std::unordered_map<uint32_t, uint16_t>& reward_items,
-                                uint32_t                                      reward_money)
+async::task<exchange_result> items::exchange(const std::unordered_map<uint32_t, uint16_t>& cost_items,
+                                             uint32_t                                      cost_money,
+                                             const std::unordered_map<uint32_t, uint16_t>& reward_items,
+                                             uint32_t                                      reward_money)
 {
     auto owner = this->_owner.lock();
     if (owner == nullptr)
-        return exchange_result::lack_cost;
+        co_return exchange_result::lack_cost;
 
     if (owner->money() < cost_money)
-        return exchange_result::lack_cost;
+        co_return exchange_result::lack_cost;
 
     auto effective_free_slots       = this->free_size();
     auto simulated_bundle_remaining = std::unordered_map<uint32_t, uint16_t>{};
@@ -1386,18 +1386,18 @@ exchange_result items::exchange(const std::unordered_map<uint32_t, uint16_t>& co
         auto& model = table::item[id];
         auto  it    = slots_by_id.find(id);
         if (it == slots_by_id.end() || it->second.empty())
-            return exchange_result::lack_cost;
+            co_return exchange_result::lack_cost;
 
         if (model.attr(ITEM_ATTRIBUTE::BUNDLE))
         {
             auto index = it->second[0];
             auto slot  = this->at(index);
             if (slot == nullptr)
-                return exchange_result::lack_cost;
+                co_return exchange_result::lack_cost;
 
             auto current = slot->count();
             if (current < cost_count)
-                return exchange_result::lack_cost;
+                co_return exchange_result::lack_cost;
 
             auto remain = static_cast<uint16_t>(current - cost_count);
             if (remain == 0)
@@ -1409,7 +1409,7 @@ exchange_result items::exchange(const std::unordered_map<uint32_t, uint16_t>& co
         {
             auto slot_count = static_cast<uint32_t>(it->second.size());
             if (slot_count < cost_count)
-                return exchange_result::lack_cost;
+                co_return exchange_result::lack_cost;
 
             effective_free_slots =
                 static_cast<uint8_t>(std::min(0xFF, static_cast<int>(effective_free_slots) + cost_count));
@@ -1419,7 +1419,7 @@ exchange_result items::exchange(const std::unordered_map<uint32_t, uint16_t>& co
     uint32_t money_after         = owner->money() - cost_money;
     uint32_t effective_money_cap = 0xFFFFFFFF - money_after;
     if (effective_money_cap < reward_money)
-        return exchange_result::lack_capacity;
+        co_return exchange_result::lack_capacity;
 
     int required_size = 0;
     for (auto& [id, count] : reward_items)
@@ -1441,13 +1441,13 @@ exchange_result items::exchange(const std::unordered_map<uint32_t, uint16_t>& co
         auto     it       = simulated_bundle_remaining.find(id);
         uint16_t existing = (it != simulated_bundle_remaining.end()) ? it->second : 0;
         if (model.capacity < existing + count)
-            return exchange_result::lack_capacity;
+            co_return exchange_result::lack_capacity;
 
         available_slots++;
     }
 
     if (available_slots < required_size)
-        return exchange_result::lack_capacity;
+        co_return exchange_result::lack_capacity;
 
     owner->money_reduce(cost_money);
 
@@ -1476,7 +1476,7 @@ exchange_result items::exchange(const std::unordered_map<uint32_t, uint16_t>& co
             uint16_t to_remove = std::min(in_slot, remaining);
             auto     removed   = this->remove(index, to_remove, ITEM_DELETE_TYPE::GIVE, true);
             if (removed != nullptr)
-                std::ignore = removed->destroy();
+                co_await removed->destroy();
             remaining -= to_remove;
 
             if (slot->count() == 0)
@@ -1492,13 +1492,13 @@ exchange_result items::exchange(const std::unordered_map<uint32_t, uint16_t>& co
         auto  made  = model.make(owner->server, count);
         if (made != nullptr)
         {
-            auto idx = this->add(made);
+            auto idx = co_await this->add(made);
             if (idx == 0xFF)
-                std::ignore = made->destroy();
+                co_await made->destroy();
         }
     }
 
-    return exchange_result::ok;
+    co_return exchange_result::ok;
 }
 
 std::map<EQUIPMENT_PARTS, std::shared_ptr<equipment>> items::equipments() const

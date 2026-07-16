@@ -20,9 +20,11 @@ public:
     login& operator= (login&&)      = delete;
 
 private:
+    // clang-format off
     void                  init_option(const internal::Option& response, character& ch);
     void                  init_items(const std::vector<internal::Item>& response, character& ch);
     void                  init_spells(const std::vector<internal::Spell>& response, character& ch);
+    void                  init_matchmaker(const std::vector<internal::MatchmakingSkill>& response, character& ch);
     void                  init_quests(const std::vector<internal::Quest>& response, character& ch);
     void                  init_marketplace(const std::vector<internal::MarketplacePending>& response, character& ch);
     void                  init_achievements(const std::vector<internal::Achievement>& response, character& ch);
@@ -30,6 +32,7 @@ private:
     async::task<ch_ptr_t> init(const game_reqs::login& request, fb::socket<character>& session);
     std::string           elapsed_message(std::string_view dt);
     async::task<bool>     assert_login(const game_reqs::login& request);
+    // clang-format on
 
 public:
     async::task<bool> handle(fb::socket<character>& session, game_reqs::login& request) override;

@@ -1,3 +1,3 @@
 -- mob: 이벤트용왕용천
-function ON_MOB_DIE_1265(me, you)
-end
+-- function ON_MOB_DIE_1265(me)
+-- end

@@ -96,16 +96,16 @@ async::task<void> object::destroy(DESTROY_TYPE destroy_type)
     co_await this->server.destroy(*this, destroy_type);
 }
 
-async::task<size_t> object::send(const fb::stream& stream, bool encrypt, bool wrap)
+size_t object::send(const fb::stream& stream, bool encrypt, bool wrap)
 {
     this->assert_thread();
-    co_return 0;
+    return 0;
 }
 
-async::task<size_t> object::send(const fb::protocol::header& response, bool encrypt, bool wrap)
+size_t object::send(const fb::protocol::header& response, bool encrypt, bool wrap)
 {
     this->assert_thread();
-    co_return 0;
+    return 0;
 }
 
 uint32_t object::oid() const
@@ -267,7 +267,7 @@ bool object::move(DIRECTION direction)
     this->position(after);
 
     {
-        auto lua = this->server.lua.new_ctx_guard("scripts/interaction.lua", "on_move");
+        auto lua = this->server.lua.open("scripts/interaction.lua", "on_move");
         if (lua)
         {
             lua->pushobject(*this);
@@ -280,7 +280,7 @@ bool object::move(DIRECTION direction)
         auto  path      = std::format("scripts/map/{}.lua", map_model.id);
         auto  func      = std::format("ON_MAP_MOVE_{}", map_model.id);
 
-        auto map_lua = this->server.lua.new_ctx_guard(path, func);
+        auto map_lua = this->server.lua.open(path, func);
         if (map_lua)
         {
             map_lua->pushobject(*this);
@@ -337,7 +337,7 @@ bool object::direction(DIRECTION value)
 
     this->_direction = value;
 
-    auto lua = this->server.lua.new_ctx_guard("scripts/interaction.lua", "on_direction");
+    auto lua = this->server.lua.open("scripts/interaction.lua", "on_direction");
     if (lua)
     {
         lua->pushobject(*this);
@@ -364,7 +364,7 @@ async::task<void> object::invoke_map_character_hook(const fb::model::map& map_mo
     auto path = std::format("scripts/map/{}.lua", map_model.id);
     auto func = std::format("{}{}", hook, map_model.id);
 
-    auto lua = this->server.lua.new_ctx_guard(path, func);
+    auto lua = this->server.lua.open(path, func);
     if (!lua)
         co_return;
 
@@ -534,6 +534,7 @@ async::task<bool> object::map(map_ptr map, std::optional<fb::model::point16_t> p
                     auto params = thread->template data<thread_params>();
                     params->characters.remove(ch.shared_from_this_as<character>());
                 }
+                this->_map->on_character_leave();
             }
 
             {
@@ -546,6 +547,9 @@ async::task<bool> object::map(map_ptr map, std::optional<fb::model::point16_t> p
         }
 
         if (map->active == false)
+            co_return false;
+
+        if (map->closing())
             co_return false;
 
         if (this->server.maps.ensure_loaded(map) == false)
@@ -562,6 +566,15 @@ async::task<bool> object::map(map_ptr map, std::optional<fb::model::point16_t> p
 
         if (this->_map != nullptr)
         {
+            if (this->_map->model.id == map->model.id)
+            {
+                for (const auto& x : this->_map->nears(this->_position))
+                {
+                    if (x.get() != this)
+                        x->hide(*this);
+                }
+            }
+
             map_options leave_options;
             leave_options.destroy_type = destroy_type;
             std::ignore                = co_await this->map(nullptr, std::nullopt, leave_options);
@@ -597,6 +610,8 @@ async::task<bool> object::map(map_ptr map, std::optional<fb::model::point16_t> p
 
         // insert character into map cache
         this->_map->objects.push(*this);
+        if (this->is(OBJECT_TYPE::CHARACTER))
+            map->on_character_enter();
         this->update_map(*map);
         this->update_position();
         if (notify)

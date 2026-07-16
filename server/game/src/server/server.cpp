@@ -1,7 +1,9 @@
 #include <fb/game/server.h>
 #include <fb/game/handler.h>
 #include <fb/log_collector.h>
+#include <fb/logger.h>
 #include <json/json.h>
+#include <tuple>
 
 using namespace fb::game;
 
@@ -20,17 +22,19 @@ internal::Service fb::game::server::service() const
     return internal::Service::Game;
 }
 
-async::task<void>
-fb::game::server::send(object& object, const fb::protocol::header& header, fb::game::scope scope, send_option options)
+void fb::game::server::send(object&                     object,
+                            const fb::protocol::header& header,
+                            fb::game::scope             scope,
+                            send_option                 options)
 {
     auto weak   = object.weak_from_this_as<fb::game::object>();
     auto stream = fb::stream();
     auto writer = fb::stream_writer<big_endian>(stream);
-    co_await header.serialize(writer);
+    header.serialize(writer);
 
     auto shared_ptr = weak.lock();
     if (shared_ptr == nullptr)
-        co_return;
+        return;
 
     switch (scope)
     {
@@ -55,19 +59,20 @@ fb::game::server::send(object& object, const fb::protocol::header& header, fb::g
     case fb::game::scope::GROUP:
     {
         if (shared_ptr->is(OBJECT_TYPE::CHARACTER) == false)
-            co_return;
+            return;
 
         auto& ch       = static_cast<const character&>(*shared_ptr);
         auto& group_id = ch.group_id();
         if (group_id.has_value() == false)
-            co_return;
+            return;
 
         {
             auto  guard = this->groups.enter_read(group_id.value());
             auto& group = guard.value();
-            for (auto& shared_ptr : group->characters())
+            for (auto& member : group->characters())
             {
-                shared_ptr->send(stream, options.encrypt);
+                if (member != nullptr)
+                    member->send(stream, options.encrypt);
             }
         }
     }
@@ -77,7 +82,7 @@ fb::game::server::send(object& object, const fb::protocol::header& header, fb::g
     {
         auto map = shared_ptr->map();
         if (map == nullptr)
-            co_return;
+            return;
 
         for (const auto& [seq, obj] : map->objects)
         {
@@ -91,8 +96,7 @@ fb::game::server::send(object& object, const fb::protocol::header& header, fb::g
 
     case fb::game::scope::WORLD:
     {
-        auto guard = this->characters.enter_write();
-        guard.value().send(stream, options.encrypt);
+        this->characters.send(stream, options.encrypt);
     }
     break;
     }
@@ -103,8 +107,7 @@ void fb::game::server::sync_time()
     auto updated = this->now();
     if (this->_time.hours() != updated.hours())
     {
-        auto guard = this->characters.enter_write();
-        guard.value().update_time(updated.hours());
+        this->characters.update_time(updated.hours());
     }
 
     this->_time = updated;
@@ -199,17 +202,16 @@ internal::SavePayload fb::game::server::save_payload(const character& ch) const
             internal::Quest{ch.id, qid, quest->step(), quest->progress(), quest->param(), quest->completed()});
     }
 
-    const auto now                  = this->now();
-    auto       storage_boxes        = ch.storage_box.to_save_dtos(ch.id, now);
-    auto       marketplace_pendings = ch.marketplace.to_save_dtos();
+    auto marketplace_pendings = ch.marketplace.to_save_dtos();
+    auto matchmaking_skills   = ch.matchmaker.to_protocol();
 
     return internal::SavePayload(ch.to_protocol(),
                                  ch.marriage().to_protocol(),
                                  items,
                                  spells,
+                                 matchmaking_skills,
                                  achievements,
                                  quests,
-                                 storage_boxes,
                                  marketplace_pendings);
 }
 
@@ -228,14 +230,13 @@ async::task<void> fb::game::server::save()
             auto payloads   = std::vector<internal::SavePayload>{};
             characters.reserve(params->characters.size());
             payloads.reserve(params->characters.size());
-            for (auto& [cid, character] : params->characters)
-            {
+            co_await params->characters.foreach ([&](auto& character) {
                 if (!character->inited())
-                    continue;
+                    return;
 
                 characters.push_back(character.get());
                 payloads.push_back(this->save_payload(*character));
-            }
+            });
 
             const size_t total = payloads.size();
             for (size_t offset = 0; offset < total; offset += SAVE_BATCH_CHUNK_SIZE)

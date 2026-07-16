@@ -179,7 +179,8 @@ std::unique_ptr<appearance> appearance_factory::create(const fb::model::object& 
             ptr->hair_color   = app.hair_color;
             ptr->weapon       = app.weapon;
             ptr->weapon_color = app.weapon_color;
-            ptr->armor        = app.armor;
+            ptr->armor =
+                app.armor.has_value() ? std::optional<uint8_t>{static_cast<uint8_t>(app.armor.value())} : std::nullopt;
             ptr->armor_color  = app.armor_color;
             ptr->shield       = app.shield;
             ptr->shield_color = app.shield_color;
@@ -225,7 +226,7 @@ std::unique_ptr<appearance> appearance_factory::create(const fb::game::object& o
 
         if (ch.items.armor() != nullptr)
         {
-            ptr->armor       = ch.items.armor()->based<fb::model::armor>().dress;
+            ptr->armor       = static_cast<uint8_t>(ch.items.armor()->based<fb::model::armor>().dress);
             ptr->armor_color = ch.armor_color();
         }
 

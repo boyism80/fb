@@ -3,9 +3,9 @@
 namespace fb::protocol::login::request {
 
 #ifndef BOT
-async::task<void> create::deserialize(fb::stream_reader<big_endian>& reader)
+void create::deserialize(fb::stream_reader<big_endian>& reader)
 {
-    co_await header::deserialize(reader);
+    header::deserialize(reader);
     this->id = reader.read<std::string, uint8_t>();
     this->pw = reader.read<std::string, uint8_t>();
 }
@@ -15,9 +15,9 @@ create::create(std::string_view id, std::string_view pw) :
     pw(std::string(pw))
 { }
 
-async::task<void> create::serialize(fb::stream_writer<big_endian>& writer) const
+void create::serialize(fb::stream_writer<big_endian>& writer) const
 {
-    co_await header::serialize(writer);
+    header::serialize(writer);
     writer.write<uint8_t>(opcode);
     writer.write<std::string, uint8_t>(this->id);
     writer.write<std::string, uint8_t>(this->pw);

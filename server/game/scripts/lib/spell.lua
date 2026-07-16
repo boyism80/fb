@@ -501,6 +501,7 @@ function M.attack_cast(me, you, spell, opts)
     local pk      = (option & MAP_OPTION.ENABLE_PK) == MAP_OPTION.ENABLE_PK
     local damaged = false
     local skill_rate = me:skill_damage_rate() / 1000.0
+    local targets = {}
     
     for _, obj in pairs(you) do
         if effect then
@@ -511,9 +512,13 @@ function M.attack_cast(me, you, spell, opts)
         end
         
         if ((obj:is(OBJECT_TYPE.CHARACTER) and pk) or obj:is(OBJECT_TYPE.MOB)) then
-            obj:damage(damage, me, { critical = false, rate = skill_rate })
+            table.insert(targets, { obj, damage })
             damaged = true
         end
+    end
+
+    if #targets > 0 then
+        me:damage_to(targets, { critical = false, rate = skill_rate })
     end
     
     if damaged then
@@ -570,7 +575,7 @@ function M.damage(me, you, spell, opts)
     end
     
     if execute_mob_spell_hit(me, you, spell) then
-        you:damage(damage, me, { critical = false, rate = me:skill_damage_rate() / 1000.0, physical = false })
+        me:damage_to(you, damage, { critical = false, rate = me:skill_damage_rate() / 1000.0, physical = false })
     end
 
     return true
@@ -590,6 +595,7 @@ function M.damage_near(me, spell, opts)
     me:sound(sound)
     me:action(ACTION.CAST_SPELL, DURATION.SPELL, 1)
     local skill_rate = me:skill_damage_rate() / 1000.0
+    local targets = {}
     for _, you in pairs(M.near(me, OBJECT_TYPE.LIFE)) do
         if effect then you:effect(effect) end
         if you:is(OBJECT_TYPE.CHARACTER) then
@@ -597,8 +603,11 @@ function M.damage_near(me, spell, opts)
         end
         
         if execute_mob_spell_hit(me, you, spell) then
-            you:damage(damage, me, { critical = false, rate = skill_rate, physical = false })
+            table.insert(targets, { you, damage })
         end
+    end
+    if #targets > 0 then
+        me:damage_to(targets, { critical = false, rate = skill_rate, physical = false })
     end
     return true
 end
@@ -617,9 +626,10 @@ function M.damage_near_target(me, you, spell, opts)
     me:sound(sound)
     me:action(ACTION.CAST_SPELL, DURATION.SPELL, 1)
     local skill_rate = me:skill_damage_rate() / 1000.0
-    local targets = M.near(you, OBJECT_TYPE.LIFE)
-    table.insert(targets, you)
-    for _, target in pairs(targets) do
+    local near_targets = M.near(you, OBJECT_TYPE.LIFE)
+    table.insert(near_targets, you)
+    local targets = {}
+    for _, target in pairs(near_targets) do
         if target == me then 
             goto CONTINUE_SPELL_DAMAGE_NEAR_TARGET 
         end
@@ -629,9 +639,12 @@ function M.damage_near_target(me, you, spell, opts)
         end
         
         if execute_mob_spell_hit(me, target, spell) then
-            target:damage(damage, me, { critical = false, rate = skill_rate, physical = false })
+            table.insert(targets, { target, damage })
         end
         ::CONTINUE_SPELL_DAMAGE_NEAR_TARGET::
+    end
+    if #targets > 0 then
+        me:damage_to(targets, { critical = false, rate = skill_rate, physical = false })
     end
     return true
 end
@@ -662,6 +675,7 @@ function M.damage_area(me, you, spell, opts)
     end
 
     local skill_rate = me:skill_damage_rate() / 1000.0
+    local targets = {}
     for _, obj in pairs(you) do
         if obj:is(OBJECT_TYPE.CHARACTER) then
             obj:message(string.format('%s님이 %s 가합니다.', me:name(), name_with(spell:name())))
@@ -672,8 +686,12 @@ function M.damage_area(me, you, spell, opts)
         end
         
         if execute_mob_spell_hit(me, obj, spell) then
-            obj:damage(damage, me, { critical = false, rate = skill_rate, physical = false })
+            table.insert(targets, { obj, damage })
         end
+    end
+
+    if #targets > 0 then
+        me:damage_to(targets, { critical = false, rate = skill_rate, physical = false })
     end
 
     me:sound(sound)

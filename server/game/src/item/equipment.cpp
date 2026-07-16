@@ -29,15 +29,15 @@ std::string fb::game::equipment::trade_name() const
     return sstream.str();
 }
 
-bool fb::game::equipment::active()
+async::task<bool> fb::game::equipment::active()
 {
     if (this->_container == nullptr)
-        return false;
+        co_return false;
 
     auto before = std::shared_ptr<fb::game::item>();
     auto owner  = this->_container->owner();
     if (owner == nullptr)
-        return false;
+        co_return false;
 
     auto  parts = EQUIPMENT_PARTS::UNKNOWN;
     auto& model = this->based<fb::model::equipment>();
@@ -155,13 +155,13 @@ bool fb::game::equipment::active()
         throw std::runtime_error(_TEXT(MESSAGE_EQUIPMENT_INVALID_TYPE));
     }
 
-    fb::game::item::active();
+    std::ignore = co_await fb::game::item::active();
 
     owner->items.remove(this->shared_from_this_as<fb::game::item>(), 1, ITEM_DELETE_TYPE::NONE, false);
-    owner->items.add(before);
+    std::ignore = co_await owner->items.add(before);
 
     // Execute equipment activation script
-    auto lua = this->server.lua.new_ctx_guard("scripts/interaction.lua", "on_equipment_active");
+    auto lua = this->server.lua.open("scripts/interaction.lua", "on_equipment_active");
     if (lua)
     {
         lua->pushobject(owner);
@@ -173,7 +173,7 @@ bool fb::game::equipment::active()
     // Call listener for packet response
     owner->listener.on_equipment_on(*owner, *this, parts);
 
-    return true;
+    co_return true;
 }
 
 std::optional<uint32_t> fb::game::equipment::durability() const

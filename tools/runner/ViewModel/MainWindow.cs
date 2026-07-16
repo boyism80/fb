@@ -28,6 +28,7 @@ namespace Runner.ViewModel
         WriteBack,
         Log,
         Marketplace,
+        Matchmaking,
         AdminTool
     }
 
@@ -220,6 +221,11 @@ namespace Runner.ViewModel
         {
             get => Model.Marketplace.Port;
             set => Model.Marketplace.Port = value;
+        }
+        public ushort MatchmakingPort
+        {
+            get => Model.Matchmaking.Port;
+            set => Model.Matchmaking.Port = value;
         }
         public ushort AdminToolPort
         {
@@ -562,6 +568,7 @@ namespace Runner.ViewModel
             SettingNavItems.Add(new SettingNavItem("서버", "Game", SettingSection.Game));
             SettingNavItems.Add(new SettingNavItem("서버", "Internal", SettingSection.Internal));
             SettingNavItems.Add(new SettingNavItem("서버", "Marketplace", SettingSection.Marketplace));
+            SettingNavItems.Add(new SettingNavItem("서버", "Matchmaking", SettingSection.Matchmaking));
             SettingNavItems.Add(new SettingNavItem("서버", "Admin Tool", SettingSection.AdminTool));
 
             SettingNavView = CollectionViewSource.GetDefaultView(SettingNavItems);
@@ -877,7 +884,7 @@ namespace Runner.ViewModel
                     StandardOutputEncoding = Encoding.UTF8,
                     StandardErrorEncoding = Encoding.UTF8,
                     FileName = "cmd.exe",
-                    Arguments = @"/C pushd tools & call update-data.bat true & popd & robocopy /NP /NFL server\game\json\ build\dist\json\ & robocopy /NP /NFL server\internal\json\ build\dist\internal\json\"
+                    Arguments = @"/C pushd tools & call update-data.bat true & popd & robocopy /NP /NFL server\game\json\ build\dist\json\ & robocopy /NP /NFL server\internal\json\ build\dist\internal\json\ & robocopy /NP /NFL server\matchmaking\json\ build\dist\matchmaking\json\"
                 }
             };
 
@@ -982,6 +989,9 @@ namespace Runner.ViewModel
                 if (MarketplacePort == 0)
                     throw new InvalidOperationException("Marketplace 서버 포트가 설정되지 않았습니다.");
 
+                if (MatchmakingPort == 0)
+                    throw new InvalidOperationException("Matchmaking 서버 포트가 설정되지 않았습니다.");
+
                 if (AdminToolPort == 0)
                     throw new InvalidOperationException("Admin Tool 서버 포트가 설정되지 않았습니다.");
 
@@ -1030,6 +1040,9 @@ namespace Runner.ViewModel
                 EnsureDistJsonDirectory(
                     Path.Combine(WorkingDirectory, "build", "dist", "internal", "json"),
                     "Internal");
+                EnsureDistJsonDirectory(
+                    Path.Combine(WorkingDirectory, "build", "dist", "matchmaking", "json"),
+                    "Matchmaking");
 
                 foreach (var mysql in MySQL)
                 {
@@ -1163,6 +1176,11 @@ namespace Runner.ViewModel
                     {
                         ip = ExternalIP,
                         port = MarketplacePort
+                    });
+                    conf["matchmaking"] = JObject.FromObject(new
+                    {
+                        ip = ExternalIP,
+                        port = MatchmakingPort
                     });
                     conf["login"] = JObject.FromObject(new
                     {
@@ -1345,6 +1363,26 @@ namespace Runner.ViewModel
                 marketplaceConf["Urls"] = $"http://127.0.0.1:{MarketplacePort}";
                 File.WriteAllText(Path.Combine([WorkingDirectory, "build", "dist", "marketplace", "appsettings.marketplace.json"]), marketplaceConf.ToString(Formatting.Indented));
 
+                var matchmakingConf = new JObject();
+                matchmakingConf["Logging"] = new JObject();
+                matchmakingConf["Logging"]["LogLevel"] = new JObject();
+                matchmakingConf["Logging"]["LogLevel"]["Default"] = "Information";
+                matchmakingConf["Logging"]["LogLevel"]["Microsoft.AspNetCore"] = "Warning";
+                matchmakingConf["RabbitMQ"] = new JObject();
+                matchmakingConf["RabbitMQ"]["Internal"] = JObject.FromObject(new { Host = RabbitMq.IP, Port = RabbitMq.Port, Uid = RabbitMq.ID, Pwd = RabbitMq.PW });
+                matchmakingConf["Matchmaking"] = JObject.FromObject(new
+                {
+                    TickIntervalMs = 500,
+                    BaseSkillTolerance = 1.0,
+                    SkillTolerancePerSecond = 0.1,
+                    MaxSkillTolerance = 5.0,
+                    EffectiveMuSigmaFactor = 3.0,
+                    SkillBucketWidth = 1.0,
+                    ConfirmTimeoutSeconds = 30
+                });
+                matchmakingConf["Urls"] = $"http://127.0.0.1:{MatchmakingPort}";
+                File.WriteAllText(Path.Combine([WorkingDirectory, "build", "dist", "matchmaking", "appsettings.matchmaking.json"]), matchmakingConf.ToString(Formatting.Indented));
+
                 var adminToolConf = new JObject();
                 adminToolConf["DetailedErrors"] = true;
                 adminToolConf["Logging"] = new JObject();
@@ -1378,6 +1416,10 @@ namespace Runner.ViewModel
                 var marketplaceGroup = new ProcessGroup { Type = ServerType.Marketplace };
                 marketplaceGroup.Processes.Add(ExecDotNet("marketplace", MarketplacePort));
                 Servers.Add(marketplaceGroup);
+
+                var matchmakingGroup = new ProcessGroup { Type = ServerType.Matchmaking };
+                matchmakingGroup.Processes.Add(ExecDotNet("matchmaking", MatchmakingPort));
+                Servers.Add(matchmakingGroup);
 
                 var adminToolGroup = new ProcessGroup { Type = ServerType.AdminTool };
                 adminToolGroup.Processes.Add(ExecDotNet("admin-tool", AdminToolPort));

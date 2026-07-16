@@ -14,9 +14,9 @@ function ON_CAST_2012(me, sp)
 end
 
 -- 투명 버프 효과
-function ON_BUFF_2012(me, sp)
-
-end
+-- function ON_BUFF_2012(me, sp)
+--
+-- end
 
 -- 투명 버프 해제 효과
 function ON_UNBUFF_2012(me, sp)

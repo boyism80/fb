@@ -2,6 +2,8 @@
 #include <fb/game/mob.h>
 #include <fb/game/sector.h>
 #include <fb/game/thread_params.h>
+#include <async/awaitable_then.h>
+#include <fb/logger.h>
 
 using namespace fb::game::handler::timer;
 
@@ -14,7 +16,8 @@ async::task<void> mob_action_timer::handle(const fb::model::datetime& now, std::
     auto thread = this->server.threads.at(id);
     auto params = thread->template data<thread_params>();
 
-    for (auto& [_, map] : params->maps)
+    auto view = params->map_view;
+    for (auto& map : *view)
     {
         if (map->active == false)
             continue;
@@ -40,7 +43,16 @@ async::task<void> mob_action_timer::handle(const fb::model::datetime& now, std::
                 if (mob->paralysis())
                     continue;
 
-                std::ignore = mob->action(now);
+                async::awaitable_then(mob->action(now), [mob](async::awaitable_result<void> result) {
+                    try
+                    {
+                        result();
+                    }
+                    catch (const std::exception& e)
+                    {
+                        fb::logger::warn(std::format("mob action error: {}", e.what()));
+                    }
+                });
             }
         }
     }

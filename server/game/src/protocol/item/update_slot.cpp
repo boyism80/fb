@@ -10,9 +10,9 @@ item_update_slot::item_update_slot(const fb::game::character& me, EQUIPMENT_PART
 #endif
 
 #ifndef BOT
-async::task<void> item_update_slot::serialize(fb::stream_writer<big_endian>& writer) const
+void item_update_slot::serialize(fb::stream_writer<big_endian>& writer) const
 {
-    co_await header::serialize(writer);
+    header::serialize(writer);
     std::shared_ptr<fb::game::item> item;
 
     switch (parts)
@@ -50,11 +50,11 @@ async::task<void> item_update_slot::serialize(fb::stream_writer<big_endian>& wri
         break;
 
     default:
-        co_return;
+        return;
     }
 
     if (item == nullptr)
-        co_return;
+        return;
 
     writer.write<uint8_t>(opcode);
     writer.write<uint16_t>(item->look());
@@ -62,9 +62,9 @@ async::task<void> item_update_slot::serialize(fb::stream_writer<big_endian>& wri
     writer.write<std::string, uint8_t>(item->name());
 }
 #else
-async::task<void> item_update_slot::deserialize(fb::stream_reader<big_endian>& reader)
+void item_update_slot::deserialize(fb::stream_reader<big_endian>& reader)
 {
-    co_await header::deserialize(reader);
+    header::deserialize(reader);
     this->look  = reader.read<uint16_t>();
     this->color = reader.read<uint8_t>();
     this->name  = reader.read<std::string, uint8_t>();

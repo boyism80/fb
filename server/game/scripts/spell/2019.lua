@@ -1,8 +1,8 @@
 -- spell: 이기어검술
 -- 이기어검술 캐스팅
-function ON_CAST_2019(me, you, spell)
-
-end
+-- function ON_CAST_2019(me, you, spell)
+--
+-- end
 
 -- 이기어검술 버프 효과
 function ON_BUFF_2019(me, spell)

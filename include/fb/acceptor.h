@@ -11,7 +11,9 @@
 #include <fb/amqp_handler_registry.h>
 #include <fb/http_client.h>
 #include <fb/socket.h>
+#include <fb/asio_task.h>
 #include <fb/lua.h>
+#include <async/awaitable_get.h>
 #include <iomanip>
 #include <mutex>
 #include <boost/stacktrace.hpp>
@@ -133,7 +135,7 @@ private:
                 }
                 else
                 {
-                    auto protocol = co_await this->handler.protocol.get_deserializer(opcode)(reader);
+                    auto protocol = this->handler.protocol.get_deserializer(opcode)(reader);
                     auto fd       = socket.fd();
                     auto weak     = socket.template weak_from_this_as<fb::socket<T>>();
                     auto builder  = this->threads.new_builder(weak);
@@ -279,34 +281,49 @@ private:
                 if (this->_running == false)
                     throw std::runtime_error("cannot accept socket. acceptor is cleaning now.");
 
-                async::awaitable_get(this->on_accepted(*socket_ptr));
-                socket_ptr->set_option(boost::asio::ip::tcp::no_delay(false));
-
-                {
-                    auto  fd    = socket_ptr->fd();
-                    auto  guard = this->_sockets.enter_write();
-                    auto& v     = guard.value();
-                    if (auto it = v.find(fd); it != v.end())
-                    {
-                        if (it->second.get() != socket_ptr.get())
-                        {
-                            fb::logger::warn(std::format("socket already exists. fd: {}", fd));
-                            auto stale = it->second;
-                            v.erase(it);
-                            if (stale->is_open())
-                                stale->close();
-                        }
-                    }
-
-                    v.insert_or_assign(fd, socket_ptr);
-                }
-
-                async::awaitable_get(this->on_connected(*socket_ptr));
-
+                // Drive cpp-async handshake on an Asio awaitable without blocking the IO thread.
                 boost::asio::co_spawn(
                     *this,
-                    [socket_ptr]() -> boost::asio::awaitable<void> {
-                        co_await socket_ptr->recv();
+                    [this, socket_ptr]() -> boost::asio::awaitable<void> {
+                        try
+                        {
+                            co_await fb::async_await_task(this->on_accepted(*socket_ptr), boost::asio::use_awaitable);
+                            socket_ptr->set_option(boost::asio::ip::tcp::no_delay(false));
+
+                            {
+                                auto  fd    = socket_ptr->fd();
+                                auto  guard = this->_sockets.enter_write();
+                                auto& v     = guard.value();
+                                if (auto it = v.find(fd); it != v.end())
+                                {
+                                    if (it->second.get() != socket_ptr.get())
+                                    {
+                                        fb::logger::warn(std::format("socket already exists. fd: {}", fd));
+                                        auto stale = it->second;
+                                        v.erase(it);
+                                        if (stale->is_open())
+                                            stale->close();
+                                    }
+                                }
+
+                                v.insert_or_assign(fd, socket_ptr);
+                            }
+
+                            co_await fb::async_await_task(this->on_connected(*socket_ptr), boost::asio::use_awaitable);
+                            co_await socket_ptr->recv();
+                        }
+                        catch (std::exception& e)
+                        {
+                            fb::logger::fatal("acceptor::accept: error={}\n{}",
+                                              e.what(),
+                                              boost::stacktrace::to_string(boost::stacktrace::stacktrace()));
+                            socket_ptr->close();
+                        }
+                        catch (...)
+                        {
+                            fb::logger::fatal("acceptor::accept: unknown error");
+                            socket_ptr->close();
+                        }
                     },
                     boost::asio::detached);
                 this->accept();
@@ -338,7 +355,7 @@ public:
         auto stream = fb::stream();
         {
             auto writer = fb::stream_writer<big_endian>(stream);
-            co_await fb::protocol::response::transfer(ip, port, params).serialize(writer);
+            fb::protocol::response::transfer(ip, port, params).serialize(writer);
         }
 
         encryption.wrap(stream);
@@ -366,7 +383,7 @@ public:
         auto stream = fb::stream();
         {
             auto writer = fb::stream_writer<big_endian>(stream);
-            co_await fb::protocol::response::transfer(ip, port, header).serialize(writer);
+            fb::protocol::response::transfer(ip, port, header).serialize(writer);
         }
 
         encryption.wrap(stream);
@@ -478,7 +495,7 @@ public:
     {
         auto stream = fb::stream();
         auto writer = fb::stream_writer<big_endian>(stream);
-        co_await response.serialize(writer);
+        response.serialize(writer);
         if (stream.empty())
             co_return 0;
 
@@ -489,6 +506,7 @@ public:
     void run()
     {
         this->_running = true;
+        // Sync boundary between main thread and async-cpp (startup loaders / Lua init).
         async::awaitable_get(this->on_start());
         this->accept();
 
@@ -606,6 +624,7 @@ public:
 
         this->_running = false;
         this->cancel();
+        // Sync boundary between main/shutdown thread and async-cpp (save, drain queues).
         async::awaitable_get(this->on_exit());
         async::awaitable_get(this->disconnect_sockets());
 

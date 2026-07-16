@@ -56,7 +56,7 @@ async::task<void> service::schedule::poll()
         if (entry.script.empty() || entry.func.empty())
             continue;
 
-        auto lua = this->server.lua.new_ctx_guard(entry.script, entry.func);
+        auto lua = this->server.lua.open(entry.script, entry.func);
         if (lua)
             std::ignore = co_await lua->call(0);
 

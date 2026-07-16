@@ -15,15 +15,18 @@ async::task<bool> group::handle(fb::socket<character>& session, game_reqs::group
     if (me->inited() == false)
         co_return true;
 
-    auto weak = me->weak_from_this_as<character>();
+    auto weak  = me->weak_from_this_as<character>();
+    auto error = std::optional<std::string>{};
     try
     {
         co_await this->server.groups.handle_action(*me, request.name);
     }
     catch (std::exception& e)
     {
-        if (weak.expired() == false)
-            me->message(e.what(), MESSAGE_TYPE::STATE);
+        error = e.what();
     }
+
+    if (error.has_value() && weak.expired() == false)
+        me->message(error.value(), MESSAGE_TYPE::STATE);
     co_return true;
 }

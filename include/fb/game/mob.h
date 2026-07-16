@@ -13,10 +13,13 @@ using namespace std::chrono_literals;
 class character;
 class ai;
 
+class map;
+
 class rezen
 {
 private:
     fb::game::server&                  _server;
+    std::weak_ptr<fb::game::map>       _map;
     uint16_t                           _count = 0;
     std::optional<fb::model::datetime> _respawn_time;
 
@@ -24,12 +27,15 @@ public:
     const fb::model::mob_spawn& model;
 
 public:
-    rezen(fb::game::server& server, const fb::model::mob_spawn& model);
+    rezen(fb::game::server& server, const fb::model::mob_spawn& model, const std::shared_ptr<fb::game::map>& map);
     ~rezen() = default;
 
+    // clang-format off
+    uint32_t                        map_id() const;
     void                            decrease();
     [[nodiscard]] async::task<void> spawn(std::thread::id thread_id);
     void                            force_spawn(std::thread::id thread_id);
+    // clang-format on
 };
 
 class mob : public life
@@ -72,23 +78,26 @@ public:
     fb::game::mob_stat             stat;
 
 public:
+    // clang-format off
     mob(fb::game::server& server, const fb::model::mob& model, const initial_params& params);
     ~mob();
+    // clang-format on
 
 private:
+    // clang-format off
     std::weak_ptr<fb::game::life>   find_target();
     [[nodiscard]] async::task<bool> call_script();
     void                            AI(const fb::model::datetime& now);
-    void                            on_die(std::shared_ptr<fb::game::object> from, DESTROY_TYPE destroy_type);
-    static bool is_cardinally_adjacent(const fb::model::point16_t& a, const fb::model::point16_t& b);
-    static bool is_cover_barrier_cell(const fb::model::point16_t& cell, const fb::model::point16_t& cover_center);
-    bool        cover_blocks_move(const fb::game::map&        map,
-                                  const fb::model::point16_t& from,
-                                  const fb::model::point16_t& to) const;
+    static bool                     is_cardinally_adjacent(const fb::model::point16_t& a, const fb::model::point16_t& b);
+    static bool                     is_cover_barrier_cell(const fb::model::point16_t& cell, const fb::model::point16_t& cover_center);
+    bool                            cover_blocks_move(const fb::game::map& map, const fb::model::point16_t& from, const fb::model::point16_t& to) const;
+    // clang-format on
 
 public:
+    // clang-format off
     bool near_target(const std::shared_ptr<fb::game::life>& target, DIRECTION& out) const;
     bool move_step(const fb::model::point16_t& position);
+    // clang-format on
 
 public:
     // clang-format off
@@ -102,7 +111,9 @@ public:
     std::shared_ptr<fb::game::life> update_target();
     virtual bool                    available() const;
     uint32_t                        normal_attack_damage(MOB_SIZE size) const override final;
-    void                            kill(std::shared_ptr<fb::game::object> from = nullptr, DESTROY_TYPE destroy_type = DESTROY_TYPE::DEFAULT) override final;
+    void                            kill(DESTROY_TYPE destroy_type = DESTROY_TYPE::DEFAULT) override final;
+    async::task<void>               damage_to(const damage_list& targets) override final;
+    async::task<void>               damage_to(const damage_list& targets, const damage_opts& opts) override final;
     async::task<void>               drop_items();
     void                            assert_thread() const override final;
     bool                            move(DIRECTION direction) override final;

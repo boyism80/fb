@@ -10,46 +10,25 @@ local MESSAGE_TRADE_FAILED               = "교환에 실패했습니다."
 
 local DEFAULT_INTERVAL = 100
 
-local function tlog(fmt, ...)
-    local message = string.format("trade: " .. fmt, ...)
-    if message:find("FAILED", 1, true) ~= nil then
-        log("fatal", message)
-    else
-        log("debug", message)
+local function progress(bot, message)
+    local level = "debug"
+    if message:find("FAILED", 1, true) ~= nil
+        and message:find("AS EXPECTED", 1, true) == nil
+        and message:find("SUCCESS:", 1, true) == nil then
+        level = "fatal"
     end
-end
-
-local function log_bot(bot, label)
-    local pos = bot:position()
-    tlog("%s oid=%d map=%d pos=(%d,%d) money=%d",
-        label, bot:oid(), bot:map(), pos[1], pos[2], bot:money())
-end
-
-local function log_trade_packet(label, packet)
-    if packet == nil then
-        tlog("%s: packet=nil", label)
-        return
-    end
-    tlog("%s: type=%s dialog_oid=%d dialog_name=%q upload_name=%q money=%d close_message=%q",
-        label,
-        tostring(packet.type),
-        packet.dialog_oid or 0,
-        tostring(packet.dialog_name),
-        tostring(packet.upload_name),
-        packet.money or 0,
-        tostring(packet.close_message))
+    log(level, message)
+    bot:chat("=== " .. message .. " ===")
 end
 
 local function setup_item(bot, label, item_name, count)
-    tlog("%s create_item %s x%d", label, item_name, count)
+    progress(bot, string.format("%s: create %s x%d", label, item_name, count))
     bot:create_item(item_name, count)
-    tlog("%s create_item %s x%d done, count=%d", label, item_name, count, bot:item_count(item_name))
 end
 
 local function setup_money(bot, label, amount)
-    tlog("%s money(%d)", label, amount)
+    progress(bot, string.format("%s: set money %d", label, amount))
     bot:money(amount)
-    tlog("%s money done, actual=%d", label, bot:money())
 end
 
 test_suite {
@@ -57,20 +36,15 @@ test_suite {
     bot_count = 2,
 
     on_initialize = function(ctx)
-        tlog("on_initialize start")
+        progress(ctx:bot(0), "TRADE TEST INITIALIZED")
         lib.formation.arrange_in_line(ctx)
-        log_bot(ctx:bot(0), "bot1 after formation")
-        log_bot(ctx:bot(1), "bot2 after formation")
-
-        local bot2 = ctx:bot(1)
-        log_bot(ctx:bot(0), "bot1 after bot2 reposition")
-        log_bot(ctx:bot(1), "bot2 after bot2 reposition")
-        tlog("on_initialize done")
+        progress(ctx:bot(0), "FORMATION DONE")
     end,
 
     on_scenario_finished = function(ctx)
         for i = 0, ctx:bot_count() - 1 do
             local bot = ctx:bot(i)
+            progress(bot, "CLEANUP INVENTORY")
             bot:chat("/아이템초기화")
             bot:chat("/아이템삭제")
             bot:money(0)
@@ -80,11 +54,9 @@ test_suite {
 
     scenarios = {
         function(ctx)
-            tlog("scenario 1 start")
             local bot1 = ctx:bot(0)
             local bot2 = ctx:bot(1)
-            log_bot(bot1, "bot1")
-            log_bot(bot2, "bot2")
+            progress(bot1, "SCENARIO 1 START")
 
             setup_item(bot1, "bot1", "도토리", 150)
             setup_item(bot1, "bot1", "부적", 1)
@@ -94,241 +66,234 @@ test_suite {
             setup_item(bot2, "bot2", "양첨목봉", 1)
             setup_money(bot2, "bot2", 20000)
 
-            tlog("scenario 1: trade REQUEST bot1 -> bot2 oid=%d", bot2:oid())
-            local dialog = trade.request(bot1, bot2:oid(), trade.dialog_oid(bot2:oid()))
-            log_trade_packet("scenario 1: trade REQUEST response", dialog)
-            tlog("scenario 1: Bot1 -> Bot2 trade initiated")
+            progress(bot1, "REQUEST TRADE -> bot2")
+            trade.request(bot1, bot2:oid(), trade.dialog_oid(bot2:oid()))
 
-            tlog("scenario 1: UP_ITEM charm (slot=%d), waiting message", trade.slot(1))
+            progress(bot1, "TRY UPLOAD CHARM (expect reject)")
             local charm = bot1:request(
                 resp.message,
                 protocol.trade("UP_ITEM", bot2:oid(), { index = trade.slot(1) }),
                 function(packet)
-                    tlog("scenario 1: charm message validator text=%q type=%s",
-                        tostring(packet.text), tostring(packet.type))
                     return string.find(packet.text or "", MESSAGE_TRADE_NOT_ALLOWED_TO_TRADE, 1, true) ~= nil
                 end)
             if charm == nil then
-                tlog("scenario 1: charm request returned nil")
+                progress(bot1, "FAILED: charm reject message missing")
                 return false
             end
-            tlog("scenario 1: charm response text=%q", tostring(charm.text))
-            tlog("scenario 1: Bot1 tried to trade a charm.")
+            progress(bot1, "CHARM REJECTED AS EXPECTED")
 
-            tlog("scenario 1: bot1 put_full_offer")
+            progress(bot1, "PUT ITEMS AND MONEY")
             trade.put_full_offer(bot1, bot2:oid(), 150, 10000)
-            tlog("scenario 1: Bot1 puts up items and money.")
 
-            tlog("scenario 1: bot2 put_full_offer")
+            progress(bot2, "PUT ITEMS AND MONEY")
             trade.put_full_offer(bot2, bot1:oid(), 200, 20000, 1)
-            tlog("scenario 1: Bot2 puts up items and money.")
 
-            tlog("scenario 1: bot2 cancel")
+            progress(bot2, "CANCEL TRADE")
             trade.cancel(bot2, bot1:oid(), trade.close_contains(MESSAGE_TRADE_CANCELLED_BY_ME))
-            tlog("scenario 1: Bot2 cancelled the trade.")
 
-            tlog("scenario 1: trade REQUEST bot2 -> bot1")
-            local dialog2 = trade.request(bot2, bot1:oid(), trade.dialog_oid(bot1:oid()))
-            log_trade_packet("scenario 1: trade REQUEST response", dialog2)
-            tlog("scenario 1: Bot2 -> Bot1 trade re-initiated.")
+            progress(bot2, "REQUEST TRADE -> bot1")
+            trade.request(bot2, bot1:oid(), trade.dialog_oid(bot1:oid()))
 
-            tlog("scenario 1: bot1 put_full_offer (2nd)")
+            progress(bot1, "PUT ITEMS AND MONEY (2nd)")
             trade.put_full_offer(bot1, bot2:oid(), 150, 10000)
-            tlog("scenario 1: Bot1 puts up items and money again.")
 
-            tlog("scenario 1: bot2 put_full_offer (2nd)")
+            progress(bot2, "PUT ITEMS AND MONEY (2nd)")
             trade.put_full_offer(bot2, bot1:oid(), 200, 20000, 1)
-            tlog("scenario 1: Bot2 puts up items and money again.")
 
-            tlog("scenario 1: bot1 lock")
+            progress(bot1, "LOCK TRADE")
             trade.lock(bot1, bot2:oid(), trade.type_is("lock"))
-            tlog("scenario 1: Bot1 locked the trade.")
 
-            tlog("scenario 1: bot2 lock (complete)")
-            local close_pkt = trade.lock(bot2, bot1:oid(), trade.close_contains(MESSAGE_TRADE_SUCCESS))
-            log_trade_packet("scenario 1: trade complete", close_pkt)
-            tlog("scenario 1: Bot2 locked the trade, completing it.")
+            progress(bot2, "LOCK TRADE (COMPLETE)")
+            trade.lock(bot2, bot1:oid(), trade.close_contains(MESSAGE_TRADE_SUCCESS))
 
             ctx:sleep(DEFAULT_INTERVAL)
 
-            tlog("scenario 1 verify: bot1 money=%d bot2 money=%d", bot1:money(), bot2:money())
-            tlog("scenario 1 verify: bot1 도토리=%d bot2 도토리=%d",
-                bot1:item_count("도토리"), bot2:item_count("도토리"))
-            tlog("scenario 1 verify: bot1 양첨목봉=%s bot1 부적=%s",
-                tostring(bot1:has_item_by_name("양첨목봉")), tostring(bot1:has_item_by_name("부적")))
-
             if bot1:money() ~= 20000 or bot2:money() ~= 10000 then
-                tlog("scenario 1 FAILED: money mismatch")
+                progress(bot1, "FAILED: money mismatch")
                 return false
             end
             if bot1:has_item_by_name("양첨목봉") == false then
-                tlog("scenario 1 FAILED: bot1 missing 양첨목봉")
+                progress(bot1, "FAILED: missing 양첨목봉")
                 return false
             end
             if bot1:has_item_by_name("부적") == false then
-                tlog("scenario 1 FAILED: bot1 missing 부적")
+                progress(bot1, "FAILED: missing 부적")
                 return false
             end
             if bot1:item_count("도토리") ~= 200 then
-                tlog("scenario 1 FAILED: bot1 도토리 count")
+                progress(bot1, "FAILED: bot1 도토리 count")
                 return false
             end
             if bot2:item_count("도토리") ~= 150 then
-                tlog("scenario 1 FAILED: bot2 도토리 count")
+                progress(bot2, "FAILED: bot2 도토리 count")
                 return false
             end
 
-            tlog("scenario 1 PASSED")
+            progress(bot1, "SCENARIO 1 PASSED")
             return true
         end,
 
         function(ctx)
-            tlog("scenario 2 start")
             local bot1 = ctx:bot(0)
             local bot2 = ctx:bot(1)
+            progress(bot1, "SCENARIO 2 START (money overflow)")
 
             bot1:money(0xFFFFFFFF)
             bot2:money(1)
+            progress(bot1, "SET MONEY MAX / bot2=1")
 
+            progress(bot1, "REQUEST TRADE -> bot2")
             trade.request(bot1, bot2:oid(), trade.dialog_oid(bot2:oid()))
-            log("debug", "Scenario 2: Trade initiated for money overflow test.")
 
+            progress(bot2, "UP MONEY 1")
             trade.up_money(bot2, bot1:oid(), 1)
-            log("debug", "Scenario 2: Bot2 puts up 1 gold.")
 
+            progress(bot1, "LOCK TRADE")
             trade.lock(bot1, bot2:oid(), trade.type_is("lock"))
-            log("debug", "Scenario 2: Bot1 locked the trade.")
 
+            progress(bot2, "LOCK TRADE (expect fail)")
             trade.lock(bot2, bot1:oid(), trade.close_contains(MESSAGE_TRADE_FAILED))
-            log("debug", "Scenario 2: Bot2 tried to lock, trade failed as expected.")
+            progress(bot2, "TRADE FAILED AS EXPECTED")
 
             ctx:sleep(DEFAULT_INTERVAL)
 
             if bot1:money() ~= 0xFFFFFFFF or bot2:money() ~= 1 then
+                progress(bot1, "FAILED: money changed after overflow reject")
                 return false
             end
 
-            tlog("scenario 2 PASSED")
+            progress(bot1, "SCENARIO 2 PASSED")
             return true
         end,
 
         function(ctx)
-            tlog("scenario 3 start")
             local bot1 = ctx:bot(0)
             local bot2 = ctx:bot(1)
+            progress(bot1, "SCENARIO 3 START (item stack overflow)")
 
+            progress(bot1, "CREATE 도토리 x150")
             bot1:create_item("도토리", 150)
+            progress(bot2, "CREATE 도토리 x150")
             bot2:create_item("도토리", 150)
 
+            progress(bot1, "REQUEST TRADE -> bot2")
             trade.request(bot1, bot2:oid(), trade.dialog_oid(bot2:oid()))
-            log("debug", "Scenario 3: Trade initiated for item stack overflow test.")
 
+            progress(bot1, "UP 도토리 x150")
             trade.up_item(bot1, bot2:oid(), 0)
             trade.item_count(bot1, bot2:oid(), 150)
-            log("debug", "Scenario 3: Bot1 puts up 도토리.")
 
+            progress(bot1, "LOCK TRADE")
             trade.lock(bot1, bot2:oid(), trade.type_is("lock"))
-            log("debug", "Scenario 3: Bot1 locked the trade.")
 
+            progress(bot2, "LOCK TRADE (expect fail)")
             trade.lock(bot2, bot1:oid(), trade.close_contains(MESSAGE_TRADE_FAILED))
-            log("debug", "Scenario 3: Bot2 tried to lock, trade failed as expected.")
+            progress(bot2, "TRADE FAILED AS EXPECTED")
 
             ctx:sleep(DEFAULT_INTERVAL)
 
             if bot1:item_count("도토리") ~= 150 or bot2:item_count("도토리") ~= 150 then
+                progress(bot1, "FAILED: item count changed after stack overflow reject")
                 return false
             end
 
-            tlog("scenario 3 PASSED")
+            progress(bot1, "SCENARIO 3 PASSED")
             return true
         end,
 
         function(ctx)
-            tlog("scenario 4 start")
             local bot1 = ctx:bot(0)
             local bot2 = ctx:bot(1)
+            progress(bot1, "SCENARIO 4 START (inventory full)")
 
+            progress(bot1, "FILL INVENTORY 목도")
             bot1:fill_inventory("목도")
+            progress(bot2, "CREATE 현철중검")
             bot2:create_item("현철중검", 1)
-            log("debug", "Scenario 4: Bot1 filled inventory.")
 
+            progress(bot1, "REQUEST TRADE -> bot2")
             trade.request(bot1, bot2:oid(), trade.dialog_oid(bot2:oid()))
-            log("debug", "Scenario 4: Trade initiated for inventory full test.")
 
+            progress(bot2, "UP 현철중검")
             trade.up_item_upload(bot2, bot1:oid(), 0)
-            log("debug", "Scenario 4: Bot2 puts up an item.")
 
+            progress(bot1, "LOCK TRADE")
             trade.lock(bot1, bot2:oid(), trade.type_is("lock"))
-            log("debug", "Scenario 4: Bot1 locked the trade.")
 
+            progress(bot2, "LOCK TRADE (expect fail)")
             trade.lock(bot2, bot1:oid(), trade.close_contains(MESSAGE_TRADE_FAILED))
-            log("debug", "Scenario 4: Bot2 tried to lock, trade failed as expected.")
+            progress(bot2, "TRADE FAILED AS EXPECTED")
 
             ctx:sleep(DEFAULT_INTERVAL)
 
             if bot1:has_item_by_name("현철중검") or bot2:has_item_by_name("현철중검") == false then
+                progress(bot1, "FAILED: inventory-full trade outcome wrong")
                 return false
             end
 
-            tlog("scenario 4 PASSED")
+            progress(bot1, "SCENARIO 4 PASSED")
             return true
         end,
 
         function(ctx)
-            tlog("scenario 5 start")
             local bot1 = ctx:bot(0)
             local bot2 = ctx:bot(1)
+            progress(bot1, "SCENARIO 5 START (partial stack then success)")
 
+            progress(bot1, "FILL INVENTORY, DROP ONE, CREATE 도토리 x100")
             bot1:fill_inventory("목도")
             bot1:drop_item(0, false)
             bot1:create_item("도토리", 100)
-            log("debug", "Scenario 5: Bot1 removed one item and created 100 도토리.")
 
+            progress(bot2, "CREATE 도토리 x200")
             bot2:create_item("도토리", 200)
-            log("debug", "Scenario 5: Bot2 created 200 도토리.")
 
+            progress(bot2, "REQUEST TRADE -> bot1")
             trade.request(bot2, bot1:oid(), trade.dialog_oid(bot1:oid()))
-            log("debug", "Scenario 5: Bot2 -> Bot1 trade initiated.")
 
+            progress(bot2, "UP 도토리 x200")
             trade.up_item(bot2, bot1:oid(), 0)
             trade.item_count(bot2, bot1:oid(), 200)
-            log("debug", "Scenario 5: Bot2 puts up 200 도토리.")
 
+            progress(bot2, "LOCK TRADE")
             trade.lock(bot2, bot1:oid(), trade.type_is("lock"))
-            log("debug", "Scenario 5: Bot2 locked the trade.")
 
+            progress(bot1, "LOCK TRADE (expect fail)")
             trade.lock(bot1, bot2:oid(), trade.close_contains(MESSAGE_TRADE_FAILED))
-            log("debug", "Scenario 5: Bot1 tried to lock, trade failed as expected.")
+            progress(bot1, "TRADE FAILED AS EXPECTED")
 
             ctx:sleep(DEFAULT_INTERVAL)
 
             if bot1:item_count("도토리") ~= 100 or bot2:item_count("도토리") ~= 200 then
+                progress(bot1, "FAILED: counts changed after first overflow reject")
                 return false
             end
 
+            progress(bot2, "REQUEST TRADE -> bot1 (retry)")
             trade.request(bot2, bot1:oid(), trade.dialog_oid(bot1:oid()))
-            log("debug", "Scenario 5: Bot2 -> Bot1 trade re-initiated.")
 
+            progress(bot2, "UP 도토리 x101")
             trade.up_item(bot2, bot1:oid(), 0)
             trade.item_count(bot2, bot1:oid(), 101)
-            log("debug", "Scenario 5: Bot2 puts up 101 도토리.")
 
+            progress(bot2, "LOCK TRADE")
             trade.lock(bot2, bot1:oid(), trade.type_is("lock"))
-            log("debug", "Scenario 5: Bot2 locked the trade.")
 
+            progress(bot1, "LOCK TRADE (COMPLETE)")
             trade.lock(bot1, bot2:oid(), trade.close_contains(MESSAGE_TRADE_SUCCESS))
-            log("debug", "Scenario 5: Bot1 locked the trade, completing it successfully.")
 
             ctx:sleep(DEFAULT_INTERVAL)
 
             if bot1:item_count("도토리") ~= 201 then
+                progress(bot1, "FAILED: bot1 도토리 != 201")
                 return false
             end
             if bot2:item_count("도토리") ~= 99 then
+                progress(bot2, "FAILED: bot2 도토리 != 99")
                 return false
             end
 
-            tlog("scenario 5 PASSED")
+            progress(bot1, "SCENARIO 5 PASSED")
             return true
         end,
     },

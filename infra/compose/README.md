@@ -32,7 +32,7 @@ bash tools/compose-up.sh
 | Profile | Services |
 |---------|----------|
 | `infra` | mysql, redis, rabbitmq |
-| `app` | internal, write-back, log, marketplace, admin-tool, gateway, login, game |
+| `app` | internal, write-back, log, marketplace, matchmaking, admin-tool, gateway, login, game |
 
 Infra only:
 
@@ -52,6 +52,7 @@ docker compose -f infra/compose/docker-compose.yml --profile infra up -d
 | Login | 3002 |
 | Game | 3004 |
 | Marketplace | 3010 |
+| Matchmaking | 3340 |
 | Admin Tool | 3020 |
 
 ## Configuration

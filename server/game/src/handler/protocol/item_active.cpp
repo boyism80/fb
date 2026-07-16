@@ -1,5 +1,6 @@
 #include <fb/game/handler/protocol/item_active.h>
 #include <fb/game/server.h>
+#include <tuple>
 
 using namespace fb::game::handler::protocol;
 
@@ -15,6 +16,6 @@ async::task<bool> item_active::handle(fb::socket<character>& session, game_reqs:
     if (ch->inited() == false)
         co_return true;
 
-    ch->items.active(request.index);
+    std::ignore = co_await ch->items.active(request.index);
     co_return true;
 }

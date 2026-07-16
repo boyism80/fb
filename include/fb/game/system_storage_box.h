@@ -14,7 +14,6 @@ class character;
 struct system_storage_box
 {
     uint32_t                           id;
-    std::optional<uint32_t>            user;
     std::string                        title;
     std::string                        message;
     std::string                        attachments;

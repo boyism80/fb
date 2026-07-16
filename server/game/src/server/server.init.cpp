@@ -33,6 +33,7 @@ async::task<void> fb::game::server::init_lua()
         lua.build<fb::game::spell, fb::lua::luable>();
         lua.build<fb::game::buff, fb::lua::luable>();
         lua.build<fb::game::map, fb::thread_switchable>();
+        lua.build<fb::game::matchmaker, fb::lua::luable>();
         lua.build<fb::game::group, fb::thread_switchable>();
         lua.build<fb::game::object, fb::thread_switchable>();
         lua.build<fb::game::life, fb::game::object>();
@@ -94,6 +95,7 @@ async::task<void> fb::game::server::init_lua()
         lua.build("regex", builtin::server::builtin_regex);
         lua.build("exp_multiplier", builtin::server::builtin_exp_multiplier);
         lua.build("drop_rate_multiplier", builtin::server::builtin_drop_rate_multiplier);
+        lua.build("http_response_delay", builtin::server::builtin_http_response_delay);
         lua.build("property", builtin::server::builtin_property);
 
         fb::model::lua::map_enum(lua);
@@ -113,9 +115,9 @@ async::task<void> fb::game::server::init_thread_params()
         maps_division.insert({thread, std::vector<std::shared_ptr<fb::game::map>>{}});
     }
 
-    for (auto& [id, map] : this->maps)
+    for (const auto& map : *this->maps.snapshot())
     {
-        auto thread = this->threads.modular(id);
+        auto thread = this->threads.modular(map->id);
         maps_division[thread].push_back(map);
     }
 
@@ -127,12 +129,12 @@ async::task<void> fb::game::server::init_thread_params()
             auto params = std::make_unique<thread_params>(*this);
             for (const auto& map : maps)
             {
-                params->maps.insert({map->model.id, map});
+                params->add_map(map);
                 if (table::mob_spawn.contains(map->model.id))
                 {
                     for (auto& spawn : table::mob_spawn[map->model.id])
                     {
-                        params->rezens.push_back(fb::game::rezen(*this, spawn));
+                        params->rezens.push_back(std::make_unique<fb::game::rezen>(*this, spawn, map));
                     }
                 }
             }
@@ -220,6 +222,7 @@ void fb::game::server::init_timers()
 
 void fb::game::server::init_amqp_handlers()
 {
+    // clang-format off
     auto world     = config<uint32_t>("world");
     auto host_name = std::format("fb.{}.game.{}", world, config<uint32_t>("id"));
     this->handler.amqp.bind<fb::game::handler::amqp::kick_out>(host_name);
@@ -237,18 +240,24 @@ void fb::game::server::init_amqp_handlers()
     this->handler.amqp.bind<fb::game::handler::amqp::write_mail>(std::format("fb.{}.mail", world));
     this->handler.amqp.bind<fb::game::handler::amqp::write_mails>(std::format("fb.{}.mail", world));
     this->handler.amqp.bind<fb::game::handler::amqp::deliver_system_mail>(std::format("fb.{}.mail", world));
+    this->handler.amqp.bind<fb::game::handler::amqp::write_storage_box>(std::format("fb.{}.storage", world));
+    this->handler.amqp.bind<fb::game::handler::amqp::deliver_system_storage>(std::format("fb.{}.storage", world));
     this->handler.amqp.bind<fb::game::handler::amqp::ban>(std::format("fb.{}.ban", world));
     this->handler.amqp.bind<fb::game::handler::amqp::set_exp_multiplier>(std::format("fb.{}.global", world));
     this->handler.amqp.bind<fb::game::handler::amqp::set_drop_rate_multiplier>(std::format("fb.{}.global", world));
     this->handler.amqp.bind<fb::game::handler::amqp::set_datetime>(std::format("fb.{}.global", world));
-    this->handler.amqp.bind<fb::game::handler::amqp::start_maintenance>(
-        std::format("fb.{}.game.{}", world, fb::config<uint32_t>("id")));
+    this->handler.amqp.bind<fb::game::handler::amqp::start_maintenance>(std::format("fb.{}.game.{}", world, fb::config<uint32_t>("id")));
+    auto matchmaking_route = std::format("fb.{}.matchmaking", world);
+    this->handler.amqp.bind<fb::game::handler::amqp::matchmaking_proposed>(matchmaking_route);
+    this->handler.amqp.bind<fb::game::handler::amqp::matchmaking_ready>(matchmaking_route);
+    this->handler.amqp.bind<fb::game::handler::amqp::matchmaking_dissolved>(matchmaking_route);
+    // clang-format on
 }
 
 async::task<void> fb::game::server::init_map_scripts()
 {
     auto async_tasks = std::vector<async::task<void>>();
-    for (auto& [id, map] : this->maps)
+    for (const auto& map : *this->maps.snapshot())
     {
         if (map->active == false || map->loaded() == false)
             continue;
@@ -271,7 +280,7 @@ async::task<void> fb::game::server::init_script()
 
     auto builder = init_thread->new_builder<void>();
     builder.func = [this](auto&) -> async::task<void> {
-        auto lua = this->lua.new_ctx_guard();
+        auto lua = this->lua.open();
         if (lua)
         {
             if (lua->load("scripts/init.lua") == false)

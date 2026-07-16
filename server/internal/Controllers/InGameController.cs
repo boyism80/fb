@@ -359,6 +359,7 @@ namespace Internal.Controllers
             var ch = await _dbContext.Character.Get(world, uid);
             var items = await _dbContext.Item.Get(world, uid);
             var spells = await _dbContext.Spell.Get(world, uid);
+            var matchmakingSkills = await _dbContext.MatchmakingSkill.Get(world, uid);
             var achievements = await _dbContext.Achievement.Get(world, uid);
             var quests = await _dbContext.Quest.Get(world, uid);
             var storageBoxes = await _dbContext.StorageBox.Get(world, uid);
@@ -396,6 +397,7 @@ namespace Internal.Controllers
                 Marriage = marriageProtocol,
                 Items = items.Select(_mapper.Map<Protocol.Item>).ToList(),
                 Spells = spells.Select(_mapper.Map<Protocol.Spell>).ToList(),
+                MatchmakingSkills = matchmakingSkills.Select(_mapper.Map<Protocol.MatchmakingSkill>).ToList(),
                 Achievements = achievements.Select(_mapper.Map<Protocol.Achievement>).ToList(),
                 Quests = quests.Select(_mapper.Map<Protocol.Quest>).ToList(),
                 StorageBoxes = storageBoxes
@@ -464,9 +466,9 @@ namespace Internal.Controllers
                     character_name = request.Payload.Character.Name,
                     item_count = request.Payload.Items?.Count ?? 0,
                     spell_count = request.Payload.Spells?.Count ?? 0,
+                    matchmaking_skill_count = request.Payload.MatchmakingSkills?.Count ?? 0,
                     achievement_count = request.Payload.Achievements?.Count ?? 0,
-                    quest_count = request.Payload.Quests?.Count ?? 0,
-                    storage_box_count = request.Payload.StorageBoxes?.Count ?? 0
+                    quest_count = request.Payload.Quests?.Count ?? 0
                 });
 
                 return new Response.Save
@@ -527,18 +529,16 @@ namespace Internal.Controllers
             var spellsTask = _dbContext.Spell.GetMany(world, characterIds);
             var achievementsTask = _dbContext.Achievement.GetMany(world, characterIds);
             var questsTask = _dbContext.Quest.GetMany(world, characterIds);
-            var storageBoxesTask = _dbContext.StorageBox.GetMany(world, characterIds);
             var marketplacePendingsTask = _dbContext.MarketplacePending.GetMany(world, characterIds);
 
             await Task.WhenAll(charactersTask, itemsTask, spellsTask, achievementsTask, questsTask,
-                storageBoxesTask, marketplacePendingsTask);
+                marketplacePendingsTask);
 
             var characters = await charactersTask;
             var itemsByOwner = await itemsTask;
             var spellsByOwner = await spellsTask;
             var achievementsByOwner = await achievementsTask;
             var questsByOwner = await questsTask;
-            var storageBoxesByOwner = await storageBoxesTask;
             var marketplacePendingsByOwner = await marketplacePendingsTask;
 
             foreach (var data in payloads)
@@ -552,7 +552,6 @@ namespace Internal.Controllers
                     spellsByOwner.GetValueOrDefault(characterId) ?? Array.Empty<Spell>(),
                     achievementsByOwner.GetValueOrDefault(characterId) ?? Array.Empty<Achievement>(),
                     questsByOwner.GetValueOrDefault(characterId) ?? Array.Empty<Quest>(),
-                    storageBoxesByOwner.GetValueOrDefault(characterId) ?? Array.Empty<StorageBox>(),
                     marketplacePendingsByOwner.GetValueOrDefault(characterId) ?? Array.Empty<MarketplacePending>());
             }
         }
@@ -564,7 +563,6 @@ namespace Internal.Controllers
             IReadOnlyList<Spell> existingSpells,
             IReadOnlyList<Achievement> existingAchievements,
             IReadOnlyList<Quest> existingQuests,
-            IReadOnlyList<StorageBox> existingStorageBoxes,
             IReadOnlyList<MarketplacePending> existingMarketplacePendings)
         {
             var characterId = data.Character.Id;
@@ -591,6 +589,11 @@ namespace Internal.Controllers
                 removed => _dbContext.Spell.Delete(world, removed),
                 alive => _dbContext.Spell.Set(world, alive));
 
+            var matchmakingSkills = _mapper.Map<Protocol.MatchmakingSkill[], MatchmakingSkill[]>(
+                data.MatchmakingSkills?.ToArray() ?? Array.Empty<Protocol.MatchmakingSkill>());
+            if (matchmakingSkills.Length > 0)
+                _dbContext.MatchmakingSkill.Set(world, matchmakingSkills);
+
             var achievements = _mapper.Map<Protocol.Achievement[], Achievement[]>(data.Achievements?.ToArray() ?? Array.Empty<Protocol.Achievement>());
             ApplyHashEntitySnapshot(
                 achievements,
@@ -604,13 +607,6 @@ namespace Internal.Controllers
                 existingQuests,
                 removed => _dbContext.Quest.Delete(world, removed),
                 alive => _dbContext.Quest.Set(world, alive));
-
-            var storageBoxes = _mapper.Map<Protocol.StorageBox[], StorageBox[]>(data.StorageBoxes?.ToArray() ?? Array.Empty<Protocol.StorageBox>());
-            ApplyHashEntitySnapshot(
-                storageBoxes,
-                existingStorageBoxes,
-                removed => _dbContext.StorageBox.Delete(world, removed),
-                alive => _dbContext.StorageBox.Set(world, alive));
 
             var marketplacePendings = _mapper.Map<Protocol.MarketplacePending[], MarketplacePending[]>(
                 data.MarketplacePendings?.ToArray() ?? Array.Empty<Protocol.MarketplacePending>());

@@ -41,9 +41,9 @@ dialog_input_ext::dialog_input_ext(const fb::game::object&       object,
 #endif
 
 #ifndef BOT
-async::task<void> dialog_input_ext::serialize(fb::stream_writer<big_endian>& writer) const
+void dialog_input_ext::serialize(fb::stream_writer<big_endian>& writer) const
 {
-    co_await header::serialize(writer);
+    header::serialize(writer);
     writer.write<uint8_t>(opcode);
     writer.write<uint8_t>(0x04);
     writer.write<uint8_t>(static_cast<uint8_t>(this->interaction));
@@ -59,9 +59,9 @@ async::task<void> dialog_input_ext::serialize(fb::stream_writer<big_endian>& wri
     writer.write<uint8_t>(0x00);
 }
 #else
-async::task<void> dialog_input_ext::deserialize(fb::stream_reader<big_endian>& reader)
+void dialog_input_ext::deserialize(fb::stream_reader<big_endian>& reader)
 {
-    co_await header::deserialize(reader);
+    header::deserialize(reader);
     reader.read<uint8_t>(); // 0x04
     this->interaction = reader.read<uint8_t>();
     this->oid         = reader.read<uint32_t>();

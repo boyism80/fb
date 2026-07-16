@@ -18,6 +18,10 @@
         "ip": "marketplace",
         "port": 3010
     },
+    "matchmaking": {
+        "ip": "matchmaking",
+        "port": 3340
+    },
     "log": {
         "level": [
             "debug",

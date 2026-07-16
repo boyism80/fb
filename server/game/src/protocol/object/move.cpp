@@ -5,9 +5,9 @@ using namespace fb::model;
 namespace fb::protocol::game::request {
 
 #ifndef BOT
-async::task<void> move::deserialize(fb::stream_reader<big_endian>& reader)
+void move::deserialize(fb::stream_reader<big_endian>& reader)
 {
-    co_await header::deserialize(reader);
+    header::deserialize(reader);
     this->direction  = DIRECTION(reader.read<uint8_t>());
     this->oid        = reader.read<uint8_t>();
     this->position.x = reader.read<uint16_t>();
@@ -20,9 +20,9 @@ move::move(DIRECTION direction, uint32_t oid, fb::model::point<uint16_t> positio
     position(position)
 { }
 
-async::task<void> move::serialize(fb::stream_writer<big_endian>& writer) const
+void move::serialize(fb::stream_writer<big_endian>& writer) const
 {
-    co_await header::serialize(writer);
+    header::serialize(writer);
     writer.write<uint8_t>(opcode);
     writer.write<uint8_t>(static_cast<uint8_t>(this->direction));
     writer.write<uint8_t>(this->oid);
@@ -47,9 +47,9 @@ move::move(const uint32_t id, DIRECTION direction, const point<uint16_t>& positi
 #endif
 
 #ifndef BOT
-async::task<void> move::serialize(fb::stream_writer<big_endian>& writer) const
+void move::serialize(fb::stream_writer<big_endian>& writer) const
 {
-    co_await header::serialize(writer);
+    header::serialize(writer);
     writer.write<uint8_t>(opcode);
     writer.write<uint32_t>(this->id);
     writer.write<uint16_t>(this->position.x);
@@ -58,9 +58,9 @@ async::task<void> move::serialize(fb::stream_writer<big_endian>& writer) const
     writer.write<uint8_t>(0x00);
 }
 #else
-async::task<void> move::deserialize(fb::stream_reader<big_endian>& reader)
+void move::deserialize(fb::stream_reader<big_endian>& reader)
 {
-    co_await header::deserialize(reader);
+    header::deserialize(reader);
     this->id         = reader.read<uint32_t>();
     this->position.x = reader.read<uint16_t>();
     this->position.y = reader.read<uint16_t>();

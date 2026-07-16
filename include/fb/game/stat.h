@@ -52,23 +52,26 @@ protected:
     stat(life& owner);
 
 public:
+    // clang-format off
     stat(const stat& other);
     stat(stat&& other);
+    // clang-format on
     virtual ~stat() = default;
 
     stat& operator= (const stat& other) = delete;
     stat& operator= (stat&& other)      = delete;
 
 public:
-    virtual uint32_t base_hp() const           = 0;
-    virtual uint32_t base_mp() const           = 0;
-    virtual uint8_t  base_str() const          = 0;
-    virtual uint8_t  base_dex() const          = 0;
-    virtual uint8_t  base_int() const          = 0;
-    virtual int8_t   base_phydef() const       = 0;
-    virtual int8_t   base_magdef() const       = 0;
-    virtual uint8_t  base_dam() const          = 0;
-    virtual uint8_t  base_hit() const          = 0;
+    // clang-format off
+    virtual uint32_t base_hp() const = 0;
+    virtual uint32_t base_mp() const = 0;
+    virtual uint8_t  base_str() const = 0;
+    virtual uint8_t  base_dex() const = 0;
+    virtual uint8_t  base_int() const = 0;
+    virtual int8_t   base_phydef() const = 0;
+    virtual int8_t   base_magdef() const = 0;
+    virtual uint8_t  base_dam() const = 0;
+    virtual uint8_t  base_hit() const = 0;
     virtual uint32_t base_regenerative() const = 0;
     virtual int32_t  buff_hp() const;
     virtual void     buff_hp(int32_t value);
@@ -93,13 +96,7 @@ public:
     virtual uint32_t hp() const;
     virtual void     hp(uint32_t value, bool notify = true);
     virtual uint32_t heal(uint32_t value, fb::game::object* from = nullptr, bool notify = true);
-    virtual uint32_t damage(uint32_t                          value,
-                            std::shared_ptr<fb::game::object> from     = nullptr,
-                            bool                              critical = false,
-                            float                             rate     = 1.0f,
-                            bool                              physical = true,
-                            bool                              fixed    = false,
-                            bool                              notify   = true);
+    virtual uint32_t damage(uint32_t value, std::shared_ptr<fb::game::object> from = nullptr, bool critical = false, float rate = 1.0f, bool physical = true, bool fixed = false, bool notify = true);
     virtual uint32_t mp() const;
     virtual void     mp(uint32_t value, bool notify = true);
     virtual uint32_t mp_up(uint32_t value, fb::game::object* from = nullptr, bool notify = true);
@@ -114,6 +111,7 @@ public:
     virtual int8_t   dam() const;
     virtual int8_t   hit() const;
     virtual uint32_t regenerative() const;
+    // clang-format on
 };
 
 class character_stat : public stat
@@ -138,6 +136,7 @@ public:
     ~character_stat() = default;
 
 public:
+    // clang-format off
     void             base_hp(uint32_t value, bool notify = true);
     void             base_mp(uint32_t value, bool notify = true);
     void             base_str(uint8_t value, bool notify = true);
@@ -168,13 +167,8 @@ public:
     virtual uint32_t maxhp() const override;
     virtual uint32_t maxmp() const override;
     virtual uint32_t regenerative() const override;
-    uint32_t         damage(uint32_t                          value,
-                            std::shared_ptr<fb::game::object> from     = nullptr,
-                            bool                              critical = false,
-                            float                             rate     = 1.0f,
-                            bool                              physical = true,
-                            bool                              fixed    = false,
-                            bool                              notify   = true) override final;
+    uint32_t         damage(uint32_t value, std::shared_ptr<fb::game::object> from = nullptr, bool critical = false, float rate = 1.0f, bool physical = true, bool fixed = false, bool notify = true) override final;
+    // clang-format on
 };
 
 class mob_stat : public stat
@@ -183,12 +177,15 @@ public:
     mob& owner;
 
 public:
+    // clang-format off
     mob_stat(mob& owner);
     mob_stat(const mob_stat& other);
     mob_stat(mob_stat&& other);
+    // clang-format on
     ~mob_stat() = default;
 
 public:
+    // clang-format off
     uint32_t base_hp() const override final;
     uint32_t base_mp() const override final;
     uint8_t  base_str() const override final;
@@ -199,13 +196,8 @@ public:
     uint8_t  base_dam() const override final;
     uint8_t  base_hit() const override final;
     uint32_t base_regenerative() const override final;
-    uint32_t damage(uint32_t                          value,
-                    std::shared_ptr<fb::game::object> from     = nullptr,
-                    bool                              critical = false,
-                    float                             rate     = 1.0f,
-                    bool                              physical = true,
-                    bool                              fixed    = false,
-                    bool                              notify   = true) override final;
+    uint32_t damage(uint32_t value, std::shared_ptr<fb::game::object> from = nullptr, bool critical = false, float rate = 1.0f, bool physical = true, bool fixed = false, bool notify = true) override final;
+    // clang-format on
 };
 
 } // namespace fb::game

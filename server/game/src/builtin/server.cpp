@@ -7,6 +7,7 @@
 #include <regex>
 #include <string_view>
 #include <fb/model/datetime.h>
+#include <tuple>
 
 using namespace fb::game;
 using table = fb::model::table;
@@ -353,11 +354,7 @@ int builtin::server::builtin_name2ch(lua_State* L)
     auto  argc = lua->argc();
     auto  name = lua->tostring(1);
 
-    character::container::character_ptr_t ch;
-    {
-        auto guard = srv.characters.enter_read();
-        ch         = guard.value().find(name);
-    }
+    character::container::character_ptr_t ch = srv.characters.find(name);
     if (ch == nullptr)
     {
         lua->pushnil();
@@ -491,11 +488,7 @@ int builtin::server::builtin_id2ch(lua_State* L)
     auto& srv = static_cast<fb::game::server&>(lua->executor);
     auto  id  = static_cast<uint32_t>(lua->tointeger(1));
 
-    character::container::character_ptr_t ch;
-    {
-        auto guard = srv.characters.enter_read();
-        ch         = guard.value().find(id);
-    }
+    character::container::character_ptr_t ch = srv.characters.find(id);
     if (ch == nullptr)
     {
         lua->pushnil();
@@ -627,9 +620,8 @@ int builtin::server::builtin_timer(lua_State* L)
     auto  value    = (uint32_t)lua->tointeger(1);
     auto  decrease = lua->toboolean(2);
 
-    auto type  = decrease ? TIMER_TYPE::DECREASE : TIMER_TYPE::INCREASE;
-    auto guard = srv.characters.enter_write();
-    guard.value().foreach_enqueue([value, type](auto& ch) -> async::task<void> {
+    auto type = decrease ? TIMER_TYPE::DECREASE : TIMER_TYPE::INCREASE;
+    srv.characters.foreach_enqueue([value, type](auto& ch) -> async::task<void> {
         ch->timer(value, type);
         co_return;
     });
@@ -645,8 +637,7 @@ int builtin::server::builtin_weather(lua_State* L)
     auto& srv   = static_cast<fb::game::server&>(lua->executor);
     auto  value = (uint32_t)lua->tointeger(1);
 
-    auto guard = srv.characters.enter_write();
-    guard.value().foreach_enqueue([value](auto& ch) -> async::task<void> {
+    srv.characters.foreach_enqueue([value](auto& ch) -> async::task<void> {
         ch->weather(WEATHER_TYPE(value));
         co_return;
     });
@@ -662,8 +653,7 @@ int builtin::server::builtin_bright(lua_State* L)
     auto& srv   = static_cast<fb::game::server&>(lua->executor);
     auto  value = (uint32_t)lua->tointeger(1);
 
-    auto guard = srv.characters.enter_write();
-    guard.value().foreach_enqueue([value](auto& ch) -> async::task<void> {
+    srv.characters.foreach_enqueue([value](auto& ch) -> async::task<void> {
         ch->bright(value);
         co_return;
     });
@@ -771,9 +761,16 @@ int builtin::server::builtin_save(lua_State* L)
     if (lua == nullptr)
         return 0;
 
-    auto& srv   = static_cast<fb::game::server&>(lua->executor);
-    std::ignore = srv.save();
-    return 0;
+    auto builder  = lua->new_co_builder();
+    builder.yield = [=]() -> async::task<void> {
+        auto& server = static_cast<fb::game::server&>(lua->executor);
+        co_await server.save();
+        co_return;
+    };
+    builder.resume = []() -> async::task<int> {
+        co_return 0;
+    };
+    return builder.run();
 }
 
 int builtin::server::builtin_mknpc(lua_State* L)
@@ -859,9 +856,9 @@ int builtin::server::builtin_mknpc(lua_State* L)
     builder.yield   = [=]() -> async::task<void> {
         auto& server = static_cast<fb::game::server&>(lua->executor);
         auto  npc    = server.make<fb::game::npc>(*model);
-        npc->direction(direction);
-        npc->map(map, fb::model::point16_t{x, y});
-        *npc_holder = npc;
+        std::ignore  = npc->direction(direction);
+        std::ignore  = co_await npc->map(map, fb::model::point16_t{x, y});
+        *npc_holder  = npc;
         co_return;
     };
     builder.resume = [=]() -> async::task<int> {
@@ -880,7 +877,7 @@ int builtin::server::builtin_maps(lua_State* L)
     auto& srv = static_cast<fb::game::server&>(lua->executor);
     lua->new_table();
     auto i = 1;
-    for (auto& [id, map] : srv.maps)
+    for (auto& map : *srv.maps.snapshot())
     {
         lua->pushobject(map);
         lua_rawseti(L, -2, i++);
@@ -913,8 +910,7 @@ int builtin::server::builtin_broadcast(lua_State* L)
 
     if (broad_type == BROADCAST_TYPE::WORLD)
     {
-        auto guard = srv.characters.enter_write();
-        guard.value().broadcast(text, type);
+        srv.characters.broadcast(text, type);
         return 0;
     }
     else
@@ -922,8 +918,8 @@ int builtin::server::builtin_broadcast(lua_State* L)
         auto builder  = lua->new_co_builder();
         builder.yield = [=]() -> async::task<void> {
             auto& server = static_cast<fb::game::server&>(lua->executor);
-            auto  guard  = co_await server.characters.enter_write_async();
-            co_await guard.value().broadcast(text, type, broad_type);
+            co_await server.characters.broadcast(text, type, broad_type);
+            co_return;
         };
         builder.resume = []() -> async::task<int> {
             co_return 0;
@@ -1174,6 +1170,30 @@ int builtin::server::builtin_drop_rate_multiplier(lua_State* L)
         };
         return builder.run();
     }
+}
+
+int builtin::server::builtin_http_response_delay(lua_State* L)
+{
+    auto lua = fb::lua::get(L);
+    if (lua == nullptr)
+        return 0;
+
+    auto& srv  = static_cast<fb::game::server&>(lua->executor);
+    auto  argc = lua->argc();
+
+    if (argc == 0)
+    {
+        lua->pushinteger(srv.http.response_delay().total_milliseconds());
+        return 1;
+    }
+
+    auto ms = static_cast<int64_t>(lua->tointeger(1));
+    if (ms < 0)
+        ms = 0;
+
+    srv.http.response_delay(fb::model::timespan(std::chrono::milliseconds(ms)));
+    lua->pushinteger(srv.http.response_delay().total_milliseconds());
+    return 1;
 }
 
 int builtin::server::builtin_property(lua_State* L)

@@ -1,4 +1,4 @@
 -- npc: 부여선원
-function NPC_79(me, npc)
-    
-end
+-- function NPC_79(me, npc)
+--
+-- end

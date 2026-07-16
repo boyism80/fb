@@ -89,6 +89,28 @@ namespace AdminTool.Services
             };
         }
 
+        public async Task<UserDetailMatchmakingData> LoadMatchmakingAsync(uint world, uint userId)
+        {
+            var skills = (await _dbContext.MatchmakingSkill.Get(world, userId))
+                .OrderBy(skill => skill.MatchType)
+                .Select(skill => new UserMatchmakingSkillRow
+                {
+                    MatchType = skill.MatchType,
+                    MatchTypeName = UserDetailDisplay.FormatMatchTypeName(skill.MatchType),
+                    MatchFormat = UserDetailDisplay.FormatMatchFormat(skill.MatchType),
+                    Mu = skill.Mu,
+                    Sigma = skill.Sigma,
+                    EffectiveRating = UserDetailDisplay.GetEffectiveMatchmakingRating(skill.Mu, skill.Sigma),
+                    UpdatedDate = skill.UpdatedDate
+                })
+                .ToList();
+
+            return new UserDetailMatchmakingData
+            {
+                Skills = skills
+            };
+        }
+
         public async Task<UserDetailSocialData> LoadSocialAsync(uint world, uint userId, CharacterRealtimeState realtimeState)
         {
             var social = new UserDetailSocialData();
@@ -382,5 +404,27 @@ namespace AdminTool.Services
         public int TotalPages => PageSize > 0
             ? (int)Math.Ceiling(TotalCount / (double)PageSize)
             : 0;
+    }
+
+    public class UserDetailMatchmakingData
+    {
+        public List<UserMatchmakingSkillRow> Skills { get; set; } = new();
+    }
+
+    public class UserMatchmakingSkillRow
+    {
+        public uint MatchType { get; set; }
+
+        public string MatchTypeName { get; set; } = string.Empty;
+
+        public string MatchFormat { get; set; } = string.Empty;
+
+        public double Mu { get; set; }
+
+        public double Sigma { get; set; }
+
+        public double EffectiveRating { get; set; }
+
+        public DateTime? UpdatedDate { get; set; }
     }
 }

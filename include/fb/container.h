@@ -6,6 +6,7 @@
 #include <vector>
 #include <stdexcept>
 #include <sstream>
+#include <algorithm>
 
 namespace fb {
 
@@ -45,6 +46,17 @@ public:
     {
         this->_ptrs.push_back(value);
         this->_pairs.insert({key, this->_ptrs.back()});
+    }
+
+    void erase(const K& k)
+    {
+        auto i = this->_pairs.find(k);
+        if (i == this->_pairs.cend())
+            return;
+
+        auto ptr = i->second;
+        this->_pairs.erase(i);
+        this->_ptrs.erase(std::remove(this->_ptrs.begin(), this->_ptrs.end(), ptr), this->_ptrs.end());
     }
 
 public:

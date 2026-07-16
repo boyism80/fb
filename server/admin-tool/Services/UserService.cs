@@ -29,38 +29,16 @@ namespace AdminTool.Services
             uint world,
             int page,
             int pageSize,
-            string searchTerm = null,
-            string sortBy = null,
-            bool sortDescending = true)
-        {
-            var column = NormalizeSortColumn(sortBy);
-            if (column is "id" or "name")
-            {
-                return await GetUsersSortedByNameRegistryAsync(
-                    world, page, pageSize, searchTerm, column, sortDescending);
-            }
-
-            return await GetUsersSortedByCharacterFieldAsync(
-                world, page, pageSize, searchTerm, column, sortDescending);
-        }
-
-        private async Task<UserListResult> GetUsersSortedByNameRegistryAsync(
-            uint world,
-            int page,
-            int pageSize,
-            string searchTerm,
-            string sortColumn,
-            bool sortDescending)
+            string searchTerm = null)
         {
             await using var globalConn = _dbContext.GetGlobalConnection(world);
 
-            var whereClause = "";
-            var searchParam = "";
-            if (!string.IsNullOrWhiteSpace(searchTerm))
-            {
-                whereClause = "WHERE n.`name` LIKE @searchTerm";
-                searchParam = $"%{searchTerm}%";
-            }
+            var hasSearch = !string.IsNullOrWhiteSpace(searchTerm);
+            var searchPattern = hasSearch ? $"%{searchTerm.Trim()}%" : null;
+
+            var whereClause = hasSearch
+                ? "WHERE n.`name` LIKE @searchPattern OR CAST(n.`id` AS CHAR) LIKE @searchPattern"
+                : string.Empty;
 
             var totalCount = await globalConn.QueryFirstOrDefaultAsync<int>(
                 $"""
@@ -68,16 +46,12 @@ namespace AdminTool.Services
                 FROM `name_registry` n
                 {whereClause}
                 """,
-                new { searchTerm = searchParam });
+                new { searchPattern });
 
             if (totalCount == 0)
             {
                 return EmptyUserListResult(page, pageSize);
             }
-
-            var orderBy = sortColumn == "name"
-                ? sortDescending ? "n.`name` DESC" : "n.`name` ASC"
-                : sortDescending ? "n.`id` DESC" : "n.`id` ASC";
 
             var offset = (page - 1) * pageSize;
             var nameList = (await globalConn.QueryAsync<NameInfo>(
@@ -87,10 +61,10 @@ namespace AdminTool.Services
                     n.`name` AS Name
                 FROM `name_registry` n
                 {whereClause}
-                ORDER BY {orderBy}
+                ORDER BY n.`id` ASC
                 LIMIT @pageSize OFFSET @offset
                 """,
-                new { searchTerm = searchParam, pageSize, offset })).ToList();
+                new { searchPattern, pageSize, offset })).ToList();
 
             if (!nameList.Any())
             {
@@ -98,60 +72,6 @@ namespace AdminTool.Services
             }
 
             return await BuildUserListResultAsync(world, page, pageSize, totalCount, nameList.Select(n => n.Id).ToList());
-        }
-
-        private async Task<UserListResult> GetUsersSortedByCharacterFieldAsync(
-            uint world,
-            int page,
-            int pageSize,
-            string searchTerm,
-            string sortColumn,
-            bool sortDescending)
-        {
-            HashSet<uint> searchIds = null;
-            if (!string.IsNullOrWhiteSpace(searchTerm))
-            {
-                await using var globalConn = _dbContext.GetGlobalConnection(world);
-                var ids = await globalConn.QueryAsync<uint>(
-                    """
-                    SELECT `id`
-                    FROM `name_registry`
-                    WHERE `name` LIKE @searchTerm
-                    """,
-                    new { searchTerm = $"%{searchTerm}%" });
-                searchIds = ids.ToHashSet();
-                if (searchIds.Count == 0)
-                {
-                    return EmptyUserListResult(page, pageSize);
-                }
-            }
-
-            var sortRows = await LoadUserSortRowsAsync(world, searchIds);
-            if (sortRows.Count == 0)
-            {
-                return EmptyUserListResult(page, pageSize);
-            }
-
-            var onlineIds = await LoadOnlineUserIdsAsync(world);
-            HashSet<uint> bannedIds = null;
-            if (sortColumn == "status")
-            {
-                bannedIds = await LoadAllBannedUserIdsAsync(world);
-            }
-
-            var sortedIds = SortUserSortRows(sortRows, sortColumn, sortDescending, onlineIds, bannedIds)
-                .Select(r => r.Id)
-                .ToList();
-
-            var totalCount = sortedIds.Count;
-            var offset = (page - 1) * pageSize;
-            var pageIds = sortedIds.Skip(offset).Take(pageSize).ToList();
-            if (!pageIds.Any())
-            {
-                return EmptyUserListResult(page, pageSize, totalCount);
-            }
-
-            return await BuildUserListResultAsync(world, page, pageSize, totalCount, pageIds);
         }
 
         private async Task<UserListResult> BuildUserListResultAsync(
@@ -203,52 +123,6 @@ namespace AdminTool.Services
             };
         }
 
-        private async Task<List<UserSortRow>> LoadUserSortRowsAsync(uint world, HashSet<uint> filterIds)
-        {
-            var shardSize = _dbContext.GetShardDbSize(world);
-            var rows = new List<UserSortRow>();
-
-            if (filterIds != null)
-            {
-                foreach (var group in filterIds.GroupBy(id => (int)(id % (uint)shardSize)))
-                {
-                    await using var conn = _dbContext.GetDataConnection(world, group.Key);
-                    var idList = group.ToList();
-                    var shardRows = await conn.QueryAsync<UserSortRow>(
-                        $"""
-                        SELECT
-                            `id` AS Id,
-                            `level` AS Level,
-                            `role` AS Role,
-                            `updated_date` AS UpdatedDate
-                        FROM `user`
-                        WHERE `deleted` = 0 AND `id` IN ({string.Join(',', idList)})
-                        """);
-                    rows.AddRange(shardRows);
-                }
-
-                return rows;
-            }
-
-            for (int i = 0; i < shardSize; i++)
-            {
-                await using var conn = _dbContext.GetDataConnection(world, i);
-                var shardRows = await conn.QueryAsync<UserSortRow>(
-                    """
-                    SELECT
-                        `id` AS Id,
-                        `level` AS Level,
-                        `role` AS Role,
-                        `updated_date` AS UpdatedDate
-                    FROM `user`
-                    WHERE `deleted` = 0
-                    """);
-                rows.AddRange(shardRows);
-            }
-
-            return rows;
-        }
-
         private async Task<HashSet<uint>> LoadOnlineUserIdsAsync(uint world)
         {
             var onlineIds = new HashSet<uint>();
@@ -266,62 +140,6 @@ namespace AdminTool.Services
             return onlineIds;
         }
 
-        private async Task<HashSet<uint>> LoadAllBannedUserIdsAsync(uint world)
-        {
-            var bannedIds = new HashSet<uint>();
-            var shardSize = _dbContext.GetShardDbSize(world);
-            for (int i = 0; i < shardSize; i++)
-            {
-                await using var conn = _dbContext.GetDataConnection(world, i);
-                var ids = await conn.QueryAsync<uint>(
-                    "SELECT `user` FROM `ban` WHERE `deleted` = 0");
-                foreach (var id in ids)
-                    bannedIds.Add(id);
-            }
-
-            return bannedIds;
-        }
-
-        private static List<UserSortRow> SortUserSortRows(
-            List<UserSortRow> rows,
-            string sortColumn,
-            bool sortDescending,
-            HashSet<uint> onlineIds,
-            HashSet<uint> bannedIds)
-        {
-            IEnumerable<UserSortRow> ordered = sortColumn switch
-            {
-                "level" => sortDescending
-                    ? rows.OrderByDescending(r => r.Level)
-                    : rows.OrderBy(r => r.Level),
-                "role" => sortDescending
-                    ? rows.OrderByDescending(r => r.Role)
-                    : rows.OrderBy(r => r.Role),
-                "updatedDate" => sortDescending
-                    ? rows.OrderByDescending(r => r.UpdatedDate)
-                    : rows.OrderBy(r => r.UpdatedDate),
-                "status" => sortDescending
-                    ? rows.OrderByDescending(r => GetStatusSortRank(r.Id, onlineIds, bannedIds ?? new HashSet<uint>()))
-                    : rows.OrderBy(r => GetStatusSortRank(r.Id, onlineIds, bannedIds ?? new HashSet<uint>())),
-                _ => sortDescending
-                    ? rows.OrderByDescending(r => r.Id)
-                    : rows.OrderBy(r => r.Id),
-            };
-
-            return ordered.ToList();
-        }
-
-        private static int GetStatusSortRank(uint userId, HashSet<uint> onlineIds, HashSet<uint> bannedIds)
-        {
-            if (bannedIds.Contains(userId))
-                return 0;
-
-            if (onlineIds.Contains(userId))
-                return 2;
-
-            return 1;
-        }
-
         private static UserListResult EmptyUserListResult(int page, int pageSize, int totalCount = 0)
         {
             return new UserListResult
@@ -331,20 +149,6 @@ namespace AdminTool.Services
                 Page = page,
                 PageSize = pageSize,
                 TotalPages = totalCount == 0 ? 0 : (int)Math.Ceiling(totalCount / (double)pageSize)
-            };
-        }
-
-        public static string NormalizeSortColumn(string sortBy)
-        {
-            return sortBy?.Trim().ToLowerInvariant() switch
-            {
-                "name" => "name",
-                "level" => "level",
-                "role" => "role",
-                "status" => "status",
-                "updateddate" or "updated" => "updatedDate",
-                "id" or "uid" => "id",
-                _ => "id",
             };
         }
 
@@ -358,7 +162,6 @@ namespace AdminTool.Services
             if (character == null)
                 return null;
 
-            // Get ban information if exists
             var ban = await _dbContext.Ban.Get(world, userId.Value);
 
             return new UserDetail
@@ -579,17 +382,6 @@ namespace AdminTool.Services
         public uint Id { get; set; }
 
         public string Name { get; set; } = string.Empty;
-    }
-
-    internal class UserSortRow
-    {
-        public uint Id { get; set; }
-
-        public ushort Level { get; set; }
-
-        public byte Role { get; set; }
-
-        public DateTime UpdatedDate { get; set; }
     }
 
     internal class BanInfo

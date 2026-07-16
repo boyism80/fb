@@ -1,5 +1,5 @@
 -- mob: 체력의돼지
 -- 체력의돼지 사망
-function ON_MOB_DIE_104(me, you)
-
-end
+-- function ON_MOB_DIE_104(me)
+--
+-- end
