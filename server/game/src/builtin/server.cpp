@@ -1172,6 +1172,30 @@ int builtin::server::builtin_drop_rate_multiplier(lua_State* L)
     }
 }
 
+int builtin::server::builtin_http_response_delay(lua_State* L)
+{
+    auto lua = fb::lua::get(L);
+    if (lua == nullptr)
+        return 0;
+
+    auto& srv  = static_cast<fb::game::server&>(lua->executor);
+    auto  argc = lua->argc();
+
+    if (argc == 0)
+    {
+        lua->pushinteger(srv.http.response_delay().total_milliseconds());
+        return 1;
+    }
+
+    auto ms = static_cast<int64_t>(lua->tointeger(1));
+    if (ms < 0)
+        ms = 0;
+
+    srv.http.response_delay(fb::model::timespan(std::chrono::milliseconds(ms)));
+    lua->pushinteger(srv.http.response_delay().total_milliseconds());
+    return 1;
+}
+
 int builtin::server::builtin_property(lua_State* L)
 {
     auto lua = fb::lua::get(L);

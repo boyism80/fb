@@ -21,70 +21,66 @@ public struct WriteSystemStorageBox : IFlatbufferObject
   public WriteSystemStorageBox __assign(int _i, ByteBuffer _bb) { __init(_i, _bb); return this; }
 
   public uint World { get { int o = __p.__offset(4); return o != 0 ? __p.bb.GetUint(o + __p.bb_pos) : (uint)0; } }
-  public uint User { get { int o = __p.__offset(6); return o != 0 ? __p.bb.GetUint(o + __p.bb_pos) : (uint)0; } }
-  public string Title { get { int o = __p.__offset(8); return o != 0 ? __p.__string(o + __p.bb_pos) : null; } }
+  public string Title { get { int o = __p.__offset(6); return o != 0 ? __p.__string(o + __p.bb_pos) : null; } }
 #if ENABLE_SPAN_T
-  public Span<byte> GetTitleBytes() { return __p.__vector_as_span<byte>(8, 1); }
+  public Span<byte> GetTitleBytes() { return __p.__vector_as_span<byte>(6, 1); }
 #else
-  public ArraySegment<byte>? GetTitleBytes() { return __p.__vector_as_arraysegment(8); }
+  public ArraySegment<byte>? GetTitleBytes() { return __p.__vector_as_arraysegment(6); }
 #endif
-  public byte[] GetTitleArray() { return __p.__vector_as_array<byte>(8); }
-  public string Message { get { int o = __p.__offset(10); return o != 0 ? __p.__string(o + __p.bb_pos) : null; } }
+  public byte[] GetTitleArray() { return __p.__vector_as_array<byte>(6); }
+  public string Message { get { int o = __p.__offset(8); return o != 0 ? __p.__string(o + __p.bb_pos) : null; } }
 #if ENABLE_SPAN_T
-  public Span<byte> GetMessageBytes() { return __p.__vector_as_span<byte>(10, 1); }
+  public Span<byte> GetMessageBytes() { return __p.__vector_as_span<byte>(8, 1); }
 #else
-  public ArraySegment<byte>? GetMessageBytes() { return __p.__vector_as_arraysegment(10); }
+  public ArraySegment<byte>? GetMessageBytes() { return __p.__vector_as_arraysegment(8); }
 #endif
-  public byte[] GetMessageArray() { return __p.__vector_as_array<byte>(10); }
-  public string Attachments { get { int o = __p.__offset(12); return o != 0 ? __p.__string(o + __p.bb_pos) : null; } }
+  public byte[] GetMessageArray() { return __p.__vector_as_array<byte>(8); }
+  public string Attachments { get { int o = __p.__offset(10); return o != 0 ? __p.__string(o + __p.bb_pos) : null; } }
 #if ENABLE_SPAN_T
-  public Span<byte> GetAttachmentsBytes() { return __p.__vector_as_span<byte>(12, 1); }
+  public Span<byte> GetAttachmentsBytes() { return __p.__vector_as_span<byte>(10, 1); }
 #else
-  public ArraySegment<byte>? GetAttachmentsBytes() { return __p.__vector_as_arraysegment(12); }
+  public ArraySegment<byte>? GetAttachmentsBytes() { return __p.__vector_as_arraysegment(10); }
 #endif
-  public byte[] GetAttachmentsArray() { return __p.__vector_as_array<byte>(12); }
-  public string ExpireDate { get { int o = __p.__offset(14); return o != 0 ? __p.__string(o + __p.bb_pos) : null; } }
+  public byte[] GetAttachmentsArray() { return __p.__vector_as_array<byte>(10); }
+  public string ExpireDate { get { int o = __p.__offset(12); return o != 0 ? __p.__string(o + __p.bb_pos) : null; } }
 #if ENABLE_SPAN_T
-  public Span<byte> GetExpireDateBytes() { return __p.__vector_as_span<byte>(14, 1); }
+  public Span<byte> GetExpireDateBytes() { return __p.__vector_as_span<byte>(12, 1); }
 #else
-  public ArraySegment<byte>? GetExpireDateBytes() { return __p.__vector_as_arraysegment(14); }
+  public ArraySegment<byte>? GetExpireDateBytes() { return __p.__vector_as_arraysegment(12); }
 #endif
-  public byte[] GetExpireDateArray() { return __p.__vector_as_array<byte>(14); }
-  public string ExternalRef { get { int o = __p.__offset(16); return o != 0 ? __p.__string(o + __p.bb_pos) : null; } }
+  public byte[] GetExpireDateArray() { return __p.__vector_as_array<byte>(12); }
+  public string ExternalRef { get { int o = __p.__offset(14); return o != 0 ? __p.__string(o + __p.bb_pos) : null; } }
 #if ENABLE_SPAN_T
-  public Span<byte> GetExternalRefBytes() { return __p.__vector_as_span<byte>(16, 1); }
+  public Span<byte> GetExternalRefBytes() { return __p.__vector_as_span<byte>(14, 1); }
 #else
-  public ArraySegment<byte>? GetExternalRefBytes() { return __p.__vector_as_arraysegment(16); }
+  public ArraySegment<byte>? GetExternalRefBytes() { return __p.__vector_as_arraysegment(14); }
 #endif
-  public byte[] GetExternalRefArray() { return __p.__vector_as_array<byte>(16); }
+  public byte[] GetExternalRefArray() { return __p.__vector_as_array<byte>(14); }
 
   public static Offset<fb.protocol._internal.request.raw.WriteSystemStorageBox> CreateWriteSystemStorageBox(FlatBufferBuilder builder,
       uint world = 0,
-      uint user = 0,
       StringOffset titleOffset = default(StringOffset),
       StringOffset messageOffset = default(StringOffset),
       StringOffset attachmentsOffset = default(StringOffset),
       StringOffset expire_dateOffset = default(StringOffset),
       StringOffset external_refOffset = default(StringOffset)) {
-    builder.StartTable(7);
+    builder.StartTable(6);
     WriteSystemStorageBox.AddExternalRef(builder, external_refOffset);
     WriteSystemStorageBox.AddExpireDate(builder, expire_dateOffset);
     WriteSystemStorageBox.AddAttachments(builder, attachmentsOffset);
     WriteSystemStorageBox.AddMessage(builder, messageOffset);
     WriteSystemStorageBox.AddTitle(builder, titleOffset);
-    WriteSystemStorageBox.AddUser(builder, user);
     WriteSystemStorageBox.AddWorld(builder, world);
     return WriteSystemStorageBox.EndWriteSystemStorageBox(builder);
   }
 
-  public static void StartWriteSystemStorageBox(FlatBufferBuilder builder) { builder.StartTable(7); }
+  public static void StartWriteSystemStorageBox(FlatBufferBuilder builder) { builder.StartTable(6); }
   public static void AddWorld(FlatBufferBuilder builder, uint world) { builder.AddUint(0, world, 0); }
-  public static void AddUser(FlatBufferBuilder builder, uint user) { builder.AddUint(1, user, 0); }
-  public static void AddTitle(FlatBufferBuilder builder, StringOffset titleOffset) { builder.AddOffset(2, titleOffset.Value, 0); }
-  public static void AddMessage(FlatBufferBuilder builder, StringOffset messageOffset) { builder.AddOffset(3, messageOffset.Value, 0); }
-  public static void AddAttachments(FlatBufferBuilder builder, StringOffset attachmentsOffset) { builder.AddOffset(4, attachmentsOffset.Value, 0); }
-  public static void AddExpireDate(FlatBufferBuilder builder, StringOffset expireDateOffset) { builder.AddOffset(5, expireDateOffset.Value, 0); }
-  public static void AddExternalRef(FlatBufferBuilder builder, StringOffset externalRefOffset) { builder.AddOffset(6, externalRefOffset.Value, 0); }
+  public static void AddTitle(FlatBufferBuilder builder, StringOffset titleOffset) { builder.AddOffset(1, titleOffset.Value, 0); }
+  public static void AddMessage(FlatBufferBuilder builder, StringOffset messageOffset) { builder.AddOffset(2, messageOffset.Value, 0); }
+  public static void AddAttachments(FlatBufferBuilder builder, StringOffset attachmentsOffset) { builder.AddOffset(3, attachmentsOffset.Value, 0); }
+  public static void AddExpireDate(FlatBufferBuilder builder, StringOffset expireDateOffset) { builder.AddOffset(4, expireDateOffset.Value, 0); }
+  public static void AddExternalRef(FlatBufferBuilder builder, StringOffset externalRefOffset) { builder.AddOffset(5, externalRefOffset.Value, 0); }
   public static Offset<fb.protocol._internal.request.raw.WriteSystemStorageBox> EndWriteSystemStorageBox(FlatBufferBuilder builder) {
     int o = builder.EndTable();
     return new Offset<fb.protocol._internal.request.raw.WriteSystemStorageBox>(o);
@@ -100,12 +96,11 @@ static public class WriteSystemStorageBoxVerify
   {
     return verifier.VerifyTableStart(tablePos)
       && verifier.VerifyField(tablePos, 4 /*World*/, 4 /*uint*/, 4, false)
-      && verifier.VerifyField(tablePos, 6 /*User*/, 4 /*uint*/, 4, false)
-      && verifier.VerifyString(tablePos, 8 /*Title*/, false)
-      && verifier.VerifyString(tablePos, 10 /*Message*/, false)
-      && verifier.VerifyString(tablePos, 12 /*Attachments*/, false)
-      && verifier.VerifyString(tablePos, 14 /*ExpireDate*/, false)
-      && verifier.VerifyString(tablePos, 16 /*ExternalRef*/, false)
+      && verifier.VerifyString(tablePos, 6 /*Title*/, false)
+      && verifier.VerifyString(tablePos, 8 /*Message*/, false)
+      && verifier.VerifyString(tablePos, 10 /*Attachments*/, false)
+      && verifier.VerifyString(tablePos, 12 /*ExpireDate*/, false)
+      && verifier.VerifyString(tablePos, 14 /*ExternalRef*/, false)
       && verifier.VerifyTableEnd(tablePos);
   }
 }

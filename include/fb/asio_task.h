@@ -31,27 +31,25 @@ auto async_await_task(async::task<void> task, CompletionToken&& token)
             auto executor = boost::asio::get_associated_executor(handler);
             auto work     = boost::asio::make_work_guard(executor);
 
-            async::awaitable_then(std::move(task),
-                                  [handler = std::move(handler), executor, work = std::move(work)](
-                                      async::awaitable_result<void> result) mutable {
-                                      std::exception_ptr ep;
-                                      try
-                                      {
-                                          result();
-                                      }
-                                      catch (...)
-                                      {
-                                          ep = std::current_exception();
-                                      }
+            async::awaitable_then(
+                std::move(task),
+                [handler = std::move(handler), executor, work = std::move(work)](
+                    async::awaitable_result<void> result) mutable {
+                    std::exception_ptr ep;
+                    try
+                    {
+                        result();
+                    }
+                    catch (...)
+                    {
+                        ep = std::current_exception();
+                    }
 
-                                      boost::asio::post(executor,
-                                                        [handler = std::move(handler),
-                                                         ep,
-                                                         work = std::move(work)]() mutable {
-                                                            std::move(handler)(ep);
-                                                            work.reset();
-                                                        });
-                                  });
+                    boost::asio::post(executor, [handler = std::move(handler), ep, work = std::move(work)]() mutable {
+                        std::move(handler)(ep);
+                        work.reset();
+                    });
+                });
         },
         std::forward<CompletionToken>(token));
 }
@@ -62,43 +60,41 @@ auto async_await_task(async::task<void> task, CompletionToken&& token)
  * Completion signature: void(std::exception_ptr, T)
  */
 template <typename T, typename CompletionToken>
-    requires (!std::is_void_v<T>)
+requires(!std::is_void_v<T>)
 auto async_await_task(async::task<T> task, CompletionToken&& token)
 {
-    static_assert(std::is_default_constructible_v<T>,
-                  "async_await_task value type must be default-constructible");
+    static_assert(std::is_default_constructible_v<T>, "async_await_task value type must be default-constructible");
 
     return boost::asio::async_initiate<CompletionToken, void(std::exception_ptr, T)>(
         [task = std::move(task)](auto handler) mutable {
             auto executor = boost::asio::get_associated_executor(handler);
             auto work     = boost::asio::make_work_guard(executor);
 
-            async::awaitable_then(std::move(task),
-                                  [handler = std::move(handler), executor, work = std::move(work)](
-                                      async::awaitable_result<T> result) mutable {
-                                      std::exception_ptr ep;
-                                      auto               value = std::optional<T>{};
-                                      try
-                                      {
-                                          value = result();
-                                      }
-                                      catch (...)
-                                      {
-                                          ep = std::current_exception();
-                                      }
+            async::awaitable_then(
+                std::move(task),
+                [handler = std::move(handler), executor, work = std::move(work)](
+                    async::awaitable_result<T> result) mutable {
+                    std::exception_ptr ep;
+                    auto               value = std::optional<T>{};
+                    try
+                    {
+                        value = result();
+                    }
+                    catch (...)
+                    {
+                        ep = std::current_exception();
+                    }
 
-                                      boost::asio::post(executor,
-                                                        [handler = std::move(handler),
-                                                         ep,
-                                                         value = std::move(value),
-                                                         work  = std::move(work)]() mutable {
-                                                            if (ep)
-                                                                std::move(handler)(ep, T{});
-                                                            else
-                                                                std::move(handler)(nullptr, std::move(*value));
-                                                            work.reset();
-                                                        });
-                                  });
+                    boost::asio::post(
+                        executor,
+                        [handler = std::move(handler), ep, value = std::move(value), work = std::move(work)]() mutable {
+                            if (ep)
+                                std::move(handler)(ep, T{});
+                            else
+                                std::move(handler)(nullptr, std::move(*value));
+                            work.reset();
+                        });
+                });
         },
         std::forward<CompletionToken>(token));
 }

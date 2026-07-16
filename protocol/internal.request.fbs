@@ -292,9 +292,32 @@ table DeliverSystemStorage {
   host: uint;
 }
 
-table WriteSystemStorageBox {
+table WriteStorageBox {
   world: uint;
   user: uint;
+  name: string?;
+  title: string;
+  message: string;
+  attachments: string;
+  expire_date: string?;
+  external_ref: string?;
+  host: uint;
+}
+
+table ClaimStorageBox {
+  world: uint;
+  user: uint;
+  id: uint;
+}
+
+table UnclaimStorageBox {
+  world: uint;
+  user: uint;
+  id: uint;
+}
+
+table WriteSystemStorageBox {
+  world: uint;
   title: string;
   message: string;
   attachments: string;

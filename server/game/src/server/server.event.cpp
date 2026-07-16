@@ -179,6 +179,7 @@ void fb::game::server::on_init_amqp(fb::amqp::socket& amqp)
     this->handler.amqp.declare_queue("amq.direct", std::format("fb.{}.group", world));
     this->handler.amqp.declare_queue("amq.direct", std::format("fb.{}.clan", world));
     this->handler.amqp.declare_queue("amq.direct", std::format("fb.{}.mail", world));
+    this->handler.amqp.declare_queue("amq.direct", std::format("fb.{}.storage", world));
     this->handler.amqp.declare_queue("amq.direct", std::format("fb.{}.ban", world));
     this->handler.amqp.declare_queue("amq.direct", std::format("fb.{}.matchmaking", world));
 }

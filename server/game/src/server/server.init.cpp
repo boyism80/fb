@@ -95,6 +95,7 @@ async::task<void> fb::game::server::init_lua()
         lua.build("regex", builtin::server::builtin_regex);
         lua.build("exp_multiplier", builtin::server::builtin_exp_multiplier);
         lua.build("drop_rate_multiplier", builtin::server::builtin_drop_rate_multiplier);
+        lua.build("http_response_delay", builtin::server::builtin_http_response_delay);
         lua.build("property", builtin::server::builtin_property);
 
         fb::model::lua::map_enum(lua);
@@ -239,6 +240,8 @@ void fb::game::server::init_amqp_handlers()
     this->handler.amqp.bind<fb::game::handler::amqp::write_mail>(std::format("fb.{}.mail", world));
     this->handler.amqp.bind<fb::game::handler::amqp::write_mails>(std::format("fb.{}.mail", world));
     this->handler.amqp.bind<fb::game::handler::amqp::deliver_system_mail>(std::format("fb.{}.mail", world));
+    this->handler.amqp.bind<fb::game::handler::amqp::write_storage_box>(std::format("fb.{}.storage", world));
+    this->handler.amqp.bind<fb::game::handler::amqp::deliver_system_storage>(std::format("fb.{}.storage", world));
     this->handler.amqp.bind<fb::game::handler::amqp::ban>(std::format("fb.{}.ban", world));
     this->handler.amqp.bind<fb::game::handler::amqp::set_exp_multiplier>(std::format("fb.{}.global", world));
     this->handler.amqp.bind<fb::game::handler::amqp::set_drop_rate_multiplier>(std::format("fb.{}.global", world));

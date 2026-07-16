@@ -268,7 +268,6 @@ table StorageWriteEntry {
 
 table SystemStorageBox {
     id: uint;
-    user: uint;
     title: string;
     message: string;
     attachments: string;
@@ -286,6 +285,5 @@ table SavePayload {
     matchmaking_skills: [MatchmakingSkill];
     achievements: [Achievement];
     quests: [Quest];
-    storage_boxes: [StorageBox];
     marketplace_pendings: [MarketplacePending];
 }

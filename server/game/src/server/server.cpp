@@ -202,10 +202,8 @@ internal::SavePayload fb::game::server::save_payload(const character& ch) const
             internal::Quest{ch.id, qid, quest->step(), quest->progress(), quest->param(), quest->completed()});
     }
 
-    const auto now                  = this->now();
-    auto       storage_boxes        = ch.storage_box.to_save_dtos(ch.id, now);
-    auto       marketplace_pendings = ch.marketplace.to_save_dtos();
-    auto       matchmaking_skills   = ch.matchmaker.to_protocol();
+    auto marketplace_pendings = ch.marketplace.to_save_dtos();
+    auto matchmaking_skills   = ch.matchmaker.to_protocol();
 
     return internal::SavePayload(ch.to_protocol(),
                                  ch.marriage().to_protocol(),
@@ -214,7 +212,6 @@ internal::SavePayload fb::game::server::save_payload(const character& ch) const
                                  matchmaking_skills,
                                  achievements,
                                  quests,
-                                 storage_boxes,
                                  marketplace_pendings);
 }
 

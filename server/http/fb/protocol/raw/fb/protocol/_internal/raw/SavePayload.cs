@@ -32,10 +32,8 @@ public struct SavePayload : IFlatbufferObject
   public int AchievementsLength { get { int o = __p.__offset(14); return o != 0 ? __p.__vector_len(o) : 0; } }
   public fb.protocol._internal.raw.Quest? Quests(int j) { int o = __p.__offset(16); return o != 0 ? (fb.protocol._internal.raw.Quest?)(new fb.protocol._internal.raw.Quest()).__assign(__p.__indirect(__p.__vector(o) + j * 4), __p.bb) : null; }
   public int QuestsLength { get { int o = __p.__offset(16); return o != 0 ? __p.__vector_len(o) : 0; } }
-  public fb.protocol._internal.raw.StorageBox? StorageBoxes(int j) { int o = __p.__offset(18); return o != 0 ? (fb.protocol._internal.raw.StorageBox?)(new fb.protocol._internal.raw.StorageBox()).__assign(__p.__indirect(__p.__vector(o) + j * 4), __p.bb) : null; }
-  public int StorageBoxesLength { get { int o = __p.__offset(18); return o != 0 ? __p.__vector_len(o) : 0; } }
-  public fb.protocol._internal.raw.MarketplacePending? MarketplacePendings(int j) { int o = __p.__offset(20); return o != 0 ? (fb.protocol._internal.raw.MarketplacePending?)(new fb.protocol._internal.raw.MarketplacePending()).__assign(__p.__indirect(__p.__vector(o) + j * 4), __p.bb) : null; }
-  public int MarketplacePendingsLength { get { int o = __p.__offset(20); return o != 0 ? __p.__vector_len(o) : 0; } }
+  public fb.protocol._internal.raw.MarketplacePending? MarketplacePendings(int j) { int o = __p.__offset(18); return o != 0 ? (fb.protocol._internal.raw.MarketplacePending?)(new fb.protocol._internal.raw.MarketplacePending()).__assign(__p.__indirect(__p.__vector(o) + j * 4), __p.bb) : null; }
+  public int MarketplacePendingsLength { get { int o = __p.__offset(18); return o != 0 ? __p.__vector_len(o) : 0; } }
 
   public static Offset<fb.protocol._internal.raw.SavePayload> CreateSavePayload(FlatBufferBuilder builder,
       Offset<fb.protocol._internal.raw.Character> characterOffset = default(Offset<fb.protocol._internal.raw.Character>),
@@ -45,11 +43,9 @@ public struct SavePayload : IFlatbufferObject
       VectorOffset matchmaking_skillsOffset = default(VectorOffset),
       VectorOffset achievementsOffset = default(VectorOffset),
       VectorOffset questsOffset = default(VectorOffset),
-      VectorOffset storage_boxesOffset = default(VectorOffset),
       VectorOffset marketplace_pendingsOffset = default(VectorOffset)) {
-    builder.StartTable(9);
+    builder.StartTable(8);
     SavePayload.AddMarketplacePendings(builder, marketplace_pendingsOffset);
-    SavePayload.AddStorageBoxes(builder, storage_boxesOffset);
     SavePayload.AddQuests(builder, questsOffset);
     SavePayload.AddAchievements(builder, achievementsOffset);
     SavePayload.AddMatchmakingSkills(builder, matchmaking_skillsOffset);
@@ -60,7 +56,7 @@ public struct SavePayload : IFlatbufferObject
     return SavePayload.EndSavePayload(builder);
   }
 
-  public static void StartSavePayload(FlatBufferBuilder builder) { builder.StartTable(9); }
+  public static void StartSavePayload(FlatBufferBuilder builder) { builder.StartTable(8); }
   public static void AddCharacter(FlatBufferBuilder builder, Offset<fb.protocol._internal.raw.Character> characterOffset) { builder.AddOffset(0, characterOffset.Value, 0); }
   public static void AddMarriage(FlatBufferBuilder builder, Offset<fb.protocol._internal.raw.Marriage> marriageOffset) { builder.AddOffset(1, marriageOffset.Value, 0); }
   public static void AddItems(FlatBufferBuilder builder, VectorOffset itemsOffset) { builder.AddOffset(2, itemsOffset.Value, 0); }
@@ -93,13 +89,7 @@ public struct SavePayload : IFlatbufferObject
   public static VectorOffset CreateQuestsVectorBlock(FlatBufferBuilder builder, ArraySegment<Offset<fb.protocol._internal.raw.Quest>> data) { builder.StartVector(4, data.Count, 4); builder.Add(data); return builder.EndVector(); }
   public static VectorOffset CreateQuestsVectorBlock(FlatBufferBuilder builder, IntPtr dataPtr, int sizeInBytes) { builder.StartVector(1, sizeInBytes, 1); builder.Add<Offset<fb.protocol._internal.raw.Quest>>(dataPtr, sizeInBytes); return builder.EndVector(); }
   public static void StartQuestsVector(FlatBufferBuilder builder, int numElems) { builder.StartVector(4, numElems, 4); }
-  public static void AddStorageBoxes(FlatBufferBuilder builder, VectorOffset storageBoxesOffset) { builder.AddOffset(7, storageBoxesOffset.Value, 0); }
-  public static VectorOffset CreateStorageBoxesVector(FlatBufferBuilder builder, Offset<fb.protocol._internal.raw.StorageBox>[] data) { builder.StartVector(4, data.Length, 4); for (int i = data.Length - 1; i >= 0; i--) builder.AddOffset(data[i].Value); return builder.EndVector(); }
-  public static VectorOffset CreateStorageBoxesVectorBlock(FlatBufferBuilder builder, Offset<fb.protocol._internal.raw.StorageBox>[] data) { builder.StartVector(4, data.Length, 4); builder.Add(data); return builder.EndVector(); }
-  public static VectorOffset CreateStorageBoxesVectorBlock(FlatBufferBuilder builder, ArraySegment<Offset<fb.protocol._internal.raw.StorageBox>> data) { builder.StartVector(4, data.Count, 4); builder.Add(data); return builder.EndVector(); }
-  public static VectorOffset CreateStorageBoxesVectorBlock(FlatBufferBuilder builder, IntPtr dataPtr, int sizeInBytes) { builder.StartVector(1, sizeInBytes, 1); builder.Add<Offset<fb.protocol._internal.raw.StorageBox>>(dataPtr, sizeInBytes); return builder.EndVector(); }
-  public static void StartStorageBoxesVector(FlatBufferBuilder builder, int numElems) { builder.StartVector(4, numElems, 4); }
-  public static void AddMarketplacePendings(FlatBufferBuilder builder, VectorOffset marketplacePendingsOffset) { builder.AddOffset(8, marketplacePendingsOffset.Value, 0); }
+  public static void AddMarketplacePendings(FlatBufferBuilder builder, VectorOffset marketplacePendingsOffset) { builder.AddOffset(7, marketplacePendingsOffset.Value, 0); }
   public static VectorOffset CreateMarketplacePendingsVector(FlatBufferBuilder builder, Offset<fb.protocol._internal.raw.MarketplacePending>[] data) { builder.StartVector(4, data.Length, 4); for (int i = data.Length - 1; i >= 0; i--) builder.AddOffset(data[i].Value); return builder.EndVector(); }
   public static VectorOffset CreateMarketplacePendingsVectorBlock(FlatBufferBuilder builder, Offset<fb.protocol._internal.raw.MarketplacePending>[] data) { builder.StartVector(4, data.Length, 4); builder.Add(data); return builder.EndVector(); }
   public static VectorOffset CreateMarketplacePendingsVectorBlock(FlatBufferBuilder builder, ArraySegment<Offset<fb.protocol._internal.raw.MarketplacePending>> data) { builder.StartVector(4, data.Count, 4); builder.Add(data); return builder.EndVector(); }
@@ -126,8 +116,7 @@ static public class SavePayloadVerify
       && verifier.VerifyVectorOfTables(tablePos, 12 /*MatchmakingSkills*/, fb.protocol._internal.raw.MatchmakingSkillVerify.Verify, false)
       && verifier.VerifyVectorOfTables(tablePos, 14 /*Achievements*/, fb.protocol._internal.raw.AchievementVerify.Verify, false)
       && verifier.VerifyVectorOfTables(tablePos, 16 /*Quests*/, fb.protocol._internal.raw.QuestVerify.Verify, false)
-      && verifier.VerifyVectorOfTables(tablePos, 18 /*StorageBoxes*/, fb.protocol._internal.raw.StorageBoxVerify.Verify, false)
-      && verifier.VerifyVectorOfTables(tablePos, 20 /*MarketplacePendings*/, fb.protocol._internal.raw.MarketplacePendingVerify.Verify, false)
+      && verifier.VerifyVectorOfTables(tablePos, 18 /*MarketplacePendings*/, fb.protocol._internal.raw.MarketplacePendingVerify.Verify, false)
       && verifier.VerifyTableEnd(tablePos);
   }
 }

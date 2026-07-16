@@ -54,7 +54,9 @@
 #include <fb/game/handler/amqp/broadcast_clan.h>
 #include <fb/game/handler/amqp/write_mail.h>
 #include <fb/game/handler/amqp/write_mails.h>
+#include <fb/game/handler/amqp/write_storage_box.h>
 #include <fb/game/handler/amqp/deliver_system_mail.h>
+#include <fb/game/handler/amqp/deliver_system_storage.h>
 #include <fb/game/handler/amqp/ban.h>
 #include <fb/game/handler/amqp/broadcast_save.h>
 #include <fb/game/handler/amqp/set_exp_multiplier.h>

@@ -48,6 +48,7 @@ public:
     void                                            apply_delivered(const std::vector<entry>& delivered);
     bool                                            contains_system_box(uint32_t system_storage_box_id) const;
     [[nodiscard]] async::task<bool>                 receive_reward(uint32_t entry_id);
+    void                                            set_received(uint32_t entry_id, bool received);
     const entry_map&                                entries() const;
     uint32_t                                        next_sequence() const;
     void                                            set_sequence(uint32_t value);

@@ -3,13 +3,19 @@ local enum = require('lib.enum')
 local storage = require('lib.storage')
 local marketplace = require('lib.marketplace')
 local matchmaking = require('lib.matchmaking')
+local grant_storage = require('lib.grant_storage')
 local sky_maze = require('lib.sky_maze')
 
 function ON_F1_EVENT(me)
     local npc = name2npc('낙랑')
 
 ::F1_MENU::
-    local selected = me:list(npc, '무엇을 도와드릴까요?', {'통합보관함', '거래소', '매치메이킹'})
+    local menu = {'통합보관함', '거래소', '매치메이킹'}
+    if me:role() >= ROLE.ADMIN then
+        table.insert(menu, '아이템 지급')
+    end
+
+    local selected = me:list(npc, '무엇을 도와드릴까요?', menu)
     if selected == nil then
         return
     end
@@ -24,6 +30,10 @@ function ON_F1_EVENT(me)
         end
     elseif selected == 2 then
         if matchmaking.handle(me, npc) == false then
+            return
+        end
+    elseif selected == 3 and me:role() >= ROLE.ADMIN then
+        if grant_storage.handle(me, npc) == false then
             return
         end
     end

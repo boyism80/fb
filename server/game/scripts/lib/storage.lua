@@ -99,7 +99,7 @@ function M.handle(me, npc)
 ::ENTRY_DETAIL::
     local detail_header = current_entry.title ~= nil and current_entry.title ~= '' and current_entry.title or '보관함 보상'
     local detail_message = build_detail_message(current_entry)
-    
+
     if not has_attachments(current_entry) then
         local detail_button = me:dialog(npc, detail_header .. '\n' .. detail_message, true, true)
         if detail_button == DIALOG_RESULT.QUIT then
@@ -110,7 +110,7 @@ function M.handle(me, npc)
         end
         goto STORAGE_LIST
     end
-    
+
     local detail_button = me:dialog(npc, detail_header .. '\n' .. detail_message, true, true)
     if detail_button == DIALOG_RESULT.QUIT then
         return false
@@ -121,11 +121,11 @@ function M.handle(me, npc)
     if detail_button ~= DIALOG_RESULT.NEXT then
         goto STORAGE_LIST
     end
-    
+
     if current_entry.received then
         goto STORAGE_LIST
     end
-    
+
 ::RECEIVE_CONFIRM::
     local receive_selected, receive_button = me:list(npc, '보상을 수령하시겠습니까?', {'예', '아니오'}, true)
     if receive_button == DIALOG_RESULT.QUIT then
@@ -137,13 +137,16 @@ function M.handle(me, npc)
     if receive_selected == nil then
         goto ENTRY_DETAIL
     end
-    
+
     if receive_selected ~= 0 then
         goto STORAGE_LIST
     end
-    
+
+    me:message(string.format('[storage] receive begin id=%d', current_entry.id), MESSAGE_TYPE.STATE)
     local success = me:receive_storage_reward(current_entry.id)
+    me:message(string.format('[storage] receive end id=%d success=%s', current_entry.id, tostring(success)), MESSAGE_TYPE.STATE)
     if success then
+        me:message('[storage] show success dialog', MESSAGE_TYPE.STATE)
         local button = me:dialog(npc, '보상이 지급되었습니다.', true, true)
         if button == DIALOG_RESULT.QUIT then
             return false
@@ -152,6 +155,7 @@ function M.handle(me, npc)
             goto STORAGE_LIST
         end
     else
+        me:message('[storage] show fail dialog', MESSAGE_TYPE.STATE)
         local button = me:dialog(npc, '수령 조건이 맞지 않습니다. 확인 후 다시 시도해주세요.', true, true)
         if button == DIALOG_RESULT.QUIT then
             return false

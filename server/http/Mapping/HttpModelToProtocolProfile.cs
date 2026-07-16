@@ -133,7 +133,6 @@ namespace Http.Mapping
 
             CreateMap<Http.Model.SystemStorageBox, Protocol.SystemStorageBox>()
                 .ForMember(x => x.Attachments, x => x.Ignore())
-                .ForMember(x => x.User, x => x.MapFrom(u => u.User ?? 0))
                 .ForMember(x => x.Title, x => x.MapFrom(u => u.Title ?? string.Empty))
                 .ForMember(x => x.ExpiredDate, x => x.MapFrom(u => u.ExpiredDate.HasValue ? u.ExpiredDate.Value.ToString("yyyy-MM-dd HH:mm:ss") : null))
                 .ForMember(x => x.CreatedDate, x => x.MapFrom(u => u.CreatedDate.ToString("yyyy-MM-dd HH:mm:ss")))

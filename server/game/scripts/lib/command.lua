@@ -1912,6 +1912,26 @@ M.functions = {
                 end
                 return true
             end,
+        },
+
+        ['HTTP지연'] = {
+            ['privilege'] = ROLE.ADMIN,
+            ['usage'] = '[밀리초] - HTTP 응답 지연 조회/설정 (테스트용)',
+            ['command'] = function (me, args)
+                if #args == 0 then
+                    local delay = http_response_delay()
+                    me:message(string.format("현재 HTTP 응답 지연: %dms", delay), MESSAGE_TYPE.BROWN)
+                else
+                    local value = tonumber(table.unpack(args))
+                    if not value or value < 0 then
+                        me:message("지연 시간은 0 이상의 숫자여야 합니다.")
+                        return true
+                    end
+                    http_response_delay(value)
+                    me:message(string.format("HTTP 응답 지연을 %dms로 설정했습니다. (이 서버에만 적용됩니다)", value), MESSAGE_TYPE.BROWN)
+                end
+                return true
+            end,
         }
     }
 

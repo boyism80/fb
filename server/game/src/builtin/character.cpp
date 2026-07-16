@@ -91,6 +91,8 @@ IMPLEMENT_LUA_EXTENSION(character, "fb.game.character")
 {"remove_quest",                 builtin::character::builtin_remove_quest},
 {"reward",                       builtin::character::builtin_reward},
 {"send_system_mail",             builtin::character::builtin_send_system_mail},
+{"send_storage_box",             builtin::character::builtin_send_storage_box},
+{"send_system_storage_box",      builtin::character::builtin_send_system_storage_box},
 {"storage_entries",              builtin::character::builtin_storage_entries},
 {"receive_storage_reward",       builtin::character::builtin_receive_storage_reward},
 {"marketplace_list",             builtin::character::builtin_marketplace_list},
@@ -4703,6 +4705,233 @@ int builtin::character::builtin_send_system_mail(lua_State* L)
     return builder.run();
 }
 
+int builtin::character::builtin_send_storage_box(lua_State* L)
+{
+    auto lua = fb::lua::get(L);
+    if (lua == nullptr)
+        return 0;
+
+    auto argc = lua->argc();
+    auto ch   = lua->touserdata<fb::game::character>(1);
+    if (ch == nullptr)
+        return 0;
+
+    auto user_name = lua->tostring(2);
+    if (user_name.empty())
+    {
+        lua->pushboolean(false);
+        return 1;
+    }
+
+    auto title = lua->tostring(3);
+    if (title.empty())
+    {
+        lua->pushboolean(false);
+        return 1;
+    }
+
+    auto message = lua->tostring(4);
+    if (message.empty())
+    {
+        lua->pushboolean(false);
+        return 1;
+    }
+
+    auto attachments = std::vector<fb::model::dsl>{};
+    if (lua->is_string(5))
+    {
+        auto reward_id = lua->tostring(5);
+        if (table::reward.contains(reward_id))
+        {
+            const auto& src = table::reward[reward_id].dsl;
+            attachments.reserve(src.size());
+            for (const auto& item : src)
+                attachments.push_back(item);
+        }
+    }
+    else if (lua->is_table(5))
+    {
+        lua->pushstring("item");
+        lua->rawget(5);
+        if (lua->is_table(-1))
+        {
+            lua->pushnil();
+            while (lua->next(-2))
+            {
+                if (lua->is_string(-2) && lua->is_number(-1))
+                {
+                    auto name  = lua->tostring(-2);
+                    auto count = static_cast<uint32_t>(lua->tointeger(-1));
+                    auto model = table::item.name2item(name);
+                    if (model != nullptr && count > 0)
+                    {
+                        auto item_dsl = fb::model::dsl::item(model->id, count, std::nullopt, std::nullopt, 100.0);
+                        attachments.push_back(item_dsl.to_dsl());
+                    }
+                }
+                lua->pop(1);
+            }
+        }
+        lua->pop(1);
+
+        lua->pushstring("money");
+        lua->rawget(5);
+        if (lua->is_number(-1))
+        {
+            auto money = static_cast<uint32_t>(lua->tointeger(-1));
+            if (money > 0)
+                attachments.push_back(fb::model::dsl::money(money).to_dsl());
+        }
+        lua->pop(1);
+
+        lua->pushstring("exp");
+        lua->rawget(5);
+        if (lua->is_number(-1))
+        {
+            auto exp = static_cast<uint32_t>(lua->tointeger(-1));
+            if (exp > 0)
+                attachments.push_back(fb::model::dsl::exp(exp).to_dsl());
+        }
+        lua->pop(1);
+    }
+
+    if (attachments.empty())
+    {
+        lua->pushboolean(false);
+        return 1;
+    }
+
+    auto expire_date = std::optional<std::string>{std::nullopt};
+    if (argc >= 6 && lua->is_nil(6) == false && lua->is_string(6))
+    {
+        auto value = lua->tostring(6);
+        if (value.empty() == false)
+            expire_date = value;
+    }
+
+    auto success  = std::make_shared<bool>(false);
+    auto builder  = lua->new_co_builder();
+    builder.yield = [=]() -> async::task<void> {
+        auto& server = static_cast<fb::game::server&>(lua->executor);
+        *success     = co_await server.system_storage.create(user_name, title, message, attachments, expire_date);
+    };
+    builder.resume = [=]() -> async::task<int> {
+        lua->pushboolean(*success);
+        co_return 1;
+    };
+    return builder.run();
+}
+
+int builtin::character::builtin_send_system_storage_box(lua_State* L)
+{
+    auto lua = fb::lua::get(L);
+    if (lua == nullptr)
+        return 0;
+
+    auto argc = lua->argc();
+    auto ch   = lua->touserdata<fb::game::character>(1);
+    if (ch == nullptr)
+        return 0;
+
+    auto title = lua->tostring(2);
+    if (title.empty())
+    {
+        lua->pushboolean(false);
+        return 1;
+    }
+
+    auto message = lua->tostring(3);
+    if (message.empty())
+    {
+        lua->pushboolean(false);
+        return 1;
+    }
+
+    auto attachments = std::vector<fb::model::dsl>{};
+    if (lua->is_string(4))
+    {
+        auto reward_id = lua->tostring(4);
+        if (table::reward.contains(reward_id))
+        {
+            const auto& src = table::reward[reward_id].dsl;
+            attachments.reserve(src.size());
+            for (const auto& item : src)
+                attachments.push_back(item);
+        }
+    }
+    else if (lua->is_table(4))
+    {
+        lua->pushstring("item");
+        lua->rawget(4);
+        if (lua->is_table(-1))
+        {
+            lua->pushnil();
+            while (lua->next(-2))
+            {
+                if (lua->is_string(-2) && lua->is_number(-1))
+                {
+                    auto name  = lua->tostring(-2);
+                    auto count = static_cast<uint32_t>(lua->tointeger(-1));
+                    auto model = table::item.name2item(name);
+                    if (model != nullptr && count > 0)
+                    {
+                        auto item_dsl = fb::model::dsl::item(model->id, count, std::nullopt, std::nullopt, 100.0);
+                        attachments.push_back(item_dsl.to_dsl());
+                    }
+                }
+                lua->pop(1);
+            }
+        }
+        lua->pop(1);
+
+        lua->pushstring("money");
+        lua->rawget(4);
+        if (lua->is_number(-1))
+        {
+            auto money = static_cast<uint32_t>(lua->tointeger(-1));
+            if (money > 0)
+                attachments.push_back(fb::model::dsl::money(money).to_dsl());
+        }
+        lua->pop(1);
+
+        lua->pushstring("exp");
+        lua->rawget(4);
+        if (lua->is_number(-1))
+        {
+            auto exp = static_cast<uint32_t>(lua->tointeger(-1));
+            if (exp > 0)
+                attachments.push_back(fb::model::dsl::exp(exp).to_dsl());
+        }
+        lua->pop(1);
+    }
+
+    if (attachments.empty())
+    {
+        lua->pushboolean(false);
+        return 1;
+    }
+
+    auto expire_date = std::optional<std::string>{std::nullopt};
+    if (argc >= 5 && lua->is_nil(5) == false && lua->is_string(5))
+    {
+        auto value = lua->tostring(5);
+        if (value.empty() == false)
+            expire_date = value;
+    }
+
+    auto success  = std::make_shared<bool>(false);
+    auto builder  = lua->new_co_builder();
+    builder.yield = [=]() -> async::task<void> {
+        auto& server = static_cast<fb::game::server&>(lua->executor);
+        *success     = co_await server.system_storage.create_system(title, message, attachments, expire_date);
+    };
+    builder.resume = [=]() -> async::task<int> {
+        lua->pushboolean(*success);
+        co_return 1;
+    };
+    return builder.run();
+}
+
 int builtin::character::builtin_storage_entries(lua_State* L)
 {
     auto lua = fb::lua::get(L);
@@ -4811,7 +5040,23 @@ int builtin::character::builtin_receive_storage_reward(lua_State* L)
     auto builder  = lua->new_co_builder();
     builder.weak  = weak;
     builder.yield = [=]() -> async::task<void> {
-        *success = co_await ch->storage_box.receive_reward(entry_id);
+        fb::logger::debug("builtin_receive_storage_reward yield user={} entry={}", ch->id, entry_id);
+        try
+        {
+            *success = co_await ch->storage_box.receive_reward(entry_id);
+            fb::logger::debug("builtin_receive_storage_reward done user={} entry={} success={}",
+                              ch->id,
+                              entry_id,
+                              *success);
+        }
+        catch (const std::exception& e)
+        {
+            fb::logger::warn("builtin_receive_storage_reward exception user={} entry={}: {}",
+                             ch->id,
+                             entry_id,
+                             e.what());
+            *success = false;
+        }
         co_return;
     };
     builder.resume = [=]() -> async::task<int> {
