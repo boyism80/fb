@@ -161,6 +161,12 @@ async::task<void> life::settle_deaths(mob_vector dead)
     }
 }
 
+async::task<void> life::damage_to(const damage_list& targets)
+{
+    co_await this->damage_to(targets, damage_opts{});
+    co_return;
+}
+
 async::task<void> life::damage_to(const damage_list& targets, const damage_opts& opts)
 {
     this->assert_thread();

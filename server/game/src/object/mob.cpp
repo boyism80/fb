@@ -417,6 +417,12 @@ void mob::kill(DESTROY_TYPE destroy_type)
     life::kill(destroy_type);
 }
 
+async::task<void> mob::damage_to(const damage_list& targets)
+{
+    co_await this->damage_to(targets, damage_opts{});
+    co_return;
+}
+
 async::task<void> mob::damage_to(const damage_list& targets, const damage_opts& opts)
 {
     this->assert_thread();

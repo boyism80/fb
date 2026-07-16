@@ -1607,6 +1607,12 @@ void character::award_exp(const fb::game::mob& mob)
     }
 }
 
+async::task<void> character::damage_to(const damage_list& targets)
+{
+    co_await this->damage_to(targets, damage_opts{});
+    co_return;
+}
+
 async::task<void> character::damage_to(const damage_list& targets, const damage_opts& opts)
 {
     this->assert_thread();

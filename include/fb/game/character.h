@@ -204,7 +204,8 @@ public:
     void                                     update(UPDATE_STATE_LEVEL value = UPDATE_STATE_LEVEL::EXP_MONEY | UPDATE_STATE_LEVEL::CROWD_CONTROL) override final;
     void                                     kill(DESTROY_TYPE destroy_type = DESTROY_TYPE::DEFAULT) override final;
     void                                     notify_death(std::shared_ptr<fb::game::object> killer = nullptr);
-    async::task<void>                        damage_to(const damage_list& targets, const damage_opts& opts = {}) override final;
+    async::task<void>                        damage_to(const damage_list& targets) override final;
+    async::task<void>                        damage_to(const damage_list& targets, const damage_opts& opts) override final;
     async::task<void>                        settle_kills(mob_vector dead);
     void                                     award_exp(const fb::game::mob& mob);
     void                                     update_id() override final;

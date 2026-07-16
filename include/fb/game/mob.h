@@ -112,7 +112,8 @@ public:
     virtual bool                    available() const;
     uint32_t                        normal_attack_damage(MOB_SIZE size) const override final;
     void                            kill(DESTROY_TYPE destroy_type = DESTROY_TYPE::DEFAULT) override final;
-    async::task<void>               damage_to(const damage_list& targets, const damage_opts& opts = {}) override final;
+    async::task<void>               damage_to(const damage_list& targets) override final;
+    async::task<void>               damage_to(const damage_list& targets, const damage_opts& opts) override final;
     async::task<void>               drop_items();
     void                            assert_thread() const override final;
     bool                            move(DIRECTION direction) override final;
