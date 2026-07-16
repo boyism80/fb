@@ -180,8 +180,8 @@ int bot_request_dialog_impl(lua_State* L)
     if (lua->argc() >= 4 && lua->is_nil(4) == false)
         timeout = fb::model::timespan(std::chrono::milliseconds(static_cast<int>(lua->tointeger(4))));
 
-    auto bot_ptr  = bot;
-    auto result   = std::make_shared<std::optional<ResponseType>>();
+    auto bot_ptr   = bot;
+    auto result    = std::make_shared<std::optional<ResponseType>>();
     auto timed_out = std::make_shared<bool>(false);
 
     auto builder  = lua->new_co_builder();
