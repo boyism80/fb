@@ -557,6 +557,7 @@ public:
     void                resume(int argc, int* n = nullptr);
     int                 yield(int retc);
     void                release();
+    void                reject(std::string_view message);
     void                parent(context* parent);
     context*            parent() const;
     void                options(call_options opts);

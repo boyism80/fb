@@ -41,7 +41,7 @@ local function marriage_npc(me, npc)
         end
 
         if found == nil then
-            me:dialog(npc, name .. '님은 현재 접속 중이 아닙니다.')
+            me:dialog(npc, name .. '님은 근처에 없습니다.')
             return
         end
 

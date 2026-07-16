@@ -543,6 +543,17 @@ void context::release()
     }
 }
 
+void context::reject(std::string_view message)
+{
+    if (this->_promise == nullptr)
+        return;
+
+    auto promise    = this->_promise;
+    this->_promise  = nullptr;
+    auto error_text = message.empty() ? std::string("lua call rejected") : std::string(message);
+    promise->set_exception(std::make_exception_ptr(std::runtime_error(error_text)));
+}
+
 async::task<std::optional<int>>
 fb::lua::context::co_builder::run_pipeline(fb::async_executor&                                 executor,
                                            std::optional<std::weak_ptr<fb::thread_switchable>> weak,
@@ -555,6 +566,9 @@ fb::lua::context::co_builder::run_pipeline(fb::async_executor&                  
             fb::logger::fatal("lua co_builder {} error: {}", phase, message);
         else
             fb::logger::fatal("lua co_builder {} error", phase);
+
+        auto error_text = message != nullptr ? std::string(message) : std::format("lua co_builder {} error", phase);
+        lua_ptr->reject(error_text);
         lua_ptr->release();
     };
 
@@ -668,6 +682,8 @@ int fb::lua::context::co_builder::run()
             }
             catch (const std::exception& e)
             {
+                // reject() was already invoked by abort_pipeline before release();
+                // do not touch lua_ptr here — the context may already be revoked.
                 fb::logger::fatal("lua co_builder async completion error: {}", e.what());
             }
             catch (...)

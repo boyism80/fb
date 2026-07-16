@@ -195,6 +195,7 @@ IMPLEMENT_LUA_EXTENSION(game_bot, "fb.bot")
     {"has_buff",                 builtin::game_bot::builtin_has_buff},
     {"request",                  builtin::game_bot::builtin_request},
     {"request_on",               builtin::game_bot::builtin_request_on},
+    {"send",                     builtin::game_bot::builtin_send},
     {"chat",                     builtin::game_bot::builtin_chat},
     {"move",                     builtin::game_bot::builtin_move},
     {"direction",                builtin::game_bot::builtin_direction},
@@ -987,6 +988,32 @@ int builtin::game_bot::builtin_request_on(lua_State* L)
         }
         response_entry->marshal_lua(static_cast<lua_State*>(*lua), **result);
         co_return 1;
+    };
+    return builder.run();
+}
+
+int builtin::game_bot::builtin_send(lua_State* L)
+{
+    auto lua = fb::lua::get(L);
+    if (lua == nullptr)
+        return 0;
+
+    auto bot = lua->touserdata<fb::bot::game_bot>(1);
+    if (bot == nullptr)
+        return 0;
+
+    auto request = lua_protocol::to_request(L, 2);
+    auto bot_ptr = bot;
+
+    auto builder  = lua->new_co_builder();
+    builder.yield = [bot_ptr, request]() -> async::task<void> {
+        if (bot_ptr == nullptr)
+            co_return;
+
+        std::ignore = co_await bot_ptr->send(*request);
+    };
+    builder.resume = []() -> async::task<int> {
+        co_return 0;
     };
     return builder.run();
 }

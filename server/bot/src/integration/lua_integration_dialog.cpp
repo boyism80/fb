@@ -180,12 +180,11 @@ int bot_request_dialog_impl(lua_State* L)
     if (lua->argc() >= 4 && lua->is_nil(4) == false)
         timeout = fb::model::timespan(std::chrono::milliseconds(static_cast<int>(lua->tointeger(4))));
 
-    auto bot_ptr   = bot;
-    auto result    = std::make_shared<std::optional<ResponseType>>();
-    auto timed_out = std::make_shared<bool>(false);
+    auto bot_ptr = bot;
+    auto result  = std::make_shared<std::optional<ResponseType>>();
 
     auto builder  = lua->new_co_builder();
-    builder.yield = [lua, bot_ptr, request, validator_ref, timeout, result, timed_out]() -> async::task<void> {
+    builder.yield = [lua, bot_ptr, request, validator_ref, timeout, result]() -> async::task<void> {
         auto* L_state = static_cast<lua_State*>(*lua);
 
         auto cleanup = [L_state, validator_ref]() {
@@ -222,14 +221,18 @@ int bot_request_dialog_impl(lua_State* L)
         {
             result->emplace(co_await bot_ptr->request<ResponseType>(*request, condition, timeout));
         }
-        catch (const std::exception&)
+        catch (const std::exception& e)
         {
-            *timed_out = true;
+            cleanup();
+            auto* what = e.what();
+            fb::logger::fatal("request_dialog failed: {}", (what != nullptr && what[0] != '\0') ? what : "unknown");
+            throw;
         }
+
         cleanup();
     };
-    builder.resume = [lua, result, timed_out]() -> async::task<int> {
-        if (*timed_out || result->has_value() == false)
+    builder.resume = [lua, result]() -> async::task<int> {
+        if (result->has_value() == false)
         {
             lua->pushnil();
             co_return 1;

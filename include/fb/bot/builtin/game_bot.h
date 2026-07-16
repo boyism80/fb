@@ -38,6 +38,7 @@ struct game_bot
     static int builtin_has_buff(lua_State* L);
     static int builtin_request(lua_State* L);
     static int builtin_request_on(lua_State* L);
+    static int builtin_send(lua_State* L);
     static int builtin_chat(lua_State* L);
     static int builtin_move(lua_State* L);
     static int builtin_direction(lua_State* L);
