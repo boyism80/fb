@@ -6,7 +6,7 @@ function NPC_177(me, npc)
     local btn
 
     ::NPC_177_0001::
-    btn = me:dialog(npc, '문신이 들어간 장신구와 재료를 가지고 오면 강력한 힘을 가진 주술을 장신구에 걸어주겠네.\n\n재료는 향료, 기름, 문신이 들어간 장신구일세.', false, true)
+    btn = me:dialog(npc, '문신이 들어간 장신구와 재료를 가지고 오면 강력한 힘을 가진 주술을 장신구에 걸어주겠네.\n\n재료는 향료, 기름, 문신이 들어간 장신구일세.', { prev = false, next = true })
     if btn == DIALOG_RESULT.QUIT then
         return
     end
@@ -18,7 +18,7 @@ function NPC_177(me, npc)
         '문신선류에 주술을 걸어주십시오.',
         '문신방패에 주술을 걸어주십시오.',
         '문신투구에 주술을 걸어주십시오.',
-    }, true)
+    }, { prev = true })
     if button == DIALOG_RESULT.QUIT then
         return
     end
@@ -34,7 +34,7 @@ function NPC_177(me, npc)
     local item_result = '주술' .. suffix
 
     ::NPC_177_0003::
-    btn = me:dialog(npc, '조상신이시여. 조상의 넋을 기리는 문신을 새긴 이 물건에 당신의 힘을 실어주소서...', false, true)
+    btn = me:dialog(npc, '조상신이시여. 조상의 넋을 기리는 문신을 새긴 이 물건에 당신의 힘을 실어주소서...', { prev = false, next = true })
     if btn == DIALOG_RESULT.QUIT then
         return
     end
@@ -45,12 +45,12 @@ function NPC_177(me, npc)
         { ['item'] = { [item_result] = 1 } }
     )
     if code == enum.EXCHANGE_RESULT.LACK_COST then
-        me:dialog(npc, '재료가 부족한 것 같은데?', false, false)
+        me:dialog(npc, '재료가 부족한 것 같은데?', { prev = false, next = false })
         return
     end
     if code == enum.EXCHANGE_RESULT.LACK_CAPACITY then
-        me:dialog(npc, '소지품이 가득 차서 ' .. name_with(item_result, '을', '를') .. ' 줄 수 없네.', false, true)
+        me:dialog(npc, '소지품이 가득 차서 ' .. name_with(item_result, '을', '를') .. ' 줄 수 없네.', { prev = false, next = true })
         return
     end
-    me:dialog(npc, item_tainted .. '에 주술을 거는 데 성공했네... 부디 뜻깊은 일에 사용하게나. 과거 이 섬을 폭염왕의 마수에서 잠시나마 구해 줬던 영웅처럼 말일세...', true, true)
+    me:dialog(npc, item_tainted .. '에 주술을 거는 데 성공했네... 부디 뜻깊은 일에 사용하게나. 과거 이 섬을 폭염왕의 마수에서 잠시나마 구해 줬던 영웅처럼 말일세...', { prev = true, next = true })
 end

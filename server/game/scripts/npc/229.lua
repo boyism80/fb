@@ -11,7 +11,7 @@ local WARP_X_MIN, WARP_X_MAX = 13, 16
 local WARP_Y_MIN, WARP_Y_MAX = 35, 38
 
 function NPC_229(me, npc)
-    local btn = me:dialog(npc, '파괴왕의방으로 가기 위해선 해골왕의뼈, 유성지의보패, 하선녀의실타래, 불의수정이 필요하다네.', false, true)
+    local btn = me:dialog(npc, '파괴왕의방으로 가기 위해선 해골왕의뼈, 유성지의보패, 하선녀의실타래, 불의수정이 필요하다네.', { prev = false, next = true })
     if btn == DIALOG_RESULT.QUIT then
         return
     end
@@ -20,16 +20,16 @@ function NPC_229(me, npc)
         required_table[name] = 1
     end
     if not me:has_items(required_table) then
-        me:dialog(npc, '자네는 재료가 부족하군..', false, false)
+        me:dialog(npc, '자네는 재료가 부족하군..', { prev = false, next = false })
         return
     end
-    btn = me:dialog(npc, '재료를 모두 가지고 있군. 그럼 파괴왕의방으로 보내주겠네.', false, true)
+    btn = me:dialog(npc, '재료를 모두 가지고 있군. 그럼 파괴왕의방으로 보내주겠네.', { prev = false, next = true })
     if btn == DIALOG_RESULT.QUIT then
         return
     end
     local map = name2map(WARP_MAP)
     if map == nil then
-        me:dialog(npc, '존재하지 않는 맵입니다.', false, false)
+        me:dialog(npc, '존재하지 않는 맵입니다.', { prev = false, next = false })
         return
     end
     local x = math.random(WARP_X_MIN, WARP_X_MAX)

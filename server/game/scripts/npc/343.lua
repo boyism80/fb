@@ -14,7 +14,7 @@ function NPC_343(me, npc)
     end
 
     if sel == 2 then
-        local button = me:dialog(npc, "잘 생각하셨어요. 준비가 되거든 다시 오세요.", false, true)
+        local button = me:dialog(npc, "잘 생각하셨어요. 준비가 되거든 다시 오세요.", { prev = false, next = true })
         if button == DIALOG_RESULT.QUIT then
             return
         end

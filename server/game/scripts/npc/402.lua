@@ -1,7 +1,7 @@
 -- npc: 만리장성잡화상09
 function NPC_402(me, npc)
 ::NPC_402_000::
-    local sel, btn = me:list(npc, "나에게 용무라도 있는가?", {"비약이란게 무엇입니까?", "그냥.. 시간이 남아서.."}, false)
+    local sel, btn = me:list(npc, "나에게 용무라도 있는가?", {"비약이란게 무엇입니까?", "그냥.. 시간이 남아서.."}, { prev = false })
     if btn == DIALOG_RESULT.QUIT then
         return
     end
@@ -10,7 +10,7 @@ function NPC_402(me, npc)
     end
 
     if sel == 1 then
-        local button = me:dialog(npc, "비약은.. 말 그대로 비밀의 약품이지. 소문에는 천지인의 패들을 서로 합치는데 비약이 필요하다고 하더군.", false, true)
+        local button = me:dialog(npc, "비약은.. 말 그대로 비밀의 약품이지. 소문에는 천지인의 패들을 서로 합치는데 비약이 필요하다고 하더군.", { prev = false, next = true })
         if button == DIALOG_RESULT.QUIT then
             return
         end
@@ -23,7 +23,7 @@ function NPC_402(me, npc)
             "요즘 우리나라에 여러 괴물들이 여기저기서 나타나서 말이지.. 황제께서 직접 현상금을 거신 것 같더라고.",
         }
         local msg = messages[math.random(1, #messages)]
-        local button = me:dialog(npc, msg, false, false)
+        local button = me:dialog(npc, msg, { prev = false, next = false })
         if button == DIALOG_RESULT.QUIT then
             return
         end

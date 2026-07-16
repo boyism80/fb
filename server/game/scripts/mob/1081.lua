@@ -15,7 +15,7 @@ function ON_MOB_KILL_1081(me, mobs)
         return
     end
 
-    local sel, list_btn = me:list(mob, "으...분하다...네놈에게 지다니...", { "이놈, 나의 포박을 받아라", "용왕님이 너를 보자하신다.", "따라오너라" }, false)
+    local sel, list_btn = me:list(mob, "으...분하다...네놈에게 지다니...", { "이놈, 나의 포박을 받아라", "용왕님이 너를 보자하신다.", "따라오너라" }, { prev = false })
     if list_btn == DIALOG_RESULT.QUIT or sel == nil or sel < 1 or sel > 3 then
         return
     end

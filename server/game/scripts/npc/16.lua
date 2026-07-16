@@ -28,7 +28,7 @@ local function craft_amber_star(me, ch)
     for i = 1, #AMBER_STAR do
         options[i] = AMBER_STAR[i].label
     end
-    local sel, btn = me:list(ch, '어떤 색깔의 호박별을 만드시겠어요?', options, true)
+    local sel, btn = me:list(ch, '어떤 색깔의 호박별을 만드시겠어요?', options, { prev = true })
     if btn == DIALOG_RESULT.QUIT then
         return DIALOG_RESULT.QUIT
     end
@@ -47,12 +47,12 @@ local function craft_amber_star(me, ch)
         { ['item'] = { [star] = 1 } }
     )
     if code == enum.EXCHANGE_RESULT.LACK_COST then
-        return me:dialog(ch, name_with(gem, '이', '가') .. ' 부족합니다.', false, true)
+        return me:dialog(ch, name_with(gem, '이', '가') .. ' 부족합니다.', { prev = false, next = true })
     end
     if code == enum.EXCHANGE_RESULT.LACK_CAPACITY then
-        return me:dialog(ch, '소지품이 가득 차서 ' .. name_with(star, '을', '를') .. ' 받을 수 없어요.', false, true)
+        return me:dialog(ch, '소지품이 가득 차서 ' .. name_with(star, '을', '를') .. ' 받을 수 없어요.', { prev = false, next = true })
     end
-    return me:dialog(ch, name_with(star, '을', '를') .. ' 만들어드렸습니다.', false, true)
+    return me:dialog(ch, name_with(star, '을', '를') .. ' 만들어드렸습니다.', { prev = false, next = true })
 end
 
 function NPC_16(me, npc_obj)

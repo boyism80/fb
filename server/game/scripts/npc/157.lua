@@ -9,31 +9,31 @@ local function do_jungki(me, npc)
 
     local step = q:step()
     if step < 4 then
-        me:dialog(npc, '자네는 아직 알 때가 아니군.', false, false)
+        me:dialog(npc, '자네는 아직 알 때가 아니군.', { prev = false, next = false })
         return
     end
     
     if step == 4 then
-        local sel = me:list(npc, '무슨 일인가?', { '용궁의정기를 만들줄 아십니까?' }, false)
+        local sel = me:list(npc, '무슨 일인가?', { '용궁의정기를 만들줄 아십니까?' }, { prev = false })
         if sel == nil or sel ~= 1 then
             return
         end
-        if me:list(npc, '물론 만들줄은 아네만...그리 쉽게 만들수는 없다네..', { '!!!' }, false) ~= 1 then
+        if me:list(npc, '물론 만들줄은 아네만...그리 쉽게 만들수는 없다네..', { '!!!' }, { prev = false }) ~= 1 then
             return
         end
         ::NPC_157_0000::
-        if me:list(npc, '그래도 만들고 싶은가?', { '물론이지요.', '아니요. 포기할래요.' }, false) ~= 1 then
+        if me:list(npc, '그래도 만들고 싶은가?', { '물론이지요.', '아니요. 포기할래요.' }, { prev = false }) ~= 1 then
             return
         end
         ::NPC_157_0001::
-        local d_btn = me:dialog(npc, '한번에 다 알려줘 봐야 소용없으니 한번에 하나씩만 알려주겠네.', true, true)
+        local d_btn = me:dialog(npc, '한번에 다 알려줘 봐야 소용없으니 한번에 하나씩만 알려주겠네.', { prev = true, next = true })
         if d_btn == DIALOG_RESULT.QUIT then
             return
         end
         if d_btn == DIALOG_RESULT.PREV then
             goto NPC_157_0000
         end
-        if me:dialog(npc, '먼저 복어의심장 30개를 가지고 오게나.', false, false) == DIALOG_RESULT.QUIT then
+        if me:dialog(npc, '먼저 복어의심장 30개를 가지고 오게나.', { prev = false, next = false }) == DIALOG_RESULT.QUIT then
             return
         end
         if q then
@@ -57,11 +57,11 @@ local function do_jungki(me, npc)
                 { ['item'] = { [s.reward] = 1 } }
             )
             if code == enum.EXCHANGE_RESULT.LACK_COST then
-                me:dialog(npc, s.item .. ' 갯수가 부족한 것은 아닌가? 30개가 필요하네.', false, false)
+                me:dialog(npc, s.item .. ' 갯수가 부족한 것은 아닌가? 30개가 필요하네.', { prev = false, next = false })
                 return
             end
             if code == enum.EXCHANGE_RESULT.LACK_CAPACITY then
-                me:dialog(npc, '소지품이 가득 차서 ' .. name_with(s.reward, '을', '를') .. ' 받을 수 없네.', false, false)
+                me:dialog(npc, '소지품이 가득 차서 ' .. name_with(s.reward, '을', '를') .. ' 받을 수 없네.', { prev = false, next = false })
                 return
             end
             if q then
@@ -69,15 +69,15 @@ local function do_jungki(me, npc)
             end
             me:push_achievement(24, s.legend, 7, 1)
             if s.next_msg then
-                me:dialog(npc, '다 모아왔군 그래. ' .. s.next_msg, false, false)
+                me:dialog(npc, '다 모아왔군 그래. ' .. s.next_msg, { prev = false, next = false })
             else
-                me:dialog(npc, '이제 용궁의정기는 모두 다 모았네. 가서 볼일을 보시게나.', false, false)
+                me:dialog(npc, '이제 용궁의정기는 모두 다 모았네. 가서 볼일을 보시게나.', { prev = false, next = false })
             end
             return
         end
     end
     if step >= 10 then
-        me:dialog(npc, '......', false, false)
+        me:dialog(npc, '......', { prev = false, next = false })
     end
 end
 
@@ -110,10 +110,10 @@ local function do_armor_infinite(me, npc)
     end
     me:money(money - price)
     ::NPC_157_0002::
-    if me:dialog(npc, string.format('염색비로 %d전을 받았습니다.', price), false, true) == DIALOG_RESULT.QUIT then
+    if me:dialog(npc, string.format('염색비로 %d전을 받았습니다.', price), { prev = false, next = true }) == DIALOG_RESULT.QUIT then
         return
     end
-    local last_btn = me:dialog(npc, '그럼 언제나 행운이 함께 하시기를 빌겠습니다.', true, true)
+    local last_btn = me:dialog(npc, '그럼 언제나 행운이 함께 하시기를 빌겠습니다.', { prev = true, next = true })
     if last_btn == DIALOG_RESULT.QUIT then
         return
     end
@@ -131,11 +131,11 @@ local function do_armor_normal(me, npc)
         return
     end
     me:armor_color(nil)
-    me:dialog(npc, '일반 복장으로 바꿔드렸습니다.', false, true)
+    me:dialog(npc, '일반 복장으로 바꿔드렸습니다.', { prev = false, next = true })
 end
 
 function NPC_157(me, npc)
-    local selected = me:list(npc, '안녕하세요. 어떻게 오셨나요?', { '정기모으기', '무한 복장', '일반 복장' }, false)
+    local selected = me:list(npc, '안녕하세요. 어떻게 오셨나요?', { '정기모으기', '무한 복장', '일반 복장' }, { prev = false })
     if selected == nil then
         return
     end

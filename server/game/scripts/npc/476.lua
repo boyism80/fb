@@ -5,7 +5,7 @@ local function run_dialogs(me, npc, messages)
     for i, msg in ipairs(messages) do
         local prev = (i > 1)
         local next = (i < #messages)
-        local b = me:dialog(npc, msg, prev, next)
+        local b = me:dialog(npc, msg, { prev = prev, next = next })
         if b == DIALOG_RESULT.QUIT or b == DIALOG_RESULT.PREV then
             return false
         end
@@ -53,7 +53,7 @@ local function handle_jingogyun_lt1(me, npc)
     if not run_dialogs(me, npc, c) then
         return
     end
-    me:dialog(npc, "(당신은 똑같은 얼굴들이 똑같은 목소리로 똑같은 이야기를 반복하는 모습을 지켜보다가 질려서 듣기를 멈추었다.)", false, false)
+    me:dialog(npc, "(당신은 똑같은 얼굴들이 똑같은 목소리로 똑같은 이야기를 반복하는 모습을 지켜보다가 질려서 듣기를 멈추었다.)", { prev = false, next = false })
 end
 
 local function handle_jingogyun_1(me, npc, q_jingo)
@@ -67,7 +67,7 @@ local function handle_jingogyun_1(me, npc, q_jingo)
     local sel, btn = me:list(npc, "인성초들이 맑은 눈으로 이쪽을 바라보며 묻는다. '넌 우리편이지?' ", {
         "응, 난 화화의 친구야.",
         "내가 왜 너희 편을 들어주냐... 난 나쁘다구.",
-    }, false)
+    }, { prev = false })
     if btn == DIALOG_RESULT.QUIT or sel == nil then
         return true
     end
@@ -95,7 +95,7 @@ local function handle_jingogyun_1(me, npc, q_jingo)
         "잠깐만, 우리 숨 좀 돌리지 않을래?",
         "물론이야. 내가 뭐든 도와줄께. 말만해.",
         "지금은 좀 무리야. 나중에 꼭 도와줄게",
-    }, false)
+    }, { prev = false })
     if btn == DIALOG_RESULT.QUIT or sel == nil then
         return true
     end
@@ -113,7 +113,7 @@ local function handle_jingogyun_1(me, npc, q_jingo)
             "너희들은 어째서 색이 다르지?",
             "여기서 뭘 하고 있는거야?",
             "후우, 그래서 무슨 이야기를 하고 있었지?",
-        }, false)
+        }, { prev = false })
         if sub_btn == DIALOG_RESULT.QUIT or sub_sel == nil then
             return true
         end
@@ -198,7 +198,7 @@ local function handle_jingogyun_2(me, npc, q_jingo)
         return true
     end
     if not me:rmitem("탄생의씨앗", 10, ITEM_DELETE_TYPE.GIVE) then
-        me:dialog(npc, "아이템을 제거할 수 없습니다.", false, false)
+        me:dialog(npc, "아이템을 제거할 수 없습니다.", { prev = false, next = false })
         return true
     end
     if q_jingo then
@@ -231,12 +231,12 @@ local function handle_jingogyun_6(me, npc, q_jingo)
     local sel, btn = me:list(npc, "바람의 토템 4개를 가져오면 바꿔줄께.", {
         "좋아, 곧 구해올께. 기다려줘.",
         "은혜를 갚아! 당장 달라구!",
-    }, false)
+    }, { prev = false })
     if btn == DIALOG_RESULT.QUIT or sel == nil then
         return true
     end
     if sel == 2 then
-        me:dialog(npc, "안돼.", false, false)
+        me:dialog(npc, "안돼.", { prev = false, next = false })
         return true
     end
     if sel == 1 and q_jingo then
@@ -255,12 +255,12 @@ local function handle_jingogyun_7(me, npc, q_jingo)
     local sel, btn = me:list(npc, "어서와. 어때? 다 구했니?", {
         "응, 자, 여기있어.",
         "아니, 그냥 들려봤어.",
-    }, false)
+    }, { prev = false })
     if btn == DIALOG_RESULT.QUIT or sel == nil then
         return true
     end
     if sel == 2 then
-        me:dialog(npc, "어서 다녀와.", false, false)
+        me:dialog(npc, "어서 다녀와.", { prev = false, next = false })
         return true
     end
     if sel == 1 then
@@ -269,11 +269,11 @@ local function handle_jingogyun_7(me, npc, q_jingo)
             { ['item'] = { ["영력구슬"] = 1 } }
         )
         if code == enum.EXCHANGE_RESULT.LACK_COST then
-            me:dialog(npc, "바람의토템 4개를 가져오면 바꿔줄께.", false, false)
+            me:dialog(npc, "바람의토템 4개를 가져오면 바꿔줄께.", { prev = false, next = false })
             return true
         end
         if code == enum.EXCHANGE_RESULT.LACK_CAPACITY then
-            me:dialog(npc, "소지품이 가득 차서 영력구슬을 받을 수 없어.", false, false)
+            me:dialog(npc, "소지품이 가득 차서 영력구슬을 받을 수 없어.", { prev = false, next = false })
             return true
         end
         run_dialogs(me, npc, {
@@ -346,5 +346,5 @@ function NPC_476(me, npc)
         return
     end
 
-    me:dialog(npc, "준비중입니다.", false, false)
+    me:dialog(npc, "준비중입니다.", { prev = false, next = false })
 end

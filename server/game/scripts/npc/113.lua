@@ -9,19 +9,19 @@ function NPC_113(me, npc)
             "특별한 옷에 대해 듣고자 합니다.",
             "문화재 유출에 대해 듣고자 합니다.",
             "그냥 지나가던 길입니다.",
-        }, false)
+        }, { prev = false })
         if list_btn == DIALOG_RESULT.QUIT or sel == nil then
             return
         end
         if sel == 1 then
         elseif sel == 2 then
-            local btn = me:dialog(npc, "정령들이 화를 내고 있다. 아, 정령들이 집으로 삼는 토템들이 이 섬을 떠나는구나.", false, true)
+            local btn = me:dialog(npc, "정령들이 화를 내고 있다. 아, 정령들이 집으로 삼는 토템들이 이 섬을 떠나는구나.", { prev = false, next = true })
             if btn == DIALOG_RESULT.QUIT then return end
             dq:step(13)
-            me:dialog(npc, "보름달이 뜨면 정령들이 분노를 이기지 못하고 비명을 내지른다. 아아, 이를 어이해야 좋단 말이더냐.", false, false)
+            me:dialog(npc, "보름달이 뜨면 정령들이 분노를 이기지 못하고 비명을 내지른다. 아아, 이를 어이해야 좋단 말이더냐.", { prev = false, next = false })
             return
         else
-            me:dialog(npc, ".............", false, false)
+            me:dialog(npc, ".............", { prev = false, next = false })
             return
         end
     end
@@ -43,7 +43,7 @@ function NPC_113(me, npc)
     end
 
     if q == nil then
-        btn = me:dialog(npc, '황혼과 여명은 각각 해가 지고 뜨는 때...\n정령의 활동이 가장 활성화되는 때...', true, true)
+        btn = me:dialog(npc, '황혼과 여명은 각각 해가 지고 뜨는 때...\n정령의 활동이 가장 활성화되는 때...', { prev = true, next = true })
         if btn == DIALOG_RESULT.QUIT then
             return
         end
@@ -55,12 +55,12 @@ function NPC_113(me, npc)
             return
         end
         ::NPC_113_0001::
-        btn = me:dialog(npc, '그러나 옷을 만드는 데에는 재료가 필요하다...\n정령의 힘을 담은 재료가 필요하다...', false, true)
+        btn = me:dialog(npc, '그러나 옷을 만드는 데에는 재료가 필요하다...\n정령의 힘을 담은 재료가 필요하다...', { prev = false, next = true })
         if btn == DIALOG_RESULT.QUIT then
             return
         end
         ::NPC_113_0002::
-        btn = me:dialog(npc, '외부인인 그대가 과연 정령의 힘을 이해하고 그 재료가 어떤 것인지 깨달을 수 있을까...\n깨닫는 것은 그대가 할 일... 재료를 구해오는 것도 그대가 할 일... 나는 재료로 옷을 만들 뿐...', true, true)
+        btn = me:dialog(npc, '외부인인 그대가 과연 정령의 힘을 이해하고 그 재료가 어떤 것인지 깨달을 수 있을까...\n깨닫는 것은 그대가 할 일... 재료를 구해오는 것도 그대가 할 일... 나는 재료로 옷을 만들 뿐...', { prev = true, next = true })
         if btn == DIALOG_RESULT.QUIT then
             return
         end
@@ -76,17 +76,17 @@ function NPC_113(me, npc)
             end
         end
         if not has_any_totem then
-            me:dialog(npc, '외부인이여... 그대는 아직 깨닫지 못했다... 그대는 아직 정령의 힘을 담은 재료가 무엇인지 모르고 있다...', true, true)
+            me:dialog(npc, '외부인이여... 그대는 아직 깨닫지 못했다... 그대는 아직 정령의 힘을 담은 재료가 무엇인지 모르고 있다...', { prev = true, next = true })
             return
         end
 
         ::NPC_113_0003::
-        btn = me:dialog(npc, '그렇다... 그대는 정령의 힘을 깨달았다... 토템이야말로 정령의 힘을 담은 재료...', true, true)
+        btn = me:dialog(npc, '그렇다... 그대는 정령의 힘을 깨달았다... 토템이야말로 정령의 힘을 담은 재료...', { prev = true, next = true })
         if btn == DIALOG_RESULT.QUIT then
             return
         end
         ::NPC_113_0004::
-        btn = me:dialog(npc, '화염, 번개, 대지, 바람의토템... 모두 4가지의 토템이 3개씩 모여야 한다...', true, true)
+        btn = me:dialog(npc, '화염, 번개, 대지, 바람의토템... 모두 4가지의 토템이 3개씩 모여야 한다...', { prev = true, next = true })
         if btn == DIALOG_RESULT.QUIT then
             return
         end
@@ -94,7 +94,7 @@ function NPC_113(me, npc)
             goto NPC_113_0003
         end
         ::NPC_113_0005::
-        btn = me:dialog(npc, '그대는 비록 외부인이지만 정령의 힘을 이해했다... 노력에 대한 보답으로... 다음 재료가 무엇인지 가르쳐준다...', true, true)
+        btn = me:dialog(npc, '그대는 비록 외부인이지만 정령의 힘을 이해했다... 노력에 대한 보답으로... 다음 재료가 무엇인지 가르쳐준다...', { prev = true, next = true })
         if btn == DIALOG_RESULT.QUIT then
             return
         end
@@ -102,7 +102,7 @@ function NPC_113(me, npc)
             goto NPC_113_0004
         end
         ::NPC_113_0006::
-        btn = me:dialog(npc, '황혼과 여명 사이에는... 정령들의 활동의 증거로 \'이슬\'이 맺힌다...\n그 이슬을 50방울 모아 마음으로부터 기원하면... 어떤 특별한 이슬... \'여신의이슬\'을 만들 수 있다...\n그 이슬 또한 옷의 재료다...', true, true)
+        btn = me:dialog(npc, '황혼과 여명 사이에는... 정령들의 활동의 증거로 \'이슬\'이 맺힌다...\n그 이슬을 50방울 모아 마음으로부터 기원하면... 어떤 특별한 이슬... \'여신의이슬\'을 만들 수 있다...\n그 이슬 또한 옷의 재료다...', { prev = true, next = true })
         if btn == DIALOG_RESULT.QUIT then
             return
         end
@@ -110,7 +110,7 @@ function NPC_113(me, npc)
             goto NPC_113_0005
         end
         ::NPC_113_0007::
-        btn = me:dialog(npc, '폭염도의 북쪽으로 가라... 이슬을 얻을 수 있을 것이다...', false, true)
+        btn = me:dialog(npc, '폭염도의 북쪽으로 가라... 이슬을 얻을 수 있을 것이다...', { prev = false, next = true })
         if btn == DIALOG_RESULT.QUIT then
             return
         end
@@ -128,7 +128,7 @@ function NPC_113(me, npc)
     end
 
     if q:step() == 0 then
-        btn = me:dialog(npc, '황혼과 여명은 각각 해가 지고 뜨는 때...\n정령의 활동이 가장 활성화되는 때...', true, true)
+        btn = me:dialog(npc, '황혼과 여명은 각각 해가 지고 뜨는 때...\n정령의 활동이 가장 활성화되는 때...', { prev = true, next = true })
         if btn == DIALOG_RESULT.QUIT then
             return
         end
@@ -140,12 +140,12 @@ function NPC_113(me, npc)
             return
         end
         ::NPC_113_0008::
-        btn = me:dialog(npc, '그러나 옷을 만드는 데에는 재료가 필요하다...\n정령의 힘을 담은 재료가 필요하다...', false, true)
+        btn = me:dialog(npc, '그러나 옷을 만드는 데에는 재료가 필요하다...\n정령의 힘을 담은 재료가 필요하다...', { prev = false, next = true })
         if btn == DIALOG_RESULT.QUIT then
             return
         end
         ::NPC_113_0009::
-        btn = me:dialog(npc, '외부인인 그대가 과연 정령의 힘을 이해하고 그 재료가 어떤 것인지 깨달을 수 있을까...\n깨닫는 것은 그대가 할 일... 재료를 구해오는 것도 그대가 할 일... 나는 재료로 옷을 만들 뿐...', true, true)
+        btn = me:dialog(npc, '외부인인 그대가 과연 정령의 힘을 이해하고 그 재료가 어떤 것인지 깨달을 수 있을까...\n깨닫는 것은 그대가 할 일... 재료를 구해오는 것도 그대가 할 일... 나는 재료로 옷을 만들 뿐...', { prev = true, next = true })
         if btn == DIALOG_RESULT.QUIT then
             return
         end
@@ -160,16 +160,16 @@ function NPC_113(me, npc)
             end
         end
         if not has_any_totem then
-            me:dialog(npc, '외부인이여... 그대는 아직 깨닫지 못했다... 그대는 아직 정령의 힘을 담은 재료가 무엇인지 모르고 있다...', true, true)
+            me:dialog(npc, '외부인이여... 그대는 아직 깨닫지 못했다... 그대는 아직 정령의 힘을 담은 재료가 무엇인지 모르고 있다...', { prev = true, next = true })
             return
         end
         ::NPC_113_0010::
-        btn = me:dialog(npc, '그렇다... 그대는 정령의 힘을 깨달았다... 토템이야말로 정령의 힘을 담은 재료...', true, true)
+        btn = me:dialog(npc, '그렇다... 그대는 정령의 힘을 깨달았다... 토템이야말로 정령의 힘을 담은 재료...', { prev = true, next = true })
         if btn == DIALOG_RESULT.QUIT then
             return
         end
         ::NPC_113_0011::
-        btn = me:dialog(npc, '화염, 번개, 대지, 바람의토템... 모두 4가지의 토템이 3개씩 모여야 한다...', true, true)
+        btn = me:dialog(npc, '화염, 번개, 대지, 바람의토템... 모두 4가지의 토템이 3개씩 모여야 한다...', { prev = true, next = true })
         if btn == DIALOG_RESULT.QUIT then
             return
         end
@@ -177,7 +177,7 @@ function NPC_113(me, npc)
             goto NPC_113_0010
         end
         ::NPC_113_0012::
-        btn = me:dialog(npc, '그대는 비록 외부인이지만 정령의 힘을 이해했다... 노력에 대한 보답으로... 다음 재료가 무엇인지 가르쳐준다...', true, true)
+        btn = me:dialog(npc, '그대는 비록 외부인이지만 정령의 힘을 이해했다... 노력에 대한 보답으로... 다음 재료가 무엇인지 가르쳐준다...', { prev = true, next = true })
         if btn == DIALOG_RESULT.QUIT then
             return
         end
@@ -185,7 +185,7 @@ function NPC_113(me, npc)
             goto NPC_113_0011
         end
         ::NPC_113_0013::
-        btn = me:dialog(npc, '황혼과 여명 사이에는... 정령들의 활동의 증거로 \'이슬\'이 맺힌다...\n그 이슬을 50방울 모아 마음으로부터 기원하면... 어떤 특별한 이슬... \'여신의이슬\'을 만들 수 있다...\n그 이슬 또한 옷의 재료다...', true, true)
+        btn = me:dialog(npc, '황혼과 여명 사이에는... 정령들의 활동의 증거로 \'이슬\'이 맺힌다...\n그 이슬을 50방울 모아 마음으로부터 기원하면... 어떤 특별한 이슬... \'여신의이슬\'을 만들 수 있다...\n그 이슬 또한 옷의 재료다...', { prev = true, next = true })
         if btn == DIALOG_RESULT.QUIT then
             return
         end
@@ -193,7 +193,7 @@ function NPC_113(me, npc)
             goto NPC_113_0012
         end
         ::NPC_113_0014::
-        btn = me:dialog(npc, '폭염도의 북쪽으로 가라... 이슬을 얻을 수 있을 것이다...', false, true)
+        btn = me:dialog(npc, '폭염도의 북쪽으로 가라... 이슬을 얻을 수 있을 것이다...', { prev = false, next = true })
         if btn == DIALOG_RESULT.QUIT then
             return
         end
@@ -217,7 +217,7 @@ function NPC_113(me, npc)
             has_all = false
         end
         if not has_all then
-            me:dialog(npc, '아직 그대는 재료를 모두 구하지 못했다. 화염, 번개, 대지, 바람의토템... 모두 4가지의 토템이 3개씩 모여야 하며 여신의이슬이 필요하다. 이슬은 폭염도 북쪽에서 구할 수 있을 것이다...', true, true)
+            me:dialog(npc, '아직 그대는 재료를 모두 구하지 못했다. 화염, 번개, 대지, 바람의토템... 모두 4가지의 토템이 3개씩 모여야 하며 여신의이슬이 필요하다. 이슬은 폭염도 북쪽에서 구할 수 있을 것이다...', { prev = true, next = true })
             return
         end
 
@@ -237,12 +237,12 @@ function NPC_113(me, npc)
         me:push_achievement(42, '자연의인장을 구하자.', 7, 16)
 
         ::NPC_113_0015::
-        btn = me:dialog(npc, '여신의이슬을 구해왔는가...\n그럼 마지막으로 자연의인장을 구하라...', false, true)
+        btn = me:dialog(npc, '여신의이슬을 구해왔는가...\n그럼 마지막으로 자연의인장을 구하라...', { prev = false, next = true })
         if btn == DIALOG_RESULT.QUIT then
             return
         end
         ::NPC_113_0016::
-        btn = me:dialog(npc, '자연의인장은 모든 정령들의 힘을 결집할 수 있는 힘을 가지는 일종의 증표다...\n자연의인장 또한 옷의 재료다...', true, true)
+        btn = me:dialog(npc, '자연의인장은 모든 정령들의 힘을 결집할 수 있는 힘을 가지는 일종의 증표다...\n자연의인장 또한 옷의 재료다...', { prev = true, next = true })
         if btn == DIALOG_RESULT.QUIT then
             return
         end
@@ -250,7 +250,7 @@ function NPC_113(me, npc)
             goto NPC_113_0015
         end
         ::NPC_113_0017::
-        btn = me:dialog(npc, '자연의인장은 이 섬을 다르시는 존재가 두 조각으로 나눠 보관하고 있다...', true, true)
+        btn = me:dialog(npc, '자연의인장은 이 섬을 다르시는 존재가 두 조각으로 나눠 보관하고 있다...', { prev = true, next = true })
         if btn == DIALOG_RESULT.QUIT then
             return
         end
@@ -262,7 +262,7 @@ function NPC_113(me, npc)
 
     if q:step() == 2 then
         if not me:has_items('자연의인장', 1) then
-            me:dialog(npc, '그대는 아직 자연의인장을 구하지 못했다..', false, false)
+            me:dialog(npc, '그대는 아직 자연의인장을 구하지 못했다..', { prev = false, next = false })
             return
         end
         local sel = me:list(npc, '재료를 다 모았다면, 만들고자 하는 옷의 이름을 말하라...', {
@@ -288,18 +288,18 @@ function NPC_113(me, npc)
             { ['item'] = { [armor_name] = 1 } }
         )
         if code == enum.EXCHANGE_RESULT.LACK_COST then
-            me:dialog(npc, '자연의인장을 가지고 있지 않으시군요.', false, true)
+            me:dialog(npc, '자연의인장을 가지고 있지 않으시군요.', { prev = false, next = true })
             return
         end
         if code == enum.EXCHANGE_RESULT.LACK_CAPACITY then
-            me:dialog(npc, '소지품이 가득 차서 ' .. name_with(armor_name, '을', '를') .. ' 줄 수 없네.', false, true)
+            me:dialog(npc, '소지품이 가득 차서 ' .. name_with(armor_name, '을', '를') .. ' 줄 수 없네.', { prev = false, next = true })
             return
         end
         q:step(3)
         me:push_achievement(42, '정령의옷을 만들었다!', 7, 16)
-        me:dialog(npc, name_with(armor_name, '이', '가') .. ' 완성되었다.. ' .. armor_name .. '에 깃든 정령들이 그대를 수호할 것이다...', true, true)
+        me:dialog(npc, name_with(armor_name, '이', '가') .. ' 완성되었다.. ' .. armor_name .. '에 깃든 정령들이 그대를 수호할 것이다...', { prev = true, next = true })
         return
     end
 
-    me:dialog(npc, '.............', true, true)
+    me:dialog(npc, '.............', { prev = true, next = true })
 end

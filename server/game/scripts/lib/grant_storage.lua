@@ -12,7 +12,7 @@ local function parse_positive_number(raw)
 end
 
 function M.handle(me, npc)
-    local target_sel, btn = me:list(npc, '누구에게 보낼까요?', {'전체 유저', '특정 유저'}, true)
+    local target_sel, btn = me:list(npc, '누구에게 보낼까요?', {'전체 유저', '특정 유저'}, { prev = true })
     if btn == DIALOG_RESULT.QUIT then
         return false
     end
@@ -28,20 +28,20 @@ function M.handle(me, npc)
     if is_global == false then
         user_name = me:input(npc, '캐릭터 이름을 입력하세요.')
         if user_name == nil or user_name == '' then
-            me:dialog(npc, '캐릭터 이름이 필요합니다.', false, true)
+            me:dialog(npc, '캐릭터 이름이 필요합니다.', { prev = false, next = true })
             return true
         end
     end
 
     local title = me:input(npc, '제목을 입력하세요.')
     if title == nil or title == '' then
-        me:dialog(npc, '제목이 필요합니다.', false, true)
+        me:dialog(npc, '제목이 필요합니다.', { prev = false, next = true })
         return true
     end
 
     local message = me:input(npc, '내용을 입력하세요.')
     if message == nil or message == '' then
-        me:dialog(npc, '내용이 필요합니다.', false, true)
+        me:dialog(npc, '내용이 필요합니다.', { prev = false, next = true })
         return true
     end
 
@@ -52,7 +52,7 @@ function M.handle(me, npc)
     }
 
 ::REWARD_MENU::
-    local reward_sel, reward_btn = me:list(npc, '보상을 추가할까요?', {'아이템', '경험치', '금전', '없음'}, false)
+    local reward_sel, reward_btn = me:list(npc, '보상을 추가할까요?', {'아이템', '경험치', '금전', '없음'}, { prev = false })
     if reward_btn == DIALOG_RESULT.QUIT then
         return false
     end
@@ -63,18 +63,18 @@ function M.handle(me, npc)
     if reward_sel == 1 then
         local item_name = me:input(npc, '아이템 이름을 입력하세요.')
         if item_name == nil or item_name == '' then
-            me:dialog(npc, '아이템 이름이 필요합니다.', false, true)
+            me:dialog(npc, '아이템 이름이 필요합니다.', { prev = false, next = true })
             goto REWARD_MENU
         end
         if name2item(item_name) == nil then
-            me:dialog(npc, '존재하지 않는 아이템입니다.', false, true)
+            me:dialog(npc, '존재하지 않는 아이템입니다.', { prev = false, next = true })
             goto REWARD_MENU
         end
 
         local count_raw = me:input(npc, '수량을 입력하세요.')
         local count = parse_positive_number(count_raw)
         if count == nil then
-            me:dialog(npc, '잘못된 수량입니다.', false, true)
+            me:dialog(npc, '잘못된 수량입니다.', { prev = false, next = true })
             goto REWARD_MENU
         end
 
@@ -84,7 +84,7 @@ function M.handle(me, npc)
         local count_raw = me:input(npc, '경험치를 입력하세요.')
         local count = parse_positive_number(count_raw)
         if count == nil then
-            me:dialog(npc, '잘못된 경험치입니다.', false, true)
+            me:dialog(npc, '잘못된 경험치입니다.', { prev = false, next = true })
             goto REWARD_MENU
         end
         attachments['exp'] = attachments['exp'] + count
@@ -93,7 +93,7 @@ function M.handle(me, npc)
         local count_raw = me:input(npc, '금전을 입력하세요.')
         local count = parse_positive_number(count_raw)
         if count == nil then
-            me:dialog(npc, '잘못된 금전입니다.', false, true)
+            me:dialog(npc, '잘못된 금전입니다.', { prev = false, next = true })
             goto REWARD_MENU
         end
         attachments['money'] = attachments['money'] + count
@@ -118,7 +118,7 @@ function M.handle(me, npc)
     end
 
     if payload['item'] == nil and payload['money'] == nil and payload['exp'] == nil then
-        me:dialog(npc, '보상이 하나 이상 필요합니다.', false, true)
+        me:dialog(npc, '보상이 하나 이상 필요합니다.', { prev = false, next = true })
         return true
     end
 
@@ -130,9 +130,9 @@ function M.handle(me, npc)
     end
 
     if ok then
-        me:dialog(npc, '지급이 완료되었습니다.', false, true)
+        me:dialog(npc, '지급이 완료되었습니다.', { prev = false, next = true })
     else
-        me:dialog(npc, '지급에 실패했습니다.', false, true)
+        me:dialog(npc, '지급에 실패했습니다.', { prev = false, next = true })
     end
     return true
 end

@@ -39,6 +39,7 @@ local MSG_KICK_OK        = "추방했음"
 local MSG_ROLE_OK        = "직책 변경 성공"
 local MSG_NO_PRIV        = "문파 권한이 부족합니다"
 local MSG_ERR_CODE_27    = "에러코드 : 27"
+local MSG_ASKING         = "에게 의사를 묻고 있습니다."
 
 local LISTENER_ARM_MS = 500
 
@@ -62,6 +63,10 @@ local function message_contains(packet, text)
     return packet ~= nil
         and packet.message ~= nil
         and packet.message:find(text, 1, true) ~= nil
+end
+
+local function is_asking_dialog(msg)
+    return msg ~= nil and msg:find(MSG_ASKING, 1, true) ~= nil
 end
 
 local function home_x(bot_index)
@@ -247,8 +252,35 @@ local function invite_start(bot, target_name)
     return true, nil
 end
 
+local function wait_normal(bot)
+    return bot:request_dialog_ext(
+        protocol.chat(false, "."),
+        function(p)
+            return p.type == "normal"
+        end)
+end
+
+-- After invitee name: waiting immediate dialog, then result (or exception result only).
 local function invite_send_name_expect_normal(bot, target_name)
-    return send_input_expect(bot, target_name, "normal")
+    local packet = send_input_expect(bot, target_name, "normal")
+    if packet == nil then
+        return nil
+    end
+    if is_asking_dialog(packet.message) then
+        dismiss_normal(bot)
+        return wait_normal(bot)
+    end
+    return packet
+end
+
+-- Consume the immediate asking dialog after INPUT; invitee handles the rest.
+local function invite_send_name_dismiss_asking(bot, target_name)
+    local packet = send_input_expect(bot, target_name, "normal")
+    if packet == nil or is_asking_dialog(packet.message) == false then
+        return false
+    end
+    dismiss_normal(bot)
+    return true
 end
 
 local function wait_menu(bot)
@@ -283,9 +315,9 @@ local function is_privilege_error(msg)
         or msg:find(MSG_ERR_CODE_27, 1, true) ~= nil
 end
 
--- Inviter INPUT when invitee-side error yields no inviter dialog.
+-- Inviter INPUT when invitee-side error yields no inviter result dialog.
 local function send_input_fire(bot, text)
-    bot:send(protocol.dialog("INPUT", 0, text, 0, 0, "", "NEXT"))
+    return invite_send_name_dismiss_asking(bot, text)
 end
 
 local function change_role(bot, target_name, role)
@@ -567,7 +599,10 @@ test_suite {
                             progress(master, "FAILED: " .. tostring(err))
                             return false
                         end
-                        send_input_fire(master, other:name())
+                        if send_input_fire(master, other:name()) == false then
+                            progress(master, "FAILED: asking dialog missing")
+                            return false
+                        end
                         g_inviter_msg = nil
                         return true
                     end,
@@ -622,7 +657,10 @@ test_suite {
                             progress(mate, "FAILED: " .. tostring(err))
                             return false
                         end
-                        send_input_fire(mate, outsider:name())
+                        if send_input_fire(mate, outsider:name()) == false then
+                            progress(mate, "FAILED: asking dialog missing")
+                            return false
+                        end
                         return true
                     end,
                 },

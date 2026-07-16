@@ -7,7 +7,7 @@ function NPC_406(me, npc)
         "은천지패와 은인패를 합쳐주십시오..",
         "은천인패와 은지패를 합쳐주십시오..",
         "은지인패와 은천패를 합쳐주십시오..",
-    }, false)
+    }, { prev = false })
     if btn == DIALOG_RESULT.QUIT then
         return
     end
@@ -34,15 +34,15 @@ function NPC_406(me, npc)
     end
     local code = me:exchange({ ['item'] = required }, reward)
     if code == enum.EXCHANGE_RESULT.LACK_COST then
-        me:dialog(npc, opt.need_msg, false, false)
+        me:dialog(npc, opt.need_msg, { prev = false, next = false })
         goto NPC_406_000
     elseif code == enum.EXCHANGE_RESULT.LACK_CAPACITY then
-        me:dialog(npc, "소지품이 가득 차서 은천지인패를 받을 수 없네. 자리 좀 비우고 다시 오게.", false, false)
+        me:dialog(npc, "소지품이 가득 차서 은천지인패를 받을 수 없네. 자리 좀 비우고 다시 오게.", { prev = false, next = false })
         goto NPC_406_000
     elseif reward == nil then
-        me:dialog(npc, "아니 실패해버렸잖아! 이런.. 미안하네..", false, false)
+        me:dialog(npc, "아니 실패해버렸잖아! 이런.. 미안하네..", { prev = false, next = false })
     else
-        me:dialog(npc, "멋지게 성공했군. 하하하...", false, false)
+        me:dialog(npc, "멋지게 성공했군. 하하하...", { prev = false, next = false })
     end
     goto NPC_406_000
 end

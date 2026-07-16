@@ -7,7 +7,7 @@ local SUMMON_ITEMS = {
 }
 
 function NPC_93(me, npc)
-    local sel = me:list(npc, '....', { '파괴왕 소환' }, false)
+    local sel = me:list(npc, '....', { '파괴왕 소환' }, { prev = false })
     if sel == nil or sel ~= 1 then
         return
     end
@@ -16,7 +16,7 @@ function NPC_93(me, npc)
         items[name] = 1
     end
     if not me:has_items(items) then
-        me:dialog(npc, '소환에 필요한 재료가 부족합니다.', false, false)
+        me:dialog(npc, '소환에 필요한 재료가 부족합니다.', { prev = false, next = false })
         return
     end
     me:rmitem(items, ITEM_DELETE_TYPE.GIVE)

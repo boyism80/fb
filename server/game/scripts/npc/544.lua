@@ -8,12 +8,12 @@ function NPC_544(me, npc)
     end
 
     if not me:has_items("종이쪽지", 1) then
-        me:dialog(npc, "퀘스트 오류입니다.\n\n운영자에게 문의하세요.", false, true)
+        me:dialog(npc, "퀘스트 오류입니다.\n\n운영자에게 문의하세요.", { prev = false, next = true })
         return
     end
 
     ::NPC_544_0000::
-    local button = me:dialog(npc, "오! 이 종이쪽지는 제친구로부터의 편지군요! 이친구 아직도 잘 살아있나요? 이 친구가 없었다면 전 이미 이세상에 없을겁니다.", false, true)
+    local button = me:dialog(npc, "오! 이 종이쪽지는 제친구로부터의 편지군요! 이친구 아직도 잘 살아있나요? 이 친구가 없었다면 전 이미 이세상에 없을겁니다.", { prev = false, next = true })
     if button == DIALOG_RESULT.QUIT then
         return
     end
@@ -22,7 +22,7 @@ function NPC_544(me, npc)
     local sel, list_btn = me:list(npc, "이런 고마울데가...", {
         "편지 여기있습니다.",
         "전 다른일이 있어서...",
-    }, true)
+    }, { prev = true })
     if list_btn == DIALOG_RESULT.QUIT then
         return
     end
@@ -34,13 +34,13 @@ function NPC_544(me, npc)
     end
 
     ::NPC_544_0002::
-    button = me:dialog(npc, "아 그런가요? 정말 반갑네요. 이렇게 징표라도 보게 되니. 보답으로 무엇이든 들어드리겠습니다!", false, true)
+    button = me:dialog(npc, "아 그런가요? 정말 반갑네요. 이렇게 징표라도 보게 되니. 보답으로 무엇이든 들어드리겠습니다!", { prev = false, next = true })
     if button == DIALOG_RESULT.QUIT then
         return
     end
 
     ::NPC_544_0003::
-    button = me:dialog(npc, "천상복숭아라. 저희집에 가보로 내려오는 물건이지만 목숨보다 귀하진 않습니다. 기꺼이 드리도록 하죠. 좋은곳에 써주세요~", true, true)
+    button = me:dialog(npc, "천상복숭아라. 저희집에 가보로 내려오는 물건이지만 목숨보다 귀하진 않습니다. 기꺼이 드리도록 하죠. 좋은곳에 써주세요~", { prev = true, next = true })
     if button == DIALOG_RESULT.QUIT then
         return
     end
@@ -55,14 +55,14 @@ function NPC_544(me, npc)
     )
     if code == enum.EXCHANGE_RESULT.LACK_COST then
         if not me:has_items("종이쪽지", 1) then
-            me:dialog(npc, "퀘스트 오류입니다.\n\n운영자에게 문의하세요.", false, false)
+            me:dialog(npc, "퀘스트 오류입니다.\n\n운영자에게 문의하세요.", { prev = false, next = false })
         else
-            me:dialog(npc, "종이쪽지가 없지 않은가.", false, false)
+            me:dialog(npc, "종이쪽지가 없지 않은가.", { prev = false, next = false })
         end
         return
     end
     if code == enum.EXCHANGE_RESULT.LACK_CAPACITY then
-        me:dialog(npc, "소지품 칸을 2칸 이상 비워주세요.", false, false)
+        me:dialog(npc, "소지품 칸을 2칸 이상 비워주세요.", { prev = false, next = false })
         return
     end
 

@@ -9,12 +9,12 @@ function NPC_186(me, npc)
     if q ~= nil and q:step() == 3 then
         if me:has_items('청심사주', 1) then
             ::NPC_186_0001::
-            btn = me:dialog(npc, '허허, 주경원이 청심사주를 만드는것을 자네가 도와주었지? 내 신통력으로 다 보고 있었지.', true, true)
+            btn = me:dialog(npc, '허허, 주경원이 청심사주를 만드는것을 자네가 도와주었지? 내 신통력으로 다 보고 있었지.', { prev = true, next = true })
             if btn == DIALOG_RESULT.QUIT then
                 return
             end
             ::NPC_186_0002::
-            btn = me:dialog(npc, '정말 오랫만에 보는 술이군! 고맙네. 이 술을 다 마셔버리지 않고 가져다 준 정직한 자네에게 선물을 주고 싶군. 요즘은 자네같은 사람도 드물다네. 내 고대금속조각\'음을 하나 주지. 어딘가에 쓸모가 있을게야..', false, false)
+            btn = me:dialog(npc, '정말 오랫만에 보는 술이군! 고맙네. 이 술을 다 마셔버리지 않고 가져다 준 정직한 자네에게 선물을 주고 싶군. 요즘은 자네같은 사람도 드물다네. 내 고대금속조각\'음을 하나 주지. 어딘가에 쓸모가 있을게야..', { prev = false, next = false })
             if btn == DIALOG_RESULT.QUIT then
                 return
             end
@@ -26,11 +26,11 @@ function NPC_186(me, npc)
                 { ['item'] = { ["고대금속조각'음"] = 1 } }
             )
             if code == enum.EXCHANGE_RESULT.LACK_COST then
-                me:dialog(npc, '청심사주를 가지고 있지 않으시군요.', false, true)
+                me:dialog(npc, '청심사주를 가지고 있지 않으시군요.', { prev = false, next = true })
                 return
             end
             if code == enum.EXCHANGE_RESULT.LACK_CAPACITY then
-                me:dialog(npc, '소지품이 가득 차서 ' .. name_with("고대금속조각'음", '을', '를') .. ' 줄 수 없네.', false, true)
+                me:dialog(npc, '소지품이 가득 차서 ' .. name_with("고대금속조각'음", '을', '를') .. ' 줄 수 없네.', { prev = false, next = true })
                 return
             end
             q:step(4)
@@ -39,5 +39,5 @@ function NPC_186(me, npc)
         end
     end
 
-    me:dialog(npc, '압록강의 물은 정말 신비롭지...', true, true)
+    me:dialog(npc, '압록강의 물은 정말 신비롭지...', { prev = true, next = true })
 end

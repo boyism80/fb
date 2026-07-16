@@ -471,17 +471,41 @@ int builtin::character::builtin_item(lua_State* L)
         }
     }
 
+    auto immediate = false;
+    auto pursuit   = uint16_t{0xFFFF};
+    if (lua->argc() >= 5 && lua->is_table(5))
+    {
+        lua->pushstring("immediate");
+        if (lua_rawget(L, 5) == LUA_TBOOLEAN)
+            immediate = lua_toboolean(L, -1);
+        lua_pop(L, 1);
+
+        lua->pushstring("pursuit");
+        if (lua_rawget(L, 5) == LUA_TNUMBER)
+            pursuit = static_cast<uint16_t>(lua->tointeger(-1));
+        lua_pop(L, 1);
+    }
+
     auto weak     = ch->weak_from_this_as<fb::game::character>();
     auto builder  = lua->new_co_builder();
     builder.weak  = weak;
     builder.yield = [=]() -> async::task<void> {
-        ch->listener.on_dialog(*ch, *model, message, items, oid);
-        if (ch->dialog != nullptr)
-            ch->dialog->release();
+        ch->listener.on_dialog(*ch, *model, message, items, oid, pursuit);
+        if (immediate == false)
+        {
+            if (ch->dialog != nullptr)
+                ch->dialog->release();
 
-        ch->dialog = lua;
+            ch->dialog = lua;
+        }
         co_return;
     };
+    if (immediate)
+    {
+        builder.resume = []() -> async::task<int> {
+            co_return 0;
+        };
+    }
     return builder.run();
 }
 
@@ -4111,7 +4135,8 @@ int fb::game::builtin::character::builtin_teleport(lua_State* L)
 
 int fb::game::builtin::character::builtin_dialog(lua_State* L)
 {
-    // Ex) ch:dialog(obj, "hello", true, true);
+    // Ex) ch:dialog(obj, "hello")
+    // Ex) ch:dialog(obj, "hello", { prev = true, next = true, immediate = true })
 
     auto lua = fb::lua::get(L);
     if (lua == nullptr)
@@ -4148,8 +4173,26 @@ int fb::game::builtin::character::builtin_dialog(lua_State* L)
     }
 
     auto message     = lua->tostring(3);
-    auto button_prev = lua->toboolean(4, false);
-    auto button_next = lua->toboolean(5, false);
+    auto button_prev = false;
+    auto button_next = false;
+    auto immediate   = false;
+    if (argc >= 4 && lua->is_table(4))
+    {
+        lua->pushstring("prev");
+        if (lua_rawget(L, 4) == LUA_TBOOLEAN)
+            button_prev = lua_toboolean(L, -1);
+        lua_pop(L, 1);
+
+        lua->pushstring("next");
+        if (lua_rawget(L, 4) == LUA_TBOOLEAN)
+            button_next = lua_toboolean(L, -1);
+        lua_pop(L, 1);
+
+        lua->pushstring("immediate");
+        if (lua_rawget(L, 4) == LUA_TBOOLEAN)
+            immediate = lua_toboolean(L, -1);
+        lua_pop(L, 1);
+    }
 
     auto weak     = ch->weak_from_this_as<fb::game::character>();
     auto builder  = lua->new_co_builder();
@@ -4162,12 +4205,21 @@ int fb::game::builtin::character::builtin_dialog(lua_State* L)
         else
             ch->listener.on_dialog(*ch, message, button_prev, button_next, oid);
 
-        if (ch->dialog != nullptr)
-            ch->dialog->release();
+        if (immediate == false)
+        {
+            if (ch->dialog != nullptr)
+                ch->dialog->release();
 
-        ch->dialog = lua;
+            ch->dialog = lua;
+        }
         co_return;
     };
+    if (immediate)
+    {
+        builder.resume = []() -> async::task<int> {
+            co_return 0;
+        };
+    }
     return builder.run();
 }
 
@@ -4177,8 +4229,7 @@ int fb::game::builtin::character::builtin_list(lua_State* L)
     if (lua == nullptr)
         return 0;
 
-    auto argc = lua->argc();
-    auto ch   = lua->touserdata<fb::game::character>(1);
+    auto ch = lua->touserdata<fb::game::character>(1);
     if (ch == nullptr)
         return 0;
 
@@ -4244,15 +4295,28 @@ int fb::game::builtin::character::builtin_list(lua_State* L)
         return 0;
     }
 
-    auto message     = lua->tostring(3);
-    auto size        = lua->rawlen(4);
-    auto button_prev = lua->toboolean(5);
-
-    auto menus = std::vector<std::string>();
+    auto message = lua->tostring(3);
+    auto size    = lua->rawlen(4);
+    auto menus   = std::vector<std::string>();
     for (int i = 0; i < size; i++)
     {
         lua->rawgeti(4, i + 1);
         menus.push_back(lua->tostring(-1));
+    }
+
+    auto button_prev = false;
+    auto immediate   = false;
+    if (lua->argc() >= 5 && lua->is_table(5))
+    {
+        lua->pushstring("prev");
+        if (lua_rawget(L, 5) == LUA_TBOOLEAN)
+            button_prev = lua_toboolean(L, -1);
+        lua_pop(L, 1);
+
+        lua->pushstring("immediate");
+        if (lua_rawget(L, 5) == LUA_TBOOLEAN)
+            immediate = lua_toboolean(L, -1);
+        lua_pop(L, 1);
     }
 
     auto weak     = ch->weak_from_this_as<fb::game::character>();
@@ -4267,18 +4331,28 @@ int fb::game::builtin::character::builtin_list(lua_State* L)
         else
             ch->listener.on_dialog(*ch, *model, message, menus, button_prev, oid);
 
-        if (ch->dialog != nullptr)
-            ch->dialog->release();
+        if (immediate == false)
+        {
+            if (ch->dialog != nullptr)
+                ch->dialog->release();
 
-        ch->dialog = lua;
+            ch->dialog = lua;
+        }
         co_return;
     };
+    if (immediate)
+    {
+        builder.resume = []() -> async::task<int> {
+            co_return 0;
+        };
+    }
     return builder.run();
 }
 
 int fb::game::builtin::character::builtin_input(lua_State* L)
 {
-    // Ex) obj::input(ch, "message")
+    // Ex) ch:input(npc, "message")
+    // Ex) ch:input(npc, "message", { top = "...", bottom = "...", maxlen = 12, prev = true, immediate = true })
     auto lua = fb::lua::get(L);
     if (lua == nullptr)
         return 0;
@@ -4305,40 +4379,86 @@ int fb::game::builtin::character::builtin_input(lua_State* L)
         return 0;
     }
 
-    auto message = lua->tostring(3);
     auto argc    = lua->argc();
-    auto weak    = ch->weak_from_this_as<fb::game::character>();
-    auto builder = lua->new_co_builder();
-    builder.weak = weak;
-    if (argc > 3)
+    auto message = lua->tostring(3);
+
+    auto has_top    = false;
+    auto has_bottom = false;
+    auto top        = std::string{};
+    auto bottom     = std::string{};
+    auto maxlen     = uint8_t{0xFF};
+    auto prev       = false;
+    auto immediate  = false;
+    if (argc >= 4 && lua->is_table(4))
     {
-        auto message_top = lua->tostring(4);
-        auto message_bot = lua->tostring(5);
-        auto maxlen      = (uint8_t)lua->tointeger(6, 0xFF);
-        auto prev        = lua->toboolean(7, false);
+        lua->pushstring("top");
+        if (lua_rawget(L, 4) != LUA_TNIL)
+        {
+            has_top = true;
+            top     = lua->tostring(-1);
+        }
+        lua_pop(L, 1);
 
-        builder.yield = [=]() -> async::task<void> {
-            ch->listener.on_dialog(*ch, *model, message, message_top, message_bot, maxlen, prev, oid);
-            if (ch->dialog != nullptr)
-                ch->dialog->release();
+        lua->pushstring("bottom");
+        if (lua_rawget(L, 4) != LUA_TNIL)
+        {
+            has_bottom = true;
+            bottom     = lua->tostring(-1);
+        }
+        lua_pop(L, 1);
 
-            ch->dialog = lua;
-            co_return;
-        };
+        lua->pushstring("maxlen");
+        if (lua_rawget(L, 4) == LUA_TNUMBER)
+            maxlen = static_cast<uint8_t>(lua->tointeger(-1));
+        lua_pop(L, 1);
+
+        lua->pushstring("prev");
+        if (lua_rawget(L, 4) == LUA_TBOOLEAN)
+            prev = lua_toboolean(L, -1);
+        lua_pop(L, 1);
+
+        lua->pushstring("immediate");
+        if (lua_rawget(L, 4) == LUA_TBOOLEAN)
+            immediate = lua_toboolean(L, -1);
+        lua_pop(L, 1);
     }
-    else
-    {
-        builder.yield = [=]() -> async::task<void> {
+
+    if (has_top != has_bottom)
+        throw std::runtime_error("input options require both top and bottom, or neither");
+
+    auto use_ext  = has_top && has_bottom;
+    auto weak     = ch->weak_from_this_as<fb::game::character>();
+    auto builder  = lua->new_co_builder();
+    builder.weak  = weak;
+    builder.yield = [=]() -> async::task<void> {
+        if (use_ext)
+        {
+            if (obj != nullptr)
+                ch->listener.on_dialog(*ch, *obj, message, top, bottom, maxlen, prev, oid);
+            else
+                ch->listener.on_dialog(*ch, *model, message, top, bottom, maxlen, prev, oid);
+        }
+        else
+        {
             if (obj != nullptr)
                 ch->listener.on_dialog(*ch, *obj, message, oid);
             else
                 ch->listener.on_dialog(*ch, *model, message, oid);
+        }
 
+        if (immediate == false)
+        {
             if (ch->dialog != nullptr)
                 ch->dialog->release();
 
             ch->dialog = lua;
-            co_return;
+        }
+        co_return;
+    };
+    if (immediate)
+    {
+        builder.resume = []() -> async::task<int> {
+            co_return 0;
         };
     }
     return builder.run();
@@ -4346,7 +4466,7 @@ int fb::game::builtin::character::builtin_input(lua_State* L)
 
 int fb::game::builtin::character::builtin_menu(lua_State* L)
 {
-    // Ex) obj::menu(ch, "hello", {"hello 1", "hello 2", "hello 3"})
+    // Ex) ch:menu(npc, "hello", {"hello 1", "hello 2"} [, { immediate = true }])
     auto lua = fb::lua::get(L);
     if (lua == nullptr)
         return 0;
@@ -4374,14 +4494,21 @@ int fb::game::builtin::character::builtin_menu(lua_State* L)
     }
 
     auto message = lua->tostring(3);
-
-    // Read menu list
-    auto size  = lua->rawlen(4);
-    auto menus = std::vector<std::string>();
+    auto size    = lua->rawlen(4);
+    auto menus   = std::vector<std::string>();
     for (int i = 0; i < size; i++)
     {
         lua->rawgeti(4, i + 1);
         menus.push_back(lua->tostring(-1));
+    }
+
+    auto immediate = false;
+    if (lua->argc() >= 5 && lua->is_table(5))
+    {
+        lua->pushstring("immediate");
+        if (lua_rawget(L, 5) == LUA_TBOOLEAN)
+            immediate = lua_toboolean(L, -1);
+        lua_pop(L, 1);
     }
 
     auto weak     = ch->weak_from_this_as<fb::game::character>();
@@ -4393,12 +4520,21 @@ int fb::game::builtin::character::builtin_menu(lua_State* L)
         else
             ch->listener.on_dialog(*ch, *model, message, menus, oid);
 
-        if (ch->dialog != nullptr)
-            ch->dialog->release();
+        if (immediate == false)
+        {
+            if (ch->dialog != nullptr)
+                ch->dialog->release();
 
-        ch->dialog = lua;
+            ch->dialog = lua;
+        }
         co_return;
     };
+    if (immediate)
+    {
+        builder.resume = []() -> async::task<int> {
+            co_return 0;
+        };
+    }
     return builder.run();
 }
 
@@ -4441,6 +4577,15 @@ int fb::game::builtin::character::builtin_slot(lua_State* L)
         lua->pop(1);
     }
 
+    auto immediate = false;
+    if (lua->argc() >= 5 && lua->is_table(5))
+    {
+        lua->pushstring("immediate");
+        if (lua_rawget(L, 5) == LUA_TBOOLEAN)
+            immediate = lua_toboolean(L, -1);
+        lua_pop(L, 1);
+    }
+
     auto weak     = ch->weak_from_this_as<fb::game::character>();
     auto builder  = lua->new_co_builder();
     builder.weak  = weak;
@@ -4450,12 +4595,21 @@ int fb::game::builtin::character::builtin_slot(lua_State* L)
         else
             ch->listener.on_dialog(*ch, *model, message, slots, oid);
 
-        if (ch->dialog != nullptr)
-            ch->dialog->release();
+        if (immediate == false)
+        {
+            if (ch->dialog != nullptr)
+                ch->dialog->release();
 
-        ch->dialog = lua;
+            ch->dialog = lua;
+        }
         co_return;
     };
+    if (immediate)
+    {
+        builder.resume = []() -> async::task<int> {
+            co_return 0;
+        };
+    }
     return builder.run();
 }
 

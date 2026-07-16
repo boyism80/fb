@@ -17,7 +17,7 @@ function NPC_487(me, npc_obj)
                     me:map(map, math.random(3, 8), math.random(5, 9))
                     return DIALOG_RESULT.NEXT
                 end
-                return me:dialog(ch, '이동할 수 없습니다.', false, true)
+                return me:dialog(ch, '이동할 수 없습니다.', { prev = false, next = true })
             end },
         },
     })

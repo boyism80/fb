@@ -1,71 +1,71 @@
 -- npc: 혜천대사
 function NPC_154(me, npc)
     if me:level() < 20 then
-        me:dialog(npc, "자네는 소림사의 비기를 전수받기에 너무 약한것 같군...\n\n레벨이 20이 넘거든 다시 오게나.", false, false)
+        me:dialog(npc, "자네는 소림사의 비기를 전수받기에 너무 약한것 같군...\n\n레벨이 20이 넘거든 다시 오게나.", { prev = false, next = false })
         return
     end
 
     local sel, btn = me:list(npc, "안녕하세요. 어떻게 오셨나요?", {
         "소림사백열장전수",
         "소림사선풍각전수",
-    }, false)
+    }, { prev = false })
     if btn == DIALOG_RESULT.QUIT or sel == nil then
         return
     end
 
     if sel == 1 then
         if me:spell("백열장") then
-            local d = me:dialog(npc, "당신은 백열장을 배워 수련중이군요..", false, true)
+            local d = me:dialog(npc, "당신은 백열장을 배워 수련중이군요..", { prev = false, next = true })
             if d == DIALOG_RESULT.QUIT then
                 return
             end
-            d = me:dialog(npc, "소림사의 무공은 수련을 할수록 그 위력이 엄청나진다오.. 부디 수련에 정진하여 더욱 강해지길 바라오...", false, true)
+            d = me:dialog(npc, "소림사의 무공은 수련을 할수록 그 위력이 엄청나진다오.. 부디 수련에 정진하여 더욱 강해지길 바라오...", { prev = false, next = true })
             if d == DIALOG_RESULT.QUIT then
                 return
             end
-            me:dialog(npc, "소림사 본전의 뒤쪽에 수련장이 있소. 그곳에 가면 소림사 승려들과 수련할 수 있을 것이오..", false, false)
+            me:dialog(npc, "소림사 본전의 뒤쪽에 수련장이 있소. 그곳에 가면 소림사 승려들과 수련할 수 있을 것이오..", { prev = false, next = false })
             return
         end
-        local d = me:dialog(npc, "자네는 백열장을 모르나? 백열장은 소림사에서 가장 쉽게 배울수 있는 무공이라네. 백열장을 모른다면 소림사를 안다고 할 수 없지.", false, true)
+        local d = me:dialog(npc, "자네는 백열장을 모르나? 백열장은 소림사에서 가장 쉽게 배울수 있는 무공이라네. 백열장을 모른다면 소림사를 안다고 할 수 없지.", { prev = false, next = true })
         if d == DIALOG_RESULT.QUIT then
             return
         end
-        d = me:dialog(npc, "백열장은 수련에 따라 그 위력이 천차만별이지. 소림사 뒤쪽의 수련장에서 수련할 수 있다네.", false, true)
+        d = me:dialog(npc, "백열장은 수련에 따라 그 위력이 천차만별이지. 소림사 뒤쪽의 수련장에서 수련할 수 있다네.", { prev = false, next = true })
         if d == DIALOG_RESULT.QUIT then
             return
         end
         local sel2, btn2 = me:list(npc, "소림사에 10000전을 시주한다면 내 직접 백열장을 전수해주겠소. 어떻소?", {
             "좋습니다. 어서 가르쳐주십시오!",
             "괜찮습니다. 그럼 이만.",
-        }, false)
+        }, { prev = false })
         if btn2 == DIALOG_RESULT.QUIT or sel2 == nil then
             return
         end
         if sel2 == 1 then
             if me:money() < 10000 then
-                me:dialog(npc, "안타깝지만 자네 수중에 충분한 돈이 없구만. 돈을 가지고 다시 찾아오시오.", false, false)
+                me:dialog(npc, "안타깝지만 자네 수중에 충분한 돈이 없구만. 돈을 가지고 다시 찾아오시오.", { prev = false, next = false })
                 return
             end
             if me:spell("백열장") then
-                me:dialog(npc, "이미 나에게 배운 것 같군.. 하지만 시주한 금액은 소림사에서 좋은 일에 쓰도록 하겠네.", false, false)
+                me:dialog(npc, "이미 나에게 배운 것 같군.. 하지만 시주한 금액은 소림사에서 좋은 일에 쓰도록 하겠네.", { prev = false, next = false })
             else
                 me:money(me:money() - 10000)
                 me:mkspell("백열장")
-                local d = me:dialog(npc, "여기있소. 피땀흘려 수련을 한다면 언젠가는 꼭 보상을 받을것이오.", false, true)
+                local d = me:dialog(npc, "여기있소. 피땀흘려 수련을 한다면 언젠가는 꼭 보상을 받을것이오.", { prev = false, next = true })
                 if d == DIALOG_RESULT.QUIT then
                     return
                 end
-                me:dialog(npc, "수련장은 소림사 뒤쪽으로 가보면 승려들이 수련하고 있을것이오.", false, false)
+                me:dialog(npc, "수련장은 소림사 뒤쪽으로 가보면 승려들이 수련하고 있을것이오.", { prev = false, next = false })
             end
         else
-            me:dialog(npc, "알겠소. 언젠가 꼭 필요하다면 그때 다시 찾아오시오.", false, false)
+            me:dialog(npc, "알겠소. 언젠가 꼭 필요하다면 그때 다시 찾아오시오.", { prev = false, next = false })
         end
         return
     end
 
     if sel == 2 then
         if me:spell("선풍각") then
-            me:dialog(npc, "선풍각을 배워 수련중이구려. 선풍각은 수련에 따라 얼마든지 강해진다오. 수련을 게을리 하지 마시길. 나무아미타불..", false, false)
+            me:dialog(npc, "선풍각을 배워 수련중이구려. 선풍각은 수련에 따라 얼마든지 강해진다오. 수련을 게을리 하지 마시길. 나무아미타불..", { prev = false, next = false })
             return
         end
         local dialogs = {
@@ -77,7 +77,7 @@ function NPC_154(me, npc)
             "그리고 선풍각'첨의 효과를 받기 위해서 선풍각을 두번 수련할 필요가 없지. 무슨 뜻인지 알겠는가?",
         }
         for i, msg in ipairs(dialogs) do
-            local d = me:dialog(npc, msg, false, true)
+            local d = me:dialog(npc, msg, { prev = false, next = true })
             if d == DIALOG_RESULT.QUIT then
                 return
             end
@@ -85,28 +85,28 @@ function NPC_154(me, npc)
         local sel2, btn2 = me:list(npc, "소림사에 20000전을 시주한다면 내 직접 선풍각을 전수해주겠소. 어떻소?", {
             "좋습니다. 어서 가르쳐주십시오!",
             "괜찮습니다. 그럼 이만.",
-        }, false)
+        }, { prev = false })
         if btn2 == DIALOG_RESULT.QUIT or sel2 == nil then
             return
         end
         if sel2 == 1 then
             if me:money() < 20000 then
-                me:dialog(npc, "안타깝지만 자네 수중에 충분한 돈이 없구만. 돈을 가지고 다시 찾아오시오.", false, false)
+                me:dialog(npc, "안타깝지만 자네 수중에 충분한 돈이 없구만. 돈을 가지고 다시 찾아오시오.", { prev = false, next = false })
                 return
             end
             if me:spell("선풍각") then
-                me:dialog(npc, "이미 나에게 배운 것 같군.. 하지만 시주한 금액은 소림사에서 좋은 일에 쓰도록 하겠네.", false, false)
+                me:dialog(npc, "이미 나에게 배운 것 같군.. 하지만 시주한 금액은 소림사에서 좋은 일에 쓰도록 하겠네.", { prev = false, next = false })
             else
                 me:money(me:money() - 20000)
                 me:mkspell("선풍각")
-                local d = me:dialog(npc, "여기있소. 피땀흘려 수련을 한다면 언젠가는 꼭 보상을 받을것이오.", false, true)
+                local d = me:dialog(npc, "여기있소. 피땀흘려 수련을 한다면 언젠가는 꼭 보상을 받을것이오.", { prev = false, next = true })
                 if d == DIALOG_RESULT.QUIT then
                     return
                 end
-                me:dialog(npc, "수련장은 소림사 뒤쪽으로 가보면 승려들이 수련하고 있을것이오.", false, false)
+                me:dialog(npc, "수련장은 소림사 뒤쪽으로 가보면 승려들이 수련하고 있을것이오.", { prev = false, next = false })
             end
         else
-            me:dialog(npc, "알겠소. 언젠가 꼭 필요하다면 그때 다시 찾아오시오.", false, false)
+            me:dialog(npc, "알겠소. 언젠가 꼭 필요하다면 그때 다시 찾아오시오.", { prev = false, next = false })
         end
     end
 end

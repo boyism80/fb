@@ -266,10 +266,10 @@ local function run_gatekeeper_entrance(me, npc_obj, totem_name_kr, totem_key)
 end
 
 local function run_black_flag(me, npc_obj)
-    if me:dialog(npc_obj, '아니, 내가 검정깃발을 가지고 있다는걸 어떻게 알았나.. 으음...', false, true) == DIALOG_RESULT.QUIT then
+    if me:dialog(npc_obj, '아니, 내가 검정깃발을 가지고 있다는걸 어떻게 알았나.. 으음...', { prev = false, next = true }) == DIALOG_RESULT.QUIT then
         return true
     end
-    if me:dialog(npc_obj, '그냥 줄순 없고.. 5000전만 내게. 그럼 검정깃발을 하나 주지.', true, true) == DIALOG_RESULT.QUIT then
+    if me:dialog(npc_obj, '그냥 줄순 없고.. 5000전만 내게. 그럼 검정깃발을 하나 주지.', { prev = true, next = true }) == DIALOG_RESULT.QUIT then
         return true
     end
     local selected, button = me:list(npc_obj, '어때? 5000전에 검정깃발 하나 사길 텐가?', { '네, 주십시오.', '안 살래요' })
@@ -281,15 +281,15 @@ local function run_black_flag(me, npc_obj)
     end
     local BLACK_FLAG_PRICE = 5000
     if me:money() < BLACK_FLAG_PRICE then
-        me:dialog(npc_obj, '돈이 모자랍니다.', false, true)
+        me:dialog(npc_obj, '돈이 모자랍니다.', { prev = false, next = true })
         return true
     end
     if me:mkitem('검정깃발', 1) == nil then
-        me:dialog(npc_obj, '공간이 부족합니다.', false, true)
+        me:dialog(npc_obj, '공간이 부족합니다.', { prev = false, next = true })
         return true
     end
     me:money(me:money() - BLACK_FLAG_PRICE)
-    me:dialog(npc_obj, '검정깃발을 받았습니다.', false, false)
+    me:dialog(npc_obj, '검정깃발을 받았습니다.', { prev = false, next = false })
     return true
 end
 
@@ -726,13 +726,13 @@ function on_login(me, first_login)
     local npc = name2npc('낙랑')
     local button = nil
 ::BIRTHDAY_DIALOG_1::
-    button = me:dialog(npc, '대단히 중요하니 끝까지 읽어주세요! 빈번히 발생하는 아이디 해킹을 미연에 방지하기 위해 또 하나의 2차 비밀번호를 정해야 합니다.', false, true)
+    button = me:dialog(npc, '대단히 중요하니 끝까지 읽어주세요! 빈번히 발생하는 아이디 해킹을 미연에 방지하기 위해 또 하나의 2차 비밀번호를 정해야 합니다.', { prev = false, next = true })
     if button == DIALOG_RESULT.QUIT then
         return
     end
 
 ::BIRTHDAY_DIALOG_2::
-    button = me:dialog(npc, '이 2차 비밀번호는 한번 결정을 하시면 변경이 불가능 합니다. 이 2차 비밀번호는 자신의 게임 접속 비밀번호를 바꿀 때에만 사용합니다.', true, true)
+    button = me:dialog(npc, '이 2차 비밀번호는 한번 결정을 하시면 변경이 불가능 합니다. 이 2차 비밀번호는 자신의 게임 접속 비밀번호를 바꿀 때에만 사용합니다.', { prev = true, next = true })
     if button == DIALOG_RESULT.QUIT then
         return
     end
@@ -741,7 +741,7 @@ function on_login(me, first_login)
     end
 
 ::BIRTHDAY_DIALOG_3::
-    button = me:dialog(npc, '이 2차 비밀번호는 자신의 생년월일로 해주세요. 예를 들면 자신의 생일이 92년 04월 17일이면, 920417으로 입력해주세요. (반드시 6자리)', true, true)
+    button = me:dialog(npc, '이 2차 비밀번호는 자신의 생년월일로 해주세요. 예를 들면 자신의 생일이 92년 04월 17일이면, 920417으로 입력해주세요. (반드시 6자리)', { prev = true, next = true })
     if button == DIALOG_RESULT.QUIT then
         return
     end
@@ -750,7 +750,7 @@ function on_login(me, first_login)
     end
 
 ::BIRTHDAY_DIALOG_4::
-    button = me:dialog(npc, '이 2차 비밀번호는 분실하실 이유가 없기 때문에(자신의 생년월일이므로) 이 2차 비밀번호를 모르시는 분은 해당 아이디에 대한 소유권을 박탈합니다.', true, true)
+    button = me:dialog(npc, '이 2차 비밀번호는 분실하실 이유가 없기 때문에(자신의 생년월일이므로) 이 2차 비밀번호를 모르시는 분은 해당 아이디에 대한 소유권을 박탈합니다.', { prev = true, next = true })
     if button == DIALOG_RESULT.QUIT then
         return
     end
@@ -759,7 +759,7 @@ function on_login(me, first_login)
     end
 
 ::BIRTHDAY_DIALOG_5::
-    button = me:dialog(npc, '이 2차 비밀번호를 모르시고 처음의 비밀번호 분실신고를 하셔도 저희는 가르쳐 드릴수가 없습니다. 그 만큼 중요한 것이오니 신중히 그리고 정확히 입력해주세요.', true, true)
+    button = me:dialog(npc, '이 2차 비밀번호를 모르시고 처음의 비밀번호 분실신고를 하셔도 저희는 가르쳐 드릴수가 없습니다. 그 만큼 중요한 것이오니 신중히 그리고 정확히 입력해주세요.', { prev = true, next = true })
     if button == DIALOG_RESULT.QUIT then
         return
     end
@@ -768,7 +768,7 @@ function on_login(me, first_login)
     end
 
 ::BIRTHDAY_DIALOG_6::
-    button = me:dialog(npc, '또한 이 두번째 비밀번호(생년월일)를 입력하지 않으시고 다음에 비밀번호 분실신고를 하셔도 저희는 해드릴수가 없으니 반드시 두번째 비번을 입력하시기 바랍니다.', true, true)
+    button = me:dialog(npc, '또한 이 두번째 비밀번호(생년월일)를 입력하지 않으시고 다음에 비밀번호 분실신고를 하셔도 저희는 해드릴수가 없으니 반드시 두번째 비번을 입력하시기 바랍니다.', { prev = true, next = true })
     if button == DIALOG_RESULT.QUIT then
         return
     end
@@ -777,7 +777,7 @@ function on_login(me, first_login)
     end
 
 ::BIRTHDAY_INPUT::
-    local birthday = me:input(npc, '자신의 생년월일을 입력해 주세요.', '저의 생년월일은', '입니다.', 6, true)
+    local birthday = me:input(npc, '자신의 생년월일을 입력해 주세요.', { top = '저의 생년월일은', bottom = '입니다.', maxlen = 6, prev = true })
     if birthday == DIALOG_RESULT.QUIT then
         goto BIRTHDAY_INPUT
     end
@@ -787,7 +787,7 @@ function on_login(me, first_login)
 
     ::BIRTHDAY_MUST_SET::
     if birthday == '' or #birthday ~= 6 then
-        button = me:dialog(npc, '두번째 비밀번호를 정하지 않으면 게임을 할 수 없습니다. 반드시 해주세요.', true, true)
+        button = me:dialog(npc, '두번째 비밀번호를 정하지 않으면 게임을 할 수 없습니다. 반드시 해주세요.', { prev = true, next = true })
         if button == DIALOG_RESULT.QUIT then
             return
         end
@@ -802,7 +802,7 @@ function on_login(me, first_login)
         goto BIRTHDAY_MUST_SET
     end
 
-    local sel, list_btn = me:list(npc, string.format('당신의 생년월일이 %s가 맞습니까?', birthday), {'예', '아니오'}, true)
+    local sel, list_btn = me:list(npc, string.format('당신의 생년월일이 %s가 맞습니까?', birthday), {'예', '아니오'}, { prev = true })
     if list_btn == DIALOG_RESULT.QUIT then
         return
     end
@@ -899,7 +899,7 @@ function on_matchmaking_proposed(me, match_id, match_type, confirm_deadline)
     )
 
     local npc = name2npc('낙랑')
-    local selected, button = me:list(npc, '매치를 찾았습니다. 참여하시겠습니까?', {'예', '아니오'}, false)
+    local selected, button = me:list(npc, '매치를 찾았습니다. 참여하시겠습니까?', {'예', '아니오'}, { prev = false })
     if button == DIALOG_RESULT.QUIT or selected == nil then
         return
     end

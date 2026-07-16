@@ -5,7 +5,7 @@ local function run_dialogs(me, npc, messages)
     for i, msg in ipairs(messages) do
         local prev = (i > 1)
         local next = (i < #messages)
-        local b = me:dialog(npc, msg, prev, next)
+        local b = me:dialog(npc, msg, { prev = prev, next = next })
         if b == DIALOG_RESULT.QUIT or b == DIALOG_RESULT.PREV then
             return false
         end
@@ -15,9 +15,9 @@ end
 
 local function handle_hwahwa_not_friend(me, npc)
     if math.random(1, 2) == 1 then
-        me:dialog(npc, "음? 처음 맡아보는 사람 냄새군. 이 섬에 사는 사람이 아닌듯 한데... 흠.", false, false)
+        me:dialog(npc, "음? 처음 맡아보는 사람 냄새군. 이 섬에 사는 사람이 아닌듯 한데... 흠.", { prev = false, next = false })
     else
-        me:dialog(npc, "나는 늑대들의 진실한 왕, 인랑이다. 이곳에서 당장 사라지도록 해.", false, false)
+        me:dialog(npc, "나는 늑대들의 진실한 왕, 인랑이다. 이곳에서 당장 사라지도록 해.", { prev = false, next = false })
     end
     return true
 end
@@ -28,12 +28,12 @@ local function handle_jingogyun_lt1(me, npc, q_jingo)
         return false
     end
     ::NPC_475_0001::
-    local b = me:dialog(npc, "화화의 내음이 잔뜩 묻어있군. 아주 오랜 시간동안 화화와 알고 지냈음이 틀림 없어.", false, true)
+    local b = me:dialog(npc, "화화의 내음이 잔뜩 묻어있군. 아주 오랜 시간동안 화화와 알고 지냈음이 틀림 없어.", { prev = false, next = true })
     if b == DIALOG_RESULT.QUIT then
         return true
     end
     ::NPC_475_0002::
-    b = me:dialog(npc, "그래, 화화의 친구라고 믿어도 좋겠군. 넌 누구지? 외부인이면서 어째서 죽은 자와 친구하고", true, true)
+    b = me:dialog(npc, "그래, 화화의 친구라고 믿어도 좋겠군. 넌 누구지? 외부인이면서 어째서 죽은 자와 친구하고", { prev = true, next = true })
     if b == DIALOG_RESULT.QUIT then
         return true
     end
@@ -41,7 +41,7 @@ local function handle_jingogyun_lt1(me, npc, q_jingo)
         goto NPC_475_0001
     end
     ::NPC_475_0003::
-    b = me:dialog(npc, "저 사악한 무리들과 싸우고 있는거지? 무엇을 위해서? 무엇을 바라고 이곳에 서있는건가?", true, true)
+    b = me:dialog(npc, "저 사악한 무리들과 싸우고 있는거지? 무엇을 위해서? 무엇을 바라고 이곳에 서있는건가?", { prev = true, next = true })
     if b == DIALOG_RESULT.QUIT then
         return true
     end
@@ -51,7 +51,7 @@ local function handle_jingogyun_lt1(me, npc, q_jingo)
     local sel, btn = me:list(npc, "대답해라. 도대체 이 곳으로 찾아온 이유가 무엇인지 말해라!", {
         "무슨 소리야? 난 부와 명성을 원할 뿐이다.",
         "나는 이 섬에 정의와 희망을 세우기 위해 왔다.",
-    }, false)
+    }, { prev = false })
     if btn == DIALOG_RESULT.QUIT or sel == nil then
         return true
     end
@@ -107,7 +107,7 @@ local function handle_jingogyun_3(me, npc, q_jingo)
         "화화와는 어떤 사이에요?",
         "저기 인성초들 말고도 다른 반란군이 있나요?",
     }
-    local sel, btn = me:list(npc, "친구, 그래, 건강하게 지내고 있나? 오늘은 무슨 일이지? ", list_opts, false)
+    local sel, btn = me:list(npc, "친구, 그래, 건강하게 지내고 있나? 오늘은 무슨 일이지? ", list_opts, { prev = false })
     if btn == DIALOG_RESULT.QUIT or sel == nil then
         return true
     end
@@ -124,7 +124,7 @@ local function handle_jingogyun_3(me, npc, q_jingo)
         local sub_sel, sub_btn = me:list(npc, "음, 고균의 영검에 대해 뭐 더 알고 싶은게 있나? ", {
             "이게 그렇게 대단한 검인가요?",
             "뭐랄까 어딘가 부족한 느낌이 들어요.",
-        }, false)
+        }, { prev = false })
         if sub_btn == DIALOG_RESULT.QUIT or sub_sel == nil then
             return true
         end
@@ -250,7 +250,7 @@ local function handle_jingogyun_4_to_8(me, npc, q_jingo)
     local sel, btn = me:list(npc, "어서오게, 친구여. 그간 잘 지냈는가?", {
         "고균의 영력구슬은 어디있죠?",
         "고균의 영검에 영력을 불어넣어주세요.",
-    }, false)
+    }, { prev = false })
     if btn == DIALOG_RESULT.QUIT or sel == nil then
         return true
     end
@@ -264,11 +264,11 @@ local function handle_jingogyun_4_to_8(me, npc, q_jingo)
     end
     if sel == 2 then
         if not me:has_items("영력구슬", 1) then
-            me:dialog(npc, "고균의 영검에 영력을 불어넣기 위해서는 영력구슬이 필요하지.", false, false)
+            me:dialog(npc, "고균의 영검에 영력을 불어넣기 위해서는 영력구슬이 필요하지.", { prev = false, next = false })
             return true
         end
         if not me:has_items("고균의영검", 1) then
-            me:dialog(npc, "고균의 영검을 가져오면 영력을 불어넣어 주지.", false, false)
+            me:dialog(npc, "고균의 영검을 가져오면 영력을 불어넣어 주지.", { prev = false, next = false })
             return true
         end
         if not run_dialogs(me, npc, {
@@ -284,10 +284,10 @@ local function handle_jingogyun_4_to_8(me, npc, q_jingo)
             { ['item'] = { ["진'고균의영검"] = 1 } }
         )
         if code == enum.EXCHANGE_RESULT.LACK_COST then
-            me:dialog(npc, "아이템을 제거할 수 없습니다.", false, false)
+            me:dialog(npc, "아이템을 제거할 수 없습니다.", { prev = false, next = false })
             return true
         elseif code == enum.EXCHANGE_RESULT.LACK_CAPACITY then
-            me:dialog(npc, "소지품이 가득 차서 검을 줄 수 없네.", false, false)
+            me:dialog(npc, "소지품이 가득 차서 검을 줄 수 없네.", { prev = false, next = false })
             return true
         end
         if q_jingo then
@@ -338,5 +338,5 @@ function NPC_475(me, npc)
         return
     end
 
-    me:dialog(npc, "준비중입니다.", false, false)
+    me:dialog(npc, "준비중입니다.", { prev = false, next = false })
 end

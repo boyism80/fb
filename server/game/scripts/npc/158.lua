@@ -12,22 +12,22 @@ function NPC_158(me, npc)
     if index == 1 then
         local q = me:quest(quest.QUEST_SHARK_WEAPON)
         if q == nil then
-            me:dialog(npc, '자네는 아직 알 때가 아니군.', false, false)
+            me:dialog(npc, '자네는 아직 알 때가 아니군.', { prev = false, next = false })
             goto NPC_158_0001
         end
         local step = q:step()
         if step < 3 then
-            me:dialog(npc, '자네는 아직 알 때가 아니군.', false, false)
+            me:dialog(npc, '자네는 아직 알 때가 아니군.', { prev = false, next = false })
             goto NPC_158_0001
         end
         if step == 3 then
-            if me:dialog(npc, '상어장군을 저승에서 불러내고 싶다고?\n\n매우 어려운 일을 부탁하는구만.', true, true) == DIALOG_RESULT.QUIT then
+            if me:dialog(npc, '상어장군을 저승에서 불러내고 싶다고?\n\n매우 어려운 일을 부탁하는구만.', { prev = true, next = true }) == DIALOG_RESULT.QUIT then
                 return
             end
-            if me:dialog(npc, '사어장군을 소환하기 위해서는 용궁의정기가 필요하다네.', true, true) == DIALOG_RESULT.QUIT then
+            if me:dialog(npc, '사어장군을 소환하기 위해서는 용궁의정기가 필요하다네.', { prev = true, next = true }) == DIALOG_RESULT.QUIT then
                 return
             end
-            if me:dialog(npc, '용궁의정기를 만드는 것은 내가 모르니 다른 사람한테 가서 물어보시게.', false, false) == DIALOG_RESULT.QUIT then
+            if me:dialog(npc, '용궁의정기를 만드는 것은 내가 모르니 다른 사람한테 가서 물어보시게.', { prev = false, next = false }) == DIALOG_RESULT.QUIT then
                 return
             end
             if q then
@@ -37,15 +37,15 @@ function NPC_158(me, npc)
             goto NPC_158_0001
         end
         if step >= 4 and step <= 9 then
-            me:dialog(npc, '아직 용궁의정기를 다 모으지 못했나 보군..', false, false)
+            me:dialog(npc, '아직 용궁의정기를 다 모으지 못했나 보군..', { prev = false, next = false })
             goto NPC_158_0001
         end
         if step == 10 then
             local required_jungki = { ['용궁의정기1'] = 1, ['용궁의정기2'] = 1, ['용궁의정기3'] = 1, ['용궁의정기4'] = 1, ['용궁의정기5'] = 1 }
-            if me:dialog(npc, '용궁의정기를 가져왔군.', true, true) == DIALOG_RESULT.QUIT then
+            if me:dialog(npc, '용궁의정기를 가져왔군.', { prev = true, next = true }) == DIALOG_RESULT.QUIT then
                 return
             end
-            if me:dialog(npc, '그럼 어디보자...아수라 마차라 바하라 미다라...하아아압!!!', true, true) == DIALOG_RESULT.QUIT then
+            if me:dialog(npc, '그럼 어디보자...아수라 마차라 바하라 미다라...하아아압!!!', { prev = true, next = true }) == DIALOG_RESULT.QUIT then
                 return
             end
             local ex_code = me:exchange(
@@ -53,22 +53,22 @@ function NPC_158(me, npc)
                 { ['item'] = { ['무기제조법'] = 1 } }
             )
             if ex_code == enum.EXCHANGE_RESULT.LACK_COST then
-                me:dialog(npc, '아직 용궁의정기를 다 모으지 못했나 보군..', false, false)
+                me:dialog(npc, '아직 용궁의정기를 다 모으지 못했나 보군..', { prev = false, next = false })
                 goto NPC_158_0001
             end
             if ex_code == enum.EXCHANGE_RESULT.LACK_CAPACITY then
-                me:dialog(npc, '소지품이 가득 차서 무기제조법을 받을 수 없네. 자리 좀 비우고 다시 오게.', false, false)
+                me:dialog(npc, '소지품이 가득 차서 무기제조법을 받을 수 없네. 자리 좀 비우고 다시 오게.', { prev = false, next = false })
                 goto NPC_158_0001
             end
             if q then
                 q:step(11)
             end
             me:push_achievement(24, '무기제조법을 얻다.', 7, 11)
-            me:dialog(npc, '상어장군이 하는 말을 적었으니 이 두루마리를 가져가게.', false, false)
+            me:dialog(npc, '상어장군이 하는 말을 적었으니 이 두루마리를 가져가게.', { prev = false, next = false })
             goto NPC_158_0001
         end
         if step >= 11 then
-            me:dialog(npc, '......', false, false)
+            me:dialog(npc, '......', { prev = false, next = false })
         end
         goto NPC_158_0001
     end
@@ -108,11 +108,11 @@ function NPC_158(me, npc)
 
         me:money(money - price)
 ::NPC_158_0010::
-        if me:dialog(npc, string.format('염색비로 %d전을 받았습니다.', price), false, true) == DIALOG_RESULT.QUIT then
+        if me:dialog(npc, string.format('염색비로 %d전을 받았습니다.', price), { prev = false, next = true }) == DIALOG_RESULT.QUIT then
             return
         end
 
-        button = me:dialog(npc, '그럼 언제나 행운이 함께 하시기를 빌겠습니다.', true, true)
+        button = me:dialog(npc, '그럼 언제나 행운이 함께 하시기를 빌겠습니다.', { prev = true, next = true })
         if button == DIALOG_RESULT.QUIT then
             return
         end
@@ -134,7 +134,7 @@ function NPC_158(me, npc)
     	end
 
     	me:armor_color(nil)
-    	button = me:dialog(npc, '일반 복장으로 바꿔드렸습니다.', false, true)
+    	button = me:dialog(npc, '일반 복장으로 바꿔드렸습니다.', { prev = false, next = true })
     	if button == DIALOG_RESULT.QUIT then
     		return
     	end

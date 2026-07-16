@@ -6,12 +6,12 @@ function NPC_370(me, npc)
 
     if not dojaechun_one then
         ::NPC_370_0000::
-        local button = me:dialog(npc, "큰아버지께서 요즘 건강이 안 좋으셔서 그 집 가족들이 모두 걱정하고 있어요.. 어서 건강해지셔야 할텐데..", false, true)
+        local button = me:dialog(npc, "큰아버지께서 요즘 건강이 안 좋으셔서 그 집 가족들이 모두 걱정하고 있어요.. 어서 건강해지셔야 할텐데..", { prev = false, next = true })
         if button == DIALOG_RESULT.QUIT then
             return
         end
 
-        button = me:dialog(npc, "저희 가족들은 도삭산 여기저기에 흩어져서 살고 있답니다. 가끔 모두 모여서 재미있는 이야기들을 하기도 하지요.", false, false)
+        button = me:dialog(npc, "저희 가족들은 도삭산 여기저기에 흩어져서 살고 있답니다. 가끔 모두 모여서 재미있는 이야기들을 하기도 하지요.", { prev = false, next = false })
         if button == DIALOG_RESULT.QUIT then
             return
         end
@@ -22,13 +22,13 @@ function NPC_370(me, npc)
     end
 
     ::NPC_370_0001::
-    local button = me:dialog(npc, string.format("앗! %s님이시군요! 저희 가족들 모두를 대신해서 제가 감사드립니다.", me:name()), false, true)
+    local button = me:dialog(npc, string.format("앗! %s님이시군요! 저희 가족들 모두를 대신해서 제가 감사드립니다.", me:name()), { prev = false, next = true })
     if button == DIALOG_RESULT.QUIT then
         return
     end
 
     ::NPC_370_0002::
-    button = me:dialog(npc, "보답이라도 해드려야 할 것 같은데.. 도삭산에는 1000층 상점이 숨겨져 있는데요, 제가 거기로 가는 길을 알고 있거든요.", true, true)
+    button = me:dialog(npc, "보답이라도 해드려야 할 것 같은데.. 도삭산에는 1000층 상점이 숨겨져 있는데요, 제가 거기로 가는 길을 알고 있거든요.", { prev = true, next = true })
     if button == DIALOG_RESULT.QUIT then
         return
     end
@@ -37,7 +37,7 @@ function NPC_370(me, npc)
     end
 
     ::NPC_370_0003::
-    button = me:dialog(npc, "여길 가려면, 수정해골, 도삭산황금봉, 도삭산의서.. 세가지가 필요하답니다.", true, true)
+    button = me:dialog(npc, "여길 가려면, 수정해골, 도삭산황금봉, 도삭산의서.. 세가지가 필요하답니다.", { prev = true, next = true })
     if button == DIALOG_RESULT.QUIT then
         return
     end
@@ -55,13 +55,13 @@ function NPC_370(me, npc)
     end
 
     ::NPC_370_0004::
-    button = me:dialog(npc, "앗, 이미 가지고 계시군요? 그럼 비밀의 1000층상점으로 보내드리겠습니다.", false, true)
+    button = me:dialog(npc, "앗, 이미 가지고 계시군요? 그럼 비밀의 1000층상점으로 보내드리겠습니다.", { prev = false, next = true })
     if button == DIALOG_RESULT.QUIT then
         return
     end
 
     ::NPC_370_0005::
-    button = me:dialog(npc, "주의하실 점은, 단 한번만 가실 수 있다는 것과, 여기서 파는 물건들은 굉장히 좋은 것들이지만, 그만큼 가격이 비싸다는 것도 기억해두세요.", true, true)
+    button = me:dialog(npc, "주의하실 점은, 단 한번만 가실 수 있다는 것과, 여기서 파는 물건들은 굉장히 좋은 것들이지만, 그만큼 가격이 비싸다는 것도 기억해두세요.", { prev = true, next = true })
     if button == DIALOG_RESULT.QUIT then
         return
     end
@@ -69,7 +69,7 @@ function NPC_370(me, npc)
         goto NPC_370_0004
     end
 
-    local sel, btn = me:list(npc, "지금 가시겠어요?", { "네, 가겠습니다.", "잠시후에.." }, false)
+    local sel, btn = me:list(npc, "지금 가시겠어요?", { "네, 가겠습니다.", "잠시후에.." }, { prev = false })
     if btn == DIALOG_RESULT.QUIT then
         return
     end
@@ -78,7 +78,7 @@ function NPC_370(me, npc)
     end
 
     if not me:rmitem(required, ITEM_DELETE_TYPE.GIVE) then
-        me:dialog(npc, "필요한 물건이 없어 보이네요.", false, false)
+        me:dialog(npc, "필요한 물건이 없어 보이네요.", { prev = false, next = false })
         return
     end
 

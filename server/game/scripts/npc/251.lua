@@ -9,7 +9,7 @@ function NPC_251(me, npc)
         else
             msg = "소림사에 오신걸 환영하오. 난 소림십팔나한중의 한명인 철수나한이오. 소림사의 무공중에서도 십팔나한의 무공은 최고라 할 수 있소.\n\n그중에 나의 특기인 금강퇴는 완력을 사용하는 무공으로는 최고라오"
         end
-        local button = me:dialog(npc, msg, false, true)
+        local button = me:dialog(npc, msg, { prev = false, next = true })
         if button == DIALOG_RESULT.QUIT then
             return nil, true
         end
@@ -17,7 +17,7 @@ function NPC_251(me, npc)
             "바로 그 금강퇴를 배우고 싶습니다.",
             "금강퇴의 수련을 위해 찾아왔습니다.",
             "금강퇴의 수련방법에 대해서 좀더 알고싶습니다.",
-        }, false)
+        }, { prev = false })
         if btn == DIALOG_RESULT.QUIT or sel == nil then
             return nil, true
         end
@@ -31,7 +31,7 @@ function NPC_251(me, npc)
 
     if sel == 1 then
         if has_spell then
-            local d = me:dialog(npc, "자네는 이미 금강퇴를 수련중이군.. 금강퇴는 다른 마법과 다르게 꾸준한 수련이 필요한 무술일세.", false, false)
+            local d = me:dialog(npc, "자네는 이미 금강퇴를 수련중이군.. 금강퇴는 다른 마법과 다르게 꾸준한 수련이 필요한 무술일세.", { prev = false, next = false })
             if d == DIALOG_RESULT.QUIT then
                 return
             end
@@ -40,39 +40,39 @@ function NPC_251(me, npc)
         local sel2, btn2 = me:list(npc, "어쩌시겠소? 시주를 하시고 금강퇴를 전수받으시겠소?", {
             "물론입니다. 어서 전수하여 주십시오.",
             "아닙니다. 다음에 다시 찾아오겠습니다.",
-        }, false)
+        }, { prev = false })
         if btn2 == DIALOG_RESULT.QUIT or sel2 == nil then
             return
         end
         if sel2 == 2 then
-            me:dialog(npc, "그대 뜻이 그렇다면 어쩔수 없지. 앞길에 부처님의 뜻이 따르길...", false, false)
+            me:dialog(npc, "그대 뜻이 그렇다면 어쩔수 없지. 앞길에 부처님의 뜻이 따르길...", { prev = false, next = false })
             return
         end
-        local d = me:dialog(npc, "좋소. 그럼 시주 오만전을 받고 전수해주겟소. 자...", false, true)
+        local d = me:dialog(npc, "좋소. 그럼 시주 오만전을 받고 전수해주겟소. 자...", { prev = false, next = true })
         if d == DIALOG_RESULT.QUIT then
             return
         end
         if me:money() < 50000 then
-            me:dialog(npc, "이런, 금전이 모자라는구려. 돈을 모아 다시 찾아오시오.", false, false)
+            me:dialog(npc, "이런, 금전이 모자라는구려. 돈을 모아 다시 찾아오시오.", { prev = false, next = false })
             return
         end
         me:money(me:money() - 50000)
         me:mkspell("금강퇴")
-        d = me:dialog(npc, "무공의 진의는 수련을 통해서만 깨달을 수 있는법. 수련 방법을 자세히 알고 싶다면 내가 가르쳐주겠소.", false, true)
+        d = me:dialog(npc, "무공의 진의는 수련을 통해서만 깨달을 수 있는법. 수련 방법을 자세히 알고 싶다면 내가 가르쳐주겠소.", { prev = false, next = true })
         if d == DIALOG_RESULT.QUIT then
             return
         end
-        me:dialog(npc, "금강퇴는 강한 완력을 바탕으로 한 타격 무공이오. 반드시 근접하여 사용해야 한다오. 지금 금강퇴를 익혔다 하더라도 위력이 약할것이오.", false, false)
+        me:dialog(npc, "금강퇴는 강한 완력을 바탕으로 한 타격 무공이오. 반드시 근접하여 사용해야 한다오. 지금 금강퇴를 익혔다 하더라도 위력이 약할것이오.", { prev = false, next = false })
         return
     end
 
     if sel == 2 then
         if not has_spell then
-            me:dialog(npc, "자네는 금강퇴를 아직 배우지 않았구려. 일단 전수부터 받아야 수련을 할 수 있다오.", false, false)
+            me:dialog(npc, "자네는 금강퇴를 아직 배우지 않았구려. 일단 전수부터 받아야 수련을 할 수 있다오.", { prev = false, next = false })
             return
         end
-        me:dialog(npc, "일단 자네가 어느정도 위력의 금강퇴를 가지고 있는지. 능력이 어느정도인지 확인해봐야겠구려. 능력에 따라 그에 걸맞는 수련을 하도록 해주겠소.", false, true)
-        local d = me:dialog(npc, "금강퇴의 수련도에 따라 내 적합한 조언을 해주도록 하겠네.", false, false)
+        me:dialog(npc, "일단 자네가 어느정도 위력의 금강퇴를 가지고 있는지. 능력이 어느정도인지 확인해봐야겠구려. 능력에 따라 그에 걸맞는 수련을 하도록 해주겠소.", { prev = false, next = true })
+        local d = me:dialog(npc, "금강퇴의 수련도에 따라 내 적합한 조언을 해주도록 하겠네.", { prev = false, next = false })
         if d == DIALOG_RESULT.QUIT then
             return
         end
@@ -93,7 +93,7 @@ function NPC_251(me, npc)
         while i >= 1 and i <= #info do
             local prev = (i > 1)
             local next = (i < #info)
-            local button = me:dialog(npc, info[i], prev, next)
+            local button = me:dialog(npc, info[i], { prev = prev, next = next })
             if button == DIALOG_RESULT.QUIT then
                 return
             end

@@ -6,12 +6,12 @@ local ITEM_DRIED_CENTIPEDE = '말린지네'
 
 function NPC_239(me, npc)
     ::NPC_239_0001::
-    local btn = me:dialog(npc, '고기나 생선말고는 건포로 만들기 어렵지...\n\n지네 같은 것은 말리면 부서지고 없어져서, 하기가 어려운데...', false, true)
+    local btn = me:dialog(npc, '고기나 생선말고는 건포로 만들기 어렵지...\n\n지네 같은 것은 말리면 부서지고 없어져서, 하기가 어려운데...', { prev = false, next = true })
     if btn == DIALOG_RESULT.QUIT then
         return
     end
     ::NPC_239_0002::
-    btn = me:dialog(npc, '자네가 가진 지네를 전부 주면 한번 시도해 봄세...', true, true)
+    btn = me:dialog(npc, '자네가 가진 지네를 전부 주면 한번 시도해 봄세...', { prev = true, next = true })
     if btn == DIALOG_RESULT.QUIT then
         return
     end
@@ -25,7 +25,7 @@ function NPC_239(me, npc)
         count = item:count()
     end
     if count < 7 then
-        me:dialog(npc, '지네가 너무 적어서 만들수 없을 것 같네..', false, false)
+        me:dialog(npc, '지네가 너무 적어서 만들수 없을 것 같네..', { prev = false, next = false })
         return
     end
 
@@ -52,16 +52,16 @@ function NPC_239(me, npc)
         reward
     )
     if code == enum.EXCHANGE_RESULT.LACK_COST then
-        me:dialog(npc, '지네가 너무 적어서 만들수 없을 것 같네..', false, false)
+        me:dialog(npc, '지네가 너무 적어서 만들수 없을 것 같네..', { prev = false, next = false })
         return
     end
     if code == enum.EXCHANGE_RESULT.LACK_CAPACITY then
-        me:dialog(npc, '소지품이 가득 차서 말린지네를 받을 수 없네.', false, false)
+        me:dialog(npc, '소지품이 가득 차서 말린지네를 받을 수 없네.', { prev = false, next = false })
         return
     end
     if reward ~= nil then
-        me:dialog(npc, '이거 쉽지 않구만... 간신히 만들었네... 자주 들리게나...', false, true)
+        me:dialog(npc, '이거 쉽지 않구만... 간신히 만들었네... 자주 들리게나...', { prev = false, next = true })
     else
-        me:dialog(npc, '이런... 지네가 모두 부숴저버렸군..', false, false)
+        me:dialog(npc, '이런... 지네가 모두 부숴저버렸군..', { prev = false, next = false })
     end
 end

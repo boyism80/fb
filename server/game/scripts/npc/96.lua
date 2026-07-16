@@ -77,38 +77,38 @@ function NPC_96(me, npc)
                 return
             end
             if code == enum.EXCHANGE_RESULT.LACK_CAPACITY then
-                me:dialog(npc, '소지품이 가득 차서 무기를 드릴 수 없습니다.', false, true)
+                me:dialog(npc, '소지품이 가득 차서 무기를 드릴 수 없습니다.', { prev = false, next = true })
                 return
             end
             if q then
                 q:complete()
             end
-            me:dialog(npc, '축하드립니다. 그에 걸맞는 무기를 지급하였습니다.', false, true)
+            me:dialog(npc, '축하드립니다. 그에 걸맞는 무기를 지급하였습니다.', { prev = false, next = true })
             return
         end
 
         local ok, err_msg = meets_4th_promotion_quest_requirements(me)
         if not ok then
-            me:dialog(npc, err_msg, false, true)
+            me:dialog(npc, err_msg, { prev = false, next = true })
             return
         end
         local q = me:start_quest(quest.QUEST_MUTA)
         if q == nil then
-            me:dialog(npc, '퀘스트를 시작할 수 없습니다.', false, true)
+            me:dialog(npc, '퀘스트를 시작할 수 없습니다.', { prev = false, next = true })
             return
         end
-        me:dialog(npc, '기본적인 능력은 갖추셨습니다만, 그만한 지위에 오르시려거든 세상을 위한 업적을 세우셔야 합니다.\n\n소문에, 천인(天人)으로 추앙받고 계신 무타님께서 세상에 닥쳐올 재앙에 대항할 인재를 구하신다고 하던데 한 번 찾아가보시는 것이 어떨까요?', true, true)
+        me:dialog(npc, '기본적인 능력은 갖추셨습니다만, 그만한 지위에 오르시려거든 세상을 위한 업적을 세우셔야 합니다.\n\n소문에, 천인(天人)으로 추앙받고 계신 무타님께서 세상에 닥쳐올 재앙에 대항할 인재를 구하신다고 하던데 한 번 찾아가보시는 것이 어떨까요?', { prev = true, next = true })
         return
     end
 
     if selected == 2 then
         local weapon_name = PROMOTION_4TH_WEAPON[me:class()]
         if not weapon_name then
-            me:dialog(npc, '아직 준비가 안 되었습니다.', false, true)
+            me:dialog(npc, '아직 준비가 안 되었습니다.', { prev = false, next = true })
             return
         end
         if has_4th_weapon(me) then
-            me:dialog(npc, '이미 해당 무기를 보유하고 계십니다.', false, true)
+            me:dialog(npc, '이미 해당 무기를 보유하고 계십니다.', { prev = false, next = true })
             return
         end
         local code = me:exchange(
@@ -116,13 +116,13 @@ function NPC_96(me, npc)
             { ['item'] = { [weapon_name] = 1 } }
         )
         if code == enum.EXCHANGE_RESULT.LACK_COST then
-            me:dialog(npc, '금전 1천만 전이 필요합니다.', false, true)
+            me:dialog(npc, '금전 1천만 전이 필요합니다.', { prev = false, next = true })
             return
         end
         if code == enum.EXCHANGE_RESULT.LACK_CAPACITY then
-            me:dialog(npc, '소지품이 가득 차서 무기를 드릴 수 없습니다.', false, true)
+            me:dialog(npc, '소지품이 가득 차서 무기를 드릴 수 없습니다.', { prev = false, next = true })
             return
         end
-        me:dialog(npc, '무기를 지급하였습니다.', false, true)
+        me:dialog(npc, '무기를 지급하였습니다.', { prev = false, next = true })
     end
 end

@@ -30,6 +30,7 @@ local MSG_DIVORCE_ONLY        = "결혼을 한 사람만이 이혼을 할 수 �
 local MSG_DIVORCE_OK          = "이혼이 완료되었습니다. 7일 후 재혼이 가능합니다."
 local MSG_CALLER_NOT_MARRIED  = "결혼하지 않아 사용할 수 없습니다."
 local MSG_SPOUSE_PREFIX       = "배우자: "
+local MSG_ASKING              = "에게 의사를 묻고 있습니다."
 
 local LISTENER_ARM_MS = 500
 local TIME_FORWARD_7D = "7.00:00:00"
@@ -46,6 +47,10 @@ local function progress(bot, message)
     end
     log(level, string.format("marriage_test bot=%s %s", bot:name(), message))
     bot:chat("=== " .. message .. " ===")
+end
+
+local function is_asking_dialog(msg)
+    return msg ~= nil and msg:find(MSG_ASKING, 1, true) ~= nil
 end
 
 local function home_x(bot_index)
@@ -123,6 +128,27 @@ local function send_input_expect(bot, text, expect_type)
         end)
 end
 
+local function wait_normal(bot)
+    return bot:request_dialog_ext(
+        protocol.chat(false, "."),
+        function(p)
+            return p.type == "normal"
+        end)
+end
+
+-- After name INPUT: waiting immediate dialog then consent result, or exception result only.
+local function send_input_expect_consent_result(bot, text)
+    local packet = send_input_expect(bot, text, "normal")
+    if packet == nil then
+        return nil
+    end
+    if is_asking_dialog(packet.message) then
+        dismiss_normal(bot)
+        return wait_normal(bot)
+    end
+    return packet
+end
+
 local function open_main_menu(bot)
     local packet = click_expect(bot, "list")
     if packet == nil then
@@ -196,9 +222,19 @@ local function divorce_select(bot)
     if packet == nil then
         return false, err
     end
-    -- Spouse receives MENU; requester gets normal only after spouse replies.
+    -- Spouse receives MENU; requester first gets immediate asking dialog.
     bot:send(protocol.dialog("LIST", 0, "", MENU_DIVORCE, 0, "", "NEXT"))
     return true, nil
+end
+
+-- After divorce list select: dismiss asking dialog, then wait for consent result.
+local function divorce_wait_result(bot)
+    local waiting = wait_normal(bot)
+    if waiting == nil or is_asking_dialog(waiting.message) == false then
+        return waiting
+    end
+    dismiss_normal(bot)
+    return wait_normal(bot)
 end
 
 local function wait_menu(bot)
@@ -206,14 +242,6 @@ local function wait_menu(bot)
         protocol.chat(false, "."),
         function(p)
             return p.type == "menu"
-        end)
-end
-
-local function wait_normal(bot)
-    return bot:request_dialog_ext(
-        protocol.chat(false, "."),
-        function(p)
-            return p.type == "normal"
         end)
 end
 
@@ -459,7 +487,7 @@ test_suite {
                             progress(a, "FAILED: " .. tostring(err))
                             return false
                         end
-                        local packet = send_input_expect(a, b:name(), "normal")
+                        local packet = send_input_expect_consent_result(a, b:name())
                         g_parallel_msg = packet and packet.message or nil
                         if packet ~= nil then
                             dismiss_normal(a)
@@ -515,7 +543,7 @@ test_suite {
                             progress(a, "FAILED: " .. tostring(err))
                             return false
                         end
-                        local packet = send_input_expect(a, b:name(), "normal")
+                        local packet = send_input_expect_consent_result(a, b:name())
                         g_parallel_msg = packet and packet.message or nil
                         if packet ~= nil then
                             dismiss_normal(a)
@@ -660,7 +688,7 @@ test_suite {
                             progress(a, "FAILED: " .. tostring(err))
                             return false
                         end
-                        local packet = wait_normal(a)
+                        local packet = divorce_wait_result(a)
                         g_parallel_msg = packet and packet.message or nil
                         if packet ~= nil then
                             dismiss_normal(a)
@@ -715,7 +743,7 @@ test_suite {
                             progress(a, "FAILED: " .. tostring(err))
                             return false
                         end
-                        local packet = wait_normal(a)
+                        local packet = divorce_wait_result(a)
                         g_parallel_msg = packet and packet.message or nil
                         if packet ~= nil then
                             dismiss_normal(a)
@@ -839,7 +867,7 @@ test_suite {
                             progress(a, "FAILED: " .. tostring(err))
                             return false
                         end
-                        local packet = send_input_expect(a, d:name(), "normal")
+                        local packet = send_input_expect_consent_result(a, d:name())
                         g_parallel_msg = packet and packet.message or nil
                         if packet ~= nil then
                             dismiss_normal(a)

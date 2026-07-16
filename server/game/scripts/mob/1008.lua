@@ -24,7 +24,7 @@ function ON_MOB_KILL_1008(me, mobs)
     end
 
     local item = me:mkitem("전략문서", 1)
-    me:dialog(item, "휴.. 드디어 전략문서를 구했다.", false, true)
+    me:dialog(item, "휴.. 드디어 전략문서를 구했다.", { prev = false, next = true })
 end
 
 -- function ON_MOB_DIE_1008(me)

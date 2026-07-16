@@ -8,7 +8,7 @@ function NPC_405(me, npc)
         "북방지역에 지름길이 있다는거 알고 있나? 전에 우연히 발견했지.",
     }
     local msg = messages[math.random(1, #messages)]
-    local button = me:dialog(npc, msg, false, false)
+    local button = me:dialog(npc, msg, { prev = false, next = false })
     if button == DIALOG_RESULT.QUIT then
         return
     end

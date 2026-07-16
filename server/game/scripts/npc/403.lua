@@ -8,7 +8,7 @@ function NPC_403(me, npc)
         "요즘 우리나라에 여러 괴물들이 여기저기서 나타나서 말이지.. 황제께서 직접 현상금을 거신 것 같더라고.",
     }
     local msg = messages[math.random(1, #messages)]
-    local button = me:dialog(npc, msg, false, false)
+    local button = me:dialog(npc, msg, { prev = false, next = false })
     if button == DIALOG_RESULT.QUIT then
         return
     end
