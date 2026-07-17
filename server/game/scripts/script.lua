@@ -52,7 +52,16 @@ function func(me, val1, val2, val3)
     -- end
     -- sleep(1000)
 
-    me:mimic(nil)
+    -- me:mimic(nil)
+    -- return 'hello', 'world'
 
-    return 'hello', 'world'
+    local x, y = me:position()
+    local boss = me:spawn_mob('고래', x, y, false)
+    boss:parts_mode(MOB_PARTS_MODE.BODY)
+    boss:hide(true)
+
+    for i = 1, 19 do
+        local part = me:spawn_mob('고래' .. i, i - 1, 10, false)
+        boss:parts(part)
+    end
 end

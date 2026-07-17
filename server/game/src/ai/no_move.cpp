@@ -6,11 +6,7 @@ using namespace fb::game;
 
 bool no_move_ai::execute(mob& mob_obj, const datetime& now)
 {
-    // Try owner following first
-    if (super::execute(mob_obj, now))
-        return true;
-
-    // Clean up expired damage records
+    // NO_MOVE never follows the owner or walks toward targets
     super::cleanup_expired_damage(now);
 
     // Check if current target is still valid

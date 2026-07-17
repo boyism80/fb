@@ -1583,7 +1583,7 @@ void character::award_exp(const fb::game::mob& mob)
 
     auto& group_id = this->group_id();
     auto  map      = this->map();
-    auto  exp      = mob.based<fb::model::mob>().exp;
+    auto  exp      = mob.total_exp();
 
     if (group_id.has_value() && map != nullptr)
     {

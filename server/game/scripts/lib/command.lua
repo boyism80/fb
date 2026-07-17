@@ -578,7 +578,9 @@ M.functions = {
                 
                 local objects = map:objects(OBJECT_TYPE.MOB)
                 for _, object in ipairs(objects) do
-                    object:destroy()
+                    if object:body() == nil then
+                        object:destroy()
+                    end
                 end
                 
                 return true
@@ -607,6 +609,10 @@ M.functions = {
 
                 local objects = map:objects(OBJECT_TYPE.MOB)
                 for _, object in ipairs(objects) do
+                    if object:body() ~= nil then
+                        goto continue
+                    end
+
                     local mob_x, mob_y = object:position()
                     local dx = mob_x - player_x
                     local dy = mob_y - player_y
@@ -614,6 +620,7 @@ M.functions = {
                         object:destroy()
                         removed_count = removed_count + 1
                     end
+                    ::continue::
                 end
 
                 if removed_count > 0 then

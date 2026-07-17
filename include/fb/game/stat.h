@@ -196,7 +196,10 @@ public:
     uint8_t  base_dam() const override final;
     uint8_t  base_hit() const override final;
     uint32_t base_regenerative() const override final;
+    uint32_t hp() const override final;
     uint32_t damage(uint32_t value, std::shared_ptr<fb::game::object> from = nullptr, bool critical = false, float rate = 1.0f, bool physical = true, bool fixed = false, bool notify = true) override final;
+    void     hp(uint32_t value, bool notify = true) override final;
+    uint32_t heal(uint32_t value, fb::game::object* from = nullptr, bool notify = true) override final;
     // clang-format on
 };
 

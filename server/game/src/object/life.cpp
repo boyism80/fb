@@ -80,13 +80,27 @@ life::mob_vector life::damage_targets(const damage_list& targets, const damage_o
             continue;
 
         target->stat.damage(value, attacker, opts.critical, opts.rate, opts.physical, opts.fixed, opts.notify);
-        // character::alive() means "not ghost", so death must be detected by HP.
-        if (target->stat.hp() != 0)
-            continue;
 
         if (target->is(OBJECT_TYPE::MOB))
         {
             auto m = std::static_pointer_cast<mob>(target);
+
+            // Part of an assembly: never settle the part; settle the body if it died.
+            auto body = m->body();
+            if (body != nullptr)
+            {
+                if (body->stat.hp() == 0 && body->invincible() == false)
+                {
+                    body->invincible(true);
+                    dead.push_back(body);
+                }
+                continue;
+            }
+
+            // character::alive() means "not ghost", so death must be detected by HP.
+            if (m->stat.hp() != 0)
+                continue;
+
             // Already settling ON_MOB_KILL / ON_MOB_DIE — do not re-enter kill flow.
             if (m->invincible())
                 continue;
@@ -96,6 +110,9 @@ life::mob_vector life::damage_targets(const damage_list& targets, const damage_o
         }
         else if (target->is(OBJECT_TYPE::CHARACTER))
         {
+            if (target->stat.hp() != 0)
+                continue;
+
             auto ch = std::static_pointer_cast<character>(target);
             if (ch->alive() == false)
                 continue;

@@ -899,6 +899,25 @@ uint32_t mob_stat::damage(uint32_t                value,
 {
     this->owner.assert_thread();
 
+    if (this->owner._forwarding_damage)
+    {
+        auto result = fb::game::stat::damage(value, from, critical, rate, physical, fixed, notify);
+        if (this->owner.alive() && this->owner._ai_strategy && from && from->is(OBJECT_TYPE::LIFE))
+        {
+            this->owner._ai_strategy->on_damage(this->owner,
+                                                std::static_pointer_cast<fb::game::life>(from),
+                                                this->owner.server.now());
+        }
+        return result;
+    }
+
+    // Assembly body ignores direct damage; only parts forward damage.
+    if (this->owner.has_parts())
+        return 0;
+
+    if (this->owner.body() != nullptr)
+        return this->owner.damage_as_part(value, from, critical, rate, physical, fixed, notify);
+
     auto result = fb::game::stat::damage(value, from, critical, rate, physical, fixed, notify);
     if (!this->owner.alive())
         return result;
@@ -912,4 +931,33 @@ uint32_t mob_stat::damage(uint32_t                value,
     }
 
     return result;
+}
+
+uint32_t mob_stat::hp() const
+{
+    return fb::game::stat::hp();
+}
+
+void mob_stat::hp(uint32_t value, bool notify)
+{
+    this->owner.assert_thread();
+
+    auto before = fb::game::stat::hp();
+    fb::game::stat::hp(value, notify);
+
+    if (this->owner._soft_dead && fb::game::stat::hp() > 0)
+        this->owner._soft_dead = false;
+
+    if (this->owner._forwarding_damage)
+        return;
+
+    if (value > before)
+        this->owner.on_part_hp_increased(value - before);
+}
+
+uint32_t mob_stat::heal(uint32_t value, fb::game::object* from, bool notify)
+{
+    this->owner.assert_thread();
+    // hp() override syncs PARTS-mode body and clears soft-dead
+    return fb::game::stat::heal(value, from, notify);
 }

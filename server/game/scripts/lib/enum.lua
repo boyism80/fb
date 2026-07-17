@@ -6,4 +6,10 @@ M.EXCHANGE_RESULT = {
     LACK_CAPACITY = 2,
 }
 
+-- Also registered from C++ as global MOB_PARTS_MODE
+M.MOB_PARTS_MODE = {
+    PARTS = 0,
+    BODY = 1,
+}
+
 return M
