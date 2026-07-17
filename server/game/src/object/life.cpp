@@ -28,7 +28,7 @@ void life::on_init()
 void life::update(UPDATE_STATE_LEVEL value)
 { }
 
-void life::update_hp(uint32_t diff, bool critical, bool notify)
+void life::update_hp(uint64_t diff, bool critical, bool notify)
 {
     if (!notify)
         return;
@@ -80,13 +80,34 @@ life::mob_vector life::damage_targets(const damage_list& targets, const damage_o
             continue;
 
         target->stat.damage(value, attacker, opts.critical, opts.rate, opts.physical, opts.fixed, opts.notify);
-        // character::alive() means "not ghost", so death must be detected by HP.
-        if (target->stat.hp() != 0)
-            continue;
 
         if (target->is(OBJECT_TYPE::MOB))
         {
             auto m = std::static_pointer_cast<mob>(target);
+
+            // Assembly part: PARTS mode settles the part on its own death;
+            // BODY mode treats the part as a hitbox (damage already went to body).
+            auto body = m->body();
+            if (body != nullptr)
+            {
+                if (body->parts_mode() == MOB_PARTS_MODE::PARTS && m->stat.hp() == 0 && m->invincible() == false)
+                {
+                    m->invincible(true);
+                    dead.push_back(m);
+                }
+
+                if (body->stat.hp() == 0 && body->invincible() == false)
+                {
+                    body->invincible(true);
+                    dead.push_back(body);
+                }
+                continue;
+            }
+
+            // character::alive() means "not ghost", so death must be detected by HP.
+            if (m->stat.hp() != 0)
+                continue;
+
             // Already settling ON_MOB_KILL / ON_MOB_DIE — do not re-enter kill flow.
             if (m->invincible())
                 continue;
@@ -96,6 +117,9 @@ life::mob_vector life::damage_targets(const damage_list& targets, const damage_o
         }
         else if (target->is(OBJECT_TYPE::CHARACTER))
         {
+            if (target->stat.hp() != 0)
+                continue;
+
             auto ch = std::static_pointer_cast<character>(target);
             if (ch->alive() == false)
                 continue;
@@ -228,7 +252,7 @@ async::task<void> life::attack(DURATION duration)
     co_return;
 }
 
-uint32_t life::exp() const
+uint64_t life::exp() const
 {
     this->assert_thread();
     return static_cast<const fb::model::life&>(this->_model).exp;
@@ -353,13 +377,17 @@ bool life::calculate_miss(life& you) const
 #endif
 }
 
-uint32_t life::calculate_damage(uint32_t value, const life& target, bool critical, float rate, bool physical) const
+uint64_t life::calculate_damage(uint64_t value, const life& target, bool critical, float rate, bool physical) const
 {
     this->assert_thread();
     auto def               = physical ? target.stat.phydef() : target.stat.magdef();
     auto n                 = (100 - def) / 10;
     auto defensive_percent = -125 + (n * (2 * 14.75f - (n - 1) / 2.0f)) / 2.0f;
-    auto damage            = value - uint32_t(defensive_percent * (value / 100.0f));
+    auto damage            = value - static_cast<uint64_t>(defensive_percent * (value / 100.0f));
+
+    auto resist = physical ? target.stat.resist(fb::model::enum_value::RESIST::PHYSICAL)
+                           : target.stat.resist(fb::model::enum_value::RESIST::MAGIC);
+    damage      = static_cast<uint64_t>(damage * (1.0f - resist));
 
     if (physical && target.direction() == this->direction())
         rate *= 2.0f;
@@ -368,7 +396,7 @@ uint32_t life::calculate_damage(uint32_t value, const life& target, bool critica
         rate *= 2.0f;
 
     rate /= (target.damage_derate() / 1000.0f);
-    return static_cast<uint32_t>(damage * rate);
+    return static_cast<uint64_t>(damage * rate);
 }
 
 uint32_t life::damage_rate() const

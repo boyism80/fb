@@ -19,7 +19,7 @@ async::task<bool> item_drop_money::handle(fb::socket<character>& session, game_r
     if (map == nullptr)
         co_return false;
 
-    auto chunk = std::min(ch->money(), request.chunk);
+    auto chunk = std::min<uint64_t>(ch->money(), request.chunk);
 
     std::ignore = co_await ch->money_drop(chunk);
     co_return true;

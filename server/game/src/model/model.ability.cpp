@@ -14,7 +14,7 @@ void fb::model::__ability::build_stacked_exp()
 {
     this->_stacked_exp.clear();
 
-    std::unordered_map<fb::model::enum_value::CLASS, std::unordered_map<uint8_t, uint32_t>> intra;
+    std::unordered_map<fb::model::enum_value::CLASS, std::unordered_map<uint8_t, uint64_t>> intra;
 
     for (auto& [cls, levels] : *this)
     {
@@ -26,7 +26,7 @@ void fb::model::__ability::build_stacked_exp()
         std::sort(sorted.begin(), sorted.end());
 
         auto& map = intra[cls];
-        auto  sum = uint32_t{0};
+        auto  sum = uint64_t{0};
         for (auto level : sorted)
         {
             sum        += levels[level].exp;
@@ -67,7 +67,7 @@ void fb::model::__ability::build_stacked_exp()
     }
 }
 
-uint32_t fb::model::__ability::stacked_exp(fb::model::enum_value::CLASS cls, uint8_t level) const
+uint64_t fb::model::__ability::stacked_exp(fb::model::enum_value::CLASS cls, uint8_t level) const
 {
     auto cls_iter = this->_stacked_exp.find(cls);
     if (cls_iter == this->_stacked_exp.cend())

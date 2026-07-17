@@ -166,7 +166,9 @@ test_suite {
         function(ctx)
             local bot1 = ctx:bot(0)
             local bot2 = ctx:bot(1)
-            progress(bot1, "SCENARIO 4 START (money give / overflow)")
+            local ENCODED_PAST_U32 = 43
+
+            progress(bot1, "SCENARIO 4 START (money give past uint32 / display encode)")
 
             progress(bot1, "SET MONEY MAX-1 AND GIVE ALL")
             bot1:money(0xFFFFFFFE)
@@ -181,24 +183,15 @@ test_suite {
             end
             progress(bot1, "GAVE ALMOST MAX MONEY")
 
-            progress(bot1, "SET MONEY 2, GIVE UNTIL CAP")
+            progress(bot1, "SET MONEY 2, GIVE PAST FORMER UINT32 CAP")
             bot1:money(2)
             bot1:request(resp.update_internal, protocol.give_money(2), function(packet)
-                return packet.ch_money == 1
+                return packet.ch_money == 0
             end)
+            ctx:sleep(DEFAULT_INTERVAL)
 
-            progress(bot1, "GIVE AGAIN (expect cannot receive)")
-            bot1:request(
-                resp.message,
-                protocol.give_money(2),
-                function(p)
-                    return p.type == "STATE"
-                        and string.find(p.text, MESSAGE_MONEY_TARGET_CANNOT_RECEIVE, 1, true) ~= nil
-                end)
-            progress(bot1, "MONEY CAP REJECT AS EXPECTED")
-
-            if bot1:money() ~= 1 or bot2:money() ~= 0xFFFFFFFF then
-                progress(bot1, "FAILED: money overflow outcome wrong")
+            if bot1:money() ~= 0 or bot2:money() ~= ENCODED_PAST_U32 then
+                progress(bot1, "FAILED: money past-uint32 encode outcome wrong")
                 return false
             end
 

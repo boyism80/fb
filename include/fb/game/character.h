@@ -92,7 +92,7 @@ private:
     std::optional<uint8_t>                     _armor_color      = 0;
     std::optional<uint8_t>                     _weapon_color     = std::nullopt;
     std::optional<uint8_t>                     _shield_color     = std::nullopt;
-    uint32_t                                   _experience       = 0;
+    uint64_t                                   _experience       = 0;
     NATION                                     _nation           = NATION::GOGURYEO;
     CREATURE                                   _creature         = CREATURE::DRAGON;
     GENDER                                     _gender           = GENDER::MALE;
@@ -100,7 +100,7 @@ private:
     uint8_t                                    _level            = 1;
     CLASS                                      _class            = CLASS::NONE;
     uint8_t                                    _promotion        = 0;
-    uint32_t                                   _money            = 0;
+    uint64_t                                   _money            = 0;
     std::optional<character_appearance>        _mimicry          = std::nullopt;
     std::string                                _title            = "";
     std::optional<uint32_t>                    _group_id         = std::nullopt;
@@ -154,10 +154,10 @@ public:
         uint16_t                               color            = 0;
         DIRECTION                              direction        = DIRECTION::BOTTOM;
         uint16_t                               look             = 0;
-        uint32_t                               money            = 0;
+        uint64_t                               money            = 0;
         GENDER                                 gender           = GENDER::MALE;
         uint8_t                                level            = 1;
-        uint32_t                               exp              = 0;
+        uint64_t                               exp              = 0;
         STATE                                  state            = STATE::NORMAL;
         std::string                            title;
         std::optional<uint8_t>                 armor_color  = std::nullopt;
@@ -176,7 +176,7 @@ public:
     // clang-format on
 
 private:
-    uint32_t limited_exp(uint32_t exp) const;
+    uint64_t limited_exp(uint64_t exp) const;
 
 public:
     // clang-format off
@@ -187,7 +187,7 @@ public:
     [[nodiscard]] async::task<size_t>        send_immediate(const fb::protocol::header& response, bool encrypt = true, bool wrap = true);
     OBJECT_TYPE                              what() const override final;
     async::task<void>                        attack(DURATION duration = DURATION::ATTACK) override final;
-    uint32_t                                 normal_attack_damage(MOB_SIZE size) const override final;
+    uint64_t                                 normal_attack_damage(MOB_SIZE size) const override final;
     void                                     action(ACTION action, DURATION duration, uint8_t sound = 0x00) override final;
     const std::string&                       name() const override final;
     bool                                     is_first_login() const { return !_first_login_date.has_value(); }
@@ -248,17 +248,17 @@ public:
     void                                                      cls(CLASS value);
     uint8_t                                                   promotion() const;
     void                                                      promotion(uint8_t value);
-    uint32_t                                                  exp() const;
-    void                                                      exp(uint32_t value);
-    uint32_t                                                  add_exp(uint32_t value, bool limit = false, bool notify = false);
-    uint32_t                                                  reduce_exp(uint32_t value);
-    uint32_t                                                  experience_remained() const;
+    uint64_t                                                  exp() const;
+    void                                                      exp(uint64_t value);
+    uint64_t                                                  add_exp(uint64_t value, bool limit = false, bool notify = false);
+    uint64_t                                                  reduce_exp(uint64_t value);
+    uint64_t                                                  experience_remained() const;
     float                                                     experience_percent() const;
-    uint32_t                                                  money() const;
-    void                                                      money(uint32_t value);
-    uint32_t                                                  money_add(uint32_t value);
-    void                                                      money_reduce(uint32_t value);
-    [[nodiscard]] async::task<fb::game::cash*>                money_drop(uint32_t value);
+    uint64_t                                                  money() const;
+    void                                                      money(uint64_t value);
+    uint64_t                                                  money_add(uint64_t value);
+    void                                                      money_reduce(uint64_t value);
+    [[nodiscard]] async::task<fb::game::cash*>                money_drop(uint64_t value);
     bool                                                      option(OPTION key) const;
     void                                                      option(OPTION key, bool value, bool notify = true);
     bool                                                      option_toggle(OPTION key, bool notify = true);

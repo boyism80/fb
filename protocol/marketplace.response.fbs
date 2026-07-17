@@ -14,7 +14,7 @@ table Cancel {
 table Purchase {
     item: fb.protocol.marketplace.Item;
     actual_purchase_count: ushort;
-    refund_amount: uint;
+    refund_amount: ulong;
     error: uint;
 }
 

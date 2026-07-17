@@ -51,7 +51,7 @@ public struct MarketplacePending : IFlatbufferObject
 #endif
   public byte[] GetAttachmentsArray() { return __p.__vector_as_array<byte>(14); }
   public ushort ExpectedPurchaseCount { get { int o = __p.__offset(16); return o != 0 ? __p.bb.GetUshort(o + __p.bb_pos) : (ushort)0; } }
-  public uint ExpectedTotalPrice { get { int o = __p.__offset(18); return o != 0 ? __p.bb.GetUint(o + __p.bb_pos) : (uint)0; } }
+  public ulong ExpectedTotalPrice { get { int o = __p.__offset(18); return o != 0 ? __p.bb.GetUlong(o + __p.bb_pos) : (ulong)0; } }
   public uint CharacterId { get { int o = __p.__offset(20); return o != 0 ? __p.bb.GetUint(o + __p.bb_pos) : (uint)0; } }
 
   public static Offset<fb.protocol._internal.raw.MarketplacePending> CreateMarketplacePending(FlatBufferBuilder builder,
@@ -62,11 +62,11 @@ public struct MarketplacePending : IFlatbufferObject
       StringOffset listing_idOffset = default(StringOffset),
       StringOffset attachmentsOffset = default(StringOffset),
       ushort expected_purchase_count = 0,
-      uint expected_total_price = 0,
+      ulong expected_total_price = 0,
       uint character_id = 0) {
     builder.StartTable(9);
-    MarketplacePending.AddCharacterId(builder, character_id);
     MarketplacePending.AddExpectedTotalPrice(builder, expected_total_price);
+    MarketplacePending.AddCharacterId(builder, character_id);
     MarketplacePending.AddAttachments(builder, attachmentsOffset);
     MarketplacePending.AddListingId(builder, listing_idOffset);
     MarketplacePending.AddPurchaseId(builder, purchase_idOffset);
@@ -85,7 +85,7 @@ public struct MarketplacePending : IFlatbufferObject
   public static void AddListingId(FlatBufferBuilder builder, StringOffset listingIdOffset) { builder.AddOffset(4, listingIdOffset.Value, 0); }
   public static void AddAttachments(FlatBufferBuilder builder, StringOffset attachmentsOffset) { builder.AddOffset(5, attachmentsOffset.Value, 0); }
   public static void AddExpectedPurchaseCount(FlatBufferBuilder builder, ushort expectedPurchaseCount) { builder.AddUshort(6, expectedPurchaseCount, 0); }
-  public static void AddExpectedTotalPrice(FlatBufferBuilder builder, uint expectedTotalPrice) { builder.AddUint(7, expectedTotalPrice, 0); }
+  public static void AddExpectedTotalPrice(FlatBufferBuilder builder, ulong expectedTotalPrice) { builder.AddUlong(7, expectedTotalPrice, 0); }
   public static void AddCharacterId(FlatBufferBuilder builder, uint characterId) { builder.AddUint(8, characterId, 0); }
   public static Offset<fb.protocol._internal.raw.MarketplacePending> EndMarketplacePending(FlatBufferBuilder builder) {
     int o = builder.EndTable();
@@ -108,7 +108,7 @@ static public class MarketplacePendingVerify
       && verifier.VerifyString(tablePos, 12 /*ListingId*/, false)
       && verifier.VerifyString(tablePos, 14 /*Attachments*/, false)
       && verifier.VerifyField(tablePos, 16 /*ExpectedPurchaseCount*/, 2 /*ushort*/, 2, false)
-      && verifier.VerifyField(tablePos, 18 /*ExpectedTotalPrice*/, 4 /*uint*/, 4, false)
+      && verifier.VerifyField(tablePos, 18 /*ExpectedTotalPrice*/, 8 /*ulong*/, 8, false)
       && verifier.VerifyField(tablePos, 20 /*CharacterId*/, 4 /*uint*/, 4, false)
       && verifier.VerifyTableEnd(tablePos);
   }

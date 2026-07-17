@@ -27,8 +27,8 @@ public struct Search : IFlatbufferObject
   public ArraySegment<byte>? GetItemNameBytes() { return __p.__vector_as_arraysegment(4); }
 #endif
   public byte[] GetItemNameArray() { return __p.__vector_as_array<byte>(4); }
-  public nullable.nullable_uint? MinPrice { get { int o = __p.__offset(6); return o != 0 ? (nullable.nullable_uint?)(new nullable.nullable_uint()).__assign(__p.__indirect(o + __p.bb_pos), __p.bb) : null; } }
-  public nullable.nullable_uint? MaxPrice { get { int o = __p.__offset(8); return o != 0 ? (nullable.nullable_uint?)(new nullable.nullable_uint()).__assign(__p.__indirect(o + __p.bb_pos), __p.bb) : null; } }
+  public nullable.nullable_ulong? MinPrice { get { int o = __p.__offset(6); return o != 0 ? (nullable.nullable_ulong?)(new nullable.nullable_ulong()).__assign(__p.__indirect(o + __p.bb_pos), __p.bb) : null; } }
+  public nullable.nullable_ulong? MaxPrice { get { int o = __p.__offset(8); return o != 0 ? (nullable.nullable_ulong?)(new nullable.nullable_ulong()).__assign(__p.__indirect(o + __p.bb_pos), __p.bb) : null; } }
   public nullable.nullable_uint? SellerId { get { int o = __p.__offset(10); return o != 0 ? (nullable.nullable_uint?)(new nullable.nullable_uint()).__assign(__p.__indirect(o + __p.bb_pos), __p.bb) : null; } }
   public string SortBy { get { int o = __p.__offset(12); return o != 0 ? __p.__string(o + __p.bb_pos) : null; } }
 #if ENABLE_SPAN_T
@@ -41,8 +41,8 @@ public struct Search : IFlatbufferObject
 
   public static Offset<fb.protocol.marketplace.request.raw.Search> CreateSearch(FlatBufferBuilder builder,
       StringOffset item_nameOffset = default(StringOffset),
-      Offset<nullable.nullable_uint> min_priceOffset = default(Offset<nullable.nullable_uint>),
-      Offset<nullable.nullable_uint> max_priceOffset = default(Offset<nullable.nullable_uint>),
+      Offset<nullable.nullable_ulong> min_priceOffset = default(Offset<nullable.nullable_ulong>),
+      Offset<nullable.nullable_ulong> max_priceOffset = default(Offset<nullable.nullable_ulong>),
       Offset<nullable.nullable_uint> seller_idOffset = default(Offset<nullable.nullable_uint>),
       StringOffset sort_byOffset = default(StringOffset),
       uint page = 0) {
@@ -58,8 +58,8 @@ public struct Search : IFlatbufferObject
 
   public static void StartSearch(FlatBufferBuilder builder) { builder.StartTable(6); }
   public static void AddItemName(FlatBufferBuilder builder, StringOffset itemNameOffset) { builder.AddOffset(0, itemNameOffset.Value, 0); }
-  public static void AddMinPrice(FlatBufferBuilder builder, Offset<nullable.nullable_uint> minPriceOffset) { builder.AddOffset(1, minPriceOffset.Value, 0); }
-  public static void AddMaxPrice(FlatBufferBuilder builder, Offset<nullable.nullable_uint> maxPriceOffset) { builder.AddOffset(2, maxPriceOffset.Value, 0); }
+  public static void AddMinPrice(FlatBufferBuilder builder, Offset<nullable.nullable_ulong> minPriceOffset) { builder.AddOffset(1, minPriceOffset.Value, 0); }
+  public static void AddMaxPrice(FlatBufferBuilder builder, Offset<nullable.nullable_ulong> maxPriceOffset) { builder.AddOffset(2, maxPriceOffset.Value, 0); }
   public static void AddSellerId(FlatBufferBuilder builder, Offset<nullable.nullable_uint> sellerIdOffset) { builder.AddOffset(3, sellerIdOffset.Value, 0); }
   public static void AddSortBy(FlatBufferBuilder builder, StringOffset sortByOffset) { builder.AddOffset(4, sortByOffset.Value, 0); }
   public static void AddPage(FlatBufferBuilder builder, uint page) { builder.AddUint(5, page, 0); }
@@ -78,8 +78,8 @@ static public class SearchVerify
   {
     return verifier.VerifyTableStart(tablePos)
       && verifier.VerifyString(tablePos, 4 /*ItemName*/, false)
-      && verifier.VerifyTable(tablePos, 6 /*MinPrice*/, nullable.nullable_uintVerify.Verify, false)
-      && verifier.VerifyTable(tablePos, 8 /*MaxPrice*/, nullable.nullable_uintVerify.Verify, false)
+      && verifier.VerifyTable(tablePos, 6 /*MinPrice*/, nullable.nullable_ulongVerify.Verify, false)
+      && verifier.VerifyTable(tablePos, 8 /*MaxPrice*/, nullable.nullable_ulongVerify.Verify, false)
       && verifier.VerifyTable(tablePos, 10 /*SellerId*/, nullable.nullable_uintVerify.Verify, false)
       && verifier.VerifyString(tablePos, 12 /*SortBy*/, false)
       && verifier.VerifyField(tablePos, 14 /*Page*/, 4 /*uint*/, 4, false)

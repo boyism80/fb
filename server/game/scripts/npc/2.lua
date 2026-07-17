@@ -20,11 +20,14 @@ local function ranggyuryun_palgu(me, npc)
         goto NPC_2_0001
     end
     sel = me:list(npc, '8개의 괘를 팔괘로 바꾸시겠어요?', { '네', '아니요, 팔괘가 다 없어요...' })
-    if sel == nil or sel == 1 then
+    if sel == nil then
         return
     end
-    if sel == 3 then
+    if sel == 2 then
         me:dialog(npc, '다음엔 팔괘를 다 모아오세요...', { prev = false, next = false })
+        return
+    end
+    if sel ~= 1 then
         return
     end
     local materials = {}

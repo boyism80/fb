@@ -30,7 +30,7 @@ public:
 
 public:
 #ifndef BOT
-    update_hp(const fb::game::life& me, uint32_t damage, bool critical);
+    update_hp(const fb::game::life& me, uint64_t damage, bool critical);
 #else
     update_hp() = default;
 #endif

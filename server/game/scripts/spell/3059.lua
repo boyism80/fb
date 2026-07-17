@@ -7,7 +7,7 @@ function ON_CAST_3059(me, you, sp)
     local sound = 68
     local effect = 14
     local buff_time = 30
-    if spell.debuff_cast(me, you, sp, {mp = mp, sound = sound, effect = effect}) then
+    if spell.debuff_cast(me, you, sp, {mp = mp, sound = sound, effect = effect, resist = RESIST.POISON}) then
         you:buff(sp, buff_time, me)
     end
 end

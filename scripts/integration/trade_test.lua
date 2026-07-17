@@ -136,11 +136,13 @@ test_suite {
         function(ctx)
             local bot1 = ctx:bot(0)
             local bot2 = ctx:bot(1)
-            progress(bot1, "SCENARIO 2 START (money overflow)")
+            local ENCODED_PAST_U32 = 43
+
+            progress(bot1, "SCENARIO 2 START (money past uint32 / display encode)")
 
             bot1:money(0xFFFFFFFF)
             bot2:money(1)
-            progress(bot1, "SET MONEY MAX / bot2=1")
+            progress(bot1, "SET MONEY FORMER MAX / bot2=1")
 
             progress(bot1, "REQUEST TRADE -> bot2")
             trade.request(bot1, bot2:oid(), trade.dialog_oid(bot2:oid()))
@@ -151,14 +153,13 @@ test_suite {
             progress(bot1, "LOCK TRADE")
             trade.lock(bot1, bot2:oid(), trade.type_is("lock"))
 
-            progress(bot2, "LOCK TRADE (expect fail)")
-            trade.lock(bot2, bot1:oid(), trade.close_contains(MESSAGE_TRADE_FAILED))
-            progress(bot2, "TRADE FAILED AS EXPECTED")
+            progress(bot2, "LOCK TRADE (COMPLETE)")
+            trade.lock(bot2, bot1:oid(), trade.close_contains(MESSAGE_TRADE_SUCCESS))
 
             ctx:sleep(DEFAULT_INTERVAL)
 
-            if bot1:money() ~= 0xFFFFFFFF or bot2:money() ~= 1 then
-                progress(bot1, "FAILED: money changed after overflow reject")
+            if bot1:money() ~= ENCODED_PAST_U32 or bot2:money() ~= 0 then
+                progress(bot1, "FAILED: money past-uint32 encode outcome wrong")
                 return false
             end
 

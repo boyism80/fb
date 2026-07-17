@@ -30,16 +30,16 @@ namespace Http.Model
         public byte Class { get; set; }
         public byte Promotion { get; set; }
         public byte Level { get; set; }
-        public uint Exp { get; set; }
-        public uint Money { get; set; }
-        public uint DepositedMoney { get; set; }
+        public ulong Exp { get; set; }
+        public ulong Money { get; set; }
+        public ulong DepositedMoney { get; set; }
         public Mimicry Mimicry { get; set; }
-        public uint Hp { get; set; }
-        public uint BaseHp { get; set; }
-        public uint AdditionalHp { get; set; }
-        public uint Mp { get; set; }
-        public uint BaseMp { get; set; }
-        public uint AdditionalMp { get; set; }
+        public ulong Hp { get; set; }
+        public ulong BaseHp { get; set; }
+        public ulong AdditionalHp { get; set; }
+        public ulong Mp { get; set; }
+        public ulong BaseMp { get; set; }
+        public ulong AdditionalMp { get; set; }
         public byte? WeaponColor { get; set; }
         public byte? HelmetColor { get; set; }
         public byte? ArmorColor { get; set; }

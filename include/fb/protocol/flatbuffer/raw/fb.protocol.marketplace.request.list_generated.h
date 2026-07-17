@@ -45,8 +45,8 @@ struct List FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
   const fb::protocol::marketplace::raw::Item *item() const {
     return GetPointer<const fb::protocol::marketplace::raw::Item *>(VT_ITEM);
   }
-  uint32_t price() const {
-    return GetField<uint32_t>(VT_PRICE, 0);
+  uint64_t price() const {
+    return GetField<uint64_t>(VT_PRICE, 0);
   }
   bool Verify(::flatbuffers::Verifier &verifier) const {
     return VerifyTableStart(verifier) &&
@@ -56,7 +56,7 @@ struct List FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
            verifier.VerifyString(listing_id()) &&
            VerifyOffset(verifier, VT_ITEM) &&
            verifier.VerifyTable(item()) &&
-           VerifyField<uint32_t>(verifier, VT_PRICE, 4) &&
+           VerifyField<uint64_t>(verifier, VT_PRICE, 8) &&
            verifier.EndTable();
   }
 };
@@ -77,8 +77,8 @@ struct ListBuilder {
   void add_item(::flatbuffers::Offset<fb::protocol::marketplace::raw::Item> item) {
     fbb_.AddOffset(List::VT_ITEM, item);
   }
-  void add_price(uint32_t price) {
-    fbb_.AddElement<uint32_t>(List::VT_PRICE, price, 0);
+  void add_price(uint64_t price) {
+    fbb_.AddElement<uint64_t>(List::VT_PRICE, price, 0);
   }
   explicit ListBuilder(::flatbuffers::FlatBufferBuilder &_fbb)
         : fbb_(_fbb) {
@@ -97,7 +97,7 @@ inline ::flatbuffers::Offset<List> CreateList(
     uint32_t character_id = 0,
     ::flatbuffers::Offset<::flatbuffers::String> listing_id = 0,
     ::flatbuffers::Offset<fb::protocol::marketplace::raw::Item> item = 0,
-    uint32_t price = 0) {
+    uint64_t price = 0) {
   ListBuilder builder_(_fbb);
   builder_.add_price(price);
   builder_.add_item(item);
@@ -113,7 +113,7 @@ inline ::flatbuffers::Offset<List> CreateListDirect(
     uint32_t character_id = 0,
     const char *listing_id = nullptr,
     ::flatbuffers::Offset<fb::protocol::marketplace::raw::Item> item = 0,
-    uint32_t price = 0) {
+    uint64_t price = 0) {
   auto listing_id__ = listing_id ? _fbb.CreateString(listing_id) : 0;
   return fb::protocol::marketplace::request::raw::CreateList(
       _fbb,

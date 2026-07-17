@@ -88,7 +88,7 @@ function NPC_600(me, npc)
         if btn2 == DIALOG_RESULT.PREV then
             goto MENU
         end
-        if sel2 == nil or sel2 < 1 or sel2 > 4 then
+        if sel2 == nil or sel2 < 1 or sel2 > 5 then
             goto MENU
         end
         local names = { "파랑문파비패", "노랑문파비패", "초록문파비패", "보라문파비패", "연두문파비패" }

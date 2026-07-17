@@ -17,7 +17,7 @@ table Item {
 
 table PurchaseInfo {
     purchase_count: ushort;
-    purchase_price: uint;
+    purchase_price: ulong;
     created_date: string;
 }
 
@@ -25,7 +25,7 @@ table Listing {
     id: string;
     seller_id: uint;
     item: Item;
-    price: uint;
+    price: ulong;
     state: fb.protocol.marketplace.ListingState;
     expire_date: string;
     created_date: string;
@@ -37,7 +37,7 @@ table Purchase {
     listing_id: string;
     buyer_id: uint;
     purchase_count: ushort;
-    purchase_price: uint;
+    purchase_price: ulong;
     created_date: string;
 }
 

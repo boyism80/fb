@@ -52,6 +52,9 @@ IMPLEMENT_LUA_EXTENSION(fb::game::life, "fb.game.life")
 {"base_magdef",          builtin::life::builtin_base_magdef},
 {"buff_magdef",          builtin::life::builtin_buff_magdef},
 {"magdef",               builtin::life::builtin_magdef},
+{"base_resist",          builtin::life::builtin_base_resist},
+{"buff_resist",          builtin::life::builtin_buff_resist},
+{"resist",               builtin::life::builtin_resist},
 {"base_dam",             builtin::life::builtin_base_dam},
 {"buff_dam",             builtin::life::builtin_buff_dam},
 {"dam",                  builtin::life::builtin_dam},
@@ -104,7 +107,7 @@ int builtin::life::builtin_hp(lua_State* L)
 
     if (argc == 1)
     {
-        auto hp_value = std::make_shared<uint32_t>();
+        auto hp_value = std::make_shared<uint64_t>();
         auto weak     = obj->weak_from_this();
         auto builder  = lua->new_co_builder();
         builder.weak  = weak;
@@ -120,15 +123,13 @@ int builtin::life::builtin_hp(lua_State* L)
     }
     else
     {
-        auto value    = (uint32_t)lua->tointeger(2);
+        auto value    = lua->touint64(2);
         auto notify   = argc < 3 || lua->toboolean(3);
         auto weak     = obj->weak_from_this();
         auto builder  = lua->new_co_builder();
         builder.weak  = weak;
         builder.yield = [=]() -> async::task<void> {
-            obj->stat.hp(value, false);
-            if (notify)
-                obj->update(UPDATE_STATE_LEVEL::HP_MP);
+            obj->stat.hp(value, notify);
             co_return;
         };
         builder.resume = []() -> async::task<int> {
@@ -150,7 +151,7 @@ int builtin::life::builtin_mp(lua_State* L)
 
     if (argc == 1)
     {
-        auto mp_value = std::make_shared<uint32_t>();
+        auto mp_value = std::make_shared<uint64_t>();
         auto weak     = obj->weak_from_this();
         auto builder  = lua->new_co_builder();
         builder.weak  = weak;
@@ -166,15 +167,13 @@ int builtin::life::builtin_mp(lua_State* L)
     }
     else
     {
-        auto value    = (uint32_t)lua->tointeger(2);
+        auto value    = lua->touint64(2);
         auto notify   = argc < 3 || lua->toboolean(3);
         auto weak     = obj->weak_from_this();
         auto builder  = lua->new_co_builder();
         builder.weak  = weak;
         builder.yield = [=]() -> async::task<void> {
-            obj->stat.mp(value, false);
-            if (notify)
-                obj->update(UPDATE_STATE_LEVEL::HP_MP);
+            obj->stat.mp(value, notify);
             co_return;
         };
         builder.resume = []() -> async::task<int> {
@@ -194,7 +193,7 @@ int builtin::life::builtin_heal(lua_State* L)
     if (obj == nullptr)
         return 0;
 
-    auto value    = (uint32_t)lua->tointeger(2);
+    auto value    = lua->touint64(2);
     auto notify   = argc < 3 || lua->toboolean(3);
     auto weak     = obj->weak_from_this();
     auto builder  = lua->new_co_builder();
@@ -231,7 +230,7 @@ int builtin::life::builtin_damage_to(lua_State* L)
         auto you = lua->touserdata<fb::game::life>(2);
         if (you == nullptr)
             return 0;
-        auto value = static_cast<uint32_t>(lua->tointeger(3));
+        auto value = lua->touint64(3);
         targets->emplace_back(you, value);
         opts_idx = 4;
     }
@@ -252,7 +251,7 @@ int builtin::life::builtin_damage_to(lua_State* L)
             lua_pop(L, 1);
 
             lua_rawgeti(L, -1, 2);
-            auto value = static_cast<uint32_t>(lua_tointeger(L, -1));
+            auto value = static_cast<uint64_t>(std::max<lua_Integer>(0, lua_tointeger(L, -1)));
             lua_pop(L, 1);
 
             lua_pop(L, 1);
@@ -329,15 +328,13 @@ int builtin::life::builtin_mp_up(lua_State* L)
     if (obj == nullptr)
         return 0;
 
-    auto value    = (uint32_t)lua->tointeger(2);
+    auto value    = lua->touint64(2);
     auto notify   = argc < 3 || lua->toboolean(3);
     auto weak     = obj->weak_from_this();
     auto builder  = lua->new_co_builder();
     builder.weak  = weak;
     builder.yield = [=]() -> async::task<void> {
-        std::ignore = obj->stat.mp_up(value, nullptr, false);
-        if (notify)
-            obj->update(UPDATE_STATE_LEVEL::HP_MP);
+        std::ignore = obj->stat.mp_up(value, nullptr, notify);
         co_return;
     };
     builder.resume = []() -> async::task<int> {
@@ -356,15 +353,13 @@ int builtin::life::builtin_mp_down(lua_State* L)
     if (obj == nullptr)
         return 0;
 
-    auto value    = (uint32_t)lua->tointeger(2);
+    auto value    = lua->touint64(2);
     auto notify   = argc < 3 || lua->toboolean(3);
     auto weak     = obj->weak_from_this();
     auto builder  = lua->new_co_builder();
     builder.weak  = weak;
     builder.yield = [=]() -> async::task<void> {
-        std::ignore = obj->stat.mp_down(value, nullptr, false);
-        if (notify)
-            obj->update(UPDATE_STATE_LEVEL::HP_MP);
+        std::ignore = obj->stat.mp_down(value, nullptr, notify);
         co_return;
     };
     builder.resume = []() -> async::task<int> {
@@ -982,7 +977,7 @@ int builtin::life::builtin_base_hp(lua_State* L)
     if (obj == nullptr)
         return 0;
 
-    auto value    = std::make_shared<uint32_t>();
+    auto value    = std::make_shared<uint64_t>();
     auto weak     = obj->weak_from_this();
     auto builder  = lua->new_co_builder();
     builder.weak  = weak;
@@ -1009,7 +1004,7 @@ int builtin::life::builtin_buff_hp(lua_State* L)
 
     if (argc == 1)
     {
-        auto buff_hp_value = std::make_shared<int32_t>();
+        auto buff_hp_value = std::make_shared<int64_t>();
         auto weak          = obj->weak_from_this();
         auto builder       = lua->new_co_builder();
         builder.weak       = weak;
@@ -1025,12 +1020,12 @@ int builtin::life::builtin_buff_hp(lua_State* L)
     }
     else
     {
-        auto value    = lua->tointeger(2);
+        auto value    = lua->toint64(2);
         auto weak     = obj->weak_from_this();
         auto builder  = lua->new_co_builder();
         builder.weak  = weak;
         builder.yield = [=]() -> async::task<void> {
-            obj->stat.buff_hp(static_cast<int32_t>(value));
+            obj->stat.buff_hp(value);
             co_return;
         };
         builder.resume = []() -> async::task<int> {
@@ -1049,7 +1044,7 @@ int builtin::life::builtin_maxhp(lua_State* L)
     if (obj == nullptr)
         return 0;
 
-    auto maxhp_value = std::make_shared<uint32_t>();
+    auto maxhp_value = std::make_shared<uint64_t>();
     auto weak        = obj->weak_from_this();
     auto builder     = lua->new_co_builder();
     builder.weak     = weak;
@@ -1073,7 +1068,7 @@ int builtin::life::builtin_base_mp(lua_State* L)
     if (obj == nullptr)
         return 0;
 
-    auto base_mp_value = std::make_shared<uint32_t>();
+    auto base_mp_value = std::make_shared<uint64_t>();
     auto weak          = obj->weak_from_this();
     auto builder       = lua->new_co_builder();
     builder.weak       = weak;
@@ -1100,7 +1095,7 @@ int builtin::life::builtin_buff_mp(lua_State* L)
 
     if (argc == 1)
     {
-        auto buff_mp_value = std::make_shared<int32_t>();
+        auto buff_mp_value = std::make_shared<int64_t>();
         auto weak          = obj->weak_from_this();
         auto builder       = lua->new_co_builder();
         builder.weak       = weak;
@@ -1116,12 +1111,12 @@ int builtin::life::builtin_buff_mp(lua_State* L)
     }
     else
     {
-        auto value    = lua->tointeger(2);
+        auto value    = lua->toint64(2);
         auto weak     = obj->weak_from_this();
         auto builder  = lua->new_co_builder();
         builder.weak  = weak;
         builder.yield = [=]() -> async::task<void> {
-            obj->stat.buff_mp(static_cast<int32_t>(value));
+            obj->stat.buff_mp(value);
             co_return;
         };
         builder.resume = []() -> async::task<int> {
@@ -1140,7 +1135,7 @@ int builtin::life::builtin_maxmp(lua_State* L)
     if (obj == nullptr)
         return 0;
 
-    auto maxmp_value = std::make_shared<uint32_t>();
+    auto maxmp_value = std::make_shared<uint64_t>();
     auto weak        = obj->weak_from_this();
     auto builder     = lua->new_co_builder();
     builder.weak     = weak;
@@ -1804,7 +1799,7 @@ int builtin::life::builtin_normal_attack_damage(lua_State* L)
     obj->assert_thread();
 
     auto size     = lua->toenum(2, MOB_SIZE::SMALL);
-    auto damage   = std::make_shared<uint32_t>();
+    auto damage   = std::make_shared<uint64_t>();
     auto weak     = obj->weak_from_this();
     auto builder  = lua->new_co_builder();
     builder.weak  = weak;
@@ -1840,6 +1835,100 @@ int builtin::life::builtin_update(lua_State* L)
     };
     builder.resume = []() -> async::task<int> {
         co_return 0;
+    };
+    return builder.run();
+}
+
+int builtin::life::builtin_base_resist(lua_State* L)
+{
+    auto lua = fb::lua::get(L);
+    if (lua == nullptr)
+        return 0;
+    auto obj = lua->touserdata<fb::game::life>(1);
+    if (obj == nullptr)
+        return 0;
+
+    auto type     = static_cast<RESIST>(lua->tointeger(2));
+    auto value    = std::make_shared<float>();
+    auto weak     = obj->weak_from_this();
+    auto builder  = lua->new_co_builder();
+    builder.weak  = weak;
+    builder.yield = [=]() -> async::task<void> {
+        *value = obj->stat.base_resist(type);
+        co_return;
+    };
+    builder.resume = [=]() -> async::task<int> {
+        lua->pushnumber(*value);
+        co_return 1;
+    };
+    return builder.run();
+}
+
+int builtin::life::builtin_buff_resist(lua_State* L)
+{
+    auto lua = fb::lua::get(L);
+    if (lua == nullptr)
+        return 0;
+    auto argc = lua->argc();
+    auto obj  = lua->touserdata<fb::game::life>(1);
+    if (obj == nullptr)
+        return 0;
+
+    auto type = static_cast<RESIST>(lua->tointeger(2));
+    if (argc == 2)
+    {
+        auto value    = std::make_shared<float>();
+        auto weak     = obj->weak_from_this();
+        auto builder  = lua->new_co_builder();
+        builder.weak  = weak;
+        builder.yield = [=]() -> async::task<void> {
+            *value = obj->stat.buff_resist(type);
+            co_return;
+        };
+        builder.resume = [=]() -> async::task<int> {
+            lua->pushnumber(*value);
+            co_return 1;
+        };
+        return builder.run();
+    }
+    else
+    {
+        auto value    = static_cast<float>(lua_tonumber(L, 3));
+        auto weak     = obj->weak_from_this();
+        auto builder  = lua->new_co_builder();
+        builder.weak  = weak;
+        builder.yield = [=]() -> async::task<void> {
+            obj->stat.buff_resist(type, value);
+            co_return;
+        };
+        builder.resume = []() -> async::task<int> {
+            co_return 0;
+        };
+        return builder.run();
+    }
+}
+
+int builtin::life::builtin_resist(lua_State* L)
+{
+    auto lua = fb::lua::get(L);
+    if (lua == nullptr)
+        return 0;
+    auto obj = lua->touserdata<fb::game::life>(1);
+    if (obj == nullptr)
+        return 0;
+
+    auto type     = static_cast<RESIST>(lua->tointeger(2));
+    auto value    = std::make_shared<float>();
+    auto weak     = obj->weak_from_this();
+    auto builder  = lua->new_co_builder();
+    builder.weak  = weak;
+    builder.yield = [=]() -> async::task<void> {
+        *value = obj->stat.resist(type);
+        co_return;
+    };
+    builder.resume = [=]() -> async::task<int> {
+        lua->pushnumber(*value);
+        co_return 1;
     };
     return builder.run();
 }

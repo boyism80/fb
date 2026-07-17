@@ -31,8 +31,8 @@ struct PurchaseInfo FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
   uint16_t purchase_count() const {
     return GetField<uint16_t>(VT_PURCHASE_COUNT, 0);
   }
-  uint32_t purchase_price() const {
-    return GetField<uint32_t>(VT_PURCHASE_PRICE, 0);
+  uint64_t purchase_price() const {
+    return GetField<uint64_t>(VT_PURCHASE_PRICE, 0);
   }
   const ::flatbuffers::String *created_date() const {
     return GetPointer<const ::flatbuffers::String *>(VT_CREATED_DATE);
@@ -40,7 +40,7 @@ struct PurchaseInfo FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
   bool Verify(::flatbuffers::Verifier &verifier) const {
     return VerifyTableStart(verifier) &&
            VerifyField<uint16_t>(verifier, VT_PURCHASE_COUNT, 2) &&
-           VerifyField<uint32_t>(verifier, VT_PURCHASE_PRICE, 4) &&
+           VerifyField<uint64_t>(verifier, VT_PURCHASE_PRICE, 8) &&
            VerifyOffset(verifier, VT_CREATED_DATE) &&
            verifier.VerifyString(created_date()) &&
            verifier.EndTable();
@@ -54,8 +54,8 @@ struct PurchaseInfoBuilder {
   void add_purchase_count(uint16_t purchase_count) {
     fbb_.AddElement<uint16_t>(PurchaseInfo::VT_PURCHASE_COUNT, purchase_count, 0);
   }
-  void add_purchase_price(uint32_t purchase_price) {
-    fbb_.AddElement<uint32_t>(PurchaseInfo::VT_PURCHASE_PRICE, purchase_price, 0);
+  void add_purchase_price(uint64_t purchase_price) {
+    fbb_.AddElement<uint64_t>(PurchaseInfo::VT_PURCHASE_PRICE, purchase_price, 0);
   }
   void add_created_date(::flatbuffers::Offset<::flatbuffers::String> created_date) {
     fbb_.AddOffset(PurchaseInfo::VT_CREATED_DATE, created_date);
@@ -74,11 +74,11 @@ struct PurchaseInfoBuilder {
 inline ::flatbuffers::Offset<PurchaseInfo> CreatePurchaseInfo(
     ::flatbuffers::FlatBufferBuilder &_fbb,
     uint16_t purchase_count = 0,
-    uint32_t purchase_price = 0,
+    uint64_t purchase_price = 0,
     ::flatbuffers::Offset<::flatbuffers::String> created_date = 0) {
   PurchaseInfoBuilder builder_(_fbb);
-  builder_.add_created_date(created_date);
   builder_.add_purchase_price(purchase_price);
+  builder_.add_created_date(created_date);
   builder_.add_purchase_count(purchase_count);
   return builder_.Finish();
 }
@@ -86,7 +86,7 @@ inline ::flatbuffers::Offset<PurchaseInfo> CreatePurchaseInfo(
 inline ::flatbuffers::Offset<PurchaseInfo> CreatePurchaseInfoDirect(
     ::flatbuffers::FlatBufferBuilder &_fbb,
     uint16_t purchase_count = 0,
-    uint32_t purchase_price = 0,
+    uint64_t purchase_price = 0,
     const char *created_date = nullptr) {
   auto created_date__ = created_date ? _fbb.CreateString(created_date) : 0;
   return fb::protocol::marketplace::raw::CreatePurchaseInfo(

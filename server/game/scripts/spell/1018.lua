@@ -45,7 +45,9 @@ function ON_CAST_1018(me, sp)
     end 
 
     if front:is(OBJECT_TYPE.LIFE) then
-        front:position(x, y)
+        if not spell.force_position(front, x, y) then
+            return spell.failed_attack(me)
+        end
     end
 
     spell.attack_cast(me, front, sp, {hp = hp, mp = 0, damage = damage, message = message, sound = sound, effect = effect})

@@ -37,7 +37,7 @@ public:
     struct purchase_info
     {
         uint16_t                           purchase_count = 0;
-        uint32_t                           purchase_price = 0;
+        uint64_t                           purchase_price = 0;
         std::optional<fb::model::datetime> created_date   = std::nullopt;
     };
 
@@ -46,8 +46,8 @@ public:
         std::string                        id;
         uint32_t                           seller_id = 0;
         item                               item_data;
-        uint32_t                           price        = 0;
-        uint32_t                           listing_fee  = 0;
+        uint64_t                           price        = 0;
+        uint64_t                           listing_fee  = 0;
         uint8_t                            state        = 0; // fb::protocol::marketplace::ListingState
         std::optional<fb::model::datetime> expire_date  = std::nullopt;
         std::optional<fb::model::datetime> created_date = std::nullopt;
@@ -59,8 +59,8 @@ public:
     struct search_option
     {
         std::optional<std::string> item_name = std::nullopt;
-        std::optional<uint32_t>    min_price = std::nullopt;
-        std::optional<uint32_t>    max_price = std::nullopt;
+        std::optional<uint64_t>    min_price = std::nullopt;
+        std::optional<uint64_t>    max_price = std::nullopt;
         std::optional<uint32_t>    seller_id = std::nullopt;
         std::optional<std::string> sort_by   = std::nullopt;
         uint32_t                   page      = 1;
@@ -87,7 +87,7 @@ public:
         std::vector<fb::model::dsl> dsls;
         uint32_t                    character_id;                // For purchase: buyer_id, for list: seller_id
         uint16_t                    expected_purchase_count = 0; // For purchase: expected count, for list: 0
-        uint32_t                    expected_total_price    = 0; // For purchase: expected total price, for list: 0
+        uint64_t                    expected_total_price    = 0; // For purchase: expected total price, for list: 0
     };
 
     // Type aliases for commonly used types
@@ -106,7 +106,7 @@ private:
     static std::string generate_uuid();
 
 public:
-    async::task<listing>              list(uint8_t slot, uint16_t count, uint32_t price, uint16_t expire_hours = 72);
+    async::task<listing>              list(uint8_t slot, uint16_t count, uint64_t price, uint16_t expire_hours = 72);
     async::task<bool>                 cancel(std::string_view id);
     async::task<listing>              purchase(std::string_view listing_id, uint16_t purchase_count);
     async::task<search_result>        search(const search_option& option);

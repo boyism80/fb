@@ -14,7 +14,7 @@ void listener_impl::on_trade_bundle(character& me)
     me.send(game_resp::trade_bundle());
 }
 
-void listener_impl::on_trade_money(character& me, character& you, uint32_t money)
+void listener_impl::on_trade_money(character& me, character& you, uint64_t money)
 {
     me.send(game_resp::trade_money(money, true));
     you.send(game_resp::trade_money(money, false));

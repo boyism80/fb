@@ -12,6 +12,7 @@
 #include <sstream>
 #include <unordered_set>
 #include <algorithm>
+#include <limits>
 #include <boost/uuid/uuid.hpp>
 #include <boost/uuid/uuid_generators.hpp>
 #include <boost/uuid/uuid_io.hpp>
@@ -33,7 +34,7 @@ std::string marketplace::generate_uuid()
     return boost::uuids::to_string(uuid);
 }
 
-async::task<marketplace::listing> marketplace::list(uint8_t slot, uint16_t count, uint32_t price, uint16_t expire_hours)
+async::task<marketplace::listing> marketplace::list(uint8_t slot, uint16_t count, uint64_t price, uint16_t expire_hours)
 {
     this->_owner.assert_thread();
 
@@ -71,8 +72,8 @@ async::task<marketplace::listing> marketplace::list(uint8_t slot, uint16_t count
     }
 
     // Calculate listing fee based on total sale amount (count * price)
-    auto total_sale_amount = static_cast<uint32_t>(count * price);
-    auto listing_fee = static_cast<uint32_t>(total_sale_amount * fb::model::const_value::marketplace::listing_fee);
+    auto total_sale_amount = static_cast<uint64_t>(count) * price;
+    auto listing_fee = static_cast<uint64_t>(total_sale_amount * fb::model::const_value::marketplace::listing_fee);
 
     // Validate listing fee BEFORE API call
     if (this->_owner.money() < listing_fee)
@@ -428,17 +429,17 @@ async::task<marketplace::search_result> marketplace::search(const search_option&
             created_date_opt = fb::model::datetime(listing.created_date);
 
         result.listings.push_back(marketplace::listing{
-            .id          = listing.id,
-            .seller_id   = listing.seller_id,
-            .item_data   = {.owner       = listing.item.owner,
-                            .model       = listing.item.model,
-                            .count       = listing.item.count,
-                            .durability  = listing.item.durability,
-                            .custom_name = listing.item.custom_name},
-            .price       = listing.price,
-            .listing_fee = static_cast<uint32_t>(
-                listing.item.count * listing.price *
-                fb::model::const_value::marketplace::listing_fee), // Calculate listing fee based on total sale amount
+            .id        = listing.id,
+            .seller_id = listing.seller_id,
+            .item_data = {.owner       = listing.item.owner,
+                          .model       = listing.item.model,
+                          .count       = listing.item.count,
+                          .durability  = listing.item.durability,
+                          .custom_name = listing.item.custom_name},
+            .price     = listing.price,
+            .listing_fee =
+                static_cast<uint64_t>(static_cast<double>(static_cast<uint64_t>(listing.item.count) * listing.price) *
+                                      fb::model::const_value::marketplace::listing_fee),
             .state        = 0,
             .expire_date  = expire_date_opt,
             .created_date = created_date_opt,
@@ -497,17 +498,17 @@ marketplace::get_listings(const marketplace::string_vector_t& listing_ids, uint3
         }
 
         result.push_back(marketplace::listing{
-            .id          = listing.id,
-            .seller_id   = listing.seller_id,
-            .item_data   = {.owner       = listing.item.owner,
-                            .model       = listing.item.model,
-                            .count       = listing.item.count,
-                            .durability  = listing.item.durability,
-                            .custom_name = listing.item.custom_name},
-            .price       = listing.price,
-            .listing_fee = static_cast<uint32_t>(
-                listing.item.count * listing.price *
-                fb::model::const_value::marketplace::listing_fee), // Calculate listing fee based on total sale amount
+            .id        = listing.id,
+            .seller_id = listing.seller_id,
+            .item_data = {.owner       = listing.item.owner,
+                          .model       = listing.item.model,
+                          .count       = listing.item.count,
+                          .durability  = listing.item.durability,
+                          .custom_name = listing.item.custom_name},
+            .price     = listing.price,
+            .listing_fee =
+                static_cast<uint64_t>(static_cast<double>(static_cast<uint64_t>(listing.item.count) * listing.price) *
+                                      fb::model::const_value::marketplace::listing_fee),
             .state        = static_cast<uint8_t>(listing.state),
             .expire_date  = expire_date_opt,
             .created_date = created_date_opt,
@@ -727,7 +728,7 @@ async::task<void> marketplace::restore()
         {
             // Purchase record exists - check for refund if needed
             const auto& purchase      = purchase_it->second;
-            auto        refund_amount = 0u;
+            auto        refund_amount = uint64_t{0};
 
             if (purchase.purchase_count < pending_info.expected_purchase_count)
             {

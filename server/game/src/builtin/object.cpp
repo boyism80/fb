@@ -1226,7 +1226,7 @@ int builtin::object::builtin_script(lua_State* L)
         auto new_lua = static_cast<fb::game::server&>(lua->executor)
                            .lua.new_context(lua,
                                             {
-                                                .auto_release       = false,
+                                                .auto_release       = true,
                                                 .auto_resume_parent = false,
                                             });
         if (new_lua == nullptr)
@@ -1264,14 +1264,14 @@ int builtin::object::builtin_script(lua_State* L)
         }
     };
     builder.resume = [=]() -> async::task<int> {
-        auto new_lua = child_holder->ctx;
+        auto new_lua      = child_holder->ctx;
+        child_holder->ctx = nullptr;
         if (new_lua == nullptr)
             co_return 0;
 
         auto n = *retc_holder;
         lua_xmove(*new_lua, *lua, n);
-        new_lua->release();
-        child_holder->ctx = nullptr;
+        // Child uses auto_release=true; release happens after call completion.
         co_return n;
     };
     return builder.run();

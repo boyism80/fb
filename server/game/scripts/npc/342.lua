@@ -20,7 +20,7 @@ function NPC_342(me, npc)
     if btn == DIALOG_RESULT.QUIT then
         return
     end
-    if sel == nil or sel < 1 or sel > 3 then
+    if sel == nil or sel < 1 or sel > 4 then
         return
     end
 

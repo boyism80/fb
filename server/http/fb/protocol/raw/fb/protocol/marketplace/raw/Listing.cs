@@ -29,7 +29,7 @@ public struct Listing : IFlatbufferObject
   public byte[] GetIdArray() { return __p.__vector_as_array<byte>(4); }
   public uint SellerId { get { int o = __p.__offset(6); return o != 0 ? __p.bb.GetUint(o + __p.bb_pos) : (uint)0; } }
   public fb.protocol.marketplace.raw.Item? Item { get { int o = __p.__offset(8); return o != 0 ? (fb.protocol.marketplace.raw.Item?)(new fb.protocol.marketplace.raw.Item()).__assign(__p.__indirect(o + __p.bb_pos), __p.bb) : null; } }
-  public uint Price { get { int o = __p.__offset(10); return o != 0 ? __p.bb.GetUint(o + __p.bb_pos) : (uint)0; } }
+  public ulong Price { get { int o = __p.__offset(10); return o != 0 ? __p.bb.GetUlong(o + __p.bb_pos) : (ulong)0; } }
   public fb.protocol.marketplace.raw.ListingState State { get { int o = __p.__offset(12); return o != 0 ? (fb.protocol.marketplace.raw.ListingState)__p.bb.Get(o + __p.bb_pos) : fb.protocol.marketplace.raw.ListingState.ACTIVE; } }
   public string ExpireDate { get { int o = __p.__offset(14); return o != 0 ? __p.__string(o + __p.bb_pos) : null; } }
 #if ENABLE_SPAN_T
@@ -51,16 +51,16 @@ public struct Listing : IFlatbufferObject
       StringOffset idOffset = default(StringOffset),
       uint seller_id = 0,
       Offset<fb.protocol.marketplace.raw.Item> itemOffset = default(Offset<fb.protocol.marketplace.raw.Item>),
-      uint price = 0,
+      ulong price = 0,
       fb.protocol.marketplace.raw.ListingState state = fb.protocol.marketplace.raw.ListingState.ACTIVE,
       StringOffset expire_dateOffset = default(StringOffset),
       StringOffset created_dateOffset = default(StringOffset),
       Offset<fb.protocol.marketplace.raw.PurchaseInfo> purchase_infoOffset = default(Offset<fb.protocol.marketplace.raw.PurchaseInfo>)) {
     builder.StartTable(8);
+    Listing.AddPrice(builder, price);
     Listing.AddPurchaseInfo(builder, purchase_infoOffset);
     Listing.AddCreatedDate(builder, created_dateOffset);
     Listing.AddExpireDate(builder, expire_dateOffset);
-    Listing.AddPrice(builder, price);
     Listing.AddItem(builder, itemOffset);
     Listing.AddSellerId(builder, seller_id);
     Listing.AddId(builder, idOffset);
@@ -72,7 +72,7 @@ public struct Listing : IFlatbufferObject
   public static void AddId(FlatBufferBuilder builder, StringOffset idOffset) { builder.AddOffset(0, idOffset.Value, 0); }
   public static void AddSellerId(FlatBufferBuilder builder, uint sellerId) { builder.AddUint(1, sellerId, 0); }
   public static void AddItem(FlatBufferBuilder builder, Offset<fb.protocol.marketplace.raw.Item> itemOffset) { builder.AddOffset(2, itemOffset.Value, 0); }
-  public static void AddPrice(FlatBufferBuilder builder, uint price) { builder.AddUint(3, price, 0); }
+  public static void AddPrice(FlatBufferBuilder builder, ulong price) { builder.AddUlong(3, price, 0); }
   public static void AddState(FlatBufferBuilder builder, fb.protocol.marketplace.raw.ListingState state) { builder.AddByte(4, (byte)state, 0); }
   public static void AddExpireDate(FlatBufferBuilder builder, StringOffset expireDateOffset) { builder.AddOffset(5, expireDateOffset.Value, 0); }
   public static void AddCreatedDate(FlatBufferBuilder builder, StringOffset createdDateOffset) { builder.AddOffset(6, createdDateOffset.Value, 0); }
@@ -94,7 +94,7 @@ static public class ListingVerify
       && verifier.VerifyString(tablePos, 4 /*Id*/, false)
       && verifier.VerifyField(tablePos, 6 /*SellerId*/, 4 /*uint*/, 4, false)
       && verifier.VerifyTable(tablePos, 8 /*Item*/, fb.protocol.marketplace.raw.ItemVerify.Verify, false)
-      && verifier.VerifyField(tablePos, 10 /*Price*/, 4 /*uint*/, 4, false)
+      && verifier.VerifyField(tablePos, 10 /*Price*/, 8 /*ulong*/, 8, false)
       && verifier.VerifyField(tablePos, 12 /*State*/, 1 /*fb.protocol.marketplace.raw.ListingState*/, 1, false)
       && verifier.VerifyString(tablePos, 14 /*ExpireDate*/, false)
       && verifier.VerifyString(tablePos, 16 /*CreatedDate*/, false)

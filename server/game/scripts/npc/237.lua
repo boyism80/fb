@@ -26,7 +26,7 @@ function NPC_237(me, npc)
     if sel == nil or sel == 4 then
         return
     end
-    if sel < 1 or sel > 2 then
+    if sel < 1 or sel > 3 then
         return
     end
 

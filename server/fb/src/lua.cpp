@@ -251,6 +251,28 @@ lua_Integer context::tonumber(int offset, lua_Integer default_value)
         return lua_tonumber(*this, offset);
 }
 
+uint64_t context::touint64(int offset, uint64_t default_value)
+{
+    if (this->argc() < offset)
+        return default_value;
+    if (lua_type(*this, offset) != LUA_TNUMBER)
+        return default_value;
+
+    auto value = lua_tointeger(*this, offset);
+    if (value < 0)
+        return default_value;
+    return static_cast<uint64_t>(value);
+}
+
+int64_t context::toint64(int offset, int64_t default_value)
+{
+    if (this->argc() < offset)
+        return default_value;
+    if (lua_type(*this, offset) != LUA_TNUMBER)
+        return default_value;
+    return static_cast<int64_t>(lua_tointeger(*this, offset));
+}
+
 bool context::toboolean(int offset, bool default_value)
 {
     if (this->argc() < offset)
@@ -440,8 +462,11 @@ void fb::lua::context::resume(int argc, int* n)
     }
     else // LUA_OK: coroutine finished successfully.
     {
+        auto promise            = promise_type{this->_promise};
+        this->_promise          = nullptr;
         auto parent             = this->_parent;
         auto auto_resume_parent = this->_options.auto_resume_parent;
+        auto auto_release       = this->_options.auto_release;
         if (parent != nullptr)
         {
             auto context = fb::execution_context::token();
@@ -476,10 +501,13 @@ void fb::lua::context::resume(int argc, int* n)
         else if (n != nullptr)
             *n = this->argc();
 
-        if (this->_options.auto_release)
-            root->release(*this);
+        if (promise != nullptr)
+            promise->set_value(true);
 
-        this->_promise->set_value(true);
+        // Release after set_value so waiters can still read return values
+        // (e.g. lua_xmove) while this context is completing.
+        if (auto_release)
+            root->release(*this);
     }
 }
 

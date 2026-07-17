@@ -1,13 +1,11 @@
-#ifndef __NO_MOVE_AI_H__
-#define __NO_MOVE_AI_H__
+#ifndef FB_GAME_AI_STATIONARY_H_
+#define FB_GAME_AI_STATIONARY_H_
 
 #include <fb/game/ai.h>
-#include <fb/game/mob.h>
-#include <fb/game/map.h>
 
 namespace fb::game {
 
-class no_move_ai : public ai
+class stationary_ai : public ai
 {
 private:
     using super    = ai;
@@ -22,6 +20,7 @@ public:
     MOB_ATTACK_TYPE get_type() const override;
     // clang-format on
 };
+
 } // namespace fb::game
 
-#endif // !__NO_MOVE_AI_H__
+#endif // !FB_GAME_AI_STATIONARY_H_

@@ -4,18 +4,18 @@ namespace Fb.Model
 {
     public static class AbilityStackedExp
     {
-        private static readonly Dictionary<Class, Dictionary<byte, uint>> Cache = new();
+        private static readonly Dictionary<Class, Dictionary<byte, ulong>> Cache = new();
 
         public static void BuildCache()
         {
             Cache.Clear();
 
-            var intra = new Dictionary<Class, Dictionary<byte, uint>>();
+            var intra = new Dictionary<Class, Dictionary<byte, ulong>>();
 
             foreach (var (cls, levels) in Table.Ability)
             {
-                var map = new Dictionary<byte, uint>();
-                uint sum = 0;
+                var map = new Dictionary<byte, ulong>();
+                ulong sum = 0;
 
                 foreach (var level in levels.Keys.OrderBy(k => k))
                 {
@@ -34,7 +34,7 @@ namespace Fb.Model
                     continue;
                 }
 
-                uint noneBase = 0;
+                ulong noneBase = 0;
                 if (intra.TryGetValue(Class.None, out var noneIntra))
                 {
                     var minLevel = classIntra.Keys.Min();
@@ -49,7 +49,7 @@ namespace Fb.Model
             }
         }
 
-        public static uint GetStackedExp(Class cls, byte level)
+        public static ulong GetStackedExp(Class cls, byte level)
         {
             if (Cache.TryGetValue(cls, out var levels) && levels.TryGetValue(level, out var stacked))
                 return stacked;
@@ -57,7 +57,7 @@ namespace Fb.Model
             return 0;
         }
 
-        public static bool TryGetStackedExp(Class cls, byte level, out uint stacked)
+        public static bool TryGetStackedExp(Class cls, byte level, out ulong stacked)
         {
             stacked = 0;
             return Cache.TryGetValue(cls, out var levels) && levels.TryGetValue(level, out stacked);

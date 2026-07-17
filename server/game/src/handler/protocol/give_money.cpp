@@ -1,6 +1,7 @@
 #include <fb/game/handler/protocol/give_money.h>
 #include <fb/game/server.h>
 #include <tuple>
+#include <limits>
 
 using namespace fb::game::handler::protocol;
 
@@ -26,14 +27,14 @@ async::task<bool> give_money::handle(fb::socket<character>& session, game_reqs::
     auto error = std::optional<std::string>{};
     try
     {
-        auto money = std::min(request.money, me->money());
+        auto money = std::min<uint64_t>(request.money, me->money());
         switch (forward->what())
         {
         case OBJECT_TYPE::CHARACTER:
         {
             auto you      = std::static_pointer_cast<fb::game::character>(forward);
-            auto capacity = 0xFFFFFFFF - you->money();
-            money         = std::min(capacity, money);
+            auto capacity = std::numeric_limits<uint64_t>::max() - you->money();
+            money         = std::min(capacity, static_cast<uint64_t>(money));
             if (money == 0)
                 throw std::runtime_error(_TEXT(MESSAGE_MONEY_TARGET_CANNOT_RECEIVE));
 

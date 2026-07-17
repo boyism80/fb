@@ -267,7 +267,7 @@ namespace AdminTool.Services
         /// <summary>
         /// Mirrors game server character::experience_percent and exp-to-next calculations.
         /// </summary>
-        public static CharacterExpInfo GetExpInfo(byte classValue, byte level, uint currentExp)
+        public static CharacterExpInfo GetExpInfo(byte classValue, byte level, ulong currentExp)
         {
             if (IsMaxLevel(classValue, level))
             {
@@ -286,7 +286,7 @@ namespace AdminTool.Services
                 return new CharacterExpInfo { CurrentExp = currentExp };
             }
 
-            uint prevStackedExp = 0;
+            ulong prevStackedExp = 0;
             if (classAbilities.ContainsKey((byte)(level - 1)))
             {
                 prevStackedExp = AbilityStackedExp.GetStackedExp(cls, (byte)(level - 1));
@@ -329,13 +329,13 @@ namespace AdminTool.Services
     {
         public bool IsMaxLevel { get; init; }
 
-        public uint CurrentExp { get; init; }
+        public ulong CurrentExp { get; init; }
 
-        public uint ExpInCurrentLevel { get; init; }
+        public ulong ExpInCurrentLevel { get; init; }
 
-        public uint RequiredExpForLevel { get; init; }
+        public ulong RequiredExpForLevel { get; init; }
 
-        public uint RemainingExpToNextLevel { get; init; }
+        public ulong RemainingExpToNextLevel { get; init; }
 
         public float Percent { get; init; }
 

@@ -4,6 +4,8 @@
 #include <fb/game/map.h>
 #include <fb/game/mob.h>
 #include <fb/game/ai.h>
+#include <algorithm>
+#include <limits>
 
 using namespace fb::game;
 using table = fb::model::table;
@@ -120,7 +122,7 @@ mob::mob(fb::game::server& server, const fb::model::mob& model, const initial_pa
     // Initialize AI strategy based on mob's attack type
     this->_ai_strategy = ai::create(model.attack_type);
 
-    this->hidden(!params.alive);
+    this->_hidden = !params.alive;
     if (params.alive)
     {
         // Do not notify during construction: server::send uses weak_from_this
@@ -283,7 +285,7 @@ std::shared_ptr<life> mob::update_target()
         this->_target.reset();
 
         auto& model = this->based<fb::model::mob>();
-        if (model.attack_type == MOB_ATTACK_TYPE::CONTAINMENT)
+        if (model.attack_type == MOB_ATTACK_TYPE::AGGRESSIVE)
             this->_target = this->find_target();
         else
             this->_target.reset();
@@ -398,10 +400,10 @@ bool mob::available() const
 {
     this->assert_thread();
 
-    return this->alive();
+    return this->alive() && this->_hidden == false;
 }
 
-uint32_t mob::normal_attack_damage(MOB_SIZE size) const
+uint64_t mob::normal_attack_damage(MOB_SIZE size) const
 {
     this->assert_thread();
 
@@ -442,6 +444,37 @@ async::task<void> mob::damage_to(const damage_list& targets, const damage_opts& 
     co_await this->settle_deaths(std::move(dead));
 }
 
+async::task<void> mob::drop_model_items(const fb::model::mob&       model,
+                                        const fb::model::point16_t& position,
+                                        std::vector<uint32_t>&      oids)
+{
+    auto map = this->map();
+    if (map == nullptr || model.drop.empty())
+        co_return;
+
+    auto& drop = table::drop[model.drop];
+    for (auto& dsl : drop.dsl)
+    {
+        switch (dsl.header)
+        {
+        case DSL::item:
+        {
+            auto params           = fb::model::dsl::item(dsl.params);
+            auto multiplier       = this->server.drop_rate_multiplier();
+            auto adjusted_percent = std::min(100.0, params.percent * multiplier);
+            auto random           = std::rand() % 100;
+            if (random > (int)adjusted_percent)
+                continue;
+
+            auto item   = table::item[params.id].make(this->server);
+            std::ignore = co_await item->map(map, position, {.notify = false});
+            oids.push_back(item->oid());
+        }
+        break;
+        }
+    }
+}
+
 async::task<void> mob::drop_items()
 {
     this->assert_thread();
@@ -458,33 +491,52 @@ async::task<void> mob::drop_items()
     this->_items.clear();
 
     auto owner = this->owner.lock();
-    if (owner == nullptr && !model.drop.empty())
-    {
-        auto& drop = table::drop[model.drop];
-        for (auto& dsl : drop.dsl)
-        {
-            switch (dsl.header)
-            {
-            case DSL::item:
-            {
-                auto params           = fb::model::dsl::item(dsl.params);
-                auto multiplier       = this->server.drop_rate_multiplier();
-                auto adjusted_percent = std::min(100.0, params.percent * multiplier);
-                auto random           = std::rand() % 100;
-                if (random > (int)adjusted_percent)
-                    continue;
+    if (owner == nullptr)
+        co_await this->drop_model_items(model, position, oids);
 
-                auto item   = table::item[params.id].make(this->server);
-                std::ignore = co_await item->map(map, position, {.notify = false});
-                oids.push_back(item->oid());
-            }
-            break;
-            }
+    if (!oids.empty() && this->map() != nullptr)
+        this->map()->bulk_update(oids);
+}
+
+async::task<void> mob::destroy(DESTROY_TYPE destroy_type)
+{
+    this->assert_thread();
+
+    if (this->_destroying)
+    {
+        co_await object::destroy(destroy_type);
+        co_return;
+    }
+
+    this->_destroying = true;
+
+    if (this->_parts.empty() == false)
+    {
+        auto linked = this->parts();
+        this->_parts.clear();
+        for (auto& part : linked)
+        {
+            if (part == nullptr)
+                continue;
+
+            part->_body.reset();
+            // Parts already in settle (invincible) destroy themselves with their own exp/drop.
+            if (part->invincible())
+                continue;
+
+            part->_destroying = true;
+            part->kill(destroy_type);
+            co_await part->destroy(destroy_type);
         }
     }
 
-    if (!oids.empty())
-        this->map()->bulk_update(oids);
+    if (auto body = this->_body.lock())
+    {
+        body->unlink_part(*this);
+        this->_body.reset();
+    }
+
+    co_await object::destroy(destroy_type);
 }
 
 void mob::assert_thread() const
@@ -585,10 +637,198 @@ bool mob::hidden(const fb::game::object& target) const
 void mob::hidden(bool enabled)
 {
     this->assert_thread();
+    if (this->_hidden == enabled)
+        return;
+
     this->_hidden = enabled;
+    if (this->map() == nullptr)
+        return;
+
+    if (enabled)
+    {
+        for (auto& obj : this->nears(OBJECT_TYPE::CHARACTER))
+            this->object::hide(*obj);
+    }
+    else
+    {
+        for (auto& obj : this->nears(OBJECT_TYPE::CHARACTER))
+            this->update_external(*obj, true);
+    }
 }
 
 std::shared_ptr<fb::game::appearance> mob::appearance() const
 {
     return this->based<fb::model::mob>().create_appearance();
+}
+
+bool mob::add_part(const std::shared_ptr<mob>& part)
+{
+    this->assert_thread();
+    if (part == nullptr || part.get() == this)
+        return false;
+
+    if (part->body() != nullptr)
+        return false;
+
+    if (part->has_parts())
+        return false;
+
+    if (this->body() != nullptr)
+        return false;
+
+    part->_body = this->weak_from_this_as<mob>();
+    this->_parts.push_back(part);
+
+    // PARTS mode: body HP tracks the sum of linked parts.
+    // BODY mode: body keeps its own model HP; parts are hitboxes only.
+    if (this->_parts_mode == MOB_PARTS_MODE::PARTS)
+        this->sync_body_hp_from_parts();
+
+    return true;
+}
+
+mob::parts_vector_t mob::parts() const
+{
+    this->assert_thread();
+    auto result = parts_vector_t{};
+    result.reserve(this->_parts.size());
+    for (auto& weak : this->_parts)
+    {
+        auto part = weak.lock();
+        if (part != nullptr)
+            result.push_back(part);
+    }
+    return result;
+}
+
+std::shared_ptr<mob> mob::body() const
+{
+    this->assert_thread();
+    return this->_body.lock();
+}
+
+bool mob::has_parts() const
+{
+    this->assert_thread();
+    return this->_parts.empty() == false;
+}
+
+void mob::parts_mode(MOB_PARTS_MODE mode)
+{
+    this->assert_thread();
+    this->_parts_mode = mode;
+    if (mode == MOB_PARTS_MODE::PARTS && this->has_parts())
+        this->sync_body_hp_from_parts();
+}
+
+MOB_PARTS_MODE mob::parts_mode() const
+{
+    this->assert_thread();
+    return this->_parts_mode;
+}
+
+uint64_t mob::total_exp() const
+{
+    this->assert_thread();
+    return this->based<fb::model::mob>().exp;
+}
+
+void mob::sync_body_hp_from_parts()
+{
+    this->assert_thread();
+
+    uint64_t sum_cur = 0;
+    uint64_t sum_max = 0;
+    for (auto& part : this->parts())
+    {
+        if (part == nullptr)
+            continue;
+        sum_cur += part->stat.hp();
+        sum_max += part->stat.maxhp();
+    }
+
+    auto base = static_cast<int64_t>(this->stat.base_hp());
+    auto desired_max =
+        static_cast<int64_t>(std::min<uint64_t>(sum_max, static_cast<uint64_t>(std::numeric_limits<int64_t>::max())));
+    auto buff = desired_max - base;
+    this->stat.buff_hp(buff);
+
+    auto max_hp              = this->stat.maxhp();
+    auto hp                  = std::min<uint64_t>(sum_cur, max_hp);
+    this->_forwarding_damage = true;
+    this->stat.hp(hp, false);
+    this->_forwarding_damage = false;
+}
+
+void mob::unlink_part(mob& part)
+{
+    this->assert_thread();
+    for (auto it = this->_parts.begin(); it != this->_parts.end();)
+    {
+        auto locked = it->lock();
+        if (locked == nullptr || locked.get() == &part)
+            it = this->_parts.erase(it);
+        else
+            ++it;
+    }
+
+    if (this->_parts_mode == MOB_PARTS_MODE::PARTS && this->has_parts())
+        this->sync_body_hp_from_parts();
+}
+
+void mob::on_part_hp_increased(uint64_t delta)
+{
+    this->assert_thread();
+    if (delta == 0)
+        return;
+
+    auto body = this->_body.lock();
+    if (body == nullptr || body->parts_mode() != MOB_PARTS_MODE::PARTS)
+        return;
+
+    body->_forwarding_damage = true;
+    body->stat.heal(delta, nullptr, true);
+    body->_forwarding_damage = false;
+}
+
+uint64_t mob::damage_as_part(uint64_t                value,
+                             std::shared_ptr<object> from,
+                             bool                    critical,
+                             float                   rate,
+                             bool                    physical,
+                             bool                    fixed,
+                             bool                    notify)
+{
+    this->assert_thread();
+
+    auto body = this->_body.lock();
+    if (body == nullptr)
+        return 0;
+
+    switch (body->parts_mode())
+    {
+    case MOB_PARTS_MODE::PARTS:
+    {
+        this->_forwarding_damage = true;
+        auto dealt               = this->stat.damage(value, from, critical, rate, physical, fixed, notify);
+        this->_forwarding_damage = false;
+
+        if (dealt > 0)
+        {
+            body->_forwarding_damage = true;
+            body->stat.damage(dealt, from, critical, rate, physical, true, notify);
+            body->_forwarding_damage = false;
+        }
+        return dealt;
+    }
+    case MOB_PARTS_MODE::BODY:
+    {
+        body->_forwarding_damage = true;
+        auto dealt               = body->stat.damage(value, from, critical, rate, physical, fixed, notify);
+        body->_forwarding_damage = false;
+        return dealt;
+    }
+    default:
+        return 0;
+    }
 }

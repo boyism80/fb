@@ -1,11 +1,12 @@
 #include <fb/game/protocol/life/update_hp.h>
+#include <fb/game/client_amount.h>
 
 namespace fb::protocol::game::response {
 
 #ifndef BOT
-update_hp::update_hp(const fb::game::life& me, uint32_t damage, bool critical) :
+update_hp::update_hp(const fb::game::life& me, uint64_t damage, bool critical) :
     me(me),
-    damage(damage),
+    damage(fb::game::encode_client_amount(damage)),
     critical(critical)
 { }
 #endif
@@ -15,7 +16,8 @@ void update_hp::serialize(fb::stream_writer<big_endian>& writer) const
 {
     header::serialize(writer);
 
-    auto percent = (uint8_t)std::ceil((this->me.stat.hp() / static_cast<double>(this->me.stat.base_hp())) * 100);
+    auto max_hp  = std::max<uint64_t>(1, this->me.stat.base_hp());
+    auto percent = (uint8_t)std::ceil((this->me.stat.hp() / static_cast<double>(max_hp)) * 100);
     writer.write<uint8_t>(opcode);
     writer.write<uint32_t>(this->me.oid());
     writer.write<uint8_t>(this->critical);

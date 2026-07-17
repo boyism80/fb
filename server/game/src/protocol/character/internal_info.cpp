@@ -1,4 +1,5 @@
 #include <fb/game/protocol/character/internal_info.h>
+#include <fb/game/client_amount.h>
 #ifndef BOT
 #include <fb/game/group.h>
 #include <fb/game/server.h>
@@ -58,8 +59,7 @@ void internal_info::serialize(fb::stream_writer<big_endian>& writer) const
     writer.write<std::string>(sstream.str());
     writer.write<uint8_t>(this->ch.option(OPTION::GROUP));
 
-    uint32_t remained_exp = this->ch.experience_remained();
-    writer.write<uint32_t>(remained_exp);
+    writer.write<uint32_t>(fb::game::encode_client_amount(this->ch.experience_remained()));
 
     auto& class_name = table::promotion[this->ch.cls()][this->ch.promotion()].name;
     writer.write<std::string>(class_name);

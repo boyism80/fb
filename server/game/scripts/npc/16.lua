@@ -35,7 +35,7 @@ local function craft_amber_star(me, ch)
     if btn == DIALOG_RESULT.PREV then
         return DIALOG_RESULT.NEXT
     end
-    if sel == nil or sel < 1 or sel > 6 then
+    if sel == nil or sel < 1 or sel > 7 then
         return DIALOG_RESULT.QUIT
     end
 

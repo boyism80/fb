@@ -101,6 +101,16 @@ async::task<void> fb::game::server::init_lua()
         fb::model::lua::map_enum(lua);
         fb::model::lua::map_const(lua);
 
+        {
+            lua_State* L = lua;
+            lua_newtable(L);
+            lua_pushinteger(L, static_cast<lua_Integer>(fb::game::MOB_PARTS_MODE::PARTS));
+            lua_setfield(L, -2, "PARTS");
+            lua_pushinteger(L, static_cast<lua_Integer>(fb::game::MOB_PARTS_MODE::BODY));
+            lua_setfield(L, -2, "BODY");
+            lua_setglobal(L, "MOB_PARTS_MODE");
+        }
+
         lua.package_path("scripts/?.lua");
         lua.package_path("scripts/?/init.lua");
     }

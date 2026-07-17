@@ -297,7 +297,7 @@ async::task<bool> character::map(std::shared_ptr<fb::game::map>      map,
     co_return true;
 }
 
-uint32_t character::limited_exp(uint32_t exp) const
+uint64_t character::limited_exp(uint64_t exp) const
 {
     if (this->max_level())
         return exp;
@@ -305,11 +305,11 @@ uint32_t character::limited_exp(uint32_t exp) const
     auto range         = table::ability[this->_class][this->_level].exp;
     auto multiplier    = this->server.exp_multiplier();
     auto limit_percent = 3.3 * multiplier;
-    auto limited       = static_cast<uint32_t>(range / 100.0 * limit_percent + 1);
+    auto limited       = static_cast<uint64_t>(range / 100.0 * limit_percent + 1);
     return std::min(limited, exp);
 }
 
-uint32_t character::normal_attack_damage(MOB_SIZE size) const
+uint64_t character::normal_attack_damage(MOB_SIZE size) const
 {
     this->assert_thread();
 
@@ -319,7 +319,7 @@ uint32_t character::normal_attack_damage(MOB_SIZE size) const
 
     auto& model = weapon->based<fb::model::weapon>();
     auto& range = size == MOB_SIZE::SMALL ? model.damage_small : model.damage_large;
-    return std::max(uint32_t(1), range.min) + std::rand() % std::max(uint32_t(1), range.max);
+    return std::max<uint64_t>(1, range.min) + std::rand() % std::max<uint64_t>(1, range.max);
 }
 
 bool character::inited() const
@@ -766,14 +766,14 @@ void character::promotion(uint8_t value)
     this->server.log.write("promotion_change", log_data);
 }
 
-uint32_t character::exp() const
+uint64_t character::exp() const
 {
     this->assert_thread();
 
     return this->_experience;
 }
 
-void character::exp(uint32_t value)
+void character::exp(uint64_t value)
 {
     this->assert_thread();
 
@@ -784,7 +784,7 @@ void character::exp(uint32_t value)
     this->update(UPDATE_STATE_LEVEL::EXP_MONEY);
 }
 
-uint32_t character::add_exp(uint32_t value, bool limit, bool notify)
+uint64_t character::add_exp(uint64_t value, bool limit, bool notify)
 {
     this->assert_thread();
 
@@ -795,7 +795,7 @@ uint32_t character::add_exp(uint32_t value, bool limit, bool notify)
     if (limit)
         value = this->limited_exp(value);
 
-    auto capacity = 0xFFFFFFFF - this->_experience;
+    auto capacity = std::numeric_limits<uint64_t>::max() - this->_experience;
     auto lack     = 0;
 
     try
@@ -857,13 +857,13 @@ uint32_t character::add_exp(uint32_t value, bool limit, bool notify)
     return lack;
 }
 
-uint32_t character::reduce_exp(uint32_t value)
+uint64_t character::reduce_exp(uint64_t value)
 {
     this->assert_thread();
 
     if (this->_experience < value)
     {
-        uint32_t lack     = value - this->_experience;
+        uint64_t lack     = value - this->_experience;
         this->_experience = 0;
         this->update(UPDATE_STATE_LEVEL::EXP_MONEY);
         return lack;
@@ -876,7 +876,7 @@ uint32_t character::reduce_exp(uint32_t value)
     }
 }
 
-uint32_t character::experience_remained() const
+uint64_t character::experience_remained() const
 {
     this->assert_thread();
 
@@ -897,11 +897,11 @@ float character::experience_percent() const
     this->assert_thread();
 
     if (this->max_level())
-        return std::min(100.0f, (this->_experience / float(0xFFFFFFFF)) * 100.0f);
+        return std::min(100.0f, (this->_experience / float(std::numeric_limits<uint64_t>::max())) * 100.0f);
 
     auto level          = this->level();
     auto required       = table::ability[this->_class][level].exp;
-    auto prev_stack_exp = uint32_t{0};
+    auto prev_stack_exp = uint64_t{0};
     if (table::ability[this->_class].contains(level - 1))
         prev_stack_exp = table::ability.stacked_exp(this->_class, level - 1);
     else if (table::ability[CLASS::NONE].contains(level - 1))
@@ -910,14 +910,14 @@ float character::experience_percent() const
     return std::min(100.0f, ((this->_experience - prev_stack_exp) / float(required)) * 100.0f);
 }
 
-uint32_t character::money() const
+uint64_t character::money() const
 {
     this->assert_thread();
 
     return this->_money;
 }
 
-void character::money(uint32_t value)
+void character::money(uint64_t value)
 {
     this->assert_thread();
 
@@ -938,12 +938,12 @@ void character::money(uint32_t value)
     this->server.log.write("money_changed", log_data);
 }
 
-uint32_t character::money_add(uint32_t value) // Returns remaining value that could not be added
+uint64_t character::money_add(uint64_t value) // Returns remaining value that could not be added
 {
     this->assert_thread();
 
-    uint32_t capacity = 0xFFFFFFFF - this->_money;
-    uint32_t lack     = 0;
+    uint64_t capacity = std::numeric_limits<uint64_t>::max() - this->_money;
+    uint64_t lack     = 0;
     if (value > capacity)
     {
         this->money(this->_money + capacity);
@@ -957,14 +957,14 @@ uint32_t character::money_add(uint32_t value) // Returns remaining value that co
     return lack;
 }
 
-void character::money_reduce(uint32_t value)
+void character::money_reduce(uint64_t value)
 {
     this->assert_thread();
     value = std::min(this->_money, value);
     this->money(this->_money - value);
 }
 
-async::task<fb::game::cash*> character::money_drop(uint32_t value)
+async::task<fb::game::cash*> character::money_drop(uint64_t value)
 {
     this->assert_thread();
 
@@ -1583,7 +1583,7 @@ void character::award_exp(const fb::game::mob& mob)
 
     auto& group_id = this->group_id();
     auto  map      = this->map();
-    auto  exp      = mob.based<fb::model::mob>().exp;
+    auto  exp      = mob.total_exp();
 
     if (group_id.has_value() && map != nullptr)
     {
@@ -2042,7 +2042,7 @@ async::task<void> character::death_penalty()
     auto level = this->level();
     if (table::ability.contains(cls) && table::ability[cls].contains(level) && table::ability[cls].contains(level - 1))
     {
-        auto penalty = uint32_t(table::ability[cls][level].exp * fb::model::const_value::death_penalty::exp);
+        auto penalty = uint64_t(table::ability[cls][level].exp * fb::model::const_value::death_penalty::exp);
         auto gained  = this->exp() - table::ability.stacked_exp(cls, level - 1);
 
         penalty = std::min(gained, penalty);

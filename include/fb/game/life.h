@@ -32,7 +32,7 @@ public:
         bool  notify   = true;
     };
 
-    using damage_target = std::pair<std::shared_ptr<life>, uint32_t>;
+    using damage_target = std::pair<std::shared_ptr<life>, uint64_t>;
     using damage_list   = std::vector<damage_target>;
     using mob_vector    = std::vector<std::shared_ptr<mob>>;
 
@@ -70,9 +70,9 @@ public:
 public:
     // clang-format off
     virtual async::task<void> attack(DURATION duration = DURATION::ATTACK);
-    virtual uint32_t          exp() const;
+    virtual uint64_t          exp() const;
     virtual void              update(UPDATE_STATE_LEVEL value = UPDATE_STATE_LEVEL::EXP_MONEY | UPDATE_STATE_LEVEL::CROWD_CONTROL);
-    void                      update_hp(uint32_t diff, bool critical, bool notify = true);
+    void                      update_hp(uint64_t diff, bool critical, bool notify = true);
     batch_update_guard        batch_update();
     virtual void              kill(DESTROY_TYPE destroy_type = DESTROY_TYPE::DEFAULT);
     virtual async::task<void> damage_to(const damage_list& targets);
@@ -83,9 +83,9 @@ public:
     bool                      active(fb::game::spell& spell, std::string_view message);
     bool                      active(fb::game::spell& spell, fb::game::object& to);
     virtual void              action(ACTION action, DURATION duration, uint8_t sound = 0x00);
-    virtual uint32_t          normal_attack_damage(MOB_SIZE size) const = 0;
+    virtual uint64_t          normal_attack_damage(MOB_SIZE size) const = 0;
     virtual bool              calculate_critical(life& you) const;
-    virtual uint32_t          calculate_damage(uint32_t damage, const life& you, bool critical, float rate = 1.0f, bool physical = true) const;
+    virtual uint64_t          calculate_damage(uint64_t damage, const life& you, bool critical, float rate = 1.0f, bool physical = true) const;
     virtual bool              calculate_miss(life& you) const;
     uint32_t                  damage_rate() const;
     void                      damage_rate(uint32_t value);
@@ -108,7 +108,7 @@ struct life::listener_t : public virtual fb::game::object::listener_t, public vi
     virtual void on_action(life& me, ACTION action, DURATION duration, uint8_t sound) = 0;
     virtual void on_attack(life& me, DURATION duration = DURATION::ATTACK)            = 0;
     virtual void on_dead(life& me, std::shared_ptr<fb::game::object> you)             = 0;
-    virtual void on_update_hp(life& me, uint32_t diff, bool critical)                 = 0;
+    virtual void on_update_hp(life& me, uint64_t diff, bool critical)                 = 0;
     // clang-format on
 };
 
