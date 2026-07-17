@@ -97,7 +97,7 @@ function ON_ACTIVATED_8(me, item)
         me:dialog(model, '네.. 그럼 심사숙고 해 보신\n뒤 결정하세요..', { prev = false, next = true })
         return
     end
-    if sel == nil or sel < 1 or sel > 3 then
+    if sel == nil or sel < 1 or sel > 4 then
         return
     end
 

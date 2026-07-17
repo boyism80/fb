@@ -41,7 +41,7 @@ function ON_ACTIVATED_6(me, item)
     if list_btn == DIALOG_RESULT.QUIT then
         return
     end
-    if sel1 ~= 2 then
+    if sel1 ~= 3 then
         quiz_wrong_and_exit(me, model, '틀렸습니다!! \'i\'는\n소지품창의 단축키, \'o\'는\n문을 열 때의 단축키 입니다.')
         return
     end

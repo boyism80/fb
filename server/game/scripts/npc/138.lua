@@ -157,7 +157,7 @@ function NPC_138(me, npc)
         if list_btn == DIALOG_RESULT.QUIT then
             return
         end
-        if sel == nil or sel < 1 or sel > 7 then
+        if sel == nil or sel < 1 or sel > 8 then
             return
         end
         local item_name = CLOTH_ITEMS[sel]
