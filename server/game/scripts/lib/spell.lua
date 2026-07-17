@@ -21,6 +21,24 @@ function M.boolean_random(percent)
     return math.random() < percent
 end
 
+-- Returns true if the target resists the effect.
+function M.resisted(you, resist_type)
+    if you == nil or not you:is(OBJECT_TYPE.LIFE) then
+        return false
+    end
+    local r = you:resist(resist_type) or 0
+    return M.boolean_random(r)
+end
+
+-- Forced position change; respects MOVE resist. Returns false if resisted.
+function M.force_position(you, x, y)
+    if M.resisted(you, RESIST.MOVE) then
+        return false
+    end
+    you:position(x, y)
+    return true
+end
+
 function M.CREATURE_SPELL(creature, index)
     if creature == CREATURE.PHOENIX then
         if index == 1 then
@@ -437,6 +455,21 @@ function M.debuff_cast(me, you, spell, opts)
         me:action(ACTION.CAST_SPELL, DURATION.SPELL, 1)
     end
 
+    if M.resisted(you, RESIST.SPELL) then
+        return false
+    end
+    if opts.resist ~= nil then
+        local resists = opts.resist
+        if type(resists) ~= 'table' then
+            resists = { resists }
+        end
+        for _, resist_type in ipairs(resists) do
+            if M.resisted(you, resist_type) then
+                return false
+            end
+        end
+    end
+
     return execute_mob_spell_hit(me, you, spell)
 end
 
@@ -574,7 +607,7 @@ function M.damage(me, you, spell, opts)
         you:message(string.format("%s님이 %s 가합니다.", me:name(), name_with(spell:name())))
     end
     
-    if execute_mob_spell_hit(me, you, spell) then
+    if execute_mob_spell_hit(me, you, spell) and not M.resisted(you, RESIST.SPELL) then
         me:damage_to(you, damage, { critical = false, rate = me:skill_damage_rate() / 1000.0, physical = false })
     end
 
@@ -602,7 +635,7 @@ function M.damage_near(me, spell, opts)
             you:message(string.format('%s님이 %s 가합니다.', me:name(), name_with(spell:name())))
         end
         
-        if execute_mob_spell_hit(me, you, spell) then
+        if execute_mob_spell_hit(me, you, spell) and not M.resisted(you, RESIST.SPELL) then
             table.insert(targets, { you, damage })
         end
     end
@@ -638,7 +671,7 @@ function M.damage_near_target(me, you, spell, opts)
             target:message(string.format('%s님이 %s 가합니다.', me:name(), name_with(spell:name())))
         end
         
-        if execute_mob_spell_hit(me, target, spell) then
+        if execute_mob_spell_hit(me, target, spell) and not M.resisted(target, RESIST.SPELL) then
             table.insert(targets, { target, damage })
         end
         ::CONTINUE_SPELL_DAMAGE_NEAR_TARGET::
@@ -685,7 +718,7 @@ function M.damage_area(me, you, spell, opts)
             obj:effect(effect.you) 
         end
         
-        if execute_mob_spell_hit(me, obj, spell) then
+        if execute_mob_spell_hit(me, obj, spell) and not M.resisted(obj, RESIST.SPELL) then
             table.insert(targets, { obj, damage })
         end
     end

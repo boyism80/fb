@@ -49,6 +49,9 @@ struct life
     static int builtin_base_magdef(lua_State* L);
     static int builtin_buff_magdef(lua_State* L);
     static int builtin_magdef(lua_State* L);
+    static int builtin_base_resist(lua_State* L);
+    static int builtin_buff_resist(lua_State* L);
+    static int builtin_resist(lua_State* L);
     static int builtin_base_dam(lua_State* L);
     static int builtin_buff_dam(lua_State* L);
     static int builtin_dam(lua_State* L);

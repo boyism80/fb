@@ -26,8 +26,8 @@ void update_internal::serialize(fb::stream_writer<big_endian>& writer) const
         writer.write<uint8_t>(static_cast<uint8_t>(this->ch.creature())); // creature
         writer.write<uint8_t>(0x00);                                      // Unknown (clan?)
         writer.write<uint8_t>(this->ch.level());                          // level
-        writer.write<uint32_t>(encoded_maxhp);                           // base hp
-        writer.write<uint32_t>(encoded_maxmp);                           // base mp
+        writer.write<uint32_t>(encoded_maxhp);                            // base hp
+        writer.write<uint32_t>(encoded_maxmp);                            // base mp
         writer.write<uint8_t>(this->ch.stat.str());
         writer.write<uint8_t>(this->ch.stat.intelligence());
         writer.write<uint8_t>(0x03);

@@ -26,7 +26,9 @@ fb::game::stat::stat(const stat& other) :
     _buff_phydef(other._buff_phydef),
     _buff_magdef(other._buff_magdef),
     _buff_dam(other._buff_dam),
-    _buff_hit(other._buff_hit)
+    _buff_hit(other._buff_hit),
+    _buff_regenerative(other._buff_regenerative),
+    _buff_resist(other._buff_resist)
 { }
 
 fb::game::stat::stat(stat&& other) :
@@ -41,7 +43,9 @@ fb::game::stat::stat(stat&& other) :
     _buff_phydef(other._buff_phydef),
     _buff_magdef(other._buff_magdef),
     _buff_dam(other._buff_dam),
-    _buff_hit(other._buff_hit)
+    _buff_hit(other._buff_hit),
+    _buff_regenerative(other._buff_regenerative),
+    _buff_resist(std::move(other._buff_resist))
 { }
 
 int64_t fb::game::stat::buff_hp() const
@@ -164,6 +168,38 @@ void fb::game::stat::buff_regenerative(uint64_t value)
     this->_buff_regenerative = value;
 }
 
+float fb::game::stat::base_resist(RESIST type) const
+{
+    this->owner.assert_thread();
+    return 0.0f;
+}
+
+float fb::game::stat::buff_resist(RESIST type) const
+{
+    this->owner.assert_thread();
+    auto i = this->_buff_resist.find(type);
+    if (i == this->_buff_resist.end())
+        return 0.0f;
+    return i->second;
+}
+
+void fb::game::stat::buff_resist(RESIST type, float value)
+{
+    this->owner.assert_thread();
+    this->_buff_resist[type] = value;
+}
+
+float fb::game::stat::resist(RESIST type) const
+{
+    this->owner.assert_thread();
+    auto value = this->base_resist(type) + this->buff_resist(type);
+    if (value < 0.0f)
+        return 0.0f;
+    if (value > 1.0f)
+        return 1.0f;
+    return value;
+}
+
 uint64_t fb::game::stat::hp() const
 {
     this->owner.assert_thread();
@@ -186,7 +222,7 @@ void fb::game::stat::hp(uint64_t value, bool notify)
 uint64_t fb::game::stat::heal(uint64_t value, fb::game::object* from, bool notify)
 {
     this->owner.assert_thread();
-    auto before = this->hp();
+    auto before  = this->hp();
     auto maximum = this->maxhp();
     auto room    = maximum > before ? maximum - before : 0;
     this->hp(before + std::min(value, room), notify);
@@ -269,7 +305,8 @@ uint64_t fb::game::stat::mp_down(uint64_t value, fb::game::object* from, bool no
 uint64_t fb::game::stat::maxhp() const
 {
     this->owner.assert_thread();
-    auto base = static_cast<int64_t>(std::min(this->base_hp(), static_cast<uint64_t>(std::numeric_limits<int64_t>::max())));
+    auto base =
+        static_cast<int64_t>(std::min(this->base_hp(), static_cast<uint64_t>(std::numeric_limits<int64_t>::max())));
     auto buff = this->buff_hp();
     if (buff > 0 && base > std::numeric_limits<int64_t>::max() - buff)
         return static_cast<uint64_t>(std::numeric_limits<int64_t>::max());
@@ -283,7 +320,8 @@ uint64_t fb::game::stat::maxhp() const
 uint64_t fb::game::stat::maxmp() const
 {
     this->owner.assert_thread();
-    auto base = static_cast<int64_t>(std::min(this->base_mp(), static_cast<uint64_t>(std::numeric_limits<int64_t>::max())));
+    auto base =
+        static_cast<int64_t>(std::min(this->base_mp(), static_cast<uint64_t>(std::numeric_limits<int64_t>::max())));
     auto buff = this->buff_mp();
     if (buff > 0 && base > std::numeric_limits<int64_t>::max() - buff)
         return static_cast<uint64_t>(std::numeric_limits<int64_t>::max());
@@ -678,7 +716,7 @@ uint64_t character_stat::maxhp() const
 {
     this->owner.assert_thread();
     constexpr auto max_signed = std::numeric_limits<int64_t>::max();
-    int64_t base_flat =
+    int64_t        base_flat =
         static_cast<int64_t>(std::min(this->base_hp(), static_cast<uint64_t>(max_signed))) + this->buff_hp();
     float hp_pct = 0.0f;
 
@@ -906,6 +944,16 @@ uint64_t mob_stat::base_regenerative() const
 {
     this->owner.assert_thread();
     return 0;
+}
+
+float mob_stat::base_resist(RESIST type) const
+{
+    this->owner.assert_thread();
+    auto& model = this->owner.based<fb::model::mob>();
+    auto  i     = model.resist.find(type);
+    if (i == model.resist.end())
+        return 0.0f;
+    return i->second;
 }
 
 uint64_t mob_stat::damage(uint64_t                value,

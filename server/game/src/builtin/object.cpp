@@ -1264,7 +1264,7 @@ int builtin::object::builtin_script(lua_State* L)
         }
     };
     builder.resume = [=]() -> async::task<int> {
-        auto new_lua = child_holder->ctx;
+        auto new_lua      = child_holder->ctx;
         child_holder->ctx = nullptr;
         if (new_lua == nullptr)
             co_return 0;

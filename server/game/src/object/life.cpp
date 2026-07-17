@@ -385,6 +385,10 @@ uint64_t life::calculate_damage(uint64_t value, const life& target, bool critica
     auto defensive_percent = -125 + (n * (2 * 14.75f - (n - 1) / 2.0f)) / 2.0f;
     auto damage            = value - static_cast<uint64_t>(defensive_percent * (value / 100.0f));
 
+    auto resist = physical ? target.stat.resist(fb::model::enum_value::RESIST::PHYSICAL)
+                           : target.stat.resist(fb::model::enum_value::RESIST::MAGIC);
+    damage      = static_cast<uint64_t>(damage * (1.0f - resist));
+
     if (physical && target.direction() == this->direction())
         rate *= 2.0f;
 

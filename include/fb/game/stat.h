@@ -5,8 +5,12 @@
 #include <limits>
 #include <stdint.h>
 #include <memory>
+#include <unordered_map>
+#include <fb/model/model.h>
 
 namespace fb::game {
+
+using namespace fb::model::enum_value;
 
 class life;
 class object;
@@ -34,19 +38,20 @@ public:
 class stat
 {
 private:
-    life&    owner;
-    uint64_t _hp                = 0;
-    uint64_t _mp                = 0;
-    int64_t  _buff_hp           = 0;
-    int64_t  _buff_mp           = 0;
-    uint8_t  _buff_str          = 0;
-    uint8_t  _buff_dex          = 0;
-    uint8_t  _buff_int          = 0;
-    int8_t   _buff_phydef       = 0;
-    int8_t   _buff_magdef       = 0;
-    int8_t   _buff_dam          = 0;
-    int8_t   _buff_hit          = 0;
-    uint64_t _buff_regenerative = 0;
+    life&                             owner;
+    uint64_t                          _hp                = 0;
+    uint64_t                          _mp                = 0;
+    int64_t                           _buff_hp           = 0;
+    int64_t                           _buff_mp           = 0;
+    uint8_t                           _buff_str          = 0;
+    uint8_t                           _buff_dex          = 0;
+    uint8_t                           _buff_int          = 0;
+    int8_t                            _buff_phydef       = 0;
+    int8_t                            _buff_magdef       = 0;
+    int8_t                            _buff_dam          = 0;
+    int8_t                            _buff_hit          = 0;
+    uint64_t                          _buff_regenerative = 0;
+    std::unordered_map<RESIST, float> _buff_resist;
 
 protected:
     stat(life& owner);
@@ -73,6 +78,10 @@ public:
     virtual uint8_t  base_dam() const = 0;
     virtual uint8_t  base_hit() const = 0;
     virtual uint64_t base_regenerative() const = 0;
+    virtual float    base_resist(RESIST type) const;
+    virtual float    buff_resist(RESIST type) const;
+    virtual void     buff_resist(RESIST type, float value);
+    virtual float    resist(RESIST type) const;
     virtual int64_t  buff_hp() const;
     virtual void     buff_hp(int64_t value);
     virtual int64_t  buff_mp() const;
@@ -196,6 +205,7 @@ public:
     uint8_t  base_dam() const override final;
     uint8_t  base_hit() const override final;
     uint64_t base_regenerative() const override final;
+    float    base_resist(RESIST type) const override final;
     uint64_t hp() const override final;
     uint64_t damage(uint64_t value, std::shared_ptr<fb::game::object> from = nullptr, bool critical = false, float rate = 1.0f, bool physical = true, bool fixed = false, bool notify = true) override final;
     void     hp(uint64_t value, bool notify = true) override final;

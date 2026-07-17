@@ -747,9 +747,10 @@ void mob::sync_body_hp_from_parts()
         sum_max += part->stat.maxhp();
     }
 
-    auto base        = static_cast<int64_t>(this->stat.base_hp());
-    auto desired_max = static_cast<int64_t>(std::min<uint64_t>(sum_max, static_cast<uint64_t>(std::numeric_limits<int64_t>::max())));
-    auto buff        = desired_max - base;
+    auto base = static_cast<int64_t>(this->stat.base_hp());
+    auto desired_max =
+        static_cast<int64_t>(std::min<uint64_t>(sum_max, static_cast<uint64_t>(std::numeric_limits<int64_t>::max())));
+    auto buff = desired_max - base;
     this->stat.buff_hp(buff);
 
     auto max_hp              = this->stat.maxhp();

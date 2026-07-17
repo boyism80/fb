@@ -52,6 +52,9 @@ IMPLEMENT_LUA_EXTENSION(fb::game::life, "fb.game.life")
 {"base_magdef",          builtin::life::builtin_base_magdef},
 {"buff_magdef",          builtin::life::builtin_buff_magdef},
 {"magdef",               builtin::life::builtin_magdef},
+{"base_resist",          builtin::life::builtin_base_resist},
+{"buff_resist",          builtin::life::builtin_buff_resist},
+{"resist",               builtin::life::builtin_resist},
 {"base_dam",             builtin::life::builtin_base_dam},
 {"buff_dam",             builtin::life::builtin_buff_dam},
 {"dam",                  builtin::life::builtin_dam},
@@ -1832,6 +1835,100 @@ int builtin::life::builtin_update(lua_State* L)
     };
     builder.resume = []() -> async::task<int> {
         co_return 0;
+    };
+    return builder.run();
+}
+
+int builtin::life::builtin_base_resist(lua_State* L)
+{
+    auto lua = fb::lua::get(L);
+    if (lua == nullptr)
+        return 0;
+    auto obj = lua->touserdata<fb::game::life>(1);
+    if (obj == nullptr)
+        return 0;
+
+    auto type     = static_cast<RESIST>(lua->tointeger(2));
+    auto value    = std::make_shared<float>();
+    auto weak     = obj->weak_from_this();
+    auto builder  = lua->new_co_builder();
+    builder.weak  = weak;
+    builder.yield = [=]() -> async::task<void> {
+        *value = obj->stat.base_resist(type);
+        co_return;
+    };
+    builder.resume = [=]() -> async::task<int> {
+        lua->pushnumber(*value);
+        co_return 1;
+    };
+    return builder.run();
+}
+
+int builtin::life::builtin_buff_resist(lua_State* L)
+{
+    auto lua = fb::lua::get(L);
+    if (lua == nullptr)
+        return 0;
+    auto argc = lua->argc();
+    auto obj  = lua->touserdata<fb::game::life>(1);
+    if (obj == nullptr)
+        return 0;
+
+    auto type = static_cast<RESIST>(lua->tointeger(2));
+    if (argc == 2)
+    {
+        auto value    = std::make_shared<float>();
+        auto weak     = obj->weak_from_this();
+        auto builder  = lua->new_co_builder();
+        builder.weak  = weak;
+        builder.yield = [=]() -> async::task<void> {
+            *value = obj->stat.buff_resist(type);
+            co_return;
+        };
+        builder.resume = [=]() -> async::task<int> {
+            lua->pushnumber(*value);
+            co_return 1;
+        };
+        return builder.run();
+    }
+    else
+    {
+        auto value    = static_cast<float>(lua_tonumber(L, 3));
+        auto weak     = obj->weak_from_this();
+        auto builder  = lua->new_co_builder();
+        builder.weak  = weak;
+        builder.yield = [=]() -> async::task<void> {
+            obj->stat.buff_resist(type, value);
+            co_return;
+        };
+        builder.resume = []() -> async::task<int> {
+            co_return 0;
+        };
+        return builder.run();
+    }
+}
+
+int builtin::life::builtin_resist(lua_State* L)
+{
+    auto lua = fb::lua::get(L);
+    if (lua == nullptr)
+        return 0;
+    auto obj = lua->touserdata<fb::game::life>(1);
+    if (obj == nullptr)
+        return 0;
+
+    auto type     = static_cast<RESIST>(lua->tointeger(2));
+    auto value    = std::make_shared<float>();
+    auto weak     = obj->weak_from_this();
+    auto builder  = lua->new_co_builder();
+    builder.weak  = weak;
+    builder.yield = [=]() -> async::task<void> {
+        *value = obj->stat.resist(type);
+        co_return;
+    };
+    builder.resume = [=]() -> async::task<int> {
+        lua->pushnumber(*value);
+        co_return 1;
     };
     return builder.run();
 }

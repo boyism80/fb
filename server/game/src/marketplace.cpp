@@ -429,16 +429,17 @@ async::task<marketplace::search_result> marketplace::search(const search_option&
             created_date_opt = fb::model::datetime(listing.created_date);
 
         result.listings.push_back(marketplace::listing{
-            .id          = listing.id,
-            .seller_id   = listing.seller_id,
-            .item_data   = {.owner       = listing.item.owner,
-                            .model       = listing.item.model,
-                            .count       = listing.item.count,
-                            .durability  = listing.item.durability,
-                            .custom_name = listing.item.custom_name},
-            .price       = listing.price,
-            .listing_fee = static_cast<uint64_t>(static_cast<double>(static_cast<uint64_t>(listing.item.count) * listing.price) *
-                           fb::model::const_value::marketplace::listing_fee),
+            .id        = listing.id,
+            .seller_id = listing.seller_id,
+            .item_data = {.owner       = listing.item.owner,
+                          .model       = listing.item.model,
+                          .count       = listing.item.count,
+                          .durability  = listing.item.durability,
+                          .custom_name = listing.item.custom_name},
+            .price     = listing.price,
+            .listing_fee =
+                static_cast<uint64_t>(static_cast<double>(static_cast<uint64_t>(listing.item.count) * listing.price) *
+                                      fb::model::const_value::marketplace::listing_fee),
             .state        = 0,
             .expire_date  = expire_date_opt,
             .created_date = created_date_opt,
@@ -497,16 +498,17 @@ marketplace::get_listings(const marketplace::string_vector_t& listing_ids, uint3
         }
 
         result.push_back(marketplace::listing{
-            .id          = listing.id,
-            .seller_id   = listing.seller_id,
-            .item_data   = {.owner       = listing.item.owner,
-                            .model       = listing.item.model,
-                            .count       = listing.item.count,
-                            .durability  = listing.item.durability,
-                            .custom_name = listing.item.custom_name},
-            .price       = listing.price,
-            .listing_fee = static_cast<uint64_t>(static_cast<double>(static_cast<uint64_t>(listing.item.count) * listing.price) *
-                           fb::model::const_value::marketplace::listing_fee),
+            .id        = listing.id,
+            .seller_id = listing.seller_id,
+            .item_data = {.owner       = listing.item.owner,
+                          .model       = listing.item.model,
+                          .count       = listing.item.count,
+                          .durability  = listing.item.durability,
+                          .custom_name = listing.item.custom_name},
+            .price     = listing.price,
+            .listing_fee =
+                static_cast<uint64_t>(static_cast<double>(static_cast<uint64_t>(listing.item.count) * listing.price) *
+                                      fb::model::const_value::marketplace::listing_fee),
             .state        = static_cast<uint8_t>(listing.state),
             .expire_date  = expire_date_opt,
             .created_date = created_date_opt,
