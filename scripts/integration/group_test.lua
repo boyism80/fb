@@ -35,6 +35,7 @@ test_suite {
 
             progress(caster, "LEARNING SPELL AND SETTING UP MP")
             local spell_slot = caster:learn_spell("뢰진주")
+            caster:set_max_hp_mp(1000, 1000)
             caster:mp(1000)
 
             progress(caster, "SPAWNING MONSTER FOR SOLO TEST")
@@ -58,6 +59,7 @@ test_suite {
             progress(caster, "GROUP FORMED SUCCESSFULLY")
 
             progress(caster, "SPAWNING MONSTER FOR GROUP TEST")
+            caster:set_max_hp_mp(1000, 1000)
             caster:mp(1000)
             local pos2 = caster:position()
             local mob2 = caster:spawn_monster("다람쥐", pos2[1], pos2[2] + 1)
