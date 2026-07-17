@@ -3,7 +3,6 @@ local resp     = require("integration.response")
 local protocol = require("integration.protocol")
 
 local MESSAGE_ITEM_FULL                  = "더 이상 가질 수 없습니다."
-local MESSAGE_MONEY_FULL                 = "더 이상 돈을 가질 수 없습니다."
 local MESSAGE_ITEM_DEATH_PENALTY_WARMTH  = "죽은 자의 온기가 남아있습니다."
 
 local DEFAULT_INTERVAL = 100
@@ -125,7 +124,8 @@ test_suite {
         end,
 
         function(ctx)
-            log("debug", "Starting drop loot scenario 4")
+            local ENCODED_PAST_U32 = 43
+            log("debug", "Starting drop loot scenario 4 (money past uint32 / display encode)")
             local bot1 = ctx:bot(0)
 
             bot1:money(2)
@@ -133,13 +133,13 @@ test_suite {
             bot1:money(0xFFFFFFFE)
 
             bot1:request(
-                resp.message,
+                resp.update_internal,
                 protocol.loot(false),
                 function(packet)
-                    return string.find(packet.text, MESSAGE_MONEY_FULL, 1, true) ~= nil
+                    return packet.ch_money == ENCODED_PAST_U32
                 end)
 
-            if bot1:money() ~= 0xFFFFFFFF then
+            if bot1:money() ~= ENCODED_PAST_U32 then
                 return false
             end
 

@@ -703,14 +703,16 @@ namespace Fb.Model.EnumValue
     {
         [EnumMember(Value = "NONE")]
         None = 0, 
-        [EnumMember(Value = "COUNTER")]
-        Counter = 1, 
-        [EnumMember(Value = "CONTAINMENT")]
-        Containment = 2, 
+        [EnumMember(Value = "RETALIATE")]
+        Retaliate = 1, 
+        [EnumMember(Value = "AGGRESSIVE")]
+        Aggressive = 2, 
         [EnumMember(Value = "RUN_AWAY")]
         RunAway = 3, 
-        [EnumMember(Value = "NO_MOVE")]
-        NoMove = 4
+        [EnumMember(Value = "STATIONARY")]
+        Stationary = 4, 
+        [EnumMember(Value = "INERT")]
+        Inert = 5
     }
 
     [JsonConverter(typeof(StringEnumConverter))]
@@ -1276,11 +1278,11 @@ namespace Fb.Model
         [JsonProperty("strength")]
         public byte Strength { get; set; }
         [JsonProperty("exp")]
-        public uint Exp { get; set; }
+        public ulong Exp { get; set; }
         [JsonProperty("hp")]
-        public uint Hp { get; set; }
+        public ulong Hp { get; set; }
         [JsonProperty("mp")]
-        public uint Mp { get; set; }
+        public ulong Mp { get; set; }
     }
 
     public class AbilityAttribute
@@ -1354,7 +1356,7 @@ namespace Fb.Model
         [JsonProperty("item")]
         public uint Item { get; set; }
         [JsonProperty("price")]
-        public uint? Price { get; set; }
+        public ulong? Price { get; set; }
     }
 
     public class BuyAttribute
@@ -1536,7 +1538,7 @@ namespace Fb.Model
         [JsonProperty("item")]
         public uint Item { get; set; }
         [JsonProperty("price")]
-        public uint? Price { get; set; }
+        public ulong? Price { get; set; }
     }
 
     public class SellAttribute
@@ -1618,9 +1620,9 @@ namespace Fb.Model
     public class Item : Fb.Model.Object
     {
         [JsonProperty("price")]
-        public uint Price { get; set; }
+        public ulong Price { get; set; }
         [JsonProperty("storage_fee")]
-        public uint? StorageFee { get; set; }
+        public ulong? StorageFee { get; set; }
         [JsonProperty("trade")]
         public bool Trade { get; set; }
         [JsonProperty("type")]
@@ -1640,11 +1642,11 @@ namespace Fb.Model
     public class Life : Fb.Model.Object
     {
         [JsonProperty("hp")]
-        public uint Hp { get; set; }
+        public ulong Hp { get; set; }
         [JsonProperty("mp")]
-        public uint Mp { get; set; }
+        public ulong Mp { get; set; }
         [JsonProperty("exp")]
-        public uint Exp { get; set; }
+        public ulong Exp { get; set; }
         [JsonProperty("defensive_physical")]
         public int DefensivePhysical { get; set; }
         [JsonProperty("defensive_magical")]
@@ -1694,9 +1696,9 @@ namespace Fb.Model
         [JsonProperty("dexterity")]
         public byte Dexterity { get; set; }
         [JsonProperty("base_hp")]
-        public int BaseHp { get; set; }
+        public long BaseHp { get; set; }
         [JsonProperty("base_mp")]
-        public int BaseMp { get; set; }
+        public long BaseMp { get; set; }
         [JsonProperty("hp_percentage")]
         public float HpPercentage { get; set; }
         [JsonProperty("mp_percentage")]
@@ -1716,7 +1718,7 @@ namespace Fb.Model
         [JsonProperty("attack_type")]
         public Fb.Model.EnumValue.MobAttackType AttackType { get; set; }
         [JsonProperty("damage")]
-        public Range<uint> Damage { get; set; }
+        public Range<ulong> Damage { get; set; }
         [JsonProperty("speed")]
         public TimeSpan Speed { get; set; }
         [JsonProperty("drop")]
@@ -1754,9 +1756,9 @@ namespace Fb.Model
     public class Weapon : Fb.Model.Equipment
     {
         [JsonProperty("damage_small")]
-        public Range<uint> DamageSmall { get; set; }
+        public Range<ulong> DamageSmall { get; set; }
         [JsonProperty("damage_large")]
-        public Range<uint> DamageLarge { get; set; }
+        public Range<ulong> DamageLarge { get; set; }
         [JsonProperty("sound")]
         public ushort Sound { get; set; }
         [JsonProperty("spell")]
@@ -1849,13 +1851,13 @@ namespace Fb.Model
         public class Exp
         {
             [JsonProperty("value")]
-            public uint Value { get; set; }
+            public ulong Value { get; set; }
 
             public static Exp Parse(object[] parameters)
             {
                 return new Exp
                 {
-                    Value = (uint)parameters[0]
+                    Value = (ulong)parameters[0]
                 };
             }
 
@@ -2008,13 +2010,13 @@ namespace Fb.Model
         public class Money
         {
             [JsonProperty("value")]
-            public uint Value { get; set; }
+            public ulong Value { get; set; }
 
             public static Money Parse(object[] parameters)
             {
                 return new Money
                 {
-                    Value = (uint)parameters[0]
+                    Value = (ulong)parameters[0]
                 };
             }
 

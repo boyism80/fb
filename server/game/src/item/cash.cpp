@@ -4,7 +4,7 @@
 using namespace fb::game;
 using table = fb::model::table;
 
-cash::cash(fb::game::server& server, uint32_t value) :
+cash::cash(fb::game::server& server, uint64_t value) :
     fb::game::item(server, match_model(server, value)),
     value(value)
 { }
@@ -12,7 +12,7 @@ cash::cash(fb::game::server& server, uint32_t value) :
 cash::~cash()
 { }
 
-const fb::model::cash& cash::match_model(fb::game::server& server, uint32_t value)
+const fb::model::cash& cash::match_model(fb::game::server& server, uint64_t value)
 {
     if (value == 0)
         throw std::runtime_error("money cannot be zero");
@@ -44,7 +44,7 @@ std::string cash::inven_name() const
     return sstream.str();
 }
 
-async::task<std::shared_ptr<cash>> cash::replace(uint32_t value)
+async::task<std::shared_ptr<cash>> cash::replace(uint64_t value)
 {
     std::shared_ptr<cash> result = nullptr;
     if (this->empty())
@@ -59,9 +59,9 @@ async::task<std::shared_ptr<cash>> cash::replace(uint32_t value)
     co_return result;
 }
 
-async::task<uint32_t> cash::reduce(uint32_t value)
+async::task<uint64_t> cash::reduce(uint64_t value)
 {
-    uint32_t reduce = std::min<uint32_t>(this->value, value);
+    uint64_t reduce = std::min<uint64_t>(this->value, value);
 
     std::ignore = co_await this->replace(this->value - reduce);
     co_return this->value;

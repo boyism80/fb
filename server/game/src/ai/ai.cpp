@@ -1,9 +1,10 @@
 #include <fb/game/ai.h>
-#include <fb/game/ai/containment.h>
-#include <fb/game/ai/counter.h>
-#include <fb/game/ai/run_away.h>
-#include <fb/game/ai/no_move.h>
+#include <fb/game/ai/aggressive.h>
+#include <fb/game/ai/inert.h>
 #include <fb/game/ai/none.h>
+#include <fb/game/ai/retaliate.h>
+#include <fb/game/ai/run_away.h>
+#include <fb/game/ai/stationary.h>
 #include <fb/game/character.h>
 #include <fb/game/life.h>
 #include <fb/game/map.h>
@@ -14,20 +15,23 @@ std::unique_ptr<ai> ai::create(MOB_ATTACK_TYPE attack_type)
 {
     switch (attack_type)
     {
-    case MOB_ATTACK_TYPE::CONTAINMENT:
-        return std::make_unique<containment_ai>();
+    case MOB_ATTACK_TYPE::AGGRESSIVE:
+        return std::make_unique<aggressive_ai>();
 
-    case MOB_ATTACK_TYPE::COUNTER:
-        return std::make_unique<counter_ai>();
+    case MOB_ATTACK_TYPE::RETALIATE:
+        return std::make_unique<retaliate_ai>();
 
-    case MOB_ATTACK_TYPE::NO_MOVE:
-        return std::make_unique<no_move_ai>();
+    case MOB_ATTACK_TYPE::STATIONARY:
+        return std::make_unique<stationary_ai>();
 
     case MOB_ATTACK_TYPE::RUN_AWAY:
         return std::make_unique<run_away_ai>();
 
     case MOB_ATTACK_TYPE::NONE:
         return std::make_unique<none_ai>();
+
+    case MOB_ATTACK_TYPE::INERT:
+        return std::make_unique<inert_ai>();
 
     default:
         return nullptr;
@@ -100,7 +104,7 @@ std::shared_ptr<life> ai::find_target_in_sight(mob& mob_obj, const datetime& now
         return nullptr;
 
     std::shared_ptr<life> best_target = nullptr;
-    uint32_t              best_damage = 0;
+    uint64_t              best_damage = 0;
 
     // First check recent attackers that are in sight
     for (const auto& [attacker, record] : this->_recent_damage)
@@ -152,7 +156,7 @@ std::shared_ptr<life> ai::find_target_in_range(mob& mob_obj, const datetime& now
         return nullptr;
 
     std::shared_ptr<life> best_target = nullptr;
-    uint32_t              best_damage = 0;
+    uint64_t              best_damage = 0;
 
     // First check recent attackers that are in range
     for (const auto& [attacker, record] : this->_recent_damage)

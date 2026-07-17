@@ -13,6 +13,7 @@ extern "C"
 #include <string_view>
 #include <map>
 #include <list>
+#include <cstdint>
 #include <random>
 #include <functional>
 #include <mutex>
@@ -475,6 +476,8 @@ public:
     async::task<void> switching();
     int               tointeger(int offset, int default_value = 0);
     lua_Integer       tonumber(int offset, lua_Integer default_value = 0);
+    uint64_t          touint64(int offset, uint64_t default_value = 0);
+    int64_t           toint64(int offset, int64_t default_value = 0);
 
     template <typename T>
     T toenum(int offset, T default_value = (T)0)

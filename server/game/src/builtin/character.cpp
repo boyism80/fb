@@ -3,6 +3,7 @@
 #include <fb/game/server.h>
 #include <fb/game/marriage.h>
 #include <fb/model/datetime.h>
+#include <algorithm>
 #include <string_view>
 #include <unordered_map>
 #include <tuple>
@@ -287,7 +288,7 @@ int builtin::character::builtin_money(lua_State* L)
     if (argc == 1)
     {
         auto weak     = ch->weak_from_this_as<fb::game::character>();
-        auto money    = std::make_shared<uint32_t>();
+        auto money    = std::make_shared<uint64_t>();
         auto builder  = lua->new_co_builder();
         builder.weak  = weak;
         builder.yield = [=]() -> async::task<void> {
@@ -302,7 +303,7 @@ int builtin::character::builtin_money(lua_State* L)
     }
     else
     {
-        auto value    = (uint32_t)lua->tointeger(2);
+        auto value    = lua->touint64(2);
         auto weak     = ch->weak_from_this_as<fb::game::character>();
         auto builder  = lua->new_co_builder();
         builder.weak  = weak;
@@ -331,7 +332,7 @@ int builtin::character::builtin_exp(lua_State* L)
     if (argc == 1)
     {
         auto weak     = ch->weak_from_this_as<fb::game::character>();
-        auto exp      = std::make_shared<uint32_t>();
+        auto exp      = std::make_shared<uint64_t>();
         auto builder  = lua->new_co_builder();
         builder.weak  = weak;
         builder.yield = [=]() -> async::task<void> {
@@ -346,7 +347,7 @@ int builtin::character::builtin_exp(lua_State* L)
     }
     else
     {
-        auto value    = (uint32_t)lua->tointeger(2);
+        auto value    = lua->touint64(2);
         auto weak     = ch->weak_from_this_as<fb::game::character>();
         auto builder  = lua->new_co_builder();
         builder.weak  = weak;
@@ -1102,11 +1103,11 @@ int builtin::character::builtin_exchange(lua_State* L)
     }
 
     auto cost_items   = std::unordered_map<uint32_t, uint16_t>();
-    auto cost_money   = uint32_t{0};
-    auto cost_exp     = uint32_t{0};
+    auto cost_money   = uint64_t{0};
+    auto cost_exp     = uint64_t{0};
     auto reward_items = std::unordered_map<uint32_t, uint16_t>();
-    auto reward_money = uint32_t{0};
-    auto reward_exp   = uint32_t{0};
+    auto reward_money = uint64_t{0};
+    auto reward_exp   = uint64_t{0};
 
     if (lua->is_table(2))
     {
@@ -1133,13 +1134,13 @@ int builtin::character::builtin_exchange(lua_State* L)
         lua->pushstring("money");
         lua->rawget(2);
         if (lua->is_number(-1))
-            cost_money = static_cast<uint32_t>(lua->tointeger(-1));
+            cost_money = static_cast<uint64_t>(std::max<lua_Integer>(0, lua_tointeger(*lua, -1)));
         lua->pop(1);
 
         lua->pushstring("exp");
         lua->rawget(2);
         if (lua->is_number(-1))
-            cost_exp = static_cast<uint32_t>(lua->tointeger(-1));
+            cost_exp = static_cast<uint64_t>(std::max<lua_Integer>(0, lua_tointeger(*lua, -1)));
         lua->pop(1);
     }
 
@@ -1168,13 +1169,13 @@ int builtin::character::builtin_exchange(lua_State* L)
         lua->pushstring("money");
         lua->rawget(3);
         if (lua->is_number(-1))
-            reward_money = static_cast<uint32_t>(lua->tointeger(-1));
+            reward_money = static_cast<uint64_t>(std::max<lua_Integer>(0, lua_tointeger(*lua, -1)));
         lua->pop(1);
 
         lua->pushstring("exp");
         lua->rawget(3);
         if (lua->is_number(-1))
-            reward_exp = static_cast<uint32_t>(lua->tointeger(-1));
+            reward_exp = static_cast<uint64_t>(std::max<lua_Integer>(0, lua_tointeger(*lua, -1)));
         lua->pop(1);
     }
 
@@ -1698,7 +1699,7 @@ int builtin::character::builtin_deposited_money(lua_State* L)
     if (argc == 1)
     {
         auto weak      = ch->weak_from_this_as<fb::game::character>();
-        auto deposited = std::make_shared<uint32_t>();
+        auto deposited = std::make_shared<uint64_t>();
         auto builder   = lua->new_co_builder();
         builder.weak   = weak;
         builder.yield  = [=]() -> async::task<void> {
@@ -1713,7 +1714,7 @@ int builtin::character::builtin_deposited_money(lua_State* L)
     }
     else
     {
-        auto value    = lua->tointeger(2);
+        auto value    = lua->touint64(2);
         auto weak     = ch->weak_from_this_as<fb::game::character>();
         auto builder  = lua->new_co_builder();
         builder.weak  = weak;
@@ -2845,7 +2846,7 @@ int builtin::character::builtin_base_hp(lua_State* L)
     if (argc == 1)
     {
         auto weak     = ch->weak_from_this_as<fb::game::character>();
-        auto base_hp  = std::make_shared<uint32_t>();
+        auto base_hp  = std::make_shared<uint64_t>();
         auto builder  = lua->new_co_builder();
         builder.weak  = weak;
         builder.yield = [=]() -> async::task<void> {
@@ -2860,13 +2861,12 @@ int builtin::character::builtin_base_hp(lua_State* L)
     }
     else
     {
-        auto value    = lua->tointeger(2);
+        auto value    = lua->touint64(2);
         auto weak     = ch->weak_from_this_as<fb::game::character>();
         auto builder  = lua->new_co_builder();
         builder.weak  = weak;
         builder.yield = [=]() -> async::task<void> {
-            ch->stat.base_hp(value, false);
-            ch->update(UPDATE_STATE_LEVEL::BASED);
+            ch->stat.base_hp(value, true);
             co_return;
         };
         builder.resume = []() -> async::task<int> {
@@ -2890,7 +2890,7 @@ int builtin::character::builtin_base_mp(lua_State* L)
     if (argc == 1)
     {
         auto weak     = ch->weak_from_this_as<fb::game::character>();
-        auto base_mp  = std::make_shared<uint32_t>();
+        auto base_mp  = std::make_shared<uint64_t>();
         auto builder  = lua->new_co_builder();
         builder.weak  = weak;
         builder.yield = [=]() -> async::task<void> {
@@ -2905,13 +2905,12 @@ int builtin::character::builtin_base_mp(lua_State* L)
     }
     else
     {
-        auto value    = lua->tointeger(2);
+        auto value    = lua->touint64(2);
         auto weak     = ch->weak_from_this_as<fb::game::character>();
         auto builder  = lua->new_co_builder();
         builder.weak  = weak;
         builder.yield = [=]() -> async::task<void> {
-            ch->stat.base_mp(value, false);
-            ch->update(UPDATE_STATE_LEVEL::BASED);
+            ch->stat.base_mp(value, true);
             co_return;
         };
         builder.resume = []() -> async::task<int> {
@@ -4932,7 +4931,7 @@ int builtin::character::builtin_send_storage_box(lua_State* L)
         lua->rawget(5);
         if (lua->is_number(-1))
         {
-            auto money = static_cast<uint32_t>(lua->tointeger(-1));
+            auto money = static_cast<uint64_t>(std::max<lua_Integer>(0, lua_tointeger(*lua, -1)));
             if (money > 0)
                 attachments.push_back(fb::model::dsl::money(money).to_dsl());
         }
@@ -4942,7 +4941,7 @@ int builtin::character::builtin_send_storage_box(lua_State* L)
         lua->rawget(5);
         if (lua->is_number(-1))
         {
-            auto exp = static_cast<uint32_t>(lua->tointeger(-1));
+            auto exp = static_cast<uint64_t>(std::max<lua_Integer>(0, lua_tointeger(*lua, -1)));
             if (exp > 0)
                 attachments.push_back(fb::model::dsl::exp(exp).to_dsl());
         }
@@ -5042,7 +5041,7 @@ int builtin::character::builtin_send_system_storage_box(lua_State* L)
         lua->rawget(4);
         if (lua->is_number(-1))
         {
-            auto money = static_cast<uint32_t>(lua->tointeger(-1));
+            auto money = static_cast<uint64_t>(std::max<lua_Integer>(0, lua_tointeger(*lua, -1)));
             if (money > 0)
                 attachments.push_back(fb::model::dsl::money(money).to_dsl());
         }
@@ -5052,7 +5051,7 @@ int builtin::character::builtin_send_system_storage_box(lua_State* L)
         lua->rawget(4);
         if (lua->is_number(-1))
         {
-            auto exp = static_cast<uint32_t>(lua->tointeger(-1));
+            auto exp = static_cast<uint64_t>(std::max<lua_Integer>(0, lua_tointeger(*lua, -1)));
             if (exp > 0)
                 attachments.push_back(fb::model::dsl::exp(exp).to_dsl());
         }
@@ -5239,7 +5238,7 @@ int builtin::character::builtin_marketplace_list(lua_State* L)
 
     auto item_index   = static_cast<uint8_t>(lua->tointeger(2) - 1);
     auto count        = static_cast<uint16_t>(lua->tointeger(3));
-    auto price        = static_cast<uint32_t>(lua->tointeger(4));
+    auto price        = lua->touint64(4);
     auto expire_hours = static_cast<uint16_t>(lua->tointeger(5, 72));
 
     auto weak           = ch->weak_from_this_as<fb::game::character>();
@@ -5435,7 +5434,7 @@ int builtin::character::builtin_marketplace_search(lua_State* L)
     lua_rawget(*lua, 2);
     if (!lua->is_nil(-1))
     {
-        option.min_price = static_cast<uint32_t>(lua->tointeger(-1));
+        option.min_price = static_cast<uint64_t>(std::max<lua_Integer>(0, lua_tointeger(*lua, -1)));
     }
     lua->pop(1);
 
@@ -5443,7 +5442,7 @@ int builtin::character::builtin_marketplace_search(lua_State* L)
     lua_rawget(*lua, 2);
     if (!lua->is_nil(-1))
     {
-        option.max_price = static_cast<uint32_t>(lua->tointeger(-1));
+        option.max_price = static_cast<uint64_t>(std::max<lua_Integer>(0, lua_tointeger(*lua, -1)));
     }
     lua->pop(1);
 

@@ -28,7 +28,7 @@ void life::on_init()
 void life::update(UPDATE_STATE_LEVEL value)
 { }
 
-void life::update_hp(uint32_t diff, bool critical, bool notify)
+void life::update_hp(uint64_t diff, bool critical, bool notify)
 {
     if (!notify)
         return;
@@ -85,10 +85,17 @@ life::mob_vector life::damage_targets(const damage_list& targets, const damage_o
         {
             auto m = std::static_pointer_cast<mob>(target);
 
-            // Part of an assembly: never settle the part; settle the body if it died.
+            // Assembly part: PARTS mode settles the part on its own death;
+            // BODY mode treats the part as a hitbox (damage already went to body).
             auto body = m->body();
             if (body != nullptr)
             {
+                if (body->parts_mode() == MOB_PARTS_MODE::PARTS && m->stat.hp() == 0 && m->invincible() == false)
+                {
+                    m->invincible(true);
+                    dead.push_back(m);
+                }
+
                 if (body->stat.hp() == 0 && body->invincible() == false)
                 {
                     body->invincible(true);
@@ -245,7 +252,7 @@ async::task<void> life::attack(DURATION duration)
     co_return;
 }
 
-uint32_t life::exp() const
+uint64_t life::exp() const
 {
     this->assert_thread();
     return static_cast<const fb::model::life&>(this->_model).exp;
@@ -370,13 +377,13 @@ bool life::calculate_miss(life& you) const
 #endif
 }
 
-uint32_t life::calculate_damage(uint32_t value, const life& target, bool critical, float rate, bool physical) const
+uint64_t life::calculate_damage(uint64_t value, const life& target, bool critical, float rate, bool physical) const
 {
     this->assert_thread();
     auto def               = physical ? target.stat.phydef() : target.stat.magdef();
     auto n                 = (100 - def) / 10;
     auto defensive_percent = -125 + (n * (2 * 14.75f - (n - 1) / 2.0f)) / 2.0f;
-    auto damage            = value - uint32_t(defensive_percent * (value / 100.0f));
+    auto damage            = value - static_cast<uint64_t>(defensive_percent * (value / 100.0f));
 
     if (physical && target.direction() == this->direction())
         rate *= 2.0f;
@@ -385,7 +392,7 @@ uint32_t life::calculate_damage(uint32_t value, const life& target, bool critica
         rate *= 2.0f;
 
     rate /= (target.damage_derate() / 1000.0f);
-    return static_cast<uint32_t>(damage * rate);
+    return static_cast<uint64_t>(damage * rate);
 }
 
 uint32_t life::damage_rate() const

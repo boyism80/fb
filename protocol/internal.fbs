@@ -54,16 +54,16 @@ table Character {
     class_type: ubyte;
     promotion: ubyte;
     level: ubyte;
-    exp: uint;
-    money: uint;
-    deposited_money: uint;
+    exp: ulong;
+    money: ulong;
+    deposited_money: ulong;
     mimicry: Mimicry?;
-    hp: uint;
-    base_hp: uint;
-    additional_hp: uint;
-    mp: uint;
-    base_mp: uint;
-    additional_mp: uint;
+    hp: ulong;
+    base_hp: ulong;
+    additional_hp: ulong;
+    mp: ulong;
+    base_mp: ulong;
+    additional_mp: ulong;
     weapon_color: ubyte?;
     helmet_color: ubyte?;
     armor_color: ubyte?;
@@ -237,7 +237,7 @@ table MarketplacePending {
     listing_id: string;
     attachments: string;
     expected_purchase_count: ushort;
-    expected_total_price: uint;
+    expected_total_price: ulong;
     character_id: uint;
 }
 

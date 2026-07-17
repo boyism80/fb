@@ -2092,10 +2092,11 @@ inline const char* enum_tostring<MESSAGE_TYPE>(MESSAGE_TYPE k)
 enum class MOB_ATTACK_TYPE
 {
     NONE = 0, 
-    COUNTER = 1, 
-    CONTAINMENT = 2, 
+    RETALIATE = 1, 
+    AGGRESSIVE = 2, 
     RUN_AWAY = 3, 
-    NO_MOVE = 4
+    STATIONARY = 4, 
+    INERT = 5
 }; // end of enum 'MOB_ATTACK_TYPE'
 
 template <>
@@ -2104,10 +2105,11 @@ inline MOB_ATTACK_TYPE enum_parse<MOB_ATTACK_TYPE>(std::string_view k)
     static const std::unordered_map<std::string, MOB_ATTACK_TYPE> enums
     {
         { "NONE", MOB_ATTACK_TYPE::NONE }, 
-        { "COUNTER", MOB_ATTACK_TYPE::COUNTER }, 
-        { "CONTAINMENT", MOB_ATTACK_TYPE::CONTAINMENT }, 
+        { "RETALIATE", MOB_ATTACK_TYPE::RETALIATE }, 
+        { "AGGRESSIVE", MOB_ATTACK_TYPE::AGGRESSIVE }, 
         { "RUN_AWAY", MOB_ATTACK_TYPE::RUN_AWAY }, 
-        { "NO_MOVE", MOB_ATTACK_TYPE::NO_MOVE }
+        { "STATIONARY", MOB_ATTACK_TYPE::STATIONARY }, 
+        { "INERT", MOB_ATTACK_TYPE::INERT }
     };
 
     auto k_str = std::string(k);
@@ -2124,10 +2126,11 @@ inline const char* enum_tostring<MOB_ATTACK_TYPE>(MOB_ATTACK_TYPE k)
     static const std::unordered_map<MOB_ATTACK_TYPE, const char*> enums
     {
         { MOB_ATTACK_TYPE::NONE, "NONE" }, 
-        { MOB_ATTACK_TYPE::COUNTER, "COUNTER" }, 
-        { MOB_ATTACK_TYPE::CONTAINMENT, "CONTAINMENT" }, 
+        { MOB_ATTACK_TYPE::RETALIATE, "RETALIATE" }, 
+        { MOB_ATTACK_TYPE::AGGRESSIVE, "AGGRESSIVE" }, 
         { MOB_ATTACK_TYPE::RUN_AWAY, "RUN_AWAY" }, 
-        { MOB_ATTACK_TYPE::NO_MOVE, "NO_MOVE" }
+        { MOB_ATTACK_TYPE::STATIONARY, "STATIONARY" }, 
+        { MOB_ATTACK_TYPE::INERT, "INERT" }
     };
 
     auto i = enums.find(k);
@@ -3939,14 +3942,16 @@ inline void enum_map<fb::model::enum_value::MOB_ATTACK_TYPE>(lua_State* lua)
     lua_newtable(lua);
     lua_pushinteger(lua, static_cast<lua_Integer>(fb::model::enum_value::MOB_ATTACK_TYPE::NONE));
     lua_setfield(lua, -2, "NONE");
-    lua_pushinteger(lua, static_cast<lua_Integer>(fb::model::enum_value::MOB_ATTACK_TYPE::COUNTER));
-    lua_setfield(lua, -2, "COUNTER");
-    lua_pushinteger(lua, static_cast<lua_Integer>(fb::model::enum_value::MOB_ATTACK_TYPE::CONTAINMENT));
-    lua_setfield(lua, -2, "CONTAINMENT");
+    lua_pushinteger(lua, static_cast<lua_Integer>(fb::model::enum_value::MOB_ATTACK_TYPE::RETALIATE));
+    lua_setfield(lua, -2, "RETALIATE");
+    lua_pushinteger(lua, static_cast<lua_Integer>(fb::model::enum_value::MOB_ATTACK_TYPE::AGGRESSIVE));
+    lua_setfield(lua, -2, "AGGRESSIVE");
     lua_pushinteger(lua, static_cast<lua_Integer>(fb::model::enum_value::MOB_ATTACK_TYPE::RUN_AWAY));
     lua_setfield(lua, -2, "RUN_AWAY");
-    lua_pushinteger(lua, static_cast<lua_Integer>(fb::model::enum_value::MOB_ATTACK_TYPE::NO_MOVE));
-    lua_setfield(lua, -2, "NO_MOVE");
+    lua_pushinteger(lua, static_cast<lua_Integer>(fb::model::enum_value::MOB_ATTACK_TYPE::STATIONARY));
+    lua_setfield(lua, -2, "STATIONARY");
+    lua_pushinteger(lua, static_cast<lua_Integer>(fb::model::enum_value::MOB_ATTACK_TYPE::INERT));
+    lua_setfield(lua, -2, "INERT");
     lua_setglobal(lua, "MOB_ATTACK_TYPE");
 }
 
@@ -5150,17 +5155,17 @@ public:
 class fb::model::dsl::exp
 {
 public:
-    const uint32_t value;
+    const uint64_t value;
 
 public:
-    exp(uint32_t value) : 
+    exp(uint64_t value) : 
         value(value)
     { }
     exp(const Json::Value& json) : 
-        value(fb::model::build<uint32_t>(json[0]))
+        value(fb::model::build<uint64_t>(json[0]))
     { }
     exp(const std::vector<std::any>& parameters) : 
-        value(any_cast<uint32_t>(parameters[0]))
+        value(any_cast<uint64_t>(parameters[0]))
     { }
 
 public:
@@ -5399,17 +5404,17 @@ public:
 class fb::model::dsl::money
 {
 public:
-    const uint32_t value;
+    const uint64_t value;
 
 public:
-    money(uint32_t value) : 
+    money(uint64_t value) : 
         value(value)
     { }
     money(const Json::Value& json) : 
-        value(fb::model::build<uint32_t>(json[0]))
+        value(fb::model::build<uint64_t>(json[0]))
     { }
     money(const std::vector<std::any>& parameters) : 
-        value(any_cast<uint32_t>(parameters[0]))
+        value(any_cast<uint64_t>(parameters[0]))
     { }
 
 public:
@@ -5724,9 +5729,9 @@ public:
     const uint8_t dexterity;
     const uint8_t intelligence;
     const uint8_t strength;
-    const uint32_t exp;
-    const uint32_t hp;
-    const uint32_t mp;
+    const uint64_t exp;
+    const uint64_t hp;
+    const uint64_t mp;
 #endif
 
 #ifdef DECLARE_ABILITY_CUSTOM_CONSTRUCTOR
@@ -5742,9 +5747,9 @@ DECLARE_ABILITY_CONSTRUCTOR
         dexterity(fb::model::build<uint8_t>(json["dexterity"])),
         intelligence(fb::model::build<uint8_t>(json["intelligence"])),
         strength(fb::model::build<uint8_t>(json["strength"])),
-        exp(fb::model::build<uint32_t>(json["exp"])),
-        hp(fb::model::build<uint32_t>(json["hp"])),
-        mp(fb::model::build<uint32_t>(json["mp"]))
+        exp(fb::model::build<uint64_t>(json["exp"])),
+        hp(fb::model::build<uint64_t>(json["hp"])),
+        mp(fb::model::build<uint64_t>(json["mp"]))
 #ifdef DECLARE_ABILITY_INITIALIZER
 DECLARE_ABILITY_INITIALIZER
 #endif
@@ -5987,7 +5992,7 @@ DECLARE_BUY_FIELDS
 public:
     const uint32_t parent;
     const uint32_t item;
-    const std::optional<uint32_t> price;
+    const std::optional<uint64_t> price;
 #endif
 
 #ifdef DECLARE_BUY_CUSTOM_CONSTRUCTOR
@@ -6000,7 +6005,7 @@ DECLARE_BUY_CONSTRUCTOR
 #endif
         parent(fb::model::build<uint32_t>(json["parent"])),
         item(fb::model::build<uint32_t>(json["item"])),
-        price(fb::model::build<std::optional<uint32_t>>(json["price"]))
+        price(fb::model::build<std::optional<uint64_t>>(json["price"]))
 #ifdef DECLARE_BUY_INITIALIZER
 DECLARE_BUY_INITIALIZER
 #endif
@@ -6611,7 +6616,7 @@ DECLARE_SELL_FIELDS
 public:
     const uint32_t parent;
     const uint32_t item;
-    const std::optional<uint32_t> price;
+    const std::optional<uint64_t> price;
 #endif
 
 #ifdef DECLARE_SELL_CUSTOM_CONSTRUCTOR
@@ -6624,7 +6629,7 @@ DECLARE_SELL_CONSTRUCTOR
 #endif
         parent(fb::model::build<uint32_t>(json["parent"])),
         item(fb::model::build<uint32_t>(json["item"])),
-        price(fb::model::build<std::optional<uint32_t>>(json["price"]))
+        price(fb::model::build<std::optional<uint64_t>>(json["price"]))
 #ifdef DECLARE_SELL_INITIALIZER
 DECLARE_SELL_INITIALIZER
 #endif
@@ -6926,8 +6931,8 @@ class item : public fb::model::object
 DECLARE_ITEM_FIELDS
 #else
 public:
-    const uint32_t price;
-    const std::optional<uint32_t> storage_fee;
+    const uint64_t price;
+    const std::optional<uint64_t> storage_fee;
     const bool trade;
     const fb::model::enum_value::ITEM_TYPE type;
     const std::string desc;
@@ -6942,8 +6947,8 @@ DECLARE_ITEM_CUSTOM_CONSTRUCTOR
 #else
 public:
     item(const Json::Value& json) : fb::model::object(json),
-        price(fb::model::build<uint32_t>(json["price"])),
-        storage_fee(fb::model::build<std::optional<uint32_t>>(json["storage_fee"])),
+        price(fb::model::build<uint64_t>(json["price"])),
+        storage_fee(fb::model::build<std::optional<uint64_t>>(json["storage_fee"])),
         trade(fb::model::build<bool>(json["trade"])),
         type(fb::model::build<fb::model::enum_value::ITEM_TYPE>(json["type"])),
         desc(fb::model::build<std::string>(json["desc"])),
@@ -6968,9 +6973,9 @@ class life : public fb::model::object
 DECLARE_LIFE_FIELDS
 #else
 public:
-    const uint32_t hp;
-    const uint32_t mp;
-    const uint32_t exp;
+    const uint64_t hp;
+    const uint64_t mp;
+    const uint64_t exp;
     const int defensive_physical;
     const int defensive_magical;
 #endif
@@ -6980,9 +6985,9 @@ DECLARE_LIFE_CUSTOM_CONSTRUCTOR
 #else
 public:
     life(const Json::Value& json) : fb::model::object(json),
-        hp(fb::model::build<uint32_t>(json["hp"])),
-        mp(fb::model::build<uint32_t>(json["mp"])),
-        exp(fb::model::build<uint32_t>(json["exp"])),
+        hp(fb::model::build<uint64_t>(json["hp"])),
+        mp(fb::model::build<uint64_t>(json["mp"])),
+        exp(fb::model::build<uint64_t>(json["exp"])),
         defensive_physical(fb::model::build<int>(json["defensive_physical"])),
         defensive_magical(fb::model::build<int>(json["defensive_magical"]))
 #ifdef DECLARE_LIFE_INITIALIZER
@@ -7080,8 +7085,8 @@ public:
     const uint8_t strength;
     const uint8_t intelligence;
     const uint8_t dexterity;
-    const int32_t base_hp;
-    const int32_t base_mp;
+    const int64_t base_hp;
+    const int64_t base_mp;
     const float hp_percentage;
     const float mp_percentage;
     const uint8_t healing_cycle;
@@ -7104,8 +7109,8 @@ public:
         strength(fb::model::build<uint8_t>(json["strength"])),
         intelligence(fb::model::build<uint8_t>(json["intelligence"])),
         dexterity(fb::model::build<uint8_t>(json["dexterity"])),
-        base_hp(fb::model::build<int>(json["base_hp"])),
-        base_mp(fb::model::build<int>(json["base_mp"])),
+        base_hp(fb::model::build<int64_t>(json["base_hp"])),
+        base_mp(fb::model::build<int64_t>(json["base_mp"])),
         hp_percentage(fb::model::build<float>(json["hp_percentage"])),
         mp_percentage(fb::model::build<float>(json["mp_percentage"])),
         healing_cycle(fb::model::build<uint8_t>(json["healing_cycle"])),
@@ -7130,7 +7135,7 @@ DECLARE_MOB_FIELDS
 public:
     const fb::model::enum_value::MOB_SIZE size;
     const fb::model::enum_value::MOB_ATTACK_TYPE attack_type;
-    const range<uint32_t> damage;
+    const range<uint64_t> damage;
     const timespan speed;
     const std::string drop;
     const std::optional<uint32_t> appearance;
@@ -7143,7 +7148,7 @@ public:
     mob(const Json::Value& json) : fb::model::life(json),
         size(fb::model::build<fb::model::enum_value::MOB_SIZE>(json["size"])),
         attack_type(fb::model::build<fb::model::enum_value::MOB_ATTACK_TYPE>(json["attack_type"])),
-        damage(fb::model::build<range<uint32_t>>(json["damage"])),
+        damage(fb::model::build<range<uint64_t>>(json["damage"])),
         speed(fb::model::build<timespan>(json["speed"])),
         drop(fb::model::build<std::string>(json["drop"])),
         appearance(fb::model::build<std::optional<uint32_t>>(json["appearance"]))
@@ -7280,8 +7285,8 @@ class weapon : public fb::model::equipment
 DECLARE_WEAPON_FIELDS
 #else
 public:
-    const range<uint32_t> damage_small;
-    const range<uint32_t> damage_large;
+    const range<uint64_t> damage_small;
+    const range<uint64_t> damage_large;
     const uint16_t sound;
     const std::optional<uint32_t> spell;
     const std::optional<uint32_t> rename;
@@ -7292,8 +7297,8 @@ DECLARE_WEAPON_CUSTOM_CONSTRUCTOR
 #else
 public:
     weapon(const Json::Value& json) : fb::model::equipment(json),
-        damage_small(fb::model::build<range<uint32_t>>(json["damage_small"])),
-        damage_large(fb::model::build<range<uint32_t>>(json["damage_large"])),
+        damage_small(fb::model::build<range<uint64_t>>(json["damage_small"])),
+        damage_large(fb::model::build<range<uint64_t>>(json["damage_large"])),
         sound(fb::model::build<uint16_t>(json["sound"])),
         spell(fb::model::build<std::optional<uint32_t>>(json["spell"])),
         rename(fb::model::build<std::optional<uint32_t>>(json["rename"]))

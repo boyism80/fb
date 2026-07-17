@@ -30,14 +30,14 @@ public struct List : IFlatbufferObject
 #endif
   public byte[] GetListingIdArray() { return __p.__vector_as_array<byte>(8); }
   public fb.protocol.marketplace.raw.Item? Item { get { int o = __p.__offset(10); return o != 0 ? (fb.protocol.marketplace.raw.Item?)(new fb.protocol.marketplace.raw.Item()).__assign(__p.__indirect(o + __p.bb_pos), __p.bb) : null; } }
-  public uint Price { get { int o = __p.__offset(12); return o != 0 ? __p.bb.GetUint(o + __p.bb_pos) : (uint)0; } }
+  public ulong Price { get { int o = __p.__offset(12); return o != 0 ? __p.bb.GetUlong(o + __p.bb_pos) : (ulong)0; } }
 
   public static Offset<fb.protocol.marketplace.request.raw.List> CreateList(FlatBufferBuilder builder,
       uint world = 0,
       uint character_id = 0,
       StringOffset listing_idOffset = default(StringOffset),
       Offset<fb.protocol.marketplace.raw.Item> itemOffset = default(Offset<fb.protocol.marketplace.raw.Item>),
-      uint price = 0) {
+      ulong price = 0) {
     builder.StartTable(5);
     List.AddPrice(builder, price);
     List.AddItem(builder, itemOffset);
@@ -52,7 +52,7 @@ public struct List : IFlatbufferObject
   public static void AddCharacterId(FlatBufferBuilder builder, uint characterId) { builder.AddUint(1, characterId, 0); }
   public static void AddListingId(FlatBufferBuilder builder, StringOffset listingIdOffset) { builder.AddOffset(2, listingIdOffset.Value, 0); }
   public static void AddItem(FlatBufferBuilder builder, Offset<fb.protocol.marketplace.raw.Item> itemOffset) { builder.AddOffset(3, itemOffset.Value, 0); }
-  public static void AddPrice(FlatBufferBuilder builder, uint price) { builder.AddUint(4, price, 0); }
+  public static void AddPrice(FlatBufferBuilder builder, ulong price) { builder.AddUlong(4, price, 0); }
   public static Offset<fb.protocol.marketplace.request.raw.List> EndList(FlatBufferBuilder builder) {
     int o = builder.EndTable();
     return new Offset<fb.protocol.marketplace.request.raw.List>(o);
@@ -71,7 +71,7 @@ static public class ListVerify
       && verifier.VerifyField(tablePos, 6 /*CharacterId*/, 4 /*uint*/, 4, false)
       && verifier.VerifyString(tablePos, 8 /*ListingId*/, false)
       && verifier.VerifyTable(tablePos, 10 /*Item*/, fb.protocol.marketplace.raw.ItemVerify.Verify, false)
-      && verifier.VerifyField(tablePos, 12 /*Price*/, 4 /*uint*/, 4, false)
+      && verifier.VerifyField(tablePos, 12 /*Price*/, 8 /*ulong*/, 8, false)
       && verifier.VerifyTableEnd(tablePos);
   }
 }

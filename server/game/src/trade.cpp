@@ -1,3 +1,4 @@
+#include <limits>
 #include <fb/game/server.h>
 #include <fb/game/character.h>
 #include <fb/game/trade.h>
@@ -167,7 +168,7 @@ bool trade::up_item(uint8_t index)
     return false;
 }
 
-bool trade::up_money(uint32_t money)
+bool trade::up_money(uint64_t money)
 {
     auto owner = this->_owner.lock();
     if (owner == nullptr)
@@ -179,7 +180,7 @@ bool trade::up_money(uint32_t money)
 
     try
     {
-        this->_money = std::min<uint32_t>(owner->money(), money);
+        this->_money = std::min<uint64_t>(owner->money(), money);
         owner->update(UPDATE_STATE_LEVEL::EXP_MONEY);
         owner->listener.on_trade_money(*owner, *you, this->_money);
 
@@ -193,7 +194,7 @@ bool trade::up_money(uint32_t money)
     return false;
 }
 
-uint32_t trade::money() const
+uint64_t trade::money() const
 {
     return this->_money;
 }
@@ -333,7 +334,7 @@ void trade::assert_exchange(const trade& trade) const
     if (owner == nullptr)
         throw std::runtime_error("owner is nullptr");
 
-    if (0xFFFFFFFF - trade.money() < owner->money())
+    if (std::numeric_limits<uint64_t>::max() - trade.money() < owner->money())
         throw std::runtime_error(_TEXT(MESSAGE_MONEY_FULL));
 
     auto buffer = std::unordered_map<uint32_t, uint16_t>{};

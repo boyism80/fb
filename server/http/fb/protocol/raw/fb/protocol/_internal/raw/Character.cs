@@ -49,16 +49,16 @@ public struct Character : IFlatbufferObject
   public byte ClassType { get { int o = __p.__offset(32); return o != 0 ? __p.bb.Get(o + __p.bb_pos) : (byte)0; } }
   public byte Promotion { get { int o = __p.__offset(34); return o != 0 ? __p.bb.Get(o + __p.bb_pos) : (byte)0; } }
   public byte Level { get { int o = __p.__offset(36); return o != 0 ? __p.bb.Get(o + __p.bb_pos) : (byte)0; } }
-  public uint Exp { get { int o = __p.__offset(38); return o != 0 ? __p.bb.GetUint(o + __p.bb_pos) : (uint)0; } }
-  public uint Money { get { int o = __p.__offset(40); return o != 0 ? __p.bb.GetUint(o + __p.bb_pos) : (uint)0; } }
-  public uint DepositedMoney { get { int o = __p.__offset(42); return o != 0 ? __p.bb.GetUint(o + __p.bb_pos) : (uint)0; } }
+  public ulong Exp { get { int o = __p.__offset(38); return o != 0 ? __p.bb.GetUlong(o + __p.bb_pos) : (ulong)0; } }
+  public ulong Money { get { int o = __p.__offset(40); return o != 0 ? __p.bb.GetUlong(o + __p.bb_pos) : (ulong)0; } }
+  public ulong DepositedMoney { get { int o = __p.__offset(42); return o != 0 ? __p.bb.GetUlong(o + __p.bb_pos) : (ulong)0; } }
   public fb.protocol._internal.raw.Mimicry? Mimicry { get { int o = __p.__offset(44); return o != 0 ? (fb.protocol._internal.raw.Mimicry?)(new fb.protocol._internal.raw.Mimicry()).__assign(__p.__indirect(o + __p.bb_pos), __p.bb) : null; } }
-  public uint Hp { get { int o = __p.__offset(46); return o != 0 ? __p.bb.GetUint(o + __p.bb_pos) : (uint)0; } }
-  public uint BaseHp { get { int o = __p.__offset(48); return o != 0 ? __p.bb.GetUint(o + __p.bb_pos) : (uint)0; } }
-  public uint AdditionalHp { get { int o = __p.__offset(50); return o != 0 ? __p.bb.GetUint(o + __p.bb_pos) : (uint)0; } }
-  public uint Mp { get { int o = __p.__offset(52); return o != 0 ? __p.bb.GetUint(o + __p.bb_pos) : (uint)0; } }
-  public uint BaseMp { get { int o = __p.__offset(54); return o != 0 ? __p.bb.GetUint(o + __p.bb_pos) : (uint)0; } }
-  public uint AdditionalMp { get { int o = __p.__offset(56); return o != 0 ? __p.bb.GetUint(o + __p.bb_pos) : (uint)0; } }
+  public ulong Hp { get { int o = __p.__offset(46); return o != 0 ? __p.bb.GetUlong(o + __p.bb_pos) : (ulong)0; } }
+  public ulong BaseHp { get { int o = __p.__offset(48); return o != 0 ? __p.bb.GetUlong(o + __p.bb_pos) : (ulong)0; } }
+  public ulong AdditionalHp { get { int o = __p.__offset(50); return o != 0 ? __p.bb.GetUlong(o + __p.bb_pos) : (ulong)0; } }
+  public ulong Mp { get { int o = __p.__offset(52); return o != 0 ? __p.bb.GetUlong(o + __p.bb_pos) : (ulong)0; } }
+  public ulong BaseMp { get { int o = __p.__offset(54); return o != 0 ? __p.bb.GetUlong(o + __p.bb_pos) : (ulong)0; } }
+  public ulong AdditionalMp { get { int o = __p.__offset(56); return o != 0 ? __p.bb.GetUlong(o + __p.bb_pos) : (ulong)0; } }
   public nullable.nullable_ubyte? WeaponColor { get { int o = __p.__offset(58); return o != 0 ? (nullable.nullable_ubyte?)(new nullable.nullable_ubyte()).__assign(__p.__indirect(o + __p.bb_pos), __p.bb) : null; } }
   public nullable.nullable_ubyte? HelmetColor { get { int o = __p.__offset(60); return o != 0 ? (nullable.nullable_ubyte?)(new nullable.nullable_ubyte()).__assign(__p.__indirect(o + __p.bb_pos), __p.bb) : null; } }
   public nullable.nullable_ubyte? ArmorColor { get { int o = __p.__offset(62); return o != 0 ? (nullable.nullable_ubyte?)(new nullable.nullable_ubyte()).__assign(__p.__indirect(o + __p.bb_pos), __p.bb) : null; } }
@@ -117,16 +117,16 @@ public struct Character : IFlatbufferObject
       byte class_type = 0,
       byte promotion = 0,
       byte level = 0,
-      uint exp = 0,
-      uint money = 0,
-      uint deposited_money = 0,
+      ulong exp = 0,
+      ulong money = 0,
+      ulong deposited_money = 0,
       Offset<fb.protocol._internal.raw.Mimicry> mimicryOffset = default(Offset<fb.protocol._internal.raw.Mimicry>),
-      uint hp = 0,
-      uint base_hp = 0,
-      uint additional_hp = 0,
-      uint mp = 0,
-      uint base_mp = 0,
-      uint additional_mp = 0,
+      ulong hp = 0,
+      ulong base_hp = 0,
+      ulong additional_hp = 0,
+      ulong mp = 0,
+      ulong base_mp = 0,
+      ulong additional_mp = 0,
       Offset<nullable.nullable_ubyte> weapon_colorOffset = default(Offset<nullable.nullable_ubyte>),
       Offset<nullable.nullable_ubyte> helmet_colorOffset = default(Offset<nullable.nullable_ubyte>),
       Offset<nullable.nullable_ubyte> armor_colorOffset = default(Offset<nullable.nullable_ubyte>),
@@ -142,6 +142,15 @@ public struct Character : IFlatbufferObject
       StringOffset first_login_dateOffset = default(StringOffset),
       bool super_hide = false) {
     builder.StartTable(41);
+    Character.AddAdditionalMp(builder, additional_mp);
+    Character.AddBaseMp(builder, base_mp);
+    Character.AddMp(builder, mp);
+    Character.AddAdditionalHp(builder, additional_hp);
+    Character.AddBaseHp(builder, base_hp);
+    Character.AddHp(builder, hp);
+    Character.AddDepositedMoney(builder, deposited_money);
+    Character.AddMoney(builder, money);
+    Character.AddExp(builder, exp);
     Character.AddFirstLoginDate(builder, first_login_dateOffset);
     Character.AddUpdatedDate(builder, updated_dateOffset);
     Character.AddCreatedDate(builder, created_dateOffset);
@@ -155,16 +164,7 @@ public struct Character : IFlatbufferObject
     Character.AddArmorColor(builder, armor_colorOffset);
     Character.AddHelmetColor(builder, helmet_colorOffset);
     Character.AddWeaponColor(builder, weapon_colorOffset);
-    Character.AddAdditionalMp(builder, additional_mp);
-    Character.AddBaseMp(builder, base_mp);
-    Character.AddMp(builder, mp);
-    Character.AddAdditionalHp(builder, additional_hp);
-    Character.AddBaseHp(builder, base_hp);
-    Character.AddHp(builder, hp);
     Character.AddMimicry(builder, mimicryOffset);
-    Character.AddDepositedMoney(builder, deposited_money);
-    Character.AddMoney(builder, money);
-    Character.AddExp(builder, exp);
     Character.AddPosition(builder, positionOffset);
     Character.AddMap(builder, map);
     Character.AddBirth(builder, birthOffset);
@@ -204,16 +204,16 @@ public struct Character : IFlatbufferObject
   public static void AddClassType(FlatBufferBuilder builder, byte classType) { builder.AddByte(14, classType, 0); }
   public static void AddPromotion(FlatBufferBuilder builder, byte promotion) { builder.AddByte(15, promotion, 0); }
   public static void AddLevel(FlatBufferBuilder builder, byte level) { builder.AddByte(16, level, 0); }
-  public static void AddExp(FlatBufferBuilder builder, uint exp) { builder.AddUint(17, exp, 0); }
-  public static void AddMoney(FlatBufferBuilder builder, uint money) { builder.AddUint(18, money, 0); }
-  public static void AddDepositedMoney(FlatBufferBuilder builder, uint depositedMoney) { builder.AddUint(19, depositedMoney, 0); }
+  public static void AddExp(FlatBufferBuilder builder, ulong exp) { builder.AddUlong(17, exp, 0); }
+  public static void AddMoney(FlatBufferBuilder builder, ulong money) { builder.AddUlong(18, money, 0); }
+  public static void AddDepositedMoney(FlatBufferBuilder builder, ulong depositedMoney) { builder.AddUlong(19, depositedMoney, 0); }
   public static void AddMimicry(FlatBufferBuilder builder, Offset<fb.protocol._internal.raw.Mimicry> mimicryOffset) { builder.AddOffset(20, mimicryOffset.Value, 0); }
-  public static void AddHp(FlatBufferBuilder builder, uint hp) { builder.AddUint(21, hp, 0); }
-  public static void AddBaseHp(FlatBufferBuilder builder, uint baseHp) { builder.AddUint(22, baseHp, 0); }
-  public static void AddAdditionalHp(FlatBufferBuilder builder, uint additionalHp) { builder.AddUint(23, additionalHp, 0); }
-  public static void AddMp(FlatBufferBuilder builder, uint mp) { builder.AddUint(24, mp, 0); }
-  public static void AddBaseMp(FlatBufferBuilder builder, uint baseMp) { builder.AddUint(25, baseMp, 0); }
-  public static void AddAdditionalMp(FlatBufferBuilder builder, uint additionalMp) { builder.AddUint(26, additionalMp, 0); }
+  public static void AddHp(FlatBufferBuilder builder, ulong hp) { builder.AddUlong(21, hp, 0); }
+  public static void AddBaseHp(FlatBufferBuilder builder, ulong baseHp) { builder.AddUlong(22, baseHp, 0); }
+  public static void AddAdditionalHp(FlatBufferBuilder builder, ulong additionalHp) { builder.AddUlong(23, additionalHp, 0); }
+  public static void AddMp(FlatBufferBuilder builder, ulong mp) { builder.AddUlong(24, mp, 0); }
+  public static void AddBaseMp(FlatBufferBuilder builder, ulong baseMp) { builder.AddUlong(25, baseMp, 0); }
+  public static void AddAdditionalMp(FlatBufferBuilder builder, ulong additionalMp) { builder.AddUlong(26, additionalMp, 0); }
   public static void AddWeaponColor(FlatBufferBuilder builder, Offset<nullable.nullable_ubyte> weaponColorOffset) { builder.AddOffset(27, weaponColorOffset.Value, 0); }
   public static void AddHelmetColor(FlatBufferBuilder builder, Offset<nullable.nullable_ubyte> helmetColorOffset) { builder.AddOffset(28, helmetColorOffset.Value, 0); }
   public static void AddArmorColor(FlatBufferBuilder builder, Offset<nullable.nullable_ubyte> armorColorOffset) { builder.AddOffset(29, armorColorOffset.Value, 0); }
@@ -264,16 +264,16 @@ static public class CharacterVerify
       && verifier.VerifyField(tablePos, 32 /*ClassType*/, 1 /*byte*/, 1, false)
       && verifier.VerifyField(tablePos, 34 /*Promotion*/, 1 /*byte*/, 1, false)
       && verifier.VerifyField(tablePos, 36 /*Level*/, 1 /*byte*/, 1, false)
-      && verifier.VerifyField(tablePos, 38 /*Exp*/, 4 /*uint*/, 4, false)
-      && verifier.VerifyField(tablePos, 40 /*Money*/, 4 /*uint*/, 4, false)
-      && verifier.VerifyField(tablePos, 42 /*DepositedMoney*/, 4 /*uint*/, 4, false)
+      && verifier.VerifyField(tablePos, 38 /*Exp*/, 8 /*ulong*/, 8, false)
+      && verifier.VerifyField(tablePos, 40 /*Money*/, 8 /*ulong*/, 8, false)
+      && verifier.VerifyField(tablePos, 42 /*DepositedMoney*/, 8 /*ulong*/, 8, false)
       && verifier.VerifyTable(tablePos, 44 /*Mimicry*/, fb.protocol._internal.raw.MimicryVerify.Verify, false)
-      && verifier.VerifyField(tablePos, 46 /*Hp*/, 4 /*uint*/, 4, false)
-      && verifier.VerifyField(tablePos, 48 /*BaseHp*/, 4 /*uint*/, 4, false)
-      && verifier.VerifyField(tablePos, 50 /*AdditionalHp*/, 4 /*uint*/, 4, false)
-      && verifier.VerifyField(tablePos, 52 /*Mp*/, 4 /*uint*/, 4, false)
-      && verifier.VerifyField(tablePos, 54 /*BaseMp*/, 4 /*uint*/, 4, false)
-      && verifier.VerifyField(tablePos, 56 /*AdditionalMp*/, 4 /*uint*/, 4, false)
+      && verifier.VerifyField(tablePos, 46 /*Hp*/, 8 /*ulong*/, 8, false)
+      && verifier.VerifyField(tablePos, 48 /*BaseHp*/, 8 /*ulong*/, 8, false)
+      && verifier.VerifyField(tablePos, 50 /*AdditionalHp*/, 8 /*ulong*/, 8, false)
+      && verifier.VerifyField(tablePos, 52 /*Mp*/, 8 /*ulong*/, 8, false)
+      && verifier.VerifyField(tablePos, 54 /*BaseMp*/, 8 /*ulong*/, 8, false)
+      && verifier.VerifyField(tablePos, 56 /*AdditionalMp*/, 8 /*ulong*/, 8, false)
       && verifier.VerifyTable(tablePos, 58 /*WeaponColor*/, nullable.nullable_ubyteVerify.Verify, false)
       && verifier.VerifyTable(tablePos, 60 /*HelmetColor*/, nullable.nullable_ubyteVerify.Verify, false)
       && verifier.VerifyTable(tablePos, 62 /*ArmorColor*/, nullable.nullable_ubyteVerify.Verify, false)

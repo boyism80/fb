@@ -1,3 +1,4 @@
+#include <limits>
 #include <fb/game/character.h>
 #include <fb/game/server.h>
 #include <fb/game/item.h>
@@ -479,7 +480,7 @@ async::task<items::item_ptr> items::retrieve(const fb::model::item& item, uint16
     co_return nullptr;
 }
 
-uint32_t items::deposited() const
+uint64_t items::deposited() const
 {
     auto owner = this->_owner.lock();
     if (owner == nullptr)
@@ -490,7 +491,7 @@ uint32_t items::deposited() const
     return this->_deposited;
 }
 
-void items::deposited(uint32_t value)
+void items::deposited(uint64_t value)
 {
     auto owner = this->_owner.lock();
     if (owner == nullptr)
@@ -501,7 +502,7 @@ void items::deposited(uint32_t value)
     this->_deposited = value;
 }
 
-uint32_t items::deposit(uint32_t value)
+uint64_t items::deposit(uint64_t value)
 {
     auto owner = this->_owner.lock();
     if (owner == nullptr)
@@ -509,9 +510,9 @@ uint32_t items::deposit(uint32_t value)
 
     owner->assert_thread();
 
-    uint32_t capacity         = 0xFFFFFFFF - this->_deposited;
+    uint64_t capacity         = std::numeric_limits<uint64_t>::max() - this->_deposited;
     uint32_t lack             = 0;
-    uint32_t deposited_amount = 0;
+    uint64_t deposited_amount = 0;
     if (value > capacity)
     {
         deposited_amount = capacity;
@@ -538,7 +539,7 @@ uint32_t items::deposit(uint32_t value)
     return lack;
 }
 
-uint32_t items::withdraw(uint32_t value)
+uint64_t items::withdraw(uint64_t value)
 {
     auto owner = this->_owner.lock();
     if (owner == nullptr)
@@ -547,7 +548,7 @@ uint32_t items::withdraw(uint32_t value)
     owner->assert_thread();
 
     uint32_t lack             = 0;
-    uint32_t withdrawn_amount = 0;
+    uint64_t withdrawn_amount = 0;
     if (this->_deposited < value)
     {
         withdrawn_amount = this->_deposited;
@@ -1286,13 +1287,13 @@ bool items::swap(uint8_t src, uint8_t dst)
     return true;
 }
 
-bool items::is_rewardable(const std::unordered_map<uint32_t, uint16_t>& items, uint32_t money) const
+bool items::is_rewardable(const std::unordered_map<uint32_t, uint16_t>& items, uint64_t money) const
 {
     auto owner = this->_owner.lock();
     if (owner == nullptr)
         return false;
 
-    auto money_cap = 0xFFFFFFFF - owner->money();
+    auto money_cap = std::numeric_limits<uint64_t>::max() - owner->money();
     if (money_cap < money)
         return false;
 
@@ -1332,7 +1333,7 @@ bool items::is_rewardable(const std::unordered_map<uint32_t, uint16_t>& items, u
 bool items::is_rewardable(const std::vector<fb::model::dsl>& items) const
 {
     auto buffer = std::unordered_map<uint32_t, uint16_t>{};
-    auto money  = 0;
+    auto money  = uint64_t{0};
     for (auto& item : items)
     {
         switch (item.header)
@@ -1357,9 +1358,9 @@ bool items::is_rewardable(const std::vector<fb::model::dsl>& items) const
 }
 
 async::task<exchange_result> items::exchange(const std::unordered_map<uint32_t, uint16_t>& cost_items,
-                                             uint32_t                                      cost_money,
+                                             uint64_t                                      cost_money,
                                              const std::unordered_map<uint32_t, uint16_t>& reward_items,
-                                             uint32_t                                      reward_money)
+                                             uint64_t                                      reward_money)
 {
     auto owner = this->_owner.lock();
     if (owner == nullptr)
@@ -1416,8 +1417,8 @@ async::task<exchange_result> items::exchange(const std::unordered_map<uint32_t, 
         }
     }
 
-    uint32_t money_after         = owner->money() - cost_money;
-    uint32_t effective_money_cap = 0xFFFFFFFF - money_after;
+    uint64_t money_after         = owner->money() - cost_money;
+    uint64_t effective_money_cap = std::numeric_limits<uint64_t>::max() - money_after;
     if (effective_money_cap < reward_money)
         co_return exchange_result::lack_capacity;
 

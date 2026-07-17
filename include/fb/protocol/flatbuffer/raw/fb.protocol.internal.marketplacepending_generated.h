@@ -55,8 +55,8 @@ struct MarketplacePending FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table
   uint16_t expected_purchase_count() const {
     return GetField<uint16_t>(VT_EXPECTED_PURCHASE_COUNT, 0);
   }
-  uint32_t expected_total_price() const {
-    return GetField<uint32_t>(VT_EXPECTED_TOTAL_PRICE, 0);
+  uint64_t expected_total_price() const {
+    return GetField<uint64_t>(VT_EXPECTED_TOTAL_PRICE, 0);
   }
   uint32_t character_id() const {
     return GetField<uint32_t>(VT_CHARACTER_ID, 0);
@@ -74,7 +74,7 @@ struct MarketplacePending FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table
            VerifyOffset(verifier, VT_ATTACHMENTS) &&
            verifier.VerifyString(attachments()) &&
            VerifyField<uint16_t>(verifier, VT_EXPECTED_PURCHASE_COUNT, 2) &&
-           VerifyField<uint32_t>(verifier, VT_EXPECTED_TOTAL_PRICE, 4) &&
+           VerifyField<uint64_t>(verifier, VT_EXPECTED_TOTAL_PRICE, 8) &&
            VerifyField<uint32_t>(verifier, VT_CHARACTER_ID, 4) &&
            verifier.EndTable();
   }
@@ -105,8 +105,8 @@ struct MarketplacePendingBuilder {
   void add_expected_purchase_count(uint16_t expected_purchase_count) {
     fbb_.AddElement<uint16_t>(MarketplacePending::VT_EXPECTED_PURCHASE_COUNT, expected_purchase_count, 0);
   }
-  void add_expected_total_price(uint32_t expected_total_price) {
-    fbb_.AddElement<uint32_t>(MarketplacePending::VT_EXPECTED_TOTAL_PRICE, expected_total_price, 0);
+  void add_expected_total_price(uint64_t expected_total_price) {
+    fbb_.AddElement<uint64_t>(MarketplacePending::VT_EXPECTED_TOTAL_PRICE, expected_total_price, 0);
   }
   void add_character_id(uint32_t character_id) {
     fbb_.AddElement<uint32_t>(MarketplacePending::VT_CHARACTER_ID, character_id, 0);
@@ -131,11 +131,11 @@ inline ::flatbuffers::Offset<MarketplacePending> CreateMarketplacePending(
     ::flatbuffers::Offset<::flatbuffers::String> listing_id = 0,
     ::flatbuffers::Offset<::flatbuffers::String> attachments = 0,
     uint16_t expected_purchase_count = 0,
-    uint32_t expected_total_price = 0,
+    uint64_t expected_total_price = 0,
     uint32_t character_id = 0) {
   MarketplacePendingBuilder builder_(_fbb);
-  builder_.add_character_id(character_id);
   builder_.add_expected_total_price(expected_total_price);
+  builder_.add_character_id(character_id);
   builder_.add_attachments(attachments);
   builder_.add_listing_id(listing_id);
   builder_.add_purchase_id(purchase_id);
@@ -155,7 +155,7 @@ inline ::flatbuffers::Offset<MarketplacePending> CreateMarketplacePendingDirect(
     const char *listing_id = nullptr,
     const char *attachments = nullptr,
     uint16_t expected_purchase_count = 0,
-    uint32_t expected_total_price = 0,
+    uint64_t expected_total_price = 0,
     uint32_t character_id = 0) {
   auto pending_key__ = pending_key ? _fbb.CreateString(pending_key) : 0;
   auto purchase_id__ = purchase_id ? _fbb.CreateString(purchase_id) : 0;

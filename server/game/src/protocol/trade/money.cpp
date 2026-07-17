@@ -1,10 +1,11 @@
 #include <fb/game/protocol/trade/money.h>
+#include <fb/game/client_amount.h>
 
 namespace fb::protocol::game::response {
 
 #ifndef BOT
-trade_money::trade_money(uint32_t money, bool mine) :
-    money(money),
+trade_money::trade_money(uint64_t money, bool mine) :
+    money(fb::game::encode_client_amount(money)),
     mine(mine)
 { }
 #endif

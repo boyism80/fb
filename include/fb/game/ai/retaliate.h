@@ -1,11 +1,11 @@
-#ifndef FB_GAME_AI_COUNTER_H_
-#define FB_GAME_AI_COUNTER_H_
+#ifndef FB_GAME_AI_RETALIATE_H_
+#define FB_GAME_AI_RETALIATE_H_
 
 #include <fb/game/ai.h>
 
 namespace fb::game {
 
-class counter_ai : public ai
+class retaliate_ai : public ai
 {
 private:
     using super    = ai;
@@ -17,6 +17,7 @@ public:
     MOB_ATTACK_TYPE get_type() const override final;
     // clang-format on
 };
+
 } // namespace fb::game
 
-#endif // !FB_GAME_AI_COUNTER_H_
+#endif // !FB_GAME_AI_RETALIATE_H_

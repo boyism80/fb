@@ -29,7 +29,7 @@ private:
     character_weak_ptr                   _you;
     std::unordered_map<uint8_t, uint8_t> _items;
     uint8_t                              _selected = 0xFF;
-    uint32_t                             _money    = 0;
+    uint64_t                             _money    = 0;
     bool                                 _locked   = false;
 
 public:
@@ -58,8 +58,8 @@ public:
     bool                            begin(character_ptr you);
     bool                            trading() const;
     bool                            up_item(uint8_t index);
-    bool                            up_money(uint32_t money);
-    uint32_t                        money() const;
+    bool                            up_money(uint64_t money);
+    uint64_t                        money() const;
     bool                            count(uint16_t count);
     bool                            cancel();
     [[nodiscard]] async::task<bool> lock();
@@ -84,7 +84,7 @@ struct trade::listener_t
     virtual void on_trade_begin(character& me, character& you)                                           = 0;
     virtual void on_trade_bundle(character& me)                                                          = 0;
     virtual void on_trade_item(character& me, character& you, uint8_t index, const fb::game::item& item) = 0;
-    virtual void on_trade_money(character& me, character& you, uint32_t money)                           = 0;
+    virtual void on_trade_money(character& me, character& you, uint64_t money)                           = 0;
     virtual void on_trade_cancel(character& me, character& you)                                          = 0;
     virtual void on_trade_lock(character& me, character& you)                                            = 0;
     virtual void on_trade_failed(character& me, character& you)                                          = 0;

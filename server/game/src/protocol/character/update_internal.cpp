@@ -1,4 +1,5 @@
 #include <fb/game/protocol/character/update_internal.h>
+#include <fb/game/client_amount.h>
 
 namespace fb::protocol::game::response {
 
@@ -16,14 +17,17 @@ void update_internal::serialize(fb::stream_writer<big_endian>& writer) const
     writer.write<uint8_t>(opcode);
     writer.write<uint8_t>(static_cast<uint8_t>(this->level));
 
+    auto [encoded_hp, encoded_maxhp] = fb::game::encode_client_pool(this->ch.stat.hp(), this->ch.stat.maxhp());
+    auto [encoded_mp, encoded_maxmp] = fb::game::encode_client_pool(this->ch.stat.mp(), this->ch.stat.maxmp());
+
     if (ENUM_IN(this->level, UPDATE_STATE_LEVEL::BASED))
     {
         writer.write<uint8_t>(static_cast<uint8_t>(this->ch.nation()));   // nation
         writer.write<uint8_t>(static_cast<uint8_t>(this->ch.creature())); // creature
         writer.write<uint8_t>(0x00);                                      // Unknown (clan?)
         writer.write<uint8_t>(this->ch.level());                          // level
-        writer.write<uint32_t>(this->ch.stat.maxhp());                    // base hp
-        writer.write<uint32_t>(this->ch.stat.maxmp());                    // base mp
+        writer.write<uint32_t>(encoded_maxhp);                           // base hp
+        writer.write<uint32_t>(encoded_maxmp);                           // base mp
         writer.write<uint8_t>(this->ch.stat.str());
         writer.write<uint8_t>(this->ch.stat.intelligence());
         writer.write<uint8_t>(0x03);
@@ -36,14 +40,14 @@ void update_internal::serialize(fb::stream_writer<big_endian>& writer) const
 
     if (ENUM_IN(this->level, UPDATE_STATE_LEVEL::HP_MP))
     {
-        writer.write<uint32_t>(this->ch.stat.hp()); // current hp
-        writer.write<uint32_t>(this->ch.stat.mp()); // current mp
+        writer.write<uint32_t>(encoded_hp); // current hp
+        writer.write<uint32_t>(encoded_mp); // current mp
     }
 
     if (ENUM_IN(this->level, UPDATE_STATE_LEVEL::EXP_MONEY))
     {
-        writer.write<uint32_t>(this->ch.exp());                            // exp
-        writer.write<uint32_t>(this->ch.money() - this->ch.trade.money()); // money
+        writer.write<uint32_t>(fb::game::encode_client_amount(this->ch.exp()));
+        writer.write<uint32_t>(fb::game::encode_client_amount(this->ch.money() - this->ch.trade.money()));
     }
 
     if (ENUM_IN(this->level, UPDATE_STATE_LEVEL::CROWD_CONTROL))

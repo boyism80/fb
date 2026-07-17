@@ -63,8 +63,8 @@ table InitCharacter {
   uid: uint;
   name: string;
   pw: string;
-  hp: uint;
-  mp: uint;
+  hp: ulong;
+  mp: ulong;
   map: ushort;
   x: ushort;
   y: ushort;

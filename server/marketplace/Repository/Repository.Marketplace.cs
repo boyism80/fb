@@ -93,7 +93,7 @@ namespace Marketplace.Reepository
             ushort remainingCount,
             uint? itemDurability,
             string itemCustomName,
-            uint price,
+            ulong price,
             DateTime expireDate)
         {
             await using var conn = _dbContext.GetUnifiedConnection();
@@ -199,8 +199,8 @@ namespace Marketplace.Reepository
 
         public async Task<List<MarketplaceListing>> SearchListingsAsync(
             List<uint> itemModelIds,
-            uint? minPrice,
-            uint? maxPrice,
+            ulong? minPrice,
+            ulong? maxPrice,
             uint? sellerId,
             string sortBy,
             int page,
@@ -267,8 +267,8 @@ namespace Marketplace.Reepository
 
         public async Task<int> CountListingsAsync(
             List<uint> itemModelIds,
-            uint? minPrice,
-            uint? maxPrice,
+            ulong? minPrice,
+            ulong? maxPrice,
             uint? sellerId,
             System.Data.IDbTransaction transaction = null)
         {

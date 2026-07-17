@@ -12,7 +12,7 @@ public class MarketplaceListing : BaseModel
     public ushort RemainingCount { get; set; }
     public uint? ItemDurability { get; set; }
     public string ItemCustomName { get; set; }
-    public uint Price { get; set; } // Per unit price
+    public ulong Price { get; set; } // Per unit price
     public ListingState Status { get; set; }
     public DateTime ExpireDate { get; set; }
     public new DateTime CreatedDate { get; set; }

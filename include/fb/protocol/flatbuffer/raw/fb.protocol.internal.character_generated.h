@@ -123,35 +123,35 @@ struct Character FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
   uint8_t level() const {
     return GetField<uint8_t>(VT_LEVEL, 0);
   }
-  uint32_t exp() const {
-    return GetField<uint32_t>(VT_EXP, 0);
+  uint64_t exp() const {
+    return GetField<uint64_t>(VT_EXP, 0);
   }
-  uint32_t money() const {
-    return GetField<uint32_t>(VT_MONEY, 0);
+  uint64_t money() const {
+    return GetField<uint64_t>(VT_MONEY, 0);
   }
-  uint32_t deposited_money() const {
-    return GetField<uint32_t>(VT_DEPOSITED_MONEY, 0);
+  uint64_t deposited_money() const {
+    return GetField<uint64_t>(VT_DEPOSITED_MONEY, 0);
   }
   const fb::protocol::internal::raw::Mimicry *mimicry() const {
     return GetPointer<const fb::protocol::internal::raw::Mimicry *>(VT_MIMICRY);
   }
-  uint32_t hp() const {
-    return GetField<uint32_t>(VT_HP, 0);
+  uint64_t hp() const {
+    return GetField<uint64_t>(VT_HP, 0);
   }
-  uint32_t base_hp() const {
-    return GetField<uint32_t>(VT_BASE_HP, 0);
+  uint64_t base_hp() const {
+    return GetField<uint64_t>(VT_BASE_HP, 0);
   }
-  uint32_t additional_hp() const {
-    return GetField<uint32_t>(VT_ADDITIONAL_HP, 0);
+  uint64_t additional_hp() const {
+    return GetField<uint64_t>(VT_ADDITIONAL_HP, 0);
   }
-  uint32_t mp() const {
-    return GetField<uint32_t>(VT_MP, 0);
+  uint64_t mp() const {
+    return GetField<uint64_t>(VT_MP, 0);
   }
-  uint32_t base_mp() const {
-    return GetField<uint32_t>(VT_BASE_MP, 0);
+  uint64_t base_mp() const {
+    return GetField<uint64_t>(VT_BASE_MP, 0);
   }
-  uint32_t additional_mp() const {
-    return GetField<uint32_t>(VT_ADDITIONAL_MP, 0);
+  uint64_t additional_mp() const {
+    return GetField<uint64_t>(VT_ADDITIONAL_MP, 0);
   }
   const nullable::nullable_ubyte *weapon_color() const {
     return GetPointer<const nullable::nullable_ubyte *>(VT_WEAPON_COLOR);
@@ -218,17 +218,17 @@ struct Character FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
            VerifyField<uint8_t>(verifier, VT_CLASS_TYPE, 1) &&
            VerifyField<uint8_t>(verifier, VT_PROMOTION, 1) &&
            VerifyField<uint8_t>(verifier, VT_LEVEL, 1) &&
-           VerifyField<uint32_t>(verifier, VT_EXP, 4) &&
-           VerifyField<uint32_t>(verifier, VT_MONEY, 4) &&
-           VerifyField<uint32_t>(verifier, VT_DEPOSITED_MONEY, 4) &&
+           VerifyField<uint64_t>(verifier, VT_EXP, 8) &&
+           VerifyField<uint64_t>(verifier, VT_MONEY, 8) &&
+           VerifyField<uint64_t>(verifier, VT_DEPOSITED_MONEY, 8) &&
            VerifyOffset(verifier, VT_MIMICRY) &&
            verifier.VerifyTable(mimicry()) &&
-           VerifyField<uint32_t>(verifier, VT_HP, 4) &&
-           VerifyField<uint32_t>(verifier, VT_BASE_HP, 4) &&
-           VerifyField<uint32_t>(verifier, VT_ADDITIONAL_HP, 4) &&
-           VerifyField<uint32_t>(verifier, VT_MP, 4) &&
-           VerifyField<uint32_t>(verifier, VT_BASE_MP, 4) &&
-           VerifyField<uint32_t>(verifier, VT_ADDITIONAL_MP, 4) &&
+           VerifyField<uint64_t>(verifier, VT_HP, 8) &&
+           VerifyField<uint64_t>(verifier, VT_BASE_HP, 8) &&
+           VerifyField<uint64_t>(verifier, VT_ADDITIONAL_HP, 8) &&
+           VerifyField<uint64_t>(verifier, VT_MP, 8) &&
+           VerifyField<uint64_t>(verifier, VT_BASE_MP, 8) &&
+           VerifyField<uint64_t>(verifier, VT_ADDITIONAL_MP, 8) &&
            VerifyOffset(verifier, VT_WEAPON_COLOR) &&
            verifier.VerifyTable(weapon_color()) &&
            VerifyOffset(verifier, VT_HELMET_COLOR) &&
@@ -316,35 +316,35 @@ struct CharacterBuilder {
   void add_level(uint8_t level) {
     fbb_.AddElement<uint8_t>(Character::VT_LEVEL, level, 0);
   }
-  void add_exp(uint32_t exp) {
-    fbb_.AddElement<uint32_t>(Character::VT_EXP, exp, 0);
+  void add_exp(uint64_t exp) {
+    fbb_.AddElement<uint64_t>(Character::VT_EXP, exp, 0);
   }
-  void add_money(uint32_t money) {
-    fbb_.AddElement<uint32_t>(Character::VT_MONEY, money, 0);
+  void add_money(uint64_t money) {
+    fbb_.AddElement<uint64_t>(Character::VT_MONEY, money, 0);
   }
-  void add_deposited_money(uint32_t deposited_money) {
-    fbb_.AddElement<uint32_t>(Character::VT_DEPOSITED_MONEY, deposited_money, 0);
+  void add_deposited_money(uint64_t deposited_money) {
+    fbb_.AddElement<uint64_t>(Character::VT_DEPOSITED_MONEY, deposited_money, 0);
   }
   void add_mimicry(::flatbuffers::Offset<fb::protocol::internal::raw::Mimicry> mimicry) {
     fbb_.AddOffset(Character::VT_MIMICRY, mimicry);
   }
-  void add_hp(uint32_t hp) {
-    fbb_.AddElement<uint32_t>(Character::VT_HP, hp, 0);
+  void add_hp(uint64_t hp) {
+    fbb_.AddElement<uint64_t>(Character::VT_HP, hp, 0);
   }
-  void add_base_hp(uint32_t base_hp) {
-    fbb_.AddElement<uint32_t>(Character::VT_BASE_HP, base_hp, 0);
+  void add_base_hp(uint64_t base_hp) {
+    fbb_.AddElement<uint64_t>(Character::VT_BASE_HP, base_hp, 0);
   }
-  void add_additional_hp(uint32_t additional_hp) {
-    fbb_.AddElement<uint32_t>(Character::VT_ADDITIONAL_HP, additional_hp, 0);
+  void add_additional_hp(uint64_t additional_hp) {
+    fbb_.AddElement<uint64_t>(Character::VT_ADDITIONAL_HP, additional_hp, 0);
   }
-  void add_mp(uint32_t mp) {
-    fbb_.AddElement<uint32_t>(Character::VT_MP, mp, 0);
+  void add_mp(uint64_t mp) {
+    fbb_.AddElement<uint64_t>(Character::VT_MP, mp, 0);
   }
-  void add_base_mp(uint32_t base_mp) {
-    fbb_.AddElement<uint32_t>(Character::VT_BASE_MP, base_mp, 0);
+  void add_base_mp(uint64_t base_mp) {
+    fbb_.AddElement<uint64_t>(Character::VT_BASE_MP, base_mp, 0);
   }
-  void add_additional_mp(uint32_t additional_mp) {
-    fbb_.AddElement<uint32_t>(Character::VT_ADDITIONAL_MP, additional_mp, 0);
+  void add_additional_mp(uint64_t additional_mp) {
+    fbb_.AddElement<uint64_t>(Character::VT_ADDITIONAL_MP, additional_mp, 0);
   }
   void add_weapon_color(::flatbuffers::Offset<nullable::nullable_ubyte> weapon_color) {
     fbb_.AddOffset(Character::VT_WEAPON_COLOR, weapon_color);
@@ -418,16 +418,16 @@ inline ::flatbuffers::Offset<Character> CreateCharacter(
     uint8_t class_type = 0,
     uint8_t promotion = 0,
     uint8_t level = 0,
-    uint32_t exp = 0,
-    uint32_t money = 0,
-    uint32_t deposited_money = 0,
+    uint64_t exp = 0,
+    uint64_t money = 0,
+    uint64_t deposited_money = 0,
     ::flatbuffers::Offset<fb::protocol::internal::raw::Mimicry> mimicry = 0,
-    uint32_t hp = 0,
-    uint32_t base_hp = 0,
-    uint32_t additional_hp = 0,
-    uint32_t mp = 0,
-    uint32_t base_mp = 0,
-    uint32_t additional_mp = 0,
+    uint64_t hp = 0,
+    uint64_t base_hp = 0,
+    uint64_t additional_hp = 0,
+    uint64_t mp = 0,
+    uint64_t base_mp = 0,
+    uint64_t additional_mp = 0,
     ::flatbuffers::Offset<nullable::nullable_ubyte> weapon_color = 0,
     ::flatbuffers::Offset<nullable::nullable_ubyte> helmet_color = 0,
     ::flatbuffers::Offset<nullable::nullable_ubyte> armor_color = 0,
@@ -443,6 +443,15 @@ inline ::flatbuffers::Offset<Character> CreateCharacter(
     ::flatbuffers::Offset<::flatbuffers::String> first_login_date = 0,
     bool super_hide = false) {
   CharacterBuilder builder_(_fbb);
+  builder_.add_additional_mp(additional_mp);
+  builder_.add_base_mp(base_mp);
+  builder_.add_mp(mp);
+  builder_.add_additional_hp(additional_hp);
+  builder_.add_base_hp(base_hp);
+  builder_.add_hp(hp);
+  builder_.add_deposited_money(deposited_money);
+  builder_.add_money(money);
+  builder_.add_exp(exp);
   builder_.add_first_login_date(first_login_date);
   builder_.add_updated_date(updated_date);
   builder_.add_created_date(created_date);
@@ -456,16 +465,7 @@ inline ::flatbuffers::Offset<Character> CreateCharacter(
   builder_.add_armor_color(armor_color);
   builder_.add_helmet_color(helmet_color);
   builder_.add_weapon_color(weapon_color);
-  builder_.add_additional_mp(additional_mp);
-  builder_.add_base_mp(base_mp);
-  builder_.add_mp(mp);
-  builder_.add_additional_hp(additional_hp);
-  builder_.add_base_hp(base_hp);
-  builder_.add_hp(hp);
   builder_.add_mimicry(mimicry);
-  builder_.add_deposited_money(deposited_money);
-  builder_.add_money(money);
-  builder_.add_exp(exp);
   builder_.add_position(position);
   builder_.add_map(map);
   builder_.add_birth(birth);
@@ -506,16 +506,16 @@ inline ::flatbuffers::Offset<Character> CreateCharacterDirect(
     uint8_t class_type = 0,
     uint8_t promotion = 0,
     uint8_t level = 0,
-    uint32_t exp = 0,
-    uint32_t money = 0,
-    uint32_t deposited_money = 0,
+    uint64_t exp = 0,
+    uint64_t money = 0,
+    uint64_t deposited_money = 0,
     ::flatbuffers::Offset<fb::protocol::internal::raw::Mimicry> mimicry = 0,
-    uint32_t hp = 0,
-    uint32_t base_hp = 0,
-    uint32_t additional_hp = 0,
-    uint32_t mp = 0,
-    uint32_t base_mp = 0,
-    uint32_t additional_mp = 0,
+    uint64_t hp = 0,
+    uint64_t base_hp = 0,
+    uint64_t additional_hp = 0,
+    uint64_t mp = 0,
+    uint64_t base_mp = 0,
+    uint64_t additional_mp = 0,
     ::flatbuffers::Offset<nullable::nullable_ubyte> weapon_color = 0,
     ::flatbuffers::Offset<nullable::nullable_ubyte> helmet_color = 0,
     ::flatbuffers::Offset<nullable::nullable_ubyte> armor_color = 0,

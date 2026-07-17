@@ -48,11 +48,11 @@ struct InitCharacter FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
   const ::flatbuffers::String *pw() const {
     return GetPointer<const ::flatbuffers::String *>(VT_PW);
   }
-  uint32_t hp() const {
-    return GetField<uint32_t>(VT_HP, 0);
+  uint64_t hp() const {
+    return GetField<uint64_t>(VT_HP, 0);
   }
-  uint32_t mp() const {
-    return GetField<uint32_t>(VT_MP, 0);
+  uint64_t mp() const {
+    return GetField<uint64_t>(VT_MP, 0);
   }
   uint16_t map() const {
     return GetField<uint16_t>(VT_MAP, 0);
@@ -74,8 +74,8 @@ struct InitCharacter FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
            verifier.VerifyString(name()) &&
            VerifyOffset(verifier, VT_PW) &&
            verifier.VerifyString(pw()) &&
-           VerifyField<uint32_t>(verifier, VT_HP, 4) &&
-           VerifyField<uint32_t>(verifier, VT_MP, 4) &&
+           VerifyField<uint64_t>(verifier, VT_HP, 8) &&
+           VerifyField<uint64_t>(verifier, VT_MP, 8) &&
            VerifyField<uint16_t>(verifier, VT_MAP, 2) &&
            VerifyField<uint16_t>(verifier, VT_X, 2) &&
            VerifyField<uint16_t>(verifier, VT_Y, 2) &&
@@ -100,11 +100,11 @@ struct InitCharacterBuilder {
   void add_pw(::flatbuffers::Offset<::flatbuffers::String> pw) {
     fbb_.AddOffset(InitCharacter::VT_PW, pw);
   }
-  void add_hp(uint32_t hp) {
-    fbb_.AddElement<uint32_t>(InitCharacter::VT_HP, hp, 0);
+  void add_hp(uint64_t hp) {
+    fbb_.AddElement<uint64_t>(InitCharacter::VT_HP, hp, 0);
   }
-  void add_mp(uint32_t mp) {
-    fbb_.AddElement<uint32_t>(InitCharacter::VT_MP, mp, 0);
+  void add_mp(uint64_t mp) {
+    fbb_.AddElement<uint64_t>(InitCharacter::VT_MP, mp, 0);
   }
   void add_map(uint16_t map) {
     fbb_.AddElement<uint16_t>(InitCharacter::VT_MAP, map, 0);
@@ -135,8 +135,8 @@ inline ::flatbuffers::Offset<InitCharacter> CreateInitCharacter(
     uint32_t uid = 0,
     ::flatbuffers::Offset<::flatbuffers::String> name = 0,
     ::flatbuffers::Offset<::flatbuffers::String> pw = 0,
-    uint32_t hp = 0,
-    uint32_t mp = 0,
+    uint64_t hp = 0,
+    uint64_t mp = 0,
     uint16_t map = 0,
     uint16_t x = 0,
     uint16_t y = 0,
@@ -161,8 +161,8 @@ inline ::flatbuffers::Offset<InitCharacter> CreateInitCharacterDirect(
     uint32_t uid = 0,
     const char *name = nullptr,
     const char *pw = nullptr,
-    uint32_t hp = 0,
-    uint32_t mp = 0,
+    uint64_t hp = 0,
+    uint64_t mp = 0,
     uint16_t map = 0,
     uint16_t x = 0,
     uint16_t y = 0,

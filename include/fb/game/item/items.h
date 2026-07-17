@@ -49,7 +49,7 @@ private:
     ring_ptr                           _rings[2]       = {nullptr, nullptr};
     auxiliary_ptr                      _auxiliaries[2] = {nullptr, nullptr};
     std::vector<item_ptr>              _stored;
-    uint32_t                           _deposited = 0;
+    uint64_t                           _deposited = 0;
 
 public:
     // clang-format off
@@ -72,10 +72,10 @@ public:
     [[nodiscard]] async::task<item_ptr>             retrieve(uint8_t index, uint16_t count);
     [[nodiscard]] async::task<item_ptr>             retrieve(std::string_view name, uint16_t count);
     [[nodiscard]] async::task<item_ptr>             retrieve(const fb::model::item& item, uint16_t count);
-    uint32_t                                        deposited() const;
-    void                                            deposited(uint32_t value);
-    uint32_t                                        deposit(uint32_t value);
-    uint32_t                                        withdraw(uint32_t value);
+    uint64_t                                        deposited() const;
+    void                                            deposited(uint64_t value);
+    uint64_t                                        deposit(uint64_t value);
+    uint64_t                                        withdraw(uint64_t value);
     [[nodiscard]] async::task<item_ptr>             active(uint8_t index);
     [[nodiscard]] async::task<uint8_t>              inactive(EQUIPMENT_PARTS parts);
     equipment_ptr                                   equipment_off(EQUIPMENT_PARTS parts);
@@ -110,9 +110,9 @@ public:
     item_ptr                                        remove(uint8_t index, uint16_t count = 1, ITEM_DELETE_TYPE attr = ITEM_DELETE_TYPE::NONE, bool detach = true);
     item_ptr                                        remove(item_ptr item, uint16_t count = 1, ITEM_DELETE_TYPE attr = ITEM_DELETE_TYPE::NONE, bool detach = true);
     [[nodiscard]] async::task<void>                 remove_expired();
-    bool                                            is_rewardable(const std::unordered_map<uint32_t, uint16_t>& items, uint32_t money = 0) const;
+    bool                                            is_rewardable(const std::unordered_map<uint32_t, uint16_t>& items, uint64_t money = 0) const;
     bool                                            is_rewardable(const std::vector<fb::model::dsl>& items) const;
-    [[nodiscard]] async::task<exchange_result>      exchange(const std::unordered_map<uint32_t, uint16_t>& cost_items, uint32_t cost_money, const std::unordered_map<uint32_t, uint16_t>& reward_items, uint32_t reward_money);
+    [[nodiscard]] async::task<exchange_result>      exchange(const std::unordered_map<uint32_t, uint16_t>& cost_items, uint64_t cost_money, const std::unordered_map<uint32_t, uint16_t>& reward_items, uint64_t reward_money);
     // clang-format on
 };
 

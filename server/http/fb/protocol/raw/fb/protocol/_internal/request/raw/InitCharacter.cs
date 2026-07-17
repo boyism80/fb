@@ -36,8 +36,8 @@ public struct InitCharacter : IFlatbufferObject
   public ArraySegment<byte>? GetPwBytes() { return __p.__vector_as_arraysegment(10); }
 #endif
   public byte[] GetPwArray() { return __p.__vector_as_array<byte>(10); }
-  public uint Hp { get { int o = __p.__offset(12); return o != 0 ? __p.bb.GetUint(o + __p.bb_pos) : (uint)0; } }
-  public uint Mp { get { int o = __p.__offset(14); return o != 0 ? __p.bb.GetUint(o + __p.bb_pos) : (uint)0; } }
+  public ulong Hp { get { int o = __p.__offset(12); return o != 0 ? __p.bb.GetUlong(o + __p.bb_pos) : (ulong)0; } }
+  public ulong Mp { get { int o = __p.__offset(14); return o != 0 ? __p.bb.GetUlong(o + __p.bb_pos) : (ulong)0; } }
   public ushort Map { get { int o = __p.__offset(16); return o != 0 ? __p.bb.GetUshort(o + __p.bb_pos) : (ushort)0; } }
   public ushort X { get { int o = __p.__offset(18); return o != 0 ? __p.bb.GetUshort(o + __p.bb_pos) : (ushort)0; } }
   public ushort Y { get { int o = __p.__offset(20); return o != 0 ? __p.bb.GetUshort(o + __p.bb_pos) : (ushort)0; } }
@@ -48,8 +48,8 @@ public struct InitCharacter : IFlatbufferObject
       uint uid = 0,
       StringOffset nameOffset = default(StringOffset),
       StringOffset pwOffset = default(StringOffset),
-      uint hp = 0,
-      uint mp = 0,
+      ulong hp = 0,
+      ulong mp = 0,
       ushort map = 0,
       ushort x = 0,
       ushort y = 0,
@@ -73,8 +73,8 @@ public struct InitCharacter : IFlatbufferObject
   public static void AddUid(FlatBufferBuilder builder, uint uid) { builder.AddUint(1, uid, 0); }
   public static void AddName(FlatBufferBuilder builder, StringOffset nameOffset) { builder.AddOffset(2, nameOffset.Value, 0); }
   public static void AddPw(FlatBufferBuilder builder, StringOffset pwOffset) { builder.AddOffset(3, pwOffset.Value, 0); }
-  public static void AddHp(FlatBufferBuilder builder, uint hp) { builder.AddUint(4, hp, 0); }
-  public static void AddMp(FlatBufferBuilder builder, uint mp) { builder.AddUint(5, mp, 0); }
+  public static void AddHp(FlatBufferBuilder builder, ulong hp) { builder.AddUlong(4, hp, 0); }
+  public static void AddMp(FlatBufferBuilder builder, ulong mp) { builder.AddUlong(5, mp, 0); }
   public static void AddMap(FlatBufferBuilder builder, ushort map) { builder.AddUshort(6, map, 0); }
   public static void AddX(FlatBufferBuilder builder, ushort x) { builder.AddUshort(7, x, 0); }
   public static void AddY(FlatBufferBuilder builder, ushort y) { builder.AddUshort(8, y, 0); }
@@ -97,8 +97,8 @@ static public class InitCharacterVerify
       && verifier.VerifyField(tablePos, 6 /*Uid*/, 4 /*uint*/, 4, false)
       && verifier.VerifyString(tablePos, 8 /*Name*/, false)
       && verifier.VerifyString(tablePos, 10 /*Pw*/, false)
-      && verifier.VerifyField(tablePos, 12 /*Hp*/, 4 /*uint*/, 4, false)
-      && verifier.VerifyField(tablePos, 14 /*Mp*/, 4 /*uint*/, 4, false)
+      && verifier.VerifyField(tablePos, 12 /*Hp*/, 8 /*ulong*/, 8, false)
+      && verifier.VerifyField(tablePos, 14 /*Mp*/, 8 /*ulong*/, 8, false)
       && verifier.VerifyField(tablePos, 16 /*Map*/, 2 /*ushort*/, 2, false)
       && verifier.VerifyField(tablePos, 18 /*X*/, 2 /*ushort*/, 2, false)
       && verifier.VerifyField(tablePos, 20 /*Y*/, 2 /*ushort*/, 2, false)

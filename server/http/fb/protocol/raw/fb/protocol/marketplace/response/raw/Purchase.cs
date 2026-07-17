@@ -22,17 +22,17 @@ public struct Purchase : IFlatbufferObject
 
   public fb.protocol.marketplace.raw.Item? Item { get { int o = __p.__offset(4); return o != 0 ? (fb.protocol.marketplace.raw.Item?)(new fb.protocol.marketplace.raw.Item()).__assign(__p.__indirect(o + __p.bb_pos), __p.bb) : null; } }
   public ushort ActualPurchaseCount { get { int o = __p.__offset(6); return o != 0 ? __p.bb.GetUshort(o + __p.bb_pos) : (ushort)0; } }
-  public uint RefundAmount { get { int o = __p.__offset(8); return o != 0 ? __p.bb.GetUint(o + __p.bb_pos) : (uint)0; } }
+  public ulong RefundAmount { get { int o = __p.__offset(8); return o != 0 ? __p.bb.GetUlong(o + __p.bb_pos) : (ulong)0; } }
   public uint Error { get { int o = __p.__offset(10); return o != 0 ? __p.bb.GetUint(o + __p.bb_pos) : (uint)0; } }
 
   public static Offset<fb.protocol.marketplace.response.raw.Purchase> CreatePurchase(FlatBufferBuilder builder,
       Offset<fb.protocol.marketplace.raw.Item> itemOffset = default(Offset<fb.protocol.marketplace.raw.Item>),
       ushort actual_purchase_count = 0,
-      uint refund_amount = 0,
+      ulong refund_amount = 0,
       uint error = 0) {
     builder.StartTable(4);
-    Purchase.AddError(builder, error);
     Purchase.AddRefundAmount(builder, refund_amount);
+    Purchase.AddError(builder, error);
     Purchase.AddItem(builder, itemOffset);
     Purchase.AddActualPurchaseCount(builder, actual_purchase_count);
     return Purchase.EndPurchase(builder);
@@ -41,7 +41,7 @@ public struct Purchase : IFlatbufferObject
   public static void StartPurchase(FlatBufferBuilder builder) { builder.StartTable(4); }
   public static void AddItem(FlatBufferBuilder builder, Offset<fb.protocol.marketplace.raw.Item> itemOffset) { builder.AddOffset(0, itemOffset.Value, 0); }
   public static void AddActualPurchaseCount(FlatBufferBuilder builder, ushort actualPurchaseCount) { builder.AddUshort(1, actualPurchaseCount, 0); }
-  public static void AddRefundAmount(FlatBufferBuilder builder, uint refundAmount) { builder.AddUint(2, refundAmount, 0); }
+  public static void AddRefundAmount(FlatBufferBuilder builder, ulong refundAmount) { builder.AddUlong(2, refundAmount, 0); }
   public static void AddError(FlatBufferBuilder builder, uint error) { builder.AddUint(3, error, 0); }
   public static Offset<fb.protocol.marketplace.response.raw.Purchase> EndPurchase(FlatBufferBuilder builder) {
     int o = builder.EndTable();
@@ -59,7 +59,7 @@ static public class PurchaseVerify
     return verifier.VerifyTableStart(tablePos)
       && verifier.VerifyTable(tablePos, 4 /*Item*/, fb.protocol.marketplace.raw.ItemVerify.Verify, false)
       && verifier.VerifyField(tablePos, 6 /*ActualPurchaseCount*/, 2 /*ushort*/, 2, false)
-      && verifier.VerifyField(tablePos, 8 /*RefundAmount*/, 4 /*uint*/, 4, false)
+      && verifier.VerifyField(tablePos, 8 /*RefundAmount*/, 8 /*ulong*/, 8, false)
       && verifier.VerifyField(tablePos, 10 /*Error*/, 4 /*uint*/, 4, false)
       && verifier.VerifyTableEnd(tablePos);
   }

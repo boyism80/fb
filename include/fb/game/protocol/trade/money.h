@@ -27,7 +27,7 @@ public:
 
 public:
 #ifndef BOT
-    trade_money(uint32_t money, bool mine);
+    trade_money(uint64_t money, bool mine);
 #else
     trade_money() = default;
 #endif

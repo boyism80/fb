@@ -285,7 +285,7 @@ std::shared_ptr<life> mob::update_target()
         this->_target.reset();
 
         auto& model = this->based<fb::model::mob>();
-        if (model.attack_type == MOB_ATTACK_TYPE::CONTAINMENT)
+        if (model.attack_type == MOB_ATTACK_TYPE::AGGRESSIVE)
             this->_target = this->find_target();
         else
             this->_target.reset();
@@ -400,10 +400,10 @@ bool mob::available() const
 {
     this->assert_thread();
 
-    return this->alive() && this->_hidden == false && this->_soft_dead == false;
+    return this->alive() && this->_hidden == false;
 }
 
-uint32_t mob::normal_attack_damage(MOB_SIZE size) const
+uint64_t mob::normal_attack_damage(MOB_SIZE size) const
 {
     this->assert_thread();
 
@@ -492,24 +492,7 @@ async::task<void> mob::drop_items()
 
     auto owner = this->owner.lock();
     if (owner == nullptr)
-    {
         co_await this->drop_model_items(model, position, oids);
-
-        // Body death: also roll linked parts' drop tables at body position
-        for (auto& part : this->parts())
-        {
-            if (part == nullptr)
-                continue;
-
-            for (auto& item : part->_items)
-            {
-                std::ignore = co_await item->map(map, position, {.notify = false});
-                oids.push_back(item->oid());
-            }
-            part->_items.clear();
-            co_await this->drop_model_items(part->based<fb::model::mob>(), position, oids);
-        }
-    }
 
     if (!oids.empty() && this->map() != nullptr)
         this->map()->bulk_update(oids);
@@ -537,6 +520,10 @@ async::task<void> mob::destroy(DESTROY_TYPE destroy_type)
                 continue;
 
             part->_body.reset();
+            // Parts already in settle (invincible) destroy themselves with their own exp/drop.
+            if (part->invincible())
+                continue;
+
             part->_destroying = true;
             part->kill(destroy_type);
             co_await part->destroy(destroy_type);
@@ -740,22 +727,10 @@ MOB_PARTS_MODE mob::parts_mode() const
     return this->_parts_mode;
 }
 
-bool mob::soft_dead() const
+uint64_t mob::total_exp() const
 {
     this->assert_thread();
-    return this->_soft_dead;
-}
-
-uint32_t mob::total_exp() const
-{
-    this->assert_thread();
-    auto exp = this->based<fb::model::mob>().exp;
-    for (auto& part : this->parts())
-    {
-        if (part != nullptr)
-            exp += part->based<fb::model::mob>().exp;
-    }
-    return exp;
+    return this->based<fb::model::mob>().exp;
 }
 
 void mob::sync_body_hp_from_parts()
@@ -772,19 +747,15 @@ void mob::sync_body_hp_from_parts()
         sum_max += part->stat.maxhp();
     }
 
-    auto base = static_cast<int64_t>(this->stat.base_hp());
-    // buff_hp is int32_t; clamp so maxhp stays within representable range
-    auto desired_max = static_cast<int64_t>(std::min<uint64_t>(sum_max, std::numeric_limits<uint32_t>::max()));
+    auto base        = static_cast<int64_t>(this->stat.base_hp());
+    auto desired_max = static_cast<int64_t>(std::min<uint64_t>(sum_max, static_cast<uint64_t>(std::numeric_limits<int64_t>::max())));
     auto buff        = desired_max - base;
-    buff             = std::clamp(buff,
-                      static_cast<int64_t>(std::numeric_limits<int32_t>::min()),
-                      static_cast<int64_t>(std::numeric_limits<int32_t>::max()));
-    this->stat.buff_hp(static_cast<int32_t>(buff));
+    this->stat.buff_hp(buff);
 
     auto max_hp              = this->stat.maxhp();
-    auto hp                  = static_cast<uint32_t>(std::min<uint64_t>(sum_cur, max_hp));
+    auto hp                  = std::min<uint64_t>(sum_cur, max_hp);
     this->_forwarding_damage = true;
-    this->stat.hp(hp, true);
+    this->stat.hp(hp, false);
     this->_forwarding_damage = false;
 }
 
@@ -804,7 +775,7 @@ void mob::unlink_part(mob& part)
         this->sync_body_hp_from_parts();
 }
 
-void mob::on_part_hp_increased(uint32_t delta)
+void mob::on_part_hp_increased(uint64_t delta)
 {
     this->assert_thread();
     if (delta == 0)
@@ -819,7 +790,7 @@ void mob::on_part_hp_increased(uint32_t delta)
     body->_forwarding_damage = false;
 }
 
-uint32_t mob::damage_as_part(uint32_t                value,
+uint64_t mob::damage_as_part(uint64_t                value,
                              std::shared_ptr<object> from,
                              bool                    critical,
                              float                   rate,
@@ -837,15 +808,9 @@ uint32_t mob::damage_as_part(uint32_t                value,
     {
     case MOB_PARTS_MODE::PARTS:
     {
-        if (this->_soft_dead)
-            return 0;
-
         this->_forwarding_damage = true;
         auto dealt               = this->stat.damage(value, from, critical, rate, physical, fixed, notify);
         this->_forwarding_damage = false;
-
-        if (this->stat.hp() == 0)
-            this->_soft_dead = true;
 
         if (dealt > 0)
         {

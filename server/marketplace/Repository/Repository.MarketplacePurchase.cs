@@ -21,7 +21,7 @@ namespace Marketplace.Reepository
             string listingId,
             uint buyerId,
             ushort purchaseCount,
-            uint purchasePrice,
+            ulong purchasePrice,
             System.Data.IDbTransaction transaction = null)
         {
             var sql = $"""

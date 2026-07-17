@@ -7,7 +7,7 @@ table List {
     character_id: uint;
     listing_id: string;
     item: fb.protocol.marketplace.Item;
-    price: uint;
+    price: ulong;
 }
 
 table Cancel {
@@ -26,8 +26,8 @@ table Purchase {
 
 table Search {
     item_name: string?;
-    min_price: uint?;
-    max_price: uint?;
+    min_price: ulong?;
+    max_price: ulong?;
     seller_id: uint?;
     sort_by: string?;
     page: uint;

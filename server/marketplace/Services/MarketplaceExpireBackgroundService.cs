@@ -164,7 +164,7 @@ namespace Marketplace.Services
         {
             // Calculate registration fee that was paid when listing was created
             var totalPrice = listing.Price * listing.RemainingCount;
-            var registrationFee = (uint)(totalPrice * Fb.Model.ConstValue.Marketplace.ListingFee);
+            var registrationFee = (ulong)(totalPrice * Fb.Model.ConstValue.Marketplace.ListingFee);
 
             // Get item name for message
             var itemName = "unknown item name";

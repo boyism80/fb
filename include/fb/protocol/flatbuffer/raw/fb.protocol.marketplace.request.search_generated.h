@@ -14,6 +14,7 @@ static_assert(FLATBUFFERS_VERSION_MAJOR == 25 &&
              "Non-compatible flatbuffers version included");
 
 #include "nullable_uint_generated.h"
+#include "nullable_ulong_generated.h"
 
 namespace fb {
 namespace protocol {
@@ -37,11 +38,11 @@ struct Search FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
   const ::flatbuffers::String *item_name() const {
     return GetPointer<const ::flatbuffers::String *>(VT_ITEM_NAME);
   }
-  const nullable::nullable_uint *min_price() const {
-    return GetPointer<const nullable::nullable_uint *>(VT_MIN_PRICE);
+  const nullable::nullable_ulong *min_price() const {
+    return GetPointer<const nullable::nullable_ulong *>(VT_MIN_PRICE);
   }
-  const nullable::nullable_uint *max_price() const {
-    return GetPointer<const nullable::nullable_uint *>(VT_MAX_PRICE);
+  const nullable::nullable_ulong *max_price() const {
+    return GetPointer<const nullable::nullable_ulong *>(VT_MAX_PRICE);
   }
   const nullable::nullable_uint *seller_id() const {
     return GetPointer<const nullable::nullable_uint *>(VT_SELLER_ID);
@@ -76,10 +77,10 @@ struct SearchBuilder {
   void add_item_name(::flatbuffers::Offset<::flatbuffers::String> item_name) {
     fbb_.AddOffset(Search::VT_ITEM_NAME, item_name);
   }
-  void add_min_price(::flatbuffers::Offset<nullable::nullable_uint> min_price) {
+  void add_min_price(::flatbuffers::Offset<nullable::nullable_ulong> min_price) {
     fbb_.AddOffset(Search::VT_MIN_PRICE, min_price);
   }
-  void add_max_price(::flatbuffers::Offset<nullable::nullable_uint> max_price) {
+  void add_max_price(::flatbuffers::Offset<nullable::nullable_ulong> max_price) {
     fbb_.AddOffset(Search::VT_MAX_PRICE, max_price);
   }
   void add_seller_id(::flatbuffers::Offset<nullable::nullable_uint> seller_id) {
@@ -105,8 +106,8 @@ struct SearchBuilder {
 inline ::flatbuffers::Offset<Search> CreateSearch(
     ::flatbuffers::FlatBufferBuilder &_fbb,
     ::flatbuffers::Offset<::flatbuffers::String> item_name = 0,
-    ::flatbuffers::Offset<nullable::nullable_uint> min_price = 0,
-    ::flatbuffers::Offset<nullable::nullable_uint> max_price = 0,
+    ::flatbuffers::Offset<nullable::nullable_ulong> min_price = 0,
+    ::flatbuffers::Offset<nullable::nullable_ulong> max_price = 0,
     ::flatbuffers::Offset<nullable::nullable_uint> seller_id = 0,
     ::flatbuffers::Offset<::flatbuffers::String> sort_by = 0,
     uint32_t page = 0) {
@@ -123,8 +124,8 @@ inline ::flatbuffers::Offset<Search> CreateSearch(
 inline ::flatbuffers::Offset<Search> CreateSearchDirect(
     ::flatbuffers::FlatBufferBuilder &_fbb,
     const char *item_name = nullptr,
-    ::flatbuffers::Offset<nullable::nullable_uint> min_price = 0,
-    ::flatbuffers::Offset<nullable::nullable_uint> max_price = 0,
+    ::flatbuffers::Offset<nullable::nullable_ulong> min_price = 0,
+    ::flatbuffers::Offset<nullable::nullable_ulong> max_price = 0,
     ::flatbuffers::Offset<nullable::nullable_uint> seller_id = 0,
     const char *sort_by = nullptr,
     uint32_t page = 0) {

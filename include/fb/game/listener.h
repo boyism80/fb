@@ -49,7 +49,7 @@ public:
     void                            on_map_enter(fb::game::object& me, const fb::game::map& map) override final;
     void                            on_attack(life& me, DURATION duration = DURATION::ATTACK) override final;
     void                            on_dead(life& me, std::shared_ptr<object> you) override final;
-    void                            on_update_hp(life& me, uint32_t diff, bool critical) override final;
+    void                            on_update_hp(life& me, uint64_t diff, bool critical) override final;
     void                            on_action(life& me, ACTION action, DURATION duration, uint8_t sound) override final;
     void                            on_update(character& me, UPDATE_STATE_LEVEL level) override final;
     void                            on_message(character& me, std::string_view message, MESSAGE_TYPE type) override final;
@@ -90,7 +90,7 @@ public:
     void                            on_trade_begin(character& me, character& you) override final;
     void                            on_trade_bundle(character& me) override final;
     void                            on_trade_item(character& me, character& from, uint8_t index, const fb::game::item& item) override final;
-    void                            on_trade_money(character& me, character& you, uint32_t money) override final;
+    void                            on_trade_money(character& me, character& you, uint64_t money) override final;
     void                            on_trade_cancel(character& me, character& you) override final;
     void                            on_trade_lock(character& me, character& you) override final;
     void                            on_trade_failed(character& me, character& you) override final;

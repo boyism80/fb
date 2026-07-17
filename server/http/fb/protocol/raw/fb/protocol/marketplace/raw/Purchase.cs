@@ -36,7 +36,7 @@ public struct Purchase : IFlatbufferObject
   public byte[] GetListingIdArray() { return __p.__vector_as_array<byte>(6); }
   public uint BuyerId { get { int o = __p.__offset(8); return o != 0 ? __p.bb.GetUint(o + __p.bb_pos) : (uint)0; } }
   public ushort PurchaseCount { get { int o = __p.__offset(10); return o != 0 ? __p.bb.GetUshort(o + __p.bb_pos) : (ushort)0; } }
-  public uint PurchasePrice { get { int o = __p.__offset(12); return o != 0 ? __p.bb.GetUint(o + __p.bb_pos) : (uint)0; } }
+  public ulong PurchasePrice { get { int o = __p.__offset(12); return o != 0 ? __p.bb.GetUlong(o + __p.bb_pos) : (ulong)0; } }
   public string CreatedDate { get { int o = __p.__offset(14); return o != 0 ? __p.__string(o + __p.bb_pos) : null; } }
 #if ENABLE_SPAN_T
   public Span<byte> GetCreatedDateBytes() { return __p.__vector_as_span<byte>(14, 1); }
@@ -50,11 +50,11 @@ public struct Purchase : IFlatbufferObject
       StringOffset listing_idOffset = default(StringOffset),
       uint buyer_id = 0,
       ushort purchase_count = 0,
-      uint purchase_price = 0,
+      ulong purchase_price = 0,
       StringOffset created_dateOffset = default(StringOffset)) {
     builder.StartTable(6);
-    Purchase.AddCreatedDate(builder, created_dateOffset);
     Purchase.AddPurchasePrice(builder, purchase_price);
+    Purchase.AddCreatedDate(builder, created_dateOffset);
     Purchase.AddBuyerId(builder, buyer_id);
     Purchase.AddListingId(builder, listing_idOffset);
     Purchase.AddId(builder, idOffset);
@@ -67,7 +67,7 @@ public struct Purchase : IFlatbufferObject
   public static void AddListingId(FlatBufferBuilder builder, StringOffset listingIdOffset) { builder.AddOffset(1, listingIdOffset.Value, 0); }
   public static void AddBuyerId(FlatBufferBuilder builder, uint buyerId) { builder.AddUint(2, buyerId, 0); }
   public static void AddPurchaseCount(FlatBufferBuilder builder, ushort purchaseCount) { builder.AddUshort(3, purchaseCount, 0); }
-  public static void AddPurchasePrice(FlatBufferBuilder builder, uint purchasePrice) { builder.AddUint(4, purchasePrice, 0); }
+  public static void AddPurchasePrice(FlatBufferBuilder builder, ulong purchasePrice) { builder.AddUlong(4, purchasePrice, 0); }
   public static void AddCreatedDate(FlatBufferBuilder builder, StringOffset createdDateOffset) { builder.AddOffset(5, createdDateOffset.Value, 0); }
   public static Offset<fb.protocol.marketplace.raw.Purchase> EndPurchase(FlatBufferBuilder builder) {
     int o = builder.EndTable();
@@ -87,7 +87,7 @@ static public class PurchaseVerify
       && verifier.VerifyString(tablePos, 6 /*ListingId*/, false)
       && verifier.VerifyField(tablePos, 8 /*BuyerId*/, 4 /*uint*/, 4, false)
       && verifier.VerifyField(tablePos, 10 /*PurchaseCount*/, 2 /*ushort*/, 2, false)
-      && verifier.VerifyField(tablePos, 12 /*PurchasePrice*/, 4 /*uint*/, 4, false)
+      && verifier.VerifyField(tablePos, 12 /*PurchasePrice*/, 8 /*ulong*/, 8, false)
       && verifier.VerifyString(tablePos, 14 /*CreatedDate*/, false)
       && verifier.VerifyTableEnd(tablePos);
   }

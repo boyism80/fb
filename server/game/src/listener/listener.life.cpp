@@ -19,7 +19,7 @@ void listener_impl::on_dead(life& me, std::shared_ptr<object> you)
     // Listener only handles packet response - no game logic
 }
 
-void listener_impl::on_update_hp(life& me, uint32_t diff, bool critical)
+void listener_impl::on_update_hp(life& me, uint64_t diff, bool critical)
 {
     this->server.send(me, game_resp::update_hp(me, diff, critical), scope::PIVOT);
 }

@@ -12,7 +12,7 @@ public class ShardedMarketplaceService : IMarketplaceService
         ushort remainingCount,
         uint? itemDurability,
         string itemCustomName,
-        uint price,
+        ulong price,
         TimeSpan expireTime)
     {
         throw new NotImplementedException("Sharded marketplace service is not yet implemented");

@@ -12,7 +12,7 @@ public interface IMarketplaceService
         ushort remainingCount,
         uint? itemDurability,
         string itemCustomName,
-        uint price,
+        ulong price,
         TimeSpan expireTime);
 
     Task CancelListingAsync(uint world, uint characterId, string listingId);

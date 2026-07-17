@@ -411,7 +411,7 @@ public:                                            \
 #define DECLARE_ABILITY_CONTAINER_EXTENSION                                                               \
                                                                                                           \
 private:                                                                                                  \
-    std::unordered_map<fb::model::enum_value::CLASS, std::unordered_map<uint8_t, uint32_t>> _stacked_exp; \
+    std::unordered_map<fb::model::enum_value::CLASS, std::unordered_map<uint8_t, uint64_t>> _stacked_exp; \
                                                                                                           \
     void build_stacked_exp();                                                                             \
                                                                                                           \
@@ -423,7 +423,7 @@ public:                                                                         
         this->build_stacked_exp();                                                                        \
     }                                                                                                     \
                                                                                                           \
-    uint32_t stacked_exp(fb::model::enum_value::CLASS cls, uint8_t level) const;
+    uint64_t stacked_exp(fb::model::enum_value::CLASS cls, uint8_t level) const;
 
 #define DECLARE_AFTER_ENUM                                                                  \
     template <typename T>                                                                   \

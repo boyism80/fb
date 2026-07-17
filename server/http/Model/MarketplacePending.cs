@@ -21,7 +21,7 @@ namespace Http.Model
         public string ListingId { get; set; } = string.Empty;
         public List<Dsl> Attachments { get; set; } = new List<Dsl>();
         public ushort ExpectedPurchaseCount { get; set; }
-        public uint ExpectedTotalPrice { get; set; }
+        public ulong ExpectedTotalPrice { get; set; }
         public uint CharacterId { get; set; }
     }
 }

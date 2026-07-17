@@ -1,4 +1,4 @@
-﻿using fb.protocol.marketplace;
+using fb.protocol.marketplace;
 using Fb.Model;
 using Fb.Model.EnumValue;
 using Http;
@@ -12,7 +12,7 @@ public class PurchaseItemResult
 {
     public MarketplaceListing Listing { get; set; }
     public ushort ActualPurchaseCount { get; set; }
-    public uint RefundAmount { get; set; }
+    public ulong RefundAmount { get; set; }
 }
 
 public class ListingWithPurchase
@@ -45,7 +45,7 @@ public class MarketplaceService : IMarketplaceService
         ushort remainingCount,
         uint? itemDurability,
         string itemCustomName,
-        uint price,
+        ulong price,
         TimeSpan expireTime)
     {
         // Check if listing ID already exists
