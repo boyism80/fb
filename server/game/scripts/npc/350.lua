@@ -37,7 +37,7 @@ function NPC_350(me, npc)
     if btn == DIALOG_RESULT.QUIT then
         return
     end
-    if sel == nil or sel < 1 or sel >= #REWARDS then
+    if sel == nil or sel < 1 or sel > #REWARDS then
         return
     end
     local r = REWARDS[sel]

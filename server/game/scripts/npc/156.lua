@@ -184,7 +184,7 @@ local function run_amber_helmet_craft(me, npc, colors, has_prev)
     if btn == DIALOG_RESULT.PREV then
         return DIALOG_RESULT.PREV
     end
-    if sel == nil or sel < 1 or sel >= #colors then
+    if sel == nil or sel < 1 or sel > #colors then
         return DIALOG_RESULT.QUIT
     end
     local color_name = colors[sel].color

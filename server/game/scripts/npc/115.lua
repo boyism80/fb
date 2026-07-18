@@ -57,7 +57,7 @@ function cultural_property_quest(me, npc)
 
     if selected == 1 then
         local totem_sel = me:list(npc, '그래..어떤 토템을 가지고 왔는가?', { '번개의토템', '바람의토템', '대지의토템', '화염의토템' })
-        if totem_sel == nil or totem_sel < 0 or totem_sel >= #totem_names then
+        if totem_sel == nil or totem_sel < 1 or totem_sel > #totem_names then
             return
         end
         local item_name = totem_names[totem_sel]

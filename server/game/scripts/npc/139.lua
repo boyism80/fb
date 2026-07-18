@@ -78,7 +78,7 @@ function NPC_139(me, npc)
     if type_btn == DIALOG_RESULT.PREV then
         goto NPC_139_0004
     end
-    if type_sel == nil or type_sel < 1 or type_sel >= #DRAGON_LOW_LINES then
+    if type_sel == nil or type_sel < 1 or type_sel > #DRAGON_LOW_LINES then
         return
     end
 
@@ -90,7 +90,7 @@ function NPC_139(me, npc)
     if grade_btn == DIALOG_RESULT.PREV then
         goto NPC_139_0005
     end
-    if grade_sel == nil or grade_sel < 0 or grade_sel >= #line.check_items then
+    if grade_sel == nil or grade_sel < 1 or grade_sel > #line.check_items then
         return
     end
 

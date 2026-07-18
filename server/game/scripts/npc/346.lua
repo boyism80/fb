@@ -36,7 +36,7 @@ function NPC_346(me, npc)
     if btn == DIALOG_RESULT.QUIT then
         return
     end
-    if sel == nil or sel < 1 or sel >= #REWARDS then
+    if sel == nil or sel < 1 or sel > #REWARDS then
         return
     end
     do_exchange(me, npc, REWARDS[sel])

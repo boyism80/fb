@@ -37,7 +37,7 @@ end
 local function do_hair_style(me, npc)
     local tier_menu = hair_tier_menu()
     local tier_sel = me:list(npc, '가격에 따라 다른 머리모양을 해드릴 수 있습니다.\n\n원하시는 가격을 선택해주세요.', tier_menu, { prev = false })
-    if tier_sel == nil or tier_sel < 1 or tier_sel >= #HAIR_STYLE_TIERS then
+    if tier_sel == nil or tier_sel < 1 or tier_sel > #HAIR_STYLE_TIERS then
         return
     end
 
@@ -101,7 +101,7 @@ local function do_hair_dye(me, npc)
         dye_menu[i] = opt[1]
     end
     local choice = me:list(npc, '원하는 염색을 선택해라', dye_menu, { prev = false })
-    if choice == nil or choice < 1 or choice >= #DYE_OPTIONS then
+    if choice == nil or choice < 1 or choice > #DYE_OPTIONS then
         return
     end
 
