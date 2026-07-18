@@ -25,7 +25,7 @@ function NPC_177(me, npc)
     if button == DIALOG_RESULT.PREV then
         goto NPC_177_0001
     end
-    if sel < 1 or sel >= #suffixes then
+    if sel < 1 or sel > #suffixes then
         return
     end
 

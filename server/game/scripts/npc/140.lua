@@ -99,7 +99,7 @@ local function run_dragon_weapon_awaken(me, npc)
     if type_btn == DIALOG_RESULT.PREV then
         goto NPC_140_0004
     end
-    if type_sel < 1 or type_sel >= #DRAGON_WEAPON_LINES then
+    if type_sel < 1 or type_sel > #DRAGON_WEAPON_LINES then
         return false
     end
     local line = DRAGON_WEAPON_LINES[type_sel]
@@ -111,7 +111,7 @@ local function run_dragon_weapon_awaken(me, npc)
     if grade_btn == DIALOG_RESULT.PREV then
         goto NPC_140_0005
     end
-    if grade_sel < 0 or grade_sel >= 3 then
+    if grade_sel < 1 or grade_sel > 3 then
         return false
     end
     local check_item = line.options[grade_sel]
@@ -150,7 +150,7 @@ local function run_amber_weapon_craft(me, npc, colors)
     if color_btn == DIALOG_RESULT.PREV then
         return DIALOG_RESULT.PREV
     end
-    if color_sel == nil or color_sel < 0 or color_sel >= #colors then
+    if color_sel == nil or color_sel < 1 or color_sel > #colors then
         return DIALOG_RESULT.QUIT
     end
     local color_name = colors[color_sel].color
@@ -162,7 +162,7 @@ local function run_amber_weapon_craft(me, npc, colors)
     if weapon_btn == DIALOG_RESULT.PREV then
         return DIALOG_RESULT.PREV
     end
-    if weapon_sel == nil or weapon_sel < 1 or weapon_sel >= #WEAPON_NAMES then
+    if weapon_sel == nil or weapon_sel < 1 or weapon_sel > #WEAPON_NAMES then
         return DIALOG_RESULT.QUIT
     end
     local star_item = color_name .. '별'

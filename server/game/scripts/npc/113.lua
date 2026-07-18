@@ -278,7 +278,7 @@ function NPC_113(me, npc)
         if sel == nil then
             return
         end
-        if sel < 1 or sel >= #armor_names then
+        if sel < 1 or sel > #armor_names then
             return
         end
 

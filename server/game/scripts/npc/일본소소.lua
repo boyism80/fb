@@ -99,7 +99,7 @@ function do_hair_dye(me, npc)
         dye_menu[i] = opt[1]
     end
     local choice = me:list(npc, '원하는 염색을 선택해라', dye_menu, { prev = false })
-    if choice == nil or choice < 1 or choice >= #DYE_OPTIONS then
+    if choice == nil or choice < 1 or choice > #DYE_OPTIONS then
         return
     end
     
