@@ -1643,16 +1643,33 @@ fb::protocol::internal::Character character::to_protocol() const
     dto.gender           = static_cast<uint8_t>(this->_gender);
     dto.nation           = static_cast<uint8_t>(this->_nation);
     dto.creature         = static_cast<uint8_t>(this->_creature);
-    dto.map              = this->_map != nullptr ? this->_map->model.id : 0;
-    dto.position         = fb::protocol::internal::Position{this->_position.x, this->_position.y};
-    dto.direction        = static_cast<uint8_t>(this->_direction);
-    dto.state            = static_cast<uint8_t>(this->_state);
-    dto.class_type       = static_cast<uint8_t>(this->_class);
-    dto.promotion        = this->_promotion;
-    dto.level            = this->_level;
-    dto.exp              = this->_experience;
-    dto.money            = this->_money;
-    dto.deposited_money  = this->items.deposited();
+    if (this->_map != nullptr && this->_map->model.return_to.has_value())
+    {
+        auto return_map_id = this->_map->model.return_to.value();
+        dto.map            = return_map_id;
+        auto spawn         = fb::model::point16_t{0, 0};
+        if (table::map.contains(return_map_id))
+            spawn = table::map[return_map_id].spawn_position().value_or(fb::model::point16_t{0, 0});
+        dto.position = fb::protocol::internal::Position{spawn.x, spawn.y};
+    }
+    else if (this->_map != nullptr)
+    {
+        dto.map      = this->_map->model.id;
+        dto.position = fb::protocol::internal::Position{this->_position.x, this->_position.y};
+    }
+    else
+    {
+        dto.map      = 0;
+        dto.position = fb::protocol::internal::Position{1, 1};
+    }
+    dto.direction       = static_cast<uint8_t>(this->_direction);
+    dto.state           = static_cast<uint8_t>(this->_state);
+    dto.class_type      = static_cast<uint8_t>(this->_class);
+    dto.promotion       = this->_promotion;
+    dto.level           = this->_level;
+    dto.exp             = this->_experience;
+    dto.money           = this->_money;
+    dto.deposited_money = this->items.deposited();
     if (this->_mimicry.has_value())
     {
         auto const& p         = this->_mimicry.value();

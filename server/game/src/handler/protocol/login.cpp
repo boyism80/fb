@@ -143,7 +143,43 @@ async::task<std::shared_ptr<character>> login::init(const game_reqs::login& requ
     auto&& resp =
         co_await this->server.http.get<internal_resp::Init>("internal",
                                                             std::format("/in-game/init/{}/{}", world, request.id));
-    auto map = request.transfer.has_value() ? request.transfer->map : resp.character.map;
+    auto map        = request.transfer.has_value() ? request.transfer->map : resp.character.map;
+    auto position_x = resp.character.position.x;
+    auto position_y = resp.character.position.y;
+    if (request.transfer != std::nullopt)
+    {
+        map        = request.transfer.value().map;
+        position_x = uint32_t(request.transfer.value().position.x);
+        position_y = uint32_t(request.transfer.value().position.y);
+    }
+    else if (table::map.contains(map) && table::map[map].return_to.has_value())
+    {
+        auto source_map_id = map;
+        auto return_map_id = table::map[map].return_to.value();
+        if (this->server.maps.contains(return_map_id) == false)
+        {
+            fb::logger::fatal("Character {} login failed: return_to map {} does not exist (source map {})",
+                              resp.character.name,
+                              return_map_id,
+                              source_map_id);
+            co_return nullptr;
+        }
+
+        auto return_map = this->server.maps[return_map_id];
+        if (return_map->active == false)
+        {
+            fb::logger::fatal("Character {} login failed: return_to map {} is not active (source map {})",
+                              resp.character.name,
+                              return_map_id,
+                              source_map_id);
+            co_return nullptr;
+        }
+
+        auto spawn = return_map->model.spawn_position().value_or(fb::model::point16_t{0, 0});
+        map        = return_map_id;
+        position_x = spawn.x;
+        position_y = spawn.y;
+    }
 
     auto socket_ptr     = session.shared_from_this_as<fb::socket<character>>();
     auto params         = character::initial_params{.socket = socket_ptr};
@@ -208,15 +244,6 @@ async::task<std::shared_ptr<character>> login::init(const game_reqs::login& requ
     auto thread = this->server.maps[map]->thread();
     ch->thread(thread);
     co_await thread->switching();
-
-    auto position_x = resp.character.position.x;
-    auto position_y = resp.character.position.y;
-    if (request.transfer != std::nullopt)
-    {
-        map        = request.transfer.value().map;
-        position_x = uint32_t(request.transfer.value().position.x);
-        position_y = uint32_t(request.transfer.value().position.y);
-    }
 
     session.data(ch);
 
