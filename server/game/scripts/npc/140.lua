@@ -183,39 +183,41 @@ local function run_amber_weapon_craft(me, npc, colors)
     return DIALOG_RESULT.NEXT
 end
 
-function NPC_140(me, npc)
-    if not me:has_items('얼음', 1) then
-        show_no_ice_dialog(me, npc)
-        return
-    end
-    ::NPC_140_START::
-    local main_opt = me:list(npc, '안녕하신가? 무엇을 도와줄까?', {
-        '상급 용무기를 각성시켜 주세요.',
-        '호박무기만들기',
-        '연호박무기만들기',
-    }, { prev = false })
-    if main_opt == nil then
-        return
-    end
-    if main_opt == 1 then
-        if run_dragon_weapon_awaken(me, npc) == false then
+return {
+    ON_CLICK = function(me, npc)
+        if not me:has_items('얼음', 1) then
+            show_no_ice_dialog(me, npc)
             return
         end
-    elseif main_opt == 2 then
-        local r = run_amber_weapon_craft(me, npc, AMBER_COLORS)
-        if r == DIALOG_RESULT.QUIT then
+        ::NPC_140_START::
+        local main_opt = me:list(npc, '안녕하신가? 무엇을 도와줄까?', {
+            '상급 용무기를 각성시켜 주세요.',
+            '호박무기만들기',
+            '연호박무기만들기',
+        }, { prev = false })
+        if main_opt == nil then
             return
         end
-        if r == DIALOG_RESULT.PREV then
-            goto NPC_140_START
-        end
-    elseif main_opt == 3 then
-        local r = run_amber_weapon_craft(me, npc, LIGHT_AMBER_COLORS)
-        if r == DIALOG_RESULT.QUIT then
-            return
-        end
-        if r == DIALOG_RESULT.PREV then
-            goto NPC_140_START
+        if main_opt == 1 then
+            if run_dragon_weapon_awaken(me, npc) == false then
+                return
+            end
+        elseif main_opt == 2 then
+            local r = run_amber_weapon_craft(me, npc, AMBER_COLORS)
+            if r == DIALOG_RESULT.QUIT then
+                return
+            end
+            if r == DIALOG_RESULT.PREV then
+                goto NPC_140_START
+            end
+        elseif main_opt == 3 then
+            local r = run_amber_weapon_craft(me, npc, LIGHT_AMBER_COLORS)
+            if r == DIALOG_RESULT.QUIT then
+                return
+            end
+            if r == DIALOG_RESULT.PREV then
+                goto NPC_140_START
+            end
         end
     end
-end
+}

@@ -35,7 +35,7 @@ local function main_menu(me, npc)
     end
 end
 
-function do_hair_style(me, npc)
+local function do_hair_style(me, npc)
     local index = me:list(npc, '가격에 따라 다른 머리모양을 해드릴 수 있습니다.\n\n원하시는 가격을 선택해주세요.', {'10만전'}, { prev = false })
     if index == nil or index ~= 1 then
         return
@@ -88,7 +88,7 @@ function do_hair_style(me, npc)
     end
 end
 
-function do_hair_dye(me, npc)
+local function do_hair_dye(me, npc)
     local btn = me:dialog(npc, '염색을 하시려구요?\n염색 비용은 100전 이고, 이번에 새로 가져온 염색약은 비싸서 500전 이에요.', { prev = false, next = true })
     if btn == DIALOG_RESULT.QUIT then
         return
@@ -116,6 +116,11 @@ function do_hair_dye(me, npc)
     me:dialog(npc, '예쁘게 염색이 되었습니다~', { prev = false, next = false })
 end
 
-function NPC_JapanSoso(me, npc)
-    main_menu(me, npc)
-end
+return {
+    -- ON_CLICK = function(me, npc)
+    -- end,
+
+    NPC_JapanSoso = function(me, npc)
+        main_menu(me, npc)
+    end
+}

@@ -1,4 +1,6 @@
 -- npc: 노망난돼지
--- function NPC_92(me, npc)
---
--- end
+
+return {
+    -- ON_CLICK = function(me, npc)
+    -- end
+}

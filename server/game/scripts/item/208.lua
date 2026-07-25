@@ -1,11 +1,15 @@
 -- item: 하늘색풍선
 
--- 하늘색풍선 사용 스크립트
--- function ON_ACTIVATED_208(me, item)
---
--- end
+return {
+    -- ON_ACTIVATED = function(me, item)
+    -- end,
 
--- 하늘색풍선 해제 스크립트
--- function ON_DEACTIVATED_208(me, item)
---
--- end
+    -- ON_DEACTIVATED = function(me, item)
+    -- end,
+
+    -- ON_CONCAST = function(me, item)
+    -- end,
+
+    -- ON_ATTACK = function(me, item)
+    -- end
+}

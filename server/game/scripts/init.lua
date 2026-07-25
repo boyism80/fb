@@ -8,3 +8,5 @@ property("clock_time_item", 10)
 local sky_maze = require('lib.sky_maze')
 sky_maze.shuffle()
 sky_maze.pk_shuffle()
+
+return {}

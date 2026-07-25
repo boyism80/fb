@@ -1,13 +1,15 @@
 -- item: 풍선4
 
--- 풍선4 사용 스크립트
--- function ON_ACTIVATED_560(me, item)
--- end
+return {
+    -- ON_ACTIVATED = function(me, item)
+    -- end,
 
--- 풍선4 해제 스크립트
--- function ON_DEACTIVATED_560(me, item)
--- end
+    -- ON_DEACTIVATED = function(me, item)
+    -- end,
 
--- 풍선4 공격 스크립트
--- function ON_ATTACK_560(me, item)
--- end
+    -- ON_CONCAST = function(me, item)
+    -- end,
+
+    -- ON_ATTACK = function(me, item)
+    -- end
+}

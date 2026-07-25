@@ -1,5 +1,15 @@
 -- item: 청연신반지
 
--- 청연신반지 해제 스크립트
--- function ON_DEACTIVATED_5627(me, item)
--- end
+return {
+    -- ON_ACTIVATED = function(me, item)
+    -- end,
+
+    -- ON_DEACTIVATED = function(me, item)
+    -- end,
+
+    -- ON_CONCAST = function(me, item)
+    -- end,
+
+    -- ON_ATTACK = function(me, item)
+    -- end
+}

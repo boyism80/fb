@@ -1,11 +1,15 @@
 -- item: 칠교칠선
 
--- 칠교칠선 사용 스크립트
--- function ON_ACTIVATED_70(me, item)
---
--- end
+return {
+    -- ON_ACTIVATED = function(me, item)
+    -- end,
 
--- 칠교칠선 해제 스크립트
--- function ON_DEACTIVATED_70(me, item)
---
--- end
+    -- ON_DEACTIVATED = function(me, item)
+    -- end,
+
+    -- ON_CONCAST = function(me, item)
+    -- end,
+
+    -- ON_ATTACK = function(me, item)
+    -- end
+}

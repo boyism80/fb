@@ -1,11 +1,15 @@
 -- item: 대마혼봉
 
--- 대마혼봉 사용 스크립트
--- function ON_ACTIVATED_77(me, item)
---
--- end
+return {
+    -- ON_ACTIVATED = function(me, item)
+    -- end,
 
--- 대마혼봉 해제 스크립트
--- function ON_DEACTIVATED_77(me, item)
---
--- end
+    -- ON_DEACTIVATED = function(me, item)
+    -- end,
+
+    -- ON_CONCAST = function(me, item)
+    -- end,
+
+    -- ON_ATTACK = function(me, item)
+    -- end
+}

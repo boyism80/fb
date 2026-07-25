@@ -1,5 +1,16 @@
 -- spell: 게장군포박
 -- 게장군포박 지속 효과
--- function ON_CONCAST_7003(me, caster, buff)
---
--- end
+
+return {
+    -- ON_CAST = function(me, you, sp)
+    -- end,
+
+    -- ON_BUFF = function(me, sp)
+    -- end,
+
+    -- ON_UNBUFF = function(me, sp)
+    -- end,
+
+    -- ON_CONCAST = function(me, sp)
+    -- end
+}

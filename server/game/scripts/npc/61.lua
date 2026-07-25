@@ -1,4 +1,6 @@
 -- npc: 옹기장수
--- function NPC_61(me, npc)
---
--- end
+
+return {
+    -- ON_CLICK = function(me, npc)
+    -- end
+}

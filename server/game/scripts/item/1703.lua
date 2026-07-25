@@ -1,11 +1,15 @@
 -- item: 비룡팔찌
 
--- 비룡팔찌 사용 스크립트
--- function ON_ACTIVATED_1703(me, item)
---
--- end
+return {
+    -- ON_ACTIVATED = function(me, item)
+    -- end,
 
--- 비룡팔찌 해제 스크립트
--- function ON_DEACTIVATED_1703(me, item)
---
--- end
+    -- ON_DEACTIVATED = function(me, item)
+    -- end,
+
+    -- ON_CONCAST = function(me, item)
+    -- end,
+
+    -- ON_ATTACK = function(me, item)
+    -- end
+}

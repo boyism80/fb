@@ -1,5 +1,15 @@
 -- item: 산타클로스옷
 
--- 산타클로스옷 해제 스크립트
--- function ON_DEACTIVATED_2916(me, item)
--- end
+return {
+    -- ON_ACTIVATED = function(me, item)
+    -- end,
+
+    -- ON_DEACTIVATED = function(me, item)
+    -- end,
+
+    -- ON_CONCAST = function(me, item)
+    -- end,
+
+    -- ON_ATTACK = function(me, item)
+    -- end
+}

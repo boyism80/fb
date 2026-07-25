@@ -1,5 +1,15 @@
 -- item: 고도리5
 
--- 고도리5 해제 스크립트
--- function ON_DEACTIVATED_12329(me, item)
--- end
+return {
+    -- ON_ACTIVATED = function(me, item)
+    -- end,
+
+    -- ON_DEACTIVATED = function(me, item)
+    -- end,
+
+    -- ON_CONCAST = function(me, item)
+    -- end,
+
+    -- ON_ATTACK = function(me, item)
+    -- end
+}

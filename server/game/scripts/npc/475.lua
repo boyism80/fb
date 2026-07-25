@@ -315,28 +315,30 @@ local function handle_jingogyun_ge9(me, npc, q_jingo)
     return true
 end
 
-function NPC_475(me, npc)
-    local q_hwahwa = me:quest(quest.QUEST_HWAHWA)
-    local q_jingo = me:quest(quest.QUEST_JINGOGYUN)
-    local hwahwa_friend = (q_hwahwa and q_hwahwa:step() >= 1)
+return {
+    ON_CLICK = function(me, npc)
+        local q_hwahwa = me:quest(quest.QUEST_HWAHWA)
+        local q_jingo = me:quest(quest.QUEST_JINGOGYUN)
+        local hwahwa_friend = (q_hwahwa and q_hwahwa:step() >= 1)
 
-    if not hwahwa_friend then
-        handle_hwahwa_not_friend(me, npc)
-        return
-    end
+        if not hwahwa_friend then
+            handle_hwahwa_not_friend(me, npc)
+            return
+        end
 
-    if handle_jingogyun_lt1(me, npc, q_jingo) then
-        return
-    end
-    if handle_jingogyun_3(me, npc, q_jingo) then
-        return
-    end
-    if handle_jingogyun_4_to_8(me, npc, q_jingo) then
-        return
-    end
-    if handle_jingogyun_ge9(me, npc, q_jingo) then
-        return
-    end
+        if handle_jingogyun_lt1(me, npc, q_jingo) then
+            return
+        end
+        if handle_jingogyun_3(me, npc, q_jingo) then
+            return
+        end
+        if handle_jingogyun_4_to_8(me, npc, q_jingo) then
+            return
+        end
+        if handle_jingogyun_ge9(me, npc, q_jingo) then
+            return
+        end
 
-    me:dialog(npc, "준비중입니다.", { prev = false, next = false })
-end
+        me:dialog(npc, "준비중입니다.", { prev = false, next = false })
+    end
+}

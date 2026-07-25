@@ -8,7 +8,7 @@ local function execute_mob_spell_hit(me, you, spell)
     local model = you:model()
     local id = model:id()
     local path = string.format('scripts/mob/%d.lua', id)
-    local func = string.format('ON_MOB_SPELL_HIT_%d', id)
+    local func = 'ON_MOB_SPELL_HIT'
     local result = you:script(path, func, me, spell)
     if result == nil then
         return true -- continue

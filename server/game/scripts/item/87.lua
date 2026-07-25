@@ -1,11 +1,15 @@
 -- item: 청일기창
 
--- 청일기창 사용 스크립트
--- function ON_ACTIVATED_87(me, item)
---
--- end
+return {
+    -- ON_ACTIVATED = function(me, item)
+    -- end,
 
--- 청일기창 해제 스크립트
--- function ON_DEACTIVATED_87(me, item)
---
--- end
+    -- ON_DEACTIVATED = function(me, item)
+    -- end,
+
+    -- ON_CONCAST = function(me, item)
+    -- end,
+
+    -- ON_ATTACK = function(me, item)
+    -- end
+}

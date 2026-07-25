@@ -1,11 +1,15 @@
 -- item: 강마두건
 
--- 강마두건 사용 스크립트
--- function ON_ACTIVATED_1323(me, item)
---
--- end
+return {
+    -- ON_ACTIVATED = function(me, item)
+    -- end,
 
--- 강마두건 해제 스크립트
--- function ON_DEACTIVATED_1323(me, item)
---
--- end
+    -- ON_DEACTIVATED = function(me, item)
+    -- end,
+
+    -- ON_CONCAST = function(me, item)
+    -- end,
+
+    -- ON_ATTACK = function(me, item)
+    -- end
+}

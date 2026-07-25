@@ -1,9 +1,15 @@
 -- item: 나무색보따리1
 
--- 나무색보따리1 사용 스크립트
--- function ON_ACTIVATED_60051(me, item)
--- end
+return {
+    -- ON_ACTIVATED = function(me, item)
+    -- end,
 
--- 나무색보따리1 해제 스크립트
--- function ON_DEACTIVATED_60051(me, item)
--- end
+    -- ON_DEACTIVATED = function(me, item)
+    -- end,
+
+    -- ON_CONCAST = function(me, item)
+    -- end,
+
+    -- ON_ATTACK = function(me, item)
+    -- end
+}

@@ -1,16 +1,15 @@
 -- item: [손상]용랑제팔봉
 
--- [손상]용랑제팔봉 공격 스크립트
--- function ON_ATTACK_290(me, item)
---
--- end
+return {
+    -- ON_ACTIVATED = function(me, item)
+    -- end,
 
--- [손상]용랑제팔봉 사용 스크립트
--- function ON_ACTIVATED_290(me, item)
---
--- end
+    -- ON_DEACTIVATED = function(me, item)
+    -- end,
 
--- [손상]용랑제팔봉 해제 스크립트
--- function ON_DEACTIVATED_290(me, item)
---
--- end
+    -- ON_CONCAST = function(me, item)
+    -- end,
+
+    -- ON_ATTACK = function(me, item)
+    -- end
+}

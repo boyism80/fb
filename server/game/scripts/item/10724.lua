@@ -1,9 +1,15 @@
 -- item: [궁극]치명타량
 
--- [궁극]치명타량 사용 스크립트
--- function ON_ACTIVATED_10724(me, item)
--- end
+return {
+    -- ON_ACTIVATED = function(me, item)
+    -- end,
 
--- [궁극]치명타량 해제 스크립트
--- function ON_DEACTIVATED_10724(me, item)
--- end
+    -- ON_DEACTIVATED = function(me, item)
+    -- end,
+
+    -- ON_CONCAST = function(me, item)
+    -- end,
+
+    -- ON_ATTACK = function(me, item)
+    -- end
+}

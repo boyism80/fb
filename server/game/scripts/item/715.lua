@@ -1,11 +1,15 @@
 -- item: 차이나드레스
 
--- 차이나드레스 사용 스크립트
--- function ON_ACTIVATED_715(me, item)
---
--- end
+return {
+    -- ON_ACTIVATED = function(me, item)
+    -- end,
 
--- 차이나드레스 해제 스크립트
--- function ON_DEACTIVATED_715(me, item)
---
--- end
+    -- ON_DEACTIVATED = function(me, item)
+    -- end,
+
+    -- ON_CONCAST = function(me, item)
+    -- end,
+
+    -- ON_ATTACK = function(me, item)
+    -- end
+}

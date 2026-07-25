@@ -1,11 +1,15 @@
 -- item: 수련검
 
--- 수련검 사용 스크립트
--- function ON_ACTIVATED_119(me, item)
---
--- end
+return {
+    -- ON_ACTIVATED = function(me, item)
+    -- end,
 
--- 수련검 해제 스크립트
--- function ON_DEACTIVATED_119(me, item)
---
--- end
+    -- ON_DEACTIVATED = function(me, item)
+    -- end,
+
+    -- ON_CONCAST = function(me, item)
+    -- end,
+
+    -- ON_ATTACK = function(me, item)
+    -- end
+}

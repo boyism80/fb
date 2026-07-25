@@ -1,11 +1,15 @@
 -- item: 철통치마
 
--- 철통치마 사용 스크립트
--- function ON_ACTIVATED_902(me, item)
---
--- end
+return {
+    -- ON_ACTIVATED = function(me, item)
+    -- end,
 
--- 철통치마 해제 스크립트
--- function ON_DEACTIVATED_902(me, item)
---
--- end
+    -- ON_DEACTIVATED = function(me, item)
+    -- end,
+
+    -- ON_CONCAST = function(me, item)
+    -- end,
+
+    -- ON_ATTACK = function(me, item)
+    -- end
+}

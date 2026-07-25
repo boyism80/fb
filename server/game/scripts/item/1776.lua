@@ -1,11 +1,15 @@
 -- item: 마력의반지2
 
--- 마력의반지2 사용 스크립트
--- function ON_ACTIVATED_1776(me, item)
---
--- end
+return {
+    -- ON_ACTIVATED = function(me, item)
+    -- end,
 
--- 마력의반지2 해제 스크립트
--- function ON_DEACTIVATED_1776(me, item)
---
--- end
+    -- ON_DEACTIVATED = function(me, item)
+    -- end,
+
+    -- ON_CONCAST = function(me, item)
+    -- end,
+
+    -- ON_ATTACK = function(me, item)
+    -- end
+}

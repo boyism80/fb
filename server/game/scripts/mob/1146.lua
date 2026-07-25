@@ -1,10 +1,16 @@
 -- mob: 선우
--- 선우 공격
-function ON_MOB_ATTACK_1146(me, you)
-    return false
-end
 
--- 선우 사망
--- function ON_MOB_DIE_1146(me)
---
--- end
+return {
+    ON_MOB_ATTACK = function(me, you)
+        return false
+    end,
+
+    -- ON_MOB_DIE = function(me)
+    -- end,
+
+    -- ON_MOB_KILL = function(me, mobs)
+    -- end,
+
+    -- ON_MOB_SPELL_HIT = function(me, you, spell)
+    -- end
+}

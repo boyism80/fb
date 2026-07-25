@@ -1,6 +1,15 @@
 -- mob: 요괴수목
--- function ON_MOB_DIE_1543(me)
--- end
 
--- function ON_MOB_ATTACK_1543(me, you)
--- end
+return {
+    -- ON_MOB_ATTACK = function(me, you)
+    -- end,
+
+    -- ON_MOB_DIE = function(me)
+    -- end,
+
+    -- ON_MOB_KILL = function(me, mobs)
+    -- end,
+
+    -- ON_MOB_SPELL_HIT = function(me, you, spell)
+    -- end
+}

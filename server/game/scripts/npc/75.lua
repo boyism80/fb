@@ -905,7 +905,6 @@ local function run_crown_prince_complete(me, npc)
     me:dialog(npc, "언제든지 용궁의 은인으로 반갑게 맞이할 테니 종종 놀러 오게나.", { prev = false, next = true })
 end
 
-
 local function run_cidequest_yongwang(me, npc)
     local q = me:quest(quest.QUEST_CIDEQUEST)
     if q == nil then
@@ -985,105 +984,107 @@ local function run_cidequest_yongwang(me, npc)
     me:dialog(npc, "어찌되어 가는가?", { prev = false, next = false })
 end
 
-function NPC_75(me, npc)
-    local q = me:quest(quest.QUEST_DRAGON_KING)
-    if q == nil then
-        run_puffer_general_accept(me, npc)
-        return
-    end
-
-    if q:completed() then
-        local sel, btn = me:list(npc, me:name() .. "이군. 반란을 막아준걸 정말 고맙게 생각하고 있네.", { "잘 지내셨습니까?", "심판의낫 만들기" }, { prev = false })
-        if btn == DIALOG_RESULT.QUIT or sel == nil then
+return {
+    ON_CLICK = function(me, npc)
+        local q = me:quest(quest.QUEST_DRAGON_KING)
+        if q == nil then
+            run_puffer_general_accept(me, npc)
             return
         end
-        if sel == 1 then
-            me:dialog(npc, "자네 덕분에 아주 잘 지내고 있다네. 언제든 놀러 오게나.", { prev = false, next = false })
+
+        if q:completed() then
+            local sel, btn = me:list(npc, me:name() .. "이군. 반란을 막아준걸 정말 고맙게 생각하고 있네.", { "잘 지내셨습니까?", "심판의낫 만들기" }, { prev = false })
+            if btn == DIALOG_RESULT.QUIT or sel == nil then
+                return
+            end
+            if sel == 1 then
+                me:dialog(npc, "자네 덕분에 아주 잘 지내고 있다네. 언제든 놀러 오게나.", { prev = false, next = false })
+                return
+            end
+            if sel == 2 then
+                run_cidequest_yongwang(me, npc)
+            end
             return
         end
-        if sel == 2 then
-            run_cidequest_yongwang(me, npc)
+
+        local step = q:step()
+        if step == 1 then
+            run_puffer_general_complete(me, npc)
+            return
         end
-        return
-    end
+        if step == 2 then
+            run_crab_general_accept(me, npc)
+            return
+        end
+        if step == 3 then
+            run_crab_general_complete(me, npc)
+            return
+        end
+        if step == 4 then
+            run_octopus_general_accept(me, npc)
+            return
+        end
+        if step == 5 then
+            run_octopus_general_complete(me, npc)
+            return
+        end
+        if step == 6 then
+            run_seahorse_accept(me, npc)
+            return
+        end
+        if step == 7 then
+            run_seahorse_complete(me, npc)
+            return
+        end
+        if step == 8 then
+            run_mermaid_accept(me, npc)
+            return
+        end
+        if step == 9 then
+            run_mermaid_complete(me, npc)
+            return
+        end
+        if step == 10 then
+            run_mermaid_turnin(me, npc)
+            return
+        end
+        if step == 11 then
+            run_shark_accept(me, npc)
+            return
+        end
+        if step == 12 then
+            run_shark_report(me, npc)
+            return
+        end
+        if step == 13 then
+            run_shark_complete(me, npc)
+            return
+        end
+        if step == 14 then
+            run_jellyfish_accept(me, npc)
+            return
+        end
+        if step == 15 then
+            run_jellyfish_report(me, npc)
+            return
+        end
+        if step == 16 then
+            run_jellyfish_complete(me, npc)
+            return
+        end
+        if step == 17 then
+            run_crown_prince_accept(me, npc)
+            return
+        end
+        if step == 18 then
+            run_crown_prince_turnin_orb(me, npc)
+            return
+        end
+        if step == 19 then
+            run_crown_prince_complete(me, npc)
+            return
+        end
 
-    local step = q:step()
-    if step == 1 then
-        run_puffer_general_complete(me, npc)
-        return
+        me:dialog(npc, "잘 왔네. 다음 부탁이 있으면 그때 찾아오게나.", { prev = false, next = false })
     end
-    if step == 2 then
-        run_crab_general_accept(me, npc)
-        return
-    end
-    if step == 3 then
-        run_crab_general_complete(me, npc)
-        return
-    end
-    if step == 4 then
-        run_octopus_general_accept(me, npc)
-        return
-    end
-    if step == 5 then
-        run_octopus_general_complete(me, npc)
-        return
-    end
-    if step == 6 then
-        run_seahorse_accept(me, npc)
-        return
-    end
-    if step == 7 then
-        run_seahorse_complete(me, npc)
-        return
-    end
-    if step == 8 then
-        run_mermaid_accept(me, npc)
-        return
-    end
-    if step == 9 then
-        run_mermaid_complete(me, npc)
-        return
-    end
-    if step == 10 then
-        run_mermaid_turnin(me, npc)
-        return
-    end
-    if step == 11 then
-        run_shark_accept(me, npc)
-        return
-    end
-    if step == 12 then
-        run_shark_report(me, npc)
-        return
-    end
-    if step == 13 then
-        run_shark_complete(me, npc)
-        return
-    end
-    if step == 14 then
-        run_jellyfish_accept(me, npc)
-        return
-    end
-    if step == 15 then
-        run_jellyfish_report(me, npc)
-        return
-    end
-    if step == 16 then
-        run_jellyfish_complete(me, npc)
-        return
-    end
-    if step == 17 then
-        run_crown_prince_accept(me, npc)
-        return
-    end
-    if step == 18 then
-        run_crown_prince_turnin_orb(me, npc)
-        return
-    end
-    if step == 19 then
-        run_crown_prince_complete(me, npc)
-        return
-    end
-
-    me:dialog(npc, "잘 왔네. 다음 부탁이 있으면 그때 찾아오게나.", { prev = false, next = false })
-end
+}

@@ -1,11 +1,15 @@
 -- item: 사비의치마
 
--- 사비의치마 사용 스크립트
--- function ON_ACTIVATED_687(me, item)
---
--- end
+return {
+    -- ON_ACTIVATED = function(me, item)
+    -- end,
 
--- 사비의치마 해제 스크립트
--- function ON_DEACTIVATED_687(me, item)
---
--- end
+    -- ON_DEACTIVATED = function(me, item)
+    -- end,
+
+    -- ON_CONCAST = function(me, item)
+    -- end,
+
+    -- ON_ATTACK = function(me, item)
+    -- end
+}

@@ -34,18 +34,20 @@ local function do_exchange(me, npc, need_count, reward_name)
     return true
 end
 
-function NPC_347(me, npc)
-    local labels = {}
-    for i = 1, #REWARDS do
-        labels[i] = REWARDS[i].label
+return {
+    ON_CLICK = function(me, npc)
+        local labels = {}
+        for i = 1, #REWARDS do
+            labels[i] = REWARDS[i].label
+        end
+        local sel, btn = me:list(npc, "교환권 1개로 무엇을 구입하시겠습니까?", labels, { prev = false })
+        if btn == DIALOG_RESULT.QUIT then
+            return
+        end
+        if sel == nil or sel < 1 or sel > #REWARDS then
+            return
+        end
+        local r = REWARDS[sel]
+        do_exchange(me, npc, r.count, r.name)
     end
-    local sel, btn = me:list(npc, "교환권 1개로 무엇을 구입하시겠습니까?", labels, { prev = false })
-    if btn == DIALOG_RESULT.QUIT then
-        return
-    end
-    if sel == nil or sel < 1 or sel > #REWARDS then
-        return
-    end
-    local r = REWARDS[sel]
-    do_exchange(me, npc, r.count, r.name)
-end
+}

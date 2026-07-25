@@ -1,11 +1,15 @@
 -- item: 천풍선
 
--- 천풍선 사용 스크립트
--- function ON_ACTIVATED_72(me, item)
---
--- end
+return {
+    -- ON_ACTIVATED = function(me, item)
+    -- end,
 
--- 천풍선 해제 스크립트
--- function ON_DEACTIVATED_72(me, item)
---
--- end
+    -- ON_DEACTIVATED = function(me, item)
+    -- end,
+
+    -- ON_CONCAST = function(me, item)
+    -- end,
+
+    -- ON_ATTACK = function(me, item)
+    -- end
+}

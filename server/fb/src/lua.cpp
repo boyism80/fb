@@ -407,6 +407,11 @@ void fb::lua::context::clear_call_engaged()
     this->_call_engaged = false;
 }
 
+void fb::lua::context::clear_script_path()
+{
+    this->_script_path.clear();
+}
+
 void fb::lua::context::resume(int argc, int* n)
 {
     if (this->_promise == nullptr)
@@ -758,6 +763,66 @@ context* root::get(lua_State* ctx)
     return it->second.get();
 }
 
+bool root::has_module(std::string_view path)
+{
+    auto path_str = std::string(path);
+    lua_getfield(*this, LUA_REGISTRYINDEX, MODULES_KEY);
+    if (lua_istable(*this, -1) == false)
+    {
+        lua_pop(*this, 1);
+        return false;
+    }
+
+    lua_getfield(*this, -1, path_str.c_str());
+    auto ok = lua_istable(*this, -1);
+    lua_pop(*this, 2);
+    return ok;
+}
+
+bool root::store_module(lua_State* L, std::string_view path)
+{
+    if (lua_istable(L, -1) == false)
+    {
+        lua_pop(L, 1);
+        return false;
+    }
+
+    auto path_str = std::string(path);
+    lua_getfield(L, LUA_REGISTRYINDEX, MODULES_KEY);
+    if (lua_istable(L, -1) == false)
+    {
+        lua_pop(L, 1);
+        lua_newtable(L);
+        lua_pushvalue(L, -1);
+        lua_setfield(L, LUA_REGISTRYINDEX, MODULES_KEY);
+    }
+
+    lua_pushvalue(L, -2);
+    lua_setfield(L, -2, path_str.c_str());
+    lua_pop(L, 2);
+    return true;
+}
+
+bool root::push_module(lua_State* L, std::string_view path)
+{
+    auto path_str = std::string(path);
+    lua_getfield(L, LUA_REGISTRYINDEX, MODULES_KEY);
+    if (lua_istable(L, -1) == false)
+    {
+        lua_pop(L, 1);
+        return false;
+    }
+
+    lua_getfield(L, -1, path_str.c_str());
+    lua_remove(L, -2);
+    if (lua_istable(L, -1) == false)
+    {
+        lua_pop(L, 1);
+        return false;
+    }
+    return true;
+}
+
 bool root::dump(std::string_view path)
 {
     if (path.empty())
@@ -792,13 +857,18 @@ bool root::dump(std::string_view path)
 
     ::lua_dump(*this, callback, params, 1);
 
-    if (lua_pcall(*this, 0, LUA_MULTRET, 0) != LUA_OK)
+    if (lua_pcall(*this, 0, 1, 0) != LUA_OK)
     {
         context::pop(1);
         this->_bytecodes[path_str].clear();
         return false;
     }
-    lua_settop(*this, 0);
+
+    if (this->store_module(*this, path_str) == false)
+    {
+        this->_bytecodes[path_str].clear();
+        return false;
+    }
 
     return true;
 }
@@ -848,6 +918,7 @@ void root::release(context& ctx)
         ctx.parent(nullptr);
         ctx.options(call_options{});
         ctx.clear_call_engaged();
+        ctx.clear_script_path();
 
         // Force garbage collection before moving to idle pool
         lua_gc(ctx, LUA_GCCOLLECT, 0);

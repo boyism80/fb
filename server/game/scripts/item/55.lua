@@ -1,11 +1,15 @@
 -- item: 삼지창
 
--- 삼지창 사용 스크립트
--- function ON_ACTIVATED_55(me, item)
---
--- end
+return {
+    -- ON_ACTIVATED = function(me, item)
+    -- end,
 
--- 삼지창 해제 스크립트
--- function ON_DEACTIVATED_55(me, item)
---
--- end
+    -- ON_DEACTIVATED = function(me, item)
+    -- end,
+
+    -- ON_CONCAST = function(me, item)
+    -- end,
+
+    -- ON_ATTACK = function(me, item)
+    -- end
+}

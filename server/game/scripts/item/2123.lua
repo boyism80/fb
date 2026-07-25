@@ -1,16 +1,16 @@
 -- item: 투명구두
 
--- 투명구두 사용 스크립트
--- function ON_ACTIVATED_2123(me, item)
---
--- end
+return {
+    -- ON_ACTIVATED = function(me, item)
+    -- end,
 
--- 투명구두 해제 스크립트
--- function ON_DEACTIVATED_2123(me, item)
---
--- end
+    -- ON_DEACTIVATED = function(me, item)
+    -- end,
 
--- 투명구두 지속 스크립트
-function ON_CONCAST_2123(me, item)
-    me:cast('자동투명')
-end
+    ON_CONCAST = function(me, item)
+        me:cast('자동투명')
+    end,
+
+    -- ON_ATTACK = function(me, item)
+    -- end
+}

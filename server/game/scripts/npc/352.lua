@@ -160,25 +160,27 @@ local function run_sesi_8(me, npc)
     return true
 end
 
-function NPC_352(me, npc)
-    local btn = me:dialog(npc, "저는 이 마을 촌장의 부인되는 목원지라고 합니다.", { prev = false, next = true })
-    if btn == DIALOG_RESULT.QUIT then
-        return
-    end
+return {
+    ON_CLICK = function(me, npc)
+        local btn = me:dialog(npc, "저는 이 마을 촌장의 부인되는 목원지라고 합니다.", { prev = false, next = true })
+        if btn == DIALOG_RESULT.QUIT then
+            return
+        end
 
-    if run_sesi_2(me, npc) then
-        return
+        if run_sesi_2(me, npc) then
+            return
+        end
+        if run_sesi_4(me, npc) then
+            return
+        end
+        if run_sesi_5(me, npc) then
+            return
+        end
+        if run_sesi_7(me, npc) then
+            return
+        end
+        if run_sesi_8(me, npc) then
+            return
+        end
     end
-    if run_sesi_4(me, npc) then
-        return
-    end
-    if run_sesi_5(me, npc) then
-        return
-    end
-    if run_sesi_7(me, npc) then
-        return
-    end
-    if run_sesi_8(me, npc) then
-        return
-    end
-end
+}

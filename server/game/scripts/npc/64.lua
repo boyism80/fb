@@ -1,4 +1,6 @@
 -- npc: 재봉사
--- function NPC_64(me, npc)
---
--- end
+
+return {
+    -- ON_CLICK = function(me, npc)
+    -- end
+}

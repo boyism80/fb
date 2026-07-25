@@ -1,9 +1,15 @@
 -- item: 초특급방무비서
 
--- 초특급방무비서 사용 스크립트
--- function ON_ACTIVATED_10578(me, item)
--- end
+return {
+    -- ON_ACTIVATED = function(me, item)
+    -- end,
 
--- 초특급방무비서 해제 스크립트
--- function ON_DEACTIVATED_10578(me, item)
--- end
+    -- ON_DEACTIVATED = function(me, item)
+    -- end,
+
+    -- ON_CONCAST = function(me, item)
+    -- end,
+
+    -- ON_ATTACK = function(me, item)
+    -- end
+}

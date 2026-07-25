@@ -1,11 +1,15 @@
 -- item: 투사의칼
 
--- 투사의칼 사용 스크립트
--- function ON_ACTIVATED_183(me, item)
---
--- end
+return {
+    -- ON_ACTIVATED = function(me, item)
+    -- end,
 
--- 투사의칼 해제 스크립트
--- function ON_DEACTIVATED_183(me, item)
---
--- end
+    -- ON_DEACTIVATED = function(me, item)
+    -- end,
+
+    -- ON_CONCAST = function(me, item)
+    -- end,
+
+    -- ON_ATTACK = function(me, item)
+    -- end
+}

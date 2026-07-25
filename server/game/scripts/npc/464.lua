@@ -58,45 +58,47 @@ local function do_sub2_complete(me, npc)
     return true
 end
 
-function NPC_464(me, npc)
-    local q2 = me:quest(quest.QUEST_SKULL_NECKLACE_2)
+return {
+    ON_CLICK = function(me, npc)
+        local q2 = me:quest(quest.QUEST_SKULL_NECKLACE_2)
 
-    if q2 == nil or q2:step() == 0 then
-        if do_sub2_start(me, npc) then
+        if q2 == nil or q2:step() == 0 then
+            if do_sub2_start(me, npc) then
+                return
+            end
             return
         end
-        return
+
+        if q2:step() == 1 then
+            me:dialog(npc, "상의하고 싶은 문제가 있으시니, 일단 편지를 전해주시기만 하시면, 나머지는 토원왕이 해결해 주실거다.", { prev = false, next = false })
+            return
+        end
+
+        if q2:step() == 2 then
+            if do_sub2_complete(me, npc) then
+                return
+            end
+            return
+        end
+
+        local main_q = me:quest(quest.QUEST_SKULL_NECKLACE)
+        if main_q and main_q:step() == 33 then
+            if not me:has_items("마른갈대", 1) then
+                me:dialog(npc, "마른갈대를 구해서 왕들에게 하나씩 나누어 주게.", { prev = false, next = false })
+                return
+            end
+            local b = me:dialog(npc, "마른 갈대를 나눠주고 있다고 들었네. 수고하는 모습이 참 보기 좋군. 더 수고해주게.", { prev = false, next = true })
+            if b == DIALOG_RESULT.QUIT then
+                return
+            end
+            if not me:rmitem("마른갈대", 1, ITEM_DELETE_TYPE.GIVE) then
+                me:dialog(npc, "아이템을 제거할 수 없습니다.", { prev = false, next = false })
+                return
+            end
+            main_q:step(34)
+            return
+        end
+
+        me:dialog(npc, "준비중입니다.", { prev = false, next = false })
     end
-
-    if q2:step() == 1 then
-        me:dialog(npc, "상의하고 싶은 문제가 있으시니, 일단 편지를 전해주시기만 하시면, 나머지는 토원왕이 해결해 주실거다.", { prev = false, next = false })
-        return
-    end
-
-    if q2:step() == 2 then
-        if do_sub2_complete(me, npc) then
-            return
-        end
-        return
-    end
-
-    local main_q = me:quest(quest.QUEST_SKULL_NECKLACE)
-    if main_q and main_q:step() == 33 then
-        if not me:has_items("마른갈대", 1) then
-            me:dialog(npc, "마른갈대를 구해서 왕들에게 하나씩 나누어 주게.", { prev = false, next = false })
-            return
-        end
-        local b = me:dialog(npc, "마른 갈대를 나눠주고 있다고 들었네. 수고하는 모습이 참 보기 좋군. 더 수고해주게.", { prev = false, next = true })
-        if b == DIALOG_RESULT.QUIT then
-            return
-        end
-        if not me:rmitem("마른갈대", 1, ITEM_DELETE_TYPE.GIVE) then
-            me:dialog(npc, "아이템을 제거할 수 없습니다.", { prev = false, next = false })
-            return
-        end
-        main_q:step(34)
-        return
-    end
-
-    me:dialog(npc, "준비중입니다.", { prev = false, next = false })
-end
+}

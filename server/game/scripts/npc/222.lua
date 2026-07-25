@@ -112,6 +112,8 @@ local function marriage_npc(me, npc)
     end
 end
 
-function NPC_222(me, npc)
-    marriage_npc(me, npc)
-end
+return {
+    ON_CLICK = function(me, npc)
+        marriage_npc(me, npc)
+    end
+}

@@ -1,9 +1,15 @@
 -- item: 봉인된각인비서
 
--- 봉인된각인비서 사용 스크립트
--- function ON_ACTIVATED_10599(me, item)
--- end
+return {
+    -- ON_ACTIVATED = function(me, item)
+    -- end,
 
--- 봉인된각인비서 해제 스크립트
--- function ON_DEACTIVATED_10599(me, item)
--- end
+    -- ON_DEACTIVATED = function(me, item)
+    -- end,
+
+    -- ON_CONCAST = function(me, item)
+    -- end,
+
+    -- ON_ATTACK = function(me, item)
+    -- end
+}

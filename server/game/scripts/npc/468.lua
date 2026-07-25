@@ -76,63 +76,65 @@ local function do_sub6_turnin(me, npc)
     return true
 end
 
-function NPC_468(me, npc)
-    local q6 = me:quest(quest.QUEST_SKULL_NECKLACE_6)
+return {
+    ON_CLICK = function(me, npc)
+        local q6 = me:quest(quest.QUEST_SKULL_NECKLACE_6)
 
-    if q6 == nil or q6:step() == 0 then
-        if do_sub6_start(me, npc) then
+        if q6 == nil or q6:step() == 0 then
+            if do_sub6_start(me, npc) then
+                return
+            end
             return
         end
-        return
+
+        if q6:step() == 1 then
+            if do_sub6_turnin(me, npc) then
+                return
+            end
+            return
+        end
+
+        local main_q = me:quest(quest.QUEST_SKULL_NECKLACE)
+        if main_q then
+            local s = main_q:step()
+            if s == 20 then
+                local b = me:dialog(npc, "참원왕이 의견을 물어 여기까지 왔으시라고?", { prev = false, next = true })
+                if b == DIALOG_RESULT.QUIT then
+                    return
+                end
+                b = me:dialog(npc, "인간들은 음식을 구워서 드신다며? 잘은 모르시지만, 우리도 음식을 구워 드시면 병에 걸리시는 일이", { prev = true, next = true })
+                if b == DIALOG_RESULT.PREV or b == DIALOG_RESULT.QUIT then
+                    return
+                end
+                b = me:dialog(npc, "없으실 것만 같으시다. 그 횃불이라고 부르시는 물건을 구하셔서 구워 드셔보는게 어떠실까 하신다.", { prev = true, next = true })
+                if b == DIALOG_RESULT.PREV or b == DIALOG_RESULT.QUIT then
+                    return
+                end
+                main_q:step(21)
+                return
+            end
+            if s == 21 then
+                me:dialog(npc, "내 의견을 참원왕에게 어서 전달해주셨으면 좋으시겠다.", { prev = false, next = false })
+                return
+            end
+            if s == 30 then
+                if not me:has_items("마른갈대", 1) then
+                    me:dialog(npc, "마른갈대를 구해서 왕들에게 하나씩 나누어 주게.", { prev = false, next = false })
+                    return
+                end
+                local b = me:dialog(npc, "마른 갈대를 나눠주고 있다고 들었네. 수고하는 모습이 참 보기 좋군. 더 수고해주게.", { prev = false, next = true })
+                if b == DIALOG_RESULT.QUIT then
+                    return
+                end
+                if not me:rmitem("마른갈대", 1, ITEM_DELETE_TYPE.GIVE) then
+                    me:dialog(npc, "아이템을 제거할 수 없습니다.", { prev = false, next = false })
+                    return
+                end
+                main_q:step(31)
+                return
+            end
+        end
+
+        me:dialog(npc, "준비중입니다.", { prev = false, next = false })
     end
-
-    if q6:step() == 1 then
-        if do_sub6_turnin(me, npc) then
-            return
-        end
-        return
-    end
-
-    local main_q = me:quest(quest.QUEST_SKULL_NECKLACE)
-    if main_q then
-        local s = main_q:step()
-        if s == 20 then
-            local b = me:dialog(npc, "참원왕이 의견을 물어 여기까지 왔으시라고?", { prev = false, next = true })
-            if b == DIALOG_RESULT.QUIT then
-                return
-            end
-            b = me:dialog(npc, "인간들은 음식을 구워서 드신다며? 잘은 모르시지만, 우리도 음식을 구워 드시면 병에 걸리시는 일이", { prev = true, next = true })
-            if b == DIALOG_RESULT.PREV or b == DIALOG_RESULT.QUIT then
-                return
-            end
-            b = me:dialog(npc, "없으실 것만 같으시다. 그 횃불이라고 부르시는 물건을 구하셔서 구워 드셔보는게 어떠실까 하신다.", { prev = true, next = true })
-            if b == DIALOG_RESULT.PREV or b == DIALOG_RESULT.QUIT then
-                return
-            end
-            main_q:step(21)
-            return
-        end
-        if s == 21 then
-            me:dialog(npc, "내 의견을 참원왕에게 어서 전달해주셨으면 좋으시겠다.", { prev = false, next = false })
-            return
-        end
-        if s == 30 then
-            if not me:has_items("마른갈대", 1) then
-                me:dialog(npc, "마른갈대를 구해서 왕들에게 하나씩 나누어 주게.", { prev = false, next = false })
-                return
-            end
-            local b = me:dialog(npc, "마른 갈대를 나눠주고 있다고 들었네. 수고하는 모습이 참 보기 좋군. 더 수고해주게.", { prev = false, next = true })
-            if b == DIALOG_RESULT.QUIT then
-                return
-            end
-            if not me:rmitem("마른갈대", 1, ITEM_DELETE_TYPE.GIVE) then
-                me:dialog(npc, "아이템을 제거할 수 없습니다.", { prev = false, next = false })
-                return
-            end
-            main_q:step(31)
-            return
-        end
-    end
-
-    me:dialog(npc, "준비중입니다.", { prev = false, next = false })
-end
+}

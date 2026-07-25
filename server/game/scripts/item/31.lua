@@ -1,11 +1,15 @@
 -- item: 현랑부
 
--- 현랑부 사용 스크립트
--- function ON_ACTIVATED_31(me, item)
---
--- end
+return {
+    -- ON_ACTIVATED = function(me, item)
+    -- end,
 
--- 현랑부 해제 스크립트
--- function ON_DEACTIVATED_31(me, item)
---
--- end
+    -- ON_DEACTIVATED = function(me, item)
+    -- end,
+
+    -- ON_CONCAST = function(me, item)
+    -- end,
+
+    -- ON_ATTACK = function(me, item)
+    -- end
+}

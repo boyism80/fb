@@ -1,13 +1,15 @@
 -- item: 풍선8
 
--- 풍선8 사용 스크립트
--- function ON_ACTIVATED_564(me, item)
--- end
+return {
+    -- ON_ACTIVATED = function(me, item)
+    -- end,
 
--- 풍선8 해제 스크립트
--- function ON_DEACTIVATED_564(me, item)
--- end
+    -- ON_DEACTIVATED = function(me, item)
+    -- end,
 
--- 풍선8 공격 스크립트
--- function ON_ATTACK_564(me, item)
--- end
+    -- ON_CONCAST = function(me, item)
+    -- end,
+
+    -- ON_ATTACK = function(me, item)
+    -- end
+}

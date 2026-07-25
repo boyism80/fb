@@ -1,5 +1,15 @@
 -- item: 빨간양말
 
--- 빨간양말 해제 스크립트
--- function ON_DEACTIVATED_14235(me, item)
--- end
+return {
+    -- ON_ACTIVATED = function(me, item)
+    -- end,
+
+    -- ON_DEACTIVATED = function(me, item)
+    -- end,
+
+    -- ON_CONCAST = function(me, item)
+    -- end,
+
+    -- ON_ATTACK = function(me, item)
+    -- end
+}

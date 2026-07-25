@@ -1,9 +1,15 @@
 -- item: [전설]방어력무시
 
--- [전설]방어력무시 사용 스크립트
--- function ON_ACTIVATED_10583(me, item)
--- end
+return {
+    -- ON_ACTIVATED = function(me, item)
+    -- end,
 
--- [전설]방어력무시 해제 스크립트
--- function ON_DEACTIVATED_10583(me, item)
--- end
+    -- ON_DEACTIVATED = function(me, item)
+    -- end,
+
+    -- ON_CONCAST = function(me, item)
+    -- end,
+
+    -- ON_ATTACK = function(me, item)
+    -- end
+}

@@ -1,11 +1,15 @@
 -- item: 체력의반지2
 
--- 체력의반지2 사용 스크립트
--- function ON_ACTIVATED_1775(me, item)
---
--- end
+return {
+    -- ON_ACTIVATED = function(me, item)
+    -- end,
 
--- 체력의반지2 해제 스크립트
--- function ON_DEACTIVATED_1775(me, item)
---
--- end
+    -- ON_DEACTIVATED = function(me, item)
+    -- end,
+
+    -- ON_CONCAST = function(me, item)
+    -- end,
+
+    -- ON_ATTACK = function(me, item)
+    -- end
+}

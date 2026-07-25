@@ -1,5 +1,15 @@
 -- item: 진소림오행진
 
--- 진소림오행진 해제 스크립트
--- function ON_DEACTIVATED_5064(me, item)
--- end
+return {
+    -- ON_ACTIVATED = function(me, item)
+    -- end,
+
+    -- ON_DEACTIVATED = function(me, item)
+    -- end,
+
+    -- ON_CONCAST = function(me, item)
+    -- end,
+
+    -- ON_ATTACK = function(me, item)
+    -- end
+}

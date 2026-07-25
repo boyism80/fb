@@ -1,10 +1,17 @@
 -- mob: 가재장
--- 가재장 사망
 local quest = require('lib.quest')
 
-function ON_MOB_KILL_338(me, mobs)
-    quest.king_on_mob_kill(me, mobs)
-end
+return {
+    -- ON_MOB_ATTACK = function(me, you)
+    -- end,
 
--- function ON_MOB_DIE_338(me)
--- end
+    -- ON_MOB_DIE = function(me)
+    -- end,
+
+    ON_MOB_KILL = function(me, mobs)
+        quest.king_on_mob_kill(me, mobs)
+    end,
+
+    -- ON_MOB_SPELL_HIT = function(me, you, spell)
+    -- end
+}

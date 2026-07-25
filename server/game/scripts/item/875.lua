@@ -1,11 +1,15 @@
 -- item: 철짧은도포
 
--- 철짧은도포 사용 스크립트
--- function ON_ACTIVATED_875(me, item)
---
--- end
+return {
+    -- ON_ACTIVATED = function(me, item)
+    -- end,
 
--- 철짧은도포 해제 스크립트
--- function ON_DEACTIVATED_875(me, item)
---
--- end
+    -- ON_DEACTIVATED = function(me, item)
+    -- end,
+
+    -- ON_CONCAST = function(me, item)
+    -- end,
+
+    -- ON_ATTACK = function(me, item)
+    -- end
+}

@@ -92,18 +92,20 @@ local function run_craft_menu(me, ch)
     end
 end
 
-function NPC_621(me, npc_obj)
-    npc.shop(me, npc_obj, {
-        menu = {
-            { '물건사기', function(me, ch)
-                return npc.show_buy_menu(me, ch)
-            end },
-            { '물건팔기', function(me, ch)
-                return npc.show_sell_menu(me, ch)
-            end },
-            { '제작 의뢰', function(me, ch)
-                return run_craft_menu(me, ch)
-            end },
-        },
-    })
-end
+return {
+    ON_CLICK = function(me, npc_obj)
+        npc.shop(me, npc_obj, {
+            menu = {
+                { '물건사기', function(me, ch)
+                    return npc.show_buy_menu(me, ch)
+                end },
+                { '물건팔기', function(me, ch)
+                    return npc.show_sell_menu(me, ch)
+                end },
+                { '제작 의뢰', function(me, ch)
+                    return run_craft_menu(me, ch)
+                end },
+            },
+        })
+    end
+}

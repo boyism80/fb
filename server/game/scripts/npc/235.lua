@@ -2,52 +2,7 @@
 local quest = require('lib.quest')
 local enum = require('lib.enum')
 
-function NPC_235(me, npc)
-    local q = me:quest(quest.QUEST_PAMASPIRI)
-    if q and q:step() == 2 and not q:completed() then
-        ::NPC_235_0001::
-        local sel, btn = me:list(npc, "누구세요? 제게 무슨 하실 말씀이라도...?", { "혹시 사탕 좀 가지고 있니?", "아무 일도 아니란다." }, { prev = false })
-        if btn == DIALOG_RESULT.QUIT or sel == nil or sel ~= 1 then
-            return
-        end
-
-        ::NPC_235_0002::
-        local button = me:dialog(npc, "아, 사탕이 필요하세요? 예, 나눠 드릴께요.", { prev = true, next = true })
-        if button == DIALOG_RESULT.QUIT then
-            return
-        end
-        if button == DIALOG_RESULT.PREV then
-            goto NPC_235_0001
-        end
-
-        if me:mkitem("꿀사탕", 1) == nil then
-            me:dialog(npc, "소지품이 가득 차서 줄 수 없네요.", { prev = false, next = false })
-            return
-        end
-        q:step(3)
-        me:push_achievement(48, "파마의 피리를 찾자(꼬마에게 사탕을 주자).", 7, 1)
-        me:dialog(npc, "대신 다음에 시간이 되시면 제 장난감 찾는 일을 좀 도와주셔야 돼요. 아셨죠? 그럼 전 이만...", { prev = false, next = false })
-        return
-    end
-
-    local sel = me:list(npc, '제게 하실 말씀이 있으신가요?', {
-        '청자다람쥐인형',
-        '잃어버린 장난감'
-    })
-    if sel == nil then
-        return
-    end
-    if sel == 1 then
-        bokgeon_sell_doll(me, npc)
-        return
-    end
-    if sel == 2 then
-        bokgeon_find_toys(me, npc)
-        return
-    end
-end
-
-function bokgeon_sell_doll(me, npc)
+local function bokgeon_sell_doll(me, npc)
     local q = me:quest(quest.QUEST_SELL_DOLL)
     
     if q == nil then
@@ -104,7 +59,7 @@ function bokgeon_sell_doll(me, npc)
     me:dialog(npc, '다른 재미있는 장난감이 있으면 제게 가져와 주세요. 제가 다 사드릴게요.', { prev = false, next = true })
 end
 
-function bokgeon_find_toys(me, npc)
+local function bokgeon_find_toys(me, npc)
     local q = me:quest(quest.QUEST_FIND_TOYS)
     
     if q == nil then
@@ -197,3 +152,50 @@ function bokgeon_find_toys(me, npc)
         me:dialog(npc, '상아주사위는 복건성에서, 오색폭죽은 상해어딘가에서, 청옥팽이는 강서성에서 잃어버렸어요.', { prev = false, next = true })
     end
 end
+
+return {
+    ON_CLICK = function(me, npc)
+        local q = me:quest(quest.QUEST_PAMASPIRI)
+        if q and q:step() == 2 and not q:completed() then
+            ::NPC_235_0001::
+            local sel, btn = me:list(npc, "누구세요? 제게 무슨 하실 말씀이라도...?", { "혹시 사탕 좀 가지고 있니?", "아무 일도 아니란다." }, { prev = false })
+            if btn == DIALOG_RESULT.QUIT or sel == nil or sel ~= 1 then
+                return
+            end
+
+            ::NPC_235_0002::
+            local button = me:dialog(npc, "아, 사탕이 필요하세요? 예, 나눠 드릴께요.", { prev = true, next = true })
+            if button == DIALOG_RESULT.QUIT then
+                return
+            end
+            if button == DIALOG_RESULT.PREV then
+                goto NPC_235_0001
+            end
+
+            if me:mkitem("꿀사탕", 1) == nil then
+                me:dialog(npc, "소지품이 가득 차서 줄 수 없네요.", { prev = false, next = false })
+                return
+            end
+            q:step(3)
+            me:push_achievement(48, "파마의 피리를 찾자(꼬마에게 사탕을 주자).", 7, 1)
+            me:dialog(npc, "대신 다음에 시간이 되시면 제 장난감 찾는 일을 좀 도와주셔야 돼요. 아셨죠? 그럼 전 이만...", { prev = false, next = false })
+            return
+        end
+
+        local sel = me:list(npc, '제게 하실 말씀이 있으신가요?', {
+            '청자다람쥐인형',
+            '잃어버린 장난감'
+        })
+        if sel == nil then
+            return
+        end
+        if sel == 1 then
+            bokgeon_sell_doll(me, npc)
+            return
+        end
+        if sel == 2 then
+            bokgeon_find_toys(me, npc)
+            return
+        end
+    end
+}

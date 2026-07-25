@@ -1,11 +1,15 @@
 -- item: 봉마의귀걸이
 
--- 봉마의귀걸이 사용 스크립트
--- function ON_ACTIVATED_2128(me, item)
---
--- end
+return {
+    -- ON_ACTIVATED = function(me, item)
+    -- end,
 
--- 봉마의귀걸이 해제 스크립트
--- function ON_DEACTIVATED_2128(me, item)
---
--- end
+    -- ON_DEACTIVATED = function(me, item)
+    -- end,
+
+    -- ON_CONCAST = function(me, item)
+    -- end,
+
+    -- ON_ATTACK = function(me, item)
+    -- end
+}

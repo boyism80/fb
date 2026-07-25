@@ -1,11 +1,15 @@
 -- item: 칠지도
 
--- 칠지도 사용 스크립트
--- function ON_ACTIVATED_221(me, item)
---
--- end
+return {
+    -- ON_ACTIVATED = function(me, item)
+    -- end,
 
--- 칠지도 해제 스크립트
--- function ON_DEACTIVATED_221(me, item)
---
--- end
+    -- ON_DEACTIVATED = function(me, item)
+    -- end,
+
+    -- ON_CONCAST = function(me, item)
+    -- end,
+
+    -- ON_ATTACK = function(me, item)
+    -- end
+}

@@ -1,9 +1,15 @@
 -- item: 활엽씨앗
 
--- 활엽씨앗 사용 스크립트
--- function ON_ACTIVATED_12479(me, item)
--- end
+return {
+    -- ON_ACTIVATED = function(me, item)
+    -- end,
 
--- 활엽씨앗 해제 스크립트
--- function ON_DEACTIVATED_12479(me, item)
--- end
+    -- ON_DEACTIVATED = function(me, item)
+    -- end,
+
+    -- ON_CONCAST = function(me, item)
+    -- end,
+
+    -- ON_ATTACK = function(me, item)
+    -- end
+}

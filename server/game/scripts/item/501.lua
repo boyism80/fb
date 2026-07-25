@@ -1,13 +1,15 @@
 -- item: 전사방천화극
 
--- 전사방천화극 사용 스크립트
--- function ON_ACTIVATED_501(me, item)
--- end
+return {
+    -- ON_ACTIVATED = function(me, item)
+    -- end,
 
--- 전사방천화극 해제 스크립트
--- function ON_DEACTIVATED_501(me, item)
--- end
+    -- ON_DEACTIVATED = function(me, item)
+    -- end,
 
--- 전사방천화극 공격 스크립트
--- function ON_ATTACK_501(me, item)
--- end
+    -- ON_CONCAST = function(me, item)
+    -- end,
+
+    -- ON_ATTACK = function(me, item)
+    -- end
+}

@@ -39,25 +39,27 @@ local function craft_amber_crystal(me, ch, exchange_list)
     return me:dialog(ch, name_with(dest.name, '을', '를') .. ' 만들어드렸습니다.', { prev = false, next = true })
 end
 
-function NPC_232(me, npc_obj)
-    npc.shop(me, npc_obj, {
-        greeting = '안녕하세요. 어떻게 오셨나요?',
-        menu = {
-            { '물건 사기', function(me, ch)
-                return npc.show_sell_menu(me, ch)
-            end },
-            { '물건 팔기', function(me, ch)
-                return npc.show_buy_menu(me, ch)
-            end },
-            { '끈옷판매', function(me, ch)
-                return me:dialog(ch, '특별 이벤트 기간에만 가능합니다.', { prev = false, next = true })
-            end },
-            { '산타클로스옷판매', function(me, ch)
-                return me:dialog(ch, '특별 이벤트 기간에만 가능합니다.', { prev = false, next = true })
-            end },
-            { '호박결정만들기', function(me, ch)
-                return craft_amber_crystal(me, ch, AMBER_CRYSTAL_EXCHANGE)
-            end },
-        },
-    })
-end
+return {
+    ON_CLICK = function(me, npc_obj)
+        npc.shop(me, npc_obj, {
+            greeting = '안녕하세요. 어떻게 오셨나요?',
+            menu = {
+                { '물건 사기', function(me, ch)
+                    return npc.show_sell_menu(me, ch)
+                end },
+                { '물건 팔기', function(me, ch)
+                    return npc.show_buy_menu(me, ch)
+                end },
+                { '끈옷판매', function(me, ch)
+                    return me:dialog(ch, '특별 이벤트 기간에만 가능합니다.', { prev = false, next = true })
+                end },
+                { '산타클로스옷판매', function(me, ch)
+                    return me:dialog(ch, '특별 이벤트 기간에만 가능합니다.', { prev = false, next = true })
+                end },
+                { '호박결정만들기', function(me, ch)
+                    return craft_amber_crystal(me, ch, AMBER_CRYSTAL_EXCHANGE)
+                end },
+            },
+        })
+    end
+}

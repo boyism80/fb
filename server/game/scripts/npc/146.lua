@@ -1,4 +1,6 @@
 -- npc: 도사팔괘
--- function NPC_146(me, npc)
---
--- end
+
+return {
+    -- ON_CLICK = function(me, npc)
+    -- end
+}

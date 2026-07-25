@@ -61,11 +61,13 @@ local function run_hunt_event_user(me, npc)
     run_hunt_event_entry(me, npc)
 end
 
-function NPC_456(me, npc)
-    local is_admin = (me:role() >= ROLE.ADMIN)
-    if is_admin then
-        run_hunt_event_admin(me, npc)
-    else
-        run_hunt_event_user(me, npc)
+return {
+    ON_CLICK = function(me, npc)
+        local is_admin = (me:role() >= ROLE.ADMIN)
+        if is_admin then
+            run_hunt_event_admin(me, npc)
+        else
+            run_hunt_event_user(me, npc)
+        end
     end
-end
+}

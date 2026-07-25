@@ -1,18 +1,18 @@
 -- item: 해독의귀걸이
 
--- 해독의귀걸이 사용 스크립트
--- function ON_ACTIVATED_2129(me, item)
---
--- end
+return {
+    -- ON_ACTIVATED = function(me, item)
+    -- end,
 
--- 해독의귀걸이 해제 스크립트
--- function ON_DEACTIVATED_2129(me, item)
---
--- end
+    -- ON_DEACTIVATED = function(me, item)
+    -- end,
 
--- 해독의귀걸이 지속 스크립트
-function ON_CONCAST_2129(me, item)
-    if me:isbuff('중독') then
-        me:unbuff('중독')
-    end
-end
+    ON_CONCAST = function(me, item)
+        if me:isbuff('중독') then
+            me:unbuff('중독')
+        end
+    end,
+
+    -- ON_ATTACK = function(me, item)
+    -- end
+}

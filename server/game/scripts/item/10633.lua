@@ -1,9 +1,15 @@
 -- item: [고급]투구마방
 
--- [고급]투구마방 사용 스크립트
--- function ON_ACTIVATED_10633(me, item)
--- end
+return {
+    -- ON_ACTIVATED = function(me, item)
+    -- end,
 
--- [고급]투구마방 해제 스크립트
--- function ON_DEACTIVATED_10633(me, item)
--- end
+    -- ON_DEACTIVATED = function(me, item)
+    -- end,
+
+    -- ON_CONCAST = function(me, item)
+    -- end,
+
+    -- ON_ATTACK = function(me, item)
+    -- end
+}

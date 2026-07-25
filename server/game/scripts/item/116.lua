@@ -1,11 +1,15 @@
 -- item: 가시나무봉
 
--- 가시나무봉 사용 스크립트
--- function ON_ACTIVATED_116(me, item)
---
--- end
+return {
+    -- ON_ACTIVATED = function(me, item)
+    -- end,
 
--- 가시나무봉 해제 스크립트
--- function ON_DEACTIVATED_116(me, item)
---
--- end
+    -- ON_DEACTIVATED = function(me, item)
+    -- end,
+
+    -- ON_CONCAST = function(me, item)
+    -- end,
+
+    -- ON_ATTACK = function(me, item)
+    -- end
+}

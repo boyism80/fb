@@ -1,11 +1,15 @@
 -- item: 그림자의막대
 
--- 그림자의막대 사용 스크립트
--- function ON_ACTIVATED_106(me, item)
---
--- end
+return {
+    -- ON_ACTIVATED = function(me, item)
+    -- end,
 
--- 그림자의막대 해제 스크립트
--- function ON_DEACTIVATED_106(me, item)
---
--- end
+    -- ON_DEACTIVATED = function(me, item)
+    -- end,
+
+    -- ON_CONCAST = function(me, item)
+    -- end,
+
+    -- ON_ATTACK = function(me, item)
+    -- end
+}

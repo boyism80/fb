@@ -1,9 +1,15 @@
 -- item: 세시마을비서
 
--- 세시마을비서 사용 스크립트
--- function ON_ACTIVATED_60027(me, item)
--- end
+return {
+    -- ON_ACTIVATED = function(me, item)
+    -- end,
 
--- 세시마을비서 해제 스크립트
--- function ON_DEACTIVATED_60027(me, item)
--- end
+    -- ON_DEACTIVATED = function(me, item)
+    -- end,
+
+    -- ON_CONCAST = function(me, item)
+    -- end,
+
+    -- ON_ATTACK = function(me, item)
+    -- end
+}

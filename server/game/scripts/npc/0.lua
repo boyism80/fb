@@ -2,11 +2,11 @@
 local quest = require('lib.quest')
 local npc_lib = require('lib.npc')
 
-function main(me, npc)
+local function main(me, npc)
     npc_lib.nakrang_intro(me, npc)
 end
 
-function sample_group(me, npc)
+local function sample_group(me, npc)
     local selected = me:menu(npc, '선택', {'그룹 초대/추방', '그룹 메시지'})
     if selected == nil then
         return
@@ -59,7 +59,7 @@ function sample_group(me, npc)
     end
 end
 
-function sample_clan(me, npc)
+local function sample_clan(me, npc)
     local clan = me:clan()
     if clan == nil then
         local name = me:input(npc, '생성할 문파 이름')
@@ -202,7 +202,7 @@ function sample_clan(me, npc)
     end
 end
 
-function sample_whisper(me, npc)
+local function sample_whisper(me, npc)
     local name = me:input(npc, '귓속말할 상대 이름')
     local message = me:input(npc, '귓속말 내용')
 
@@ -214,7 +214,7 @@ function sample_whisper(me, npc)
     end
 end
 
-function sample_send_mail(me, npc)
+local function sample_send_mail(me, npc)
     local name = me:input(npc, '상대 이름')
     local title = me:input(npc, '제목')
     local contents = me:input(npc, '내용')
@@ -227,7 +227,7 @@ function sample_send_mail(me, npc)
     end
 end
 
-function sample_map(me, npc)
+local function sample_map(me, npc)
     local name = me:input(npc, '맵 이름')
     local error = me:map(name)
     if error ~= nil then
@@ -235,7 +235,7 @@ function sample_map(me, npc)
     end
 end
 
-function sample_cc(me, npc)
+local function sample_cc(me, npc)
     local selected = me:menu(npc, '선택', {'방향역전', '암흑', '채팅금지', '듣기금지'})
     if selected == nil then
         return
@@ -260,7 +260,7 @@ function sample_cc(me, npc)
     end
 end
 
-function sample_quest(me, npc)
+local function sample_quest(me, npc)
     local q = me:quest(quest.QUEST_NAKRANG_HUNT)
     if q == nil then
         if me:level() < 10 then
@@ -321,11 +321,7 @@ function sample_quest(me, npc)
     end
 end
 
-function NPC_0(me, npc)
-    main(me, npc)
-end
-
-function sample_menu(me, npc)
+local function sample_menu(me, npc)
     local selected = me:menu(npc, '안녕하세요. 무엇을 도와드릴까요?', {'group','clan','whisper','send_mail','map','cc','q'})
     if selected == nil then
         return
@@ -352,3 +348,9 @@ function sample_menu(me, npc)
         return sample_quest(me, npc)
     end
 end
+
+return {
+    ON_CLICK = function(me, npc)
+        main(me, npc)
+    end
+}

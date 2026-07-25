@@ -692,20 +692,22 @@ local function pyosin_sell_docs(me, npc)
     me:dialog(npc, '고맙네. 다음에 또 생기면 언제든지 찾아와주게나.', { prev = false, next = false })
 end
 
-function NPC_185(me, npc)
-    if me:promotion() < 1 then
-        me:dialog(npc, '표신궁의 역사란 참 미묘하지..', { prev = false, next = false })
-        return
+return {
+    ON_CLICK = function(me, npc)
+        if me:promotion() < 1 then
+            me:dialog(npc, '표신궁의 역사란 참 미묘하지..', { prev = false, next = false })
+            return
+        end
+        local sel = me:list(npc, '......', { '표신궁에 관한 이야기를 한다.', '표신궁고문서를 판다.' })
+        if sel == nil then 
+            return
+        end
+        if sel == 1 then
+            pyosin_story(me, npc)
+            return
+        end
+        if sel == 2 then
+            pyosin_sell_docs(me, npc)
+        end
     end
-    local sel = me:list(npc, '......', { '표신궁에 관한 이야기를 한다.', '표신궁고문서를 판다.' })
-    if sel == nil then 
-        return
-    end
-    if sel == 1 then
-        pyosin_story(me, npc)
-        return
-    end
-    if sel == 2 then
-        pyosin_sell_docs(me, npc)
-    end
-end
+}

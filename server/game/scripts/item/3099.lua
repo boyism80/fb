@@ -1,6 +1,16 @@
 -- item: 맑은시약
 
--- 맑은시약 사용 스크립트
-function ON_ACTIVATED_3099(me, item)
-    me:hp(me:maxhp())
-end
+return {
+    ON_ACTIVATED = function(me, item)
+        me:hp(me:maxhp())
+    end,
+
+    -- ON_DEACTIVATED = function(me, item)
+    -- end,
+
+    -- ON_CONCAST = function(me, item)
+    -- end,
+
+    -- ON_ATTACK = function(me, item)
+    -- end
+}

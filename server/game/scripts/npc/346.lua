@@ -26,18 +26,20 @@ local function do_exchange(me, npc, reward_name)
     return true
 end
 
-function NPC_346(me, npc)
-    local sel, btn = me:list(npc, "교환권으로 무엇을 구입하시겠습니까?", {
-        "가시철단도 (교환권 10개)",
-        "환두대도 (교환권 10개)",
-        "대마령봉 (교환권 10개)",
-        "삼촉현창 (교환권 10개)",
-    }, { prev = false })
-    if btn == DIALOG_RESULT.QUIT then
-        return
+return {
+    ON_CLICK = function(me, npc)
+        local sel, btn = me:list(npc, "교환권으로 무엇을 구입하시겠습니까?", {
+            "가시철단도 (교환권 10개)",
+            "환두대도 (교환권 10개)",
+            "대마령봉 (교환권 10개)",
+            "삼촉현창 (교환권 10개)",
+        }, { prev = false })
+        if btn == DIALOG_RESULT.QUIT then
+            return
+        end
+        if sel == nil or sel < 1 or sel > #REWARDS then
+            return
+        end
+        do_exchange(me, npc, REWARDS[sel])
     end
-    if sel == nil or sel < 1 or sel > #REWARDS then
-        return
-    end
-    do_exchange(me, npc, REWARDS[sel])
-end
+}

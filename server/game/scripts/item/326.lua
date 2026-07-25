@@ -1,11 +1,15 @@
 -- item: 칠식천부연곤
 
--- 칠식천부연곤 사용 스크립트
--- function ON_ACTIVATED_326(me, item)
---
--- end
+return {
+    -- ON_ACTIVATED = function(me, item)
+    -- end,
 
--- 칠식천부연곤 해제 스크립트
--- function ON_DEACTIVATED_326(me, item)
---
--- end
+    -- ON_DEACTIVATED = function(me, item)
+    -- end,
+
+    -- ON_CONCAST = function(me, item)
+    -- end,
+
+    -- ON_ATTACK = function(me, item)
+    -- end
+}

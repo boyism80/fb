@@ -51,20 +51,28 @@ local function run_beginner_path_squirrel(me, count)
     q:param(string.format('%d,%d', squirrel, rabbit))
 end
 
-function ON_MOB_KILL_1(me, mobs)
-    if me == nil or mobs == nil or #mobs == 0 then
-        return
-    end
-    if not me:is(OBJECT_TYPE.CHARACTER) then
-        return
-    end
-    if not assert_alive(me) then
-        return
-    end
-    run_nakrang_hunt(me, mobs)
-    run_nakrang5_squirrel(me, #mobs)
-    run_beginner_path_squirrel(me, #mobs)
-end
+return {
+    -- ON_MOB_ATTACK = function(me, you)
+    -- end,
 
--- function ON_MOB_DIE_1(me)
--- end
+    -- ON_MOB_DIE = function(me)
+    -- end,
+
+    ON_MOB_KILL = function(me, mobs)
+        if me == nil or mobs == nil or #mobs == 0 then
+            return
+        end
+        if not me:is(OBJECT_TYPE.CHARACTER) then
+            return
+        end
+        if not assert_alive(me) then
+            return
+        end
+        run_nakrang_hunt(me, mobs)
+        run_nakrang5_squirrel(me, #mobs)
+        run_beginner_path_squirrel(me, #mobs)
+    end,
+
+    -- ON_MOB_SPELL_HIT = function(me, you, spell)
+    -- end
+}

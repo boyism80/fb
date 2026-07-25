@@ -1,5 +1,15 @@
 -- item: 연등4
 
--- 연등4 해제 스크립트
--- function ON_DEACTIVATED_3521(me, item)
--- end
+return {
+    -- ON_ACTIVATED = function(me, item)
+    -- end,
+
+    -- ON_DEACTIVATED = function(me, item)
+    -- end,
+
+    -- ON_CONCAST = function(me, item)
+    -- end,
+
+    -- ON_ATTACK = function(me, item)
+    -- end
+}

@@ -1,11 +1,15 @@
 -- item: 무쌍현랑부
 
--- 무쌍현랑부 사용 스크립트
--- function ON_ACTIVATED_343(me, item)
---
--- end
+return {
+    -- ON_ACTIVATED = function(me, item)
+    -- end,
 
--- 무쌍현랑부 해제 스크립트
--- function ON_DEACTIVATED_343(me, item)
---
--- end
+    -- ON_DEACTIVATED = function(me, item)
+    -- end,
+
+    -- ON_CONCAST = function(me, item)
+    -- end,
+
+    -- ON_ATTACK = function(me, item)
+    -- end
+}

@@ -1,13 +1,15 @@
 -- item: 얼음개비
 
--- 얼음개비 사용 스크립트
--- function ON_ACTIVATED_1833(me, item)
--- end
+return {
+    -- ON_ACTIVATED = function(me, item)
+    -- end,
 
--- 얼음개비 해제 스크립트
--- function ON_DEACTIVATED_1833(me, item)
--- end
+    -- ON_DEACTIVATED = function(me, item)
+    -- end,
 
--- 얼음개비 공격 스크립트
--- function ON_ATTACK_1833(me, item)
--- end
+    -- ON_CONCAST = function(me, item)
+    -- end,
+
+    -- ON_ATTACK = function(me, item)
+    -- end
+}

@@ -1,4 +1,6 @@
 -- npc: 오엑스
--- function NPC_163(me, npc)
---
--- end
+
+return {
+    -- ON_CLICK = function(me, npc)
+    -- end
+}

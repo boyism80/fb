@@ -1,11 +1,15 @@
 -- item: 연환장갑
 
--- 연환장갑 사용 스크립트
--- function ON_ACTIVATED_1718(me, item)
---
--- end
+return {
+    -- ON_ACTIVATED = function(me, item)
+    -- end,
 
--- 연환장갑 해제 스크립트
--- function ON_DEACTIVATED_1718(me, item)
---
--- end
+    -- ON_DEACTIVATED = function(me, item)
+    -- end,
+
+    -- ON_CONCAST = function(me, item)
+    -- end,
+
+    -- ON_ATTACK = function(me, item)
+    -- end
+}

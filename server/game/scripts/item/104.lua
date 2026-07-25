@@ -1,11 +1,15 @@
 -- item: 음양도
 
--- 음양도 사용 스크립트
--- function ON_ACTIVATED_104(me, item)
---
--- end
+return {
+    -- ON_ACTIVATED = function(me, item)
+    -- end,
 
--- 음양도 해제 스크립트
--- function ON_DEACTIVATED_104(me, item)
---
--- end
+    -- ON_DEACTIVATED = function(me, item)
+    -- end,
+
+    -- ON_CONCAST = function(me, item)
+    -- end,
+
+    -- ON_ATTACK = function(me, item)
+    -- end
+}

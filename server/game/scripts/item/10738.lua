@@ -1,9 +1,15 @@
 -- item: 공하의도시락
 
--- 공하의도시락 사용 스크립트
--- function ON_ACTIVATED_10738(me, item)
--- end
+return {
+    -- ON_ACTIVATED = function(me, item)
+    -- end,
 
--- 공하의도시락 해제 스크립트
--- function ON_DEACTIVATED_10738(me, item)
--- end
+    -- ON_DEACTIVATED = function(me, item)
+    -- end,
+
+    -- ON_CONCAST = function(me, item)
+    -- end,
+
+    -- ON_ATTACK = function(me, item)
+    -- end
+}

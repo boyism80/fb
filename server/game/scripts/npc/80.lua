@@ -1,4 +1,6 @@
 -- npc: 배
--- function NPC_80(me, npc)
---
--- end
+
+return {
+    -- ON_CLICK = function(me, npc)
+    -- end
+}

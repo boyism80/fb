@@ -1,10 +1,15 @@
 -- mob: 적명비
--- 적명비 사망
--- function ON_MOB_DIE_374(me)
---
--- end
 
--- 적명비 사망
--- function ON_MOB_DIE_374(me)
---
--- end
+return {
+    -- ON_MOB_ATTACK = function(me, you)
+    -- end,
+
+    -- ON_MOB_DIE = function(me)
+    -- end,
+
+    -- ON_MOB_KILL = function(me, mobs)
+    -- end,
+
+    -- ON_MOB_SPELL_HIT = function(me, you, spell)
+    -- end
+}

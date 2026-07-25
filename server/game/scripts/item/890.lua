@@ -1,11 +1,15 @@
 -- item: 가죽치마
 
--- 가죽치마 사용 스크립트
--- function ON_ACTIVATED_890(me, item)
---
--- end
+return {
+    -- ON_ACTIVATED = function(me, item)
+    -- end,
 
--- 가죽치마 해제 스크립트
--- function ON_DEACTIVATED_890(me, item)
---
--- end
+    -- ON_DEACTIVATED = function(me, item)
+    -- end,
+
+    -- ON_CONCAST = function(me, item)
+    -- end,
+
+    -- ON_ATTACK = function(me, item)
+    -- end
+}

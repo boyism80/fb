@@ -1,9 +1,14 @@
--- 변태 공격
-function ON_MOB_ATTACK_1177(me, you)
-    return false
-end
+return {
+    ON_MOB_ATTACK = function(me, you)
+        return false
+    end,
 
--- 변태 사망
--- function ON_MOB_DIE_1177(me)
---
--- end
+    -- ON_MOB_DIE = function(me)
+    -- end,
+
+    -- ON_MOB_KILL = function(me, mobs)
+    -- end,
+
+    -- ON_MOB_SPELL_HIT = function(me, you, spell)
+    -- end
+}

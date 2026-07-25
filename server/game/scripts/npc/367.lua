@@ -179,6 +179,8 @@ local function run_intro_and_list(me, npc)
     end
 end
 
-function NPC_367(me, npc)
-    run_intro_and_list(me, npc)
-end
+return {
+    ON_CLICK = function(me, npc)
+        run_intro_and_list(me, npc)
+    end
+}

@@ -1,10 +1,16 @@
 -- mob: 북천황
--- 북천황 공격
-function ON_MOB_ATTACK_1051(me, you)
-    return false
-end
 
--- 북천황 사망
--- function ON_MOB_DIE_1051(me)
---
--- end
+return {
+    ON_MOB_ATTACK = function(me, you)
+        return false
+    end,
+
+    -- ON_MOB_DIE = function(me)
+    -- end,
+
+    -- ON_MOB_KILL = function(me, mobs)
+    -- end,
+
+    -- ON_MOB_SPELL_HIT = function(me, you, spell)
+    -- end
+}

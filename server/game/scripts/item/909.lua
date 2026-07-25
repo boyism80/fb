@@ -1,11 +1,15 @@
 -- item: 구리장삼
 
--- 구리장삼 사용 스크립트
--- function ON_ACTIVATED_909(me, item)
---
--- end
+return {
+    -- ON_ACTIVATED = function(me, item)
+    -- end,
 
--- 구리장삼 해제 스크립트
--- function ON_DEACTIVATED_909(me, item)
---
--- end
+    -- ON_DEACTIVATED = function(me, item)
+    -- end,
+
+    -- ON_CONCAST = function(me, item)
+    -- end,
+
+    -- ON_ATTACK = function(me, item)
+    -- end
+}

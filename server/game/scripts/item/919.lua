@@ -1,11 +1,15 @@
 -- item: 구리여자통옷
 
--- 구리여자통옷 사용 스크립트
--- function ON_ACTIVATED_919(me, item)
---
--- end
+return {
+    -- ON_ACTIVATED = function(me, item)
+    -- end,
 
--- 구리여자통옷 해제 스크립트
--- function ON_DEACTIVATED_919(me, item)
---
--- end
+    -- ON_DEACTIVATED = function(me, item)
+    -- end,
+
+    -- ON_CONCAST = function(me, item)
+    -- end,
+
+    -- ON_ATTACK = function(me, item)
+    -- end
+}

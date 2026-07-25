@@ -1,11 +1,15 @@
 -- item: 그물
 
--- 그물 사용 스크립트
--- function ON_ACTIVATED_242(me, item)
---
--- end
+return {
+    -- ON_ACTIVATED = function(me, item)
+    -- end,
 
--- 그물 해제 스크립트
--- function ON_DEACTIVATED_242(me, item)
---
--- end
+    -- ON_DEACTIVATED = function(me, item)
+    -- end,
+
+    -- ON_CONCAST = function(me, item)
+    -- end,
+
+    -- ON_ATTACK = function(me, item)
+    -- end
+}

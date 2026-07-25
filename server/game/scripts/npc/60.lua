@@ -1,4 +1,6 @@
 -- npc: 부여무기장인
--- function NPC_60(me, npc)
---
--- end
+
+return {
+    -- ON_CLICK = function(me, npc)
+    -- end
+}

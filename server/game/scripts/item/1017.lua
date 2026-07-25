@@ -1,11 +1,15 @@
 -- item: 보라방패
 
--- 보라방패 사용 스크립트
--- function ON_ACTIVATED_1017(me, item)
---
--- end
+return {
+    -- ON_ACTIVATED = function(me, item)
+    -- end,
 
--- 보라방패 해제 스크립트
--- function ON_DEACTIVATED_1017(me, item)
---
--- end
+    -- ON_DEACTIVATED = function(me, item)
+    -- end,
+
+    -- ON_CONCAST = function(me, item)
+    -- end,
+
+    -- ON_ATTACK = function(me, item)
+    -- end
+}

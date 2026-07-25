@@ -1,5 +1,15 @@
 -- item: 클로버8
 
--- 클로버8 해제 스크립트
--- function ON_DEACTIVATED_12290(me, item)
--- end
+return {
+    -- ON_ACTIVATED = function(me, item)
+    -- end,
+
+    -- ON_DEACTIVATED = function(me, item)
+    -- end,
+
+    -- ON_CONCAST = function(me, item)
+    -- end,
+
+    -- ON_ATTACK = function(me, item)
+    -- end
+}

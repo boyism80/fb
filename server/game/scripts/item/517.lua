@@ -1,13 +1,15 @@
 -- item: 흑곡검
 
--- 흑곡검 사용 스크립트
--- function ON_ACTIVATED_517(me, item)
--- end
+return {
+    -- ON_ACTIVATED = function(me, item)
+    -- end,
 
--- 흑곡검 해제 스크립트
--- function ON_DEACTIVATED_517(me, item)
--- end
+    -- ON_DEACTIVATED = function(me, item)
+    -- end,
 
--- 흑곡검 공격 스크립트
--- function ON_ATTACK_517(me, item)
--- end
+    -- ON_CONCAST = function(me, item)
+    -- end,
+
+    -- ON_ATTACK = function(me, item)
+    -- end
+}

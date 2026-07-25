@@ -1,9 +1,15 @@
 -- item: [일반]반지체력
 
--- [일반]반지체력 사용 스크립트
--- function ON_ACTIVATED_10686(me, item)
--- end
+return {
+    -- ON_ACTIVATED = function(me, item)
+    -- end,
 
--- [일반]반지체력 해제 스크립트
--- function ON_DEACTIVATED_10686(me, item)
--- end
+    -- ON_DEACTIVATED = function(me, item)
+    -- end,
+
+    -- ON_CONCAST = function(me, item)
+    -- end,
+
+    -- ON_ATTACK = function(me, item)
+    -- end
+}

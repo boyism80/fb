@@ -1,10 +1,21 @@
 -- map: 국경지대
 local quest = require('lib.quest')
 
-function ON_MAP_MOVE_671(me)
-    if not me:is(OBJECT_TYPE.CHARACTER) then
-        return
-    end
+return {
+    -- ON_MAP_INIT = function(me)
+    -- end,
 
-    quest.dongchung_insam_on_move(me)
-end
+    ON_MAP_MOVE = function(me)
+        if not me:is(OBJECT_TYPE.CHARACTER) then
+            return
+        end
+
+        quest.dongchung_insam_on_move(me)
+    end,
+
+    -- ON_MAP_ENTER = function(me)
+    -- end,
+
+    -- ON_MAP_LEAVE = function(me)
+    -- end
+}

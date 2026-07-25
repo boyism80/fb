@@ -1,13 +1,15 @@
 -- item: 깃털용빗
 
--- 깃털용빗 사용 스크립트
--- function ON_ACTIVATED_60018(me, item)
--- end
+return {
+    -- ON_ACTIVATED = function(me, item)
+    -- end,
 
--- 깃털용빗 해제 스크립트
--- function ON_DEACTIVATED_60018(me, item)
--- end
+    -- ON_DEACTIVATED = function(me, item)
+    -- end,
 
--- 깃털용빗 공격 스크립트
--- function ON_ATTACK_60018(me, item)
--- end
+    -- ON_CONCAST = function(me, item)
+    -- end,
+
+    -- ON_ATTACK = function(me, item)
+    -- end
+}

@@ -1,11 +1,15 @@
 -- item: 지력의투구6
 
--- 지력의투구6 사용 스크립트
--- function ON_ACTIVATED_1354(me, item)
---
--- end
+return {
+    -- ON_ACTIVATED = function(me, item)
+    -- end,
 
--- 지력의투구6 해제 스크립트
--- function ON_DEACTIVATED_1354(me, item)
---
--- end
+    -- ON_DEACTIVATED = function(me, item)
+    -- end,
+
+    -- ON_CONCAST = function(me, item)
+    -- end,
+
+    -- ON_ATTACK = function(me, item)
+    -- end
+}

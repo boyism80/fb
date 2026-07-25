@@ -1,11 +1,15 @@
 -- item: 보라여자갑옷
 
--- 보라여자갑옷 사용 스크립트
--- function ON_ACTIVATED_860(me, item)
---
--- end
+return {
+    -- ON_ACTIVATED = function(me, item)
+    -- end,
 
--- 보라여자갑옷 해제 스크립트
--- function ON_DEACTIVATED_860(me, item)
---
--- end
+    -- ON_DEACTIVATED = function(me, item)
+    -- end,
+
+    -- ON_CONCAST = function(me, item)
+    -- end,
+
+    -- ON_ATTACK = function(me, item)
+    -- end
+}

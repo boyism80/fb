@@ -1,11 +1,15 @@
 -- item: 은여자도복
 
--- 은여자도복 사용 스크립트
--- function ON_ACTIVATED_857(me, item)
---
--- end
+return {
+    -- ON_ACTIVATED = function(me, item)
+    -- end,
 
--- 은여자도복 해제 스크립트
--- function ON_DEACTIVATED_857(me, item)
---
--- end
+    -- ON_DEACTIVATED = function(me, item)
+    -- end,
+
+    -- ON_CONCAST = function(me, item)
+    -- end,
+
+    -- ON_ATTACK = function(me, item)
+    -- end
+}

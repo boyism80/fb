@@ -1,4 +1,6 @@
 -- npc: 백열장
--- function NPC_160(me, npc)
---
--- end
+
+return {
+    -- ON_CLICK = function(me, npc)
+    -- end
+}

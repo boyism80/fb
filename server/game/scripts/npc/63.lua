@@ -118,17 +118,19 @@ local function do_hair_dye(me, npc)
     me:dialog(npc, '예쁘게 염색이 되었습니다~', { prev = false, next = false })
 end
 
-function NPC_63(me, npc)
-    local index = me:list(npc, '안녕하세요. 어떻게 오셨나요?', {
-        '머리모양을 바꾸고 싶어요',
-        '머리염색',
-    }, { prev = false })
-    if index == nil then
-        return
+return {
+    ON_CLICK = function(me, npc)
+        local index = me:list(npc, '안녕하세요. 어떻게 오셨나요?', {
+            '머리모양을 바꾸고 싶어요',
+            '머리염색',
+        }, { prev = false })
+        if index == nil then
+            return
+        end
+        if index == 1 then
+            do_hair_style(me, npc)
+        elseif index == 2 then
+            do_hair_dye(me, npc)
+        end
     end
-    if index == 1 then
-        do_hair_style(me, npc)
-    elseif index == 2 then
-        do_hair_dye(me, npc)
-    end
-end
+}

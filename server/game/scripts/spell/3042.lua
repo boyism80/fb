@@ -1,5 +1,16 @@
 -- spell: 성려멸주
 -- 성려멸주 캐스팅
--- function ON_CAST_3042(me, spell)
---
--- end
+
+return {
+    -- ON_CAST = function(me, you, sp)
+    -- end,
+
+    -- ON_BUFF = function(me, sp)
+    -- end,
+
+    -- ON_UNBUFF = function(me, sp)
+    -- end,
+
+    -- ON_CONCAST = function(me, sp)
+    -- end
+}

@@ -1,5 +1,15 @@
 -- item: 아무나OX주최토큰
 
--- 아무나OX주최토큰 해제 스크립트
--- function ON_DEACTIVATED_12374(me, item)
--- end
+return {
+    -- ON_ACTIVATED = function(me, item)
+    -- end,
+
+    -- ON_DEACTIVATED = function(me, item)
+    -- end,
+
+    -- ON_CONCAST = function(me, item)
+    -- end,
+
+    -- ON_ATTACK = function(me, item)
+    -- end
+}

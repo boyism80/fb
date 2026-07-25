@@ -1,11 +1,15 @@
 -- item: 초록색장삼
 
--- 초록색장삼 사용 스크립트
--- function ON_ACTIVATED_905(me, item)
---
--- end
+return {
+    -- ON_ACTIVATED = function(me, item)
+    -- end,
 
--- 초록색장삼 해제 스크립트
--- function ON_DEACTIVATED_905(me, item)
---
--- end
+    -- ON_DEACTIVATED = function(me, item)
+    -- end,
+
+    -- ON_CONCAST = function(me, item)
+    -- end,
+
+    -- ON_ATTACK = function(me, item)
+    -- end
+}

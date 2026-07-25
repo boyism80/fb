@@ -76,16 +76,18 @@ local function run_battery_purchase(me, npc)
     me:dialog(npc, '자네 생각보다 운이 좋은걸? 여기 건전기 가져가게나.', { prev = false, next = false })
 end
 
-function NPC_250(me, npc)
-    ::NPC_250_0001::
-    local sel = me:list(npc, '안녕하신가? 나에겐 어쩐일로 왔는가?', { '시계 구입', '건전지 구입' }, { prev = false })
-    if sel == nil then
-        return
-    end
+return {
+    ON_CLICK = function(me, npc)
+        ::NPC_250_0001::
+        local sel = me:list(npc, '안녕하신가? 나에겐 어쩐일로 왔는가?', { '시계 구입', '건전지 구입' }, { prev = false })
+        if sel == nil then
+            return
+        end
 
-    if sel == 1 then
-        run_clock_purchase(me, npc)
-    elseif sel == 2 then
-        run_battery_purchase(me, npc)
+        if sel == 1 then
+            run_clock_purchase(me, npc)
+        elseif sel == 2 then
+            run_battery_purchase(me, npc)
+        end
     end
-end
+}

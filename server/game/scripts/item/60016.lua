@@ -1,13 +1,15 @@
 -- item: 흰색하트풍선
 
--- 흰색하트풍선 사용 스크립트
--- function ON_ACTIVATED_60016(me, item)
--- end
+return {
+    -- ON_ACTIVATED = function(me, item)
+    -- end,
 
--- 흰색하트풍선 해제 스크립트
--- function ON_DEACTIVATED_60016(me, item)
--- end
+    -- ON_DEACTIVATED = function(me, item)
+    -- end,
 
--- 흰색하트풍선 공격 스크립트
--- function ON_ATTACK_60016(me, item)
--- end
+    -- ON_CONCAST = function(me, item)
+    -- end,
+
+    -- ON_ATTACK = function(me, item)
+    -- end
+}

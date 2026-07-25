@@ -1,4 +1,6 @@
 -- npc: 부여선원
--- function NPC_79(me, npc)
---
--- end
+
+return {
+    -- ON_CLICK = function(me, npc)
+    -- end
+}

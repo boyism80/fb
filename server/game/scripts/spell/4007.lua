@@ -2,11 +2,22 @@
 -- 파혼술 캐스팅
 local spell = require('lib.spell')
 
-function ON_CAST_4007(me, you, sp)
-    local mp = 30
-    local sound = 77
-    local effect = 49
-    if spell.cast(me, you, sp, {mp=mp, sound=sound, effect=effect}) then
-        you:unbuff('혼마술')
-    end
-end
+return {
+    ON_CAST = function(me, you, sp)
+        local mp = 30
+        local sound = 77
+        local effect = 49
+        if spell.cast(me, you, sp, {mp=mp, sound=sound, effect=effect}) then
+            you:unbuff('혼마술')
+        end
+    end,
+
+    -- ON_BUFF = function(me, sp)
+    -- end,
+
+    -- ON_UNBUFF = function(me, sp)
+    -- end,
+
+    -- ON_CONCAST = function(me, sp)
+    -- end
+}

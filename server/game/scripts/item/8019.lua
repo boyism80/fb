@@ -1,9 +1,15 @@
 -- item: 탁주
 
--- 탁주 사용 스크립트
--- function ON_ACTIVATED_8019(me, item)
--- end
+return {
+    -- ON_ACTIVATED = function(me, item)
+    -- end,
 
--- 탁주 해제 스크립트
--- function ON_DEACTIVATED_8019(me, item)
--- end
+    -- ON_DEACTIVATED = function(me, item)
+    -- end,
+
+    -- ON_CONCAST = function(me, item)
+    -- end,
+
+    -- ON_ATTACK = function(me, item)
+    -- end
+}

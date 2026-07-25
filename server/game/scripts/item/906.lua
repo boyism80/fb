@@ -1,11 +1,15 @@
 -- item: 보라장삼
 
--- 보라장삼 사용 스크립트
--- function ON_ACTIVATED_906(me, item)
---
--- end
+return {
+    -- ON_ACTIVATED = function(me, item)
+    -- end,
 
--- 보라장삼 해제 스크립트
--- function ON_DEACTIVATED_906(me, item)
---
--- end
+    -- ON_DEACTIVATED = function(me, item)
+    -- end,
+
+    -- ON_CONCAST = function(me, item)
+    -- end,
+
+    -- ON_ATTACK = function(me, item)
+    -- end
+}

@@ -1,9 +1,15 @@
 -- item: [일반]체력흡수민
 
--- [일반]체력흡수민 사용 스크립트
--- function ON_ACTIVATED_10570(me, item)
--- end
+return {
+    -- ON_ACTIVATED = function(me, item)
+    -- end,
 
--- [일반]체력흡수민 해제 스크립트
--- function ON_DEACTIVATED_10570(me, item)
--- end
+    -- ON_DEACTIVATED = function(me, item)
+    -- end,
+
+    -- ON_CONCAST = function(me, item)
+    -- end,
+
+    -- ON_ATTACK = function(me, item)
+    -- end
+}

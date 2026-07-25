@@ -1,11 +1,15 @@
 -- item: 도절의갑주
 
--- 도절의갑주 사용 스크립트
--- function ON_ACTIVATED_683(me, item)
---
--- end
+return {
+    -- ON_ACTIVATED = function(me, item)
+    -- end,
 
--- 도절의갑주 해제 스크립트
--- function ON_DEACTIVATED_683(me, item)
---
--- end
+    -- ON_DEACTIVATED = function(me, item)
+    -- end,
+
+    -- ON_CONCAST = function(me, item)
+    -- end,
+
+    -- ON_ATTACK = function(me, item)
+    -- end
+}

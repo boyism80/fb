@@ -127,18 +127,20 @@ local function ranggyuryun_golden_amber(me, npc)
     end
 end
 
-function NPC_2(me, npc)
-    local sel = me:list(npc, '안녕하세요. 어떻게 오셨나요?', { '팔괘', '순수한물', '황금호박무기만들기' })
-    if sel == nil then return end
-    if sel == 1 then
-        ranggyuryun_palgu(me, npc)
-        return
+return {
+    ON_CLICK = function(me, npc)
+        local sel = me:list(npc, '안녕하세요. 어떻게 오셨나요?', { '팔괘', '순수한물', '황금호박무기만들기' })
+        if sel == nil then return end
+        if sel == 1 then
+            ranggyuryun_palgu(me, npc)
+            return
+        end
+        if sel == 2 then
+            ranggyuryun_pure_water(me, npc)
+            return
+        end
+        if sel == 3 then
+            ranggyuryun_golden_amber(me, npc)
+        end
     end
-    if sel == 2 then
-        ranggyuryun_pure_water(me, npc)
-        return
-    end
-    if sel == 3 then
-        ranggyuryun_golden_amber(me, npc)
-    end
-end
+}

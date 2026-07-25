@@ -1,11 +1,15 @@
 -- item: 꼬마별봉
 
--- 꼬마별봉 사용 스크립트
--- function ON_ACTIVATED_52(me, item)
---
--- end
+return {
+    -- ON_ACTIVATED = function(me, item)
+    -- end,
 
--- 꼬마별봉 해제 스크립트
--- function ON_DEACTIVATED_52(me, item)
---
--- end
+    -- ON_DEACTIVATED = function(me, item)
+    -- end,
+
+    -- ON_CONCAST = function(me, item)
+    -- end,
+
+    -- ON_ATTACK = function(me, item)
+    -- end
+}

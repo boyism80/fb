@@ -1,5 +1,15 @@
 -- item: 클로버A
 
--- 클로버A 해제 스크립트
--- function ON_DEACTIVATED_12283(me, item)
--- end
+return {
+    -- ON_ACTIVATED = function(me, item)
+    -- end,
+
+    -- ON_DEACTIVATED = function(me, item)
+    -- end,
+
+    -- ON_CONCAST = function(me, item)
+    -- end,
+
+    -- ON_ATTACK = function(me, item)
+    -- end
+}

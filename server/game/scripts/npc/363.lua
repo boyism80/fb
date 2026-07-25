@@ -73,32 +73,34 @@ local function run_weeding_handin(me, npc, q)
     q:complete()
 end
 
-function NPC_363(me, npc)
-    local btn = me:dialog(npc, "안녕하세요? 저는 백리향입니다.", { prev = false, next = true })
-    if btn == DIALOG_RESULT.QUIT then
-        return
-    end
+return {
+    ON_CLICK = function(me, npc)
+        local btn = me:dialog(npc, "안녕하세요? 저는 백리향입니다.", { prev = false, next = true })
+        if btn == DIALOG_RESULT.QUIT then
+            return
+        end
 
-    if property("sesi_rightnow") ~= 8 then
-        return
-    end
+        if property("sesi_rightnow") ~= 8 then
+            return
+        end
 
-    local q = me:quest(quest.QUEST_BAEKRIHYANG)
-    local sel, list_btn = me:list(npc, "무슨일로 절 찾아오셨나요?", {
-        "송편재료가 필요해요.",
-        "벌초를 하고 왔어요."
-    }, { prev = false })
-    if list_btn == DIALOG_RESULT.QUIT then
-        return
-    end
-    if sel == nil then
-        return
-    end
+        local q = me:quest(quest.QUEST_BAEKRIHYANG)
+        local sel, list_btn = me:list(npc, "무슨일로 절 찾아오셨나요?", {
+            "송편재료가 필요해요.",
+            "벌초를 하고 왔어요."
+        }, { prev = false })
+        if list_btn == DIALOG_RESULT.QUIT then
+            return
+        end
+        if sel == nil then
+            return
+        end
 
-    if sel == 1 then
-        run_songpyeon_request(me, npc, q)
-        return
-    end
+        if sel == 1 then
+            run_songpyeon_request(me, npc, q)
+            return
+        end
 
-    run_weeding_handin(me, npc, q)
-end
+        run_weeding_handin(me, npc, q)
+    end
+}

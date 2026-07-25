@@ -1,4 +1,6 @@
 -- npc: 주작공성엔피시
--- function NPC_151(me, npc)
---
--- end
+
+return {
+    -- ON_CLICK = function(me, npc)
+    -- end
+}

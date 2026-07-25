@@ -284,7 +284,7 @@ bool map::container::try_mark_init_script(const std::shared_ptr<fb::game::map>& 
 async::task<void> map::container::run_init_script(const std::shared_ptr<fb::game::map>& map)
 {
     auto path = std::format("scripts/map/{}.lua", map->model.id);
-    auto func = std::format("ON_MAP_INIT_{}", map->model.id);
+    auto func = "ON_MAP_INIT";
 
     auto lua = this->server.lua.open(path, func);
     if (!lua)

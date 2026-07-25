@@ -74,26 +74,28 @@ local function run_snow_helmet_info(me, npc)
     end
 end
 
-function NPC_441(me, npc)
-    local d = me:dialog(npc, "안녕하십니까? 당신은 눈꽃방어구에 대해 관심이 있으신 것 같군요. 자세한 설명을 들어보시겠습니까?", { prev = false, next = true })
-    if d == DIALOG_RESULT.QUIT then
-        return
-    end
+return {
+    ON_CLICK = function(me, npc)
+        local d = me:dialog(npc, "안녕하십니까? 당신은 눈꽃방어구에 대해 관심이 있으신 것 같군요. 자세한 설명을 들어보시겠습니까?", { prev = false, next = true })
+        if d == DIALOG_RESULT.QUIT then
+            return
+        end
 
-    local equip = get_equip_name(me)
-    local sel, btn = me:list(npc, "눈꽃얼음은 그 한기가 매우 시려, 사용자의 체력과 마력을 약하게 만드는 단점을 가지고 있습니다.", {
-        "눈꽃투구에 대하여...",
-        "눈꽃" .. equip .. "에 대하여...",
-        "활력의귀걸이에 대하여...",
-    }, { prev = false })
-    if btn == DIALOG_RESULT.QUIT then
-        return
+        local equip = get_equip_name(me)
+        local sel, btn = me:list(npc, "눈꽃얼음은 그 한기가 매우 시려, 사용자의 체력과 마력을 약하게 만드는 단점을 가지고 있습니다.", {
+            "눈꽃투구에 대하여...",
+            "눈꽃" .. equip .. "에 대하여...",
+            "활력의귀걸이에 대하여...",
+        }, { prev = false })
+        if btn == DIALOG_RESULT.QUIT then
+            return
+        end
+        if sel == 1 then
+            run_snow_helmet_info(me, npc)
+            return
+        end
+        if sel == 2 or sel == 3 then
+            me:dialog(npc, "준비중인 컨텐츠 입니다.", { prev = false, next = false })
+        end
     end
-    if sel == 1 then
-        run_snow_helmet_info(me, npc)
-        return
-    end
-    if sel == 2 or sel == 3 then
-        me:dialog(npc, "준비중인 컨텐츠 입니다.", { prev = false, next = false })
-    end
-end
+}

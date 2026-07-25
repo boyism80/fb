@@ -1,9 +1,15 @@
 -- item: 우루삼90％
 
--- 우루삼90％ 사용 스크립트
--- function ON_ACTIVATED_10608(me, item)
--- end
+return {
+    -- ON_ACTIVATED = function(me, item)
+    -- end,
 
--- 우루삼90％ 해제 스크립트
--- function ON_DEACTIVATED_10608(me, item)
--- end
+    -- ON_DEACTIVATED = function(me, item)
+    -- end,
+
+    -- ON_CONCAST = function(me, item)
+    -- end,
+
+    -- ON_ATTACK = function(me, item)
+    -- end
+}

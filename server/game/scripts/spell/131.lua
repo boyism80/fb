@@ -1,17 +1,23 @@
 -- spell: 상어장군둔갑술
 -- 상어장군둔갑술 (id 131). Add logic as needed.
--- function ON_CAST_131(me, spell, message)
 --     -- TODO: implement
--- end
 
--- function ON_BUFF_131(me, spell)
 --     -- TODO: implement
--- end
 
--- function ON_UNBUFF_131(me, spell)
 --     -- TODO: implement
--- end
 
--- function ON_CONCAST_131(me, caster, buff)
 --     -- TODO: implement
--- end
+
+return {
+    -- ON_CAST = function(me, you, sp)
+    -- end,
+
+    -- ON_BUFF = function(me, sp)
+    -- end,
+
+    -- ON_UNBUFF = function(me, sp)
+    -- end,
+
+    -- ON_CONCAST = function(me, sp)
+    -- end
+}

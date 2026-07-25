@@ -2,27 +2,7 @@
 local quest = require('lib.quest')
 local enum = require('lib.enum')
 
-function NPC_107(me, npc)
-
-    local options = {'황비연 퀘스트'}
-    local herb_quest = me:quest(quest.QUEST_HWANGBIYEON)
-    if herb_quest ~= nil and herb_quest:step() == 2 then
-        table.insert(options, '약초 퀘스트')
-    end
-
-    local selected = me:list(npc, '안녕하세요. 무엇을 도와드릴까요?', options)
-    if selected == nil then
-        return
-    end
-    
-    if selected == 1 then
-        dojaeyoung_nobidocument(me, npc)
-    else
-        dojaeyoung_herb_quest(me, npc)
-    end
-end
-
-function dojaeyoung_nobidocument(me, npc)
+local function dojaeyoung_nobidocument(me, npc)
     local selected = me:list(npc, '음... 뉘신지요? 제게 무슨 볼일이라도?', { '상해에서 물건을 전해달라는 부탁을 받고 왔습니다.', '아무 것도 아닙니다.' })
     if selected == nil then
         return
@@ -99,7 +79,7 @@ function dojaeyoung_nobidocument(me, npc)
     me:push_achievement(39, '보패를 가지고 다시 상해주민에게 가보자.', 7, 2)
 end
 
-function dojaeyoung_herb_quest(me, npc)
+local function dojaeyoung_herb_quest(me, npc)
     local q = me:quest(quest.QUEST_DOJAEYOUNG_HERB)
 
     if q == nil then
@@ -117,7 +97,7 @@ function dojaeyoung_herb_quest(me, npc)
     me:dialog(npc, '저번에 약초를 구해주셔서 정말 감사드립니다. 덕분에 아버님의 건강이 많이 좋아지셨습니다.', { prev = true, next = true })
 end
 
-function dojaeyoung_herb_start(me, npc)
+local function dojaeyoung_herb_start(me, npc)
     ::NPC_107_0020::
     local btn = me:dialog(npc, '안녕하세요 ' .. me:name() .. '님. 도삭산을 탐험하고 계시군요, 도삭산은 마법에 걸린 곳이라는 소문이있는데, 그 말처럼 이상한 여러가지 현상들이 일어나는 곳이랍니다.', { prev = false, next = true })
     if btn == DIALOG_RESULT.QUIT then
@@ -165,7 +145,7 @@ function dojaeyoung_herb_start(me, npc)
     end
 end
 
-function dojaeyoung_herb_turnin(me, npc)
+local function dojaeyoung_herb_turnin(me, npc)
     local q = me:quest(quest.QUEST_DOJAEYOUNG_HERB)
     if q == nil or q:step() ~= 1 then
         return
@@ -194,3 +174,24 @@ function dojaeyoung_herb_turnin(me, npc)
     me:push_achievement(9, '도삭산 100층 퀘스트 완료', 7, 1)
     me:dialog(npc, '약소하지만 보답으로 강철의구두를 드리겠습니다. 도삭산을 돌아다니시면서 조금이라도 도움이 되길 바랍니다. 그럼..', { prev = false, next = true })
 end
+
+return {
+    ON_CLICK = function(me, npc)
+        local options = {'황비연 퀘스트'}
+        local herb_quest = me:quest(quest.QUEST_HWANGBIYEON)
+        if herb_quest ~= nil and herb_quest:step() == 2 then
+            table.insert(options, '약초 퀘스트')
+        end
+
+        local selected = me:list(npc, '안녕하세요. 무엇을 도와드릴까요?', options)
+        if selected == nil then
+            return
+        end
+
+        if selected == 1 then
+            dojaeyoung_nobidocument(me, npc)
+        else
+            dojaeyoung_herb_quest(me, npc)
+        end
+    end
+}

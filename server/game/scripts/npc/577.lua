@@ -85,20 +85,22 @@ local function run_special_exchange(me, npc)
     me:dialog(npc, "특별교환권를 제가 가진 [" .. entry[1] .. "]으로 교환해 드렸어요.", { prev = false, next = false })
 end
 
-function NPC_577(me, npc)
-    local map = me:map()
-    local map_name = (map and map:model()) and map:model():name() or ""
+return {
+    ON_CLICK = function(me, npc)
+        local map = me:map()
+        local map_name = (map and map:model()) and map:model():name() or ""
 
-    if map_name == "고구려경품상2" then
-        run_normal_exchange(me, npc)
-        return
+        if map_name == "고구려경품상2" then
+            run_normal_exchange(me, npc)
+            return
+        end
+        if map_name == "고구려경품상3" then
+            run_special_exchange(me, npc)
+            return
+        end
+        if map_name == "고구려경품상4" then
+            me:dialog(npc, ".............", { prev = false, next = false })
+            return
+        end
     end
-    if map_name == "고구려경품상3" then
-        run_special_exchange(me, npc)
-        return
-    end
-    if map_name == "고구려경품상4" then
-        me:dialog(npc, ".............", { prev = false, next = false })
-        return
-    end
-end
+}

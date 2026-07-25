@@ -1,4 +1,6 @@
 -- npc: 고구려경비대장
--- function NPC_67(me, npc)
---
--- end
+
+return {
+    -- ON_CLICK = function(me, npc)
+    -- end
+}

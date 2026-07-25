@@ -313,38 +313,40 @@ local function handle_jingogyun_ge8(me, npc)
     })
 end
 
-function NPC_476(me, npc)
-    local q_jingo = me:quest(quest.QUEST_JINGOGYUN)
-    local step = (q_jingo and q_jingo:step()) or 0
+return {
+    ON_CLICK = function(me, npc)
+        local q_jingo = me:quest(quest.QUEST_JINGOGYUN)
+        local step = (q_jingo and q_jingo:step()) or 0
 
-    if step < 1 then
-        handle_jingogyun_lt1(me, npc)
-        return
-    end
-    if step == 1 then
-        if handle_jingogyun_1(me, npc, q_jingo) then
+        if step < 1 then
+            handle_jingogyun_lt1(me, npc)
             return
         end
-    end
-    if step == 2 then
-        if handle_jingogyun_2(me, npc, q_jingo) then
+        if step == 1 then
+            if handle_jingogyun_1(me, npc, q_jingo) then
+                return
+            end
+        end
+        if step == 2 then
+            if handle_jingogyun_2(me, npc, q_jingo) then
+                return
+            end
+        end
+        if step == 6 then
+            if handle_jingogyun_6(me, npc, q_jingo) then
+                return
+            end
+        end
+        if step == 7 then
+            if handle_jingogyun_7(me, npc, q_jingo) then
+                return
+            end
+        end
+        if step >= 8 then
+            handle_jingogyun_ge8(me, npc)
             return
         end
-    end
-    if step == 6 then
-        if handle_jingogyun_6(me, npc, q_jingo) then
-            return
-        end
-    end
-    if step == 7 then
-        if handle_jingogyun_7(me, npc, q_jingo) then
-            return
-        end
-    end
-    if step >= 8 then
-        handle_jingogyun_ge8(me, npc)
-        return
-    end
 
-    me:dialog(npc, "준비중입니다.", { prev = false, next = false })
-end
+        me:dialog(npc, "준비중입니다.", { prev = false, next = false })
+    end
+}

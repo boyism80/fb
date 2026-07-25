@@ -216,21 +216,23 @@ local function run_cursed_forgiveness(me, npc)
     end
 end
 
-function NPC_172(me, npc)
-    local q = me:quest(quest.QUEST_STRONGBOX)
-    if q == nil then
-        run_intro_and_accept(me, npc)
-        return
+return {
+    ON_CLICK = function(me, npc)
+        local q = me:quest(quest.QUEST_STRONGBOX)
+        if q == nil then
+            run_intro_and_accept(me, npc)
+            return
+        end
+        if q:completed() then
+            me:dialog(npc, '잘 지내시나? 저번엔 고마웠네.', { prev = false, next = true })
+            return
+        end
+        if q:step() == 1 then
+            run_turn_in(me, npc)
+            return
+        end
+        if q:step() == 2 then
+            run_cursed_forgiveness(me, npc)
+        end
     end
-    if q:completed() then
-        me:dialog(npc, '잘 지내시나? 저번엔 고마웠네.', { prev = false, next = true })
-        return
-    end
-    if q:step() == 1 then
-        run_turn_in(me, npc)
-        return
-    end
-    if q:step() == 2 then
-        run_cursed_forgiveness(me, npc)
-    end
-end
+}

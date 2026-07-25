@@ -1,27 +1,30 @@
 -- mob: 제곡
--- 제곡 공격
 local quest = require('lib.quest')
 
-function ON_MOB_ATTACK_1167(me, you)
-    return false
-end
+return {
+    ON_MOB_ATTACK = function(me, you)
+        return false
+    end,
 
--- 제곡 사망
-function ON_MOB_KILL_1167(me, mobs)
-    if me == nil or mobs == nil or #mobs == 0 then
-        return
-    end
-    local mob = mobs[1]
-    if not me:is(OBJECT_TYPE.CHARACTER) then
-        return
-    end
+    -- ON_MOB_DIE = function(me)
+    -- end,
 
-    local q = me:quest(quest.QUEST_MUTA)
-    if q == nil or q:step() ~= 3 then
-        return
-    end
-    me:mkitem('제곡의증표', 1)
-end
+    ON_MOB_KILL = function(me, mobs)
+        if me == nil or mobs == nil or #mobs == 0 then
+            return
+        end
+        local mob = mobs[1]
+        if not me:is(OBJECT_TYPE.CHARACTER) then
+            return
+        end
 
--- function ON_MOB_DIE_1167(me)
--- end
+        local q = me:quest(quest.QUEST_MUTA)
+        if q == nil or q:step() ~= 3 then
+            return
+        end
+        me:mkitem('제곡의증표', 1)
+    end,
+
+    -- ON_MOB_SPELL_HIT = function(me, you, spell)
+    -- end
+}

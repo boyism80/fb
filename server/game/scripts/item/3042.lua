@@ -1,6 +1,15 @@
 -- item: 담비가죽
 
--- 담비가죽 사용 스크립트
--- function ON_ACTIVATED_3042(me, item)
---
--- end
+return {
+    -- ON_ACTIVATED = function(me, item)
+    -- end,
+
+    -- ON_DEACTIVATED = function(me, item)
+    -- end,
+
+    -- ON_CONCAST = function(me, item)
+    -- end,
+
+    -- ON_ATTACK = function(me, item)
+    -- end
+}

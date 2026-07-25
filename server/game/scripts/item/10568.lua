@@ -1,9 +1,15 @@
 -- item: [궁극]마력흡수지
 
--- [궁극]마력흡수지 사용 스크립트
--- function ON_ACTIVATED_10568(me, item)
--- end
+return {
+    -- ON_ACTIVATED = function(me, item)
+    -- end,
 
--- [궁극]마력흡수지 해제 스크립트
--- function ON_DEACTIVATED_10568(me, item)
--- end
+    -- ON_DEACTIVATED = function(me, item)
+    -- end,
+
+    -- ON_CONCAST = function(me, item)
+    -- end,
+
+    -- ON_ATTACK = function(me, item)
+    -- end
+}

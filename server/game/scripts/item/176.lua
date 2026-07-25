@@ -1,11 +1,15 @@
 -- item: 검성기검
 
--- 검성기검 사용 스크립트
--- function ON_ACTIVATED_176(me, item)
---
--- end
+return {
+    -- ON_ACTIVATED = function(me, item)
+    -- end,
 
--- 검성기검 해제 스크립트
--- function ON_DEACTIVATED_176(me, item)
---
--- end
+    -- ON_DEACTIVATED = function(me, item)
+    -- end,
+
+    -- ON_CONCAST = function(me, item)
+    -- end,
+
+    -- ON_ATTACK = function(me, item)
+    -- end
+}

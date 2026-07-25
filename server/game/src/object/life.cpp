@@ -147,7 +147,7 @@ async::task<void> life::settle_deaths(mob_vector dead)
     for (auto& [id, mobs] : groups)
     {
         auto path = std::format("scripts/mob/{}.lua", id);
-        auto func = std::format("ON_MOB_DIE_{}", id);
+        auto func = "ON_MOB_DIE";
         auto lua  = this->server.lua.open(path, func);
         if (lua)
         {
@@ -231,7 +231,7 @@ async::task<void> life::attack(DURATION duration)
         {
             auto& model = weapon->based<fb::model::weapon>();
             auto  path  = std::format("scripts/item/{}.lua", model.id);
-            auto  func  = std::format("ON_ATTACK_{}", model.id);
+            auto  func  = "ON_ATTACK";
 
             auto weapon_lua = this->server.lua.open(path, func);
             if (weapon_lua)
@@ -270,7 +270,7 @@ bool life::active(fb::game::spell& spell, std::string_view message)
 
     auto& model = spell.model;
     auto  path  = std::format("scripts/spell/{}.lua", model.id);
-    auto  func  = std::format("ON_CAST_{}", model.id);
+    auto  func  = "ON_CAST";
 
     auto lua = this->server.lua.open(path, func);
     if (!lua)
@@ -304,7 +304,7 @@ bool life::active(fb::game::spell& spell, fb::game::object& to)
     this->assert_thread();
     auto& model = spell.model;
     auto  path  = std::format("scripts/spell/{}.lua", model.id);
-    auto  func  = std::format("ON_CAST_{}", model.id);
+    auto  func  = "ON_CAST";
 
     auto lua = this->server.lua.open(path, func);
     if (!lua)
@@ -335,7 +335,7 @@ bool life::active(fb::game::spell& spell)
     this->assert_thread();
     auto& model = spell.model;
     auto  path  = std::format("scripts/spell/{}.lua", model.id);
-    auto  func  = std::format("ON_CAST_{}", model.id);
+    auto  func  = "ON_CAST";
 
     auto lua = this->server.lua.open(path, func);
     if (!lua)

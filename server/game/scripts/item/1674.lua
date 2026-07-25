@@ -1,11 +1,15 @@
 -- item: 인어반지
 
--- 인어반지 사용 스크립트
--- function ON_ACTIVATED_1674(me, item)
---
--- end
+return {
+    -- ON_ACTIVATED = function(me, item)
+    -- end,
 
--- 인어반지 해제 스크립트
--- function ON_DEACTIVATED_1674(me, item)
---
--- end
+    -- ON_DEACTIVATED = function(me, item)
+    -- end,
+
+    -- ON_CONCAST = function(me, item)
+    -- end,
+
+    -- ON_ATTACK = function(me, item)
+    -- end
+}

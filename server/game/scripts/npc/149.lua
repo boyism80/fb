@@ -1,4 +1,6 @@
 -- npc: 무한장
--- function NPC_149(me, npc)
---
--- end
+
+return {
+    -- ON_CLICK = function(me, npc)
+    -- end
+}

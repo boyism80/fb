@@ -1,11 +1,15 @@
 -- item: 야월도
 
--- 야월도 사용 스크립트
--- function ON_ACTIVATED_44(me, item)
---
--- end
+return {
+    -- ON_ACTIVATED = function(me, item)
+    -- end,
 
--- 야월도 해제 스크립트
--- function ON_DEACTIVATED_44(me, item)
---
--- end
+    -- ON_DEACTIVATED = function(me, item)
+    -- end,
+
+    -- ON_CONCAST = function(me, item)
+    -- end,
+
+    -- ON_ATTACK = function(me, item)
+    -- end
+}

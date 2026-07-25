@@ -1,4 +1,6 @@
 -- npc: 태백
--- function NPC_23(me, npc)
---
--- end
+
+return {
+    -- ON_CLICK = function(me, npc)
+    -- end
+}

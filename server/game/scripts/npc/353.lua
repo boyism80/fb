@@ -1,113 +1,8 @@
 -- npc: 백몽연
 local quest = require('lib.quest')
 local enum = require('lib.enum')
-function NPC_353(me, npc)
-    ::NPC_353_0001::
-    local btn = me:dialog(npc, "안녕하세요? 저는 백몽연입니다.", { prev = false, next = true })
-    if btn == DIALOG_RESULT.QUIT then
-        return
-    end
 
-    if property("sesi_rightnow") ~= 2 then
-        return
-    end
-
-    local q = me:quest(quest.QUEST_BAEK_MONGYEON)
-
-    ::NPC_353_0002::
-    local sel, list_btn = me:list(npc, "안녕하세요?", {
-        "중화절은 뭐하는 날인가요?",
-        "도와드릴 일이라도...",
-        "부탁하신일 다 했어요."
-    }, { prev = true })
-    if list_btn == DIALOG_RESULT.QUIT then
-        return
-    end
-    if list_btn == DIALOG_RESULT.PREV then
-        goto NPC_353_0001
-    end
-    if sel == nil then
-        return
-    end
-
-    if sel == 1 then
-        ::NPC_353_0003::
-        btn = me:dialog(npc, "중화절은 음력 2월 1일입니다. 봄이 시작되는 때이기 때문에 창고나 부엌같은 곳을 모두 말끔히 청소하지요.", { prev = false, next = true })
-        if btn == DIALOG_RESULT.QUIT then
-            return
-        end
-        ::NPC_353_0004::
-        btn = me:dialog(npc, "이렇게 대청소를 한 다음, 더러운 것이나 부정한 물건, 해충들을 모두 태우고 옷을 볕에 말리기도 하죠.", { prev = true, next = true })
-        if btn == DIALOG_RESULT.QUIT then
-            return
-        end
-        if btn == DIALOG_RESULT.PREV then
-            goto NPC_353_0003
-        end
-        ::NPC_353_0005::
-        btn = me:dialog(npc, "특히 초가집엔 벌레가 많아서 이것을 예방하기 위해 종이에 '향랑각시 속거천리'라고 써서 서까래에 붙여두는 풍습도 있습니다.", { prev = true, next = true })
-        if btn == DIALOG_RESULT.QUIT then
-            return
-        end
-        if btn == DIALOG_RESULT.PREV then
-            goto NPC_353_0004
-        end
-        return
-    end
-
-    if sel == 2 then
-        ::NPC_353_0006::
-        btn = me:dialog(npc, "제가 중화절에 대청소하는 일을 맡아서 하고 있는데요, 마을 곳곳의 잡동사니들을 다 모아 오려니까 정말 힘이드네요.", { prev = false, next = true })
-        if btn == DIALOG_RESULT.QUIT then
-            return
-        end
-
-        if q == nil then
-            ::NPC_353_0007::
-            local sel2, list_btn2 = me:list(npc, "세시마을 대청소하는거.. 좀 도와주시겠어요?", { "네 도와드려야죠.", "저는 청소는 잘 못해서.." }, { prev = true })
-            if list_btn2 == DIALOG_RESULT.QUIT then
-                return
-            end
-            if list_btn2 == DIALOG_RESULT.PREV then
-                goto NPC_353_0006
-            end
-            if sel2 == nil or sel2 ~= 1 then
-                if sel2 == 2 then
-                    me:dialog(npc, "아... 그렇다면 어쩔 수 없죠. 혹시 마음이 바뀌면 다시 알려주세요.", { prev = false, next = false })
-                end
-                return
-            end
-            btn = me:dialog(npc, "감사합니다! 그럼 제가 목록을 알려드릴테니 좀 찾아와주시겠어요?", { prev = false, next = true })
-            if btn == DIALOG_RESULT.QUIT then
-                return
-            end
-            run_material_list(me, npc)
-        else
-            me:dialog(npc, "동지집에 연이 있을텐데.. 동지집에 가서 수인이에게 연을 받아주시구요..\n\n칠석집엔 실패가 있을꺼에요.. 칠석집의 제 동생 주연이에게 실패를 받아오시구요..", { prev = false, next = true })
-            btn = me:dialog(npc, "섣달집에는 제기가 있을꺼에요.. 섣달집의 선릉이에게 제기를 받아주세요..", { prev = false, next = true })
-            if btn == DIALOG_RESULT.QUIT then
-                return
-            end
-            btn = me:dialog(npc, "또, 김장집의 제 막내동생 나연이에게 김장독 깨진것 받아오시면 되고... \n\n추석집의 세인이에게 냄비 못 쓰는것도 받아야 하고..", { prev = false, next = true })
-            if btn == DIALOG_RESULT.QUIT then
-                return
-            end
-            btn = me:dialog(npc, "설날집의 저희 어머니에게 널뛰기에 쓰는 널을 받아와주시고..\n\n할아버지가 계신 촌장집에 가서 종이 두장을 받아와 주세요. 아까 말씀드린 벌레 쫓는 종이에요.", { prev = false, next = true })
-        end
-        return
-    end
-
-    if sel == 3 then
-        if q and q:completed() then
-            me:dialog(npc, "감사합니다! 그럼 잘 쓰시고 좋은 봄날 맞으시길!", { prev = false, next = true })
-            return
-        end
-        run_hand_in(me, npc)
-        return
-    end
-end
-
-function run_material_list(me, npc)
+local function run_material_list(me, npc)
     ::NPC_353_0008::
     local btn = me:dialog(npc, "동지집에 연이 있을텐데.. 동지집에 가서 수인이에게 연을 받아주시구요..\n\n칠석집엔 실패가 있을꺼에요.. 칠석집의 제 동생 주연이에게 실패를 받아오시구요..", { prev = false, next = true })
     if btn == DIALOG_RESULT.QUIT then
@@ -162,7 +57,7 @@ function run_material_list(me, npc)
     me:dialog(npc, "그런데.. 섣달집의 선릉이를 조심하셔야 되요. 이 녀석은 발명한답시고 잡동사니들을 모으는 녀석이라..\n\n부탁드리겠습니다. 감사합니다~", { prev = false, next = true })
 end
 
-function run_hand_in(me, npc)
+local function run_hand_in(me, npc)
     local q = me:quest(quest.QUEST_BAEK_MONGYEON)
     if q == nil or q:completed() then
         return
@@ -254,3 +149,111 @@ function run_hand_in(me, npc)
         me:dialog(npc, "감사합니다! 그럼 잘 쓰시고 좋은 봄날 맞으시길!", { prev = false, next = true })
     end
 end
+
+return {
+    ON_CLICK = function(me, npc)
+        ::NPC_353_0001::
+        local btn = me:dialog(npc, "안녕하세요? 저는 백몽연입니다.", { prev = false, next = true })
+        if btn == DIALOG_RESULT.QUIT then
+            return
+        end
+
+        if property("sesi_rightnow") ~= 2 then
+            return
+        end
+
+        local q = me:quest(quest.QUEST_BAEK_MONGYEON)
+
+        ::NPC_353_0002::
+        local sel, list_btn = me:list(npc, "안녕하세요?", {
+            "중화절은 뭐하는 날인가요?",
+            "도와드릴 일이라도...",
+            "부탁하신일 다 했어요."
+        }, { prev = true })
+        if list_btn == DIALOG_RESULT.QUIT then
+            return
+        end
+        if list_btn == DIALOG_RESULT.PREV then
+            goto NPC_353_0001
+        end
+        if sel == nil then
+            return
+        end
+
+        if sel == 1 then
+            ::NPC_353_0003::
+            btn = me:dialog(npc, "중화절은 음력 2월 1일입니다. 봄이 시작되는 때이기 때문에 창고나 부엌같은 곳을 모두 말끔히 청소하지요.", { prev = false, next = true })
+            if btn == DIALOG_RESULT.QUIT then
+                return
+            end
+            ::NPC_353_0004::
+            btn = me:dialog(npc, "이렇게 대청소를 한 다음, 더러운 것이나 부정한 물건, 해충들을 모두 태우고 옷을 볕에 말리기도 하죠.", { prev = true, next = true })
+            if btn == DIALOG_RESULT.QUIT then
+                return
+            end
+            if btn == DIALOG_RESULT.PREV then
+                goto NPC_353_0003
+            end
+            ::NPC_353_0005::
+            btn = me:dialog(npc, "특히 초가집엔 벌레가 많아서 이것을 예방하기 위해 종이에 '향랑각시 속거천리'라고 써서 서까래에 붙여두는 풍습도 있습니다.", { prev = true, next = true })
+            if btn == DIALOG_RESULT.QUIT then
+                return
+            end
+            if btn == DIALOG_RESULT.PREV then
+                goto NPC_353_0004
+            end
+            return
+        end
+
+        if sel == 2 then
+            ::NPC_353_0006::
+            btn = me:dialog(npc, "제가 중화절에 대청소하는 일을 맡아서 하고 있는데요, 마을 곳곳의 잡동사니들을 다 모아 오려니까 정말 힘이드네요.", { prev = false, next = true })
+            if btn == DIALOG_RESULT.QUIT then
+                return
+            end
+
+            if q == nil then
+                ::NPC_353_0007::
+                local sel2, list_btn2 = me:list(npc, "세시마을 대청소하는거.. 좀 도와주시겠어요?", { "네 도와드려야죠.", "저는 청소는 잘 못해서.." }, { prev = true })
+                if list_btn2 == DIALOG_RESULT.QUIT then
+                    return
+                end
+                if list_btn2 == DIALOG_RESULT.PREV then
+                    goto NPC_353_0006
+                end
+                if sel2 == nil or sel2 ~= 1 then
+                    if sel2 == 2 then
+                        me:dialog(npc, "아... 그렇다면 어쩔 수 없죠. 혹시 마음이 바뀌면 다시 알려주세요.", { prev = false, next = false })
+                    end
+                    return
+                end
+                btn = me:dialog(npc, "감사합니다! 그럼 제가 목록을 알려드릴테니 좀 찾아와주시겠어요?", { prev = false, next = true })
+                if btn == DIALOG_RESULT.QUIT then
+                    return
+                end
+                run_material_list(me, npc)
+            else
+                me:dialog(npc, "동지집에 연이 있을텐데.. 동지집에 가서 수인이에게 연을 받아주시구요..\n\n칠석집엔 실패가 있을꺼에요.. 칠석집의 제 동생 주연이에게 실패를 받아오시구요..", { prev = false, next = true })
+                btn = me:dialog(npc, "섣달집에는 제기가 있을꺼에요.. 섣달집의 선릉이에게 제기를 받아주세요..", { prev = false, next = true })
+                if btn == DIALOG_RESULT.QUIT then
+                    return
+                end
+                btn = me:dialog(npc, "또, 김장집의 제 막내동생 나연이에게 김장독 깨진것 받아오시면 되고... \n\n추석집의 세인이에게 냄비 못 쓰는것도 받아야 하고..", { prev = false, next = true })
+                if btn == DIALOG_RESULT.QUIT then
+                    return
+                end
+                btn = me:dialog(npc, "설날집의 저희 어머니에게 널뛰기에 쓰는 널을 받아와주시고..\n\n할아버지가 계신 촌장집에 가서 종이 두장을 받아와 주세요. 아까 말씀드린 벌레 쫓는 종이에요.", { prev = false, next = true })
+            end
+            return
+        end
+
+        if sel == 3 then
+            if q and q:completed() then
+                me:dialog(npc, "감사합니다! 그럼 잘 쓰시고 좋은 봄날 맞으시길!", { prev = false, next = true })
+                return
+            end
+            run_hand_in(me, npc)
+            return
+        end
+    end
+}

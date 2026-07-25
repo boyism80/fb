@@ -194,17 +194,19 @@ local function run_appraise_dragon_scale(me, npc)
     end
 end
 
-function NPC_17(me, npc)
-    local sel = me:list(npc, '무슨일로 날 찾으시나?', {
-        '용의비늘이 무엇인가요?',
-        '용의비늘을 가지고 왔어요..',
-    }, { prev = false })
-    if sel == nil then
-        return
+return {
+    ON_CLICK = function(me, npc)
+        local sel = me:list(npc, '무슨일로 날 찾으시나?', {
+            '용의비늘이 무엇인가요?',
+            '용의비늘을 가지고 왔어요..',
+        }, { prev = false })
+        if sel == nil then
+            return
+        end
+        if sel == 1 then
+            run_dragon_scale_info(me, npc)
+        elseif sel == 2 then
+            run_appraise_dragon_scale(me, npc)
+        end
     end
-    if sel == 1 then
-        run_dragon_scale_info(me, npc)
-    elseif sel == 2 then
-        run_appraise_dragon_scale(me, npc)
-    end
-end
+}

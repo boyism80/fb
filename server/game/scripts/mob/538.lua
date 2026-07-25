@@ -1,10 +1,17 @@
 -- mob: 흡혈강시
--- 흡혈강시 사망
 local quest = require('lib.quest')
 
-function ON_MOB_KILL_538(me, mobs)
-    quest.king_on_mob_kill(me, mobs)
-end
+return {
+    -- ON_MOB_ATTACK = function(me, you)
+    -- end,
 
--- function ON_MOB_DIE_538(me)
--- end
+    -- ON_MOB_DIE = function(me)
+    -- end,
+
+    ON_MOB_KILL = function(me, mobs)
+        quest.king_on_mob_kill(me, mobs)
+    end,
+
+    -- ON_MOB_SPELL_HIT = function(me, you, spell)
+    -- end
+}

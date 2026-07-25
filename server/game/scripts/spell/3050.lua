@@ -1,5 +1,16 @@
 -- spell: 몬스터노도성황
 -- 몬스터노도성황 지속 효과
--- function ON_CONCAST_3050(me, caster, buff)
---
--- end
+
+return {
+    -- ON_CAST = function(me, you, sp)
+    -- end,
+
+    -- ON_BUFF = function(me, sp)
+    -- end,
+
+    -- ON_UNBUFF = function(me, sp)
+    -- end,
+
+    -- ON_CONCAST = function(me, sp)
+    -- end
+}

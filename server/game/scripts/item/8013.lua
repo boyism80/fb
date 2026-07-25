@@ -1,9 +1,15 @@
 -- item: 신작약주
 
--- 신작약주 사용 스크립트
--- function ON_ACTIVATED_8013(me, item)
--- end
+return {
+    -- ON_ACTIVATED = function(me, item)
+    -- end,
 
--- 신작약주 해제 스크립트
--- function ON_DEACTIVATED_8013(me, item)
--- end
+    -- ON_DEACTIVATED = function(me, item)
+    -- end,
+
+    -- ON_CONCAST = function(me, item)
+    -- end,
+
+    -- ON_ATTACK = function(me, item)
+    -- end
+}

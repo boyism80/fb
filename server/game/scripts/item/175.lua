@@ -1,11 +1,15 @@
 -- item: 현자금봉
 
--- 현자금봉 사용 스크립트
--- function ON_ACTIVATED_175(me, item)
---
--- end
+return {
+    -- ON_ACTIVATED = function(me, item)
+    -- end,
 
--- 현자금봉 해제 스크립트
--- function ON_DEACTIVATED_175(me, item)
---
--- end
+    -- ON_DEACTIVATED = function(me, item)
+    -- end,
+
+    -- ON_CONCAST = function(me, item)
+    -- end,
+
+    -- ON_ATTACK = function(me, item)
+    -- end
+}

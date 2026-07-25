@@ -175,20 +175,22 @@ local function run_garimbin_wing_exchange(me, npc)
     end
 end
 
-function NPC_490(me, npc)
-    local sel, btn = me:list(npc, "안녕하세요. 어떻게 오셨나요?", {
-        "웨딩드레스특별판매",
-        "가릉빈가의날개옷교환"
-    })
-    if btn == DIALOG_RESULT.QUIT or sel == nil then
-        return
+return {
+    ON_CLICK = function(me, npc)
+        local sel, btn = me:list(npc, "안녕하세요. 어떻게 오셨나요?", {
+            "웨딩드레스특별판매",
+            "가릉빈가의날개옷교환"
+        })
+        if btn == DIALOG_RESULT.QUIT or sel == nil then
+            return
+        end
+        if sel == 1 then
+            run_wedding_dress_sale(me, npc)
+            return
+        end
+        if sel == 2 then
+            run_garimbin_wing_exchange(me, npc)
+            return
+        end
     end
-    if sel == 1 then
-        run_wedding_dress_sale(me, npc)
-        return
-    end
-    if sel == 2 then
-        run_garimbin_wing_exchange(me, npc)
-        return
-    end
-end
+}

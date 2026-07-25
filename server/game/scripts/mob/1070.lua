@@ -1,10 +1,16 @@
 -- mob: 신몽
--- 신몽 공격
-function ON_MOB_ATTACK_1070(me, you)
-    return false
-end
 
--- 신몽 사망
--- function ON_MOB_DIE_1070(me)
---
--- end
+return {
+    ON_MOB_ATTACK = function(me, you)
+        return false
+    end,
+
+    -- ON_MOB_DIE = function(me)
+    -- end,
+
+    -- ON_MOB_KILL = function(me, mobs)
+    -- end,
+
+    -- ON_MOB_SPELL_HIT = function(me, you, spell)
+    -- end
+}

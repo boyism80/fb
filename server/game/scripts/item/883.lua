@@ -1,11 +1,15 @@
 -- item: 청동도포
 
--- 청동도포 사용 스크립트
--- function ON_ACTIVATED_883(me, item)
---
--- end
+return {
+    -- ON_ACTIVATED = function(me, item)
+    -- end,
 
--- 청동도포 해제 스크립트
--- function ON_DEACTIVATED_883(me, item)
---
--- end
+    -- ON_DEACTIVATED = function(me, item)
+    -- end,
+
+    -- ON_CONCAST = function(me, item)
+    -- end,
+
+    -- ON_ATTACK = function(me, item)
+    -- end
+}

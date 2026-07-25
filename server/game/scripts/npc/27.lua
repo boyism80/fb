@@ -1,4 +1,6 @@
 -- npc: 진선
--- function NPC_27(me, npc)
---
--- end
+
+return {
+    -- ON_CLICK = function(me, npc)
+    -- end
+}

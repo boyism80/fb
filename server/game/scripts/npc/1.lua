@@ -1,4 +1,6 @@
 -- npc: 비도
--- function NPC_1(me, npc)
---
--- end
+
+return {
+    -- ON_CLICK = function(me, npc)
+    -- end
+}

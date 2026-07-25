@@ -1,13 +1,15 @@
 -- item: 진천부연곤
 
--- 진천부연곤 사용 스크립트
--- function ON_ACTIVATED_60021(me, item)
--- end
+return {
+    -- ON_ACTIVATED = function(me, item)
+    -- end,
 
--- 진천부연곤 해제 스크립트
--- function ON_DEACTIVATED_60021(me, item)
--- end
+    -- ON_DEACTIVATED = function(me, item)
+    -- end,
 
--- 진천부연곤 공격 스크립트
--- function ON_ATTACK_60021(me, item)
--- end
+    -- ON_CONCAST = function(me, item)
+    -- end,
+
+    -- ON_ATTACK = function(me, item)
+    -- end
+}

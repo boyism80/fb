@@ -1,11 +1,15 @@
 -- item: 여자설빔
 
--- 여자설빔 사용 스크립트
--- function ON_ACTIVATED_708(me, item)
---
--- end
+return {
+    -- ON_ACTIVATED = function(me, item)
+    -- end,
 
--- 여자설빔 해제 스크립트
--- function ON_DEACTIVATED_708(me, item)
---
--- end
+    -- ON_DEACTIVATED = function(me, item)
+    -- end,
+
+    -- ON_CONCAST = function(me, item)
+    -- end,
+
+    -- ON_ATTACK = function(me, item)
+    -- end
+}

@@ -1,9 +1,15 @@
 -- item: [궁극]방패마방
 
--- [궁극]방패마방 사용 스크립트
--- function ON_ACTIVATED_10629(me, item)
--- end
+return {
+    -- ON_ACTIVATED = function(me, item)
+    -- end,
 
--- [궁극]방패마방 해제 스크립트
--- function ON_DEACTIVATED_10629(me, item)
--- end
+    -- ON_DEACTIVATED = function(me, item)
+    -- end,
+
+    -- ON_CONCAST = function(me, item)
+    -- end,
+
+    -- ON_ATTACK = function(me, item)
+    -- end
+}

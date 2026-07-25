@@ -1,13 +1,15 @@
 -- item: 별풍선21
 
--- 별풍선21 사용 스크립트
--- function ON_ACTIVATED_546(me, item)
--- end
+return {
+    -- ON_ACTIVATED = function(me, item)
+    -- end,
 
--- 별풍선21 해제 스크립트
--- function ON_DEACTIVATED_546(me, item)
--- end
+    -- ON_DEACTIVATED = function(me, item)
+    -- end,
 
--- 별풍선21 공격 스크립트
--- function ON_ATTACK_546(me, item)
--- end
+    -- ON_CONCAST = function(me, item)
+    -- end,
+
+    -- ON_ATTACK = function(me, item)
+    -- end
+}

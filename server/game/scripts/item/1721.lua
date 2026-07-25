@@ -1,11 +1,15 @@
 -- item: 백금소장갑
 
--- 백금소장갑 사용 스크립트
--- function ON_ACTIVATED_1721(me, item)
---
--- end
+return {
+    -- ON_ACTIVATED = function(me, item)
+    -- end,
 
--- 백금소장갑 해제 스크립트
--- function ON_DEACTIVATED_1721(me, item)
---
--- end
+    -- ON_DEACTIVATED = function(me, item)
+    -- end,
+
+    -- ON_CONCAST = function(me, item)
+    -- end,
+
+    -- ON_ATTACK = function(me, item)
+    -- end
+}

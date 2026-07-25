@@ -1,11 +1,15 @@
 -- item: 혈충의목걸이
 
--- 혈충의목걸이 사용 스크립트
--- function ON_ACTIVATED_2134(me, item)
---
--- end
+return {
+    -- ON_ACTIVATED = function(me, item)
+    -- end,
 
--- 혈충의목걸이 해제 스크립트
--- function ON_DEACTIVATED_2134(me, item)
---
--- end
+    -- ON_DEACTIVATED = function(me, item)
+    -- end,
+
+    -- ON_CONCAST = function(me, item)
+    -- end,
+
+    -- ON_ATTACK = function(me, item)
+    -- end
+}

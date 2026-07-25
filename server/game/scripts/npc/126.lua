@@ -200,111 +200,113 @@ local function do_frolic(me, npc)
     end
 end
 
-function NPC_126(me, npc)
-    local x, y = me:position()
-    if (x and x > 20) or (y and (y < 75 or y > 94)) then
-        me:dialog(npc, "대체 어디서 장난을 하는거야? 내가 귀신이라고 우습게보여?", { prev = false, next = false })
-        return
-    end
-
-
-    if not in_hwahwa_time_window() then
-        me:dialog(npc, "앗, 큰일이야. 이제 다시 귀신의 모습으로 돌아가야해. 나중에 만나자.\n\n(소녀의 씁쓸한 목소리가 귓가에 남아 메아리쳤다.)", { prev = false, next = false })
-        return
-    end
-
-    local q_hwahwa = me:quest(quest.QUEST_HWAHWA)
-    local q_jingo = me:quest(quest.QUEST_JINGOGYUN)
-    local jingo_step = (q_jingo and q_jingo:step()) or 0
-    local hwahwa_friend = (q_hwahwa and q_hwahwa:step() >= 1)
-    local smile = get_smile_count(me)
-
-    if handle_jingogyun_4(me, npc, q_jingo) then
-        return
-    end
-    if handle_jingogyun_2(me, npc, q_jingo) then
-        return
-    end
-
-    if hwahwa_friend then
-        me:dialog(npc, me:name() .. ", 잘 지내?", { prev = false, next = false })
-        return
-    end
-
-    if smile >= 1500 then
-        me:dialog(npc, "심심해~ 심심해~\n\n배고파~ 배고파~", { prev = false, next = true })
-        local sel, btn = me:list(npc, me:name() .. "!!\n우리 친구하자! 어때?", {
-            "음... 좋아!",
-            "너랑 친구되기 싫은데?",
-        }, { prev = false })
-        if btn == DIALOG_RESULT.QUIT or sel == nil then
+return {
+    ON_CLICK = function(me, npc)
+        local x, y = me:position()
+        if (x and x > 20) or (y and (y < 75 or y > 94)) then
+            me:dialog(npc, "대체 어디서 장난을 하는거야? 내가 귀신이라고 우습게보여?", { prev = false, next = false })
             return
         end
-        if sel == 1 then
-            local q = (not q_hwahwa) and me:start_quest(quest.QUEST_HWAHWA) or me:quest(quest.QUEST_HWAHWA)
-            if q == nil then
+
+
+        if not in_hwahwa_time_window() then
+            me:dialog(npc, "앗, 큰일이야. 이제 다시 귀신의 모습으로 돌아가야해. 나중에 만나자.\n\n(소녀의 씁쓸한 목소리가 귓가에 남아 메아리쳤다.)", { prev = false, next = false })
+            return
+        end
+
+        local q_hwahwa = me:quest(quest.QUEST_HWAHWA)
+        local q_jingo = me:quest(quest.QUEST_JINGOGYUN)
+        local jingo_step = (q_jingo and q_jingo:step()) or 0
+        local hwahwa_friend = (q_hwahwa and q_hwahwa:step() >= 1)
+        local smile = get_smile_count(me)
+
+        if handle_jingogyun_4(me, npc, q_jingo) then
+            return
+        end
+        if handle_jingogyun_2(me, npc, q_jingo) then
+            return
+        end
+
+        if hwahwa_friend then
+            me:dialog(npc, me:name() .. ", 잘 지내?", { prev = false, next = false })
+            return
+        end
+
+        if smile >= 1500 then
+            me:dialog(npc, "심심해~ 심심해~\n\n배고파~ 배고파~", { prev = false, next = true })
+            local sel, btn = me:list(npc, me:name() .. "!!\n우리 친구하자! 어때?", {
+                "음... 좋아!",
+                "너랑 친구되기 싫은데?",
+            }, { prev = false })
+            if btn == DIALOG_RESULT.QUIT or sel == nil then
                 return
             end
-            q:step(1)
-            me:mkitem("고균의영검", 1)
-            me:dialog(npc, "선물 하나 줄게!\n\n가지고 있는게 이것뿐이라...\n닳지않도록 조심히 써야 되~", { prev = false, next = false })
-            return
-        end
-        if sel == 2 then
-            local q = me:quest(quest.QUEST_HWAHWA_SMILE)
-            if q and q:step() > 0 then
-                q:step(math.max(0, (q:step() or 0) - 50))
+            if sel == 1 then
+                local q = (not q_hwahwa) and me:start_quest(quest.QUEST_HWAHWA) or me:quest(quest.QUEST_HWAHWA)
+                if q == nil then
+                    return
+                end
+                q:step(1)
+                me:mkitem("고균의영검", 1)
+                me:dialog(npc, "선물 하나 줄게!\n\n가지고 있는게 이것뿐이라...\n닳지않도록 조심히 써야 되~", { prev = false, next = false })
+                return
             end
-            me:dialog(npc, "꺼져!", { prev = false, next = false })
-            return
+            if sel == 2 then
+                local q = me:quest(quest.QUEST_HWAHWA_SMILE)
+                if q and q:step() > 0 then
+                    q:step(math.max(0, (q:step() or 0) - 50))
+                end
+                me:dialog(npc, "꺼져!", { prev = false, next = false })
+                return
+            end
         end
-    end
 
-    if smile > 0 then
-        do_frolic(me, npc)
-        return
-    end
+        if smile > 0 then
+            do_frolic(me, npc)
+            return
+        end
 
-    if me:has_items("비장의도시락", 1) then
-        if not run_dialogs(me, npc, {
-            "소녀가 당신을 본다. 시선이 당신이 들고있는 도시락으로 향한다. 하지만, 표정은 경계심이 가득하다.",
-            "어? 넌 누구야? 돌순이의 기운이 강하게 느껴지네. 돌순이의 친구니?",
-        }) then
-            return
-        end
-        local sel, btn = me:list(npc, "소녀가 호기심에 가득찬 눈으로 쳐다본다. 무어라 대답해야할까?", {
-            "응, 난 돌순이의 친한 친구야.",
-            "돌순이라니? 혹시 돈만 좋아하는 그 여자애말야?",
-        }, { prev = false })
-        if btn == DIALOG_RESULT.QUIT or sel == nil then
-            return
-        end
-        if sel == 1 then
+        if me:has_items("비장의도시락", 1) then
             if not run_dialogs(me, npc, {
-                "그래?! 돌순이랑 친구였구나. 반가워, 나도 돌순이 친구야. 내 이름은 화화라고해.\n\n이쁜 이름이지? 이미 죽어서 이름이 이뻐도 아무 소용없긴 하지만...",
-                "헤헤헤, 아무튼 만나서 다행이다. 돌순이가 오지 않는 날엔 하루종일 쓸쓸하거든.\n\n나는 옛날에 폐허 동굴에서 죽어서 친구가 없었거든. 그래서 죽어서도 친구를 사귀고 싶어.",
-                "요즘은 돌순이가 항상 도시락을 가져다줘. 굉장히 비싼 도시락같던데. 어디서 그런 돈을 구하는걸까?",
+                "소녀가 당신을 본다. 시선이 당신이 들고있는 도시락으로 향한다. 하지만, 표정은 경계심이 가득하다.",
+                "어? 넌 누구야? 돌순이의 기운이 강하게 느껴지네. 돌순이의 친구니?",
             }) then
                 return
             end
-            local sel2, btn2 = me:list(npc, "그런데 이렇게 늦은 밤에 돌아다녀도 괜찮아? 늘 밤에 돌아다니는거야?", {
-                "응, 난 밤이 무섭지 않거든.",
-                "아니, 오늘은 어쩌다가 이렇게 돌아다니게 된거야.",
+            local sel, btn = me:list(npc, "소녀가 호기심에 가득찬 눈으로 쳐다본다. 무어라 대답해야할까?", {
+                "응, 난 돌순이의 친한 친구야.",
+                "돌순이라니? 혹시 돈만 좋아하는 그 여자애말야?",
             }, { prev = false })
-            if btn2 == DIALOG_RESULT.QUIT or sel2 == nil then
+            if btn == DIALOG_RESULT.QUIT or sel == nil then
                 return
             end
-            if sel2 == 1 or sel2 == 2 then
-                do_frolic(me, npc)
+            if sel == 1 then
+                if not run_dialogs(me, npc, {
+                    "그래?! 돌순이랑 친구였구나. 반가워, 나도 돌순이 친구야. 내 이름은 화화라고해.\n\n이쁜 이름이지? 이미 죽어서 이름이 이뻐도 아무 소용없긴 하지만...",
+                    "헤헤헤, 아무튼 만나서 다행이다. 돌순이가 오지 않는 날엔 하루종일 쓸쓸하거든.\n\n나는 옛날에 폐허 동굴에서 죽어서 친구가 없었거든. 그래서 죽어서도 친구를 사귀고 싶어.",
+                    "요즘은 돌순이가 항상 도시락을 가져다줘. 굉장히 비싼 도시락같던데. 어디서 그런 돈을 구하는걸까?",
+                }) then
+                    return
+                end
+                local sel2, btn2 = me:list(npc, "그런데 이렇게 늦은 밤에 돌아다녀도 괜찮아? 늘 밤에 돌아다니는거야?", {
+                    "응, 난 밤이 무섭지 않거든.",
+                    "아니, 오늘은 어쩌다가 이렇게 돌아다니게 된거야.",
+                }, { prev = false })
+                if btn2 == DIALOG_RESULT.QUIT or sel2 == nil then
+                    return
+                end
+                if sel2 == 1 or sel2 == 2 then
+                    do_frolic(me, npc)
+                end
+                return
+            end
+            if sel == 2 then
+                me:dialog(npc, "뭐? 그게 무슨말이니?", { prev = false, next = false })
+                return
             end
             return
         end
-        if sel == 2 then
-            me:dialog(npc, "뭐? 그게 무슨말이니?", { prev = false, next = false })
-            return
-        end
-        return
-    end
 
-    me:dialog(npc, "소녀가 공허한 눈으로 당신을 쳐다본다. 당신에게서 무언가를 찾듯이 한참이나 살펴보다가 이윽고 조금 실망한 표정으로 다른 곳을 바라본다.", { prev = false, next = false })
-end
+        me:dialog(npc, "소녀가 공허한 눈으로 당신을 쳐다본다. 당신에게서 무언가를 찾듯이 한참이나 살펴보다가 이윽고 조금 실망한 표정으로 다른 곳을 바라본다.", { prev = false, next = false })
+    end
+}

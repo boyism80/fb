@@ -1,10 +1,16 @@
 -- mob: 중앙장군의망령
--- 중앙장군의망령 공격
-function ON_MOB_ATTACK_1214(me, you)
-    return false
-end
 
--- 중앙장군의망령 사망
--- function ON_MOB_DIE_1214(me)
---
--- end
+return {
+    ON_MOB_ATTACK = function(me, you)
+        return false
+    end,
+
+    -- ON_MOB_DIE = function(me)
+    -- end,
+
+    -- ON_MOB_KILL = function(me, mobs)
+    -- end,
+
+    -- ON_MOB_SPELL_HIT = function(me, you, spell)
+    -- end
+}

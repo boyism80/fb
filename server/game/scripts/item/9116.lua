@@ -1,9 +1,15 @@
 -- item: 맛없는화면
 
--- 맛없는화면 사용 스크립트
--- function ON_ACTIVATED_9116(me, item)
--- end
+return {
+    -- ON_ACTIVATED = function(me, item)
+    -- end,
 
--- 맛없는화면 해제 스크립트
--- function ON_DEACTIVATED_9116(me, item)
--- end
+    -- ON_DEACTIVATED = function(me, item)
+    -- end,
+
+    -- ON_CONCAST = function(me, item)
+    -- end,
+
+    -- ON_ATTACK = function(me, item)
+    -- end
+}

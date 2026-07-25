@@ -1,9 +1,15 @@
 -- item: 장안성B서
 
--- 장안성B서 사용 스크립트
--- function ON_ACTIVATED_60040(me, item)
--- end
+return {
+    -- ON_ACTIVATED = function(me, item)
+    -- end,
 
--- 장안성B서 해제 스크립트
--- function ON_DEACTIVATED_60040(me, item)
--- end
+    -- ON_DEACTIVATED = function(me, item)
+    -- end,
+
+    -- ON_CONCAST = function(me, item)
+    -- end,
+
+    -- ON_ATTACK = function(me, item)
+    -- end
+}

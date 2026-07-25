@@ -1,4 +1,6 @@
 -- npc: 흑천
--- function NPC_33(me, npc)
---
--- end
+
+return {
+    -- ON_CLICK = function(me, npc)
+    -- end
+}

@@ -1,11 +1,15 @@
 -- item: 진인의영혼
 
--- 진인의영혼 사용 스크립트
--- function ON_ACTIVATED_695(me, item)
---
--- end
+return {
+    -- ON_ACTIVATED = function(me, item)
+    -- end,
 
--- 진인의영혼 해제 스크립트
--- function ON_DEACTIVATED_695(me, item)
---
--- end
+    -- ON_DEACTIVATED = function(me, item)
+    -- end,
+
+    -- ON_CONCAST = function(me, item)
+    -- end,
+
+    -- ON_ATTACK = function(me, item)
+    -- end
+}

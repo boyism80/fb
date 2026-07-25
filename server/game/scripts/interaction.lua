@@ -4,222 +4,6 @@ local spell = require('lib.spell')
 local npc = require('lib.npc')
 local command = require('lib.command')
 
-function on_attack(me, additional_attack)
-    local map = me:map()
-    if map == nil then
-        return 0
-    end
-
-    local option = map:model():option()
-    local pk = (option & MAP_OPTION.ENABLE_PK) == MAP_OPTION.ENABLE_PK
-    local enemy_type = OBJECT_TYPE.LIFE
-    if not pk then
-        enemy_type = OBJECT_TYPE.MOB
-    end
-
-    if additional_attack == nil then
-        additional_attack = false
-    end
-
-    if not additional_attack then
-        me:action(ACTION.ATTACK, DURATION.ATTACK)
-    end
-
-    local weapon = nil
-    local is_bow = false
-    if me:is(OBJECT_TYPE.CHARACTER) and not additional_attack then
-        weapon = me:weapon()
-        if weapon ~= nil then
-            local model = weapon:model()
-            is_bow = model:type() == WEAPON_TYPE.BOW
-
-            local sound = model:sound()
-            if sound == 0 then
-                if not is_bow then
-                    sound = SOUND.SWING
-                end
-            end
-            me:sound(sound)
-        end
-    end
-
-    local count = 0
-    local x, y = me:position()
-    local direction = me:direction()
-    if is_bow then
-        local range = 14
-        local target = nil
-        local width = map:width()
-        local height = map:height()
-        for i = 1, range do
-            local obj_x = x
-            local obj_y = y
-            if direction == DIRECTION.LEFT then
-                obj_x = obj_x - i
-            elseif direction == DIRECTION.RIGHT then
-                obj_x = obj_x + i
-            elseif direction == DIRECTION.TOP then
-                obj_y = obj_y - i
-            else
-                obj_y = obj_y + i
-            end
-
-            if obj_x < 0 or obj_x > width or obj_y < 0 or obj_y > height then
-                break
-            end
-
-            target = map:at(obj_x, obj_y, enemy_type)
-            if target ~= nil then
-                break
-            end
-        end
-
-        if target ~= nil then
-            lib.damage(me, target, nil, 701)
-            count = count + 1
-        end
-    else
-        local front = nil
-        if me:is(OBJECT_TYPE.MOB) then
-            front = me:target()
-            if front ~= nil then
-                local x_front, y_front = front:position()
-                local x_diff = math.abs(x_front - x)
-                local y_diff = math.abs(y_front - y)
-                local is_near = (x_diff == 1 and y_diff == 0) or (y_diff == 1 and x_diff == 0)
-                if not is_near then
-                    front = nil
-                end
-            end
-        end
-        if front == nil then
-            front = me:front(enemy_type)
-        end
-        local damaged_sound = nil
-        if weapon ~= nil then
-            damaged_sound = SOUND.DAMAGE
-        end
-        if front ~= nil and not lib.is_miss(me, front) then
-            lib.damage(me, front, nil, damaged_sound)
-            count = count + 1
-        end
-
-        if me:isbuff('측면공격') then
-            local points = {}
-            if direction == DIRECTION.LEFT or direction == DIRECTION.RIGHT then
-                table.insert(points, {x, y-1})
-                table.insert(points, {x, y+1})
-            else
-                table.insert(points, {x-1, y})
-                table.insert(points, {x+1, y})
-            end
-
-            local nears = me:nears(enemy_type, points, false)
-            for _, obj in pairs(nears) do
-                lib.damage(me, obj, 0.4, damaged_sound)
-                count = count + 1
-            end
-        end
-
-        if me:isbuff('후면공격') then
-            local points = {}
-            if direction == DIRECTION.LEFT then
-                table.insert(points, {x+1, y})
-            elseif direction == DIRECTION.TOP then
-                table.insert(points, {x, y+1})
-            elseif direction == DIRECTION.RIGHT then
-                table.insert(points, {x-1, y})
-            else
-                table.insert(points, {x, y-1})
-            end
-
-            local nears = me:nears(enemy_type, points, false)
-            for _, obj in pairs(nears) do
-                lib.damage(me, obj, 0.5, damaged_sound)
-                count = count + 1
-            end
-        end
-    end
-
-    if me:isbuff('투명') and count > 0 then
-        me:unbuff('투명')
-    end
-
-    if me:isbuff('분신') and not additional_attack then
-        count = count + on_attack(me, true)
-    end
-
-    lib.any_action(me)
-    return count
-end
-
-function on_equipment_active(me, parts, equipment)
-    lib.any_action(me)
-end
-
-function on_equipment_inactive(me, parts, equipment)
-    if me:weapon_damage() > 0 then
-        me:message('무기의 푸른빛이 사라집니다.')
-        me:weapon_damage(0)
-    end
-
-    lib.any_action(me)
-end
-
-function on_loot(me)
-    for _, buff_name in pairs(spell.relative_buff_name('투명')) do
-        if me:isbuff(buff_name) then
-            me:state(STATE.NORMAL)
-            me:unbuff(buff_name)
-        end
-    end
-
-    if me:super_hide() then
-        me:super_hide(false)
-        me:state(STATE.NORMAL)
-    end
-
-    lib.any_action(me)
-end
-
-function on_door(me)
-    local map = me:map()
-    local door = map:door(me)
-    if door == nil then
-        return
-    end
-
-    local key = me:item('파란열쇠')
-    local locked = door:locked()
-    if door:locked() and key == nil then
-        me:message('문이 잠겼습니다.')
-        return
-    end
-
-    local opened = door:toggle()
-    if opened then
-        me:message('문을 열었습니다.')
-    else
-        me:message('문을 닫았습니다.')
-    end
-
-    lib.any_action(me)
-end
-
-function on_move(me)
-    lib.any_action(me)
-
-    if me:is(OBJECT_TYPE.CHARACTER) then
-        local quest = require('lib.quest')
-        quest.red_clay_on_move(me)
-        quest.mountain_treasure_fabric_on_move(me)
-    end
-end
-
-function on_direction(me)
-    lib.any_action(me)
-end
-
 -- Gatekeeper NPC name -> { totem name (e.g. "청룡"), totem_key (e.g. "dragon") } for "~참가" chat.
 local GATEKEEPER_BY_NAME = {
     ["주작성문지기"] = { "주작", "bird" },
@@ -634,61 +418,6 @@ local function dispatch_npc_chat(me, npcs, message)
     return false
 end
 
-function on_chat(me, message, shout)
-    if string.sub(message, 1, 1) == '/' then
-        message = string.sub(message, 2, string.len(message))
-        args = lib.string_split(message, ' ')
-
-        local cmd = args[1]
-        if command.functions[cmd] == nil then
-            return false
-        end
-        
-        local cmd_data = command.functions[cmd]
-        local cmd_func = nil
-        local required_privilege = ROLE.USER
-        
-        if type(cmd_data) == 'table' then
-            cmd_func = cmd_data['command']
-            required_privilege = cmd_data['privilege'] or ROLE.USER
-        else
-            cmd_func = cmd_data
-        end
-        
-        if me:role() < required_privilege then
-            me:message('권한이 부족합니다.')
-            return true
-        end
-        
-        table.remove(args, 1)
-        return cmd_func(me, args)
-    end
-    
-    on_npc_chat(me, message, shout)
-    return false
-end
-
-function on_npc_chat(me, message, shout)
-    local map = me:map()
-    if map == nil then
-        return false
-    end
-
-    local npcs = {}
-    if shout then
-        npcs = map:objects(OBJECT_TYPE.NPC)
-    else
-        local x, y = me:position()
-        npcs = map:nears({x, y}, OBJECT_TYPE.NPC)
-    end
-
-    if #npcs == 0 then
-        return false
-    end
-
-    return dispatch_npc_chat(me, npcs, message)
-end
-
 local function make_baram_birth_label()
     local epoch = os.time{ year = 1996, month = 3, day = 31, hour = 0, min = 0, sec = 0 }
     local now = os.time()
@@ -713,109 +442,6 @@ local function make_baram_birth_label()
     end
 
     return string.format("바람력 %d년 %s", baram_year, season)
-end
-
-function on_login(me, first_login)
-    if first_login then
-        me:push_achievement(0, make_baram_birth_label() .. " 생", 0, 47)
-    end
-    if me:birthday() ~= nil then
-        return
-    end
-
-    local npc = name2npc('낙랑')
-    local button = nil
-::BIRTHDAY_DIALOG_1::
-    button = me:dialog(npc, '대단히 중요하니 끝까지 읽어주세요! 빈번히 발생하는 아이디 해킹을 미연에 방지하기 위해 또 하나의 2차 비밀번호를 정해야 합니다.', { prev = false, next = true })
-    if button == DIALOG_RESULT.QUIT then
-        return
-    end
-
-::BIRTHDAY_DIALOG_2::
-    button = me:dialog(npc, '이 2차 비밀번호는 한번 결정을 하시면 변경이 불가능 합니다. 이 2차 비밀번호는 자신의 게임 접속 비밀번호를 바꿀 때에만 사용합니다.', { prev = true, next = true })
-    if button == DIALOG_RESULT.QUIT then
-        return
-    end
-    if button == DIALOG_RESULT.PREV then
-        goto BIRTHDAY_DIALOG_1
-    end
-
-::BIRTHDAY_DIALOG_3::
-    button = me:dialog(npc, '이 2차 비밀번호는 자신의 생년월일로 해주세요. 예를 들면 자신의 생일이 92년 04월 17일이면, 920417으로 입력해주세요. (반드시 6자리)', { prev = true, next = true })
-    if button == DIALOG_RESULT.QUIT then
-        return
-    end
-    if button == DIALOG_RESULT.PREV then
-        goto BIRTHDAY_DIALOG_2
-    end
-
-::BIRTHDAY_DIALOG_4::
-    button = me:dialog(npc, '이 2차 비밀번호는 분실하실 이유가 없기 때문에(자신의 생년월일이므로) 이 2차 비밀번호를 모르시는 분은 해당 아이디에 대한 소유권을 박탈합니다.', { prev = true, next = true })
-    if button == DIALOG_RESULT.QUIT then
-        return
-    end
-    if button == DIALOG_RESULT.PREV then
-        goto BIRTHDAY_DIALOG_3
-    end
-
-::BIRTHDAY_DIALOG_5::
-    button = me:dialog(npc, '이 2차 비밀번호를 모르시고 처음의 비밀번호 분실신고를 하셔도 저희는 가르쳐 드릴수가 없습니다. 그 만큼 중요한 것이오니 신중히 그리고 정확히 입력해주세요.', { prev = true, next = true })
-    if button == DIALOG_RESULT.QUIT then
-        return
-    end
-    if button == DIALOG_RESULT.PREV then
-        goto BIRTHDAY_DIALOG_4
-    end
-
-::BIRTHDAY_DIALOG_6::
-    button = me:dialog(npc, '또한 이 두번째 비밀번호(생년월일)를 입력하지 않으시고 다음에 비밀번호 분실신고를 하셔도 저희는 해드릴수가 없으니 반드시 두번째 비번을 입력하시기 바랍니다.', { prev = true, next = true })
-    if button == DIALOG_RESULT.QUIT then
-        return
-    end
-    if button == DIALOG_RESULT.PREV then
-        goto BIRTHDAY_DIALOG_5
-    end
-
-::BIRTHDAY_INPUT::
-    local birthday = me:input(npc, '자신의 생년월일을 입력해 주세요.', { top = '저의 생년월일은', bottom = '입니다.', maxlen = 6, prev = true })
-    if birthday == DIALOG_RESULT.QUIT then
-        goto BIRTHDAY_INPUT
-    end
-    if birthday == DIALOG_RESULT.PREV then
-        goto BIRTHDAY_DIALOG_6
-    end
-
-    ::BIRTHDAY_MUST_SET::
-    if birthday == '' or #birthday ~= 6 then
-        button = me:dialog(npc, '두번째 비밀번호를 정하지 않으면 게임을 할 수 없습니다. 반드시 해주세요.', { prev = true, next = true })
-        if button == DIALOG_RESULT.QUIT then
-            return
-        end
-        if button == DIALOG_RESULT.PREV then
-            goto BIRTHDAY_INPUT
-        end
-        goto BIRTHDAY_INPUT
-    end
-
-    birthday = tonumber(birthday)
-    if birthday == nil or birthday <= 0 then
-        goto BIRTHDAY_MUST_SET
-    end
-
-    local sel, list_btn = me:list(npc, string.format('당신의 생년월일이 %s가 맞습니까?', birthday), {'예', '아니오'}, { prev = true })
-    if list_btn == DIALOG_RESULT.QUIT then
-        return
-    end
-    if list_btn == DIALOG_RESULT.PREV or sel == nil then
-        goto BIRTHDAY_INPUT
-    end
-
-    if sel == 1 then
-        me:birthday(birthday)
-        return
-    end
-
-    goto BIRTHDAY_MUST_SET
 end
 
 -- Matchmaking events (see server/game/src/matchmaker.cpp, handler/amqp/matchmaking_*.cpp)
@@ -858,99 +484,477 @@ local function matchmaking_clear_state(me)
     matchmaking_states[me:uid()] = nil
 end
 
-function on_matchmaking_register(me, match_type, registry_id)
-    local state = matchmaking_state(me)
-    local now_ts = now()
-    state.queue_started_at = now_ts
-    state.elapsed_seconds = 0
-    me:timer(1200, false)
-    me:message(string.format('매치메이킹 대기를 시작했습니다. (유형: %d)', match_type), MESSAGE_TYPE.STATE)
-end
-
-function on_matchmaking_unregister(me, match_type, registry_id)
-    matchmaking_clear_timer(me)
-    matchmaking_clear_state(me)
-    me:message(string.format('매치메이킹 대기를 취소했습니다. (유형: %d)', match_type), MESSAGE_TYPE.STATE)
-end
-
-function on_matchmaking_decline(me, match_id, match_type)
-    matchmaking_clear_timer(me)
-    matchmaking_clear_state(me)
-    me:message(string.format('매치를 거절했습니다. (유형: %d)', match_type), MESSAGE_TYPE.STATE)
-end
-
-function on_matchmaking_confirm(me, match_id, match_type)
-    me:message(string.format('매치 참여를 수락했습니다. (유형: %d)', match_type), MESSAGE_TYPE.STATE)
-end
-
-function on_matchmaking_proposed(me, match_id, match_type, confirm_deadline)
-    local state = matchmaking_state(me)
-    local now_ts = now()
-    if state.queue_started_at ~= nil then
-        state.elapsed_seconds = now_ts - state.queue_started_at
-    else
-        state.elapsed_seconds = 0
-    end
-    local confirm_seconds = matchmaking_confirm_seconds(confirm_deadline)
-    me:timer(confirm_seconds, true)
-    me:message(
-        string.format('매치가 제안되었습니다. %d초 안에 수락해 주세요. (유형: %d)', confirm_seconds, match_type),
-        MESSAGE_TYPE.STATE
-    )
-
-    local npc = name2npc('낙랑')
-    local selected, button = me:list(npc, '매치를 찾았습니다. 참여하시겠습니까?', {'예', '아니오'}, { prev = false })
-    if button == DIALOG_RESULT.QUIT or selected == nil then
-        return
+local function on_attack(me, additional_attack)
+    local map = me:map()
+    if map == nil then
+        return 0
     end
 
-    if selected == 1 then
-        local err = me:matchmaker():confirm()
-        if err ~= nil then
-            me:message(err, MESSAGE_TYPE.STATE)
-        end
-    else
-        local err = me:matchmaker():decline()
-        if err ~= nil then
-            me:message(err, MESSAGE_TYPE.STATE)
+    local option = map:model():option()
+    local pk = (option & MAP_OPTION.ENABLE_PK) == MAP_OPTION.ENABLE_PK
+    local enemy_type = OBJECT_TYPE.LIFE
+    if not pk then
+        enemy_type = OBJECT_TYPE.MOB
+    end
+
+    if additional_attack == nil then
+        additional_attack = false
+    end
+
+    if not additional_attack then
+        me:action(ACTION.ATTACK, DURATION.ATTACK)
+    end
+
+    local weapon = nil
+    local is_bow = false
+    if me:is(OBJECT_TYPE.CHARACTER) and not additional_attack then
+        weapon = me:weapon()
+        if weapon ~= nil then
+            local model = weapon:model()
+            is_bow = model:type() == WEAPON_TYPE.BOW
+
+            local sound = model:sound()
+            if sound == 0 then
+                if not is_bow then
+                    sound = SOUND.SWING
+                end
+            end
+            me:sound(sound)
         end
     end
-end
 
-function on_matchmaking_ready(me, match_id, match_type)
-    matchmaking_clear_timer(me)
-    matchmaking_clear_state(me)
-    me:message(string.format('매치가 성사되었습니다. (유형: %d)', match_type), MESSAGE_TYPE.STATE)
-end
+    local count = 0
+    local x, y = me:position()
+    local direction = me:direction()
+    if is_bow then
+        local range = 14
+        local target = nil
+        local width = map:width()
+        local height = map:height()
+        for i = 1, range do
+            local obj_x = x
+            local obj_y = y
+            if direction == DIRECTION.LEFT then
+                obj_x = obj_x - i
+            elseif direction == DIRECTION.RIGHT then
+                obj_x = obj_x + i
+            elseif direction == DIRECTION.TOP then
+                obj_y = obj_y - i
+            else
+                obj_y = obj_y + i
+            end
 
-function on_matchmaking_dissolved(me, match_id, match_type, reason, outcome)
-    if outcome == 1 then
-        local state = matchmaking_state(me)
-        local elapsed = state.elapsed_seconds or 0
-        state.queue_started_at = now() - elapsed
-        me:timer(1200, false)
-        if reason == 0 then
-            me:message(
-                string.format('상대가 응답하지 않아 대기를 이어갑니다. (유형: %d)', match_type),
-                MESSAGE_TYPE.STATE
-            )
-        else
-            me:message(
-                string.format('다른 플레이어가 거절하여 대기를 이어갑니다. (유형: %d)', match_type),
-                MESSAGE_TYPE.STATE
-            )
+            if obj_x < 0 or obj_x > width or obj_y < 0 or obj_y > height then
+                break
+            end
+
+            target = map:at(obj_x, obj_y, enemy_type)
+            if target ~= nil then
+                break
+            end
+        end
+
+        if target ~= nil then
+            lib.damage(me, target, nil, 701)
+            count = count + 1
         end
     else
-        local had_state = matchmaking_states[me:uid()] ~= nil
-        matchmaking_clear_timer(me)
-        matchmaking_clear_state(me)
-        if not had_state then
+        local front = nil
+        if me:is(OBJECT_TYPE.MOB) then
+            front = me:target()
+            if front ~= nil then
+                local x_front, y_front = front:position()
+                local x_diff = math.abs(x_front - x)
+                local y_diff = math.abs(y_front - y)
+                local is_near = (x_diff == 1 and y_diff == 0) or (y_diff == 1 and x_diff == 0)
+                if not is_near then
+                    front = nil
+                end
+            end
+        end
+        if front == nil then
+            front = me:front(enemy_type)
+        end
+        local damaged_sound = nil
+        if weapon ~= nil then
+            damaged_sound = SOUND.DAMAGE
+        end
+        if front ~= nil and not lib.is_miss(me, front) then
+            lib.damage(me, front, nil, damaged_sound)
+            count = count + 1
+        end
+
+        if me:isbuff('측면공격') then
+            local points = {}
+            if direction == DIRECTION.LEFT or direction == DIRECTION.RIGHT then
+                table.insert(points, {x, y-1})
+                table.insert(points, {x, y+1})
+            else
+                table.insert(points, {x-1, y})
+                table.insert(points, {x+1, y})
+            end
+
+            local nears = me:nears(enemy_type, points, false)
+            for _, obj in pairs(nears) do
+                lib.damage(me, obj, 0.4, damaged_sound)
+                count = count + 1
+            end
+        end
+
+        if me:isbuff('후면공격') then
+            local points = {}
+            if direction == DIRECTION.LEFT then
+                table.insert(points, {x+1, y})
+            elseif direction == DIRECTION.TOP then
+                table.insert(points, {x, y+1})
+            elseif direction == DIRECTION.RIGHT then
+                table.insert(points, {x-1, y})
+            else
+                table.insert(points, {x, y-1})
+            end
+
+            local nears = me:nears(enemy_type, points, false)
+            for _, obj in pairs(nears) do
+                lib.damage(me, obj, 0.5, damaged_sound)
+                count = count + 1
+            end
+        end
+    end
+
+    if me:isbuff('투명') and count > 0 then
+        me:unbuff('투명')
+    end
+
+    if me:isbuff('분신') and not additional_attack then
+        count = count + on_attack(me, true)
+    end
+
+    lib.any_action(me)
+    return count
+end
+
+return {
+    on_attack = on_attack,
+
+    on_equipment_active = function(me, parts, equipment)
+        lib.any_action(me)
+    end,
+
+    on_equipment_inactive = function(me, parts, equipment)
+        if me:weapon_damage() > 0 then
+            me:message('무기의 푸른빛이 사라집니다.')
+            me:weapon_damage(0)
+        end
+
+        lib.any_action(me)
+    end,
+
+    on_loot = function(me)
+        for _, buff_name in pairs(spell.relative_buff_name('투명')) do
+            if me:isbuff(buff_name) then
+                me:state(STATE.NORMAL)
+                me:unbuff(buff_name)
+            end
+        end
+
+        if me:super_hide() then
+            me:super_hide(false)
+            me:state(STATE.NORMAL)
+        end
+
+        lib.any_action(me)
+    end,
+
+    on_door = function(me)
+        local map = me:map()
+        local door = map:door(me)
+        if door == nil then
             return
         end
-        if reason == 0 then
-            me:message(string.format('응답 시간이 초과되어 대기가 종료되었습니다. (유형: %d)', match_type), MESSAGE_TYPE.STATE)
+
+        local key = me:item('파란열쇠')
+        local locked = door:locked()
+        if door:locked() and key == nil then
+            me:message('문이 잠겼습니다.')
+            return
+        end
+
+        local opened = door:toggle()
+        if opened then
+            me:message('문을 열었습니다.')
         else
-            me:message(string.format('매치가 취소되었습니다. (유형: %d)', match_type), MESSAGE_TYPE.STATE)
+            me:message('문을 닫았습니다.')
+        end
+
+        lib.any_action(me)
+    end,
+
+    on_move = function(me)
+        lib.any_action(me)
+
+        if me:is(OBJECT_TYPE.CHARACTER) then
+            local quest = require('lib.quest')
+            quest.red_clay_on_move(me)
+            quest.mountain_treasure_fabric_on_move(me)
+        end
+    end,
+
+    on_direction = function(me)
+        lib.any_action(me)
+    end,
+
+    on_chat = function(me, message, shout)
+        if string.sub(message, 1, 1) == '/' then
+            message = string.sub(message, 2, string.len(message))
+            args = lib.string_split(message, ' ')
+
+            local cmd = args[1]
+            if command.functions[cmd] == nil then
+                return false
+            end
+
+            local cmd_data = command.functions[cmd]
+            local cmd_func = nil
+            local required_privilege = ROLE.USER
+
+            if type(cmd_data) == 'table' then
+                cmd_func = cmd_data['command']
+                required_privilege = cmd_data['privilege'] or ROLE.USER
+            else
+                cmd_func = cmd_data
+            end
+
+            if me:role() < required_privilege then
+                me:message('권한이 부족합니다.')
+                return true
+            end
+
+            table.remove(args, 1)
+            return cmd_func(me, args)
+        end
+
+        on_npc_chat(me, message, shout)
+        return false
+    end,
+
+    on_npc_chat = function(me, message, shout)
+            local map = me:map()
+            if map == nil then
+                return false
+            end
+
+            local npcs = {}
+            if shout then
+                npcs = map:objects(OBJECT_TYPE.NPC)
+            else
+                local x, y = me:position()
+                npcs = map:nears({x, y}, OBJECT_TYPE.NPC)
+            end
+
+            if #npcs == 0 then
+                return false
+            end
+
+            return dispatch_npc_chat(me, npcs, message)
+    end,
+
+    on_login = function(me, first_login)
+        if first_login then
+            me:push_achievement(0, make_baram_birth_label() .. " 생", 0, 47)
+        end
+        if me:birthday() ~= nil then
+            return
+        end
+
+        local npc = name2npc('낙랑')
+        local button = nil
+    ::BIRTHDAY_DIALOG_1::
+        button = me:dialog(npc, '대단히 중요하니 끝까지 읽어주세요! 빈번히 발생하는 아이디 해킹을 미연에 방지하기 위해 또 하나의 2차 비밀번호를 정해야 합니다.', { prev = false, next = true })
+        if button == DIALOG_RESULT.QUIT then
+            return
+        end
+
+    ::BIRTHDAY_DIALOG_2::
+        button = me:dialog(npc, '이 2차 비밀번호는 한번 결정을 하시면 변경이 불가능 합니다. 이 2차 비밀번호는 자신의 게임 접속 비밀번호를 바꿀 때에만 사용합니다.', { prev = true, next = true })
+        if button == DIALOG_RESULT.QUIT then
+            return
+        end
+        if button == DIALOG_RESULT.PREV then
+            goto BIRTHDAY_DIALOG_1
+        end
+
+    ::BIRTHDAY_DIALOG_3::
+        button = me:dialog(npc, '이 2차 비밀번호는 자신의 생년월일로 해주세요. 예를 들면 자신의 생일이 92년 04월 17일이면, 920417으로 입력해주세요. (반드시 6자리)', { prev = true, next = true })
+        if button == DIALOG_RESULT.QUIT then
+            return
+        end
+        if button == DIALOG_RESULT.PREV then
+            goto BIRTHDAY_DIALOG_2
+        end
+
+    ::BIRTHDAY_DIALOG_4::
+        button = me:dialog(npc, '이 2차 비밀번호는 분실하실 이유가 없기 때문에(자신의 생년월일이므로) 이 2차 비밀번호를 모르시는 분은 해당 아이디에 대한 소유권을 박탈합니다.', { prev = true, next = true })
+        if button == DIALOG_RESULT.QUIT then
+            return
+        end
+        if button == DIALOG_RESULT.PREV then
+            goto BIRTHDAY_DIALOG_3
+        end
+
+    ::BIRTHDAY_DIALOG_5::
+        button = me:dialog(npc, '이 2차 비밀번호를 모르시고 처음의 비밀번호 분실신고를 하셔도 저희는 가르쳐 드릴수가 없습니다. 그 만큼 중요한 것이오니 신중히 그리고 정확히 입력해주세요.', { prev = true, next = true })
+        if button == DIALOG_RESULT.QUIT then
+            return
+        end
+        if button == DIALOG_RESULT.PREV then
+            goto BIRTHDAY_DIALOG_4
+        end
+
+    ::BIRTHDAY_DIALOG_6::
+        button = me:dialog(npc, '또한 이 두번째 비밀번호(생년월일)를 입력하지 않으시고 다음에 비밀번호 분실신고를 하셔도 저희는 해드릴수가 없으니 반드시 두번째 비번을 입력하시기 바랍니다.', { prev = true, next = true })
+        if button == DIALOG_RESULT.QUIT then
+            return
+        end
+        if button == DIALOG_RESULT.PREV then
+            goto BIRTHDAY_DIALOG_5
+        end
+
+    ::BIRTHDAY_INPUT::
+        local birthday = me:input(npc, '자신의 생년월일을 입력해 주세요.', { top = '저의 생년월일은', bottom = '입니다.', maxlen = 6, prev = true })
+        if birthday == DIALOG_RESULT.QUIT then
+            goto BIRTHDAY_INPUT
+        end
+        if birthday == DIALOG_RESULT.PREV then
+            goto BIRTHDAY_DIALOG_6
+        end
+
+        ::BIRTHDAY_MUST_SET::
+        if birthday == '' or #birthday ~= 6 then
+            button = me:dialog(npc, '두번째 비밀번호를 정하지 않으면 게임을 할 수 없습니다. 반드시 해주세요.', { prev = true, next = true })
+            if button == DIALOG_RESULT.QUIT then
+                return
+            end
+            if button == DIALOG_RESULT.PREV then
+                goto BIRTHDAY_INPUT
+            end
+            goto BIRTHDAY_INPUT
+        end
+
+        birthday = tonumber(birthday)
+        if birthday == nil or birthday <= 0 then
+            goto BIRTHDAY_MUST_SET
+        end
+
+        local sel, list_btn = me:list(npc, string.format('당신의 생년월일이 %s가 맞습니까?', birthday), {'예', '아니오'}, { prev = true })
+        if list_btn == DIALOG_RESULT.QUIT then
+            return
+        end
+        if list_btn == DIALOG_RESULT.PREV or sel == nil then
+            goto BIRTHDAY_INPUT
+        end
+
+        if sel == 1 then
+            me:birthday(birthday)
+            return
+        end
+
+        goto BIRTHDAY_MUST_SET
+    end,
+
+    on_matchmaking_register = function(me, match_type, registry_id)
+        local state = matchmaking_state(me)
+        local now_ts = now()
+        state.queue_started_at = now_ts
+        state.elapsed_seconds = 0
+        me:timer(1200, false)
+        me:message(string.format('매치메이킹 대기를 시작했습니다. (유형: %d)', match_type), MESSAGE_TYPE.STATE)
+    end,
+
+    on_matchmaking_unregister = function(me, match_type, registry_id)
+        matchmaking_clear_timer(me)
+        matchmaking_clear_state(me)
+        me:message(string.format('매치메이킹 대기를 취소했습니다. (유형: %d)', match_type), MESSAGE_TYPE.STATE)
+    end,
+
+    on_matchmaking_decline = function(me, match_id, match_type)
+        matchmaking_clear_timer(me)
+        matchmaking_clear_state(me)
+        me:message(string.format('매치를 거절했습니다. (유형: %d)', match_type), MESSAGE_TYPE.STATE)
+    end,
+
+    on_matchmaking_confirm = function(me, match_id, match_type)
+        me:message(string.format('매치 참여를 수락했습니다. (유형: %d)', match_type), MESSAGE_TYPE.STATE)
+    end,
+
+    on_matchmaking_proposed = function(me, match_id, match_type, confirm_deadline)
+        local state = matchmaking_state(me)
+        local now_ts = now()
+        if state.queue_started_at ~= nil then
+            state.elapsed_seconds = now_ts - state.queue_started_at
+        else
+            state.elapsed_seconds = 0
+        end
+        local confirm_seconds = matchmaking_confirm_seconds(confirm_deadline)
+        me:timer(confirm_seconds, true)
+        me:message(
+            string.format('매치가 제안되었습니다. %d초 안에 수락해 주세요. (유형: %d)', confirm_seconds, match_type),
+            MESSAGE_TYPE.STATE
+        )
+
+        local npc = name2npc('낙랑')
+        local selected, button = me:list(npc, '매치를 찾았습니다. 참여하시겠습니까?', {'예', '아니오'}, { prev = false })
+        if button == DIALOG_RESULT.QUIT or selected == nil then
+            return
+        end
+
+        if selected == 1 then
+            local err = me:matchmaker():confirm()
+            if err ~= nil then
+                me:message(err, MESSAGE_TYPE.STATE)
+            end
+        else
+            local err = me:matchmaker():decline()
+            if err ~= nil then
+                me:message(err, MESSAGE_TYPE.STATE)
+            end
+        end
+    end,
+
+    on_matchmaking_ready = function(me, match_id, match_type)
+        matchmaking_clear_timer(me)
+        matchmaking_clear_state(me)
+        me:message(string.format('매치가 성사되었습니다. (유형: %d)', match_type), MESSAGE_TYPE.STATE)
+    end,
+
+    on_matchmaking_dissolved = function(me, match_id, match_type, reason, outcome)
+        if outcome == 1 then
+            local state = matchmaking_state(me)
+            local elapsed = state.elapsed_seconds or 0
+            state.queue_started_at = now() - elapsed
+            me:timer(1200, false)
+            if reason == 0 then
+                me:message(
+                    string.format('상대가 응답하지 않아 대기를 이어갑니다. (유형: %d)', match_type),
+                    MESSAGE_TYPE.STATE
+                )
+            else
+                me:message(
+                    string.format('다른 플레이어가 거절하여 대기를 이어갑니다. (유형: %d)', match_type),
+                    MESSAGE_TYPE.STATE
+                )
+            end
+        else
+            local had_state = matchmaking_states[me:uid()] ~= nil
+            matchmaking_clear_timer(me)
+            matchmaking_clear_state(me)
+            if not had_state then
+                return
+            end
+            if reason == 0 then
+                me:message(string.format('응답 시간이 초과되어 대기가 종료되었습니다. (유형: %d)', match_type), MESSAGE_TYPE.STATE)
+            else
+                me:message(string.format('매치가 취소되었습니다. (유형: %d)', match_type), MESSAGE_TYPE.STATE)
+            end
         end
     end
-end
+}

@@ -1,11 +1,15 @@
 -- item: 가죽장삼
 
--- 가죽장삼 사용 스크립트
--- function ON_ACTIVATED_908(me, item)
---
--- end
+return {
+    -- ON_ACTIVATED = function(me, item)
+    -- end,
 
--- 가죽장삼 해제 스크립트
--- function ON_DEACTIVATED_908(me, item)
---
--- end
+    -- ON_DEACTIVATED = function(me, item)
+    -- end,
+
+    -- ON_CONCAST = function(me, item)
+    -- end,
+
+    -- ON_ATTACK = function(me, item)
+    -- end
+}

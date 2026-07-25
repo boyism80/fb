@@ -1,5 +1,15 @@
 -- item: 복권조각(좌)
 
--- 복권조각(좌) 해제 스크립트
--- function ON_DEACTIVATED_12447(me, item)
--- end
+return {
+    -- ON_ACTIVATED = function(me, item)
+    -- end,
+
+    -- ON_DEACTIVATED = function(me, item)
+    -- end,
+
+    -- ON_CONCAST = function(me, item)
+    -- end,
+
+    -- ON_ATTACK = function(me, item)
+    -- end
+}

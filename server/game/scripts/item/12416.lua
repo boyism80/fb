@@ -1,5 +1,15 @@
 -- item: 천상복숭아
 
--- 천상복숭아 해제 스크립트
--- function ON_DEACTIVATED_12416(me, item)
--- end
+return {
+    -- ON_ACTIVATED = function(me, item)
+    -- end,
+
+    -- ON_DEACTIVATED = function(me, item)
+    -- end,
+
+    -- ON_CONCAST = function(me, item)
+    -- end,
+
+    -- ON_ATTACK = function(me, item)
+    -- end
+}

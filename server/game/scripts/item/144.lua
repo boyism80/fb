@@ -1,11 +1,15 @@
 -- item: 황금호박별곤
 
--- 황금호박별곤 사용 스크립트
--- function ON_ACTIVATED_144(me, item)
---
--- end
+return {
+    -- ON_ACTIVATED = function(me, item)
+    -- end,
 
--- 황금호박별곤 해제 스크립트
--- function ON_DEACTIVATED_144(me, item)
---
--- end
+    -- ON_DEACTIVATED = function(me, item)
+    -- end,
+
+    -- ON_CONCAST = function(me, item)
+    -- end,
+
+    -- ON_ATTACK = function(me, item)
+    -- end
+}

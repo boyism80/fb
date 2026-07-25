@@ -1,4 +1,6 @@
 -- npc: 여행객
--- function NPC_141(me, npc)
---
--- end
+
+return {
+    -- ON_CLICK = function(me, npc)
+    -- end
+}

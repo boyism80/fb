@@ -1,4 +1,6 @@
 -- npc: 백호공성엔피시
--- function NPC_152(me, npc)
---
--- end
+
+return {
+    -- ON_CLICK = function(me, npc)
+    -- end
+}

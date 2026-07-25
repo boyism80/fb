@@ -1,11 +1,15 @@
 -- item: 승리의증표
 
--- 승리의증표 사용 스크립트
--- function ON_ACTIVATED_1635(me, item)
---
--- end
+return {
+    -- ON_ACTIVATED = function(me, item)
+    -- end,
 
--- 승리의증표 해제 스크립트
--- function ON_DEACTIVATED_1635(me, item)
---
--- end
+    -- ON_DEACTIVATED = function(me, item)
+    -- end,
+
+    -- ON_CONCAST = function(me, item)
+    -- end,
+
+    -- ON_ATTACK = function(me, item)
+    -- end
+}

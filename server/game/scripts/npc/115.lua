@@ -1,7 +1,7 @@
 -- npc: 준준
 local quest = require('lib.quest')
 
-function cultural_property_quest(me, npc)
+local function cultural_property_quest(me, npc)
     local totem_names = { '번개의토템', '바람의토템', '대지의토템', '화염의토템' }
     local reward_at = { 5, 10, 15 }
     local reward_items = { '선장의일기5', '반룡곤', '가시나무봉' }
@@ -104,13 +104,15 @@ function cultural_property_quest(me, npc)
     end    
 end
 
-function NPC_115(me, npc)
-    local selected = me:list(npc, '안녕하세요. 어떻게 오셨나요?', {'문화재보호공무원', '환상의섬에 나타난 괴물'})
-    if selected == nil then
-        return
-    end
+return {
+    ON_CLICK = function(me, npc)
+        local selected = me:list(npc, '안녕하세요. 어떻게 오셨나요?', {'문화재보호공무원', '환상의섬에 나타난 괴물'})
+        if selected == nil then
+            return
+        end
 
-    if selected == 1 then
-        cultural_property_quest(me, npc)
+        if selected == 1 then
+            cultural_property_quest(me, npc)
+        end
     end
-end
+}

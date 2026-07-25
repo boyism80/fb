@@ -210,51 +210,53 @@ local function run_amber_helmet_craft(me, npc, colors, has_prev)
     return me:dialog(npc, gem_name .. '으로 ' .. helmet_name .. '를 만들어주었네.', { prev = false, next = true })
 end
 
-function NPC_156(me, npc)
-    ::NPC_156_0001::
-    local sel, btn = me:list(npc, '안녕하세요. 어떻게 오셨나요?', {
-        '얼음칼만들기',
-        '초혼술방법',
-        '호박투구만들기',
-        '연호박투구만들기',
-        '황금호박투구만들기',
-    }, { prev = false })
-    if btn == DIALOG_RESULT.QUIT then
-        return
+return {
+    ON_CLICK = function(me, npc)
+        ::NPC_156_0001::
+        local sel, btn = me:list(npc, '안녕하세요. 어떻게 오셨나요?', {
+            '얼음칼만들기',
+            '초혼술방법',
+            '호박투구만들기',
+            '연호박투구만들기',
+            '황금호박투구만들기',
+        }, { prev = false })
+        if btn == DIALOG_RESULT.QUIT then
+            return
+        end
+        if sel == nil then
+            return
+        end
+        if sel == 1 then
+            if run_ice_sword(me, npc) == false then
+                return
+            end
+        elseif sel == 2 then
+            run_spirit_summon_shark_weapon(me, npc)
+        elseif sel == 3 then
+            local r = run_amber_helmet_craft(me, npc, AMBER_HELMET_COLORS, true)
+            if r == DIALOG_RESULT.QUIT then
+                return
+            end
+            if r == DIALOG_RESULT.PREV then
+                goto NPC_156_0001
+            end
+        elseif sel == 4 then
+            local r = run_amber_helmet_craft(me, npc, LIGHT_AMBER_HELMET_COLORS, true)
+            if r == DIALOG_RESULT.QUIT then
+                return
+            end
+            if r == DIALOG_RESULT.PREV then
+                goto NPC_156_0001
+            end
+        elseif sel == 5 then
+            local r = run_amber_helmet_craft(me, npc, GOLD_AMBER_HELMET_COLORS, true)
+            if r == DIALOG_RESULT.QUIT then
+                return
+            end
+            if r == DIALOG_RESULT.PREV then
+                goto NPC_156_0001
+            end
+        end
+        goto NPC_156_0001
     end
-    if sel == nil then
-        return
-    end
-    if sel == 1 then
-        if run_ice_sword(me, npc) == false then
-            return
-        end
-    elseif sel == 2 then
-        run_spirit_summon_shark_weapon(me, npc)
-    elseif sel == 3 then
-        local r = run_amber_helmet_craft(me, npc, AMBER_HELMET_COLORS, true)
-        if r == DIALOG_RESULT.QUIT then
-            return
-        end
-        if r == DIALOG_RESULT.PREV then
-            goto NPC_156_0001
-        end
-    elseif sel == 4 then
-        local r = run_amber_helmet_craft(me, npc, LIGHT_AMBER_HELMET_COLORS, true)
-        if r == DIALOG_RESULT.QUIT then
-            return
-        end
-        if r == DIALOG_RESULT.PREV then
-            goto NPC_156_0001
-        end
-    elseif sel == 5 then
-        local r = run_amber_helmet_craft(me, npc, GOLD_AMBER_HELMET_COLORS, true)
-        if r == DIALOG_RESULT.QUIT then
-            return
-        end
-        if r == DIALOG_RESULT.PREV then
-            goto NPC_156_0001
-        end
-    end
-    goto NPC_156_0001
-end
+}

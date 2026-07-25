@@ -1,5 +1,16 @@
 -- spell: 신의출두
 -- 신의출두 캐스팅
--- function ON_CAST_5002(me, spell)
---
--- end
+
+return {
+    -- ON_CAST = function(me, you, sp)
+    -- end,
+
+    -- ON_BUFF = function(me, sp)
+    -- end,
+
+    -- ON_UNBUFF = function(me, sp)
+    -- end,
+
+    -- ON_CONCAST = function(me, sp)
+    -- end
+}

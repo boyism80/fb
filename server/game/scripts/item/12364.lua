@@ -1,5 +1,15 @@
 -- item: 고도리40
 
--- 고도리40 해제 스크립트
--- function ON_DEACTIVATED_12364(me, item)
--- end
+return {
+    -- ON_ACTIVATED = function(me, item)
+    -- end,
+
+    -- ON_DEACTIVATED = function(me, item)
+    -- end,
+
+    -- ON_CONCAST = function(me, item)
+    -- end,
+
+    -- ON_ATTACK = function(me, item)
+    -- end
+}

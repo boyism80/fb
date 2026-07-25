@@ -1,13 +1,15 @@
 -- item: 풍선21
 
--- 풍선21 사용 스크립트
--- function ON_ACTIVATED_577(me, item)
--- end
+return {
+    -- ON_ACTIVATED = function(me, item)
+    -- end,
 
--- 풍선21 해제 스크립트
--- function ON_DEACTIVATED_577(me, item)
--- end
+    -- ON_DEACTIVATED = function(me, item)
+    -- end,
 
--- 풍선21 공격 스크립트
--- function ON_ATTACK_577(me, item)
--- end
+    -- ON_CONCAST = function(me, item)
+    -- end,
+
+    -- ON_ATTACK = function(me, item)
+    -- end
+}

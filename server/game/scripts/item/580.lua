@@ -1,13 +1,15 @@
 -- item: 풍선24
 
--- 풍선24 사용 스크립트
--- function ON_ACTIVATED_580(me, item)
--- end
+return {
+    -- ON_ACTIVATED = function(me, item)
+    -- end,
 
--- 풍선24 해제 스크립트
--- function ON_DEACTIVATED_580(me, item)
--- end
+    -- ON_DEACTIVATED = function(me, item)
+    -- end,
 
--- 풍선24 공격 스크립트
--- function ON_ATTACK_580(me, item)
--- end
+    -- ON_CONCAST = function(me, item)
+    -- end,
+
+    -- ON_ATTACK = function(me, item)
+    -- end
+}

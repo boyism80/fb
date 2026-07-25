@@ -1,11 +1,15 @@
 -- item: 역사수호깃발
 
--- 역사수호깃발 사용 스크립트
--- function ON_ACTIVATED_247(me, item)
---
--- end
+return {
+    -- ON_ACTIVATED = function(me, item)
+    -- end,
 
--- 역사수호깃발 해제 스크립트
--- function ON_DEACTIVATED_247(me, item)
---
--- end
+    -- ON_DEACTIVATED = function(me, item)
+    -- end,
+
+    -- ON_CONCAST = function(me, item)
+    -- end,
+
+    -- ON_ATTACK = function(me, item)
+    -- end
+}

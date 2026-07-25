@@ -1,9 +1,15 @@
 -- item: 용겸제일봉교환권
 
--- 용겸제일봉교환권 사용 스크립트
--- function ON_ACTIVATED_12474(me, item)
--- end
+return {
+    -- ON_ACTIVATED = function(me, item)
+    -- end,
 
--- 용겸제일봉교환권 해제 스크립트
--- function ON_DEACTIVATED_12474(me, item)
--- end
+    -- ON_DEACTIVATED = function(me, item)
+    -- end,
+
+    -- ON_CONCAST = function(me, item)
+    -- end,
+
+    -- ON_ATTACK = function(me, item)
+    -- end
+}

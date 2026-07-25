@@ -1,13 +1,15 @@
 -- item: 철도오
 
--- 철도오 사용 스크립트
--- function ON_ACTIVATED_60011(me, item)
--- end
+return {
+    -- ON_ACTIVATED = function(me, item)
+    -- end,
 
--- 철도오 해제 스크립트
--- function ON_DEACTIVATED_60011(me, item)
--- end
+    -- ON_DEACTIVATED = function(me, item)
+    -- end,
 
--- 철도오 공격 스크립트
--- function ON_ATTACK_60011(me, item)
--- end
+    -- ON_CONCAST = function(me, item)
+    -- end,
+
+    -- ON_ATTACK = function(me, item)
+    -- end
+}
