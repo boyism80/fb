@@ -2,7 +2,7 @@
 local npc = require('lib.npc')
 
 return {
-    ON_CLICK = function(me, npc_obj)
+    on_click = function(me, npc_obj)
         npc.shop(me, npc_obj, {
             greeting = '이 위험한 곳까지 와서 장사하기가 쉬운 줄 아나?',
             menu = {

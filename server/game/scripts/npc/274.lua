@@ -148,7 +148,7 @@ local function run_weapon_info_loop(me, npc)
 end
 
 return {
-    ON_CLICK = function(me, npc)
+    on_click = function(me, npc)
         local sel, list_btn = me:list(npc, "zzzzzz", {
             "여보세요?",
             "......",

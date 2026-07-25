@@ -1,7 +1,7 @@
 -- npc: 현무의육체
 
 return {
-    ON_CLICK = function(me, npc)
+    on_click = function(me, npc)
         if me:class() ~= CLASS.WARRIOR then
             me:dialog(npc, ".....zZZ", { prev = false, next = false })
             return

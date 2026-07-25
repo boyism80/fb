@@ -11,7 +11,7 @@ local NEED_ITEMS = {
 local REWARD_NAME = "칠지도"
 
 return {
-    ON_CLICK = function(me, npc)
+    on_click = function(me, npc)
         local d = me:dialog(npc, "안녕하십니까? 저는 일본과 부여를 오가며 외교를 담당하는 일본통신사 입니다.", { prev = false, next = true })
         if d == DIALOG_RESULT.QUIT then
             return

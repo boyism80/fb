@@ -176,7 +176,7 @@ local function run_garimbin_wing_exchange(me, npc)
 end
 
 return {
-    ON_CLICK = function(me, npc)
+    on_click = function(me, npc)
         local sel, btn = me:list(npc, "안녕하세요. 어떻게 오셨나요?", {
             "웨딩드레스특별판매",
             "가릉빈가의날개옷교환"

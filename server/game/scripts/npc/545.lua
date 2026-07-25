@@ -3,7 +3,7 @@ local quest = require('lib.quest')
 local enum = require('lib.enum')
 
 return {
-    ON_CLICK = function(me, npc)
+    on_click = function(me, npc)
         local q = me:quest(quest.QUEST_JINHWANG)
         if q == nil or q:step() ~= 3 then
             return

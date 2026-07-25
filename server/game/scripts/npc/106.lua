@@ -10,7 +10,7 @@ local REQUIRED_ITEMS = {
 local REWARD_500 = '수정의귀걸이'
 
 return {
-    ON_CLICK = function(me, npc)
+    on_click = function(me, npc)
         local q = me:quest(quest.QUEST_DOTAEYEON)
         if q == nil then
             return

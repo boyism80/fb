@@ -1,7 +1,7 @@
 -- npc: 토토입장
 
 return {
-    ON_CLICK = function(me, npc)
+    on_click = function(me, npc)
         local sel, btn = me:list(npc, "몬스터복불복에 입장하실래요?", {"네.", "아니요."}, { prev = false })
         if btn == DIALOG_RESULT.QUIT then
             return

@@ -11,7 +11,7 @@ local function find_butterfly_item(me)
 end
 
 return {
-    ON_CLICK = function(me, npc)
+    on_click = function(me, npc)
         local btn = me:dialog(npc, "안녕하세요? 저는 장명주입니다.", { prev = false, next = true })
         if btn == DIALOG_RESULT.QUIT then
             return

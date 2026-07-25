@@ -113,7 +113,7 @@ local function marriage_npc(me, npc)
 end
 
 return {
-    ON_CLICK = function(me, npc)
+    on_click = function(me, npc)
         marriage_npc(me, npc)
     end
 }

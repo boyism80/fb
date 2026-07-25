@@ -307,7 +307,7 @@ bool buffs::push_back(const std::shared_ptr<buff>& buff)
 
     // Execute buff script
     auto path = std::format("scripts/spell/{}.lua", model.id);
-    auto func = "ON_BUFF";
+    auto func = "on_buff";
 
     auto lua = this->_owner.server.lua.open(path, func);
     if (lua)
@@ -365,7 +365,7 @@ async::task<bool> buffs::remove(uint32_t id)
     // Execute unbuff script
     auto& model = buff->model;
     auto  path  = std::format("scripts/spell/{}.lua", model.id);
-    auto  func  = "ON_UNBUFF";
+    auto  func  = "on_unbuff";
 
     auto lua = this->_owner.server.lua.open(path, func);
     if (lua)

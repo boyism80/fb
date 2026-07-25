@@ -2,7 +2,7 @@
 local quest = require('lib.quest')
 
 return {
-    ON_CLICK = function(me, npc)
+    on_click = function(me, npc)
         local q = me:quest(quest.QUEST_BEGINNER_PATH)
         if q and (q:step() == 7 or q:completed()) then
             me:dialog(npc, "준비가 되셨으면 노란비서를 사용해 보세요.\n그럼, 안녕히 가십시오.", { prev = false, next = false })

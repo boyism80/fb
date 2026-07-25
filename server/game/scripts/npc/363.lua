@@ -74,7 +74,7 @@ local function run_weeding_handin(me, npc, q)
 end
 
 return {
-    ON_CLICK = function(me, npc)
+    on_click = function(me, npc)
         local btn = me:dialog(npc, "안녕하세요? 저는 백리향입니다.", { prev = false, next = true })
         if btn == DIALOG_RESULT.QUIT then
             return

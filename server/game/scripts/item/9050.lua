@@ -3,7 +3,7 @@
 local spell = require('lib.spell')
 
 return {
-    ON_ACTIVATED = function(me, item)
+    on_activated = function(me, item)
         local front = spell.front_exclude_item(me)
         if front == nil then
             return
@@ -12,12 +12,12 @@ return {
         me:cast(front, '의태')
     end,
 
-    -- ON_DEACTIVATED = function(me, item)
+    -- on_deactivated = function(me, item)
     -- end,
 
-    -- ON_CONCAST = function(me, item)
+    -- on_concast = function(me, item)
     -- end,
 
-    -- ON_ATTACK = function(me, item)
+    -- on_attack = function(me, item)
     -- end
 }

@@ -1,7 +1,7 @@
 -- npc: 청룡제단지기
 
 return {
-    ON_CLICK = function(me, npc)
+    on_click = function(me, npc)
         local button = me:dialog(npc, "안녕하신가, " .. me:name() .. ". 나는 이곳 제단에서 힘을 모아 다른 제단지기들에게 [용의 축복]을 걸어주는 청룡제단지기라네.", { prev = false, next = true })
         if button == DIALOG_RESULT.QUIT then
             return

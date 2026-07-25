@@ -2,7 +2,7 @@
 local enum = require('lib.enum')
 
 return {
-    ON_CLICK = function(me, npc)
+    on_click = function(me, npc)
         if property("sesi_rightnow") ~= 5 then
             local btn = me:dialog(npc, "안녕하세요? 저는 오단미입니다.", { prev = false, next = true })
             if btn == DIALOG_RESULT.QUIT then

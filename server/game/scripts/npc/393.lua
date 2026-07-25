@@ -2,7 +2,7 @@
 local quest = require('lib.quest')
 
 return {
-    ON_CLICK = function(me, npc)
+    on_click = function(me, npc)
         local q = me:quest(quest.QUEST_SILENCE)
         if q == nil then
             local btn = me:dialog(npc, "무슨 문제를 낼까...", { prev = false, next = true })

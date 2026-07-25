@@ -1,7 +1,7 @@
 -- npc: 부롱대미궁입장
 
 return {
-    ON_CLICK = function(me, npc)
+    on_click = function(me, npc)
         local sel = me:list(npc, "부롱대미궁에 입장하실래요?", {"예", "아니오"})
         if sel == nil then
             return

@@ -195,7 +195,7 @@ local function run_appraise_dragon_scale(me, npc)
 end
 
 return {
-    ON_CLICK = function(me, npc)
+    on_click = function(me, npc)
         local sel = me:list(npc, '무슨일로 날 찾으시나?', {
             '용의비늘이 무엇인가요?',
             '용의비늘을 가지고 왔어요..',

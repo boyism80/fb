@@ -2,7 +2,7 @@
 -- 잠복근무 캐스팅
 
 return {
-    ON_CAST = function(me, spell)
+    on_cast = function(me, spell)
         me:super_hide(true)
         me:state(STATE.CLOACK)
         me:effect(20)
@@ -10,12 +10,12 @@ return {
         me:action(ACTION.CAST_SPELL, DURATION.SPELL, 1)
     end,
 
-    -- ON_BUFF = function(me, sp)
+    -- on_buff = function(me, sp)
     -- end,
 
-    -- ON_UNBUFF = function(me, sp)
+    -- on_unbuff = function(me, sp)
     -- end,
 
-    -- ON_CONCAST = function(me, sp)
+    -- on_concast = function(me, sp)
     -- end
 }

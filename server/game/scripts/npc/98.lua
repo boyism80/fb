@@ -1,7 +1,7 @@
 -- npc: 용노인
 
 return {
-    ON_CLICK = function(me, npc)
+    on_click = function(me, npc)
         ::NPC_98_0001::
         local button = me:dialog(npc, '용왕의침소로 이동하기 위해서는, 어금니 4개가 필요하네.', { prev = false, next = true })
         if button == DIALOG_RESULT.QUIT then

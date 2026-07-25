@@ -2,7 +2,7 @@
 local enum = require('lib.enum')
 
 return {
-    ON_CLICK = function(me, npc)
+    on_click = function(me, npc)
         local suffixes = { '장갑', '팔찌', '반지', '선류', '방패', '투구' }
         local btn
 

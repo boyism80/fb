@@ -2,7 +2,7 @@
 local quest = require('lib.quest')
 
 return {
-    ON_CLICK = function(me, npc)
+    on_click = function(me, npc)
         local BURY_COUNT = 5
         local ACHIEVEMENT_GHOST = 29
         local q = me:quest(quest.QUEST_GHOST)

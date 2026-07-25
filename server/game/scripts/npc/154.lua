@@ -1,7 +1,7 @@
 -- npc: 혜천대사
 
 return {
-    ON_CLICK = function(me, npc)
+    on_click = function(me, npc)
         if me:level() < 20 then
             me:dialog(npc, "자네는 소림사의 비기를 전수받기에 너무 약한것 같군...\n\n레벨이 20이 넘거든 다시 오게나.", { prev = false, next = false })
             return

@@ -30,7 +30,7 @@ local function run_schedule_dialog_japan(me, npc)
 end
 
 return {
-    ON_CLICK = function(me, npc)
+    on_click = function(me, npc)
         local sel, btn = me:list(npc, '무엇을 도와드릴까요?', {
             '출항시간에 대해서 알려주세요.',
             '배를 태워주세요.'

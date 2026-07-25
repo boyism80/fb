@@ -111,7 +111,7 @@ local function run_ice_split(me, npc)
 end
 
 return {
-    ON_CLICK = function(me, npc)
+    on_click = function(me, npc)
         ::NPC_57_START::
         local sel, list_btn = me:list(npc, '안녕하세요. 어떻게 오셨나요?', { '얼음세척', '얼음을 쪼개주세요' })
         if list_btn == DIALOG_RESULT.PREV then

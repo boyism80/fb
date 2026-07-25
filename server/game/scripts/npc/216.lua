@@ -2,7 +2,7 @@
 local quest = require('lib.quest')
 
 return {
-    ON_CLICK = function(me, npc)
+    on_click = function(me, npc)
         local REWARD_PER_BAG = 5000
 
         local q = me:quest(quest.QUEST_RED_CLAY)

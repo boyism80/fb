@@ -29,7 +29,7 @@ local function do_craft(me, npc)
 end
 
 return {
-    ON_CLICK = function(me, npc)
+    on_click = function(me, npc)
         local sel, btn = me:list(npc, "저는 눈꽃얼음을 이용해 [" .. REWARD_NAME .. "]을 만들어 드립니다. ", { "만들어 주세요.", "아니요. 다음에..." }, { prev = false })
         if btn == DIALOG_RESULT.QUIT then
             return

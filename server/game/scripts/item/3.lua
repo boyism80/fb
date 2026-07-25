@@ -7,7 +7,7 @@ local enum = require('lib.enum')
 local WEAPON_NAME = '초심자의목도'
 
 return {
-    ON_ACTIVATED = function(me, item)
+    on_activated = function(me, item)
         local q = me:quest(quest.QUEST_NAKRANG3)
         local btn
         local model = item:model()
@@ -105,12 +105,12 @@ return {
         q:complete()
     end,
 
-    -- ON_DEACTIVATED = function(me, item)
+    -- on_deactivated = function(me, item)
     -- end,
 
-    -- ON_CONCAST = function(me, item)
+    -- on_concast = function(me, item)
     -- end,
 
-    -- ON_ATTACK = function(me, item)
+    -- on_attack = function(me, item)
     -- end
 }

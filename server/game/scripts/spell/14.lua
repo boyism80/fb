@@ -5,7 +5,7 @@ local spell = require('lib.spell')
 --     -- TODO: implement
 
 return {
-    ON_CAST = function(me, you, sp)
+    on_cast = function(me, you, sp)
         local buff_time = 5
         if spell.buff_cast(me, me, sp) then
             local appearance = you:appearance()
@@ -14,13 +14,13 @@ return {
         end
     end,
 
-    -- ON_BUFF = function(me, sp)
+    -- on_buff = function(me, sp)
     -- end,
 
-    ON_UNBUFF = function(me, sp)
+    on_unbuff = function(me, sp)
         me:mimic(nil)
     end,
 
-    -- ON_CONCAST = function(me, sp)
+    -- on_concast = function(me, sp)
     -- end
 }

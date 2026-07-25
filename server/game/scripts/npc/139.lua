@@ -11,7 +11,7 @@ local DRAGON_LOW_LINES = {
 local SUCCESS_RATES = { 85, 70, 50, 40, 25 }
 
 return {
-    ON_CLICK = function(me, npc)
+    on_click = function(me, npc)
         ::NPC_139_0000::
         local sel, btn = me:list(npc, '안녕하세요. 어떻게 오셨나요?', { '하급 용무기 각성' }, { prev = false })
         if btn == DIALOG_RESULT.QUIT then

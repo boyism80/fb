@@ -9,7 +9,7 @@ local REPAIRS = {
 }
 
 return {
-    ON_CLICK = function(me, npc)
+    on_click = function(me, npc)
         local btn = me:dialog(npc, '아이구 더워. 너무 더워서 뭔 일을 할 수가 없네...', { prev = false, next = true })
         if btn == DIALOG_RESULT.QUIT then
             return

@@ -2,7 +2,7 @@
 local enum = require('lib.enum')
 
 return {
-    ON_CLICK = function(me, npc)
+    on_click = function(me, npc)
         if property("check") == 25 and me:has_items("훈제연어", 5) then
             local btn = me:dialog(npc, "난 깊은계곡을 지키고 있는 곰이다웅... 그런데 너는 보니까 임무를 수행중인것처럼 보이는데웅...?", { prev = false, next = true })
             if btn == DIALOG_RESULT.QUIT then

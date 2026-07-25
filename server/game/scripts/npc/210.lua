@@ -1,7 +1,7 @@
 -- npc: 산소소탕병사
 
 return {
-    ON_CLICK = function(me, npc)
+    on_click = function(me, npc)
         local r = math.random(1, 3)
         if r == 1 then
             me:dialog(npc, '여긴 어쩐일이요?', { prev = false, next = true })

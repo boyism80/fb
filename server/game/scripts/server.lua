@@ -7,7 +7,7 @@ local grant_storage = require('lib.grant_storage')
 local sky_maze = require('lib.sky_maze')
 
 return {
-    ON_F1_EVENT = function(me)
+    on_f1_event = function(me)
         local npc = name2npc('낙랑')
 
     ::F1_MENU::
@@ -42,7 +42,7 @@ return {
         goto F1_MENU
     end,
 
-    ON_F2_EVENT = function(me)
+    on_f2_event = function(me)
         local npc = name2npc('낙랑')
         local button = me:dialog(npc, 'F2 이벤트 스크립트', { prev = false, next = true })
         if button == DIALOG_RESULT.QUIT then

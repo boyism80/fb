@@ -2,7 +2,7 @@
 local quest = require('lib.quest')
 
 return {
-    ON_CLICK = function(me, npc)
+    on_click = function(me, npc)
         local q = me:quest(quest.QUEST_DOJAECHUN)
         local dojaechun_one = (q and (q:step() == 1 or q:completed()))
 

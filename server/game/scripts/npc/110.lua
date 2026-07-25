@@ -2,7 +2,7 @@
 local quest = require('lib.quest')
 
 return {
-    ON_CLICK = function(me, npc)
+    on_click = function(me, npc)
         local q = me:quest(quest.QUEST_DOJAEYOUNG_HERB)
         if q == nil then
             me:dialog(npc, '더 예뻐질 방법이 없을까?', { prev = false, next = true })

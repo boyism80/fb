@@ -1,7 +1,7 @@
 -- npc: 북팀워프
 
 return {
-    ON_CLICK = function(me, npc)
+    on_click = function(me, npc)
         if property("ns_start") ~= 1 then
             me:dialog(npc, "저런, 남북무한대전은 종료되었는데요. 나가는걸 도와드릴게요.", { prev = false, next = false })
             local map = name2map("국내성")

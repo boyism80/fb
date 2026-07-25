@@ -3,7 +3,7 @@
 local enum = require('lib.enum')
 
 return {
-    ON_ACTIVATED = function(me, item)
+    on_activated = function(me, item)
     	local model = item:model()
     	if me:item('무쇠망치') == nil then
     		me:dialog(model, '자세히 살펴보니, 무쇠망치가 있으면 부술 수 있을 것 같다.')
@@ -21,12 +21,12 @@ return {
     	me:dialog(model, '무쇠망치로 낡은 금고를 깨뜨리니, 안에서 낡은 봉투가 나왔군.')
     end,
 
-    -- ON_DEACTIVATED = function(me, item)
+    -- on_deactivated = function(me, item)
     -- end,
 
-    -- ON_CONCAST = function(me, item)
+    -- on_concast = function(me, item)
     -- end,
 
-    -- ON_ATTACK = function(me, item)
+    -- on_attack = function(me, item)
     -- end
 }

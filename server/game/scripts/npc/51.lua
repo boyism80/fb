@@ -1,7 +1,7 @@
 -- npc: 비밀세작도우미
 
 return {
-    ON_CLICK = function(me, npc)
+    on_click = function(me, npc)
         ::NPC_51_0001::
         local button = me:dialog(npc, '여기는 비밀세작의 집입니다. 85 레벨부터 99 레벨 이상 고레벨이 사냥하기에 좋습니다.', { prev = false, next = true })
         if button == DIALOG_RESULT.QUIT then

@@ -37,7 +37,7 @@ local WARP_X_MIN, WARP_X_MAX = 3, 8
 local WARP_Y_MIN, WARP_Y_MAX = 5, 8
 
 return {
-    ON_ACTIVATED = function(me, item)
+    on_activated = function(me, item)
         local btn
         local model = item:model()
 
@@ -143,12 +143,12 @@ return {
         me:map(map, { x, y })
     end,
 
-    -- ON_DEACTIVATED = function(me, item)
+    -- on_deactivated = function(me, item)
     -- end,
 
-    -- ON_CONCAST = function(me, item)
+    -- on_concast = function(me, item)
     -- end,
 
-    -- ON_ATTACK = function(me, item)
+    -- on_attack = function(me, item)
     -- end
 }

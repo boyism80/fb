@@ -11,7 +11,7 @@ local WARP_X_MIN, WARP_X_MAX = 13, 16
 local WARP_Y_MIN, WARP_Y_MAX = 35, 38
 
 return {
-    ON_CLICK = function(me, npc)
+    on_click = function(me, npc)
         local btn = me:dialog(npc, '파괴왕의방으로 가기 위해선 해골왕의뼈, 유성지의보패, 하선녀의실타래, 불의수정이 필요하다네.', { prev = false, next = true })
         if btn == DIALOG_RESULT.QUIT then
             return

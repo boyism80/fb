@@ -1,7 +1,7 @@
 -- npc: 만리장성잡화상09
 
 return {
-    ON_CLICK = function(me, npc)
+    on_click = function(me, npc)
     ::NPC_402_000::
         local sel, btn = me:list(npc, "나에게 용무라도 있는가?", {"비약이란게 무엇입니까?", "그냥.. 시간이 남아서.."}, { prev = false })
         if btn == DIALOG_RESULT.QUIT then

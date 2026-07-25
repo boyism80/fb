@@ -2,7 +2,7 @@
 -- 월아일격 캐스팅
 
 return {
-    ON_CAST = function(me, you, spell)
+    on_cast = function(me, you, spell)
         you:sound(8)
         you:effect(120)
         if you ~= nil then
@@ -15,12 +15,12 @@ return {
         me:damage_to(you, math.random(30000, 35000), { critical = false, rate = me:skill_damage_rate() / 1000.0, physical = false })
     end,
 
-    -- ON_BUFF = function(me, sp)
+    -- on_buff = function(me, sp)
     -- end,
 
-    -- ON_UNBUFF = function(me, sp)
+    -- on_unbuff = function(me, sp)
     -- end,
 
-    -- ON_CONCAST = function(me, sp)
+    -- on_concast = function(me, sp)
     -- end
 }

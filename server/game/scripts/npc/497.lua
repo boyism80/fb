@@ -2,7 +2,7 @@
 local enum = require('lib.enum')
 
 return {
-    ON_CLICK = function(me, npc)
+    on_click = function(me, npc)
         if property("sesi_rightnow") ~= 1 then
             me:dialog(npc, "......", { prev = false, next = false })
             return

@@ -3,7 +3,7 @@ local quest = require('lib.quest')
 local enum = require('lib.enum')
 
 return {
-    ON_CLICK = function(me, npc)
+    on_click = function(me, npc)
         local d = me:dialog(npc, "비밀의 상점에 온 것을 환영하네. 여기선 방천화극을 팔고 있지...", { prev = false, next = true })
         if d == DIALOG_RESULT.QUIT then
             return

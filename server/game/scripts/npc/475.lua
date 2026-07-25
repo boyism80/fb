@@ -316,7 +316,7 @@ local function handle_jingogyun_ge9(me, npc, q_jingo)
 end
 
 return {
-    ON_CLICK = function(me, npc)
+    on_click = function(me, npc)
         local q_hwahwa = me:quest(quest.QUEST_HWAHWA)
         local q_jingo = me:quest(quest.QUEST_JINGOGYUN)
         local hwahwa_friend = (q_hwahwa and q_hwahwa:step() >= 1)

@@ -101,7 +101,7 @@ local function do_sub7_complete(me, npc)
 end
 
 return {
-    ON_CLICK = function(me, npc)
+    on_click = function(me, npc)
         local q9 = me:quest(quest.QUEST_SKULL_NECKLACE_9)
         local q7 = me:quest(quest.QUEST_SKULL_NECKLACE_7)
 

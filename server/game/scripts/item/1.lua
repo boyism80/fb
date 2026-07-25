@@ -1,7 +1,7 @@
 -- item: 낙랑의두루마리1
 
 return {
-    ON_ACTIVATED = function(me, item)
+    on_activated = function(me, item)
         ::NAK_1::
         local btn = me:dialog(item, '벌써 두루마리 사용법을 익히셨군요!! 잘 하셨어요!! 그럼 제가 주막으로 보내드릴께요...', { prev = false, next = true })
         if btn == DIALOG_RESULT.QUIT then
@@ -42,12 +42,12 @@ return {
         })
     end,
 
-    -- ON_DEACTIVATED = function(me, item)
+    -- on_deactivated = function(me, item)
     -- end,
 
-    -- ON_CONCAST = function(me, item)
+    -- on_concast = function(me, item)
     -- end,
 
-    -- ON_ATTACK = function(me, item)
+    -- on_attack = function(me, item)
     -- end
 }

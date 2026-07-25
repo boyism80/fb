@@ -2,7 +2,7 @@
 local quest = require('lib.quest')
 
 return {
-    ON_CLICK = function(me, npc)
+    on_click = function(me, npc)
         local q = me:quest(quest.QUEST_MUTA)
         if q == nil or q:completed() then
             me:dialog(npc, '자네도 이 심상치 않은 기운이 느껴지는가? 요사이, 이곳 저곳에서 불길한 징조가 나타나고 있었다네.', { prev = false, next = true })

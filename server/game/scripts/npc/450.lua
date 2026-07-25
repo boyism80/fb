@@ -50,7 +50,7 @@ local function do_exchange(me, npc, need_count, reward_name)
 end
 
 return {
-    ON_CLICK = function(me, npc)
+    on_click = function(me, npc)
         local now_ts = now()
         local next_ts = next_available(me)
         if now_ts and now_ts > 0 and next_ts > now_ts then

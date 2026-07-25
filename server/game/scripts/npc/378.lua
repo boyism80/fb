@@ -6,7 +6,7 @@ local ASSEMBLE_FEE = 100000
 local SELL_PRICE = 150000
 
 return {
-    ON_CLICK = function(me, npc)
+    on_click = function(me, npc)
         local q = me:quest(quest.QUEST_MAGIC_BALL)
         local param = (q and q:param()) or "0"
 

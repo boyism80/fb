@@ -1,7 +1,7 @@
 -- npc: 만리장성잡화상03
 
 return {
-    ON_CLICK = function(me, npc)
+    on_click = function(me, npc)
         local messages = {
             "선비족 녀석들.. 고구려와 중국을 왕래하는 상인들을 습격한다고 하더라고. 나쁜놈들..",
             "고구려쪽 어딘가에 가면 선녀들이 사는 곳이 있다고 하던데.. 정말일까?",

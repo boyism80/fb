@@ -1,7 +1,7 @@
 -- npc: 만리장성잡화상04
 
 return {
-    ON_CLICK = function(me, npc)
+    on_click = function(me, npc)
         local messages = {
             "흉노족 두령은 생긴건 무섭게 생겼지만 알고보면 말이 잘 통하는 똑똑한 사람이라던데.. 역시 사람은 겉만 보곤 알 수 없는건가?",
             "대방성 대장장이 녀석이 검정 깃발을 혼자 가지고 있다는 소문이 있어.",

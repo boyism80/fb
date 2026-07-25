@@ -2,10 +2,10 @@
 local quest = require('lib.quest')
 
 return {
-    -- ON_MAP_INIT = function(me)
+    -- on_map_init = function(me)
     -- end,
 
-    ON_MAP_MOVE = function(me)
+    on_map_move = function(me)
         if not me:is(OBJECT_TYPE.CHARACTER) then
             return
         end
@@ -13,9 +13,9 @@ return {
         quest.greatwall_repair_on_move(me)
     end,
 
-    -- ON_MAP_ENTER = function(me)
+    -- on_map_enter = function(me)
     -- end,
 
-    -- ON_MAP_LEAVE = function(me)
+    -- on_map_leave = function(me)
     -- end
 }

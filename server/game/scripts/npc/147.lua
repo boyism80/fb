@@ -4,7 +4,7 @@ local MOB_NAME = '북천황'
 local SPAWN_X, SPAWN_Y = 10, 9
 
 return {
-    ON_CLICK = function(me, npc)
+    on_click = function(me, npc)
         ::NPC_147_0001::
         local btn = me:dialog(npc, '이 곳은 북천황이 봉인된 곳..', { prev = false, next = true })
         if btn == DIALOG_RESULT.QUIT then

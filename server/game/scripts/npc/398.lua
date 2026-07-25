@@ -2,7 +2,7 @@
 local enum = require('lib.enum')
 
 return {
-    ON_CLICK = function(me, npc)
+    on_click = function(me, npc)
         ::NPC_398_000::
         local sel, btn = me:list(npc, "무슨일로 찾아왔는가?", {
             "동천지패와 동인패를 합쳐주십시오..",

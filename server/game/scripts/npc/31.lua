@@ -2,7 +2,7 @@
 local quest = require('lib.quest')
 
 return {
-    ON_CLICK = function(me, npc)
+    on_click = function(me, npc)
         local function pool_fn(level)
             if level < 70 then
                 return { '자호', '친자호', '구자호', '가재', '전갈', '전갈장', '가재장', '서현가재' }

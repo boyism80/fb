@@ -3,7 +3,7 @@ local quest = require('lib.quest')
 local enum = require('lib.enum')
 
 return {
-    ON_CLICK = function(me, npc)
+    on_click = function(me, npc)
         local dq = me:quest(quest.QUEST_DETECTIVE)
         if dq and not dq:completed() then
             local ds = dq:step()

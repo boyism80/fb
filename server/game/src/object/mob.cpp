@@ -145,7 +145,7 @@ async::task<bool> mob::call_script()
 
     auto& model = this->based<fb::model::mob>();
     auto  path  = std::format("scripts/mob/{}.lua", model.id);
-    auto  func  = "ON_MOB_ATTACK";
+    auto  func  = "on_mob_attack";
 
     if (this->_attack_thread != nullptr)
         co_return false;

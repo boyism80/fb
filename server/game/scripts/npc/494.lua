@@ -1,7 +1,7 @@
 -- npc: 막걸리상인
 
 return {
-    ON_CLICK = function(me, npc)
+    on_click = function(me, npc)
         local item_name = "막걸리"
         if me:has_items(item_name, 1) then
             local button = me:dialog(npc, string.format("%s님은 이미 %s를 가지고 계시네요.", me:name(), item_name), { prev = false, next = false })

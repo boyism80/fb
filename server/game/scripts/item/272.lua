@@ -1,16 +1,16 @@
 -- item: 용랑제육봉
 
 return {
-    -- ON_ACTIVATED = function(me, item)
+    -- on_activated = function(me, item)
     -- end,
 
-    -- ON_DEACTIVATED = function(me, item)
+    -- on_deactivated = function(me, item)
     -- end,
 
-    -- ON_CONCAST = function(me, item)
+    -- on_concast = function(me, item)
     -- end,
 
-    ON_ATTACK = function(me, item)
+    on_attack = function(me, item)
         math.randomseed(seed())
         if math.random() > 0.25 then
             return false

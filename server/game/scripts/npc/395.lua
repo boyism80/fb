@@ -2,7 +2,7 @@
 local enum = require('lib.enum')
 
 return {
-    ON_CLICK = function(me, npc)
+    on_click = function(me, npc)
         local required = { ["녹비약(소)"] = 1, ["동천패"] = 1, ["동지패"] = 1, ["동인패"] = 1 }
 
         ::NPC_395_000::

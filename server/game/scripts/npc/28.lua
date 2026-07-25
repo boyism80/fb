@@ -531,7 +531,7 @@ local function run_change_gender(me, npc)
 end
 
 return {
-    ON_CLICK = function(me, npc)
+    on_click = function(me, npc)
         while true do
             if not run_init_dialogs(me, npc) then
                 return

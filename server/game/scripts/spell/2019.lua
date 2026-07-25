@@ -5,17 +5,17 @@
 -- 이기어검술 버프 해제 효과
 
 return {
-    -- ON_CAST = function(me, you, sp)
+    -- on_cast = function(me, you, sp)
     -- end,
 
-    ON_BUFF = function(me, spell)
+    on_buff = function(me, spell)
         me:buff_phydef(me:buff_phydef() - 30)
     end,
 
-    ON_UNBUFF = function(me, spell)
+    on_unbuff = function(me, spell)
         me:buff_phydef(me:buff_phydef() - 30)
     end,
 
-    -- ON_CONCAST = function(me, sp)
+    -- on_concast = function(me, sp)
     -- end
 }

@@ -7,7 +7,7 @@ local REQUIRED_ITEM = { ['어머니의호롱불'] = 1 }
 local REWARD_600 = '수정해골'
 
 return {
-    ON_CLICK = function(me, npc)
+    on_click = function(me, npc)
         local q = me:quest(quest.QUEST_WOOGAPUNG)
 
         if q == nil then

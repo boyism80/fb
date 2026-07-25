@@ -6,7 +6,7 @@ local spell = require('lib.spell')
 -- 금수 버프 해제 효과
 
 return {
-    ON_CAST = function(me, sp, name)
+    on_cast = function(me, sp, name)
         local mobs = {
             ['고양이'] = 183 + 0x7FFF,
             ['새끼돼지'] = name2mob('꼬마돼지'):look(),
@@ -22,13 +22,13 @@ return {
         spell.disguise(me, mobs, name, sp, {mp=mp, sound=sound, effect=effect, buff_time=buff_time})
     end,
 
-    -- ON_BUFF = function(me, sp)
+    -- on_buff = function(me, sp)
     -- end,
 
-    ON_UNBUFF = function(me, sp)
+    on_unbuff = function(me, sp)
         me:mimic(nil)
     end,
 
-    -- ON_CONCAST = function(me, sp)
+    -- on_concast = function(me, sp)
     -- end
 }

@@ -3,7 +3,7 @@
 local spell = require('lib.spell')
 
 return {
-    ON_CAST = function(me, sp)
+    on_cast = function(me, sp)
         local damage = (me:mp()*3)//2
         local hp = nil
         local mp = math.max(me:mp(), 30)
@@ -13,12 +13,12 @@ return {
         spell.damage_area(me, me:nears(OBJECT_TYPE.LIFE, 8, 7), sp, {damage=damage, hp=hp, mp=mp, sound=sound, effect={you=effect}})
     end,
 
-    -- ON_BUFF = function(me, sp)
+    -- on_buff = function(me, sp)
     -- end,
 
-    -- ON_UNBUFF = function(me, sp)
+    -- on_unbuff = function(me, sp)
     -- end,
 
-    -- ON_CONCAST = function(me, sp)
+    -- on_concast = function(me, sp)
     -- end
 }

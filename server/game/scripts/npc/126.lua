@@ -201,7 +201,7 @@ local function do_frolic(me, npc)
 end
 
 return {
-    ON_CLICK = function(me, npc)
+    on_click = function(me, npc)
         local x, y = me:position()
         if (x and x > 20) or (y and (y < 75 or y > 94)) then
             me:dialog(npc, "대체 어디서 장난을 하는거야? 내가 귀신이라고 우습게보여?", { prev = false, next = false })

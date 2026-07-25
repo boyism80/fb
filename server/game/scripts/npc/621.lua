@@ -93,7 +93,7 @@ local function run_craft_menu(me, ch)
 end
 
 return {
-    ON_CLICK = function(me, npc_obj)
+    on_click = function(me, npc_obj)
         npc.shop(me, npc_obj, {
             menu = {
                 { '물건사기', function(me, ch)

@@ -2,7 +2,7 @@
 -- 청룡마령참 캐스팅
 
 return {
-    ON_CAST = function(me, you, spell)
+    on_cast = function(me, you, spell)
         you:effect(0x89)
         you:sound(0x08)
         if you:is(OBJECT_TYPE.CHARACTER) then
@@ -12,12 +12,12 @@ return {
         me:action(0x03)
     end,
 
-    -- ON_BUFF = function(me, sp)
+    -- on_buff = function(me, sp)
     -- end,
 
-    -- ON_UNBUFF = function(me, sp)
+    -- on_unbuff = function(me, sp)
     -- end,
 
-    -- ON_CONCAST = function(me, sp)
+    -- on_concast = function(me, sp)
     -- end
 }

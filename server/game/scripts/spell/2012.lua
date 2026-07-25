@@ -6,7 +6,7 @@ local spell = require('lib.spell')
 -- 투명 버프 해제 효과
 
 return {
-    ON_CAST = function(me, sp)
+    on_cast = function(me, sp)
         local mp = 0
         local sound = 28
         local effect = 20
@@ -17,13 +17,13 @@ return {
         end
     end,
 
-    -- ON_BUFF = function(me, sp)
+    -- on_buff = function(me, sp)
     -- end,
 
-    ON_UNBUFF = function(me, sp)
+    on_unbuff = function(me, sp)
         me:state(STATE.NORMAL)
     end,
 
-    -- ON_CONCAST = function(me, sp)
+    -- on_concast = function(me, sp)
     -- end
 }

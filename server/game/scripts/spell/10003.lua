@@ -2,7 +2,7 @@
 -- 강제이동(우) 캐스팅
 
 return {
-    ON_CAST = function(me, spell)
+    on_cast = function(me, spell)
         local map = me:map()
         if map == nil then
             return
@@ -16,12 +16,12 @@ return {
         me:position(x+1, y)
     end,
 
-    -- ON_BUFF = function(me, sp)
+    -- on_buff = function(me, sp)
     -- end,
 
-    -- ON_UNBUFF = function(me, sp)
+    -- on_unbuff = function(me, sp)
     -- end,
 
-    -- ON_CONCAST = function(me, sp)
+    -- on_concast = function(me, sp)
     -- end
 }

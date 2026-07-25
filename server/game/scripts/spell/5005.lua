@@ -2,7 +2,7 @@
 -- 맵번호 캐스팅
 
 return {
-    ON_CAST = function(me, spell, name)
+    on_cast = function(me, spell, name)
         local map = name2map(name)
         if map == nil then
             me:message('맵 정보 없음', MESSAGE_TYPE.POPUP)
@@ -11,12 +11,12 @@ return {
         end
     end,
 
-    -- ON_BUFF = function(me, sp)
+    -- on_buff = function(me, sp)
     -- end,
 
-    -- ON_UNBUFF = function(me, sp)
+    -- on_unbuff = function(me, sp)
     -- end,
 
-    -- ON_CONCAST = function(me, sp)
+    -- on_concast = function(me, sp)
     -- end
 }

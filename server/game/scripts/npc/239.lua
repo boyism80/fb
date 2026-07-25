@@ -5,7 +5,7 @@ local ITEM_DEAD_CENTIPEDE = '죽은지네'
 local ITEM_DRIED_CENTIPEDE = '말린지네'
 
 return {
-    ON_CLICK = function(me, npc)
+    on_click = function(me, npc)
         ::NPC_239_0001::
         local btn = me:dialog(npc, '고기나 생선말고는 건포로 만들기 어렵지...\n\n지네 같은 것은 말리면 부서지고 없어져서, 하기가 어려운데...', { prev = false, next = true })
         if btn == DIALOG_RESULT.QUIT then

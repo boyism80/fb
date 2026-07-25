@@ -3,7 +3,7 @@ local quest = require('lib.quest')
 local enum = require('lib.enum')
 
 return {
-    ON_CLICK = function(me, npc)
+    on_click = function(me, npc)
     ::NPC_158_0001::
         local index, button = me:list(npc, '안녕하세요. 어떻게 오셨나요?', {'초혼술방법', '무한 복장', '일반 복장'})
         if index == nil then

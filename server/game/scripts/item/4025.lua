@@ -1,7 +1,7 @@
 -- item: 신부여성비서
 
 return {
-    ON_ACTIVATED = function(me, item)
+    on_activated = function(me, item)
     	local maps = {'신부여성주막', '신부여서쪽주막', '신부여서쪽주막2'}
 
         math.randomseed(seed())
@@ -13,12 +13,12 @@ return {
         end
     end,
 
-    -- ON_DEACTIVATED = function(me, item)
+    -- on_deactivated = function(me, item)
     -- end,
 
-    -- ON_CONCAST = function(me, item)
+    -- on_concast = function(me, item)
     -- end,
 
-    -- ON_ATTACK = function(me, item)
+    -- on_attack = function(me, item)
     -- end
 }

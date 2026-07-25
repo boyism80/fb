@@ -3,7 +3,7 @@ local quest = require('lib.quest')
 local enum = require('lib.enum')
 
 return {
-    ON_CLICK = function(me, npc)
+    on_click = function(me, npc)
         local food_rewards = {
             ['바나나다발'] = { item = nil,  item_count = 0,  money = 500 },
             ['영양반찬'] = { item = nil,  item_count = 0,  money = 5000 },

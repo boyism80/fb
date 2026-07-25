@@ -8,7 +8,7 @@ local REWARD_ITEMS = { '진비투구', '경비투구', '법비모', '격비모' 
 local REWARD_CLASSES = { '전사', '도적', '주술사', '도사' }
 
 return {
-    ON_CLICK = function(me, npc)
+    on_click = function(me, npc)
         local q = me:quest(quest.QUEST_HATAEHYUN)
         local btn
 

@@ -32,7 +32,7 @@ local function do_exchange(me, npc, need_count, reward_name, reward_count)
 end
 
 return {
-    ON_CLICK = function(me, npc)
+    on_click = function(me, npc)
         local labels = {}
         for i = 1, #REWARDS do
             labels[i] = REWARDS[i].label

@@ -1,7 +1,7 @@
 -- npc: 주작의육체
 
 return {
-    ON_CLICK = function(me, npc)
+    on_click = function(me, npc)
         if me:class() ~= CLASS.MAGE then
             me:dialog(npc, ".....zZZ", { prev = false, next = false })
             return

@@ -2,7 +2,7 @@
 local quest = require('lib.quest')
 
 return {
-    ON_CLICK = function(me, npc)
+    on_click = function(me, npc)
         local q = me:quest(quest.QUEST_JINHWANG)
         if q == nil or q:step() ~= 5 then
             me:dialog(npc, "에휴... 여행을 다녀왔더니 힘드네요.", { prev = false, next = true })

@@ -3,7 +3,7 @@ local quest = require('lib.quest')
 local PARENT_MAP_GWIMUN = "둔귀촌"
 
 return {
-    ON_CLICK = function(me, npc)
+    on_click = function(me, npc)
         local cur = me:map()
         if cur then
             local root = cur:model():root()

@@ -1,7 +1,7 @@
 -- npc: 사슴굴도우미
 
 return {
-    ON_CLICK = function(me, npc)
+    on_click = function(me, npc)
         ::NPC_36_COS00::
         local button = me:dialog(npc, '여기는 사슴굴입니다. 10 레벨부터 25 레벨까지 사냥하기에 좋습니다.', { prev = false, next = true })
         if button == DIALOG_RESULT.QUIT then

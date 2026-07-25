@@ -93,7 +93,7 @@ std::shared_ptr<equipment> items::equipment_off(EQUIPMENT_PARTS parts)
     // Execute equipment deactivation script
     auto& model = equipment->based<fb::model::equipment>();
     auto  path  = std::format("scripts/item/{}.lua", model.id);
-    auto  func  = "ON_DEACTIVATED";
+    auto  func  = "on_deactivated";
 
     auto lua = owner->server.lua.open(path, func);
     if (lua)

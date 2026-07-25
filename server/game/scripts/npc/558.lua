@@ -2,7 +2,7 @@
 local server = require('lib.server')
 
 return {
-    ON_CLICK = function(me, npc)
+    on_click = function(me, npc)
         if me:gender() == GENDER.FEMALE then
             local button = me:dialog(npc, "여자분들은 직녀에게 말을 걸어보세요.", { prev = false, next = false })
             if button == DIALOG_RESULT.QUIT then

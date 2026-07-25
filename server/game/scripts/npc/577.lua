@@ -86,7 +86,7 @@ local function run_special_exchange(me, npc)
 end
 
 return {
-    ON_CLICK = function(me, npc)
+    on_click = function(me, npc)
         local map = me:map()
         local map_name = (map and map:model()) and map:model():name() or ""
 

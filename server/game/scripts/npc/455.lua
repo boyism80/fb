@@ -1,7 +1,7 @@
 -- npc: 현무제단지기
 
 return {
-    ON_CLICK = function(me, npc)
+    on_click = function(me, npc)
         local button = me:dialog(npc, "안녕하신가, " .. me:name() .. ". 나는 이곳 제단에서 힘을 모아 사악한악령에게 [강력한 참격]을 가하는 현무제단지기라네.", { prev = false, next = true })
         if button == DIALOG_RESULT.QUIT then
             return

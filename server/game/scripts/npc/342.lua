@@ -2,7 +2,7 @@
 local enum = require('lib.enum')
 
 return {
-    ON_CLICK = function(me, npc)
+    on_click = function(me, npc)
         local exchanges = {
             { need = 30, item = "트렁크", msg = "좋아. 여기 트렁크를 주지. 하지만 별로 남자다운 의상은 아니군!" },
             { need = 50, item = "비키니", msg = "좋아. 여기 비키니를 주지. 비키니야 말로 진정 남자다운 옷이란다!" },

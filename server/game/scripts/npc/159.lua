@@ -49,7 +49,7 @@ local function run_cidequest_jangdol(me, npc)
 end
 
 return {
-    ON_CLICK = function(me, npc)
+    on_click = function(me, npc)
         local main_sel, main_btn = me:list(npc, "안녕하세요. 어떻게 오셨나요?", {
             "물건 사기",
             "물건 팔기",

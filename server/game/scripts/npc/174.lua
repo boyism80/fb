@@ -3,7 +3,7 @@ local quest = require('lib.quest')
 local enum = require('lib.enum')
 
 return {
-    ON_CLICK = function(me, npc)
+    on_click = function(me, npc)
         local diary_names = {
             '선장의일기1', '선장의일기2', '선장의일기3', '선장의일기4', '선장의일기5',
             '선장의일기6', '선장의일기7', '선장의일기8', '선장의일기9', '선장의일기겉표지',

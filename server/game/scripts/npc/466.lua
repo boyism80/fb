@@ -68,7 +68,7 @@ local function do_sub4_complete(me, npc)
 end
 
 return {
-    ON_CLICK = function(me, npc)
+    on_click = function(me, npc)
         local q4 = me:quest(quest.QUEST_SKULL_NECKLACE_4)
 
         if q4 == nil or q4:step() == 0 then

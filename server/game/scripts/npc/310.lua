@@ -57,7 +57,7 @@ local function run_ox_admin(me, ch)
 end
 
 return {
-    ON_CLICK = function(me, npc_obj)
+    on_click = function(me, npc_obj)
         npc.shop(me, npc_obj, {
             greeting = '무엇을 도와드릴까요?',
             menu = {

@@ -3,7 +3,7 @@
 local server = require('lib.server')
 
 return {
-    ON_CAST = function(me, spell)
+    on_cast = function(me, spell)
         local sound = 33
         local mp = 30
         local error = me:assert(STATE.GHOST, STATE.RIDING)
@@ -26,12 +26,12 @@ return {
         me:action(ACTION.CAST_SPELL, DURATION.SPELL, 1)
     end,
 
-    -- ON_BUFF = function(me, sp)
+    -- on_buff = function(me, sp)
     -- end,
 
-    -- ON_UNBUFF = function(me, sp)
+    -- on_unbuff = function(me, sp)
     -- end,
 
-    -- ON_CONCAST = function(me, sp)
+    -- on_concast = function(me, sp)
     -- end
 }

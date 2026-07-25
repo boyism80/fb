@@ -2,7 +2,7 @@
 local JOIN_MONEY = 100
 
 return {
-    ON_CLICK = function(me, npc)
+    on_click = function(me, npc)
         local btn = me:dialog(npc, "현재 테스트 기간( ~ 2015. 6. 28)입니다. 당첨되어도 따로 상금/상품 지급은 되지 않습니다. 버그를 발견하면 제보 해 주세요.", { prev = false, next = true })
         if btn == DIALOG_RESULT.QUIT then
             return

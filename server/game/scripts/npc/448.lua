@@ -33,7 +33,7 @@ local function do_warp(me, nation, class_index)
 end
 
 return {
-    ON_CLICK = function(me, npc)
+    on_click = function(me, npc)
         local m = me:map()
         if m == nil then
             return

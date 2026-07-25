@@ -144,7 +144,7 @@ local function sample_clan(me, npc)
 end
 
 return {
-    ON_CLICK = function(me, npc)
+    on_click = function(me, npc)
         sample_clan(me, npc)
     end
 }

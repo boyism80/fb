@@ -1,7 +1,7 @@
 -- npc: 해골굴도우미
 
 return {
-    ON_CLICK = function(me, npc)
+    on_click = function(me, npc)
         ::NPC_41_0001::
         local button = me:dialog(npc, '여기는 해골굴입니다. 60 레벨부터 90 레벨까지 사냥하기에 좋습니다.', { prev = false, next = true })
         if button == DIALOG_RESULT.QUIT then

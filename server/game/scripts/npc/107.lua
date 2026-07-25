@@ -176,7 +176,7 @@ local function dojaeyoung_herb_turnin(me, npc)
 end
 
 return {
-    ON_CLICK = function(me, npc)
+    on_click = function(me, npc)
         local options = {'황비연 퀘스트'}
         local herb_quest = me:quest(quest.QUEST_HWANGBIYEON)
         if herb_quest ~= nil and herb_quest:step() == 2 then

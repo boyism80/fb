@@ -27,7 +27,7 @@ local function do_exchange(me, npc, reward_name)
 end
 
 return {
-    ON_CLICK = function(me, npc)
+    on_click = function(me, npc)
         local sel, btn = me:list(npc, "교환권으로 무엇을 구입하시겠습니까?", {
             "가시철단도 (교환권 10개)",
             "환두대도 (교환권 10개)",

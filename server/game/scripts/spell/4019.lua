@@ -6,19 +6,19 @@
 -- 파력무참진 지속 효과
 
 return {
-    -- ON_CAST = function(me, you, sp)
+    -- on_cast = function(me, you, sp)
     -- end,
 
-    ON_BUFF = function(me, spell)
+    on_buff = function(me, spell)
         me:damage_rate(me:damage_rate() + 1000)
         me:skill_damage_rate(me:skill_damage_rate() + 1000)
     end,
 
-    ON_UNBUFF = function(me, spell)
+    on_unbuff = function(me, spell)
     	me:damage_rate(me:damage_rate() - 1000)
         me:skill_damage_rate(me:skill_damage_rate() - 1000)
     end,
 
-    -- ON_CONCAST = function(me, sp)
+    -- on_concast = function(me, sp)
     -- end
 }

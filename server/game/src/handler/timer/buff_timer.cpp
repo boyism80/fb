@@ -44,7 +44,7 @@ async::task<void> buff_timer::handle(const fb::model::datetime& now, std::thread
 
                 auto& model = buff->model;
                 auto  path  = std::format("scripts/spell/{}.lua", model.id);
-                auto  func  = "ON_CONCAST";
+                auto  func  = "on_concast";
 
                 auto lua = this->server.lua.open(path, func);
                 if (!lua)

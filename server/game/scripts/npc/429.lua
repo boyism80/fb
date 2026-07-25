@@ -1,7 +1,7 @@
 -- npc: 백호의육체
 
 return {
-    ON_CLICK = function(me, npc)
+    on_click = function(me, npc)
         if me:class() ~= CLASS.ROGUE then
             me:dialog(npc, ".....zZZ", { prev = false, next = false })
             return

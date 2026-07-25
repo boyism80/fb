@@ -2,7 +2,7 @@
 local npc = require('lib.npc')
 
 return {
-    ON_CLICK = function(me, npc_obj)
+    on_click = function(me, npc_obj)
         local class_name = class2name(me:class(), me:promotion())
         if not class_name then
             class_name = '전사'

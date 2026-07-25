@@ -2,7 +2,7 @@
 local REQUIRED_CIGARETTES = 5
 
 return {
-    ON_CLICK = function(me, npc)
+    on_click = function(me, npc)
         local btn = me:dialog(npc, string.format("음... 담배 [ %d ]개피만 있으면 또 모르겠는데...", REQUIRED_CIGARETTES), { prev = false, next = true })
         if btn == DIALOG_RESULT.QUIT then
             return

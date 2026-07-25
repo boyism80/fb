@@ -2,7 +2,7 @@
 local enum = require('lib.enum')
 
 return {
-    ON_CLICK = function(me, npc)
+    on_click = function(me, npc)
         local sesi = property("sesi_rightnow")
         if sesi == 1 then
             local sel, list_btn = me:list(npc, " 어쩐일로 찾아오셨습니까?", {

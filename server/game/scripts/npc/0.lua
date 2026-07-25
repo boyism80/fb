@@ -350,7 +350,7 @@ local function sample_menu(me, npc)
 end
 
 return {
-    ON_CLICK = function(me, npc)
+    on_click = function(me, npc)
         main(me, npc)
     end
 }

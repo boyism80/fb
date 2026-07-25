@@ -3,7 +3,7 @@ local quest = require('lib.quest')
 local enum = require('lib.enum')
 
 return {
-    ON_CLICK = function(me, npc)
+    on_click = function(me, npc)
         if me:level() < 56 then
             me:dialog(npc, '(옆에 있는 아이를 보며 크게 한숨을 내쉰다.)', { prev = false, next = true })
             return

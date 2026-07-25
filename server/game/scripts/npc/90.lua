@@ -3,7 +3,7 @@ local quest = require('lib.quest')
 local enum = require('lib.enum')
 
 return {
-    ON_CLICK = function(me, npc)
+    on_click = function(me, npc)
         local sel = me:list(npc, '안녕하세요. 어떻게 오셨나요?', { '3차 승급을 원합니다' })
         if sel == nil or sel ~= 1 then
             return

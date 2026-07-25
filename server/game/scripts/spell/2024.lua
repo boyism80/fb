@@ -7,7 +7,7 @@ local spell = require('lib.spell')
 -- 운기 지속 효과
 
 return {
-    ON_CAST = function(me, sp)
+    on_cast = function(me, sp)
         local mp = 30
         local sound = 2
         local effect = nil
@@ -17,13 +17,13 @@ return {
         end
     end,
 
-    -- ON_BUFF = function(me, sp)
+    -- on_buff = function(me, sp)
     -- end,
 
-    -- ON_UNBUFF = function(me, sp)
+    -- on_unbuff = function(me, sp)
     -- end,
 
-    ON_CONCAST = function(me, caster, buff)
+    on_concast = function(me, caster, buff)
         me:effect(133)
         me:sound(2)
         me:mp_up(me:maxmp() // 10)

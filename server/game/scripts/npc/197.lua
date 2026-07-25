@@ -1,7 +1,7 @@
 -- npc: 고구려-섬뱃사공
 
 return {
-    ON_CLICK = function(me, npc)
+    on_click = function(me, npc)
         local t = datetime()
         local minute = t.minute
         if minute >= 40 and minute <= 59 then

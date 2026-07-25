@@ -2,7 +2,7 @@
 -- 성황령 캐스팅
 
 return {
-    ON_CAST = function(me, spell, message)
+    on_cast = function(me, spell, message)
         local map = me:map()
         if map == nil then
             return
@@ -35,12 +35,12 @@ return {
         me:map(revive[input]:name())
     end,
 
-    -- ON_BUFF = function(me, sp)
+    -- on_buff = function(me, sp)
     -- end,
 
-    -- ON_UNBUFF = function(me, sp)
+    -- on_unbuff = function(me, sp)
     -- end,
 
-    -- ON_CONCAST = function(me, sp)
+    -- on_concast = function(me, sp)
     -- end
 }

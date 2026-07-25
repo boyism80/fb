@@ -117,7 +117,7 @@ local function do_hair_dye(me, npc)
 end
 
 return {
-    -- ON_CLICK = function(me, npc)
+    -- on_click = function(me, npc)
     -- end,
 
     NPC_JapanSoso = function(me, npc)

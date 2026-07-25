@@ -2,7 +2,7 @@
 local enum = require('lib.enum')
 
 return {
-    ON_CLICK = function(me, npc)
+    on_click = function(me, npc)
         if not me:has_items({ ["한왕"] = 1, ["초왕"] = 1 }) then
             local button = me:dialog(npc, "초패 저 친구와 장기를 둬야 하는데, 원숭이 놈들이 장기알을 훔쳐가버렸지 뭐야...", { prev = false, next = false })
             if button == DIALOG_RESULT.QUIT then

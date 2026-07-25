@@ -4,7 +4,7 @@ local enum = require('lib.enum')
 local REQUIRED_ITEMS = { ["자철석"] = 1, ["무슈후슈의뿔"] = 10 }
 
 return {
-    ON_CLICK = function(me, npc)
+    on_click = function(me, npc)
         local q = me:quest(quest.QUEST_BLUEEAR)
 
         if q == nil then

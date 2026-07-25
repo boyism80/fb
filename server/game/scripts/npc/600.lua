@@ -18,7 +18,7 @@ local function voucher_price()
 end
 
 return {
-    ON_CLICK = function(me, npc)
+    on_click = function(me, npc)
     ::MENU::
         local sel, btn = me:list(npc, "안녕하신가? 그래.. 요즘 하는 일은 잘 되고? 내게 무슨 볼일로 찾아왔나? 설마 인사차 온건 아닐테고.. 허허허 ~", {
             "비패교환증을 사러 왔어요 !!",

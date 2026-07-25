@@ -2,7 +2,7 @@
 local quest = require('lib.quest')
 
 return {
-    ON_CLICK = function(me, npc)
+    on_click = function(me, npc)
         local q_jingo = me:quest(quest.QUEST_JINGOGYUN)
         if q_jingo and q_jingo:step() == 5 then
             ::NPC_133_0001::

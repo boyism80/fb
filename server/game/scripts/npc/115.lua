@@ -105,7 +105,7 @@ local function cultural_property_quest(me, npc)
 end
 
 return {
-    ON_CLICK = function(me, npc)
+    on_click = function(me, npc)
         local selected = me:list(npc, '안녕하세요. 어떻게 오셨나요?', {'문화재보호공무원', '환상의섬에 나타난 괴물'})
         if selected == nil then
             return

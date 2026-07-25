@@ -3,7 +3,7 @@ local quest = require('lib.quest')
 local enum = require('lib.enum')
 
 return {
-    ON_CLICK = function(me, npc)
+    on_click = function(me, npc)
         local ACHIEVEMENT_OXYGEN = 4
         local MIN_LEVEL = 50
 

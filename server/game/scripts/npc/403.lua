@@ -1,7 +1,7 @@
 -- npc: 만리장성잡화상10
 
 return {
-    ON_CLICK = function(me, npc)
+    on_click = function(me, npc)
         local messages = {
             "고구려엔 왈숙네라는 주모가 있다면서? 어떤 주모이길래 중국에 까지 소문이 나는걸까?",
             "신부여성 서쪽엔 세시마을이라는 곳이 있더군. 한번 가본적이 있는데.. 굉장히 특이한 마을인 것 같던데 말야.",

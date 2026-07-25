@@ -135,7 +135,7 @@ local function do_armor_normal(me, npc)
 end
 
 return {
-    ON_CLICK = function(me, npc)
+    on_click = function(me, npc)
         local selected = me:list(npc, '안녕하세요. 어떻게 오셨나요?', { '정기모으기', '무한 복장', '일반 복장' }, { prev = false })
         if selected == nil then
             return

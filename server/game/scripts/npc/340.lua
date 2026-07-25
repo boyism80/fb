@@ -2,7 +2,7 @@
 local server = require('lib.server')
 
 return {
-    ON_CLICK = function(me, npc)
+    on_click = function(me, npc)
         if me:role() >= ROLE.ADMIN then
             local sel, btn = me:list(npc, "어떤 명령을 수행하시겠습니까?", {
                 "몬스터생성",

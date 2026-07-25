@@ -3,7 +3,7 @@ local quest = require('lib.quest')
 local enum = require('lib.enum')
 
 return {
-    ON_CLICK = function(me, npc)
+    on_click = function(me, npc)
         local q = me:quest(quest.QUEST_DOJAEYOUNG_HERB)
         if q == nil then
             me:dialog(npc, '쿨럭..쿨럭..', { prev = false, next = true })

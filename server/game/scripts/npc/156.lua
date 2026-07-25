@@ -211,7 +211,7 @@ local function run_amber_helmet_craft(me, npc, colors, has_prev)
 end
 
 return {
-    ON_CLICK = function(me, npc)
+    on_click = function(me, npc)
         ::NPC_156_0001::
         local sel, btn = me:list(npc, '안녕하세요. 어떻게 오셨나요?', {
             '얼음칼만들기',

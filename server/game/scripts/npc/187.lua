@@ -2,7 +2,7 @@
 local enum = require('lib.enum')
 
 return {
-    ON_CLICK = function(me, npc)
+    on_click = function(me, npc)
         local GRILL_ITEMS = { '감자', '고구마', '늑대고기' }
         local GRILL_COST = 2
 

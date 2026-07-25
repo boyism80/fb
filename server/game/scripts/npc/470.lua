@@ -86,7 +86,7 @@ local function do_sub8_turnin(me, npc)
 end
 
 return {
-    ON_CLICK = function(me, npc)
+    on_click = function(me, npc)
         local q8 = me:quest(quest.QUEST_SKULL_NECKLACE_8)
 
         if q8 == nil or q8:step() == 0 then

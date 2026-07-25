@@ -314,7 +314,7 @@ local function handle_jingogyun_ge8(me, npc)
 end
 
 return {
-    ON_CLICK = function(me, npc)
+    on_click = function(me, npc)
         local q_jingo = me:quest(quest.QUEST_JINGOGYUN)
         local step = (q_jingo and q_jingo:step()) or 0
 

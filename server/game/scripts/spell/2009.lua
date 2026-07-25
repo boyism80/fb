@@ -7,7 +7,7 @@ local spell = require('lib.spell')
 -- 망각 버프 해제 효과
 
 return {
-    ON_CAST = function(me, you, sp)
+    on_cast = function(me, you, sp)
         if not you:is(OBJECT_TYPE.MOB) then
             return me:message('걸리지 않습니다.')
         end
@@ -22,14 +22,14 @@ return {
         end
     end,
 
-    ON_BUFF = function(me, sp)
+    on_buff = function(me, sp)
         me:target(nil)
     end,
 
-    ON_UNBUFF = function(me, sp)
+    on_unbuff = function(me, sp)
         me:oblivion(nil)
     end,
 
-    -- ON_CONCAST = function(me, sp)
+    -- on_concast = function(me, sp)
     -- end
 }

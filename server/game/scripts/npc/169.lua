@@ -3,7 +3,7 @@ local quest = require('lib.quest')
 local enum = require('lib.enum')
 
 return {
-    ON_CLICK = function(me, npc)
+    on_click = function(me, npc)
         local q = me:quest(quest.QUEST_DRAGON_KING)
         if q == nil or q:step() ~= 10 then
             me:dialog(npc, "안녕하신가? 여행이란 참 즐거운 일이지.", { prev = false, next = false })

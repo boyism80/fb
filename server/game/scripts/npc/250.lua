@@ -77,7 +77,7 @@ local function run_battery_purchase(me, npc)
 end
 
 return {
-    ON_CLICK = function(me, npc)
+    on_click = function(me, npc)
         ::NPC_250_0001::
         local sel = me:list(npc, '안녕하신가? 나에겐 어쩐일로 왔는가?', { '시계 구입', '건전지 구입' }, { prev = false })
         if sel == nil then

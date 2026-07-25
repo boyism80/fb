@@ -11,7 +11,7 @@ local function yeondeung_list()
 end
 
 return {
-    ON_CLICK = function(me, npc)
+    on_click = function(me, npc)
         ::NPC_364_0001::
         local btn = me:dialog(npc, "안녕하십니까. 저는 명경사의 혜방이라고 합니다.", { prev = false, next = true })
         if btn == DIALOG_RESULT.QUIT then

@@ -77,7 +77,7 @@ local function do_sub6_turnin(me, npc)
 end
 
 return {
-    ON_CLICK = function(me, npc)
+    on_click = function(me, npc)
         local q6 = me:quest(quest.QUEST_SKULL_NECKLACE_6)
 
         if q6 == nil or q6:step() == 0 then

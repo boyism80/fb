@@ -132,7 +132,7 @@ local function run_form(me, npc, class_name, partner, schedule)
 end
 
 return {
-    ON_CLICK = function(me, npc)
+    on_click = function(me, npc)
         local q = me:quest(quest.QUEST_MADONG_APPLY)
         if q ~= nil and q:step() == 1 then
             local class_name, partner, schedule = parse_param(q:param())

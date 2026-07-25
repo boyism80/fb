@@ -10,7 +10,7 @@ local DOTOL_NAMES = {
 local DOTOL_PRICE = 1000
 
 return {
-    ON_CLICK = function(me, npc)
+    on_click = function(me, npc)
         local btn = me:dialog(npc, "안녕하세요?\n\n저는 여러분에게 행운을 가져다 주는 톨루이 입니다.", { prev = false, next = true })
         if btn == DIALOG_RESULT.QUIT then
             return

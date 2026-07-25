@@ -166,7 +166,7 @@ async::task<bool> item::active()
 
     auto& model = this->based<fb::model::item>();
     auto  path  = std::format("scripts/item/{}.lua", model.id);
-    auto  func  = "ON_ACTIVATED";
+    auto  func  = "on_activated";
 
     // Execute item activation script
     auto lua = this->server.lua.open(path, func);

@@ -3,7 +3,7 @@ local quest = require('lib.quest')
 local enum = require('lib.enum')
 
 return {
-    ON_CLICK = function(me, npc)
+    on_click = function(me, npc)
         local q = me:quest(quest.QUEST_BEGINNER_PATH)
         if q == nil then
             me:dialog(npc, "먼저 앞의 도우미 분들의 도움을 받고 오세요.", { prev = false, next = false })

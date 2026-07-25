@@ -7,7 +7,7 @@ local OPTIONS = {
 }
 
 return {
-    ON_CLICK = function(me, npc)
+    on_click = function(me, npc)
         local sel, list_btn = me:list(npc, "수련이 힘들텐데 술 한잔 하는게 어떻소? 공짜로 줄수는 없으니 소림사에 시주를 좀 해주었으면 하오. 어떤 술을 원하시오?", {
             "동동주 (200전)",
             "팔십세주 (4000전)",

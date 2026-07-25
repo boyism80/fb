@@ -61,7 +61,7 @@ async::task<void> gear_timer::handle(const fb::model::datetime& now, std::thread
                 {
                     auto& model = equipment->based<fb::model::equipment>();
                     auto  path  = std::format("scripts/item/{}.lua", model.id);
-                    auto  func  = "ON_CONCAST";
+                    auto  func  = "on_concast";
 
                     if (lua->load(path) == false)
                         continue;

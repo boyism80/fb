@@ -7,7 +7,7 @@ local spell = require('lib.spell')
 -- 노도성황 지속 효과
 
 return {
-    ON_CAST = function(me, you, sp)
+    on_cast = function(me, you, sp)
         local mp = 30
         local sound = 106
         local effect = 96
@@ -17,13 +17,13 @@ return {
         end
     end,
 
-    -- ON_BUFF = function(me, sp)
+    -- on_buff = function(me, sp)
     -- end,
 
-    -- ON_UNBUFF = function(me, sp)
+    -- on_unbuff = function(me, sp)
     -- end,
 
-    ON_CONCAST = function(me, caster, buff)
+    on_concast = function(me, caster, buff)
         local damage = (me:maxhp() * 5) // 100
         caster:damage_to(me, damage, { critical = false, rate = caster:skill_damage_rate() / 1000.0, physical = false })
         me:effect(96)

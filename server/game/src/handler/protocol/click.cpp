@@ -89,7 +89,7 @@ async::task<void> click::handle_object_click(character* ch, game_reqs::click& re
     {
         auto& model = static_cast<npc&>(*you).based<fb::model::npc>();
         auto  path  = std::format("scripts/npc/{}.lua", model.id);
-        auto  func  = "ON_CLICK";
+        auto  func  = "on_click";
 
         auto lua = this->server.lua.open(path, func);
         if (!lua)

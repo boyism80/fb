@@ -161,7 +161,7 @@ local function run_sesi_8(me, npc)
 end
 
 return {
-    ON_CLICK = function(me, npc)
+    on_click = function(me, npc)
         local btn = me:dialog(npc, "저는 이 마을 촌장의 부인되는 목원지라고 합니다.", { prev = false, next = true })
         if btn == DIALOG_RESULT.QUIT then
             return

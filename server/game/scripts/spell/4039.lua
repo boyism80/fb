@@ -3,7 +3,7 @@
 local spell = require('lib.spell')
 
 return {
-    ON_CAST = function(me, sp)
+    on_cast = function(me, sp)
         local mp = 1000
         local sound = 97
         local effect = 63
@@ -13,12 +13,12 @@ return {
         end
     end,
 
-    -- ON_BUFF = function(me, sp)
+    -- on_buff = function(me, sp)
     -- end,
 
-    -- ON_UNBUFF = function(me, sp)
+    -- on_unbuff = function(me, sp)
     -- end,
 
-    -- ON_CONCAST = function(me, sp)
+    -- on_concast = function(me, sp)
     -- end
 }

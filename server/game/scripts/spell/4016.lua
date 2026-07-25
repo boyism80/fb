@@ -7,7 +7,7 @@ local spell = require('lib.spell')
 -- 신령지익 지속 효과
 
 return {
-    ON_CAST = function(me, sp)
+    on_cast = function(me, sp)
         local mp = 0
         local sound = 109
         local effect = 116
@@ -17,13 +17,13 @@ return {
         end
     end,
 
-    -- ON_BUFF = function(me, sp)
+    -- on_buff = function(me, sp)
     -- end,
 
-    -- ON_UNBUFF = function(me, sp)
+    -- on_unbuff = function(me, sp)
     -- end,
 
-    ON_CONCAST = function(me, caster, buff)
+    on_concast = function(me, caster, buff)
         local x, y = me:position()
         local begin_x = x-3
         local begin_y = y-3

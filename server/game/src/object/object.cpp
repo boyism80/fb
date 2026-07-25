@@ -278,7 +278,7 @@ bool object::move(DIRECTION direction)
     {
         auto& map_model = this->_map->model;
         auto  path      = std::format("scripts/map/{}.lua", map_model.id);
-        auto  func      = "ON_MAP_MOVE";
+        auto  func      = "on_map_move";
 
         auto map_lua = this->server.lua.open(path, func);
         if (map_lua)
@@ -501,7 +501,7 @@ async::task<bool> object::map(map_ptr map, std::optional<fb::model::point16_t> p
         if (map == nullptr)
         {
             if (this->_map != nullptr)
-                co_await this->invoke_map_character_hook(this->_map->model, "ON_MAP_LEAVE");
+                co_await this->invoke_map_character_hook(this->_map->model, "on_map_leave");
 
             // broadcast near characters
             for (const auto& x : this->_map->nears(this->_position))
@@ -629,7 +629,7 @@ async::task<bool> object::map(map_ptr map, std::optional<fb::model::point16_t> p
             }
         }
 
-        co_await this->invoke_map_character_hook(map->model, "ON_MAP_ENTER");
+        co_await this->invoke_map_character_hook(map->model, "on_map_enter");
 
         co_return true;
     }

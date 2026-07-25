@@ -1,15 +1,15 @@
 -- item: 구리비늘남자갑주
 
 return {
-    -- ON_ACTIVATED = function(me, item)
+    -- on_activated = function(me, item)
     -- end,
 
-    -- ON_DEACTIVATED = function(me, item)
+    -- on_deactivated = function(me, item)
     -- end,
 
-    -- ON_CONCAST = function(me, item)
+    -- on_concast = function(me, item)
     -- end,
 
-    -- ON_ATTACK = function(me, item)
+    -- on_attack = function(me, item)
     -- end
 }

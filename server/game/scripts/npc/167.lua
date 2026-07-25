@@ -27,7 +27,7 @@ local function try_craft_weapon(me, npc, materials, price, reward_name)
 end
 
 return {
-    ON_CLICK = function(me, npc)
+    on_click = function(me, npc)
         local PRICE = 5000
         local SPIDER_FANG = '거미의이빨'
         local SPIDER_WEB = '독거미줄'

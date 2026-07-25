@@ -2,7 +2,7 @@
 local enum = require('lib.enum')
 
 return {
-    ON_CLICK = function(me, npc)
+    on_click = function(me, npc)
         local button = me:dialog(npc, "백두촌이 이상한 기운으로 뒤덮혀 정령들이 이성을 잃기 전 까지만 해도, 나는 그들의 신령한 기운을 모아 이런저런 무기와 장비를 만들곤 했었소.", { prev = true, next = true })
         if button == DIALOG_RESULT.QUIT then
             return

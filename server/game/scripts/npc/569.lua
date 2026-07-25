@@ -4,7 +4,7 @@ local MATERIAL = "수정"
 local RING_NAMES = { "수정반지1", "수정반지2", "수정반지3", "수정반지4", "수정반지5" }
 
 return {
-    ON_CLICK = function(me, npc)
+    on_click = function(me, npc)
         if not me:has_items(MATERIAL, 1) then
             me:dialog(npc, "나는 " .. MATERIAL .. "으로 세공을 한다네...", { prev = false, next = false })
             return

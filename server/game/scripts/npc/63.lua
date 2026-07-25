@@ -119,7 +119,7 @@ local function do_hair_dye(me, npc)
 end
 
 return {
-    ON_CLICK = function(me, npc)
+    on_click = function(me, npc)
         local index = me:list(npc, '안녕하세요. 어떻게 오셨나요?', {
             '머리모양을 바꾸고 싶어요',
             '머리염색',

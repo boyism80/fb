@@ -1,6 +1,6 @@
 -- npc: 도사팔괘
 
 return {
-    -- ON_CLICK = function(me, npc)
+    -- on_click = function(me, npc)
     -- end
 }

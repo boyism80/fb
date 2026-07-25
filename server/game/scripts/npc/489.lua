@@ -3,7 +3,7 @@ local quest = require('lib.quest')
 local enum = require('lib.enum')
 
 return {
-    ON_CLICK = function(me, npc)
+    on_click = function(me, npc)
         local q = me:quest(quest.QUEST_PAMASPIRI)
         if q == nil then
             me:dialog(npc, "삐리리- 삘릴리리- 삘릴리리리- 삐- 삐---\n내 피리 부는 솜씨가 어떠냐!", { prev = false, next = false })

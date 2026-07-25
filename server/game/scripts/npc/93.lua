@@ -7,7 +7,7 @@ local SUMMON_ITEMS = {
 }
 
 return {
-    ON_CLICK = function(me, npc)
+    on_click = function(me, npc)
         local sel = me:list(npc, '....', { '파괴왕 소환' }, { prev = false })
         if sel == nil or sel ~= 1 then
             return

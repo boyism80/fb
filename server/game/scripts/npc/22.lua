@@ -2,7 +2,7 @@
 local npc = require('lib.npc')
 
 return {
-    ON_CLICK = function(me, npc_obj)
+    on_click = function(me, npc_obj)
         local spells = {
             ['성황령'] = {
                 ['level'] = 0,

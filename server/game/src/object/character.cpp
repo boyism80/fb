@@ -1531,7 +1531,7 @@ async::task<void> character::settle_kills(mob_vector dead)
     for (auto& [id, mobs] : groups)
     {
         auto path = std::format("scripts/mob/{}.lua", id);
-        auto func = "ON_MOB_KILL";
+        auto func = "on_mob_kill";
         auto lua  = this->server.lua.open(path, func);
         if (lua)
         {

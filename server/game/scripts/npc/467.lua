@@ -128,7 +128,7 @@ local function do_sub5_turnin(me, npc)
 end
 
 return {
-    ON_CLICK = function(me, npc)
+    on_click = function(me, npc)
         local q4 = me:quest(quest.QUEST_SKULL_NECKLACE_4)
         local q5 = me:quest(quest.QUEST_SKULL_NECKLACE_5)
 

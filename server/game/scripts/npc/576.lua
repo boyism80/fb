@@ -2,7 +2,7 @@
 local enum = require('lib.enum')
 
 return {
-    ON_CLICK = function(me, npc)
+    on_click = function(me, npc)
         if property("goldarcon") ~= 36 then
             me:dialog(npc, "지금은 때가 아닙니다.", { prev = false, next = false })
             return

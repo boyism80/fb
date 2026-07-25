@@ -1,6 +1,6 @@
 -- npc: 폭염왕장식품
 
 return {
-    -- ON_CLICK = function(me, npc)
+    -- on_click = function(me, npc)
     -- end
 }

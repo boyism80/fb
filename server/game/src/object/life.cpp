@@ -108,7 +108,7 @@ life::mob_vector life::damage_targets(const damage_list& targets, const damage_o
             if (m->stat.hp() != 0)
                 continue;
 
-            // Already settling ON_MOB_KILL / ON_MOB_DIE — do not re-enter kill flow.
+            // Already settling on_mob_kill / on_mob_die — do not re-enter kill flow.
             if (m->invincible())
                 continue;
 
@@ -147,7 +147,7 @@ async::task<void> life::settle_deaths(mob_vector dead)
     for (auto& [id, mobs] : groups)
     {
         auto path = std::format("scripts/mob/{}.lua", id);
-        auto func = "ON_MOB_DIE";
+        auto func = "on_mob_die";
         auto lua  = this->server.lua.open(path, func);
         if (lua)
         {
@@ -231,7 +231,7 @@ async::task<void> life::attack(DURATION duration)
         {
             auto& model = weapon->based<fb::model::weapon>();
             auto  path  = std::format("scripts/item/{}.lua", model.id);
-            auto  func  = "ON_ATTACK";
+            auto  func  = "on_attack";
 
             auto weapon_lua = this->server.lua.open(path, func);
             if (weapon_lua)
@@ -270,7 +270,7 @@ bool life::active(fb::game::spell& spell, std::string_view message)
 
     auto& model = spell.model;
     auto  path  = std::format("scripts/spell/{}.lua", model.id);
-    auto  func  = "ON_CAST";
+    auto  func  = "on_cast";
 
     auto lua = this->server.lua.open(path, func);
     if (!lua)
@@ -304,7 +304,7 @@ bool life::active(fb::game::spell& spell, fb::game::object& to)
     this->assert_thread();
     auto& model = spell.model;
     auto  path  = std::format("scripts/spell/{}.lua", model.id);
-    auto  func  = "ON_CAST";
+    auto  func  = "on_cast";
 
     auto lua = this->server.lua.open(path, func);
     if (!lua)
@@ -335,7 +335,7 @@ bool life::active(fb::game::spell& spell)
     this->assert_thread();
     auto& model = spell.model;
     auto  path  = std::format("scripts/spell/{}.lua", model.id);
-    auto  func  = "ON_CAST";
+    auto  func  = "on_cast";
 
     auto lua = this->server.lua.open(path, func);
     if (!lua)

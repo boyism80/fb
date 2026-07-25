@@ -3,7 +3,7 @@
 local spell = require('lib.spell')
 
 return {
-    ON_CAST = function(me, sp)
+    on_cast = function(me, sp)
         local map = me:map()
         if map == nil then
             return
@@ -22,12 +22,12 @@ return {
         me:chat('노획', CHAT_TYPE.BLUE, false)
     end,
 
-    -- ON_BUFF = function(me, sp)
+    -- on_buff = function(me, sp)
     -- end,
 
-    -- ON_UNBUFF = function(me, sp)
+    -- on_unbuff = function(me, sp)
     -- end,
 
-    -- ON_CONCAST = function(me, sp)
+    -- on_concast = function(me, sp)
     -- end
 }

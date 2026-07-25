@@ -13,7 +13,7 @@ local HOLYTREE_ITEMS = {
 }
 
 return {
-    ON_CLICK = function(me, npc)
+    on_click = function(me, npc)
         if me:level() < 99 then
             me:dialog(npc, '99레벨 이상만 이용이 가능합니다.', { prev = false, next = false })
             return

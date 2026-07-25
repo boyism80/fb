@@ -47,7 +47,7 @@ local function has_4th_weapon(me)
 end
 
 return {
-    ON_CLICK = function(me, npc)
+    on_click = function(me, npc)
         local selected = me:list(npc, '안녕하세요. 어떻게 오셨나요?', {
             '4차 승급을 원합니다',
             '4차 승급 무기들 다시 받고 싶습니다',

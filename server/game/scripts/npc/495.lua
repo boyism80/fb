@@ -8,7 +8,7 @@ local MAP_ID_DEATH = 12017
 local SURVIVE_ITEMS = { ["노란비서"] = 1, ["소환비서"] = 1, ["동동주"] = 1, ["막걸리"] = 1 }
 
 return {
-    ON_CLICK = function(me, npc)
+    on_click = function(me, npc)
         local m = me:map()
         if m == nil or m:model() == nil then
             return

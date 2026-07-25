@@ -1,7 +1,7 @@
 -- npc: 칠중하종료
 
 return {
-    ON_CLICK = function(me, npc)
+    on_click = function(me, npc)
         local map = name2map("칠중하입구")
         if map == nil then
             me:dialog(npc, "이동할 수 없습니다.", { prev = false, next = false })

@@ -2,17 +2,17 @@
 local quest = require('lib.quest')
 
 return {
-    ON_MOB_ATTACK = function(me, you)
+    on_mob_attack = function(me, you)
         return false
     end,
 
-    -- ON_MOB_DIE = function(me)
+    -- on_mob_die = function(me)
     -- end,
 
-    ON_MOB_KILL = function(me, mobs)
+    on_mob_kill = function(me, mobs)
         quest.king_on_mob_kill(me, mobs)
     end,
 
-    -- ON_MOB_SPELL_HIT = function(me, you, spell)
+    -- on_mob_spell_hit = function(me, you, spell)
     -- end
 }

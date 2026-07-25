@@ -1,7 +1,7 @@
 -- npc: 동쪽태극문보초
 
 return {
-    ON_CLICK = function(me, npc)
+    on_click = function(me, npc)
         if not me:has_items('동문열쇠', 1) then
             return
         end

@@ -154,7 +154,7 @@ local function bokgeon_find_toys(me, npc)
 end
 
 return {
-    ON_CLICK = function(me, npc)
+    on_click = function(me, npc)
         local q = me:quest(quest.QUEST_PAMASPIRI)
         if q and q:step() == 2 and not q:completed() then
             ::NPC_235_0001::

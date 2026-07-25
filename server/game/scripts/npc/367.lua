@@ -180,7 +180,7 @@ local function run_intro_and_list(me, npc)
 end
 
 return {
-    ON_CLICK = function(me, npc)
+    on_click = function(me, npc)
         run_intro_and_list(me, npc)
     end
 }

@@ -1,7 +1,7 @@
 -- npc: 만리장성잡화상01
 
 return {
-    ON_CLICK = function(me, npc)
+    on_click = function(me, npc)
     ::NPC_394_000::
         local sel, btn = me:list(npc, "안녕하신가.. 무슨일로 찾아왔나?", {"천패, 지패, 인패는 무엇인가요?", "뭐 재미있는 이야기 없습니까?"}, { prev = false })
         if btn == DIALOG_RESULT.QUIT then

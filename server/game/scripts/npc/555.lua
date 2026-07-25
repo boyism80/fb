@@ -3,7 +3,7 @@ local quest = require('lib.quest')
 local server = require('lib.server')
 
 return {
-    ON_CLICK = function(me, npc)
+    on_click = function(me, npc)
         local q = me:quest(quest.QUEST_BEGINNER_PATH)
         if q and (q:step() == 7 or q:completed()) then
             server.warp_to_return_map(me)

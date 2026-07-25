@@ -217,7 +217,7 @@ local function run_cursed_forgiveness(me, npc)
 end
 
 return {
-    ON_CLICK = function(me, npc)
+    on_click = function(me, npc)
         local q = me:quest(quest.QUEST_STRONGBOX)
         if q == nil then
             run_intro_and_accept(me, npc)

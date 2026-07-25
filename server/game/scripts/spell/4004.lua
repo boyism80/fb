@@ -7,7 +7,7 @@ local spell = require('lib.spell')
 -- 보호 버프 해제 효과
 
 return {
-    ON_CAST = function(me, you, sp)
+    on_cast = function(me, you, sp)
         local mp = 30
         local sound = 8
         local effect = 110
@@ -17,14 +17,14 @@ return {
         end
     end,
 
-    ON_BUFF = function(me, sp)
+    on_buff = function(me, sp)
         me:damage_derate(me:damage_derate() + 1000)
     end,
 
-    ON_UNBUFF = function(me, sp)
+    on_unbuff = function(me, sp)
         me:damage_derate(me:damage_derate() - 1000)
     end,
 
-    -- ON_CONCAST = function(me, sp)
+    -- on_concast = function(me, sp)
     -- end
 }

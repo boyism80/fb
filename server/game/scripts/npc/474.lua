@@ -22,7 +22,7 @@ local function all_sub_quests_complete(me)
 end
 
 return {
-    ON_CLICK = function(me, npc)
+    on_click = function(me, npc)
         local main = me:quest(quest.QUEST_SKULL_NECKLACE)
         local main_step = (main and main:step()) or 0
 

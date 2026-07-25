@@ -2,13 +2,13 @@
 local quest = require('lib.quest')
 
 return {
-    -- ON_MOB_ATTACK = function(me, you)
+    -- on_mob_attack = function(me, you)
     -- end,
 
-    -- ON_MOB_DIE = function(me)
+    -- on_mob_die = function(me)
     -- end,
 
-    ON_MOB_KILL = function(me, mobs)
+    on_mob_kill = function(me, mobs)
         if me == nil or mobs == nil or #mobs == 0 then
             return
         end
@@ -34,6 +34,6 @@ return {
         me:dialog(item, "휴.. 드디어 전략문서를 구했다.", { prev = false, next = true })
     end,
 
-    -- ON_MOB_SPELL_HIT = function(me, you, spell)
+    -- on_mob_spell_hit = function(me, you, spell)
     -- end
 }

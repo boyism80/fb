@@ -1,7 +1,7 @@
 -- npc: 유령화화
 
 return {
-    ON_CLICK = function(me, npc)
+    on_click = function(me, npc)
         ::NPC_380_0001::
         local btn = me:dialog(npc, "멀리 어렴풋한 무언가가 보인다.\n\n절벽에 가까이 서서 보면 멀리 소녀가 서있는 것 같다.", { prev = false, next = true })
         if btn == DIALOG_RESULT.QUIT then

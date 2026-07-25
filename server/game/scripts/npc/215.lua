@@ -21,7 +21,7 @@ local function seocheon_give_tier_reward(me, step)
 end
 
 return {
-    ON_CLICK = function(me, npc)
+    on_click = function(me, npc)
         local q = me:quest(quest.QUEST_GREATWALL)
 
         if q == nil then

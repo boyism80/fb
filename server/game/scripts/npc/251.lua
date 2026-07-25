@@ -1,7 +1,7 @@
 -- npc: 철수나한
 
 return {
-    ON_CLICK = function(me, npc)
+    on_click = function(me, npc)
         local has_spell = (me:spell("금강퇴") ~= nil)
 
         local function run_welcome_and_list()

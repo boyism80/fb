@@ -5,7 +5,7 @@ local enum = require('lib.enum')
 local ITEM_BONG_BOOK = '봉래산전설'
 
 return {
-    ON_CLICK = function(me, npc)
+    on_click = function(me, npc)
         local dq = me:quest(quest.QUEST_DETECTIVE)
         if dq and not dq:completed() then
             local ds = dq:step()

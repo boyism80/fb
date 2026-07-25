@@ -8,7 +8,7 @@ local REQUIRED_ITEMS = {
 }
 
 return {
-    ON_CLICK = function(me, npc)
+    on_click = function(me, npc)
         local q = me:quest(quest.QUEST_WOLF_CURSE)
         if q and q:completed() then
             me:dialog(npc, "증표는 이미 받았다. 의식이 준비되면 알려주겠지.", { prev = false, next = false })

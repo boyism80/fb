@@ -1,6 +1,6 @@
 -- npc: 부여무기장인
 
 return {
-    -- ON_CLICK = function(me, npc)
+    -- on_click = function(me, npc)
     -- end
 }

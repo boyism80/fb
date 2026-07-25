@@ -75,7 +75,7 @@ local function run_snow_helmet_info(me, npc)
 end
 
 return {
-    ON_CLICK = function(me, npc)
+    on_click = function(me, npc)
         local d = me:dialog(npc, "안녕하십니까? 당신은 눈꽃방어구에 대해 관심이 있으신 것 같군요. 자세한 설명을 들어보시겠습니까?", { prev = false, next = true })
         if d == DIALOG_RESULT.QUIT then
             return

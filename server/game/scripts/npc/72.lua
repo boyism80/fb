@@ -1,7 +1,7 @@
 -- npc: 폭12지입장
 
 return {
-    ON_CLICK = function(me, npc)
+    on_click = function(me, npc)
         local selected, button = me:list(npc, '안녕하세요. 어떻게 오셨나요?', {'PK12지입장', '신부여성입장'})
         if button == DIALOG_RESULT.QUIT then
             return

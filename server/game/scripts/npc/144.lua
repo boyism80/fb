@@ -231,7 +231,7 @@ local function run_shark_weapon_quest(me, npc)
 end
 
 return {
-    ON_CLICK = function(me, npc)
+    on_click = function(me, npc)
         local sel = me:list(npc, '안녕하세요? 어떻게 오셨나요?', { '별주부전', '상어장군의무기' }, { prev = false })
         if sel == nil then
             return

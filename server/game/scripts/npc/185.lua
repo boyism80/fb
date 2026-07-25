@@ -693,7 +693,7 @@ local function pyosin_sell_docs(me, npc)
 end
 
 return {
-    ON_CLICK = function(me, npc)
+    on_click = function(me, npc)
         if me:promotion() < 1 then
             me:dialog(npc, '표신궁의 역사란 참 미묘하지..', { prev = false, next = false })
             return

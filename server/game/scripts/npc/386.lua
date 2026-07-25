@@ -1,7 +1,7 @@
 -- npc: 금화상인
 
 return {
-    ON_CLICK = function(me, npc)
+    on_click = function(me, npc)
         local button = me:dialog(npc, "안녕하세요? 금화를 특별한 아이템으로 교환해 드리는 금화교환 도우미라고 해요.", { prev = false, next = true })
         if button == DIALOG_RESULT.QUIT then
             return

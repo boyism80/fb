@@ -7,7 +7,7 @@ local spell = require('lib.spell')
 -- 누리의힘 버프 해제 효과
 
 return {
-    ON_CAST = function(me, sp)
+    on_cast = function(me, sp)
         local mp = 30
         local sound = 21
         local effect = 11
@@ -17,14 +17,14 @@ return {
         end
     end,
 
-    ON_BUFF = function(me, sp)
+    on_buff = function(me, sp)
         me:buff_str(me:buff_str()+3)
     end,
 
-    ON_UNBUFF = function(me, sp)
+    on_unbuff = function(me, sp)
         me:buff_str(me:buff_str()-3)
     end,
 
-    -- ON_CONCAST = function(me, sp)
+    -- on_concast = function(me, sp)
     -- end
 }

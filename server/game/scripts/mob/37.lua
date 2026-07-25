@@ -5,13 +5,13 @@ local ACHIEVEMENT_RABBIT_CAPTURE = 20
 local ITEM_RABBIT_LIVER = '토끼의간'
 
 return {
-    -- ON_MOB_ATTACK = function(me, you)
+    -- on_mob_attack = function(me, you)
     -- end,
 
-    -- ON_MOB_DIE = function(me)
+    -- on_mob_die = function(me)
     -- end,
 
-    ON_MOB_KILL = function(me, mobs)
+    on_mob_kill = function(me, mobs)
         if me == nil or mobs == nil or #mobs == 0 then
             return
         end
@@ -58,6 +58,6 @@ return {
         me:dialog(mob, '으으윽..', { prev = false, next = false })
     end,
 
-    -- ON_MOB_SPELL_HIT = function(me, you, spell)
+    -- on_mob_spell_hit = function(me, you, spell)
     -- end
 }

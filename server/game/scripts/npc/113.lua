@@ -3,7 +3,7 @@ local quest = require('lib.quest')
 local enum = require('lib.enum')
 
 return {
-    ON_CLICK = function(me, npc)
+    on_click = function(me, npc)
         local dq = me:quest(quest.QUEST_DETECTIVE)
         if dq and not dq:completed() and dq:step() == 12 then
             local sel, list_btn = me:list(npc, "수사관이 왔는가? 올바른 기운이 느껴지는도다.", {

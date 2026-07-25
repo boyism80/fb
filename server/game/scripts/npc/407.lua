@@ -3,7 +3,7 @@ local enum = require('lib.enum')
 local POTION_PREFIXES = { "적", "황", "청", "녹" }
 
 return {
-    ON_CLICK = function(me, npc)
+    on_click = function(me, npc)
         local button = me:dialog(npc, "비약? 누구에게 들었는지 모르지만.. 우리 흉노족의 장로에게는 비약을 만드는 법이 대대로 전해지고 있지.", { prev = false, next = true })
         if button == DIALOG_RESULT.QUIT then
             return

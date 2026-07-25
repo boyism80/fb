@@ -2,16 +2,16 @@
 -- 세계후 캐스팅
 
 return {
-    ON_CAST = function(me, spell, message)
+    on_cast = function(me, spell, message)
         broadcast(string.format('[%s]: %s', me:name(), message), MESSAGE_TYPE.WORLD, BROADCAST_TYPE.GLOBAL)
     end,
 
-    -- ON_BUFF = function(me, sp)
+    -- on_buff = function(me, sp)
     -- end,
 
-    -- ON_UNBUFF = function(me, sp)
+    -- on_unbuff = function(me, sp)
     -- end,
 
-    -- ON_CONCAST = function(me, sp)
+    -- on_concast = function(me, sp)
     -- end
 }

@@ -3,7 +3,7 @@
 local quest = require('lib.quest')
 
 return {
-    ON_ACTIVATED = function(me, item)
+    on_activated = function(me, item)
         local q = me:quest(quest.QUEST_NAKRANG2)
         if q and not q:completed() and q:step() == 1 and q:progress() < 2 then
             q:progress(q:progress() + 1)
@@ -11,12 +11,12 @@ return {
         me:hp(math.min(me:hp() + 8, me:maxhp()))
     end,
 
-    -- ON_DEACTIVATED = function(me, item)
+    -- on_deactivated = function(me, item)
     -- end,
 
-    -- ON_CONCAST = function(me, item)
+    -- on_concast = function(me, item)
     -- end,
 
-    -- ON_ATTACK = function(me, item)
+    -- on_attack = function(me, item)
     -- end
 }

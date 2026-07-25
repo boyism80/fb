@@ -7,7 +7,7 @@ local spell = require('lib.spell')
 -- 자동무장 버프 해제 효과
 
 return {
-    ON_CAST = function(me, sp)
+    on_cast = function(me, sp)
         if me:isbuff(table.unpack(spell.relative_buff_name(sp:name()))) then
             return false
         end
@@ -17,14 +17,14 @@ return {
         me:buff(sp, 180, me)
     end,
 
-    ON_BUFF = function(me, sp)
+    on_buff = function(me, sp)
         me:buff_phydef(me:buff_phydef() -10)
     end,
 
-    ON_UNBUFF = function(me, sp)
+    on_unbuff = function(me, sp)
         me:buff_phydef(me:buff_phydef() + 10)
     end,
 
-    -- ON_CONCAST = function(me, sp)
+    -- on_concast = function(me, sp)
     -- end
 }

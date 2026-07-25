@@ -2,7 +2,7 @@
 local quest = require('lib.quest')
 
 return {
-    ON_CLICK = function(me, npc)
+    on_click = function(me, npc)
         local button = me:dialog(npc, "안녕하세요? 저는 백수인입니다.", { prev = false, next = true })
         if button == DIALOG_RESULT.QUIT then
             return

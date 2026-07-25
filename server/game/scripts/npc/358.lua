@@ -1,7 +1,7 @@
 -- npc: 백남신
 
 return {
-    ON_CLICK = function(me, npc)
+    on_click = function(me, npc)
         local d = me:dialog(npc, "안녕하세요? 저는 백남신입니다.", { prev = false, next = true })
         if d == DIALOG_RESULT.QUIT then
             return

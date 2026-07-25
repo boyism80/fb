@@ -2,7 +2,7 @@
 local quest = require('lib.quest')
 
 return {
-    ON_CLICK = function(me, npc)
+    on_click = function(me, npc)
         local main_q = me:quest(quest.QUEST_SKULL_NECKLACE)
         if main_q == nil or main_q:step() ~= 10 then
             me:dialog(npc, "준비중입니다.", { prev = false, next = false })

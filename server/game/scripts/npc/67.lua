@@ -1,6 +1,6 @@
 -- npc: 고구려경비대장
 
 return {
-    -- ON_CLICK = function(me, npc)
+    -- on_click = function(me, npc)
     -- end
 }

@@ -1,7 +1,7 @@
 -- npc: 물망동도우미
 
 return {
-    ON_CLICK = function(me, npc)
+    on_click = function(me, npc)
         ::NPC_48_0001::
         local button = me:dialog(npc, '여기는 물망동입니다. 80 레벨부터 99 레벨까지 사냥하기에 좋습니다.', { prev = false, next = true })
         if button == DIALOG_RESULT.QUIT then

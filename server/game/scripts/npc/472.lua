@@ -23,7 +23,7 @@ local function do_sub3_give_medicine(me, npc)
 end
 
 return {
-    ON_CLICK = function(me, npc)
+    on_click = function(me, npc)
         local q3 = me:quest(quest.QUEST_SKULL_NECKLACE_3)
 
         if q3 and q3:step() == 1 then

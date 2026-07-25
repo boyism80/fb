@@ -1,7 +1,7 @@
 -- npc: 길림동굴보초
 
 return {
-    ON_CLICK = function(me, npc)
+    on_click = function(me, npc)
         if me:dialog(npc, '멈춰라!\n이곳은 이제 아무나 들이지 말라는 어명이 있었네.\n어떤 몰상식한 자가 이곳에서 한몫 잡아 보려고 다른 사람들에게 피해를 줬다는데, 요즘 사람들은 왜 이렇게 자기 생각만 하는지 모르겠네.. 에휴~\n그나저나 무엇을 하려던 참인가?', { prev = false, next = true }) == DIALOG_RESULT.QUIT then
             return
         end

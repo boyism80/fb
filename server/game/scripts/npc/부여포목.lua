@@ -40,7 +40,7 @@ local function craft_amber_crystal(me, ch, exchange_list)
 end
 
 return {
-    ON_CLICK = function(me, npc_obj)
+    on_click = function(me, npc_obj)
         npc.shop(me, npc_obj, {
             greeting = '안녕하세요. 어떻게 오셨나요?',
             menu = {

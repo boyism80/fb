@@ -3,7 +3,7 @@
 local spell = require('lib.spell')
 
 return {
-    ON_ACTIVATED = function(me, item)
+    on_activated = function(me, item)
         local m = me:marriage()
         if not m.married then
             return me:message('결혼하지 않아 사용할 수 없습니다.')
@@ -26,12 +26,12 @@ return {
         me:direction(direction)
     end,
 
-    -- ON_DEACTIVATED = function(me, item)
+    -- on_deactivated = function(me, item)
     -- end,
 
-    -- ON_CONCAST = function(me, item)
+    -- on_concast = function(me, item)
     -- end,
 
-    -- ON_ATTACK = function(me, item)
+    -- on_attack = function(me, item)
     -- end
 }

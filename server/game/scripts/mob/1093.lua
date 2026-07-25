@@ -2,13 +2,13 @@
 local quest = require('lib.quest')
 
 return {
-    -- ON_MOB_ATTACK = function(me, you)
+    -- on_mob_attack = function(me, you)
     -- end,
 
-    -- ON_MOB_DIE = function(me)
+    -- on_mob_die = function(me)
     -- end,
 
-    ON_MOB_KILL = function(me, mobs)
+    on_mob_kill = function(me, mobs)
         if me == nil or mobs == nil or #mobs == 0 then
             return
         end
@@ -56,6 +56,6 @@ return {
         me:push_achievement(19, "해파리장군을 생포하였다.", 7, 1)
     end,
 
-    -- ON_MOB_SPELL_HIT = function(me, you, spell)
+    -- on_mob_spell_hit = function(me, you, spell)
     -- end
 }

@@ -2,7 +2,7 @@
 local quest = require('lib.quest')
 
 return {
-    ON_MOB_ATTACK = function(me, you)
+    on_mob_attack = function(me, you)
         math.randomseed(seed())
         if math.random() > 0.01 then
             return
@@ -41,10 +41,10 @@ return {
         sleep(1000);
     end,
 
-    -- ON_MOB_DIE = function(me)
+    -- on_mob_die = function(me)
     -- end,
 
-    ON_MOB_KILL = function(me, mobs)
+    on_mob_kill = function(me, mobs)
         if me == nil or mobs == nil or #mobs == 0 then
             return
         end
@@ -116,6 +116,6 @@ return {
         me:dialog(mob, "아. 나의 꿈이....나의 야망이................", { prev = false, next = true })
     end,
 
-    -- ON_MOB_SPELL_HIT = function(me, you, spell)
+    -- on_mob_spell_hit = function(me, you, spell)
     -- end
 }

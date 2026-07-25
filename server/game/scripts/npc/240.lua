@@ -3,7 +3,7 @@ local quest = require('lib.quest')
 local enum = require('lib.enum')
 
 return {
-    ON_CLICK = function(me, npc)
+    on_click = function(me, npc)
         local quest_mother = me:quest(quest.QUEST_SICK_CHILD)
         local q = me:quest(quest.QUEST_SAMJEONSIN)
 

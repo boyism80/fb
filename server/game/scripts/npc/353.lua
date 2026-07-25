@@ -151,7 +151,7 @@ local function run_hand_in(me, npc)
 end
 
 return {
-    ON_CLICK = function(me, npc)
+    on_click = function(me, npc)
         ::NPC_353_0001::
         local btn = me:dialog(npc, "안녕하세요? 저는 백몽연입니다.", { prev = false, next = true })
         if btn == DIALOG_RESULT.QUIT then

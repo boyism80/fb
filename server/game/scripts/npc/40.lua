@@ -1,7 +1,7 @@
 -- npc: 인형굴도우미
 
 return {
-    ON_CLICK = function(me, npc)
+    on_click = function(me, npc)
         ::NPC_40_0001::
         local button = me:dialog(npc, '여기는 인형굴입니다. 60 레벨부터 80 레벨까지 사냥하기에 좋습니다.', { prev = false, next = true })
         if button == DIALOG_RESULT.QUIT then

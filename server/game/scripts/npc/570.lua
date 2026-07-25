@@ -4,7 +4,7 @@ local MATERIAL = "크리스탈"
 local RING_NAMES = { "크리스탈반지1", "크리스탈반지2", "크리스탈반지3", "크리스탈반지4", "크리스탈반지5" }
 
 return {
-    ON_CLICK = function(me, npc)
+    on_click = function(me, npc)
         if not me:has_items(MATERIAL, 1) then
             me:dialog(npc, "나는 " .. MATERIAL .. "으로 세공을 한다네...", { prev = false, next = false })
             return

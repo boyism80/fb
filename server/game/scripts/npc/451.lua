@@ -3,7 +3,7 @@ local quest = require('lib.quest')
 local enum = require('lib.enum')
 
 return {
-    ON_CLICK = function(me, npc)
+    on_click = function(me, npc)
         local CLASS_TO_WEAPON = {
             [CLASS.WARRIOR] = "진월신검",
             [CLASS.ROGUE]   = "청월기창",

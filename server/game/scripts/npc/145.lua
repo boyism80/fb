@@ -6,7 +6,7 @@ local ITEM_GOOSE_EGG = '기러기알'
 local MONEY_PER_EGG = 200
 
 return {
-    ON_CLICK = function(me, npc)
+    on_click = function(me, npc)
         local q = me:quest(quest.QUEST_GOOSE_EGG)
 
         if q == nil or q:step() < 1 then

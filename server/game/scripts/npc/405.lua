@@ -1,7 +1,7 @@
 -- npc: 만리장성잡화상12
 
 return {
-    ON_CLICK = function(me, npc)
+    on_click = function(me, npc)
         local messages = {
             "암흑왕인가 하는 굉장히 무서운 괴물이 어디에 살고 있다던데.. 어떻게 생긴걸까?",
             "선비족 두령은 정말 선비같이 생겼어. 그래서 선비족인걸까?",

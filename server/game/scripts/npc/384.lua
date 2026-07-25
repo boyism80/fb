@@ -3,7 +3,7 @@ local BAEKYEOL_PRICE = 100000
 local SEONPUNG_PRICE = 200000
 
 return {
-    ON_CLICK = function(me, npc)
+    on_click = function(me, npc)
         ::NPC_384_0001::
         local btn = me:dialog(npc, "뭐라고오옷?! 이미 배웠던 선풍각과 백열장 사용 방법을 잊어버렸다고?!", { prev = false, next = true })
         if btn == DIALOG_RESULT.QUIT then

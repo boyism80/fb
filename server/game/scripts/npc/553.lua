@@ -36,7 +36,7 @@ local function set_cooldown(me)
 end
 
 return {
-    ON_CLICK = function(me, npc)
+    on_click = function(me, npc)
         local sel, btn = me:list(npc, "안녕하신가. 오늘은 슬픈 날이로군.", { "오늘은...", "국화 한 송이를..." }, { prev = false })
         if btn == DIALOG_RESULT.QUIT then
             return

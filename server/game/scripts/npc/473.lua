@@ -1,7 +1,7 @@
 -- npc: 봉쇄장군
 
 return {
-    ON_CLICK = function(me, npc)
+    on_click = function(me, npc)
         ::NPC_473_0001::
         local button = me:dialog(npc, "자네도 우리를 도와주러온 사람인가? 그렇다면 반갑군. 자, 내 말을 잘 듣게.", { prev = false, next = true })
         if button == DIALOG_RESULT.QUIT then

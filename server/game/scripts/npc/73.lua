@@ -1,7 +1,7 @@
 -- npc: 방송
 
 return {
-    ON_CLICK = function(me, npc)
+    on_click = function(me, npc)
         me:dialog(npc, "전 서버에 방송을 하시려구요?", { prev = false, next = true })
         if button == DIALOG_RESULT.QUIT then
             return;

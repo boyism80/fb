@@ -3,7 +3,7 @@
 local spell = require('lib.spell')
 
 return {
-    ON_CAST = function(me, sp)
+    on_cast = function(me, sp)
         local damage = math.floor(me:hp()*0.75 + me:mp()*1.5)
         local hp = nil
         local mp = math.max(30, me:mp() // 2)
@@ -17,12 +17,12 @@ return {
         me:hp(me:hp() // 2)
     end,
 
-    -- ON_BUFF = function(me, sp)
+    -- on_buff = function(me, sp)
     -- end,
 
-    -- ON_UNBUFF = function(me, sp)
+    -- on_unbuff = function(me, sp)
     -- end,
 
-    -- ON_CONCAST = function(me, sp)
+    -- on_concast = function(me, sp)
     -- end
 }

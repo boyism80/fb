@@ -7,7 +7,7 @@ local VOUCHER_NAME = '물병보관증'
 local BOTTLE_NAME = '물병'
 
 return {
-    ON_CLICK = function(me, npc)
+    on_click = function(me, npc)
         local q = me:quest(quest.QUEST_WATER_BOTTLE)
 
         if q == nil then

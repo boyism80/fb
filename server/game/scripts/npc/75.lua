@@ -985,7 +985,7 @@ local function run_cidequest_yongwang(me, npc)
 end
 
 return {
-    ON_CLICK = function(me, npc)
+    on_click = function(me, npc)
         local q = me:quest(quest.QUEST_DRAGON_KING)
         if q == nil then
             run_puffer_general_accept(me, npc)

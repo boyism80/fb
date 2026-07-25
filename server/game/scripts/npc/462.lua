@@ -8,7 +8,7 @@ local WARP_OPTIONS = {
 }
 
 return {
-    ON_CLICK = function(me, npc)
+    on_click = function(me, npc)
     ::NPC_462_0000::
         local button = me:dialog(npc, "황제께서 흉노를 토벌하기 위해 그대들을 파견했건만, 여전히 모든 흉노를 토벌하기에는 역부족이었다네.", { prev = false, next = true })
         if button == DIALOG_RESULT.QUIT then

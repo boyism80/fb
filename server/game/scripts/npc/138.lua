@@ -16,7 +16,7 @@ local CLOTH_CLASS = { '전사', '도적', '주술사', '도사', '전사', '도�
 local CLOTH_GENDER = { '남자', '남자', '남자', '남자', '여자', '여자', '여자', '여자' }
 
 return {
-    ON_CLICK = function(me, npc)
+    on_click = function(me, npc)
         local q = me:quest(quest.QUEST_MOUNTAIN_GOD)
 
         if q ~= nil and q:completed() then

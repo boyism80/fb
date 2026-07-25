@@ -3,7 +3,7 @@
 local spell = require('lib.spell')
 
 return {
-    ON_CAST = function(me, sp, name)
+    on_cast = function(me, sp, name)
         if me:name() == name then
             return me:message('나 자신을 출두할 수 없습니다.')
         end
@@ -29,20 +29,20 @@ return {
             local direction = me:direction()
             local new_x, new_y, direction = spell.TELEPORT_LOOKUP(me, map, x, y, direction)
             me:map(map, new_x, new_y)
-            me:script('scripts/spell/3.lua', 'ON_CAST_BULK', sp:name(), map:model():name(), {new_x, new_y}, direction, sound, effect)
+            me:script('scripts/spell/3.lua', 'on_cast_bulk', sp:name(), map:model():name(), {new_x, new_y}, direction, sound, effect)
         end
     end,
 
-    -- ON_BUFF = function(me, sp)
+    -- on_buff = function(me, sp)
     -- end,
 
-    -- ON_UNBUFF = function(me, sp)
+    -- on_unbuff = function(me, sp)
     -- end,
 
-    -- ON_CONCAST = function(me, sp)
+    -- on_concast = function(me, sp)
     -- end,
 
-    ON_CAST_BULK = function(me, sp, map, position, direction, sound, effect)
+    on_cast_bulk = function(me, sp, map, position, direction, sound, effect)
         me:direction(direction)
         me:sound(sound)
         me:effect(effect)

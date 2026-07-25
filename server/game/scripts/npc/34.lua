@@ -1,7 +1,7 @@
 -- npc: 초보사냥터도우미
 
 return {
-    ON_CLICK = function(me, npc)
+    on_click = function(me, npc)
         ::NPC_34_0001::
         local button = me:dialog(npc, '여기는 초보자사냥터입니다. 초보자에게 적합한 던전으로, 1 레벨부터 10 레벨까지 사냥하기에 좋습니다.', { prev = false, next = true })
         if button == DIALOG_RESULT.QUIT then

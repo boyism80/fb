@@ -3,7 +3,7 @@ local quest = require('lib.quest')
 local enum = require('lib.enum')
 
 return {
-    ON_CLICK = function(me, npc)
+    on_click = function(me, npc)
         local button = me:dialog(npc, "안녕하세요? 저는 오선릉입니다.", { prev = false, next = true })
         if button == DIALOG_RESULT.QUIT then
             return

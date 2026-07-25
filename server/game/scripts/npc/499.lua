@@ -1,7 +1,7 @@
 -- npc: 남북무한도우미
 
 return {
-    ON_CLICK = function(me, npc)
+    on_click = function(me, npc)
     ::NPC_499_MENU::
         local sel, list_btn = me:list(npc, "안녕하세요. 어떻게 오셨나요?", {
             "설명듣기",

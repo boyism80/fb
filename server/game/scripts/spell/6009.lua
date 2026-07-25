@@ -3,15 +3,15 @@
 -- 적심토 지속 효과
 
 return {
-    -- ON_CAST = function(me, you, sp)
+    -- on_cast = function(me, you, sp)
     -- end,
 
-    -- ON_BUFF = function(me, sp)
+    -- on_buff = function(me, sp)
     -- end,
 
-    -- ON_UNBUFF = function(me, sp)
+    -- on_unbuff = function(me, sp)
     -- end,
 
-    -- ON_CONCAST = function(me, sp)
+    -- on_concast = function(me, sp)
     -- end
 }

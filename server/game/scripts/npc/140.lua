@@ -184,7 +184,7 @@ local function run_amber_weapon_craft(me, npc, colors)
 end
 
 return {
-    ON_CLICK = function(me, npc)
+    on_click = function(me, npc)
         if not me:has_items('얼음', 1) then
             show_no_ice_dialog(me, npc)
             return

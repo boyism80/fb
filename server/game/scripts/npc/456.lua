@@ -62,7 +62,7 @@ local function run_hunt_event_user(me, npc)
 end
 
 return {
-    ON_CLICK = function(me, npc)
+    on_click = function(me, npc)
         local is_admin = (me:role() >= ROLE.ADMIN)
         if is_admin then
             run_hunt_event_admin(me, npc)

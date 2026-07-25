@@ -3,7 +3,7 @@
 local spell = require('lib.spell')
 
 return {
-    ON_CAST = function(me, you, sp)
+    on_cast = function(me, you, sp)
         local damage = math.floor(me:mp() * 1.5)
         local mp = me:mp()
         local sound = 73
@@ -11,12 +11,12 @@ return {
         spell.damage_near_target(me, you, sp, {damage=damage, mp=mp, sound=sound, effect=effect})
     end,
 
-    -- ON_BUFF = function(me, sp)
+    -- on_buff = function(me, sp)
     -- end,
 
-    -- ON_UNBUFF = function(me, sp)
+    -- on_unbuff = function(me, sp)
     -- end,
 
-    -- ON_CONCAST = function(me, sp)
+    -- on_concast = function(me, sp)
     -- end
 }

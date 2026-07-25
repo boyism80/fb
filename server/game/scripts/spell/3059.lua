@@ -7,7 +7,7 @@ local spell = require('lib.spell')
 -- 중독 지속 효과
 
 return {
-    ON_CAST = function(me, you, sp)
+    on_cast = function(me, you, sp)
         local mp = 30
         local sound = 68
         local effect = 14
@@ -17,13 +17,13 @@ return {
         end
     end,
 
-    -- ON_BUFF = function(me, sp)
+    -- on_buff = function(me, sp)
     -- end,
 
-    -- ON_UNBUFF = function(me, sp)
+    -- on_unbuff = function(me, sp)
     -- end,
 
-    ON_CONCAST = function(me, caster, buff)
+    on_concast = function(me, caster, buff)
         local damage = math.min((me:maxhp() * 5) // 100, 14994)
         if damage > me:hp() - 100 then
             damage = math.max(0, me:hp() - 100)
