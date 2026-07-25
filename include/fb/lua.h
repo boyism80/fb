@@ -306,12 +306,8 @@ public:
     context operator= (const context&) = delete;
 
 public:
-    template <class... Args>
-    bool load(std::string_view fmt, Args&&... args);
-    template <class... Args>
-    bool execute(std::string_view fmt, Args&&... args);
-    // Run a script for side effects only (no module table / no func lookup).
-    // Used by bot integration tests and similar non-game loaders.
+    template <class... Args> bool load(std::string_view fmt, Args&&... args);
+    template <class... Args> bool execute(std::string_view fmt, Args&&... args);
     template <class... Args> bool dofile(std::string_view fmt, Args&&... args);
     template <class... Args> bool func(std::string_view fmt, Args&&... args);
     context&                      pushstring(std::string_view value);
@@ -786,10 +782,7 @@ bool fb::lua::context::load(std::string_view fmt, Args&&... args)
 
     this->_script_path.clear();
 
-    auto* iroot =
-        this->owner != nullptr ? static_cast<fb::lua::root*>(this->owner) : dynamic_cast<fb::lua::root*>(this);
-    if (iroot == nullptr)
-        return false;
+    auto* root = this->owner != nullptr ? static_cast<fb::lua::root*>(this->owner) : static_cast<fb::lua::root*>(this);
 
 #if defined DEBUG || defined _DEBUG
     if (luaL_loadfile(*this, fname.c_str()) != LUA_OK)
@@ -806,7 +799,7 @@ bool fb::lua::context::load(std::string_view fmt, Args&&... args)
         return false;
     }
 
-    if (iroot->store_module(*this, fname) == false)
+    if (root->store_module(*this, fname) == false)
     {
         fb::lua::report_load_failed(fname);
         return false;
@@ -815,16 +808,16 @@ bool fb::lua::context::load(std::string_view fmt, Args&&... args)
     this->_script_path = fname;
     return true;
 #else
-    if (auto cached = iroot->_bytecodes.find(fname); cached != iroot->_bytecodes.end())
+    if (auto cached = root->_bytecodes.find(fname); cached != root->_bytecodes.end())
     {
-        if (cached->second.empty() || iroot->has_module(fname) == false)
+        if (cached->second.empty() || root->has_module(fname) == false)
             return false;
 
         this->_script_path = fname;
         return true;
     }
 
-    if (iroot->dump(fname) == false)
+    if (root->dump(fname) == false)
         return false;
 
     this->_script_path = fname;
@@ -841,10 +834,7 @@ bool fb::lua::context::execute(std::string_view fmt, Args&&... args)
 
     this->_script_path.clear();
 
-    auto* iroot =
-        this->owner != nullptr ? static_cast<fb::lua::root*>(this->owner) : dynamic_cast<fb::lua::root*>(this);
-    if (iroot == nullptr)
-        return false;
+    auto* root = this->owner != nullptr ? static_cast<fb::lua::root*>(this->owner) : static_cast<fb::lua::root*>(this);
 
 #if defined DEBUG || defined _DEBUG
     if (luaL_loadfile(*this, fname.c_str()) != LUA_OK)
@@ -859,17 +849,17 @@ bool fb::lua::context::execute(std::string_view fmt, Args&&... args)
         return false;
     }
 
-    if (iroot->store_module(*this, fname) == false)
+    if (root->store_module(*this, fname) == false)
         return false;
 
     this->_script_path = fname;
     return true;
 #else
-    if (iroot->dump(fname) == false)
+    if (root->dump(fname) == false)
         return false;
 
-    auto it = iroot->_bytecodes.find(fname);
-    if (it == iroot->_bytecodes.end() || it->second.empty())
+    auto it = root->_bytecodes.find(fname);
+    if (it == root->_bytecodes.end() || it->second.empty())
         return false;
 
     const auto& bytes = it->second;
@@ -885,7 +875,7 @@ bool fb::lua::context::execute(std::string_view fmt, Args&&... args)
         return false;
     }
 
-    if (iroot->store_module(*this, fname) == false)
+    if (root->store_module(*this, fname) == false)
         return false;
 
     this->_script_path = fname;
@@ -918,12 +908,9 @@ bool fb::lua::context::func(std::string_view fmt, Args&&... args)
     if (fname.empty() || this->_script_path.empty())
         return false;
 
-    auto* iroot =
-        this->owner != nullptr ? static_cast<fb::lua::root*>(this->owner) : dynamic_cast<fb::lua::root*>(this);
-    if (iroot == nullptr)
-        return false;
+    auto* root = this->owner != nullptr ? static_cast<fb::lua::root*>(this->owner) : static_cast<fb::lua::root*>(this);
 
-    if (iroot->push_module(*this, this->_script_path) == false)
+    if (root->push_module(*this, this->_script_path) == false)
         return false;
 
     lua_getfield(*this, -1, fname.c_str());
