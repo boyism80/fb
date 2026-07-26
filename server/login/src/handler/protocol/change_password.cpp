@@ -53,7 +53,7 @@ async::task<bool> change_password::handle(fb::socket<fb::login::session>&       
         auto   world = fb::config<uint32_t>("world");
         auto&& resp1 = co_await this->server.http.get<internal::response::GetUid>(
             "internal",
-            std::format("/{}/account/uid/{}", world, request.name));
+            std::format("/account/{}/uid/{}", world, request.name));
         co_await this->server.threads.switching(weak);
 
         if (resp1.success == false)
