@@ -1206,6 +1206,9 @@ bool character::move(DIRECTION direction, const fb::model::point16_t& before)
     }
     else
     {
+        // FAST_MOVE OFF: client waits for server 0x0B at walk phase 2.
+        if (this->option(OPTION::FAST_MOVE) == false)
+            this->listener.on_move_confirm(*this, before);
         return true;
     }
 }

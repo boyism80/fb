@@ -1,4 +1,4 @@
-﻿#ifndef __CHARACTER_H__
+#ifndef __CHARACTER_H__
 #define __CHARACTER_H__
 
 #include <fb/game/life.h>
@@ -425,6 +425,7 @@ public:
     virtual void                            on_update_id(character& ch) = 0;
     virtual void                            on_character_init(character& ch) = 0;
     virtual void                            on_update_position(character& ch) = 0;
+    virtual void                            on_move_confirm(character& ch, const fb::model::point16_t& before) = 0;
     virtual void                            on_screen_refresh(character& ch) = 0;
     virtual void                            on_level_up(character& me) = 0;
     virtual void                            on_update(character& me, UPDATE_STATE_LEVEL level = UPDATE_STATE_LEVEL::EXP_MONEY | UPDATE_STATE_LEVEL::CROWD_CONTROL) = 0;

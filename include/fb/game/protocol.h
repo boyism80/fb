@@ -84,6 +84,7 @@
 #include <fb/game/protocol/object/hide.h>
 #include <fb/game/protocol/object/chat.h>
 #include <fb/game/protocol/object/move.h>
+#include <fb/game/protocol/object/move_confirm.h>
 #include <fb/game/protocol/object/move_blocked.h>
 #include <fb/game/protocol/object/sound.h>
 #include <fb/game/protocol/object/effect.h>
