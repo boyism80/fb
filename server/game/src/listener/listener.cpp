@@ -1,5 +1,7 @@
 #include <fb/game/listener.h>
 #include <fb/game/server.h>
+#include <fb/stream.h>
+#include <unordered_set>
 
 using namespace fb::game;
 using table = fb::model::table;
@@ -48,19 +50,48 @@ void listener_impl::on_chat(object& me, std::string_view message, CHAT_TYPE chat
     if (me.is(OBJECT_TYPE::ITEM))
         return;
 
-    auto scp = scope::PIVOT;
-    switch (chat_type)
+    if (chat_type == CHAT_TYPE::SHOUT)
     {
-    case CHAT_TYPE::SHOUT:
-        scp = scope::MAP;
-        break;
+        auto map = me.map();
+        if (map == nullptr)
+            return;
 
-    default:
-        scp = scope::PIVOT;
-        break;
+        auto stream = fb::stream();
+        auto writer = fb::stream_writer<big_endian>(stream);
+        game_resp::chat(me, message, chat_type).serialize(writer);
+
+        auto sent = std::unordered_set<uint32_t>{};
+        me.send(stream, true);
+        sent.insert(me.oid());
+
+        for (auto& x : me.nears(OBJECT_TYPE::CHARACTER, true))
+        {
+            if (x->sight(me) == false)
+                continue;
+
+            if (me.hidden(*x))
+                continue;
+
+            x->send(stream, true);
+            sent.insert(x->oid());
+        }
+
+        map->objects.foreach (OBJECT_TYPE::CHARACTER, [&](object& obj) {
+            if (sent.contains(obj.oid()))
+                return true;
+
+            auto& ch = static_cast<character&>(obj);
+            if (ch.option(OPTION::ROAR) == false)
+                return true;
+
+            ch.send(stream, true);
+            return true;
+        });
     }
-
-    this->server.send(me, game_resp::chat(me, message, chat_type), scp);
+    else
+    {
+        this->server.send(me, game_resp::chat(me, message, chat_type), scope::PIVOT);
+    }
 }
 
 void listener_impl::on_direction(object& me)
