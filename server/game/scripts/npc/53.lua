@@ -36,11 +36,11 @@ return {
                     { ['money'] = TICKET_PRICE },
                     { ['item'] = { ['부여-일본쾌속승선권'] = 1 } }
                 )
-                if code == enum.EXCHANGE_RESULT.LACK_COST then
+                if code == enum.exchange_result.LACK_COST then
                     me:dialog(npc, '이 사람이! 돈이 없잖아 돈이!', { prev = false, next = true })
                     return
                 end
-                if code == enum.EXCHANGE_RESULT.LACK_CAPACITY then
+                if code == enum.exchange_result.LACK_CAPACITY then
                     me:dialog(npc, '소지품이 가득 차서 줄 수가 없네.', { prev = false, next = true })
                     return
                 end
@@ -82,11 +82,11 @@ return {
                         { ['money'] = TICKET_PRICE },
                         { ['item'] = { ['노란비서'] = 1, ['부여-일본쾌속승선권'] = 1 } }
                     )
-                    if code == enum.EXCHANGE_RESULT.LACK_COST then
+                    if code == enum.exchange_result.LACK_COST then
                         me:dialog(npc, '이 사람이! 돈이 없잖아 돈이!', { prev = false, next = true })
                         return
                     end
-                    if code == enum.EXCHANGE_RESULT.LACK_CAPACITY then
+                    if code == enum.exchange_result.LACK_CAPACITY then
                         me:dialog(npc, '소지품이 가득 차서 줄 수가 없네.', { prev = false, next = true })
                         return
                     end

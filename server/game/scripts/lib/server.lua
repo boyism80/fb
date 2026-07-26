@@ -1,6 +1,6 @@
 local M = {}
 
-M.RETURN_MAP_DATA = {
+M.return_map_data = {
     [NATION.GOGURYEO] = {
         maps = {29, 30, 31, 8016, 8017, 8018, 8043, 8044, 8045, 8070, 8071, 8072, 8097, 8098, 8099, 8124, 8125, 8126, 8151, 8152, 8153, 8178, 8179, 8180, 8205, 8206, 8207, 8232, 8233, 8234, 8259, 8260, 8261},
     },
@@ -10,7 +10,7 @@ M.RETURN_MAP_DATA = {
 }
 
 function M.warp_to_return_map(ch)
-    local data = M.RETURN_MAP_DATA[ch:nation()]
+    local data = M.return_map_data[ch:nation()]
     if data == nil then
         return nil
     end

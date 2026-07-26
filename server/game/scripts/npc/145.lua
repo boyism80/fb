@@ -69,10 +69,10 @@ return {
             { ['item'] = { [ITEM_GOOSE_EGG] = count } },
             { ['money'] = pay }
         )
-        if code == enum.EXCHANGE_RESULT.LACK_COST then
+        if code == enum.exchange_result.LACK_COST then
             me:dialog(npc, '기러기알 없습니다.', { prev = false, next = false })
             return
-        elseif code == enum.EXCHANGE_RESULT.LACK_CAPACITY then
+        elseif code == enum.exchange_result.LACK_CAPACITY then
             me:dialog(npc, '금전을 더이상 받을 수 없습니다.', { prev = false, next = false })
             return
         end

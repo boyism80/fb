@@ -425,10 +425,10 @@ local function run_mermaid_turnin(me, npc)
         { ['item'] = { [ITEM_MERMAID_DOC_TRANSLATED] = 1 } },
         { ['item'] = { [ITEM_MERMAID_STAFF] = 1 } }
     )
-    if code == enum.EXCHANGE_RESULT.LACK_COST then
+    if code == enum.exchange_result.LACK_COST then
         me:dialog(npc, "아이템을 제거할 수 없습니다.", { prev = false, next = false })
         return
-    elseif code == enum.EXCHANGE_RESULT.LACK_CAPACITY then
+    elseif code == enum.exchange_result.LACK_CAPACITY then
         me:dialog(npc, "소지품이 가득 차서 지팡이를 줄 수 없네.", { prev = false, next = false })
         return
     end
@@ -703,10 +703,10 @@ local function run_jellyfish_complete(me, npc)
         { ['item'] = { [ITEM_JELLYFISH_STRATEGY] = 1 } },
         { ['item'] = { [ITEM_DRAGON_KING_RING] = 1 } }
     )
-    if code == enum.EXCHANGE_RESULT.LACK_COST then
+    if code == enum.exchange_result.LACK_COST then
         me:dialog(npc, "아이템을 제거할 수 없습니다.", { prev = false, next = false })
         return
-    elseif code == enum.EXCHANGE_RESULT.LACK_CAPACITY then
+    elseif code == enum.exchange_result.LACK_CAPACITY then
         me:dialog(npc, "소지품이 가득 차서 용왕의반지를 줄 수 없네.", { prev = false, next = false })
         return
     end
@@ -958,10 +958,10 @@ local function run_cidequest_yongwang(me, npc)
             { ['item'] = { ["수정"] = 3, ["크리스탈"] = 3 } },
             { ['item'] = { [reward_item] = 1 } }
         )
-        if code == enum.EXCHANGE_RESULT.LACK_COST then
+        if code == enum.exchange_result.LACK_COST then
             me:dialog(npc, "수정과 크리스탈 각 세개씩이라네...", { prev = false, next = false })
             return
-        elseif code == enum.EXCHANGE_RESULT.LACK_CAPACITY then
+        elseif code == enum.exchange_result.LACK_CAPACITY then
             me:dialog(npc, "소지품이 가득 차서 받을 수 없네. 재료를 새로 모아오면 다시 만들어 주겠네.", { prev = false, next = false })
             return
         end

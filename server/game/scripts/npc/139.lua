@@ -103,11 +103,11 @@ return {
         local roll = math.random(1, 100)
         local reward = (roll <= rate) and { ['item'] = { [success_item] = 1 } } or nil
         local code = me:exchange(cost, reward)
-        if code == enum.EXCHANGE_RESULT.LACK_COST then
+        if code == enum.exchange_result.LACK_COST then
             me:dialog(npc, '자네는 아직 용무기를 각성시킬 준비가 완벽하지 못하군.', { prev = false, next = false })
             return
         end
-        if code == enum.EXCHANGE_RESULT.LACK_CAPACITY then
+        if code == enum.exchange_result.LACK_CAPACITY then
             me:dialog(npc, '소지품이 가득 차서 ' .. name_with(success_item, '을', '를') .. ' 받을 수 없군.', { prev = false, next = false })
             return
         end

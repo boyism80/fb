@@ -24,7 +24,7 @@ local function do_craft(me, ch, need_items, money_needed, product_name, rate_per
     end
 
     local code = me:exchange(cost, reward)
-    if code == enum.EXCHANGE_RESULT.LACK_COST then
+    if code == enum.exchange_result.LACK_COST then
         for item_name, need_count in pairs(need_items) do
             if not me:has_items(item_name, need_count) then
                 return me:dialog(ch, name_with(item_name, '이', '가') .. ' 부족합니다.', { prev = false, next = true })
@@ -32,7 +32,7 @@ local function do_craft(me, ch, need_items, money_needed, product_name, rate_per
         end
         return me:dialog(ch, '금전이 부족합니다.', { prev = false, next = true })
     end
-    if code == enum.EXCHANGE_RESULT.LACK_CAPACITY then
+    if code == enum.exchange_result.LACK_CAPACITY then
         return me:dialog(ch, '소지품이 가득 차서 줄 수 없습니다.', { prev = false, next = true })
     end
     if reward == nil then

@@ -110,11 +110,11 @@ return {
                 { ['item'] = REQUIRED_ITEMS },
                 { ['item'] = { ["지남침"] = 1 } }
             )
-            if code == enum.EXCHANGE_RESULT.LACK_COST then
+            if code == enum.exchange_result.LACK_COST then
                 me:dialog(npc, "재료가 부족합니다.", { prev = false, next = false })
                 return
             end
-            if code == enum.EXCHANGE_RESULT.LACK_CAPACITY then
+            if code == enum.exchange_result.LACK_CAPACITY then
                 me:dialog(npc, "소지품이 가득 차서 지남침을 드리지 못합니다. 재료는 돌려드리겠네.", { prev = false, next = false })
                 return
             end

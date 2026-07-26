@@ -84,10 +84,10 @@ return {
             { ['item'] = materials },
             { ['item'] = { ['인어반지'] = 1 } }
         )
-        if code == enum.EXCHANGE_RESULT.LACK_COST then
+        if code == enum.exchange_result.LACK_COST then
             me:dialog(npc, '아직 재료를 다 모으지 못하신 것 같군요.. 재료는 [게등껍질][게집게][문어다리][해마꼬리]랍니다.', { prev = false, next = true })
             return
-        elseif code == enum.EXCHANGE_RESULT.LACK_CAPACITY then
+        elseif code == enum.exchange_result.LACK_CAPACITY then
             me:dialog(npc, '소지품이 가득 차서 인어반지를 받을 수 없습니다.', { prev = false, next = true })
             return
         end

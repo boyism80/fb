@@ -45,7 +45,7 @@ return {
     			['desc'] = '다른 사람의 능력치를 훔쳐보는 기술로 시야에 보이는 모든 사람의 능력치를 훔쳐볼수있는 기술이라네.',
     			['material'] = { {['name'] = '금전', ['count'] = 150}, {['name'] = '도토리', ['count'] = 70}, {['name'] = '뱀고기', ['count'] = 30} }
     		},
-    		[spell.CREATURE_SPELL(me:creature(), 1)] = {
+    		[spell.creature_spell(me:creature(), 1)] = {
     			['level'] = 18,
     			['desc'] = '신수의 속성을 가진 원거리 마법으로써,멀리서도 적을 공격할 수 있는 기술이네.',
     			['material'] = { {['name'] = '금전', ['count'] = 200}, {['name'] = '도토리', ['count'] = 30} }
@@ -90,7 +90,7 @@ return {
     			['desc'] = '자신보다 낮은 레벨의 사람에게 순간적으로 이동하는 기술로써,',
     			['material'] = { {['name'] = '금전', ['count'] = 100}, {['name'] = '도토리', ['count'] = 100}, {['name'] = '호랑이고기', ['count'] = 10} }
     		},
-    		[spell.CREATURE_SPELL(me:creature(), 2)] = {
+    		[spell.creature_spell(me:creature(), 2)] = {
     			['level'] = 36,
     			['desc'] = '첫번째 신수마법의 다음 단계 기술로써,적에게 더욱 강력한 공격을 가할수 있는 마법이네.',
     			['material'] = { {['name'] = '금전', ['count'] = 500}, {['name'] = '도토리', ['count'] = 50}, {['name'] = '호랑이고기', ['count'] = 10} }
@@ -135,7 +135,7 @@ return {
     			['desc'] = '순간적으로 세 번 연속으로 공격하는 기술로써,',
     			['material'] = { {['name'] = '금전', ['count'] = 1000}, {['name'] = '도토리', ['count'] = 180}, {['name'] = '야월도', ['count'] = 1}, {['name'] = '자호의가죽', ['count'] = 20} }
     		},
-    		[spell.CREATURE_SPELL(me:creature(), 3)] = {
+    		[spell.creature_spell(me:creature(), 3)] = {
     			['level'] = 58,
     			['desc'] = '두번째 신수마법의 다음 단계 기술로써,적에게 더욱 강력한 공격을 가할수 있는 마법이네.',
     			['material'] = { {['name'] = '금전', ['count'] = 800}, {['name'] = '도토리', ['count'] = 130} }
@@ -145,7 +145,7 @@ return {
     			['desc'] = '마법력을 사용하여 앞쪽에 있는 물건을 재빠르게 집는 기술로써,',
     			['material'] = { {['name'] = '금전', ['count'] = 2000}, {['name'] = '도토리', ['count'] = 130}, {['name'] = '철검', ['count'] = 1} }
     		},
-    		[spell.CREATURE_SPELL(me:creature(), 4)] = {
+    		[spell.creature_spell(me:creature(), 4)] = {
     			['level'] = 75,
     			['desc'] = '세번째 신수마법의 다음 단계 기술로써,적에게 더욱 강력한 공격을 가할수 있는 마법이네.',
     			['material'] = { {['name'] = '금전', ['count'] = 4000}, {['name'] = '도토리', ['count'] = 180}, {['name'] = '철단도', ['count'] = 1}, {['name'] = '호박', ['count'] = 5} }

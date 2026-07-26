@@ -30,10 +30,10 @@ local function craft_amber_crystal(me, ch, exchange_list)
         { ['item'] = { [src.name] = src.count } },
         { ['item'] = { [dest.name] = dest.count } }
     )
-    if code == enum.EXCHANGE_RESULT.LACK_COST then
+    if code == enum.exchange_result.LACK_COST then
         return me:dialog(ch, name_with(src.name, '이', '가') .. ' 부족합니다.', { prev = false, next = true })
     end
-    if code == enum.EXCHANGE_RESULT.LACK_CAPACITY then
+    if code == enum.exchange_result.LACK_CAPACITY then
         return me:dialog(ch, '소지품이 가득 차서 ' .. name_with(dest.name, '을', '를') .. ' 받을 수 없어요.', { prev = false, next = true })
     end
     return me:dialog(ch, name_with(dest.name, '을', '를') .. ' 만들어드렸습니다.', { prev = false, next = true })

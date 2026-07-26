@@ -131,11 +131,11 @@ return {
                 { ['item'] = { ['마계천신의뼈'] = 1 } },
                 { ['item'] = { ['강철투구'] = 1 } }
             )
-            if code == enum.EXCHANGE_RESULT.LACK_COST then
+            if code == enum.exchange_result.LACK_COST then
                 me:dialog(npc, '마계천신의뼈를 가지고 있지 않으시군요.', { prev = false, next = true })
                 return
             end
-            if code == enum.EXCHANGE_RESULT.LACK_CAPACITY then
+            if code == enum.exchange_result.LACK_CAPACITY then
                 me:dialog(npc, '소지품이 가득 차서 강철투구를 받을 수 없습니다.', { prev = false, next = true })
                 return
             end

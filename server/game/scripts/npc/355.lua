@@ -73,11 +73,11 @@ return {
                 { ['item'] = { ["창포"] = 1 } },
                 reward
             )
-            if code == enum.EXCHANGE_RESULT.LACK_COST then
+            if code == enum.exchange_result.LACK_COST then
                 me:dialog(npc, "창포를 가지고 오세요.", { prev = false, next = false })
                 return
             end
-            if code == enum.EXCHANGE_RESULT.LACK_CAPACITY then
+            if code == enum.exchange_result.LACK_CAPACITY then
                 me:dialog(npc, "소지품이 가득 차서 받을 수 없어요. 자리 좀 비우고 다시 오세요.", { prev = false, next = false })
                 return
             end
@@ -121,14 +121,14 @@ return {
                 { ['item'] = { ["창포뿌리"] = 5 } },
                 { ['item'] = { ["비녀"] = 1 } }
             )
-            if code == enum.EXCHANGE_RESULT.LACK_COST then
+            if code == enum.exchange_result.LACK_COST then
                 btn = me:dialog(npc, "창포뿌리 다섯개를 가져오시면 비녀를 만들어 드릴게요.", { prev = false, next = true })
                 if btn == DIALOG_RESULT.QUIT then
                     return
                 end
                 return
             end
-            if code == enum.EXCHANGE_RESULT.LACK_CAPACITY then
+            if code == enum.exchange_result.LACK_CAPACITY then
                 me:dialog(npc, "소지품이 가득 차서 비녀를 받을 수 없어요. 자리 좀 비우고 다시 오세요.", { prev = false, next = false })
                 return
             end

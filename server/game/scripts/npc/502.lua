@@ -38,11 +38,11 @@ return {
                     { ['item'] = { ["떡국"] = 1 } },
                     { ['item'] = { [armor] = 1 } }
                 )
-                if code == enum.EXCHANGE_RESULT.LACK_COST then
+                if code == enum.exchange_result.LACK_COST then
                     me:dialog(npc, " 이번해는 정말 바빠서 떡국 한 그릇도 먹지 못하고 있네요. 이거 참...", { prev = false, next = false })
                     return
                 end
-                if code == enum.EXCHANGE_RESULT.LACK_CAPACITY then
+                if code == enum.exchange_result.LACK_CAPACITY then
                     me:dialog(npc, "설빔을 지급할 수 없습니다.", { prev = false, next = false })
                     return
                 end

@@ -132,11 +132,11 @@ return {
                 { ['item'] = materials },
                 { ['item'] = { ['천성현의증표'] = 1 } }
             )
-            if code == enum.EXCHANGE_RESULT.LACK_COST then
+            if code == enum.exchange_result.LACK_COST then
                 me:dialog(npc, '암흑왕의봉인을 찾지 못하셨군요.', { prev = false, next = true })
                 return
             end
-            if code == enum.EXCHANGE_RESULT.LACK_CAPACITY then
+            if code == enum.exchange_result.LACK_CAPACITY then
                 me:dialog(npc, '소지품이 가득 차서 증표를 받을 수 없습니다.', { prev = false, next = true })
                 return
             end

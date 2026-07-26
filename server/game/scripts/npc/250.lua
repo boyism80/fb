@@ -28,11 +28,11 @@ local function run_clock_purchase(me, npc)
         { ['money'] = CLOCK_PRICE },
         { ['item'] = { [CLOCK_ITEM_NAME] = 1 } }
     )
-    if code == enum.EXCHANGE_RESULT.LACK_COST then
+    if code == enum.exchange_result.LACK_COST then
         me:dialog(npc, '아니.. 돈도 없이 내 시계를 살 순 없지.', { prev = false, next = false })
         return
     end
-    if code == enum.EXCHANGE_RESULT.LACK_CAPACITY then
+    if code == enum.exchange_result.LACK_CAPACITY then
         me:dialog(npc, '소지품이 가득 차서 시계를 줄 수 없네.', { prev = false, next = false })
         return
     end
@@ -64,11 +64,11 @@ local function run_battery_purchase(me, npc)
         { ['money'] = BATTERY_PRICE },
         { ['item'] = { [BATTERY_ITEM_NAME] = 1 } }
     )
-    if code == enum.EXCHANGE_RESULT.LACK_COST then
+    if code == enum.exchange_result.LACK_COST then
         me:dialog(npc, '돈이 부족하구만.. 나의 건전지는 하나당 5000전이라네.', { prev = false, next = false })
         return
     end
-    if code == enum.EXCHANGE_RESULT.LACK_CAPACITY then
+    if code == enum.exchange_result.LACK_CAPACITY then
         me:dialog(npc, '소지품이 가득 차서 건전지를 줄 수 없네.', { prev = false, next = false })
         return
     end

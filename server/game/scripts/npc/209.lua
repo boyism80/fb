@@ -90,7 +90,7 @@ return {
                 { ['item'] = { [item.name] = 1 } },
                 { ['exp'] = give_exp }
             )
-            if code == enum.EXCHANGE_RESULT.LACK_COST then
+            if code == enum.exchange_result.LACK_COST then
                 me:dialog(npc, name_with(item.name, '이', '가') .. ' 없는데요?', { prev = false, next = false })
                 return
             end

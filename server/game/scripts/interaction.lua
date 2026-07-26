@@ -5,7 +5,7 @@ local npc = require('lib.npc')
 local command = require('lib.command')
 
 -- Gatekeeper NPC name -> { totem name (e.g. "청룡"), totem_key (e.g. "dragon") } for "~참가" chat.
-local GATEKEEPER_BY_NAME = {
+local gatekeeper_by_name = {
     ["주작성문지기"] = { "주작", "bird" },
     ["청룡성문지기"] = { "청룡", "dragon" },
     ["현무성문지기"] = { "현무", "turtle" },
@@ -63,8 +63,8 @@ local function run_black_flag(me, npc_obj)
     if selected ~= 1 then
         return true
     end
-    local BLACK_FLAG_PRICE = 5000
-    if me:money() < BLACK_FLAG_PRICE then
+    local black_flag_price = 5000
+    if me:money() < black_flag_price then
         me:dialog(npc_obj, '돈이 모자랍니다.', { prev = false, next = true })
         return true
     end
@@ -72,7 +72,7 @@ local function run_black_flag(me, npc_obj)
         me:dialog(npc_obj, '공간이 부족합니다.', { prev = false, next = true })
         return true
     end
-    me:money(me:money() - BLACK_FLAG_PRICE)
+    me:money(me:money() - black_flag_price)
     me:dialog(npc_obj, '검정깃발을 받았습니다.', { prev = false, next = false })
     return true
 end
@@ -81,7 +81,7 @@ local npc_chat_handlers = {
     {
         priority = 10,
         anchors = { '산다', '줘', '주세요' },
-        pattern = lib.CHAT_REGEX.BUY,
+        pattern = lib.chat_regex.BUY,
         condition = function(npc_obj)
             return #npc_obj:model():sell() > 0
         end,
@@ -96,7 +96,7 @@ local npc_chat_handlers = {
     {
         priority = 20,
         anchors = { '판다', '팜', '팔게' },
-        pattern = lib.CHAT_REGEX.SELL,
+        pattern = lib.chat_regex.SELL,
         condition = function(npc_obj)
             return npc_obj:model():buy() ~= nil
         end,
@@ -115,7 +115,7 @@ local npc_chat_handlers = {
     {
         priority = 30,
         anchors = { '고쳐', '수리' },
-        pattern = lib.CHAT_REGEX.REPAIR,
+        pattern = lib.chat_regex.REPAIR,
         condition = function(npc_obj)
             local interaction = npc_obj:model():interaction()
             return (interaction & NPC_INTERACTION.REPAIR) == NPC_INTERACTION.REPAIR
@@ -133,7 +133,7 @@ local npc_chat_handlers = {
     {
         priority = 40,
         anchors = { '맡아' },
-        pattern = lib.CHAT_REGEX.DEPOSIT_MONEY,
+        pattern = lib.chat_regex.DEPOSIT_MONEY,
         condition = function(npc_obj)
             local interaction = npc_obj:model():interaction()
             return (interaction & NPC_INTERACTION.DEPOSIT_MONEY) == NPC_INTERACTION.DEPOSIT_MONEY
@@ -153,7 +153,7 @@ local npc_chat_handlers = {
     {
         priority = 50,
         anchors = { '돌려' },
-        pattern = lib.CHAT_REGEX.WITHDRAW_MONEY,
+        pattern = lib.chat_regex.WITHDRAW_MONEY,
         condition = function(npc_obj)
             local interaction = npc_obj:model():interaction()
             return (interaction & NPC_INTERACTION.DEPOSIT_MONEY) == NPC_INTERACTION.DEPOSIT_MONEY
@@ -173,7 +173,7 @@ local npc_chat_handlers = {
     {
         priority = 60,
         anchors = { '맡아' },
-        pattern = lib.CHAT_REGEX.STORE_ITEM,
+        pattern = lib.chat_regex.STORE_ITEM,
         condition = function(npc_obj)
             local interaction = npc_obj:model():interaction()
             return (interaction & NPC_INTERACTION.STORE_ITEM) == NPC_INTERACTION.STORE_ITEM
@@ -193,7 +193,7 @@ local npc_chat_handlers = {
     {
         priority = 70,
         anchors = { '돌려' },
-        pattern = lib.CHAT_REGEX.RETRIEVE_ITEM,
+        pattern = lib.chat_regex.RETRIEVE_ITEM,
         condition = function(npc_obj)
             local interaction = npc_obj:model():interaction()
             return (interaction & NPC_INTERACTION.STORE_ITEM) == NPC_INTERACTION.STORE_ITEM
@@ -213,7 +213,7 @@ local npc_chat_handlers = {
     {
         priority = 80,
         anchors = { '파니', '파냐', '팔고' },
-        pattern = lib.CHAT_REGEX.SELL_LIST,
+        pattern = lib.chat_regex.SELL_LIST,
         condition = function(npc_obj)
             return #npc_obj:model():sell() > 0
         end,
@@ -224,7 +224,7 @@ local npc_chat_handlers = {
     {
         priority = 90,
         anchors = { '사니', '사냐', '사고' },
-        pattern = lib.CHAT_REGEX.BUY_LIST,
+        pattern = lib.chat_regex.BUY_LIST,
         condition = function(npc_obj)
             return npc_obj:model():buy() ~= nil
         end,
@@ -235,7 +235,7 @@ local npc_chat_handlers = {
     {
         priority = 100,
         anchors = { '얼마' },
-        pattern = lib.CHAT_REGEX.SELL_PRICE,
+        pattern = lib.chat_regex.SELL_PRICE,
         condition = function(npc_obj)
             return #npc_obj:model():sell() > 0
         end,
@@ -246,7 +246,7 @@ local npc_chat_handlers = {
     {
         priority = 110,
         anchors = { '얼마에' },
-        pattern = lib.CHAT_REGEX.BUY_PRICE,
+        pattern = lib.chat_regex.BUY_PRICE,
         condition = function(npc_obj)
             return npc_obj:model():buy() ~= nil
         end,
@@ -257,7 +257,7 @@ local npc_chat_handlers = {
     {
         priority = 120,
         anchors = { '맡고' },
-        pattern = lib.CHAT_REGEX.DEPOSITED_MONEY,
+        pattern = lib.chat_regex.DEPOSITED_MONEY,
         condition = function(npc_obj)
             local interaction = npc_obj:model():interaction()
             return (interaction & NPC_INTERACTION.DEPOSIT_MONEY) == NPC_INTERACTION.DEPOSIT_MONEY
@@ -269,7 +269,7 @@ local npc_chat_handlers = {
     {
         priority = 130,
         anchors = { '명명', '이름을' },
-        pattern = lib.CHAT_REGEX.RENAME_WEAPON,
+        pattern = lib.chat_regex.RENAME_WEAPON,
         condition = function(npc_obj)
             local interaction = npc_obj:model():interaction()
             return (interaction & NPC_INTERACTION.RENAME) == NPC_INTERACTION.RENAME
@@ -281,7 +281,7 @@ local npc_chat_handlers = {
     {
         priority = 140,
         anchors = { '맡고' },
-        pattern = lib.CHAT_REGEX.HOLD_ITEM_LIST,
+        pattern = lib.chat_regex.HOLD_ITEM_LIST,
         condition = function(npc_obj)
             local interaction = npc_obj:model():interaction()
             return (interaction & NPC_INTERACTION.STORE_ITEM) == NPC_INTERACTION.STORE_ITEM
@@ -293,7 +293,7 @@ local npc_chat_handlers = {
     {
         priority = 150,
         anchors = { '맡고', '몇', '얼마나' },
-        pattern = lib.CHAT_REGEX.HOLD_ITEM_COUNT,
+        pattern = lib.chat_regex.HOLD_ITEM_COUNT,
         condition = function(npc_obj)
             local interaction = npc_obj:model():interaction()
             return (interaction & NPC_INTERACTION.STORE_ITEM) == NPC_INTERACTION.STORE_ITEM
@@ -305,7 +305,7 @@ local npc_chat_handlers = {
     {
         priority = 160,
         anchors = { '살려' },
-        pattern = lib.CHAT_REGEX.REVIVE,
+        pattern = lib.chat_regex.REVIVE,
         condition = function(npc_obj)
             local interaction = npc_obj:model():interaction()
             return (interaction & NPC_INTERACTION.REVIVE) == NPC_INTERACTION.REVIVE
@@ -331,11 +331,11 @@ local npc_chat_handlers = {
         anchors = { '참가' },
         literal = true,
         condition = function(npc_obj)
-            return GATEKEEPER_BY_NAME[npc_obj:model():name()] ~= nil
+            return gatekeeper_by_name[npc_obj:model():name()] ~= nil
         end,
         func = function(me, npc_obj, params)
             local name = npc_obj:model():name()
-            local info = GATEKEEPER_BY_NAME[name]
+            local info = gatekeeper_by_name[name]
             return run_gatekeeper_entrance(me, npc_obj, info[1], info[2])
         end,
     },
@@ -493,7 +493,7 @@ local function on_attack(me, additional_attack)
     local option = map:model():option()
     local pk = (option & MAP_OPTION.ENABLE_PK) == MAP_OPTION.ENABLE_PK
     local enemy_type = OBJECT_TYPE.LIFE
-    if not pk then
+    if not pk or (me:is(OBJECT_TYPE.CHARACTER) and me:option(OPTION.PK_PROTECT)) then
         enemy_type = OBJECT_TYPE.MOB
     end
 
@@ -633,6 +633,27 @@ local function on_attack(me, additional_attack)
     return count
 end
 
+local function on_npc_chat(me, message, shout)
+    local map = me:map()
+    if map == nil then
+        return false
+    end
+
+    local npcs = {}
+    if shout then
+        npcs = map:objects(OBJECT_TYPE.NPC)
+    else
+        local x, y = me:position()
+        npcs = map:nears({x, y}, OBJECT_TYPE.NPC)
+    end
+
+    if #npcs == 0 then
+        return false
+    end
+
+    return dispatch_npc_chat(me, npcs, message)
+end
+
 return {
     on_attack = on_attack,
 
@@ -737,26 +758,7 @@ return {
         return false
     end,
 
-    on_npc_chat = function(me, message, shout)
-            local map = me:map()
-            if map == nil then
-                return false
-            end
-
-            local npcs = {}
-            if shout then
-                npcs = map:objects(OBJECT_TYPE.NPC)
-            else
-                local x, y = me:position()
-                npcs = map:nears({x, y}, OBJECT_TYPE.NPC)
-            end
-
-            if #npcs == 0 then
-                return false
-            end
-
-            return dispatch_npc_chat(me, npcs, message)
-    end,
+    on_npc_chat = on_npc_chat,
 
     on_login = function(me, first_login)
         if first_login then

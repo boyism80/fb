@@ -136,11 +136,11 @@ return {
                 { ['money'] = 1000 },
                 { ['item'] = { [ITEM_BONG_BOOK] = 1 } }
             )
-            if code == enum.EXCHANGE_RESULT.LACK_COST then
+            if code == enum.exchange_result.LACK_COST then
                 me:dialog(npc, '돈이 부족하지 않나?', { prev = false, next = true })
                 return
             end
-            if code == enum.EXCHANGE_RESULT.LACK_CAPACITY then
+            if code == enum.exchange_result.LACK_CAPACITY then
                 me:dialog(npc, '소지품이 가득 차서 줄 수가 없네.', { prev = false, next = true })
                 return
             end

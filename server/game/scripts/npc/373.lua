@@ -22,11 +22,11 @@ return {
             { ['money'] = opt.cost },
             { ['item'] = { [opt.item] = 1 } }
         )
-        if code == enum.EXCHANGE_RESULT.LACK_COST then
+        if code == enum.exchange_result.LACK_COST then
             me:dialog(npc, "안타깝지만 자네 수중에 충분한 돈이 없구만. 돈을 가지고 다시 찾아오시오.", { prev = false, next = true })
             return
         end
-        if code == enum.EXCHANGE_RESULT.LACK_CAPACITY then
+        if code == enum.exchange_result.LACK_CAPACITY then
             me:dialog(npc, "소지품이 가득 차서 줄 수 없구만.", { prev = false, next = false })
             return
         end

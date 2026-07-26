@@ -79,11 +79,11 @@ return {
                 { ['item'] = REQUIRED_ITEMS },
                 { ['item'] = { [REWARD_400] = 1 } }
             )
-            if code == enum.EXCHANGE_RESULT.LACK_COST then
+            if code == enum.exchange_result.LACK_COST then
                 me:dialog(npc, '아직 발톱, 이빨, 뿔을 다 구하지 못한 모양이군..', { prev = false, next = false })
                 return
             end
-            if code == enum.EXCHANGE_RESULT.LACK_CAPACITY then
+            if code == enum.exchange_result.LACK_CAPACITY then
                 me:dialog(npc, '소지품이 가득 차서 ' .. name_with(REWARD_400, '을', '를') .. ' 받을 수 없습니다.', { prev = false, next = false })
                 return
             end

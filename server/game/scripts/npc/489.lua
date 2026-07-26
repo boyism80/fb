@@ -100,11 +100,11 @@ return {
                 { ['item'] = { ["꿀사탕"] = 1 } },
                 { ['item'] = { ["파마의피리"] = 1 } }
             )
-            if code == enum.EXCHANGE_RESULT.LACK_COST then
+            if code == enum.exchange_result.LACK_COST then
                 me:dialog(npc, "사탕을 가져오지 않으면 피리를 주지 않을테야!", { prev = false, next = false })
                 return
             end
-            if code == enum.EXCHANGE_RESULT.LACK_CAPACITY then
+            if code == enum.exchange_result.LACK_CAPACITY then
                 me:dialog(npc, "소지품이 가득 차서 줄 수 없네요.", { prev = false, next = false })
                 return
             end

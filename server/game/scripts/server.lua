@@ -50,15 +50,15 @@ return {
         end
     end,
 
-    ON_WARP_SKY_MAZE = function(me)
+    on_warp_sky_maze = function(me)
         return sky_maze.warp(me)
     end,
 
-    ON_WARP_PK_SKY_MAZE = function(me)
+    on_warp_pk_sky_maze = function(me)
         return sky_maze.warp_pk(me)
     end,
 
-    ON_MAP_GUILLIM_TEMPLE = function(me)
+    on_map_guillim_temple = function(me)
         local reward_by_offer = {
             ['산의옥'] = '고대마법서\'상',
             ['구름옥'] = '서문열쇠',
@@ -98,12 +98,12 @@ return {
                 { ['item'] = { [offer_name] = 1 } },
                 { ['item'] = { [reward_name] = 1 } }
             )
-            if code == enum.EXCHANGE_RESULT.LACK_COST then
+            if code == enum.exchange_result.LACK_COST then
                 me:dialog(nil, '지금 감히 난에게 거짓말을 하는 것이냐! 썩 물러가거라.', { prev = false, next = true })
                 me:map(name2map('길림성'), 0, 0)
                 return
             end
-            if code ~= enum.EXCHANGE_RESULT.OK then
+            if code ~= enum.exchange_result.OK then
                 return
             end
             if selected == 1 then

@@ -75,11 +75,11 @@ local function run_sesi_5(me, npc)
         { ['money'] = 100 },
         { ['item'] = { ["창포"] = 1 } }
     )
-    if code == enum.EXCHANGE_RESULT.LACK_COST then
+    if code == enum.exchange_result.LACK_COST then
         me:dialog(npc, "창포는 하나에 100원이에요.", { prev = false, next = true })
         return true
     end
-    if code == enum.EXCHANGE_RESULT.LACK_CAPACITY then
+    if code == enum.exchange_result.LACK_CAPACITY then
         me:dialog(npc, "소지품이 가득 차서 창포를 줄 수 없습니다.", { prev = false, next = false })
         return true
     end

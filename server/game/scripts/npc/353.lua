@@ -134,10 +134,10 @@ local function run_hand_in(me, npc)
             { ['item'] = { ["벌레쫓는부적"] = 2 } },
             { ['item'] = { ["중화절부적"] = 1, ["세시마을비서"] = 10 } }
         )
-        if code == enum.EXCHANGE_RESULT.LACK_COST then
+        if code == enum.exchange_result.LACK_COST then
             me:dialog(npc, "벌레쫓는부적은 저희 할아버지가 계신 촌장집에서 받아오시면 된답니다. 두 장을 받아와 주세요.", { prev = false, next = false })
             return
-        elseif code == enum.EXCHANGE_RESULT.LACK_CAPACITY then
+        elseif code == enum.exchange_result.LACK_CAPACITY then
             me:dialog(npc, "소지품이 가득 차서 보상을 드리지 못합니다.", { prev = false, next = false })
             return
         end

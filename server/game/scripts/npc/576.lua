@@ -27,11 +27,11 @@ return {
                 { ['item'] = { ["황금도토리"] = 1 } },
                 { ['item'] = { ["일반교환권"] = 1 } }
             )
-            if code == enum.EXCHANGE_RESULT.LACK_COST then
+            if code == enum.exchange_result.LACK_COST then
                 me:dialog(npc, "황금도토리가 없으시군요. 황금도토리를 가져오세요.", { prev = false, next = false })
                 return
             end
-            if code == enum.EXCHANGE_RESULT.LACK_CAPACITY then
+            if code == enum.exchange_result.LACK_CAPACITY then
                 me:dialog(npc, "소지품이 가득 차서 일반교환권을 받을 수 없어요.", { prev = false, next = false })
                 return
             end
@@ -44,11 +44,11 @@ return {
                 { ['item'] = { ["황금도토리"] = 6 } },
                 { ['item'] = { ["특별교환권"] = 1 } }
             )
-            if code == enum.EXCHANGE_RESULT.LACK_COST then
+            if code == enum.exchange_result.LACK_COST then
                 me:dialog(npc, "황금도토리가 없으시군요. 황금도토리를 가져오세요.", { prev = false, next = false })
                 return
             end
-            if code == enum.EXCHANGE_RESULT.LACK_CAPACITY then
+            if code == enum.exchange_result.LACK_CAPACITY then
                 me:dialog(npc, "소지품이 가득 차서 특별교환권을 받을 수 없어요.", { prev = false, next = false })
                 return
             end

@@ -52,11 +52,11 @@ return {
             { ['item'] = { ["신선의책"] = 1 } },
             { ['item'] = { ["도삭산의서"] = 1 } }
         )
-        if code == enum.EXCHANGE_RESULT.LACK_COST then
+        if code == enum.exchange_result.LACK_COST then
             me:dialog(npc, "신선의책이 없지 않은가.", { prev = false, next = false })
             return
         end
-        if code == enum.EXCHANGE_RESULT.LACK_CAPACITY then
+        if code == enum.exchange_result.LACK_CAPACITY then
             me:dialog(npc, "소지품이 가득 차서 줄 수 없네.", { prev = false, next = false })
             return
         end

@@ -70,11 +70,11 @@ return {
             reward = { ['item'] = { [BALLOON_NAME] = 1 } }
         end
         local code = me:exchange({ ['item'] = { [FLOWER_NAME] = 1 } }, reward)
-        if code == enum.EXCHANGE_RESULT.LACK_COST then
+        if code == enum.exchange_result.LACK_COST then
             me:dialog(npc, "고인에 대한 진심을 담아 꽃 한송이를 올리게나...", { prev = false, next = false })
             return
         end
-        if code == enum.EXCHANGE_RESULT.LACK_CAPACITY then
+        if code == enum.exchange_result.LACK_CAPACITY then
             me:dialog(npc, "소지품이 가득 차서 풍선을 받을 수 없네.", { prev = false, next = false })
             return
         end

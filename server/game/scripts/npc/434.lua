@@ -12,11 +12,11 @@ local function do_craft(me, npc)
         reward = { ['item'] = { [REWARD_NAME] = 1 } }
     end
     local code = me:exchange(cost, reward)
-    if code == enum.EXCHANGE_RESULT.LACK_COST then
+    if code == enum.exchange_result.LACK_COST then
         me:dialog(npc, "눈꽃얼음이 없으신데요?", { prev = false, next = false })
         return false
     end
-    if code == enum.EXCHANGE_RESULT.LACK_CAPACITY then
+    if code == enum.exchange_result.LACK_CAPACITY then
         me:dialog(npc, "소지품이 가득 차서 " .. name_with(REWARD_NAME, '을', '를') .. " 드리지 못합니다.", { prev = false, next = false })
         return true
     end

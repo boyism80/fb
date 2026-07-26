@@ -20,10 +20,10 @@ return {
                     { ['item'] = { ["훈제연어"] = 5 } },
                     { ['item'] = { ["당근케이크"] = 10 } }
                 )
-                if code == enum.EXCHANGE_RESULT.LACK_COST then
+                if code == enum.exchange_result.LACK_COST then
                     me:dialog(npc, "훈제연어를 잃어버린것같구웅! 분명 너는 임무에서 받은 훈제연어를 나한테 가져와야 했을텐데웅?", { prev = false, next = false })
                     return
-                elseif code == enum.EXCHANGE_RESULT.LACK_CAPACITY then
+                elseif code == enum.exchange_result.LACK_CAPACITY then
                     me:dialog(npc, "소지품이 가득 차서 당근케이크를 줄 수 없겠다웅!", { prev = false, next = false })
                     return
                 end

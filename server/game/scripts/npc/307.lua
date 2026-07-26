@@ -35,11 +35,11 @@ return {
                 { ['item'] = { ["작약주"] = 1 } },
                 { ['item'] = { ["방천화극"] = 1 } }
             )
-            if code == enum.EXCHANGE_RESULT.LACK_COST then
+            if code == enum.exchange_result.LACK_COST then
                 me:dialog(npc, "뭐야? 아무것도 없질 않은가!!", { prev = false, next = false })
                 return
             end
-            if code == enum.EXCHANGE_RESULT.LACK_CAPACITY then
+            if code == enum.exchange_result.LACK_CAPACITY then
                 me:dialog(npc, "소지품이 가득 차서 방천화극을 드리지 못합니다.", { prev = false, next = false })
                 return
             end
@@ -52,11 +52,11 @@ return {
                 { ['item'] = { ["신작약주"] = 1 } },
                 { ['item'] = { ["전사방천화극"] = 1 } }
             )
-            if code == enum.EXCHANGE_RESULT.LACK_COST then
+            if code == enum.exchange_result.LACK_COST then
                 me:dialog(npc, "뭐야? 아무것도 없질 않은가!!", { prev = false, next = false })
                 return
             end
-            if code == enum.EXCHANGE_RESULT.LACK_CAPACITY then
+            if code == enum.exchange_result.LACK_CAPACITY then
                 me:dialog(npc, "소지품이 가득 차서 전사방천화극을 드리지 못합니다.", { prev = false, next = false })
                 return
             end

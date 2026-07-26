@@ -91,7 +91,7 @@ local function run_rabbit_liver_quest(me, npc)
         { ['item'] = { [RABBIT_LIVER_ITEM] = 1 } },
         { ['item'] = { [REWARD_ITEM] = 1 } }
     )
-    if code == enum.EXCHANGE_RESULT.LACK_COST or code == enum.EXCHANGE_RESULT.LACK_CAPACITY then
+    if code == enum.exchange_result.LACK_COST or code == enum.exchange_result.LACK_CAPACITY then
         return
     end
     q:complete()
@@ -200,10 +200,10 @@ local function run_shark_weapon_quest(me, npc)
             reward = { ['item'] = { [SHARK_WEAPON_RESULT] = 1 } }
         end
         local code = me:exchange(cost, reward)
-        if code == enum.EXCHANGE_RESULT.LACK_COST then
+        if code == enum.exchange_result.LACK_COST then
             return
         end
-        if code == enum.EXCHANGE_RESULT.LACK_CAPACITY then
+        if code == enum.exchange_result.LACK_CAPACITY then
             me:dialog(npc, '소지품이 가득 차서 무기를 받을 수 없네.', { prev = false, next = false })
             return
         end

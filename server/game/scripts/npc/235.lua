@@ -44,11 +44,11 @@ local function bokgeon_sell_doll(me, npc)
             { ['item'] = { ['청자다람쥐인형'] = 1 } },
             { ['money'] = 100000 }
         )
-        if code == enum.EXCHANGE_RESULT.LACK_COST then
+        if code == enum.exchange_result.LACK_COST then
             me:dialog(npc, '청자다람쥐인형을 가져오세요.', { prev = false, next = true })
             return
         end
-        if code == enum.EXCHANGE_RESULT.LACK_CAPACITY then
+        if code == enum.exchange_result.LACK_CAPACITY then
             me:dialog(npc, '금전을 받을 여유가 없군요.', { prev = false, next = true })
             return
         end
@@ -137,11 +137,11 @@ local function bokgeon_find_toys(me, npc)
             { ['item'] = materials },
             { ['item'] = { ['팔과탕'] = 10 } }
         )
-        if code == enum.EXCHANGE_RESULT.LACK_COST then
+        if code == enum.exchange_result.LACK_COST then
             me:dialog(npc, '아직 재료를 다 모으지 못하셨군요.', { prev = false, next = true })
             return
         end
-        if code == enum.EXCHANGE_RESULT.LACK_CAPACITY then
+        if code == enum.exchange_result.LACK_CAPACITY then
             me:dialog(npc, '소지품이 가득 차서 팔과탕을 받을 수 없습니다.', { prev = false, next = true })
             return
         end

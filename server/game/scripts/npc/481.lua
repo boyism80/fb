@@ -22,14 +22,14 @@ return {
             reward = { ['item'] = { ["황매주"] = 1 } }
         end
         local code = me:exchange(cost, reward)
-        if code == enum.EXCHANGE_RESULT.LACK_COST then
+        if code == enum.exchange_result.LACK_COST then
             local btn = me:dialog(npc, "님 아이템복사 버그로 영정임", { prev = false, next = true })
             if btn == DIALOG_RESULT.QUIT then
                 return
             end
             return
         end
-        if code == enum.EXCHANGE_RESULT.LACK_CAPACITY then
+        if code == enum.exchange_result.LACK_CAPACITY then
             me:dialog(npc, "소지품이 가득 차서 황매주를 받을 수 없네.", { prev = false, next = true })
             return
         end

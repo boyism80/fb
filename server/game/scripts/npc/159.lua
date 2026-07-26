@@ -73,11 +73,11 @@ return {
                 { ['item'] = { ["금은보화"] = 1 } },
                 { ['money'] = 15000 }
             )
-            if code == enum.EXCHANGE_RESULT.LACK_COST then
+            if code == enum.exchange_result.LACK_COST then
                 me:dialog(npc, "금은보화를 가지고 있거든 말을 걸어주게나...", { prev = false, next = false })
                 return
             end
-            if code == enum.EXCHANGE_RESULT.LACK_CAPACITY then
+            if code == enum.exchange_result.LACK_CAPACITY then
                 me:dialog(npc, "금전을 받을 여유가 없군요.", { prev = false, next = false })
                 return
             end

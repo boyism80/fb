@@ -100,11 +100,11 @@ return {
                 { ['item'] = { ['숯의정화'] = 3 } },
                 { ['item'] = { ['정화의방패'] = 1 } }
             )
-            if code == enum.EXCHANGE_RESULT.LACK_COST then
+            if code == enum.exchange_result.LACK_COST then
                 me:dialog(npc, '물을 정화하기 위해 숯의정화 3조각만 구해주세요.', { prev = false, next = false })
                 return
             end
-            if code == enum.EXCHANGE_RESULT.LACK_CAPACITY then
+            if code == enum.exchange_result.LACK_CAPACITY then
                 me:dialog(npc, '소지품이 가득 차서 정화의방패를 받을 수 없습니다.', { prev = false, next = true })
                 return
             end

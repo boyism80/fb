@@ -91,11 +91,11 @@ return {
                     { ['item'] = { ["도토리"] = 50 } },
                     { ['item'] = { ["동동주"] = 1, ["막걸리"] = 1 } }
                 )
-                if code == enum.EXCHANGE_RESULT.OK then
+                if code == enum.exchange_result.OK then
                     me:dialog(npc, "동동주와 막걸리를 하나씩 드렸으니, 이제 잃어버리지 않도록 조심하세요.", { prev = false, next = false })
-                elseif code == enum.EXCHANGE_RESULT.LACK_COST then
+                elseif code == enum.exchange_result.LACK_COST then
                     me:dialog(npc, "도토리가 부족합니다.", { prev = false, next = false })
-                elseif code == enum.EXCHANGE_RESULT.LACK_CAPACITY then
+                elseif code == enum.exchange_result.LACK_CAPACITY then
                     me:dialog(npc, "소지품이 가득 차서 동동주와 막걸리를 줄 수 없습니다.", { prev = false, next = false })
                 end
                 return

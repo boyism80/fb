@@ -26,11 +26,11 @@ return {
                     { ['item'] = { ['청심사주'] = 1 } },
                     { ['item'] = { ["고대금속조각'음"] = 1 } }
                 )
-                if code == enum.EXCHANGE_RESULT.LACK_COST then
+                if code == enum.exchange_result.LACK_COST then
                     me:dialog(npc, '청심사주를 가지고 있지 않으시군요.', { prev = false, next = true })
                     return
                 end
-                if code == enum.EXCHANGE_RESULT.LACK_CAPACITY then
+                if code == enum.exchange_result.LACK_CAPACITY then
                     me:dialog(npc, '소지품이 가득 차서 ' .. name_with("고대금속조각'음", '을', '를') .. ' 줄 수 없네.', { prev = false, next = true })
                     return
                 end

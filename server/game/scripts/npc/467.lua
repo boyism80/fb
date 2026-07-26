@@ -112,11 +112,11 @@ local function do_sub5_turnin(me, npc)
         { ['item'] = { ["원숭이편지"] = 1 } },
         { ['item'] = { ["바나나다발"] = 1 } }
     )
-    if code == enum.EXCHANGE_RESULT.LACK_COST then
+    if code == enum.exchange_result.LACK_COST then
         me:dialog(npc, "아이템을 제거할 수 없습니다.", { prev = false, next = false })
         return true
     end
-    if code == enum.EXCHANGE_RESULT.LACK_CAPACITY then
+    if code == enum.exchange_result.LACK_CAPACITY then
         me:dialog(npc, "소지품이 가득 차서 바나나다발을 받을 수 없습니다.", { prev = false, next = false })
         return true
     end

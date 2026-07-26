@@ -27,7 +27,7 @@ return {
         if spell.cast(me, nil, nil, {mp=mp, default_action=false}) then
             local x, y = ch:position()
             local direction = me:direction()
-            local new_x, new_y, direction = spell.TELEPORT_LOOKUP(me, map, x, y, direction)
+            local new_x, new_y, direction = spell.teleport_lookup(me, map, x, y, direction)
             me:map(map, new_x, new_y)
             me:script('scripts/spell/3.lua', 'on_cast_bulk', sp:name(), map:model():name(), {new_x, new_y}, direction, sound, effect)
         end

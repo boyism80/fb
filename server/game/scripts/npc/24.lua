@@ -20,7 +20,7 @@ return {
     			['desc'] = '자신의 체력을 약간 회복하는 기술로써, 자신의 체력만 회복 가능하여 그다지 중요하지 않은 기술이네.',
     			['material'] = {{['name'] = '도토리', ['count'] = 10}, {['name'] = '토끼고기', ['count'] = 10}}
     		},
-    		[spell.CREATURE_SPELL(me:creature(), 1)] = {
+    		[spell.creature_spell(me:creature(), 1)] = {
     			['level'] = 6,
     			['desc'] = '신수 속성을 가진 원거리 마법으로써, 멀리서도 적을 공격할 수 있는 기술이네.',
     			['material'] = {{['name'] = '도토리', ['count'] = 10}, {['name'] = '토끼고기', ['count'] = 10}}
@@ -40,7 +40,7 @@ return {
     			['desc'] = '자신의 나라 주막으로 이동하는 마법이네.',
     			['material'] = {{['name'] = '금전', ['count'] = 50}, {['name'] = '도토리', ['count'] = 30}}
     		},
-    		[spell.CREATURE_AREA_SPELL(me:creature(), 1)] = {
+    		[spell.creature_area_spell(me:creature(), 1)] = {
     			['level'] = 14,
     			['desc'] = '자신의 전후좌우 방향으로 동시에 신수마법을 시전하는 마법으로 많은 적을 공격 할 수 있다네.',
     			['material'] = {{['name'] = '도토리', ['count'] = 50}}
@@ -50,7 +50,7 @@ return {
     			['desc'] = '자신의 체력을 100만큼 회복하는 기술로써, 기초적인 회복마법이라네.',
     			['material'] = {{['name'] = '금전', ['count'] = 70}, {['name'] = '도토리', ['count'] = 50}}
     		},
-    		[spell.CREATURE_SPELL(me:creature(), 2)] = {
+    		[spell.creature_spell(me:creature(), 2)] = {
     			['level'] = 16,
     			['desc'] = '첫번째 신수마법의 다음 단계 기술로써, 적에게 더욱 강력한 공격을 가할수 있는 마법이네.',
     			['material'] = {{['name'] = '금전', ['count'] = 50}, {['name'] = '도토리', ['count'] = 70}}
@@ -80,7 +80,7 @@ return {
     			['desc'] = '자신의 체력을 200만큼 회복시키는 마법이네.',
     			['material'] = {{['name'] = '금전', ['count'] = 50}, {['name'] = '도토리', ['count'] = 50}, {['name'] = '뱀고기', ['count'] = 10}}
     		},
-    		[spell.CREATURE_AREA_SPELL(me:creature(), 2)] = {
+    		[spell.creature_area_spell(me:creature(), 2)] = {
     			['level'] = 24,
     			['desc'] = '자신의 전후좌우 방향으로 동시에 한층 강해진 신수마법을 시전하는 마법으로 많은 적을 공격 할 수 있다네.',
     			['material'] = {{['name'] = '금전', ['count'] = 50}, {['name'] = '도토리', ['count'] = 30}, {['name'] = '곰가죽', ['count'] = 10}}
@@ -105,7 +105,7 @@ return {
     			['desc'] = '마비를 푸는 회복계열의 마법이네.',
     			['material'] = {{['name'] = '금전', ['count'] = 100}, {['name'] = '도토리', ['count'] = 60}}
     		},
-    		[spell.CREATURE_SPELL(me:creature(), 3)] = {
+    		[spell.creature_spell(me:creature(), 3)] = {
     			['level'] = 31,
     			['desc'] = '두번째 신수마법의 다음 단계 기술로써, 적에게 더욱 강력한 공격을 가할수 있는 마법이네.',
     			['material'] = {{['name'] = '도토리', ['count'] = 70}, {['name'] = '호랑이고기', ['count'] = 10}}
@@ -125,7 +125,7 @@ return {
     			['desc'] = '자신이나 타인의 체력을 500만큼 회복시켜주는 마법이네.',
     			['material'] = {{['name'] = '도토리', ['count'] = 100}, {['name'] = '웅담', ['count'] = 10}, {['name'] = '여우모피', ['count'] = 10}}
     		},
-    		[spell.CREATURE_AREA_SPELL(me:creature(), 3)] = {
+    		[spell.creature_area_spell(me:creature(), 3)] = {
     			['level'] = 36,
     			['desc'] = '자신의 전후좌우 방향으로 동시에 한층 강해진 신수마법을 시전하는 마법으로 많은 적을 공격 할 수 있다네.',
     			['material'] = {{['name'] = '금전', ['count'] = 100}, {['name'] = '도토리', ['count'] = 100}, {['name'] = '여우모피', ['count'] = 10}}
@@ -140,7 +140,7 @@ return {
     			['desc'] = '저주를 푸는 회복계열의 마법이네.',
     			['material'] = {{['name'] = '금전', ['count'] = 200}, {['name'] = '도토리', ['count'] = 50}, {['name'] = '여우모피', ['count'] = 10}}
     		},
-    		[spell.CREATURE_SPELL(me:creature(), 4)] = {
+    		[spell.creature_spell(me:creature(), 4)] = {
     			['level'] = 45,
     			['desc'] = '세번째 신수마법의 다음 단계 기술로써, 적에게 더욱 강력한 공격을 가할수 있는 마법이네.',
     			['material'] = {{['name'] = '금전', ['count'] = 500}, {['name'] = '도토리', ['count'] = 50}, {['name'] = '철도', ['count'] = 1}}
@@ -170,7 +170,7 @@ return {
     			['desc'] = '상대의 시력을 일정시간 동안 빼앗는 저주 계열의 마법이네.',
     			['material'] = {{['name'] = '금전', ['count'] = 400}, {['name'] = '도토리', ['count'] = 80}, {['name'] = '호박', ['count'] = 1} }
     		},
-    		[spell.CREATURE_AREA_SPELL(me:creature(), 4)] = {
+    		[spell.creature_area_spell(me:creature(), 4)] = {
     			['level'] = 62,
     			['desc'] = '자신의 전후좌우 방향으로 동시에 한층 가해진 신수마법을 시전하는 마법으로 많은 적을 공격 할 수 있다네.',
     			['material'] = {{['name'] = '금전', ['count'] = 500}, {['name'] = '도토리', ['count'] = 70}, {['name'] = '호박', ['count'] = 1} }
@@ -180,12 +180,12 @@ return {
     			['desc'] = '희생자의 정신을 혼란시켜 아군을 공격하게 만드는 마법이네.',
     			['material'] = {{['name'] = '금전', ['count'] = 600}, {['name'] = '도토리', ['count'] = 90}, {['name'] = '호박', ['count'] = 2}, {['name'] = '해골죽장', ['count'] = 1}}
     		},
-    		[spell.CREATURE_SPELL(me:creature(), 5)] = {
+    		[spell.creature_spell(me:creature(), 5)] = {
     			['level'] = 74,
     			['desc'] = '신수 속성을 가진 주술사의 최강의 원거리 공격 마법이네.',
     			['material'] = {{['name'] = '금전', ['count'] = 2000}, {['name'] = '도토리', ['count'] = 100}, {['name'] = '진호박', ['count'] = 1}}
     		},
-    		[spell.CREATURE_AREA_SPELL(me:creature(), 5)] = {
+    		[spell.creature_area_spell(me:creature(), 5)] = {
     			['level'] = 85,
     			['desc'] = '자신의 전후좌우 방향으로 동시에 한층 강해진 신수마법을 시전하는 마법으로 많은 적을 공격 할 수 있다네.',
     			['material'] = {{['name'] = '금전', ['count'] = 2000}, {['name'] = '도토리', ['count'] = 100}, {['name'] = '진호박', ['count'] = 2}}

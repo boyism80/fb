@@ -193,10 +193,10 @@ return {
             { ['item'] = { [food_name] = 1 } },
             reward
         )
-        if code == enum.EXCHANGE_RESULT.LACK_COST then
+        if code == enum.exchange_result.LACK_COST then
             me:dialog(npc, food_name .. '!! 그거 좋지... 하지만 자네는 그 요리를 가지고 있지 않은데? 어디 놔 두고 온 것은 아닌가? 쯧쯧...', { prev = false, next = false })
             return
-        elseif code == enum.EXCHANGE_RESULT.LACK_CAPACITY then
+        elseif code == enum.exchange_result.LACK_CAPACITY then
             me:dialog(npc, '소지품이 가득 차서 보상을 줄 수 없네.', { prev = false, next = true })
             return
         end

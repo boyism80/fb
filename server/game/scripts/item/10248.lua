@@ -18,7 +18,7 @@ return {
             { ['item'] = { ['낡은봉투'] = 1 } },
             { ['item'] = { ['낡은연애편지'] = 1 } }
         )
-        if code ~= enum.EXCHANGE_RESULT.OK then
+        if code ~= enum.exchange_result.OK then
             return
         end
         local added = me:item('낡은연애편지')

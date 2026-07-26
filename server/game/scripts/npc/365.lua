@@ -60,10 +60,10 @@ return {
                 { ['item'] = { ["색비단"] = 1, ["꿩의깃털"] = 1 } },
                 { ['item'] = { ["연등"] = 1 } }
             )
-            if code == enum.EXCHANGE_RESULT.LACK_COST then
+            if code == enum.exchange_result.LACK_COST then
                 me:dialog(npc, "연등을 만들기 위해서는 꿩의깃털, 색비단이 필요합니다.", { prev = false, next = false })
                 return
-            elseif code == enum.EXCHANGE_RESULT.LACK_CAPACITY then
+            elseif code == enum.exchange_result.LACK_CAPACITY then
                 me:dialog(npc, "소지품이 가득 차서 연등을 줄 수 없습니다.", { prev = false, next = false })
                 return
             end

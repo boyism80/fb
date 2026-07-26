@@ -111,11 +111,11 @@ return {
                 { ['item'] = materials },
                 { ['item'] = { ['삼전신보탕'] = 1 } }
             )
-            if code == enum.EXCHANGE_RESULT.LACK_COST then
+            if code == enum.exchange_result.LACK_COST then
                 me:dialog(npc, '삼전신보신탕을 만들기 위한 재료가 부족한 것 같네만. 녹용과 국광 그리고 감초가 있어야 제작이 가능하지.', { prev = false, next = true })
                 return
             end
-            if code == enum.EXCHANGE_RESULT.LACK_CAPACITY then
+            if code == enum.exchange_result.LACK_CAPACITY then
                 me:dialog(npc, '소지품이 가득 차서 삼전신보탕을 줄 수 없습니다.', { prev = false, next = true })
                 return
             end

@@ -66,11 +66,11 @@ local function run_ice_sword(me, npc)
             reward = { ['item'] = { [ITEM_ICE_SWORD] = 1 } }
         end
         local code = me:exchange(cost, reward)
-        if code == enum.EXCHANGE_RESULT.LACK_COST then
+        if code == enum.exchange_result.LACK_COST then
             me:dialog(npc, '얼음칼을 만들기 위해선 얼음 100개가 필요하네.', { prev = false, next = false })
             return true
         end
-        if code == enum.EXCHANGE_RESULT.LACK_CAPACITY then
+        if code == enum.exchange_result.LACK_CAPACITY then
             me:dialog(npc, '소지품이 가득 차서 얼음칼을 받을 수 없네.', { prev = false, next = false })
             return true
         end
@@ -201,10 +201,10 @@ local function run_amber_helmet_craft(me, npc, colors, has_prev)
         { ['item'] = { [gem_name] = 1, [ITEM_IRON_DUST] = HELMET_IRON_DUST_COUNT } },
         { ['item'] = { [helmet_name] = 1 } }
     )
-    if code == enum.EXCHANGE_RESULT.LACK_COST then
+    if code == enum.exchange_result.LACK_COST then
         return me:dialog(npc, '자네 혹시 재료를 모르는 것인가? ' .. gem_name .. '과 쇠가루 2개를 가지고 와야 ' .. helmet_name .. '를 만들어 줄 수 있네.', { prev = false, next = true })
     end
-    if code == enum.EXCHANGE_RESULT.LACK_CAPACITY then
+    if code == enum.exchange_result.LACK_CAPACITY then
         return me:dialog(npc, '소지품이 가득 차서 ' .. helmet_name .. '를 받을 수 없네.', { prev = false, next = true })
     end
     return me:dialog(npc, gem_name .. '으로 ' .. helmet_name .. '를 만들어주었네.', { prev = false, next = true })

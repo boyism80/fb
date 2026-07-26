@@ -55,7 +55,7 @@ return {
             { ['item'] = required },
             { ['item'] = { ["천상복숭아"] = 1 } }
         )
-        if code == enum.EXCHANGE_RESULT.LACK_COST then
+        if code == enum.exchange_result.LACK_COST then
             if not me:has_items("종이쪽지", 1) then
                 me:dialog(npc, "퀘스트 오류입니다.\n\n운영자에게 문의하세요.", { prev = false, next = false })
             else
@@ -63,7 +63,7 @@ return {
             end
             return
         end
-        if code == enum.EXCHANGE_RESULT.LACK_CAPACITY then
+        if code == enum.exchange_result.LACK_CAPACITY then
             me:dialog(npc, "소지품 칸을 2칸 이상 비워주세요.", { prev = false, next = false })
             return
         end

@@ -105,11 +105,11 @@ return {
                 { ['item'] = { ['황비연의머리띠'] = 1 } },
                 { ['money'] = 100000 }
             )
-            if code == enum.EXCHANGE_RESULT.LACK_COST then
+            if code == enum.exchange_result.LACK_COST then
                 me:dialog(npc, '황비연의머리띠를 가져오세요.', { prev = false, next = false })
                 return
             end
-            if code == enum.EXCHANGE_RESULT.LACK_CAPACITY then
+            if code == enum.exchange_result.LACK_CAPACITY then
                 me:dialog(npc, '금전을 받을 여유가 없군요.', { prev = false, next = false })
                 return
             end

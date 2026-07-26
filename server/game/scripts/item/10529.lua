@@ -21,7 +21,7 @@ return {
 
         local x, y = spouse:position()
         local direction = me:direction()
-        local new_x, new_y, direction = spell.TELEPORT_LOOKUP(me, map, x, y, direction)
+        local new_x, new_y, direction = spell.teleport_lookup(me, map, x, y, direction)
         me:map(map, new_x, new_y)
         me:direction(direction)
     end,

@@ -50,7 +50,7 @@ return {
             { ['item'] = { [button_str] = 2, ["검정깃발"] = 1 } },
             { ['item'] = { [reward_name] = 1 } }
         )
-        if code == enum.EXCHANGE_RESULT.LACK_COST then
+        if code == enum.exchange_result.LACK_COST then
             if not me:has_items(button_str, 2) then
                 me:dialog(npc, "아니 자네," .. button_str .. " 2개가 없지 않은가.", { prev = false, next = false })
             elseif not me:has_items("검정깃발", 1) then
@@ -60,7 +60,7 @@ return {
             end
             return
         end
-        if code == enum.EXCHANGE_RESULT.LACK_CAPACITY then
+        if code == enum.exchange_result.LACK_CAPACITY then
             me:dialog(npc, "소지품이 가득 차서 줄 수 없네.", { prev = false, next = false })
             return
         end

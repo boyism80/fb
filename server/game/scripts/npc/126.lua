@@ -84,11 +84,11 @@ local function handle_jingogyun_2(me, npc, q_jingo)
             reward = { ['item'] = { ["탄생의씨앗"] = 1 } }
         end
         local code = me:exchange({ ['item'] = { ["해바라기씨"] = 1 } }, reward)
-        if code == enum.EXCHANGE_RESULT.LACK_COST then
+        if code == enum.exchange_result.LACK_COST then
             me:dialog(npc, "해바라기씨앗을 가져와~", { prev = false, next = false })
             return true
         end
-        if code == enum.EXCHANGE_RESULT.LACK_CAPACITY then
+        if code == enum.exchange_result.LACK_CAPACITY then
             me:dialog(npc, "소지품이 가득 차서 탄생의 씨앗을 줄 수 없어.", { prev = false, next = false })
             return true
         end

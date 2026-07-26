@@ -37,10 +37,10 @@ return {
             { ['item'] = NEED_ITEMS },
             { ['item'] = { [REWARD_NAME] = 1 } }
         )
-        if code == enum.EXCHANGE_RESULT.LACK_COST then
+        if code == enum.exchange_result.LACK_COST then
             me:dialog(npc, "24일간 모은 도톨 24종류를 가지고 오셔야 합니다.", { prev = false, next = false })
             return
-        elseif code == enum.EXCHANGE_RESULT.LACK_CAPACITY then
+        elseif code == enum.exchange_result.LACK_CAPACITY then
             me:dialog(npc, "소지품이 가득 차서 칠지도를 드리지 못합니다. 도톨은 돌려드렸습니다.", { prev = false, next = false })
             return
         end

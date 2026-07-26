@@ -268,11 +268,11 @@ local function handle_jingogyun_7(me, npc, q_jingo)
             { ['item'] = { ["바람의토템"] = 4 } },
             { ['item'] = { ["영력구슬"] = 1 } }
         )
-        if code == enum.EXCHANGE_RESULT.LACK_COST then
+        if code == enum.exchange_result.LACK_COST then
             me:dialog(npc, "바람의토템 4개를 가져오면 바꿔줄께.", { prev = false, next = false })
             return true
         end
-        if code == enum.EXCHANGE_RESULT.LACK_CAPACITY then
+        if code == enum.exchange_result.LACK_CAPACITY then
             me:dialog(npc, "소지품이 가득 차서 영력구슬을 받을 수 없어.", { prev = false, next = false })
             return true
         end

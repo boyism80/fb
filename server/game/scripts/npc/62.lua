@@ -42,7 +42,7 @@ return {
             { ['item'] = { [VOUCHER_NAME] = 1 }, ['money'] = WATER_BOTTLE_PRICE },
             { ['item'] = { [BOTTLE_NAME] = 1 } }
         )
-        if code == enum.EXCHANGE_RESULT.LACK_COST then
+        if code == enum.exchange_result.LACK_COST then
             if not me:has_items(VOUCHER_NAME, 1) then
                 me:dialog(npc, '물병보관증을 가져오세요.', { prev = false, next = false })
             else
@@ -50,7 +50,7 @@ return {
             end
             return
         end
-        if code == enum.EXCHANGE_RESULT.LACK_CAPACITY then
+        if code == enum.exchange_result.LACK_CAPACITY then
             me:dialog(npc, '소지품이 가득 차서 물병을 받을 수 없습니다.', { prev = false, next = false })
             return
         end

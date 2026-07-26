@@ -25,11 +25,11 @@ return {
                     { ['item'] = { ["홍성초"] = 1 } },
                     { ['item'] = { ["빨간양말"] = 1 } }
                 )
-                if code == enum.EXCHANGE_RESULT.LACK_COST then
+                if code == enum.exchange_result.LACK_COST then
                     me:dialog(npc, "홍성초가 없는데?", { prev = false, next = false })
                     return
                 end
-                if code == enum.EXCHANGE_RESULT.LACK_CAPACITY then
+                if code == enum.exchange_result.LACK_CAPACITY then
                     me:dialog(npc, "소지품이 가득 차서 빨간양말을 드리지 못합니다.", { prev = false, next = false })
                     return
                 end
@@ -61,11 +61,11 @@ return {
                 { ['item'] = { ["빨간양말"] = need } },
                 { ['item'] = { [reward_name] = 1 } }
             )
-            if code == enum.EXCHANGE_RESULT.LACK_COST then
+            if code == enum.exchange_result.LACK_COST then
                 me:dialog(npc, "안그래도 심란한데... 거짓말 말게나!!", { prev = false, next = false })
                 return
             end
-            if code == enum.EXCHANGE_RESULT.LACK_CAPACITY then
+            if code == enum.exchange_result.LACK_CAPACITY then
                 me:dialog(npc, "소지품이 가득 차서 " .. reward_name .. "을(를) 드리지 못합니다.", { prev = false, next = false })
                 return
             end

@@ -86,10 +86,10 @@ local function do_sub7_complete(me, npc)
         { ['item'] = { ["건강한아기원숭이"] = 1 } },
         { ['item'] = { ["초코바나나"] = 1 } }
     )
-    if code == enum.EXCHANGE_RESULT.LACK_COST then
+    if code == enum.exchange_result.LACK_COST then
         me:dialog(npc, "아이템을 제거할 수 없습니다.", { prev = false, next = false })
         return true
-    elseif code == enum.EXCHANGE_RESULT.LACK_CAPACITY then
+    elseif code == enum.exchange_result.LACK_CAPACITY then
         me:dialog(npc, "소지품이 가득 차서 초코바나나를 줄 수 없습니다.", { prev = false, next = false })
         return true
     end

@@ -75,10 +75,10 @@ local function do_sub3_turnin(me, npc)
         { ['item'] = { ["좌황활력환"] = 1 } },
         { ['item'] = { ["과일나라"] = 1 } }
     )
-    if code == enum.EXCHANGE_RESULT.LACK_COST then
+    if code == enum.exchange_result.LACK_COST then
         me:dialog(npc, "아이템을 제거할 수 없습니다.", { prev = false, next = false })
         return true
-    elseif code == enum.EXCHANGE_RESULT.LACK_CAPACITY then
+    elseif code == enum.exchange_result.LACK_CAPACITY then
         me:dialog(npc, "소지품이 가득 차서 과일나라를 줄 수 없습니다.", { prev = false, next = false })
         return true
     end

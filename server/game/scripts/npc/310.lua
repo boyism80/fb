@@ -72,10 +72,10 @@ return {
                         { ['item'] = { ['도깨비방망이'] = 1 } },
                         { ['item'] = { ['아무나OX주최토큰'] = 1 } }
                     )
-                    if code == enum.EXCHANGE_RESULT.LACK_COST then
+                    if code == enum.exchange_result.LACK_COST then
                         return me:dialog(ch, '도깨비방망이가 없으시군요.', { prev = false, next = true })
                     end
-                    if code == enum.EXCHANGE_RESULT.LACK_CAPACITY then
+                    if code == enum.exchange_result.LACK_CAPACITY then
                         return me:dialog(ch, '소지품이 가득 차서 아무나OX주최토큰을 받을 수 없습니다.', { prev = false, next = true })
                     end
                     return me:dialog(ch, "도깨비방망이를 '아무나OX주최토큰'으로 바꿔드리겠습니다.", { prev = false, next = true })

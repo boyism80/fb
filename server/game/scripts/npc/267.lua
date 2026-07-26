@@ -57,7 +57,7 @@ return {
             end
 
             me:dialog(npc, '동료에게 확인을 받겠다.', { prev = false, next = true })
-            if teammate:script('scripts/npc/267.lua', 'NPC_CONFIRM_TEAMMATE', me:name(), npc) ~= true then
+            if teammate:script('scripts/npc/267.lua', 'npc_confirm_teammate', me:name(), npc) ~= true then
                 me:dialog(npc, '동료에게 확인을 받지 못했습니다.', { prev = false, next = true })
                 goto NPC_267_0011
             end
@@ -83,7 +83,7 @@ return {
         end
     end,
 
-    NPC_CONFIRM_TEAMMATE = function(me, teammate_name, npc)
+    npc_confirm_teammate = function(me, teammate_name, npc)
             local button = me:dialog(npc, string.format('%s의 동료에게 묻겠다.', teammate_name), { prev = false, next = true })
             if button == DIALOG_RESULT.QUIT then
                 return false

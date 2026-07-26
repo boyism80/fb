@@ -43,11 +43,11 @@ return {
             { ['item'] = { [source_name] = 2 } },
             { ['item'] = { [target_name] = 1 } }
         )
-        if code == enum.EXCHANGE_RESULT.LACK_COST then
+        if code == enum.exchange_result.LACK_COST then
             me:dialog(npc, "연등이 없으시군요....", { prev = false, next = false })
             return
         end
-        if code == enum.EXCHANGE_RESULT.LACK_CAPACITY then
+        if code == enum.exchange_result.LACK_CAPACITY then
             me:dialog(npc, "소지품이 가득 차서 연등을 드리지 못합니다.", { prev = false, next = false })
             return
         end

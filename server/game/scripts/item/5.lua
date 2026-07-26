@@ -91,7 +91,7 @@ return {
                 { ['item'] = { ['낙랑의두루마리5'] = 1 } },
                 { ['item'] = { ['낙랑의두루마리6'] = 1, ['초심자의머리띠'] = 1 }, ['exp'] = give_exp and 200 or 0 }
             )
-            if code == enum.EXCHANGE_RESULT.LACK_CAPACITY then
+            if code == enum.exchange_result.LACK_CAPACITY then
                 me:dialog(model, '소지품이 가득 찼습니다.', { prev = false, next = false })
                 return
             end

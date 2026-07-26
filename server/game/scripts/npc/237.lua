@@ -36,11 +36,11 @@ return {
             { ['item'] = { [ITEM_FRUIT_SALAD] = 1, [r.input] = 1 } },
             { ['item'] = { [r.output] = 1 } }
         )
-        if code == enum.EXCHANGE_RESULT.LACK_COST then
+        if code == enum.exchange_result.LACK_COST then
             me:dialog(npc, '아이고, 더운데 재료도 없고 신경질나게 하지마!', { prev = false, next = false })
             return
         end
-        if code == enum.EXCHANGE_RESULT.LACK_CAPACITY then
+        if code == enum.exchange_result.LACK_CAPACITY then
             me:dialog(npc, '소지품이 가득 차서 수선한 드레스를 받을 수 없어요.', { prev = false, next = false })
             return
         end

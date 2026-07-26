@@ -52,11 +52,11 @@ local function ranggyuryun_palgu(me, npc)
         { ['item'] = materials },
         { ['item'] = { ['팔괘'] = 1 } }
     )
-    if code == enum.EXCHANGE_RESULT.LACK_COST then
+    if code == enum.exchange_result.LACK_COST then
         me:dialog(npc, '아직 팔괘 재료를 다 모으지 못하셨군요.', { prev = false, next = true })
         return
     end
-    if code == enum.EXCHANGE_RESULT.LACK_CAPACITY then
+    if code == enum.exchange_result.LACK_CAPACITY then
         me:dialog(npc, '소지품이 가득 차서 팔괘를 받을 수 없습니다.', { prev = false, next = true })
         return
     end
@@ -99,11 +99,11 @@ local function ranggyuryun_pure_water(me, npc)
             { ['item'] = materials },
             { ['item'] = { ['정화비서'] = 1 } }
         )
-        if code == enum.EXCHANGE_RESULT.LACK_COST then
+        if code == enum.exchange_result.LACK_COST then
             me:dialog(npc, '아직 홍옥 3개를 구하시지 못하신거군요.', { prev = false, next = false })
             return
         end
-        if code == enum.EXCHANGE_RESULT.LACK_CAPACITY then
+        if code == enum.exchange_result.LACK_CAPACITY then
             me:dialog(npc, '소지품이 가득 차서 정화비서를 받을 수 없습니다.', { prev = false, next = true })
             return
         end

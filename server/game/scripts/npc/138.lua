@@ -181,11 +181,11 @@ return {
                 { ['item'] = { [ITEM_NEEDLE] = 1 } },
                 { ['item'] = { [item_name] = 1 } }
             )
-            if code == enum.EXCHANGE_RESULT.LACK_COST then
+            if code == enum.exchange_result.LACK_COST then
                 me:dialog(npc, '산신의바늘을 아직 구하지 못하신거 같은데요?', { prev = false, next = false })
                 return
             end
-            if code == enum.EXCHANGE_RESULT.LACK_CAPACITY then
+            if code == enum.exchange_result.LACK_CAPACITY then
                 me:dialog(npc, '소지품이 가득 차서 ' .. name_with(item_name, '을', '를') .. ' 받을 수 없습니다.', { prev = false, next = false })
                 return
             end

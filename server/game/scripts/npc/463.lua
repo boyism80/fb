@@ -28,10 +28,10 @@ local function do_sub7_cure(me, npc)
         { ['item'] = { ["아픈아기원숭이"] = 1 } },
         { ['item'] = { ["건강한아기원숭이"] = 1 } }
     )
-    if code == enum.EXCHANGE_RESULT.LACK_COST then
+    if code == enum.exchange_result.LACK_COST then
         me:dialog(npc, "아이템을 제거할 수 없습니다.", { prev = false, next = false })
         return true
-    elseif code == enum.EXCHANGE_RESULT.LACK_CAPACITY then
+    elseif code == enum.exchange_result.LACK_CAPACITY then
         me:dialog(npc, "소지품이 가득 차서 건강한아기원숭이를 줄 수 없습니다.", { prev = false, next = false })
         return true
     end
@@ -140,10 +140,10 @@ local function do_sub1_turnin(me, npc)
         { ['item'] = { ["깨끗한얼음"] = 1 } },
         { ['item'] = { ["오도독망고과편"] = 1 } }
     )
-    if code == enum.EXCHANGE_RESULT.LACK_COST then
+    if code == enum.exchange_result.LACK_COST then
         me:dialog(npc, "아이템을 제거할 수 없습니다.", { prev = false, next = false })
         return true
-    elseif code == enum.EXCHANGE_RESULT.LACK_CAPACITY then
+    elseif code == enum.exchange_result.LACK_CAPACITY then
         me:dialog(npc, "소지품이 가득 차서 오도독망고과편을 줄 수 없습니다.", { prev = false, next = false })
         return true
     end

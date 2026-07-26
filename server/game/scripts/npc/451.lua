@@ -199,11 +199,11 @@ return {
             { ['item'] = { ["낡은망치"] = 1, ["금강석"] = 1, [unequipped] = 1 } },
             { ['item'] = { [weapon_new] = 1 } }
         )
-        if code == enum.EXCHANGE_RESULT.LACK_COST then
+        if code == enum.exchange_result.LACK_COST then
             me:dialog(npc, "낡은망치나 금강석, 무기를 제거할 수 없소.", { prev = false, next = false })
             return
         end
-        if code == enum.EXCHANGE_RESULT.LACK_CAPACITY then
+        if code == enum.exchange_result.LACK_CAPACITY then
             me:dialog(npc, "소지품이 가득 차서 새 무기를 줄 수 없소.", { prev = false, next = false })
             return
         end

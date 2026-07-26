@@ -74,10 +74,10 @@ return {
                     { ['item'] = { ['반고의심장'] = 1 } },
                     { ['item'] = { [weapon_name] = 1 } }
                 )
-                if code == enum.EXCHANGE_RESULT.LACK_COST then
+                if code == enum.exchange_result.LACK_COST then
                     return
                 end
-                if code == enum.EXCHANGE_RESULT.LACK_CAPACITY then
+                if code == enum.exchange_result.LACK_CAPACITY then
                     me:dialog(npc, '소지품이 가득 차서 무기를 드릴 수 없습니다.', { prev = false, next = true })
                     return
                 end
@@ -116,11 +116,11 @@ return {
                 { ['money'] = WEAPON_REISSUE_GOLD },
                 { ['item'] = { [weapon_name] = 1 } }
             )
-            if code == enum.EXCHANGE_RESULT.LACK_COST then
+            if code == enum.exchange_result.LACK_COST then
                 me:dialog(npc, '금전 1천만 전이 필요합니다.', { prev = false, next = true })
                 return
             end
-            if code == enum.EXCHANGE_RESULT.LACK_CAPACITY then
+            if code == enum.exchange_result.LACK_CAPACITY then
                 me:dialog(npc, '소지품이 가득 차서 무기를 드릴 수 없습니다.', { prev = false, next = true })
                 return
             end

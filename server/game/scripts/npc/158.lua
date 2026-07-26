@@ -53,11 +53,11 @@ return {
                     { ['item'] = required_jungki },
                     { ['item'] = { ['무기제조법'] = 1 } }
                 )
-                if ex_code == enum.EXCHANGE_RESULT.LACK_COST then
+                if ex_code == enum.exchange_result.LACK_COST then
                     me:dialog(npc, '아직 용궁의정기를 다 모으지 못했나 보군..', { prev = false, next = false })
                     goto NPC_158_0001
                 end
-                if ex_code == enum.EXCHANGE_RESULT.LACK_CAPACITY then
+                if ex_code == enum.exchange_result.LACK_CAPACITY then
                     me:dialog(npc, '소지품이 가득 차서 무기제조법을 받을 수 없네. 자리 좀 비우고 다시 오게.', { prev = false, next = false })
                     goto NPC_158_0001
                 end

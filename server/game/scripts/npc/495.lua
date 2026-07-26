@@ -84,7 +84,7 @@ return {
                         { ['item'] = SURVIVE_ITEMS },
                         { ['item'] = { ["서바이벌증표"] = 1 } }
                     )
-                    if code == enum.EXCHANGE_RESULT.LACK_COST then
+                    if code == enum.exchange_result.LACK_COST then
                         local lack = {}
                         if not me:has_items("노란비서", 1) then lack[#lack + 1] = "노란비서" end
                         if not me:has_items("소환비서", 1) then lack[#lack + 1] = "소환비서" end
@@ -96,7 +96,7 @@ return {
                             me:dialog(npc, "아이템을 건네지 못했습니다.", { prev = false, next = false })
                         end
                         return
-                    elseif code == enum.EXCHANGE_RESULT.LACK_CAPACITY then
+                    elseif code == enum.exchange_result.LACK_CAPACITY then
                         me:dialog(npc, "소지품이 가득 차서 증표를 줄 수 없습니다.", { prev = false, next = false })
                         return
                     end

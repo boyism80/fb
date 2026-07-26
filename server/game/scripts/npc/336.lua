@@ -105,11 +105,11 @@ return {
             { ['item'] = cost_items },
             { ['item'] = { ["칠지도"] = 1 } }
         )
-        if code == enum.EXCHANGE_RESULT.LACK_COST then
+        if code == enum.exchange_result.LACK_COST then
             me:dialog(npc, "도톨을 건네지 못했습니다.", { prev = false, next = false })
             return
         end
-        if code == enum.EXCHANGE_RESULT.LACK_CAPACITY then
+        if code == enum.exchange_result.LACK_CAPACITY then
             me:dialog(npc, "소지품이 가득 차서 칠지도를 받을 수 없습니다.", { prev = false, next = false })
             return
         end

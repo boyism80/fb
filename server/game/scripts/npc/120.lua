@@ -51,10 +51,10 @@ return {
             { ['item'] = { ['태존도'] = 1 } },
             { ['item'] = { ['선장의일기4'] = 1 } }
         )
-        if code == enum.EXCHANGE_RESULT.LACK_COST then
+        if code == enum.exchange_result.LACK_COST then
             me:dialog(npc, '아직 태존도를 구하지 못한건가?', { prev = false, next = true })
             return
-        elseif code == enum.EXCHANGE_RESULT.LACK_CAPACITY then
+        elseif code == enum.exchange_result.LACK_CAPACITY then
             me:dialog(npc, '소지품이 가득 차서 선장의일기4를 줄 수 없네.', { prev = false, next = true })
             return
         end

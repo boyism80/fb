@@ -75,10 +75,10 @@ return {
                     { ['item'] = { ['삼전신보탕'] = 1 } },
                     { ['item'] = { ['청자다람쥐인형'] = 1 } }
                 )
-                if code == enum.EXCHANGE_RESULT.LACK_COST then
+                if code == enum.exchange_result.LACK_COST then
                     me:dialog(npc, '보약은 장안성 푸줏간에 가보시면 될거예요.', { prev = false, next = true })
                     return
-                elseif code == enum.EXCHANGE_RESULT.LACK_CAPACITY then
+                elseif code == enum.exchange_result.LACK_CAPACITY then
                     me:dialog(npc, '소지품이 가득 차서 청자다람쥐인형을 줄 수 없습니다.', { prev = false, next = true })
                     return
                 end

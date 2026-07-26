@@ -30,11 +30,11 @@ return {
             { ['item'] = { ["사랑의증표"] = ex.need } },
             { ['item'] = { [ex.item] = 1 } }
         )
-        if code == enum.EXCHANGE_RESULT.LACK_COST then
+        if code == enum.exchange_result.LACK_COST then
             me:dialog(npc, insufficient_msg, { prev = false, next = false })
             goto NPC_342_000
         end
-        if code == enum.EXCHANGE_RESULT.LACK_CAPACITY then
+        if code == enum.exchange_result.LACK_CAPACITY then
             me:dialog(npc, "소지품이 가득 차서 받을 수 없네요. 자리 좀 비우고 다시 오세요.", { prev = false, next = false })
             goto NPC_342_000
         end

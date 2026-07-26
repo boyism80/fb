@@ -257,7 +257,7 @@ test_suite {
                 return fail(a, "step5: 소환 failed")
             end
             ctx:sleep(1000)
-            -- TELEPORT_LOOKUP places B beside A; re-align for front_info.
+            -- teleport_lookup places B beside A; re-align for front_info.
             face_drop_marker(ctx, b, true)
             if assert_front_contains(b, MARKER_SHARE, "step5-summon") == false then
                 return false

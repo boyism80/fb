@@ -47,11 +47,11 @@ return {
             { ['item'] = { [ex.key] = 1 } },
             { ['item'] = { [ex.item] = 1 } }
         )
-        if code == enum.EXCHANGE_RESULT.LACK_COST then
+        if code == enum.exchange_result.LACK_COST then
             me:dialog(npc, name_with(ex.key, '이', '가') .. ' 없지 않은가?!', { prev = false, next = false })
             return
         end
-        if code == enum.EXCHANGE_RESULT.LACK_CAPACITY then
+        if code == enum.exchange_result.LACK_CAPACITY then
             me:dialog(npc, '소지품이 가득 차서 ' .. name_with(ex.item, '을', '를') .. ' 받을 수 없습니다.', { prev = false, next = false })
             return
         end

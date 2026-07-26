@@ -34,10 +34,10 @@ return {
             reward = { ['item'] = { ["동천지인패"] = 1 } }
         end
         local code = me:exchange({ ['item'] = required }, reward)
-        if code == enum.EXCHANGE_RESULT.LACK_COST then
+        if code == enum.exchange_result.LACK_COST then
             me:dialog(npc, opt.need_msg, { prev = false, next = false })
             goto NPC_398_000
-        elseif code == enum.EXCHANGE_RESULT.LACK_CAPACITY then
+        elseif code == enum.exchange_result.LACK_CAPACITY then
             me:dialog(npc, "소지품이 가득 차서 동천지인패를 받을 수 없네. 자리 좀 비우고 다시 오게.", { prev = false, next = false })
             goto NPC_398_000
         elseif reward == nil then

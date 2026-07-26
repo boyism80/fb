@@ -14,7 +14,7 @@ return {
     		{ ['item'] = { ['낡은금고'] = 1, ['무쇠망치'] = 1 } },
     		{ ['item'] = { ['낡은봉투'] = 1 } }
     	)
-    	if code == enum.EXCHANGE_RESULT.LACK_CAPACITY then
+    	if code == enum.exchange_result.LACK_CAPACITY then
     		me:dialog(model, '소지품이 가득 찼습니다.')
     		return
     	end

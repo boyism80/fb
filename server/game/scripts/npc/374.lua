@@ -167,11 +167,11 @@ return {
                     { ['money'] = 50000 },
                     { ['item'] = { ["소림오행진"] = 1 } }
                 )
-                if code == enum.EXCHANGE_RESULT.LACK_COST then
+                if code == enum.exchange_result.LACK_COST then
                     me:dialog(npc, "금전이 부족하군요.. 금전을 통해서 소림사의 유지에 쓰입니다.", { prev = false, next = true })
                     return
                 end
-                if code == enum.EXCHANGE_RESULT.LACK_CAPACITY then
+                if code == enum.exchange_result.LACK_CAPACITY then
                     me:dialog(npc, "소지품이 가득 차서 소림오행진을 받을 수 없습니다.", { prev = false, next = true })
                     return
                 end
@@ -196,11 +196,11 @@ return {
                     { ['money'] = 500000 },
                     { ['item'] = { ["진소림오행진"] = 1 } }
                 )
-                if code == enum.EXCHANGE_RESULT.LACK_COST then
+                if code == enum.exchange_result.LACK_COST then
                     me:dialog(npc, "금전이 부족하군요.. 금전을 통해서 소림사의 유지에 쓰입니다.", { prev = false, next = true })
                     return
                 end
-                if code == enum.EXCHANGE_RESULT.LACK_CAPACITY then
+                if code == enum.exchange_result.LACK_CAPACITY then
                     me:dialog(npc, "소지품이 가득 차서 진소림오행진을 받을 수 없습니다.", { prev = false, next = true })
                     return
                 end

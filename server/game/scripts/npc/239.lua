@@ -52,11 +52,11 @@ return {
             { ['item'] = { [ITEM_DEAD_CENTIPEDE] = count } },
             reward
         )
-        if code == enum.EXCHANGE_RESULT.LACK_COST then
+        if code == enum.exchange_result.LACK_COST then
             me:dialog(npc, '지네가 너무 적어서 만들수 없을 것 같네..', { prev = false, next = false })
             return
         end
-        if code == enum.EXCHANGE_RESULT.LACK_CAPACITY then
+        if code == enum.exchange_result.LACK_CAPACITY then
             me:dialog(npc, '소지품이 가득 차서 말린지네를 받을 수 없네.', { prev = false, next = false })
             return
         end

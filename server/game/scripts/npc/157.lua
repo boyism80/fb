@@ -56,11 +56,11 @@ local function do_jungki(me, npc)
                 { ['item'] = { [s.item] = s.count } },
                 { ['item'] = { [s.reward] = 1 } }
             )
-            if code == enum.EXCHANGE_RESULT.LACK_COST then
+            if code == enum.exchange_result.LACK_COST then
                 me:dialog(npc, s.item .. ' 갯수가 부족한 것은 아닌가? 30개가 필요하네.', { prev = false, next = false })
                 return
             end
-            if code == enum.EXCHANGE_RESULT.LACK_CAPACITY then
+            if code == enum.exchange_result.LACK_CAPACITY then
                 me:dialog(npc, '소지품이 가득 차서 ' .. name_with(s.reward, '을', '를') .. ' 받을 수 없네.', { prev = false, next = false })
                 return
             end

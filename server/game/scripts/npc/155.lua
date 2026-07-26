@@ -128,10 +128,10 @@ return {
                     { ['item'] = { ['악어의피'] = 3 } },
                     { ['item'] = { ['수선도사의머리띠'] = 1 } }
                 )
-                if code == enum.EXCHANGE_RESULT.LACK_COST then
+                if code == enum.exchange_result.LACK_COST then
                     goto NPC_155_0030
                 end
-                if code == enum.EXCHANGE_RESULT.LACK_CAPACITY then
+                if code == enum.exchange_result.LACK_CAPACITY then
                     me:dialog(npc, '소지품이 가득 차서 머리띠를 줄 수 없네.', { prev = false, next = true })
                     return
                 end

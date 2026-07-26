@@ -20,10 +20,10 @@ return {
             { ['item'] = { ["황매주"] = 1 } },
             { ['item'] = { ["용의골무"] = 1 } }
         )
-        if code == enum.EXCHANGE_RESULT.LACK_COST then
+        if code == enum.exchange_result.LACK_COST then
             return
         end
-        if code == enum.EXCHANGE_RESULT.LACK_CAPACITY then
+        if code == enum.exchange_result.LACK_CAPACITY then
             return
         end
 

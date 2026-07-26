@@ -37,11 +37,11 @@ local function do_exchange(me, npc, need_count, reward_name)
         { ['item'] = { ["잔가지"] = need_count } },
         { ['item'] = { [reward_name] = 1 } }
     )
-    if code == enum.EXCHANGE_RESULT.LACK_COST then
+    if code == enum.exchange_result.LACK_COST then
         me:dialog(npc, "잔가지를 몇개만 주워다 주시면 제가 가진 나뭇가지들을 드리겠습니다. 잘 부탁 드리겠습니다.", { prev = false, next = false })
         return
     end
-    if code == enum.EXCHANGE_RESULT.LACK_CAPACITY then
+    if code == enum.exchange_result.LACK_CAPACITY then
         me:dialog(npc, "소지품이 가득 차서 나무를 줄 수 없습니다.", { prev = false, next = false })
         return
     end

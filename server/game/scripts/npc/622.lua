@@ -62,7 +62,7 @@ return {
                 reward = { ['item'] = { [r.product] = 1 } }
             end
             local code = me:exchange({ ['item'] = cost_7 }, reward)
-            if code == enum.EXCHANGE_RESULT.LACK_COST then
+            if code == enum.exchange_result.LACK_COST then
                 if not me:has_items(r.main, 100) then
                     me:dialog(npc, r.main .. "이 부족합니다.", { prev = false, next = false })
                 elseif not me:has_items(other, 100) then
@@ -72,7 +72,7 @@ return {
                 end
                 return
             end
-            if code == enum.EXCHANGE_RESULT.LACK_CAPACITY then
+            if code == enum.exchange_result.LACK_CAPACITY then
                 me:dialog(npc, "소지품이 가득 차서 [" .. r.product .. "]를 줄 수 없소.", { prev = false, next = false })
                 return
             end
@@ -106,7 +106,7 @@ return {
                 reward = { ['item'] = { ["칠요구륜"] = 1 } }
             end
             local code = me:exchange({ ['item'] = cost_chil }, reward)
-            if code == enum.EXCHANGE_RESULT.LACK_COST then
+            if code == enum.exchange_result.LACK_COST then
                 for _, name in ipairs(STONES) do
                     if not me:has_items(name, 100) then
                         me:dialog(npc, "[" .. name .. "]이 부족합니다.", { prev = false, next = false })
@@ -116,7 +116,7 @@ return {
                 me:dialog(npc, "지석이 부족하오.", { prev = false, next = false })
                 return
             end
-            if code == enum.EXCHANGE_RESULT.LACK_CAPACITY then
+            if code == enum.exchange_result.LACK_CAPACITY then
                 me:dialog(npc, "소지품이 가득 차서 [칠요구륜]을 줄 수 없소.", { prev = false, next = false })
                 return
             end
@@ -150,7 +150,7 @@ return {
                 reward = { ['item'] = { ["팔세지도"] = 1 } }
             end
             local code = me:exchange({ ['item'] = cost_pal }, reward)
-            if code == enum.EXCHANGE_RESULT.LACK_COST then
+            if code == enum.exchange_result.LACK_COST then
                 if not me:has_items("팔요지석", 100) then
                     me:dialog(npc, "[팔요지석]이 부족합니다.", { prev = false, next = false })
                 else
@@ -164,7 +164,7 @@ return {
                 end
                 return
             end
-            if code == enum.EXCHANGE_RESULT.LACK_CAPACITY then
+            if code == enum.exchange_result.LACK_CAPACITY then
                 me:dialog(npc, "소지품이 가득 차서 [팔세지도]를 줄 수 없소.", { prev = false, next = false })
                 return
             end
@@ -216,7 +216,7 @@ return {
                 reward = { ['item'] = { [product] = 1 } }
             end
             local code = me:exchange({ ['item'] = cost_nine }, reward)
-            if code == enum.EXCHANGE_RESULT.LACK_COST then
+            if code == enum.exchange_result.LACK_COST then
                 for _, name in ipairs(need_nine) do
                     if not me:has_items(name, 1) then
                         me:dialog(npc, "[" .. name .. "]가 부족합니다.", { prev = false, next = false })
@@ -226,7 +226,7 @@ return {
                 me:dialog(npc, "재료가 부족하오.", { prev = false, next = false })
                 return
             end
-            if code == enum.EXCHANGE_RESULT.LACK_CAPACITY then
+            if code == enum.exchange_result.LACK_CAPACITY then
                 me:dialog(npc, "소지품이 가득 차서 [" .. product .. "]를 줄 수 없소.", { prev = false, next = false })
                 return
             end

@@ -47,11 +47,11 @@ local function run_change_item(me, npc_obj)
         { ['item'] = { [src.name] = src.count } },
         { ['item'] = { [dest.name] = dest.count } }
     )
-    if code == enum.EXCHANGE_RESULT.LACK_COST then
+    if code == enum.exchange_result.LACK_COST then
         me:dialog(npc_obj, string.format('%s %d개를 가져오셔야 바꿔드려요.', src.name, src.count))
         return true
     end
-    if code == enum.EXCHANGE_RESULT.LACK_CAPACITY then
+    if code == enum.exchange_result.LACK_CAPACITY then
         me:dialog(npc_obj, '소지품이 가득 차서 받을 수 없어요.', { prev = false, next = false })
         return true
     end

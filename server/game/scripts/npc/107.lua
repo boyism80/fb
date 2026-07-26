@@ -67,11 +67,11 @@ local function dojaeyoung_nobidocument(me, npc)
         { ['item'] = { ['노비문서'] = 1 } },
         { ['item'] = { ['보패'] = 1 } }
     )
-    if code == enum.EXCHANGE_RESULT.LACK_COST then
+    if code == enum.exchange_result.LACK_COST then
         me:dialog(npc, '노비문서를 가지고 있지 않으시군요.', { prev = false, next = true })
         return
     end
-    if code == enum.EXCHANGE_RESULT.LACK_CAPACITY then
+    if code == enum.exchange_result.LACK_CAPACITY then
         me:dialog(npc, '소지품이 가득 차서 보패를 받을 수 없습니다.', { prev = false, next = true })
         return
     end
@@ -162,11 +162,11 @@ local function dojaeyoung_herb_turnin(me, npc)
         { ['item'] = { ['약초가지'] = 1, ['약초잎사귀'] = 5 } },
         { ['item'] = { ['강철의구두'] = 1 } }
     )
-    if code == enum.EXCHANGE_RESULT.LACK_COST then
+    if code == enum.exchange_result.LACK_COST then
         me:dialog(npc, '아직 약초를 구를 구하시지 못하셨군요. 의사의 말로는 약초잎사귀 5개와 약초가지 1개가 있어야 한다고 합니다. 부탁드립니다.', { prev = false, next = true })
         return
     end
-    if code == enum.EXCHANGE_RESULT.LACK_CAPACITY then
+    if code == enum.exchange_result.LACK_CAPACITY then
         me:dialog(npc, '소지품이 가득 차서 강철의구두를 줄 수 없습니다.', { prev = false, next = true })
         return
     end

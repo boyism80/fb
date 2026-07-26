@@ -61,11 +61,11 @@ return {
                     reward = { ['item'] = { ["보통화면"] = 1, ["맛없는화면"] = 1 } }
                 end
                 code = me:exchange(cost, reward)
-                if code == enum.EXCHANGE_RESULT.LACK_COST then
+                if code == enum.exchange_result.LACK_COST then
                     me:dialog(npc, "나비를 가져오시면 감사하겠어요.", { prev = false, next = false })
                     return
                 end
-                if code == enum.EXCHANGE_RESULT.LACK_CAPACITY then
+                if code == enum.exchange_result.LACK_CAPACITY then
                     me:dialog(npc, "소지품이 가득 차서 화면을 받을 수 없어요. 자리 좀 비우고 다시 오세요.", { prev = false, next = false })
                     return
                 end

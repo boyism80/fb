@@ -55,11 +55,11 @@ return {
             { ['item'] = { ['공주의반지'] = 1 } },
             { ['item'] = { ['청옥반지'] = 1 } }
         )
-        if code == enum.EXCHANGE_RESULT.LACK_COST then
+        if code == enum.exchange_result.LACK_COST then
             me:dialog(npc, '아직 제 반지가 없으신거같은데..', { prev = false, next = true })
             return
         end
-        if code == enum.EXCHANGE_RESULT.LACK_CAPACITY then
+        if code == enum.exchange_result.LACK_CAPACITY then
             me:dialog(npc, '소지품이 가득 차서 청옥반지를 받을 수 없습니다.', { prev = false, next = true })
             return
         end

@@ -15,11 +15,11 @@ local function try_craft_weapon(me, npc, materials, price, reward_name)
         cost['money'] = price
     end
     local code = me:exchange(cost, { ['item'] = { [reward_name] = 1 } })
-    if code == enum.EXCHANGE_RESULT.LACK_COST then
+    if code == enum.exchange_result.LACK_COST then
         me:dialog(npc, '재료가 조금 부족한 것 같은데? 다시 한번 살펴봐.', { prev = false, next = true })
         return false
     end
-    if code == enum.EXCHANGE_RESULT.LACK_CAPACITY then
+    if code == enum.exchange_result.LACK_CAPACITY then
         me:dialog(npc, '소지품이 가득 차서 ' .. name_with(reward_name, '은', '는') .. ' 줄 수 없네.', { prev = false, next = true })
         return false
     end

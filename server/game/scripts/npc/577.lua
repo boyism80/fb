@@ -25,10 +25,10 @@ local function run_normal_exchange(me, npc)
         { ['item'] = { ["일반교환권"] = 1 } },
         { ['item'] = { [entry[1]] = entry[2] } }
     )
-    if code == enum.EXCHANGE_RESULT.LACK_COST then
+    if code == enum.exchange_result.LACK_COST then
         me:dialog(npc, "일반교환권이 없으시군요. 일반교환권을 가져오세요.", { prev = false, next = false })
         return
-    elseif code == enum.EXCHANGE_RESULT.LACK_CAPACITY then
+    elseif code == enum.exchange_result.LACK_CAPACITY then
         me:dialog(npc, "소지품이 가득 차서 보상을 드릴 수 없습니다.", { prev = false, next = false })
         return
     end
@@ -75,10 +75,10 @@ local function run_special_exchange(me, npc)
         { ['item'] = { ["특별교환권"] = 1 } },
         { ['item'] = { [entry[1]] = entry[2] } }
     )
-    if code == enum.EXCHANGE_RESULT.LACK_COST then
+    if code == enum.exchange_result.LACK_COST then
         me:dialog(npc, "특별교환권이 없으시군요. 특별교환권을 가져오세요.", { prev = false, next = false })
         return
-    elseif code == enum.EXCHANGE_RESULT.LACK_CAPACITY then
+    elseif code == enum.exchange_result.LACK_CAPACITY then
         me:dialog(npc, "소지품이 가득 차서 보상을 드릴 수 없습니다.", { prev = false, next = false })
         return
     end

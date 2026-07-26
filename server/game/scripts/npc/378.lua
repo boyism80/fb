@@ -89,11 +89,11 @@ return {
                         { ['item'] = cost_item, ['money'] = ASSEMBLE_FEE },
                         { ['item'] = { ["요술놀이구슬"] = 1 } }
                     )
-                    if code == enum.EXCHANGE_RESULT.LACK_COST then
+                    if code == enum.exchange_result.LACK_COST then
                         me:dialog(npc, "재료를 다 구해오지 않았잖아! 요술구슬과 상하막대, 좌우막대와 누름막대라네! 그리고 10만전도 말이야!", { prev = false, next = false })
                         return
                     end
-                    if code == enum.EXCHANGE_RESULT.LACK_CAPACITY then
+                    if code == enum.exchange_result.LACK_CAPACITY then
                         me:dialog(npc, "소지품이 가득 차서 요술놀이구슬을 받을 수 없어요. 자리 좀 비우고 다시 오세요.", { prev = false, next = false })
                         return
                     end
@@ -128,11 +128,11 @@ return {
                     { ['item'] = { ["요술놀이구슬"] = 1 } },
                     { ['money'] = SELL_PRICE }
                 )
-                if code == enum.EXCHANGE_RESULT.LACK_COST then
+                if code == enum.exchange_result.LACK_COST then
                     me:dialog(npc, "요술놀이구슬이 없지 않은가? 장난하나? 지금?", { prev = false, next = false })
                     return
                 end
-                if code == enum.EXCHANGE_RESULT.LACK_CAPACITY then
+                if code == enum.exchange_result.LACK_CAPACITY then
                     me:dialog(npc, "금전을 받을 여유가 없군요.", { prev = false, next = false })
                     return
                 end
@@ -151,11 +151,11 @@ return {
                 { ['item'] = cost_item, ['money'] = ASSEMBLE_FEE },
                 { ['item'] = { ["요술놀이구슬"] = 1 } }
             )
-            if code == enum.EXCHANGE_RESULT.LACK_COST then
+            if code == enum.exchange_result.LACK_COST then
                 me:dialog(npc, "재료를 다 구해오지 않았잖아! 요술구슬과 상하막대, 좌우막대와 누름막대라네! 그리고 10만전도 말이야!", { prev = false, next = false })
                 return
             end
-            if code == enum.EXCHANGE_RESULT.LACK_CAPACITY then
+            if code == enum.exchange_result.LACK_CAPACITY then
                 me:dialog(npc, "소지품이 가득 차서 요술놀이구슬을 받을 수 없어요. 자리 좀 비우고 다시 오세요.", { prev = false, next = false })
                 return
             end

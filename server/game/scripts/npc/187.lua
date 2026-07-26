@@ -44,11 +44,11 @@ return {
             { ['item'] = { [item_name] = GRILL_COST } },
             { ['item'] = { ['구운' .. item_name] = 1 } }
         )
-        if code == enum.EXCHANGE_RESULT.LACK_COST then
+        if code == enum.exchange_result.LACK_COST then
             me:dialog(npc, name_with(item_name, '이', '가') .. ' 부족한 것 같은데?', { prev = false, next = true })
             return
         end
-        if code == enum.EXCHANGE_RESULT.LACK_CAPACITY then
+        if code == enum.exchange_result.LACK_CAPACITY then
             me:dialog(npc, '소지품이 가득 차서 구운 음식을 줄 수 없네.', { prev = false, next = true })
             return
         end

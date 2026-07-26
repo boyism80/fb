@@ -212,11 +212,11 @@ return {
                 { ['item'] = { ['보패'] = 1 } },
                 { ['item'] = { ['황비연의머리띠'] = 1 } }
             )
-            if code == enum.EXCHANGE_RESULT.LACK_COST then
+            if code == enum.exchange_result.LACK_COST then
                 me:dialog(npc, '보패를 가지고 있지 않으시군요.', { prev = false, next = true })
                 return
             end
-            if code == enum.EXCHANGE_RESULT.LACK_CAPACITY then
+            if code == enum.exchange_result.LACK_CAPACITY then
                 me:dialog(npc, '소지품이 가득 차서 황비연의머리띠를 줄 수 없습니다.', { prev = false, next = true })
                 return
             end
