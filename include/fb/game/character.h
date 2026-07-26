@@ -1,4 +1,4 @@
-#ifndef __CHARACTER_H__
+﻿#ifndef __CHARACTER_H__
 #define __CHARACTER_H__
 
 #include <fb/game/life.h>
@@ -112,7 +112,7 @@ private:
     mutable std::optional<fb::model::datetime> _first_login_date = std::nullopt;
     fb::model::datetime                        _last_afk_time;
     fb::game::marriage                         _marriage;
-    bool                                       _options[0x0B + 1] = {
+    bool                                       _options[static_cast<uint8_t>(OPTION::LOCK_WALK_SPEED) + 1] = {
         1,
     };
     std::weak_ptr<fb::socket<character>> _socket;

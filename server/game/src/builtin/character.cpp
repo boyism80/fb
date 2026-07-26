@@ -52,6 +52,7 @@ IMPLEMENT_LUA_EXTENSION(character, "fb.game.character")
 {"whisper",                      builtin::character::builtin_whisper},
 {"send_mail",                    builtin::character::builtin_send_mail},
 {"nation",                       builtin::character::builtin_nation},
+{"option",                       builtin::character::builtin_option},
 {"weapon",                       builtin::character::builtin_weapon},
 {"title",                        builtin::character::builtin_title},
 {"gain",                         builtin::character::builtin_gain},
@@ -66,6 +67,7 @@ IMPLEMENT_LUA_EXTENSION(character, "fb.game.character")
 {"base_int",                     builtin::character::builtin_base_int},
 {"base_dam",                     builtin::character::builtin_base_dam},
 {"base_hit",                     builtin::character::builtin_base_hit},
+{"base_speed",                   builtin::character::builtin_base_speed},
 {"armor_color",                  builtin::character::builtin_armor_color},
 {"weapon_color",                 builtin::character::builtin_weapon_color},
 {"shield_color",                 builtin::character::builtin_shield_color},
@@ -2499,6 +2501,49 @@ int builtin::character::builtin_nation(lua_State* L)
     }
 }
 
+int builtin::character::builtin_option(lua_State* L)
+{
+    auto lua = fb::lua::get(L);
+    if (lua == nullptr)
+        return 0;
+
+    auto ch = lua->touserdata<fb::game::character>(1);
+    if (ch == nullptr)
+        return 0;
+
+    auto argc = lua->argc();
+    auto key  = static_cast<OPTION>(lua->tointeger(2));
+    auto weak = ch->weak_from_this_as<fb::game::character>();
+
+    if (argc >= 3)
+    {
+        auto value    = lua->toboolean(3);
+        auto builder  = lua->new_co_builder();
+        builder.weak  = weak;
+        builder.yield = [=]() -> async::task<void> {
+            ch->option(key, value);
+            co_return;
+        };
+        builder.resume = []() -> async::task<int> {
+            co_return 0;
+        };
+        return builder.run();
+    }
+
+    auto value    = std::make_shared<bool>(false);
+    auto builder  = lua->new_co_builder();
+    builder.weak  = weak;
+    builder.yield = [=]() -> async::task<void> {
+        *value = ch->option(key);
+        co_return;
+    };
+    builder.resume = [=]() -> async::task<int> {
+        lua->pushboolean(*value);
+        co_return 1;
+    };
+    return builder.run();
+}
+
 int builtin::character::builtin_weapon(lua_State* L)
 {
     auto lua = fb::lua::get(L);
@@ -3134,6 +3179,55 @@ int builtin::character::builtin_base_hit(lua_State* L)
         builder.weak  = weak;
         builder.yield = [=]() -> async::task<void> {
             ch->stat.base_hit(value);
+            co_return;
+        };
+        builder.resume = []() -> async::task<int> {
+            co_return 0;
+        };
+        return builder.run();
+    }
+}
+
+int builtin::character::builtin_base_speed(lua_State* L)
+{
+    auto lua = fb::lua::get(L);
+    if (lua == nullptr)
+        return 0;
+
+    auto argc = lua->argc();
+    auto ch   = lua->touserdata<fb::game::character>(1);
+    if (ch == nullptr)
+        return 0;
+
+    if (argc == 1)
+    {
+        auto weak       = ch->weak_from_this_as<fb::game::character>();
+        auto base_speed = std::make_shared<uint8_t>();
+        auto builder    = lua->new_co_builder();
+        builder.weak    = weak;
+        builder.yield   = [=]() -> async::task<void> {
+            *base_speed = ch->stat.base_speed();
+            co_return;
+        };
+        builder.resume = [=]() -> async::task<int> {
+            lua->pushinteger(*base_speed);
+            co_return 1;
+        };
+        return builder.run();
+    }
+    else
+    {
+        auto value = lua->tointeger(2);
+        if (value < 0)
+            value = 0;
+        if (value > 5)
+            value = 5;
+
+        auto weak     = ch->weak_from_this_as<fb::game::character>();
+        auto builder  = lua->new_co_builder();
+        builder.weak  = weak;
+        builder.yield = [=]() -> async::task<void> {
+            ch->stat.base_speed(static_cast<uint8_t>(value));
             co_return;
         };
         builder.resume = []() -> async::task<int> {

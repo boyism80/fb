@@ -41,8 +41,8 @@ character::character(fb::game::server& server, const initial_params& params) :
     _armor_color(params.armor_color), _weapon_color(params.weapon_color), _shield_color(params.shield_color),
     _experience(params.exp), _gender(params.gender), _state(params.state), _level(params.level),
     _class(params.class_type), _promotion(params.promotion), _money(params.money), _mimicry(params.mimicry),
-    _title(params.title), _nation(params.nation), _creature(params.creature), _last_afk_time(server.now()),
-    _marriage(server.now()), _super_hide(params.super_hide)
+    _title(params.title), _nation(params.nation), _creature(params.creature), _super_hide(params.super_hide),
+    _last_afk_time(server.now()), _marriage(server.now())
 {
     this->_ping_state.last_ping_time = server.now() - std::chrono::seconds(10);
 }
@@ -1000,7 +1000,7 @@ bool character::option(OPTION key) const
     this->assert_thread();
 
     auto opt = static_cast<uint8_t>(key);
-    if (opt == 0 || opt > static_cast<uint8_t>(OPTION::EFFECT_SOUND))
+    if (opt == 0 || opt > static_cast<uint8_t>(OPTION::LOCK_WALK_SPEED))
         throw std::runtime_error(std::format("invalid setting key : {:#x}", opt));
 
     return this->_options[opt];
@@ -1011,14 +1011,15 @@ void character::option(OPTION key, bool value, bool notify)
     this->assert_thread();
 
     auto opt = static_cast<uint8_t>(key);
-    if (opt == 0 || opt > static_cast<uint8_t>(OPTION::EFFECT_SOUND))
+    if (opt == 0 || opt > static_cast<uint8_t>(OPTION::LOCK_WALK_SPEED))
         return;
 
     if (this->_options[opt] == value)
         return;
 
-    this->update(UPDATE_STATE_LEVEL::EXP_MONEY | UPDATE_STATE_LEVEL::CROWD_CONTROL);
+    // Apply option before update_internal so FOLLOW_CAMERA (0x02) reflects FIXED_MOVE.
     this->_options[opt] = value;
+    this->update(UPDATE_STATE_LEVEL::EXP_MONEY | UPDATE_STATE_LEVEL::CROWD_CONTROL);
     this->update_option();
 
     if (notify)
@@ -1030,7 +1031,7 @@ bool character::option_toggle(OPTION key, bool notify)
     this->assert_thread();
 
     auto opt = static_cast<uint8_t>(key);
-    if (opt == 0 || opt > static_cast<uint8_t>(OPTION::EFFECT_SOUND))
+    if (opt == 0 || opt > static_cast<uint8_t>(OPTION::LOCK_WALK_SPEED))
         throw std::runtime_error(std::format("invalid setting key : {:#x}", opt));
 
     this->option(key, !this->_options[opt], notify);
@@ -1710,6 +1711,7 @@ fb::protocol::internal::Character character::to_protocol() const
     dto.aux_bot_color    = std::nullopt;
     dto.title            = this->_title;
     dto.super_hide       = this->_super_hide;
+    dto.speed            = this->stat.base_speed();
 
     for (auto& [_, buff] : this->buffs)
     {

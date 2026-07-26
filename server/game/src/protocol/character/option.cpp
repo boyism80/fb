@@ -15,7 +15,7 @@ void option::serialize(fb::stream_writer<big_endian>& writer) const
     writer.write<uint8_t>(opcode);
     writer.write<uint8_t>(this->ch.option(OPTION::WEATHER_EFFECT)); // weather
     writer.write<uint8_t>(this->ch.option(OPTION::MAGIC_EFFECT));   // magic effect
-    writer.write<uint8_t>(this->ch.option(OPTION::ROAR_WORLDS));    // listen news
+    writer.write<uint8_t>(this->ch.option(OPTION::NEWS));           // news (소식 듣기)
     writer.write<uint8_t>(this->ch.option(OPTION::FAST_MOVE));      // fast move
     writer.write<uint8_t>(this->ch.option(OPTION::EFFECT_SOUND));   // effect sound
     writer.write<uint8_t>(0x00);
@@ -26,7 +26,7 @@ void option::deserialize(fb::stream_reader<big_endian>& reader)
     header::deserialize(reader);
     this->weather_effect = reader.read<uint8_t>();
     this->magic_effect   = reader.read<uint8_t>();
-    this->roar_worlds    = reader.read<uint8_t>();
+    this->news           = reader.read<uint8_t>();
     this->fast_move      = reader.read<uint8_t>();
     this->effect_sound   = reader.read<uint8_t>();
     reader.read<uint8_t>();

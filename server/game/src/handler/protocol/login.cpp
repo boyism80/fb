@@ -25,7 +25,7 @@ void login::init_option(const internal::Option& response, fb::game::character& c
     ch.option(OPTION::WHISPER, response.whisper, false);
     ch.option(OPTION::GROUP, response.group, false);
     ch.option(OPTION::ROAR, response.roar, false);
-    ch.option(OPTION::ROAR_WORLDS, response.roar_worlds, false);
+    ch.option(OPTION::NEWS, response.news, false);
     ch.option(OPTION::MAGIC_EFFECT, response.magic_effect, false);
     ch.option(OPTION::WEATHER_EFFECT, response.weather_effect, false);
     ch.option(OPTION::FIXED_MOVE, response.fixed_move, false);
@@ -240,6 +240,7 @@ async::task<std::shared_ptr<character>> login::init(const game_reqs::login& requ
     ch->stat.hp(resp.character.hp, false);
     ch->stat.base_mp(resp.character.base_mp, false);
     ch->stat.mp(resp.character.mp, false);
+    ch->stat.base_speed(resp.character.speed, false);
 
     auto thread = this->server.maps[map]->thread();
     ch->thread(thread);

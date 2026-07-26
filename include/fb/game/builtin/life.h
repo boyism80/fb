@@ -58,6 +58,9 @@ struct life
     static int builtin_base_hit(lua_State* L);
     static int builtin_buff_hit(lua_State* L);
     static int builtin_hit(lua_State* L);
+    static int builtin_base_speed(lua_State* L);
+    static int builtin_buff_speed(lua_State* L);
+    static int builtin_speed(lua_State* L);
     static int builtin_normal_attack_damage(lua_State* L);
     static int builtin_update(lua_State* L);
 };

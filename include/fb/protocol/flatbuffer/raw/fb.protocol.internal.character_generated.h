@@ -70,7 +70,8 @@ struct Character FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
     VT_CREATED_DATE = 78,
     VT_UPDATED_DATE = 80,
     VT_FIRST_LOGIN_DATE = 82,
-    VT_SUPER_HIDE = 84
+    VT_SUPER_HIDE = 84,
+    VT_SPEED = 86
   };
   uint32_t id() const {
     return GetField<uint32_t>(VT_ID, 0);
@@ -195,6 +196,9 @@ struct Character FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
   bool super_hide() const {
     return GetField<uint8_t>(VT_SUPER_HIDE, 0) != 0;
   }
+  uint8_t speed() const {
+    return GetField<uint8_t>(VT_SPEED, 0);
+  }
   bool Verify(::flatbuffers::Verifier &verifier) const {
     return VerifyTableStart(verifier) &&
            VerifyField<uint32_t>(verifier, VT_ID, 4) &&
@@ -257,6 +261,7 @@ struct Character FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
            VerifyOffset(verifier, VT_FIRST_LOGIN_DATE) &&
            verifier.VerifyString(first_login_date()) &&
            VerifyField<uint8_t>(verifier, VT_SUPER_HIDE, 1) &&
+           VerifyField<uint8_t>(verifier, VT_SPEED, 1) &&
            verifier.EndTable();
   }
 };
@@ -388,6 +393,9 @@ struct CharacterBuilder {
   void add_super_hide(bool super_hide) {
     fbb_.AddElement<uint8_t>(Character::VT_SUPER_HIDE, static_cast<uint8_t>(super_hide), 0);
   }
+  void add_speed(uint8_t speed) {
+    fbb_.AddElement<uint8_t>(Character::VT_SPEED, speed, 0);
+  }
   explicit CharacterBuilder(::flatbuffers::FlatBufferBuilder &_fbb)
         : fbb_(_fbb) {
     start_ = fbb_.StartTable();
@@ -441,7 +449,8 @@ inline ::flatbuffers::Offset<Character> CreateCharacter(
     ::flatbuffers::Offset<::flatbuffers::String> created_date = 0,
     ::flatbuffers::Offset<::flatbuffers::String> updated_date = 0,
     ::flatbuffers::Offset<::flatbuffers::String> first_login_date = 0,
-    bool super_hide = false) {
+    bool super_hide = false,
+    uint8_t speed = 0) {
   CharacterBuilder builder_(_fbb);
   builder_.add_additional_mp(additional_mp);
   builder_.add_base_mp(base_mp);
@@ -474,6 +483,7 @@ inline ::flatbuffers::Offset<Character> CreateCharacter(
   builder_.add_id(id);
   builder_.add_color(color);
   builder_.add_look(look);
+  builder_.add_speed(speed);
   builder_.add_super_hide(super_hide);
   builder_.add_level(level);
   builder_.add_promotion(promotion);
@@ -529,7 +539,8 @@ inline ::flatbuffers::Offset<Character> CreateCharacterDirect(
     const char *created_date = nullptr,
     const char *updated_date = nullptr,
     const char *first_login_date = nullptr,
-    bool super_hide = false) {
+    bool super_hide = false,
+    uint8_t speed = 0) {
   auto name__ = name ? _fbb.CreateString(name) : 0;
   auto pw__ = pw ? _fbb.CreateString(pw) : 0;
   auto buffs__ = buffs ? _fbb.CreateVector<::flatbuffers::Offset<fb::protocol::internal::raw::Buff>>(*buffs) : 0;
@@ -579,7 +590,8 @@ inline ::flatbuffers::Offset<Character> CreateCharacterDirect(
       created_date__,
       updated_date__,
       first_login_date__,
-      super_hide);
+      super_hide,
+      speed);
 }
 
 inline const fb::protocol::internal::raw::Character *GetCharacter(const void *buf) {

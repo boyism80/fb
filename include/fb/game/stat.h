@@ -50,6 +50,7 @@ private:
     int8_t                            _buff_magdef       = 0;
     int8_t                            _buff_dam          = 0;
     int8_t                            _buff_hit          = 0;
+    int8_t                            _buff_speed        = 0;
     uint64_t                          _buff_regenerative = 0;
     std::unordered_map<RESIST, float> _buff_resist;
 
@@ -77,6 +78,7 @@ public:
     virtual int8_t   base_magdef() const = 0;
     virtual uint8_t  base_dam() const = 0;
     virtual uint8_t  base_hit() const = 0;
+    virtual uint8_t  base_speed() const;
     virtual uint64_t base_regenerative() const = 0;
     virtual float    base_resist(RESIST type) const;
     virtual float    buff_resist(RESIST type) const;
@@ -100,6 +102,8 @@ public:
     virtual void     buff_dam(int8_t value);
     virtual int8_t   buff_hit() const;
     virtual void     buff_hit(int8_t value);
+    virtual int8_t   buff_speed() const;
+    virtual void     buff_speed(int8_t value);
     virtual uint64_t buff_regenerative() const;
     virtual void     buff_regenerative(uint64_t value);
     virtual uint64_t hp() const;
@@ -119,6 +123,7 @@ public:
     virtual int8_t   magdef() const;
     virtual int8_t   dam() const;
     virtual int8_t   hit() const;
+    virtual uint8_t  speed() const;
     virtual uint64_t regenerative() const;
     // clang-format on
 };
@@ -135,6 +140,7 @@ private:
     int32_t  _magdef       = 0;
     int32_t  _dam          = 0;
     int32_t  _hit          = 0;
+    uint8_t  _speed        = 0;
     uint64_t _regenerative = 0;
 
 public:
@@ -155,6 +161,7 @@ public:
     void             base_magdef(int8_t value, bool notify = true);
     void             base_dam(uint8_t value, bool notify = true);
     void             base_hit(uint8_t value, bool notify = true);
+    void             base_speed(uint8_t value, bool notify = true);
     void             base_regenerative(uint64_t value, bool notify = true);
     uint64_t         base_hp() const;
     uint64_t         base_mp() const;
@@ -172,6 +179,8 @@ public:
     virtual int8_t   dam() const;
     uint8_t          base_hit() const;
     virtual int8_t   hit() const;
+    uint8_t          base_speed() const override;
+    void             buff_speed(int8_t value) override;
     uint64_t         base_regenerative() const;
     virtual uint64_t maxhp() const override;
     virtual uint64_t maxmp() const override;

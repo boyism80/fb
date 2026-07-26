@@ -15,7 +15,7 @@ namespace Http.Model
         public bool Whisper { get; set; } = true;
         public bool Group { get; set; } = true;
         public bool Roar { get; set; } = true;
-        public bool RoarWorlds { get; set; } = true;
+        public bool News { get; set; } = true;
         public bool MagicEffect { get; set; } = true;
         public bool WeatherEffect { get; set; } = true;
         public bool FixedMove { get; set; } = true;

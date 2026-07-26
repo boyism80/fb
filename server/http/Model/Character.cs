@@ -51,6 +51,7 @@ namespace Http.Model
         public List<Buff> Buffs { get; set; } = new List<Buff>();
         public string Title { get; set; } = string.Empty;
         public bool SuperHide { get; set; }
+        public byte Speed { get; set; }
         public DateTime? FirstLoginDate { get; set; }
     }
 }

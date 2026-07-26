@@ -45,6 +45,7 @@ struct character
     static int builtin_whisper(lua_State* L);
     static int builtin_send_mail(lua_State* L);
     static int builtin_nation(lua_State* L);
+    static int builtin_option(lua_State* L);
     static int builtin_weapon(lua_State* L);
     static int builtin_title(lua_State* L);
     static int builtin_gain(lua_State* L);
@@ -59,6 +60,7 @@ struct character
     static int builtin_base_int(lua_State* L);
     static int builtin_base_dam(lua_State* L);
     static int builtin_base_hit(lua_State* L);
+    static int builtin_base_speed(lua_State* L);
     static int builtin_armor_color(lua_State* L);
     static int builtin_weapon_color(lua_State* L);
     static int builtin_shield_color(lua_State* L);

@@ -31,8 +31,8 @@ void listener_impl::on_option_changed(character& me, OPTION option, bool enabled
         sstream << "외치기듣기  ";
         break;
 
-    case OPTION::ROAR_WORLDS:
-        sstream << "세계후      ";
+    case OPTION::NEWS:
+        sstream << "소식듣기    ";
         break;
 
     case OPTION::MAGIC_EFFECT:
@@ -61,6 +61,10 @@ void listener_impl::on_option_changed(character& me, OPTION option, bool enabled
 
     case OPTION::PK_PROTECT:
         sstream << "PK보호      ";
+        break;
+
+    case OPTION::LOCK_WALK_SPEED:
+        sstream << "이속고정    ";
         break;
 
     default:

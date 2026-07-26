@@ -637,8 +637,8 @@ namespace Internal.Controllers
                         option.Roar = request.Enabled;
                         break;
 
-                    case Fb.Model.EnumValue.Option.RoarWorlds:
-                        option.RoarWorlds = request.Enabled;
+                    case Fb.Model.EnumValue.Option.News:
+                        option.News = request.Enabled;
                         break;
 
                     case Fb.Model.EnumValue.Option.MagicEffect:

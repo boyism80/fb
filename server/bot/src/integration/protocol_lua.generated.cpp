@@ -994,8 +994,8 @@ void marshal_lua_game_resp__option(lua_State* L, const fb::protocol::header& hea
     lua->pushstring("magic_effect");
     lua->pushboolean(resp.magic_effect);
     lua->settable(-3);
-    lua->pushstring("roar_worlds");
-    lua->pushboolean(resp.roar_worlds);
+    lua->pushstring("news");
+    lua->pushboolean(resp.news);
     lua->settable(-3);
     lua->pushstring("fast_move");
     lua->pushboolean(resp.fast_move);
@@ -1599,6 +1599,15 @@ void marshal_lua_game_resp__update_internal(lua_State* L, const fb::protocol::he
     lua->settable(-3);
     lua->pushstring("level_id");
     lua->pushinteger(static_cast<lua_Integer>(resp.level));
+    lua->settable(-3);
+    lua->pushstring("ch_follow_camera");
+    lua->pushboolean(resp.ch_follow_camera);
+    lua->settable(-3);
+    lua->pushstring("ch_lock_walk_speed");
+    lua->pushboolean(resp.ch_lock_walk_speed);
+    lua->settable(-3);
+    lua->pushstring("ch_gm");
+    lua->pushboolean(resp.ch_gm);
     lua->settable(-3);
     lua->pushstring("ch_nation");
     lua->pushinteger(resp.ch_nation);
