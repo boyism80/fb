@@ -1,7 +1,5 @@
 #include <fb/game/listener.h>
 #include <fb/game/server.h>
-#include <fb/stream.h>
-#include <unordered_set>
 
 using namespace fb::game;
 using table = fb::model::table;
@@ -52,41 +50,17 @@ void listener_impl::on_chat(object& me, std::string_view message, CHAT_TYPE chat
 
     if (chat_type == CHAT_TYPE::SHOUT)
     {
-        auto map = me.map();
-        if (map == nullptr)
-            return;
+        this->server.send(me, game_resp::chat(me, message, chat_type), scope::MAP, {
+            .condition = [&me](object& to) {
+                if (to.is(OBJECT_TYPE::CHARACTER) == false)
+                    return false;
 
-        auto stream = fb::stream();
-        auto writer = fb::stream_writer<big_endian>(stream);
-        game_resp::chat(me, message, chat_type).serialize(writer);
+                auto& ch = static_cast<character&>(to);
+                if (ch.sight(me) && me.hidden(ch) == false)
+                    return true;
 
-        auto sent = std::unordered_set<uint32_t>{};
-        me.send(stream, true);
-        sent.insert(me.oid());
-
-        for (auto& x : me.nears(OBJECT_TYPE::CHARACTER, true))
-        {
-            if (x->sight(me) == false)
-                continue;
-
-            if (me.hidden(*x))
-                continue;
-
-            x->send(stream, true);
-            sent.insert(x->oid());
-        }
-
-        map->objects.foreach (OBJECT_TYPE::CHARACTER, [&](object& obj) {
-            if (sent.contains(obj.oid()))
-                return true;
-
-            auto& ch = static_cast<character&>(obj);
-            if (ch.option(OPTION::ROAR) == false)
-                return true;
-
-            ch.send(stream, true);
-            return true;
-        });
+                return ch.option(OPTION::ROAR);
+            }});
     }
     else
     {

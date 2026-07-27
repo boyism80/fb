@@ -26,6 +26,7 @@
 #include <vector>
 #include <memory>
 #include <mutex>
+#include <functional>
 #include <string_view>
 #include <unordered_map>
 
@@ -100,8 +101,9 @@ enum class scope
 
 struct send_option
 {
-    bool with_me = true;
-    bool encrypt = true;
+    bool                                   with_me   = true;
+    bool                                   encrypt   = true;
+    std::function<bool(fb::game::object&)> condition = {};
 };
 
 class server : public fb::acceptor<fb::game::character>
