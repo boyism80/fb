@@ -18,22 +18,14 @@ void map_worlds::serialize(fb::stream_writer<big_endian>& writer) const
 
     auto& attr   = table::world_attribute[this->id];
     auto& points = table::world[this->id];
-    auto  g      = std::unordered_map<uint32_t, std::vector<uint16_t>>();
-    for (auto& [id, point] : points)
-    {
-        if (g.contains(point.group))
-            g[point.group].push_back(id);
-        else
-            g.insert({point.group, std::vector<uint16_t>{id}});
-    }
 
     writer.write<std::string, uint8_t>(attr.key);
-    writer.write<uint8_t>(table::world[this->id].size());
+    writer.write<uint8_t>(static_cast<uint8_t>(points.size()));
     writer.write<uint8_t>(this->index);
 
     for (int i = 0; i < points.size(); i++)
     {
-        auto& point = table::world[this->id][i];
+        auto& point = points[i];
         writer.write<uint16_t>(point.offset.x);
         writer.write<uint16_t>(point.offset.y);
         writer.write<std::string, uint8_t>(point.name);
@@ -41,9 +33,9 @@ void map_worlds::serialize(fb::stream_writer<big_endian>& writer) const
         writer.write<uint16_t>(this->id);
         writer.write<uint16_t>(this->index);
         writer.write<uint16_t>(i);
-        writer.write<uint16_t>(g[point.group].size());
+        writer.write<uint16_t>(static_cast<uint16_t>(point.links.size()));
 
-        for (auto x : g[point.group])
+        for (auto x : point.links)
         {
             writer.write<uint16_t>(x);
         }
