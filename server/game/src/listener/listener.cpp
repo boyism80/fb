@@ -50,17 +50,16 @@ void listener_impl::on_chat(object& me, std::string_view message, CHAT_TYPE chat
 
     if (chat_type == CHAT_TYPE::SHOUT)
     {
-        this->server.send(me, game_resp::chat(me, message, chat_type), scope::MAP, {
-            .condition = [&me](object& to) {
-                if (to.is(OBJECT_TYPE::CHARACTER) == false)
-                    return false;
+        this->server.send(me, game_resp::chat(me, message, chat_type), scope::MAP, {.condition = [&me](object& to) {
+                              if (to.is(OBJECT_TYPE::CHARACTER) == false)
+                                  return false;
 
-                auto& ch = static_cast<character&>(to);
-                if (ch.sight(me) && me.hidden(ch) == false)
-                    return true;
+                              auto& ch = static_cast<character&>(to);
+                              if (ch.sight(me) && me.hidden(ch) == false)
+                                  return true;
 
-                return ch.option(OPTION::ROAR);
-            }});
+                              return ch.option(OPTION::ROAR);
+                          }});
     }
     else
     {

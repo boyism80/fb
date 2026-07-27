@@ -264,6 +264,8 @@ async::task<bool> character::map(std::shared_ptr<fb::game::map>      map,
         co_return true;
     }
 
+    this->_camera_pivot.reset();
+
     if (co_await object::map(map, position, std::move(options)) == false)
         co_return false;
 
@@ -1017,8 +1019,16 @@ void character::option(OPTION key, bool value, bool notify)
     if (this->_options[opt] == value)
         return;
 
-    // Apply option before update_internal so FOLLOW_CAMERA (0x02) reflects FIXED_MOVE.
     this->_options[opt] = value;
+
+    if (key == OPTION::FIXED_MOVE)
+    {
+        if (value)
+            this->_camera_pivot.reset();
+        else
+            this->ensure_camera_pivot();
+    }
+
     this->update(UPDATE_STATE_LEVEL::EXP_MONEY | UPDATE_STATE_LEVEL::CROWD_CONTROL);
     this->update_option();
 
@@ -1090,6 +1100,111 @@ void character::init()
 void character::update_position()
 {
     this->listener.on_update_position(*this);
+}
+
+fb::model::point16_t character::viewport_centered(const fb::model::point16_t& position) const
+{
+    auto map = this->map();
+    auto x   = position.x;
+    auto y   = position.y;
+    auto vx  = uint16_t{0};
+    auto vy  = uint16_t{0};
+
+    if (map->width() < fb::game::map::MAX_SCREEN_WIDTH)
+        vx = static_cast<uint16_t>(x + fb::game::map::HALF_SCREEN_WIDTH - (map->width() / 2));
+    else if (x < fb::game::map::HALF_SCREEN_WIDTH)
+        vx = x;
+    else if (x >= map->width() - fb::game::map::HALF_SCREEN_WIDTH)
+        vx = static_cast<uint16_t>(x + fb::game::map::MAX_SCREEN_WIDTH - map->width());
+    else
+        vx = static_cast<uint16_t>(fb::game::map::HALF_SCREEN_WIDTH);
+
+    if (map->height() < fb::game::map::MAX_SCREEN_HEIGHT)
+        vy = static_cast<uint16_t>(y + fb::game::map::HALF_SCREEN_HEIGHT - (map->height() / 2));
+    else if (y < fb::game::map::HALF_SCREEN_HEIGHT)
+        vy = y;
+    else if (y >= map->height() - fb::game::map::HALF_SCREEN_HEIGHT)
+        vy = static_cast<uint16_t>(y + fb::game::map::MAX_SCREEN_HEIGHT - map->height());
+    else
+        vy = static_cast<uint16_t>(fb::game::map::HALF_SCREEN_HEIGHT);
+
+    return fb::model::point16_t{vx, vy};
+}
+
+void character::ensure_camera_pivot() const
+{
+    this->assert_thread();
+
+    if (this->option(OPTION::FIXED_MOVE))
+    {
+        this->_camera_pivot.reset();
+        return;
+    }
+
+    auto map = this->map();
+    if (map == nullptr)
+        return;
+
+    auto ax = static_cast<int32_t>(this->x());
+    auto ay = static_cast<int32_t>(this->y());
+
+    if (this->_camera_pivot.has_value() == false)
+    {
+        auto vp = this->viewport_centered(this->position());
+        this->_camera_pivot =
+            fb::model::point<int32_t>{ax - static_cast<int32_t>(vp.x), ay - static_cast<int32_t>(vp.y)};
+        return;
+    }
+
+    auto& pivot = this->_camera_pivot.value();
+    auto  vx    = ax - pivot.x;
+    auto  vy    = ay - pivot.y;
+    auto  max_x = static_cast<int32_t>(fb::game::map::MAX_SCREEN_WIDTH);
+    auto  max_y = static_cast<int32_t>(fb::game::map::MAX_SCREEN_HEIGHT);
+
+    if (vx < 0)
+        pivot.x = ax;
+    else if (vx >= max_x)
+        pivot.x = ax - (max_x - 1);
+
+    if (vy < 0)
+        pivot.y = ay;
+    else if (vy >= max_y)
+        pivot.y = ay - (max_y - 1);
+}
+
+fb::model::point16_t character::viewport() const
+{
+    this->assert_thread();
+
+    if (this->option(OPTION::FIXED_MOVE) == false)
+        this->ensure_camera_pivot();
+
+    return this->viewport(this->position());
+}
+
+fb::model::point16_t character::viewport(const fb::model::point16_t& position) const
+{
+    this->assert_thread();
+
+    auto map = this->map();
+    if (map == nullptr)
+        return fb::model::point16_t{0, 0};
+
+    if (this->option(OPTION::FIXED_MOVE))
+        return this->viewport_centered(position);
+
+    if (this->_camera_pivot.has_value() == false)
+    {
+        auto vp             = this->viewport_centered(position);
+        this->_camera_pivot = fb::model::point<int32_t>{static_cast<int32_t>(position.x) - static_cast<int32_t>(vp.x),
+                                                        static_cast<int32_t>(position.y) - static_cast<int32_t>(vp.y)};
+        return vp;
+    }
+
+    auto& pivot = this->_camera_pivot.value();
+    return fb::model::point16_t{static_cast<uint16_t>(static_cast<int32_t>(position.x) - pivot.x),
+                                static_cast<uint16_t>(static_cast<int32_t>(position.y) - pivot.y)};
 }
 
 void character::screen_refresh()
@@ -1207,9 +1322,12 @@ bool character::move(DIRECTION direction, const fb::model::point16_t& before)
     }
     else
     {
-        // FAST_MOVE OFF: client waits for server 0x0B at walk phase 2.
+        auto viewport = this->viewport(before);
+        if (this->option(OPTION::FIXED_MOVE) == false)
+            this->ensure_camera_pivot();
+
         if (this->option(OPTION::FAST_MOVE) == false)
-            this->listener.on_move_confirm(*this, before);
+            this->listener.on_move_confirm(*this, before, viewport);
         return true;
     }
 }

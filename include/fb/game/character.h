@@ -1,4 +1,4 @@
-﻿#ifndef __CHARACTER_H__
+#ifndef __CHARACTER_H__
 #define __CHARACTER_H__
 
 #include <fb/game/life.h>
@@ -81,42 +81,43 @@ public:
     };
 
 private:
-    const std::string                          _pw;
-    const fb::model::datetime                  _created_date;
-    const fb::model::datetime                  _updated_date;
-    const std::string                          _name;
-    ROLE                                       _role;
-    std::optional<uint32_t>                    _birthday;
-    uint16_t                                   _look             = 0;
-    uint8_t                                    _color            = 0;
-    std::optional<uint8_t>                     _armor_color      = 0;
-    std::optional<uint8_t>                     _weapon_color     = std::nullopt;
-    std::optional<uint8_t>                     _shield_color     = std::nullopt;
-    uint64_t                                   _experience       = 0;
-    NATION                                     _nation           = NATION::GOGURYEO;
-    CREATURE                                   _creature         = CREATURE::DRAGON;
-    GENDER                                     _gender           = GENDER::MALE;
-    STATE                                      _state            = STATE::NORMAL;
-    uint8_t                                    _level            = 1;
-    CLASS                                      _class            = CLASS::NONE;
-    uint8_t                                    _promotion        = 0;
-    uint64_t                                   _money            = 0;
-    std::optional<character_appearance>        _mimicry          = std::nullopt;
-    std::string                                _title            = "";
-    std::optional<uint32_t>                    _group_id         = std::nullopt;
-    std::optional<uint32_t>                    _clan_id          = std::nullopt;
-    uint16_t                                   _weapon_damage    = 0;
-    bool                                       _detect           = false;
-    mob_vector_t                               _spawned_mobs     = {};
-    bool                                       _super_hide       = false;
-    mutable std::optional<fb::model::datetime> _first_login_date = std::nullopt;
-    fb::model::datetime                        _last_afk_time;
-    fb::game::marriage                         _marriage;
-    bool                                       _options[static_cast<uint8_t>(OPTION::LOCK_WALK_SPEED) + 1] = {
+    const std::string                                _pw;
+    const fb::model::datetime                        _created_date;
+    const fb::model::datetime                        _updated_date;
+    const std::string                                _name;
+    ROLE                                             _role;
+    std::optional<uint32_t>                          _birthday;
+    uint16_t                                         _look             = 0;
+    uint8_t                                          _color            = 0;
+    std::optional<uint8_t>                           _armor_color      = 0;
+    std::optional<uint8_t>                           _weapon_color     = std::nullopt;
+    std::optional<uint8_t>                           _shield_color     = std::nullopt;
+    uint64_t                                         _experience       = 0;
+    NATION                                           _nation           = NATION::GOGURYEO;
+    CREATURE                                         _creature         = CREATURE::DRAGON;
+    GENDER                                           _gender           = GENDER::MALE;
+    STATE                                            _state            = STATE::NORMAL;
+    uint8_t                                          _level            = 1;
+    CLASS                                            _class            = CLASS::NONE;
+    uint8_t                                          _promotion        = 0;
+    uint64_t                                         _money            = 0;
+    std::optional<character_appearance>              _mimicry          = std::nullopt;
+    std::string                                      _title            = "";
+    std::optional<uint32_t>                          _group_id         = std::nullopt;
+    std::optional<uint32_t>                          _clan_id          = std::nullopt;
+    uint16_t                                         _weapon_damage    = 0;
+    bool                                             _detect           = false;
+    mob_vector_t                                     _spawned_mobs     = {};
+    bool                                             _super_hide       = false;
+    mutable std::optional<fb::model::datetime>       _first_login_date = std::nullopt;
+    fb::model::datetime                              _last_afk_time;
+    fb::game::marriage                               _marriage;
+    mutable std::optional<fb::model::point<int32_t>> _camera_pivot = std::nullopt;
+    std::weak_ptr<fb::socket<character>>             _socket;
+    ping_state_t                                     _ping_state;
+    bool                                             _options[static_cast<uint8_t>(OPTION::LOCK_WALK_SPEED) + 1] = {
         1,
     };
-    std::weak_ptr<fb::socket<character>> _socket;
-    ping_state_t                         _ping_state;
 
 public:
     const uint32_t        id;
@@ -176,7 +177,9 @@ public:
     // clang-format on
 
 private:
-    uint64_t limited_exp(uint64_t exp) const;
+    uint64_t             limited_exp(uint64_t exp) const;
+    fb::model::point16_t viewport_centered(const fb::model::point16_t& position) const;
+    void                 ensure_camera_pivot() const;
 
 public:
     // clang-format off
@@ -198,6 +201,8 @@ public:
     void                                     update_map(const fb::game::map& map) override final;
     void                                     update_bgm(uint16_t bgm, uint8_t volume) override final;
     void                                     update_position() override final;
+    fb::model::point16_t                     viewport() const;
+    fb::model::point16_t                     viewport(const fb::model::point16_t& position) const;
     bool                                     condition(const std::vector<fb::model::dsl>& conditions) const override final;
     fb::thread*                              thread() const override final;
     void                                     assert_thread() const override final;
@@ -425,7 +430,7 @@ public:
     virtual void                            on_update_id(character& ch) = 0;
     virtual void                            on_character_init(character& ch) = 0;
     virtual void                            on_update_position(character& ch) = 0;
-    virtual void                            on_move_confirm(character& ch, const fb::model::point16_t& before) = 0;
+    virtual void                            on_move_confirm(character& ch, const fb::model::point16_t& before, const fb::model::point16_t& viewport) = 0;
     virtual void                            on_screen_refresh(character& ch) = 0;
     virtual void                            on_level_up(character& me) = 0;
     virtual void                            on_update(character& me, UPDATE_STATE_LEVEL level = UPDATE_STATE_LEVEL::EXP_MONEY | UPDATE_STATE_LEVEL::CROWD_CONTROL) = 0;

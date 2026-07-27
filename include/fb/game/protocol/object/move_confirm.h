@@ -11,8 +11,6 @@ namespace fb::protocol::game::response {
 
 using namespace fb::model::enum_value;
 
-// Opcode 0x0B: self move confirm. Required when FAST_MOVE is off so the
-// client can continue the walk animation past phase 2 (+0x687F gate).
 class move_confirm : public fb::protocol::header
 {
 public:
@@ -22,15 +20,21 @@ public:
 #ifndef BOT
     const DIRECTION                  direction;
     const fb::model::point<uint16_t> position;
+    const fb::model::point<uint16_t> viewport;
 #else
     DIRECTION                  direction;
     fb::model::point<uint16_t> position;
+    fb::model::point<uint16_t> viewport;
 #endif
 
 public:
 #ifndef BOT
-    move_confirm(DIRECTION direction, const fb::model::point<uint16_t>& position);
-    move_confirm(const fb::game::object& object, const fb::model::point<uint16_t>& position);
+    move_confirm(DIRECTION                         direction,
+                 const fb::model::point<uint16_t>& position,
+                 const fb::model::point<uint16_t>& viewport);
+    move_confirm(const fb::game::object&           object,
+                 const fb::model::point<uint16_t>& position,
+                 const fb::model::point<uint16_t>& viewport);
 #else
     move_confirm() = default;
 #endif

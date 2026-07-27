@@ -61,7 +61,7 @@ public:
     void                            on_update_time(character& ch, uint16_t hours) override final;
     void                            on_character_init(character& ch) override final;
     void                            on_update_position(character& ch) override final;
-    void                            on_move_confirm(character& ch, const fb::model::point16_t& before) override final;
+    void                            on_move_confirm(character& ch, const fb::model::point16_t& before, const fb::model::point16_t& viewport) override final;
     void                            on_screen_refresh(character& ch) override final;
     void                            on_browse_character(character& ch, const character& target) override final;
     void                            on_item_tooltip(character& ch, const fb::game::item& item, uint16_t position) override final;

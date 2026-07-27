@@ -162,17 +162,17 @@ void listener_impl::on_update_position(character& ch)
     ch.send(game_resp::position(ch));
 }
 
-void listener_impl::on_move_confirm(character& ch, const fb::model::point16_t& before)
+void listener_impl::on_move_confirm(character&                  ch,
+                                    const fb::model::point16_t& before,
+                                    const fb::model::point16_t& viewport)
 {
-    // Must not send immediately — on localhost the reply can be processed inside
-    // NetworkSend, before the client clears +0x687F, and that clear wipes the ack.
     auto thread = ch.thread();
     if (thread == nullptr)
         return;
 
     auto direction = ch.direction();
     auto position  = before;
-    ch.send(game_resp::move_confirm(direction, position));
+    ch.send(game_resp::move_confirm(direction, position, viewport));
 }
 
 void listener_impl::on_screen_refresh(character& ch)
