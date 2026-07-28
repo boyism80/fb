@@ -19,6 +19,13 @@ public:
     static constexpr uint8_t opcode = 0x18;
 
 public:
+#ifndef BOT
+    uint8_t unused = 0; // optional; real client often omits (opcode-only)
+#else
+    const uint8_t unused = 0;
+#endif
+
+public:
     user_list() = default;
 
 public:
@@ -41,6 +48,12 @@ class user_list : public fb::protocol::header
 public:
     static constexpr uint8_t opcode = 0x36;
 
+    enum class SORT_TYPE : uint8_t
+    {
+        CLASS = 0x00, // sort by class (nation/cls nibble)
+        NAME  = 0x01, // sort by name
+    };
+
 public:
     struct user_data
     {
@@ -52,13 +65,19 @@ public:
         std::string name;
     };
 
+#ifndef BOT
+    const SORT_TYPE        sort;
     std::vector<user_data> users;
+#else
+    SORT_TYPE              sort = SORT_TYPE::CLASS;
+    std::vector<user_data> users;
+#endif
 
 public:
 #ifdef BOT
     user_list() = default;
 #else
-    user_list(std::vector<user_data>&& users);
+    user_list(std::vector<user_data>&& users, SORT_TYPE sort = SORT_TYPE::CLASS);
 #endif
 
 public:

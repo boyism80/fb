@@ -260,8 +260,8 @@ void marshal_lua_game_resp__dialog(lua_State* L, const fb::protocol::header& hea
     lua->pushstring("button_next");
     lua->pushboolean(resp.button_next);
     lua->settable(-3);
-    lua->pushstring("interaction");
-    lua->pushinteger(resp.interaction);
+    lua->pushstring("type");
+    lua->pushinteger(resp.type_echo);
     lua->settable(-3);
     lua->pushstring("oid");
     lua->pushinteger(resp.oid);
@@ -285,8 +285,8 @@ void marshal_lua_game_resp__dialog_input(lua_State* L, const fb::protocol::heade
     lua->pushstring("message");
     lua->pushstring(resp.message);
     lua->settable(-3);
-    lua->pushstring("interaction");
-    lua->pushinteger(resp.interaction);
+    lua->pushstring("type");
+    lua->pushinteger(resp.type_echo);
     lua->settable(-3);
     lua->pushstring("oid");
     lua->pushinteger(resp.oid);
@@ -322,8 +322,8 @@ void marshal_lua_game_resp__dialog_input_ext(lua_State* L, const fb::protocol::h
     lua->pushstring("button_prev");
     lua->pushboolean(resp.button_prev);
     lua->settable(-3);
-    lua->pushstring("interaction");
-    lua->pushinteger(resp.interaction);
+    lua->pushstring("type");
+    lua->pushinteger(resp.type_echo);
     lua->settable(-3);
     lua->pushstring("oid");
     lua->pushinteger(resp.oid);
@@ -350,8 +350,8 @@ void marshal_lua_game_resp__dialog_item(lua_State* L, const fb::protocol::header
     lua->pushstring("pursuit");
     lua->pushinteger(resp.pursuit);
     lua->settable(-3);
-    lua->pushstring("interaction");
-    lua->pushinteger(resp.interaction);
+    lua->pushstring("type");
+    lua->pushinteger(resp.type_echo);
     lua->settable(-3);
     lua->pushstring("oid");
     lua->pushinteger(resp.oid);
@@ -378,8 +378,8 @@ void marshal_lua_game_resp__dialog_list(lua_State* L, const fb::protocol::header
     lua->pushstring("button_prev");
     lua->pushboolean(resp.button_prev);
     lua->settable(-3);
-    lua->pushstring("interaction");
-    lua->pushinteger(resp.interaction);
+    lua->pushstring("type");
+    lua->pushinteger(resp.type_echo);
     lua->settable(-3);
     lua->pushstring("oid");
     lua->pushinteger(resp.oid);
@@ -403,8 +403,8 @@ void marshal_lua_game_resp__dialog_menu(lua_State* L, const fb::protocol::header
     lua->pushstring("message");
     lua->pushstring(resp.message);
     lua->settable(-3);
-    lua->pushstring("interaction");
-    lua->pushinteger(resp.interaction);
+    lua->pushstring("type");
+    lua->pushinteger(resp.type_echo);
     lua->settable(-3);
     lua->pushstring("oid");
     lua->pushinteger(resp.oid);
@@ -428,8 +428,8 @@ void marshal_lua_game_resp__dialog_slot(lua_State* L, const fb::protocol::header
     lua->pushstring("message");
     lua->pushstring(resp.message);
     lua->settable(-3);
-    lua->pushstring("interaction");
-    lua->pushinteger(resp.interaction);
+    lua->pushstring("type");
+    lua->pushinteger(resp.type_echo);
     lua->settable(-3);
     lua->pushstring("oid");
     lua->pushinteger(resp.oid);
@@ -558,9 +558,6 @@ void marshal_lua_game_resp__external_info(lua_State* L, const fb::protocol::head
     lua->settable(-3);
     lua->pushstring("trade_option");
     lua->pushinteger(resp.trade_option);
-    lua->settable(-3);
-    lua->pushstring("unknown");
-    lua->pushinteger(resp.unknown);
     lua->settable(-3);
 }
 
@@ -1077,6 +1074,12 @@ void marshal_lua_game_resp__sound(lua_State* L, const fb::protocol::header& head
     lua->pushstring("oid");
     lua->pushinteger(resp.oid);
     lua->settable(-3);
+    lua->pushstring("value");
+    lua->pushinteger(static_cast<lua_Integer>(resp.value));
+    lua->settable(-3);
+    lua->pushstring("volume");
+    lua->pushinteger(resp.volume);
+    lua->settable(-3);
 }
 
 void marshal_lua_game_resp__spell_buff(lua_State* L, const fb::protocol::header& header)
@@ -1166,6 +1169,9 @@ void marshal_lua_game_resp__time(lua_State* L, const fb::protocol::header& heade
     lua->new_table();
     lua->pushstring("hours");
     lua->pushinteger(resp.hours);
+    lua->settable(-3);
+    lua->pushstring("minutes");
+    lua->pushinteger(resp.minutes);
     lua->settable(-3);
 }
 
@@ -1664,6 +1670,9 @@ void marshal_lua_game_resp__user_list(lua_State* L, const fb::protocol::header& 
 
     const auto& resp = static_cast<const game_resp::user_list&>(header);
     lua->new_table();
+    lua->pushstring("sort");
+    lua->pushinteger(static_cast<lua_Integer>(resp.sort));
+    lua->settable(-3);
     lua->pushstring("users");
     lua->new_table();
     for (size_t i = 0; i < resp.users.size(); ++i)
@@ -1932,9 +1941,9 @@ int lua_builder_game_reqs__pong(lua_State* L)
     if (lua == nullptr)
         return luaL_error(L, "integration protocol requires active lua context");
 
-    const auto token   = static_cast<uint32_t>(lua->tointeger(1));
-    const auto unknown = static_cast<uint32_t>(lua->tointeger(2));
-    lua_protocol::push_request(L, std::make_shared<game_reqs::pong>(token, unknown));
+    const auto token          = static_cast<uint32_t>(lua->tointeger(1));
+    const auto client_tick_ms = static_cast<uint32_t>(lua->tointeger(2));
+    lua_protocol::push_request(L, std::make_shared<game_reqs::pong>(token, client_tick_ms));
     return 1;
 }
 

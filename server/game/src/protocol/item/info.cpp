@@ -8,9 +8,10 @@ void item_info::serialize(fb::stream_writer<big_endian>& writer) const
     header::serialize(writer);
     writer.write<uint8_t>(opcode);
     writer.write<uint16_t>(this->position);
+    // Real client WriteHeader chain leftovers; server ignores.
     writer.write<uint8_t>(0);
-    writer.write<uint8_t>(0);
-    writer.write<uint8_t>(0);
+    writer.write<uint8_t>(1);
+    writer.write<uint8_t>(1);
     writer.write<uint8_t>(this->slot + 1);
 }
 #else
@@ -18,9 +19,9 @@ void item_info::deserialize(fb::stream_reader<big_endian>& reader)
 {
     header::deserialize(reader);
     this->position = reader.read<uint16_t>();
-    auto unknown1  = reader.read<uint8_t>();
-    auto unknown2  = reader.read<uint8_t>();
-    auto unknown3  = reader.read<uint8_t>();
+    this->filler0  = reader.read<uint8_t>();
+    this->filler1  = reader.read<uint8_t>();
+    this->filler2  = reader.read<uint8_t>();
     this->slot     = reader.read<uint8_t>() - 1;
 }
 #endif

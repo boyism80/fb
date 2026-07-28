@@ -65,6 +65,8 @@ namespace Fb.Model.EnumValue
     {
         [EnumMember(Value = "ATTACK")]
         Attack = 0x01, 
+        [EnumMember(Value = "THROW")]
+        Throw = 0x02, 
         [EnumMember(Value = "ARROW")]
         Arrow = 0x03, 
         [EnumMember(Value = "PICKUP")]

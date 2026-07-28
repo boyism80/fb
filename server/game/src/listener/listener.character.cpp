@@ -147,9 +147,14 @@ void listener_impl::on_update_bgm(character& ch, uint16_t bgm, uint8_t volume)
     ch.send(game_resp::map_bgm(bgm, volume));
 }
 
-void listener_impl::on_update_time(character& ch, uint16_t hours)
+void listener_impl::on_stop_bgm(character& ch, uint16_t bgm_id)
 {
-    ch.send(game_resp::time(hours));
+    ch.send(game_resp::map_bgm_stop(bgm_id));
+}
+
+void listener_impl::on_update_time(character& ch, uint8_t hours, uint8_t minutes)
+{
+    ch.send(game_resp::time(hours, minutes));
 }
 
 void listener_impl::on_character_init(character& ch)
@@ -164,7 +169,8 @@ void listener_impl::on_update_position(character& ch)
 
 void listener_impl::on_move_confirm(character&                  ch,
                                     const fb::model::point16_t& before,
-                                    const fb::model::point16_t& viewport)
+                                    const fb::model::point16_t& viewport,
+                                    uint8_t                     walk_queue_slot)
 {
     auto thread = ch.thread();
     if (thread == nullptr)
@@ -172,7 +178,7 @@ void listener_impl::on_move_confirm(character&                  ch,
 
     auto direction = ch.direction();
     auto position  = before;
-    ch.send(game_resp::move_confirm(direction, position, viewport));
+    ch.send(game_resp::move_confirm(direction, position, viewport, walk_queue_slot));
 }
 
 void listener_impl::on_screen_refresh(character& ch)

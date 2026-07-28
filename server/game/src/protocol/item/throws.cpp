@@ -21,6 +21,8 @@ void item_throws::deserialize(fb::stream_reader<big_endian>& reader)
 
 namespace fb::protocol::game::response {
 
+using namespace fb::model::enum_value;
+
 #ifndef BOT
 item_throws::item_throws(const fb::game::character&        ch,
                          const fb::game::item&             item,
@@ -44,9 +46,8 @@ void item_throws::serialize(fb::stream_writer<big_endian>& writer) const
     writer.write<uint16_t>(this->ch.y());
     writer.write<uint16_t>(this->to.x);
     writer.write<uint16_t>(this->to.y);
-    writer.write<uint32_t>(0x00000000);
-    writer.write<uint8_t>(0x02);
-    writer.write<uint8_t>(0x00);
+    writer.write<uint32_t>(0); // projectile legacy slot (client stores, never reads)
+    writer.write<uint8_t>(static_cast<uint8_t>(ACTION::THROW));
 }
 #else
 void item_throws::deserialize(fb::stream_reader<big_endian>& reader)
@@ -60,9 +61,8 @@ void item_throws::deserialize(fb::stream_reader<big_endian>& reader)
     this->from_y   = reader.read<uint16_t>();
     this->to_x     = reader.read<uint16_t>();
     this->to_y     = reader.read<uint16_t>();
-    reader.read<uint32_t>(); // 0x00000000
-    reader.read<uint8_t>();  // 0x02
-    reader.read<uint8_t>();  // 0x00
+    reader.read<uint32_t>(); // projectile legacy slot
+    reader.read<uint8_t>();  // ACTION::THROW
 }
 #endif
 

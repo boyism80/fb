@@ -152,7 +152,7 @@ public:
     virtual void                            update_map(const fb::game::map& map);
     virtual void                            update_bgm(uint16_t bgm, uint8_t volume);
     virtual void                            update_position();
-    void                                    sound(SOUND sound);
+    void                                    sound(SOUND sound, uint8_t volume = 100);
     void                                    effect(uint8_t value);
     virtual appearance_ptr                  appearance() const = 0;
     // clang-format on
@@ -176,7 +176,7 @@ struct object::listener_t
     virtual void on_unbuff(fb::game::object& me, fb::game::buff& buff)                                            = 0;
     virtual void on_create(fb::game::object& me)                                                                  = 0;
     virtual void on_destroy(fb::game::object& me)                                                                 = 0;
-    virtual void on_sound(fb::game::object& ch, SOUND sound)                                                      = 0;
+    virtual void on_sound(fb::game::object& ch, SOUND sound, uint8_t volume = 100)                                = 0;
     virtual void on_effect(fb::game::object& ch, uint8_t value)                                                   = 0;
     virtual void on_map_leave(fb::game::object& me, const fb::game::map& map)                                     = 0;
     virtual void on_map_enter(fb::game::object& me, const fb::game::map& map)                                     = 0;

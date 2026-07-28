@@ -15,7 +15,6 @@ class external_info : public fb::protocol::header
 {
 public:
     static constexpr uint8_t opcode = 0x34;
-
 #ifdef BOT
 
 public:
@@ -69,7 +68,6 @@ public:
     uint32_t    oid;
     uint8_t     group_option;
     uint8_t     trade_option;
-    uint32_t    unknown;
 
     // Achievement information
     std::vector<achievement_data> achievements;

@@ -19,8 +19,6 @@ void position::serialize(fb::stream_writer<big_endian>& writer) const
     auto viewport = this->ch.viewport();
     writer.write<uint16_t>(viewport.x);
     writer.write<uint16_t>(viewport.y);
-
-    writer.write<uint8_t>(0x00);
 }
 #else
 void position::deserialize(fb::stream_reader<big_endian>& reader)

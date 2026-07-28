@@ -1077,6 +1077,11 @@ void character::update_bgm(uint16_t bgm, uint8_t volume)
     this->listener.on_update_bgm(*this, bgm, volume);
 }
 
+void character::stop_bgm(uint16_t bgm_id)
+{
+    this->listener.on_stop_bgm(*this, bgm_id);
+}
+
 void character::update_buff()
 {
     this->listener.on_update_buff(*this, this->buffs);
@@ -1087,9 +1092,9 @@ void character::update_internal()
     this->listener.on_update_internal(*this);
 }
 
-void character::update_time(uint16_t hours)
+void character::update_time(uint8_t hours, uint8_t minutes)
 {
-    this->listener.on_update_time(*this, hours);
+    this->listener.on_update_time(*this, hours, minutes);
 }
 
 void character::init()
@@ -1299,14 +1304,14 @@ void character::assert_state(const std::vector<STATE>& values) const
     }
 }
 
-bool character::move(const fb::model::point16_t& before)
+bool character::move(const fb::model::point16_t& before, uint8_t walk_queue_slot)
 {
     this->assert_thread();
 
-    return this->move(this->_direction, before);
+    return this->move(this->_direction, before, walk_queue_slot);
 }
 
-bool character::move(DIRECTION direction, const fb::model::point16_t& before)
+bool character::move(DIRECTION direction, const fb::model::point16_t& before, uint8_t walk_queue_slot)
 {
     this->assert_thread();
 
@@ -1327,7 +1332,7 @@ bool character::move(DIRECTION direction, const fb::model::point16_t& before)
             this->ensure_camera_pivot();
 
         if (this->option(OPTION::FAST_MOVE) == false)
-            this->listener.on_move_confirm(*this, before, viewport);
+            this->listener.on_move_confirm(*this, before, viewport, walk_queue_slot);
         return true;
     }
 }

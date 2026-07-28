@@ -7,38 +7,36 @@ dialog_item::dialog_item(const fb::model::object&            obj,
                          const fb::game::dialog::item_pairs& items,
                          std::string_view                    message,
                          uint32_t                            oid,
-                         uint16_t                            pursuit,
-                         fb::game::dialog::interaction       interaction) :
+                         uint16_t                            pursuit) :
     appearance(fb::game::appearance_factory::create(obj)),
     items(items),
     message(std::string(message)),
-    oid(oid),
     pursuit(pursuit),
-    interaction(interaction)
+    oid(oid)
 { }
 
 dialog_item::dialog_item(const fb::game::object&             object,
                          const fb::game::dialog::item_pairs& items,
                          std::string_view                    message,
                          uint32_t                            oid,
-                         uint16_t                            pursuit,
-                         fb::game::dialog::interaction       interaction) :
+                         uint16_t                            pursuit) :
     appearance(fb::game::appearance_factory::create(object)),
     items(items),
     message(std::string(message)),
-    oid(oid),
     pursuit(pursuit),
-    interaction(interaction)
+    oid(oid)
 { }
 #endif
 
 #ifndef BOT
 void dialog_item::serialize(fb::stream_writer<big_endian>& writer) const
 {
+    constexpr auto type_value = static_cast<uint8_t>(type);
+
     header::serialize(writer);
     writer.write<uint8_t>(opcode);
-    writer.write<uint8_t>(0x04);
-    writer.write<uint8_t>(static_cast<uint8_t>(this->interaction));
+    writer.write<uint8_t>(type_value);
+    writer.write<uint8_t>(type_value);
     writer.write<uint32_t>(this->oid);
     this->appearance->serialize(writer);
     writer.write<std::string, uint16_t>(this->message);
@@ -60,9 +58,9 @@ void dialog_item::serialize(fb::stream_writer<big_endian>& writer) const
 void dialog_item::deserialize(fb::stream_reader<big_endian>& reader)
 {
     header::deserialize(reader);
-    reader.read<uint8_t>(); // 0x04
-    this->interaction = reader.read<uint8_t>();
-    this->oid         = reader.read<uint32_t>();
+    reader.read<uint8_t>();
+    this->type_echo = reader.read<uint8_t>();
+    this->oid       = reader.read<uint32_t>();
     reader.read<uint8_t>(); // obj type flag
     reader.read<uint8_t>(); // 0x01
     this->look  = reader.read<uint16_t>();

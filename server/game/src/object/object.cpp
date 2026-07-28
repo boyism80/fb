@@ -872,9 +872,9 @@ void object::update_bgm(uint16_t bgm, uint8_t volume)
 void object::update_position()
 { }
 
-void object::sound(SOUND sound)
+void object::sound(SOUND sound, uint8_t volume)
 {
-    this->listener.on_sound(*this, sound);
+    this->listener.on_sound(*this, sound, volume);
 }
 
 void object::effect(uint8_t value)

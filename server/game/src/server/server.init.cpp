@@ -191,7 +191,7 @@ void fb::game::server::init_handlers()
     this->handler.protocol.bind<fb::game::handler::protocol::bulletin>();        // Bulletin section list handler
     this->handler.protocol.bind<fb::game::handler::protocol::swap>();            // Spell order change
     this->handler.protocol.bind<fb::game::handler::protocol::dialog>();          // Dialog
-    this->handler.protocol.bind<fb::game::handler::protocol::dialog>(0x39);      // Dialog
+    this->handler.protocol.bind<fb::game::handler::protocol::dialog_list>();     // Dialog list
     this->handler.protocol.bind<fb::game::handler::protocol::item_throws>();     // Item throw handler
     this->handler.protocol.bind<fb::game::handler::protocol::spell_cast>();      // Spell handler
     this->handler.protocol.bind<fb::game::handler::protocol::door>();            // Door handler

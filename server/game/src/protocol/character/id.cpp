@@ -14,10 +14,9 @@ void id::serialize(fb::stream_writer<big_endian>& writer) const
     header::serialize(writer);
     writer.write<uint8_t>(opcode);
     writer.write<uint32_t>(this->ch.oid());
-    writer.write<uint32_t>(static_cast<uint32_t>(this->ch.direction())); // side
-    writer.write<uint8_t>(static_cast<uint8_t>(this->ch.cls()));         // class
-    writer.write<uint16_t>(0x00);
-    writer.write<uint8_t>(0x00);
+    // Client uses only the low byte of this BE u32 as direction.
+    writer.write<uint32_t>(static_cast<uint32_t>(this->ch.direction()));
+    writer.write<uint8_t>(static_cast<uint8_t>(this->ch.cls()));
 }
 #else
 void id::deserialize(fb::stream_reader<big_endian>& reader)

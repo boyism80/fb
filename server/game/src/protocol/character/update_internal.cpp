@@ -34,18 +34,18 @@ void update_internal::serialize(fb::stream_writer<big_endian>& writer) const
     {
         writer.write<uint8_t>(static_cast<uint8_t>(this->ch.nation()));   // nation
         writer.write<uint8_t>(static_cast<uint8_t>(this->ch.creature())); // creature
-        writer.write<uint8_t>(0x00);                                      // Unknown (clan?)
+        writer.write<uint8_t>(0x00);                                      // mid-skip pad (unread)
         writer.write<uint8_t>(this->ch.level());                          // level
         writer.write<uint32_t>(encoded_maxhp);                            // base hp
         writer.write<uint32_t>(encoded_maxmp);                            // base mp
         writer.write<uint8_t>(this->ch.stat.str());
         writer.write<uint8_t>(this->ch.stat.intelligence());
-        writer.write<uint8_t>(0x03);
-        writer.write<uint8_t>(0x03);
+        writer.write<uint8_t>(0x03); // mid-skip pad (unread)
+        writer.write<uint8_t>(0x03); // mid-skip pad (unread)
         writer.write<uint8_t>(this->ch.stat.dex());
-        writer.write<uint8_t>(0x03);
-        writer.write<uint32_t>(0x00);
-        writer.write<uint8_t>(0x00);
+        writer.write<uint8_t>(0x03);  // mid-skip pad (unread)
+        writer.write<uint32_t>(0x00); // mid-skip pad (unread)
+        writer.write<uint8_t>(0x00);  // mid-skip pad (unread)
     }
 
     if (ENUM_IN(this->level, UPDATE_STATE_LEVEL::HP_MP))

@@ -7,7 +7,6 @@
 namespace fb::game::handler::protocol {
 
 namespace game_reqs = fb::protocol::game::request;
-namespace game_resp = fb::protocol::game::response;
 
 class dialog : public fb::handler::protocol<fb::game::server, game_reqs::dialog>
 {

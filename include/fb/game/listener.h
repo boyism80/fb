@@ -43,7 +43,8 @@ public:
     void                            on_unbuff(fb::game::object& me, fb::game::buff& buff) override final;
     void                            on_update_map(character& ch, const fb::game::map& map) override final;
     void                            on_update_bgm(character& ch, uint16_t bgm, uint8_t volume) override final;
-    void                            on_sound(fb::game::object& ch, SOUND sound) override final;
+    void                            on_stop_bgm(character& ch, uint16_t bgm_id = 0) override final;
+    void                            on_sound(fb::game::object& ch, SOUND sound, uint8_t volume = 100) override final;
     void                            on_effect(fb::game::object& ch, uint8_t value) override final;
     void                            on_map_leave(fb::game::object& me, const fb::game::map& map) override final;
     void                            on_map_enter(fb::game::object& me, const fb::game::map& map) override final;
@@ -58,10 +59,10 @@ public:
     void                            on_update_map(character& ch, const fb::game::map& map, const fb::model::point16_t& position, const fb::model::size8_t& size, uint16_t crc) override final;
     void                            on_update_buff(character& ch, const fb::game::buffs& buffs) override final;
     void                            on_update_internal(character& ch) override final;
-    void                            on_update_time(character& ch, uint16_t hours) override final;
+    void                            on_update_time(character& ch, uint8_t hours, uint8_t minutes) override final;
     void                            on_character_init(character& ch) override final;
     void                            on_update_position(character& ch) override final;
-    void                            on_move_confirm(character& ch, const fb::model::point16_t& before, const fb::model::point16_t& viewport) override final;
+    void                            on_move_confirm(character& ch, const fb::model::point16_t& before, const fb::model::point16_t& viewport, uint8_t walk_queue_slot) override final;
     void                            on_screen_refresh(character& ch) override final;
     void                            on_browse_character(character& ch, const character& target) override final;
     void                            on_item_tooltip(character& ch, const fb::game::item& item, uint16_t position) override final;

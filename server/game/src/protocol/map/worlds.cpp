@@ -29,7 +29,7 @@ void map_worlds::serialize(fb::stream_writer<big_endian>& writer) const
         writer.write<uint16_t>(point.offset.x);
         writer.write<uint16_t>(point.offset.y);
         writer.write<std::string, uint8_t>(point.name);
-        writer.write<uint16_t>(0x0000);
+        writer.write<uint16_t>(static_cast<uint16_t>(this->id)); // world_value → 0x3F value
         writer.write<uint16_t>(this->id);
         writer.write<uint16_t>(this->index);
         writer.write<uint16_t>(i);
@@ -54,13 +54,13 @@ void map_worlds::deserialize(fb::stream_reader<big_endian>& reader)
     for (int i = 0; i < this->world_count; i++)
     {
         world_point point;
-        point.offset_x = reader.read<uint16_t>();
-        point.offset_y = reader.read<uint16_t>();
-        point.name     = reader.read<std::string, uint8_t>();
-        point.unknown1 = reader.read<uint16_t>(); // 0x0000
-        point.world_id = reader.read<uint16_t>();
-        point.index    = reader.read<uint16_t>();
-        point.point_id = reader.read<uint16_t>();
+        point.offset_x    = reader.read<uint16_t>();
+        point.offset_y    = reader.read<uint16_t>();
+        point.name        = reader.read<std::string, uint8_t>();
+        point.world_value = reader.read<uint16_t>();
+        point.world_id    = reader.read<uint16_t>();
+        point.index       = reader.read<uint16_t>();
+        point.point_id    = reader.read<uint16_t>();
 
         uint16_t group_count = reader.read<uint16_t>();
         point.group_points.clear();

@@ -42,6 +42,7 @@
 #include <fb/game/protocol/item/unequip.h>
 #include <fb/game/protocol/map/update.h>
 #include <fb/game/protocol/map/world.h>
+#include <fb/game/protocol/audio.h>
 #include <fb/game/protocol/map/bgm.h>
 #include <fb/game/protocol/map/config.h>
 #include <fb/game/protocol/map/worlds.h>

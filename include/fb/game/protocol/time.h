@@ -16,14 +16,17 @@ public:
 public:
 #ifndef BOT
     const uint8_t hours;
+    const uint8_t minutes;
 #else
     uint8_t hours;
+    uint8_t minutes;
 #endif
 
 public:
 #ifndef BOT
-    time(uint8_t hours) :
-        hours(hours)
+    time(uint8_t hours, uint8_t minutes = 0) :
+        hours(hours),
+        minutes(minutes)
     { }
 #else
     time() = default;

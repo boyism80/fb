@@ -3,6 +3,7 @@
 
 #include <stack>
 #include <string_view>
+#include <fb/game/dialog_type.h>
 #include <fb/game/npc.h>
 #include <fb/game/appearance.h>
 
@@ -13,17 +14,6 @@ class character;
 namespace fb::game::dialog {
 using item_pair  = std::pair<fb::model::item&, uint32_t>;
 using item_pairs = std::vector<item_pair>;
-
-enum class interaction : uint8_t
-{
-    NORMAL,
-    INPUT,
-    INPUT_EX,
-    MENU,
-    LIST,
-    SLOT,
-    ITEM,
-};
 
 // clang-format off
 struct listener_t

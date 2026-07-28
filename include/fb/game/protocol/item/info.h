@@ -15,10 +15,16 @@ public:
 
 public:
 #ifndef BOT
-    uint16_t position;
-    uint8_t  slot;
+    uint16_t position = 0;
+    uint8_t  filler0  = 0;
+    uint8_t  filler1  = 0;
+    uint8_t  filler2  = 0;
+    uint8_t  slot     = 0;
 #else
     const uint16_t position = 0;
+    const uint8_t  filler0  = 0;
+    const uint8_t  filler1  = 1;
+    const uint8_t  filler2  = 1;
     const uint8_t  slot     = 0;
 #endif
 

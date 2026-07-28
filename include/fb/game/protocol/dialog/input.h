@@ -5,6 +5,8 @@
 #include <fb/model/model.h>
 #ifndef BOT
 #include <fb/game/dialog.h>
+#else
+#include <fb/game/dialog_type.h>
 #endif
 #include <string_view>
 
@@ -15,37 +17,30 @@ using namespace fb::model::enum_value;
 class dialog_input : public fb::protocol::header
 {
 public:
-    static constexpr uint8_t opcode = 0x2F;
+    static constexpr uint8_t                opcode = 0x2F;
+    static constexpr fb::game::dialog::type type   = fb::game::dialog::type::INPUT;
 #ifndef BOT
     using appearance_ptr = std::unique_ptr<fb::game::appearance>;
 #endif
 
 public:
 #ifndef BOT
-    const appearance_ptr                appearance;
-    const std::vector<uint8_t>          slots;
-    const std::string                   message;
-    const fb::game::dialog::interaction interaction;
-    const uint32_t                      oid;
+    const appearance_ptr       appearance;
+    const std::vector<uint8_t> slots;
+    const std::string          message;
+    const uint32_t             oid;
 #else
     uint16_t    look;
     uint8_t     color;
     std::string message;
-    uint8_t     interaction;
+    uint8_t     type_echo;
     uint32_t    oid;
 #endif
 
 public:
 #ifndef BOT
-    dialog_input(const fb::model::object&      obj,
-                 std::string_view              message,
-                 uint32_t                      oid         = 0xFFFFFFFD,
-                 fb::game::dialog::interaction interaction = fb::game::dialog::interaction::INPUT);
-
-    dialog_input(const fb::game::object&       object,
-                 std::string_view              message,
-                 uint32_t                      oid         = 0xFFFFFFFD,
-                 fb::game::dialog::interaction interaction = fb::game::dialog::interaction::INPUT);
+    dialog_input(const fb::model::object& obj, std::string_view message, uint32_t oid = 0xFFFFFFFD);
+    dialog_input(const fb::game::object& object, std::string_view message, uint32_t oid = 0xFFFFFFFD);
 #else
     dialog_input() = default;
 #endif

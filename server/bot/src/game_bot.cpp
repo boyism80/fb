@@ -504,7 +504,7 @@ async::task<void> game_bot::move(DIRECTION direction, int step, const fb::model:
     for (int i = 0; i < step; i++)
     {
         this->_direction = direction;
-        this->send(game_reqs::move{direction, this->_oid, after});
+        this->send(game_reqs::move{direction, 0, after});
         switch (direction)
         {
         case DIRECTION::LEFT:
@@ -792,7 +792,7 @@ async::task<void> game_bot::pattern_move()
     static auto                   dist   = std::uniform_int_distribution<>(0, directions.size() - 1);
 
     auto direction = directions.at(dist(gen));
-    this->send(game_reqs::move{direction, this->_oid, this->_position});
+    this->send(game_reqs::move{direction, 0, this->_position});
 
     // Update internal direction state
     this->_direction = direction;
@@ -1512,7 +1512,7 @@ async::task<void> game_bot::move_bot_back_to_position(const fb::model::point<uin
     {
         for (auto i = 0; i < move_y_axis; i++)
         {
-            this->send(game_reqs::move{DIRECTION::TOP, this->oid(), current_position});
+            this->send(game_reqs::move{DIRECTION::TOP, 0, current_position});
             co_await thread->sleep(interval);
             current_position.y--;
             this->set_position(current_position);

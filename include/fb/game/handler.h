@@ -30,6 +30,7 @@
 #include <fb/game/handler/protocol/bulletin.h>
 #include <fb/game/handler/protocol/swap.h>
 #include <fb/game/handler/protocol/dialog.h>
+#include <fb/game/handler/protocol/dialog_list.h>
 #include <fb/game/handler/protocol/item_throws.h>
 #include <fb/game/handler/protocol/spell_cast.h>
 #include <fb/game/handler/protocol/door.h>

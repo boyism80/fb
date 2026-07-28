@@ -3,50 +3,99 @@
 namespace fb::protocol::game::request {
 
 #ifndef BOT
+
 void dialog::deserialize(fb::stream_reader<big_endian>& reader)
 {
+    using dialog_type = fb::game::dialog::type;
+
     header::deserialize(reader);
-    this->interaction = static_cast<fb::game::dialog::interaction>(reader.read<uint8_t>());
-    switch (static_cast<fb::game::dialog::interaction>(this->interaction))
-    {
-    case fb::game::dialog::interaction::NORMAL: // Normal dialog
-    {
-        reader.read(nullptr, 0x07); // Skip 7 bytes
-        this->action = reader.read<uint8_t>();
-        break;
-    }
+    this->type = static_cast<dialog_type>(reader.read<uint8_t>());
 
-    case fb::game::dialog::interaction::INPUT:
+    switch (this->type)
     {
-        auto unknown1 = reader.read<uint16_t>();
-        auto unknown2 = reader.read<uint32_t>();
-        this->message = reader.read<std::string, uint16_t>();
-        break;
-    }
-
-    case fb::game::dialog::interaction::INPUT_EX:
+    case dialog_type::INPUT:
     {
-        reader.read(nullptr, 0x07); // Skip 7 bytes
-        this->action = reader.read<uint8_t>();
-        if (this->action == 0x02) // OK button
+        this->oid = reader.read<uint32_t>();
+        this->seq = reader.read<uint16_t>();
+        if (reader.readable_size() > 2)
         {
-            auto unknown1 = reader.read<uint8_t>();
-            this->message = reader.read<std::string, uint8_t>();
+            reader.read<uint16_t>();
+            this->action = reader.read<uint8_t>();
+            if (this->action == 0x02 && reader.readable_size() > 0)
+                this->message = reader.read<std::string, uint8_t>();
+        }
+        else
+        {
+            this->action = static_cast<uint8_t>(reader.read<uint16_t>());
         }
         break;
     }
 
-    case fb::game::dialog::interaction::MENU:
+    case dialog_type::MENU:
     {
-        auto unknown = reader.read<uint32_t>();
-        this->index  = reader.read<uint16_t>() + 1;
+        this->oid   = reader.read<uint32_t>();
+        this->seq   = reader.read<uint16_t>();
+        this->index = reader.read<uint16_t>() + 1;
         break;
     }
 
-    case fb::game::dialog::interaction::LIST:
+    case dialog_type::ITEM:
     {
-        auto unknown1 = reader.read<uint32_t>();
-        this->button  = static_cast<DIALOG_RESULT>(reader.read<uint32_t>());
+        this->oid     = reader.read<uint32_t>();
+        this->pursuit = reader.read<uint16_t>();
+        this->name    = reader.read<std::string, uint8_t>();
+        break;
+    }
+
+    case dialog_type::SLOT:
+    {
+        this->oid     = reader.read<uint32_t>();
+        this->pursuit = reader.read<uint16_t>();
+        this->index   = reader.read<uint8_t>();
+        break;
+    }
+    }
+}
+
+void dialog_list::deserialize(fb::stream_reader<big_endian>& reader)
+{
+    using list_type = fb::game::dialog::list_type;
+
+    header::deserialize(reader);
+    this->type = static_cast<list_type>(reader.read<uint8_t>());
+
+    switch (this->type)
+    {
+    case list_type::TEXT:
+    {
+        this->oid    = reader.read<uint32_t>();
+        this->seq    = reader.read<uint16_t>();
+        this->action = static_cast<uint8_t>(reader.read<uint16_t>());
+        break;
+    }
+
+    case list_type::INPUT:
+    {
+        this->oid = reader.read<uint32_t>();
+        this->seq = reader.read<uint16_t>();
+        if (reader.readable_size() > 2)
+        {
+            reader.read<uint16_t>();
+            this->action = reader.read<uint8_t>();
+            if (this->action == 0x02 && reader.readable_size() > 0)
+                this->message = reader.read<std::string, uint8_t>();
+        }
+        else
+        {
+            this->action = static_cast<uint8_t>(reader.read<uint16_t>());
+        }
+        break;
+    }
+
+    case list_type::LIST:
+    {
+        this->oid    = reader.read<uint32_t>();
+        this->button = static_cast<DIALOG_RESULT>(reader.read<uint32_t>());
         switch (this->button)
         {
         case DIALOG_RESULT::PREV:
@@ -54,100 +103,105 @@ void dialog::deserialize(fb::stream_reader<big_endian>& reader)
             break;
 
         case DIALOG_RESULT::NEXT:
-            auto unknown2 = reader.read<uint8_t>();
-            this->index   = reader.read<uint8_t>();
+            reader.read<uint8_t>();
+            this->index = reader.read<uint8_t>();
             break;
         }
         break;
     }
-
-    case fb::game::dialog::interaction::ITEM:
-    {
-        auto unknown  = reader.read<uint32_t>();
-        this->pursuit = reader.read<uint16_t>();
-        this->name    = reader.read<std::string, uint8_t>();
-        break;
-    }
-
-    case fb::game::dialog::interaction::SLOT:
-    {
-        auto unknown  = reader.read<uint32_t>();
-        this->pursuit = reader.read<uint16_t>();
-        this->index   = reader.read<uint8_t>();
-        break;
-    }
     }
 }
+
 #else
+
 void dialog::serialize(fb::stream_writer<big_endian>& writer) const
 {
+    using dialog_type = fb::game::dialog::type;
+
     header::serialize(writer);
     writer.write<uint8_t>(opcode);
-    writer.write<uint8_t>(static_cast<uint8_t>(this->interaction));
+    writer.write<uint8_t>(static_cast<uint8_t>(this->type));
 
-    switch (this->interaction)
+    switch (this->type)
     {
-    case INTERACTION::NORMAL:        // NORMAL
-        writer.write<uint8_t>(0x00); // 7-byte padding
-        writer.write<uint8_t>(0x00);
-        writer.write<uint8_t>(0x00);
-        writer.write<uint8_t>(0x00);
-        writer.write<uint8_t>(0x00);
-        writer.write<uint8_t>(0x00);
-        writer.write<uint8_t>(0x00);
-        writer.write<uint8_t>(this->action);
-        break;
-
-    case INTERACTION::INPUT:                // INPUT
-        writer.write<uint16_t>(0x0000);     // unknown1
-        writer.write<uint32_t>(0x00000000); // unknown2
-        writer.write<std::string, uint16_t>(this->message);
-        break;
-
-    case INTERACTION::INPUT_EX:      // INPUT_EX
-        writer.write<uint8_t>(0x00); // 7-byte padding
-        writer.write<uint8_t>(0x00);
-        writer.write<uint8_t>(0x00);
-        writer.write<uint8_t>(0x00);
-        writer.write<uint8_t>(0x00);
-        writer.write<uint8_t>(0x00);
-        writer.write<uint8_t>(0x00);
-        writer.write<uint8_t>(this->action);
-        if (this->action == 0x02)
+    case dialog_type::INPUT:
+        writer.write<uint32_t>(this->oid);
+        writer.write<uint16_t>(this->seq);
+        if (this->message.empty() == false)
         {
-            writer.write<uint8_t>(0x00); // unknown1
+            writer.write<uint16_t>(0);
+            writer.write<uint8_t>(0x02);
             writer.write<std::string, uint8_t>(this->message);
+        }
+        else
+        {
+            writer.write<uint16_t>(this->action);
         }
         break;
 
-    case INTERACTION::MENU:                 // MENU
-        writer.write<uint32_t>(0x00000000); // unknown
+    case dialog_type::MENU:
+        writer.write<uint32_t>(this->oid);
+        writer.write<uint16_t>(this->seq);
         writer.write<uint16_t>(this->index - 1);
         break;
 
-    case INTERACTION::LIST:                 // LIST
-        writer.write<uint32_t>(0x00000000); // unknown1
-        writer.write<uint32_t>(static_cast<uint32_t>(this->button));
-        if (this->button == DIALOG_RESULT::NEXT)
-        {
-            writer.write<uint8_t>(0x00); // unknown2
-            writer.write<uint8_t>(this->index);
-        }
-        break;
-
-    case INTERACTION::SLOT:                 // SLOT
-        writer.write<uint32_t>(0x00000000); // unknown
+    case dialog_type::SLOT:
+        writer.write<uint32_t>(this->oid);
         writer.write<uint16_t>(this->pursuit);
         writer.write<uint8_t>(static_cast<uint8_t>(this->index));
         break;
 
-    case INTERACTION::ITEM:                 // ITEM
-        writer.write<uint32_t>(0x00000000); // unknown
+    case dialog_type::ITEM:
+        writer.write<uint32_t>(this->oid);
         writer.write<uint16_t>(this->pursuit);
         writer.write<std::string, uint8_t>(this->name);
         break;
     }
 }
+
+void dialog_list::serialize(fb::stream_writer<big_endian>& writer) const
+{
+    using list_type = fb::game::dialog::list_type;
+
+    header::serialize(writer);
+    writer.write<uint8_t>(opcode);
+    writer.write<uint8_t>(static_cast<uint8_t>(this->type));
+
+    switch (this->type)
+    {
+    case list_type::TEXT:
+        writer.write<uint32_t>(this->oid);
+        writer.write<uint16_t>(this->seq);
+        writer.write<uint16_t>(this->action);
+        break;
+
+    case list_type::INPUT:
+        writer.write<uint32_t>(this->oid);
+        writer.write<uint16_t>(this->seq);
+        if (this->action == 0x02)
+        {
+            writer.write<uint16_t>(0);
+            writer.write<uint8_t>(0x02);
+            writer.write<std::string, uint8_t>(this->message);
+        }
+        else
+        {
+            writer.write<uint16_t>(this->action);
+        }
+        break;
+
+    case list_type::LIST:
+        writer.write<uint32_t>(this->oid);
+        writer.write<uint32_t>(static_cast<uint32_t>(this->button));
+        if (this->button == DIALOG_RESULT::NEXT)
+        {
+            writer.write<uint8_t>(0x00);
+            writer.write<uint8_t>(this->index);
+        }
+        break;
+    }
+}
+
 #endif
 
 } // namespace fb::protocol::game::request

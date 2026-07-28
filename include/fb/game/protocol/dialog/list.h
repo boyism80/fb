@@ -5,6 +5,8 @@
 #include <fb/model/model.h>
 #ifndef BOT
 #include <fb/game/dialog.h>
+#else
+#include <fb/game/dialog_type.h>
 #endif
 #include <string_view>
 
@@ -20,22 +22,22 @@ public:
 #endif
 
 public:
-    static constexpr uint8_t opcode = 0x30;
+    static constexpr uint8_t                     opcode = 0x30;
+    static constexpr fb::game::dialog::list_type type   = fb::game::dialog::list_type::LIST;
 
 public:
 #ifndef BOT
-    const appearance_ptr                appearance;
-    const std::vector<std::string>      lists;
-    const std::string                   message;
-    const bool                          button_prev;
-    const fb::game::dialog::interaction interaction;
-    const uint32_t                      oid;
+    const appearance_ptr           appearance;
+    const std::vector<std::string> lists;
+    const std::string              message;
+    const bool                     button_prev;
+    const uint32_t                 oid;
 #else
     uint16_t                 look;
     uint8_t                  color;
     std::string              message;
     bool                     button_prev;
-    uint8_t                  interaction;
+    uint8_t                  type_echo;
     uint32_t                 oid;
     std::vector<std::string> lists;
 #endif
@@ -46,20 +48,17 @@ public:
                 const std::vector<std::string>& list,
                 std::string_view                message,
                 bool                            button_prev,
-                uint32_t                        oid         = 0xFFFFFFFD,
-                fb::game::dialog::interaction   interaction = fb::game::dialog::interaction::LIST);
+                uint32_t                        oid = 0xFFFFFFFD);
     dialog_list(const fb::model::object&        object,
                 const std::vector<std::string>& list,
                 std::string_view                message,
                 bool                            button_prev,
-                uint32_t                        oid         = 0xFFFFFFFD,
-                fb::game::dialog::interaction   interaction = fb::game::dialog::interaction::LIST);
+                uint32_t                        oid = 0xFFFFFFFD);
     dialog_list(appearance_ptr&&                appearance,
                 const std::vector<std::string>& list,
                 std::string_view                message,
                 bool                            button_prev,
-                uint32_t                        oid         = 0xFFFFFFFD,
-                fb::game::dialog::interaction   interaction = fb::game::dialog::interaction::LIST);
+                uint32_t                        oid = 0xFFFFFFFD);
 #else
     dialog_list() = default;
 #endif

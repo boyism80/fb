@@ -21,7 +21,7 @@ public:
         uint16_t              offset_x;
         uint16_t              offset_y;
         std::string           name;
-        uint16_t              unknown1;
+        uint16_t              world_value; // echoed as 0x3F map_world.value (world table key)
         uint16_t              world_id;
         uint16_t              index;
         uint16_t              point_id;

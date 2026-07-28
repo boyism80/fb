@@ -18,14 +18,14 @@ public:
 
 public:
     DIRECTION                  direction;
-    uint8_t                    oid;
+    uint8_t                    walk_queue_slot = 0; // client circular walk-queue index (0..63)
     fb::model::point<uint16_t> position;
 
 public:
 #ifndef BOT
     move() = default;
 #else
-    move(DIRECTION direction, uint32_t oid, fb::model::point<uint16_t> position);
+    move(DIRECTION direction, uint32_t walk_queue_slot, fb::model::point<uint16_t> position);
 #endif
 
 public:

@@ -202,12 +202,15 @@ int builtin::object::builtin_sound(lua_State* L)
     if (obj == nullptr)
         return 0;
 
-    auto sound    = static_cast<SOUND>(lua->tointeger(2));
+    auto sound  = static_cast<SOUND>(lua->tointeger(2));
+    auto volume = static_cast<uint8_t>(100);
+    if (lua->argc() >= 3)
+        volume = static_cast<uint8_t>(lua->tointeger(3));
     auto weak     = obj->weak_from_this_as<fb::game::object>();
     auto builder  = lua->new_co_builder();
     builder.weak  = weak;
     builder.yield = [=]() -> async::task<void> {
-        obj->sound(sound);
+        obj->sound(sound, volume);
         co_return;
     };
     builder.resume = []() -> async::task<int> {

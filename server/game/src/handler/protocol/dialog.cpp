@@ -18,48 +18,24 @@ async::task<bool> dialog::handle(fb::socket<character>& session, game_reqs::dial
 
     auto lua   = ch->dialog;
     ch->dialog = nullptr;
-    switch (request.interaction)
+    switch (request.type)
     {
-    case fb::game::dialog::interaction::NORMAL:
-        lua->pushinteger(request.action);
-        lua->resume(1);
-        break;
-
-    case fb::game::dialog::interaction::INPUT:
+    case fb::game::dialog::type::INPUT:
         lua->pushstring(request.message);
         lua->resume(1);
         break;
 
-    case fb::game::dialog::interaction::INPUT_EX:
-        if (request.action == 0x02) // OK button
-            lua->pushstring(request.message);
-        else
-            lua->pushinteger(request.action);
-
-        lua->resume(1);
-        break;
-
-    case fb::game::dialog::interaction::MENU:
+    case fb::game::dialog::type::MENU:
         lua->pushinteger(request.index);
         lua->resume(1);
         break;
 
-    case fb::game::dialog::interaction::LIST:
-        if (request.button == DIALOG_RESULT::NEXT)
-            lua->pushinteger(request.index);
-        else
-            lua->pushnil();
-
-        lua->pushinteger(static_cast<uint32_t>(request.button));
-        lua->resume(2);
-        break;
-
-    case fb::game::dialog::interaction::SLOT:
+    case fb::game::dialog::type::SLOT:
         lua->pushinteger(request.index);
         lua->resume(1);
         break;
 
-    case fb::game::dialog::interaction::ITEM:
+    case fb::game::dialog::type::ITEM:
         lua->pushstring(request.name);
         lua->resume(1);
         break;

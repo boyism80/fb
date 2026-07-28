@@ -319,6 +319,7 @@ inline const char* enum_tostring(T k)
 enum class ACTION
 {
     ATTACK = 0x01, 
+    THROW = 0x02, 
     ARROW = 0x03, 
     PICKUP = 0x04, 
     PICKUP_SILENT = 0x05, 
@@ -334,6 +335,7 @@ inline ACTION enum_parse<ACTION>(std::string_view k)
     static const std::unordered_map<std::string, ACTION> enums
     {
         { "ATTACK", ACTION::ATTACK }, 
+        { "THROW", ACTION::THROW }, 
         { "ARROW", ACTION::ARROW }, 
         { "PICKUP", ACTION::PICKUP }, 
         { "PICKUP_SILENT", ACTION::PICKUP_SILENT }, 
@@ -357,6 +359,7 @@ inline const char* enum_tostring<ACTION>(ACTION k)
     static const std::unordered_map<ACTION, const char*> enums
     {
         { ACTION::ATTACK, "ATTACK" }, 
+        { ACTION::THROW, "THROW" }, 
         { ACTION::ARROW, "ARROW" }, 
         { ACTION::PICKUP, "PICKUP" }, 
         { ACTION::PICKUP_SILENT, "PICKUP_SILENT" }, 
@@ -3312,6 +3315,8 @@ inline void enum_map<fb::model::enum_value::ACTION>(lua_State* lua)
     lua_newtable(lua);
     lua_pushinteger(lua, static_cast<lua_Integer>(fb::model::enum_value::ACTION::ATTACK));
     lua_setfield(lua, -2, "ATTACK");
+    lua_pushinteger(lua, static_cast<lua_Integer>(fb::model::enum_value::ACTION::THROW));
+    lua_setfield(lua, -2, "THROW");
     lua_pushinteger(lua, static_cast<lua_Integer>(fb::model::enum_value::ACTION::ARROW));
     lua_setfield(lua, -2, "ARROW");
     lua_pushinteger(lua, static_cast<lua_Integer>(fb::model::enum_value::ACTION::PICKUP));

@@ -5,6 +5,8 @@
 #include <fb/model/model.h>
 #ifndef BOT
 #include <fb/game/dialog.h>
+#else
+#include <fb/game/dialog_type.h>
 #endif
 #include <string_view>
 
@@ -15,25 +17,25 @@ using namespace fb::model::enum_value;
 class dialog_menu : public fb::protocol::header
 {
 public:
-    static constexpr uint8_t opcode = 0x2F;
+    static constexpr uint8_t                opcode = 0x2F;
+    static constexpr fb::game::dialog::type type   = fb::game::dialog::type::MENU;
 #ifndef BOT
     using appearance_ptr = std::unique_ptr<fb::game::appearance>;
 #endif
 
 public:
 #ifndef BOT
-    const appearance_ptr                appearance;
-    const std::vector<std::string>      menus;
-    const std::string                   message;
-    const fb::game::dialog::interaction interaction;
-    const uint32_t                      oid;
+    const appearance_ptr           appearance;
+    const std::vector<std::string> menus;
+    const std::string              message;
+    const uint32_t                 oid;
 #else
     uint16_t                 look;
     uint8_t                  color;
-    std::vector<std::string> menus;
     std::string              message;
-    uint8_t                  interaction;
+    uint8_t                  type_echo;
     uint32_t                 oid;
+    std::vector<std::string> menus;
 #endif
 
 public:
@@ -41,14 +43,11 @@ public:
     dialog_menu(const fb::model::object&        obj,
                 const std::vector<std::string>& menus,
                 std::string_view                message,
-                uint32_t                        oid         = 0xFFFFFFFD,
-                fb::game::dialog::interaction   interaction = fb::game::dialog::interaction::MENU);
-
+                uint32_t                        oid = 0xFFFFFFFD);
     dialog_menu(const fb::game::object&         object,
                 const std::vector<std::string>& menus,
                 std::string_view                message,
-                uint32_t                        oid         = 0xFFFFFFFD,
-                fb::game::dialog::interaction   interaction = fb::game::dialog::interaction::MENU);
+                uint32_t                        oid = 0xFFFFFFFD);
 #else
     dialog_menu() = default;
 #endif

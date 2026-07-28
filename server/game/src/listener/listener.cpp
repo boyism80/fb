@@ -241,9 +241,9 @@ void listener_impl::on_unbuff(object& me, buff& buff)
     me.send(game_resp::spell_unbuff(buff));
 }
 
-void listener_impl::on_sound(object& me, SOUND sound)
+void listener_impl::on_sound(object& me, SOUND sound, uint8_t volume)
 {
-    this->server.send(me, game_resp::sound(me, sound), scope::PIVOT);
+    this->server.send(me, game_resp::sound(me, sound, volume), scope::PIVOT);
 }
 void listener_impl::on_effect(object& me, uint8_t value)
 {

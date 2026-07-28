@@ -5,16 +5,21 @@ using namespace fb::model;
 namespace fb::protocol::game::response {
 
 #ifndef BOT
-move_confirm::move_confirm(DIRECTION direction, const point<uint16_t>& position, const point<uint16_t>& viewport) :
+move_confirm::move_confirm(DIRECTION              direction,
+                           const point<uint16_t>& position,
+                           const point<uint16_t>& viewport,
+                           uint8_t                walk_queue_slot) :
     direction(direction),
     position(position),
-    viewport(viewport)
+    viewport(viewport),
+    walk_queue_slot(walk_queue_slot)
 { }
 
 move_confirm::move_confirm(const fb::game::object& object,
                            const point<uint16_t>&  position,
-                           const point<uint16_t>&  viewport) :
-    move_confirm(object.direction(), position, viewport)
+                           const point<uint16_t>&  viewport,
+                           uint8_t                 walk_queue_slot) :
+    move_confirm(object.direction(), position, viewport, walk_queue_slot)
 { }
 
 void move_confirm::serialize(fb::stream_writer<big_endian>& writer) const
@@ -26,18 +31,18 @@ void move_confirm::serialize(fb::stream_writer<big_endian>& writer) const
     writer.write<uint16_t>(this->position.y);
     writer.write<uint16_t>(this->viewport.x);
     writer.write<uint16_t>(this->viewport.y);
-    writer.write<uint8_t>(0x01);
+    writer.write<uint8_t>(this->walk_queue_slot);
 }
 #else
 void move_confirm::deserialize(fb::stream_reader<big_endian>& reader)
 {
     header::deserialize(reader);
-    this->direction  = static_cast<DIRECTION>(reader.read<uint8_t>());
-    this->position.x = reader.read<uint16_t>();
-    this->position.y = reader.read<uint16_t>();
-    this->viewport.x = reader.read<uint16_t>();
-    this->viewport.y = reader.read<uint16_t>();
-    reader.read<uint8_t>();
+    this->direction       = static_cast<DIRECTION>(reader.read<uint8_t>());
+    this->position.x      = reader.read<uint16_t>();
+    this->position.y      = reader.read<uint16_t>();
+    this->viewport.x      = reader.read<uint16_t>();
+    this->viewport.y      = reader.read<uint16_t>();
+    this->walk_queue_slot = reader.read<uint8_t>();
 }
 #endif
 

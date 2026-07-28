@@ -303,7 +303,8 @@ async::task<std::shared_ptr<character>> login::init(const game_reqs::login& requ
                                     resp.marriage.divorce_count));
 
     ch->init();
-    ch->update_time(this->server.time().hours());
+    ch->update_time(static_cast<uint8_t>(this->server.time().hours()),
+                    static_cast<uint8_t>(this->server.time().minutes()));
     if (request.from == internal::Service::Login)
     {
         auto msg = this->elapsed_message(resp.character.updated_date);

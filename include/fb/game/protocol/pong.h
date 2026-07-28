@@ -13,20 +13,20 @@ public:
 
 public:
 #ifndef BOT
-    uint32_t token   = 0;
-    uint32_t unknown = 0;
+    uint32_t token          = 0;
+    uint32_t client_tick_ms = 0; // client timeGetTime(); server ignores
 #else
     const uint32_t token;
-    const uint32_t unknown;
+    const uint32_t client_tick_ms;
 #endif
 
 public:
 #ifndef BOT
     pong() = default;
 #else
-    pong(uint32_t token, uint32_t unknown) :
+    pong(uint32_t token, uint32_t client_tick_ms) :
         token(token),
-        unknown(unknown)
+        client_tick_ms(client_tick_ms)
     { }
 #endif
 
