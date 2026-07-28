@@ -196,6 +196,11 @@ local function test_scenario_3(ctx, index)
 
     local npc = setup_npc(ctx, bot, index, "좌성황")
 
+    if lib.option.disable_pk_protect(bot) == false then
+        log("fatal", string.format("Chat[%d]: %s", index, "scenario 3 FAILED: could not disable PK_PROTECT"))
+        return false
+    end
+
     local spell_index = bot:learn_spell("헬파이어")
     bot:set_max_hp_mp(100000, 100000)
     bot:mp(100000)

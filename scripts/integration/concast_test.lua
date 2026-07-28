@@ -92,8 +92,14 @@ test_suite {
                 [2] = {
                     function(ctx)
                         local bot = ctx:bot(2)
+                        local option = require("integration.lib.option")
 
                         log("debug", string.format("Concast[%s]: poison clear test start", bot:name()))
+
+                        if option.disable_pk_protect(bot) == false then
+                            log("fatal", string.format("Concast[%s]: failed to disable PK_PROTECT", bot:name()))
+                            return false
+                        end
 
                         bot:setup_bot_stats(10000, 10000)
                         bot:remove_buffs()
@@ -141,8 +147,14 @@ test_suite {
                 [3] = {
                     function(ctx)
                         local bot = ctx:bot(3)
+                        local option = require("integration.lib.option")
 
                         log("debug", string.format("Concast[%s]: despair clear test start", bot:name()))
+
+                        if option.disable_pk_protect(bot) == false then
+                            log("fatal", string.format("Concast[%s]: failed to disable PK_PROTECT", bot:name()))
+                            return false
+                        end
 
                         bot:setup_bot_stats(10000, 10000)
                         bot:remove_buffs()

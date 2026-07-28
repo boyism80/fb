@@ -203,6 +203,8 @@ void fb::game::server::init_handlers()
     this->handler.protocol.bind<fb::game::handler::protocol::post>();
     this->handler.protocol.bind<fb::game::handler::protocol::friends>();
     this->handler.protocol.bind<fb::game::handler::protocol::pong>();
+    this->handler.protocol.bind<fb::game::handler::protocol::user_info_submit>();
+    this->handler.protocol.bind<fb::game::handler::protocol::popup_input_submit>();
 }
 
 void fb::game::server::init_timers()

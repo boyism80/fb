@@ -41,6 +41,8 @@
 #include <fb/game/handler/protocol/give_money.h>
 #include <fb/game/handler/protocol/post.h>
 #include <fb/game/handler/protocol/pong.h>
+#include <fb/game/handler/protocol/user_info_submit.h>
+#include <fb/game/handler/protocol/popup_input_submit.h>
 
 #include <fb/game/handler/amqp/kick_out.h>
 #include <fb/game/handler/amqp/whisper.h>

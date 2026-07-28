@@ -84,6 +84,11 @@ test_suite {
 
             log("debug", "Enhanced attack test: PvP scenario started")
 
+            if lib.option.disable_pk_protect(attacker) == false then
+                log("fatal", "Attack test: failed to disable PK_PROTECT for attacker")
+                return false
+            end
+
             target:set_max_hp_mp(100000, 100000)
             attacker:direction("RIGHT")
 

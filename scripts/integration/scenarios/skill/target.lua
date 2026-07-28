@@ -248,6 +248,10 @@ function M.run(ctx, bot_index, target_index)
     local caster = ctx:bot(bot_index)
     local target = ctx:bot(target_index)
     log("debug", "TARGET SPELL TEST STARTED")
+    if lib.option.disable_pk_protect(caster) == false then
+        log("fatal", "TARGET SPELL TEST: failed to disable PK_PROTECT for caster")
+        return false
+    end
     if spell_runner.run_cases(CASES, caster, target) == false then
         return false
     end

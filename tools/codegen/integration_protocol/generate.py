@@ -27,7 +27,7 @@ TEMPLATE_RE = re.compile(r"template\s*<([^>]+)>\s*class\s+(\w+)\s*:")
 
 FIELD_RE = re.compile(
     r"^\s*(?:(?:const|static|volatile)\s+)*"
-    r"(std::string|uint32_t|uint16_t|uint8_t|int32_t|bool|"
+    r"(std::string|uint32_t|uint16_t|uint8_t|int32_t|int16_t|int8_t|bool|"
     r"ACTION|CHAT_TYPE|DURATION|MESSAGE_TYPE|SPELL_TYPE|STATE|DIRECTION|"
     r"UPDATE_STATE_LEVEL|"
     r"fb::model::point<uint16_t>)"
@@ -55,6 +55,8 @@ PRIMITIVE_FIELD_TYPES = {
     "uint16_t",
     "uint8_t",
     "int32_t",
+    "int16_t",
+    "int8_t",
     "bool",
     "fb::model::point<uint16_t>",
 }
@@ -333,6 +335,8 @@ def split_ctor_params(params: str) -> list[tuple[str, str]]:
     parsed: list[tuple[str, str]] = []
     for part in parts:
         part = normalize_param_type(part)
+        if "=" in part:
+            part = part.split("=", 1)[0].strip()
         tokens = part.split()
         if len(tokens) < 2:
             continue
@@ -492,6 +496,24 @@ def append_marshal_field(lines: list[str], fld: ProtocolField, var: str = "resp"
 
 
 SPECIAL_MARSHAL_EXTRAS: dict[str, list[str]] = {
+    "game_resp::update_cc": [
+        "    const auto cc = static_cast<uint32_t>(resp.cc);",
+        '    lua->pushstring("cc");',
+        "    lua->pushinteger(cc);",
+        "    lua->settable(-3);",
+        '    lua->pushstring("direction");',
+        "    lua->pushboolean((cc & static_cast<uint32_t>(fb::model::enum_value::CROWD_CONTROL::DIRECTION)) != 0);",
+        "    lua->settable(-3);",
+        '    lua->pushstring("sight");',
+        "    lua->pushboolean((cc & static_cast<uint32_t>(fb::model::enum_value::CROWD_CONTROL::SIGHT)) != 0);",
+        "    lua->settable(-3);",
+        '    lua->pushstring("hear");',
+        "    lua->pushboolean((cc & static_cast<uint32_t>(fb::model::enum_value::CROWD_CONTROL::HEAR)) != 0);",
+        "    lua->settable(-3);",
+        '    lua->pushstring("chat");',
+        "    lua->pushboolean((cc & static_cast<uint32_t>(fb::model::enum_value::CROWD_CONTROL::CHAT)) != 0);",
+        "    lua->settable(-3);",
+    ],
     "game_resp::update": [
         '    lua->pushstring("objects_data");',
         "    lua->new_table();",
@@ -600,7 +622,7 @@ def lua_read_arg_lines(cpp_type: str, lua_index: int, var_name: str) -> list[str
         ]
     if norm == "bool":
         return [f"    const auto {var_name} = lua->toboolean({lua_index});"]
-    if norm in ("uint32_t", "uint16_t", "uint8_t", "int32_t"):
+    if norm in ("uint32_t", "uint16_t", "uint8_t", "int32_t", "int16_t", "int8_t"):
         return [
             f"    const auto {var_name} = static_cast<{norm}>(lua->tointeger({lua_index}));"
         ]

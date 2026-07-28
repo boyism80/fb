@@ -503,6 +503,15 @@ void register_manual_builders(lua_State* L)
     lua_setfield(L, -2, "move");
 
     lua_pushcfunction(L, [](lua_State* L) -> int {
+        auto& lua  = require_lua(L);
+        auto  oid  = static_cast<uint32_t>(lua.tointeger(1));
+        auto  flag = static_cast<uint8_t>(lua.tointeger(2, game_reqs::click::FLAG_OBJECT));
+        push_request(L, std::make_shared<game_reqs::click>(oid, flag));
+        return 1;
+    });
+    lua_setfield(L, -2, "click");
+
+    lua_pushcfunction(L, [](lua_State* L) -> int {
         auto& lua = require_lua(L);
 
         if (lua.is_table(1) == false)
