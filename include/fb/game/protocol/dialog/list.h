@@ -8,6 +8,7 @@
 #else
 #include <fb/game/dialog_type.h>
 #endif
+#include <optional>
 #include <string_view>
 
 namespace fb::protocol::game::response {
@@ -22,41 +23,40 @@ public:
 #endif
 
 public:
-    static constexpr uint8_t                     opcode = 0x30;
-    static constexpr fb::game::dialog::list_type type   = fb::game::dialog::list_type::LIST;
+    static constexpr uint8_t opcode = 0x30;
 
 public:
 #ifndef BOT
-    const appearance_ptr           appearance;
-    const std::vector<std::string> lists;
-    const std::string              message;
-    const bool                     button_prev;
-    const uint32_t                 oid;
+    const appearance_ptr             appearance;
+    const std::vector<std::string>   lists;
+    const std::optional<std::string> message; // nullopt → subtype 3 (no text)
+    const bool                       button_prev;
+    const uint32_t                   oid;
 #else
-    uint16_t                 look;
-    uint8_t                  color;
-    std::string              message;
-    bool                     button_prev;
-    uint8_t                  type_echo;
-    uint32_t                 oid;
-    std::vector<std::string> lists;
+    uint16_t                   look;
+    uint8_t                    color;
+    std::optional<std::string> message;
+    bool                       button_prev;
+    uint8_t                    type_echo;
+    uint32_t                   oid;
+    std::vector<std::string>   lists;
 #endif
 
 public:
 #ifndef BOT
     dialog_list(const fb::game::object&         object,
                 const std::vector<std::string>& list,
-                std::string_view                message,
+                std::optional<std::string>      message,
                 bool                            button_prev,
                 uint32_t                        oid = 0xFFFFFFFD);
     dialog_list(const fb::model::object&        object,
                 const std::vector<std::string>& list,
-                std::string_view                message,
+                std::optional<std::string>      message,
                 bool                            button_prev,
                 uint32_t                        oid = 0xFFFFFFFD);
     dialog_list(appearance_ptr&&                appearance,
                 const std::vector<std::string>& list,
-                std::string_view                message,
+                std::optional<std::string>      message,
                 bool                            button_prev,
                 uint32_t                        oid = 0xFFFFFFFD);
 #else

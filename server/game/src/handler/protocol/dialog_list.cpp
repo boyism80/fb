@@ -21,11 +21,16 @@ async::task<bool> dialog_list::handle(fb::socket<character>& session, game_reqs:
     switch (request.type)
     {
     case fb::game::dialog::list_type::TEXT:
+    case fb::game::dialog::list_type::TEXT_NO_MSG:
         lua->pushinteger(request.action);
         lua->resume(1);
         break;
 
     case fb::game::dialog::list_type::INPUT:
+    case fb::game::dialog::list_type::INPUT_NO_MSG:
+    case fb::game::dialog::list_type::INPUT_PASSWORD:
+    case fb::game::dialog::list_type::INPUT_PASSWORD_NO_MSG:
+    case fb::game::dialog::list_type::EMAIL:
         if (request.action == 0x02) // OK button
             lua->pushstring(request.message);
         else
@@ -35,6 +40,7 @@ async::task<bool> dialog_list::handle(fb::socket<character>& session, game_reqs:
         break;
 
     case fb::game::dialog::list_type::LIST:
+    case fb::game::dialog::list_type::LIST_NO_MSG:
         if (request.button == DIALOG_RESULT::NEXT)
             lua->pushinteger(request.index);
         else

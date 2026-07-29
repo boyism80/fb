@@ -81,6 +81,11 @@ struct character
     static int builtin_input(lua_State* L);
     static int builtin_menu(lua_State* L);
     static int builtin_slot(lua_State* L);
+    static int builtin_pursuit(lua_State* L);
+    static int builtin_dual_field(lua_State* L);
+    static int builtin_spell(lua_State* L);
+    static int builtin_email(lua_State* L);
+    static int builtin_dialog_0x30_10(lua_State* L);
     static int builtin_rezen_force(lua_State* L);
     static int builtin_quest(lua_State* L);
     static int builtin_matchmaker(lua_State* L);

@@ -51,8 +51,6 @@ void dialog_item::serialize(fb::stream_writer<big_endian>& writer) const
         writer.write<std::string>(item.name);
         writer.write<std::string>(item.desc);
     }
-
-    writer.write<uint8_t>(0x00);
 }
 #else
 void dialog_item::deserialize(fb::stream_reader<big_endian>& reader)
@@ -83,7 +81,6 @@ void dialog_item::deserialize(fb::stream_reader<big_endian>& reader)
         item.desc  = reader.read<std::string, uint8_t>();
         this->items.push_back(item);
     }
-    reader.read<uint8_t>(); // 0x00
 }
 #endif
 

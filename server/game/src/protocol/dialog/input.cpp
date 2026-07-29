@@ -3,23 +3,35 @@
 namespace fb::protocol::game::response {
 
 #ifndef BOT
-dialog_input::dialog_input(const fb::model::object& obj, std::string_view message, uint32_t oid) :
+dialog_input::dialog_input(const fb::model::object&   obj,
+                           std::string_view           message,
+                           uint32_t                   oid,
+                           std::optional<std::string> ext,
+                           uint16_t                   pursuit) :
     appearance(fb::game::appearance_factory::create(obj)),
     message(std::string(message)),
-    oid(oid)
+    oid(oid),
+    ext(std::move(ext)),
+    pursuit(pursuit)
 { }
 
-dialog_input::dialog_input(const fb::game::object& object, std::string_view message, uint32_t oid) :
+dialog_input::dialog_input(const fb::game::object&    object,
+                           std::string_view           message,
+                           uint32_t                   oid,
+                           std::optional<std::string> ext,
+                           uint16_t                   pursuit) :
     appearance(fb::game::appearance_factory::create(object)),
     message(std::string(message)),
-    oid(oid)
+    oid(oid),
+    ext(std::move(ext)),
+    pursuit(pursuit)
 { }
-#endif
 
-#ifndef BOT
 void dialog_input::serialize(fb::stream_writer<big_endian>& writer) const
 {
-    constexpr auto type_value = static_cast<uint8_t>(type);
+    // ext present → subtype INPUT(3); absent → subtype 2 (no ext blob)
+    auto type_value = static_cast<uint8_t>(this->ext.has_value() ? fb::game::dialog::type::INPUT
+                                                                 : fb::game::dialog::type::INPUT_NO_EXT);
 
     header::serialize(writer);
     writer.write<uint8_t>(opcode);
@@ -28,7 +40,9 @@ void dialog_input::serialize(fb::stream_writer<big_endian>& writer) const
     writer.write<uint32_t>(this->oid);
     this->appearance->serialize(writer);
     writer.write<std::string, uint16_t>(this->message);
-    writer.write<uint8_t>(0x00);
+    if (this->ext.has_value())
+        writer.write<std::string, uint8_t>(*this->ext);
+    writer.write<uint16_t>(this->pursuit);
 }
 #else
 void dialog_input::deserialize(fb::stream_reader<big_endian>& reader)
@@ -45,7 +59,12 @@ void dialog_input::deserialize(fb::stream_reader<big_endian>& reader)
     reader.read<uint16_t>(); // look (duplicate)
     reader.read<uint8_t>();  // color (duplicate)
     this->message = reader.read<std::string, uint16_t>();
-    reader.read<uint8_t>(); // 0x00
+
+    this->ext = std::nullopt;
+    if (this->type_echo == static_cast<uint8_t>(fb::game::dialog::type::INPUT))
+        this->ext = reader.read<std::string, uint8_t>();
+
+    this->pursuit = reader.read<uint16_t>();
 }
 #endif
 

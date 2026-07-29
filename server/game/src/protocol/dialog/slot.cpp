@@ -43,7 +43,6 @@ void dialog_slot::serialize(fb::stream_writer<big_endian>& writer) const
     {
         writer.write<uint8_t>(slot);
     }
-    writer.write<uint8_t>(0x00);
 }
 #else
 void dialog_slot::deserialize(fb::stream_reader<big_endian>& reader)
@@ -68,7 +67,6 @@ void dialog_slot::deserialize(fb::stream_reader<big_endian>& reader)
     {
         this->slots.push_back(reader.read<uint8_t>());
     }
-    reader.read<uint8_t>(); // 0x00
 }
 #endif
 

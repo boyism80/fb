@@ -265,7 +265,10 @@ void marshal_lua_game_resp__dialog(lua_State* L, const fb::protocol::header& hea
     lua->pushinteger(resp.color);
     lua->settable(-3);
     lua->pushstring("message");
-    lua->pushstring(resp.message);
+    if (resp.message.has_value())
+        lua->pushstring(*resp.message);
+    else
+        lua->pushnil();
     lua->settable(-3);
     lua->pushstring("button_prev");
     lua->pushboolean(resp.button_prev);
@@ -321,7 +324,10 @@ void marshal_lua_game_resp__dialog_input_ext(lua_State* L, const fb::protocol::h
     lua->pushinteger(resp.color);
     lua->settable(-3);
     lua->pushstring("message");
-    lua->pushstring(resp.message);
+    if (resp.message.has_value())
+        lua->pushstring(*resp.message);
+    else
+        lua->pushnil();
     lua->settable(-3);
     lua->pushstring("top");
     lua->pushstring(resp.top);
@@ -334,6 +340,9 @@ void marshal_lua_game_resp__dialog_input_ext(lua_State* L, const fb::protocol::h
     lua->settable(-3);
     lua->pushstring("button_prev");
     lua->pushboolean(resp.button_prev);
+    lua->settable(-3);
+    lua->pushstring("password");
+    lua->pushboolean(resp.password);
     lua->settable(-3);
     lua->pushstring("type_echo");
     lua->pushinteger(resp.type_echo);
@@ -386,7 +395,10 @@ void marshal_lua_game_resp__dialog_list(lua_State* L, const fb::protocol::header
     lua->pushinteger(resp.color);
     lua->settable(-3);
     lua->pushstring("message");
-    lua->pushstring(resp.message);
+    if (resp.message.has_value())
+        lua->pushstring(*resp.message);
+    else
+        lua->pushnil();
     lua->settable(-3);
     lua->pushstring("button_prev");
     lua->pushboolean(resp.button_prev);

@@ -8,6 +8,7 @@
 #else
 #include <fb/game/dialog_type.h>
 #endif
+#include <optional>
 #include <string_view>
 
 namespace fb::protocol::game::response {
@@ -17,25 +18,26 @@ using namespace fb::model::enum_value;
 class dialog_menu : public fb::protocol::header
 {
 public:
-    static constexpr uint8_t                opcode = 0x2F;
-    static constexpr fb::game::dialog::type type   = fb::game::dialog::type::MENU;
+    static constexpr uint8_t opcode = 0x2F;
 #ifndef BOT
     using appearance_ptr = std::unique_ptr<fb::game::appearance>;
 #endif
 
 public:
 #ifndef BOT
-    const appearance_ptr           appearance;
-    const std::vector<std::string> menus;
-    const std::string              message;
-    const uint32_t                 oid;
+    const appearance_ptr             appearance;
+    const std::vector<std::string>   menus;
+    const std::string                message;
+    const uint32_t                   oid;
+    const std::optional<std::string> ext;
 #else
-    uint16_t                 look;
-    uint8_t                  color;
-    std::string              message;
-    uint8_t                  type_echo;
-    uint32_t                 oid;
-    std::vector<std::string> menus;
+    uint16_t                   look;
+    uint8_t                    color;
+    std::string                message;
+    uint8_t                    type_echo;
+    uint32_t                   oid;
+    std::vector<std::string>   menus;
+    std::optional<std::string> ext;
 #endif
 
 public:
@@ -43,11 +45,13 @@ public:
     dialog_menu(const fb::model::object&        obj,
                 const std::vector<std::string>& menus,
                 std::string_view                message,
-                uint32_t                        oid = 0xFFFFFFFD);
+                uint32_t                        oid = 0xFFFFFFFD,
+                std::optional<std::string>      ext = std::nullopt);
     dialog_menu(const fb::game::object&         object,
                 const std::vector<std::string>& menus,
                 std::string_view                message,
-                uint32_t                        oid = 0xFFFFFFFD);
+                uint32_t                        oid = 0xFFFFFFFD,
+                std::optional<std::string>      ext = std::nullopt);
 #else
     dialog_menu() = default;
 #endif

@@ -27,6 +27,19 @@ async::task<bool> click::handle(fb::socket<character>& session, game_reqs::click
         co_return true;
     }
 
+    // 0x2F MENU/INPUT cancel: client sends C2S 0x43|flag=1|dialog oid (same layout as object click).
+    // While a dialog coroutine is waiting, treat object-click as cancel instead of re-clicking.
+    // Push nil (+ QUIT) so both 1-value (menu/input) and 2-value (list) yields unwind cleanly.
+    if (ch->dialog != nullptr && request.flag == game_reqs::click::FLAG_OBJECT)
+    {
+        auto lua   = ch->dialog;
+        ch->dialog = nullptr;
+        lua->pushnil();
+        lua->pushinteger(static_cast<uint32_t>(fb::model::enum_value::DIALOG_RESULT::QUIT));
+        lua->resume(2);
+        co_return true;
+    }
+
     co_await handle_object_click(ch, request);
     co_return true;
 }

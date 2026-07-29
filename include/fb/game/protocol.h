@@ -65,6 +65,11 @@
 #include <fb/game/protocol/dialog/item.h>
 #include <fb/game/protocol/dialog/input.h>
 #include <fb/game/protocol/dialog/input_ext.h>
+#include <fb/game/protocol/dialog/dialog_pursuit.h>
+#include <fb/game/protocol/dialog/dialog_spell.h>
+#include <fb/game/protocol/dialog/dialog_dual_field.h>
+#include <fb/game/protocol/dialog/dialog_email.h>
+#include <fb/game/protocol/dialog/dialog_0x30_10.h>
 #include <fb/game/protocol/init.h>
 #include <fb/game/protocol/message.h>
 #include <fb/game/protocol/user_list.h>
