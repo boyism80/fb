@@ -37,7 +37,6 @@ std::string  M(const std::wstring& w);
 std::string  name_with(std::string_view name);
 std::string  name_with(std::string_view name, const std::pair<std::string, std::string>& postfix);
 bool         assert_korean(std::string_view cp949, bool completed = true);
-bool         is_ksx1001_hangul(uint8_t lead, uint8_t trail);
 std::string  delirious(std::string_view message);
 std::string  url_encode(std::string_view value);
 

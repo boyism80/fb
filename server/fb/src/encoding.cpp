@@ -263,20 +263,6 @@ bool is_hangul_syllable_bytes(uint8_t lead, uint8_t trail)
 
 } // namespace
 
-bool fb::is_ksx1001_hangul(uint8_t lead, uint8_t trail)
-{
-    // KS X 1001 Hangul syllable rows 16-40 → EUC-KR/CP949 lead B0-C8, trail A1-FE
-    if (lead < 0xB0 || lead > 0xC8)
-        return false;
-    if (trail < 0xA1 || trail > 0xFE)
-        return false;
-
-    char32_t cp = 0;
-    if (!cp949_pair_to_codepoint(lead, trail, cp))
-        return false;
-    return codepoint_is_hangul_syllable(cp);
-}
-
 bool fb::assert_korean(std::string_view cp949, bool completed)
 {
     if (cp949.empty())
@@ -347,9 +333,10 @@ std::string fb::delirious(std::string_view message)
             out.push_back(static_cast<char>(lead));
             out.push_back(static_cast<char>(trail));
         }
-        else if (choice == 1 && is_ksx1001_hangul(lead, trail) && is_ksx1001_hangul(trail, lead))
+        else if (choice == 1 && lead >= 0xA1 && lead <= 0xFE && trail >= 0xA1 && trail <= 0xFE &&
+                 is_hangul_syllable_bytes(trail, lead))
         {
-            // Byte-swap only when both orders are KS X 1001 Hangul syllables
+            // Byte-swap only when swapped KS cell decodes to a Hangul syllable
             out.push_back(static_cast<char>(trail));
             out.push_back(static_cast<char>(lead));
         }
