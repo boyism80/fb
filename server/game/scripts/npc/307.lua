@@ -74,15 +74,15 @@ return {
             local pn = (q and q:progress()) or 0
             if pn == 2 then
                 local l1, b1 = me:list(npc, " ", { "이봐요.", "당신이 용왕님의 보물을 가져갔다고 하던데.." }, { prev = false })
-                if b1 == DIALOG_RESULT.QUIT or l1 == nil then
+                if b1 == DIALOG_RESULT.QUIT then
                     return
                 end
                 local l2, b2 = me:list(npc, "아니 난 그런 적 없소.", { "장돌뱅이한테 물어보니까 당신이", "가지고 가는 것을 보았다고 하는데", "끝까지 발뺌할 건가요?" }, { prev = false })
-                if b2 == DIALOG_RESULT.QUIT or l2 == nil then
+                if b2 == DIALOG_RESULT.QUIT then
                     return
                 end
                 local l3, b3 = me:list(npc, "앗. 설마 그 친구가 배반할 줄은 몰랐는걸.", { "..." }, { prev = false })
-                if b3 == DIALOG_RESULT.QUIT or l3 == nil then
+                if b3 == DIALOG_RESULT.QUIT then
                     return
                 end
                 if me:mkitem("용궁의보물", 1) == nil then

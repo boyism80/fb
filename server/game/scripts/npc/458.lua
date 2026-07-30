@@ -3,15 +3,17 @@ local enum = require('lib.enum')
 
 return {
     on_click = function(me, npc)
-        local sel, btn = me:list(npc, "안녕하세요. 어떻게 오셨나요?", { "홍성초를 가져왔어요.", "산타양말" }, { prev = false })
+        local OPT_HONGSEONG = '홍성초를 가져왔어요.'
+        local OPT_STOCKING = '산타양말'
+        local sel, btn = me:pursuit(npc, "안녕하세요. 어떻게 오셨나요?", { OPT_HONGSEONG, OPT_STOCKING })
         if btn == DIALOG_RESULT.QUIT then
             return
         end
-        if sel == nil then
+        if btn == DIALOG_RESULT.TOP then
             return
         end
 
-        if sel == 1 then
+        if sel == OPT_HONGSEONG then
             local d = me:dialog(npc, "이번 크리스마스 트리를 장식할 홍성초가 부족한데... 어떻게 해야 한담...", { prev = false, next = true })
             if d == DIALOG_RESULT.QUIT then
                 return
@@ -40,7 +42,7 @@ return {
             return
         end
 
-        if sel == 2 then
+        if sel == OPT_STOCKING then
             local d = me:dialog(npc, "아니 글쎄... 빨간양말에 선물을 담아 나누어 주어야 하는데, 그만 빨간양말을 잃어버렸지 뭔가! 이걸 어떻게 해야 한담...", { prev = false, next = true })
             if d == DIALOG_RESULT.QUIT then
                 return

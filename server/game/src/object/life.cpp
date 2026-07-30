@@ -464,3 +464,24 @@ bool life::cover() const
 {
     return this->_cover;
 }
+
+void life::delirious(bool value)
+{
+    this->assert_thread();
+    this->_delirious = value;
+}
+
+bool life::delirious() const
+{
+    return this->_delirious;
+}
+
+void life::chat(std::string_view message, CHAT_TYPE chat_type, bool decorate)
+{
+    this->assert_thread();
+
+    if (this->_delirious)
+        object::chat(fb::delirious(message), chat_type, decorate);
+    else
+        object::chat(message, chat_type, decorate);
+}

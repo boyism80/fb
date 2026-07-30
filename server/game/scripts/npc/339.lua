@@ -11,7 +11,7 @@ return {
                 "예. 지금 귀환하겠습니다.",
                 "아니오. 조금 더 지켜보겠습니다.",
             }, { prev = false })
-            if list_btn == DIALOG_RESULT.QUIT or sel == nil then
+            if list_btn == DIALOG_RESULT.QUIT then
                 return
             end
             if sel == 1 then
@@ -66,7 +66,7 @@ return {
             "예. 동의합니다.",
             "아니오. 동의하지 않습니다.",
         }, { prev = false })
-        if list_btn == DIALOG_RESULT.QUIT or sel == nil then
+        if list_btn == DIALOG_RESULT.QUIT then
             return
         end
         if sel == 2 then
@@ -88,7 +88,7 @@ return {
             "우측(오른쪽)의 사람이 잘못했습니다.",
             "판단할 자신이 없군요. 기권합니다.",
         }, { prev = false })
-        if vote_btn == DIALOG_RESULT.QUIT or vote_sel == nil then
+        if vote_btn == DIALOG_RESULT.QUIT then
             return
         end
         if q == nil then

@@ -13,7 +13,7 @@ local function run_normal_exchange(me, npc)
         "예 교환해 주세요.",
         "아니오. 싫어요."
     }, { prev = false })
-    if btn == DIALOG_RESULT.QUIT or sel == nil then
+    if btn == DIALOG_RESULT.QUIT then
         return
     end
     if sel ~= 1 then
@@ -63,7 +63,7 @@ local function run_special_exchange(me, npc)
         "예 교환해 주세요.",
         "아니오. 싫어요."
     }, { prev = false })
-    if btn == DIALOG_RESULT.QUIT or sel == nil then
+    if btn == DIALOG_RESULT.QUIT then
         return
     end
     if sel ~= 1 then

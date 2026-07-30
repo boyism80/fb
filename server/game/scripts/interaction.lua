@@ -851,7 +851,7 @@ return {
         if list_btn == DIALOG_RESULT.QUIT then
             return
         end
-        if list_btn == DIALOG_RESULT.PREV or sel == nil then
+        if list_btn == DIALOG_RESULT.PREV then
             goto BIRTHDAY_INPUT
         end
 
@@ -905,7 +905,7 @@ return {
 
         local npc = name2npc('낙랑')
         local selected, button = me:list(npc, '매치를 찾았습니다. 참여하시겠습니까?', {'예', '아니오'}, { prev = false })
-        if button == DIALOG_RESULT.QUIT or selected == nil then
+        if button == DIALOG_RESULT.QUIT then
             return
         end
 

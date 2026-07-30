@@ -16,7 +16,7 @@ return {
                     "이 섬의 부자들에 대해 아시는게 있나요?",
                     "요즘 수상쩍은 일은 없었나요?",
                 }, { prev = false })
-                if list_btn == DIALOG_RESULT.QUIT or sel == nil then
+                if list_btn == DIALOG_RESULT.QUIT then
                     return
                 end
                 if sel == 1 then
@@ -61,7 +61,7 @@ return {
                     "네, 그럭저럭이요.",
                     "아, 봉래산 전설 때문에요.",
                 }, { prev = false })
-                if list_btn == DIALOG_RESULT.QUIT or sel == nil then
+                if list_btn == DIALOG_RESULT.QUIT then
                     return
                 end
                 if sel == 1 then
@@ -76,7 +76,7 @@ return {
                     "하긴 그렇죠?",
                     "아. 봉래산 전설 말이에요.",
                 }, { prev = false })
-                if list_btn == DIALOG_RESULT.QUIT or sel == nil then
+                if list_btn == DIALOG_RESULT.QUIT then
                     return
                 end
                 if sel == 1 then

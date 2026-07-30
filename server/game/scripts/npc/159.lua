@@ -26,22 +26,22 @@ local function run_cidequest_jangdol(me, npc)
         return
     end
     local list_1, b1 = me:list(npc, "음...", { "혹시 용왕님의 보물에 대해 알고 계신가요?" }, { prev = false })
-    if b1 == DIALOG_RESULT.QUIT or list_1 == nil then
+    if b1 == DIALOG_RESULT.QUIT then
         return
     end
     if list_1 ~= 1 then
         return
     end
     local list_2, b2 = me:list(npc, "물론 알고 있지.", { "그렇다면 가르쳐 주실 수 있으신지요?" }, { prev = false })
-    if b2 == DIALOG_RESULT.QUIT or list_2 == nil or list_2 ~= 1 then
+    if b2 == DIALOG_RESULT.QUIT or list_2 ~= 1 then
         return
     end
     local list_3, b3 = me:list(npc, "이 사람아. 세상에 공짜가 어디있는가?.", { "..." }, { prev = false })
-    if b3 == DIALOG_RESULT.QUIT or list_3 == nil or list_3 ~= 1 then
+    if b3 == DIALOG_RESULT.QUIT or list_3 ~= 1 then
         return
     end
     local list_4, b4 = me:list(npc, "뇌진도를 가지고 온다면 내 어디 있는지 말해주지.", { "좋습니다.", "뇌진도를 가지고 오겠습니다." }, { prev = false })
-    if b4 == DIALOG_RESULT.QUIT or list_4 == nil then
+    if b4 == DIALOG_RESULT.QUIT then
         return
     end
     me:dialog(npc, "기다리고 있겠네.", { prev = false, next = false })
@@ -50,25 +50,33 @@ end
 
 return {
     on_click = function(me, npc)
-        local main_sel, main_btn = me:list(npc, "안녕하세요. 어떻게 오셨나요?", {
-            "물건 사기",
-            "물건 팔기",
-            "별주부전",
-            "용왕의보물",
-            "금은보화",
-        }, { prev = false })
-        if main_btn == DIALOG_RESULT.QUIT or main_sel == nil then
+        local OPT_BUY = '물건 사기'
+        local OPT_SELL = '물건 팔기'
+        local OPT_QUEST = '별주부전'
+        local OPT_TREASURE = '용왕의보물'
+        local OPT_GOLD = '금은보화'
+        local main_sel, main_btn = me:pursuit(npc, "안녕하세요. 어떻게 오셨나요?", {
+            OPT_BUY,
+            OPT_SELL,
+            OPT_QUEST,
+            OPT_TREASURE,
+            OPT_GOLD,
+        })
+        if main_btn == DIALOG_RESULT.QUIT then
             return
         end
-        if main_sel == 1 or main_sel == 2 then
+        if main_btn == DIALOG_RESULT.TOP then
+            return
+        end
+        if main_sel == OPT_BUY or main_sel == OPT_SELL then
             me:dialog(npc, "준비중입니다.", { prev = false, next = false })
             return
         end
-        if main_sel == 4 then
+        if main_sel == OPT_TREASURE then
             run_cidequest_jangdol(me, npc)
             return
         end
-        if main_sel == 5 then
+        if main_sel == OPT_GOLD then
             local code = me:exchange(
                 { ['item'] = { ["금은보화"] = 1 } },
                 { ['money'] = 15000 }

@@ -3,11 +3,15 @@ local TOTEM = '주작'
 local TOTEM_KEY = 'bird'
 
 local function run_gatekeeper(me, npc)
-    local selected, button = me:list(npc, '안녕하세요. 어떻게 오셨나요?', { TOTEM .. '성 입장' })
+    local OPT_ENTER = TOTEM .. '성 입장'
+    local selected, button = me:pursuit(npc, '안녕하세요. 어떻게 오셨나요?', { OPT_ENTER })
     if button == DIALOG_RESULT.QUIT then
         return
     end
-    if selected ~= 1 then
+    if button == DIALOG_RESULT.TOP then
+        return
+    end
+    if selected ~= OPT_ENTER then
         return
     end
 

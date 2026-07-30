@@ -78,7 +78,7 @@ local function run_dragon_weapon_awaken(me, npc)
     end
     ::NPC_140_0004::
     local sel, list_btn = me:list(npc, '그래. 그래도 나에게 용무기 각성을 맡기겠나?', { '네. 용무기를 각성해주세요.' }, { prev = true })
-    if list_btn == DIALOG_RESULT.QUIT or sel == nil then
+    if list_btn == DIALOG_RESULT.QUIT then
         return false
     end
     if list_btn == DIALOG_RESULT.PREV then
@@ -93,7 +93,7 @@ local function run_dragon_weapon_awaken(me, npc)
         type_options[#type_options + 1] = line.type_name
     end
     local type_sel, type_btn = me:list(npc, '좋아. 각오가 대단하군. 그럼 각성시킬 용무기를 고르게.', type_options, { prev = true })
-    if type_btn == DIALOG_RESULT.QUIT or type_sel == nil then
+    if type_btn == DIALOG_RESULT.QUIT then
         return false
     end
     if type_btn == DIALOG_RESULT.PREV then
@@ -105,7 +105,7 @@ local function run_dragon_weapon_awaken(me, npc)
     local line = DRAGON_WEAPON_LINES[type_sel]
     ::NPC_140_0006::
     local grade_sel, grade_btn = me:list(npc, '어떤 무기를 각성할건가?', line.options, { prev = true })
-    if grade_btn == DIALOG_RESULT.QUIT or grade_sel == nil then
+    if grade_btn == DIALOG_RESULT.QUIT then
         return false
     end
     if grade_btn == DIALOG_RESULT.PREV then

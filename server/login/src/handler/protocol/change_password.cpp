@@ -22,13 +22,13 @@ async::task<bool> change_password::handle(fb::socket<fb::login::session>&       
         auto delay = fb::config<uint32_t>("transfer delay");
         co_await this->server.sleep(std::chrono::seconds(delay));
 
-        if (request.name.length() < fb::config("name_size:min").asInt() ||
-            request.name.length() > fb::config("name_size:max").asInt())
+        auto name_cp949 = CP949(request.name);
+        if (name_cp949.length() < fb::config("name_size:min").asInt() ||
+            name_cp949.length() > fb::config("name_size:max").asInt())
             throw id_exception(_TEXT(MESSAGE_ACCOUNT_INVALID_NAME));
 
-        // Name must be full-hangul characters
-        if (fb::config<bool>("login:account option:allow_foreign_name") == false &&
-            assert_korean(request.name) == false)
+        // Name must be Hangul syllables (no jamo)
+        if (fb::config<bool>("login:account option:allow_foreign_name") == false && assert_korean(name_cp949) == false)
             throw id_exception(_TEXT(MESSAGE_ACCOUNT_INVALID_NAME));
 
         // Name cannot contains subcharacters in forbidden list

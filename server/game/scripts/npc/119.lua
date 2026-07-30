@@ -16,7 +16,7 @@ return {
                 "참, 요리 이야기 좀 해주세요.",
                 "알 수 없는 세상이죠, 그럼 이만.",
             }, { prev = false })
-            if list_btn == DIALOG_RESULT.QUIT or sel == nil then
+            if list_btn == DIALOG_RESULT.QUIT then
                 return
             end
             if sel == 1 then

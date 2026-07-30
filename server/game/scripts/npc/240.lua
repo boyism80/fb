@@ -14,7 +14,7 @@ return {
 
         if q == nil then
             local sel, lb = me:list(npc, '무슨 일인가? 급한 일이라도 있는가?', { '실은 아픈 아이가 있는데...', '아니오, 아무 일도 아닙니다.' }, { prev = false })
-            if lb == DIALOG_RESULT.QUIT or sel == nil or sel ~= 1 then
+            if lb == DIALOG_RESULT.QUIT or sel ~= 1 then
                 return
             end
             ::NPC_240_0001::
@@ -59,7 +59,7 @@ return {
 
         if q:step() == 0 then
             local sel, lb = me:list(npc, '무슨 일인가? 급한 일이라도 있는가?', { '실은 아픈 아이가 있는데...', '아니오, 아무 일도 아닙니다.' }, { prev = false })
-            if lb == DIALOG_RESULT.QUIT or sel == nil or sel ~= 1 then
+            if lb == DIALOG_RESULT.QUIT or sel ~= 1 then
                 return
             end
             ::NPC_240_0005::

@@ -48,15 +48,20 @@ end
 
 return {
     on_click = function(me, npc)
-        local selected = me:list(npc, '안녕하세요. 어떻게 오셨나요?', {
-            '4차 승급을 원합니다',
-            '4차 승급 무기들 다시 받고 싶습니다',
+        local OPT_PROMOTE = '4차 승급을 원합니다'
+        local OPT_WEAPON = '4차 승급 무기들 다시 받고 싶습니다'
+        local selected, button = me:pursuit(npc, '안녕하세요. 어떻게 오셨나요?', {
+            OPT_PROMOTE,
+            OPT_WEAPON,
         })
-        if selected == nil then
+        if button == DIALOG_RESULT.QUIT then
+            return
+        end
+        if button == DIALOG_RESULT.TOP then
             return
         end
 
-        if selected == 1 then
+        if selected == OPT_PROMOTE then
             local q = me:quest(quest.QUEST_MUTA)
             if me:has_items('반고의심장', 1) and q and not q:completed() and q:step() >= 7 then
                 local choice = me:list(npc, '당신은 지금껏 수많은 수련을 거쳐 인간으로서 오르기 힘든 경지에 도달하셨고, 더욱이 세상을 종말로부터 보호하는 업적을 세우셨으니 진선으로 불리우시기에 부족함이 없습니다. 지금 바로 승급을 원하시나요?', {
@@ -102,7 +107,7 @@ return {
             return
         end
 
-        if selected == 2 then
+        if selected == OPT_WEAPON then
             local weapon_name = PROMOTION_4TH_WEAPON[me:class()]
             if not weapon_name then
                 me:dialog(npc, '아직 준비가 안 되었습니다.', { prev = false, next = true })

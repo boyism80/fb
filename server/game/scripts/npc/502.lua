@@ -9,7 +9,7 @@ return {
                 "정월 대보름이 뭐에요?",
                 "떡국을 드릴께요, 드세요.",
             }, { prev = false })
-            if list_btn == DIALOG_RESULT.QUIT or sel == nil then
+            if list_btn == DIALOG_RESULT.QUIT then
                 return
             end
             if sel == 1 then

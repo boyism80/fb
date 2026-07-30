@@ -113,14 +113,16 @@ end
 return {
     on_click = function(me, npc)
         ::NPC_57_START::
-        local sel, list_btn = me:list(npc, '안녕하세요. 어떻게 오셨나요?', { '얼음세척', '얼음을 쪼개주세요' })
-        if list_btn == DIALOG_RESULT.PREV then
+        local OPT_WASH = '얼음세척'
+        local OPT_SPLIT = '얼음을 쪼개주세요'
+        local sel, list_btn = me:pursuit(npc, '안녕하세요. 어떻게 오셨나요?', { OPT_WASH, OPT_SPLIT })
+        if list_btn == DIALOG_RESULT.QUIT then
             return
         end
-        if sel == nil then
+        if list_btn == DIALOG_RESULT.TOP then
             return
         end
-        if sel == 1 then
+        if sel == OPT_WASH then
             local r = run_ice_wash(me, npc)
             if r == DIALOG_RESULT.PREV then
                 goto NPC_57_START

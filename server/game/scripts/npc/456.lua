@@ -14,7 +14,7 @@ local function run_hunt_event_entry(me, npc)
     end
 
     local sel, list_btn = me:list(npc, "사냥이벤트에 입장하기 위해서는 '노란비서'가 필요합니다. 지금 입장하시겠습니까?", { "예", "아니오" }, { prev = false })
-    if list_btn == DIALOG_RESULT.QUIT or sel == nil then
+    if list_btn == DIALOG_RESULT.QUIT then
         return
     end
     if sel == 2 then

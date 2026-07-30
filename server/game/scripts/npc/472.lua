@@ -2,7 +2,7 @@
 local quest = require('lib.quest')
 local function do_sub3_give_medicine(me, npc)
     local sel, btn = me:list(npc, "모험가가 나에겐 무슨 일인가?", { "원숭이들이 약이 필요하다고 합니다." }, { prev = false })
-    if btn == DIALOG_RESULT.QUIT or sel == nil or sel ~= 1 then
+    if btn == DIALOG_RESULT.QUIT or sel ~= 1 then
         return true
     end
     ::NPC_472_0010::

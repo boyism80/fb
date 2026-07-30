@@ -153,7 +153,7 @@ return {
             goto NPC_168_0050
         end
         local food_name = me:input(npc, '요리 이름인 뭔가?', { top = '제가 만든 요리는', bottom = '입니다.', maxlen = 15, prev = true })
-        if food_name == nil or food_name == DIALOG_RESULT.QUIT then
+        if food_name == DIALOG_RESULT.QUIT then
             return
         end
         if food_name == DIALOG_RESULT.PREV then

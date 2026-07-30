@@ -12,7 +12,7 @@ local function run_ox_admin(me, ch)
         '출입구닫기',
         '추방',
     }, { prev = false })
-    if sub_btn == DIALOG_RESULT.QUIT or sub_sel == nil then
+    if sub_btn == DIALOG_RESULT.QUIT then
         return DIALOG_RESULT.NEXT
     end
 

@@ -31,7 +31,7 @@ return {
             "흉노족9",
             "흉노족10",
         }, { prev = false })
-        if list_btn == DIALOG_RESULT.QUIT or sel == nil or sel < 1 or sel > 5 then
+        if list_btn == DIALOG_RESULT.QUIT or sel < 1 or sel > 5 then
             return
         end
 

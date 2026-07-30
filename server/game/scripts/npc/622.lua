@@ -30,7 +30,7 @@ return {
         local sel, btn = me:list(npc, "어떤 것을 만들고 싶은지 나에게 말 해 주시오.", {
             "일광방패", "월광방패", "화분천검", "수류곡도", "목근정곤", "금기련봉", "토선투구", "칠요구륜", "팔세지도", "팔요천의옷",
         }, { prev = true })
-        if btn == DIALOG_RESULT.QUIT or sel == nil then
+        if btn == DIALOG_RESULT.QUIT then
             return
         end
         if btn == DIALOG_RESULT.PREV then
@@ -44,7 +44,7 @@ return {
                 return
             end
             local sub_sel, sub_btn = me:list(npc, "[" .. r.product .. "]를 만들기 위해서는 [" .. r.main .. "] 100개와, 다른 지석 100개가 필요하오. 무엇을 주시겠소?", STONES, { prev = true })
-            if sub_btn == DIALOG_RESULT.QUIT or sub_sel == nil then
+            if sub_btn == DIALOG_RESULT.QUIT then
                 return
             end
             local other = STONES[sub_sel]
@@ -90,7 +90,7 @@ return {
                 return
             end
             local sub_sel, sub_btn = me:list(npc, "[칠요구륜]을 만들기 위해서는 모든 요일의 지석 100개가 필요하오. 성공률은 채 일할이 되지 않으니 실패하더라도 양해해 주시오.", { "만들겠습니다.", "아니오... 다시 생각해볼게요." }, { prev = true })
-            if sub_btn == DIALOG_RESULT.QUIT or sub_sel == nil then
+            if sub_btn == DIALOG_RESULT.QUIT then
                 return
             end
             if sub_sel == 2 then
@@ -134,7 +134,7 @@ return {
                 return
             end
             local sub_sel, sub_btn = me:list(npc, "[팔세지도]를 만들기 위해서는 모든 요일의 지석 100개와 팔요지석이 필요하오. 성공률은 채 일할이 되지 않으니 실패하더라도 양해해 주시오.", { "만들겠습니다.", "아니오... 다시 생각해볼게요." }, { prev = true })
-            if sub_btn == DIALOG_RESULT.QUIT or sub_sel == nil then
+            if sub_btn == DIALOG_RESULT.QUIT then
                 return
             end
             if sub_sel == 2 then
@@ -198,7 +198,7 @@ return {
                 return
             end
             local sub_sel, sub_btn = me:list(npc, "팔요천의 옷을 만들기 위한 준비가 되었다면, 말을 걸어주시오.", { "만들겠습니다.", "아니오... 다시 생각해볼게요." }, { prev = true })
-            if sub_btn == DIALOG_RESULT.QUIT or sub_sel == nil then
+            if sub_btn == DIALOG_RESULT.QUIT then
                 return
             end
             if sub_sel == 2 then

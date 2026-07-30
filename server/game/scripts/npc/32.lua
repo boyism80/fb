@@ -16,7 +16,7 @@ return {
         end
         ::NPC_32_0002::
         local sel, btn = me:list(npc, "아무리 필요해도 빼올 수는 없어.", { "어떻게든 수를 내주세요.", "그래요? 아쉽네요." }, { prev = true })
-        if btn == DIALOG_RESULT.QUIT or sel == nil then
+        if btn == DIALOG_RESULT.QUIT then
             return
         end
         if btn == DIALOG_RESULT.PREV then
@@ -43,7 +43,7 @@ return {
         end
         ::NPC_32_0005::
         sel, btn = me:list(npc, "자네가 대신 물어줄 수 있겠나?", { "음, 대신 물어드릴께요.", "그럴 순 없죠." }, { prev = true })
-        if btn == DIALOG_RESULT.QUIT or sel == nil then
+        if btn == DIALOG_RESULT.QUIT then
             return
         end
         if btn == DIALOG_RESULT.PREV then

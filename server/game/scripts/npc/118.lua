@@ -18,7 +18,7 @@ return {
                     "아니, 뭐 좀 물어볼게 있어서요.",
                     "예? 전 지나가던 길인데요?",
                 }, { prev = true })
-                if list_btn == DIALOG_RESULT.QUIT or sel == nil then
+                if list_btn == DIALOG_RESULT.QUIT then
                     return
                 end
                 if list_btn == DIALOG_RESULT.PREV then
@@ -37,7 +37,7 @@ return {
                     "최근 돈을 많이 버셨다죠?",
                     "아, 그래요? 실례했습니다.",
                 }, { prev = false })
-                if list_btn == DIALOG_RESULT.QUIT or sel == nil then
+                if list_btn == DIALOG_RESULT.QUIT then
                     return
                 end
                 if sel == 2 then
@@ -47,7 +47,7 @@ return {
                     "습득물은 신고를 하셔야죠?",
                     "아, 그래요? 실례했습니다.",
                 }, { prev = false })
-                if list_btn == DIALOG_RESULT.QUIT or sel == nil then
+                if list_btn == DIALOG_RESULT.QUIT then
                     return
                 end
                 if sel == 2 then
@@ -57,7 +57,7 @@ return {
                     "수고비요? 누가 왜 줬나요?",
                     "아, 그래요? 실례했습니다.",
                 }, { prev = false })
-                if list_btn == DIALOG_RESULT.QUIT or sel == nil then
+                if list_btn == DIALOG_RESULT.QUIT then
                     return
                 end
                 if sel == 2 then
@@ -67,7 +67,7 @@ return {
                     "시키는대로요? 누가 뭘 시켰죠?",
                     "아, 그래요? 실례했습니다.",
                 }, { prev = false })
-                if list_btn == DIALOG_RESULT.QUIT or sel == nil then
+                if list_btn == DIALOG_RESULT.QUIT then
                     return
                 end
                 if sel == 2 then
@@ -77,7 +77,7 @@ return {
                     "이미 다 알고 왔습니다.",
                     "아, 그래요? 실례했습니다.",
                 }, { prev = false })
-                if list_btn == DIALOG_RESULT.QUIT or sel == nil then
+                if list_btn == DIALOG_RESULT.QUIT then
                     return
                 end
                 if sel == 2 then
@@ -87,7 +87,7 @@ return {
                     "부자 대감들과 나쁜 짓을 하셨죠?",
                     "그렇게 잡아떼시다니, 나중에 두고 봅시다!",
                 }, { prev = false })
-                if list_btn == DIALOG_RESULT.QUIT or sel == nil then
+                if list_btn == DIALOG_RESULT.QUIT then
                     return
                 end
                 if sel == 2 then
@@ -99,7 +99,7 @@ return {
                     "늦은 밤에 화산굴로 들어갔었죠?",
                     "늦은 밤에 도둑질을 했었죠?",
                 }, { prev = false })
-                if list_btn == DIALOG_RESULT.QUIT or sel == nil then
+                if list_btn == DIALOG_RESULT.QUIT then
                     return
                 end
                 if sel == 1 or sel == 3 or sel == 4 then
@@ -110,7 +110,7 @@ return {
                     "거짓말 말아요!",
                     "아, 그래요? 실례했습니다.",
                 }, { prev = false })
-                if list_btn == DIALOG_RESULT.QUIT or sel == nil then
+                if list_btn == DIALOG_RESULT.QUIT then
                     return
                 end
                 if sel == 2 then
@@ -122,7 +122,7 @@ return {
                     "섬에서 도망가려고 했죠?",
                     "밀수선을 기다리고 있었죠?",
                 }, { prev = false })
-                if list_btn == DIALOG_RESULT.QUIT or sel == nil then
+                if list_btn == DIALOG_RESULT.QUIT then
                     return
                 end
                 if sel == 1 or sel == 2 or sel == 3 then
@@ -133,7 +133,7 @@ return {
                     "정직하게 털어놓으세요.",
                     "그러면, 어쩔 수 없군요.",
                 }, { prev = false })
-                if list_btn == DIALOG_RESULT.QUIT or sel == nil then
+                if list_btn == DIALOG_RESULT.QUIT then
                     return
                 end
                 if sel == 1 then

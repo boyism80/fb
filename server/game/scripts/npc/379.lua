@@ -23,7 +23,7 @@ return {
                 "언제나 불평뿐이군요. 힘을 좀 내봐요.",
                 "이번에는 또 무슨 일인가요?",
             }, { prev = false })
-            if list_btn == DIALOG_RESULT.QUIT or sel == nil then
+            if list_btn == DIALOG_RESULT.QUIT then
                 return
             end
             if sel == 1 then
@@ -58,7 +58,7 @@ return {
                 "말만 하지 말고 행동을 해야죠!",
                 "그거야 갑자기 부자가 된 사람을 의심해봐야죠.",
             }, { prev = false })
-            if list_btn == DIALOG_RESULT.QUIT or sel == nil then
+            if list_btn == DIALOG_RESULT.QUIT then
                 return
             end
             if sel == 1 then
@@ -86,7 +86,7 @@ return {
                 "바빠요. 자기 일은 스스로 하세요.",
                 "기꺼이 도와드리죠.",
             }, { prev = false })
-            if list_btn == DIALOG_RESULT.QUIT or sel == nil then
+            if list_btn == DIALOG_RESULT.QUIT then
                 return
             end
             if sel == 1 then
@@ -136,7 +136,7 @@ return {
             "경과를 보고한다.",
             "지금은 할 이야기가 없다.",
         }, { prev = false })
-        if list_btn == DIALOG_RESULT.QUIT or sel == nil then
+        if list_btn == DIALOG_RESULT.QUIT then
             return
         end
 

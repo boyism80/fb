@@ -3,17 +3,24 @@
 return {
     on_click = function(me, npc)
     ::NPC_499_MENU::
-        local sel, list_btn = me:list(npc, "안녕하세요. 어떻게 오셨나요?", {
-            "설명듣기",
-            "남북무한대전 참가",
-            "남북무한대전 현황",
-            "상품수령",
-        }, { prev = false })
-        if list_btn == DIALOG_RESULT.QUIT or sel == nil then
+        local OPT_EXPLAIN = '설명듣기'
+        local OPT_JOIN = '남북무한대전 참가'
+        local OPT_STATUS = '남북무한대전 현황'
+        local OPT_REWARD = '상품수령'
+        local sel, list_btn = me:pursuit(npc, "안녕하세요. 어떻게 오셨나요?", {
+            OPT_EXPLAIN,
+            OPT_JOIN,
+            OPT_STATUS,
+            OPT_REWARD,
+        })
+        if list_btn == DIALOG_RESULT.QUIT then
+            return
+        end
+        if list_btn == DIALOG_RESULT.TOP then
             return
         end
 
-        if sel == 1 then
+        if sel == OPT_EXPLAIN then
             local btn = me:dialog(npc, "안녕하세요? " .. me:name() .. "님. 남북무한대전에 오신 것을 환영합니다.", { prev = false, next = true })
             if btn == DIALOG_RESULT.QUIT then
                 return
@@ -49,17 +56,17 @@ return {
             goto NPC_499_MENU
         end
 
-        if sel == 2 then
+        if sel == OPT_JOIN then
             me:dialog(npc, "남북무한대전 참가 신청은 공지된 일정에만 가능합니다. 현재는 진행 시간이 아니거나 준비중입니다.", { prev = false, next = true })
             goto NPC_499_MENU
         end
 
-        if sel == 3 then
+        if sel == OPT_STATUS then
             me:dialog(npc, "남북무한대전 현황 조회는 현재 준비중입니다.", { prev = false, next = true })
             goto NPC_499_MENU
         end
 
-        if sel == 4 then
+        if sel == OPT_REWARD then
             local ns_start = property("ns_start")
             if ns_start == 2 then
                 local winner = property("ns_winner_team")

@@ -51,7 +51,7 @@ local function handle_jingogyun_4(me, npc, q_jingo)
         "응, 그냥 잘 있나해서 들렸어. 잘 지내지?",
         "반가워, 그동안 뭐 재미있는 일이라도 없었어?",
     }, { prev = false })
-    if btn == DIALOG_RESULT.QUIT or sel == nil then
+    if btn == DIALOG_RESULT.QUIT then
         return true
     end
     if sel == 1 or sel == 2 then
@@ -75,7 +75,7 @@ local function handle_jingogyun_2(me, npc, q_jingo)
         "근데 어느 씨앗을 모아야하지?",
         "아니야, 있다가 다시 올께.",
     }, { prev = false })
-    if btn == DIALOG_RESULT.QUIT or sel == nil then
+    if btn == DIALOG_RESULT.QUIT then
         return true
     end
     if sel == 1 then
@@ -127,7 +127,7 @@ local function do_frolic(me, npc)
         "가위 바위 보해서 엉덩이로 이름쓰기 하자.",
         "음, 그럼 재미있는 엣날 이야기를 해줄게!",
     }, { prev = false })
-    if btn == DIALOG_RESULT.QUIT or sel == nil then
+    if btn == DIALOG_RESULT.QUIT then
         return
     end
     if sel == 1 then
@@ -150,7 +150,7 @@ local function do_frolic(me, npc)
             "바위를 낸다.",
             "보를 낸다.",
         }, { prev = false })
-        if b2 == DIALOG_RESULT.QUIT or s2 == nil then
+        if b2 == DIALOG_RESULT.QUIT then
             return
         end
         if s2 >= 0 and s2 <= 2 then
@@ -238,7 +238,7 @@ return {
                 "음... 좋아!",
                 "너랑 친구되기 싫은데?",
             }, { prev = false })
-            if btn == DIALOG_RESULT.QUIT or sel == nil then
+            if btn == DIALOG_RESULT.QUIT then
                 return
             end
             if sel == 1 then
@@ -277,7 +277,7 @@ return {
                 "응, 난 돌순이의 친한 친구야.",
                 "돌순이라니? 혹시 돈만 좋아하는 그 여자애말야?",
             }, { prev = false })
-            if btn == DIALOG_RESULT.QUIT or sel == nil then
+            if btn == DIALOG_RESULT.QUIT then
                 return
             end
             if sel == 1 then
@@ -292,7 +292,7 @@ return {
                     "응, 난 밤이 무섭지 않거든.",
                     "아니, 오늘은 어쩌다가 이렇게 돌아다니게 된거야.",
                 }, { prev = false })
-                if btn2 == DIALOG_RESULT.QUIT or sel2 == nil then
+                if btn2 == DIALOG_RESULT.QUIT then
                     return
                 end
                 if sel2 == 1 or sel2 == 2 then

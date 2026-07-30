@@ -31,6 +31,7 @@ IMPLEMENT_LUA_EXTENSION(fb::game::life, "fb.game.life")
 {"paralysis",            builtin::life::builtin_paralysis},
 {"invincible",           builtin::life::builtin_invincible},
 {"cover",                builtin::life::builtin_cover},
+{"delirious",            builtin::life::builtin_delirious},
 {"base_hp",              builtin::life::builtin_base_hp},
 {"buff_hp",              builtin::life::builtin_buff_hp},
 {"maxhp",                builtin::life::builtin_maxhp},
@@ -960,6 +961,49 @@ int builtin::life::builtin_cover(lua_State* L)
         builder.weak  = weak;
         builder.yield = [=]() -> async::task<void> {
             obj->cover(value);
+            co_return;
+        };
+        builder.resume = []() -> async::task<int> {
+            co_return 0;
+        };
+        return builder.run();
+    }
+}
+
+int builtin::life::builtin_delirious(lua_State* L)
+{
+    auto lua = fb::lua::get(L);
+    if (lua == nullptr)
+        return 0;
+    auto argc = lua->argc();
+    auto obj  = lua->touserdata<fb::game::life>(1);
+    if (obj == nullptr)
+        return 0;
+
+    if (argc == 1)
+    {
+        auto delirious_value = std::make_shared<bool>();
+        auto weak            = obj->weak_from_this();
+        auto builder         = lua->new_co_builder();
+        builder.weak         = weak;
+        builder.yield        = [=]() -> async::task<void> {
+            *delirious_value = obj->delirious();
+            co_return;
+        };
+        builder.resume = [=]() -> async::task<int> {
+            lua->pushboolean(*delirious_value);
+            co_return 1;
+        };
+        return builder.run();
+    }
+    else
+    {
+        auto value    = lua->toboolean(2);
+        auto weak     = obj->weak_from_this();
+        auto builder  = lua->new_co_builder();
+        builder.weak  = weak;
+        builder.yield = [=]() -> async::task<void> {
+            obj->delirious(value);
             co_return;
         };
         builder.resume = []() -> async::task<int> {

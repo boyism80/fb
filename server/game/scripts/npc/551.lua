@@ -18,7 +18,7 @@ return {
             "예. 보내주세요.",
             "아니오. 괜찮습니다.",
         }, { prev = false })
-        if btn == DIALOG_RESULT.QUIT or sel == nil then
+        if btn == DIALOG_RESULT.QUIT then
             return
         end
         if sel == 1 then

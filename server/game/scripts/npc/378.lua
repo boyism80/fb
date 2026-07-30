@@ -54,7 +54,7 @@ return {
                 "열심히 해치우는 중이에요.",
                 "여기 부속품 다 구해왔습니다.",
             }, { prev = false })
-            if list_btn == DIALOG_RESULT.QUIT or sel == nil then
+            if list_btn == DIALOG_RESULT.QUIT then
                 return
             end
             if sel == 1 then
@@ -72,7 +72,7 @@ return {
                     "아 그래요? 그럼 괴물퇴치 비용을 지불해주세요.",
                     "10만전이라... 자, 그럼 10만전에 조립해주세요.",
                 }, { prev = false })
-                if list_btn2 == DIALOG_RESULT.QUIT or sel2 == nil then
+                if list_btn2 == DIALOG_RESULT.QUIT then
                     return
                 end
                 if sel2 == 1 then
@@ -110,7 +110,7 @@ return {
             "이 요술놀이 구슬은 얼마나 하나요?",
             "부속을 또 모아왔는데, 조립해줘요.",
         }, { prev = false })
-        if list_btn == DIALOG_RESULT.QUIT or sel == nil then
+        if list_btn == DIALOG_RESULT.QUIT then
             return
         end
         if sel == 1 then
@@ -120,7 +120,7 @@ return {
                 "15만전이라... 좋아요, 팔께요.",
                 "원가가 600만전이라고 들었는데요?",
             }, { prev = false })
-            if list_btn2 == DIALOG_RESULT.QUIT or sel2 == nil then
+            if list_btn2 == DIALOG_RESULT.QUIT then
                 return
             end
             if sel2 == 1 then

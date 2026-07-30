@@ -12,7 +12,7 @@ return {
                 "당근케이크",
                 "(임무 완료 후 사용 가능...)",
             }, { prev = false })
-            if list_btn == DIALOG_RESULT.QUIT or sel == nil then
+            if list_btn == DIALOG_RESULT.QUIT then
                 return
             end
             if sel == 1 then
@@ -48,7 +48,7 @@ return {
             "알사탕",
             "(추가 예정...)",
         }, { prev = false })
-        if list_btn == DIALOG_RESULT.QUIT or sel == nil then
+        if list_btn == DIALOG_RESULT.QUIT then
             return
         end
 

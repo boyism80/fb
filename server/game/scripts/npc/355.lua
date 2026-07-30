@@ -17,7 +17,7 @@ return {
             "비녀를 만들어 주세요.",
             "머리를 감고 왔어요.",
         }, { prev = false })
-        if list_btn == DIALOG_RESULT.QUIT or sel == nil then
+        if list_btn == DIALOG_RESULT.QUIT then
             return
         end
 

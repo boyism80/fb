@@ -1,5 +1,6 @@
 #include <fb/game/builtin/server.h>
 #include <fb/lua.h>
+#include <fb/encoding.h>
 #include <json/json.h>
 #include <boost/xpressive/xpressive.hpp>
 #include <chrono>
@@ -688,9 +689,9 @@ int builtin::server::builtin_assert_korean(lua_State* L)
     if (lua == nullptr)
         return 0;
 
-    auto argc = lua->argc();
-    auto text = lua->tostring(1);
-    lua->pushboolean(assert_korean(text));
+    auto text      = lua->tostring(1);
+    auto completed = lua->toboolean(2, true);
+    lua->pushboolean(assert_korean(text, completed));
     return 1;
 }
 

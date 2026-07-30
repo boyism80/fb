@@ -68,7 +68,7 @@ local function handle_jingogyun_1(me, npc, q_jingo)
         "응, 난 화화의 친구야.",
         "내가 왜 너희 편을 들어주냐... 난 나쁘다구.",
     }, { prev = false })
-    if btn == DIALOG_RESULT.QUIT or sel == nil then
+    if btn == DIALOG_RESULT.QUIT then
         return true
     end
     if sel == 2 then
@@ -96,7 +96,7 @@ local function handle_jingogyun_1(me, npc, q_jingo)
         "물론이야. 내가 뭐든 도와줄께. 말만해.",
         "지금은 좀 무리야. 나중에 꼭 도와줄게",
     }, { prev = false })
-    if btn == DIALOG_RESULT.QUIT or sel == nil then
+    if btn == DIALOG_RESULT.QUIT then
         return true
     end
     if sel == 1 then
@@ -114,7 +114,7 @@ local function handle_jingogyun_1(me, npc, q_jingo)
             "여기서 뭘 하고 있는거야?",
             "후우, 그래서 무슨 이야기를 하고 있었지?",
         }, { prev = false })
-        if sub_btn == DIALOG_RESULT.QUIT or sub_sel == nil then
+        if sub_btn == DIALOG_RESULT.QUIT then
             return true
         end
         if sub_sel == 1 then
@@ -232,7 +232,7 @@ local function handle_jingogyun_6(me, npc, q_jingo)
         "좋아, 곧 구해올께. 기다려줘.",
         "은혜를 갚아! 당장 달라구!",
     }, { prev = false })
-    if btn == DIALOG_RESULT.QUIT or sel == nil then
+    if btn == DIALOG_RESULT.QUIT then
         return true
     end
     if sel == 2 then
@@ -256,7 +256,7 @@ local function handle_jingogyun_7(me, npc, q_jingo)
         "응, 자, 여기있어.",
         "아니, 그냥 들려봤어.",
     }, { prev = false })
-    if btn == DIALOG_RESULT.QUIT or sel == nil then
+    if btn == DIALOG_RESULT.QUIT then
         return true
     end
     if sel == 2 then

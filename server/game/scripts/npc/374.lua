@@ -12,7 +12,7 @@ return {
             "둔갑술이 무엇인가요?",
             "둔갑술을 배우고 싶습니다.",
         }, { prev = false })
-        if list_btn == DIALOG_RESULT.QUIT or sel == nil then
+        if list_btn == DIALOG_RESULT.QUIT then
             return
         end
 
@@ -45,7 +45,7 @@ return {
                 "강시로 변하고 싶습니다.",
                 "다른 모습으로 변하고 싶습니다.",
             }, { prev = false })
-            if list_btn2 == DIALOG_RESULT.QUIT or sel2 == nil then
+            if list_btn2 == DIALOG_RESULT.QUIT then
                 return
             end
 

@@ -35,7 +35,7 @@ return {
             '출항시간에 대해서 알려주세요.',
             '배를 태워주세요.'
         })
-        if btn == DIALOG_RESULT.QUIT or sel == nil then
+        if btn == DIALOG_RESULT.QUIT then
             return
         end
         if sel == 1 then

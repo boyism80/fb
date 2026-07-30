@@ -4,8 +4,15 @@ local enum = require('lib.enum')
 
 return {
     on_click = function(me, npc)
-        local sel = me:list(npc, '안녕하세요. 어떻게 오셨나요?', { '3차 승급을 원합니다' })
-        if sel == nil or sel ~= 1 then
+        local OPT_PROMOTE = '3차 승급을 원합니다'
+        local sel, btn = me:pursuit(npc, '안녕하세요. 어떻게 오셨나요?', { OPT_PROMOTE })
+        if btn == DIALOG_RESULT.QUIT then
+            return
+        end
+        if btn == DIALOG_RESULT.TOP then
+            return
+        end
+        if sel ~= OPT_PROMOTE then
             return
         end
 

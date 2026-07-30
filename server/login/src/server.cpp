@@ -103,7 +103,7 @@ void fb::login::server::assert_account(std::string_view id, std::string_view pw)
     if (name_size < fb::config<int>("name_size:min") || name_size > fb::config<int>("name_size:max"))
         throw id_exception(_TEXT(MESSAGE_ACCOUNT_INVALID_NAME));
 
-    // Name must be full-hangul characters
+    // Name must be Hangul syllables (no jamo)
     if (fb::config<bool>("allow_foreign_name") == false && assert_korean(cp949) == false)
         throw id_exception(_TEXT(MESSAGE_ACCOUNT_INVALID_NAME));
 

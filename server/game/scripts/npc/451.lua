@@ -51,7 +51,7 @@ return {
                 return
             end
             local sel, btn = me:list(npc, "오래간만에 그 무기를 보니 의욕이 솟는군... 어떤가, 재료만 가져다주면 그 무기의 진짜 모습을 되찾도록 해 주겠네. 물론 지금 쓰고 있는 것보다 훨씬 강해지겠지.", { "예, 잘 부탁드립니다!", "고맙지만 사양하겠습니다." }, { prev = false })
-            if btn == DIALOG_RESULT.QUIT or sel == nil then
+            if btn == DIALOG_RESULT.QUIT then
                 return
             end
             if sel == 2 then
@@ -95,7 +95,7 @@ return {
             return
         end
         local sel, btn = me:list(npc, "자... 재료인 금강석과 낡은망치는 구해 왔는가?", { "예, 구해 왔습니다.", "아뇨, 아직..." }, { prev = false })
-        if btn == DIALOG_RESULT.QUIT or sel == nil then
+        if btn == DIALOG_RESULT.QUIT then
             return
         end
         if sel == 2 then
@@ -131,7 +131,7 @@ return {
             "황화곤봉 입니다.",
             "적화접선 입니다.",
         }, { prev = false })
-        if list_btn == DIALOG_RESULT.QUIT or list_sel == nil then
+        if list_btn == DIALOG_RESULT.QUIT then
             return
         end
 

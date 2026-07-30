@@ -67,7 +67,7 @@ local function run_craft_menu(me, ch)
         '원앙청선',
         '원앙홍선',
     }, { prev = false })
-    if craft_btn == DIALOG_RESULT.QUIT or craft_sel == nil then
+    if craft_btn == DIALOG_RESULT.QUIT then
         return DIALOG_RESULT.NEXT
     end
 

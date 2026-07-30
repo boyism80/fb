@@ -15,7 +15,7 @@ return {
             "청비약을 만들고 싶습니다.",
             "녹비약을 만들고 싶습니다.",
         }, { prev = false })
-        if list_btn == DIALOG_RESULT.QUIT or sel == nil or sel < 1 or sel > 4 then
+        if list_btn == DIALOG_RESULT.QUIT or sel < 1 or sel > 4 then
             return
         end
 
@@ -36,7 +36,7 @@ return {
             "네, 구해왔습니다.",
             "아니오. 아직..",
         }, { prev = false })
-        if list_btn2 == DIALOG_RESULT.QUIT or sel2 == nil then
+        if list_btn2 == DIALOG_RESULT.QUIT then
             return
         end
 

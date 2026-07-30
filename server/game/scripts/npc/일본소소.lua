@@ -24,13 +24,18 @@ local DYE_OPTIONS = {
 }
 
 local function main_menu(me, npc)
-    local index = me:list(npc, '안녕하세요. 어떻게 오셨나요?', {'머리모양을 바꾸고 싶어요','머리염색'}, { prev = false })
-    if index == nil then
+    local OPT_STYLE = '머리모양을 바꾸고 싶어요'
+    local OPT_DYE = '머리염색'
+    local index, button = me:pursuit(npc, '안녕하세요. 어떻게 오셨나요?', { OPT_STYLE, OPT_DYE })
+    if button == DIALOG_RESULT.QUIT then
         return
     end
-    if index == 1 then
+    if button == DIALOG_RESULT.TOP then
+        return
+    end
+    if index == OPT_STYLE then
         do_hair_style(me, npc)
-    elseif index == 2 then
+    elseif index == OPT_DYE then
         do_hair_dye(me, npc)
     end
 end

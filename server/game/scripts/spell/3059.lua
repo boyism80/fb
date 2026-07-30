@@ -17,11 +17,13 @@ return {
         end
     end,
 
-    -- on_buff = function(me, sp)
-    -- end,
+    on_buff = function(me, sp)
+        me:delirious(true)
+    end,
 
-    -- on_unbuff = function(me, sp)
-    -- end,
+    on_unbuff = function(me, sp)
+        me:delirious(false)
+    end,
 
     on_concast = function(me, caster, buff)
         local damage = math.min((me:maxhp() * 5) // 100, 14994)

@@ -82,7 +82,7 @@ return {
                 return
             end
             local sel, list_btn = me:list(npc, "전사의길로 보내드릴까요? 이동하신 뒤에 직업을 가지지 않는다면, 언제든 이곳으로 다시 돌아오실 수 있습니다.", { "전사의길로 가겠습니다.", "다른곳을 조금 더 둘러볼래요..." }, { prev = false })
-            if list_btn == DIALOG_RESULT.QUIT or sel == nil then
+            if list_btn == DIALOG_RESULT.QUIT then
                 return
             end
             if sel == 1 then
@@ -111,7 +111,7 @@ return {
                 return
             end
             local sel, list_btn = me:list(npc, "도적의길로 보내드릴까요? 이동하신 뒤에 직업을 가지지 않는다면, 언제든 이곳으로 다시 돌아오실 수 있습니다.", { "도적의길로 가겠습니다.", "다른곳을 조금 더 둘러볼래요..." }, { prev = false })
-            if list_btn == DIALOG_RESULT.QUIT or sel == nil then
+            if list_btn == DIALOG_RESULT.QUIT then
                 return
             end
             if sel == 1 then
@@ -144,7 +144,7 @@ return {
                 return
             end
             local sel, list_btn = me:list(npc, "주술사의길로 보내드릴까요? 이동하신 뒤에 직업을 가지지 않는다면, 언제든 이곳으로 다시 돌아오실 수 있습니다.", { "주술사의길로 가겠습니다.", "다른곳을 조금 더 둘러볼래요..." }, { prev = false })
-            if list_btn == DIALOG_RESULT.QUIT or sel == nil then
+            if list_btn == DIALOG_RESULT.QUIT then
                 return
             end
             if sel == 1 then
@@ -181,7 +181,7 @@ return {
                 return
             end
             local sel, list_btn = me:list(npc, "도사의길로 보내드릴까요? 이동하신 뒤에 직업을 가지지 않는다면, 언제든 이곳으로 다시 돌아오실 수 있습니다.", { "도사의길로 가겠습니다.", "다른곳을 조금 더 둘러볼래요..." }, { prev = false })
-            if list_btn == DIALOG_RESULT.QUIT or sel == nil then
+            if list_btn == DIALOG_RESULT.QUIT then
                 return
             end
             if sel == 1 then

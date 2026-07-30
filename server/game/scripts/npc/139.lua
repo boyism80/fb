@@ -13,11 +13,15 @@ local SUCCESS_RATES = { 85, 70, 50, 40, 25 }
 return {
     on_click = function(me, npc)
         ::NPC_139_0000::
-        local sel, btn = me:list(npc, '안녕하세요. 어떻게 오셨나요?', { '하급 용무기 각성' }, { prev = false })
+        local OPT_AWAKEN = '하급 용무기 각성'
+        local sel, btn = me:pursuit(npc, '안녕하세요. 어떻게 오셨나요?', { OPT_AWAKEN })
         if btn == DIALOG_RESULT.QUIT then
             return
         end
-        if sel == nil or sel ~= 1 then
+        if btn == DIALOG_RESULT.TOP then
+            return
+        end
+        if sel ~= OPT_AWAKEN then
             return
         end
 

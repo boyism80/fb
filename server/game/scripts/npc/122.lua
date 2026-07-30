@@ -11,7 +11,7 @@ return {
                 "망치에 대해서 이야기를 좀...",
                 "지금 당장은 아무런 용무가 없습니다.",
             }, { prev = false })
-            if list_btn == DIALOG_RESULT.QUIT or sel == nil then
+            if list_btn == DIALOG_RESULT.QUIT then
                 return
             end
             if sel == 1 then

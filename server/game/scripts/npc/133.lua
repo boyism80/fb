@@ -48,7 +48,7 @@ return {
                 "나중에 다 이야기해주마.",
                 "아. 오늘은 요리 이야기를 좀...",
             }, { prev = false })
-            if list_btn == DIALOG_RESULT.QUIT or sel == nil then
+            if list_btn == DIALOG_RESULT.QUIT then
                 return
             end
             if sel == 1 then
@@ -74,7 +74,7 @@ return {
             local sel, list_btn = me:list(npc, "수사관님! 수사는 잘 되가세요?", {
                 "새롭게 얻은 정보는 있니?",
             }, { prev = false })
-            if list_btn == DIALOG_RESULT.QUIT or sel == nil then
+            if list_btn == DIALOG_RESULT.QUIT then
                 return
             end
             if sel == 1 then

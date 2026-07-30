@@ -18,7 +18,7 @@ return {
             "황금도토리 6개 : 특별교환권",
             "다음에는 언제오니...?",
         }, { prev = false })
-        if list_btn == DIALOG_RESULT.QUIT or sel == nil then
+        if list_btn == DIALOG_RESULT.QUIT then
             return
         end
 

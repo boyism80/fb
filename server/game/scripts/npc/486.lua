@@ -28,7 +28,7 @@ return {
             "=============================================",
             "당첨여부 확인",
         }, { prev = false })
-        if list_btn == DIALOG_RESULT.QUIT or sel == nil then
+        if list_btn == DIALOG_RESULT.QUIT then
             return
         end
 

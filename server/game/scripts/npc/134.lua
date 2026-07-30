@@ -16,7 +16,7 @@ return {
                 "나중에 다 이야기해주마.",
                 "아. 오늘은 요리 이야기를 좀...",
             }, { prev = false })
-            if list_btn == DIALOG_RESULT.QUIT or sel == nil then
+            if list_btn == DIALOG_RESULT.QUIT then
                 return
             end
             if sel == 1 then
@@ -44,7 +44,7 @@ return {
                 "그래, 열심히 정보를 모아다오.",
                 "아, 오늘은 요리 이야기를 좀.",
             }, { prev = false })
-            if list_btn == DIALOG_RESULT.QUIT or sel == nil then
+            if list_btn == DIALOG_RESULT.QUIT then
                 return
             end
             if sel == 1 then

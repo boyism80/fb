@@ -80,18 +80,21 @@ function M.handle(me, npc)
         table.insert(entry_list, entry.title ~= nil and entry.title ~= '' and entry.title or entry.message)
     end
     
-    local entry_index, button = me:list(npc, '통합보관함', entry_list, { prev = true })
+    local entry_name, button = me:pursuit(npc, '통합보관함', entry_list)
     if button == DIALOG_RESULT.QUIT then
-        return false
-    end
-    if button == DIALOG_RESULT.PREV then
         return true
     end
-    if entry_index == nil then
-        goto STORAGE_LIST
+    if button == DIALOG_RESULT.TOP then
+        return true
     end
-    
-    current_entry = entries[entry_index]
+
+    current_entry = nil
+    for i, name in ipairs(entry_list) do
+        if name == entry_name then
+            current_entry = entries[i]
+            break
+        end
+    end
     if current_entry == nil then
         goto STORAGE_LIST
     end
@@ -127,18 +130,16 @@ function M.handle(me, npc)
     end
 
 ::RECEIVE_CONFIRM::
-    local receive_selected, receive_button = me:list(npc, '보상을 수령하시겠습니까?', {'예', '아니오'}, { prev = true })
+    local YES = '예'
+    local NO = '아니오'
+    local receive_selected, receive_button = me:pursuit(npc, '보상을 수령하시겠습니까?', { YES, NO })
     if receive_button == DIALOG_RESULT.QUIT then
-        return false
+        return true
     end
-    if receive_button == DIALOG_RESULT.PREV then
+    if receive_button == DIALOG_RESULT.TOP then
         goto ENTRY_DETAIL
     end
-    if receive_selected == nil then
-        goto ENTRY_DETAIL
-    end
-
-    if receive_selected ~= 1 then
+    if receive_selected ~= YES then
         goto STORAGE_LIST
     end
 

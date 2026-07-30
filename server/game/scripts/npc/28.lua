@@ -536,35 +536,47 @@ return {
             if not run_init_dialogs(me, npc) then
                 return
             end
-            local index, button = me:list(npc, '그래도 버티고 서서 도대체 원하는 것이 뭐냐?', {'힘올리기', '지력올리기', '민첩올리기', '체력사기', '마력사기', '성형', '성전환'}, { prev = false })
+            local OPT_STR = '힘올리기'
+            local OPT_INT = '지력올리기'
+            local OPT_DEX = '민첩올리기'
+            local OPT_HP = '체력사기'
+            local OPT_MP = '마력사기'
+            local OPT_FACE = '성형'
+            local OPT_GENDER = '성전환'
+            local index, button = me:pursuit(npc, '그래도 버티고 서서 도대체 원하는 것이 뭐냐?', {
+                OPT_STR, OPT_INT, OPT_DEX, OPT_HP, OPT_MP, OPT_FACE, OPT_GENDER,
+            })
             if button == DIALOG_RESULT.QUIT then
                 return
             end
-            if index == 1 then
+            if button == DIALOG_RESULT.TOP then
+                return
+            end
+            if index == OPT_STR then
                 if not run_buy_stat(me, npc, 'str', '힘') then
                     return
                 end
-            elseif index == 2 then
+            elseif index == OPT_INT then
                 if not run_buy_stat(me, npc, 'int', '지력') then
                     return
                 end
-            elseif index == 3 then
+            elseif index == OPT_DEX then
                 if not run_buy_stat(me, npc, 'dex', '민첩성') then
                     return
                 end
-            elseif index == 4 then
+            elseif index == OPT_HP then
                 if not run_buy_hp(me, npc) then
                     return
                 end
-            elseif index == 5 then
+            elseif index == OPT_MP then
                 if not run_buy_mp(me, npc) then
                     return
                 end
-            elseif index == 6 then
+            elseif index == OPT_FACE then
                 if not run_change_face(me, npc) then
                     return
                 end
-            elseif index == 7 then
+            elseif index == OPT_GENDER then
                 if not run_change_gender(me, npc) then
                     return
                 end

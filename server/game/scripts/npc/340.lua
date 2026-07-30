@@ -9,7 +9,7 @@ return {
                 "출입구닫기",
                 "초기화",
             }, { prev = false })
-            if btn == DIALOG_RESULT.QUIT or sel == nil then
+            if btn == DIALOG_RESULT.QUIT then
                 return
             end
             me:dialog(npc, "준비중입니다.", { prev = false, next = false })
@@ -20,7 +20,7 @@ return {
             "네. 나가고 싶어요!",
             "아니요. 아직 안나갈래요!",
         }, { prev = false })
-        if btn == DIALOG_RESULT.QUIT or sel == nil then
+        if btn == DIALOG_RESULT.QUIT then
             return
         end
 

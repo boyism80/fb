@@ -38,8 +38,9 @@ std::string login_bot::generate_id() const
             wcs += (wchar_t)random(min, max);
         }
 
-        auto mbs = fb::M(wcs);
-        if (fb::assert_korean(mbs) == false)
+        auto mbs   = fb::M(wcs);
+        auto cp949 = fb::CP949(mbs); // Linux: UTF-8 -> CP949; Windows: already CP949
+        if (fb::assert_korean(cp949) == false)
             continue;
 
         return mbs;

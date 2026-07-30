@@ -71,7 +71,7 @@ local function run_bead_exchange(me, npc)
         "구슬조각을 찾아왔습니다.",
         "아직 많이 찾지 못했습니다."
     }, { prev = true })
-    if list_btn == DIALOG_RESULT.QUIT or sel == nil then
+    if list_btn == DIALOG_RESULT.QUIT then
         return
     end
     if sel == 2 then
@@ -88,7 +88,7 @@ local function run_bead_exchange(me, npc)
         "청색구슬조각입니다.",
         "녹색구슬조각입니다."
     }, { prev = true })
-    if list_btn == DIALOG_RESULT.QUIT or sel == nil or sel < 1 or sel > 4 then
+    if list_btn == DIALOG_RESULT.QUIT or sel < 1 or sel > 4 then
         return
     end
     local bead_item = BEAD_OPTIONS[sel][1]
@@ -163,7 +163,7 @@ local function run_intro_and_list(me, npc)
         "저도 발굴 작업을 돕겠습니다!",
         "열심히 찾으세요. 전 이만..."
     }, { prev = true })
-    if list_btn == DIALOG_RESULT.QUIT or sel == nil then
+    if list_btn == DIALOG_RESULT.QUIT then
         return
     end
     if list_btn == DIALOG_RESULT.PREV then

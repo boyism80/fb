@@ -15,7 +15,7 @@ return {
             "편의 아이템",
             "(기간한정) 금화 아이템 환불"
         }, { prev = false })
-        if list_btn == DIALOG_RESULT.QUIT or sel == nil then
+        if list_btn == DIALOG_RESULT.QUIT then
             return
         end
 

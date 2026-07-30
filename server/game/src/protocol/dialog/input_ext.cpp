@@ -45,8 +45,9 @@ void dialog_input_ext::serialize(fb::stream_writer<big_endian>& writer) const
     uint8_t type_value;
     if (this->password)
     {
-        type_value = static_cast<uint8_t>(this->message.has_value() ? fb::game::dialog::list_type::INPUT_PASSWORD
-                                                                    : fb::game::dialog::list_type::INPUT_PASSWORD_NO_MSG);
+        type_value =
+            static_cast<uint8_t>(this->message.has_value() ? fb::game::dialog::list_type::INPUT_PASSWORD
+                                                           : fb::game::dialog::list_type::INPUT_PASSWORD_NO_MSG);
     }
     else
     {

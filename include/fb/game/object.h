@@ -114,7 +114,7 @@ public:
     virtual void                            update_external(object& you, bool detailed);
     virtual bool                            super_hide() const;
     virtual bool                            hidden(const object& target) const;
-    void                                    chat(std::string_view message, CHAT_TYPE chat_type = CHAT_TYPE::NORMAL, bool decorate = true);
+    virtual void                            chat(std::string_view message, CHAT_TYPE chat_type = CHAT_TYPE::NORMAL, bool decorate = true);
     const fb::model::point16_t&             position() const;
     virtual bool                            position(uint16_t x, uint16_t y, bool refresh = false);
     virtual bool                            position(const fb::model::point16_t position, bool refresh = false);

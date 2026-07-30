@@ -36,7 +36,7 @@ return {
 
         ::NPC_384_0005::
         local sel, list_btn = me:list(npc, "무슨 마법을 다시 배우고 싶은겐가?", { "백열장을...", "선풍각을..." }, { prev = true })
-        if list_btn == DIALOG_RESULT.QUIT or sel == nil then
+        if list_btn == DIALOG_RESULT.QUIT then
             return
         end
         if list_btn == DIALOG_RESULT.PREV then
@@ -51,7 +51,7 @@ return {
             end
             ::NPC_384_0007::
             local sel2, list_btn2 = me:list(npc, "다시 수련하겠는가?", { "예. 부탁드립니다.", "아니오... 죄송합니다." }, { prev = true })
-            if list_btn2 == DIALOG_RESULT.QUIT or sel2 == nil then
+            if list_btn2 == DIALOG_RESULT.QUIT then
                 return
             end
             if list_btn2 == DIALOG_RESULT.PREV then
@@ -81,7 +81,7 @@ return {
             end
             ::NPC_384_0009::
             local sel2, list_btn2 = me:list(npc, "다시 수련하겠는가?", { "예. 부탁드립니다.", "아니오... 죄송합니다." }, { prev = true })
-            if list_btn2 == DIALOG_RESULT.QUIT or sel2 == nil then
+            if list_btn2 == DIALOG_RESULT.QUIT then
                 return
             end
             if list_btn2 == DIALOG_RESULT.PREV then

@@ -11,7 +11,7 @@ return {
                 "문화재 유출에 대해 듣고자 합니다.",
                 "그냥 지나가던 길입니다.",
             }, { prev = false })
-            if list_btn == DIALOG_RESULT.QUIT or sel == nil then
+            if list_btn == DIALOG_RESULT.QUIT then
                 return
             end
             if sel == 1 then

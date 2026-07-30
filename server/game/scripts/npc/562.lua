@@ -14,7 +14,7 @@ return {
                 "지남침을 구해주십시오.",
                 "어떤 갑옷을 파시는지요?",
             }, { prev = false })
-            if list_btn == DIALOG_RESULT.QUIT or sel == nil then
+            if list_btn == DIALOG_RESULT.QUIT then
                 return
             end
             if sel == 1 then

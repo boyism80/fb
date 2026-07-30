@@ -13,7 +13,7 @@ return {
             "팔십세주 (4000전)",
             "백세주 (10000전)",
         }, { prev = false })
-        if list_btn == DIALOG_RESULT.QUIT or sel == nil or sel < 1 or sel > 3 then
+        if list_btn == DIALOG_RESULT.QUIT or sel < 1 or sel > 3 then
             return
         end
 

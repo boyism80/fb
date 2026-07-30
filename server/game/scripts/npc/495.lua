@@ -76,7 +76,7 @@ return {
                     "네. 하나만 만들어 주세요.",
                     "서바이벌증표는 어떻게 얻나요?",
                 }, { prev = false })
-                if list_btn == DIALOG_RESULT.QUIT or sel == nil then
+                if list_btn == DIALOG_RESULT.QUIT then
                     return
                 end
                 if sel == 1 then
@@ -111,7 +111,7 @@ return {
             if not now_ok then
                 me:dialog(npc, "지금은 이벤트 진행시간이 아닙니다. ", { prev = false, next = true })
                 local sel, list_btn = me:list(npc, "퇴장 하시겠습니까?", { "네. 퇴장합니다.", "아니오. 이따가요." }, { prev = false })
-                if list_btn == DIALOG_RESULT.QUIT or sel == nil then
+                if list_btn == DIALOG_RESULT.QUIT then
                     return
                 end
                 if sel == 1 then
@@ -128,7 +128,7 @@ return {
                 "아니오. 이따가요.",
                 "퇴장합니다.",
             }, { prev = false })
-            if list_btn == DIALOG_RESULT.QUIT or sel == nil then
+            if list_btn == DIALOG_RESULT.QUIT then
                 return
             end
             if sel == 1 then
@@ -142,7 +142,7 @@ return {
             elseif sel == 3 then
                 me:dialog(npc, "퇴장하시겠다구요? [서바이벌증표]를 회수하고, 퇴장을 도와드리겠습니다.", { prev = false, next = true })
                 local sel2, list_btn2 = me:list(npc, "서바이벌증표를 회수합니다.", { "네. 퇴장합니다.", "아니오. 이따가요." }, { prev = false })
-                if list_btn2 == DIALOG_RESULT.QUIT or sel2 == nil then
+                if list_btn2 == DIALOG_RESULT.QUIT then
                     return
                 end
                 if sel2 == 1 then
@@ -178,7 +178,7 @@ return {
             "네. 입장합니다.",
             "서바이벌 달리기는 무엇인가요?",
         }, { prev = false })
-        if list_btn == DIALOG_RESULT.QUIT or sel == nil then
+        if list_btn == DIALOG_RESULT.QUIT then
             return
         end
         if sel == 1 then

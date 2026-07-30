@@ -1,5 +1,8 @@
 local M = {}
 
+local YES = '예'
+local NO = '아니오'
+
 local function queues()
     return {
         { type = MATCH_TYPE.MATCH_1, label = '매치 1' },
@@ -24,17 +27,14 @@ function M.handle(me, npc)
     end
 
     if mm:enrolled() then
-        local selected, button = me:list(npc, '현재 등록된 매칭이 있습니다. 취소하시겠습니까?', {'예', '아니오'}, { prev = true })
+        local selected, button = me:pursuit(npc, '현재 등록된 매칭이 있습니다. 취소하시겠습니까?', { YES, NO })
         if button == DIALOG_RESULT.QUIT then
-            return false
-        end
-        if button == DIALOG_RESULT.PREV then
             return true
         end
-        if selected == nil then
+        if button == DIALOG_RESULT.TOP then
             return true
         end
-        if selected == 1 then
+        if selected == YES then
             local err = mm:unregister()
             if err ~= nil then
                 me:dialog(npc, err, { prev = false, next = true })
@@ -48,30 +48,34 @@ function M.handle(me, npc)
         labels[#labels + 1] = queue.label
     end
 
-    local selected, button = me:list(npc, '매치 유형을 선택해 주세요.', labels, { prev = true })
+::MATCHMAKING_TYPE::
+    local selected, button = me:pursuit(npc, '매치 유형을 선택해 주세요.', labels)
     if button == DIALOG_RESULT.QUIT then
-        return false
-    end
-    if button == DIALOG_RESULT.PREV then
         return true
     end
-    if selected == nil then
+    if button == DIALOG_RESULT.TOP then
         return true
     end
 
-    local queue = queues()[selected]
+    local queue = nil
+    for _, q in ipairs(queues()) do
+        if q.label == selected then
+            queue = q
+            break
+        end
+    end
     if queue == nil then
         return true
     end
 
-    local confirm_selected, confirm_button = me:list(npc, string.format('"%s" 매치를 등록하시겠습니까?', queue.label), {'예', '아니오'}, { prev = true })
+    local confirm_selected, confirm_button = me:pursuit(npc, string.format('"%s" 매치를 등록하시겠습니까?', queue.label), { YES, NO })
     if confirm_button == DIALOG_RESULT.QUIT then
-        return false
-    end
-    if confirm_button == DIALOG_RESULT.PREV then
         return true
     end
-    if confirm_selected == nil or confirm_selected ~= 1 then
+    if confirm_button == DIALOG_RESULT.TOP then
+        goto MATCHMAKING_TYPE
+    end
+    if confirm_selected ~= YES then
         return true
     end
 

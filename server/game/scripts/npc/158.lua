@@ -5,12 +5,18 @@ local enum = require('lib.enum')
 return {
     on_click = function(me, npc)
     ::NPC_158_0001::
-        local index, button = me:list(npc, '안녕하세요. 어떻게 오셨나요?', {'초혼술방법', '무한 복장', '일반 복장'})
-        if index == nil then
+        local OPT_SPIRIT = '초혼술방법'
+        local OPT_INFINITE = '무한 복장'
+        local OPT_NORMAL = '일반 복장'
+        local index, button = me:pursuit(npc, '안녕하세요. 어떻게 오셨나요?', { OPT_SPIRIT, OPT_INFINITE, OPT_NORMAL })
+        if button == DIALOG_RESULT.QUIT then
+            return
+        end
+        if button == DIALOG_RESULT.TOP then
             return
         end
 
-        if index == 1 then
+        if index == OPT_SPIRIT then
             local q = me:quest(quest.QUEST_SHARK_WEAPON)
             if q == nil then
                 me:dialog(npc, '자네는 아직 알 때가 아니군.', { prev = false, next = false })
@@ -74,7 +80,7 @@ return {
             goto NPC_158_0001
         end
 
-        if index == 2 then
+        if index == OPT_INFINITE then
             local price = 1000
             index = me:list(npc, string.format('무한에 참여하시려면 염색비 %d전을 내시고 무한 복장을 하셔야 합니다. %d전을 내시겠습니까?', price, price), {'예', '아니오'})
             if index == nil then
@@ -124,7 +130,7 @@ return {
 
             goto NPC_158_0001
 
-        elseif index == 3 then
+        elseif index == OPT_NORMAL then
         	index = me:list(npc, '일반 복장으로 바꿔드릴까요?', {'예', '아니오'})
         	if index == nil then
         		return

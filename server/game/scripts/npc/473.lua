@@ -46,7 +46,7 @@ return {
 
         ::NPC_473_0006::
         local sel, btn = me:list(npc, "잘 마른 갈대 10개를 10000전에 팔겠네, 어떤가?", { "네, 어서 주세요", "아뇨, 필요없어요" }, { prev = true })
-        if btn == DIALOG_RESULT.QUIT or sel == nil then
+        if btn == DIALOG_RESULT.QUIT then
             return
         end
         if btn == DIALOG_RESULT.PREV then

@@ -20,7 +20,7 @@ return {
                 "금강퇴의 수련을 위해 찾아왔습니다.",
                 "금강퇴의 수련방법에 대해서 좀더 알고싶습니다.",
             }, { prev = false })
-            if btn == DIALOG_RESULT.QUIT or sel == nil then
+            if btn == DIALOG_RESULT.QUIT then
                 return nil, true
             end
             return sel, false
@@ -43,7 +43,7 @@ return {
                 "물론입니다. 어서 전수하여 주십시오.",
                 "아닙니다. 다음에 다시 찾아오겠습니다.",
             }, { prev = false })
-            if btn2 == DIALOG_RESULT.QUIT or sel2 == nil then
+            if btn2 == DIALOG_RESULT.QUIT then
                 return
             end
             if sel2 == 2 then

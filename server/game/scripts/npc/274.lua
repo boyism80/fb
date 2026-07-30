@@ -29,7 +29,7 @@ local function run_nation_change(me, npc)
         target_name .. " 국적을 얻게 해주십시요.",
         "에고, 돈이 모자라는군요, 다음에 다시...",
     }, { prev = true })
-    if lb4 == DIALOG_RESULT.QUIT or sel4 == nil then
+    if lb4 == DIALOG_RESULT.QUIT then
         return true
     end
     if lb4 == DIALOG_RESULT.PREV then
@@ -88,7 +88,7 @@ local function run_weapon_info_loop(me, npc)
             "혹시 방천화극을....",
             "이만 물러가보겠습니다...",
         }, { prev = true })
-        if weapon_lb == DIALOG_RESULT.QUIT or weapon_sel == nil then
+        if weapon_lb == DIALOG_RESULT.QUIT then
             return
         end
         if weapon_lb == DIALOG_RESULT.PREV then
@@ -153,7 +153,7 @@ return {
             "여보세요?",
             "......",
         }, { prev = false })
-        if list_btn == DIALOG_RESULT.QUIT or sel == nil then
+        if list_btn == DIALOG_RESULT.QUIT then
             return
         end
 
@@ -170,7 +170,7 @@ return {
             "백룡장님은...",
             "안녕히 계세요...",
         }, { prev = false })
-        if lb2 == DIALOG_RESULT.QUIT or sel2 == nil then
+        if lb2 == DIALOG_RESULT.QUIT then
             return
         end
 
@@ -200,7 +200,7 @@ return {
             "혹시 제 국적을...",
             "네... 안녕히 계세요.",
         }, { prev = true })
-        if lb3 == DIALOG_RESULT.QUIT or sel3 == nil then
+        if lb3 == DIALOG_RESULT.QUIT then
             return
         end
         if lb3 == DIALOG_RESULT.PREV then

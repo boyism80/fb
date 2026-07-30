@@ -36,7 +36,7 @@ return {
                 '제가 오제의 음모를 막아보겠습니다.',
                 '신들이 하는 일을 인간이 어쩔 순 없겠죠.',
             }, { prev = true })
-            if list_btn == DIALOG_RESULT.QUIT or choice == nil then
+            if list_btn == DIALOG_RESULT.QUIT then
                 return
             end
             if list_btn == DIALOG_RESULT.PREV then
@@ -198,7 +198,7 @@ return {
                 '이 땅이 아직 건재한데, 포기하긴 이릅니다.',
                 '만고를 제거해야 하지 않겠습니까?',
             }, { prev = true })
-            if list_btn == DIALOG_RESULT.QUIT or choice2 == nil then
+            if list_btn == DIALOG_RESULT.QUIT then
                 return
             end
             if list_btn == DIALOG_RESULT.PREV then

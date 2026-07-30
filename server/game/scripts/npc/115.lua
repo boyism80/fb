@@ -22,7 +22,7 @@ local function cultural_property_quest(me, npc)
 
         ::NPC_115_0002::
         local selected, list_btn = me:list(npc, '자네처럼 외부인 대표로, 우리가 유출된 문화재를 찾아서 나에게 가져다 주지 않겠나? 외부인에 대한 우리의 불신을 풀어줄 좋은 기회가 될거야.', { '네, 구해 보겠습니다.', '글쎄요...' }, { prev = true })
-        if list_btn == DIALOG_RESULT.QUIT or selected == nil then
+        if list_btn == DIALOG_RESULT.QUIT then
             return
         end
         if list_btn == DIALOG_RESULT.PREV then
@@ -106,12 +106,17 @@ end
 
 return {
     on_click = function(me, npc)
-        local selected = me:list(npc, '안녕하세요. 어떻게 오셨나요?', {'문화재보호공무원', '환상의섬에 나타난 괴물'})
-        if selected == nil then
+        local OPT_CULTURAL = '문화재보호공무원'
+        local OPT_MONSTER = '환상의섬에 나타난 괴물'
+        local selected, button = me:pursuit(npc, '안녕하세요. 어떻게 오셨나요?', { OPT_CULTURAL, OPT_MONSTER })
+        if button == DIALOG_RESULT.QUIT then
+            return
+        end
+        if button == DIALOG_RESULT.TOP then
             return
         end
 
-        if selected == 1 then
+        if selected == OPT_CULTURAL then
             cultural_property_quest(me, npc)
         end
     end

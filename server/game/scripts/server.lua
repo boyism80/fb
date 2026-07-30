@@ -11,29 +11,36 @@ return {
         local npc = name2npc('낙랑')
 
     ::F1_MENU::
-        local menu = {'통합보관함', '거래소', '매치메이킹'}
+        local OPT_STORAGE = '통합보관함'
+        local OPT_MARKET = '거래소'
+        local OPT_MATCH = '매치메이킹'
+        local OPT_GRANT = '아이템 지급'
+        local menu = { OPT_STORAGE, OPT_MARKET, OPT_MATCH }
         if me:role() >= ROLE.ADMIN then
-            table.insert(menu, '아이템 지급')
+            table.insert(menu, OPT_GRANT)
         end
 
-        local selected = me:list(npc, '무엇을 도와드릴까요?', menu)
-        if selected == nil then
+        local selected, button = me:pursuit(npc, '안녕하세요. 무엇을 도와드릴까요?', menu)
+        if button == DIALOG_RESULT.QUIT then
+            return
+        end
+        if button == DIALOG_RESULT.TOP then
             return
         end
 
-        if selected == 1 then
+        if selected == OPT_STORAGE then
             if storage.handle(me, npc) == false then
                 return
             end
-        elseif selected == 2 then
+        elseif selected == OPT_MARKET then
             if marketplace.handle(me, npc) == false then
                 return
             end
-        elseif selected == 3 then
+        elseif selected == OPT_MATCH then
             if matchmaking.handle(me, npc) == false then
                 return
             end
-        elseif selected == 4 and me:role() >= ROLE.ADMIN then
+        elseif selected == OPT_GRANT and me:role() >= ROLE.ADMIN then
             if grant_storage.handle(me, npc) == false then
                 return
             end

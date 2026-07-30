@@ -30,7 +30,7 @@ return {
             "삼짇날에 대해서 알려주세요.",
             "나비를 잡아왔어요.",
         }, { prev = false })
-        if list_btn == DIALOG_RESULT.QUIT or sel == nil then
+        if list_btn == DIALOG_RESULT.QUIT then
             return
         end
 
@@ -101,7 +101,7 @@ return {
                 "네, 잡아드릴께요.",
                 "나비 잡을시간 없는데..",
             }, { prev = false })
-            if sub_btn == DIALOG_RESULT.QUIT or sub_sel == nil then
+            if sub_btn == DIALOG_RESULT.QUIT then
                 return
             end
             if sub_sel == 1 then

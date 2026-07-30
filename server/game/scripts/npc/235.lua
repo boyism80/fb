@@ -159,7 +159,7 @@ return {
         if q and q:step() == 2 and not q:completed() then
             ::NPC_235_0001::
             local sel, btn = me:list(npc, "누구세요? 제게 무슨 하실 말씀이라도...?", { "혹시 사탕 좀 가지고 있니?", "아무 일도 아니란다." }, { prev = false })
-            if btn == DIALOG_RESULT.QUIT or sel == nil or sel ~= 1 then
+            if btn == DIALOG_RESULT.QUIT or sel ~= 1 then
                 return
             end
 

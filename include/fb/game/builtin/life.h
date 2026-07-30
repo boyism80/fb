@@ -28,6 +28,7 @@ struct life
     static int builtin_paralysis(lua_State* L);
     static int builtin_invincible(lua_State* L);
     static int builtin_cover(lua_State* L);
+    static int builtin_delirious(lua_State* L);
     static int builtin_base_hp(lua_State* L);
     static int builtin_buff_hp(lua_State* L);
     static int builtin_maxhp(lua_State* L);

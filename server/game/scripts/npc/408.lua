@@ -19,7 +19,7 @@ return {
         end
 
         local sel, list_btn = me:list(npc, string.format("그 귀하디 귀한 담배 %d개를 내게 준다면 이곳에서 내보내 주지...", REQUIRED_CIGARETTES), { "준다", "주지 않는다" }, { prev = false })
-        if list_btn == DIALOG_RESULT.QUIT or sel == nil then
+        if list_btn == DIALOG_RESULT.QUIT then
             return
         end
 

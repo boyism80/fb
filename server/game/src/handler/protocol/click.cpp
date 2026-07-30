@@ -27,15 +27,16 @@ async::task<bool> click::handle(fb::socket<character>& session, game_reqs::click
         co_return true;
     }
 
-    // 0x2F MENU/INPUT cancel: client sends C2S 0x43|flag=1|dialog oid (same layout as object click).
-    // While a dialog coroutine is waiting, treat object-click as cancel instead of re-clicking.
-    // Push nil (+ QUIT) so both 1-value (menu/input) and 2-value (list) yields unwind cleanly.
+    // 0x2F family TOP button: client sends C2S 0x43|flag=1|dialog oid (same layout as object click).
+    // Child buttons are Select(1)->0x39, TOP(2)->0x43, QUIT(3)->close with no packet.
+    // While a dialog coroutine is waiting, treat this as TOP instead of re-clicking the object.
+    // Push nil (+ TOP) so both 1-value (menu/input/pursuit) and 2-value (list) yields unwind cleanly.
     if (ch->dialog != nullptr && request.flag == game_reqs::click::FLAG_OBJECT)
     {
         auto lua   = ch->dialog;
         ch->dialog = nullptr;
         lua->pushnil();
-        lua->pushinteger(static_cast<uint32_t>(fb::model::enum_value::DIALOG_RESULT::QUIT));
+        lua->pushinteger(static_cast<uint32_t>(fb::model::enum_value::DIALOG_RESULT::TOP));
         lua->resume(2);
         co_return true;
     }
