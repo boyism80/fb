@@ -1,4 +1,4 @@
-﻿using Dapper;
+using Dapper;
 using Fb.Model.EnumValue;
 using Http.Model;
 using Http.Service;
@@ -298,6 +298,15 @@ namespace Http.Reepository
         {
             await using var conn = _dbContext.GetShardConnection(world, user);
             return await conn.QueryFirstOrDefaultAsync<ushort>($"SELECT COUNT(id) FROM mail WHERE user = {user} AND `read` = 0 AND deleted = 0;");
+        }
+
+        public async Task<List<uint>> GetSystemMailIds(uint world, uint user)
+        {
+            await using var conn = _dbContext.GetShardConnection(world, user);
+            var ids = await conn.QueryAsync<uint>(
+                "SELECT DISTINCT `system_mail_id` FROM `mail` WHERE `user` = @user AND `deleted` = 0 AND `system_mail_id` IS NOT NULL",
+                new { user });
+            return ids.ToList();
         }
 
         public async Task<bool> Delete(uint world, uint user, uint id)

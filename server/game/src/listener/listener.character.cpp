@@ -280,7 +280,14 @@ void listener_impl::on_show_mail_box(character&                            ch,
 
 void listener_impl::on_show_mail_box(character& ch, const mail_box::mail& mail, MAIL_BUTTON_ENABLE flag)
 {
-    auto dto = internal::Mail{mail.id, mail.user, mail.sender, mail.title, mail.contents, mail.read, mail.created_date};
+    auto dto = internal::Mail{mail.id,
+                              mail.user,
+                              mail.sender,
+                              mail.title,
+                              mail.contents,
+                              mail.read,
+                              mail.created_date,
+                              std::nullopt};
     ch.send(game_resp::bulletin_mail(dto, flag));
 }
 

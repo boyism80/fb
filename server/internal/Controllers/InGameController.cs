@@ -423,7 +423,8 @@ namespace Internal.Controllers
                 Option = _mapper.Map<Protocol.Option>(option),
                 Clan = sync.Clan,
                 Group = sync.Group,
-                Mail = await _dbContext.Mail.Unread(world, uid)
+                Mail = await _dbContext.Mail.Unread(world, uid),
+                SystemMailIds = await _dbContext.Mail.GetSystemMailIds(world, uid)
             };
         }
 

@@ -289,6 +289,7 @@ async::task<std::shared_ptr<character>> login::init(const game_reqs::login& requ
     }
 
     ch->mail_box.unread_count(resp.mail);
+    ch->mail_box.init_system_mails(resp.system_mail_ids);
     this->init_items(resp.items, *ch);
     this->init_spells(resp.spells, *ch);
     this->init_matchmaker(resp.matchmaking_skills, *ch);

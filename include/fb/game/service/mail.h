@@ -35,8 +35,8 @@ public:
     // clang-format on
 
     // clang-format off
-    async::task<void> on_received(uint32_t user_id, uint16_t unread, const mail_box::summary& snapshot);
-    async::task<void> on_received_batch(const std::vector<mail_box::summary>& snapshots, const std::vector<uint32_t>& user_ids, const std::vector<uint16_t>& unread_counts);
+    async::task<void> on_received(const mail_box::received& entry);
+    async::task<void> on_received_batch(const std::vector<mail_box::received>& entries);
     // clang-format on
 
     void on_error(uint32_t error) const;
@@ -46,7 +46,7 @@ private:
     static mail_box::summary to_summary(const fb::protocol::internal::MailSummary& mail);
     static mail_box::summary to_summary(const fb::protocol::internal::Mail& mail);
     static mail_box::mail    to_mail(const fb::protocol::internal::Mail& mail);
-    void                     apply_received(character& ch, uint16_t unread, const mail_box::summary& snapshot);
+    void                     apply_received(character& ch, const mail_box::received& entry);
     // clang-format on
 };
 

@@ -13,7 +13,11 @@ async::task<void> write_mail::handle(const internal_resp::WriteMail& message)
     if (message.host == fb::config<uint32_t>("id"))
         co_return;
 
-    const auto& m        = message.mail;
-    auto        snapshot = mail_box::summary{m.id, m.user, m.sender, m.read, m.title, m.created_date};
-    co_await this->server.mail.on_received(m.user, message.unread, snapshot);
+    const auto& m = message.mail;
+    co_await this->server.mail.on_received(mail_box::received{
+        .user_id        = m.user,
+        .unread         = message.unread,
+        .snapshot       = mail_box::summary{m.id, m.user, m.sender, m.read, m.title, m.created_date},
+        .system_mail_id = m.system_mail_id,
+    });
 }
