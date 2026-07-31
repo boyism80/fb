@@ -119,9 +119,6 @@ return {
         if list_btn == DIALOG_RESULT.QUIT then
             return
         end
-        if list_btn == DIALOG_RESULT.TOP then
-            return
-        end
         if sel == OPT_WASH then
             local r = run_ice_wash(me, npc)
             if r == DIALOG_RESULT.PREV then

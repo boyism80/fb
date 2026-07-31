@@ -442,7 +442,7 @@ template <typename BotType>
 async::task<std::shared_ptr<fb::protocol::header>>
 bot<BotType>::request_by_opcode(std::shared_ptr<BotType>                                     target,
                                 uint8_t                                                      response_opcode,
-                                const fb::protocol::header&                                  protocol,
+                                const fb::protocol::header*                                  protocol,
                                 const std::function<bool(const fb::protocol::header& resp)>& condition,
                                 const fb::model::timespan&                                   timeout,
                                 bool                                                         encrypt,
@@ -454,10 +454,11 @@ bot<BotType>::request_by_opcode(std::shared_ptr<BotType>                        
     auto self_ptr = std::static_pointer_cast<BotType>(target->shared_from_this());
     auto context  = std::make_shared<request_erased_context>(self_ptr, response_opcode);
 
-    fb::logger::debug("bot request start: bot_id={} response_opcode=0x{:02X} timeout_ms={}",
+    fb::logger::debug("bot request start: bot_id={} response_opcode=0x{:02X} timeout_ms={} wait_only={}",
                       target->id,
                       response_opcode,
-                      timeout.total_milliseconds());
+                      timeout.total_milliseconds(),
+                      protocol == nullptr);
 
     if (timeout > 0s)
     {
@@ -499,17 +500,55 @@ bot<BotType>::request_by_opcode(std::shared_ptr<BotType>                        
                         },
                     .context_ptr = context.get()});
 
-    async::awaitable_then(this->send(protocol, encrypt, wrap), [](auto result) {
-        try
-        {
-            result();
-        }
-        catch (std::exception& e)
-        {
-            fb::logger::fatal(e.what());
-        }
-    });
+    if (protocol != nullptr)
+    {
+        async::awaitable_then(this->send(*protocol, encrypt, wrap), [](auto result) {
+            try
+            {
+                result();
+            }
+            catch (std::exception& e)
+            {
+                fb::logger::fatal(e.what());
+            }
+        });
+    }
     co_return co_await context->task();
+}
+
+template <typename BotType>
+async::task<std::shared_ptr<fb::protocol::header>>
+bot<BotType>::request_by_opcode(std::shared_ptr<BotType>                                     target,
+                                uint8_t                                                      response_opcode,
+                                const fb::protocol::header&                                  protocol,
+                                const std::function<bool(const fb::protocol::header& resp)>& condition,
+                                const fb::model::timespan&                                   timeout,
+                                bool                                                         encrypt,
+                                bool                                                         wrap,
+                                std::function<std::shared_ptr<fb::protocol::header>(const fb::protocol::header&)> clone)
+{
+    co_return co_await this
+        ->request_by_opcode(target, response_opcode, &protocol, condition, timeout, encrypt, wrap, std::move(clone));
+}
+
+template <typename BotType>
+async::task<std::shared_ptr<fb::protocol::header>>
+bot<BotType>::request_by_opcode(uint8_t                                                      response_opcode,
+                                const fb::protocol::header*                                  protocol,
+                                const std::function<bool(const fb::protocol::header& resp)>& condition,
+                                const fb::model::timespan&                                   timeout,
+                                bool                                                         encrypt,
+                                bool                                                         wrap,
+                                std::function<std::shared_ptr<fb::protocol::header>(const fb::protocol::header&)> clone)
+{
+    co_return co_await this->request_by_opcode(this->shared_from_this_as<BotType>(),
+                                               response_opcode,
+                                               protocol,
+                                               condition,
+                                               timeout,
+                                               encrypt,
+                                               wrap,
+                                               std::move(clone));
 }
 
 template <typename BotType>
@@ -524,7 +563,7 @@ bot<BotType>::request_by_opcode(uint8_t                                         
 {
     co_return co_await this->request_by_opcode(this->shared_from_this_as<BotType>(),
                                                response_opcode,
-                                               protocol,
+                                               &protocol,
                                                condition,
                                                timeout,
                                                encrypt,

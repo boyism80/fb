@@ -262,33 +262,33 @@ local function test_scenario_4(ctx, index)
     local npc = setup_npc(ctx, bot, index, "뭉치")
     log("debug", string.format("Chat[%d]: %s", index, "scenario 4: npc oid=" .. tostring(npc.oid)))
 
-    log("debug", string.format("Chat[%d]: %s", index, "scenario 4: clicking NPC (expect list dialog)"))
-    bot:request_dialog_ext(
+    log("debug", string.format("Chat[%d]: %s", index, "scenario 4: clicking NPC (expect pursuit dialog)"))
+    bot:request_dialog(
         protocol.click(npc.oid),
         function(packet)
-            return packet.type == "list"
+            return packet.type == "pursuit"
         end)
-    log("debug", string.format("Chat[%d]: %s", index, "scenario 4: click dialog received (list)"))
+    log("debug", string.format("Chat[%d]: %s", index, "scenario 4: click dialog received (pursuit)"))
 
-    log("debug", string.format("Chat[%d]: %s", index, "scenario 4: dialog LIST step 1 (expect list)"))
-    bot:request_dialog_ext(
-        protocol.dialog("LIST", 0, "", 1, 0, "", "NEXT"),
-        function(packet)
-            return packet.type == "list"
-        end)
-    log("debug", string.format("Chat[%d]: %s", index, "scenario 4: LIST step 1 done"))
-
-    log("debug", string.format("Chat[%d]: %s", index, "scenario 4: dialog LIST step 2 (expect item)"))
+    log("debug", string.format("Chat[%d]: %s", index, "scenario 4: select 물건 사기 (expect category pursuit)"))
     bot:request_dialog(
-        protocol.dialog("LIST", 0, "", 1, 0, "", "NEXT"),
+        protocol.dialog("PURSUIT", 0, "", 0, 0, "물건 사기"),
+        function(packet)
+            return packet.type == "pursuit"
+        end)
+    log("debug", string.format("Chat[%d]: %s", index, "scenario 4: category pursuit done"))
+
+    log("debug", string.format("Chat[%d]: %s", index, "scenario 4: select category (expect item)"))
+    bot:request_dialog(
+        protocol.dialog("PURSUIT", 0, "", 0, 0, "전사용 갑주류"),
         function(packet)
             return packet.type == "item"
         end)
-    log("debug", string.format("Chat[%d]: %s", index, "scenario 4: LIST step 2 done (item dialog)"))
+    log("debug", string.format("Chat[%d]: %s", index, "scenario 4: item dialog done"))
 
     log("debug", string.format("Chat[%d]: %s", index, "scenario 4: dialog ITEM step (expect normal)"))
     local packet = bot:request_dialog_ext(
-        protocol.dialog("ITEM", 0, "", 0, 0, "unknown", "NEXT"),
+        protocol.dialog("ITEM", 0, "", 0, 0, "unknown"),
         function(p)
             return p.type == "normal"
         end)

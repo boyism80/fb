@@ -61,7 +61,8 @@ return {
 
     -- Interactive dialog suite:
     --   /스크립트 scripts/script.lua dialog_test
-    -- Walk each case; press PREV/NEXT/TOP/Select/QUIT as prompted and check the chat log.
+    -- Walk each case; press PREV/NEXT/Select/QUIT as prompted and check the chat log.
+    -- Client TOP on 0x2F restarts NPC click (releases dialog) — it does not resume here.
     dialog_test = function(me)
         local function result_name(v)
             if v == nil then
@@ -71,7 +72,6 @@ return {
                 if v == DIALOG_RESULT.PREV then return 'PREV' end
                 if v == DIALOG_RESULT.QUIT then return 'QUIT' end
                 if v == DIALOG_RESULT.NEXT then return 'NEXT' end
-                if v == DIALOG_RESULT.TOP then return 'TOP' end
                 return tostring(v)
             end
             return tostring(v)
@@ -185,9 +185,9 @@ return {
         log('email', me:email(me, 'email dialog'))
 
         ------------------------------------------------------------------
-        -- 0x2F menu / input: TOP
+        -- 0x2F menu / input
         ------------------------------------------------------------------
-        if not pause('0x2F menu (no ext): Select or TOP. QUIT sends no packet.') then return end
+        if not pause('0x2F menu (no ext): Select or QUIT. TOP restarts click.') then return end
         do
             local i, btn = me:menu(me, 'menu0', { 'opt_a', 'opt_b' })
             log('menu0', i, btn)
@@ -199,7 +199,7 @@ return {
             log('menu1', i, btn)
         end
 
-        if not pause('0x2F input (no ext): type text / TOP.') then return end
+        if not pause('0x2F input (no ext): type text / QUIT.') then return end
         do
             local s, btn = me:input(me, 'input2')
             log('input2', s, btn)
@@ -214,14 +214,14 @@ return {
         ------------------------------------------------------------------
         -- 0x2F pursuit / dual / item / slot / spell
         ------------------------------------------------------------------
-        if not pause('0x2F pursuit (string list): Select name or TOP.') then return end
+        if not pause('0x2F pursuit (string list): Select name or QUIT.') then return end
         do
             local OPT = { a = 'option_a', b = 'option_b', c = 'option_c' }
             local name, btn = me:pursuit(me, 'pursuit list', { OPT.a, OPT.b, OPT.c })
             log('pursuit', name, btn)
         end
 
-        if not pause('0x2F pursuit dual-field (ordered pairs): Select label or TOP.') then return end
+        if not pause('0x2F pursuit dual-field (ordered pairs): Select label or QUIT.') then return end
         do
             local label, btn = me:pursuit(me, 'pursuit dual', {
                 { 'HP', '100' },
@@ -231,7 +231,7 @@ return {
             log('pursuit_dual', label, btn)
         end
 
-        if not pause('0x2F item: needs shop-like pairs. Select or TOP.') then return end
+        if not pause('0x2F item: needs shop-like pairs. Select or QUIT.') then return end
         do
             local pairs = {
                 { '도토리', 100 },
@@ -241,7 +241,7 @@ return {
             log('item', name, btn)
         end
 
-        if not pause('0x2F slot: uses your inventory slots. Select or TOP.') then return end
+        if not pause('0x2F slot: uses your inventory slots. Select or QUIT.') then return end
         do
             local slots = {}
             for slot, _ in pairs(me:items() or {}) do
@@ -256,7 +256,7 @@ return {
             end
         end
 
-        if not pause('0x2F spell: local spell slots. Select or TOP.') then return end
+        if not pause('0x2F spell: local spell slots. Select or QUIT.') then return end
         do
             local slot, btn = me:spell(me, 'spell dialog')
             log('spell', slot, btn)

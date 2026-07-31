@@ -28,9 +28,6 @@ function M.handle(me, npc)
     if btn == DIALOG_RESULT.QUIT then
         return true
     end
-    if btn == DIALOG_RESULT.TOP then
-        return true
-    end
 
     local is_global = (target_sel == TARGET.all)
     local user_name = nil
@@ -65,9 +62,6 @@ function M.handle(me, npc)
         REWARD.item, REWARD.exp, REWARD.money, REWARD.none,
     })
     if reward_btn == DIALOG_RESULT.QUIT then
-        return true
-    end
-    if reward_btn == DIALOG_RESULT.TOP then
         return true
     end
 

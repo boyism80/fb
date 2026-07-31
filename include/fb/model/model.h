@@ -965,8 +965,7 @@ enum class DIALOG_RESULT
 {
     PREV = 0, 
     QUIT = 1, 
-    NEXT = 2, 
-    TOP = 3
+    NEXT = 2
 }; // end of enum 'DIALOG_RESULT'
 
 template <>
@@ -976,8 +975,7 @@ inline DIALOG_RESULT enum_parse<DIALOG_RESULT>(std::string_view k)
     {
         { "PREV", DIALOG_RESULT::PREV }, 
         { "QUIT", DIALOG_RESULT::QUIT }, 
-        { "NEXT", DIALOG_RESULT::NEXT }, 
-        { "TOP", DIALOG_RESULT::TOP }
+        { "NEXT", DIALOG_RESULT::NEXT }
     };
 
     auto k_str = std::string(k);
@@ -995,8 +993,7 @@ inline const char* enum_tostring<DIALOG_RESULT>(DIALOG_RESULT k)
     {
         { DIALOG_RESULT::PREV, "PREV" }, 
         { DIALOG_RESULT::QUIT, "QUIT" }, 
-        { DIALOG_RESULT::NEXT, "NEXT" }, 
-        { DIALOG_RESULT::TOP, "TOP" }
+        { DIALOG_RESULT::NEXT, "NEXT" }
     };
 
     auto i = enums.find(k);
@@ -3542,8 +3539,6 @@ inline void enum_map<fb::model::enum_value::DIALOG_RESULT>(lua_State* lua)
     lua_setfield(lua, -2, "QUIT");
     lua_pushinteger(lua, static_cast<lua_Integer>(fb::model::enum_value::DIALOG_RESULT::NEXT));
     lua_setfield(lua, -2, "NEXT");
-    lua_pushinteger(lua, static_cast<lua_Integer>(fb::model::enum_value::DIALOG_RESULT::TOP));
-    lua_setfield(lua, -2, "TOP");
     lua_setglobal(lua, "DIALOG_RESULT");
 }
 

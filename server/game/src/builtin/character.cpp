@@ -4842,7 +4842,7 @@ int fb::game::builtin::character::builtin_pursuit(lua_State* L)
 {
     // Ex) ch:pursuit(npc, "msg", {"opt1", "opt2"} [, { pursuit = 0xFFFF, immediate = true }])
     // Ex) ch:pursuit(npc, "msg", { {"HP", "100"}, {"MP", "50"} } [, { ... }])  -- subtype 10 dual field
-    // Select yields option/label name; TOP yields (nil, DIALOG_RESULT.TOP) via C2S 0x43.
+    // Select yields option/label name. Dialog TOP is C2S 0x43 (object click), not a yield result.
     auto lua = fb::lua::get(L);
     if (lua == nullptr)
         return 0;

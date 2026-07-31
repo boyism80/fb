@@ -228,9 +228,6 @@ return {
         if btn == DIALOG_RESULT.QUIT then
             return
         end
-        if btn == DIALOG_RESULT.TOP then
-            return
-        end
         if sel == OPT_ICE_SWORD then
             if run_ice_sword(me, npc) == false then
                 return

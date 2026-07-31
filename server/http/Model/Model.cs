@@ -260,9 +260,7 @@ namespace Fb.Model.EnumValue
         [EnumMember(Value = "QUIT")]
         Quit = 1, 
         [EnumMember(Value = "NEXT")]
-        Next = 2, 
-        [EnumMember(Value = "TOP")]
-        Top = 3
+        Next = 2
     }
 
     [JsonConverter(typeof(StringEnumConverter))]

@@ -112,9 +112,6 @@ return {
         if button == DIALOG_RESULT.QUIT then
             return
         end
-        if button == DIALOG_RESULT.TOP then
-            return
-        end
 
         if selected == OPT_CULTURAL then
             cultural_property_quest(me, npc)

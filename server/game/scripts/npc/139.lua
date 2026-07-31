@@ -18,9 +18,6 @@ return {
         if btn == DIALOG_RESULT.QUIT then
             return
         end
-        if btn == DIALOG_RESULT.TOP then
-            return
-        end
         if sel ~= OPT_AWAKEN then
             return
         end

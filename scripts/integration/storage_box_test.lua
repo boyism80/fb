@@ -2,17 +2,17 @@ local lib      = require("integration.lib")
 local protocol = require("integration.protocol")
 
 local F1_OID            = 0xFFFFFFFF
-local F1_STORAGE_INDEX  = 1
-local F1_GRANT_INDEX    = 4
-local GRANT_TARGET_USER = 2
-local GRANT_REWARD_ITEM = 1
-local GRANT_REWARD_NONE = 4
-local RECEIVE_YES       = 1
+local DIALOG_CLOSE_OID  = 0xFFFFFFFD
+local OPT_STORAGE       = "통합보관함"
+local OPT_GRANT         = "아이템 지급"
+local OPT_TARGET_USER   = "특정 유저"
+local OPT_REWARD_ITEM   = "아이템"
+local OPT_REWARD_NONE   = "없음"
+local OPT_YES           = "예"
 
 -- NORMAL dialog resumes with request.action (not button).
 -- Must match fb::model::enum_value::DIALOG_RESULT.
 local DIALOG_PREV = 0
-local DIALOG_QUIT = 1
 local DIALOG_NEXT = 2
 
 local REWARD_ITEM_NAME  = "도토리"
@@ -48,13 +48,17 @@ local function cleanup_bot(bot)
     bot:chat("/HTTP지연 0")
 end
 
-local function find_list_index(packet, text)
-    if packet == nil or packet.list_lists == nil then
+local function find_menu_option(packet, text)
+    if packet == nil then
         return nil
     end
-    for i, name in ipairs(packet.list_lists) do
+    local menus = packet.menu_menus or packet.list_lists
+    if menus == nil then
+        return nil
+    end
+    for _, name in ipairs(menus) do
         if name == text then
-            return i
+            return name
         end
     end
     return nil
@@ -66,14 +70,6 @@ local function message_contains(packet, text)
         and packet.message:find(text, 1, true) ~= nil
 end
 
-local function dismiss_normal_to_list(bot)
-    return bot:request_dialog_ext(
-        protocol.dialog("NORMAL", DIALOG_NEXT, "", 0, 0, "", "NEXT"),
-        function(packet)
-            return packet.type == "list" or packet.type == "normal"
-        end)
-end
-
 local function dialog_normal_next()
     return protocol.dialog("NORMAL", DIALOG_NEXT, "", 0, 0, "", "NEXT")
 end
@@ -82,27 +78,31 @@ local function dialog_normal_prev()
     return protocol.dialog("NORMAL", DIALOG_PREV, "", 0, 0, "", "PREV")
 end
 
+local function pursuit_select(option)
+    return protocol.dialog("PURSUIT", 0, "", 0, 0, option)
+end
+
+-- TOP releases any waiting 0x2F/0x30 dialog without depending on the next script goto.
+local function close_dialog(bot)
+    bot:send(protocol.click(DIALOG_CLOSE_OID))
+end
+
 local function f1_open_menu(bot)
-    return bot:request_dialog_ext(
+    return bot:request_dialog(
         protocol.click(F1_OID),
         function(packet)
-            return packet.type == "list"
+            return packet.type == "pursuit"
         end)
 end
 
-local function f1_select_list(bot, index)
-    return bot:request_dialog_ext(
-        protocol.dialog("LIST", 0, "", index, 0, "", "NEXT"),
+local function f1_select_pursuit(bot, option, expect_type)
+    expect_type = expect_type or "pursuit"
+    local use_ext = (expect_type == "list" or expect_type == "normal" or expect_type == "input_ext")
+    local fn = use_ext and bot.request_dialog_ext or bot.request_dialog
+    return fn(bot,
+        pursuit_select(option),
         function(packet)
-            return packet.type == "list" or packet.type == "normal"
-        end)
-end
-
-local function f1_select_input(bot, index)
-    return bot:request_dialog(
-        protocol.dialog("LIST", 0, "", index, 0, "", "NEXT"),
-        function(packet)
-            return packet.type == "input"
+            return packet.type == expect_type
         end)
 end
 
@@ -114,11 +114,11 @@ local function send_input_expect_input(bot, text)
         end)
 end
 
-local function send_input_expect_list(bot, text)
-    return bot:request_dialog_ext(
+local function send_input_expect_pursuit(bot, text)
+    return bot:request_dialog(
         protocol.dialog("INPUT", 0, text, 0, 0, "", "NEXT"),
         function(packet)
-            return packet.type == "list" or packet.type == "normal"
+            return packet.type == "pursuit"
         end)
 end
 
@@ -128,12 +128,12 @@ local function grant_flow(bot_a, target_name, title, message, item_name, item_co
         return false, "f1 open failed"
     end
 
-    packet = f1_select_list(bot_a, F1_GRANT_INDEX)
+    packet = f1_select_pursuit(bot_a, OPT_GRANT, "pursuit")
     if packet == nil or message_contains(packet, "누구에게") == false then
         return false, "grant menu missing"
     end
 
-    packet = f1_select_input(bot_a, GRANT_TARGET_USER)
+    packet = f1_select_pursuit(bot_a, OPT_TARGET_USER, "input")
     if packet == nil then
         return false, "name input missing"
     end
@@ -148,13 +148,13 @@ local function grant_flow(bot_a, target_name, title, message, item_name, item_co
         return false, "message input missing"
     end
 
-    packet = send_input_expect_list(bot_a, message)
+    packet = send_input_expect_pursuit(bot_a, message)
     if packet == nil then
         return false, "reward menu missing"
     end
 
     if item_name ~= nil then
-        packet = f1_select_input(bot_a, GRANT_REWARD_ITEM)
+        packet = f1_select_pursuit(bot_a, OPT_REWARD_ITEM, "input")
         if packet == nil then
             return false, "item name input missing"
         end
@@ -164,14 +164,14 @@ local function grant_flow(bot_a, target_name, title, message, item_name, item_co
             return false, "item count input missing"
         end
 
-        packet = send_input_expect_list(bot_a, tostring(item_count))
+        packet = send_input_expect_pursuit(bot_a, tostring(item_count))
         if packet == nil then
             return false, "reward menu after item missing"
         end
     end
 
     packet = bot_a:request_dialog_ext(
-        protocol.dialog("LIST", 0, "", GRANT_REWARD_NONE, 0, "", "NEXT"),
+        pursuit_select(OPT_REWARD_NONE),
         function(p)
             return p.type == "normal"
         end)
@@ -180,7 +180,8 @@ local function grant_flow(bot_a, target_name, title, message, item_name, item_co
     end
 
     local result_msg = packet.message
-    dismiss_normal_to_list(bot_a)
+    -- grant_storage returns to F1; TOP is enough because later steps reopen F1.
+    close_dialog(bot_a)
     return true, result_msg
 end
 
@@ -190,23 +191,19 @@ local function open_storage_entry_detail(bot, title)
         return nil, "f1 open failed"
     end
 
-    packet = f1_select_list(bot, F1_STORAGE_INDEX)
+    packet = f1_select_pursuit(bot, OPT_STORAGE, "pursuit")
     if packet == nil then
         return nil, "storage list missing"
     end
 
-    if packet.type == "normal" and message_contains(packet, "보관된 항목이 없습니다") then
-        dismiss_normal_to_list(bot)
-        return nil, "storage empty"
-    end
-
-    local index = find_list_index(packet, title)
-    if index == nil then
+    local option = find_menu_option(packet, title)
+    if option == nil then
+        close_dialog(bot)
         return nil, "entry not found: " .. title
     end
 
     packet = bot:request_dialog_ext(
-        protocol.dialog("LIST", 0, "", index, 0, "", "NEXT"),
+        pursuit_select(option),
         function(p)
             return p.type == "normal"
         end)
@@ -217,11 +214,13 @@ local function open_storage_entry_detail(bot, title)
 end
 
 local function close_detail_with_prev(bot)
-    bot:request_dialog_ext(
+    -- PREV returns to STORAGE_LIST; entry still exists so response is pursuit.
+    bot:request_dialog(
         dialog_normal_prev(),
         function(p)
-            return p.type == "list" or p.type == "normal"
+            return p.type == "pursuit"
         end)
+    close_dialog(bot)
 end
 
 local function dump_dialog(bot, label, packet)
@@ -230,7 +229,9 @@ local function dump_dialog(bot, label, packet)
         return
     end
     local lists = ""
-    if packet.list_lists ~= nil then
+    if packet.menu_menus ~= nil then
+        lists = table.concat(packet.menu_menus, "|")
+    elseif packet.list_lists ~= nil then
         lists = table.concat(packet.list_lists, "|")
     end
     progress(bot, string.format(
@@ -246,13 +247,13 @@ local function receive_from_detail(bot, expect_text)
         tostring(bot:inventory_size()),
         expect_text))
 
-    local packet = bot:request_dialog_ext(
+    local packet = bot:request_dialog(
         dialog_normal_next(),
         function(p)
-            return p.type == "list" or p.type == "normal"
+            return p.type == "pursuit"
         end)
     dump_dialog(bot, "after-detail-next", packet)
-    if packet == nil or packet.type ~= "list" then
+    if packet == nil or packet.type ~= "pursuit" then
         return false, "receive confirm missing"
     end
     if packet.message == nil or packet.message:find("수령하시겠습니까", 1, true) == nil then
@@ -262,7 +263,7 @@ local function receive_from_detail(bot, expect_text)
 
     progress(bot, "receive_from_detail click YES")
     packet = bot:request_dialog_ext(
-        protocol.dialog("LIST", 0, "", RECEIVE_YES, 0, "", "NEXT"),
+        pursuit_select(OPT_YES),
         function(p)
             if p.type == "normal" and p.message ~= nil then
                 log("debug", string.format(
@@ -280,7 +281,9 @@ local function receive_from_detail(bot, expect_text)
     local matched = message_contains(packet, expect_text)
     local result_msg = packet.message
     progress(bot, string.format("receive_from_detail matched=%s msg=%q", tostring(matched), tostring(result_msg)))
-    dismiss_normal_to_list(bot)
+    -- After result, storage.lua goto STORAGE_LIST (empty→normal / remaining→pursuit).
+    -- TOP closes without depending on that branch.
+    close_dialog(bot)
     return matched, result_msg
 end
 
@@ -290,10 +293,10 @@ local function open_receive_confirm(bot, title)
         return nil, err
     end
 
-    local packet = bot:request_dialog_ext(
+    local packet = bot:request_dialog(
         dialog_normal_next(),
         function(p)
-            return p.type == "list"
+            return p.type == "pursuit"
         end)
     if packet == nil then
         return nil, "receive confirm missing"
@@ -473,7 +476,7 @@ test_suite {
                         progress(b, "S4/C2: CLICK RECEIVE YES")
 
                         local packet = b:request_dialog_ext(
-                            protocol.dialog("LIST", 0, "", RECEIVE_YES, 0, "", "NEXT"),
+                            pursuit_select(OPT_YES),
                             function(p)
                                 if p.type == "normal" and p.message ~= nil then
                                     log("debug", string.format(
@@ -494,11 +497,11 @@ test_suite {
                         end
                         if message_contains(packet, MSG_RECEIVE_FAIL) == false then
                             progress(b, "FAILED: expected receive fail after unclaim, got=" .. tostring(packet.message))
-                            dismiss_normal_to_list(b)
+                            close_dialog(b)
                             return false
                         end
 
-                        dismiss_normal_to_list(b)
+                        close_dialog(b)
 
                         local status_ok, status_msg = assert_entry_status(b, TITLE, MSG_STATUS_AVAILABLE)
                         if status_ok == false then
@@ -558,14 +561,15 @@ test_suite {
                 progress(b, "FAILED: f1 open after receive")
                 return false
             end
-            packet = f1_select_list(b, F1_STORAGE_INDEX)
+            -- Empty storage returns normal; remaining entries return pursuit.
+            packet = f1_select_pursuit(b, OPT_STORAGE, "normal")
             dump_dialog(b, "S5-storage-after-receive", packet)
-            if packet ~= nil and packet.type == "list" and find_list_index(packet, TITLE) ~= nil then
+            if packet ~= nil and packet.type == "pursuit" and find_menu_option(packet, TITLE) ~= nil then
                 progress(b, "FAILED: received entry still listed")
                 return false
             end
             if packet ~= nil and packet.type == "normal" and message_contains(packet, "보관된 항목이 없습니다") then
-                dismiss_normal_to_list(b)
+                close_dialog(b)
             end
 
             progress(b, "S5 PASSED")

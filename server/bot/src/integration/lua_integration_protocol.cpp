@@ -317,9 +317,21 @@ int lua_builder_dialog(lua_State* L)
         push_request(L, std::make_shared<game_reqs::dialog_list>(list_type::TEXT, action, message, index, button));
         return 1;
     }
+    else if (type_name == "TEXT_NO_MSG" || type_name == "NORMAL_NO_MSG")
+    {
+        push_request(L,
+                     std::make_shared<game_reqs::dialog_list>(list_type::TEXT_NO_MSG, action, message, index, button));
+        return 1;
+    }
     else if (type_name == "LIST")
     {
         push_request(L, std::make_shared<game_reqs::dialog_list>(list_type::LIST, action, message, index, button));
+        return 1;
+    }
+    else if (type_name == "LIST_NO_MSG")
+    {
+        push_request(L,
+                     std::make_shared<game_reqs::dialog_list>(list_type::LIST_NO_MSG, action, message, index, button));
         return 1;
     }
     else if (type_name == "INPUT_EX" || type_name == "INPUT_EXT")
@@ -327,12 +339,57 @@ int lua_builder_dialog(lua_State* L)
         push_request(L, std::make_shared<game_reqs::dialog_list>(list_type::INPUT, action, message, index, button));
         return 1;
     }
+    else if (type_name == "INPUT_EXT_NO_MSG")
+    {
+        push_request(L,
+                     std::make_shared<game_reqs::dialog_list>(list_type::INPUT_NO_MSG, action, message, index, button));
+        return 1;
+    }
+    else if (type_name == "INPUT_PASSWORD")
+    {
+        push_request(
+            L,
+            std::make_shared<game_reqs::dialog_list>(list_type::INPUT_PASSWORD, action, message, index, button));
+        return 1;
+    }
+    else if (type_name == "INPUT_PASSWORD_NO_MSG")
+    {
+        push_request(
+            L,
+            std::make_shared<game_reqs::dialog_list>(list_type::INPUT_PASSWORD_NO_MSG, action, message, index, button));
+        return 1;
+    }
+    else if (type_name == "EMAIL")
+    {
+        push_request(L, std::make_shared<game_reqs::dialog_list>(list_type::EMAIL, action, message, index, button));
+        return 1;
+    }
+    else if (type_name == "LOOK")
+    {
+        // LOOK ACK uses the same TEXT button layout on the wire.
+        push_request(L, std::make_shared<game_reqs::dialog_list>(list_type::TEXT, action, message, index, button));
+        return 1;
+    }
     else if (type_name == "MENU")
     {
         push_request(L, std::make_shared<game_reqs::dialog>(dialog_type::MENU, action, message, index, pursuit, name));
         return 1;
     }
+    else if (type_name == "MENU_NO_EXT")
+    {
+        push_request(
+            L,
+            std::make_shared<game_reqs::dialog>(dialog_type::MENU_NO_EXT, action, message, index, pursuit, name));
+        return 1;
+    }
     else if (type_name == "INPUT")
+    {
+        push_request(
+            L,
+            std::make_shared<game_reqs::dialog>(dialog_type::INPUT_NO_EXT, action, message, index, pursuit, name));
+        return 1;
+    }
+    else if (type_name == "INPUT_EXT_2F" || type_name == "INPUT_WITH_EXT")
     {
         push_request(L, std::make_shared<game_reqs::dialog>(dialog_type::INPUT, action, message, index, pursuit, name));
         return 1;
@@ -342,9 +399,27 @@ int lua_builder_dialog(lua_State* L)
         push_request(L, std::make_shared<game_reqs::dialog>(dialog_type::SLOT, action, message, index, pursuit, name));
         return 1;
     }
+    else if (type_name == "SPELL")
+    {
+        push_request(L, std::make_shared<game_reqs::dialog>(dialog_type::SPELL, action, message, index, pursuit, name));
+        return 1;
+    }
     else if (type_name == "ITEM")
     {
         push_request(L, std::make_shared<game_reqs::dialog>(dialog_type::ITEM, action, message, index, pursuit, name));
+        return 1;
+    }
+    else if (type_name == "PURSUIT")
+    {
+        push_request(L,
+                     std::make_shared<game_reqs::dialog>(dialog_type::PURSUIT, action, message, index, pursuit, name));
+        return 1;
+    }
+    else if (type_name == "DUAL_FIELD")
+    {
+        push_request(
+            L,
+            std::make_shared<game_reqs::dialog>(dialog_type::DUAL_FIELD, action, message, index, pursuit, name));
         return 1;
     }
     else

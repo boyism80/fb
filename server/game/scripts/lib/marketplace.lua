@@ -14,9 +14,6 @@ function M.handle(me, npc)
     if button == DIALOG_RESULT.QUIT then
         return true
     end
-    if button == DIALOG_RESULT.TOP then
-        return true
-    end
 
     if marketplace_selected == OPT.search then
         local result = M.search(me, npc)
@@ -148,9 +145,6 @@ function M.search(me, npc)
         if button == DIALOG_RESULT.QUIT then
             return false
         end
-        if button == DIALOG_RESULT.TOP then
-            goto MARKETPLACE_SEARCH
-        end
 
         for i, display_text in ipairs(listing_list) do
             if display_text == selected_display then
@@ -225,9 +219,6 @@ function M.search(me, npc)
         local confirm_selected, confirm_button = me:pursuit(npc, warning_text, { YES, NO })
         if confirm_button == DIALOG_RESULT.QUIT then
             return false
-        end
-        if confirm_button == DIALOG_RESULT.TOP then
-            goto MARKETPLACE_SEARCH
         end
 
         if confirm_selected ~= YES then
@@ -352,9 +343,6 @@ function M.list(me, npc)
     if confirm_button == DIALOG_RESULT.QUIT then
         return false
     end
-    if confirm_button == DIALOG_RESULT.TOP then
-        goto MARKETPLACE_LIST
-    end
 
     if confirm_selected ~= YES then
         goto MARKETPLACE_LIST
@@ -472,9 +460,6 @@ function M.cancel(me, npc)
         if cancel_button == DIALOG_RESULT.QUIT then
             return false
         end
-        if cancel_button == DIALOG_RESULT.TOP then
-            goto MARKETPLACE_CANCEL
-        end
 
         for i, display_text in ipairs(listing_list) do
             if display_text == cancel_selected then
@@ -491,9 +476,6 @@ function M.cancel(me, npc)
     local confirm_selected, confirm_button = me:pursuit(npc, '수수료를 반환받지 못합니다. 정말 취소하시겠습니까?', { YES, NO })
     if confirm_button == DIALOG_RESULT.QUIT then
         return false
-    end
-    if confirm_button == DIALOG_RESULT.TOP then
-        goto MARKETPLACE_CANCEL
     end
 
     if confirm_selected ~= YES then

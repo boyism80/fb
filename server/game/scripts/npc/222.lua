@@ -9,9 +9,6 @@ local function marriage_npc(me, npc)
     if button == DIALOG_RESULT.QUIT then
         return
     end
-    if button == DIALOG_RESULT.TOP then
-        return
-    end
 
     if selected == OPT_MARRY then
         if m.married then

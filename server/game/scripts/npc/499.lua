@@ -16,9 +16,6 @@ return {
         if list_btn == DIALOG_RESULT.QUIT then
             return
         end
-        if list_btn == DIALOG_RESULT.TOP then
-            return
-        end
 
         if sel == OPT_EXPLAIN then
             local btn = me:dialog(npc, "안녕하세요? " .. me:name() .. "님. 남북무한대전에 오신 것을 환영합니다.", { prev = false, next = true })

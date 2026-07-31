@@ -8,9 +8,6 @@ local function run_gatekeeper(me, npc)
     if button == DIALOG_RESULT.QUIT then
         return
     end
-    if button == DIALOG_RESULT.TOP then
-        return
-    end
     if selected ~= OPT_ENTER then
         return
     end

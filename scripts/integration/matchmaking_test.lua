@@ -5,8 +5,9 @@ local protocol = require("integration.protocol")
 local MESSAGE_WAIT_MS = 10000
 local LISTENER_ARM_MS = 500
 local F1_OID = 0xFFFFFFFF
-local MATCH_MENU_INDEX = 3
-local MATCH2_TYPE_INDEX = 2
+local OPT_MATCHMAKING = "매치메이킹"
+local OPT_MATCH_2 = "매치 2"
+local OPT_YES = "예"
 local REGISTER_CONFIRM_TIMEOUT_MS = 10000
 
 local MSG_NOT_GROUP_MASTER = "그룹장만 매치메이킹을 이용할 수 있습니다."
@@ -25,30 +26,32 @@ local function progress(bot, message)
     bot:chat("=== " .. message .. " ===")
 end
 
+-- After NEXT on the non-leader reject dialog, server.lua loops back to F1
+-- with me:pursuit (0x2F), not another 0x30.
 local function dismiss_normal_dialog(bot)
-    bot:request_dialog_ext(
+    bot:request_dialog(
         protocol.dialog("NORMAL", 0, "", 0, 0, "", "NEXT"),
         function(packet)
-            return packet.type == "list" or packet.type == "normal"
+            return packet.type == "pursuit"
         end
     )
 end
 
 local function f1_open_menu(bot)
-    bot:request_dialog_ext(
+    bot:request_dialog(
         protocol.click(F1_OID),
         function(packet)
-            return packet.type == "list"
+            return packet.type == "pursuit"
         end
     )
 end
 
 local function f1_select_matchmaking(bot)
     f1_open_menu(bot)
-    bot:request_dialog_ext(
-        protocol.dialog("LIST", 0, "", MATCH_MENU_INDEX, 0, "", "NEXT"),
+    bot:request_dialog(
+        protocol.dialog("PURSUIT", 0, "", 0, 0, OPT_MATCHMAKING),
         function(packet)
-            return packet.type == "list" or packet.type == "normal"
+            return packet.type == "pursuit"
         end
     )
 end
@@ -56,16 +59,16 @@ end
 local function f1_register_match2(bot)
     f1_select_matchmaking(bot)
 
-    bot:request_dialog_ext(
-        protocol.dialog("LIST", 0, "", MATCH2_TYPE_INDEX, 0, "", "NEXT"),
+    bot:request_dialog(
+        protocol.dialog("PURSUIT", 0, "", 0, 0, OPT_MATCH_2),
         function(packet)
-            return packet.type == "list"
+            return packet.type == "pursuit"
         end
     )
 
     local packet = bot:request(
         resp.message,
-        protocol.dialog("LIST", 0, "", 1, 0, "", "NEXT"),
+        protocol.dialog("PURSUIT", 0, "", 0, 0, OPT_YES),
         function(p)
             return p.type == "STATE"
                 and p.text ~= nil
@@ -81,7 +84,7 @@ local function f1_fail_not_group_master(bot)
     f1_open_menu(bot)
 
     local packet = bot:request_dialog_ext(
-        protocol.dialog("LIST", 0, "", MATCH_MENU_INDEX, 0, "", "NEXT"),
+        protocol.dialog("PURSUIT", 0, "", 0, 0, OPT_MATCHMAKING),
         function(p)
             return p.type == "normal"
                 and p.message ~= nil

@@ -9,9 +9,6 @@ return {
         if button == DIALOG_RESULT.QUIT then
             return
         end
-        if button == DIALOG_RESULT.TOP then
-            return
-        end
 
         if selected == OPT_COUPON then
             button = me:dialog(npc, '방송쿠폰은 나만이 팔고 있지. 호호홋...', { prev = false, next = true })

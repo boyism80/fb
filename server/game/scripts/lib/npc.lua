@@ -640,9 +640,6 @@ function M.shop(me, npc, config)
         if button == DIALOG_RESULT.QUIT then
             return
         end
-        if button == DIALOG_RESULT.TOP then
-            return
-        end
 
         local entry = nil
         for i = 1, #menu do
@@ -809,9 +806,6 @@ function M.show_sell_menu(me, npc, categories)
         local selected, button = me:pursuit(npc, '무엇을 사시겠어요?', labels)
         if button == DIALOG_RESULT.QUIT then
             return
-        end
-        if button == DIALOG_RESULT.TOP then
-            return DIALOG_RESULT.NEXT
         end
 
         for i = 1, #categories do
@@ -1179,9 +1173,10 @@ end
 
 -- Dialog button convention:
 --   After any dialog builtin, check DIALOG_RESULT.QUIT first → full exit (return).
---   0x2F (pursuit/menu/spell/item/slot): TOP = back to parent; at root TOP = exit.
---   0x30 (dialog/list/input_ext): PREV = previous step, QUIT = exit. Do not use TOP.
---   After QUIT/TOP (or PREV), selected is never nil — do not write `or selected == nil`.
+--   0x2F (pursuit/menu/spell/item/slot): client TOP sends C2S 0x43 (object re-click);
+--     server releases the waiting dialog and restarts on_click — do not handle TOP in script.
+--   0x30 (dialog/list/input_ext): PREV = previous step, QUIT = exit.
+--   After QUIT (or PREV), selected is never nil — do not write `or selected == nil`.
 function M.basic_class(me, npc, class, spells)
     local YES = '예'
     local NO = '아니오'
@@ -1192,9 +1187,6 @@ function M.basic_class(me, npc, class, spells)
     if me:class() == class then
         local selected, menu_btn = me:menu(npc, '험난한 길을 걷는 수행자여, 무슨 일로 저를 찾으셨소?', {'마법 알아보기', '마법 배우기', '마법 지우기', '칭호 받기'})
         if menu_btn == DIALOG_RESULT.QUIT then
-            return
-        end
-        if menu_btn == DIALOG_RESULT.TOP then
             return
         end
         if selected == 1 then
@@ -1221,9 +1213,6 @@ function M.basic_class(me, npc, class, spells)
             local name, button = me:pursuit(npc, '자네 수준이라면 이런 마법들을 알아볼 수 있겠군', preview)
             if button == DIALOG_RESULT.QUIT then
                 return
-            end
-            if button == DIALOG_RESULT.TOP then
-                goto NPC_BASIC_CLASS_000
             end
 
             local spell = spells[name]
@@ -1271,9 +1260,6 @@ function M.basic_class(me, npc, class, spells)
             if button == DIALOG_RESULT.QUIT then
                 return
             end
-            if button == DIALOG_RESULT.TOP then
-                goto NPC_BASIC_CLASS_000
-            end
 
             local spell = spells[name]
             if me:dialog(npc, string.format('%s %s', name_with(name, '은', '는'), spell.desc), { prev = false, next = true }) == DIALOG_RESULT.QUIT then
@@ -1292,9 +1278,6 @@ function M.basic_class(me, npc, class, spells)
             local confirm, confirm_btn = me:pursuit(npc, string.format('%s 배우기 위해서는 %s를 바쳐야 하네. 배우겠느냐?', name_with(name), table.concat(material, ', ')), { YES, NO })
             if confirm_btn == DIALOG_RESULT.QUIT then
                 return
-            end
-            if confirm_btn == DIALOG_RESULT.TOP then
-                goto NPC_BASIC_CLASS_000
             end
 
             if confirm == NO then
@@ -1335,31 +1318,16 @@ function M.basic_class(me, npc, class, spells)
                 end
             end
             me:mkspell(name)
-            local _, spell_done_btn = me:menu(npc, SPELL_DONE_MSG, {})
-            if spell_done_btn == DIALOG_RESULT.QUIT then
-                return
-            end
-            if spell_done_btn == DIALOG_RESULT.TOP then
-                goto NPC_BASIC_CLASS_000
-            end
+            me:menu(npc, SPELL_DONE_MSG, {})
             return
         elseif selected == 3 then
             local slot, button = me:spell(npc, '지금 네가 지울 수 있는 마법은 다음과 같단다. 다시 한 번 심사 숙고 하고 지우도록 하여라.')
             if button == DIALOG_RESULT.QUIT then
                 return
             end
-            if button == DIALOG_RESULT.TOP then
-                goto NPC_BASIC_CLASS_000
-            end
 
             me:rmspell(slot)
-            local _, spell_done_btn = me:menu(npc, SPELL_DONE_MSG, {})
-            if spell_done_btn == DIALOG_RESULT.QUIT then
-                return
-            end
-            if spell_done_btn == DIALOG_RESULT.TOP then
-                goto NPC_BASIC_CLASS_000
-            end
+            me:menu(npc, SPELL_DONE_MSG, {})
             return
         elseif selected == 4 then
             local title = me:input(npc, '네 정성이 갸륵하니... 그래, 무슨 칭호를 받고 싶으냐?', { top = '받고싶은 칭호는', bottom = '입니다.', maxlen = 10, prev = true })
@@ -1373,9 +1341,6 @@ function M.basic_class(me, npc, class, spells)
             local confirm, confirm_btn = me:pursuit(npc, '그 칭호로 바꾸려면 금전 5000전을 바쳐야 하느니라. 네 소원을 이루겠느냐?', { YES, NO })
             if confirm_btn == DIALOG_RESULT.QUIT then
                 return
-            end
-            if confirm_btn == DIALOG_RESULT.TOP then
-                goto NPC_BASIC_CLASS_000
             end
             if confirm ~= YES then
                 goto NPC_BASIC_CLASS_000
@@ -1403,9 +1368,6 @@ function M.basic_class(me, npc, class, spells)
         if menu_btn == DIALOG_RESULT.QUIT then
             return
         end
-        if menu_btn == DIALOG_RESULT.TOP then
-            return
-        end
         if job_sel == 1 then
             if me:class() ~= CLASS.NONE then
                 me:dialog(npc, '이미 직업이 있지 않느냐? 한번 선택한 직업은 바꿀 수 없느니라.')
@@ -1426,9 +1388,6 @@ function M.basic_class(me, npc, class, spells)
             if button == DIALOG_RESULT.QUIT then
                 return
             end
-            if button == DIALOG_RESULT.TOP then
-                goto NPC_BASIC_CLASS_001
-            end
             if selected ~= YES then
                 goto NPC_BASIC_CLASS_STOP
             end
@@ -1436,9 +1395,6 @@ function M.basic_class(me, npc, class, spells)
             selected, button = me:pursuit(npc, '둘째로, 험난한 ' .. class_name .. '수련의 길에 너의 평생을 바칠 것을 맹세하겠느냐?', { YES, NO })
             if button == DIALOG_RESULT.QUIT then
                 return
-            end
-            if button == DIALOG_RESULT.TOP then
-                goto NPC_BASIC_CLASS_002
             end
             if selected ~= YES then
                 goto NPC_BASIC_CLASS_STOP
@@ -1448,9 +1404,6 @@ function M.basic_class(me, npc, class, spells)
             if button == DIALOG_RESULT.QUIT then
                 return
             end
-            if button == DIALOG_RESULT.TOP then
-                goto NPC_BASIC_CLASS_003
-            end
             if selected ~= YES then
                 goto NPC_BASIC_CLASS_STOP
             end
@@ -1458,9 +1411,6 @@ function M.basic_class(me, npc, class, spells)
             selected, button = me:pursuit(npc, '훌륭하군. 그렇다면, 지금까지의 맹세를 증명하기 위해 도토리를 10개 바치거라.', { YES, NO })
             if button == DIALOG_RESULT.QUIT then
                 return
-            end
-            if button == DIALOG_RESULT.TOP then
-                goto NPC_BASIC_CLASS_004
             end
             if selected ~= YES then
                 goto NPC_BASIC_CLASS_STOP
@@ -1579,9 +1529,6 @@ function M.promotion_skills(me, npc, class)
     if tier_btn == DIALOG_RESULT.QUIT then
         return
     end
-    if tier_btn == DIALOG_RESULT.TOP then
-        return
-    end
     local tier = nil
     for i = 1, 3 do
         if tier_sel == TIER[i] then
@@ -1604,9 +1551,6 @@ function M.promotion_skills(me, npc, class)
     local spell_name, skill_btn = me:pursuit(npc, '안녕하세요. 어떤 기술을 배울래요?', spells)
     if skill_btn == DIALOG_RESULT.QUIT then
         return
-    end
-    if skill_btn == DIALOG_RESULT.TOP then
-        goto NPC_PROMOTION_TIER
     end
     if me:dialog(npc, name_with(spell_name, '을', '를') .. ' 배우기 위해선 5000만의 경험치가 필요합니다.', { prev = false, next = true }) == DIALOG_RESULT.QUIT then
         return
@@ -1700,9 +1644,6 @@ function M.promotion(me, npc, class)
     local OPT_LATER = '나중에 다시 오지요.'
     local selected, button = me:pursuit(npc, string.format('이토록 강해지시다니, 정말 대단하십니다.\n당신이 지금껏 걸어온 고된 수련의 길에 경의를 표합니다.\n\n지금 %s의 칭호를 받으시겠습니까?', next_name), { OPT_READY, OPT_LATER })
     if button == DIALOG_RESULT.QUIT then
-        return
-    end
-    if button == DIALOG_RESULT.TOP then
         return
     end
     if selected ~= OPT_READY then

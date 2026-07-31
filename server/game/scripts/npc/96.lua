@@ -57,9 +57,6 @@ return {
         if button == DIALOG_RESULT.QUIT then
             return
         end
-        if button == DIALOG_RESULT.TOP then
-            return
-        end
 
         if selected == OPT_PROMOTE then
             local q = me:quest(quest.QUEST_MUTA)

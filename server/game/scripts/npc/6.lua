@@ -18,9 +18,6 @@ return {
         if btn == DIALOG_RESULT.QUIT then
             return
         end
-        if btn == DIALOG_RESULT.TOP then
-            return
-        end
         if sel == OPT_PROMOTE then
             if me:promotion() >= 3 then
                 me:dialog(npc_obj, '당신은 더 이상 제가 수련을 도와드리지 않아도 될 만큼 성장하셨군요.', { prev = false, next = true })

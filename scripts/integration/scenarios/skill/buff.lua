@@ -317,6 +317,8 @@ local CASES = {
             state.expected_mp = caster:mp() - 30
             state.dispel_name = "해독"
             state.dispel_mp = 30
+            state.poison_probe = "가나다라마바사아자차카타파하"
+            state.tick_timeout_ms = 5000
         end,
         condition = function(packet)
             if packet.text == nil then
@@ -336,6 +338,72 @@ local CASES = {
                 return packet.name == "중독"
             end)
             if buff_result == false or buff_result == nil then
+                return false
+            end
+
+            if state.buff_target:has_buff("중독") ~= true then
+                return false
+            end
+
+            -- Tick damage: wait for next concast update_hp without sending a request.
+            local tick = state.buff_target:request(resp.update_hp, nil, function(packet)
+                return packet.oid == state.buff_target:oid()
+                    and packet.damage ~= nil
+                    and packet.damage > 0
+            end, state.tick_timeout_ms)
+            if tick == false or tick == nil then
+                return false
+            end
+
+            -- Delirious: received chat message body must differ from the message sent to server.
+            -- Random coincidence can keep the original text, so retry up to 10 times.
+            local chat_prefix = state.buff_target:name() .. ": "
+            local function chat_body(text)
+                if text == nil or text:sub(1, #chat_prefix) ~= chat_prefix then
+                    return nil
+                end
+                return text:sub(#chat_prefix + 1)
+            end
+
+            local distorted = false
+            for _ = 1, 10 do
+                local chat = state.buff_target:request(
+                    resp.chat,
+                    protocol.chat(false, state.poison_probe),
+                    function(packet)
+                        return packet.oid == state.buff_target:oid() and packet.type == "NORMAL"
+                    end,
+                    3000)
+                local body = chat ~= false and chat ~= nil and chat_body(chat.text) or nil
+                if body ~= nil and body ~= state.poison_probe then
+                    distorted = true
+                    break
+                end
+            end
+            if distorted ~= true then
+                return false
+            end
+
+            -- HP floor: poison damage must not drop HP below 100.
+            local floor_hp = 150
+            state.buff_target:set_current_hp_mp(floor_hp, 10000)
+            local floor_tick = state.buff_target:request(resp.update_hp, nil, function(packet)
+                return packet.oid == state.buff_target:oid()
+                    and packet.damage ~= nil
+                    and packet.damage > 0
+                    and packet.damage <= (floor_hp - 100)
+            end, state.tick_timeout_ms)
+            if floor_tick == false or floor_tick == nil then
+                return false
+            end
+
+            local hp_info = state.buff_target:request(resp.update_internal, protocol.self_info(), function(packet)
+                return packet.ch_hp ~= nil and packet.ch_hp >= 100 and packet.ch_hp <= floor_hp
+            end)
+            if hp_info == false or hp_info == nil then
+                return false
+            end
+            if state.buff_target:hp() < 100 then
                 return false
             end
 
@@ -361,6 +429,20 @@ local CASES = {
             end
 
             caster:mp(state.expected_mp_dispel)
+
+            -- After cleanse, chat message body must match the message sent to server.
+            local clean_chat = state.buff_target:request(
+                resp.chat,
+                protocol.chat(false, state.poison_probe),
+                function(packet)
+                    return packet.oid == state.buff_target:oid()
+                        and packet.type == "NORMAL"
+                        and chat_body(packet.text) == state.poison_probe
+                end,
+                3000)
+            if clean_chat == false or clean_chat == nil then
+                return false
+            end
 
             state.buff_target:remove_buffs()
             return true

@@ -84,9 +84,6 @@ function M.handle(me, npc)
     if button == DIALOG_RESULT.QUIT then
         return true
     end
-    if button == DIALOG_RESULT.TOP then
-        return true
-    end
 
     current_entry = nil
     for i, name in ipairs(entry_list) do
@@ -135,9 +132,6 @@ function M.handle(me, npc)
     local receive_selected, receive_button = me:pursuit(npc, '보상을 수령하시겠습니까?', { YES, NO })
     if receive_button == DIALOG_RESULT.QUIT then
         return true
-    end
-    if receive_button == DIALOG_RESULT.TOP then
-        goto ENTRY_DETAIL
     end
     if receive_selected ~= YES then
         goto STORAGE_LIST

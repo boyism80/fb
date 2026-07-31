@@ -9,9 +9,6 @@ return {
         if btn == DIALOG_RESULT.QUIT then
             return
         end
-        if btn == DIALOG_RESULT.TOP then
-            return
-        end
 
         if sel == OPT_HONGSEONG then
             local d = me:dialog(npc, "이번 크리스마스 트리를 장식할 홍성초가 부족한데... 어떻게 해야 한담...", { prev = false, next = true })

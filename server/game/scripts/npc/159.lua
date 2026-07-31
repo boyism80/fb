@@ -65,9 +65,6 @@ return {
         if main_btn == DIALOG_RESULT.QUIT then
             return
         end
-        if main_btn == DIALOG_RESULT.TOP then
-            return
-        end
         if main_sel == OPT_BUY or main_sel == OPT_SELL then
             me:dialog(npc, "준비중입니다.", { prev = false, next = false })
             return

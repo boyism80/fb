@@ -31,9 +31,6 @@ function M.handle(me, npc)
         if button == DIALOG_RESULT.QUIT then
             return true
         end
-        if button == DIALOG_RESULT.TOP then
-            return true
-        end
         if selected == YES then
             local err = mm:unregister()
             if err ~= nil then
@@ -53,9 +50,6 @@ function M.handle(me, npc)
     if button == DIALOG_RESULT.QUIT then
         return true
     end
-    if button == DIALOG_RESULT.TOP then
-        return true
-    end
 
     local queue = nil
     for _, q in ipairs(queues()) do
@@ -71,9 +65,6 @@ function M.handle(me, npc)
     local confirm_selected, confirm_button = me:pursuit(npc, string.format('"%s" 매치를 등록하시겠습니까?', queue.label), { YES, NO })
     if confirm_button == DIALOG_RESULT.QUIT then
         return true
-    end
-    if confirm_button == DIALOG_RESULT.TOP then
-        goto MATCHMAKING_TYPE
     end
     if confirm_selected ~= YES then
         return true

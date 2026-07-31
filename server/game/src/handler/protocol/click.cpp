@@ -15,34 +15,29 @@ async::task<bool> click::handle(fb::socket<character>& session, game_reqs::click
     if (ch->inited() == false)
         co_return true;
 
+    // Object-flag click (map object, F1/F2, dialog TOP): drop any waiting dialog first.
+    // Real NPC then restarts via on_click; sentinel oid 0xFFFFFFFD just closes.
+    if (request.flag == game_reqs::click::FLAG_OBJECT && ch->dialog != nullptr)
+    {
+        ch->dialog->release();
+        ch->dialog = nullptr;
+    }
+
     if (request.oid == 0xFFFFFFFF)
     {
         co_await handle_f1(ch);
         co_return true;
     }
-
-    if (request.oid == 0xFFFFFFFE)
+    else if (request.oid == 0xFFFFFFFE)
     {
         co_await handle_f2(ch);
         co_return true;
     }
-
-    // 0x2F family TOP button: client sends C2S 0x43|flag=1|dialog oid (same layout as object click).
-    // Child buttons are Select(1)->0x39, TOP(2)->0x43, QUIT(3)->close with no packet.
-    // While a dialog coroutine is waiting, treat this as TOP instead of re-clicking the object.
-    // Push nil (+ TOP) so both 1-value (menu/input/pursuit) and 2-value (list) yields unwind cleanly.
-    if (ch->dialog != nullptr && request.flag == game_reqs::click::FLAG_OBJECT)
+    else
     {
-        auto lua   = ch->dialog;
-        ch->dialog = nullptr;
-        lua->pushnil();
-        lua->pushinteger(static_cast<uint32_t>(fb::model::enum_value::DIALOG_RESULT::TOP));
-        lua->resume(2);
+        co_await handle_object_click(ch, request);
         co_return true;
     }
-
-    co_await handle_object_click(ch, request);
-    co_return true;
 }
 
 async::task<void> click::handle_f1(character* ch)
