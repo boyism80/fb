@@ -64,12 +64,13 @@ void login::init_spells(const std::vector<internal::Spell>& response, character&
 {
     for (auto& x : response)
     {
-        if (table::spell.contains(x.model) == false)
+        if (table::spell->contains(x.model) == false)
             continue;
 
-        auto& model = table::spell[x.model];
-        auto  delay = fb::model::datetime(x.next) - this->server.now();
-        auto  sec   = delay.seconds();
+        auto  spell_table = table::spell;
+        auto& model       = spell_table[x.model];
+        auto  delay       = fb::model::datetime(x.next) - this->server.now();
+        auto  sec         = delay.seconds();
         if (sec >= 0)
             sec += (delay.milliseconds() > 0 ? 1 : 0);
         else
@@ -152,7 +153,7 @@ async::task<std::shared_ptr<character>> login::init(const game_reqs::login& requ
         position_x = uint32_t(request.transfer.value().position.x);
         position_y = uint32_t(request.transfer.value().position.y);
     }
-    else if (table::map.contains(map) && table::map[map].return_to.has_value())
+    else if (table::map->contains(map) && table::map[map].return_to.has_value())
     {
         auto source_map_id = map;
         auto return_map_id = table::map[map].return_to.value();
@@ -253,8 +254,9 @@ async::task<std::shared_ptr<character>> login::init(const game_reqs::login& requ
 
     for (auto& buff : resp.character.buffs)
     {
-        auto& model = table::spell[buff.model];
-        std::ignore = co_await ch->buffs.push_back(model, buff.time);
+        auto  spell_table2 = table::spell;
+        auto& model        = spell_table2[buff.model];
+        std::ignore        = co_await ch->buffs.push_back(model, buff.time);
     }
 
     if (resp.group.has_value())

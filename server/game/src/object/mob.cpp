@@ -452,7 +452,8 @@ async::task<void> mob::drop_model_items(const fb::model::mob&       model,
     if (map == nullptr || model.drop.empty())
         co_return;
 
-    auto& drop = table::drop[model.drop];
+    auto  drop_table = table::drop;
+    auto& drop       = drop_table[model.drop];
     for (auto& dsl : drop.dsl)
     {
         switch (dsl.header)

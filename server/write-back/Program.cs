@@ -1,6 +1,7 @@
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
+using Http.Service.Amqp;
 using WriteBack.Service;
 
 namespace WriteBack
@@ -19,7 +20,7 @@ namespace WriteBack
                         builder.AddConsole();
                     });
                     services.AddHostedService<WriteBackService>();
-                    services.AddHostedService<Http.Service.ShutdownListenerService>();
+                    services.AddAmqpListener<ShutdownHandler>();
                 })
                 .UseConsoleLifetime()
                 .Build();

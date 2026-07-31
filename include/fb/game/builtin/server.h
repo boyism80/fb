@@ -41,6 +41,7 @@ struct server
     static int builtin_name2class(lua_State* L);
     static int builtin_class2name(lua_State* L);
     static int builtin_save(lua_State* L);
+    static int builtin_reload_table(lua_State* L);
     static int builtin_mknpc(lua_State* L);
     static int builtin_maps(lua_State* L);
     static int builtin_shutdown(lua_State* L);

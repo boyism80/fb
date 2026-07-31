@@ -2,6 +2,7 @@ using Dapper;
 using Http.Extension;
 using Http.Migration;
 using Http.Service;
+using Http.Service.Amqp;
 using Http.Worker;
 
 namespace Http;
@@ -46,7 +47,7 @@ public class Program
         builder.Services.AddSingleton<Http.Service.BulletinService>();
         builder.Services.AddSingleton<Http.Service.BulletinCacheService>();
         builder.Services.AddHostedService<Http.Service.BulletinBackgroundService>();
-        builder.Services.AddHostedService<ShutdownListenerService>();
+        builder.Services.AddAmqpListener<ShutdownHandler, ReloadTablesHandler>();
         builder.Services.AddHostedService<Http.Service.SessionTtlRefreshService>();
         builder.Services.AddSingleton<Http.Service.MaintenanceService>();
         builder.Services.AddHostedService<Internal.Services.MaintenanceBackgroundService>();

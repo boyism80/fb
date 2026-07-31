@@ -14,7 +14,7 @@ int builtin_name2map(lua_State* L)
         return 0;
 
     auto name = lua->tostring(1);
-    auto map  = table::map.name2map(name);
+    auto map  = table::map->name2map(name);
 
     if (map == nullptr)
         lua->pushnil();
@@ -31,7 +31,7 @@ int builtin_id2map(lua_State* L)
         return 0;
 
     auto id  = static_cast<uint32_t>(lua->tointeger(1));
-    auto map = const_cast<fb::model::map*>(table::map.find(id));
+    auto map = const_cast<fb::model::map*>(table::map->find(id));
 
     if (map == nullptr)
         lua->pushnil();
@@ -79,13 +79,14 @@ int map_builtin_root(lua_State* L)
     if (map == nullptr)
         return 0;
 
-    if (table::map.contains(map->root) == false)
+    if (table::map->contains(map->root) == false)
     {
         lua->pushnil();
         return 1;
     }
 
-    auto& root = table::map[map->root];
+    auto  map_table = table::map;
+    auto& root      = map_table[map->root];
     lua->pushobject(root);
     return 1;
 }

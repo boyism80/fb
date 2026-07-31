@@ -1,5 +1,6 @@
 using AutoMapper;
 using Http.Service;
+using Http.Service.Amqp;
 using Http.Worker;
 using Matchmaking.Core;
 using Matchmaking.Formatter;
@@ -35,10 +36,12 @@ public class Program
             return new Mapper(config);
         });
         builder.Services.AddSingleton<RabbitMqService>();
+        builder.Services.AddSingleton<RedisService>();
         builder.Services.AddSingleton<CharacterMatchMaker>();
         builder.Services.AddSingleton<MatchMaker<CharacterRegistryEntry>>(sp => sp.GetRequiredService<CharacterMatchMaker>());
         builder.Services.AddHostedService<MatchmakingBackgroundService>();
         builder.Services.AddHostedService<MatchConfirmationBackgroundService>();
+        builder.Services.AddAmqpListener<ReloadTablesHandler>();
         builder.Services.AddHealthChecks();
 
         var app = builder.Build();

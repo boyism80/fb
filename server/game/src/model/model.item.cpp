@@ -33,22 +33,31 @@ std::optional<fb::model::datetime> fb::model::item::expire_time(const fb::model:
 
 fb::model::item* fb::model::__item::name2item(std::string_view name) const
 {
-    static auto cache       = std::unordered_map<std::string, fb::model::item*>{};
-    static auto cache_mutex = std::shared_mutex{};
+    static const __item* cache_owner = nullptr;
+    static auto          cache       = std::unordered_map<std::string, fb::model::item*>{};
+    static auto          cache_mutex = std::shared_mutex{};
 
     auto name_str = std::string(name);
     {
         auto lock = std::shared_lock(cache_mutex);
-        auto it   = cache.find(name_str);
-        if (it != cache.end())
-            return it->second;
+        if (cache_owner == this)
+        {
+            auto it = cache.find(name_str);
+            if (it != cache.end())
+                return it->second;
+        }
     }
 
     for (auto& [k, v] : *this)
     {
         if (v.name == name)
         {
-            auto lock       = std::lock_guard(cache_mutex);
+            auto lock = std::lock_guard(cache_mutex);
+            if (cache_owner != this)
+            {
+                cache.clear();
+                cache_owner = this;
+            }
             cache[name_str] = &v;
             return &v;
         }
@@ -59,29 +68,30 @@ fb::model::item* fb::model::__item::name2item(std::string_view name) const
 
 std::vector<fb::model::item*> fb::model::__item::name2item_prefix(std::string_view prefix) const
 {
-    static auto sorted_items = std::map<std::string, fb::model::item*>{};
-    static auto once_flag    = std::once_flag{};
-    static auto read_mutex   = std::shared_mutex{};
+    static const __item* cache_owner  = nullptr;
+    static auto          sorted_items = std::map<std::string, fb::model::item*>{};
+    static auto          cache_mutex  = std::shared_mutex{};
 
-    std::call_once(once_flag, [this]() {
-        auto lock = std::lock_guard(read_mutex);
-        for (auto& [k, v] : *this)
+    {
+        auto lock = std::unique_lock(cache_mutex);
+        if (cache_owner != this)
         {
-            sorted_items[v.name] = &v;
+            sorted_items.clear();
+            for (auto& [k, v] : *this)
+                sorted_items[v.name] = &v;
+            cache_owner = this;
         }
-    });
+    }
 
     auto result     = std::vector<fb::model::item*>{};
     auto prefix_str = std::string(prefix);
 
     {
-        auto lock = std::shared_lock(read_mutex);
+        auto lock = std::shared_lock(cache_mutex);
         if (prefix.empty())
         {
             for (auto& [name, item] : sorted_items)
-            {
                 result.push_back(item);
-            }
             return result;
         }
 

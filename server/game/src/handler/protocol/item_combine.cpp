@@ -32,7 +32,7 @@ async::task<bool> item_combine::handle(fb::socket<character>& session, game_reqs
         dsl.push_back(fb::model::dsl::item(model.id, item->count(), std::nullopt, std::nullopt, 100.0));
     }
 
-    auto found = table::recipe.find(dsl);
+    auto found = table::recipe->find(dsl);
     if (found == nullptr)
     {
         ch->message(_TEXT(MESSAGE_NO_RECIPE));
@@ -82,9 +82,10 @@ async::task<bool> item_combine::handle(fb::socket<character>& session, game_reqs
     // Add result items (success or failure items)
     for (auto& dsl : result)
     {
-        auto  params = fb::model::dsl::item(dsl.params);
-        auto& model  = table::item[params.id];
-        auto  remain = params.count;
+        auto  params     = fb::model::dsl::item(dsl.params);
+        auto  item_table = table::item;
+        auto& model      = item_table[params.id];
+        auto  remain     = params.count;
         while (remain > 0)
         {
             auto item  = this->server.make<fb::game::item>(table::item[params.id]);

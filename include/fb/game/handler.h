@@ -63,6 +63,7 @@
 #include <fb/game/handler/amqp/ban.h>
 #include <fb/game/handler/amqp/broadcast_save.h>
 #include <fb/game/handler/amqp/set_exp_multiplier.h>
+#include <fb/game/handler/amqp/reload_tables.h>
 #include <fb/game/handler/amqp/set_drop_rate_multiplier.h>
 #include <fb/game/handler/amqp/set_datetime.h>
 #include <fb/game/handler/amqp/start_maintenance.h>

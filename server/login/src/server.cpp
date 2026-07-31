@@ -67,6 +67,8 @@ async::task<void> fb::login::server::on_start()
     this->handler.amqp.bind<fb::login::handler::amqp::shutdown>("fb.global"); // Shutdown: all servers
     this->handler.amqp.bind<fb::login::handler::amqp::set_datetime>(
         std::format("fb.{}.global", fb::config<uint32_t>("world")));
+    this->handler.amqp.bind<fb::login::handler::amqp::reload_tables>(
+        std::format("fb.{}.global", fb::config<uint32_t>("world")));
 }
 
 async::task<void> fb::login::server::update_status()
@@ -107,10 +109,10 @@ void fb::login::server::assert_account(std::string_view id, std::string_view pw)
     if (fb::config<bool>("allow_foreign_name") == false && assert_korean(cp949) == false)
         throw id_exception(_TEXT(MESSAGE_ACCOUNT_INVALID_NAME));
 
-    if (fb::model::table::blocked_name.contains_substring(id_str))
+    if (fb::model::table::blocked_name->contains_substring(id_str))
         throw id_exception(_TEXT(MESSAGE_ACCOUNT_INVALID_NAME));
 
-    if (fb::model::table::blocked_word.contains_substring(id_str))
+    if (fb::model::table::blocked_word->contains_substring(id_str))
         throw id_exception(_TEXT(MESSAGE_ACCOUNT_INVALID_NAME));
 
     // Read character's password

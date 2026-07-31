@@ -57,8 +57,9 @@ void push_recipe_dsl_items(fb::lua::context& lua, const std::vector<fb::model::d
         if (dsl.header != fb::model::enum_value::DSL::item)
             continue;
 
-        auto  params = fb::model::dsl::item(dsl.params);
-        auto& item   = fb::model::table::item[params.id];
+        auto  params      = fb::model::dsl::item(dsl.params);
+        auto  item_table2 = fb::model::table::item;
+        auto& item        = item_table2[params.id];
 
         lua.pushinteger(index++);
         lua.new_table();
@@ -80,8 +81,9 @@ static int lua_model_promotions(lua_State* L)
     auto& lua = require_lua(L);
 
     lua.new_table();
-    auto index = 1;
-    for (auto& [cls, promotions] : fb::model::table::promotion)
+    auto index           = 1;
+    auto promotion_table = fb::model::table::promotion;
+    for (auto& [cls, promotions] : promotion_table)
     {
         for (auto& [_, promotion] : promotions)
         {
@@ -101,10 +103,11 @@ static int lua_model_promotions(lua_State* L)
 
 static int lua_model_world_destination(lua_State* L)
 {
-    auto& lua    = require_lua(L);
-    auto  parent = static_cast<uint16_t>(lua.tointeger(1));
-    auto  id     = static_cast<uint16_t>(lua.tointeger(2));
-    auto& cell   = fb::model::table::world[parent][id];
+    auto& lua         = require_lua(L);
+    auto  parent      = static_cast<uint16_t>(lua.tointeger(1));
+    auto  id          = static_cast<uint16_t>(lua.tointeger(2));
+    auto  world_table = fb::model::table::world;
+    auto& cell        = world_table[parent][id];
 
     lua.new_table();
     lua.pushstring("map");
@@ -137,8 +140,9 @@ static int lua_model_equipment_items(lua_State* L)
                                                                   ITEM_TYPE::AUXILIARY};
 
     lua.new_table();
-    auto index = 1;
-    for (auto& [_, item] : fb::model::table::item)
+    auto index      = 1;
+    auto item_table = fb::model::table::item;
+    for (auto& [_, item] : item_table)
     {
         if (equipment_types.contains(item.type) == false)
             continue;
@@ -164,8 +168,9 @@ static int lua_model_recipes(lua_State* L)
     auto& lua = require_lua(L);
 
     lua.new_table();
-    auto index = 1;
-    for (auto& recipe : fb::model::table::recipe)
+    auto index        = 1;
+    auto recipe_table = fb::model::table::recipe;
+    for (auto& recipe : recipe_table)
     {
         lua.pushinteger(index++);
         lua.new_table();

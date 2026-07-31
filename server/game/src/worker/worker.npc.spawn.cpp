@@ -14,7 +14,8 @@ fb::generator<fb::game::npc_spawner::input_type> fb::game::npc_spawner::on_ready
 {
     fb::console::progress("Loading npc spawns", 0);
 
-    for (auto& [map, spawns] : table::npc_spawn)
+    auto npc_spawn_table = table::npc_spawn;
+    for (auto& [map, spawns] : npc_spawn_table)
     {
         for (auto& spawn : spawns)
         {
@@ -26,8 +27,10 @@ fb::generator<fb::game::npc_spawner::input_type> fb::game::npc_spawner::on_ready
 async::task<void> fb::game::npc_spawner::on_work(const fb::game::npc_spawner::input_type& value)
 {
     auto& spawn_model = value.get();
-    auto& npc_model   = table::npc[spawn_model.npc];
-    auto& map_model   = table::map[spawn_model.parent];
+    auto  npc_table   = table::npc;
+    auto& npc_model   = npc_table[spawn_model.npc];
+    auto  map_table   = table::map;
+    auto& map_model   = map_table[spawn_model.parent];
     if (this->_server.maps.contains(spawn_model.parent) == false)
         throw std::runtime_error(std::format(_TEXT(MESSAGE_ASSET_NPC_SPAWN_FAILED), npc_model.name, map_model.name));
 

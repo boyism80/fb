@@ -153,8 +153,9 @@ fb::model::point<uint16_t> parse_point(fb::lua::context* lua, int index)
 
 const fb::model::item* find_item_by_name(std::string_view name)
 {
-    auto name_str = std::string(name);
-    for (auto& [_, item] : fb::model::table::item)
+    auto name_str   = std::string(name);
+    auto item_table = fb::model::table::item;
+    for (auto& [_, item] : item_table)
     {
         if (item.name == name_str)
             return &item;

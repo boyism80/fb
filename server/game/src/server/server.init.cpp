@@ -87,6 +87,7 @@ async::task<void> fb::game::server::init_lua()
         lua.build("name2class", builtin::server::builtin_name2class);
         lua.build("class2name", builtin::server::builtin_class2name);
         lua.build("save", builtin::server::builtin_save);
+        lua.build("reload_table", builtin::server::builtin_reload_table);
         lua.build("mknpc", builtin::server::builtin_mknpc);
         lua.build("maps", builtin::server::builtin_maps);
         lua.build("shutdown", builtin::server::builtin_shutdown);
@@ -140,7 +141,7 @@ async::task<void> fb::game::server::init_thread_params()
             for (const auto& map : maps)
             {
                 params->add_map(map);
-                if (table::mob_spawn.contains(map->model.id))
+                if (table::mob_spawn->contains(map->model.id))
                 {
                     for (auto& spawn : table::mob_spawn[map->model.id])
                     {
@@ -256,6 +257,7 @@ void fb::game::server::init_amqp_handlers()
     this->handler.amqp.bind<fb::game::handler::amqp::deliver_system_storage>(std::format("fb.{}.storage", world));
     this->handler.amqp.bind<fb::game::handler::amqp::ban>(std::format("fb.{}.ban", world));
     this->handler.amqp.bind<fb::game::handler::amqp::set_exp_multiplier>(std::format("fb.{}.global", world));
+    this->handler.amqp.bind<fb::game::handler::amqp::reload_tables>(std::format("fb.{}.global", world));
     this->handler.amqp.bind<fb::game::handler::amqp::set_drop_rate_multiplier>(std::format("fb.{}.global", world));
     this->handler.amqp.bind<fb::game::handler::amqp::set_datetime>(std::format("fb.{}.global", world));
     this->handler.amqp.bind<fb::game::handler::amqp::start_maintenance>(std::format("fb.{}.game.{}", world, fb::config<uint32_t>("id")));
@@ -338,19 +340,19 @@ async::task<void> fb::game::server::on_start()
     flatbuffers::option::decoding(fb::cp949);
 #endif
 
-    table::npc.hook.build = [](const Json::Value& json) -> fb::model::npc* {
+    table::npc->hook.build = [](const Json::Value& json) -> fb::model::npc* {
         auto clone    = json;
         clone["look"] = clone["look"].asUInt() + 0x7FFF;
         return fb::model::build<fb::model::npc*>(clone);
     };
 
-    table::mob.hook.build = [](const Json::Value& json) -> fb::model::mob* {
+    table::mob->hook.build = [](const Json::Value& json) -> fb::model::mob* {
         auto clone    = json;
         clone["look"] = clone["look"].asUInt() + 0x7FFF;
         return fb::model::build<fb::model::mob*>(clone);
     };
 
-    table::item.hook.build = [](const Json::Value& json) -> fb::model::item* {
+    table::item->hook.build = [](const Json::Value& json) -> fb::model::item* {
         auto clone    = json;
         clone["look"] = clone["look"].asUInt() + 0xBFFF;
 

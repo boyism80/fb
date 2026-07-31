@@ -102,7 +102,8 @@ void listener_impl::on_update_external(object& me, bool detailed)
         auto& model = npc.based<fb::model::npc>();
         if (model.appearance.has_value())
         {
-            auto& app = table::appearance[model.appearance.value()];
+            auto  appearance_table = table::appearance;
+            auto& app              = appearance_table[model.appearance.value()];
             this->send_update_appearance(npc, app);
         }
         else
@@ -118,7 +119,8 @@ void listener_impl::on_update_external(object& me, bool detailed)
         auto& model = mob.based<fb::model::mob>();
         if (model.appearance.has_value())
         {
-            auto& app = table::appearance[model.appearance.value()];
+            auto  appearance_table2 = table::appearance;
+            auto& app               = appearance_table2[model.appearance.value()];
             this->send_update_appearance(mob, app);
         }
         else
@@ -158,7 +160,8 @@ void listener_impl::on_update_external(object& me, object& you, bool detailed)
         auto& model = npc.based<fb::model::npc>();
         if (model.appearance.has_value())
         {
-            auto& app = table::appearance[model.appearance.value()];
+            auto  appearance_table3 = table::appearance;
+            auto& app               = appearance_table3[model.appearance.value()];
             this->send_update_appearance(npc, app);
         }
         else
@@ -174,7 +177,8 @@ void listener_impl::on_update_external(object& me, object& you, bool detailed)
         auto& model = mob.based<fb::model::mob>();
         if (model.appearance.has_value())
         {
-            auto& app = table::appearance[model.appearance.value()];
+            auto  appearance_table4 = table::appearance;
+            auto& app               = appearance_table4[model.appearance.value()];
             this->send_update_appearance(mob, app);
         }
         else

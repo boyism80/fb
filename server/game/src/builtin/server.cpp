@@ -272,7 +272,7 @@ int builtin::server::builtin_name2mob(lua_State* L)
         return 0;
 
     auto name = lua->tostring(1);
-    auto mob  = table::mob.name2mob(name);
+    auto mob  = table::mob->name2mob(name);
 
     if (mob == nullptr)
     {
@@ -292,7 +292,7 @@ int builtin::server::builtin_name2spell(lua_State* L)
         return 0;
 
     auto name  = lua->tostring(1);
-    auto spell = table::spell.name2spell(name);
+    auto spell = table::spell->name2spell(name);
 
     if (spell == nullptr)
     {
@@ -312,7 +312,7 @@ int builtin::server::builtin_name2npc(lua_State* L)
         return 0;
 
     auto name = lua->tostring(1);
-    auto npc  = table::npc.name2npc(name);
+    auto npc  = table::npc->name2npc(name);
 
     if (npc == nullptr)
     {
@@ -332,7 +332,7 @@ int builtin::server::builtin_name2map(lua_State* L)
         return 0;
 
     auto name = lua->tostring(1);
-    auto map  = table::map.name2map(name);
+    auto map  = table::map->name2map(name);
 
     if (map == nullptr)
     {
@@ -387,7 +387,7 @@ int builtin::server::builtin_name2item(lua_State* L)
         return 0;
 
     auto name = lua->tostring(1);
-    auto item = table::item.name2item(name);
+    auto item = table::item->name2item(name);
 
     if (item == nullptr)
     {
@@ -407,7 +407,7 @@ int builtin::server::builtin_id2mob(lua_State* L)
         return 0;
 
     auto id  = static_cast<uint32_t>(lua->tointeger(1));
-    auto mob = const_cast<fb::model::mob*>(table::mob.find(id));
+    auto mob = const_cast<fb::model::mob*>(table::mob->find(id));
 
     if (mob == nullptr)
         lua->pushnil();
@@ -423,7 +423,7 @@ int builtin::server::builtin_id2spell(lua_State* L)
         return 0;
 
     auto id    = static_cast<uint32_t>(lua->tointeger(1));
-    auto spell = const_cast<fb::model::spell*>(table::spell.find(id));
+    auto spell = const_cast<fb::model::spell*>(table::spell->find(id));
 
     if (spell == nullptr)
         lua->pushnil();
@@ -439,7 +439,7 @@ int builtin::server::builtin_id2npc(lua_State* L)
         return 0;
 
     auto id  = static_cast<uint32_t>(lua->tointeger(1));
-    auto npc = const_cast<fb::model::npc*>(table::npc.find(id));
+    auto npc = const_cast<fb::model::npc*>(table::npc->find(id));
 
     if (npc == nullptr)
         lua->pushnil();
@@ -455,7 +455,7 @@ int builtin::server::builtin_id2map(lua_State* L)
         return 0;
 
     auto id  = static_cast<uint32_t>(lua->tointeger(1));
-    auto map = const_cast<fb::model::map*>(table::map.find(id));
+    auto map = const_cast<fb::model::map*>(table::map->find(id));
 
     if (map == nullptr)
         lua->pushnil();
@@ -471,7 +471,7 @@ int builtin::server::builtin_id2item(lua_State* L)
         return 0;
 
     auto id   = static_cast<uint32_t>(lua->tointeger(1));
-    auto item = const_cast<fb::model::item*>(table::item.find(id));
+    auto item = const_cast<fb::model::item*>(table::item->find(id));
 
     if (item == nullptr)
         lua->pushnil();
@@ -524,14 +524,16 @@ int builtin::server::builtin_pursuit_sell(lua_State* L)
         return 1;
 
     auto pursuit = lua->tointeger(1);
-    if (table::sell.contains(pursuit))
+    if (table::sell->contains(pursuit))
     {
-        auto& sell = table::sell[pursuit];
-        auto  i    = 0;
+        auto  sell_table = table::sell;
+        auto& sell       = sell_table[pursuit];
+        auto  i          = 0;
         for (auto& v : sell)
         {
-            auto& item  = table::item[v.item];
-            auto  price = v.price.value_or(item.price);
+            auto  item_table = table::item;
+            auto& item       = item_table[v.item];
+            auto  price      = v.price.value_or(item.price);
 
             lua->pushinteger(++i);
             lua->new_table();
@@ -560,12 +562,13 @@ int builtin::server::builtin_pursuit_sell_price(lua_State* L)
     auto pursuit = lua->tointeger(1);
     auto name    = lua->tostring(2);
 
-    if (table::sell.contains(pursuit) == false)
+    if (table::sell->contains(pursuit) == false)
         return 0;
 
     for (auto& x : table::sell[pursuit])
     {
-        auto& model = table::item[x.item];
+        auto  item_table2 = table::item;
+        auto& model       = item_table2[x.item];
         if (model.name != name)
             continue;
 
@@ -584,14 +587,16 @@ int builtin::server::builtin_pursuit_buy(lua_State* L)
 
     auto pursuit = lua->tointeger(1);
     lua->new_table();
-    if (table::buy.contains(pursuit))
+    if (table::buy->contains(pursuit))
     {
-        auto& buy = table::buy[pursuit];
-        auto  i   = 0;
+        auto  buy_table = table::buy;
+        auto& buy       = buy_table[pursuit];
+        auto  i         = 0;
         for (auto& [k, v] : buy)
         {
-            auto& item  = table::item[k];
-            auto  price = v.price.value_or(item.price / 2);
+            auto  item_table3 = table::item;
+            auto& item        = item_table3[k];
+            auto  price       = v.price.value_or(item.price / 2);
 
             lua->pushinteger(++i);
             lua->new_table();
@@ -731,7 +736,7 @@ int builtin::server::builtin_name2class(lua_State* L)
 
     auto cls       = CLASS::NONE;
     auto promotion = uint8_t{0};
-    if (table::promotion.name2class(name, cls, promotion) == false)
+    if (table::promotion->name2class(name, cls, promotion) == false)
         return 0;
 
     lua->pushinteger(cls);
@@ -748,7 +753,7 @@ int builtin::server::builtin_class2name(lua_State* L)
     auto cls       = (uint8_t)lua->tointeger(1);
     auto promotion = (uint8_t)lua->tointeger(2);
     auto name      = std::string{};
-    if (table::promotion.class2name(static_cast<CLASS>(cls), promotion, name) == false)
+    if (table::promotion->class2name(static_cast<CLASS>(cls), promotion, name) == false)
         lua->pushnil();
     else
         lua->pushstring(name);
@@ -774,6 +779,35 @@ int builtin::server::builtin_save(lua_State* L)
     return builder.run();
 }
 
+int builtin::server::builtin_reload_table(lua_State* L)
+{
+    auto lua = fb::lua::get(L);
+    if (lua == nullptr)
+        return 0;
+
+    // Do not reload on the logic thread. Broadcast via internal HTTP → AMQP,
+    // same pattern as exp_multiplier; each host offloads build to a background thread.
+    auto success  = std::make_shared<bool>(false);
+    auto error    = std::make_shared<std::string>();
+    auto builder  = lua->new_co_builder();
+    builder.yield = [=]() -> async::task<void> {
+        auto& server = static_cast<fb::game::server&>(lua->executor);
+        auto  world  = fb::config<uint32_t>("world");
+        auto resp = co_await server.http.post("internal", "/in-game/reload-tables", internal_reqs::ReloadTables(world));
+        if (resp.error == 0)
+            *success = true;
+        else
+            *error = std::format("Reload tables failed with error code: {}", resp.error);
+    };
+    builder.resume = [=]() -> async::task<int> {
+        lua->pushboolean(*success);
+        if (*success == false)
+            lua->pushstring(*error);
+        co_return *success ? 1 : 2;
+    };
+    return builder.run();
+}
+
 int builtin::server::builtin_mknpc(lua_State* L)
 {
     auto lua = fb::lua::get(L);
@@ -783,7 +817,7 @@ int builtin::server::builtin_mknpc(lua_State* L)
     auto& srv   = static_cast<fb::game::server&>(lua->executor);
     auto  argc  = lua->argc();
     auto  name  = lua->tostring(1);
-    auto  model = table::npc.name2npc(name);
+    auto  model = table::npc->name2npc(name);
     if (model == nullptr)
         return 0;
 
@@ -791,7 +825,7 @@ int builtin::server::builtin_mknpc(lua_State* L)
     if (lua->is_string(2))
     {
         auto name      = lua->tostring(2);
-        auto map_model = table::map.name2map(name);
+        auto map_model = table::map->name2map(name);
         if (map_model == nullptr)
             return 0;
 

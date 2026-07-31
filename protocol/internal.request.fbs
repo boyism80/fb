@@ -359,6 +359,10 @@ table SetExpMultiplier {
   value: double;
 }
 
+table ReloadTables {
+  world: uint;
+}
+
 table SetDropRateMultiplier {
   world: uint;
   value: double;

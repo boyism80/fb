@@ -16,9 +16,10 @@ async::task<bool> map_world::handle(fb::socket<character>& session, game_reqs::m
     if (ch->inited() == false)
         co_return true;
 
-    auto& world  = table::world[request.value];
-    auto& before = world[request.before];
-    auto& after  = world[request.after];
+    auto  world_table = table::world;
+    auto& world       = world_table[request.value];
+    auto& before      = world[request.before];
+    auto& after       = world[request.after];
 
     if (ch->map() == this->server.maps[after.map])
     {

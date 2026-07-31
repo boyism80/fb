@@ -379,10 +379,11 @@ async::task<void> matchmaker::register_queue(uint32_t match_type)
         throw std::runtime_error(_TEXT(MESSAGE_MARKETPLACE_CHARACTER_EXPIRED));
 
     auto match_type_enum = static_cast<fb::model::enum_value::MATCH_TYPE>(match_type);
-    if (table::matchmaking.contains(match_type_enum) == false)
+    if (table::matchmaking->contains(match_type_enum) == false)
         throw std::runtime_error(enum_tostring(fb::model::enum_value::ERROR_CODE::MATCHMAKING_UNKNOWN_QUEUE));
 
-    auto& matchmaking_config = table::matchmaking[match_type_enum];
+    auto  matchmaking_table  = table::matchmaking;
+    auto& matchmaking_config = matchmaking_table[match_type_enum];
     auto  world              = fb::config<uint32_t>("world");
     auto  entries            = std::vector<mp::RegistryEntry>{};
     auto  participants       = std::vector<std::shared_ptr<character>>{};

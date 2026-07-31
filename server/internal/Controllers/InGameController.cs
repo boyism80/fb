@@ -315,6 +315,21 @@ namespace Internal.Controllers
             return response;
         }
 
+        [HttpPost("reload-tables")]
+        public async Task<Response.ReloadTables> ReloadTables(Request.ReloadTables request)
+        {
+            var response = new Response.ReloadTables
+            {
+                Error = (uint)ErrorCode.None
+            };
+
+            // Game/login logic hosts
+            await _rabbitMqService.PublishAsync(response, "amq.direct", $"fb.{request.World}.global");
+            // C# hosts (AmqpListener on fb.global)
+            await _rabbitMqService.PublishAsync(response, "amq.direct", "fb.global");
+            return response;
+        }
+
         [HttpPost("set-drop-rate-multiplier")]
         public async Task<Response.SetDropRateMultiplier> SetDropRateMultiplier(Request.SetDropRateMultiplier request)
         {

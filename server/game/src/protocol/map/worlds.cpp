@@ -16,8 +16,10 @@ void map_worlds::serialize(fb::stream_writer<big_endian>& writer) const
     header::serialize(writer);
     writer.write<uint8_t>(opcode);
 
-    auto& attr   = table::world_attribute[this->id];
-    auto& points = table::world[this->id];
+    auto  world_attribute_table = table::world_attribute;
+    auto& attr                  = world_attribute_table[this->id];
+    auto  world_table           = table::world;
+    auto& points                = world_table[this->id];
 
     writer.write<std::string, uint8_t>(attr.key);
     writer.write<uint8_t>(static_cast<uint8_t>(points.size()));

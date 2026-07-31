@@ -448,7 +448,7 @@ int builtin::character::builtin_item(lua_State* L)
                 lua_gettable(L, -2);
                 if (lua->is_string(-1))
                 {
-                    item = table::item.name2item(lua->tostring(-1));
+                    item = table::item->name2item(lua->tostring(-1));
                 }
                 else if (lua->is_userdata<fb::model::item>(-1))
                 {
@@ -613,7 +613,7 @@ int builtin::character::builtin_has_items(lua_State* L)
     auto required_models = std::vector<std::pair<const fb::model::item*, uint16_t>>();
     for (const auto& [name, min_count] : required)
     {
-        auto model = table::item.name2item(name);
+        auto model = table::item->name2item(name);
         if (model == nullptr)
         {
             lua->pushboolean(false);
@@ -771,7 +771,7 @@ int builtin::character::builtin_mkitem(lua_State* L)
             {
                 auto name  = lua->tostring(-2);
                 auto count = static_cast<uint16_t>(lua->tointeger(-1));
-                auto model = table::item.name2item(name);
+                auto model = table::item->name2item(name);
                 if (model != nullptr && count > 0)
                     id_to_count[model->id] += count;
             }
@@ -787,7 +787,7 @@ int builtin::character::builtin_mkitem(lua_State* L)
             lua->pushnil();
             return 1;
         }
-        auto model = table::item.name2item(name);
+        auto model = table::item->name2item(name);
         if (model == nullptr)
         {
             lua->pushnil();
@@ -821,8 +821,9 @@ int builtin::character::builtin_mkitem(lua_State* L)
         auto items = std::vector<std::shared_ptr<fb::game::item>>();
         for (auto& [id, count] : id_to_count)
         {
-            auto& model = table::item[id];
-            auto  item  = model.make(server, count, expire_time);
+            auto  item_table = table::item;
+            auto& model      = item_table[id];
+            auto  item       = model.make(server, count, expire_time);
             if (item != nullptr)
                 items.push_back(std::move(item));
         }
@@ -884,7 +885,7 @@ int builtin::character::builtin_rmitem(lua_State* L)
             {
                 auto name  = lua->tostring(-2);
                 auto cnt   = static_cast<uint16_t>(lua->tointeger(-1));
-                auto model = table::item.name2item(name);
+                auto model = table::item->name2item(name);
                 if (model != nullptr && cnt > 0)
                     to_remove.push_back({model, cnt});
             }
@@ -1054,7 +1055,7 @@ int builtin::character::builtin_rmitem(lua_State* L)
         builder.yield = [=]() -> async::task<void> {
             try
             {
-                auto model = table::item.name2item(name);
+                auto model = table::item->name2item(name);
                 if (model == nullptr)
                     co_return;
 
@@ -1131,7 +1132,7 @@ int builtin::character::builtin_exchange(lua_State* L)
                 {
                     auto name  = lua->tostring(-2);
                     auto count = static_cast<uint16_t>(lua->tointeger(-1));
-                    auto model = table::item.name2item(name);
+                    auto model = table::item->name2item(name);
                     if (model != nullptr && count > 0)
                         cost_items[model->id] += count;
                 }
@@ -1166,7 +1167,7 @@ int builtin::character::builtin_exchange(lua_State* L)
                 {
                     auto name  = lua->tostring(-2);
                     auto count = static_cast<uint16_t>(lua->tointeger(-1));
-                    auto model = table::item.name2item(name);
+                    auto model = table::item->name2item(name);
                     if (model != nullptr && count > 0)
                         reward_items[model->id] += count;
                 }
@@ -2781,7 +2782,7 @@ int builtin::character::builtin_spawn_mob(lua_State* L)
 
     auto name  = lua->tostring(2);
     auto owned = true;
-    auto model = table::mob.name2mob(name);
+    auto model = table::mob->name2mob(name);
     if (model == nullptr)
     {
         lua->pushnil();
@@ -3406,7 +3407,7 @@ int builtin::character::builtin_mkspell(lua_State* L)
         return 0;
 
     auto name  = lua->tostring(2);
-    auto model = table::spell.name2spell(name);
+    auto model = table::spell->name2spell(name);
     if (model == nullptr)
         return 0;
 
@@ -3521,8 +3522,9 @@ int builtin::character::builtin_world(lua_State* L)
     if (ch == nullptr)
         return 0;
 
-    auto name = lua->tostring(2);
-    for (auto& [id, world] : table::world)
+    auto name        = lua->tostring(2);
+    auto world_table = table::world;
+    for (auto& [id, world] : world_table)
     {
         for (auto& [index, point] : world)
         {
@@ -4025,7 +4027,7 @@ int builtin::character::builtin_delay(lua_State* L)
     }
     else if (lua->is_string(2))
     {
-        model = table::spell.name2spell(lua->tostring(2));
+        model = table::spell->name2spell(lua->tostring(2));
     }
 
     if (model == nullptr)
@@ -5338,7 +5340,7 @@ int fb::game::builtin::character::builtin_reward(lua_State* L)
     }
 
     auto reward_id = lua->tostring(2);
-    if (table::reward.contains(reward_id) == false)
+    if (table::reward->contains(reward_id) == false)
     {
         lua->pushboolean(false);
         return 1;
@@ -5438,7 +5440,7 @@ int builtin::character::builtin_send_storage_box(lua_State* L)
     if (lua->is_string(5))
     {
         auto reward_id = lua->tostring(5);
-        if (table::reward.contains(reward_id))
+        if (table::reward->contains(reward_id))
         {
             const auto& src = table::reward[reward_id].dsl;
             attachments.reserve(src.size());
@@ -5459,7 +5461,7 @@ int builtin::character::builtin_send_storage_box(lua_State* L)
                 {
                     auto name  = lua->tostring(-2);
                     auto count = static_cast<uint32_t>(lua->tointeger(-1));
-                    auto model = table::item.name2item(name);
+                    auto model = table::item->name2item(name);
                     if (model != nullptr && count > 0)
                     {
                         auto item_dsl = fb::model::dsl::item(model->id, count, std::nullopt, std::nullopt, 100.0);
@@ -5548,7 +5550,7 @@ int builtin::character::builtin_send_system_storage_box(lua_State* L)
     if (lua->is_string(4))
     {
         auto reward_id = lua->tostring(4);
-        if (table::reward.contains(reward_id))
+        if (table::reward->contains(reward_id))
         {
             const auto& src = table::reward[reward_id].dsl;
             attachments.reserve(src.size());
@@ -5569,7 +5571,7 @@ int builtin::character::builtin_send_system_storage_box(lua_State* L)
                 {
                     auto name  = lua->tostring(-2);
                     auto count = static_cast<uint32_t>(lua->tointeger(-1));
-                    auto model = table::item.name2item(name);
+                    auto model = table::item->name2item(name);
                     if (model != nullptr && count > 0)
                     {
                         auto item_dsl = fb::model::dsl::item(model->id, count, std::nullopt, std::nullopt, 100.0);

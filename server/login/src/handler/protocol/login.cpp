@@ -52,10 +52,10 @@ async::task<bool> login::handle(fb::socket<fb::login::session>& session, fb::pro
         }
 
         auto map = resp2.map;
-        if (table::map.contains(map) && table::map[map].return_to.has_value())
+        if (table::map->contains(map) && table::map[map].return_to.has_value())
         {
             auto return_map_id = table::map[map].return_to.value();
-            if (table::map.contains(return_map_id) == false)
+            if (table::map->contains(return_map_id) == false)
             {
                 fb::logger::fatal("Character {} login failed: return_to map {} does not exist (source map {})",
                                   name,

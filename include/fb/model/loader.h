@@ -3,14 +3,17 @@
 
 #include <fb/parallel_worker.h>
 #include <fb/model/model.h>
+#include <fb/encoding.h>
 #include <async/task.h>
+#include <async/task_completion_source.h>
+#include <thread>
 
 namespace fb::model {
 
-class loader : public fb::parallel_worker<std::reference_wrapper<fb::model::container>>
+class loader : public fb::parallel_worker<std::reference_wrapper<fb::model::slot_base>>
 {
 public:
-    using input_type = std::reference_wrapper<fb::model::container>;
+    using input_type = std::reference_wrapper<fb::model::slot_base>;
 
 public:
     explicit loader(fb::async_executor& executor) :
@@ -22,14 +25,14 @@ public:
 protected:
     fb::generator<input_type> on_ready()
     {
-        auto buffer = std::vector<std::reference_wrapper<fb::model::container>>();
-        table::foreach ([&, this](auto& container) {
-            buffer.push_back(container);
+        auto buffer = std::vector<std::reference_wrapper<fb::model::slot_base>>();
+        table::foreach ([&, this](auto& slot) {
+            buffer.push_back(slot);
         });
 
-        for (auto& container : buffer)
+        for (auto& slot : buffer)
         {
-            co_yield container;
+            co_yield slot;
         }
     }
 
@@ -55,6 +58,33 @@ protected:
         fb::console::newline();
     }
 };
+
+inline async::task<void> reload_async()
+{
+    auto promise = std::make_shared<async::task_completion_source<void>>();
+    std::thread([promise]() {
+        try
+        {
+#ifdef _WIN32
+            option::decoding(fb::cp949);
+            option::encoding(fb::utf8);
+#endif
+            table::reload();
+#ifdef _WIN32
+            option::decoding(nullptr);
+#endif
+            promise->set_value();
+        }
+        catch (...)
+        {
+#ifdef _WIN32
+            option::decoding(nullptr);
+#endif
+            promise->set_exception(std::current_exception());
+        }
+    }).detach();
+    co_await promise->task();
+}
 
 } // namespace fb::model
 

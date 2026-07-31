@@ -3,6 +3,7 @@ using AdminTool.Options;
 using Dapper;
 using Http.Extension;
 using Http.Service;
+using Http.Service.Amqp;
 using Http.Worker;
 using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.AspNetCore.Components.Server.ProtectedBrowserStorage;
@@ -52,6 +53,7 @@ builder.Services.AddScoped<AdminTool.Services.UserDetailService>();
 builder.Services.AddScoped<AdminTool.Services.MarketplaceAdminService>();
 builder.Services.AddSingleton<AdminTool.Services.AdminActivityLogService>();
 builder.Services.AddSingleton<Http.Service.MaintenanceService>();
+builder.Services.AddAmqpListener<ReloadTablesHandler>();
 
 var app = builder.Build();
 

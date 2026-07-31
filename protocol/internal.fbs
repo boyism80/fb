@@ -169,6 +169,7 @@ table Mail {
     contents: string;
     read: bool;
     created_date: string;
+    system_mail_id: uint?;
 }
 
 table MailWriteEntry {

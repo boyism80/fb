@@ -67,11 +67,12 @@ int builtin::model::mob::builtin_drop(lua_State* L)
         return 0;
 
     lua->new_table();
-    if (table::drop.contains(model->drop))
+    if (table::drop->contains(model->drop))
     {
-        auto  i     = 0;
-        auto  visit = std::unordered_set<uint32_t>();
-        auto& drop  = table::drop[model->drop];
+        auto  i          = 0;
+        auto  visit      = std::unordered_set<uint32_t>();
+        auto  drop_table = table::drop;
+        auto& drop       = drop_table[model->drop];
         for (auto& dsl : drop.dsl)
         {
             switch (dsl.header)

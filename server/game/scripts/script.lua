@@ -267,7 +267,11 @@ return {
     end,
 
     func = function(me, val1, val2, val3)
-        local s = me:input(me, nil, { top = 'top', bottom = 'bottom', maxlen = 12, prev = true })
-        me:chat(s)
+        local ok, err = reload_table()
+        if ok then
+            me:chat('table reloaded')
+        else
+            me:chat(err or 'table reload failed')
+        end
     end
 }

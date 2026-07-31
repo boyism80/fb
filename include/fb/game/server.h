@@ -71,6 +71,7 @@ REGISTER_RESPONSE(fb::protocol::internal::request::WriteSystemMail, fb::protocol
 REGISTER_RESPONSE(fb::protocol::internal::request::Ban, fb::protocol::internal::response::Ban)
 REGISTER_RESPONSE(fb::protocol::internal::request::Unban, fb::protocol::internal::response::Unban)
 REGISTER_RESPONSE(fb::protocol::internal::request::SetExpMultiplier, fb::protocol::internal::response::SetExpMultiplier)
+REGISTER_RESPONSE(fb::protocol::internal::request::ReloadTables, fb::protocol::internal::response::ReloadTables)
 REGISTER_RESPONSE(fb::protocol::internal::request::SetDropRateMultiplier, fb::protocol::internal::response::SetDropRateMultiplier)
 REGISTER_RESPONSE(fb::protocol::internal::request::SetDateTime, fb::protocol::internal::response::SetDateTime)
 REGISTER_RESPONSE(fb::protocol::marketplace::request::List, fb::protocol::marketplace::response::List)

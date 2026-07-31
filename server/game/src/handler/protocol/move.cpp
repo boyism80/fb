@@ -53,8 +53,9 @@ async::task<bool> move::handle(fb::socket<character>&      session,
 
         case DSL::world:
         {
-            auto  params = fb::model::dsl::world(warp->dest.params);
-            auto& world  = table::world[params.id][params.index];
+            auto  params      = fb::model::dsl::world(warp->dest.params);
+            auto  world_table = table::world;
+            auto& world       = world_table[params.id][params.index];
             ch->show_world_map(params.id, params.index);
         }
         break;
