@@ -3,6 +3,6 @@
     "main": "index.js",
     "dependencies": {
         "@pulumi/pulumi": "^3.217.1",
-        "@pulumi/kubernetes": "^4.23.0"
+        "@pulumi/kubernetes": "^4.33.0"
     }
 }
