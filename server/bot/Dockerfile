@@ -15,7 +15,7 @@ COPY server/bot ./bot
 
 WORKDIR /app/bot/build
 RUN cmake -DCMAKE_BUILD_TYPE=${BUILD_TYPE} ..
-RUN cmake --build . --config ${BUILD_TYPE} --parallel 32
+RUN cmake --build . --config ${BUILD_TYPE} --parallel 12
 
 FROM ${DATA_IMAGE} AS data
 

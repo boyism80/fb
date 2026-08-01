@@ -11,7 +11,7 @@ COPY server/gateway ./gateway
 
 WORKDIR /app/gateway/build
 RUN cmake -DCMAKE_BUILD_TYPE=${BUILD_TYPE} ..
-RUN cmake --build . --config ${BUILD_TYPE} --parallel 32
+RUN cmake --build . --config ${BUILD_TYPE} --parallel 12
 
 FROM --platform=$BUILDPLATFORM ${BUILD_IMAGE}
 WORKDIR /app
