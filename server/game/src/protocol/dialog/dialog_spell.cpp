@@ -30,6 +30,23 @@ void dialog_spell::serialize(fb::stream_writer<big_endian>& writer) const
     writer.write<std::string, uint16_t>(this->message);
     writer.write<uint16_t>(this->pursuit);
 }
+#else
+void dialog_spell::deserialize(fb::stream_reader<big_endian>& reader)
+{
+    header::deserialize(reader);
+    reader.read<uint8_t>(); // first type echo
+    this->type_echo = reader.read<uint8_t>();
+    this->oid       = reader.read<uint32_t>();
+    reader.read<uint8_t>();  // obj type flag
+    reader.read<uint8_t>();  // 0x01
+    reader.read<uint16_t>(); // look
+    reader.read<uint8_t>();  // color
+    reader.read<uint8_t>();  // obj type flag
+    reader.read<uint16_t>(); // look (duplicate)
+    reader.read<uint8_t>();  // color (duplicate)
+    this->message = reader.read<std::string, uint16_t>();
+    this->pursuit = reader.read<uint16_t>();
+}
 #endif
 
 } // namespace fb::protocol::game::response

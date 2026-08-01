@@ -1038,7 +1038,19 @@ namespace fb.protocol._internal
                 return default;
 
             return fb.protocol._internal.request.raw.ReloadTables.CreateReloadTables(builder,
-                builder.Build(value.World));
+                builder.Build(value.World),
+                builder.Build(value.Url),
+                builder.Build(value.TableNames));
+        }
+        public static Offset<fb.protocol._internal.request.raw.ReloadScripts> Build(this FlatBufferBuilder builder, fb.protocol._internal.request.ReloadScripts value)
+        {
+            if (value == null)
+                return default;
+
+            return fb.protocol._internal.request.raw.ReloadScripts.CreateReloadScripts(builder,
+                builder.Build(value.World),
+                builder.Build(value.Url),
+                builder.Build(value.ScriptPaths));
         }
         public static Offset<fb.protocol._internal.request.raw.SetDropRateMultiplier> Build(this FlatBufferBuilder builder, fb.protocol._internal.request.SetDropRateMultiplier value)
         {
@@ -1566,7 +1578,19 @@ namespace fb.protocol._internal
                 return default;
 
             return fb.protocol._internal.response.raw.ReloadTables.CreateReloadTables(builder,
-                builder.Build(value.Error));
+                builder.Build(value.Error),
+                builder.Build(value.Url),
+                builder.Build(value.TableNames));
+        }
+        public static Offset<fb.protocol._internal.response.raw.ReloadScripts> Build(this FlatBufferBuilder builder, fb.protocol._internal.response.ReloadScripts value)
+        {
+            if (value == null)
+                return default;
+
+            return fb.protocol._internal.response.raw.ReloadScripts.CreateReloadScripts(builder,
+                builder.Build(value.Error),
+                builder.Build(value.Url),
+                builder.Build(value.ScriptPaths));
         }
         public static Offset<fb.protocol._internal.response.raw.SetDropRateMultiplier> Build(this FlatBufferBuilder builder, fb.protocol._internal.response.SetDropRateMultiplier value)
         {
@@ -3049,7 +3073,19 @@ namespace fb.protocol._internal.request
                 return default;
 
             return fb.protocol._internal.request.raw.ReloadTables.CreateReloadTables(builder,
-                builder.Build(value.World));
+                builder.Build(value.World),
+                builder.Build(value.Url),
+                builder.Build(value.TableNames));
+        }
+        public static Offset<fb.protocol._internal.request.raw.ReloadScripts> Build(this FlatBufferBuilder builder, fb.protocol._internal.request.ReloadScripts value)
+        {
+            if (value == null)
+                return default;
+
+            return fb.protocol._internal.request.raw.ReloadScripts.CreateReloadScripts(builder,
+                builder.Build(value.World),
+                builder.Build(value.Url),
+                builder.Build(value.ScriptPaths));
         }
         public static Offset<fb.protocol._internal.request.raw.SetDropRateMultiplier> Build(this FlatBufferBuilder builder, fb.protocol._internal.request.SetDropRateMultiplier value)
         {
@@ -3577,7 +3613,19 @@ namespace fb.protocol._internal.request
                 return default;
 
             return fb.protocol._internal.response.raw.ReloadTables.CreateReloadTables(builder,
-                builder.Build(value.Error));
+                builder.Build(value.Error),
+                builder.Build(value.Url),
+                builder.Build(value.TableNames));
+        }
+        public static Offset<fb.protocol._internal.response.raw.ReloadScripts> Build(this FlatBufferBuilder builder, fb.protocol._internal.response.ReloadScripts value)
+        {
+            if (value == null)
+                return default;
+
+            return fb.protocol._internal.response.raw.ReloadScripts.CreateReloadScripts(builder,
+                builder.Build(value.Error),
+                builder.Build(value.Url),
+                builder.Build(value.ScriptPaths));
         }
         public static Offset<fb.protocol._internal.response.raw.SetDropRateMultiplier> Build(this FlatBufferBuilder builder, fb.protocol._internal.response.SetDropRateMultiplier value)
         {
@@ -4138,6 +4186,7 @@ namespace fb.protocol._internal.request
         Heartbeat,
         SetExpMultiplier,
         ReloadTables,
+        ReloadScripts,
         SetDropRateMultiplier,
         SetDateTime
     }
@@ -5085,7 +5134,19 @@ namespace fb.protocol._internal.response
                 return default;
 
             return fb.protocol._internal.request.raw.ReloadTables.CreateReloadTables(builder,
-                builder.Build(value.World));
+                builder.Build(value.World),
+                builder.Build(value.Url),
+                builder.Build(value.TableNames));
+        }
+        public static Offset<fb.protocol._internal.request.raw.ReloadScripts> Build(this FlatBufferBuilder builder, fb.protocol._internal.request.ReloadScripts value)
+        {
+            if (value == null)
+                return default;
+
+            return fb.protocol._internal.request.raw.ReloadScripts.CreateReloadScripts(builder,
+                builder.Build(value.World),
+                builder.Build(value.Url),
+                builder.Build(value.ScriptPaths));
         }
         public static Offset<fb.protocol._internal.request.raw.SetDropRateMultiplier> Build(this FlatBufferBuilder builder, fb.protocol._internal.request.SetDropRateMultiplier value)
         {
@@ -5613,7 +5674,19 @@ namespace fb.protocol._internal.response
                 return default;
 
             return fb.protocol._internal.response.raw.ReloadTables.CreateReloadTables(builder,
-                builder.Build(value.Error));
+                builder.Build(value.Error),
+                builder.Build(value.Url),
+                builder.Build(value.TableNames));
+        }
+        public static Offset<fb.protocol._internal.response.raw.ReloadScripts> Build(this FlatBufferBuilder builder, fb.protocol._internal.response.ReloadScripts value)
+        {
+            if (value == null)
+                return default;
+
+            return fb.protocol._internal.response.raw.ReloadScripts.CreateReloadScripts(builder,
+                builder.Build(value.Error),
+                builder.Build(value.Url),
+                builder.Build(value.ScriptPaths));
         }
         public static Offset<fb.protocol._internal.response.raw.SetDropRateMultiplier> Build(this FlatBufferBuilder builder, fb.protocol._internal.response.SetDropRateMultiplier value)
         {
@@ -6175,6 +6248,7 @@ namespace fb.protocol._internal.response
         Heartbeat,
         SetExpMultiplier,
         ReloadTables,
+        ReloadScripts,
         SetDropRateMultiplier,
         SetDateTime,
         StartMaintenance
@@ -7123,7 +7197,19 @@ namespace fb.protocol.marketplace
                 return default;
 
             return fb.protocol._internal.request.raw.ReloadTables.CreateReloadTables(builder,
-                builder.Build(value.World));
+                builder.Build(value.World),
+                builder.Build(value.Url),
+                builder.Build(value.TableNames));
+        }
+        public static Offset<fb.protocol._internal.request.raw.ReloadScripts> Build(this FlatBufferBuilder builder, fb.protocol._internal.request.ReloadScripts value)
+        {
+            if (value == null)
+                return default;
+
+            return fb.protocol._internal.request.raw.ReloadScripts.CreateReloadScripts(builder,
+                builder.Build(value.World),
+                builder.Build(value.Url),
+                builder.Build(value.ScriptPaths));
         }
         public static Offset<fb.protocol._internal.request.raw.SetDropRateMultiplier> Build(this FlatBufferBuilder builder, fb.protocol._internal.request.SetDropRateMultiplier value)
         {
@@ -7651,7 +7737,19 @@ namespace fb.protocol.marketplace
                 return default;
 
             return fb.protocol._internal.response.raw.ReloadTables.CreateReloadTables(builder,
-                builder.Build(value.Error));
+                builder.Build(value.Error),
+                builder.Build(value.Url),
+                builder.Build(value.TableNames));
+        }
+        public static Offset<fb.protocol._internal.response.raw.ReloadScripts> Build(this FlatBufferBuilder builder, fb.protocol._internal.response.ReloadScripts value)
+        {
+            if (value == null)
+                return default;
+
+            return fb.protocol._internal.response.raw.ReloadScripts.CreateReloadScripts(builder,
+                builder.Build(value.Error),
+                builder.Build(value.Url),
+                builder.Build(value.ScriptPaths));
         }
         public static Offset<fb.protocol._internal.response.raw.SetDropRateMultiplier> Build(this FlatBufferBuilder builder, fb.protocol._internal.response.SetDropRateMultiplier value)
         {
@@ -9113,7 +9211,19 @@ namespace fb.protocol.marketplace.request
                 return default;
 
             return fb.protocol._internal.request.raw.ReloadTables.CreateReloadTables(builder,
-                builder.Build(value.World));
+                builder.Build(value.World),
+                builder.Build(value.Url),
+                builder.Build(value.TableNames));
+        }
+        public static Offset<fb.protocol._internal.request.raw.ReloadScripts> Build(this FlatBufferBuilder builder, fb.protocol._internal.request.ReloadScripts value)
+        {
+            if (value == null)
+                return default;
+
+            return fb.protocol._internal.request.raw.ReloadScripts.CreateReloadScripts(builder,
+                builder.Build(value.World),
+                builder.Build(value.Url),
+                builder.Build(value.ScriptPaths));
         }
         public static Offset<fb.protocol._internal.request.raw.SetDropRateMultiplier> Build(this FlatBufferBuilder builder, fb.protocol._internal.request.SetDropRateMultiplier value)
         {
@@ -9641,7 +9751,19 @@ namespace fb.protocol.marketplace.request
                 return default;
 
             return fb.protocol._internal.response.raw.ReloadTables.CreateReloadTables(builder,
-                builder.Build(value.Error));
+                builder.Build(value.Error),
+                builder.Build(value.Url),
+                builder.Build(value.TableNames));
+        }
+        public static Offset<fb.protocol._internal.response.raw.ReloadScripts> Build(this FlatBufferBuilder builder, fb.protocol._internal.response.ReloadScripts value)
+        {
+            if (value == null)
+                return default;
+
+            return fb.protocol._internal.response.raw.ReloadScripts.CreateReloadScripts(builder,
+                builder.Build(value.Error),
+                builder.Build(value.Url),
+                builder.Build(value.ScriptPaths));
         }
         public static Offset<fb.protocol._internal.response.raw.SetDropRateMultiplier> Build(this FlatBufferBuilder builder, fb.protocol._internal.response.SetDropRateMultiplier value)
         {
@@ -11104,7 +11226,19 @@ namespace fb.protocol.marketplace.response
                 return default;
 
             return fb.protocol._internal.request.raw.ReloadTables.CreateReloadTables(builder,
-                builder.Build(value.World));
+                builder.Build(value.World),
+                builder.Build(value.Url),
+                builder.Build(value.TableNames));
+        }
+        public static Offset<fb.protocol._internal.request.raw.ReloadScripts> Build(this FlatBufferBuilder builder, fb.protocol._internal.request.ReloadScripts value)
+        {
+            if (value == null)
+                return default;
+
+            return fb.protocol._internal.request.raw.ReloadScripts.CreateReloadScripts(builder,
+                builder.Build(value.World),
+                builder.Build(value.Url),
+                builder.Build(value.ScriptPaths));
         }
         public static Offset<fb.protocol._internal.request.raw.SetDropRateMultiplier> Build(this FlatBufferBuilder builder, fb.protocol._internal.request.SetDropRateMultiplier value)
         {
@@ -11632,7 +11766,19 @@ namespace fb.protocol.marketplace.response
                 return default;
 
             return fb.protocol._internal.response.raw.ReloadTables.CreateReloadTables(builder,
-                builder.Build(value.Error));
+                builder.Build(value.Error),
+                builder.Build(value.Url),
+                builder.Build(value.TableNames));
+        }
+        public static Offset<fb.protocol._internal.response.raw.ReloadScripts> Build(this FlatBufferBuilder builder, fb.protocol._internal.response.ReloadScripts value)
+        {
+            if (value == null)
+                return default;
+
+            return fb.protocol._internal.response.raw.ReloadScripts.CreateReloadScripts(builder,
+                builder.Build(value.Error),
+                builder.Build(value.Url),
+                builder.Build(value.ScriptPaths));
         }
         public static Offset<fb.protocol._internal.response.raw.SetDropRateMultiplier> Build(this FlatBufferBuilder builder, fb.protocol._internal.response.SetDropRateMultiplier value)
         {
@@ -13095,7 +13241,19 @@ namespace fb.protocol.matchmaking
                 return default;
 
             return fb.protocol._internal.request.raw.ReloadTables.CreateReloadTables(builder,
-                builder.Build(value.World));
+                builder.Build(value.World),
+                builder.Build(value.Url),
+                builder.Build(value.TableNames));
+        }
+        public static Offset<fb.protocol._internal.request.raw.ReloadScripts> Build(this FlatBufferBuilder builder, fb.protocol._internal.request.ReloadScripts value)
+        {
+            if (value == null)
+                return default;
+
+            return fb.protocol._internal.request.raw.ReloadScripts.CreateReloadScripts(builder,
+                builder.Build(value.World),
+                builder.Build(value.Url),
+                builder.Build(value.ScriptPaths));
         }
         public static Offset<fb.protocol._internal.request.raw.SetDropRateMultiplier> Build(this FlatBufferBuilder builder, fb.protocol._internal.request.SetDropRateMultiplier value)
         {
@@ -13623,7 +13781,19 @@ namespace fb.protocol.matchmaking
                 return default;
 
             return fb.protocol._internal.response.raw.ReloadTables.CreateReloadTables(builder,
-                builder.Build(value.Error));
+                builder.Build(value.Error),
+                builder.Build(value.Url),
+                builder.Build(value.TableNames));
+        }
+        public static Offset<fb.protocol._internal.response.raw.ReloadScripts> Build(this FlatBufferBuilder builder, fb.protocol._internal.response.ReloadScripts value)
+        {
+            if (value == null)
+                return default;
+
+            return fb.protocol._internal.response.raw.ReloadScripts.CreateReloadScripts(builder,
+                builder.Build(value.Error),
+                builder.Build(value.Url),
+                builder.Build(value.ScriptPaths));
         }
         public static Offset<fb.protocol._internal.response.raw.SetDropRateMultiplier> Build(this FlatBufferBuilder builder, fb.protocol._internal.response.SetDropRateMultiplier value)
         {
@@ -15084,7 +15254,19 @@ namespace fb.protocol.matchmaking.mq
                 return default;
 
             return fb.protocol._internal.request.raw.ReloadTables.CreateReloadTables(builder,
-                builder.Build(value.World));
+                builder.Build(value.World),
+                builder.Build(value.Url),
+                builder.Build(value.TableNames));
+        }
+        public static Offset<fb.protocol._internal.request.raw.ReloadScripts> Build(this FlatBufferBuilder builder, fb.protocol._internal.request.ReloadScripts value)
+        {
+            if (value == null)
+                return default;
+
+            return fb.protocol._internal.request.raw.ReloadScripts.CreateReloadScripts(builder,
+                builder.Build(value.World),
+                builder.Build(value.Url),
+                builder.Build(value.ScriptPaths));
         }
         public static Offset<fb.protocol._internal.request.raw.SetDropRateMultiplier> Build(this FlatBufferBuilder builder, fb.protocol._internal.request.SetDropRateMultiplier value)
         {
@@ -15612,7 +15794,19 @@ namespace fb.protocol.matchmaking.mq
                 return default;
 
             return fb.protocol._internal.response.raw.ReloadTables.CreateReloadTables(builder,
-                builder.Build(value.Error));
+                builder.Build(value.Error),
+                builder.Build(value.Url),
+                builder.Build(value.TableNames));
+        }
+        public static Offset<fb.protocol._internal.response.raw.ReloadScripts> Build(this FlatBufferBuilder builder, fb.protocol._internal.response.ReloadScripts value)
+        {
+            if (value == null)
+                return default;
+
+            return fb.protocol._internal.response.raw.ReloadScripts.CreateReloadScripts(builder,
+                builder.Build(value.Error),
+                builder.Build(value.Url),
+                builder.Build(value.ScriptPaths));
         }
         public static Offset<fb.protocol._internal.response.raw.SetDropRateMultiplier> Build(this FlatBufferBuilder builder, fb.protocol._internal.response.SetDropRateMultiplier value)
         {
@@ -17072,7 +17266,19 @@ namespace fb.protocol.matchmaking.request
                 return default;
 
             return fb.protocol._internal.request.raw.ReloadTables.CreateReloadTables(builder,
-                builder.Build(value.World));
+                builder.Build(value.World),
+                builder.Build(value.Url),
+                builder.Build(value.TableNames));
+        }
+        public static Offset<fb.protocol._internal.request.raw.ReloadScripts> Build(this FlatBufferBuilder builder, fb.protocol._internal.request.ReloadScripts value)
+        {
+            if (value == null)
+                return default;
+
+            return fb.protocol._internal.request.raw.ReloadScripts.CreateReloadScripts(builder,
+                builder.Build(value.World),
+                builder.Build(value.Url),
+                builder.Build(value.ScriptPaths));
         }
         public static Offset<fb.protocol._internal.request.raw.SetDropRateMultiplier> Build(this FlatBufferBuilder builder, fb.protocol._internal.request.SetDropRateMultiplier value)
         {
@@ -17600,7 +17806,19 @@ namespace fb.protocol.matchmaking.request
                 return default;
 
             return fb.protocol._internal.response.raw.ReloadTables.CreateReloadTables(builder,
-                builder.Build(value.Error));
+                builder.Build(value.Error),
+                builder.Build(value.Url),
+                builder.Build(value.TableNames));
+        }
+        public static Offset<fb.protocol._internal.response.raw.ReloadScripts> Build(this FlatBufferBuilder builder, fb.protocol._internal.response.ReloadScripts value)
+        {
+            if (value == null)
+                return default;
+
+            return fb.protocol._internal.response.raw.ReloadScripts.CreateReloadScripts(builder,
+                builder.Build(value.Error),
+                builder.Build(value.Url),
+                builder.Build(value.ScriptPaths));
         }
         public static Offset<fb.protocol._internal.response.raw.SetDropRateMultiplier> Build(this FlatBufferBuilder builder, fb.protocol._internal.response.SetDropRateMultiplier value)
         {
@@ -19062,7 +19280,19 @@ namespace fb.protocol.matchmaking.response
                 return default;
 
             return fb.protocol._internal.request.raw.ReloadTables.CreateReloadTables(builder,
-                builder.Build(value.World));
+                builder.Build(value.World),
+                builder.Build(value.Url),
+                builder.Build(value.TableNames));
+        }
+        public static Offset<fb.protocol._internal.request.raw.ReloadScripts> Build(this FlatBufferBuilder builder, fb.protocol._internal.request.ReloadScripts value)
+        {
+            if (value == null)
+                return default;
+
+            return fb.protocol._internal.request.raw.ReloadScripts.CreateReloadScripts(builder,
+                builder.Build(value.World),
+                builder.Build(value.Url),
+                builder.Build(value.ScriptPaths));
         }
         public static Offset<fb.protocol._internal.request.raw.SetDropRateMultiplier> Build(this FlatBufferBuilder builder, fb.protocol._internal.request.SetDropRateMultiplier value)
         {
@@ -19590,7 +19820,19 @@ namespace fb.protocol.matchmaking.response
                 return default;
 
             return fb.protocol._internal.response.raw.ReloadTables.CreateReloadTables(builder,
-                builder.Build(value.Error));
+                builder.Build(value.Error),
+                builder.Build(value.Url),
+                builder.Build(value.TableNames));
+        }
+        public static Offset<fb.protocol._internal.response.raw.ReloadScripts> Build(this FlatBufferBuilder builder, fb.protocol._internal.response.ReloadScripts value)
+        {
+            if (value == null)
+                return default;
+
+            return fb.protocol._internal.response.raw.ReloadScripts.CreateReloadScripts(builder,
+                builder.Build(value.Error),
+                builder.Build(value.Url),
+                builder.Build(value.ScriptPaths));
         }
         public static Offset<fb.protocol._internal.response.raw.SetDropRateMultiplier> Build(this FlatBufferBuilder builder, fb.protocol._internal.response.SetDropRateMultiplier value)
         {
@@ -23456,6 +23698,8 @@ namespace fb.protocol._internal.request
     {
         public int ProtocolType => (int)FlatBufferProtocolType.ReloadTables;
         public uint World { get; set; } = 0;
+        public string Url { get; set; } = string.Empty;
+        public List<string> TableNames { get; set; } = new List<string>();
 
         public ReloadTables()
         { }
@@ -23463,6 +23707,8 @@ namespace fb.protocol._internal.request
         public ReloadTables(fb.protocol._internal.request.raw.ReloadTables raw)
         {
             World = raw.World;
+            Url = raw.Url;
+            TableNames = Enumerable.Range(0, raw.TableNamesLength).Select(i => raw.TableNames(i)).Select(x => x).ToList();
         }
 
         public ReloadTables(byte[] bytes) : this(fb.protocol._internal.request.raw.ReloadTables.GetRootAsReloadTables(new ByteBuffer(bytes)))
@@ -23486,6 +23732,46 @@ namespace fb.protocol._internal.request
         public static ReloadTables Deserialize(byte[] bytes)
         {
             return new ReloadTables(bytes);
+        }
+    }
+    public class ReloadScripts : IFlatBufferEx
+    {
+        public int ProtocolType => (int)FlatBufferProtocolType.ReloadScripts;
+        public uint World { get; set; } = 0;
+        public string Url { get; set; } = string.Empty;
+        public List<string> ScriptPaths { get; set; } = new List<string>();
+
+        public ReloadScripts()
+        { }
+
+        public ReloadScripts(fb.protocol._internal.request.raw.ReloadScripts raw)
+        {
+            World = raw.World;
+            Url = raw.Url;
+            ScriptPaths = Enumerable.Range(0, raw.ScriptPathsLength).Select(i => raw.ScriptPaths(i)).Select(x => x).ToList();
+        }
+
+        public ReloadScripts(byte[] bytes) : this(fb.protocol._internal.request.raw.ReloadScripts.GetRootAsReloadScripts(new ByteBuffer(bytes)))
+        { }
+
+        public byte[] Serialize()
+        {
+            var builder = FlatBufferBuilderPool.Get();
+            try
+            {
+                var offset = builder.Build(this);
+                builder.Finish(offset.Value);
+                return builder.SizedByteArray();
+            }
+            finally
+            {
+                FlatBufferBuilderPool.Return(builder);
+            }
+        }
+
+        public static ReloadScripts Deserialize(byte[] bytes)
+        {
+            return new ReloadScripts(bytes);
         }
     }
     public class SetDropRateMultiplier : IFlatBufferEx
@@ -23622,6 +23908,7 @@ namespace fb.protocol._internal.request
                 FlatBufferProtocolType.Heartbeat => typeof(fb.protocol._internal.request.Heartbeat),
                 FlatBufferProtocolType.SetExpMultiplier => typeof(fb.protocol._internal.request.SetExpMultiplier),
                 FlatBufferProtocolType.ReloadTables => typeof(fb.protocol._internal.request.ReloadTables),
+                FlatBufferProtocolType.ReloadScripts => typeof(fb.protocol._internal.request.ReloadScripts),
                 FlatBufferProtocolType.SetDropRateMultiplier => typeof(fb.protocol._internal.request.SetDropRateMultiplier),
                 FlatBufferProtocolType.SetDateTime => typeof(fb.protocol._internal.request.SetDateTime),
                 _ => throw new ArgumentException(),
@@ -25614,6 +25901,8 @@ namespace fb.protocol._internal.response
     {
         public int ProtocolType => (int)FlatBufferProtocolType.ReloadTables;
         public uint Error { get; set; } = 0;
+        public string Url { get; set; } = string.Empty;
+        public List<string> TableNames { get; set; } = new List<string>();
 
         public ReloadTables()
         { }
@@ -25621,6 +25910,8 @@ namespace fb.protocol._internal.response
         public ReloadTables(fb.protocol._internal.response.raw.ReloadTables raw)
         {
             Error = raw.Error;
+            Url = raw.Url;
+            TableNames = Enumerable.Range(0, raw.TableNamesLength).Select(i => raw.TableNames(i)).Select(x => x).ToList();
         }
 
         public ReloadTables(byte[] bytes) : this(fb.protocol._internal.response.raw.ReloadTables.GetRootAsReloadTables(new ByteBuffer(bytes)))
@@ -25644,6 +25935,46 @@ namespace fb.protocol._internal.response
         public static ReloadTables Deserialize(byte[] bytes)
         {
             return new ReloadTables(bytes);
+        }
+    }
+    public class ReloadScripts : IFlatBufferEx
+    {
+        public int ProtocolType => (int)FlatBufferProtocolType.ReloadScripts;
+        public uint Error { get; set; } = 0;
+        public string Url { get; set; } = string.Empty;
+        public List<string> ScriptPaths { get; set; } = new List<string>();
+
+        public ReloadScripts()
+        { }
+
+        public ReloadScripts(fb.protocol._internal.response.raw.ReloadScripts raw)
+        {
+            Error = raw.Error;
+            Url = raw.Url;
+            ScriptPaths = Enumerable.Range(0, raw.ScriptPathsLength).Select(i => raw.ScriptPaths(i)).Select(x => x).ToList();
+        }
+
+        public ReloadScripts(byte[] bytes) : this(fb.protocol._internal.response.raw.ReloadScripts.GetRootAsReloadScripts(new ByteBuffer(bytes)))
+        { }
+
+        public byte[] Serialize()
+        {
+            var builder = FlatBufferBuilderPool.Get();
+            try
+            {
+                var offset = builder.Build(this);
+                builder.Finish(offset.Value);
+                return builder.SizedByteArray();
+            }
+            finally
+            {
+                FlatBufferBuilderPool.Return(builder);
+            }
+        }
+
+        public static ReloadScripts Deserialize(byte[] bytes)
+        {
+            return new ReloadScripts(bytes);
         }
     }
     public class SetDropRateMultiplier : IFlatBufferEx
@@ -25819,6 +26150,7 @@ namespace fb.protocol._internal.response
                 FlatBufferProtocolType.Heartbeat => typeof(fb.protocol._internal.response.Heartbeat),
                 FlatBufferProtocolType.SetExpMultiplier => typeof(fb.protocol._internal.response.SetExpMultiplier),
                 FlatBufferProtocolType.ReloadTables => typeof(fb.protocol._internal.response.ReloadTables),
+                FlatBufferProtocolType.ReloadScripts => typeof(fb.protocol._internal.response.ReloadScripts),
                 FlatBufferProtocolType.SetDropRateMultiplier => typeof(fb.protocol._internal.response.SetDropRateMultiplier),
                 FlatBufferProtocolType.SetDateTime => typeof(fb.protocol._internal.response.SetDateTime),
                 FlatBufferProtocolType.StartMaintenance => typeof(fb.protocol._internal.response.StartMaintenance),

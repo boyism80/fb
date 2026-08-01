@@ -21,12 +21,17 @@ void marshal_lua_game_resp__bulletin_sections(lua_State* L, const fb::protocol::
 void marshal_lua_game_resp__c2s_relay(lua_State* L, const fb::protocol::header& header);
 void marshal_lua_game_resp__chat(lua_State* L, const fb::protocol::header& header);
 void marshal_lua_game_resp__dialog(lua_State* L, const fb::protocol::header& header);
+void marshal_lua_game_resp__dialog_0x30_10(lua_State* L, const fb::protocol::header& header);
+void marshal_lua_game_resp__dialog_dual_field(lua_State* L, const fb::protocol::header& header);
+void marshal_lua_game_resp__dialog_email(lua_State* L, const fb::protocol::header& header);
 void marshal_lua_game_resp__dialog_input(lua_State* L, const fb::protocol::header& header);
 void marshal_lua_game_resp__dialog_input_ext(lua_State* L, const fb::protocol::header& header);
 void marshal_lua_game_resp__dialog_item(lua_State* L, const fb::protocol::header& header);
 void marshal_lua_game_resp__dialog_list(lua_State* L, const fb::protocol::header& header);
 void marshal_lua_game_resp__dialog_menu(lua_State* L, const fb::protocol::header& header);
+void marshal_lua_game_resp__dialog_pursuit(lua_State* L, const fb::protocol::header& header);
 void marshal_lua_game_resp__dialog_slot(lua_State* L, const fb::protocol::header& header);
+void marshal_lua_game_resp__dialog_spell(lua_State* L, const fb::protocol::header& header);
 void marshal_lua_game_resp__die(lua_State* L, const fb::protocol::header& header);
 void marshal_lua_game_resp__direction(lua_State* L, const fb::protocol::header& header);
 void marshal_lua_game_resp__effect(lua_State* L, const fb::protocol::header& header);

@@ -642,6 +642,15 @@ jobs:
         uses: pulumi/actions@v7
         env:
           PULUMI_ACCESS_TOKEN: ${{ secrets.PULUMI_ACCESS_TOKEN }}
+          # GitHub secrets cannot be read by Pulumi directly; inject like REMOTE_IP → host.
+          TABLE_PUBLISH_UPLOAD_BASE_URL: ${{ secrets.TABLE_PUBLISH_UPLOAD_BASE_URL }}
+          TABLE_PUBLISH_DOWNLOAD_BASE_URL: ${{ secrets.TABLE_PUBLISH_DOWNLOAD_BASE_URL }}
+          TABLE_PUBLISH_USERNAME: ${{ secrets.NAS_ID }}
+          TABLE_PUBLISH_PASSWORD: ${{ secrets.NAS_PW }}
+          SCRIPT_PUBLISH_UPLOAD_BASE_URL: ${{ secrets.SCRIPT_PUBLISH_UPLOAD_BASE_URL }}
+          SCRIPT_PUBLISH_DOWNLOAD_BASE_URL: ${{ secrets.SCRIPT_PUBLISH_DOWNLOAD_BASE_URL }}
+          SCRIPT_PUBLISH_USERNAME: ${{ secrets.NAS_ID }}
+          SCRIPT_PUBLISH_PASSWORD: ${{ secrets.NAS_PW }}
         with:
           work-dir: infra/pulumi
           command: up

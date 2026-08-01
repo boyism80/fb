@@ -108,6 +108,7 @@
 #include <fb/protocol/flatbuffer/raw/fb.protocol.internal.request.heartbeat_generated.h>
 #include <fb/protocol/flatbuffer/raw/fb.protocol.internal.request.setexpmultiplier_generated.h>
 #include <fb/protocol/flatbuffer/raw/fb.protocol.internal.request.reloadtables_generated.h>
+#include <fb/protocol/flatbuffer/raw/fb.protocol.internal.request.reloadscripts_generated.h>
 #include <fb/protocol/flatbuffer/raw/fb.protocol.internal.request.setdropratemultiplier_generated.h>
 #include <fb/protocol/flatbuffer/raw/fb.protocol.internal.request.setdatetime_generated.h>
 #include <fb/protocol/flatbuffer/raw/fb.protocol.internal.response.shutdown_generated.h>
@@ -160,6 +161,7 @@
 #include <fb/protocol/flatbuffer/raw/fb.protocol.internal.response.heartbeat_generated.h>
 #include <fb/protocol/flatbuffer/raw/fb.protocol.internal.response.setexpmultiplier_generated.h>
 #include <fb/protocol/flatbuffer/raw/fb.protocol.internal.response.reloadtables_generated.h>
+#include <fb/protocol/flatbuffer/raw/fb.protocol.internal.response.reloadscripts_generated.h>
 #include <fb/protocol/flatbuffer/raw/fb.protocol.internal.response.setdropratemultiplier_generated.h>
 #include <fb/protocol/flatbuffer/raw/fb.protocol.internal.response.setdatetime_generated.h>
 #include <fb/protocol/flatbuffer/raw/fb.protocol.internal.response.startmaintenance_generated.h>
@@ -284,6 +286,7 @@ namespace fb::protocol::internal::request
     class Heartbeat;
     class SetExpMultiplier;
     class ReloadTables;
+    class ReloadScripts;
     class SetDropRateMultiplier;
     class SetDateTime;
 } // end of namespace fb::protocol::internal::request
@@ -339,6 +342,7 @@ namespace fb::protocol::internal::response
     class Heartbeat;
     class SetExpMultiplier;
     class ReloadTables;
+    class ReloadScripts;
     class SetDropRateMultiplier;
     class SetDateTime;
     class StartMaintenance;
@@ -565,6 +569,7 @@ template <> struct FlatBufferOffset<fb::protocol::internal::request::Unban> { ty
 template <> struct FlatBufferOffset<fb::protocol::internal::request::Heartbeat> { typedef flatbuffers::Offset<fb::protocol::internal::request::raw::Heartbeat> type; };
 template <> struct FlatBufferOffset<fb::protocol::internal::request::SetExpMultiplier> { typedef flatbuffers::Offset<fb::protocol::internal::request::raw::SetExpMultiplier> type; };
 template <> struct FlatBufferOffset<fb::protocol::internal::request::ReloadTables> { typedef flatbuffers::Offset<fb::protocol::internal::request::raw::ReloadTables> type; };
+template <> struct FlatBufferOffset<fb::protocol::internal::request::ReloadScripts> { typedef flatbuffers::Offset<fb::protocol::internal::request::raw::ReloadScripts> type; };
 template <> struct FlatBufferOffset<fb::protocol::internal::request::SetDropRateMultiplier> { typedef flatbuffers::Offset<fb::protocol::internal::request::raw::SetDropRateMultiplier> type; };
 template <> struct FlatBufferOffset<fb::protocol::internal::request::SetDateTime> { typedef flatbuffers::Offset<fb::protocol::internal::request::raw::SetDateTime> type; };
 template <> struct FlatBufferOffset<fb::protocol::internal::response::Shutdown> { typedef flatbuffers::Offset<fb::protocol::internal::response::raw::Shutdown> type; };
@@ -617,6 +622,7 @@ template <> struct FlatBufferOffset<fb::protocol::internal::response::Unban> { t
 template <> struct FlatBufferOffset<fb::protocol::internal::response::Heartbeat> { typedef flatbuffers::Offset<fb::protocol::internal::response::raw::Heartbeat> type; };
 template <> struct FlatBufferOffset<fb::protocol::internal::response::SetExpMultiplier> { typedef flatbuffers::Offset<fb::protocol::internal::response::raw::SetExpMultiplier> type; };
 template <> struct FlatBufferOffset<fb::protocol::internal::response::ReloadTables> { typedef flatbuffers::Offset<fb::protocol::internal::response::raw::ReloadTables> type; };
+template <> struct FlatBufferOffset<fb::protocol::internal::response::ReloadScripts> { typedef flatbuffers::Offset<fb::protocol::internal::response::raw::ReloadScripts> type; };
 template <> struct FlatBufferOffset<fb::protocol::internal::response::SetDropRateMultiplier> { typedef flatbuffers::Offset<fb::protocol::internal::response::raw::SetDropRateMultiplier> type; };
 template <> struct FlatBufferOffset<fb::protocol::internal::response::SetDateTime> { typedef flatbuffers::Offset<fb::protocol::internal::response::raw::SetDateTime> type; };
 template <> struct FlatBufferOffset<fb::protocol::internal::response::StartMaintenance> { typedef flatbuffers::Offset<fb::protocol::internal::response::raw::StartMaintenance> type; };
@@ -818,6 +824,8 @@ flatbuffers::Offset<fb::protocol::internal::request::raw::SetExpMultiplier> buil
 template <>
 flatbuffers::Offset<fb::protocol::internal::request::raw::ReloadTables> build<fb::protocol::internal::request::ReloadTables>(FlatBufferBuilder& builder, const fb::protocol::internal::request::ReloadTables& value);
 template <>
+flatbuffers::Offset<fb::protocol::internal::request::raw::ReloadScripts> build<fb::protocol::internal::request::ReloadScripts>(FlatBufferBuilder& builder, const fb::protocol::internal::request::ReloadScripts& value);
+template <>
 flatbuffers::Offset<fb::protocol::internal::request::raw::SetDropRateMultiplier> build<fb::protocol::internal::request::SetDropRateMultiplier>(FlatBufferBuilder& builder, const fb::protocol::internal::request::SetDropRateMultiplier& value);
 template <>
 flatbuffers::Offset<fb::protocol::internal::request::raw::SetDateTime> build<fb::protocol::internal::request::SetDateTime>(FlatBufferBuilder& builder, const fb::protocol::internal::request::SetDateTime& value);
@@ -921,6 +929,8 @@ template <>
 flatbuffers::Offset<fb::protocol::internal::response::raw::SetExpMultiplier> build<fb::protocol::internal::response::SetExpMultiplier>(FlatBufferBuilder& builder, const fb::protocol::internal::response::SetExpMultiplier& value);
 template <>
 flatbuffers::Offset<fb::protocol::internal::response::raw::ReloadTables> build<fb::protocol::internal::response::ReloadTables>(FlatBufferBuilder& builder, const fb::protocol::internal::response::ReloadTables& value);
+template <>
+flatbuffers::Offset<fb::protocol::internal::response::raw::ReloadScripts> build<fb::protocol::internal::response::ReloadScripts>(FlatBufferBuilder& builder, const fb::protocol::internal::response::ReloadScripts& value);
 template <>
 flatbuffers::Offset<fb::protocol::internal::response::raw::SetDropRateMultiplier> build<fb::protocol::internal::response::SetDropRateMultiplier>(FlatBufferBuilder& builder, const fb::protocol::internal::response::SetDropRateMultiplier& value);
 template <>
@@ -2303,6 +2313,7 @@ enum class FlatBufferProtocolType
     Heartbeat,
     SetExpMultiplier,
     ReloadTables,
+    ReloadScripts,
     SetDropRateMultiplier,
     SetDateTime,
 };
@@ -4328,20 +4339,22 @@ public:
 
 public:
     uint32_t world = 0;
+    std::string url;
+    std::vector<std::string> table_names = {};
 
 public:
     ReloadTables() = default;
 
     ReloadTables(const ReloadTables& x)
-        : world(x.world)
+        : world(x.world), url(x.url), table_names(x.table_names)
     { }
 
-    ReloadTables(uint32_t world)
-        : world(world)
+    ReloadTables(uint32_t world, std::string_view url, std::vector<std::string> table_names)
+        : world(world), url(std::string(url)), table_names(table_names)
     { }
 
     ReloadTables(const fb::protocol::internal::request::raw::ReloadTables& raw)
-        : world(raw.world())
+        : world(raw.world()), url(flatbuffers::option::decode(raw.url()->c_str())), table_names(unpack<std::string>(raw.table_names()))
     { }
 
 public:
@@ -4358,6 +4371,47 @@ public:
     {
         auto raw = fb::protocol::internal::request::raw::GetReloadTables(bytes);
         return ReloadTables(*raw);
+    }
+};
+class ReloadScripts
+{
+public:
+    static inline fb::protocol::internal::request::FlatBufferProtocolType FlatBufferProtocolType = fb::protocol::internal::request::FlatBufferProtocolType::ReloadScripts;
+
+public:
+    uint32_t world = 0;
+    std::string url;
+    std::vector<std::string> script_paths = {};
+
+public:
+    ReloadScripts() = default;
+
+    ReloadScripts(const ReloadScripts& x)
+        : world(x.world), url(x.url), script_paths(x.script_paths)
+    { }
+
+    ReloadScripts(uint32_t world, std::string_view url, std::vector<std::string> script_paths)
+        : world(world), url(std::string(url)), script_paths(script_paths)
+    { }
+
+    ReloadScripts(const fb::protocol::internal::request::raw::ReloadScripts& raw)
+        : world(raw.world()), url(flatbuffers::option::decode(raw.url()->c_str())), script_paths(unpack<std::string>(raw.script_paths()))
+    { }
+
+public:
+    std::vector<uint8_t> Serialize() const
+    {
+        auto builder = flatbuffers::FlatBufferBuilder();
+        builder.Finish(build<fb::protocol::internal::request::ReloadScripts>(builder, *this));
+        auto buffer = std::vector<uint8_t>(builder.GetSize());
+        std::memcpy(buffer.data(), builder.GetBufferPointer(), builder.GetSize());
+        return buffer;
+    }
+
+    static ReloadScripts Deserialize(const uint8_t* bytes)
+    {
+        auto raw = fb::protocol::internal::request::raw::GetReloadScripts(bytes);
+        return ReloadScripts(*raw);
     }
 };
 class SetDropRateMultiplier
@@ -4498,6 +4552,7 @@ enum class FlatBufferProtocolType
     Heartbeat,
     SetExpMultiplier,
     ReloadTables,
+    ReloadScripts,
     SetDropRateMultiplier,
     SetDateTime,
     StartMaintenance,
@@ -6516,20 +6571,22 @@ public:
 
 public:
     uint32_t error = 0;
+    std::string url;
+    std::vector<std::string> table_names = {};
 
 public:
     ReloadTables() = default;
 
     ReloadTables(const ReloadTables& x)
-        : error(x.error)
+        : error(x.error), url(x.url), table_names(x.table_names)
     { }
 
-    ReloadTables(uint32_t error)
-        : error(error)
+    ReloadTables(uint32_t error, std::string_view url, std::vector<std::string> table_names)
+        : error(error), url(std::string(url)), table_names(table_names)
     { }
 
     ReloadTables(const fb::protocol::internal::response::raw::ReloadTables& raw)
-        : error(raw.error())
+        : error(raw.error()), url(flatbuffers::option::decode(raw.url()->c_str())), table_names(unpack<std::string>(raw.table_names()))
     { }
 
 public:
@@ -6546,6 +6603,47 @@ public:
     {
         auto raw = fb::protocol::internal::response::raw::GetReloadTables(bytes);
         return ReloadTables(*raw);
+    }
+};
+class ReloadScripts
+{
+public:
+    static inline fb::protocol::internal::response::FlatBufferProtocolType FlatBufferProtocolType = fb::protocol::internal::response::FlatBufferProtocolType::ReloadScripts;
+
+public:
+    uint32_t error = 0;
+    std::string url;
+    std::vector<std::string> script_paths = {};
+
+public:
+    ReloadScripts() = default;
+
+    ReloadScripts(const ReloadScripts& x)
+        : error(x.error), url(x.url), script_paths(x.script_paths)
+    { }
+
+    ReloadScripts(uint32_t error, std::string_view url, std::vector<std::string> script_paths)
+        : error(error), url(std::string(url)), script_paths(script_paths)
+    { }
+
+    ReloadScripts(const fb::protocol::internal::response::raw::ReloadScripts& raw)
+        : error(raw.error()), url(flatbuffers::option::decode(raw.url()->c_str())), script_paths(unpack<std::string>(raw.script_paths()))
+    { }
+
+public:
+    std::vector<uint8_t> Serialize() const
+    {
+        auto builder = flatbuffers::FlatBufferBuilder();
+        builder.Finish(build<fb::protocol::internal::response::ReloadScripts>(builder, *this));
+        auto buffer = std::vector<uint8_t>(builder.GetSize());
+        std::memcpy(buffer.data(), builder.GetBufferPointer(), builder.GetSize());
+        return buffer;
+    }
+
+    static ReloadScripts Deserialize(const uint8_t* bytes)
+    {
+        auto raw = fb::protocol::internal::response::raw::GetReloadScripts(bytes);
+        return ReloadScripts(*raw);
     }
 };
 class SetDropRateMultiplier
@@ -8984,7 +9082,17 @@ template <>
 flatbuffers::Offset<fb::protocol::internal::request::raw::ReloadTables> build<fb::protocol::internal::request::ReloadTables>(FlatBufferBuilder& builder, const fb::protocol::internal::request::ReloadTables& value)
 {
     return fb::protocol::internal::request::raw::CreateReloadTables(builder,
-            flatbuffers::build<uint32_t>(builder, value.world));
+            flatbuffers::build<uint32_t>(builder, value.world),
+            flatbuffers::build<std::string>(builder, value.url),
+            flatbuffers::build<std::vector<std::string>>(builder, value.table_names));
+}
+template <>
+flatbuffers::Offset<fb::protocol::internal::request::raw::ReloadScripts> build<fb::protocol::internal::request::ReloadScripts>(FlatBufferBuilder& builder, const fb::protocol::internal::request::ReloadScripts& value)
+{
+    return fb::protocol::internal::request::raw::CreateReloadScripts(builder,
+            flatbuffers::build<uint32_t>(builder, value.world),
+            flatbuffers::build<std::string>(builder, value.url),
+            flatbuffers::build<std::vector<std::string>>(builder, value.script_paths));
 }
 template <>
 flatbuffers::Offset<fb::protocol::internal::request::raw::SetDropRateMultiplier> build<fb::protocol::internal::request::SetDropRateMultiplier>(FlatBufferBuilder& builder, const fb::protocol::internal::request::SetDropRateMultiplier& value)
@@ -9406,7 +9514,17 @@ template <>
 flatbuffers::Offset<fb::protocol::internal::response::raw::ReloadTables> build<fb::protocol::internal::response::ReloadTables>(FlatBufferBuilder& builder, const fb::protocol::internal::response::ReloadTables& value)
 {
     return fb::protocol::internal::response::raw::CreateReloadTables(builder,
-            flatbuffers::build<uint32_t>(builder, value.error));
+            flatbuffers::build<uint32_t>(builder, value.error),
+            flatbuffers::build<std::string>(builder, value.url),
+            flatbuffers::build<std::vector<std::string>>(builder, value.table_names));
+}
+template <>
+flatbuffers::Offset<fb::protocol::internal::response::raw::ReloadScripts> build<fb::protocol::internal::response::ReloadScripts>(FlatBufferBuilder& builder, const fb::protocol::internal::response::ReloadScripts& value)
+{
+    return fb::protocol::internal::response::raw::CreateReloadScripts(builder,
+            flatbuffers::build<uint32_t>(builder, value.error),
+            flatbuffers::build<std::string>(builder, value.url),
+            flatbuffers::build<std::vector<std::string>>(builder, value.script_paths));
 }
 template <>
 flatbuffers::Offset<fb::protocol::internal::response::raw::SetDropRateMultiplier> build<fb::protocol::internal::response::SetDropRateMultiplier>(FlatBufferBuilder& builder, const fb::protocol::internal::response::SetDropRateMultiplier& value)

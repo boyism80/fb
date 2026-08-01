@@ -651,6 +651,8 @@ public:
 
 public:
     bool        dump(std::string_view path);
+    void        invalidate(std::string_view path);
+    void        unload_package(std::string_view module_name);
     bool        has_module(std::string_view path);
     bool        store_module(lua_State* L, std::string_view path);
     bool        push_module(lua_State* L, std::string_view path);
@@ -740,6 +742,7 @@ public:
     context::guard      open(context* parent = nullptr, call_options options = {});
     context::guard      open(std::string_view path, std::string_view func, context* parent = nullptr, call_options options = {});
     async::task<void>   dump(std::string_view path);
+    async::task<void>   reload_scripts(const std::vector<std::string>& relative_paths);
 
     base_type::iterator begin();
     base_type::iterator end();

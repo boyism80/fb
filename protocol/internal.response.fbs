@@ -329,6 +329,14 @@ table SetExpMultiplier {
 
 table ReloadTables {
   error: uint;
+  url: string;
+  table_names: [string];
+}
+
+table ReloadScripts {
+  error: uint;
+  url: string;
+  script_paths: [string];
 }
 
 table SetDropRateMultiplier {

@@ -793,7 +793,8 @@ int builtin::server::builtin_reload_table(lua_State* L)
     builder.yield = [=]() -> async::task<void> {
         auto& server = static_cast<fb::game::server&>(lua->executor);
         auto  world  = fb::config<uint32_t>("world");
-        auto resp = co_await server.http.post("internal", "/in-game/reload-tables", internal_reqs::ReloadTables(world));
+        auto  resp =
+            co_await server.http.post("internal", "/in-game/reload-tables", internal_reqs::ReloadTables(world, "", {}));
         if (resp.error == 0)
             *success = true;
         else

@@ -258,6 +258,7 @@ void fb::game::server::init_amqp_handlers()
     this->handler.amqp.bind<fb::game::handler::amqp::ban>(std::format("fb.{}.ban", world));
     this->handler.amqp.bind<fb::game::handler::amqp::set_exp_multiplier>(std::format("fb.{}.global", world));
     this->handler.amqp.bind<fb::game::handler::amqp::reload_tables>(std::format("fb.{}.global", world));
+    this->handler.amqp.bind<fb::game::handler::amqp::reload_scripts>(std::format("fb.{}.global", world));
     this->handler.amqp.bind<fb::game::handler::amqp::set_drop_rate_multiplier>(std::format("fb.{}.global", world));
     this->handler.amqp.bind<fb::game::handler::amqp::set_datetime>(std::format("fb.{}.global", world));
     this->handler.amqp.bind<fb::game::handler::amqp::start_maintenance>(std::format("fb.{}.game.{}", world, fb::config<uint32_t>("id")));

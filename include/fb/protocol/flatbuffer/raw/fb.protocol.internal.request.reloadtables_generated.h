@@ -25,14 +25,27 @@ struct ReloadTablesBuilder;
 struct ReloadTables FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
   typedef ReloadTablesBuilder Builder;
   enum FlatBuffersVTableOffset FLATBUFFERS_VTABLE_UNDERLYING_TYPE {
-    VT_WORLD = 4
+    VT_WORLD = 4,
+    VT_URL = 6,
+    VT_TABLE_NAMES = 8
   };
   uint32_t world() const {
     return GetField<uint32_t>(VT_WORLD, 0);
   }
+  const ::flatbuffers::String *url() const {
+    return GetPointer<const ::flatbuffers::String *>(VT_URL);
+  }
+  const ::flatbuffers::Vector<::flatbuffers::Offset<::flatbuffers::String>> *table_names() const {
+    return GetPointer<const ::flatbuffers::Vector<::flatbuffers::Offset<::flatbuffers::String>> *>(VT_TABLE_NAMES);
+  }
   bool Verify(::flatbuffers::Verifier &verifier) const {
     return VerifyTableStart(verifier) &&
            VerifyField<uint32_t>(verifier, VT_WORLD, 4) &&
+           VerifyOffset(verifier, VT_URL) &&
+           verifier.VerifyString(url()) &&
+           VerifyOffset(verifier, VT_TABLE_NAMES) &&
+           verifier.VerifyVector(table_names()) &&
+           verifier.VerifyVectorOfStrings(table_names()) &&
            verifier.EndTable();
   }
 };
@@ -43,6 +56,12 @@ struct ReloadTablesBuilder {
   ::flatbuffers::uoffset_t start_;
   void add_world(uint32_t world) {
     fbb_.AddElement<uint32_t>(ReloadTables::VT_WORLD, world, 0);
+  }
+  void add_url(::flatbuffers::Offset<::flatbuffers::String> url) {
+    fbb_.AddOffset(ReloadTables::VT_URL, url);
+  }
+  void add_table_names(::flatbuffers::Offset<::flatbuffers::Vector<::flatbuffers::Offset<::flatbuffers::String>>> table_names) {
+    fbb_.AddOffset(ReloadTables::VT_TABLE_NAMES, table_names);
   }
   explicit ReloadTablesBuilder(::flatbuffers::FlatBufferBuilder &_fbb)
         : fbb_(_fbb) {
@@ -57,10 +76,28 @@ struct ReloadTablesBuilder {
 
 inline ::flatbuffers::Offset<ReloadTables> CreateReloadTables(
     ::flatbuffers::FlatBufferBuilder &_fbb,
-    uint32_t world = 0) {
+    uint32_t world = 0,
+    ::flatbuffers::Offset<::flatbuffers::String> url = 0,
+    ::flatbuffers::Offset<::flatbuffers::Vector<::flatbuffers::Offset<::flatbuffers::String>>> table_names = 0) {
   ReloadTablesBuilder builder_(_fbb);
+  builder_.add_table_names(table_names);
+  builder_.add_url(url);
   builder_.add_world(world);
   return builder_.Finish();
+}
+
+inline ::flatbuffers::Offset<ReloadTables> CreateReloadTablesDirect(
+    ::flatbuffers::FlatBufferBuilder &_fbb,
+    uint32_t world = 0,
+    const char *url = nullptr,
+    const std::vector<::flatbuffers::Offset<::flatbuffers::String>> *table_names = nullptr) {
+  auto url__ = url ? _fbb.CreateString(url) : 0;
+  auto table_names__ = table_names ? _fbb.CreateVector<::flatbuffers::Offset<::flatbuffers::String>>(*table_names) : 0;
+  return fb::protocol::internal::request::raw::CreateReloadTables(
+      _fbb,
+      world,
+      url__,
+      table_names__);
 }
 
 inline const fb::protocol::internal::request::raw::ReloadTables *GetReloadTables(const void *buf) {

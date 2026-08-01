@@ -46,6 +46,32 @@ void dialog_dual_field::serialize(fb::stream_writer<big_endian>& writer) const
         writer.write<std::string>(value);
     }
 }
+#else
+void dialog_dual_field::deserialize(fb::stream_reader<big_endian>& reader)
+{
+    header::deserialize(reader);
+    reader.read<uint8_t>(); // first type echo
+    this->type_echo = reader.read<uint8_t>();
+    this->oid       = reader.read<uint32_t>();
+    reader.read<uint8_t>();  // obj type flag
+    reader.read<uint8_t>();  // 0x01
+    reader.read<uint16_t>(); // look
+    reader.read<uint8_t>();  // color
+    reader.read<uint8_t>();  // obj type flag
+    reader.read<uint16_t>(); // look (duplicate)
+    reader.read<uint8_t>();  // color (duplicate)
+    this->message = reader.read<std::string, uint16_t>();
+    this->pursuit = reader.read<uint16_t>();
+
+    uint16_t pair_count = reader.read<uint16_t>();
+    this->pairs.clear();
+    for (uint16_t i = 0; i < pair_count; i++)
+    {
+        auto label = reader.read<std::string, uint8_t>();
+        auto value = reader.read<std::string, uint8_t>();
+        this->pairs.emplace_back(std::move(label), std::move(value));
+    }
+}
 #endif
 
 } // namespace fb::protocol::game::response

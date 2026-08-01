@@ -320,13 +320,29 @@ namespace Internal.Controllers
         {
             var response = new Response.ReloadTables
             {
-                Error = (uint)ErrorCode.None
+                Error = (uint)ErrorCode.None,
+                Url = request.Url ?? string.Empty,
+                TableNames = request.TableNames ?? new List<string>()
             };
 
             // Game/login logic hosts
             await _rabbitMqService.PublishAsync(response, "amq.direct", $"fb.{request.World}.global");
             // C# hosts (AmqpListener on fb.global)
             await _rabbitMqService.PublishAsync(response, "amq.direct", "fb.global");
+            return response;
+        }
+
+        [HttpPost("reload-scripts")]
+        public async Task<Response.ReloadScripts> ReloadScripts(Request.ReloadScripts request)
+        {
+            var response = new Response.ReloadScripts
+            {
+                Error = (uint)ErrorCode.None,
+                Url = request.Url ?? string.Empty,
+                ScriptPaths = request.ScriptPaths ?? new List<string>()
+            };
+
+            await _rabbitMqService.PublishAsync(response, "amq.direct", $"fb.{request.World}.global");
             return response;
         }
 

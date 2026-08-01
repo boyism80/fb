@@ -1,6 +1,7 @@
 #include <fb/login/handler/amqp/reload_tables.h>
 #include <fb/login/server.h>
 #include <fb/model/loader.h>
+#include <fb/model/table_download.h>
 #include <fb/logger.h>
 
 using namespace fb::login::handler::amqp;
@@ -16,6 +17,9 @@ async::task<void> reload_tables::handle(const internal_resp::ReloadTables& messa
 
     try
     {
+        if (message.url.empty() == false && message.table_names.empty() == false)
+            co_await fb::model::download_tables(this->server.http, message.url, message.table_names);
+
         co_await fb::model::reload_async();
         fb::logger::info("Data tables reloaded");
     }

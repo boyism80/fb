@@ -52,6 +52,90 @@
     font-weight: 500 !important;
 }
 
+.main-nav-desktop .nav-group {
+    position: relative;
+    margin-right: 2rem;
+    height: 48px;
+    display: inline-flex;
+    align-items: center;
+}
+
+.main-nav-desktop .nav-group-toggle {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.15rem;
+    height: 48px;
+    padding: 2px 0 0;
+    border: none;
+    border-bottom: 2px solid transparent;
+    background: transparent;
+    color: var(--text-secondary);
+    font-weight: 500;
+    font-size: 0.875rem;
+    cursor: pointer;
+    box-sizing: border-box;
+}
+
+.main-nav-desktop .nav-group-toggle:hover,
+.main-nav-desktop .nav-group-toggle.active {
+    color: var(--accent-color);
+}
+
+.main-nav-desktop .nav-group.active .nav-group-toggle {
+    border-bottom-color: var(--accent-color);
+}
+
+.main-nav-desktop .nav-group-caret {
+    font-size: 1rem;
+    line-height: 1;
+}
+
+.main-nav-desktop .nav-group-menu {
+    display: none;
+    position: absolute;
+    top: 100%;
+    left: 0;
+    min-width: 10rem;
+    padding: 0.35rem 0;
+    background: var(--surface-container, #1f2020);
+    border: 1px solid var(--outline-variant, #2a2a2a);
+    border-radius: 0.25rem;
+    z-index: 30;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.35);
+}
+
+.main-nav-desktop .nav-group:hover .nav-group-menu,
+.main-nav-desktop .nav-group:focus-within .nav-group-menu {
+    display: block;
+}
+
+.main-nav-desktop .nav-group-menu ::deep .nav-link,
+.main-nav-desktop .nav-group-link {
+    display: flex !important;
+    align-items: center !important;
+    width: 100%;
+    height: auto !important;
+    margin: 0 !important;
+    padding: 0.625rem 1rem !important;
+    border: none !important;
+    border-bottom: none !important;
+    border-radius: 0 !important;
+    white-space: nowrap !important;
+    box-sizing: border-box;
+}
+
+.main-nav-desktop .nav-group-menu ::deep .nav-link:hover,
+.main-nav-desktop .nav-group-link:hover {
+    background-color: var(--bg-hover, #2a2a2a) !important;
+    color: var(--text-primary) !important;
+}
+
+.main-nav-desktop .nav-group-menu ::deep .nav-link.active,
+.main-nav-desktop .nav-group-link.active {
+    border-bottom: none !important;
+    color: var(--accent-color) !important;
+}
+
 @media (max-width: 768px) {
     .main-nav-desktop {
         display: none;

@@ -46,6 +46,31 @@ void dialog_pursuit::serialize(fb::stream_writer<big_endian>& writer) const
         writer.write<std::string>(name);
     }
 }
+#else
+void dialog_pursuit::deserialize(fb::stream_reader<big_endian>& reader)
+{
+    header::deserialize(reader);
+    reader.read<uint8_t>(); // first type echo
+    this->type_echo = reader.read<uint8_t>();
+    this->oid       = reader.read<uint32_t>();
+    reader.read<uint8_t>();  // obj type flag
+    reader.read<uint8_t>();  // 0x01
+    reader.read<uint16_t>(); // look
+    reader.read<uint8_t>();  // color
+    reader.read<uint8_t>();  // obj type flag
+    reader.read<uint16_t>(); // look (duplicate)
+    reader.read<uint8_t>();  // color (duplicate)
+    this->message = reader.read<std::string, uint16_t>();
+    this->pursuit = reader.read<uint16_t>();
+
+    uint16_t option_count = reader.read<uint16_t>();
+    this->options.clear();
+    for (uint16_t i = 0; i < option_count; i++)
+    {
+        reader.read<uint32_t>(); // unused
+        this->options.push_back(reader.read<std::string, uint8_t>());
+    }
+}
 #endif
 
 } // namespace fb::protocol::game::response

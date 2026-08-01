@@ -21,16 +21,36 @@ public struct ReloadTables : IFlatbufferObject
   public ReloadTables __assign(int _i, ByteBuffer _bb) { __init(_i, _bb); return this; }
 
   public uint World { get { int o = __p.__offset(4); return o != 0 ? __p.bb.GetUint(o + __p.bb_pos) : (uint)0; } }
+  public string Url { get { int o = __p.__offset(6); return o != 0 ? __p.__string(o + __p.bb_pos) : null; } }
+#if ENABLE_SPAN_T
+  public Span<byte> GetUrlBytes() { return __p.__vector_as_span<byte>(6, 1); }
+#else
+  public ArraySegment<byte>? GetUrlBytes() { return __p.__vector_as_arraysegment(6); }
+#endif
+  public byte[] GetUrlArray() { return __p.__vector_as_array<byte>(6); }
+  public string TableNames(int j) { int o = __p.__offset(8); return o != 0 ? __p.__string(__p.__vector(o) + j * 4) : null; }
+  public int TableNamesLength { get { int o = __p.__offset(8); return o != 0 ? __p.__vector_len(o) : 0; } }
 
   public static Offset<fb.protocol._internal.request.raw.ReloadTables> CreateReloadTables(FlatBufferBuilder builder,
-      uint world = 0) {
-    builder.StartTable(1);
+      uint world = 0,
+      StringOffset urlOffset = default(StringOffset),
+      VectorOffset table_namesOffset = default(VectorOffset)) {
+    builder.StartTable(3);
+    ReloadTables.AddTableNames(builder, table_namesOffset);
+    ReloadTables.AddUrl(builder, urlOffset);
     ReloadTables.AddWorld(builder, world);
     return ReloadTables.EndReloadTables(builder);
   }
 
-  public static void StartReloadTables(FlatBufferBuilder builder) { builder.StartTable(1); }
+  public static void StartReloadTables(FlatBufferBuilder builder) { builder.StartTable(3); }
   public static void AddWorld(FlatBufferBuilder builder, uint world) { builder.AddUint(0, world, 0); }
+  public static void AddUrl(FlatBufferBuilder builder, StringOffset urlOffset) { builder.AddOffset(1, urlOffset.Value, 0); }
+  public static void AddTableNames(FlatBufferBuilder builder, VectorOffset tableNamesOffset) { builder.AddOffset(2, tableNamesOffset.Value, 0); }
+  public static VectorOffset CreateTableNamesVector(FlatBufferBuilder builder, StringOffset[] data) { builder.StartVector(4, data.Length, 4); for (int i = data.Length - 1; i >= 0; i--) builder.AddOffset(data[i].Value); return builder.EndVector(); }
+  public static VectorOffset CreateTableNamesVectorBlock(FlatBufferBuilder builder, StringOffset[] data) { builder.StartVector(4, data.Length, 4); builder.Add(data); return builder.EndVector(); }
+  public static VectorOffset CreateTableNamesVectorBlock(FlatBufferBuilder builder, ArraySegment<StringOffset> data) { builder.StartVector(4, data.Count, 4); builder.Add(data); return builder.EndVector(); }
+  public static VectorOffset CreateTableNamesVectorBlock(FlatBufferBuilder builder, IntPtr dataPtr, int sizeInBytes) { builder.StartVector(1, sizeInBytes, 1); builder.Add<StringOffset>(dataPtr, sizeInBytes); return builder.EndVector(); }
+  public static void StartTableNamesVector(FlatBufferBuilder builder, int numElems) { builder.StartVector(4, numElems, 4); }
   public static Offset<fb.protocol._internal.request.raw.ReloadTables> EndReloadTables(FlatBufferBuilder builder) {
     int o = builder.EndTable();
     return new Offset<fb.protocol._internal.request.raw.ReloadTables>(o);
@@ -46,6 +66,8 @@ static public class ReloadTablesVerify
   {
     return verifier.VerifyTableStart(tablePos)
       && verifier.VerifyField(tablePos, 4 /*World*/, 4 /*uint*/, 4, false)
+      && verifier.VerifyString(tablePos, 6 /*Url*/, false)
+      && verifier.VerifyVectorOfStrings(tablePos, 8 /*TableNames*/, false)
       && verifier.VerifyTableEnd(tablePos);
   }
 }

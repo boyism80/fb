@@ -4890,3 +4890,341 @@ a.dashboard-card:hover,
     padding: 1.25rem;
     box-sizing: border-box;
 }
+
+/* Runtime table patch page (Stitch-aligned) */
+.table-patch-page {
+    max-width: 1200px;
+}
+
+.table-patch-dropzone {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    min-height: 10rem;
+    margin-bottom: 1rem;
+    padding: 1.5rem;
+    border: 1px dashed var(--border-color);
+    border-radius: var(--radius-default);
+    background: var(--bg-surface);
+    text-align: center;
+}
+
+.table-patch-dropzone:hover {
+    border-color: var(--accent-color);
+    background: var(--bg-hover);
+}
+
+.table-patch-drop-icon {
+    font-size: 2rem;
+    color: var(--text-muted);
+}
+
+.table-patch-drop-text {
+    margin: 0;
+    color: var(--text-secondary);
+    font-size: var(--font-size-sm);
+}
+
+.table-patch-file-input {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    opacity: 0;
+    cursor: pointer;
+}
+
+.table-patch-scope {
+    margin-top: var(--section-gap, 1rem);
+}
+
+.table-patch-scope-label {
+    margin: 0.5rem 0 0;
+    font-size: 0.875rem;
+    color: var(--text-muted, #6b7280);
+}
+
+.table-patch-hint {
+    margin: 0 0 1rem;
+    color: var(--text-muted);
+    font-size: var(--font-size-sm);
+}
+
+.table-patch-file-list-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.75rem;
+    margin-bottom: 0.5rem;
+}
+
+.table-patch-file-list-title {
+    margin: 0;
+    font-size: var(--font-size-sm);
+    font-weight: 600;
+    color: var(--text-primary);
+}
+
+.table-patch-clear-all {
+    padding: 0.25rem 0.75rem;
+    font-size: var(--font-size-sm);
+}
+
+.table-patch-file-list {
+    list-style: none;
+    margin: 0 0 1rem;
+    padding: 0;
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-default);
+    overflow: hidden;
+}
+
+.table-patch-file-item {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.65rem 0.75rem;
+    border-bottom: 1px solid var(--border-color);
+    background: var(--bg-card);
+}
+
+.table-patch-file-item:last-child {
+    border-bottom: none;
+}
+
+.table-patch-file-item .material-symbols-outlined {
+    color: var(--text-muted);
+    font-size: 1.25rem;
+}
+
+.table-patch-file-meta {
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+    min-width: 0;
+}
+
+.table-patch-file-name {
+    color: var(--text-primary);
+    font-size: var(--font-size-sm);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.table-patch-file-size {
+    color: var(--text-muted);
+    font-size: var(--font-size-metadata);
+}
+
+.table-patch-file-remove {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 1.75rem;
+    height: 1.75rem;
+    border: none;
+    border-radius: var(--radius-default);
+    background: transparent;
+    color: var(--text-muted);
+    cursor: pointer;
+}
+
+.table-patch-file-remove:hover:not(:disabled) {
+    background: var(--bg-hover);
+    color: var(--error-text);
+}
+
+.table-patch-file-remove:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+
+/* Runtime script patch page (Stitch-aligned) */
+.script-patch-page {
+    max-width: 1200px;
+}
+
+.script-patch-dropzone {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    min-height: 9rem;
+    margin-bottom: 1rem;
+    padding: 1.5rem;
+    border: 1px dashed var(--outline-variant, #2a2a2a);
+    border-radius: var(--radius-lg, 0.5rem);
+    background: var(--surface-container-low, #1b1c1c);
+    text-align: center;
+}
+
+.script-patch-dropzone:hover {
+    border-color: var(--accent-color, #3ddc84);
+}
+
+.script-patch-drop-icon {
+    font-size: 2rem;
+    color: var(--text-muted);
+}
+
+.script-patch-drop-text {
+    margin: 0;
+    color: var(--text-secondary);
+    font-size: var(--font-size-sm);
+}
+
+.script-patch-file-input {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    opacity: 0;
+    cursor: pointer;
+}
+
+.script-patch-hint {
+    margin: 0 0 1rem;
+    color: var(--text-muted);
+    font-size: var(--font-size-sm);
+}
+
+.script-patch-hint-inline {
+    color: var(--text-muted);
+    font-weight: 400;
+}
+
+.script-patch-file-list-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.75rem;
+    margin-bottom: 0.5rem;
+}
+
+.script-patch-file-list-title {
+    margin: 0;
+    font-size: var(--font-size-sm);
+    font-weight: 600;
+}
+
+.script-patch-file-list {
+    list-style: none;
+    margin: 0 0 1rem;
+    padding: 0;
+    border: 1px solid var(--outline-variant, #2a2a2a);
+    border-radius: var(--radius-default);
+}
+
+.script-patch-file-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.75rem;
+    padding: 0.75rem;
+    border-bottom: 1px solid var(--outline-variant, #2a2a2a);
+}
+
+.script-patch-file-item:last-child {
+    border-bottom: none;
+}
+
+.script-patch-file-meta {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 0.35rem;
+    min-width: 0;
+}
+
+.script-patch-file-name {
+    font-weight: 600;
+    font-size: var(--font-size-sm);
+}
+
+.script-patch-file-size {
+    color: var(--text-muted);
+    font-size: var(--font-size-metadata);
+}
+
+.script-patch-path-input {
+    max-width: 28rem;
+    font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+    font-size: 0.8125rem;
+}
+
+.script-patch-deps {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.35rem;
+}
+
+.script-patch-dep-chip {
+    display: inline-flex;
+    padding: 0.1rem 0.4rem;
+    border-radius: 0.125rem;
+    background: rgba(61, 220, 132, 0.12);
+    color: var(--accent-color, #3ddc84);
+    font-size: 0.75rem;
+}
+
+.script-patch-file-remove {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 1.75rem;
+    height: 1.75rem;
+    border: none;
+    border-radius: var(--radius-default);
+    background: transparent;
+    color: var(--text-muted);
+    cursor: pointer;
+}
+
+.script-patch-file-remove:hover:not(:disabled) {
+    background: var(--bg-hover);
+    color: var(--error-text);
+}
+
+.script-patch-scope {
+    margin-top: var(--section-gap, 1rem);
+}
+
+.script-patch-scope-label {
+    margin: 0.5rem 0 0;
+    font-size: 0.875rem;
+    color: var(--text-muted);
+}
+
+.script-patch-order-card {
+    margin-top: var(--section-gap, 1rem);
+}
+
+.script-patch-order-list {
+    list-style: none;
+    margin: 0;
+    padding: 0.75rem;
+    background: var(--surface-container-low, #1b1c1c);
+    border-radius: var(--radius-default);
+    font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+    font-size: 0.8125rem;
+}
+
+.script-patch-order-index {
+    color: var(--text-muted);
+    margin-right: 0.35rem;
+}
+
+.script-patch-analysis-error {
+    margin: 0;
+    color: var(--error-text, #ffb4ab);
+}
+
+.script-patch-actions {
+    margin-top: var(--section-gap, 1rem);
+}

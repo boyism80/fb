@@ -206,10 +206,25 @@ private:
         return std::runtime_error(std::format("HTTP {} request failed: {}", operation, e.what()));
     }
 
+    static std::pair<std::string, std::string> split_absolute_url(std::string_view full_url)
+    {
+        auto url        = std::string(full_url);
+        auto scheme_end = url.find("://");
+        if (scheme_end == std::string::npos)
+            throw std::runtime_error(std::format("Invalid URL: {}", full_url));
+
+        auto path_start = url.find('/', scheme_end + 3);
+        if (path_start == std::string::npos)
+            return {url, "/"};
+
+        return {url.substr(0, path_start), url.substr(path_start)};
+    }
+
     boost::asio::awaitable<std::vector<uint8_t>> boost_get_raw_async(std::string                         host,
                                                                      std::string                         path,
                                                                      std::map<std::string, std::string>  headers,
-                                                                     std::chrono::steady_clock::duration timeout)
+                                                                     std::chrono::steady_clock::duration timeout,
+                                                                     bool require_success = false)
     {
         try
         {
@@ -225,7 +240,33 @@ private:
             for (const auto& [name, value] : headers)
                 req.set(name, value);
 
-            co_return co_await exchange_http_async(io_context, endpoint, timeout, std::move(req));
+            auto resolver = boost::asio::ip::tcp::resolver{io_context};
+            auto socket   = boost::asio::ip::tcp::socket{io_context};
+
+            http_request_deadline deadline{io_context.get_executor(), socket, timeout};
+
+            const auto results =
+                co_await resolver.async_resolve(endpoint.host, endpoint.port, boost::asio::use_awaitable);
+            co_await boost::asio::async_connect(socket, results, boost::asio::use_awaitable);
+            co_await boost::beast::http::async_write(socket, req, boost::asio::use_awaitable);
+
+            auto buffer = boost::beast::flat_buffer{};
+            auto res    = boost::beast::http::response<boost::beast::http::dynamic_body>{};
+            co_await boost::beast::http::async_read(socket, buffer, res, boost::asio::use_awaitable);
+
+            deadline.release();
+            close_http_socket(socket);
+
+            if (require_success)
+            {
+                auto status = res.result_int();
+                if (status < 200 || status >= 300)
+                {
+                    throw std::runtime_error(std::format("HTTP GET failed with status {}: {}", status, path));
+                }
+            }
+
+            co_return response_body_bytes(res);
         }
         catch (const std::exception& e)
         {
@@ -390,6 +431,46 @@ public:
         auto thread   = this->_executor.threads.current();
         co_await this->boost_post_binary_async(url_str, path_str, data);
         co_await this->apply_response_delay(thread);
+    }
+
+    /// <summary>
+    /// Downloads raw bytes from an absolute HTTP URL (e.g. http://host:port/path/file.json).
+    /// Throws if the response status is not 2xx.
+    /// </summary>
+    async::task<std::vector<uint8_t>> get_bytes(std::string_view full_url)
+    {
+        auto [host, path] = split_absolute_url(full_url);
+        auto promise      = std::make_shared<async::task_completion_source<std::vector<uint8_t>>>();
+        auto headers      = std::map<std::string, std::string>{};
+
+        pending_task task = [this, promise, host = std::move(host), path = std::move(path), headers]() {
+            auto& ctx = static_cast<boost::asio::io_context&>(this->_executor);
+            boost::asio::co_spawn(ctx,
+                                  this->boost_get_raw_async(host, path, headers, std::chrono::seconds{30}, true),
+                                  [this, promise](std::exception_ptr ep, std::vector<uint8_t> bytes) {
+                                      if (ep)
+                                      {
+                                          promise->set_exception(ep);
+                                          this->_in_flight.fetch_sub(1, std::memory_order_relaxed);
+                                          this->post_process_pending();
+                                          return;
+                                      }
+                                      promise->set_value(std::move(bytes));
+                                      this->_in_flight.fetch_sub(1, std::memory_order_relaxed);
+                                      this->post_process_pending();
+                                  });
+        };
+
+        bool trigger;
+        {
+            std::lock_guard lock(this->_queue_mutex);
+            trigger = this->_queue.empty();
+            this->_queue.push(std::move(task));
+        }
+        if (trigger)
+            this->post_process_pending();
+
+        return promise->task();
     }
 
 private:
