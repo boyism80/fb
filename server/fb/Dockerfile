@@ -22,14 +22,14 @@ WORKDIR /app
 RUN git clone --branch ${JSONCPP_REF} https://github.com/open-source-parsers/jsoncpp /app/jsoncpp
 WORKDIR /app/jsoncpp/build
 RUN cmake -DCMAKE_BUILD_TYPE=Release ..
-RUN cmake --build . --parallel 32
+RUN cmake --build . --parallel 12
 RUN make install
 
 WORKDIR /app
 RUN git clone --branch ${RABBITMQ_REF} https://github.com/alanxz/rabbitmq-c /app/rabbitmq-c
 WORKDIR /app/rabbitmq-c/build
 RUN cmake .. -DENABLE_SSL_SUPPORT=OFF
-RUN cmake --build . --config Release --parallel 32
+RUN cmake --build . --config Release --parallel 12
 RUN make install
 
 # No pinned ref in update-modules.bat; tracks fork default branch.
@@ -37,14 +37,14 @@ WORKDIR /app
 RUN git clone --recursive https://github.com/boyism80/lua /app/lua
 WORKDIR /app/lua/build
 RUN cmake -DCMAKE_BUILD_TYPE=Release ..
-RUN cmake --build . --parallel 32
+RUN cmake --build . --parallel 12
 RUN make install
 
 WORKDIR /app
 RUN git clone --branch ${ZLIB_REF} https://github.com/intel/zlib /app/zlib
 WORKDIR /app/zlib/build
 RUN cmake -DCMAKE_BUILD_TYPE=Release ..
-RUN cmake --build . --parallel 32
+RUN cmake --build . --parallel 12
 RUN make install
 
 # No pinned ref in update-modules.bat; tracks fork default branch.
@@ -52,7 +52,7 @@ WORKDIR /app
 RUN git clone https://github.com/boyism80/flatbuffers /app/flatbuffers
 WORKDIR /app/flatbuffers/build
 RUN cmake .. -DFLATBUFFERS_BUILD_FLATC=OFF -DFLATBUFFERS_BUILD_TESTS=OFF
-RUN cmake --build . --config Release --parallel 32
+RUN cmake --build . --config Release --parallel 12
 RUN make install
 
 WORKDIR /app
@@ -78,7 +78,7 @@ COPY include ./include
 COPY server/fb ./fb
 WORKDIR /app/fb/build
 RUN cmake -DCMAKE_BUILD_TYPE=${BUILD_TYPE} ..
-RUN cmake --build . --parallel 32
+RUN cmake --build . --parallel 12
 RUN make install
 
 RUN rm -rf /app

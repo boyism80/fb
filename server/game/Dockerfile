@@ -16,7 +16,7 @@ RUN mkdir -p maps && unzip -qq maps.zip -d ./maps && rm -f maps.zip
 
 WORKDIR /app/game/build
 RUN cmake -DCMAKE_BUILD_TYPE=${BUILD_TYPE} ..
-RUN cmake --build . --config ${BUILD_TYPE} --parallel 32
+RUN cmake --build . --config ${BUILD_TYPE} --parallel 12
 
 FROM ${DATA_IMAGE} AS data
 
