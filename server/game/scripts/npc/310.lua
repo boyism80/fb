@@ -12,7 +12,7 @@ local function run_ox_admin(me, ch)
         '출입구닫기',
         '추방',
     }, { prev = false })
-    if sub_btn == DIALOG_RESULT.QUIT or sub_sel == nil then
+    if sub_btn == DIALOG_RESULT.QUIT then
         return DIALOG_RESULT.NEXT
     end
 
@@ -56,29 +56,31 @@ local function run_ox_admin(me, ch)
     return DIALOG_RESULT.NEXT
 end
 
-function NPC_310(me, npc_obj)
-    npc.shop(me, npc_obj, {
-        greeting = '무엇을 도와드릴까요?',
-        menu = {
-            { '물건 사기', function(me, ch)
-                return npc.show_sell_menu(me, ch)
-            end },
-            { '사용자 오엑스', function(me, ch)
-                return run_ox_admin(me, ch)
-            end },
-            { '토큰 구입', function(me, ch)
-                local code = me:exchange(
-                    { ['item'] = { ['도깨비방망이'] = 1 } },
-                    { ['item'] = { ['아무나OX주최토큰'] = 1 } }
-                )
-                if code == enum.EXCHANGE_RESULT.LACK_COST then
-                    return me:dialog(ch, '도깨비방망이가 없으시군요.', { prev = false, next = true })
-                end
-                if code == enum.EXCHANGE_RESULT.LACK_CAPACITY then
-                    return me:dialog(ch, '소지품이 가득 차서 아무나OX주최토큰을 받을 수 없습니다.', { prev = false, next = true })
-                end
-                return me:dialog(ch, "도깨비방망이를 '아무나OX주최토큰'으로 바꿔드리겠습니다.", { prev = false, next = true })
-            end },
-        },
-    })
-end
+return {
+    on_click = function(me, npc_obj)
+        npc.shop(me, npc_obj, {
+            greeting = '무엇을 도와드릴까요?',
+            menu = {
+                { '물건 사기', function(me, ch)
+                    return npc.show_sell_menu(me, ch)
+                end },
+                { '사용자 오엑스', function(me, ch)
+                    return run_ox_admin(me, ch)
+                end },
+                { '토큰 구입', function(me, ch)
+                    local code = me:exchange(
+                        { ['item'] = { ['도깨비방망이'] = 1 } },
+                        { ['item'] = { ['아무나OX주최토큰'] = 1 } }
+                    )
+                    if code == enum.exchange_result.LACK_COST then
+                        return me:dialog(ch, '도깨비방망이가 없으시군요.', { prev = false, next = true })
+                    end
+                    if code == enum.exchange_result.LACK_CAPACITY then
+                        return me:dialog(ch, '소지품이 가득 차서 아무나OX주최토큰을 받을 수 없습니다.', { prev = false, next = true })
+                    end
+                    return me:dialog(ch, "도깨비방망이를 '아무나OX주최토큰'으로 바꿔드리겠습니다.", { prev = false, next = true })
+                end },
+            },
+        })
+    end
+}

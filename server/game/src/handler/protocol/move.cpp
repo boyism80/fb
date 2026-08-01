@@ -13,7 +13,8 @@ move::move(fb::game::server& server) :
 
 async::task<bool> move::handle(fb::socket<character>&      session,
                                DIRECTION                   direction,
-                               const fb::model::point16_t& position)
+                               const fb::model::point16_t& position,
+                               uint8_t                     walk_queue_slot)
 {
     auto ch = session.data();
     if (ch->inited() == false)
@@ -52,15 +53,16 @@ async::task<bool> move::handle(fb::socket<character>&      session,
 
         case DSL::world:
         {
-            auto  params = fb::model::dsl::world(warp->dest.params);
-            auto& world  = table::world[params.id][params.index];
+            auto  params      = fb::model::dsl::world(warp->dest.params);
+            auto  world_table = table::world;
+            auto& world       = world_table[params.id][params.index];
             ch->show_world_map(params.id, params.index);
         }
         break;
 
         case DSL::script:
         {
-            std::ignore = ch->move(direction, position);
+            std::ignore = ch->move(direction, position, walk_queue_slot);
 
             auto params = fb::model::dsl::script(warp->dest.params);
             if (params.path.empty() || params.function.empty())
@@ -81,12 +83,12 @@ async::task<bool> move::handle(fb::socket<character>&      session,
     }
     else
     {
-        std::ignore = ch->move(direction, position);
+        std::ignore = ch->move(direction, position, walk_queue_slot);
     }
     co_return true;
 }
 
 async::task<bool> move::handle(fb::socket<character>& session, game_reqs::move& request)
 {
-    return this->handle(session, request.direction, request.position);
+    return this->handle(session, request.direction, request.position, request.walk_queue_slot);
 }

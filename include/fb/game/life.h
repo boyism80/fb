@@ -43,6 +43,7 @@ protected:
     bool               _paralysis         = false;
     bool               _invincible        = false;
     bool               _cover             = false;
+    bool               _delirious         = false;
     bool               _batch_mode        = false;
     UPDATE_STATE_LEVEL _pending_update    = UPDATE_STATE_LEVEL::MINIMUM;
 
@@ -99,6 +100,9 @@ public:
     bool                      invincible() const;
     void                      cover(bool value);
     bool                      cover() const;
+    void                      delirious(bool value);
+    bool                      delirious() const;
+    virtual void              chat(std::string_view message, CHAT_TYPE chat_type = CHAT_TYPE::NORMAL, bool decorate = true) override;
     // clang-format on
 };
 

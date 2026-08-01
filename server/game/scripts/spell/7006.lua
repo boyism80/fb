@@ -1,5 +1,16 @@
 -- spell: 해마장군잡기
 -- 해마장군잡기 캐스팅
--- function ON_CAST_7006(me, spell)
---
--- end
+
+return {
+    -- on_cast = function(me, you, sp)
+    -- end,
+
+    -- on_buff = function(me, sp)
+    -- end,
+
+    -- on_unbuff = function(me, sp)
+    -- end,
+
+    -- on_concast = function(me, sp)
+    -- end
+}

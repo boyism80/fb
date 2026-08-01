@@ -46,28 +46,30 @@ local function craft_amber_star(me, ch)
         { ['item'] = { [gem] = 5 } },
         { ['item'] = { [star] = 1 } }
     )
-    if code == enum.EXCHANGE_RESULT.LACK_COST then
+    if code == enum.exchange_result.LACK_COST then
         return me:dialog(ch, name_with(gem, '이', '가') .. ' 부족합니다.', { prev = false, next = true })
     end
-    if code == enum.EXCHANGE_RESULT.LACK_CAPACITY then
+    if code == enum.exchange_result.LACK_CAPACITY then
         return me:dialog(ch, '소지품이 가득 차서 ' .. name_with(star, '을', '를') .. ' 받을 수 없어요.', { prev = false, next = true })
     end
     return me:dialog(ch, name_with(star, '을', '를') .. ' 만들어드렸습니다.', { prev = false, next = true })
 end
 
-function NPC_16(me, npc_obj)
-    npc.shop(me, npc_obj, {
-        greeting = '안녕하세요. 어떻게 오셨나요?',
-        menu = {
-            { '물건 사기', function(me, ch)
-                return npc.show_sell_menu(me, ch, SELL_CATEGORIES)
-            end },
-            { '물건 팔기', function(me, ch)
-                return npc.show_buy_menu(me, ch)
-            end },
-            { '호박별만들기', function(me, ch)
-                return craft_amber_star(me, ch)
-            end },
-        },
-    })
-end
+return {
+    on_click = function(me, npc_obj)
+        npc.shop(me, npc_obj, {
+            greeting = '안녕하세요. 어떻게 오셨나요?',
+            menu = {
+                { '물건 사기', function(me, ch)
+                    return npc.show_sell_menu(me, ch, SELL_CATEGORIES)
+                end },
+                { '물건 팔기', function(me, ch)
+                    return npc.show_buy_menu(me, ch)
+                end },
+                { '호박별만들기', function(me, ch)
+                    return craft_amber_star(me, ch)
+                end },
+            },
+        })
+    end
+}

@@ -1,11 +1,15 @@
 -- item: 보라여자갑주
 
--- 보라여자갑주 사용 스크립트
--- function ON_ACTIVATED_815(me, item)
---
--- end
+return {
+    -- on_activated = function(me, item)
+    -- end,
 
--- 보라여자갑주 해제 스크립트
--- function ON_DEACTIVATED_815(me, item)
---
--- end
+    -- on_deactivated = function(me, item)
+    -- end,
+
+    -- on_concast = function(me, item)
+    -- end,
+
+    -- on_attack = function(me, item)
+    -- end
+}

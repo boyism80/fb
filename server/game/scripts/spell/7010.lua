@@ -1,5 +1,16 @@
 -- spell: 전략문서
 -- 전략문서 캐스팅
--- function ON_CAST_7010(me, spell)
---
--- end
+
+return {
+    -- on_cast = function(me, you, sp)
+    -- end,
+
+    -- on_buff = function(me, sp)
+    -- end,
+
+    -- on_unbuff = function(me, sp)
+    -- end,
+
+    -- on_concast = function(me, sp)
+    -- end
+}

@@ -31,8 +31,8 @@ void listener_impl::on_option_changed(character& me, OPTION option, bool enabled
         sstream << "외치기듣기  ";
         break;
 
-    case OPTION::ROAR_WORLDS:
-        sstream << "세계후      ";
+    case OPTION::NEWS:
+        sstream << "소식듣기    ";
         break;
 
     case OPTION::MAGIC_EFFECT:
@@ -61,6 +61,10 @@ void listener_impl::on_option_changed(character& me, OPTION option, bool enabled
 
     case OPTION::PK_PROTECT:
         sstream << "PK보호      ";
+        break;
+
+    case OPTION::LOCK_WALK_SPEED:
+        sstream << "이속고정    ";
         break;
 
     default:
@@ -143,9 +147,14 @@ void listener_impl::on_update_bgm(character& ch, uint16_t bgm, uint8_t volume)
     ch.send(game_resp::map_bgm(bgm, volume));
 }
 
-void listener_impl::on_update_time(character& ch, uint16_t hours)
+void listener_impl::on_stop_bgm(character& ch, uint16_t bgm_id)
 {
-    ch.send(game_resp::time(hours));
+    ch.send(game_resp::map_bgm_stop(bgm_id));
+}
+
+void listener_impl::on_update_time(character& ch, uint8_t hours, uint8_t minutes)
+{
+    ch.send(game_resp::time(hours, minutes));
 }
 
 void listener_impl::on_character_init(character& ch)
@@ -156,6 +165,20 @@ void listener_impl::on_character_init(character& ch)
 void listener_impl::on_update_position(character& ch)
 {
     ch.send(game_resp::position(ch));
+}
+
+void listener_impl::on_move_confirm(character&                  ch,
+                                    const fb::model::point16_t& before,
+                                    const fb::model::point16_t& viewport,
+                                    uint8_t                     walk_queue_slot)
+{
+    auto thread = ch.thread();
+    if (thread == nullptr)
+        return;
+
+    auto direction = ch.direction();
+    auto position  = before;
+    ch.send(game_resp::move_confirm(direction, position, viewport, walk_queue_slot));
 }
 
 void listener_impl::on_screen_refresh(character& ch)
@@ -257,7 +280,14 @@ void listener_impl::on_show_mail_box(character&                            ch,
 
 void listener_impl::on_show_mail_box(character& ch, const mail_box::mail& mail, MAIL_BUTTON_ENABLE flag)
 {
-    auto dto = internal::Mail{mail.id, mail.user, mail.sender, mail.title, mail.contents, mail.read, mail.created_date};
+    auto dto = internal::Mail{mail.id,
+                              mail.user,
+                              mail.sender,
+                              mail.title,
+                              mail.contents,
+                              mail.read,
+                              mail.created_date,
+                              std::nullopt};
     ch.send(game_resp::bulletin_mail(dto, flag));
 }
 

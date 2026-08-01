@@ -1,11 +1,15 @@
 -- item: 괴력선창
 
--- 괴력선창 사용 스크립트
--- function ON_ACTIVATED_57(me, item)
---
--- end
+return {
+    -- on_activated = function(me, item)
+    -- end,
 
--- 괴력선창 해제 스크립트
--- function ON_DEACTIVATED_57(me, item)
---
--- end
+    -- on_deactivated = function(me, item)
+    -- end,
+
+    -- on_concast = function(me, item)
+    -- end,
+
+    -- on_attack = function(me, item)
+    -- end
+}

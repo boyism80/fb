@@ -1,0 +1,501 @@
+@page "/script-patch"
+@using AdminTool.Services
+@using Http.Service
+@using Microsoft.AspNetCore.Components.Authorization
+@using Microsoft.AspNetCore.Components.Forms
+@using System.Security.Claims
+@using System.Text
+@using Response = fb.protocol._internal.response
+@inject ScriptPublishService ScriptPublishService
+@inject RabbitMqService RabbitMqService
+@inject LogService LogService
+@inject AdminActivityLogService ActivityLog
+@inject AuthenticationStateProvider AuthenticationStateProvider
+@inject IConfiguration Configuration
+@attribute [AuthorizeRole(Role.Superadmin)]
+
+<PageTitle>스크립트 패치 - FB ADMIN</PageTitle>
+
+<div class="script-patch-page">
+    <div class="page-header">
+        <h1>스크립트 패치</h1>
+        <p>Lua 스크립트를 업로드하고 실시간으로 리로드합니다</p>
+    </div>
+
+    @if (!ScriptPublishService.IsConfigured)
+    {
+        <div class="stitch-error-banner" role="status">
+            <div class="stitch-error-banner-content">
+                <span class="material-symbols-outlined">block</span>
+                <span>
+                    스크립트 패치 기능을 사용할 수 없습니다.
+                    UploadBaseUrl, DownloadBaseUrl, Username, Password가 모두 설정되어야 합니다.
+                    로컬은 <code>appsettings.Local.json</code>, Compose/Pulumi는 환경변수 또는 Pulumi secret을 확인하세요.
+                </span>
+            </div>
+        </div>
+    }
+    else
+    {
+        @if (!string.IsNullOrEmpty(errorMessage))
+        {
+            <div class="stitch-error-banner">
+                <div class="stitch-error-banner-content">
+                    <span class="material-symbols-outlined">error</span>
+                    <span>@errorMessage</span>
+                </div>
+                <button type="button" class="stitch-banner-dismiss" @onclick="() => errorMessage = null" aria-label="닫기">
+                    <span class="material-symbols-outlined">close</span>
+                </button>
+            </div>
+        }
+
+        @if (!string.IsNullOrEmpty(successMessage))
+        {
+            <div class="stitch-success-banner">
+                <div class="stitch-success-banner-content">
+                    <span class="material-symbols-outlined">check_circle</span>
+                    <span class="stitch-success-text">@successMessage</span>
+                </div>
+                <button type="button" class="stitch-banner-dismiss stitch-success-dismiss" @onclick="() => successMessage = null" aria-label="닫기">
+                    <span class="material-symbols-outlined">close</span>
+                </button>
+            </div>
+        }
+
+        <div class="card-bg stitch-form-card">
+            <div class="stitch-form-card-header">
+                <div class="dash-card-title-row">
+                    <span class="material-symbols-outlined">code</span>
+                    <h2 class="dash-card-title">런타임 스크립트 패치</h2>
+                </div>
+            </div>
+            <div class="card-body">
+                <div class="script-patch-dropzone">
+                    <span class="material-symbols-outlined script-patch-drop-icon">cloud_upload</span>
+                    <p class="script-patch-drop-text">.lua 파일을 여기에 드래그하거나 클릭하여 선택하세요</p>
+                    <InputFile @key="fileInputKey"
+                               OnChange="OnInputFileChange"
+                               multiple
+                               accept=".lua,text/plain"
+                               class="script-patch-file-input" />
+                </div>
+
+                @if (pendingFiles.Count > 0)
+                {
+                    <div class="script-patch-file-list-header">
+                        <h3 class="script-patch-file-list-title">업로드 대기 (@pendingFiles.Count)</h3>
+                        <button type="button" class="stitch-btn stitch-btn-neutral" @onclick="ClearFiles" disabled="@isProcessing">
+                            모두 삭제
+                        </button>
+                    </div>
+                    <ul class="script-patch-file-list">
+                        @foreach (var file in pendingFiles)
+                        {
+                            <li class="script-patch-file-item">
+                                <span class="material-symbols-outlined">description</span>
+                                <div class="script-patch-file-meta">
+                                    <span class="script-patch-file-name">@file.Name</span>
+                                    <span class="script-patch-file-size">@FormatSize(file.Bytes.LongLength)</span>
+                                    <input class="form-control script-patch-path-input"
+                                           placeholder="spell/123.lua"
+                                           value="@file.RelativePath"
+                                           disabled="@isProcessing"
+                                           @onchange="e => OnPathChanged(file, e.Value?.ToString())" />
+                                    @if (file.Dependencies.Count > 0)
+                                    {
+                                        <div class="script-patch-deps">
+                                            @foreach (var dep in file.Dependencies)
+                                            {
+                                                <span class="script-patch-dep-chip">@dep</span>
+                                            }
+                                        </div>
+                                    }
+                                </div>
+                                <button type="button"
+                                        class="script-patch-file-remove"
+                                        @onclick="() => RemoveFile(file)"
+                                        disabled="@isProcessing"
+                                        aria-label="제거">
+                                    <span class="material-symbols-outlined">close</span>
+                                </button>
+                            </li>
+                        }
+                    </ul>
+                }
+                else
+                {
+                    <p class="script-patch-hint">파일마다 scripts/ 기준 상대 경로를 지정하세요. require('lib.*') 종속성은 자동 분석됩니다.</p>
+                }
+
+                <div class="mb-3 script-patch-scope">
+                    <div class="form-check">
+                        <InputCheckbox id="applyAllWorldsScripts" class="form-check-input" @bind-Value="applyAllWorlds" disabled="@isProcessing" />
+                        <label class="form-check-label" for="applyAllWorldsScripts">모든 월드에 적용</label>
+                    </div>
+                    <p class="script-patch-scope-label">
+                        적용 범위:
+                        @if (applyAllWorlds)
+                        {
+                            <strong>전체 월드</strong>
+                            <span class="script-patch-hint-inline"> (헤더 월드 선택과 무관)</span>
+                        }
+                        else if (selectedWorld.HasValue)
+                        {
+                            <strong>World @selectedWorld.Value</strong>
+                        }
+                        else
+                        {
+                            <strong>월드 미선택</strong>
+                        }
+                    </p>
+                </div>
+            </div>
+        </div>
+
+        @if (pendingFiles.Count > 0)
+        {
+            <div class="card-bg stitch-form-card script-patch-order-card">
+                <div class="stitch-form-card-header">
+                    <div class="dash-card-title-row">
+                        <span class="material-symbols-outlined">account_tree</span>
+                        <h2 class="dash-card-title">적용 순서</h2>
+                    </div>
+                </div>
+                <div class="card-body">
+                    @if (!string.IsNullOrEmpty(analysisError))
+                    {
+                        <p class="script-patch-analysis-error">@analysisError</p>
+                    }
+                    else if (orderedPaths.Count > 0)
+                    {
+                        <ul class="script-patch-order-list">
+                            @for (var i = 0; i < orderedPaths.Count; i++)
+                            {
+                                <li><span class="script-patch-order-index">@(i + 1).</span> @orderedPaths[i]</li>
+                            }
+                        </ul>
+                    }
+                    else
+                    {
+                        <p class="script-patch-hint">경로를 입력하면 종속성을 분석합니다.</p>
+                    }
+                </div>
+            </div>
+        }
+
+        <div class="stitch-form-actions script-patch-actions">
+            <button type="button" class="stitch-btn stitch-btn-neutral" @onclick="ClearFiles" disabled="@isProcessing">
+                초기화
+            </button>
+            <button type="button"
+                    class="stitch-btn stitch-btn-primary"
+                    @onclick="HandlePublish"
+                    disabled="@(isProcessing || pendingFiles.Count == 0 || !canPublish)">
+                @if (isProcessing)
+                {
+                    <span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
+                }
+                <span class="material-symbols-outlined" style="font-size:1rem;">sync</span>
+                업로드 및 리로드
+            </button>
+        </div>
+    }
+</div>
+
+@code {
+    private const long MaxFileBytes = 2 * 1024 * 1024;
+
+    private readonly List<PendingFile> pendingFiles = new();
+    private readonly List<string> orderedPaths = new();
+    private string errorMessage;
+    private string successMessage;
+    private string analysisError;
+    private bool isProcessing;
+    private bool applyAllWorlds;
+    private bool canPublish;
+    private int fileInputKey;
+    private string currentUserName = "Admin";
+
+    [CascadingParameter(Name = "SelectedWorld")]
+    private uint? selectedWorld { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
+        var nameClaim = authState.User.FindFirst(ClaimTypes.Name);
+        if (!string.IsNullOrEmpty(nameClaim?.Value))
+            currentUserName = nameClaim.Value;
+    }
+
+    private async Task OnInputFileChange(InputFileChangeEventArgs e)
+    {
+        if (!ScriptPublishService.IsConfigured)
+            return;
+
+        errorMessage = null;
+        successMessage = null;
+
+        foreach (var file in e.GetMultipleFiles(64))
+            await TryAddFileAsync(file);
+
+        Reanalyze();
+        // Remount InputFile so the same files can be selected/dragged again.
+        fileInputKey++;
+    }
+
+    private async Task TryAddFileAsync(IBrowserFile file)
+    {
+        var name = Path.GetFileName(file.Name);
+        if (!name.EndsWith(".lua", StringComparison.OrdinalIgnoreCase))
+        {
+            errorMessage = $"허용되지 않은 파일입니다: {name}";
+            return;
+        }
+
+        if (file.Size <= 0 || file.Size > MaxFileBytes)
+        {
+            errorMessage = $"파일 크기가 올바르지 않습니다: {name}";
+            return;
+        }
+
+        await using var stream = file.OpenReadStream(MaxFileBytes);
+        using var ms = new MemoryStream();
+        await stream.CopyToAsync(ms);
+        var bytes = ms.ToArray();
+        var source = Encoding.UTF8.GetString(bytes);
+
+        pendingFiles.RemoveAll(x => string.Equals(x.Name, name, StringComparison.OrdinalIgnoreCase));
+        pendingFiles.Add(new PendingFile(name, bytes, source, name));
+    }
+
+    private void OnPathChanged(PendingFile file, string value)
+    {
+        file.RelativePath = value?.Trim() ?? string.Empty;
+        Reanalyze();
+    }
+
+    private void RemoveFile(PendingFile file)
+    {
+        pendingFiles.Remove(file);
+        Reanalyze();
+    }
+
+    private void ClearFiles()
+    {
+        pendingFiles.Clear();
+        orderedPaths.Clear();
+        analysisError = null;
+        canPublish = false;
+        errorMessage = null;
+        successMessage = null;
+        fileInputKey++;
+    }
+
+    private void Reanalyze()
+    {
+        orderedPaths.Clear();
+        analysisError = null;
+        canPublish = false;
+
+        foreach (var file in pendingFiles)
+            file.Dependencies = new List<string>();
+
+        if (pendingFiles.Count == 0)
+            return;
+
+        foreach (var file in pendingFiles)
+        {
+            var path = ScriptDependencyAnalyzer.NormalizeRelativePath(file.RelativePath);
+            if (string.IsNullOrEmpty(path))
+            {
+                analysisError = "모든 파일에 상대 경로를 입력하세요.";
+                return;
+            }
+
+            if (!ScriptPublishService.IsAllowedRelativePath(path))
+            {
+                analysisError = $"허용되지 않은 경로입니다: {path}";
+                return;
+            }
+        }
+
+        var entries = pendingFiles
+            .Select(f => (ScriptDependencyAnalyzer.NormalizeRelativePath(f.RelativePath), f.Source))
+            .ToList();
+
+        var result = ScriptDependencyAnalyzer.Analyze(entries);
+        if (!result.Success)
+        {
+            analysisError = result.Error;
+            return;
+        }
+
+        orderedPaths.AddRange(result.OrderedPaths);
+        foreach (var file in pendingFiles)
+        {
+            var path = ScriptDependencyAnalyzer.NormalizeRelativePath(file.RelativePath);
+            if (result.Dependencies.TryGetValue(path, out var deps))
+                file.Dependencies = deps.ToList();
+        }
+
+        canPublish = orderedPaths.Count > 0;
+    }
+
+    private async Task HandlePublish()
+    {
+        if (!ScriptPublishService.IsConfigured)
+            return;
+
+        Reanalyze();
+        if (!canPublish)
+        {
+            errorMessage = analysisError ?? "종속성 분석을 완료할 수 없습니다.";
+            return;
+        }
+
+        isProcessing = true;
+        errorMessage = null;
+        successMessage = null;
+
+        try
+        {
+            List<uint> targetWorlds;
+            if (applyAllWorlds)
+            {
+                targetWorlds = GetWorlds();
+                if (targetWorlds.Count == 0)
+                {
+                    errorMessage = "WorldServers 설정에서 월드를 찾을 수 없습니다.";
+                    return;
+                }
+            }
+            else
+            {
+                if (!selectedWorld.HasValue)
+                {
+                    errorMessage = "월드가 선택되지 않았습니다.";
+                    return;
+                }
+
+                targetWorlds = new List<uint> { selectedWorld.Value };
+            }
+
+            var byPath = pendingFiles.ToDictionary(
+                f => ScriptDependencyAnalyzer.NormalizeRelativePath(f.RelativePath),
+                f => f,
+                StringComparer.OrdinalIgnoreCase);
+
+            var uploads = orderedPaths
+                .Select(path => (path, (Stream)new MemoryStream(byPath[path].Bytes)))
+                .ToList();
+
+            try
+            {
+                await ScriptPublishService.PublishAsync(uploads);
+            }
+            finally
+            {
+                foreach (var (_, stream) in uploads)
+                    await stream.DisposeAsync();
+            }
+
+            var message = new Response.ReloadScripts
+            {
+                Error = 0,
+                Url = ScriptPublishService.DownloadBaseUrl,
+                ScriptPaths = orderedPaths.ToList()
+            };
+
+            foreach (var world in targetWorlds)
+                await RabbitMqService.PublishAsync(message, "amq.direct", $"fb.{world}.global");
+
+            var targetLabel = applyAllWorlds ? "전체 월드" : $"World {selectedWorld.Value}";
+            var detail = string.Join(", ", orderedPaths);
+            await LogService.WriteAsync("script_patch", new
+            {
+                world = applyAllWorlds ? "all" : selectedWorld?.ToString() ?? "unknown",
+                worlds = targetWorlds,
+                apply_all_worlds = applyAllWorlds,
+                url = message.Url,
+                script_paths = orderedPaths,
+                file_count = orderedPaths.Count
+            });
+
+            ActivityLog.Add(new AdminActivityEntry
+            {
+                Category = "script_patch",
+                Summary = $"스크립트 패치 ({orderedPaths.Count})",
+                Detail = detail,
+                Actor = currentUserName,
+                Target = targetLabel,
+                Success = true
+            });
+
+            successMessage = applyAllWorlds
+                ? $"{orderedPaths.Count}개 스크립트를 업로드하고 전체 월드({targetWorlds.Count})에 리로드를 요청했습니다."
+                : $"{orderedPaths.Count}개 스크립트를 업로드하고 World {selectedWorld.Value}에 리로드를 요청했습니다.";
+            ClearFiles();
+        }
+        catch (Exception ex)
+        {
+            errorMessage = $"스크립트 패치 실패: {ex.Message}";
+            ActivityLog.Add(new AdminActivityEntry
+            {
+                Category = "script_patch",
+                Summary = "스크립트 패치",
+                Detail = ex.Message,
+                Actor = currentUserName,
+                Target = applyAllWorlds
+                    ? "전체 월드"
+                    : (selectedWorld.HasValue ? $"World {selectedWorld.Value}" : "unknown"),
+                Success = false
+            });
+        }
+        finally
+        {
+            isProcessing = false;
+        }
+    }
+
+    private List<uint> GetWorlds()
+    {
+        try
+        {
+            return Configuration.GetSection("WorldServers").GetChildren()
+                .Where(child => uint.TryParse(child.Key, out _))
+                .Select(child => uint.Parse(child.Key))
+                .ToList();
+        }
+        catch
+        {
+            return new List<uint>();
+        }
+    }
+
+    private static string FormatSize(long bytes)
+    {
+        if (bytes < 1024)
+            return $"{bytes} B";
+        if (bytes < 1024 * 1024)
+            return $"{bytes / 1024.0:0.#} KB";
+        return $"{bytes / (1024.0 * 1024.0):0.#} MB";
+    }
+
+    private sealed class PendingFile
+    {
+        public PendingFile(string name, byte[] bytes, string source, string relativePath)
+        {
+            Name = name;
+            Bytes = bytes;
+            Source = source;
+            RelativePath = relativePath;
+        }
+
+        public string Name { get; }
+        public byte[] Bytes { get; }
+        public string Source { get; }
+        public string RelativePath { get; set; }
+        public List<string> Dependencies { get; set; } = new();
+    }
+}

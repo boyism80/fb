@@ -1,9 +1,15 @@
 -- item: [궁극]마법강화
 
--- [궁극]마법강화 사용 스크립트
--- function ON_ACTIVATED_10654(me, item)
--- end
+return {
+    -- on_activated = function(me, item)
+    -- end,
 
--- [궁극]마법강화 해제 스크립트
--- function ON_DEACTIVATED_10654(me, item)
--- end
+    -- on_deactivated = function(me, item)
+    -- end,
+
+    -- on_concast = function(me, item)
+    -- end,
+
+    -- on_attack = function(me, item)
+    -- end
+}

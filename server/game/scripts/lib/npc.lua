@@ -117,18 +117,18 @@ function M.rename_weapon(me, npc, from, to)
         end
     end
 
-    local unicode = CP949(to)
-    if #unicode < 4 then
+    local cp949 = CP949(to)
+    if #cp949 < 4 then
         npc:chat('이름이 너무 짧습니다.')
         return true
     end
     
-    if #unicode > 32 then
+    if #cp949 > 32 then
         npc:chat('이름이 너무 깁니다.')
         return true
     end
     
-    if assert_korean(unicode) == false then
+    if assert_korean(cp949) == false then
         npc:chat('그렇게 바꿀 수 없습니다.')
         return true
     end
@@ -636,12 +636,18 @@ function M.shop(me, npc, config)
             labels[i] = menu[i][1]
         end
 
-        local selected = me:list(npc, greeting, labels)
-        if selected == nil then
+        local selected, button = me:pursuit(npc, greeting, labels)
+        if button == DIALOG_RESULT.QUIT then
             return
         end
 
-        local entry = menu[selected]
+        local entry = nil
+        for i = 1, #menu do
+            if menu[i][1] == selected then
+                entry = menu[i]
+                break
+            end
+        end
         if entry == nil then
             return
         end
@@ -797,15 +803,17 @@ function M.show_sell_menu(me, npc, categories)
             labels[i] = categories[i][1]
         end
 
-        local selected, button = me:list(npc, '무엇을 사시겠어요?', labels, { prev = true })
-        if selected == nil then
-            if button == DIALOG_RESULT.QUIT then
-                return DIALOG_RESULT.QUIT
-            end
-            return DIALOG_RESULT.NEXT
+        local selected, button = me:pursuit(npc, '무엇을 사시겠어요?', labels)
+        if button == DIALOG_RESULT.QUIT then
+            return
         end
 
-        return show_sell_catalog(me, npc, categories[selected][2])
+        for i = 1, #categories do
+            if categories[i][1] == selected then
+                return show_sell_catalog(me, npc, categories[i][2])
+            end
+        end
+        return DIALOG_RESULT.NEXT
     end
 
     return show_sell_catalog(me, npc)
@@ -1163,12 +1171,24 @@ function M.show_rename_weapon_menu(me, npc)
     return me:dialog(npc, string.format('%s의 이름을 %s 변경했습니다.', weapon:model():name(), name_with(name, '으로', '로')), { prev = false, next = true })
 end
 
+-- Dialog button convention:
+--   After any dialog builtin, check DIALOG_RESULT.QUIT first → full exit (return).
+--   0x2F (pursuit/menu/spell/item/slot): client TOP sends C2S 0x43 (object re-click);
+--     server releases the waiting dialog and restarts on_click — do not handle TOP in script.
+--   0x30 (dialog/list/input_ext): PREV = previous step, QUIT = exit.
+--   After QUIT (or PREV), selected is never nil — do not write `or selected == nil`.
 function M.basic_class(me, npc, class, spells)
+    local YES = '예'
+    local NO = '아니오'
+    local SPELL_DONE_MSG = '수행의 길은 끝이 없는 법. 언제라도 어려운 일이 있으면 나를 찾아오도록 하게.'
 ::NPC_BASIC_CLASS_000::
     local level = me:level()
     local class_name = class2name(class)
     if me:class() == class then
-        local selected = me:menu(npc, '험난한 길을 걷는 수행자여, 무슨 일로 저를 찾으셨소?', {'마법 알아보기', '마법 배우기', '마법 지우기', '칭호 받기'})
+        local selected, menu_btn = me:menu(npc, '험난한 길을 걷는 수행자여, 무슨 일로 저를 찾으셨소?', {'마법 알아보기', '마법 배우기', '마법 지우기', '칭호 받기'})
+        if menu_btn == DIALOG_RESULT.QUIT then
+            return
+        end
         if selected == 1 then
             local learned_spells = {}
             for _, spell in pairs(me:spells()) do
@@ -1190,12 +1210,11 @@ function M.basic_class(me, npc, class, spells)
             end
 
             table.sort(preview, function(a, b) return spells[a].level < spells[b].level end)
-            selected = me:list(npc, '자네 수준이라면 이런 마법들을 알아볼 수 있겠군', preview)
-            if selected == nil then
+            local name, button = me:pursuit(npc, '자네 수준이라면 이런 마법들을 알아볼 수 있겠군', preview)
+            if button == DIALOG_RESULT.QUIT then
                 return
             end
 
-            local name = preview[selected]
             local spell = spells[name]
             if me:dialog(npc, string.format('%s %s', name_with(name, '은', '는'), spell.desc), { prev = false, next = true }) == DIALOG_RESULT.QUIT then
                 return
@@ -1203,12 +1222,12 @@ function M.basic_class(me, npc, class, spells)
 
             local material = {}
             for _, m in pairs(spell.material) do
-                local name = m['name']
+                local mat_name = m['name']
                 local count = m['count']
-                if name == '금전' then
-                    table.insert(material, string.format('%s %d전', name, count))
+                if mat_name == '금전' then
+                    table.insert(material, string.format('%s %d전', mat_name, count))
                 else
-                    table.insert(material, string.format('%s %d개', name, count))
+                    table.insert(material, string.format('%s %d개', mat_name, count))
                 end
             end
 
@@ -1237,17 +1256,16 @@ function M.basic_class(me, npc, class, spells)
             end
 
             table.sort(preview, function(a, b) return spells[a].level < spells[b].level end)
-            selected = me:list(npc, '자네 수준이라면 이런 마법들을 배울 수 있겠군', preview)
-            if selected == nil then
+            local name, button = me:pursuit(npc, '자네 수준이라면 이런 마법들을 배울 수 있겠군', preview)
+            if button == DIALOG_RESULT.QUIT then
                 return
             end
 
-            local name = preview[selected]
             local spell = spells[name]
             if me:dialog(npc, string.format('%s %s', name_with(name, '은', '는'), spell.desc), { prev = false, next = true }) == DIALOG_RESULT.QUIT then
                 return
             end
-            
+
             local material = {}
             for _, m in pairs(spell.material) do
                 if m.name == '금전' then
@@ -1256,13 +1274,13 @@ function M.basic_class(me, npc, class, spells)
                     table.insert(material, string.format('%s %d개', m.name, m.count))
                 end
             end
-            
-            selected = me:list(npc, string.format('%s 배우기 위해서는 %s를 바쳐야 하네. 배우겠느냐?', name_with(name), table.concat(material, ', ')), {'예', '아니오'})
-            if selected == nil then
+
+            local confirm, confirm_btn = me:pursuit(npc, string.format('%s 배우기 위해서는 %s를 바쳐야 하네. 배우겠느냐?', name_with(name), table.concat(material, ', ')), { YES, NO })
+            if confirm_btn == DIALOG_RESULT.QUIT then
                 return
             end
 
-            if selected == 2 then
+            if confirm == NO then
                 if me:dialog(npc, '이 모든 것은 네 탓이니, 다음에 이 곳에 올 때는 더 굳은 각오를 가지고 오도록 하거라.', { prev = false, next = true }) == DIALOG_RESULT.QUIT then
                     return
                 end
@@ -1300,34 +1318,32 @@ function M.basic_class(me, npc, class, spells)
                 end
             end
             me:mkspell(name)
-            if me:dialog(npc, '배움의 길은 끝이 없으니 더더욱 노력하는 자세를 갖도록 하거라', { prev = false, next = true }) == DIALOG_RESULT.QUIT then
-                return
-            end
-            goto NPC_BASIC_CLASS_000
+            me:menu(npc, SPELL_DONE_MSG, {})
+            return
         elseif selected == 3 then
-            local learned_spells = {}
-            for _, spell in pairs(me:spells()) do
-                table.insert(learned_spells, spell:model():name())
-            end
-            selected = me:list(npc, '지금 네가 지울 수 있는 마법은 다음과 같단다. 다시 한 번 심사 숙고 하고 지우도록 하여라.', learned_spells)
-            if selected == nil then
+            local slot, button = me:spell(npc, '지금 네가 지울 수 있는 마법은 다음과 같단다. 다시 한 번 심사 숙고 하고 지우도록 하여라.')
+            if button == DIALOG_RESULT.QUIT then
                 return
             end
 
-            me:rmspell(learned_spells[selected])
-            if me:dialog(npc, '배움의 길은 끝이 없으니 더더욱 노력하는 자세를 갖도록 하거라', { prev = false, next = true }) == DIALOG_RESULT.QUIT then
-                return
-            end
-            goto NPC_BASIC_CLASS_000
+            me:rmspell(slot)
+            me:menu(npc, SPELL_DONE_MSG, {})
+            return
         elseif selected == 4 then
             local title = me:input(npc, '네 정성이 갸륵하니... 그래, 무슨 칭호를 받고 싶으냐?', { top = '받고싶은 칭호는', bottom = '입니다.', maxlen = 10, prev = true })
             if title == DIALOG_RESULT.QUIT then
                 return
             end
+            if title == DIALOG_RESULT.PREV then
+                goto NPC_BASIC_CLASS_000
+            end
 
-            selected = me:list(npc, '그 칭호로 바꾸려면 금전 5000전을 바쳐야 하느니라. 네 소원을 이루겠느냐?', {'예', '아니오'})
-            if selected == nil then
+            local confirm, confirm_btn = me:pursuit(npc, '그 칭호로 바꾸려면 금전 5000전을 바쳐야 하느니라. 네 소원을 이루겠느냐?', { YES, NO })
+            if confirm_btn == DIALOG_RESULT.QUIT then
                 return
+            end
+            if confirm ~= YES then
+                goto NPC_BASIC_CLASS_000
             end
 
             if me:money() < 5000 then
@@ -1348,8 +1364,11 @@ function M.basic_class(me, npc, class, spells)
             goto NPC_BASIC_CLASS_000
         end
     else
-        local button = me:menu(npc, '험난한 길을 걷는 수행자여, 무슨 일로 저를 찾으셨소?', {class_name .. '직업가지기'})
-        if button == 1 then
+        local job_sel, menu_btn = me:menu(npc, '험난한 길을 걷는 수행자여, 무슨 일로 저를 찾으셨소?', {class_name .. '직업가지기'})
+        if menu_btn == DIALOG_RESULT.QUIT then
+            return
+        end
+        if job_sel == 1 then
             if me:class() ~= CLASS.NONE then
                 me:dialog(npc, '이미 직업이 있지 않느냐? 한번 선택한 직업은 바꿀 수 없느니라.')
                 return
@@ -1359,52 +1378,42 @@ function M.basic_class(me, npc, class, spells)
                 me:dialog(npc, '아직 너의 정성이 부족하니 다음에 이 곳에 올 때에는 보다 큰 각오를 갖고 나를 찾아오도록 하여라.')
             end
 ::NPC_BASIC_CLASS_001::
-            button = me:dialog(npc, class_name .. '의 길을 가려면, 몇 가지 맹세를 해야하느니.', { prev = false, next = true })
+            local button = me:dialog(npc, class_name .. '의 길을 가려면, 몇 가지 맹세를 해야하느니.', { prev = false, next = true })
             if button == DIALOG_RESULT.QUIT then
                 return
             end
 
 ::NPC_BASIC_CLASS_002::
-            local selected, button = me:list(npc, '첫째로, 하늘에서 굽어보고 계신 천제(天帝) 앞에 복종을 맹세하겠느냐?', {'예', '아니오'}, { prev = true })
-            if selected ~= 1 then
-                goto NPC_BASIC_CLASS_STOP
-            end
+            local selected, button = me:pursuit(npc, '첫째로, 하늘에서 굽어보고 계신 천제(天帝) 앞에 복종을 맹세하겠느냐?', { YES, NO })
             if button == DIALOG_RESULT.QUIT then
                 return
             end
-            if button == DIALOG_RESULT.PREV then
-                goto NPC_BASIC_CLASS_001
+            if selected ~= YES then
+                goto NPC_BASIC_CLASS_STOP
             end
 ::NPC_BASIC_CLASS_003::
-            selected, button = me:list(npc, '둘째로, 험난한 ' .. class_name .. '수련의 길에 너의 평생을 바칠 것을 맹세하겠느냐?', {'예', '아니오'}, { prev = true })
-            if selected ~= 1 then
-                goto NPC_BASIC_CLASS_STOP
-            end
+            selected, button = me:pursuit(npc, '둘째로, 험난한 ' .. class_name .. '수련의 길에 너의 평생을 바칠 것을 맹세하겠느냐?', { YES, NO })
             if button == DIALOG_RESULT.QUIT then
                 return
             end
-            if button == DIALOG_RESULT.PREV then
-                goto NPC_BASIC_CLASS_002
+            if selected ~= YES then
+                goto NPC_BASIC_CLASS_STOP
             end
 ::NPC_BASIC_CLASS_004::
-            selected, button = me:list(npc, '셋째로, 불의를 보고 그냥 지나치지 않을 것을 맹세하겠느냐?', {'예', '아니오'}, { prev = true })
-            if selected ~= 1 then
-                goto NPC_BASIC_CLASS_STOP
-            end
+            selected, button = me:pursuit(npc, '셋째로, 불의를 보고 그냥 지나치지 않을 것을 맹세하겠느냐?', { YES, NO })
             if button == DIALOG_RESULT.QUIT then
                 return
             end
-            if button == DIALOG_RESULT.PREV then
-                goto NPC_BASIC_CLASS_003
+            if selected ~= YES then
+                goto NPC_BASIC_CLASS_STOP
             end
 ::NPC_BASIC_CLASS_005::
-            selected, button = me:list(npc, '훌륭하군. 그렇다면, 지금까지의 맹세를 증명하기 위해 도토리를 10개 바치거라.', {'예', '아니오'}, { prev = true })
-            if selected ~= 1 then
-                goto NPC_BASIC_CLASS_STOP
-            elseif button == DIALOG_RESULT.QUIT then
+            selected, button = me:pursuit(npc, '훌륭하군. 그렇다면, 지금까지의 맹세를 증명하기 위해 도토리를 10개 바치거라.', { YES, NO })
+            if button == DIALOG_RESULT.QUIT then
                 return
-            elseif button == DIALOG_RESULT.PREV then
-                goto NPC_BASIC_CLASS_004
+            end
+            if selected ~= YES then
+                goto NPC_BASIC_CLASS_STOP
             else
                 local item = me:item('도토리')
                 if item == nil then
@@ -1508,15 +1517,28 @@ function M.promotion_skills(me, npc, class)
         me:dialog(npc, '당신은 더 이상 제가 수련을 도와드리지 않아도 될 만큼 성장하셨군요.', { prev = false, next = true })
         return
     end
-    local tier_sel = me:list(npc, '안녕하세요. 어떻게 오셨나요?', {
-        '1차 승급기술',
-        '2차 승급기술',
-        '3차 승급기술',
+    local TIER = {
+        [1] = '1차 승급기술',
+        [2] = '2차 승급기술',
+        [3] = '3차 승급기술',
+    }
+::NPC_PROMOTION_TIER::
+    local tier_sel, tier_btn = me:pursuit(npc, '안녕하세요. 어떻게 오셨나요?', {
+        TIER[1], TIER[2], TIER[3],
     })
-    if tier_sel == nil then
+    if tier_btn == DIALOG_RESULT.QUIT then
         return
     end
-    local tier = tier_sel
+    local tier = nil
+    for i = 1, 3 do
+        if tier_sel == TIER[i] then
+            tier = i
+            break
+        end
+    end
+    if tier == nil then
+        return
+    end
     if me:promotion() < tier - 1 then
         me:dialog(npc, string.format('%d차 승급을 한 뒤에 다시 오세요.', tier), { prev = false, next = true })
         return
@@ -1526,12 +1548,8 @@ function M.promotion_skills(me, npc, class)
         me:dialog(npc, '아직 준비 중입니다.', { prev = false, next = true })
         return
     end
-    local skill_sel = me:list(npc, '안녕하세요. 어떤 기술을 배울래요?', spells)
-    if skill_sel == nil then
-        return
-    end
-    local spell_name = spells[skill_sel]
-    if not spell_name then
+    local spell_name, skill_btn = me:pursuit(npc, '안녕하세요. 어떤 기술을 배울래요?', spells)
+    if skill_btn == DIALOG_RESULT.QUIT then
         return
     end
     if me:dialog(npc, name_with(spell_name, '을', '를') .. ' 배우기 위해선 5000만의 경험치가 필요합니다.', { prev = false, next = true }) == DIALOG_RESULT.QUIT then
@@ -1622,8 +1640,13 @@ function M.promotion(me, npc, class)
     if not next_name then
         return
     end
-    local selected, button = me:list(npc, string.format('이토록 강해지시다니, 정말 대단하십니다.\n당신이 지금껏 걸어온 고된 수련의 길에 경의를 표합니다.\n\n지금 %s의 칭호를 받으시겠습니까?', next_name), {'네, 모든 준비가 끝났습니다.', '나중에 다시 오지요.'})
-    if selected ~= 1 then
+    local OPT_READY = '네, 모든 준비가 끝났습니다.'
+    local OPT_LATER = '나중에 다시 오지요.'
+    local selected, button = me:pursuit(npc, string.format('이토록 강해지시다니, 정말 대단하십니다.\n당신이 지금껏 걸어온 고된 수련의 길에 경의를 표합니다.\n\n지금 %s의 칭호를 받으시겠습니까?', next_name), { OPT_READY, OPT_LATER })
+    if button == DIALOG_RESULT.QUIT then
+        return
+    end
+    if selected ~= OPT_READY then
         return
     end
     for _, it in ipairs(items) do

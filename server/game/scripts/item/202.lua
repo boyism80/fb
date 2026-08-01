@@ -1,11 +1,15 @@
 -- item: 빨간색풍선
 
--- 빨간색풍선 사용 스크립트
--- function ON_ACTIVATED_202(me, item)
---
--- end
+return {
+    -- on_activated = function(me, item)
+    -- end,
 
--- 빨간색풍선 해제 스크립트
--- function ON_DEACTIVATED_202(me, item)
---
--- end
+    -- on_deactivated = function(me, item)
+    -- end,
+
+    -- on_concast = function(me, item)
+    -- end,
+
+    -- on_attack = function(me, item)
+    -- end
+}

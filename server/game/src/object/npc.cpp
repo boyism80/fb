@@ -20,15 +20,16 @@ void fb::game::npc::soliloquy()
 {
     this->assert_thread();
     auto& model = this->based<fb::model::npc>();
-    if (table::soliloquy.contains(model.id) == false)
+    if (table::soliloquy->contains(model.id) == false)
         return;
 
     this->_soliloquy_time--;
     if (this->_soliloquy_time > 0)
         return;
 
-    auto& soliloquy = table::soliloquy[model.id];
-    auto  i         = random<uint16_t>(0, soliloquy.size() - 1);
+    auto  soliloquy_table = table::soliloquy;
+    auto& soliloquy       = soliloquy_table[model.id];
+    auto  i               = random<uint16_t>(0, soliloquy.size() - 1);
     this->chat(soliloquy[i].message);
     this->_soliloquy_time = random<uint16_t>(60, 120);
 }

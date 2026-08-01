@@ -151,7 +151,17 @@ test_suite {
             local bot1 = ctx:bot(0)
             local bot2 = ctx:bot(1)
 
-            bot1:learn_spells({ "헬파이어" })
+            if lib.option.disable_pk_protect(bot1) == false then
+                log("fatal", "Drop loot test: failed to disable PK_PROTECT for bot1")
+                return false
+            end
+
+            local hell_slot = bot1:learn_spell("헬파이어")
+            if hell_slot == 0xFF then
+                log("fatal", "Drop loot test: failed to learn 헬파이어")
+                return false
+            end
+
             bot1:setup_bot_stats(100000, 10000)
             bot2:setup_bot_stats(100000, 100000, 50)
 
@@ -173,7 +183,7 @@ test_suite {
             local pos = bot2:position()
             bot1:request(
                 resp.update_external_detailed,
-                protocol.spell_cast("TARGET", 0, "", bot2:oid(), pos),
+                protocol.spell_cast("TARGET", hell_slot, "", bot2:oid(), pos),
                 function(packet)
                     return packet.oid == bot2:oid() and packet.state == "GHOST"
                 end)

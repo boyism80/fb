@@ -95,8 +95,9 @@ async::task<void> bulletin::handle_articles(character* ch, std::weak_ptr<charact
             if (ptr == nullptr)
                 co_return;
 
-            auto& model = table::bulletin[section];
-            auto  flag  = BULLETIN_BUTTON_ENABLE::UP;
+            auto  bulletin_table = table::bulletin;
+            auto& model          = bulletin_table[section];
+            auto  flag           = BULLETIN_BUTTON_ENABLE::UP;
             if (ptr->condition(model.condition))
                 flag |= BULLETIN_BUTTON_ENABLE::WRITE;
 

@@ -48,19 +48,23 @@ void listener_impl::on_chat(object& me, std::string_view message, CHAT_TYPE chat
     if (me.is(OBJECT_TYPE::ITEM))
         return;
 
-    auto scp = scope::PIVOT;
-    switch (chat_type)
+    if (chat_type == CHAT_TYPE::SHOUT)
     {
-    case CHAT_TYPE::SHOUT:
-        scp = scope::MAP;
-        break;
+        this->server.send(me, game_resp::chat(me, message, chat_type), scope::MAP, {.condition = [&me](object& to) {
+                              if (to.is(OBJECT_TYPE::CHARACTER) == false)
+                                  return false;
 
-    default:
-        scp = scope::PIVOT;
-        break;
+                              auto& ch = static_cast<character&>(to);
+                              if (ch.sight(me) && me.hidden(ch) == false)
+                                  return true;
+
+                              return ch.option(OPTION::ROAR);
+                          }});
     }
-
-    this->server.send(me, game_resp::chat(me, message, chat_type), scp);
+    else
+    {
+        this->server.send(me, game_resp::chat(me, message, chat_type), scope::PIVOT);
+    }
 }
 
 void listener_impl::on_direction(object& me)
@@ -98,7 +102,8 @@ void listener_impl::on_update_external(object& me, bool detailed)
         auto& model = npc.based<fb::model::npc>();
         if (model.appearance.has_value())
         {
-            auto& app = table::appearance[model.appearance.value()];
+            auto  appearance_table = table::appearance;
+            auto& app              = appearance_table[model.appearance.value()];
             this->send_update_appearance(npc, app);
         }
         else
@@ -114,7 +119,8 @@ void listener_impl::on_update_external(object& me, bool detailed)
         auto& model = mob.based<fb::model::mob>();
         if (model.appearance.has_value())
         {
-            auto& app = table::appearance[model.appearance.value()];
+            auto  appearance_table2 = table::appearance;
+            auto& app               = appearance_table2[model.appearance.value()];
             this->send_update_appearance(mob, app);
         }
         else
@@ -154,7 +160,8 @@ void listener_impl::on_update_external(object& me, object& you, bool detailed)
         auto& model = npc.based<fb::model::npc>();
         if (model.appearance.has_value())
         {
-            auto& app = table::appearance[model.appearance.value()];
+            auto  appearance_table3 = table::appearance;
+            auto& app               = appearance_table3[model.appearance.value()];
             this->send_update_appearance(npc, app);
         }
         else
@@ -170,7 +177,8 @@ void listener_impl::on_update_external(object& me, object& you, bool detailed)
         auto& model = mob.based<fb::model::mob>();
         if (model.appearance.has_value())
         {
-            auto& app = table::appearance[model.appearance.value()];
+            auto  appearance_table4 = table::appearance;
+            auto& app               = appearance_table4[model.appearance.value()];
             this->send_update_appearance(mob, app);
         }
         else
@@ -237,9 +245,9 @@ void listener_impl::on_unbuff(object& me, buff& buff)
     me.send(game_resp::spell_unbuff(buff));
 }
 
-void listener_impl::on_sound(object& me, SOUND sound)
+void listener_impl::on_sound(object& me, SOUND sound, uint8_t volume)
 {
-    this->server.send(me, game_resp::sound(me, sound), scope::PIVOT);
+    this->server.send(me, game_resp::sound(me, sound, volume), scope::PIVOT);
 }
 void listener_impl::on_effect(object& me, uint8_t value)
 {

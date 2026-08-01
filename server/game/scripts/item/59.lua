@@ -1,6 +1,15 @@
 -- item: 운의제이검
 
--- 운의제이검 사용 스크립트
--- function ON_ACTIVATED_59(me, item)
---
--- end
+return {
+    -- on_activated = function(me, item)
+    -- end,
+
+    -- on_deactivated = function(me, item)
+    -- end,
+
+    -- on_concast = function(me, item)
+    -- end,
+
+    -- on_attack = function(me, item)
+    -- end
+}

@@ -51,6 +51,7 @@ public struct Mail : IFlatbufferObject
   public ArraySegment<byte>? GetCreatedDateBytes() { return __p.__vector_as_arraysegment(16); }
 #endif
   public byte[] GetCreatedDateArray() { return __p.__vector_as_array<byte>(16); }
+  public nullable.nullable_uint? SystemMailId { get { int o = __p.__offset(18); return o != 0 ? (nullable.nullable_uint?)(new nullable.nullable_uint()).__assign(__p.__indirect(o + __p.bb_pos), __p.bb) : null; } }
 
   public static Offset<fb.protocol._internal.raw.Mail> CreateMail(FlatBufferBuilder builder,
       ushort id = 0,
@@ -59,8 +60,10 @@ public struct Mail : IFlatbufferObject
       StringOffset titleOffset = default(StringOffset),
       StringOffset contentsOffset = default(StringOffset),
       bool read = false,
-      StringOffset created_dateOffset = default(StringOffset)) {
-    builder.StartTable(7);
+      StringOffset created_dateOffset = default(StringOffset),
+      Offset<nullable.nullable_uint> system_mail_idOffset = default(Offset<nullable.nullable_uint>)) {
+    builder.StartTable(8);
+    Mail.AddSystemMailId(builder, system_mail_idOffset);
     Mail.AddCreatedDate(builder, created_dateOffset);
     Mail.AddContents(builder, contentsOffset);
     Mail.AddTitle(builder, titleOffset);
@@ -71,7 +74,7 @@ public struct Mail : IFlatbufferObject
     return Mail.EndMail(builder);
   }
 
-  public static void StartMail(FlatBufferBuilder builder) { builder.StartTable(7); }
+  public static void StartMail(FlatBufferBuilder builder) { builder.StartTable(8); }
   public static void AddId(FlatBufferBuilder builder, ushort id) { builder.AddUshort(0, id, 0); }
   public static void AddUser(FlatBufferBuilder builder, uint user) { builder.AddUint(1, user, 0); }
   public static void AddSender(FlatBufferBuilder builder, StringOffset senderOffset) { builder.AddOffset(2, senderOffset.Value, 0); }
@@ -79,6 +82,7 @@ public struct Mail : IFlatbufferObject
   public static void AddContents(FlatBufferBuilder builder, StringOffset contentsOffset) { builder.AddOffset(4, contentsOffset.Value, 0); }
   public static void AddRead(FlatBufferBuilder builder, bool read) { builder.AddBool(5, read, false); }
   public static void AddCreatedDate(FlatBufferBuilder builder, StringOffset createdDateOffset) { builder.AddOffset(6, createdDateOffset.Value, 0); }
+  public static void AddSystemMailId(FlatBufferBuilder builder, Offset<nullable.nullable_uint> systemMailIdOffset) { builder.AddOffset(7, systemMailIdOffset.Value, 0); }
   public static Offset<fb.protocol._internal.raw.Mail> EndMail(FlatBufferBuilder builder) {
     int o = builder.EndTable();
     return new Offset<fb.protocol._internal.raw.Mail>(o);
@@ -100,6 +104,7 @@ static public class MailVerify
       && verifier.VerifyString(tablePos, 12 /*Contents*/, false)
       && verifier.VerifyField(tablePos, 14 /*Read*/, 1 /*bool*/, 1, false)
       && verifier.VerifyString(tablePos, 16 /*CreatedDate*/, false)
+      && verifier.VerifyTable(tablePos, 18 /*SystemMailId*/, nullable.nullable_uintVerify.Verify, false)
       && verifier.VerifyTableEnd(tablePos);
   }
 }

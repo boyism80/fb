@@ -45,6 +45,7 @@ struct character
     static int builtin_whisper(lua_State* L);
     static int builtin_send_mail(lua_State* L);
     static int builtin_nation(lua_State* L);
+    static int builtin_option(lua_State* L);
     static int builtin_weapon(lua_State* L);
     static int builtin_title(lua_State* L);
     static int builtin_gain(lua_State* L);
@@ -59,6 +60,7 @@ struct character
     static int builtin_base_int(lua_State* L);
     static int builtin_base_dam(lua_State* L);
     static int builtin_base_hit(lua_State* L);
+    static int builtin_base_speed(lua_State* L);
     static int builtin_armor_color(lua_State* L);
     static int builtin_weapon_color(lua_State* L);
     static int builtin_shield_color(lua_State* L);
@@ -79,6 +81,10 @@ struct character
     static int builtin_input(lua_State* L);
     static int builtin_menu(lua_State* L);
     static int builtin_slot(lua_State* L);
+    static int builtin_pursuit(lua_State* L);
+    static int builtin_spell(lua_State* L);
+    static int builtin_email(lua_State* L);
+    static int builtin_dialog_0x30_10(lua_State* L);
     static int builtin_rezen_force(lua_State* L);
     static int builtin_quest(lua_State* L);
     static int builtin_matchmaker(lua_State* L);
@@ -100,14 +106,15 @@ struct character
     static int builtin_marry(lua_State* L);
     static int builtin_divorce(lua_State* L);
     static int builtin_unknown_12(lua_State* L);
-    static int builtin_unknown_26(lua_State* L);
+    static int builtin_move_confirm_noscroll(lua_State* L);
     static int builtin_ui(lua_State* L);
     static int builtin_item_throw_confirm(lua_State* L);
     static int builtin_freeze(lua_State* L);
     static int builtin_friends_sync(lua_State* L);
-    static int builtin_unknown_4B(lua_State* L);
-    static int builtin_unknown_4D(lua_State* L);
-    static int builtin_unknown_35(lua_State* L);
+    static int builtin_c2s_relay(lua_State* L);
+    static int builtin_user_info(lua_State* L);
+    static int builtin_popup_message(lua_State* L);
+    static int builtin_popup_input(lua_State* L);
     static int builtin_holyday_screen(lua_State* L);
 };
 

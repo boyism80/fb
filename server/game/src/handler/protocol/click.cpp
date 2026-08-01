@@ -15,20 +15,29 @@ async::task<bool> click::handle(fb::socket<character>& session, game_reqs::click
     if (ch->inited() == false)
         co_return true;
 
+    // Object-flag click (map object, F1/F2, dialog TOP): drop any waiting dialog first.
+    // Real NPC then restarts via on_click; sentinel oid 0xFFFFFFFD just closes.
+    if (request.flag == game_reqs::click::FLAG_OBJECT && ch->dialog != nullptr)
+    {
+        ch->dialog->release();
+        ch->dialog = nullptr;
+    }
+
     if (request.oid == 0xFFFFFFFF)
     {
         co_await handle_f1(ch);
         co_return true;
     }
-
-    if (request.oid == 0xFFFFFFFE)
+    else if (request.oid == 0xFFFFFFFE)
     {
         co_await handle_f2(ch);
         co_return true;
     }
-
-    co_await handle_object_click(ch, request);
-    co_return true;
+    else
+    {
+        co_await handle_object_click(ch, request);
+        co_return true;
+    }
 }
 
 async::task<void> click::handle_f1(character* ch)
@@ -89,7 +98,7 @@ async::task<void> click::handle_object_click(character* ch, game_reqs::click& re
     {
         auto& model = static_cast<npc&>(*you).based<fb::model::npc>();
         auto  path  = std::format("scripts/npc/{}.lua", model.id);
-        auto  func  = std::format("NPC_{}", model.id);
+        auto  func  = "on_click";
 
         auto lua = this->server.lua.open(path, func);
         if (!lua)

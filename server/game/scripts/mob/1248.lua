@@ -1,3 +1,15 @@
 -- mob: 이벤트인면충
--- function ON_MOB_DIE_1248(me)
--- end
+
+return {
+    -- on_mob_attack = function(me, you)
+    -- end,
+
+    -- on_mob_die = function(me)
+    -- end,
+
+    -- on_mob_kill = function(me, mobs)
+    -- end,
+
+    -- on_mob_spell_hit = function(me, you, spell)
+    -- end
+}

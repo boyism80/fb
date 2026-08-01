@@ -84,7 +84,7 @@ void chat::handle_normal_chat(character* ch, game_reqs::chat& request, const std
     if (map == nullptr)
         return;
 
-    auto message = fb::model::table::blocked_word.filter(request.message);
+    auto message = fb::model::table::blocked_word->filter(request.message);
     auto type    = request.shout ? CHAT_TYPE::SHOUT : CHAT_TYPE::NORMAL;
     ch->chat(message, type, true);
 

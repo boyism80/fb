@@ -78,6 +78,7 @@ table Character {
     updated_date: string;
     first_login_date: string?;
     super_hide: bool = false;
+    speed: ubyte = 0;
 }
 
 table Marriage {
@@ -124,7 +125,7 @@ table Option {
     whisper: bool;
     group: bool;
     roar: bool;
-    roar_worlds: bool;
+    news: bool;
     magic_effect: bool;
     weather_effect: bool;
     fixed_move: bool;
@@ -168,6 +169,7 @@ table Mail {
     contents: string;
     read: bool;
     created_date: string;
+    system_mail_id: uint?;
 }
 
 table MailWriteEntry {

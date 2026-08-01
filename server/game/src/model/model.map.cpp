@@ -36,22 +36,31 @@ std::optional<fb::model::point16_t> fb::model::map::spawn_position() const
 
 fb::model::map* fb::model::__map::name2map(std::string_view name) const
 {
-    static auto cache       = std::unordered_map<std::string, fb::model::map*>{};
-    static auto cache_mutex = std::shared_mutex{};
+    static const __map* cache_owner = nullptr;
+    static auto         cache       = std::unordered_map<std::string, fb::model::map*>{};
+    static auto         cache_mutex = std::shared_mutex{};
 
     auto name_str = std::string(name);
     {
         auto lock = std::shared_lock(cache_mutex);
-        auto it   = cache.find(name_str);
-        if (it != cache.end())
-            return it->second;
+        if (cache_owner == this)
+        {
+            auto it = cache.find(name_str);
+            if (it != cache.end())
+                return it->second;
+        }
     }
 
     for (auto& [k, v] : *this)
     {
         if (v.name == name)
         {
-            auto lock       = std::lock_guard(cache_mutex);
+            auto lock = std::lock_guard(cache_mutex);
+            if (cache_owner != this)
+            {
+                cache.clear();
+                cache_owner = this;
+            }
             cache[name_str] = &v;
             return &v;
         }

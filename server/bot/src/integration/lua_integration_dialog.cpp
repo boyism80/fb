@@ -29,11 +29,20 @@ const char* dialog_ext_type_name(dialog_ext_type type)
     switch (type)
     {
     case dialog_ext_type::normal:
+    case dialog_ext_type::normal_no_msg:
         return "normal";
     case dialog_ext_type::list:
+    case dialog_ext_type::list_no_msg:
         return "list";
     case dialog_ext_type::input_ext:
+    case dialog_ext_type::input_ext_no_msg:
+    case dialog_ext_type::input_password:
+    case dialog_ext_type::input_password_no_msg:
         return "input_ext";
+    case dialog_ext_type::email:
+        return "email";
+    case dialog_ext_type::look:
+        return "look";
     default:
         return "unknown";
     }
@@ -44,13 +53,21 @@ const char* dialog_type_name(dialog_type type)
     switch (type)
     {
     case dialog_type::menu:
+    case dialog_type::menu_no_ext:
         return "menu";
     case dialog_type::input:
+    case dialog_type::input_no_ext:
         return "input";
     case dialog_type::item:
         return "item";
     case dialog_type::slot:
         return "slot";
+    case dialog_type::pursuit:
+        return "pursuit";
+    case dialog_type::spell:
+        return "spell";
+    case dialog_type::dual_field:
+        return "dual_field";
     default:
         return "unknown";
     }
@@ -61,6 +78,9 @@ void push_dialog_ext(fb::lua::context* lua, const dialog_ext_bot& resp)
     lua->new_table();
     lua->pushstring("type");
     lua->pushstring(dialog_ext_type_name(resp.type));
+    lua->settable(-3);
+    lua->pushstring("subtype");
+    lua->pushinteger(static_cast<lua_Integer>(resp.type));
     lua->settable(-3);
     lua->pushstring("look");
     lua->pushinteger(resp.look);
@@ -96,6 +116,28 @@ void push_dialog_ext(fb::lua::context* lua, const dialog_ext_bot& resp)
         lua->settable(-3);
     }
     lua->settable(-3);
+
+    lua->pushstring("input_ext_top");
+    lua->pushstring(resp.input_ext_top);
+    lua->settable(-3);
+    lua->pushstring("input_ext_bottom");
+    lua->pushstring(resp.input_ext_bottom);
+    lua->settable(-3);
+    lua->pushstring("input_ext_maxlen");
+    lua->pushinteger(resp.input_ext_maxlen);
+    lua->settable(-3);
+    lua->pushstring("input_ext_button_prev");
+    lua->pushboolean(resp.input_ext_button_prev);
+    lua->settable(-3);
+    lua->pushstring("input_ext_password");
+    lua->pushboolean(resp.input_ext_password);
+    lua->settable(-3);
+    lua->pushstring("email_str1");
+    lua->pushstring(resp.email_str1);
+    lua->settable(-3);
+    lua->pushstring("email_str2");
+    lua->pushstring(resp.email_str2);
+    lua->settable(-3);
 }
 
 void push_dialog(fb::lua::context* lua, const dialog_bot& resp)
@@ -121,6 +163,9 @@ void push_dialog(fb::lua::context* lua, const dialog_bot& resp)
     lua->settable(-3);
     lua->pushstring("item_pursuit");
     lua->pushinteger(resp.item_pursuit);
+    lua->settable(-3);
+    lua->pushstring("pursuit");
+    lua->pushinteger(resp.pursuit);
     lua->settable(-3);
 
     lua->pushstring("item_items");
@@ -148,6 +193,16 @@ void push_dialog(fb::lua::context* lua, const dialog_bot& resp)
     }
     lua->settable(-3);
 
+    lua->pushstring("menu_menus");
+    lua->new_table();
+    for (size_t i = 0; i < resp.menu_menus.size(); ++i)
+    {
+        lua->pushinteger(static_cast<lua_Integer>(i + 1));
+        lua->pushstring(resp.menu_menus[i]);
+        lua->settable(-3);
+    }
+    lua->settable(-3);
+
     lua->pushstring("slot_slots");
     lua->new_table();
     for (size_t i = 0; i < resp.slot_slots.size(); ++i)
@@ -156,6 +211,26 @@ void push_dialog(fb::lua::context* lua, const dialog_bot& resp)
         lua->pushinteger(resp.slot_slots[i]);
         lua->settable(-3);
     }
+    lua->settable(-3);
+
+    lua->pushstring("dual_pairs");
+    lua->new_table();
+    for (size_t i = 0; i < resp.dual_pairs.size(); ++i)
+    {
+        lua->pushinteger(static_cast<lua_Integer>(i + 1));
+        lua->new_table();
+        lua->pushstring("label");
+        lua->pushstring(resp.dual_pairs[i].first);
+        lua->settable(-3);
+        lua->pushstring("value");
+        lua->pushstring(resp.dual_pairs[i].second);
+        lua->settable(-3);
+        lua->settable(-3);
+    }
+    lua->settable(-3);
+
+    lua->pushstring("subtype");
+    lua->pushinteger(static_cast<lua_Integer>(resp.type));
     lua->settable(-3);
 }
 

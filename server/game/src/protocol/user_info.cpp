@@ -1,9 +1,9 @@
-#include <fb/game/protocol/unknown_4D.h>
+#include <fb/game/protocol/user_info.h>
 
 namespace fb::protocol::game::response {
 
 #ifndef BOT
-void unknown_4D::serialize(fb::stream_writer<big_endian>& writer) const
+void user_info::serialize(fb::stream_writer<big_endian>& writer) const
 {
     header::serialize(writer);
     writer.write<uint8_t>(opcode);
@@ -17,7 +17,7 @@ void unknown_4D::serialize(fb::stream_writer<big_endian>& writer) const
     }
 }
 #else
-void unknown_4D::deserialize(fb::stream_reader<big_endian>& reader)
+void user_info::deserialize(fb::stream_reader<big_endian>& reader)
 {
     header::deserialize(reader);
     this->type = reader.read<uint8_t>();

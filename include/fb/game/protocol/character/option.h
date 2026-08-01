@@ -20,7 +20,7 @@ public:
 #ifdef BOT
     bool weather_effect = false;
     bool magic_effect   = false;
-    bool roar_worlds    = false;
+    bool news           = false;
     bool fast_move      = false;
     bool effect_sound   = false;
 #else

@@ -108,7 +108,7 @@ life::mob_vector life::damage_targets(const damage_list& targets, const damage_o
             if (m->stat.hp() != 0)
                 continue;
 
-            // Already settling ON_MOB_KILL / ON_MOB_DIE — do not re-enter kill flow.
+            // Already settling on_mob_kill / on_mob_die — do not re-enter kill flow.
             if (m->invincible())
                 continue;
 
@@ -147,7 +147,7 @@ async::task<void> life::settle_deaths(mob_vector dead)
     for (auto& [id, mobs] : groups)
     {
         auto path = std::format("scripts/mob/{}.lua", id);
-        auto func = std::format("ON_MOB_DIE_{}", id);
+        auto func = "on_mob_die";
         auto lua  = this->server.lua.open(path, func);
         if (lua)
         {
@@ -231,7 +231,7 @@ async::task<void> life::attack(DURATION duration)
         {
             auto& model = weapon->based<fb::model::weapon>();
             auto  path  = std::format("scripts/item/{}.lua", model.id);
-            auto  func  = std::format("ON_ATTACK_{}", model.id);
+            auto  func  = "on_attack";
 
             auto weapon_lua = this->server.lua.open(path, func);
             if (weapon_lua)
@@ -270,7 +270,7 @@ bool life::active(fb::game::spell& spell, std::string_view message)
 
     auto& model = spell.model;
     auto  path  = std::format("scripts/spell/{}.lua", model.id);
-    auto  func  = std::format("ON_CAST_{}", model.id);
+    auto  func  = "on_cast";
 
     auto lua = this->server.lua.open(path, func);
     if (!lua)
@@ -304,7 +304,7 @@ bool life::active(fb::game::spell& spell, fb::game::object& to)
     this->assert_thread();
     auto& model = spell.model;
     auto  path  = std::format("scripts/spell/{}.lua", model.id);
-    auto  func  = std::format("ON_CAST_{}", model.id);
+    auto  func  = "on_cast";
 
     auto lua = this->server.lua.open(path, func);
     if (!lua)
@@ -335,7 +335,7 @@ bool life::active(fb::game::spell& spell)
     this->assert_thread();
     auto& model = spell.model;
     auto  path  = std::format("scripts/spell/{}.lua", model.id);
-    auto  func  = std::format("ON_CAST_{}", model.id);
+    auto  func  = "on_cast";
 
     auto lua = this->server.lua.open(path, func);
     if (!lua)
@@ -463,4 +463,25 @@ void life::cover(bool value)
 bool life::cover() const
 {
     return this->_cover;
+}
+
+void life::delirious(bool value)
+{
+    this->assert_thread();
+    this->_delirious = value;
+}
+
+bool life::delirious() const
+{
+    return this->_delirious;
+}
+
+void life::chat(std::string_view message, CHAT_TYPE chat_type, bool decorate)
+{
+    this->assert_thread();
+
+    if (this->_delirious)
+        object::chat(fb::delirious(message), chat_type, decorate);
+    else
+        object::chat(message, chat_type, decorate);
 }

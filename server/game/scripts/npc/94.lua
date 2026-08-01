@@ -1,4 +1,6 @@
 -- npc: 테스트5
--- function NPC_94(me, npc)
---
--- end
+
+return {
+    -- on_click = function(me, npc)
+    -- end
+}

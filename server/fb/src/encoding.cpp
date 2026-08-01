@@ -2,6 +2,7 @@
 #include <Windows.h>
 #endif
 #include <fb/encoding.h>
+#include <random.h>
 
 std::string fb::cp949(std::string_view utf8)
 {
@@ -169,15 +170,194 @@ std::string fb::name_with(std::string_view name, const std::pair<std::string, st
         return std::string(name) + postfix.second;
 }
 
-bool fb::assert_korean(std::string_view str)
+namespace {
+
+bool is_cp949_lead(uint8_t b)
 {
-    for (auto ch : str)
+    return b >= 0x81 && b <= 0xFE;
+}
+
+bool is_cp949_trail(uint8_t b)
+{
+    return (b >= 0x41 && b <= 0x5A) || (b >= 0x61 && b <= 0x7A) || (b >= 0x81 && b <= 0xFE);
+}
+
+bool utf8_first_codepoint(std::string_view u8, char32_t& out)
+{
+    if (u8.empty())
+        return false;
+
+    auto b0 = static_cast<uint8_t>(u8[0]);
+    if (b0 < 0x80)
     {
-        if ((ch & 0x80) == 0)
+        out = b0;
+        return true;
+    }
+    else if ((b0 & 0xE0) == 0xC0)
+    {
+        if (u8.size() < 2)
             return false;
+        auto b1 = static_cast<uint8_t>(u8[1]);
+        if ((b1 & 0xC0) != 0x80)
+            return false;
+        out = (static_cast<char32_t>(b0 & 0x1F) << 6) | (b1 & 0x3F);
+        return true;
+    }
+    else if ((b0 & 0xF0) == 0xE0)
+    {
+        if (u8.size() < 3)
+            return false;
+        auto b1 = static_cast<uint8_t>(u8[1]);
+        auto b2 = static_cast<uint8_t>(u8[2]);
+        if ((b1 & 0xC0) != 0x80 || (b2 & 0xC0) != 0x80)
+            return false;
+        out = (static_cast<char32_t>(b0 & 0x0F) << 12) | (static_cast<char32_t>(b1 & 0x3F) << 6) | (b2 & 0x3F);
+        return true;
+    }
+    else if ((b0 & 0xF8) == 0xF0)
+    {
+        if (u8.size() < 4)
+            return false;
+        auto b1 = static_cast<uint8_t>(u8[1]);
+        auto b2 = static_cast<uint8_t>(u8[2]);
+        auto b3 = static_cast<uint8_t>(u8[3]);
+        if ((b1 & 0xC0) != 0x80 || (b2 & 0xC0) != 0x80 || (b3 & 0xC0) != 0x80)
+            return false;
+        out = (static_cast<char32_t>(b0 & 0x07) << 18) | (static_cast<char32_t>(b1 & 0x3F) << 12) |
+              (static_cast<char32_t>(b2 & 0x3F) << 6) | (b3 & 0x3F);
+        return true;
+    }
+
+    return false;
+}
+
+bool codepoint_is_hangul_syllable(char32_t c)
+{
+    return c >= 0xAC00 && c <= 0xD7A3;
+}
+
+bool codepoint_is_hangul_jamo(char32_t c)
+{
+    return (c >= 0x1100 && c <= 0x11FF) || (c >= 0x3131 && c <= 0x318E) || (c >= 0xA960 && c <= 0xA97F) ||
+           (c >= 0xD7B0 && c <= 0xD7FF);
+}
+
+bool cp949_pair_to_codepoint(uint8_t lead, uint8_t trail, char32_t& out)
+{
+    char buf[2] = {static_cast<char>(lead), static_cast<char>(trail)};
+    auto u8     = fb::utf8(std::string_view(buf, 2));
+    return utf8_first_codepoint(u8, out);
+}
+
+// Completed Hangul syllable in CP949 (KS X 1001 + extended). Rejects jamo.
+bool is_hangul_syllable_bytes(uint8_t lead, uint8_t trail)
+{
+    if (!is_cp949_lead(lead) || !is_cp949_trail(trail))
+        return false;
+
+    char32_t cp = 0;
+    if (!cp949_pair_to_codepoint(lead, trail, cp))
+        return false;
+    return codepoint_is_hangul_syllable(cp);
+}
+
+} // namespace
+
+bool fb::assert_korean(std::string_view cp949, bool completed)
+{
+    if (cp949.empty())
+        return false;
+
+    for (size_t i = 0; i < cp949.size();)
+    {
+        auto lead = static_cast<uint8_t>(cp949[i]);
+        if (lead < 0x80)
+            return false;
+        if (i + 1 >= cp949.size())
+            return false;
+
+        auto trail = static_cast<uint8_t>(cp949[i + 1]);
+        if (completed)
+        {
+            if (!is_hangul_syllable_bytes(lead, trail))
+                return false;
+        }
+        else
+        {
+            if (!is_cp949_lead(lead) || !is_cp949_trail(trail))
+                return false;
+
+            char32_t cp = 0;
+            if (!cp949_pair_to_codepoint(lead, trail, cp))
+                return false;
+            if (!codepoint_is_hangul_syllable(cp) && !codepoint_is_hangul_jamo(cp))
+                return false;
+        }
+
+        i += 2;
     }
 
     return true;
+}
+
+std::string fb::delirious(std::string_view message)
+{
+    if (message.empty())
+        return std::string();
+
+    auto bytes = CP949(message);
+    auto out   = std::string{};
+    out.reserve(bytes.size());
+
+    for (size_t i = 0; i < bytes.size();)
+    {
+        auto lead = static_cast<uint8_t>(bytes[i]);
+        if (lead < 0x80 || i + 1 >= bytes.size())
+        {
+            out.push_back(static_cast<char>(lead));
+            i += 1;
+            continue;
+        }
+
+        auto trail = static_cast<uint8_t>(bytes[i + 1]);
+        if (!is_cp949_lead(lead) || !is_cp949_trail(trail))
+        {
+            out.push_back(static_cast<char>(lead));
+            i += 1;
+            continue;
+        }
+
+        auto choice = random(0, 3);
+        if (choice == 0)
+        {
+            out.push_back(static_cast<char>(lead));
+            out.push_back(static_cast<char>(trail));
+        }
+        else if (choice == 1 && lead >= 0xA1 && lead <= 0xFE && trail >= 0xA1 && trail <= 0xFE &&
+                 is_hangul_syllable_bytes(trail, lead))
+        {
+            // Byte-swap only when swapped KS cell decodes to a Hangul syllable
+            out.push_back(static_cast<char>(trail));
+            out.push_back(static_cast<char>(lead));
+        }
+        else if (choice == 1)
+        {
+            out.push_back(static_cast<char>(lead));
+            out.push_back(static_cast<char>(trail));
+        }
+        else if (choice == 2)
+        {
+            out.push_back('*');
+        }
+        else
+        {
+            out.push_back('?');
+        }
+
+        i += 2;
+    }
+
+    return UTF8(out);
 }
 
 std::string fb::url_encode(std::string_view value)

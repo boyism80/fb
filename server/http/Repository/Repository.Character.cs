@@ -94,6 +94,7 @@ namespace Http.Reepository
                     `buffs`,
                     `title`,
                     `super_hide`,
+                    `speed`,
                     `deleted`,
                     `created_date`,
                     `updated_date`,
@@ -139,6 +140,7 @@ namespace Http.Reepository
                     {value.Buffs.Escape()},
                     {value.Title.Escape()},
                     {value.SuperHide.Escape()},
+                    {value.Speed.Escape()},
                     0,
                     {value.CreatedDate.Escape()},
                     {value.UpdatedDate.Escape()},
@@ -181,6 +183,7 @@ namespace Http.Reepository
                     `buffs`=VALUES(`buffs`),
                     `title`=VALUES(`title`),
                     `super_hide`=VALUES(`super_hide`),
+                    `speed`=VALUES(`speed`),
                     `updated_date`=VALUES(`updated_date`),
                     `first_login_date`=COALESCE(VALUES(`first_login_date`), `first_login_date`);
                 """;

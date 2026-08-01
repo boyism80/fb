@@ -75,11 +75,11 @@ local function run_sesi_5(me, npc)
         { ['money'] = 100 },
         { ['item'] = { ["창포"] = 1 } }
     )
-    if code == enum.EXCHANGE_RESULT.LACK_COST then
+    if code == enum.exchange_result.LACK_COST then
         me:dialog(npc, "창포는 하나에 100원이에요.", { prev = false, next = true })
         return true
     end
-    if code == enum.EXCHANGE_RESULT.LACK_CAPACITY then
+    if code == enum.exchange_result.LACK_CAPACITY then
         me:dialog(npc, "소지품이 가득 차서 창포를 줄 수 없습니다.", { prev = false, next = false })
         return true
     end
@@ -160,25 +160,27 @@ local function run_sesi_8(me, npc)
     return true
 end
 
-function NPC_352(me, npc)
-    local btn = me:dialog(npc, "저는 이 마을 촌장의 부인되는 목원지라고 합니다.", { prev = false, next = true })
-    if btn == DIALOG_RESULT.QUIT then
-        return
-    end
+return {
+    on_click = function(me, npc)
+        local btn = me:dialog(npc, "저는 이 마을 촌장의 부인되는 목원지라고 합니다.", { prev = false, next = true })
+        if btn == DIALOG_RESULT.QUIT then
+            return
+        end
 
-    if run_sesi_2(me, npc) then
-        return
+        if run_sesi_2(me, npc) then
+            return
+        end
+        if run_sesi_4(me, npc) then
+            return
+        end
+        if run_sesi_5(me, npc) then
+            return
+        end
+        if run_sesi_7(me, npc) then
+            return
+        end
+        if run_sesi_8(me, npc) then
+            return
+        end
     end
-    if run_sesi_4(me, npc) then
-        return
-    end
-    if run_sesi_5(me, npc) then
-        return
-    end
-    if run_sesi_7(me, npc) then
-        return
-    end
-    if run_sesi_8(me, npc) then
-        return
-    end
-end
+}

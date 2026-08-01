@@ -13,10 +13,16 @@ class click : public fb::protocol::header
 public:
     static constexpr uint8_t opcode = 0x43;
 
+    // Client click kind: 1 = object/F-key, 3 = map coordinate (server ignores).
+    static constexpr uint8_t FLAG_OBJECT = 1;
+    static constexpr uint8_t FLAG_COORD  = 3;
+
 public:
 #ifndef BOT
-    uint32_t oid;
+    uint8_t  flag = 0;
+    uint32_t oid  = 0;
 #else
+    const uint8_t  flag;
     const uint32_t oid;
 #endif
 
@@ -24,7 +30,8 @@ public:
 #ifndef BOT
     click() = default;
 #else
-    click(uint32_t oid) :
+    click(uint32_t oid, uint8_t flag = FLAG_OBJECT) :
+        flag(flag),
         oid(oid)
     { }
 #endif

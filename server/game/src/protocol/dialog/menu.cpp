@@ -7,54 +7,57 @@ dialog_menu::dialog_menu(const fb::model::object&        obj,
                          const std::vector<std::string>& menus,
                          std::string_view                message,
                          uint32_t                        oid,
-                         fb::game::dialog::interaction   interaction) :
+                         std::optional<std::string>      ext) :
     appearance(fb::game::appearance_factory::create(obj)),
     menus(menus),
     message(std::string(message)),
     oid(oid),
-    interaction(interaction)
+    ext(std::move(ext))
 { }
 
 dialog_menu::dialog_menu(const fb::game::object&         object,
                          const std::vector<std::string>& menus,
                          std::string_view                message,
                          uint32_t                        oid,
-                         fb::game::dialog::interaction   interaction) :
+                         std::optional<std::string>      ext) :
     appearance(fb::game::appearance_factory::create(object)),
     menus(menus),
     message(std::string(message)),
     oid(oid),
-    interaction(interaction)
+    ext(std::move(ext))
 { }
-#endif
 
-#ifndef BOT
 void dialog_menu::serialize(fb::stream_writer<big_endian>& writer) const
 {
+    // ext present → subtype MENU(1); absent → subtype 0 (no ext blob)
+    auto type_value = static_cast<uint8_t>(this->ext.has_value() ? fb::game::dialog::type::MENU
+                                                                 : fb::game::dialog::type::MENU_NO_EXT);
+
     header::serialize(writer);
     writer.write<uint8_t>(opcode);
-    writer.write<uint8_t>(0x01);
-    writer.write<uint8_t>(static_cast<uint8_t>(interaction));
+    writer.write<uint8_t>(type_value);
+    writer.write<uint8_t>(type_value);
     writer.write<uint32_t>(this->oid);
     this->appearance->serialize(writer);
     writer.write<std::string, uint16_t>(message);
 
-    writer.write<uint16_t>((uint16_t)menus.size());
+    if (this->ext.has_value())
+        writer.write<std::string, uint8_t>(*this->ext);
+
+    writer.write<uint8_t>((uint8_t)menus.size());
     for (int i = 0; i < menus.size(); i++)
     {
         writer.write<std::string>(menus[i]);
         writer.write<uint16_t>(i);
     }
-
-    writer.write<uint8_t>(0x00);
 }
 #else
 void dialog_menu::deserialize(fb::stream_reader<big_endian>& reader)
 {
     header::deserialize(reader);
     reader.read<uint8_t>(); // 0x01
-    this->interaction = reader.read<uint8_t>();
-    this->oid         = reader.read<uint32_t>();
+    this->type_echo = reader.read<uint8_t>();
+    this->oid       = reader.read<uint32_t>();
     reader.read<uint8_t>(); // obj type flag
     reader.read<uint8_t>(); // 0x01
     this->look  = reader.read<uint16_t>();
@@ -64,14 +67,17 @@ void dialog_menu::deserialize(fb::stream_reader<big_endian>& reader)
     reader.read<uint8_t>();  // color (duplicate)
     this->message = reader.read<std::string, uint16_t>();
 
-    uint16_t menu_count = reader.read<uint16_t>();
+    this->ext = std::nullopt;
+    if (this->type_echo == static_cast<uint8_t>(fb::game::dialog::type::MENU))
+        this->ext = reader.read<std::string, uint8_t>();
+
+    uint8_t menu_count = reader.read<uint8_t>();
     this->menus.clear();
     for (int i = 0; i < menu_count; i++)
     {
         this->menus.push_back(reader.read<std::string, uint8_t>());
         reader.read<uint16_t>(); // menu index
     }
-    reader.read<uint8_t>(); // 0x00
 }
 #endif
 

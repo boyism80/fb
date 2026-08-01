@@ -1,5 +1,15 @@
 -- item: 실패작골무
 
--- 실패작골무 해제 스크립트
--- function ON_DEACTIVATED_14270(me, item)
--- end
+return {
+    -- on_activated = function(me, item)
+    -- end,
+
+    -- on_deactivated = function(me, item)
+    -- end,
+
+    -- on_concast = function(me, item)
+    -- end,
+
+    -- on_attack = function(me, item)
+    -- end
+}

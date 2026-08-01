@@ -93,7 +93,7 @@ std::shared_ptr<equipment> items::equipment_off(EQUIPMENT_PARTS parts)
     // Execute equipment deactivation script
     auto& model = equipment->based<fb::model::equipment>();
     auto  path  = std::format("scripts/item/{}.lua", model.id);
-    auto  func  = std::format("ON_DEACTIVATED_{}", model.id);
+    auto  func  = "on_deactivated";
 
     auto lua = owner->server.lua.open(path, func);
     if (lua)
@@ -1300,7 +1300,8 @@ bool items::is_rewardable(const std::unordered_map<uint32_t, uint16_t>& items, u
     auto required_size = 0;
     for (auto& [id, count] : items)
     {
-        auto& model = table::item[id];
+        auto  item_table = table::item;
+        auto& model      = item_table[id];
         if (model.attr(ITEM_ATTRIBUTE::BUNDLE) == false)
             required_size += count;
         else
@@ -1384,8 +1385,9 @@ async::task<exchange_result> items::exchange(const std::unordered_map<uint32_t, 
 
     for (auto& [id, cost_count] : cost_items)
     {
-        auto& model = table::item[id];
-        auto  it    = slots_by_id.find(id);
+        auto  item_table2 = table::item;
+        auto& model       = item_table2[id];
+        auto  it          = slots_by_id.find(id);
         if (it == slots_by_id.end() || it->second.empty())
             co_return exchange_result::lack_cost;
 
@@ -1425,7 +1427,8 @@ async::task<exchange_result> items::exchange(const std::unordered_map<uint32_t, 
     int required_size = 0;
     for (auto& [id, count] : reward_items)
     {
-        auto& model = table::item[id];
+        auto  item_table3 = table::item;
+        auto& model       = item_table3[id];
         if (model.attr(ITEM_ATTRIBUTE::BUNDLE) == false)
             required_size += count;
         else
@@ -1435,7 +1438,8 @@ async::task<exchange_result> items::exchange(const std::unordered_map<uint32_t, 
     int available_slots = effective_free_slots;
     for (auto& [id, count] : reward_items)
     {
-        auto& model = table::item[id];
+        auto  item_table4 = table::item;
+        auto& model       = item_table4[id];
         if (model.attr(ITEM_ATTRIBUTE::BUNDLE) == false)
             continue;
 
@@ -1489,8 +1493,9 @@ async::task<exchange_result> items::exchange(const std::unordered_map<uint32_t, 
 
     for (auto& [id, count] : reward_items)
     {
-        auto& model = table::item[id];
-        auto  made  = model.make(owner->server, count);
+        auto  item_table5 = table::item;
+        auto& model       = item_table5[id];
+        auto  made        = model.make(owner->server, count);
         if (made != nullptr)
         {
             auto idx = co_await this->add(made);

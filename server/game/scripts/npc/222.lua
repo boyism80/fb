@@ -3,12 +3,14 @@ local MARRIAGE_MIN_LEVEL = 21
 
 local function marriage_npc(me, npc)
     local m = me:marriage()
-    local selected = me:list(npc, '안녕하세요. 어떻게 오셨나요?', { '결혼을 하려고 왔습니다', '이혼을 하려고 왔습니다' })
-    if selected == nil then
+    local OPT_MARRY = '결혼을 하려고 왔습니다'
+    local OPT_DIVORCE = '이혼을 하려고 왔습니다'
+    local selected, button = me:pursuit(npc, '안녕하세요. 어떻게 오셨나요?', { OPT_MARRY, OPT_DIVORCE })
+    if button == DIALOG_RESULT.QUIT then
         return
     end
 
-    if selected == 1 then
+    if selected == OPT_MARRY then
         if m.married then
             me:dialog(npc, '이미 결혼을 하셨습니다.')
             return
@@ -83,7 +85,7 @@ local function marriage_npc(me, npc)
         else
             me:dialog(npc, string.format('%s님이 거절하셨습니다.', found:name()))
         end
-    elseif selected == 2 then
+    elseif selected == OPT_DIVORCE then
         if not m.married then
             me:dialog(npc, '결혼을 한 사람만이 이혼을 할 수 있습니다.')
             return
@@ -112,6 +114,8 @@ local function marriage_npc(me, npc)
     end
 end
 
-function NPC_222(me, npc)
-    marriage_npc(me, npc)
-end
+return {
+    on_click = function(me, npc)
+        marriage_npc(me, npc)
+    end
+}

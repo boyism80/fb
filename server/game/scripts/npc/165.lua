@@ -1,4 +1,6 @@
 -- npc: 천층상점
--- function NPC_165(me, npc)
---
--- end
+
+return {
+    -- on_click = function(me, npc)
+    -- end
+}

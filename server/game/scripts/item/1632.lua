@@ -1,11 +1,15 @@
 -- item: 주술장갑
 
--- 주술장갑 사용 스크립트
--- function ON_ACTIVATED_1632(me, item)
---
--- end
+return {
+    -- on_activated = function(me, item)
+    -- end,
 
--- 주술장갑 해제 스크립트
--- function ON_DEACTIVATED_1632(me, item)
---
--- end
+    -- on_deactivated = function(me, item)
+    -- end,
+
+    -- on_concast = function(me, item)
+    -- end,
+
+    -- on_attack = function(me, item)
+    -- end
+}

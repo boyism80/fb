@@ -8,7 +8,7 @@ local function execute_mob_spell_hit(me, you, spell)
     local model = you:model()
     local id = model:id()
     local path = string.format('scripts/mob/%d.lua', id)
-    local func = string.format('ON_MOB_SPELL_HIT_%d', id)
+    local func = 'on_mob_spell_hit'
     local result = you:script(path, func, me, spell)
     if result == nil then
         return true -- continue
@@ -39,7 +39,7 @@ function M.force_position(you, x, y)
     return true
 end
 
-function M.CREATURE_SPELL(creature, index)
+function M.creature_spell(creature, index)
     if creature == CREATURE.PHOENIX then
         if index == 1 then
             return '화염주'
@@ -103,7 +103,7 @@ function M.CREATURE_SPELL(creature, index)
     end
 end
 
-function M.CREATURE_AREA_SPELL(creature, index)
+function M.creature_area_spell(creature, index)
     if creature == CREATURE.PHOENIX then
         if index == 1 then
             return "화염주'첨"
@@ -167,7 +167,7 @@ function M.CREATURE_AREA_SPELL(creature, index)
     end
 end
 
-function M.TELEPORT_LOOKUP(me, map, x, y, direction)
+function M.teleport_lookup(me, map, x, y, direction)
     math.randomseed(seed())
     local rand_x = nil
     local rand_y = nil
@@ -200,7 +200,7 @@ function M.TELEPORT_LOOKUP(me, map, x, y, direction)
     return x, y, new_direction
 end
 
-M.RELATIVE_BUFF_GROUPS = {
+M.relative_buff_groups = {
     {'혼마술', '저주', '귀염추혼소'},
     {'무장', '자동무장', '시약무장'},
     {'보호', '자동보호', '시약보호'},
@@ -211,7 +211,7 @@ M.RELATIVE_BUFF_GROUPS = {
 }
 
 function M.relative_buff_name(buff_name)
-    for _, names in pairs(M.RELATIVE_BUFF_GROUPS) do
+    for _, names in pairs(M.relative_buff_groups) do
         for _, name in pairs(names) do
             if buff_name == name then
                 return names
@@ -249,6 +249,58 @@ function M.near(me, type)
     return result
 end
 
+function M.attacker_blocks_pvp(me)
+    return me ~= nil and me:is(OBJECT_TYPE.CHARACTER) and me:option(OPTION.PK_PROTECT)
+end
+
+function M.map_pk_enabled(me)
+    local map = me:map()
+    if map == nil then
+        return false
+    end
+    local option = map:model():option()
+    return (option & MAP_OPTION.ENABLE_PK) == MAP_OPTION.ENABLE_PK
+end
+
+function M.can_harm_character(me, you, pk, blocks_pvp)
+    if you == nil or not you:is(OBJECT_TYPE.CHARACTER) then
+        return false
+    end
+
+    -- Mob (or non-character) attackers keep previous AOE behavior: always may hit characters.
+    if me == nil or not me:is(OBJECT_TYPE.CHARACTER) then
+        return true
+    end
+
+    if pk == nil then
+        pk = M.map_pk_enabled(me)
+    end
+    if not pk then
+        return false
+    end
+
+    if blocks_pvp == nil then
+        blocks_pvp = M.attacker_blocks_pvp(me)
+    end
+    if blocks_pvp then
+        return false
+    end
+
+    return true
+end
+
+function M.can_damage_life(me, you, pk, blocks_pvp)
+    if you == nil or not you:is(OBJECT_TYPE.LIFE) then
+        return false
+    end
+
+    if you:is(OBJECT_TYPE.MOB) then
+        return true
+    end
+
+    return M.can_harm_character(me, you, pk, blocks_pvp)
+end
+
 function M.assert_map_debuff(me, you)
     local map = me:map()
     if map == nil then
@@ -260,11 +312,14 @@ function M.assert_map_debuff(me, you)
         return false
     end
     
-    local option = map:model():option()
     if you:is(OBJECT_TYPE.CHARACTER) then
-        local pk = (option & MAP_OPTION.ENABLE_PK) == MAP_OPTION.ENABLE_PK
-        if not pk then
+        if not M.map_pk_enabled(me) then
             me:message('걸리지 않습니다.')
+            return false
+        end
+
+        if M.attacker_blocks_pvp(me) then
+            me:message('PK보호!')
             return false
         end
         
@@ -288,11 +343,14 @@ function M.assert_map_damage(me, you)
         return false
     end
     
-    local option = map:model():option()
     if you:is(OBJECT_TYPE.CHARACTER) then
-        local pk = (option & MAP_OPTION.ENABLE_PK) == MAP_OPTION.ENABLE_PK
-        if not pk then
+        if not M.map_pk_enabled(me) then
             me:message('대상이 올바르지 않습니다.')
+            return false
+        end
+
+        if M.attacker_blocks_pvp(me) then
+            me:message('PK보호!')
             return false
         end
         
@@ -531,20 +589,20 @@ function M.attack_cast(me, you, spell, opts)
     me:message(string.format("%s 외웠습니다.", name_with(spell:name())))
     me:action(ACTION.ATTACK, DURATION.ATTACK, 1)
     
-    local pk      = (option & MAP_OPTION.ENABLE_PK) == MAP_OPTION.ENABLE_PK
+    local pk = (option & MAP_OPTION.ENABLE_PK) == MAP_OPTION.ENABLE_PK
+    local blocks_pvp = M.attacker_blocks_pvp(me)
     local damaged = false
     local skill_rate = me:skill_damage_rate() / 1000.0
     local targets = {}
     
     for _, obj in pairs(you) do
-        if effect then
-            obj:effect(effect)
-        end
-        if sound then
-            obj:sound(sound)
-        end
-        
-        if ((obj:is(OBJECT_TYPE.CHARACTER) and pk) or obj:is(OBJECT_TYPE.MOB)) then
+        if M.can_damage_life(me, obj, pk, blocks_pvp) then
+            if effect then
+                obj:effect(effect)
+            end
+            if sound then
+                obj:sound(sound)
+            end
             table.insert(targets, { obj, damage })
             damaged = true
         end
@@ -628,15 +686,19 @@ function M.damage_near(me, spell, opts)
     me:sound(sound)
     me:action(ACTION.CAST_SPELL, DURATION.SPELL, 1)
     local skill_rate = me:skill_damage_rate() / 1000.0
+    local pk = M.map_pk_enabled(me)
+    local blocks_pvp = M.attacker_blocks_pvp(me)
     local targets = {}
     for _, you in pairs(M.near(me, OBJECT_TYPE.LIFE)) do
-        if effect then you:effect(effect) end
-        if you:is(OBJECT_TYPE.CHARACTER) then
-            you:message(string.format('%s님이 %s 가합니다.', me:name(), name_with(spell:name())))
-        end
-        
-        if execute_mob_spell_hit(me, you, spell) and not M.resisted(you, RESIST.SPELL) then
-            table.insert(targets, { you, damage })
+        if M.can_damage_life(me, you, pk, blocks_pvp) then
+            if effect then you:effect(effect) end
+            if you:is(OBJECT_TYPE.CHARACTER) then
+                you:message(string.format('%s님이 %s 가합니다.', me:name(), name_with(spell:name())))
+            end
+            
+            if execute_mob_spell_hit(me, you, spell) and not M.resisted(you, RESIST.SPELL) then
+                table.insert(targets, { you, damage })
+            end
         end
     end
     if #targets > 0 then
@@ -651,6 +713,16 @@ function M.damage_near_target(me, you, spell, opts)
     local mp = opts.mp or 0
     local sound = opts.sound
     local effect = opts.effect
+
+    if you:is(OBJECT_TYPE.CHARACTER) then
+        if not M.assert_map_damage(me, you) then
+            return false
+        end
+    elseif not you:is(OBJECT_TYPE.LIFE) then
+        me:message('대상이 올바르지 않습니다.')
+        return false
+    end
+
     if me:mp() < mp then
         me:message('마력이 부족합니다.')
         return false
@@ -659,12 +731,17 @@ function M.damage_near_target(me, you, spell, opts)
     me:sound(sound)
     me:action(ACTION.CAST_SPELL, DURATION.SPELL, 1)
     local skill_rate = me:skill_damage_rate() / 1000.0
+    local pk = M.map_pk_enabled(me)
+    local blocks_pvp = M.attacker_blocks_pvp(me)
     local near_targets = M.near(you, OBJECT_TYPE.LIFE)
     table.insert(near_targets, you)
     local targets = {}
     for _, target in pairs(near_targets) do
         if target == me then 
             goto CONTINUE_SPELL_DAMAGE_NEAR_TARGET 
+        end
+        if not M.can_damage_life(me, target, pk, blocks_pvp) then
+            goto CONTINUE_SPELL_DAMAGE_NEAR_TARGET
         end
         if effect then target:effect(effect) end
         if target:is(OBJECT_TYPE.CHARACTER) then
@@ -708,18 +785,22 @@ function M.damage_area(me, you, spell, opts)
     end
 
     local skill_rate = me:skill_damage_rate() / 1000.0
+    local pk = M.map_pk_enabled(me)
+    local blocks_pvp = M.attacker_blocks_pvp(me)
     local targets = {}
     for _, obj in pairs(you) do
-        if obj:is(OBJECT_TYPE.CHARACTER) then
-            obj:message(string.format('%s님이 %s 가합니다.', me:name(), name_with(spell:name())))
-        end
+        if M.can_damage_life(me, obj, pk, blocks_pvp) then
+            if obj:is(OBJECT_TYPE.CHARACTER) then
+                obj:message(string.format('%s님이 %s 가합니다.', me:name(), name_with(spell:name())))
+            end
 
-        if effect.you then 
-            obj:effect(effect.you) 
-        end
-        
-        if execute_mob_spell_hit(me, obj, spell) and not M.resisted(obj, RESIST.SPELL) then
-            table.insert(targets, { obj, damage })
+            if effect.you then 
+                obj:effect(effect.you) 
+            end
+            
+            if execute_mob_spell_hit(me, obj, spell) and not M.resisted(obj, RESIST.SPELL) then
+                table.insert(targets, { obj, damage })
+            end
         end
     end
 

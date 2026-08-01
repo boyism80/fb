@@ -1,11 +1,15 @@
 -- item: 청형도
 
--- 청형도 사용 스크립트
--- function ON_ACTIVATED_96(me, item)
---
--- end
+return {
+    -- on_activated = function(me, item)
+    -- end,
 
--- 청형도 해제 스크립트
--- function ON_DEACTIVATED_96(me, item)
---
--- end
+    -- on_deactivated = function(me, item)
+    -- end,
+
+    -- on_concast = function(me, item)
+    -- end,
+
+    -- on_attack = function(me, item)
+    -- end
+}

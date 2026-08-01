@@ -14,7 +14,8 @@ using namespace fb::model::enum_value;
 class bulletin_articles : public fb::protocol::header
 {
 public:
-    static constexpr uint8_t opcode = 0x31;
+    static constexpr uint8_t opcode               = 0x31;
+    static constexpr uint8_t SUBTYPE_ARTICLE_LIST = 0x02;
 
 public:
 #ifndef BOT

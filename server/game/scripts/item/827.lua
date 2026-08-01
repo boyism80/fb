@@ -1,11 +1,15 @@
 -- item: 구리비늘여자갑주
 
--- 구리비늘여자갑주 사용 스크립트
--- function ON_ACTIVATED_827(me, item)
---
--- end
+return {
+    -- on_activated = function(me, item)
+    -- end,
 
--- 구리비늘여자갑주 해제 스크립트
--- function ON_DEACTIVATED_827(me, item)
---
--- end
+    -- on_deactivated = function(me, item)
+    -- end,
+
+    -- on_concast = function(me, item)
+    -- end,
+
+    -- on_attack = function(me, item)
+    -- end
+}

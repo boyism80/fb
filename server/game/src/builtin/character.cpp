@@ -1,9 +1,11 @@
 #include <fb/game/builtin/object.h>
 #include <fb/game/builtin/character.h>
+#include <fb/game/builtin/life.h>
 #include <fb/game/server.h>
 #include <fb/game/marriage.h>
 #include <fb/model/datetime.h>
 #include <algorithm>
+#include <optional>
 #include <string_view>
 #include <unordered_map>
 #include <tuple>
@@ -52,6 +54,7 @@ IMPLEMENT_LUA_EXTENSION(character, "fb.game.character")
 {"whisper",                      builtin::character::builtin_whisper},
 {"send_mail",                    builtin::character::builtin_send_mail},
 {"nation",                       builtin::character::builtin_nation},
+{"option",                       builtin::character::builtin_option},
 {"weapon",                       builtin::character::builtin_weapon},
 {"title",                        builtin::character::builtin_title},
 {"gain",                         builtin::character::builtin_gain},
@@ -66,6 +69,7 @@ IMPLEMENT_LUA_EXTENSION(character, "fb.game.character")
 {"base_int",                     builtin::character::builtin_base_int},
 {"base_dam",                     builtin::character::builtin_base_dam},
 {"base_hit",                     builtin::character::builtin_base_hit},
+{"base_speed",                   builtin::character::builtin_base_speed},
 {"armor_color",                  builtin::character::builtin_armor_color},
 {"weapon_color",                 builtin::character::builtin_weapon_color},
 {"shield_color",                 builtin::character::builtin_shield_color},
@@ -85,6 +89,10 @@ IMPLEMENT_LUA_EXTENSION(character, "fb.game.character")
 {"input",                        builtin::character::builtin_input},
 {"menu",                         builtin::character::builtin_menu},
 {"slot",                         builtin::character::builtin_slot},
+{"pursuit",                      builtin::character::builtin_pursuit},
+{"spell",                        builtin::character::builtin_spell},
+{"email",                        builtin::character::builtin_email},
+{"dialog_0x30_10",               builtin::character::builtin_dialog_0x30_10},
 {"rezen_force",                  builtin::character::builtin_rezen_force},
 {"quest",                        builtin::character::builtin_quest},
 {"matchmaker",                   builtin::character::builtin_matchmaker},
@@ -106,14 +114,15 @@ IMPLEMENT_LUA_EXTENSION(character, "fb.game.character")
 {"marry",                        builtin::character::builtin_marry},
 {"divorce",                      builtin::character::builtin_divorce},
 {"unknown_12",                   builtin::character::builtin_unknown_12},
-{"unknown_26",                   builtin::character::builtin_unknown_26},
+{"move_confirm_noscroll",        builtin::character::builtin_move_confirm_noscroll},
 {"ui",                           builtin::character::builtin_ui},
 {"item_throw_confirm",           builtin::character::builtin_item_throw_confirm},
 {"freeze",                       builtin::character::builtin_freeze},
 {"friends_sync",                 builtin::character::builtin_friends_sync},
-{"unknown_4B",                   builtin::character::builtin_unknown_4B},
-{"unknown_4D",                   builtin::character::builtin_unknown_4D},
-{"unknown_35",                   builtin::character::builtin_unknown_35},
+{"c2s_relay",                    builtin::character::builtin_c2s_relay},
+{"user_info",                    builtin::character::builtin_user_info},
+{"popup_message",                builtin::character::builtin_popup_message},
+{"popup_input",                  builtin::character::builtin_popup_input},
 {"holyday_screen",               builtin::character::builtin_holyday_screen},
 END_LUA_EXTENSION; // clang-format on
 
@@ -439,7 +448,7 @@ int builtin::character::builtin_item(lua_State* L)
                 lua_gettable(L, -2);
                 if (lua->is_string(-1))
                 {
-                    item = table::item.name2item(lua->tostring(-1));
+                    item = table::item->name2item(lua->tostring(-1));
                 }
                 else if (lua->is_userdata<fb::model::item>(-1))
                 {
@@ -604,7 +613,7 @@ int builtin::character::builtin_has_items(lua_State* L)
     auto required_models = std::vector<std::pair<const fb::model::item*, uint16_t>>();
     for (const auto& [name, min_count] : required)
     {
-        auto model = table::item.name2item(name);
+        auto model = table::item->name2item(name);
         if (model == nullptr)
         {
             lua->pushboolean(false);
@@ -762,7 +771,7 @@ int builtin::character::builtin_mkitem(lua_State* L)
             {
                 auto name  = lua->tostring(-2);
                 auto count = static_cast<uint16_t>(lua->tointeger(-1));
-                auto model = table::item.name2item(name);
+                auto model = table::item->name2item(name);
                 if (model != nullptr && count > 0)
                     id_to_count[model->id] += count;
             }
@@ -778,7 +787,7 @@ int builtin::character::builtin_mkitem(lua_State* L)
             lua->pushnil();
             return 1;
         }
-        auto model = table::item.name2item(name);
+        auto model = table::item->name2item(name);
         if (model == nullptr)
         {
             lua->pushnil();
@@ -812,8 +821,9 @@ int builtin::character::builtin_mkitem(lua_State* L)
         auto items = std::vector<std::shared_ptr<fb::game::item>>();
         for (auto& [id, count] : id_to_count)
         {
-            auto& model = table::item[id];
-            auto  item  = model.make(server, count, expire_time);
+            auto  item_table = table::item;
+            auto& model      = item_table[id];
+            auto  item       = model.make(server, count, expire_time);
             if (item != nullptr)
                 items.push_back(std::move(item));
         }
@@ -875,7 +885,7 @@ int builtin::character::builtin_rmitem(lua_State* L)
             {
                 auto name  = lua->tostring(-2);
                 auto cnt   = static_cast<uint16_t>(lua->tointeger(-1));
-                auto model = table::item.name2item(name);
+                auto model = table::item->name2item(name);
                 if (model != nullptr && cnt > 0)
                     to_remove.push_back({model, cnt});
             }
@@ -1045,7 +1055,7 @@ int builtin::character::builtin_rmitem(lua_State* L)
         builder.yield = [=]() -> async::task<void> {
             try
             {
-                auto model = table::item.name2item(name);
+                auto model = table::item->name2item(name);
                 if (model == nullptr)
                     co_return;
 
@@ -1122,7 +1132,7 @@ int builtin::character::builtin_exchange(lua_State* L)
                 {
                     auto name  = lua->tostring(-2);
                     auto count = static_cast<uint16_t>(lua->tointeger(-1));
-                    auto model = table::item.name2item(name);
+                    auto model = table::item->name2item(name);
                     if (model != nullptr && count > 0)
                         cost_items[model->id] += count;
                 }
@@ -1157,7 +1167,7 @@ int builtin::character::builtin_exchange(lua_State* L)
                 {
                     auto name  = lua->tostring(-2);
                     auto count = static_cast<uint16_t>(lua->tointeger(-1));
-                    auto model = table::item.name2item(name);
+                    auto model = table::item->name2item(name);
                     if (model != nullptr && count > 0)
                         reward_items[model->id] += count;
                 }
@@ -2499,6 +2509,49 @@ int builtin::character::builtin_nation(lua_State* L)
     }
 }
 
+int builtin::character::builtin_option(lua_State* L)
+{
+    auto lua = fb::lua::get(L);
+    if (lua == nullptr)
+        return 0;
+
+    auto ch = lua->touserdata<fb::game::character>(1);
+    if (ch == nullptr)
+        return 0;
+
+    auto argc = lua->argc();
+    auto key  = static_cast<OPTION>(lua->tointeger(2));
+    auto weak = ch->weak_from_this_as<fb::game::character>();
+
+    if (argc >= 3)
+    {
+        auto value    = lua->toboolean(3);
+        auto builder  = lua->new_co_builder();
+        builder.weak  = weak;
+        builder.yield = [=]() -> async::task<void> {
+            ch->option(key, value);
+            co_return;
+        };
+        builder.resume = []() -> async::task<int> {
+            co_return 0;
+        };
+        return builder.run();
+    }
+
+    auto value    = std::make_shared<bool>(false);
+    auto builder  = lua->new_co_builder();
+    builder.weak  = weak;
+    builder.yield = [=]() -> async::task<void> {
+        *value = ch->option(key);
+        co_return;
+    };
+    builder.resume = [=]() -> async::task<int> {
+        lua->pushboolean(*value);
+        co_return 1;
+    };
+    return builder.run();
+}
+
 int builtin::character::builtin_weapon(lua_State* L)
 {
     auto lua = fb::lua::get(L);
@@ -2729,7 +2782,7 @@ int builtin::character::builtin_spawn_mob(lua_State* L)
 
     auto name  = lua->tostring(2);
     auto owned = true;
-    auto model = table::mob.name2mob(name);
+    auto model = table::mob->name2mob(name);
     if (model == nullptr)
     {
         lua->pushnil();
@@ -3143,6 +3196,55 @@ int builtin::character::builtin_base_hit(lua_State* L)
     }
 }
 
+int builtin::character::builtin_base_speed(lua_State* L)
+{
+    auto lua = fb::lua::get(L);
+    if (lua == nullptr)
+        return 0;
+
+    auto argc = lua->argc();
+    auto ch   = lua->touserdata<fb::game::character>(1);
+    if (ch == nullptr)
+        return 0;
+
+    if (argc == 1)
+    {
+        auto weak       = ch->weak_from_this_as<fb::game::character>();
+        auto base_speed = std::make_shared<uint8_t>();
+        auto builder    = lua->new_co_builder();
+        builder.weak    = weak;
+        builder.yield   = [=]() -> async::task<void> {
+            *base_speed = ch->stat.base_speed();
+            co_return;
+        };
+        builder.resume = [=]() -> async::task<int> {
+            lua->pushinteger(*base_speed);
+            co_return 1;
+        };
+        return builder.run();
+    }
+    else
+    {
+        auto value = lua->tointeger(2);
+        if (value < 0)
+            value = 0;
+        if (value > 5)
+            value = 5;
+
+        auto weak     = ch->weak_from_this_as<fb::game::character>();
+        auto builder  = lua->new_co_builder();
+        builder.weak  = weak;
+        builder.yield = [=]() -> async::task<void> {
+            ch->stat.base_speed(static_cast<uint8_t>(value));
+            co_return;
+        };
+        builder.resume = []() -> async::task<int> {
+            co_return 0;
+        };
+        return builder.run();
+    }
+}
+
 int builtin::character::builtin_armor_color(lua_State* L)
 {
     auto lua = fb::lua::get(L);
@@ -3305,7 +3407,7 @@ int builtin::character::builtin_mkspell(lua_State* L)
         return 0;
 
     auto name  = lua->tostring(2);
-    auto model = table::spell.name2spell(name);
+    auto model = table::spell->name2spell(name);
     if (model == nullptr)
         return 0;
 
@@ -3420,8 +3522,9 @@ int builtin::character::builtin_world(lua_State* L)
     if (ch == nullptr)
         return 0;
 
-    auto name = lua->tostring(2);
-    for (auto& [id, world] : table::world)
+    auto name        = lua->tostring(2);
+    auto world_table = table::world;
+    for (auto& [id, world] : world_table)
     {
         for (auto& [index, point] : world)
         {
@@ -3541,15 +3644,15 @@ int builtin::character::builtin_unknown_12(lua_State* L)
     if (ch == nullptr)
         return 0;
 
-    auto oid           = static_cast<uint32_t>(lua->tointeger(2, 0));
-    auto party_slot    = static_cast<uint8_t>(lua->tointeger(3, 0));
-    auto level_encoded = static_cast<uint8_t>(lua->tointeger(4, 1));
+    auto oid  = static_cast<uint32_t>(lua->tointeger(2, ch->oid()));
+    auto slot = static_cast<uint8_t>(lua->tointeger(3, 0));
+    auto flag = static_cast<uint8_t>(lua->tointeger(4, 1));
 
     auto weak     = ch->weak_from_this_as<fb::game::character>();
     auto builder  = lua->new_co_builder();
     builder.weak  = weak;
     builder.yield = [=]() -> async::task<void> {
-        std::ignore = ch->send(fb::protocol::game::response::unknown_12(oid, party_slot, level_encoded));
+        std::ignore = ch->send(fb::protocol::game::response::unknown_12(oid, slot, flag));
         co_return;
     };
     builder.resume = []() -> async::task<int> {
@@ -3558,7 +3661,7 @@ int builtin::character::builtin_unknown_12(lua_State* L)
     return builder.run();
 }
 
-int builtin::character::builtin_unknown_26(lua_State* L)
+int builtin::character::builtin_move_confirm_noscroll(lua_State* L)
 {
     auto lua = fb::lua::get(L);
     if (lua == nullptr)
@@ -3568,19 +3671,26 @@ int builtin::character::builtin_unknown_26(lua_State* L)
     if (ch == nullptr)
         return 0;
 
-    auto flags     = static_cast<uint8_t>(lua->tointeger(2, 0));
-    auto pos_x     = static_cast<int16_t>(lua->tointeger(3, 0));
-    auto pos_y     = static_cast<int16_t>(lua->tointeger(4, 0));
-    auto map_rel_x = static_cast<int16_t>(lua->tointeger(5, 0));
-    auto map_rel_y = static_cast<int16_t>(lua->tointeger(6, 0));
-    auto zone_slot = static_cast<uint8_t>(lua->tointeger(7, 0));
+    // Defaults: current direction / position / viewport, walk slot 0 (matches move_confirm shape).
+    auto position = ch->position();
+    auto viewport = ch->viewport();
+    auto direction =
+        static_cast<fb::model::enum_value::DIRECTION>(lua->tointeger(2, static_cast<int>(ch->direction())));
+    auto pos_x           = static_cast<uint16_t>(lua->tointeger(3, position.x));
+    auto pos_y           = static_cast<uint16_t>(lua->tointeger(4, position.y));
+    auto viewport_x      = static_cast<uint16_t>(lua->tointeger(5, viewport.x));
+    auto viewport_y      = static_cast<uint16_t>(lua->tointeger(6, viewport.y));
+    auto walk_queue_slot = static_cast<uint8_t>(lua->tointeger(7, 0));
 
     auto weak     = ch->weak_from_this_as<fb::game::character>();
     auto builder  = lua->new_co_builder();
     builder.weak  = weak;
     builder.yield = [=]() -> async::task<void> {
-        std::ignore =
-            ch->send(fb::protocol::game::response::unknown_26(flags, pos_x, pos_y, map_rel_x, map_rel_y, zone_slot));
+        std::ignore = ch->send(
+            fb::protocol::game::response::move_confirm_noscroll(direction,
+                                                                fb::model::point<uint16_t>(pos_x, pos_y),
+                                                                fb::model::point<uint16_t>(viewport_x, viewport_y),
+                                                                walk_queue_slot));
         co_return;
     };
     builder.resume = []() -> async::task<int> {
@@ -3690,7 +3800,7 @@ int builtin::character::builtin_friends_sync(lua_State* L)
     return builder.run();
 }
 
-int builtin::character::builtin_unknown_4B(lua_State* L)
+int builtin::character::builtin_c2s_relay(lua_State* L)
 {
     auto lua = fb::lua::get(L);
     if (lua == nullptr)
@@ -3700,13 +3810,26 @@ int builtin::character::builtin_unknown_4B(lua_State* L)
     if (ch == nullptr)
         return 0;
 
-    auto payload = lua->tostring(2, "");
+    // Default: C2S miss (0x0C) + self oid — harmless handled packet the client echoes back.
+    std::string payload;
+    if (lua->argc() >= 2 && lua->is_string(2))
+    {
+        payload = lua->tostring(2);
+    }
+    else
+    {
+        fb::stream                    stream;
+        fb::stream_writer<big_endian> writer(stream);
+        writer.write<uint8_t>(0x0C);
+        writer.write<uint32_t>(ch->oid());
+        payload.assign(reinterpret_cast<const char*>(stream.data()), stream.size());
+    }
 
     auto weak     = ch->weak_from_this_as<fb::game::character>();
     auto builder  = lua->new_co_builder();
     builder.weak  = weak;
     builder.yield = [=]() -> async::task<void> {
-        std::ignore = ch->send(fb::protocol::game::response::unknown_4B(payload));
+        std::ignore = ch->send(fb::protocol::game::response::c2s_relay(payload));
         co_return;
     };
     builder.resume = []() -> async::task<int> {
@@ -3715,7 +3838,7 @@ int builtin::character::builtin_unknown_4B(lua_State* L)
     return builder.run();
 }
 
-int builtin::character::builtin_unknown_4D(lua_State* L)
+int builtin::character::builtin_user_info(lua_State* L)
 {
     auto lua = fb::lua::get(L);
     if (lua == nullptr)
@@ -3725,19 +3848,31 @@ int builtin::character::builtin_unknown_4D(lua_State* L)
     if (ch == nullptr)
         return 0;
 
-    auto                       type = static_cast<uint8_t>(lua->tointeger(2, 0));
+    // type 0: empty form (safest). type 2: prefill with client-valid combo labels.
+    auto type = static_cast<uint8_t>(lua->tointeger(2, 0));
+
+    static constexpr const char* k_defaults[8] = {
+        "테스트",
+        "테스트",
+        "테스트",
+        "테스트",
+        "A",
+        "서울시",
+        "게임방 및 인터넷카페",
+        "친구",
+    };
+
     std::array<std::string, 8> strings;
-    const char*                default_str = "-";
     for (size_t i = 0; i < strings.size(); ++i)
     {
-        strings[i] = lua->tostring(static_cast<int>(3 + i), default_str);
+        strings[i] = lua->tostring(static_cast<int>(3 + i), k_defaults[i]);
     }
 
     auto weak     = ch->weak_from_this_as<fb::game::character>();
     auto builder  = lua->new_co_builder();
     builder.weak  = weak;
     builder.yield = [=]() -> async::task<void> {
-        std::ignore = ch->send(fb::protocol::game::response::unknown_4D(type, strings));
+        std::ignore = ch->send(fb::protocol::game::response::user_info(type, strings));
         co_return;
     };
     builder.resume = []() -> async::task<int> {
@@ -3786,7 +3921,7 @@ int builtin::character::builtin_holyday_screen(lua_State* L)
     return builder.run();
 }
 
-int builtin::character::builtin_unknown_35(lua_State* L)
+int builtin::character::builtin_popup_message(lua_State* L)
 {
     auto lua = fb::lua::get(L);
     if (lua == nullptr)
@@ -3796,16 +3931,75 @@ int builtin::character::builtin_unknown_35(lua_State* L)
     if (ch == nullptr)
         return 0;
 
+    // Mode 1 (0x35): param0 reserved; param1 height; param2 width; param3 center-align.
+    auto text   = lua->tostring(2, "시스템 메시지");
+    auto param0 = static_cast<uint8_t>(lua->tointeger(3, 0));
+    auto param1 = static_cast<uint8_t>(lua->tointeger(4, 2)); // height = 16*(2+2) = 64
+    auto param2 = static_cast<uint8_t>(lua->tointeger(5, 8)); // width  = 16*(8+3) = 176
+    auto param3 = static_cast<uint8_t>(lua->tointeger(6, 1)); // center width from text
+
     auto weak     = ch->weak_from_this_as<fb::game::character>();
     auto builder  = lua->new_co_builder();
     builder.weak  = weak;
     builder.yield = [=]() -> async::task<void> {
-        std::ignore = ch->send(fb::protocol::game::response::unknown_35());
+        std::ignore = ch->send(fb::protocol::game::response::popup_message(param0, param1, param2, param3, text));
         co_return;
     };
     builder.resume = []() -> async::task<int> {
         co_return 0;
     };
+    return builder.run();
+}
+
+int builtin::character::builtin_popup_input(lua_State* L)
+{
+    // Ex) local text = ch:popup_input("짧은 메시지")
+    // Ex) local text = ch:popup_input("짧은 메시지", 0, 0, 2, 8)
+    // Ex) ch:popup_input("짧은 메시지", 0, 0, 2, 8, { immediate = true })
+    auto lua = fb::lua::get(L);
+    if (lua == nullptr)
+        return 0;
+
+    auto ch = lua->touserdata<fb::game::character>(1);
+    if (ch == nullptr)
+        return 0;
+
+    // Mode 0 (0x1B): param1 overwritten; presenter uses param2=height, param3=width.
+    auto text   = lua->tostring(2, "짧은 메시지");
+    auto param0 = static_cast<uint8_t>(lua->tointeger(3, 0));
+    auto param1 = static_cast<uint8_t>(lua->tointeger(4, 0));
+    auto param2 = static_cast<uint8_t>(lua->tointeger(5, 2)); // height
+    auto param3 = static_cast<uint8_t>(lua->tointeger(6, 8)); // width
+
+    auto immediate = false;
+    if (lua->argc() >= 7 && lua->is_table(7))
+    {
+        lua->pushstring("immediate");
+        if (lua_rawget(L, 7) == LUA_TBOOLEAN)
+            immediate = lua_toboolean(L, -1);
+        lua_pop(L, 1);
+    }
+
+    auto weak     = ch->weak_from_this_as<fb::game::character>();
+    auto builder  = lua->new_co_builder();
+    builder.weak  = weak;
+    builder.yield = [=]() -> async::task<void> {
+        std::ignore = ch->send(fb::protocol::game::response::popup_input(param0, param1, param2, param3, text));
+        if (immediate == false)
+        {
+            if (ch->dialog != nullptr)
+                ch->dialog->release();
+
+            ch->dialog = lua;
+        }
+        co_return;
+    };
+    if (immediate)
+    {
+        builder.resume = []() -> async::task<int> {
+            co_return 0;
+        };
+    }
     return builder.run();
 }
 
@@ -3833,7 +4027,7 @@ int builtin::character::builtin_delay(lua_State* L)
     }
     else if (lua->is_string(2))
     {
-        model = table::spell.name2spell(lua->tostring(2));
+        model = table::spell->name2spell(lua->tostring(2));
     }
 
     if (model == nullptr)
@@ -4134,9 +4328,8 @@ int fb::game::builtin::character::builtin_teleport(lua_State* L)
 
 int fb::game::builtin::character::builtin_dialog(lua_State* L)
 {
-    // Ex) ch:dialog(obj, "hello")
-    // Ex) ch:dialog(obj, "hello", { prev = true, next = true, immediate = true })
-
+    // Ex) ch:dialog(obj, "hello", { prev = true, next = true, immediate = true })  -- subtype 0
+    // Ex) ch:dialog(obj, nil, { prev = true, next = true })                        -- subtype 1 (no text)
     auto lua = fb::lua::get(L);
     if (lua == nullptr)
         return 0;
@@ -4171,7 +4364,10 @@ int fb::game::builtin::character::builtin_dialog(lua_State* L)
         return 0;
     }
 
-    auto message     = lua->tostring(3);
+    auto message = std::optional<std::string>{std::nullopt};
+    if (lua->is_nil(3) == false)
+        message = lua->tostring(3);
+
     auto button_prev = false;
     auto button_next = false;
     auto immediate   = false;
@@ -4294,9 +4490,11 @@ int fb::game::builtin::character::builtin_list(lua_State* L)
         return 0;
     }
 
-    auto message = lua->tostring(3);
-    auto size    = lua->rawlen(4);
-    auto menus   = std::vector<std::string>();
+    auto message = std::optional<std::string>{std::nullopt};
+    if (lua->is_nil(3) == false)
+        message = lua->tostring(3);
+    auto size  = lua->rawlen(4);
+    auto menus = std::vector<std::string>();
     for (int i = 0; i < size; i++)
     {
         lua->rawgeti(4, i + 1);
@@ -4350,8 +4548,10 @@ int fb::game::builtin::character::builtin_list(lua_State* L)
 
 int fb::game::builtin::character::builtin_input(lua_State* L)
 {
-    // Ex) ch:input(npc, "message")
-    // Ex) ch:input(npc, "message", { top = "...", bottom = "...", maxlen = 12, prev = true, immediate = true })
+    // Ex) ch:input(npc, "message" [, { ext = nil|"...", pursuit = 0xFFFF, immediate = true }])
+    // Ex) ch:input(npc, "message"|nil, { top = "...", bottom = "...", maxlen = 12, prev = true, password = true })
+    // 0x2F: ext nil → subtype 2; ext string → subtype 3
+    // 0x30: top+bottom → subtype 4/5/7/8 by message nil and password
     auto lua = fb::lua::get(L);
     if (lua == nullptr)
         return 0;
@@ -4379,7 +4579,9 @@ int fb::game::builtin::character::builtin_input(lua_State* L)
     }
 
     auto argc    = lua->argc();
-    auto message = lua->tostring(3);
+    auto message = std::optional<std::string>{std::nullopt};
+    if (lua->is_nil(3) == false)
+        message = lua->tostring(3);
 
     auto has_top    = false;
     auto has_bottom = false;
@@ -4388,6 +4590,9 @@ int fb::game::builtin::character::builtin_input(lua_State* L)
     auto maxlen     = uint8_t{0xFF};
     auto prev       = false;
     auto immediate  = false;
+    auto password   = false;
+    auto pursuit    = uint16_t{0xFFFF};
+    auto ext        = std::optional<std::string>{std::nullopt};
     if (argc >= 4 && lua->is_table(4))
     {
         lua->pushstring("top");
@@ -4420,29 +4625,45 @@ int fb::game::builtin::character::builtin_input(lua_State* L)
         if (lua_rawget(L, 4) == LUA_TBOOLEAN)
             immediate = lua_toboolean(L, -1);
         lua_pop(L, 1);
+
+        lua->pushstring("password");
+        if (lua_rawget(L, 4) == LUA_TBOOLEAN)
+            password = lua_toboolean(L, -1);
+        lua_pop(L, 1);
+
+        lua->pushstring("pursuit");
+        if (lua_rawget(L, 4) == LUA_TNUMBER)
+            pursuit = static_cast<uint16_t>(lua->tointeger(-1));
+        lua_pop(L, 1);
+
+        lua->pushstring("ext");
+        if (lua_rawget(L, 4) == LUA_TSTRING)
+            ext = lua->tostring(-1);
+        lua_pop(L, 1);
     }
 
     if (has_top != has_bottom)
         throw std::runtime_error("input options require both top and bottom, or neither");
 
-    auto use_ext  = has_top && has_bottom;
-    auto weak     = ch->weak_from_this_as<fb::game::character>();
-    auto builder  = lua->new_co_builder();
-    builder.weak  = weak;
-    builder.yield = [=]() -> async::task<void> {
-        if (use_ext)
+    auto use_list_input = has_top && has_bottom;
+    auto weak           = ch->weak_from_this_as<fb::game::character>();
+    auto builder        = lua->new_co_builder();
+    builder.weak        = weak;
+    builder.yield       = [=]() -> async::task<void> {
+        if (use_list_input)
         {
             if (obj != nullptr)
-                ch->listener.on_dialog(*ch, *obj, message, top, bottom, maxlen, prev, oid);
+                ch->listener.on_dialog(*ch, *obj, message, top, bottom, maxlen, prev, password, oid);
             else
-                ch->listener.on_dialog(*ch, *model, message, top, bottom, maxlen, prev, oid);
+                ch->listener.on_dialog(*ch, *model, message, top, bottom, maxlen, prev, password, oid);
         }
         else
         {
+            auto msg = message.value_or(std::string{});
             if (obj != nullptr)
-                ch->listener.on_dialog(*ch, *obj, message, oid);
+                ch->listener.on_dialog(*ch, *obj, msg, oid, ext, pursuit);
             else
-                ch->listener.on_dialog(*ch, *model, message, oid);
+                ch->listener.on_dialog(*ch, *model, msg, oid, ext, pursuit);
         }
 
         if (immediate == false)
@@ -4465,7 +4686,8 @@ int fb::game::builtin::character::builtin_input(lua_State* L)
 
 int fb::game::builtin::character::builtin_menu(lua_State* L)
 {
-    // Ex) ch:menu(npc, "hello", {"hello 1", "hello 2"} [, { immediate = true }])
+    // Ex) ch:menu(npc, "hello", {"a", "b"} [, { ext = nil|"...", immediate = true }])
+    // ext nil (default) → 0x2F subtype 0; ext string → subtype MENU(1)
     auto lua = fb::lua::get(L);
     if (lua == nullptr)
         return 0;
@@ -4502,11 +4724,17 @@ int fb::game::builtin::character::builtin_menu(lua_State* L)
     }
 
     auto immediate = false;
+    auto ext       = std::optional<std::string>{std::nullopt};
     if (lua->argc() >= 5 && lua->is_table(5))
     {
         lua->pushstring("immediate");
         if (lua_rawget(L, 5) == LUA_TBOOLEAN)
             immediate = lua_toboolean(L, -1);
+        lua_pop(L, 1);
+
+        lua->pushstring("ext");
+        if (lua_rawget(L, 5) == LUA_TSTRING)
+            ext = lua->tostring(-1);
         lua_pop(L, 1);
     }
 
@@ -4515,9 +4743,9 @@ int fb::game::builtin::character::builtin_menu(lua_State* L)
     builder.weak  = weak;
     builder.yield = [=]() -> async::task<void> {
         if (obj != nullptr)
-            ch->listener.on_dialog(*ch, *obj, message, menus, oid);
+            ch->listener.on_dialog(*ch, *obj, message, menus, oid, ext);
         else
-            ch->listener.on_dialog(*ch, *model, message, menus, oid);
+            ch->listener.on_dialog(*ch, *model, message, menus, oid, ext);
 
         if (immediate == false)
         {
@@ -4609,6 +4837,324 @@ int fb::game::builtin::character::builtin_slot(lua_State* L)
             co_return 0;
         };
     }
+    return builder.run();
+}
+
+int fb::game::builtin::character::builtin_pursuit(lua_State* L)
+{
+    // Ex) ch:pursuit(npc, "msg", {"opt1", "opt2"} [, { pursuit = 0xFFFF, immediate = true }])
+    // Ex) ch:pursuit(npc, "msg", { {"HP", "100"}, {"MP", "50"} } [, { ... }])  -- subtype 10 dual field
+    // Select yields option/label name. Dialog TOP is C2S 0x43 (object click), not a yield result.
+    auto lua = fb::lua::get(L);
+    if (lua == nullptr)
+        return 0;
+
+    auto ch = lua->touserdata<fb::game::character>(1);
+    if (ch == nullptr)
+        return 0;
+
+    auto oid   = uint32_t{0xFFFFFFFD};
+    auto model = static_cast<const fb::model::object*>(nullptr);
+    auto obj   = std::shared_ptr<fb::game::object>(nullptr);
+    if (lua->is_userdata<fb::game::object>(2))
+    {
+        obj   = lua->touserdata<fb::game::object>(2);
+        oid   = obj->oid();
+        model = &obj->based();
+    }
+    else if (lua->is_userdata<fb::model::object>(2))
+    {
+        model = lua->touserdata<fb::model::object>(2);
+    }
+    else
+    {
+        return 0;
+    }
+
+    auto message = lua->tostring(3);
+    if (lua->is_table(4) == false)
+        return 0;
+
+    auto size     = lua->rawlen(4);
+    auto use_dual = false;
+    auto options  = std::vector<std::string>();
+    auto pairs    = std::vector<std::pair<std::string, std::string>>();
+    if (size > 0)
+    {
+        lua->rawgeti(4, 1);
+        use_dual = lua->is_table(-1);
+        lua_pop(L, 1);
+    }
+
+    if (use_dual)
+    {
+        for (int i = 0; i < size; i++)
+        {
+            lua->rawgeti(4, i + 1);
+            if (lua->is_table(-1) == false)
+            {
+                lua_pop(L, 1);
+                continue;
+            }
+            lua->rawgeti(-1, 1);
+            auto label = lua->tostring(-1);
+            lua_pop(L, 1);
+            lua->rawgeti(-1, 2);
+            auto value = lua->tostring(-1);
+            lua_pop(L, 1);
+            lua_pop(L, 1);
+            if (label.empty() == false)
+                pairs.emplace_back(std::move(label), std::move(value));
+        }
+    }
+    else
+    {
+        for (int i = 0; i < size; i++)
+        {
+            lua->rawgeti(4, i + 1);
+            options.push_back(lua->tostring(-1));
+            lua_pop(L, 1);
+        }
+    }
+
+    auto pursuit   = uint16_t{0xFFFF};
+    auto immediate = false;
+    if (lua->argc() >= 5 && lua->is_table(5))
+    {
+        lua->pushstring("pursuit");
+        if (lua_rawget(L, 5) == LUA_TNUMBER)
+            pursuit = static_cast<uint16_t>(lua->tointeger(-1));
+        lua_pop(L, 1);
+
+        lua->pushstring("immediate");
+        if (lua_rawget(L, 5) == LUA_TBOOLEAN)
+            immediate = lua_toboolean(L, -1);
+        lua_pop(L, 1);
+    }
+
+    auto weak     = ch->weak_from_this_as<fb::game::character>();
+    auto builder  = lua->new_co_builder();
+    builder.weak  = weak;
+    builder.yield = [=]() -> async::task<void> {
+        if (use_dual)
+        {
+            if (obj != nullptr)
+                ch->listener.on_dialog_dual_field(*ch, *obj, message, pairs, oid, pursuit);
+            else
+                ch->listener.on_dialog_dual_field(*ch, *model, message, pairs, oid, pursuit);
+        }
+        else
+        {
+            if (obj != nullptr)
+                ch->listener.on_dialog_pursuit(*ch, *obj, message, options, oid, pursuit);
+            else
+                ch->listener.on_dialog_pursuit(*ch, *model, message, options, oid, pursuit);
+        }
+
+        if (immediate == false)
+        {
+            if (ch->dialog != nullptr)
+                ch->dialog->release();
+
+            ch->dialog = lua;
+        }
+        co_return;
+    };
+    if (immediate)
+    {
+        builder.resume = []() -> async::task<int> {
+            co_return 0;
+        };
+    }
+    return builder.run();
+}
+
+int fb::game::builtin::character::builtin_spell(lua_State* L)
+{
+    // Lookup (inherited): me:spell(index|name|model) → life::builtin_spell
+    // Dialog:             me:spell(npc, "message" [, { pursuit, immediate }])
+    auto lua = fb::lua::get(L);
+    if (lua == nullptr)
+        return 0;
+
+    if (lua->is_number(2) || lua->is_string(2) || lua->is_userdata<fb::model::spell>(2))
+        return builtin::life::builtin_spell(L);
+
+    auto ch = lua->touserdata<fb::game::character>(1);
+    if (ch == nullptr)
+        return 0;
+
+    auto oid   = uint32_t{0xFFFFFFFD};
+    auto model = static_cast<const fb::model::object*>(nullptr);
+    auto obj   = std::shared_ptr<fb::game::object>(nullptr);
+    if (lua->is_userdata<fb::game::object>(2))
+    {
+        obj   = lua->touserdata<fb::game::object>(2);
+        oid   = obj->oid();
+        model = &obj->based();
+    }
+    else if (lua->is_userdata<fb::model::object>(2))
+    {
+        model = lua->touserdata<fb::model::object>(2);
+    }
+    else
+    {
+        return builtin::life::builtin_spell(L);
+    }
+
+    auto message   = lua->tostring(3);
+    auto pursuit   = uint16_t{0xFFFF};
+    auto immediate = false;
+    if (lua->argc() >= 4 && lua->is_table(4))
+    {
+        lua->pushstring("pursuit");
+        if (lua_rawget(L, 4) == LUA_TNUMBER)
+            pursuit = static_cast<uint16_t>(lua->tointeger(-1));
+        lua_pop(L, 1);
+
+        lua->pushstring("immediate");
+        if (lua_rawget(L, 4) == LUA_TBOOLEAN)
+            immediate = lua_toboolean(L, -1);
+        lua_pop(L, 1);
+    }
+
+    auto weak     = ch->weak_from_this_as<fb::game::character>();
+    auto builder  = lua->new_co_builder();
+    builder.weak  = weak;
+    builder.yield = [=]() -> async::task<void> {
+        if (obj != nullptr)
+            ch->listener.on_dialog_spell(*ch, *obj, message, oid, pursuit);
+        else
+            ch->listener.on_dialog_spell(*ch, *model, message, oid, pursuit);
+
+        if (immediate == false)
+        {
+            if (ch->dialog != nullptr)
+                ch->dialog->release();
+
+            ch->dialog = lua;
+        }
+        co_return;
+    };
+    if (immediate)
+    {
+        builder.resume = []() -> async::task<int> {
+            co_return 0;
+        };
+    }
+    return builder.run();
+}
+
+int fb::game::builtin::character::builtin_email(lua_State* L)
+{
+    // Ex) ch:email(npc, "msg" [, { immediate = true }])
+    // str1/str2 exist on the wire but the client ignores them (dead fields).
+    auto lua = fb::lua::get(L);
+    if (lua == nullptr)
+        return 0;
+
+    auto ch = lua->touserdata<fb::game::character>(1);
+    if (ch == nullptr)
+        return 0;
+
+    auto oid   = uint32_t{0xFFFFFFFD};
+    auto model = static_cast<const fb::model::object*>(nullptr);
+    auto obj   = std::shared_ptr<fb::game::object>(nullptr);
+    if (lua->is_userdata<fb::game::object>(2))
+    {
+        obj   = lua->touserdata<fb::game::object>(2);
+        oid   = obj->oid();
+        model = &obj->based();
+    }
+    else if (lua->is_userdata<fb::model::object>(2))
+    {
+        model = lua->touserdata<fb::model::object>(2);
+    }
+    else
+    {
+        return 0;
+    }
+
+    auto message   = lua->tostring(3);
+    auto immediate = false;
+    if (lua->argc() >= 4 && lua->is_table(4))
+    {
+        lua->pushstring("immediate");
+        if (lua_rawget(L, 4) == LUA_TBOOLEAN)
+            immediate = lua_toboolean(L, -1);
+        lua_pop(L, 1);
+    }
+
+    auto weak     = ch->weak_from_this_as<fb::game::character>();
+    auto builder  = lua->new_co_builder();
+    builder.weak  = weak;
+    builder.yield = [=]() -> async::task<void> {
+        if (obj != nullptr)
+            ch->listener.on_dialog_email(*ch, *obj, message, "", "", false, false, oid);
+        else
+            ch->listener.on_dialog_email(*ch, *model, message, "", "", false, false, oid);
+
+        if (immediate == false)
+        {
+            if (ch->dialog != nullptr)
+                ch->dialog->release();
+
+            ch->dialog = lua;
+        }
+        co_return;
+    };
+    if (immediate)
+    {
+        builder.resume = []() -> async::task<int> {
+            co_return 0;
+        };
+    }
+    return builder.run();
+}
+
+int fb::game::builtin::character::builtin_dialog_0x30_10(lua_State* L)
+{
+    // Ex) ch:dialog_0x30_10(npc, "message") — send only (no C2S resume)
+    auto lua = fb::lua::get(L);
+    if (lua == nullptr)
+        return 0;
+
+    auto ch = lua->touserdata<fb::game::character>(1);
+    if (ch == nullptr)
+        return 0;
+
+    auto oid   = uint32_t{0xFFFFFFFD};
+    auto model = static_cast<const fb::model::object*>(nullptr);
+    auto obj   = std::shared_ptr<fb::game::object>(nullptr);
+    if (lua->is_userdata<fb::game::object>(2))
+    {
+        obj   = lua->touserdata<fb::game::object>(2);
+        oid   = obj->oid();
+        model = &obj->based();
+    }
+    else if (lua->is_userdata<fb::model::object>(2))
+    {
+        model = lua->touserdata<fb::model::object>(2);
+    }
+    else
+    {
+        return 0;
+    }
+
+    auto message  = lua->tostring(3);
+    auto weak     = ch->weak_from_this_as<fb::game::character>();
+    auto builder  = lua->new_co_builder();
+    builder.weak  = weak;
+    builder.yield = [=]() -> async::task<void> {
+        if (obj != nullptr)
+            ch->listener.on_dialog_0x30_10(*ch, *obj, message, oid);
+        else
+            ch->listener.on_dialog_0x30_10(*ch, *model, message, oid);
+        co_return;
+    };
+    builder.resume = []() -> async::task<int> {
+        co_return 0;
+    };
     return builder.run();
 }
 
@@ -4794,7 +5340,7 @@ int fb::game::builtin::character::builtin_reward(lua_State* L)
     }
 
     auto reward_id = lua->tostring(2);
-    if (table::reward.contains(reward_id) == false)
+    if (table::reward->contains(reward_id) == false)
     {
         lua->pushboolean(false);
         return 1;
@@ -4894,7 +5440,7 @@ int builtin::character::builtin_send_storage_box(lua_State* L)
     if (lua->is_string(5))
     {
         auto reward_id = lua->tostring(5);
-        if (table::reward.contains(reward_id))
+        if (table::reward->contains(reward_id))
         {
             const auto& src = table::reward[reward_id].dsl;
             attachments.reserve(src.size());
@@ -4915,7 +5461,7 @@ int builtin::character::builtin_send_storage_box(lua_State* L)
                 {
                     auto name  = lua->tostring(-2);
                     auto count = static_cast<uint32_t>(lua->tointeger(-1));
-                    auto model = table::item.name2item(name);
+                    auto model = table::item->name2item(name);
                     if (model != nullptr && count > 0)
                     {
                         auto item_dsl = fb::model::dsl::item(model->id, count, std::nullopt, std::nullopt, 100.0);
@@ -5004,7 +5550,7 @@ int builtin::character::builtin_send_system_storage_box(lua_State* L)
     if (lua->is_string(4))
     {
         auto reward_id = lua->tostring(4);
-        if (table::reward.contains(reward_id))
+        if (table::reward->contains(reward_id))
         {
             const auto& src = table::reward[reward_id].dsl;
             attachments.reserve(src.size());
@@ -5025,7 +5571,7 @@ int builtin::character::builtin_send_system_storage_box(lua_State* L)
                 {
                     auto name  = lua->tostring(-2);
                     auto count = static_cast<uint32_t>(lua->tointeger(-1));
-                    auto model = table::item.name2item(name);
+                    auto model = table::item->name2item(name);
                     if (model != nullptr && count > 0)
                     {
                         auto item_dsl = fb::model::dsl::item(model->id, count, std::nullopt, std::nullopt, 100.0);

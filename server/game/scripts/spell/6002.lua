@@ -1,5 +1,16 @@
 -- spell: 금고주인의저주
 -- 금고주인의저주 버프 해제 효과
--- function ON_UNBUFF_6002(me, spell)
---
--- end
+
+return {
+    -- on_cast = function(me, you, sp)
+    -- end,
+
+    -- on_buff = function(me, sp)
+    -- end,
+
+    -- on_unbuff = function(me, sp)
+    -- end,
+
+    -- on_concast = function(me, sp)
+    -- end
+}

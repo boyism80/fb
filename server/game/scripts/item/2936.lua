@@ -1,5 +1,15 @@
 -- item: 화이트드레스
 
--- 화이트드레스 해제 스크립트
--- function ON_DEACTIVATED_2936(me, item)
--- end
+return {
+    -- on_activated = function(me, item)
+    -- end,
+
+    -- on_deactivated = function(me, item)
+    -- end,
+
+    -- on_concast = function(me, item)
+    -- end,
+
+    -- on_attack = function(me, item)
+    -- end
+}

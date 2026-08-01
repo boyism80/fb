@@ -7,13 +7,15 @@ void user_list::serialize(fb::stream_writer<big_endian>& writer) const
 {
     header::serialize(writer);
     writer.write<uint8_t>(opcode);
-    writer.write<uint8_t>(0);
+    writer.write<uint8_t>(this->unused);
 }
 #else
 void user_list::deserialize(fb::stream_reader<big_endian>& reader)
 {
     header::deserialize(reader);
-    auto unknown = reader.read<uint8_t>();
+    // Optional filler; real client often omits it (opcode-only).
+    if (reader.readable_size() > 0)
+        this->unused = reader.read<uint8_t>();
 }
 #endif
 
@@ -22,7 +24,8 @@ void user_list::deserialize(fb::stream_reader<big_endian>& reader)
 namespace fb::protocol::game::response {
 
 #ifndef BOT
-user_list::user_list(std::vector<user_data>&& users) :
+user_list::user_list(std::vector<user_data>&& users, SORT_TYPE sort) :
+    sort(sort),
     users(std::move(users))
 { }
 
@@ -32,7 +35,7 @@ void user_list::serialize(fb::stream_writer<big_endian>& writer) const
     writer.write<uint8_t>(opcode);
     writer.write<uint16_t>((uint16_t)this->users.size());
     writer.write<uint16_t>((uint16_t)this->users.size());
-    writer.write<uint8_t>(0x00);
+    writer.write<uint8_t>(static_cast<uint8_t>(this->sort));
 
     for (const auto& user : this->users)
     {
@@ -48,7 +51,7 @@ void user_list::deserialize(fb::stream_reader<big_endian>& reader)
     header::deserialize(reader);
     auto user_count = reader.read<uint16_t>();
     reader.read<uint16_t>(); // user_count (duplicate)
-    reader.read<uint8_t>();  // 0x00
+    this->sort = static_cast<SORT_TYPE>(reader.read<uint8_t>());
 
     this->users.clear();
     for (int i = 0; i < user_count; i++)

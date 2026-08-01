@@ -1,11 +1,15 @@
 -- item: 홍옥지팡이
 
--- 홍옥지팡이 사용 스크립트
--- function ON_ACTIVATED_227(me, item)
---
--- end
+return {
+    -- on_activated = function(me, item)
+    -- end,
 
--- 홍옥지팡이 해제 스크립트
--- function ON_DEACTIVATED_227(me, item)
---
--- end
+    -- on_deactivated = function(me, item)
+    -- end,
+
+    -- on_concast = function(me, item)
+    -- end,
+
+    -- on_attack = function(me, item)
+    -- end
+}

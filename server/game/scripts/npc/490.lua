@@ -12,7 +12,7 @@ local function run_wedding_dress_sale(me, npc)
         "웨딩드레스22를 사고 싶어요.",
         "웨딩드레스25를 사고 싶어요."
     }, { prev = false })
-    if list_btn == DIALOG_RESULT.QUIT or sel == nil then
+    if list_btn == DIALOG_RESULT.QUIT then
         return
     end
     if sel == 1 then
@@ -21,7 +21,7 @@ local function run_wedding_dress_sale(me, npc)
             return
         end
         local buy_sel, buy_btn = me:list(npc, "구매하시겠어요?", {"네, 사겠습니다.", "아니오, 다음에요..."}, { prev = false })
-        if buy_btn == DIALOG_RESULT.QUIT or buy_sel == nil then
+        if buy_btn == DIALOG_RESULT.QUIT then
             return
         end
         if buy_sel == 1 then
@@ -43,7 +43,7 @@ local function run_wedding_dress_sale(me, npc)
             return
         end
         local buy_sel, buy_btn = me:list(npc, "구매하시겠어요?", {"네, 사겠습니다.", "아니오, 다음에요..."}, { prev = false })
-        if buy_btn == DIALOG_RESULT.QUIT or buy_sel == nil then
+        if buy_btn == DIALOG_RESULT.QUIT then
             return
         end
         if buy_sel == 1 then
@@ -65,7 +65,7 @@ local function run_wedding_dress_sale(me, npc)
             return
         end
         local buy_sel, buy_btn = me:list(npc, "구매하시겠어요?", {"네, 사겠습니다.", "아니오, 다음에요..."}, { prev = false })
-        if buy_btn == DIALOG_RESULT.QUIT or buy_sel == nil then
+        if buy_btn == DIALOG_RESULT.QUIT then
             return
         end
         if buy_sel == 1 then
@@ -87,7 +87,7 @@ local function run_wedding_dress_sale(me, npc)
             return
         end
         local ex_sel, ex_btn = me:list(npc, "교환하시겠어요?", {"네, 교환하겠습니다.", "아니오, 다음에요..."}, { prev = false })
-        if ex_btn == DIALOG_RESULT.QUIT or ex_sel == nil then
+        if ex_btn == DIALOG_RESULT.QUIT then
             return
         end
         if ex_sel == 1 then
@@ -95,11 +95,11 @@ local function run_wedding_dress_sale(me, npc)
                 { ['item'] = { ["웨딩드레스12"] = 1, ["웨딩드레스18"] = 1 } },
                 { ['item'] = { ["웨딩드레스22"] = 1 } }
             )
-            if code == enum.EXCHANGE_RESULT.LACK_COST then
+            if code == enum.exchange_result.LACK_COST then
                 me:dialog(npc, "웨딩드레스가 없으신데요?", { prev = false, next = false })
                 return
             end
-            if code == enum.EXCHANGE_RESULT.LACK_CAPACITY then
+            if code == enum.exchange_result.LACK_CAPACITY then
                 me:dialog(npc, "소지품이 가득 차서 웨딩드레스22를 드리지 못합니다.", { prev = false, next = false })
                 return
             end
@@ -115,7 +115,7 @@ local function run_wedding_dress_sale(me, npc)
             return
         end
         local ex_sel, ex_btn = me:list(npc, "교환하시겠어요?", {"네, 교환하겠습니다.", "아니오, 다음에요..."}, { prev = false })
-        if ex_btn == DIALOG_RESULT.QUIT or ex_sel == nil then
+        if ex_btn == DIALOG_RESULT.QUIT then
             return
         end
         if ex_sel == 1 then
@@ -123,11 +123,11 @@ local function run_wedding_dress_sale(me, npc)
                 { ['item'] = { ["웨딩드레스18"] = 1, ["웨딩드레스22"] = 1 } },
                 { ['item'] = { ["웨딩드레스25"] = 1 } }
             )
-            if code == enum.EXCHANGE_RESULT.LACK_COST then
+            if code == enum.exchange_result.LACK_COST then
                 me:dialog(npc, "웨딩드레스가 없으신데요?", { prev = false, next = false })
                 return
             end
-            if code == enum.EXCHANGE_RESULT.LACK_CAPACITY then
+            if code == enum.exchange_result.LACK_CAPACITY then
                 me:dialog(npc, "소지품이 가득 차서 웨딩드레스25를 드리지 못합니다.", { prev = false, next = false })
                 return
             end
@@ -149,7 +149,7 @@ local function run_garimbin_wing_exchange(me, npc)
     if list_btn == DIALOG_RESULT.PREV then
         goto NPC_490_0001
     end
-    if list_btn == DIALOG_RESULT.QUIT or sel == nil then
+    if list_btn == DIALOG_RESULT.QUIT then
         return
     end
     if sel == 1 then
@@ -157,7 +157,7 @@ local function run_garimbin_wing_exchange(me, npc)
             { ['item'] = { ["웨딩드레스25"] = 1, ["천사의깃털"] = 10 } },
             { ['item'] = { ["가릉빈가의날개옷"] = 1 } }
         )
-        if code == enum.EXCHANGE_RESULT.LACK_COST then
+        if code == enum.exchange_result.LACK_COST then
             if not me:has_items("웨딩드레스25", 1) then
                 me:dialog(npc, "웨딩드레스가 없으신데요?", { prev = false, next = false })
             else
@@ -165,7 +165,7 @@ local function run_garimbin_wing_exchange(me, npc)
             end
             return
         end
-        if code == enum.EXCHANGE_RESULT.LACK_CAPACITY then
+        if code == enum.exchange_result.LACK_CAPACITY then
             me:dialog(npc, "소지품이 가득 차서 가릉빈가의날개옷을 드리지 못합니다.", { prev = false, next = false })
             return
         end
@@ -175,20 +175,24 @@ local function run_garimbin_wing_exchange(me, npc)
     end
 end
 
-function NPC_490(me, npc)
-    local sel, btn = me:list(npc, "안녕하세요. 어떻게 오셨나요?", {
-        "웨딩드레스특별판매",
-        "가릉빈가의날개옷교환"
-    })
-    if btn == DIALOG_RESULT.QUIT or sel == nil then
-        return
+return {
+    on_click = function(me, npc)
+        local OPT_WEDDING = '웨딩드레스특별판매'
+        local OPT_WING = '가릉빈가의날개옷교환'
+        local sel, btn = me:pursuit(npc, "안녕하세요. 어떻게 오셨나요?", {
+            OPT_WEDDING,
+            OPT_WING,
+        })
+        if btn == DIALOG_RESULT.QUIT then
+            return
+        end
+        if sel == OPT_WEDDING then
+            run_wedding_dress_sale(me, npc)
+            return
+        end
+        if sel == OPT_WING then
+            run_garimbin_wing_exchange(me, npc)
+            return
+        end
     end
-    if sel == 1 then
-        run_wedding_dress_sale(me, npc)
-        return
-    end
-    if sel == 2 then
-        run_garimbin_wing_exchange(me, npc)
-        return
-    end
-end
+}

@@ -19,18 +19,16 @@ void trade_dialog::serialize(fb::stream_writer<big_endian>& writer) const
     sstream << this->me.name() << '(' << cname.c_str() << ')';
 
     writer.write<uint8_t>(opcode);
-    writer.write<uint8_t>(0x00);
+    writer.write<uint8_t>(SUBTYPE_OPEN);
     writer.write<uint32_t>(this->me.oid());
     writer.write<std::string>(sstream.str());
-    writer.write<uint8_t>(0x00);
 }
 #else
 void trade_dialog::deserialize(fb::stream_reader<big_endian>& reader)
 {
     header::deserialize(reader);
-    reader.read<uint8_t>(); // 0x00
+    reader.read<uint8_t>(); // SUBTYPE_OPEN
     this->oid  = reader.read<uint32_t>();
     this->name = reader.read<std::string, uint8_t>();
-    reader.read<uint8_t>(); // 0x00
 }
 #endif

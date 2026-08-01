@@ -30,7 +30,7 @@ end
 
 local function do_sub3_start(me, npc)
     local sel, btn = me:list(npc, "고민이시다... 정말 고민이시다...", { "무슨 일이신가요?" }, { prev = false })
-    if btn == DIALOG_RESULT.QUIT or sel == nil or sel ~= 1 then
+    if btn == DIALOG_RESULT.QUIT or sel ~= 1 then
         return false
     end
     local b = me:dialog(npc, "요즘 원숭이들이 병에 걸려서 고민이시다. 정말로 고민이시다.", { prev = true, next = true })
@@ -75,10 +75,10 @@ local function do_sub3_turnin(me, npc)
         { ['item'] = { ["좌황활력환"] = 1 } },
         { ['item'] = { ["과일나라"] = 1 } }
     )
-    if code == enum.EXCHANGE_RESULT.LACK_COST then
+    if code == enum.exchange_result.LACK_COST then
         me:dialog(npc, "아이템을 제거할 수 없습니다.", { prev = false, next = false })
         return true
-    elseif code == enum.EXCHANGE_RESULT.LACK_CAPACITY then
+    elseif code == enum.exchange_result.LACK_CAPACITY then
         me:dialog(npc, "소지품이 가득 차서 과일나라를 줄 수 없습니다.", { prev = false, next = false })
         return true
     end
@@ -89,76 +89,78 @@ local function do_sub3_turnin(me, npc)
     return true
 end
 
-function NPC_465(me, npc)
-    local q2 = me:quest(quest.QUEST_SKULL_NECKLACE_2)
-    local q3 = me:quest(quest.QUEST_SKULL_NECKLACE_3)
+return {
+    on_click = function(me, npc)
+        local q2 = me:quest(quest.QUEST_SKULL_NECKLACE_2)
+        local q3 = me:quest(quest.QUEST_SKULL_NECKLACE_3)
 
-    if q2 and q2:step() == 1 then
-        if do_sub2_receive_letter(me, npc) then
-            return
-        end
-    end
-
-    if q3 == nil or q3:step() == 0 then
-        if do_sub3_start(me, npc) then
-            return
-        end
-        return
-    end
-
-    if q3:step() == 1 then
-        me:dialog(npc, "병을 예방하기 위해 이상한 약을 먹어야 하는데, 그 약을 구해다 주셔야 한다.", { prev = false, next = false })
-        return
-    end
-
-    if q3:step() == 2 then
-        if do_sub3_turnin(me, npc) then
-            return
-        end
-        return
-    end
-
-    local main_q = me:quest(quest.QUEST_SKULL_NECKLACE)
-    if main_q then
-        local s = main_q:step()
-        if s == 2 then
-            ::NPC_465_0001::
-            local b = me:dialog(npc, "음? 참원왕께서 의견이나 계책을 바사리고 계신다고? 그래, 마침 생각하시던 일이 계시는데 말이다.", { prev = false, next = true })
-            if b == DIALOG_RESULT.QUIT then
+        if q2 and q2:step() == 1 then
+            if do_sub2_receive_letter(me, npc) then
                 return
             end
-            ::NPC_465_0002::
-            b = me:dialog(npc, "좌황활력환을 대량으로 좀 얻으실 수 있으시면 굉장한 도움이 되실것 같으시다. 이게 내 의견이시다.", { prev = true, next = true })
-            if b == DIALOG_RESULT.QUIT then
-                return
-            end
-            if b == DIALOG_RESULT.PREV then
-                goto NPC_465_0001
-            end
-            main_q:step(3)
-            return
         end
-        if s == 3 then
-            me:dialog(npc, "내 의견을 참원왕에게 전해주면 되신다.", { prev = false, next = false })
-            return
-        end
-        if s == 28 then
-            if not me:has_items("마른갈대", 1) then
-                me:dialog(npc, "마른갈대를 구해서 왕들에게 하나씩 나누어 주게.", { prev = false, next = false })
-                return
-            end
-            local b = me:dialog(npc, "마른 갈대를 나눠주고 있다고 들었네. 수고하는 모습이 참 보기 좋군. 더 수고해주게.", { prev = false, next = true })
-            if b == DIALOG_RESULT.QUIT then
-                return
-            end
-            if not me:rmitem("마른갈대", 1, ITEM_DELETE_TYPE.GIVE) then
-                me:dialog(npc, "아이템을 제거할 수 없습니다.", { prev = false, next = false })
-                return
-            end
-            main_q:step(29)
-            return
-        end
-    end
 
-    me:dialog(npc, "준비중입니다.", { prev = false, next = false })
-end
+        if q3 == nil or q3:step() == 0 then
+            if do_sub3_start(me, npc) then
+                return
+            end
+            return
+        end
+
+        if q3:step() == 1 then
+            me:dialog(npc, "병을 예방하기 위해 이상한 약을 먹어야 하는데, 그 약을 구해다 주셔야 한다.", { prev = false, next = false })
+            return
+        end
+
+        if q3:step() == 2 then
+            if do_sub3_turnin(me, npc) then
+                return
+            end
+            return
+        end
+
+        local main_q = me:quest(quest.QUEST_SKULL_NECKLACE)
+        if main_q then
+            local s = main_q:step()
+            if s == 2 then
+                ::NPC_465_0001::
+                local b = me:dialog(npc, "음? 참원왕께서 의견이나 계책을 바사리고 계신다고? 그래, 마침 생각하시던 일이 계시는데 말이다.", { prev = false, next = true })
+                if b == DIALOG_RESULT.QUIT then
+                    return
+                end
+                ::NPC_465_0002::
+                b = me:dialog(npc, "좌황활력환을 대량으로 좀 얻으실 수 있으시면 굉장한 도움이 되실것 같으시다. 이게 내 의견이시다.", { prev = true, next = true })
+                if b == DIALOG_RESULT.QUIT then
+                    return
+                end
+                if b == DIALOG_RESULT.PREV then
+                    goto NPC_465_0001
+                end
+                main_q:step(3)
+                return
+            end
+            if s == 3 then
+                me:dialog(npc, "내 의견을 참원왕에게 전해주면 되신다.", { prev = false, next = false })
+                return
+            end
+            if s == 28 then
+                if not me:has_items("마른갈대", 1) then
+                    me:dialog(npc, "마른갈대를 구해서 왕들에게 하나씩 나누어 주게.", { prev = false, next = false })
+                    return
+                end
+                local b = me:dialog(npc, "마른 갈대를 나눠주고 있다고 들었네. 수고하는 모습이 참 보기 좋군. 더 수고해주게.", { prev = false, next = true })
+                if b == DIALOG_RESULT.QUIT then
+                    return
+                end
+                if not me:rmitem("마른갈대", 1, ITEM_DELETE_TYPE.GIVE) then
+                    me:dialog(npc, "아이템을 제거할 수 없습니다.", { prev = false, next = false })
+                    return
+                end
+                main_q:step(29)
+                return
+            end
+        end
+
+        me:dialog(npc, "준비중입니다.", { prev = false, next = false })
+    end
+}

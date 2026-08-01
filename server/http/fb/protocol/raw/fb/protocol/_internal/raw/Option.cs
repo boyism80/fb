@@ -24,7 +24,7 @@ public struct Option : IFlatbufferObject
   public bool Whisper { get { int o = __p.__offset(6); return o != 0 ? 0!=__p.bb.Get(o + __p.bb_pos) : (bool)false; } }
   public bool Group { get { int o = __p.__offset(8); return o != 0 ? 0!=__p.bb.Get(o + __p.bb_pos) : (bool)false; } }
   public bool Roar { get { int o = __p.__offset(10); return o != 0 ? 0!=__p.bb.Get(o + __p.bb_pos) : (bool)false; } }
-  public bool RoarWorlds { get { int o = __p.__offset(12); return o != 0 ? 0!=__p.bb.Get(o + __p.bb_pos) : (bool)false; } }
+  public bool News { get { int o = __p.__offset(12); return o != 0 ? 0!=__p.bb.Get(o + __p.bb_pos) : (bool)false; } }
   public bool MagicEffect { get { int o = __p.__offset(14); return o != 0 ? 0!=__p.bb.Get(o + __p.bb_pos) : (bool)false; } }
   public bool WeatherEffect { get { int o = __p.__offset(16); return o != 0 ? 0!=__p.bb.Get(o + __p.bb_pos) : (bool)false; } }
   public bool FixedMove { get { int o = __p.__offset(18); return o != 0 ? 0!=__p.bb.Get(o + __p.bb_pos) : (bool)false; } }
@@ -38,7 +38,7 @@ public struct Option : IFlatbufferObject
       bool whisper = false,
       bool group = false,
       bool roar = false,
-      bool roar_worlds = false,
+      bool news = false,
       bool magic_effect = false,
       bool weather_effect = false,
       bool fixed_move = false,
@@ -55,7 +55,7 @@ public struct Option : IFlatbufferObject
     Option.AddFixedMove(builder, fixed_move);
     Option.AddWeatherEffect(builder, weather_effect);
     Option.AddMagicEffect(builder, magic_effect);
-    Option.AddRoarWorlds(builder, roar_worlds);
+    Option.AddNews(builder, news);
     Option.AddRoar(builder, roar);
     Option.AddGroup(builder, group);
     Option.AddWhisper(builder, whisper);
@@ -67,7 +67,7 @@ public struct Option : IFlatbufferObject
   public static void AddWhisper(FlatBufferBuilder builder, bool whisper) { builder.AddBool(1, whisper, false); }
   public static void AddGroup(FlatBufferBuilder builder, bool group) { builder.AddBool(2, group, false); }
   public static void AddRoar(FlatBufferBuilder builder, bool roar) { builder.AddBool(3, roar, false); }
-  public static void AddRoarWorlds(FlatBufferBuilder builder, bool roarWorlds) { builder.AddBool(4, roarWorlds, false); }
+  public static void AddNews(FlatBufferBuilder builder, bool news) { builder.AddBool(4, news, false); }
   public static void AddMagicEffect(FlatBufferBuilder builder, bool magicEffect) { builder.AddBool(5, magicEffect, false); }
   public static void AddWeatherEffect(FlatBufferBuilder builder, bool weatherEffect) { builder.AddBool(6, weatherEffect, false); }
   public static void AddFixedMove(FlatBufferBuilder builder, bool fixedMove) { builder.AddBool(7, fixedMove, false); }
@@ -93,7 +93,7 @@ static public class OptionVerify
       && verifier.VerifyField(tablePos, 6 /*Whisper*/, 1 /*bool*/, 1, false)
       && verifier.VerifyField(tablePos, 8 /*Group*/, 1 /*bool*/, 1, false)
       && verifier.VerifyField(tablePos, 10 /*Roar*/, 1 /*bool*/, 1, false)
-      && verifier.VerifyField(tablePos, 12 /*RoarWorlds*/, 1 /*bool*/, 1, false)
+      && verifier.VerifyField(tablePos, 12 /*News*/, 1 /*bool*/, 1, false)
       && verifier.VerifyField(tablePos, 14 /*MagicEffect*/, 1 /*bool*/, 1, false)
       && verifier.VerifyField(tablePos, 16 /*WeatherEffect*/, 1 /*bool*/, 1, false)
       && verifier.VerifyField(tablePos, 18 /*FixedMove*/, 1 /*bool*/, 1, false)

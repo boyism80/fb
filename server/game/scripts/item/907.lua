@@ -1,11 +1,15 @@
 -- item: 파란색장삼
 
--- 파란색장삼 사용 스크립트
--- function ON_ACTIVATED_907(me, item)
---
--- end
+return {
+    -- on_activated = function(me, item)
+    -- end,
 
--- 파란색장삼 해제 스크립트
--- function ON_DEACTIVATED_907(me, item)
---
--- end
+    -- on_deactivated = function(me, item)
+    -- end,
+
+    -- on_concast = function(me, item)
+    -- end,
+
+    -- on_attack = function(me, item)
+    -- end
+}

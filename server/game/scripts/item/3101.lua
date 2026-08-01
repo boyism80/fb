@@ -1,6 +1,16 @@
 -- item: 구기자
 
--- 구기자 사용 스크립트
-function ON_ACTIVATED_3101(me, item)
-    me:hp(math.min(me:hp()+300, me:maxhp()))
-end
+return {
+    on_activated = function(me, item)
+        me:hp(math.min(me:hp()+300, me:maxhp()))
+    end,
+
+    -- on_deactivated = function(me, item)
+    -- end,
+
+    -- on_concast = function(me, item)
+    -- end,
+
+    -- on_attack = function(me, item)
+    -- end
+}

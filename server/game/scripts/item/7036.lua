@@ -1,5 +1,15 @@
 -- item: 모닥불
 
--- 모닥불 해제 스크립트
--- function ON_DEACTIVATED_7036(me, item)
--- end
+return {
+    -- on_activated = function(me, item)
+    -- end,
+
+    -- on_deactivated = function(me, item)
+    -- end,
+
+    -- on_concast = function(me, item)
+    -- end,
+
+    -- on_attack = function(me, item)
+    -- end
+}

@@ -1,7 +1,17 @@
 -- item: 빨간시약
 
--- 빨간시약 사용 스크립트
-function ON_ACTIVATED_3095(me, item)
-    local value = me:maxhp() // 3
-    me:hp(math.min(me:hp()+value, me:maxhp()))
-end
+return {
+    on_activated = function(me, item)
+        local value = me:maxhp() // 3
+        me:hp(math.min(me:hp()+value, me:maxhp()))
+    end,
+
+    -- on_deactivated = function(me, item)
+    -- end,
+
+    -- on_concast = function(me, item)
+    -- end,
+
+    -- on_attack = function(me, item)
+    -- end
+}

@@ -2,7 +2,7 @@
 local quest = require('lib.quest')
 local function do_sub4_start(me, npc)
     local sel, btn = me:list(npc, "요즘따라 인간들을 자주 만나시게 되시는도다.", { "이름을 가르쳐주세요.", "이곳의 상황은 좀 어떤가요?", "제가 도와드릴 일은 없을까요?" }, { prev = false })
-    if btn == DIALOG_RESULT.QUIT or sel == nil then
+    if btn == DIALOG_RESULT.QUIT then
         return false
     end
     if sel == 1 then
@@ -14,7 +14,7 @@ local function do_sub4_start(me, npc)
         return true
     end
     sel, btn = me:list(npc, "음? 하하하. 고마운 말씀이시다. 진심이신가?", { "네, 꼭 도와드릴께요.", "아뇨, 그만 둘래요." }, { prev = true })
-    if btn == DIALOG_RESULT.QUIT or sel == nil or sel ~= 1 then
+    if btn == DIALOG_RESULT.QUIT or sel ~= 1 then
         me:dialog(npc, "장난을 치는 사람은 싫어한다.", { prev = false, next = false })
         return true
     end
@@ -67,45 +67,47 @@ local function do_sub4_complete(me, npc)
     return true
 end
 
-function NPC_466(me, npc)
-    local q4 = me:quest(quest.QUEST_SKULL_NECKLACE_4)
+return {
+    on_click = function(me, npc)
+        local q4 = me:quest(quest.QUEST_SKULL_NECKLACE_4)
 
-    if q4 == nil or q4:step() == 0 then
-        if do_sub4_start(me, npc) then
+        if q4 == nil or q4:step() == 0 then
+            if do_sub4_start(me, npc) then
+                return
+            end
             return
         end
-        return
+
+        if q4:step() == 1 then
+            me:dialog(npc, "이 아이의 부족을 찾아 데려다 주셔야 한다.", { prev = false, next = false })
+            return
+        end
+
+        if q4:step() == 2 then
+            if do_sub4_complete(me, npc) then
+                return
+            end
+            return
+        end
+
+        local main_q = me:quest(quest.QUEST_SKULL_NECKLACE)
+        if main_q and main_q:step() == 34 then
+            if not me:has_items("마른갈대", 1) then
+                me:dialog(npc, "마른갈대를 구해서 왕들에게 하나씩 나누어 주게.", { prev = false, next = false })
+                return
+            end
+            local b = me:dialog(npc, "마른 갈대를 나눠주고 있다고 들었네. 수고하는 모습이 참 보기 좋군. 더 수고해주게.", { prev = false, next = true })
+            if b == DIALOG_RESULT.QUIT then
+                return
+            end
+            if not me:rmitem("마른갈대", 1, ITEM_DELETE_TYPE.GIVE) then
+                me:dialog(npc, "아이템을 제거할 수 없습니다.", { prev = false, next = false })
+                return
+            end
+            main_q:step(35)
+            return
+        end
+
+        me:dialog(npc, "준비중입니다.", { prev = false, next = false })
     end
-
-    if q4:step() == 1 then
-        me:dialog(npc, "이 아이의 부족을 찾아 데려다 주셔야 한다.", { prev = false, next = false })
-        return
-    end
-
-    if q4:step() == 2 then
-        if do_sub4_complete(me, npc) then
-            return
-        end
-        return
-    end
-
-    local main_q = me:quest(quest.QUEST_SKULL_NECKLACE)
-    if main_q and main_q:step() == 34 then
-        if not me:has_items("마른갈대", 1) then
-            me:dialog(npc, "마른갈대를 구해서 왕들에게 하나씩 나누어 주게.", { prev = false, next = false })
-            return
-        end
-        local b = me:dialog(npc, "마른 갈대를 나눠주고 있다고 들었네. 수고하는 모습이 참 보기 좋군. 더 수고해주게.", { prev = false, next = true })
-        if b == DIALOG_RESULT.QUIT then
-            return
-        end
-        if not me:rmitem("마른갈대", 1, ITEM_DELETE_TYPE.GIVE) then
-            me:dialog(npc, "아이템을 제거할 수 없습니다.", { prev = false, next = false })
-            return
-        end
-        main_q:step(35)
-        return
-    end
-
-    me:dialog(npc, "준비중입니다.", { prev = false, next = false })
-end
+}

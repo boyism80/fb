@@ -95,7 +95,8 @@ namespace Http.Mapping
                 .ForMember(x => x.CreatedDate, x => x.MapFrom(u => u.CreatedDate.ToString("yyyy-MM-dd HH:mm:ss")));
 
             CreateMap<Http.Model.Mail, Protocol.Mail>()
-                .ForMember(x => x.CreatedDate, x => x.MapFrom(u => u.CreatedDate.ToString("yyyy-MM-dd HH:mm:ss")));
+                .ForMember(x => x.CreatedDate, x => x.MapFrom(u => u.CreatedDate.ToString("yyyy-MM-dd HH:mm:ss")))
+                .ForMember(x => x.SystemMailId, x => x.MapFrom(u => u.SystemMailId));
 
             CreateMap<Http.Model.Clan, Protocol.Clan>();
 

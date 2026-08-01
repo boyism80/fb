@@ -1,4 +1,6 @@
 -- npc: 화사화사
--- function NPC_125(me, npc)
---
--- end
+
+return {
+    -- on_click = function(me, npc)
+    -- end
+}

@@ -143,6 +143,8 @@ local function sample_clan(me, npc)
     end
 end
 
-function NPC_89(me, npc)
-    sample_clan(me, npc)
-end
+return {
+    on_click = function(me, npc)
+        sample_clan(me, npc)
+    end
+}

@@ -1,5 +1,15 @@
 -- item: 여자명예신선복
 
--- 여자명예신선복 해제 스크립트
--- function ON_DEACTIVATED_2933(me, item)
--- end
+return {
+    -- on_activated = function(me, item)
+    -- end,
+
+    -- on_deactivated = function(me, item)
+    -- end,
+
+    -- on_concast = function(me, item)
+    -- end,
+
+    -- on_attack = function(me, item)
+    -- end
+}

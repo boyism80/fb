@@ -12,15 +12,17 @@ local SELL_CATEGORIES = {
     { '남자용 투구류', 18 },
 }
 
-function NPC_15(me, npc_obj)
-    npc.shop(me, npc_obj, {
-        menu = {
-            { '물건 사기', function(me, ch)
-                return npc.show_sell_menu(me, ch, SELL_CATEGORIES)
-            end },
-            { '물건 팔기', function(me, ch)
-                return npc.show_buy_menu(me, ch)
-            end },
-        },
-    })
-end
+return {
+    on_click = function(me, npc_obj)
+        npc.shop(me, npc_obj, {
+            menu = {
+                { '물건 사기', function(me, ch)
+                    return npc.show_sell_menu(me, ch, SELL_CATEGORIES)
+                end },
+                { '물건 팔기', function(me, ch)
+                    return npc.show_buy_menu(me, ch)
+                end },
+            },
+        })
+    end
+}

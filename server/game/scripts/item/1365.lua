@@ -1,11 +1,15 @@
 -- item: 민첩의투구4
 
--- 민첩의투구4 사용 스크립트
--- function ON_ACTIVATED_1365(me, item)
---
--- end
+return {
+    -- on_activated = function(me, item)
+    -- end,
 
--- 민첩의투구4 해제 스크립트
--- function ON_DEACTIVATED_1365(me, item)
---
--- end
+    -- on_deactivated = function(me, item)
+    -- end,
+
+    -- on_concast = function(me, item)
+    -- end,
+
+    -- on_attack = function(me, item)
+    -- end
+}

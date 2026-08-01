@@ -1,11 +1,15 @@
 -- item: 한족여자평복
 
--- 한족여자평복 사용 스크립트
--- function ON_ACTIVATED_717(me, item)
---
--- end
+return {
+    -- on_activated = function(me, item)
+    -- end,
 
--- 한족여자평복 해제 스크립트
--- function ON_DEACTIVATED_717(me, item)
---
--- end
+    -- on_deactivated = function(me, item)
+    -- end,
+
+    -- on_concast = function(me, item)
+    -- end,
+
+    -- on_attack = function(me, item)
+    -- end
+}

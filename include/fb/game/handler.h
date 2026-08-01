@@ -30,6 +30,7 @@
 #include <fb/game/handler/protocol/bulletin.h>
 #include <fb/game/handler/protocol/swap.h>
 #include <fb/game/handler/protocol/dialog.h>
+#include <fb/game/handler/protocol/dialog_list.h>
 #include <fb/game/handler/protocol/item_throws.h>
 #include <fb/game/handler/protocol/spell_cast.h>
 #include <fb/game/handler/protocol/door.h>
@@ -40,6 +41,8 @@
 #include <fb/game/handler/protocol/give_money.h>
 #include <fb/game/handler/protocol/post.h>
 #include <fb/game/handler/protocol/pong.h>
+#include <fb/game/handler/protocol/user_info_submit.h>
+#include <fb/game/handler/protocol/popup_input_submit.h>
 
 #include <fb/game/handler/amqp/kick_out.h>
 #include <fb/game/handler/amqp/whisper.h>
@@ -60,6 +63,8 @@
 #include <fb/game/handler/amqp/ban.h>
 #include <fb/game/handler/amqp/broadcast_save.h>
 #include <fb/game/handler/amqp/set_exp_multiplier.h>
+#include <fb/game/handler/amqp/reload_scripts.h>
+#include <fb/game/handler/amqp/reload_tables.h>
 #include <fb/game/handler/amqp/set_drop_rate_multiplier.h>
 #include <fb/game/handler/amqp/set_datetime.h>
 #include <fb/game/handler/amqp/start_maintenance.h>

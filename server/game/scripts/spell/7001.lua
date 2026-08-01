@@ -1,5 +1,16 @@
 -- spell: 복홍잡기
 -- 복홍잡기 지속 효과
--- function ON_CONCAST_7001(me, caster, buff)
---
--- end
+
+return {
+    -- on_cast = function(me, you, sp)
+    -- end,
+
+    -- on_buff = function(me, sp)
+    -- end,
+
+    -- on_unbuff = function(me, sp)
+    -- end,
+
+    -- on_concast = function(me, sp)
+    -- end
+}

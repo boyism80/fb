@@ -1,5 +1,15 @@
 -- item: 천부연의도복
 
--- 천부연의도복 해제 스크립트
--- function ON_DEACTIVATED_2251(me, item)
--- end
+return {
+    -- on_activated = function(me, item)
+    -- end,
+
+    -- on_deactivated = function(me, item)
+    -- end,
+
+    -- on_concast = function(me, item)
+    -- end,
+
+    -- on_attack = function(me, item)
+    -- end
+}

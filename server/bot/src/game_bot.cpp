@@ -504,7 +504,7 @@ async::task<void> game_bot::move(DIRECTION direction, int step, const fb::model:
     for (int i = 0; i < step; i++)
     {
         this->_direction = direction;
-        this->send(game_reqs::move{direction, this->_oid, after});
+        this->send(game_reqs::move{direction, 0, after});
         switch (direction)
         {
         case DIRECTION::LEFT:
@@ -534,7 +534,7 @@ game_bot::map_move(std::string_view map_name, uint16_t x, uint16_t y, std::chron
 {
     auto map_name_str = std::string(map_name);
     auto command      = std::format("/맵이동 {} {} {}", map_name_str, x, y);
-    auto map          = table::map.name2map(map_name_str);
+    auto map          = table::map->name2map(map_name_str);
     if (map == nullptr)
     {
         co_return;
@@ -792,7 +792,7 @@ async::task<void> game_bot::pattern_move()
     static auto                   dist   = std::uniform_int_distribution<>(0, directions.size() - 1);
 
     auto direction = directions.at(dist(gen));
-    this->send(game_reqs::move{direction, this->_oid, this->_position});
+    this->send(game_reqs::move{direction, 0, this->_position});
 
     // Update internal direction state
     this->_direction = direction;
@@ -957,7 +957,7 @@ async::task<game_bot::simple_npc> game_bot::create_npc(std::string_view npc_name
 {
     auto npc_name_str = std::string(npc_name);
     auto command      = std::format("/엔피씨생성 {}", npc_name_str);
-    auto model        = table::npc.name2npc(npc_name_str);
+    auto model        = table::npc->name2npc(npc_name_str);
     if (!model)
         throw std::runtime_error(std::format("Failed to find NPC model for {}", npc_name_str));
 
@@ -1041,7 +1041,7 @@ async::task<bool> game_bot::equip(uint8_t slot, std::chrono::milliseconds timeou
         }
 
         auto& item       = this->_items.at(slot);
-        auto  item_model = table::item.name2item(item.name);
+        auto  item_model = table::item->name2item(item.name);
         if (!item_model)
         {
             fb::logger::fatal("Failed to find item model for {}", item.name);
@@ -1123,7 +1123,7 @@ async::task<spawned_monster_info>
 game_bot::spawn_monster(std::string_view monster_name, uint16_t x, uint16_t y, std::chrono::milliseconds timeout)
 {
     auto monster_name_str = std::string(monster_name);
-    auto expected_look    = table::mob.name2mob(monster_name_str)->look;
+    auto expected_look    = table::mob->name2mob(monster_name_str)->look;
 
     auto&& spawn_response = co_await this->request<game_resp::update>(
         game_reqs::chat{false, std::format("/몬스터생성 {} {} {}", monster_name_str, x, y)},
@@ -1155,7 +1155,7 @@ async::task<void> game_bot::spawn_monsters_bulk(std::string_view          monste
                                                 std::chrono::milliseconds timeout)
 {
     auto monster_name_str = std::string(monster_name);
-    auto expected_look    = table::mob.name2mob(monster_name_str)->look;
+    auto expected_look    = table::mob->name2mob(monster_name_str)->look;
 
     std::ignore = co_await this->request<game_resp::update>(
         game_reqs::chat{false, std::format("/몬스터범위생성 {} {}", monster_name_str, range)},
@@ -1214,7 +1214,7 @@ game_bot::spawn_monsters_relative(std::string_view                        monste
                                   std::chrono::milliseconds               timeout)
 {
     auto monster_name_str = std::string(monster_name);
-    auto expected_look    = table::mob.name2mob(monster_name_str)->look;
+    auto expected_look    = table::mob->name2mob(monster_name_str)->look;
 
     auto                              caster_pos = this->position();
     std::vector<spawned_monster_info> spawned_monsters;
@@ -1266,7 +1266,7 @@ async::task<spawned_monster_info> game_bot::spawn_monster_relative(std::string_v
                                                                    std::chrono::milliseconds timeout)
 {
     auto monster_name_str = std::string(monster_name);
-    auto expected_look    = table::mob.name2mob(monster_name_str)->look;
+    auto expected_look    = table::mob->name2mob(monster_name_str)->look;
 
     auto caster_pos = this->position();
     auto monster_x  = caster_pos.x + relative_x;
@@ -1512,7 +1512,7 @@ async::task<void> game_bot::move_bot_back_to_position(const fb::model::point<uin
     {
         for (auto i = 0; i < move_y_axis; i++)
         {
-            this->send(game_reqs::move{DIRECTION::TOP, this->oid(), current_position});
+            this->send(game_reqs::move{DIRECTION::TOP, 0, current_position});
             co_await thread->sleep(interval);
             current_position.y--;
             this->set_position(current_position);
@@ -1723,7 +1723,7 @@ bool game_bot::simple_item::is_equipment(const game_bot_controller& controller) 
 
     try
     {
-        auto item_model = table::item.name2item(name);
+        auto item_model = table::item->name2item(name);
         if (!item_model)
         {
             return false;
@@ -1741,7 +1741,7 @@ std::string game_bot::simple_item::get_equipment_info(const game_bot_controller&
 {
     try
     {
-        auto item_model = table::item.name2item(name);
+        auto item_model = table::item->name2item(name);
         if (!item_model)
         {
             return "";
@@ -1844,7 +1844,7 @@ uint32_t game_bot::simple_item::get_price(const game_bot_controller& controller)
 {
     try
     {
-        auto item_model = table::item.name2item(name);
+        auto item_model = table::item->name2item(name);
         if (!item_model)
         {
             return 0xFFFFFFFF;

@@ -5,7 +5,27 @@
     <div class="main-nav-desktop">
         @foreach (var item in NavItems)
         {
-            <NavLink class="nav-link" href="@item.Href" Match="@item.Match">@item.Label</NavLink>
+            if (item.Children is { Length: > 0 })
+            {
+                <div class="nav-group @(IsGroupActive(item) ? "active" : null)">
+                    <button type="button"
+                            class="nav-group-toggle @(IsGroupActive(item) ? "active" : null)"
+                            aria-expanded="true">
+                        @item.Label
+                        <span class="material-symbols-outlined nav-group-caret">expand_more</span>
+                    </button>
+                    <div class="nav-group-menu">
+                        @foreach (var child in item.Children)
+                        {
+                            <NavLink class="nav-link nav-group-link" href="@child.Href" Match="@child.Match">@child.Label</NavLink>
+                        }
+                    </div>
+                </div>
+            }
+            else
+            {
+                <NavLink class="nav-link" href="@item.Href" Match="@item.Match">@item.Label</NavLink>
+            }
         }
     </div>
     <div class="main-nav-mobile">
@@ -14,7 +34,7 @@
                 class="stitch-select nav-select"
                 value="@CurrentSegment"
                 @onchange="OnMobileNavChange">
-            @foreach (var item in NavItems)
+            @foreach (var item in FlatNavOptions)
             {
                 <option value="@item.Href">@item.Label</option>
             }
@@ -23,7 +43,13 @@
 </nav>
 
 @code {
-    private sealed record NavItem(string Href, string Label, NavLinkMatch Match = NavLinkMatch.Prefix);
+    private sealed record NavChild(string Href, string Label, NavLinkMatch Match = NavLinkMatch.Prefix);
+
+    private sealed record NavItem(
+        string Href,
+        string Label,
+        NavLinkMatch Match = NavLinkMatch.Prefix,
+        NavChild[] Children = null);
 
     private static readonly NavItem[] NavItems =
     {
@@ -35,9 +61,21 @@
         new("systemmail", "메일"),
         new("bulletin", "게시판"),
         new("broadcast", "방송"),
+        new("patch", "패치", Children: new NavChild[]
+        {
+            new("table-patch", "테이블 패치"),
+            new("script-patch", "스크립트 패치")
+        }),
         new("cache", "캐시"),
         new("maintenance", "점검")
     };
+
+    private static readonly NavChild[] FlatNavOptions = NavItems
+        .SelectMany(item =>
+            item.Children is { Length: > 0 }
+                ? item.Children.Select(child => new NavChild(child.Href, $"{item.Label} / {child.Label}", child.Match))
+                : new[] { new NavChild(item.Href, item.Label, item.Match) })
+        .ToArray();
 
     private string CurrentSegment
     {
@@ -46,6 +84,15 @@
             var relative = Navigation.ToBaseRelativePath(Navigation.Uri);
             return relative.Split('?', '/')[0];
         }
+    }
+
+    private bool IsGroupActive(NavItem item)
+    {
+        if (item.Children == null)
+            return false;
+        var segment = CurrentSegment;
+        return item.Children.Any(child =>
+            string.Equals(child.Href, segment, StringComparison.OrdinalIgnoreCase));
     }
 
     protected override void OnInitialized()

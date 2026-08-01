@@ -104,7 +104,7 @@ void external_info::serialize(fb::stream_writer<big_endian>& writer) const
     writer.write<uint32_t>(this->ch.oid());
     writer.write<uint8_t>(this->ch.option(OPTION::GROUP));
     writer.write<uint8_t>(this->ch.option(OPTION::TRADE));
-    writer.write<uint32_t>(0x00000000); // unknown
+    writer.write<uint32_t>(0x00000000); // legacy extension (side+empty strings; mid-skip)
 
     // Achievements
     writer.write<uint8_t>((uint8_t)this->ch.achievements.size());
@@ -114,7 +114,6 @@ void external_info::serialize(fb::stream_writer<big_endian>& writer) const
         writer.write<uint8_t>(achievement->color);
         writer.write<std::string>(achievement->text);
     }
-    writer.write<uint8_t>(0x00);
 }
 #else
 void external_info::deserialize(fb::stream_reader<big_endian>& reader)
@@ -175,7 +174,7 @@ void external_info::deserialize(fb::stream_reader<big_endian>& reader)
     this->oid          = reader.read<uint32_t>();
     this->group_option = reader.read<uint8_t>();
     this->trade_option = reader.read<uint8_t>();
-    this->unknown      = reader.read<uint32_t>();
+    reader.read<uint32_t>(); // legacy extension
 
     // Achievement information
     uint8_t achievement_count = reader.read<uint8_t>();
@@ -188,6 +187,5 @@ void external_info::deserialize(fb::stream_reader<big_endian>& reader)
         achievement.text  = reader.read<std::string, uint8_t>();
         this->achievements.push_back(achievement);
     }
-    reader.read<uint8_t>(); // Final 0x00
 }
 #endif

@@ -35,7 +35,7 @@ void bulletin_bot::deserialize(fb::stream_reader<big_endian>& reader)
         for (int i = 0; i < count; i++)
         {
             article_data article;
-            reader.read<uint8_t>(); // 0x00
+            reader.read<uint8_t>(); // article flag
             article.id    = reader.read<uint16_t>();
             article.uname = reader.read<std::string, uint8_t>();
             article.month = reader.read<uint8_t>();
@@ -43,8 +43,6 @@ void bulletin_bot::deserialize(fb::stream_reader<big_endian>& reader)
             article.title = reader.read<std::string, uint8_t>();
             this->articles.push_back(article);
         }
-
-        reader.read<uint8_t>(); // 0x00
     }
     break;
 

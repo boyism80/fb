@@ -6,6 +6,7 @@
 #include <fb/protocol/flatbuffer/protocol.h>
 #include <algorithm>
 #include <format>
+#include <mutex>
 
 using namespace fb::game;
 namespace internal_resp = fb::protocol::internal::response;
@@ -125,17 +126,29 @@ fb::async_generator<void> service::system_mail::delivery_coroutine()
             if (expired(mail, now))
                 continue;
 
-            auto eligible = this->server.characters.collect_ids([&](const auto& ch) {
-                return ch->created_date() < mail.created_date;
-            });
+            auto eligible = std::make_shared<std::vector<uint32_t>>();
+            auto mutex    = std::make_shared<std::mutex>();
+            co_await this->server.characters.foreach_async(
+                [eligible, mutex, mail_id = mail.id, created = mail.created_date](auto& ch) -> async::task<void> {
+                    if (ch->created_date() < created && !ch->mail_box.contains_system_mail(mail_id))
+                    {
+                        auto _ = std::lock_guard(*mutex);
+                        eligible->push_back(ch->id);
+                    }
+                    co_return;
+                });
 
-            for (std::size_t i = 0; i < eligible.size(); i += chunk_limit)
+            if (eligible->empty())
+                continue;
+
+            for (std::size_t i = 0; i < eligible->size(); i += chunk_limit)
             {
-                const auto end = std::min(i + chunk_limit, eligible.size());
+                const auto end = std::min(i + chunk_limit, eligible->size());
 
                 auto chunk_users = std::vector<uint32_t>{};
-                chunk_users.assign(eligible.begin() + static_cast<std::ptrdiff_t>(i),
-                                   eligible.begin() + static_cast<std::ptrdiff_t>(end));
+                chunk_users.assign(eligible->begin() + static_cast<std::ptrdiff_t>(i),
+                                   eligible->begin() + static_cast<std::ptrdiff_t>(end));
+                const auto chunk_users_to_mark = chunk_users;
 
                 try
                 {
@@ -151,7 +164,29 @@ fb::async_generator<void> service::system_mail::delivery_coroutine()
                                                                                          fb::config<uint32_t>("id")});
 
                     if (resp.error != 0)
+                    {
                         fb::logger::warn("DeliverSystemMail failed for system mail {}: error {}", mail.id, resp.error);
+                    }
+                    else
+                    {
+                        for (auto user_id : chunk_users_to_mark)
+                        {
+                            auto ch = this->server.characters.find(user_id);
+                            if (ch == nullptr)
+                                continue;
+
+                            auto weak    = ch->template weak_from_this_as<character>();
+                            auto mail_id = mail.id;
+                            auto builder = this->server.threads.new_builder(weak);
+                            builder.func = [weak, mail_id](auto&) -> async::task<void> {
+                                auto ptr = weak.lock();
+                                if (ptr != nullptr)
+                                    ptr->mail_box.mark_system_mail(mail_id);
+                                co_return;
+                            };
+                            builder.enqueue();
+                        }
+                    }
                 }
                 catch (const std::exception& e)
                 {

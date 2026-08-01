@@ -98,6 +98,7 @@ public struct Character : IFlatbufferObject
 #endif
   public byte[] GetFirstLoginDateArray() { return __p.__vector_as_array<byte>(82); }
   public bool SuperHide { get { int o = __p.__offset(84); return o != 0 ? 0!=__p.bb.Get(o + __p.bb_pos) : (bool)false; } }
+  public byte Speed { get { int o = __p.__offset(86); return o != 0 ? __p.bb.Get(o + __p.bb_pos) : (byte)0; } }
 
   public static Offset<fb.protocol._internal.raw.Character> CreateCharacter(FlatBufferBuilder builder,
       uint id = 0,
@@ -140,8 +141,9 @@ public struct Character : IFlatbufferObject
       StringOffset created_dateOffset = default(StringOffset),
       StringOffset updated_dateOffset = default(StringOffset),
       StringOffset first_login_dateOffset = default(StringOffset),
-      bool super_hide = false) {
-    builder.StartTable(41);
+      bool super_hide = false,
+      byte speed = 0) {
+    builder.StartTable(42);
     Character.AddAdditionalMp(builder, additional_mp);
     Character.AddBaseMp(builder, base_mp);
     Character.AddMp(builder, mp);
@@ -173,6 +175,7 @@ public struct Character : IFlatbufferObject
     Character.AddId(builder, id);
     Character.AddColor(builder, color);
     Character.AddLook(builder, look);
+    Character.AddSpeed(builder, speed);
     Character.AddSuperHide(builder, super_hide);
     Character.AddLevel(builder, level);
     Character.AddPromotion(builder, promotion);
@@ -186,7 +189,7 @@ public struct Character : IFlatbufferObject
     return Character.EndCharacter(builder);
   }
 
-  public static void StartCharacter(FlatBufferBuilder builder) { builder.StartTable(41); }
+  public static void StartCharacter(FlatBufferBuilder builder) { builder.StartTable(42); }
   public static void AddId(FlatBufferBuilder builder, uint id) { builder.AddUint(0, id, 0); }
   public static void AddName(FlatBufferBuilder builder, StringOffset nameOffset) { builder.AddOffset(1, nameOffset.Value, 0); }
   public static void AddPw(FlatBufferBuilder builder, StringOffset pwOffset) { builder.AddOffset(2, pwOffset.Value, 0); }
@@ -233,6 +236,7 @@ public struct Character : IFlatbufferObject
   public static void AddUpdatedDate(FlatBufferBuilder builder, StringOffset updatedDateOffset) { builder.AddOffset(38, updatedDateOffset.Value, 0); }
   public static void AddFirstLoginDate(FlatBufferBuilder builder, StringOffset firstLoginDateOffset) { builder.AddOffset(39, firstLoginDateOffset.Value, 0); }
   public static void AddSuperHide(FlatBufferBuilder builder, bool superHide) { builder.AddBool(40, superHide, false); }
+  public static void AddSpeed(FlatBufferBuilder builder, byte speed) { builder.AddByte(41, speed, 0); }
   public static Offset<fb.protocol._internal.raw.Character> EndCharacter(FlatBufferBuilder builder) {
     int o = builder.EndTable();
     return new Offset<fb.protocol._internal.raw.Character>(o);
@@ -288,6 +292,7 @@ static public class CharacterVerify
       && verifier.VerifyString(tablePos, 80 /*UpdatedDate*/, false)
       && verifier.VerifyString(tablePos, 82 /*FirstLoginDate*/, false)
       && verifier.VerifyField(tablePos, 84 /*SuperHide*/, 1 /*bool*/, 1, false)
+      && verifier.VerifyField(tablePos, 86 /*Speed*/, 1 /*byte*/, 1, false)
       && verifier.VerifyTableEnd(tablePos);
   }
 }

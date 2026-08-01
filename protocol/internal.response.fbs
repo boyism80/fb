@@ -166,6 +166,7 @@ table Init {
   storage_boxes: [fb.protocol.internal.StorageBox];
   marketplace_pendings: [fb.protocol.internal.MarketplacePending];
   mail: uint;
+  system_mail_ids: [uint];
 }
 
 
@@ -324,6 +325,18 @@ table Heartbeat {
 table SetExpMultiplier {
   value: double;
   error: uint;
+}
+
+table ReloadTables {
+  error: uint;
+  url: string;
+  table_names: [string];
+}
+
+table ReloadScripts {
+  error: uint;
+  url: string;
+  script_paths: [string];
 }
 
 table SetDropRateMultiplier {

@@ -1,11 +1,15 @@
 -- item: 방천화극
 
--- 방천화극 사용 스크립트
--- function ON_ACTIVATED_36(me, item)
---
--- end
+return {
+    -- on_activated = function(me, item)
+    -- end,
 
--- 방천화극 해제 스크립트
--- function ON_DEACTIVATED_36(me, item)
---
--- end
+    -- on_deactivated = function(me, item)
+    -- end,
+
+    -- on_concast = function(me, item)
+    -- end,
+
+    -- on_attack = function(me, item)
+    -- end
+}

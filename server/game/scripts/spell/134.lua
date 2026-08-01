@@ -1,17 +1,23 @@
 -- spell: 철거인둔갑술
 -- 철거인둔갑술 (id 134). Add logic as needed.
--- function ON_CAST_134(me, spell, message)
 --     -- TODO: implement
--- end
 
--- function ON_BUFF_134(me, spell)
 --     -- TODO: implement
--- end
 
--- function ON_UNBUFF_134(me, spell)
 --     -- TODO: implement
--- end
 
--- function ON_CONCAST_134(me, caster, buff)
 --     -- TODO: implement
--- end
+
+return {
+    -- on_cast = function(me, you, sp)
+    -- end,
+
+    -- on_buff = function(me, sp)
+    -- end,
+
+    -- on_unbuff = function(me, sp)
+    -- end,
+
+    -- on_concast = function(me, sp)
+    -- end
+}

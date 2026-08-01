@@ -1,5 +1,5 @@
-#ifndef __PROTOCOL_GAME_UNKNOWN_4D_H__
-#define __PROTOCOL_GAME_UNKNOWN_4D_H__
+#ifndef __PROTOCOL_GAME_USER_INFO_H__
+#define __PROTOCOL_GAME_USER_INFO_H__
 
 #include <fb/protocol/header.h>
 #include <fb/model/model.h>
@@ -11,13 +11,11 @@ namespace fb::protocol::game::response {
 using namespace fb::model::enum_value;
 
 /**
- * Unknown packet 0x4D (UserInfo).
- * Payload: type (1 byte). When type==2 only: exactly 8 strings, each len(1) + data (EUC-KR).
- * Client reads type then, if type==2, reads 8 length-prefixed strings; otherwise no more bytes.
- * Sending type!=2 avoids string/dropdown parsing and is safe; type==2 with non-matching
- * dropdown values can cause client crash (see PACKET_0x4D_0x68_STRUCTURE_ANALYSIS.md).
+ * S2C 0x4D — opens USERINFO.EPF survey / profile dialog.
+ * type == 2: prefills 8 CP949 strings (4 text + 4 combo labels that must match client options).
+ * Other type values open an empty form (no string payload).
  */
-class unknown_4D : public fb::protocol::header
+class user_info : public fb::protocol::header
 {
 public:
     static constexpr uint8_t opcode = 0x4D;
@@ -27,18 +25,18 @@ public:
     const uint8_t                    type;
     const std::array<std::string, 8> strings;
 #else
-    uint8_t                    type;
+    uint8_t                    type = 0;
     std::array<std::string, 8> strings;
 #endif
 
 public:
 #ifndef BOT
-    explicit unknown_4D(uint8_t type, const std::array<std::string, 8>& strings) :
+    explicit user_info(uint8_t type, const std::array<std::string, 8>& strings) :
         type(type),
         strings(strings)
     { }
 #else
-    unknown_4D() = default;
+    user_info() = default;
 #endif
 
 public:

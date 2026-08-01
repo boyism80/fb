@@ -131,39 +131,41 @@ local function run_form(me, npc, class_name, partner, schedule)
     end
 end
 
-function NPC_550(me, npc)
-    local q = me:quest(quest.QUEST_MADONG_APPLY)
-    if q ~= nil and q:step() == 1 then
-        local class_name, partner, schedule = parse_param(q:param())
-        me:dialog(npc, "이미 제출하셨습니다.\n선택클래스:" .. class_name .. "\n파트너아이디:" .. partner .. "\n참여일:" .. schedule .. "", { prev = false, next = false })
-        return
-    end
+return {
+    on_click = function(me, npc)
+        local q = me:quest(quest.QUEST_MADONG_APPLY)
+        if q ~= nil and q:step() == 1 then
+            local class_name, partner, schedule = parse_param(q:param())
+            me:dialog(npc, "이미 제출하셨습니다.\n선택클래스:" .. class_name .. "\n파트너아이디:" .. partner .. "\n참여일:" .. schedule .. "", { prev = false, next = false })
+            return
+        end
 
-    if me:promotion() < 3 then
-        me:dialog(npc, "3차승급 미만은 참여하실 수 없습니다.", { prev = false, next = false })
-        return
-    end
+        if me:promotion() < 3 then
+            me:dialog(npc, "3차승급 미만은 참여하실 수 없습니다.", { prev = false, next = false })
+            return
+        end
 
-    local d = me:dialog(npc, "약 1주일간 참가신청을 받은 뒤, 참가 자격 필터링을 한 뒤 최종 참가자를 발표 합니다.", { prev = false, next = true })
-    if d == DIALOG_RESULT.QUIT then
-        return
-    end
-    d = me:dialog(npc, "참가팀은 총 64팀이며, 자진기권 등의 가능성을 염두에 두어 예비 팀도 약 10팀을 선발합니다.", { prev = false, next = true })
-    if d == DIALOG_RESULT.QUIT then
-        return
-    end
-    d = me:dialog(npc, "2인 1조로 참여하실 수 있으며, 함께 참가하실 파트너와 함께 참가 등록을 하셔야만 합니다.", { prev = false, next = true })
-    if d == DIALOG_RESULT.QUIT then
-        return
-    end
-    d = me:dialog(npc, "참가 과정에서 별도의 파트너 동의 여부는 이루어지지 않습니다만, 추 후 검토하게 되므로 반드시 신중하게 참가 신청을 해 주시길 바랍니다.", { prev = false, next = true })
-    if d == DIALOG_RESULT.QUIT then
-        return
-    end
+        local d = me:dialog(npc, "약 1주일간 참가신청을 받은 뒤, 참가 자격 필터링을 한 뒤 최종 참가자를 발표 합니다.", { prev = false, next = true })
+        if d == DIALOG_RESULT.QUIT then
+            return
+        end
+        d = me:dialog(npc, "참가팀은 총 64팀이며, 자진기권 등의 가능성을 염두에 두어 예비 팀도 약 10팀을 선발합니다.", { prev = false, next = true })
+        if d == DIALOG_RESULT.QUIT then
+            return
+        end
+        d = me:dialog(npc, "2인 1조로 참여하실 수 있으며, 함께 참가하실 파트너와 함께 참가 등록을 하셔야만 합니다.", { prev = false, next = true })
+        if d == DIALOG_RESULT.QUIT then
+            return
+        end
+        d = me:dialog(npc, "참가 과정에서 별도의 파트너 동의 여부는 이루어지지 않습니다만, 추 후 검토하게 되므로 반드시 신중하게 참가 신청을 해 주시길 바랍니다.", { prev = false, next = true })
+        if d == DIALOG_RESULT.QUIT then
+            return
+        end
 
-    local class_name, partner, schedule = "", "", ""
-    if q ~= nil then
-        class_name, partner, schedule = parse_param(q:param())
+        local class_name, partner, schedule = "", "", ""
+        if q ~= nil then
+            class_name, partner, schedule = parse_param(q:param())
+        end
+        run_form(me, npc, class_name, partner, schedule)
     end
-    run_form(me, npc, class_name, partner, schedule)
-end
+}

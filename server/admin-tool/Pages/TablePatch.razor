@@ -1,0 +1,371 @@
+@page "/table-patch"
+@using AdminTool.Services
+@using Http.Service
+@using Microsoft.AspNetCore.Authorization
+@using Microsoft.AspNetCore.Components.Authorization
+@using Microsoft.AspNetCore.Components.Forms
+@using System.Security.Claims
+@using Response = fb.protocol._internal.response
+@inject TablePublishService TablePublishService
+@inject RabbitMqService RabbitMqService
+@inject LogService LogService
+@inject AdminActivityLogService ActivityLog
+@inject AuthenticationStateProvider AuthenticationStateProvider
+@inject IConfiguration Configuration
+@attribute [AuthorizeRole(Role.Superadmin)]
+
+<PageTitle>테이블 패치 - FB ADMIN</PageTitle>
+
+<div class="table-patch-page">
+    <div class="page-header">
+        <h1>테이블 패치</h1>
+        <p>JSON 테이블을 업로드하고 서버에 리로드합니다</p>
+    </div>
+
+    @if (!TablePublishService.IsConfigured)
+    {
+        <div class="stitch-error-banner" role="status">
+            <div class="stitch-error-banner-content">
+                <span class="material-symbols-outlined">block</span>
+                <span>
+                    테이블 패치 기능을 사용할 수 없습니다.
+                    UploadBaseUrl, DownloadBaseUrl, Username, Password가 모두 설정되어야 합니다.
+                    로컬은 <code>appsettings.Local.json</code>, Compose/Pulumi는 환경변수 또는 Pulumi secret을 확인하세요.
+                </span>
+            </div>
+        </div>
+    }
+    else
+    {
+        @if (!string.IsNullOrEmpty(errorMessage))
+        {
+            <div class="stitch-error-banner">
+                <div class="stitch-error-banner-content">
+                    <span class="material-symbols-outlined">error</span>
+                    <span>@errorMessage</span>
+                </div>
+                <button type="button" class="stitch-banner-dismiss" @onclick="() => errorMessage = null" aria-label="닫기">
+                    <span class="material-symbols-outlined">close</span>
+                </button>
+            </div>
+        }
+
+        @if (!string.IsNullOrEmpty(successMessage))
+        {
+            <div class="stitch-success-banner">
+                <div class="stitch-success-banner-content">
+                    <span class="material-symbols-outlined">check_circle</span>
+                    <span class="stitch-success-text">@successMessage</span>
+                </div>
+                <button type="button" class="stitch-banner-dismiss stitch-success-dismiss" @onclick="() => successMessage = null" aria-label="닫기">
+                    <span class="material-symbols-outlined">close</span>
+                </button>
+            </div>
+        }
+
+        <div class="card-bg stitch-form-card">
+            <div class="stitch-form-card-header">
+                <div class="dash-card-title-row">
+                    <span class="material-symbols-outlined">upload_file</span>
+                    <h2 class="dash-card-title">런타임 테이블 패치</h2>
+                </div>
+            </div>
+            <div class="card-body">
+                <div class="table-patch-dropzone">
+                    <span class="material-symbols-outlined table-patch-drop-icon">cloud_upload</span>
+                    <p class="table-patch-drop-text">.json 파일을 여기에 드래그하거나 클릭하여 선택하세요</p>
+                    <InputFile OnChange="OnInputFileChange"
+                               multiple
+                               accept=".json,application/json"
+                               class="table-patch-file-input" />
+                </div>
+
+                @if (pendingFiles.Count > 0)
+                {
+                    <div class="table-patch-file-list-header">
+                        <h3 class="table-patch-file-list-title">업로드 대기 중인 파일 (@pendingFiles.Count)</h3>
+                        <button type="button" class="stitch-btn stitch-btn-neutral table-patch-clear-all" @onclick="ClearFiles" disabled="@isProcessing">
+                            모두 삭제
+                        </button>
+                    </div>
+                    <ul class="table-patch-file-list">
+                        @foreach (var file in pendingFiles)
+                        {
+                            <li class="table-patch-file-item">
+                                <span class="material-symbols-outlined">description</span>
+                                <div class="table-patch-file-meta">
+                                    <span class="table-patch-file-name">@file.Name</span>
+                                    <span class="table-patch-file-size">@FormatSize(file.Size)</span>
+                                </div>
+                                <button type="button"
+                                        class="table-patch-file-remove"
+                                        @onclick="() => RemoveFile(file.Name)"
+                                        disabled="@isProcessing"
+                                        aria-label="제거">
+                                    <span class="material-symbols-outlined">close</span>
+                                </button>
+                            </li>
+                        }
+                    </ul>
+                }
+                else
+                {
+                    <p class="table-patch-hint">허용된 테이블 JSON만 업로드할 수 있습니다. 업로드 후 대상 서버가 파일을 내려받고 전체 테이블을 리로드합니다.</p>
+                }
+
+                <div class="mb-3 table-patch-scope">
+                    <div class="form-check">
+                        <InputCheckbox id="applyAllWorlds" class="form-check-input" @bind-Value="applyAllWorlds" disabled="@isProcessing" />
+                        <label class="form-check-label" for="applyAllWorlds">모든 월드에 적용</label>
+                    </div>
+                    <p class="table-patch-scope-label">
+                        적용 범위:
+                        @if (applyAllWorlds)
+                        {
+                            <strong>전체 월드</strong>
+                            <span class="table-patch-hint"> (헤더 월드 선택과 무관)</span>
+                        }
+                        else if (selectedWorld.HasValue)
+                        {
+                            <strong>World @selectedWorld.Value</strong>
+                        }
+                        else
+                        {
+                            <strong>월드 미선택</strong>
+                        }
+                    </p>
+                </div>
+
+                <div class="stitch-form-actions">
+                    <button type="button" class="stitch-btn stitch-btn-neutral" @onclick="ClearFiles" disabled="@isProcessing">
+                        초기화
+                    </button>
+                    <button type="button" class="stitch-btn stitch-btn-primary" @onclick="HandlePublish" disabled="@(isProcessing || pendingFiles.Count == 0)">
+                        @if (isProcessing)
+                        {
+                            <span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
+                        }
+                        <span class="material-symbols-outlined" style="font-size:1rem;">sync</span>
+                        업로드 및 리로드
+                    </button>
+                </div>
+            </div>
+        </div>
+    }
+</div>
+
+@code {
+    private const long MaxFileBytes = 20 * 1024 * 1024;
+
+    private readonly List<PendingFile> pendingFiles = new();
+    private string errorMessage;
+    private string successMessage;
+    private bool isProcessing;
+    private bool applyAllWorlds;
+    private string currentUserName = "Admin";
+
+    [CascadingParameter(Name = "SelectedWorld")]
+    private uint? selectedWorld { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
+        var nameClaim = authState.User.FindFirst(ClaimTypes.Name);
+        if (!string.IsNullOrEmpty(nameClaim?.Value))
+            currentUserName = nameClaim.Value;
+    }
+
+    private async Task OnInputFileChange(InputFileChangeEventArgs e)
+    {
+        if (!TablePublishService.IsConfigured)
+            return;
+
+        errorMessage = null;
+        successMessage = null;
+
+        foreach (var file in e.GetMultipleFiles(64))
+            await TryAddFileAsync(file);
+    }
+
+    private async Task TryAddFileAsync(IBrowserFile file)
+    {
+        var name = Path.GetFileName(file.Name);
+        if (!TablePublishService.IsAllowedFileName(name))
+        {
+            errorMessage = $"허용되지 않은 파일입니다: {name}";
+            return;
+        }
+
+        if (file.Size <= 0 || file.Size > MaxFileBytes)
+        {
+            errorMessage = $"파일 크기가 올바르지 않습니다: {name}";
+            return;
+        }
+
+        await using var stream = file.OpenReadStream(MaxFileBytes);
+        using var ms = new MemoryStream();
+        await stream.CopyToAsync(ms);
+        var bytes = ms.ToArray();
+
+        pendingFiles.RemoveAll(x => string.Equals(x.Name, name, StringComparison.OrdinalIgnoreCase));
+        pendingFiles.Add(new PendingFile(name, bytes));
+    }
+
+    private void RemoveFile(string name)
+    {
+        pendingFiles.RemoveAll(x => string.Equals(x.Name, name, StringComparison.OrdinalIgnoreCase));
+    }
+
+    private void ClearFiles()
+    {
+        pendingFiles.Clear();
+        errorMessage = null;
+        successMessage = null;
+    }
+
+    private async Task HandlePublish()
+    {
+        if (!TablePublishService.IsConfigured)
+            return;
+
+        isProcessing = true;
+        errorMessage = null;
+        successMessage = null;
+
+        try
+        {
+            if (pendingFiles.Count == 0)
+            {
+                errorMessage = "업로드할 파일을 선택하세요.";
+                return;
+            }
+
+            List<uint> targetWorlds;
+            if (applyAllWorlds)
+            {
+                targetWorlds = GetWorlds();
+                if (targetWorlds.Count == 0)
+                {
+                    errorMessage = "WorldServers 설정에서 월드를 찾을 수 없습니다.";
+                    return;
+                }
+            }
+            else
+            {
+                if (!selectedWorld.HasValue)
+                {
+                    errorMessage = "월드가 선택되지 않았습니다.";
+                    return;
+                }
+
+                targetWorlds = new List<uint> { selectedWorld.Value };
+            }
+
+            var uploads = pendingFiles
+                .Select(f => (f.Name, (Stream)new MemoryStream(f.Bytes)))
+                .ToList();
+
+            try
+            {
+                await TablePublishService.PublishAsync(uploads);
+            }
+            finally
+            {
+                foreach (var (_, stream) in uploads)
+                    await stream.DisposeAsync();
+            }
+
+            var stems = pendingFiles
+                .Select(f => TablePublishService.NormalizeStem(f.Name))
+                .Distinct(StringComparer.OrdinalIgnoreCase)
+                .ToList();
+
+            var message = new Response.ReloadTables
+            {
+                Error = 0,
+                Url = TablePublishService.DownloadBaseUrl,
+                TableNames = stems
+            };
+
+            foreach (var world in targetWorlds)
+                await RabbitMqService.PublishAsync(message, "amq.direct", $"fb.{world}.global");
+
+            await RabbitMqService.PublishAsync(message, "amq.direct", "fb.global");
+
+            var targetLabel = applyAllWorlds ? "전체 월드" : $"World {selectedWorld.Value}";
+            var detail = string.Join(", ", stems.Select(s => $"{s}.json"));
+            await LogService.WriteAsync("table_patch", new
+            {
+                world = applyAllWorlds ? "all" : selectedWorld?.ToString() ?? "unknown",
+                worlds = targetWorlds,
+                apply_all_worlds = applyAllWorlds,
+                url = message.Url,
+                table_names = stems,
+                file_count = stems.Count
+            });
+
+            ActivityLog.Add(new AdminActivityEntry
+            {
+                Category = "table_patch",
+                Summary = $"테이블 패치 ({stems.Count})",
+                Detail = detail,
+                Actor = currentUserName,
+                Target = targetLabel,
+                Success = true
+            });
+
+            successMessage = applyAllWorlds
+                ? $"{stems.Count}개 테이블을 업로드하고 전체 월드({targetWorlds.Count})에 리로드를 요청했습니다."
+                : $"{stems.Count}개 테이블을 업로드하고 World {selectedWorld.Value}에 리로드를 요청했습니다.";
+            pendingFiles.Clear();
+        }
+        catch (Exception ex)
+        {
+            errorMessage = $"테이블 패치 실패: {ex.Message}";
+            ActivityLog.Add(new AdminActivityEntry
+            {
+                Category = "table_patch",
+                Summary = "테이블 패치",
+                Detail = ex.Message,
+                Actor = currentUserName,
+                Target = applyAllWorlds
+                    ? "전체 월드"
+                    : (selectedWorld.HasValue ? $"World {selectedWorld.Value}" : "unknown"),
+                Success = false
+            });
+        }
+        finally
+        {
+            isProcessing = false;
+        }
+    }
+
+    private List<uint> GetWorlds()
+    {
+        try
+        {
+            return Configuration.GetSection("WorldServers").GetChildren()
+                .Where(child => uint.TryParse(child.Key, out _))
+                .Select(child => uint.Parse(child.Key))
+                .ToList();
+        }
+        catch
+        {
+            return new List<uint>();
+        }
+    }
+
+    private static string FormatSize(long bytes)
+    {
+        if (bytes < 1024)
+            return $"{bytes} B";
+        if (bytes < 1024 * 1024)
+            return $"{bytes / 1024.0:0.#} KB";
+        return $"{bytes / (1024.0 * 1024.0):0.#} MB";
+    }
+
+    private sealed record PendingFile(string Name, byte[] Bytes)
+    {
+        public long Size => Bytes.LongLength;
+    }
+}

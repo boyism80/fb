@@ -31,6 +31,7 @@ IMPLEMENT_LUA_EXTENSION(fb::game::life, "fb.game.life")
 {"paralysis",            builtin::life::builtin_paralysis},
 {"invincible",           builtin::life::builtin_invincible},
 {"cover",                builtin::life::builtin_cover},
+{"delirious",            builtin::life::builtin_delirious},
 {"base_hp",              builtin::life::builtin_base_hp},
 {"buff_hp",              builtin::life::builtin_buff_hp},
 {"maxhp",                builtin::life::builtin_maxhp},
@@ -61,6 +62,9 @@ IMPLEMENT_LUA_EXTENSION(fb::game::life, "fb.game.life")
 {"base_hit",             builtin::life::builtin_base_hit},
 {"buff_hit",             builtin::life::builtin_buff_hit},
 {"hit",                  builtin::life::builtin_hit},
+{"base_speed",           builtin::life::builtin_base_speed},
+{"buff_speed",           builtin::life::builtin_buff_speed},
+{"speed",                builtin::life::builtin_speed},
 {"normal_attack_damage", builtin::life::builtin_normal_attack_damage},
 {"update",               builtin::life::builtin_update},
 END_LUA_EXTENSION; // clang-format on
@@ -532,7 +536,7 @@ int builtin::life::builtin_cast(lua_State* L)
         return 0;
 
     auto name  = lua->tostring(offset++);
-    auto spell = table::spell.name2spell(name);
+    auto spell = table::spell->name2spell(name);
     if (spell == nullptr)
         return 0;
 
@@ -549,7 +553,7 @@ int builtin::life::builtin_cast(lua_State* L)
             co_return;
 
         auto path = std::format("scripts/spell/{}.lua", spell->id);
-        auto func = std::format("ON_CAST_{}", spell->id);
+        auto func = "on_cast";
 
         auto x = static_cast<fb::game::server&>(lua->executor).lua.open(path, func);
         if (!x)
@@ -957,6 +961,49 @@ int builtin::life::builtin_cover(lua_State* L)
         builder.weak  = weak;
         builder.yield = [=]() -> async::task<void> {
             obj->cover(value);
+            co_return;
+        };
+        builder.resume = []() -> async::task<int> {
+            co_return 0;
+        };
+        return builder.run();
+    }
+}
+
+int builtin::life::builtin_delirious(lua_State* L)
+{
+    auto lua = fb::lua::get(L);
+    if (lua == nullptr)
+        return 0;
+    auto argc = lua->argc();
+    auto obj  = lua->touserdata<fb::game::life>(1);
+    if (obj == nullptr)
+        return 0;
+
+    if (argc == 1)
+    {
+        auto delirious_value = std::make_shared<bool>();
+        auto weak            = obj->weak_from_this();
+        auto builder         = lua->new_co_builder();
+        builder.weak         = weak;
+        builder.yield        = [=]() -> async::task<void> {
+            *delirious_value = obj->delirious();
+            co_return;
+        };
+        builder.resume = [=]() -> async::task<int> {
+            lua->pushboolean(*delirious_value);
+            co_return 1;
+        };
+        return builder.run();
+    }
+    else
+    {
+        auto value    = lua->toboolean(2);
+        auto weak     = obj->weak_from_this();
+        auto builder  = lua->new_co_builder();
+        builder.weak  = weak;
+        builder.yield = [=]() -> async::task<void> {
+            obj->delirious(value);
             co_return;
         };
         builder.resume = []() -> async::task<int> {
@@ -1782,6 +1829,97 @@ int builtin::life::builtin_hit(lua_State* L)
     };
     builder.resume = [=]() -> async::task<int> {
         lua->pushinteger(*hit_value);
+        co_return 1;
+    };
+    return builder.run();
+}
+
+int builtin::life::builtin_base_speed(lua_State* L)
+{
+    auto lua = fb::lua::get(L);
+    if (lua == nullptr)
+        return 0;
+    auto obj = lua->touserdata<fb::game::life>(1);
+    if (obj == nullptr)
+        return 0;
+
+    auto base_speed_value = std::make_shared<uint8_t>();
+    auto weak             = obj->weak_from_this();
+    auto builder          = lua->new_co_builder();
+    builder.weak          = weak;
+    builder.yield         = [=]() -> async::task<void> {
+        *base_speed_value = obj->stat.base_speed();
+        co_return;
+    };
+    builder.resume = [=]() -> async::task<int> {
+        lua->pushinteger(*base_speed_value);
+        co_return 1;
+    };
+    return builder.run();
+}
+
+int builtin::life::builtin_buff_speed(lua_State* L)
+{
+    auto lua = fb::lua::get(L);
+    if (lua == nullptr)
+        return 0;
+    auto argc = lua->argc();
+    auto obj  = lua->touserdata<fb::game::life>(1);
+    if (obj == nullptr)
+        return 0;
+
+    if (argc == 1)
+    {
+        auto buff_speed_value = std::make_shared<int8_t>();
+        auto weak             = obj->weak_from_this();
+        auto builder          = lua->new_co_builder();
+        builder.weak          = weak;
+        builder.yield         = [=]() -> async::task<void> {
+            *buff_speed_value = obj->stat.buff_speed();
+            co_return;
+        };
+        builder.resume = [=]() -> async::task<int> {
+            lua->pushinteger(*buff_speed_value);
+            co_return 1;
+        };
+        return builder.run();
+    }
+    else
+    {
+        auto value    = lua->tointeger(2);
+        auto weak     = obj->weak_from_this();
+        auto builder  = lua->new_co_builder();
+        builder.weak  = weak;
+        builder.yield = [=]() -> async::task<void> {
+            obj->stat.buff_speed(static_cast<int8_t>(value));
+            co_return;
+        };
+        builder.resume = []() -> async::task<int> {
+            co_return 0;
+        };
+        return builder.run();
+    }
+}
+
+int builtin::life::builtin_speed(lua_State* L)
+{
+    auto lua = fb::lua::get(L);
+    if (lua == nullptr)
+        return 0;
+    auto obj = lua->touserdata<fb::game::life>(1);
+    if (obj == nullptr)
+        return 0;
+
+    auto speed_value = std::make_shared<uint8_t>();
+    auto weak        = obj->weak_from_this();
+    auto builder     = lua->new_co_builder();
+    builder.weak     = weak;
+    builder.yield    = [=]() -> async::task<void> {
+        *speed_value = obj->stat.speed();
+        co_return;
+    };
+    builder.resume = [=]() -> async::task<int> {
+        lua->pushinteger(*speed_value);
         co_return 1;
     };
     return builder.run();

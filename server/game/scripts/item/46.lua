@@ -1,11 +1,15 @@
 -- item: 일월대도
 
--- 일월대도 사용 스크립트
--- function ON_ACTIVATED_46(me, item)
---
--- end
+return {
+    -- on_activated = function(me, item)
+    -- end,
 
--- 일월대도 해제 스크립트
--- function ON_DEACTIVATED_46(me, item)
---
--- end
+    -- on_deactivated = function(me, item)
+    -- end,
+
+    -- on_concast = function(me, item)
+    -- end,
+
+    -- on_attack = function(me, item)
+    -- end
+}

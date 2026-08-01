@@ -78,7 +78,7 @@ local function run_dragon_weapon_awaken(me, npc)
     end
     ::NPC_140_0004::
     local sel, list_btn = me:list(npc, '그래. 그래도 나에게 용무기 각성을 맡기겠나?', { '네. 용무기를 각성해주세요.' }, { prev = true })
-    if list_btn == DIALOG_RESULT.QUIT or sel == nil then
+    if list_btn == DIALOG_RESULT.QUIT then
         return false
     end
     if list_btn == DIALOG_RESULT.PREV then
@@ -93,7 +93,7 @@ local function run_dragon_weapon_awaken(me, npc)
         type_options[#type_options + 1] = line.type_name
     end
     local type_sel, type_btn = me:list(npc, '좋아. 각오가 대단하군. 그럼 각성시킬 용무기를 고르게.', type_options, { prev = true })
-    if type_btn == DIALOG_RESULT.QUIT or type_sel == nil then
+    if type_btn == DIALOG_RESULT.QUIT then
         return false
     end
     if type_btn == DIALOG_RESULT.PREV then
@@ -105,7 +105,7 @@ local function run_dragon_weapon_awaken(me, npc)
     local line = DRAGON_WEAPON_LINES[type_sel]
     ::NPC_140_0006::
     local grade_sel, grade_btn = me:list(npc, '어떤 무기를 각성할건가?', line.options, { prev = true })
-    if grade_btn == DIALOG_RESULT.QUIT or grade_sel == nil then
+    if grade_btn == DIALOG_RESULT.QUIT then
         return false
     end
     if grade_btn == DIALOG_RESULT.PREV then
@@ -171,11 +171,11 @@ local function run_amber_weapon_craft(me, npc, colors)
         { ['item'] = { [star_item] = 1, ['죽은지네'] = 1 } },
         { ['item'] = { [result_name] = 1 } }
     )
-    if code == enum.EXCHANGE_RESULT.LACK_COST then
+    if code == enum.exchange_result.LACK_COST then
         me:dialog(npc, '재료를 다시 한번 살펴보게. ' .. color_name .. '별과 죽은지네가 있어야 제작할 수 있다네.', { prev = false, next = false })
         return DIALOG_RESULT.NEXT
     end
-    if code == enum.EXCHANGE_RESULT.LACK_CAPACITY then
+    if code == enum.exchange_result.LACK_CAPACITY then
         me:dialog(npc, '소지품이 가득 차서 ' .. name_with(result_name, '을', '를') .. ' 받을 수 없네.', { prev = false, next = false })
         return DIALOG_RESULT.NEXT
     end
@@ -183,39 +183,41 @@ local function run_amber_weapon_craft(me, npc, colors)
     return DIALOG_RESULT.NEXT
 end
 
-function NPC_140(me, npc)
-    if not me:has_items('얼음', 1) then
-        show_no_ice_dialog(me, npc)
-        return
-    end
-    ::NPC_140_START::
-    local main_opt = me:list(npc, '안녕하신가? 무엇을 도와줄까?', {
-        '상급 용무기를 각성시켜 주세요.',
-        '호박무기만들기',
-        '연호박무기만들기',
-    }, { prev = false })
-    if main_opt == nil then
-        return
-    end
-    if main_opt == 1 then
-        if run_dragon_weapon_awaken(me, npc) == false then
+return {
+    on_click = function(me, npc)
+        if not me:has_items('얼음', 1) then
+            show_no_ice_dialog(me, npc)
             return
         end
-    elseif main_opt == 2 then
-        local r = run_amber_weapon_craft(me, npc, AMBER_COLORS)
-        if r == DIALOG_RESULT.QUIT then
+        ::NPC_140_START::
+        local main_opt = me:list(npc, '안녕하신가? 무엇을 도와줄까?', {
+            '상급 용무기를 각성시켜 주세요.',
+            '호박무기만들기',
+            '연호박무기만들기',
+        }, { prev = false })
+        if main_opt == nil then
             return
         end
-        if r == DIALOG_RESULT.PREV then
-            goto NPC_140_START
-        end
-    elseif main_opt == 3 then
-        local r = run_amber_weapon_craft(me, npc, LIGHT_AMBER_COLORS)
-        if r == DIALOG_RESULT.QUIT then
-            return
-        end
-        if r == DIALOG_RESULT.PREV then
-            goto NPC_140_START
+        if main_opt == 1 then
+            if run_dragon_weapon_awaken(me, npc) == false then
+                return
+            end
+        elseif main_opt == 2 then
+            local r = run_amber_weapon_craft(me, npc, AMBER_COLORS)
+            if r == DIALOG_RESULT.QUIT then
+                return
+            end
+            if r == DIALOG_RESULT.PREV then
+                goto NPC_140_START
+            end
+        elseif main_opt == 3 then
+            local r = run_amber_weapon_craft(me, npc, LIGHT_AMBER_COLORS)
+            if r == DIALOG_RESULT.QUIT then
+                return
+            end
+            if r == DIALOG_RESULT.PREV then
+                goto NPC_140_START
+            end
         end
     end
-end
+}

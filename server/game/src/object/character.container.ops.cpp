@@ -50,10 +50,10 @@ async::task<void> character::container::on_broadcast(const internal_resp::Broadc
     co_return;
 }
 
-void character::container::update_time(uint8_t hours)
+void character::container::update_time(uint8_t hours, uint8_t minutes)
 {
-    this->foreach_enqueue([hours](auto& ch) -> async::task<void> {
-        ch->update_time(hours);
+    this->foreach_enqueue([hours, minutes](auto& ch) -> async::task<void> {
+        ch->update_time(hours, minutes);
         co_return;
     });
 }

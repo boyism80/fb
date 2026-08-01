@@ -205,6 +205,14 @@ services:
     environment:
       ASPNETCORE_ENVIRONMENT: Development
       ASPNETCORE_HTTP_PORTS: "3020"
+      TablePublish__UploadBaseUrl: ${TABLE_PUBLISH_UPLOAD_BASE_URL:-}
+      TablePublish__DownloadBaseUrl: ${TABLE_PUBLISH_DOWNLOAD_BASE_URL:-}
+      TablePublish__Username: ${TABLE_PUBLISH_USERNAME:-}
+      TablePublish__Password: ${TABLE_PUBLISH_PASSWORD:-}
+      ScriptPublish__UploadBaseUrl: ${SCRIPT_PUBLISH_UPLOAD_BASE_URL:-}
+      ScriptPublish__DownloadBaseUrl: ${SCRIPT_PUBLISH_DOWNLOAD_BASE_URL:-}
+      ScriptPublish__Username: ${SCRIPT_PUBLISH_USERNAME:-${TABLE_PUBLISH_USERNAME:-}}
+      ScriptPublish__Password: ${SCRIPT_PUBLISH_PASSWORD:-${TABLE_PUBLISH_PASSWORD:-}}
     volumes:
       - ./config/admin-tool/appsettings.Development.json:/app/appsettings.Development.json:ro
     ports:

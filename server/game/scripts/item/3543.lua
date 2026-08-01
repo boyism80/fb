@@ -1,5 +1,15 @@
 -- item: 연등26
 
--- 연등26 해제 스크립트
--- function ON_DEACTIVATED_3543(me, item)
--- end
+return {
+    -- on_activated = function(me, item)
+    -- end,
+
+    -- on_deactivated = function(me, item)
+    -- end,
+
+    -- on_concast = function(me, item)
+    -- end,
+
+    -- on_attack = function(me, item)
+    -- end
+}

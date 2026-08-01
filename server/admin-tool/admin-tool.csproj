@@ -19,6 +19,8 @@
     <None Include="json\**">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
+    <Content Update="appsettings.Local.json" CopyToOutputDirectory="PreserveNewest" Condition="Exists('appsettings.Local.json')" />
+    <Content Update="appsettings.Local.json.example" CopyToPublishDirectory="Never" />
   </ItemGroup>
 
 </Project>

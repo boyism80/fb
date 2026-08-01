@@ -3,6 +3,7 @@ using AdminTool.Options;
 using Dapper;
 using Http.Extension;
 using Http.Service;
+using Http.Service.Amqp;
 using Http.Worker;
 using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.AspNetCore.Components.Server.ProtectedBrowserStorage;
@@ -15,6 +16,9 @@ SqlMapper.AddTypeHandler(typeof(Dictionary<string, List<Fb.Model.Dsl>>), new Jso
 SqlMapper.AddTypeHandler(typeof(Http.Model.Mimicry), new JsonTypeHandler());
 
 var builder = WebApplication.CreateBuilder(args);
+
+// Local overrides (gitignored). Optional so CI/k8s can rely on env vars instead.
+builder.Configuration.AddJsonFile("appsettings.Local.json", optional: true, reloadOnChange: true);
 
 // Add services to the container.
 builder.Services.AddRazorPages();
@@ -38,6 +42,12 @@ builder.Services.AddSingleton<Http.Service.BulletinService>();
 builder.Services.AddSingleton<Http.Service.BulletinCacheService>();
 builder.Services.AddHostedService<Http.Service.BulletinBackgroundService>();
 builder.Services.Configure<SecurityOptions>(builder.Configuration.GetSection("Security"));
+builder.Services.Configure<AdminTool.Options.TablePublishOptions>(
+    builder.Configuration.GetSection(AdminTool.Options.TablePublishOptions.SectionName));
+builder.Services.Configure<AdminTool.Options.ScriptPublishOptions>(
+    builder.Configuration.GetSection(AdminTool.Options.ScriptPublishOptions.SectionName));
+builder.Services.AddHttpClient(nameof(AdminTool.Services.TablePublishService));
+builder.Services.AddHttpClient(nameof(AdminTool.Services.ScriptPublishService));
 builder.Services.AddSingleton<AdminTool.Services.SecurityService>();
 builder.Services.AddScoped<StorageService>();
 builder.Services.AddAuthorization();
@@ -51,7 +61,10 @@ builder.Services.AddScoped<AdminTool.Services.UserService>();
 builder.Services.AddScoped<AdminTool.Services.UserDetailService>();
 builder.Services.AddScoped<AdminTool.Services.MarketplaceAdminService>();
 builder.Services.AddSingleton<AdminTool.Services.AdminActivityLogService>();
+builder.Services.AddSingleton<AdminTool.Services.TablePublishService>();
+builder.Services.AddSingleton<AdminTool.Services.ScriptPublishService>();
 builder.Services.AddSingleton<Http.Service.MaintenanceService>();
+builder.Services.AddAmqpListener<ReloadTablesHandler>();
 
 var app = builder.Build();
 

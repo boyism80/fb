@@ -25,8 +25,9 @@ bool door::toggle()
         if (tile == nullptr)
             return false;
 
-        auto  index = this->model.pairs[i];
-        auto& model = table::door_pair[index];
+        auto  index           = this->model.pairs[i];
+        auto  door_pair_table = table::door_pair;
+        auto& model           = door_pair_table[index];
         if (this->_opened)
             tile->object = model.close;
         else

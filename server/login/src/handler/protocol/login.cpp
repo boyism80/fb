@@ -1,6 +1,7 @@
 #include <fb/login/handler/protocol/login.h>
 #include <fb/login/exception.h>
 #include <fb/encoding.h>
+#include <fb/logger.h>
 #include <json/json.h>
 #include <format>
 
@@ -50,7 +51,22 @@ async::task<bool> login::handle(fb::socket<fb::login::session>& session, fb::pro
             throw pw_exception(_TEXT(MESSAGE_ACCOUNT_INVALID_PASSWORD));
         }
 
-        auto   map   = resp2.map;
+        auto map = resp2.map;
+        if (table::map->contains(map) && table::map[map].return_to.has_value())
+        {
+            auto return_map_id = table::map[map].return_to.value();
+            if (table::map->contains(return_map_id) == false)
+            {
+                fb::logger::fatal("Character {} login failed: return_to map {} does not exist (source map {})",
+                                  name,
+                                  return_map_id,
+                                  map);
+                throw id_exception(_TEXT(MESSAGE_NOT_READY_GAME_SERVER));
+            }
+
+            map = return_map_id;
+        }
+
         auto&& resp3 = co_await this->server.http.post(
             "internal",
             "/in-game/transfer",

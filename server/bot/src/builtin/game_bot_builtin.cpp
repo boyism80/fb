@@ -153,8 +153,9 @@ fb::model::point<uint16_t> parse_point(fb::lua::context* lua, int index)
 
 const fb::model::item* find_item_by_name(std::string_view name)
 {
-    auto name_str = std::string(name);
-    for (auto& [_, item] : fb::model::table::item)
+    auto name_str   = std::string(name);
+    auto item_table = fb::model::table::item;
+    for (auto& [_, item] : item_table)
     {
         if (item.name == name_str)
             return &item;
@@ -814,10 +815,13 @@ int builtin::game_bot::builtin_request(lua_State* L)
     if (bot == nullptr)
         return 0;
 
-    auto* response_entry = lua_protocol::to_response_token(L, 2);
-    auto  request        = lua_protocol::to_request(L, 3);
+    auto*                                 response_entry = lua_protocol::to_response_token(L, 2);
+    std::shared_ptr<fb::protocol::header> request;
+    if (lua->argc() >= 3 && lua->is_nil(3) == false)
+        request = lua_protocol::to_request(L, 3);
+
     if (lua->argc() < 4 || lua->is_function(4) == false)
-        return luaL_error(L, "request(response, packet, validator) requires a function as third argument");
+        return luaL_error(L, "request(response, packet|nil, validator) requires a function as third argument");
 
     if (auto* message = unified_response_opcode_error(response_entry->opcode))
         return luaL_error(L, "%s", message);
@@ -872,14 +876,21 @@ int builtin::game_bot::builtin_request(lua_State* L)
         if (response_entry->clone != nullptr)
             clone = response_entry->clone;
 
-        *result = co_await bot_ptr->request_by_opcode(bot_ptr,
-                                                      response_entry->opcode,
-                                                      *request,
-                                                      condition,
-                                                      timeout,
-                                                      true,
-                                                      true,
-                                                      std::move(clone));
+        try
+        {
+            *result = co_await bot_ptr->request_by_opcode(bot_ptr,
+                                                          response_entry->opcode,
+                                                          request.get(),
+                                                          condition,
+                                                          timeout,
+                                                          true,
+                                                          true,
+                                                          std::move(clone));
+        }
+        catch (...)
+        {
+            *result = nullptr;
+        }
 
         luaL_unref(L_state, LUA_REGISTRYINDEX, validator_ref);
     };
@@ -909,10 +920,14 @@ int builtin::game_bot::builtin_request_on(lua_State* L)
     if (listener == nullptr)
         return 0;
 
-    auto* response_entry = lua_protocol::to_response_token(L, 3);
-    auto  request        = lua_protocol::to_request(L, 4);
+    auto*                                 response_entry = lua_protocol::to_response_token(L, 3);
+    std::shared_ptr<fb::protocol::header> request;
+    if (lua->argc() >= 4 && lua->is_nil(4) == false)
+        request = lua_protocol::to_request(L, 4);
+
     if (lua->argc() < 5 || lua->is_function(5) == false)
-        return luaL_error(L, "request_on(target, response, packet, validator) requires a function as fourth argument");
+        return luaL_error(L,
+                          "request_on(target, response, packet|nil, validator) requires a function as fourth argument");
 
     if (auto* message = unified_response_opcode_error(response_entry->opcode))
         return luaL_error(L, "%s", message);
@@ -969,14 +984,21 @@ int builtin::game_bot::builtin_request_on(lua_State* L)
         if (response_entry->clone != nullptr)
             clone = response_entry->clone;
 
-        *result = co_await sender_ptr->request_by_opcode(listener_ptr,
-                                                         response_entry->opcode,
-                                                         *request,
-                                                         condition,
-                                                         timeout,
-                                                         true,
-                                                         true,
-                                                         std::move(clone));
+        try
+        {
+            *result = co_await sender_ptr->request_by_opcode(listener_ptr,
+                                                             response_entry->opcode,
+                                                             request.get(),
+                                                             condition,
+                                                             timeout,
+                                                             true,
+                                                             true,
+                                                             std::move(clone));
+        }
+        catch (...)
+        {
+            *result = nullptr;
+        }
 
         luaL_unref(L_state, LUA_REGISTRYINDEX, validator_ref);
     };

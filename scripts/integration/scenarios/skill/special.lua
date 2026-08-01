@@ -346,6 +346,11 @@ local SPECIAL_SPELLS = {
 function M.run(ctx, bot_index)
     local caster = ctx:bot(bot_index)
     log("debug", "SPECIAL SPELL TEST STARTED")
+    local option = require("integration.lib.option")
+    if option.disable_pk_protect(caster) == false then
+        log("fatal", "SPECIAL SPELL TEST: failed to disable PK_PROTECT for caster")
+        return false
+    end
     caster:setup_bot_stats(100000, 100000)
     if spell_runner.run_cases(SPECIAL_SPELLS, caster, caster) == false then
         return false

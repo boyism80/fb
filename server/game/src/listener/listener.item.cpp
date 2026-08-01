@@ -29,5 +29,5 @@ void listener_impl::on_item_throws(character& me, item& item, const fb::model::p
     if (me.position() != to)
         this->server.send(me, game_resp::item_throws(me, item, to), scope::PIVOT);
     else
-        this->server.send(me, game_resp::action(me, ACTION::ATTACK, DURATION::THROW), scope::PIVOT);
+        this->server.send(me, game_resp::action(me, ACTION::THROW, DURATION::THROW), scope::PIVOT);
 }

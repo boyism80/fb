@@ -1,6 +1,15 @@
 -- mob: 공역자룡
--- function ON_MOB_DIE_1547(me)
--- end
 
--- function ON_MOB_ATTACK_1547(me, you)
--- end
+return {
+    -- on_mob_attack = function(me, you)
+    -- end,
+
+    -- on_mob_die = function(me)
+    -- end,
+
+    -- on_mob_kill = function(me, mobs)
+    -- end,
+
+    -- on_mob_spell_hit = function(me, you, spell)
+    -- end
+}

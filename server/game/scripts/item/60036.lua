@@ -1,9 +1,15 @@
 -- item: 해킹사건해결요청권
 
--- 해킹사건해결요청권 사용 스크립트
--- function ON_ACTIVATED_60036(me, item)
--- end
+return {
+    -- on_activated = function(me, item)
+    -- end,
 
--- 해킹사건해결요청권 해제 스크립트
--- function ON_DEACTIVATED_60036(me, item)
--- end
+    -- on_deactivated = function(me, item)
+    -- end,
+
+    -- on_concast = function(me, item)
+    -- end,
+
+    -- on_attack = function(me, item)
+    -- end
+}

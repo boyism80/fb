@@ -1,6 +1,16 @@
 -- item: 홍주
 
--- 홍주 사용 스크립트
-function ON_ACTIVATED_2205(me, item)
-    me:mp(math.min(me:mp()+300, me:maxmp()))
-end
+return {
+    on_activated = function(me, item)
+        me:mp(math.min(me:mp()+300, me:maxmp()))
+    end,
+
+    -- on_deactivated = function(me, item)
+    -- end,
+
+    -- on_concast = function(me, item)
+    -- end,
+
+    -- on_attack = function(me, item)
+    -- end
+}

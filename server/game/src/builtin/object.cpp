@@ -202,12 +202,15 @@ int builtin::object::builtin_sound(lua_State* L)
     if (obj == nullptr)
         return 0;
 
-    auto sound    = static_cast<SOUND>(lua->tointeger(2));
+    auto sound  = static_cast<SOUND>(lua->tointeger(2));
+    auto volume = static_cast<uint8_t>(100);
+    if (lua->argc() >= 3)
+        volume = static_cast<uint8_t>(lua->tointeger(3));
     auto weak     = obj->weak_from_this_as<fb::game::object>();
     auto builder  = lua->new_co_builder();
     builder.weak  = weak;
     builder.yield = [=]() -> async::task<void> {
-        obj->sound(sound);
+        obj->sound(sound, volume);
         co_return;
     };
     builder.resume = []() -> async::task<int> {
@@ -396,7 +399,7 @@ int builtin::object::builtin_buff(lua_State* L)
     }
     else if (lua->is_string(2))
     {
-        model = table::spell.name2spell(lua->tostring(2));
+        model = table::spell->name2spell(lua->tostring(2));
     }
     else
     {
@@ -479,7 +482,7 @@ int builtin::object::builtin_unbuff(lua_State* L)
     builder.yield = [=]() -> async::task<void> {
         if (mode == unbuff_mode::BY_NAME)
         {
-            auto model = table::spell.name2spell(name);
+            auto model = table::spell->name2spell(name);
             if (model == nullptr)
                 *result = false;
             else
@@ -553,7 +556,7 @@ int builtin::object::builtin_isbuff(lua_State* L)
         {
             if (check.type == buff_check::type_t::NAME)
             {
-                auto model = table::spell.name2spell(check.name);
+                auto model = table::spell->name2spell(check.name);
                 if (model != nullptr && obj->buffs.contains(*model))
                 {
                     *found = true;
@@ -839,7 +842,7 @@ int builtin::object::builtin_mkitem(lua_State* L)
         return 0;
 
     auto name  = lua->tostring(2);
-    auto model = table::item.name2item(name);
+    auto model = table::item->name2item(name);
     if (model == nullptr)
     {
         lua->pushnil();

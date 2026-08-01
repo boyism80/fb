@@ -1,5 +1,15 @@
 -- item: 통가죽선류
 
--- 통가죽선류 해제 스크립트
--- function ON_DEACTIVATED_5830(me, item)
--- end
+return {
+    -- on_activated = function(me, item)
+    -- end,
+
+    -- on_deactivated = function(me, item)
+    -- end,
+
+    -- on_concast = function(me, item)
+    -- end,
+
+    -- on_attack = function(me, item)
+    -- end
+}

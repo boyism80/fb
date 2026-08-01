@@ -1,17 +1,17 @@
 local lib      = require("integration.lib")
 local protocol = require("integration.protocol")
 
-local F1_OID               = 0xFFFFFFFF
-local F1_STORAGE_INDEX     = 1
-local F1_MARKETPLACE_INDEX = 2
-local MP_SEARCH_INDEX      = 1
-local MP_LIST_INDEX        = 2
-local MP_CANCEL_INDEX      = 3
-local CONFIRM_YES          = 1
-local CONFIRM_NO           = 2
-local RECEIVE_YES          = 1
+local F1_OID          = 0xFFFFFFFF
+local DIALOG_CLOSE_OID = 0xFFFFFFFD
 
-local DIALOG_PREV = 0
+local OPT_STORAGE = "통합보관함"
+local OPT_MARKET  = "거래소"
+local OPT_SEARCH  = "검색"
+local OPT_REGISTER = "등록"
+local OPT_CANCEL  = "취소"
+local OPT_YES     = "예"
+local OPT_NO      = "아니오"
+
 local DIALOG_NEXT = 2
 
 local WEAPON_ITEM       = "양첨목봉"
@@ -72,13 +72,14 @@ local function dump_dialog(bot, label, packet)
         return
     end
     local lists = ""
-    if packet.list_lists ~= nil then
+    if packet.menu_menus ~= nil then
+        lists = table.concat(packet.menu_menus, "|")
+    elseif packet.list_lists ~= nil then
         lists = table.concat(packet.list_lists, "|")
     end
     local slots = ""
     if packet.slot_slots ~= nil then
-        local parts = {}
-        for i, s in ipairs(packet.slot_slots) do
+        local parts = {}        for i, s in ipairs(packet.slot_slots) do
             parts[i] = tostring(s)
         end
         slots = table.concat(parts, ",")
@@ -123,82 +124,36 @@ local function message_normalized_contains(packet, text)
     return normalized:find(text, 1, true) ~= nil
 end
 
-local function is_cancel_empty_message(packet)
-    return message_normalized_contains(packet, MSG_CANCEL_EMPTY)
-end
-
-local function is_search_empty_message(packet)
-    return message_normalized_contains(packet, MSG_SEARCH_EMPTY)
-end
-
-local function dialog_normal_next()
-    return protocol.dialog("NORMAL", DIALOG_NEXT, "", 0, 0, "", "NEXT")
-end
-
 local function f1_open_menu(bot)
     progress(bot, "f1_open_menu")
-    local packet = bot:request_dialog_ext(
+    local packet = bot:request_dialog(
         protocol.click(F1_OID),
         function(p)
-            return p.type == "list"
+            return p.type == "pursuit"
         end)
     dump_dialog(bot, "f1_open", packet)
     return packet
 end
 
-local function f1_select_list(bot, index)
-    progress(bot, string.format("f1_select_list index=%d", index))
-    local packet = bot:request_dialog_ext(
-        protocol.dialog("LIST", 0, "", index, 0, "", "NEXT"),
+local function f1_select_pursuit(bot, option, expect_type)
+    expect_type = expect_type or "pursuit"
+    progress(bot, string.format("f1_select_pursuit option=%s expect=%s", option, expect_type))
+    local use_ext = (expect_type == "list" or expect_type == "normal" or expect_type == "input_ext")
+    local fn = use_ext and bot.request_dialog_ext or bot.request_dialog
+    local packet = fn(bot,
+        protocol.dialog("PURSUIT", 0, "", 0, 0, option),
         function(p)
-            return p.type == "list" or p.type == "normal"
+            return p.type == expect_type
         end)
-    dump_dialog(bot, "f1_select_list", packet)
+    dump_dialog(bot, "f1_select_pursuit", packet)
     return packet
 end
 
-local function f1_select_input(bot, index)
-    progress(bot, string.format("f1_select_input index=%d", index))
-    local packet = bot:request_dialog(
-        protocol.dialog("LIST", 0, "", index, 0, "", "NEXT"),
-        function(p)
-            return p.type == "input"
-        end)
-    dump_dialog(bot, "f1_select_input", packet)
-    return packet
-end
-
-local function f1_select_slot(bot, index)
-    progress(bot, string.format("f1_select_slot index=%d", index))
-    local packet = bot:request_dialog(
-        protocol.dialog("LIST", 0, "", index, 0, "", "NEXT"),
-        function(p)
-            return p.type == "slot" or p.type == "normal"
-        end)
-    dump_dialog(bot, "f1_select_slot", packet)
-    return packet
-end
-
-local function dismiss_normal_to_list(bot)
-    progress(bot, "dismiss_normal_to_list")
-    local packet = bot:request_dialog_ext(
-        dialog_normal_next(),
-        function(p)
-            return p.type == "list" or p.type == "normal"
-        end)
-    dump_dialog(bot, "dismiss_normal", packet)
-    return packet
-end
-
+-- TOP releases any waiting dialog; preferred cleanup when next goto is ambiguous.
 local function close_marketplace_menu(bot)
-    progress(bot, "close_marketplace_menu PREV")
-    local packet = bot:request_dialog_ext(
-        protocol.dialog("LIST", 0, "", 0, 0, "", "PREV"),
-        function(p)
-            return p.type == "list" or p.type == "normal"
-        end)
-    dump_dialog(bot, "close_mp_menu", packet)
-    return packet
+    progress(bot, "close_marketplace_menu TOP")
+    bot:send(protocol.click(DIALOG_CLOSE_OID))
+    return nil
 end
 
 local function open_marketplace_menu(bot)
@@ -206,20 +161,24 @@ local function open_marketplace_menu(bot)
     if packet == nil then
         return nil, "f1 open failed"
     end
-    packet = f1_select_list(bot, F1_MARKETPLACE_INDEX)
-    if packet == nil or packet.type ~= "list" then
+    packet = f1_select_pursuit(bot, OPT_MARKET, "pursuit")
+    if packet == nil or packet.type ~= "pursuit" then
         return nil, "marketplace menu missing"
     end
     return packet, nil
 end
 
-local function find_list_index(packet, text)
-    if packet == nil or packet.list_lists == nil then
+local function find_menu_option(packet, text)
+    if packet == nil then
         return nil
     end
-    for i, name in ipairs(packet.list_lists) do
+    local menus = packet.menu_menus or packet.list_lists
+    if menus == nil then
+        return nil
+    end
+    for _, name in ipairs(menus) do
         if name == text then
-            return i
+            return name
         end
     end
     return nil
@@ -272,24 +231,20 @@ local function open_storage_entry_detail(bot, title)
         return nil, "f1 open failed"
     end
 
-    packet = f1_select_list(bot, F1_STORAGE_INDEX)
+    -- Entries present → pursuit; empty storage → normal (0x30). Prefer entries path.
+    packet = f1_select_pursuit(bot, OPT_STORAGE, "pursuit")
     if packet == nil then
         return nil, "storage list missing"
     end
 
-    if packet.type == "normal" and message_contains(packet, "보관된 항목이 없습니다") then
-        dismiss_normal_to_list(bot)
-        return nil, "storage empty"
-    end
-
-    local index = find_list_index(packet, title)
-    if index == nil then
+    local option = find_menu_option(packet, title)
+    if option == nil then
         close_marketplace_menu(bot)
         return nil, "entry not found: " .. title
     end
 
     packet = bot:request_dialog_ext(
-        protocol.dialog("LIST", 0, "", index, 0, "", "NEXT"),
+        protocol.dialog("PURSUIT", 0, "", 0, 0, option),
         function(p)
             return p.type == "normal"
         end)
@@ -305,17 +260,17 @@ local function receive_storage(bot, title)
         return false, err
     end
 
-    local packet = bot:request_dialog_ext(
-        dialog_normal_next(),
+    local packet = bot:request_dialog(
+        protocol.dialog("NORMAL", DIALOG_NEXT, "", 0, 0, "", "NEXT"),
         function(p)
-            return p.type == "list" or p.type == "normal"
+            return p.type == "pursuit"
         end)
-    if packet == nil or packet.type ~= "list" then
+    if packet == nil or packet.type ~= "pursuit" then
         return false, "receive confirm missing"
     end
 
     packet = bot:request_dialog_ext(
-        protocol.dialog("LIST", 0, "", RECEIVE_YES, 0, "", "NEXT"),
+        protocol.dialog("PURSUIT", 0, "", 0, 0, OPT_YES),
         function(p)
             return p.type == "normal" and p.message ~= nil
         end)
@@ -323,7 +278,7 @@ local function receive_storage(bot, title)
         return false, "receive result missing"
     end
 
-    dismiss_normal_to_list(bot)
+    close_marketplace_menu(bot)
     return true, packet.message
 end
 
@@ -352,16 +307,9 @@ local function list_item_flow(bot, item_name, count, price)
         return nil, err
     end
 
-    packet = f1_select_slot(bot, MP_LIST_INDEX)
+    packet = f1_select_pursuit(bot, OPT_REGISTER, "slot")
     if packet == nil then
         return nil, "list slot dialog missing"
-    end
-    if packet.type == "normal" then
-        local msg = packet.message
-        progress(bot, "list_item_flow early normal: " .. tostring(msg))
-        dismiss_normal_to_list(bot)
-        close_marketplace_menu(bot)
-        return msg, nil
     end
 
     local slot = resolve_list_slot(bot, item_name, packet)
@@ -374,28 +322,25 @@ local function list_item_flow(bot, item_name, count, price)
         packet = bot:request_dialog(
             protocol.dialog("SLOT", 0, "", slot, 0, "", "NEXT"),
             function(p)
-                return p.type == "input" or p.type == "slot" or p.type == "normal"
+                return p.type == "input"
             end)
         dump_dialog(bot, "after_slot_count", packet)
         if packet == nil then
             return nil, "count input missing"
-        end
-        if packet.type ~= "input" then
-            return nil, "expected count input, got=" .. tostring(packet.type) .. " msg=" .. tostring(packet.message)
         end
 
         progress(bot, string.format("list_item_flow send count=%d", count))
         packet = bot:request_dialog(
             protocol.dialog("INPUT", 0, tostring(count), 0, 0, "", "NEXT"),
             function(p)
-                return p.type == "input" or p.type == "normal"
+                return p.type == "input"
             end)
         dump_dialog(bot, "after_count_input", packet)
     else
         packet = bot:request_dialog(
             protocol.dialog("SLOT", 0, "", slot, 0, "", "NEXT"),
             function(p)
-                return p.type == "input" or p.type == "slot" or p.type == "normal"
+                return p.type == "input"
             end)
         dump_dialog(bot, "after_slot_price", packet)
     end
@@ -407,22 +352,14 @@ local function list_item_flow(bot, item_name, count, price)
     end
 
     progress(bot, string.format("list_item_flow send price=%d", price))
-    packet = bot:request_dialog_ext(
+    packet = bot:request_dialog(
         protocol.dialog("INPUT", 0, tostring(price), 0, 0, "", "NEXT"),
         function(p)
-            return p.type == "list" or p.type == "normal"
+            return p.type == "pursuit"
         end)
     dump_dialog(bot, "after_price_input", packet)
     if packet == nil then
         return nil, "fee confirm missing"
-    end
-
-    if packet.type == "normal" then
-        local msg = packet.message
-        progress(bot, "list_item_flow result normal: " .. tostring(msg))
-        dismiss_normal_to_list(bot)
-        close_marketplace_menu(bot)
-        return msg, nil
     end
 
     if message_contains(packet, MSG_FEE_CONFIRM) == false then
@@ -431,7 +368,7 @@ local function list_item_flow(bot, item_name, count, price)
 
     progress(bot, "list_item_flow confirm YES")
     packet = bot:request_dialog_ext(
-        protocol.dialog("LIST", 0, "", CONFIRM_YES, 0, "", "NEXT"),
+        protocol.dialog("PURSUIT", 0, "", 0, 0, OPT_YES),
         function(p)
             return p.type == "normal" and p.message ~= nil
         end)
@@ -441,7 +378,6 @@ local function list_item_flow(bot, item_name, count, price)
     end
 
     local msg = packet.message
-    dismiss_normal_to_list(bot)
     close_marketplace_menu(bot)
     progress(bot, "list_item_flow done msg=" .. tostring(msg))
     return msg, nil
@@ -449,10 +385,11 @@ end
 
 local function abort_search_item_dialog(bot, item_name)
     progress(bot, "abort_search_item_dialog item=" .. item_name)
-    local after = bot:request_dialog_ext(
+    -- Listed weapons in this suite have reduced durability → warning pursuit.
+    local after = bot:request_dialog(
         protocol.dialog("ITEM", 0, "", 0, 0, item_name, "NEXT"),
         function(p)
-            return p.type == "input" or p.type == "list" or p.type == "normal"
+            return p.type == "pursuit"
         end)
     dump_dialog(bot, "abort_after_item", after)
     if after == nil then
@@ -460,27 +397,13 @@ local function abort_search_item_dialog(bot, item_name)
         return
     end
 
-    if after.type == "list" and message_contains(after, MSG_WARNING) then
+    if message_contains(after, MSG_WARNING) then
         after = bot:request_dialog(
-            protocol.dialog("LIST", 0, "", CONFIRM_NO, 0, "", "NEXT"),
+            protocol.dialog("PURSUIT", 0, "", 0, 0, OPT_NO),
             function(p)
-                return p.type == "input" or p.type == "list" or p.type == "normal"
+                return p.type == "input"
             end)
         dump_dialog(bot, "abort_after_no", after)
-    end
-
-    if after ~= nil and after.type == "input" then
-        local next_packet = bot:request_dialog_ext(
-            protocol.dialog("INPUT", 0, "", 0, 0, "", "NEXT"),
-            function(p)
-                return p.type == "list" or p.type == "normal"
-            end)
-        dump_dialog(bot, "abort_after_empty_input", next_packet)
-        if next_packet ~= nil and next_packet.type == "normal" then
-            dismiss_normal_to_list(bot)
-        end
-    elseif after ~= nil and after.type == "normal" then
-        dismiss_normal_to_list(bot)
     end
 
     close_marketplace_menu(bot)
@@ -493,7 +416,7 @@ local function search_listings_expect_empty(bot, item_name)
         return nil, err
     end
 
-    packet = f1_select_input(bot, MP_SEARCH_INDEX)
+    packet = f1_select_pursuit(bot, OPT_SEARCH, "input")
     if packet == nil then
         return nil, "search input missing"
     end
@@ -520,7 +443,7 @@ local function search_listings_expect_present(bot, item_name)
         return nil, err
     end
 
-    packet = f1_select_input(bot, MP_SEARCH_INDEX)
+    packet = f1_select_pursuit(bot, OPT_SEARCH, "input")
     if packet == nil then
         return nil, "search input missing"
     end
@@ -528,7 +451,7 @@ local function search_listings_expect_present(bot, item_name)
     packet = bot:request_dialog(
         protocol.dialog("INPUT", 0, item_name, 0, 0, "", "NEXT"),
         function(p)
-            return p.type == "item" or p.type == "normal"
+            return p.type == "item"
         end,
         DIALOG_TIMEOUT_MS)
     dump_dialog(bot, "search_result", packet)
@@ -538,10 +461,6 @@ local function search_listings_expect_present(bot, item_name)
     return packet, nil
 end
 
-local function cancel_menu_request()
-    return protocol.dialog("LIST", 0, "", MP_CANCEL_INDEX, 0, "", "NEXT")
-end
-
 local function open_cancel_list_expect_present(bot)
     local packet, err = open_marketplace_menu(bot)
     if packet == nil then
@@ -549,7 +468,7 @@ local function open_cancel_list_expect_present(bot)
     end
 
     packet = bot:request_dialog(
-        cancel_menu_request(),
+        protocol.dialog("PURSUIT", 0, "", 0, 0, OPT_CANCEL),
         function(p)
             return p.type == "item"
         end,
@@ -568,7 +487,7 @@ local function open_cancel_list_expect_empty(bot)
     end
 
     packet = bot:request_dialog_ext(
-        cancel_menu_request(),
+        protocol.dialog("PURSUIT", 0, "", 0, 0, OPT_CANCEL),
         function(p)
             return p.type == "normal"
         end,
@@ -589,8 +508,7 @@ local function assert_search_has_item(bot, item_name, expect_found)
         end
         if packet.type ~= "item" then
             local msg = packet.message
-            dismiss_normal_to_list(bot)
-            close_marketplace_menu(bot)
+        close_marketplace_menu(bot)
             return false, "expected listings, got=" .. tostring(msg)
         end
         abort_search_item_dialog(bot, item_name)
@@ -607,14 +525,11 @@ local function assert_search_has_item(bot, item_name, expect_found)
         return false, "listing unexpectedly found"
     end
 
-    if message_contains(packet, MSG_SEARCH_EMPTY) == false and is_search_empty_message(packet) == false then
+    if message_contains(packet, MSG_SEARCH_EMPTY) == false and message_normalized_contains(packet, MSG_SEARCH_EMPTY) == false then
         local msg = packet.message
-        dismiss_normal_to_list(bot)
         close_marketplace_menu(bot)
         return false, "expected empty search, got=" .. tostring(msg)
     end
-
-    dismiss_normal_to_list(bot)
     close_marketplace_menu(bot)
     return true, nil
 end
@@ -644,44 +559,46 @@ local function purchase_selected_item(bot, item_name, purchase_count, listing_co
 
     local packet
     if listing_count > 1 then
-        -- Same-name multi listing -> LIST (0x30), then count INPUT (0x2F) or warning/result.
-        packet = bot:request_dialog_ext(
+        packet = bot:request_dialog(
             protocol.dialog("ITEM", 0, "", 0, 0, item_name, "NEXT"),
             function(p)
-                return p.type == "list" or p.type == "normal"
+                return p.type == "pursuit"
             end)
         dump_dialog(bot, "purchase_multi_list", packet)
         if packet == nil then
             return nil, "multi listing dialog missing"
         end
-        if packet.type == "list" then
-            if need_count_input then
-                packet = bot:request_dialog(
-                    protocol.dialog("LIST", 0, "", 1, 0, "", "NEXT"),
-                    function(p)
-                        return p.type == "input" or p.type == "normal"
-                    end)
-            else
-                packet = bot:request_dialog_ext(
-                    protocol.dialog("LIST", 0, "", 1, 0, "", "NEXT"),
-                    function(p)
-                        return p.type == "list" or p.type == "normal"
-                    end)
-            end
-            dump_dialog(bot, "purchase_after_multi", packet)
+        local first = packet.menu_menus and packet.menu_menus[1]
+        if first == nil then
+            return nil, "multi listing option missing"
         end
+        if need_count_input then
+            packet = bot:request_dialog(
+                protocol.dialog("PURSUIT", 0, "", 0, 0, first),
+                function(p)
+                    return p.type == "input"
+                end)
+        else
+            packet = bot:request_dialog(
+                protocol.dialog("PURSUIT", 0, "", 0, 0, first),
+                function(p)
+                    return p.type == "pursuit"
+                end)
+        end
+        dump_dialog(bot, "purchase_after_multi", packet)
     elseif need_count_input then
         packet = bot:request_dialog(
             protocol.dialog("ITEM", 0, "", 0, 0, item_name, "NEXT"),
             function(p)
-                return p.type == "input" or p.type == "normal"
+                return p.type == "input"
             end)
         dump_dialog(bot, "purchase_after_item", packet)
     else
-        packet = bot:request_dialog_ext(
+        -- Weapon listings in this suite always carry a durability warning (pursuit).
+        packet = bot:request_dialog(
             protocol.dialog("ITEM", 0, "", 0, 0, item_name, "NEXT"),
             function(p)
-                return p.type == "list" or p.type == "normal"
+                return p.type == "pursuit"
             end)
         dump_dialog(bot, "purchase_after_item", packet)
     end
@@ -694,21 +611,20 @@ local function purchase_selected_item(bot, item_name, purchase_count, listing_co
         packet = bot:request_dialog_ext(
             protocol.dialog("INPUT", 0, tostring(purchase_count), 0, 0, "", "NEXT"),
             function(p)
-                return p.type == "list" or p.type == "normal"
+                return p.type == "normal"
             end)
         dump_dialog(bot, "purchase_after_count", packet)
         if packet == nil then
             return nil, "after count input missing"
         end
-    end
-
-    if packet.type == "list" then
+        g_purchase_api_started = true
+    elseif packet.type == "pursuit" then
         progress(bot, string.format(
             "purchase confirm YES money_cache=%d",
             bot:money()))
         g_purchase_api_started = true
         packet = bot:request_dialog_ext(
-            protocol.dialog("LIST", 0, "", CONFIRM_YES, 0, "", "NEXT"),
+            protocol.dialog("PURSUIT", 0, "", 0, 0, OPT_YES),
             function(p)
                 return p.type == "normal" and p.message ~= nil
             end)
@@ -720,7 +636,6 @@ local function purchase_selected_item(bot, item_name, purchase_count, listing_co
     end
 
     local msg = packet.message
-    dismiss_normal_to_list(bot)
     close_marketplace_menu(bot)
     progress(bot, "purchase_selected_item done msg=" .. tostring(msg))
     return msg, nil
@@ -734,7 +649,6 @@ local function purchase_item_flow(bot, item_name, purchase_count)
     end
     if packet.type ~= "item" then
         local msg = packet.message
-        dismiss_normal_to_list(bot)
         close_marketplace_menu(bot)
         return nil, msg
     end
@@ -754,27 +668,30 @@ local function cancel_item_flow(bot, item_name)
 
     if packet.type == "normal" then
         local msg = packet.message
-        dismiss_normal_to_list(bot)
         close_marketplace_menu(bot)
         return msg, nil
     end
 
     progress(bot, "cancel select ITEM name=" .. item_name)
-    packet = bot:request_dialog_ext(
+    packet = bot:request_dialog(
         protocol.dialog("ITEM", 0, "", 0, 0, item_name, "NEXT"),
         function(p)
-            return p.type == "list" or p.type == "normal"
+            return p.type == "pursuit"
         end)
     dump_dialog(bot, "cancel_confirm", packet)
     if packet == nil then
         return nil, "cancel confirm missing"
     end
 
-    if packet.type == "list" and message_contains(packet, MSG_CANCEL_CONFIRM) == false then
-        packet = bot:request_dialog_ext(
-            protocol.dialog("LIST", 0, "", 1, 0, "", "NEXT"),
+    if message_contains(packet, MSG_CANCEL_CONFIRM) == false then
+        local first = packet.menu_menus and packet.menu_menus[1]
+        if first == nil then
+            return nil, "cancel multi option missing"
+        end
+        packet = bot:request_dialog(
+            protocol.dialog("PURSUIT", 0, "", 0, 0, first),
             function(p)
-                return p.type == "list" or p.type == "normal"
+                return p.type == "pursuit"
             end)
         dump_dialog(bot, "cancel_confirm_multi", packet)
         if packet == nil then
@@ -782,16 +699,9 @@ local function cancel_item_flow(bot, item_name)
         end
     end
 
-    if packet.type == "normal" then
-        local msg = packet.message
-        dismiss_normal_to_list(bot)
-        close_marketplace_menu(bot)
-        return msg, nil
-    end
-
     progress(bot, "cancel confirm YES")
     packet = bot:request_dialog_ext(
-        protocol.dialog("LIST", 0, "", CONFIRM_YES, 0, "", "NEXT"),
+        protocol.dialog("PURSUIT", 0, "", 0, 0, OPT_YES),
         function(p)
             return p.type == "normal" and p.message ~= nil
         end)
@@ -801,13 +711,7 @@ local function cancel_item_flow(bot, item_name)
     end
 
     local msg = packet.message
-    local next_packet = dismiss_normal_to_list(bot)
-    if next_packet ~= nil and next_packet.type == "normal" then
-        dismiss_normal_to_list(bot)
-    elseif next_packet ~= nil and next_packet.type == "item" then
-        close_marketplace_menu(bot)
-        return msg, nil
-    end
+    -- Cancel success goto MARKETPLACE_CANCEL (empty→normal). TOP skips that branch.
     close_marketplace_menu(bot)
     progress(bot, "cancel_item_flow done msg=" .. tostring(msg))
     return msg, nil
@@ -819,14 +723,11 @@ local function assert_cancel_list_empty(bot)
     if packet == nil then
         return false, tostring(err)
     end
-    if message_contains(packet, MSG_CANCEL_EMPTY) == false and is_cancel_empty_message(packet) == false then
+    if message_contains(packet, MSG_CANCEL_EMPTY) == false and message_normalized_contains(packet, MSG_CANCEL_EMPTY) == false then
         local msg = packet.message
-        dismiss_normal_to_list(bot)
         close_marketplace_menu(bot)
         return false, "expected empty cancel list, got=" .. tostring(msg)
     end
-
-    dismiss_normal_to_list(bot)
     close_marketplace_menu(bot)
     return true, nil
 end

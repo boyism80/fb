@@ -2,6 +2,7 @@ using Dapper;
 using Http.Extension;
 using Http.Migration;
 using Http.Service;
+using Http.Service.Amqp;
 using Marketplace.Formatter;
 
 namespace Marketplace;
@@ -60,6 +61,7 @@ public class Program
 
         // Marketplace expire services
         builder.Services.AddHostedService<Marketplace.Services.MarketplaceExpireBackgroundService>();
+        builder.Services.AddAmqpListener<ReloadTablesHandler>();
 
         builder.Services.AddHealthChecks();
 

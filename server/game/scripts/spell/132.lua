@@ -1,17 +1,23 @@
 -- spell: 해파리장군둔갑술
 -- 해파리장군둔갑술 (id 132). Add logic as needed.
--- function ON_CAST_132(me, spell, message)
 --     -- TODO: implement
--- end
 
--- function ON_BUFF_132(me, spell)
 --     -- TODO: implement
--- end
 
--- function ON_UNBUFF_132(me, spell)
 --     -- TODO: implement
--- end
 
--- function ON_CONCAST_132(me, caster, buff)
 --     -- TODO: implement
--- end
+
+return {
+    -- on_cast = function(me, you, sp)
+    -- end,
+
+    -- on_buff = function(me, sp)
+    -- end,
+
+    -- on_unbuff = function(me, sp)
+    -- end,
+
+    -- on_concast = function(me, sp)
+    -- end
+}

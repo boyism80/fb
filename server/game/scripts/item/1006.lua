@@ -1,11 +1,15 @@
 -- item: 팔세지도
 
--- 팔세지도 사용 스크립트
--- function ON_ACTIVATED_1006(me, item)
---
--- end
+return {
+    -- on_activated = function(me, item)
+    -- end,
 
--- 팔세지도 해제 스크립트
--- function ON_DEACTIVATED_1006(me, item)
---
--- end
+    -- on_deactivated = function(me, item)
+    -- end,
+
+    -- on_concast = function(me, item)
+    -- end,
+
+    -- on_attack = function(me, item)
+    -- end
+}

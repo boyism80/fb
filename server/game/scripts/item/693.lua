@@ -1,11 +1,15 @@
 -- item: 귀검의영혼
 
--- 귀검의영혼 사용 스크립트
--- function ON_ACTIVATED_693(me, item)
---
--- end
+return {
+    -- on_activated = function(me, item)
+    -- end,
 
--- 귀검의영혼 해제 스크립트
--- function ON_DEACTIVATED_693(me, item)
---
--- end
+    -- on_deactivated = function(me, item)
+    -- end,
+
+    -- on_concast = function(me, item)
+    -- end,
+
+    -- on_attack = function(me, item)
+    -- end
+}

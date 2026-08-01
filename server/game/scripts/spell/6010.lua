@@ -1,10 +1,17 @@
 -- spell: 멍석말이
 -- 멍석말이 캐스팅
--- function ON_CAST_6010(me, spell)
---
--- end
-
 -- 멍석말이 지속 효과
--- function ON_CONCAST_6010(me, caster, buff)
---
--- end
+
+return {
+    -- on_cast = function(me, you, sp)
+    -- end,
+
+    -- on_buff = function(me, sp)
+    -- end,
+
+    -- on_unbuff = function(me, sp)
+    -- end,
+
+    -- on_concast = function(me, sp)
+    -- end
+}

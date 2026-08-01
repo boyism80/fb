@@ -1,5 +1,15 @@
 -- item: 좌황활력환
 
--- 좌황활력환 해제 스크립트
--- function ON_DEACTIVATED_12092(me, item)
--- end
+return {
+    -- on_activated = function(me, item)
+    -- end,
+
+    -- on_deactivated = function(me, item)
+    -- end,
+
+    -- on_concast = function(me, item)
+    -- end,
+
+    -- on_attack = function(me, item)
+    -- end
+}

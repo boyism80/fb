@@ -1,17 +1,23 @@
 -- spell: 반짝반짝
 -- 반짝반짝 (id 53). Add logic as needed.
--- function ON_CAST_58(me, you, spell)
 --     -- TODO: implement
--- end
 
--- function ON_BUFF_58(me, spell)
 --     -- TODO: implement
--- end
 
--- function ON_UNBUFF_58(me, spell)
 --     -- TODO: implement
--- end
 
--- function ON_CONCAST_58(me, caster, buff)
 --     -- TODO: implement
--- end
+
+return {
+    -- on_cast = function(me, you, sp)
+    -- end,
+
+    -- on_buff = function(me, sp)
+    -- end,
+
+    -- on_unbuff = function(me, sp)
+    -- end,
+
+    -- on_concast = function(me, sp)
+    -- end
+}

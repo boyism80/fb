@@ -1,16 +1,15 @@
 -- item: [손상]용마제칠검
 
--- [손상]용마제칠검 공격 스크립트
--- function ON_ATTACK_285(me, item)
---
--- end
+return {
+    -- on_activated = function(me, item)
+    -- end,
 
--- [손상]용마제칠검 사용 스크립트
--- function ON_ACTIVATED_285(me, item)
---
--- end
+    -- on_deactivated = function(me, item)
+    -- end,
 
--- [손상]용마제칠검 해제 스크립트
--- function ON_DEACTIVATED_285(me, item)
---
--- end
+    -- on_concast = function(me, item)
+    -- end,
+
+    -- on_attack = function(me, item)
+    -- end
+}

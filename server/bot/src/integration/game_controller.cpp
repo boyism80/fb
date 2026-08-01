@@ -31,19 +31,19 @@ game_bot_controller::game_bot_controller(bot_container& container) :
 
 void game_bot_controller::initialize()
 {
-    table::npc.hook.build = [](const Json::Value& json) -> fb::model::npc* {
+    table::npc->hook.build = [](const Json::Value& json) -> fb::model::npc* {
         auto clone    = json;
         clone["look"] = clone["look"].asUInt() + 0x7FFF;
         return fb::model::build<fb::model::npc*>(clone);
     };
 
-    table::mob.hook.build = [](const Json::Value& json) -> fb::model::mob* {
+    table::mob->hook.build = [](const Json::Value& json) -> fb::model::mob* {
         auto clone    = json;
         clone["look"] = clone["look"].asUInt() + 0x7FFF;
         return fb::model::build<fb::model::mob*>(clone);
     };
 
-    table::item.hook.build = [](const Json::Value& json) -> fb::model::item* {
+    table::item->hook.build = [](const Json::Value& json) -> fb::model::item* {
         auto clone    = json;
         clone["look"] = clone["look"].asUInt() + 0xBFFF;
 

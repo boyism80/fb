@@ -333,7 +333,7 @@ local function change_role(bot, target_name, role)
     packet = bot:request_dialog(
         protocol.dialog("INPUT", 0, target_name, 0, 0, "", "NEXT"),
         function(p)
-            return p.type == "input" or p.type == "normal"
+            return p.type == "input"
         end)
     if packet == nil then
         return nil, "role second prompt missing"

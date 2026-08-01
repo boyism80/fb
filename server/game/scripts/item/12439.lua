@@ -1,5 +1,15 @@
 -- item: 호박부침
 
--- 호박부침 해제 스크립트
--- function ON_DEACTIVATED_12439(me, item)
--- end
+return {
+    -- on_activated = function(me, item)
+    -- end,
+
+    -- on_deactivated = function(me, item)
+    -- end,
+
+    -- on_concast = function(me, item)
+    -- end,
+
+    -- on_attack = function(me, item)
+    -- end
+}

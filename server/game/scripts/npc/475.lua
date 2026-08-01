@@ -52,7 +52,7 @@ local function handle_jingogyun_lt1(me, npc, q_jingo)
         "무슨 소리야? 난 부와 명성을 원할 뿐이다.",
         "나는 이 섬에 정의와 희망을 세우기 위해 왔다.",
     }, { prev = false })
-    if btn == DIALOG_RESULT.QUIT or sel == nil then
+    if btn == DIALOG_RESULT.QUIT then
         return true
     end
     if sel == 1 then
@@ -108,7 +108,7 @@ local function handle_jingogyun_3(me, npc, q_jingo)
         "저기 인성초들 말고도 다른 반란군이 있나요?",
     }
     local sel, btn = me:list(npc, "친구, 그래, 건강하게 지내고 있나? 오늘은 무슨 일이지? ", list_opts, { prev = false })
-    if btn == DIALOG_RESULT.QUIT or sel == nil then
+    if btn == DIALOG_RESULT.QUIT then
         return true
     end
     if sel == 1 then
@@ -125,7 +125,7 @@ local function handle_jingogyun_3(me, npc, q_jingo)
             "이게 그렇게 대단한 검인가요?",
             "뭐랄까 어딘가 부족한 느낌이 들어요.",
         }, { prev = false })
-        if sub_btn == DIALOG_RESULT.QUIT or sub_sel == nil then
+        if sub_btn == DIALOG_RESULT.QUIT then
             return true
         end
         if sub_sel == 1 then
@@ -251,7 +251,7 @@ local function handle_jingogyun_4_to_8(me, npc, q_jingo)
         "고균의 영력구슬은 어디있죠?",
         "고균의 영검에 영력을 불어넣어주세요.",
     }, { prev = false })
-    if btn == DIALOG_RESULT.QUIT or sel == nil then
+    if btn == DIALOG_RESULT.QUIT then
         return true
     end
     if sel == 1 then
@@ -283,10 +283,10 @@ local function handle_jingogyun_4_to_8(me, npc, q_jingo)
             { ['item'] = { ["영력구슬"] = 1, ["고균의영검"] = 1 } },
             { ['item'] = { ["진'고균의영검"] = 1 } }
         )
-        if code == enum.EXCHANGE_RESULT.LACK_COST then
+        if code == enum.exchange_result.LACK_COST then
             me:dialog(npc, "아이템을 제거할 수 없습니다.", { prev = false, next = false })
             return true
-        elseif code == enum.EXCHANGE_RESULT.LACK_CAPACITY then
+        elseif code == enum.exchange_result.LACK_CAPACITY then
             me:dialog(npc, "소지품이 가득 차서 검을 줄 수 없네.", { prev = false, next = false })
             return true
         end
@@ -315,28 +315,30 @@ local function handle_jingogyun_ge9(me, npc, q_jingo)
     return true
 end
 
-function NPC_475(me, npc)
-    local q_hwahwa = me:quest(quest.QUEST_HWAHWA)
-    local q_jingo = me:quest(quest.QUEST_JINGOGYUN)
-    local hwahwa_friend = (q_hwahwa and q_hwahwa:step() >= 1)
+return {
+    on_click = function(me, npc)
+        local q_hwahwa = me:quest(quest.QUEST_HWAHWA)
+        local q_jingo = me:quest(quest.QUEST_JINGOGYUN)
+        local hwahwa_friend = (q_hwahwa and q_hwahwa:step() >= 1)
 
-    if not hwahwa_friend then
-        handle_hwahwa_not_friend(me, npc)
-        return
-    end
+        if not hwahwa_friend then
+            handle_hwahwa_not_friend(me, npc)
+            return
+        end
 
-    if handle_jingogyun_lt1(me, npc, q_jingo) then
-        return
-    end
-    if handle_jingogyun_3(me, npc, q_jingo) then
-        return
-    end
-    if handle_jingogyun_4_to_8(me, npc, q_jingo) then
-        return
-    end
-    if handle_jingogyun_ge9(me, npc, q_jingo) then
-        return
-    end
+        if handle_jingogyun_lt1(me, npc, q_jingo) then
+            return
+        end
+        if handle_jingogyun_3(me, npc, q_jingo) then
+            return
+        end
+        if handle_jingogyun_4_to_8(me, npc, q_jingo) then
+            return
+        end
+        if handle_jingogyun_ge9(me, npc, q_jingo) then
+            return
+        end
 
-    me:dialog(npc, "준비중입니다.", { prev = false, next = false })
-end
+        me:dialog(npc, "준비중입니다.", { prev = false, next = false })
+    end
+}

@@ -1,4 +1,6 @@
 -- npc: 마로
--- function NPC_21(me, npc)
---
--- end
+
+return {
+    -- on_click = function(me, npc)
+    -- end
+}

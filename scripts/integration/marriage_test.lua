@@ -8,8 +8,8 @@ local OFF_MAP    = "가상계"
 local HOME_MAP   = "낙랑의방"
 local HOME_Y     = 6
 
-local MENU_MARRY   = 1
-local MENU_DIVORCE = 2
+local OPT_MARRY    = "결혼을 하려고 왔습니다"
+local OPT_DIVORCE  = "이혼을 하려고 왔습니다"
 local CONFIRM_YES  = 1
 local CONFIRM_NO   = 2
 
@@ -95,23 +95,20 @@ local function click_expect(bot, expect_type)
         end)
 end
 
-local function select_list(bot, index, expect_types)
-    expect_types = expect_types or { "list", "normal" }
-    return bot:request_dialog_ext(
-        protocol.dialog("LIST", 0, "", index, 0, "", "NEXT"),
+local function select_pursuit(bot, option, expect_type)
+    expect_type = expect_type or "pursuit"
+    local use_ext = (expect_type == "list" or expect_type == "normal" or expect_type == "input_ext")
+    local fn = use_ext and bot.request_dialog_ext or bot.request_dialog
+    return fn(bot,
+        protocol.dialog("PURSUIT", 0, "", 0, 0, option),
         function(p)
-            for _, t in ipairs(expect_types) do
-                if p.type == t then
-                    return true
-                end
-            end
-            return false
+            return p.type == expect_type
         end)
 end
 
-local function select_list_expect_input(bot, index)
+local function select_pursuit_expect_input(bot, option)
     return bot:request_dialog(
-        protocol.dialog("LIST", 0, "", index, 0, "", "NEXT"),
+        protocol.dialog("PURSUIT", 0, "", 0, 0, option),
         function(p)
             return p.type == "input"
         end)
@@ -150,7 +147,7 @@ local function send_input_expect_consent_result(bot, text)
 end
 
 local function open_main_menu(bot)
-    local packet = click_expect(bot, "list")
+    local packet = click_expect(bot, "pursuit")
     if packet == nil then
         return nil, "main menu missing"
     end
@@ -163,7 +160,7 @@ local function marry_expect_error(bot)
     if packet == nil then
         return nil, err
     end
-    packet = select_list(bot, MENU_MARRY, { "normal" })
+    packet = select_pursuit(bot, OPT_MARRY, "normal")
     if packet == nil then
         return nil, "marry error dialog missing"
     end
@@ -178,7 +175,7 @@ local function marry_input_expect_normal(bot, target_name)
     if packet == nil then
         return nil, err
     end
-    packet = select_list_expect_input(bot, MENU_MARRY)
+    packet = select_pursuit_expect_input(bot, OPT_MARRY)
     if packet == nil then
         return nil, "marry name input missing"
     end
@@ -196,7 +193,7 @@ local function marry_start_input(bot)
     if packet == nil then
         return false, err
     end
-    packet = select_list_expect_input(bot, MENU_MARRY)
+    packet = select_pursuit_expect_input(bot, OPT_MARRY)
     if packet == nil then
         return false, "marry name input missing"
     end
@@ -208,7 +205,7 @@ local function divorce_expect_error(bot)
     if packet == nil then
         return nil, err
     end
-    packet = select_list(bot, MENU_DIVORCE, { "normal" })
+    packet = select_pursuit(bot, OPT_DIVORCE, "normal")
     if packet == nil then
         return nil, "divorce error dialog missing"
     end
@@ -223,7 +220,7 @@ local function divorce_select(bot)
         return false, err
     end
     -- Spouse receives MENU; requester first gets immediate asking dialog.
-    bot:send(protocol.dialog("LIST", 0, "", MENU_DIVORCE, 0, "", "NEXT"))
+    bot:send(protocol.dialog("PURSUIT", 0, "", 0, 0, OPT_DIVORCE))
     return true, nil
 end
 

@@ -1,6 +1,15 @@
 -- mob: 공성카운트
--- function ON_MOB_DIE_60016(me)
--- end
 
--- function ON_MOB_ATTACK_60016(me, you)
--- end
+return {
+    -- on_mob_attack = function(me, you)
+    -- end,
+
+    -- on_mob_die = function(me)
+    -- end,
+
+    -- on_mob_kill = function(me, mobs)
+    -- end,
+
+    -- on_mob_spell_hit = function(me, you, spell)
+    -- end
+}

@@ -1,4 +1,6 @@
 -- npc: 장안성경비대장
--- function NPC_65(me, npc)
---
--- end
+
+return {
+    -- on_click = function(me, npc)
+    -- end
+}

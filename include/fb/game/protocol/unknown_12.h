@@ -8,6 +8,13 @@ namespace fb::protocol::game::response {
 
 using namespace fb::model::enum_value;
 
+/**
+ * S2C 0x12 — purpose still unclear (not a group/party packet).
+ * Confirmed wire fields:
+ * - oid: local player only on CharStats path
+ * - slot: inventory letter index (1='a'..); appends str.res 148 "[무장]" when flag < 0xA0
+ * - flag: branch gate (< 0xA0 armed-mark path, >= 0xA0 self level-up toast via template 14)
+ */
 class unknown_12 : public fb::protocol::header
 {
 public:
@@ -16,20 +23,20 @@ public:
 public:
 #ifndef BOT
     const uint32_t oid;
-    const uint8_t  party_slot;
-    const uint8_t  level_encoded;
+    const uint8_t  slot;
+    const uint8_t  flag;
 #else
-    uint32_t oid;
-    uint8_t  party_slot;
-    uint8_t  level_encoded;
+    uint32_t oid  = 0;
+    uint8_t  slot = 0;
+    uint8_t  flag = 0;
 #endif
 
 public:
 #ifndef BOT
-    unknown_12(uint32_t oid, uint8_t party_slot, uint8_t level_encoded) :
+    unknown_12(uint32_t oid, uint8_t slot, uint8_t flag) :
         oid(oid),
-        party_slot(party_slot),
-        level_encoded(level_encoded)
+        slot(slot),
+        flag(flag)
     { }
 #else
     unknown_12() = default;

@@ -1,11 +1,15 @@
 -- item: 은치마
 
--- 은치마 사용 스크립트
--- function ON_ACTIVATED_894(me, item)
---
--- end
+return {
+    -- on_activated = function(me, item)
+    -- end,
 
--- 은치마 해제 스크립트
--- function ON_DEACTIVATED_894(me, item)
---
--- end
+    -- on_deactivated = function(me, item)
+    -- end,
+
+    -- on_concast = function(me, item)
+    -- end,
+
+    -- on_attack = function(me, item)
+    -- end
+}

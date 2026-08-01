@@ -1,4 +1,6 @@
 -- npc: 호박
--- function NPC_148(me, npc)
---
--- end
+
+return {
+    -- on_click = function(me, npc)
+    -- end
+}

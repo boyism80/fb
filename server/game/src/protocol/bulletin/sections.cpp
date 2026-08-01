@@ -21,8 +21,9 @@ void bulletin_sections::serialize(fb::stream_writer<big_endian>& writer) const
     writer.write<uint8_t>(0x01);
     writer.write<uint16_t>(size);
 
-    auto sorted_items = std::vector<std::pair<uint32_t, const fb::model::bulletin*>>{};
-    for (const auto& pair : table::bulletin)
+    auto sorted_items   = std::vector<std::pair<uint32_t, const fb::model::bulletin*>>{};
+    auto bulletin_table = table::bulletin;
+    for (const auto& pair : bulletin_table)
     {
         sorted_items.emplace_back(pair.first, &pair.second);
     }

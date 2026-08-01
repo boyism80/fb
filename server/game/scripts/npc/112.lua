@@ -1,4 +1,6 @@
 -- npc: 원주민장로
--- function NPC_112(me, npc)
---
--- end
+
+return {
+    -- on_click = function(me, npc)
+    -- end
+}

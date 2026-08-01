@@ -13,7 +13,7 @@ local function run_normal_exchange(me, npc)
         "예 교환해 주세요.",
         "아니오. 싫어요."
     }, { prev = false })
-    if btn == DIALOG_RESULT.QUIT or sel == nil then
+    if btn == DIALOG_RESULT.QUIT then
         return
     end
     if sel ~= 1 then
@@ -25,10 +25,10 @@ local function run_normal_exchange(me, npc)
         { ['item'] = { ["일반교환권"] = 1 } },
         { ['item'] = { [entry[1]] = entry[2] } }
     )
-    if code == enum.EXCHANGE_RESULT.LACK_COST then
+    if code == enum.exchange_result.LACK_COST then
         me:dialog(npc, "일반교환권이 없으시군요. 일반교환권을 가져오세요.", { prev = false, next = false })
         return
-    elseif code == enum.EXCHANGE_RESULT.LACK_CAPACITY then
+    elseif code == enum.exchange_result.LACK_CAPACITY then
         me:dialog(npc, "소지품이 가득 차서 보상을 드릴 수 없습니다.", { prev = false, next = false })
         return
     end
@@ -63,7 +63,7 @@ local function run_special_exchange(me, npc)
         "예 교환해 주세요.",
         "아니오. 싫어요."
     }, { prev = false })
-    if btn == DIALOG_RESULT.QUIT or sel == nil then
+    if btn == DIALOG_RESULT.QUIT then
         return
     end
     if sel ~= 1 then
@@ -75,30 +75,32 @@ local function run_special_exchange(me, npc)
         { ['item'] = { ["특별교환권"] = 1 } },
         { ['item'] = { [entry[1]] = entry[2] } }
     )
-    if code == enum.EXCHANGE_RESULT.LACK_COST then
+    if code == enum.exchange_result.LACK_COST then
         me:dialog(npc, "특별교환권이 없으시군요. 특별교환권을 가져오세요.", { prev = false, next = false })
         return
-    elseif code == enum.EXCHANGE_RESULT.LACK_CAPACITY then
+    elseif code == enum.exchange_result.LACK_CAPACITY then
         me:dialog(npc, "소지품이 가득 차서 보상을 드릴 수 없습니다.", { prev = false, next = false })
         return
     end
     me:dialog(npc, "특별교환권를 제가 가진 [" .. entry[1] .. "]으로 교환해 드렸어요.", { prev = false, next = false })
 end
 
-function NPC_577(me, npc)
-    local map = me:map()
-    local map_name = (map and map:model()) and map:model():name() or ""
+return {
+    on_click = function(me, npc)
+        local map = me:map()
+        local map_name = (map and map:model()) and map:model():name() or ""
 
-    if map_name == "고구려경품상2" then
-        run_normal_exchange(me, npc)
-        return
+        if map_name == "고구려경품상2" then
+            run_normal_exchange(me, npc)
+            return
+        end
+        if map_name == "고구려경품상3" then
+            run_special_exchange(me, npc)
+            return
+        end
+        if map_name == "고구려경품상4" then
+            me:dialog(npc, ".............", { prev = false, next = false })
+            return
+        end
     end
-    if map_name == "고구려경품상3" then
-        run_special_exchange(me, npc)
-        return
-    end
-    if map_name == "고구려경품상4" then
-        me:dialog(npc, ".............", { prev = false, next = false })
-        return
-    end
-end
+}

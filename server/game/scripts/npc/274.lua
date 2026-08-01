@@ -29,7 +29,7 @@ local function run_nation_change(me, npc)
         target_name .. " 국적을 얻게 해주십시요.",
         "에고, 돈이 모자라는군요, 다음에 다시...",
     }, { prev = true })
-    if lb4 == DIALOG_RESULT.QUIT or sel4 == nil then
+    if lb4 == DIALOG_RESULT.QUIT then
         return true
     end
     if lb4 == DIALOG_RESULT.PREV then
@@ -88,7 +88,7 @@ local function run_weapon_info_loop(me, npc)
             "혹시 방천화극을....",
             "이만 물러가보겠습니다...",
         }, { prev = true })
-        if weapon_lb == DIALOG_RESULT.QUIT or weapon_sel == nil then
+        if weapon_lb == DIALOG_RESULT.QUIT then
             return
         end
         if weapon_lb == DIALOG_RESULT.PREV then
@@ -147,79 +147,81 @@ local function run_weapon_info_loop(me, npc)
     end
 end
 
-function NPC_274(me, npc)
-    local sel, list_btn = me:list(npc, "zzzzzz", {
-        "여보세요?",
-        "......",
-    }, { prev = false })
-    if list_btn == DIALOG_RESULT.QUIT or sel == nil then
-        return
-    end
+return {
+    on_click = function(me, npc)
+        local sel, list_btn = me:list(npc, "zzzzzz", {
+            "여보세요?",
+            "......",
+        }, { prev = false })
+        if list_btn == DIALOG_RESULT.QUIT then
+            return
+        end
 
-    if sel == 1 then
-        me:dialog(npc, "zzzzzzzz", { prev = false, next = false })
-        return
-    end
+        if sel == 1 then
+            me:dialog(npc, "zzzzzzzz", { prev = false, next = false })
+            return
+        end
 
-    if sel ~= 2 then
-        return
-    end
+        if sel ~= 2 then
+            return
+        end
 
-    local sel2, lb2 = me:list(npc, "나는 백룡장, 나에게 볼 일이 있는가?", {
-        "백룡장님은...",
-        "안녕히 계세요...",
-    }, { prev = false })
-    if lb2 == DIALOG_RESULT.QUIT or sel2 == nil then
-        return
-    end
+        local sel2, lb2 = me:list(npc, "나는 백룡장, 나에게 볼 일이 있는가?", {
+            "백룡장님은...",
+            "안녕히 계세요...",
+        }, { prev = false })
+        if lb2 == DIALOG_RESULT.QUIT then
+            return
+        end
 
-    if sel2 == 2 then
-        me:dialog(npc, "잘 가게...", { prev = false, next = false })
-        return
-    end
+        if sel2 == 2 then
+            me:dialog(npc, "잘 가게...", { prev = false, next = false })
+            return
+        end
 
-    ::NPC_274_0003::
-    local btn = me:dialog(npc, "나는 상제를 모시는 금천군 12대를 지휘했던 천계 제일의 장군 백룡장일세.", { prev = false, next = true })
-    if btn == DIALOG_RESULT.QUIT then
-        return
-    end
-    ::NPC_274_0004::
-    btn = me:dialog(npc, "비록 지금은 모함을 받고 여기 내려와 있네만 언젠간 반드시 상제께서 나의 결백을 알아주실 날이 올것이야...", { prev = true, next = true })
-    if btn == DIALOG_RESULT.QUIT then
-        return
-    end
-    if btn == DIALOG_RESULT.PREV then
-        goto NPC_274_0003
-    end
+        ::NPC_274_0003::
+        local btn = me:dialog(npc, "나는 상제를 모시는 금천군 12대를 지휘했던 천계 제일의 장군 백룡장일세.", { prev = false, next = true })
+        if btn == DIALOG_RESULT.QUIT then
+            return
+        end
+        ::NPC_274_0004::
+        btn = me:dialog(npc, "비록 지금은 모함을 받고 여기 내려와 있네만 언젠간 반드시 상제께서 나의 결백을 알아주실 날이 올것이야...", { prev = true, next = true })
+        if btn == DIALOG_RESULT.QUIT then
+            return
+        end
+        if btn == DIALOG_RESULT.PREV then
+            goto NPC_274_0003
+        end
 
-    ::NPC_274_0005::
-    local sel3, lb3 = me:list(npc, "알고 싶은 것이 있는가?", {
-        "천계의 장군이시라면...",
-        "저도 억울한데 혹시 사면을?",
-        "혹시 제 국적을...",
-        "네... 안녕히 계세요.",
-    }, { prev = true })
-    if lb3 == DIALOG_RESULT.QUIT or sel3 == nil then
-        return
-    end
-    if lb3 == DIALOG_RESULT.PREV then
-        goto NPC_274_0004
-    end
+        ::NPC_274_0005::
+        local sel3, lb3 = me:list(npc, "알고 싶은 것이 있는가?", {
+            "천계의 장군이시라면...",
+            "저도 억울한데 혹시 사면을?",
+            "혹시 제 국적을...",
+            "네... 안녕히 계세요.",
+        }, { prev = true })
+        if lb3 == DIALOG_RESULT.QUIT then
+            return
+        end
+        if lb3 == DIALOG_RESULT.PREV then
+            goto NPC_274_0004
+        end
 
-    if sel3 == 4 then
-        me:dialog(npc, "잘 가게...", { prev = false, next = false })
-        return
-    end
+        if sel3 == 4 then
+            me:dialog(npc, "잘 가게...", { prev = false, next = false })
+            return
+        end
 
-    if sel3 == 2 then
-        run_pardon_placeholder(me, npc)
-        return
-    end
+        if sel3 == 2 then
+            run_pardon_placeholder(me, npc)
+            return
+        end
 
-    if sel3 == 3 then
-        run_nation_change(me, npc)
-        return
-    end
+        if sel3 == 3 then
+            run_nation_change(me, npc)
+            return
+        end
 
-    run_weapon_info_loop(me, npc)
-end
+        run_weapon_info_loop(me, npc)
+    end
+}

@@ -1,4 +1,6 @@
 -- npc: 청룡공성엔피시
--- function NPC_150(me, npc)
---
--- end
+
+return {
+    -- on_click = function(me, npc)
+    -- end
+}

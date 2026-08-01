@@ -8,15 +8,15 @@ namespace fb::protocol::game::request {
 void move::deserialize(fb::stream_reader<big_endian>& reader)
 {
     header::deserialize(reader);
-    this->direction  = DIRECTION(reader.read<uint8_t>());
-    this->oid        = reader.read<uint8_t>();
-    this->position.x = reader.read<uint16_t>();
-    this->position.y = reader.read<uint16_t>();
+    this->direction       = DIRECTION(reader.read<uint8_t>());
+    this->walk_queue_slot = reader.read<uint8_t>();
+    this->position.x      = reader.read<uint16_t>();
+    this->position.y      = reader.read<uint16_t>();
 }
 #else
-move::move(DIRECTION direction, uint32_t oid, fb::model::point<uint16_t> position) :
+move::move(DIRECTION direction, uint32_t walk_queue_slot, fb::model::point<uint16_t> position) :
     direction(direction),
-    oid(oid),
+    walk_queue_slot(static_cast<uint8_t>(walk_queue_slot)),
     position(position)
 { }
 
@@ -25,7 +25,7 @@ void move::serialize(fb::stream_writer<big_endian>& writer) const
     header::serialize(writer);
     writer.write<uint8_t>(opcode);
     writer.write<uint8_t>(static_cast<uint8_t>(this->direction));
-    writer.write<uint8_t>(this->oid);
+    writer.write<uint8_t>(this->walk_queue_slot);
     writer.write<uint16_t>(this->position.x);
     writer.write<uint16_t>(this->position.y);
 }

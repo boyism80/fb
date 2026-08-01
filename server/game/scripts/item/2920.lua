@@ -1,5 +1,15 @@
 -- item: 산타패딩
 
--- 산타패딩 해제 스크립트
--- function ON_DEACTIVATED_2920(me, item)
--- end
+return {
+    -- on_activated = function(me, item)
+    -- end,
+
+    -- on_deactivated = function(me, item)
+    -- end,
+
+    -- on_concast = function(me, item)
+    -- end,
+
+    -- on_attack = function(me, item)
+    -- end
+}

@@ -1,11 +1,15 @@
 -- item: 파란색여자도복
 
--- 파란색여자도복 사용 스크립트
--- function ON_ACTIVATED_852(me, item)
---
--- end
+return {
+    -- on_activated = function(me, item)
+    -- end,
 
--- 파란색여자도복 해제 스크립트
--- function ON_DEACTIVATED_852(me, item)
---
--- end
+    -- on_deactivated = function(me, item)
+    -- end,
+
+    -- on_concast = function(me, item)
+    -- end,
+
+    -- on_attack = function(me, item)
+    -- end
+}

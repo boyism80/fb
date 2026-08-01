@@ -1,11 +1,15 @@
 -- item: 팬더풍선
 
--- 팬더풍선 사용 스크립트
--- function ON_ACTIVATED_197(me, item)
---
--- end
+return {
+    -- on_activated = function(me, item)
+    -- end,
 
--- 팬더풍선 해제 스크립트
--- function ON_DEACTIVATED_197(me, item)
---
--- end
+    -- on_deactivated = function(me, item)
+    -- end,
+
+    -- on_concast = function(me, item)
+    -- end,
+
+    -- on_attack = function(me, item)
+    -- end
+}

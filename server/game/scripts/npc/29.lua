@@ -1,4 +1,6 @@
 -- npc: 백두산상인
--- function NPC_29(me, npc)
---
--- end
+
+return {
+    -- on_click = function(me, npc)
+    -- end
+}

@@ -1,24 +1,14 @@
--- 수로설괴주 공격
-function ON_MOB_ATTACK_1217(me, you)
-    return false
-end
+return {
+    on_mob_attack = function(me, you)
+        return false
+    end,
 
--- 수로설괴주 공격
-function ON_MOB_ATTACK_1217(me, you)
-    return false
-end
+    -- on_mob_die = function(me)
+    -- end,
 
--- 수로설괴주 사망
--- function ON_MOB_DIE_1217(me)
---
--- end
+    -- on_mob_kill = function(me, mobs)
+    -- end,
 
--- 수로설괴주 사망
--- function ON_MOB_DIE_1217(me)
---
--- end
-
--- 수로설괴주 사망
--- function ON_MOB_DIE_1217(me)
---
--- end
+    -- on_mob_spell_hit = function(me, you, spell)
+    -- end
+}

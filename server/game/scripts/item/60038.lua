@@ -1,9 +1,15 @@
 -- item: 폭발시체복구요청권
 
--- 폭발시체복구요청권 사용 스크립트
--- function ON_ACTIVATED_60038(me, item)
--- end
+return {
+    -- on_activated = function(me, item)
+    -- end,
 
--- 폭발시체복구요청권 해제 스크립트
--- function ON_DEACTIVATED_60038(me, item)
--- end
+    -- on_deactivated = function(me, item)
+    -- end,
+
+    -- on_concast = function(me, item)
+    -- end,
+
+    -- on_attack = function(me, item)
+    -- end
+}

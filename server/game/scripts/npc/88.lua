@@ -1,4 +1,6 @@
 -- npc: 이동엔피씨
--- function NPC_88(me, npc)
---
--- end
+
+return {
+    -- on_click = function(me, npc)
+    -- end
+}

@@ -36,7 +36,8 @@ std::wstring W(std::string_view m);
 std::string  M(const std::wstring& w);
 std::string  name_with(std::string_view name);
 std::string  name_with(std::string_view name, const std::pair<std::string, std::string>& postfix);
-bool         assert_korean(std::string_view str);
+bool         assert_korean(std::string_view cp949, bool completed = true);
+std::string  delirious(std::string_view message);
 std::string  url_encode(std::string_view value);
 
 } // namespace fb

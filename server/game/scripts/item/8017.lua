@@ -1,9 +1,15 @@
 -- item: 호박송편
 
--- 호박송편 사용 스크립트
--- function ON_ACTIVATED_8017(me, item)
--- end
+return {
+    -- on_activated = function(me, item)
+    -- end,
 
--- 호박송편 해제 스크립트
--- function ON_DEACTIVATED_8017(me, item)
--- end
+    -- on_deactivated = function(me, item)
+    -- end,
+
+    -- on_concast = function(me, item)
+    -- end,
+
+    -- on_attack = function(me, item)
+    -- end
+}

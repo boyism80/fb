@@ -171,14 +171,15 @@ std::unique_ptr<appearance> appearance_factory::create(const fb::model::object& 
         auto& npc_model = static_cast<const fb::model::npc&>(obj);
         if (npc_model.appearance.has_value())
         {
-            auto& app         = table::appearance[npc_model.appearance.value()];
-            auto  ptr         = std::make_unique<character_appearance>();
-            ptr->gender       = app.gender;
-            ptr->state        = app.state;
-            ptr->hair         = app.hair;
-            ptr->hair_color   = app.hair_color;
-            ptr->weapon       = app.weapon;
-            ptr->weapon_color = app.weapon_color;
+            auto  appearance_table = table::appearance;
+            auto& app              = appearance_table[npc_model.appearance.value()];
+            auto  ptr              = std::make_unique<character_appearance>();
+            ptr->gender            = app.gender;
+            ptr->state             = app.state;
+            ptr->hair              = app.hair;
+            ptr->hair_color        = app.hair_color;
+            ptr->weapon            = app.weapon;
+            ptr->weapon_color      = app.weapon_color;
             ptr->armor =
                 app.armor.has_value() ? std::optional<uint8_t>{static_cast<uint8_t>(app.armor.value())} : std::nullopt;
             ptr->armor_color  = app.armor_color;

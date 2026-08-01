@@ -1,11 +1,15 @@
 -- item: 불의연갑
 
--- 불의연갑 사용 스크립트
--- function ON_ACTIVATED_754(me, item)
---
--- end
+return {
+    -- on_activated = function(me, item)
+    -- end,
 
--- 불의연갑 해제 스크립트
--- function ON_DEACTIVATED_754(me, item)
---
--- end
+    -- on_deactivated = function(me, item)
+    -- end,
+
+    -- on_concast = function(me, item)
+    -- end,
+
+    -- on_attack = function(me, item)
+    -- end
+}

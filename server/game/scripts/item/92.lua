@@ -1,11 +1,15 @@
 -- item: 백사도
 
--- 백사도 사용 스크립트
--- function ON_ACTIVATED_92(me, item)
---
--- end
+return {
+    -- on_activated = function(me, item)
+    -- end,
 
--- 백사도 해제 스크립트
--- function ON_DEACTIVATED_92(me, item)
---
--- end
+    -- on_deactivated = function(me, item)
+    -- end,
+
+    -- on_concast = function(me, item)
+    -- end,
+
+    -- on_attack = function(me, item)
+    -- end
+}

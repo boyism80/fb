@@ -1,11 +1,15 @@
 -- item: 검황의심장
 
--- 검황의심장 사용 스크립트
--- function ON_ACTIVATED_691(me, item)
---
--- end
+return {
+    -- on_activated = function(me, item)
+    -- end,
 
--- 검황의심장 해제 스크립트
--- function ON_DEACTIVATED_691(me, item)
---
--- end
+    -- on_deactivated = function(me, item)
+    -- end,
+
+    -- on_concast = function(me, item)
+    -- end,
+
+    -- on_attack = function(me, item)
+    -- end
+}

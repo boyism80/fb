@@ -13,30 +13,12 @@ void position::serialize(fb::stream_writer<big_endian>& writer) const
 {
     header::serialize(writer);
     writer.write<uint8_t>(opcode);
-    writer.write<uint16_t>(this->ch.x()); // Actual x position
-    writer.write<uint16_t>(this->ch.y()); // Actual y position
+    writer.write<uint16_t>(this->ch.x());
+    writer.write<uint16_t>(this->ch.y());
 
-    auto map = this->ch.map();
-    if (map->width() < fb::game::map::MAX_SCREEN_WIDTH)
-        writer.write<uint16_t>(this->ch.x() + fb::game::map::HALF_SCREEN_WIDTH - (map->width() / 2));
-    else if (this->ch.x() < fb::game::map::HALF_SCREEN_WIDTH)
-        writer.write<uint16_t>(this->ch.x());
-    else if (this->ch.x() >= map->width() - fb::game::map::HALF_SCREEN_WIDTH)
-        writer.write<uint16_t>(this->ch.x() + fb::game::map::MAX_SCREEN_WIDTH - map->width());
-    else
-        writer.write<uint16_t>(fb::game::map::HALF_SCREEN_WIDTH);
-
-    // Y position on screen
-    if (map->height() < fb::game::map::MAX_SCREEN_HEIGHT)
-        writer.write<uint16_t>(this->ch.y() + fb::game::map::HALF_SCREEN_HEIGHT - (map->height() / 2));
-    else if (this->ch.y() < fb::game::map::HALF_SCREEN_HEIGHT)
-        writer.write<uint16_t>(this->ch.y());
-    else if (this->ch.y() >= (map->height() - fb::game::map::HALF_SCREEN_HEIGHT))
-        writer.write<uint16_t>(this->ch.y() + fb::game::map::MAX_SCREEN_HEIGHT - map->height());
-    else
-        writer.write<uint16_t>(fb::game::map::HALF_SCREEN_HEIGHT);
-
-    writer.write<uint8_t>(0x00);
+    auto viewport = this->ch.viewport();
+    writer.write<uint16_t>(viewport.x);
+    writer.write<uint16_t>(viewport.y);
 }
 #else
 void position::deserialize(fb::stream_reader<big_endian>& reader)

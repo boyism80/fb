@@ -1,9 +1,15 @@
 -- item: 고급미용쿠폰
 
--- 고급미용쿠폰 사용 스크립트
--- function ON_ACTIVATED_10543(me, item)
--- end
+return {
+    -- on_activated = function(me, item)
+    -- end,
 
--- 고급미용쿠폰 해제 스크립트
--- function ON_DEACTIVATED_10543(me, item)
--- end
+    -- on_deactivated = function(me, item)
+    -- end,
+
+    -- on_concast = function(me, item)
+    -- end,
+
+    -- on_attack = function(me, item)
+    -- end
+}

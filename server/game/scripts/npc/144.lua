@@ -91,7 +91,7 @@ local function run_rabbit_liver_quest(me, npc)
         { ['item'] = { [RABBIT_LIVER_ITEM] = 1 } },
         { ['item'] = { [REWARD_ITEM] = 1 } }
     )
-    if code == enum.EXCHANGE_RESULT.LACK_COST or code == enum.EXCHANGE_RESULT.LACK_CAPACITY then
+    if code == enum.exchange_result.LACK_COST or code == enum.exchange_result.LACK_CAPACITY then
         return
     end
     q:complete()
@@ -200,10 +200,10 @@ local function run_shark_weapon_quest(me, npc)
             reward = { ['item'] = { [SHARK_WEAPON_RESULT] = 1 } }
         end
         local code = me:exchange(cost, reward)
-        if code == enum.EXCHANGE_RESULT.LACK_COST then
+        if code == enum.exchange_result.LACK_COST then
             return
         end
-        if code == enum.EXCHANGE_RESULT.LACK_CAPACITY then
+        if code == enum.exchange_result.LACK_CAPACITY then
             me:dialog(npc, '소지품이 가득 차서 무기를 받을 수 없네.', { prev = false, next = false })
             return
         end
@@ -230,14 +230,16 @@ local function run_shark_weapon_quest(me, npc)
     end
 end
 
-function NPC_144(me, npc)
-    local sel = me:list(npc, '안녕하세요? 어떻게 오셨나요?', { '별주부전', '상어장군의무기' }, { prev = false })
-    if sel == nil then
-        return
+return {
+    on_click = function(me, npc)
+        local sel = me:list(npc, '안녕하세요? 어떻게 오셨나요?', { '별주부전', '상어장군의무기' }, { prev = false })
+        if sel == nil then
+            return
+        end
+        if sel == 1 then
+            run_rabbit_liver_quest(me, npc)
+        else
+            run_shark_weapon_quest(me, npc)
+        end
     end
-    if sel == 1 then
-        run_rabbit_liver_quest(me, npc)
-    else
-        run_shark_weapon_quest(me, npc)
-    end
-end
+}

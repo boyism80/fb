@@ -1,11 +1,15 @@
 -- item: 오뢰창
 
--- 오뢰창 사용 스크립트
--- function ON_ACTIVATED_63(me, item)
---
--- end
+return {
+    -- on_activated = function(me, item)
+    -- end,
 
--- 오뢰창 해제 스크립트
--- function ON_DEACTIVATED_63(me, item)
---
--- end
+    -- on_deactivated = function(me, item)
+    -- end,
+
+    -- on_concast = function(me, item)
+    -- end,
+
+    -- on_attack = function(me, item)
+    -- end
+}

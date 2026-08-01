@@ -1,0 +1,14 @@
+{
+  "TablePublish": {
+    "UploadBaseUrl": "http://cshyeon.com:8080/upload/fb/json",
+    "DownloadBaseUrl": "http://cshyeon.com:8080/fb/json",
+    "Username": "REPLACE_WITH_NAS_ID",
+    "Password": "REPLACE_WITH_NAS_PW"
+  },
+  "ScriptPublish": {
+    "UploadBaseUrl": "http://cshyeon.com:8080/upload/fb/scripts",
+    "DownloadBaseUrl": "http://cshyeon.com:8080/fb/scripts",
+    "Username": "REPLACE_WITH_NAS_ID",
+    "Password": "REPLACE_WITH_NAS_PW"
+  }
+}

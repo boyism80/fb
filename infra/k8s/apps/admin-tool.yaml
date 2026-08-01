@@ -25,6 +25,26 @@ spec:
               value: k8s
             - name: ASPNETCORE_HTTP_PORTS
               value: "80"
+            - name: TablePublish__UploadBaseUrl
+              valueFrom:
+                secretKeyRef:
+                  name: admin-tool-table-publish
+                  key: uploadBaseUrl
+            - name: TablePublish__DownloadBaseUrl
+              valueFrom:
+                secretKeyRef:
+                  name: admin-tool-table-publish
+                  key: downloadBaseUrl
+            - name: TablePublish__Username
+              valueFrom:
+                secretKeyRef:
+                  name: admin-tool-table-publish
+                  key: username
+            - name: TablePublish__Password
+              valueFrom:
+                secretKeyRef:
+                  name: admin-tool-table-publish
+                  key: password
           volumeMounts:
             - name: config-volume
               mountPath: /app/appsettings.k8s.json

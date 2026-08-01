@@ -3,11 +3,12 @@ local TOTEM = '백호'
 local TOTEM_KEY = 'tiger'
 
 local function run_gatekeeper(me, npc)
-    local selected, button = me:list(npc, '안녕하세요. 어떻게 오셨나요?', { TOTEM .. '성 입장' })
+    local OPT_ENTER = TOTEM .. '성 입장'
+    local selected, button = me:pursuit(npc, '안녕하세요. 어떻게 오셨나요?', { OPT_ENTER })
     if button == DIALOG_RESULT.QUIT then
         return
     end
-    if selected ~= 1 then
+    if selected ~= OPT_ENTER then
         return
     end
 
@@ -51,6 +52,8 @@ local function run_gatekeeper(me, npc)
     me:dialog(npc, string.format('현재 %s 공성이 진행중이지 않습니다.', castle_name))
 end
 
-function NPC_226(me, npc)
-    run_gatekeeper(me, npc)
-end
+return {
+    on_click = function(me, npc)
+        run_gatekeeper(me, npc)
+    end
+}

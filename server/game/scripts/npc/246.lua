@@ -1,4 +1,6 @@
 -- npc: 성문문지기5
--- function NPC_246(me, npc)
---
--- end
+
+return {
+    -- on_click = function(me, npc)
+    -- end
+}

@@ -21,21 +21,25 @@ public:
 public:
 #ifdef BOT
     UPDATE_STATE_LEVEL level;
-    uint8_t            ch_nation        = 0;
-    uint8_t            ch_creature      = 0;
-    uint8_t            ch_level         = 0;
-    uint32_t           ch_base_hp       = 0;
-    uint32_t           ch_base_mp       = 0;
-    uint8_t            ch_strength      = 0;
-    uint8_t            ch_intelligence  = 0;
-    uint8_t            ch_dexterity     = 0;
-    uint32_t           ch_hp            = 0;
-    uint32_t           ch_mp            = 0;
-    uint32_t           ch_exp           = 0;
-    uint32_t           ch_money         = 0;
-    uint32_t           ch_crowd_control = 0;
-    uint8_t            ch_mail          = 0;
-    uint8_t            ch_fast_move     = 0;
+    bool               ch_follow_camera   = false;
+    bool               ch_lock_walk_speed = false;
+    bool               ch_gm              = false;
+    uint8_t            ch_nation          = 0;
+    uint8_t            ch_creature        = 0;
+    uint8_t            ch_level           = 0;
+    uint32_t           ch_base_hp         = 0;
+    uint32_t           ch_base_mp         = 0;
+    uint8_t            ch_strength        = 0;
+    uint8_t            ch_intelligence    = 0;
+    uint8_t            ch_dexterity       = 0;
+    uint32_t           ch_hp              = 0;
+    uint32_t           ch_mp              = 0;
+    uint32_t           ch_exp             = 0;
+    uint32_t           ch_money           = 0;
+    uint32_t           ch_crowd_control   = 0;
+    uint8_t            ch_mail            = 0;
+    uint8_t            ch_fast_move       = 0;
+    uint8_t            ch_speed           = 0;
 #else
     const fb::game::character& ch;
     const UPDATE_STATE_LEVEL   level;

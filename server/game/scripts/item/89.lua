@@ -1,11 +1,15 @@
 -- item: 적염곤봉
 
--- 적염곤봉 사용 스크립트
--- function ON_ACTIVATED_89(me, item)
---
--- end
+return {
+    -- on_activated = function(me, item)
+    -- end,
 
--- 적염곤봉 해제 스크립트
--- function ON_DEACTIVATED_89(me, item)
---
--- end
+    -- on_deactivated = function(me, item)
+    -- end,
+
+    -- on_concast = function(me, item)
+    -- end,
+
+    -- on_attack = function(me, item)
+    -- end
+}

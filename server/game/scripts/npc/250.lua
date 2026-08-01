@@ -28,11 +28,11 @@ local function run_clock_purchase(me, npc)
         { ['money'] = CLOCK_PRICE },
         { ['item'] = { [CLOCK_ITEM_NAME] = 1 } }
     )
-    if code == enum.EXCHANGE_RESULT.LACK_COST then
+    if code == enum.exchange_result.LACK_COST then
         me:dialog(npc, '아니.. 돈도 없이 내 시계를 살 순 없지.', { prev = false, next = false })
         return
     end
-    if code == enum.EXCHANGE_RESULT.LACK_CAPACITY then
+    if code == enum.exchange_result.LACK_CAPACITY then
         me:dialog(npc, '소지품이 가득 차서 시계를 줄 수 없네.', { prev = false, next = false })
         return
     end
@@ -64,11 +64,11 @@ local function run_battery_purchase(me, npc)
         { ['money'] = BATTERY_PRICE },
         { ['item'] = { [BATTERY_ITEM_NAME] = 1 } }
     )
-    if code == enum.EXCHANGE_RESULT.LACK_COST then
+    if code == enum.exchange_result.LACK_COST then
         me:dialog(npc, '돈이 부족하구만.. 나의 건전지는 하나당 5000전이라네.', { prev = false, next = false })
         return
     end
-    if code == enum.EXCHANGE_RESULT.LACK_CAPACITY then
+    if code == enum.exchange_result.LACK_CAPACITY then
         me:dialog(npc, '소지품이 가득 차서 건전지를 줄 수 없네.', { prev = false, next = false })
         return
     end
@@ -76,16 +76,18 @@ local function run_battery_purchase(me, npc)
     me:dialog(npc, '자네 생각보다 운이 좋은걸? 여기 건전기 가져가게나.', { prev = false, next = false })
 end
 
-function NPC_250(me, npc)
-    ::NPC_250_0001::
-    local sel = me:list(npc, '안녕하신가? 나에겐 어쩐일로 왔는가?', { '시계 구입', '건전지 구입' }, { prev = false })
-    if sel == nil then
-        return
-    end
+return {
+    on_click = function(me, npc)
+        ::NPC_250_0001::
+        local sel = me:list(npc, '안녕하신가? 나에겐 어쩐일로 왔는가?', { '시계 구입', '건전지 구입' }, { prev = false })
+        if sel == nil then
+            return
+        end
 
-    if sel == 1 then
-        run_clock_purchase(me, npc)
-    elseif sel == 2 then
-        run_battery_purchase(me, npc)
+        if sel == 1 then
+            run_clock_purchase(me, npc)
+        elseif sel == 2 then
+            run_battery_purchase(me, npc)
+        end
     end
-end
+}

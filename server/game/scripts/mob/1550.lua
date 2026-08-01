@@ -1,6 +1,15 @@
 -- mob: 일요의정
--- function ON_MOB_DIE_1550(me)
--- end
 
--- function ON_MOB_ATTACK_1550(me, you)
--- end
+return {
+    -- on_mob_attack = function(me, you)
+    -- end,
+
+    -- on_mob_die = function(me)
+    -- end,
+
+    -- on_mob_kill = function(me, mobs)
+    -- end,
+
+    -- on_mob_spell_hit = function(me, you, spell)
+    -- end
+}

@@ -28,7 +28,7 @@ struct Option FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
     VT_WHISPER = 6,
     VT_GROUP = 8,
     VT_ROAR = 10,
-    VT_ROAR_WORLDS = 12,
+    VT_NEWS = 12,
     VT_MAGIC_EFFECT = 14,
     VT_WEATHER_EFFECT = 16,
     VT_FIXED_MOVE = 18,
@@ -49,8 +49,8 @@ struct Option FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
   bool roar() const {
     return GetField<uint8_t>(VT_ROAR, 0) != 0;
   }
-  bool roar_worlds() const {
-    return GetField<uint8_t>(VT_ROAR_WORLDS, 0) != 0;
+  bool news() const {
+    return GetField<uint8_t>(VT_NEWS, 0) != 0;
   }
   bool magic_effect() const {
     return GetField<uint8_t>(VT_MAGIC_EFFECT, 0) != 0;
@@ -79,7 +79,7 @@ struct Option FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
            VerifyField<uint8_t>(verifier, VT_WHISPER, 1) &&
            VerifyField<uint8_t>(verifier, VT_GROUP, 1) &&
            VerifyField<uint8_t>(verifier, VT_ROAR, 1) &&
-           VerifyField<uint8_t>(verifier, VT_ROAR_WORLDS, 1) &&
+           VerifyField<uint8_t>(verifier, VT_NEWS, 1) &&
            VerifyField<uint8_t>(verifier, VT_MAGIC_EFFECT, 1) &&
            VerifyField<uint8_t>(verifier, VT_WEATHER_EFFECT, 1) &&
            VerifyField<uint8_t>(verifier, VT_FIXED_MOVE, 1) &&
@@ -107,8 +107,8 @@ struct OptionBuilder {
   void add_roar(bool roar) {
     fbb_.AddElement<uint8_t>(Option::VT_ROAR, static_cast<uint8_t>(roar), 0);
   }
-  void add_roar_worlds(bool roar_worlds) {
-    fbb_.AddElement<uint8_t>(Option::VT_ROAR_WORLDS, static_cast<uint8_t>(roar_worlds), 0);
+  void add_news(bool news) {
+    fbb_.AddElement<uint8_t>(Option::VT_NEWS, static_cast<uint8_t>(news), 0);
   }
   void add_magic_effect(bool magic_effect) {
     fbb_.AddElement<uint8_t>(Option::VT_MAGIC_EFFECT, static_cast<uint8_t>(magic_effect), 0);
@@ -148,7 +148,7 @@ inline ::flatbuffers::Offset<Option> CreateOption(
     bool whisper = false,
     bool group = false,
     bool roar = false,
-    bool roar_worlds = false,
+    bool news = false,
     bool magic_effect = false,
     bool weather_effect = false,
     bool fixed_move = false,
@@ -165,7 +165,7 @@ inline ::flatbuffers::Offset<Option> CreateOption(
   builder_.add_fixed_move(fixed_move);
   builder_.add_weather_effect(weather_effect);
   builder_.add_magic_effect(magic_effect);
-  builder_.add_roar_worlds(roar_worlds);
+  builder_.add_news(news);
   builder_.add_roar(roar);
   builder_.add_group(group);
   builder_.add_whisper(whisper);

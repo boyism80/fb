@@ -1,4 +1,6 @@
 -- npc: 부여경비대장
--- function NPC_69(me, npc)
---
--- end
+
+return {
+    -- on_click = function(me, npc)
+    -- end
+}

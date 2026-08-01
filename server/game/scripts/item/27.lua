@@ -1,11 +1,15 @@
 -- item: 상아검
 
--- 상아검 사용 스크립트
--- function ON_ACTIVATED_27(me, item)
---
--- end
+return {
+    -- on_activated = function(me, item)
+    -- end,
 
--- 상아검 해제 스크립트
--- function ON_DEACTIVATED_27(me, item)
---
--- end
+    -- on_deactivated = function(me, item)
+    -- end,
+
+    -- on_concast = function(me, item)
+    -- end,
+
+    -- on_attack = function(me, item)
+    -- end
+}

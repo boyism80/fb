@@ -1,11 +1,15 @@
 -- item: 태양의막대'지
 
--- 태양의막대'지 사용 스크립트
--- function ON_ACTIVATED_109(me, item)
---
--- end
+return {
+    -- on_activated = function(me, item)
+    -- end,
 
--- 태양의막대'지 해제 스크립트
--- function ON_DEACTIVATED_109(me, item)
---
--- end
+    -- on_deactivated = function(me, item)
+    -- end,
+
+    -- on_concast = function(me, item)
+    -- end,
+
+    -- on_attack = function(me, item)
+    -- end
+}

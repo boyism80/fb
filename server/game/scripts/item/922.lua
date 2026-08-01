@@ -1,11 +1,15 @@
 -- item: 은여자통옷
 
--- 은여자통옷 사용 스크립트
--- function ON_ACTIVATED_922(me, item)
---
--- end
+return {
+    -- on_activated = function(me, item)
+    -- end,
 
--- 은여자통옷 해제 스크립트
--- function ON_DEACTIVATED_922(me, item)
---
--- end
+    -- on_deactivated = function(me, item)
+    -- end,
+
+    -- on_concast = function(me, item)
+    -- end,
+
+    -- on_attack = function(me, item)
+    -- end
+}

@@ -8,6 +8,7 @@
 #include <sstream>
 #include <algorithm>
 #include <format>
+#include <mutex>
 
 using namespace fb::game;
 namespace internal_resp = fb::protocol::internal::response;
@@ -399,16 +400,27 @@ async::task<void> service::system_storage::poll_and_deliver()
         if (box.expired(now))
             continue;
 
-        auto eligible = this->server.characters.collect_ids([&](const auto& ch) {
-            return ch->created_date() < box.created_date;
-        });
+        auto eligible = std::make_shared<std::vector<uint32_t>>();
+        auto mutex    = std::make_shared<std::mutex>();
+        co_await this->server.characters.foreach_async(
+            [eligible, mutex, box_id = box.id, created = box.created_date](auto& ch) -> async::task<void> {
+                if (ch->created_date() < created && !ch->storage_box.contains_system_box(box_id))
+                {
+                    auto _ = std::lock_guard(*mutex);
+                    eligible->push_back(ch->id);
+                }
+                co_return;
+            });
 
-        for (std::size_t i = 0; i < eligible.size(); i += chunk_limit)
+        if (eligible->empty())
+            continue;
+
+        for (std::size_t i = 0; i < eligible->size(); i += chunk_limit)
         {
-            const auto end         = std::min(i + chunk_limit, eligible.size());
+            const auto end         = std::min(i + chunk_limit, eligible->size());
             auto       chunk_users = std::vector<uint32_t>{};
-            chunk_users.assign(eligible.begin() + static_cast<std::ptrdiff_t>(i),
-                               eligible.begin() + static_cast<std::ptrdiff_t>(end));
+            chunk_users.assign(eligible->begin() + static_cast<std::ptrdiff_t>(i),
+                               eligible->begin() + static_cast<std::ptrdiff_t>(end));
 
             try
             {

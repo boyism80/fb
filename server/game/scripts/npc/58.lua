@@ -1,4 +1,6 @@
 -- npc: 사용자오엑스도우미
--- function NPC_58(me, npc)
---
--- end
+
+return {
+    -- on_click = function(me, npc)
+    -- end
+}

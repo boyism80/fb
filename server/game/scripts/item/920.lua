@@ -1,11 +1,15 @@
 -- item: 청동여자통옷
 
--- 청동여자통옷 사용 스크립트
--- function ON_ACTIVATED_920(me, item)
---
--- end
+return {
+    -- on_activated = function(me, item)
+    -- end,
 
--- 청동여자통옷 해제 스크립트
--- function ON_DEACTIVATED_920(me, item)
---
--- end
+    -- on_deactivated = function(me, item)
+    -- end,
+
+    -- on_concast = function(me, item)
+    -- end,
+
+    -- on_attack = function(me, item)
+    -- end
+}

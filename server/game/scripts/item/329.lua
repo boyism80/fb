@@ -1,11 +1,15 @@
 -- item: 하늘개비
 
--- 하늘개비 사용 스크립트
--- function ON_ACTIVATED_329(me, item)
---
--- end
+return {
+    -- on_activated = function(me, item)
+    -- end,
 
--- 하늘개비 해제 스크립트
--- function ON_DEACTIVATED_329(me, item)
---
--- end
+    -- on_deactivated = function(me, item)
+    -- end,
+
+    -- on_concast = function(me, item)
+    -- end,
+
+    -- on_attack = function(me, item)
+    -- end
+}

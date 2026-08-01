@@ -1,10 +1,16 @@
 -- mob: 도삭산흉노무사
--- 도삭산흉노무사 공격
-function ON_MOB_ATTACK_1017(me, you)
-    return false
-end
 
--- 도삭산흉노무사 사망
--- function ON_MOB_DIE_1017(me)
---
--- end
+return {
+    on_mob_attack = function(me, you)
+        return false
+    end,
+
+    -- on_mob_die = function(me)
+    -- end,
+
+    -- on_mob_kill = function(me, mobs)
+    -- end,
+
+    -- on_mob_spell_hit = function(me, you, spell)
+    -- end
+}

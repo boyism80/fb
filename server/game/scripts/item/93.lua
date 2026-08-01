@@ -1,11 +1,15 @@
 -- item: 구곡검
 
--- 구곡검 사용 스크립트
--- function ON_ACTIVATED_93(me, item)
---
--- end
+return {
+    -- on_activated = function(me, item)
+    -- end,
 
--- 구곡검 해제 스크립트
--- function ON_DEACTIVATED_93(me, item)
---
--- end
+    -- on_deactivated = function(me, item)
+    -- end,
+
+    -- on_concast = function(me, item)
+    -- end,
+
+    -- on_attack = function(me, item)
+    -- end
+}

@@ -1,5 +1,5 @@
-#ifndef __PROTOCOL_GAME_UNKNOWN_4B_H__
-#define __PROTOCOL_GAME_UNKNOWN_4B_H__
+#ifndef __PROTOCOL_GAME_C2S_RELAY_H__
+#define __PROTOCOL_GAME_C2S_RELAY_H__
 
 #include <fb/protocol/header.h>
 #include <fb/model/model.h>
@@ -9,7 +9,11 @@ namespace fb::protocol::game::response {
 
 using namespace fb::model::enum_value;
 
-class unknown_4B : public fb::protocol::header
+/**
+ * S2C 0x4B — client relays the payload bytes back as a C2S packet (no opcode prefix added).
+ * Payload first byte is typically a C2S opcode. Stack buffer on client is ~10000 bytes.
+ */
+class c2s_relay : public fb::protocol::header
 {
 public:
     static constexpr uint8_t opcode = 0x4B;
@@ -23,11 +27,11 @@ public:
 
 public:
 #ifndef BOT
-    explicit unknown_4B(std::string_view payload) :
+    explicit c2s_relay(std::string_view payload) :
         payload(std::string(payload))
     { }
 #else
-    unknown_4B() = default;
+    c2s_relay() = default;
 #endif
 
 public:

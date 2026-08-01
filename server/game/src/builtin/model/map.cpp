@@ -56,13 +56,14 @@ int builtin::model::map::builtin_root(lua_State* L)
     if (map == nullptr)
         return 0;
 
-    if (table::map.contains(map->root) == false)
+    if (table::map->contains(map->root) == false)
     {
         lua->pushnil();
         return 1;
     }
 
-    auto& root = table::map[map->root];
+    auto  map_table = table::map;
+    auto& root      = map_table[map->root];
     lua->pushobject(root);
     return 1;
 }
@@ -98,7 +99,7 @@ int builtin::model::map::builtin_cardinal(lua_State* L)
     }
 
     auto params = fb::model::dsl::map(dsl.params);
-    if (table::map.contains(params.id) == false)
+    if (table::map->contains(params.id) == false)
     {
         lua->pushnil();
         return 1;

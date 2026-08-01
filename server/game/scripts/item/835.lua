@@ -1,11 +1,15 @@
 -- item: 가죽남자도복
 
--- 가죽남자도복 사용 스크립트
--- function ON_ACTIVATED_835(me, item)
---
--- end
+return {
+    -- on_activated = function(me, item)
+    -- end,
 
--- 가죽남자도복 해제 스크립트
--- function ON_DEACTIVATED_835(me, item)
---
--- end
+    -- on_deactivated = function(me, item)
+    -- end,
+
+    -- on_concast = function(me, item)
+    -- end,
+
+    -- on_attack = function(me, item)
+    -- end
+}

@@ -1,4 +1,6 @@
 -- npc: 용소환
--- function NPC_137(me, npc)
---
--- end
+
+return {
+    -- on_click = function(me, npc)
+    -- end
+}

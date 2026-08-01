@@ -1,5 +1,15 @@
 -- mob: 괴성'청
--- 괴성'청 사망
--- function ON_MOB_DIE_561(me)
---
--- end
+
+return {
+    -- on_mob_attack = function(me, you)
+    -- end,
+
+    -- on_mob_die = function(me)
+    -- end,
+
+    -- on_mob_kill = function(me, mobs)
+    -- end,
+
+    -- on_mob_spell_hit = function(me, you, spell)
+    -- end
+}

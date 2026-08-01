@@ -1,4 +1,6 @@
 -- npc: 환상의섬무당
--- function NPC_127(me, npc)
---
--- end
+
+return {
+    -- on_click = function(me, npc)
+    -- end
+}

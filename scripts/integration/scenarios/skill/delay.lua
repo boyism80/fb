@@ -95,6 +95,11 @@ end
 function M.run(ctx, bot_index)
     local caster = ctx:bot(bot_index)
     log("debug", "SKILL COOLDOWN DELAY TEST STARTED")
+    local option = require("integration.lib.option")
+    if option.disable_pk_protect(caster) == false then
+        log("fatal", "SKILL COOLDOWN DELAY TEST: failed to disable PK_PROTECT for caster")
+        return false
+    end
     local shared = {}
     if spell_runner.run_spell_groups(build_groups(shared), caster, nil) == false then
         return false

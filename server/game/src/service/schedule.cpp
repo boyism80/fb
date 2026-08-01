@@ -15,8 +15,9 @@ void service::schedule::init()
 {
     auto now = this->server.now();
 
-    uint32_t index = 0;
-    for (const auto& entry : table::schedule)
+    uint32_t index          = 0;
+    auto     schedule_table = table::schedule;
+    for (const auto& entry : schedule_table)
     {
         auto next = entry.next_execution(now);
         if (next.has_value())
@@ -51,7 +52,8 @@ async::task<void> service::schedule::poll()
             continue;
         }
 
-        const auto& entry = table::schedule[schedule_index];
+        auto        schedule_table2 = table::schedule;
+        const auto& entry           = schedule_table2[schedule_index];
 
         if (entry.script.empty() || entry.func.empty())
             continue;

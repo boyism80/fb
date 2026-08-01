@@ -41,8 +41,8 @@ character::character(fb::game::server& server, const initial_params& params) :
     _armor_color(params.armor_color), _weapon_color(params.weapon_color), _shield_color(params.shield_color),
     _experience(params.exp), _gender(params.gender), _state(params.state), _level(params.level),
     _class(params.class_type), _promotion(params.promotion), _money(params.money), _mimicry(params.mimicry),
-    _title(params.title), _nation(params.nation), _creature(params.creature), _last_afk_time(server.now()),
-    _marriage(server.now()), _super_hide(params.super_hide)
+    _title(params.title), _nation(params.nation), _creature(params.creature), _super_hide(params.super_hide),
+    _last_afk_time(server.now()), _marriage(server.now())
 {
     this->_ping_state.last_ping_time = server.now() - std::chrono::seconds(10);
 }
@@ -263,6 +263,8 @@ async::task<bool> character::map(std::shared_ptr<fb::game::map>      map,
         }
         co_return true;
     }
+
+    this->_camera_pivot.reset();
 
     if (co_await object::map(map, position, std::move(options)) == false)
         co_return false;
@@ -586,7 +588,8 @@ bool character::level_up()
     if (this->max_level())
         return false;
 
-    auto& ability = table::ability[this->_class][this->_level];
+    auto  ability_table = table::ability;
+    auto& ability       = ability_table[this->_class][this->_level];
     {
         auto batch = this->batch_update();
         this->stat.base_str(this->stat.base_str() + ability.strength);
@@ -803,7 +806,7 @@ uint64_t character::add_exp(uint64_t value, bool limit, bool notify)
         // When class is NONE, cap exp to exactly what is needed for level 5
         if (this->_class == CLASS::NONE)
         {
-            auto require = table::ability.stacked_exp(CLASS::NONE, 5);
+            auto require = table::ability->stacked_exp(CLASS::NONE, 5);
             if (this->_experience > require)
                 value = 0;
 
@@ -827,7 +830,7 @@ uint64_t character::add_exp(uint64_t value, bool limit, bool notify)
                 this->message(std::format(_TEXT(MESSAGE_EXP_GAINED), value, int(this->experience_percent())));
         }
 
-        if (table::ability.contains(this->_class) == false)
+        if (table::ability->contains(this->_class) == false)
             throw std::runtime_error("what?");
 
         while (true)
@@ -835,11 +838,12 @@ uint64_t character::add_exp(uint64_t value, bool limit, bool notify)
             if (this->max_level())
                 break;
 
-            auto& next = table::ability[this->_class][this->_level];
+            auto  ability_table2 = table::ability;
+            auto& next           = ability_table2[this->_class][this->_level];
             if (next.exp == 0)
                 break;
 
-            if (this->_experience < table::ability.stacked_exp(this->_class, this->_level))
+            if (this->_experience < table::ability->stacked_exp(this->_class, this->_level))
                 break;
 
             if (this->level_up() == false)
@@ -883,13 +887,13 @@ uint64_t character::experience_remained() const
     if (this->max_level())
         return 0;
 
-    if (table::ability.contains(this->_class) == false)
+    if (table::ability->contains(this->_class) == false)
         return 0;
 
     if (table::ability[this->_class].contains(this->_level) == false)
         return 0;
 
-    return table::ability.stacked_exp(this->_class, this->_level) - this->exp();
+    return table::ability->stacked_exp(this->_class, this->_level) - this->exp();
 }
 
 float character::experience_percent() const
@@ -903,9 +907,9 @@ float character::experience_percent() const
     auto required       = table::ability[this->_class][level].exp;
     auto prev_stack_exp = uint64_t{0};
     if (table::ability[this->_class].contains(level - 1))
-        prev_stack_exp = table::ability.stacked_exp(this->_class, level - 1);
+        prev_stack_exp = table::ability->stacked_exp(this->_class, level - 1);
     else if (table::ability[CLASS::NONE].contains(level - 1))
-        prev_stack_exp = table::ability.stacked_exp(CLASS::NONE, level - 1);
+        prev_stack_exp = table::ability->stacked_exp(CLASS::NONE, level - 1);
 
     return std::min(100.0f, ((this->_experience - prev_stack_exp) / float(required)) * 100.0f);
 }
@@ -1000,7 +1004,7 @@ bool character::option(OPTION key) const
     this->assert_thread();
 
     auto opt = static_cast<uint8_t>(key);
-    if (opt == 0 || opt > static_cast<uint8_t>(OPTION::EFFECT_SOUND))
+    if (opt == 0 || opt > static_cast<uint8_t>(OPTION::LOCK_WALK_SPEED))
         throw std::runtime_error(std::format("invalid setting key : {:#x}", opt));
 
     return this->_options[opt];
@@ -1011,14 +1015,23 @@ void character::option(OPTION key, bool value, bool notify)
     this->assert_thread();
 
     auto opt = static_cast<uint8_t>(key);
-    if (opt == 0 || opt > static_cast<uint8_t>(OPTION::EFFECT_SOUND))
+    if (opt == 0 || opt > static_cast<uint8_t>(OPTION::LOCK_WALK_SPEED))
         return;
 
     if (this->_options[opt] == value)
         return;
 
-    this->update(UPDATE_STATE_LEVEL::EXP_MONEY | UPDATE_STATE_LEVEL::CROWD_CONTROL);
     this->_options[opt] = value;
+
+    if (key == OPTION::FIXED_MOVE)
+    {
+        if (value)
+            this->_camera_pivot.reset();
+        else
+            this->ensure_camera_pivot();
+    }
+
+    this->update(UPDATE_STATE_LEVEL::EXP_MONEY | UPDATE_STATE_LEVEL::CROWD_CONTROL);
     this->update_option();
 
     if (notify)
@@ -1030,7 +1043,7 @@ bool character::option_toggle(OPTION key, bool notify)
     this->assert_thread();
 
     auto opt = static_cast<uint8_t>(key);
-    if (opt == 0 || opt > static_cast<uint8_t>(OPTION::EFFECT_SOUND))
+    if (opt == 0 || opt > static_cast<uint8_t>(OPTION::LOCK_WALK_SPEED))
         throw std::runtime_error(std::format("invalid setting key : {:#x}", opt));
 
     this->option(key, !this->_options[opt], notify);
@@ -1066,6 +1079,11 @@ void character::update_bgm(uint16_t bgm, uint8_t volume)
     this->listener.on_update_bgm(*this, bgm, volume);
 }
 
+void character::stop_bgm(uint16_t bgm_id)
+{
+    this->listener.on_stop_bgm(*this, bgm_id);
+}
+
 void character::update_buff()
 {
     this->listener.on_update_buff(*this, this->buffs);
@@ -1076,9 +1094,9 @@ void character::update_internal()
     this->listener.on_update_internal(*this);
 }
 
-void character::update_time(uint16_t hours)
+void character::update_time(uint8_t hours, uint8_t minutes)
 {
-    this->listener.on_update_time(*this, hours);
+    this->listener.on_update_time(*this, hours, minutes);
 }
 
 void character::init()
@@ -1089,6 +1107,111 @@ void character::init()
 void character::update_position()
 {
     this->listener.on_update_position(*this);
+}
+
+fb::model::point16_t character::viewport_centered(const fb::model::point16_t& position) const
+{
+    auto map = this->map();
+    auto x   = position.x;
+    auto y   = position.y;
+    auto vx  = uint16_t{0};
+    auto vy  = uint16_t{0};
+
+    if (map->width() < fb::game::map::MAX_SCREEN_WIDTH)
+        vx = static_cast<uint16_t>(x + fb::game::map::HALF_SCREEN_WIDTH - (map->width() / 2));
+    else if (x < fb::game::map::HALF_SCREEN_WIDTH)
+        vx = x;
+    else if (x >= map->width() - fb::game::map::HALF_SCREEN_WIDTH)
+        vx = static_cast<uint16_t>(x + fb::game::map::MAX_SCREEN_WIDTH - map->width());
+    else
+        vx = static_cast<uint16_t>(fb::game::map::HALF_SCREEN_WIDTH);
+
+    if (map->height() < fb::game::map::MAX_SCREEN_HEIGHT)
+        vy = static_cast<uint16_t>(y + fb::game::map::HALF_SCREEN_HEIGHT - (map->height() / 2));
+    else if (y < fb::game::map::HALF_SCREEN_HEIGHT)
+        vy = y;
+    else if (y >= map->height() - fb::game::map::HALF_SCREEN_HEIGHT)
+        vy = static_cast<uint16_t>(y + fb::game::map::MAX_SCREEN_HEIGHT - map->height());
+    else
+        vy = static_cast<uint16_t>(fb::game::map::HALF_SCREEN_HEIGHT);
+
+    return fb::model::point16_t{vx, vy};
+}
+
+void character::ensure_camera_pivot() const
+{
+    this->assert_thread();
+
+    if (this->option(OPTION::FIXED_MOVE))
+    {
+        this->_camera_pivot.reset();
+        return;
+    }
+
+    auto map = this->map();
+    if (map == nullptr)
+        return;
+
+    auto ax = static_cast<int32_t>(this->x());
+    auto ay = static_cast<int32_t>(this->y());
+
+    if (this->_camera_pivot.has_value() == false)
+    {
+        auto vp = this->viewport_centered(this->position());
+        this->_camera_pivot =
+            fb::model::point<int32_t>{ax - static_cast<int32_t>(vp.x), ay - static_cast<int32_t>(vp.y)};
+        return;
+    }
+
+    auto& pivot = this->_camera_pivot.value();
+    auto  vx    = ax - pivot.x;
+    auto  vy    = ay - pivot.y;
+    auto  max_x = static_cast<int32_t>(fb::game::map::MAX_SCREEN_WIDTH);
+    auto  max_y = static_cast<int32_t>(fb::game::map::MAX_SCREEN_HEIGHT);
+
+    if (vx < 0)
+        pivot.x = ax;
+    else if (vx >= max_x)
+        pivot.x = ax - (max_x - 1);
+
+    if (vy < 0)
+        pivot.y = ay;
+    else if (vy >= max_y)
+        pivot.y = ay - (max_y - 1);
+}
+
+fb::model::point16_t character::viewport() const
+{
+    this->assert_thread();
+
+    if (this->option(OPTION::FIXED_MOVE) == false)
+        this->ensure_camera_pivot();
+
+    return this->viewport(this->position());
+}
+
+fb::model::point16_t character::viewport(const fb::model::point16_t& position) const
+{
+    this->assert_thread();
+
+    auto map = this->map();
+    if (map == nullptr)
+        return fb::model::point16_t{0, 0};
+
+    if (this->option(OPTION::FIXED_MOVE))
+        return this->viewport_centered(position);
+
+    if (this->_camera_pivot.has_value() == false)
+    {
+        auto vp             = this->viewport_centered(position);
+        this->_camera_pivot = fb::model::point<int32_t>{static_cast<int32_t>(position.x) - static_cast<int32_t>(vp.x),
+                                                        static_cast<int32_t>(position.y) - static_cast<int32_t>(vp.y)};
+        return vp;
+    }
+
+    auto& pivot = this->_camera_pivot.value();
+    return fb::model::point16_t{static_cast<uint16_t>(static_cast<int32_t>(position.x) - pivot.x),
+                                static_cast<uint16_t>(static_cast<int32_t>(position.y) - pivot.y)};
 }
 
 void character::screen_refresh()
@@ -1183,14 +1306,14 @@ void character::assert_state(const std::vector<STATE>& values) const
     }
 }
 
-bool character::move(const fb::model::point16_t& before)
+bool character::move(const fb::model::point16_t& before, uint8_t walk_queue_slot)
 {
     this->assert_thread();
 
-    return this->move(this->_direction, before);
+    return this->move(this->_direction, before, walk_queue_slot);
 }
 
-bool character::move(DIRECTION direction, const fb::model::point16_t& before)
+bool character::move(DIRECTION direction, const fb::model::point16_t& before, uint8_t walk_queue_slot)
 {
     this->assert_thread();
 
@@ -1206,6 +1329,12 @@ bool character::move(DIRECTION direction, const fb::model::point16_t& before)
     }
     else
     {
+        auto viewport = this->viewport(before);
+        if (this->option(OPTION::FIXED_MOVE) == false)
+            this->ensure_camera_pivot();
+
+        if (this->option(OPTION::FAST_MOVE) == false)
+            this->listener.on_move_confirm(*this, before, viewport, walk_queue_slot);
         return true;
     }
 }
@@ -1269,9 +1398,10 @@ async::task<void> character::unride()
         if (this->state() != STATE::RIDING)
             throw std::runtime_error(_TEXT(MESSAGE_RIDE_UNRIDE));
 
-        auto& model = table::mob[fb::model::const_value::mob::horse];
-        auto  horse = this->server.make<mob>(model, mob::initial_params{.alive = true});
-        std::ignore = co_await horse->map(this->_map, this->front_position());
+        auto  mob_table = table::mob;
+        auto& model     = mob_table[fb::model::const_value::mob::horse];
+        auto  horse     = this->server.make<mob>(model, mob::initial_params{.alive = true});
+        std::ignore     = co_await horse->map(this->_map, this->front_position());
 
         this->state(STATE::NORMAL);
         this->message(_TEXT(MESSAGE_RIDE_OFF));
@@ -1531,7 +1661,7 @@ async::task<void> character::settle_kills(mob_vector dead)
     for (auto& [id, mobs] : groups)
     {
         auto path = std::format("scripts/mob/{}.lua", id);
-        auto func = std::format("ON_MOB_KILL_{}", id);
+        auto func = "on_mob_kill";
         auto lua  = this->server.lua.open(path, func);
         if (lua)
         {
@@ -1643,16 +1773,33 @@ fb::protocol::internal::Character character::to_protocol() const
     dto.gender           = static_cast<uint8_t>(this->_gender);
     dto.nation           = static_cast<uint8_t>(this->_nation);
     dto.creature         = static_cast<uint8_t>(this->_creature);
-    dto.map              = this->_map != nullptr ? this->_map->model.id : 0;
-    dto.position         = fb::protocol::internal::Position{this->_position.x, this->_position.y};
-    dto.direction        = static_cast<uint8_t>(this->_direction);
-    dto.state            = static_cast<uint8_t>(this->_state);
-    dto.class_type       = static_cast<uint8_t>(this->_class);
-    dto.promotion        = this->_promotion;
-    dto.level            = this->_level;
-    dto.exp              = this->_experience;
-    dto.money            = this->_money;
-    dto.deposited_money  = this->items.deposited();
+    if (this->_map != nullptr && this->_map->model.return_to.has_value())
+    {
+        auto return_map_id = this->_map->model.return_to.value();
+        dto.map            = return_map_id;
+        auto spawn         = fb::model::point16_t{0, 0};
+        if (table::map->contains(return_map_id))
+            spawn = table::map[return_map_id].spawn_position().value_or(fb::model::point16_t{0, 0});
+        dto.position = fb::protocol::internal::Position{spawn.x, spawn.y};
+    }
+    else if (this->_map != nullptr)
+    {
+        dto.map      = this->_map->model.id;
+        dto.position = fb::protocol::internal::Position{this->_position.x, this->_position.y};
+    }
+    else
+    {
+        dto.map      = 0;
+        dto.position = fb::protocol::internal::Position{1, 1};
+    }
+    dto.direction       = static_cast<uint8_t>(this->_direction);
+    dto.state           = static_cast<uint8_t>(this->_state);
+    dto.class_type      = static_cast<uint8_t>(this->_class);
+    dto.promotion       = this->_promotion;
+    dto.level           = this->_level;
+    dto.exp             = this->_experience;
+    dto.money           = this->_money;
+    dto.deposited_money = this->items.deposited();
     if (this->_mimicry.has_value())
     {
         auto const& p         = this->_mimicry.value();
@@ -1690,6 +1837,7 @@ fb::protocol::internal::Character character::to_protocol() const
     dto.aux_bot_color    = std::nullopt;
     dto.title            = this->_title;
     dto.super_hide       = this->_super_hide;
+    dto.speed            = this->stat.base_speed();
 
     for (auto& [_, buff] : this->buffs)
     {
@@ -2040,10 +2188,10 @@ async::task<void> character::death_penalty()
 
     auto cls   = this->cls();
     auto level = this->level();
-    if (table::ability.contains(cls) && table::ability[cls].contains(level) && table::ability[cls].contains(level - 1))
+    if (table::ability->contains(cls) && table::ability[cls].contains(level) && table::ability[cls].contains(level - 1))
     {
         auto penalty = uint64_t(table::ability[cls][level].exp * fb::model::const_value::death_penalty::exp);
-        auto gained  = this->exp() - table::ability.stacked_exp(cls, level - 1);
+        auto gained  = this->exp() - table::ability->stacked_exp(cls, level - 1);
 
         penalty = std::min(gained, penalty);
         if (penalty > 0)
@@ -2068,9 +2216,10 @@ async::task<bool> character::reward(const std::vector<fb::model::dsl>& reward)
         {
         case fb::model::enum_value::DSL::item:
         {
-            auto  params = fb::model::dsl::item(item.params);
-            auto& model  = table::item[params.id];
-            auto  item   = model.make(this->server, params.count);
+            auto  params     = fb::model::dsl::item(item.params);
+            auto  item_table = table::item;
+            auto& model      = item_table[params.id];
+            auto  item       = model.make(this->server, params.count);
             if (params.durability.has_value())
             {
                 if (model.attr(ITEM_ATTRIBUTE::EQUIPMENT))

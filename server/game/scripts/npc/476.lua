@@ -68,7 +68,7 @@ local function handle_jingogyun_1(me, npc, q_jingo)
         "응, 난 화화의 친구야.",
         "내가 왜 너희 편을 들어주냐... 난 나쁘다구.",
     }, { prev = false })
-    if btn == DIALOG_RESULT.QUIT or sel == nil then
+    if btn == DIALOG_RESULT.QUIT then
         return true
     end
     if sel == 2 then
@@ -96,7 +96,7 @@ local function handle_jingogyun_1(me, npc, q_jingo)
         "물론이야. 내가 뭐든 도와줄께. 말만해.",
         "지금은 좀 무리야. 나중에 꼭 도와줄게",
     }, { prev = false })
-    if btn == DIALOG_RESULT.QUIT or sel == nil then
+    if btn == DIALOG_RESULT.QUIT then
         return true
     end
     if sel == 1 then
@@ -114,7 +114,7 @@ local function handle_jingogyun_1(me, npc, q_jingo)
             "여기서 뭘 하고 있는거야?",
             "후우, 그래서 무슨 이야기를 하고 있었지?",
         }, { prev = false })
-        if sub_btn == DIALOG_RESULT.QUIT or sub_sel == nil then
+        if sub_btn == DIALOG_RESULT.QUIT then
             return true
         end
         if sub_sel == 1 then
@@ -232,7 +232,7 @@ local function handle_jingogyun_6(me, npc, q_jingo)
         "좋아, 곧 구해올께. 기다려줘.",
         "은혜를 갚아! 당장 달라구!",
     }, { prev = false })
-    if btn == DIALOG_RESULT.QUIT or sel == nil then
+    if btn == DIALOG_RESULT.QUIT then
         return true
     end
     if sel == 2 then
@@ -256,7 +256,7 @@ local function handle_jingogyun_7(me, npc, q_jingo)
         "응, 자, 여기있어.",
         "아니, 그냥 들려봤어.",
     }, { prev = false })
-    if btn == DIALOG_RESULT.QUIT or sel == nil then
+    if btn == DIALOG_RESULT.QUIT then
         return true
     end
     if sel == 2 then
@@ -268,11 +268,11 @@ local function handle_jingogyun_7(me, npc, q_jingo)
             { ['item'] = { ["바람의토템"] = 4 } },
             { ['item'] = { ["영력구슬"] = 1 } }
         )
-        if code == enum.EXCHANGE_RESULT.LACK_COST then
+        if code == enum.exchange_result.LACK_COST then
             me:dialog(npc, "바람의토템 4개를 가져오면 바꿔줄께.", { prev = false, next = false })
             return true
         end
-        if code == enum.EXCHANGE_RESULT.LACK_CAPACITY then
+        if code == enum.exchange_result.LACK_CAPACITY then
             me:dialog(npc, "소지품이 가득 차서 영력구슬을 받을 수 없어.", { prev = false, next = false })
             return true
         end
@@ -313,38 +313,40 @@ local function handle_jingogyun_ge8(me, npc)
     })
 end
 
-function NPC_476(me, npc)
-    local q_jingo = me:quest(quest.QUEST_JINGOGYUN)
-    local step = (q_jingo and q_jingo:step()) or 0
+return {
+    on_click = function(me, npc)
+        local q_jingo = me:quest(quest.QUEST_JINGOGYUN)
+        local step = (q_jingo and q_jingo:step()) or 0
 
-    if step < 1 then
-        handle_jingogyun_lt1(me, npc)
-        return
-    end
-    if step == 1 then
-        if handle_jingogyun_1(me, npc, q_jingo) then
+        if step < 1 then
+            handle_jingogyun_lt1(me, npc)
             return
         end
-    end
-    if step == 2 then
-        if handle_jingogyun_2(me, npc, q_jingo) then
+        if step == 1 then
+            if handle_jingogyun_1(me, npc, q_jingo) then
+                return
+            end
+        end
+        if step == 2 then
+            if handle_jingogyun_2(me, npc, q_jingo) then
+                return
+            end
+        end
+        if step == 6 then
+            if handle_jingogyun_6(me, npc, q_jingo) then
+                return
+            end
+        end
+        if step == 7 then
+            if handle_jingogyun_7(me, npc, q_jingo) then
+                return
+            end
+        end
+        if step >= 8 then
+            handle_jingogyun_ge8(me, npc)
             return
         end
-    end
-    if step == 6 then
-        if handle_jingogyun_6(me, npc, q_jingo) then
-            return
-        end
-    end
-    if step == 7 then
-        if handle_jingogyun_7(me, npc, q_jingo) then
-            return
-        end
-    end
-    if step >= 8 then
-        handle_jingogyun_ge8(me, npc)
-        return
-    end
 
-    me:dialog(npc, "준비중입니다.", { prev = false, next = false })
-end
+        me:dialog(npc, "준비중입니다.", { prev = false, next = false })
+    end
+}

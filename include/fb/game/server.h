@@ -26,6 +26,7 @@
 #include <vector>
 #include <memory>
 #include <mutex>
+#include <functional>
 #include <string_view>
 #include <unordered_map>
 
@@ -70,6 +71,8 @@ REGISTER_RESPONSE(fb::protocol::internal::request::WriteSystemMail, fb::protocol
 REGISTER_RESPONSE(fb::protocol::internal::request::Ban, fb::protocol::internal::response::Ban)
 REGISTER_RESPONSE(fb::protocol::internal::request::Unban, fb::protocol::internal::response::Unban)
 REGISTER_RESPONSE(fb::protocol::internal::request::SetExpMultiplier, fb::protocol::internal::response::SetExpMultiplier)
+REGISTER_RESPONSE(fb::protocol::internal::request::ReloadTables, fb::protocol::internal::response::ReloadTables)
+REGISTER_RESPONSE(fb::protocol::internal::request::ReloadScripts, fb::protocol::internal::response::ReloadScripts)
 REGISTER_RESPONSE(fb::protocol::internal::request::SetDropRateMultiplier, fb::protocol::internal::response::SetDropRateMultiplier)
 REGISTER_RESPONSE(fb::protocol::internal::request::SetDateTime, fb::protocol::internal::response::SetDateTime)
 REGISTER_RESPONSE(fb::protocol::marketplace::request::List, fb::protocol::marketplace::response::List)
@@ -100,8 +103,9 @@ enum class scope
 
 struct send_option
 {
-    bool with_me = true;
-    bool encrypt = true;
+    bool                                   with_me   = true;
+    bool                                   encrypt   = true;
+    std::function<bool(fb::game::object&)> condition = {};
 };
 
 class server : public fb::acceptor<fb::game::character>

@@ -14,7 +14,6 @@ void trade_bot::deserialize(fb::stream_reader<big_endian>& reader)
     {
         this->dialog_oid  = reader.read<uint32_t>();
         this->dialog_name = reader.read<std::string, uint8_t>();
-        reader.read<uint8_t>(); // trailing 0x00
         break;
     }
 

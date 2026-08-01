@@ -2,51 +2,62 @@
 -- 어검술 캐스팅
 local spell = require('lib.spell')
 
-function ON_CAST_1017(me, sp)
-    local effect = 9
-    local sound = 88
-    local hp = me:hp()*2 // 3
-    local mp = 40
-    local damage = me:hp()
-    local message = '어검술'
+return {
+    on_cast = function(me, sp)
+        local effect = 9
+        local sound = 88
+        local hp = me:hp()*2 // 3
+        local mp = 40
+        local damage = me:hp()
+        local message = '어검술'
 
-    local targets = {}
-    local x, y = me:position()
-    local direction = me:direction()
+        local targets = {}
+        local x, y = me:position()
+        local direction = me:direction()
 
-    local positions = {}
-    if direction == DIRECTION.LEFT then
-        table.insert(positions, {x-1, y  })
-        table.insert(positions, {x-2, y-1})
-        table.insert(positions, {x-2, y  })
-        table.insert(positions, {x-2, y+1})
-    elseif direction == DIRECTION.TOP then
-        table.insert(positions, {x  , y-1})
-        table.insert(positions, {x-1, y-2})
-        table.insert(positions, {x  , y-2})
-        table.insert(positions, {x+1, y-2})
-    elseif direction == DIRECTION.RIGHT then
-        table.insert(positions, {x+1, y  })
-        table.insert(positions, {x+2, y-1})
-        table.insert(positions, {x+2, y  })
-        table.insert(positions, {x+2, y+1})
-    else
-        table.insert(positions, {x  , y+1})
-        table.insert(positions, {x-1, y+2})
-        table.insert(positions, {x  , y+2})
-        table.insert(positions, {x+1, y+2})
-    end
-    for _, obj in pairs(me:nears(OBJECT_TYPE.LIFE)) do
-        local obj_x, obj_y = obj:position()
-        for _, position in pairs(positions) do
-            if obj_x == position[1] and obj_y == position[2] then
-                table.insert(targets, obj)
-                break
+        local positions = {}
+        if direction == DIRECTION.LEFT then
+            table.insert(positions, {x-1, y  })
+            table.insert(positions, {x-2, y-1})
+            table.insert(positions, {x-2, y  })
+            table.insert(positions, {x-2, y+1})
+        elseif direction == DIRECTION.TOP then
+            table.insert(positions, {x  , y-1})
+            table.insert(positions, {x-1, y-2})
+            table.insert(positions, {x  , y-2})
+            table.insert(positions, {x+1, y-2})
+        elseif direction == DIRECTION.RIGHT then
+            table.insert(positions, {x+1, y  })
+            table.insert(positions, {x+2, y-1})
+            table.insert(positions, {x+2, y  })
+            table.insert(positions, {x+2, y+1})
+        else
+            table.insert(positions, {x  , y+1})
+            table.insert(positions, {x-1, y+2})
+            table.insert(positions, {x  , y+2})
+            table.insert(positions, {x+1, y+2})
+        end
+        for _, obj in pairs(me:nears(OBJECT_TYPE.LIFE)) do
+            local obj_x, obj_y = obj:position()
+            for _, position in pairs(positions) do
+                if obj_x == position[1] and obj_y == position[2] then
+                    table.insert(targets, obj)
+                    break
+                end
             end
         end
-    end
 
-    if not spell.attack_cast(me, targets, sp, {hp = hp, mp = mp, damage = damage, message = message, sound = sound, effect = effect}) then
-        return
-    end
-end
+        if not spell.attack_cast(me, targets, sp, {hp = hp, mp = mp, damage = damage, message = message, sound = sound, effect = effect}) then
+            return
+        end
+    end,
+
+    -- on_buff = function(me, sp)
+    -- end,
+
+    -- on_unbuff = function(me, sp)
+    -- end,
+
+    -- on_concast = function(me, sp)
+    -- end
+}

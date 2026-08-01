@@ -1,10 +1,16 @@
 -- mob: 산소괴왕
--- 산소괴왕 공격
-function ON_MOB_ATTACK_575(me, you)
-    return false
-end
 
--- 산소괴왕 사망
--- function ON_MOB_DIE_575(me)
---
--- end
+return {
+    on_mob_attack = function(me, you)
+        return false
+    end,
+
+    -- on_mob_die = function(me)
+    -- end,
+
+    -- on_mob_kill = function(me, mobs)
+    -- end,
+
+    -- on_mob_spell_hit = function(me, you, spell)
+    -- end
+}

@@ -1,11 +1,15 @@
 -- item: 무도가옷
 
--- 무도가옷 사용 스크립트
--- function ON_ACTIVATED_716(me, item)
---
--- end
+return {
+    -- on_activated = function(me, item)
+    -- end,
 
--- 무도가옷 해제 스크립트
--- function ON_DEACTIVATED_716(me, item)
---
--- end
+    -- on_deactivated = function(me, item)
+    -- end,
+
+    -- on_concast = function(me, item)
+    -- end,
+
+    -- on_attack = function(me, item)
+    -- end
+}

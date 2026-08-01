@@ -1,5 +1,15 @@
 -- item: 비패교환증
 
--- 비패교환증 해제 스크립트
--- function ON_DEACTIVATED_14019(me, item)
--- end
+return {
+    -- on_activated = function(me, item)
+    -- end,
+
+    -- on_deactivated = function(me, item)
+    -- end,
+
+    -- on_concast = function(me, item)
+    -- end,
+
+    -- on_attack = function(me, item)
+    -- end
+}

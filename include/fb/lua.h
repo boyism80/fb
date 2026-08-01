@@ -282,6 +282,7 @@ private:
     promise_type _promise;
     call_options _options;
     bool         _call_engaged = false;
+    std::string  _script_path;
 
 protected:
     lua_State*  _ctx = nullptr;
@@ -305,10 +306,9 @@ public:
     context operator= (const context&) = delete;
 
 public:
-    template <class... Args>
-    bool load(std::string_view fmt, Args&&... args);
-    template <class... Args>
-    bool                          execute(std::string_view fmt, Args&&... args);
+    template <class... Args> bool load(std::string_view fmt, Args&&... args);
+    template <class... Args> bool execute(std::string_view fmt, Args&&... args);
+    template <class... Args> bool dofile(std::string_view fmt, Args&&... args);
     template <class... Args> bool func(std::string_view fmt, Args&&... args);
     context&                      pushstring(std::string_view value);
     context&                      pushinteger(lua_Integer value);
@@ -567,6 +567,7 @@ public:
     const call_options& options() const;
     bool                call_engaged() const;
     void                clear_call_engaged();
+    void                clear_script_path();
     void                clear_loaded_modules();
 
 public:
@@ -622,6 +623,7 @@ class root : public context
 {
 public:
     static constexpr const char* REGISTRY_KEY = "fb.root";
+    static constexpr const char* MODULES_KEY  = "fb.script_modules";
 
 public:
     using unique_lua_map = std::unordered_map<lua_State*, std::unique_ptr<thread>>;
@@ -649,6 +651,11 @@ public:
 
 public:
     bool        dump(std::string_view path);
+    void        invalidate(std::string_view path);
+    void        unload_package(std::string_view module_name);
+    bool        has_module(std::string_view path);
+    bool        store_module(lua_State* L, std::string_view path);
+    bool        push_module(lua_State* L, std::string_view path);
     context*    pop(context* parent, call_options options = {});
     context*    get(lua_State* ctx);
     void        release(context& ctx);
@@ -735,6 +742,7 @@ public:
     context::guard      open(context* parent = nullptr, call_options options = {});
     context::guard      open(std::string_view path, std::string_view func, context* parent = nullptr, call_options options = {});
     async::task<void>   dump(std::string_view path);
+    async::task<void>   reload_scripts(const std::vector<std::string>& relative_paths);
 
     base_type::iterator begin();
     base_type::iterator end();
@@ -775,23 +783,48 @@ bool fb::lua::context::load(std::string_view fmt, Args&&... args)
     if (fname.empty())
         return false;
 
+    this->_script_path.clear();
+
+    auto* root = this->owner != nullptr ? static_cast<fb::lua::root*>(this->owner) : static_cast<fb::lua::root*>(this);
+
 #if defined DEBUG || defined _DEBUG
-    if (luaL_dofile(*this, fname.c_str()) != LUA_OK)
+    if (luaL_loadfile(*this, fname.c_str()) != LUA_OK)
     {
         this->pop(1);
         fb::lua::report_load_failed(fname);
         return false;
     }
+
+    if (lua_pcall(*this, 0, 1, 0) != LUA_OK)
+    {
+        this->pop(1);
+        fb::lua::report_load_failed(fname);
+        return false;
+    }
+
+    if (root->store_module(*this, fname) == false)
+    {
+        fb::lua::report_load_failed(fname);
+        return false;
+    }
+
+    this->_script_path = fname;
     return true;
 #else
-    if (this->owner == nullptr)
+    if (auto cached = root->_bytecodes.find(fname); cached != root->_bytecodes.end())
+    {
+        if (cached->second.empty() || root->has_module(fname) == false)
+            return false;
+
+        this->_script_path = fname;
+        return true;
+    }
+
+    if (root->dump(fname) == false)
         return false;
 
-    auto root = static_cast<fb::lua::root*>(this->owner);
-    if (auto cached = root->_bytecodes.find(fname); cached != root->_bytecodes.end())
-        return cached->second.empty() == false;
-
-    return root->dump(fname);
+    this->_script_path = fname;
+    return true;
 #endif
 }
 
@@ -802,6 +835,10 @@ bool fb::lua::context::execute(std::string_view fmt, Args&&... args)
     if (fname.empty())
         return false;
 
+    this->_script_path.clear();
+
+    auto* root = this->owner != nullptr ? static_cast<fb::lua::root*>(this->owner) : static_cast<fb::lua::root*>(this);
+
 #if defined DEBUG || defined _DEBUG
     if (luaL_loadfile(*this, fname.c_str()) != LUA_OK)
     {
@@ -809,17 +846,18 @@ bool fb::lua::context::execute(std::string_view fmt, Args&&... args)
         return false;
     }
 
-    if (lua_pcall(*this, 0, LUA_MULTRET, 0) != LUA_OK)
+    if (lua_pcall(*this, 0, 1, 0) != LUA_OK)
     {
         this->pop(1);
         return false;
     }
-    return true;
-#else
-    if (this->owner == nullptr)
+
+    if (root->store_module(*this, fname) == false)
         return false;
 
-    auto root = static_cast<fb::lua::root*>(this->owner);
+    this->_script_path = fname;
+    return true;
+#else
     if (root->dump(fname) == false)
         return false;
 
@@ -834,23 +872,52 @@ bool fb::lua::context::execute(std::string_view fmt, Args&&... args)
         return false;
     }
 
-    if (lua_pcall(*this, 0, LUA_MULTRET, 0) != LUA_OK)
+    if (lua_pcall(*this, 0, 1, 0) != LUA_OK)
     {
         this->pop(1);
         return false;
     }
+
+    if (root->store_module(*this, fname) == false)
+        return false;
+
+    this->_script_path = fname;
     return true;
 #endif
+}
+
+template <class... Args>
+bool fb::lua::context::dofile(std::string_view fmt, Args&&... args)
+{
+    auto fname = std::vformat(fmt, std::make_format_args(args...));
+    if (fname.empty())
+        return false;
+
+    if (luaL_dofile(*this, fname.c_str()) != LUA_OK)
+    {
+        this->pop(1);
+        return false;
+    }
+
+    // Discard any return values; callers only need side effects.
+    lua_settop(*this, 0);
+    return true;
 }
 
 template <class... Args>
 bool fb::lua::context::func(std::string_view fmt, Args&&... args)
 {
     auto fname = std::vformat(fmt, std::make_format_args(args...));
-    if (fname.empty())
+    if (fname.empty() || this->_script_path.empty())
         return false;
 
-    lua_getglobal(*this, fname.c_str());
+    auto* root = this->owner != nullptr ? static_cast<fb::lua::root*>(this->owner) : static_cast<fb::lua::root*>(this);
+
+    if (root->push_module(*this, this->_script_path) == false)
+        return false;
+
+    lua_getfield(*this, -1, fname.c_str());
+    lua_remove(*this, -2);
     if (lua_type(*this, -1) != LUA_TFUNCTION)
     {
         this->pop(1);

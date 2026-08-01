@@ -1,4 +1,6 @@
 -- npc: 폭염왕장식품
--- function NPC_124(me, npc)
---
--- end
+
+return {
+    -- on_click = function(me, npc)
+    -- end
+}

@@ -1,16 +1,15 @@
 -- item: 횃불
 
--- 횃불 사용 스크립트
--- function ON_ACTIVATED_84(me, item)
---
--- end
+return {
+    -- on_activated = function(me, item)
+    -- end,
 
--- 횃불 사용 스크립트
--- function ON_ACTIVATED_84(me, item)
---
--- end
+    -- on_deactivated = function(me, item)
+    -- end,
 
--- 횃불 해제 스크립트
--- function ON_DEACTIVATED_84(me, item)
---
--- end
+    -- on_concast = function(me, item)
+    -- end,
+
+    -- on_attack = function(me, item)
+    -- end
+}

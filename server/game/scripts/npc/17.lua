@@ -175,11 +175,11 @@ local function run_appraise_dragon_scale(me, npc)
         { ['item'] = { [ITEM_DRAGON_SCALE] = 1 } },
         reward
     )
-    if code == enum.EXCHANGE_RESULT.LACK_COST then
+    if code == enum.exchange_result.LACK_COST then
         me:dialog(npc, '아니! 이보게.. 나한테 거짓말을 해도 되는가? ' .. name_with(ITEM_DRAGON_SCALE, '이', '가') .. ' 없지 않은가. 썩 물러 가게!!!', { prev = false, next = false })
         return
     end
-    if code == enum.EXCHANGE_RESULT.LACK_CAPACITY then
+    if code == enum.exchange_result.LACK_CAPACITY then
         me:dialog(npc, '소지품이 가득 차서 비늘을 받을 수 없군.', { prev = false, next = false })
         return
     end
@@ -194,17 +194,19 @@ local function run_appraise_dragon_scale(me, npc)
     end
 end
 
-function NPC_17(me, npc)
-    local sel = me:list(npc, '무슨일로 날 찾으시나?', {
-        '용의비늘이 무엇인가요?',
-        '용의비늘을 가지고 왔어요..',
-    }, { prev = false })
-    if sel == nil then
-        return
+return {
+    on_click = function(me, npc)
+        local sel = me:list(npc, '무슨일로 날 찾으시나?', {
+            '용의비늘이 무엇인가요?',
+            '용의비늘을 가지고 왔어요..',
+        }, { prev = false })
+        if sel == nil then
+            return
+        end
+        if sel == 1 then
+            run_dragon_scale_info(me, npc)
+        elseif sel == 2 then
+            run_appraise_dragon_scale(me, npc)
+        end
     end
-    if sel == 1 then
-        run_dragon_scale_info(me, npc)
-    elseif sel == 2 then
-        run_appraise_dragon_scale(me, npc)
-    end
-end
+}

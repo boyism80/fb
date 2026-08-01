@@ -1,11 +1,15 @@
 -- item: 힘의투구6
 
--- 힘의투구6 사용 스크립트
--- function ON_ACTIVATED_1372(me, item)
---
--- end
+return {
+    -- on_activated = function(me, item)
+    -- end,
 
--- 힘의투구6 해제 스크립트
--- function ON_DEACTIVATED_1372(me, item)
---
--- end
+    -- on_deactivated = function(me, item)
+    -- end,
+
+    -- on_concast = function(me, item)
+    -- end,
+
+    -- on_attack = function(me, item)
+    -- end
+}

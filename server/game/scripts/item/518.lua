@@ -1,13 +1,15 @@
 -- item: 홍곡검
 
--- 홍곡검 사용 스크립트
--- function ON_ACTIVATED_518(me, item)
--- end
+return {
+    -- on_activated = function(me, item)
+    -- end,
 
--- 홍곡검 해제 스크립트
--- function ON_DEACTIVATED_518(me, item)
--- end
+    -- on_deactivated = function(me, item)
+    -- end,
 
--- 홍곡검 공격 스크립트
--- function ON_ATTACK_518(me, item)
--- end
+    -- on_concast = function(me, item)
+    -- end,
+
+    -- on_attack = function(me, item)
+    -- end
+}

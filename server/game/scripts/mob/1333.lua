@@ -1,3 +1,15 @@
 -- mob: 보름달
--- function ON_MOB_DIE_1333(me)
--- end
+
+return {
+    -- on_mob_attack = function(me, you)
+    -- end,
+
+    -- on_mob_die = function(me)
+    -- end,
+
+    -- on_mob_kill = function(me, mobs)
+    -- end,
+
+    -- on_mob_spell_hit = function(me, you, spell)
+    -- end
+}

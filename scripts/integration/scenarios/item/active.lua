@@ -112,6 +112,12 @@ local function equip_target_loadout(target)
 end
 
 local function enter_ghost(target, caster)
+    local option = require("integration.lib.option")
+    if option.disable_pk_protect(caster) == false then
+        log("fatal", "uitae: failed to disable PK_PROTECT for caster")
+        return false
+    end
+
     caster:setup_bot_stats(100000, 100000)
     target:set_current_hp_mp(50, target:mp())
 

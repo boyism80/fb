@@ -1,11 +1,15 @@
 -- item: 수류곡도
 
--- 수류곡도 사용 스크립트
--- function ON_ACTIVATED_191(me, item)
---
--- end
+return {
+    -- on_activated = function(me, item)
+    -- end,
 
--- 수류곡도 해제 스크립트
--- function ON_DEACTIVATED_191(me, item)
---
--- end
+    -- on_deactivated = function(me, item)
+    -- end,
+
+    -- on_concast = function(me, item)
+    -- end,
+
+    -- on_attack = function(me, item)
+    -- end
+}

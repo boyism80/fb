@@ -145,7 +145,7 @@ async::task<bool> mob::call_script()
 
     auto& model = this->based<fb::model::mob>();
     auto  path  = std::format("scripts/mob/{}.lua", model.id);
-    auto  func  = std::format("ON_MOB_ATTACK_{}", model.id);
+    auto  func  = "on_mob_attack";
 
     if (this->_attack_thread != nullptr)
         co_return false;
@@ -452,7 +452,8 @@ async::task<void> mob::drop_model_items(const fb::model::mob&       model,
     if (map == nullptr || model.drop.empty())
         co_return;
 
-    auto& drop = table::drop[model.drop];
+    auto  drop_table = table::drop;
+    auto& drop       = drop_table[model.drop];
     for (auto& dsl : drop.dsl)
     {
         switch (dsl.header)

@@ -1,6 +1,20 @@
 const pulumi = require("@pulumi/pulumi")
 const k8s = require("@pulumi/kubernetes")
 
+function secretOrEnv(stackConfig, configKey, envKeys) {
+    const fromConfig = stackConfig.getSecret(configKey)
+    if (fromConfig !== undefined)
+        return fromConfig
+
+    for (const key of envKeys) {
+        const value = process.env[key]
+        if (value)
+            return value
+    }
+
+    return ""
+}
+
 module.exports = {
     setup: function (namespace, conf, dependsOn) {
 
@@ -130,6 +144,62 @@ module.exports = {
             config.Security.ElevationSecret = adminToolConf.security.elevationSecret
         }
 
+        // TablePublish / ScriptPublish are infrastructure secrets only (not in ConfigMap).
+        // Same model as `host`: Pulumi stack secret and/or env injected from GitHub Actions.
+        const stackConfig = new pulumi.Config()
+        const tablePublishUploadBaseUrl = secretOrEnv(stackConfig, "tablePublishUploadBaseUrl", [
+            "TABLE_PUBLISH_UPLOAD_BASE_URL"
+        ])
+        const tablePublishDownloadBaseUrl = secretOrEnv(stackConfig, "tablePublishDownloadBaseUrl", [
+            "TABLE_PUBLISH_DOWNLOAD_BASE_URL"
+        ])
+        const tablePublishUsername = secretOrEnv(stackConfig, "tablePublishUsername", [
+            "TABLE_PUBLISH_USERNAME",
+            "NAS_ID"
+        ])
+        const tablePublishPassword = secretOrEnv(stackConfig, "tablePublishPassword", [
+            "TABLE_PUBLISH_PASSWORD",
+            "NAS_PW"
+        ])
+        const scriptPublishUploadBaseUrl = secretOrEnv(stackConfig, "scriptPublishUploadBaseUrl", [
+            "SCRIPT_PUBLISH_UPLOAD_BASE_URL"
+        ])
+        const scriptPublishDownloadBaseUrl = secretOrEnv(stackConfig, "scriptPublishDownloadBaseUrl", [
+            "SCRIPT_PUBLISH_DOWNLOAD_BASE_URL"
+        ])
+        const scriptPublishUsername = secretOrEnv(stackConfig, "scriptPublishUsername", [
+            "SCRIPT_PUBLISH_USERNAME",
+            "TABLE_PUBLISH_USERNAME",
+            "NAS_ID"
+        ])
+        const scriptPublishPassword = secretOrEnv(stackConfig, "scriptPublishPassword", [
+            "SCRIPT_PUBLISH_PASSWORD",
+            "TABLE_PUBLISH_PASSWORD",
+            "NAS_PW"
+        ])
+
+        const tablePublishSecret = new k8s.core.v1.Secret("admin-tool-table-publish", {
+            metadata: { name: "admin-tool-table-publish", namespace: namespace.metadata.name },
+            type: "Opaque",
+            stringData: {
+                uploadBaseUrl: tablePublishUploadBaseUrl,
+                downloadBaseUrl: tablePublishDownloadBaseUrl,
+                username: tablePublishUsername,
+                password: tablePublishPassword,
+            },
+        }, { dependsOn: dependsOn })
+
+        const scriptPublishSecret = new k8s.core.v1.Secret("admin-tool-script-publish", {
+            metadata: { name: "admin-tool-script-publish", namespace: namespace.metadata.name },
+            type: "Opaque",
+            stringData: {
+                uploadBaseUrl: scriptPublishUploadBaseUrl,
+                downloadBaseUrl: scriptPublishDownloadBaseUrl,
+                username: scriptPublishUsername,
+                password: scriptPublishPassword,
+            },
+        }, { dependsOn: dependsOn })
+
         const configMap = new k8s.core.v1.ConfigMap("admin-tool", {
             metadata: { name: "admin-tool", namespace: namespace.metadata.name },
             data: {
@@ -175,6 +245,78 @@ module.exports = {
                                     {
                                         name: 'ASPNETCORE_HTTP_PORTS',
                                         value: '80'
+                                    },
+                                    {
+                                        name: 'TablePublish__UploadBaseUrl',
+                                        valueFrom: {
+                                            secretKeyRef: {
+                                                name: tablePublishSecret.metadata.name,
+                                                key: 'uploadBaseUrl'
+                                            }
+                                        }
+                                    },
+                                    {
+                                        name: 'TablePublish__DownloadBaseUrl',
+                                        valueFrom: {
+                                            secretKeyRef: {
+                                                name: tablePublishSecret.metadata.name,
+                                                key: 'downloadBaseUrl'
+                                            }
+                                        }
+                                    },
+                                    {
+                                        name: 'TablePublish__Username',
+                                        valueFrom: {
+                                            secretKeyRef: {
+                                                name: tablePublishSecret.metadata.name,
+                                                key: 'username'
+                                            }
+                                        }
+                                    },
+                                    {
+                                        name: 'TablePublish__Password',
+                                        valueFrom: {
+                                            secretKeyRef: {
+                                                name: tablePublishSecret.metadata.name,
+                                                key: 'password'
+                                            }
+                                        }
+                                    },
+                                    {
+                                        name: 'ScriptPublish__UploadBaseUrl',
+                                        valueFrom: {
+                                            secretKeyRef: {
+                                                name: scriptPublishSecret.metadata.name,
+                                                key: 'uploadBaseUrl'
+                                            }
+                                        }
+                                    },
+                                    {
+                                        name: 'ScriptPublish__DownloadBaseUrl',
+                                        valueFrom: {
+                                            secretKeyRef: {
+                                                name: scriptPublishSecret.metadata.name,
+                                                key: 'downloadBaseUrl'
+                                            }
+                                        }
+                                    },
+                                    {
+                                        name: 'ScriptPublish__Username',
+                                        valueFrom: {
+                                            secretKeyRef: {
+                                                name: scriptPublishSecret.metadata.name,
+                                                key: 'username'
+                                            }
+                                        }
+                                    },
+                                    {
+                                        name: 'ScriptPublish__Password',
+                                        valueFrom: {
+                                            secretKeyRef: {
+                                                name: scriptPublishSecret.metadata.name,
+                                                key: 'password'
+                                            }
+                                        }
                                     }],
                                 volumeMounts: [{
                                     name: "config-volume",
@@ -209,6 +351,7 @@ module.exports = {
         }, { dependsOn: dependsOn })
         
         // Collect all resources
+        resources.push(tablePublishSecret)
         resources.push(configMap)
         resources.push(deployment)
         resources.push(service)
@@ -216,4 +359,3 @@ module.exports = {
         return resources
     }
 }
-

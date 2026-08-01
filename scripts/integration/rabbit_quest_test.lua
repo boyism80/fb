@@ -115,7 +115,7 @@ test_suite {
                 end
             end)
 
-            -- Bot1 kills 토깽이 -> ON_MOB_KILL opens first list dialog; mob stays invincible.
+            -- Bot1 kills 토깽이 -> on_mob_kill opens first list dialog; mob stays invincible.
             log("debug", "rabbit quest: bot1 hellfire kill (expect list dialog)")
             local dlg = bot1:request_dialog_ext(
                 protocol.spell_cast("TARGET", hell1, "", mob_oid, mob.position),

@@ -1,5 +1,15 @@
 -- item: 계피
 
--- 계피 해제 스크립트
--- function ON_DEACTIVATED_12465(me, item)
--- end
+return {
+    -- on_activated = function(me, item)
+    -- end,
+
+    -- on_deactivated = function(me, item)
+    -- end,
+
+    -- on_concast = function(me, item)
+    -- end,
+
+    -- on_attack = function(me, item)
+    -- end
+}

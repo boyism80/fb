@@ -1279,28 +1279,33 @@ M.functions = {
         
         ['unknown_12'] = {
             ['privilege'] = ROLE.ADMIN,
-            ['usage'] = '[oid] [파티슬롯] [레벨인코딩] - 그룹 랭크 패킷 전송 (테스트)',
+            ['usage'] = '[oid] [slot] [flag] - S2C 0x12 (slot=인벤문자 1=a, flag<0xA0→[무장] / >=0xA0→레벨업토스트). 생략 시 자신 oid·slot0·flag1',
             ['command'] = function (me, args)
-                -- 그룹랭크가 아니라 뭔지 모르겠는데
-                --  oid, slot(인벤토리 슬롯, 1 based), weapon
-                -- 장착무기 외형이 갑자기 변하고 인벤토리 슬롯에 해당되는 아이템 뒤에 [무장]이라는 글자가 붙음
-                local oid, slot, level = table.unpack(args)
-                me:unknown_12(tonumber(oid) or 0, tonumber(slot) or 0, tonumber(level) or 1)
+                local oid, slot, flag = table.unpack(args)
+                if oid or slot or flag then
+                    me:unknown_12(tonumber(oid) or 0, tonumber(slot) or 0, tonumber(flag) or 1)
+                else
+                    me:unknown_12()
+                end
                 return true
             end,
         },
-        
-        ['unknown_26'] = {
+
+        ['move_confirm_noscroll'] = {
             ['privilege'] = ROLE.ADMIN,
-            ['usage'] = '[flags] [x] [y] [rel_x] [rel_y] [zone_slot] - cmd 0x26 (동작 간헐적, 위치워프 아님, 테스트)',
+            ['usage'] = '[direction] [x] [y] [vx] [vy] [walk_slot] - 이동 ACK(노스크롤, 0x26). 생략 시 현재 위치',
             ['command'] = function (me, args)
-                local flags, x, y, rx, ry, slot = table.unpack(args)
-                me:unknown_26(tonumber(flags) or 0, tonumber(x) or 0, tonumber(y) or 0,
-                    tonumber(rx) or 0, tonumber(ry) or 0, tonumber(slot) or 0)
+                local dir, x, y, vx, vy, slot = table.unpack(args)
+                if dir or x or y or vx or vy or slot then
+                    me:move_confirm_noscroll(tonumber(dir) or 0, tonumber(x) or 0, tonumber(y) or 0,
+                        tonumber(vx) or 0, tonumber(vy) or 0, tonumber(slot) or 0)
+                else
+                    me:move_confirm_noscroll()
+                end
                 return true
             end,
         },
-        
+
         ['UI화면'] = {
             ['privilege'] = ROLE.ADMIN,
             ['usage'] = '[0=인벤토리 2=스킬 4=상태 6=게시판 7=세부상태 8=업적] - UI 화면 전환 (cmd 0x3E)',
@@ -1331,36 +1336,65 @@ M.functions = {
             end,
         },
         
-        ['unknown_4B'] = {
+        ['c2s_relay'] = {
             ['privilege'] = ROLE.ADMIN,
-            ['usage'] = '[text] - unknown packet 0x4B (no visible reaction, test)',
+            ['usage'] = '[payload] - 클라이언트가 C2S로 재전송 (0x4B). 생략 시 miss(0x0C)+자기 oid',
             ['command'] = function (me, args)
-                local payload = (args and #args > 0) and table.concat(args, ' ') or ''
-                me:unknown_4B(payload)
-                return true
-            end,
-        },
-        
-        ['unknown_4D'] = {
-            ['privilege'] = ROLE.ADMIN,
-            ['usage'] = '[type] [s1]..[s8] - packet 0x4D (UserInfo). type=0: safe, no strings. type=2: 8 EUC-KR strings. Client requires USERINFO.EPF in data path or shows "File not found" and exits.',
-            ['command'] = function (me, args)
-                local type_val = tonumber(args[1]) or 0
-                local default_str = 'qweqwe'
-                local s = {}
-                for i = 1, 8 do
-                    s[i] = (args and args[i + 1] and tostring(args[i + 1]) ~= '') and tostring(args[i + 1]) or default_str
+                if args and #args > 0 then
+                    me:c2s_relay(table.concat(args, ' '))
+                else
+                    me:c2s_relay()
                 end
-                me:unknown_4D(type_val, s[1], s[2], s[3], s[4], s[5], s[6], s[7], s[8])
                 return true
             end,
         },
-        
-        ['unknown_1B'] = {
+
+        ['user_info'] = {
             ['privilege'] = ROLE.ADMIN,
-            ['usage'] = '- unknown packet 0x1B (causes client crash, test only)',
+            ['usage'] = '[type] [s1]..[s8] - USERINFO UI (0x4D). 생략 시 type=0 빈 폼. type=2면 유효 콤보 기본값',
             ['command'] = function (me, args)
-                me:unknown_1B()
+                local type_val = tonumber(args and args[1]) or 0
+                if args and #args > 1 then
+                    local s = {}
+                    for i = 1, 8 do
+                        s[i] = (args[i + 1] and tostring(args[i + 1]) ~= '') and tostring(args[i + 1]) or nil
+                    end
+                    me:user_info(type_val, s[1], s[2], s[3], s[4], s[5], s[6], s[7], s[8])
+                else
+                    me:user_info(type_val)
+                end
+                return true
+            end,
+        },
+
+        ['popup_message'] = {
+            ['privilege'] = ROLE.ADMIN,
+            ['usage'] = '[text] [p0] [p1] [p2] [p3] - 긴 타이머 팝업 (0x35). 생략 시 기본 문구/크기',
+            ['command'] = function (me, args)
+                local text = args and args[1]
+                local p0, p1, p2, p3 = tonumber(args and args[2]), tonumber(args and args[3]), tonumber(args and args[4]), tonumber(args and args[5])
+                if text then
+                    me:popup_message(text, p0, p1, p2, p3)
+                else
+                    me:popup_message()
+                end
+                return true
+            end,
+        },
+
+        ['popup_input'] = {
+            ['privilege'] = ROLE.ADMIN,
+            ['usage'] = '[text] [p0] [p1] [p2] [p3] - 편집 팝업 입력 (S2C 0x1B). 닫으면 텍스트 반환 (yield)',
+            ['command'] = function (me, args)
+                local text = args and args[1]
+                local p0, p1, p2, p3 = tonumber(args and args[2]), tonumber(args and args[3]), tonumber(args and args[4]), tonumber(args and args[5])
+                local result
+                if text then
+                    result = me:popup_input(text, p0, p1, p2, p3)
+                else
+                    result = me:popup_input()
+                end
+                me:chat(string.format('popup_input result: %s', tostring(result)))
                 return true
             end,
         },
@@ -1374,15 +1408,6 @@ M.functions = {
                 local x = tonumber(args[3]) or 0
                 local y = tonumber(args[4]) or 0
                 me:holyday_screen(screen, direction, {x, y})
-                return true
-            end,
-        },
-        
-        ['unknown_35'] = {
-            ['privilege'] = ROLE.ADMIN,
-            ['usage'] = '- unknown packet 0x35 (causes client crash, test only)',
-            ['command'] = function (me, args)
-                me:unknown_35()
                 return true
             end,
         },
@@ -1937,6 +1962,59 @@ M.functions = {
                     http_response_delay(value)
                     me:message(string.format("HTTP 응답 지연을 %dms로 설정했습니다. (이 서버에만 적용됩니다)", value), MESSAGE_TYPE.BROWN)
                 end
+                return true
+            end,
+        },
+
+        ['이속고정'] = {
+            ['privilege'] = ROLE.ADMIN,
+            ['usage'] = '[on|off] - LOCK_WALK_SPEED(0x04) 조회/설정 (클라 스티키, off 후 재접 필요할 수 있음)',
+            ['command'] = function (me, args)
+                if #args == 0 then
+                    local enabled = me:option(OPTION.LOCK_WALK_SPEED)
+                    me:message(string.format("이속고정(LOCK_WALK_SPEED): %s", enabled and "ON" or "OFF"), MESSAGE_TYPE.BROWN)
+                    return true
+                end
+
+                local arg = string.lower(tostring(args[1]))
+                local enabled = nil
+                if arg == 'on' or arg == '1' or arg == 'true' then
+                    enabled = true
+                elseif arg == 'off' or arg == '0' or arg == 'false' then
+                    enabled = false
+                else
+                    me:message("사용법: /이속고정 [on|off]")
+                    return true
+                end
+
+                me:option(OPTION.LOCK_WALK_SPEED, enabled)
+                me:message(string.format("이속고정(LOCK_WALK_SPEED): %s", enabled and "ON" or "OFF"), MESSAGE_TYPE.BROWN)
+                if not enabled then
+                    me:message("클라 플래그는 스티키입니다. OFF가 반영되지 않으면 재접속하세요.", MESSAGE_TYPE.BROWN)
+                end
+                return true
+            end,
+        },
+
+        ['이속'] = {
+            ['privilege'] = ROLE.ADMIN,
+            ['usage'] = '[0-5] - 기본 이속(base_speed) 조회/설정 (유효값=base+buff, clamp 0~5)',
+            ['command'] = function (me, args)
+                if #args == 0 then
+                    me:message(string.format("이속 base=%d buff=%d effective=%d",
+                        me:base_speed(), me:buff_speed(), me:speed()), MESSAGE_TYPE.BROWN)
+                    return true
+                end
+
+                local value = tonumber(args[1])
+                if value == nil or value < 0 or value > 5 or value ~= math.floor(value) then
+                    me:message("사용법: /이속 [0-5]")
+                    return true
+                end
+
+                me:base_speed(value)
+                me:message(string.format("기본 이속(base_speed)을 %d로 설정했습니다. (effective=%d)",
+                    me:base_speed(), me:speed()), MESSAGE_TYPE.BROWN)
                 return true
             end,
         }

@@ -284,7 +284,7 @@ bool map::container::try_mark_init_script(const std::shared_ptr<fb::game::map>& 
 async::task<void> map::container::run_init_script(const std::shared_ptr<fb::game::map>& map)
 {
     auto path = std::format("scripts/map/{}.lua", map->model.id);
-    auto func = std::format("ON_MAP_INIT_{}", map->model.id);
+    auto func = "on_map_init";
 
     auto lua = this->server.lua.open(path, func);
     if (!lua)
@@ -322,7 +322,7 @@ async::task<void> map::container::invoke_init_script_wait(const std::shared_ptr<
 
 void map::container::spawn_npcs(const std::shared_ptr<fb::game::map>& map)
 {
-    if (table::npc_spawn.contains(map->model.id) == false)
+    if (table::npc_spawn->contains(map->model.id) == false)
         return;
 
     for (auto& spawn : table::npc_spawn[map->model.id])
@@ -348,7 +348,8 @@ void map::container::spawn_npc(const fb::model::npc_spawn& spawn)
 
 void map::container::spawn_npc(const fb::model::npc_spawn& spawn, const std::shared_ptr<fb::game::map>& map)
 {
-    auto& npc_model = table::npc[spawn.npc];
+    auto  npc_table = table::npc;
+    auto& npc_model = npc_table[spawn.npc];
     auto  npc       = this->server.make<fb::game::npc>(npc_model);
     auto  weak      = npc->weak_from_this_as<fb::game::npc>();
     auto  position  = spawn.position;
@@ -458,7 +459,7 @@ std::shared_ptr<fb::game::map> map::container::create_instance(const std::shared
     builder.func = [this, map](auto& thread) -> async::task<void> {
         auto params = thread.template data<thread_params>();
         params->add_map(map);
-        if (table::mob_spawn.contains(map->model.id))
+        if (table::mob_spawn->contains(map->model.id))
         {
             for (auto& spawn : table::mob_spawn[map->model.id])
             {

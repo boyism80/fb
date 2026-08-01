@@ -1,6 +1,15 @@
 -- item: 하얀시약
 
--- 하얀시약 사용 스크립트
--- function ON_ACTIVATED_3098(me, item)
---
--- end
+return {
+    -- on_activated = function(me, item)
+    -- end,
+
+    -- on_deactivated = function(me, item)
+    -- end,
+
+    -- on_concast = function(me, item)
+    -- end,
+
+    -- on_attack = function(me, item)
+    -- end
+}

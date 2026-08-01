@@ -27,6 +27,7 @@ fb::game::stat::stat(const stat& other) :
     _buff_magdef(other._buff_magdef),
     _buff_dam(other._buff_dam),
     _buff_hit(other._buff_hit),
+    _buff_speed(other._buff_speed),
     _buff_regenerative(other._buff_regenerative),
     _buff_resist(other._buff_resist)
 { }
@@ -44,6 +45,7 @@ fb::game::stat::stat(stat&& other) :
     _buff_magdef(other._buff_magdef),
     _buff_dam(other._buff_dam),
     _buff_hit(other._buff_hit),
+    _buff_speed(other._buff_speed),
     _buff_regenerative(other._buff_regenerative),
     _buff_resist(std::move(other._buff_resist))
 { }
@@ -154,6 +156,18 @@ void fb::game::stat::buff_hit(int8_t value)
 {
     this->owner.assert_thread();
     this->_buff_hit = value;
+}
+
+int8_t fb::game::stat::buff_speed() const
+{
+    this->owner.assert_thread();
+    return this->_buff_speed;
+}
+
+void fb::game::stat::buff_speed(int8_t value)
+{
+    this->owner.assert_thread();
+    this->_buff_speed = value;
 }
 
 uint64_t fb::game::stat::buff_regenerative() const
@@ -404,6 +418,23 @@ int8_t fb::game::stat::hit() const
     return static_cast<int8_t>(std::max<int16_t>(-128, std::min<int16_t>(127, sum)));
 }
 
+uint8_t fb::game::stat::base_speed() const
+{
+    this->owner.assert_thread();
+    return 0;
+}
+
+uint8_t fb::game::stat::speed() const
+{
+    this->owner.assert_thread();
+    auto sum = static_cast<int>(this->base_speed()) + static_cast<int>(this->buff_speed());
+    if (sum < 0)
+        return 0;
+    if (sum > 5)
+        return 5;
+    return static_cast<uint8_t>(sum);
+}
+
 uint64_t fb::game::stat::regenerative() const
 {
     this->owner.assert_thread();
@@ -511,6 +542,22 @@ void character_stat::base_hit(uint8_t value, bool notify)
 {
     this->owner.assert_thread();
     this->_hit = value;
+}
+
+void character_stat::base_speed(uint8_t value, bool notify)
+{
+    this->owner.assert_thread();
+
+    if (value > 5)
+        value = 5;
+
+    if (this->_speed == value)
+        return;
+
+    this->_speed = value;
+    // Trailer walk_speed is always appended to update_internal.
+    if (notify)
+        this->owner.update(UPDATE_STATE_LEVEL::EXP_MONEY | UPDATE_STATE_LEVEL::CROWD_CONTROL);
 }
 
 void character_stat::base_regenerative(uint64_t value, bool notify)
@@ -687,6 +734,22 @@ uint8_t character_stat::base_hit() const
 {
     this->owner.assert_thread();
     return this->_hit;
+}
+
+uint8_t character_stat::base_speed() const
+{
+    this->owner.assert_thread();
+    return this->_speed;
+}
+
+void character_stat::buff_speed(int8_t value)
+{
+    this->owner.assert_thread();
+
+    auto before = this->speed();
+    fb::game::stat::buff_speed(value);
+    if (before != this->speed())
+        this->owner.update(UPDATE_STATE_LEVEL::EXP_MONEY | UPDATE_STATE_LEVEL::CROWD_CONTROL);
 }
 
 int8_t character_stat::hit() const

@@ -1,9 +1,15 @@
 -- item: 성장지도교본
 
--- 성장지도교본 사용 스크립트
--- function ON_ACTIVATED_10533(me, item)
--- end
+return {
+    -- on_activated = function(me, item)
+    -- end,
 
--- 성장지도교본 해제 스크립트
--- function ON_DEACTIVATED_10533(me, item)
--- end
+    -- on_deactivated = function(me, item)
+    -- end,
+
+    -- on_concast = function(me, item)
+    -- end,
+
+    -- on_attack = function(me, item)
+    -- end
+}

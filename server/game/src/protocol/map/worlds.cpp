@@ -16,34 +16,28 @@ void map_worlds::serialize(fb::stream_writer<big_endian>& writer) const
     header::serialize(writer);
     writer.write<uint8_t>(opcode);
 
-    auto& attr   = table::world_attribute[this->id];
-    auto& points = table::world[this->id];
-    auto  g      = std::unordered_map<uint32_t, std::vector<uint16_t>>();
-    for (auto& [id, point] : points)
-    {
-        if (g.contains(point.group))
-            g[point.group].push_back(id);
-        else
-            g.insert({point.group, std::vector<uint16_t>{id}});
-    }
+    auto  world_attribute_table = table::world_attribute;
+    auto& attr                  = world_attribute_table[this->id];
+    auto  world_table           = table::world;
+    auto& points                = world_table[this->id];
 
     writer.write<std::string, uint8_t>(attr.key);
-    writer.write<uint8_t>(table::world[this->id].size());
+    writer.write<uint8_t>(static_cast<uint8_t>(points.size()));
     writer.write<uint8_t>(this->index);
 
     for (int i = 0; i < points.size(); i++)
     {
-        auto& point = table::world[this->id][i];
+        auto& point = points[i];
         writer.write<uint16_t>(point.offset.x);
         writer.write<uint16_t>(point.offset.y);
         writer.write<std::string, uint8_t>(point.name);
-        writer.write<uint16_t>(0x0000);
+        writer.write<uint16_t>(static_cast<uint16_t>(this->id)); // world_value → 0x3F value
         writer.write<uint16_t>(this->id);
         writer.write<uint16_t>(this->index);
         writer.write<uint16_t>(i);
-        writer.write<uint16_t>(g[point.group].size());
+        writer.write<uint16_t>(static_cast<uint16_t>(point.links.size()));
 
-        for (auto x : g[point.group])
+        for (auto x : point.links)
         {
             writer.write<uint16_t>(x);
         }
@@ -62,13 +56,13 @@ void map_worlds::deserialize(fb::stream_reader<big_endian>& reader)
     for (int i = 0; i < this->world_count; i++)
     {
         world_point point;
-        point.offset_x = reader.read<uint16_t>();
-        point.offset_y = reader.read<uint16_t>();
-        point.name     = reader.read<std::string, uint8_t>();
-        point.unknown1 = reader.read<uint16_t>(); // 0x0000
-        point.world_id = reader.read<uint16_t>();
-        point.index    = reader.read<uint16_t>();
-        point.point_id = reader.read<uint16_t>();
+        point.offset_x    = reader.read<uint16_t>();
+        point.offset_y    = reader.read<uint16_t>();
+        point.name        = reader.read<std::string, uint8_t>();
+        point.world_value = reader.read<uint16_t>();
+        point.world_id    = reader.read<uint16_t>();
+        point.index       = reader.read<uint16_t>();
+        point.point_id    = reader.read<uint16_t>();
 
         uint16_t group_count = reader.read<uint16_t>();
         point.group_points.clear();

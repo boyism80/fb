@@ -16,6 +16,9 @@ class trade_dialog : public fb::protocol::header
 public:
     static constexpr uint8_t opcode = 0x42;
 
+    // Trade packet subtype: open trade window.
+    static constexpr uint8_t SUBTYPE_OPEN = 0x00;
+
 public:
 #ifndef BOT
     const fb::game::character& me;

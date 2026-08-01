@@ -25,31 +25,36 @@ fb::generator<fb::game::script_work> fb::game::script_loader::on_ready()
     scripts.push_back(fb::model::const_value::script::F1_EVENT_SCRIPT);
     scripts.push_back(fb::model::const_value::script::F2_EVENT_SCRIPT);
 
-    for (auto& [id, v] : table::spell)
+    auto spell_table = table::spell;
+    for (auto& [id, v] : spell_table)
     {
         auto path = std::format("scripts/spell/{}.lua", id);
         if (std::filesystem::exists(path))
             scripts.push_back(path);
     }
 
-    for (auto& [id, v] : table::item)
+    auto item_table = table::item;
+    for (auto& [id, v] : item_table)
     {
         auto path = std::format("scripts/item/{}.lua", id);
         if (std::filesystem::exists(path))
             scripts.push_back(path);
     }
 
-    for (auto& [id, v] : table::npc)
+    auto npc_table = table::npc;
+    for (auto& [id, v] : npc_table)
     {
         auto path = std::format("scripts/npc/{}.lua", id);
         if (std::filesystem::exists(path))
             scripts.push_back(path);
     }
 
-    auto host = fb::config<uint8_t>("id");
-    for (auto& [k, v] : table::warp)
+    auto host       = fb::config<uint8_t>("id");
+    auto warp_table = table::warp;
+    for (auto& [k, v] : warp_table)
     {
-        auto& map = table::map[k];
+        auto  map_table2 = table::map;
+        auto& map        = map_table2[k];
         if (map.host != host)
             continue;
 
@@ -63,14 +68,16 @@ fb::generator<fb::game::script_work> fb::game::script_loader::on_ready()
         }
     }
 
-    for (auto& [id, v] : table::mob)
+    auto mob_table = table::mob;
+    for (auto& [id, v] : mob_table)
     {
         auto path = std::format("scripts/mob/{}.lua", id);
         if (std::filesystem::exists(path))
             scripts.push_back(path);
     }
 
-    for (auto& [id, v] : table::map)
+    auto map_table = table::map;
+    for (auto& [id, v] : map_table)
     {
         auto path = std::format("scripts/map/{}.lua", id);
         if (std::filesystem::exists(path))

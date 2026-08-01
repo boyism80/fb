@@ -1,4 +1,6 @@
 -- npc: 말타기
--- function NPC_164(me, npc)
---
--- end
+
+return {
+    -- on_click = function(me, npc)
+    -- end
+}

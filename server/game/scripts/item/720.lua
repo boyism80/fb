@@ -1,11 +1,15 @@
 -- item: 미유의통옷
 
--- 미유의통옷 사용 스크립트
--- function ON_ACTIVATED_720(me, item)
---
--- end
+return {
+    -- on_activated = function(me, item)
+    -- end,
 
--- 미유의통옷 해제 스크립트
--- function ON_DEACTIVATED_720(me, item)
---
--- end
+    -- on_deactivated = function(me, item)
+    -- end,
+
+    -- on_concast = function(me, item)
+    -- end,
+
+    -- on_attack = function(me, item)
+    -- end
+}

@@ -1,9 +1,15 @@
 -- item: 십억경보관봉
 
--- 십억경보관봉 사용 스크립트
--- function ON_ACTIVATED_12443(me, item)
--- end
+return {
+    -- on_activated = function(me, item)
+    -- end,
 
--- 십억경보관봉 해제 스크립트
--- function ON_DEACTIVATED_12443(me, item)
--- end
+    -- on_deactivated = function(me, item)
+    -- end,
+
+    -- on_concast = function(me, item)
+    -- end,
+
+    -- on_attack = function(me, item)
+    -- end
+}

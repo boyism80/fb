@@ -1,11 +1,15 @@
 -- item: 비취의목걸이
 
--- 비취의목걸이 사용 스크립트
--- function ON_ACTIVATED_2139(me, item)
---
--- end
+return {
+    -- on_activated = function(me, item)
+    -- end,
 
--- 비취의목걸이 해제 스크립트
--- function ON_DEACTIVATED_2139(me, item)
---
--- end
+    -- on_deactivated = function(me, item)
+    -- end,
+
+    -- on_concast = function(me, item)
+    -- end,
+
+    -- on_attack = function(me, item)
+    -- end
+}

@@ -5,6 +5,8 @@
 #include <fb/model/model.h>
 #ifndef BOT
 #include <fb/game/dialog.h>
+#else
+#include <fb/game/dialog_type.h>
 #endif
 #include <string_view>
 
@@ -15,7 +17,8 @@ using namespace fb::model::enum_value;
 class dialog_item : public fb::protocol::header
 {
 public:
-    static constexpr uint8_t opcode = 0x2F;
+    static constexpr uint8_t                opcode = 0x2F;
+    static constexpr fb::game::dialog::type type   = fb::game::dialog::type::ITEM;
 #ifndef BOT
     using appearance_ptr = std::unique_ptr<fb::game::appearance>;
 #endif
@@ -26,7 +29,6 @@ public:
     const fb::game::dialog::item_pairs& items;
     const std::string                   message;
     const uint16_t                      pursuit;
-    const fb::game::dialog::interaction interaction;
     const uint32_t                      oid;
 #else
     struct item_data
@@ -42,7 +44,7 @@ public:
     uint8_t                color;
     std::string            message;
     uint16_t               pursuit;
-    uint8_t                interaction;
+    uint8_t                type_echo;
     uint32_t               oid;
     std::vector<item_data> items;
 #endif
@@ -52,16 +54,14 @@ public:
     dialog_item(const fb::model::object&            obj,
                 const fb::game::dialog::item_pairs& items,
                 std::string_view                    message,
-                uint32_t                            oid         = 0xFFFFFFFD,
-                uint16_t                            pursuit     = 0xFFFF,
-                fb::game::dialog::interaction       interaction = fb::game::dialog::interaction::ITEM);
+                uint32_t                            oid     = 0xFFFFFFFD,
+                uint16_t                            pursuit = 0xFFFF);
 
     dialog_item(const fb::game::object&             object,
                 const fb::game::dialog::item_pairs& items,
                 std::string_view                    message,
-                uint32_t                            oid         = 0xFFFFFFFD,
-                uint16_t                            pursuit     = 0xFFFF,
-                fb::game::dialog::interaction       interaction = fb::game::dialog::interaction::ITEM);
+                uint32_t                            oid     = 0xFFFFFFFD,
+                uint16_t                            pursuit = 0xFFFF);
 #else
     dialog_item() = default;
 #endif

@@ -1,5 +1,15 @@
 -- item: 탄생의씨앗
 
--- 탄생의씨앗 해제 스크립트
--- function ON_DEACTIVATED_14236(me, item)
--- end
+return {
+    -- on_activated = function(me, item)
+    -- end,
+
+    -- on_deactivated = function(me, item)
+    -- end,
+
+    -- on_concast = function(me, item)
+    -- end,
+
+    -- on_attack = function(me, item)
+    -- end
+}

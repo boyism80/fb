@@ -13,6 +13,8 @@ static_assert(FLATBUFFERS_VERSION_MAJOR == 25 &&
               FLATBUFFERS_VERSION_REVISION == 10,
              "Non-compatible flatbuffers version included");
 
+#include "nullable_uint_generated.h"
+
 namespace fb {
 namespace protocol {
 namespace internal {
@@ -30,7 +32,8 @@ struct Mail FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
     VT_TITLE = 10,
     VT_CONTENTS = 12,
     VT_READ = 14,
-    VT_CREATED_DATE = 16
+    VT_CREATED_DATE = 16,
+    VT_SYSTEM_MAIL_ID = 18
   };
   uint16_t id() const {
     return GetField<uint16_t>(VT_ID, 0);
@@ -53,6 +56,9 @@ struct Mail FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
   const ::flatbuffers::String *created_date() const {
     return GetPointer<const ::flatbuffers::String *>(VT_CREATED_DATE);
   }
+  const nullable::nullable_uint *system_mail_id() const {
+    return GetPointer<const nullable::nullable_uint *>(VT_SYSTEM_MAIL_ID);
+  }
   bool Verify(::flatbuffers::Verifier &verifier) const {
     return VerifyTableStart(verifier) &&
            VerifyField<uint16_t>(verifier, VT_ID, 2) &&
@@ -66,6 +72,8 @@ struct Mail FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
            VerifyField<uint8_t>(verifier, VT_READ, 1) &&
            VerifyOffset(verifier, VT_CREATED_DATE) &&
            verifier.VerifyString(created_date()) &&
+           VerifyOffset(verifier, VT_SYSTEM_MAIL_ID) &&
+           verifier.VerifyTable(system_mail_id()) &&
            verifier.EndTable();
   }
 };
@@ -95,6 +103,9 @@ struct MailBuilder {
   void add_created_date(::flatbuffers::Offset<::flatbuffers::String> created_date) {
     fbb_.AddOffset(Mail::VT_CREATED_DATE, created_date);
   }
+  void add_system_mail_id(::flatbuffers::Offset<nullable::nullable_uint> system_mail_id) {
+    fbb_.AddOffset(Mail::VT_SYSTEM_MAIL_ID, system_mail_id);
+  }
   explicit MailBuilder(::flatbuffers::FlatBufferBuilder &_fbb)
         : fbb_(_fbb) {
     start_ = fbb_.StartTable();
@@ -114,8 +125,10 @@ inline ::flatbuffers::Offset<Mail> CreateMail(
     ::flatbuffers::Offset<::flatbuffers::String> title = 0,
     ::flatbuffers::Offset<::flatbuffers::String> contents = 0,
     bool read = false,
-    ::flatbuffers::Offset<::flatbuffers::String> created_date = 0) {
+    ::flatbuffers::Offset<::flatbuffers::String> created_date = 0,
+    ::flatbuffers::Offset<nullable::nullable_uint> system_mail_id = 0) {
   MailBuilder builder_(_fbb);
+  builder_.add_system_mail_id(system_mail_id);
   builder_.add_created_date(created_date);
   builder_.add_contents(contents);
   builder_.add_title(title);
@@ -134,7 +147,8 @@ inline ::flatbuffers::Offset<Mail> CreateMailDirect(
     const char *title = nullptr,
     const char *contents = nullptr,
     bool read = false,
-    const char *created_date = nullptr) {
+    const char *created_date = nullptr,
+    ::flatbuffers::Offset<nullable::nullable_uint> system_mail_id = 0) {
   auto sender__ = sender ? _fbb.CreateString(sender) : 0;
   auto title__ = title ? _fbb.CreateString(title) : 0;
   auto contents__ = contents ? _fbb.CreateString(contents) : 0;
@@ -147,7 +161,8 @@ inline ::flatbuffers::Offset<Mail> CreateMailDirect(
       title__,
       contents__,
       read,
-      created_date__);
+      created_date__,
+      system_mail_id);
 }
 
 inline const fb::protocol::internal::raw::Mail *GetMail(const void *buf) {

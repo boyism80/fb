@@ -5,6 +5,8 @@
 #include <stdint.h>
 #include <optional>
 #include <string>
+#include <unordered_set>
+#include <vector>
 #include <fb/model/model.h>
 
 namespace fb::game {
@@ -18,9 +20,11 @@ class mail_box
 public:
     struct summary;
     struct mail;
+    struct received;
 
 private:
-    uint16_t _unread_count = 0;
+    uint16_t                     _unread_count = 0;
+    std::unordered_set<uint32_t> _system_mail_ids;
 
 public:
     character& owner;
@@ -36,6 +40,9 @@ public:
     void     message(std::string_view message, bool success, BULLETIN_MESSAGE_TYPE action);
     uint16_t unread_count() const;
     void     unread_count(uint16_t value);
+    void     init_system_mails(const std::vector<uint32_t>& ids);
+    bool     contains_system_mail(uint32_t system_mail_id) const;
+    void     mark_system_mail(uint32_t system_mail_id);
     // clang-format on
 };
 
@@ -47,6 +54,14 @@ struct mail_box::summary
     bool        read         = false;
     std::string title        = "";
     std::string created_date = "";
+};
+
+struct mail_box::received
+{
+    uint32_t                user_id = 0;
+    uint16_t                unread  = 0;
+    summary                 snapshot;
+    std::optional<uint32_t> system_mail_id;
 };
 
 struct mail_box::mail

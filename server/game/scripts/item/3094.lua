@@ -1,6 +1,16 @@
 -- item: 갈색시약
 
--- 갈색시약 사용 스크립트
-function ON_ACTIVATED_3094(me, item)
-    me:cast('시약무장')
-end
+return {
+    on_activated = function(me, item)
+        me:cast('시약무장')
+    end,
+
+    -- on_deactivated = function(me, item)
+    -- end,
+
+    -- on_concast = function(me, item)
+    -- end,
+
+    -- on_attack = function(me, item)
+    -- end
+}

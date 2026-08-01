@@ -1,10 +1,21 @@
 -- map: 귀기서린집
 local quest = require('lib.quest')
 
-function ON_MAP_MOVE_2535(me)
-    if not me:is(OBJECT_TYPE.CHARACTER) then
-        return
-    end
+return {
+    -- on_map_init = function(me)
+    -- end,
 
-    quest.ghost_talisman_on_move(me)
-end
+    on_map_move = function(me)
+        if not me:is(OBJECT_TYPE.CHARACTER) then
+            return
+        end
+
+        quest.ghost_talisman_on_move(me)
+    end,
+
+    -- on_map_enter = function(me)
+    -- end,
+
+    -- on_map_leave = function(me)
+    -- end
+}

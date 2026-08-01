@@ -1,5 +1,15 @@
 -- mob: 표신궁문려
--- 표신궁문려 사망
--- function ON_MOB_DIE_1201(me)
---
--- end
+
+return {
+    -- on_mob_attack = function(me, you)
+    -- end,
+
+    -- on_mob_die = function(me)
+    -- end,
+
+    -- on_mob_kill = function(me, mobs)
+    -- end,
+
+    -- on_mob_spell_hit = function(me, you, spell)
+    -- end
+}

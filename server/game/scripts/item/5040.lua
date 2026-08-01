@@ -1,5 +1,15 @@
 -- item: 마력의반지4
 
--- 마력의반지4 해제 스크립트
--- function ON_DEACTIVATED_5040(me, item)
--- end
+return {
+    -- on_activated = function(me, item)
+    -- end,
+
+    -- on_deactivated = function(me, item)
+    -- end,
+
+    -- on_concast = function(me, item)
+    -- end,
+
+    -- on_attack = function(me, item)
+    -- end
+}

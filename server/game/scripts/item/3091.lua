@@ -1,6 +1,16 @@
 -- item: 노란시약
 
--- 노란시약 사용 스크립트
-function ON_ACTIVATED_3091(me, item)
-    me:hp(math.min(me:hp()+50, me:maxhp()))
-end
+return {
+    on_activated = function(me, item)
+        me:hp(math.min(me:hp()+50, me:maxhp()))
+    end,
+
+    -- on_deactivated = function(me, item)
+    -- end,
+
+    -- on_concast = function(me, item)
+    -- end,
+
+    -- on_attack = function(me, item)
+    -- end
+}

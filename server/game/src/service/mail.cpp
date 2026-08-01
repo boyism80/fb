@@ -69,27 +69,29 @@ mail_box::mail service::mail::to_mail(const fb::protocol::internal::Mail& mail)
     };
 }
 
-void service::mail::apply_received(character& ch, uint16_t unread, const mail_box::summary& snapshot)
+void service::mail::apply_received(character& ch, const mail_box::received& entry)
 {
-    ch.mail_box.unread_count(unread);
+    ch.mail_box.unread_count(entry.unread);
+    if (entry.system_mail_id.has_value())
+        ch.mail_box.mark_system_mail(entry.system_mail_id.value());
 
     auto log_data            = Json::Value();
     log_data["character_id"] = static_cast<Json::Int64>(ch.id);
-    log_data["sender_name"]  = UTF8(snapshot.sender, PLATFORM::WINDOWS);
-    log_data["mail_id"]      = static_cast<Json::Int64>(snapshot.id);
-    log_data["title"]        = UTF8(snapshot.title, PLATFORM::WINDOWS);
+    log_data["sender_name"]  = UTF8(entry.snapshot.sender, PLATFORM::WINDOWS);
+    log_data["mail_id"]      = static_cast<Json::Int64>(entry.snapshot.id);
+    log_data["title"]        = UTF8(entry.snapshot.title, PLATFORM::WINDOWS);
     this->server.log.write("mail_receive", log_data);
 }
 
-async::task<void> service::mail::on_received(uint32_t user_id, uint16_t unread, const mail_box::summary& snapshot)
+async::task<void> service::mail::on_received(const mail_box::received& entry)
 {
-    auto ch = this->server.characters.find(user_id);
+    auto ch = this->server.characters.find(entry.user_id);
     if (ch != nullptr)
     {
         auto weak    = ch->template weak_from_this_as<character>();
         auto builder = this->server.threads.new_builder(weak);
-        builder.func = [this, ch, unread, snapshot](auto&) -> async::task<void> {
-            this->apply_received(*ch, unread, snapshot);
+        builder.func = [this, ch, entry](auto&) -> async::task<void> {
+            this->apply_received(*ch, entry);
             co_return;
         };
         builder.enqueue();
@@ -97,26 +99,18 @@ async::task<void> service::mail::on_received(uint32_t user_id, uint16_t unread, 
     co_return;
 }
 
-async::task<void> service::mail::on_received_batch(const std::vector<mail_box::summary>& snapshots,
-                                                   const std::vector<uint32_t>&          user_ids,
-                                                   const std::vector<uint16_t>&          unread_counts)
+async::task<void> service::mail::on_received_batch(const std::vector<mail_box::received>& entries)
 {
-    if (snapshots.empty())
-        co_return;
-
-    const auto count = snapshots.size();
-    for (size_t i = 0; i < count; ++i)
+    for (const auto& entry : entries)
     {
-        auto ch = this->server.characters.find(user_ids[i]);
+        auto ch = this->server.characters.find(entry.user_id);
         if (ch == nullptr)
             continue;
 
-        auto weak     = ch->template weak_from_this_as<character>();
-        auto unread   = unread_counts[i];
-        auto snapshot = snapshots[i];
-        auto builder  = this->server.threads.new_builder(weak);
-        builder.func  = [this, ch, unread, snapshot](auto&) -> async::task<void> {
-            this->apply_received(*ch, unread, snapshot);
+        auto weak    = ch->template weak_from_this_as<character>();
+        auto builder = this->server.threads.new_builder(weak);
+        builder.func = [this, ch, entry](auto&) -> async::task<void> {
+            this->apply_received(*ch, entry);
             co_return;
         };
         builder.enqueue();
@@ -144,7 +138,12 @@ service::mail::send(character& sender, std::string_view to, std::string_view tit
 
     auto snapshot         = to_summary(resp.mail);
     snapshot.created_date = "";
-    co_await this->on_received(resp.mail.user, resp.unread, snapshot);
+    co_await this->on_received(mail_box::received{
+        .user_id        = resp.mail.user,
+        .unread         = resp.unread,
+        .snapshot       = snapshot,
+        .system_mail_id = resp.mail.system_mail_id,
+    });
 }
 
 async::task<std::vector<mail_box::summary>> service::mail::list(const character& ch, uint16_t offset, uint16_t count)

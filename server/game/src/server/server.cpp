@@ -36,6 +36,13 @@ void fb::game::server::send(object&                     object,
     if (shared_ptr == nullptr)
         return;
 
+    auto allowed = [&options](fb::game::object& to) -> bool {
+        if (!options.condition)
+            return true;
+
+        return options.condition(to);
+    };
+
     switch (scope)
     {
     case fb::game::scope::PIVOT:
@@ -49,6 +56,9 @@ void fb::game::server::send(object&                     object,
                 continue;
 
             if (shared_ptr->hidden(*x))
+                continue;
+
+            if (allowed(*x) == false)
                 continue;
 
             x->send(stream, options.encrypt);
@@ -71,8 +81,13 @@ void fb::game::server::send(object&                     object,
             auto& group = guard.value();
             for (auto& member : group->characters())
             {
-                if (member != nullptr)
-                    member->send(stream, options.encrypt);
+                if (member == nullptr)
+                    continue;
+
+                if (allowed(*member) == false)
+                    continue;
+
+                member->send(stream, options.encrypt);
             }
         }
     }
@@ -86,8 +101,15 @@ void fb::game::server::send(object&                     object,
 
         for (const auto& [seq, obj] : map->objects)
         {
-            if (!options.with_me && obj->oid() == shared_ptr->oid())
+            if (obj->oid() == shared_ptr->oid())
+            {
+                if (options.with_me == false)
+                    continue;
+            }
+            else if (allowed(*obj) == false)
+            {
                 continue;
+            }
 
             obj->send(stream, options.encrypt);
         }
@@ -105,9 +127,9 @@ void fb::game::server::send(object&                     object,
 void fb::game::server::sync_time()
 {
     auto updated = this->now();
-    if (this->_time.hours() != updated.hours())
+    if (this->_time.hours() != updated.hours() || this->_time.minutes() != updated.minutes())
     {
-        this->characters.update_time(updated.hours());
+        this->characters.update_time(static_cast<uint8_t>(updated.hours()), static_cast<uint8_t>(updated.minutes()));
     }
 
     this->_time = updated;

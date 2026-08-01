@@ -22,11 +22,11 @@ local function do_exchange(me, npc, need_count, reward_name)
         { ['item'] = { [TICKET_NAME] = need_count } },
         { ['item'] = { [reward_name] = 1 } }
     )
-    if code == enum.EXCHANGE_RESULT.LACK_COST then
+    if code == enum.exchange_result.LACK_COST then
         me:dialog(npc, "교환권이 부족하시네요.", { prev = false, next = false })
         return false
     end
-    if code == enum.EXCHANGE_RESULT.LACK_CAPACITY then
+    if code == enum.exchange_result.LACK_CAPACITY then
         me:dialog(npc, "소지품이 가득 차서 " .. name_with(reward_name, '을', '를') .. " 드리지 못합니다.", { prev = false, next = false })
         return false
     end
@@ -34,18 +34,20 @@ local function do_exchange(me, npc, need_count, reward_name)
     return true
 end
 
-function NPC_347(me, npc)
-    local labels = {}
-    for i = 1, #REWARDS do
-        labels[i] = REWARDS[i].label
+return {
+    on_click = function(me, npc)
+        local labels = {}
+        for i = 1, #REWARDS do
+            labels[i] = REWARDS[i].label
+        end
+        local sel, btn = me:list(npc, "교환권 1개로 무엇을 구입하시겠습니까?", labels, { prev = false })
+        if btn == DIALOG_RESULT.QUIT then
+            return
+        end
+        if sel == nil or sel < 1 or sel > #REWARDS then
+            return
+        end
+        local r = REWARDS[sel]
+        do_exchange(me, npc, r.count, r.name)
     end
-    local sel, btn = me:list(npc, "교환권 1개로 무엇을 구입하시겠습니까?", labels, { prev = false })
-    if btn == DIALOG_RESULT.QUIT then
-        return
-    end
-    if sel == nil or sel < 1 or sel > #REWARDS then
-        return
-    end
-    local r = REWARDS[sel]
-    do_exchange(me, npc, r.count, r.name)
-end
+}

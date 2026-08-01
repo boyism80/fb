@@ -1,10 +1,17 @@
 -- spell: 귀신퇴치부적
 -- 귀신퇴치부적 버프 해제 효과
--- function ON_UNBUFF_6003(me, spell)
---
--- end
-
 -- 귀신퇴치부적 지속 효과
--- function ON_CONCAST_6003(me, caster, buff)
---
--- end
+
+return {
+    -- on_cast = function(me, you, sp)
+    -- end,
+
+    -- on_buff = function(me, sp)
+    -- end,
+
+    -- on_unbuff = function(me, sp)
+    -- end,
+
+    -- on_concast = function(me, sp)
+    -- end
+}

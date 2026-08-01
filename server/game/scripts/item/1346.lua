@@ -1,11 +1,15 @@
 -- item: 천공투구
 
--- 천공투구 사용 스크립트
--- function ON_ACTIVATED_1346(me, item)
---
--- end
+return {
+    -- on_activated = function(me, item)
+    -- end,
 
--- 천공투구 해제 스크립트
--- function ON_DEACTIVATED_1346(me, item)
---
--- end
+    -- on_deactivated = function(me, item)
+    -- end,
+
+    -- on_concast = function(me, item)
+    -- end,
+
+    -- on_attack = function(me, item)
+    -- end
+}

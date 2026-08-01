@@ -56,11 +56,11 @@ local function do_jungki(me, npc)
                 { ['item'] = { [s.item] = s.count } },
                 { ['item'] = { [s.reward] = 1 } }
             )
-            if code == enum.EXCHANGE_RESULT.LACK_COST then
+            if code == enum.exchange_result.LACK_COST then
                 me:dialog(npc, s.item .. ' 갯수가 부족한 것은 아닌가? 30개가 필요하네.', { prev = false, next = false })
                 return
             end
-            if code == enum.EXCHANGE_RESULT.LACK_CAPACITY then
+            if code == enum.exchange_result.LACK_CAPACITY then
                 me:dialog(npc, '소지품이 가득 차서 ' .. name_with(s.reward, '을', '를') .. ' 받을 수 없네.', { prev = false, next = false })
                 return
             end
@@ -134,21 +134,26 @@ local function do_armor_normal(me, npc)
     me:dialog(npc, '일반 복장으로 바꿔드렸습니다.', { prev = false, next = true })
 end
 
-function NPC_157(me, npc)
-    local selected = me:list(npc, '안녕하세요. 어떻게 오셨나요?', { '정기모으기', '무한 복장', '일반 복장' }, { prev = false })
-    if selected == nil then
-        return
+return {
+    on_click = function(me, npc)
+        local OPT_JUNGKI = '정기모으기'
+        local OPT_INFINITE = '무한 복장'
+        local OPT_NORMAL = '일반 복장'
+        local selected, button = me:pursuit(npc, '안녕하세요. 어떻게 오셨나요?', { OPT_JUNGKI, OPT_INFINITE, OPT_NORMAL })
+        if button == DIALOG_RESULT.QUIT then
+            return
+        end
+        if selected == OPT_JUNGKI then
+            do_jungki(me, npc, q, step)
+            return
+        end
+        if selected == OPT_INFINITE then
+            do_armor_infinite(me, npc)
+            return
+        end
+        if selected == OPT_NORMAL then
+            do_armor_normal(me, npc)
+            return
+        end
     end
-    if selected == 1 then
-        do_jungki(me, npc, q, step)
-        return
-    end
-    if selected == 2 then
-        do_armor_infinite(me, npc)
-        return
-    end
-    if selected == 3 then
-        do_armor_normal(me, npc)
-        return
-    end
-end
+}

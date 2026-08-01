@@ -27,7 +27,7 @@ end
 
 local function do_sub7_start(me, npc)
     local sel, btn = me:list(npc, "요즘따라 인간들을 자주 만나시게 되시는도다.", { "이름을 가르쳐주세요.", "이곳의 상황은 좀 어떤가요?", "제가 도와드릴 일은 없을까요?" }, { prev = false })
-    if btn == DIALOG_RESULT.QUIT or sel == nil then
+    if btn == DIALOG_RESULT.QUIT then
         return false
     end
     if sel == 1 then
@@ -39,7 +39,7 @@ local function do_sub7_start(me, npc)
         return true
     end
     sel, btn = me:list(npc, "음? 하하하. 고마운 말씀이시다. 진심이신가?", { "네, 꼭 도와드릴께요.", "아뇨, 그만 둘래요." }, { prev = true })
-    if btn == DIALOG_RESULT.QUIT or sel == nil or sel ~= 1 then
+    if btn == DIALOG_RESULT.QUIT or sel ~= 1 then
         me:dialog(npc, "장난을 치는 사람은 싫어한다.", { prev = false, next = false })
         return true
     end
@@ -86,10 +86,10 @@ local function do_sub7_complete(me, npc)
         { ['item'] = { ["건강한아기원숭이"] = 1 } },
         { ['item'] = { ["초코바나나"] = 1 } }
     )
-    if code == enum.EXCHANGE_RESULT.LACK_COST then
+    if code == enum.exchange_result.LACK_COST then
         me:dialog(npc, "아이템을 제거할 수 없습니다.", { prev = false, next = false })
         return true
-    elseif code == enum.EXCHANGE_RESULT.LACK_CAPACITY then
+    elseif code == enum.exchange_result.LACK_CAPACITY then
         me:dialog(npc, "소지품이 가득 차서 초코바나나를 줄 수 없습니다.", { prev = false, next = false })
         return true
     end
@@ -100,100 +100,102 @@ local function do_sub7_complete(me, npc)
     return true
 end
 
-function NPC_469(me, npc)
-    local q9 = me:quest(quest.QUEST_SKULL_NECKLACE_9)
-    local q7 = me:quest(quest.QUEST_SKULL_NECKLACE_7)
+return {
+    on_click = function(me, npc)
+        local q9 = me:quest(quest.QUEST_SKULL_NECKLACE_9)
+        local q7 = me:quest(quest.QUEST_SKULL_NECKLACE_7)
 
-    if q9 and q9:step() == 1 then
-        if do_sub9_receive_wine(me, npc) then
+        if q9 and q9:step() == 1 then
+            if do_sub9_receive_wine(me, npc) then
+                return
+            end
+        end
+
+        if q7 == nil or q7:step() == 0 then
+            if do_sub7_start(me, npc) then
+                return
+            end
             return
         end
+
+        if q7:step() == 1 then
+            me:dialog(npc, "한 우두머리만이 원숭이를 치료할 수 있는 능력을 가지고 있으시다.", { prev = false, next = false })
+            return
+        end
+
+        if q7:step() == 2 then
+            if do_sub7_complete(me, npc) then
+                return
+            end
+            return
+        end
+
+        local main_q = me:quest(quest.QUEST_SKULL_NECKLACE)
+        if main_q then
+            local s = main_q:step()
+            if s == 23 then
+                ::NPC_469_0001::
+                local b = me:dialog(npc, "참원왕이 의견을 물으셨다고?", { prev = false, next = true })
+                if b == DIALOG_RESULT.QUIT then
+                    return
+                end
+                ::NPC_469_0002::
+                b = me:dialog(npc, "더 큰 문제가 계시다. 바로 우리 어린 원숭이들에 대한 문제이시다. 이 곳으로 옮겨오신지 얼마 되지 않으신 탓도", { prev = true, next = true })
+                if b == DIALOG_RESULT.QUIT then
+                    return
+                end
+                if b == DIALOG_RESULT.PREV then
+                    goto NPC_469_0001
+                end
+                ::NPC_469_0003::
+                b = me:dialog(npc, "계시지만, 아직 이 땅이 낯설으셔서 편하게 주무실 수가 없으시다. 얼마전에 보셨는데, 담벼락 밖에서 병사 한 명이", { prev = true, next = true })
+                if b == DIALOG_RESULT.QUIT then
+                    return
+                end
+                if b == DIALOG_RESULT.PREV then
+                    goto NPC_469_0002
+                end
+                ::NPC_469_0004::
+                b = me:dialog(npc, "'마른갈대'라는 것을 깔고 그 위에 누워 주무시던데.. 아주 편해보이셨다. 어디서 나시는 건지는 모르시지만, 그게 계시면", { prev = true, next = true })
+                if b == DIALOG_RESULT.QUIT then
+                    return
+                end
+                if b == DIALOG_RESULT.PREV then
+                    goto NPC_469_0003
+                end
+                ::NPC_469_0005::
+                b = me:dialog(npc, "적어도 어린 원숭이들이 편하게 주무실 수 있으실거 같으시다. 이런 내 생각을 참원왕께 전해주시면 좋으시다.", { prev = true, next = true })
+                if b == DIALOG_RESULT.QUIT then
+                    return
+                end
+                if b == DIALOG_RESULT.PREV then
+                    goto NPC_469_0004
+                end
+                main_q:step(24)
+                return
+            end
+            if s == 24 then
+                me:dialog(npc, "이런 의견을 빨리 참원왕에게 전해주시면 좋으시다.", { prev = false, next = false })
+                return
+            end
+            if s == 26 then
+                if not me:has_items("마른갈대", 1) then
+                    me:dialog(npc, "마른갈대를 구해서 왕들에게 하나씩 나누어 주게.", { prev = false, next = false })
+                    return
+                end
+                local b = me:dialog(npc, "마른 갈대를 나눠주고 있다고 들었네. 수고하는 모습이 참 보기 좋군. 더 수고해주게.", { prev = false, next = true })
+                if b == DIALOG_RESULT.QUIT then
+                    return
+                end
+                if not me:rmitem("마른갈대", 1, ITEM_DELETE_TYPE.GIVE) then
+                    me:dialog(npc, "아이템을 제거할 수 없습니다.", { prev = false, next = false })
+                    return
+                end
+                main_q:step(27)
+                return
+            end
+        end
+
+        me:dialog(npc, "준비중입니다.", { prev = false, next = false })
     end
-
-    if q7 == nil or q7:step() == 0 then
-        if do_sub7_start(me, npc) then
-            return
-        end
-        return
-    end
-
-    if q7:step() == 1 then
-        me:dialog(npc, "한 우두머리만이 원숭이를 치료할 수 있는 능력을 가지고 있으시다.", { prev = false, next = false })
-        return
-    end
-
-    if q7:step() == 2 then
-        if do_sub7_complete(me, npc) then
-            return
-        end
-        return
-    end
-
-    local main_q = me:quest(quest.QUEST_SKULL_NECKLACE)
-    if main_q then
-        local s = main_q:step()
-        if s == 23 then
-            ::NPC_469_0001::
-            local b = me:dialog(npc, "참원왕이 의견을 물으셨다고?", { prev = false, next = true })
-            if b == DIALOG_RESULT.QUIT then
-                return
-            end
-            ::NPC_469_0002::
-            b = me:dialog(npc, "더 큰 문제가 계시다. 바로 우리 어린 원숭이들에 대한 문제이시다. 이 곳으로 옮겨오신지 얼마 되지 않으신 탓도", { prev = true, next = true })
-            if b == DIALOG_RESULT.QUIT then
-                return
-            end
-            if b == DIALOG_RESULT.PREV then
-                goto NPC_469_0001
-            end
-            ::NPC_469_0003::
-            b = me:dialog(npc, "계시지만, 아직 이 땅이 낯설으셔서 편하게 주무실 수가 없으시다. 얼마전에 보셨는데, 담벼락 밖에서 병사 한 명이", { prev = true, next = true })
-            if b == DIALOG_RESULT.QUIT then
-                return
-            end
-            if b == DIALOG_RESULT.PREV then
-                goto NPC_469_0002
-            end
-            ::NPC_469_0004::
-            b = me:dialog(npc, "'마른갈대'라는 것을 깔고 그 위에 누워 주무시던데.. 아주 편해보이셨다. 어디서 나시는 건지는 모르시지만, 그게 계시면", { prev = true, next = true })
-            if b == DIALOG_RESULT.QUIT then
-                return
-            end
-            if b == DIALOG_RESULT.PREV then
-                goto NPC_469_0003
-            end
-            ::NPC_469_0005::
-            b = me:dialog(npc, "적어도 어린 원숭이들이 편하게 주무실 수 있으실거 같으시다. 이런 내 생각을 참원왕께 전해주시면 좋으시다.", { prev = true, next = true })
-            if b == DIALOG_RESULT.QUIT then
-                return
-            end
-            if b == DIALOG_RESULT.PREV then
-                goto NPC_469_0004
-            end
-            main_q:step(24)
-            return
-        end
-        if s == 24 then
-            me:dialog(npc, "이런 의견을 빨리 참원왕에게 전해주시면 좋으시다.", { prev = false, next = false })
-            return
-        end
-        if s == 26 then
-            if not me:has_items("마른갈대", 1) then
-                me:dialog(npc, "마른갈대를 구해서 왕들에게 하나씩 나누어 주게.", { prev = false, next = false })
-                return
-            end
-            local b = me:dialog(npc, "마른 갈대를 나눠주고 있다고 들었네. 수고하는 모습이 참 보기 좋군. 더 수고해주게.", { prev = false, next = true })
-            if b == DIALOG_RESULT.QUIT then
-                return
-            end
-            if not me:rmitem("마른갈대", 1, ITEM_DELETE_TYPE.GIVE) then
-                me:dialog(npc, "아이템을 제거할 수 없습니다.", { prev = false, next = false })
-                return
-            end
-            main_q:step(27)
-            return
-        end
-    end
-
-    me:dialog(npc, "준비중입니다.", { prev = false, next = false })
-end
+}

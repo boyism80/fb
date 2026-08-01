@@ -1,9 +1,15 @@
 -- item: 회의실이동비서
 
--- 회의실이동비서 사용 스크립트
--- function ON_ACTIVATED_60039(me, item)
--- end
+return {
+    -- on_activated = function(me, item)
+    -- end,
 
--- 회의실이동비서 해제 스크립트
--- function ON_DEACTIVATED_60039(me, item)
--- end
+    -- on_deactivated = function(me, item)
+    -- end,
+
+    -- on_concast = function(me, item)
+    -- end,
+
+    -- on_attack = function(me, item)
+    -- end
+}

@@ -1,5 +1,15 @@
 -- item: 망또13
 
--- 망또13 해제 스크립트
--- function ON_DEACTIVATED_2846(me, item)
--- end
+return {
+    -- on_activated = function(me, item)
+    -- end,
+
+    -- on_deactivated = function(me, item)
+    -- end,
+
+    -- on_concast = function(me, item)
+    -- end,
+
+    -- on_attack = function(me, item)
+    -- end
+}

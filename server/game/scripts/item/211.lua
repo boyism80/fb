@@ -1,11 +1,15 @@
 -- item: 적사모
 
--- 적사모 사용 스크립트
--- function ON_ACTIVATED_211(me, item)
---
--- end
+return {
+    -- on_activated = function(me, item)
+    -- end,
 
--- 적사모 해제 스크립트
--- function ON_DEACTIVATED_211(me, item)
---
--- end
+    -- on_deactivated = function(me, item)
+    -- end,
+
+    -- on_concast = function(me, item)
+    -- end,
+
+    -- on_attack = function(me, item)
+    -- end
+}

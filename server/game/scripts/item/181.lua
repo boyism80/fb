@@ -1,11 +1,15 @@
 -- item: 환술의봉
 
--- 환술의봉 사용 스크립트
--- function ON_ACTIVATED_181(me, item)
---
--- end
+return {
+    -- on_activated = function(me, item)
+    -- end,
 
--- 환술의봉 해제 스크립트
--- function ON_DEACTIVATED_181(me, item)
---
--- end
+    -- on_deactivated = function(me, item)
+    -- end,
+
+    -- on_concast = function(me, item)
+    -- end,
+
+    -- on_attack = function(me, item)
+    -- end
+}

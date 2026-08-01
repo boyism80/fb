@@ -1,4 +1,6 @@
 -- npc: 폭염도미용사
--- function NPC_123(me, npc)
---
--- end
+
+return {
+    -- on_click = function(me, npc)
+    -- end
+}

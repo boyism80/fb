@@ -39,3 +39,22 @@ void mail_box::unread_count(uint16_t value)
         this->owner.update(UPDATE_STATE_LEVEL::MINIMUM);
     }
 }
+
+void mail_box::init_system_mails(const std::vector<uint32_t>& ids)
+{
+    this->owner.assert_thread();
+    this->_system_mail_ids.clear();
+    this->_system_mail_ids.insert(ids.begin(), ids.end());
+}
+
+bool mail_box::contains_system_mail(uint32_t system_mail_id) const
+{
+    this->owner.assert_thread();
+    return this->_system_mail_ids.contains(system_mail_id);
+}
+
+void mail_box::mark_system_mail(uint32_t system_mail_id)
+{
+    this->owner.assert_thread();
+    this->_system_mail_ids.insert(system_mail_id);
+}

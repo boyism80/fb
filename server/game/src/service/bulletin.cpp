@@ -15,7 +15,7 @@ service::bulletin::bulletin(fb::game::server& server) :
 
 void service::bulletin::assert_section(uint16_t section) const
 {
-    if (table::bulletin.contains(section) == false)
+    if (table::bulletin->contains(section) == false)
         throw std::runtime_error(_TEXT(MESSAGE_BULLETIN_SECTION_NOT_EXIST));
 }
 

@@ -57,8 +57,9 @@ void push_recipe_dsl_items(fb::lua::context& lua, const std::vector<fb::model::d
         if (dsl.header != fb::model::enum_value::DSL::item)
             continue;
 
-        auto  params = fb::model::dsl::item(dsl.params);
-        auto& item   = fb::model::table::item[params.id];
+        auto  params      = fb::model::dsl::item(dsl.params);
+        auto  item_table2 = fb::model::table::item;
+        auto& item        = item_table2[params.id];
 
         lua.pushinteger(index++);
         lua.new_table();
@@ -80,8 +81,9 @@ static int lua_model_promotions(lua_State* L)
     auto& lua = require_lua(L);
 
     lua.new_table();
-    auto index = 1;
-    for (auto& [cls, promotions] : fb::model::table::promotion)
+    auto index           = 1;
+    auto promotion_table = fb::model::table::promotion;
+    for (auto& [cls, promotions] : promotion_table)
     {
         for (auto& [_, promotion] : promotions)
         {
@@ -101,10 +103,11 @@ static int lua_model_promotions(lua_State* L)
 
 static int lua_model_world_destination(lua_State* L)
 {
-    auto& lua    = require_lua(L);
-    auto  parent = static_cast<uint16_t>(lua.tointeger(1));
-    auto  id     = static_cast<uint16_t>(lua.tointeger(2));
-    auto& cell   = fb::model::table::world[parent][id];
+    auto& lua         = require_lua(L);
+    auto  parent      = static_cast<uint16_t>(lua.tointeger(1));
+    auto  id          = static_cast<uint16_t>(lua.tointeger(2));
+    auto  world_table = fb::model::table::world;
+    auto& cell        = world_table[parent][id];
 
     lua.new_table();
     lua.pushstring("map");
@@ -137,8 +140,9 @@ static int lua_model_equipment_items(lua_State* L)
                                                                   ITEM_TYPE::AUXILIARY};
 
     lua.new_table();
-    auto index = 1;
-    for (auto& [_, item] : fb::model::table::item)
+    auto index      = 1;
+    auto item_table = fb::model::table::item;
+    for (auto& [_, item] : item_table)
     {
         if (equipment_types.contains(item.type) == false)
             continue;
@@ -164,8 +168,9 @@ static int lua_model_recipes(lua_State* L)
     auto& lua = require_lua(L);
 
     lua.new_table();
-    auto index = 1;
-    for (auto& recipe : fb::model::table::recipe)
+    auto index        = 1;
+    auto recipe_table = fb::model::table::recipe;
+    for (auto& recipe : recipe_table)
     {
         lua.pushinteger(index++);
         lua.new_table();
@@ -299,40 +304,133 @@ int lua_builder_dialog(lua_State* L)
 
     namespace game_reqs = fb::protocol::game::request;
     using namespace fb::model::enum_value;
+    using dialog_type = fb::game::dialog::type;
+    using list_type   = fb::game::dialog::list_type;
 
-    auto parse_interaction = [](std::string_view value) -> game_reqs::dialog::INTERACTION {
-        static const std::unordered_map<std::string_view, game_reqs::dialog::INTERACTION> values = {
-            {"NORMAL",   game_reqs::dialog::INTERACTION::NORMAL  },
-            {"INPUT",    game_reqs::dialog::INTERACTION::INPUT   },
-            {"INPUT_EX", game_reqs::dialog::INTERACTION::INPUT_EX},
-            {"MENU",     game_reqs::dialog::INTERACTION::MENU    },
-            {"LIST",     game_reqs::dialog::INTERACTION::LIST    },
-            {"SLOT",     game_reqs::dialog::INTERACTION::SLOT    },
-            {"ITEM",     game_reqs::dialog::INTERACTION::ITEM    },
-        };
-
-        auto i = values.find(value);
-        if (i == values.end())
-            throw std::runtime_error(std::format("{} is not a valid dialog interaction", value));
-
-        return i->second;
-    };
-
-    auto interaction = game_reqs::dialog::INTERACTION::NORMAL;
-    if (lua.argc() >= 1 && lua.is_nil(1) == false)
-        interaction = parse_interaction(lua.tostring(1));
-
-    auto action  = static_cast<uint8_t>(lua.tointeger(2, 0));
-    auto message = lua.argc() >= 3 && lua.is_nil(3) == false ? lua.tostring(3) : std::string{};
-    auto index   = static_cast<uint16_t>(lua.tointeger(4, 0));
-    auto pursuit = static_cast<uint16_t>(lua.tointeger(5, 0));
-    auto name    = lua.argc() >= 6 && lua.is_nil(6) == false ? lua.tostring(6) : std::string{};
-    auto button  = DIALOG_RESULT::NEXT;
+    auto type_name = lua.argc() >= 1 && lua.is_nil(1) == false ? std::string(lua.tostring(1)) : std::string{"NORMAL"};
+    auto action    = static_cast<uint8_t>(lua.tointeger(2, 0));
+    auto message   = lua.argc() >= 3 && lua.is_nil(3) == false ? lua.tostring(3) : std::string{};
+    auto index     = static_cast<uint16_t>(lua.tointeger(4, 0));
+    auto pursuit   = static_cast<uint16_t>(lua.tointeger(5, 0));
+    auto name      = lua.argc() >= 6 && lua.is_nil(6) == false ? lua.tostring(6) : std::string{};
+    auto button    = DIALOG_RESULT::NEXT;
     if (lua.argc() >= 7 && lua.is_nil(7) == false)
         button = enum_parse<DIALOG_RESULT>(lua.tostring(7));
 
-    push_request(L, std::make_shared<game_reqs::dialog>(interaction, action, message, index, pursuit, name, button));
-    return 1;
+    if (type_name == "NORMAL" || type_name == "TEXT")
+    {
+        push_request(L, std::make_shared<game_reqs::dialog_list>(list_type::TEXT, action, message, index, button));
+        return 1;
+    }
+    else if (type_name == "TEXT_NO_MSG" || type_name == "NORMAL_NO_MSG")
+    {
+        push_request(L,
+                     std::make_shared<game_reqs::dialog_list>(list_type::TEXT_NO_MSG, action, message, index, button));
+        return 1;
+    }
+    else if (type_name == "LIST")
+    {
+        push_request(L, std::make_shared<game_reqs::dialog_list>(list_type::LIST, action, message, index, button));
+        return 1;
+    }
+    else if (type_name == "LIST_NO_MSG")
+    {
+        push_request(L,
+                     std::make_shared<game_reqs::dialog_list>(list_type::LIST_NO_MSG, action, message, index, button));
+        return 1;
+    }
+    else if (type_name == "INPUT_EX" || type_name == "INPUT_EXT")
+    {
+        push_request(L, std::make_shared<game_reqs::dialog_list>(list_type::INPUT, action, message, index, button));
+        return 1;
+    }
+    else if (type_name == "INPUT_EXT_NO_MSG")
+    {
+        push_request(L,
+                     std::make_shared<game_reqs::dialog_list>(list_type::INPUT_NO_MSG, action, message, index, button));
+        return 1;
+    }
+    else if (type_name == "INPUT_PASSWORD")
+    {
+        push_request(
+            L,
+            std::make_shared<game_reqs::dialog_list>(list_type::INPUT_PASSWORD, action, message, index, button));
+        return 1;
+    }
+    else if (type_name == "INPUT_PASSWORD_NO_MSG")
+    {
+        push_request(
+            L,
+            std::make_shared<game_reqs::dialog_list>(list_type::INPUT_PASSWORD_NO_MSG, action, message, index, button));
+        return 1;
+    }
+    else if (type_name == "EMAIL")
+    {
+        push_request(L, std::make_shared<game_reqs::dialog_list>(list_type::EMAIL, action, message, index, button));
+        return 1;
+    }
+    else if (type_name == "LOOK")
+    {
+        // LOOK ACK uses the same TEXT button layout on the wire.
+        push_request(L, std::make_shared<game_reqs::dialog_list>(list_type::TEXT, action, message, index, button));
+        return 1;
+    }
+    else if (type_name == "MENU")
+    {
+        push_request(L, std::make_shared<game_reqs::dialog>(dialog_type::MENU, action, message, index, pursuit, name));
+        return 1;
+    }
+    else if (type_name == "MENU_NO_EXT")
+    {
+        push_request(
+            L,
+            std::make_shared<game_reqs::dialog>(dialog_type::MENU_NO_EXT, action, message, index, pursuit, name));
+        return 1;
+    }
+    else if (type_name == "INPUT")
+    {
+        push_request(
+            L,
+            std::make_shared<game_reqs::dialog>(dialog_type::INPUT_NO_EXT, action, message, index, pursuit, name));
+        return 1;
+    }
+    else if (type_name == "INPUT_EXT_2F" || type_name == "INPUT_WITH_EXT")
+    {
+        push_request(L, std::make_shared<game_reqs::dialog>(dialog_type::INPUT, action, message, index, pursuit, name));
+        return 1;
+    }
+    else if (type_name == "SLOT")
+    {
+        push_request(L, std::make_shared<game_reqs::dialog>(dialog_type::SLOT, action, message, index, pursuit, name));
+        return 1;
+    }
+    else if (type_name == "SPELL")
+    {
+        push_request(L, std::make_shared<game_reqs::dialog>(dialog_type::SPELL, action, message, index, pursuit, name));
+        return 1;
+    }
+    else if (type_name == "ITEM")
+    {
+        push_request(L, std::make_shared<game_reqs::dialog>(dialog_type::ITEM, action, message, index, pursuit, name));
+        return 1;
+    }
+    else if (type_name == "PURSUIT")
+    {
+        push_request(L,
+                     std::make_shared<game_reqs::dialog>(dialog_type::PURSUIT, action, message, index, pursuit, name));
+        return 1;
+    }
+    else if (type_name == "DUAL_FIELD")
+    {
+        push_request(
+            L,
+            std::make_shared<game_reqs::dialog>(dialog_type::DUAL_FIELD, action, message, index, pursuit, name));
+        return 1;
+    }
+    else
+    {
+        throw std::runtime_error(std::format("{} is not a valid dialog type", type_name));
+    }
 }
 
 int lua_builder_trade(lua_State* L)
@@ -408,8 +506,8 @@ int lua_builder_move(lua_State* L)
     namespace game_reqs = fb::protocol::game::request;
     using namespace fb::model::enum_value;
 
-    auto direction = enum_parse<DIRECTION>(lua.tostring(1));
-    auto oid       = static_cast<uint32_t>(lua.tointeger(2));
+    auto direction       = enum_parse<DIRECTION>(lua.tostring(1));
+    auto walk_queue_slot = static_cast<uint32_t>(lua.tointeger(2));
 
     fb::model::point<uint16_t> position{};
     if (lua.is_table(3))
@@ -427,7 +525,7 @@ int lua_builder_move(lua_State* L)
         position.y = static_cast<uint16_t>(lua.tointeger(4));
     }
 
-    push_request(L, std::make_shared<game_reqs::move>(direction, oid, position));
+    push_request(L, std::make_shared<game_reqs::move>(direction, walk_queue_slot, position));
     return 1;
 }
 
@@ -483,6 +581,15 @@ void register_manual_builders(lua_State* L)
 
     lua_pushcfunction(L, lua_builder_move);
     lua_setfield(L, -2, "move");
+
+    lua_pushcfunction(L, [](lua_State* L) -> int {
+        auto& lua  = require_lua(L);
+        auto  oid  = static_cast<uint32_t>(lua.tointeger(1));
+        auto  flag = static_cast<uint8_t>(lua.tointeger(2, game_reqs::click::FLAG_OBJECT));
+        push_request(L, std::make_shared<game_reqs::click>(oid, flag));
+        return 1;
+    });
+    lua_setfield(L, -2, "click");
 
     lua_pushcfunction(L, [](lua_State* L) -> int {
         auto& lua = require_lua(L);

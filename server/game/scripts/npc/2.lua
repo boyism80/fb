@@ -52,11 +52,11 @@ local function ranggyuryun_palgu(me, npc)
         { ['item'] = materials },
         { ['item'] = { ['팔괘'] = 1 } }
     )
-    if code == enum.EXCHANGE_RESULT.LACK_COST then
+    if code == enum.exchange_result.LACK_COST then
         me:dialog(npc, '아직 팔괘 재료를 다 모으지 못하셨군요.', { prev = false, next = true })
         return
     end
-    if code == enum.EXCHANGE_RESULT.LACK_CAPACITY then
+    if code == enum.exchange_result.LACK_CAPACITY then
         me:dialog(npc, '소지품이 가득 차서 팔괘를 받을 수 없습니다.', { prev = false, next = true })
         return
     end
@@ -99,11 +99,11 @@ local function ranggyuryun_pure_water(me, npc)
             { ['item'] = materials },
             { ['item'] = { ['정화비서'] = 1 } }
         )
-        if code == enum.EXCHANGE_RESULT.LACK_COST then
+        if code == enum.exchange_result.LACK_COST then
             me:dialog(npc, '아직 홍옥 3개를 구하시지 못하신거군요.', { prev = false, next = false })
             return
         end
-        if code == enum.EXCHANGE_RESULT.LACK_CAPACITY then
+        if code == enum.exchange_result.LACK_CAPACITY then
             me:dialog(npc, '소지품이 가득 차서 정화비서를 받을 수 없습니다.', { prev = false, next = true })
             return
         end
@@ -127,18 +127,25 @@ local function ranggyuryun_golden_amber(me, npc)
     end
 end
 
-function NPC_2(me, npc)
-    local sel = me:list(npc, '안녕하세요. 어떻게 오셨나요?', { '팔괘', '순수한물', '황금호박무기만들기' })
-    if sel == nil then return end
-    if sel == 1 then
-        ranggyuryun_palgu(me, npc)
-        return
+return {
+    on_click = function(me, npc)
+        local OPT_PALGU = '팔괘'
+        local OPT_WATER = '순수한물'
+        local OPT_AMBER = '황금호박무기만들기'
+        local sel, btn = me:pursuit(npc, '안녕하세요. 어떻게 오셨나요?', { OPT_PALGU, OPT_WATER, OPT_AMBER })
+        if btn == DIALOG_RESULT.QUIT then
+            return
+        end
+        if sel == OPT_PALGU then
+            ranggyuryun_palgu(me, npc)
+            return
+        end
+        if sel == OPT_WATER then
+            ranggyuryun_pure_water(me, npc)
+            return
+        end
+        if sel == OPT_AMBER then
+            ranggyuryun_golden_amber(me, npc)
+        end
     end
-    if sel == 2 then
-        ranggyuryun_pure_water(me, npc)
-        return
-    end
-    if sel == 3 then
-        ranggyuryun_golden_amber(me, npc)
-    end
-end
+}

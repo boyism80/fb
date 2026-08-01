@@ -170,10 +170,30 @@ protected:
     bot(bot_controller<BotType>& controller, uint32_t id);
 
 public:
+    // protocol may be nullptr for wait-only (arm response hook without sending a request).
+    async::task<std::shared_ptr<fb::protocol::header>> request_by_opcode(
+        std::shared_ptr<BotType>                                                          target,
+        uint8_t                                                                           response_opcode,
+        const fb::protocol::header*                                                       protocol,
+        const std::function<bool(const fb::protocol::header& resp)>&                      condition,
+        const fb::model::timespan&                                                        timeout = 0s,
+        bool                                                                              encrypt = true,
+        bool                                                                              wrap    = true,
+        std::function<std::shared_ptr<fb::protocol::header>(const fb::protocol::header&)> clone   = nullptr);
+
     async::task<std::shared_ptr<fb::protocol::header>> request_by_opcode(
         std::shared_ptr<BotType>                                                          target,
         uint8_t                                                                           response_opcode,
         const fb::protocol::header&                                                       protocol,
+        const std::function<bool(const fb::protocol::header& resp)>&                      condition,
+        const fb::model::timespan&                                                        timeout = 0s,
+        bool                                                                              encrypt = true,
+        bool                                                                              wrap    = true,
+        std::function<std::shared_ptr<fb::protocol::header>(const fb::protocol::header&)> clone   = nullptr);
+
+    async::task<std::shared_ptr<fb::protocol::header>> request_by_opcode(
+        uint8_t                                                                           response_opcode,
+        const fb::protocol::header*                                                       protocol,
         const std::function<bool(const fb::protocol::header& resp)>&                      condition,
         const fb::model::timespan&                                                        timeout = 0s,
         bool                                                                              encrypt = true,

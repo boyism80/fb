@@ -1,10 +1,16 @@
 -- mob: 운랑
--- 운랑 공격
-function ON_MOB_ATTACK_1047(me, you)
-    return false
-end
 
--- 운랑 사망
--- function ON_MOB_DIE_1047(me)
---
--- end
+return {
+    on_mob_attack = function(me, you)
+        return false
+    end,
+
+    -- on_mob_die = function(me)
+    -- end,
+
+    -- on_mob_kill = function(me, mobs)
+    -- end,
+
+    -- on_mob_spell_hit = function(me, you, spell)
+    -- end
+}

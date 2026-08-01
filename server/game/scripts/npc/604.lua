@@ -1,7 +1,10 @@
 -- npc: 초도
-function NPC_604(me, npc)
-    local button = me:dialog(npc, "......", { prev = false, next = true })
-    if button == DIALOG_RESULT.QUIT then
-        return
+
+return {
+    on_click = function(me, npc)
+        local button = me:dialog(npc, "......", { prev = false, next = true })
+        if button == DIALOG_RESULT.QUIT then
+            return
+        end
     end
-end
+}

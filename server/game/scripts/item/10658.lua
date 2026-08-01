@@ -1,9 +1,15 @@
 -- item: [고급]마법성공률
 
--- [고급]마법성공률 사용 스크립트
--- function ON_ACTIVATED_10658(me, item)
--- end
+return {
+    -- on_activated = function(me, item)
+    -- end,
 
--- [고급]마법성공률 해제 스크립트
--- function ON_DEACTIVATED_10658(me, item)
--- end
+    -- on_deactivated = function(me, item)
+    -- end,
+
+    -- on_concast = function(me, item)
+    -- end,
+
+    -- on_attack = function(me, item)
+    -- end
+}

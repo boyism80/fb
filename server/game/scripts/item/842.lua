@@ -1,11 +1,15 @@
 -- item: 보라남자갑옷
 
--- 보라남자갑옷 사용 스크립트
--- function ON_ACTIVATED_842(me, item)
---
--- end
+return {
+    -- on_activated = function(me, item)
+    -- end,
 
--- 보라남자갑옷 해제 스크립트
--- function ON_DEACTIVATED_842(me, item)
---
--- end
+    -- on_deactivated = function(me, item)
+    -- end,
+
+    -- on_concast = function(me, item)
+    -- end,
+
+    -- on_attack = function(me, item)
+    -- end
+}

@@ -1,4 +1,6 @@
 -- npc: 해두
--- function NPC_25(me, npc)
---
--- end
+
+return {
+    -- on_click = function(me, npc)
+    -- end
+}

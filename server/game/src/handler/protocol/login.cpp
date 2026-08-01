@@ -25,7 +25,7 @@ void login::init_option(const internal::Option& response, fb::game::character& c
     ch.option(OPTION::WHISPER, response.whisper, false);
     ch.option(OPTION::GROUP, response.group, false);
     ch.option(OPTION::ROAR, response.roar, false);
-    ch.option(OPTION::ROAR_WORLDS, response.roar_worlds, false);
+    ch.option(OPTION::NEWS, response.news, false);
     ch.option(OPTION::MAGIC_EFFECT, response.magic_effect, false);
     ch.option(OPTION::WEATHER_EFFECT, response.weather_effect, false);
     ch.option(OPTION::FIXED_MOVE, response.fixed_move, false);
@@ -64,12 +64,13 @@ void login::init_spells(const std::vector<internal::Spell>& response, character&
 {
     for (auto& x : response)
     {
-        if (table::spell.contains(x.model) == false)
+        if (table::spell->contains(x.model) == false)
             continue;
 
-        auto& model = table::spell[x.model];
-        auto  delay = fb::model::datetime(x.next) - this->server.now();
-        auto  sec   = delay.seconds();
+        auto  spell_table = table::spell;
+        auto& model       = spell_table[x.model];
+        auto  delay       = fb::model::datetime(x.next) - this->server.now();
+        auto  sec         = delay.seconds();
         if (sec >= 0)
             sec += (delay.milliseconds() > 0 ? 1 : 0);
         else
@@ -143,7 +144,43 @@ async::task<std::shared_ptr<character>> login::init(const game_reqs::login& requ
     auto&& resp =
         co_await this->server.http.get<internal_resp::Init>("internal",
                                                             std::format("/in-game/init/{}/{}", world, request.id));
-    auto map = request.transfer.has_value() ? request.transfer->map : resp.character.map;
+    auto map        = request.transfer.has_value() ? request.transfer->map : resp.character.map;
+    auto position_x = resp.character.position.x;
+    auto position_y = resp.character.position.y;
+    if (request.transfer != std::nullopt)
+    {
+        map        = request.transfer.value().map;
+        position_x = uint32_t(request.transfer.value().position.x);
+        position_y = uint32_t(request.transfer.value().position.y);
+    }
+    else if (table::map->contains(map) && table::map[map].return_to.has_value())
+    {
+        auto source_map_id = map;
+        auto return_map_id = table::map[map].return_to.value();
+        if (this->server.maps.contains(return_map_id) == false)
+        {
+            fb::logger::fatal("Character {} login failed: return_to map {} does not exist (source map {})",
+                              resp.character.name,
+                              return_map_id,
+                              source_map_id);
+            co_return nullptr;
+        }
+
+        auto return_map = this->server.maps[return_map_id];
+        if (return_map->active == false)
+        {
+            fb::logger::fatal("Character {} login failed: return_to map {} is not active (source map {})",
+                              resp.character.name,
+                              return_map_id,
+                              source_map_id);
+            co_return nullptr;
+        }
+
+        auto spawn = return_map->model.spawn_position().value_or(fb::model::point16_t{0, 0});
+        map        = return_map_id;
+        position_x = spawn.x;
+        position_y = spawn.y;
+    }
 
     auto socket_ptr     = session.shared_from_this_as<fb::socket<character>>();
     auto params         = character::initial_params{.socket = socket_ptr};
@@ -204,19 +241,11 @@ async::task<std::shared_ptr<character>> login::init(const game_reqs::login& requ
     ch->stat.hp(resp.character.hp, false);
     ch->stat.base_mp(resp.character.base_mp, false);
     ch->stat.mp(resp.character.mp, false);
+    ch->stat.base_speed(resp.character.speed, false);
 
     auto thread = this->server.maps[map]->thread();
     ch->thread(thread);
     co_await thread->switching();
-
-    auto position_x = resp.character.position.x;
-    auto position_y = resp.character.position.y;
-    if (request.transfer != std::nullopt)
-    {
-        map        = request.transfer.value().map;
-        position_x = uint32_t(request.transfer.value().position.x);
-        position_y = uint32_t(request.transfer.value().position.y);
-    }
 
     session.data(ch);
 
@@ -225,8 +254,9 @@ async::task<std::shared_ptr<character>> login::init(const game_reqs::login& requ
 
     for (auto& buff : resp.character.buffs)
     {
-        auto& model = table::spell[buff.model];
-        std::ignore = co_await ch->buffs.push_back(model, buff.time);
+        auto  spell_table2 = table::spell;
+        auto& model        = spell_table2[buff.model];
+        std::ignore        = co_await ch->buffs.push_back(model, buff.time);
     }
 
     if (resp.group.has_value())
@@ -259,6 +289,7 @@ async::task<std::shared_ptr<character>> login::init(const game_reqs::login& requ
     }
 
     ch->mail_box.unread_count(resp.mail);
+    ch->mail_box.init_system_mails(resp.system_mail_ids);
     this->init_items(resp.items, *ch);
     this->init_spells(resp.spells, *ch);
     this->init_matchmaker(resp.matchmaking_skills, *ch);
@@ -275,7 +306,8 @@ async::task<std::shared_ptr<character>> login::init(const game_reqs::login& requ
                                     resp.marriage.divorce_count));
 
     ch->init();
-    ch->update_time(this->server.time().hours());
+    ch->update_time(static_cast<uint8_t>(this->server.time().hours()),
+                    static_cast<uint8_t>(this->server.time().minutes()));
     if (request.from == internal::Service::Login)
     {
         auto msg = this->elapsed_message(resp.character.updated_date);
