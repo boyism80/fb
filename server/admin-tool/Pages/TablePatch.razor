@@ -74,7 +74,8 @@
                 <div class="table-patch-dropzone">
                     <span class="material-symbols-outlined table-patch-drop-icon">cloud_upload</span>
                     <p class="table-patch-drop-text">.json 파일을 여기에 드래그하거나 클릭하여 선택하세요</p>
-                    <InputFile OnChange="OnInputFileChange"
+                    <InputFile @key="fileInputKey"
+                               OnChange="OnInputFileChange"
                                multiple
                                accept=".json,application/json"
                                class="table-patch-file-input" />
@@ -158,6 +159,7 @@
     private const long MaxFileBytes = 20 * 1024 * 1024;
 
     private readonly List<PendingFile> pendingFiles = new();
+    private int fileInputKey;
     private string errorMessage;
     private string successMessage;
     private bool isProcessing;
@@ -185,6 +187,9 @@
 
         foreach (var file in e.GetMultipleFiles(64))
             await TryAddFileAsync(file);
+
+        // Remount InputFile so the same files can be selected/dragged again.
+        fileInputKey++;
     }
 
     private async Task TryAddFileAsync(IBrowserFile file)
@@ -221,6 +226,7 @@
         pendingFiles.Clear();
         errorMessage = null;
         successMessage = null;
+        fileInputKey++;
     }
 
     private async Task HandlePublish()
@@ -318,6 +324,8 @@
                 ? $"{stems.Count}개 테이블을 업로드하고 전체 월드({targetWorlds.Count})에 리로드를 요청했습니다."
                 : $"{stems.Count}개 테이블을 업로드하고 World {selectedWorld.Value}에 리로드를 요청했습니다.";
             pendingFiles.Clear();
+            // Remount InputFile; keep successMessage (unlike ClearFiles).
+            fileInputKey++;
         }
         catch (Exception ex)
         {
