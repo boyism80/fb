@@ -5044,7 +5044,7 @@ a.dashboard-card:hover,
 }
 
 
-/* Runtime script patch page (Stitch-aligned) */
+/* Runtime script patch page (aligned with table-patch) */
 .script-patch-page {
     max-width: 1200px;
 }
@@ -5056,17 +5056,18 @@ a.dashboard-card:hover,
     align-items: center;
     justify-content: center;
     gap: 0.5rem;
-    min-height: 9rem;
+    min-height: 10rem;
     margin-bottom: 1rem;
     padding: 1.5rem;
-    border: 1px dashed var(--outline-variant, #2a2a2a);
-    border-radius: var(--radius-lg, 0.5rem);
-    background: var(--surface-container-low, #1b1c1c);
+    border: 1px dashed var(--border-color);
+    border-radius: var(--radius-default);
+    background: var(--bg-surface);
     text-align: center;
 }
 
 .script-patch-dropzone:hover {
-    border-color: var(--accent-color, #3ddc84);
+    border-color: var(--accent-color);
+    background: var(--bg-hover);
 }
 
 .script-patch-drop-icon {
@@ -5095,11 +5096,6 @@ a.dashboard-card:hover,
     font-size: var(--font-size-sm);
 }
 
-.script-patch-hint-inline {
-    color: var(--text-muted);
-    font-weight: 400;
-}
-
 .script-patch-file-list-header {
     display: flex;
     align-items: center;
@@ -5112,26 +5108,39 @@ a.dashboard-card:hover,
     margin: 0;
     font-size: var(--font-size-sm);
     font-weight: 600;
+    color: var(--text-primary);
+}
+
+.script-patch-clear-all {
+    padding: 0.25rem 0.75rem;
+    font-size: var(--font-size-sm);
 }
 
 .script-patch-file-list {
     list-style: none;
     margin: 0 0 1rem;
     padding: 0;
-    border: 1px solid var(--outline-variant, #2a2a2a);
+    border: 1px solid var(--border-color);
     border-radius: var(--radius-default);
+    overflow: hidden;
 }
 
 .script-patch-file-item {
     display: flex;
     align-items: flex-start;
     gap: 0.75rem;
-    padding: 0.75rem;
-    border-bottom: 1px solid var(--outline-variant, #2a2a2a);
+    padding: 0.65rem 0.75rem;
+    border-bottom: 1px solid var(--border-color);
+    background: var(--bg-card);
 }
 
 .script-patch-file-item:last-child {
     border-bottom: none;
+}
+
+.script-patch-file-item .material-symbols-outlined {
+    color: var(--text-muted);
+    font-size: 1.25rem;
 }
 
 .script-patch-file-meta {
@@ -5143,8 +5152,12 @@ a.dashboard-card:hover,
 }
 
 .script-patch-file-name {
+    color: var(--text-primary);
     font-weight: 600;
     font-size: var(--font-size-sm);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
 }
 
 .script-patch-file-size {
@@ -5191,6 +5204,11 @@ a.dashboard-card:hover,
     color: var(--error-text);
 }
 
+.script-patch-file-remove:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
 .script-patch-scope {
     margin-top: var(--section-gap, 1rem);
 }
@@ -5198,18 +5216,23 @@ a.dashboard-card:hover,
 .script-patch-scope-label {
     margin: 0.5rem 0 0;
     font-size: 0.875rem;
-    color: var(--text-muted);
+    color: var(--text-muted, #6b7280);
 }
 
-.script-patch-order-card {
-    margin-top: var(--section-gap, 1rem);
+.script-patch-order-section {
+    margin: 0 0 1rem;
+}
+
+.script-patch-order-section .script-patch-file-list-title {
+    margin-bottom: 0.5rem;
 }
 
 .script-patch-order-list {
     list-style: none;
     margin: 0;
     padding: 0.75rem;
-    background: var(--surface-container-low, #1b1c1c);
+    background: var(--bg-surface);
+    border: 1px solid var(--border-color);
     border-radius: var(--radius-default);
     font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
     font-size: 0.8125rem;
@@ -5223,8 +5246,4 @@ a.dashboard-card:hover,
 .script-patch-analysis-error {
     margin: 0;
     color: var(--error-text, #ffb4ab);
-}
-
-.script-patch-actions {
-    margin-top: var(--section-gap, 1rem);
 }
