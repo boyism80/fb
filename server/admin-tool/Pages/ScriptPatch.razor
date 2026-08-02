@@ -84,8 +84,8 @@
                 @if (pendingFiles.Count > 0)
                 {
                     <div class="script-patch-file-list-header">
-                        <h3 class="script-patch-file-list-title">업로드 대기 (@pendingFiles.Count)</h3>
-                        <button type="button" class="stitch-btn stitch-btn-neutral" @onclick="ClearFiles" disabled="@isProcessing">
+                        <h3 class="script-patch-file-list-title">업로드 대기 중인 파일 (@pendingFiles.Count)</h3>
+                        <button type="button" class="stitch-btn stitch-btn-neutral script-patch-clear-all" @onclick="ClearFiles" disabled="@isProcessing">
                             모두 삭제
                         </button>
                     </div>
@@ -122,6 +122,27 @@
                             </li>
                         }
                     </ul>
+
+                    <div class="script-patch-order-section">
+                        <h3 class="script-patch-file-list-title">적용 순서</h3>
+                        @if (!string.IsNullOrEmpty(analysisError))
+                        {
+                            <p class="script-patch-analysis-error">@analysisError</p>
+                        }
+                        else if (orderedPaths.Count > 0)
+                        {
+                            <ul class="script-patch-order-list">
+                                @for (var i = 0; i < orderedPaths.Count; i++)
+                                {
+                                    <li><span class="script-patch-order-index">@(i + 1).</span> @orderedPaths[i]</li>
+                                }
+                            </ul>
+                        }
+                        else
+                        {
+                            <p class="script-patch-hint">경로를 입력하면 종속성을 분석합니다.</p>
+                        }
+                    </div>
                 }
                 else
                 {
@@ -138,7 +159,7 @@
                         @if (applyAllWorlds)
                         {
                             <strong>전체 월드</strong>
-                            <span class="script-patch-hint-inline"> (헤더 월드 선택과 무관)</span>
+                            <span class="script-patch-hint"> (헤더 월드 선택과 무관)</span>
                         }
                         else if (selectedWorld.HasValue)
                         {
@@ -150,55 +171,24 @@
                         }
                     </p>
                 </div>
-            </div>
-        </div>
 
-        @if (pendingFiles.Count > 0)
-        {
-            <div class="card-bg stitch-form-card script-patch-order-card">
-                <div class="stitch-form-card-header">
-                    <div class="dash-card-title-row">
-                        <span class="material-symbols-outlined">account_tree</span>
-                        <h2 class="dash-card-title">적용 순서</h2>
-                    </div>
-                </div>
-                <div class="card-body">
-                    @if (!string.IsNullOrEmpty(analysisError))
-                    {
-                        <p class="script-patch-analysis-error">@analysisError</p>
-                    }
-                    else if (orderedPaths.Count > 0)
-                    {
-                        <ul class="script-patch-order-list">
-                            @for (var i = 0; i < orderedPaths.Count; i++)
-                            {
-                                <li><span class="script-patch-order-index">@(i + 1).</span> @orderedPaths[i]</li>
-                            }
-                        </ul>
-                    }
-                    else
-                    {
-                        <p class="script-patch-hint">경로를 입력하면 종속성을 분석합니다.</p>
-                    }
+                <div class="stitch-form-actions">
+                    <button type="button" class="stitch-btn stitch-btn-neutral" @onclick="ClearFiles" disabled="@isProcessing">
+                        초기화
+                    </button>
+                    <button type="button"
+                            class="stitch-btn stitch-btn-primary"
+                            @onclick="HandlePublish"
+                            disabled="@(isProcessing || pendingFiles.Count == 0 || !canPublish)">
+                        @if (isProcessing)
+                        {
+                            <span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
+                        }
+                        <span class="material-symbols-outlined" style="font-size:1rem;">sync</span>
+                        업로드 및 리로드
+                    </button>
                 </div>
             </div>
-        }
-
-        <div class="stitch-form-actions script-patch-actions">
-            <button type="button" class="stitch-btn stitch-btn-neutral" @onclick="ClearFiles" disabled="@isProcessing">
-                초기화
-            </button>
-            <button type="button"
-                    class="stitch-btn stitch-btn-primary"
-                    @onclick="HandlePublish"
-                    disabled="@(isProcessing || pendingFiles.Count == 0 || !canPublish)">
-                @if (isProcessing)
-                {
-                    <span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
-                }
-                <span class="material-symbols-outlined" style="font-size:1rem;">sync</span>
-                업로드 및 리로드
-            </button>
         </div>
     }
 </div>
