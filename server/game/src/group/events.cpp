@@ -223,7 +223,7 @@ async::task<void> group::container::on_leave(std::string                target,
 
             auto map = ptr->map();
             if (map != nullptr && map->is_instance() &&
-                map->model.instance_rule == fb::model::enum_value::INSTANCE_RULE_TYPE::GROUP)
+                map->model().instance_rule == fb::model::enum_value::INSTANCE_RULE_TYPE::GROUP)
             {
                 auto source = map->source();
                 if (source != nullptr)
@@ -297,7 +297,7 @@ async::task<void> group::container::on_kick(std::string                target,
 
             auto map = ptr->map();
             if (map != nullptr && map->is_instance() &&
-                map->model.instance_rule == fb::model::enum_value::INSTANCE_RULE_TYPE::GROUP)
+                map->model().instance_rule == fb::model::enum_value::INSTANCE_RULE_TYPE::GROUP)
             {
                 auto source = map->source();
                 if (source != nullptr)
@@ -346,7 +346,7 @@ async::task<void> group::container::on_destroyed(std::string actor, uint32_t gro
 
             auto map = ch->map();
             if (map != nullptr && map->is_instance() &&
-                map->model.instance_rule == fb::model::enum_value::INSTANCE_RULE_TYPE::GROUP)
+                map->model().instance_rule == fb::model::enum_value::INSTANCE_RULE_TYPE::GROUP)
             {
                 auto source = map->source();
                 if (source != nullptr)

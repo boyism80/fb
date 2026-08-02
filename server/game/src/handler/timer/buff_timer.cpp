@@ -42,7 +42,7 @@ async::task<void> buff_timer::handle(const fb::model::datetime& now, std::thread
                     continue;
                 }
 
-                auto& model = buff->model;
+                auto& model = buff->model();
                 auto  path  = std::format("scripts/spell/{}.lua", model.id);
                 auto  func  = "on_concast";
 
@@ -61,7 +61,7 @@ async::task<void> buff_timer::handle(const fb::model::datetime& now, std::thread
 
             for (auto& buff : ended_buffs)
             {
-                std::ignore = co_await obj->buffs.remove(buff->model);
+                std::ignore = co_await obj->buffs.remove(buff->model());
             }
         }
     }

@@ -20,12 +20,12 @@ public:
     class model;
 
 private:
-    bool _opened = false;
-    bool _locked = false;
+    bool     _opened   = false;
+    bool     _locked   = false;
+    uint32_t _model_id = 0;
 
 public:
     const fb::game::map&       map;
-    const fb::model::door&     model;
     const fb::model::point16_t pivot;
     const uint16_t             width;
 
@@ -35,10 +35,11 @@ public:
     ~door();
 
 public:
-    bool toggle();
-    bool opened() const;
-    bool locked() const;
-    void lock(bool value);
+    const fb::model::door& model() const;
+    bool                   toggle();
+    bool                   opened() const;
+    bool                   locked() const;
+    void                   lock(bool value);
 };
 
 class door::container : private std::unordered_map<uint64_t, std::shared_ptr<fb::game::door>>

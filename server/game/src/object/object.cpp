@@ -12,7 +12,7 @@ object::object(fb::game::server& server, const fb::model::object& model, const i
     server(server),
     listener(server.listener),
     _oid(params.id),
-    _model(model),
+    _model_id(model.id),
     _position(params.position),
     _direction(params.direction),
     _map(params.map),
@@ -24,18 +24,13 @@ object::object(fb::game::server& server, const fb::model::object& model, const i
 object::object(const object& right) :
     object(
         right.server,
-        right._model,
+        right.model(),
         initial_params{.id = right._oid, .position = right._position, .direction = right._direction, .map = right._map})
 { }
 
 object::~object()
 {
     this->listener.on_destroy(*this);
-}
-
-const fb::model::object& object::based() const
-{
-    return this->_model;
 }
 
 bool object::is(OBJECT_TYPE type) const
@@ -46,22 +41,22 @@ bool object::is(OBJECT_TYPE type) const
 
 const std::string& object::name() const
 {
-    return this->_model.name;
+    return this->model().name;
 }
 
 uint16_t object::look() const
 {
-    return this->_model.look;
+    return this->model().look;
 }
 
 uint8_t object::color() const
 {
-    return this->_model.color;
+    return this->model().color;
 }
 
 OBJECT_TYPE object::what() const
 {
-    return this->_model.what();
+    return this->model().what();
 }
 
 void object::update_external(bool detailed)
@@ -276,7 +271,7 @@ bool object::move(DIRECTION direction)
     }
 
     {
-        auto& map_model = this->_map->model;
+        auto& map_model = this->_map->model();
         auto  path      = std::format("scripts/map/{}.lua", map_model.id);
         auto  func      = "on_map_move";
 
@@ -480,7 +475,7 @@ async::task<bool> object::map(map_ptr map, std::optional<fb::model::point16_t> p
     this->assert_thread();
 
     if (map != nullptr && position.has_value() == false)
-        position = map->model.spawn_position();
+        position = map->model().spawn_position();
 
     auto  weak         = this->weak_from_this_as<object>();
     auto& context      = this->server;
@@ -501,7 +496,7 @@ async::task<bool> object::map(map_ptr map, std::optional<fb::model::point16_t> p
         if (map == nullptr)
         {
             if (this->_map != nullptr)
-                co_await this->invoke_map_character_hook(this->_map->model, "on_map_leave");
+                co_await this->invoke_map_character_hook(this->_map->model(), "on_map_leave");
 
             // broadcast near characters
             for (const auto& x : this->_map->nears(this->_position))
@@ -566,7 +561,7 @@ async::task<bool> object::map(map_ptr map, std::optional<fb::model::point16_t> p
 
         if (this->_map != nullptr)
         {
-            if (this->_map->model.id == map->model.id)
+            if (this->_map->model().id == map->model().id)
             {
                 for (const auto& x : this->_map->nears(this->_position))
                 {
@@ -616,7 +611,7 @@ async::task<bool> object::map(map_ptr map, std::optional<fb::model::point16_t> p
         this->update_position();
         if (notify)
             this->update_external(true);
-        this->update_bgm(map->model.bgm, 100);
+        this->update_bgm(map->model().bgm, 100);
 
         if (notify)
         {
@@ -629,7 +624,7 @@ async::task<bool> object::map(map_ptr map, std::optional<fb::model::point16_t> p
             }
         }
 
-        co_await this->invoke_map_character_hook(map->model, "on_map_enter");
+        co_await this->invoke_map_character_hook(map->model(), "on_map_enter");
 
         co_return true;
     }
@@ -857,7 +852,7 @@ fb::thread* object::thread() const
     if (this->_thread != nullptr)
         return this->_thread;
     else
-        return this->server.threads.modular(this->_model.id);
+        return this->server.threads.modular(this->_model_id);
 }
 
 void object::update_id()

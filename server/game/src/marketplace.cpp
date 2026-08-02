@@ -52,7 +52,7 @@ async::task<marketplace::listing> marketplace::list(uint8_t slot, uint16_t count
     if (item == nullptr)
         throw std::runtime_error(_TEXT(MESSAGE_MARKETPLACE_ITEM_NOT_FOUND_AT_INDEX));
 
-    auto& model = item->based<fb::model::item>();
+    auto& model = item->model();
     if (item->count() < count)
         throw std::runtime_error(_TEXT(MESSAGE_MARKETPLACE_INSUFFICIENT_ITEM_COUNT));
 

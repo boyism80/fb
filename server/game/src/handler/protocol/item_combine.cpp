@@ -28,7 +28,7 @@ async::task<bool> item_combine::handle(fb::socket<character>& session, game_reqs
         if (item == nullptr)
             continue;
 
-        auto& model = item->based<fb::model::item>();
+        auto& model = item->model();
         dsl.push_back(fb::model::dsl::item(model.id, item->count(), std::nullopt, std::nullopt, 100.0));
     }
 

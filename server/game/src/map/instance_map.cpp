@@ -7,7 +7,7 @@ instance_map::instance_map(fb::game::server&                     server,
                            uint32_t                              id,
                            uint32_t                              slot,
                            const std::shared_ptr<fb::game::map>& source) :
-    map(server, id, source->model, true, nullptr, 0),
+    map(server, id, source->model(), true, nullptr, 0),
     _source(source),
     _slot(slot)
 {

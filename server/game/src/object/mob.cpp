@@ -10,12 +10,18 @@
 using namespace fb::game;
 using table = fb::model::table;
 
-rezen::rezen(server& server, const fb::model::mob_spawn& model, const std::shared_ptr<fb::game::map>& map) :
+rezen::rezen(server& server, uint32_t parent, uint32_t index, const std::shared_ptr<fb::game::map>& map) :
     _server(server),
     _map(map),
-    model(model)
+    _parent(parent),
+    _index(index)
 {
     this->_respawn_time = this->_server.now();
+}
+
+const fb::model::mob_spawn& rezen::model() const
+{
+    return fb::model::table::mob_spawn[this->_parent][this->_index];
 }
 
 uint32_t rezen::map_id() const
@@ -29,7 +35,7 @@ void rezen::decrease()
     auto now = this->_server.now();
 
     if (!this->_respawn_time.has_value())
-        this->_respawn_time = now + this->model.rezen;
+        this->_respawn_time = now + this->model().rezen;
     this->_count = std::max(0, this->_count - 1);
 }
 
@@ -56,7 +62,7 @@ async::task<void> rezen::spawn(std::thread::id thread_id)
     if (now < this->_respawn_time)
         co_return;
 
-    auto spawn_count = this->model.count - this->_count;
+    auto spawn_count = this->model().count - this->_count;
     if (spawn_count < 1)
         co_return;
 
@@ -64,7 +70,7 @@ async::task<void> rezen::spawn(std::thread::id thread_id)
     for (int i = 0; i < spawn_count; i++)
     {
         // Use smart pointer for mob creation
-        auto mob = this->_server.make<fb::game::mob>(table::mob[this->model.mob],
+        auto mob = this->_server.make<fb::game::mob>(table::mob[this->model().mob],
                                                      mob::initial_params{.alive = true, .rezen = this});
 
         mob->direction(DIRECTION(std::rand() % 4));
@@ -72,10 +78,10 @@ async::task<void> rezen::spawn(std::thread::id thread_id)
 
         while (true)
         {
-            auto width    = this->model.end.x - this->model.begin.x;
-            auto height   = this->model.end.y - this->model.begin.y;
-            auto position = fb::model::point16_t(this->model.begin.x + (width > 0 ? std::rand() % width : 0),
-                                                 this->model.begin.y + (height > 0 ? std::rand() % height : 0));
+            auto width    = this->model().end.x - this->model().begin.x;
+            auto height   = this->model().end.y - this->model().begin.y;
+            auto position = fb::model::point16_t(this->model().begin.x + (width > 0 ? std::rand() % width : 0),
+                                                 this->model().begin.y + (height > 0 ? std::rand() % height : 0));
 
             if (position.x > map->width() - 1 || position.y > map->height() - 1)
                 continue;
@@ -138,12 +144,17 @@ mob::~mob()
         this->_rezen->decrease();
 }
 
+const fb::model::mob& mob::model() const
+{
+    return fb::model::table::mob[this->_model_id];
+}
+
 async::task<bool> mob::call_script()
 {
     this->assert_thread();
     this->update_target();
 
-    auto& model = this->based<fb::model::mob>();
+    auto& model = this->model();
     auto  path  = std::format("scripts/mob/{}.lua", model.id);
     auto  func  = "on_mob_attack";
 
@@ -284,7 +295,7 @@ std::shared_ptr<life> mob::update_target()
     {
         this->_target.reset();
 
-        auto& model = this->based<fb::model::mob>();
+        auto& model = this->model();
         if (model.attack_type == MOB_ATTACK_TYPE::AGGRESSIVE)
             this->_target = this->find_target();
         else
@@ -382,7 +393,7 @@ void mob::AI(const fb::model::datetime& now)
     if (ENUM_IN(static_cast<CROWD_CONTROL>(this->cc), CROWD_CONTROL::SIGHT))
         return;
 
-    auto& model = this->based<fb::model::mob>();
+    auto& model = this->model();
     if (now < this->_action_time + model.speed)
         return;
 
@@ -407,7 +418,7 @@ uint64_t mob::normal_attack_damage(MOB_SIZE size) const
 {
     this->assert_thread();
 
-    auto& model      = this->based<fb::model::mob>();
+    auto& model      = this->model();
     auto  difference = model.damage.max - model.damage.min;
     return model.damage.min + (std::rand() % difference);
 }
@@ -480,7 +491,7 @@ async::task<void> mob::drop_items()
 {
     this->assert_thread();
 
-    auto& model    = this->based<fb::model::mob>();
+    auto& model    = this->model();
     auto  oids     = std::vector<uint32_t>{};
     auto  map      = this->map();
     auto& position = this->position();
@@ -659,7 +670,7 @@ void mob::hidden(bool enabled)
 
 std::shared_ptr<fb::game::appearance> mob::appearance() const
 {
-    return this->based<fb::model::mob>().create_appearance();
+    return this->model().create_appearance();
 }
 
 bool mob::add_part(const std::shared_ptr<mob>& part)
@@ -731,7 +742,7 @@ MOB_PARTS_MODE mob::parts_mode() const
 uint64_t mob::total_exp() const
 {
     this->assert_thread();
-    return this->based<fb::model::mob>().exp;
+    return this->model().exp;
 }
 
 void mob::sync_body_hp_from_parts()

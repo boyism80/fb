@@ -19,7 +19,7 @@ async::task<bool> spell_cast::handle(fb::socket<character>& session, game_reqs::
     if (map == nullptr)
         co_return true;
 
-    if (ch->role() == ROLE::USER && ENUM_IN(map->model.option, MAP_OPTION::DISABLE_SPELL))
+    if (ch->role() == ROLE::USER && ENUM_IN(map->model().option, MAP_OPTION::DISABLE_SPELL))
     {
         ch->message(_TEXT(MESSAGE_SPELL_DISABLED_AREA));
         co_return true;
@@ -39,8 +39,8 @@ async::task<bool> spell_cast::handle(fb::socket<character>& session, game_reqs::
         co_return true;
     }
 
-    const_cast<fb::protocol::game::request::spell_cast&>(request).parse(spell->model.type);
-    switch (spell->model.type)
+    const_cast<fb::protocol::game::request::spell_cast&>(request).parse(spell->model().type);
+    switch (spell->model().type)
     {
     case SPELL_TYPE::INPUT:
         ch->active(*spell, request.message);

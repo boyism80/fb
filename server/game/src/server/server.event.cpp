@@ -96,7 +96,7 @@ async::task<bool> fb::game::server::on_disconnected(fb::socket<character>& socke
         auto map                   = ptr->map();
         if (map != nullptr)
         {
-            log_data["map"]        = map->model.id;
+            log_data["map"]        = map->model().id;
             log_data["position_x"] = ptr->position().x;
             log_data["position_y"] = ptr->position().y;
         }
@@ -166,7 +166,7 @@ uint32_t fb::game::server::thread_id(const fb::socket<character>& socket) const
     if (map == nullptr)
         return 0;
 
-    return map->model.id;
+    return map->model().id;
 }
 
 void fb::game::server::on_init_amqp(fb::amqp::socket& amqp)

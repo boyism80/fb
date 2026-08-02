@@ -55,7 +55,7 @@ int builtin::object::builtin_model(lua_State* L)
     auto builder   = lua->new_co_builder();
     builder.weak   = weak;
     builder.yield  = [=]() -> async::task<void> {
-        *model_ptr = &obj->based();
+        *model_ptr = &obj->model();
         co_return;
     };
     builder.resume = [=]() -> async::task<int> {
@@ -467,7 +467,7 @@ int builtin::object::builtin_unbuff(lua_State* L)
         if (buff == nullptr)
             return 0;
         mode     = unbuff_mode::BY_BUFF;
-        spell_id = buff->model.id;
+        spell_id = buff->model().id;
     }
     else if (lua->is_userdata<fb::model::spell>(2))
     {
@@ -536,7 +536,7 @@ int builtin::object::builtin_isbuff(lua_State* L)
             auto buff = lua->touserdata<fb::game::buff>(i + 1);
             if (buff == nullptr)
                 continue;
-            checks.push_back({buff_check::type_t::BUFF, "", buff->model.id});
+            checks.push_back({buff_check::type_t::BUFF, "", buff->model().id});
         }
         else if (lua->is_userdata<fb::model::spell>(i + 1))
         {
@@ -805,7 +805,7 @@ int builtin::object::builtin_map(lua_State* L)
         parse_map_option_table(lua, offset, options, callback_holder, weak);
 
     if (position.has_value() == false)
-        position = map->model.spawn_position();
+        position = map->model().spawn_position();
 
     auto success_holder = std::make_shared<bool>(false);
     auto builder        = lua->new_co_builder();

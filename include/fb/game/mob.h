@@ -28,17 +28,17 @@ class rezen
 private:
     fb::game::server&                  _server;
     std::weak_ptr<fb::game::map>       _map;
-    uint16_t                           _count = 0;
+    uint32_t                           _parent = 0;
+    uint32_t                           _index  = 0;
+    uint16_t                           _count  = 0;
     std::optional<fb::model::datetime> _respawn_time;
 
 public:
-    const fb::model::mob_spawn& model;
-
-public:
-    rezen(fb::game::server& server, const fb::model::mob_spawn& model, const std::shared_ptr<fb::game::map>& map);
+    rezen(fb::game::server& server, uint32_t parent, uint32_t index, const std::shared_ptr<fb::game::map>& map);
     ~rezen() = default;
 
     // clang-format off
+    const fb::model::mob_spawn&     model() const;
     uint32_t                        map_id() const;
     void                            decrease();
     [[nodiscard]] async::task<void> spawn(std::thread::id thread_id);
@@ -96,6 +96,9 @@ public:
     mob(fb::game::server& server, const fb::model::mob& model, const initial_params& params);
     ~mob();
     // clang-format on
+
+public:
+    const fb::model::mob& model() const override;
 
 private:
     // clang-format off

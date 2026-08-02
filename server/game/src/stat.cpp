@@ -594,7 +594,7 @@ uint8_t character_stat::str() const
         if (equipment == nullptr)
             continue;
 
-        auto& model  = equipment->based<fb::model::equipment>();
+        auto& model  = equipment->model();
         additional  += model.strength;
     }
 
@@ -621,7 +621,7 @@ uint8_t character_stat::dex() const
         if (equipment == nullptr)
             continue;
 
-        auto& model  = equipment->based<fb::model::equipment>();
+        auto& model  = equipment->model();
         additional  += model.dexterity;
     }
 
@@ -648,7 +648,7 @@ uint8_t character_stat::intelligence() const
         if (equipment == nullptr)
             continue;
 
-        auto& model  = equipment->based<fb::model::equipment>();
+        auto& model  = equipment->model();
         additional  += model.intelligence;
     }
 
@@ -675,7 +675,7 @@ int8_t character_stat::phydef() const
         if (equipment == nullptr)
             continue;
 
-        auto& model  = equipment->based<fb::model::equipment>();
+        auto& model  = equipment->model();
         additional  += model.defensive_physical;
     }
 
@@ -699,7 +699,7 @@ int8_t character_stat::magdef() const
         if (equipment == nullptr)
             continue;
 
-        auto& model  = equipment->based<fb::model::equipment>();
+        auto& model  = equipment->model();
         additional  += model.defensive_magical;
     }
 
@@ -717,7 +717,7 @@ int8_t character_stat::dam() const
         if (equipment == nullptr)
             continue;
 
-        auto& model  = equipment->based<fb::model::equipment>();
+        auto& model  = equipment->model();
         additional  += static_cast<int16_t>(static_cast<int8_t>(model.damage));
     }
     int16_t sum = static_cast<int16_t>(dam_val) + additional;
@@ -762,7 +762,7 @@ int8_t character_stat::hit() const
         if (equipment == nullptr)
             continue;
 
-        auto& model  = equipment->based<fb::model::equipment>();
+        auto& model  = equipment->model();
         additional  += static_cast<int16_t>(static_cast<int8_t>(model.hit));
     }
     int16_t sum = static_cast<int16_t>(hit_val) + additional;
@@ -788,7 +788,7 @@ uint64_t character_stat::maxhp() const
         if (equipment == nullptr)
             continue;
 
-        auto& model = equipment->based<fb::model::equipment>();
+        auto& model = equipment->model();
         if (model.base_hp > 0 && base_flat > max_signed - model.base_hp)
             base_flat = max_signed;
         else if (model.base_hp < 0 && base_flat < std::numeric_limits<int64_t>::min() - model.base_hp)
@@ -824,7 +824,7 @@ uint64_t character_stat::maxmp() const
         if (equipment == nullptr)
             continue;
 
-        auto& model = equipment->based<fb::model::equipment>();
+        auto& model = equipment->model();
         if (model.base_mp > 0 && base_flat > max_signed - model.base_mp)
             base_flat = max_signed;
         else if (model.base_mp < 0 && base_flat < std::numeric_limits<int64_t>::min() - model.base_mp)
@@ -858,7 +858,7 @@ uint64_t character_stat::regenerative() const
         if (equipment == nullptr)
             continue;
 
-        auto& model  = equipment->based<fb::model::equipment>();
+        auto& model  = equipment->model();
         additional  += model.healing_cycle;
     }
 
@@ -909,7 +909,7 @@ uint64_t character_stat::damage(uint64_t                          value,
         if (durability.has_value() == false)
             continue;
 
-        auto& model = equipment->based<fb::model::equipment>();
+        auto& model = equipment->model();
         if (equipment->durability_down(1))
         {
             auto equipment = this->owner.items.equipment_off(parts);
@@ -938,21 +938,21 @@ mob_stat::mob_stat(mob_stat&& other) :
 uint64_t mob_stat::base_hp() const
 {
     this->owner.assert_thread();
-    auto& model = this->owner.based<fb::model::mob>();
+    auto& model = this->owner.model();
     return model.hp;
 }
 
 uint64_t mob_stat::base_mp() const
 {
     this->owner.assert_thread();
-    auto& model = this->owner.based<fb::model::mob>();
+    auto& model = this->owner.model();
     return model.mp;
 }
 
 uint8_t mob_stat::base_str() const
 {
     this->owner.assert_thread();
-    // auto& model = this->owner.based<fb::model::mob>();
+    // auto& model = this->owner.model();
     // return model.str;
     return 0;
 }
@@ -960,7 +960,7 @@ uint8_t mob_stat::base_str() const
 uint8_t mob_stat::base_dex() const
 {
     this->owner.assert_thread();
-    // auto& model = this->owner.based<fb::model::mob>();
+    // auto& model = this->owner.model();
     // return model.dex;
     return 0;
 }
@@ -968,7 +968,7 @@ uint8_t mob_stat::base_dex() const
 uint8_t mob_stat::base_int() const
 {
     this->owner.assert_thread();
-    // auto& model = this->owner.based<fb::model::mob>();
+    // auto& model = this->owner.model();
     // return model.int;
     return 0;
 }
@@ -976,21 +976,21 @@ uint8_t mob_stat::base_int() const
 int8_t mob_stat::base_phydef() const
 {
     this->owner.assert_thread();
-    auto& model = this->owner.based<fb::model::mob>();
+    auto& model = this->owner.model();
     return model.defensive_physical;
 }
 
 int8_t mob_stat::base_magdef() const
 {
     this->owner.assert_thread();
-    auto& model = this->owner.based<fb::model::mob>();
+    auto& model = this->owner.model();
     return model.defensive_magical;
 }
 
 uint8_t mob_stat::base_dam() const
 {
     this->owner.assert_thread();
-    // auto& model = this->owner.based<fb::model::mob>();
+    // auto& model = this->owner.model();
     // return model.dam;
     return 0;
 }
@@ -998,7 +998,7 @@ uint8_t mob_stat::base_dam() const
 uint8_t mob_stat::base_hit() const
 {
     this->owner.assert_thread();
-    // auto& model = this->owner.based<fb::model::mob>();
+    // auto& model = this->owner.model();
     // return model.hit;
     return 0;
 }
@@ -1012,7 +1012,7 @@ uint64_t mob_stat::base_regenerative() const
 float mob_stat::base_resist(RESIST type) const
 {
     this->owner.assert_thread();
-    auto& model = this->owner.based<fb::model::mob>();
+    auto& model = this->owner.model();
     auto  i     = model.resist.find(type);
     if (i == model.resist.end())
         return 0.0f;

@@ -12,3 +12,8 @@ armor::armor(const armor& right) :
 
 armor::~armor()
 { }
+
+const fb::model::armor& armor::model() const
+{
+    return static_cast<const fb::model::armor&>(fb::model::table::item[this->_model_id]);
+}

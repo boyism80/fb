@@ -16,6 +16,9 @@ public:
    ~cash();
     // clang-format on
 
+public:
+    const fb::model::cash& model() const override;
+
 private:
     static const fb::model::cash& match_model(fb::game::server& server, uint64_t value);
 

@@ -8,14 +8,19 @@ using table = fb::model::table;
 
 door::door(const fb::game::map& map, const fb::model::door& model, const fb::model::point16_t& pivot, bool opened) :
     map(map),
-    model(model),
     pivot(pivot),
     _opened(opened),
+    _model_id(model.id),
     width(static_cast<uint16_t>(model.pairs.size()))
 { }
 
 door::~door()
 { }
+
+const fb::model::door& door::model() const
+{
+    return fb::model::table::door[this->_model_id];
+}
 
 bool door::toggle()
 {
@@ -25,7 +30,7 @@ bool door::toggle()
         if (tile == nullptr)
             return false;
 
-        auto  index           = this->model.pairs[i];
+        auto  index           = this->model().pairs[i];
         auto  door_pair_table = table::door_pair;
         auto& model           = door_pair_table[index];
         if (this->_opened)

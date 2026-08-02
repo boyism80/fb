@@ -55,7 +55,7 @@ void login::init_items(const std::vector<internal::Item>& response, character& c
         else
             std::ignore = ch.items.wear((EQUIPMENT_PARTS)x.parts, std::static_pointer_cast<fb::game::equipment>(item));
 
-        if (x.custom_name.has_value() && item->based<fb::model::item>().attr(ITEM_ATTRIBUTE::WEAPON))
+        if (x.custom_name.has_value() && item->model().attr(ITEM_ATTRIBUTE::WEAPON))
             static_cast<weapon*>(item.get())->custom_name(x.custom_name.value());
     }
 }
@@ -176,7 +176,7 @@ async::task<std::shared_ptr<character>> login::init(const game_reqs::login& requ
             co_return nullptr;
         }
 
-        auto spawn = return_map->model.spawn_position().value_or(fb::model::point16_t{0, 0});
+        auto spawn = return_map->model().spawn_position().value_or(fb::model::point16_t{0, 0});
         map        = return_map_id;
         position_x = spawn.x;
         position_y = spawn.y;
@@ -405,7 +405,7 @@ async::task<bool> login::handle(fb::socket<character>& session, game_reqs::login
     log_data["level"]          = ch->level();
     if (auto map = ch->map(); map != nullptr)
     {
-        log_data["map"]        = map->model.id;
+        log_data["map"]        = map->model().id;
         log_data["position_x"] = ch->position().x;
         log_data["position_y"] = ch->position().y;
     }

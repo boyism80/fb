@@ -69,6 +69,9 @@ public:
     // clang-format on
 
 public:
+    const fb::model::item& model() const override;
+
+public:
     // clang-format off
     std::shared_ptr<fb::game::character>    owner() const;
     uint16_t                                fill(uint16_t count);

@@ -173,12 +173,12 @@ async::task<bool> character::map(std::shared_ptr<fb::game::map>      map,
     }
 
     auto switch_process = (map != nullptr && map->active == false);
-    auto new_map_id     = map != nullptr ? std::make_optional(map->model.id) : std::optional<uint32_t>();
+    auto new_map_id     = map != nullptr ? std::make_optional(map->model().id) : std::optional<uint32_t>();
     auto new_position   = fb::model::point16_t();
     if (position.has_value())
         new_position = position.value();
     else if (map != nullptr)
-        new_position = map->model.spawn_position().value_or(fb::model::point16_t{0, 0});
+        new_position = map->model().spawn_position().value_or(fb::model::point16_t{0, 0});
     else
         new_position = fb::model::point16_t{0, 0};
 
@@ -196,7 +196,7 @@ async::task<bool> character::map(std::shared_ptr<fb::game::map>      map,
             auto&& resp  = co_await this->server.http.post(
                 "internal",
                 "/in-game/transfer",
-                internal_reqs::Transfer{world, internal::Service::Game, map->model.host, this->name(), false});
+                internal_reqs::Transfer{world, internal::Service::Game, map->model().host, this->name(), false});
 
             switch (static_cast<ERROR_CODE>(resp.error))
             {
@@ -249,7 +249,7 @@ async::task<bool> character::map(std::shared_ptr<fb::game::map>      map,
             log_data["level"]          = this->level();
             if (old_map != nullptr)
             {
-                log_data["old_map"]        = old_map->model.id;
+                log_data["old_map"]        = old_map->model().id;
                 log_data["old_position_x"] = old_position.x;
                 log_data["old_position_y"] = old_position.y;
             }
@@ -284,7 +284,7 @@ async::task<bool> character::map(std::shared_ptr<fb::game::map>      map,
         log_data["level"]          = this->level();
         if (old_map != nullptr)
         {
-            log_data["old_map"]        = old_map->model.id;
+            log_data["old_map"]        = old_map->model().id;
             log_data["old_position_x"] = old_position.x;
             log_data["old_position_y"] = old_position.y;
         }
@@ -319,7 +319,7 @@ uint64_t character::normal_attack_damage(MOB_SIZE size) const
     if (weapon == nullptr)
         return 1 + std::rand() % 5;
 
-    auto& model = weapon->based<fb::model::weapon>();
+    auto& model = weapon->model();
     auto& range = size == MOB_SIZE::SMALL ? model.damage_small : model.damage_large;
     return std::max<uint64_t>(1, range.min) + std::rand() % std::max<uint64_t>(1, range.max);
 }
@@ -711,7 +711,7 @@ void character::state(STATE value)
         auto map                   = this->map();
         if (map != nullptr)
         {
-            log_data["map"]        = map->model.id;
+            log_data["map"]        = map->model().id;
             log_data["position_x"] = this->position().x;
             log_data["position_y"] = this->position().y;
         }
@@ -1350,7 +1350,7 @@ async::task<void> character::ride(mob& horse)
         if (this->state() == STATE::RIDING)
             throw std::runtime_error(_TEXT(MESSAGE_RIDE_ALREADY_RIDE));
 
-        if (horse.based<fb::model::mob>() != table::mob[fb::model::const_value::mob::horse])
+        if (horse.model() != table::mob[fb::model::const_value::mob::horse])
             throw std::runtime_error(_TEXT(MESSAGE_EXCEPTION_NO_CONVEYANCE));
 
         if (horse.map() != this->_map)
@@ -1632,7 +1632,7 @@ void character::notify_death(std::shared_ptr<fb::game::object> killer)
     auto map                   = this->map();
     if (map != nullptr)
     {
-        log_data["map"]        = map->model.id;
+        log_data["map"]        = map->model().id;
         log_data["position_x"] = this->position().x;
         log_data["position_y"] = this->position().y;
     }
@@ -1654,7 +1654,7 @@ async::task<void> character::settle_kills(mob_vector dead)
     {
         if (m == nullptr)
             continue;
-        groups[m->based<fb::model::mob>().id].push_back(m);
+        groups[m->model().id].push_back(m);
     }
 
     auto self = this->shared_from_this_as<character>();
@@ -1773,9 +1773,9 @@ fb::protocol::internal::Character character::to_protocol() const
     dto.gender           = static_cast<uint8_t>(this->_gender);
     dto.nation           = static_cast<uint8_t>(this->_nation);
     dto.creature         = static_cast<uint8_t>(this->_creature);
-    if (this->_map != nullptr && this->_map->model.return_to.has_value())
+    if (this->_map != nullptr && this->_map->model().return_to.has_value())
     {
-        auto return_map_id = this->_map->model.return_to.value();
+        auto return_map_id = this->_map->model().return_to.value();
         dto.map            = return_map_id;
         auto spawn         = fb::model::point16_t{0, 0};
         if (table::map->contains(return_map_id))
@@ -1784,7 +1784,7 @@ fb::protocol::internal::Character character::to_protocol() const
     }
     else if (this->_map != nullptr)
     {
-        dto.map      = this->_map->model.id;
+        dto.map      = this->_map->model().id;
         dto.position = fb::protocol::internal::Position{this->_position.x, this->_position.y};
     }
     else
@@ -1847,7 +1847,7 @@ fb::protocol::internal::Character character::to_protocol() const
 
         // `internal::Buff.time` is seconds, not milliseconds.
         auto remaining_s = static_cast<uint32_t>(remaining_ms / 1000);
-        dto.buffs.push_back({buff->model.id, remaining_s});
+        dto.buffs.push_back({buff->model().id, remaining_s});
     }
 
     return dto;
@@ -2136,11 +2136,11 @@ async::task<void> character::death_penalty()
         if (item == nullptr)
             continue;
 
-        auto& model = item->based<fb::model::item>();
+        auto& model = item->model();
         if (model.attr(ITEM_ATTRIBUTE::EQUIPMENT))
         {
             auto  equipment       = std::static_pointer_cast<fb::game::equipment>(item);
-            auto& equipment_model = equipment->based<fb::model::equipment>();
+            auto& equipment_model = equipment->model();
             auto  penalty         = equipment_model.durability * fb::model::const_value::death_penalty::durability;
             if (equipment->durability_down(penalty))
             {
@@ -2162,7 +2162,7 @@ async::task<void> character::death_penalty()
         if (equipment == nullptr)
             continue;
 
-        auto& model   = equipment->based<fb::model::equipment>();
+        auto& model   = equipment->model();
         auto  penalty = model.durability * fb::model::const_value::death_penalty::durability;
         if (equipment->durability_down(penalty))
         {
@@ -2294,19 +2294,19 @@ std::shared_ptr<fb::game::appearance> character::appearance() const
 
     if (this->items.weapon() != nullptr)
     {
-        ptr->weapon       = this->items.weapon()->based<fb::model::weapon>().dress;
+        ptr->weapon       = this->items.weapon()->model().dress;
         ptr->weapon_color = this->_weapon_color;
     }
 
     if (this->items.armor() != nullptr)
     {
-        ptr->armor       = this->items.armor()->based<fb::model::armor>().dress;
+        ptr->armor       = this->items.armor()->model().dress;
         ptr->armor_color = this->_armor_color;
     }
 
     if (this->items.shield() != nullptr)
     {
-        ptr->shield       = this->items.shield()->based<fb::model::shield>().dress;
+        ptr->shield       = this->items.shield()->model().dress;
         ptr->shield_color = this->_shield_color;
     }
 

@@ -12,3 +12,8 @@ shield::shield(const shield& right) :
 
 shield::~shield()
 { }
+
+const fb::model::shield& shield::model() const
+{
+    return static_cast<const fb::model::shield&>(fb::model::table::item[this->_model_id]);
+}

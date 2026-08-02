@@ -12,13 +12,13 @@ map_config::map_config(const fb::game::map& map) :
 void map_config::serialize(fb::stream_writer<big_endian>& writer) const
 {
     header::serialize(writer);
-    auto building = ENUM_IN(this->map.model.option, MAP_OPTION::BUILD_IN) ? 0x04 : 0x05;
+    auto building = ENUM_IN(this->map.model().option, MAP_OPTION::BUILD_IN) ? 0x04 : 0x05;
     writer.write<uint8_t>(opcode);
-    writer.write<uint16_t>(this->map.model.id); // id
-    writer.write<uint16_t>(this->map.width());  // width
-    writer.write<uint16_t>(this->map.height()); // height
-    writer.write<uint8_t>(building);            // this.building ? 0x04 : 0x05
-    writer.write<std::string, uint16_t>(this->map.model.name);
+    writer.write<uint16_t>(this->map.model().id); // id
+    writer.write<uint16_t>(this->map.width());    // width
+    writer.write<uint16_t>(this->map.height());   // height
+    writer.write<uint8_t>(building);              // this.building ? 0x04 : 0x05
+    writer.write<std::string, uint16_t>(this->map.model().name);
 }
 #else
 void map_config::deserialize(fb::stream_reader<big_endian>& reader)

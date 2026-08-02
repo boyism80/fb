@@ -14,7 +14,7 @@ map::map(fb::game::server&     server,
          size_t                size) :
     id(id),
     server(server),
-    model(model),
+    _model_id(model.id),
     active(active),
     doors(*this)
 {
@@ -27,6 +27,11 @@ map::map(fb::game::server&     server,
     this->load_tiles(data, size);
 }
 
+const fb::model::map& map::model() const
+{
+    return fb::model::table::map[this->_model_id];
+}
+
 void map::load_tiles(const void* data, size_t size)
 {
     if (this->loaded())
@@ -37,16 +42,16 @@ void map::load_tiles(const void* data, size_t size)
 
     this->_size.width = reader.read<uint16_t>();
     if (this->_size.width == 0)
-        throw std::runtime_error(std::format(_TEXT(MESSAGE_MAP_INVALID_DATA), this->model.name));
+        throw std::runtime_error(std::format(_TEXT(MESSAGE_MAP_INVALID_DATA), this->model().name));
 
     this->_size.height = reader.read<uint16_t>();
     if (this->_size.height == 0)
-        throw std::runtime_error(std::format(_TEXT(MESSAGE_MAP_INVALID_DATA), this->model.name));
+        throw std::runtime_error(std::format(_TEXT(MESSAGE_MAP_INVALID_DATA), this->model().name));
 
     uint32_t map_size = this->_size.width * this->_size.height;
     this->_tiles      = std::make_unique<tile[]>(map_size);
     if (this->_tiles == nullptr)
-        throw std::runtime_error(std::format(_TEXT(MESSAGE_MAP_TILE_ALLOCATION_FAILED), this->model.name));
+        throw std::runtime_error(std::format(_TEXT(MESSAGE_MAP_TILE_ALLOCATION_FAILED), this->model().name));
 
     for (uint32_t i = 0; i < map_size; i++)
     {
@@ -64,13 +69,13 @@ void map::copy_tiles(const fb::game::map& source)
         return;
 
     if (source.loaded() == false || source._tiles == nullptr)
-        throw std::runtime_error(std::format(_TEXT(MESSAGE_MAP_INVALID_DATA), this->model.name));
+        throw std::runtime_error(std::format(_TEXT(MESSAGE_MAP_INVALID_DATA), this->model().name));
 
     this->_size   = source._size;
     auto map_size = static_cast<uint32_t>(this->_size.width) * static_cast<uint32_t>(this->_size.height);
     this->_tiles  = std::make_unique<tile[]>(map_size);
     if (this->_tiles == nullptr)
-        throw std::runtime_error(std::format(_TEXT(MESSAGE_MAP_TILE_ALLOCATION_FAILED), this->model.name));
+        throw std::runtime_error(std::format(_TEXT(MESSAGE_MAP_TILE_ALLOCATION_FAILED), this->model().name));
 
     std::copy_n(source._tiles.get(), map_size, this->_tiles.get());
 
@@ -286,10 +291,10 @@ bool map::movable_forward(const object& object, uint16_t step) const
 const fb::model::warp* map::warpable(const fb::model::point16_t& position) const
 {
     auto warps = table::warp;
-    if (warps->contains(this->model.id) == false)
+    if (warps->contains(this->model().id) == false)
         return nullptr;
 
-    for (auto& warp : warps[this->model.id])
+    for (auto& warp : warps[this->model().id])
     {
         if (warp.before == position)
             return &warp;

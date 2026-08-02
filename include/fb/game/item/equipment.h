@@ -26,6 +26,9 @@ public:
     virtual ~equipment();
 
 public:
+    const fb::model::equipment& model() const override;
+
+public:
     [[nodiscard]] async::task<bool> active() override;
 
 public:

@@ -40,7 +40,7 @@ async::task<void> gear_timer::handle(const fb::model::datetime& now, std::thread
                 if (concast.contains(ch.get()) == false)
                     concast.insert({ch.get(), {}});
 
-                auto& model = equipment->based<fb::model::equipment>();
+                auto& model = equipment->model();
                 concast[ch.get()].push_back(equipment);
             }
         }
@@ -59,7 +59,7 @@ async::task<void> gear_timer::handle(const fb::model::datetime& now, std::thread
 
                 try
                 {
-                    auto& model = equipment->based<fb::model::equipment>();
+                    auto& model = equipment->model();
                     auto  path  = std::format("scripts/item/{}.lua", model.id);
                     auto  func  = "on_concast";
 

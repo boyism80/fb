@@ -144,21 +144,21 @@ public:
 
             if (ch.items.armor() != nullptr)
             {
-                serializer.appearance.armor = static_cast<uint8_t>(ch.items.armor()->based<fb::model::armor>().dress);
+                serializer.appearance.armor = static_cast<uint8_t>(ch.items.armor()->model().dress);
                 if (serializer.appearance.armor_color.has_value() == false)
-                    serializer.appearance.armor_color = ch.items.armor()->based<fb::model::armor>().color;
+                    serializer.appearance.armor_color = ch.items.armor()->model().color;
             }
 
             if (ch.items.weapon() != nullptr)
             {
-                serializer.appearance.weapon = ch.items.weapon()->based<fb::model::weapon>().dress;
+                serializer.appearance.weapon = ch.items.weapon()->model().dress;
                 serializer.appearance.weapon_color =
                     ch.weapon_color().value_or(static_cast<uint8_t>(ch.items.weapon()->color()));
             }
 
             if (ch.items.shield() != nullptr)
             {
-                serializer.appearance.shield       = ch.items.shield()->based<fb::model::shield>().dress;
+                serializer.appearance.shield       = ch.items.shield()->model().dress;
                 serializer.appearance.shield_color = ch.shield_color().value_or(ch.items.shield()->color());
             }
         }

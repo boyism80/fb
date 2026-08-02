@@ -8,7 +8,7 @@ spell_buff::spell_buff(std::string_view name, const fb::model::timespan& duratio
     duration(duration)
 { }
 spell_buff::spell_buff(const fb::game::buff& buff) :
-    name(buff.model.name),
+    name(buff.model().name),
     duration(buff.remaining())
 { }
 #endif

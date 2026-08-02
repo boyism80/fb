@@ -233,7 +233,7 @@ bool ai::should_ignore_attacker(const mob& mob_obj, std::shared_ptr<life> attack
         {
             // Check map PK settings
             auto map = mob_obj.map();
-            if (map != nullptr && !ENUM_IN(map->model.option, MAP_OPTION::ENABLE_PK))
+            if (map != nullptr && !ENUM_IN(map->model().option, MAP_OPTION::ENABLE_PK))
                 return true;
         }
     }

@@ -18,6 +18,9 @@ public:
     // clang-format on
 
 public:
+    const fb::model::pack& model() const override;
+
+public:
     // clang-format off
     std::optional<uint32_t> durability() const;
     void                    durability(uint32_t value);

@@ -20,6 +20,11 @@ life::life(fb::game::server& server, const fb::model::life& model, fb::game::sta
 life::~life()
 { }
 
+const fb::model::life& life::model() const
+{
+    return fb::model::table::life[this->_model_id];
+}
+
 void life::on_init()
 {
     this->spells.owner(this->shared_from_this_as<life>());
@@ -141,7 +146,7 @@ async::task<void> life::settle_deaths(mob_vector dead)
     {
         if (m == nullptr)
             continue;
-        groups[m->based<fb::model::mob>().id].push_back(m);
+        groups[m->model().id].push_back(m);
     }
 
     for (auto& [id, mobs] : groups)
@@ -229,7 +234,7 @@ async::task<void> life::attack(DURATION duration)
         auto weapon = ch->items.weapon();
         if (weapon != nullptr)
         {
-            auto& model = weapon->based<fb::model::weapon>();
+            auto& model = weapon->model();
             auto  path  = std::format("scripts/item/{}.lua", model.id);
             auto  func  = "on_attack";
 
@@ -255,7 +260,7 @@ async::task<void> life::attack(DURATION duration)
 uint64_t life::exp() const
 {
     this->assert_thread();
-    return static_cast<const fb::model::life&>(this->_model).exp;
+    return this->model().exp;
 }
 
 bool life::alive() const
@@ -268,7 +273,7 @@ bool life::active(fb::game::spell& spell, std::string_view message)
 {
     this->assert_thread();
 
-    auto& model = spell.model;
+    auto& model = spell.model();
     auto  path  = std::format("scripts/spell/{}.lua", model.id);
     auto  func  = "on_cast";
 
@@ -276,11 +281,11 @@ bool life::active(fb::game::spell& spell, std::string_view message)
     if (!lua)
         return false;
 
-    if (spell.model.type != SPELL_TYPE::INPUT)
+    if (spell.model().type != SPELL_TYPE::INPUT)
         return false;
 
     lua->pushobject(this);
-    lua->pushobject(spell.model);
+    lua->pushobject(spell.model());
     lua->pushstring(message);
     std::ignore = lua->call(3);
     return true;
@@ -302,7 +307,7 @@ bool life::active(fb::game::spell& spell, uint32_t oid)
 bool life::active(fb::game::spell& spell, fb::game::object& to)
 {
     this->assert_thread();
-    auto& model = spell.model;
+    auto& model = spell.model();
     auto  path  = std::format("scripts/spell/{}.lua", model.id);
     auto  func  = "on_cast";
 
@@ -310,7 +315,7 @@ bool life::active(fb::game::spell& spell, fb::game::object& to)
     if (!lua)
         return false;
 
-    if (spell.model.type != SPELL_TYPE::TARGET)
+    if (spell.model().type != SPELL_TYPE::TARGET)
         return false;
 
     auto map = this->map();
@@ -325,7 +330,7 @@ bool life::active(fb::game::spell& spell, fb::game::object& to)
 
     lua->pushobject(this);
     lua->pushobject(&to);
-    lua->pushobject(spell.model);
+    lua->pushobject(spell.model());
     std::ignore = lua->call(3);
     return true;
 }
@@ -333,7 +338,7 @@ bool life::active(fb::game::spell& spell, fb::game::object& to)
 bool life::active(fb::game::spell& spell)
 {
     this->assert_thread();
-    auto& model = spell.model;
+    auto& model = spell.model();
     auto  path  = std::format("scripts/spell/{}.lua", model.id);
     auto  func  = "on_cast";
 
@@ -341,11 +346,11 @@ bool life::active(fb::game::spell& spell)
     if (!lua)
         return false;
 
-    if (spell.model.type != SPELL_TYPE::NORMAL)
+    if (spell.model().type != SPELL_TYPE::NORMAL)
         return false;
 
     lua->pushobject(this);
-    lua->pushobject(spell.model);
+    lua->pushobject(spell.model());
     std::ignore = lua->call(2);
     return true;
 }

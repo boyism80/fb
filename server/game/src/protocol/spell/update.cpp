@@ -19,11 +19,11 @@ void spell_update::serialize(fb::stream_writer<big_endian>& writer) const
 
     writer.write<uint8_t>(opcode);
     writer.write<uint8_t>(this->index + 1);
-    writer.write<uint8_t>(static_cast<uint8_t>(spell->model.type));
-    writer.write<std::string>(spell->model.name);
+    writer.write<uint8_t>(static_cast<uint8_t>(spell->model().type));
+    writer.write<std::string>(spell->model().name);
 
-    if (static_cast<int>(spell->model.type) < 3)
-        writer.write<std::string>(spell->model.message);
+    if (static_cast<int>(spell->model().type) < 3)
+        writer.write<std::string>(spell->model().message);
 }
 #else
 void spell_update::deserialize(fb::stream_reader<big_endian>& reader)

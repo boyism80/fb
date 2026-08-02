@@ -20,7 +20,7 @@ async::task<bool> whisper::handle(fb::socket<character>& session, game_reqs::whi
     if (map == nullptr)
         co_return true;
 
-    if (me->role() == ROLE::USER && ENUM_IN(map->model.option, MAP_OPTION::DISABLE_WHISPER))
+    if (me->role() == ROLE::USER && ENUM_IN(map->model().option, MAP_OPTION::DISABLE_WHISPER))
     {
         me->message(_TEXT(MESSAGE_WHISPER_DISABLED_AREA));
         co_return true;

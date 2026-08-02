@@ -221,19 +221,19 @@ std::unique_ptr<appearance> appearance_factory::create(const fb::game::object& o
 
         if (ch.items.weapon() != nullptr)
         {
-            ptr->weapon       = ch.items.weapon()->based<fb::model::weapon>().dress;
+            ptr->weapon       = ch.items.weapon()->model().dress;
             ptr->weapon_color = std::nullopt;
         }
 
         if (ch.items.armor() != nullptr)
         {
-            ptr->armor       = static_cast<uint8_t>(ch.items.armor()->based<fb::model::armor>().dress);
+            ptr->armor       = static_cast<uint8_t>(ch.items.armor()->model().dress);
             ptr->armor_color = ch.armor_color();
         }
 
         if (ch.items.shield() != nullptr)
         {
-            ptr->shield       = ch.items.shield()->based<fb::model::shield>().dress;
+            ptr->shield       = ch.items.shield()->model().dress;
             ptr->shield_color = std::nullopt;
         }
 
@@ -241,7 +241,7 @@ std::unique_ptr<appearance> appearance_factory::create(const fb::game::object& o
     }
     default:
     {
-        return create(obj.based<fb::model::object>());
+        return create(obj.model());
     }
     }
 }

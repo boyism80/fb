@@ -421,7 +421,7 @@ int builtin::character::builtin_item(lua_State* L)
     {
         auto obj = lua->touserdata<fb::game::object>(2);
         oid      = obj->oid();
-        model    = &obj->based();
+        model    = &obj->model();
     }
     else if (lua->is_userdata<fb::model::object>(2))
     {
@@ -543,7 +543,7 @@ int builtin::character::builtin_items(lua_State* L)
             if (ch->items[i] == nullptr)
                 continue;
 
-            if (filter_name.has_value() && ch->items[i]->based<fb::model::item>().name != *filter_name)
+            if (filter_name.has_value() && ch->items[i]->model().name != *filter_name)
                 continue;
 
             buffer->push_back({i, ch->items[i]->shared_from_this_as<fb::game::item>()});
@@ -946,11 +946,10 @@ int builtin::character::builtin_rmitem(lua_State* L)
         builder.yield = [=]() -> async::task<void> {
             try
             {
-                auto found = ch->items.find(item->based<fb::model::item>());
+                auto found = ch->items.find(item->model());
                 if (found != nullptr && found->count() >= count)
                 {
-                    auto dropped =
-                        ch->items.remove(ch->items.index(item->based<fb::model::item>()), count, delete_attr);
+                    auto dropped = ch->items.remove(ch->items.index(item->model()), count, delete_attr);
                     if (dropped != nullptr)
                     {
                         co_await dropped->destroy();
@@ -1814,7 +1813,7 @@ int builtin::character::builtin_stored_item(lua_State* L)
             auto        found        = std::find_if(stored_items.cbegin(),
                                       stored_items.cend(),
                                       [&name](const std::shared_ptr<fb::game::item>& item) {
-                                          return item->based<fb::model::item>().name == name;
+                                          return item->model().name == name;
                                       });
             if (found != stored_items.cend())
                 *stored_item = *found;
@@ -1840,11 +1839,11 @@ int builtin::character::builtin_stored_item(lua_State* L)
         builder.weak     = weak;
         builder.yield    = [=]() -> async::task<void> {
             const auto& stored_items = ch->items.stored();
-            auto&       item_model   = item->based<fb::model::item>();
+            auto&       item_model   = item->model();
             auto        found        = std::find_if(stored_items.cbegin(),
                                       stored_items.cend(),
                                       [&item_model](const std::shared_ptr<fb::game::item>& stored) {
-                                          return stored->based<fb::model::item>() == item_model;
+                                          return stored->model() == item_model;
                                       });
             if (found != stored_items.cend())
                 *stored_item = *found;
@@ -1873,7 +1872,7 @@ int builtin::character::builtin_stored_item(lua_State* L)
             auto        found        = std::find_if(stored_items.cbegin(),
                                       stored_items.cend(),
                                       [model](const std::shared_ptr<fb::game::item>& stored) {
-                                          return stored->based<fb::model::item>() == *model;
+                                          return stored->model() == *model;
                                       });
             if (found != stored_items.cend())
                 *stored_item = *found;
@@ -3489,7 +3488,7 @@ int builtin::character::builtin_rmspell(lua_State* L)
                 if (spell == nullptr)
                     continue;
 
-                if (spell->model.name == spell_name)
+                if (spell->model().name == spell_name)
                 {
                     slot = i;
                     break;
@@ -4023,7 +4022,7 @@ int builtin::character::builtin_delay(lua_State* L)
     {
         auto spell = lua->touserdata<fb::game::spell>(2);
         if (spell != nullptr)
-            model = &spell->model;
+            model = &spell->model();
     }
     else if (lua->is_string(2))
     {
@@ -4349,7 +4348,7 @@ int fb::game::builtin::character::builtin_dialog(lua_State* L)
     {
         obj   = lua->touserdata<fb::game::object>(2);
         oid   = obj->oid();
-        model = &obj->based();
+        model = &obj->model();
     }
     else if (lua->is_userdata<fb::model::object>(2))
     {
@@ -4436,7 +4435,7 @@ int fb::game::builtin::character::builtin_list(lua_State* L)
     {
         obj   = lua->touserdata<fb::game::object>(2);
         oid   = obj->oid();
-        model = &obj->based();
+        model = &obj->model();
     }
     else if (lua->is_userdata<fb::model::object>(2))
     {
@@ -4567,7 +4566,7 @@ int fb::game::builtin::character::builtin_input(lua_State* L)
     {
         obj   = lua->touserdata<fb::game::object>(2);
         oid   = obj->oid();
-        model = &obj->based();
+        model = &obj->model();
     }
     else if (lua->is_userdata<fb::model::object>(2))
     {
@@ -4703,7 +4702,7 @@ int fb::game::builtin::character::builtin_menu(lua_State* L)
     {
         obj   = lua->touserdata<fb::game::object>(2);
         oid   = obj->oid();
-        model = &obj->based();
+        model = &obj->model();
     }
     else if (lua->is_userdata<fb::model::object>(2))
     {
@@ -4782,7 +4781,7 @@ int fb::game::builtin::character::builtin_slot(lua_State* L)
     {
         obj   = lua->touserdata<fb::game::object>(2);
         oid   = obj->oid();
-        model = &obj->based();
+        model = &obj->model();
     }
     else if (lua->is_userdata<fb::model::object>(2))
     {
@@ -4860,7 +4859,7 @@ int fb::game::builtin::character::builtin_pursuit(lua_State* L)
     {
         obj   = lua->touserdata<fb::game::object>(2);
         oid   = obj->oid();
-        model = &obj->based();
+        model = &obj->model();
     }
     else if (lua->is_userdata<fb::model::object>(2))
     {
@@ -4991,7 +4990,7 @@ int fb::game::builtin::character::builtin_spell(lua_State* L)
     {
         obj   = lua->touserdata<fb::game::object>(2);
         oid   = obj->oid();
-        model = &obj->based();
+        model = &obj->model();
     }
     else if (lua->is_userdata<fb::model::object>(2))
     {
@@ -5064,7 +5063,7 @@ int fb::game::builtin::character::builtin_email(lua_State* L)
     {
         obj   = lua->touserdata<fb::game::object>(2);
         oid   = obj->oid();
-        model = &obj->based();
+        model = &obj->model();
     }
     else if (lua->is_userdata<fb::model::object>(2))
     {
@@ -5130,7 +5129,7 @@ int fb::game::builtin::character::builtin_dialog_0x30_10(lua_State* L)
     {
         obj   = lua->touserdata<fb::game::object>(2);
         oid   = obj->oid();
-        model = &obj->based();
+        model = &obj->model();
     }
     else if (lua->is_userdata<fb::model::object>(2))
     {

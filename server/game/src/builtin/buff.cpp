@@ -20,7 +20,7 @@ int builtin::buff::builtin_model(lua_State* L)
     if (buff == nullptr)
         return 0;
 
-    lua->pushobject(buff->model);
+    lua->pushobject(buff->model());
     return 1;
 }
 

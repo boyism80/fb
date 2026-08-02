@@ -11,6 +11,9 @@ public:
     shield(fb::game::server& server, const fb::model::shield& model, const initial_params& params = {});
     shield(const shield& right);
     ~shield();
+
+public:
+    const fb::model::shield& model() const override;
 };
 
 } // namespace fb::game

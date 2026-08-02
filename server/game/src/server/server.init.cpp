@@ -141,11 +141,12 @@ async::task<void> fb::game::server::init_thread_params()
             for (const auto& map : maps)
             {
                 params->add_map(map);
-                if (table::mob_spawn->contains(map->model.id))
+                if (table::mob_spawn->contains(map->model().id))
                 {
-                    for (auto& spawn : table::mob_spawn[map->model.id])
+                    auto& spawns = table::mob_spawn[map->model().id];
+                    for (uint32_t i = 0; i < spawns.size(); i++)
                     {
-                        params->rezens.push_back(std::make_unique<fb::game::rezen>(*this, spawn, map));
+                        params->rezens.push_back(std::make_unique<fb::game::rezen>(*this, map->model().id, i, map));
                     }
                 }
             }

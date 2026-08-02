@@ -20,11 +20,11 @@ public:
 
 private:
     fb::model::datetime _next;
+    uint32_t            _model_id = 0;
 
 public:
     const fb::game::server& server;
     const fb::game::life&   owner;
-    const fb::model::spell& model;
 
 public:
     // clang-format off
@@ -34,6 +34,7 @@ public:
 
 public:
     // clang-format off
+    const fb::model::spell&    model() const;
     void                       delay(uint16_t value);
     uint16_t                   delay() const;
     const fb::model::datetime& next() const;
@@ -91,10 +92,10 @@ public:
 
 private:
     fb::model::timespan _duration;
+    uint32_t            _model_id = 0;
 
 public:
     const fb::game::server&   server;
-    const fb::model::spell&   model;
     const fb::game::object*   caster;
     const fb::model::datetime start;
 
@@ -106,6 +107,7 @@ public:
 
 public:
     // clang-format off
+    const fb::model::spell&    model() const;
     const fb::model::timespan& duration() const;
     void                       duration(const fb::model::timespan& value);
     fb::model::timespan        remaining() const;

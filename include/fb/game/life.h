@@ -59,6 +59,9 @@ protected:
     virtual ~life();
     // clang-format on
 
+public:
+    const fb::model::life& model() const override;
+
 protected:
     // clang-format off
     mob_vector        damage_targets(const damage_list& targets, const damage_opts& opts);

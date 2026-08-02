@@ -22,7 +22,7 @@ async::task<bool> chat::handle(fb::socket<character>& session, game_reqs::chat& 
     if (map == nullptr)
         co_return true;
 
-    if (ch->role() == ROLE::USER && ENUM_IN(map->model.option, MAP_OPTION::DISABLE_TALK))
+    if (ch->role() == ROLE::USER && ENUM_IN(map->model().option, MAP_OPTION::DISABLE_TALK))
         co_return true;
 
     if (co_await try_command(ch, weak, request))
@@ -74,7 +74,7 @@ async::task<bool> chat::try_command(character* ch, std::weak_ptr<character> weak
     log_data["command"]        = UTF8(request.message, PLATFORM::WINDOWS);
     auto map                   = ptr->map();
     if (map != nullptr)
-        log_data["map"] = map->model.id;
+        log_data["map"] = map->model().id;
     this->server.log.write("command_execute", log_data);
     co_return true;
 }
@@ -93,6 +93,6 @@ void chat::handle_normal_chat(character* ch, game_reqs::chat& request, const std
     log_data["character_name"] = UTF8(ch->name(), PLATFORM::WINDOWS);
     log_data["message"]        = UTF8(message, PLATFORM::WINDOWS);
     log_data["chat_type"]      = request.shout ? "shout" : "normal";
-    log_data["map"]            = map->model.id;
+    log_data["map"]            = map->model().id;
     this->server.log.write("chat", log_data);
 }

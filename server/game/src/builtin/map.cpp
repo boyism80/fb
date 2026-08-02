@@ -41,7 +41,7 @@ int builtin::map::builtin_model(lua_State* L)
     auto builder   = lua->new_co_builder();
     builder.weak   = weak;
     builder.yield  = [=]() -> async::task<void> {
-        *model_ptr = &map->model;
+        *model_ptr = &map->model();
         co_return;
     };
     builder.resume = [=]() -> async::task<int> {

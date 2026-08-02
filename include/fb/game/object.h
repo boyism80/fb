@@ -60,12 +60,12 @@ private:
     mutable std::shared_mutex _map_lock;
 
 protected:
-    uint32_t                 _oid = 0;
-    const fb::model::object& _model;
-    fb::model::point16_t     _position  = fb::model::point16_t(0, 0);
-    DIRECTION                _direction = DIRECTION::BOTTOM;
-    map_ptr                  _map       = nullptr;
-    fb::thread*              _thread    = nullptr;
+    uint32_t             _oid       = 0;
+    uint32_t             _model_id  = 0;
+    fb::model::point16_t _position  = fb::model::point16_t(0, 0);
+    DIRECTION            _direction = DIRECTION::BOTTOM;
+    map_ptr              _map       = nullptr;
+    fb::thread*          _thread    = nullptr;
 
 public:
     listener_t&       listener;
@@ -90,11 +90,6 @@ private:
     // clang-format on
 
 public:
-    template <typename T> const T& based() const
-    {
-        return static_cast<const T&>(this->_model);
-    }
-
     virtual void on_init();
 
 public:
@@ -104,7 +99,7 @@ public:
     virtual size_t                          send(const fb::protocol::header& response, bool encrypt = true, bool wrap = true);
     uint32_t                                oid() const;
     void                                    oid(uint32_t value);
-    const fb::model::object&                based() const;
+    virtual const fb::model::object&        model() const = 0;
     bool                                    is(OBJECT_TYPE type) const;
     virtual const std::string&              name() const;
     virtual uint16_t                        look() const;

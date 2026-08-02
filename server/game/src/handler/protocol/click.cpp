@@ -96,7 +96,7 @@ async::task<void> click::handle_object_click(character* ch, game_reqs::click& re
 
     case OBJECT_TYPE::NPC:
     {
-        auto& model = static_cast<npc&>(*you).based<fb::model::npc>();
+        auto& model = static_cast<npc&>(*you).model();
         auto  path  = std::format("scripts/npc/{}.lua", model.id);
         auto  func  = "on_click";
 

@@ -12,3 +12,8 @@ helmet::helmet(const helmet& right) :
 
 helmet::~helmet()
 { }
+
+const fb::model::helmet& helmet::model() const
+{
+    return static_cast<const fb::model::helmet&>(fb::model::table::item[this->_model_id]);
+}

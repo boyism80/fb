@@ -27,7 +27,7 @@ async::task<bool> give_item::handle(fb::socket<character>& session, game_reqs::g
         co_return true;
 
     auto  count = request.all ? item->count() : 1;
-    auto& model = item->based<fb::model::item>();
+    auto& model = item->model();
     auto  error = std::optional<std::string>{};
 
     try

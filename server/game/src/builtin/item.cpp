@@ -26,7 +26,7 @@ int builtin::item::builtin_model(lua_State* L)
     auto builder   = lua->new_co_builder();
     builder.weak   = weak;
     builder.yield  = [=]() -> async::task<void> {
-        *model_ptr = &item->based<fb::model::item>();
+        *model_ptr = &item->model();
         co_return;
     };
     builder.resume = [=]() -> async::task<int> {
@@ -115,7 +115,7 @@ int builtin::item::builtin_rename(lua_State* L)
     if (item == nullptr)
         return 0;
 
-    auto& model  = item->based<fb::model::item>();
+    auto& model  = item->model();
     auto  weapon = model.attr(ITEM_ATTRIBUTE::WEAPON) ? item->weak_from_this_as<fb::game::weapon>()
                                                       : std::weak_ptr<fb::game::weapon>();
 

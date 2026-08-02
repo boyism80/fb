@@ -52,15 +52,15 @@ public:
     using object_ptr   = std::shared_ptr<object>;
 
 private:
-    fb::model::size16_t   _size  = fb::model::size16_t(0, 0);
-    unique_tiles          _tiles = nullptr;
+    fb::model::size16_t   _size     = fb::model::size16_t(0, 0);
+    unique_tiles          _tiles    = nullptr;
+    uint32_t              _model_id = 0;
     std::atomic<bool>     _init_script_invoked{false};
     std::atomic<uint32_t> _character_count{0};
 
 public:
     const uint32_t          id;
     const fb::game::server& server;
-    const fb::model::map&   model;
     object::container       objects = object::container(*this);
     door::container         doors   = door::container(*this);
     sector::container       sectors = sector::container(*this);
@@ -82,6 +82,7 @@ private:
 
 public:
     // clang-format off
+    const fb::model::map&           model() const;
     uint64_t                        index(const fb::model::point16_t& p) const;
     fb::model::point16_t            point(uint64_t i) const;
     bool                            blocked(uint16_t x, uint16_t y) const;

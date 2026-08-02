@@ -19,6 +19,11 @@ pack::pack(const pack& right) :
 pack::~pack()
 { }
 
+const fb::model::pack& pack::model() const
+{
+    return static_cast<const fb::model::pack&>(fb::model::table::item[this->_model_id]);
+}
+
 std::optional<uint32_t> pack::durability() const
 {
     return this->_durability;
@@ -26,13 +31,13 @@ std::optional<uint32_t> pack::durability() const
 
 void pack::durability(uint32_t value)
 {
-    auto& model       = this->based<fb::model::pack>();
+    auto& model       = this->model();
     this->_durability = std::max(uint32_t(0), std::min(model.durability, value));
 }
 
 std::string pack::inven_name() const
 {
-    auto& model = this->based<fb::model::pack>();
+    auto& model = this->model();
     return std::format("{} [{}]잔", model.name, this->_durability);
 }
 

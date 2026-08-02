@@ -38,14 +38,14 @@ void map_update::serialize(fb::stream_writer<big_endian>& writer) const
     header::serialize(writer);
     writer.write<uint8_t>(opcode);
 
-    if (this->map.model.effect == MAP_EFFECT_TYPE::NONE)
+    if (this->map.model().effect == MAP_EFFECT_TYPE::NONE)
     {
         writer.write<uint8_t>(0x00);
     }
     else
     {
         writer.write<uint8_t>(0x04);
-        writer.write<uint8_t>(static_cast<uint8_t>(this->map.model.effect));
+        writer.write<uint8_t>(static_cast<uint8_t>(this->map.model().effect));
     }
 
     writer.write<uint16_t>(this->begin.x);

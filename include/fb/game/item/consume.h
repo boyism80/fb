@@ -15,6 +15,9 @@ public:
     // clang-format on
 
 public:
+    const fb::model::consume& model() const override;
+
+public:
     [[nodiscard]] async::task<bool> active() override;
 };
 

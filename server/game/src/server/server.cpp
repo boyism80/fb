@@ -207,7 +207,7 @@ internal::SavePayload fb::game::server::save_payload(const character& ch) const
         if (spell == nullptr)
             continue;
 
-        spells.push_back(internal::Spell{ch.id, i, spell->model.id, spell->next().to_string()});
+        spells.push_back(internal::Spell{ch.id, i, spell->model().id, spell->next().to_string()});
     }
 
     auto achievements = std::vector<internal::Achievement>();

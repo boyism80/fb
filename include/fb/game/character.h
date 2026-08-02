@@ -134,9 +134,6 @@ public:
     listener_t&           listener;
     character_stat        stat;
 
-private:
-    using object::based;
-
 public:
     struct initial_params : fb::game::life::initial_params
     {

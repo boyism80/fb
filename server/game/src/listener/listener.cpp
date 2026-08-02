@@ -99,7 +99,7 @@ void listener_impl::on_update_external(object& me, bool detailed)
     case OBJECT_TYPE::NPC:
     {
         auto& npc   = static_cast<fb::game::npc&>(me);
-        auto& model = npc.based<fb::model::npc>();
+        auto& model = npc.model();
         if (model.appearance.has_value())
         {
             auto  appearance_table = table::appearance;
@@ -116,7 +116,7 @@ void listener_impl::on_update_external(object& me, bool detailed)
     case OBJECT_TYPE::MOB:
     {
         auto& mob   = static_cast<fb::game::mob&>(me);
-        auto& model = mob.based<fb::model::mob>();
+        auto& model = mob.model();
         if (model.appearance.has_value())
         {
             auto  appearance_table2 = table::appearance;
@@ -157,7 +157,7 @@ void listener_impl::on_update_external(object& me, object& you, bool detailed)
     case OBJECT_TYPE::NPC:
     {
         auto& npc   = static_cast<fb::game::npc&>(me);
-        auto& model = npc.based<fb::model::npc>();
+        auto& model = npc.model();
         if (model.appearance.has_value())
         {
             auto  appearance_table3 = table::appearance;
@@ -174,7 +174,7 @@ void listener_impl::on_update_external(object& me, object& you, bool detailed)
     case OBJECT_TYPE::MOB:
     {
         auto& mob   = static_cast<fb::game::mob&>(me);
-        auto& model = mob.based<fb::model::mob>();
+        auto& model = mob.model();
         if (model.appearance.has_value())
         {
             auto  appearance_table4 = table::appearance;

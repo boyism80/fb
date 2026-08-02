@@ -12,6 +12,11 @@ cash::cash(fb::game::server& server, uint64_t value) :
 cash::~cash()
 { }
 
+const fb::model::cash& cash::model() const
+{
+    return static_cast<const fb::model::cash&>(fb::model::table::item[this->_model_id]);
+}
+
 const fb::model::cash& cash::match_model(fb::game::server& server, uint64_t value)
 {
     if (value == 0)
@@ -37,7 +42,7 @@ const fb::model::cash& cash::match_model(fb::game::server& server, uint64_t valu
 
 std::string cash::inven_name() const
 {
-    auto& model   = this->based<fb::model::cash>();
+    auto& model   = this->model();
     auto  sstream = std::stringstream();
     sstream << model.name << ' ' << this->value << "전";
 

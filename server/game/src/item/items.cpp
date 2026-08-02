@@ -91,7 +91,7 @@ std::shared_ptr<equipment> items::equipment_off(EQUIPMENT_PARTS parts)
     owner->update(UPDATE_STATE_LEVEL::ALL);
 
     // Execute equipment deactivation script
-    auto& model = equipment->based<fb::model::equipment>();
+    auto& model = equipment->model();
     auto  path  = std::format("scripts/item/{}.lua", model.id);
     auto  func  = "on_deactivated";
 
@@ -149,7 +149,7 @@ async::task<std::vector<uint8_t>> items::add(const std::vector<std::shared_ptr<i
             }
         }
 
-        auto& model = item->based<fb::model::item>();
+        auto& model = item->model();
         if (model.attr(ITEM_ATTRIBUTE::CASH))
         {
             auto cash   = std::static_pointer_cast<fb::game::cash>(item);
@@ -231,7 +231,7 @@ uint8_t items::add(std::shared_ptr<item> item, uint8_t index)
         owner->listener.on_item_update(*owner, index);
 
         // Log item gain event (only for non-cash items)
-        auto& model = item->based<fb::model::item>();
+        auto& model = item->model();
         if (!model.attr(ITEM_ATTRIBUTE::CASH))
         {
             auto log_data              = Json::Value();
@@ -256,7 +256,7 @@ bool items::store(std::shared_ptr<item> item)
 
     owner->assert_thread();
 
-    auto& model     = item->based<fb::model::item>();
+    auto& model     = item->model();
     auto  item_id   = model.id;
     auto  item_name = model.name;
     auto  count     = item->count();
@@ -266,8 +266,8 @@ bool items::store(std::shared_ptr<item> item)
         auto found = std::find_if(this->_stored.begin(),
                                   this->_stored.end(),
                                   [&item](const std::shared_ptr<fb::game::item>& stored) {
-                                      auto& model = stored->template based<fb::model::item>();
-                                      return item->based<fb::model::item>() == model;
+                                      auto& model = stored->model();
+                                      return item->model() == model;
                                   });
 
         if (found == this->_stored.end())
@@ -355,7 +355,7 @@ std::shared_ptr<item> items::stored(const fb::model::item& item) const
 
     for (const auto& stored : this->_stored)
     {
-        if (stored->template based<fb::model::item>() == item)
+        if (stored->model() == item)
             return stored;
     }
     return nullptr;
@@ -391,7 +391,7 @@ async::task<items::item_ptr> items::retrieve(uint8_t index, uint16_t count)
     if (stored_count < count)
         co_return nullptr;
 
-    auto& model     = stored->based<fb::model::item>();
+    auto& model     = stored->model();
     auto  item_id   = model.id;
     auto  item_name = model.name;
 
@@ -402,7 +402,7 @@ async::task<items::item_ptr> items::retrieve(uint8_t index, uint16_t count)
             co_return nullptr;
 
         stored->count(stored_count - count);
-        auto added_slot = co_await this->add(stored->based<fb::model::item>().make(owner->server, count));
+        auto added_slot = co_await this->add(stored->model().make(owner->server, count));
         if (stored->empty())
         {
             auto i = this->_stored.begin() + index;
@@ -456,7 +456,7 @@ async::task<items::item_ptr> items::retrieve(std::string_view name, uint16_t cou
 
     for (size_t i = 0; i < this->_stored.size(); ++i)
     {
-        auto& model = this->_stored[i]->template based<fb::model::item>();
+        auto& model = this->_stored[i]->model();
         if (model.name == name)
             co_return co_await this->retrieve(static_cast<uint8_t>(i), count);
     }
@@ -473,7 +473,7 @@ async::task<items::item_ptr> items::retrieve(const fb::model::item& item, uint16
 
     for (size_t i = 0; i < this->_stored.size(); ++i)
     {
-        auto& model = this->_stored[i]->template based<fb::model::item>();
+        auto& model = this->_stored[i]->model();
         if (model == item)
             co_return co_await this->retrieve(static_cast<uint8_t>(i), count);
     }
@@ -633,7 +633,7 @@ uint8_t items::index(const fb::model::item& model) const
         if (now == nullptr)
             continue;
 
-        if (now->based<fb::model::item>() == model)
+        if (now->model() == model)
             return i;
     }
 
@@ -662,7 +662,7 @@ std::vector<uint8_t> items::index_all(const std::shared_ptr<item>& item) const
         if (now == nullptr)
             continue;
 
-        if (now->based<fb::model::item>() == item->based<fb::model::item>())
+        if (now->model() == item->model())
             result.push_back(i);
     }
 
@@ -914,7 +914,7 @@ std::shared_ptr<item> items::find(std::string_view name) const
         if (item == nullptr)
             continue;
 
-        auto& model = item->based<fb::model::item>();
+        auto& model = item->model();
         if (model.name == name)
             return std::static_pointer_cast<fb::game::item>(item);
     }
@@ -934,7 +934,7 @@ std::shared_ptr<item> items::find(const fb::model::item& model) const
         if (item == nullptr)
             continue;
 
-        if (item->based<fb::model::item>() == model)
+        if (item->model() == model)
             return std::static_pointer_cast<fb::game::item>(item);
     }
 
@@ -943,7 +943,7 @@ std::shared_ptr<item> items::find(const fb::model::item& model) const
         if (equipment == nullptr)
             continue;
 
-        if (equipment->based<fb::model::item>() == model)
+        if (equipment->model() == model)
             return std::static_pointer_cast<fb::game::item>(equipment);
     }
 
@@ -960,7 +960,7 @@ bool items::has(const fb::model::item& model, uint16_t count) const
             auto slot_item = this->at(i);
             if (slot_item == nullptr)
                 continue;
-            if (slot_item->based<fb::model::item>() == model)
+            if (slot_item->model() == model)
                 return slot_item->count() >= count;
         }
         return false;
@@ -972,7 +972,7 @@ bool items::has(const fb::model::item& model, uint16_t count) const
         for (int i = 0; i < CONTAINER_CAPACITY; i++)
         {
             auto slot_item = this->at(i);
-            if (slot_item != nullptr && slot_item->based<fb::model::item>() == model)
+            if (slot_item != nullptr && slot_item->model() == model)
                 slot_count++;
         }
         return slot_count >= count;
@@ -990,7 +990,7 @@ bool items::has(const std::vector<std::pair<const fb::model::item*, uint16_t>>& 
         auto slot_item = this->at(i);
         if (slot_item == nullptr)
             continue;
-        const auto& model = slot_item->based<fb::model::item>();
+        const auto& model = slot_item->model();
         if (model.attr(ITEM_ATTRIBUTE::BUNDLE))
             counts[model.id] += slot_item->count();
         else
@@ -1023,7 +1023,7 @@ async::task<items::item_ptr> items::drop(uint8_t index, uint8_t count, bool acti
         if (item == nullptr)
             co_return nullptr;
 
-        auto& model = item->based<fb::model::item>();
+        auto& model = item->model();
         if (model.trade == false)
             throw std::runtime_error(_TEXT(MESSAGE_EXCEPTION_CANNOT_DROP_ITEM));
 
@@ -1104,7 +1104,7 @@ async::task<bool> items::throws(uint8_t index, bool all)
         if (item == nullptr)
             co_return false;
 
-        auto& model = item->based<fb::model::item>();
+        auto& model = item->model();
         if (model.trade == false)
             throw std::runtime_error(_TEXT(MESSAGE_EXCEPTION_CANNOT_THROW_ITEM));
 
@@ -1157,7 +1157,7 @@ std::shared_ptr<item> items::remove(uint8_t index, uint16_t count, ITEM_DELETE_T
         owner->listener.on_item_remove(*owner, index, attr);
 
         // Log item remove event (only for non-cash items)
-        auto& model = item->based<fb::model::item>();
+        auto& model = item->model();
         if (!model.attr(ITEM_ATTRIBUTE::CASH))
         {
             auto log_data              = Json::Value();
@@ -1208,7 +1208,7 @@ async::task<void> items::remove_expired()
             if (expired == nullptr)
                 continue;
 
-            owner->message(std::format("{} 아이템이 만료되었습니다.", expired->based<fb::model::item>().name));
+            owner->message(std::format("{} 아이템이 만료되었습니다.", expired->model().name));
             co_await expired->destroy();
             continue;
         }
@@ -1246,7 +1246,7 @@ async::task<void> items::remove_expired()
         if (expired == nullptr)
             continue;
 
-        auto& model = expired->based<fb::model::item>();
+        auto& model = expired->model();
         owner->message(std::format("{} 아이템이 만료되었습니다.", model.name));
 
         auto log_data              = Json::Value();
@@ -1315,7 +1315,7 @@ bool items::is_rewardable(const std::unordered_map<uint32_t, uint16_t>& items, u
         if (item == nullptr)
             continue;
 
-        auto& model = item->based<fb::model::item>();
+        auto& model = item->model();
         if (model.attr(ITEM_ATTRIBUTE::BUNDLE) == false)
             continue;
 
@@ -1379,7 +1379,7 @@ async::task<exchange_result> items::exchange(const std::unordered_map<uint32_t, 
         auto slot = this->at(static_cast<uint8_t>(i));
         if (slot == nullptr)
             continue;
-        auto& model = slot->based<fb::model::item>();
+        auto& model = slot->model();
         slots_by_id[model.id].push_back(static_cast<uint8_t>(i));
     }
 
@@ -1465,7 +1465,7 @@ async::task<exchange_result> items::exchange(const std::unordered_map<uint32_t, 
         {
             auto index = slots[slot_it];
             auto slot  = this->at(index);
-            if (slot == nullptr || slot->based<fb::model::item>().id != id)
+            if (slot == nullptr || slot->model().id != id)
             {
                 ++slot_it;
                 continue;
