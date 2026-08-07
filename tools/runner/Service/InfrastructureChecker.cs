@@ -23,6 +23,7 @@ namespace Runner.Service
             ("zlib headers", @"dependency\include\zlib"),
             ("cpp-async headers", @"dependency\include\async"),
             ("aho_corasick headers", @"dependency\include\aho_corasick"),
+            ("croncpp header", @"dependency\include\croncpp.h"),
             ("Boost headers", @"dependency\include\boost"),
         };
 

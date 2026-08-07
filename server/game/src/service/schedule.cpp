@@ -52,24 +52,25 @@ async::task<void> service::schedule::poll()
             continue;
         }
 
-        auto        schedule_table2 = table::schedule;
-        const auto& entry           = schedule_table2[schedule_index];
-
+        const auto& entry = table::schedule[schedule_index];
         if (entry.script.empty() || entry.func.empty())
+        {
+            to_remove.push_back(schedule_index);
             continue;
+        }
 
         auto lua = this->server.lua.open(entry.script, entry.func);
         if (lua)
             std::ignore = co_await lua->call(0);
 
-        if (entry.repeat.has_value())
+        if (entry.cron.has_value() && entry.cron->empty() == false)
         {
-            auto next_time = next_execution + entry.repeat.value();
-
-            if (entry.date.end.has_value() && next_time > entry.date.end.value())
-                to_remove.push_back(schedule_index);
+            // Re-align from the fired slot so next time stays cron-accurate.
+            auto next_time = entry.next_execution(next_execution);
+            if (next_time.has_value())
+                next_execution = next_time.value();
             else
-                next_execution = next_time;
+                to_remove.push_back(schedule_index);
         }
         else
         {
