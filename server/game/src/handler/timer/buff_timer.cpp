@@ -1,4 +1,5 @@
 #include <fb/game/handler/timer/buff_timer.h>
+#include <fb/logger.h>
 #include <format>
 
 using namespace fb::game::handler::timer;
@@ -21,6 +22,10 @@ async::task<void> buff_timer::handle(const fb::model::datetime& now, std::thread
         if (map->objects.size() == 0)
             continue;
 
+        // Scripts/remove may leave us on another thread; always resume map walk here.
+        if (std::this_thread::get_id() != thread->id())
+            co_await thread->switching();
+
         auto concast = std::vector<fb::game::object*>{};
         for (auto& [fd, obj] : map->objects)
         {
@@ -32,9 +37,15 @@ async::task<void> buff_timer::handle(const fb::model::datetime& now, std::thread
 
         for (auto obj : concast)
         {
+            auto map_id = map->id;
+            auto weak   = obj->weak_from_this_as<fb::game::object>();
+
+            if (std::this_thread::get_id() != thread->id())
+                co_await thread->switching();
+
             auto ended_buffs = std::vector<std::shared_ptr<fb::game::buff>>();
             auto buffs       = obj->buffs; // To avoid iterator invalidation
-            for (auto& [id, buff] : buffs)
+            for (auto& [buff_id, buff] : buffs)
             {
                 if (buff->remaining() <= 0ms)
                 {
@@ -56,15 +67,46 @@ async::task<void> buff_timer::handle(const fb::model::datetime& now, std::thread
                 else
                     lua->pushobject(buff->caster);
                 lua->pushobject(buff);
-                std::ignore = co_await lua->call(3);
+
+                try
+                {
+                    std::ignore = co_await lua->call(3);
+                }
+                catch (std::exception& e)
+                {
+                    fb::logger::warn("buff_timer: on_concast failed (map={}, spell={}): {}",
+                                     map_id,
+                                     model.id,
+                                     e.what());
+                }
+
+                if (std::this_thread::get_id() != thread->id())
+                    co_await thread->switching();
             }
 
             for (auto& buff : ended_buffs)
             {
-                std::ignore = co_await obj->buffs.remove(buff->model());
+                try
+                {
+                    co_await this->server.threads.switching(weak);
+                    std::ignore = co_await obj->buffs.remove(buff->model());
+                }
+                catch (std::exception& e)
+                {
+                    fb::logger::warn("buff_timer: remove failed (map={}, spell={}): {}",
+                                     map_id,
+                                     buff->model().id,
+                                     e.what());
+                }
+
+                if (std::this_thread::get_id() != thread->id())
+                    co_await thread->switching();
             }
         }
     }
+
+    if (std::this_thread::get_id() != thread->id())
+        co_await thread->switching();
 
     co_return;
 }

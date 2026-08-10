@@ -158,7 +158,7 @@ return {
             return
         end
 
-        if property("sesi_rightnow") ~= 2 then
+        if not require('lib.festival').is('중화절') then
             return
         end
 

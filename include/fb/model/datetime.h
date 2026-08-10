@@ -16,8 +16,14 @@
 #include <string_view>
 #include <chrono>
 #include <format>
+#include <stdexcept>
+#include <cstdint>
+#include <cmath>
+#include <vector>
+#include <limits>
 #include <boost/xpressive/xpressive.hpp>
 #include <boost/date_time/posix_time/posix_time.hpp>
+#include <boost/date_time/gregorian/gregorian.hpp>
 
 namespace fb::model {
 
@@ -316,6 +322,288 @@ public:
     }
 };
 
+
+struct lunar_date
+{
+    uint16_t year  = 0;
+    uint16_t month = 0;
+    uint16_t day   = 0;
+    bool     leap  = false;
+};
+
+namespace lunar_detail {
+
+struct month_info
+{
+    int64_t  start_day = 0;
+    int64_t  end_day   = 0;
+    uint16_t month     = 0;
+    bool     leap      = false;
+    int32_t  cny_year  = 0;
+};
+
+inline constexpr double to_radians(double degrees)
+{
+    return degrees * 0.017453292519943295;
+}
+
+inline int64_t jd_noon(int32_t year, int32_t month, int32_t day)
+{
+    const auto a  = (14 - month) / 12;
+    const auto y2 = year + 4800 - a;
+    const auto m2 = month + 12 * a - 3;
+    return day + (153 * m2 + 2) / 5 + 365LL * y2 + y2 / 4 - y2 / 100 + y2 / 400 - 32045;
+}
+
+inline void ymd_from_jd(int64_t jd, int32_t& year, int32_t& month, int32_t& day)
+{
+    const auto a  = jd + 32044;
+    const auto b  = (4 * a + 3) / 146097;
+    const auto c  = a - (146097 * b) / 4;
+    const auto d  = (4 * c + 3) / 1461;
+    const auto e  = c - (1461 * d) / 4;
+    const auto m  = (5 * e + 2) / 153;
+    day   = static_cast<int32_t>(e - (153 * m + 2) / 5 + 1);
+    month = static_cast<int32_t>(m + 3 - 12 * (m / 10));
+    year  = static_cast<int32_t>(100 * b + d - 4800 + (m / 10));
+}
+
+inline double sun_longitude(double jd)
+{
+    const auto t  = (jd - 2451545.0) / 36525.0;
+    const auto l0 = 280.46646 + 36000.76983 * t + 0.0003032 * t * t;
+    const auto m  = 357.52911 + 35999.05029 * t - 0.0001537 * t * t;
+    const auto mr = to_radians(m);
+    const auto c  = (1.914602 - 0.004817 * t - 0.000014 * t * t) * std::sin(mr)
+                  + (0.019993 - 0.000101 * t) * std::sin(2.0 * mr)
+                  + 0.000289 * std::sin(3.0 * mr);
+    const auto true_long = std::fmod(l0 + c, 360.0);
+    const auto omega     = 125.04 - 1934.136 * t;
+    auto       lambda    = true_long - 0.00569 - 0.00478 * std::sin(to_radians(omega));
+    lambda = std::fmod(lambda, 360.0);
+    if (lambda < 0.0)
+        lambda += 360.0;
+    return lambda;
+}
+
+inline int64_t beijing_day(double jd_ut)
+{
+    return static_cast<int64_t>(std::floor(jd_ut + 8.0 / 24.0 + 0.5));
+}
+
+inline double solar_term_jd(int32_t year, double target_deg)
+{
+    struct month_day { int32_t month; int32_t day; };
+    static constexpr month_day approx[12] = {
+        {3, 20}, {4, 20}, {5, 21}, {6, 21}, {7, 23}, {8, 23},
+        {9, 23}, {10, 23}, {11, 22}, {12, 21}, {1, 20}, {2, 18},
+    };
+    const auto idx = static_cast<int32_t>(target_deg) / 30 % 12;
+    auto       jd  = static_cast<double>(jd_noon(year, approx[idx].month, approx[idx].day));
+    for (auto i = 0; i < 40; ++i)
+    {
+        const auto lon = sun_longitude(jd);
+        auto       diff = std::fmod(lon - target_deg + 180.0, 360.0);
+        if (diff < 0.0)
+            diff += 360.0;
+        diff -= 180.0;
+        jd -= diff / 0.985647;
+    }
+    return jd;
+}
+
+inline int64_t solar_term_day(int32_t year, double target_deg)
+{
+    return beijing_day(solar_term_jd(year, target_deg));
+}
+
+inline double new_moon(double k)
+{
+    const auto t   = k / 1236.85;
+    const auto jde = 2451550.09766 + 29.530588861 * k
+                    + 0.00015437 * t * t
+                    - 0.000000150 * t * t * t
+                    + 0.00000000073 * t * t * t * t;
+    const auto e  = 1.0 - 0.002516 * t - 0.0000074 * t * t;
+    const auto m  = to_radians(2.5534 + 29.10535670 * k - 0.0000014 * t * t - 0.00000011 * t * t * t);
+    const auto mp = to_radians(201.5643 + 385.81693528 * k + 0.0107582 * t * t
+                              + 0.00001238 * t * t * t - 0.000000058 * t * t * t * t);
+    const auto f  = to_radians(160.7108 + 390.67050284 * k - 0.0016118 * t * t
+                              - 0.00000227 * t * t * t + 0.000000011 * t * t * t * t);
+    const auto om = to_radians(124.7746 - 1.56375588 * k + 0.0020672 * t * t + 0.00000215 * t * t * t);
+
+    auto corr = -0.40720 * std::sin(mp)
+              + 0.17241 * e * std::sin(m)
+              + 0.01608 * std::sin(2.0 * mp)
+              + 0.01039 * std::sin(2.0 * f)
+              + 0.00739 * e * std::sin(mp - m)
+              - 0.00514 * e * std::sin(mp + m)
+              + 0.00208 * e * e * std::sin(2.0 * m)
+              - 0.00111 * std::sin(mp - 2.0 * f)
+              - 0.00057 * std::sin(mp + 2.0 * f)
+              + 0.00056 * e * std::sin(2.0 * mp + m)
+              - 0.00042 * std::sin(3.0 * mp)
+              + 0.00042 * e * std::sin(m + 2.0 * f)
+              + 0.00038 * e * std::sin(m - 2.0 * f)
+              - 0.00024 * e * std::sin(2.0 * mp - m)
+              - 0.00017 * std::sin(om);
+
+    const auto a1 = to_radians(299.77 + 0.107408 * k - 0.009173 * t * t);
+    corr += 0.000325 * std::sin(a1);
+
+    return jde + corr;
+}
+
+inline double k_from_jd(double jd)
+{
+    return (jd - 2451550.09766) / 29.530588861;
+}
+
+inline std::vector<double> collect_new_moons(double jd0, double jd1)
+{
+    auto result   = std::vector<double>();
+    auto k        = std::floor(k_from_jd(jd0)) - 2.0;
+    auto last_day = std::numeric_limits<int64_t>::min();
+    for (auto i = 0; i < 48; ++i)
+    {
+        const auto nm = new_moon(k);
+        k += 1.0;
+        if (nm < jd0 - 3.0)
+            continue;
+        if (nm > jd1 + 3.0)
+            break;
+
+        const auto d = beijing_day(nm);
+        if (d != last_day)
+        {
+            result.push_back(nm);
+            last_day = d;
+        }
+    }
+    return result;
+}
+
+inline bool has_zhongqi(double nm0, double nm1)
+{
+    const auto d0 = beijing_day(nm0);
+    const auto d1 = beijing_day(nm1);
+
+    int32_t y0 = 0, dummy_month = 0, dummy_day = 0;
+    ymd_from_jd(d0, y0, dummy_month, dummy_day);
+
+    for (auto y = y0 - 1; y <= y0 + 1; ++y)
+    {
+        for (auto deg = 0; deg < 360; deg += 30)
+        {
+            const auto d = solar_term_day(y, static_cast<double>(deg));
+            if (d0 <= d && d < d1)
+                return true;
+        }
+    }
+    return false;
+}
+
+inline std::vector<month_info> chinese_months_for_dongzhi_year(int32_t dz_year)
+{
+    const auto dz0 = solar_term_jd(dz_year, 270.0);
+    const auto dz1 = solar_term_jd(dz_year + 1, 270.0);
+
+    const auto moons = collect_new_moons(dz0 - 40.0, dz1 + 40.0);
+
+    const auto last_on_or_before = [&moons](double jd) -> double
+    {
+        const auto day = beijing_day(jd);
+        auto       result = moons.front();
+        for (const auto& m : moons)
+        {
+            if (beijing_day(m) <= day)
+                result = m;
+        }
+        return result;
+    };
+
+    const auto m11  = last_on_or_before(dz0);
+    const auto m11n = last_on_or_before(dz1);
+
+    auto seq = std::vector<double>();
+    for (const auto& m : moons)
+    {
+        if (beijing_day(m11) <= beijing_day(m) && beijing_day(m) <= beijing_day(m11n))
+            seq.push_back(m);
+    }
+
+    const auto n = static_cast<int32_t>(seq.size()) - 1;
+    auto       leap_index = -1;
+    if (n == 13)
+    {
+        for (auto i = 0; i < n; ++i)
+        {
+            if (has_zhongqi(seq[i], seq[i + 1]) == false)
+            {
+                leap_index = i;
+                break;
+            }
+        }
+    }
+
+    auto months     = std::vector<month_info>();
+    auto month      = 11;
+    auto prev_month = 11;
+    const auto cny_year = dz_year + 1;
+    for (auto i = 0; i < n; ++i)
+    {
+        auto info      = month_info{};
+        info.start_day = beijing_day(seq[i]);
+        info.end_day   = beijing_day(seq[i + 1]);
+        info.cny_year  = cny_year;
+
+        if (i == leap_index)
+        {
+            info.month = static_cast<uint16_t>(prev_month);
+            info.leap  = true;
+        }
+        else
+        {
+            info.month = static_cast<uint16_t>(month);
+            info.leap  = false;
+            prev_month = month;
+            ++month;
+            if (month == 13)
+                month = 1;
+        }
+        months.push_back(info);
+    }
+    return months;
+}
+
+inline lunar_date solar_to_lunar(int32_t year, int32_t month, int32_t day)
+{
+    const auto target_day = jd_noon(year, month, day);
+
+    for (auto dz_year = year - 1; dz_year <= year + 1; ++dz_year)
+    {
+        for (const auto& info : chinese_months_for_dongzhi_year(dz_year))
+        {
+            if (info.start_day <= target_day && target_day < info.end_day)
+            {
+                auto lunar_year = info.cny_year;
+                if (info.month >= 11)
+                    lunar_year -= 1;
+
+                return lunar_date{
+                    static_cast<uint16_t>(lunar_year),
+                    info.month,
+                    static_cast<uint16_t>(target_day - info.start_day + 1),
+                    info.leap
+                };
+            }
+        }
+    }
+    throw std::runtime_error("failed to convert solar date to lunar date");
+}
+
+}
+
 /**
  * @brief      A date and time class that provides comprehensive date/time operations.
  *
@@ -418,15 +706,21 @@ public:
         return *this;
     }
 
-    datetime& add_milliseconds(int ms)
+    datetime& add_milliseconds(int64_t ms)
     {
-        this->_ptime += boost::posix_time::milliseconds(ms);
+        constexpr int64_t ms_per_day = 86400000LL;
+        auto              days       = ms / ms_per_day;
+        auto              rem        = ms % ms_per_day;
+        if (days != 0)
+            this->_ptime += boost::gregorian::days(static_cast<int>(days));
+        if (rem != 0)
+            this->_ptime += boost::posix_time::milliseconds(static_cast<int>(rem));
         return *this;
     }
 
     datetime& add_timespan(const timespan& ts)
     {
-        this->add_milliseconds(static_cast<int>(ts.total_milliseconds()));
+        this->add_milliseconds(ts.total_milliseconds());
         return *this;
     }
 
@@ -440,14 +734,14 @@ public:
     friend datetime operator- (const datetime& dt, const timespan& ts)
     {
         auto result = datetime(dt);
-        result.add_milliseconds(-static_cast<int>(ts.total_milliseconds()));
+        result.add_milliseconds(-ts.total_milliseconds());
         return result;
     }
 
     friend timespan operator- (const datetime& dt1, const datetime& dt2)
     {
         auto diff = dt1._ptime - dt2._ptime;
-        return timespan(boost::posix_time::to_simple_string(diff));
+        return timespan(std::chrono::milliseconds(diff.total_milliseconds()));
     }
 
     datetime& operator+= (const timespan& ts)
@@ -458,7 +752,7 @@ public:
 
     datetime& operator-= (const timespan& ts)
     {
-        this->add_milliseconds(-static_cast<int>(ts.total_milliseconds()));
+        this->add_milliseconds(-ts.total_milliseconds());
         return *this;
     }
 
@@ -517,6 +811,52 @@ public:
         (*this) -= timespan(duration);
         return *this;
     }
+
+    lunar_date to_lunar() const
+    {
+        return datetime::to_lunar(*this);
+    }
+
+    static lunar_date to_lunar(const datetime& solar)
+    {
+        return lunar_detail::solar_to_lunar(solar.year(), solar.month(), solar.day());
+    }
+
+    static datetime from_lunar(const lunar_date& lunar, uint16_t hours = 0, uint16_t minutes = 0, uint16_t seconds = 0)
+    {
+        if (lunar.year == 0 || lunar.month < 1 || lunar.month > 12 || lunar.day < 1 || lunar.day > 30)
+            throw std::runtime_error("lunar date out of conversion range");
+
+        const auto dz_year = (lunar.month >= 11)
+            ? static_cast<int32_t>(lunar.year)
+            : static_cast<int32_t>(lunar.year) - 1;
+
+        const lunar_detail::month_info* found = nullptr;
+        const auto months = lunar_detail::chinese_months_for_dongzhi_year(dz_year);
+        for (const auto& info : months)
+        {
+            if (info.month == lunar.month && info.leap == lunar.leap)
+            {
+                found = &info;
+                break;
+            }
+        }
+        if (found == nullptr)
+            throw std::runtime_error(lunar.leap
+                ? "requested leap month does not exist in lunar year"
+                : "invalid lunar month for the given lunar year");
+
+        if (static_cast<int64_t>(lunar.day) > (found->end_day - found->start_day))
+            throw std::runtime_error("lunar day out of range for month");
+
+        const auto jd = found->start_day + static_cast<int64_t>(lunar.day) - 1;
+
+        int32_t y = 0, m = 0, d = 0;
+        lunar_detail::ymd_from_jd(jd, y, m, d);
+
+        return datetime(std::format("{:04}-{:02}-{:02} {:02}:{:02}:{:02}", y, m, d, hours, minutes, seconds));
+    }
+
 
     std::string to_string() const
     {

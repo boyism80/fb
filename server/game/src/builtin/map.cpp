@@ -1,7 +1,11 @@
 #include <fb/game/builtin/map.h>
 #include <fb/game/server.h>
+#include <fb/game/mob.h>
+#include <fb/game/item.h>
+#include <optional>
 
 using namespace fb::game;
+using table = fb::model::table;
 
 // clang-format off
 IMPLEMENT_LUA_EXTENSION(map, "fb.game.map")
@@ -24,6 +28,11 @@ IMPLEMENT_LUA_EXTENSION(map, "fb.game.map")
 {"slot",                builtin::map::builtin_slot},
 {"clone",               builtin::map::builtin_clone},
 {"destroy",             builtin::map::builtin_destroy},
+{"set_timer",           builtin::map::builtin_set_timer},
+{"cancel_timer",        builtin::map::builtin_cancel_timer},
+{"timer",               builtin::map::builtin_timer},
+{"spawn_mob",           builtin::map::builtin_spawn_mob},
+{"mkitem",              builtin::map::builtin_mkitem},
 END_LUA_EXTENSION; // clang-format on
 
 int builtin::map::builtin_model(lua_State* L)
@@ -715,6 +724,305 @@ int builtin::map::builtin_destroy(lua_State* L)
     };
     builder.resume = [=]() -> async::task<int> {
         lua->pushboolean(*result);
+        co_return 1;
+    };
+    return builder.run();
+}
+
+int builtin::map::builtin_set_timer(lua_State* L)
+{
+    auto lua = fb::lua::get(L);
+    if (lua == nullptr)
+        return 0;
+
+    auto map = lua->touserdata<fb::game::map>(1);
+    if (map == nullptr)
+        return 0;
+
+    auto interval_ms = static_cast<uint32_t>(lua->tointeger(2));
+    auto path        = lua->tostring(3);
+    auto func        = lua->tostring(4);
+    auto name        = std::string{};
+    auto repeat      = true;
+
+    if (lua->argc() >= 5 && lua->is_table(5))
+    {
+        ::lua_getfield(*lua, 5, "name");
+        if (lua->is_string(-1))
+            name = lua->tostring(-1);
+        lua->remove(-1);
+
+        ::lua_getfield(*lua, 5, "repeat");
+        if (lua->is_nil(-1) == false)
+            repeat = lua->toboolean(-1);
+        lua->remove(-1);
+
+        ::lua_getfield(*lua, 5, "once");
+        if (lua->is_nil(-1) == false && lua->toboolean(-1))
+            repeat = false;
+        lua->remove(-1);
+    }
+
+    auto server   = &static_cast<fb::game::server&>(lua->executor);
+    auto result   = std::make_shared<std::optional<uint64_t>>();
+    auto weak     = map->weak_from_this_as<fb::game::map>();
+    auto builder  = lua->new_co_builder();
+    builder.weak  = weak;
+    builder.yield = [=]() -> async::task<void> {
+        *result = co_await server->script_timers.create_or_replace(*map, name, interval_ms, path, func, repeat);
+        co_return;
+    };
+    builder.resume = [=]() -> async::task<int> {
+        if (result->has_value())
+            lua->pushinteger(static_cast<lua_Integer>(result->value()));
+        else
+            lua->pushnil();
+        co_return 1;
+    };
+    return builder.run();
+}
+
+int builtin::map::builtin_cancel_timer(lua_State* L)
+{
+    auto lua = fb::lua::get(L);
+    if (lua == nullptr)
+        return 0;
+
+    auto map = lua->touserdata<fb::game::map>(1);
+    if (map == nullptr)
+        return 0;
+
+    auto server  = &static_cast<fb::game::server&>(lua->executor);
+    auto success = std::make_shared<bool>(false);
+    auto weak    = map->weak_from_this_as<fb::game::map>();
+    auto builder = lua->new_co_builder();
+    builder.weak = weak;
+
+    if (lua->is_string(2))
+    {
+        auto name     = lua->tostring(2);
+        builder.yield = [=]() -> async::task<void> {
+            *success = server->script_timers.cancel(map->id, name);
+            co_return;
+        };
+    }
+    else if (lua->is_number(2))
+    {
+        auto id       = static_cast<uint64_t>(lua->touint64(2));
+        builder.yield = [=]() -> async::task<void> {
+            *success = server->script_timers.cancel(id);
+            co_return;
+        };
+    }
+    else
+    {
+        builder.yield = [=]() -> async::task<void> {
+            *success = false;
+            co_return;
+        };
+    }
+
+    builder.resume = [=]() -> async::task<int> {
+        lua->pushboolean(*success);
+        co_return 1;
+    };
+    return builder.run();
+}
+
+int builtin::map::builtin_timer(lua_State* L)
+{
+    auto lua = fb::lua::get(L);
+    if (lua == nullptr)
+        return 0;
+
+    auto map = lua->touserdata<fb::game::map>(1);
+    if (map == nullptr)
+        return 0;
+
+    auto value    = static_cast<uint32_t>(lua->tointeger(2));
+    auto decrease = lua->toboolean(3);
+    auto type     = decrease ? TIMER_TYPE::DECREASE : TIMER_TYPE::INCREASE;
+    auto map_id   = map->id;
+
+    auto& server = static_cast<fb::game::server&>(lua->executor);
+    // Filter on each character's thread: snapshot predicates must not call
+    // ch->map() (assert_thread) from the caller's thread.
+    server.characters.foreach_enqueue([value, type, map_id](auto& ch) -> async::task<void> {
+        auto ch_map = ch->map();
+        if (ch_map == nullptr || ch_map->id != map_id)
+            co_return;
+
+        ch->timer(value, type);
+        co_return;
+    });
+    return 0;
+}
+
+int builtin::map::builtin_spawn_mob(lua_State* L)
+{
+    auto lua = fb::lua::get(L);
+    if (lua == nullptr)
+        return 0;
+
+    auto map = lua->touserdata<fb::game::map>(1);
+    if (map == nullptr)
+        return 0;
+
+    const fb::model::mob* model = nullptr;
+    if (lua->is_string(2))
+    {
+        model = table::mob->name2mob(lua->tostring(2));
+    }
+    else if (lua->is_number(2))
+    {
+        model = table::mob->find(static_cast<uint32_t>(lua->tointeger(2)));
+    }
+    else if (lua->is_userdata<fb::model::mob>(2))
+    {
+        model = lua->touserdata<fb::model::mob>(2);
+    }
+
+    if (model == nullptr)
+    {
+        lua->pushnil();
+        return 1;
+    }
+
+    auto     argc   = lua->argc();
+    uint16_t x      = 0;
+    uint16_t y      = 0;
+    auto     offset = 3;
+    if (lua->is_table(3))
+    {
+        lua->rawgeti(3, 1);
+        x = static_cast<uint16_t>(lua->tointeger(-1));
+        lua->remove(-1);
+
+        lua->rawgeti(3, 2);
+        y = static_cast<uint16_t>(lua->tointeger(-1));
+        lua->remove(-1);
+        offset = 4;
+    }
+    else if (lua->is_number(3) && lua->is_number(4))
+    {
+        x      = static_cast<uint16_t>(lua->tointeger(3));
+        y      = static_cast<uint16_t>(lua->tointeger(4));
+        offset = 5;
+    }
+    else
+    {
+        lua->pushnil();
+        return 1;
+    }
+
+    auto direction = DIRECTION::BOTTOM;
+    if (argc >= offset && lua->is_number(offset))
+        direction = static_cast<DIRECTION>(lua->tointeger(offset));
+
+    auto notify     = true;
+    auto notify_idx = (argc >= offset && lua->is_number(offset)) ? offset + 1 : offset;
+    if (argc >= notify_idx)
+        notify = lua->toboolean(notify_idx, true);
+
+    auto server   = &static_cast<fb::game::server&>(lua->executor);
+    auto mob_ptr  = std::make_shared<std::shared_ptr<fb::game::mob>>();
+    auto model_id = model->id;
+    auto map_ptr  = map->shared_from_this_as<fb::game::map>();
+    auto weak     = map->weak_from_this_as<fb::game::map>();
+    auto builder  = lua->new_co_builder();
+    builder.weak  = weak;
+    builder.yield = [server, mob_ptr, model_id, map_ptr, x, y, direction, notify]() -> async::task<void> {
+        auto* mob_model = table::mob->find(model_id);
+        if (mob_model == nullptr)
+        {
+            fb::logger::warn("map:spawn_mob model not found id={}", model_id);
+            co_return;
+        }
+
+        auto mob = std::make_shared<fb::game::mob>(*server, *mob_model, mob::initial_params{.alive = true});
+        if (co_await mob->map(map_ptr, fb::model::point16_t{x, y}, {.notify = notify}) == false)
+        {
+            fb::logger::warn("map:spawn_mob failed to place mob id={} at ({},{}) map={}",
+                             model_id,
+                             x,
+                             y,
+                             map_ptr->model().id);
+            co_return;
+        }
+
+        mob->direction(direction);
+        *mob_ptr = mob;
+        co_return;
+    };
+    builder.resume = [=]() -> async::task<int> {
+        if (*mob_ptr == nullptr)
+            lua->pushnil();
+        else
+            lua->pushobject(*mob_ptr);
+        co_return 1;
+    };
+    return builder.run();
+}
+
+int builtin::map::builtin_mkitem(lua_State* L)
+{
+    auto lua = fb::lua::get(L);
+    if (lua == nullptr)
+        return 0;
+
+    auto map = lua->touserdata<fb::game::map>(1);
+    if (map == nullptr)
+        return 0;
+
+    auto name  = lua->tostring(2);
+    auto model = table::item->name2item(name);
+    if (model == nullptr)
+    {
+        lua->pushnil();
+        return 1;
+    }
+
+    uint16_t x = 0;
+    uint16_t y = 0;
+    if (lua->is_table(3))
+    {
+        lua->rawgeti(3, 1);
+        x = static_cast<uint16_t>(lua->tointeger(-1));
+        lua->remove(-1);
+        lua->rawgeti(3, 2);
+        y = static_cast<uint16_t>(lua->tointeger(-1));
+        lua->remove(-1);
+    }
+    else if (lua->is_number(3) && lua->is_number(4))
+    {
+        x = static_cast<uint16_t>(lua->tointeger(3));
+        y = static_cast<uint16_t>(lua->tointeger(4));
+    }
+    else
+    {
+        lua->pushnil();
+        return 1;
+    }
+
+    auto item_holder = std::make_shared<std::shared_ptr<fb::game::item>>();
+    auto map_ptr     = map->shared_from_this_as<fb::game::map>();
+    auto weak        = map->weak_from_this_as<fb::game::map>();
+    auto builder     = lua->new_co_builder();
+    builder.weak     = weak;
+    builder.yield    = [=]() -> async::task<void> {
+        auto& server = static_cast<fb::game::server&>(lua->executor);
+        auto  item   = model->make(server);
+        if (co_await item->map(map_ptr, fb::model::point16_t{x, y}) == false)
+            co_return;
+
+        *item_holder = item;
+        co_return;
+    };
+    builder.resume = [=]() -> async::task<int> {
+        if (*item_holder == nullptr)
+            lua->pushnil();
+        else
+            lua->pushobject(*item_holder);
         co_return 1;
     };
     return builder.run();

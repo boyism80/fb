@@ -294,26 +294,124 @@ M.functions = {
         end,
     },
 
-    ['현재시간'] = {
+    ['스크립트타이머'] = {
         ['privilege'] = ROLE.ADMIN,
-        ['usage'] = '[YYYY-MM-DD HH:MM:SS] - 현재 서버 시간 조회/설정',
+        ['usage'] = '시작|중지 [맵ID] [밀리초] - map:set_timer 스모크 (기본: 현재맵, 1000ms)',
         ['command'] = function (me, args)
-            if #args == 0 then
-                local dt = datetime()
-                me:message(string.format("현재 서버 시간: %04d-%02d-%02d %02d:%02d:%02d",
-                    dt.year, dt.month, dt.day, dt.hour, dt.minute, dt.second), MESSAGE_TYPE.BROWN)
+            local action = args[1]
+            if action ~= '시작' and action ~= '중지' then
+                me:message("사용법: /스크립트타이머 시작|중지 [맵ID] [밀리초]")
                 return true
             end
 
-            local value = table.concat(args, ' ')
-            if not string.match(value, '^%d%d%d%d%-%d%d%-%d%d %d%d:%d%d:%d%d$') then
-                me:message("사용법: /현재시간 YYYY-MM-DD HH:MM:SS")
+            local function resolve_game_map(map_id)
+                for _, map in pairs(maps()) do
+                    if map:model():id() == map_id then
+                        return map
+                    end
+                end
+                return nil
+            end
+
+            local map_id = tonumber(args[2])
+            local map = nil
+            if map_id ~= nil then
+                map = resolve_game_map(map_id)
+            else
+                map = me:map()
+                if map ~= nil then
+                    map_id = map:model():id()
+                end
+            end
+            if map == nil then
+                me:message("맵을 찾을 수 없습니다.")
                 return true
+            end
+
+            local NAME = 'script_timer_smoke'
+            local PATH = 'scripts/lib/script_timer_smoke.lua'
+
+            if action == '중지' then
+                local ok = map:cancel_timer(NAME)
+                if ok then
+                    me:message(string.format("스크립트 타이머 중지: map=%d name=%s", map_id, NAME))
+                else
+                    me:message("중지할 스크립트 타이머가 없습니다.")
+                end
+                return true
+            end
+
+            local interval = tonumber(args[3]) or 1000
+            if interval <= 0 then
+                me:message("밀리초는 1 이상이어야 합니다.")
+                return true
+            end
+
+            local id = map:set_timer(interval, PATH, 'on_tick', { name = NAME })
+            if id == nil then
+                me:message("스크립트 타이머 설치 실패")
+                return true
+            end
+
+            me:message(string.format("스크립트 타이머 시작: map=%d interval=%dms id=%s", map_id, interval, tostring(id)))
+            return true
+        end,
+    },
+
+    ['현재시간'] = {
+        ['privilege'] = ROLE.ADMIN,
+        ['usage'] = '[YYYY-MM-DD HH:MM:SS [음력]] - 현재 서버 시간 조회/설정',
+        ['command'] = function (me, args)
+            if #args == 0 then
+                local dt = datetime()
+                if dt.lunar_year ~= nil then
+                    local leap = dt.lunar_leap and ' (윤)' or ''
+                    me:message(string.format(
+                        "현재 서버 시간: %04d-%02d-%02d %02d:%02d:%02d / 음력 %04d-%02d-%02d%s",
+                        dt.year, dt.month, dt.day, dt.hour, dt.minute, dt.second,
+                        dt.lunar_year, dt.lunar_month, dt.lunar_day, leap), MESSAGE_TYPE.BROWN)
+                else
+                    me:message(string.format("현재 서버 시간: %04d-%02d-%02d %02d:%02d:%02d",
+                        dt.year, dt.month, dt.day, dt.hour, dt.minute, dt.second), MESSAGE_TYPE.BROWN)
+                end
+                return true
+            end
+
+            local lunar = args[#args] == '음력'
+            local date_args = args
+            if lunar then
+                date_args = { table.unpack(args, 1, #args - 1) }
+            end
+
+            local value = table.concat(date_args, ' ')
+            if not string.match(value, '^%d%d%d%d%-%d%d%-%d%d %d%d:%d%d:%d%d$') then
+                me:message("사용법: /현재시간 YYYY-MM-DD HH:MM:SS [음력]")
+                return true
+            end
+
+            if lunar then
+                local y, m, d, hh, mm, ss = string.match(value, '^(%d%d%d%d)%-(%d%d)%-(%d%d) (%d%d):(%d%d):(%d%d)$')
+                local solar, err = from_lunar({
+                    year = tonumber(y),
+                    month = tonumber(m),
+                    day = tonumber(d),
+                    leap = false,
+                }, tonumber(hh), tonumber(mm), tonumber(ss))
+                if solar == nil then
+                    me:message(string.format("음력 변환 실패: %s", err or "unknown error"), MESSAGE_TYPE.BROWN)
+                    return true
+                end
+                value = string.format("%04d-%02d-%02d %02d:%02d:%02d",
+                    solar.year, solar.month, solar.day, solar.hour, solar.minute, solar.second)
             end
 
             local success, error_message = now(value)
             if success then
-                me:message(string.format("현재 시간을 %s 로 설정 요청했습니다.", value), MESSAGE_TYPE.BROWN)
+                if lunar then
+                    me:message(string.format("현재 시간을 음력 기준 양력 %s 로 설정 요청했습니다.", value), MESSAGE_TYPE.BROWN)
+                else
+                    me:message(string.format("현재 시간을 %s 로 설정 요청했습니다.", value), MESSAGE_TYPE.BROWN)
+                end
             else
                 me:message(string.format("현재시간 설정 실패: %s", error_message or "unknown error"), MESSAGE_TYPE.BROWN)
             end

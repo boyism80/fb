@@ -351,19 +351,17 @@ void map::container::spawn_npc(const fb::model::npc_spawn& spawn, const std::sha
     auto  npc_table = table::npc;
     auto& npc_model = npc_table[spawn.npc];
     auto  npc       = this->server.make<fb::game::npc>(npc_model);
-    auto  weak      = npc->weak_from_this_as<fb::game::npc>();
     auto  position  = spawn.position;
     auto  direction = spawn.direction;
-    auto  fn        = [](std::shared_ptr<fb::game::npc> npc,
-                 std::shared_ptr<fb::game::map> map,
-                 fb::model::point16_t           position,
-                 DIRECTION                      direction) -> async::task<void> {
+    auto  thread    = map->thread();
+    if (thread == nullptr)
+        return;
+
+    // object::map requires first placement on the destination map thread.
+    auto builder = thread->new_builder<void>();
+    builder.func = [npc, map, position, direction](auto&) -> async::task<void> {
         std::ignore = co_await npc->map(map, position);
         npc->direction(direction);
-    };
-    auto builder = this->server.threads.new_builder(weak);
-    builder.func = [fn, npc, map, position, direction](auto&) -> async::task<void> {
-        co_await fn(npc, map, position, direction);
     };
     builder.enqueue();
 }
@@ -646,6 +644,8 @@ async::task<void> map::container::destroy(const std::shared_ptr<fb::game::map>& 
 
     if (map->begin_destroy() == false)
         co_return;
+
+    this->server.script_timers.cancel_all(map->id);
 
     auto thread = map->thread();
     if (thread == nullptr)

@@ -1,4 +1,5 @@
 #include <fb/execution_context.h>
+#include <fb/logger.h>
 #include <fb/thread.h>
 #include <sstream>
 
@@ -59,15 +60,35 @@ void fb::thread::on_idle()
             continue;
         }
 
+        if (timer->running())
+            continue;
+
         if (now < timer->begin + timer->duration)
             continue;
 
-        auto repeat = timer->repeat;
-        auto fn     = fb::timer::handle_callback_type{timer->fn};
+        if (timer->try_begin_run() == false)
+            continue;
+
+        if (timer->repeat == fb::timer::repeat_type::repeat)
+            timer->begin = now;
+
+        auto fn    = fb::timer::handle_callback_type{timer->fn};
+        auto index = this->_index;
         execution_context::pending(timer->context);
-        async::awaitable_then(fn(now, this->_thread.get_id()), [timer, repeat, now](auto result) {
-            if (repeat == fb::timer::repeat_type::repeat)
-                timer->begin = now;
+        async::awaitable_then(fn(now, this->_thread.get_id()), [timer, index](auto result) {
+            try
+            {
+                result();
+            }
+            catch (std::exception& e)
+            {
+                fb::logger::fatal("timer error in thread {} : {}", index, e.what());
+            }
+            catch (...)
+            {
+                fb::logger::fatal("timer error in thread {} : unknown exception", index);
+            }
+            timer->end_run();
         });
 
         if (timer->repeat == fb::timer::repeat_type::once)
@@ -116,7 +137,11 @@ std::shared_ptr<fb::timer> fb::thread::settimer(fb::timer::handle_callback_type&
             }
             catch (std::exception& e)
             {
-                fb::logger::fatal(std::format("timer error in thread {} : {}", index, e.what()));
+                fb::logger::fatal("timer error in thread {} : {}", index, e.what());
+            }
+            catch (...)
+            {
+                fb::logger::fatal("timer error in thread {} : unknown exception", index);
             }
             co_return;
         },

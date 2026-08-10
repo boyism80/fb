@@ -1,5 +1,6 @@
 -- npc: 영문스님
 local enum = require('lib.enum')
+local festival = require('lib.festival')
 
 return {
     on_click = function(me, npc)
@@ -8,7 +9,7 @@ return {
             return
         end
 
-        if property("sesi_rightnow") ~= 4 then
+        if not festival.is('석가탄신일') then
             return
         end
 
@@ -53,6 +54,16 @@ return {
         if sel == 3 then
             btn = me:dialog(npc, "꿩의 깃털과 색비단을 가져오셨나요?", { prev = false, next = true })
             if btn == DIALOG_RESULT.QUIT then
+                return
+            end
+
+            local remain = festival.pheasant_kill_penalty_remaining(me)
+            if remain > 0 then
+                btn = me:dialog(npc, "이런.. 살생은 안된다고 말씀 드리지 않았습니까. 연등은 만들어드리지 못하겠습니다.", { prev = false, next = true })
+                if btn == DIALOG_RESULT.QUIT then
+                    return
+                end
+                me:dialog(npc, "반성하시고, 다른 일 하시다가 시간이 좀 지난후에 다시 오십시오.", { prev = false, next = false })
                 return
             end
 

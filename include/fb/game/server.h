@@ -18,6 +18,7 @@
 #include <fb/game/service/system_storage.h>
 #include <fb/game/service/system_mail.h>
 #include <fb/game/service/schedule.h>
+#include <fb/game/service/script_timer.h>
 #include <fb/game/service/property.h>
 #include <fb/game/storage.h>
 #include <fb/game/system_storage_box.h>
@@ -136,6 +137,7 @@ public:
     service::system_storage system_storage;
     service::system_mail    system_mail;
     service::schedule       schedules;
+    service::script_timer   script_timers;
     service::property       property;
 
 public:

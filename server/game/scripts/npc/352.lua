@@ -1,8 +1,9 @@
 -- npc: 촌장부인
 local quest = require('lib.quest')
 local enum = require('lib.enum')
-local function run_sesi_2(me, npc)
-    if property("sesi_rightnow") ~= 2 then
+local festival = require('lib.festival')
+local function run_junghwa(me, npc)
+    if not festival.is('중화절') then
         return false
     end
     local q = me:quest(quest.QUEST_BAEK_MONGYEON)
@@ -28,8 +29,8 @@ local function run_sesi_2(me, npc)
     return true
 end
 
-local function run_sesi_4(me, npc)
-    if property("sesi_rightnow") ~= 4 then
+local function run_seokka(me, npc)
+    if not festival.is('석가탄신일') then
         return false
     end
     if me:has_items("색비단", 1) then
@@ -48,8 +49,8 @@ local function run_sesi_4(me, npc)
     return true
 end
 
-local function run_sesi_5(me, npc)
-    if property("sesi_rightnow") ~= 5 then
+local function run_dano(me, npc)
+    if not festival.is('단오') then
         return false
     end
     local btn = me:dialog(npc, "창포가 필요하시다구요.. 제가 모아놓은 창포를 드리도록 하죠.", { prev = false, next = true })
@@ -87,8 +88,49 @@ local function run_sesi_5(me, npc)
     return true
 end
 
-local function run_sesi_7(me, npc)
-    if property("sesi_rightnow") ~= 7 then
+local function run_yudu(me, npc)
+    if not festival.is('유두') then
+        return false
+    end
+
+    local btn = me:dialog(npc, "고사를 지내시려구요? 고사를 지내려면 유두벼, 유두콩, 유두조가 필요할텐데...", { prev = false, next = true })
+    if btn == DIALOG_RESULT.QUIT then
+        return true
+    end
+    btn = me:dialog(npc, "벼, 콩, 조를 구해오시면 제가 유두벼, 유두콩, 유두조로 바꿔드릴게요.", { prev = false, next = true })
+    if btn == DIALOG_RESULT.QUIT then
+        return true
+    end
+
+    local sel, list_btn = me:list(npc, "지금 구해오셨나요?", {
+        "네, 다 구해왔어요. 지금 바꿔주세요.",
+        "아니오, 아직 다 못구해왔어요.",
+    }, { prev = false })
+    if list_btn == DIALOG_RESULT.QUIT then
+        return true
+    end
+    if sel ~= 1 then
+        return true
+    end
+
+    local code = me:exchange(
+        { ['item'] = { ["벼"] = 1, ["콩"] = 1, ["조"] = 1 } },
+        { ['item'] = { ["유두벼"] = 1, ["유두콩"] = 1, ["유두조"] = 1 } }
+    )
+    if code == enum.exchange_result.LACK_COST then
+        me:dialog(npc, "벼, 콩, 조가 부족합니다. 다 구해오신 뒤 다시 찾아와 주세요.", { prev = false, next = false })
+        return true
+    end
+    if code == enum.exchange_result.LACK_CAPACITY then
+        me:dialog(npc, "소지품이 가득 차서 바꿔드릴 수 없습니다.", { prev = false, next = false })
+        return true
+    end
+    me:dialog(npc, "다 됐습니다~ 그럼 경건한 마음으로 고사를 지내세요~", { prev = false, next = false })
+    return true
+end
+
+local function run_chilseok(me, npc)
+    if not festival.is('칠석') then
         return false
     end
     local sel, list_btn = me:list(npc, "무슨일로 오셨나요?", { "그물이 필요해요..", "식용호박이 필요해요..." }, { prev = false })
@@ -122,8 +164,8 @@ local function run_sesi_7(me, npc)
     return true
 end
 
-local function run_sesi_8(me, npc)
-    if property("sesi_rightnow") ~= 8 then
+local function run_chuseok(me, npc)
+    if not festival.is('추석') then
         return false
     end
     local q = me:quest(quest.QUEST_BAEKRIHYANG)
@@ -167,19 +209,22 @@ return {
             return
         end
 
-        if run_sesi_2(me, npc) then
+        if run_junghwa(me, npc) then
             return
         end
-        if run_sesi_4(me, npc) then
+        if run_seokka(me, npc) then
             return
         end
-        if run_sesi_5(me, npc) then
+        if run_dano(me, npc) then
             return
         end
-        if run_sesi_7(me, npc) then
+        if run_yudu(me, npc) then
             return
         end
-        if run_sesi_8(me, npc) then
+        if run_chilseok(me, npc) then
+            return
+        end
+        if run_chuseok(me, npc) then
             return
         end
     end

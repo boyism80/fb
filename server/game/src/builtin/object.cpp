@@ -21,6 +21,7 @@ IMPLEMENT_LUA_EXTENSION(object, "fb.game.object")
 {"position",            builtin::object::builtin_position},
 {"front_position",      builtin::object::builtin_front_position},
 {"direction",           builtin::object::builtin_direction},
+{"move",                builtin::object::builtin_move},
 {"chat",                builtin::object::builtin_chat},
 {"buff",                builtin::object::builtin_buff},
 {"isbuff",              builtin::object::builtin_isbuff},
@@ -350,6 +351,38 @@ int builtin::object::builtin_direction(lua_State* L)
         };
         return builder.run();
     }
+}
+
+int builtin::object::builtin_move(lua_State* L)
+{
+    auto lua = fb::lua::get(L);
+    if (lua == nullptr)
+        return 0;
+
+    auto obj = lua->touserdata<fb::game::object>(1);
+    if (obj == nullptr)
+        return 0;
+
+    if (obj->is(OBJECT_TYPE::ITEM))
+    {
+        lua->pushboolean(false);
+        return 1;
+    }
+
+    auto direction = static_cast<DIRECTION>(lua->tointeger(2));
+    auto success   = std::make_shared<bool>(false);
+    auto weak      = obj->weak_from_this_as<fb::game::object>();
+    auto builder   = lua->new_co_builder();
+    builder.weak   = weak;
+    builder.yield  = [=]() -> async::task<void> {
+        *success = obj->move(direction);
+        co_return;
+    };
+    builder.resume = [=]() -> async::task<int> {
+        lua->pushboolean(*success);
+        co_return 1;
+    };
+    return builder.run();
 }
 
 int builtin::object::builtin_chat(lua_State* L)

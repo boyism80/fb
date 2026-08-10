@@ -17,7 +17,7 @@ return {
             return
         end
 
-        if property("sesi_rightnow") ~= 3 then
+        if not require('lib.festival').is('삼짇날') then
             return
         end
 

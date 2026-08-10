@@ -9,6 +9,8 @@
 #include <string_view>
 #include <fb/model/datetime.h>
 #include <tuple>
+#include <format>
+#include <stdexcept>
 
 using namespace fb::game;
 using table = fb::model::table;
@@ -232,6 +234,113 @@ int builtin::server::builtin_time_backward(lua_State* L)
     return builder.run();
 }
 
+namespace {
+
+void push_datetime_table(lua_State* L, const fb::model::datetime& dt)
+{
+    lua_createtable(L, 0, 10);
+    lua_pushinteger(L, static_cast<lua_Integer>(dt.year()));
+    lua_setfield(L, -2, "year");
+    lua_pushinteger(L, static_cast<lua_Integer>(dt.month()));
+    lua_setfield(L, -2, "month");
+    lua_pushinteger(L, static_cast<lua_Integer>(dt.day()));
+    lua_setfield(L, -2, "day");
+    lua_pushinteger(L, static_cast<lua_Integer>(dt.hours()));
+    lua_setfield(L, -2, "hour");
+    lua_pushinteger(L, static_cast<lua_Integer>(dt.minutes()));
+    lua_setfield(L, -2, "minute");
+    lua_pushinteger(L, static_cast<lua_Integer>(dt.seconds()));
+    lua_setfield(L, -2, "second");
+    try
+    {
+        auto lunar = dt.to_lunar();
+        lua_pushinteger(L, static_cast<lua_Integer>(lunar.year));
+        lua_setfield(L, -2, "lunar_year");
+        lua_pushinteger(L, static_cast<lua_Integer>(lunar.month));
+        lua_setfield(L, -2, "lunar_month");
+        lua_pushinteger(L, static_cast<lua_Integer>(lunar.day));
+        lua_setfield(L, -2, "lunar_day");
+        lua_pushboolean(L, lunar.leap ? 1 : 0);
+        lua_setfield(L, -2, "lunar_leap");
+    }
+    catch (const std::exception&)
+    {
+        lua_pushnil(L);
+        lua_setfield(L, -2, "lunar_year");
+        lua_pushnil(L);
+        lua_setfield(L, -2, "lunar_month");
+        lua_pushnil(L);
+        lua_setfield(L, -2, "lunar_day");
+        lua_pushnil(L);
+        lua_setfield(L, -2, "lunar_leap");
+    }
+}
+
+void push_lunar_table(lua_State* L, const fb::model::lunar_date& lunar)
+{
+    lua_createtable(L, 0, 4);
+    lua_pushinteger(L, static_cast<lua_Integer>(lunar.year));
+    lua_setfield(L, -2, "year");
+    lua_pushinteger(L, static_cast<lua_Integer>(lunar.month));
+    lua_setfield(L, -2, "month");
+    lua_pushinteger(L, static_cast<lua_Integer>(lunar.day));
+    lua_setfield(L, -2, "day");
+    lua_pushboolean(L, lunar.leap ? 1 : 0);
+    lua_setfield(L, -2, "leap");
+}
+
+fb::model::datetime datetime_from_lua_table(fb::lua::context& lua, int index)
+{
+    lua_getfield(lua, index, "year");
+    auto year = static_cast<uint16_t>(lua_tointeger(lua, -1));
+    lua_pop(lua, 1);
+    lua_getfield(lua, index, "month");
+    auto month = static_cast<uint16_t>(lua_tointeger(lua, -1));
+    lua_pop(lua, 1);
+    lua_getfield(lua, index, "day");
+    auto day = static_cast<uint16_t>(lua_tointeger(lua, -1));
+    lua_pop(lua, 1);
+
+    auto hour   = uint16_t{0};
+    auto minute = uint16_t{0};
+    auto second = uint16_t{0};
+    lua_getfield(lua, index, "hour");
+    if (!lua_isnil(lua, -1))
+        hour = static_cast<uint16_t>(lua_tointeger(lua, -1));
+    lua_pop(lua, 1);
+    lua_getfield(lua, index, "minute");
+    if (!lua_isnil(lua, -1))
+        minute = static_cast<uint16_t>(lua_tointeger(lua, -1));
+    lua_pop(lua, 1);
+    lua_getfield(lua, index, "second");
+    if (!lua_isnil(lua, -1))
+        second = static_cast<uint16_t>(lua_tointeger(lua, -1));
+    lua_pop(lua, 1);
+
+    return fb::model::datetime(
+        std::format("{:04}-{:02}-{:02} {:02}:{:02}:{:02}", year, month, day, hour, minute, second));
+}
+
+fb::model::lunar_date lunar_from_lua_table(fb::lua::context& lua, int index)
+{
+    auto lunar = fb::model::lunar_date{};
+    lua_getfield(lua, index, "year");
+    lunar.year = static_cast<uint16_t>(lua_tointeger(lua, -1));
+    lua_pop(lua, 1);
+    lua_getfield(lua, index, "month");
+    lunar.month = static_cast<uint16_t>(lua_tointeger(lua, -1));
+    lua_pop(lua, 1);
+    lua_getfield(lua, index, "day");
+    lunar.day = static_cast<uint16_t>(lua_tointeger(lua, -1));
+    lua_pop(lua, 1);
+    lua_getfield(lua, index, "leap");
+    lunar.leap = lua_toboolean(lua, -1) != 0;
+    lua_pop(lua, 1);
+    return lunar;
+}
+
+} // namespace
+
 /**
  * @brief      Returns current date/time as a table (server local time) for calendar-style logic.
  *
@@ -248,21 +357,66 @@ int builtin::server::builtin_datetime(lua_State* L)
         return 0;
 
     auto& srv = static_cast<fb::game::server&>(lua->executor);
-    auto  dt  = srv.now();
-    lua_createtable(L, 0, 6);
-    lua_pushinteger(L, static_cast<lua_Integer>(dt.year()));
-    lua_setfield(L, -2, "year");
-    lua_pushinteger(L, static_cast<lua_Integer>(dt.month()));
-    lua_setfield(L, -2, "month");
-    lua_pushinteger(L, static_cast<lua_Integer>(dt.day()));
-    lua_setfield(L, -2, "day");
-    lua_pushinteger(L, static_cast<lua_Integer>(dt.hours()));
-    lua_setfield(L, -2, "hour");
-    lua_pushinteger(L, static_cast<lua_Integer>(dt.minutes()));
-    lua_setfield(L, -2, "minute");
-    lua_pushinteger(L, static_cast<lua_Integer>(dt.seconds()));
-    lua_setfield(L, -2, "second");
+    push_datetime_table(L, srv.now());
     return 1;
+}
+
+int builtin::server::builtin_to_lunar(lua_State* L)
+{
+    auto lua = fb::lua::get(L);
+    if (lua == nullptr)
+        return 0;
+
+    if (lua->argc() < 1 || !lua->is_table(1))
+    {
+        lua->pushnil();
+        lua->pushstring("datetime table required (e.g. to_lunar(datetime()))");
+        return 2;
+    }
+
+    try
+    {
+        auto solar = datetime_from_lua_table(*lua, 1);
+        push_lunar_table(L, solar.to_lunar());
+        return 1;
+    }
+    catch (const std::exception& e)
+    {
+        lua->pushnil();
+        lua->pushstring(e.what());
+        return 2;
+    }
+}
+
+int builtin::server::builtin_from_lunar(lua_State* L)
+{
+    auto lua = fb::lua::get(L);
+    if (lua == nullptr)
+        return 0;
+
+    if (lua->argc() < 1 || !lua->is_table(1))
+    {
+        lua->pushnil();
+        lua->pushstring("lunar table {year,month,day[,leap]} required");
+        return 2;
+    }
+
+    try
+    {
+        auto lunar   = lunar_from_lua_table(*lua, 1);
+        auto hours   = static_cast<uint16_t>(lua->tointeger(2, 0));
+        auto minutes = static_cast<uint16_t>(lua->tointeger(3, 0));
+        auto seconds = static_cast<uint16_t>(lua->tointeger(4, 0));
+        auto solar   = fb::model::datetime::from_lunar(lunar, hours, minutes, seconds);
+        push_datetime_table(L, solar);
+        return 1;
+    }
+    catch (const std::exception& e)
+    {
+        lua->pushnil();
+        lua->pushstring(e.what());
+        return 2;
+    }
 }
 
 int builtin::server::builtin_name2mob(lua_State* L)
@@ -921,6 +1075,35 @@ int builtin::server::builtin_maps(lua_State* L)
     return 1;
 }
 
+int builtin::server::builtin_find_map(lua_State* L)
+{
+    auto lua = fb::lua::get(L);
+    if (lua == nullptr)
+        return 0;
+
+    auto&                          srv = static_cast<fb::game::server&>(lua->executor);
+    std::shared_ptr<fb::game::map> map;
+
+    if (lua->is_number(1))
+    {
+        map = srv.maps.find(static_cast<uint32_t>(lua->tointeger(1)));
+    }
+    else if (lua->is_string(1))
+    {
+        map = srv.maps.name2map(lua->tostring(1));
+    }
+    else
+    {
+        lua->pushnil();
+        return 1;
+    }
+
+    if (map == nullptr)
+        lua->pushnil();
+    else
+        lua->pushobject(map);
+    return 1;
+}
 int builtin::server::builtin_shutdown(lua_State* L)
 {
     auto lua = fb::lua::get(L);

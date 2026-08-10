@@ -14,6 +14,8 @@ struct server
     static int builtin_time_forward(lua_State* L);
     static int builtin_time_backward(lua_State* L);
     static int builtin_datetime(lua_State* L);
+    static int builtin_to_lunar(lua_State* L);
+    static int builtin_from_lunar(lua_State* L);
     static int builtin_name2mob(lua_State* L);
     static int builtin_name2spell(lua_State* L);
     static int builtin_name2npc(lua_State* L);
@@ -44,6 +46,7 @@ struct server
     static int builtin_reload_table(lua_State* L);
     static int builtin_mknpc(lua_State* L);
     static int builtin_maps(lua_State* L);
+    static int builtin_find_map(lua_State* L);
     static int builtin_shutdown(lua_State* L);
     static int builtin_ban(lua_State* L);
     static int builtin_unban(lua_State* L);

@@ -60,6 +60,8 @@ async::task<void> fb::game::server::init_lua()
         lua.build("time_forward", builtin::server::builtin_time_forward);
         lua.build("time_backward", builtin::server::builtin_time_backward);
         lua.build("datetime", builtin::server::builtin_datetime);
+        lua.build("to_lunar", builtin::server::builtin_to_lunar);
+        lua.build("from_lunar", builtin::server::builtin_from_lunar);
         lua.build("name2mob", builtin::server::builtin_name2mob);
         lua.build("name2spell", builtin::server::builtin_name2spell);
         lua.build("name2item", builtin::server::builtin_name2item);
@@ -90,6 +92,7 @@ async::task<void> fb::game::server::init_lua()
         lua.build("reload_table", builtin::server::builtin_reload_table);
         lua.build("mknpc", builtin::server::builtin_mknpc);
         lua.build("maps", builtin::server::builtin_maps);
+        lua.build("game_map", builtin::server::builtin_find_map);
         lua.build("shutdown", builtin::server::builtin_shutdown);
         lua.build("ban", builtin::server::builtin_ban);
         lua.build("unban", builtin::server::builtin_unban);
@@ -319,6 +322,7 @@ fb::game::server::server(boost::asio::io_context& io_context, uint16_t port) :
     system_storage(*this),
     system_mail(*this),
     schedules(*this),
+    script_timers(*this),
     log(fb::config<std::string>("amqp:log:ip"),
         fb::config<uint16_t>("amqp:log:port"),
         fb::config<std::string>("amqp:log:uid"),

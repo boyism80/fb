@@ -3,7 +3,7 @@ local enum = require('lib.enum')
 
 return {
     on_click = function(me, npc)
-        if property("sesi_rightnow") ~= 5 then
+        if not require('lib.festival').is('단오') then
             local btn = me:dialog(npc, "안녕하세요? 저는 오단미입니다.", { prev = false, next = true })
             if btn == DIALOG_RESULT.QUIT then
                 return
@@ -138,20 +138,17 @@ return {
 
         if sel == 4 then
             if me:isbuff("반짝반짝") then
-                me:mkitem("망개떡", 1)
-                btn = me:dialog(npc, "제가 떡을 준비했는데.. 배고플때 드세요. ^^", { prev = false, next = true })
+                if me:mkitem("망개떡", 1) == nil then
+                    me:dialog(npc, "소지품이 가득 차서 망개떡을 드릴 수 없습니다.", { prev = false, next = false })
+                    return
+                end
+                local btn = me:dialog(npc, "제가 떡을 준비했는데.. 배고플때 드세요. ^^", { prev = false, next = true })
                 if btn == DIALOG_RESULT.QUIT then
                     return
                 end
-                btn = me:dialog(npc, "망개떡을 드릴께요.. 맛있게 드세요~~", { prev = false, next = true })
-                if btn == DIALOG_RESULT.QUIT then
-                    return
-                end
+                me:dialog(npc, "망개떡을 드릴께요.. 맛있게 드세요~~", { prev = false, next = true })
             else
-                btn = me:dialog(npc, "밖의 우물에서 머리를 감고 오세요.", { prev = false, next = true })
-                if btn == DIALOG_RESULT.QUIT then
-                    return
-                end
+                me:dialog(npc, "밖의 우물에서 머리를 감고 오세요.", { prev = false, next = true })
             end
         end
     end

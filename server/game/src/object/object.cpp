@@ -4,6 +4,7 @@
 #include <fb/model/model.h>
 #include <fb/game/object.h>
 #include <format>
+#include <thread>
 
 using namespace fb::game;
 
@@ -332,11 +333,14 @@ bool object::direction(DIRECTION value)
 
     this->_direction = value;
 
-    auto lua = this->server.lua.open("scripts/interaction.lua", "on_direction");
-    if (lua)
+    if (this->is(OBJECT_TYPE::CHARACTER))
     {
-        lua->pushobject(*this);
-        std::ignore = lua->call(1);
+        auto lua = this->server.lua.open("scripts/interaction.lua", "on_direction");
+        if (lua)
+        {
+            lua->pushobject(*this);
+            std::ignore = lua->call(1);
+        }
     }
 
     this->listener.on_direction(*this);
@@ -472,7 +476,20 @@ fb::model::area<uint16_t> object::sight_area() const
 
 async::task<bool> object::map(map_ptr map, std::optional<fb::model::point16_t> position, map_options options)
 {
-    this->assert_thread();
+    if (this->_map == nullptr && map != nullptr)
+    {
+#if defined DEBUG || defined _DEBUG
+        auto* map_thread = map->thread();
+        if (map_thread == nullptr)
+            throw std::runtime_error("active thread is null");
+        if (std::this_thread::get_id() != map_thread->id())
+            throw std::runtime_error("active thread not matched");
+#endif
+    }
+    else
+    {
+        this->assert_thread();
+    }
 
     if (map != nullptr && position.has_value() == false)
         position = map->model().spawn_position();

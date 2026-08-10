@@ -372,30 +372,31 @@ async::task<bool> buffs::remove(uint32_t id)
     if (buff == nullptr)
         co_return false;
 
-    // Execute unbuff script
     auto& model = buff->model();
-    auto  path  = std::format("scripts/spell/{}.lua", model.id);
-    auto  func  = "on_unbuff";
 
-    auto lua = this->_owner.server.lua.open(path, func);
-    if (lua)
-    {
-        lua->pushobject(this->_owner);
-        lua->pushobject(buff->model());
-        std::ignore = lua->call(2);
-    }
-
-    // Call listener for packet response
+    // Notify client before the script runs. on_unbuff may warp the owner
+    // (e.g. spell 72), which changes the active thread and would make
+    // send/message assert if they ran afterward.
     this->_owner.listener.on_unbuff(this->_owner, *buff);
 
-    // Show unbuff message for characters
     if (this->_owner.is(OBJECT_TYPE::CHARACTER))
     {
         auto& ch = static_cast<character&>(this->_owner);
-        ch.message(std::format(_TEXT(MESSAGE_SPELL_UNBUFF), buff->model().name));
+        ch.message(std::format(_TEXT(MESSAGE_SPELL_UNBUFF), model.name));
     }
 
     this->erase(id);
+
+    auto path = std::format("scripts/spell/{}.lua", model.id);
+    auto func = "on_unbuff";
+    auto lua  = this->_owner.server.lua.open(path, func);
+    if (lua)
+    {
+        lua->pushobject(this->_owner);
+        lua->pushobject(model);
+        std::ignore = co_await lua->call(2);
+    }
+
     co_await this->_owner.server.destroy(*buff);
     co_return true;
 }
