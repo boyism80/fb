@@ -29,6 +29,7 @@ local function run_songpyeon_request(me, npc, q)
     if q and not q:completed() then
         q:step(1)
         q:progress(0)
+        festival.stamp_lunar_year(q)
     end
 end
 
@@ -74,10 +75,11 @@ local function run_weeding_handin(me, npc, q)
     end
     q:progress(0)
     q:complete()
+    festival.mark_completed_year(q)
 end
 
 local function run_chuseok(me, npc)
-    local q = me:quest(quest.QUEST_BAEKRIHYANG)
+    local q = quest.get_annual(me, quest.QUEST_BAEKRIHYANG)
     local sel, list_btn = me:list(npc, "무슨일로 절 찾아오셨나요?", {
         "송편재료가 필요해요.",
         "벌초를 하고 왔어요."

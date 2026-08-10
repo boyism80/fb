@@ -1,4 +1,5 @@
 #include <fb/game/handler/timer/gear_timer.h>
+#include <fb/logger.h>
 #include <format>
 
 using namespace fb::game::handler::timer;
@@ -22,6 +23,9 @@ async::task<void> gear_timer::handle(const fb::model::datetime& now, std::thread
         if (map->objects.size() == 0)
             continue;
 
+        // Scripts may leave us on another thread; resume map walk on this timer thread.
+        co_await thread->switching();
+
         auto concast = std::unordered_map<fb::game::character*, std::vector<std::shared_ptr<fb::game::equipment>>>{};
         for (auto& [fd, obj] : map->objects)
         {
@@ -40,14 +44,12 @@ async::task<void> gear_timer::handle(const fb::model::datetime& now, std::thread
                 if (concast.contains(ch.get()) == false)
                     concast.insert({ch.get(), {}});
 
-                auto& model = equipment->model();
                 concast[ch.get()].push_back(equipment);
             }
         }
 
         for (auto& [ch, equipments] : concast)
         {
-            auto weak = ch->weak_from_this();
             for (auto& equipment : equipments)
             {
                 if (lua == nullptr)
@@ -74,23 +76,20 @@ async::task<void> gear_timer::handle(const fb::model::datetime& now, std::thread
 
                     lua->pushobject(ch);
                     lua->pushobject(equipment);
-
-                    try
-                    {
-                        std::ignore = co_await lua->call(2);
-                    }
-                    catch (...)
-                    {
-                        lua = nullptr;
-                        throw;
-                    }
-
-                    co_await this->server.threads.switching(weak);
+                    std::ignore = co_await lua->call(2);
                 }
                 catch (std::exception& e)
                 {
-                    fb::logger::warn("on_gear_timer: {}", e.what());
+                    lua = nullptr;
+                    fb::logger::warn("gear_timer: on_concast failed (map={}): {}", map->id, e.what());
                 }
+                catch (...)
+                {
+                    lua = nullptr;
+                    fb::logger::warn("gear_timer: on_concast failed (map={})", map->id);
+                }
+
+                co_await thread->switching();
             }
         }
     }
@@ -98,5 +97,6 @@ async::task<void> gear_timer::handle(const fb::model::datetime& now, std::thread
     if (lua != nullptr)
         lua->release();
 
+    co_await thread->switching();
     co_return;
 }

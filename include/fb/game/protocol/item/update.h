@@ -3,6 +3,7 @@
 
 #include <fb/protocol/header.h>
 #include <fb/model/model.h>
+#include <string>
 #ifndef BOT
 #include <fb/game/character.h>
 #endif
@@ -18,8 +19,12 @@ public:
 
 public:
 #ifndef BOT
-    const fb::game::character& me;
-    const uint8_t              index;
+    const uint8_t     index;
+    const uint16_t    look;
+    const uint8_t     color;
+    const std::string name;
+    const uint32_t    count;
+    const bool        valid;
 #else
     uint8_t     index;
     uint16_t    look;
@@ -31,8 +36,15 @@ public:
 public:
 #ifndef BOT
     item_update(const fb::game::character& me, uint8_t index);
+    item_update(uint8_t index, uint16_t look, uint8_t color, std::string name, uint32_t count);
 #else
     item_update() = default;
+#endif
+
+private:
+#ifndef BOT
+    item_update(uint8_t index, uint16_t look, uint8_t color, std::string name, uint32_t count, bool valid);
+    static item_update from_inventory(const fb::game::character& me, uint8_t index);
 #endif
 
 public:

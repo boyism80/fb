@@ -9,6 +9,9 @@ local FESTIVALS = {
     ['유두'] = { month = 6, day_begin = 15, day_end = 15 },
     ['칠석'] = { month = 7, day_begin = 7, day_end = 7 },
     ['추석'] = { month = 8, day_begin = 15, day_end = 15 },
+    ['중양절'] = { month = 9, day_begin = 9, day_end = 9 },
+    ['김장'] = { month = 10, day_begin = 1, day_end = 30 },
+    ['섣달'] = { month = 12, day_begin = 21, day_end = 30 },
     ['동지'] = { month = 11, day_begin = 1, day_end = 30 },
 }
 
@@ -37,6 +40,70 @@ function M.is(name)
         return false
     end
     return true
+end
+
+-- Lunar calendar year for annual festival quest resets.
+function M.lunar_year()
+    local lunar = to_lunar(datetime())
+    if lunar == nil then
+        return 0
+    end
+    return lunar.year or 0
+end
+
+-- If the quest was completed (or stamped) in a previous lunar year, clear it for replay.
+-- Param convention: leading number is lunar year (e.g. "2026" or "2026:0:0:0").
+function M.ensure_current_lunar_year(q)
+    if q == nil then
+        return M.lunar_year()
+    end
+
+    local year = M.lunar_year()
+    local p = q:param() or ''
+    local stored = tonumber(string.match(p, '^(%d+)'))
+
+    if q:completed() then
+        if stored == nil or stored < year then
+            q:resume()
+            q:step(0)
+            q:progress(0)
+            q:param('')
+        end
+        return year
+    end
+
+    if stored ~= nil and stored < year then
+        q:step(0)
+        q:progress(0)
+        q:param('')
+    elseif stored == nil and (q:step() > 0 or q:progress() > 0) then
+        -- Legacy in-progress without a year stamp: bind to this lunar year.
+        q:param(tostring(year))
+    end
+    return year
+end
+
+-- Record the current lunar year as the completion stamp (call before/with complete).
+function M.mark_completed_year(q)
+    if q == nil then
+        return
+    end
+    q:param(tostring(M.lunar_year()))
+end
+
+-- Stamp or refresh the leading lunar year on an in-progress param (keeps "YEAR:rest").
+function M.stamp_lunar_year(q)
+    if q == nil then
+        return
+    end
+    local year = M.lunar_year()
+    local p = q:param() or ''
+    local rest = string.match(p, '^%d+:(.*)$')
+    if rest ~= nil then
+        q:param(string.format('%d:%s', year, rest))
+    else
+        q:param(tostring(year))
+    end
 end
 
 -- 칠성당 입장/고사: 0,3,6,9,12,15,18,21

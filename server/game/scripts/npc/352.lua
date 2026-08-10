@@ -6,7 +6,7 @@ local function run_junghwa(me, npc)
     if not festival.is('중화절') then
         return false
     end
-    local q = me:quest(quest.QUEST_BAEK_MONGYEON)
+    local q = quest.get_annual(me, quest.QUEST_BAEK_MONGYEON)
     if q == nil or q:step() < 1 then
         return false
     end
@@ -168,7 +168,7 @@ local function run_chuseok(me, npc)
     if not festival.is('추석') then
         return false
     end
-    local q = me:quest(quest.QUEST_BAEKRIHYANG)
+    local q = quest.get_annual(me, quest.QUEST_BAEKRIHYANG)
     local sel, list_btn = me:list(npc, "무슨일로 오셨나요?", { "벌초를 하고 왔어요", "식용호박이 없어서..." }, { prev = false })
     if list_btn == DIALOG_RESULT.QUIT then
         return true
@@ -202,6 +202,173 @@ local function run_chuseok(me, npc)
     return true
 end
 
+local function run_jungyang(me, npc)
+    if not festival.is('중양절') then
+        return false
+    end
+
+    local btn = me:dialog(npc, "국화가 필요하시다구요.. 제가 모아놓은 국화를 드리도록 하죠.", { prev = false, next = true })
+    if btn == DIALOG_RESULT.QUIT then
+        return true
+    end
+
+    local t = datetime()
+    local day_key = 0
+    if t ~= nil then
+        day_key = (t.year or 0) * 10000 + (t.month or 0) * 100 + (t.day or 0)
+    end
+
+    local q = quest.get_annual(me, quest.QUEST_JUNGYANG_GUKHWA)
+    local given = 0
+    local last_day = 0
+    if q ~= nil and q:param() ~= nil and q:param() ~= "" then
+        local a, b = string.match(q:param(), "^(%d+):(%d+)$")
+        last_day = tonumber(a) or 0
+        given = tonumber(b) or 0
+        if last_day ~= day_key then
+            given = 0
+        end
+    end
+
+    if given >= 10 then
+        me:dialog(npc, "오늘은 이미 국화를 충분히 드렸답니다. 내일 다시 오세요. (하루 10병)", { prev = false, next = false })
+        return true
+    end
+
+    if me:mkitem("국화", 1) == nil then
+        me:dialog(npc, "소지품이 가득 차서 국화를 줄 수 없습니다.", { prev = false, next = false })
+        return true
+    end
+
+    given = given + 1
+    if q == nil then
+        q = me:start_quest(quest.QUEST_JUNGYANG_GUKHWA)
+    end
+    if q ~= nil then
+        q:param(string.format("%d:%d", day_key, given))
+    end
+
+    me:dialog(npc, "국화가 여기 있습니다. 그럼 잘 사용하세요..", { prev = false, next = true })
+    return true
+end
+
+local function seotdal_flags(q)
+    local p = (q ~= nil and q:param()) or ''
+    local y, w, d, b = string.match(p, '^(%d+):(%d+):(%d+):(%d+)$')
+    if y ~= nil then
+        return tonumber(w) or 0, tonumber(d) or 0, tonumber(b) or 0
+    end
+    w, d, b = string.match(p, '^(%d+):(%d+):(%d+)$')
+    return tonumber(w) or 0, tonumber(d) or 0, tonumber(b) or 0
+end
+
+local function set_seotdal_flags(q, w, d, b)
+    local year = festival.lunar_year()
+    q:param(string.format('%d:%d:%d:%d', year, w, d, b))
+end
+
+local function run_seotdal(me, npc)
+    if not festival.is('섣달') then
+        return false
+    end
+
+    local q = quest.get_annual(me, quest.QUEST_SEOTDAL_GIFTS)
+    if q == nil or q:step() < 1 or q:completed() then
+        return false
+    end
+
+    local w, d, b = seotdal_flags(q)
+    if w == 1 then
+        me:dialog(npc, "이미 김장김치를 받았어요. 제기는 선릉이에게 잘 전해 주세요.", { prev = false, next = false })
+        return true
+    end
+
+    if not me:has_items('김장김치', 1) then
+        return false
+    end
+
+    local btn = me:dialog(npc, "선릉이가 김장김치를 보냈군요. 고맙습니다.", { prev = false, next = true })
+    if btn == DIALOG_RESULT.QUIT then
+        return true
+    end
+    btn = me:dialog(npc, "답례로 제기를 드릴게요. 선릉이에게 전해 주세요.", { prev = false, next = true })
+    if btn == DIALOG_RESULT.QUIT then
+        return true
+    end
+
+    local code = me:exchange(
+        { ['item'] = { ['김장김치'] = 1 } },
+        { ['item'] = { ['제기'] = 1 } }
+    )
+    if code == enum.exchange_result.LACK_COST then
+        me:dialog(npc, "김장김치를 가지고 오세요.", { prev = false, next = false })
+        return true
+    end
+    if code == enum.exchange_result.LACK_CAPACITY then
+        me:dialog(npc, "소지품이 가득 차서 제기를 드릴 수 없습니다.", { prev = false, next = false })
+        return true
+    end
+
+    set_seotdal_flags(q, 1, d, b)
+    me:dialog(npc, "선릉이에게 제기 잘 전해 주세요.", { prev = false, next = true })
+    return true
+end
+
+local function run_kimjang(me, npc)
+    if not me:has_items('파김치', 1) then
+        return false
+    end
+
+    local q = quest.get_annual(me, quest.QUEST_KIMJANG)
+    if q ~= nil and q:completed() then
+        return false
+    end
+
+    -- yeondailyy screenshots
+    local btn = me:dialog(npc, "파김치를 담그셨군요! 저에게도 좀 주시면 안될까요?", { prev = false, next = true })
+    if btn == DIALOG_RESULT.QUIT then
+        return true
+    end
+
+    local sel, list_btn = me:list(npc, "파김치를 저에게 주시겠어요?", {
+        "네. 드릴께요",
+        "안돼요.",
+    }, { prev = false })
+    if list_btn == DIALOG_RESULT.QUIT or sel == nil then
+        return true
+    end
+    if sel ~= 1 then
+        return true
+    end
+
+    local code = me:exchange(
+        { ['item'] = { ['파김치'] = 1 } },
+        { ['item'] = { ['고사반'] = 1 } }
+    )
+    if code == enum.exchange_result.LACK_COST or code == enum.exchange_result.LACK_CAPACITY then
+        return true
+    end
+
+    if q == nil then
+        q = me:start_quest(quest.QUEST_KIMJANG)
+    end
+    if q ~= nil then
+        q:complete()
+        festival.mark_completed_year(q)
+    end
+
+    btn = me:dialog(npc, "어머.. 감사합니다. 그럼 저도 보답으로 뭔가 드려야 할텐데...", { prev = false, next = true })
+    if btn == DIALOG_RESULT.QUIT then
+        return true
+    end
+    btn = me:dialog(npc, "고사반을 드릴께요. 고사반은 장수를 의미하는 실타래를 숟가락에 감아서 쌀이 담아져 있는 그릇에 꽂은거에요", { prev = false, next = true })
+    if btn == DIALOG_RESULT.QUIT then
+        return true
+    end
+    me:dialog(npc, "매달 아이템을 모으시고 계신가요? 고사반도 나머지 11개의 아이템과 함께 가지고 계시면 좋은일이 생길꺼에요.", { prev = false, next = true })
+    return true
+end
+
 return {
     on_click = function(me, npc)
         local btn = me:dialog(npc, "저는 이 마을 촌장의 부인되는 목원지라고 합니다.", { prev = false, next = true })
@@ -225,6 +392,15 @@ return {
             return
         end
         if run_chuseok(me, npc) then
+            return
+        end
+        if run_jungyang(me, npc) then
+            return
+        end
+        if run_seotdal(me, npc) then
+            return
+        end
+        if run_kimjang(me, npc) then
             return
         end
     end

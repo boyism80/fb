@@ -91,7 +91,7 @@ local function run_chuseok(me, npc)
 end
 
 local function run_junghwa(me, npc)
-    local q = me:quest(quest.QUEST_BAEK_MONGYEON)
+    local q = quest.get_annual(me, quest.QUEST_BAEK_MONGYEON)
     if q == nil or q:step() < 1 then
         me:dialog(npc, "준비중입니다.", { prev = false, next = false })
         return

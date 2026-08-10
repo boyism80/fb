@@ -28,7 +28,7 @@ return {
             return
         end
 
-        local q = me:quest(quest.QUEST_BAEKRIHYANG)
+        local q = quest.get_annual(me, quest.QUEST_BAEKRIHYANG)
         if q == nil or q:completed() or q:step() < 1 then
             return
         end

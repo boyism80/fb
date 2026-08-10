@@ -66,6 +66,7 @@ protected:
     // clang-format off
     mob_vector        damage_targets(const damage_list& targets, const damage_opts& opts);
     async::task<void> settle_deaths(mob_vector dead);
+    async::task<void> invoke_on_mob_damaged(const damage_list& targets);
     // clang-format on
 
 public:

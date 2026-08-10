@@ -200,8 +200,52 @@ async::task<void> life::damage_to(const damage_list& targets, const damage_opts&
 {
     this->assert_thread();
     auto dead = this->damage_targets(targets, opts);
+    co_await this->invoke_on_mob_damaged(targets);
     if (dead.empty() == false)
         co_await this->settle_deaths(std::move(dead));
+    co_return;
+}
+
+async::task<void> life::invoke_on_mob_damaged(const damage_list& targets)
+{
+    this->assert_thread();
+
+    auto attacker = this->shared_from_this_as<life>();
+    for (auto& [target, value] : targets)
+    {
+        if (target == nullptr || target->is(OBJECT_TYPE::MOB) == false)
+            continue;
+
+        auto m    = std::static_pointer_cast<mob>(target);
+        auto path = std::format("scripts/mob/{}.lua", m->model().id);
+        auto func = "on_mob_damaged";
+
+        // Avoid open(path, func) — it reports missing funcs for every generic mob.
+        auto lua = this->server.lua.new_context(nullptr, {.auto_release = false});
+        if (lua == nullptr)
+            continue;
+        if (lua->load(path) == false || lua->func(func) == false)
+        {
+            lua->release();
+            continue;
+        }
+
+        lua->pushobject(m);
+        lua->pushobject(attacker);
+        try
+        {
+            std::ignore = co_await lua->call(2);
+        }
+        catch (std::exception& e)
+        {
+            fb::logger::warn("error in on_mob_damaged {}: {}", m->model().id, e.what());
+        }
+        catch (...)
+        {
+            fb::logger::warn("unknown error in on_mob_damaged {}", m->model().id);
+        }
+        lua->release();
+    }
     co_return;
 }
 

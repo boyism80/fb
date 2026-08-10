@@ -508,7 +508,7 @@ M.functions = {
     
     ['변신'] = {
         ['privilege'] = ROLE.ADMIN,
-        ['usage'] = '<변신ID> - 변신',
+        ['usage'] = '<변신ID> - 변신 (mob.json raw look, +0x7FFF 보정)',
         ['command'] = function (me, args)
             local value = table.unpack(args)
             if not value then
@@ -520,7 +520,14 @@ M.functions = {
                 me:message("변신 ID는 0 이상의 숫자여야 합니다.")
                 return true
             end
-            me:mimic({ disguise = value })
+            -- mob/npc table look = json raw + 0x7FFF (server.init build hook)
+            local MOB_LOOK_OFFSET = 0x7FFF
+            local wire = value
+            if value < MOB_LOOK_OFFSET then
+                wire = value + MOB_LOOK_OFFSET
+            end
+            me:mimic({ disguise = wire })
+            me:message(string.format("변신 raw=%d wire=%d", value, wire))
             return true
         end,
     },
@@ -1002,6 +1009,55 @@ M.functions = {
                 end
 
                 me:mkitem(name, count, true, expire_sec)
+                return true
+            end,
+        },
+
+        ['룩미리보기'] = {
+            ['privilege'] = ROLE.ADMIN,
+            ['usage'] = '<look> [개수] [색] - 빈 슬롯에 가짜 인벤 아이콘 미리보기 (item.json raw look)',
+            ['command'] = function (me, args)
+                local look = tonumber(args[1])
+                if look == nil or look < 0 then
+                    me:message("사용법: /룩미리보기 <look> [개수] [색]")
+                    return true
+                end
+
+                local count = 1
+                if args[2] ~= nil then
+                    count = tonumber(args[2])
+                    if not count or count < 1 then
+                        me:message("개수는 1 이상의 숫자여야 합니다.")
+                        return true
+                    end
+                end
+
+                local color = 0
+                if args[3] ~= nil then
+                    color = tonumber(args[3])
+                    if color == nil or color < 0 then
+                        me:message("색은 0 이상의 숫자여야 합니다.")
+                        return true
+                    end
+                end
+
+                local ITEM_LOOK_OFFSET = 0xBFFF
+                local sent = me:preview_item_looks(look, count, color)
+                if sent == nil or sent <= 0 then
+                    me:message("빈 인벤 슬롯이 없습니다.")
+                    return true
+                end
+
+                local raw_end = look + sent - 1
+                local function to_wire(raw)
+                    if raw >= ITEM_LOOK_OFFSET then
+                        return raw
+                    end
+                    return raw + ITEM_LOOK_OFFSET
+                end
+                me:message(string.format(
+                    "룩미리보기 %d개 (시각만, 실제 아이템 아님) raw=%d..%d wire=%d..%d",
+                    sent, look, raw_end, to_wire(look), to_wire(raw_end)))
                 return true
             end,
         },

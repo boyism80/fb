@@ -11,6 +11,8 @@ return {
     -- on_mob_kill = function(me, mobs)
     -- end,
 
-    -- on_mob_spell_hit = function(me, you, spell)
-    -- end
+    on_mob_spell_hit = function(me, you, spell)
+        me:hp(me:maxhp())
+        return false
+    end
 }

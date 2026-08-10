@@ -1747,6 +1747,7 @@ async::task<void> character::damage_to(const damage_list& targets, const damage_
 {
     this->assert_thread();
     auto dead = this->damage_targets(targets, opts);
+    co_await this->invoke_on_mob_damaged(targets);
     if (dead.empty() == false)
         co_await this->settle_kills(std::move(dead));
     co_return;

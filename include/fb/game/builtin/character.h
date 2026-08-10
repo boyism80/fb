@@ -21,6 +21,7 @@ struct character
     static int builtin_item_drop(lua_State* L);
     static int builtin_mkitem(lua_State* L);
     static int builtin_rmitem(lua_State* L);
+    static int builtin_preview_item_looks(lua_State* L);
     static int builtin_exchange(lua_State* L);
     static int builtin_state(lua_State* L);
     static int builtin_mimic(lua_State* L);

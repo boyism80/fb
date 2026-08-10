@@ -11,6 +11,9 @@ return {
     -- on_mob_kill = function(me, mobs)
     -- end,
 
-    -- on_mob_spell_hit = function(me, you, spell)
-    -- end
+    -- Belt-and-suspenders if invincible was not set at spawn.
+    on_mob_spell_hit = function(me, you, spell)
+        me:hp(me:maxhp())
+        return false
+    end
 }

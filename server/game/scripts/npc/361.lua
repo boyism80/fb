@@ -4,7 +4,7 @@ local enum = require('lib.enum')
 local festival = require('lib.festival')
 
 local function run_junghwa(me, npc)
-    local q = me:quest(quest.QUEST_BAEK_MONGYEON)
+    local q = quest.get_annual(me, quest.QUEST_BAEK_MONGYEON)
     if q == nil or q:step() < 1 then
         me:dialog(npc, "준비중입니다.", { prev = false, next = false })
         return
@@ -239,6 +239,32 @@ local function run_chilseok(me, npc)
     end
 end
 
+local function run_kimjang(me, npc)
+    -- yeondailyy screenshots: list prompt + 칠석이벤트 → salt dialog
+    local sel, list_btn = me:list(npc, "안녕하세요. 어떻게 오셨나요?", {
+        "칠석이벤트",
+        "견우와 직녀의 만남 축하",
+    }, { prev = false })
+    if list_btn == DIALOG_RESULT.QUIT or sel == nil then
+        return
+    end
+
+    if sel ~= 1 then
+        return
+    end
+
+    if me:has_items("소금", 1) then
+        return
+    end
+
+    local btn = me:dialog(npc, "김장김치를 담그나보네요.. 소금은 여기 있습니다. 맛있는 김치 담그세요~", { prev = false, next = true })
+    if btn == DIALOG_RESULT.QUIT then
+        return
+    end
+
+    me:mkitem("소금", 1)
+end
+
 return {
     on_click = function(me, npc)
         local button = me:dialog(npc, "안녕하세요? 저는 백주연입니다.", { prev = false, next = true })
@@ -246,7 +272,9 @@ return {
             return
         end
 
-        if festival.is('동지') then
+        if festival.is('김장') then
+            run_kimjang(me, npc)
+        elseif festival.is('동지') then
             run_dongji(me, npc)
         elseif festival.is('칠석') then
             run_chilseok(me, npc)

@@ -39,7 +39,7 @@ return {
             if btn == DIALOG_RESULT.QUIT then
                 return
             end
-            btn = me:dialog(npc, "음력 9월 9일 중앙절에 강남갔던 제비가 돌아오는 날이라고도 해요. 요즘 세시마을에서 제비가 날아다니는거 보셨나요?", { prev = false, next = true })
+            btn = me:dialog(npc, "음력 9월 9일 중양절에 강남갔던 제비가 돌아오는 날이라고도 해요. 요즘 세시마을에서 제비가 날아다니는거 보셨나요?", { prev = false, next = true })
             if btn == DIALOG_RESULT.QUIT then
                 return
             end
