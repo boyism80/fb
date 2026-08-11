@@ -9,6 +9,26 @@
 using namespace fb::game;
 namespace internal_resp = fb::protocol::internal::response;
 
+namespace {
+
+std::vector<std::shared_ptr<character>> online_members(const std::shared_ptr<clan>& clan)
+{
+    auto result = std::vector<std::shared_ptr<character>>{};
+    if (clan == nullptr)
+        return result;
+
+    for (auto& [uid, weak] : clan->characters())
+    {
+        std::ignore = uid;
+        auto shared = weak.lock();
+        if (shared != nullptr)
+            result.push_back(shared);
+    }
+    return result;
+}
+
+} // namespace
+
 async::task<void> clan::container::apply_updated(const internal_resp::UpdatedClan& resp)
 {
     co_await this->on_error(resp.error);
@@ -46,6 +66,22 @@ async::task<void> clan::container::apply_updated(const internal_resp::UpdatedCla
 
     case internal::ClanActionType::SetTitle:
         co_await this->on_set_title(resp.clan_id, resp.new_title);
+        break;
+
+    case internal::ClanActionType::Ally:
+        co_await this->on_ally(resp.clan_id, resp.related_clan_id);
+        break;
+
+    case internal::ClanActionType::Unally:
+        co_await this->on_unally(resp.clan_id, resp.related_clan_id);
+        break;
+
+    case internal::ClanActionType::Enemy:
+        co_await this->on_enemy(resp.clan_id, resp.related_clan_id);
+        break;
+
+    case internal::ClanActionType::Unenemy:
+        co_await this->on_unenemy(resp.clan_id, resp.related_clan_id);
         break;
 
     default:
@@ -389,6 +425,113 @@ async::task<void> clan::container::on_kick(uint32_t clan_id, std::optional<std::
     this->_server.characters.foreach_enqueue(
         [message](auto& member) -> async::task<void> {
             member->message(message, MESSAGE_TYPE::NOTIFY);
+            co_return;
+        },
+        members);
+}
+
+async::task<void> clan::container::on_ally(uint32_t clan_id, std::optional<uint32_t> related_clan_id)
+{
+    if (related_clan_id.has_value() == false)
+        co_return;
+
+    auto other_id = related_clan_id.value();
+
+    auto guard = co_await this->ensure(clan_id);
+    if (guard.value() != nullptr)
+        guard.value()->allied_clan_id(other_id);
+
+    auto other_guard = co_await this->ensure(other_id);
+    if (other_guard.value() != nullptr)
+        other_guard.value()->allied_clan_id(clan_id);
+
+    auto members = online_members(guard.value());
+    auto others  = online_members(other_guard.value());
+    members.insert(members.end(), others.begin(), others.end());
+
+    this->_server.characters.foreach_enqueue(
+        [](auto& member) -> async::task<void> {
+            member->update_external(false);
+            co_return;
+        },
+        members);
+}
+
+async::task<void> clan::container::on_unally(uint32_t clan_id, std::optional<uint32_t> related_clan_id)
+{
+    auto guard = co_await this->ensure(clan_id);
+    if (guard.value() != nullptr)
+        guard.value()->allied_clan_id(std::nullopt);
+
+    auto members = online_members(guard.value());
+
+    if (related_clan_id.has_value())
+    {
+        auto other_guard = co_await this->ensure(related_clan_id.value());
+        if (other_guard.value() != nullptr)
+            other_guard.value()->allied_clan_id(std::nullopt);
+
+        auto others = online_members(other_guard.value());
+        members.insert(members.end(), others.begin(), others.end());
+    }
+
+    this->_server.characters.foreach_enqueue(
+        [](auto& member) -> async::task<void> {
+            member->update_external(false);
+            co_return;
+        },
+        members);
+}
+
+async::task<void> clan::container::on_enemy(uint32_t clan_id, std::optional<uint32_t> related_clan_id)
+{
+    if (related_clan_id.has_value() == false)
+        co_return;
+
+    auto other_id = related_clan_id.value();
+
+    auto guard = co_await this->ensure(clan_id);
+    if (guard.value() != nullptr)
+        guard.value()->add_enemy_clan(other_id);
+
+    auto other_guard = co_await this->ensure(other_id);
+    if (other_guard.value() != nullptr)
+        other_guard.value()->add_enemy_clan(clan_id);
+
+    auto members = online_members(guard.value());
+    auto others  = online_members(other_guard.value());
+    members.insert(members.end(), others.begin(), others.end());
+
+    this->_server.characters.foreach_enqueue(
+        [](auto& member) -> async::task<void> {
+            member->update_external(false);
+            co_return;
+        },
+        members);
+}
+
+async::task<void> clan::container::on_unenemy(uint32_t clan_id, std::optional<uint32_t> related_clan_id)
+{
+    if (related_clan_id.has_value() == false)
+        co_return;
+
+    auto other_id = related_clan_id.value();
+
+    auto guard = co_await this->ensure(clan_id);
+    if (guard.value() != nullptr)
+        guard.value()->remove_enemy_clan(other_id);
+
+    auto other_guard = co_await this->ensure(other_id);
+    if (other_guard.value() != nullptr)
+        other_guard.value()->remove_enemy_clan(clan_id);
+
+    auto members = online_members(guard.value());
+    auto others  = online_members(other_guard.value());
+    members.insert(members.end(), others.begin(), others.end());
+
+    this->_server.characters.foreach_enqueue(
+        [](auto& member) -> async::task<void> {
+            member->update_external(false);
             co_return;
         },
         members);

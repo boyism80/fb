@@ -1,12 +1,14 @@
 #include <fb/game/clan.h>
 #include <fb/game/server.h>
 #include <fb/game/builtin/clan.h>
+#include <macro.h>
 #include <string_view>
 
 using namespace fb::game;
 
 // clang-format off
 IMPLEMENT_LUA_EXTENSION(clan, "fb.game.clan")
+{"id",                  builtin::clan::builtin_id},
 {"name",                builtin::clan::builtin_name},
 {"members",             builtin::clan::builtin_members},
 {"nears",               builtin::clan::builtin_nears},
@@ -16,7 +18,29 @@ IMPLEMENT_LUA_EXTENSION(clan, "fb.game.clan")
 {"kick",                builtin::clan::builtin_kick},
 {"change_role",         builtin::clan::builtin_change_role},
 {"message",             builtin::clan::builtin_message},
+{"allied_clan_id",      builtin::clan::builtin_allied_clan_id},
+{"enemy_clan_ids",      builtin::clan::builtin_enemy_clan_ids},
+{"is_allied",           builtin::clan::builtin_is_allied},
+{"is_hostile",          builtin::clan::builtin_is_hostile},
+{"request_ally",        builtin::clan::builtin_request_ally},
+{"break_ally",          builtin::clan::builtin_break_ally},
+{"declare_enemy",       builtin::clan::builtin_declare_enemy},
+{"end_enemy",           builtin::clan::builtin_end_enemy},
 END_LUA_EXTENSION; // clang-format on
+
+int builtin::clan::builtin_id(lua_State* L)
+{
+    auto lua = fb::lua::get(L);
+    if (lua == nullptr)
+        return 0;
+
+    auto clan = lua->touserdata<fb::game::clan>(1);
+    if (clan == nullptr)
+        return 0;
+
+    lua->pushinteger(clan->id());
+    return 1;
+}
 
 int builtin::clan::builtin_name(lua_State* L)
 {
@@ -368,6 +392,298 @@ int builtin::clan::builtin_message(lua_State* L)
         try
         {
             co_await server.clans.broadcast(clan_id, message, type);
+        }
+        catch (std::exception& e)
+        {
+            *error = e.what();
+        }
+    };
+    builder.resume = [=]() -> async::task<int> {
+        if (error->has_value())
+            lua->pushstring(error->value().c_str());
+        else
+            lua->pushnil();
+        co_return 1;
+    };
+    return builder.run();
+}
+
+int builtin::clan::builtin_allied_clan_id(lua_State* L)
+{
+    auto lua = fb::lua::get(L);
+    if (lua == nullptr)
+        return 0;
+
+    auto clan = lua->touserdata<fb::game::clan>(1);
+    if (clan == nullptr)
+        return 0;
+
+    auto& allied = clan->allied_clan_id();
+    if (allied.has_value())
+        lua->pushinteger(allied.value());
+    else
+        lua->pushnil();
+    return 1;
+}
+
+int builtin::clan::builtin_enemy_clan_ids(lua_State* L)
+{
+    auto lua = fb::lua::get(L);
+    if (lua == nullptr)
+        return 0;
+
+    auto clan = lua->touserdata<fb::game::clan>(1);
+    if (clan == nullptr)
+        return 0;
+
+    lua->new_table();
+    auto i = 0;
+    for (auto enemy_id : clan->enemy_clan_ids())
+    {
+        lua->pushinteger(enemy_id);
+        lua_rawseti(L, -2, ++i);
+    }
+    return 1;
+}
+
+int builtin::clan::builtin_is_allied(lua_State* L)
+{
+    auto lua = fb::lua::get(L);
+    if (lua == nullptr)
+        return 0;
+
+    auto clan = lua->touserdata<fb::game::clan>(1);
+    if (clan == nullptr)
+        return 0;
+
+    std::optional<uint32_t> other_id;
+    if (lua->is_number(2))
+        other_id = static_cast<uint32_t>(lua->tointeger(2));
+    else if (auto other = lua->touserdata<fb::game::clan>(2); other != nullptr)
+        other_id = other->id();
+
+    if (other_id.has_value() == false)
+        return 0;
+
+    lua->pushboolean(clan->is_allied(other_id.value()));
+    return 1;
+}
+
+int builtin::clan::builtin_is_hostile(lua_State* L)
+{
+    auto lua = fb::lua::get(L);
+    if (lua == nullptr)
+        return 0;
+
+    auto clan = lua->touserdata<fb::game::clan>(1);
+    if (clan == nullptr)
+        return 0;
+
+    std::optional<uint32_t> other_id;
+    if (lua->is_number(2))
+        other_id = static_cast<uint32_t>(lua->tointeger(2));
+    else if (auto other = lua->touserdata<fb::game::clan>(2); other != nullptr)
+        other_id = other->id();
+
+    if (other_id.has_value() == false)
+        return 0;
+
+    lua->pushboolean(clan->is_hostile(other_id.value()));
+    return 1;
+}
+
+int builtin::clan::builtin_request_ally(lua_State* L)
+{
+    auto lua = fb::lua::get(L);
+    if (lua == nullptr)
+        return 0;
+
+    auto clan = lua->touserdata<fb::game::clan>(1);
+    if (clan == nullptr)
+        return 0;
+
+    auto requester = lua->touserdata<fb::game::character>(2);
+    if (requester == nullptr)
+        return 0;
+
+    std::optional<uint32_t> target_clan_id;
+    if (lua->is_number(3))
+        target_clan_id = static_cast<uint32_t>(lua->tointeger(3));
+    else if (auto other = lua->touserdata<fb::game::clan>(3); other != nullptr)
+        target_clan_id = other->id();
+
+    if (target_clan_id.has_value() == false)
+    {
+        lua->pushstring(_TEXT(MESSAGE_CLAN_TARGET_NOT_FOUND));
+        return 1;
+    }
+
+    auto weak_ptr = requester->weak_from_this_as<fb::game::character>();
+    auto error    = std::make_shared<std::optional<std::string>>();
+    auto builder  = lua->new_co_builder();
+    builder.weak  = weak_ptr;
+    builder.yield = [=]() -> async::task<void> {
+        auto& server = static_cast<fb::game::server&>(lua->executor);
+        try
+        {
+            auto shared_ptr = weak_ptr.lock();
+            if (shared_ptr == nullptr)
+                throw std::runtime_error("character is not alive");
+
+            co_await server.clans.request_ally(*shared_ptr, target_clan_id.value());
+        }
+        catch (std::exception& e)
+        {
+            *error = e.what();
+        }
+    };
+    builder.resume = [=]() -> async::task<int> {
+        if (error->has_value())
+            lua->pushstring(error->value().c_str());
+        else
+            lua->pushnil();
+        co_return 1;
+    };
+    return builder.run();
+}
+
+int builtin::clan::builtin_break_ally(lua_State* L)
+{
+    auto lua = fb::lua::get(L);
+    if (lua == nullptr)
+        return 0;
+
+    auto clan = lua->touserdata<fb::game::clan>(1);
+    if (clan == nullptr)
+        return 0;
+
+    auto requester = lua->touserdata<fb::game::character>(2);
+    if (requester == nullptr)
+        return 0;
+
+    auto weak_ptr = requester->weak_from_this_as<fb::game::character>();
+    auto error    = std::make_shared<std::optional<std::string>>();
+    auto builder  = lua->new_co_builder();
+    builder.weak  = weak_ptr;
+    builder.yield = [=]() -> async::task<void> {
+        auto& server = static_cast<fb::game::server&>(lua->executor);
+        try
+        {
+            auto shared_ptr = weak_ptr.lock();
+            if (shared_ptr == nullptr)
+                throw std::runtime_error("character is not alive");
+
+            co_await server.clans.break_ally(*shared_ptr);
+        }
+        catch (std::exception& e)
+        {
+            *error = e.what();
+        }
+    };
+    builder.resume = [=]() -> async::task<int> {
+        if (error->has_value())
+            lua->pushstring(error->value().c_str());
+        else
+            lua->pushnil();
+        co_return 1;
+    };
+    return builder.run();
+}
+
+int builtin::clan::builtin_declare_enemy(lua_State* L)
+{
+    auto lua = fb::lua::get(L);
+    if (lua == nullptr)
+        return 0;
+
+    auto clan = lua->touserdata<fb::game::clan>(1);
+    if (clan == nullptr)
+        return 0;
+
+    auto requester = lua->touserdata<fb::game::character>(2);
+    if (requester == nullptr)
+        return 0;
+
+    std::optional<uint32_t> target_clan_id;
+    if (lua->is_number(3))
+        target_clan_id = static_cast<uint32_t>(lua->tointeger(3));
+    else if (auto other = lua->touserdata<fb::game::clan>(3); other != nullptr)
+        target_clan_id = other->id();
+
+    if (target_clan_id.has_value() == false)
+    {
+        lua->pushstring(_TEXT(MESSAGE_CLAN_TARGET_NOT_FOUND));
+        return 1;
+    }
+
+    auto weak_ptr = requester->weak_from_this_as<fb::game::character>();
+    auto error    = std::make_shared<std::optional<std::string>>();
+    auto builder  = lua->new_co_builder();
+    builder.weak  = weak_ptr;
+    builder.yield = [=]() -> async::task<void> {
+        auto& server = static_cast<fb::game::server&>(lua->executor);
+        try
+        {
+            auto shared_ptr = weak_ptr.lock();
+            if (shared_ptr == nullptr)
+                throw std::runtime_error("character is not alive");
+
+            co_await server.clans.declare_enemy(*shared_ptr, target_clan_id.value());
+        }
+        catch (std::exception& e)
+        {
+            *error = e.what();
+        }
+    };
+    builder.resume = [=]() -> async::task<int> {
+        if (error->has_value())
+            lua->pushstring(error->value().c_str());
+        else
+            lua->pushnil();
+        co_return 1;
+    };
+    return builder.run();
+}
+
+int builtin::clan::builtin_end_enemy(lua_State* L)
+{
+    auto lua = fb::lua::get(L);
+    if (lua == nullptr)
+        return 0;
+
+    auto clan = lua->touserdata<fb::game::clan>(1);
+    if (clan == nullptr)
+        return 0;
+
+    auto requester = lua->touserdata<fb::game::character>(2);
+    if (requester == nullptr)
+        return 0;
+
+    std::optional<uint32_t> target_clan_id;
+    if (lua->is_number(3))
+        target_clan_id = static_cast<uint32_t>(lua->tointeger(3));
+    else if (auto other = lua->touserdata<fb::game::clan>(3); other != nullptr)
+        target_clan_id = other->id();
+
+    if (target_clan_id.has_value() == false)
+    {
+        lua->pushstring(_TEXT(MESSAGE_CLAN_TARGET_NOT_FOUND));
+        return 1;
+    }
+
+    auto weak_ptr = requester->weak_from_this_as<fb::game::character>();
+    auto error    = std::make_shared<std::optional<std::string>>();
+    auto builder  = lua->new_co_builder();
+    builder.weak  = weak_ptr;
+    builder.yield = [=]() -> async::task<void> {
+        auto& server = static_cast<fb::game::server&>(lua->executor);
+        try
+        {
+            auto shared_ptr = weak_ptr.lock();
+            if (shared_ptr == nullptr)
+                throw std::runtime_error("character is not alive");
+
+            co_await server.clans.end_enemy(*shared_ptr, target_clan_id.value());
         }
         catch (std::exception& e)
         {

@@ -6,6 +6,7 @@
 #include <fb/game/lazy_container.h>
 #include <string_view>
 #include <unordered_map>
+#include <unordered_set>
 
 namespace fb::protocol::internal::response {
 class UpdatedClan;
@@ -28,22 +29,22 @@ private:
     using character_map      = std::unordered_map<uint32_t, character_weak_ptr>;
 
 private:
-    server&                    _server;
-    uint32_t                   _id;
-    std::string                _name;
-    std::optional<std::string> _title;
-    member_map                 _members;
-    character_map              _characters;
+    server&                      _server;
+    uint32_t                     _id;
+    std::string                  _name;
+    std::optional<std::string>   _title;
+    member_map                   _members;
+    character_map                _characters;
+    std::optional<uint32_t>      _allied_clan_id;
+    std::unordered_set<uint32_t> _enemy_clan_ids;
 
 public:
-    clan(server&                           server,
-         uint32_t                          id,
-         std::string_view                  name,
-         const std::optional<std::string>& title,
-         const member_map&                 members);
+    // clang-format off
+    clan(server& server, uint32_t id, std::string_view name, const std::optional<std::string>& title, const member_map& members, const std::optional<uint32_t>& allied_clan_id = std::nullopt, const std::unordered_set<uint32_t>& enemy_clan_ids = {});
     clan(const clan&) = delete;
     clan(clan&&);
     ~clan() = default;
+    // clang-format on
 
 public:
     // clang-format off
@@ -63,6 +64,13 @@ public:
     void                              attach(character_weak_ptr ch);
     void                              detach(character_weak_ptr ch);
     std::vector<character_ptr_t>      nears(const fb::game::map& map, const fb::model::point16_t& position) const;
+    const std::optional<uint32_t>&    allied_clan_id() const;
+    void                              allied_clan_id(const std::optional<uint32_t>& value);
+    bool                              is_allied(uint32_t other_clan_id) const;
+    const std::unordered_set<uint32_t>& enemy_clan_ids() const;
+    void                              add_enemy_clan(uint32_t other_clan_id);
+    void                              remove_enemy_clan(uint32_t other_clan_id);
+    bool                              is_hostile(uint32_t other_clan_id) const;
     // clang-format on
 };
 
@@ -74,8 +82,9 @@ protected:
 public:
     explicit container(server& server);
 
+public:
+    // clang-format off
     async::task<void> apply_updated(const fb::protocol::internal::response::UpdatedClan& resp);
-
     async::task<void> create(character& me, std::string_view name);
     async::task<void> destroy(character& me);
     async::task<void> join_member(character& inviter, std::string_view target_name);
@@ -84,23 +93,24 @@ public:
     async::task<void> change_role(character& changer, std::string_view target_name, CLAN_ROLE role);
     async::task<void> set_title(character& changer, std::string_view title);
     async::task<void> broadcast(uint32_t clan_id, std::string_view message, MESSAGE_TYPE type);
-
+    async::task<void> request_ally(character& requester, uint32_t target_clan_id);
+    async::task<void> break_ally(character& requester);
+    async::task<void> declare_enemy(character& requester, uint32_t target_clan_id);
+    async::task<void> end_enemy(character& requester, uint32_t target_clan_id);
     async::task<void> on_error(uint32_t error);
-    async::task<void> on_create(uint32_t                                     clan_id,
-                                std::string                                  name,
-                                std::string                                  title,
-                                std::unordered_map<std::string, clan_member> members);
+    async::task<void> on_create(uint32_t clan_id, std::string name, std::string title, std::unordered_map<std::string, clan_member> members);
     async::task<void> on_destroyed(uint32_t clan_id, std::string clan_name);
     async::task<void> on_broadcast(uint32_t clan_id, std::string message, uint8_t type);
     async::task<void> on_set_title(uint32_t clan_id, std::optional<std::string> new_title);
     async::task<void> on_join(uint32_t clan_id, std::optional<std::string> new_member, CLAN_ROLE role);
     async::task<void> on_leave(uint32_t clan_id, std::optional<std::string> deleted_member);
     async::task<void> on_kick(uint32_t clan_id, std::optional<std::string> deleted_member);
-    async::task<void> on_change_role(uint32_t                   clan_id,
-                                     std::optional<uint32_t>    target_uid,
-                                     std::optional<std::string> target_name,
-                                     std::optional<uint32_t>    old_role,
-                                     std::optional<uint32_t>    new_role);
+    async::task<void> on_change_role(uint32_t clan_id, std::optional<uint32_t> target_uid, std::optional<std::string> target_name, std::optional<uint32_t> old_role, std::optional<uint32_t> new_role);
+    async::task<void> on_ally(uint32_t clan_id, std::optional<uint32_t> related_clan_id);
+    async::task<void> on_unally(uint32_t clan_id, std::optional<uint32_t> related_clan_id);
+    async::task<void> on_enemy(uint32_t clan_id, std::optional<uint32_t> related_clan_id);
+    async::task<void> on_unenemy(uint32_t clan_id, std::optional<uint32_t> related_clan_id);
+    // clang-format on
 };
 
 } // namespace fb::game

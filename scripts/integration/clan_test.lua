@@ -6,12 +6,31 @@ local OFF_MAP  = "가상계"
 local HOME_MAP = "낙랑의방"
 local HOME_Y   = 6
 
-local MENU_TITLE   = 1
-local MENU_DESTROY = 2
-local MENU_INVITE  = 3
-local MENU_LEAVE   = 4
-local MENU_KICK    = 5
-local MENU_ROLE    = 6
+-- Top-level category menu (matches npc/89.lua on_click list)
+local CAT_INFO      = 1
+local CAT_OPERATION = 2
+local CAT_DIPLOMACY = 3
+local CAT_LEAVE     = 4
+
+-- clan_operation submenu
+local OP_TITLE   = 1
+local OP_INVITE  = 2
+local OP_KICK    = 3
+local OP_ROLE    = 4
+local OP_MESSAGE = 5
+local OP_DESTROY = 6
+
+-- clan_info submenu
+local INFO_CASTLE  = 1
+local INFO_MEMBERS = 2
+local INFO_ALLY    = 3
+local INFO_ENEMY   = 4
+
+-- clan_diplomacy submenu
+local DIP_ALLY    = 1
+local DIP_UNALLY  = 2
+local DIP_ENEMY   = 3
+local DIP_UNENEMY = 4
 
 local CONFIRM_YES = 1
 local CONFIRM_NO  = 2
@@ -19,36 +38,42 @@ local CONFIRM_NO  = 2
 local ROLE_DEPUTY = "2"
 local ROLE_MASTER = "3"
 
-local MSG_CREATE_OK      = "클랜 생성 성공"
-local MSG_CREATE_DUP     = "클랜명이 이미 존재함"
-local MSG_TITLE_OK       = "문파 칭호 변경 성공"
-local MSG_TITLE_PRIV     = "문파 권한이 부족합니다"
-local MSG_TITLE_SHORT    = "문파 칭호가 너무 짧습니다"
-local MSG_TITLE_SAME     = "문파 칭호가 변경되지 않았습니다"
-local MSG_ERR_CODE_33    = "에러코드 : 33"
-local MSG_DESTROY_OK     = "클랜 제거 성공"
+local MSG_CREATE_OK       = "축하하오"
+local MSG_CREATE_DUP      = "클랜명이 이미 존재함"
+local MSG_TITLE_OK        = "칭호를 새로 내걸었소"
+local MSG_TITLE_PRIV      = "문파 권한이 부족합니다"
+local MSG_TITLE_SHORT     = "문파 칭호가 너무 짧습니다"
+local MSG_TITLE_SAME      = "문파 칭호가 변경되지 않았습니다"
+local MSG_ERR_CODE_33     = "에러코드 : 33"
+local MSG_DESTROY_OK      = "문파 해체 수속이 처리되었소"
 local MSG_DESTROY_MEMBERS = "문파에 다른 멤버가 존재합니다"
-local MSG_NOT_NEAR       = "캐릭터 근처에 없음"
-local MSG_REJECTED       = "가 거절함"
-local MSG_ACCEPTED       = "가 승락함"
-local MSG_JOINED         = "문파에 가입됨"
-local MSG_ALREADY        = "클랜 이미 있음"
-local MSG_LEAVE_OK       = "클랜 탈퇴 성공"
-local MSG_LEAVE_MASTER   = "문파 마스터는 탈퇴할 수 없습니다"
-local MSG_KICK_OK        = "추방했음"
-local MSG_ROLE_OK        = "직책 변경 성공"
-local MSG_NO_PRIV        = "문파 권한이 부족합니다"
-local MSG_ERR_CODE_27    = "에러코드 : 27"
-local MSG_ASKING         = "에게 의사를 묻고 있습니다."
+local MSG_NOT_NEAR        = "이 자리에 보이지 않아"
+local MSG_REJECTED        = "가 거절했습니다"
+local MSG_ACCEPTED        = "가입 수속이 처리되었소"
+local MSG_JOINED          = "문파에 가입되었습니다"
+local MSG_ALREADY         = "클랜 이미 있음"
+local MSG_LEAVE_OK        = "탈퇴 수속이 완료되었소"
+local MSG_LEAVE_MASTER    = "문파 마스터는 탈퇴할 수 없습니다"
+local MSG_KICK_OK         = "축출 수속이 처리되었소"
+local MSG_ROLE_OK         = "직책 임명 수속이 처리되었소"
+local MSG_NO_PRIV         = "문파 권한이 부족합니다"
+local MSG_ERR_CODE_27     = "에러코드 : 27"
+local MSG_WAITING         = "잠시만 기다려보시오"
+local MSG_NONE            = "없음"
+
+local MSG_ALLY_OK    = "동맹이 성공적으로 체결되었습니다"
+local MSG_UNALLY_OK  = "동맹파기가 완료되었습니다"
+local MSG_ENEMY_OK   = "적대관계 설정이 완료되었습니다"
+local MSG_UNENEMY_OK = "종전 협약이 완료되었습니다"
 
 local LISTENER_ARM_MS = 500
 
--- Shared across invite parallel steps
-local g_npc            = nil
-local g_invite_ok      = false
-local g_invite_err     = nil
-local g_invitee_msg    = nil
-local g_inviter_msg    = nil
+-- Shared across parallel steps
+local g_npc         = nil
+local g_invite_ok   = false
+local g_invite_err  = nil
+local g_invitee_msg = nil
+local g_inviter_msg = nil
 
 local function progress(bot, message)
     local level = "debug"
@@ -65,8 +90,8 @@ local function message_contains(packet, text)
         and packet.message:find(text, 1, true) ~= nil
 end
 
-local function is_asking_dialog(msg)
-    return msg ~= nil and msg:find(MSG_ASKING, 1, true) ~= nil
+local function is_waiting_dialog(msg)
+    return msg ~= nil and msg:find(MSG_WAITING, 1, true) ~= nil
 end
 
 local function home_x(bot_index)
@@ -131,14 +156,6 @@ local function select_list_expect_input(bot, index)
         end)
 end
 
-local function select_list_expect_input_ext(bot, index)
-    return bot:request_dialog_ext(
-        protocol.dialog("LIST", 0, "", index, 0, "", "NEXT"),
-        function(p)
-            return p.type == "input_ext"
-        end)
-end
-
 local function send_input_expect(bot, text, expect_type)
     expect_type = expect_type or "normal"
     local use_ext = (expect_type == "list" or expect_type == "normal" or expect_type == "input_ext")
@@ -158,9 +175,25 @@ local function open_clan_menu(bot)
     return packet, nil
 end
 
+local function open_category(bot, category)
+    local packet, err = open_clan_menu(bot)
+    if packet == nil then
+        return nil, err
+    end
+    packet = select_list(bot, category, { "list" })
+    if packet == nil then
+        return nil, "category list missing"
+    end
+    return packet, nil
+end
+
 local function create_clan(bot, clan_name)
     progress(bot, "create_clan name=" .. clan_name)
-    local packet = click_expect(bot, "input")
+    local packet = click_expect(bot, "list")
+    if packet == nil then
+        return nil, "create confirm missing"
+    end
+    packet = select_list_expect_input(bot, CONFIRM_YES)
     if packet == nil then
         return nil, "create input missing"
     end
@@ -168,17 +201,18 @@ local function create_clan(bot, clan_name)
     if packet == nil then
         return nil, "create result missing"
     end
+    local msg = packet.message
     dismiss_normal(bot)
-    return packet.message, nil
+    return msg, nil
 end
 
 local function change_title(bot, title)
     progress(bot, "change_title title=" .. tostring(title))
-    local packet, err = open_clan_menu(bot)
+    local packet, err = open_category(bot, CAT_OPERATION)
     if packet == nil then
         return nil, err
     end
-    packet = select_list_expect_input_ext(bot, MENU_TITLE)
+    packet = select_list_expect_input(bot, OP_TITLE)
     if packet == nil then
         return nil, "title input missing"
     end
@@ -193,11 +227,15 @@ end
 
 local function destroy_clan(bot)
     progress(bot, "destroy_clan")
-    local packet, err = open_clan_menu(bot)
+    local packet, err = open_category(bot, CAT_OPERATION)
     if packet == nil then
         return nil, err
     end
-    packet = select_list(bot, MENU_DESTROY, { "normal" })
+    packet = select_list(bot, OP_DESTROY, { "list" })
+    if packet == nil then
+        return nil, "destroy confirm missing"
+    end
+    packet = select_list(bot, CONFIRM_YES, { "normal" })
     if packet == nil then
         return nil, "destroy result missing"
     end
@@ -212,7 +250,11 @@ local function leave_clan(bot)
     if packet == nil then
         return nil, err
     end
-    packet = select_list(bot, MENU_LEAVE, { "normal" })
+    packet = select_list(bot, CAT_LEAVE, { "list" })
+    if packet == nil then
+        return nil, "leave confirm missing"
+    end
+    packet = select_list(bot, CONFIRM_YES, { "normal" })
     if packet == nil then
         return nil, "leave result missing"
     end
@@ -223,11 +265,11 @@ end
 
 local function kick_member(bot, target_name)
     progress(bot, "kick target=" .. target_name)
-    local packet, err = open_clan_menu(bot)
+    local packet, err = open_category(bot, CAT_OPERATION)
     if packet == nil then
         return nil, err
     end
-    packet = select_list_expect_input(bot, MENU_KICK)
+    packet = select_list_expect_input(bot, OP_KICK)
     if packet == nil then
         return nil, "kick input missing"
     end
@@ -241,15 +283,41 @@ local function kick_member(bot, target_name)
 end
 
 local function invite_start(bot, target_name)
-    local packet, err = open_clan_menu(bot)
+    local packet, err = open_category(bot, CAT_OPERATION)
     if packet == nil then
         return false, err
     end
-    packet = select_list_expect_input(bot, MENU_INVITE)
+    packet = select_list_expect_input(bot, OP_INVITE)
     if packet == nil then
         return false, "invite input missing"
     end
     return true, nil
+end
+
+local function diplomacy_start(bot, action_index)
+    local packet, err = open_category(bot, CAT_DIPLOMACY)
+    if packet == nil then
+        return false, err
+    end
+    packet = select_list_expect_input(bot, action_index)
+    if packet == nil then
+        return false, "diplomacy input missing"
+    end
+    return true, nil
+end
+
+local function fetch_info(bot, info_index)
+    local packet, err = open_category(bot, CAT_INFO)
+    if packet == nil then
+        return nil, err
+    end
+    packet = select_list(bot, info_index, { "normal" })
+    if packet == nil then
+        return nil, "info result missing"
+    end
+    local msg = packet.message
+    dismiss_normal(bot)
+    return msg, nil
 end
 
 local function wait_normal(bot)
@@ -260,23 +328,21 @@ local function wait_normal(bot)
         end)
 end
 
--- After invitee name: waiting immediate dialog, then result (or exception result only).
-local function invite_send_name_expect_normal(bot, target_name)
+local function send_target_name_expect_normal(bot, target_name)
     local packet = send_input_expect(bot, target_name, "normal")
     if packet == nil then
         return nil
     end
-    if is_asking_dialog(packet.message) then
+    if is_waiting_dialog(packet.message) then
         dismiss_normal(bot)
         return wait_normal(bot)
     end
     return packet
 end
 
--- Consume the immediate asking dialog after INPUT; invitee handles the rest.
-local function invite_send_name_dismiss_asking(bot, target_name)
+local function send_target_name_dismiss_waiting(bot, target_name)
     local packet = send_input_expect(bot, target_name, "normal")
-    if packet == nil or is_asking_dialog(packet.message) == false then
+    if packet == nil or is_waiting_dialog(packet.message) == false then
         return false
     end
     dismiss_normal(bot)
@@ -315,18 +381,17 @@ local function is_privilege_error(msg)
         or msg:find(MSG_ERR_CODE_27, 1, true) ~= nil
 end
 
--- Inviter INPUT when invitee-side error yields no inviter result dialog.
 local function send_input_fire(bot, text)
-    return invite_send_name_dismiss_asking(bot, text)
+    return send_target_name_dismiss_waiting(bot, text)
 end
 
 local function change_role(bot, target_name, role)
     progress(bot, string.format("change_role target=%s role=%s", target_name, tostring(role)))
-    local packet, err = open_clan_menu(bot)
+    local packet, err = open_category(bot, CAT_OPERATION)
     if packet == nil then
         return nil, err
     end
-    packet = select_list_expect_input(bot, MENU_ROLE)
+    packet = select_list_expect_input(bot, OP_ROLE)
     if packet == nil then
         return nil, "role name input missing"
     end
@@ -337,11 +402,6 @@ local function change_role(bot, target_name, role)
         end)
     if packet == nil then
         return nil, "role second prompt missing"
-    end
-    if packet.type == "normal" then
-        local msg = packet.message
-        dismiss_normal(bot)
-        return msg, nil
     end
     packet = send_input_expect(bot, tostring(role), "normal")
     if packet == nil then
@@ -355,6 +415,62 @@ end
 local function restore_bot_home(bot, index)
     bot:map_move(HOME_MAP, home_x(index), HOME_Y)
     bot:direction("BOTTOM")
+end
+
+local function diplomacy_scenario(label, action_index, requester_idx, target_idx, success_msg)
+    return {
+        parallel = {
+            [requester_idx] = {
+                function(ctx)
+                    local requester = ctx:bot(requester_idx)
+                    local target    = ctx:bot(target_idx)
+                    progress(requester, label .. " (requester)")
+                    g_invite_ok = false
+                    g_inviter_msg = nil
+                    g_invitee_msg = nil
+                    ctx:sleep(LISTENER_ARM_MS)
+
+                    local ok, err = diplomacy_start(requester, action_index)
+                    if ok == false then
+                        progress(requester, "FAILED: " .. tostring(err))
+                        return false
+                    end
+                    local packet = send_target_name_expect_normal(requester, target:name())
+                    g_inviter_msg = packet and packet.message or nil
+                    if packet ~= nil then
+                        dismiss_normal(requester)
+                    end
+                    local pass = g_inviter_msg ~= nil and g_inviter_msg:find(success_msg, 1, true) ~= nil
+                    if pass == false then
+                        progress(requester, "FAILED: msg=" .. tostring(g_inviter_msg))
+                    end
+                    g_invite_ok = pass
+                    return pass
+                end,
+            },
+            [target_idx] = {
+                function(ctx)
+                    local target = ctx:bot(target_idx)
+                    progress(target, label .. " (target)")
+                    local packet = wait_menu(target)
+                    if packet == nil then
+                        progress(target, "FAILED: menu missing")
+                        return false
+                    end
+                    packet = reply_menu_expect_normal(target, CONFIRM_YES)
+                    g_invitee_msg = packet and packet.message or nil
+                    if packet ~= nil then
+                        dismiss_normal(target)
+                    end
+                    local pass = g_invitee_msg ~= nil and g_invitee_msg:find(success_msg, 1, true) ~= nil
+                    if pass == false then
+                        progress(target, "FAILED: msg=" .. tostring(g_invitee_msg))
+                    end
+                    return pass
+                end,
+            },
+        },
+    }
 end
 
 test_suite {
@@ -444,7 +560,7 @@ test_suite {
                 progress(master, "FAILED: " .. tostring(err))
                 return false
             end
-            local packet = invite_send_name_expect_normal(master, spare:name())
+            local packet = send_target_name_expect_normal(master, spare:name())
             if packet == nil or message_contains(packet, MSG_NOT_NEAR) == false then
                 restore_bot_home(spare, 3)
                 progress(master, "FAILED: not-near msg=" .. tostring(packet and packet.message))
@@ -473,7 +589,7 @@ test_suite {
                             g_invite_err = err
                             return false
                         end
-                        local packet = invite_send_name_expect_normal(master, other:name())
+                        local packet = send_target_name_expect_normal(master, other:name())
                         g_inviter_msg = packet and packet.message or nil
                         if packet ~= nil then
                             dismiss_normal(master)
@@ -531,7 +647,7 @@ test_suite {
                             progress(master, "FAILED: " .. tostring(err))
                             return false
                         end
-                        local packet = invite_send_name_expect_normal(master, other:name())
+                        local packet = send_target_name_expect_normal(master, other:name())
                         g_inviter_msg = packet and packet.message or nil
                         if packet ~= nil then
                             dismiss_normal(master)
@@ -600,7 +716,7 @@ test_suite {
                             return false
                         end
                         if send_input_fire(master, other:name()) == false then
-                            progress(master, "FAILED: asking dialog missing")
+                            progress(master, "FAILED: waiting dialog missing")
                             return false
                         end
                         g_inviter_msg = nil
@@ -658,7 +774,7 @@ test_suite {
                             return false
                         end
                         if send_input_fire(mate, outsider:name()) == false then
-                            progress(mate, "FAILED: asking dialog missing")
+                            progress(mate, "FAILED: waiting dialog missing")
                             return false
                         end
                         return true
@@ -730,7 +846,7 @@ test_suite {
                             progress(deputy, "FAILED: " .. tostring(err))
                             return false
                         end
-                        local packet = invite_send_name_expect_normal(deputy, outsider:name())
+                        local packet = send_target_name_expect_normal(deputy, outsider:name())
                         g_inviter_msg = packet and packet.message or nil
                         if packet ~= nil then
                             dismiss_normal(deputy)
@@ -846,6 +962,140 @@ test_suite {
             end
 
             progress(master, "S9 PASSED")
+            return true
+        end,
+
+        -- 10) Diplomacy setup: two fresh single-member clans (bot0, bot2)
+        function(ctx)
+            local a = ctx:bot(0)
+            local b = ctx:bot(2)
+            progress(a, "S10: DIPLOMACY SETUP")
+
+            local msg, err = create_clan(a, a:name())
+            if msg == nil or msg:find(MSG_CREATE_OK, 1, true) == nil then
+                progress(a, "FAILED: create a " .. tostring(msg or err))
+                return false
+            end
+
+            msg, err = create_clan(b, b:name())
+            if msg == nil or msg:find(MSG_CREATE_OK, 1, true) == nil then
+                progress(b, "FAILED: create b " .. tostring(msg or err))
+                return false
+            end
+
+            progress(a, "S10 PASSED")
+            return true
+        end,
+
+        -- 11) Alliance request + accept, then verify 동맹 현황
+        diplomacy_scenario("S11: ALLY", DIP_ALLY, 0, 2, MSG_ALLY_OK),
+
+        function(ctx)
+            local a = ctx:bot(0)
+            local b = ctx:bot(2)
+            if g_invite_ok ~= true then
+                progress(a, "FAILED: S11 ally requester")
+                return false
+            end
+            if g_invitee_msg == nil or g_invitee_msg:find(MSG_ALLY_OK, 1, true) == nil then
+                progress(b, "FAILED: S11 ally target")
+                return false
+            end
+
+            local msg, err = fetch_info(a, INFO_ALLY)
+            if msg == nil or msg:find(b:name(), 1, true) == nil then
+                progress(a, "FAILED: ally info " .. tostring(msg or err))
+                return false
+            end
+
+            progress(a, "S11 PASSED")
+            return true
+        end,
+
+        -- 12) Break alliance, then verify 동맹 현황 shows none
+        diplomacy_scenario("S12: UNALLY", DIP_UNALLY, 0, 2, MSG_UNALLY_OK),
+
+        function(ctx)
+            local a = ctx:bot(0)
+            local b = ctx:bot(2)
+            if g_invite_ok ~= true then
+                progress(a, "FAILED: S12 unally requester")
+                return false
+            end
+            if g_invitee_msg == nil or g_invitee_msg:find(MSG_UNALLY_OK, 1, true) == nil then
+                progress(b, "FAILED: S12 unally target")
+                return false
+            end
+
+            local msg, err = fetch_info(a, INFO_ALLY)
+            if msg == nil or msg:find(MSG_NONE, 1, true) == nil then
+                progress(a, "FAILED: ally info after break " .. tostring(msg or err))
+                return false
+            end
+
+            progress(a, "S12 PASSED")
+            return true
+        end,
+
+        -- 13) Declare enemy + accept, then verify 전쟁 현황
+        diplomacy_scenario("S13: ENEMY", DIP_ENEMY, 0, 2, MSG_ENEMY_OK),
+
+        function(ctx)
+            local a = ctx:bot(0)
+            local b = ctx:bot(2)
+            if g_invite_ok ~= true then
+                progress(a, "FAILED: S13 enemy requester")
+                return false
+            end
+            if g_invitee_msg == nil or g_invitee_msg:find(MSG_ENEMY_OK, 1, true) == nil then
+                progress(b, "FAILED: S13 enemy target")
+                return false
+            end
+
+            local msg, err = fetch_info(a, INFO_ENEMY)
+            if msg == nil or msg:find(b:name(), 1, true) == nil then
+                progress(a, "FAILED: enemy info " .. tostring(msg or err))
+                return false
+            end
+
+            progress(a, "S13 PASSED")
+            return true
+        end,
+
+        -- 14) End enmity, verify 전쟁 현황 shows none, then teardown both clans
+        diplomacy_scenario("S14: UNENEMY", DIP_UNENEMY, 0, 2, MSG_UNENEMY_OK),
+
+        function(ctx)
+            local a = ctx:bot(0)
+            local b = ctx:bot(2)
+            if g_invite_ok ~= true then
+                progress(a, "FAILED: S14 unenemy requester")
+                return false
+            end
+            if g_invitee_msg == nil or g_invitee_msg:find(MSG_UNENEMY_OK, 1, true) == nil then
+                progress(b, "FAILED: S14 unenemy target")
+                return false
+            end
+
+            local msg, err = fetch_info(a, INFO_ENEMY)
+            if msg == nil or msg:find(MSG_NONE, 1, true) == nil then
+                progress(a, "FAILED: enemy info after end " .. tostring(msg or err))
+                return false
+            end
+
+            msg, err = destroy_clan(a)
+            if msg == nil or msg:find(MSG_DESTROY_OK, 1, true) == nil then
+                progress(a, "FAILED: cleanup destroy a " .. tostring(msg or err))
+                return false
+            end
+
+            msg, err = destroy_clan(b)
+            if msg == nil or msg:find(MSG_DESTROY_OK, 1, true) == nil then
+                progress(b, "FAILED: cleanup destroy b " .. tostring(msg or err))
+                return false
+            end
+
+            progress(a, "S14 PASSED")
             return true
         end,
     },

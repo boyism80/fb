@@ -28,7 +28,14 @@ async::task<clan::container::entity_ptr> clan::container::fetch(uint32_t id)
                 clan_member{member.name, static_cast<CLAN_ROLE>(member.role)}
             });
         }
-        co_return this->_server.make<fb::game::clan>(id, resp.clan.name, resp.clan.title, members);
+        auto enemy_clan_ids =
+            std::unordered_set<uint32_t>(resp.clan.enemy_clan_ids.begin(), resp.clan.enemy_clan_ids.end());
+        co_return this->_server.make<fb::game::clan>(id,
+                                                     resp.clan.name,
+                                                     resp.clan.title,
+                                                     members,
+                                                     resp.clan.allied_clan_id,
+                                                     enemy_clan_ids);
     }
 
     case fb::model::enum_value::ERROR_CODE::NOT_FOUND_CLAN:

@@ -11,12 +11,16 @@ clan::clan(server&                                             server,
            uint32_t                                            id,
            std::string_view                                    name,
            const std::optional<std::string>&                   title,
-           const std::unordered_map<std::string, clan_member>& members) :
+           const std::unordered_map<std::string, clan_member>& members,
+           const std::optional<uint32_t>&                      allied_clan_id,
+           const std::unordered_set<uint32_t>&                 enemy_clan_ids) :
     _server(server),
     _id(id),
     _name(std::string(name)),
     _title(title),
-    _members(members)
+    _members(members),
+    _allied_clan_id(allied_clan_id),
+    _enemy_clan_ids(enemy_clan_ids)
 { }
 
 clan::clan(clan&& r) :
@@ -24,7 +28,9 @@ clan::clan(clan&& r) :
     _id(r._id),
     _name(r._name),
     _title(r._title),
-    _members(std::move(r._members))
+    _members(std::move(r._members)),
+    _allied_clan_id(r._allied_clan_id),
+    _enemy_clan_ids(std::move(r._enemy_clan_ids))
 { }
 
 void clan::update(std::string_view name, const std::optional<std::string>& title, const member_map& members)
@@ -133,6 +139,41 @@ void clan::detach(std::weak_ptr<character> ch)
         return;
 
     this->_characters.erase(shared->id);
+}
+
+const std::optional<uint32_t>& clan::allied_clan_id() const
+{
+    return this->_allied_clan_id;
+}
+
+void clan::allied_clan_id(const std::optional<uint32_t>& value)
+{
+    this->_allied_clan_id = value;
+}
+
+bool clan::is_allied(uint32_t other_clan_id) const
+{
+    return this->_allied_clan_id.has_value() && this->_allied_clan_id.value() == other_clan_id;
+}
+
+const std::unordered_set<uint32_t>& clan::enemy_clan_ids() const
+{
+    return this->_enemy_clan_ids;
+}
+
+void clan::add_enemy_clan(uint32_t other_clan_id)
+{
+    this->_enemy_clan_ids.insert(other_clan_id);
+}
+
+void clan::remove_enemy_clan(uint32_t other_clan_id)
+{
+    this->_enemy_clan_ids.erase(other_clan_id);
+}
+
+bool clan::is_hostile(uint32_t other_clan_id) const
+{
+    return this->_enemy_clan_ids.contains(other_clan_id);
 }
 
 std::vector<std::shared_ptr<fb::game::character>> clan::nears(const fb::game::map& map, const point16_t& position) const

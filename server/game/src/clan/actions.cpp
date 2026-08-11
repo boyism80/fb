@@ -246,6 +246,144 @@ async::task<void> clan::container::set_title(character& changer, std::string_vie
     co_await this->apply_updated(resp);
 }
 
+async::task<void> clan::container::request_ally(character& requester, uint32_t target_clan_id)
+{
+    auto clan_id = requester.clan_id();
+    if (clan_id.has_value() == false)
+        throw std::runtime_error(_TEXT(MESSAGE_NOT_JOINED_CLAN));
+
+    if (clan_id.value() == target_clan_id)
+        throw std::runtime_error(_TEXT(MESSAGE_CLAN_CANNOT_ALLY_SELF));
+
+    {
+        auto guard = this->try_enter_read(clan_id.value());
+        if (guard.has_value() == false || guard->value() == nullptr)
+            throw std::runtime_error(_TEXT(MESSAGE_NOT_JOINED_CLAN));
+
+        auto& clan   = guard->value();
+        auto  member = clan->member(requester.name());
+        if (member == nullptr || member->role != CLAN_ROLE::MASTER)
+            throw std::runtime_error(_TEXT(MESSAGE_CLAN_NO_PRIVILEGE));
+
+        if (clan->allied_clan_id().has_value())
+            throw std::runtime_error(_TEXT(MESSAGE_CLAN_ALREADY_ALLIED));
+
+        if (clan->is_hostile(target_clan_id))
+            throw std::runtime_error(_TEXT(MESSAGE_CLAN_CANNOT_ALLY_ENEMY));
+    }
+
+    auto   weak  = requester.weak_from_this_as<character>();
+    auto   world = fb::config<uint32_t>("world");
+    auto&& resp  = co_await this->_server.http.post(
+        "internal",
+        "/clan/ally",
+        internal_reqs::AllyClan{world, fb::config<uint32_t>("host"), requester.id, clan_id.value(), target_clan_id});
+    co_await this->_server.threads.switching(weak);
+    co_await this->apply_updated(resp);
+}
+
+async::task<void> clan::container::break_ally(character& requester)
+{
+    auto clan_id = requester.clan_id();
+    if (clan_id.has_value() == false)
+        throw std::runtime_error(_TEXT(MESSAGE_NOT_JOINED_CLAN));
+
+    {
+        auto guard = this->try_enter_read(clan_id.value());
+        if (guard.has_value() == false || guard->value() == nullptr)
+            throw std::runtime_error(_TEXT(MESSAGE_NOT_JOINED_CLAN));
+
+        auto& clan   = guard->value();
+        auto  member = clan->member(requester.name());
+        if (member == nullptr || member->role != CLAN_ROLE::MASTER)
+            throw std::runtime_error(_TEXT(MESSAGE_CLAN_NO_PRIVILEGE));
+
+        if (clan->allied_clan_id().has_value() == false)
+            throw std::runtime_error(_TEXT(MESSAGE_CLAN_NOT_ALLIED));
+    }
+
+    auto   weak  = requester.weak_from_this_as<character>();
+    auto   world = fb::config<uint32_t>("world");
+    auto&& resp  = co_await this->_server.http.post(
+        "internal",
+        "/clan/unally",
+        internal_reqs::UnallyClan{world, fb::config<uint32_t>("host"), requester.id, clan_id.value()});
+    co_await this->_server.threads.switching(weak);
+    co_await this->apply_updated(resp);
+}
+
+async::task<void> clan::container::declare_enemy(character& requester, uint32_t target_clan_id)
+{
+    auto clan_id = requester.clan_id();
+    if (clan_id.has_value() == false)
+        throw std::runtime_error(_TEXT(MESSAGE_NOT_JOINED_CLAN));
+
+    if (clan_id.value() == target_clan_id)
+        throw std::runtime_error(_TEXT(MESSAGE_CLAN_CANNOT_ENEMY_SELF));
+
+    {
+        auto guard = this->try_enter_read(clan_id.value());
+        if (guard.has_value() == false || guard->value() == nullptr)
+            throw std::runtime_error(_TEXT(MESSAGE_NOT_JOINED_CLAN));
+
+        auto& clan   = guard->value();
+        auto  member = clan->member(requester.name());
+        if (member == nullptr || member->role != CLAN_ROLE::MASTER)
+            throw std::runtime_error(_TEXT(MESSAGE_CLAN_NO_PRIVILEGE));
+
+        if (clan->is_allied(target_clan_id))
+            throw std::runtime_error(_TEXT(MESSAGE_CLAN_CANNOT_ENEMY_ALLY));
+
+        if (clan->is_hostile(target_clan_id))
+            throw std::runtime_error(_TEXT(MESSAGE_CLAN_ALREADY_ENEMY));
+    }
+
+    auto   weak  = requester.weak_from_this_as<character>();
+    auto   world = fb::config<uint32_t>("world");
+    auto&& resp  = co_await this->_server.http.post("internal",
+                                                   "/clan/enemy",
+                                                   internal_reqs::DeclareClanEnemy{world,
+                                                                                   fb::config<uint32_t>("host"),
+                                                                                   requester.id,
+                                                                                   clan_id.value(),
+                                                                                   target_clan_id});
+    co_await this->_server.threads.switching(weak);
+    co_await this->apply_updated(resp);
+}
+
+async::task<void> clan::container::end_enemy(character& requester, uint32_t target_clan_id)
+{
+    auto clan_id = requester.clan_id();
+    if (clan_id.has_value() == false)
+        throw std::runtime_error(_TEXT(MESSAGE_NOT_JOINED_CLAN));
+
+    {
+        auto guard = this->try_enter_read(clan_id.value());
+        if (guard.has_value() == false || guard->value() == nullptr)
+            throw std::runtime_error(_TEXT(MESSAGE_NOT_JOINED_CLAN));
+
+        auto& clan   = guard->value();
+        auto  member = clan->member(requester.name());
+        if (member == nullptr || member->role != CLAN_ROLE::MASTER)
+            throw std::runtime_error(_TEXT(MESSAGE_CLAN_NO_PRIVILEGE));
+
+        if (clan->is_hostile(target_clan_id) == false)
+            throw std::runtime_error(_TEXT(MESSAGE_CLAN_NOT_ENEMY));
+    }
+
+    auto   weak  = requester.weak_from_this_as<character>();
+    auto   world = fb::config<uint32_t>("world");
+    auto&& resp  = co_await this->_server.http.post("internal",
+                                                   "/clan/unenemy",
+                                                   internal_reqs::EndClanEnemy{world,
+                                                                               fb::config<uint32_t>("host"),
+                                                                               requester.id,
+                                                                               clan_id.value(),
+                                                                               target_clan_id});
+    co_await this->_server.threads.switching(weak);
+    co_await this->apply_updated(resp);
+}
+
 async::task<void> clan::container::broadcast(uint32_t clan_id, std::string_view message, MESSAGE_TYPE type)
 {
     auto   message_str = std::string(message);
