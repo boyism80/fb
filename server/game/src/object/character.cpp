@@ -36,14 +36,14 @@ character::character(fb::game::server& server, const initial_params& params) :
               .direction = params.direction,
               }
 }),
-    listener(server.listener), id(params.id), _socket(params.socket), _pw(params.pw),
-    _created_date(params.created_date), _updated_date(params.updated_date), _first_login_date(params.first_login_date),
-    _name(params.name), _role(params.role), _birthday(params.birthday), _look(params.look), _color(params.color),
+    listener(server.listener), _socket(params.socket), _pw(params.pw), _created_date(params.created_date),
+    _updated_date(params.updated_date), _first_login_date(params.first_login_date), _name(params.name),
+    _role(params.role), _birthday(params.birthday), _look(params.look), _color(params.color),
     _armor_color(params.armor_color), _weapon_color(params.weapon_color), _shield_color(params.shield_color),
     _experience(params.exp), _gender(params.gender), _state(params.state), _level(params.level),
     _class(params.class_type), _promotion(params.promotion), _money(params.money), _mimicry(params.mimicry),
     _title(params.title), _nation(params.nation), _divine_beast(params.divine_beast), _super_hide(params.super_hide),
-    _last_afk_time(server.now()), _marriage(server.now())
+    _last_afk_time(server.now()), _marriage(server.now()), id(params.id), client_version(params.client_version)
 {
     this->_ping_state.last_ping_time = server.now() - std::chrono::seconds(10);
 }

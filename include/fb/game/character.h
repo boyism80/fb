@@ -21,6 +21,7 @@
 #include <fb/game/marriage.h>
 #include <fb/game/matchmaker.h>
 #include <fb/game/appearance.h>
+#include <fb/protocol/client_version.h>
 #include <set>
 #include <shared_mutex>
 #include <string_view>
@@ -120,19 +121,20 @@ private:
     };
 
 public:
-    const uint32_t        id;
-    fb::game::trade       trade;
-    fb::game::items       items;
-    fb::game::quests      quests;
-    fb::game::bulletin    bulletin = fb::game::bulletin(*this);
-    fb::game::mail_box    mail_box = fb::game::mail_box(*this);
-    fb::game::storage_box storage_box;
-    fb::game::marketplace marketplace;
-    fb::game::matchmaker  matchmaker;
-    fb::lua::context*     dialog = nullptr;
-    achievement_map_t     achievements;
-    listener_t&           listener;
-    character_stat        stat;
+    const uint32_t                     id;
+    const fb::protocol::CLIENT_VERSION client_version;
+    fb::game::trade                    trade;
+    fb::game::items                    items;
+    fb::game::quests                   quests;
+    fb::game::bulletin                 bulletin = fb::game::bulletin(*this);
+    fb::game::mail_box                 mail_box = fb::game::mail_box(*this);
+    fb::game::storage_box              storage_box;
+    fb::game::marketplace              marketplace;
+    fb::game::matchmaker               matchmaker;
+    fb::lua::context*                  dialog = nullptr;
+    achievement_map_t                  achievements;
+    listener_t&                        listener;
+    character_stat                     stat;
 
 public:
     struct initial_params : fb::game::life::initial_params
@@ -158,13 +160,14 @@ public:
         uint64_t                               exp              = 0;
         STATE                                  state            = STATE::NORMAL;
         std::string                            title;
-        std::optional<uint8_t>                 armor_color  = std::nullopt;
-        std::optional<uint8_t>                 weapon_color = std::nullopt;
-        std::optional<uint8_t>                 shield_color = std::nullopt;
-        std::optional<character_appearance>    mimicry      = std::nullopt;
-        NATION                                 nation       = NATION::GOGURYEO;
-        DIVINE_BEAST                           divine_beast = DIVINE_BEAST::AZURE_DRAGON;
-        bool                                   super_hide   = false;
+        std::optional<uint8_t>                 armor_color    = std::nullopt;
+        std::optional<uint8_t>                 weapon_color   = std::nullopt;
+        std::optional<uint8_t>                 shield_color   = std::nullopt;
+        std::optional<character_appearance>    mimicry        = std::nullopt;
+        NATION                                 nation         = NATION::GOGURYEO;
+        DIVINE_BEAST                           divine_beast   = DIVINE_BEAST::AZURE_DRAGON;
+        bool                                   super_hide     = false;
+        fb::protocol::CLIENT_VERSION           client_version = fb::protocol::CLIENT_VERSION::v550;
     };
 
 public:

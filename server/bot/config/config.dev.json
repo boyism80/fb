@@ -15,5 +15,9 @@
 	"spawn_count": 1,
 	"thread": {
 		"logic": 1
+	},
+	"client": {
+		"version": 550,
+		"nation": 215
 	}
 }

@@ -3,12 +3,18 @@
 
 #include <fb/protocol/header.h>
 #include <fb/model/model.h>
+#include <fb/protocol/client_version.h>
 #include <string_view>
 
 namespace fb::protocol::login::request {
 
 using namespace fb::model::enum_value;
 
+/**
+ * C2S agreement (opcode 0x10).
+ * Stock clients echo the full gateway->login transfer parameter blob here:
+ *   enc_type u8 | key_size u8 | iv[key_size] | from u8 | client_version u16
+ */
 class agreement : public fb::protocol::header
 {
 public:
@@ -16,11 +22,15 @@ public:
 
 public:
 #ifdef BOT
-    const uint8_t enc_type;
-    const uint8_t enc_key_size;
+    const uint8_t        enc_type;
+    const uint8_t        enc_key_size;
+    const uint8_t        from;
+    const CLIENT_VERSION client_version;
 #else
-    uint8_t enc_type;
-    uint8_t enc_key_size;
+    uint8_t        enc_type;
+    uint8_t        enc_key_size;
+    uint8_t        from           = 0;
+    CLIENT_VERSION client_version = CLIENT_VERSION::v550;
 #endif
     uint8_t enc_key[0x09];
 
@@ -28,7 +38,7 @@ public:
 #ifndef BOT
     agreement() = default;
 #else
-    agreement(uint8_t type, uint8_t ksize, const uint8_t* key);
+    agreement(uint8_t type, uint8_t ksize, const uint8_t* key, uint8_t from, CLIENT_VERSION client_version);
 #endif
 
 public:

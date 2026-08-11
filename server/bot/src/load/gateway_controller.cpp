@@ -3,6 +3,7 @@
 #include <fb/bot/gateway_bot.h>
 #include <fb/bot/login_bot.h>
 #include <fb/bot/login_controller.h>
+#include <fb/protocol/client_version.h>
 
 using namespace fb::bot::load;
 
@@ -41,7 +42,13 @@ async::task<void> gateway_bot_controller::on_bot_spawn()
 
 async::task<void> gateway_bot_controller::on_welcome(gateway_bot& bot, const gateway_resp::welcome& response)
 {
-    bot.send(gateway_reqs::version{550, 0xD7}, false, true);
+    auto packed = fb::config<uint16_t>("client:version", 550);
+    auto cv     = fb::protocol::CLIENT_VERSION::v550;
+    if (fb::protocol::try_parse(packed, cv) == false)
+        cv = fb::protocol::CLIENT_VERSION::v550;
+
+    auto nation = static_cast<uint8_t>(fb::config<uint16_t>("client:nation", 0xD7));
+    bot.send(gateway_reqs::version{cv, nation}, false, true);
     co_return;
 }
 

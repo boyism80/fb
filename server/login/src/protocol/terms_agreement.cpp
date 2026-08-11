@@ -1,4 +1,5 @@
 #include <fb/login/protocol/terms_agreement.h>
+#include <stdexcept>
 
 namespace fb::protocol::login::request {
 
@@ -9,11 +10,19 @@ void agreement::deserialize(fb::stream_reader<big_endian>& reader)
     this->enc_type     = reader.read<uint8_t>();
     this->enc_key_size = reader.read<uint8_t>();
     reader.read(this->enc_key, this->enc_key_size);
+
+    // Trailing transfer fields echoed by the stock client (gateway→login hop).
+    this->from  = reader.read<uint8_t>();
+    auto packed = reader.read<uint16_t>();
+    if (try_parse(packed, this->client_version) == false)
+        throw std::runtime_error("invalid client version in agreement transfer");
 }
 #else
-agreement::agreement(uint8_t type, uint8_t ksize, const uint8_t* key) :
+agreement::agreement(uint8_t type, uint8_t ksize, const uint8_t* key, uint8_t from, CLIENT_VERSION client_version) :
     enc_type(type),
-    enc_key_size(ksize)
+    enc_key_size(ksize),
+    from(from),
+    client_version(client_version)
 {
     memcpy(this->enc_key, key, ksize);
 }
@@ -25,6 +34,8 @@ void agreement::serialize(fb::stream_writer<big_endian>& writer) const
     writer.write<uint8_t>(this->enc_type);
     writer.write<uint8_t>(this->enc_key_size);
     writer.write((const void*)this->enc_key, this->enc_key_size);
+    writer.write<uint8_t>(this->from);
+    writer.write<uint16_t>(static_cast<uint16_t>(this->client_version));
 }
 #endif
 

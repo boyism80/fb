@@ -94,7 +94,7 @@ private:
     async::task<void> on_direction(game_bot& bot, const game_resp::direction& response);
     async::task<void> on_position(game_bot& bot, const game_resp::position& response);
     async::task<void> on_move(game_bot& bot, const game_resp::move& response);
-    async::task<void> on_effect(game_bot& bot, const game_resp::effect& response);
+    async::task<void> on_effect(game_bot& bot, const game_resp::effect_v550& response);
     async::task<void> on_hide(game_bot& bot, const game_resp::hide& response);
     async::task<void> on_die(game_bot& bot, const game_resp::die& response);
     async::task<void> on_buff(game_bot& bot, const game_resp::spell_buff& response);

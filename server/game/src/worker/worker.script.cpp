@@ -20,7 +20,8 @@ fb::generator<fb::game::script_work> fb::game::script_loader::on_ready()
     scripts.push_back("scripts/server.lua");
     scripts.push_back("scripts/interaction.lua");
     scripts.push_back("scripts/script.lua");
-    scripts.push_back("scripts/init.lua");
+    // scripts/init.lua is executed once at end of startup via server::init_script()
+    // (coroutine-aware); do not dump/pcall it here.
     scripts.push_back("scripts/schedule/schedule.lua");
     scripts.push_back(fb::model::const_value::script::F1_EVENT_SCRIPT);
     scripts.push_back(fb::model::const_value::script::F2_EVENT_SCRIPT);

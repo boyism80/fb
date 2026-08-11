@@ -7,6 +7,7 @@
 #include <fb/mutex.h>
 #include <fb/protocol/flatbuffer/protocol.h>
 #include <fb/protocol/transfer.h>
+#include <fb/protocol/client_version.h>
 #include <fb/protocol_handler_registry.h>
 #include <fb/amqp_handler_registry.h>
 #include <fb/http_client.h>
@@ -338,6 +339,27 @@ private:
         });
     }
 
+private:
+    static uint16_t transfer_client_version(fb::socket<T>& socket)
+    {
+        auto* data = socket.data();
+        if (data == nullptr)
+            return static_cast<uint16_t>(fb::protocol::CLIENT_VERSION::v550);
+
+        if constexpr (requires { data->client_version(); })
+        {
+            return static_cast<uint16_t>(data->client_version());
+        }
+        else if constexpr (requires { data->client_version; })
+        {
+            return static_cast<uint16_t>(data->client_version);
+        }
+        else
+        {
+            return static_cast<uint16_t>(fb::protocol::CLIENT_VERSION::v550);
+        }
+    }
+
 public:
     [[nodiscard]] async::task<void>
     transfer(fb::socket<T>& socket, uint32_t ip, uint16_t port, fb::protocol::internal::Service from)
@@ -350,6 +372,7 @@ public:
             writer.write<uint8_t>(fb::encryption::KEY_SIZE);
             writer.write(encryption.iv(), fb::encryption::KEY_SIZE);
             writer.write<uint8_t>(static_cast<uint8_t>(from));
+            writer.write<uint16_t>(transfer_client_version(socket));
         }
 
         auto stream = fb::stream();
@@ -377,6 +400,7 @@ public:
             writer.write<uint8_t>(fb::encryption::KEY_SIZE);
             writer.write(encryption.iv(), fb::encryption::KEY_SIZE);
             writer.write<uint8_t>(static_cast<uint8_t>(from));
+            writer.write<uint16_t>(transfer_client_version(socket));
             writer.write<fb::stream>(parameter);
         }
 

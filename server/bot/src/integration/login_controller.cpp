@@ -130,7 +130,13 @@ async::task<void> login_bot_controller::on_bot_connected(login_bot& bot)
 {
     // Integration test: Initialize authentication test scenario upon connection
     auto& encryption = bot.encryption();
-    bot.send(login_reqs::agreement(encryption.pattern(), fb::encryption::KEY_SIZE, encryption.iv()), false, true);
+    bot.send(login_reqs::agreement(encryption.pattern(),
+                                   fb::encryption::KEY_SIZE,
+                                   encryption.iv(),
+                                   bot.transfer_from(),
+                                   bot.client_version()),
+             false,
+             true);
 
     // TODO: Set up login-specific test scenarios
     co_return;

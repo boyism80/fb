@@ -231,7 +231,7 @@ async::task<void> game_bot_controller::on_transfer(game_bot& bot, const fb::prot
     co_return;
 }
 
-async::task<void> game_bot_controller::on_effect(game_bot& bot, const game_resp::effect& response)
+async::task<void> game_bot_controller::on_effect(game_bot& bot, const game_resp::effect_v550& response)
 {
     // Effect is a one-time event, no need to store state
     co_return;

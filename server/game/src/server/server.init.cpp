@@ -302,11 +302,28 @@ async::task<void> fb::game::server::init_script()
 
     auto builder = init_thread->new_builder<void>();
     builder.func = [this](auto&) -> async::task<void> {
-        auto lua = this->lua.open();
-        if (lua)
+        // init.lua may call yielding builtins (e.g. map:model); run via call()/lua_resume,
+        // not load()/lua_pcall which cannot cross a C-call boundary.
+        static constexpr auto path = "scripts/init.lua";
+        auto                  lua  = this->lua.open();
+        if (!lua)
+            co_return;
+
+        auto* ctx = lua.get();
+        if (::luaL_loadfile(*ctx, path) != LUA_OK)
         {
-            if (lua->load("scripts/init.lua") == false)
-                fb::logger::warn("Server init script failed: cannot load scripts/init.lua");
+            fb::lua::report_load_failed_from_stack(*ctx, path);
+            fb::logger::warn("Server init script failed: {}", path);
+            co_return;
+        }
+
+        try
+        {
+            std::ignore = co_await lua->call(0);
+        }
+        catch (const std::exception& e)
+        {
+            fb::logger::warn("Server init script failed: {}: {}", path, e.what());
         }
         co_return;
     };
@@ -410,6 +427,7 @@ async::task<void> fb::game::server::on_start()
     this->init_handlers();
     this->init_timers();
     this->init_amqp_handlers();
-    co_await this->castles.load_all();
+    // Do not await HTTP here: io_context threads start only after on_start returns.
+    // Castle rows are loaded lazily via castle::container::fetch when first needed.
     co_await this->init_script();
 }

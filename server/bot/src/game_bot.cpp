@@ -31,6 +31,16 @@ game_bot::game_bot(bot_controller<game_bot>& bot_controller, uint32_t id, const 
     reader.read(enc_key.get(), key_size);
     this->encryption(enc_type, enc_key.get());
     this->_transfer_buffer = params;
+
+    // Transfer header: from (u8) + required CLIENT_VERSION (u16)
+    if (reader.readable_size() >= sizeof(uint8_t) + sizeof(uint16_t))
+    {
+        std::ignore  = reader.read<uint8_t>();
+        auto packed  = reader.read<uint16_t>();
+        auto version = fb::protocol::CLIENT_VERSION::v550;
+        if (fb::protocol::try_parse(packed, version))
+            this->_client_version = version;
+    }
 }
 
 game_bot::~game_bot()
@@ -80,6 +90,11 @@ void game_bot::inited(bool value)
 const fb::stream& game_bot::transfer_buffer() const
 {
     return this->_transfer_buffer;
+}
+
+fb::protocol::CLIENT_VERSION game_bot::client_version() const
+{
+    return this->_client_version;
 }
 
 uint32_t game_bot::transfer_from_bot_id() const

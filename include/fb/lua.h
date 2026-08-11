@@ -763,7 +763,9 @@ public:
 
 // Debug: warn once when a script file exists but fails to load.
 // Missing files are silent (optional hooks). No-op in release.
-void report_load_failed(std::string_view path);
+void report_load_failed(std::string_view path, std::string_view error = {});
+// Pop the Lua error on the top of the stack and forward it to report_load_failed.
+void report_load_failed_from_stack(lua_State* L, std::string_view path);
 // Debug: warn once when a loaded script is missing the expected entry function.
 // No-op in release.
 void report_func_missing(std::string_view path, std::string_view func);
@@ -790,21 +792,19 @@ bool fb::lua::context::load(std::string_view fmt, Args&&... args)
 #if defined DEBUG || defined _DEBUG
     if (luaL_loadfile(*this, fname.c_str()) != LUA_OK)
     {
-        this->pop(1);
-        fb::lua::report_load_failed(fname);
+        fb::lua::report_load_failed_from_stack(*this, fname);
         return false;
     }
 
     if (lua_pcall(*this, 0, 1, 0) != LUA_OK)
     {
-        this->pop(1);
-        fb::lua::report_load_failed(fname);
+        fb::lua::report_load_failed_from_stack(*this, fname);
         return false;
     }
 
     if (root->store_module(*this, fname) == false)
     {
-        fb::lua::report_load_failed(fname);
+        fb::lua::report_load_failed(fname, "module must return a table");
         return false;
     }
 

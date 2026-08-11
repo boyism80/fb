@@ -1,4 +1,5 @@
 #include <fb/game/protocol/login.h>
+#include <stdexcept>
 
 namespace fb::protocol::game::request {
 
@@ -19,6 +20,8 @@ void login::serialize(fb::stream_writer<big_endian>& writer) const
     writer.write<uint8_t>(this->key_size);
     writer.write((void*)this->enc_key, this->key_size);
     writer.write<uint8_t>(static_cast<uint8_t>(this->from));
+    // Required client_version sits after `from` in the transfer header
+    writer.write<uint16_t>(static_cast<uint16_t>(this->client_version));
     writer.write<uint32_t>(this->id);
     writer.write<std::string, uint8_t>(this->name);
     writer.write<bool>(this->transfer.has_value());
@@ -34,7 +37,7 @@ void login::serialize(fb::stream_writer<big_endian>& writer) const
 void login::deserialize(fb::stream_reader<big_endian>& reader)
 {
     header::deserialize(reader);
-    // base
+    // base (from transfer header)
     this->enc_type = reader.read<uint8_t>();
     this->key_size = reader.read<uint8_t>();
     reader.read((void*)this->enc_key, this->key_size);
@@ -43,6 +46,11 @@ void login::deserialize(fb::stream_reader<big_endian>& reader)
 #else
     this->from = reader.read<uint8_t>();
 #endif
+
+    // Required client version (before optional transfer payload)
+    auto packed = reader.read<uint16_t>();
+    if (try_parse(packed, this->client_version) == false)
+        throw std::runtime_error("invalid client version in login transfer");
 
     // additional parameters
     this->id   = reader.read<uint32_t>();

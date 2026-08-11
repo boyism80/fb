@@ -4,6 +4,7 @@
 #include <fb/protocol/header.h>
 #include <fb/model/model.h>
 #include <fb/protocol/flatbuffer/protocol.h>
+#include <fb/protocol/client_version.h>
 
 namespace fb::protocol::game::request {
 
@@ -31,6 +32,7 @@ public:
     uint8_t                       enc_key[0x09];
     uint32_t                      id;
     std::string                   name;
+    CLIENT_VERSION                client_version = CLIENT_VERSION::v550;
     std::optional<transfer_param> transfer;
 
 public:

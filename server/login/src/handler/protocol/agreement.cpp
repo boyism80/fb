@@ -15,6 +15,11 @@ async::task<bool> agreement::handle(fb::socket<fb::login::session>&          ses
             throw std::exception();
 
         session.encryption(request.enc_type, request.enc_key);
+
+        auto* data = session.data();
+        if (data != nullptr)
+            data->client_version = request.client_version;
+
         session.send(this->server.agreement());
         co_return true;
     }

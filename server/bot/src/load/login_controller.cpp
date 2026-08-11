@@ -105,7 +105,13 @@ async::task<void> login_bot_controller::on_transfer(login_bot& bot, const fb_res
 async::task<void> login_bot_controller::on_bot_connected(login_bot& bot)
 {
     auto& encryption = bot.encryption();
-    bot.send(login_reqs::agreement(encryption.pattern(), fb::encryption::KEY_SIZE, encryption.iv()), false, true);
+    bot.send(login_reqs::agreement(encryption.pattern(),
+                                   fb::encryption::KEY_SIZE,
+                                   encryption.iv(),
+                                   bot.transfer_from(),
+                                   bot.client_version()),
+             false,
+             true);
 
     // Bot is now managed by bot_controller's thread-safe collection
     co_return;

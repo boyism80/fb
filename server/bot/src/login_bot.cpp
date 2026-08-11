@@ -19,6 +19,16 @@ login_bot::login_bot(bot_controller<login_bot>& bot_controller, uint32_t id, con
     auto enc_key  = std::make_unique<uint8_t[]>(key_size);
     reader.read(enc_key.get(), key_size);
     this->encryption(enc_type, enc_key.get());
+
+    // Transfer header: from (u8) + required CLIENT_VERSION (u16)
+    if (reader.readable_size() >= sizeof(uint8_t) + sizeof(uint16_t))
+    {
+        this->_transfer_from = reader.read<uint8_t>();
+        auto packed          = reader.read<uint16_t>();
+        auto version         = fb::protocol::CLIENT_VERSION::v550;
+        if (fb::protocol::try_parse(packed, version))
+            this->_client_version = version;
+    }
 }
 
 login_bot::~login_bot()
@@ -45,4 +55,14 @@ std::string login_bot::generate_id() const
 
         return mbs;
     }
+}
+
+uint8_t login_bot::transfer_from() const
+{
+    return this->_transfer_from;
+}
+
+fb::protocol::CLIENT_VERSION login_bot::client_version() const
+{
+    return this->_client_version;
 }

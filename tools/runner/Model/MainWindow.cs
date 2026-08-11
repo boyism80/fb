@@ -30,7 +30,7 @@ namespace Runner.Model
     public class GatewaySetting
     {
         public required ushort Port { get; set; }
-        public ushort ClientVersion { get; set; } = 550;
+        public List<ushort> ClientVersions { get; set; } = new List<ushort> { 550, 565 };
         public byte ClientNation { get; set; } = 215;
     }
 
@@ -127,8 +127,8 @@ namespace Runner.Model
             try
             {
                 var model = JsonConvert.DeserializeObject<MainWindow>(File.ReadAllText(path));
-                if (model.Gateway.ClientVersion == 0)
-                    model.Gateway.ClientVersion = 550;
+                if (model.Gateway.ClientVersions == null || model.Gateway.ClientVersions.Count == 0)
+                    model.Gateway.ClientVersions = new List<ushort> { 550, 565 };
                 if (model.Gateway.ClientNation == 0)
                     model.Gateway.ClientNation = 215;
                 if (model.Marketplace.Port == 0)

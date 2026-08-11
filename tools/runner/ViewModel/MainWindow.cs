@@ -143,10 +143,22 @@ namespace Runner.ViewModel
             get => Model.Port;
             set => Model.Port = value;
         }
-        public ushort ClientVersion
+        public string ClientVersions
         {
-            get => Model.ClientVersion;
-            set => Model.ClientVersion = value;
+            get => string.Join(",", Model.ClientVersions ?? new List<ushort>());
+            set
+            {
+                var parsed = new List<ushort>();
+                if (string.IsNullOrWhiteSpace(value) == false)
+                {
+                    foreach (var part in value.Split(new[] { ',', ' ', ';' }, StringSplitOptions.RemoveEmptyEntries))
+                    {
+                        if (ushort.TryParse(part.Trim(), out var v))
+                            parsed.Add(v);
+                    }
+                }
+                Model.ClientVersions = parsed.Count > 0 ? parsed : new List<ushort> { 550, 565 };
+            }
         }
         public byte ClientNation
         {
@@ -1249,7 +1261,7 @@ namespace Runner.ViewModel
                 });
                 gatewayConf["client"] = JObject.FromObject(new
                 {
-                    version = Gateway.ClientVersion,
+                    versions = Gateway.Model.ClientVersions ?? new List<ushort> { 550, 565 },
                     nation = Gateway.ClientNation
                 });
 

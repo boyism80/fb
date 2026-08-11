@@ -229,9 +229,10 @@ async::task<std::shared_ptr<character>> login::init(const game_reqs::login& requ
     {
         params.mimicry = std::nullopt;
     }
-    params.nation       = static_cast<NATION>(resp.character.nation);
-    params.divine_beast = static_cast<DIVINE_BEAST>(resp.character.divine_beast);
-    params.super_hide   = resp.character.super_hide;
+    params.nation         = static_cast<NATION>(resp.character.nation);
+    params.divine_beast   = static_cast<DIVINE_BEAST>(resp.character.divine_beast);
+    params.super_hide     = resp.character.super_hide;
+    params.client_version = request.client_version;
 
     auto ch   = this->server.make<character>(params);
     auto weak = ch->weak_from_this_as<character>();

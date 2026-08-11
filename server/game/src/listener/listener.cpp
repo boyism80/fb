@@ -1,5 +1,6 @@
-#include <fb/game/listener.h>
+﻿#include <fb/game/listener.h>
 #include <fb/game/server.h>
+#include <fb/protocol/client_version.h>
 
 using namespace fb::game;
 using table = fb::model::table;
@@ -251,7 +252,25 @@ void listener_impl::on_sound(object& me, SOUND sound, uint8_t volume)
 }
 void listener_impl::on_effect(object& me, uint8_t value)
 {
-    this->server.send(me, game_resp::effect(me, value), scope::PIVOT);
+    using cv     = fb::protocol::CLIENT_VERSION;
+    auto matches = [](object& o, cv ver) -> bool {
+        if (o.is(OBJECT_TYPE::CHARACTER) == false)
+            return false;
+        return static_cast<character&>(o).client_version == ver;
+    };
+
+    this->server.send(me,
+                      game_resp::effect_v550(me, value),
+                      scope::PIVOT,
+                      {.with_me = matches(me, cv::v550), .condition = [matches](object& o) {
+                           return matches(o, cv::v550);
+                       }});
+    this->server.send(me,
+                      game_resp::effect_v565(me, value),
+                      scope::PIVOT,
+                      {.with_me = matches(me, cv::v565), .condition = [matches](object& o) {
+                           return matches(o, cv::v565);
+                       }});
 }
 
 void listener_impl::on_map_leave(object& me, const fb::game::map& map)

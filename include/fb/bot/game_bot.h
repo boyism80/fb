@@ -4,6 +4,7 @@
 #include <fb/bot/bot.h>
 #include <fb/lua.h>
 #include <fb/game/protocol.h>
+#include <fb/protocol/client_version.h>
 #include <shared_mutex>
 #include <set>
 #include <string>
@@ -97,6 +98,7 @@ private:
     uint32_t                        _oid = 0;
     point<uint16_t>                 _position;
     fb::stream                      _transfer_buffer;
+    fb::protocol::CLIENT_VERSION    _client_version = fb::protocol::CLIENT_VERSION::v550;
     uint32_t                        _transfer_from_bot_id = 0;
     DIRECTION                       _direction            = DIRECTION::BOTTOM;
     uint16_t                        _look                 = 0;
@@ -166,6 +168,7 @@ public:
     bool                                   inited() const;
     void                                   inited(bool value);
     const fb::stream&                      transfer_buffer() const;
+    fb::protocol::CLIENT_VERSION           client_version() const;
     uint32_t                               transfer_from_bot_id() const;
     void                                   set_transfer_from_bot_id(uint32_t value);
     DIRECTION                              direction() const;
