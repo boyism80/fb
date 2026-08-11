@@ -72,6 +72,11 @@ void life::kill(DESTROY_TYPE destroy_type)
     this->stat.hp(0, false);
 }
 
+void life::handle_death(std::shared_ptr<fb::game::object> killer)
+{
+    this->assert_thread();
+}
+
 life::mob_vector life::damage_targets(const damage_list& targets, const damage_opts& opts)
 {
     this->assert_thread();
@@ -130,7 +135,7 @@ life::mob_vector life::damage_targets(const damage_list& targets, const damage_o
                 continue;
 
             ch->kill(DESTROY_TYPE::DEAD);
-            ch->notify_death(attacker);
+            ch->handle_death(attacker);
         }
     }
 

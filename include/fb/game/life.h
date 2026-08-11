@@ -80,6 +80,7 @@ public:
     void                      update_hp(uint64_t diff, bool critical, bool notify = true);
     batch_update_guard        batch_update();
     virtual void              kill(DESTROY_TYPE destroy_type = DESTROY_TYPE::DEFAULT);
+    virtual void              handle_death(std::shared_ptr<fb::game::object> killer = nullptr);
     virtual async::task<void> damage_to(const damage_list& targets);
     virtual async::task<void> damage_to(const damage_list& targets, const damage_opts& opts);
     virtual bool              alive() const;

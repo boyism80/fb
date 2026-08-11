@@ -85,7 +85,7 @@ IMPLEMENT_LUA_EXTENSION(character, "fb.game.character")
 {"birthday",                     builtin::character::builtin_birthday},
 {"active",                       builtin::character::builtin_active},
 {"super_hide",                   builtin::character::builtin_super_hide},
-{"creature",                     builtin::character::builtin_creature},
+{"divine_beast",                     builtin::character::builtin_divine_beast},
 {"teleport",                     builtin::character::builtin_teleport},
 {"dialog",                       builtin::character::builtin_dialog},
 {"list",                         builtin::character::builtin_list},
@@ -4264,7 +4264,7 @@ int builtin::character::builtin_send_mail(lua_State* L)
     return builder.run();
 }
 
-int builtin::character::builtin_creature(lua_State* L)
+int builtin::character::builtin_divine_beast(lua_State* L)
 {
     auto lua = fb::lua::get(L);
     if (lua == nullptr)
@@ -4277,29 +4277,29 @@ int builtin::character::builtin_creature(lua_State* L)
 
     if (argc == 1)
     {
-        auto weak     = ch->weak_from_this_as<fb::game::character>();
-        auto creature = std::make_shared<CREATURE>();
-        auto builder  = lua->new_co_builder();
-        builder.weak  = weak;
-        builder.yield = [=]() -> async::task<void> {
-            *creature = ch->creature();
+        auto weak         = ch->weak_from_this_as<fb::game::character>();
+        auto divine_beast = std::make_shared<DIVINE_BEAST>();
+        auto builder      = lua->new_co_builder();
+        builder.weak      = weak;
+        builder.yield     = [=]() -> async::task<void> {
+            *divine_beast = ch->divine_beast();
             co_return;
         };
         builder.resume = [=]() -> async::task<int> {
-            lua->pushinteger(static_cast<uint8_t>(*creature));
+            lua->pushinteger(static_cast<uint8_t>(*divine_beast));
             co_return 1;
         };
         return builder.run();
     }
     else
     {
-        auto value    = static_cast<CREATURE>(lua->tointeger(2));
+        auto value    = static_cast<DIVINE_BEAST>(lua->tointeger(2));
         auto weak     = ch->weak_from_this_as<fb::game::character>();
         auto success  = std::make_shared<bool>(false);
         auto builder  = lua->new_co_builder();
         builder.weak  = weak;
         builder.yield = [=]() -> async::task<void> {
-            *success = ch->creature(value);
+            *success = ch->divine_beast(value);
             co_return;
         };
         builder.resume = [=]() -> async::task<int> {

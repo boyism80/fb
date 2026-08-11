@@ -32,12 +32,12 @@ void update_internal::serialize(fb::stream_writer<big_endian>& writer) const
 
     if (ENUM_IN(this->level, UPDATE_STATE_LEVEL::BASED))
     {
-        writer.write<uint8_t>(static_cast<uint8_t>(this->ch.nation()));   // nation
-        writer.write<uint8_t>(static_cast<uint8_t>(this->ch.creature())); // creature
-        writer.write<uint8_t>(0x00);                                      // mid-skip pad (unread)
-        writer.write<uint8_t>(this->ch.level());                          // level
-        writer.write<uint32_t>(encoded_maxhp);                            // base hp
-        writer.write<uint32_t>(encoded_maxmp);                            // base mp
+        writer.write<uint8_t>(static_cast<uint8_t>(this->ch.nation()));       // nation
+        writer.write<uint8_t>(static_cast<uint8_t>(this->ch.divine_beast())); // divine_beast
+        writer.write<uint8_t>(0x00);                                          // mid-skip pad (unread)
+        writer.write<uint8_t>(this->ch.level());                              // level
+        writer.write<uint32_t>(encoded_maxhp);                                // base hp
+        writer.write<uint32_t>(encoded_maxmp);                                // base mp
         writer.write<uint8_t>(this->ch.stat.str());
         writer.write<uint8_t>(this->ch.stat.intelligence());
         writer.write<uint8_t>(0x03); // mid-skip pad (unread)
@@ -83,8 +83,8 @@ void update_internal::deserialize(fb::stream_reader<big_endian>& reader)
     this->ch_gm              = ENUM_IN(this->level, UPDATE_STATE_LEVEL::GM);
     if (ENUM_IN(this->level, UPDATE_STATE_LEVEL::BASED))
     {
-        this->ch_nation   = reader.read<uint8_t>();
-        this->ch_creature = reader.read<uint8_t>();
+        this->ch_nation       = reader.read<uint8_t>();
+        this->ch_divine_beast = reader.read<uint8_t>();
         reader.read<uint8_t>();
         this->ch_level        = reader.read<uint8_t>();
         this->ch_base_hp      = reader.read<uint32_t>();

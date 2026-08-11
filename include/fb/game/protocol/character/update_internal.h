@@ -25,7 +25,7 @@ public:
     bool               ch_lock_walk_speed = false;
     bool               ch_gm              = false;
     uint8_t            ch_nation          = 0;
-    uint8_t            ch_creature        = 0;
+    uint8_t            ch_divine_beast    = 0;
     uint8_t            ch_level           = 0;
     uint32_t           ch_base_hp         = 0;
     uint32_t           ch_base_mp         = 0;

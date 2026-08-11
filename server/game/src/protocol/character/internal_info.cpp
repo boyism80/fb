@@ -59,7 +59,15 @@ void internal_info::serialize(fb::stream_writer<big_endian>& writer) const
     writer.write<std::string>(sstream.str());
     writer.write<uint8_t>(this->ch.option(OPTION::GROUP));
 
-    writer.write<uint32_t>(fb::game::encode_client_amount(this->ch.experience_remained()));
+    auto     cls      = this->ch.cls();
+    auto     level    = this->ch.level();
+    uint64_t remained = 0;
+    if (table::ability->contains(cls) && table::ability[cls].contains(level) &&
+        table::ability[cls].contains(static_cast<uint8_t>(level + 1)))
+    {
+        remained = table::ability->stacked_exp(cls, level) - this->ch.exp();
+    }
+    writer.write<uint32_t>(fb::game::encode_client_amount(remained));
 
     auto& class_name = table::promotion[this->ch.cls()][this->ch.promotion()].name;
     writer.write<std::string>(class_name);

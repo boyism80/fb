@@ -13,6 +13,7 @@
 #include <fb/hash.h>
 #include <fb/game/group.h>
 #include <fb/game/clan.h>
+#include <fb/game/castle.h>
 #include <fb/game/service/mail.h>
 #include <fb/game/service/bulletin.h>
 #include <fb/game/service/system_storage.h>
@@ -44,6 +45,11 @@ REGISTER_RESPONSE(fb::protocol::internal::request::LeaveClan, fb::protocol::inte
 REGISTER_RESPONSE(fb::protocol::internal::request::KickClan, fb::protocol::internal::response::UpdatedClan)
 REGISTER_RESPONSE(fb::protocol::internal::request::ChangeClanRole, fb::protocol::internal::response::UpdatedClan)
 REGISTER_RESPONSE(fb::protocol::internal::request::BroadcastClan, fb::protocol::internal::response::BroadcastClan)
+REGISTER_RESPONSE(fb::protocol::internal::request::AllyClan, fb::protocol::internal::response::UpdatedClan)
+REGISTER_RESPONSE(fb::protocol::internal::request::UnallyClan, fb::protocol::internal::response::UpdatedClan)
+REGISTER_RESPONSE(fb::protocol::internal::request::DeclareClanEnemy, fb::protocol::internal::response::UpdatedClan)
+REGISTER_RESPONSE(fb::protocol::internal::request::EndClanEnemy, fb::protocol::internal::response::UpdatedClan)
+REGISTER_RESPONSE(fb::protocol::internal::request::SetCastleOwner, fb::protocol::internal::response::UpdatedCastle)
 REGISTER_RESPONSE(fb::protocol::internal::request::Logout, fb::protocol::internal::response::Logout)
 REGISTER_RESPONSE(fb::protocol::internal::request::Save, fb::protocol::internal::response::Save)
 REGISTER_RESPONSE(fb::protocol::internal::request::SaveBatch, fb::protocol::internal::response::BatchSave)
@@ -131,6 +137,7 @@ public:
     character::container    characters;
     map::container          maps;
     clan::container         clans;
+    castle::container       castles;
     group::container        groups;
     service::mail           mail;
     service::bulletin       bulletin;

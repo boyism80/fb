@@ -28,6 +28,7 @@ async::task<void> fb::game::server::init_lua()
         lua.build<fb::game::quest, fb::lua::luable>();
         lua.build<fb::game::door, fb::lua::luable>();
         lua.build<fb::game::clan, fb::lua::luable>();
+        lua.build<fb::game::castle, fb::lua::luable>();
         lua.build<fb::game::clan_member, fb::lua::luable>();
         lua.build<fb::game::achievement, fb::lua::luable>();
         lua.build<fb::game::spell, fb::lua::luable>();
@@ -74,6 +75,8 @@ async::task<void> fb::game::server::init_lua()
         lua.build("id2npc", builtin::server::builtin_id2npc);
         lua.build("id2map", builtin::server::builtin_id2map);
         lua.build("id2ch", builtin::server::builtin_id2ch);
+        lua.build("id2clan", builtin::server::builtin_id2clan);
+        lua.build("castle", builtin::server::builtin_castle);
         lua.build("broadcast", builtin::server::builtin_broadcast);
         lua.build("assert_alive", builtin::server::builtin_assert_alive);
         lua.build("pursuit_sell", builtin::server::builtin_pursuit_sell);
@@ -92,7 +95,6 @@ async::task<void> fb::game::server::init_lua()
         lua.build("reload_table", builtin::server::builtin_reload_table);
         lua.build("mknpc", builtin::server::builtin_mknpc);
         lua.build("maps", builtin::server::builtin_maps);
-        lua.build("game_map", builtin::server::builtin_find_map);
         lua.build("shutdown", builtin::server::builtin_shutdown);
         lua.build("ban", builtin::server::builtin_ban);
         lua.build("unban", builtin::server::builtin_unban);
@@ -254,6 +256,7 @@ void fb::game::server::init_amqp_handlers()
     this->handler.amqp.bind<fb::game::handler::amqp::destroy_clan>(std::format("fb.{}.clan", world));
     this->handler.amqp.bind<fb::game::handler::amqp::updated_clan>(std::format("fb.{}.clan", world));
     this->handler.amqp.bind<fb::game::handler::amqp::broadcast_clan>(std::format("fb.{}.clan", world));
+    this->handler.amqp.bind<fb::game::handler::amqp::updated_castle>(std::format("fb.{}.castle", world));
     this->handler.amqp.bind<fb::game::handler::amqp::write_mail>(std::format("fb.{}.mail", world));
     this->handler.amqp.bind<fb::game::handler::amqp::write_mails>(std::format("fb.{}.mail", world));
     this->handler.amqp.bind<fb::game::handler::amqp::deliver_system_mail>(std::format("fb.{}.mail", world));
@@ -316,6 +319,7 @@ fb::game::server::server(boost::asio::io_context& io_context, uint16_t port) :
     listener(*this),
     characters(*this),
     clans(*this),
+    castles(*this),
     groups(*this),
     mail(*this),
     bulletin(*this),
@@ -406,5 +410,6 @@ async::task<void> fb::game::server::on_start()
     this->init_handlers();
     this->init_timers();
     this->init_amqp_handlers();
+    co_await this->castles.load_all();
     co_await this->init_script();
 }

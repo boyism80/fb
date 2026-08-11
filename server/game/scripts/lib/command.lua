@@ -1,6 +1,44 @@
 local sky_maze = require('lib.sky_maze')
+local siege = require('schedule.siege')
 
 local M = {}
+
+local function is_clan_master(me)
+    local clan = me:clan()
+    if clan == nil then
+        return false
+    end
+
+    for _, member in pairs(clan:members()) do
+        if member:role() == CLAN_ROLE.MASTER and member:name() == me:name() then
+            return true
+        end
+    end
+
+    return false
+end
+
+local function ensure_clan_as_master(me)
+    if is_clan_master(me) then
+        return true, me:clan()
+    end
+
+    local clan = me:clan()
+    if clan ~= nil then
+        local err = clan:leave(me)
+        if err ~= nil then
+            return false, err
+        end
+    end
+
+    local name = string.format('공성%s%d', me:name(), math.random(1000, 9999))
+    local err = me:create_clan(name)
+    if err ~= nil then
+        return false, err
+    end
+
+    return true, me:clan()
+end
 
 M.functions = {
     ['명령어'] = {
@@ -142,8 +180,8 @@ M.functions = {
                 return true
             end
 
-            local model = name2map(name)
-            if model == nil then
+            local map = name2map(name)
+            if map == nil then
                 me:message(string.format("존재하지 않는 맵입니다: %s", name))
                 return true
             end
@@ -165,9 +203,8 @@ M.functions = {
                 end
             end
 
-            local map = model
             if slot ~= nil then
-                map = model:instance(slot)
+                map = map:instance(slot)
                 if map == nil then
                     me:message(string.format("인스턴스 맵을 생성할 수 없습니다: %s (slot %d)", name, slot))
                     return true
@@ -304,19 +341,10 @@ M.functions = {
                 return true
             end
 
-            local function resolve_game_map(map_id)
-                for _, map in pairs(maps()) do
-                    if map:model():id() == map_id then
-                        return map
-                    end
-                end
-                return nil
-            end
-
             local map_id = tonumber(args[2])
             local map = nil
             if map_id ~= nil then
-                map = resolve_game_map(map_id)
+                map = id2map(map_id)
             else
                 map = me:map()
                 if map ~= nil then
@@ -469,6 +497,62 @@ M.functions = {
             else
                 me:message(string.format("시간역전 실패: %s", error_message or "unknown error"), MESSAGE_TYPE.BROWN)
             end
+            return true
+        end,
+    },
+
+    ['공성시작'] = {
+        ['privilege'] = ROLE.ADMIN,
+        ['usage'] = '<신수> - 신수성 공성 시작 (주작/현무/청룡/백호)',
+        ['command'] = function (me, args)
+            local name = table.unpack(args)
+            if not name then
+                me:message("사용법: /공성시작 <신수> (주작/현무/청룡/백호)")
+                return true
+            end
+
+            local divine_beast = siege.NAME_TO_DIVINE_BEAST[name]
+            if divine_beast == nil then
+                me:message("신수는 주작/현무/청룡/백호 중 하나여야 합니다.")
+                return true
+            end
+
+            local ok, result = siege.start_siege(divine_beast)
+            if ok then
+                me:message(string.format("%s의성 공성전을 시작했습니다. (지속 %d초)", name, result), MESSAGE_TYPE.BROWN)
+            else
+                me:message(string.format("공성시작 실패: %s", result or "unknown error"), MESSAGE_TYPE.BROWN)
+            end
+            return true
+        end,
+    },
+
+    ['공성종료'] = {
+        ['privilege'] = ROLE.ADMIN,
+        ['usage'] = '- 진행 중인 신수성 공성전 종료',
+        ['command'] = function (me, args)
+            local ended = siege.end_active_sieges()
+            if #ended == 0 then
+                me:message("진행 중인 공성전이 없습니다.", MESSAGE_TYPE.BROWN)
+            else
+                me:message(string.format("공성전 종료: %s", table.concat(ended, ', ')), MESSAGE_TYPE.BROWN)
+            end
+            return true
+        end,
+    },
+
+    ['공성준비'] = {
+        ['privilege'] = ROLE.ADMIN,
+        ['usage'] = '- 공성 참가용 문파장 문파 준비',
+        ['command'] = function (me, args)
+            local ok, result = ensure_clan_as_master(me)
+            if ok == false then
+                me:message(string.format("공성준비 실패: %s", result or "unknown error"), MESSAGE_TYPE.BROWN)
+                return true
+            end
+
+            local clan = result
+            me:message(string.format("공성준비 완료: 문파 [%s] 문파장", clan and clan:name() or '?'), MESSAGE_TYPE.BROWN)
             return true
         end,
     },
@@ -1943,29 +2027,29 @@ M.functions = {
             ['privilege'] = ROLE.ADMIN,
             ['usage'] = '<신수> - 신수 변경 (청룡, 주작, 백호, 현무)',
             ['command'] = function (me, args)
-                local creature_name = table.unpack(args)
-                if not creature_name then
+                local divine_beast_name = table.unpack(args)
+                if not divine_beast_name then
                     me:message("사용법: /신수바꾸기 <신수> (청룡, 주작, 백호, 현무 중 하나)")
                     return true
                 end
                 
-                local creature_value = nil
-                if creature_name == '청룡' then
-                    creature_value = CREATURE.DRAGON
-                elseif creature_name == '주작' then
-                    creature_value = CREATURE.PHOENIX
-                elseif creature_name == '백호' then
-                    creature_value = CREATURE.TIGER
-                elseif creature_name == '현무' then
-                    creature_value = CREATURE.TURTLE
+                local divine_beast_value = nil
+                if divine_beast_name == '청룡' then
+                    divine_beast_value = DIVINE_BEAST.AZURE_DRAGON
+                elseif divine_beast_name == '주작' then
+                    divine_beast_value = DIVINE_BEAST.VERMILION_BIRD
+                elseif divine_beast_name == '백호' then
+                    divine_beast_value = DIVINE_BEAST.WHITE_TIGER
+                elseif divine_beast_name == '현무' then
+                    divine_beast_value = DIVINE_BEAST.BLACK_TORTOISE
                 else
                     me:message("신수는 청룡, 주작, 백호, 현무 중 하나여야 합니다.")
                     return true
                 end
                 
-                local success = me:creature(creature_value)
+                local success = me:divine_beast(divine_beast_value)
                 if success then
-                    me:message(string.format("신수가 %s 변경되었습니다. 재접속 후 변경사항을 확인할 수 있습니다.", name_with(creature_name, '으로', '로')), MESSAGE_TYPE.BROWN)
+                    me:message(string.format("신수가 %s 변경되었습니다. 재접속 후 변경사항을 확인할 수 있습니다.", name_with(divine_beast_name, '으로', '로')), MESSAGE_TYPE.BROWN)
                 else
                     me:message("신수 변경에 실패했습니다.", MESSAGE_TYPE.BROWN)
                 end

@@ -15,6 +15,7 @@
 #include <format>
 #include <macro.h>
 #include <unordered_map>
+#include <random>
 
 using namespace fb::game;
 using namespace fb::model;
@@ -41,7 +42,7 @@ character::character(fb::game::server& server, const initial_params& params) :
     _armor_color(params.armor_color), _weapon_color(params.weapon_color), _shield_color(params.shield_color),
     _experience(params.exp), _gender(params.gender), _state(params.state), _level(params.level),
     _class(params.class_type), _promotion(params.promotion), _money(params.money), _mimicry(params.mimicry),
-    _title(params.title), _nation(params.nation), _creature(params.creature), _super_hide(params.super_hide),
+    _title(params.title), _nation(params.nation), _divine_beast(params.divine_beast), _super_hide(params.super_hide),
     _last_afk_time(server.now()), _marriage(server.now())
 {
     this->_ping_state.last_ping_time = server.now() - std::chrono::seconds(10);
@@ -533,25 +534,25 @@ bool character::nation(NATION value)
     return true;
 }
 
-CREATURE character::creature() const
+DIVINE_BEAST character::divine_beast() const
 {
     this->assert_thread();
 
-    return this->_creature;
+    return this->_divine_beast;
 }
 
-bool character::creature(CREATURE value)
+bool character::divine_beast(DIVINE_BEAST value)
 {
-    static const std::unordered_set<CREATURE> valid_creatures = {CREATURE::DRAGON,
-                                                                 CREATURE::PHOENIX,
-                                                                 CREATURE::TIGER,
-                                                                 CREATURE::TURTLE};
+    static const std::unordered_set<DIVINE_BEAST> valid_divine_beasts = {DIVINE_BEAST::AZURE_DRAGON,
+                                                                         DIVINE_BEAST::VERMILION_BIRD,
+                                                                         DIVINE_BEAST::WHITE_TIGER,
+                                                                         DIVINE_BEAST::BLACK_TORTOISE};
     this->assert_thread();
 
-    if (valid_creatures.contains(value) == false)
+    if (valid_divine_beasts.contains(value) == false)
         return false;
 
-    this->_creature = value;
+    this->_divine_beast = value;
     return true;
 }
 
@@ -878,22 +879,6 @@ uint64_t character::reduce_exp(uint64_t value)
         this->update(UPDATE_STATE_LEVEL::EXP_MONEY);
         return 0;
     }
-}
-
-uint64_t character::experience_remained() const
-{
-    this->assert_thread();
-
-    if (this->max_level())
-        return 0;
-
-    if (table::ability->contains(this->_class) == false)
-        return 0;
-
-    if (table::ability[this->_class].contains(this->_level) == false)
-        return 0;
-
-    return table::ability->stacked_exp(this->_class, this->_level) - this->exp();
 }
 
 float character::experience_percent() const
@@ -1620,7 +1605,7 @@ void character::kill(DESTROY_TYPE destroy_type)
     this->state(STATE::GHOST);
 }
 
-void character::notify_death(std::shared_ptr<fb::game::object> killer)
+void character::handle_death(std::shared_ptr<fb::game::object> killer)
 {
     this->assert_thread();
     this->listener.on_dead(*this, killer);
@@ -1643,6 +1628,38 @@ void character::notify_death(std::shared_ptr<fb::game::object> killer)
         log_data["killer_name"] = UTF8(killer_ch.name(), PLATFORM::WINDOWS);
     }
     this->server.log.write("death", log_data);
+
+    this->apply_death_warp();
+}
+
+void character::apply_death_warp()
+{
+    this->assert_thread();
+
+    auto map = this->map();
+    if (map == nullptr)
+        return;
+
+    auto& death_warp = map->model().death_warp;
+    if (death_warp.has_value() == false || death_warp->header != DSL::map)
+        return;
+
+    auto params     = fb::model::dsl::map(death_warp->params);
+    auto target_map = this->server.maps[params.id];
+    if (target_map == nullptr)
+        return;
+
+    static std::random_device random_device;
+    static std::mt19937       random_engine(random_device());
+
+    auto x = params.x;
+    auto y = params.y;
+    if (params.right > params.x)
+        x = static_cast<uint16_t>(std::uniform_int_distribution<int>(params.x, params.right)(random_engine));
+    if (params.bottom > params.y)
+        y = static_cast<uint16_t>(std::uniform_int_distribution<int>(params.y, params.bottom)(random_engine));
+
+    std::ignore = this->map(target_map, fb::model::point16_t(x, y));
 }
 
 async::task<void> character::settle_kills(mob_vector dead)
@@ -1773,7 +1790,7 @@ fb::protocol::internal::Character character::to_protocol() const
     dto.color            = this->_color;
     dto.gender           = static_cast<uint8_t>(this->_gender);
     dto.nation           = static_cast<uint8_t>(this->_nation);
-    dto.creature         = static_cast<uint8_t>(this->_creature);
+    dto.divine_beast     = static_cast<uint8_t>(this->_divine_beast);
     if (this->_map != nullptr && this->_map->model().return_to.has_value())
     {
         auto return_map_id = this->_map->model().return_to.value();

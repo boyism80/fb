@@ -94,7 +94,7 @@ private:
     std::optional<uint8_t>                           _shield_color     = std::nullopt;
     uint64_t                                         _experience       = 0;
     NATION                                           _nation           = NATION::GOGURYEO;
-    CREATURE                                         _creature         = CREATURE::DRAGON;
+    DIVINE_BEAST                                     _divine_beast     = DIVINE_BEAST::AZURE_DRAGON;
     GENDER                                           _gender           = GENDER::MALE;
     STATE                                            _state            = STATE::NORMAL;
     uint8_t                                          _level            = 1;
@@ -163,7 +163,7 @@ public:
         std::optional<uint8_t>                 shield_color = std::nullopt;
         std::optional<character_appearance>    mimicry      = std::nullopt;
         NATION                                 nation       = NATION::GOGURYEO;
-        CREATURE                               creature     = CREATURE::DRAGON;
+        DIVINE_BEAST                           divine_beast = DIVINE_BEAST::AZURE_DRAGON;
         bool                                   super_hide   = false;
     };
 
@@ -174,9 +174,20 @@ public:
     // clang-format on
 
 private:
-    uint64_t             limited_exp(uint64_t exp) const;
-    fb::model::point16_t viewport_centered(const fb::model::point16_t& position) const;
-    void                 ensure_camera_pivot() const;
+    // clang-format off
+    uint64_t                      limited_exp(uint64_t exp) const;
+    fb::model::point16_t          viewport_centered(const fb::model::point16_t& position) const;
+    void                          ensure_camera_pivot() const;
+    bool                          level_up();
+    bool                          max_level() const;
+    float                         experience_percent() const;
+    bool                          option_toggle(OPTION key, bool notify = true);
+    void                          stop_bgm(uint16_t bgm_id = 0);
+    void                          apply_death_warp();
+    void                          award_exp(const fb::game::mob& mob);
+    async::task<void>             death_penalty();
+    async::task<void>             settle_kills(mob_vector dead);
+    // clang-format on
 
 public:
     // clang-format off
@@ -197,7 +208,6 @@ public:
     [[nodiscard]] async::task<bool>          map(std::shared_ptr<fb::game::map> map, std::optional<fb::model::point16_t> position = std::nullopt, map_options options = {}) override final;
     void                                     update_map(const fb::game::map& map) override final;
     void                                     update_bgm(uint16_t bgm, uint8_t volume) override final;
-    void                                     stop_bgm(uint16_t bgm_id = 0);
     void                                     update_position() override final;
     fb::model::point16_t                     viewport() const;
     fb::model::point16_t                     viewport(const fb::model::point16_t& position) const;
@@ -206,11 +216,9 @@ public:
     void                                     assert_thread() const override final;
     void                                     update(UPDATE_STATE_LEVEL value = UPDATE_STATE_LEVEL::EXP_MONEY | UPDATE_STATE_LEVEL::CROWD_CONTROL) override final;
     void                                     kill(DESTROY_TYPE destroy_type = DESTROY_TYPE::DEFAULT) override final;
-    void                                     notify_death(std::shared_ptr<fb::game::object> killer = nullptr);
+    void                                     handle_death(std::shared_ptr<fb::game::object> killer = nullptr) override final;
     async::task<void>                        damage_to(const damage_list& targets) override final;
     async::task<void>                        damage_to(const damage_list& targets, const damage_opts& opts) override final;
-    async::task<void>                        settle_kills(mob_vector dead);
-    void                                     award_exp(const fb::game::mob& mob);
     void                                     update_id() override final;
     bool                                     super_hide() const override final;
     bool                                     hidden(const fb::game::object& target) const override final;
@@ -236,12 +244,10 @@ public:
     void                                                      mimicry(std::optional<character_appearance> value);
     NATION                                                    nation() const;
     bool                                                      nation(NATION value);
-    CREATURE                                                  creature() const;
-    bool                                                      creature(CREATURE value);
+    DIVINE_BEAST                                              divine_beast() const;
+    bool                                                      divine_beast(DIVINE_BEAST value);
     uint8_t                                                   level() const;
     void                                                      level(uint8_t value);
-    bool                                                      level_up();
-    bool                                                      max_level() const;
     GENDER                                                    gender() const;
     void                                                      gender(GENDER value);
     STATE                                                     state() const;
@@ -255,8 +261,6 @@ public:
     void                                                      exp(uint64_t value);
     uint64_t                                                  add_exp(uint64_t value, bool limit = false, bool notify = false);
     uint64_t                                                  reduce_exp(uint64_t value);
-    uint64_t                                                  experience_remained() const;
-    float                                                     experience_percent() const;
     uint64_t                                                  money() const;
     void                                                      money(uint64_t value);
     uint64_t                                                  money_add(uint64_t value);
@@ -264,7 +268,6 @@ public:
     [[nodiscard]] async::task<fb::game::cash*>                money_drop(uint64_t value);
     bool                                                      option(OPTION key) const;
     void                                                      option(OPTION key, bool value, bool notify = true);
-    bool                                                      option_toggle(OPTION key, bool notify = true);
     void                                                      update_option();
     void                                                      update_map();
     void                                                      update_map(const fb::game::map& map, const fb::model::point16_t& begin, const fb::model::size8_t& size, uint16_t crc = 0);
@@ -317,7 +320,6 @@ public:
     [[nodiscard]] async::task<std::shared_ptr<fb::game::mob>> spawn_mob(const fb::model::mob& model, const fb::model::point16_t& position, bool owned = true, bool notify = true);
     const std::vector<std::shared_ptr<fb::game::mob>>&        spawned_mobs() const;
     bool                                                      detach_spawned_mob(fb::game::mob& mob);
-    async::task<void>                                         death_penalty();
     [[nodiscard]] async::task<bool>                           reward(const std::vector<fb::model::dsl>& reward);
     fb::protocol::internal::Character                         to_protocol() const;
     const fb::game::marriage&                                 marriage() const;

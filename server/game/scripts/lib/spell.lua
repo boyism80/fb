@@ -39,8 +39,8 @@ function M.force_position(you, x, y)
     return true
 end
 
-function M.creature_spell(creature, index)
-    if creature == CREATURE.PHOENIX then
+function M.divine_beast_spell(divine_beast, index)
+    if divine_beast == DIVINE_BEAST.VERMILION_BIRD then
         if index == 1 then
             return '화염주'
         elseif index == 2 then
@@ -55,7 +55,7 @@ function M.creature_spell(creature, index)
             return nil
         end
         
-    elseif creature == CREATURE.TIGER then
+    elseif divine_beast == DIVINE_BEAST.WHITE_TIGER then
         if index == 1 then
             return '백열주'
         elseif index == 2 then
@@ -70,7 +70,7 @@ function M.creature_spell(creature, index)
             return nil
         end
         
-    elseif creature == CREATURE.TURTLE then
+    elseif divine_beast == DIVINE_BEAST.BLACK_TORTOISE then
         if index == 1 then
             return '자무주'
         elseif index == 2 then
@@ -84,7 +84,7 @@ function M.creature_spell(creature, index)
         else
             return nil
         end
-    elseif creature == CREATURE.DRAGON then
+    elseif divine_beast == DIVINE_BEAST.AZURE_DRAGON then
         if index == 1 then
             return '뢰진주'
         elseif index == 2 then
@@ -103,8 +103,8 @@ function M.creature_spell(creature, index)
     end
 end
 
-function M.creature_area_spell(creature, index)
-    if creature == CREATURE.PHOENIX then
+function M.divine_beast_area_spell(divine_beast, index)
+    if divine_beast == DIVINE_BEAST.VERMILION_BIRD then
         if index == 1 then
             return "화염주'첨"
         elseif index == 2 then
@@ -119,7 +119,7 @@ function M.creature_area_spell(creature, index)
             return nil
         end
         
-    elseif creature == CREATURE.TIGER then
+    elseif divine_beast == DIVINE_BEAST.WHITE_TIGER then
         if index == 1 then
             return "백열주'첨"
         elseif index == 2 then
@@ -134,7 +134,7 @@ function M.creature_area_spell(creature, index)
             return nil
         end
         
-    elseif creature == CREATURE.TURTLE then
+    elseif divine_beast == DIVINE_BEAST.BLACK_TORTOISE then
         if index == 1 then
             return "자무주'첨"
         elseif index == 2 then
@@ -148,7 +148,7 @@ function M.creature_area_spell(creature, index)
         else
             return nil
         end
-    elseif creature == CREATURE.DRAGON then
+    elseif divine_beast == DIVINE_BEAST.AZURE_DRAGON then
         if index == 1 then
             return "뢰진주'첨"
         elseif index == 2 then
@@ -262,6 +262,40 @@ function M.map_pk_enabled(me)
     return (option & MAP_OPTION.ENABLE_PK) == MAP_OPTION.ENABLE_PK
 end
 
+function M.map_siege_castle(me)
+    local map = me:map()
+    if map == nil then
+        return false
+    end
+    local option = map:model():option()
+    return (option & MAP_OPTION.SIEGE_CASTLE) == MAP_OPTION.SIEGE_CASTLE
+end
+
+function M.is_friendly_clan(me, you)
+    if me == nil or you == nil then
+        return false
+    end
+    if not me:is(OBJECT_TYPE.CHARACTER) or not you:is(OBJECT_TYPE.CHARACTER) then
+        return false
+    end
+
+    local my_clan = me:clan()
+    local your_clan = you:clan()
+    if my_clan == nil or your_clan == nil then
+        return false
+    end
+
+    if my_clan:id() == your_clan:id() then
+        return true
+    end
+
+    return my_clan:is_allied(your_clan)
+end
+
+function M.blocks_siege_friendly_fire(me, you)
+    return M.map_siege_castle(me) and M.is_friendly_clan(me, you)
+end
+
 function M.can_harm_character(me, you, pk, blocks_pvp)
     if you == nil or not you:is(OBJECT_TYPE.CHARACTER) then
         return false
@@ -283,6 +317,10 @@ function M.can_harm_character(me, you, pk, blocks_pvp)
         blocks_pvp = M.attacker_blocks_pvp(me)
     end
     if blocks_pvp then
+        return false
+    end
+
+    if M.blocks_siege_friendly_fire(me, you) then
         return false
     end
 

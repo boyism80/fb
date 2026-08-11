@@ -14,6 +14,8 @@ namespace fb::protocol::game::response {
 
 using namespace fb::game;
 
+HEAD_MARKER compute_head_marker(const fb::game::character& ch, const fb::game::object& to);
+
 template <bool Detailed>
 struct appearance_serializer
 {
@@ -123,7 +125,7 @@ public:
         serializer(appearance_serializer<Detailed>{.oid         = ch.oid(),
                                                    .position    = ch.position(),
                                                    .direction   = ch.direction(),
-                                                   .head_marker = head_marker(ch, to),
+                                                   .head_marker = compute_head_marker(ch, to),
                                                    .name        = ch.name(),
                                                    .appearance  = character_appearance()})
     {
@@ -171,32 +173,6 @@ public:
     update_external(const update_external&) = delete;
 #else
     update_external() = default;
-#endif
-
-private:
-#ifndef BOT
-    static HEAD_MARKER head_marker(const fb::game::character& ch, const fb::game::object& to)
-    {
-        if (&ch == &to)
-            return HEAD_MARKER::NONE;
-
-        if (to.is(OBJECT_TYPE::CHARACTER) == false)
-            return HEAD_MARKER::NONE;
-
-        auto clan_id_1 = ch.clan_id();
-        if (clan_id_1.has_value() == false)
-            return HEAD_MARKER::NONE;
-
-        auto& you       = static_cast<const fb::game::character&>(to);
-        auto  clan_id_2 = you.clan_id();
-        if (clan_id_2.has_value() == false)
-            return HEAD_MARKER::NONE;
-
-        if (clan_id_1 != clan_id_2)
-            return HEAD_MARKER::NONE;
-
-        return HEAD_MARKER::BLUE;
-    }
 #endif
 
 public:

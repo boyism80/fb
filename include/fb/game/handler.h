@@ -54,6 +54,7 @@
 #include <fb/game/handler/amqp/create_clan.h>
 #include <fb/game/handler/amqp/destroy_clan.h>
 #include <fb/game/handler/amqp/updated_clan.h>
+#include <fb/game/handler/amqp/updated_castle.h>
 #include <fb/game/handler/amqp/broadcast_clan.h>
 #include <fb/game/handler/amqp/write_mail.h>
 #include <fb/game/handler/amqp/write_mails.h>

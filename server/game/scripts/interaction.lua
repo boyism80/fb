@@ -3,51 +3,15 @@ local lib = require('lib.interaction')
 local spell = require('lib.spell')
 local npc = require('lib.npc')
 local command = require('lib.command')
+local castle_lib = require('lib.castle')
 
--- Gatekeeper NPC name -> { totem name (e.g. "청룡"), totem_key (e.g. "dragon") } for "~참가" chat.
+-- Gatekeeper NPC name -> { totem name, DIVINE_BEAST } for "~참가" chat.
 local gatekeeper_by_name = {
-    ["주작성문지기"] = { "주작", "bird" },
-    ["청룡성문지기"] = { "청룡", "dragon" },
-    ["현무성문지기"] = { "현무", "turtle" },
-    ["백호성문지기"] = { "백호", "tiger" },
+    ["주작성문지기"] = { "주작", DIVINE_BEAST.VERMILION_BIRD },
+    ["청룡성문지기"] = { "청룡", DIVINE_BEAST.AZURE_DRAGON },
+    ["현무성문지기"] = { "현무", DIVINE_BEAST.BLACK_TORTOISE },
+    ["백호성문지기"] = { "백호", DIVINE_BEAST.WHITE_TIGER },
 }
-
-local function run_gatekeeper_entrance(me, npc_obj, totem_name_kr, totem_key)
-    local clan = me:clan()
-    if not clan then
-        me:dialog(npc_obj, '가입된 문파가 없습니다.')
-        return true
-    end
-    if me:state() == STATE.GHOST then
-        me:dialog(npc_obj, '유령은 참가할 수 없습니다.')
-        return true
-    end
-    local occupant = (_G.clan_castle_occupant or {})[totem_key] or ''
-    local siege_start = _G.clan_siege_start or 0
-    local siege_map = _G.clan_siege_map or ''
-    local clan_name = clan:name()
-    local castle_name = totem_name_kr .. '성'
-    local map_entrance = name2map(totem_name_kr .. '성입구')
-    local map_inner = name2map(totem_name_kr .. '의성')
-    if not map_entrance then
-        me:dialog(npc_obj, '입장할 수 있는 맵이 없습니다.')
-        return true
-    end
-    if clan_name == occupant then
-        if siege_start == 0 and map_inner then
-            me:map(map_inner, math.random(11, 17), math.random(4, 11))
-        else
-            me:map(map_entrance, math.random(49, 57), math.random(145, 148))
-        end
-        return true
-    end
-    if siege_map == castle_name then
-        me:map(map_entrance, math.random(49, 57), math.random(145, 148))
-        return true
-    end
-    me:dialog(npc_obj, string.format('현재 %s 공성이 진행중이지 않습니다.', castle_name))
-    return true
-end
 
 local function run_black_flag(me, npc_obj)
     if me:dialog(npc_obj, '아니, 내가 검정깃발을 가지고 있다는걸 어떻게 알았나.. 으음...', { prev = false, next = true }) == DIALOG_RESULT.QUIT then
@@ -336,7 +300,7 @@ local npc_chat_handlers = {
         func = function(me, npc_obj, params)
             local name = npc_obj:model():name()
             local info = gatekeeper_by_name[name]
-            return run_gatekeeper_entrance(me, npc_obj, info[1], info[2])
+            return castle_lib.enter_castle(me, npc_obj, info[1], info[2])
         end,
     },
     {
@@ -554,7 +518,7 @@ local function on_attack(me, additional_attack)
             end
         end
 
-        if target ~= nil then
+        if target ~= nil and not spell.blocks_siege_friendly_fire(me, target) then
             lib.damage(me, target, nil, 701)
             count = count + 1
         end
@@ -579,7 +543,7 @@ local function on_attack(me, additional_attack)
         if weapon ~= nil then
             damaged_sound = SOUND.DAMAGE
         end
-        if front ~= nil and not lib.is_miss(me, front) then
+        if front ~= nil and not spell.blocks_siege_friendly_fire(me, front) and not lib.is_miss(me, front) then
             lib.damage(me, front, nil, damaged_sound)
             count = count + 1
         end
@@ -596,8 +560,10 @@ local function on_attack(me, additional_attack)
 
             local nears = me:nears(enemy_type, points, false)
             for _, obj in pairs(nears) do
-                lib.damage(me, obj, 0.4, damaged_sound)
-                count = count + 1
+                if not spell.blocks_siege_friendly_fire(me, obj) then
+                    lib.damage(me, obj, 0.4, damaged_sound)
+                    count = count + 1
+                end
             end
         end
 
@@ -615,8 +581,10 @@ local function on_attack(me, additional_attack)
 
             local nears = me:nears(enemy_type, points, false)
             for _, obj in pairs(nears) do
-                lib.damage(me, obj, 0.5, damaged_sound)
-                count = count + 1
+                if not spell.blocks_siege_friendly_fire(me, obj) then
+                    lib.damage(me, obj, 0.5, damaged_sound)
+                    count = count + 1
+                end
             end
         end
     end
@@ -761,6 +729,13 @@ return {
     on_npc_chat = on_npc_chat,
 
     on_login = function(me, first_login)
+        castle_lib.enforce_all(me)
+
+        local clan = me:clan()
+        if clan ~= nil and me:role() <= ROLE.USER then
+            clan:message(string.format('[%s] %s님이 접속하셨습니다.', clan:name(), me:name()), MESSAGE_TYPE.NOTIFY)
+        end
+
         if first_login then
             me:push_achievement(0, make_baram_birth_label() .. " 생", 0, 47)
         end
