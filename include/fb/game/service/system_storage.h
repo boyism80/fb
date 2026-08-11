@@ -40,37 +40,19 @@ public:
 public:
     explicit system_storage(fb::game::server& server);
 
-    /// Personal storage box via internal `/storage/write` (uid).
-    async::task<bool> create(uint32_t                           user_id,
-                             std::string_view                   external_ref,
-                             std::string_view                   title,
-                             std::string_view                   message,
-                             const std::vector<fb::model::dsl>& attachments,
-                             const std::optional<std::string>&  expire_date = std::nullopt);
-
-    /// Personal storage box via internal `/storage/write` (name; resolved on internal).
-    async::task<bool> create(std::string_view                   user_name,
-                             std::string_view                   title,
-                             std::string_view                   message,
-                             const std::vector<fb::model::dsl>& attachments,
-                             const std::optional<std::string>&  expire_date  = std::nullopt,
-                             std::string_view                   external_ref = "");
-
-    /// Global system storage template via internal `/storage/system`.
-    async::task<bool> create_system(std::string_view                   title,
-                                    std::string_view                   message,
-                                    const std::vector<fb::model::dsl>& attachments,
-                                    const std::optional<std::string>&  expire_date  = std::nullopt,
-                                    std::string_view                   external_ref = "");
-
+public:
+    // clang-format off
+    async::task<bool> create(uint32_t user_id, std::string_view external_ref, std::string_view title, std::string_view message, const std::vector<fb::model::dsl>& attachments, const std::optional<std::string>& expire_date = std::nullopt);
+    async::task<bool> create(std::string_view user_name, std::string_view title, std::string_view message, const std::vector<fb::model::dsl>& attachments, const std::optional<std::string>& expire_date = std::nullopt, std::string_view external_ref = "");
+    async::task<bool> create_system(std::string_view title, std::string_view message, const std::vector<fb::model::dsl>& attachments, const std::optional<std::string>& expire_date = std::nullopt, std::string_view external_ref = "");
     async::task<void> sync(character& ch);
     async::task<void> poll_and_deliver();
-
-    void apply_entries(const std::vector<storage_box::entry>& entries, const std::vector<uint32_t>& user_ids);
-    void apply_write_box(const fb::protocol::internal::StorageBox& dto);
-    void apply_deliver_entries(const std::vector<fb::protocol::internal::StorageWriteEntry>& entries);
-    void init_character(character& ch, const std::vector<storage_box::entry>& entries);
-    void init_from_login(character& ch, const std::vector<fb::protocol::internal::StorageBox>& boxes);
+    void              apply_entries(const std::vector<storage_box::entry>& entries, const std::vector<uint32_t>& user_ids);
+    void              apply_write_box(const fb::protocol::internal::StorageBox& dto);
+    void              apply_deliver_entries(const std::vector<fb::protocol::internal::StorageWriteEntry>& entries);
+    void              init_character(character& ch, const std::vector<storage_box::entry>& entries);
+    void              init_from_login(character& ch, const std::vector<fb::protocol::internal::StorageBox>& boxes);
+    // clang-format on
 };
 
 } // namespace fb::game::service

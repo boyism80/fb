@@ -37,6 +37,7 @@ public:
     ~group() = default;
 
 public:
+    // clang-format off
     void                     enter(std::weak_ptr<character> ch);
     void                     detach(std::weak_ptr<character> ch);
     void                     add_member(std::string_view name);
@@ -46,6 +47,7 @@ public:
     character_set            characters() const;
     std::vector<std::string> members() const;
     character_vector         nears(const fb::game::map& map, const fb::model::point16_t& position) const;
+    // clang-format on
 };
 
 class group::container : public lazy_container<group>
@@ -56,21 +58,22 @@ protected:
 public:
     explicit container(server& server);
 
+public:
+    // clang-format off
     async::task<void> create(character& me, std::string_view target_name);
     async::task<void> destroy(character& me);
     async::task<void> handle_action(character& actor, std::string_view target_name);
     async::task<void> toggle_member(character& actor, std::string_view target_name);
     async::task<void> leave_member(character& leaver);
     async::task<void> broadcast(uint32_t group_id, std::string_view message, MESSAGE_TYPE type);
-
     async::task<void> on_error(uint32_t error, std::string_view actor);
-    async::task<void>
-    on_create(std::string target, uint32_t group_id, std::string master, std::map<uint32_t, std::string> members);
+    async::task<void> on_create(std::string target, uint32_t group_id, std::string master, std::map<uint32_t, std::string> members);
     async::task<void> on_destroyed(std::string actor, uint32_t group_id);
     async::task<void> on_enter(std::string target, uint32_t group_id, std::optional<std::string> new_member);
     async::task<void> on_leave(std::string target, uint32_t group_id, std::optional<std::string> deleted_member);
     async::task<void> on_kick(std::string target, uint32_t group_id, std::optional<std::string> deleted_member);
     async::task<void> on_broadcast(uint32_t group_id, std::string message, uint8_t type);
+    // clang-format on
 };
 
 } // namespace fb::game
