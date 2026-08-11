@@ -26,7 +26,7 @@ return {
             me:look(89)
         end
 
-        local house = game_map(10960) or game_map('견우직녀의집')
+        local house = id2map(10960) or name2map('견우직녀의집')
         if house ~= nil then
             me:map(house, math.random(7, 12), math.random(6, 15))
         end

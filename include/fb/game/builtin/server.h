@@ -28,6 +28,8 @@ struct server
     static int builtin_id2map(lua_State* L);
     static int builtin_id2ch(lua_State* L);
     static int builtin_id2item(lua_State* L);
+    static int builtin_id2clan(lua_State* L);
+    static int builtin_castle(lua_State* L);
     static int builtin_pursuit_sell(lua_State* L);
     static int builtin_pursuit_sell_price(lua_State* L);
     static int builtin_pursuit_buy(lua_State* L);
@@ -46,7 +48,6 @@ struct server
     static int builtin_reload_table(lua_State* L);
     static int builtin_mknpc(lua_State* L);
     static int builtin_maps(lua_State* L);
-    static int builtin_find_map(lua_State* L);
     static int builtin_shutdown(lua_State* L);
     static int builtin_ban(lua_State* L);
     static int builtin_unban(lua_State* L);

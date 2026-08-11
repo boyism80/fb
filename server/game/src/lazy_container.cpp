@@ -1,3 +1,4 @@
+#include <fb/game/castle.h>
 #include <fb/game/clan.h>
 #include <fb/game/group.h>
 #include <fb/game/lazy_container.h>
@@ -120,17 +121,22 @@ bool lazy_container<Entity, NumBuckets>::contains(hash_type id) const
 
 template class lazy_container<clan>::ensure_guard;
 template class lazy_container<group>::ensure_guard;
+template class lazy_container<castle>::ensure_guard;
 
 template lazy_container<clan>::lazy_container(server&);
 template lazy_container<group>::lazy_container(server&);
+template lazy_container<castle>::lazy_container(server&);
 
-template async::task<lazy_container<clan>::ensure_guard>  lazy_container<clan>::ensure_impl(uint32_t, fb::thread&);
-template async::task<lazy_container<group>::ensure_guard> lazy_container<group>::ensure_impl(uint32_t, fb::thread&);
+template async::task<lazy_container<clan>::ensure_guard>   lazy_container<clan>::ensure_impl(uint32_t, fb::thread&);
+template async::task<lazy_container<group>::ensure_guard>  lazy_container<group>::ensure_impl(uint32_t, fb::thread&);
+template async::task<lazy_container<castle>::ensure_guard> lazy_container<castle>::ensure_impl(uint32_t, fb::thread&);
 
-template async::task<lazy_container<clan>::ensure_guard>  lazy_container<clan>::ensure(uint32_t);
-template async::task<lazy_container<group>::ensure_guard> lazy_container<group>::ensure(uint32_t);
+template async::task<lazy_container<clan>::ensure_guard>   lazy_container<clan>::ensure(uint32_t);
+template async::task<lazy_container<group>::ensure_guard>  lazy_container<group>::ensure(uint32_t);
+template async::task<lazy_container<castle>::ensure_guard> lazy_container<castle>::ensure(uint32_t);
 
 template bool lazy_container<clan>::contains(hash_type) const;
 template bool lazy_container<group>::contains(hash_type) const;
+template bool lazy_container<castle>::contains(hash_type) const;
 
 } // namespace fb::game

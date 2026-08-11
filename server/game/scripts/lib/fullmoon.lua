@@ -100,7 +100,7 @@ end
 
 function M.start(map)
     if map == nil then
-        map = game_map(MAP_ID)
+        map = id2map(MAP_ID)
     end
     if map == nil then
         return

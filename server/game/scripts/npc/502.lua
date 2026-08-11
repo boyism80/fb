@@ -88,7 +88,10 @@ local function give_chilseok_reward(me, npc)
         me:dialog(npc, "소지품이 가득 차서 드릴 수 없습니다.", { prev = false, next = false })
         return
     end
-    local map = game_map(25228) or game_map("세시마을") or name2map("세시마을")
+    local map = name2map("세시마을")
+    if map == nil then
+        map = id2map(25228)
+    end
     if map ~= nil then
         me:map(map, math.random(52, 59), math.random(46, 50))
     end
@@ -160,7 +163,7 @@ local function run_chilseok(me, npc)
             me:dialog(npc, "소지품이 가득 차서 노란비서를 드릴 수 없습니다.", { prev = false, next = false })
             return
         end
-        local map = game_map(house) or name2map(house)
+        local map = name2map(house)
         if map ~= nil then
             -- Message/timer before map (thread hop).
             if rem ~= nil and rem > 0 then

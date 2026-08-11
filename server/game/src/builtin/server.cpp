@@ -485,17 +485,20 @@ int builtin::server::builtin_name2map(lua_State* L)
     if (lua == nullptr)
         return 0;
 
-    auto name = lua->tostring(1);
-    auto map  = table::map->name2map(name);
-
-    if (map == nullptr)
+    auto& srv   = static_cast<fb::game::server&>(lua->executor);
+    auto  name  = lua->tostring(1);
+    auto  model = table::map->name2map(name);
+    if (model == nullptr)
     {
         lua->pushnil();
+        return 1;
     }
+
+    auto map = srv.maps.find(model->id);
+    if (map == nullptr)
+        lua->pushnil();
     else
-    {
         lua->pushobject(map);
-    }
     return 1;
 }
 
@@ -608,8 +611,9 @@ int builtin::server::builtin_id2map(lua_State* L)
     if (lua == nullptr)
         return 0;
 
-    auto id  = static_cast<uint32_t>(lua->tointeger(1));
-    auto map = const_cast<fb::model::map*>(table::map->find(id));
+    auto& srv = static_cast<fb::game::server&>(lua->executor);
+    auto  id  = static_cast<uint32_t>(lua->tointeger(1));
+    auto  map = srv.maps.find(id);
 
     if (map == nullptr)
         lua->pushnil();
@@ -631,6 +635,42 @@ int builtin::server::builtin_id2item(lua_State* L)
         lua->pushnil();
     else
         lua->pushobject(item);
+    return 1;
+}
+
+int builtin::server::builtin_id2clan(lua_State* L)
+{
+    auto lua = fb::lua::get(L);
+    if (lua == nullptr)
+        return 0;
+
+    auto& srv = static_cast<fb::game::server&>(lua->executor);
+    auto  id  = static_cast<uint32_t>(lua->tointeger(1));
+
+    auto guard = srv.clans.try_enter_read(id);
+    if (guard.has_value() == false || guard->value() == nullptr)
+        lua->pushnil();
+    else
+        lua->pushobject(guard->value());
+
+    return 1;
+}
+
+int builtin::server::builtin_castle(lua_State* L)
+{
+    auto lua = fb::lua::get(L);
+    if (lua == nullptr)
+        return 0;
+
+    auto& srv          = static_cast<fb::game::server&>(lua->executor);
+    auto  divine_beast = static_cast<uint32_t>(lua->tointeger(1));
+
+    auto guard = srv.castles.try_enter_read(divine_beast);
+    if (guard.has_value() == false || guard->value() == nullptr)
+        lua->pushnil();
+    else
+        lua->pushobject(guard->value());
+
     return 1;
 }
 
@@ -1075,35 +1115,6 @@ int builtin::server::builtin_maps(lua_State* L)
     return 1;
 }
 
-int builtin::server::builtin_find_map(lua_State* L)
-{
-    auto lua = fb::lua::get(L);
-    if (lua == nullptr)
-        return 0;
-
-    auto&                          srv = static_cast<fb::game::server&>(lua->executor);
-    std::shared_ptr<fb::game::map> map;
-
-    if (lua->is_number(1))
-    {
-        map = srv.maps.find(static_cast<uint32_t>(lua->tointeger(1)));
-    }
-    else if (lua->is_string(1))
-    {
-        map = srv.maps.name2map(lua->tostring(1));
-    }
-    else
-    {
-        lua->pushnil();
-        return 1;
-    }
-
-    if (map == nullptr)
-        lua->pushnil();
-    else
-        lua->pushobject(map);
-    return 1;
-}
 int builtin::server::builtin_shutdown(lua_State* L)
 {
     auto lua = fb::lua::get(L);

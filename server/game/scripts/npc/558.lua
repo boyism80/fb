@@ -29,7 +29,7 @@ return {
             return
         end
 
-        local village = game_map(25228) or game_map('세시마을')
+        local village = id2map(25228) or name2map('세시마을')
         if village ~= nil then
             me:map(village, math.random(52, 59), math.random(46, 50))
         end

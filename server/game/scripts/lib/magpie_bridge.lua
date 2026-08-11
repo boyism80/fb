@@ -358,7 +358,7 @@ local function clear_bridge_timer()
     if not state.get('countdown_active') then
         return
     end
-    set_map_char_timers(game_map(MAP_ID), 0)
+    set_map_char_timers(id2map(MAP_ID), 0)
     state.set('countdown_active', false)
 end
 
@@ -373,13 +373,13 @@ end
 
 -- Must run on 칠성당 thread.
 local function warp_chilsung_all()
-    local map = game_map(CHILSUNG_MAP_ID)
+    local map = id2map(CHILSUNG_MAP_ID)
     if map == nil then
         return
     end
 
-    local gyeonu = game_map(HOUSE_GYEONU) or game_map(10958)
-    local jiknyeo = game_map(HOUSE_JIKNYEO) or game_map(10959)
+    local gyeonu = name2map(HOUSE_GYEONU) or id2map(10958)
+    local jiknyeo = name2map(HOUSE_JIKNYEO) or id2map(10959)
 
     if state.get('chilsung_countdown') then
         set_map_char_timers(map, 0)
@@ -493,7 +493,7 @@ function M.on_chilsung_tick()
         return
     end
 
-    local chilsung = game_map(CHILSUNG_MAP_ID)
+    local chilsung = id2map(CHILSUNG_MAP_ID)
     if chilsung == nil then
         return
     end
@@ -603,7 +603,7 @@ function M.settle_remaining(minute, second)
 end
 
 local function ensure_bridge_timer()
-    local map = game_map(MAP_ID)
+    local map = id2map(MAP_ID)
     if map == nil then
         return false
     end
@@ -612,7 +612,7 @@ local function ensure_bridge_timer()
 end
 
 local function ensure_chilsung_timer()
-    local chilsung = game_map(CHILSUNG_MAP_ID)
+    local chilsung = id2map(CHILSUNG_MAP_ID)
     if chilsung == nil then
         return false
     end
@@ -623,7 +623,7 @@ local function ensure_chilsung_timer()
 end
 
 function M.start(map)
-    map = map or game_map(MAP_ID)
+    map = map or id2map(MAP_ID)
     if map == nil then
         return false
     end
@@ -646,7 +646,7 @@ end
 function M.on_bridge_enter(me)
     M.ensure_timer()
     M.sync_timer(me)
-    local map = (me ~= nil) and me:map() or game_map(MAP_ID)
+    local map = (me ~= nil) and me:map() or id2map(MAP_ID)
     flush_bridge_mobs(map)
 end
 
@@ -669,7 +669,7 @@ function M.sync_timer(me)
 end
 
 function M.on_tick()
-    local map = game_map(MAP_ID)
+    local map = id2map(MAP_ID)
     if map == nil then
         return
     end
