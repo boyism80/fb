@@ -12,6 +12,10 @@ public enum ClanActionType : sbyte
   Kick = 2,
   ChangeRole = 3,
   SetTitle = 4,
+  Ally = 5,
+  Unally = 6,
+  Enemy = 7,
+  Unenemy = 8,
 };
 
 

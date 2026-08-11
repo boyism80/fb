@@ -30,7 +30,7 @@ struct MakeCharacter FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
     VT_HAIR = 8,
     VT_GENDER = 10,
     VT_NATION = 12,
-    VT_CREATURE = 14
+    VT_DIVINE_BEAST = 14
   };
   uint32_t world() const {
     return GetField<uint32_t>(VT_WORLD, 0);
@@ -47,8 +47,8 @@ struct MakeCharacter FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
   uint8_t nation() const {
     return GetField<uint8_t>(VT_NATION, 0);
   }
-  uint8_t creature() const {
-    return GetField<uint8_t>(VT_CREATURE, 0);
+  uint8_t divine_beast() const {
+    return GetField<uint8_t>(VT_DIVINE_BEAST, 0);
   }
   bool Verify(::flatbuffers::Verifier &verifier) const {
     return VerifyTableStart(verifier) &&
@@ -57,7 +57,7 @@ struct MakeCharacter FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
            VerifyField<uint16_t>(verifier, VT_HAIR, 2) &&
            VerifyField<uint8_t>(verifier, VT_GENDER, 1) &&
            VerifyField<uint8_t>(verifier, VT_NATION, 1) &&
-           VerifyField<uint8_t>(verifier, VT_CREATURE, 1) &&
+           VerifyField<uint8_t>(verifier, VT_DIVINE_BEAST, 1) &&
            verifier.EndTable();
   }
 };
@@ -81,8 +81,8 @@ struct MakeCharacterBuilder {
   void add_nation(uint8_t nation) {
     fbb_.AddElement<uint8_t>(MakeCharacter::VT_NATION, nation, 0);
   }
-  void add_creature(uint8_t creature) {
-    fbb_.AddElement<uint8_t>(MakeCharacter::VT_CREATURE, creature, 0);
+  void add_divine_beast(uint8_t divine_beast) {
+    fbb_.AddElement<uint8_t>(MakeCharacter::VT_DIVINE_BEAST, divine_beast, 0);
   }
   explicit MakeCharacterBuilder(::flatbuffers::FlatBufferBuilder &_fbb)
         : fbb_(_fbb) {
@@ -102,12 +102,12 @@ inline ::flatbuffers::Offset<MakeCharacter> CreateMakeCharacter(
     uint16_t hair = 0,
     uint8_t gender = 0,
     uint8_t nation = 0,
-    uint8_t creature = 0) {
+    uint8_t divine_beast = 0) {
   MakeCharacterBuilder builder_(_fbb);
   builder_.add_uid(uid);
   builder_.add_world(world);
   builder_.add_hair(hair);
-  builder_.add_creature(creature);
+  builder_.add_divine_beast(divine_beast);
   builder_.add_nation(nation);
   builder_.add_gender(gender);
   return builder_.Finish();

@@ -46,7 +46,7 @@ table Character {
     color: ushort;
     gender: ubyte;
     nation: ubyte;
-    creature: ubyte;
+    divine_beast: ubyte;
     map: uint;
     position: Position;
     direction: ubyte;
@@ -196,6 +196,8 @@ table Clan {
     id: uint;
     name: string;
     title: string?;
+    allied_clan_id: uint?;
+    enemy_clan_ids: [uint];
 }
 
 table ClanMember {
@@ -209,12 +211,22 @@ table CharacterRef {
     name: string;
 }
 
+/// Siege castle ownership. `divine_beast` matches fb::model::enum_value::DIVINE_BEAST (VERMILION_BIRD/WHITE_TIGER/BLACK_TORTOISE/AZURE_DRAGON).
+table Castle {
+    divine_beast: ubyte;
+    owner_clan_id: uint?;
+}
+
 enum ClanActionType : byte {
     Join = 0,
     Leave = 1,
     Kick = 2,
     ChangeRole = 3,
-    SetTitle = 4
+    SetTitle = 4,
+    Ally = 5,
+    Unally = 6,
+    Enemy = 7,
+    Unenemy = 8
 }
 
 enum ClanDetailsAction : byte {

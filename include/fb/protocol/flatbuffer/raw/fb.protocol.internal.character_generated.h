@@ -39,7 +39,7 @@ struct Character FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
     VT_COLOR = 16,
     VT_GENDER = 18,
     VT_NATION = 20,
-    VT_CREATURE = 22,
+    VT_DIVINE_BEAST = 22,
     VT_MAP = 24,
     VT_POSITION = 26,
     VT_DIRECTION = 28,
@@ -100,8 +100,8 @@ struct Character FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
   uint8_t nation() const {
     return GetField<uint8_t>(VT_NATION, 0);
   }
-  uint8_t creature() const {
-    return GetField<uint8_t>(VT_CREATURE, 0);
+  uint8_t divine_beast() const {
+    return GetField<uint8_t>(VT_DIVINE_BEAST, 0);
   }
   uint32_t map() const {
     return GetField<uint32_t>(VT_MAP, 0);
@@ -213,7 +213,7 @@ struct Character FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
            VerifyField<uint16_t>(verifier, VT_COLOR, 2) &&
            VerifyField<uint8_t>(verifier, VT_GENDER, 1) &&
            VerifyField<uint8_t>(verifier, VT_NATION, 1) &&
-           VerifyField<uint8_t>(verifier, VT_CREATURE, 1) &&
+           VerifyField<uint8_t>(verifier, VT_DIVINE_BEAST, 1) &&
            VerifyField<uint32_t>(verifier, VT_MAP, 4) &&
            VerifyOffset(verifier, VT_POSITION) &&
            verifier.VerifyTable(position()) &&
@@ -297,8 +297,8 @@ struct CharacterBuilder {
   void add_nation(uint8_t nation) {
     fbb_.AddElement<uint8_t>(Character::VT_NATION, nation, 0);
   }
-  void add_creature(uint8_t creature) {
-    fbb_.AddElement<uint8_t>(Character::VT_CREATURE, creature, 0);
+  void add_divine_beast(uint8_t divine_beast) {
+    fbb_.AddElement<uint8_t>(Character::VT_DIVINE_BEAST, divine_beast, 0);
   }
   void add_map(uint32_t map) {
     fbb_.AddElement<uint32_t>(Character::VT_MAP, map, 0);
@@ -418,7 +418,7 @@ inline ::flatbuffers::Offset<Character> CreateCharacter(
     uint16_t color = 0,
     uint8_t gender = 0,
     uint8_t nation = 0,
-    uint8_t creature = 0,
+    uint8_t divine_beast = 0,
     uint32_t map = 0,
     ::flatbuffers::Offset<fb::protocol::internal::raw::Position> position = 0,
     uint8_t direction = 0,
@@ -490,7 +490,7 @@ inline ::flatbuffers::Offset<Character> CreateCharacter(
   builder_.add_class_type(class_type);
   builder_.add_state(state);
   builder_.add_direction(direction);
-  builder_.add_creature(creature);
+  builder_.add_divine_beast(divine_beast);
   builder_.add_nation(nation);
   builder_.add_gender(gender);
   builder_.add_role(role);
@@ -508,7 +508,7 @@ inline ::flatbuffers::Offset<Character> CreateCharacterDirect(
     uint16_t color = 0,
     uint8_t gender = 0,
     uint8_t nation = 0,
-    uint8_t creature = 0,
+    uint8_t divine_beast = 0,
     uint32_t map = 0,
     ::flatbuffers::Offset<fb::protocol::internal::raw::Position> position = 0,
     uint8_t direction = 0,
@@ -559,7 +559,7 @@ inline ::flatbuffers::Offset<Character> CreateCharacterDirect(
       color,
       gender,
       nation,
-      creature,
+      divine_beast,
       map,
       position,
       direction,

@@ -35,22 +35,42 @@ public struct Clan : IFlatbufferObject
   public ArraySegment<byte>? GetTitleBytes() { return __p.__vector_as_arraysegment(8); }
 #endif
   public byte[] GetTitleArray() { return __p.__vector_as_array<byte>(8); }
+  public nullable.nullable_uint? AlliedClanId { get { int o = __p.__offset(10); return o != 0 ? (nullable.nullable_uint?)(new nullable.nullable_uint()).__assign(__p.__indirect(o + __p.bb_pos), __p.bb) : null; } }
+  public uint EnemyClanIds(int j) { int o = __p.__offset(12); return o != 0 ? __p.bb.GetUint(__p.__vector(o) + j * 4) : (uint)0; }
+  public int EnemyClanIdsLength { get { int o = __p.__offset(12); return o != 0 ? __p.__vector_len(o) : 0; } }
+#if ENABLE_SPAN_T
+  public Span<uint> GetEnemyClanIdsBytes() { return __p.__vector_as_span<uint>(12, 4); }
+#else
+  public ArraySegment<byte>? GetEnemyClanIdsBytes() { return __p.__vector_as_arraysegment(12); }
+#endif
+  public uint[] GetEnemyClanIdsArray() { return __p.__vector_as_array<uint>(12); }
 
   public static Offset<fb.protocol._internal.raw.Clan> CreateClan(FlatBufferBuilder builder,
       uint id = 0,
       StringOffset nameOffset = default(StringOffset),
-      StringOffset titleOffset = default(StringOffset)) {
-    builder.StartTable(3);
+      StringOffset titleOffset = default(StringOffset),
+      Offset<nullable.nullable_uint> allied_clan_idOffset = default(Offset<nullable.nullable_uint>),
+      VectorOffset enemy_clan_idsOffset = default(VectorOffset)) {
+    builder.StartTable(5);
+    Clan.AddEnemyClanIds(builder, enemy_clan_idsOffset);
+    Clan.AddAlliedClanId(builder, allied_clan_idOffset);
     Clan.AddTitle(builder, titleOffset);
     Clan.AddName(builder, nameOffset);
     Clan.AddId(builder, id);
     return Clan.EndClan(builder);
   }
 
-  public static void StartClan(FlatBufferBuilder builder) { builder.StartTable(3); }
+  public static void StartClan(FlatBufferBuilder builder) { builder.StartTable(5); }
   public static void AddId(FlatBufferBuilder builder, uint id) { builder.AddUint(0, id, 0); }
   public static void AddName(FlatBufferBuilder builder, StringOffset nameOffset) { builder.AddOffset(1, nameOffset.Value, 0); }
   public static void AddTitle(FlatBufferBuilder builder, StringOffset titleOffset) { builder.AddOffset(2, titleOffset.Value, 0); }
+  public static void AddAlliedClanId(FlatBufferBuilder builder, Offset<nullable.nullable_uint> alliedClanIdOffset) { builder.AddOffset(3, alliedClanIdOffset.Value, 0); }
+  public static void AddEnemyClanIds(FlatBufferBuilder builder, VectorOffset enemyClanIdsOffset) { builder.AddOffset(4, enemyClanIdsOffset.Value, 0); }
+  public static VectorOffset CreateEnemyClanIdsVector(FlatBufferBuilder builder, uint[] data) { builder.StartVector(4, data.Length, 4); for (int i = data.Length - 1; i >= 0; i--) builder.AddUint(data[i]); return builder.EndVector(); }
+  public static VectorOffset CreateEnemyClanIdsVectorBlock(FlatBufferBuilder builder, uint[] data) { builder.StartVector(4, data.Length, 4); builder.Add(data); return builder.EndVector(); }
+  public static VectorOffset CreateEnemyClanIdsVectorBlock(FlatBufferBuilder builder, ArraySegment<uint> data) { builder.StartVector(4, data.Count, 4); builder.Add(data); return builder.EndVector(); }
+  public static VectorOffset CreateEnemyClanIdsVectorBlock(FlatBufferBuilder builder, IntPtr dataPtr, int sizeInBytes) { builder.StartVector(1, sizeInBytes, 1); builder.Add<uint>(dataPtr, sizeInBytes); return builder.EndVector(); }
+  public static void StartEnemyClanIdsVector(FlatBufferBuilder builder, int numElems) { builder.StartVector(4, numElems, 4); }
   public static Offset<fb.protocol._internal.raw.Clan> EndClan(FlatBufferBuilder builder) {
     int o = builder.EndTable();
     return new Offset<fb.protocol._internal.raw.Clan>(o);
@@ -68,6 +88,8 @@ static public class ClanVerify
       && verifier.VerifyField(tablePos, 4 /*Id*/, 4 /*uint*/, 4, false)
       && verifier.VerifyString(tablePos, 6 /*Name*/, false)
       && verifier.VerifyString(tablePos, 8 /*Title*/, false)
+      && verifier.VerifyTable(tablePos, 10 /*AlliedClanId*/, nullable.nullable_uintVerify.Verify, false)
+      && verifier.VerifyVectorOfData(tablePos, 12 /*EnemyClanIds*/, 4 /*uint*/, false)
       && verifier.VerifyTableEnd(tablePos);
   }
 }

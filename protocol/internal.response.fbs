@@ -255,6 +255,8 @@ table UpdatedClan {
   new_role: uint?;
   old_title: string?;
   new_title: string?;
+  /// Counterpart clan id for Ally/Unally/Enemy/Unenemy actions.
+  related_clan_id: uint?;
   error: uint;
 }
 
@@ -347,6 +349,19 @@ table SetDropRateMultiplier {
 table SetDateTime {
   datetime: string;
   reset: bool = false;
+  error: uint;
+}
+
+table CastleList {
+  host: uint;
+  castles: [fb.protocol.internal.Castle];
+  error: uint;
+}
+
+table UpdatedCastle {
+  host: uint;
+  divine_beast: ubyte;
+  owner_clan_id: uint?;
   error: uint;
 }
 

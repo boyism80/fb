@@ -41,7 +41,7 @@ public struct Character : IFlatbufferObject
   public ushort Color { get { int o = __p.__offset(16); return o != 0 ? __p.bb.GetUshort(o + __p.bb_pos) : (ushort)0; } }
   public byte Gender { get { int o = __p.__offset(18); return o != 0 ? __p.bb.Get(o + __p.bb_pos) : (byte)0; } }
   public byte Nation { get { int o = __p.__offset(20); return o != 0 ? __p.bb.Get(o + __p.bb_pos) : (byte)0; } }
-  public byte Creature { get { int o = __p.__offset(22); return o != 0 ? __p.bb.Get(o + __p.bb_pos) : (byte)0; } }
+  public byte DivineBeast { get { int o = __p.__offset(22); return o != 0 ? __p.bb.Get(o + __p.bb_pos) : (byte)0; } }
   public uint Map { get { int o = __p.__offset(24); return o != 0 ? __p.bb.GetUint(o + __p.bb_pos) : (uint)0; } }
   public fb.protocol._internal.raw.Position? Position { get { int o = __p.__offset(26); return o != 0 ? (fb.protocol._internal.raw.Position?)(new fb.protocol._internal.raw.Position()).__assign(__p.__indirect(o + __p.bb_pos), __p.bb) : null; } }
   public byte Direction { get { int o = __p.__offset(28); return o != 0 ? __p.bb.Get(o + __p.bb_pos) : (byte)0; } }
@@ -110,7 +110,7 @@ public struct Character : IFlatbufferObject
       ushort color = 0,
       byte gender = 0,
       byte nation = 0,
-      byte creature = 0,
+      byte divine_beast = 0,
       uint map = 0,
       Offset<fb.protocol._internal.raw.Position> positionOffset = default(Offset<fb.protocol._internal.raw.Position>),
       byte direction = 0,
@@ -182,7 +182,7 @@ public struct Character : IFlatbufferObject
     Character.AddClassType(builder, class_type);
     Character.AddState(builder, state);
     Character.AddDirection(builder, direction);
-    Character.AddCreature(builder, creature);
+    Character.AddDivineBeast(builder, divine_beast);
     Character.AddNation(builder, nation);
     Character.AddGender(builder, gender);
     Character.AddRole(builder, role);
@@ -199,7 +199,7 @@ public struct Character : IFlatbufferObject
   public static void AddColor(FlatBufferBuilder builder, ushort color) { builder.AddUshort(6, color, 0); }
   public static void AddGender(FlatBufferBuilder builder, byte gender) { builder.AddByte(7, gender, 0); }
   public static void AddNation(FlatBufferBuilder builder, byte nation) { builder.AddByte(8, nation, 0); }
-  public static void AddCreature(FlatBufferBuilder builder, byte creature) { builder.AddByte(9, creature, 0); }
+  public static void AddDivineBeast(FlatBufferBuilder builder, byte divineBeast) { builder.AddByte(9, divineBeast, 0); }
   public static void AddMap(FlatBufferBuilder builder, uint map) { builder.AddUint(10, map, 0); }
   public static void AddPosition(FlatBufferBuilder builder, Offset<fb.protocol._internal.raw.Position> positionOffset) { builder.AddOffset(11, positionOffset.Value, 0); }
   public static void AddDirection(FlatBufferBuilder builder, byte direction) { builder.AddByte(12, direction, 0); }
@@ -260,7 +260,7 @@ static public class CharacterVerify
       && verifier.VerifyField(tablePos, 16 /*Color*/, 2 /*ushort*/, 2, false)
       && verifier.VerifyField(tablePos, 18 /*Gender*/, 1 /*byte*/, 1, false)
       && verifier.VerifyField(tablePos, 20 /*Nation*/, 1 /*byte*/, 1, false)
-      && verifier.VerifyField(tablePos, 22 /*Creature*/, 1 /*byte*/, 1, false)
+      && verifier.VerifyField(tablePos, 22 /*DivineBeast*/, 1 /*byte*/, 1, false)
       && verifier.VerifyField(tablePos, 24 /*Map*/, 4 /*uint*/, 4, false)
       && verifier.VerifyTable(tablePos, 26 /*Position*/, fb.protocol._internal.raw.PositionVerify.Verify, false)
       && verifier.VerifyField(tablePos, 28 /*Direction*/, 1 /*byte*/, 1, false)

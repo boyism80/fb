@@ -90,7 +90,7 @@ table MakeCharacter {
   hair: ushort;
   gender: ubyte;
   nation: ubyte;
-  creature: ubyte;
+  divine_beast: ubyte;
 }
 
 
@@ -272,6 +272,37 @@ table ChangeClanRole {
   new_role: uint;
 }
 
+table AllyClan {
+  world: uint;
+  host: uint;
+  requester_uid: uint;
+  clan: uint;
+  target_clan: uint;
+}
+
+table UnallyClan {
+  world: uint;
+  host: uint;
+  requester_uid: uint;
+  clan: uint;
+}
+
+table DeclareClanEnemy {
+  world: uint;
+  host: uint;
+  requester_uid: uint;
+  clan: uint;
+  target_clan: uint;
+}
+
+table EndClanEnemy {
+  world: uint;
+  host: uint;
+  requester_uid: uint;
+  clan: uint;
+  target_clan: uint;
+}
+
 table Broadcast {
   world: uint;
   host: uint;
@@ -380,4 +411,11 @@ table SetDateTime {
   world: uint;
   datetime: string;
   reset: bool = false;
+}
+
+table SetCastleOwner {
+  world: uint;
+  host: uint;
+  divine_beast: ubyte;
+  owner_clan_id: uint?;
 }

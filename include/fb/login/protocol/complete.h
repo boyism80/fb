@@ -18,19 +18,19 @@ public:
     uint8_t hair;
     uint8_t gender;
     uint8_t nation;
-    uint8_t creature;
+    uint8_t divine_beast;
 #else
     const uint8_t hair;
     const uint8_t gender;
     const uint8_t nation;
-    const uint8_t creature;
+    const uint8_t divine_beast;
 #endif
 
 public:
 #ifndef BOT
     complete() = default;
 #else
-    complete(uint8_t hair, uint8_t gender, uint8_t nation, uint8_t creature);
+    complete(uint8_t hair, uint8_t gender, uint8_t nation, uint8_t divine_beast);
 #endif
 
 public:

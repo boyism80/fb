@@ -24,35 +24,47 @@ enum ClanActionType : int8_t {
   ClanActionType_Kick = 2,
   ClanActionType_ChangeRole = 3,
   ClanActionType_SetTitle = 4,
+  ClanActionType_Ally = 5,
+  ClanActionType_Unally = 6,
+  ClanActionType_Enemy = 7,
+  ClanActionType_Unenemy = 8,
   ClanActionType_MIN = ClanActionType_Join,
-  ClanActionType_MAX = ClanActionType_SetTitle
+  ClanActionType_MAX = ClanActionType_Unenemy
 };
 
-inline const ClanActionType (&EnumValuesClanActionType())[5] {
+inline const ClanActionType (&EnumValuesClanActionType())[9] {
   static const ClanActionType values[] = {
     ClanActionType_Join,
     ClanActionType_Leave,
     ClanActionType_Kick,
     ClanActionType_ChangeRole,
-    ClanActionType_SetTitle
+    ClanActionType_SetTitle,
+    ClanActionType_Ally,
+    ClanActionType_Unally,
+    ClanActionType_Enemy,
+    ClanActionType_Unenemy
   };
   return values;
 }
 
 inline const char * const *EnumNamesClanActionType() {
-  static const char * const names[6] = {
+  static const char * const names[10] = {
     "Join",
     "Leave",
     "Kick",
     "ChangeRole",
     "SetTitle",
+    "Ally",
+    "Unally",
+    "Enemy",
+    "Unenemy",
     nullptr
   };
   return names;
 }
 
 inline const char *EnumNameClanActionType(ClanActionType e) {
-  if (::flatbuffers::IsOutRange(e, ClanActionType_Join, ClanActionType_SetTitle)) return "";
+  if (::flatbuffers::IsOutRange(e, ClanActionType_Join, ClanActionType_Unenemy)) return "";
   const size_t index = static_cast<size_t>(e);
   return EnumNamesClanActionType()[index];
 }

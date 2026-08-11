@@ -228,8 +228,8 @@ namespace Internal.Controllers
                     };
                 }
 
-                if (request.Creature != (byte)Creature.Phoenix && request.Creature != (byte)Creature.Tiger &&
-                    request.Creature != (byte)Creature.Turtle && request.Creature != (byte)Creature.Dragon)
+                if (request.DivineBeast != (byte)DivineBeast.VermilionBird && request.DivineBeast != (byte)DivineBeast.WhiteTiger &&
+                    request.DivineBeast != (byte)DivineBeast.BlackTortoise && request.DivineBeast != (byte)DivineBeast.AzureDragon)
                 {
                     return new Response.MakeCharacter
                     {
@@ -244,7 +244,7 @@ namespace Internal.Controllers
                 ch.Look = request.Hair;
                 ch.Gender = request.Gender;
                 ch.Nation = request.Nation;
-                ch.Creature = request.Creature;
+                ch.DivineBeast = request.DivineBeast;
                 _dbContext.Character.Set(world, ch);
 
                 await _dbContext.SaveChangesAsync();

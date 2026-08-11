@@ -50,14 +50,14 @@ namespace AdminTool.Services
             _ => nation.ToString()
         };
 
-        public static string FormatCreature(byte? creature) => creature switch
+        public static string FormatDivineBeast(byte? divineBeast) => divineBeast switch
         {
             null => "-",
-            (byte)Creature.Phoenix => "주작",
-            (byte)Creature.Tiger => "백호",
-            (byte)Creature.Turtle => "현무",
-            (byte)Creature.Dragon => "청룡",
-            _ => creature.ToString()
+            (byte)DivineBeast.VermilionBird => "주작",
+            (byte)DivineBeast.WhiteTiger => "백호",
+            (byte)DivineBeast.BlackTortoise => "현무",
+            (byte)DivineBeast.AzureDragon => "청룡",
+            _ => divineBeast.ToString()
         };
 
         public static string FormatState(byte state) => ((State)state) switch

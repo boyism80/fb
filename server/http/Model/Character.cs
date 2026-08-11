@@ -21,7 +21,7 @@ namespace Http.Model
         public byte Color { get; set; }
         public byte Gender { get; set; }
         public byte Nation { get; set; }
-        public byte? Creature { get; set; }
+        public byte? DivineBeast { get; set; }
         public uint Map { get; set; }
         public ushort PositionX { get; set; }
         public ushort PositionY { get; set; }

@@ -186,14 +186,14 @@ void game_bot::set_nation(uint8_t value)
     this->_nation = value;
 }
 
-uint8_t game_bot::creature() const
+uint8_t game_bot::divine_beast() const
 {
-    return this->_creature;
+    return this->_divine_beast;
 }
 
-void game_bot::set_creature(uint8_t value)
+void game_bot::set_divine_beast(uint8_t value)
 {
-    this->_creature = value;
+    this->_divine_beast = value;
 }
 
 uint8_t game_bot::level() const

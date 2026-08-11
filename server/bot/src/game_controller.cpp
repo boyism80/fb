@@ -75,7 +75,7 @@ async::task<void> game_bot_controller::on_state(game_bot& bot, const game_resp::
     if (ENUM_IN(response.level, UPDATE_STATE_LEVEL::BASED))
     {
         bot.set_nation(response.ch_nation);
-        bot.set_creature(response.ch_creature);
+        bot.set_divine_beast(response.ch_divine_beast);
         bot.set_level(response.ch_level);
         bot.set_base_hp(response.ch_base_hp);
         bot.set_base_mp(response.ch_base_mp);

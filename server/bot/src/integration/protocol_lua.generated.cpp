@@ -1845,8 +1845,8 @@ void marshal_lua_game_resp__update_internal(lua_State* L, const fb::protocol::he
     lua->pushstring("ch_nation");
     lua->pushinteger(resp.ch_nation);
     lua->settable(-3);
-    lua->pushstring("ch_creature");
-    lua->pushinteger(resp.ch_creature);
+    lua->pushstring("ch_divine_beast");
+    lua->pushinteger(resp.ch_divine_beast);
     lua->settable(-3);
     lua->pushstring("ch_level");
     lua->pushinteger(resp.ch_level);

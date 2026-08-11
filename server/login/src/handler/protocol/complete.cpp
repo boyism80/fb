@@ -31,10 +31,10 @@ async::task<bool> complete::handle(fb::socket<fb::login::session>&         sessi
         if (gender != GENDER::MALE && gender != GENDER::FEMALE)
             throw id_exception(_TEXT(MESSAGE_CLIENT_GENDER_INVALID));
 
-        auto creature = static_cast<CREATURE>(request.creature);
-        if (creature != CREATURE::PHOENIX && creature != CREATURE::TIGER && creature != CREATURE::TURTLE &&
-            creature != CREATURE::DRAGON)
-            throw id_exception(_TEXT(MESSAGE_CLIENT_CREATURE_INVALID));
+        auto divine_beast = static_cast<DIVINE_BEAST>(request.divine_beast);
+        if (divine_beast != DIVINE_BEAST::VERMILION_BIRD && divine_beast != DIVINE_BEAST::WHITE_TIGER &&
+            divine_beast != DIVINE_BEAST::BLACK_TORTOISE && divine_beast != DIVINE_BEAST::AZURE_DRAGON)
+            throw id_exception(_TEXT(MESSAGE_CLIENT_DIVINE_BEAST_INVALID));
 
         auto   world    = fb::config<uint32_t>("world");
         auto&& response = co_await this->server.http.post("internal",
@@ -44,7 +44,7 @@ async::task<bool> complete::handle(fb::socket<fb::login::session>&         sessi
                                                                                        request.hair,
                                                                                        request.gender,
                                                                                        request.nation,
-                                                                                       request.creature});
+                                                                                       request.divine_beast});
         co_await this->server.threads.switching(weak);
 
         if (response.success == false)

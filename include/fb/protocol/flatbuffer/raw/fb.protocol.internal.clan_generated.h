@@ -13,6 +13,8 @@ static_assert(FLATBUFFERS_VERSION_MAJOR == 25 &&
               FLATBUFFERS_VERSION_REVISION == 10,
              "Non-compatible flatbuffers version included");
 
+#include "nullable_uint_generated.h"
+
 namespace fb {
 namespace protocol {
 namespace internal {
@@ -26,7 +28,9 @@ struct Clan FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
   enum FlatBuffersVTableOffset FLATBUFFERS_VTABLE_UNDERLYING_TYPE {
     VT_ID = 4,
     VT_NAME = 6,
-    VT_TITLE = 8
+    VT_TITLE = 8,
+    VT_ALLIED_CLAN_ID = 10,
+    VT_ENEMY_CLAN_IDS = 12
   };
   uint32_t id() const {
     return GetField<uint32_t>(VT_ID, 0);
@@ -37,6 +41,12 @@ struct Clan FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
   const ::flatbuffers::String *title() const {
     return GetPointer<const ::flatbuffers::String *>(VT_TITLE);
   }
+  const nullable::nullable_uint *allied_clan_id() const {
+    return GetPointer<const nullable::nullable_uint *>(VT_ALLIED_CLAN_ID);
+  }
+  const ::flatbuffers::Vector<uint32_t> *enemy_clan_ids() const {
+    return GetPointer<const ::flatbuffers::Vector<uint32_t> *>(VT_ENEMY_CLAN_IDS);
+  }
   bool Verify(::flatbuffers::Verifier &verifier) const {
     return VerifyTableStart(verifier) &&
            VerifyField<uint32_t>(verifier, VT_ID, 4) &&
@@ -44,6 +54,10 @@ struct Clan FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
            verifier.VerifyString(name()) &&
            VerifyOffset(verifier, VT_TITLE) &&
            verifier.VerifyString(title()) &&
+           VerifyOffset(verifier, VT_ALLIED_CLAN_ID) &&
+           verifier.VerifyTable(allied_clan_id()) &&
+           VerifyOffset(verifier, VT_ENEMY_CLAN_IDS) &&
+           verifier.VerifyVector(enemy_clan_ids()) &&
            verifier.EndTable();
   }
 };
@@ -61,6 +75,12 @@ struct ClanBuilder {
   void add_title(::flatbuffers::Offset<::flatbuffers::String> title) {
     fbb_.AddOffset(Clan::VT_TITLE, title);
   }
+  void add_allied_clan_id(::flatbuffers::Offset<nullable::nullable_uint> allied_clan_id) {
+    fbb_.AddOffset(Clan::VT_ALLIED_CLAN_ID, allied_clan_id);
+  }
+  void add_enemy_clan_ids(::flatbuffers::Offset<::flatbuffers::Vector<uint32_t>> enemy_clan_ids) {
+    fbb_.AddOffset(Clan::VT_ENEMY_CLAN_IDS, enemy_clan_ids);
+  }
   explicit ClanBuilder(::flatbuffers::FlatBufferBuilder &_fbb)
         : fbb_(_fbb) {
     start_ = fbb_.StartTable();
@@ -76,8 +96,12 @@ inline ::flatbuffers::Offset<Clan> CreateClan(
     ::flatbuffers::FlatBufferBuilder &_fbb,
     uint32_t id = 0,
     ::flatbuffers::Offset<::flatbuffers::String> name = 0,
-    ::flatbuffers::Offset<::flatbuffers::String> title = 0) {
+    ::flatbuffers::Offset<::flatbuffers::String> title = 0,
+    ::flatbuffers::Offset<nullable::nullable_uint> allied_clan_id = 0,
+    ::flatbuffers::Offset<::flatbuffers::Vector<uint32_t>> enemy_clan_ids = 0) {
   ClanBuilder builder_(_fbb);
+  builder_.add_enemy_clan_ids(enemy_clan_ids);
+  builder_.add_allied_clan_id(allied_clan_id);
   builder_.add_title(title);
   builder_.add_name(name);
   builder_.add_id(id);
@@ -88,14 +112,19 @@ inline ::flatbuffers::Offset<Clan> CreateClanDirect(
     ::flatbuffers::FlatBufferBuilder &_fbb,
     uint32_t id = 0,
     const char *name = nullptr,
-    const char *title = nullptr) {
+    const char *title = nullptr,
+    ::flatbuffers::Offset<nullable::nullable_uint> allied_clan_id = 0,
+    const std::vector<uint32_t> *enemy_clan_ids = nullptr) {
   auto name__ = name ? _fbb.CreateString(name) : 0;
   auto title__ = title ? _fbb.CreateString(title) : 0;
+  auto enemy_clan_ids__ = enemy_clan_ids ? _fbb.CreateVector<uint32_t>(*enemy_clan_ids) : 0;
   return fb::protocol::internal::raw::CreateClan(
       _fbb,
       id,
       name__,
-      title__);
+      title__,
+      allied_clan_id,
+      enemy_clan_ids__);
 }
 
 inline const fb::protocol::internal::raw::Clan *GetClan(const void *buf) {

@@ -25,6 +25,12 @@ namespace Http.Service
 
         public ClanMemberRepository ClanMember => Bind<ClanMemberRepository>();
 
+        public ClanAllianceRepository ClanAlliance => Bind<ClanAllianceRepository>();
+
+        public ClanEnemyRepository ClanEnemy => Bind<ClanEnemyRepository>();
+
+        public CastleRepository Castle => Bind<CastleRepository>();
+
         public CharacterRealtimeStateRepository CharacterRealtimeState => Bind<CharacterRealtimeStateRepository>();
 
         public MailRepository Mail => Bind<MailRepository>();
