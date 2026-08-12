@@ -43,7 +43,8 @@ character::character(fb::game::server& server, const initial_params& params) :
     _experience(params.exp), _gender(params.gender), _state(params.state), _level(params.level),
     _class(params.class_type), _promotion(params.promotion), _money(params.money), _mimicry(params.mimicry),
     _title(params.title), _nation(params.nation), _divine_beast(params.divine_beast), _super_hide(params.super_hide),
-    _last_afk_time(server.now()), _marriage(server.now()), id(params.id), client_version(params.client_version), ui_mode(params.ui_mode)
+    _last_afk_time(server.now()), _marriage(server.now()), id(params.id), client_version(params.client_version),
+    ui_mode(params.ui_mode)
 {
     this->_ping_state.last_ping_time = server.now() - std::chrono::seconds(10);
 }
@@ -1267,6 +1268,105 @@ void character::clan_reset()
     this->update_external(false);
 }
 
+const std::vector<friend_entry>& character::friends() const
+{
+    this->assert_thread();
+    return this->_friends;
+}
+
+void character::friends(std::vector<friend_entry> value)
+{
+    this->assert_thread();
+    this->_friends = std::move(value);
+}
+
+void character::update_friend_relation(uint32_t friend_uid, std::string_view friend_name, bool mutual)
+{
+    this->assert_thread();
+
+    for (auto& entry : this->_friends)
+    {
+        if (entry.uid == friend_uid)
+        {
+            entry.name   = std::string(friend_name);
+            entry.mutual = mutual;
+            return;
+        }
+    }
+
+    this->_friends.push_back(friend_entry{friend_uid, std::string(friend_name), mutual});
+}
+
+bool character::is_mutual_friend(uint32_t uid) const
+{
+    this->assert_thread();
+    for (auto& entry : this->_friends)
+    {
+        if (entry.uid == uid)
+            return entry.mutual;
+    }
+    return false;
+}
+
+bool character::is_mutual_friend(std::string_view name) const
+{
+    this->assert_thread();
+    for (auto& entry : this->_friends)
+    {
+        if (entry.name == name)
+            return entry.mutual;
+    }
+    return false;
+}
+
+void character::friend_login_notify_pending(bool value)
+{
+    this->assert_thread();
+    this->_friend_login_notify_pending = value;
+}
+
+bool character::consume_friend_login_notify_pending()
+{
+    this->assert_thread();
+    auto pending                       = this->_friend_login_notify_pending;
+    this->_friend_login_notify_pending = false;
+    return pending;
+}
+
+async::task<void> character::broadcast_friends(std::string_view message, MESSAGE_TYPE type, bool mutual_only)
+{
+    this->assert_thread();
+
+    auto message_str = std::string(message);
+    auto to_uids     = std::vector<uint32_t>{};
+    for (auto& entry : this->_friends)
+    {
+        if (mutual_only && entry.mutual == false)
+            continue;
+
+        to_uids.push_back(entry.uid);
+        auto ch = this->server.characters.find(entry.uid);
+        if (ch != nullptr)
+            ch->message(message_str, type);
+    }
+
+    if (to_uids.empty() == false)
+    {
+        auto world = fb::config<uint32_t>("world");
+        auto host  = fb::config<uint32_t>("id");
+        co_await this->server.http.post("internal",
+                                        "/in-game/friend-broadcast",
+                                        internal_reqs::FriendBroadcast{world,
+                                                                       host,
+                                                                       this->id,
+                                                                       this->name(),
+                                                                       message_str,
+                                                                       static_cast<uint8_t>(type),
+                                                                       std::move(to_uids)});
+    }
+    co_return;
+}
+
 void character::assert_state(STATE value) const
 {
     this->assert_thread();
@@ -1491,6 +1591,79 @@ void character::message(std::string_view message, MESSAGE_TYPE type)
 
 async::task<void> character::whisper(std::string receiver_name, std::string message)
 {
+    // Client chat modes: "!" = clan, "!!" = group, "!!!" = mutual friends.
+    // These are not real whispers; they reuse C2S whisper with a special target name.
+    if (receiver_name == "!" || receiver_name == "!!" || receiver_name == "!!!")
+    {
+        auto filtered   = fb::model::table::blocked_word->filter(message);
+        auto class_name = std::string{};
+        table::promotion->class2name(this->cls(), this->promotion(), class_name);
+
+        auto text = std::format("<!{}({})> {}", this->name(), class_name, filtered);
+
+        if (receiver_name == "!")
+        {
+            if (this->clan_id().has_value() == false)
+            {
+                this->message(_TEXT(MESSAGE_CLAN_NOT_JOINED), MESSAGE_TYPE::NOTIFY);
+                co_return;
+            }
+
+            co_await this->server.clans.broadcast(this->clan_id().value(), text, MESSAGE_TYPE::BROWN);
+
+            auto log_data           = Json::Value();
+            log_data["sender_id"]   = static_cast<Json::Int64>(this->id);
+            log_data["sender_name"] = UTF8(this->name(), PLATFORM::WINDOWS);
+            log_data["clan_id"]     = static_cast<Json::Int64>(this->clan_id().value());
+            log_data["message"]     = UTF8(filtered, PLATFORM::WINDOWS);
+            this->server.log.write("clan_chat", log_data);
+        }
+        else if (receiver_name == "!!")
+        {
+            if (this->group_id().has_value() == false)
+            {
+                this->message(_TEXT(MESSAGE_GROUP_NOT_JOINED), MESSAGE_TYPE::NOTIFY);
+                co_return;
+            }
+
+            co_await this->server.groups.broadcast(this->group_id().value(), text, MESSAGE_TYPE::YELLOW);
+
+            auto log_data           = Json::Value();
+            log_data["sender_id"]   = static_cast<Json::Int64>(this->id);
+            log_data["sender_name"] = UTF8(this->name(), PLATFORM::WINDOWS);
+            log_data["group_id"]    = static_cast<Json::Int64>(this->group_id().value());
+            log_data["message"]     = UTF8(filtered, PLATFORM::WINDOWS);
+            this->server.log.write("group_chat", log_data);
+        }
+        else
+        {
+            auto has_mutual = false;
+            for (auto& entry : this->_friends)
+            {
+                if (entry.mutual)
+                {
+                    has_mutual = true;
+                    break;
+                }
+            }
+            if (has_mutual == false)
+            {
+                this->message(_TEXT(MESSAGE_FRIEND_CHAT_NO_MUTUAL), MESSAGE_TYPE::NOTIFY);
+                co_return;
+            }
+
+            co_await this->broadcast_friends(text, MESSAGE_TYPE::NOTIFY, true);
+            this->message(text, MESSAGE_TYPE::NOTIFY);
+
+            auto log_data           = Json::Value();
+            log_data["sender_id"]   = static_cast<Json::Int64>(this->id);
+            log_data["sender_name"] = UTF8(this->name(), PLATFORM::WINDOWS);
+            log_data["message"]     = UTF8(filtered, PLATFORM::WINDOWS);
+            this->server.log.write("friend_chat", log_data);
+        }
+        co_return;
+    }
+
     if (this->option(OPTION::WHISPER) == false)
         throw std::runtime_error(_TEXT(MESSAGE_WHISPER_DISABLED_MINE));
 

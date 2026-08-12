@@ -249,6 +249,8 @@ void fb::game::server::init_amqp_handlers()
     auto host_name = std::format("fb.{}.game.{}", world, config<uint32_t>("id"));
     this->handler.amqp.bind<fb::game::handler::amqp::kick_out>(host_name);
     this->handler.amqp.bind<fb::game::handler::amqp::whisper>(host_name);
+    this->handler.amqp.bind<fb::game::handler::amqp::friend_relation>(host_name);
+    this->handler.amqp.bind<fb::game::handler::amqp::friend_message>(host_name);
     this->handler.amqp.bind<fb::game::handler::amqp::shutdown>("fb.global"); // Shutdown: all servers
     this->handler.amqp.bind<fb::game::handler::amqp::broadcast>(std::format("fb.{}.global", world));
     this->handler.amqp.bind<fb::game::handler::amqp::broadcast_save>(std::format("fb.{}.system", world));

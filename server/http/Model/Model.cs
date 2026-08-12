@@ -1134,9 +1134,12 @@ namespace Fb.Model.ConstValue
         public const string MessageClanAlreadyEnemy = "이미 적대 관계인 문파입니다.";
         public const string MessageClanNotEnemy = "적대 관계가 아닌 문파입니다.";
         public const string MessageClanTargetNotFound = "대상 문파를 찾을 수 없습니다.";
+        public const string MessageClanNotJoined = "문파에 가입하지 않았습니다.";
         public const string MessageWhisperDisabledMine = "당신은 귓속말 거부 상태입니다.";
         public const string MessageWhisperDisabledTarget = "{}님은 귓속말 거부 상태입니다.";
         public const string MessageWhisperDisabledArea = "귓속말을 할 수 없는 지역입니다.";
+        public const string MessageFriendChatNoMutual = "상호 친구가 없습니다.";
+        public const string MessageFriendLogin = "[친구] {}님이 접속하셨습니다.";
         public const string MessageDoorOpen = "문을 열었습니다.";
         public const string MessageDoorClose = "문을 닫았습니다.";
         public const string MessageDoorLock = "문을 잠궜습니다.";

@@ -4,6 +4,7 @@ using Http;
 using Http.Model;
 using Http.Model.Redis;
 using Http.Service;
+using Internal.Services;
 using Microsoft.AspNetCore.Mvc;
 using Option = Http.Model.Option;
 using Protocol = fb.protocol._internal;
@@ -26,6 +27,7 @@ namespace Internal.Controllers
         private readonly ServerStateService _serverStateService;
         private readonly LogService _logService;
         private readonly MaintenanceService _maintenanceService;
+        private readonly FriendService _friendService;
         public InGameController(ILogger<InGameController> logger,
             RabbitMqService rabbitMqService,
             SessionService sessionService,
@@ -35,7 +37,8 @@ namespace Internal.Controllers
             BanService banService,
             ServerStateService serverStateService,
             LogService logService,
-            MaintenanceService maintenanceService)
+            MaintenanceService maintenanceService,
+            FriendService friendService)
         {
             _logger = logger;
             _rabbitMqService = rabbitMqService;
@@ -47,6 +50,7 @@ namespace Internal.Controllers
             _serverStateService = serverStateService;
             _logService = logService;
             _maintenanceService = maintenanceService;
+            _friendService = friendService;
         }
 
         [HttpPost("login")]
@@ -374,14 +378,15 @@ namespace Internal.Controllers
         }
 
         [HttpPost("update-friends")]
-        public Task<Response.UpdateFriends> UpdateFriends(Request.UpdateFriends request)
+        public async Task<Response.UpdateFriends> UpdateFriends(Request.UpdateFriends request)
         {
-            var response = new Response.UpdateFriends
-            {
-                Error = (uint)ErrorCode.None
-            };
+            return await _friendService.Update(request);
+        }
 
-            return Task.FromResult(response);
+        [HttpPost("friend-broadcast")]
+        public async Task<Response.FriendBroadcast> FriendBroadcast(Request.FriendBroadcast request)
+        {
+            return await _friendService.Broadcast(request);
         }
 
         [HttpGet("init/{world}/{uid}")]
@@ -395,6 +400,7 @@ namespace Internal.Controllers
             var quests = await _dbContext.Quest.Get(world, uid);
             var storageBoxes = await _dbContext.StorageBox.Get(world, uid);
             var marketplacePendings = await _dbContext.MarketplacePending.Get(world, uid);
+            var friends = await _friendService.GetEntries(world, uid);
             var option = await _dbContext.Option.Get(world, uid) ??
                 _dbContext.Option.Set(world, new Option
                 {
@@ -436,6 +442,7 @@ namespace Internal.Controllers
                     .Select(_mapper.Map<Protocol.StorageBox>)
                     .ToList(),
                 MarketplacePendings = marketplacePendings.Select(_mapper.Map<Protocol.MarketplacePending>).ToList(),
+                Friends = friends,
                 Option = _mapper.Map<Protocol.Option>(option),
                 Clan = sync.Clan,
                 Group = sync.Group,

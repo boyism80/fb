@@ -316,6 +316,16 @@ table UpdateFriends {
   names: [string];
 }
 
+table FriendBroadcast {
+  world: uint;
+  host: uint;
+  from_uid: uint;
+  from_name: string;
+  message: string;
+  type: ubyte;
+  to_uids: [uint];
+}
+
 table DeliverSystemStorage {
   world: uint;
   system_storage_box_id: uint;

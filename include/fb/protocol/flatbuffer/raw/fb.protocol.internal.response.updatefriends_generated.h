@@ -13,6 +13,8 @@ static_assert(FLATBUFFERS_VERSION_MAJOR == 25 &&
               FLATBUFFERS_VERSION_REVISION == 10,
              "Non-compatible flatbuffers version included");
 
+#include "fb.protocol.internal.friendentry_generated.h"
+
 namespace fb {
 namespace protocol {
 namespace internal {
@@ -25,14 +27,21 @@ struct UpdateFriendsBuilder;
 struct UpdateFriends FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
   typedef UpdateFriendsBuilder Builder;
   enum FlatBuffersVTableOffset FLATBUFFERS_VTABLE_UNDERLYING_TYPE {
-    VT_ERROR = 4
+    VT_ERROR = 4,
+    VT_FRIENDS = 6
   };
   uint32_t error() const {
     return GetField<uint32_t>(VT_ERROR, 0);
   }
+  const ::flatbuffers::Vector<::flatbuffers::Offset<fb::protocol::internal::raw::FriendEntry>> *friends() const {
+    return GetPointer<const ::flatbuffers::Vector<::flatbuffers::Offset<fb::protocol::internal::raw::FriendEntry>> *>(VT_FRIENDS);
+  }
   bool Verify(::flatbuffers::Verifier &verifier) const {
     return VerifyTableStart(verifier) &&
            VerifyField<uint32_t>(verifier, VT_ERROR, 4) &&
+           VerifyOffset(verifier, VT_FRIENDS) &&
+           verifier.VerifyVector(friends()) &&
+           verifier.VerifyVectorOfTables(friends()) &&
            verifier.EndTable();
   }
 };
@@ -43,6 +52,9 @@ struct UpdateFriendsBuilder {
   ::flatbuffers::uoffset_t start_;
   void add_error(uint32_t error) {
     fbb_.AddElement<uint32_t>(UpdateFriends::VT_ERROR, error, 0);
+  }
+  void add_friends(::flatbuffers::Offset<::flatbuffers::Vector<::flatbuffers::Offset<fb::protocol::internal::raw::FriendEntry>>> friends) {
+    fbb_.AddOffset(UpdateFriends::VT_FRIENDS, friends);
   }
   explicit UpdateFriendsBuilder(::flatbuffers::FlatBufferBuilder &_fbb)
         : fbb_(_fbb) {
@@ -57,10 +69,23 @@ struct UpdateFriendsBuilder {
 
 inline ::flatbuffers::Offset<UpdateFriends> CreateUpdateFriends(
     ::flatbuffers::FlatBufferBuilder &_fbb,
-    uint32_t error = 0) {
+    uint32_t error = 0,
+    ::flatbuffers::Offset<::flatbuffers::Vector<::flatbuffers::Offset<fb::protocol::internal::raw::FriendEntry>>> friends = 0) {
   UpdateFriendsBuilder builder_(_fbb);
+  builder_.add_friends(friends);
   builder_.add_error(error);
   return builder_.Finish();
+}
+
+inline ::flatbuffers::Offset<UpdateFriends> CreateUpdateFriendsDirect(
+    ::flatbuffers::FlatBufferBuilder &_fbb,
+    uint32_t error = 0,
+    const std::vector<::flatbuffers::Offset<fb::protocol::internal::raw::FriendEntry>> *friends = nullptr) {
+  auto friends__ = friends ? _fbb.CreateVector<::flatbuffers::Offset<fb::protocol::internal::raw::FriendEntry>>(*friends) : 0;
+  return fb::protocol::internal::response::raw::CreateUpdateFriends(
+      _fbb,
+      error,
+      friends__);
 }
 
 inline const fb::protocol::internal::response::raw::UpdateFriends *GetUpdateFriends(const void *buf) {

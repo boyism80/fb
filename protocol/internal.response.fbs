@@ -165,6 +165,7 @@ table Init {
   quests: [fb.protocol.internal.Quest];
   storage_boxes: [fb.protocol.internal.StorageBox];
   marketplace_pendings: [fb.protocol.internal.MarketplacePending];
+  friends: [fb.protocol.internal.FriendEntry];
   mail: uint;
   system_mail_ids: [uint];
 }
@@ -286,6 +287,20 @@ table Broadcast {
 table UpdateFriends
 {
   error: uint;
+  friends: [fb.protocol.internal.FriendEntry];
+}
+
+table FriendRelation {
+  user: uint;
+  friend_uid: uint;
+  friend_name: string;
+  mutual: bool;
+}
+
+table FriendMessage {
+  to_uid: uint;
+  message: string;
+  type: ubyte;
 }
 
 table GetSystemStorageBoxes {
@@ -368,4 +383,8 @@ table UpdatedCastle {
 table StartMaintenance {
   message: string;
   end_time: string;
+}
+
+table FriendBroadcast {
+  error: uint;
 }

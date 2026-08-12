@@ -21,6 +21,8 @@ namespace Http.Service
 
         public AchievementRepository Achievement => Bind<AchievementRepository>();
 
+        public FriendRepository Friend => Bind<FriendRepository>();
+
         public ClanRepository Clan => Bind<ClanRepository>();
 
         public ClanMemberRepository ClanMember => Bind<ClanMemberRepository>();

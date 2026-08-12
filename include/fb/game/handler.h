@@ -49,6 +49,8 @@
 
 #include <fb/game/handler/amqp/kick_out.h>
 #include <fb/game/handler/amqp/whisper.h>
+#include <fb/game/handler/amqp/friend_relation.h>
+#include <fb/game/handler/amqp/friend_message.h>
 #include <fb/game/handler/amqp/shutdown.h>
 #include <fb/game/handler/amqp/broadcast.h>
 #include <fb/game/handler/amqp/create_group.h>

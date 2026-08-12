@@ -46,6 +46,13 @@ namespace fb::game {
 
 class map;
 
+struct friend_entry
+{
+    uint32_t    uid = 0;
+    std::string name;
+    bool        mutual = false;
+};
+
 class character : public life
 {
     friend class group;
@@ -116,6 +123,8 @@ private:
     mutable std::optional<fb::model::point<int32_t>> _camera_pivot = std::nullopt;
     std::weak_ptr<fb::socket<character>>             _socket;
     ping_state_t                                     _ping_state;
+    std::vector<friend_entry>                        _friends;
+    bool                                             _friend_login_notify_pending = false;
     bool                                             _options[static_cast<uint8_t>(OPTION::LOCK_WALK_SPEED) + 1] = {
         1,
     };
@@ -290,6 +299,14 @@ public:
     const std::optional<uint32_t>&                            clan_id() const;
     void                                                      clan_id(std::optional<uint32_t> value);
     void                                                      clan_reset();
+    const std::vector<friend_entry>&                          friends() const;
+    void                                                      friends(std::vector<friend_entry> value);
+    void                                                      update_friend_relation(uint32_t friend_uid, std::string_view friend_name, bool mutual);
+    bool                                                      is_mutual_friend(uint32_t uid) const;
+    bool                                                      is_mutual_friend(std::string_view name) const;
+    void                                                      friend_login_notify_pending(bool value);
+    bool                                                      consume_friend_login_notify_pending();
+    [[nodiscard]] async::task<void>                           broadcast_friends(std::string_view message, MESSAGE_TYPE type, bool mutual_only = true);
     void                                                      assert_state(STATE value) const;
     void                                                      assert_state(const std::vector<STATE>& values) const;
     bool                                                      move(const fb::model::point16_t& before, uint8_t walk_queue_slot = 0);

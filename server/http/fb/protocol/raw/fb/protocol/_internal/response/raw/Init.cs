@@ -39,15 +39,17 @@ public struct Init : IFlatbufferObject
   public int StorageBoxesLength { get { int o = __p.__offset(24); return o != 0 ? __p.__vector_len(o) : 0; } }
   public fb.protocol._internal.raw.MarketplacePending? MarketplacePendings(int j) { int o = __p.__offset(26); return o != 0 ? (fb.protocol._internal.raw.MarketplacePending?)(new fb.protocol._internal.raw.MarketplacePending()).__assign(__p.__indirect(__p.__vector(o) + j * 4), __p.bb) : null; }
   public int MarketplacePendingsLength { get { int o = __p.__offset(26); return o != 0 ? __p.__vector_len(o) : 0; } }
-  public uint Mail { get { int o = __p.__offset(28); return o != 0 ? __p.bb.GetUint(o + __p.bb_pos) : (uint)0; } }
-  public uint SystemMailIds(int j) { int o = __p.__offset(30); return o != 0 ? __p.bb.GetUint(__p.__vector(o) + j * 4) : (uint)0; }
-  public int SystemMailIdsLength { get { int o = __p.__offset(30); return o != 0 ? __p.__vector_len(o) : 0; } }
+  public fb.protocol._internal.raw.FriendEntry? Friends(int j) { int o = __p.__offset(28); return o != 0 ? (fb.protocol._internal.raw.FriendEntry?)(new fb.protocol._internal.raw.FriendEntry()).__assign(__p.__indirect(__p.__vector(o) + j * 4), __p.bb) : null; }
+  public int FriendsLength { get { int o = __p.__offset(28); return o != 0 ? __p.__vector_len(o) : 0; } }
+  public uint Mail { get { int o = __p.__offset(30); return o != 0 ? __p.bb.GetUint(o + __p.bb_pos) : (uint)0; } }
+  public uint SystemMailIds(int j) { int o = __p.__offset(32); return o != 0 ? __p.bb.GetUint(__p.__vector(o) + j * 4) : (uint)0; }
+  public int SystemMailIdsLength { get { int o = __p.__offset(32); return o != 0 ? __p.__vector_len(o) : 0; } }
 #if ENABLE_SPAN_T
-  public Span<uint> GetSystemMailIdsBytes() { return __p.__vector_as_span<uint>(30, 4); }
+  public Span<uint> GetSystemMailIdsBytes() { return __p.__vector_as_span<uint>(32, 4); }
 #else
-  public ArraySegment<byte>? GetSystemMailIdsBytes() { return __p.__vector_as_arraysegment(30); }
+  public ArraySegment<byte>? GetSystemMailIdsBytes() { return __p.__vector_as_arraysegment(32); }
 #endif
-  public uint[] GetSystemMailIdsArray() { return __p.__vector_as_array<uint>(30); }
+  public uint[] GetSystemMailIdsArray() { return __p.__vector_as_array<uint>(32); }
 
   public static Offset<fb.protocol._internal.response.raw.Init> CreateInit(FlatBufferBuilder builder,
       Offset<fb.protocol._internal.raw.Character> characterOffset = default(Offset<fb.protocol._internal.raw.Character>),
@@ -62,11 +64,13 @@ public struct Init : IFlatbufferObject
       VectorOffset questsOffset = default(VectorOffset),
       VectorOffset storage_boxesOffset = default(VectorOffset),
       VectorOffset marketplace_pendingsOffset = default(VectorOffset),
+      VectorOffset friendsOffset = default(VectorOffset),
       uint mail = 0,
       VectorOffset system_mail_idsOffset = default(VectorOffset)) {
-    builder.StartTable(14);
+    builder.StartTable(15);
     Init.AddSystemMailIds(builder, system_mail_idsOffset);
     Init.AddMail(builder, mail);
+    Init.AddFriends(builder, friendsOffset);
     Init.AddMarketplacePendings(builder, marketplace_pendingsOffset);
     Init.AddStorageBoxes(builder, storage_boxesOffset);
     Init.AddQuests(builder, questsOffset);
@@ -82,7 +86,7 @@ public struct Init : IFlatbufferObject
     return Init.EndInit(builder);
   }
 
-  public static void StartInit(FlatBufferBuilder builder) { builder.StartTable(14); }
+  public static void StartInit(FlatBufferBuilder builder) { builder.StartTable(15); }
   public static void AddCharacter(FlatBufferBuilder builder, Offset<fb.protocol._internal.raw.Character> characterOffset) { builder.AddOffset(0, characterOffset.Value, 0); }
   public static void AddMarriage(FlatBufferBuilder builder, Offset<fb.protocol._internal.raw.Marriage> marriageOffset) { builder.AddOffset(1, marriageOffset.Value, 0); }
   public static void AddGroup(FlatBufferBuilder builder, Offset<nullable.nullable_uint> groupOffset) { builder.AddOffset(2, groupOffset.Value, 0); }
@@ -130,8 +134,14 @@ public struct Init : IFlatbufferObject
   public static VectorOffset CreateMarketplacePendingsVectorBlock(FlatBufferBuilder builder, ArraySegment<Offset<fb.protocol._internal.raw.MarketplacePending>> data) { builder.StartVector(4, data.Count, 4); builder.Add(data); return builder.EndVector(); }
   public static VectorOffset CreateMarketplacePendingsVectorBlock(FlatBufferBuilder builder, IntPtr dataPtr, int sizeInBytes) { builder.StartVector(1, sizeInBytes, 1); builder.Add<Offset<fb.protocol._internal.raw.MarketplacePending>>(dataPtr, sizeInBytes); return builder.EndVector(); }
   public static void StartMarketplacePendingsVector(FlatBufferBuilder builder, int numElems) { builder.StartVector(4, numElems, 4); }
-  public static void AddMail(FlatBufferBuilder builder, uint mail) { builder.AddUint(12, mail, 0); }
-  public static void AddSystemMailIds(FlatBufferBuilder builder, VectorOffset systemMailIdsOffset) { builder.AddOffset(13, systemMailIdsOffset.Value, 0); }
+  public static void AddFriends(FlatBufferBuilder builder, VectorOffset friendsOffset) { builder.AddOffset(12, friendsOffset.Value, 0); }
+  public static VectorOffset CreateFriendsVector(FlatBufferBuilder builder, Offset<fb.protocol._internal.raw.FriendEntry>[] data) { builder.StartVector(4, data.Length, 4); for (int i = data.Length - 1; i >= 0; i--) builder.AddOffset(data[i].Value); return builder.EndVector(); }
+  public static VectorOffset CreateFriendsVectorBlock(FlatBufferBuilder builder, Offset<fb.protocol._internal.raw.FriendEntry>[] data) { builder.StartVector(4, data.Length, 4); builder.Add(data); return builder.EndVector(); }
+  public static VectorOffset CreateFriendsVectorBlock(FlatBufferBuilder builder, ArraySegment<Offset<fb.protocol._internal.raw.FriendEntry>> data) { builder.StartVector(4, data.Count, 4); builder.Add(data); return builder.EndVector(); }
+  public static VectorOffset CreateFriendsVectorBlock(FlatBufferBuilder builder, IntPtr dataPtr, int sizeInBytes) { builder.StartVector(1, sizeInBytes, 1); builder.Add<Offset<fb.protocol._internal.raw.FriendEntry>>(dataPtr, sizeInBytes); return builder.EndVector(); }
+  public static void StartFriendsVector(FlatBufferBuilder builder, int numElems) { builder.StartVector(4, numElems, 4); }
+  public static void AddMail(FlatBufferBuilder builder, uint mail) { builder.AddUint(13, mail, 0); }
+  public static void AddSystemMailIds(FlatBufferBuilder builder, VectorOffset systemMailIdsOffset) { builder.AddOffset(14, systemMailIdsOffset.Value, 0); }
   public static VectorOffset CreateSystemMailIdsVector(FlatBufferBuilder builder, uint[] data) { builder.StartVector(4, data.Length, 4); for (int i = data.Length - 1; i >= 0; i--) builder.AddUint(data[i]); return builder.EndVector(); }
   public static VectorOffset CreateSystemMailIdsVectorBlock(FlatBufferBuilder builder, uint[] data) { builder.StartVector(4, data.Length, 4); builder.Add(data); return builder.EndVector(); }
   public static VectorOffset CreateSystemMailIdsVectorBlock(FlatBufferBuilder builder, ArraySegment<uint> data) { builder.StartVector(4, data.Count, 4); builder.Add(data); return builder.EndVector(); }
@@ -163,8 +173,9 @@ static public class InitVerify
       && verifier.VerifyVectorOfTables(tablePos, 22 /*Quests*/, fb.protocol._internal.raw.QuestVerify.Verify, false)
       && verifier.VerifyVectorOfTables(tablePos, 24 /*StorageBoxes*/, fb.protocol._internal.raw.StorageBoxVerify.Verify, false)
       && verifier.VerifyVectorOfTables(tablePos, 26 /*MarketplacePendings*/, fb.protocol._internal.raw.MarketplacePendingVerify.Verify, false)
-      && verifier.VerifyField(tablePos, 28 /*Mail*/, 4 /*uint*/, 4, false)
-      && verifier.VerifyVectorOfData(tablePos, 30 /*SystemMailIds*/, 4 /*uint*/, false)
+      && verifier.VerifyVectorOfTables(tablePos, 28 /*Friends*/, fb.protocol._internal.raw.FriendEntryVerify.Verify, false)
+      && verifier.VerifyField(tablePos, 30 /*Mail*/, 4 /*uint*/, 4, false)
+      && verifier.VerifyVectorOfData(tablePos, 32 /*SystemMailIds*/, 4 /*uint*/, false)
       && verifier.VerifyTableEnd(tablePos);
   }
 }

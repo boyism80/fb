@@ -192,6 +192,12 @@ table Achievement {
     color: ushort;
 }
 
+table FriendEntry {
+    name: string;
+    uid: uint;
+    mutual: bool;
+}
+
 table Clan {
     id: uint;
     name: string;

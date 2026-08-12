@@ -54,6 +54,7 @@ public class Program
         builder.Services.AddHealthChecks();
         builder.Services.AddScoped<StorageService>();
         builder.Services.AddScoped<Internal.Services.GroupService>();
+        builder.Services.AddScoped<Internal.Services.FriendService>();
 
         var app = builder.Build();
         await DatabaseMigrationHost.RunAsync(app.Services, MigrationProfile.Internal);

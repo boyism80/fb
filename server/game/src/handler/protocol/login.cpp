@@ -313,6 +313,13 @@ async::task<std::shared_ptr<character>> login<V>::init(const game_reqs::login<V>
     this->init_marketplace(resp.marketplace_pendings, *ch);
     this->init_storage(resp, *ch);
     this->init_option(resp.option, *ch);
+    {
+        auto entries = std::vector<friend_entry>{};
+        entries.reserve(resp.friends.size());
+        for (auto& entry : resp.friends)
+            entries.push_back(friend_entry{entry.uid, entry.name, entry.mutual});
+        ch->friends(std::move(entries));
+    }
     ch->marriage(fb::game::marriage(resp.marriage.remarriage_after.empty()
                                         ? this->server.now()
                                         : fb::model::datetime(resp.marriage.remarriage_after),
@@ -337,6 +344,8 @@ async::task<std::shared_ptr<character>> login<V>::init(const game_reqs::login<V>
             std::ignore = lua->call(2);
         }
 
+        ch->friend_login_notify_pending(true);
+        ch->friends_sync(1);
     }
 
     co_await this->server.system_storage.sync(*ch);
