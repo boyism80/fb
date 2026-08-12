@@ -13,10 +13,13 @@ namespace game_resp     = fb::protocol::game::response;
 namespace internal_resp = fb::protocol::internal::response;
 namespace internal_reqs = fb::protocol::internal::request;
 
-void character::container::broadcast(std::string_view message, MESSAGE_TYPE type)
+void character::container::broadcast(std::string_view message, MESSAGE_TYPE type, bool respect_roar)
 {
     auto message_str = std::string(message);
-    this->foreach_enqueue([message_str, type](auto& ch) -> async::task<void> {
+    this->foreach_enqueue([message_str, type, respect_roar](auto& ch) -> async::task<void> {
+        if (respect_roar && ch->option(OPTION::ROAR) == false)
+            co_return;
+
         ch->message(message_str, type);
         co_return;
     });
@@ -24,7 +27,8 @@ void character::container::broadcast(std::string_view message, MESSAGE_TYPE type
 
 async::task<void> character::container::broadcast(std::string_view message,
                                                   MESSAGE_TYPE     type,
-                                                  BROADCAST_TYPE   broadcast_type)
+                                                  BROADCAST_TYPE   broadcast_type,
+                                                  bool             respect_roar)
 {
     auto message_str = std::string(message);
     if (broadcast_type == BROADCAST_TYPE::GLOBAL)
@@ -34,11 +38,12 @@ async::task<void> character::container::broadcast(std::string_view message,
             "internal",
             "/in-game/broadcast",
             internal_reqs::Broadcast{world, fb::config<uint32_t>("id"), message_str, static_cast<uint8_t>(type)});
+        // Cross-host GLOBAL has no respect_roar flag; ROAR filtering is for WORLD (local) use.
         co_await this->on_broadcast(resp);
     }
     else
     {
-        this->broadcast(message_str, type);
+        this->broadcast(message_str, type, respect_roar);
     }
 
     co_return;

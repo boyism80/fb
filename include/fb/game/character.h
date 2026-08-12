@@ -382,8 +382,11 @@ public:
     void                  foreach_enqueue(const std::vector<std::string>& names, character_async_function_t&& fn, character_function_t_miss miss = nullptr) const;
     async::task<void>     invoke(std::string_view name, character_function_t fn, character_function_t_miss miss = nullptr) const;
     async::task<void>     invoke_async(std::string_view name, character_async_function_t fn, character_function_t_miss miss = nullptr) const;
-    void                  broadcast(std::string_view message, MESSAGE_TYPE type);
-    async::task<void>     broadcast(std::string_view message, MESSAGE_TYPE type, BROADCAST_TYPE broadcast_type);
+    void                  broadcast(std::string_view message, MESSAGE_TYPE type, bool respect_roar = false);
+    async::task<void>     broadcast(std::string_view message,
+                                    MESSAGE_TYPE     type,
+                                    BROADCAST_TYPE   broadcast_type,
+                                    bool             respect_roar = false);
     async::task<void>     on_broadcast(const fb::protocol::internal::response::Broadcast& resp);
     void                  update_time(uint8_t hours, uint8_t minutes);
     void                  send(const fb::stream& stream, bool encrypt);

@@ -1132,15 +1132,23 @@ int builtin::server::builtin_broadcast(lua_State* L)
     if (lua == nullptr)
         return 0;
 
-    auto& srv        = static_cast<fb::game::server&>(lua->executor);
-    auto  argc       = lua->argc();
-    auto  text       = lua->tostring(1);
-    auto  type       = lua->toenum(2, MESSAGE_TYPE::STATE);
-    auto  broad_type = lua->toenum(3, BROADCAST_TYPE::GLOBAL);
+    auto& srv          = static_cast<fb::game::server&>(lua->executor);
+    auto  text         = lua->tostring(1);
+    auto  type         = lua->toenum(2, MESSAGE_TYPE::STATE);
+    auto  broad_type   = lua->toenum(3, BROADCAST_TYPE::GLOBAL);
+    auto  respect_roar = false;
+
+    if (lua->argc() >= 4 && lua->is_table(4))
+    {
+        lua->pushstring("respect_roar");
+        if (lua_rawget(L, 4) == LUA_TBOOLEAN)
+            respect_roar = lua_toboolean(L, -1);
+        lua_pop(L, 1);
+    }
 
     if (broad_type == BROADCAST_TYPE::WORLD)
     {
-        srv.characters.broadcast(text, type);
+        srv.characters.broadcast(text, type, respect_roar);
         return 0;
     }
     else
@@ -1148,7 +1156,7 @@ int builtin::server::builtin_broadcast(lua_State* L)
         auto builder  = lua->new_co_builder();
         builder.yield = [=]() -> async::task<void> {
             auto& server = static_cast<fb::game::server&>(lua->executor);
-            co_await server.characters.broadcast(text, type, broad_type);
+            co_await server.characters.broadcast(text, type, broad_type, respect_roar);
             co_return;
         };
         builder.resume = []() -> async::task<int> {
