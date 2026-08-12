@@ -314,6 +314,18 @@ local npc_chat_handlers = {
             return run_black_flag(me, npc_obj)
         end,
     },
+    {
+        priority = 200,
+        anchors = { '안녕' },
+        literal = true,
+        condition = function(npc_obj)
+            return npc_obj:model():name() == '용노인'
+        end,
+        func = function(me, npc_obj, params)
+            me:script('scripts/npc/98.lua', 'on_hello', npc_obj)
+            return true
+        end,
+    },
 }
 
 local npc_chat_handlers_by_anchor = {}
