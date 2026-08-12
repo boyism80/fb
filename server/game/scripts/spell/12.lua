@@ -3,7 +3,7 @@
 
 return {
     on_cast = function(me, spell, message)
-        broadcast(string.format('[%s]: %s', me:name(), message), MESSAGE_TYPE.SHOUT, BROADCAST_TYPE.WORLD)
+        broadcast(string.format('[%s]: %s', me:name(), message), MESSAGE_TYPE.SHOUT, BROADCAST_TYPE.WORLD, { respect_roar = true })
         me:message('사자후도사를 외웠습니다.')
     end,
 
