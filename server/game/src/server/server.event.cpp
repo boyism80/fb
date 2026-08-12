@@ -18,7 +18,8 @@ bool fb::game::server::decrypt_policy(uint8_t opcode) const
 {
     switch (opcode)
     {
-    case game_reqs::login::opcode:
+    // The opcode is version independent, so any instantiation resolves it.
+    case game_reqs::login<fb::protocol::CLIENT_VERSION::v550>::opcode:
         return false;
 
     default:

@@ -3,7 +3,8 @@
 namespace fb::protocol::game::request {
 
 #ifdef BOT
-void user_info_submit::serialize(fb::stream_writer<big_endian>& writer) const
+template <CLIENT_VERSION V>
+void user_info_submit<V>::serialize(fb::stream_writer<big_endian>& writer) const
 {
     header::serialize(writer);
     writer.write<uint8_t>(opcode);
@@ -14,7 +15,8 @@ void user_info_submit::serialize(fb::stream_writer<big_endian>& writer) const
     }
 }
 #else
-void user_info_submit::deserialize(fb::stream_reader<big_endian>& reader)
+template <CLIENT_VERSION V>
+void user_info_submit<V>::deserialize(fb::stream_reader<big_endian>& reader)
 {
     header::deserialize(reader);
     this->sub = reader.read<uint8_t>();
@@ -24,5 +26,9 @@ void user_info_submit::deserialize(fb::stream_reader<big_endian>& reader)
     }
 }
 #endif
+
+template class user_info_submit<CLIENT_VERSION::v550>;
+template class user_info_submit<CLIENT_VERSION::v565>;
+template class user_info_submit<CLIENT_VERSION::v651>;
 
 } // namespace fb::protocol::game::request

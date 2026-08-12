@@ -3,7 +3,8 @@
 namespace fb::protocol::game::response {
 
 #ifndef BOT
-void unknown_12::serialize(fb::stream_writer<big_endian>& writer) const
+template <CLIENT_VERSION V>
+void unknown_12<V>::serialize(fb::stream_writer<big_endian>& writer) const
 {
     header::serialize(writer);
     writer.write<uint8_t>(opcode);
@@ -12,7 +13,8 @@ void unknown_12::serialize(fb::stream_writer<big_endian>& writer) const
     writer.write<uint8_t>(this->flag);
 }
 #else
-void unknown_12::deserialize(fb::stream_reader<big_endian>& reader)
+template <CLIENT_VERSION V>
+void unknown_12<V>::deserialize(fb::stream_reader<big_endian>& reader)
 {
     header::deserialize(reader);
     this->oid  = reader.read<uint32_t>();
@@ -20,5 +22,9 @@ void unknown_12::deserialize(fb::stream_reader<big_endian>& reader)
     this->flag = reader.read<uint8_t>();
 }
 #endif
+
+template class unknown_12<CLIENT_VERSION::v550>;
+template class unknown_12<CLIENT_VERSION::v565>;
+template class unknown_12<CLIENT_VERSION::v651>;
 
 } // namespace fb::protocol::game::response

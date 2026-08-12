@@ -3,16 +3,24 @@
 
 #include <fb/protocol/header.h>
 #include <fb/model/model.h>
+#include <fb/protocol/client_version.h>
 #include <string_view>
 
 namespace fb::protocol::login::request {
 
 using namespace fb::model::enum_value;
 
+/**
+ * C2S change password (opcode 0x26).
+ * Primary layout (v550): name | pw | new_pw (all u8-prefixed) + birthday u32.
+ * No version delta known for v565/v651.
+ */
+template <CLIENT_VERSION V>
 class update_pw : public fb::protocol::header
 {
 public:
     static constexpr uint8_t opcode = 0x26;
+    FB_PROTOCOL_VERSION_TAGS(V);
 
 public:
 #ifndef BOT

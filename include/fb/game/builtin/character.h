@@ -107,6 +107,12 @@ struct character
     static int builtin_marry(lua_State* L);
     static int builtin_divorce(lua_State* L);
     static int builtin_unknown_12(lua_State* L);
+    static int builtin_unknown_4f(lua_State* L);
+    static int builtin_unknown_58(lua_State* L);
+    static int builtin_unknown_62(lua_State* L);
+    static int builtin_unknown_63(lua_State* L);
+    static int builtin_unknown_6f(lua_State* L);
+    static int builtin_unknown_70(lua_State* L);
     static int builtin_move_confirm_noscroll(lua_State* L);
     static int builtin_ui(lua_State* L);
     static int builtin_item_throw_confirm(lua_State* L);

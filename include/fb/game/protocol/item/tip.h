@@ -15,6 +15,7 @@ class item_tip : public fb::protocol::header
 {
 public:
     static constexpr uint8_t opcode = 0x59;
+    FB_PROTOCOL_VERSION_TAGS(V);
 
 public:
 #ifndef BOT
@@ -41,16 +42,11 @@ public:
     {
         header::serialize(writer);
         writer.write<uint8_t>(opcode);
-        // Both client versions currently share the same tip body; v565 gates on
-        // position high-byte==1 using the echoed C2S position from the client.
+        // v550/v565/v651 share the inventory tooltip body:
+        // [pos u16][len u16][CP949][0x00]. The 0x40 dictionary list is unused.
         writer.write<uint16_t>(this->position);
         writer.write<std::string, uint16_t>(this->message);
         writer.write<uint8_t>(0x00);
-        if constexpr (V == CLIENT_VERSION::v565)
-        {
-            // Reserved for 5.65 list-shaped body once live capture confirms it.
-            // Current layout remains the 5.50-compatible tip message format.
-        }
     }
 #else
     void deserialize(fb::stream_reader<big_endian>& reader)

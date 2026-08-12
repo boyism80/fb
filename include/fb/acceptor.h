@@ -126,24 +126,30 @@ private:
 
                 socket.update_last_packet_time();
 
-                if (!this->handler.protocol.has_deserializer(opcode))
+                // Session missing / version not established → deserialize as v550.
+                auto client_version = fb::protocol::client_version_or_default(socket.data());
+
+                if (!this->handler.protocol.has_opcode(opcode))
                 {
                     fb::logger::warn(std::format("Undefined protocol. [{:#x}]", opcode));
                 }
-                else if (!this->handler.protocol.has_handler(opcode))
+                else if (!this->handler.protocol.has_entry(opcode, client_version))
                 {
-                    fb::logger::warn(std::format("Undefined handler. [{:#x}]", opcode));
+                    fb::logger::warn(std::format("Undefined handler. [{:#x}] version={}",
+                                                 opcode,
+                                                 fb::protocol::to_string(client_version)));
                 }
                 else
                 {
-                    auto protocol = this->handler.protocol.get_deserializer(opcode)(reader);
+                    auto protocol = this->handler.protocol.get_deserializer(opcode, client_version)(reader);
                     auto fd       = socket.fd();
                     auto weak     = socket.template weak_from_this_as<fb::socket<T>>();
                     auto builder  = this->threads.new_builder(weak);
                     auto frame    = execution_context::create();
                     frame->slot(context::local::slot_id(), context{.transaction_id = mint_transaction_id()});
                     builder.context = execution_context::token(std::move(frame));
-                    builder.func    = [this, protocol, weak, fd, opcode](auto& thread) -> async::task<void> {
+                    builder.func =
+                        [this, protocol, weak, fd, opcode, client_version](auto& thread) -> async::task<void> {
                         try
                         {
                             if (weak.expired())
@@ -154,7 +160,7 @@ private:
                                 co_return;
 
                             auto  socket  = shared.get();
-                            auto& handler = this->handler.protocol.get_handler(opcode);
+                            auto& handler = this->handler.protocol.get_handler(opcode, client_version);
                             // Check both global socket TPS and per-command TPS limits
                             // If either limit is exceeded, ignore the packet
                             if (this->assert_tps(*socket) &&

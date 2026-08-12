@@ -7,6 +7,21 @@
 
 using namespace fb::bot::load;
 
+namespace {
+
+// Client version the gateway bots emulate.
+fb::protocol::CLIENT_VERSION configured_client_version()
+{
+    auto packed  = fb::config<uint16_t>("client:version", 550);
+    auto version = fb::protocol::CLIENT_VERSION::v550;
+    if (fb::protocol::try_parse(packed, version) == false)
+        return fb::protocol::CLIENT_VERSION::v550;
+
+    return version;
+}
+
+} // namespace
+
 gateway_bot_controller::gateway_bot_controller(bot_container& container) :
     fb::bot::gateway_bot_controller(container),
     _remained_count(fb::config<uint32_t>("spawn_count") / fb::config<uint32_t>("io_size"))
@@ -42,26 +57,30 @@ async::task<void> gateway_bot_controller::on_bot_spawn()
 
 async::task<void> gateway_bot_controller::on_welcome(gateway_bot& bot, const gateway_resp::welcome& response)
 {
-    auto packed = fb::config<uint16_t>("client:version", 550);
-    auto cv     = fb::protocol::CLIENT_VERSION::v550;
-    if (fb::protocol::try_parse(packed, cv) == false)
-        cv = fb::protocol::CLIENT_VERSION::v550;
-
+    auto cv     = configured_client_version();
     auto nation = static_cast<uint8_t>(fb::config<uint16_t>("client:nation", 0xD7));
-    bot.send(gateway_reqs::version{cv, nation}, false, true);
+
+    // Runtime CLIENT_VERSION -> compile-time V for the versioned request layout.
+    fb::protocol::visit_client_version(cv, [&]<fb::protocol::CLIENT_VERSION V> {
+        bot.send(gateway_reqs::version<V>{cv, nation}, false, true);
+    });
     co_return;
 }
 
 async::task<void> gateway_bot_controller::on_crt(gateway_bot& bot, const gateway_resp::encryption& response)
 {
     bot.encryption(response.cryptor);
-    bot.send(gateway_reqs::server_list{0x01, 0});
+    fb::protocol::visit_client_version(configured_client_version(), [&]<fb::protocol::CLIENT_VERSION V> {
+        bot.send(gateway_reqs::server_list<V>{0x01, 0});
+    });
     co_return;
 }
 
 async::task<void> gateway_bot_controller::on_hosts(gateway_bot& bot, const gateway_resp::server_list& response)
 {
-    bot.send(gateway_reqs::server_list{0x00, 0});
+    fb::protocol::visit_client_version(configured_client_version(), [&]<fb::protocol::CLIENT_VERSION V> {
+        bot.send(gateway_reqs::server_list<V>{0x00, 0});
+    });
     co_return;
 }
 

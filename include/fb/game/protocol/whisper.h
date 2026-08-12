@@ -2,14 +2,17 @@
 #define __GAME_PROTOCOL_WHISPER_H__
 
 #include <fb/protocol/header.h>
+#include <fb/protocol/client_version.h>
 #include <string_view>
 
 namespace fb::protocol::game::request {
 
+template <CLIENT_VERSION V>
 class whisper : public fb::protocol::header
 {
 public:
     static constexpr uint8_t opcode = 0x19;
+    FB_PROTOCOL_VERSION_TAGS(V);
 
 public:
 #ifdef BOT // bot only

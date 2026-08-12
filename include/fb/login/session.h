@@ -9,12 +9,14 @@ namespace fb::login {
 class session
 {
 public:
-    uint32_t                     pk = -1;
-    std::string                  name;
-    fb::protocol::CLIENT_VERSION client_version = fb::protocol::CLIENT_VERSION::v550;
+    uint32_t                           pk = -1;
+    std::string                        name;
+    const fb::protocol::CLIENT_VERSION client_version;
+    const fb::protocol::CLIENT_UI_MODE ui_mode;
 
 public:
-    session();
+    session(fb::protocol::CLIENT_VERSION client_version,
+            fb::protocol::CLIENT_UI_MODE ui_mode = fb::protocol::CLIENT_UI_MODE::OLD);
     ~session();
 };
 

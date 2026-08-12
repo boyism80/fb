@@ -8,7 +8,8 @@ namespace fb::game::handler::protocol {
 
 namespace game_reqs = fb::protocol::game::request;
 
-class click : public fb::handler::protocol<fb::game::server, game_reqs::click>
+template <fb::protocol::CLIENT_VERSION V>
+class click : public fb::handler::protocol<fb::game::server, game_reqs::click<V>>
 {
 public:
     click(fb::game::server& server);
@@ -17,12 +18,12 @@ public:
     click& operator= (const click&) = delete;
     click& operator= (click&&)      = delete;
 
-    async::task<bool> handle(fb::socket<character>& session, game_reqs::click& request) override;
+    async::task<bool> handle(fb::socket<character>& session, game_reqs::click<V>& request) override;
 
 private:
     async::task<void> handle_f1(character* ch);
     async::task<void> handle_f2(character* ch);
-    async::task<void> handle_object_click(character* ch, game_reqs::click& request);
+    async::task<void> handle_object_click(character* ch, game_reqs::click<V>& request);
 };
 
 } // namespace fb::game::handler::protocol

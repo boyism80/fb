@@ -2,6 +2,7 @@
 #define __PROTOCOL_GAME_POPUP_INPUT_SUBMIT_H__
 
 #include <fb/protocol/header.h>
+#include <fb/protocol/client_version.h>
 #include <fb/model/model.h>
 #include <string>
 
@@ -15,10 +16,12 @@ using namespace fb::model::enum_value;
  * Wire: param0 (echo of S2C 0x1B param0) + u16 BE text_len + CP949 text.
  * Distinct from S2C option (also 0x23).
  */
+template <CLIENT_VERSION V>
 class popup_input_submit : public fb::protocol::header
 {
 public:
     static constexpr uint8_t opcode = 0x23;
+    FB_PROTOCOL_VERSION_TAGS(V);
 
 public:
 #ifdef BOT

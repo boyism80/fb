@@ -6,6 +6,14 @@
 
 using namespace fb::bot::load;
 
+namespace {
+
+// create / complete / login C2S layouts carry no version delta, so the bot always
+// builds them with the primary (v550) specialization.
+constexpr auto REQUEST_VERSION = fb::protocol::CLIENT_VERSION::v550;
+
+} // namespace
+
 login_bot_controller::login_bot_controller(bot_container& container) :
     fb::bot::login_bot_controller(container)
 {
@@ -30,7 +38,7 @@ async::task<void> login_bot_controller::on_agreement(login_bot& bot, const login
 
         while (true)
         {
-            auto&& resp = co_await bot.request<login_resp::message>(fb::protocol::login::request::create(id, pw));
+            auto&& resp = co_await bot.request<login_resp::message>(login_reqs::create<REQUEST_VERSION>(id, pw));
 
             if (resp.type == 0x00)
                 break;
@@ -64,7 +72,7 @@ async::task<void> login_bot_controller::on_agreement(login_bot& bot, const login
             while (true)
             {
                 auto&& resp = co_await bot.request<login_resp::message>(
-                    fb::protocol::login::request::complete{hair, gender, nation, divine_beast});
+                    login_reqs::complete<REQUEST_VERSION>{hair, gender, nation, divine_beast});
 
                 if (resp.type == 0x00)
                     break;
@@ -75,7 +83,7 @@ async::task<void> login_bot_controller::on_agreement(login_bot& bot, const login
 
         while (true)
         {
-            auto&& resp = co_await bot.request<login_resp::message>(fb::protocol::login::request::login{id, pw});
+            auto&& resp = co_await bot.request<login_resp::message>(login_reqs::login<REQUEST_VERSION>{id, pw});
             if (resp.type == 0x00)
                 break;
 
@@ -105,13 +113,17 @@ async::task<void> login_bot_controller::on_transfer(login_bot& bot, const fb_res
 async::task<void> login_bot_controller::on_bot_connected(login_bot& bot)
 {
     auto& encryption = bot.encryption();
-    bot.send(login_reqs::agreement(encryption.pattern(),
-                                   fb::encryption::KEY_SIZE,
-                                   encryption.iv(),
-                                   bot.transfer_from(),
-                                   bot.client_version()),
-             false,
-             true);
+
+    // Runtime CLIENT_VERSION -> compile-time V for the versioned request layout.
+    fb::protocol::visit_client_version(bot.client_version(), [&]<fb::protocol::CLIENT_VERSION V> {
+        bot.send(login_reqs::agreement<V>(encryption.pattern(),
+                                          fb::encryption::KEY_SIZE,
+                                          encryption.iv(),
+                                          bot.transfer_from(),
+                                          bot.client_version()),
+                 false,
+                 true);
+    });
 
     // Bot is now managed by bot_controller's thread-safe collection
     co_return;

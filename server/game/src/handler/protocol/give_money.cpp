@@ -3,15 +3,17 @@
 #include <tuple>
 #include <limits>
 
-using namespace fb::game::handler::protocol;
-
 namespace game_reqs = fb::protocol::game::request;
 
-give_money::give_money(fb::game::server& server) :
-    fb::handler::protocol<fb::game::server, game_reqs::give_money>(server)
+namespace fb::game::handler::protocol {
+
+template <fb::protocol::CLIENT_VERSION V>
+give_money<V>::give_money(fb::game::server& server) :
+    fb::handler::protocol<fb::game::server, game_reqs::give_money<V>>(server)
 { }
 
-async::task<bool> give_money::handle(fb::socket<character>& session, game_reqs::give_money& request)
+template <fb::protocol::CLIENT_VERSION V>
+async::task<bool> give_money<V>::handle(fb::socket<character>& session, game_reqs::give_money<V>& request)
 {
     auto me = session.data();
     if (me->inited() == false)
@@ -69,3 +71,9 @@ async::task<bool> give_money::handle(fb::socket<character>& session, game_reqs::
         me->message(error.value());
     co_return true;
 }
+
+template class give_money<fb::protocol::CLIENT_VERSION::v550>;
+template class give_money<fb::protocol::CLIENT_VERSION::v565>;
+template class give_money<fb::protocol::CLIENT_VERSION::v651>;
+
+} // namespace fb::game::handler::protocol

@@ -5,7 +5,8 @@ namespace fb::protocol::game::request {
 using namespace fb::model::enum_value;
 
 #ifndef BOT // server only
-void map_update::deserialize(fb::stream_reader<big_endian>& reader)
+template <CLIENT_VERSION V>
+void map_update<V>::deserialize(fb::stream_reader<big_endian>& reader)
 {
     header::deserialize(reader);
     this->begin.x     = reader.read<uint16_t>();
@@ -15,7 +16,8 @@ void map_update::deserialize(fb::stream_reader<big_endian>& reader)
     this->crc         = reader.read<uint16_t>();
 }
 #else // bot only
-void map_update::serialize(fb::stream_writer<big_endian>& writer) const
+template <CLIENT_VERSION V>
+void map_update<V>::serialize(fb::stream_writer<big_endian>& writer) const
 {
     header::serialize(writer);
     writer.write<uint16_t>(this->begin_x);
@@ -25,6 +27,10 @@ void map_update::serialize(fb::stream_writer<big_endian>& writer) const
     writer.write<uint16_t>(this->crc);
 }
 #endif
+
+template class map_update<CLIENT_VERSION::v550>;
+template class map_update<CLIENT_VERSION::v565>;
+template class map_update<CLIENT_VERSION::v651>;
 
 } // namespace fb::protocol::game::request
 

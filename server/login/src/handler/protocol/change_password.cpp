@@ -7,12 +7,13 @@ using namespace fb::login::handler::protocol;
 
 namespace internal_reqs = fb::protocol::internal::request;
 
-change_password::change_password(fb::login::server& server) :
-    fb::handler::protocol<fb::login::server, fb::protocol::login::request::update_pw>(server)
+template <fb::protocol::CLIENT_VERSION V>
+change_password<V>::change_password(fb::login::server& server) :
+    fb::handler::protocol<fb::login::server, login_reqs::update_pw<V>>(server)
 { }
 
-async::task<bool> change_password::handle(fb::socket<fb::login::session>&          session,
-                                          fb::protocol::login::request::update_pw& request)
+template <fb::protocol::CLIENT_VERSION V>
+async::task<bool> change_password<V>::handle(fb::socket<fb::login::session>& session, login_reqs::update_pw<V>& request)
 {
     auto weak = session.weak_from_this_as<fb::socket<fb::login::session>>();
     try
@@ -102,3 +103,7 @@ async::task<bool> change_password::handle(fb::socket<fb::login::session>&       
 
     co_return true;
 }
+
+template class change_password<fb::protocol::CLIENT_VERSION::v550>;
+template class change_password<fb::protocol::CLIENT_VERSION::v565>;
+template class change_password<fb::protocol::CLIENT_VERSION::v651>;

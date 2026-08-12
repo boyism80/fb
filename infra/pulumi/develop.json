@@ -1946,7 +1946,7 @@
         "port": 30000,
         "replicas": 3,
         "client": {
-            "versions": [550, 565],
+            "versions": [550, 565, 651],
             "nation": 215
         }
     },

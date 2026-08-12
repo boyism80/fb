@@ -45,7 +45,7 @@
         "max_concurrent": 128
     },
     "client": {
-        "versions": [550, 565],
+        "versions": [550, 565, 651],
         "nation": 215
     }
 }

@@ -123,6 +123,7 @@ private:
 public:
     const uint32_t                     id;
     const fb::protocol::CLIENT_VERSION client_version;
+    const fb::protocol::CLIENT_UI_MODE ui_mode;
     fb::game::trade                    trade;
     fb::game::items                    items;
     fb::game::quests                   quests;
@@ -168,6 +169,7 @@ public:
         DIVINE_BEAST                           divine_beast   = DIVINE_BEAST::AZURE_DRAGON;
         bool                                   super_hide     = false;
         fb::protocol::CLIENT_VERSION           client_version = fb::protocol::CLIENT_VERSION::v550;
+        fb::protocol::CLIENT_UI_MODE           ui_mode        = fb::protocol::CLIENT_UI_MODE::OLD;
     };
 
 public:

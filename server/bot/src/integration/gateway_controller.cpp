@@ -5,6 +5,21 @@
 
 using namespace fb::bot::integration;
 
+namespace {
+
+// Client version the gateway bots emulate.
+fb::protocol::CLIENT_VERSION configured_client_version()
+{
+    auto packed  = fb::config<uint16_t>("client:version", 550);
+    auto version = fb::protocol::CLIENT_VERSION::v550;
+    if (fb::protocol::try_parse(packed, version) == false)
+        return fb::protocol::CLIENT_VERSION::v550;
+
+    return version;
+}
+
+} // namespace
+
 gateway_bot_controller::gateway_bot_controller(bot_container& container) :
     fb::bot::gateway_bot_controller(container)
 {
@@ -23,13 +38,13 @@ async::task<void> gateway_bot_controller::on_welcome(gateway_bot& bot, const gat
     // Integration test: Validate welcome message protocol compliance
     // TODO: Add welcome message validation logic
 
-    auto packed = fb::config<uint16_t>("client:version", 550);
-    auto cv     = fb::protocol::CLIENT_VERSION::v550;
-    if (fb::protocol::try_parse(packed, cv) == false)
-        cv = fb::protocol::CLIENT_VERSION::v550;
-
+    auto cv     = configured_client_version();
     auto nation = static_cast<uint8_t>(fb::config<uint16_t>("client:nation", 0xD7));
-    bot.send(fb::protocol::gateway::request::version{cv, nation}, false, true);
+
+    // Runtime CLIENT_VERSION -> compile-time V for the versioned request layout.
+    fb::protocol::visit_client_version(cv, [&]<fb::protocol::CLIENT_VERSION V> {
+        bot.send(fb::protocol::gateway::request::version<V>{cv, nation}, false, true);
+    });
 
     // TODO: Validate response timing and protocol correctness
     co_return;
@@ -41,7 +56,9 @@ async::task<void> gateway_bot_controller::on_crt(gateway_bot& bot, const gateway
     // TODO: Add encryption parameter validation logic
 
     bot.encryption(response.cryptor);
-    bot.send(fb::protocol::gateway::request::server_list{0x01, 0});
+    fb::protocol::visit_client_version(configured_client_version(), [&]<fb::protocol::CLIENT_VERSION V> {
+        bot.send(fb::protocol::gateway::request::server_list<V>{0x01, 0});
+    });
 
     // TODO: Validate encryption/decryption functionality
     co_return;
@@ -52,7 +69,9 @@ async::task<void> gateway_bot_controller::on_hosts(gateway_bot& bot, const gatew
     // Integration test: Validate endpoint discovery
     // TODO: Add endpoint information validation logic
 
-    bot.send(fb::protocol::gateway::request::server_list{0x00, 0});
+    fb::protocol::visit_client_version(configured_client_version(), [&]<fb::protocol::CLIENT_VERSION V> {
+        bot.send(fb::protocol::gateway::request::server_list<V>{0x00, 0});
+    });
 
     // TODO: Validate server list completeness and correctness
     co_return;

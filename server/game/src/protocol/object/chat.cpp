@@ -3,19 +3,22 @@
 namespace fb::protocol::game::request {
 
 #ifndef BOT
-void chat::deserialize(fb::stream_reader<big_endian>& reader)
+template <CLIENT_VERSION V>
+void chat<V>::deserialize(fb::stream_reader<big_endian>& reader)
 {
     header::deserialize(reader);
     this->shout   = reader.read<bool>();
     this->message = reader.read<std::string, uint8_t>();
 }
 #else
-chat::chat(bool shout, std::string_view message) :
+template <CLIENT_VERSION V>
+chat<V>::chat(bool shout, std::string_view message) :
     shout(shout),
     message(std::string(message))
 { }
 
-void chat::serialize(fb::stream_writer<big_endian>& writer) const
+template <CLIENT_VERSION V>
+void chat<V>::serialize(fb::stream_writer<big_endian>& writer) const
 {
     header::serialize(writer);
     writer.write<uint8_t>(opcode);
@@ -23,6 +26,10 @@ void chat::serialize(fb::stream_writer<big_endian>& writer) const
     writer.write<std::string, uint8_t>(this->message);
 }
 #endif
+
+template class chat<CLIENT_VERSION::v550>;
+template class chat<CLIENT_VERSION::v565>;
+template class chat<CLIENT_VERSION::v651>;
 
 } // namespace fb::protocol::game::request
 

@@ -2,6 +2,7 @@
 #define __PROTOCOL_GAME_DIALOG_H__
 
 #include <fb/protocol/header.h>
+#include <fb/protocol/client_version.h>
 #include <fb/model/model.h>
 #include <fb/game/dialog_type.h>
 #ifndef BOT
@@ -15,10 +16,12 @@ namespace fb::protocol::game::request {
 
 using namespace fb::model::enum_value;
 
+template <CLIENT_VERSION V>
 class dialog : public fb::protocol::header
 {
 public:
     static constexpr uint8_t opcode = 0x39;
+    FB_PROTOCOL_VERSION_TAGS(V);
 
 public:
 #ifdef BOT
@@ -76,10 +79,12 @@ public:
 #endif
 };
 
+template <CLIENT_VERSION V>
 class dialog_list : public fb::protocol::header
 {
 public:
     static constexpr uint8_t opcode = 0x3A;
+    FB_PROTOCOL_VERSION_TAGS(V);
 
 public:
 #ifdef BOT

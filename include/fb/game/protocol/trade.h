@@ -2,6 +2,7 @@
 #define __PROTOCOL_GAME_TRADE_H__
 
 #include <fb/protocol/header.h>
+#include <fb/protocol/client_version.h>
 #include <fb/model/model.h>
 #ifndef BOT
 #include <fb/game/trade.h>
@@ -11,10 +12,12 @@ namespace fb::protocol::game::request {
 
 using namespace fb::model::enum_value;
 
+template <CLIENT_VERSION V>
 class trade : public fb::protocol::header
 {
 public:
     static constexpr uint8_t opcode = 0x4A;
+    FB_PROTOCOL_VERSION_TAGS(V);
 
 public:
     typedef union

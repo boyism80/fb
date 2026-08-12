@@ -3,14 +3,16 @@
 namespace fb::protocol::game::request {
 
 #ifdef BOT
-void user_list::serialize(fb::stream_writer<big_endian>& writer) const
+template <CLIENT_VERSION V>
+void user_list<V>::serialize(fb::stream_writer<big_endian>& writer) const
 {
     header::serialize(writer);
     writer.write<uint8_t>(opcode);
     writer.write<uint8_t>(this->unused);
 }
 #else
-void user_list::deserialize(fb::stream_reader<big_endian>& reader)
+template <CLIENT_VERSION V>
+void user_list<V>::deserialize(fb::stream_reader<big_endian>& reader)
 {
     header::deserialize(reader);
     // Optional filler; real client often omits it (opcode-only).
@@ -18,6 +20,10 @@ void user_list::deserialize(fb::stream_reader<big_endian>& reader)
         this->unused = reader.read<uint8_t>();
 }
 #endif
+
+template class user_list<CLIENT_VERSION::v550>;
+template class user_list<CLIENT_VERSION::v565>;
+template class user_list<CLIENT_VERSION::v651>;
 
 } // namespace fb::protocol::game::request
 

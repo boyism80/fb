@@ -14,6 +14,10 @@ constexpr auto LOGIN_REQUEST_TIMEOUT = 30s;
 constexpr auto LOGIN_REQUEST_TIMEOUT = 10s;
 #endif
 
+// create / complete / login C2S layouts carry no version delta, so the bot always
+// builds them with the primary (v550) specialization.
+constexpr auto REQUEST_VERSION = fb::protocol::CLIENT_VERSION::v550;
+
 } // namespace
 
 login_bot_controller::login_bot_controller(bot_container& container) :
@@ -44,7 +48,7 @@ async::task<void> login_bot_controller::on_agreement(login_bot& bot, const login
         while (true)
         {
             fb::logger::debug("login create request: bot_id={} account={}", bot.id, id);
-            auto&& resp = co_await bot.request<login_resp::message>(fb::protocol::login::request::create(id, pw),
+            auto&& resp = co_await bot.request<login_resp::message>(login_reqs::create<REQUEST_VERSION>(id, pw),
                                                                     LOGIN_REQUEST_TIMEOUT);
 
             if (resp.type == 0x00)
@@ -73,7 +77,7 @@ async::task<void> login_bot_controller::on_agreement(login_bot& bot, const login
             while (true)
             {
                 auto&& resp = co_await bot.request<login_resp::message>(
-                    fb::protocol::login::request::complete{hair, gender, nation, divine_beast},
+                    login_reqs::complete<REQUEST_VERSION>{hair, gender, nation, divine_beast},
                     LOGIN_REQUEST_TIMEOUT);
 
                 if (resp.type == 0x00)
@@ -92,7 +96,7 @@ async::task<void> login_bot_controller::on_agreement(login_bot& bot, const login
         fb::logger::debug("login auth request: bot_id={} account={}", bot.id, id);
         while (true)
         {
-            auto&& resp = co_await bot.request<login_resp::message>(fb::protocol::login::request::login{id, pw},
+            auto&& resp = co_await bot.request<login_resp::message>(login_reqs::login<REQUEST_VERSION>{id, pw},
                                                                     LOGIN_REQUEST_TIMEOUT);
             if (resp.type == 0x00)
                 break;
@@ -130,13 +134,17 @@ async::task<void> login_bot_controller::on_bot_connected(login_bot& bot)
 {
     // Integration test: Initialize authentication test scenario upon connection
     auto& encryption = bot.encryption();
-    bot.send(login_reqs::agreement(encryption.pattern(),
-                                   fb::encryption::KEY_SIZE,
-                                   encryption.iv(),
-                                   bot.transfer_from(),
-                                   bot.client_version()),
-             false,
-             true);
+
+    // Runtime CLIENT_VERSION -> compile-time V for the versioned request layout.
+    fb::protocol::visit_client_version(bot.client_version(), [&]<fb::protocol::CLIENT_VERSION V> {
+        bot.send(login_reqs::agreement<V>(encryption.pattern(),
+                                          fb::encryption::KEY_SIZE,
+                                          encryption.iv(),
+                                          bot.transfer_from(),
+                                          bot.client_version()),
+                 false,
+                 true);
+    });
 
     // TODO: Set up login-specific test scenarios
     co_return;

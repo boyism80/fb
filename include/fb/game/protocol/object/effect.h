@@ -17,6 +17,7 @@ class effect : public fb::protocol::header
 {
 public:
     static constexpr uint8_t opcode = 0x29;
+    FB_PROTOCOL_VERSION_TAGS(V);
 
 public:
 #ifndef BOT
@@ -44,13 +45,24 @@ public:
         header::serialize(writer);
         writer.write<uint8_t>(opcode);
         writer.write<uint32_t>(this->me.oid());
-        writer.write<uint8_t>(this->value);
         if constexpr (V == CLIENT_VERSION::v550)
         {
+            writer.write<uint8_t>(this->value);
             writer.write<uint8_t>(0x00);
         }
-        else
+        else if constexpr (V == CLIENT_VERSION::v565)
         {
+            writer.write<uint8_t>(this->value);
+            writer.write<uint16_t>(0); // duration
+            if (this->value != 0x86)
+            {
+                writer.write<uint16_t>(0); // x
+                writer.write<uint16_t>(0); // y
+            }
+        }
+        else // CLIENT_VERSION::v651
+        {
+            writer.write<uint16_t>(this->value);
             writer.write<uint16_t>(0); // duration
             if (this->value != 0x86)
             {
@@ -63,14 +75,25 @@ public:
     void deserialize(fb::stream_reader<big_endian>& reader)
     {
         header::deserialize(reader);
-        this->oid   = reader.read<uint32_t>();
-        this->value = reader.read<uint8_t>();
+        this->oid = reader.read<uint32_t>();
         if constexpr (V == CLIENT_VERSION::v550)
         {
+            this->value = reader.read<uint8_t>();
             reader.read<uint8_t>(); // 0x00
         }
-        else
+        else if constexpr (V == CLIENT_VERSION::v565)
         {
+            this->value = reader.read<uint8_t>();
+            reader.read<uint16_t>(); // duration
+            if (this->value != 0x86)
+            {
+                reader.read<uint16_t>(); // x
+                reader.read<uint16_t>(); // y
+            }
+        }
+        else // CLIENT_VERSION::v651
+        {
+            this->value = static_cast<uint8_t>(reader.read<uint16_t>());
             reader.read<uint16_t>(); // duration
             if (this->value != 0x86)
             {
@@ -84,6 +107,7 @@ public:
 
 using effect_v550 = effect<CLIENT_VERSION::v550>;
 using effect_v565 = effect<CLIENT_VERSION::v565>;
+using effect_v651 = effect<CLIENT_VERSION::v651>;
 
 } // namespace fb::protocol::game::response
 

@@ -2,6 +2,7 @@
 #define __PROTOCOL_GAME_UPDATE_MOVE_H__
 
 #include <fb/protocol/header.h>
+#include <fb/protocol/client_version.h>
 #include <fb/model/model.h>
 #include <fb/game/protocol/object/move.h>
 
@@ -9,10 +10,12 @@ namespace fb::protocol::game::request {
 
 using namespace fb::model::enum_value;
 
-class update_move : public move
+template <CLIENT_VERSION V>
+class update_move : public move<V>
 {
 public:
     static constexpr uint8_t opcode = 0x06;
+    FB_PROTOCOL_VERSION_TAGS(V);
 
 public:
     fb::model::point<uint16_t> begin;

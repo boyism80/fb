@@ -14,11 +14,18 @@ using namespace fb::model::enum_value;
  * C2S agreement (opcode 0x10).
  * Stock clients echo the full gateway->login transfer parameter blob here:
  *   enc_type u8 | key_size u8 | iv[key_size] | from u8 | client_version u16
+ * Primary layout (v550) stops after client_version.
+ * v651: + CLIENT_UI_MODE (byte_5E0866) after the blob (if constexpr).
+ *
+ * Bootstrap (no session yet) always deserializes as agreement<v550>; the packed
+ * client_version field still establishes CLIENT_VERSION for the new session.
  */
+template <CLIENT_VERSION V>
 class agreement : public fb::protocol::header
 {
 public:
     static constexpr uint8_t opcode = 0x10;
+    FB_PROTOCOL_VERSION_TAGS(V);
 
 public:
 #ifdef BOT
@@ -26,11 +33,13 @@ public:
     const uint8_t        enc_key_size;
     const uint8_t        from;
     const CLIENT_VERSION client_version;
+    const CLIENT_UI_MODE ui_mode;
 #else
     uint8_t        enc_type;
     uint8_t        enc_key_size;
     uint8_t        from           = 0;
     CLIENT_VERSION client_version = CLIENT_VERSION::v550;
+    CLIENT_UI_MODE ui_mode        = CLIENT_UI_MODE::OLD;
 #endif
     uint8_t enc_key[0x09];
 
@@ -38,7 +47,12 @@ public:
 #ifndef BOT
     agreement() = default;
 #else
-    agreement(uint8_t type, uint8_t ksize, const uint8_t* key, uint8_t from, CLIENT_VERSION client_version);
+    agreement(uint8_t        type,
+              uint8_t        ksize,
+              const uint8_t* key,
+              uint8_t        from,
+              CLIENT_VERSION client_version,
+              CLIENT_UI_MODE ui_mode = CLIENT_UI_MODE::OLD);
 #endif
 
 public:

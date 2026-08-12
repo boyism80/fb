@@ -43,7 +43,7 @@ character::character(fb::game::server& server, const initial_params& params) :
     _experience(params.exp), _gender(params.gender), _state(params.state), _level(params.level),
     _class(params.class_type), _promotion(params.promotion), _money(params.money), _mimicry(params.mimicry),
     _title(params.title), _nation(params.nation), _divine_beast(params.divine_beast), _super_hide(params.super_hide),
-    _last_afk_time(server.now()), _marriage(server.now()), id(params.id), client_version(params.client_version)
+    _last_afk_time(server.now()), _marriage(server.now()), id(params.id), client_version(params.client_version), ui_mode(params.ui_mode)
 {
     this->_ping_state.last_ping_time = server.now() - std::chrono::seconds(10);
 }

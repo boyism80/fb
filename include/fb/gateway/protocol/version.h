@@ -8,18 +8,20 @@ namespace fb::protocol::gateway::request {
 
 /**
  * C2S version (opcode 0x00).
- * Wire layout depends on CLIENT_VERSION discovered from the packed version field:
- *   v550: u16 version + u8 nation
- *   v565: u16 version + u8 nation + u16 build
+ * Primary layout (v550): u16 version + u8 nation.
+ * v565/v651: + u16 build after nation (if constexpr).
  *
- * Bound as a single concrete type because the opcode is shared and V is only
- * known after reading the first field. Bot serialize selects layout from
- * client_version / build.
+ * Bootstrap (no session yet) always deserializes as version<v550>; the packed
+ * version field still establishes CLIENT_VERSION for the session.
  */
+template <CLIENT_VERSION V>
 class version : public fb::protocol::header
 {
 public:
+    // A member cannot share the enclosing class name, so the version tag is
+    // named `protocol_version` here; the handler registry accepts either name.
     static constexpr uint8_t opcode = 0x00;
+    FB_PROTOCOL_VERSION_TAGS_NAMED(V);
 
 public:
     uint16_t       v              = 0;

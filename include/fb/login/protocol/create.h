@@ -3,16 +3,24 @@
 
 #include <fb/protocol/header.h>
 #include <fb/model/model.h>
+#include <fb/protocol/client_version.h>
 #include <string_view>
 
 namespace fb::protocol::login::request {
 
 using namespace fb::model::enum_value;
 
+/**
+ * C2S create account (opcode 0x02).
+ * Primary layout (v550): id (u8-prefixed) + pw (u8-prefixed).
+ * No version delta known for v565/v651.
+ */
+template <CLIENT_VERSION V>
 class create : public fb::protocol::header
 {
 public:
     static constexpr uint8_t opcode = 0x02;
+    FB_PROTOCOL_VERSION_TAGS(V);
 
 public:
 #ifndef BOT

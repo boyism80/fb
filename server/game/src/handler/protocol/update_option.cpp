@@ -1,15 +1,17 @@
 #include <fb/game/handler/protocol/update_option.h>
 #include <fb/game/server.h>
 
-using namespace fb::game::handler::protocol;
-
 namespace game_reqs = fb::protocol::game::request;
 
-update_option::update_option(fb::game::server& server) :
-    fb::handler::protocol<fb::game::server, game_reqs::update_option>(server)
+namespace fb::game::handler::protocol {
+
+template <fb::protocol::CLIENT_VERSION V>
+update_option<V>::update_option(fb::game::server& server) :
+    fb::handler::protocol<fb::game::server, game_reqs::update_option<V>>(server)
 { }
 
-async::task<bool> update_option::handle(fb::socket<character>& session, game_reqs::update_option& request)
+template <fb::protocol::CLIENT_VERSION V>
+async::task<bool> update_option<V>::handle(fb::socket<character>& session, game_reqs::update_option<V>& request)
 {
     auto ch = session.data();
     if (ch->inited() == false)
@@ -74,3 +76,9 @@ async::task<bool> update_option::handle(fb::socket<character>& session, game_req
     }
     co_return true;
 }
+
+template class update_option<fb::protocol::CLIENT_VERSION::v550>;
+template class update_option<fb::protocol::CLIENT_VERSION::v565>;
+template class update_option<fb::protocol::CLIENT_VERSION::v651>;
+
+} // namespace fb::game::handler::protocol

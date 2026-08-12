@@ -78,7 +78,9 @@ void listener_impl::on_option_changed(character& me, OPTION option, bool enabled
 
 void listener_impl::on_update_option(character& ch)
 {
-    ch.send(game_resp::option(ch));
+    fb::protocol::visit_client_version(ch.client_version, [&]<fb::protocol::CLIENT_VERSION V> {
+        ch.send(game_resp::option<V>(ch));
+    });
 }
 
 void listener_impl::on_update_map(character&                  ch,
@@ -125,6 +127,12 @@ void listener_impl::on_level_up(character& me)
                       scope::PIVOT,
                       {.with_me = matches(me, cv::v565), .condition = [matches](object& o) {
                            return matches(o, cv::v565);
+                       }});
+    this->server.send(me,
+                      game_resp::effect_v651(me, 0x02),
+                      scope::PIVOT,
+                      {.with_me = matches(me, cv::v651), .condition = [matches](object& o) {
+                           return matches(o, cv::v651);
                        }});
 }
 
@@ -229,10 +237,10 @@ void listener_impl::on_browse_character(character& ch, const character& target)
 
 void listener_impl::on_item_tooltip(character& ch, const item& item, uint16_t position)
 {
-    if (ch.client_version == fb::protocol::CLIENT_VERSION::v565)
-        ch.send(game_resp::item_tip_v565(position, item.tip_message()));
-    else
+    if (ch.client_version == fb::protocol::CLIENT_VERSION::v550)
         ch.send(game_resp::item_tip_v550(position, item.tip_message()));
+    else
+        ch.send(game_resp::item_tip_v565(position, item.tip_message()));
 }
 
 async::task<void> listener_impl::on_show_user_list(character& ch)
@@ -368,10 +376,10 @@ void listener_impl::on_ad(character& ch, uint32_t width, uint32_t height, std::s
 
 void listener_impl::on_web(character& ch, uint8_t type, std::string_view url, std::string_view message)
 {
-    if (ch.client_version == fb::protocol::CLIENT_VERSION::v565)
-        ch.send(game_resp::web_v565(type, std::string(url), std::string(message)));
-    else
+    if (ch.client_version == fb::protocol::CLIENT_VERSION::v550)
         ch.send(game_resp::web_v550(type, std::string(url), std::string(message)));
+    else
+        ch.send(game_resp::web_v565(type, std::string(url), std::string(message)));
 }
 
 void listener_impl::on_ui(character& ch, uint8_t screen)

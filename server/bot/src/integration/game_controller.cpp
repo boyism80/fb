@@ -315,7 +315,10 @@ async::task<void> game_bot_controller::on_bot_connected(game_bot& bot)
                       bot.transfer_buffer().size(),
                       bot.inited());
 
-    bot.send(fb::protocol::game::request::login(bot.transfer_buffer()), false, true);
+    // Bootstrap 0x10 always uses the v550 layout; the packed client_version field
+    // inside the transfer blob still establishes the session version.
+    using login_request = fb::protocol::game::request::login<fb::protocol::CLIENT_VERSION::v550>;
+    bot.send(login_request(bot.transfer_buffer()), false, true);
 
     co_return;
 }

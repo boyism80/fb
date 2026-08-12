@@ -102,6 +102,15 @@
 #include <fb/game/protocol/trade/close.h>
 #include <fb/game/protocol/trade/lock.h>
 #include <fb/game/protocol/unknown_12.h>
+#include <fb/game/protocol/unknown_27.h>
+#include <fb/game/protocol/unknown_4f.h>
+#include <fb/game/protocol/unknown_54.h>
+#include <fb/game/protocol/unknown_58.h>
+#include <fb/game/protocol/unknown_62.h>
+#include <fb/game/protocol/unknown_63.h>
+#include <fb/game/protocol/unknown_6f.h>
+#include <fb/game/protocol/unknown_70.h>
+#include <fb/game/protocol/unknown_7b.h>
 #include <fb/game/protocol/update_cc.h>
 #include <fb/game/protocol/object/move_confirm_noscroll.h>
 #include <fb/game/protocol/ui_screen.h>

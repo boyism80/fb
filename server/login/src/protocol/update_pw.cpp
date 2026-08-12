@@ -3,7 +3,8 @@
 namespace fb::protocol::login::request {
 
 #ifndef BOT
-void update_pw::deserialize(fb::stream_reader<big_endian>& reader)
+template <CLIENT_VERSION V>
+void update_pw<V>::deserialize(fb::stream_reader<big_endian>& reader)
 {
     header::deserialize(reader);
     this->name     = reader.read<std::string, uint8_t>();
@@ -12,14 +13,16 @@ void update_pw::deserialize(fb::stream_reader<big_endian>& reader)
     this->birthday = reader.read<uint32_t>();
 }
 #else
-update_pw::update_pw(std::string_view name, std::string_view pw, std::string_view new_pw, uint32_t birthday) :
+template <CLIENT_VERSION V>
+update_pw<V>::update_pw(std::string_view name, std::string_view pw, std::string_view new_pw, uint32_t birthday) :
     name(std::string(name)),
     pw(std::string(pw)),
     new_pw(std::string(new_pw)),
     birthday(birthday)
 { }
 
-void update_pw::serialize(fb::stream_writer<big_endian>& writer) const
+template <CLIENT_VERSION V>
+void update_pw<V>::serialize(fb::stream_writer<big_endian>& writer) const
 {
     header::serialize(writer);
     writer.write<uint8_t>(opcode);
@@ -29,5 +32,9 @@ void update_pw::serialize(fb::stream_writer<big_endian>& writer) const
     writer.write<uint32_t>(this->birthday);
 }
 #endif
+
+template class update_pw<CLIENT_VERSION::v550>;
+template class update_pw<CLIENT_VERSION::v565>;
+template class update_pw<CLIENT_VERSION::v651>;
 
 } // namespace fb::protocol::login::request

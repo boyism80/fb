@@ -271,6 +271,12 @@ void listener_impl::on_effect(object& me, uint8_t value)
                       {.with_me = matches(me, cv::v565), .condition = [matches](object& o) {
                            return matches(o, cv::v565);
                        }});
+    this->server.send(me,
+                      game_resp::effect_v651(me, value),
+                      scope::PIVOT,
+                      {.with_me = matches(me, cv::v651), .condition = [matches](object& o) {
+                           return matches(o, cv::v651);
+                       }});
 }
 
 void listener_impl::on_map_leave(object& me, const fb::game::map& map)

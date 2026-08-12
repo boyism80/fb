@@ -157,7 +157,7 @@ namespace Runner.ViewModel
                             parsed.Add(v);
                     }
                 }
-                Model.ClientVersions = parsed.Count > 0 ? parsed : new List<ushort> { 550, 565 };
+                Model.ClientVersions = parsed.Count > 0 ? parsed : new List<ushort> { 550, 565, 651 };
             }
         }
         public byte ClientNation
@@ -1261,7 +1261,7 @@ namespace Runner.ViewModel
                 });
                 gatewayConf["client"] = JObject.FromObject(new
                 {
-                    versions = Gateway.Model.ClientVersions ?? new List<ushort> { 550, 565 },
+                    versions = Gateway.Model.ClientVersions ?? new List<ushort> { 550, 565, 651 },
                     nation = Gateway.ClientNation
                 });
 

@@ -1529,6 +1529,79 @@ M.functions = {
             end,
         },
 
+        ['unknown_4f'] = {
+            ['privilege'] = ROLE.ADMIN,
+            ['usage'] = '- S2C 0x4F UI 윈도우 오픈 (5.65+). 클라가 0x54 phase5로 응답',
+            ['command'] = function (me, args)
+                me:unknown_4f()
+                return true
+            end,
+        },
+
+        ['unknown_6f'] = {
+            ['privilege'] = ROLE.ADMIN,
+            ['usage'] = '[subtype] [count] - S2C 0x6F 이름 리스트 (5.65+). 생략 시 subtype1·count0(빈 리스트)',
+            ['command'] = function (me, args)
+                local subtype, count = table.unpack(args)
+                me:unknown_6f(tonumber(subtype) or 1, tonumber(count) or 0)
+                return true
+            end,
+        },
+
+        ['unknown_58'] = {
+            ['privilege'] = ROLE.ADMIN,
+            ['usage'] = '[flag] [텍스트] - S2C 0x58 공지 텍스트창 (6.51 NEW). flag 0이면 창 닫기',
+            ['command'] = function (me, args)
+                local flag = 1
+                local from = 1
+                if tonumber(args[1]) then
+                    flag = tonumber(args[1])
+                    from = 2
+                end
+
+                local text = table.concat(args, ' ', from, #args)
+                if text == '' then
+                    text = 'test'
+                end
+
+                me:unknown_58(flag, text)
+                return true
+            end,
+        },
+
+        ['unknown_63'] = {
+            ['privilege'] = ROLE.ADMIN,
+            ['usage'] = '[subtype] [count] - S2C 0x63 외형 리스트 (6.51 NEW). 생략 시 subtype2·count0(빈 리스트)',
+            ['command'] = function (me, args)
+                local subtype, count = table.unpack(args)
+                me:unknown_63(tonumber(subtype) or 2, tonumber(count) or 0)
+                return true
+            end,
+        },
+
+        ['unknown_70'] = {
+            ['privilege'] = ROLE.ADMIN,
+            ['usage'] = '[x] [y] [이름] - S2C 0x70 웹 월드맵 (6.51 NEW). 생략 시 마커 없음',
+            ['command'] = function (me, args)
+                local x, y, name = table.unpack(args)
+                if x or y or name then
+                    me:unknown_70(tonumber(x) or 0, tonumber(y) or 0, name or '')
+                else
+                    me:unknown_70()
+                end
+                return true
+            end,
+        },
+
+        ['unknown_62'] = {
+            ['privilege'] = ROLE.ADMIN,
+            ['usage'] = '- S2C 0x62 NEW UI 오픈 (6.51). 게이트웨이 C2S 0x62와 별개',
+            ['command'] = function (me, args)
+                me:unknown_62()
+                return true
+            end,
+        },
+
         ['move_confirm_noscroll'] = {
             ['privilege'] = ROLE.ADMIN,
             ['usage'] = '[direction] [x] [y] [vx] [vy] [walk_slot] - 이동 ACK(노스크롤, 0x26). 생략 시 현재 위치',

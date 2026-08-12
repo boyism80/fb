@@ -2,16 +2,19 @@
 #define __PROTOCOL_GAME_MIX_H__
 
 #include <fb/protocol/header.h>
+#include <fb/protocol/client_version.h>
 #include <fb/model/model.h>
 
 namespace fb::protocol::game::request {
 
 using namespace fb::model::enum_value;
 
+template <CLIENT_VERSION V>
 class item_combine : public fb::protocol::header
 {
 public:
     static constexpr uint8_t opcode = 0x6B;
+    FB_PROTOCOL_VERSION_TAGS(V);
 
 public:
 #ifndef BOT

@@ -1,13 +1,15 @@
 #include <fb/game/handler/protocol/dialog_list.h>
 #include <fb/game/server.h>
 
-using namespace fb::game::handler::protocol;
+namespace fb::game::handler::protocol {
 
-dialog_list::dialog_list(fb::game::server& server) :
-    fb::handler::protocol<fb::game::server, game_reqs::dialog_list>(server)
+template <fb::protocol::CLIENT_VERSION V>
+dialog_list<V>::dialog_list(fb::game::server& server) :
+    fb::handler::protocol<fb::game::server, game_reqs::dialog_list<V>>(server)
 { }
 
-async::task<bool> dialog_list::handle(fb::socket<character>& session, game_reqs::dialog_list& request)
+template <fb::protocol::CLIENT_VERSION V>
+async::task<bool> dialog_list<V>::handle(fb::socket<character>& session, game_reqs::dialog_list<V>& request)
 {
     auto ch = session.data();
     if (ch->inited() == false)
@@ -57,3 +59,9 @@ async::task<bool> dialog_list::handle(fb::socket<character>& session, game_reqs:
 
     co_return true;
 }
+
+template class dialog_list<fb::protocol::CLIENT_VERSION::v550>;
+template class dialog_list<fb::protocol::CLIENT_VERSION::v565>;
+template class dialog_list<fb::protocol::CLIENT_VERSION::v651>;
+
+} // namespace fb::game::handler::protocol

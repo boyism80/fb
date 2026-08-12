@@ -2,19 +2,22 @@
 #include <fb/game/server.h>
 #include <tuple>
 
-using namespace fb::game::handler::protocol;
 using namespace fb::model;
 
 namespace game_reqs = fb::protocol::game::request;
 
-move::move(fb::game::server& server) :
-    fb::handler::protocol<fb::game::server, game_reqs::move>(server)
+namespace fb::game::handler::protocol {
+
+template <fb::protocol::CLIENT_VERSION V>
+move<V>::move(fb::game::server& server) :
+    fb::handler::protocol<fb::game::server, game_reqs::move<V>>(server)
 { }
 
-async::task<bool> move::handle(fb::socket<character>&      session,
-                               DIRECTION                   direction,
-                               const fb::model::point16_t& position,
-                               uint8_t                     walk_queue_slot)
+template <fb::protocol::CLIENT_VERSION V>
+async::task<bool> move<V>::handle(fb::socket<character>&      session,
+                                  DIRECTION                   direction,
+                                  const fb::model::point16_t& position,
+                                  uint8_t                     walk_queue_slot)
 {
     auto ch = session.data();
     if (ch->inited() == false)
@@ -88,7 +91,14 @@ async::task<bool> move::handle(fb::socket<character>&      session,
     co_return true;
 }
 
-async::task<bool> move::handle(fb::socket<character>& session, game_reqs::move& request)
+template <fb::protocol::CLIENT_VERSION V>
+async::task<bool> move<V>::handle(fb::socket<character>& session, game_reqs::move<V>& request)
 {
     return this->handle(session, request.direction, request.position, request.walk_queue_slot);
 }
+
+template class move<fb::protocol::CLIENT_VERSION::v550>;
+template class move<fb::protocol::CLIENT_VERSION::v565>;
+template class move<fb::protocol::CLIENT_VERSION::v651>;
+
+} // namespace fb::game::handler::protocol

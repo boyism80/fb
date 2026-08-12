@@ -212,6 +212,9 @@ void fb::game::server::init_handlers()
     this->handler.protocol.bind<fb::game::handler::protocol::pong>();
     this->handler.protocol.bind<fb::game::handler::protocol::user_info_submit>();
     this->handler.protocol.bind<fb::game::handler::protocol::popup_input_submit>();
+    this->handler.protocol.bind<fb::game::handler::protocol::unknown_27>(); // 5.65+ list UI slot click
+    this->handler.protocol.bind<fb::game::handler::protocol::unknown_54>(); // 5.65+ 0x4F window round trip
+    this->handler.protocol.bind<fb::game::handler::protocol::unknown_7b>(); // 5.65+ 0x6F name miss report
 }
 
 void fb::game::server::init_timers()

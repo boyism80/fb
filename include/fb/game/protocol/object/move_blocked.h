@@ -2,6 +2,7 @@
 #define __PROTOCOL_GAME_OBJECT_MOVE_BLOCKED_H__
 
 #include <fb/protocol/header.h>
+#include <fb/protocol/client_version.h>
 #include <fb/model/model.h>
 
 namespace fb::protocol::game::request {
@@ -13,10 +14,12 @@ using namespace fb::model::enum_value;
  * Sent when the character tries to move but is blocked by an obstacle.
  * Payload: current position (x, y), attempted direction. Server may ignore (no-op).
  */
+template <CLIENT_VERSION V>
 class move_blocked : public fb::protocol::header
 {
 public:
     static constexpr uint8_t opcode = 0x69;
+    FB_PROTOCOL_VERSION_TAGS(V);
 
 public:
     fb::model::point<uint16_t> position;

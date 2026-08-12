@@ -5,18 +5,21 @@
 #include <fb/encoding.h>
 #include <json/json.h>
 
-using namespace fb::game::handler::protocol;
 using table = fb::model::table;
 using namespace fb::model::enum_value;
 
 namespace game_reqs = fb::protocol::game::request;
 namespace game_resp = fb::protocol::game::response;
 
-bulletin::bulletin(fb::game::server& server) :
-    fb::handler::protocol<fb::game::server, game_reqs::bulletin>(server)
+namespace fb::game::handler::protocol {
+
+template <fb::protocol::CLIENT_VERSION V>
+bulletin<V>::bulletin(fb::game::server& server) :
+    fb::handler::protocol<fb::game::server, game_reqs::bulletin<V>>(server)
 { }
 
-async::task<bool> bulletin::handle(fb::socket<character>& session, game_reqs::bulletin& request)
+template <fb::protocol::CLIENT_VERSION V>
+async::task<bool> bulletin<V>::handle(fb::socket<character>& session, game_reqs::bulletin<V>& request)
 {
     auto ch = session.data();
     if (ch->inited() == false)
@@ -60,13 +63,17 @@ async::task<bool> bulletin::handle(fb::socket<character>& session, game_reqs::bu
     co_return true;
 }
 
-async::task<void> bulletin::handle_sections(character* ch)
+template <fb::protocol::CLIENT_VERSION V>
+async::task<void> bulletin<V>::handle_sections(character* ch)
 {
     ch->bulletin.show();
     co_return;
 }
 
-async::task<void> bulletin::handle_articles(character* ch, std::weak_ptr<character> weak, game_reqs::bulletin& request)
+template <fb::protocol::CLIENT_VERSION V>
+async::task<void> bulletin<V>::handle_articles(character*               ch,
+                                               std::weak_ptr<character> weak,
+                                               game_reqs::bulletin<V>&  request)
 {
     auto mail  = request.section == 0xFFFF;
     auto error = std::optional<std::string>{};
@@ -117,7 +124,10 @@ async::task<void> bulletin::handle_articles(character* ch, std::weak_ptr<charact
     }
 }
 
-async::task<void> bulletin::handle_article(character* ch, std::weak_ptr<character> weak, game_reqs::bulletin& request)
+template <fb::protocol::CLIENT_VERSION V>
+async::task<void> bulletin<V>::handle_article(character*               ch,
+                                              std::weak_ptr<character> weak,
+                                              game_reqs::bulletin<V>&  request)
 {
     auto mail  = request.section == 0xFFFF;
     auto error = std::optional<std::string>{};
@@ -182,7 +192,10 @@ async::task<void> bulletin::handle_article(character* ch, std::weak_ptr<characte
     }
 }
 
-async::task<void> bulletin::handle_write(character* ch, std::weak_ptr<character> weak, game_reqs::bulletin& request)
+template <fb::protocol::CLIENT_VERSION V>
+async::task<void> bulletin<V>::handle_write(character*               ch,
+                                            std::weak_ptr<character> weak,
+                                            game_reqs::bulletin<V>&  request)
 {
     auto error = std::optional<std::string>{};
     try
@@ -215,7 +228,10 @@ async::task<void> bulletin::handle_write(character* ch, std::weak_ptr<character>
     }
 }
 
-async::task<void> bulletin::handle_delete(character* ch, std::weak_ptr<character> weak, game_reqs::bulletin& request)
+template <fb::protocol::CLIENT_VERSION V>
+async::task<void> bulletin<V>::handle_delete(character*               ch,
+                                             std::weak_ptr<character> weak,
+                                             game_reqs::bulletin<V>&  request)
 {
     auto mail  = request.section == 0xFFFF;
     auto error = std::optional<std::string>{};
@@ -271,7 +287,10 @@ async::task<void> bulletin::handle_delete(character* ch, std::weak_ptr<character
     }
 }
 
-async::task<void> bulletin::handle_mail(character* ch, std::weak_ptr<character> weak, game_reqs::bulletin& request)
+template <fb::protocol::CLIENT_VERSION V>
+async::task<void> bulletin<V>::handle_mail(character*               ch,
+                                           std::weak_ptr<character> weak,
+                                           game_reqs::bulletin<V>&  request)
 {
     auto error = std::optional<std::string>{};
     try
@@ -301,7 +320,10 @@ async::task<void> bulletin::handle_mail(character* ch, std::weak_ptr<character> 
     }
 }
 
-async::task<void> bulletin::handle_send_mail(character* ch, std::weak_ptr<character> weak, game_reqs::bulletin& request)
+template <fb::protocol::CLIENT_VERSION V>
+async::task<void> bulletin<V>::handle_send_mail(character*               ch,
+                                                std::weak_ptr<character> weak,
+                                                game_reqs::bulletin<V>&  request)
 {
     auto error = std::optional<std::string>{};
     try
@@ -332,3 +354,9 @@ async::task<void> bulletin::handle_send_mail(character* ch, std::weak_ptr<charac
             ptr->mail_box.message(error.value(), false, BULLETIN_MESSAGE_TYPE::WRITE);
     }
 }
+
+template class bulletin<fb::protocol::CLIENT_VERSION::v550>;
+template class bulletin<fb::protocol::CLIENT_VERSION::v565>;
+template class bulletin<fb::protocol::CLIENT_VERSION::v651>;
+
+} // namespace fb::game::handler::protocol

@@ -5,6 +5,9 @@
 
 using namespace fb::bot;
 
+// The bot speaks the v550 C2S layout; versioned requests are instantiated for it.
+constexpr auto BOT_CLIENT_VERSION = fb::protocol::CLIENT_VERSION::v550;
+
 game_bot_controller::game_bot_controller(bot_container& container) :
     bot_controller<game_bot>(container)
 {
@@ -107,7 +110,7 @@ async::task<void> game_bot_controller::on_state(game_bot& bot, const game_resp::
     co_return;
 }
 
-async::task<void> game_bot_controller::on_option(game_bot& bot, const game_resp::option& response)
+async::task<void> game_bot_controller::on_option(game_bot& bot, const game_resp::option_v550& response)
 {
     co_return;
 }
@@ -128,7 +131,7 @@ async::task<void> game_bot_controller::on_message(game_bot& bot, const game_resp
 
         auto id  = what["id"].str();
         auto msg = std::format("\"{}\"에 대한 응답입니다.", what["msg"].str());
-        bot.send(game_reqs::whisper(id, msg));
+        bot.send(game_reqs::whisper<BOT_CLIENT_VERSION>(id, msg));
     }
 
     co_return;
@@ -305,7 +308,7 @@ async::task<void> game_bot_controller::on_internal_info(game_bot& bot, const gam
 
 async::task<void> game_bot_controller::on_ping(game_bot& bot, const game_resp::ping& response)
 {
-    bot.send(game_reqs::pong(response.value, 0));
+    bot.send(game_reqs::pong<BOT_CLIENT_VERSION>(response.value, 0));
     co_return;
 }
 

@@ -3,7 +3,8 @@
 namespace fb::protocol::game::request {
 
 #ifdef BOT // bot only
-void trade::serialize(fb::stream_writer<big_endian>& writer) const
+template <CLIENT_VERSION V>
+void trade<V>::serialize(fb::stream_writer<big_endian>& writer) const
 {
     header::serialize(writer);
     writer.write<uint8_t>(opcode);
@@ -26,7 +27,8 @@ void trade::serialize(fb::stream_writer<big_endian>& writer) const
     }
 }
 #else // server only
-void trade::deserialize(fb::stream_reader<big_endian>& reader)
+template <CLIENT_VERSION V>
+void trade<V>::deserialize(fb::stream_reader<big_endian>& reader)
 {
     header::deserialize(reader);
     this->action = static_cast<fb::game::trade::state>(reader.read<uint8_t>());
@@ -47,5 +49,9 @@ void trade::deserialize(fb::stream_reader<big_endian>& reader)
     }
 }
 #endif
+
+template class trade<CLIENT_VERSION::v550>;
+template class trade<CLIENT_VERSION::v565>;
+template class trade<CLIENT_VERSION::v651>;
 
 } // namespace fb::protocol::game::request

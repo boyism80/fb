@@ -2,6 +2,7 @@
 #define __PROTOCOL_GAME_ITEM_THROWS_H__
 
 #include <fb/protocol/header.h>
+#include <fb/protocol/client_version.h>
 #include <fb/model/model.h>
 #ifndef BOT
 #include <fb/game/item.h>
@@ -14,10 +15,12 @@ using namespace fb::game;
 #endif
 using namespace fb::model::enum_value;
 
+template <CLIENT_VERSION V>
 class item_throws : public fb::protocol::header
 {
 public:
     static constexpr uint8_t opcode = 0x17;
+    FB_PROTOCOL_VERSION_TAGS(V);
 
 public:
 #ifndef BOT

@@ -2,6 +2,7 @@
 #define __PROTOCOL_GAME_USER_LIST_H__
 
 #include <fb/protocol/header.h>
+#include <fb/protocol/client_version.h>
 #include <fb/model/model.h>
 #include <fb/socket.h>
 #include <string>
@@ -13,10 +14,12 @@ using namespace fb::game;
 #endif
 using namespace fb::model::enum_value;
 
+template <CLIENT_VERSION V>
 class user_list : public fb::protocol::header
 {
 public:
     static constexpr uint8_t opcode = 0x18;
+    FB_PROTOCOL_VERSION_TAGS(V);
 
 public:
 #ifndef BOT

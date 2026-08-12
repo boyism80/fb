@@ -3,7 +3,8 @@
 namespace fb::protocol::login::request {
 
 #ifndef BOT
-void complete::deserialize(fb::stream_reader<big_endian>& reader)
+template <CLIENT_VERSION V>
+void complete<V>::deserialize(fb::stream_reader<big_endian>& reader)
 {
     header::deserialize(reader);
     this->hair         = reader.read<uint8_t>();
@@ -12,14 +13,16 @@ void complete::deserialize(fb::stream_reader<big_endian>& reader)
     this->divine_beast = reader.read<uint8_t>();
 }
 #else
-complete::complete(uint8_t hair, uint8_t gender, uint8_t nation, uint8_t divine_beast) :
+template <CLIENT_VERSION V>
+complete<V>::complete(uint8_t hair, uint8_t gender, uint8_t nation, uint8_t divine_beast) :
     hair(hair),
     gender(gender),
     nation(nation),
     divine_beast(divine_beast)
 { }
 
-void complete::serialize(fb::stream_writer<big_endian>& writer) const
+template <CLIENT_VERSION V>
+void complete<V>::serialize(fb::stream_writer<big_endian>& writer) const
 {
     header::serialize(writer);
     writer.write<uint8_t>(opcode);
@@ -29,5 +32,9 @@ void complete::serialize(fb::stream_writer<big_endian>& writer) const
     writer.write<uint8_t>(this->divine_beast);
 }
 #endif
+
+template class complete<CLIENT_VERSION::v550>;
+template class complete<CLIENT_VERSION::v565>;
+template class complete<CLIENT_VERSION::v651>;
 
 } // namespace fb::protocol::login::request

@@ -8,7 +8,8 @@ namespace fb::game::handler::protocol {
 
 namespace game_reqs = fb::protocol::game::request;
 
-class whisper : public fb::handler::protocol<fb::game::server, game_reqs::whisper>
+template <fb::protocol::CLIENT_VERSION V>
+class whisper : public fb::handler::protocol<fb::game::server, game_reqs::whisper<V>>
 {
 public:
     whisper(fb::game::server& server);
@@ -17,7 +18,7 @@ public:
     whisper& operator= (const whisper&) = delete;
     whisper& operator= (whisper&&)      = delete;
 
-    async::task<bool> handle(fb::socket<character>& session, game_reqs::whisper& request) override;
+    async::task<bool> handle(fb::socket<character>& session, game_reqs::whisper<V>& request) override;
 };
 
 } // namespace fb::game::handler::protocol

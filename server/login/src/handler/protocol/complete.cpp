@@ -7,12 +7,13 @@ using namespace fb::model;
 
 namespace internal_reqs = fb::protocol::internal::request;
 
-complete::complete(fb::login::server& server) :
-    fb::handler::protocol<fb::login::server, fb::protocol::login::request::complete>(server)
+template <fb::protocol::CLIENT_VERSION V>
+complete<V>::complete(fb::login::server& server) :
+    fb::handler::protocol<fb::login::server, login_reqs::complete<V>>(server)
 { }
 
-async::task<bool> complete::handle(fb::socket<fb::login::session>&         session,
-                                   fb::protocol::login::request::complete& request)
+template <fb::protocol::CLIENT_VERSION V>
+async::task<bool> complete<V>::handle(fb::socket<fb::login::session>& session, login_reqs::complete<V>& request)
 {
     auto fd   = session.fd();
     auto weak = session.weak_from_this_as<fb::socket<fb::login::session>>();
@@ -20,6 +21,9 @@ async::task<bool> complete::handle(fb::socket<fb::login::session>&         sessi
     try
     {
         auto session_data = session.data();
+        if (session_data == nullptr)
+            throw std::runtime_error("session is not established");
+
         if (session_data->pk == -1)
             throw std::exception();
 
@@ -68,3 +72,7 @@ async::task<bool> complete::handle(fb::socket<fb::login::session>&         sessi
 
     co_return true;
 }
+
+template class complete<fb::protocol::CLIENT_VERSION::v550>;
+template class complete<fb::protocol::CLIENT_VERSION::v565>;
+template class complete<fb::protocol::CLIENT_VERSION::v651>;

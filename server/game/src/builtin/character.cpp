@@ -117,6 +117,12 @@ IMPLEMENT_LUA_EXTENSION(character, "fb.game.character")
 {"marry",                        builtin::character::builtin_marry},
 {"divorce",                      builtin::character::builtin_divorce},
 {"unknown_12",                   builtin::character::builtin_unknown_12},
+{"unknown_4f",                   builtin::character::builtin_unknown_4f},
+{"unknown_58",                   builtin::character::builtin_unknown_58},
+{"unknown_62",                   builtin::character::builtin_unknown_62},
+{"unknown_63",                   builtin::character::builtin_unknown_63},
+{"unknown_6f",                   builtin::character::builtin_unknown_6f},
+{"unknown_70",                   builtin::character::builtin_unknown_70},
 {"move_confirm_noscroll",        builtin::character::builtin_move_confirm_noscroll},
 {"ui",                           builtin::character::builtin_ui},
 {"item_throw_confirm",           builtin::character::builtin_item_throw_confirm},
@@ -3713,7 +3719,196 @@ int builtin::character::builtin_unknown_12(lua_State* L)
     auto builder  = lua->new_co_builder();
     builder.weak  = weak;
     builder.yield = [=]() -> async::task<void> {
-        std::ignore = ch->send(fb::protocol::game::response::unknown_12(oid, slot, flag));
+        fb::protocol::visit_client_version(ch->client_version, [&]<fb::protocol::CLIENT_VERSION V> {
+            if constexpr (fb::protocol::game::response::unknown_12<V>::supported)
+                std::ignore = ch->send(fb::protocol::game::response::unknown_12<V>(oid, slot, flag));
+        });
+        co_return;
+    };
+    builder.resume = []() -> async::task<int> {
+        co_return 0;
+    };
+    return builder.run();
+}
+
+int builtin::character::builtin_unknown_4f(lua_State* L)
+{
+    auto lua = fb::lua::get(L);
+    if (lua == nullptr)
+        return 0;
+
+    auto ch = lua->touserdata<fb::game::character>(1);
+    if (ch == nullptr)
+        return 0;
+
+    auto weak     = ch->weak_from_this_as<fb::game::character>();
+    auto builder  = lua->new_co_builder();
+    builder.weak  = weak;
+    builder.yield = [=]() -> async::task<void> {
+        fb::protocol::visit_client_version(ch->client_version, [&]<fb::protocol::CLIENT_VERSION V> {
+            if constexpr (fb::protocol::game::response::unknown_4f<V>::supported)
+                std::ignore = ch->send(fb::protocol::game::response::unknown_4f<V>());
+        });
+        co_return;
+    };
+    builder.resume = []() -> async::task<int> {
+        co_return 0;
+    };
+    return builder.run();
+}
+
+int builtin::character::builtin_unknown_58(lua_State* L)
+{
+    auto lua = fb::lua::get(L);
+    if (lua == nullptr)
+        return 0;
+
+    auto ch = lua->touserdata<fb::game::character>(1);
+    if (ch == nullptr)
+        return 0;
+
+    // flag 0 destroys the notice window, any other value opens it with the text.
+    auto flag = static_cast<uint8_t>(lua->tointeger(2, 1));
+    auto text = lua->tostring(3, "test");
+
+    auto weak     = ch->weak_from_this_as<fb::game::character>();
+    auto builder  = lua->new_co_builder();
+    builder.weak  = weak;
+    builder.yield = [=]() -> async::task<void> {
+        fb::protocol::visit_client_version(ch->client_version, [&]<fb::protocol::CLIENT_VERSION V> {
+            if constexpr (fb::protocol::game::response::unknown_58<V>::supported)
+                std::ignore = ch->send(fb::protocol::game::response::unknown_58<V>(flag, text));
+        });
+        co_return;
+    };
+    builder.resume = []() -> async::task<int> {
+        co_return 0;
+    };
+    return builder.run();
+}
+
+int builtin::character::builtin_unknown_62(lua_State* L)
+{
+    auto lua = fb::lua::get(L);
+    if (lua == nullptr)
+        return 0;
+
+    auto ch = lua->touserdata<fb::game::character>(1);
+    if (ch == nullptr)
+        return 0;
+
+    auto weak     = ch->weak_from_this_as<fb::game::character>();
+    auto builder  = lua->new_co_builder();
+    builder.weak  = weak;
+    builder.yield = [=]() -> async::task<void> {
+        fb::protocol::visit_client_version(ch->client_version, [&]<fb::protocol::CLIENT_VERSION V> {
+            if constexpr (fb::protocol::game::response::unknown_62<V>::supported)
+                std::ignore = ch->send(fb::protocol::game::response::unknown_62<V>());
+        });
+        co_return;
+    };
+    builder.resume = []() -> async::task<int> {
+        co_return 0;
+    };
+    return builder.run();
+}
+
+int builtin::character::builtin_unknown_63(lua_State* L)
+{
+    auto lua = fb::lua::get(L);
+    if (lua == nullptr)
+        return 0;
+
+    auto ch = lua->touserdata<fb::game::character>(1);
+    if (ch == nullptr)
+        return 0;
+
+    // Only subtype 2 is consumed by the client; entries are not modelled yet.
+    auto subtype = static_cast<uint8_t>(lua->tointeger(2, 2));
+    auto count   = static_cast<uint8_t>(lua->tointeger(3, 0));
+
+    auto weak     = ch->weak_from_this_as<fb::game::character>();
+    auto builder  = lua->new_co_builder();
+    builder.weak  = weak;
+    builder.yield = [=]() -> async::task<void> {
+        fb::protocol::visit_client_version(ch->client_version, [&]<fb::protocol::CLIENT_VERSION V> {
+            if constexpr (fb::protocol::game::response::unknown_63<V>::supported)
+                std::ignore = ch->send(fb::protocol::game::response::unknown_63<V>(subtype, count));
+        });
+        co_return;
+    };
+    builder.resume = []() -> async::task<int> {
+        co_return 0;
+    };
+    return builder.run();
+}
+
+int builtin::character::builtin_unknown_6f(lua_State* L)
+{
+    auto lua = fb::lua::get(L);
+    if (lua == nullptr)
+        return 0;
+
+    auto ch = lua->touserdata<fb::game::character>(1);
+    if (ch == nullptr)
+        return 0;
+
+    // subtype 1 with count 0 is the safest probe: an empty name list.
+    auto subtype = static_cast<uint8_t>(lua->tointeger(2, 1));
+    auto count   = static_cast<uint16_t>(lua->tointeger(3, 0));
+
+    auto weak     = ch->weak_from_this_as<fb::game::character>();
+    auto builder  = lua->new_co_builder();
+    builder.weak  = weak;
+    builder.yield = [=]() -> async::task<void> {
+        fb::protocol::visit_client_version(ch->client_version, [&]<fb::protocol::CLIENT_VERSION V> {
+            if constexpr (fb::protocol::game::response::unknown_6f<V>::supported)
+                std::ignore = ch->send(fb::protocol::game::response::unknown_6f<V>(subtype, count));
+        });
+        co_return;
+    };
+    builder.resume = []() -> async::task<int> {
+        co_return 0;
+    };
+    return builder.run();
+}
+
+int builtin::character::builtin_unknown_70(lua_State* L)
+{
+    auto lua = fb::lua::get(L);
+    if (lua == nullptr)
+        return 0;
+
+    auto ch = lua->touserdata<fb::game::character>(1);
+    if (ch == nullptr)
+        return 0;
+
+    // Without arguments an empty marker list is sent; otherwise one marker
+    // defaulting to the caller's position and name.
+    auto has_entry = lua->argc() > 1;
+    auto x         = static_cast<uint16_t>(lua->tointeger(2, 0));
+    auto y         = static_cast<uint16_t>(lua->tointeger(3, 0));
+    auto name      = lua->tostring(4, "");
+
+    auto weak     = ch->weak_from_this_as<fb::game::character>();
+    auto builder  = lua->new_co_builder();
+    builder.weak  = weak;
+    builder.yield = [=]() -> async::task<void> {
+        auto entries = std::vector<fb::protocol::game::response::unknown_70_entry>();
+        if (has_entry)
+        {
+            auto position = ch->position();
+            auto entry    = fb::protocol::game::response::unknown_70_entry();
+            entry.x       = x == 0 ? position.x : x;
+            entry.y       = y == 0 ? position.y : y;
+            entry.name    = name.empty() ? ch->name() : name;
+            entries.push_back(entry);
+        }
+
+        fb::protocol::visit_client_version(ch->client_version, [&]<fb::protocol::CLIENT_VERSION V> {
+            if constexpr (fb::protocol::game::response::unknown_70<V>::supported)
+                std::ignore = ch->send(fb::protocol::game::response::unknown_70<V>(entries));
+        });
         co_return;
     };
     builder.resume = []() -> async::task<int> {

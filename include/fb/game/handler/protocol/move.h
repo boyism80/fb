@@ -8,7 +8,8 @@ namespace fb::game::handler::protocol {
 
 namespace game_reqs = fb::protocol::game::request;
 
-class move : public fb::handler::protocol<fb::game::server, game_reqs::move>
+template <fb::protocol::CLIENT_VERSION V>
+class move : public fb::handler::protocol<fb::game::server, game_reqs::move<V>>
 {
 public:
     move(fb::game::server& server);
@@ -21,7 +22,7 @@ public:
                              DIRECTION                   direction,
                              const fb::model::point16_t& position,
                              uint8_t                     walk_queue_slot);
-    async::task<bool> handle(fb::socket<character>& session, game_reqs::move& request) override;
+    async::task<bool> handle(fb::socket<character>& session, game_reqs::move<V>& request) override;
 };
 
 } // namespace fb::game::handler::protocol

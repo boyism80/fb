@@ -8,7 +8,8 @@ namespace fb::gateway::handler::protocol {
 
 namespace gateway_reqs = fb::protocol::gateway::request;
 
-class version : public fb::handler::protocol<fb::gateway::server, gateway_reqs::version>
+template <fb::protocol::CLIENT_VERSION V>
+class version : public fb::handler::protocol<fb::gateway::server, gateway_reqs::version<V>>
 {
 public:
     version(fb::gateway::server& server);
@@ -17,7 +18,7 @@ public:
     version& operator= (const version&) = delete;
     version& operator= (version&&)      = delete;
 
-    async::task<bool> handle(fb::socket<fb::gateway::session>& session, gateway_reqs::version& request) override;
+    async::task<bool> handle(fb::socket<fb::gateway::session>& session, gateway_reqs::version<V>& request) override;
 };
 
 } // namespace fb::gateway::handler::protocol

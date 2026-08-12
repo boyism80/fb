@@ -3,7 +3,8 @@
 namespace fb::protocol::game::request {
 
 #ifdef BOT
-void item_combine::serialize(fb::stream_writer<big_endian>& writer) const
+template <CLIENT_VERSION V>
+void item_combine<V>::serialize(fb::stream_writer<big_endian>& writer) const
 {
     header::serialize(writer);
     writer.write<uint8_t>(opcode);
@@ -14,7 +15,8 @@ void item_combine::serialize(fb::stream_writer<big_endian>& writer) const
     }
 }
 #else
-void item_combine::deserialize(fb::stream_reader<big_endian>& reader)
+template <CLIENT_VERSION V>
+void item_combine<V>::deserialize(fb::stream_reader<big_endian>& reader)
 {
     header::deserialize(reader);
     auto count = reader.read<uint8_t>();
@@ -24,4 +26,9 @@ void item_combine::deserialize(fb::stream_reader<big_endian>& reader)
     }
 }
 #endif
+
+template class item_combine<CLIENT_VERSION::v550>;
+template class item_combine<CLIENT_VERSION::v565>;
+template class item_combine<CLIENT_VERSION::v651>;
+
 } // namespace fb::protocol::game::request

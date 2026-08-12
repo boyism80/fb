@@ -1,15 +1,17 @@
 #include <fb/game/handler/protocol/spell_cast.h>
 #include <fb/game/server.h>
 
-using namespace fb::game::handler::protocol;
-
 namespace game_reqs = fb::protocol::game::request;
 
-spell_cast::spell_cast(fb::game::server& server) :
-    fb::handler::protocol<fb::game::server, game_reqs::spell_cast>(server)
+namespace fb::game::handler::protocol {
+
+template <fb::protocol::CLIENT_VERSION V>
+spell_cast<V>::spell_cast(fb::game::server& server) :
+    fb::handler::protocol<fb::game::server, game_reqs::spell_cast<V>>(server)
 { }
 
-async::task<bool> spell_cast::handle(fb::socket<character>& session, game_reqs::spell_cast& request)
+template <fb::protocol::CLIENT_VERSION V>
+async::task<bool> spell_cast<V>::handle(fb::socket<character>& session, game_reqs::spell_cast<V>& request)
 {
     auto ch = session.data();
     if (ch->inited() == false)
@@ -39,7 +41,7 @@ async::task<bool> spell_cast::handle(fb::socket<character>& session, game_reqs::
         co_return true;
     }
 
-    const_cast<fb::protocol::game::request::spell_cast&>(request).parse(spell->model().type);
+    const_cast<fb::protocol::game::request::spell_cast<V>&>(request).parse(spell->model().type);
     switch (spell->model().type)
     {
     case SPELL_TYPE::INPUT:
@@ -57,3 +59,9 @@ async::task<bool> spell_cast::handle(fb::socket<character>& session, game_reqs::
 
     co_return true;
 }
+
+template class spell_cast<fb::protocol::CLIENT_VERSION::v550>;
+template class spell_cast<fb::protocol::CLIENT_VERSION::v565>;
+template class spell_cast<fb::protocol::CLIENT_VERSION::v651>;
+
+} // namespace fb::game::handler::protocol

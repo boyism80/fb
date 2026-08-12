@@ -3,11 +3,14 @@
 
 using namespace fb::gateway::handler::protocol;
 
-server_list::server_list(fb::gateway::server& server) :
-    fb::handler::protocol<fb::gateway::server, gateway_reqs::server_list>(server)
+template <fb::protocol::CLIENT_VERSION V>
+server_list<V>::server_list(fb::gateway::server& server) :
+    fb::handler::protocol<fb::gateway::server, gateway_reqs::server_list<V>>(server)
 { }
 
-async::task<bool> server_list::handle(fb::socket<fb::gateway::session>& session, gateway_reqs::server_list& request)
+template <fb::protocol::CLIENT_VERSION V>
+async::task<bool> server_list<V>::handle(fb::socket<fb::gateway::session>& session,
+                                         gateway_reqs::server_list<V>&     request)
 {
     switch (request.action)
     {
@@ -32,3 +35,7 @@ async::task<bool> server_list::handle(fb::socket<fb::gateway::session>& session,
         co_return false;
     }
 }
+
+template class server_list<fb::protocol::CLIENT_VERSION::v550>;
+template class server_list<fb::protocol::CLIENT_VERSION::v565>;
+template class server_list<fb::protocol::CLIENT_VERSION::v651>;

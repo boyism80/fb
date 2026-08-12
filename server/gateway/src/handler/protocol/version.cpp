@@ -24,11 +24,13 @@ bool is_version_allowed(uint16_t packed)
 
 } // namespace
 
-version::version(fb::gateway::server& server) :
-    fb::handler::protocol<fb::gateway::server, gateway_reqs::version>(server)
+template <fb::protocol::CLIENT_VERSION V>
+version<V>::version(fb::gateway::server& server) :
+    fb::handler::protocol<fb::gateway::server, gateway_reqs::version<V>>(server)
 { }
 
-async::task<bool> version::handle(fb::socket<fb::gateway::session>& session, gateway_reqs::version& request)
+template <fb::protocol::CLIENT_VERSION V>
+async::task<bool> version<V>::handle(fb::socket<fb::gateway::session>& session, gateway_reqs::version<V>& request)
 {
     try
     {
@@ -38,9 +40,8 @@ async::task<bool> version::handle(fb::socket<fb::gateway::session>& session, gat
         if (request.nation != fb::config<uint8_t>("client:nation"))
             throw std::runtime_error(_TEXT(MESSAGE_CLIENT_NATION_INVALID));
 
-        auto* data = session.data();
-        if (data != nullptr)
-            data->client_version = request.client_version;
+        // Establish const session version after bootstrap deserialize (always v550 layout).
+        session.data(std::make_shared<fb::gateway::session>(request.client_version));
 
         auto encryption = fb::encryption::generate();
         session.encryption(encryption);
@@ -53,3 +54,7 @@ async::task<bool> version::handle(fb::socket<fb::gateway::session>& session, gat
         co_return false;
     }
 }
+
+template class version<fb::protocol::CLIENT_VERSION::v550>;
+template class version<fb::protocol::CLIENT_VERSION::v565>;
+template class version<fb::protocol::CLIENT_VERSION::v651>;

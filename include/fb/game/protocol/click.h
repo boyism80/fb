@@ -2,16 +2,19 @@
 #define __PROTOCOL_GAME_CLICK_H__
 
 #include <fb/protocol/header.h>
+#include <fb/protocol/client_version.h>
 #include <fb/model/model.h>
 
 namespace fb::protocol::game::request {
 
 using namespace fb::model::enum_value;
 
+template <CLIENT_VERSION V>
 class click : public fb::protocol::header
 {
 public:
     static constexpr uint8_t opcode = 0x43;
+    FB_PROTOCOL_VERSION_TAGS(V);
 
     // Client click kind: 1 = object/F-key, 3 = map coordinate (server ignores).
     static constexpr uint8_t FLAG_OBJECT = 1;

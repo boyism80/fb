@@ -14,6 +14,7 @@ class web : public fb::protocol::header
 {
 public:
     static constexpr uint8_t opcode = 0x66;
+    FB_PROTOCOL_VERSION_TAGS(V);
 
 public:
 #ifndef BOT
@@ -50,10 +51,18 @@ public:
             writer.write<std::string, uint16_t>(this->message);
             writer.write<uint8_t>(0x00);
         }
-        else
+        else if constexpr (V == CLIENT_VERSION::v565)
         {
-            // 5.65 client treats 0x66 as an item-UI subtype dispatcher.
+            // 5.65 treats 0x66 as an item-UI subtype dispatcher.
             // Emit a minimal safe payload (subtype 3 = other) for GM /web.
+            writer.write<uint8_t>(3);
+            writer.write<std::string, uint16_t>(this->address);
+            writer.write<std::string, uint16_t>(this->message);
+            writer.write<uint8_t>(0x00);
+        }
+        else // CLIENT_VERSION::v651
+        {
+            // 6.51 same subtype layout as 5.65.
             writer.write<uint8_t>(3);
             writer.write<std::string, uint16_t>(this->address);
             writer.write<std::string, uint16_t>(this->message);

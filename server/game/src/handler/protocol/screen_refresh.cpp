@@ -1,15 +1,17 @@
 #include <fb/game/handler/protocol/screen_refresh.h>
 #include <fb/game/server.h>
 
-using namespace fb::game::handler::protocol;
-
 namespace game_reqs = fb::protocol::game::request;
 
-screen_refresh::screen_refresh(fb::game::server& server) :
-    fb::handler::protocol<fb::game::server, game_reqs::screen_refresh>(server)
+namespace fb::game::handler::protocol {
+
+template <fb::protocol::CLIENT_VERSION V>
+screen_refresh<V>::screen_refresh(fb::game::server& server) :
+    fb::handler::protocol<fb::game::server, game_reqs::screen_refresh<V>>(server)
 { }
 
-async::task<bool> screen_refresh::handle(fb::socket<character>& session, game_reqs::screen_refresh& request)
+template <fb::protocol::CLIENT_VERSION V>
+async::task<bool> screen_refresh<V>::handle(fb::socket<character>& session, game_reqs::screen_refresh<V>& request)
 {
     auto ch = session.data();
     if (ch->inited() == false)
@@ -18,3 +20,9 @@ async::task<bool> screen_refresh::handle(fb::socket<character>& session, game_re
     ch->screen_refresh();
     co_return true;
 }
+
+template class screen_refresh<fb::protocol::CLIENT_VERSION::v550>;
+template class screen_refresh<fb::protocol::CLIENT_VERSION::v565>;
+template class screen_refresh<fb::protocol::CLIENT_VERSION::v651>;
+
+} // namespace fb::game::handler::protocol

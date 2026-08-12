@@ -10,17 +10,20 @@
 #include <chrono>
 #include <tuple>
 
-using namespace fb::game::handler::protocol;
 using namespace fb::game;
 using table = fb::model::table;
 
 namespace game_reqs = fb::protocol::game::request;
 
-login::login(fb::game::server& server) :
-    fb::handler::protocol<fb::game::server, game_reqs::login>(server)
+namespace fb::game::handler::protocol {
+
+template <fb::protocol::CLIENT_VERSION V>
+login<V>::login(fb::game::server& server) :
+    fb::handler::protocol<fb::game::server, game_reqs::login<V>>(server)
 { }
 
-void login::init_option(const internal::Option& response, fb::game::character& ch)
+template <fb::protocol::CLIENT_VERSION V>
+void login<V>::init_option(const internal::Option& response, fb::game::character& ch)
 {
     ch.option(OPTION::WHISPER, response.whisper, false);
     ch.option(OPTION::GROUP, response.group, false);
@@ -35,7 +38,8 @@ void login::init_option(const internal::Option& response, fb::game::character& c
     ch.option(OPTION::PK_PROTECT, response.pk_protect, false);
 }
 
-void login::init_items(const std::vector<internal::Item>& response, character& ch)
+template <fb::protocol::CLIENT_VERSION V>
+void login<V>::init_items(const std::vector<internal::Item>& response, character& ch)
 {
     for (auto& x : response)
     {
@@ -60,7 +64,8 @@ void login::init_items(const std::vector<internal::Item>& response, character& c
     }
 }
 
-void login::init_spells(const std::vector<internal::Spell>& response, character& ch)
+template <fb::protocol::CLIENT_VERSION V>
+void login<V>::init_spells(const std::vector<internal::Spell>& response, character& ch)
 {
     for (auto& x : response)
     {
@@ -79,12 +84,14 @@ void login::init_spells(const std::vector<internal::Spell>& response, character&
     }
 }
 
-void login::init_matchmaker(const std::vector<internal::MatchmakingSkill>& response, character& ch)
+template <fb::protocol::CLIENT_VERSION V>
+void login<V>::init_matchmaker(const std::vector<internal::MatchmakingSkill>& response, character& ch)
 {
     ch.matchmaker.load(response);
 }
 
-void login::init_quests(const std::vector<fb::protocol::internal::Quest>& response, fb::game::character& ch)
+template <fb::protocol::CLIENT_VERSION V>
+void login<V>::init_quests(const std::vector<fb::protocol::internal::Quest>& response, fb::game::character& ch)
 {
     for (auto& x : response)
     {
@@ -92,8 +99,9 @@ void login::init_quests(const std::vector<fb::protocol::internal::Quest>& respon
     }
 }
 
-void login::init_marketplace(const std::vector<fb::protocol::internal::MarketplacePending>& response,
-                             fb::game::character&                                           ch)
+template <fb::protocol::CLIENT_VERSION V>
+void login<V>::init_marketplace(const std::vector<fb::protocol::internal::MarketplacePending>& response,
+                                fb::game::character&                                           ch)
 {
     auto pending_listings = fb::game::marketplace::pending_listings_t{};
     for (const auto& row : response)
@@ -124,7 +132,9 @@ void login::init_marketplace(const std::vector<fb::protocol::internal::Marketpla
         ch.marketplace.set_pending_listings(std::move(pending_listings));
 }
 
-void login::init_achievements(const std::vector<fb::protocol::internal::Achievement>& response, fb::game::character& ch)
+template <fb::protocol::CLIENT_VERSION V>
+void login<V>::init_achievements(const std::vector<fb::protocol::internal::Achievement>& response,
+                                 fb::game::character&                                    ch)
 {
     for (auto& a : response)
     {
@@ -133,12 +143,15 @@ void login::init_achievements(const std::vector<fb::protocol::internal::Achievem
     }
 }
 
-void login::init_storage(const fb::protocol::internal::response::Init& response, fb::game::character& ch)
+template <fb::protocol::CLIENT_VERSION V>
+void login<V>::init_storage(const fb::protocol::internal::response::Init& response, fb::game::character& ch)
 {
     ch.server.system_storage.init_from_login(ch, response.storage_boxes);
 }
 
-async::task<std::shared_ptr<character>> login::init(const game_reqs::login& request, fb::socket<character>& session)
+template <fb::protocol::CLIENT_VERSION V>
+async::task<std::shared_ptr<character>> login<V>::init(const game_reqs::login<V>& request,
+                                                       fb::socket<character>&     session)
 {
     auto   world = fb::config<uint32_t>("world");
     auto&& resp =
@@ -233,6 +246,7 @@ async::task<std::shared_ptr<character>> login::init(const game_reqs::login& requ
     params.divine_beast   = static_cast<DIVINE_BEAST>(resp.character.divine_beast);
     params.super_hide     = resp.character.super_hide;
     params.client_version = request.client_version;
+    params.ui_mode        = request.ui_mode;
 
     auto ch   = this->server.make<character>(params);
     auto weak = ch->weak_from_this_as<character>();
@@ -322,6 +336,7 @@ async::task<std::shared_ptr<character>> login::init(const game_reqs::login& requ
             lua->pushboolean(ch->is_first_login());
             std::ignore = lua->call(2);
         }
+
     }
 
     co_await this->server.system_storage.sync(*ch);
@@ -331,7 +346,8 @@ async::task<std::shared_ptr<character>> login::init(const game_reqs::login& requ
     co_return ch;
 }
 
-async::task<bool> login::assert_login(const game_reqs::login& request)
+template <fb::protocol::CLIENT_VERSION V>
+async::task<bool> login<V>::assert_login(const game_reqs::login<V>& request)
 {
     auto   world = fb::config<uint32_t>("world");
     auto&& resp  = co_await this->server.http.post(
@@ -353,7 +369,8 @@ async::task<bool> login::assert_login(const game_reqs::login& request)
     }
 }
 
-std::string login::elapsed_message(std::string_view dt)
+template <fb::protocol::CLIENT_VERSION V>
+std::string login<V>::elapsed_message(std::string_view dt)
 {
     auto elapsed = this->server.now() - fb::model::datetime(dt);
     if (elapsed.total_milliseconds() < 1000 * 60)
@@ -376,7 +393,8 @@ std::string login::elapsed_message(std::string_view dt)
     return sstream.str();
 }
 
-async::task<bool> login::handle(fb::socket<character>& session, game_reqs::login& request)
+template <fb::protocol::CLIENT_VERSION V>
+async::task<bool> login<V>::handle(fb::socket<character>& session, game_reqs::login<V>& request)
 {
     session.encryption(request.enc_type, request.enc_key);
     fb::logger::info("{} has connected.", request.name);
@@ -414,3 +432,9 @@ async::task<bool> login::handle(fb::socket<character>& session, game_reqs::login
 
     co_return true;
 }
+
+template class login<fb::protocol::CLIENT_VERSION::v550>;
+template class login<fb::protocol::CLIENT_VERSION::v565>;
+template class login<fb::protocol::CLIENT_VERSION::v651>;
+
+} // namespace fb::game::handler::protocol

@@ -79,8 +79,8 @@ bool server::decrypt_policy(uint8_t opcode) const
 {
     switch (opcode)
     {
-    case fb::protocol::gateway::request::version::opcode:
-    case fb::protocol::gateway::request::connection_ack::opcode:
+    case fb::protocol::gateway::request::version<fb::protocol::CLIENT_VERSION::v550>::opcode:
+    case fb::protocol::gateway::request::connection_ack<fb::protocol::CLIENT_VERSION::v550>::opcode:
         return false;
 
     default:
@@ -105,8 +105,8 @@ async::task<void> server::on_start()
 
 async::task<void> server::on_accepted(fb::socket<session>& socket)
 {
-    auto data = std::make_shared<session>();
-    socket.data(data);
+    // Session (with const client_version) is created in the version handler
+    // after C2S 0x00. Until then acceptor deserializes as v550.
     co_return;
 }
 

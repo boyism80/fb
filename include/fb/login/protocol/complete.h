@@ -3,15 +3,23 @@
 
 #include <fb/protocol/header.h>
 #include <fb/model/model.h>
+#include <fb/protocol/client_version.h>
 
 namespace fb::protocol::login::request {
 
 using namespace fb::model::enum_value;
 
+/**
+ * C2S create character complete (opcode 0x04).
+ * Primary layout (v550): hair u8 | gender u8 | nation u8 | divine_beast u8.
+ * No version delta known for v565/v651.
+ */
+template <CLIENT_VERSION V>
 class complete : public fb::protocol::header
 {
 public:
     static constexpr uint8_t opcode = 0x04;
+    FB_PROTOCOL_VERSION_TAGS(V);
 
 public:
 #ifndef BOT

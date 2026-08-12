@@ -37,7 +37,7 @@ bool fb::login::server::decrypt_policy(uint8_t opcode) const
 {
     switch (opcode)
     {
-    case fb::protocol::login::request::agreement::opcode:
+    case fb::protocol::login::request::agreement<fb::protocol::CLIENT_VERSION::v550>::opcode:
         return false;
 
     default:
@@ -122,8 +122,8 @@ void fb::login::server::assert_account(std::string_view id, std::string_view pw)
 
 async::task<void> fb::login::server::on_accepted(fb::socket<session>& socket)
 {
-    auto data = std::make_shared<session>();
-    socket.data(data);
+    // Session (with const client_version) is created in the agreement handler
+    // after C2S 0x10. Until then acceptor deserializes as v550.
     co_return;
 }
 

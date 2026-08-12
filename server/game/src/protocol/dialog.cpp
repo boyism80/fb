@@ -4,7 +4,8 @@ namespace fb::protocol::game::request {
 
 #ifndef BOT
 
-void dialog::deserialize(fb::stream_reader<big_endian>& reader)
+template <CLIENT_VERSION V>
+void dialog<V>::deserialize(fb::stream_reader<big_endian>& reader)
 {
     using dialog_type = fb::game::dialog::type;
 
@@ -74,7 +75,8 @@ void dialog::deserialize(fb::stream_reader<big_endian>& reader)
     }
 }
 
-void dialog_list::deserialize(fb::stream_reader<big_endian>& reader)
+template <CLIENT_VERSION V>
+void dialog_list<V>::deserialize(fb::stream_reader<big_endian>& reader)
 {
     using list_type = fb::game::dialog::list_type;
 
@@ -137,7 +139,8 @@ void dialog_list::deserialize(fb::stream_reader<big_endian>& reader)
 
 #else
 
-void dialog::serialize(fb::stream_writer<big_endian>& writer) const
+template <CLIENT_VERSION V>
+void dialog<V>::serialize(fb::stream_writer<big_endian>& writer) const
 {
     using dialog_type = fb::game::dialog::type;
 
@@ -188,7 +191,8 @@ void dialog::serialize(fb::stream_writer<big_endian>& writer) const
     }
 }
 
-void dialog_list::serialize(fb::stream_writer<big_endian>& writer) const
+template <CLIENT_VERSION V>
+void dialog_list<V>::serialize(fb::stream_writer<big_endian>& writer) const
 {
     using list_type = fb::game::dialog::list_type;
 
@@ -238,5 +242,12 @@ void dialog_list::serialize(fb::stream_writer<big_endian>& writer) const
 }
 
 #endif
+
+template class dialog<CLIENT_VERSION::v550>;
+template class dialog<CLIENT_VERSION::v565>;
+template class dialog<CLIENT_VERSION::v651>;
+template class dialog_list<CLIENT_VERSION::v550>;
+template class dialog_list<CLIENT_VERSION::v565>;
+template class dialog_list<CLIENT_VERSION::v651>;
 
 } // namespace fb::protocol::game::request

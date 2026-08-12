@@ -2,6 +2,7 @@
 #define __PROTOCOL_GAME_UNKNOWN_12_H__
 
 #include <fb/protocol/header.h>
+#include <fb/protocol/client_version.h>
 #include <fb/model/model.h>
 
 namespace fb::protocol::game::response {
@@ -15,10 +16,12 @@ using namespace fb::model::enum_value;
  * - slot: inventory letter index (1='a'..); appends str.res 148 "[무장]" when flag < 0xA0
  * - flag: branch gate (< 0xA0 armed-mark path, >= 0xA0 self level-up toast via template 14)
  */
+template <CLIENT_VERSION V>
 class unknown_12 : public fb::protocol::header
 {
 public:
     static constexpr uint8_t opcode = 0x12;
+    FB_PROTOCOL_VERSION_TAGS(V);
 
 public:
 #ifndef BOT

@@ -4,7 +4,8 @@
 namespace fb::protocol::login::request {
 
 #ifndef BOT
-void agreement::deserialize(fb::stream_reader<big_endian>& reader)
+template <CLIENT_VERSION V>
+void agreement<V>::deserialize(fb::stream_reader<big_endian>& reader)
 {
     header::deserialize(reader);
     this->enc_type     = reader.read<uint8_t>();
@@ -16,18 +17,34 @@ void agreement::deserialize(fb::stream_reader<big_endian>& reader)
     auto packed = reader.read<uint16_t>();
     if (try_parse(packed, this->client_version) == false)
         throw std::runtime_error("invalid client version in agreement transfer");
+
+    // Login 6.51 always appends NEW/OLD after the echoed blob.
+    if constexpr (V == CLIENT_VERSION::v651)
+    {
+        auto flag = reader.read<uint8_t>();
+        if (try_parse(flag, this->ui_mode) == false)
+            throw std::runtime_error("invalid client ui mode in agreement transfer");
+    }
 }
 #else
-agreement::agreement(uint8_t type, uint8_t ksize, const uint8_t* key, uint8_t from, CLIENT_VERSION client_version) :
+template <CLIENT_VERSION V>
+agreement<V>::agreement(uint8_t        type,
+                        uint8_t        ksize,
+                        const uint8_t* key,
+                        uint8_t        from,
+                        CLIENT_VERSION client_version,
+                        CLIENT_UI_MODE ui_mode) :
     enc_type(type),
     enc_key_size(ksize),
     from(from),
-    client_version(client_version)
+    client_version(client_version),
+    ui_mode(ui_mode)
 {
     memcpy(this->enc_key, key, ksize);
 }
 
-void agreement::serialize(fb::stream_writer<big_endian>& writer) const
+template <CLIENT_VERSION V>
+void agreement<V>::serialize(fb::stream_writer<big_endian>& writer) const
 {
     header::serialize(writer);
     writer.write<uint8_t>(opcode);
@@ -36,8 +53,14 @@ void agreement::serialize(fb::stream_writer<big_endian>& writer) const
     writer.write((const void*)this->enc_key, this->enc_key_size);
     writer.write<uint8_t>(this->from);
     writer.write<uint16_t>(static_cast<uint16_t>(this->client_version));
+    if constexpr (V == CLIENT_VERSION::v651)
+        writer.write<uint8_t>(static_cast<uint8_t>(this->ui_mode));
 }
 #endif
+
+template class agreement<CLIENT_VERSION::v550>;
+template class agreement<CLIENT_VERSION::v565>;
+template class agreement<CLIENT_VERSION::v651>;
 
 } // namespace fb::protocol::login::request
 

@@ -4,7 +4,8 @@
 namespace fb::protocol::game::request {
 
 #ifdef BOT
-login::login(const fb::stream& params)
+template <CLIENT_VERSION V>
+login<V>::login(const fb::stream& params)
 {
     auto clone  = fb::stream{params};
     auto reader = fb::stream_reader<big_endian>{clone};
@@ -12,7 +13,8 @@ login::login(const fb::stream& params)
 }
 #endif
 
-void login::serialize(fb::stream_writer<big_endian>& writer) const
+template <CLIENT_VERSION V>
+void login<V>::serialize(fb::stream_writer<big_endian>& writer) const
 {
     header::serialize(writer);
     writer.write<uint8_t>(opcode);
@@ -32,9 +34,13 @@ void login::serialize(fb::stream_writer<big_endian>& writer) const
         writer.write<uint16_t>(this->transfer.value().position.x);
         writer.write<uint16_t>(this->transfer.value().position.y);
     }
+
+    if constexpr (V == CLIENT_VERSION::v651)
+        writer.write<uint8_t>(static_cast<uint8_t>(this->ui_mode));
 }
 
-void login::deserialize(fb::stream_reader<big_endian>& reader)
+template <CLIENT_VERSION V>
+void login<V>::deserialize(fb::stream_reader<big_endian>& reader)
 {
     header::deserialize(reader);
     // base (from transfer header)
@@ -62,6 +68,20 @@ void login::deserialize(fb::stream_reader<big_endian>& reader)
         auto y         = reader.read<uint16_t>();
         this->transfer = transfer_param{.map = map, .position = fb::model::point<uint16_t>(x, y)};
     }
+
+    // GameScene NEW appends CLIENT_UI_MODE after the echoed blob.
+    // Only the v651 layout carries it; the bootstrap v550 layout leaves ui_mode at OLD
+    // and the trailing byte is flushed with the rest of the packet body.
+    if constexpr (V == CLIENT_VERSION::v651)
+    {
+        auto flag = reader.read<uint8_t>();
+        if (try_parse(flag, this->ui_mode) == false)
+            throw std::runtime_error("invalid client ui mode in login transfer");
+    }
 }
+
+template class login<CLIENT_VERSION::v550>;
+template class login<CLIENT_VERSION::v565>;
+template class login<CLIENT_VERSION::v651>;
 
 } // namespace fb::protocol::game::request
