@@ -38,8 +38,8 @@ function M.enter_castle(me, npc_obj, totem_name_kr, divine_beast)
         return true
     end
 
-    local castle_name = totem_name_kr .. '성'
-    local map_entrance = name2map(totem_name_kr .. '성입구')
+    local castle_name = totem_name_kr .. '의성'
+    local map_entrance = name2map(totem_name_kr .. '의성입구')
     if map_entrance == nil then
         me:dialog(npc_obj, '입장할 수 있는 맵이 없습니다.')
         return true

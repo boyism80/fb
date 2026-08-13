@@ -5,11 +5,34 @@
 #include <fb/game/ai/retaliate.h>
 #include <fb/game/ai/run_away.h>
 #include <fb/game/ai/stationary.h>
+#include <fb/game/castle.h>
 #include <fb/game/character.h>
 #include <fb/game/life.h>
 #include <fb/game/map.h>
+#include <fb/game/server.h>
 
 using namespace fb::game;
+
+namespace {
+
+bool map_pk_enabled(const fb::game::map& map, fb::game::server& server)
+{
+    auto option = map.model().option;
+    if (ENUM_IN(option, MAP_OPTION::ENABLE_PK))
+        return true;
+
+    if (ENUM_IN(option, MAP_OPTION::SIEGE_CASTLE) == false || map.model().siege_castle.has_value() == false)
+        return false;
+
+    auto divine = static_cast<uint32_t>(map.model().siege_castle.value());
+    auto guard  = server.castles.try_enter_read(divine);
+    if (guard.has_value() == false || guard->value() == nullptr)
+        return false;
+
+    return guard->value()->siege_active();
+}
+
+} // namespace
 
 std::unique_ptr<ai> ai::create(MOB_ATTACK_TYPE attack_type)
 {
@@ -231,9 +254,9 @@ bool ai::should_ignore_attacker(const mob& mob_obj, std::shared_ptr<life> attack
         // Check if attacker is a character
         if (attacker->is(OBJECT_TYPE::CHARACTER))
         {
-            // Check map PK settings
+            // Check map PK settings (ENABLE_PK, or SIEGE_CASTLE while siege is active)
             auto map = mob_obj.map();
-            if (map != nullptr && !ENUM_IN(map->model().option, MAP_OPTION::ENABLE_PK))
+            if (map != nullptr && map_pk_enabled(*map, mob_obj.server) == false)
                 return true;
         }
     }

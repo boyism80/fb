@@ -72,6 +72,7 @@ struct map
     static int builtin_cardinal(lua_State* L);
     static int builtin_revive(lua_State* L);
     static int builtin_option(lua_State* L);
+    static int builtin_siege_castle(lua_State* L);
     static int builtin_clone(lua_State* L);
     static int builtin_instance(lua_State* L);
     static int builtin_instance_rule(lua_State* L);

@@ -466,8 +466,7 @@ local function on_attack(me, additional_attack)
         return 0
     end
 
-    local option = map:model():option()
-    local pk = (option & MAP_OPTION.ENABLE_PK) == MAP_OPTION.ENABLE_PK
+    local pk = spell.map_pk_enabled(me)
     local enemy_type = OBJECT_TYPE.LIFE
     if not pk or (me:is(OBJECT_TYPE.CHARACTER) and me:option(OPTION.PK_PROTECT)) then
         enemy_type = OBJECT_TYPE.MOB

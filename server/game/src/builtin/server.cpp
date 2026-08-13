@@ -662,15 +662,74 @@ int builtin::server::builtin_castle(lua_State* L)
     if (lua == nullptr)
         return 0;
 
-    auto& srv          = static_cast<fb::game::server&>(lua->executor);
-    auto  divine_beast = static_cast<uint32_t>(lua->tointeger(1));
-
-    auto guard = srv.castles.try_enter_read(divine_beast);
-    if (guard.has_value() == false || guard->value() == nullptr)
+    auto divine_beast = static_cast<uint32_t>(lua->tointeger(1));
+    if (divine_beast > static_cast<uint32_t>(fb::model::enum_value::DIVINE_BEAST::AZURE_DRAGON))
+    {
         lua->pushnil();
-    else
-        lua->pushobject(guard->value());
+        return 1;
+    }
 
+    auto& srv = static_cast<fb::game::server&>(lua->executor);
+
+    // Fast path: already cached in this process.
+    {
+        auto guard = srv.castles.try_enter_read(divine_beast);
+        if (guard.has_value() && guard->value() != nullptr)
+        {
+            lua->pushobject(guard->value());
+            return 1;
+        }
+    }
+
+    // Slow path: lazy-load from internal/DB via ensure().
+    auto holder   = std::make_shared<std::shared_ptr<fb::game::castle>>();
+    auto builder  = lua->new_co_builder();
+    builder.yield = [=]() -> async::task<void> {
+        auto& server = static_cast<fb::game::server&>(lua->executor);
+        try
+        {
+            auto guard = co_await server.castles.ensure(divine_beast);
+            *holder    = guard.value();
+        }
+        catch (std::exception& e)
+        {
+            fb::logger::warn("castle ensure failed (id: {}): {}", divine_beast, e.what());
+        }
+        co_return;
+    };
+    builder.resume = [=]() -> async::task<int> {
+        if (*holder == nullptr)
+            lua->pushnil();
+        else
+            lua->pushobject(*holder);
+        co_return 1;
+    };
+    return builder.run();
+}
+
+int builtin::server::builtin_siege_active(lua_State* L)
+{
+    // Sync-only: never yields. Used from attack/PK hot paths.
+    auto lua = fb::lua::get(L);
+    if (lua == nullptr)
+        return 0;
+
+    auto divine_beast = static_cast<uint32_t>(lua->tointeger(1));
+    if (divine_beast > static_cast<uint32_t>(fb::model::enum_value::DIVINE_BEAST::AZURE_DRAGON))
+    {
+        lua->pushboolean(false);
+        return 1;
+    }
+
+    auto& srv   = static_cast<fb::game::server&>(lua->executor);
+    auto  guard = srv.castles.try_enter_read(divine_beast);
+    if (guard.has_value() == false || guard->value() == nullptr)
+    {
+        lua->pushboolean(false);
+        return 1;
+    }
+
+    lua->pushboolean(guard->value()->siege_active());
     return 1;
 }
 

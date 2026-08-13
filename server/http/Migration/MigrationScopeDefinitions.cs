@@ -53,6 +53,7 @@ namespace Http.Migration
                     "name_registry",
                     "clan_name",
                     "USP_NAME_SET",
+                    "castle",
                 },
                 MigrationScope.WorldData => new[]
                 {

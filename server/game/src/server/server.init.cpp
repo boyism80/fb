@@ -8,6 +8,7 @@
 #include <fb/protocol/flatbuffer/protocol.h>
 #include <json/json.h>
 #include <format>
+#include <boost/asio/post.hpp>
 
 using namespace fb::game;
 using namespace fb::model::enum_value;
@@ -77,6 +78,7 @@ async::task<void> fb::game::server::init_lua()
         lua.build("id2ch", builtin::server::builtin_id2ch);
         lua.build("id2clan", builtin::server::builtin_id2clan);
         lua.build("castle", builtin::server::builtin_castle);
+        lua.build("siege_active", builtin::server::builtin_siege_active);
         lua.build("broadcast", builtin::server::builtin_broadcast);
         lua.build("assert_alive", builtin::server::builtin_assert_alive);
         lua.build("pursuit_sell", builtin::server::builtin_pursuit_sell);
@@ -432,7 +434,30 @@ async::task<void> fb::game::server::on_start()
     this->init_handlers();
     this->init_timers();
     this->init_amqp_handlers();
-    // Do not await HTTP here: io_context threads start only after on_start returns.
-    // Castle rows are loaded lazily via castle::container::fetch when first needed.
+    // HTTP needs io_context, which starts only after on_start returns.
+    // Queue castle warmup on the first game thread once IO is running.
+    boost::asio::post(this->io_context, [this]() {
+        auto* thread = this->threads.at(0);
+        if (thread == nullptr)
+        {
+            fb::logger::warn("castles: no game thread available for startup load");
+            return;
+        }
+
+        auto builder = thread->new_builder<void>();
+        builder.func = [this](auto&) -> async::task<void> {
+            try
+            {
+                co_await this->castles.load_all();
+                fb::logger::info("castles: loaded all divine beast castles");
+            }
+            catch (std::exception& e)
+            {
+                fb::logger::warn("castles: load_all failed: {}", e.what());
+            }
+            co_return;
+        };
+        builder.enqueue();
+    });
     co_await this->init_script();
 }

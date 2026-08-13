@@ -258,8 +258,24 @@ function M.map_pk_enabled(me)
     if map == nil then
         return false
     end
-    local option = map:model():option()
-    return (option & MAP_OPTION.ENABLE_PK) == MAP_OPTION.ENABLE_PK
+    local model = map:model()
+    local option = model:option()
+    if (option & MAP_OPTION.ENABLE_PK) == MAP_OPTION.ENABLE_PK then
+        return true
+    end
+
+    -- Siege maps: PK only while that divine beast's siege is active.
+    -- Use siege_active() (sync) — never castle(), which can yield and break attack flow.
+    if (option & MAP_OPTION.SIEGE_CASTLE) ~= MAP_OPTION.SIEGE_CASTLE then
+        return false
+    end
+
+    local divine_beast = model:siege_castle()
+    if divine_beast == nil then
+        return false
+    end
+
+    return siege_active(divine_beast)
 end
 
 function M.map_siege_castle(me)
@@ -627,7 +643,7 @@ function M.attack_cast(me, you, spell, opts)
     me:message(string.format("%s 외웠습니다.", name_with(spell:name())))
     me:action(ACTION.ATTACK, DURATION.ATTACK, 1)
     
-    local pk = (option & MAP_OPTION.ENABLE_PK) == MAP_OPTION.ENABLE_PK
+    local pk = M.map_pk_enabled(me)
     local blocks_pvp = M.attacker_blocks_pvp(me)
     local damaged = false
     local skill_rate = me:skill_damage_rate() / 1000.0

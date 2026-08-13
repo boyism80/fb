@@ -30,6 +30,7 @@ struct server
     static int builtin_id2item(lua_State* L);
     static int builtin_id2clan(lua_State* L);
     static int builtin_castle(lua_State* L);
+    static int builtin_siege_active(lua_State* L);
     static int builtin_pursuit_sell(lua_State* L);
     static int builtin_pursuit_sell_price(lua_State* L);
     static int builtin_pursuit_buy(lua_State* L);
