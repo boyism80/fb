@@ -3,7 +3,7 @@ local festival = require('lib.festival')
 
 local M = {}
 
-local MAP_ID = 25227
+local MAP_ID = 10947
 local TIMER_NAME = 'sesinon_rice'
 local TIMER_PATH = 'scripts/lib/sesinon_rice.lua'
 local INTERVAL_MS = 300000

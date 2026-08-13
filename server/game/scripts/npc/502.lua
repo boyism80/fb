@@ -90,7 +90,7 @@ local function give_chilseok_reward(me, npc)
     end
     local map = name2map("세시마을")
     if map == nil then
-        map = id2map(25228)
+        map = id2map(10932)
     end
     if map ~= nil then
         me:map(map, math.random(52, 59), math.random(46, 50))

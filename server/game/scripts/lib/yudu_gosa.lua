@@ -119,7 +119,7 @@ function M.try_reward(me, npc)
     property(count_key, count)
     me:push_achievement(ACHIEVEMENT_GOSA, string.format('백남인에게 고사음식을 %d번 받았다.', count), 7, 1)
 
-    local village = id2map(25228) or name2map('세시마을')
+    local village = id2map(10932) or name2map('세시마을')
     if village ~= nil then
         me:map(village, math.random(52, 59), math.random(46, 50))
     end
