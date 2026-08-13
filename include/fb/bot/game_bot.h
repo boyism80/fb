@@ -38,7 +38,7 @@ public:
     using spawned_monster_task      = async::task<spawned_monster_info>;
     using spawned_monster_list_task = async::task<std::vector<spawned_monster_info>>;
     using game_bot_ptr_task         = async::task<std::shared_ptr<game_bot>>;
-    using update_validator_fn       = std::function<bool(const fb::protocol::game::response::update&)>;
+    using update_validator_fn       = std::function<bool(const fb::protocol::game::response::update_v550&)>;
     using relative_positions_t      = std::vector<std::pair<int, int>>;
     // clang-format on
 

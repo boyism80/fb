@@ -66,13 +66,13 @@ async::task<void> game_bot_controller::on_time(game_bot& bot, const game_resp::t
     co_return;
 }
 
-async::task<void> game_bot_controller::on_map_config(game_bot& bot, const game_resp::map_config& response)
+async::task<void> game_bot_controller::on_map_config(game_bot& bot, const game_resp::map_config_v550& response)
 {
     bot.set_map(response.id);
     co_return;
 }
 
-async::task<void> game_bot_controller::on_state(game_bot& bot, const game_resp::update_internal& response)
+async::task<void> game_bot_controller::on_state(game_bot& bot, const game_resp::update_internal_v550& response)
 {
     // Update character information based on the state level received
     if (ENUM_IN(response.level, UPDATE_STATE_LEVEL::BASED))
@@ -194,7 +194,7 @@ async::task<void> game_bot_controller::on_move(game_bot& bot, const game_resp::m
     co_return;
 }
 
-async::task<void> game_bot_controller::on_map(game_bot& bot, const game_resp::map_config& response)
+async::task<void> game_bot_controller::on_map(game_bot& bot, const game_resp::map_config_v550& response)
 {
     if (response.id == 1)
     {
@@ -276,7 +276,7 @@ async::task<void> game_bot_controller::on_update_cc(game_bot& bot, const game_re
     co_return;
 }
 
-async::task<void> game_bot_controller::on_update(game_bot& bot, const game_resp::update& response)
+async::task<void> game_bot_controller::on_update(game_bot& bot, const game_resp::update_v550& response)
 {
     co_return;
 }
@@ -295,7 +295,7 @@ async::task<void> game_bot_controller::on_item_remove(game_bot& bot, const game_
     co_return;
 }
 
-async::task<void> game_bot_controller::on_internal_info(game_bot& bot, const game_resp::internal_info& response)
+async::task<void> game_bot_controller::on_internal_info(game_bot& bot, const game_resp::internal_info_v550& response)
 {
     bot.set_clan_name(response.clan_name);
     bot.set_clan_title(response.clan_title);

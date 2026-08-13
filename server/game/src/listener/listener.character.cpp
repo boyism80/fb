@@ -104,7 +104,9 @@ void listener_impl::on_update_buff(character& ch, const buffs& buffs)
 
 void listener_impl::on_update_internal(character& ch)
 {
-    ch.send(game_resp::internal_info(ch));
+    fb::protocol::visit_client_version(ch.client_version, [&]<fb::protocol::CLIENT_VERSION V> {
+        ch.send(game_resp::internal_info<V>(ch));
+    });
 }
 
 void listener_impl::on_level_up(character& me)
@@ -141,7 +143,11 @@ void listener_impl::on_update(character& me, UPDATE_STATE_LEVEL level)
     if (level == UPDATE_STATE_LEVEL::CROWD_CONTROL)
         me.send(game_resp::update_cc(me));
     else
-        me.send(game_resp::update_internal(me, level));
+    {
+        fb::protocol::visit_client_version(me.client_version, [&]<fb::protocol::CLIENT_VERSION V> {
+            me.send(game_resp::update_internal<V>(me, level));
+        });
+    }
 }
 
 async::task<void> listener_impl::on_transfer(character&                  me,
@@ -166,7 +172,9 @@ async::task<void> listener_impl::on_transfer(character&                  me,
 
 void listener_impl::on_update_map(character& ch, const fb::game::map& map)
 {
-    ch.send(game_resp::map_config(map));
+    fb::protocol::visit_client_version(ch.client_version, [&]<fb::protocol::CLIENT_VERSION V> {
+        ch.send(game_resp::map_config<V>(map));
+    });
 }
 
 void listener_impl::on_update_bgm(character& ch, uint16_t bgm, uint8_t volume)
@@ -366,7 +374,9 @@ void listener_impl::on_save(character& ch)
 
 void listener_impl::on_bulk_update(character& ch, const std::vector<object*>& objects)
 {
-    ch.send(game_resp::update(objects));
+    fb::protocol::visit_client_version(ch.client_version, [&]<fb::protocol::CLIENT_VERSION V> {
+        ch.send(game_resp::update<V>(objects));
+    });
 }
 
 void listener_impl::on_ad(character& ch, uint32_t width, uint32_t height, std::string_view url, uint8_t time)

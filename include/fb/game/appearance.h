@@ -39,6 +39,18 @@ public:
     std::optional<uint8_t>  shield_color = std::nullopt;
     std::optional<uint16_t> disguise     = std::nullopt;
 
+    // v651 appearance wire extras (defaults 0 / empty-look semantics; probe may override)
+    uint16_t unknown_ridable_id      = 0;
+    uint8_t  unknown_anim_base       = 0;
+    uint8_t  unknown_hair_style      = 0;
+    uint8_t  unknown_face_hair_tint  = 0;
+    uint8_t  unknown_body_color      = 0;
+    uint8_t  unknown_hair_to_hat     = 0;
+    uint8_t  unknown_helmet          = 0;
+    uint8_t  unknown_helmet_color    = 0;
+    uint16_t unknown_accessory_pack  = 0xFFFF;
+    uint8_t  unknown_accessory_color = 0;
+
 public:
     character_appearance() = default;
     character_appearance(GENDER                  gender,

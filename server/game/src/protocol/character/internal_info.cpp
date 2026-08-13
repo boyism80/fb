@@ -6,21 +6,23 @@
 #endif
 
 using table = fb::model::table;
-using namespace fb::protocol::game::response;
+
+namespace fb::protocol::game::response {
 
 #ifndef BOT
-void internal_info::serialize(fb::stream_writer<big_endian>& writer) const
-{
-    header::serialize(writer);
-    writer.write<uint8_t>(opcode);
-    writer.write<int8_t>(this->ch.stat.phydef());
-    writer.write<int8_t>(this->ch.stat.dam());
-    writer.write<int8_t>(this->ch.stat.hit());
+namespace {
 
-    auto& clan_id = this->ch.clan_id();
+template <typename Writer>
+void write_internal_info_header(Writer& writer, fb::game::character& ch)
+{
+    writer.write<int8_t>(ch.stat.phydef());
+    writer.write<int8_t>(ch.stat.dam());
+    writer.write<int8_t>(ch.stat.hit());
+
+    auto& clan_id = ch.clan_id();
     if (clan_id.has_value())
     {
-        auto guard = this->ch.server.clans.enter_read(clan_id.value());
+        auto guard = ch.server.clans.enter_read(clan_id.value());
         writer.write<std::string>(guard.value()->name());
         writer.write<std::string>(guard.value()->title().value_or(""));
     }
@@ -29,22 +31,19 @@ void internal_info::serialize(fb::stream_writer<big_endian>& writer) const
         writer.write<std::string>("");
         writer.write<std::string>("");
     }
-    writer.write<std::string>(this->ch.title());
+    writer.write<std::string>(ch.title());
 
     auto  sstream  = std::stringstream();
-    auto& marriage = this->ch.marriage();
+    auto& marriage = ch.marriage();
     if (marriage.spouse_id.has_value())
-    {
         sstream << "배우자: " << marriage.spouse_name << std::endl;
-    }
 
-    auto& group_id = this->ch.group_id();
+    auto& group_id = ch.group_id();
     if (group_id.has_value())
     {
-        auto  guard = this->ch.server.groups.enter_read(group_id.value());
+        auto  guard = ch.server.groups.enter_read(group_id.value());
         auto& group = guard.value();
         sstream << _TEXT(MESSAGE_GROUP_MEMBERS_HEADER) << std::endl << "  * " << group->master() << std::endl;
-
         auto master_name = group->master();
         for (auto& member : group->members())
         {
@@ -57,20 +56,49 @@ void internal_info::serialize(fb::stream_writer<big_endian>& writer) const
         sstream << _TEXT(MESSAGE_GROUP_NONE);
     }
     writer.write<std::string>(sstream.str());
-    writer.write<uint8_t>(this->ch.option(OPTION::GROUP));
+    writer.write<uint8_t>(ch.option(OPTION::GROUP));
 
-    auto     cls      = this->ch.cls();
-    auto     level    = this->ch.level();
+    auto     cls      = ch.cls();
+    auto     level    = ch.level();
     uint64_t remained = 0;
     if (table::ability->contains(cls) && table::ability[cls].contains(level) &&
         table::ability[cls].contains(static_cast<uint8_t>(level + 1)))
     {
-        remained = table::ability->stacked_exp(cls, level) - this->ch.exp();
+        remained = table::ability->stacked_exp(cls, level) - ch.exp();
     }
     writer.write<uint32_t>(fb::game::encode_client_amount(remained));
+    writer.write<std::string>(table::promotion[ch.cls()][ch.promotion()].name);
+}
 
-    auto& class_name = table::promotion[this->ch.cls()][this->ch.promotion()].name;
-    writer.write<std::string>(class_name);
+template <typename Writer>
+void write_equip_slot_v651(Writer& writer, const std::shared_ptr<fb::game::equipment>& eq)
+{
+    if (eq == nullptr)
+    {
+        writer.write<uint16_t>(0); // empty look = 0
+        writer.write<uint8_t>(0);
+        writer.write<std::string>("");
+        writer.write<std::string>(""); // unknown_name_b
+        writer.write<uint32_t>(0);     // unknown_u32
+    }
+    else
+    {
+        writer.write<uint16_t>(eq->look());
+        writer.write<uint8_t>(eq->color());
+        writer.write<std::string>(eq->name());
+        writer.write<std::string>("");
+        writer.write<uint32_t>(0);
+    }
+}
+
+} // namespace
+
+template <CLIENT_VERSION V>
+void internal_info<V>::serialize(fb::stream_writer<big_endian>& writer) const
+{
+    header::serialize(writer);
+    writer.write<uint8_t>(opcode);
+    write_internal_info_header(writer, this->ch);
 
     auto equipments =
         std::array<std::shared_ptr<fb::game::equipment>, 5>{this->ch.items.helmet(),
@@ -78,21 +106,21 @@ void internal_info::serialize(fb::stream_writer<big_endian>& writer) const
                                                             this->ch.items.ring(EQUIPMENT_POSITION::RIGHT),
                                                             this->ch.items.auxiliary(EQUIPMENT_POSITION::LEFT),
                                                             this->ch.items.auxiliary(EQUIPMENT_POSITION::RIGHT)};
-    for (int i = 0, size = equipments.size(); i < size; i++)
+    for (auto& eq : equipments)
     {
-        if (equipments[i] == nullptr)
+        if (eq == nullptr)
         {
             writer.write<uint16_t>(0xFFFF);
             writer.write<uint8_t>(0x00);
         }
         else
         {
-            writer.write<uint16_t>(equipments[i]->look());
-            writer.write<uint8_t>(equipments[i]->color());
+            writer.write<uint16_t>(eq->look());
+            writer.write<uint8_t>(eq->color());
         }
     }
 
-    writer.write<uint8_t>(0x00); // fixed
+    writer.write<uint8_t>(0x00);
     writer.write<uint8_t>(this->ch.option(OPTION::TRADE));
     writer.write<uint8_t>(this->ch.option(OPTION::PK_PROTECT));
 
@@ -105,8 +133,43 @@ void internal_info::serialize(fb::stream_writer<big_endian>& writer) const
     }
     writer.write<uint8_t>(0x00);
 }
+
+template <>
+void internal_info<CLIENT_VERSION::v651>::serialize(fb::stream_writer<big_endian>& writer) const
+{
+    header::serialize(writer);
+    writer.write<uint8_t>(opcode);
+    write_internal_info_header(writer, this->ch);
+
+    // parts 1,2,3,4,7,8,20,21,22
+    write_equip_slot_v651(writer, this->ch.items.weapon());
+    write_equip_slot_v651(writer, this->ch.items.armor());
+    write_equip_slot_v651(writer, this->ch.items.shield());
+    write_equip_slot_v651(writer, this->ch.items.helmet());
+    write_equip_slot_v651(writer, this->ch.items.ring(EQUIPMENT_POSITION::LEFT));
+    write_equip_slot_v651(writer, this->ch.items.ring(EQUIPMENT_POSITION::RIGHT));
+    write_equip_slot_v651(writer, this->ch.items.auxiliary(EQUIPMENT_POSITION::LEFT));
+    write_equip_slot_v651(writer, this->ch.items.auxiliary(EQUIPMENT_POSITION::RIGHT));
+    write_equip_slot_v651(writer, nullptr); // parts 22 unknown
+
+    // no fixed 0x00
+    writer.write<uint8_t>(this->ch.option(OPTION::TRADE));
+    writer.write<uint8_t>(this->ch.option(OPTION::PK_PROTECT));
+
+    writer.write<uint8_t>((uint8_t)this->ch.achievements.size());
+    for (auto& [_, achievement] : this->ch.achievements)
+    {
+        writer.write<uint8_t>(achievement->icon);
+        writer.write<uint8_t>(achievement->color);
+        writer.write<std::string>(achievement->text);
+    }
+}
+
+template void internal_info<CLIENT_VERSION::v550>::serialize(fb::stream_writer<big_endian>&) const;
+template void internal_info<CLIENT_VERSION::v565>::serialize(fb::stream_writer<big_endian>&) const;
 #else
-void internal_info::deserialize(fb::stream_reader<big_endian>& reader)
+template <CLIENT_VERSION V>
+void internal_info<V>::deserialize(fb::stream_reader<big_endian>& reader)
 {
     header::deserialize(reader);
     this->phydef       = reader.read<int8_t>();
@@ -120,7 +183,6 @@ void internal_info::deserialize(fb::stream_reader<big_endian>& reader)
     this->remained_exp = reader.read<uint32_t>();
     this->class_name   = reader.read<std::string, uint8_t>();
 
-    // Equipment information (5 slots)
     this->equipments.clear();
     for (int i = 0; i < 5; i++)
     {
@@ -130,11 +192,10 @@ void internal_info::deserialize(fb::stream_reader<big_endian>& reader)
         this->equipments.push_back(equip);
     }
 
-    reader.read<uint8_t>(); // fixed 0x00
+    reader.read<uint8_t>();
     this->trade_option      = reader.read<uint8_t>();
     this->pk_protect_option = reader.read<uint8_t>();
 
-    // Fully implement achievement information
     uint8_t achievement_count = reader.read<uint8_t>();
     this->achievements.clear();
     for (int i = 0; i < achievement_count; i++)
@@ -145,6 +206,53 @@ void internal_info::deserialize(fb::stream_reader<big_endian>& reader)
         achievement.text  = reader.read<std::string, uint8_t>();
         this->achievements.push_back(achievement);
     }
-    reader.read<uint8_t>(); // Final 0x00
+    reader.read<uint8_t>();
 }
+
+template <>
+void internal_info<CLIENT_VERSION::v651>::deserialize(fb::stream_reader<big_endian>& reader)
+{
+    header::deserialize(reader);
+    this->phydef       = reader.read<int8_t>();
+    this->dam          = reader.read<int8_t>();
+    this->hit          = reader.read<int8_t>();
+    this->clan_name    = reader.read<std::string, uint8_t>();
+    this->clan_title   = reader.read<std::string, uint8_t>();
+    this->title        = reader.read<std::string, uint8_t>();
+    this->group_info   = reader.read<std::string, uint8_t>();
+    this->group_option = reader.read<uint8_t>();
+    this->remained_exp = reader.read<uint32_t>();
+    this->class_name   = reader.read<std::string, uint8_t>();
+
+    this->equipments.clear();
+    for (int i = 0; i < 9; i++)
+    {
+        equipment_data equip;
+        equip.look           = reader.read<uint16_t>();
+        equip.color          = reader.read<uint8_t>();
+        equip.name_a         = reader.read<std::string, uint8_t>();
+        equip.unknown_name_b = reader.read<std::string, uint8_t>();
+        equip.unknown_u32    = reader.read<uint32_t>();
+        this->equipments.push_back(equip);
+    }
+
+    this->trade_option      = reader.read<uint8_t>();
+    this->pk_protect_option = reader.read<uint8_t>();
+
+    uint8_t achievement_count = reader.read<uint8_t>();
+    this->achievements.clear();
+    for (int i = 0; i < achievement_count; i++)
+    {
+        achievement_data achievement;
+        achievement.look  = reader.read<uint8_t>();
+        achievement.color = reader.read<uint8_t>();
+        achievement.text  = reader.read<std::string, uint8_t>();
+        this->achievements.push_back(achievement);
+    }
+}
+
+template void internal_info<CLIENT_VERSION::v550>::deserialize(fb::stream_reader<big_endian>&);
+template void internal_info<CLIENT_VERSION::v565>::deserialize(fb::stream_reader<big_endian>&);
 #endif
+
+} // namespace fb::protocol::game::response

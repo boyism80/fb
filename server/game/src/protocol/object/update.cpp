@@ -3,17 +3,8 @@
 namespace fb::protocol::game::response {
 
 #ifndef BOT
-update::update(const fb::game::object& object) :
-    objects({const_cast<fb::game::object*>(&object)})
-{ }
-
-update::update(const std::vector<fb::game::object*>& objects) :
-    objects(objects)
-{ }
-#endif
-
-#ifndef BOT
-void update::serialize(fb::stream_writer<big_endian>& writer) const
+template <>
+void update<CLIENT_VERSION::v651>::serialize(fb::stream_writer<big_endian>& writer) const
 {
     header::serialize(writer);
     writer.write<uint8_t>(opcode);
@@ -25,41 +16,55 @@ void update::serialize(fb::stream_writer<big_endian>& writer) const
         if (map == nullptr)
             continue;
 
-        writer.write<uint16_t>(object->x());                              // object x
-        writer.write<uint16_t>(object->y());                              // object y
-        writer.write<uint32_t>(object->oid());                            // object oid
-        writer.write<uint16_t>(object->look());                           // npc icon code
-        writer.write<uint8_t>(object->color());                           // color
-        writer.write<uint8_t>(static_cast<uint8_t>(object->direction())); // side
+        auto dir = static_cast<uint8_t>(object->direction());
+        writer.write<uint16_t>(object->x());
+        writer.write<uint16_t>(object->y());
+        writer.write<uint8_t>(dir); // mid-direction
+        writer.write<uint32_t>(object->oid());
+        writer.write<uint16_t>(object->look());
+        writer.write<uint8_t>(object->color());
+        writer.write<uint8_t>(dir); // facing (default = direction)
     }
     writer.write<uint8_t>(0);
 }
 #else
-void update::deserialize(fb::stream_reader<big_endian>& reader)
+template <CLIENT_VERSION V>
+void update<V>::deserialize(fb::stream_reader<big_endian>& reader)
 {
     header::deserialize(reader);
-
-    // Read object count
     this->object_count = reader.read<uint16_t>();
     this->objects_data.clear();
     this->objects_data.reserve(this->object_count);
 
-    // Read each object's data
     for (int i = 0; i < this->object_count; i++)
     {
         object_data obj;
-        obj.x         = reader.read<uint16_t>();
-        obj.y         = reader.read<uint16_t>();
-        obj.oid       = reader.read<uint32_t>();
-        obj.look      = reader.read<uint16_t>();
-        obj.color     = reader.read<uint8_t>();
-        obj.direction = reader.read<uint8_t>();
+        obj.x = reader.read<uint16_t>();
+        obj.y = reader.read<uint16_t>();
+        if constexpr (V == CLIENT_VERSION::v651)
+        {
+            obj.direction = reader.read<uint8_t>();
+            obj.oid       = reader.read<uint32_t>();
+            obj.look      = reader.read<uint16_t>();
+            obj.color     = reader.read<uint8_t>();
+            obj.facing    = reader.read<uint8_t>();
+        }
+        else
+        {
+            obj.oid       = reader.read<uint32_t>();
+            obj.look      = reader.read<uint16_t>();
+            obj.color     = reader.read<uint8_t>();
+            obj.direction = reader.read<uint8_t>();
+            obj.facing    = obj.direction;
+        }
         this->objects_data.push_back(obj);
     }
-
-    // Read trailing byte
     reader.read<uint8_t>();
 }
+
+template void update<CLIENT_VERSION::v550>::deserialize(fb::stream_reader<big_endian>&);
+template void update<CLIENT_VERSION::v565>::deserialize(fb::stream_reader<big_endian>&);
+template void update<CLIENT_VERSION::v651>::deserialize(fb::stream_reader<big_endian>&);
 #endif
 
 } // namespace fb::protocol::game::response

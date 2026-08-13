@@ -1,5 +1,6 @@
 #include <fb/game/server.h>
 #include <fb/model/model.h>
+#include <fb/protocol/client_version.h>
 
 using namespace fb::game;
 
@@ -7,7 +8,9 @@ namespace game_resp = fb::protocol::game::response;
 
 void listener_impl::on_equipment_on(character& me, item& item, EQUIPMENT_PARTS parts)
 {
-    me.send(game_resp::item_update_slot(me, parts));
+    fb::protocol::visit_client_version(me.client_version, [&]<fb::protocol::CLIENT_VERSION V> {
+        me.send(game_resp::item_update_slot<V>(me, parts));
+    });
     me.sound(SOUND::EQUIPMENT_ON);
 
     std::stringstream sstream;

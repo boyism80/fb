@@ -1593,6 +1593,87 @@ M.functions = {
             end,
         },
 
+        ['probe_map_config'] = {
+            ['privilege'] = ROLE.ADMIN,
+            ['usage'] = '[flags] [extra] [light] - S2C 0x15 map_config 재송신 (v651 unknown_* 스윕)',
+            ['command'] = function (me, args)
+                local flags, extra, light = table.unpack(args)
+                me:probe_map_config(tonumber(flags) or 0x02, tonumber(extra) or 0, tonumber(light) or 0)
+                return true
+            end,
+        },
+
+        ['probe_appearance'] = {
+            ['privilege'] = ROLE.ADMIN,
+            ['usage'] = '[detailed 0/1] [ridable] [anim] [hair_style] [face_tint] [body] [hat] [helm] [helm_c] [acc] [acc_c] - S2C 0x33/0x1D 외형 재송신',
+            ['command'] = function (me, args)
+                local detailed = tonumber(args[1])
+                if detailed == nil then
+                    detailed = 1
+                end
+                me:probe_appearance(
+                    detailed ~= 0,
+                    tonumber(args[2]) or 0,
+                    tonumber(args[3]) or 0,
+                    tonumber(args[4]) or 0,
+                    tonumber(args[5]) or 0,
+                    tonumber(args[6]) or 0,
+                    tonumber(args[7]) or 0,
+                    tonumber(args[8]) or 0,
+                    tonumber(args[9]) or 0,
+                    tonumber(args[10]) or 0xFFFF,
+                    tonumber(args[11]) or 0
+                )
+                return true
+            end,
+        },
+
+        ['probe_update_internal'] = {
+            ['privilege'] = ROLE.ADMIN,
+            ['usage'] = '[level] [based5] [based26] [based28] [exp_pad] [option_bits] - S2C 0x08 재송신 (기본 level=ALL)',
+            ['command'] = function (me, args)
+                me:probe_update_internal(
+                    tonumber(args[1]) or UPDATE_STATE_LEVEL.ALL,
+                    tonumber(args[2]) or 0,
+                    tonumber(args[3]) or 0,
+                    tonumber(args[4]) or 0,
+                    tonumber(args[5]) or 0,
+                    tonumber(args[6]) or 0
+                )
+                return true
+            end,
+        },
+
+        ['probe_internal_info'] = {
+            ['privilege'] = ROLE.ADMIN,
+            ['usage'] = '- S2C 0x39 internal_info 재송신',
+            ['command'] = function (me, args)
+                me:probe_internal_info()
+                return true
+            end,
+        },
+
+        ['probe_update_slot'] = {
+            ['privilege'] = ROLE.ADMIN,
+            ['usage'] = '[parts] [name_b] [u32] - S2C 0x37 장비슬롯 재송신 (parts 기본 1=WEAPON)',
+            ['command'] = function (me, args)
+                local parts = tonumber(args[1]) or 1
+                local name_b = args[2] or ''
+                local u32 = tonumber(args[3]) or 0
+                me:probe_update_slot(parts, name_b, u32)
+                return true
+            end,
+        },
+
+        ['probe_option'] = {
+            ['privilege'] = ROLE.ADMIN,
+            ['usage'] = '[selflook] - S2C 0x23 option 재송신 (v651 6번째 바이트)',
+            ['command'] = function (me, args)
+                me:probe_option(tonumber(args[1]) or 0)
+                return true
+            end,
+        },
+
         ['unknown_62'] = {
             ['privilege'] = ROLE.ADMIN,
             ['usage'] = '- S2C 0x62 NEW UI 오픈 (6.51). 게이트웨이 C2S 0x62와 별개',

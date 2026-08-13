@@ -1042,12 +1042,12 @@ std::shared_ptr<fb::protocol::header> create_game_resp__init()
 
 void ensure_registered_game_resp__internal_info(fb::bot::game_bot_controller& controller)
 {
-    controller.ensure_handler_registered<game_resp::internal_info>();
+    controller.ensure_handler_registered<game_resp::internal_info_v550>();
 }
 
 std::shared_ptr<fb::protocol::header> clone_game_resp__internal_info(const fb::protocol::header& header)
 {
-    return std::make_shared<game_resp::internal_info>(static_cast<const game_resp::internal_info&>(header));
+    return std::make_shared<game_resp::internal_info_v550>(static_cast<const game_resp::internal_info_v550&>(header));
 }
 
 std::shared_ptr<fb::protocol::header> create_game_resp__internal_info()
@@ -1118,12 +1118,12 @@ std::shared_ptr<fb::protocol::header> create_game_resp__item_tip()
 
 void ensure_registered_game_resp__item_unequip(fb::bot::game_bot_controller& controller)
 {
-    controller.ensure_handler_registered<game_resp::item_unequip>();
+    controller.ensure_handler_registered<game_resp::item_unequip_v550>();
 }
 
 std::shared_ptr<fb::protocol::header> clone_game_resp__item_unequip(const fb::protocol::header& header)
 {
-    return std::make_shared<game_resp::item_unequip>(static_cast<const game_resp::item_unequip&>(header));
+    return std::make_shared<game_resp::item_unequip_v550>(static_cast<const game_resp::item_unequip_v550&>(header));
 }
 
 std::shared_ptr<fb::protocol::header> create_game_resp__item_unequip()
@@ -1148,12 +1148,13 @@ std::shared_ptr<fb::protocol::header> create_game_resp__item_update()
 
 void ensure_registered_game_resp__item_update_slot(fb::bot::game_bot_controller& controller)
 {
-    controller.ensure_handler_registered<game_resp::item_update_slot>();
+    controller.ensure_handler_registered<game_resp::item_update_slot_v550>();
 }
 
 std::shared_ptr<fb::protocol::header> clone_game_resp__item_update_slot(const fb::protocol::header& header)
 {
-    return std::make_shared<game_resp::item_update_slot>(static_cast<const game_resp::item_update_slot&>(header));
+    return std::make_shared<game_resp::item_update_slot_v550>(
+        static_cast<const game_resp::item_update_slot_v550&>(header));
 }
 
 std::shared_ptr<fb::protocol::header> create_game_resp__item_update_slot()
@@ -1193,12 +1194,12 @@ std::shared_ptr<fb::protocol::header> create_game_resp__map_bgm_stop()
 
 void ensure_registered_game_resp__map_config(fb::bot::game_bot_controller& controller)
 {
-    controller.ensure_handler_registered<game_resp::map_config>();
+    controller.ensure_handler_registered<game_resp::map_config_v550>();
 }
 
 std::shared_ptr<fb::protocol::header> clone_game_resp__map_config(const fb::protocol::header& header)
 {
-    return std::make_shared<game_resp::map_config>(static_cast<const game_resp::map_config&>(header));
+    return std::make_shared<game_resp::map_config_v550>(static_cast<const game_resp::map_config_v550&>(header));
 }
 
 std::shared_ptr<fb::protocol::header> create_game_resp__map_config()
@@ -1647,12 +1648,12 @@ std::shared_ptr<fb::protocol::header> create_game_resp__unknown_12()
 
 void ensure_registered_game_resp__update(fb::bot::game_bot_controller& controller)
 {
-    controller.ensure_handler_registered<game_resp::update>();
+    controller.ensure_handler_registered<game_resp::update_v550>();
 }
 
 std::shared_ptr<fb::protocol::header> clone_game_resp__update(const fb::protocol::header& header)
 {
-    return std::make_shared<game_resp::update>(static_cast<const game_resp::update&>(header));
+    return std::make_shared<game_resp::update_v550>(static_cast<const game_resp::update_v550&>(header));
 }
 
 std::shared_ptr<fb::protocol::header> create_game_resp__update()
@@ -1724,12 +1725,13 @@ std::shared_ptr<fb::protocol::header> create_game_resp__update_hp()
 
 void ensure_registered_game_resp__update_internal(fb::bot::game_bot_controller& controller)
 {
-    controller.ensure_handler_registered<game_resp::update_internal>();
+    controller.ensure_handler_registered<game_resp::update_internal_v550>();
 }
 
 std::shared_ptr<fb::protocol::header> clone_game_resp__update_internal(const fb::protocol::header& header)
 {
-    return std::make_shared<game_resp::update_internal>(static_cast<const game_resp::update_internal&>(header));
+    return std::make_shared<game_resp::update_internal_v550>(
+        static_cast<const game_resp::update_internal_v550&>(header));
 }
 
 std::shared_ptr<fb::protocol::header> create_game_resp__update_internal()

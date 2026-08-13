@@ -13,7 +13,9 @@ listener_impl::listener_impl(fb::game::server& server) :
 
 void listener_impl::send_update_appearance(object& obj, const fb::model::appearance& appearance)
 {
-    auto serializer = game_resp::appearance_serializer<true>{
+    // Phase 1: pivot stays v550 layout; mixed-version fan-out is Phase 2.
+    using V         = fb::protocol::CLIENT_VERSION;
+    auto serializer = game_resp::appearance_serializer<true, V::v550>{
         .oid         = obj.oid(),
         .position    = obj.position(),
         .direction   = obj.direction(),
@@ -31,7 +33,7 @@ void listener_impl::send_update_appearance(object& obj, const fb::model::appeara
                                            appearance.shield_color,
                                            appearance.disguise)};
 
-    this->server.send(obj, game_resp::update_external<true>(serializer), scope::PIVOT);
+    this->server.send(obj, game_resp::update_external<true, V::v550>(serializer), scope::PIVOT);
 }
 
 void listener_impl::on_create(object& me)
@@ -89,10 +91,12 @@ void listener_impl::on_update_external(object& me, bool detailed)
                 continue;
 
             auto you = std::static_pointer_cast<character>(obj);
-            if (detailed)
-                you->send(game_resp::update_external<true>(static_cast<character&>(me), *you));
-            else
-                you->send(game_resp::update_external<false>(static_cast<character&>(me), *you));
+            fb::protocol::visit_client_version(you->client_version, [&]<fb::protocol::CLIENT_VERSION Ver> {
+                if (detailed)
+                    you->send(game_resp::update_external<true, Ver>(static_cast<character&>(me), *you));
+                else
+                    you->send(game_resp::update_external<false, Ver>(static_cast<character&>(me), *you));
+            });
         }
     }
     break;
@@ -109,7 +113,7 @@ void listener_impl::on_update_external(object& me, bool detailed)
         }
         else
         {
-            this->server.send(me, game_resp::update(me), scope::PIVOT);
+            this->server.send(me, game_resp::update_v550(me), scope::PIVOT);
         }
     }
     break;
@@ -126,14 +130,14 @@ void listener_impl::on_update_external(object& me, bool detailed)
         }
         else
         {
-            this->server.send(me, game_resp::update(me), scope::PIVOT);
+            this->server.send(me, game_resp::update_v550(me), scope::PIVOT);
         }
     }
     break;
 
     default:
     {
-        this->server.send(me, game_resp::update(me), scope::PIVOT);
+        this->server.send(me, game_resp::update_v550(me), scope::PIVOT);
     }
     break;
     }
@@ -144,14 +148,21 @@ void listener_impl::on_update_external(object& me, object& you, bool detailed)
     if (me.hidden(you))
         return;
 
+    if (you.is(OBJECT_TYPE::CHARACTER) == false)
+        return;
+
+    auto& ch = static_cast<character&>(you);
+
     switch (me.what())
     {
     case OBJECT_TYPE::CHARACTER:
     {
-        if (detailed)
-            you.send(game_resp::update_external<true>(static_cast<character&>(me), you));
-        else
-            you.send(game_resp::update_external<false>(static_cast<character&>(me), you));
+        fb::protocol::visit_client_version(ch.client_version, [&]<fb::protocol::CLIENT_VERSION Ver> {
+            if (detailed)
+                ch.send(game_resp::update_external<true, Ver>(static_cast<character&>(me), ch));
+            else
+                ch.send(game_resp::update_external<false, Ver>(static_cast<character&>(me), ch));
+        });
     }
     break;
 
@@ -167,7 +178,9 @@ void listener_impl::on_update_external(object& me, object& you, bool detailed)
         }
         else
         {
-            you.send(game_resp::update(me));
+            fb::protocol::visit_client_version(ch.client_version, [&]<fb::protocol::CLIENT_VERSION Ver> {
+                ch.send(game_resp::update<Ver>(me));
+            });
         }
     }
     break;
@@ -184,14 +197,18 @@ void listener_impl::on_update_external(object& me, object& you, bool detailed)
         }
         else
         {
-            you.send(game_resp::update(me));
+            fb::protocol::visit_client_version(ch.client_version, [&]<fb::protocol::CLIENT_VERSION Ver> {
+                ch.send(game_resp::update<Ver>(me));
+            });
         }
     }
     break;
 
     default:
     {
-        you.send(game_resp::update(me));
+        fb::protocol::visit_client_version(ch.client_version, [&]<fb::protocol::CLIENT_VERSION Ver> {
+            ch.send(game_resp::update<Ver>(me));
+        });
     }
     break;
     }

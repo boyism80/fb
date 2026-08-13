@@ -798,7 +798,7 @@ void marshal_lua_game_resp__internal_info(lua_State* L, const fb::protocol::head
     if (lua == nullptr)
         return;
 
-    const auto& resp = static_cast<const game_resp::internal_info&>(header);
+    const auto& resp = static_cast<const game_resp::internal_info_v550&>(header);
     lua->new_table();
     lua->pushstring("phydef");
     lua->pushinteger(resp.phydef);
@@ -923,7 +923,7 @@ void marshal_lua_game_resp__item_unequip(lua_State* L, const fb::protocol::heade
     if (lua == nullptr)
         return;
 
-    const auto& resp = static_cast<const game_resp::item_unequip&>(header);
+    const auto& resp = static_cast<const game_resp::item_unequip_v550&>(header);
     lua->new_table();
 }
 
@@ -958,7 +958,7 @@ void marshal_lua_game_resp__item_update_slot(lua_State* L, const fb::protocol::h
     if (lua == nullptr)
         return;
 
-    const auto& resp = static_cast<const game_resp::item_update_slot&>(header);
+    const auto& resp = static_cast<const game_resp::item_update_slot_v550&>(header);
     lua->new_table();
     lua->pushstring("look");
     lua->pushinteger(resp.look);
@@ -1006,7 +1006,7 @@ void marshal_lua_game_resp__map_config(lua_State* L, const fb::protocol::header&
     if (lua == nullptr)
         return;
 
-    const auto& resp = static_cast<const game_resp::map_config&>(header);
+    const auto& resp = static_cast<const game_resp::map_config_v550&>(header);
     lua->new_table();
     lua->pushstring("id");
     lua->pushinteger(resp.id);
@@ -1595,7 +1595,7 @@ void marshal_lua_game_resp__update(lua_State* L, const fb::protocol::header& hea
     if (lua == nullptr)
         return;
 
-    const auto& resp = static_cast<const game_resp::update&>(header);
+    const auto& resp = static_cast<const game_resp::update_v550&>(header);
     lua->new_table();
     lua->pushstring("object_count");
     lua->pushinteger(resp.object_count);
@@ -1820,7 +1820,7 @@ void marshal_lua_game_resp__update_internal(lua_State* L, const fb::protocol::he
     if (lua == nullptr)
         return;
 
-    const auto& resp = static_cast<const game_resp::update_internal&>(header);
+    const auto& resp = static_cast<const game_resp::update_internal_v550&>(header);
     lua->new_table();
     lua->pushstring("level");
     try

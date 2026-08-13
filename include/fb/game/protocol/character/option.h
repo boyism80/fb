@@ -29,6 +29,7 @@ public:
     bool selflook       = false;
 #else
     const fb::game::character& ch;
+    uint8_t                    unknown_selflook = 0;
 #endif
 
 public:
@@ -38,6 +39,10 @@ public:
     option(const fb::game::character& ch) :
         ch(ch)
     { }
+    option(const fb::game::character& ch, uint8_t selflook) :
+        ch(ch),
+        unknown_selflook(selflook)
+    { }
 #endif
 
 public:
@@ -46,14 +51,11 @@ public:
     {
         header::serialize(writer);
         writer.write<uint8_t>(opcode);
-        writer.write<uint8_t>(this->ch.option(OPTION::WEATHER_EFFECT)); // weather
-        writer.write<uint8_t>(this->ch.option(OPTION::MAGIC_EFFECT));   // magic effect
-        writer.write<uint8_t>(this->ch.option(OPTION::NEWS));           // news
-        writer.write<uint8_t>(this->ch.option(OPTION::FAST_MOVE));      // fast move
-        writer.write<uint8_t>(this->ch.option(OPTION::EFFECT_SOUND));   // effect sound
-        // v550/v565: 5 flags. v651 appends SELFLOOK.
-        if constexpr (V == CLIENT_VERSION::v651)
-            writer.write<uint8_t>(0); // SELFLOOK sheet toggle (off)
+        writer.write<uint8_t>(this->ch.option(OPTION::WEATHER_EFFECT));
+        writer.write<uint8_t>(this->ch.option(OPTION::MAGIC_EFFECT));
+        writer.write<uint8_t>(this->ch.option(OPTION::NEWS));
+        writer.write<uint8_t>(this->ch.option(OPTION::FAST_MOVE));
+        writer.write<uint8_t>(this->ch.option(OPTION::EFFECT_SOUND));
     }
 #else
     void deserialize(fb::stream_reader<big_endian>& reader)
@@ -64,11 +66,36 @@ public:
         this->news           = reader.read<uint8_t>();
         this->fast_move      = reader.read<uint8_t>();
         this->effect_sound   = reader.read<uint8_t>();
-        if constexpr (V == CLIENT_VERSION::v651)
-            this->selflook = reader.read<uint8_t>();
     }
 #endif
 };
+
+#ifndef BOT
+template <>
+inline void option<CLIENT_VERSION::v651>::serialize(fb::stream_writer<big_endian>& writer) const
+{
+    header::serialize(writer);
+    writer.write<uint8_t>(opcode);
+    writer.write<uint8_t>(this->ch.option(OPTION::WEATHER_EFFECT));
+    writer.write<uint8_t>(this->ch.option(OPTION::MAGIC_EFFECT));
+    writer.write<uint8_t>(this->ch.option(OPTION::NEWS));
+    writer.write<uint8_t>(this->ch.option(OPTION::FAST_MOVE));
+    writer.write<uint8_t>(this->ch.option(OPTION::EFFECT_SOUND));
+    writer.write<uint8_t>(this->unknown_selflook);
+}
+#else
+template <>
+inline void option<CLIENT_VERSION::v651>::deserialize(fb::stream_reader<big_endian>& reader)
+{
+    header::deserialize(reader);
+    this->weather_effect = reader.read<uint8_t>();
+    this->magic_effect   = reader.read<uint8_t>();
+    this->news           = reader.read<uint8_t>();
+    this->fast_move      = reader.read<uint8_t>();
+    this->effect_sound   = reader.read<uint8_t>();
+    this->selflook       = reader.read<uint8_t>();
+}
+#endif
 
 using option_v550 = option<CLIENT_VERSION::v550>;
 using option_v565 = option<CLIENT_VERSION::v565>;

@@ -82,8 +82,8 @@ public:
 
 private:
     async::task<void> on_time(game_bot& bot, const game_resp::time& response);
-    async::task<void> on_map_config(game_bot& bot, const game_resp::map_config& response);
-    async::task<void> on_state(game_bot& bot, const game_resp::update_internal& response);
+    async::task<void> on_map_config(game_bot& bot, const game_resp::map_config_v550& response);
+    async::task<void> on_state(game_bot& bot, const game_resp::update_internal_v550& response);
     async::task<void> on_option(game_bot& bot, const game_resp::option_v550& response);
     async::task<void> on_message(game_bot& bot, const game_resp::message& response);
     async::task<void> on_sequence(game_bot& bot, const game_resp::id& response);
@@ -100,8 +100,8 @@ private:
     async::task<void> on_buff(game_bot& bot, const game_resp::spell_buff& response);
     async::task<void> on_unbuff(game_bot& bot, const game_resp::spell_unbuff& response);
     async::task<void> on_update_cc(game_bot& bot, const game_resp::update_cc& response);
-    async::task<void> on_update(game_bot& bot, const game_resp::update& response);
-    async::task<void> on_map(game_bot& bot, const game_resp::map_config& response);
+    async::task<void> on_update(game_bot& bot, const game_resp::update_v550& response);
+    async::task<void> on_map(game_bot& bot, const game_resp::map_config_v550& response);
     async::task<void> on_transfer(game_bot& bot, const fb::protocol::response::transfer& response);
     template <bool Detailed> async::task<void> on_update_external(game_bot&                                   bot,
                                                                   const game_resp::update_external<Detailed>& response)
@@ -136,7 +136,7 @@ private:
 private:
     async::task<void> on_item_update(game_bot& bot, const game_resp::item_update& response);
     async::task<void> on_item_remove(game_bot& bot, const game_resp::item_remove& response);
-    async::task<void> on_internal_info(game_bot& bot, const game_resp::internal_info& response);
+    async::task<void> on_internal_info(game_bot& bot, const game_resp::internal_info_v550& response);
     async::task<void> on_ping(game_bot& bot, const game_resp::ping& response);
 
 public:

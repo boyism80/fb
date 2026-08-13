@@ -2,6 +2,7 @@
 #define __PROTOCOL_GAME_CHARACTER_SHOW_H__
 
 #include <fb/protocol/header.h>
+#include <fb/protocol/client_version.h>
 #include <fb/model/model.h>
 #ifndef BOT
 #include <fb/game/character.h>
@@ -16,7 +17,7 @@ using namespace fb::game;
 
 HEAD_MARKER compute_head_marker(const fb::game::character& ch, const fb::game::object& to);
 
-template <bool Detailed>
+template <bool Detailed, CLIENT_VERSION V>
 struct appearance_serializer
 {
     uint32_t                   oid;
@@ -78,7 +79,7 @@ struct appearance_serializer
             }
             else
             {
-                writer.write<uint8_t>(0xFF); // about shield
+                writer.write<uint8_t>(0xFF);
                 writer.write<uint8_t>(0x00);
             }
         }
@@ -87,18 +88,24 @@ struct appearance_serializer
         writer.write<std::string, uint8_t>(this->name);
     }
 };
+
+template <>
+void appearance_serializer<true, CLIENT_VERSION::v651>::serialize(fb::stream_writer<big_endian>& writer) const;
+template <>
+void appearance_serializer<false, CLIENT_VERSION::v651>::serialize(fb::stream_writer<big_endian>& writer) const;
+
 #endif
 
-// Template implementation for compile-time optimization
-template <bool Detailed>
+template <bool Detailed, CLIENT_VERSION V = CLIENT_VERSION::v550>
 class update_external : public fb::protocol::header
 {
 public:
     static constexpr uint8_t opcode = Detailed ? 0x33 : 0x1D;
+    FB_PROTOCOL_VERSION_TAGS(V);
 
 public:
 #ifndef BOT
-    appearance_serializer<Detailed> serializer;
+    appearance_serializer<Detailed, V> serializer;
 #else
     uint16_t    x;
     uint16_t    y;
@@ -122,12 +129,12 @@ public:
 public:
 #ifndef BOT
     update_external(const fb::game::character& ch, const fb::game::object& to) :
-        serializer(appearance_serializer<Detailed>{.oid         = ch.oid(),
-                                                   .position    = ch.position(),
-                                                   .direction   = ch.direction(),
-                                                   .head_marker = compute_head_marker(ch, to),
-                                                   .name        = ch.name(),
-                                                   .appearance  = character_appearance()})
+        serializer(appearance_serializer<Detailed, V>{.oid         = ch.oid(),
+                                                      .position    = ch.position(),
+                                                      .direction   = ch.direction(),
+                                                      .head_marker = compute_head_marker(ch, to),
+                                                      .name        = ch.name(),
+                                                      .appearance  = character_appearance()})
     {
         if (ch.mimicry().has_value())
         {
@@ -167,7 +174,7 @@ public:
 
         serializer.appearance.state = ch.state_to(to, serializer.appearance.state.value_or(ch.state()));
     }
-    update_external(const appearance_serializer<Detailed>& serializer) :
+    update_external(const appearance_serializer<Detailed, V>& serializer) :
         serializer(serializer)
     { }
     update_external(const update_external&) = delete;
@@ -180,7 +187,7 @@ public:
     void serialize(fb::stream_writer<big_endian>& writer) const
     {
         header::serialize(writer);
-        writer.write<uint8_t>(opcode); // Use compile-time constant header
+        writer.write<uint8_t>(opcode);
         this->serializer.serialize(writer);
     }
 #else
@@ -223,9 +230,8 @@ public:
 #endif
 };
 
-// Type aliases for convenience
-using update_external_detailed = update_external<true>;  // 0x33 header with position info
-using update_external_brief    = update_external<false>; // 0x1D header without position info
+using update_external_detailed = update_external<true, CLIENT_VERSION::v550>;
+using update_external_brief    = update_external<false, CLIENT_VERSION::v550>;
 
 } // namespace fb::protocol::game::response
 
