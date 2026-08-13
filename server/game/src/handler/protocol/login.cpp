@@ -9,6 +9,7 @@
 #include <sstream>
 #include <chrono>
 #include <tuple>
+#include <format>
 
 using namespace fb::game;
 using table = fb::model::table;
@@ -344,8 +345,13 @@ async::task<std::shared_ptr<character>> login<V>::init(const game_reqs::login<V>
             std::ignore = lua->call(2);
         }
 
-        ch->friend_login_notify_pending(true);
         ch->friends_sync(1);
+        // Notify from Init mutual flags. Client may later replace the list;
+        // accept that race rather than deferring behind a pending flag.
+        {
+            auto message = std::format(_TEXT(MESSAGE_FRIEND_LOGIN), ch->name());
+            co_await ch->broadcast_friends(message, MESSAGE_TYPE::NOTIFY, true);
+        }
     }
 
     co_await this->server.system_storage.sync(*ch);

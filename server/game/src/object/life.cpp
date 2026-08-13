@@ -77,12 +77,12 @@ void life::handle_death(std::shared_ptr<fb::game::object> killer)
     this->assert_thread();
 }
 
-life::mob_vector life::damage_targets(const damage_list& targets, const damage_opts& opts)
+life::damage_settle life::damage_targets(const damage_list& targets, const damage_opts& opts)
 {
     this->assert_thread();
 
     auto attacker = this->shared_from_this_as<life>();
-    auto dead     = mob_vector{};
+    auto settle   = damage_settle{};
 
     for (auto& [target, value] : targets)
     {
@@ -103,13 +103,13 @@ life::mob_vector life::damage_targets(const damage_list& targets, const damage_o
                 if (body->parts_mode() == MOB_PARTS_MODE::PARTS && m->stat.hp() == 0 && m->invincible() == false)
                 {
                     m->invincible(true);
-                    dead.push_back(m);
+                    settle.dead_mobs.push_back(m);
                 }
 
                 if (body->stat.hp() == 0 && body->invincible() == false)
                 {
                     body->invincible(true);
-                    dead.push_back(body);
+                    settle.dead_mobs.push_back(body);
                 }
                 continue;
             }
@@ -123,23 +123,24 @@ life::mob_vector life::damage_targets(const damage_list& targets, const damage_o
                 continue;
 
             m->invincible(true);
-            dead.push_back(m);
+            settle.dead_mobs.push_back(m);
         }
         else if (target->is(OBJECT_TYPE::CHARACTER))
         {
-            if (target->stat.hp() != 0)
-                continue;
-
             auto ch = std::static_pointer_cast<character>(target);
-            if (ch->alive() == false)
+            if (ch->stat.hp() != 0)
                 continue;
 
-            ch->kill(DESTROY_TYPE::DEAD);
-            ch->handle_death(attacker);
+            // Defer kill/death_warp until after invoke_on_mob_damaged so later target
+            // checks still see a stable thread affinity for this attack frame.
+            if (ch->state() == STATE::GHOST)
+                continue;
+
+            settle.dead_characters.push_back(ch);
         }
     }
 
-    return dead;
+    return settle;
 }
 
 async::task<void> life::settle_deaths(mob_vector dead)
@@ -204,10 +205,33 @@ async::task<void> life::damage_to(const damage_list& targets)
 async::task<void> life::damage_to(const damage_list& targets, const damage_opts& opts)
 {
     this->assert_thread();
-    auto dead = this->damage_targets(targets, opts);
+    auto settle = this->damage_targets(targets, opts);
     co_await this->invoke_on_mob_damaged(targets);
-    if (dead.empty() == false)
-        co_await this->settle_deaths(std::move(dead));
+    co_await this->settle_character_deaths(settle.dead_characters, this->shared_from_this_as<life>());
+    if (settle.dead_mobs.empty() == false)
+        co_await this->settle_deaths(std::move(settle.dead_mobs));
+    co_return;
+}
+
+async::task<void> life::settle_character_deaths(const character_vector& dead, std::shared_ptr<life> killer)
+{
+    this->assert_thread();
+    for (auto& ch : dead)
+    {
+        if (ch == nullptr)
+            continue;
+
+        // HP already zero from damage; skip if already settled as ghost.
+        if (ch->stat.hp() != 0)
+            continue;
+        if (ch->state() == STATE::GHOST)
+            continue;
+
+        // settle_death awaits penalty on this map thread, then detaches death_warp.
+        // Do not co_await map() here — that would migrate this damage coroutine
+        // onto the victim's destination map thread.
+        co_await ch->settle_death(killer);
+    }
     co_return;
 }
 

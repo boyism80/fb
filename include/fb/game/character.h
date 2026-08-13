@@ -124,7 +124,6 @@ private:
     std::weak_ptr<fb::socket<character>>             _socket;
     ping_state_t                                     _ping_state;
     std::vector<friend_entry>                        _friends;
-    bool                                             _friend_login_notify_pending = false;
     bool                                             _options[static_cast<uint8_t>(OPTION::LOCK_WALK_SPEED) + 1] = {
         1,
     };
@@ -197,10 +196,11 @@ private:
     float                         experience_percent() const;
     bool                          option_toggle(OPTION key, bool notify = true);
     void                          stop_bgm(uint16_t bgm_id = 0);
-    void                          apply_death_warp();
+    [[nodiscard]] async::task<void>       apply_death_warp();
     void                          award_exp(const fb::game::mob& mob);
     async::task<void>             death_penalty();
     async::task<void>             settle_kills(mob_vector dead);
+    void                          enqueue_death_warp();
     // clang-format on
 
 public:
@@ -230,6 +230,7 @@ public:
     void                                     assert_thread() const override final;
     void                                     update(UPDATE_STATE_LEVEL value = UPDATE_STATE_LEVEL::EXP_MONEY | UPDATE_STATE_LEVEL::CROWD_CONTROL) override final;
     void                                     kill(DESTROY_TYPE destroy_type = DESTROY_TYPE::DEFAULT) override final;
+    [[nodiscard]] async::task<void>          settle_death(std::shared_ptr<fb::game::object> killer = nullptr);
     void                                     handle_death(std::shared_ptr<fb::game::object> killer = nullptr) override final;
     async::task<void>                        damage_to(const damage_list& targets) override final;
     async::task<void>                        damage_to(const damage_list& targets, const damage_opts& opts) override final;
@@ -304,8 +305,6 @@ public:
     void                                                      update_friend_relation(uint32_t friend_uid, std::string_view friend_name, bool mutual);
     bool                                                      is_mutual_friend(uint32_t uid) const;
     bool                                                      is_mutual_friend(std::string_view name) const;
-    void                                                      friend_login_notify_pending(bool value);
-    bool                                                      consume_friend_login_notify_pending();
     [[nodiscard]] async::task<void>                           broadcast_friends(std::string_view message, MESSAGE_TYPE type, bool mutual_only = true);
     void                                                      assert_state(STATE value) const;
     void                                                      assert_state(const std::vector<STATE>& values) const;

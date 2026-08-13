@@ -441,18 +441,19 @@ async::task<void> mob::damage_to(const damage_list& targets, const damage_opts& 
     this->assert_thread();
 
     // Damage is always applied as this mob (not redirected to owner).
-    auto dead = this->damage_targets(targets, opts);
-    if (dead.empty())
+    auto settle = this->damage_targets(targets, opts);
+    co_await this->settle_character_deaths(settle.dead_characters, this->shared_from_this_as<life>());
+    if (settle.dead_mobs.empty())
         co_return;
 
     auto owner = this->owner.lock();
     if (owner != nullptr)
     {
-        co_await owner->settle_kills(std::move(dead));
+        co_await owner->settle_kills(std::move(settle.dead_mobs));
         co_return;
     }
 
-    co_await this->settle_deaths(std::move(dead));
+    co_await this->settle_deaths(std::move(settle.dead_mobs));
 }
 
 async::task<void> mob::drop_model_items(const fb::model::mob&       model,

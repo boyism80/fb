@@ -1,7 +1,6 @@
 #include <fb/game/handler/protocol/friends.h>
 #include <fb/game/server.h>
 #include <fb/model/model.h>
-#include <format>
 
 namespace game_reqs     = fb::protocol::game::request;
 namespace internal_reqs = fb::protocol::internal::request;
@@ -30,12 +29,6 @@ async::task<bool> friends<V>::handle(fb::socket<character>& session, game_reqs::
     for (auto& entry : resp.friends)
         entries.push_back(friend_entry{entry.uid, entry.name, entry.mutual});
     ch->friends(std::move(entries));
-
-    if (ch->consume_friend_login_notify_pending() && ch->role() <= ROLE::USER)
-    {
-        auto message = std::format(_TEXT(MESSAGE_FRIEND_LOGIN), ch->name());
-        co_await ch->broadcast_friends(message, MESSAGE_TYPE::NOTIFY, true);
-    }
 
     co_return true;
 }

@@ -1319,26 +1319,13 @@ bool character::is_mutual_friend(std::string_view name) const
     return false;
 }
 
-void character::friend_login_notify_pending(bool value)
-{
-    this->assert_thread();
-    this->_friend_login_notify_pending = value;
-}
-
-bool character::consume_friend_login_notify_pending()
-{
-    this->assert_thread();
-    auto pending                       = this->_friend_login_notify_pending;
-    this->_friend_login_notify_pending = false;
-    return pending;
-}
-
 async::task<void> character::broadcast_friends(std::string_view message, MESSAGE_TYPE type, bool mutual_only)
 {
     this->assert_thread();
 
     auto message_str = std::string(message);
     auto to_uids     = std::vector<uint32_t>{};
+    auto locals      = std::vector<std::shared_ptr<character>>{};
     for (auto& entry : this->_friends)
     {
         if (mutual_only && entry.mutual == false)
@@ -1347,7 +1334,18 @@ async::task<void> character::broadcast_friends(std::string_view message, MESSAGE
         to_uids.push_back(entry.uid);
         auto ch = this->server.characters.find(entry.uid);
         if (ch != nullptr)
-            ch->message(message_str, type);
+            locals.push_back(ch);
+    }
+
+    // Deliver on each friend's owning thread (same pattern as AMQP friend_message).
+    if (locals.empty() == false)
+    {
+        this->server.characters.foreach_enqueue(
+            [message_str, type](std::shared_ptr<character>& ch) -> async::task<void> {
+                ch->message(message_str, type);
+                co_return;
+            },
+            locals);
     }
 
     if (to_uids.empty() == false)
@@ -1773,9 +1771,28 @@ void character::kill(DESTROY_TYPE destroy_type)
 {
     this->assert_thread();
     life::kill(destroy_type);
-
-    this->death_penalty();
     this->state(STATE::GHOST);
+}
+
+async::task<void> character::settle_death(std::shared_ptr<fb::game::object> killer)
+{
+    this->assert_thread();
+
+    // Root cause of death_warp / thread assert failures on the attack path:
+    // co_await object::map() (death_warp) switches the *current* coroutine onto
+    // the destination map thread. If that await runs inside the attacker's
+    // damage_to pipeline, the attacker coroutine leaves its map thread and
+    // later assert_thread / settle work breaks.
+    //
+    // Correct flow: await death_penalty on the death map thread (same thread as
+    // the kill), become ghost, then enqueue death_warp so map() only migrates
+    // a dedicated coroutine — never the attacker's damage pipeline.
+    life::kill(DESTROY_TYPE::DEAD);
+    co_await this->death_penalty();
+    this->state(STATE::GHOST);
+    this->handle_death(killer);
+    this->enqueue_death_warp();
+    co_return;
 }
 
 void character::handle_death(std::shared_ptr<fb::game::object> killer)
@@ -1801,26 +1818,41 @@ void character::handle_death(std::shared_ptr<fb::game::object> killer)
         log_data["killer_name"] = UTF8(killer_ch.name(), PLATFORM::WINDOWS);
     }
     this->server.log.write("death", log_data);
-
-    this->apply_death_warp();
 }
 
-void character::apply_death_warp()
+void character::enqueue_death_warp()
+{
+    this->assert_thread();
+
+    auto weak    = this->weak_from_this_as<character>();
+    auto builder = this->server.threads.new_builder(weak);
+    builder.func = [weak](auto&) -> async::task<void> {
+        auto self = weak.lock();
+        if (self == nullptr)
+            co_return;
+
+        co_await self->apply_death_warp();
+        co_return;
+    };
+    builder.enqueue();
+}
+
+async::task<void> character::apply_death_warp()
 {
     this->assert_thread();
 
     auto map = this->map();
     if (map == nullptr)
-        return;
+        co_return;
 
     auto& death_warp = map->model().death_warp;
     if (death_warp.has_value() == false || death_warp->header != DSL::map)
-        return;
+        co_return;
 
     auto params     = fb::model::dsl::map(death_warp->params);
     auto target_map = this->server.maps[params.id];
     if (target_map == nullptr)
-        return;
+        co_return;
 
     static std::random_device random_device;
     static std::mt19937       random_engine(random_device());
@@ -1832,7 +1864,8 @@ void character::apply_death_warp()
     if (params.bottom > params.y)
         y = static_cast<uint16_t>(std::uniform_int_distribution<int>(params.y, params.bottom)(random_engine));
 
-    std::ignore = this->map(target_map, fb::model::point16_t(x, y));
+    std::ignore = co_await this->map(target_map, fb::model::point16_t(x, y));
+    co_return;
 }
 
 async::task<void> character::settle_kills(mob_vector dead)
@@ -1936,10 +1969,11 @@ async::task<void> character::damage_to(const damage_list& targets)
 async::task<void> character::damage_to(const damage_list& targets, const damage_opts& opts)
 {
     this->assert_thread();
-    auto dead = this->damage_targets(targets, opts);
+    auto settle = this->damage_targets(targets, opts);
     co_await this->invoke_on_mob_damaged(targets);
-    if (dead.empty() == false)
-        co_await this->settle_kills(std::move(dead));
+    co_await this->settle_character_deaths(settle.dead_characters, this->shared_from_this_as<life>());
+    if (settle.dead_mobs.empty() == false)
+        co_await this->settle_kills(std::move(settle.dead_mobs));
     co_return;
 }
 
@@ -2300,6 +2334,8 @@ fb::model::datetime& character::last_afk_time()
 async::task<void> character::death_penalty()
 {
     this->assert_thread();
+
+    // Buffs always clear on death, even when the map disables other penalties.
     auto buff_keys = std::vector<uint32_t>{};
     for (auto& [k, v] : this->buffs)
     {
@@ -2309,6 +2345,10 @@ async::task<void> character::death_penalty()
     {
         std::ignore = co_await this->buffs.remove(k);
     }
+
+    auto map = this->map();
+    if (map != nullptr && ENUM_IN(map->model().option, MAP_OPTION::DISABLE_DIE_PENALTY))
+        co_return;
 
     auto money = this->money();
     if (money > 0)
