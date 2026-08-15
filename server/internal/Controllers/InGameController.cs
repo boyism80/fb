@@ -658,59 +658,15 @@ namespace Internal.Controllers
             try
             {
                 var world = request.World;
+                if (request.Changes == null || request.Changes.Count == 0)
+                    throw new Exception("option changes is empty");
 
                 var option = await _dbContext.Option.Get(world, request.User) ??
                     throw new Exception($"option {request.User} not found");
 
-                switch ((Fb.Model.EnumValue.Option)request.Type)
-                {
-                    case Fb.Model.EnumValue.Option.Whisper:
-                        option.Whisper = request.Enabled;
-                        break;
+                foreach (var change in request.Changes)
+                    ApplyOption(option, change.Type, change.Enabled);
 
-                    case Fb.Model.EnumValue.Option.Group:
-                        option.Group = request.Enabled;
-                        break;
-
-                    case Fb.Model.EnumValue.Option.Roar:
-                        option.Roar = request.Enabled;
-                        break;
-
-                    case Fb.Model.EnumValue.Option.News:
-                        option.News = request.Enabled;
-                        break;
-
-                    case Fb.Model.EnumValue.Option.MagicEffect:
-                        option.MagicEffect = request.Enabled;
-                        break;
-
-                    case Fb.Model.EnumValue.Option.WeatherEffect:
-                        option.WeatherEffect = request.Enabled;
-                        break;
-
-                    case Fb.Model.EnumValue.Option.FixedMove:
-                        option.FixedMove = request.Enabled;
-                        break;
-
-                    case Fb.Model.EnumValue.Option.Trade:
-                        option.Trade = request.Enabled;
-                        break;
-
-                    case Fb.Model.EnumValue.Option.FastMove:
-                        option.FastMove = request.Enabled;
-                        break;
-
-                    case Fb.Model.EnumValue.Option.EffectSound:
-                        option.EffectSound = request.Enabled;
-                        break;
-
-                    case Fb.Model.EnumValue.Option.PkProtect:
-                        option.PkProtect = request.Enabled;
-                        break;
-
-                    default:
-                        throw new Exception($"invalid option type : {request.Type}");
-                }
                 _dbContext.Option.Set(world, option);
 
                 await _dbContext.SaveChangesAsync();
@@ -725,6 +681,59 @@ namespace Internal.Controllers
                 {
                     Success = false
                 };
+            }
+        }
+
+        private static void ApplyOption(Option option, byte type, bool enabled)
+        {
+            switch ((Fb.Model.EnumValue.Option)type)
+            {
+                case Fb.Model.EnumValue.Option.Whisper:
+                    option.Whisper = enabled;
+                    break;
+
+                case Fb.Model.EnumValue.Option.Group:
+                    option.Group = enabled;
+                    break;
+
+                case Fb.Model.EnumValue.Option.Roar:
+                    option.Roar = enabled;
+                    break;
+
+                case Fb.Model.EnumValue.Option.News:
+                    option.News = enabled;
+                    break;
+
+                case Fb.Model.EnumValue.Option.MagicEffect:
+                    option.MagicEffect = enabled;
+                    break;
+
+                case Fb.Model.EnumValue.Option.WeatherEffect:
+                    option.WeatherEffect = enabled;
+                    break;
+
+                case Fb.Model.EnumValue.Option.FixedMove:
+                    option.FixedMove = enabled;
+                    break;
+
+                case Fb.Model.EnumValue.Option.Trade:
+                    option.Trade = enabled;
+                    break;
+
+                case Fb.Model.EnumValue.Option.FastMove:
+                    option.FastMove = enabled;
+                    break;
+
+                case Fb.Model.EnumValue.Option.EffectSound:
+                    option.EffectSound = enabled;
+                    break;
+
+                case Fb.Model.EnumValue.Option.PkProtect:
+                    option.PkProtect = enabled;
+                    break;
+
+                default:
+                    throw new Exception($"invalid option type : {type}");
             }
         }
     }

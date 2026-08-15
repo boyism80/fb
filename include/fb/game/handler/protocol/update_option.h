@@ -21,6 +21,11 @@ public:
     async::task<bool> handle(fb::socket<character>& session, game_reqs::update_option<V>& request) override;
 };
 
+template <>
+async::task<bool> update_option<fb::protocol::CLIENT_VERSION::v651>::handle(
+    fb::socket<character>&                                        session,
+    game_reqs::update_option<fb::protocol::CLIENT_VERSION::v651>& request);
+
 } // namespace fb::game::handler::protocol
 
 #endif // FB_GAME_HANDLER_UPDATE_OPTION_H
