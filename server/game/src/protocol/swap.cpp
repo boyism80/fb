@@ -4,6 +4,15 @@ namespace fb::protocol::game::request {
 
 #ifdef BOT
 template <CLIENT_VERSION V>
+swap<V>::swap(const SWAP_TYPE type, const uint8_t src, const uint8_t dst) :
+    type(type),
+    src(src),
+    dst(dst)
+{ }
+#endif
+
+#ifdef BOT
+template <CLIENT_VERSION V>
 void swap<V>::serialize(fb::stream_writer<big_endian>& writer) const
 {
     header::serialize(writer);

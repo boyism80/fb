@@ -27,9 +27,7 @@ public:
 #ifndef BOT
     item_combine() = default;
 #else
-    item_combine(const std::vector<uint8_t>& indices) :
-        indices(indices)
-    { }
+    item_combine(const std::vector<uint8_t>& indices);
 #endif
 
 public:

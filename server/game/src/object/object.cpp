@@ -60,16 +60,28 @@ OBJECT_TYPE object::what() const
     return this->model().what();
 }
 
-void object::update_external(bool detailed)
+void object::show()
 {
     this->assert_thread();
-    this->listener.on_update_external(*this, detailed);
+    this->listener.on_show(*this);
 }
 
-void object::update_external(object& to, bool detailed)
+void object::show(object& to)
 {
     this->assert_thread();
-    this->listener.on_update_external(*this, to, detailed);
+    this->listener.on_show(*this, to);
+}
+
+void object::update_external()
+{
+    this->assert_thread();
+    this->listener.on_update_external(*this);
+}
+
+void object::update_external(object& to)
+{
+    this->assert_thread();
+    this->listener.on_update_external(*this, to);
 }
 
 bool object::super_hide() const
@@ -173,7 +185,7 @@ bool object::position(uint16_t x, uint16_t y, bool refresh)
         this->update_position();
 
     if (sight(before, this->_position, this->_map) == false)
-        this->update_external(*this, true);
+        this->show(*this);
 
     this->update_sector();
 
@@ -207,11 +219,11 @@ bool object::position(uint16_t x, uint16_t y, bool refresh)
 
             if (!before_sight && after_sight) // I entered the other object's sight
             {
-                this->update_external(*obj, true);
+                this->show(*obj);
             }
             else if (refresh && before_sight && after_sight) // Force refresh while already in sight
             {
-                this->update_external(*obj, true);
+                this->show(*obj);
             }
             else
             {
@@ -223,7 +235,7 @@ bool object::position(uint16_t x, uint16_t y, bool refresh)
         {
             if (!sight(before, obj->_position, this->_map) && this->sight(*obj))
             {
-                obj->update_external(*this, true);
+                obj->show(*this);
             }
         }
     }
@@ -627,7 +639,7 @@ async::task<bool> object::map(map_ptr map, std::optional<fb::model::point16_t> p
         this->update_map(*map);
         this->update_position();
         if (notify)
-            this->update_external(true);
+            this->show();
         this->update_bgm(map->model().bgm, 100);
 
         if (notify)
@@ -637,11 +649,16 @@ async::task<bool> object::map(map_ptr map, std::optional<fb::model::point16_t> p
                 if (obj.get() == this)
                     continue;
 
-                obj->update_external(*this, true);
+                obj->show(*this);
             }
         }
 
         co_await this->invoke_map_character_hook(map->model(), "on_map_enter");
+
+        // on_map_enter may call me:map() (e.g. castle evict), which switches this
+        // coroutine onto the destination thread. Re-anchor to the object's current
+        // thread before returning so the caller's assert_thread / name() stay valid.
+        co_await this->server.threads.switching(weak);
 
         co_return true;
     }

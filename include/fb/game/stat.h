@@ -180,6 +180,7 @@ public:
     uint8_t          base_hit() const;
     virtual int8_t   hit() const;
     uint8_t          base_speed() const override;
+    uint8_t          speed() const override;
     void             buff_speed(int8_t value) override;
     uint64_t         base_regenerative() const;
     virtual uint64_t maxhp() const override;

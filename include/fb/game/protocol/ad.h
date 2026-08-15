@@ -28,12 +28,7 @@ public:
 
 public:
 #ifndef BOT
-    ad(uint32_t width, uint32_t height, std::string url, uint8_t time) :
-        width(width),
-        height(height),
-        url(url),
-        time(time)
-    { }
+    ad(uint32_t width, uint32_t height, std::string url, uint8_t time);
 #else
     ad() = default;
 #endif

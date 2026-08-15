@@ -10,9 +10,16 @@ using table = fb::model::table;
 namespace fb::protocol::game::response {
 
 #ifndef BOT
+template <CLIENT_VERSION V>
+internal_info<V>::internal_info(fb::game::character& ch) :
+    ch(ch)
+{ }
+#endif
+
+#ifndef BOT
 namespace {
 
-template <typename Writer>
+template <fb::protocol::CLIENT_VERSION V, typename Writer>
 void write_internal_info_header(Writer& writer, fb::game::character& ch)
 {
     writer.write<int8_t>(ch.stat.phydef());
@@ -33,29 +40,40 @@ void write_internal_info_header(Writer& writer, fb::game::character& ch)
     }
     writer.write<std::string>(ch.title());
 
-    auto  sstream  = std::stringstream();
     auto& marriage = ch.marriage();
-    if (marriage.spouse_id.has_value())
-        sstream << "배우자: " << marriage.spouse_name << std::endl;
-
-    auto& group_id = ch.group_id();
-    if (group_id.has_value())
+    if constexpr (V == fb::protocol::CLIENT_VERSION::v651)
     {
-        auto  guard = ch.server.groups.enter_read(group_id.value());
-        auto& group = guard.value();
-        sstream << _TEXT(MESSAGE_GROUP_MEMBERS_HEADER) << std::endl << "  * " << group->master() << std::endl;
-        auto master_name = group->master();
-        for (auto& member : group->members())
-        {
-            if (member != master_name)
-                sstream << "    " << member << std::endl;
-        }
+        if (marriage.spouse_id.has_value())
+            writer.write<std::string>(std::string("배우자: ") + marriage.spouse_name);
+        else
+            writer.write<std::string>("");
     }
     else
     {
-        sstream << _TEXT(MESSAGE_GROUP_NONE);
+        auto sstream = std::stringstream();
+        if (marriage.spouse_id.has_value())
+            sstream << "배우자: " << marriage.spouse_name << std::endl;
+
+        auto& group_id = ch.group_id();
+        if (group_id.has_value())
+        {
+            auto  guard = ch.server.groups.enter_read(group_id.value());
+            auto& group = guard.value();
+            sstream << _TEXT(MESSAGE_GROUP_MEMBERS_HEADER) << std::endl << "  * " << group->master() << std::endl;
+            auto master_name = group->master();
+            for (auto& member : group->members())
+            {
+                if (member != master_name)
+                    sstream << "    " << member << std::endl;
+            }
+        }
+        else
+        {
+            sstream << _TEXT(MESSAGE_GROUP_NONE);
+        }
+        writer.write<std::string>(sstream.str());
     }
-    writer.write<std::string>(sstream.str());
+
     writer.write<uint8_t>(ch.option(OPTION::GROUP));
 
     auto     cls      = ch.cls();
@@ -98,7 +116,7 @@ void internal_info<V>::serialize(fb::stream_writer<big_endian>& writer) const
 {
     header::serialize(writer);
     writer.write<uint8_t>(opcode);
-    write_internal_info_header(writer, this->ch);
+    write_internal_info_header<V>(writer, this->ch);
 
     auto equipments =
         std::array<std::shared_ptr<fb::game::equipment>, 5>{this->ch.items.helmet(),
@@ -139,7 +157,7 @@ void internal_info<CLIENT_VERSION::v651>::serialize(fb::stream_writer<big_endian
 {
     header::serialize(writer);
     writer.write<uint8_t>(opcode);
-    write_internal_info_header(writer, this->ch);
+    write_internal_info_header<CLIENT_VERSION::v651>(writer, this->ch);
 
     // parts 1,2,3,4,7,8,20,21,22
     write_equip_slot_v651(writer, this->ch.items.weapon());
@@ -165,6 +183,9 @@ void internal_info<CLIENT_VERSION::v651>::serialize(fb::stream_writer<big_endian
     }
 }
 
+template internal_info<CLIENT_VERSION::v550>::internal_info(fb::game::character&);
+template internal_info<CLIENT_VERSION::v565>::internal_info(fb::game::character&);
+template internal_info<CLIENT_VERSION::v651>::internal_info(fb::game::character&);
 template void internal_info<CLIENT_VERSION::v550>::serialize(fb::stream_writer<big_endian>&) const;
 template void internal_info<CLIENT_VERSION::v565>::serialize(fb::stream_writer<big_endian>&) const;
 #else

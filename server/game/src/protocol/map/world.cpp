@@ -2,6 +2,15 @@
 
 namespace fb::protocol::game::request {
 
+#ifdef BOT
+template <CLIENT_VERSION V>
+map_world<V>::map_world(uint16_t value, uint16_t before, uint16_t after) :
+    value(value),
+    before(before),
+    after(after)
+{ }
+#endif
+
 #ifndef BOT // server only
 template <CLIENT_VERSION V>
 void map_world<V>::deserialize(fb::stream_reader<big_endian>& reader)

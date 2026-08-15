@@ -9,12 +9,6 @@ namespace fb::protocol::game::request {
 
 using namespace fb::model::enum_value;
 
-/**
- * C2S 0x54 — round trip of S2C 0x4F UI window, since 5.65.
- * Wire header: [0x54][0x01][token u32 BE][phase u8], followed by a phase specific
- * payload. phase 5 is the window creation ack, phases 0..4 are user actions.
- * The trailing payload is left unread; the acceptor rewinds to the packet size.
- */
 template <CLIENT_VERSION V>
 class unknown_54 : public fb::protocol::header
 {
@@ -33,10 +27,7 @@ public:
 
 public:
 #ifdef BOT
-    unknown_54(uint32_t token, uint8_t phase) :
-        token(token),
-        phase(phase)
-    { }
+    unknown_54(uint32_t token, uint8_t phase);
 #else
     unknown_54() = default;
 #endif

@@ -35,10 +35,7 @@ public:
 #ifndef BOT
     item_info() = default;
 #else
-    item_info(uint16_t position, uint8_t slot) :
-        position(position),
-        slot(slot)
-    { }
+    item_info(uint16_t position, uint8_t slot);
 #endif
 
 public:

@@ -1,6 +1,7 @@
 #ifndef __PROTOCOL_LOGIN_MESSAGE_H__
 #define __PROTOCOL_LOGIN_MESSAGE_H__
 
+#include <fb/protocol/header.h>
 #include <string_view>
 
 namespace fb::protocol::login::response {
@@ -23,28 +24,14 @@ public:
 #ifdef BOT
     message() = default;
 #else
-    message(std::string_view text, uint8_t type) :
-        text(std::string(text)),
-        type(type)
-    { }
+    message(std::string_view text, uint8_t type);
 #endif
 
 public:
 #ifndef BOT
-    void serialize(fb::stream_writer<big_endian>& writer) const
-    {
-        header::serialize(writer);
-        writer.write<uint8_t>(opcode);
-        writer.write<uint8_t>(this->type);
-        writer.write<std::string, uint8_t>(this->text);
-    }
+    void serialize(fb::stream_writer<big_endian>& writer) const;
 #else
-    void deserialize(fb::stream_reader<big_endian>& reader)
-    {
-        header::deserialize(reader);
-        this->type = reader.read<uint8_t>();
-        this->text = reader.read<std::string, uint8_t>();
-    }
+    void deserialize(fb::stream_reader<big_endian>& reader);
 #endif
 };
 

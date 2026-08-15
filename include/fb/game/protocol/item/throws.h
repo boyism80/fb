@@ -35,10 +35,7 @@ public:
 #ifndef BOT
     item_throws() = default;
 #else
-    item_throws(const bool all, const uint8_t index) :
-        all(all),
-        index(index)
-    { }
+    item_throws(const bool all, const uint8_t index);
 #endif
 
 public:

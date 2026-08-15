@@ -3,6 +3,13 @@
 namespace fb::protocol::game::response {
 
 #ifndef BOT
+timer::timer(uint32_t time, TIMER_TYPE type) :
+    time(time),
+    type(type)
+{ }
+#endif
+
+#ifndef BOT
 void timer::serialize(fb::stream_writer<big_endian>& writer) const
 {
     header::serialize(writer);

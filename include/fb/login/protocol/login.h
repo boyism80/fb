@@ -35,10 +35,7 @@ public:
 #ifndef BOT
     login() = default;
 #else
-    login(std::string_view id, std::string_view pw) :
-        id(std::string(id)),
-        pw(std::string(pw))
-    { }
+    login(std::string_view id, std::string_view pw);
 #endif
 
 public:

@@ -105,8 +105,10 @@ public:
     virtual uint16_t                        look() const;
     virtual uint8_t                         color() const;
     virtual OBJECT_TYPE                     what() const;
-    virtual void                            update_external(bool detailed);
-    virtual void                            update_external(object& you, bool detailed);
+    virtual void                            show();
+    virtual void                            show(object& you);
+    virtual void                            update_external();
+    virtual void                            update_external(object& you);
     virtual bool                            super_hide() const;
     virtual bool                            hidden(const object& target) const;
     virtual void                            chat(std::string_view message, CHAT_TYPE chat_type = CHAT_TYPE::NORMAL, bool decorate = true);
@@ -162,8 +164,10 @@ struct object::listener_t
     // clang-format off
     virtual void on_chat(fb::game::object& me, std::string_view message, CHAT_TYPE chat_type = CHAT_TYPE::NORMAL) = 0;
     virtual void on_direction(fb::game::object& me)                                                               = 0;
-    virtual void on_update_external(fb::game::object& me, bool detailed)                                          = 0;
-    virtual void on_update_external(fb::game::object& me, fb::game::object& you, bool detailed)                   = 0;
+    virtual void on_show(fb::game::object& me)                                                                    = 0;
+    virtual void on_show(fb::game::object& me, fb::game::object& you)                                             = 0;
+    virtual void on_update_external(fb::game::object& me)                                                         = 0;
+    virtual void on_update_external(fb::game::object& me, fb::game::object& you)                                  = 0;
     virtual void on_hide(fb::game::object& me, DESTROY_TYPE destroy_type = DESTROY_TYPE::DEFAULT)                 = 0;
     virtual void on_hide(fb::game::object& me, fb::game::object& you, DESTROY_TYPE destroy_type)                  = 0;
     virtual void on_move(fb::game::object& me, const fb::model::point16_t& before)                                = 0;

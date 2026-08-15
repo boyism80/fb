@@ -22,9 +22,7 @@ public:
 
 public:
 #ifndef BOT
-    bright(uint8_t value) :
-        value(value)
-    { }
+    bright(uint8_t value);
 #else
     bright() = default;
 #endif

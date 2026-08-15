@@ -31,11 +31,7 @@ public:
 #ifndef BOT
     map_world() = default;
 #else
-    map_world(uint16_t value, uint16_t before, uint16_t after) :
-        value(value),
-        before(before),
-        after(after)
-    { }
+    map_world(uint16_t value, uint16_t before, uint16_t after);
 #endif
 
 public:

@@ -7,7 +7,13 @@ namespace game_resp = fb::protocol::game::response;
 
 void listener_impl::on_spell_update(life& me, uint8_t index)
 {
-    me.send(game_resp::spell_update(me, index));
+    if (me.is(OBJECT_TYPE::CHARACTER) == false)
+        return;
+
+    auto& ch = static_cast<character&>(me);
+    fb::protocol::visit_client_version(ch.client_version, [&]<fb::protocol::CLIENT_VERSION V> {
+        ch.send(game_resp::spell_update<V>(me, index));
+    });
 }
 
 void listener_impl::on_spell_remove(life& me, uint8_t index)

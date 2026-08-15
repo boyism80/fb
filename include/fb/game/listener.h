@@ -27,6 +27,11 @@ public:
 
 private:
     void send_update_appearance(fb::game::object& obj, const fb::model::appearance& appearance);
+    void send_update_appearance(fb::game::object&            obj,
+                                fb::game::character&         to,
+                                const fb::model::appearance& appearance);
+    void send_non_character_external(fb::game::object& me);
+    void send_non_character_external(fb::game::object& me, fb::game::character& you);
 
 public:
     // clang-format off
@@ -34,8 +39,10 @@ public:
     void                            on_destroy(fb::game::object& me) override final;
     void                            on_chat(fb::game::object& me, std::string_view message, CHAT_TYPE chat_type = CHAT_TYPE::NORMAL) override final;
     void                            on_direction(fb::game::object& me) override final;
-    void                            on_update_external(fb::game::object& me, bool detailed) override final;
-    void                            on_update_external(fb::game::object& me, fb::game::object& you, bool detailed) override final;
+    void                            on_show(fb::game::object& me) override final;
+    void                            on_show(fb::game::object& me, fb::game::object& you) override final;
+    void                            on_update_external(fb::game::object& me) override final;
+    void                            on_update_external(fb::game::object& me, fb::game::object& you) override final;
     void                            on_hide(fb::game::object& me, DESTROY_TYPE destroy_type = DESTROY_TYPE::DEFAULT) override final;
     void                            on_hide(fb::game::object& me, fb::game::object& you, DESTROY_TYPE destroy_type = DESTROY_TYPE::DEFAULT) override final;
     void                            on_move(fb::game::object& me, const fb::model::point16_t& before) override final;

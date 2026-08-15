@@ -22,9 +22,7 @@ public:
 
 public:
 #ifndef BOT
-    explicit freeze(bool enable) :
-        enable(enable)
-    { }
+    explicit freeze(bool enable);
 #else
     freeze() = default;
 #endif

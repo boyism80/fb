@@ -3,6 +3,12 @@
 namespace fb::protocol::game::response {
 
 #ifndef BOT
+item_throw_confirm::item_throw_confirm(uint8_t inventory_slot) :
+    inventory_slot(inventory_slot)
+{ }
+#endif
+
+#ifndef BOT
 void item_throw_confirm::serialize(fb::stream_writer<big_endian>& writer) const
 {
     header::serialize(writer);

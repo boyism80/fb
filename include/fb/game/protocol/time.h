@@ -24,10 +24,7 @@ public:
 
 public:
 #ifndef BOT
-    time(uint8_t hours, uint8_t minutes = 0) :
-        hours(hours),
-        minutes(minutes)
-    { }
+    time(uint8_t hours, uint8_t minutes = 0);
 #else
     time() = default;
 #endif

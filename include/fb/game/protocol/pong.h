@@ -27,10 +27,7 @@ public:
 #ifndef BOT
     pong() = default;
 #else
-    pong(uint32_t token, uint32_t client_tick_ms) :
-        token(token),
-        client_tick_ms(client_tick_ms)
-    { }
+    pong(uint32_t token, uint32_t client_tick_ms);
 #endif
 
 public:

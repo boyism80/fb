@@ -22,6 +22,7 @@
 #include <fb/game/matchmaker.h>
 #include <fb/game/appearance.h>
 #include <fb/protocol/client_version.h>
+#include <cstdint>
 #include <set>
 #include <shared_mutex>
 #include <string_view>
@@ -103,13 +104,15 @@ private:
     uint64_t                                         _experience       = 0;
     NATION                                           _nation           = NATION::GOGURYEO;
     DIVINE_BEAST                                     _divine_beast     = DIVINE_BEAST::AZURE_DRAGON;
+    int16_t                                          _reputation       = 100; // 인품 (test default)
+    uint16_t                                         _evaluation       = 150; // 평가권 (test default)
     GENDER                                           _gender           = GENDER::MALE;
     STATE                                            _state            = STATE::NORMAL;
     uint8_t                                          _level            = 1;
     CLASS                                            _class            = CLASS::NONE;
     uint8_t                                          _promotion        = 0;
     uint64_t                                         _money            = 0;
-    std::optional<character_appearance>              _mimicry          = std::nullopt;
+    std::optional<character_appearance<>>            _mimicry          = std::nullopt;
     std::string                                      _title            = "";
     std::optional<uint32_t>                          _group_id         = std::nullopt;
     std::optional<uint32_t>                          _clan_id          = std::nullopt;
@@ -172,7 +175,7 @@ public:
         std::optional<uint8_t>                 armor_color    = std::nullopt;
         std::optional<uint8_t>                 weapon_color   = std::nullopt;
         std::optional<uint8_t>                 shield_color   = std::nullopt;
-        std::optional<character_appearance>    mimicry        = std::nullopt;
+        std::optional<character_appearance<>>  mimicry        = std::nullopt;
         NATION                                 nation         = NATION::GOGURYEO;
         DIVINE_BEAST                           divine_beast   = DIVINE_BEAST::AZURE_DRAGON;
         bool                                   super_hide     = false;
@@ -255,12 +258,14 @@ public:
     void                                                      weapon_color(std::optional<uint8_t> value);
     std::optional<uint8_t>                                    shield_color() const;
     void                                                      shield_color(std::optional<uint8_t> value);
-    const std::optional<character_appearance>&                mimicry() const;
-    void                                                      mimicry(std::optional<character_appearance> value);
+    const std::optional<character_appearance<>>&                mimicry() const;
+    void                                                      mimicry(std::optional<character_appearance<>> value);
     NATION                                                    nation() const;
     bool                                                      nation(NATION value);
     DIVINE_BEAST                                              divine_beast() const;
     bool                                                      divine_beast(DIVINE_BEAST value);
+    int16_t                                                   reputation() const;
+    uint16_t                                                  evaluation() const;
     uint8_t                                                   level() const;
     void                                                      level(uint8_t value);
     GENDER                                                    gender() const;

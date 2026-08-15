@@ -124,7 +124,8 @@ struct character
     static int builtin_popup_input(lua_State* L);
     static int builtin_holyday_screen(lua_State* L);
     static int builtin_probe_map_config(lua_State* L);
-    static int builtin_probe_appearance(lua_State* L);
+    static int builtin_probe_show(lua_State* L);
+    static int builtin_probe_update_external(lua_State* L);
     static int builtin_probe_update_internal(lua_State* L);
     static int builtin_probe_internal_info(lua_State* L);
     static int builtin_probe_update_slot(lua_State* L);

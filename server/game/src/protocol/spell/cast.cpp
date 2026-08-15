@@ -4,6 +4,21 @@ namespace fb::protocol::game::request {
 
 #ifdef BOT
 template <CLIENT_VERSION V>
+spell_cast<V>::spell_cast(SPELL_TYPE                        type,
+                          uint8_t                           slot,
+                          std::string_view                  message,
+                          uint32_t                          oid,
+                          const fb::model::point<uint16_t>& position) :
+    type(type),
+    slot(slot),
+    message(std::string(message)),
+    oid(oid),
+    position(position)
+{ }
+#endif
+
+#ifdef BOT
+template <CLIENT_VERSION V>
 void spell_cast<V>::serialize(fb::stream_writer<big_endian>& writer) const
 {
     header::serialize(writer);
@@ -57,6 +72,38 @@ void spell_cast<V>::parse(SPELL_TYPE type)
         this->message = (const char*)this->buffer.data();
 #else
         this->message = utf8((const char*)this->buffer.data());
+#endif
+    }
+    break;
+
+    case SPELL_TYPE::TARGET:
+    {
+        this->oid        = reader.read<uint32_t>();
+        this->position.x = reader.read<uint16_t>();
+        this->position.y = reader.read<uint16_t>();
+    }
+    break;
+    }
+}
+
+template <>
+void spell_cast<CLIENT_VERSION::v651>::parse(SPELL_TYPE type)
+{
+    auto reader = fb::stream_reader<big_endian>(this->buffer);
+    switch (type)
+    {
+    case SPELL_TYPE::INPUT:
+    {
+        if (this->buffer.empty())
+            throw std::runtime_error("spell_cast::parse: buffer is empty");
+
+        auto n = this->buffer.size();
+        while (n > 0 && this->buffer[n - 1] == 0)
+            --n;
+#ifdef _WIN32
+        this->message = std::string(reinterpret_cast<const char*>(this->buffer.data()), n);
+#else
+        this->message = utf8(std::string_view(reinterpret_cast<const char*>(this->buffer.data()), n));
 #endif
     }
     break;

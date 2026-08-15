@@ -2,6 +2,14 @@
 
 namespace fb::protocol::login::request {
 
+#ifdef BOT
+template <CLIENT_VERSION V>
+login<V>::login(std::string_view id, std::string_view pw) :
+    id(std::string(id)),
+    pw(std::string(pw))
+{ }
+#endif
+
 #ifndef BOT
 template <CLIENT_VERSION V>
 void login<V>::deserialize(fb::stream_reader<big_endian>& reader)

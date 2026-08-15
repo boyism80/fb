@@ -3,6 +3,12 @@
 namespace fb::protocol::game::response {
 
 #ifndef BOT
+friends_sync::friends_sync(uint8_t enabled) :
+    enabled(enabled)
+{ }
+#endif
+
+#ifndef BOT
 void friends_sync::serialize(fb::stream_writer<big_endian>& writer) const
 {
     header::serialize(writer);

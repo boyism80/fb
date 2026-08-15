@@ -2,6 +2,14 @@
 
 namespace fb::protocol::game::request {
 
+#ifdef BOT
+template <CLIENT_VERSION V>
+pong<V>::pong(uint32_t token, uint32_t client_tick_ms) :
+    token(token),
+    client_tick_ms(client_tick_ms)
+{ }
+#endif
+
 #ifndef BOT
 template <CLIENT_VERSION V>
 void pong<V>::deserialize(fb::stream_reader<big_endian>& reader)

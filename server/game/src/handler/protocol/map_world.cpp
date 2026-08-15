@@ -27,7 +27,7 @@ async::task<bool> map_world<V>::handle(fb::socket<character>& session, game_reqs
     if (ch->map() == this->server.maps[after.map])
     {
         ch->update_map();
-        ch->update_external(true);
+        ch->show();
     }
     else
     {

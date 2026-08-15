@@ -182,7 +182,7 @@ test_suite {
 
             local pos = bot2:position()
             bot1:request(
-                resp.update_external_detailed,
+                resp.show,
                 protocol.spell_cast("TARGET", hell_slot, "", bot2:oid(), pos),
                 function(packet)
                     return packet.oid == bot2:oid() and packet.state == "GHOST"

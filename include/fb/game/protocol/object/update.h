@@ -55,39 +55,6 @@ public:
 };
 
 #ifndef BOT
-template <CLIENT_VERSION V>
-update<V>::update(const fb::game::object& object) :
-    objects({const_cast<fb::game::object*>(&object)})
-{ }
-
-template <CLIENT_VERSION V>
-update<V>::update(const std::vector<fb::game::object*>& objects) :
-    objects(objects)
-{ }
-
-template <CLIENT_VERSION V>
-void update<V>::serialize(fb::stream_writer<big_endian>& writer) const
-{
-    header::serialize(writer);
-    writer.write<uint8_t>(opcode);
-    writer.write<uint16_t>((uint16_t)this->objects.size());
-
-    for (const auto object : this->objects)
-    {
-        auto map = object->map();
-        if (map == nullptr)
-            continue;
-
-        writer.write<uint16_t>(object->x());
-        writer.write<uint16_t>(object->y());
-        writer.write<uint32_t>(object->oid());
-        writer.write<uint16_t>(object->look());
-        writer.write<uint8_t>(object->color());
-        writer.write<uint8_t>(static_cast<uint8_t>(object->direction()));
-    }
-    writer.write<uint8_t>(0);
-}
-
 template <>
 void update<CLIENT_VERSION::v651>::serialize(fb::stream_writer<big_endian>& writer) const;
 #endif

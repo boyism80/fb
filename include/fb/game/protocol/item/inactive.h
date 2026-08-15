@@ -27,9 +27,7 @@ public:
 #ifndef BOT
     item_inactive() = default;
 #else
-    item_inactive(EQUIPMENT_PARTS parts) :
-        parts(parts)
-    { }
+    item_inactive(EQUIPMENT_PARTS parts);
 #endif
 
 public:

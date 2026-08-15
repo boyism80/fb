@@ -3,6 +3,13 @@
 namespace fb::protocol::game::response {
 
 #ifndef BOT
+user_info::user_info(uint8_t type, const std::array<std::string, 8>& strings) :
+    type(type),
+    strings(strings)
+{ }
+#endif
+
+#ifndef BOT
 void user_info::serialize(fb::stream_writer<big_endian>& writer) const
 {
     header::serialize(writer);

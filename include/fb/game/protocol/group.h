@@ -28,9 +28,7 @@ public:
 #ifndef BOT
     group() = default;
 #else
-    group(std::string_view name) :
-        name(std::string(name))
-    { }
+    group(std::string_view name);
 #endif
 
 public:

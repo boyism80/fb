@@ -658,7 +658,7 @@ async::task<void> game_bot::change_gender(GENDER gender, std::chrono::millisecon
         co_return;
 
     auto command = std::format("/성별바꾸기 {}", (uint8_t)gender);
-    std::ignore  = co_await this->request<game_resp::update_external<true>>(
+    std::ignore  = co_await this->request<game_resp::show_v550>(
         game_reqs::chat<BOT_CLIENT_VERSION>{false, command},
         [gender](auto& resp) -> bool {
             return resp.gender == gender;
@@ -964,7 +964,7 @@ async::task<void> game_bot::create_item(std::string_view item_name, uint32_t cou
 {
     auto item_name_str = std::string(item_name);
     auto command       = std::format("/아이템생성 {} {}", item_name_str, count);
-    std::ignore        = co_await this->request<game_resp::item_update>(
+    std::ignore        = co_await this->request<game_resp::item_update_v550>(
         game_reqs::chat<BOT_CLIENT_VERSION>{false, command},
         [item_name_str, count](auto& resp) -> bool {
             return resp.name.starts_with(item_name_str) && resp.count == count;
@@ -1088,8 +1088,8 @@ async::task<bool> game_bot::unequip(EQUIPMENT_PARTS parts, std::chrono::millisec
     try
     {
         std::ignore =
-            co_await this->request<game_resp::item_update>(game_reqs::item_inactive<BOT_CLIENT_VERSION>(parts),
-                                                           timeout);
+            co_await this->request<game_resp::item_update_v550>(game_reqs::item_inactive<BOT_CLIENT_VERSION>(parts),
+                                                                timeout);
 
         co_return true;
     }
@@ -1431,7 +1431,7 @@ async::task<bool> game_bot::setup_bot_stats(int                       max_hp,
 async::task<uint8_t> game_bot::learn_spell(std::string_view spell_name, std::chrono::milliseconds timeout)
 {
     auto   spell_name_str = std::string(spell_name);
-    auto&& resp           = co_await this->request<game_resp::spell_update>(
+    auto&& resp           = co_await this->request<game_resp::spell_update_v550>(
         game_reqs::chat<BOT_CLIENT_VERSION>{false, std::format("/마법배우기 {}", spell_name_str)},
         [](auto& resp) -> bool {
             return resp.index != 0xFF;

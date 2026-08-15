@@ -26,6 +26,14 @@ namespace fb::game {
 class character;
 class server;
 
+enum class MAP_CONFIG_FLAG : uint8_t
+{
+    NONE            = 0x00,
+    STORE_1025      = 0x01,
+    NO_SELF_CONFIRM = 0x02,
+    STORE_1212      = 0x08,
+};
+
 class map : public fb::thread_switchable
 {
 public:
@@ -57,6 +65,7 @@ private:
     uint32_t              _model_id = 0;
     std::atomic<bool>     _init_script_invoked{false};
     std::atomic<uint32_t> _character_count{0};
+    MAP_CONFIG_FLAG       _config_flag = MAP_CONFIG_FLAG::NONE;
 
 public:
     const uint32_t          id;
@@ -83,6 +92,8 @@ private:
 public:
     // clang-format off
     const fb::model::map&           model() const;
+    MAP_CONFIG_FLAG                 config_flag() const;
+    void                            config_flag(MAP_CONFIG_FLAG value);
     uint64_t                        index(const fb::model::point16_t& p) const;
     fb::model::point16_t            point(uint64_t i) const;
     bool                            blocked(uint16_t x, uint16_t y) const;

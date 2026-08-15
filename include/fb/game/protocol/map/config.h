@@ -22,10 +22,8 @@ public:
 public:
 #ifndef BOT
     const fb::game::map& map;
-    // v651-only overrides (defaults safe/unknown; probe builtins may set)
-    uint8_t  unknown_flags = 0x02; // bit1 set: avoid +1026==0 hang candidate
-    uint8_t  unknown_extra = 0x00; // extra==0 → client +1024=1
-    uint16_t unknown_light = 0;
+    uint8_t              unknown_extra = 0x00;
+    uint16_t             unknown_light = 0;
 #else
     uint16_t                  id;
     fb::model::size<uint16_t> size;
@@ -38,16 +36,9 @@ public:
 
 public:
 #ifndef BOT
-    map_config(const fb::game::map& map) :
-        map(map)
-    { }
+    map_config(const fb::game::map& map);
 
-    map_config(const fb::game::map& map, uint8_t flags, uint8_t extra, uint16_t light) :
-        map(map),
-        unknown_flags(flags),
-        unknown_extra(extra),
-        unknown_light(light)
-    { }
+    map_config(const fb::game::map& map, uint8_t extra, uint16_t light);
 #else
     map_config() = default;
 #endif
@@ -61,19 +52,6 @@ public:
 };
 
 #ifndef BOT
-template <CLIENT_VERSION V>
-void map_config<V>::serialize(fb::stream_writer<big_endian>& writer) const
-{
-    header::serialize(writer);
-    auto building = ENUM_IN(this->map.model().option, MAP_OPTION::BUILD_IN) ? 0x04 : 0x05;
-    writer.write<uint8_t>(opcode);
-    writer.write<uint16_t>(this->map.model().id);
-    writer.write<uint16_t>(this->map.width());
-    writer.write<uint16_t>(this->map.height());
-    writer.write<uint8_t>(building);
-    writer.write<std::string, uint16_t>(this->map.model().name);
-}
-
 template <>
 void map_config<CLIENT_VERSION::v651>::serialize(fb::stream_writer<big_endian>& writer) const;
 #endif

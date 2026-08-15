@@ -211,9 +211,9 @@ void listener_impl::on_move_confirm(character&                  ch,
     if (thread == nullptr)
         return;
 
-    auto direction = ch.direction();
-    auto position  = before;
-    ch.send(game_resp::move_confirm(direction, position, viewport, walk_queue_slot));
+    fb::protocol::visit_client_version(ch.client_version, [&]<fb::protocol::CLIENT_VERSION V> {
+        ch.send(game_resp::move_confirm<V>(ch.direction(), before, viewport, walk_queue_slot));
+    });
 }
 
 void listener_impl::on_screen_refresh(character& ch)
@@ -231,24 +231,25 @@ void listener_impl::on_screen_refresh(character& ch)
         if (obj->hidden(ch))
             continue;
 
-        obj->update_external(ch, true);
+        obj->show(ch);
     }
-    ch.update_external(ch, true);
+    ch.show(ch);
     ch.send(game_resp::direction(ch));
     ch.send(game_resp::screen_refresh_complete());
 }
 
 void listener_impl::on_browse_character(character& ch, const character& target)
 {
-    ch.send(game_resp::external_info(target, ch));
+    fb::protocol::visit_client_version(ch.client_version, [&]<fb::protocol::CLIENT_VERSION V> {
+        ch.send(game_resp::external_info<V>(target, ch));
+    });
 }
 
 void listener_impl::on_item_tooltip(character& ch, const item& item, uint16_t position)
 {
-    if (ch.client_version == fb::protocol::CLIENT_VERSION::v550)
-        ch.send(game_resp::item_tip_v550(position, item.tip_message()));
-    else
-        ch.send(game_resp::item_tip_v565(position, item.tip_message()));
+    fb::protocol::visit_client_version(ch.client_version, [&]<fb::protocol::CLIENT_VERSION V> {
+        ch.send(game_resp::item_tip<V>(position, item.tip_message()));
+    });
 }
 
 async::task<void> listener_impl::on_show_user_list(character& ch)
@@ -386,10 +387,9 @@ void listener_impl::on_ad(character& ch, uint32_t width, uint32_t height, std::s
 
 void listener_impl::on_web(character& ch, uint8_t type, std::string_view url, std::string_view message)
 {
-    if (ch.client_version == fb::protocol::CLIENT_VERSION::v550)
-        ch.send(game_resp::web_v550(type, std::string(url), std::string(message)));
-    else
-        ch.send(game_resp::web_v565(type, std::string(url), std::string(message)));
+    fb::protocol::visit_client_version(ch.client_version, [&]<fb::protocol::CLIENT_VERSION V> {
+        ch.send(game_resp::web<V>(type, std::string(url), std::string(message)));
+    });
 }
 
 void listener_impl::on_ui(character& ch, uint8_t screen)

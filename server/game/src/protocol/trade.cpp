@@ -2,6 +2,15 @@
 
 namespace fb::protocol::game::request {
 
+#ifdef BOT
+template <CLIENT_VERSION V>
+trade<V>::trade(state action, uint32_t oid, const params& parameter) :
+    action(action),
+    oid(oid),
+    parameter(parameter)
+{ }
+#endif
+
 #ifdef BOT // bot only
 template <CLIENT_VERSION V>
 void trade<V>::serialize(fb::stream_writer<big_endian>& writer) const

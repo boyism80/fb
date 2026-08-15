@@ -4,6 +4,13 @@ namespace fb::protocol::game::request {
 
 #ifdef BOT
 template <CLIENT_VERSION V>
+item_inactive<V>::item_inactive(EQUIPMENT_PARTS parts) :
+    parts(parts)
+{ }
+#endif
+
+#ifdef BOT
+template <CLIENT_VERSION V>
 void item_inactive<V>::serialize(fb::stream_writer<big_endian>& writer) const
 {
     header::serialize(writer);

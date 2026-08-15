@@ -42,13 +42,7 @@ public:
                uint8_t                           slot,
                std::string_view                  message,
                uint32_t                          oid,
-               const fb::model::point<uint16_t>& position) :
-        type(type),
-        slot(slot),
-        message(std::string(message)),
-        oid(oid),
-        position(position)
-    { }
+               const fb::model::point<uint16_t>& position);
 #endif
 
 public:

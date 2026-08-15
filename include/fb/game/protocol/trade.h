@@ -53,11 +53,7 @@ public:
 #ifndef BOT
     trade() = default;
 #else
-    trade(state action, uint32_t oid, const params& parameter) :
-        action(action),
-        oid(oid),
-        parameter(parameter)
-    { }
+    trade(state action, uint32_t oid, const params& parameter);
 #endif
 
 public:

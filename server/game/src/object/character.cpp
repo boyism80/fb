@@ -230,14 +230,14 @@ async::task<bool> character::map(std::shared_ptr<fb::game::map>      map,
         catch (std::exception& e)
         {
             this->update_map();
-            this->update_external(true);
+            this->show();
             this->listener.on_message(*this, e.what(), MESSAGE_TYPE::STATE);
             co_return false;
         }
         catch (boost::system::error_code& /*e*/)
         {
             this->update_map();
-            this->update_external(true);
+            this->show();
             this->listener.on_message(*this, _TEXT(MESSAGE_NOT_READY_GAME_SERVER), MESSAGE_TYPE::STATE);
             co_return false;
         }
@@ -433,7 +433,7 @@ void character::look(uint16_t value)
 
     auto old_look = this->_look;
     this->_look   = value;
-    this->update_external(true);
+    this->show();
 
     auto log_data              = Json::Value();
     log_data["character_id"]   = static_cast<Json::Int64>(this->id);
@@ -455,7 +455,7 @@ void character::color(uint8_t value)
     this->assert_thread();
 
     this->_color = value;
-    this->update_external(true);
+    this->show();
 }
 
 std::optional<uint8_t> character::armor_color() const
@@ -470,7 +470,7 @@ void character::armor_color(std::optional<uint8_t> value)
     this->assert_thread();
 
     this->_armor_color = value;
-    this->update_external(true);
+    this->show();
 }
 
 std::optional<uint8_t> character::weapon_color() const
@@ -485,7 +485,7 @@ void character::weapon_color(std::optional<uint8_t> value)
     this->assert_thread();
 
     this->_weapon_color = value;
-    this->update_external(true);
+    this->show();
 }
 
 std::optional<uint8_t> character::shield_color() const
@@ -500,21 +500,21 @@ void character::shield_color(std::optional<uint8_t> value)
     this->assert_thread();
 
     this->_shield_color = value;
-    this->update_external(true);
+    this->show();
 }
 
-const std::optional<character_appearance>& character::mimicry() const
+const std::optional<character_appearance<>>& character::mimicry() const
 {
     this->assert_thread();
     return this->_mimicry;
 }
 
-void character::mimicry(std::optional<character_appearance> value)
+void character::mimicry(std::optional<character_appearance<>> value)
 {
     this->assert_thread();
 
     this->_mimicry = std::move(value);
-    this->update_external(true);
+    this->show();
 }
 
 NATION character::nation() const
@@ -555,6 +555,18 @@ bool character::divine_beast(DIVINE_BEAST value)
 
     this->_divine_beast = value;
     return true;
+}
+
+int16_t character::reputation() const
+{
+    this->assert_thread();
+    return this->_reputation;
+}
+
+uint16_t character::evaluation() const
+{
+    this->assert_thread();
+    return this->_evaluation;
 }
 
 uint8_t character::level() const
@@ -644,7 +656,7 @@ void character::gender(GENDER value)
 
     auto old_gender = this->_gender;
     this->_gender   = value;
-    this->update_external(true);
+    this->show();
 
     auto log_data              = Json::Value();
     log_data["character_id"]   = static_cast<Json::Int64>(this->id);
@@ -701,7 +713,7 @@ void character::state(STATE value)
     auto old_state = this->_state;
     this->_state   = value;
 
-    this->update_external(true);
+    this->show();
 
     // Log revive event (state change from GHOST to NORMAL)
     if (old_state == STATE::GHOST && value == STATE::NORMAL)
@@ -1265,7 +1277,7 @@ void character::clan_reset()
     this->assert_thread();
 
     this->_clan_id.reset();
-    this->update_external(false);
+    this->update_external();
 }
 
 const std::vector<friend_entry>& character::friends() const
@@ -1400,6 +1412,10 @@ bool character::move(DIRECTION direction, const fb::model::point16_t& before, ui
 {
     this->assert_thread();
 
+    auto map = this->map();
+    if (map == nullptr)
+        return false;
+
     if (this->_position != before)
     {
         this->update_position();
@@ -1416,8 +1432,16 @@ bool character::move(DIRECTION direction, const fb::model::point16_t& before, ui
         if (this->option(OPTION::FIXED_MOVE) == false)
             this->ensure_camera_pivot();
 
-        if (this->option(OPTION::FAST_MOVE) == false)
+        auto v651 = this->client_version == fb::protocol::CLIENT_VERSION::v651;
+        if (v651 && ENUM_IN(map->config_flag(), MAP_CONFIG_FLAG::NO_SELF_CONFIRM))
+        {
+            this->listener.on_move_confirm(*this, this->_position, this->viewport(), walk_queue_slot);
+        }
+        else if (this->option(OPTION::FAST_MOVE) == false)
+        {
             this->listener.on_move_confirm(*this, before, viewport, walk_queue_slot);
+        }
+
         return true;
     }
 }
@@ -2088,6 +2112,7 @@ void character::marriage(const fb::game::marriage& value)
 {
     this->assert_thread();
     this->_marriage = value;
+    this->update_internal();
 }
 
 void character::browse_ch(const character& ch)
@@ -2211,7 +2236,7 @@ void character::detect(bool value)
         if (ch->state() != STATE::CLOACK && ch->state() != STATE::ADV_CLOACK)
             continue;
 
-        ch->update_external(*this, true);
+        ch->show(*this);
     }
 }
 
@@ -2290,14 +2315,14 @@ void character::super_hide(bool enabled)
             if (this->hidden(*obj))
                 this->hide(*obj);
             else
-                this->update_external(*obj, false);
+                this->update_external(*obj);
         }
     }
     else
     {
         for (auto& obj : this->nears(OBJECT_TYPE::CHARACTER))
         {
-            this->update_external(*obj, false);
+            this->update_external(*obj);
         }
     }
 }
@@ -2515,9 +2540,13 @@ fb::game::character::ping_state_t& character::ping_state()
 std::shared_ptr<fb::game::appearance> character::appearance() const
 {
     if (this->_mimicry.has_value())
-        return std::make_shared<character_appearance>(this->_mimicry.value());
+    {
+        auto ptr   = std::make_shared<character_appearance<>>(this->_mimicry.value());
+        ptr->speed = this->stat.speed();
+        return ptr;
+    }
 
-    auto ptr        = std::make_shared<character_appearance>();
+    auto ptr        = std::make_shared<character_appearance<>>();
     ptr->gender     = this->_gender;
     ptr->state      = this->_state;
     ptr->hair       = this->_look;
@@ -2541,5 +2570,6 @@ std::shared_ptr<fb::game::appearance> character::appearance() const
         ptr->shield_color = this->_shield_color;
     }
 
+    ptr->speed = this->stat.speed();
     return ptr;
 }

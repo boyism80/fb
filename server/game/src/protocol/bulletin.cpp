@@ -40,6 +40,48 @@ void bulletin<V>::deserialize(fb::stream_reader<big_endian>& reader)
         break;
     }
 }
+
+template <>
+void bulletin<CLIENT_VERSION::v651>::deserialize(fb::stream_reader<big_endian>& reader)
+{
+    header::deserialize(reader);
+    this->action = (BULLETIN_ACTION)reader.read<uint8_t>();
+
+    switch (this->action)
+    {
+    case BULLETIN_ACTION::ARTICLES:
+        this->section = reader.read<uint16_t>();
+        this->offset  = reader.read<uint16_t>();
+        if (reader.readable_size() > 0)
+            reader.read<uint8_t>();
+        break;
+
+    case BULLETIN_ACTION::ARTICLE:
+        this->section = reader.read<uint16_t>();
+        this->article = reader.read<uint16_t>();
+        if (reader.readable_size() > 0)
+            reader.read<uint8_t>();
+        break;
+
+    case BULLETIN_ACTION::WRITE:
+        this->section  = reader.read<uint16_t>();
+        this->title    = reader.read<std::string, uint8_t>();
+        this->contents = reader.read<std::string, uint16_t>();
+        break;
+
+    case BULLETIN_ACTION::DELETE:
+        this->section = reader.read<uint16_t>();
+        this->article = reader.read<uint16_t>();
+        break;
+
+    case BULLETIN_ACTION::SEND_MAIL:
+        this->section  = reader.read<uint16_t>();
+        this->user     = reader.read<std::string>();
+        this->title    = reader.read<std::string>();
+        this->contents = reader.read<std::string, uint16_t>();
+        break;
+    }
+}
 #else
 template <CLIENT_VERSION V>
 bulletin<V>::bulletin(BULLETIN_ACTION  action,

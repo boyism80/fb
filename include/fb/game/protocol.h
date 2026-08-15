@@ -52,6 +52,7 @@
 #include <fb/game/protocol/spell/update.h>
 #include <fb/game/protocol/spell/remove.h>
 #include <fb/game/protocol/spell/delay.h>
+#include <fb/game/protocol/character/show.h>
 #include <fb/game/protocol/character/update_external.h>
 #include <fb/game/protocol/character/id.h>
 #include <fb/game/protocol/character/update_internal.h>

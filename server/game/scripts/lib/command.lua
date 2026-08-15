@@ -99,6 +99,15 @@ M.functions = {
             return true
         end,
     },
+
+    ['주사위'] = {
+        ['privilege'] = ROLE.USER,
+        ['usage'] = '- 1부터 100까지 주사위를 굴립니다',
+        ['command'] = function (me, args)
+            me:chat(string.format('주사위 [%d]나왔습니다.', math.random(1, 100)))
+            return true
+        end,
+    },
     
     ['관리자'] = {
         ['privilege'] = ROLE.ADMIN,
@@ -1595,7 +1604,7 @@ M.functions = {
 
         ['probe_map_config'] = {
             ['privilege'] = ROLE.ADMIN,
-            ['usage'] = '[flags] [extra] [light] - S2C 0x15 map_config 재송신 (v651 unknown_* 스윕)',
+            ['usage'] = '[flags] [extra] [light] - S2C 0x15 map_config 재송신 (v651 +7: bit0=0x01 map+1025, bit1=0x02 NO_SELF_CONFIRM, bit3=0x08 map+1212)',
             ['command'] = function (me, args)
                 local flags, extra, light = table.unpack(args)
                 me:probe_map_config(tonumber(flags) or 0x02, tonumber(extra) or 0, tonumber(light) or 0)
@@ -1603,16 +1612,12 @@ M.functions = {
             end,
         },
 
-        ['probe_appearance'] = {
+        ['probe_show'] = {
             ['privilege'] = ROLE.ADMIN,
-            ['usage'] = '[detailed 0/1] [ridable] [anim] [hair_style] [face_tint] [body] [hat] [helm] [helm_c] [acc] [acc_c] - S2C 0x33/0x1D 외형 재송신',
+            ['usage'] = '[ridable] [anim] [hair_style] [face_tint] [body] [hat] [helm] [helm_c] [acc] [acc_c] - S2C 0x33 show 재송신',
             ['command'] = function (me, args)
-                local detailed = tonumber(args[1])
-                if detailed == nil then
-                    detailed = 1
-                end
-                me:probe_appearance(
-                    detailed ~= 0,
+                me:probe_show(
+                    tonumber(args[1]) or 0,
                     tonumber(args[2]) or 0,
                     tonumber(args[3]) or 0,
                     tonumber(args[4]) or 0,
@@ -1620,9 +1625,28 @@ M.functions = {
                     tonumber(args[6]) or 0,
                     tonumber(args[7]) or 0,
                     tonumber(args[8]) or 0,
-                    tonumber(args[9]) or 0,
-                    tonumber(args[10]) or 0xFFFF,
-                    tonumber(args[11]) or 0
+                    tonumber(args[9]) or 0xFFFF,
+                    tonumber(args[10]) or 0
+                )
+                return true
+            end,
+        },
+
+        ['probe_update_external'] = {
+            ['privilege'] = ROLE.ADMIN,
+            ['usage'] = '[ridable] [anim] [hair_style] [face_tint] [body] [hat] [helm] [helm_c] [acc] [acc_c] - S2C 0x1D update_external 재송신',
+            ['command'] = function (me, args)
+                me:probe_update_external(
+                    tonumber(args[1]) or 0,
+                    tonumber(args[2]) or 0,
+                    tonumber(args[3]) or 0,
+                    tonumber(args[4]) or 0,
+                    tonumber(args[5]) or 0,
+                    tonumber(args[6]) or 0,
+                    tonumber(args[7]) or 0,
+                    tonumber(args[8]) or 0,
+                    tonumber(args[9]) or 0xFFFF,
+                    tonumber(args[10]) or 0
                 )
                 return true
             end,
@@ -1630,13 +1654,13 @@ M.functions = {
 
         ['probe_update_internal'] = {
             ['privilege'] = ROLE.ADMIN,
-            ['usage'] = '[level] [based5] [based26] [based28] [exp_pad] [option_bits] - S2C 0x08 재송신 (기본 level=ALL)',
+            ['usage'] = '[level] [based5] [인품] [평가권] [exp_pad] [option_bits] - S2C 0x08 재송신 (기본 level=ALL, 인품/평가권은 캐릭터 값)',
             ['command'] = function (me, args)
                 me:probe_update_internal(
                     tonumber(args[1]) or UPDATE_STATE_LEVEL.ALL,
                     tonumber(args[2]) or 0,
-                    tonumber(args[3]) or 0,
-                    tonumber(args[4]) or 0,
+                    tonumber(args[3]),
+                    tonumber(args[4]),
                     tonumber(args[5]) or 0,
                     tonumber(args[6]) or 0
                 )
@@ -2390,7 +2414,7 @@ M.functions = {
 
         ['이속'] = {
             ['privilege'] = ROLE.ADMIN,
-            ['usage'] = '[0-5] - 기본 이속(base_speed) 조회/설정 (유효값=base+buff, clamp 0~5)',
+            ['usage'] = '[0-5] (6.51 GM은 0-10) - 기본 이속(base_speed) 조회/설정',
             ['command'] = function (me, args)
                 if #args == 0 then
                     me:message(string.format("이속 base=%d buff=%d effective=%d",
@@ -2399,8 +2423,8 @@ M.functions = {
                 end
 
                 local value = tonumber(args[1])
-                if value == nil or value < 0 or value > 5 or value ~= math.floor(value) then
-                    me:message("사용법: /이속 [0-5]")
+                if value == nil or value < 0 or value > 10 or value ~= math.floor(value) then
+                    me:message("사용법: /이속 [0-5] (6.51 GM은 0-10)")
                     return true
                 end
 

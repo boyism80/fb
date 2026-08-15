@@ -29,10 +29,7 @@ public:
 #ifndef BOT
     give_item() = default;
 #else
-    give_item(uint8_t slot, bool all) :
-        slot(slot),
-        all(all)
-    { }
+    give_item(uint8_t slot, bool all);
 #endif
 
 public:
@@ -61,9 +58,7 @@ public:
 #ifndef BOT
     give_money() = default;
 #else
-    give_money(uint32_t money) :
-        money(money)
-    { }
+    give_money(uint32_t money);
 #endif
 
 public:

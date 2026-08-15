@@ -227,17 +227,17 @@ async::task<std::shared_ptr<character>> login<V>::init(const game_reqs::login<V>
     {
         auto const& m  = resp.character.mimicry.value();
         auto state     = m.state.has_value() ? std::optional<STATE>(static_cast<STATE>(m.state.value())) : std::nullopt;
-        params.mimicry = character_appearance(static_cast<GENDER>(m.gender),
-                                              state,
-                                              m.hair,
-                                              m.hair_color,
-                                              m.weapon,
-                                              m.weapon_color,
-                                              m.armor,
-                                              m.armor_color,
-                                              m.shield,
-                                              m.shield_color,
-                                              m.disguise);
+        params.mimicry = character_appearance<>(static_cast<GENDER>(m.gender),
+                                                state,
+                                                m.hair,
+                                                m.hair_color,
+                                                m.weapon,
+                                                m.weapon_color,
+                                                m.armor,
+                                                m.armor_color,
+                                                m.shield,
+                                                m.shield_color,
+                                                m.disguise);
     }
     else
     {

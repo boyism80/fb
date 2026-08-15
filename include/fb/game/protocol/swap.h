@@ -31,11 +31,7 @@ public:
 #ifndef BOT
     swap() = default;
 #else
-    swap(const SWAP_TYPE type, const uint8_t src, const uint8_t dst) :
-        type(type),
-        src(src),
-        dst(dst)
-    { }
+    swap(const SWAP_TYPE type, const uint8_t src, const uint8_t dst);
 #endif
 
 public:

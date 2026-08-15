@@ -49,6 +49,7 @@ REGISTER_RESPONSE(fb::protocol::internal::request::AllyClan, fb::protocol::inter
 REGISTER_RESPONSE(fb::protocol::internal::request::UnallyClan, fb::protocol::internal::response::UpdatedClan)
 REGISTER_RESPONSE(fb::protocol::internal::request::DeclareClanEnemy, fb::protocol::internal::response::UpdatedClan)
 REGISTER_RESPONSE(fb::protocol::internal::request::EndClanEnemy, fb::protocol::internal::response::UpdatedClan)
+REGISTER_RESPONSE(fb::protocol::internal::request::SetClanMoney, fb::protocol::internal::response::UpdatedClan)
 REGISTER_RESPONSE(fb::protocol::internal::request::SetCastleOwner, fb::protocol::internal::response::UpdatedCastle)
 REGISTER_RESPONSE(fb::protocol::internal::request::Logout, fb::protocol::internal::response::Logout)
 REGISTER_RESPONSE(fb::protocol::internal::request::Save, fb::protocol::internal::response::Save)

@@ -11,9 +11,6 @@ namespace fb::protocol::game::response {
 
 using namespace fb::model::enum_value;
 
-/**
- * Single marker of the S2C 0x70 web world map list: position and CP949 label.
- */
 struct unknown_70_entry
 {
     uint16_t    x = 0;
@@ -21,10 +18,6 @@ struct unknown_70_entry
     std::string name;
 };
 
-/**
- * S2C 0x70 — Nexon web world map window (CharStats NEW UI only, window 620), since 6.51.
- * Wire: [0x70][count u8] then count entries of [x u16][y u16][name_len u8][name CP949].
- */
 template <CLIENT_VERSION V>
 class unknown_70 : public fb::protocol::header
 {
@@ -43,9 +36,7 @@ public:
 #ifdef BOT
     unknown_70() = default;
 #else
-    explicit unknown_70(const std::vector<unknown_70_entry>& entries) :
-        entries(entries)
-    { }
+    explicit unknown_70(const std::vector<unknown_70_entry>& entries);
 #endif
 
 public:

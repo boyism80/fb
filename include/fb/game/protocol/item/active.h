@@ -23,9 +23,7 @@ public:
 #ifndef BOT
     item_active() = default;
 #else
-    item_active(uint8_t index) :
-        index(index)
-    { }
+    item_active(uint8_t index);
 #endif
 
 public:

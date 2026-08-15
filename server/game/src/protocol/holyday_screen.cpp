@@ -3,6 +3,15 @@
 namespace fb::protocol::game::response {
 
 #ifndef BOT
+holyday_screen::holyday_screen(uint8_t screen, uint8_t hair, DIRECTION direction, const point8_t& position) :
+    screen(screen),
+    hair(hair),
+    direction(direction),
+    position(position)
+{ }
+#endif
+
+#ifndef BOT
 void holyday_screen::serialize(fb::stream_writer<big_endian>& writer) const
 {
     header::serialize(writer);
@@ -18,7 +27,7 @@ void holyday_screen::serialize(fb::stream_writer<big_endian>& writer) const
 void holyday_screen::deserialize(fb::stream_reader<big_endian>& reader)
 {
     header::deserialize(reader);
-    this->screen = reader.read<uint8_t>();
+    this->screen = static_cast<uint8_t>(reader.read<uint16_t>());
     (void)reader.read<uint8_t>(); // pad
     this->hair       = reader.read<uint8_t>();
     this->direction  = static_cast<DIRECTION>(reader.read<uint8_t>());

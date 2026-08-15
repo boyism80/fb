@@ -4,6 +4,13 @@ namespace fb::protocol::game::request {
 
 #ifdef BOT
 template <CLIENT_VERSION V>
+item_combine<V>::item_combine(const std::vector<uint8_t>& indices) :
+    indices(indices)
+{ }
+#endif
+
+#ifdef BOT
+template <CLIENT_VERSION V>
 void item_combine<V>::serialize(fb::stream_writer<big_endian>& writer) const
 {
     header::serialize(writer);
@@ -23,6 +30,20 @@ void item_combine<V>::deserialize(fb::stream_reader<big_endian>& reader)
     for (int i = 0; i < count; i++)
     {
         this->indices.push_back(reader.read<uint8_t>() - 1);
+    }
+}
+
+template <>
+void item_combine<CLIENT_VERSION::v651>::deserialize(fb::stream_reader<big_endian>& reader)
+{
+    header::deserialize(reader);
+    auto count = reader.read<uint8_t>();
+    for (int i = 0; i < count; i++)
+    {
+        this->indices.push_back(reader.read<uint8_t>() - 1);
+        auto remaining = static_cast<uint32_t>(count - 1 - i);
+        if (reader.readable_size() > remaining)
+            reader.read<uint8_t>();
     }
 }
 #endif

@@ -4,6 +4,14 @@ namespace fb::protocol::game::request {
 
 #ifdef BOT
 template <CLIENT_VERSION V>
+popup_input_submit<V>::popup_input_submit(uint8_t param0, const std::string& text) :
+    param0(param0),
+    text(text)
+{ }
+#endif
+
+#ifdef BOT
+template <CLIENT_VERSION V>
 void popup_input_submit<V>::serialize(fb::stream_writer<big_endian>& writer) const
 {
     header::serialize(writer);

@@ -11,10 +11,6 @@ namespace fb::protocol::game::request {
 
 using namespace fb::model::enum_value;
 
-/**
- * C2S 0x53 — USERINFO dialog OK submit (UserInfoDlg_OnOk).
- * Wire: sub (usually 1) + 8 length-prefixed CP949 strings (4 text + 4 combo labels).
- */
 template <CLIENT_VERSION V>
 class user_info_submit : public fb::protocol::header
 {
@@ -33,10 +29,7 @@ public:
 
 public:
 #ifdef BOT
-    user_info_submit(uint8_t sub, const std::array<std::string, 8>& strings) :
-        sub(sub),
-        strings(strings)
-    { }
+    user_info_submit(uint8_t sub, const std::array<std::string, 8>& strings);
 #else
     user_info_submit() = default;
 #endif

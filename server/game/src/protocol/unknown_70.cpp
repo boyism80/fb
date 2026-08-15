@@ -2,6 +2,13 @@
 
 namespace fb::protocol::game::response {
 
+#ifndef BOT
+template <CLIENT_VERSION V>
+unknown_70<V>::unknown_70(const std::vector<unknown_70_entry>& entries) :
+    entries(entries)
+{ }
+#endif
+
 #ifdef BOT
 template <CLIENT_VERSION V>
 void unknown_70<V>::deserialize(fb::stream_reader<big_endian>& reader)

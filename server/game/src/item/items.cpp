@@ -107,7 +107,7 @@ std::shared_ptr<equipment> items::equipment_off(EQUIPMENT_PARTS parts)
     // Call listener for packet response
     owner->listener.on_equipment_off(*owner, parts, *equipment);
 
-    owner->update_external(true);
+    owner->show();
     return equipment;
 }
 
@@ -745,7 +745,7 @@ std::shared_ptr<weapon> items::weapon(std::shared_ptr<fb::game::weapon> weapon)
     auto before = this->_weapon;
 
     this->_weapon = weapon;
-    owner->update_external(false);
+    owner->update_external();
     return before;
 }
 
@@ -767,7 +767,7 @@ std::shared_ptr<armor> items::armor(std::shared_ptr<fb::game::armor> armor)
     auto before = this->_armor;
 
     this->_armor = armor;
-    owner->update_external(false);
+    owner->update_external();
 
     return before;
 }
@@ -790,7 +790,7 @@ std::shared_ptr<shield> items::shield(std::shared_ptr<fb::game::shield> shield)
     auto before = this->_shield;
 
     this->_shield = shield;
-    owner->update_external(false);
+    owner->update_external();
 
     return before;
 }
@@ -813,7 +813,7 @@ std::shared_ptr<helmet> items::helmet(std::shared_ptr<fb::game::helmet> helmet)
     auto before = this->_helmet;
 
     this->_helmet = helmet;
-    owner->update_external(false);
+    owner->update_external();
 
     return before;
 }
@@ -855,7 +855,7 @@ std::shared_ptr<ring> items::ring(std::shared_ptr<fb::game::ring> ring, EQUIPMEN
     auto before = this->_rings[static_cast<int>(position)];
 
     this->_rings[static_cast<int>(position)] = ring;
-    owner->update_external(false);
+    owner->update_external();
 
     return before;
 }
@@ -897,7 +897,7 @@ std::shared_ptr<auxiliary> items::auxiliary(std::shared_ptr<fb::game::auxiliary>
 
     auto before                                    = this->_auxiliaries[static_cast<int>(position)];
     this->_auxiliaries[static_cast<int>(position)] = auxiliary;
-    owner->update_external(false);
+    owner->update_external();
 
     return before;
 }

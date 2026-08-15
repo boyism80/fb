@@ -25,40 +25,22 @@ public:
 
 public:
 #ifndef BOT
-    item_unequip(EQUIPMENT_PARTS parts) :
-        parts(parts)
-    { }
+    item_unequip(EQUIPMENT_PARTS parts);
 #else
     item_unequip() = default;
 #endif
 
 public:
 #ifndef BOT
-    void serialize(fb::stream_writer<big_endian>& writer) const
-    {
-        header::serialize(writer);
-        writer.write<uint8_t>(opcode);
-        writer.write<uint8_t>(static_cast<uint8_t>(this->parts));
-        writer.write<uint8_t>(0x00);
-    }
+    void serialize(fb::stream_writer<big_endian>& writer) const;
 #else
-    void deserialize(fb::stream_reader<big_endian>& reader)
-    {
-        header::deserialize(reader);
-        this->parts = static_cast<EQUIPMENT_PARTS>(reader.read<uint8_t>());
-        reader.read<uint8_t>();
-    }
+    void deserialize(fb::stream_reader<big_endian>& reader);
 #endif
 };
 
 #ifndef BOT
 template <>
-inline void item_unequip<CLIENT_VERSION::v651>::serialize(fb::stream_writer<big_endian>& writer) const
-{
-    header::serialize(writer);
-    writer.write<uint8_t>(opcode);
-    writer.write<uint8_t>(static_cast<uint8_t>(this->parts));
-}
+void item_unequip<CLIENT_VERSION::v651>::serialize(fb::stream_writer<big_endian>& writer) const;
 #endif
 
 using item_unequip_v550 = item_unequip<CLIENT_VERSION::v550>;

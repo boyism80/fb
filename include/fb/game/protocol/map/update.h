@@ -101,11 +101,7 @@ public:
 
 public:
 #ifndef BOT
-    map_update(const fb::game::map& map, const fb::model::point16_t& begin, const fb::model::size8_t& size) :
-        map(map),
-        begin(begin),
-        size(size)
-    { }
+    map_update(const fb::game::map& map, const fb::model::point16_t& begin, const fb::model::size8_t& size);
 #else
     map_update() = default;
 #endif

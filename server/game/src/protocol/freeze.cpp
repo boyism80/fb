@@ -3,6 +3,12 @@
 namespace fb::protocol::game::response {
 
 #ifndef BOT
+freeze::freeze(bool enable) :
+    enable(enable)
+{ }
+#endif
+
+#ifndef BOT
 void freeze::serialize(fb::stream_writer<big_endian>& writer) const
 {
     header::serialize(writer);

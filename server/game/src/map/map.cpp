@@ -32,6 +32,16 @@ const fb::model::map& map::model() const
     return fb::model::table::map[this->_model_id];
 }
 
+MAP_CONFIG_FLAG map::config_flag() const
+{
+    return this->_config_flag;
+}
+
+void map::config_flag(MAP_CONFIG_FLAG value)
+{
+    this->_config_flag = value;
+}
+
 void map::load_tiles(const void* data, size_t size)
 {
     if (this->loaded())

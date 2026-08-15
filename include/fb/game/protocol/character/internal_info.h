@@ -57,9 +57,7 @@ public:
 
 public:
 #ifndef BOT
-    internal_info(fb::game::character& ch) :
-        ch(ch)
-    { }
+    internal_info(fb::game::character& ch);
 #else
     internal_info() = default;
 #endif

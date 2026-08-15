@@ -32,9 +32,7 @@ public:
 
 public:
 #ifndef BOT
-    explicit ui_screen(UI_SCREEN screen) :
-        screen(screen)
-    { }
+    explicit ui_screen(UI_SCREEN screen);
 #else
     ui_screen() = default;
 #endif

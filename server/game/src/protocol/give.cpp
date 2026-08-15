@@ -4,6 +4,21 @@ namespace fb::protocol::game::request {
 
 #ifdef BOT
 template <CLIENT_VERSION V>
+give_item<V>::give_item(uint8_t slot, bool all) :
+    slot(slot),
+    all(all)
+{ }
+#endif
+
+#ifdef BOT
+template <CLIENT_VERSION V>
+give_money<V>::give_money(uint32_t money) :
+    money(money)
+{ }
+#endif
+
+#ifdef BOT
+template <CLIENT_VERSION V>
 void give_item<V>::serialize(fb::stream_writer<big_endian>& writer) const
 {
     header::serialize(writer);

@@ -3,6 +3,12 @@
 namespace fb::protocol::game::response {
 
 #ifndef BOT
+c2s_relay::c2s_relay(std::string_view payload) :
+    payload(std::string(payload))
+{ }
+#endif
+
+#ifndef BOT
 void c2s_relay::serialize(fb::stream_writer<big_endian>& writer) const
 {
     header::serialize(writer);

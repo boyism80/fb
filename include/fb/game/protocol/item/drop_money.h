@@ -27,9 +27,7 @@ public:
 #ifndef BOT
     item_drop_money() = default;
 #else
-    item_drop_money(uint32_t chunk) :
-        chunk(chunk)
-    { }
+    item_drop_money(uint32_t chunk);
 #endif
 
 public:

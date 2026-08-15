@@ -2,6 +2,16 @@
 
 namespace fb::protocol::game::response {
 
+#ifndef BOT
+template <CLIENT_VERSION V>
+unknown_62<V>::unknown_62(uint8_t type, std::string url, std::string key, std::string cookie) :
+    type(type),
+    url(std::move(url)),
+    key(std::move(key)),
+    cookie(std::move(cookie))
+{ }
+#endif
+
 #ifdef BOT
 template <CLIENT_VERSION V>
 void unknown_62<V>::deserialize(fb::stream_reader<big_endian>& reader)

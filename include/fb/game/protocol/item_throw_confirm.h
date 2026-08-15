@@ -22,9 +22,7 @@ public:
 
 public:
 #ifndef BOT
-    explicit item_throw_confirm(uint8_t inventory_slot) :
-        inventory_slot(inventory_slot)
-    { }
+    explicit item_throw_confirm(uint8_t inventory_slot);
 #else
     item_throw_confirm() = default;
 #endif

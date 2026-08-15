@@ -25,7 +25,7 @@ async::task<bool> miss<V>::handle(fb::socket<character>& session, game_reqs::mis
     if (obj == nullptr)
         co_return true;
 
-    obj->update_external(*ch, false);
+    obj->update_external(*ch);
     fb::logger::info("Object miss for {}", obj->oid());
 
     co_return true;

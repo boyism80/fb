@@ -1,4 +1,5 @@
 #include <fb/game/server.h>
+#include <fb/protocol/client_version.h>
 
 using namespace fb::game;
 
@@ -6,7 +7,9 @@ namespace game_resp = fb::protocol::game::response;
 
 void listener_impl::on_trade_begin(character& me, character& you)
 {
-    me.send(game_resp::trade_dialog(you));
+    fb::protocol::visit_client_version(me.client_version, [&]<fb::protocol::CLIENT_VERSION V> {
+        me.send(game_resp::trade_dialog<V>(you));
+    });
 }
 
 void listener_impl::on_trade_bundle(character& me)

@@ -89,9 +89,8 @@ protected:
     async::task<bool>             parallel_scenarios(const std::vector<std::pair<uint32_t, scenario_t>>& scenarios);
     virtual async::task<void>     on_hook_sequence(game_bot& bot, const game_resp::id& resp);
     virtual async::task<void>     on_hook_position(game_bot& bot, const game_resp::position& resp);
-    virtual async::task<void>     on_hook_update_external(game_bot& bot, const game_resp::update_external<true>& resp);
-    virtual async::task<void>     on_hook_update_external_brief(game_bot&                                bot,
-                                                                const game_resp::update_external<false>& resp);
+    virtual async::task<void>     on_hook_show(game_bot& bot, const game_resp::show_v550& resp);
+    virtual async::task<void>     on_hook_update_external(game_bot& bot, const game_resp::update_external_v550& resp);
 
     [[nodiscard]] async::task<void> sleep(std::chrono::milliseconds duration);
 

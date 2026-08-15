@@ -4,15 +4,12 @@
 #include <fb/protocol/header.h>
 #include <fb/protocol/client_version.h>
 #include <fb/model/model.h>
+#include <string>
 
 namespace fb::protocol::game::response {
 
 using namespace fb::model::enum_value;
 
-/**
- * S2C 0x62 — NEW UI window open (client sub_491C40, UI 880 on NEW / 620 on OLD), since 6.51.
- * Body is empty. Shares the opcode with the gateway C2S connection_ack but not the meaning.
- */
 template <CLIENT_VERSION V>
 class unknown_62 : public fb::protocol::header
 {
@@ -21,7 +18,24 @@ public:
     FB_PROTOCOL_VERSION_TAGS_SINCE(V, CLIENT_VERSION::v651);
 
 public:
+#ifndef BOT
+    const uint8_t     type;
+    const std::string url;
+    const std::string key;
+    const std::string cookie;
+#else
+    uint8_t     type = 0;
+    std::string url;
+    std::string key;
+    std::string cookie;
+#endif
+
+public:
+#ifdef BOT
     unknown_62() = default;
+#else
+    unknown_62(uint8_t type = 0, std::string url = {}, std::string key = {}, std::string cookie = {});
+#endif
 
 public:
 #ifdef BOT

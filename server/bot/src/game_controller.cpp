@@ -33,8 +33,8 @@ game_bot_controller::game_bot_controller(bot_container& container) :
     this->bind(&game_bot_controller::on_update);
     this->bind(&game_bot_controller::on_map);
     this->bind(&game_bot_controller::on_transfer);
-    this->bind(&game_bot_controller::on_update_external<true>);
-    this->bind(&game_bot_controller::on_update_external<false>);
+    this->bind(&game_bot_controller::on_show);
+    this->bind(&game_bot_controller::on_update_external);
     this->bind(&game_bot_controller::on_item_update);
     this->bind(&game_bot_controller::on_item_remove);
     this->bind(&game_bot_controller::on_internal_info);
@@ -143,7 +143,7 @@ async::task<void> game_bot_controller::on_sequence(game_bot& bot, const game_res
     co_return;
 }
 
-async::task<void> game_bot_controller::on_spell_update(game_bot& bot, const game_resp::spell_update& response)
+async::task<void> game_bot_controller::on_spell_update(game_bot& bot, const game_resp::spell_update_v550& response)
 {
     // Update the bot's spell inventory with the new or updated spell
     bot.update_spell(response.index, response.name, response.type);
@@ -281,7 +281,7 @@ async::task<void> game_bot_controller::on_update(game_bot& bot, const game_resp:
     co_return;
 }
 
-async::task<void> game_bot_controller::on_item_update(game_bot& bot, const game_resp::item_update& response)
+async::task<void> game_bot_controller::on_item_update(game_bot& bot, const game_resp::item_update_v550& response)
 {
     // Update the bot's inventory with the new or updated item
     bot.update_item(response.index, response.name, response.count);

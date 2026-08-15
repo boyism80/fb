@@ -58,17 +58,63 @@ public:
            std::string            name,
            uint32_t               oid = 0,
            uint16_t               seq = 0,
-           std::string            ext = {}) :
-        type(type),
-        oid(oid),
-        seq(seq),
-        action(action),
-        message(std::move(message)),
-        index(index),
-        pursuit(pursuit),
-        name(std::move(name)),
-        ext(std::move(ext))
-    { }
+           std::string            ext = {});
+#endif
+
+public:
+#ifdef BOT
+    void serialize(fb::stream_writer<big_endian>& writer) const;
+#else
+    void deserialize(fb::stream_reader<big_endian>& reader);
+#endif
+};
+
+template <>
+class dialog<CLIENT_VERSION::v651> : public fb::protocol::header
+{
+public:
+    static constexpr uint8_t opcode = 0x39;
+    FB_PROTOCOL_VERSION_TAGS(CLIENT_VERSION::v651);
+
+public:
+#ifdef BOT
+    const fb::game::dialog::type type;
+    const uint32_t               oid;
+    const uint16_t               seq;
+    const uint8_t                action;
+    const std::string            message;
+    const uint16_t               index;
+    const uint16_t               pursuit;
+    const std::string            name;
+    const std::string            ext;
+    const uint32_t               item_value;
+#else
+    fb::game::dialog::type type   = fb::game::dialog::type::MENU;
+    uint32_t               oid    = 0;
+    uint16_t               seq    = 0;
+    uint8_t                action = 0;
+    std::string            message;
+    uint16_t               index   = 0;
+    uint16_t               pursuit = 0;
+    std::string            name;
+    std::string            ext;
+    uint32_t               item_value = 0;
+#endif
+
+public:
+#ifndef BOT
+    dialog() = default;
+#else
+    dialog(fb::game::dialog::type type,
+           uint8_t                action,
+           std::string            message,
+           uint16_t               index,
+           uint16_t               pursuit,
+           std::string            name,
+           uint32_t               oid        = 0,
+           uint16_t               seq        = 0,
+           std::string            ext        = {},
+           uint32_t               item_value = 0);
 #endif
 
 public:
@@ -115,15 +161,7 @@ public:
                 uint16_t                    index,
                 DIALOG_RESULT               button,
                 uint32_t                    oid = 0,
-                uint16_t                    seq = 0) :
-        type(type),
-        oid(oid),
-        seq(seq),
-        action(action),
-        message(std::move(message)),
-        index(index),
-        button(button)
-    { }
+                uint16_t                    seq = 0);
 #endif
 
 public:

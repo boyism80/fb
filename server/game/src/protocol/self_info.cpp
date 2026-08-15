@@ -15,6 +15,14 @@ void self_info<V>::deserialize(fb::stream_reader<big_endian>& reader)
 {
     header::deserialize(reader);
 }
+
+template <>
+void self_info<CLIENT_VERSION::v651>::deserialize(fb::stream_reader<big_endian>& reader)
+{
+    header::deserialize(reader);
+    if (reader.readable_size() > 0)
+        reader.read<uint8_t>();
+}
 #endif
 
 template class self_info<CLIENT_VERSION::v550>;

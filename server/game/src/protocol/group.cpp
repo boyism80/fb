@@ -4,6 +4,13 @@ namespace fb::protocol::game::request {
 
 #ifdef BOT
 template <CLIENT_VERSION V>
+group<V>::group(std::string_view name) :
+    name(std::string(name))
+{ }
+#endif
+
+#ifdef BOT
+template <CLIENT_VERSION V>
 void group<V>::serialize(fb::stream_writer<big_endian>& writer) const
 {
     header::serialize(writer);

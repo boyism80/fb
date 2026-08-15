@@ -3,6 +3,12 @@
 namespace fb::protocol::game::response {
 
 #ifndef BOT
+weather::weather(WEATHER_TYPE value) :
+    value(value)
+{ }
+#endif
+
+#ifndef BOT
 void weather::serialize(fb::stream_writer<big_endian>& writer) const
 {
     header::serialize(writer);

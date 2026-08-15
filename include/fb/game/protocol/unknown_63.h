@@ -4,16 +4,26 @@
 #include <fb/protocol/header.h>
 #include <fb/protocol/client_version.h>
 #include <fb/model/model.h>
+#include <array>
+#include <string>
+#include <vector>
 
 namespace fb::protocol::game::response {
 
 using namespace fb::model::enum_value;
 
-/**
- * S2C 0x63 — SELFLOOK appearance list (CharStats NEW UI only), since 6.51.
- * Only subtype 2 is consumed by the client: [0x63][subtype u8][count u8] then
- * count entries of stride 280. Entries are not modelled; count 0 opens an empty list.
- */
+struct unknown_63_entry
+{
+    std::string            name;
+    uint8_t                flag = 0;
+    uint16_t               a    = 0;
+    std::array<uint8_t, 5> b{};
+    uint16_t               c = 0;
+    uint8_t                d = 0;
+    uint32_t               e = 0;
+    uint32_t               f = 0;
+};
+
 template <CLIENT_VERSION V>
 class unknown_63 : public fb::protocol::header
 {
@@ -23,21 +33,20 @@ public:
 
 public:
 #ifdef BOT
-    uint8_t subtype = 2;
-    uint8_t count   = 0;
+    uint8_t                       subtype = 2;
+    uint8_t                       count   = 0;
+    std::vector<unknown_63_entry> entries;
 #else
-    const uint8_t subtype;
-    const uint8_t count;
+    const uint8_t                       subtype;
+    const uint8_t                       count;
+    const std::vector<unknown_63_entry> entries;
 #endif
 
 public:
 #ifdef BOT
     unknown_63() = default;
 #else
-    unknown_63(uint8_t subtype, uint8_t count) :
-        subtype(subtype),
-        count(count)
-    { }
+    unknown_63(uint8_t subtype, uint8_t count, std::vector<unknown_63_entry> entries = {});
 #endif
 
 public:

@@ -25,10 +25,7 @@ public:
 
 public:
 #ifdef BOT // bot only
-    whisper(std::string_view name, std::string_view message) :
-        name(std::string(name)),
-        message(std::string(message))
-    { }
+    whisper(std::string_view name, std::string_view message);
 #else
     whisper() = default;
 #endif

@@ -28,39 +28,22 @@ public:
 
 public:
 #ifndef BOT
-    item_tip(uint16_t position, std::string_view message) :
-        position(position),
-        message(std::string(message))
-    { }
+    item_tip(uint16_t position, std::string_view message);
 #else
     item_tip() = default;
 #endif
 
 public:
 #ifndef BOT
-    void serialize(fb::stream_writer<big_endian>& writer) const
-    {
-        header::serialize(writer);
-        writer.write<uint8_t>(opcode);
-        // v550/v565/v651 share the inventory tooltip body:
-        // [pos u16][len u16][CP949][0x00]. The 0x40 dictionary list is unused.
-        writer.write<uint16_t>(this->position);
-        writer.write<std::string, uint16_t>(this->message);
-        writer.write<uint8_t>(0x00);
-    }
+    void serialize(fb::stream_writer<big_endian>& writer) const;
 #else
-    void deserialize(fb::stream_reader<big_endian>& reader)
-    {
-        header::deserialize(reader);
-        this->position = reader.read<uint16_t>();
-        this->message  = reader.read<std::string, uint16_t>();
-        reader.read<uint8_t>(); // 0x00
-    }
+    void deserialize(fb::stream_reader<big_endian>& reader);
 #endif
 };
 
 using item_tip_v550 = item_tip<CLIENT_VERSION::v550>;
 using item_tip_v565 = item_tip<CLIENT_VERSION::v565>;
+using item_tip_v651 = item_tip<CLIENT_VERSION::v651>;
 
 } // namespace fb::protocol::game::response
 

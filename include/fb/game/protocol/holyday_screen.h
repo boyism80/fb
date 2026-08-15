@@ -29,12 +29,7 @@ public:
 
 public:
 #ifndef BOT
-    holyday_screen(uint8_t screen, uint8_t hair, DIRECTION direction, const point8_t& position) :
-        screen(screen),
-        hair(hair),
-        direction(direction),
-        position(position)
-    { }
+    holyday_screen(uint8_t screen, uint8_t hair, DIRECTION direction, const point8_t& position);
 #else
     holyday_screen() = default;
 #endif

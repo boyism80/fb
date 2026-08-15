@@ -9,11 +9,6 @@ namespace fb::protocol::game::request {
 
 using namespace fb::model::enum_value;
 
-/**
- * C2S 0x27 — 5-row grid list UI slot click (client sub_4E6D30), since 5.65.
- * Wire: [0x27][0x00][0x01][slot u8] (4 bytes).
- * The owning screen (storage / mail / auction) is still unidentified.
- */
 template <CLIENT_VERSION V>
 class unknown_27 : public fb::protocol::header
 {
@@ -30,9 +25,7 @@ public:
 
 public:
 #ifdef BOT
-    explicit unknown_27(uint8_t slot) :
-        slot(slot)
-    { }
+    explicit unknown_27(uint8_t slot);
 #else
     unknown_27() = default;
 #endif

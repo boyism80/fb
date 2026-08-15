@@ -2,6 +2,15 @@
 
 namespace fb::protocol::game::response {
 
+#ifndef BOT
+template <CLIENT_VERSION V>
+unknown_63<V>::unknown_63(uint8_t subtype, uint8_t count, std::vector<unknown_63_entry> entries) :
+    subtype(subtype),
+    count(count),
+    entries(std::move(entries))
+{ }
+#endif
+
 #ifdef BOT
 template <CLIENT_VERSION V>
 void unknown_63<V>::deserialize(fb::stream_reader<big_endian>& reader)

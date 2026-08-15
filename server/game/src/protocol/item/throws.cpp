@@ -1,6 +1,15 @@
 #include <fb/game/protocol/item/throws.h>
 
 namespace fb::protocol::game::request {
+
+#ifdef BOT
+template <CLIENT_VERSION V>
+item_throws<V>::item_throws(const bool all, const uint8_t index) :
+    all(all),
+    index(index)
+{ }
+#endif
+
 #ifdef BOT
 template <CLIENT_VERSION V>
 void item_throws<V>::serialize(fb::stream_writer<big_endian>& writer) const

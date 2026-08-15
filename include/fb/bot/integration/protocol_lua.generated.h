@@ -66,6 +66,7 @@ void marshal_lua_game_resp__popup_message(lua_State* L, const fb::protocol::head
 void marshal_lua_game_resp__position(lua_State* L, const fb::protocol::header& header);
 void marshal_lua_game_resp__save(lua_State* L, const fb::protocol::header& header);
 void marshal_lua_game_resp__screen_refresh_complete(lua_State* L, const fb::protocol::header& header);
+void marshal_lua_game_resp__show(lua_State* L, const fb::protocol::header& header);
 void marshal_lua_game_resp__sound(lua_State* L, const fb::protocol::header& header);
 void marshal_lua_game_resp__spell_buff(lua_State* L, const fb::protocol::header& header);
 void marshal_lua_game_resp__spell_delay(lua_State* L, const fb::protocol::header& header);
@@ -82,10 +83,15 @@ void marshal_lua_game_resp__trade_money(lua_State* L, const fb::protocol::header
 void marshal_lua_game_resp__trade_upload(lua_State* L, const fb::protocol::header& header);
 void marshal_lua_game_resp__ui_screen(lua_State* L, const fb::protocol::header& header);
 void marshal_lua_game_resp__unknown_12(lua_State* L, const fb::protocol::header& header);
+void marshal_lua_game_resp__unknown_4f(lua_State* L, const fb::protocol::header& header);
+void marshal_lua_game_resp__unknown_58(lua_State* L, const fb::protocol::header& header);
+void marshal_lua_game_resp__unknown_62(lua_State* L, const fb::protocol::header& header);
+void marshal_lua_game_resp__unknown_63(lua_State* L, const fb::protocol::header& header);
+void marshal_lua_game_resp__unknown_6f(lua_State* L, const fb::protocol::header& header);
+void marshal_lua_game_resp__unknown_70(lua_State* L, const fb::protocol::header& header);
 void marshal_lua_game_resp__update(lua_State* L, const fb::protocol::header& header);
 void marshal_lua_game_resp__update_cc(lua_State* L, const fb::protocol::header& header);
-void marshal_lua_game_resp__update_external_false_(lua_State* L, const fb::protocol::header& header);
-void marshal_lua_game_resp__update_external_true_(lua_State* L, const fb::protocol::header& header);
+void marshal_lua_game_resp__update_external(lua_State* L, const fb::protocol::header& header);
 void marshal_lua_game_resp__update_hp(lua_State* L, const fb::protocol::header& header);
 void marshal_lua_game_resp__update_internal(lua_State* L, const fb::protocol::header& header);
 void marshal_lua_game_resp__user_info(lua_State* L, const fb::protocol::header& header);

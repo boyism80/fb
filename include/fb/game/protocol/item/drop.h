@@ -29,10 +29,7 @@ public:
 #ifndef BOT
     item_drop() = default;
 #else
-    item_drop(uint8_t index, bool all) :
-        index(index),
-        all(all)
-    { }
+    item_drop(uint8_t index, bool all);
 #endif
 
 public:

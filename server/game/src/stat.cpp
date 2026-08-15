@@ -10,6 +10,17 @@
 
 using namespace fb::game;
 
+namespace {
+
+uint8_t character_speed_cap(const character& ch)
+{
+    if (ch.client_version == fb::protocol::CLIENT_VERSION::v651 && ch.role() >= ROLE::ADMIN)
+        return 10;
+    return 5;
+}
+
+} // namespace
+
 fb::game::stat::stat(life& owner) :
     owner(owner)
 { }
@@ -548,8 +559,9 @@ void character_stat::base_speed(uint8_t value, bool notify)
 {
     this->owner.assert_thread();
 
-    if (value > 5)
-        value = 5;
+    auto cap = character_speed_cap(this->owner);
+    if (value > cap)
+        value = cap;
 
     if (this->_speed == value)
         return;
@@ -740,6 +752,18 @@ uint8_t character_stat::base_speed() const
 {
     this->owner.assert_thread();
     return this->_speed;
+}
+
+uint8_t character_stat::speed() const
+{
+    this->owner.assert_thread();
+    auto sum = static_cast<int>(this->base_speed()) + static_cast<int>(fb::game::stat::buff_speed());
+    auto cap = character_speed_cap(this->owner);
+    if (sum < 0)
+        return 0;
+    if (sum > cap)
+        return static_cast<uint8_t>(cap);
+    return static_cast<uint8_t>(sum);
 }
 
 void character_stat::buff_speed(int8_t value)

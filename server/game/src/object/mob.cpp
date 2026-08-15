@@ -665,7 +665,7 @@ void mob::hidden(bool enabled)
     else
     {
         for (auto& obj : this->nears(OBJECT_TYPE::CHARACTER))
-            this->update_external(*obj, true);
+            this->show(*obj);
     }
 }
 

@@ -7,7 +7,9 @@ namespace fb::protocol::game::response {
 template <CLIENT_VERSION V>
 update_internal<V>::update_internal(const fb::game::character& ch, UPDATE_STATE_LEVEL level) :
     ch(ch),
-    level(level)
+    level(level),
+    reputation(ch.reputation()),
+    evaluation(ch.evaluation())
 { }
 
 template <CLIENT_VERSION V>
@@ -67,7 +69,10 @@ void update_internal<V>::serialize(fb::stream_writer<big_endian>& writer) const
 
     writer.write<uint8_t>(this->ch.mail_box.unread_count());
     writer.write<bool>(this->ch.option(OPTION::FAST_MOVE));
-    writer.write<uint8_t>(this->ch.stat.speed());
+    auto speed = this->ch.stat.speed();
+    if (speed > 5)
+        speed = 5;
+    writer.write<uint8_t>(speed);
 }
 
 template <>
@@ -88,26 +93,25 @@ void update_internal<CLIENT_VERSION::v651>::serialize(fb::stream_writer<big_endi
 
     if (ENUM_IN(this->level, UPDATE_STATE_LEVEL::BASED))
     {
-        // nation u16 wire = stored+1
         writer.write<uint16_t>(static_cast<uint16_t>(this->ch.nation()) + 1);
-        writer.write<uint8_t>(static_cast<uint8_t>(this->ch.divine_beast())); // totem @+4
-        writer.write<uint8_t>(this->unknown_based_5);                         // +5 NOT READ
+        writer.write<uint8_t>(static_cast<uint8_t>(this->ch.divine_beast()));
+        writer.write<uint8_t>(this->unknown_based_5);
         writer.write<uint8_t>(this->ch.level());
         writer.write<uint32_t>(encoded_maxhp);
         writer.write<uint32_t>(encoded_maxmp);
         writer.write<uint8_t>(this->ch.stat.str());
         writer.write<uint8_t>(this->ch.stat.intelligence());
-        writer.write<uint8_t>(0x00); // +17 NOT READ
-        writer.write<uint8_t>(0x00); // +18 NOT READ
+        writer.write<uint8_t>(0x00);
+        writer.write<uint8_t>(0x00);
         writer.write<uint8_t>(this->ch.stat.dex());
-        writer.write<uint8_t>(0x00); // +20
-        writer.write<uint8_t>(0x00); // +21
-        writer.write<uint8_t>(0x00); // +22
-        writer.write<uint8_t>(0x00); // +23
-        writer.write<uint8_t>(0x00); // +24
-        writer.write<uint8_t>(0x00); // +25
-        writer.write<uint16_t>(this->unknown_based_26);
-        writer.write<uint16_t>(this->unknown_based_28);
+        writer.write<uint8_t>(0x00);
+        writer.write<uint8_t>(0x00);
+        writer.write<uint8_t>(0x00);
+        writer.write<uint8_t>(0x00);
+        writer.write<uint8_t>(0x00);
+        writer.write<uint8_t>(0x00);
+        writer.write<int16_t>(this->reputation);
+        writer.write<uint16_t>(this->evaluation);
     }
 
     if (ENUM_IN(this->level, UPDATE_STATE_LEVEL::HP_MP))
@@ -120,7 +124,7 @@ void update_internal<CLIENT_VERSION::v651>::serialize(fb::stream_writer<big_endi
     {
         writer.write<uint32_t>(fb::game::encode_client_amount(this->ch.exp()));
         writer.write<uint32_t>(fb::game::encode_client_amount(this->ch.money() - this->ch.trade.money()));
-        writer.write<uint8_t>(this->unknown_exp_pad); // CharStats skips +9
+        writer.write<uint8_t>(this->unknown_exp_pad);
     }
 
     if (ENUM_IN(this->level, UPDATE_STATE_LEVEL::CROWD_CONTROL))
@@ -129,21 +133,19 @@ void update_internal<CLIENT_VERSION::v651>::serialize(fb::stream_writer<big_endi
         writer.write<bool>(this->ch.cc.contains(CROWD_CONTROL::SIGHT));
         writer.write<bool>(this->ch.cc.contains(CROWD_CONTROL::HEAR));
         writer.write<bool>(this->ch.cc.contains(CROWD_CONTROL::CHAT));
-        // 5th bool skipped by client (not stored); write pad 0
         writer.write<uint8_t>(0x00);
     }
 
-    // mail skipped by CharStats; still present in span for other consumers — write then fast_move + option_bits
-    writer.write<uint8_t>(this->ch.mail_box.unread_count()); // skipped by CharStats cursor
+    writer.write<uint8_t>(this->ch.mail_box.unread_count());
     writer.write<bool>(this->ch.option(OPTION::FAST_MOVE));
     writer.write<uint32_t>(this->unknown_option_bits);
 }
 
+template void update_internal<CLIENT_VERSION::v550>::serialize(fb::stream_writer<big_endian>&) const;
+template void update_internal<CLIENT_VERSION::v565>::serialize(fb::stream_writer<big_endian>&) const;
 template update_internal<CLIENT_VERSION::v550>::update_internal(const fb::game::character&, UPDATE_STATE_LEVEL);
 template update_internal<CLIENT_VERSION::v565>::update_internal(const fb::game::character&, UPDATE_STATE_LEVEL);
 template update_internal<CLIENT_VERSION::v651>::update_internal(const fb::game::character&, UPDATE_STATE_LEVEL);
-template void update_internal<CLIENT_VERSION::v550>::serialize(fb::stream_writer<big_endian>&) const;
-template void update_internal<CLIENT_VERSION::v565>::serialize(fb::stream_writer<big_endian>&) const;
 #else
 template <CLIENT_VERSION V>
 void update_internal<V>::deserialize(fb::stream_reader<big_endian>& reader)
@@ -229,8 +231,8 @@ void update_internal<CLIENT_VERSION::v651>::deserialize(fb::stream_reader<big_en
         reader.read<uint8_t>();
         reader.read<uint8_t>();
         reader.read<uint8_t>();
-        this->unknown_based_26 = reader.read<uint16_t>();
-        this->unknown_based_28 = reader.read<uint16_t>();
+        this->reputation = reader.read<int16_t>();
+        this->evaluation = reader.read<uint16_t>();
     }
 
     if (ENUM_IN(this->level, UPDATE_STATE_LEVEL::HP_MP))
