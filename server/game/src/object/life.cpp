@@ -227,6 +227,17 @@ async::task<void> life::settle_character_deaths(const character_vector& dead, st
         if (ch->state() == STATE::GHOST)
             continue;
 
+        if (killer != nullptr && killer->is(OBJECT_TYPE::CHARACTER))
+        {
+            auto lua = this->server.lua.open("scripts/interaction.lua", "on_character_kill");
+            if (lua)
+            {
+                lua->pushobject(*killer);
+                lua->pushobject(*ch);
+                std::ignore = co_await lua->call(2);
+            }
+        }
+
         // settle_death awaits penalty on this map thread, then detaches death_warp.
         // Do not co_await map() here — that would migrate this damage coroutine
         // onto the victim's destination map thread.

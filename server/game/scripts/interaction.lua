@@ -466,7 +466,7 @@ local function on_attack(me, additional_attack)
         return 0
     end
 
-    local pk = spell.map_pk_enabled(me)
+    local pk = castle_lib.map_pk_enabled(me)
     local enemy_type = OBJECT_TYPE.LIFE
     if not pk or (me:is(OBJECT_TYPE.CHARACTER) and me:option(OPTION.PK_PROTECT)) then
         enemy_type = OBJECT_TYPE.MOB
@@ -529,7 +529,7 @@ local function on_attack(me, additional_attack)
             end
         end
 
-        if target ~= nil and not spell.blocks_siege_friendly_fire(me, target) then
+        if target ~= nil and not castle_lib.blocks_siege_friendly_fire(me, target) and not lib.is_miss(me, target, 'front') then
             lib.damage(me, target, nil, 701)
             count = count + 1
         end
@@ -554,7 +554,7 @@ local function on_attack(me, additional_attack)
         if weapon ~= nil then
             damaged_sound = SOUND.DAMAGE
         end
-        if front ~= nil and not spell.blocks_siege_friendly_fire(me, front) and not lib.is_miss(me, front) then
+        if front ~= nil and not castle_lib.blocks_siege_friendly_fire(me, front) and not lib.is_miss(me, front, 'front') then
             lib.damage(me, front, nil, damaged_sound)
             count = count + 1
         end
@@ -571,7 +571,7 @@ local function on_attack(me, additional_attack)
 
             local nears = me:nears(enemy_type, points, false)
             for _, obj in pairs(nears) do
-                if not spell.blocks_siege_friendly_fire(me, obj) then
+                if not castle_lib.blocks_siege_friendly_fire(me, obj) and not lib.is_miss(me, obj, 'side') then
                     lib.damage(me, obj, 0.4, damaged_sound)
                     count = count + 1
                 end
@@ -592,7 +592,7 @@ local function on_attack(me, additional_attack)
 
             local nears = me:nears(enemy_type, points, false)
             for _, obj in pairs(nears) do
-                if not spell.blocks_siege_friendly_fire(me, obj) then
+                if not castle_lib.blocks_siege_friendly_fire(me, obj) and not lib.is_miss(me, obj, 'back') then
                     lib.damage(me, obj, 0.5, damaged_sound)
                     count = count + 1
                 end
@@ -635,6 +635,23 @@ end
 
 return {
     on_attack = on_attack,
+
+    on_character_kill = function(killer, victim)
+        if killer == nil or victim == nil then
+            return
+        end
+        if not killer:is(OBJECT_TYPE.CHARACTER) or not victim:is(OBJECT_TYPE.CHARACTER) then
+            return
+        end
+        if not castle_lib.map_siege_castle(victim) then
+            return
+        end
+        if not castle_lib.map_pk_enabled(victim) then
+            return
+        end
+
+        broadcast(string.format('[정보] %s님이 %s님에게 죽어서 탈락했습니다.', victim:name(), killer:name()), MESSAGE_TYPE.WORLD)
+    end,
 
     on_equipment_active = function(me, parts, equipment)
         lib.any_action(me)
@@ -692,11 +709,11 @@ return {
     on_move = function(me)
         lib.any_action(me)
 
-        if me:is(OBJECT_TYPE.CHARACTER) then
-            local quest = require('lib.quest')
-            quest.red_clay_on_move(me)
-            quest.mountain_treasure_fabric_on_move(me)
-        end
+        -- if me:is(OBJECT_TYPE.CHARACTER) then
+        --     local quest = require('lib.quest')
+        --     quest.red_clay_on_move(me)
+        --     quest.mountain_treasure_fabric_on_move(me)
+        -- end
     end,
 
     on_direction = function(me)
@@ -739,8 +756,14 @@ return {
 
     on_npc_chat = on_npc_chat,
 
+    on_clan_left = function(me)
+        castle_lib.evict(me)
+        castle_lib.strip_all(me)
+    end,
+
     on_login = function(me, first_login)
-        castle_lib.enforce_all(me)
+        castle_lib.strip_all(me)
+        castle_lib.evict(me)
 
         local clan = me:clan()
         if clan ~= nil and me:role() <= ROLE.USER then

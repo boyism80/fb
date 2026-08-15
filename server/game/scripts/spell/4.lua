@@ -27,6 +27,11 @@ return {
             me:message('마력이 미치지 않습니다.')
             return
         end
+        local castle_lib = require('lib.castle')
+        if not castle_lib.can_occupy(ch, map) then
+            me:message('그곳으로 소환할 수 없습니다.')
+            return
+        end
 
         local sound = 36
         local effect = 3

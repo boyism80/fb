@@ -1,3 +1,5 @@
+local castle = require('lib.castle')
+
 local M = {}
 
 local function execute_mob_spell_hit(me, you, spell)
@@ -253,65 +255,6 @@ function M.attacker_blocks_pvp(me)
     return me ~= nil and me:is(OBJECT_TYPE.CHARACTER) and me:option(OPTION.PK_PROTECT)
 end
 
-function M.map_pk_enabled(me)
-    local map = me:map()
-    if map == nil then
-        return false
-    end
-    local model = map:model()
-    local option = model:option()
-    if (option & MAP_OPTION.ENABLE_PK) == MAP_OPTION.ENABLE_PK then
-        return true
-    end
-
-    -- Siege maps: PK only while that divine beast's siege is active.
-    -- Use siege_active() (sync) — never castle(), which can yield and break attack flow.
-    if (option & MAP_OPTION.SIEGE_CASTLE) ~= MAP_OPTION.SIEGE_CASTLE then
-        return false
-    end
-
-    local divine_beast = model:siege_castle()
-    if divine_beast == nil then
-        return false
-    end
-
-    return siege_active(divine_beast)
-end
-
-function M.map_siege_castle(me)
-    local map = me:map()
-    if map == nil then
-        return false
-    end
-    local option = map:model():option()
-    return (option & MAP_OPTION.SIEGE_CASTLE) == MAP_OPTION.SIEGE_CASTLE
-end
-
-function M.is_friendly_clan(me, you)
-    if me == nil or you == nil then
-        return false
-    end
-    if not me:is(OBJECT_TYPE.CHARACTER) or not you:is(OBJECT_TYPE.CHARACTER) then
-        return false
-    end
-
-    local my_clan = me:clan()
-    local your_clan = you:clan()
-    if my_clan == nil or your_clan == nil then
-        return false
-    end
-
-    if my_clan:id() == your_clan:id() then
-        return true
-    end
-
-    return my_clan:is_allied(your_clan)
-end
-
-function M.blocks_siege_friendly_fire(me, you)
-    return M.map_siege_castle(me) and M.is_friendly_clan(me, you)
-end
-
 function M.can_harm_character(me, you, pk, blocks_pvp)
     if you == nil or not you:is(OBJECT_TYPE.CHARACTER) then
         return false
@@ -323,7 +266,7 @@ function M.can_harm_character(me, you, pk, blocks_pvp)
     end
 
     if pk == nil then
-        pk = M.map_pk_enabled(me)
+        pk = castle.map_pk_enabled(me)
     end
     if not pk then
         return false
@@ -336,7 +279,7 @@ function M.can_harm_character(me, you, pk, blocks_pvp)
         return false
     end
 
-    if M.blocks_siege_friendly_fire(me, you) then
+    if castle.blocks_siege_friendly_fire(me, you) then
         return false
     end
 
@@ -367,7 +310,7 @@ function M.assert_map_debuff(me, you)
     end
     
     if you:is(OBJECT_TYPE.CHARACTER) then
-        if not M.map_pk_enabled(me) then
+        if not castle.map_pk_enabled(me) then
             me:message('걸리지 않습니다.')
             return false
         end
@@ -398,7 +341,7 @@ function M.assert_map_damage(me, you)
     end
     
     if you:is(OBJECT_TYPE.CHARACTER) then
-        if not M.map_pk_enabled(me) then
+        if not castle.map_pk_enabled(me) then
             me:message('대상이 올바르지 않습니다.')
             return false
         end
@@ -643,7 +586,7 @@ function M.attack_cast(me, you, spell, opts)
     me:message(string.format("%s 외웠습니다.", name_with(spell:name())))
     me:action(ACTION.ATTACK, DURATION.ATTACK, 1)
     
-    local pk = M.map_pk_enabled(me)
+    local pk = castle.map_pk_enabled(me)
     local blocks_pvp = M.attacker_blocks_pvp(me)
     local damaged = false
     local skill_rate = me:skill_damage_rate() / 1000.0
@@ -740,7 +683,7 @@ function M.damage_near(me, spell, opts)
     me:sound(sound)
     me:action(ACTION.CAST_SPELL, DURATION.SPELL, 1)
     local skill_rate = me:skill_damage_rate() / 1000.0
-    local pk = M.map_pk_enabled(me)
+    local pk = castle.map_pk_enabled(me)
     local blocks_pvp = M.attacker_blocks_pvp(me)
     local targets = {}
     for _, you in pairs(M.near(me, OBJECT_TYPE.LIFE)) do
@@ -785,7 +728,7 @@ function M.damage_near_target(me, you, spell, opts)
     me:sound(sound)
     me:action(ACTION.CAST_SPELL, DURATION.SPELL, 1)
     local skill_rate = me:skill_damage_rate() / 1000.0
-    local pk = M.map_pk_enabled(me)
+    local pk = castle.map_pk_enabled(me)
     local blocks_pvp = M.attacker_blocks_pvp(me)
     local near_targets = M.near(you, OBJECT_TYPE.LIFE)
     table.insert(near_targets, you)
@@ -839,7 +782,7 @@ function M.damage_area(me, you, spell, opts)
     end
 
     local skill_rate = me:skill_damage_rate() / 1000.0
-    local pk = M.map_pk_enabled(me)
+    local pk = castle.map_pk_enabled(me)
     local blocks_pvp = M.attacker_blocks_pvp(me)
     local targets = {}
     for _, obj in pairs(you) do

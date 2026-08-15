@@ -96,7 +96,7 @@ local function end_siege(divine_beast)
                 for _, member in pairs(previous_owner:members()) do
                     local online = name2ch(member:name())
                     if online ~= nil then
-                        castle_lib.enforce_ownership(online, divine_beast)
+                        castle_lib.strip(online, divine_beast)
                     end
                 end
             end
@@ -109,6 +109,7 @@ local function end_siege(divine_beast)
         broadcast(string.format('[정보] %s의성이 수성측 %s문파에게 돌아갑니다.', info.name, owner_name), MESSAGE_TYPE.WORLD)
     end
 
+    castle_lib.evict_castle_maps(info.name)
     return true, info.name
 end
 
