@@ -35,12 +35,54 @@ function M.string_split(self, delimiter)
     return result
 end
 
-function M.is_miss(me, you)
+local HIT_CHANCE_MIN = 10
+local HIT_CHANCE_MAX = 100
+
+local function clamp_hit_chance(chance)
+    if chance < HIT_CHANCE_MIN then
+        return HIT_CHANCE_MIN
+    elseif chance > HIT_CHANCE_MAX then
+        return HIT_CHANCE_MAX
+    else
+        return chance
+    end
+end
+
+-- Classic Hit: front 100% at 12, back 100% at 24, side 100% at 30. Floor 10%.
+local function attack_hit_chance(hit, facing)
+    if facing == 'back' then
+        if hit >= 24 then
+            return HIT_CHANCE_MAX
+        else
+            return clamp_hit_chance(50 + math.floor((hit - 12) * 50 / 12))
+        end
+    elseif facing == 'side' then
+        if hit >= 30 then
+            return HIT_CHANCE_MAX
+        else
+            return clamp_hit_chance(40 + math.floor((hit - 12) * 10 / 3))
+        end
+    else
+        if hit >= 12 then
+            return HIT_CHANCE_MAX
+        elseif hit <= -5 then
+            return HIT_CHANCE_MIN
+        else
+            return 10 + math.floor((hit + 5) * 90 / 17)
+        end
+    end
+end
+
+function M.is_miss(me, you, facing)
     if debug() then
         return false
-    else
-        return math.random() > 0.8
     end
+    if not me:is(OBJECT_TYPE.CHARACTER) then
+        return false
+    end
+
+    local chance = attack_hit_chance(me:hit(), facing)
+    return math.random(100) > chance
 end
 
 function M.is_critical(me, you)
@@ -55,7 +97,8 @@ function M.damage(me, you, rate, sound)
     if rate == nil then
         rate = 1.0
     end
-    rate = rate * (me:damage_rate() / 1000.0)
+    -- Dam is added after multiplier buffs: +0.25x base weapon damage per point.
+    rate = rate * (me:damage_rate() / 1000.0 + me:dam() * 0.25)
 
     local size = MOB_SIZE.SMALL
     if you:is(OBJECT_TYPE.MOB) then

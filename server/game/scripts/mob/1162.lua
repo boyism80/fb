@@ -3,11 +3,17 @@ local quest = require('lib.quest')
 
 return {
     on_mob_attack = function(me, you)
+        local lines = {
+            '반고: 가소롭군..',
+            '반고: 진흑룡소환!!',
+        }
+        me:chat(lines[math.random(#lines)], CHAT_TYPE.NORMAL, false)
         return false
     end,
 
-    -- on_mob_die = function(me)
-    -- end,
+    on_mob_die = function(me)
+        me:chat('이 순간이..너희들의 기억속에서..지워지는 날..다시 오리라...', CHAT_TYPE.NORMAL, true)
+    end,
 
     on_mob_kill = function(me, mobs)
         if me == nil or mobs == nil or #mobs == 0 then
@@ -23,8 +29,5 @@ return {
             return
         end
         me:mkitem('반고의심장', 1)
-    end,
-
-    -- on_mob_spell_hit = function(me, you, spell)
-    -- end
+    end
 }

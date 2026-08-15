@@ -41,9 +41,6 @@ return {
         sleep(1000);
     end,
 
-    -- on_mob_die = function(me)
-    -- end,
-
     on_mob_kill = function(me, mobs)
         if me == nil or mobs == nil or #mobs == 0 then
             return
@@ -114,8 +111,5 @@ return {
         q:progress(2)
         me:push_achievement(19, "청의태자를 생포하였다. [2/2]", 7, 1)
         me:dialog(mob, "아. 나의 꿈이....나의 야망이................", { prev = false, next = true })
-    end,
-
-    -- on_mob_spell_hit = function(me, you, spell)
-    -- end
+    end
 }

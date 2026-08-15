@@ -5,12 +5,11 @@ return {
         return false
     end,
 
-    -- on_mob_die = function(me)
-    -- end,
-
-    -- on_mob_kill = function(me, mobs)
-    -- end,
-
-    -- on_mob_spell_hit = function(me, you, spell)
-    -- end
+    on_mob_die = function(me)
+        local lines = {
+        '어리석은 인간들이여...',
+        '파괴왕: 크으윽..',
+    }
+        me:chat(lines[math.random(#lines)], CHAT_TYPE.NORMAL, false)
+    end
 }

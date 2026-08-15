@@ -2,10 +2,6 @@
 -- 신의축복 캐스팅
 local spell = require('lib.spell')
 
--- 신의축복 버프 효과
-
--- 신의축복 버프 해제 효과
-
 return {
     on_cast = function(me, sp)
         local mp = 30
@@ -18,11 +14,11 @@ return {
     end,
 
     on_buff = function(me, sp)
-        me:hit(me:hit()+3)
+        me:buff_hit(me:buff_hit() + 3)
     end,
 
     on_unbuff = function(me, sp)
-        me:hit(me:hit()-3)
+        me:buff_hit(me:buff_hit() - 3)
     end,
 
     -- on_concast = function(me, sp)
