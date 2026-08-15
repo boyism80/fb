@@ -30,7 +30,8 @@ struct Clan FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
     VT_NAME = 6,
     VT_TITLE = 8,
     VT_ALLIED_CLAN_ID = 10,
-    VT_ENEMY_CLAN_IDS = 12
+    VT_ENEMY_CLAN_IDS = 12,
+    VT_MONEY = 14
   };
   uint32_t id() const {
     return GetField<uint32_t>(VT_ID, 0);
@@ -47,6 +48,9 @@ struct Clan FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
   const ::flatbuffers::Vector<uint32_t> *enemy_clan_ids() const {
     return GetPointer<const ::flatbuffers::Vector<uint32_t> *>(VT_ENEMY_CLAN_IDS);
   }
+  uint64_t money() const {
+    return GetField<uint64_t>(VT_MONEY, 0);
+  }
   bool Verify(::flatbuffers::Verifier &verifier) const {
     return VerifyTableStart(verifier) &&
            VerifyField<uint32_t>(verifier, VT_ID, 4) &&
@@ -58,6 +62,7 @@ struct Clan FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
            verifier.VerifyTable(allied_clan_id()) &&
            VerifyOffset(verifier, VT_ENEMY_CLAN_IDS) &&
            verifier.VerifyVector(enemy_clan_ids()) &&
+           VerifyField<uint64_t>(verifier, VT_MONEY, 8) &&
            verifier.EndTable();
   }
 };
@@ -81,6 +86,9 @@ struct ClanBuilder {
   void add_enemy_clan_ids(::flatbuffers::Offset<::flatbuffers::Vector<uint32_t>> enemy_clan_ids) {
     fbb_.AddOffset(Clan::VT_ENEMY_CLAN_IDS, enemy_clan_ids);
   }
+  void add_money(uint64_t money) {
+    fbb_.AddElement<uint64_t>(Clan::VT_MONEY, money, 0);
+  }
   explicit ClanBuilder(::flatbuffers::FlatBufferBuilder &_fbb)
         : fbb_(_fbb) {
     start_ = fbb_.StartTable();
@@ -98,8 +106,10 @@ inline ::flatbuffers::Offset<Clan> CreateClan(
     ::flatbuffers::Offset<::flatbuffers::String> name = 0,
     ::flatbuffers::Offset<::flatbuffers::String> title = 0,
     ::flatbuffers::Offset<nullable::nullable_uint> allied_clan_id = 0,
-    ::flatbuffers::Offset<::flatbuffers::Vector<uint32_t>> enemy_clan_ids = 0) {
+    ::flatbuffers::Offset<::flatbuffers::Vector<uint32_t>> enemy_clan_ids = 0,
+    uint64_t money = 0) {
   ClanBuilder builder_(_fbb);
+  builder_.add_money(money);
   builder_.add_enemy_clan_ids(enemy_clan_ids);
   builder_.add_allied_clan_id(allied_clan_id);
   builder_.add_title(title);
@@ -114,7 +124,8 @@ inline ::flatbuffers::Offset<Clan> CreateClanDirect(
     const char *name = nullptr,
     const char *title = nullptr,
     ::flatbuffers::Offset<nullable::nullable_uint> allied_clan_id = 0,
-    const std::vector<uint32_t> *enemy_clan_ids = nullptr) {
+    const std::vector<uint32_t> *enemy_clan_ids = nullptr,
+    uint64_t money = 0) {
   auto name__ = name ? _fbb.CreateString(name) : 0;
   auto title__ = title ? _fbb.CreateString(title) : 0;
   auto enemy_clan_ids__ = enemy_clan_ids ? _fbb.CreateVector<uint32_t>(*enemy_clan_ids) : 0;
@@ -124,7 +135,8 @@ inline ::flatbuffers::Offset<Clan> CreateClanDirect(
       name__,
       title__,
       allied_clan_id,
-      enemy_clan_ids__);
+      enemy_clan_ids__,
+      money);
 }
 
 inline const fb::protocol::internal::raw::Clan *GetClan(const void *buf) {

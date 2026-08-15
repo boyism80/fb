@@ -168,8 +168,7 @@ table DeleteMail {
 table SetOption {
   world: uint;
   user: uint;
-  type: ubyte;
-  enabled: bool;
+  changes: [fb.protocol.internal.OptionChange];
 }
 
 table CreateGroup {
@@ -428,4 +427,11 @@ table SetCastleOwner {
   host: uint;
   divine_beast: ubyte;
   owner_clan_id: uint?;
+}
+
+table SetClanMoney {
+  world: uint;
+  host: uint;
+  clan: uint;
+  delta: long;
 }

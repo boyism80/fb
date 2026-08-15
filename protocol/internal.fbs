@@ -204,6 +204,7 @@ table Clan {
     title: string?;
     allied_clan_id: uint?;
     enemy_clan_ids: [uint];
+    money: ulong = 0;
 }
 
 table ClanMember {
@@ -232,7 +233,8 @@ enum ClanActionType : byte {
     Ally = 5,
     Unally = 6,
     Enemy = 7,
-    Unenemy = 8
+    Unenemy = 8,
+    SetMoney = 9
 }
 
 enum ClanDetailsAction : byte {
@@ -306,4 +308,9 @@ table SavePayload {
     achievements: [Achievement];
     quests: [Quest];
     marketplace_pendings: [MarketplacePending];
+}
+
+table OptionChange {
+    type: ubyte;
+    enabled: bool;
 }

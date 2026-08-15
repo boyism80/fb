@@ -44,14 +44,17 @@ public struct Clan : IFlatbufferObject
   public ArraySegment<byte>? GetEnemyClanIdsBytes() { return __p.__vector_as_arraysegment(12); }
 #endif
   public uint[] GetEnemyClanIdsArray() { return __p.__vector_as_array<uint>(12); }
+  public ulong Money { get { int o = __p.__offset(14); return o != 0 ? __p.bb.GetUlong(o + __p.bb_pos) : (ulong)0; } }
 
   public static Offset<fb.protocol._internal.raw.Clan> CreateClan(FlatBufferBuilder builder,
       uint id = 0,
       StringOffset nameOffset = default(StringOffset),
       StringOffset titleOffset = default(StringOffset),
       Offset<nullable.nullable_uint> allied_clan_idOffset = default(Offset<nullable.nullable_uint>),
-      VectorOffset enemy_clan_idsOffset = default(VectorOffset)) {
-    builder.StartTable(5);
+      VectorOffset enemy_clan_idsOffset = default(VectorOffset),
+      ulong money = 0) {
+    builder.StartTable(6);
+    Clan.AddMoney(builder, money);
     Clan.AddEnemyClanIds(builder, enemy_clan_idsOffset);
     Clan.AddAlliedClanId(builder, allied_clan_idOffset);
     Clan.AddTitle(builder, titleOffset);
@@ -60,7 +63,7 @@ public struct Clan : IFlatbufferObject
     return Clan.EndClan(builder);
   }
 
-  public static void StartClan(FlatBufferBuilder builder) { builder.StartTable(5); }
+  public static void StartClan(FlatBufferBuilder builder) { builder.StartTable(6); }
   public static void AddId(FlatBufferBuilder builder, uint id) { builder.AddUint(0, id, 0); }
   public static void AddName(FlatBufferBuilder builder, StringOffset nameOffset) { builder.AddOffset(1, nameOffset.Value, 0); }
   public static void AddTitle(FlatBufferBuilder builder, StringOffset titleOffset) { builder.AddOffset(2, titleOffset.Value, 0); }
@@ -71,6 +74,7 @@ public struct Clan : IFlatbufferObject
   public static VectorOffset CreateEnemyClanIdsVectorBlock(FlatBufferBuilder builder, ArraySegment<uint> data) { builder.StartVector(4, data.Count, 4); builder.Add(data); return builder.EndVector(); }
   public static VectorOffset CreateEnemyClanIdsVectorBlock(FlatBufferBuilder builder, IntPtr dataPtr, int sizeInBytes) { builder.StartVector(1, sizeInBytes, 1); builder.Add<uint>(dataPtr, sizeInBytes); return builder.EndVector(); }
   public static void StartEnemyClanIdsVector(FlatBufferBuilder builder, int numElems) { builder.StartVector(4, numElems, 4); }
+  public static void AddMoney(FlatBufferBuilder builder, ulong money) { builder.AddUlong(5, money, 0); }
   public static Offset<fb.protocol._internal.raw.Clan> EndClan(FlatBufferBuilder builder) {
     int o = builder.EndTable();
     return new Offset<fb.protocol._internal.raw.Clan>(o);
@@ -90,6 +94,7 @@ static public class ClanVerify
       && verifier.VerifyString(tablePos, 8 /*Title*/, false)
       && verifier.VerifyTable(tablePos, 10 /*AlliedClanId*/, nullable.nullable_uintVerify.Verify, false)
       && verifier.VerifyVectorOfData(tablePos, 12 /*EnemyClanIds*/, 4 /*uint*/, false)
+      && verifier.VerifyField(tablePos, 14 /*Money*/, 8 /*ulong*/, 8, false)
       && verifier.VerifyTableEnd(tablePos);
   }
 }

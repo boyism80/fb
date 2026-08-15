@@ -16,6 +16,7 @@ public enum ClanActionType : sbyte
   Unally = 6,
   Enemy = 7,
   Unenemy = 8,
+  SetMoney = 9,
 };
 
 

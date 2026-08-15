@@ -51,7 +51,8 @@ public struct UpdatedClan : IFlatbufferObject
 #endif
   public byte[] GetNewTitleArray() { return __p.__vector_as_array<byte>(26); }
   public nullable.nullable_uint? RelatedClanId { get { int o = __p.__offset(28); return o != 0 ? (nullable.nullable_uint?)(new nullable.nullable_uint()).__assign(__p.__indirect(o + __p.bb_pos), __p.bb) : null; } }
-  public uint Error { get { int o = __p.__offset(30); return o != 0 ? __p.bb.GetUint(o + __p.bb_pos) : (uint)0; } }
+  public ulong Money { get { int o = __p.__offset(30); return o != 0 ? __p.bb.GetUlong(o + __p.bb_pos) : (ulong)0; } }
+  public uint Error { get { int o = __p.__offset(32); return o != 0 ? __p.bb.GetUint(o + __p.bb_pos) : (uint)0; } }
 
   public static Offset<fb.protocol._internal.response.raw.UpdatedClan> CreateUpdatedClan(FlatBufferBuilder builder,
       uint host = 0,
@@ -67,8 +68,10 @@ public struct UpdatedClan : IFlatbufferObject
       StringOffset old_titleOffset = default(StringOffset),
       StringOffset new_titleOffset = default(StringOffset),
       Offset<nullable.nullable_uint> related_clan_idOffset = default(Offset<nullable.nullable_uint>),
+      ulong money = 0,
       uint error = 0) {
-    builder.StartTable(14);
+    builder.StartTable(15);
+    UpdatedClan.AddMoney(builder, money);
     UpdatedClan.AddError(builder, error);
     UpdatedClan.AddRelatedClanId(builder, related_clan_idOffset);
     UpdatedClan.AddNewTitle(builder, new_titleOffset);
@@ -86,7 +89,7 @@ public struct UpdatedClan : IFlatbufferObject
     return UpdatedClan.EndUpdatedClan(builder);
   }
 
-  public static void StartUpdatedClan(FlatBufferBuilder builder) { builder.StartTable(14); }
+  public static void StartUpdatedClan(FlatBufferBuilder builder) { builder.StartTable(15); }
   public static void AddHost(FlatBufferBuilder builder, uint host) { builder.AddUint(0, host, 0); }
   public static void AddAction(FlatBufferBuilder builder, fb.protocol._internal.raw.ClanActionType action) { builder.AddSbyte(1, (sbyte)action, 0); }
   public static void AddClanId(FlatBufferBuilder builder, uint clanId) { builder.AddUint(2, clanId, 0); }
@@ -100,7 +103,8 @@ public struct UpdatedClan : IFlatbufferObject
   public static void AddOldTitle(FlatBufferBuilder builder, StringOffset oldTitleOffset) { builder.AddOffset(10, oldTitleOffset.Value, 0); }
   public static void AddNewTitle(FlatBufferBuilder builder, StringOffset newTitleOffset) { builder.AddOffset(11, newTitleOffset.Value, 0); }
   public static void AddRelatedClanId(FlatBufferBuilder builder, Offset<nullable.nullable_uint> relatedClanIdOffset) { builder.AddOffset(12, relatedClanIdOffset.Value, 0); }
-  public static void AddError(FlatBufferBuilder builder, uint error) { builder.AddUint(13, error, 0); }
+  public static void AddMoney(FlatBufferBuilder builder, ulong money) { builder.AddUlong(13, money, 0); }
+  public static void AddError(FlatBufferBuilder builder, uint error) { builder.AddUint(14, error, 0); }
   public static Offset<fb.protocol._internal.response.raw.UpdatedClan> EndUpdatedClan(FlatBufferBuilder builder) {
     int o = builder.EndTable();
     return new Offset<fb.protocol._internal.response.raw.UpdatedClan>(o);
@@ -128,7 +132,8 @@ static public class UpdatedClanVerify
       && verifier.VerifyString(tablePos, 24 /*OldTitle*/, false)
       && verifier.VerifyString(tablePos, 26 /*NewTitle*/, false)
       && verifier.VerifyTable(tablePos, 28 /*RelatedClanId*/, nullable.nullable_uintVerify.Verify, false)
-      && verifier.VerifyField(tablePos, 30 /*Error*/, 4 /*uint*/, 4, false)
+      && verifier.VerifyField(tablePos, 30 /*Money*/, 8 /*ulong*/, 8, false)
+      && verifier.VerifyField(tablePos, 32 /*Error*/, 4 /*uint*/, 4, false)
       && verifier.VerifyTableEnd(tablePos);
   }
 }

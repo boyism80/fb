@@ -258,6 +258,7 @@ table UpdatedClan {
   new_title: string?;
   /// Counterpart clan id for Ally/Unally/Enemy/Unenemy actions.
   related_clan_id: uint?;
+  money: ulong = 0;
   error: uint;
 }
 
