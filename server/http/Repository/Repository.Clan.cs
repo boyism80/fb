@@ -39,6 +39,7 @@ namespace Http.Reepository
                     `id`,
                     `name`,
                     `title`,
+                    `money`,
                     `deleted`,
                     `created_date`,
                     `updated_date`)
@@ -46,12 +47,14 @@ namespace Http.Reepository
                     {value.Id.Escape()},
                     {value.Name.Escape()},
                     {value.Title.Escape()},
+                    {value.Money.Escape()},
                     0,
                     {value.CreatedDate.Escape()},
                     {value.UpdatedDate.Escape()})
                 ON DUPLICATE KEY UPDATE 
                     `name`=VALUES(`name`),
                     `title`=VALUES(`title`),
+                    `money`=VALUES(`money`),
                     `updated_date`=VALUES(`updated_date`);
                 """;
 

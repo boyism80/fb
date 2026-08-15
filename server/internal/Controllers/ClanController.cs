@@ -1114,6 +1114,66 @@ namespace Internal.Controllers
                 };
             }
         }
+        [HttpPost("money")]
+        public async Task<Response.UpdatedClan> SetMoney(Request.SetClanMoney request)
+        {
+            try
+            {
+                var world = request.World;
+                await using var _ = await _distributedLock.Lock(world, Clan.DistributedLockKey(request.Clan));
+
+                var clan = await _dbContext.Clan.Get(world, request.Clan) ??
+                    throw new LogicException(ErrorCode.NotFoundClan);
+
+                if (request.Delta > 0)
+                {
+                    var next = clan.Money + (ulong)request.Delta;
+                    if (next < clan.Money)
+                        throw new LogicException(ErrorCode.Unhandled);
+                    clan.Money = next;
+                }
+                else if (request.Delta < 0)
+                {
+                    var abs = (ulong)(-request.Delta);
+                    if (clan.Money < abs)
+                        throw new LogicException(ErrorCode.Unhandled);
+                    clan.Money -= abs;
+                }
+
+                _dbContext.Clan.Set(world, clan);
+                await _dbContext.SaveChangesAsync();
+
+                var response = new Response.UpdatedClan
+                {
+                    Host = request.Host,
+                    Action = Protocol.ClanActionType.SetMoney,
+                    ClanId = clan.Id,
+                    ClanName = clan.Name,
+                    Money = clan.Money,
+                    Error = (uint)ErrorCode.None
+                };
+                await _rabbitMqService.PublishAsync(response, "amq.direct", $"fb.{request.World}.clan");
+                return response;
+            }
+            catch (LogicException e)
+            {
+                return new Response.UpdatedClan
+                {
+                    Host = request.Host,
+                    Action = Protocol.ClanActionType.SetMoney,
+                    Error = (uint)e.Error
+                };
+            }
+            catch (Exception)
+            {
+                return new Response.UpdatedClan
+                {
+                    Host = request.Host,
+                    Action = Protocol.ClanActionType.SetMoney,
+                    Error = (uint)ErrorCode.Unhandled
+                };
+            }
+        }
         [HttpPost("unenemy")]
         public async Task<Response.UpdatedClan> Unenemy(Request.EndClanEnemy request)
         {

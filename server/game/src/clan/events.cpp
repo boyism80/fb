@@ -11,6 +11,19 @@ namespace internal_resp = fb::protocol::internal::response;
 
 namespace {
 
+async::task<void> invoke_clan_left(fb::game::server& server, const std::shared_ptr<character>& ptr)
+{
+    if (ptr == nullptr)
+        co_return;
+
+    auto lua = server.lua.open("scripts/interaction.lua", "on_clan_left");
+    if (!lua)
+        co_return;
+
+    lua->pushobject(ptr);
+    std::ignore = co_await lua->call(1);
+}
+
 std::vector<std::shared_ptr<character>> online_members(const std::shared_ptr<clan>& clan)
 {
     auto result = std::vector<std::shared_ptr<character>>{};
@@ -82,6 +95,10 @@ async::task<void> clan::container::apply_updated(const internal_resp::UpdatedCla
 
     case internal::ClanActionType::Unenemy:
         co_await this->on_unenemy(resp.clan_id, resp.related_clan_id);
+        break;
+
+    case internal::ClanActionType::SetMoney:
+        co_await this->on_set_money(resp.clan_id, resp.money);
         break;
 
     default:
@@ -284,7 +301,7 @@ async::task<void> clan::container::on_join(uint32_t clan_id, std::optional<std::
         if (ptr != nullptr)
         {
             ptr->clan_id(clan->id());
-            ptr->update_external(false);
+            ptr->update_external();
             ptr->message(std::format(_TEXT(MESSAGE_CLAN_JOINED_SUCCESS), clan->name()), MESSAGE_TYPE::NOTIFY);
         }
 
@@ -330,8 +347,9 @@ async::task<void> clan::container::on_leave(uint32_t clan_id, std::optional<std:
         if (ptr != nullptr)
         {
             ptr->clan_reset();
-            ptr->update_external(false);
+            ptr->update_external();
             ptr->message(_TEXT(MESSAGE_CLAN_LEFT), MESSAGE_TYPE::NOTIFY);
+            co_await invoke_clan_left(this->_server, ptr);
         }
 
         if (before != nullptr)
@@ -395,8 +413,9 @@ async::task<void> clan::container::on_kick(uint32_t clan_id, std::optional<std::
         if (ptr != nullptr)
         {
             ptr->clan_reset();
-            ptr->update_external(false);
+            ptr->update_external();
             ptr->message(_TEXT(MESSAGE_CLAN_KICKED), MESSAGE_TYPE::NOTIFY);
+            co_await invoke_clan_left(this->_server, ptr);
         }
 
         if (before != nullptr)
@@ -451,7 +470,7 @@ async::task<void> clan::container::on_ally(uint32_t clan_id, std::optional<uint3
 
     this->_server.characters.foreach_enqueue(
         [](auto& member) -> async::task<void> {
-            member->update_external(false);
+            member->update_external();
             co_return;
         },
         members);
@@ -477,7 +496,7 @@ async::task<void> clan::container::on_unally(uint32_t clan_id, std::optional<uin
 
     this->_server.characters.foreach_enqueue(
         [](auto& member) -> async::task<void> {
-            member->update_external(false);
+            member->update_external();
             co_return;
         },
         members);
@@ -504,7 +523,7 @@ async::task<void> clan::container::on_enemy(uint32_t clan_id, std::optional<uint
 
     this->_server.characters.foreach_enqueue(
         [](auto& member) -> async::task<void> {
-            member->update_external(false);
+            member->update_external();
             co_return;
         },
         members);
@@ -531,7 +550,7 @@ async::task<void> clan::container::on_unenemy(uint32_t clan_id, std::optional<ui
 
     this->_server.characters.foreach_enqueue(
         [](auto& member) -> async::task<void> {
-            member->update_external(false);
+            member->update_external();
             co_return;
         },
         members);
@@ -596,4 +615,13 @@ async::task<void> clan::container::on_change_role(uint32_t                   cla
             },
             members);
     }
+}
+
+async::task<void> clan::container::on_set_money(uint32_t clan_id, uint64_t money)
+{
+    auto guard = co_await this->ensure(clan_id);
+    if (guard.value() == nullptr)
+        co_return;
+
+    guard.value()->money(money);
 }

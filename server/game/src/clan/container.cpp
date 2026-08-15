@@ -35,7 +35,8 @@ async::task<clan::container::entity_ptr> clan::container::fetch(uint32_t id)
                                                      resp.clan.title,
                                                      members,
                                                      resp.clan.allied_clan_id,
-                                                     enemy_clan_ids);
+                                                     enemy_clan_ids,
+                                                     resp.clan.money);
     }
 
     case fb::model::enum_value::ERROR_CODE::NOT_FOUND_CLAN:

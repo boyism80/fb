@@ -26,6 +26,7 @@ IMPLEMENT_LUA_EXTENSION(clan, "fb.game.clan")
 {"break_ally",          builtin::clan::builtin_break_ally},
 {"declare_enemy",       builtin::clan::builtin_declare_enemy},
 {"end_enemy",           builtin::clan::builtin_end_enemy},
+{"money",               builtin::clan::builtin_money},
 END_LUA_EXTENSION; // clang-format on
 
 int builtin::clan::builtin_id(lua_State* L)
@@ -696,6 +697,57 @@ int builtin::clan::builtin_end_enemy(lua_State* L)
         else
             lua->pushnil();
         co_return 1;
+    };
+    return builder.run();
+}
+
+int builtin::clan::builtin_money(lua_State* L)
+{
+    auto lua = fb::lua::get(L);
+    if (lua == nullptr)
+        return 0;
+
+    auto clan = lua->touserdata<fb::game::clan>(1);
+    if (clan == nullptr)
+        return 0;
+
+    auto argc = lua->argc();
+    if (argc < 2)
+    {
+        lua->pushinteger(clan->money());
+        return 1;
+    }
+
+    auto delta    = static_cast<int64_t>(lua->tointeger(2));
+    auto clan_id  = clan->id();
+    auto error    = std::make_shared<std::optional<std::string>>();
+    auto money    = std::make_shared<uint64_t>(0);
+    auto builder  = lua->new_co_builder();
+    builder.yield = [=]() -> async::task<void> {
+        auto& server = static_cast<fb::game::server&>(lua->executor);
+        try
+        {
+            co_await server.clans.add_money(clan_id, delta);
+            auto guard = co_await server.clans.ensure(clan_id);
+            if (guard.value() != nullptr)
+                *money = guard.value()->money();
+        }
+        catch (std::exception& e)
+        {
+            *error = e.what();
+        }
+    };
+    builder.resume = [=]() -> async::task<int> {
+        if (error->has_value())
+        {
+            lua->pushnil();
+            lua->pushstring(error->value().c_str());
+            co_return 2;
+        }
+
+        lua->pushinteger(*money);
+        lua->pushnil();
+        co_return 2;
     };
     return builder.run();
 }

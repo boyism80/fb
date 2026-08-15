@@ -398,3 +398,19 @@ async::task<void> clan::container::broadcast(uint32_t clan_id, std::string_view 
     co_await this->on_error(resp.error);
     co_await this->on_broadcast(resp.clan, std::move(resp.message), resp.type);
 }
+
+async::task<void> clan::container::add_money(uint32_t clan_id, int64_t delta)
+{
+    if (delta == 0)
+        co_return;
+
+    auto*  before = this->_server.threads.current();
+    auto   world  = fb::config<uint32_t>("world");
+    auto&& resp   = co_await this->_server.http.post(
+        "internal",
+        "/clan/money",
+        internal_reqs::SetClanMoney{world, fb::config<uint32_t>("id"), clan_id, delta});
+    if (before != nullptr)
+        co_await before->switching();
+    co_await this->apply_updated(resp);
+}

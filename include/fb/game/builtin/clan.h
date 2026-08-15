@@ -25,6 +25,7 @@ struct clan
     static int builtin_break_ally(lua_State* L);
     static int builtin_declare_enemy(lua_State* L);
     static int builtin_end_enemy(lua_State* L);
+    static int builtin_money(lua_State* L);
 };
 
 } // namespace fb::game::builtin

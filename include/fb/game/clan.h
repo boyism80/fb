@@ -37,10 +37,11 @@ private:
     character_map                _characters;
     std::optional<uint32_t>      _allied_clan_id;
     std::unordered_set<uint32_t> _enemy_clan_ids;
+    uint64_t                     _money = 0;
 
 public:
     // clang-format off
-    clan(server& server, uint32_t id, std::string_view name, const std::optional<std::string>& title, const member_map& members, const std::optional<uint32_t>& allied_clan_id = std::nullopt, const std::unordered_set<uint32_t>& enemy_clan_ids = {});
+    clan(server& server, uint32_t id, std::string_view name, const std::optional<std::string>& title, const member_map& members, const std::optional<uint32_t>& allied_clan_id = std::nullopt, const std::unordered_set<uint32_t>& enemy_clan_ids = {}, uint64_t money = 0);
     clan(const clan&) = delete;
     clan(clan&&);
     ~clan() = default;
@@ -71,6 +72,8 @@ public:
     void                              add_enemy_clan(uint32_t other_clan_id);
     void                              remove_enemy_clan(uint32_t other_clan_id);
     bool                              is_hostile(uint32_t other_clan_id) const;
+    uint64_t                          money() const;
+    void                              money(uint64_t value);
     // clang-format on
 };
 
@@ -110,6 +113,8 @@ public:
     async::task<void> on_unally(uint32_t clan_id, std::optional<uint32_t> related_clan_id);
     async::task<void> on_enemy(uint32_t clan_id, std::optional<uint32_t> related_clan_id);
     async::task<void> on_unenemy(uint32_t clan_id, std::optional<uint32_t> related_clan_id);
+    async::task<void> add_money(uint32_t clan_id, int64_t delta);
+    async::task<void> on_set_money(uint32_t clan_id, uint64_t money);
     // clang-format on
 };
 

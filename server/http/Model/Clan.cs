@@ -14,6 +14,7 @@ namespace Http.Model
     {
         public string Name { get; set; }
         public string Title { get; set; }
+        public ulong Money { get; set; }
         public static string DistributedLockKey(uint id)
         {
             return $"fb:lock:clan:{id}";
