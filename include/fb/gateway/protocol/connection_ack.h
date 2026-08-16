@@ -33,6 +33,11 @@ public:
 #endif
 };
 
+#ifndef BOT
+template <>
+void connection_ack<CLIENT_VERSION::v651>::deserialize(fb::stream_reader<big_endian>& reader);
+#endif
+
 } // namespace fb::protocol::gateway::request
 
 #endif

@@ -17,6 +17,12 @@ async::task<bool> click<V>::handle(fb::socket<character>& session, game_reqs::cl
     if (ch->inited() == false)
         co_return true;
 
+    if constexpr (V == fb::protocol::CLIENT_VERSION::v651)
+    {
+        if (request.flag == game_reqs::click<V>::FLAG_COORD)
+            co_return true;
+    }
+
     // Object-flag click (map object, F1/F2, dialog TOP): drop any waiting dialog first.
     // Real NPC then restarts via on_click; sentinel oid 0xFFFFFFFD just closes.
     if (request.flag == game_reqs::click<V>::FLAG_OBJECT && ch->dialog != nullptr)

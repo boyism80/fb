@@ -21,6 +21,9 @@ async::task<bool> item_info<V>::handle(fb::socket<character>& session, game_reqs
     if (item == nullptr)
         co_return false;
 
+    if constexpr (V == fb::protocol::CLIENT_VERSION::v651)
+        co_return true;
+
     ch->item_tooltip(*item, request.position);
     co_return true;
 }

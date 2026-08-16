@@ -106,10 +106,12 @@ async::task<bool> fb::game::server::on_disconnected(fb::socket<character>& socke
         auto& group_id = ptr->group_id();
         if (group_id.has_value())
         {
-            this->groups.write(group_id.value(), [weak](auto& group) {
+            auto gid = group_id.value();
+            this->groups.write(gid, [weak](auto& group) {
                 group->detach(weak);
             });
             ptr->group_reset();
+            this->groups.update_portraits(gid);
         }
 
         auto& clan_id = ptr->clan_id();

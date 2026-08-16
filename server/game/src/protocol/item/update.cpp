@@ -65,7 +65,6 @@ item_update<CLIENT_VERSION::v651>::item_update(uint8_t     index,
     look(look),
     color(color),
     name(std::move(name)),
-    name_b(),
     count(count),
     flag(0),
     extra(0),
@@ -110,7 +109,7 @@ void item_update<CLIENT_VERSION::v651>::serialize(fb::stream_writer<big_endian>&
     writer.write<uint16_t>(this->look);
     writer.write<uint8_t>(this->color);
     writer.write<std::string, uint8_t>(this->name);
-    writer.write<std::string, uint8_t>(this->name_b);
+    writer.write<std::string, uint8_t>(this->name);
     writer.write<uint32_t>(this->count);
     writer.write<uint8_t>(this->flag);
     writer.write<uint32_t>(this->extra);
@@ -145,5 +144,6 @@ void item_update<CLIENT_VERSION::v651>::deserialize(fb::stream_reader<big_endian
 
 template class item_update<CLIENT_VERSION::v550>;
 template class item_update<CLIENT_VERSION::v565>;
+template class item_update<CLIENT_VERSION::v651>;
 
 } // namespace fb::protocol::game::response

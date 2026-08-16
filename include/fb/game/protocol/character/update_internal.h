@@ -1,4 +1,4 @@
-#ifndef __PROTOCOL_GAME_STATE_H__
+﻿#ifndef __PROTOCOL_GAME_STATE_H__
 #define __PROTOCOL_GAME_STATE_H__
 
 #include <fb/protocol/header.h>
@@ -25,38 +25,37 @@ public:
 public:
 #ifdef BOT
     UPDATE_STATE_LEVEL level;
-    bool               ch_follow_camera    = false;
-    bool               ch_lock_walk_speed  = false;
-    bool               ch_gm               = false;
-    uint16_t           ch_nation           = 0;
-    uint8_t            ch_divine_beast     = 0;
-    uint8_t            unknown_based_5     = 0;
-    uint8_t            ch_level            = 0;
-    uint32_t           ch_base_hp          = 0;
-    uint32_t           ch_base_mp          = 0;
-    uint8_t            ch_strength         = 0;
-    uint8_t            ch_intelligence     = 0;
-    uint8_t            ch_dexterity        = 0;
-    int16_t            reputation          = 0; // 인품, BASED +26
-    uint16_t           evaluation          = 0; // 평가권, BASED +28
-    uint32_t           ch_hp               = 0;
-    uint32_t           ch_mp               = 0;
-    uint32_t           ch_exp              = 0;
-    uint32_t           ch_money            = 0;
-    uint32_t           ch_crowd_control    = 0;
-    uint8_t            ch_mail             = 0;
-    uint8_t            ch_fast_move        = 0;
-    uint8_t            ch_speed            = 0;
-    uint8_t            unknown_exp_pad     = 0;
-    uint32_t           unknown_option_bits = 0;
+    bool               ch_follow_camera   = false;
+    bool               ch_lock_walk_speed = false;
+    bool               ch_gm              = false;
+    uint16_t           ch_nation          = 0;
+    uint8_t            ch_divine_beast    = 0;
+    uint8_t            unknown_based_5    = 0;
+    uint8_t            ch_level           = 0;
+    uint32_t           ch_base_hp         = 0;
+    uint32_t           ch_base_mp         = 0;
+    uint8_t            ch_strength        = 0;
+    uint8_t            ch_intelligence    = 0;
+    uint8_t            ch_dexterity       = 0;
+    int16_t            reputation         = 0;
+    uint16_t           evaluation         = 0;
+    uint32_t           ch_hp              = 0;
+    uint32_t           ch_mp              = 0;
+    uint32_t           ch_exp             = 0;
+    uint32_t           ch_money           = 0;
+    uint32_t           ch_crowd_control   = 0;
+    uint8_t            ch_mail            = 0;
+    uint8_t            ch_fast_move       = 0;
+    uint8_t            ch_speed           = 0;
+    uint8_t            unknown_exp_pad    = 0;
+    uint32_t           option_bits        = 0;
 #else
     const fb::game::character& ch;
     const UPDATE_STATE_LEVEL   level;
-    uint8_t                    unknown_based_5     = 0;
-    int16_t                    reputation          = 0; // 인품, BASED +26
-    uint16_t                   evaluation          = 0; // 평가권, BASED +28
-    uint8_t                    unknown_exp_pad     = 0;
-    uint32_t                   unknown_option_bits = 5;
+    uint8_t                    unknown_based_5 = 0;
+    int16_t                    reputation      = 0;
+    uint16_t                   evaluation      = 0;
+    uint8_t                    unknown_exp_pad = 0;
 #endif
 
 public:

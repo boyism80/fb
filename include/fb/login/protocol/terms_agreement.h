@@ -14,11 +14,9 @@ using namespace fb::model::enum_value;
  * C2S agreement (opcode 0x10).
  * Stock clients echo the full gateway->login transfer parameter blob here:
  *   enc_type u8 | key_size u8 | iv[key_size] | from u8 | client_version u16
- * Primary layout (v550) stops after client_version.
- * v651: + CLIENT_UI_MODE (byte_5E0866) after the blob (if constexpr).
- *
- * Bootstrap (no session yet) always deserializes as agreement<v550>; the packed
- * client_version field still establishes CLIENT_VERSION for the new session.
+ * Packed 651 always appends CLIENT_UI_MODE (g_ui_mode_new). 550/565 stop after
+ * client_version. Bootstrap deserializes as agreement<v550>; the packed u16
+ * selects whether the UI byte is present.
  */
 template <CLIENT_VERSION V>
 class agreement : public fb::protocol::header

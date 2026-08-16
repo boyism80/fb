@@ -22,18 +22,13 @@ enum class CLIENT_UI_MODE : uint8_t
     NEW = 1,
 };
 
-inline bool try_parse(uint16_t raw, CLIENT_VERSION& out)
+inline constexpr bool is_supported(uint16_t packed)
 {
-    switch (raw)
+    switch (packed)
     {
-    case 550:
-        out = CLIENT_VERSION::v550;
-        return true;
-    case 565:
-        out = CLIENT_VERSION::v565;
-        return true;
-    case 651:
-        out = CLIENT_VERSION::v651;
+    case static_cast<uint16_t>(CLIENT_VERSION::v550):
+    case static_cast<uint16_t>(CLIENT_VERSION::v565):
+    case static_cast<uint16_t>(CLIENT_VERSION::v651):
         return true;
     default:
         return false;
@@ -52,21 +47,6 @@ inline std::string_view to_string(CLIENT_VERSION v)
         return "6.51";
     default:
         return "unknown";
-    }
-}
-
-inline bool try_parse(uint8_t raw, CLIENT_UI_MODE& out)
-{
-    switch (raw)
-    {
-    case 0:
-        out = CLIENT_UI_MODE::OLD;
-        return true;
-    case 1:
-        out = CLIENT_UI_MODE::NEW;
-        return true;
-    default:
-        return false;
     }
 }
 

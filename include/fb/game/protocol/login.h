@@ -8,6 +8,13 @@
 
 namespace fb::protocol::game::request {
 
+/**
+ * C2S game login (opcode 0x10). Echoed transfer blob:
+ *   enc | key | from | client_version u16 | uid | name | transfer?
+ * Packed 651 + NEW UI appends CLIENT_UI_MODE. Packed 651 + OLD UI does not.
+ * Bootstrap deserializes as login<v550>; the packed u16 and remaining bytes
+ * select whether the UI byte is present.
+ */
 template <CLIENT_VERSION V>
 class login : public fb::protocol::header
 {

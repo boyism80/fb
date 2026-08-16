@@ -27,6 +27,35 @@ public:
 #endif
 };
 
+template <>
+class self_info<CLIENT_VERSION::v651> : public fb::protocol::header
+{
+public:
+    static constexpr uint8_t opcode = 0x2D;
+    FB_PROTOCOL_VERSION_TAGS(CLIENT_VERSION::v651);
+
+public:
+#ifndef BOT
+    bool party = false;
+#else
+    const bool party = false;
+#endif
+
+public:
+#ifndef BOT
+    self_info() = default;
+#else
+    self_info(bool party = false);
+#endif
+
+public:
+#ifdef BOT
+    void serialize(fb::stream_writer<big_endian>& writer) const;
+#else
+    void deserialize(fb::stream_reader<big_endian>& reader);
+#endif
+};
+
 } // namespace fb::protocol::game::request
 
 #endif

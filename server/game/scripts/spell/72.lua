@@ -21,9 +21,9 @@ return {
         end
 
         if me:gender() == GENDER.MALE then
-            me:look(19)
+            me:hair(19)
         else
-            me:look(89)
+            me:hair(89)
         end
 
         local house = id2map(10960) or name2map('견우직녀의집')

@@ -55,6 +55,11 @@ public:
     void parse(SPELL_TYPE type);
 };
 
+#ifndef BOT
+template <>
+void spell_cast<CLIENT_VERSION::v651>::parse(SPELL_TYPE type);
+#endif
+
 } // namespace fb::protocol::game::request
 
 #endif

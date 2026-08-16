@@ -71,7 +71,6 @@ public:
     const uint16_t    look;
     const uint8_t     color;
     const std::string name;
-    const std::string name_b;
     const uint32_t    count;
     const uint8_t     flag;
     const uint32_t    extra;

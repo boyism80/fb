@@ -12,18 +12,19 @@ void agreement<V>::deserialize(fb::stream_reader<big_endian>& reader)
     this->enc_key_size = reader.read<uint8_t>();
     reader.read(this->enc_key, this->enc_key_size);
 
-    // Trailing transfer fields echoed by the stock client (gateway→login hop).
     this->from  = reader.read<uint8_t>();
     auto packed = reader.read<uint16_t>();
-    if (try_parse(packed, this->client_version) == false)
-        throw std::runtime_error("invalid client version in agreement transfer");
+    if (is_supported(packed) == false)
+        throw std::runtime_error("unsupported client version in agreement transfer");
+    this->client_version = static_cast<CLIENT_VERSION>(packed);
 
-    // Login 6.51 always appends NEW/OLD after the echoed blob.
-    if constexpr (V == CLIENT_VERSION::v651)
+    if (this->client_version == CLIENT_VERSION::v651)
     {
-        auto flag = reader.read<uint8_t>();
-        if (try_parse(flag, this->ui_mode) == false)
-            throw std::runtime_error("invalid client ui mode in agreement transfer");
+        this->ui_mode = static_cast<CLIENT_UI_MODE>(reader.read<uint8_t>());
+    }
+    else
+    {
+        this->ui_mode = CLIENT_UI_MODE::OLD;
     }
 }
 #else
@@ -53,7 +54,7 @@ void agreement<V>::serialize(fb::stream_writer<big_endian>& writer) const
     writer.write((const void*)this->enc_key, this->enc_key_size);
     writer.write<uint8_t>(this->from);
     writer.write<uint16_t>(static_cast<uint16_t>(this->client_version));
-    if constexpr (V == CLIENT_VERSION::v651)
+    if (this->client_version == CLIENT_VERSION::v651)
         writer.write<uint8_t>(static_cast<uint8_t>(this->ui_mode));
 }
 #endif

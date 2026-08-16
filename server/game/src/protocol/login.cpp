@@ -22,7 +22,6 @@ void login<V>::serialize(fb::stream_writer<big_endian>& writer) const
     writer.write<uint8_t>(this->key_size);
     writer.write((void*)this->enc_key, this->key_size);
     writer.write<uint8_t>(static_cast<uint8_t>(this->from));
-    // Required client_version sits after `from` in the transfer header
     writer.write<uint16_t>(static_cast<uint16_t>(this->client_version));
     writer.write<uint32_t>(this->id);
     writer.write<std::string, uint8_t>(this->name);
@@ -35,7 +34,7 @@ void login<V>::serialize(fb::stream_writer<big_endian>& writer) const
         writer.write<uint16_t>(this->transfer.value().position.y);
     }
 
-    if constexpr (V == CLIENT_VERSION::v651)
+    if (this->client_version == CLIENT_VERSION::v651 && this->ui_mode == CLIENT_UI_MODE::NEW)
         writer.write<uint8_t>(static_cast<uint8_t>(this->ui_mode));
 }
 
@@ -43,7 +42,6 @@ template <CLIENT_VERSION V>
 void login<V>::deserialize(fb::stream_reader<big_endian>& reader)
 {
     header::deserialize(reader);
-    // base (from transfer header)
     this->enc_type = reader.read<uint8_t>();
     this->key_size = reader.read<uint8_t>();
     reader.read((void*)this->enc_key, this->key_size);
@@ -53,12 +51,11 @@ void login<V>::deserialize(fb::stream_reader<big_endian>& reader)
     this->from = reader.read<uint8_t>();
 #endif
 
-    // Required client version (before optional transfer payload)
     auto packed = reader.read<uint16_t>();
-    if (try_parse(packed, this->client_version) == false)
-        throw std::runtime_error("invalid client version in login transfer");
+    if (is_supported(packed) == false)
+        throw std::runtime_error("unsupported client version in login transfer");
+    this->client_version = static_cast<CLIENT_VERSION>(packed);
 
-    // additional parameters
     this->id   = reader.read<uint32_t>();
     this->name = reader.read<std::string, uint8_t>();
     if (reader.read<bool>())
@@ -69,14 +66,13 @@ void login<V>::deserialize(fb::stream_reader<big_endian>& reader)
         this->transfer = transfer_param{.map = map, .position = fb::model::point<uint16_t>(x, y)};
     }
 
-    // GameScene NEW appends CLIENT_UI_MODE after the echoed blob.
-    // Only the v651 layout carries it; the bootstrap v550 layout leaves ui_mode at OLD
-    // and the trailing byte is flushed with the rest of the packet body.
-    if constexpr (V == CLIENT_VERSION::v651)
+    if (this->client_version == CLIENT_VERSION::v651 && reader.readable_size() >= 1)
     {
-        auto flag = reader.read<uint8_t>();
-        if (try_parse(flag, this->ui_mode) == false)
-            throw std::runtime_error("invalid client ui mode in login transfer");
+        this->ui_mode = static_cast<CLIENT_UI_MODE>(reader.read<uint8_t>());
+    }
+    else
+    {
+        this->ui_mode = CLIENT_UI_MODE::OLD;
     }
 }
 

@@ -17,8 +17,23 @@ async::task<bool> self_info<V>::handle(fb::socket<character>& session, game_reqs
     if (ch->inited() == false)
         co_return true;
 
-    ch->update_internal();
-    ch->update_buff();
+    if constexpr (V == fb::protocol::CLIENT_VERSION::v651)
+    {
+        if (request.party)
+        {
+            this->server.groups.update_portraits(*ch);
+        }
+        else
+        {
+            ch->update_internal();
+            ch->update_buff();
+        }
+    }
+    else
+    {
+        ch->update_internal();
+        ch->update_buff();
+    }
     co_return true;
 }
 

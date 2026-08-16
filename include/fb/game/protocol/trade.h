@@ -20,13 +20,12 @@ public:
     FB_PROTOCOL_VERSION_TAGS(V);
 
 public:
-    typedef union
+    struct params
     {
-    public:
-        uint8_t  index;
-        uint16_t count;
-        uint32_t money;
-    } params;
+        uint8_t  index = 0;
+        uint16_t count = 0;
+        uint32_t money = 0;
+    };
 
 public:
 #ifndef BOT
@@ -63,6 +62,14 @@ public:
     void deserialize(fb::stream_reader<big_endian>& reader);
 #endif
 };
+
+#ifdef BOT
+template <>
+void trade<CLIENT_VERSION::v651>::serialize(fb::stream_writer<big_endian>& writer) const;
+#else
+template <>
+void trade<CLIENT_VERSION::v651>::deserialize(fb::stream_reader<big_endian>& reader);
+#endif
 
 } // namespace fb::protocol::game::request
 
