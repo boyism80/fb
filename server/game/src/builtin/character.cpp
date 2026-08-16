@@ -3960,16 +3960,11 @@ int builtin::character::builtin_group_portrait(lua_State* L)
     if (ch == nullptr)
         return 0;
 
-    auto subtype = static_cast<uint8_t>(lua->tointeger(2, 2));
-
     auto weak     = ch->weak_from_this_as<fb::game::character>();
     auto builder  = lua->new_co_builder();
     builder.weak  = weak;
     builder.yield = [=]() -> async::task<void> {
-        fb::protocol::visit_client_version(ch->client_version, [&]<fb::protocol::CLIENT_VERSION V> {
-            if constexpr (V == fb::protocol::CLIENT_VERSION::v651)
-                std::ignore = ch->send(fb::protocol::game::response::group_portrait<V>(subtype, 0));
-        });
+        ch->listener.on_group_portrait(*ch, {});
         co_return;
     };
     builder.resume = []() -> async::task<int> {

@@ -439,6 +439,7 @@ void character::hair(uint16_t value)
     auto old_hair = this->_hair;
     this->_hair   = value;
     this->show();
+    this->refresh_group_portrait();
 
     auto log_data              = Json::Value();
     log_data["character_id"]   = static_cast<Json::Int64>(this->id);
@@ -464,6 +465,7 @@ void character::face(uint8_t value)
 
     this->_face = value;
     this->show();
+    this->refresh_group_portrait();
 }
 
 uint8_t character::color() const
@@ -479,6 +481,16 @@ void character::color(uint8_t value)
 
     this->_color = value;
     this->show();
+    this->refresh_group_portrait();
+}
+
+void character::refresh_group_portrait()
+{
+    this->assert_thread();
+
+    auto& gid = this->group_id();
+    if (gid.has_value())
+        this->server.groups.update_portraits(gid.value());
 }
 
 std::optional<uint8_t> character::armor_color() const

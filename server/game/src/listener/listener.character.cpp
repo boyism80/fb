@@ -80,7 +80,11 @@ void listener_impl::on_option_changed(character& me, OPTION option, bool enabled
     me.message(sstream.str(), MESSAGE_TYPE::STATE);
 
     if (option == OPTION::VISIBLE_HELMET && me.client_version == fb::protocol::CLIENT_VERSION::v651)
+    {
         me.update_external();
+        if (me.items.helmet() != nullptr)
+            me.refresh_group_portrait();
+    }
 }
 
 void listener_impl::on_update_option(character& ch)
@@ -155,7 +159,10 @@ void listener_impl::on_update(character& me, UPDATE_STATE_LEVEL level)
             me.send(game_resp::update_internal<V>(me, level));
         });
         if (ENUM_IN(level, UPDATE_STATE_LEVEL::HP_MP))
-            this->server.groups.update_hp(me);
+        {
+            auto include_max = ENUM_IN(level, UPDATE_STATE_LEVEL::BASED);
+            this->server.groups.update_hp(me, include_max);
+        }
     }
 }
 
@@ -349,8 +356,8 @@ void listener_impl::on_show_bulletin_message(character&            ch,
 
 void listener_impl::on_show_world_map(character& ch, uint32_t id, uint16_t index)
 {
-    auto use_offset_new = ch.client_version == fb::protocol::CLIENT_VERSION::v651 &&
-                          ch.ui_mode == fb::protocol::CLIENT_UI_MODE::NEW;
+    auto use_offset_new =
+        ch.client_version == fb::protocol::CLIENT_VERSION::v651 && ch.ui_mode == fb::protocol::CLIENT_UI_MODE::NEW;
     ch.send(game_resp::map_worlds(id, index, use_offset_new));
 }
 
@@ -430,4 +437,23 @@ void listener_impl::on_holyday_screen(character&                       ch,
                                       const fb::model::point<uint8_t>& position)
 {
     ch.send(game_resp::holyday_screen(screen, hair, direction, position));
+}
+
+void listener_impl::on_group_portrait(character& ch, std::vector<game_resp::group_portrait_entry> entries)
+{
+    if (ch.client_version != fb::protocol::CLIENT_VERSION::v651)
+        return;
+
+    if (entries.size() > 255)
+        entries.resize(255);
+    auto n = static_cast<uint8_t>(entries.size());
+    ch.send(game_resp::group_portrait<fb::protocol::CLIENT_VERSION::v651>(2, n, std::move(entries)));
+}
+
+void listener_impl::on_group_portrait_hp(character& ch, std::string name, uint32_t cur_hp)
+{
+    if (ch.client_version != fb::protocol::CLIENT_VERSION::v651)
+        return;
+
+    ch.send(game_resp::group_portrait<fb::protocol::CLIENT_VERSION::v651>(std::move(name), cur_hp));
 }

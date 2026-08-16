@@ -21,6 +21,7 @@
 #include <fb/game/marriage.h>
 #include <fb/game/matchmaker.h>
 #include <fb/game/appearance.h>
+#include <fb/game/protocol/group_portrait.h>
 #include <fb/protocol/client_version.h>
 #include <cstdint>
 #include <set>
@@ -307,6 +308,7 @@ public:
     std::optional<uint32_t>&                                  group_id();
     void                                                      group_id(uint32_t gid);
     void                                                      group_reset();
+    void                                                      refresh_group_portrait();
     const std::optional<uint32_t>&                            clan_id() const;
     void                                                      clan_id(std::optional<uint32_t> value);
     void                                                      clan_reset();
@@ -480,6 +482,8 @@ public:
     virtual void                            on_freeze(character& ch, bool value) = 0;
     virtual void                            on_friends_sync(character& ch, uint8_t enabled) = 0;
     virtual void                            on_holyday_screen(character& ch, uint8_t screen, uint8_t hair, fb::model::enum_value::DIRECTION direction, const fb::model::point<uint8_t>& position) = 0;
+    virtual void                            on_group_portrait(character& ch, std::vector<fb::protocol::game::response::group_portrait_entry> entries) = 0;
+    virtual void                            on_group_portrait_hp(character& ch, std::string name, uint32_t cur_hp) = 0;
     // clang-format on
 };
 

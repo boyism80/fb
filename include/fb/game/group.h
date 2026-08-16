@@ -77,7 +77,7 @@ public:
     void              update_portraits(uint32_t group_id);
     void              update_portraits(character& ch);
     void              clear_portraits(character& ch);
-    void              update_hp(character& source);
+    void              update_hp(character& source, bool include_max = false);
     // clang-format on
 };
 

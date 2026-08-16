@@ -32,10 +32,11 @@ game_resp::group_portrait_entry make_portrait_entry(const character& ch, bool le
     ch.assert_thread();
 
     game_resp::group_portrait_entry e;
-    e.name   = ch.name();
-    e.leader = leader ? 1 : 0;
-    e.hair   = ch.hair();
-    e.color  = ch.color();
+    e.name           = ch.name();
+    e.leader         = leader ? 1 : 0;
+    e.hair           = static_cast<uint16_t>(200 + ch.face());
+    e.color          = static_cast<uint8_t>(ch.hair());
+    e.face_hair_tint = ch.color();
 
     auto helmet = ch.items.helmet();
     if (helmet != nullptr && ch.option(OPTION::VISIBLE_HELMET))
@@ -52,16 +53,9 @@ game_resp::group_portrait_entry make_portrait_entry(const character& ch, bool le
     return e;
 }
 
-void send_portrait_list(character& ch, const std::vector<game_resp::group_portrait_entry>& entries)
+void send_portrait_list(character& ch, std::vector<game_resp::group_portrait_entry> entries)
 {
-    if (ch.client_version != cv::v651)
-        return;
-
-    auto sliced = entries;
-    if (sliced.size() > 255)
-        sliced.resize(255);
-    auto n      = static_cast<uint8_t>(sliced.size());
-    std::ignore = ch.send(game_resp::group_portrait<cv::v651>(2, n, std::move(sliced)));
+    ch.listener.on_group_portrait(ch, std::move(entries));
 }
 
 void dispatch_portraits(server&                                 srv,
@@ -584,19 +578,22 @@ void group::container::update_portraits(character& ch)
 void group::container::clear_portraits(character& ch)
 {
     ch.assert_thread();
-    if (ch.client_version != cv::v651)
-        return;
-
-    std::ignore = ch.send(game_resp::group_portrait<cv::v651>(2, 0));
+    ch.listener.on_group_portrait(ch, {});
 }
 
-void group::container::update_hp(character& source)
+void group::container::update_hp(character& source, bool include_max)
 {
     source.assert_thread();
 
     auto& gid = source.group_id();
     if (gid.has_value() == false)
         return;
+
+    if (include_max)
+    {
+        this->update_portraits(gid.value());
+        return;
+    }
 
     auto name      = source.name();
     auto [hp, max] = encode_client_pool(source.stat.hp(), source.stat.maxhp());
@@ -616,10 +613,7 @@ void group::container::update_hp(character& source)
 
     this->_server.characters.foreach_enqueue(
         [name, hp](auto& ch) -> async::task<void> {
-            if (ch->client_version != cv::v651)
-                co_return;
-
-            std::ignore = ch->send(game_resp::group_portrait<cv::v651>(name, hp));
+            ch->listener.on_group_portrait_hp(*ch, name, hp);
             co_return;
         },
         recipients);
