@@ -18,6 +18,15 @@ namespace fb::game {
 
 using namespace fb::model::enum_value;
 
+enum class OBJECT_CURSOR : uint8_t
+{
+    ATTACK       = 0,
+    INSPECT      = 11,
+    INTERACT     = 12,
+    INTERACT_ALT = 14,
+    ITEM         = 15
+};
+
 using map_callback = std::function<async::task<bool>()>;
 
 struct map_options

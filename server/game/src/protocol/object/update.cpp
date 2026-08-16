@@ -51,14 +51,24 @@ void update<CLIENT_VERSION::v651>::serialize(fb::stream_writer<big_endian>& writ
         if (map == nullptr)
             continue;
 
-        auto dir = static_cast<uint8_t>(object->direction());
         writer.write<uint16_t>(object->x());
         writer.write<uint16_t>(object->y());
-        writer.write<uint8_t>(dir); // mid-direction
+        switch (object->what())
+        {
+        case OBJECT_TYPE::NPC:
+            writer.write<uint8_t>(static_cast<uint8_t>(fb::game::OBJECT_CURSOR::INTERACT));
+            break;
+        case OBJECT_TYPE::MOB:
+            writer.write<uint8_t>(static_cast<uint8_t>(fb::game::OBJECT_CURSOR::ATTACK));
+            break;
+        default:
+            writer.write<uint8_t>(static_cast<uint8_t>(fb::game::OBJECT_CURSOR::INSPECT));
+            break;
+        }
         writer.write<uint32_t>(object->oid());
         writer.write<uint16_t>(object->look());
         writer.write<uint8_t>(object->color());
-        writer.write<uint8_t>(dir); // facing (default = direction)
+        writer.write<uint8_t>(static_cast<uint8_t>(object->direction()));
     }
     writer.write<uint8_t>(0);
 }
