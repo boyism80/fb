@@ -349,7 +349,9 @@ void listener_impl::on_show_bulletin_message(character&            ch,
 
 void listener_impl::on_show_world_map(character& ch, uint32_t id, uint16_t index)
 {
-    ch.send(game_resp::map_worlds(id, index));
+    auto use_offset_new = ch.client_version == fb::protocol::CLIENT_VERSION::v651 &&
+                          ch.ui_mode == fb::protocol::CLIENT_UI_MODE::NEW;
+    ch.send(game_resp::map_worlds(id, index, use_offset_new));
 }
 
 void listener_impl::on_timer(character& ch, uint32_t time, TIMER_TYPE type)
