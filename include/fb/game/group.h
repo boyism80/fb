@@ -73,6 +73,11 @@ public:
     async::task<void> on_leave(std::string target, uint32_t group_id, std::optional<std::string> deleted_member);
     async::task<void> on_kick(std::string target, uint32_t group_id, std::optional<std::string> deleted_member);
     async::task<void> on_broadcast(uint32_t group_id, std::string message, uint8_t type);
+    void              update_portraits(const group& g, std::vector<std::shared_ptr<character>> recipients = {});
+    void              update_portraits(uint32_t group_id);
+    void              update_portraits(character& ch);
+    void              clear_portraits(character& ch);
+    void              update_hp(character& source);
     // clang-format on
 };
 

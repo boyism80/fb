@@ -37,6 +37,7 @@ void login<V>::init_option(const internal::Option& response, fb::game::character
     ch.option(OPTION::FAST_MOVE, response.fast_move, false);
     ch.option(OPTION::EFFECT_SOUND, response.effect_sound, false);
     ch.option(OPTION::PK_PROTECT, response.pk_protect, false);
+    ch.option(OPTION::VISIBLE_HELMET, response.visible_helmet, false);
 }
 
 template <fb::protocol::CLIENT_VERSION V>
@@ -213,7 +214,8 @@ async::task<std::shared_ptr<character>> login<V>::init(const game_reqs::login<V>
     params.promotion    = resp.character.promotion;
     params.color        = resp.character.color;
     params.direction    = static_cast<DIRECTION>(resp.character.direction);
-    params.look         = resp.character.look;
+    params.hair         = resp.character.hair;
+    params.face         = resp.character.face;
     params.money        = resp.character.money;
     params.gender       = static_cast<GENDER>(resp.character.gender);
     params.level        = resp.character.level;
@@ -282,6 +284,7 @@ async::task<std::shared_ptr<character>> login<V>::init(const game_reqs::login<V>
         {
             group->enter(weak);
             ch->group_id(group->id());
+            this->server.groups.update_portraits(*group);
         }
     }
 

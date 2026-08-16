@@ -113,6 +113,7 @@ namespace Http.Reepository
                     `durability`=VALUES(`durability`),
                     `custom_name`=VALUES(`custom_name`),
                     `expire_time`=VALUES(`expire_time`),
+                    `deleted`=0,
                     `updated_date`=VALUES(`updated_date`);
                 """;
 
@@ -160,6 +161,7 @@ namespace Http.Reepository
                         `durability`=VALUES(`durability`),
                         `custom_name`=VALUES(`custom_name`),
                         `expire_time`=VALUES(`expire_time`),
+                        `deleted`=0,
                         `updated_date`=VALUES(`updated_date`);
                     """;
 

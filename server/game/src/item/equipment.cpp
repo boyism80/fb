@@ -175,9 +175,6 @@ async::task<bool> fb::game::equipment::active()
         std::ignore = lua->call(3);
     }
 
-    // Call listener for packet response
-    owner->listener.on_equipment_on(*owner, *this, parts);
-
     co_return true;
 }
 

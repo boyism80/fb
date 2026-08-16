@@ -62,6 +62,11 @@ void update_option<CLIENT_VERSION::v651>::deserialize(fb::stream_reader<big_endi
 
     if (this->options.size() == 1 && this->options.front() == OPTION::EXTENSION && reader.readable_size() >= 1)
         this->ride = reader.read<bool>();
+    else
+    {
+        while (reader.readable_size() > 0)
+            reader.read<uint8_t>();
+    }
 }
 #endif
 

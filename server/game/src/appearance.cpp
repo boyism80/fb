@@ -1,4 +1,5 @@
 #include <fb/game/appearance.h>
+#include <fb/game/character.h>
 #include <fb/game/server.h>
 #include <fb/model/model.h>
 #include <stdexcept>
@@ -7,6 +8,65 @@ using namespace fb::game;
 using namespace fb::model::enum_value;
 using fb::big_endian;
 using table = fb::model::table;
+
+namespace {
+
+template <typename App>
+void fill_appearance_from_character(App& app, const character& ch)
+{
+    app.gender      = ch.gender();
+    app.state       = ch.state();
+    app.hair        = ch.hair();
+    app.hair_color  = ch.color();
+    app.armor_color = ch.armor_color();
+    app.disguise    = std::nullopt;
+
+    if (ch.items.armor() != nullptr)
+    {
+        app.armor = static_cast<uint8_t>(ch.items.armor()->model().dress);
+        if (app.armor_color.has_value() == false)
+            app.armor_color = ch.items.armor()->model().color;
+    }
+
+    if (ch.items.weapon() != nullptr)
+    {
+        app.weapon       = ch.items.weapon()->model().dress;
+        app.weapon_color = ch.weapon_color().value_or(static_cast<uint8_t>(ch.items.weapon()->color()));
+    }
+
+    if (ch.items.shield() != nullptr)
+    {
+        app.shield       = ch.items.shield()->model().dress;
+        app.shield_color = ch.shield_color().value_or(ch.items.shield()->color());
+    }
+
+    app.speed = ch.stat.speed();
+}
+
+} // namespace
+
+template <fb::protocol::CLIENT_VERSION V>
+character_appearance<V> character_appearance<V>::from(const character& ch)
+{
+    auto app = character_appearance<V>{};
+    fill_appearance_from_character(app, ch);
+    return app;
+}
+
+character_appearance<fb::protocol::CLIENT_VERSION::v651>
+character_appearance<fb::protocol::CLIENT_VERSION::v651>::from(const character& ch)
+{
+    auto app = character_appearance<fb::protocol::CLIENT_VERSION::v651>{};
+    fill_appearance_from_character(app, ch);
+    app.face    = ch.face();
+    auto helmet = ch.items.helmet();
+    if (helmet != nullptr && ch.option(OPTION::VISIBLE_HELMET))
+    {
+        app.helmet       = static_cast<uint8_t>(helmet->model().dress);
+        app.helmet_color = helmet->color();
+    }
+    return app;
+}
 
 template <fb::protocol::CLIENT_VERSION V>
 character_appearance<V>::character_appearance(GENDER                  gender,
@@ -107,37 +167,28 @@ void character_appearance<fb::protocol::CLIENT_VERSION::v651>::serialize(fb::str
 
     writer.write<uint16_t>(this->ridable_id);
     writer.write<uint8_t>(walk_delay_from_speed(this->speed));
-    writer.write<uint16_t>(this->hair);
+    if (ui_mode == fb::protocol::CLIENT_UI_MODE::NEW)
+        writer.write<uint16_t>(static_cast<uint16_t>(200 + this->face));
+    else
+        writer.write<uint16_t>(this->hair);
 
-    uint8_t slot7 = this->unknown_hair_style;
+    uint8_t slot7 = this->hair_style;
     if (slot7 == 0)
-    {
-        if (ui_mode == fb::protocol::CLIENT_UI_MODE::NEW)
-        {
-            slot7 = this->hair_color.value_or(0x00);
-        }
-        else if (this->hair < 0x66)
-        {
-            slot7 = static_cast<uint8_t>(this->hair);
-        }
-        else
-        {
-            slot7 = 0x66;
-        }
-    }
+        slot7 = static_cast<uint8_t>(this->hair);
     writer.write<uint8_t>(slot7);
-    writer.write<uint8_t>(this->unknown_face_hair_tint);
+    writer.write<uint8_t>(this->face_hair_tint != 0 ? this->face_hair_tint : this->hair_color.value_or(0x00));
     writer.write<uint8_t>(this->armor.value_or(static_cast<uint8_t>(this->gender)));
-    writer.write<uint8_t>(this->unknown_body_color != 0 ? this->unknown_body_color : this->armor_color.value_or(0x00));
+    writer.write<uint8_t>(this->body_color != 0 ? this->body_color : this->armor_color.value_or(0x00));
     writer.write<uint16_t>(this->weapon.value_or(0xFFFF));
     writer.write<uint8_t>(this->weapon_color.value_or(0x00));
     writer.write<uint16_t>(this->shield.has_value() ? static_cast<uint16_t>(this->shield.value()) : 0xFFFF);
     writer.write<uint8_t>(this->shield_color.value_or(0x00));
-    writer.write<uint8_t>(this->hair_to_hat);
-    writer.write<uint8_t>(this->unknown_helmet);
-    writer.write<uint8_t>(this->unknown_helmet_color);
-    writer.write<uint16_t>(this->unknown_accessory_pack);
-    writer.write<uint8_t>(this->unknown_accessory_color);
+    const auto show_helmet = (ui_mode == fb::protocol::CLIENT_UI_MODE::NEW) && this->helmet.has_value();
+    writer.write<uint8_t>(show_helmet ? 1 : 0);
+    writer.write<uint8_t>(show_helmet ? this->helmet.value() : 0);
+    writer.write<uint8_t>(show_helmet ? this->helmet_color.value_or(0) : 0);
+    writer.write<uint16_t>(this->accessory_pack);
+    writer.write<uint8_t>(this->accessory_color);
 }
 
 template <fb::protocol::CLIENT_VERSION V>
@@ -218,6 +269,9 @@ void character_appearance<fb::protocol::CLIENT_VERSION::v651>::to_lua(fb::lua::c
     lua->pushstring("hair");
     lua->pushinteger(static_cast<lua_Integer>(this->hair));
     lua->settable(-3);
+    lua->pushstring("face");
+    lua->pushinteger(static_cast<lua_Integer>(this->face));
+    lua->settable(-3);
     if (this->hair_color.has_value())
     {
         lua->pushstring("hair_color");
@@ -267,6 +321,18 @@ void character_appearance<fb::protocol::CLIENT_VERSION::v651>::to_lua(fb::lua::c
     {
         lua->pushstring("shield_color");
         lua->pushinteger(static_cast<lua_Integer>(this->shield_color.value()));
+        lua->settable(-3);
+    }
+    if (this->helmet.has_value())
+    {
+        lua->pushstring("helmet");
+        lua->pushinteger(static_cast<lua_Integer>(this->helmet.value()));
+        lua->settable(-3);
+    }
+    if (this->helmet_color.has_value())
+    {
+        lua->pushstring("helmet_color");
+        lua->pushinteger(static_cast<lua_Integer>(this->helmet_color.value()));
         lua->settable(-3);
     }
 }

@@ -586,7 +586,7 @@ namespace Internal.Controllers
                 if (!characters.TryGetValue(characterId, out var existingCharacter))
                     throw new Exception($"Character not found: {characterId}");
 
-                ApplyOneSavePayload(world, data,
+                ApplyOneSavePayload(world, data, existingCharacter,
                     itemsByOwner.GetValueOrDefault(characterId) ?? Array.Empty<Item>(),
                     spellsByOwner.GetValueOrDefault(characterId) ?? Array.Empty<Spell>(),
                     achievementsByOwner.GetValueOrDefault(characterId) ?? Array.Empty<Achievement>(),
@@ -598,6 +598,7 @@ namespace Internal.Controllers
         private void ApplyOneSavePayload(
             uint world,
             Protocol.SavePayload data,
+            Character existingCharacter,
             IReadOnlyList<Item> existingItems,
             IReadOnlyList<Spell> existingSpells,
             IReadOnlyList<Achievement> existingAchievements,
@@ -607,6 +608,8 @@ namespace Internal.Controllers
             var characterId = data.Character.Id;
 
             var ch = _mapper.Map<Character>(data.Character);
+            ch.Reputation = existingCharacter.Reputation;
+            ch.Evaluation = existingCharacter.Evaluation;
             _dbContext.Character.Set(world, ch);
 
             var marriage = _mapper.Map<Http.Model.Marriage>(data.Marriage);
@@ -730,6 +733,10 @@ namespace Internal.Controllers
 
                 case Fb.Model.EnumValue.Option.PkProtect:
                     option.PkProtect = enabled;
+                    break;
+
+                case Fb.Model.EnumValue.Option.VisibleHelmet:
+                    option.VisibleHelmet = enabled;
                     break;
 
                 default:

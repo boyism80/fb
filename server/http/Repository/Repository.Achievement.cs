@@ -103,6 +103,7 @@ namespace Http.Reepository
                         `text`=VALUES(`text`),
                         `icon`=VALUES(`icon`),
                         `color`=VALUES(`color`),
+                        `deleted`=0,
                         `updated_date`=VALUES(`updated_date`);
                     """;
 
@@ -140,6 +141,7 @@ namespace Http.Reepository
                         `text`=VALUES(`text`),
                         `icon`=VALUES(`icon`),
                         `color`=VALUES(`color`),
+                        `deleted`=0,
                         `created_date`=VALUES(`created_date`),
                         `updated_date`=VALUES(`updated_date`);
                     """;

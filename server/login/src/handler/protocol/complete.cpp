@@ -40,7 +40,11 @@ async::task<bool> complete<V>::handle(fb::socket<fb::login::session>& session, l
             divine_beast != DIVINE_BEAST::BLACK_TORTOISE && divine_beast != DIVINE_BEAST::AZURE_DRAGON)
             throw id_exception(_TEXT(MESSAGE_CLIENT_DIVINE_BEAST_INVALID));
 
-        auto   world    = fb::config<uint32_t>("world");
+        auto world = fb::config<uint32_t>("world");
+        auto face  = uint8_t{0};
+        if constexpr (V == fb::protocol::CLIENT_VERSION::v651)
+            face = request.face;
+
         auto&& response = co_await this->server.http.post("internal",
                                                           "/account/make",
                                                           internal_reqs::MakeCharacter{world,
@@ -48,7 +52,8 @@ async::task<bool> complete<V>::handle(fb::socket<fb::login::session>& session, l
                                                                                        request.hair,
                                                                                        request.gender,
                                                                                        request.nation,
-                                                                                       request.divine_beast});
+                                                                                       request.divine_beast,
+                                                                                       face});
         co_await this->server.threads.switching(weak);
 
         if (response.success == false)

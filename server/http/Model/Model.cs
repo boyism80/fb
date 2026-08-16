@@ -823,7 +823,9 @@ namespace Fb.Model.EnumValue
         [EnumMember(Value = "EFFECT_SOUND")]
         EffectSound = 0x0d, 
         [EnumMember(Value = "LOCK_WALK_SPEED")]
-        LockWalkSpeed = 0x0e
+        LockWalkSpeed = 0x0e, 
+        [EnumMember(Value = "VISIBLE_HELMET")]
+        VisibleHelmet = 0x0e
     }
 
     [JsonConverter(typeof(StringEnumConverter))]

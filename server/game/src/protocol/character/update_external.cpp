@@ -54,36 +54,13 @@ update_external<V>::update_external(const fb::game::character& ch, const fb::gam
     }
     else
     {
-        this->appearance.gender      = ch.gender();
-        this->appearance.state       = ch.state();
-        this->appearance.hair        = ch.look();
-        this->appearance.hair_color  = ch.color();
-        this->appearance.armor_color = ch.armor_color();
-        this->appearance.disguise    = std::nullopt;
-
-        if (ch.items.armor() != nullptr)
-        {
-            this->appearance.armor = static_cast<uint8_t>(ch.items.armor()->model().dress);
-            if (this->appearance.armor_color.has_value() == false)
-                this->appearance.armor_color = ch.items.armor()->model().color;
-        }
-
-        if (ch.items.weapon() != nullptr)
-        {
-            this->appearance.weapon = ch.items.weapon()->model().dress;
-            this->appearance.weapon_color =
-                ch.weapon_color().value_or(static_cast<uint8_t>(ch.items.weapon()->color()));
-        }
-
-        if (ch.items.shield() != nullptr)
-        {
-            this->appearance.shield       = ch.items.shield()->model().dress;
-            this->appearance.shield_color = ch.shield_color().value_or(ch.items.shield()->color());
-        }
+        this->appearance = fb::game::character_appearance<V>::from(ch);
     }
 
     this->appearance.speed = ch.stat.speed();
     this->appearance.state = ch.state_to(to, this->appearance.state.value_or(ch.state()));
+    if constexpr (V == CLIENT_VERSION::v651)
+        this->appearance.face = ch.face();
 }
 
 template <CLIENT_VERSION V>

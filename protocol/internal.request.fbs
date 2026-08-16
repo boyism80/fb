@@ -91,6 +91,7 @@ table MakeCharacter {
   gender: ubyte;
   nation: ubyte;
   divine_beast: ubyte;
+  face: ubyte;
 }
 
 

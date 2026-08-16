@@ -49,6 +49,7 @@ namespace Http.Reepository
                     `fast_move`,
                     `effect_sound`,
                     `pk_protect`,
+                    `visible_helmet`,
                     `deleted`,
                     `created_date`,
                     `updated_date`)
@@ -65,6 +66,7 @@ namespace Http.Reepository
                     {value.FastMove.Escape()},
                     {value.EffectSound.Escape()},
                     {value.PkProtect.Escape()},
+                    {value.VisibleHelmet.Escape()},
                     0,
                     {value.CreatedDate.Escape()},
                     {value.UpdatedDate.Escape()})
@@ -80,6 +82,7 @@ namespace Http.Reepository
                     `fast_move`=VALUES(`fast_move`),
                     `effect_sound`=VALUES(`effect_sound`),
                     `pk_protect`=VALUES(`pk_protect`),
+                    `visible_helmet`=VALUES(`visible_helmet`),
                     `updated_date`=VALUES(`updated_date`);
                 """;
 

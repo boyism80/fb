@@ -30,7 +30,8 @@ struct MakeCharacter FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
     VT_HAIR = 8,
     VT_GENDER = 10,
     VT_NATION = 12,
-    VT_DIVINE_BEAST = 14
+    VT_DIVINE_BEAST = 14,
+    VT_FACE = 16
   };
   uint32_t world() const {
     return GetField<uint32_t>(VT_WORLD, 0);
@@ -50,6 +51,9 @@ struct MakeCharacter FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
   uint8_t divine_beast() const {
     return GetField<uint8_t>(VT_DIVINE_BEAST, 0);
   }
+  uint8_t face() const {
+    return GetField<uint8_t>(VT_FACE, 0);
+  }
   bool Verify(::flatbuffers::Verifier &verifier) const {
     return VerifyTableStart(verifier) &&
            VerifyField<uint32_t>(verifier, VT_WORLD, 4) &&
@@ -58,6 +62,7 @@ struct MakeCharacter FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
            VerifyField<uint8_t>(verifier, VT_GENDER, 1) &&
            VerifyField<uint8_t>(verifier, VT_NATION, 1) &&
            VerifyField<uint8_t>(verifier, VT_DIVINE_BEAST, 1) &&
+           VerifyField<uint8_t>(verifier, VT_FACE, 1) &&
            verifier.EndTable();
   }
 };
@@ -84,6 +89,9 @@ struct MakeCharacterBuilder {
   void add_divine_beast(uint8_t divine_beast) {
     fbb_.AddElement<uint8_t>(MakeCharacter::VT_DIVINE_BEAST, divine_beast, 0);
   }
+  void add_face(uint8_t face) {
+    fbb_.AddElement<uint8_t>(MakeCharacter::VT_FACE, face, 0);
+  }
   explicit MakeCharacterBuilder(::flatbuffers::FlatBufferBuilder &_fbb)
         : fbb_(_fbb) {
     start_ = fbb_.StartTable();
@@ -102,11 +110,13 @@ inline ::flatbuffers::Offset<MakeCharacter> CreateMakeCharacter(
     uint16_t hair = 0,
     uint8_t gender = 0,
     uint8_t nation = 0,
-    uint8_t divine_beast = 0) {
+    uint8_t divine_beast = 0,
+    uint8_t face = 0) {
   MakeCharacterBuilder builder_(_fbb);
   builder_.add_uid(uid);
   builder_.add_world(world);
   builder_.add_hair(hair);
+  builder_.add_face(face);
   builder_.add_divine_beast(divine_beast);
   builder_.add_nation(nation);
   builder_.add_gender(gender);

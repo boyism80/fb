@@ -37,7 +37,7 @@ public struct Character : IFlatbufferObject
   public byte[] GetPwArray() { return __p.__vector_as_array<byte>(8); }
   public nullable.nullable_uint? Birth { get { int o = __p.__offset(10); return o != 0 ? (nullable.nullable_uint?)(new nullable.nullable_uint()).__assign(__p.__indirect(o + __p.bb_pos), __p.bb) : null; } }
   public byte Role { get { int o = __p.__offset(12); return o != 0 ? __p.bb.Get(o + __p.bb_pos) : (byte)0; } }
-  public ushort Look { get { int o = __p.__offset(14); return o != 0 ? __p.bb.GetUshort(o + __p.bb_pos) : (ushort)0; } }
+  public ushort Hair { get { int o = __p.__offset(14); return o != 0 ? __p.bb.GetUshort(o + __p.bb_pos) : (ushort)0; } }
   public ushort Color { get { int o = __p.__offset(16); return o != 0 ? __p.bb.GetUshort(o + __p.bb_pos) : (ushort)0; } }
   public byte Gender { get { int o = __p.__offset(18); return o != 0 ? __p.bb.Get(o + __p.bb_pos) : (byte)0; } }
   public byte Nation { get { int o = __p.__offset(20); return o != 0 ? __p.bb.Get(o + __p.bb_pos) : (byte)0; } }
@@ -99,6 +99,9 @@ public struct Character : IFlatbufferObject
   public byte[] GetFirstLoginDateArray() { return __p.__vector_as_array<byte>(82); }
   public bool SuperHide { get { int o = __p.__offset(84); return o != 0 ? 0!=__p.bb.Get(o + __p.bb_pos) : (bool)false; } }
   public byte Speed { get { int o = __p.__offset(86); return o != 0 ? __p.bb.Get(o + __p.bb_pos) : (byte)0; } }
+  public short Reputation { get { int o = __p.__offset(88); return o != 0 ? __p.bb.GetShort(o + __p.bb_pos) : (short)0; } }
+  public ushort Evaluation { get { int o = __p.__offset(90); return o != 0 ? __p.bb.GetUshort(o + __p.bb_pos) : (ushort)0; } }
+  public byte Face { get { int o = __p.__offset(92); return o != 0 ? __p.bb.Get(o + __p.bb_pos) : (byte)0; } }
 
   public static Offset<fb.protocol._internal.raw.Character> CreateCharacter(FlatBufferBuilder builder,
       uint id = 0,
@@ -106,7 +109,7 @@ public struct Character : IFlatbufferObject
       StringOffset pwOffset = default(StringOffset),
       Offset<nullable.nullable_uint> birthOffset = default(Offset<nullable.nullable_uint>),
       byte role = 0,
-      ushort look = 0,
+      ushort hair = 0,
       ushort color = 0,
       byte gender = 0,
       byte nation = 0,
@@ -142,8 +145,11 @@ public struct Character : IFlatbufferObject
       StringOffset updated_dateOffset = default(StringOffset),
       StringOffset first_login_dateOffset = default(StringOffset),
       bool super_hide = false,
-      byte speed = 0) {
-    builder.StartTable(42);
+      byte speed = 0,
+      short reputation = 0,
+      ushort evaluation = 0,
+      byte face = 0) {
+    builder.StartTable(45);
     Character.AddAdditionalMp(builder, additional_mp);
     Character.AddBaseMp(builder, base_mp);
     Character.AddMp(builder, mp);
@@ -173,8 +179,11 @@ public struct Character : IFlatbufferObject
     Character.AddPw(builder, pwOffset);
     Character.AddName(builder, nameOffset);
     Character.AddId(builder, id);
+    Character.AddEvaluation(builder, evaluation);
+    Character.AddReputation(builder, reputation);
     Character.AddColor(builder, color);
-    Character.AddLook(builder, look);
+    Character.AddHair(builder, hair);
+    Character.AddFace(builder, face);
     Character.AddSpeed(builder, speed);
     Character.AddSuperHide(builder, super_hide);
     Character.AddLevel(builder, level);
@@ -189,13 +198,13 @@ public struct Character : IFlatbufferObject
     return Character.EndCharacter(builder);
   }
 
-  public static void StartCharacter(FlatBufferBuilder builder) { builder.StartTable(42); }
+  public static void StartCharacter(FlatBufferBuilder builder) { builder.StartTable(45); }
   public static void AddId(FlatBufferBuilder builder, uint id) { builder.AddUint(0, id, 0); }
   public static void AddName(FlatBufferBuilder builder, StringOffset nameOffset) { builder.AddOffset(1, nameOffset.Value, 0); }
   public static void AddPw(FlatBufferBuilder builder, StringOffset pwOffset) { builder.AddOffset(2, pwOffset.Value, 0); }
   public static void AddBirth(FlatBufferBuilder builder, Offset<nullable.nullable_uint> birthOffset) { builder.AddOffset(3, birthOffset.Value, 0); }
   public static void AddRole(FlatBufferBuilder builder, byte role) { builder.AddByte(4, role, 0); }
-  public static void AddLook(FlatBufferBuilder builder, ushort look) { builder.AddUshort(5, look, 0); }
+  public static void AddHair(FlatBufferBuilder builder, ushort hair) { builder.AddUshort(5, hair, 0); }
   public static void AddColor(FlatBufferBuilder builder, ushort color) { builder.AddUshort(6, color, 0); }
   public static void AddGender(FlatBufferBuilder builder, byte gender) { builder.AddByte(7, gender, 0); }
   public static void AddNation(FlatBufferBuilder builder, byte nation) { builder.AddByte(8, nation, 0); }
@@ -237,6 +246,9 @@ public struct Character : IFlatbufferObject
   public static void AddFirstLoginDate(FlatBufferBuilder builder, StringOffset firstLoginDateOffset) { builder.AddOffset(39, firstLoginDateOffset.Value, 0); }
   public static void AddSuperHide(FlatBufferBuilder builder, bool superHide) { builder.AddBool(40, superHide, false); }
   public static void AddSpeed(FlatBufferBuilder builder, byte speed) { builder.AddByte(41, speed, 0); }
+  public static void AddReputation(FlatBufferBuilder builder, short reputation) { builder.AddShort(42, reputation, 0); }
+  public static void AddEvaluation(FlatBufferBuilder builder, ushort evaluation) { builder.AddUshort(43, evaluation, 0); }
+  public static void AddFace(FlatBufferBuilder builder, byte face) { builder.AddByte(44, face, 0); }
   public static Offset<fb.protocol._internal.raw.Character> EndCharacter(FlatBufferBuilder builder) {
     int o = builder.EndTable();
     return new Offset<fb.protocol._internal.raw.Character>(o);
@@ -256,7 +268,7 @@ static public class CharacterVerify
       && verifier.VerifyString(tablePos, 8 /*Pw*/, false)
       && verifier.VerifyTable(tablePos, 10 /*Birth*/, nullable.nullable_uintVerify.Verify, false)
       && verifier.VerifyField(tablePos, 12 /*Role*/, 1 /*byte*/, 1, false)
-      && verifier.VerifyField(tablePos, 14 /*Look*/, 2 /*ushort*/, 2, false)
+      && verifier.VerifyField(tablePos, 14 /*Hair*/, 2 /*ushort*/, 2, false)
       && verifier.VerifyField(tablePos, 16 /*Color*/, 2 /*ushort*/, 2, false)
       && verifier.VerifyField(tablePos, 18 /*Gender*/, 1 /*byte*/, 1, false)
       && verifier.VerifyField(tablePos, 20 /*Nation*/, 1 /*byte*/, 1, false)
@@ -293,6 +305,9 @@ static public class CharacterVerify
       && verifier.VerifyString(tablePos, 82 /*FirstLoginDate*/, false)
       && verifier.VerifyField(tablePos, 84 /*SuperHide*/, 1 /*bool*/, 1, false)
       && verifier.VerifyField(tablePos, 86 /*Speed*/, 1 /*byte*/, 1, false)
+      && verifier.VerifyField(tablePos, 88 /*Reputation*/, 2 /*short*/, 2, false)
+      && verifier.VerifyField(tablePos, 90 /*Evaluation*/, 2 /*ushort*/, 2, false)
+      && verifier.VerifyField(tablePos, 92 /*Face*/, 1 /*byte*/, 1, false)
       && verifier.VerifyTableEnd(tablePos);
   }
 }

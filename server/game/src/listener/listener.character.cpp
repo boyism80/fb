@@ -1,6 +1,7 @@
-﻿#include <fb/game/server.h>
+#include <fb/game/server.h>
 #include <fb/model/model.h>
 #include <fb/protocol/client_version.h>
+#include <macro.h>
 #include <mutex>
 
 using namespace fb::game;
@@ -65,7 +66,10 @@ void listener_impl::on_option_changed(character& me, OPTION option, bool enabled
         break;
 
     case OPTION::LOCK_WALK_SPEED:
-        sstream << "이속고정    ";
+        if (me.client_version == fb::protocol::CLIENT_VERSION::v651)
+            sstream << "투구표시    ";
+        else
+            sstream << "이속고정    ";
         break;
 
     default:
@@ -74,6 +78,9 @@ void listener_impl::on_option_changed(character& me, OPTION option, bool enabled
 
     sstream << ": " << (enabled ? "ON" : "OFF");
     me.message(sstream.str(), MESSAGE_TYPE::STATE);
+
+    if (option == OPTION::VISIBLE_HELMET && me.client_version == fb::protocol::CLIENT_VERSION::v651)
+        me.update_external();
 }
 
 void listener_impl::on_update_option(character& ch)
@@ -147,6 +154,8 @@ void listener_impl::on_update(character& me, UPDATE_STATE_LEVEL level)
         fb::protocol::visit_client_version(me.client_version, [&]<fb::protocol::CLIENT_VERSION V> {
             me.send(game_resp::update_internal<V>(me, level));
         });
+        if (ENUM_IN(level, UPDATE_STATE_LEVEL::HP_MP))
+            this->server.groups.update_hp(me);
     }
 }
 

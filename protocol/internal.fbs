@@ -42,7 +42,7 @@ table Character {
     pw: string;
     birth: uint?;
     role: ubyte;
-    look: ushort;
+    hair: ushort;
     color: ushort;
     gender: ubyte;
     nation: ubyte;
@@ -79,6 +79,9 @@ table Character {
     first_login_date: string?;
     super_hide: bool = false;
     speed: ubyte = 0;
+    reputation: short;
+    evaluation: ushort;
+    face: ubyte;
 }
 
 table Marriage {
@@ -133,6 +136,7 @@ table Option {
     fast_move: bool;
     effect_sound: bool;
     pk_protect: bool;
+    visible_helmet: bool = true;
 }
 
 table ArticleSummary {

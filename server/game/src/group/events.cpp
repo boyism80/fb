@@ -2,11 +2,145 @@
 #include <fb/game/server.h>
 #include <fb/game/character.h>
 #include <fb/game/thread_params.h>
+#include <fb/game/protocol/group_portrait.h>
+#include <fb/game/client_amount.h>
 #include <fb/encoding.h>
 #include <json/json.h>
 #include <macro.h>
+#include <algorithm>
+#include <memory>
+#include <mutex>
 
 using namespace fb::game;
+
+namespace {
+
+using cv            = fb::protocol::CLIENT_VERSION;
+namespace game_resp = fb::protocol::game::response;
+
+std::vector<std::string> roster_names(const group& g)
+{
+    auto        names  = g.members();
+    const auto& master = g.master();
+    if (master.empty() == false && std::find(names.begin(), names.end(), master) == names.end())
+        names.insert(names.begin(), master);
+    return names;
+}
+
+game_resp::group_portrait_entry make_portrait_entry(const character& ch, bool leader)
+{
+    ch.assert_thread();
+
+    game_resp::group_portrait_entry e;
+    e.name   = ch.name();
+    e.leader = leader ? 1 : 0;
+    e.hair   = ch.hair();
+    e.color  = ch.color();
+
+    auto helmet = ch.items.helmet();
+    if (helmet != nullptr && ch.option(OPTION::VISIBLE_HELMET))
+    {
+        e.hair_to_hat  = 1;
+        e.helmet       = static_cast<uint8_t>(helmet->model().dress);
+        e.helmet_color = helmet->color();
+    }
+
+    e.accessory_pack = 0xFFFF;
+    auto [hp, maxhp] = encode_client_pool(ch.stat.hp(), ch.stat.maxhp());
+    e.cur_hp         = hp;
+    e.max_hp         = maxhp;
+    return e;
+}
+
+void send_portrait_list(character& ch, const std::vector<game_resp::group_portrait_entry>& entries)
+{
+    if (ch.client_version != cv::v651)
+        return;
+
+    auto sliced = entries;
+    if (sliced.size() > 255)
+        sliced.resize(255);
+    auto n      = static_cast<uint8_t>(sliced.size());
+    std::ignore = ch.send(game_resp::group_portrait<cv::v651>(2, n, std::move(sliced)));
+}
+
+void dispatch_portraits(server&                                 srv,
+                        std::vector<std::string>                names,
+                        std::string                             master,
+                        std::vector<std::shared_ptr<character>> online,
+                        std::vector<std::shared_ptr<character>> recipients)
+{
+    struct state_t
+    {
+        std::mutex                                   mutex;
+        std::vector<game_resp::group_portrait_entry> entries;
+        std::vector<std::string>                     names;
+        std::string                                  master;
+        std::vector<std::shared_ptr<character>>      recipients;
+        uint32_t                                     remaining = 0;
+        server*                                      srv       = nullptr;
+    };
+
+    auto state        = std::make_shared<state_t>();
+    state->names      = std::move(names);
+    state->master     = std::move(master);
+    state->recipients = std::move(recipients);
+    state->remaining  = static_cast<uint32_t>(online.size());
+    state->srv        = &srv;
+
+    auto finish = [state]() {
+        auto ordered = std::vector<game_resp::group_portrait_entry>{};
+        ordered.reserve(state->names.size());
+        for (const auto& name : state->names)
+        {
+            auto it = std::find_if(state->entries.begin(), state->entries.end(), [&](const auto& e) {
+                return e.name == name;
+            });
+            if (it != state->entries.end())
+            {
+                ordered.push_back(*it);
+            }
+            else
+            {
+                game_resp::group_portrait_entry e;
+                e.name           = name;
+                e.leader         = (name == state->master) ? 1 : 0;
+                e.accessory_pack = 0xFFFF;
+                ordered.push_back(std::move(e));
+            }
+        }
+
+        state->srv->characters.foreach_enqueue(
+            [ordered](auto& ch) -> async::task<void> {
+                send_portrait_list(*ch, ordered);
+                co_return;
+            },
+            state->recipients);
+    };
+
+    if (state->remaining == 0)
+    {
+        finish();
+        return;
+    }
+
+    srv.characters.foreach_enqueue(
+        [state, finish](auto& ch) -> async::task<void> {
+            auto e    = make_portrait_entry(*ch, ch->name() == state->master);
+            auto last = false;
+            {
+                auto lock = std::lock_guard(state->mutex);
+                state->entries.push_back(std::move(e));
+                last = (--state->remaining == 0);
+            }
+            if (last)
+                finish();
+            co_return;
+        },
+        online);
+}
+
+} // namespace
 
 async::task<void> group::container::on_error(uint32_t error, std::string_view actor)
 {
@@ -122,6 +256,7 @@ async::task<void> group::container::on_create(std::string                     ta
                         co_return;
                     },
                     group_members);
+                this->update_portraits(*group, group_members);
             }
             co_return;
         },
@@ -182,6 +317,8 @@ async::task<void> group::container::on_enter(std::string                target,
 
     if (before != nullptr)
         co_await before->switching();
+
+    this->update_portraits(*group);
 }
 
 async::task<void> group::container::on_leave(std::string                target,
@@ -219,6 +356,7 @@ async::task<void> group::container::on_leave(std::string                target,
         {
             co_await ptr->matchmaker.unregister_queue(true);
             ptr->group_reset();
+            this->clear_portraits(*ptr);
             ptr->message(_TEXT(MESSAGE_GROUP_LEFT_SUCCESS), MESSAGE_TYPE::STATE);
 
             auto map = ptr->map();
@@ -256,6 +394,7 @@ async::task<void> group::container::on_leave(std::string                target,
             co_return;
         },
         members);
+    this->update_portraits(*group);
 }
 
 async::task<void> group::container::on_kick(std::string                target,
@@ -293,6 +432,7 @@ async::task<void> group::container::on_kick(std::string                target,
         {
             co_await ptr->matchmaker.unregister_queue(true);
             ptr->group_reset();
+            this->clear_portraits(*ptr);
             ptr->message(_TEXT(MESSAGE_GROUP_KICKED), MESSAGE_TYPE::STATE);
 
             auto map = ptr->map();
@@ -330,6 +470,7 @@ async::task<void> group::container::on_kick(std::string                target,
             co_return;
         },
         members);
+    this->update_portraits(*group);
 }
 
 async::task<void> group::container::on_destroyed(std::string actor, uint32_t group_id)
@@ -338,10 +479,11 @@ async::task<void> group::container::on_destroyed(std::string actor, uint32_t gro
         auto members = std::vector<std::string>{group->members()};
         members.push_back(group->master());
 
-        this->_server.characters.foreach_enqueue(members, [](auto& ch) -> async::task<void> {
+        this->_server.characters.foreach_enqueue(members, [this](auto& ch) -> async::task<void> {
             if (ch->matchmaker.enrolled())
                 co_await ch->matchmaker.unregister_queue(true);
             ch->group_reset();
+            this->clear_portraits(*ch);
             ch->message(_TEXT(MESSAGE_GROUP_DISBANDED), MESSAGE_TYPE::STATE);
 
             auto map = ch->map();
@@ -381,4 +523,104 @@ async::task<void> group::container::on_broadcast(uint32_t group_id, std::string 
             co_return;
         },
         members);
+}
+
+void group::container::update_portraits(const group& g, std::vector<std::shared_ptr<character>> recipients)
+{
+    auto names  = roster_names(g);
+    auto master = g.master();
+    auto online = std::vector<std::shared_ptr<character>>{};
+    for (auto& ch : g.characters())
+        online.push_back(ch);
+
+    if (recipients.empty())
+        recipients = online;
+
+    dispatch_portraits(this->_server, std::move(names), std::move(master), std::move(online), std::move(recipients));
+}
+
+void group::container::update_portraits(uint32_t group_id)
+{
+    auto guard = this->try_enter_read(group_id);
+    if (guard.has_value() == false)
+        return;
+
+    auto& g = guard->value();
+    if (g == nullptr)
+        return;
+
+    this->update_portraits(*g);
+}
+
+void group::container::update_portraits(character& ch)
+{
+    ch.assert_thread();
+
+    auto& gid = ch.group_id();
+    if (gid.has_value() == false)
+    {
+        this->clear_portraits(ch);
+        return;
+    }
+
+    auto self  = ch.shared_from_this_as<character>();
+    auto guard = this->try_enter_read(gid.value());
+    if (guard.has_value() == false)
+    {
+        this->clear_portraits(ch);
+        return;
+    }
+
+    auto& g = guard->value();
+    if (g == nullptr)
+    {
+        this->clear_portraits(ch);
+        return;
+    }
+
+    this->update_portraits(*g, {self});
+}
+
+void group::container::clear_portraits(character& ch)
+{
+    ch.assert_thread();
+    if (ch.client_version != cv::v651)
+        return;
+
+    std::ignore = ch.send(game_resp::group_portrait<cv::v651>(2, 0));
+}
+
+void group::container::update_hp(character& source)
+{
+    source.assert_thread();
+
+    auto& gid = source.group_id();
+    if (gid.has_value() == false)
+        return;
+
+    auto name      = source.name();
+    auto [hp, max] = encode_client_pool(source.stat.hp(), source.stat.maxhp());
+    std::ignore    = max;
+
+    auto guard = this->try_enter_read(gid.value());
+    if (guard.has_value() == false)
+        return;
+
+    auto& g = guard->value();
+    if (g == nullptr)
+        return;
+
+    auto recipients = std::vector<std::shared_ptr<character>>{};
+    for (auto& member : g->characters())
+        recipients.push_back(member);
+
+    this->_server.characters.foreach_enqueue(
+        [name, hp](auto& ch) -> async::task<void> {
+            if (ch->client_version != cv::v651)
+                co_return;
+
+            std::ignore = ch->send(game_resp::group_portrait<cv::v651>(name, hp));
+            co_return;
+        },
+        recipients);
 }

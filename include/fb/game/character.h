@@ -96,7 +96,8 @@ private:
     const std::string                                _name;
     ROLE                                             _role;
     std::optional<uint32_t>                          _birthday;
-    uint16_t                                         _look             = 0;
+    uint16_t                                         _hair             = 0;
+    uint8_t                                          _face             = 0;
     uint8_t                                          _color            = 0;
     std::optional<uint8_t>                           _armor_color      = 0;
     std::optional<uint8_t>                           _weapon_color     = std::nullopt;
@@ -104,8 +105,8 @@ private:
     uint64_t                                         _experience       = 0;
     NATION                                           _nation           = NATION::GOGURYEO;
     DIVINE_BEAST                                     _divine_beast     = DIVINE_BEAST::AZURE_DRAGON;
-    int16_t                                          _reputation       = 100; // 인품 (test default)
-    uint16_t                                         _evaluation       = 150; // 평가권 (test default)
+    int16_t                                          _reputation       = 0;
+    uint16_t                                         _evaluation       = 0;
     GENDER                                           _gender           = GENDER::MALE;
     STATE                                            _state            = STATE::NORMAL;
     uint8_t                                          _level            = 1;
@@ -165,7 +166,8 @@ public:
         uint8_t                                promotion        = 0;
         uint16_t                               color            = 0;
         DIRECTION                              direction        = DIRECTION::BOTTOM;
-        uint16_t                               look             = 0;
+        uint16_t                               hair             = 0;
+        uint8_t                                face             = 0;
         uint64_t                               money            = 0;
         GENDER                                 gender           = GENDER::MALE;
         uint8_t                                level            = 1;
@@ -221,6 +223,8 @@ public:
     bool                                     is_first_login() const { return !_first_login_date.has_value(); }
     [[nodiscard]] const fb::model::datetime& created_date() const { return this->_created_date; }
     uint16_t                                 look() const override final;
+    uint16_t                                 hair() const;
+    uint8_t                                  face() const;
     uint8_t                                  color() const override final;
     [[nodiscard]] async::task<bool>          map(std::shared_ptr<fb::game::map> map, std::optional<fb::model::point16_t> position = std::nullopt, map_options options = {}) override final;
     void                                     update_map(const fb::game::map& map) override final;
@@ -250,7 +254,8 @@ public:
     void                                                      role(ROLE value);
     const std::optional<uint32_t>&                            birthday() const;
     void                                                      birthday(const std::optional<uint32_t>& value);
-    void                                                      look(uint16_t value);
+    void                                                      hair(uint16_t value);
+    void                                                      face(uint8_t value);
     void                                                      color(uint8_t value);
     std::optional<uint8_t>                                    armor_color() const;
     void                                                      armor_color(std::optional<uint8_t> value);
@@ -258,7 +263,7 @@ public:
     void                                                      weapon_color(std::optional<uint8_t> value);
     std::optional<uint8_t>                                    shield_color() const;
     void                                                      shield_color(std::optional<uint8_t> value);
-    const std::optional<character_appearance<>>&                mimicry() const;
+    const std::optional<character_appearance<>>&              mimicry() const;
     void                                                      mimicry(std::optional<character_appearance<>> value);
     NATION                                                    nation() const;
     bool                                                      nation(NATION value);

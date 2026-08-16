@@ -241,7 +241,8 @@ namespace Internal.Controllers
                 var ch = await _dbContext.Character.Get(world, request.Uid) ??
                     throw new Exception($"user {request.Uid} not found");
 
-                ch.Look = request.Hair;
+                ch.Hair = request.Hair;
+                ch.Face = request.Face;
                 ch.Gender = request.Gender;
                 ch.Nation = request.Nation;
                 ch.DivineBeast = request.DivineBeast;

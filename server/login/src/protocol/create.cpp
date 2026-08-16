@@ -10,6 +10,18 @@ void create<V>::deserialize(fb::stream_reader<big_endian>& reader)
     this->id = reader.read<std::string, uint8_t>();
     this->pw = reader.read<std::string, uint8_t>();
 }
+
+template <>
+void create<CLIENT_VERSION::v651>::deserialize(fb::stream_reader<big_endian>& reader)
+{
+    header::deserialize(reader);
+    this->id = reader.read<std::string, uint8_t>();
+    this->pw = reader.read<std::string, uint8_t>();
+    if (reader.readable_size() > 0)
+        reader.read<std::string, uint8_t>();
+    while (reader.readable_size() > 0)
+        reader.read<uint8_t>();
+}
 #else
 template <CLIENT_VERSION V>
 create<V>::create(std::string_view id, std::string_view pw) :

@@ -5,6 +5,7 @@
 #include <fb/protocol/client_version.h>
 #include <fb/stream_writer.h>
 #include <fb/lua.h>
+#include <optional>
 
 namespace fb::game {
 
@@ -18,6 +19,7 @@ inline uint8_t walk_delay_from_speed(uint8_t speed)
 }
 
 class object;
+class character;
 
 class appearance
 {
@@ -48,6 +50,9 @@ public:
     std::optional<uint8_t>  shield_color = std::nullopt;
     std::optional<uint16_t> disguise     = std::nullopt;
     uint8_t                 speed        = 0;
+
+public:
+    static character_appearance from(const character& ch);
 
 public:
     character_appearance() = default;
@@ -91,28 +96,31 @@ template <>
 class character_appearance<fb::protocol::CLIENT_VERSION::v651> : public appearance
 {
 public:
-    GENDER                  gender       = GENDER::MALE;
-    std::optional<STATE>    state        = std::nullopt;
-    uint16_t                hair         = 0;
-    std::optional<uint8_t>  hair_color   = std::nullopt;
-    std::optional<uint16_t> weapon       = std::nullopt;
-    std::optional<uint8_t>  weapon_color = std::nullopt;
-    std::optional<uint8_t>  armor        = std::nullopt;
-    std::optional<uint8_t>  armor_color  = std::nullopt;
-    std::optional<uint8_t>  shield       = std::nullopt;
-    std::optional<uint8_t>  shield_color = std::nullopt;
-    std::optional<uint16_t> disguise     = std::nullopt;
-    uint8_t                 speed        = 0;
+    GENDER                  gender          = GENDER::MALE;
+    std::optional<STATE>    state           = std::nullopt;
+    uint16_t                hair            = 0;
+    std::optional<uint8_t>  hair_color      = std::nullopt;
+    std::optional<uint16_t> weapon          = std::nullopt;
+    std::optional<uint8_t>  weapon_color    = std::nullopt;
+    std::optional<uint8_t>  armor           = std::nullopt;
+    std::optional<uint8_t>  armor_color     = std::nullopt;
+    std::optional<uint8_t>  shield          = std::nullopt;
+    std::optional<uint8_t>  shield_color    = std::nullopt;
+    std::optional<uint16_t> disguise        = std::nullopt;
+    uint8_t                 speed           = 0;
+    uint16_t                ridable_id      = 0;
+    uint8_t                 face            = 0;
+    uint8_t                 hair_style      = 0;
+    uint8_t                 face_hair_tint  = 0;
+    uint8_t                 body_color      = 0;
+    uint8_t                 hair_to_hat     = 0;
+    std::optional<uint8_t>  helmet          = std::nullopt;
+    std::optional<uint8_t>  helmet_color    = std::nullopt;
+    uint16_t                accessory_pack  = 0xFFFF;
+    uint8_t                 accessory_color = 0;
 
-    uint16_t ridable_id              = 0;
-    uint8_t  unknown_hair_style      = 0;
-    uint8_t  unknown_face_hair_tint  = 0;
-    uint8_t  unknown_body_color      = 0;
-    uint8_t  hair_to_hat             = 0;
-    uint8_t  unknown_helmet          = 0;
-    uint8_t  unknown_helmet_color    = 0;
-    uint16_t unknown_accessory_pack  = 0xFFFF;
-    uint8_t  unknown_accessory_color = 0;
+public:
+    static character_appearance from(const character& ch);
 
 public:
     character_appearance() = default;

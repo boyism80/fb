@@ -405,7 +405,7 @@ local function run_change_face(me, npc)
                 end
                 return true
             end
-            me:look(hair)
+            me:hair(hair)
             me:money(money - 1000000)
             if me:dialog(npc, '새 얼굴이 마음에 드는가? 맘에 안들어도 다시 해 줄 수는 없네.', { prev = false, next = true }) == DIALOG_RESULT.QUIT then
                 return false

@@ -102,6 +102,7 @@ namespace Http.Reepository
                     `progress`=VALUES(`progress`), 
                     `completed`=VALUES(`completed`),
                     `param`=VALUES(`param`),
+                    `deleted`=0,
                     `updated_date`=VALUES(`updated_date`);
                 """;
 
@@ -142,6 +143,7 @@ namespace Http.Reepository
                         `progress`=VALUES(`progress`),
                         `completed`=VALUES(`completed`),
                         `param`=VALUES(`param`),
+                        `deleted`=0,
                         `updated_date`=VALUES(`updated_date`);
                     """;
 

@@ -38,7 +38,7 @@ character::character(fb::game::server& server, const initial_params& params) :
 }),
     listener(server.listener), _socket(params.socket), _pw(params.pw), _created_date(params.created_date),
     _updated_date(params.updated_date), _first_login_date(params.first_login_date), _name(params.name),
-    _role(params.role), _birthday(params.birthday), _look(params.look), _color(params.color),
+    _role(params.role), _birthday(params.birthday), _hair(params.hair), _face(params.face), _color(params.color),
     _armor_color(params.armor_color), _weapon_color(params.weapon_color), _shield_color(params.shield_color),
     _experience(params.exp), _gender(params.gender), _state(params.state), _level(params.level),
     _class(params.class_type), _promotion(params.promotion), _money(params.money), _mimicry(params.mimicry),
@@ -419,28 +419,51 @@ void fb::game::character::birthday(const std::optional<uint32_t>& value)
 
 uint16_t character::look() const
 {
-    this->assert_thread();
-
-    return this->_look;
+    return this->hair();
 }
 
-void character::look(uint16_t value)
+uint16_t character::hair() const
 {
     this->assert_thread();
 
-    if (this->_look == value)
+    return this->_hair;
+}
+
+void character::hair(uint16_t value)
+{
+    this->assert_thread();
+
+    if (this->_hair == value)
         return;
 
-    auto old_look = this->_look;
-    this->_look   = value;
+    auto old_hair = this->_hair;
+    this->_hair   = value;
     this->show();
 
     auto log_data              = Json::Value();
     log_data["character_id"]   = static_cast<Json::Int64>(this->id);
     log_data["character_name"] = UTF8(this->name(), PLATFORM::WINDOWS);
-    log_data["old_look"]       = old_look;
-    log_data["new_look"]       = value;
-    this->server.log.write("look_change", log_data);
+    log_data["old_hair"]       = old_hair;
+    log_data["new_hair"]       = value;
+    this->server.log.write("hair_change", log_data);
+}
+
+uint8_t character::face() const
+{
+    this->assert_thread();
+
+    return this->_face;
+}
+
+void character::face(uint8_t value)
+{
+    this->assert_thread();
+
+    if (this->_face == value)
+        return;
+
+    this->_face = value;
+    this->show();
 }
 
 uint8_t character::color() const
@@ -1028,6 +1051,9 @@ void character::option(OPTION key, bool value, bool notify)
         else
             this->ensure_camera_pivot();
     }
+
+    if (key == OPTION::VISIBLE_HELMET)
+        this->show();
 
     this->update(UPDATE_STATE_LEVEL::EXP_MONEY | UPDATE_STATE_LEVEL::CROWD_CONTROL);
     this->update_option();
@@ -2017,7 +2043,8 @@ fb::protocol::internal::Character character::to_protocol() const
     dto.updated_date     = this->server.now().to_string();
     dto.first_login_date = this->_first_login_date->to_string();
     dto.role             = static_cast<uint8_t>(this->_role);
-    dto.look             = this->_look;
+    dto.hair             = this->_hair;
+    dto.face             = this->_face;
     dto.color            = this->_color;
     dto.gender           = static_cast<uint8_t>(this->_gender);
     dto.nation           = static_cast<uint8_t>(this->_nation);
@@ -2546,30 +2573,5 @@ std::shared_ptr<fb::game::appearance> character::appearance() const
         return ptr;
     }
 
-    auto ptr        = std::make_shared<character_appearance<>>();
-    ptr->gender     = this->_gender;
-    ptr->state      = this->_state;
-    ptr->hair       = this->_look;
-    ptr->hair_color = this->_color;
-
-    if (this->items.weapon() != nullptr)
-    {
-        ptr->weapon       = this->items.weapon()->model().dress;
-        ptr->weapon_color = this->_weapon_color;
-    }
-
-    if (this->items.armor() != nullptr)
-    {
-        ptr->armor       = this->items.armor()->model().dress;
-        ptr->armor_color = this->_armor_color;
-    }
-
-    if (this->items.shield() != nullptr)
-    {
-        ptr->shield       = this->items.shield()->model().dress;
-        ptr->shield_color = this->_shield_color;
-    }
-
-    ptr->speed = this->stat.speed();
-    return ptr;
+    return std::make_shared<character_appearance<>>(character_appearance<>::from(*this));
 }

@@ -11,14 +11,6 @@ option<V>::option(const fb::game::character& ch) :
 
 #ifndef BOT
 template <CLIENT_VERSION V>
-option<V>::option(const fb::game::character& ch, uint8_t selflook) :
-    ch(ch),
-    unknown_selflook(selflook)
-{ }
-#endif
-
-#ifndef BOT
-template <CLIENT_VERSION V>
 void option<V>::serialize(fb::stream_writer<big_endian>& writer) const
 {
     header::serialize(writer);
@@ -40,7 +32,7 @@ void option<CLIENT_VERSION::v651>::serialize(fb::stream_writer<big_endian>& writ
     writer.write<uint8_t>(this->ch.option(OPTION::NEWS));
     writer.write<uint8_t>(this->ch.option(OPTION::FAST_MOVE));
     writer.write<uint8_t>(this->ch.option(OPTION::EFFECT_SOUND));
-    writer.write<uint8_t>(this->unknown_selflook);
+    writer.write<uint8_t>(this->ch.option(OPTION::VISIBLE_HELMET));
 }
 #else
 template <CLIENT_VERSION V>
@@ -63,7 +55,7 @@ void option<CLIENT_VERSION::v651>::deserialize(fb::stream_reader<big_endian>& re
     this->news           = reader.read<uint8_t>();
     this->fast_move      = reader.read<uint8_t>();
     this->effect_sound   = reader.read<uint8_t>();
-    this->selflook       = reader.read<uint8_t>();
+    this->visible_helmet = reader.read<uint8_t>();
 }
 #endif
 

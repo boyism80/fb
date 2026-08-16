@@ -37,6 +37,9 @@ return {
         -- me:unknown_12()
         -- me:unknown_12(me:oid(), 1, 1)      -- invent slot a → append [무장]
         -- me:unknown_12(me:oid(), 0, 0xA0) -- CharStats self level-up toast
+        -- me:collection_list(1, 0, 2, 0)    -- 도감 탭 목록
+        -- me:collection_dialog(1, 255)      -- 도감 그룹 다이얼로그
+        -- me:web_map()                      -- 현재 맵 웹맵 마커
         
         -- S2C 0x26 move_confirm_noscroll — current direction/position/viewport
         -- me:move_confirm_noscroll()

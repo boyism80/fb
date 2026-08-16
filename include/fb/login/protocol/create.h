@@ -13,7 +13,8 @@ using namespace fb::model::enum_value;
 /**
  * C2S create account (opcode 0x02).
  * Primary layout (v550): id (u8-prefixed) + pw (u8-prefixed).
- * No version delta known for v565/v651.
+ * v651 also sends a third string8 (and a trailing NUL in send length); those
+ * bytes are consumed and discarded.
  */
 template <CLIENT_VERSION V>
 class create : public fb::protocol::header
@@ -45,6 +46,11 @@ public:
     void deserialize(fb::stream_reader<big_endian>& reader);
 #endif
 };
+
+#ifndef BOT
+template <>
+void create<CLIENT_VERSION::v651>::deserialize(fb::stream_reader<big_endian>& reader);
+#endif
 
 } // namespace fb::protocol::login::request
 

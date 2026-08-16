@@ -130,14 +130,23 @@ void external_info<CLIENT_VERSION::v651>::serialize(fb::stream_writer<big_endian
     writer.write<std::string>(table::promotion[this->ch.cls()][this->ch.promotion()].name);
     writer.write<std::string>(this->ch.name());
 
-    auto src         = std::static_pointer_cast<fb::game::character_appearance<>>(this->ch.appearance());
-    auto appearance  = fb::game::character_appearance<CLIENT_VERSION::v651>(*src);
+    fb::game::character_appearance<CLIENT_VERSION::v651> appearance;
+    if (this->ch.mimicry().has_value())
+    {
+        appearance = this->ch.mimicry().value();
+        if (appearance.state.has_value() == false)
+            appearance.state = this->ch.state();
+    }
+    else
+    {
+        appearance = fb::game::character_appearance<CLIENT_VERSION::v651>::from(this->ch);
+    }
     appearance.speed = this->ch.stat.speed();
     appearance.state = this->ch.state_to(this->to, appearance.state.value_or(this->ch.state()));
+    appearance.face  = this->ch.face();
+    auto ui_mode     = this->to.is(OBJECT_TYPE::CHARACTER) ? static_cast<const fb::game::character&>(this->to).ui_mode
+                                                           : fb::protocol::CLIENT_UI_MODE::OLD;
     writer.write<bool>(appearance.disguise.has_value());
-
-    auto ui_mode = this->to.is(OBJECT_TYPE::CHARACTER) ? static_cast<const fb::game::character&>(this->to).ui_mode
-                                                       : fb::protocol::CLIENT_UI_MODE::OLD;
     appearance.serialize(writer, ui_mode);
 
     auto                                 armor  = this->ch.items.armor();
@@ -184,8 +193,8 @@ void external_info<CLIENT_VERSION::v651>::serialize(fb::stream_writer<big_endian
     writer.write<uint32_t>(this->ch.oid());
     writer.write<uint8_t>(this->ch.option(OPTION::GROUP));
     writer.write<uint8_t>(this->ch.option(OPTION::TRADE));
-    writer.write<uint8_t>(0);                     // skipped with trade (IDA add edi,2)
-    writer.write<int16_t>(this->ch.reputation()); // 인품, this+0xB64
+    writer.write<uint8_t>(0);
+    writer.write<int16_t>(this->ch.reputation());
     writer.write<uint16_t>(0);
     writer.write<std::string>("");
 

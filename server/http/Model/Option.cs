@@ -23,5 +23,6 @@ namespace Http.Model
         public bool FastMove { get; set; } = true;
         public bool EffectSound { get; set; } = true;
         public bool PkProtect { get; set; } = true;
+        public bool VisibleHelmet { get; set; } = true;
     }
 }

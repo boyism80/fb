@@ -26,10 +26,9 @@ public:
     bool news           = false;
     bool fast_move      = false;
     bool effect_sound   = false;
-    bool selflook       = false;
+    bool visible_helmet = false;
 #else
     const fb::game::character& ch;
-    uint8_t                    unknown_selflook = 0;
 #endif
 
 public:
@@ -37,7 +36,6 @@ public:
     option() = default;
 #else
     option(const fb::game::character& ch);
-    option(const fb::game::character& ch, uint8_t selflook);
 #endif
 
 public:

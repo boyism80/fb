@@ -35,7 +35,7 @@ struct Character FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
     VT_PW = 8,
     VT_BIRTH = 10,
     VT_ROLE = 12,
-    VT_LOOK = 14,
+    VT_HAIR = 14,
     VT_COLOR = 16,
     VT_GENDER = 18,
     VT_NATION = 20,
@@ -71,7 +71,10 @@ struct Character FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
     VT_UPDATED_DATE = 80,
     VT_FIRST_LOGIN_DATE = 82,
     VT_SUPER_HIDE = 84,
-    VT_SPEED = 86
+    VT_SPEED = 86,
+    VT_REPUTATION = 88,
+    VT_EVALUATION = 90,
+    VT_FACE = 92
   };
   uint32_t id() const {
     return GetField<uint32_t>(VT_ID, 0);
@@ -88,8 +91,8 @@ struct Character FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
   uint8_t role() const {
     return GetField<uint8_t>(VT_ROLE, 0);
   }
-  uint16_t look() const {
-    return GetField<uint16_t>(VT_LOOK, 0);
+  uint16_t hair() const {
+    return GetField<uint16_t>(VT_HAIR, 0);
   }
   uint16_t color() const {
     return GetField<uint16_t>(VT_COLOR, 0);
@@ -199,6 +202,15 @@ struct Character FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
   uint8_t speed() const {
     return GetField<uint8_t>(VT_SPEED, 0);
   }
+  int16_t reputation() const {
+    return GetField<int16_t>(VT_REPUTATION, 0);
+  }
+  uint16_t evaluation() const {
+    return GetField<uint16_t>(VT_EVALUATION, 0);
+  }
+  uint8_t face() const {
+    return GetField<uint8_t>(VT_FACE, 0);
+  }
   bool Verify(::flatbuffers::Verifier &verifier) const {
     return VerifyTableStart(verifier) &&
            VerifyField<uint32_t>(verifier, VT_ID, 4) &&
@@ -209,7 +221,7 @@ struct Character FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
            VerifyOffset(verifier, VT_BIRTH) &&
            verifier.VerifyTable(birth()) &&
            VerifyField<uint8_t>(verifier, VT_ROLE, 1) &&
-           VerifyField<uint16_t>(verifier, VT_LOOK, 2) &&
+           VerifyField<uint16_t>(verifier, VT_HAIR, 2) &&
            VerifyField<uint16_t>(verifier, VT_COLOR, 2) &&
            VerifyField<uint8_t>(verifier, VT_GENDER, 1) &&
            VerifyField<uint8_t>(verifier, VT_NATION, 1) &&
@@ -262,6 +274,9 @@ struct Character FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
            verifier.VerifyString(first_login_date()) &&
            VerifyField<uint8_t>(verifier, VT_SUPER_HIDE, 1) &&
            VerifyField<uint8_t>(verifier, VT_SPEED, 1) &&
+           VerifyField<int16_t>(verifier, VT_REPUTATION, 2) &&
+           VerifyField<uint16_t>(verifier, VT_EVALUATION, 2) &&
+           VerifyField<uint8_t>(verifier, VT_FACE, 1) &&
            verifier.EndTable();
   }
 };
@@ -285,8 +300,8 @@ struct CharacterBuilder {
   void add_role(uint8_t role) {
     fbb_.AddElement<uint8_t>(Character::VT_ROLE, role, 0);
   }
-  void add_look(uint16_t look) {
-    fbb_.AddElement<uint16_t>(Character::VT_LOOK, look, 0);
+  void add_hair(uint16_t hair) {
+    fbb_.AddElement<uint16_t>(Character::VT_HAIR, hair, 0);
   }
   void add_color(uint16_t color) {
     fbb_.AddElement<uint16_t>(Character::VT_COLOR, color, 0);
@@ -396,6 +411,15 @@ struct CharacterBuilder {
   void add_speed(uint8_t speed) {
     fbb_.AddElement<uint8_t>(Character::VT_SPEED, speed, 0);
   }
+  void add_reputation(int16_t reputation) {
+    fbb_.AddElement<int16_t>(Character::VT_REPUTATION, reputation, 0);
+  }
+  void add_evaluation(uint16_t evaluation) {
+    fbb_.AddElement<uint16_t>(Character::VT_EVALUATION, evaluation, 0);
+  }
+  void add_face(uint8_t face) {
+    fbb_.AddElement<uint8_t>(Character::VT_FACE, face, 0);
+  }
   explicit CharacterBuilder(::flatbuffers::FlatBufferBuilder &_fbb)
         : fbb_(_fbb) {
     start_ = fbb_.StartTable();
@@ -414,7 +438,7 @@ inline ::flatbuffers::Offset<Character> CreateCharacter(
     ::flatbuffers::Offset<::flatbuffers::String> pw = 0,
     ::flatbuffers::Offset<nullable::nullable_uint> birth = 0,
     uint8_t role = 0,
-    uint16_t look = 0,
+    uint16_t hair = 0,
     uint16_t color = 0,
     uint8_t gender = 0,
     uint8_t nation = 0,
@@ -450,7 +474,10 @@ inline ::flatbuffers::Offset<Character> CreateCharacter(
     ::flatbuffers::Offset<::flatbuffers::String> updated_date = 0,
     ::flatbuffers::Offset<::flatbuffers::String> first_login_date = 0,
     bool super_hide = false,
-    uint8_t speed = 0) {
+    uint8_t speed = 0,
+    int16_t reputation = 0,
+    uint16_t evaluation = 0,
+    uint8_t face = 0) {
   CharacterBuilder builder_(_fbb);
   builder_.add_additional_mp(additional_mp);
   builder_.add_base_mp(base_mp);
@@ -481,8 +508,11 @@ inline ::flatbuffers::Offset<Character> CreateCharacter(
   builder_.add_pw(pw);
   builder_.add_name(name);
   builder_.add_id(id);
+  builder_.add_evaluation(evaluation);
+  builder_.add_reputation(reputation);
   builder_.add_color(color);
-  builder_.add_look(look);
+  builder_.add_hair(hair);
+  builder_.add_face(face);
   builder_.add_speed(speed);
   builder_.add_super_hide(super_hide);
   builder_.add_level(level);
@@ -504,7 +534,7 @@ inline ::flatbuffers::Offset<Character> CreateCharacterDirect(
     const char *pw = nullptr,
     ::flatbuffers::Offset<nullable::nullable_uint> birth = 0,
     uint8_t role = 0,
-    uint16_t look = 0,
+    uint16_t hair = 0,
     uint16_t color = 0,
     uint8_t gender = 0,
     uint8_t nation = 0,
@@ -540,7 +570,10 @@ inline ::flatbuffers::Offset<Character> CreateCharacterDirect(
     const char *updated_date = nullptr,
     const char *first_login_date = nullptr,
     bool super_hide = false,
-    uint8_t speed = 0) {
+    uint8_t speed = 0,
+    int16_t reputation = 0,
+    uint16_t evaluation = 0,
+    uint8_t face = 0) {
   auto name__ = name ? _fbb.CreateString(name) : 0;
   auto pw__ = pw ? _fbb.CreateString(pw) : 0;
   auto buffs__ = buffs ? _fbb.CreateVector<::flatbuffers::Offset<fb::protocol::internal::raw::Buff>>(*buffs) : 0;
@@ -555,7 +588,7 @@ inline ::flatbuffers::Offset<Character> CreateCharacterDirect(
       pw__,
       birth,
       role,
-      look,
+      hair,
       color,
       gender,
       nation,
@@ -591,7 +624,10 @@ inline ::flatbuffers::Offset<Character> CreateCharacterDirect(
       updated_date__,
       first_login_date__,
       super_hide,
-      speed);
+      speed,
+      reputation,
+      evaluation,
+      face);
 }
 
 inline const fb::protocol::internal::raw::Character *GetCharacter(const void *buf) {
