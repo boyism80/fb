@@ -1,10 +1,10 @@
-#include <fb/game/protocol/unknown_58.h>
+#include <fb/game/protocol/notice.h>
 
 namespace fb::protocol::game::response {
 
 #ifndef BOT
 template <CLIENT_VERSION V>
-unknown_58<V>::unknown_58(uint8_t flag, const std::string& text) :
+notice<V>::notice(uint8_t flag, const std::string& text) :
     flag(flag),
     text(text)
 { }
@@ -12,7 +12,7 @@ unknown_58<V>::unknown_58(uint8_t flag, const std::string& text) :
 
 #ifdef BOT
 template <CLIENT_VERSION V>
-void unknown_58<V>::deserialize(fb::stream_reader<big_endian>& reader)
+void notice<V>::deserialize(fb::stream_reader<big_endian>& reader)
 {
     header::deserialize(reader);
     this->flag = reader.read<uint8_t>();
@@ -20,7 +20,7 @@ void unknown_58<V>::deserialize(fb::stream_reader<big_endian>& reader)
 }
 #else
 template <CLIENT_VERSION V>
-void unknown_58<V>::serialize(fb::stream_writer<big_endian>& writer) const
+void notice<V>::serialize(fb::stream_writer<big_endian>& writer) const
 {
     header::serialize(writer);
     writer.write<uint8_t>(opcode);
@@ -29,8 +29,8 @@ void unknown_58<V>::serialize(fb::stream_writer<big_endian>& writer) const
 }
 #endif
 
-template class unknown_58<CLIENT_VERSION::v550>;
-template class unknown_58<CLIENT_VERSION::v565>;
-template class unknown_58<CLIENT_VERSION::v651>;
+template class notice<CLIENT_VERSION::v550>;
+template class notice<CLIENT_VERSION::v565>;
+template class notice<CLIENT_VERSION::v651>;
 
 } // namespace fb::protocol::game::response

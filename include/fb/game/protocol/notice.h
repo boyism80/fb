@@ -1,42 +1,36 @@
-#ifndef __PROTOCOL_GAME_UNKNOWN_70_H__
-#define __PROTOCOL_GAME_UNKNOWN_70_H__
+#ifndef __PROTOCOL_GAME_NOTICE_H__
+#define __PROTOCOL_GAME_NOTICE_H__
 
 #include <fb/protocol/header.h>
 #include <fb/protocol/client_version.h>
 #include <fb/model/model.h>
 #include <string>
-#include <vector>
 
 namespace fb::protocol::game::response {
 
 using namespace fb::model::enum_value;
 
-struct unknown_70_entry
-{
-    uint16_t    x = 0;
-    uint16_t    y = 0;
-    std::string name;
-};
-
 template <CLIENT_VERSION V>
-class unknown_70 : public fb::protocol::header
+class notice : public fb::protocol::header
 {
 public:
-    static constexpr uint8_t opcode = 0x70;
+    static constexpr uint8_t opcode = 0x58;
     FB_PROTOCOL_VERSION_TAGS_SINCE(V, CLIENT_VERSION::v651);
 
 public:
 #ifdef BOT
-    std::vector<unknown_70_entry> entries;
+    uint8_t     flag = 0;
+    std::string text;
 #else
-    const std::vector<unknown_70_entry> entries;
+    const uint8_t     flag;
+    const std::string text;
 #endif
 
 public:
 #ifdef BOT
-    unknown_70() = default;
+    notice() = default;
 #else
-    explicit unknown_70(const std::vector<unknown_70_entry>& entries);
+    notice(uint8_t flag, const std::string& text);
 #endif
 
 public:
