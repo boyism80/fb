@@ -96,6 +96,16 @@ void marshal_lua_game_resp__bright(lua_State* L, const fb::protocol::header& hea
     lua->settable(-3);
 }
 
+void marshal_lua_game_resp__browser(lua_State* L, const fb::protocol::header& header)
+{
+    auto* lua = fb::lua::get(L);
+    if (lua == nullptr)
+        return;
+
+    const auto& resp = static_cast<const game_resp::browser<BOT_CLIENT_VERSION>&>(header);
+    lua->new_table();
+}
+
 void marshal_lua_game_resp__bulletin_article(lua_State* L, const fb::protocol::header& header)
 {
     auto* lua = fb::lua::get(L);
@@ -724,6 +734,22 @@ void marshal_lua_game_resp__friends_sync(lua_State* L, const fb::protocol::heade
     lua->settable(-3);
 }
 
+void marshal_lua_game_resp__group_portrait(lua_State* L, const fb::protocol::header& header)
+{
+    auto* lua = fb::lua::get(L);
+    if (lua == nullptr)
+        return;
+
+    const auto& resp = static_cast<const game_resp::group_portrait<BOT_CLIENT_VERSION>&>(header);
+    lua->new_table();
+    lua->pushstring("subtype");
+    lua->pushinteger(resp.subtype);
+    lua->settable(-3);
+    lua->pushstring("count");
+    lua->pushinteger(resp.count);
+    lua->settable(-3);
+}
+
 void marshal_lua_game_resp__hide(lua_State* L, const fb::protocol::header& header)
 {
     auto* lua = fb::lua::get(L);
@@ -1230,6 +1256,22 @@ void marshal_lua_game_resp__move_confirm_noscroll(lua_State* L, const fb::protoc
     lua->settable(-3);
 }
 
+void marshal_lua_game_resp__notice(lua_State* L, const fb::protocol::header& header)
+{
+    auto* lua = fb::lua::get(L);
+    if (lua == nullptr)
+        return;
+
+    const auto& resp = static_cast<const game_resp::notice<BOT_CLIENT_VERSION>&>(header);
+    lua->new_table();
+    lua->pushstring("flag");
+    lua->pushinteger(resp.flag);
+    lua->settable(-3);
+    lua->pushstring("text");
+    lua->pushstring(resp.text);
+    lua->settable(-3);
+}
+
 void marshal_lua_game_resp__option(lua_State* L, const fb::protocol::header& header)
 {
     auto* lua = fb::lua::get(L);
@@ -1253,8 +1295,8 @@ void marshal_lua_game_resp__option(lua_State* L, const fb::protocol::header& hea
     lua->pushstring("effect_sound");
     lua->pushboolean(resp.effect_sound);
     lua->settable(-3);
-    lua->pushstring("selflook");
-    lua->pushboolean(resp.selflook);
+    lua->pushstring("visible_helmet");
+    lua->pushboolean(resp.visible_helmet);
     lua->settable(-3);
 }
 
@@ -1691,60 +1733,6 @@ void marshal_lua_game_resp__unknown_4f(lua_State* L, const fb::protocol::header&
     lua->new_table();
 }
 
-void marshal_lua_game_resp__unknown_58(lua_State* L, const fb::protocol::header& header)
-{
-    auto* lua = fb::lua::get(L);
-    if (lua == nullptr)
-        return;
-
-    const auto& resp = static_cast<const game_resp::unknown_58<BOT_CLIENT_VERSION>&>(header);
-    lua->new_table();
-    lua->pushstring("flag");
-    lua->pushinteger(resp.flag);
-    lua->settable(-3);
-    lua->pushstring("text");
-    lua->pushstring(resp.text);
-    lua->settable(-3);
-}
-
-void marshal_lua_game_resp__unknown_62(lua_State* L, const fb::protocol::header& header)
-{
-    auto* lua = fb::lua::get(L);
-    if (lua == nullptr)
-        return;
-
-    const auto& resp = static_cast<const game_resp::unknown_62<BOT_CLIENT_VERSION>&>(header);
-    lua->new_table();
-    lua->pushstring("type");
-    lua->pushinteger(resp.type);
-    lua->settable(-3);
-    lua->pushstring("url");
-    lua->pushstring(resp.url);
-    lua->settable(-3);
-    lua->pushstring("key");
-    lua->pushstring(resp.key);
-    lua->settable(-3);
-    lua->pushstring("cookie");
-    lua->pushstring(resp.cookie);
-    lua->settable(-3);
-}
-
-void marshal_lua_game_resp__unknown_63(lua_State* L, const fb::protocol::header& header)
-{
-    auto* lua = fb::lua::get(L);
-    if (lua == nullptr)
-        return;
-
-    const auto& resp = static_cast<const game_resp::unknown_63<BOT_CLIENT_VERSION>&>(header);
-    lua->new_table();
-    lua->pushstring("subtype");
-    lua->pushinteger(resp.subtype);
-    lua->settable(-3);
-    lua->pushstring("count");
-    lua->pushinteger(resp.count);
-    lua->settable(-3);
-}
-
 void marshal_lua_game_resp__unknown_6f(lua_State* L, const fb::protocol::header& header)
 {
     auto* lua = fb::lua::get(L);
@@ -1759,16 +1747,6 @@ void marshal_lua_game_resp__unknown_6f(lua_State* L, const fb::protocol::header&
     lua->pushstring("count");
     lua->pushinteger(resp.count);
     lua->settable(-3);
-}
-
-void marshal_lua_game_resp__unknown_70(lua_State* L, const fb::protocol::header& header)
-{
-    auto* lua = fb::lua::get(L);
-    if (lua == nullptr)
-        return;
-
-    const auto& resp = static_cast<const game_resp::unknown_70<BOT_CLIENT_VERSION>&>(header);
-    lua->new_table();
 }
 
 void marshal_lua_game_resp__update(lua_State* L, const fb::protocol::header& header)
@@ -2009,8 +1987,8 @@ void marshal_lua_game_resp__update_internal(lua_State* L, const fb::protocol::he
     lua->pushstring("unknown_exp_pad");
     lua->pushinteger(resp.unknown_exp_pad);
     lua->settable(-3);
-    lua->pushstring("unknown_option_bits");
-    lua->pushinteger(resp.unknown_option_bits);
+    lua->pushstring("option_bits");
+    lua->pushinteger(resp.option_bits);
     lua->settable(-3);
 }
 
@@ -2092,6 +2070,16 @@ void marshal_lua_game_resp__web(lua_State* L, const fb::protocol::header& header
     lua->pushstring("message");
     lua->pushstring(resp.message);
     lua->settable(-3);
+}
+
+void marshal_lua_game_resp__web_map(lua_State* L, const fb::protocol::header& header)
+{
+    auto* lua = fb::lua::get(L);
+    if (lua == nullptr)
+        return;
+
+    const auto& resp = static_cast<const game_resp::web_map<BOT_CLIENT_VERSION>&>(header);
+    lua->new_table();
 }
 
 } // namespace detail
@@ -2210,6 +2198,16 @@ int lua_builder_game_reqs__user_list(lua_State* L)
     return 1;
 }
 
+int lua_builder_game_reqs__web_map(lua_State* L)
+{
+    auto lua = fb::lua::get(L);
+    if (lua == nullptr)
+        return luaL_error(L, "integration protocol requires active lua context");
+
+    lua_protocol::push_request(L, std::make_shared<game_reqs::web_map<BOT_CLIENT_VERSION>>());
+    return 1;
+}
+
 void register_builders(lua_State* L)
 {
     lua_newtable(L);
@@ -2235,6 +2233,8 @@ void register_builders(lua_State* L)
     lua_setfield(L, -2, "self_info");
     lua_pushcfunction(L, lua_builder_game_reqs__user_list);
     lua_setfield(L, -2, "user_list");
+    lua_pushcfunction(L, lua_builder_game_reqs__web_map);
+    lua_setfield(L, -2, "web_map");
 }
 
 } // namespace fb::bot::integration::lua_protocol

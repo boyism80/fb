@@ -8,7 +8,8 @@ namespace fb::game::builtin {
 struct character
 {
     static int builtin_uid(lua_State* L);
-    static int builtin_look(lua_State* L);
+    static int builtin_hair(lua_State* L);
+    static int builtin_face(lua_State* L);
     static int builtin_color(lua_State* L);
     static int builtin_gender(lua_State* L);
     static int builtin_money(lua_State* L);
@@ -107,12 +108,15 @@ struct character
     static int builtin_marry(lua_State* L);
     static int builtin_divorce(lua_State* L);
     static int builtin_unknown_12(lua_State* L);
+    static int builtin_collection_list(lua_State* L);
+    static int builtin_collection_dialog(lua_State* L);
     static int builtin_unknown_4f(lua_State* L);
-    static int builtin_unknown_58(lua_State* L);
-    static int builtin_unknown_62(lua_State* L);
-    static int builtin_unknown_63(lua_State* L);
+    static int builtin_notice(lua_State* L);
+    static int builtin_browser(lua_State* L);
+    static int builtin_group_portrait(lua_State* L);
     static int builtin_unknown_6f(lua_State* L);
-    static int builtin_unknown_70(lua_State* L);
+    static int builtin_web_map_markers(lua_State* L);
+    static int builtin_web_map(lua_State* L);
     static int builtin_move_confirm_noscroll(lua_State* L);
     static int builtin_ui(lua_State* L);
     static int builtin_item_throw_confirm(lua_State* L);
@@ -123,13 +127,6 @@ struct character
     static int builtin_popup_message(lua_State* L);
     static int builtin_popup_input(lua_State* L);
     static int builtin_holyday_screen(lua_State* L);
-    static int builtin_probe_map_config(lua_State* L);
-    static int builtin_probe_show(lua_State* L);
-    static int builtin_probe_update_external(lua_State* L);
-    static int builtin_probe_update_internal(lua_State* L);
-    static int builtin_probe_internal_info(lua_State* L);
-    static int builtin_probe_update_slot(lua_State* L);
-    static int builtin_probe_option(lua_State* L);
 };
 
 } // namespace fb::game::builtin

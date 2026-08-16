@@ -38,11 +38,10 @@ game_bot::game_bot(bot_controller<game_bot>& bot_controller, uint32_t id, const 
     // Transfer header: from (u8) + required CLIENT_VERSION (u16)
     if (reader.readable_size() >= sizeof(uint8_t) + sizeof(uint16_t))
     {
-        std::ignore  = reader.read<uint8_t>();
-        auto packed  = reader.read<uint16_t>();
-        auto version = fb::protocol::CLIENT_VERSION::v550;
-        if (fb::protocol::try_parse(packed, version))
-            this->_client_version = version;
+        std::ignore = reader.read<uint8_t>();
+        auto packed = reader.read<uint16_t>();
+        if (fb::protocol::is_supported(packed))
+            this->_client_version = static_cast<fb::protocol::CLIENT_VERSION>(packed);
     }
 }
 

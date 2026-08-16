@@ -12,6 +12,7 @@ namespace fb::bot::integration::detail {
 void marshal_lua_game_resp__action(lua_State* L, const fb::protocol::header& header);
 void marshal_lua_game_resp__ad(lua_State* L, const fb::protocol::header& header);
 void marshal_lua_game_resp__bright(lua_State* L, const fb::protocol::header& header);
+void marshal_lua_game_resp__browser(lua_State* L, const fb::protocol::header& header);
 void marshal_lua_game_resp__bulletin_article(lua_State* L, const fb::protocol::header& header);
 void marshal_lua_game_resp__bulletin_articles(lua_State* L, const fb::protocol::header& header);
 void marshal_lua_game_resp__bulletin_mail(lua_State* L, const fb::protocol::header& header);
@@ -38,6 +39,7 @@ void marshal_lua_game_resp__effect(lua_State* L, const fb::protocol::header& hea
 void marshal_lua_game_resp__external_info(lua_State* L, const fb::protocol::header& header);
 void marshal_lua_game_resp__freeze(lua_State* L, const fb::protocol::header& header);
 void marshal_lua_game_resp__friends_sync(lua_State* L, const fb::protocol::header& header);
+void marshal_lua_game_resp__group_portrait(lua_State* L, const fb::protocol::header& header);
 void marshal_lua_game_resp__hide(lua_State* L, const fb::protocol::header& header);
 void marshal_lua_game_resp__holyday_screen(lua_State* L, const fb::protocol::header& header);
 void marshal_lua_game_resp__id(lua_State* L, const fb::protocol::header& header);
@@ -59,6 +61,7 @@ void marshal_lua_game_resp__message(lua_State* L, const fb::protocol::header& he
 void marshal_lua_game_resp__move(lua_State* L, const fb::protocol::header& header);
 void marshal_lua_game_resp__move_confirm(lua_State* L, const fb::protocol::header& header);
 void marshal_lua_game_resp__move_confirm_noscroll(lua_State* L, const fb::protocol::header& header);
+void marshal_lua_game_resp__notice(lua_State* L, const fb::protocol::header& header);
 void marshal_lua_game_resp__option(lua_State* L, const fb::protocol::header& header);
 void marshal_lua_game_resp__ping(lua_State* L, const fb::protocol::header& header);
 void marshal_lua_game_resp__popup_input(lua_State* L, const fb::protocol::header& header);
@@ -84,11 +87,7 @@ void marshal_lua_game_resp__trade_upload(lua_State* L, const fb::protocol::heade
 void marshal_lua_game_resp__ui_screen(lua_State* L, const fb::protocol::header& header);
 void marshal_lua_game_resp__unknown_12(lua_State* L, const fb::protocol::header& header);
 void marshal_lua_game_resp__unknown_4f(lua_State* L, const fb::protocol::header& header);
-void marshal_lua_game_resp__unknown_58(lua_State* L, const fb::protocol::header& header);
-void marshal_lua_game_resp__unknown_62(lua_State* L, const fb::protocol::header& header);
-void marshal_lua_game_resp__unknown_63(lua_State* L, const fb::protocol::header& header);
 void marshal_lua_game_resp__unknown_6f(lua_State* L, const fb::protocol::header& header);
-void marshal_lua_game_resp__unknown_70(lua_State* L, const fb::protocol::header& header);
 void marshal_lua_game_resp__update(lua_State* L, const fb::protocol::header& header);
 void marshal_lua_game_resp__update_cc(lua_State* L, const fb::protocol::header& header);
 void marshal_lua_game_resp__update_external(lua_State* L, const fb::protocol::header& header);
@@ -98,6 +97,7 @@ void marshal_lua_game_resp__user_info(lua_State* L, const fb::protocol::header& 
 void marshal_lua_game_resp__user_list(lua_State* L, const fb::protocol::header& header);
 void marshal_lua_game_resp__weather(lua_State* L, const fb::protocol::header& header);
 void marshal_lua_game_resp__web(lua_State* L, const fb::protocol::header& header);
+void marshal_lua_game_resp__web_map(lua_State* L, const fb::protocol::header& header);
 
 } // namespace fb::bot::integration::detail
 

@@ -31,9 +31,11 @@ struct life
     static int builtin_delirious(lua_State* L);
     static int builtin_base_hp(lua_State* L);
     static int builtin_buff_hp(lua_State* L);
+    static int builtin_buff_hp_percent(lua_State* L);
     static int builtin_maxhp(lua_State* L);
     static int builtin_base_mp(lua_State* L);
     static int builtin_buff_mp(lua_State* L);
+    static int builtin_buff_mp_percent(lua_State* L);
     static int builtin_maxmp(lua_State* L);
     static int builtin_base_str(lua_State* L);
     static int builtin_buff_str(lua_State* L);

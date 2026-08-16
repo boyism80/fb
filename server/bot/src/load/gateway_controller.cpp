@@ -12,12 +12,11 @@ namespace {
 // Client version the gateway bots emulate.
 fb::protocol::CLIENT_VERSION configured_client_version()
 {
-    auto packed  = fb::config<uint16_t>("client:version", 550);
-    auto version = fb::protocol::CLIENT_VERSION::v550;
-    if (fb::protocol::try_parse(packed, version) == false)
+    auto packed = fb::config<uint16_t>("client:version", 550);
+    if (fb::protocol::is_supported(packed) == false)
         return fb::protocol::CLIENT_VERSION::v550;
 
-    return version;
+    return static_cast<fb::protocol::CLIENT_VERSION>(packed);
 }
 
 } // namespace

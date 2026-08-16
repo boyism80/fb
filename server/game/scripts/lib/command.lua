@@ -1225,7 +1225,26 @@ M.functions = {
                     me:message("머리 ID는 0 이상의 숫자여야 합니다.")
                     return true
                 end
-                me:look(value)
+                me:hair(value)
+                return true
+            end,
+        },
+        
+        ['얼굴바꾸기'] = {
+            ['privilege'] = ROLE.ADMIN,
+            ['usage'] = '<얼굴ID> - 얼굴 변경 (6.51 NEW UI)',
+            ['command'] = function (me, args)
+                local value = table.unpack(args)
+                if not value then
+                    me:message("사용법: /얼굴바꾸기 <얼굴ID>")
+                    return true
+                end
+                value = tonumber(value)
+                if not value or value < 0 then
+                    me:message("얼굴 ID는 0 이상의 숫자여야 합니다.")
+                    return true
+                end
+                me:face(value)
                 return true
             end,
         },
@@ -1526,7 +1545,7 @@ M.functions = {
         
         ['unknown_12'] = {
             ['privilege'] = ROLE.ADMIN,
-            ['usage'] = '[oid] [slot] [flag] - S2C 0x12 (slot=인벤문자 1=a, flag<0xA0→[무장] / >=0xA0→레벨업토스트). 생략 시 자신 oid·slot0·flag1',
+            ['usage'] = '[oid] [slot] [flag] - S2C 0x12 type2 (slot=인벤문자 1=a, flag<0xA0→[무장] / >=0xA0→레벨업토스트). 생략 시 자신 oid·slot0·flag1',
             ['command'] = function (me, args)
                 local oid, slot, flag = table.unpack(args)
                 if oid or slot or flag then
@@ -1534,6 +1553,33 @@ M.functions = {
                 else
                     me:unknown_12()
                 end
+                return true
+            end,
+        },
+
+        ['collection_list'] = {
+            ['privilege'] = ROLE.ADMIN,
+            ['usage'] = '[id extra]... - S2C 0x12 type0 도감 탭 목록. 생략 시 count=0',
+            ['command'] = function (me, args)
+                local values = {}
+                for i = 1, #args do
+                    values[#values + 1] = tonumber(args[i]) or 0
+                end
+                me:collection_list(table.unpack(values))
+                return true
+            end,
+        },
+
+        ['collection_dialog'] = {
+            ['privilege'] = ROLE.ADMIN,
+            ['usage'] = '[group_id] [byte...] - S2C 0x12 type1 도감 다이얼로그 bitmask',
+            ['command'] = function (me, args)
+                local group_id = tonumber(args[1]) or 0
+                local bytes = {}
+                for i = 2, #args do
+                    bytes[#bytes + 1] = tonumber(args[i]) or 0
+                end
+                me:collection_dialog(group_id, table.unpack(bytes))
                 return true
             end,
         },
@@ -1557,7 +1603,7 @@ M.functions = {
             end,
         },
 
-        ['unknown_58'] = {
+        ['notice'] = {
             ['privilege'] = ROLE.ADMIN,
             ['usage'] = '[flag] [텍스트] - S2C 0x58 공지 텍스트창 (6.51 NEW). flag 0이면 창 닫기',
             ['command'] = function (me, args)
@@ -1573,136 +1619,52 @@ M.functions = {
                     text = 'test'
                 end
 
-                me:unknown_58(flag, text)
+                me:notice(flag, text)
                 return true
             end,
         },
 
-        ['unknown_63'] = {
+        ['group_portrait'] = {
             ['privilege'] = ROLE.ADMIN,
-            ['usage'] = '[subtype] [count] - S2C 0x63 외형 리스트 (6.51 NEW). 생략 시 subtype2·count0(빈 리스트)',
+            ['usage'] = '[subtype] [count] - S2C 0x63 그룹 초상 리스트 (6.51 NEW). 생략 시 subtype2·count0(빈 리스트)',
             ['command'] = function (me, args)
                 local subtype, count = table.unpack(args)
-                me:unknown_63(tonumber(subtype) or 2, tonumber(count) or 0)
+                me:group_portrait(tonumber(subtype) or 2, tonumber(count) or 0)
                 return true
             end,
         },
 
-        ['unknown_70'] = {
+        ['web_map_markers'] = {
             ['privilege'] = ROLE.ADMIN,
-            ['usage'] = '[x] [y] [이름] - S2C 0x70 웹 월드맵 (6.51 NEW). 생략 시 마커 없음',
+            ['usage'] = '[x y 이름]... - S2C 0x70 웹맵 마커. 생략 시 마커 없음. x/y 0이면 현재 좌표, 이름 생략 시 자신',
             ['command'] = function (me, args)
-                local x, y, name = table.unpack(args)
-                if x or y or name then
-                    me:unknown_70(tonumber(x) or 0, tonumber(y) or 0, name or '')
-                else
-                    me:unknown_70()
+                local values = {}
+                local i = 1
+                while i <= #args do
+                    values[#values + 1] = tonumber(args[i]) or 0
+                    values[#values + 1] = tonumber(args[i + 1]) or 0
+                    values[#values + 1] = args[i + 2] or ''
+                    i = i + 3
                 end
+                me:web_map_markers(table.unpack(values))
                 return true
             end,
         },
 
-        ['probe_map_config'] = {
+        ['web_map'] = {
             ['privilege'] = ROLE.ADMIN,
-            ['usage'] = '[flags] [extra] [light] - S2C 0x15 map_config 재송신 (v651 +7: bit0=0x01 map+1025, bit1=0x02 NO_SELF_CONFIRM, bit3=0x08 map+1212)',
+            ['usage'] = '- S2C 0x70 현재 맵의 다른 캐릭터 마커 (C2S 0x7C 응답과 동일)',
             ['command'] = function (me, args)
-                local flags, extra, light = table.unpack(args)
-                me:probe_map_config(tonumber(flags) or 0x02, tonumber(extra) or 0, tonumber(light) or 0)
+                me:web_map()
                 return true
             end,
         },
 
-        ['probe_show'] = {
-            ['privilege'] = ROLE.ADMIN,
-            ['usage'] = '[ridable] [anim] [hair_style] [face_tint] [body] [hat] [helm] [helm_c] [acc] [acc_c] - S2C 0x33 show 재송신',
-            ['command'] = function (me, args)
-                me:probe_show(
-                    tonumber(args[1]) or 0,
-                    tonumber(args[2]) or 0,
-                    tonumber(args[3]) or 0,
-                    tonumber(args[4]) or 0,
-                    tonumber(args[5]) or 0,
-                    tonumber(args[6]) or 0,
-                    tonumber(args[7]) or 0,
-                    tonumber(args[8]) or 0,
-                    tonumber(args[9]) or 0xFFFF,
-                    tonumber(args[10]) or 0
-                )
-                return true
-            end,
-        },
-
-        ['probe_update_external'] = {
-            ['privilege'] = ROLE.ADMIN,
-            ['usage'] = '[ridable] [anim] [hair_style] [face_tint] [body] [hat] [helm] [helm_c] [acc] [acc_c] - S2C 0x1D update_external 재송신',
-            ['command'] = function (me, args)
-                me:probe_update_external(
-                    tonumber(args[1]) or 0,
-                    tonumber(args[2]) or 0,
-                    tonumber(args[3]) or 0,
-                    tonumber(args[4]) or 0,
-                    tonumber(args[5]) or 0,
-                    tonumber(args[6]) or 0,
-                    tonumber(args[7]) or 0,
-                    tonumber(args[8]) or 0,
-                    tonumber(args[9]) or 0xFFFF,
-                    tonumber(args[10]) or 0
-                )
-                return true
-            end,
-        },
-
-        ['probe_update_internal'] = {
-            ['privilege'] = ROLE.ADMIN,
-            ['usage'] = '[level] [based5] [인품] [평가권] [exp_pad] [option_bits] - S2C 0x08 재송신 (기본 level=ALL, 인품/평가권은 캐릭터 값)',
-            ['command'] = function (me, args)
-                me:probe_update_internal(
-                    tonumber(args[1]) or UPDATE_STATE_LEVEL.ALL,
-                    tonumber(args[2]) or 0,
-                    tonumber(args[3]),
-                    tonumber(args[4]),
-                    tonumber(args[5]) or 0,
-                    tonumber(args[6]) or 0
-                )
-                return true
-            end,
-        },
-
-        ['probe_internal_info'] = {
-            ['privilege'] = ROLE.ADMIN,
-            ['usage'] = '- S2C 0x39 internal_info 재송신',
-            ['command'] = function (me, args)
-                me:probe_internal_info()
-                return true
-            end,
-        },
-
-        ['probe_update_slot'] = {
-            ['privilege'] = ROLE.ADMIN,
-            ['usage'] = '[parts] [name_b] [u32] - S2C 0x37 장비슬롯 재송신 (parts 기본 1=WEAPON)',
-            ['command'] = function (me, args)
-                local parts = tonumber(args[1]) or 1
-                local name_b = args[2] or ''
-                local u32 = tonumber(args[3]) or 0
-                me:probe_update_slot(parts, name_b, u32)
-                return true
-            end,
-        },
-
-        ['probe_option'] = {
-            ['privilege'] = ROLE.ADMIN,
-            ['usage'] = '[selflook] - S2C 0x23 option 재송신 (v651 6번째 바이트)',
-            ['command'] = function (me, args)
-                me:probe_option(tonumber(args[1]) or 0)
-                return true
-            end,
-        },
-
-        ['unknown_62'] = {
+        ['browser'] = {
             ['privilege'] = ROLE.ADMIN,
             ['usage'] = '- S2C 0x62 NEW UI 오픈 (6.51). 게이트웨이 C2S 0x62와 별개',
             ['command'] = function (me, args)
-                me:unknown_62()
+                me:browser()
                 return true
             end,
         },

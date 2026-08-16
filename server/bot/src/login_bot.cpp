@@ -25,9 +25,8 @@ login_bot::login_bot(bot_controller<login_bot>& bot_controller, uint32_t id, con
     {
         this->_transfer_from = reader.read<uint8_t>();
         auto packed          = reader.read<uint16_t>();
-        auto version         = fb::protocol::CLIENT_VERSION::v550;
-        if (fb::protocol::try_parse(packed, version))
-            this->_client_version = version;
+        if (fb::protocol::is_supported(packed))
+            this->_client_version = static_cast<fb::protocol::CLIENT_VERSION>(packed);
     }
 }
 

@@ -27,7 +27,8 @@ using table = fb::model::table;
 IMPLEMENT_LUA_EXTENSION(character, "fb.game.character")
 {"__eq",                         builtin::object::builtin_eq},
 {"uid",                          builtin::character::builtin_uid},
-{"look",                         builtin::character::builtin_look},
+{"hair",                         builtin::character::builtin_hair},
+{"face",                         builtin::character::builtin_face},
 {"color",                        builtin::character::builtin_color},
 {"gender",                       builtin::character::builtin_gender},
 {"money",                        builtin::character::builtin_money},
@@ -125,12 +126,15 @@ IMPLEMENT_LUA_EXTENSION(character, "fb.game.character")
 {"marry",                        builtin::character::builtin_marry},
 {"divorce",                      builtin::character::builtin_divorce},
 {"unknown_12",                   builtin::character::builtin_unknown_12},
+{"collection_list",              builtin::character::builtin_collection_list},
+{"collection_dialog",            builtin::character::builtin_collection_dialog},
 {"unknown_4f",                   builtin::character::builtin_unknown_4f},
-{"unknown_58",                   builtin::character::builtin_unknown_58},
-{"unknown_62",                   builtin::character::builtin_unknown_62},
-{"unknown_63",                   builtin::character::builtin_unknown_63},
+{"notice",                       builtin::character::builtin_notice},
+{"browser",                      builtin::character::builtin_browser},
+{"group_portrait",               builtin::character::builtin_group_portrait},
 {"unknown_6f",                   builtin::character::builtin_unknown_6f},
-{"unknown_70",                   builtin::character::builtin_unknown_70},
+{"web_map_markers",              builtin::character::builtin_web_map_markers},
+{"web_map",                      builtin::character::builtin_web_map},
 {"move_confirm_noscroll",        builtin::character::builtin_move_confirm_noscroll},
 {"ui",                           builtin::character::builtin_ui},
 {"item_throw_confirm",           builtin::character::builtin_item_throw_confirm},
@@ -141,13 +145,6 @@ IMPLEMENT_LUA_EXTENSION(character, "fb.game.character")
 {"popup_message",                builtin::character::builtin_popup_message},
 {"popup_input",                  builtin::character::builtin_popup_input},
 {"holyday_screen",               builtin::character::builtin_holyday_screen},
-{"probe_map_config",             builtin::character::builtin_probe_map_config},
-{"probe_show",                   builtin::character::builtin_probe_show},
-{"probe_update_external",        builtin::character::builtin_probe_update_external},
-{"probe_update_internal",        builtin::character::builtin_probe_update_internal},
-{"probe_internal_info",          builtin::character::builtin_probe_internal_info},
-{"probe_update_slot",            builtin::character::builtin_probe_update_slot},
-{"probe_option",                 builtin::character::builtin_probe_option},
 END_LUA_EXTENSION; // clang-format on
 
 int builtin::character::builtin_uid(lua_State* L)
@@ -175,7 +172,7 @@ int builtin::character::builtin_uid(lua_State* L)
     return builder.run();
 }
 
-int builtin::character::builtin_look(lua_State* L)
+int builtin::character::builtin_hair(lua_State* L)
 {
     auto lua = fb::lua::get(L);
     if (lua == nullptr)
@@ -189,15 +186,15 @@ int builtin::character::builtin_look(lua_State* L)
     if (argc == 1)
     {
         auto weak     = ch->weak_from_this_as<fb::game::character>();
-        auto look     = std::make_shared<uint16_t>();
+        auto hair     = std::make_shared<uint16_t>();
         auto builder  = lua->new_co_builder();
         builder.weak  = weak;
         builder.yield = [=]() -> async::task<void> {
-            *look = ch->look();
+            *hair = ch->hair();
             co_return;
         };
         builder.resume = [=]() -> async::task<int> {
-            lua->pushinteger(*look);
+            lua->pushinteger(*hair);
             co_return 1;
         };
         return builder.run();
@@ -209,7 +206,51 @@ int builtin::character::builtin_look(lua_State* L)
         auto builder  = lua->new_co_builder();
         builder.weak  = weak;
         builder.yield = [=]() -> async::task<void> {
-            ch->look(value);
+            ch->hair(value);
+            co_return;
+        };
+        builder.resume = []() -> async::task<int> {
+            co_return 0;
+        };
+        return builder.run();
+    }
+}
+
+int builtin::character::builtin_face(lua_State* L)
+{
+    auto lua = fb::lua::get(L);
+    if (lua == nullptr)
+        return 0;
+
+    auto argc = lua->argc();
+    auto ch   = lua->touserdata<fb::game::character>(1);
+    if (ch == nullptr)
+        return 0;
+
+    if (argc == 1)
+    {
+        auto weak     = ch->weak_from_this_as<fb::game::character>();
+        auto face     = std::make_shared<uint8_t>();
+        auto builder  = lua->new_co_builder();
+        builder.weak  = weak;
+        builder.yield = [=]() -> async::task<void> {
+            *face = ch->face();
+            co_return;
+        };
+        builder.resume = [=]() -> async::task<int> {
+            lua->pushinteger(*face);
+            co_return 1;
+        };
+        return builder.run();
+    }
+    else
+    {
+        auto value    = (uint8_t)lua->tointeger(2);
+        auto weak     = ch->weak_from_this_as<fb::game::character>();
+        auto builder  = lua->new_co_builder();
+        builder.weak  = weak;
+        builder.yield = [=]() -> async::task<void> {
+            ch->face(value);
             co_return;
         };
         builder.resume = []() -> async::task<int> {
@@ -3749,6 +3790,80 @@ int builtin::character::builtin_unknown_12(lua_State* L)
     return builder.run();
 }
 
+int builtin::character::builtin_collection_list(lua_State* L)
+{
+    auto lua = fb::lua::get(L);
+    if (lua == nullptr)
+        return 0;
+
+    auto ch = lua->touserdata<fb::game::character>(1);
+    if (ch == nullptr)
+        return 0;
+
+    auto entries = std::vector<fb::protocol::game::response::unknown_12_entry>();
+    auto argc    = lua->argc();
+    for (int i = 2; i + 1 <= argc; i += 2)
+    {
+        auto entry  = fb::protocol::game::response::unknown_12_entry();
+        entry.id    = static_cast<uint8_t>(lua->tointeger(i, 0));
+        entry.extra = static_cast<uint8_t>(lua->tointeger(i + 1, 0));
+        entries.push_back(entry);
+        if (entries.size() >= 255)
+            break;
+    }
+
+    auto weak     = ch->weak_from_this_as<fb::game::character>();
+    auto builder  = lua->new_co_builder();
+    builder.weak  = weak;
+    builder.yield = [=]() -> async::task<void> {
+        fb::protocol::visit_client_version(ch->client_version, [&]<fb::protocol::CLIENT_VERSION V> {
+            if constexpr (V == fb::protocol::CLIENT_VERSION::v651)
+                std::ignore = ch->send(fb::protocol::game::response::unknown_12<V>(entries));
+        });
+        co_return;
+    };
+    builder.resume = []() -> async::task<int> {
+        co_return 0;
+    };
+    return builder.run();
+}
+
+int builtin::character::builtin_collection_dialog(lua_State* L)
+{
+    auto lua = fb::lua::get(L);
+    if (lua == nullptr)
+        return 0;
+
+    auto ch = lua->touserdata<fb::game::character>(1);
+    if (ch == nullptr)
+        return 0;
+
+    auto group_id = static_cast<uint8_t>(lua->tointeger(2, 0));
+    auto bitmask  = std::vector<uint8_t>();
+    auto argc     = lua->argc();
+    for (int i = 3; i <= argc; i++)
+    {
+        bitmask.push_back(static_cast<uint8_t>(lua->tointeger(i, 0)));
+        if (bitmask.size() >= 255)
+            break;
+    }
+
+    auto weak     = ch->weak_from_this_as<fb::game::character>();
+    auto builder  = lua->new_co_builder();
+    builder.weak  = weak;
+    builder.yield = [=]() -> async::task<void> {
+        fb::protocol::visit_client_version(ch->client_version, [&]<fb::protocol::CLIENT_VERSION V> {
+            if constexpr (V == fb::protocol::CLIENT_VERSION::v651)
+                std::ignore = ch->send(fb::protocol::game::response::unknown_12<V>(group_id, bitmask));
+        });
+        co_return;
+    };
+    builder.resume = []() -> async::task<int> {
+        co_return 0;
+    };
+    return builder.run();
+}
+
 int builtin::character::builtin_unknown_4f(lua_State* L)
 {
     auto lua = fb::lua::get(L);
@@ -3775,7 +3890,7 @@ int builtin::character::builtin_unknown_4f(lua_State* L)
     return builder.run();
 }
 
-int builtin::character::builtin_unknown_58(lua_State* L)
+int builtin::character::builtin_notice(lua_State* L)
 {
     auto lua = fb::lua::get(L);
     if (lua == nullptr)
@@ -3785,7 +3900,6 @@ int builtin::character::builtin_unknown_58(lua_State* L)
     if (ch == nullptr)
         return 0;
 
-    // flag 0 destroys the notice window, any other value opens it with the text.
     auto flag = static_cast<uint8_t>(lua->tointeger(2, 1));
     auto text = lua->tostring(3, "test");
 
@@ -3794,8 +3908,8 @@ int builtin::character::builtin_unknown_58(lua_State* L)
     builder.weak  = weak;
     builder.yield = [=]() -> async::task<void> {
         fb::protocol::visit_client_version(ch->client_version, [&]<fb::protocol::CLIENT_VERSION V> {
-            if constexpr (fb::protocol::game::response::unknown_58<V>::supported)
-                std::ignore = ch->send(fb::protocol::game::response::unknown_58<V>(flag, text));
+            if constexpr (fb::protocol::game::response::notice<V>::supported)
+                std::ignore = ch->send(fb::protocol::game::response::notice<V>(flag, text));
         });
         co_return;
     };
@@ -3805,7 +3919,7 @@ int builtin::character::builtin_unknown_58(lua_State* L)
     return builder.run();
 }
 
-int builtin::character::builtin_unknown_62(lua_State* L)
+int builtin::character::builtin_browser(lua_State* L)
 {
     auto lua = fb::lua::get(L);
     if (lua == nullptr)
@@ -3815,16 +3929,18 @@ int builtin::character::builtin_unknown_62(lua_State* L)
     if (ch == nullptr)
         return 0;
 
-    auto type = static_cast<uint8_t>(lua->tointeger(2, 0));
-    auto url  = lua->tostring(3, "");
+    auto type   = static_cast<uint8_t>(lua->tointeger(2, 0));
+    auto url    = lua->tostring(3, "");
+    auto key    = lua->tostring(4, "");
+    auto cookie = lua->tostring(5, "");
 
     auto weak     = ch->weak_from_this_as<fb::game::character>();
     auto builder  = lua->new_co_builder();
     builder.weak  = weak;
     builder.yield = [=]() -> async::task<void> {
         fb::protocol::visit_client_version(ch->client_version, [&]<fb::protocol::CLIENT_VERSION V> {
-            if constexpr (fb::protocol::game::response::unknown_62<V>::supported)
-                std::ignore = ch->send(fb::protocol::game::response::unknown_62<V>(type, url));
+            if constexpr (V == fb::protocol::CLIENT_VERSION::v651)
+                std::ignore = ch->send(fb::protocol::game::response::browser<V>(type, url, key, cookie));
         });
         co_return;
     };
@@ -3834,7 +3950,7 @@ int builtin::character::builtin_unknown_62(lua_State* L)
     return builder.run();
 }
 
-int builtin::character::builtin_unknown_63(lua_State* L)
+int builtin::character::builtin_group_portrait(lua_State* L)
 {
     auto lua = fb::lua::get(L);
     if (lua == nullptr)
@@ -3844,17 +3960,15 @@ int builtin::character::builtin_unknown_63(lua_State* L)
     if (ch == nullptr)
         return 0;
 
-    // Only subtype 2 is consumed by the client; entries are not modelled yet.
     auto subtype = static_cast<uint8_t>(lua->tointeger(2, 2));
-    auto count   = static_cast<uint8_t>(lua->tointeger(3, 0));
 
     auto weak     = ch->weak_from_this_as<fb::game::character>();
     auto builder  = lua->new_co_builder();
     builder.weak  = weak;
     builder.yield = [=]() -> async::task<void> {
         fb::protocol::visit_client_version(ch->client_version, [&]<fb::protocol::CLIENT_VERSION V> {
-            if constexpr (fb::protocol::game::response::unknown_63<V>::supported)
-                std::ignore = ch->send(fb::protocol::game::response::unknown_63<V>(subtype, count));
+            if constexpr (V == fb::protocol::CLIENT_VERSION::v651)
+                std::ignore = ch->send(fb::protocol::game::response::group_portrait<V>(subtype, 0));
         });
         co_return;
     };
@@ -3874,7 +3988,6 @@ int builtin::character::builtin_unknown_6f(lua_State* L)
     if (ch == nullptr)
         return 0;
 
-    // subtype 1 with count 0 is the safest probe: an empty name list.
     auto subtype = static_cast<uint8_t>(lua->tointeger(2, 1));
     auto count   = static_cast<uint16_t>(lua->tointeger(3, 0));
 
@@ -3894,7 +4007,7 @@ int builtin::character::builtin_unknown_6f(lua_State* L)
     return builder.run();
 }
 
-int builtin::character::builtin_unknown_70(lua_State* L)
+int builtin::character::builtin_web_map_markers(lua_State* L)
 {
     auto lua = fb::lua::get(L);
     if (lua == nullptr)
@@ -3904,31 +4017,79 @@ int builtin::character::builtin_unknown_70(lua_State* L)
     if (ch == nullptr)
         return 0;
 
-    // Without arguments an empty marker list is sent; otherwise one marker
-    // defaulting to the caller's position and name.
-    auto has_entry = lua->argc() > 1;
-    auto x         = static_cast<uint16_t>(lua->tointeger(2, 0));
-    auto y         = static_cast<uint16_t>(lua->tointeger(3, 0));
-    auto name      = lua->tostring(4, "");
+    auto argc     = lua->argc();
+    auto entries  = std::vector<fb::protocol::game::response::web_map_entry>();
+    auto position = ch->position();
+    for (int i = 2; i <= argc; i += 3)
+    {
+        auto entry = fb::protocol::game::response::web_map_entry();
+        auto x     = static_cast<uint16_t>(lua->tointeger(i, 0));
+        auto y     = static_cast<uint16_t>(lua->tointeger(i + 1, 0));
+        auto name  = lua->tostring(i + 2, "");
+        entry.x    = x == 0 ? position.x : x;
+        entry.y    = y == 0 ? position.y : y;
+        entry.name = name.empty() ? ch->name() : name;
+        entries.push_back(std::move(entry));
+        if (entries.size() >= 255)
+            break;
+    }
 
     auto weak     = ch->weak_from_this_as<fb::game::character>();
     auto builder  = lua->new_co_builder();
     builder.weak  = weak;
     builder.yield = [=]() -> async::task<void> {
-        auto entries = std::vector<fb::protocol::game::response::unknown_70_entry>();
-        if (has_entry)
+        fb::protocol::visit_client_version(ch->client_version, [&]<fb::protocol::CLIENT_VERSION V> {
+            if constexpr (fb::protocol::game::response::web_map<V>::supported)
+                std::ignore = ch->send(fb::protocol::game::response::web_map<V>(entries));
+        });
+        co_return;
+    };
+    builder.resume = []() -> async::task<int> {
+        co_return 0;
+    };
+    return builder.run();
+}
+
+int builtin::character::builtin_web_map(lua_State* L)
+{
+    auto lua = fb::lua::get(L);
+    if (lua == nullptr)
+        return 0;
+
+    auto ch = lua->touserdata<fb::game::character>(1);
+    if (ch == nullptr)
+        return 0;
+
+    auto weak     = ch->weak_from_this_as<fb::game::character>();
+    auto builder  = lua->new_co_builder();
+    builder.weak  = weak;
+    builder.yield = [=]() -> async::task<void> {
+        auto entries = std::vector<fb::protocol::game::response::web_map_entry>{};
+        auto map     = ch->map();
+        if (map != nullptr)
         {
-            auto position = ch->position();
-            auto entry    = fb::protocol::game::response::unknown_70_entry();
-            entry.x       = x == 0 ? position.x : x;
-            entry.y       = y == 0 ? position.y : y;
-            entry.name    = name.empty() ? ch->name() : name;
-            entries.push_back(entry);
+            map->objects.foreach (OBJECT_TYPE::CHARACTER, [&](fb::game::object& obj) {
+                auto& other = static_cast<fb::game::character&>(obj);
+                if (&other == ch.get())
+                    return true;
+                if (other.super_hide())
+                    return true;
+                if (entries.size() >= 255)
+                    return false;
+
+                auto position = other.position();
+                auto entry    = fb::protocol::game::response::web_map_entry();
+                entry.x       = position.x;
+                entry.y       = position.y;
+                entry.name    = other.name();
+                entries.push_back(std::move(entry));
+                return true;
+            });
         }
 
         fb::protocol::visit_client_version(ch->client_version, [&]<fb::protocol::CLIENT_VERSION V> {
-            if constexpr (fb::protocol::game::response::unknown_70<V>::supported)
-                std::ignore = ch->send(fb::protocol::game::response::unknown_70<V>(entries));
+            if constexpr (fb::protocol::game::response::web_map<V>::supported)
+                std::ignore = ch->send(fb::protocol::game::response::web_map<V>(entries));
         });
         co_return;
     };
@@ -3948,7 +4109,6 @@ int builtin::character::builtin_move_confirm_noscroll(lua_State* L)
     if (ch == nullptr)
         return 0;
 
-    // Defaults: current direction / position / viewport, walk slot 0 (matches move_confirm shape).
     auto position = ch->position();
     auto viewport = ch->viewport();
     auto direction =
@@ -4087,7 +4247,6 @@ int builtin::character::builtin_c2s_relay(lua_State* L)
     if (ch == nullptr)
         return 0;
 
-    // Default: C2S miss (0x0C) + self oid — harmless handled packet the client echoes back.
     std::string payload;
     if (lua->argc() >= 2 && lua->is_string(2))
     {
@@ -4125,7 +4284,6 @@ int builtin::character::builtin_user_info(lua_State* L)
     if (ch == nullptr)
         return 0;
 
-    // type 0: empty form (safest). type 2: prefill with client-valid combo labels.
     auto type = static_cast<uint8_t>(lua->tointeger(2, 0));
 
     static constexpr const char* k_defaults[8] = {
@@ -6670,315 +6828,6 @@ int builtin::character::builtin_divorce(lua_State* L)
         else
             lua->pushnil();
         co_return 1;
-    };
-    return builder.run();
-}
-
-namespace {
-
-template <fb::protocol::CLIENT_VERSION V>
-fb::game::character_appearance<V> appearance_from_character(const fb::game::character& ch)
-{
-    if (ch.mimicry().has_value())
-    {
-        auto app = fb::game::character_appearance<V>(ch.mimicry().value());
-        if (app.state.has_value() == false)
-            app.state = ch.state();
-        app.speed = ch.stat.speed();
-        return app;
-    }
-
-    fb::game::character_appearance<V> app;
-    app.gender      = ch.gender();
-    app.state       = ch.state();
-    app.hair        = ch.look();
-    app.hair_color  = ch.color();
-    app.armor_color = ch.armor_color();
-    app.disguise    = std::nullopt;
-
-    if (ch.items.armor() != nullptr)
-    {
-        app.armor = static_cast<uint8_t>(ch.items.armor()->model().dress);
-        if (app.armor_color.has_value() == false)
-            app.armor_color = ch.items.armor()->model().color;
-    }
-
-    if (ch.items.weapon() != nullptr)
-    {
-        app.weapon       = ch.items.weapon()->model().dress;
-        app.weapon_color = ch.weapon_color().value_or(static_cast<uint8_t>(ch.items.weapon()->color()));
-    }
-
-    if (ch.items.shield() != nullptr)
-    {
-        app.shield       = ch.items.shield()->model().dress;
-        app.shield_color = ch.shield_color().value_or(ch.items.shield()->color());
-    }
-
-    app.speed = ch.stat.speed();
-    return app;
-}
-
-} // namespace
-
-int builtin::character::builtin_probe_show(lua_State* L)
-{
-    auto lua = fb::lua::get(L);
-    if (lua == nullptr)
-        return 0;
-
-    auto ch = lua->touserdata<fb::game::character>(1);
-    if (ch == nullptr)
-        return 0;
-
-    auto ridable_id         = static_cast<uint16_t>(lua->tointeger(2, 0));
-    auto unknown_hair_style = static_cast<uint8_t>(lua->tointeger(4, 0));
-    auto unknown_face_tint  = static_cast<uint8_t>(lua->tointeger(5, 0));
-    auto unknown_body_color = static_cast<uint8_t>(lua->tointeger(6, 0));
-    auto hair_to_hat        = static_cast<uint8_t>(lua->tointeger(7, 0));
-    auto unknown_helmet     = static_cast<uint8_t>(lua->tointeger(8, 0));
-    auto unknown_helmet_col = static_cast<uint8_t>(lua->tointeger(9, 0));
-    auto unknown_acc_pack   = static_cast<uint16_t>(lua->tointeger(10, 0xFFFF));
-    auto unknown_acc_color  = static_cast<uint8_t>(lua->tointeger(11, 0));
-
-    auto weak     = ch->weak_from_this_as<fb::game::character>();
-    auto builder  = lua->new_co_builder();
-    builder.weak  = weak;
-    builder.yield = [=]() -> async::task<void> {
-        fb::protocol::visit_client_version(ch->client_version, [&]<fb::protocol::CLIENT_VERSION V> {
-            auto app = appearance_from_character<V>(*ch);
-            if constexpr (V == fb::protocol::CLIENT_VERSION::v651)
-            {
-                app.ridable_id              = ridable_id;
-                app.unknown_hair_style      = unknown_hair_style;
-                app.unknown_face_hair_tint  = unknown_face_tint;
-                app.unknown_body_color      = unknown_body_color;
-                app.hair_to_hat             = hair_to_hat;
-                app.unknown_helmet          = unknown_helmet;
-                app.unknown_helmet_color    = unknown_helmet_col;
-                app.unknown_accessory_pack  = unknown_acc_pack;
-                app.unknown_accessory_color = unknown_acc_color;
-            }
-            std::ignore = ch->send(fb::protocol::game::response::show<V>(ch->oid(),
-                                                                         ch->position(),
-                                                                         ch->direction(),
-                                                                         HEAD_MARKER::NONE,
-                                                                         ch->name(),
-                                                                         app,
-                                                                         ch->ui_mode));
-        });
-        co_return;
-    };
-    builder.resume = []() -> async::task<int> {
-        co_return 0;
-    };
-    return builder.run();
-}
-
-int builtin::character::builtin_probe_update_external(lua_State* L)
-{
-    auto lua = fb::lua::get(L);
-    if (lua == nullptr)
-        return 0;
-
-    auto ch = lua->touserdata<fb::game::character>(1);
-    if (ch == nullptr)
-        return 0;
-
-    auto ridable_id         = static_cast<uint16_t>(lua->tointeger(2, 0));
-    auto unknown_hair_style = static_cast<uint8_t>(lua->tointeger(4, 0));
-    auto unknown_face_tint  = static_cast<uint8_t>(lua->tointeger(5, 0));
-    auto unknown_body_color = static_cast<uint8_t>(lua->tointeger(6, 0));
-    auto hair_to_hat        = static_cast<uint8_t>(lua->tointeger(7, 0));
-    auto unknown_helmet     = static_cast<uint8_t>(lua->tointeger(8, 0));
-    auto unknown_helmet_col = static_cast<uint8_t>(lua->tointeger(9, 0));
-    auto unknown_acc_pack   = static_cast<uint16_t>(lua->tointeger(10, 0xFFFF));
-    auto unknown_acc_color  = static_cast<uint8_t>(lua->tointeger(11, 0));
-
-    auto weak     = ch->weak_from_this_as<fb::game::character>();
-    auto builder  = lua->new_co_builder();
-    builder.weak  = weak;
-    builder.yield = [=]() -> async::task<void> {
-        fb::protocol::visit_client_version(ch->client_version, [&]<fb::protocol::CLIENT_VERSION V> {
-            auto app = appearance_from_character<V>(*ch);
-            if constexpr (V == fb::protocol::CLIENT_VERSION::v651)
-            {
-                app.ridable_id              = ridable_id;
-                app.unknown_hair_style      = unknown_hair_style;
-                app.unknown_face_hair_tint  = unknown_face_tint;
-                app.unknown_body_color      = unknown_body_color;
-                app.hair_to_hat             = hair_to_hat;
-                app.unknown_helmet          = unknown_helmet;
-                app.unknown_helmet_color    = unknown_helmet_col;
-                app.unknown_accessory_pack  = unknown_acc_pack;
-                app.unknown_accessory_color = unknown_acc_color;
-            }
-            std::ignore = ch->send(fb::protocol::game::response::update_external<V>(ch->oid(),
-                                                                                    HEAD_MARKER::NONE,
-                                                                                    ch->name(),
-                                                                                    app,
-                                                                                    ch->ui_mode));
-        });
-        co_return;
-    };
-    builder.resume = []() -> async::task<int> {
-        co_return 0;
-    };
-    return builder.run();
-}
-
-int builtin::character::builtin_probe_map_config(lua_State* L)
-{
-    auto lua = fb::lua::get(L);
-    if (lua == nullptr)
-        return 0;
-
-    auto ch = lua->touserdata<fb::game::character>(1);
-    if (ch == nullptr)
-        return 0;
-
-    auto map = ch->map();
-    if (map == nullptr)
-        return 0;
-
-    auto flags = static_cast<fb::game::MAP_CONFIG_FLAG>(lua->tointeger(2, 0x02));
-    auto extra = static_cast<uint8_t>(lua->tointeger(3, 0x00));
-    auto light = static_cast<uint16_t>(lua->tointeger(4, 0));
-
-    auto weak     = ch->weak_from_this_as<fb::game::character>();
-    auto builder  = lua->new_co_builder();
-    builder.weak  = weak;
-    builder.yield = [=]() -> async::task<void> {
-        map->config_flag(flags);
-        fb::protocol::visit_client_version(ch->client_version, [&]<fb::protocol::CLIENT_VERSION V> {
-            std::ignore = ch->send(fb::protocol::game::response::map_config<V>(*map, extra, light));
-        });
-        co_return;
-    };
-    builder.resume = []() -> async::task<int> {
-        co_return 0;
-    };
-    return builder.run();
-}
-
-int builtin::character::builtin_probe_update_internal(lua_State* L)
-{
-    auto lua = fb::lua::get(L);
-    if (lua == nullptr)
-        return 0;
-
-    auto ch = lua->touserdata<fb::game::character>(1);
-    if (ch == nullptr)
-        return 0;
-
-    auto level = static_cast<UPDATE_STATE_LEVEL>(lua->tointeger(2, static_cast<lua_Integer>(UPDATE_STATE_LEVEL::ALL)));
-    auto based_5     = static_cast<uint8_t>(lua->tointeger(3, 0));
-    auto reputation  = static_cast<int16_t>(lua->tointeger(4, ch->reputation()));
-    auto evaluation  = static_cast<uint16_t>(lua->tointeger(5, ch->evaluation()));
-    auto exp_pad     = static_cast<uint8_t>(lua->tointeger(6, 0));
-    auto option_bits = static_cast<uint32_t>(lua->tointeger(7, 0));
-
-    auto weak     = ch->weak_from_this_as<fb::game::character>();
-    auto builder  = lua->new_co_builder();
-    builder.weak  = weak;
-    builder.yield = [=]() -> async::task<void> {
-        fb::protocol::visit_client_version(ch->client_version, [&]<fb::protocol::CLIENT_VERSION V> {
-            auto pkt                = fb::protocol::game::response::update_internal<V>(*ch, level);
-            pkt.unknown_based_5     = based_5;
-            pkt.reputation          = reputation;
-            pkt.evaluation          = evaluation;
-            pkt.unknown_exp_pad     = exp_pad;
-            pkt.unknown_option_bits = option_bits;
-            std::ignore             = ch->send(pkt);
-        });
-        co_return;
-    };
-    builder.resume = []() -> async::task<int> {
-        co_return 0;
-    };
-    return builder.run();
-}
-
-int builtin::character::builtin_probe_internal_info(lua_State* L)
-{
-    auto lua = fb::lua::get(L);
-    if (lua == nullptr)
-        return 0;
-
-    auto ch = lua->touserdata<fb::game::character>(1);
-    if (ch == nullptr)
-        return 0;
-
-    auto weak     = ch->weak_from_this_as<fb::game::character>();
-    auto builder  = lua->new_co_builder();
-    builder.weak  = weak;
-    builder.yield = [=]() -> async::task<void> {
-        fb::protocol::visit_client_version(ch->client_version, [&]<fb::protocol::CLIENT_VERSION V> {
-            std::ignore = ch->send(fb::protocol::game::response::internal_info<V>(*ch));
-        });
-        co_return;
-    };
-    builder.resume = []() -> async::task<int> {
-        co_return 0;
-    };
-    return builder.run();
-}
-
-int builtin::character::builtin_probe_update_slot(lua_State* L)
-{
-    auto lua = fb::lua::get(L);
-    if (lua == nullptr)
-        return 0;
-
-    auto ch = lua->touserdata<fb::game::character>(1);
-    if (ch == nullptr)
-        return 0;
-
-    auto parts   = static_cast<EQUIPMENT_PARTS>(lua->tointeger(2, static_cast<lua_Integer>(EQUIPMENT_PARTS::WEAPON)));
-    auto name_b  = lua->tostring(3, "");
-    auto unknown = static_cast<uint32_t>(lua->tointeger(4, 0));
-
-    auto weak     = ch->weak_from_this_as<fb::game::character>();
-    auto builder  = lua->new_co_builder();
-    builder.weak  = weak;
-    builder.yield = [=]() -> async::task<void> {
-        fb::protocol::visit_client_version(ch->client_version, [&]<fb::protocol::CLIENT_VERSION V> {
-            auto pkt           = fb::protocol::game::response::item_update_slot<V>(*ch, parts);
-            pkt.unknown_name_b = name_b;
-            pkt.unknown_u32    = unknown;
-            std::ignore        = ch->send(pkt);
-        });
-        co_return;
-    };
-    builder.resume = []() -> async::task<int> {
-        co_return 0;
-    };
-    return builder.run();
-}
-
-int builtin::character::builtin_probe_option(lua_State* L)
-{
-    auto lua = fb::lua::get(L);
-    if (lua == nullptr)
-        return 0;
-
-    auto ch = lua->touserdata<fb::game::character>(1);
-    if (ch == nullptr)
-        return 0;
-
-    auto selflook = static_cast<uint8_t>(lua->tointeger(2, 0));
-
-    auto weak     = ch->weak_from_this_as<fb::game::character>();
-    auto builder  = lua->new_co_builder();
-    builder.weak  = weak;
-    builder.yield = [=]() -> async::task<void> {
-        fb::protocol::visit_client_version(ch->client_version, [&]<fb::protocol::CLIENT_VERSION V> {
-            std::ignore = ch->send(fb::protocol::game::response::option<V>(*ch, selflook));
-        });
-        co_return;
-    };
-    builder.resume = []() -> async::task<int> {
-        co_return 0;
     };
     return builder.run();
 }
