@@ -6,6 +6,7 @@
 #include <fb/login/handler/protocol/complete.h>
 #include <fb/login/handler/protocol/change_password.h>
 #include <fb/login/handler/protocol/login.h>
+#include <fb/login/handler/protocol/meta_dat.h>
 
 #include <fb/login/handler/amqp/shutdown.h>
 #include <fb/login/handler/amqp/set_datetime.h>

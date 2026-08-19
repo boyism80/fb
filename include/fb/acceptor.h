@@ -101,6 +101,9 @@ private:
         {
             while (!stream.empty())
             {
+                if (socket.is_open() == false)
+                    break;
+
                 if (reader.readable_size() < base_size)
                     co_return;
 
@@ -182,7 +185,7 @@ private:
                             fb::logger::fatal("unhandled exception");
                         }
                     };
-                    builder.enqueue();
+                    co_await builder.dispatch();
                 }
 
                 reader.seek(size - sizeof(uint8_t));
