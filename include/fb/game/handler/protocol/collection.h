@@ -8,10 +8,6 @@ namespace fb::game::handler::protocol {
 
 namespace game_reqs = fb::protocol::game::request;
 
-/**
- * Handler for C2S collection (0x27) collection UI.
- * v651 action 0 opens sheet tab 5 (S2C 0x12 type 0); action 1 opens a group dialog (type 1).
- */
 template <fb::protocol::CLIENT_VERSION V>
 class collection : public fb::handler::protocol<fb::game::server, game_reqs::collection<V>>
 {

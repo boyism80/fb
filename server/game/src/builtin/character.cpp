@@ -125,14 +125,10 @@ IMPLEMENT_LUA_EXTENSION(character, "fb.game.character")
 {"marriage",                     builtin::character::builtin_marriage},
 {"marry",                        builtin::character::builtin_marry},
 {"divorce",                      builtin::character::builtin_divorce},
-{"unknown_12",                   builtin::character::builtin_unknown_12},
-{"collection_list",              builtin::character::builtin_collection_list},
-{"collection_dialog",            builtin::character::builtin_collection_dialog},
 {"unknown_4f",                   builtin::character::builtin_unknown_4f},
 {"notice",                       builtin::character::builtin_notice},
 {"browser",                      builtin::character::builtin_browser},
 {"group_portrait",               builtin::character::builtin_group_portrait},
-{"unknown_6f",                   builtin::character::builtin_unknown_6f},
 {"web_map_markers",              builtin::character::builtin_web_map_markers},
 {"web_map",                      builtin::character::builtin_web_map},
 {"move_confirm_noscroll",        builtin::character::builtin_move_confirm_noscroll},
@@ -3760,110 +3756,6 @@ int builtin::character::builtin_web(lua_State* L)
     return builder.run();
 }
 
-int builtin::character::builtin_unknown_12(lua_State* L)
-{
-    auto lua = fb::lua::get(L);
-    if (lua == nullptr)
-        return 0;
-
-    auto ch = lua->touserdata<fb::game::character>(1);
-    if (ch == nullptr)
-        return 0;
-
-    auto oid  = static_cast<uint32_t>(lua->tointeger(2, ch->oid()));
-    auto slot = static_cast<uint8_t>(lua->tointeger(3, 0));
-    auto flag = static_cast<uint8_t>(lua->tointeger(4, 1));
-
-    auto weak     = ch->weak_from_this_as<fb::game::character>();
-    auto builder  = lua->new_co_builder();
-    builder.weak  = weak;
-    builder.yield = [=]() -> async::task<void> {
-        fb::protocol::visit_client_version(ch->client_version, [&]<fb::protocol::CLIENT_VERSION V> {
-            if constexpr (fb::protocol::game::response::unknown_12<V>::supported)
-                std::ignore = ch->send(fb::protocol::game::response::unknown_12<V>(oid, slot, flag));
-        });
-        co_return;
-    };
-    builder.resume = []() -> async::task<int> {
-        co_return 0;
-    };
-    return builder.run();
-}
-
-int builtin::character::builtin_collection_list(lua_State* L)
-{
-    auto lua = fb::lua::get(L);
-    if (lua == nullptr)
-        return 0;
-
-    auto ch = lua->touserdata<fb::game::character>(1);
-    if (ch == nullptr)
-        return 0;
-
-    auto entries = std::vector<fb::protocol::game::response::unknown_12_entry>();
-    auto argc    = lua->argc();
-    for (int i = 2; i + 1 <= argc; i += 2)
-    {
-        auto entry  = fb::protocol::game::response::unknown_12_entry();
-        entry.id    = static_cast<uint8_t>(lua->tointeger(i, 0));
-        entry.extra = static_cast<uint8_t>(lua->tointeger(i + 1, 0));
-        entries.push_back(entry);
-        if (entries.size() >= 255)
-            break;
-    }
-
-    auto weak     = ch->weak_from_this_as<fb::game::character>();
-    auto builder  = lua->new_co_builder();
-    builder.weak  = weak;
-    builder.yield = [=]() -> async::task<void> {
-        fb::protocol::visit_client_version(ch->client_version, [&]<fb::protocol::CLIENT_VERSION V> {
-            if constexpr (V == fb::protocol::CLIENT_VERSION::v651)
-                std::ignore = ch->send(fb::protocol::game::response::unknown_12<V>(entries));
-        });
-        co_return;
-    };
-    builder.resume = []() -> async::task<int> {
-        co_return 0;
-    };
-    return builder.run();
-}
-
-int builtin::character::builtin_collection_dialog(lua_State* L)
-{
-    auto lua = fb::lua::get(L);
-    if (lua == nullptr)
-        return 0;
-
-    auto ch = lua->touserdata<fb::game::character>(1);
-    if (ch == nullptr)
-        return 0;
-
-    auto group_id = static_cast<uint8_t>(lua->tointeger(2, 0));
-    auto bitmask  = std::vector<uint8_t>();
-    auto argc     = lua->argc();
-    for (int i = 3; i <= argc; i++)
-    {
-        bitmask.push_back(static_cast<uint8_t>(lua->tointeger(i, 0)));
-        if (bitmask.size() >= 255)
-            break;
-    }
-
-    auto weak     = ch->weak_from_this_as<fb::game::character>();
-    auto builder  = lua->new_co_builder();
-    builder.weak  = weak;
-    builder.yield = [=]() -> async::task<void> {
-        fb::protocol::visit_client_version(ch->client_version, [&]<fb::protocol::CLIENT_VERSION V> {
-            if constexpr (V == fb::protocol::CLIENT_VERSION::v651)
-                std::ignore = ch->send(fb::protocol::game::response::unknown_12<V>(group_id, bitmask));
-        });
-        co_return;
-    };
-    builder.resume = []() -> async::task<int> {
-        co_return 0;
-    };
-    return builder.run();
-}
-
 int builtin::character::builtin_unknown_4f(lua_State* L)
 {
     auto lua = fb::lua::get(L);
@@ -3965,35 +3857,6 @@ int builtin::character::builtin_group_portrait(lua_State* L)
     builder.weak  = weak;
     builder.yield = [=]() -> async::task<void> {
         ch->listener.on_group_portrait(*ch, {});
-        co_return;
-    };
-    builder.resume = []() -> async::task<int> {
-        co_return 0;
-    };
-    return builder.run();
-}
-
-int builtin::character::builtin_unknown_6f(lua_State* L)
-{
-    auto lua = fb::lua::get(L);
-    if (lua == nullptr)
-        return 0;
-
-    auto ch = lua->touserdata<fb::game::character>(1);
-    if (ch == nullptr)
-        return 0;
-
-    auto subtype = static_cast<uint8_t>(lua->tointeger(2, 1));
-    auto count   = static_cast<uint16_t>(lua->tointeger(3, 0));
-
-    auto weak     = ch->weak_from_this_as<fb::game::character>();
-    auto builder  = lua->new_co_builder();
-    builder.weak  = weak;
-    builder.yield = [=]() -> async::task<void> {
-        fb::protocol::visit_client_version(ch->client_version, [&]<fb::protocol::CLIENT_VERSION V> {
-            if constexpr (fb::protocol::game::response::unknown_6f<V>::supported)
-                std::ignore = ch->send(fb::protocol::game::response::unknown_6f<V>(subtype, count));
-        });
         co_return;
     };
     builder.resume = []() -> async::task<int> {

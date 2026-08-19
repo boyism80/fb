@@ -1,5 +1,5 @@
 #include <fb/game/handler/protocol/collection.h>
-#include <fb/game/protocol/unknown_12.h>
+#include <fb/game/protocol/collection.h>
 #include <fb/game/server.h>
 
 namespace game_reqs = fb::protocol::game::request;
@@ -18,11 +18,11 @@ async::task<bool> collection<V>::handle(fb::socket<character>& session, game_req
     {
         if (request.action == 0)
         {
-            std::ignore = ch->send(game_resp::unknown_12<V>(std::vector<game_resp::unknown_12_entry>{}));
+            std::ignore = ch->send(game_resp::collection<V>(game_resp::collection_list_groups()));
         }
-        else
+        else if (request.action == 1 && request.slot < 7)
         {
-            std::ignore = ch->send(game_resp::unknown_12<V>(request.slot, std::vector<uint8_t>{}));
+            std::ignore = ch->send(game_resp::collection<V>(request.slot, std::vector<uint8_t>{}));
         }
     }
     co_return true;

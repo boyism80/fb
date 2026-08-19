@@ -107,14 +107,10 @@ struct character
     static int builtin_marriage(lua_State* L);
     static int builtin_marry(lua_State* L);
     static int builtin_divorce(lua_State* L);
-    static int builtin_unknown_12(lua_State* L);
-    static int builtin_collection_list(lua_State* L);
-    static int builtin_collection_dialog(lua_State* L);
     static int builtin_unknown_4f(lua_State* L);
     static int builtin_notice(lua_State* L);
     static int builtin_browser(lua_State* L);
     static int builtin_group_portrait(lua_State* L);
-    static int builtin_unknown_6f(lua_State* L);
     static int builtin_web_map_markers(lua_State* L);
     static int builtin_web_map(lua_State* L);
     static int builtin_move_confirm_noscroll(lua_State* L);

@@ -1543,62 +1543,11 @@ M.functions = {
             end,
         },
         
-        ['unknown_12'] = {
-            ['privilege'] = ROLE.ADMIN,
-            ['usage'] = '[oid] [slot] [flag] - S2C 0x12 type2 (slot=인벤문자 1=a, flag<0xA0→[무장] / >=0xA0→레벨업토스트). 생략 시 자신 oid·slot0·flag1',
-            ['command'] = function (me, args)
-                local oid, slot, flag = table.unpack(args)
-                if oid or slot or flag then
-                    me:unknown_12(tonumber(oid) or 0, tonumber(slot) or 0, tonumber(flag) or 1)
-                else
-                    me:unknown_12()
-                end
-                return true
-            end,
-        },
-
-        ['collection_list'] = {
-            ['privilege'] = ROLE.ADMIN,
-            ['usage'] = '[id extra]... - S2C 0x12 type0 도감 탭 목록. 생략 시 count=0',
-            ['command'] = function (me, args)
-                local values = {}
-                for i = 1, #args do
-                    values[#values + 1] = tonumber(args[i]) or 0
-                end
-                me:collection_list(table.unpack(values))
-                return true
-            end,
-        },
-
-        ['collection_dialog'] = {
-            ['privilege'] = ROLE.ADMIN,
-            ['usage'] = '[group_id] [byte...] - S2C 0x12 type1 도감 다이얼로그 bitmask',
-            ['command'] = function (me, args)
-                local group_id = tonumber(args[1]) or 0
-                local bytes = {}
-                for i = 2, #args do
-                    bytes[#bytes + 1] = tonumber(args[i]) or 0
-                end
-                me:collection_dialog(group_id, table.unpack(bytes))
-                return true
-            end,
-        },
-
         ['unknown_4f'] = {
             ['privilege'] = ROLE.ADMIN,
             ['usage'] = '- S2C 0x4F UI 윈도우 오픈 (5.65+). 클라가 0x54 phase5로 응답',
             ['command'] = function (me, args)
                 me:unknown_4f()
-                return true
-            end,
-        },
-
-        ['unknown_6f'] = {
-            ['privilege'] = ROLE.ADMIN,
-            ['usage'] = '[subtype] [count] - S2C 0x6F 이름 리스트 (5.65+). 생략 시 subtype1·count0(빈 리스트)',
-            ['command'] = function (me, args)
-                local subtype, count = table.unpack(args)
-                me:unknown_6f(tonumber(subtype) or 1, tonumber(count) or 0)
                 return true
             end,
         },

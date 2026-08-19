@@ -21,6 +21,7 @@ void marshal_lua_game_resp__bulletin_message(lua_State* L, const fb::protocol::h
 void marshal_lua_game_resp__bulletin_sections(lua_State* L, const fb::protocol::header& header);
 void marshal_lua_game_resp__c2s_relay(lua_State* L, const fb::protocol::header& header);
 void marshal_lua_game_resp__chat(lua_State* L, const fb::protocol::header& header);
+void marshal_lua_game_resp__collection(lua_State* L, const fb::protocol::header& header);
 void marshal_lua_game_resp__dialog(lua_State* L, const fb::protocol::header& header);
 void marshal_lua_game_resp__dialog_0x30_10(lua_State* L, const fb::protocol::header& header);
 void marshal_lua_game_resp__dialog_dual_field(lua_State* L, const fb::protocol::header& header);
@@ -85,9 +86,7 @@ void marshal_lua_game_resp__trade_lock(lua_State* L, const fb::protocol::header&
 void marshal_lua_game_resp__trade_money(lua_State* L, const fb::protocol::header& header);
 void marshal_lua_game_resp__trade_upload(lua_State* L, const fb::protocol::header& header);
 void marshal_lua_game_resp__ui_screen(lua_State* L, const fb::protocol::header& header);
-void marshal_lua_game_resp__unknown_12(lua_State* L, const fb::protocol::header& header);
 void marshal_lua_game_resp__unknown_4f(lua_State* L, const fb::protocol::header& header);
-void marshal_lua_game_resp__unknown_6f(lua_State* L, const fb::protocol::header& header);
 void marshal_lua_game_resp__update(lua_State* L, const fb::protocol::header& header);
 void marshal_lua_game_resp__update_cc(lua_State* L, const fb::protocol::header& header);
 void marshal_lua_game_resp__update_external(lua_State* L, const fb::protocol::header& header);

@@ -46,7 +46,6 @@
 #include <fb/game/handler/protocol/collection.h>
 #include <fb/game/handler/protocol/unknown_54.h>
 #include <fb/game/handler/protocol/browser.h>
-#include <fb/game/handler/protocol/unknown_7b.h>
 #include <fb/game/handler/protocol/web_map.h>
 
 #include <fb/game/handler/amqp/kick_out.h>

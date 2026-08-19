@@ -217,7 +217,6 @@ void fb::game::server::init_handlers()
     this->handler.protocol.bind<fb::game::handler::protocol::collection>(); // 6.51 collection UI
     this->handler.protocol.bind<fb::game::handler::protocol::unknown_54>(); // 5.65+ 0x4F window round trip
     this->handler.protocol.bind<fb::game::handler::protocol::browser>();    // 6.51 in-game IE window
-    this->handler.protocol.bind<fb::game::handler::protocol::unknown_7b>(); // 5.65+ 0x6F name miss report
     this->handler.protocol.bind<fb::game::handler::protocol::web_map>();    // 6.51 web map
 }
 
