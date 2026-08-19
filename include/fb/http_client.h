@@ -68,26 +68,25 @@ private:
         co_await thread->sleep(fb::model::timespan(std::chrono::milliseconds(delay_ms)));
     }
 
-    void process_pending()
-    {
-        pending_task task;
-        {
-            std::lock_guard lock(this->_queue_mutex);
-            if (this->_queue.empty() || this->_in_flight.load(std::memory_order_relaxed) >= this->_max_concurrent)
-                return;
-            task = std::move(this->_queue.front());
-            this->_queue.pop();
-            this->_in_flight.fetch_add(1, std::memory_order_relaxed);
-        }
-        task();
-        this->post_process_pending();
-    }
-
-    void post_process_pending()
+    void pump()
     {
         auto& io_context = static_cast<boost::asio::io_context&>(this->_executor);
         boost::asio::post(io_context, [this] {
-            this->process_pending();
+            while (true)
+            {
+                pending_task task;
+                {
+                    std::lock_guard lock(this->_queue_mutex);
+                    if (this->_queue.empty() ||
+                        this->_in_flight.load(std::memory_order_relaxed) >= this->_max_concurrent)
+                        break;
+
+                    task = std::move(this->_queue.front());
+                    this->_queue.pop();
+                    this->_in_flight.fetch_add(1, std::memory_order_relaxed);
+                }
+                task();
+            }
         });
     }
 
@@ -371,7 +370,7 @@ private:
                                       {
                                           promise->set_exception(ep);
                                           this->_in_flight.fetch_sub(1, std::memory_order_relaxed);
-                                          this->post_process_pending();
+                                          this->pump();
                                           return;
                                       }
                                       try
@@ -387,7 +386,7 @@ private:
                                           promise->set_exception(std::make_exception_ptr(e));
                                       }
                                       this->_in_flight.fetch_sub(1, std::memory_order_relaxed);
-                                      this->post_process_pending();
+                                      this->pump();
                                   });
         };
 
@@ -398,7 +397,7 @@ private:
             this->_queue.push(std::move(task));
         }
         if (trigger)
-            this->post_process_pending();
+            this->pump();
 
         return promise->task();
     }
@@ -452,12 +451,12 @@ public:
                                       {
                                           promise->set_exception(ep);
                                           this->_in_flight.fetch_sub(1, std::memory_order_relaxed);
-                                          this->post_process_pending();
+                                          this->pump();
                                           return;
                                       }
                                       promise->set_value(std::move(bytes));
                                       this->_in_flight.fetch_sub(1, std::memory_order_relaxed);
-                                      this->post_process_pending();
+                                      this->pump();
                                   });
         };
 
@@ -468,7 +467,7 @@ public:
             this->_queue.push(std::move(task));
         }
         if (trigger)
-            this->post_process_pending();
+            this->pump();
 
         return promise->task();
     }
@@ -501,7 +500,7 @@ private:
                                       {
                                           promise->set_exception(ep);
                                           this->_in_flight.fetch_sub(1, std::memory_order_relaxed);
-                                          this->post_process_pending();
+                                          this->pump();
                                           return;
                                       }
                                       try
@@ -517,7 +516,7 @@ private:
                                           promise->set_exception(std::current_exception());
                                       }
                                       this->_in_flight.fetch_sub(1, std::memory_order_relaxed);
-                                      this->post_process_pending();
+                                      this->pump();
                                   });
         };
 
@@ -528,7 +527,7 @@ private:
             this->_queue.push(std::move(task));
         }
         if (trigger)
-            this->post_process_pending();
+            this->pump();
 
         return promise->task();
     }
@@ -558,12 +557,12 @@ private:
                     {
                         promise->set_exception(ep);
                         this->_in_flight.fetch_sub(1, std::memory_order_relaxed);
-                        this->post_process_pending();
+                        this->pump();
                         return;
                     }
                     promise->set_value();
                     this->_in_flight.fetch_sub(1, std::memory_order_relaxed);
-                    this->post_process_pending();
+                    this->pump();
                 });
         };
 
@@ -574,7 +573,7 @@ private:
             this->_queue.push(std::move(task));
         }
         if (trigger)
-            this->post_process_pending();
+            this->pump();
 
         return promise->task();
     }
