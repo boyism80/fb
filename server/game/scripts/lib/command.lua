@@ -1543,6 +1543,30 @@ M.functions = {
             end,
         },
         
+        ['도감'] = {
+            ['privilege'] = ROLE.ADMIN,
+            ['usage'] = '<group_id> <slot> [onoff] - S2C 0x12 type2. 도감 탭을 연 뒤 그룹의 slot을 해금(1)/잠금(0). onoff 생략=해금',
+            ['command'] = function (me, args)
+                local group_id = tonumber(args[1])
+                local slot = tonumber(args[2])
+                if group_id == nil or slot == nil then
+                    me:message('사용법: /도감 <group_id> <slot> [onoff]')
+                    return true
+                end
+                local onoff = true
+                if args[3] ~= nil then
+                    local n = tonumber(args[3])
+                    if n ~= nil then
+                        onoff = n ~= 0
+                    else
+                        onoff = args[3] ~= 'false'
+                    end
+                end
+                me:collection(group_id, slot, onoff)
+                return true
+            end,
+        },
+
         ['unknown_4f'] = {
             ['privilege'] = ROLE.ADMIN,
             ['usage'] = '- S2C 0x4F UI 윈도우 오픈 (5.65+). 클라가 0x54 phase5로 응답',

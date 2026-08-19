@@ -125,6 +125,7 @@ IMPLEMENT_LUA_EXTENSION(character, "fb.game.character")
 {"marriage",                     builtin::character::builtin_marriage},
 {"marry",                        builtin::character::builtin_marry},
 {"divorce",                      builtin::character::builtin_divorce},
+{"collection",                   builtin::character::builtin_collection},
 {"unknown_4f",                   builtin::character::builtin_unknown_4f},
 {"notice",                       builtin::character::builtin_notice},
 {"browser",                      builtin::character::builtin_browser},
@@ -3748,6 +3749,43 @@ int builtin::character::builtin_web(lua_State* L)
     builder.weak  = weak;
     builder.yield = [=]() -> async::task<void> {
         ch->web(type, url, message);
+        co_return;
+    };
+    builder.resume = []() -> async::task<int> {
+        co_return 0;
+    };
+    return builder.run();
+}
+
+int builtin::character::builtin_collection(lua_State* L)
+{
+    auto lua = fb::lua::get(L);
+    if (lua == nullptr)
+        return 0;
+
+    auto ch = lua->touserdata<fb::game::character>(1);
+    if (ch == nullptr)
+        return 0;
+
+    auto group_id = static_cast<uint8_t>(lua->tointeger(2, 0));
+    auto slot     = static_cast<uint8_t>(lua->tointeger(3, 0));
+    auto onoff    = true;
+    if (lua->argc() >= 4)
+    {
+        if (lua_type(L, 4) == LUA_TBOOLEAN)
+            onoff = lua->toboolean(4);
+        else
+            onoff = lua->tointeger(4, 1) != 0;
+    }
+
+    auto weak     = ch->weak_from_this_as<fb::game::character>();
+    auto builder  = lua->new_co_builder();
+    builder.weak  = weak;
+    builder.yield = [=]() -> async::task<void> {
+        fb::protocol::visit_client_version(ch->client_version, [&]<fb::protocol::CLIENT_VERSION V> {
+            if constexpr (V == fb::protocol::CLIENT_VERSION::v651)
+                std::ignore = ch->send(fb::protocol::game::response::collection<V>(group_id, slot, onoff));
+        });
         co_return;
     };
     builder.resume = []() -> async::task<int> {
