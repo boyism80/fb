@@ -214,6 +214,8 @@ public:
     async::task<void>                 save();
     async::task<void>                 save(character& ch);
     void                              sync_time();
+    static uint8_t                    brightness_from_time(uint8_t hours, uint8_t minutes);
+    uint8_t                           brightness() const;
     async::task<internal_resp::Ban>   ban(std::string_view name, std::string_view reason, const std::optional<uint32_t>& days);
     async::task<internal_resp::Unban> unban(std::string_view name);
     // clang-format on

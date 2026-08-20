@@ -3,6 +3,7 @@
 #include <fb/log_collector.h>
 #include <fb/logger.h>
 #include <json/json.h>
+#include <cmath>
 #include <tuple>
 
 using namespace fb::game;
@@ -133,6 +134,35 @@ void fb::game::server::sync_time()
     }
 
     this->_time = updated;
+}
+
+uint8_t fb::game::server::brightness_from_time(uint8_t hours, uint8_t minutes)
+{
+    if (hours >= 1)
+        return 20;
+
+    const auto t = static_cast<uint32_t>(minutes) * 60u;
+    double     v;
+    if (t <= 1200)
+        v = 1.0 - (static_cast<double>(450 * t / 3600) * 0.0043333336);
+    else if (t <= 2400)
+        v = 0.35;
+    else if (t < 3600)
+        v = (static_cast<double>(450 * t / 3600) - 300.0) * 0.0043333336 + 0.35;
+    else
+        v = 1.0;
+
+    auto value = static_cast<int>(std::lround((v - 0.35) / 0.65 * 20.0));
+    if (value < 0)
+        value = 0;
+    if (value > 20)
+        value = 20;
+    return static_cast<uint8_t>(value);
+}
+
+uint8_t fb::game::server::brightness() const
+{
+    return brightness_from_time(static_cast<uint8_t>(this->_time.hours()), static_cast<uint8_t>(this->_time.minutes()));
 }
 
 async::task<void> fb::game::server::save(character& ch)
