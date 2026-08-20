@@ -754,6 +754,16 @@ jobs:
             Write-Host "Warning: server\game\json not found"
           }
 
+      - name: Copy Meta.dat
+        shell: powershell
+        run: |
+          if (Test-Path "resources\meta\Meta.dat") {
+            Copy-Item -Path "resources\meta\Meta.dat" -Destination "build\Meta.dat" -Force
+            Write-Host "Copied resources\meta\Meta.dat to build\Meta.dat"
+          } else {
+            Write-Host "Warning: resources\meta\Meta.dat not found"
+          }
+
       - name: Copy config files
         shell: powershell
         run: |
@@ -789,6 +799,7 @@ jobs:
             build/maps
             build/scripts
             build/json
+            build/Meta.dat
             build/config.gateway.json
             build/config.login.json
             build/config.game.json
@@ -811,6 +822,7 @@ jobs:
           if (Test-Path build\maps) { Copy-Item build\maps -Destination (Join-Path $distZip "maps") -Recurse }
           if (Test-Path build\scripts) { Copy-Item build\scripts -Destination (Join-Path $distZip "scripts") -Recurse }
           if (Test-Path build\json) { Copy-Item build\json -Destination (Join-Path $distZip "json") -Recurse }
+          if (Test-Path build\Meta.dat) { Copy-Item build\Meta.dat -Destination (Join-Path $distZip "Meta.dat") }
 
       - name: Zip dist package
         shell: powershell

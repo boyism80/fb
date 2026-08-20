@@ -59,5 +59,6 @@
     },
     "http": {
         "max_concurrent": 128
-    }
+    },
+    "meta_dat": "Meta.dat"
 }

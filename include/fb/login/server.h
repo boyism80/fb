@@ -16,6 +16,7 @@
 #include <fb/login/session.h>
 #include <fb/login/protocol.h>
 #include <fb/log_collector.h>
+#include <fb/meta_dat_file.h>
 #include <memory>
 #include <string_view>
 
@@ -48,6 +49,7 @@ private:
 
 public:
     fb::log_collector log;
+    fb::meta_dat_file meta;
 
 public:
     server(boost::asio::io_context& io_context, uint16_t port);

@@ -17,13 +17,9 @@ async::task<bool> collection<V>::handle(fb::socket<character>& session, game_req
     if constexpr (V == fb::protocol::CLIENT_VERSION::v651)
     {
         if (request.action == 0)
-        {
-            std::ignore = ch->send(game_resp::collection<V>(game_resp::collection_list_groups()));
-        }
-        else if (request.action == 1 && request.slot < 7)
-        {
-            std::ignore = ch->send(game_resp::collection<V>(request.slot, std::vector<uint8_t>{}));
-        }
+            ch->listener.on_collection_list(*ch);
+        else if (request.action == 1 && this->server.meta.group(request.slot) != nullptr)
+            ch->listener.on_collection_dialog(*ch, request.slot);
     }
     co_return true;
 }

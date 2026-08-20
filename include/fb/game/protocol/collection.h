@@ -82,15 +82,6 @@ struct collection_entry
     uint8_t unlocked_count = 0;
 };
 
-inline std::vector<collection_entry> collection_list_groups()
-{
-    auto entries = std::vector<collection_entry>{};
-    entries.reserve(7);
-    for (uint8_t g = 0; g < 7; ++g)
-        entries.push_back({g, 0});
-    return entries;
-}
-
 enum class COLLECTION_TYPE : uint8_t
 {
     LIST   = 0,
@@ -140,19 +131,19 @@ public:
 
 public:
 #ifndef BOT
-    const COLLECTION_TYPE              type;
+    const COLLECTION_TYPE               type;
     const std::vector<collection_entry> entries;
-    const uint8_t                      group_id;
-    const std::vector<uint8_t>         bitmask;
-    const uint8_t                      slot;
-    const bool                         onoff;
+    const uint8_t                       group_id;
+    const std::vector<uint8_t>          bitmask;
+    const uint8_t                       slot;
+    const bool                          onoff;
 #else
-    COLLECTION_TYPE              type = COLLECTION_TYPE::FLAG;
+    COLLECTION_TYPE               type = COLLECTION_TYPE::FLAG;
     std::vector<collection_entry> entries;
-    uint8_t                      group_id = 0;
-    std::vector<uint8_t>         bitmask;
-    uint8_t                      slot  = 0;
-    bool                         onoff = false;
+    uint8_t                       group_id = 0;
+    std::vector<uint8_t>          bitmask;
+    uint8_t                       slot  = 0;
+    bool                          onoff = false;
 #endif
 
 public:

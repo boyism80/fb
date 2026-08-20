@@ -20,6 +20,7 @@ FROM --platform=$BUILDPLATFORM ${BUILD_IMAGE}
 WORKDIR /app
 COPY --from=build /app/login/build/app ./login
 COPY --from=data /fb/data/json/server/ /app/json/
+COPY resources/meta/Meta.dat /app/Meta.dat
 
 WORKDIR /app
 CMD ["./login"]

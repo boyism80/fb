@@ -108,6 +108,11 @@ namespace Http.Mapping
                 .ForMember(x => x.Qid, x => x.MapFrom(u => u.Id))
                 .ReverseMap();
 
+            CreateMap<Http.Model.CollectionUnlock, Protocol.CollectionUnlock>()
+                .ForMember(x => x.User, x => x.MapFrom(u => u.User))
+                .ForMember(x => x.MobId, x => x.MapFrom(u => u.MobId))
+                .ReverseMap();
+
             CreateMap<Http.Model.StorageBox, Protocol.StorageBox>()
                 .ForMember(x => x.Attachments, x => x.Ignore())
                 .ForMember(x => x.SystemStorageBoxId, x => x.MapFrom(u => u.SystemStorageBoxId ?? 0))

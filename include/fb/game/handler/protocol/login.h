@@ -29,6 +29,7 @@ private:
     void                  init_quests(const std::vector<internal::Quest>& response, character& ch);
     void                  init_marketplace(const std::vector<internal::MarketplacePending>& response, character& ch);
     void                  init_achievements(const std::vector<internal::Achievement>& response, character& ch);
+    void                  init_collection_unlocks(const std::vector<internal::CollectionUnlock>& response, character& ch);
     void                  init_storage(const internal_resp::Init& response, character& ch);
     async::task<ch_ptr_t> init(const game_reqs::login<V>& request, fb::socket<character>& session);
     std::string           elapsed_message(std::string_view dt);

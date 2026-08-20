@@ -5,6 +5,7 @@
 #include <fb/log_collector.h>
 #include <fb/console.h>
 #include <fb/encoding.h>
+#include <fb/logger.h>
 #include <fb/protocol/flatbuffer/protocol.h>
 #include <fb/model/loader.h>
 #include <format>
@@ -56,6 +57,8 @@ async::task<void> fb::login::server::on_start()
 #endif
 
     co_await fb::model::loader(*this).run();
+    this->meta.load(fb::config<std::string>("meta_dat", std::string("Meta.dat")), false);
+    fb::logger::info("Meta.dat loaded entries={}", this->meta.entries().size());
 
     co_await fb::acceptor<session>::on_start();
 

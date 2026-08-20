@@ -1,4 +1,5 @@
 #include <fb/game/server.h>
+#include <fb/game/protocol/collection.h>
 #include <fb/model/model.h>
 #include <fb/protocol/client_version.h>
 #include <macro.h>
@@ -456,4 +457,33 @@ void listener_impl::on_group_portrait_hp(character& ch, std::string name, uint32
         return;
 
     ch.send(game_resp::group_portrait<fb::protocol::CLIENT_VERSION::v651>(std::move(name), cur_hp));
+}
+
+void listener_impl::on_collection_list(character& ch)
+{
+    if (ch.client_version != fb::protocol::CLIENT_VERSION::v651)
+        return;
+
+    auto entries = std::vector<game_resp::collection_entry>{};
+    for (const auto& group : this->server.meta.groups())
+        entries.push_back({group.id, ch.collections.unlocked_count(group.id)});
+
+    ch.send(game_resp::collection<fb::protocol::CLIENT_VERSION::v651>(std::move(entries)));
+}
+
+void listener_impl::on_collection_flag(character& ch, uint8_t group_id, uint8_t slot, bool onoff)
+{
+    if (ch.client_version != fb::protocol::CLIENT_VERSION::v651)
+        return;
+
+    ch.send(game_resp::collection<fb::protocol::CLIENT_VERSION::v651>(group_id, slot, onoff));
+}
+
+void listener_impl::on_collection_dialog(character& ch, uint8_t group_id)
+{
+    if (ch.client_version != fb::protocol::CLIENT_VERSION::v651)
+        return;
+
+    auto bitmask = ch.collections.bitmask(group_id);
+    ch.send(game_resp::collection<fb::protocol::CLIENT_VERSION::v651>(group_id, std::move(bitmask)));
 }

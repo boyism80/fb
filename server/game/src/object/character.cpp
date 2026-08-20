@@ -61,6 +61,7 @@ void character::on_init()
     this->items.owner(this->shared_from_this_as<character>());
     this->trade.owner(this->shared_from_this_as<character>());
     this->quests.owner(this->shared_from_this_as<character>());
+    this->collections.owner(this->shared_from_this_as<character>());
 }
 
 size_t character::send(const fb::stream& stream, bool encrypt, bool wrap)
@@ -1945,6 +1946,8 @@ async::task<void> character::settle_kills(mob_vector dead)
     auto self = this->shared_from_this_as<character>();
     for (auto& [id, mobs] : groups)
     {
+        co_await this->collections.try_unlock(id);
+
         auto path = std::format("scripts/mob/{}.lua", id);
         auto func = "on_mob_kill";
         auto lua  = this->server.lua.open(path, func);

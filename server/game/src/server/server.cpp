@@ -226,6 +226,7 @@ internal::SavePayload fb::game::server::save_payload(const character& ch) const
 
     auto marketplace_pendings = ch.marketplace.to_save_dtos();
     auto matchmaking_skills   = ch.matchmaker.to_protocol();
+    auto collection_unlocks   = ch.collections.to_protocol(ch.id);
 
     return internal::SavePayload(ch.to_protocol(),
                                  ch.marriage().to_protocol(),
@@ -234,7 +235,8 @@ internal::SavePayload fb::game::server::save_payload(const character& ch) const
                                  matchmaking_skills,
                                  achievements,
                                  quests,
-                                 marketplace_pendings);
+                                 marketplace_pendings,
+                                 collection_unlocks);
 }
 
 async::task<void> fb::game::server::save()

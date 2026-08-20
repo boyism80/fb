@@ -168,6 +168,7 @@ table Init {
   friends: [fb.protocol.internal.FriendEntry];
   mail: uint;
   system_mail_ids: [uint];
+  collection_unlocks: [fb.protocol.internal.CollectionUnlock];
 }
 
 

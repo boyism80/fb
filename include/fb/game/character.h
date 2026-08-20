@@ -16,6 +16,7 @@
 #include <fb/game/mail_box.h>
 #include <fb/game/stat.h>
 #include <fb/game/quest.h>
+#include <fb/game/collection.h>
 #include <fb/game/storage.h>
 #include <fb/game/marketplace.h>
 #include <fb/game/marriage.h>
@@ -140,6 +141,7 @@ public:
     fb::game::trade                    trade;
     fb::game::items                    items;
     fb::game::quests                   quests;
+    fb::game::character_collections    collections;
     fb::game::bulletin                 bulletin = fb::game::bulletin(*this);
     fb::game::mail_box                 mail_box = fb::game::mail_box(*this);
     fb::game::storage_box              storage_box;
@@ -484,6 +486,9 @@ public:
     virtual void                            on_holyday_screen(character& ch, uint8_t screen, uint8_t hair, fb::model::enum_value::DIRECTION direction, const fb::model::point<uint8_t>& position) = 0;
     virtual void                            on_group_portrait(character& ch, std::vector<fb::protocol::game::response::group_portrait_entry> entries) = 0;
     virtual void                            on_group_portrait_hp(character& ch, std::string name, uint32_t cur_hp) = 0;
+    virtual void                            on_collection_list(character& ch) = 0;
+    virtual void                            on_collection_flag(character& ch, uint8_t group_id, uint8_t slot, bool onoff) = 0;
+    virtual void                            on_collection_dialog(character& ch, uint8_t group_id) = 0;
     // clang-format on
 };
 

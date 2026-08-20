@@ -39,6 +39,8 @@ namespace Http.Service
 
         public QuestRepository Quest => Bind<QuestRepository>();
 
+        public CollectionUnlockRepository CollectionUnlock => Bind<CollectionUnlockRepository>();
+
         public SystemMailRepository SystemMail => Bind<SystemMailRepository>();
 
         public StorageBoxRepository StorageBox => Bind<StorageBoxRepository>();

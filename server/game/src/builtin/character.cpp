@@ -94,7 +94,7 @@ IMPLEMENT_LUA_EXTENSION(character, "fb.game.character")
 {"birthday",                     builtin::character::builtin_birthday},
 {"active",                       builtin::character::builtin_active},
 {"super_hide",                   builtin::character::builtin_super_hide},
-{"divine_beast",                     builtin::character::builtin_divine_beast},
+{"divine_beast",                 builtin::character::builtin_divine_beast},
 {"teleport",                     builtin::character::builtin_teleport},
 {"dialog",                       builtin::character::builtin_dialog},
 {"list",                         builtin::character::builtin_list},
@@ -3782,10 +3782,7 @@ int builtin::character::builtin_collection(lua_State* L)
     auto builder  = lua->new_co_builder();
     builder.weak  = weak;
     builder.yield = [=]() -> async::task<void> {
-        fb::protocol::visit_client_version(ch->client_version, [&]<fb::protocol::CLIENT_VERSION V> {
-            if constexpr (V == fb::protocol::CLIENT_VERSION::v651)
-                std::ignore = ch->send(fb::protocol::game::response::collection<V>(group_id, slot, onoff));
-        });
+        co_await ch->collections.set(group_id, slot, onoff);
         co_return;
     };
     builder.resume = []() -> async::task<int> {

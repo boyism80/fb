@@ -50,6 +50,8 @@ public struct Init : IFlatbufferObject
   public ArraySegment<byte>? GetSystemMailIdsBytes() { return __p.__vector_as_arraysegment(32); }
 #endif
   public uint[] GetSystemMailIdsArray() { return __p.__vector_as_array<uint>(32); }
+  public fb.protocol._internal.raw.CollectionUnlock? CollectionUnlocks(int j) { int o = __p.__offset(34); return o != 0 ? (fb.protocol._internal.raw.CollectionUnlock?)(new fb.protocol._internal.raw.CollectionUnlock()).__assign(__p.__indirect(__p.__vector(o) + j * 4), __p.bb) : null; }
+  public int CollectionUnlocksLength { get { int o = __p.__offset(34); return o != 0 ? __p.__vector_len(o) : 0; } }
 
   public static Offset<fb.protocol._internal.response.raw.Init> CreateInit(FlatBufferBuilder builder,
       Offset<fb.protocol._internal.raw.Character> characterOffset = default(Offset<fb.protocol._internal.raw.Character>),
@@ -66,8 +68,10 @@ public struct Init : IFlatbufferObject
       VectorOffset marketplace_pendingsOffset = default(VectorOffset),
       VectorOffset friendsOffset = default(VectorOffset),
       uint mail = 0,
-      VectorOffset system_mail_idsOffset = default(VectorOffset)) {
-    builder.StartTable(15);
+      VectorOffset system_mail_idsOffset = default(VectorOffset),
+      VectorOffset collection_unlocksOffset = default(VectorOffset)) {
+    builder.StartTable(16);
+    Init.AddCollectionUnlocks(builder, collection_unlocksOffset);
     Init.AddSystemMailIds(builder, system_mail_idsOffset);
     Init.AddMail(builder, mail);
     Init.AddFriends(builder, friendsOffset);
@@ -86,7 +90,7 @@ public struct Init : IFlatbufferObject
     return Init.EndInit(builder);
   }
 
-  public static void StartInit(FlatBufferBuilder builder) { builder.StartTable(15); }
+  public static void StartInit(FlatBufferBuilder builder) { builder.StartTable(16); }
   public static void AddCharacter(FlatBufferBuilder builder, Offset<fb.protocol._internal.raw.Character> characterOffset) { builder.AddOffset(0, characterOffset.Value, 0); }
   public static void AddMarriage(FlatBufferBuilder builder, Offset<fb.protocol._internal.raw.Marriage> marriageOffset) { builder.AddOffset(1, marriageOffset.Value, 0); }
   public static void AddGroup(FlatBufferBuilder builder, Offset<nullable.nullable_uint> groupOffset) { builder.AddOffset(2, groupOffset.Value, 0); }
@@ -147,6 +151,12 @@ public struct Init : IFlatbufferObject
   public static VectorOffset CreateSystemMailIdsVectorBlock(FlatBufferBuilder builder, ArraySegment<uint> data) { builder.StartVector(4, data.Count, 4); builder.Add(data); return builder.EndVector(); }
   public static VectorOffset CreateSystemMailIdsVectorBlock(FlatBufferBuilder builder, IntPtr dataPtr, int sizeInBytes) { builder.StartVector(1, sizeInBytes, 1); builder.Add<uint>(dataPtr, sizeInBytes); return builder.EndVector(); }
   public static void StartSystemMailIdsVector(FlatBufferBuilder builder, int numElems) { builder.StartVector(4, numElems, 4); }
+  public static void AddCollectionUnlocks(FlatBufferBuilder builder, VectorOffset collectionUnlocksOffset) { builder.AddOffset(15, collectionUnlocksOffset.Value, 0); }
+  public static VectorOffset CreateCollectionUnlocksVector(FlatBufferBuilder builder, Offset<fb.protocol._internal.raw.CollectionUnlock>[] data) { builder.StartVector(4, data.Length, 4); for (int i = data.Length - 1; i >= 0; i--) builder.AddOffset(data[i].Value); return builder.EndVector(); }
+  public static VectorOffset CreateCollectionUnlocksVectorBlock(FlatBufferBuilder builder, Offset<fb.protocol._internal.raw.CollectionUnlock>[] data) { builder.StartVector(4, data.Length, 4); builder.Add(data); return builder.EndVector(); }
+  public static VectorOffset CreateCollectionUnlocksVectorBlock(FlatBufferBuilder builder, ArraySegment<Offset<fb.protocol._internal.raw.CollectionUnlock>> data) { builder.StartVector(4, data.Count, 4); builder.Add(data); return builder.EndVector(); }
+  public static VectorOffset CreateCollectionUnlocksVectorBlock(FlatBufferBuilder builder, IntPtr dataPtr, int sizeInBytes) { builder.StartVector(1, sizeInBytes, 1); builder.Add<Offset<fb.protocol._internal.raw.CollectionUnlock>>(dataPtr, sizeInBytes); return builder.EndVector(); }
+  public static void StartCollectionUnlocksVector(FlatBufferBuilder builder, int numElems) { builder.StartVector(4, numElems, 4); }
   public static Offset<fb.protocol._internal.response.raw.Init> EndInit(FlatBufferBuilder builder) {
     int o = builder.EndTable();
     return new Offset<fb.protocol._internal.response.raw.Init>(o);
@@ -176,6 +186,7 @@ static public class InitVerify
       && verifier.VerifyVectorOfTables(tablePos, 28 /*Friends*/, fb.protocol._internal.raw.FriendEntryVerify.Verify, false)
       && verifier.VerifyField(tablePos, 30 /*Mail*/, 4 /*uint*/, 4, false)
       && verifier.VerifyVectorOfData(tablePos, 32 /*SystemMailIds*/, 4 /*uint*/, false)
+      && verifier.VerifyVectorOfTables(tablePos, 34 /*CollectionUnlocks*/, fb.protocol._internal.raw.CollectionUnlockVerify.Verify, false)
       && verifier.VerifyTableEnd(tablePos);
   }
 }

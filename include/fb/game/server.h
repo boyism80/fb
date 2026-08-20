@@ -24,7 +24,9 @@
 #include <fb/game/storage.h>
 #include <fb/game/system_storage_box.h>
 #include <fb/log_collector.h>
+#include <fb/meta_dat_file.h>
 #include <fb/synchronized.h>
+#include <optional>
 #include <vector>
 #include <memory>
 #include <mutex>
@@ -129,12 +131,14 @@ public:
     using protocol_generator = std::function<std::unique_ptr<fb::protocol::header>(const fb::game::object&)>;
 
 private:
-    fb::model::datetime _time;
-    double              _exp_multiplier;
-    double              _drop_rate_multiplier;
+    fb::model::datetime                           _time;
+    double                                        _exp_multiplier;
+    double                                        _drop_rate_multiplier;
+    std::unordered_map<uint32_t, fb::model::mob*> _collection_mobs;
 
 public:
     fb::log_collector       log;
+    fb::meta_dat_file       meta;
     listener_impl           listener;
     character::container    characters;
     map::container          maps;
@@ -165,6 +169,7 @@ private:
     void                  init_amqp_handlers();
     async::task<void>     init_map_scripts();
     async::task<void>     init_script();
+    void                  init_collection_mobs();
     // clang-format on
 
 public:
@@ -215,13 +220,16 @@ public:
 
 public:
     // clang-format off
-    virtual uint32_t           thread_id(const fb::socket<character>& socket) const;
-    const fb::model::datetime& time() const;
-    async::task<void>          update_status();
-    double                     exp_multiplier() const;
-    void                       exp_multiplier(double value);
-    double                     drop_rate_multiplier() const;
-    void                       drop_rate_multiplier(double value);
+    virtual uint32_t                                     thread_id(const fb::socket<character>& socket) const;
+    const fb::model::datetime&                           time() const;
+    async::task<void>                                    update_status();
+    double                                               exp_multiplier() const;
+    void                                                 exp_multiplier(double value);
+    double                                               drop_rate_multiplier() const;
+    void                                                 drop_rate_multiplier(double value);
+    const std::unordered_map<uint32_t, fb::model::mob*>& collection_mobs() const;
+    fb::model::mob*                                      collection_mob(uint32_t mob_id) const;
+    fb::model::mob*                                      collection_mob(const fb::meta_dat_collection_item& item) const;
     // clang-format on
 };
 

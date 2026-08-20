@@ -19,15 +19,20 @@ async::task<bool> meta_dat<V>::handle(fb::socket<fb::login::session>& session, l
     {
         if (request.name.empty() == false)
         {
-            fb::logger::info("meta_dat miss name={} (no body asset)", request.name);
+            auto entry = this->server.meta.find(request.name);
+            if (entry == nullptr)
+            {
+                fb::logger::info("meta_dat miss name={} (not in Meta.dat)", request.name);
+                co_return true;
+            }
+
+            std::ignore = session.send(login_resps::name_list<V>(0, 0, entry->name, entry->crc, entry->compressed, {}));
             co_return true;
         }
 
-        auto entry = std::vector<std::pair<std::string, uint32_t>>{
-            {"Collections", 0x6863AD43u},
-            {"GroupNames",  0x31D8776Cu}
-        };
-        std::ignore = session.send(login_resps::name_list<V>(1, entry.size(), {}, 0, {}, entry));
+        auto list = this->server.meta.crc_list();
+        std::ignore =
+            session.send(login_resps::name_list<V>(1, static_cast<uint16_t>(list.size()), {}, 0, {}, std::move(list)));
     }
 
     co_return true;

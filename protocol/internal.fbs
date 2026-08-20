@@ -255,6 +255,11 @@ table Quest {
     completed: bool;
 }
 
+table CollectionUnlock {
+    user: uint;
+    mob_id: uint;
+}
+
 table MarketplacePending {
     user: uint;
     pending_key: string;
@@ -312,6 +317,7 @@ table SavePayload {
     achievements: [Achievement];
     quests: [Quest];
     marketplace_pendings: [MarketplacePending];
+    collection_unlocks: [CollectionUnlock];
 }
 
 table OptionChange {

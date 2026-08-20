@@ -46,5 +46,6 @@
     "drop_rate_multiplier": 1.0,
     "http": {
         "max_concurrent": 128
-    }
+    },
+    "meta_dat": "Meta.dat"
 }

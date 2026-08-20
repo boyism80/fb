@@ -7,7 +7,7 @@ using namespace fb::game;
 
 // clang-format off
 IMPLEMENT_LUA_EXTENSION(castle, "fb.game.castle")
-{"divine_beast",            builtin::castle::builtin_divine_beast},
+{"divine_beast",        builtin::castle::builtin_divine_beast},
 {"owner_clan",          builtin::castle::builtin_owner_clan},
 {"siege_active",        builtin::castle::builtin_siege_active},
 {"siege_end_time",      builtin::castle::builtin_siege_end_time},

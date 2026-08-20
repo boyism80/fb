@@ -398,6 +398,7 @@ namespace Internal.Controllers
             var matchmakingSkills = await _dbContext.MatchmakingSkill.Get(world, uid);
             var achievements = await _dbContext.Achievement.Get(world, uid);
             var quests = await _dbContext.Quest.Get(world, uid);
+            var collectionUnlocks = await _dbContext.CollectionUnlock.Get(world, uid);
             var storageBoxes = await _dbContext.StorageBox.Get(world, uid);
             var marketplacePendings = await _dbContext.MarketplacePending.Get(world, uid);
             var friends = await _friendService.GetEntries(world, uid);
@@ -437,6 +438,7 @@ namespace Internal.Controllers
                 MatchmakingSkills = matchmakingSkills.Select(_mapper.Map<Protocol.MatchmakingSkill>).ToList(),
                 Achievements = achievements.Select(_mapper.Map<Protocol.Achievement>).ToList(),
                 Quests = quests.Select(_mapper.Map<Protocol.Quest>).ToList(),
+                CollectionUnlocks = collectionUnlocks.Select(_mapper.Map<Protocol.CollectionUnlock>).ToList(),
                 StorageBoxes = storageBoxes
                     .Where(box => box.ExpiredDate == null || box.ExpiredDate > now)
                     .Select(_mapper.Map<Protocol.StorageBox>)
@@ -568,16 +570,18 @@ namespace Internal.Controllers
             var spellsTask = _dbContext.Spell.GetMany(world, characterIds);
             var achievementsTask = _dbContext.Achievement.GetMany(world, characterIds);
             var questsTask = _dbContext.Quest.GetMany(world, characterIds);
+            var collectionUnlocksTask = _dbContext.CollectionUnlock.GetMany(world, characterIds);
             var marketplacePendingsTask = _dbContext.MarketplacePending.GetMany(world, characterIds);
 
             await Task.WhenAll(charactersTask, itemsTask, spellsTask, achievementsTask, questsTask,
-                marketplacePendingsTask);
+                collectionUnlocksTask, marketplacePendingsTask);
 
             var characters = await charactersTask;
             var itemsByOwner = await itemsTask;
             var spellsByOwner = await spellsTask;
             var achievementsByOwner = await achievementsTask;
             var questsByOwner = await questsTask;
+            var collectionUnlocksByOwner = await collectionUnlocksTask;
             var marketplacePendingsByOwner = await marketplacePendingsTask;
 
             foreach (var data in payloads)
@@ -591,6 +595,7 @@ namespace Internal.Controllers
                     spellsByOwner.GetValueOrDefault(characterId) ?? Array.Empty<Spell>(),
                     achievementsByOwner.GetValueOrDefault(characterId) ?? Array.Empty<Achievement>(),
                     questsByOwner.GetValueOrDefault(characterId) ?? Array.Empty<Quest>(),
+                    collectionUnlocksByOwner.GetValueOrDefault(characterId) ?? Array.Empty<CollectionUnlock>(),
                     marketplacePendingsByOwner.GetValueOrDefault(characterId) ?? Array.Empty<MarketplacePending>());
             }
         }
@@ -603,6 +608,7 @@ namespace Internal.Controllers
             IReadOnlyList<Spell> existingSpells,
             IReadOnlyList<Achievement> existingAchievements,
             IReadOnlyList<Quest> existingQuests,
+            IReadOnlyList<CollectionUnlock> existingCollectionUnlocks,
             IReadOnlyList<MarketplacePending> existingMarketplacePendings)
         {
             var characterId = data.Character.Id;
@@ -649,6 +655,14 @@ namespace Internal.Controllers
                 existingQuests,
                 removed => _dbContext.Quest.Delete(world, removed),
                 alive => _dbContext.Quest.Set(world, alive));
+
+            var collectionUnlocks = _mapper.Map<Protocol.CollectionUnlock[], CollectionUnlock[]>(
+                data.CollectionUnlocks?.ToArray() ?? Array.Empty<Protocol.CollectionUnlock>());
+            ApplyHashEntitySnapshot(
+                collectionUnlocks,
+                existingCollectionUnlocks,
+                removed => _dbContext.CollectionUnlock.Delete(world, removed),
+                alive => _dbContext.CollectionUnlock.Set(world, alive));
 
             var marketplacePendings = _mapper.Map<Protocol.MarketplacePending[], MarketplacePending[]>(
                 data.MarketplacePendings?.ToArray() ?? Array.Empty<Protocol.MarketplacePending>());

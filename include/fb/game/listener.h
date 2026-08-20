@@ -143,6 +143,9 @@ public:
     void                            on_holyday_screen(character& ch, uint8_t screen, uint8_t hair, fb::model::enum_value::DIRECTION direction, const fb::model::point<uint8_t>& position) override final;
     void                            on_group_portrait(character& ch, std::vector<fb::protocol::game::response::group_portrait_entry> entries) override final;
     void                            on_group_portrait_hp(character& ch, std::string name, uint32_t cur_hp) override final;
+    void                            on_collection_list(character& ch) override final;
+    void                            on_collection_flag(character& ch, uint8_t group_id, uint8_t slot, bool onoff) override final;
+    void                            on_collection_dialog(character& ch, uint8_t group_id) override final;
     void                            on_spell_delay(life& me, const spell& spell, uint32_t delay) override final;
     // clang-format on
 };

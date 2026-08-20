@@ -135,6 +135,13 @@ void login<V>::init_marketplace(const std::vector<fb::protocol::internal::Market
 }
 
 template <fb::protocol::CLIENT_VERSION V>
+void login<V>::init_collection_unlocks(const std::vector<fb::protocol::internal::CollectionUnlock>& response,
+                                       fb::game::character&                                         ch)
+{
+    ch.collections.load(response);
+}
+
+template <fb::protocol::CLIENT_VERSION V>
 void login<V>::init_achievements(const std::vector<fb::protocol::internal::Achievement>& response,
                                  fb::game::character&                                    ch)
 {
@@ -314,6 +321,7 @@ async::task<std::shared_ptr<character>> login<V>::init(const game_reqs::login<V>
     this->init_matchmaker(resp.matchmaking_skills, *ch);
     this->init_achievements(resp.achievements, *ch);
     this->init_quests(resp.quests, *ch);
+    this->init_collection_unlocks(resp.collection_unlocks, *ch);
     this->init_marketplace(resp.marketplace_pendings, *ch);
     this->init_storage(resp, *ch);
     this->init_option(resp.option, *ch);
@@ -332,6 +340,7 @@ async::task<std::shared_ptr<character>> login<V>::init(const game_reqs::login<V>
                                     resp.marriage.divorce_count));
 
     ch->init();
+    ch->collections.sync();
     ch->update_time(static_cast<uint8_t>(this->server.time().hours()),
                     static_cast<uint8_t>(this->server.time().minutes()));
     if (request.from == internal::Service::Login)
