@@ -169,6 +169,16 @@ async::task<bool> character::map(std::shared_ptr<fb::game::map>      map,
         map = routed;
     }
 
+    if (this->_map == nullptr && map != nullptr)
+    {
+        auto* dest_thread = map->thread();
+        if (dest_thread != nullptr && dest_thread != this->_thread)
+        {
+            this->thread(dest_thread);
+            co_await dest_thread->switching();
+        }
+    }
+
     if (this->_map != map)
     {
         if (this->trade.trading())

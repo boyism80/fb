@@ -87,6 +87,7 @@ async::task<void> fb::game::server::init_lua()
         lua.build("pursuit_buy", builtin::server::builtin_pursuit_buy);
         lua.build("timer", builtin::server::builtin_timer);
         lua.build("weather", builtin::server::builtin_weather);
+        lua.build("weather_reroll", builtin::server::builtin_weather_reroll);
         lua.build("bright", builtin::server::builtin_bright);
         lua.build("name_with", builtin::server::builtin_name_with);
         lua.build("assert_korean", builtin::server::builtin_assert_korean);

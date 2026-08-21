@@ -287,6 +287,28 @@ M.functions = {
             return true
         end,
     },
+
+    ['날씨갱신'] = {
+        ['privilege'] = ROLE.ADMIN,
+        ['usage'] = '- 현재와 다른 날씨가 나올 때까지 스케줄 재추첨',
+        ['command'] = function (me, args)
+            local names = {
+                [0] = '맑음',
+                [1] = '비',
+                [2] = '눈',
+                [3] = '새',
+            }
+            local before, after = weather_reroll()
+            local before_name = names[before] or tostring(before)
+            local after_name = names[after] or tostring(after)
+            if before == after then
+                me:message(string.format("날씨 갱신 실패 (타입이 바뀌지 않음): %s", before_name), MESSAGE_TYPE.BROWN)
+            else
+                me:message(string.format("날씨 갱신: %s -> %s", before_name, after_name), MESSAGE_TYPE.BROWN)
+            end
+            return true
+        end,
+    },
     
     ['밝기'] = {
         ['privilege'] = ROLE.ADMIN,

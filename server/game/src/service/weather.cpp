@@ -85,71 +85,63 @@ service::weather::weather(fb::game::server& server) :
     server(server)
 { }
 
-void service::weather::sync()
+void service::weather::rebuild_segments(uint32_t seed, int month, int day)
 {
-    const auto& time = this->server.time();
-    auto        day_key =
-        static_cast<int>(time.year()) * 10000 + static_cast<int>(time.month()) * 100 + static_cast<int>(time.day());
-    if (day_key != this->_day_key)
+    this->_segments.clear();
+
+    auto rng = [&seed]() {
+        seed = seed * 1103515245u + 12345u;
+        return seed;
+    };
+
+    auto w = weights_for(month, day);
+    auto n = segment_count(month, day, rng);
+
+    uint8_t hours[4]    = {};
+    uint8_t hour_count  = 0;
+    hours[hour_count++] = 0;
+    while (hour_count < n)
     {
-        this->_day_key = day_key;
-        this->_segments.clear();
-
-        auto seed = static_cast<uint32_t>(day_key);
-        auto rng  = [&seed]() {
-            seed = seed * 1103515245u + 12345u;
-            return seed;
-        };
-
-        auto month = static_cast<int>(time.month());
-        auto day   = static_cast<int>(time.day());
-        auto w     = weights_for(month, day);
-        auto n     = segment_count(month, day, rng);
-
-        uint8_t hours[4]    = {};
-        uint8_t hour_count  = 0;
-        hours[hour_count++] = 0;
-        while (hour_count < n)
-        {
-            auto h   = static_cast<uint8_t>(rng() % 24);
-            auto dup = false;
-            for (uint8_t i = 0; i < hour_count; ++i)
-            {
-                if (hours[i] == h)
-                {
-                    dup = true;
-                    break;
-                }
-            }
-            if (dup)
-                continue;
-            hours[hour_count++] = h;
-        }
+        auto h   = static_cast<uint8_t>(rng() % 24);
+        auto dup = false;
         for (uint8_t i = 0; i < hour_count; ++i)
         {
-            for (uint8_t j = i + 1; j < hour_count; ++j)
+            if (hours[i] == h)
             {
-                if (hours[j] < hours[i])
-                    std::swap(hours[i], hours[j]);
+                dup = true;
+                break;
             }
         }
-
-        auto total = w.normal + w.rain + w.snow;
-        this->_segments.reserve(hour_count);
-        for (uint8_t i = 0; i < hour_count; ++i)
+        if (dup)
+            continue;
+        hours[hour_count++] = h;
+    }
+    for (uint8_t i = 0; i < hour_count; ++i)
+    {
+        for (uint8_t j = i + 1; j < hour_count; ++j)
         {
-            auto         r = rng() % total;
-            weather_type t = weather_type::NORMAL;
-            if (r >= w.normal && r < w.normal + w.rain)
-                t = weather_type::RAIN;
-            else if (r >= w.normal + w.rain)
-                t = weather_type::SNOW;
-            this->_segments.push_back({hours[i], t});
+            if (hours[j] < hours[i])
+                std::swap(hours[i], hours[j]);
         }
     }
 
+    auto total = w.normal + w.rain + w.snow;
+    this->_segments.reserve(hour_count);
+    for (uint8_t i = 0; i < hour_count; ++i)
+    {
+        auto         r = rng() % total;
+        weather_type t = weather_type::NORMAL;
+        if (r >= w.normal && r < w.normal + w.rain)
+            t = weather_type::RAIN;
+        else if (r >= w.normal + w.rain)
+            t = weather_type::SNOW;
+        this->_segments.push_back({hours[i], t});
+    }
+}
+
+weather_type service::weather::type_at_hour(uint8_t hour) const
+{
     auto type = weather_type::NORMAL;
-    auto hour = static_cast<uint8_t>(time.hours());
     for (const auto& segment : this->_segments)
     {
         if (segment.start_hour <= hour)
@@ -157,11 +149,11 @@ void service::weather::sync()
         else
             break;
     }
+    return type;
+}
 
-    if (type == this->_current)
-        return;
-
-    this->_current = type;
+void service::weather::broadcast_outdoor(weather_type type)
+{
     this->server.characters.foreach_enqueue([type](auto& ch) -> async::task<void> {
         auto map = ch->map();
         if (map == nullptr)
@@ -172,6 +164,55 @@ void service::weather::sync()
         ch->weather(type);
         co_return;
     });
+}
+
+void service::weather::sync()
+{
+    const auto& time = this->server.time();
+    auto        day_key =
+        static_cast<int>(time.year()) * 10000 + static_cast<int>(time.month()) * 100 + static_cast<int>(time.day());
+    if (day_key != this->_day_key)
+    {
+        this->_day_key = day_key;
+        this->rebuild_segments(static_cast<uint32_t>(day_key),
+                               static_cast<int>(time.month()),
+                               static_cast<int>(time.day()));
+    }
+
+    auto type = this->type_at_hour(static_cast<uint8_t>(time.hours()));
+    if (type == this->_current)
+        return;
+
+    this->_current = type;
+    this->broadcast_outdoor(type);
+}
+
+weather_type service::weather::reroll(uint32_t max_attempts)
+{
+    const auto& time  = this->server.time();
+    auto        old   = this->_current;
+    auto        day_key =
+        static_cast<int>(time.year()) * 10000 + static_cast<int>(time.month()) * 100 + static_cast<int>(time.day());
+    auto month = static_cast<int>(time.month());
+    auto day   = static_cast<int>(time.day());
+    auto hour  = static_cast<uint8_t>(time.hours());
+
+    for (uint32_t attempt = 0; attempt < max_attempts; ++attempt)
+    {
+        auto seed = static_cast<uint32_t>(day_key) * 1000u + attempt;
+        this->rebuild_segments(seed, month, day);
+        this->_day_key = day_key;
+
+        auto type = this->type_at_hour(hour);
+        if (type == old)
+            continue;
+
+        this->_current = type;
+        this->broadcast_outdoor(type);
+        return type;
+    }
+
+    return old;
 }
 
 weather_type service::weather::current() const

@@ -201,16 +201,108 @@ local function wait_all_state_messages(ctx, bots, pattern, timeout_ms, after_hoo
     return false
 end
 
+-- Parallel lanes must share one MATCH READY hook. ctx:unhook("message") clears
+-- every hook for that opcode, so per-lane wait_state_message races and drops
+-- READY notifications for bots that have not finished waiting yet.
+local match_ready = {
+    armed = false,
+    flags = nil,
+}
+
+local function match_ready_reset()
+    match_ready.armed = false
+    match_ready.flags = nil
+end
+
+local function match_ready_arm(ctx, bots)
+    if match_ready.armed then
+        return true
+    end
+
+    match_ready.flags = {}
+    for _, bot in ipairs(bots) do
+        match_ready.flags[bot:name()] = false
+    end
+
+    ctx:hook("message", function(_, hooked_bot, packet)
+        if packet.type ~= "STATE" or packet.text == nil then
+            return
+        end
+        if packet.text:find(MSG_MATCH_READY, 1, true) == nil then
+            return
+        end
+        if match_ready.flags[hooked_bot:name()] ~= nil then
+            match_ready.flags[hooked_bot:name()] = true
+        end
+    end)
+
+    match_ready.armed = true
+    return true
+end
+
+local function match_ready_wait_armed(ctx, timeout_ms)
+    local waited_ms = 0
+    local interval_ms = 50
+    while match_ready.armed == false and waited_ms < timeout_ms do
+        ctx:sleep(interval_ms)
+        waited_ms = waited_ms + interval_ms
+    end
+    return match_ready.armed
+end
+
+local function match_ready_wait(ctx, bot, timeout_ms)
+    local waited_ms = 0
+    local interval_ms = 200
+    while waited_ms < timeout_ms do
+        if match_ready.flags ~= nil and match_ready.flags[bot:name()] == true then
+            return true
+        end
+        ctx:sleep(interval_ms)
+        waited_ms = waited_ms + interval_ms
+    end
+    return match_ready.flags ~= nil and match_ready.flags[bot:name()] == true
+end
+
+local function match_ready_wait_all(ctx, bots, timeout_ms)
+    local waited_ms = 0
+    local interval_ms = 200
+    while waited_ms < timeout_ms do
+        local all_received = true
+        for _, bot in ipairs(bots) do
+            if match_ready.flags == nil or match_ready.flags[bot:name()] ~= true then
+                all_received = false
+                break
+            end
+        end
+        if all_received then
+            return true
+        end
+        ctx:sleep(interval_ms)
+        waited_ms = waited_ms + interval_ms
+    end
+    return false
+end
+
+local function match_ready_disarm(ctx)
+    if match_ready.armed then
+        ctx:unhook("message")
+        match_ready.armed = false
+    end
+end
+
 test_suite {
     name = "Matchmaking Test",
     bot_count = 6,
 
     on_initialize = function(ctx)
+        match_ready_reset()
         progress(ctx:bot(0), "MATCHMAKING TEST INITIALIZED WITH " .. ctx:bot_count() .. " BOTS")
         lib.formation.arrange_in_line(ctx)
     end,
 
     on_finished = function(ctx)
+        match_ready_disarm(ctx)
+        match_ready_reset()
         lib.group.cleanup(ctx)
     end,
 
@@ -303,30 +395,48 @@ test_suite {
             parallel = {
                 [0] = { function(ctx)
                     local a = ctx:bot(0)
+                    local bots = {
+                        ctx:bot(0),
+                        ctx:bot(1),
+                        ctx:bot(2),
+                        ctx:bot(3),
+                        ctx:bot(4),
+                        ctx:bot(5),
+                    }
                     progress(a, "STEP 6-PARALLEL: A re-register and confirm")
+                    match_ready_arm(ctx, bots)
                     ctx:sleep(LISTENER_ARM_MS)
+
+                    local ok = false
                     if f1_register_match2(a) == false then
                         progress(a, "FAILED: A COULD NOT RE-REGISTER")
-                        return false
-                    end
-                    if confirm_proposal_dialog(a) == false then
+                    elseif confirm_proposal_dialog(a) == false then
                         progress(a, "FAILED: A COULD NOT CONFIRM MATCH PROPOSAL")
-                        return false
+                    else
+                        -- Hold the shared hook until every lane has seen READY (or timeout).
+                        match_ready_wait_all(ctx, bots, MESSAGE_WAIT_MS)
+                        if match_ready_wait(ctx, a, 0) == false then
+                            progress(a, "FAILED: A DID NOT RECEIVE MATCH READY MESSAGE")
+                        else
+                            ok = true
+                        end
                     end
-                    if wait_state_message(ctx, a, MSG_MATCH_READY, MESSAGE_WAIT_MS) == false then
-                        progress(a, "FAILED: A DID NOT RECEIVE MATCH READY MESSAGE")
-                        return false
-                    end
-                    return true
+
+                    match_ready_disarm(ctx)
+                    return ok
                 end },
                 [1] = { function(ctx)
                     local b = ctx:bot(1)
                     progress(b, "STEP 6-PARALLEL: B confirm proposal")
+                    if match_ready_wait_armed(ctx, MESSAGE_WAIT_MS) == false then
+                        progress(b, "FAILED: MATCH READY HOOK NOT ARMED")
+                        return false
+                    end
                     if confirm_proposal_dialog(b) == false then
                         progress(b, "FAILED: B COULD NOT CONFIRM MATCH PROPOSAL")
                         return false
                     end
-                    if wait_state_message(ctx, b, MSG_MATCH_READY, MESSAGE_WAIT_MS) == false then
+                    if match_ready_wait(ctx, b, MESSAGE_WAIT_MS) == false then
                         progress(b, "FAILED: B DID NOT RECEIVE MATCH READY MESSAGE")
                         return false
                     end
@@ -335,11 +445,15 @@ test_suite {
                 [2] = { function(ctx)
                     local c = ctx:bot(2)
                     progress(c, "STEP 6-PARALLEL: C confirm proposal")
+                    if match_ready_wait_armed(ctx, MESSAGE_WAIT_MS) == false then
+                        progress(c, "FAILED: MATCH READY HOOK NOT ARMED")
+                        return false
+                    end
                     if confirm_proposal_dialog(c) == false then
                         progress(c, "FAILED: C COULD NOT CONFIRM MATCH PROPOSAL")
                         return false
                     end
-                    if wait_state_message(ctx, c, MSG_MATCH_READY, MESSAGE_WAIT_MS) == false then
+                    if match_ready_wait(ctx, c, MESSAGE_WAIT_MS) == false then
                         progress(c, "FAILED: C DID NOT RECEIVE MATCH READY MESSAGE")
                         return false
                     end
@@ -348,11 +462,15 @@ test_suite {
                 [3] = { function(ctx)
                     local d = ctx:bot(3)
                     progress(d, "STEP 6-PARALLEL: D confirm proposal")
+                    if match_ready_wait_armed(ctx, MESSAGE_WAIT_MS) == false then
+                        progress(d, "FAILED: MATCH READY HOOK NOT ARMED")
+                        return false
+                    end
                     if confirm_proposal_dialog(d) == false then
                         progress(d, "FAILED: D COULD NOT CONFIRM MATCH PROPOSAL")
                         return false
                     end
-                    if wait_state_message(ctx, d, MSG_MATCH_READY, MESSAGE_WAIT_MS) == false then
+                    if match_ready_wait(ctx, d, MESSAGE_WAIT_MS) == false then
                         progress(d, "FAILED: D DID NOT RECEIVE MATCH READY MESSAGE")
                         return false
                     end
@@ -361,6 +479,10 @@ test_suite {
                 [4] = { function(ctx)
                     local e = ctx:bot(4)
                     progress(e, "STEP 6-PARALLEL: E register and confirm")
+                    if match_ready_wait_armed(ctx, MESSAGE_WAIT_MS) == false then
+                        progress(e, "FAILED: MATCH READY HOOK NOT ARMED")
+                        return false
+                    end
                     ctx:sleep(LISTENER_ARM_MS)
                     if f1_register_match2(e) == false then
                         progress(e, "FAILED: E COULD NOT REGISTER")
@@ -370,7 +492,7 @@ test_suite {
                         progress(e, "FAILED: E COULD NOT CONFIRM MATCH PROPOSAL")
                         return false
                     end
-                    if wait_state_message(ctx, e, MSG_MATCH_READY, MESSAGE_WAIT_MS) == false then
+                    if match_ready_wait(ctx, e, MESSAGE_WAIT_MS) == false then
                         progress(e, "FAILED: E DID NOT RECEIVE MATCH READY MESSAGE")
                         return false
                     end
@@ -379,6 +501,10 @@ test_suite {
                 [5] = { function(ctx)
                     local f = ctx:bot(5)
                     progress(f, "STEP 6-PARALLEL: F register and confirm")
+                    if match_ready_wait_armed(ctx, MESSAGE_WAIT_MS) == false then
+                        progress(f, "FAILED: MATCH READY HOOK NOT ARMED")
+                        return false
+                    end
                     ctx:sleep(LISTENER_ARM_MS)
                     if f1_register_match2(f) == false then
                         progress(f, "FAILED: F COULD NOT REGISTER")
@@ -388,7 +514,7 @@ test_suite {
                         progress(f, "FAILED: F COULD NOT CONFIRM MATCH PROPOSAL")
                         return false
                     end
-                    if wait_state_message(ctx, f, MSG_MATCH_READY, MESSAGE_WAIT_MS) == false then
+                    if match_ready_wait(ctx, f, MESSAGE_WAIT_MS) == false then
                         progress(f, "FAILED: F DID NOT RECEIVE MATCH READY MESSAGE")
                         return false
                     end

@@ -903,6 +903,20 @@ int builtin::server::builtin_weather(lua_State* L)
     return 0;
 }
 
+int builtin::server::builtin_weather_reroll(lua_State* L)
+{
+    auto lua = fb::lua::get(L);
+    if (lua == nullptr)
+        return 0;
+
+    auto& srv    = static_cast<fb::game::server&>(lua->executor);
+    auto  before  = static_cast<lua_Integer>(srv.weather.current());
+    auto  after   = static_cast<lua_Integer>(srv.weather.reroll());
+    lua->pushinteger(before);
+    lua->pushinteger(after);
+    return 2;
+}
+
 int builtin::server::builtin_bright(lua_State* L)
 {
     auto lua = fb::lua::get(L);

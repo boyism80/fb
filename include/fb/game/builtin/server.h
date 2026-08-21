@@ -36,6 +36,7 @@ struct server
     static int builtin_pursuit_buy(lua_State* L);
     static int builtin_timer(lua_State* L);
     static int builtin_weather(lua_State* L);
+    static int builtin_weather_reroll(lua_State* L);
     static int builtin_bright(lua_State* L);
     static int builtin_name_with(lua_State* L);
     static int builtin_assert_korean(lua_State* L);

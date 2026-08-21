@@ -27,10 +27,15 @@ private:
     int                                 _day_key = -1;
     std::vector<segment>                _segments;
 
+    void                                rebuild_segments(uint32_t seed, int month, int day);
+    fb::model::enum_value::WEATHER_TYPE type_at_hour(uint8_t hour) const;
+    void                                broadcast_outdoor(fb::model::enum_value::WEATHER_TYPE type);
+
 public:
     explicit weather(fb::game::server& server);
 
     void                                sync();
+    fb::model::enum_value::WEATHER_TYPE reroll(uint32_t max_attempts = 64);
     fb::model::enum_value::WEATHER_TYPE current() const;
 };
 

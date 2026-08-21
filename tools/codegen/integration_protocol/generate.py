@@ -35,7 +35,7 @@ FIELD_RE = re.compile(
     r"^\s*(?:(?:const|static|volatile)\s+)*"
     r"(std::string|uint32_t|uint16_t|uint8_t|int32_t|int16_t|int8_t|bool|"
     r"ACTION|CHAT_TYPE|DURATION|MESSAGE_TYPE|SPELL_TYPE|STATE|DIRECTION|"
-    r"UPDATE_STATE_LEVEL|"
+    r"UPDATE_STATE_LEVEL|OPTION|EQUIPMENT_PARTS|SWAP_TYPE|"
     r"fb::model::point<uint16_t>)"
     r"\s+(\w+)\s*(?:=\s*[^;]+)?;",
     re.MULTILINE,
@@ -53,6 +53,8 @@ ENUM_TYPES = {
     "DIALOG_RESULT",
     "BULLETIN_BUTTON_ENABLE",
     "UPDATE_STATE_LEVEL",
+    "OPTION",
+    "EQUIPMENT_PARTS",
 }
 
 PRIMITIVE_FIELD_TYPES = {
@@ -367,14 +369,44 @@ def split_ctor_params(params: str) -> list[tuple[str, str]]:
     return parsed
 
 
+def extract_parameter_list(text: str, open_paren_index: int) -> tuple[str, int] | None:
+    if open_paren_index >= len(text) or text[open_paren_index] != "(":
+        return None
+
+    depth = 0
+    angle = 0
+    for i in range(open_paren_index, len(text)):
+        ch = text[i]
+        if ch == "<":
+            angle += 1
+        elif ch == ">" and angle > 0:
+            angle -= 1
+        elif ch == "(" and angle == 0:
+            depth += 1
+        elif ch == ")" and angle == 0:
+            depth -= 1
+            if depth == 0:
+                return text[open_paren_index + 1 : i], i + 1
+    return None
+
+
 def extract_bot_ctor_params(class_body: str, class_name: str) -> list[tuple[str, str]]:
+    # After ctors moved into .cpp, BOT constructors are declarations that end
+    # with ';' rather than an inline ': member()' / '{ body }'.
     bot_view = preprocess_for_bot(class_body)
-    pattern = rf"\b{re.escape(class_name)}\s*\(([^)]*)\)\s*(?::|,|\{{)"
+    pattern = rf"\b{re.escape(class_name)}\s*\("
     for match in re.finditer(pattern, bot_view):
-        params = match.group(1).strip()
-        if not params:
+        extracted = extract_parameter_list(bot_view, match.end() - 1)
+        if extracted is None:
             continue
-        if "= default" in match.group(0):
+
+        params, end = extracted
+        rest = bot_view[end:].lstrip()
+        if rest.startswith("= default"):
+            continue
+        if not rest or rest[0] not in ";:{,":
+            continue
+        if not params.strip():
             continue
         return split_ctor_params(params)
     return []
@@ -417,12 +449,18 @@ def scan_protocols() -> list[ProtocolType]:
             for m in CLASS_RE.finditer(sub):
                 class_name = m.group(1)
                 start = m.start()
+                leading = sub[max(0, start - 120) : start]
+                # Skip explicit specializations (v651 overlays). The bot speaks
+                # the primary CLIENT_VERSION template instantiated as v550.
+                if re.search(r"template\s*<>\s*$", leading):
+                    continue
+
                 template_params = None
                 tm = TEMPLATE_RE.match(m.group(0))
                 if tm and tm.group(2) == class_name:
                     template_params = tm.group(1)
                 else:
-                    lm = LEADING_TEMPLATE_RE.search(sub[max(0, start - 120) : start])
+                    lm = LEADING_TEMPLATE_RE.search(leading)
                     if lm:
                         template_params = lm.group(1)
 
