@@ -64,12 +64,12 @@ std::vector<tree_node> parse_tree(std::vector<uint8_t>& data)
 
     for (uint16_t i = 0; i < top_count; ++i)
     {
-        auto name        = reader.read<std::string>(); // u8 length + CP949
+        auto name        = reader.read<std::string>();
         auto child_count = reader.read<uint16_t>();
         auto children    = std::vector<std::string>{};
         children.reserve(child_count);
         for (uint16_t c = 0; c < child_count; ++c)
-            children.push_back(reader.read<std::string, uint16_t>()); // u16be length + CP949
+            children.push_back(reader.read<std::string, uint16_t>());
         nodes.push_back({std::move(name), std::move(children)});
     }
     return nodes;

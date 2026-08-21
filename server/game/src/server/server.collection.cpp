@@ -1,6 +1,5 @@
 #include <fb/game/server.h>
 #include <fb/model/model.h>
-#include <fb/logger.h>
 
 using table = fb::model::table;
 
@@ -18,14 +17,9 @@ void server::init_collection_mobs()
 
             auto* mob = table::mob->name2mob(item.name);
             if (mob == nullptr)
-            {
-                fb::logger::warn("collection mob skipped (not in mob.json): {}", item.name);
                 continue;
-            }
 
-            auto [it, inserted] = this->_collection_mobs.emplace(mob->id, mob);
-            if (inserted == false)
-                fb::logger::warn("duplicate collection mob id {} ({})", mob->id, item.name);
+            this->_collection_mobs.emplace(mob->id, mob);
         }
     }
 }

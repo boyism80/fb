@@ -425,9 +425,6 @@ async::task<void> fb::game::server::on_start()
     co_await fb::model::loader(*this).run();
     this->meta.load(fb::config<std::string>("meta_dat", std::string("Meta.dat")), true);
     this->init_collection_mobs();
-    fb::logger::info("Meta.dat collections groups={}, mapped_mobs={}",
-                     this->meta.groups().size(),
-                     this->_collection_mobs.size());
     co_await map_loader(*this).run();
     co_await script_loader(*this).run();
     co_await npc_spawner(*this).run();

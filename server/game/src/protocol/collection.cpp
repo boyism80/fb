@@ -162,7 +162,7 @@ void collection<V>::deserialize(fb::stream_reader<big_endian>& reader)
 void collection<CLIENT_VERSION::v651>::deserialize(fb::stream_reader<big_endian>& reader)
 {
     header::deserialize(reader);
-    reader.read<uint8_t>(); // gate 0
+    reader.read<uint8_t>();
     this->type = static_cast<COLLECTION_TYPE>(reader.read<uint8_t>());
     this->entries.clear();
     this->bitmask.clear();

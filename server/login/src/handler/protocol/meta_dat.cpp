@@ -1,6 +1,5 @@
 #include <fb/login/handler/protocol/meta_dat.h>
 #include <fb/login/protocol/name_list.h>
-#include <fb/logger.h>
 #include <tuple>
 
 namespace login_reqs  = fb::protocol::login::request;
@@ -21,10 +20,7 @@ async::task<bool> meta_dat<V>::handle(fb::socket<fb::login::session>& session, l
         {
             auto entry = this->server.meta.find(request.name);
             if (entry == nullptr)
-            {
-                fb::logger::info("meta_dat miss name={} (not in Meta.dat)", request.name);
                 co_return true;
-            }
 
             std::ignore = session.send(login_resps::name_list<V>(0, 0, entry->name, entry->crc, entry->compressed, {}));
             co_return true;

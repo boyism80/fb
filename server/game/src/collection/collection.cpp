@@ -47,7 +47,6 @@ void character_collections::sync()
     if (ch->client_version != fb::protocol::CLIENT_VERSION::v651)
         return;
 
-    // LIST (type 0) forces sheet_select_tab(5); push flags only.
     for (auto mob_id : this->_unlocked_mob_ids)
     {
         auto* mob = ch->server.collection_mob(mob_id);
