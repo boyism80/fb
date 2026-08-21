@@ -1,8 +1,10 @@
 ﻿#include <fb/game/listener.h>
 #include <fb/game/server.h>
 #include <fb/protocol/client_version.h>
+#include <macro.h>
 
 using namespace fb::game;
+using namespace fb::model::enum_value;
 using table = fb::model::table;
 
 namespace game_resp = fb::protocol::game::response;
@@ -443,5 +445,12 @@ void listener_impl::on_map_leave(object& me, const fb::game::map& map)
 
 void listener_impl::on_map_enter(object& me, const fb::game::map& map)
 {
-    // Listener only handles packet response - no game logic
+    if (me.is(OBJECT_TYPE::CHARACTER) == false)
+        return;
+
+    auto& ch = static_cast<character&>(me);
+    if (ENUM_IN(map.model().option, MAP_OPTION::BUILD_IN))
+        ch.weather(WEATHER_TYPE::NORMAL);
+    else
+        ch.weather(this->server.weather.current());
 }

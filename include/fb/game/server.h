@@ -21,6 +21,7 @@
 #include <fb/game/service/schedule.h>
 #include <fb/game/service/script_timer.h>
 #include <fb/game/service/property.h>
+#include <fb/game/service/weather.h>
 #include <fb/game/storage.h>
 #include <fb/game/system_storage_box.h>
 #include <fb/log_collector.h>
@@ -152,6 +153,7 @@ public:
     service::schedule       schedules;
     service::script_timer   script_timers;
     service::property       property;
+    service::weather        weather;
 
 public:
     server(boost::asio::io_context& io_context, uint16_t port);

@@ -353,6 +353,7 @@ fb::game::server::server(boost::asio::io_context& io_context, uint16_t port) :
     system_mail(*this),
     schedules(*this),
     script_timers(*this),
+    weather(*this),
     log(fb::config<std::string>("amqp:log:ip"),
         fb::config<uint16_t>("amqp:log:port"),
         fb::config<std::string>("amqp:log:uid"),
@@ -440,6 +441,7 @@ async::task<void> fb::game::server::on_start()
     co_await this->init_map_scripts();
     this->init_handlers();
     this->init_timers();
+    this->weather.sync();
     this->init_amqp_handlers();
     // HTTP needs io_context, which starts only after on_start returns.
     // Queue castle warmup on the first game thread once IO is running.

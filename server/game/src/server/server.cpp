@@ -134,6 +134,7 @@ void fb::game::server::sync_time()
     }
 
     this->_time = updated;
+    this->weather.sync();
 }
 
 uint8_t fb::game::server::brightness_from_time(uint8_t hours, uint8_t minutes)
