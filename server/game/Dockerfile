@@ -28,6 +28,7 @@ COPY --from=build /app/maps/ ./maps/
 COPY server/game/scripts/ ./scripts/
 COPY --from=data /fb/data/json/server/ ./json/
 COPY resources/meta/Meta.dat /app/Meta.dat
+COPY resources/meta/SObj.tbl /app/SObj.tbl
 
 WORKDIR /app
 CMD ["./game"]

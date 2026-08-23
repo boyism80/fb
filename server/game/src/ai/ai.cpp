@@ -286,29 +286,48 @@ void ai::run_from_target(mob& mob_obj, std::shared_ptr<life> target)
     if (target == nullptr)
         return;
 
+    auto map = mob_obj.map();
+    if (map == nullptr)
+        return;
+
     auto repeat = std::rand() % 2;
     auto count  = repeat ? 2 : 1;
 
-    for (int i = 0; i < count; i++)
+    constexpr DIRECTION all_dirs[] = {DIRECTION::LEFT, DIRECTION::TOP, DIRECTION::RIGHT, DIRECTION::BOTTOM};
+
+    for (int step = 0; step < count; step++)
     {
-        // Calculate opposite direction from target
-        auto target_pos = target->position();
-        auto mob_pos    = mob_obj.position();
+        const auto mob_pos     = mob_obj.position();
+        const auto target_pos  = target->position();
+        const int  dist_before = std::abs(static_cast<int>(mob_pos.x) - static_cast<int>(target_pos.x)) +
+                                std::abs(static_cast<int>(mob_pos.y) - static_cast<int>(target_pos.y));
 
-        DIRECTION run_dir;
-        if (std::abs(target_pos.x - mob_pos.x) > std::abs(target_pos.y - mob_pos.y))
-        {
-            // Run horizontally
-            run_dir = (target_pos.x > mob_pos.x) ? DIRECTION::LEFT : DIRECTION::RIGHT;
-        }
-        else
-        {
-            // Run vertically
-            run_dir = (target_pos.y > mob_pos.y) ? DIRECTION::TOP : DIRECTION::BOTTOM;
-        }
+        bool moved = false;
 
-        // Move in chosen direction
-        if (!mob_obj.move(run_dir))
-            mob_obj.move(DIRECTION(std::rand() % 4));
+        // tier 0: move away (+1 manhattan), tier 1: lateral (0), tier 2: toward (-1, last resort)
+        for (int tier = 0; tier < 3 && !moved; tier++)
+        {
+            const int want_delta = (tier == 0) ? 1 : (tier == 1 ? 0 : -1);
+
+            for (auto dir : all_dirs)
+            {
+                if (!map->movable(mob_obj, dir))
+                    continue;
+
+                const auto next       = mob_obj.side_position(dir);
+                const int  dist_after = std::abs(static_cast<int>(next.x) - static_cast<int>(target_pos.x)) +
+                                       std::abs(static_cast<int>(next.y) - static_cast<int>(target_pos.y));
+                const int delta = dist_after - dist_before;
+
+                if (delta != want_delta)
+                    continue;
+
+                if (mob_obj.move(dir))
+                {
+                    moved = true;
+                    break;
+                }
+            }
+        }
     }
 }

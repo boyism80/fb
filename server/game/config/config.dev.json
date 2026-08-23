@@ -54,5 +54,6 @@
     "http": {
         "max_concurrent": 128
     },
-    "meta_dat": "Meta.dat"
+    "meta_dat": "Meta.dat",
+    "sobj_tbl": "SObj.tbl"
 }

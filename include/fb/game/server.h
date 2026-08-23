@@ -26,6 +26,7 @@
 #include <fb/game/system_storage_box.h>
 #include <fb/log_collector.h>
 #include <fb/meta_dat_file.h>
+#include <fb/sobj_tbl_file.h>
 #include <fb/synchronized.h>
 #include <optional>
 #include <vector>
@@ -140,6 +141,7 @@ private:
 public:
     fb::log_collector       log;
     fb::meta_dat_file       meta;
+    fb::sobj_tbl_file       sobj;
     listener_impl           listener;
     character::container    characters;
     map::container          maps;

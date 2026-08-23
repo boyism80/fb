@@ -265,7 +265,7 @@ bool object::move(DIRECTION direction)
         return false;
 
     auto after = this->side_position(direction);
-    if (this->_map->movable(*this, after) == false)
+    if (this->_map->movable(*this, direction) == false)
         return false;
 
     if (this->direction(direction) == false)

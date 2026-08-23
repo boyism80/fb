@@ -6,6 +6,44 @@
 using namespace fb::game;
 using table = fb::model::table;
 
+namespace {
+
+uint8_t leave_mask(DIRECTION direction)
+{
+    switch (direction)
+    {
+    case DIRECTION::TOP:
+        return fb::sobj_tbl_file::NORTH;
+    case DIRECTION::RIGHT:
+        return fb::sobj_tbl_file::EAST;
+    case DIRECTION::BOTTOM:
+        return fb::sobj_tbl_file::SOUTH;
+    case DIRECTION::LEFT:
+        return fb::sobj_tbl_file::WEST;
+    default:
+        return 0;
+    }
+}
+
+uint8_t enter_mask(DIRECTION direction)
+{
+    switch (direction)
+    {
+    case DIRECTION::TOP:
+        return fb::sobj_tbl_file::SOUTH;
+    case DIRECTION::RIGHT:
+        return fb::sobj_tbl_file::WEST;
+    case DIRECTION::BOTTOM:
+        return fb::sobj_tbl_file::NORTH;
+    case DIRECTION::LEFT:
+        return fb::sobj_tbl_file::EAST;
+    default:
+        return 0;
+    }
+}
+
+} // namespace
+
 map::map(fb::game::server&     server,
          uint32_t              id,
          const fb::model::map& model,
@@ -150,7 +188,17 @@ bool map::blocked(uint16_t x, uint16_t y) const
     if (y >= this->_size.height)
         return true;
 
-    return this->_tiles[y * this->_size.width + x].blocked;
+    auto& tile = this->_tiles[y * this->_size.width + x];
+    if (tile.blocked)
+        return true;
+
+    if (tile.id == 0)
+        return true;
+
+    if (this->server.sobj.fully_blocked(tile.object))
+        return true;
+
+    return false;
 }
 
 bool map::block(uint16_t x, uint16_t y, bool option)
@@ -213,7 +261,7 @@ bool map::movable(const fb::model::point16_t& position, const std::function<bool
     if (this->in_ground(position) == false)
         return false;
 
-    if ((*this)(position.x, position.y)->blocked)
+    if (this->blocked(position.x, position.y))
         return false;
 
     auto index = this->index(position);
@@ -266,31 +314,48 @@ bool map::movable(const object& object, const fb::model::point16_t position) con
 
 bool map::movable(const object& object, DIRECTION direction) const
 {
-    fb::model::point16_t position = object.position();
-
+    auto from = object.position();
+    auto to   = from;
     switch (direction)
     {
     case DIRECTION::BOTTOM:
-        position.y++;
+        to.y++;
         break;
 
     case DIRECTION::TOP:
-        position.y--;
+        to.y--;
         break;
 
     case DIRECTION::LEFT:
-        position.x--;
+        to.x--;
         break;
 
     case DIRECTION::RIGHT:
-        position.x++;
+        to.x++;
         break;
+
+    default:
+        return false;
     }
 
-    if (this->movable(object, position) == false)
+    if (this->in_ground(from) == false)
         return false;
 
-    return true;
+    if (this->in_ground(to) == false)
+        return false;
+
+    auto from_tile = (*this)(from.x, from.y);
+    auto to_tile   = (*this)(to.x, to.y);
+    if (from_tile == nullptr || to_tile == nullptr)
+        return false;
+
+    if ((this->server.sobj.collision(from_tile->object) & leave_mask(direction)) != 0)
+        return false;
+
+    if ((this->server.sobj.collision(to_tile->object) & enter_mask(direction)) != 0)
+        return false;
+
+    return this->movable(object, to);
 }
 
 bool map::movable_forward(const object& object, uint16_t step) const
