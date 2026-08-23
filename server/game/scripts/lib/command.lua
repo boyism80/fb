@@ -708,15 +708,23 @@ M.functions = {
         
         ['몬스터생성'] = {
             ['privilege'] = ROLE.ADMIN,
-            ['usage'] = '<몬스터이름> [x] [y] - 몬스터 생성',
+            ['usage'] = '<몬스터이름> [x] [y] [마릿수] - 몬스터 생성',
             ['command'] = function (me, args)
-                local name, x, y = table.unpack(args)
+                local name, x, y, count_arg = table.unpack(args)
                 if not name then
-                    me:message("사용법: /몬스터생성 <몬스터이름> [x] [y]")
+                    me:message("사용법: /몬스터생성 <몬스터이름> [x] [y] [마릿수]")
                     return true
                 end
-                
-                if x == nil and y == nil then
+
+                local count = 1
+                if x == nil then
+                    x, y = me:position()
+                elseif y == nil then
+                    count = tonumber(x)
+                    if not count or count < 1 then
+                        me:message("마릿수는 1 이상의 숫자여야 합니다.")
+                        return true
+                    end
                     x, y = me:position()
                 else
                     x = tonumber(x)
@@ -725,8 +733,18 @@ M.functions = {
                         me:message("좌표는 숫자여야 합니다.")
                         return true
                     end
+                    if count_arg ~= nil then
+                        count = tonumber(count_arg)
+                        if not count or count < 1 then
+                            me:message("마릿수는 1 이상의 숫자여야 합니다.")
+                            return true
+                        end
+                    end
                 end
-                me:spawn_mob(name, x, y, false)
+
+                for i = 1, count do
+                    me:spawn_mob(name, x, y, false)
+                end
                 return true
             end,
         },
