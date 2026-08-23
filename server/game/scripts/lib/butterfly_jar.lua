@@ -5,6 +5,9 @@ for i = 0, 10 do
     JAR_NAMES[i] = string.format("채집통 [%d 마리]", i)
 end
 
+local MAP_DALMAJI = 10946
+local NET_ITEM_ID = 246
+
 local M = {}
 
 function M.find_count(me)
@@ -36,6 +39,36 @@ function M.upgrade(me)
         return false
     end
     return true
+end
+
+-- Called from butterfly mob on_mob_damaged (before the mob is removed on lethal hit).
+function M.try_catch(attacker, mob)
+    if attacker == nil or mob == nil then
+        return false
+    end
+    if not attacker:is(OBJECT_TYPE.CHARACTER) then
+        return false
+    end
+
+    local map = attacker:map()
+    if map == nil or map:model():id() ~= MAP_DALMAJI then
+        return false
+    end
+
+    local weapon = attacker:weapon()
+    if weapon == nil or weapon:model():id() ~= NET_ITEM_ID then
+        return false
+    end
+
+    if attacker:role() < ROLE.ADMIN then
+        math.randomseed(seed())
+        if math.random(1, 5) > 1 then
+            attacker:message("나비가 날아갔다!")
+            return false
+        end
+    end
+
+    return M.upgrade(attacker)
 end
 
 function M.shake(me, item)

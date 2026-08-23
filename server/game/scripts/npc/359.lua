@@ -50,7 +50,11 @@ return {
         if sel == 2 then
             local item_name = find_butterfly_item(me)
             if item_name then
-                local num = tonumber(item_name:match("%[(%d+)%]"))
+                local num = tonumber(item_name:match("%[(%d+) 마리%]"))
+                if num == nil then
+                    me:dialog(npc, "나비를 가져오시면 감사하겠어요.", { prev = false, next = false })
+                    return
+                end
                 local cost = { ['item'] = { [item_name] = 1 } }
                 local reward, code
                 if num == 10 then
