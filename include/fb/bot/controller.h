@@ -23,7 +23,6 @@ public:
 public:
     virtual async::task<void> on_receive(fb::socket<>& socket, fb::stream& stream) = 0;
     virtual async::task<void> on_closed(fb::socket<>& socket)                      = 0;
-    virtual bool              decrypt_policy(int opcode) const                     = 0;
     virtual async::task<void> on_bot_connected(base_bot& bot)                      = 0;
     virtual async::task<void> on_bot_disconnected(base_bot& bot)                   = 0;
     virtual void              ensure_handler_registered(uint8_t opcode)            = 0;
@@ -40,7 +39,8 @@ public:
 private:
     std::unordered_map<uint8_t, handle_func>    _handler;
     std::unordered_map<uint8_t, deserilze_func> _deserializer;
-    std::shared_mutex                           _handler_mutex;
+    std::unordered_map<uint8_t, bool>           _decrypt;
+    mutable std::shared_mutex                   _handler_mutex;
 
     inline static std::unordered_map<uint8_t, response_cloner_fn>     _response_cloners;
     inline static std::unordered_map<std::string, response_cloner_fn> _typed_response_cloners;
@@ -95,9 +95,14 @@ protected:
     { }
 
 protected:
-    virtual bool decrypt_policy(int opcode) const override
+    // Unknown opcodes default to decrypting (same as server registry).
+    bool should_decrypt(uint8_t opcode) const
     {
-        return true;
+        auto shared_lock = std::shared_lock<std::shared_mutex>(this->_handler_mutex);
+        auto it          = this->_decrypt.find(opcode);
+        if (it == this->_decrypt.end())
+            return true;
+        return it->second;
     }
 
     template <typename Class>
@@ -232,7 +237,7 @@ public:
 
                 auto opcode   = reader.read<uint8_t>();
                 processed_cmd = opcode;
-                if (this->decrypt_policy(opcode))
+                if (this->should_decrypt(opcode))
                 {
                     auto& encryption = bot.encryption();
                     size             = encryption.decrypt(stream, reader.seek() - 1, size);
@@ -358,6 +363,8 @@ public:
                                         protocol->deserialize(reader);
                                         return protocol;
                                     }});
+
+        this->_decrypt[ResponseType::opcode] = fb::protocol::protocol_decrypt<ResponseType>();
 
         this->_handler.insert(
             {ResponseType::opcode, [this, fn = std::move(fn)](auto& bot, auto& header) -> async::task<void> {

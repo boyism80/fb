@@ -14,19 +14,6 @@ namespace game_reqs     = fb::protocol::game::request;
 namespace internal      = fb::protocol::internal;
 namespace internal_reqs = fb::protocol::internal::request;
 
-bool fb::game::server::decrypt_policy(uint8_t opcode) const
-{
-    switch (opcode)
-    {
-    // The opcode is version independent, so any instantiation resolves it.
-    case game_reqs::login<fb::protocol::CLIENT_VERSION::v550>::opcode:
-        return false;
-
-    default:
-        return true;
-    }
-}
-
 bool fb::game::server::assert_tps(const fb::socket<fb::game::character>& socket) const
 {
     auto ch = socket.data();

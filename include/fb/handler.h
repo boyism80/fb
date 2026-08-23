@@ -7,7 +7,11 @@
 
 namespace fb::handler {
 
-template <typename ServerType, typename ProtocolType, uint32_t DurationMs = 1000, uint32_t Limit = 10>
+template <typename ServerType,
+          typename ProtocolType,
+          uint32_t DurationMs    = 1000,
+          uint32_t Limit         = 10,
+          bool     AwaitDispatch = false>
 class protocol
 {
 public:
@@ -15,9 +19,10 @@ public:
     using protocol_type = ProtocolType;
     using session_type  = server_type::session_type;
 
-    // Rate limiting configuration as static constants
-    static constexpr uint32_t duration_ms = DurationMs;
-    static constexpr uint32_t limit       = Limit;
+    // Rate limiting / dispatch configuration as static constants
+    static constexpr uint32_t duration_ms    = DurationMs;
+    static constexpr uint32_t limit          = Limit;
+    static constexpr bool     await_dispatch = AwaitDispatch;
 
 protected:
     server_type& server;

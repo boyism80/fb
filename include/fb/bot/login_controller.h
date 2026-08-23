@@ -18,7 +18,6 @@ protected:
 public:
     virtual ~login_bot_controller() = default;
     virtual void initialize()       = 0;
-    bool         decrypt_policy(int opcode) const override final;
 
 public:
     virtual async::task<void> on_bot_connected(login_bot& bot) override    = 0;

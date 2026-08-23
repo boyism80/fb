@@ -19,7 +19,8 @@ template <CLIENT_VERSION V>
 class login : public fb::protocol::header
 {
 public:
-    static constexpr uint8_t opcode = 0x10;
+    static constexpr uint8_t opcode  = 0x10;
+    static constexpr bool    decrypt = false;
     FB_PROTOCOL_VERSION_TAGS(V);
 
 public:

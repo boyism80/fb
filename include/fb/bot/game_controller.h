@@ -78,7 +78,6 @@ public:
 public:
     virtual async::task<void> on_bot_connected(game_bot& bot) override = 0;
     virtual async::task<void> on_bot_disconnected(game_bot& bot) override;
-    bool                      decrypt_policy(int opcode) const override final;
 
 private:
     async::task<void> on_time(game_bot& bot, const game_resp::time& response);

@@ -10,7 +10,7 @@ namespace fb::login::handler::protocol {
 namespace login_reqs = fb::protocol::login::request;
 
 template <fb::protocol::CLIENT_VERSION V>
-class meta_dat : public fb::handler::protocol<fb::login::server, login_reqs::meta_dat<V>>
+class meta_dat : public fb::handler::protocol<fb::login::server, login_reqs::meta_dat<V>, 1000, 10, true>
 {
 public:
     meta_dat(fb::login::server& server);

@@ -35,18 +35,6 @@ fb::login::server::server(boost::asio::io_context& io_context, uint16_t port) :
 fb::login::server::~server()
 { }
 
-bool fb::login::server::decrypt_policy(uint8_t opcode) const
-{
-    switch (opcode)
-    {
-    case fb::protocol::login::request::agreement<fb::protocol::CLIENT_VERSION::v550>::opcode:
-        return false;
-
-    default:
-        return true;
-    }
-}
-
 async::task<void> fb::login::server::on_start()
 {
 #ifdef _WIN32

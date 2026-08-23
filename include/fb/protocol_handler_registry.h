@@ -47,17 +47,20 @@ private:
     {
     public:
         handle_func                         fn;
-        std::chrono::steady_clock::duration duration = 1s;
-        uint32_t                            limit    = 0xFFFFFFFF;
+        std::chrono::steady_clock::duration duration       = 1s;
+        uint32_t                            limit          = 0xFFFFFFFF;
+        bool                                await_dispatch = false;
 
         rate_limited_command() = default;
 
         rate_limited_command(const handle_func&                         fn,
                              const std::chrono::steady_clock::duration& duration,
-                             uint32_t                                   limit = 0xFFFFFFFF) :
+                             uint32_t                                   limit,
+                             bool                                       await_dispatch) :
             fn(fn),
             duration(duration),
-            limit(limit)
+            limit(limit),
+            await_dispatch(await_dispatch)
         { }
     };
 
@@ -67,10 +70,17 @@ private:
         rate_limited_command handler;
     };
 
+    struct opcode_policy
+    {
+        bool decrypt = true;
+    };
+
 private:
     fb::acceptor<T>& _owner;
     // opcode → packed CLIENT_VERSION → entry
     std::unordered_map<uint8_t, std::unordered_map<uint16_t, version_entry>> _entries;
+    // opcode → wire policy (shared across versions of the same opcode)
+    std::unordered_map<uint8_t, opcode_policy> _policies;
 
 public:
     protocol_handler_registry(fb::acceptor<T>& owner) :
@@ -107,10 +117,12 @@ public:
 
         auto& server = static_cast<typename HandlerType::server_type&>(this->_owner);
 
-        auto duration = std::chrono::milliseconds(HandlerType::duration_ms);
-        auto limit    = HandlerType::limit;
-        auto opcode   = protocol_type::opcode;
-        auto version  = static_cast<uint16_t>(protocol_version_of<protocol_type>());
+        auto duration       = std::chrono::milliseconds(HandlerType::duration_ms);
+        auto limit          = HandlerType::limit;
+        auto await_dispatch = HandlerType::await_dispatch;
+        auto opcode         = protocol_type::opcode;
+        auto version        = static_cast<uint16_t>(protocol_version_of<protocol_type>());
+        auto decrypt        = fb::protocol::protocol_decrypt<protocol_type>();
 
         auto& slot = this->_entries[opcode][version];
 
@@ -128,7 +140,10 @@ public:
                 co_return co_await handler->handle(session, *protocol);
             },
             duration,
-            limit);
+            limit,
+            await_dispatch);
+
+        this->_policies[opcode] = opcode_policy{.decrypt = decrypt};
     }
 
     bool has_entry(uint8_t opcode, fb::protocol::CLIENT_VERSION version) const
@@ -142,6 +157,15 @@ public:
     bool has_opcode(uint8_t opcode) const
     {
         return this->_entries.contains(opcode);
+    }
+
+    // Unknown opcodes default to decrypting (legacy acceptor behavior).
+    bool should_decrypt(uint8_t opcode) const
+    {
+        auto it = this->_policies.find(opcode);
+        if (it == this->_policies.end())
+            return true;
+        return it->second.decrypt;
     }
 
     const deserialize_func& get_deserializer(uint8_t opcode, fb::protocol::CLIENT_VERSION version) const

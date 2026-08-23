@@ -8,7 +8,7 @@ using namespace fb::login::handler::protocol;
 
 template <fb::protocol::CLIENT_VERSION V>
 meta_dat<V>::meta_dat(fb::login::server& server) :
-    fb::handler::protocol<fb::login::server, login_reqs::meta_dat<V>>(server)
+    fb::handler::protocol<fb::login::server, login_reqs::meta_dat<V>, 1000, 10, true>(server)
 { }
 
 template <fb::protocol::CLIENT_VERSION V>

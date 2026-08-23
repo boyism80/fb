@@ -47,7 +47,6 @@ private:
     // override
 
 protected:
-    bool                            decrypt_policy(uint8_t opcode) const override final;
     void                            on_init_amqp(fb::amqp::socket& amqp) override final;
     [[nodiscard]] async::task<void> on_start() override final;
     [[nodiscard]] async::task<void> on_accepted(fb::socket<fb::gateway::session>& socket) override final;

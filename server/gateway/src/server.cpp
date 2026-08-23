@@ -75,19 +75,6 @@ fb::stream server::make_crt_stream(const fb::encryption& encryption)
     return stream;
 }
 
-bool server::decrypt_policy(uint8_t opcode) const
-{
-    switch (opcode)
-    {
-    case fb::protocol::gateway::request::version<fb::protocol::CLIENT_VERSION::v550>::opcode:
-    case fb::protocol::gateway::request::connection_ack<fb::protocol::CLIENT_VERSION::v550>::opcode:
-        return false;
-
-    default:
-        return true;
-    }
-}
-
 async::task<void> server::on_start()
 {
     static constexpr const char* message = "CONNECTED SERVER\n";

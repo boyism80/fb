@@ -43,18 +43,6 @@ game_bot_controller::game_bot_controller(bot_container& container) :
     integration::protocol_registry::register_all();
 }
 
-bool game_bot_controller::decrypt_policy(int opcode) const
-{
-    switch (opcode)
-    {
-    case fb::protocol::response::transfer::opcode: // Host discovery
-        return false;
-
-    default:
-        return true;
-    }
-}
-
 async::task<void> game_bot_controller::on_bot_disconnected(game_bot& bot)
 {
     bot.inited(false);

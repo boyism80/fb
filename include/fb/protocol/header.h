@@ -21,6 +21,17 @@ public:
     { }
 };
 
+// Wire framing: whether the acceptor decrypts this opcode before deserialize.
+// Protocol types may set `static constexpr bool decrypt = false;` to opt out.
+template <typename ProtocolType>
+constexpr bool protocol_decrypt()
+{
+    if constexpr (requires { ProtocolType::decrypt; })
+        return ProtocolType::decrypt;
+    else
+        return true;
+}
+
 } // namespace fb::protocol
 
 #endif

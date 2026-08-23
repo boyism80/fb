@@ -20,7 +20,8 @@ class version : public fb::protocol::header
 public:
     // A member cannot share the enclosing class name, so the version tag is
     // named `protocol_version` here; the handler registry accepts either name.
-    static constexpr uint8_t opcode = 0x00;
+    static constexpr uint8_t opcode  = 0x00;
+    static constexpr bool    decrypt = false;
     FB_PROTOCOL_VERSION_TAGS_NAMED(V);
 
 public:

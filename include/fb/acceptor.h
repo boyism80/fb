@@ -122,7 +122,7 @@ private:
                     throw std::runtime_error("tps limit exceeded");
 
                 auto opcode = reader.read<uint8_t>();
-                if (this->decrypt_policy(opcode))
+                if (this->handler.protocol.should_decrypt(opcode))
                     size = socket.encryption().decrypt(stream, reader.seek() - 1, size);
 
                 reader.flush(); // remove magic code and size
@@ -144,11 +144,12 @@ private:
                 }
                 else
                 {
-                    auto protocol = this->handler.protocol.get_deserializer(opcode, client_version)(reader);
-                    auto fd       = socket.fd();
-                    auto weak     = socket.template weak_from_this_as<fb::socket<T>>();
-                    auto builder  = this->threads.new_builder(weak);
-                    auto frame    = execution_context::create();
+                    auto protocol       = this->handler.protocol.get_deserializer(opcode, client_version)(reader);
+                    auto await_dispatch = this->handler.protocol.get_handler(opcode, client_version).await_dispatch;
+                    auto fd             = socket.fd();
+                    auto weak           = socket.template weak_from_this_as<fb::socket<T>>();
+                    auto builder        = this->threads.new_builder(weak);
+                    auto frame          = execution_context::create();
                     frame->slot(context::local::slot_id(), context{.transaction_id = mint_transaction_id()});
                     builder.context = execution_context::token(std::move(frame));
                     builder.func =
@@ -185,7 +186,13 @@ private:
                             fb::logger::fatal("unhandled exception");
                         }
                     };
-                    co_await builder.dispatch();
+
+                    // Default: enqueue so the receive loop keeps parsing. Opt in to
+                    // await_dispatch on handlers that must finish before the next packet.
+                    if (await_dispatch)
+                        co_await builder.dispatch();
+                    else
+                        builder.enqueue();
                 }
 
                 reader.seek(size - sizeof(uint8_t));
@@ -441,11 +448,6 @@ public:
     }
 
 protected:
-    virtual bool decrypt_policy(uint8_t opcode) const
-    {
-        return true;
-    }
-
     virtual bool assert_tps(const fb::socket<T>& socket) const
     {
         return true;
