@@ -298,6 +298,37 @@ buffs::buffs(const buffs& other) :
 buffs::~buffs()
 { }
 
+std::shared_ptr<buff> buffs::find(uint32_t id) const
+{
+    this->_owner.assert_thread();
+
+    auto it = super::find(id);
+    if (it == super::end())
+        return nullptr;
+
+    return it->second;
+}
+
+void buffs::discard_expired(uint32_t id)
+{
+    this->_owner.assert_thread();
+
+    auto buff = this->find(id);
+    if (buff == nullptr || buff->remaining() > 0ms)
+        return;
+
+    this->_owner.listener.on_unbuff(this->_owner, *buff);
+    this->erase(id);
+}
+
+bool buffs::contains(uint32_t id) const
+{
+    this->_owner.assert_thread();
+
+    auto buff = this->find(id);
+    return buff != nullptr && buff->remaining() > 0ms;
+}
+
 bool buffs::contains(const fb::model::spell& model) const
 {
     this->_owner.assert_thread();
@@ -312,6 +343,8 @@ bool buffs::push_back(const std::shared_ptr<buff>& buff)
     auto& model = buff->model();
     if (this->contains(model.id))
         return false;
+
+    this->discard_expired(model.id);
 
     this->insert({model.id, buff});
 
@@ -341,10 +374,12 @@ async::task<std::shared_ptr<buff>> buffs::push_back(const fb::model::spell&     
 
     if (this->contains(model.id))
     {
-        auto& buff = this->at(model.id);
+        auto buff = this->find(model.id);
         buff->remaining(std::chrono::seconds(seconds));
         co_return buff;
     }
+
+    this->discard_expired(model.id);
 
     auto& server  = this->_owner.server;
     auto  created = server.make<buff>(model, caster.get(), seconds);
@@ -368,7 +403,7 @@ async::task<bool> buffs::remove(uint32_t id)
 {
     this->_owner.assert_thread();
 
-    auto buff = this->operator[] (id);
+    auto buff = this->find(id);
     if (buff == nullptr)
         co_return false;
 
@@ -415,5 +450,5 @@ std::shared_ptr<buff> buffs::operator[] (uint32_t id) const
     if (this->contains(id) == false)
         return nullptr;
 
-    return super::at(id);
+    return this->find(id);
 }

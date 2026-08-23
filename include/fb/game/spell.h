@@ -127,7 +127,6 @@ public:
     using super::begin;
     using super::cbegin;
     using super::cend;
-    using super::contains;
     using super::end;
     using super::erase;
     using super::insert;
@@ -141,11 +140,14 @@ public:
     // clang-format on
 
 private:
-    bool push_back(const std::shared_ptr<buff>& buff);
+    bool                  push_back(const std::shared_ptr<buff>& buff);
+    std::shared_ptr<buff> find(uint32_t id) const;
 
 public:
     // clang-format off
+    bool                                             contains(uint32_t id) const;
     bool                                             contains(const fb::model::spell& model) const;
+    void                                             discard_expired(uint32_t id);
     [[nodiscard]] async::task<std::shared_ptr<buff>> push_back(const fb::model::spell& spell, uint32_t seconds, const std::shared_ptr<fb::game::object>& caster = nullptr);
     [[nodiscard]] async::task<bool>                  remove(uint32_t id);
     [[nodiscard]] async::task<bool>                  remove(const fb::model::spell& spell);

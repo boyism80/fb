@@ -86,6 +86,8 @@ async::task<void> buff_timer::handle(const fb::model::datetime& now, std::thread
 
             for (auto& buff : ended_buffs)
             {
+                auto spell_id      = buff->model().id;
+                auto remove_failed = false;
                 try
                 {
                     co_await this->server.threads.switching(weak);
@@ -93,10 +95,14 @@ async::task<void> buff_timer::handle(const fb::model::datetime& now, std::thread
                 }
                 catch (std::exception& e)
                 {
-                    fb::logger::warn("buff_timer: remove failed (map={}, spell={}): {}",
-                                     map_id,
-                                     buff->model().id,
-                                     e.what());
+                    fb::logger::warn("buff_timer: remove failed (map={}, spell={}): {}", map_id, spell_id, e.what());
+                    remove_failed = true;
+                }
+
+                if (remove_failed)
+                {
+                    co_await this->server.threads.switching(weak);
+                    obj->buffs.discard_expired(spell_id);
                 }
 
                 if (std::this_thread::get_id() != thread->id())
