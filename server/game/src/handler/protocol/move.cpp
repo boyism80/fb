@@ -75,7 +75,7 @@ async::task<bool> move<V>::handle(fb::socket<character>&      session,
             if (lua)
             {
                 lua->pushobject(ch);
-                std::ignore = lua->call(1);
+                std::ignore = co_await lua->call(1);
             }
         }
         break;
