@@ -15,8 +15,13 @@ local FESTIVALS = {
     ['동지'] = { month = 11, day_begin = 1, day_end = 30 },
 }
 
--- In-memory kill penalty for 꿩 (석가탄신일). Keyed by character name.
-local pheasant_penalty_until = {}
+-- Kill penalty for 꿩 (석가탄신일). Stored in server property per character uid
+-- so mob kill scripts and NPC dialogs share the same value across Lua contexts.
+local PHEASANT_PENALTY_PROP = 'sesi.pheasant_penalty.'
+
+local function pheasant_penalty_key(me)
+    return PHEASANT_PENALTY_PROP .. tostring(me:uid())
+end
 
 function M.is(name)
     local e = FESTIVALS[name]
@@ -119,14 +124,14 @@ function M.set_pheasant_kill_penalty(me, seconds)
     if ts == nil or ts <= 0 then
         return
     end
-    pheasant_penalty_until[me:name()] = ts + (seconds or 3600)
+    property(pheasant_penalty_key(me), ts + (seconds or 3600))
 end
 
 function M.pheasant_kill_penalty_remaining(me)
     if me == nil then
         return 0
     end
-    local until_ts = pheasant_penalty_until[me:name()]
+    local until_ts = tonumber(property(pheasant_penalty_key(me)))
     if until_ts == nil then
         return 0
     end
@@ -135,7 +140,6 @@ function M.pheasant_kill_penalty_remaining(me)
         return 0
     end
     if until_ts <= ts then
-        pheasant_penalty_until[me:name()] = nil
         return 0
     end
     return until_ts - ts

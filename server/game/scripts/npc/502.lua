@@ -4,6 +4,8 @@ local festival = require('lib.festival')
 local yudu_gosa = require('lib.yudu_gosa')
 local magpie_bridge = require('lib.magpie_bridge')
 
+local ACHIEVEMENT_SEOLBIM = 566
+
 local function run_seollal(me, npc)
     local sel, list_btn = me:list(npc, " 어쩐일로 찾아오셨습니까?", {
         "정월 대보름이 뭐에요?",
@@ -46,6 +48,9 @@ local function run_seollal(me, npc)
             me:dialog(npc, "설빔을 지급할 수 없습니다.", { prev = false, next = false })
             return
         end
+
+        me:push_achievement(ACHIEVEMENT_SEOLBIM, '설빔을 받았다.', 7, 16)
+
         local btn = me:dialog(npc, " 허허.. 이런 감사합니다. 바빠서 올해 떡국을 어떻게 먹나 했더니.. 이렇게 전해주시다니 정말 감사합니다.", { prev = false, next = true })
         if btn == DIALOG_RESULT.QUIT then
             return

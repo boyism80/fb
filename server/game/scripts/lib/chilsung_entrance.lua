@@ -12,7 +12,7 @@ local function push_back(me)
         return
     end
     local x, y = me:position()
-    me:message('들어갈 수 없습니다...', MESSAGE_TYPE.NOTIFY)
+    me:message('들어갈 수 없습니다...', MESSAGE_TYPE.STATE)
     me:map(map, x, y + 1)
 end
 

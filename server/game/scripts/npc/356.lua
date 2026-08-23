@@ -3,6 +3,8 @@ local quest = require('lib.quest')
 local enum = require('lib.enum')
 local festival = require('lib.festival')
 
+local ACHIEVEMENT_TTEOKGUK = 565
+
 local function run_seollal(me, npc)
     local sel, list_btn = me:list(npc, " 새해계획은 세우셨나요?", {
         "설날엔 뭘 하나요?",
@@ -51,6 +53,8 @@ local function run_seollal(me, npc)
             me:dialog(npc, "소지품이 가득 차서 떡국을 드릴 수 없습니다.", { prev = false, next = false })
             return
         end
+
+        me:push_achievement(ACHIEVEMENT_TTEOKGUK, '설날에 떡국을 먹었다.', 7, 16)
 
         btn = me:dialog(npc, " 이 떡국 먹고 올해도 좋은 일만 가득하시길 바랄께요..", { prev = false, next = true })
         if btn == DIALOG_RESULT.QUIT then

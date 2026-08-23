@@ -1,29 +1,32 @@
 -- mob: 꿩
 local festival = require('lib.festival')
 
-return {
-    on_mob_attack = function(me, you)
-        if me == nil then
+local FEATHER = '꿩의깃털'
+
+local function try_feather_drop(me, you)
+    if you == nil or not you:is(OBJECT_TYPE.CHARACTER) then
+        return
+    end
+    if not festival.is('석가탄신일') then
+        return
+    end
+
+    if you:role() < ROLE.ADMIN then
+        math.randomseed(seed())
+        if math.random(1, 2) ~= 1 then
             return
         end
+    end
 
-        local hp = me:hp()
-        local maxhp = me:maxhp()
-        if hp < maxhp then
-            me:hp(math.min(hp + 20, maxhp))
-        end
+    if you:mkitem(FEATHER, 1) == nil then
+        you:message("소지품이 가득 차서 깃털을 받을 수 없습니다.")
+    end
+end
 
-        local dirs = { DIRECTION.LEFT, DIRECTION.TOP, DIRECTION.RIGHT, DIRECTION.BOTTOM }
-        local dir = dirs[math.random(1, 4)]
-        me:direction(dir)
-        local fx, fy = me:front_position(1)
-        if fx ~= nil and fy ~= nil then
-            me:position(fx, fy)
-        end
+return {
+    on_mob_damaged = function(me, you)
+        try_feather_drop(me, you)
     end,
-
-    -- on_mob_die = function(me)
-    -- end,
 
     on_mob_kill = function(me, mobs)
         if me == nil or not me:is(OBJECT_TYPE.CHARACTER) then
