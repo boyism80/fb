@@ -33,6 +33,16 @@ void listener_impl::on_dialog(character&                 me,
     me.send(game_resp::dialog(obj, std::move(message), button_prev, button_next, oid));
 }
 
+void listener_impl::on_dialog(character&                              me,
+                              std::unique_ptr<fb::game::appearance>&& appearance,
+                              std::optional<std::string>              message,
+                              bool                                    button_prev,
+                              bool                                    button_next,
+                              uint32_t                                oid)
+{
+    me.send(game_resp::dialog(std::move(appearance), std::move(message), button_prev, button_next, oid));
+}
+
 void listener_impl::on_dialog(character&                      me,
                               const fb::model::object&        obj,
                               std::string_view                message,

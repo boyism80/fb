@@ -1,6 +1,7 @@
 #include <fb/game/builtin/object.h>
 #include <fb/game/builtin/character.h>
 #include <fb/game/builtin/life.h>
+#include <fb/game/appearance.h>
 #include <fb/game/server.h>
 #include <fb/game/marriage.h>
 #include <fb/game/protocol/item/update.h>
@@ -22,6 +23,26 @@
 
 using namespace fb::game;
 using table = fb::model::table;
+
+namespace {
+
+bool uses_portrait_appearance(const fb::game::object& obj)
+{
+    if (obj.is(OBJECT_TYPE::CHARACTER))
+        return true;
+    if (obj.is(OBJECT_TYPE::NPC) == false)
+        return false;
+    return static_cast<const fb::model::npc&>(obj.model()).appearance.has_value();
+}
+
+bool uses_portrait_appearance(const fb::model::object& model)
+{
+    if (model.what() != OBJECT_TYPE::NPC)
+        return false;
+    return static_cast<const fb::model::npc&>(model).appearance.has_value();
+}
+
+} // namespace
 
 // clang-format off
 IMPLEMENT_LUA_EXTENSION(character, "fb.game.character")
@@ -4670,18 +4691,37 @@ int fb::game::builtin::character::builtin_dialog(lua_State* L)
     if (argc < 3)
         throw std::runtime_error("not enough parameters");
 
-    auto oid   = uint32_t{0xFFFFFFFD};
-    auto obj   = std::shared_ptr<fb::game::object>(nullptr);
-    auto model = static_cast<const fb::model::object*>(nullptr);
-    if (lua->is_userdata<fb::game::object>(2))
+    auto oid        = uint32_t{0xFFFFFFFD};
+    auto obj        = std::shared_ptr<fb::game::object>(nullptr);
+    auto model      = static_cast<const fb::model::object*>(nullptr);
+    auto appearance = static_cast<fb::game::appearance*>(nullptr);
+    if (lua->is_userdata<fb::game::character>(2))
     {
-        obj   = lua->touserdata<fb::game::object>(2);
-        oid   = obj->oid();
-        model = &obj->model();
+        auto target = lua->touserdata<fb::game::character>(2);
+        appearance  = appearance_factory::create(*target, *ch).release();
+    }
+    else if (lua->is_userdata<fb::game::object>(2))
+    {
+        obj = lua->touserdata<fb::game::object>(2);
+        if (uses_portrait_appearance(*obj))
+        {
+            appearance = appearance_factory::create(*obj, *ch).release();
+            obj        = nullptr;
+        }
+        else
+        {
+            oid   = obj->oid();
+            model = &obj->model();
+        }
     }
     else if (lua->is_userdata<fb::model::object>(2))
     {
         model = lua->touserdata<fb::model::object>(2);
+        if (uses_portrait_appearance(*model))
+        {
+            appearance = appearance_factory::create(*model).release();
+            model      = nullptr;
+        }
     }
     else if (lua->is_nil(2))
     {
@@ -4721,7 +4761,14 @@ int fb::game::builtin::character::builtin_dialog(lua_State* L)
     auto builder  = lua->new_co_builder();
     builder.weak  = weak;
     builder.yield = [=]() -> async::task<void> {
-        if (obj != nullptr)
+        if (appearance != nullptr)
+            ch->listener.on_dialog(*ch,
+                                   std::unique_ptr<fb::game::appearance>(appearance),
+                                   message,
+                                   button_prev,
+                                   button_next,
+                                   oid);
+        else if (obj != nullptr)
             ch->listener.on_dialog(*ch, *obj, message, button_prev, button_next, oid);
         else if (model != nullptr)
             ch->listener.on_dialog(*ch, *model, message, button_prev, button_next, oid);
@@ -4759,59 +4806,78 @@ int fb::game::builtin::character::builtin_list(lua_State* L)
     auto oid        = uint32_t{0xFFFFFFFD};
     auto obj        = std::shared_ptr<fb::game::object>(nullptr);
     auto model      = static_cast<const fb::model::object*>(nullptr);
-    auto appearance = static_cast<fb::game::character_appearance<>*>(nullptr);
-    if (lua->is_userdata<fb::game::object>(2))
+    auto appearance = static_cast<fb::game::appearance*>(nullptr);
+    if (lua->is_userdata<fb::game::character>(2))
     {
-        obj   = lua->touserdata<fb::game::object>(2);
-        oid   = obj->oid();
-        model = &obj->model();
+        auto target = lua->touserdata<fb::game::character>(2);
+        appearance  = appearance_factory::create(*target, *ch).release();
+    }
+    else if (lua->is_userdata<fb::game::object>(2))
+    {
+        obj = lua->touserdata<fb::game::object>(2);
+        if (uses_portrait_appearance(*obj))
+        {
+            appearance = appearance_factory::create(*obj, *ch).release();
+            obj        = nullptr;
+        }
+        else
+        {
+            oid   = obj->oid();
+            model = &obj->model();
+        }
     }
     else if (lua->is_userdata<fb::model::object>(2))
     {
         model = lua->touserdata<fb::model::object>(2);
+        if (uses_portrait_appearance(*model))
+        {
+            appearance = appearance_factory::create(*model).release();
+            model      = nullptr;
+        }
     }
     else if (lua->is_table(2))
     {
-        appearance = new fb::game::character_appearance<>();
+        auto ch_app = new fb::game::character_appearance<>();
+        appearance  = ch_app;
         lua->pushstring("gender");
         if (lua_rawget(L, 2) == LUA_TNUMBER)
-            appearance->gender = static_cast<GENDER>(lua->tointeger(-1));
+            ch_app->gender = static_cast<GENDER>(lua->tointeger(-1));
 
         lua->pushstring("state");
         if (lua_rawget(L, 2) == LUA_TNUMBER)
-            appearance->state = static_cast<STATE>(lua->tointeger(-1));
+            ch_app->state = static_cast<STATE>(lua->tointeger(-1));
 
         lua->pushstring("hair");
         if (lua_rawget(L, 2) == LUA_TNUMBER)
-            appearance->hair = lua->tointeger(-1);
+            ch_app->hair = lua->tointeger(-1);
 
         lua->pushstring("hair_color");
         if (lua_rawget(L, 2) == LUA_TNUMBER)
-            appearance->hair_color = lua->tointeger(-1);
+            ch_app->hair_color = lua->tointeger(-1);
 
         lua->pushstring("weapon");
         if (lua_rawget(L, 2) == LUA_TNUMBER)
-            appearance->weapon = lua->tointeger(-1);
+            ch_app->weapon = lua->tointeger(-1);
 
         lua->pushstring("weapon_color");
         if (lua_rawget(L, 2) == LUA_TNUMBER)
-            appearance->weapon_color = lua->tointeger(-1);
+            ch_app->weapon_color = lua->tointeger(-1);
 
         lua->pushstring("armor");
         if (lua_rawget(L, 2) == LUA_TNUMBER)
-            appearance->armor = lua->tointeger(-1);
+            ch_app->armor = lua->tointeger(-1);
 
         lua->pushstring("armor_color");
         if (lua_rawget(L, 2) == LUA_TNUMBER)
-            appearance->armor_color = lua->tointeger(-1);
+            ch_app->armor_color = lua->tointeger(-1);
 
         lua->pushstring("shield");
         if (lua_rawget(L, 2) == LUA_TNUMBER)
-            appearance->shield = lua->tointeger(-1);
+            ch_app->shield = lua->tointeger(-1);
 
         lua->pushstring("shield_color");
         if (lua_rawget(L, 2) == LUA_TNUMBER)
-            appearance->shield_color = lua->tointeger(-1);
+            ch_app->shield_color = lua->tointeger(-1);
     }
     else
     {

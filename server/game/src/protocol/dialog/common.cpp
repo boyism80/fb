@@ -34,6 +34,18 @@ dialog::dialog(const fb::game::object&    object,
     oid(oid)
 { }
 
+dialog::dialog(appearance_ptr&&           appearance,
+               std::optional<std::string> message,
+               bool                       button_prev,
+               bool                       button_next,
+               uint32_t                   oid) :
+    appearance(std::move(appearance)),
+    message(std::move(message)),
+    button_prev(button_prev),
+    button_next(button_next),
+    oid(oid)
+{ }
+
 void dialog::serialize(fb::stream_writer<big_endian>& writer) const
 {
     // message present → TEXT(0); absent → subtype 1

@@ -422,39 +422,25 @@ std::unique_ptr<appearance> appearance_factory::create(const fb::game::object& o
     {
     case fb::model::enum_value::OBJECT_TYPE::CHARACTER:
     {
-        auto& ch        = static_cast<const fb::game::character&>(obj);
-        auto  ptr       = std::make_unique<character_appearance<>>();
-        ptr->gender     = ch.gender();
-        ptr->state      = ch.state();
-        ptr->hair       = ch.look();
-        ptr->hair_color = ch.color();
-
-        if (ch.items.weapon() != nullptr)
-        {
-            ptr->weapon       = ch.items.weapon()->model().dress;
-            ptr->weapon_color = std::nullopt;
-        }
-
-        if (ch.items.armor() != nullptr)
-        {
-            ptr->armor       = static_cast<uint8_t>(ch.items.armor()->model().dress);
-            ptr->armor_color = ch.armor_color();
-        }
-
-        if (ch.items.shield() != nullptr)
-        {
-            ptr->shield       = ch.items.shield()->model().dress;
-            ptr->shield_color = std::nullopt;
-        }
-
-        ptr->speed = ch.stat.speed();
-        return std::move(ptr);
+        auto& ch = static_cast<const fb::game::character&>(obj);
+        return std::make_unique<character_appearance<>>(character_appearance<>::from(ch));
     }
     default:
     {
         return create(obj.model());
     }
     }
+}
+
+std::unique_ptr<appearance> appearance_factory::create(const fb::game::object& obj, const fb::game::character& viewer)
+{
+    if (obj.is(OBJECT_TYPE::CHARACTER) == false)
+        return create(obj);
+
+    auto& subject = static_cast<const character&>(obj);
+    auto  app     = character_appearance<>::from(subject);
+    app.state     = subject.state_to(viewer, subject.state());
+    return std::make_unique<character_appearance<>>(std::move(app));
 }
 
 std::shared_ptr<fb::game::appearance> fb::model::object::create_appearance() const

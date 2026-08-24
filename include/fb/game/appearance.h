@@ -183,6 +183,7 @@ class appearance_factory
 public:
     static std::unique_ptr<appearance> create(const fb::model::object& obj);
     static std::unique_ptr<appearance> create(const fb::game::object& obj);
+    static std::unique_ptr<appearance> create(const fb::game::object& obj, const fb::game::character& viewer);
 
 private:
     appearance_factory() = default;

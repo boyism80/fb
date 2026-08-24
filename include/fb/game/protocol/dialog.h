@@ -218,6 +218,12 @@ public:
            bool                       button_prev,
            bool                       button_next,
            uint32_t                   oid = 0xFFFFFFFD);
+
+    dialog(appearance_ptr&&           appearance,
+           std::optional<std::string> message,
+           bool                       button_prev,
+           bool                       button_next,
+           uint32_t                   oid = 0xFFFFFFFD);
 #else
     dialog() = default;
 #endif
