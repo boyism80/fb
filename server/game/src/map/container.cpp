@@ -60,6 +60,7 @@ std::shared_ptr<const map::container::snapshot_t> map::container::snapshot() con
 
 void map::container::append_snapshot(const std::shared_ptr<fb::game::map>& map)
 {
+    // Must run under _maps.write so parallel map_loader inserts cannot drop entries.
     auto prev = this->_snapshot.load();
     auto next = std::make_shared<snapshot_t>(*prev);
     next->push_back(map);
@@ -84,8 +85,8 @@ void map::container::insert(const std::shared_ptr<fb::game::map>& map)
     this->_maps.write([&](registry& registry) {
         registry.push(map->id, map);
         this->_sequence = std::max(this->_sequence, map->id + 1);
+        this->append_snapshot(map);
     });
-    this->append_snapshot(map);
 }
 
 void map::container::erase(uint32_t id)
@@ -98,8 +99,8 @@ void map::container::erase(uint32_t id)
 
         registry.erase(id);
         this->_available_seq.push(id);
+        this->remove_snapshot(id);
     });
-    this->remove_snapshot(id);
 
     if (erased != nullptr && erased->is_instance())
         this->unregister_group_instance(erased);
@@ -444,14 +445,14 @@ std::shared_ptr<fb::game::map> map::container::create_instance(const std::shared
         registry.push(id, map);
         this->_sequence = std::max(this->_sequence, id + 1);
         this->register_slot(source->model().id, slot, map);
-        created = true;
-        return std::static_pointer_cast<fb::game::map>(map);
+        created          = true;
+        auto created_map = std::static_pointer_cast<fb::game::map>(map);
+        this->append_snapshot(created_map);
+        return created_map;
     });
 
     if (created == false)
         return map;
-
-    this->append_snapshot(map);
 
     auto builder = map->thread()->new_builder<void>();
     builder.func = [this, map](auto& thread) -> async::task<void> {
