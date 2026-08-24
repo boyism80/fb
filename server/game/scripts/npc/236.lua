@@ -1,4 +1,5 @@
 -- npc: 남천좌상
+
 local quest = require('lib.quest')
 local enum = require('lib.enum')
 
@@ -31,7 +32,7 @@ return {
                 return
             end
             ::NPC_236_0004::
-            btn = me:dialog(npc, '자네가 후를 ' .. BONE_COUNT .. '마리 이상 잡았다는 증거로, ' .. BONE_COUNT .. '마리의 뼈를 가지고 오면 내 포상을 하지. \'후의뼈\' ' .. BONE_COUNT .. '개라네.', { prev = true, next = false })
+            btn = me:dialog(npc, '자네가 후를 ' .. BONE_COUNT .. '마리 이상 잡았다는 증거로, ' .. BONE_COUNT .. '마리의 뼈를 가지고 오면 내 포상을 하지. \'후의뼈\' ' .. BONE_COUNT .. '개라네.', { prev = true, next = true })
             if btn == DIALOG_RESULT.PREV then
                 goto NPC_236_0003
             end
@@ -65,7 +66,7 @@ return {
                 return
             end
             ::NPC_236_0006::
-            btn = me:dialog(npc, '그래서 한가지 부탁을 더 해야겠네. 마계천신을 잡아 그의 뼈를 가져와주게. 정말 마지막 부탁이네.', { prev = true, next = false })
+            btn = me:dialog(npc, '그래서 한가지 부탁을 더 해야겠네. 마계천신을 잡아 그의 뼈를 가져와주게. 정말 마지막 부탁이네.', { prev = true, next = true })
             if btn == DIALOG_RESULT.PREV then
                 goto NPC_236_0005
             end
@@ -119,7 +120,7 @@ return {
             if btn == DIALOG_RESULT.QUIT then
                 return
             end
-            btn = me:dialog(npc, '이 투구를 쓰고 있으면 자네의 무기와 갑옷의 내구력이 오랫동안 유지될걸세. 그럼 잘 가시게..', { prev = true, next = false })
+            btn = me:dialog(npc, '이 투구를 쓰고 있으면 자네의 무기와 갑옷의 내구력이 오랫동안 유지될걸세. 그럼 잘 가시게..', { prev = true, next = true })
             if btn == DIALOG_RESULT.PREV then
                 goto NPC_236_0011
             end

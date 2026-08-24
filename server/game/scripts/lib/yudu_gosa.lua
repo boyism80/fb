@@ -112,7 +112,7 @@ function M.try_reward(me, npc)
         me:dialog(npc, '소지품이 가득 차서 드릴 수 없습니다.', { prev = false, next = false })
         return true
     end
-    me:message(reward .. ' 받았습니다.', MESSAGE_TYPE.NOTIFY)
+    me:message(reward .. ' 받았습니다.', MESSAGE_TYPE.STATE)
 
     local count_key = 'sesi.yudu_gosa_count.' .. me:name()
     local count = (property(count_key) or 0) + 1

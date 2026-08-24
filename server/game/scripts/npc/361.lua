@@ -77,7 +77,7 @@ local function run_dongji(me, npc)
             me:dialog(npc, "소지품이 가득 차서 고약을 드릴 수 없습니다.", { prev = false, next = false })
             return
         end
-        me:message("고약 받았습니다.", MESSAGE_TYPE.NOTIFY)
+        me:message("고약 받았습니다.", MESSAGE_TYPE.STATE)
         return
     end
 
@@ -101,7 +101,7 @@ local function run_dongji(me, npc)
             me:dialog(npc, "소지품이 가득 차서 팥을 드릴 수 없습니다.", { prev = false, next = false })
             return
         end
-        me:message("팥 받았습니다.", MESSAGE_TYPE.NOTIFY)
+        me:message("팥 받았습니다.", MESSAGE_TYPE.STATE)
         return
     end
 
@@ -134,7 +134,7 @@ local function run_dongji(me, npc)
         me:dialog(npc, "소지품이 가득 차서 동지창고열쇠를 드릴 수 없습니다.", { prev = false, next = false })
         return
     end
-    me:message("동지창고열쇠 받았습니다.", MESSAGE_TYPE.NOTIFY)
+    me:message("동지창고열쇠 받았습니다.", MESSAGE_TYPE.STATE)
 end
 
 local function run_chilseok(me, npc)

@@ -1,4 +1,5 @@
 -- npc: 출발도우미
+
 local enum = require('lib.enum')
 local MAP_ID_LOBBY = 12010
 local MAP_ID_GAME = 12011
@@ -20,7 +21,7 @@ return {
             if btn == DIALOG_RESULT.QUIT then
                 return
             end
-            btn = me:dialog(npc, "살려드릴테니 어서 다시 달리기에 참여하러 가보세요.", { prev = false, next = false })
+            btn = me:dialog(npc, "살려드릴테니 어서 다시 달리기에 참여하러 가보세요.", { prev = false, next = true })
             if btn == DIALOG_RESULT.QUIT then
                 return
             end
@@ -52,7 +53,7 @@ return {
             else
                 prize_name = property("survive_prize_joiner") or prize_name
             end
-            local btn = me:dialog(npc, "축하합니다! " .. me:name() .. "님은 " .. tostring(rank) .. "등으로 완주하여 상품으로 " .. prize_name .. "을(를) 받으실 수 있습니다.", { prev = false, next = false })
+            local btn = me:dialog(npc, "축하합니다! " .. me:name() .. "님은 " .. tostring(rank) .. "등으로 완주하여 상품으로 " .. prize_name .. "을(를) 받으실 수 있습니다.", { prev = false, next = true })
             if btn == DIALOG_RESULT.QUIT then
                 return
             end

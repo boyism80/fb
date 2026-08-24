@@ -93,7 +93,7 @@ function M.mark_completed_year(q)
     if q == nil then
         return
     end
-    q:param(tostring(M.lunar_year()))
+    M.stamp_lunar_year(q)
 end
 
 -- Stamp or refresh the leading lunar year on an in-progress param (keeps "YEAR:rest").

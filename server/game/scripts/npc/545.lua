@@ -1,4 +1,5 @@
 -- npc: 흉노장로2
+
 local quest = require('lib.quest')
 local enum = require('lib.enum')
 
@@ -54,7 +55,7 @@ return {
         end
 
         ::NPC_545_0004::
-        button = me:dialog(npc, "어찌됐든 아들의 목숨을 구할 수 있게 되어서 너무 감사하오. 그럼 이만..", { prev = false, next = false })
+        button = me:dialog(npc, "어찌됐든 아들의 목숨을 구할 수 있게 되어서 너무 감사하오. 그럼 이만..", { prev = true, next = true })
         if button == DIALOG_RESULT.QUIT then
             return
         end

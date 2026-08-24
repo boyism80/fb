@@ -121,7 +121,7 @@ local function run_dongji(me, npc)
             me:dialog(npc, "소지품이 가득 차서 팥죽을 드릴 수 없습니다.", { prev = false, next = false })
             return
         end
-        me:message("팥죽 받았습니다.", MESSAGE_TYPE.NOTIFY)
+        me:message("팥죽 받았습니다.", MESSAGE_TYPE.STATE)
     end
 end
 

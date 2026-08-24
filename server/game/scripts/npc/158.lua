@@ -1,4 +1,5 @@
 -- npc: 무두
+
 local quest = require('lib.quest')
 local enum = require('lib.enum')
 
@@ -31,7 +32,7 @@ return {
                 if me:dialog(npc, '사어장군을 소환하기 위해서는 용궁의정기가 필요하다네.', { prev = true, next = true }) == DIALOG_RESULT.QUIT then
                     return
                 end
-                if me:dialog(npc, '용궁의정기를 만드는 것은 내가 모르니 다른 사람한테 가서 물어보시게.', { prev = false, next = false }) == DIALOG_RESULT.QUIT then
+                if me:dialog(npc, '용궁의정기를 만드는 것은 내가 모르니 다른 사람한테 가서 물어보시게.', { prev = false, next = true }) == DIALOG_RESULT.QUIT then
                     return
                 end
                 if q then

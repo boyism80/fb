@@ -1,7 +1,7 @@
 -- map: 세시호수
+
 local festival = require('lib.festival')
 
--- Lake move tiles 10238-10240: 10% roll while 그물 is equipped.
 local TILE_MIN = 10238
 local TILE_MAX = 10240
 
@@ -42,7 +42,7 @@ return {
         if me:mkitem('잉어', 1) == nil then
             return
         end
-        me:message('잉어 잡았습니다.', MESSAGE_TYPE.NOTIFY)
+        me:message('잉어 잡았습니다.', MESSAGE_TYPE.STATE)
         me:dialog(nil, '드디어 잉어를 잡았다! 정말 구하기 힘들구나.', { prev = false, next = false })
     end,
 }

@@ -1,4 +1,5 @@
 -- npc: 상해주민
+
 local quest = require('lib.quest')
 local enum = require('lib.enum')
 
@@ -90,7 +91,7 @@ return {
                 goto NPC_232_0012
             end
             ::NPC_232_0021::
-            btn = me:dialog(npc, '그럼 수고스러우시겠지만 잘 부탁드립니다.', { prev = true, next = false })
+            btn = me:dialog(npc, '그럼 수고스러우시겠지만 잘 부탁드립니다.', { prev = true, next = true })
             if btn == DIALOG_RESULT.PREV then
                 goto NPC_232_0020
             end
@@ -201,7 +202,7 @@ return {
             if btn == DIALOG_RESULT.QUIT then
                 return
             end
-            btn = me:dialog(npc, '저는 더 많은 사람들을 돕도록 하겠습니다. 물론 이제 도둑질은 하지 않겠습니다. 떳떳한 방법으로 사람들을 도울 겁니다. 정말 감사합니다.', { prev = true, next = false })
+            btn = me:dialog(npc, '저는 더 많은 사람들을 돕도록 하겠습니다. 물론 이제 도둑질은 하지 않겠습니다. 떳떳한 방법으로 사람들을 도울 겁니다. 정말 감사합니다.', { prev = true, next = true })
             if btn == DIALOG_RESULT.QUIT then
                 return
             end

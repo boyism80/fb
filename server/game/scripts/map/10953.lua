@@ -16,27 +16,32 @@ return {
         end
 
         local x, y = me:position()
-        local sel, list_btn = me:list(nil, "창고에 들어가시겠습니까?", {
+        local push_back = function()
+            warp_same(me, x, y + 2)
+        end
+
+        local sel, list_btn = me:list(me, "창고에 들어가시겠습니까?", {
             "창고에 들어간다.",
             "나중에...",
         }, { prev = false })
         if list_btn == DIALOG_RESULT.QUIT or sel == nil then
+            push_back()
             return
         end
 
         if sel == 1 then
             if me:has_items("동지창고열쇠", 1) then
                 if me:rmitem("동지창고열쇠", 1, ITEM_DELETE_TYPE.GIVE) then
-                    me:message("동지창고열쇠 사용합니다.", MESSAGE_TYPE.NOTIFY)
+                    me:message("동지창고열쇠 사용합니다.", MESSAGE_TYPE.STATE)
                     warp_same(me, x, y - 5)
                 else
-                    warp_same(me, x, y + 2)
+                    push_back()
                 end
             else
-                warp_same(me, x, y + 2)
+                push_back()
             end
         else
-            warp_same(me, x, y + 2)
+            push_back()
         end
     end,
 
@@ -47,18 +52,23 @@ return {
         end
 
         local x, y = me:position()
+        local push_back = function()
+            warp_same(me, x, y - 2)
+        end
+
         local sel, list_btn = me:list(nil, "창고에서 퇴장하시겠습니까?", {
             "나가겠습니다.",
             "나중에...",
         }, { prev = false })
         if list_btn == DIALOG_RESULT.QUIT or sel == nil then
+            push_back()
             return
         end
 
         if sel == 1 then
             warp_same(me, x, y + 5)
         else
-            warp_same(me, x, y - 2)
+            push_back()
         end
     end,
 }

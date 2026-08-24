@@ -55,7 +55,7 @@ local function reward_seolbim_wearers(map)
             if ch:mkitem(item, 1) ~= nil then
                 ch:effect(131)
                 ch:sound(112)
-                ch:message(item .. ' 받았습니다.', MESSAGE_TYPE.NOTIFY)
+                ch:message(item .. ' 받았습니다.', MESSAGE_TYPE.STATE)
             end
         end
     end

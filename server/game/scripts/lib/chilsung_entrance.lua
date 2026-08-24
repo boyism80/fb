@@ -25,7 +25,7 @@ local function can_enter_now()
 end
 
 local function enter_chilsung(me)
-    me:message('칠성당에 입장합니다.', MESSAGE_TYPE.NOTIFY)
+    me:message('칠성당에 입장합니다.', MESSAGE_TYPE.STATE)
     me:map(10954, math.random(7, 10), 13)
 end
 
@@ -66,7 +66,7 @@ local function try_offerings(me, offerings, intro)
             push_back(me)
             return
         end
-        me:message(name .. ' 주었습니다.', MESSAGE_TYPE.NOTIFY)
+        me:message(name .. ' 주었습니다.', MESSAGE_TYPE.STATE)
     end
 
     enter_chilsung(me)
