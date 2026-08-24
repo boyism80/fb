@@ -76,7 +76,7 @@ private:
     std::weak_ptr<life>             _target;
     std::weak_ptr<life>             _oblivion;
     rezen*                          _rezen         = nullptr;
-    lua::context*                   _attack_thread = nullptr;
+    lua::context*                   _action_thread = nullptr;
     item_vector_t                   _items;
     bool                            _hidden = false;
     std::unique_ptr<ai>             _ai_strategy;
@@ -103,7 +103,8 @@ public:
 private:
     // clang-format off
     std::weak_ptr<fb::game::life>   find_target();
-    [[nodiscard]] async::task<bool> call_script();
+    [[nodiscard]] async::task<bool> call_action_script();
+    [[nodiscard]] async::task<void> call_attack_script();
     void                            AI(const fb::model::datetime& now);
     static bool                     is_cardinally_adjacent(const fb::model::point16_t& a, const fb::model::point16_t& b);
     static bool                     is_cover_barrier_cell(const fb::model::point16_t& cell, const fb::model::point16_t& cover_center);
@@ -124,6 +125,7 @@ public:
 public:
     // clang-format off
     [[nodiscard]] async::task<void> action(fb::model::datetime now);
+    async::task<void>               attack(DURATION duration = DURATION::ATTACK) override final;
     const fb::model::datetime&      action_time() const;
     void                            action_time(const fb::model::datetime& dt);
     std::shared_ptr<fb::game::life> target() const;

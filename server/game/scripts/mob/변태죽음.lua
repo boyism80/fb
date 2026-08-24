@@ -1,7 +1,10 @@
 return {
-    on_mob_attack = function(me, you)
+    on_mob_action = function(me, you)
         return false
     end,
+
+    -- on_mob_attack = function(me, you)
+    -- end,
 
     -- on_mob_die = function(me)
     -- end,

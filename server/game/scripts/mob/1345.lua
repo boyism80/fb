@@ -1,10 +1,11 @@
 -- mob: 계피귀신
+
 local LINES = {
-    "계피귀신: 으아앙~! ",
-    "계피귀신: 때리지 마세요~!",
-    "계피귀신: 계피 가져가면 아파요 으아앙~!",
-    "계피귀신: 엉엉~! 살려주세요~!",
-    "계피귀신: 왜 그러는거에요....!",
+    "으아앙~!",
+    "때리지 마세요~!",
+    "계피 가져가면 아파요 으아앙~!",
+    "엉엉~! 살려주세요~!",
+    "왜 그러는거에요....!",
 }
 
 return {
@@ -21,6 +22,15 @@ return {
         if me == nil then
             return
         end
-        me:chat("계피귀신: 으아아앙~!!")
+        me:chat("으아아앙~!!")
     end,
+
+    -- on_mob_action = function(me, you)
+    -- end,
+
+    -- on_mob_kill = function(me, mobs)
+    -- end,
+
+    -- on_mob_spell_hit = function(me, you, spell)
+    -- end,
 }

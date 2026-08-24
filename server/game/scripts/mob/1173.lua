@@ -1,10 +1,12 @@
 -- mob: 소호
+
 local quest = require('lib.quest')
 
 return {
-    on_mob_attack = function(me, you)
+    on_mob_action = function(me, you)
         return false
     end,
+
 
     on_mob_die = function(me)
         me:chat('어리석은 인간들이여...', CHAT_TYPE.NORMAL, true)
@@ -25,4 +27,10 @@ return {
         end
         me:mkitem('소호의증표', 1)
     end
+
+    -- on_mob_attack = function(me, you)
+    -- end,
+
+    -- on_mob_spell_hit = function(me, you, spell)
+    -- end,
 }

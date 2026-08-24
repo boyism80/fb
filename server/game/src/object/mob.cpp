@@ -149,53 +149,53 @@ const fb::model::mob& mob::model() const
     return fb::model::table::mob[this->_model_id];
 }
 
-async::task<bool> mob::call_script()
+async::task<bool> mob::call_action_script()
 {
     this->assert_thread();
     this->update_target();
 
     auto& model = this->model();
     auto  path  = std::format("scripts/mob/{}.lua", model.id);
-    auto  func  = "on_mob_attack";
+    auto  func  = "on_mob_action";
 
-    if (this->_attack_thread != nullptr)
+    if (this->_action_thread != nullptr)
         co_return false;
 
-    this->_attack_thread = this->server.lua.new_context();
-    if (this->_attack_thread == nullptr)
+    this->_action_thread = this->server.lua.new_context();
+    if (this->_action_thread == nullptr)
         co_return true;
 
-    if (this->_attack_thread->load(path) == false)
+    if (this->_action_thread->load(path) == false)
     {
-        this->_attack_thread->release();
-        this->_attack_thread = nullptr;
+        this->_action_thread->release();
+        this->_action_thread = nullptr;
         co_return true;
     }
 
-    if (this->_attack_thread->func(func) == false)
+    if (this->_action_thread->func(func) == false)
     {
         fb::lua::report_func_missing(path, func);
-        this->_attack_thread->release();
-        this->_attack_thread = nullptr;
+        this->_action_thread->release();
+        this->_action_thread = nullptr;
         co_return true;
     }
 
-    this->_attack_thread->pushobject(this);
+    this->_action_thread->pushobject(this);
 
     if (this->_target.expired() == false)
     {
         auto shared = this->_target.lock();
         if (shared != nullptr)
-            this->_attack_thread->pushobject(shared);
+            this->_action_thread->pushobject(shared);
     }
     else
-        this->_attack_thread->pushnil();
+        this->_action_thread->pushnil();
 
     auto& ctx  = this->server;
     auto  weak = this->weak_from_this();
     try
     {
-        std::ignore = co_await this->_attack_thread->call(2);
+        std::ignore = co_await this->_action_thread->call(2);
     }
     catch (std::exception& e)
     {
@@ -206,16 +206,58 @@ async::task<bool> mob::call_script()
     if (shared == nullptr)
         co_return false;
 
-    this->_attack_thread = nullptr;
+    this->_action_thread = nullptr;
     co_return true;
+}
+
+async::task<void> mob::call_attack_script()
+{
+    this->assert_thread();
+
+    auto& model = this->model();
+    auto  path  = std::format("scripts/mob/{}.lua", model.id);
+    auto  lua   = this->server.lua.open(path, "on_mob_attack");
+    if (!lua)
+        co_return;
+
+    lua->pushobject(this);
+    auto target = this->target();
+    if (target != nullptr)
+        lua->pushobject(target);
+    else
+        lua->pushnil();
+
+    std::ignore = lua->call(2);
+    co_return;
 }
 
 async::task<void> mob::action(fb::model::datetime now)
 {
-    if (co_await this->call_script() == false)
+    if (this->_action_thread != nullptr)
+        co_return;
+
+    if (ENUM_IN(static_cast<CROWD_CONTROL>(this->cc), CROWD_CONTROL::SIGHT))
+        co_return;
+
+    auto& model = this->model();
+    if (now < this->_action_time + model.speed)
+        co_return;
+
+    // Claim this speed interval before script/AI so on_mob_action matches model.speed.
+    this->_action_time = now;
+
+    if (co_await this->call_action_script() == false)
         co_return;
 
     this->AI(now);
+}
+
+async::task<void> mob::attack(DURATION duration)
+{
+    this->assert_thread();
+    co_await this->call_attack_script();
+    co_await life::attack(duration);
+    co_return;
 }
 
 const fb::model::datetime& mob::action_time() const
@@ -387,24 +429,12 @@ void mob::AI(const fb::model::datetime& now)
 {
     this->assert_thread();
 
-    if (this->_attack_thread != nullptr)
+    if (this->_action_thread != nullptr)
         return;
 
-    if (ENUM_IN(static_cast<CROWD_CONTROL>(this->cc), CROWD_CONTROL::SIGHT))
-        return;
-
-    auto& model = this->model();
-    if (now < this->_action_time + model.speed)
-        return;
-
-    // Execute AI strategy if available
+    // Speed / sight gates are applied in action(); AI only executes the strategy.
     if (this->_ai_strategy)
-    {
         this->_ai_strategy->execute(*this, now);
-        this->_action_time = now;
-    }
-
-    this->_action_time = now;
 }
 
 bool mob::available() const
