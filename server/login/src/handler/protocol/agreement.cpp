@@ -4,7 +4,7 @@ using namespace fb::login::handler::protocol;
 
 template <fb::protocol::CLIENT_VERSION V>
 agreement<V>::agreement(fb::login::server& server) :
-    fb::handler::protocol<fb::login::server, login_reqs::agreement<V>>(server)
+    fb::handler::protocol<fb::login::server, login_reqs::agreement<V>, 1000, 10, true>(server)
 { }
 
 template <fb::protocol::CLIENT_VERSION V>
