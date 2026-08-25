@@ -44,6 +44,9 @@ public:
     [[nodiscard]] async::task<void> spawn(std::thread::id thread_id);
     void                            force_spawn(std::thread::id thread_id);
     // clang-format on
+
+private:
+    [[nodiscard]] async::task<void> despawn_all();
 };
 
 class mob : public life
@@ -144,6 +147,7 @@ public:
     bool                            move(DIRECTION direction) override final;
     const item_vector_t&            items() const;
     bool                            push_item(std::shared_ptr<fb::game::item> item);
+    fb::game::rezen*                spawn_rezen() const;
     bool                            hidden(const fb::game::object& target) const override final;
     void                            hidden(bool enabled);
     appearance_ptr                  appearance() const override;

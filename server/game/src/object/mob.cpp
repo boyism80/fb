@@ -56,6 +56,12 @@ async::task<void> rezen::spawn(std::thread::id thread_id)
         co_return;
 
     auto now = this->_server.now();
+    if (this->model().conditions_met(now) == false)
+    {
+        co_await this->despawn_all();
+        co_return;
+    }
+
     if (!this->_respawn_time.has_value())
         co_return;
 
@@ -113,6 +119,29 @@ async::task<void> rezen::spawn(std::thread::id thread_id)
     this->_respawn_time.reset();
 }
 
+async::task<void> rezen::despawn_all()
+{
+    auto map = this->_map.lock();
+    if (map == nullptr)
+        co_return;
+
+    auto victims = std::vector<std::shared_ptr<fb::game::mob>>{};
+    for (auto& [_, obj] : map->objects)
+    {
+        if (obj == nullptr || obj->is(OBJECT_TYPE::MOB) == false)
+            continue;
+
+        auto mob = std::static_pointer_cast<fb::game::mob>(obj);
+        if (mob->spawn_rezen() != this)
+            continue;
+
+        victims.push_back(mob);
+    }
+
+    for (auto& mob : victims)
+        co_await mob->destroy(DESTROY_TYPE::DEFAULT);
+}
+
 void rezen::force_spawn(std::thread::id thread_id)
 {
     this->_respawn_time = this->_server.now();
@@ -129,6 +158,9 @@ mob::mob(fb::game::server& server, const fb::model::mob& model, const initial_pa
     this->_ai_strategy = ai::create(model.attack_type);
 
     this->_hidden = !params.alive;
+    if (model.invincible)
+        this->invincible(true);
+
     if (params.alive)
     {
         // Do not notify during construction: server::send uses weak_from_this
@@ -142,6 +174,11 @@ mob::~mob()
 {
     if (this->_rezen != nullptr)
         this->_rezen->decrease();
+}
+
+fb::game::rezen* mob::spawn_rezen() const
+{
+    return this->_rezen;
 }
 
 const fb::model::mob& mob::model() const
