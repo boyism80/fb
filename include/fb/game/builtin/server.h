@@ -16,6 +16,7 @@ struct server
     static int builtin_datetime(lua_State* L);
     static int builtin_to_lunar(lua_State* L);
     static int builtin_from_lunar(lua_State* L);
+    static int builtin_event_is(lua_State* L);
     static int builtin_name2mob(lua_State* L);
     static int builtin_name2spell(lua_State* L);
     static int builtin_name2npc(lua_State* L);

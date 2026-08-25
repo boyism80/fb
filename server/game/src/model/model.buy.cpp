@@ -1,6 +1,6 @@
 #include <fb/model/model.h>
 
-const fb::model::buy* fb::model::__buy::find(uint32_t pursuit, const fb::model::item& item) const
+const fb::model::buy* fb::model::___buy::find(uint32_t pursuit, const fb::model::item& item) const
 {
     if (this->contains(pursuit) == false)
         return nullptr;
@@ -14,7 +14,7 @@ const fb::model::buy* fb::model::__buy::find(uint32_t pursuit, const fb::model::
     return nullptr;
 }
 
-const fb::model::buy* fb::model::__buy::find(const fb::model::npc& npc, const fb::model::item& item) const
+const fb::model::buy* fb::model::___buy::find(const fb::model::npc& npc, const fb::model::item& item) const
 {
     if (npc.buy.has_value() == false)
         return nullptr;

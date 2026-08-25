@@ -3,7 +3,7 @@
 #include <fb/model/model.h>
 #include <fb/model/substring_matcher.h>
 
-fb::model::__blocked_word::__blocked_word() :
+fb::model::___blocked_word::___blocked_word() :
     fb::model::kv_container<std::string, fb::model::blocked_word>(std::string_view("json/blocked_word.json"))
 {
     this->hook.built = [this](auto& value) {
@@ -11,12 +11,12 @@ fb::model::__blocked_word::__blocked_word() :
     };
 }
 
-bool fb::model::__blocked_word::contains_substring(std::string_view name) const
+bool fb::model::___blocked_word::contains_substring(std::string_view name) const
 {
     return this->_matcher.contains(name);
 }
 
-std::string fb::model::__blocked_word::filter(std::string_view message) const
+std::string fb::model::___blocked_word::filter(std::string_view message) const
 {
     return this->_matcher.filter(message);
 }

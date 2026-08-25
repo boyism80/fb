@@ -189,8 +189,8 @@ void service::weather::sync()
 
 weather_type service::weather::reroll(uint32_t max_attempts)
 {
-    const auto& time  = this->server.time();
-    auto        old   = this->_current;
+    const auto& time = this->server.time();
+    auto        old  = this->_current;
     auto        day_key =
         static_cast<int>(time.year()) * 10000 + static_cast<int>(time.month()) * 100 + static_cast<int>(time.day());
     auto month = static_cast<int>(time.month());

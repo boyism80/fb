@@ -6,9 +6,9 @@
 #include <macro.h>
 
 #define DECLARE_BLOCKED_NAME_CONTAINER_CUSTOM_CONSTRUCTOR \
-    __blocked_name();                                     \
-    __blocked_name(const __blocked_name&) = delete;       \
-    ~__blocked_name()                     = default;
+    ___blocked_name();                                    \
+    ___blocked_name(const ___blocked_name&) = delete;     \
+    ~___blocked_name()                      = default;
 
 #define DECLARE_BLOCKED_NAME_CONTAINER_EXTENSION          \
                                                           \
@@ -19,9 +19,9 @@ private:                                                  \
     fb::model::substring_matcher _matcher;
 
 #define DECLARE_BLOCKED_WORD_CONTAINER_CUSTOM_CONSTRUCTOR \
-    __blocked_word();                                     \
-    __blocked_word(const __blocked_word&) = delete;       \
-    ~__blocked_word()                     = default;
+    ___blocked_word();                                    \
+    ___blocked_word(const ___blocked_word&) = delete;     \
+    ~___blocked_word()                      = default;
 
 #define DECLARE_BLOCKED_WORD_CONTAINER_EXTENSION                 \
                                                                  \

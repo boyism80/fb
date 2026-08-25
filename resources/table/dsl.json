@@ -194,5 +194,12 @@
             "type": "string",
             "desc": "function name"
         }
+    ],
+    "event": [
+        {
+            "name": "id",
+            "type": "string",
+            "desc": "event table id"
+        }
     ]
 }

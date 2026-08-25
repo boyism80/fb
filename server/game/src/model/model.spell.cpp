@@ -2,11 +2,11 @@
 #include <unordered_map>
 #include <shared_mutex>
 
-fb::model::spell* fb::model::__spell::name2spell(std::string_view name) const
+fb::model::spell* fb::model::___spell::name2spell(std::string_view name) const
 {
-    static const __spell* cache_owner = nullptr;
-    static auto           cache       = std::unordered_map<std::string, fb::model::spell*>{};
-    static auto           cache_mutex = std::shared_mutex{};
+    static const ___spell* cache_owner = nullptr;
+    static auto            cache       = std::unordered_map<std::string, fb::model::spell*>{};
+    static auto            cache_mutex = std::shared_mutex{};
 
     auto name_str = std::string(name);
     {

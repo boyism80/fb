@@ -65,6 +65,7 @@ async::task<void> fb::game::server::init_lua()
         lua.build("datetime", builtin::server::builtin_datetime);
         lua.build("to_lunar", builtin::server::builtin_to_lunar);
         lua.build("from_lunar", builtin::server::builtin_from_lunar);
+        lua.build("event_is", builtin::server::builtin_event_is);
         lua.build("name2mob", builtin::server::builtin_name2mob);
         lua.build("name2spell", builtin::server::builtin_name2spell);
         lua.build("name2item", builtin::server::builtin_name2item);

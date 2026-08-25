@@ -419,6 +419,24 @@ int builtin::server::builtin_from_lunar(lua_State* L)
     }
 }
 
+int builtin::server::builtin_event_is(lua_State* L)
+{
+    auto lua = fb::lua::get(L);
+    if (lua == nullptr)
+        return 0;
+
+    auto& srv = static_cast<fb::game::server&>(lua->executor);
+    auto  id  = lua->tostring(1);
+    if (id.empty() || table::event->contains(id) == false)
+    {
+        lua->pushboolean(false);
+        return 1;
+    }
+
+    lua->pushboolean(table::event[id].is_active(srv.now()));
+    return 1;
+}
+
 int builtin::server::builtin_name2mob(lua_State* L)
 {
     auto lua = fb::lua::get(L);
@@ -910,8 +928,8 @@ int builtin::server::builtin_weather_reroll(lua_State* L)
         return 0;
 
     auto& srv    = static_cast<fb::game::server&>(lua->executor);
-    auto  before  = static_cast<lua_Integer>(srv.weather.current());
-    auto  after   = static_cast<lua_Integer>(srv.weather.reroll());
+    auto  before = static_cast<lua_Integer>(srv.weather.current());
+    auto  after  = static_cast<lua_Integer>(srv.weather.reroll());
     lua->pushinteger(before);
     lua->pushinteger(after);
     return 2;

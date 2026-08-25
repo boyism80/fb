@@ -3,11 +3,11 @@
 #include <unordered_map>
 #include <shared_mutex>
 
-fb::model::npc* fb::model::__npc::name2npc(std::string_view name) const
+fb::model::npc* fb::model::___npc::name2npc(std::string_view name) const
 {
-    static const __npc* cache_owner = nullptr;
-    static auto         cache       = std::unordered_map<std::string, fb::model::npc*>{};
-    static auto         cache_mutex = std::shared_mutex{};
+    static const ___npc* cache_owner = nullptr;
+    static auto          cache       = std::unordered_map<std::string, fb::model::npc*>{};
+    static auto          cache_mutex = std::shared_mutex{};
 
     auto name_str = std::string(name);
     {

@@ -1,19 +1,6 @@
-local M = {}
+local event = require('lib.event')
 
-local FESTIVALS = {
-    ['설날'] = { month = 1, day_begin = 1, day_end = 15 },
-    ['중화절'] = { month = 2, day_begin = 1, day_end = 1 },
-    ['삼짇날'] = { month = 3, day_begin = 3, day_end = 3 },
-    ['석가탄신일'] = { month = 4, day_begin = 8, day_end = 8 },
-    ['단오'] = { month = 5, day_begin = 5, day_end = 5 },
-    ['유두'] = { month = 6, day_begin = 15, day_end = 15 },
-    ['칠석'] = { month = 7, day_begin = 7, day_end = 7 },
-    ['추석'] = { month = 8, day_begin = 15, day_end = 15 },
-    ['중양절'] = { month = 9, day_begin = 9, day_end = 9 },
-    ['김장'] = { month = 10, day_begin = 1, day_end = 30 },
-    ['섣달'] = { month = 12, day_begin = 21, day_end = 30 },
-    ['동지'] = { month = 11, day_begin = 1, day_end = 30 },
-}
+local M = {}
 
 -- Kill penalty for 꿩 (석가탄신일). Stored in server property per character uid
 -- so mob kill scripts and NPC dialogs share the same value across Lua contexts.
@@ -24,27 +11,7 @@ local function pheasant_penalty_key(me)
 end
 
 function M.is(name)
-    local e = FESTIVALS[name]
-    if e == nil then
-        return false
-    end
-
-    local lunar = to_lunar(datetime())
-    if lunar == nil then
-        return false
-    end
-
-    if lunar.leap then
-        return false
-    end
-
-    if lunar.month ~= e.month then
-        return false
-    end
-    if lunar.day < e.day_begin or lunar.day > e.day_end then
-        return false
-    end
-    return true
+    return event.is(name)
 end
 
 -- Lunar calendar year for annual festival quest resets.
