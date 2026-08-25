@@ -113,20 +113,10 @@ local function bridge_build_finished(t)
     return rem ~= nil and rem <= 0
 end
 
-local function mark_event_mob(mob)
-    if mob == nil then
-        return nil
-    end
-    -- Event props (견우/직녀/합체/석상): take no damage. Same goal as 백열장수련도우미
-    -- HP-restore, but invincible covers physical hits too (training helper only hooks spells).
-    mob:invincible(true)
-    return mob
-end
-
 local function spawn_event_mob(map, mob_id, x, y, direction)
     local mob = map:spawn_mob(mob_id, x, y, direction)
     if mob ~= nil then
-        return mark_event_mob(mob)
+        return mob
     end
 
     local name = MOB_NAME[mob_id]
@@ -136,7 +126,7 @@ local function spawn_event_mob(map, mob_id, x, y, direction)
 
     mob = map:spawn_mob(name, x, y, direction)
     if mob ~= nil then
-        return mark_event_mob(mob)
+        return mob
     end
 
     for _, ch in pairs(map:objects(OBJECT_TYPE.CHARACTER)) do
@@ -145,13 +135,12 @@ local function spawn_event_mob(map, mob_id, x, y, direction)
             if direction ~= nil then
                 mob:direction(direction)
             end
-            return mark_event_mob(mob)
+            return mob
         end
         break
     end
     return nil
 end
-
 local EVENT_MOB_IDS = {
     [MOB_GYEONU] = true,
     [MOB_JIKNYEO] = true,

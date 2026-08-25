@@ -1,5 +1,4 @@
 -- mob: 술취한호랑이
--- On hit during 중양절: steal 국화주, or warp player to 약수터 entrance.
 
 local festival = require('lib.festival')
 
@@ -8,12 +7,20 @@ local RESET_X = 52
 local RESET_Y = 247
 local CHAT = '국화주 한 병 주면 안 잡아먹지!!'
 
--- Per-mob busy flag while dialog runs (keyed by oid string).
 local busy = {}
+local primed = {}
+
+local function ensure_chat(me)
+    local oid = tostring(me:oid())
+    if primed[oid] then
+        return
+    end
+    primed[oid] = true
+    me:chat(CHAT)
+end
 
 local function handle_hit(me, you)
-    me:invincible(true)
-    me:chat(CHAT)
+    ensure_chat(me)
 
     if you == nil or not you:is(OBJECT_TYPE.CHARACTER) then
         return
@@ -42,15 +49,16 @@ local function handle_hit(me, you)
 end
 
 return {
+    on_mob_action = function(me)
+        ensure_chat(me)
+    end,
+
     on_mob_damaged = function(me, you)
         handle_hit(me, you)
     end,
 
     on_mob_spell_hit = function(me, you, spell)
-        -- Spell pipelines may cancel before damage_to; steal/warp here too.
         handle_hit(me, you)
-        me:hp(me:maxhp())
-        me:invincible(true)
         return false
     end,
 }
