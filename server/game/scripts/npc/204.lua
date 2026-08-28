@@ -7,7 +7,7 @@ local function run_schedule_dialog_buyeo_japan(me, npc)
         return
     end
     ::NPC_204_0011::
-    btn = me:dialog(npc, '2시부터 24시까지 매 2시간마다 일본으로 건너가는 배가 출항합니다. 35분부터 탑승하실 수 있으며 정각에 출항, 3분에 일본에 도착합니다.', { prev = true, next = true })
+    btn = me:dialog(npc, '2시부터 24시까지 매 2시간마다 일본으로 건너가는 배가 출항합니다.', { prev = true, next = true })
     if btn == DIALOG_RESULT.QUIT then
         return
     end
@@ -53,7 +53,7 @@ return {
             me:dialog(npc, '배가 선착장에 없습니다.', { prev = false, next = false })
             return
         end
-        if minute < 35 or minute > 59 then
+        if minute < 40 or minute > 59 then
             me:dialog(npc, '배가 선착장에 없습니다.', { prev = false, next = false })
             return
         end
