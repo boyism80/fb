@@ -38,7 +38,8 @@ void pack::durability(uint32_t value)
 std::string pack::inven_name() const
 {
     auto& model = this->model();
-    return std::format("{} [{}]잔", model.name, this->_durability);
+    auto  unit  = model.unit.empty() ? "잔" : model.unit;
+    return std::format("{} [{}]{}", model.name, this->_durability, unit);
 }
 
 async::task<bool> pack::active()
