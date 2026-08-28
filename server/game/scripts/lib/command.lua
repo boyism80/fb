@@ -1463,7 +1463,9 @@ M.functions = {
                         return true
                     end
                 end
-                mknpc(name, map, x, y)
+
+                local direction = me:direction()
+                mknpc(name, map, x, y, direction)
                 return true
             end,
         },
