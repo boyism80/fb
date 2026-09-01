@@ -96,8 +96,8 @@ service::system_storage::system_storage(fb::game::server& server) :
     server(server)
 { }
 
-void service::system_storage::apply_entries(const std::vector<storage_box::entry>& entries,
-                                            const std::vector<uint32_t>&           user_ids)
+void service::system_storage::deliver(const std::vector<storage_box::entry>& entries,
+                                      const std::vector<uint32_t>&           user_ids)
 {
     if (entries.empty() || entries.size() != user_ids.size())
         return;
@@ -120,25 +120,24 @@ void service::system_storage::apply_entries(const std::vector<storage_box::entry
                 ptr->storage_box.contains_system_box(entry.system_storage_box_id.value()))
                 co_return;
 
-            ptr->storage_box.apply_delivered({entry});
+            ptr->storage_box.add({entry});
             co_return;
         };
         builder.enqueue();
     }
 }
 
-void service::system_storage::apply_write_box(const fb::protocol::internal::StorageBox& dto)
+void service::system_storage::on_write_box(const fb::protocol::internal::StorageBox& dto)
 {
     auto entry = from_storage_box_dto(dto);
     auto user  = dto.user != 0 ? dto.user : 0u;
     if (user == 0)
         return;
 
-    this->apply_entries({entry}, {user});
+    this->deliver({entry}, {user});
 }
 
-void service::system_storage::apply_deliver_entries(
-    const std::vector<fb::protocol::internal::StorageWriteEntry>& entries)
+void service::system_storage::on_deliver(const std::vector<fb::protocol::internal::StorageWriteEntry>& entries)
 {
     auto converted = std::vector<storage_box::entry>{};
     auto user_ids  = std::vector<uint32_t>{};
@@ -153,7 +152,7 @@ void service::system_storage::apply_deliver_entries(
         converted.push_back(from_storage_box_dto(box));
     }
 
-    this->apply_entries(converted, user_ids);
+    this->deliver(converted, user_ids);
 }
 
 void service::system_storage::init_character(character& ch, const std::vector<storage_box::entry>& entries)

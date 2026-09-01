@@ -69,20 +69,6 @@ mail_box::mail service::mail::to_mail(const fb::protocol::internal::Mail& mail)
     };
 }
 
-void service::mail::apply_received(character& ch, const mail_box::received& entry)
-{
-    ch.mail_box.unread_count(entry.unread);
-    if (entry.system_mail_id.has_value())
-        ch.mail_box.mark_system_mail(entry.system_mail_id.value());
-
-    auto log_data            = Json::Value();
-    log_data["character_id"] = static_cast<Json::Int64>(ch.id);
-    log_data["sender_name"]  = UTF8(entry.snapshot.sender, PLATFORM::WINDOWS);
-    log_data["mail_id"]      = static_cast<Json::Int64>(entry.snapshot.id);
-    log_data["title"]        = UTF8(entry.snapshot.title, PLATFORM::WINDOWS);
-    this->server.log.write("mail_receive", log_data);
-}
-
 async::task<void> service::mail::on_received(const mail_box::received& entry)
 {
     auto ch = this->server.characters.find(entry.user_id);
@@ -91,7 +77,16 @@ async::task<void> service::mail::on_received(const mail_box::received& entry)
         auto weak    = ch->template weak_from_this_as<character>();
         auto builder = this->server.threads.new_builder(weak);
         builder.func = [this, ch, entry](auto&) -> async::task<void> {
-            this->apply_received(*ch, entry);
+            ch->mail_box.unread_count(entry.unread);
+            if (entry.system_mail_id.has_value())
+                ch->mail_box.mark_system_mail(entry.system_mail_id.value());
+
+            auto log_data            = Json::Value();
+            log_data["character_id"] = static_cast<Json::Int64>(ch->id);
+            log_data["sender_name"]  = UTF8(entry.snapshot.sender, PLATFORM::WINDOWS);
+            log_data["mail_id"]      = static_cast<Json::Int64>(entry.snapshot.id);
+            log_data["title"]        = UTF8(entry.snapshot.title, PLATFORM::WINDOWS);
+            this->server.log.write("mail_receive", log_data);
             co_return;
         };
         builder.enqueue();
@@ -103,17 +98,7 @@ async::task<void> service::mail::on_received_batch(const std::vector<mail_box::r
 {
     for (const auto& entry : entries)
     {
-        auto ch = this->server.characters.find(entry.user_id);
-        if (ch == nullptr)
-            continue;
-
-        auto weak    = ch->template weak_from_this_as<character>();
-        auto builder = this->server.threads.new_builder(weak);
-        builder.func = [this, ch, entry](auto&) -> async::task<void> {
-            this->apply_received(*ch, entry);
-            co_return;
-        };
-        builder.enqueue();
+        co_await this->on_received(entry);
     }
     co_return;
 }

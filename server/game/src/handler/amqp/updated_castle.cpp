@@ -12,5 +12,5 @@ async::task<void> updated_castle::handle(const internal_resp::UpdatedCastle& mes
     if (message.host == fb::config<uint32_t>("id"))
         co_return;
 
-    co_await this->server.castles.apply_updated(message);
+    co_await this->server.castles.on_updated(message);
 }

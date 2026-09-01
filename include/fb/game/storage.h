@@ -45,7 +45,7 @@ public:
     // clang-format off
     explicit                                        storage_box(character& owner);
     void                                            init(const std::vector<entry>& entries);
-    void                                            apply_delivered(const std::vector<entry>& delivered);
+    void                                            add(const std::vector<entry>& entries);
     bool                                            contains_system_box(uint32_t system_storage_box_id) const;
     [[nodiscard]] async::task<bool>                 receive_reward(uint32_t entry_id);
     void                                            set_received(uint32_t entry_id, bool received);

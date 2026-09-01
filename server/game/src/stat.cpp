@@ -710,22 +710,40 @@ uint64_t character_stat::base_regenerative() const
     return this->_regenerative;
 }
 
-void character_stat::apply_equipment(const fb::model::equipment& model, int sign)
+void character_stat::equipment_on(const fb::model::equipment& model)
 {
     this->owner.assert_thread();
 
-    this->buff_hp(this->buff_hp() + sign * model.base_hp);
-    this->buff_mp(this->buff_mp() + sign * model.base_mp);
-    this->buff_hp_percent(this->buff_hp_percent() + sign * model.hp_percentage);
-    this->buff_mp_percent(this->buff_mp_percent() + sign * model.mp_percentage);
-    this->buff_str(this->buff_str() + sign * model.strength);
-    this->buff_dex(this->buff_dex() + sign * model.dexterity);
-    this->buff_int(this->buff_int() + sign * model.intelligence);
-    this->buff_phydef(this->buff_phydef() + sign * model.defensive_physical);
-    this->buff_magdef(this->buff_magdef() + sign * model.defensive_magical);
-    this->buff_dam(this->buff_dam() + sign * model.damage);
-    this->buff_hit(this->buff_hit() + sign * model.hit);
-    this->buff_regenerative(this->buff_regenerative() + sign * static_cast<int64_t>(model.healing_cycle));
+    this->buff_hp(this->buff_hp() + model.base_hp);
+    this->buff_mp(this->buff_mp() + model.base_mp);
+    this->buff_hp_percent(this->buff_hp_percent() + model.hp_percentage);
+    this->buff_mp_percent(this->buff_mp_percent() + model.mp_percentage);
+    this->buff_str(this->buff_str() + model.strength);
+    this->buff_dex(this->buff_dex() + model.dexterity);
+    this->buff_int(this->buff_int() + model.intelligence);
+    this->buff_phydef(this->buff_phydef() + model.defensive_physical);
+    this->buff_magdef(this->buff_magdef() + model.defensive_magical);
+    this->buff_dam(this->buff_dam() + model.damage);
+    this->buff_hit(this->buff_hit() + model.hit);
+    this->buff_regenerative(this->buff_regenerative() + static_cast<int64_t>(model.healing_cycle));
+}
+
+void character_stat::equipment_off(const fb::model::equipment& model)
+{
+    this->owner.assert_thread();
+
+    this->buff_hp(this->buff_hp() - model.base_hp);
+    this->buff_mp(this->buff_mp() - model.base_mp);
+    this->buff_hp_percent(this->buff_hp_percent() - model.hp_percentage);
+    this->buff_mp_percent(this->buff_mp_percent() - model.mp_percentage);
+    this->buff_str(this->buff_str() - model.strength);
+    this->buff_dex(this->buff_dex() - model.dexterity);
+    this->buff_int(this->buff_int() - model.intelligence);
+    this->buff_phydef(this->buff_phydef() - model.defensive_physical);
+    this->buff_magdef(this->buff_magdef() - model.defensive_magical);
+    this->buff_dam(this->buff_dam() - model.damage);
+    this->buff_hit(this->buff_hit() - model.hit);
+    this->buff_regenerative(this->buff_regenerative() - static_cast<int64_t>(model.healing_cycle));
 }
 
 uint64_t character_stat::damage(uint64_t                          value,

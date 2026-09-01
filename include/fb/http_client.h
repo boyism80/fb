@@ -54,7 +54,7 @@ private:
     std::atomic<size_t>      _in_flight{0};
     std::atomic<int64_t>     _response_delay_ms{0};
 
-    [[nodiscard]] async::task<void> apply_response_delay(fb::thread* thread)
+    [[nodiscard]] async::task<void> sleep(fb::thread* thread)
     {
         if (thread == nullptr)
             co_return;
@@ -346,7 +346,7 @@ public:
         auto  path_str    = std::string(path);
         auto  thread      = this->_executor.threads.current();
         auto  result      = co_await this->boost_get_async<T>(host, path_str);
-        co_await this->apply_response_delay(thread);
+        co_await this->sleep(thread);
         co_return result;
     }
 
@@ -412,7 +412,7 @@ public:
         auto  path_str    = std::string(path);
         auto  thread      = this->_executor.threads.current();
         auto  result      = co_await this->boost_post_async<Request>(host, path_str, request);
-        co_await this->apply_response_delay(thread);
+        co_await this->sleep(thread);
         co_return result;
     }
 
@@ -429,7 +429,7 @@ public:
         auto path_str = std::string(path);
         auto thread   = this->_executor.threads.current();
         co_await this->boost_post_binary_async(url_str, path_str, data);
-        co_await this->apply_response_delay(thread);
+        co_await this->sleep(thread);
     }
 
     /// <summary>

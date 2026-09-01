@@ -1904,13 +1904,13 @@ void character::enqueue_death_warp()
         if (self == nullptr)
             co_return;
 
-        co_await self->apply_death_warp();
+        co_await self->death_warp();
         co_return;
     };
     builder.enqueue();
 }
 
-async::task<void> character::apply_death_warp()
+async::task<void> character::death_warp()
 {
     this->assert_thread();
 

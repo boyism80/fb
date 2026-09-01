@@ -196,19 +196,19 @@ public:
 
 private:
     // clang-format off
-    uint64_t                      limited_exp(uint64_t exp) const;
-    fb::model::point16_t          viewport_centered(const fb::model::point16_t& position) const;
-    void                          ensure_camera_pivot() const;
-    bool                          level_up();
-    bool                          max_level() const;
-    float                         experience_percent() const;
-    bool                          option_toggle(OPTION key, bool notify = true);
-    void                          stop_bgm(uint16_t bgm_id = 0);
-    [[nodiscard]] async::task<void>       apply_death_warp();
-    void                          award_exp(const fb::game::mob& mob);
-    async::task<void>             death_penalty();
-    async::task<void>             settle_kills(mob_vector dead);
-    void                          enqueue_death_warp();
+    uint64_t                        limited_exp(uint64_t exp) const;
+    fb::model::point16_t            viewport_centered(const fb::model::point16_t& position) const;
+    void                            ensure_camera_pivot() const;
+    bool                            level_up();
+    bool                            max_level() const;
+    float                           experience_percent() const;
+    bool                            option_toggle(OPTION key, bool notify = true);
+    void                            stop_bgm(uint16_t bgm_id = 0);
+    [[nodiscard]] async::task<void> death_warp();
+    void                            award_exp(const fb::game::mob& mob);
+    async::task<void>               death_penalty();
+    async::task<void>               settle_kills(mob_vector dead);
+    void                            enqueue_death_warp();
     // clang-format on
 
 public:

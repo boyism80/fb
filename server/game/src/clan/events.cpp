@@ -42,7 +42,7 @@ std::vector<std::shared_ptr<character>> online_members(const std::shared_ptr<cla
 
 } // namespace
 
-async::task<void> clan::container::apply_updated(const internal_resp::UpdatedClan& resp)
+async::task<void> clan::container::on_updated(const internal_resp::UpdatedClan& resp)
 {
     co_await this->on_error(resp.error);
 

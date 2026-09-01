@@ -55,7 +55,7 @@ async::task<void> castle::container::load_all()
     }
 }
 
-async::task<void> castle::container::apply_updated(const internal_resp::UpdatedCastle& resp)
+async::task<void> castle::container::on_updated(const internal_resp::UpdatedCastle& resp)
 {
     if (static_cast<fb::model::enum_value::ERROR_CODE>(resp.error) != fb::model::enum_value::ERROR_CODE::NONE)
         co_return;

@@ -12,5 +12,5 @@ async::task<void> updated_clan::handle(const internal_resp::UpdatedClan& message
     if (message.host == fb::config<uint32_t>("id"))
         co_return;
 
-    co_await this->server.clans.apply_updated(message);
+    co_await this->server.clans.on_updated(message);
 }

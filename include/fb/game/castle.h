@@ -64,7 +64,7 @@ public:
 public:
     // clang-format off
     async::task<void> load_all();
-    async::task<void> apply_updated(const fb::protocol::internal::response::UpdatedCastle& resp);
+    async::task<void> on_updated(const fb::protocol::internal::response::UpdatedCastle& resp);
     async::task<void> end_siege(fb::model::enum_value::DIVINE_BEAST divine_beast, const std::optional<uint32_t>& winner_clan_id);
     // clang-format on
 };

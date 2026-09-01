@@ -104,7 +104,7 @@ async::task<void> clan::container::join_member(character& inviter, std::string_v
         "/clan/join",
         internal_reqs::JoinClan{world, fb::config<uint32_t>("host"), inviter.id, target_name_str});
     co_await this->_server.threads.switching(weak);
-    co_await this->apply_updated(resp);
+    co_await this->on_updated(resp);
 }
 
 async::task<void> clan::container::leave_member(character& leaver)
@@ -134,7 +134,7 @@ async::task<void> clan::container::leave_member(character& leaver)
         "/clan/leave",
         internal_reqs::LeaveClan{world, fb::config<uint32_t>("host"), clan_id.value(), leaver.name()});
     co_await this->_server.threads.switching(weak);
-    co_await this->apply_updated(resp);
+    co_await this->on_updated(resp);
 }
 
 async::task<void> clan::container::kick_member(character& kicker, std::string_view target_name)
@@ -168,7 +168,7 @@ async::task<void> clan::container::kick_member(character& kicker, std::string_vi
                                                                            kicker.name(),
                                                                            target_name_str});
     co_await this->_server.threads.switching(weak);
-    co_await this->apply_updated(resp);
+    co_await this->on_updated(resp);
 }
 
 async::task<void> clan::container::change_role(character& changer, std::string_view target_name, CLAN_ROLE role)
@@ -203,7 +203,7 @@ async::task<void> clan::container::change_role(character& changer, std::string_v
                                                                                  changer_clan_id.value(),
                                                                                  static_cast<uint32_t>(role)});
     co_await this->_server.threads.switching(weak);
-    co_await this->apply_updated(resp);
+    co_await this->on_updated(resp);
 }
 
 async::task<void> clan::container::set_title(character& changer, std::string_view title)
@@ -243,7 +243,7 @@ async::task<void> clan::container::set_title(character& changer, std::string_vie
         "/clan/title",
         internal_reqs::SetClanTitle{world, fb::config<uint32_t>("host"), changer.id, title_str});
     co_await this->_server.threads.switching(weak);
-    co_await this->apply_updated(resp);
+    co_await this->on_updated(resp);
 }
 
 async::task<void> clan::container::request_ally(character& requester, uint32_t target_clan_id)
@@ -279,7 +279,7 @@ async::task<void> clan::container::request_ally(character& requester, uint32_t t
         "/clan/ally",
         internal_reqs::AllyClan{world, fb::config<uint32_t>("host"), requester.id, clan_id.value(), target_clan_id});
     co_await this->_server.threads.switching(weak);
-    co_await this->apply_updated(resp);
+    co_await this->on_updated(resp);
 }
 
 async::task<void> clan::container::break_ally(character& requester)
@@ -309,7 +309,7 @@ async::task<void> clan::container::break_ally(character& requester)
         "/clan/unally",
         internal_reqs::UnallyClan{world, fb::config<uint32_t>("host"), requester.id, clan_id.value()});
     co_await this->_server.threads.switching(weak);
-    co_await this->apply_updated(resp);
+    co_await this->on_updated(resp);
 }
 
 async::task<void> clan::container::declare_enemy(character& requester, uint32_t target_clan_id)
@@ -348,7 +348,7 @@ async::task<void> clan::container::declare_enemy(character& requester, uint32_t 
                                                                                    clan_id.value(),
                                                                                    target_clan_id});
     co_await this->_server.threads.switching(weak);
-    co_await this->apply_updated(resp);
+    co_await this->on_updated(resp);
 }
 
 async::task<void> clan::container::end_enemy(character& requester, uint32_t target_clan_id)
@@ -381,7 +381,7 @@ async::task<void> clan::container::end_enemy(character& requester, uint32_t targ
                                                                                clan_id.value(),
                                                                                target_clan_id});
     co_await this->_server.threads.switching(weak);
-    co_await this->apply_updated(resp);
+    co_await this->on_updated(resp);
 }
 
 async::task<void> clan::container::broadcast(uint32_t clan_id, std::string_view message, MESSAGE_TYPE type)
@@ -412,5 +412,5 @@ async::task<void> clan::container::add_money(uint32_t clan_id, int64_t delta)
         internal_reqs::SetClanMoney{world, fb::config<uint32_t>("id"), clan_id, delta});
     if (before != nullptr)
         co_await before->switching();
-    co_await this->apply_updated(resp);
+    co_await this->on_updated(resp);
 }

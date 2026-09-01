@@ -85,11 +85,11 @@ void storage_box::init(const std::vector<entry>& entries)
     }
 }
 
-void storage_box::apply_delivered(const std::vector<entry>& delivered)
+void storage_box::add(const std::vector<entry>& entries)
 {
     this->_owner.assert_thread();
 
-    for (const auto& box : delivered)
+    for (const auto& box : entries)
     {
         if (box.system_storage_box_id.has_value())
         {

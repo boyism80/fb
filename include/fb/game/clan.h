@@ -49,31 +49,31 @@ public:
 
 public:
     // clang-format off
-    void                              update(std::string_view name, const std::optional<std::string>& title, const member_map& members);
-    uint32_t                          id() const;
-    const std::string&                name() const;
-    const std::optional<std::string>& title() const;
-    void                              title(const std::optional<std::string>& title);
-    const member_map&                 members() const;
-    clan_member*                      member(std::string_view name);
-    const clan_member*                member(std::string_view name) const;
-    bool                              contains(std::string_view name) const;
-    void                              join(const clan_member& member);
-    void                              leave(std::string_view member);
-    void                              change_role(std::string_view member_name, CLAN_ROLE new_role);
-    const character_map&              characters() const;
-    void                              attach(character_weak_ptr ch);
-    void                              detach(character_weak_ptr ch);
-    std::vector<character_ptr_t>      nears(const fb::game::map& map, const fb::model::point16_t& position) const;
-    const std::optional<uint32_t>&    allied_clan_id() const;
-    void                              allied_clan_id(const std::optional<uint32_t>& value);
-    bool                              is_allied(uint32_t other_clan_id) const;
+    void                                update(std::string_view name, const std::optional<std::string>& title, const member_map& members);
+    uint32_t                            id() const;
+    const std::string&                  name() const;
+    const std::optional<std::string>&   title() const;
+    void                                title(const std::optional<std::string>& title);
+    const member_map&                   members() const;
+    clan_member*                        member(std::string_view name);
+    const clan_member*                  member(std::string_view name) const;
+    bool                                contains(std::string_view name) const;
+    void                                join(const clan_member& member);
+    void                                leave(std::string_view member);
+    void                                change_role(std::string_view member_name, CLAN_ROLE new_role);
+    const character_map&                characters() const;
+    void                                attach(character_weak_ptr ch);
+    void                                detach(character_weak_ptr ch);
+    std::vector<character_ptr_t>        nears(const fb::game::map& map, const fb::model::point16_t& position) const;
+    const std::optional<uint32_t>&      allied_clan_id() const;
+    void                                allied_clan_id(const std::optional<uint32_t>& value);
+    bool                                is_allied(uint32_t other_clan_id) const;
     const std::unordered_set<uint32_t>& enemy_clan_ids() const;
-    void                              add_enemy_clan(uint32_t other_clan_id);
-    void                              remove_enemy_clan(uint32_t other_clan_id);
-    bool                              is_hostile(uint32_t other_clan_id) const;
-    uint64_t                          money() const;
-    void                              money(uint64_t value);
+    void                                add_enemy_clan(uint32_t other_clan_id);
+    void                                remove_enemy_clan(uint32_t other_clan_id);
+    bool                                is_hostile(uint32_t other_clan_id) const;
+    uint64_t                            money() const;
+    void                                money(uint64_t value);
     // clang-format on
 };
 
@@ -87,7 +87,7 @@ public:
 
 public:
     // clang-format off
-    async::task<void> apply_updated(const fb::protocol::internal::response::UpdatedClan& resp);
+    async::task<void> on_updated(const fb::protocol::internal::response::UpdatedClan& resp);
     async::task<void> create(character& me, std::string_view name);
     async::task<void> destroy(character& me);
     async::task<void> join_member(character& inviter, std::string_view target_name);

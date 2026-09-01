@@ -38,9 +38,9 @@ private:
     // clang-format off
     static fb::game::bulletin::article to_article(const fb::protocol::internal::ArticleSummary& summary, uint16_t section);
     static fb::game::bulletin::article to_article(const fb::protocol::internal::Article& article, uint16_t section, bool next);
-    void assert_section(uint16_t section) const;
-    void assert_auth(const character& ch, uint16_t section) const;
-    void on_delete_error(int32_t result) const;
+    void                               assert_section(uint16_t section) const;
+    void                               assert_auth(const character& ch, uint16_t section) const;
+    void                               on_delete_error(int32_t result) const;
     // clang-format on
 };
 

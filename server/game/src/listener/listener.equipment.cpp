@@ -8,7 +8,7 @@ namespace game_resp = fb::protocol::game::response;
 
 void listener_impl::on_equipment_on(character& me, item& item, EQUIPMENT_PARTS parts)
 {
-    me.stat.apply_equipment(static_cast<equipment&>(item).model(), 1);
+    me.stat.equipment_on(static_cast<equipment&>(item).model());
 
     fb::protocol::visit_client_version(me.client_version, [&]<fb::protocol::CLIENT_VERSION V> {
         me.send(game_resp::item_update_slot<V>(me, parts));
@@ -66,7 +66,7 @@ void listener_impl::on_equipment_on(character& me, item& item, EQUIPMENT_PARTS p
 
 void listener_impl::on_equipment_off(character& me, EQUIPMENT_PARTS parts, fb::game::equipment& equipment)
 {
-    me.stat.apply_equipment(equipment.model(), -1);
+    me.stat.equipment_off(equipment.model());
 
     fb::protocol::visit_client_version(me.client_version, [&]<fb::protocol::CLIENT_VERSION V> {
         me.send(game_resp::item_unequip<V>(parts));

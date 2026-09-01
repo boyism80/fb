@@ -34,7 +34,7 @@ test_suite {
                         bot:remove_buffs()
                         bot:clear_inventory()
                         bot:create_item("보무의목걸이", 1)
-                        bot:apply_item_condition("보무의목걸이")
+                        bot:item_condition("보무의목걸이")
 
                         local pending_buffs = {
                             ["자동무장"] = true,
@@ -70,7 +70,7 @@ test_suite {
                         bot:remove_buffs()
                         bot:clear_inventory()
                         bot:create_item("투명구두", 1)
-                        bot:apply_item_condition("투명구두")
+                        bot:item_condition("투명구두")
 
                         local buffed = bot:request(
                             resp.spell_buff,
@@ -124,7 +124,7 @@ test_suite {
                         end
 
                         bot:create_item("해독의귀걸이", 1)
-                        bot:apply_item_condition("해독의귀걸이")
+                        bot:item_condition("해독의귀걸이")
 
                         local poison_cleared = bot:request(
                             resp.message,
@@ -179,7 +179,7 @@ test_suite {
                         end
 
                         bot:create_item("시력회복의귀걸이", 1)
-                        bot:apply_item_condition("시력회복의귀걸이")
+                        bot:item_condition("시력회복의귀걸이")
 
                         local despair_cleared = bot:request(
                             resp.update_cc,

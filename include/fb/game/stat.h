@@ -182,7 +182,8 @@ public:
     uint8_t          speed() const override;
     void             buff_speed(int8_t value) override;
     uint64_t         base_regenerative() const;
-    void             apply_equipment(const fb::model::equipment& model, int sign);
+    void             equipment_on(const fb::model::equipment& model);
+    void             equipment_off(const fb::model::equipment& model);
     uint64_t         damage(uint64_t value, std::shared_ptr<fb::game::object> from = nullptr, bool critical = false, float rate = 1.0f, bool physical = true, bool fixed = false, bool notify = true) override final;
     // clang-format on
 };
