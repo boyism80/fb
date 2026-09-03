@@ -6,6 +6,11 @@ enum Service : byte {
     Game
 }
 
+enum ProcessRole : byte {
+    Home,
+    Cross
+}
+
 enum GroupActionType : byte {
     Enter = 0,
     Leave = 1,
@@ -38,6 +43,7 @@ table Mimicry {
 
 table Character {
     id: uint;
+    world: uint;
     name: string;
     pw: string;
     birth: uint?;

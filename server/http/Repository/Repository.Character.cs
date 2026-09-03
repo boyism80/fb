@@ -200,34 +200,54 @@ namespace Http.Reepository
             return sql;
         }
 
+        public async Task<uint?> GetCharacterId(string name)
+        {
+            var row = await GetCharacterRef(name);
+            return row?.Id;
+        }
+
         public async Task<uint?> GetCharacterId(uint world, string name)
         {
-            await using var conn = _dbContext.GetGlobalConnection(world);
-            var result = await conn.QueryAsync<uint>("USP_NAME_GET_ID", new
-            {
-                n = name
-            }, commandType: CommandType.StoredProcedure);
+            var row = await GetCharacterRef(name);
+            if (row == null || row.World != world)
+                return null;
+            return row.Id;
+        }
 
-            if (result.Any())
-                return result.ElementAt(0);
+        public async Task<CharacterName> GetCharacterRef(string name)
+        {
+            await using var conn = _dbContext.GetUnifiedConnection();
+            return await conn.QueryFirstOrDefaultAsync<CharacterName>(
+                "SELECT id, world, name FROM name_registry WHERE name = @name",
+                new { name });
+        }
 
-            return null;
+        public async Task<uint?> GetWorld(uint id)
+        {
+            await using var conn = _dbContext.GetUnifiedConnection();
+            return await conn.QueryFirstOrDefaultAsync<uint?>(
+                "SELECT world FROM name_registry WHERE id = @id",
+                new { id });
         }
 
         public async Task<string> GetName(uint world, uint id)
         {
-            await using var conn = _dbContext.GetGlobalConnection(world);
-            var result = await conn.QueryFirstOrDefaultAsync<CharacterName>($"SELECT id, name FROM name_registry WHERE id = {id}");
+            await using var conn = _dbContext.GetUnifiedConnection();
+            var result = await conn.QueryFirstOrDefaultAsync<CharacterName>(
+                "SELECT id, world, name FROM name_registry WHERE id = @id",
+                new { id });
             return result?.Name;
         }
 
         public async Task<IReadOnlyDictionary<uint, string>> GetName(uint world, IEnumerable<uint> ids)
         {
-            if (ids.Any() == false)
+            var list = ids.Distinct().ToList();
+            if (list.Count == 0)
                 return new Dictionary<uint, string>();
 
-            await using var conn = _dbContext.GetGlobalConnection(world);
-            var result = await conn.QueryAsync<CharacterName>($"SELECT id, name FROM name_registry WHERE id IN ({string.Join(',', ids)})");
+            await using var conn = _dbContext.GetUnifiedConnection();
+            var result = await conn.QueryAsync<CharacterName>(
+                $"SELECT id, world, name FROM name_registry WHERE id IN ({string.Join(',', list)})");
             return result.ToDictionary(x => x.Id, x => x.Name);
         }
     }

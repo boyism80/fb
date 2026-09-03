@@ -54,7 +54,7 @@ async::task<bool> update_option<V>::handle(fb::socket<character>& session, game_
             }
         }
 
-        auto   world = fb::config<uint32_t>("world");
+        auto   world = ch->world();
         auto&& resp  = co_await this->server.http.post(
             "internal",
             "/in-game/option",
@@ -102,7 +102,7 @@ async::task<bool> update_option<fb::protocol::CLIENT_VERSION::v651>::handle(
     }
     else
     {
-        auto world   = fb::config<uint32_t>("world");
+        auto world   = ch->world();
         auto current = weak.lock();
         auto changes = std::vector<internal::OptionChange>{};
         auto applied = std::vector<std::pair<OPTION, bool>>{};

@@ -12,6 +12,7 @@ table Login {
   name: string;
   host: ubyte;
   force: bool;
+  role: fb.protocol.internal.ProcessRole;
 }
 
 
@@ -27,6 +28,10 @@ table Transfer {
   id: ubyte;
   name: string?;
   force_shutdown: bool;
+}
+
+table MatchTransfer {
+  match_id: string;
 }
 
 
@@ -324,6 +329,7 @@ table FriendBroadcast {
   message: string;
   type: ubyte;
   to_uids: [uint];
+  role: fb.protocol.internal.ProcessRole;
 }
 
 table DeliverSystemStorage {
@@ -393,6 +399,7 @@ table Heartbeat {
   name: string;
   ip: string;
   port: ushort;
+  role: fb.protocol.internal.ProcessRole;
 }
 
 table SetExpMultiplier {

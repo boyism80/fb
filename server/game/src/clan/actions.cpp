@@ -16,7 +16,7 @@ async::task<void> clan::container::create(character& me, std::string_view name)
 
     auto   weak     = me.weak_from_this_as<character>();
     auto   name_str = std::string(name);
-    auto   world    = fb::config<uint32_t>("world");
+    auto   world    = me.world();
     auto&& resp =
         co_await this->_server.http.post("internal",
                                          "/clan/create",
@@ -65,7 +65,7 @@ async::task<void> clan::container::destroy(character& me)
     }
 
     auto   weak  = me.weak_from_this_as<character>();
-    auto   world = fb::config<uint32_t>("world");
+    auto   world = me.world();
     auto&& resp =
         co_await this->_server.http.post("internal",
                                          "/clan/destroy",
@@ -98,7 +98,7 @@ async::task<void> clan::container::join_member(character& inviter, std::string_v
         }
     }
 
-    auto   world = fb::config<uint32_t>("world");
+    auto   world = inviter.world();
     auto&& resp  = co_await this->_server.http.post(
         "internal",
         "/clan/join",
@@ -128,7 +128,7 @@ async::task<void> clan::container::leave_member(character& leaver)
     }
 
     auto   weak  = leaver.weak_from_this_as<character>();
-    auto   world = fb::config<uint32_t>("world");
+    auto   world = leaver.world();
     auto&& resp  = co_await this->_server.http.post(
         "internal",
         "/clan/leave",
@@ -159,7 +159,7 @@ async::task<void> clan::container::kick_member(character& kicker, std::string_vi
         }
     }
 
-    auto   world = fb::config<uint32_t>("world");
+    auto   world = kicker.world();
     auto&& resp  = co_await this->_server.http.post("internal",
                                                    "/clan/kick",
                                                    internal_reqs::KickClan{world,
@@ -193,7 +193,7 @@ async::task<void> clan::container::change_role(character& changer, std::string_v
         }
     }
 
-    auto   world = fb::config<uint32_t>("world");
+    auto   world = changer.world();
     auto&& resp  = co_await this->_server.http.post("internal",
                                                    "/clan/change-role",
                                                    internal_reqs::ChangeClanRole{world,
@@ -237,7 +237,7 @@ async::task<void> clan::container::set_title(character& changer, std::string_vie
             throw std::runtime_error(_TEXT(MESSAGE_CLAN_TITLE_TOO_SHORT));
     }
 
-    auto   world = fb::config<uint32_t>("world");
+    auto   world = changer.world();
     auto&& resp  = co_await this->_server.http.post(
         "internal",
         "/clan/title",
@@ -273,7 +273,7 @@ async::task<void> clan::container::request_ally(character& requester, uint32_t t
     }
 
     auto   weak  = requester.weak_from_this_as<character>();
-    auto   world = fb::config<uint32_t>("world");
+    auto   world = requester.world();
     auto&& resp  = co_await this->_server.http.post(
         "internal",
         "/clan/ally",
@@ -303,7 +303,7 @@ async::task<void> clan::container::break_ally(character& requester)
     }
 
     auto   weak  = requester.weak_from_this_as<character>();
-    auto   world = fb::config<uint32_t>("world");
+    auto   world = requester.world();
     auto&& resp  = co_await this->_server.http.post(
         "internal",
         "/clan/unally",
@@ -339,7 +339,7 @@ async::task<void> clan::container::declare_enemy(character& requester, uint32_t 
     }
 
     auto   weak  = requester.weak_from_this_as<character>();
-    auto   world = fb::config<uint32_t>("world");
+    auto   world = requester.world();
     auto&& resp  = co_await this->_server.http.post("internal",
                                                    "/clan/enemy",
                                                    internal_reqs::DeclareClanEnemy{world,
@@ -372,7 +372,7 @@ async::task<void> clan::container::end_enemy(character& requester, uint32_t targ
     }
 
     auto   weak  = requester.weak_from_this_as<character>();
-    auto   world = fb::config<uint32_t>("world");
+    auto   world = requester.world();
     auto&& resp  = co_await this->_server.http.post("internal",
                                                    "/clan/unenemy",
                                                    internal_reqs::EndClanEnemy{world,

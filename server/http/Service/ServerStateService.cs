@@ -1,4 +1,4 @@
-﻿using Http.Redis;
+using Http.Redis;
 using Http.Redis.Key;
 using Newtonsoft.Json;
 using Protocol = fb.protocol._internal;
@@ -17,6 +17,8 @@ namespace Http.Service
         public class ServerInfo
         {
             public uint World { get; set; }
+
+            public string Role { get; set; } = "home";
 
             public string Service { get; set; } = string.Empty;
 
@@ -41,12 +43,13 @@ namespace Http.Service
             foreach (var key in keys)
             {
                 var keyStr = key.ToString();
-                // Parse key format: fb:heart-beat:World:Service:Id
                 var parts = keyStr.Split(':');
                 if (parts.Length != 5)
                     continue;
 
-                if (!uint.TryParse(parts[2], out var world))
+                var role = parts[2] == "cross" ? "cross" : "home";
+                uint world = 0;
+                if (role == "home" && !uint.TryParse(parts[2], out world))
                     continue;
 
                 var service = parts[3];
@@ -64,12 +67,13 @@ namespace Http.Service
                     {
                         servers.Add(new ServerInfo
                         {
-                            World   = world,
+                            World = world,
+                            Role = role,
                             Service = service,
-                            Id      = id,
-                            Name    = config.Name,
-                            IP      = config.IP,
-                            Port    = config.Port
+                            Id = id,
+                            Name = config.Name,
+                            IP = config.IP,
+                            Port = config.Port
                         });
                     }
                 }
@@ -80,7 +84,8 @@ namespace Http.Service
             }
 
             return servers
-                .OrderBy(s => s.World)
+                .OrderBy(s => s.Role)
+                .ThenBy(s => s.World)
                 .ThenBy(s => s.Service)
                 .ThenBy(s => s.Id)
                 .ToList();
@@ -96,21 +101,23 @@ namespace Http.Service
             return keys.Count > 0;
         }
 
-        public async Task<bool> UpdateHeartbeat(uint world, Protocol.Service service, byte id, string name, string ip, ushort port)
+        public async Task<bool> UpdateHeartbeat(uint world, Protocol.Service service, byte id, string name, string ip, ushort port, Protocol.ProcessRole role = Protocol.ProcessRole.Home)
         {
             try
             {
-                var redis = _redisService.GetUnifiedConnection(); // unified is 0
+                var redis = _redisService.GetUnifiedConnection();
                 if (redis == null)
                     return false;
 
+                var roleName = AmqpRoute.Name(role);
                 var config = new HostConfig
                 {
                     Name = name,
                     IP = ip,
-                    Port = port
+                    Port = port,
+                    Role = roleName
                 };
-                var key = new HeartBeatKey { World = world, Service = service, Id = id };
+                var key = new HeartBeatKey { Role = role, World = world, Service = service, Id = id };
                 var json = JsonConvert.SerializeObject(config);
 
                 await redis.Connection.StringSetAsync(key.Key, json);
@@ -126,12 +133,49 @@ namespace Http.Service
 
         public async Task<HostConfig> GetHostConfig(uint world, Protocol.Service service, byte id)
         {
-            var redis = _redisService.GetUnifiedConnection(); // unified is 0
+            var redis = _redisService.GetUnifiedConnection();
             if (redis == null)
                 return null;
 
-            var key = new HeartBeatKey { World = world, Service = service, Id = id };
+            var key = new HeartBeatKey { Role = Protocol.ProcessRole.Home, World = world, Service = service, Id = id };
             return await redis.Connection.JsonGetAsync<HostConfig>(key.Key);
+        }
+
+        public async Task<HostConfig> GetCrossHost(byte id)
+        {
+            var redis = _redisService.GetUnifiedConnection();
+            if (redis == null)
+                return null;
+
+            var key = new HeartBeatKey { Role = Protocol.ProcessRole.Cross, Service = Protocol.Service.Game, Id = id };
+            return await redis.Connection.JsonGetAsync<HostConfig>(key.Key);
+        }
+
+        public async Task<List<ServerInfo>> ListLiveCrossServers()
+        {
+            var servers = await GetRunningServers();
+            return servers
+                .Where(s => s.Role == "cross" && s.Service == Protocol.Service.Game.ToString())
+                .ToList();
+        }
+
+        public async Task<ServerInfo> PickLiveCrossServer(string matchId)
+        {
+            var ordered = (await ListLiveCrossServers())
+                .OrderBy(s => s.Id)
+                .ToList();
+            if (ordered.Count == 0)
+                return null;
+
+            if (string.IsNullOrEmpty(matchId))
+                return ordered[0];
+
+            ulong hash = 0;
+            foreach (var ch in matchId)
+            {
+                hash = hash * 31 + ch;
+            }
+            return ordered[(int)(hash % (ulong)ordered.Count)];
         }
 
         public class HostConfig
@@ -144,6 +188,9 @@ namespace Http.Service
 
             [JsonProperty("Port")]
             public ushort Port { get; set; }
+
+            [JsonProperty("Role")]
+            public string Role { get; set; } = "home";
         }
     }
 }

@@ -11,7 +11,6 @@ matchmaking_dissolved::matchmaking_dissolved(fb::game::server& server) :
 
 async::task<void> matchmaking_dissolved::handle(const fb::protocol::matchmaking::mq::Dissolved& message)
 {
-    auto world      = fb::config<uint32_t>("world");
     auto match_id   = message.match_id;
     auto match_type = message.match_type;
     auto reason     = message.reason;
@@ -20,9 +19,6 @@ async::task<void> matchmaking_dissolved::handle(const fb::protocol::matchmaking:
     {
         for (auto& entry : outcome.entries)
         {
-            if (entry.world != world)
-                continue;
-
             auto ch = this->server.characters.find(entry.character_id);
             if (ch == nullptr)
                 continue;

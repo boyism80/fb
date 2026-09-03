@@ -42,6 +42,13 @@ table Transfer {
   maintenance_end_time: string?; // ISO 8601 format
 }
 
+table MatchTransfer {
+  error: uint;
+  ip: string;
+  port: ushort;
+  id: ubyte;
+}
+
 
 
 table Whisper {

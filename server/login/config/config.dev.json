@@ -1,6 +1,7 @@
 {
     "id": 0,
     "name": "login-0",
+    "role": "home",
     "world": 1,
     "ip": "127.0.0.1",
     "port": 3002,

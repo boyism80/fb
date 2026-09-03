@@ -127,7 +127,8 @@ async::task<void> server::update_status()
                                                                         this->id(),
                                                                         this->name(),
                                                                         fb::config<std::string_view>("ip"),
-                                                                        fb::config<uint16_t>("port")});
+                                                                        fb::config<uint16_t>("port"),
+                                                                        fb::protocol::internal::ProcessRole::Home});
     }
     catch (const std::exception& e)
     {

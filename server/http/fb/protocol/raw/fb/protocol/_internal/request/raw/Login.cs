@@ -31,28 +31,32 @@ public struct Login : IFlatbufferObject
   public byte[] GetNameArray() { return __p.__vector_as_array<byte>(8); }
   public byte Host { get { int o = __p.__offset(10); return o != 0 ? __p.bb.Get(o + __p.bb_pos) : (byte)0; } }
   public bool Force { get { int o = __p.__offset(12); return o != 0 ? 0!=__p.bb.Get(o + __p.bb_pos) : (bool)false; } }
+  public fb.protocol._internal.raw.ProcessRole Role { get { int o = __p.__offset(14); return o != 0 ? (fb.protocol._internal.raw.ProcessRole)__p.bb.GetSbyte(o + __p.bb_pos) : fb.protocol._internal.raw.ProcessRole.Home; } }
 
   public static Offset<fb.protocol._internal.request.raw.Login> CreateLogin(FlatBufferBuilder builder,
       uint world = 0,
       uint uid = 0,
       StringOffset nameOffset = default(StringOffset),
       byte host = 0,
-      bool force = false) {
-    builder.StartTable(5);
+      bool force = false,
+      fb.protocol._internal.raw.ProcessRole role = fb.protocol._internal.raw.ProcessRole.Home) {
+    builder.StartTable(6);
     Login.AddName(builder, nameOffset);
     Login.AddUid(builder, uid);
     Login.AddWorld(builder, world);
+    Login.AddRole(builder, role);
     Login.AddForce(builder, force);
     Login.AddHost(builder, host);
     return Login.EndLogin(builder);
   }
 
-  public static void StartLogin(FlatBufferBuilder builder) { builder.StartTable(5); }
+  public static void StartLogin(FlatBufferBuilder builder) { builder.StartTable(6); }
   public static void AddWorld(FlatBufferBuilder builder, uint world) { builder.AddUint(0, world, 0); }
   public static void AddUid(FlatBufferBuilder builder, uint uid) { builder.AddUint(1, uid, 0); }
   public static void AddName(FlatBufferBuilder builder, StringOffset nameOffset) { builder.AddOffset(2, nameOffset.Value, 0); }
   public static void AddHost(FlatBufferBuilder builder, byte host) { builder.AddByte(3, host, 0); }
   public static void AddForce(FlatBufferBuilder builder, bool force) { builder.AddBool(4, force, false); }
+  public static void AddRole(FlatBufferBuilder builder, fb.protocol._internal.raw.ProcessRole role) { builder.AddSbyte(5, (sbyte)role, 0); }
   public static Offset<fb.protocol._internal.request.raw.Login> EndLogin(FlatBufferBuilder builder) {
     int o = builder.EndTable();
     return new Offset<fb.protocol._internal.request.raw.Login>(o);
@@ -72,6 +76,7 @@ static public class LoginVerify
       && verifier.VerifyString(tablePos, 8 /*Name*/, false)
       && verifier.VerifyField(tablePos, 10 /*Host*/, 1 /*byte*/, 1, false)
       && verifier.VerifyField(tablePos, 12 /*Force*/, 1 /*bool*/, 1, false)
+      && verifier.VerifyField(tablePos, 14 /*Role*/, 1 /*fb.protocol._internal.raw.ProcessRole*/, 1, false)
       && verifier.VerifyTableEnd(tablePos);
   }
 }

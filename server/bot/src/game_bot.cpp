@@ -1597,7 +1597,8 @@ async::task<void> game_bot::reverse_condition(const std::vector<fb::model::dsl>&
     }
 }
 
-async::task<void> game_bot::apply_condition(const std::vector<fb::model::dsl>& conditions, std::chrono::milliseconds timeout)
+async::task<void> game_bot::apply_condition(const std::vector<fb::model::dsl>& conditions,
+                                            std::chrono::milliseconds          timeout)
 {
     static auto class_names = std::unordered_map<CLASS, std::unordered_map<uint8_t, std::string>>{
         {CLASS::WARRIOR, {{0, "전사"}, {1, "검객"}, {2, "검제"}, {3, "검황"}, {4, "검성"}}  },

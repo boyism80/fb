@@ -1,7 +1,8 @@
-﻿#include <fb/game/service/system_storage.h>
+#include <fb/game/service/system_storage.h>
 #include <fb/game/server.h>
 #include <fb/game/character.h>
 #include <fb/config.h>
+#include <fb/amqp_route.h>
 #include <fb/logger.h>
 #include <fb/protocol/flatbuffer/protocol.h>
 #include <json/json.h>
@@ -175,7 +176,7 @@ void service::system_storage::init_from_login(character&                        
 
 async::task<void> service::system_storage::sync(character& ch)
 {
-    const auto  world = fb::config<uint32_t>("world");
+    const auto  world = ch.world();
     const auto& url   = std::format("/storage/system/{}?offset=0", world);
 
     auto weak = ch.weak_from_this_as<character>();
@@ -352,6 +353,9 @@ async::task<bool> service::system_storage::create_system(std::string_view       
 
 async::task<void> service::system_storage::poll_and_deliver()
 {
+    if (fb::is_cross())
+        co_return;
+
     const auto now = this->server.now();
     prune_expired_boxes(this->_pending_boxes, now);
 

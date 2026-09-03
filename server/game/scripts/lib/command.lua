@@ -1204,7 +1204,7 @@ M.functions = {
                     me:message("사용법: /월드맵 <월드맵이름>")
                     return true
                 end
-                me:world(name)
+                me:world_map(name)
                 return true
             end,
         },

@@ -90,7 +90,7 @@ namespace Internal.Controllers
                     Error = (uint)ErrorCode.None
                 };
 
-                await _rabbitMqService.PublishAsync(response, "amq.direct", $"fb.{world}.castle");
+                await _rabbitMqService.PublishAsync(response, AmqpRoute.Exchange, AmqpRoute.Home("castle", world));
                 return response;
             }
             catch (LogicException e)

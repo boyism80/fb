@@ -1,4 +1,4 @@
-﻿using Http.Model.Redis;
+using Http.Model.Redis;
 using Http.Redis;
 using Http.Redis.Key;
 using Newtonsoft.Json;
@@ -157,7 +157,7 @@ namespace Http.Service
                 {
                     Uid = existingSession.Uid,
                     Name = name
-                }, "amq.direct", $"fb.{world}.game.{existingSession.Host}");
+                }, AmqpRoute.Exchange, AmqpRoute.Unicast(existingSession, world));
             }
 
             return false;

@@ -13,6 +13,8 @@ static_assert(FLATBUFFERS_VERSION_MAJOR == 25 &&
               FLATBUFFERS_VERSION_REVISION == 10,
              "Non-compatible flatbuffers version included");
 
+#include "fb.protocol.internal.processrole_generated.h"
+
 namespace fb {
 namespace protocol {
 namespace internal {
@@ -31,7 +33,8 @@ struct FriendBroadcast FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
     VT_FROM_NAME = 10,
     VT_MESSAGE = 12,
     VT_TYPE = 14,
-    VT_TO_UIDS = 16
+    VT_TO_UIDS = 16,
+    VT_ROLE = 18
   };
   uint32_t world() const {
     return GetField<uint32_t>(VT_WORLD, 0);
@@ -54,6 +57,9 @@ struct FriendBroadcast FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
   const ::flatbuffers::Vector<uint32_t> *to_uids() const {
     return GetPointer<const ::flatbuffers::Vector<uint32_t> *>(VT_TO_UIDS);
   }
+  fb::protocol::internal::raw::ProcessRole role() const {
+    return static_cast<fb::protocol::internal::raw::ProcessRole>(GetField<int8_t>(VT_ROLE, 0));
+  }
   bool Verify(::flatbuffers::Verifier &verifier) const {
     return VerifyTableStart(verifier) &&
            VerifyField<uint32_t>(verifier, VT_WORLD, 4) &&
@@ -66,6 +72,7 @@ struct FriendBroadcast FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
            VerifyField<uint8_t>(verifier, VT_TYPE, 1) &&
            VerifyOffset(verifier, VT_TO_UIDS) &&
            verifier.VerifyVector(to_uids()) &&
+           VerifyField<int8_t>(verifier, VT_ROLE, 1) &&
            verifier.EndTable();
   }
 };
@@ -95,6 +102,9 @@ struct FriendBroadcastBuilder {
   void add_to_uids(::flatbuffers::Offset<::flatbuffers::Vector<uint32_t>> to_uids) {
     fbb_.AddOffset(FriendBroadcast::VT_TO_UIDS, to_uids);
   }
+  void add_role(fb::protocol::internal::raw::ProcessRole role) {
+    fbb_.AddElement<int8_t>(FriendBroadcast::VT_ROLE, static_cast<int8_t>(role), 0);
+  }
   explicit FriendBroadcastBuilder(::flatbuffers::FlatBufferBuilder &_fbb)
         : fbb_(_fbb) {
     start_ = fbb_.StartTable();
@@ -114,7 +124,8 @@ inline ::flatbuffers::Offset<FriendBroadcast> CreateFriendBroadcast(
     ::flatbuffers::Offset<::flatbuffers::String> from_name = 0,
     ::flatbuffers::Offset<::flatbuffers::String> message = 0,
     uint8_t type = 0,
-    ::flatbuffers::Offset<::flatbuffers::Vector<uint32_t>> to_uids = 0) {
+    ::flatbuffers::Offset<::flatbuffers::Vector<uint32_t>> to_uids = 0,
+    fb::protocol::internal::raw::ProcessRole role = fb::protocol::internal::raw::ProcessRole_Home) {
   FriendBroadcastBuilder builder_(_fbb);
   builder_.add_to_uids(to_uids);
   builder_.add_message(message);
@@ -122,6 +133,7 @@ inline ::flatbuffers::Offset<FriendBroadcast> CreateFriendBroadcast(
   builder_.add_from_uid(from_uid);
   builder_.add_host(host);
   builder_.add_world(world);
+  builder_.add_role(role);
   builder_.add_type(type);
   return builder_.Finish();
 }
@@ -134,7 +146,8 @@ inline ::flatbuffers::Offset<FriendBroadcast> CreateFriendBroadcastDirect(
     const char *from_name = nullptr,
     const char *message = nullptr,
     uint8_t type = 0,
-    const std::vector<uint32_t> *to_uids = nullptr) {
+    const std::vector<uint32_t> *to_uids = nullptr,
+    fb::protocol::internal::raw::ProcessRole role = fb::protocol::internal::raw::ProcessRole_Home) {
   auto from_name__ = from_name ? _fbb.CreateString(from_name) : 0;
   auto message__ = message ? _fbb.CreateString(message) : 0;
   auto to_uids__ = to_uids ? _fbb.CreateVector<uint32_t>(*to_uids) : 0;
@@ -146,7 +159,8 @@ inline ::flatbuffers::Offset<FriendBroadcast> CreateFriendBroadcastDirect(
       from_name__,
       message__,
       type,
-      to_uids__);
+      to_uids__,
+      role);
 }
 
 inline const fb::protocol::internal::request::raw::FriendBroadcast *GetFriendBroadcast(const void *buf) {

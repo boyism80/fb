@@ -96,7 +96,7 @@ async::task<void> bulletin<V>::handle_articles(character*               ch,
         else
         {
             auto   section  = request.section;
-            auto&& articles = co_await this->server.bulletin.list(request.section, request.offset);
+            auto&& articles = co_await this->server.bulletin.list(ch->world(), request.section, request.offset);
             co_await this->server.threads.switching(weak);
             auto ptr = weak.lock();
             if (ptr == nullptr)
@@ -158,7 +158,7 @@ async::task<void> bulletin<V>::handle_article(character*               ch,
         }
         else
         {
-            auto&& article = co_await this->server.bulletin.read(request.section, request.article);
+            auto&& article = co_await this->server.bulletin.read(ch->world(), request.section, request.article);
             co_await this->server.threads.switching(weak);
             auto ptr = weak.lock();
             if (ptr == nullptr)

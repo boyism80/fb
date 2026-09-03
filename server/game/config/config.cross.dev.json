@@ -1,11 +1,11 @@
 {
-    "id": 0,
-    "name": "game-0",
-    "role": "home",
+    "id": 200,
+    "name": "game-cross-0",
+    "role": "cross",
     "world": 1,
     "delay": 1,
     "ip": "127.0.0.1",
-    "port": 3004,
+    "port": 3100,
     "thread": {
         "logic": 12,
         "io": 12

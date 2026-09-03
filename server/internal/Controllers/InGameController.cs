@@ -90,14 +90,19 @@ namespace Internal.Controllers
                     }
                 }
 
-                var conf = await _serverStateService.GetHostConfig(world, fb.protocol._internal.Service.Game, request.Host);
+                Http.Service.ServerStateService.HostConfig conf;
+                if (request.Role == Protocol.ProcessRole.Cross)
+                    conf = await _serverStateService.GetCrossHost(request.Host);
+                else
+                    conf = await _serverStateService.GetHostConfig(world, Protocol.Service.Game, request.Host);
                 if (conf == null)
                     throw new LogicException(ErrorCode.ServerNotReady);
 
                 var success = await _sessionService.Login(world, request.Name, new Session
                 {
                     Uid = request.Uid,
-                    Host = request.Host
+                    Host = request.Host,
+                    Role = AmqpRoute.Name(request.Role)
                 }, request.Force);
 
                 if (!success)
@@ -194,7 +199,7 @@ namespace Internal.Controllers
                         {
                             Uid = session.Uid,
                             Name = request.Name
-                        }, "amq.direct", $"fb.{world}.game.{session.Host}");
+                        }, AmqpRoute.Exchange, AmqpRoute.Unicast(session, world));
                         throw new LogicException(ErrorCode.AlreadyLogin);
                     }
                 }
@@ -237,6 +242,39 @@ namespace Internal.Controllers
             }
         }
 
+        [HttpPost("match-transfer")]
+        public async Task<Response.MatchTransfer> MatchTransfer(Request.MatchTransfer request)
+        {
+            try
+            {
+                var pick = await _serverStateService.PickLiveCrossServer(request.MatchId);
+                if (pick == null)
+                    throw new LogicException(ErrorCode.ServerNotReady);
+
+                return new Response.MatchTransfer
+                {
+                    Ip = pick.IP,
+                    Port = pick.Port,
+                    Id = pick.Id
+                };
+            }
+            catch (LogicException e)
+            {
+                return new Response.MatchTransfer
+                {
+                    Error = (uint)e.Error
+                };
+            }
+            catch (Exception e)
+            {
+                _logger.LogError(e.Message);
+                return new Response.MatchTransfer
+                {
+                    Error = (uint)ErrorCode.Unhandled
+                };
+            }
+        }
+
         [HttpPost("whisper")]
         public async Task<Response.Whisper> Whisper(Request.Whisper request)
         {
@@ -247,14 +285,17 @@ namespace Internal.Controllers
                 var session = await _sessionService.Get(world, request.From) ??
                     throw new LogicException(ErrorCode.Offline);
 
-                var targetSession = await _sessionService.Get(world, request.To);
+                var targetRef = await _dbContext.Character.GetCharacterRef(request.To) ??
+                    throw new LogicException(ErrorCode.Offline);
+                var targetWorld = targetRef.World;
+                var targetSession = await _sessionService.Get(targetWorld, request.To);
                 if (targetSession == null)
                     throw new LogicException(ErrorCode.Offline);
 
-                var target = await _dbContext.Character.Get(world, targetSession.Uid) ??
+                var target = await _dbContext.Character.Get(targetWorld, targetSession.Uid) ??
                     throw new LogicException(ErrorCode.NotFoundCharacter);
 
-                var targetOption = await _dbContext.Option.Get(world, targetSession.Uid) ??
+                var targetOption = await _dbContext.Option.Get(targetWorld, targetSession.Uid) ??
                     throw new LogicException(ErrorCode.NotFoundOption);
 
                 if (!targetOption.Whisper)
@@ -267,7 +308,7 @@ namespace Internal.Controllers
                     To = target.Name,
                     Message = request.Message
                 };
-                await _rabbitMqService.PublishAsync(response, "amq.direct", $"fb.{request.World}.game.{targetSession.Host}");
+                await _rabbitMqService.PublishAsync(response, AmqpRoute.Exchange, AmqpRoute.Unicast(targetSession, targetWorld));
                 return response;
             }
             catch (LogicException e)
@@ -302,7 +343,7 @@ namespace Internal.Controllers
                 Error = (uint)ErrorCode.None
             };
 
-            await _rabbitMqService.PublishAsync(response, "amq.direct", $"fb.{request.World}.global");
+            await _rabbitMqService.PublishAsync(response, AmqpRoute.Exchange, AmqpRoute.Home("global", request.World));
             return response;
         }
 
@@ -315,7 +356,7 @@ namespace Internal.Controllers
                 Error = (uint)ErrorCode.None
             };
 
-            await _rabbitMqService.PublishAsync(response, "amq.direct", $"fb.{request.World}.global");
+            await _rabbitMqService.PublishAsync(response, AmqpRoute.Exchange, AmqpRoute.Home("global", request.World));
             return response;
         }
 
@@ -330,7 +371,7 @@ namespace Internal.Controllers
             };
 
             // Game/login logic hosts
-            await _rabbitMqService.PublishAsync(response, "amq.direct", $"fb.{request.World}.global");
+            await _rabbitMqService.PublishAsync(response, AmqpRoute.Exchange, AmqpRoute.Home("global", request.World));
             // C# hosts (AmqpListener on fb.global)
             await _rabbitMqService.PublishAsync(response, "amq.direct", "fb.global");
             return response;
@@ -346,7 +387,7 @@ namespace Internal.Controllers
                 ScriptPaths = request.ScriptPaths ?? new List<string>()
             };
 
-            await _rabbitMqService.PublishAsync(response, "amq.direct", $"fb.{request.World}.global");
+            await _rabbitMqService.PublishAsync(response, AmqpRoute.Exchange, AmqpRoute.Home("global", request.World));
             return response;
         }
 
@@ -359,7 +400,7 @@ namespace Internal.Controllers
                 Error = (uint)ErrorCode.None
             };
 
-            await _rabbitMqService.PublishAsync(response, "amq.direct", $"fb.{request.World}.global");
+            await _rabbitMqService.PublishAsync(response, AmqpRoute.Exchange, AmqpRoute.Home("global", request.World));
             return response;
         }
 
@@ -373,7 +414,7 @@ namespace Internal.Controllers
                 Error = (uint)ErrorCode.None
             };
 
-            await _rabbitMqService.PublishAsync(response, "amq.direct", $"fb.{request.World}.global");
+            await _rabbitMqService.PublishAsync(response, AmqpRoute.Exchange, AmqpRoute.Home("global", request.World));
             return response;
         }
 
@@ -429,9 +470,10 @@ namespace Internal.Controllers
 
             await _dbContext.SaveChangesAsync();
             var now = DateTime.Now;
+            var character = _mapper.Map<Protocol.Character>(ch);
             return new Response.Init
             {
-                Character = _mapper.Map<Protocol.Character>(ch),
+                Character = character,
                 Marriage = marriageProtocol,
                 Items = items.Select(_mapper.Map<Protocol.Item>).ToList(),
                 Spells = spells.Select(_mapper.Map<Protocol.Spell>).ToList(),

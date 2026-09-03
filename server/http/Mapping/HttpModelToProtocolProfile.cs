@@ -12,6 +12,7 @@ namespace Http.Mapping
             CreateMap<Protocol.Mimicry, Http.Model.Mimicry>();
 
             CreateMap<Http.Model.Character, Protocol.Character>()
+                .ForMember(x => x.World, x => x.MapFrom(u => u.World))
                 .ForMember(x => x.ClassType, x => x.MapFrom(u => u.Class))
                 .ForMember(x => x.Mimicry, x => x.MapFrom(u => u.Mimicry))
                 .ForMember(x => x.Buffs, x => x.MapFrom(u => u.Buffs))
@@ -22,6 +23,7 @@ namespace Http.Mapping
                 .ForMember(x => x.Role, x => x.MapFrom(u => (byte)u.Role));
 
             CreateMap<Protocol.Character, Http.Model.Character>()
+                .ForMember(x => x.World, x => x.MapFrom(u => u.World))
                 .ForMember(x => x.Mimicry, x => x.MapFrom(u => u.Mimicry))
                 .ForMember(x => x.Buffs, x => x.MapFrom(u => u.Buffs))
                 .ForMember(x => x.Class, x => x.MapFrom(u => u.ClassType))

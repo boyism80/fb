@@ -74,6 +74,7 @@ REGISTER_RESPONSE(fb::protocol::internal::request::DeliverSystemMail, fb::protoc
 REGISTER_RESPONSE(fb::protocol::internal::request::DeleteMail, fb::protocol::internal::response::DeleteMail)
 REGISTER_RESPONSE(fb::protocol::internal::request::Whisper, fb::protocol::internal::response::Whisper)
 REGISTER_RESPONSE(fb::protocol::internal::request::Transfer, fb::protocol::internal::response::Transfer)
+REGISTER_RESPONSE(fb::protocol::internal::request::MatchTransfer, fb::protocol::internal::response::MatchTransfer)
 REGISTER_RESPONSE(fb::protocol::internal::request::UpdateFriends, fb::protocol::internal::response::UpdateFriends)
 REGISTER_RESPONSE(fb::protocol::internal::request::WriteSystemStorageBox, fb::protocol::internal::response::WriteSystemStorageBox)
 REGISTER_RESPONSE(fb::protocol::internal::request::WriteStorageBox, fb::protocol::internal::response::WriteStorageBox)

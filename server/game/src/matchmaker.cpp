@@ -178,7 +178,7 @@ async::task<void> matchmaker::unregister_queue(bool quiet)
 
     auto enrollment   = this->_enrollment.value();
     auto registry_id  = enrollment.registry_id;
-    auto world        = fb::config<uint32_t>("world");
+    auto world        = this->owner.world();
     auto match_type   = enrollment.match_type;
     auto character_id = this->owner.id;
     this->clear_enrollment();
@@ -245,7 +245,7 @@ async::task<void> matchmaker::confirm_queue(std::string_view match_id, bool quie
     if (match_id.empty())
         co_return;
 
-    auto world        = fb::config<uint32_t>("world");
+    auto world        = this->owner.world();
     auto character_id = this->owner.id;
 
     try
@@ -304,7 +304,7 @@ async::task<void> matchmaker::decline_queue(std::string_view match_id, bool quie
     if (match_id.empty())
         co_return;
 
-    auto world        = fb::config<uint32_t>("world");
+    auto world        = this->owner.world();
     auto character_id = this->owner.id;
 
     try
@@ -384,7 +384,7 @@ async::task<void> matchmaker::register_queue(uint32_t match_type)
 
     auto  matchmaking_table  = table::matchmaking;
     auto& matchmaking_config = matchmaking_table[match_type_enum];
-    auto  world              = fb::config<uint32_t>("world");
+    auto  world              = this->owner.world();
     auto  entries            = std::vector<mp::RegistryEntry>{};
     auto  participants       = std::vector<std::shared_ptr<character>>{};
 

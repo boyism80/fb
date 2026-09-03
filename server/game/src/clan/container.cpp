@@ -12,9 +12,8 @@ clan::container::container(server& server) :
 
 async::task<clan::container::entity_ptr> clan::container::fetch(uint32_t id)
 {
-    auto   world = fb::config<uint32_t>("world");
     auto&& resp =
-        co_await this->_server.http.get<internal_resp::ClanDetails>("internal", std::format("/clan/{}/{}", world, id));
+        co_await this->_server.http.get<internal_resp::ClanDetails>("internal", std::format("/clan/id/{}", id));
 
     switch (static_cast<fb::model::enum_value::ERROR_CODE>(resp.error))
     {

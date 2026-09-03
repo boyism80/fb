@@ -31,53 +31,57 @@ struct Character FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
   typedef CharacterBuilder Builder;
   enum FlatBuffersVTableOffset FLATBUFFERS_VTABLE_UNDERLYING_TYPE {
     VT_ID = 4,
-    VT_NAME = 6,
-    VT_PW = 8,
-    VT_BIRTH = 10,
-    VT_ROLE = 12,
-    VT_HAIR = 14,
-    VT_COLOR = 16,
-    VT_GENDER = 18,
-    VT_NATION = 20,
-    VT_DIVINE_BEAST = 22,
-    VT_MAP = 24,
-    VT_POSITION = 26,
-    VT_DIRECTION = 28,
-    VT_STATE = 30,
-    VT_CLASS_TYPE = 32,
-    VT_PROMOTION = 34,
-    VT_LEVEL = 36,
-    VT_EXP = 38,
-    VT_MONEY = 40,
-    VT_DEPOSITED_MONEY = 42,
-    VT_MIMICRY = 44,
-    VT_HP = 46,
-    VT_BASE_HP = 48,
-    VT_ADDITIONAL_HP = 50,
-    VT_MP = 52,
-    VT_BASE_MP = 54,
-    VT_ADDITIONAL_MP = 56,
-    VT_WEAPON_COLOR = 58,
-    VT_HELMET_COLOR = 60,
-    VT_ARMOR_COLOR = 62,
-    VT_SHIELD_COLOR = 64,
-    VT_RING_LEFT_COLOR = 66,
-    VT_RING_RIGHT_COLOR = 68,
-    VT_AUX_TOP_COLOR = 70,
-    VT_AUX_BOT_COLOR = 72,
-    VT_BUFFS = 74,
-    VT_TITLE = 76,
-    VT_CREATED_DATE = 78,
-    VT_UPDATED_DATE = 80,
-    VT_FIRST_LOGIN_DATE = 82,
-    VT_SUPER_HIDE = 84,
-    VT_SPEED = 86,
-    VT_REPUTATION = 88,
-    VT_EVALUATION = 90,
-    VT_FACE = 92
+    VT_WORLD = 6,
+    VT_NAME = 8,
+    VT_PW = 10,
+    VT_BIRTH = 12,
+    VT_ROLE = 14,
+    VT_HAIR = 16,
+    VT_COLOR = 18,
+    VT_GENDER = 20,
+    VT_NATION = 22,
+    VT_DIVINE_BEAST = 24,
+    VT_MAP = 26,
+    VT_POSITION = 28,
+    VT_DIRECTION = 30,
+    VT_STATE = 32,
+    VT_CLASS_TYPE = 34,
+    VT_PROMOTION = 36,
+    VT_LEVEL = 38,
+    VT_EXP = 40,
+    VT_MONEY = 42,
+    VT_DEPOSITED_MONEY = 44,
+    VT_MIMICRY = 46,
+    VT_HP = 48,
+    VT_BASE_HP = 50,
+    VT_ADDITIONAL_HP = 52,
+    VT_MP = 54,
+    VT_BASE_MP = 56,
+    VT_ADDITIONAL_MP = 58,
+    VT_WEAPON_COLOR = 60,
+    VT_HELMET_COLOR = 62,
+    VT_ARMOR_COLOR = 64,
+    VT_SHIELD_COLOR = 66,
+    VT_RING_LEFT_COLOR = 68,
+    VT_RING_RIGHT_COLOR = 70,
+    VT_AUX_TOP_COLOR = 72,
+    VT_AUX_BOT_COLOR = 74,
+    VT_BUFFS = 76,
+    VT_TITLE = 78,
+    VT_CREATED_DATE = 80,
+    VT_UPDATED_DATE = 82,
+    VT_FIRST_LOGIN_DATE = 84,
+    VT_SUPER_HIDE = 86,
+    VT_SPEED = 88,
+    VT_REPUTATION = 90,
+    VT_EVALUATION = 92,
+    VT_FACE = 94
   };
   uint32_t id() const {
     return GetField<uint32_t>(VT_ID, 0);
+  }
+  uint32_t world() const {
+    return GetField<uint32_t>(VT_WORLD, 0);
   }
   const ::flatbuffers::String *name() const {
     return GetPointer<const ::flatbuffers::String *>(VT_NAME);
@@ -214,6 +218,7 @@ struct Character FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
   bool Verify(::flatbuffers::Verifier &verifier) const {
     return VerifyTableStart(verifier) &&
            VerifyField<uint32_t>(verifier, VT_ID, 4) &&
+           VerifyField<uint32_t>(verifier, VT_WORLD, 4) &&
            VerifyOffset(verifier, VT_NAME) &&
            verifier.VerifyString(name()) &&
            VerifyOffset(verifier, VT_PW) &&
@@ -287,6 +292,9 @@ struct CharacterBuilder {
   ::flatbuffers::uoffset_t start_;
   void add_id(uint32_t id) {
     fbb_.AddElement<uint32_t>(Character::VT_ID, id, 0);
+  }
+  void add_world(uint32_t world) {
+    fbb_.AddElement<uint32_t>(Character::VT_WORLD, world, 0);
   }
   void add_name(::flatbuffers::Offset<::flatbuffers::String> name) {
     fbb_.AddOffset(Character::VT_NAME, name);
@@ -434,6 +442,7 @@ struct CharacterBuilder {
 inline ::flatbuffers::Offset<Character> CreateCharacter(
     ::flatbuffers::FlatBufferBuilder &_fbb,
     uint32_t id = 0,
+    uint32_t world = 0,
     ::flatbuffers::Offset<::flatbuffers::String> name = 0,
     ::flatbuffers::Offset<::flatbuffers::String> pw = 0,
     ::flatbuffers::Offset<nullable::nullable_uint> birth = 0,
@@ -507,6 +516,7 @@ inline ::flatbuffers::Offset<Character> CreateCharacter(
   builder_.add_birth(birth);
   builder_.add_pw(pw);
   builder_.add_name(name);
+  builder_.add_world(world);
   builder_.add_id(id);
   builder_.add_evaluation(evaluation);
   builder_.add_reputation(reputation);
@@ -530,6 +540,7 @@ inline ::flatbuffers::Offset<Character> CreateCharacter(
 inline ::flatbuffers::Offset<Character> CreateCharacterDirect(
     ::flatbuffers::FlatBufferBuilder &_fbb,
     uint32_t id = 0,
+    uint32_t world = 0,
     const char *name = nullptr,
     const char *pw = nullptr,
     ::flatbuffers::Offset<nullable::nullable_uint> birth = 0,
@@ -584,6 +595,7 @@ inline ::flatbuffers::Offset<Character> CreateCharacterDirect(
   return fb::protocol::internal::raw::CreateCharacter(
       _fbb,
       id,
+      world,
       name__,
       pw__,
       birth,

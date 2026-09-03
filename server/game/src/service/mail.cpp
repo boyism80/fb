@@ -110,7 +110,7 @@ service::mail::send(character& sender, std::string_view to, std::string_view tit
     auto   to_str       = std::string(to);
     auto   title_str    = std::string(title);
     auto   contents_str = std::string(contents);
-    auto   world        = fb::config<uint32_t>("world");
+    auto   world        = sender.world();
     auto&& resp         = co_await this->server.http.post(
         "internal",
         "/mail/write",
@@ -134,7 +134,7 @@ service::mail::send(character& sender, std::string_view to, std::string_view tit
 async::task<std::vector<mail_box::summary>> service::mail::list(const character& ch, uint16_t offset, uint16_t count)
 {
     auto   weak  = ch.weak_from_this();
-    auto   world = fb::config<uint32_t>("world");
+    auto   world = ch.world();
     auto&& resp  = co_await this->server.http.get<internal_resp::GetMailList>(
         "internal",
         std::format("/mail/{}/{}?offset={}&count={}", world, ch.id, offset, count));
@@ -157,7 +157,7 @@ async::task<std::vector<mail_box::summary>> service::mail::list(const character&
 async::task<mail_box::mail> service::mail::read(character& ch, uint16_t id)
 {
     auto   weak  = ch.weak_from_this_as<character>();
-    auto   world = fb::config<uint32_t>("world");
+    auto   world = ch.world();
     auto   url   = std::format("/mail/{}/{}/{}", world, ch.id, id);
     auto&& resp  = co_await this->server.http.get<internal_resp::GetMail>("internal", url);
     co_await this->server.threads.switching(weak);
@@ -173,7 +173,7 @@ async::task<mail_box::mail> service::mail::read(character& ch, uint16_t id)
 async::task<void> service::mail::remove(character& ch, uint16_t id)
 {
     auto   weak  = ch.weak_from_this_as<character>();
-    auto   world = fb::config<uint32_t>("world");
+    auto   world = ch.world();
     auto&& resp =
         co_await this->server.http.post("internal", "/mail/delete", internal_reqs::DeleteMail{world, ch.id, id});
     co_await this->server.threads.switching(weak);

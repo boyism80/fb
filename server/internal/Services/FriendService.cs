@@ -39,9 +39,9 @@ namespace Internal.Services
             var user = request.User;
             var now = DateTime.Now;
 
-            var resolved = await ResolveFriends(world, user, request.Names);
+            var friends = await FindFriends(world, user, request.Names);
             var lockUids = new SortedSet<uint> { user };
-            foreach (var friend in resolved)
+            foreach (var friend in friends)
                 lockUids.Add(friend.FriendUid);
 
             while (true)
@@ -61,7 +61,7 @@ namespace Internal.Services
                     }
 
                     var existingByFriend = existing.ToDictionary(x => x.FriendUid);
-                    var newFriendUids = resolved.Select(x => x.FriendUid).ToHashSet();
+                    var newFriendUids = friends.Select(x => x.FriendUid).ToHashSet();
                     var removed = existing.Where(x => !newFriendUids.Contains(x.FriendUid)).ToList();
                     var ownerName = await _dbContext.Character.GetName(world, user) ?? string.Empty;
                     var peerUpdates = new List<PeerRelationNotify>();
@@ -85,7 +85,7 @@ namespace Internal.Services
                     }
 
                     var nextFriends = new List<Friend>();
-                    foreach (var friend in resolved)
+                    foreach (var friend in friends)
                     {
                         var reverse = await _dbContext.Friend.Get(world, friend.FriendUid, user);
                         var mutual = reverse != null;
@@ -169,7 +169,7 @@ namespace Internal.Services
                 var session = await _sessionService.Get(world, toName);
                 if (session == null)
                     continue;
-                if (session.Host == request.Host)
+                if (session.Host == request.Host && AmqpRoute.Parse(session.Role) == request.Role)
                     continue;
 
                 await _rabbitMqService.PublishAsync(new Response.FriendMessage
@@ -177,7 +177,7 @@ namespace Internal.Services
                     ToUid = toUid,
                     Message = request.Message,
                     Type = request.Type
-                }, "amq.direct", $"fb.{world}.game.{session.Host}");
+                }, AmqpRoute.Exchange, AmqpRoute.Unicast(session, world));
             }
 
             return new Response.FriendBroadcast
@@ -186,9 +186,9 @@ namespace Internal.Services
             };
         }
 
-        private async Task<List<ResolvedFriend>> ResolveFriends(uint world, uint user, List<string> names)
+        private async Task<List<NamedFriend>> FindFriends(uint world, uint user, List<string> names)
         {
-            var resolved = new List<ResolvedFriend>();
+            var friends = new List<NamedFriend>();
             var seen = new HashSet<uint>();
             foreach (var name in names ?? new List<string>())
             {
@@ -202,14 +202,14 @@ namespace Internal.Services
                     continue;
 
                 var canonicalName = await _dbContext.Character.GetName(world, friendId.Value) ?? name;
-                resolved.Add(new ResolvedFriend
+                friends.Add(new NamedFriend
                 {
                     FriendUid = friendId.Value,
                     FriendName = canonicalName
                 });
             }
 
-            return resolved;
+            return friends;
         }
 
         private async Task NotifyPeerRelations(uint world, List<PeerRelationNotify> peerUpdates)
@@ -234,7 +234,7 @@ namespace Internal.Services
                     FriendUid = update.FriendUid,
                     FriendName = update.FriendName,
                     Mutual = update.Mutual
-                }, "amq.direct", $"fb.{world}.game.{peerSession.Host}");
+                }, AmqpRoute.Exchange, AmqpRoute.Unicast(peerSession, world));
             }
         }
 
@@ -279,7 +279,7 @@ namespace Internal.Services
             };
         }
 
-        private sealed class ResolvedFriend
+        private sealed class NamedFriend
         {
             public uint FriendUid { get; init; }
             public string FriendName { get; init; } = string.Empty;

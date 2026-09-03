@@ -2,6 +2,7 @@
 #include <fb/game/server.h>
 #include <fb/game/character.h>
 #include <fb/config.h>
+#include <fb/amqp_route.h>
 #include <fb/logger.h>
 #include <fb/protocol/flatbuffer/protocol.h>
 #include <algorithm>
@@ -79,6 +80,12 @@ fb::async_generator<void> service::system_mail::delivery_coroutine()
     {
         const auto now = this->server.now();
         prune_expired_mails(this->_pending_mails, now);
+
+        if (fb::is_cross())
+        {
+            co_await fb::async_suspend{};
+            continue;
+        }
 
         if (this->server.characters.size() == 0)
         {

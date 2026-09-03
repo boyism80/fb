@@ -1,4 +1,5 @@
 #include <fb/config.h>
+#include <fb/amqp_route.h>
 #include <fb/game/character.h>
 #include <fb/game/instance_map.h>
 #include <fb/game/map.h>
@@ -10,6 +11,7 @@
 #include <fb/model/model.h>
 #include <fb/stream_reader.h>
 #include <fb/stream_writer.h>
+#include <json/json.h>
 #include <algorithm>
 #include <tuple>
 
@@ -202,7 +204,7 @@ bool map::container::load_block(uint32_t id, std::vector<fb::model::point16_t>& 
 
 void map::container::load(const fb::model::map& model)
 {
-    auto active    = (model.host == this->host);
+    auto active    = fb::is_cross() || (model.host == this->host);
     auto lazy_load = fb::config<bool>("lazy_load_maps", false);
     auto binary    = std::vector<char>();
     auto blocks    = std::vector<fb::model::point16_t>();

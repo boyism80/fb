@@ -190,7 +190,7 @@ async::task<bool> storage_box::receive_reward(uint32_t entry_id)
     }
 
     auto weak  = this->_owner.weak_from_this_as<character>();
-    auto world = fb::config<uint32_t>("world");
+    auto world = this->_owner.world();
     fb::logger::debug("storage_box.receive_reward claim begin user={} entry={} world={} http_delay_ms={}",
                       this->_owner.id,
                       entry_id,

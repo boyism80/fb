@@ -96,6 +96,7 @@ private:
     const fb::model::datetime                        _created_date;
     const fb::model::datetime                        _updated_date;
     const std::string                                _name;
+    uint32_t                                         _world = 0;
     ROLE                                             _role;
     std::optional<uint32_t>                          _birthday;
     uint16_t                                         _hair             = 0;
@@ -130,6 +131,8 @@ private:
     std::weak_ptr<fb::socket<character>>             _socket;
     ping_state_t                                     _ping_state;
     std::vector<friend_entry>                        _friends;
+    std::optional<fb::model::point16_t>              _match_return_position = std::nullopt;
+    uint32_t                                         _match_return_map      = 0;
     bool                                             _options[static_cast<uint8_t>(OPTION::LOCK_WALK_SPEED) + 1] = {
         1,
     };
@@ -157,7 +160,8 @@ public:
     {
     public:
         std::shared_ptr<fb::socket<character>> socket;
-        uint32_t                               id = 0;
+        uint32_t                               id    = 0;
+        uint32_t                               world = 0;
         std::string                            name;
         std::string                            pw;
         std::optional<uint32_t>                birthday = std::nullopt;
@@ -254,6 +258,13 @@ public:
     // clang-format off
     bool                                                      inited() const;
     ROLE                                                      role() const;
+    uint32_t                                                  world() const;
+    void                                                      save_return_point();
+    void                                                      restore_return_point(uint32_t map, const fb::model::point16_t& position);
+    bool                                                      has_return_point() const;
+    uint32_t                                                  return_map() const;
+    fb::model::point16_t                                      return_position() const;
+    [[nodiscard]] async::task<bool>                           transfer_home();
     void                                                      role(ROLE value);
     const std::optional<uint32_t>&                            birthday() const;
     void                                                      birthday(const std::optional<uint32_t>& value);

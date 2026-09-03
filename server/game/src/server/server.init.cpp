@@ -6,6 +6,7 @@
 #include <fb/encoding.h>
 #include <fb/console.h>
 #include <fb/logger.h>
+#include <fb/amqp_route.h>
 #include <fb/protocol/flatbuffer/protocol.h>
 #include <json/json.h>
 #include <format>
@@ -108,6 +109,8 @@ async::task<void> fb::game::server::init_lua()
         lua.build("drop_rate_multiplier", builtin::server::builtin_drop_rate_multiplier);
         lua.build("http_response_delay", builtin::server::builtin_http_response_delay);
         lua.build("property", builtin::server::builtin_property);
+        lua.build("match_transfer", builtin::server::builtin_match_transfer);
+        lua.build("is_cross", builtin::server::builtin_is_cross);
 
         fb::model::lua::map_enum(lua);
         fb::model::lua::map_const(lua);
@@ -231,7 +234,8 @@ void fb::game::server::init_timers()
     this->bind_timer<fb::game::handler::timer::system_mail_timer>(1s);
     this->bind_timer<fb::game::handler::timer::system_storage_box_timer>(1s);
 
-    this->schedules.init();
+    if (fb::is_cross() == false)
+        this->schedules.init();
     auto announce_interval = std::chrono::seconds(fb::model::const_value::time::ANNOUNCE.total_milliseconds() / 1000);
     this->bind_timer<fb::game::handler::timer::announce>(announce_interval);
     this->bind_thread_timer<fb::game::handler::timer::mob_action_timer>(100ms);
@@ -250,41 +254,45 @@ void fb::game::server::init_timers()
 
 void fb::game::server::init_amqp_handlers()
 {
-    // clang-format off
-    auto world     = config<uint32_t>("world");
-    auto host_name = std::format("fb.{}.game.{}", world, config<uint32_t>("id"));
-    this->handler.amqp.bind<fb::game::handler::amqp::kick_out>(host_name);
-    this->handler.amqp.bind<fb::game::handler::amqp::whisper>(host_name);
-    this->handler.amqp.bind<fb::game::handler::amqp::friend_relation>(host_name);
-    this->handler.amqp.bind<fb::game::handler::amqp::friend_message>(host_name);
-    this->handler.amqp.bind<fb::game::handler::amqp::shutdown>("fb.global"); // Shutdown: all servers
-    this->handler.amqp.bind<fb::game::handler::amqp::broadcast>(std::format("fb.{}.global", world));
-    this->handler.amqp.bind<fb::game::handler::amqp::broadcast_save>(std::format("fb.{}.system", world));
-    this->handler.amqp.bind<fb::game::handler::amqp::create_group>(std::format("fb.{}.group", world));
-    this->handler.amqp.bind<fb::game::handler::amqp::updated_group>(std::format("fb.{}.group", world));
-    this->handler.amqp.bind<fb::game::handler::amqp::destroy_group>(std::format("fb.{}.group", world));
-    this->handler.amqp.bind<fb::game::handler::amqp::create_clan>(std::format("fb.{}.clan", world));
-    this->handler.amqp.bind<fb::game::handler::amqp::destroy_clan>(std::format("fb.{}.clan", world));
-    this->handler.amqp.bind<fb::game::handler::amqp::updated_clan>(std::format("fb.{}.clan", world));
-    this->handler.amqp.bind<fb::game::handler::amqp::broadcast_clan>(std::format("fb.{}.clan", world));
-    this->handler.amqp.bind<fb::game::handler::amqp::updated_castle>(std::format("fb.{}.castle", world));
-    this->handler.amqp.bind<fb::game::handler::amqp::write_mail>(std::format("fb.{}.mail", world));
-    this->handler.amqp.bind<fb::game::handler::amqp::write_mails>(std::format("fb.{}.mail", world));
-    this->handler.amqp.bind<fb::game::handler::amqp::deliver_system_mail>(std::format("fb.{}.mail", world));
-    this->handler.amqp.bind<fb::game::handler::amqp::write_storage_box>(std::format("fb.{}.storage", world));
-    this->handler.amqp.bind<fb::game::handler::amqp::deliver_system_storage>(std::format("fb.{}.storage", world));
-    this->handler.amqp.bind<fb::game::handler::amqp::ban>(std::format("fb.{}.ban", world));
-    this->handler.amqp.bind<fb::game::handler::amqp::set_exp_multiplier>(std::format("fb.{}.global", world));
-    this->handler.amqp.bind<fb::game::handler::amqp::reload_tables>(std::format("fb.{}.global", world));
-    this->handler.amqp.bind<fb::game::handler::amqp::reload_scripts>(std::format("fb.{}.global", world));
-    this->handler.amqp.bind<fb::game::handler::amqp::set_drop_rate_multiplier>(std::format("fb.{}.global", world));
-    this->handler.amqp.bind<fb::game::handler::amqp::set_datetime>(std::format("fb.{}.global", world));
-    this->handler.amqp.bind<fb::game::handler::amqp::start_maintenance>(std::format("fb.{}.game.{}", world, fb::config<uint32_t>("id")));
-    auto matchmaking_route = std::format("fb.{}.matchmaking", world);
-    this->handler.amqp.bind<fb::game::handler::amqp::matchmaking_proposed>(matchmaking_route);
-    this->handler.amqp.bind<fb::game::handler::amqp::matchmaking_ready>(matchmaking_route);
-    this->handler.amqp.bind<fb::game::handler::amqp::matchmaking_dissolved>(matchmaking_route);
-    // clang-format on
+    auto scope = fb::amqp_scope();
+    auto id    = fb::config<uint32_t>("id");
+    auto game  = fb::amqp_key("game", scope, id);
+
+    this->handler.amqp.bind<fb::game::handler::amqp::kick_out>(game);
+    this->handler.amqp.bind<fb::game::handler::amqp::whisper>(game);
+    this->handler.amqp.bind<fb::game::handler::amqp::friend_relation>(game);
+    this->handler.amqp.bind<fb::game::handler::amqp::friend_message>(game);
+    this->handler.amqp.bind<fb::game::handler::amqp::start_maintenance>(game);
+    this->handler.amqp.bind<fb::game::handler::amqp::shutdown>("fb.global");
+
+    this->handler.amqp.bind<fb::game::handler::amqp::create_clan>(fb::amqp_key("clan", scope));
+    this->handler.amqp.bind<fb::game::handler::amqp::destroy_clan>(fb::amqp_key("clan", scope));
+    this->handler.amqp.bind<fb::game::handler::amqp::updated_clan>(fb::amqp_key("clan", scope));
+    this->handler.amqp.bind<fb::game::handler::amqp::broadcast_clan>(fb::amqp_key("clan", scope));
+    this->handler.amqp.bind<fb::game::handler::amqp::create_group>(fb::amqp_key("group", scope));
+    this->handler.amqp.bind<fb::game::handler::amqp::updated_group>(fb::amqp_key("group", scope));
+    this->handler.amqp.bind<fb::game::handler::amqp::destroy_group>(fb::amqp_key("group", scope));
+    this->handler.amqp.bind<fb::game::handler::amqp::write_mail>(fb::amqp_key("mail", scope));
+    this->handler.amqp.bind<fb::game::handler::amqp::write_mails>(fb::amqp_key("mail", scope));
+    this->handler.amqp.bind<fb::game::handler::amqp::deliver_system_mail>(fb::amqp_key("mail", scope));
+    this->handler.amqp.bind<fb::game::handler::amqp::write_storage_box>(fb::amqp_key("storage", scope));
+    this->handler.amqp.bind<fb::game::handler::amqp::deliver_system_storage>(fb::amqp_key("storage", scope));
+    this->handler.amqp.bind<fb::game::handler::amqp::ban>(fb::amqp_key("ban", scope));
+    this->handler.amqp.bind<fb::game::handler::amqp::broadcast_save>(fb::amqp_key("system", scope));
+    this->handler.amqp.bind<fb::game::handler::amqp::matchmaking_proposed>(fb::amqp_key("matchmaking", scope));
+    this->handler.amqp.bind<fb::game::handler::amqp::matchmaking_ready>(fb::amqp_key("matchmaking", scope));
+    this->handler.amqp.bind<fb::game::handler::amqp::matchmaking_dissolved>(fb::amqp_key("matchmaking", scope));
+
+    if (scope != "cross")
+    {
+        this->handler.amqp.bind<fb::game::handler::amqp::updated_castle>(fb::amqp_key("castle", scope));
+        this->handler.amqp.bind<fb::game::handler::amqp::broadcast>(fb::amqp_key("global", scope));
+        this->handler.amqp.bind<fb::game::handler::amqp::set_datetime>(fb::amqp_key("global", scope));
+        this->handler.amqp.bind<fb::game::handler::amqp::set_exp_multiplier>(fb::amqp_key("global", scope));
+        this->handler.amqp.bind<fb::game::handler::amqp::set_drop_rate_multiplier>(fb::amqp_key("global", scope));
+        this->handler.amqp.bind<fb::game::handler::amqp::reload_tables>(fb::amqp_key("global", scope));
+        this->handler.amqp.bind<fb::game::handler::amqp::reload_scripts>(fb::amqp_key("global", scope));
+    }
 }
 
 async::task<void> fb::game::server::init_map_scripts()
@@ -457,8 +465,11 @@ async::task<void> fb::game::server::on_start()
         builder.func = [this](auto&) -> async::task<void> {
             try
             {
-                co_await this->castles.load_all();
-                fb::logger::info("castles: loaded all divine beast castles");
+                if (fb::is_cross() == false)
+                {
+                    co_await this->castles.load_all();
+                    fb::logger::info("castles: loaded all divine beast castles");
+                }
             }
             catch (std::exception& e)
             {

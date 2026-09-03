@@ -59,6 +59,8 @@ struct server
     static int builtin_drop_rate_multiplier(lua_State* L);
     static int builtin_http_response_delay(lua_State* L);
     static int builtin_property(lua_State* L);
+    static int builtin_match_transfer(lua_State* L);
+    static int builtin_is_cross(lua_State* L);
 };
 
 } // namespace fb::game::builtin

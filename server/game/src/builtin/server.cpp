@@ -1,6 +1,7 @@
 #include <fb/game/builtin/server.h>
 #include <fb/lua.h>
 #include <fb/encoding.h>
+#include <fb/amqp_route.h>
 #include <json/json.h>
 #include <boost/xpressive/xpressive.hpp>
 #include <chrono>
@@ -1602,4 +1603,58 @@ int builtin::server::builtin_property(lua_State* L)
         }
     }
     return 0;
+}
+
+int builtin::server::builtin_is_cross(lua_State* L)
+{
+    auto lua = fb::lua::get(L);
+    if (lua == nullptr)
+        return 0;
+
+    lua->pushboolean(fb::is_cross());
+    return 1;
+}
+
+int builtin::server::builtin_match_transfer(lua_State* L)
+{
+    auto lua = fb::lua::get(L);
+    if (lua == nullptr)
+        return 0;
+
+    auto match_id = std::string(lua->tostring(1));
+    auto ok       = std::make_shared<bool>(false);
+    auto ip       = std::make_shared<std::string>();
+    auto port     = std::make_shared<uint16_t>(0);
+    auto id       = std::make_shared<uint8_t>(0);
+    auto builder  = lua->new_co_builder();
+    builder.yield = [=]() -> async::task<void> {
+        auto&  server = static_cast<fb::game::server&>(lua->executor);
+        auto&& resp =
+            co_await server.http.post("internal", "/in-game/match-transfer", internal_reqs::MatchTransfer{match_id});
+        if (resp.error == 0 && resp.ip.empty() == false)
+        {
+            *ok   = true;
+            *ip   = resp.ip;
+            *port = resp.port;
+            *id   = resp.id;
+        }
+        co_return;
+    };
+    builder.resume = [=]() -> async::task<int> {
+        if (*ok == false)
+        {
+            lua->pushnil();
+            co_return 1;
+        }
+
+        lua->new_table();
+        lua->pushstring(*ip);
+        lua_setfield(*lua, -2, "ip");
+        lua->pushinteger(*port);
+        lua_setfield(*lua, -2, "port");
+        lua->pushinteger(*id);
+        lua_setfield(*lua, -2, "id");
+        co_return 1;
+    };
+    return builder.run();
 }

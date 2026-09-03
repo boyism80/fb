@@ -460,6 +460,14 @@ local function matchmaking_clear_state(me)
     matchmaking_states[me:uid()] = nil
 end
 
+-- 고구려중앙무한장
+local MATCH_MAP_ID = 616
+local MATCH_DURATION_SECONDS = 600
+
+local function on_match_end(me)
+    me:transfer_home()
+end
+
 local function on_attack(me, additional_attack)
     local map = me:map()
     if map == nil then
@@ -934,8 +942,24 @@ return {
     on_matchmaking_ready = function(me, match_id, match_type)
         matchmaking_clear_timer(me)
         matchmaking_clear_state(me)
-        me:message(string.format('매치가 성사되었습니다. (유형: %d)', match_type), MESSAGE_TYPE.STATE)
+        me:save_return_point()
+        me:save()
+        local dest = match_transfer(match_id)
+        if dest == nil then
+            me:message('교차 서버를 찾을 수 없습니다.', MESSAGE_TYPE.STATE)
+            return
+        end
+        me:transfer_to(dest.ip, dest.port, dest.id, { map = MATCH_MAP_ID })
     end,
+
+    on_match_start = function(me)
+        me:timer(MATCH_DURATION_SECONDS, false)
+        me:message('매치가 시작되었습니다.', MESSAGE_TYPE.STATE)
+        sleep(MATCH_DURATION_SECONDS * 1000)
+        on_match_end(me)
+    end,
+
+    on_match_end = on_match_end,
 
     on_matchmaking_dissolved = function(me, match_id, match_type, reason, outcome)
         if outcome == 1 then

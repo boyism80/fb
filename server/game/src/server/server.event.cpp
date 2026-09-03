@@ -2,6 +2,7 @@
 #include <fb/game/handler.h>
 #include <fb/log_collector.h>
 #include <fb/encoding.h>
+#include <fb/amqp_route.h>
 #include <json/json.h>
 #include <format>
 #include <tuple>
@@ -48,7 +49,7 @@ async::task<bool> fb::game::server::on_disconnected(fb::socket<character>& socke
         {
             co_await this->save(*ch);
         }
-        auto world  = fb::config<uint32_t>("world");
+        auto world  = ch->world();
         std::ignore = co_await this->http.post("internal", "/in-game/logout", internal_reqs::Logout{world, ch->name()});
     }
     catch (std::exception& e)
@@ -161,15 +162,13 @@ uint32_t fb::game::server::thread_id(const fb::socket<character>& socket) const
 
 void fb::game::server::on_init_amqp(fb::amqp::socket& amqp)
 {
-    auto world = config<uint32_t>("world");
-    this->handler.amqp.declare_queue("amq.direct", "fb.global");                        // Shutdown: all servers
-    this->handler.amqp.declare_queue("amq.direct", std::format("fb.{}.system", world)); // System mail, broadcast save
-    this->handler.amqp.declare_queue("amq.direct", std::format("fb.{}.game.{}", world, fb::config<uint32_t>("id")));
-    this->handler.amqp.declare_queue("amq.direct", std::format("fb.{}.global", world));
-    this->handler.amqp.declare_queue("amq.direct", std::format("fb.{}.group", world));
-    this->handler.amqp.declare_queue("amq.direct", std::format("fb.{}.clan", world));
-    this->handler.amqp.declare_queue("amq.direct", std::format("fb.{}.mail", world));
-    this->handler.amqp.declare_queue("amq.direct", std::format("fb.{}.storage", world));
-    this->handler.amqp.declare_queue("amq.direct", std::format("fb.{}.ban", world));
-    this->handler.amqp.declare_queue("amq.direct", std::format("fb.{}.matchmaking", world));
+    auto scope = fb::amqp_scope();
+    auto id    = fb::config<uint32_t>("id");
+    this->handler.amqp.declare_queue("amq.direct", "fb.global");
+    for (auto& t : fb::k_amqp_topics)
+    {
+        if (t.kind == fb::amqp_kind::home && scope == "cross")
+            continue;
+        this->handler.amqp.declare_queue("amq.direct", fb::amqp_key(t.name, scope, id));
+    }
 }

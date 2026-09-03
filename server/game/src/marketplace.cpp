@@ -117,7 +117,7 @@ async::task<marketplace::listing> marketplace::list(uint8_t slot, uint16_t count
     // Send request to marketplace server
     try
     {
-        auto   world = fb::config<uint32_t>("world");
+        auto   world = this->_owner.world();
         auto&& resp  = co_await this->_owner.server.http.post(
             "marketplace",
             "/marketplace/list",
@@ -199,7 +199,7 @@ async::task<bool> marketplace::cancel(std::string_view id)
     this->_owner.server.log.write("marketplace_cancel", log_data_before);
 
     auto   weak  = this->_owner.weak_from_this_as<fb::game::character>();
-    auto   world = fb::config<uint32_t>("world");
+    auto   world = this->_owner.world();
     auto   req   = mp_reqs::Cancel{world, this->_owner.id, id_copy};
     auto&& resp  = co_await this->_owner.server.http.post("marketplace", "/marketplace/cancel", req);
 
@@ -288,7 +288,7 @@ async::task<marketplace::listing> marketplace::purchase(std::string_view listing
     this->_owner.server.log.write("marketplace_purchase", log_data_before);
 
     // Send purchase request to marketplace server
-    auto world           = fb::config<uint32_t>("world");
+    auto world           = this->_owner.world();
     auto unhandled_error = true;
     auto restore_money   = false;
     auto character_gone  = false;

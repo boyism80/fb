@@ -27,6 +27,7 @@ public:
     struct transfer_param
     {
     public:
+        uint32_t                   world = 0;
         uint16_t                   map;
         fb::model::point<uint16_t> position;
     };

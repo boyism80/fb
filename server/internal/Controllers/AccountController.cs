@@ -109,12 +109,14 @@ namespace Internal.Controllers
         {
             try
             {
-                var uid = await _dbContext.Character.GetCharacterId(world, name) ??
-                throw new LogicException(ErrorCode.NotFoundCharacter);
+                var row = await _dbContext.Character.GetCharacterRef(name) ??
+                    throw new LogicException(ErrorCode.NotFoundCharacter);
+                if (row.World != world)
+                    throw new LogicException(ErrorCode.NotFoundCharacter);
 
                 return new Response.GetUid
                 {
-                    Uid = uid,
+                    Uid = row.Id,
                     Success = true
                 };
             }
@@ -157,7 +159,7 @@ namespace Internal.Controllers
         public async Task<Response.ReserveName> ReserveName(Request.ReserveName request)
         {
             var world = request.World;
-            await using var connection = _dbContext.GetGlobalConnection(world);
+            await using var connection = _dbContext.GetUnifiedConnection();
             var result = await connection.QueryFirstAsync<ReserveNameResult>("USP_NAME_SET", new
             {
                 uname = request.Name,

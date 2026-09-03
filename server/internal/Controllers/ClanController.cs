@@ -42,7 +42,7 @@ namespace Internal.Controllers
         private async Task<List<Protocol.ClanMember>> GetClanMemberResponse(uint world, uint id)
         {
             var members = await _dbContext.ClanMember.Get(world, id);
-            await using var conn = _dbContext.GetGlobalConnection(world);
+            await using var conn = _dbContext.GetUnifiedConnection();
             var names = await conn.QueryAsync($"SELECT `id`, `name` FROM `name_registry` WHERE id IN ({string.Join(',', members.Select(x => x.User))})");
             var nameDict = names.ToDictionary(x => x.id, x => x.name);
 
@@ -65,6 +65,35 @@ namespace Internal.Controllers
             var enemies = await _dbContext.ClanEnemy.Get(world, clan.Id);
             protocolClan.EnemyClanIds = enemies.Select(x => x.EnemyClan).ToList();
             return protocolClan;
+        }
+
+        [HttpGet("id/{id}")]
+        public async Task<Response.ClanDetails> GetById(uint id)
+        {
+            try
+            {
+                var world = await _dbContext.Clan.GetWorld(id);
+                if (!world.HasValue)
+                    throw new LogicException(ErrorCode.NotFoundClan);
+
+                return await Get(world.Value, id);
+            }
+            catch (LogicException e)
+            {
+                return new Response.ClanDetails
+                {
+                    Action = Protocol.ClanDetailsAction.Query,
+                    Error = (uint)e.Error
+                };
+            }
+            catch (Exception)
+            {
+                return new Response.ClanDetails
+                {
+                    Action = Protocol.ClanDetailsAction.Query,
+                    Error = (uint)ErrorCode.Unhandled
+                };
+            }
         }
 
         [HttpGet("{world}/{id}")]
@@ -108,7 +137,7 @@ namespace Internal.Controllers
         public async Task<Response.ClanDetails> Create(Request.CreateClan request)
         {
             var world = request.World;
-            await using var db = _dbContext.GetGlobalConnection(world);
+            await using var db = _dbContext.GetUnifiedConnection();
             await db.OpenAsync();
             await using var trans = await db.BeginTransactionAsync();
             try
@@ -125,8 +154,8 @@ namespace Internal.Controllers
                     throw new LogicException(ErrorCode.ClanNameAlreadyExists);
 
                 var newClanId = await db.QuerySingleAsync<uint>(
-                    @"INSERT INTO clan_name (name) VALUES (@Name);SELECT LAST_INSERT_ID();",
-                    new { Name = request.Name },
+                    @"INSERT INTO clan_name (name, world) VALUES (@Name, @World);SELECT LAST_INSERT_ID();",
+                    new { Name = request.Name, World = world },
                     transaction: trans
                 );
 
@@ -168,7 +197,7 @@ namespace Internal.Controllers
                     Error = (uint)ErrorCode.None
                 };
 
-                await _rabbitMqService.PublishAsync(response, "amq.direct", $"fb.{request.World}.clan");
+                await _rabbitMqService.PublishFanoutAsync(response, "clan", request.World);
                 return response;
             }
             catch (LogicException e)
@@ -200,7 +229,7 @@ namespace Internal.Controllers
         public async Task<Response.DestroyClan> Destroy(Request.DestroyClan request)
         {
             var world = request.World;
-            await using var db = _dbContext.GetGlobalConnection(world);
+            await using var db = _dbContext.GetUnifiedConnection();
             await db.OpenAsync();
             await using var trans = await db.BeginTransactionAsync();
             try
@@ -248,7 +277,7 @@ namespace Internal.Controllers
                 await _dbContext.SaveChangesAsync();
                 await trans.CommitAsync();
 
-                var conn = _dbContext.GetGlobalConnection(world);
+                var conn = _dbContext.GetUnifiedConnection();
                 var masterName = await conn.QueryFirstOrDefaultAsync<string>(
                     $"SELECT `name` FROM `name_registry` WHERE id = {ch.Id}");
 
@@ -265,7 +294,7 @@ namespace Internal.Controllers
                     Error = (uint)ErrorCode.None
                 };
 
-                await _rabbitMqService.PublishAsync(response, "amq.direct", $"fb.{request.World}.clan");
+                await _rabbitMqService.PublishFanoutAsync(response, "clan", request.World);
                 return response;
             }
             catch (LogicException e)
@@ -349,7 +378,7 @@ namespace Internal.Controllers
                     NewTitle = request.Title,
                     Error = (uint)ErrorCode.None
                 };
-                await _rabbitMqService.PublishAsync(response, "amq.direct", $"fb.{request.World}.clan");
+                await _rabbitMqService.PublishFanoutAsync(response, "clan", request.World);
                 return response;
             }
             catch (LogicException e)
@@ -464,7 +493,7 @@ namespace Internal.Controllers
                     Error = (uint)ErrorCode.None
                 };
 
-                await _rabbitMqService.PublishAsync(response, "amq.direct", $"fb.{request.World}.clan");
+                await _rabbitMqService.PublishFanoutAsync(response, "clan", request.World);
                 return response;
             }
             catch (LogicException e)
@@ -551,7 +580,7 @@ namespace Internal.Controllers
                     Error = (uint)ErrorCode.None
                 };
 
-                await _rabbitMqService.PublishAsync(response, "amq.direct", $"fb.{request.World}.clan");
+                await _rabbitMqService.PublishFanoutAsync(response, "clan", request.World);
                 return response;
             }
             catch (LogicException e)
@@ -671,7 +700,7 @@ namespace Internal.Controllers
                     Error = (uint)ErrorCode.None
                 };
 
-                await _rabbitMqService.PublishAsync(response, "amq.direct", $"fb.{request.World}.clan");
+                await _rabbitMqService.PublishFanoutAsync(response, "clan", request.World);
                 return response;
             }
             catch (LogicException e)
@@ -698,7 +727,7 @@ namespace Internal.Controllers
         {
             try
             {
-                var world = request.World;
+                var world = await _dbContext.Clan.GetWorld(request.Clan) ?? request.World;
                 await using var _ = await _distributedLock.Lock(world, Clan.DistributedLockKey(request.Clan));
 
                 var clan = await _dbContext.Clan.Get(world, request.Clan) ??
@@ -712,7 +741,7 @@ namespace Internal.Controllers
                     Type = request.Type,
                     Error = (uint)ErrorCode.None
                 };
-                await _rabbitMqService.PublishAsync(response, "amq.direct", $"fb.{world}.clan");
+                await _rabbitMqService.PublishFanoutAsync(response, "clan", world);
                 return response;
             }
             catch (LogicException e)
@@ -834,7 +863,7 @@ namespace Internal.Controllers
                     Error = (uint)ErrorCode.None
                 };
 
-                await _rabbitMqService.PublishAsync(response, "amq.direct", $"fb.{request.World}.clan");
+                await _rabbitMqService.PublishFanoutAsync(response, "clan", request.World);
                 return response;
             }
             catch (LogicException e)
@@ -925,7 +954,7 @@ namespace Internal.Controllers
                     Error = (uint)ErrorCode.None
                 };
 
-                await _rabbitMqService.PublishAsync(response, "amq.direct", $"fb.{request.World}.clan");
+                await _rabbitMqService.PublishFanoutAsync(response, "clan", request.World);
                 return response;
             }
             catch (LogicException e)
@@ -1006,7 +1035,7 @@ namespace Internal.Controllers
                     Error = (uint)ErrorCode.None
                 };
 
-                await _rabbitMqService.PublishAsync(response, "amq.direct", $"fb.{request.World}.clan");
+                await _rabbitMqService.PublishFanoutAsync(response, "clan", request.World);
                 return response;
             }
             catch (LogicException e)
@@ -1092,7 +1121,7 @@ namespace Internal.Controllers
                     Error = (uint)ErrorCode.None
                 };
 
-                await _rabbitMqService.PublishAsync(response, "amq.direct", $"fb.{request.World}.clan");
+                await _rabbitMqService.PublishFanoutAsync(response, "clan", request.World);
                 return response;
             }
             catch (LogicException e)
@@ -1119,7 +1148,7 @@ namespace Internal.Controllers
         {
             try
             {
-                var world = request.World;
+                var world = await _dbContext.Clan.GetWorld(request.Clan) ?? request.World;
                 await using var _ = await _distributedLock.Lock(world, Clan.DistributedLockKey(request.Clan));
 
                 var clan = await _dbContext.Clan.Get(world, request.Clan) ??
@@ -1152,7 +1181,7 @@ namespace Internal.Controllers
                     Money = clan.Money,
                     Error = (uint)ErrorCode.None
                 };
-                await _rabbitMqService.PublishAsync(response, "amq.direct", $"fb.{request.World}.clan");
+                await _rabbitMqService.PublishFanoutAsync(response, "clan", world);
                 return response;
             }
             catch (LogicException e)
@@ -1231,7 +1260,7 @@ namespace Internal.Controllers
                     Error = (uint)ErrorCode.None
                 };
 
-                await _rabbitMqService.PublishAsync(response, "amq.direct", $"fb.{request.World}.clan");
+                await _rabbitMqService.PublishFanoutAsync(response, "clan", request.World);
                 return response;
             }
             catch (LogicException e)

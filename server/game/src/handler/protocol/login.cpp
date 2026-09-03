@@ -1,5 +1,6 @@
 #include <fb/game/handler/protocol/login.h>
 #include <fb/game/server.h>
+#include <fb/amqp_route.h>
 #include <fb/game/handler/amqp/ban.h>
 #include <fb/game/storage.h>
 #include <fb/model/model.h>
@@ -162,7 +163,9 @@ template <fb::protocol::CLIENT_VERSION V>
 async::task<std::shared_ptr<character>> login<V>::init(const game_reqs::login<V>& request,
                                                        fb::socket<character>&     session)
 {
-    auto   world = fb::config<uint32_t>("world");
+    auto world = request.transfer.has_value() ? request.transfer->world : fb::config<uint32_t>("world");
+    if (world == 0)
+        world = fb::config<uint32_t>("world");
     auto&& resp =
         co_await this->server.http.get<internal_resp::Init>("internal",
                                                             std::format("/in-game/init/{}/{}", world, request.id));
@@ -207,6 +210,7 @@ async::task<std::shared_ptr<character>> login<V>::init(const game_reqs::login<V>
     auto socket_ptr     = session.shared_from_this_as<fb::socket<character>>();
     auto params         = character::initial_params{.socket = socket_ptr};
     params.id           = resp.character.id;
+    params.world        = resp.character.world != 0 ? resp.character.world : world;
     params.name         = resp.character.name;
     params.pw           = resp.character.pw;
     params.birthday     = resp.character.birth;
@@ -261,6 +265,12 @@ async::task<std::shared_ptr<character>> login<V>::init(const game_reqs::login<V>
     auto ch   = this->server.make<character>(params);
     auto weak = ch->weak_from_this_as<character>();
     co_await this->server.threads.switching(weak);
+    if (fb::is_cross())
+    {
+        ch->restore_return_point(resp.character.map,
+                                 fb::model::point16_t{static_cast<uint16_t>(resp.character.position.x),
+                                                      static_cast<uint16_t>(resp.character.position.y)});
+    }
     ch->items.deposited(resp.character.deposited_money);
     ch->stat.base_hp(resp.character.base_hp, false);
     ch->stat.hp(resp.character.hp, false);
@@ -343,6 +353,15 @@ async::task<std::shared_ptr<character>> login<V>::init(const game_reqs::login<V>
     ch->collections.sync();
     ch->update_time(static_cast<uint8_t>(this->server.time().hours()),
                     static_cast<uint8_t>(this->server.time().minutes()));
+    if (fb::is_cross() && ch->has_return_point())
+    {
+        auto lua = this->server.lua.open("scripts/interaction.lua", "on_match_start");
+        if (lua)
+        {
+            lua->pushobject(ch);
+            std::ignore = lua->call(1);
+        }
+    }
     if (request.from == internal::Service::Login)
     {
         auto msg = this->elapsed_message(resp.character.updated_date);
@@ -376,11 +395,13 @@ async::task<std::shared_ptr<character>> login<V>::init(const game_reqs::login<V>
 template <fb::protocol::CLIENT_VERSION V>
 async::task<bool> login<V>::assert_login(const game_reqs::login<V>& request)
 {
-    auto   world = fb::config<uint32_t>("world");
-    auto&& resp  = co_await this->server.http.post(
+    auto world = request.transfer.has_value() ? request.transfer->world : fb::config<uint32_t>("world");
+    if (world == 0)
+        world = fb::config<uint32_t>("world");
+    auto&& resp = co_await this->server.http.post(
         "internal",
         "/in-game/login",
-        internal_reqs::Login{world, request.id, request.name, fb::config<uint8_t>("id"), false});
+        internal_reqs::Login{world, request.id, request.name, fb::config<uint8_t>("id"), false, fb::process_role()});
     switch (static_cast<ERROR_CODE>(resp.error))
     {
     case ERROR_CODE::NONE:

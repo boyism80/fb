@@ -7,6 +7,7 @@
 #include <stdexcept>
 #include <fb/encoding.h>
 #include <fb/config.h>
+#include <fb/amqp_route.h>
 #include <fb/protocol/flatbuffer/protocol.h>
 #include <json/json.h>
 #include <json/writer.h>
@@ -38,13 +39,13 @@ character::character(fb::game::server& server, const initial_params& params) :
 }),
     listener(server.listener), _socket(params.socket), _pw(params.pw), _created_date(params.created_date),
     _updated_date(params.updated_date), _first_login_date(params.first_login_date), _name(params.name),
-    _role(params.role), _birthday(params.birthday), _hair(params.hair), _face(params.face), _color(params.color),
-    _armor_color(params.armor_color), _weapon_color(params.weapon_color), _shield_color(params.shield_color),
-    _experience(params.exp), _gender(params.gender), _state(params.state), _level(params.level),
-    _class(params.class_type), _promotion(params.promotion), _money(params.money), _mimicry(params.mimicry),
-    _title(params.title), _nation(params.nation), _divine_beast(params.divine_beast), _super_hide(params.super_hide),
-    _last_afk_time(server.now()), _marriage(server.now()), id(params.id), client_version(params.client_version),
-    ui_mode(params.ui_mode)
+    _world(params.world), _role(params.role), _birthday(params.birthday), _hair(params.hair), _face(params.face),
+    _color(params.color), _armor_color(params.armor_color), _weapon_color(params.weapon_color),
+    _shield_color(params.shield_color), _experience(params.exp), _gender(params.gender), _state(params.state),
+    _level(params.level), _class(params.class_type), _promotion(params.promotion), _money(params.money),
+    _mimicry(params.mimicry), _title(params.title), _nation(params.nation), _divine_beast(params.divine_beast),
+    _super_hide(params.super_hide), _last_afk_time(server.now()), _marriage(server.now()), id(params.id),
+    client_version(params.client_version), ui_mode(params.ui_mode)
 {
     this->_ping_state.last_ping_time = server.now() - std::chrono::seconds(10);
 }
@@ -205,7 +206,7 @@ async::task<bool> character::map(std::shared_ptr<fb::game::map>      map,
 
         try
         {
-            auto   world = fb::config<uint32_t>("world");
+            auto   world = this->world();
             auto&& resp  = co_await this->server.http.post(
                 "internal",
                 "/in-game/transfer",
@@ -348,6 +349,105 @@ bool character::inited() const
 ROLE character::role() const
 {
     return this->_role;
+}
+
+uint32_t character::world() const
+{
+    return this->_world;
+}
+
+void character::save_return_point()
+{
+    this->assert_thread();
+    if (this->_map == nullptr)
+        return;
+
+    this->_match_return_map      = this->_map->model().id;
+    this->_match_return_position = this->_position;
+}
+
+void character::restore_return_point(uint32_t map, const fb::model::point16_t& position)
+{
+    this->assert_thread();
+    this->_match_return_map      = map;
+    this->_match_return_position = position;
+}
+
+bool character::has_return_point() const
+{
+    return this->_match_return_position.has_value();
+}
+
+uint32_t character::return_map() const
+{
+    return this->_match_return_map;
+}
+
+fb::model::point16_t character::return_position() const
+{
+    return this->_match_return_position.value_or(fb::model::point16_t{0, 0});
+}
+
+async::task<bool> character::transfer_home()
+{
+    this->assert_thread();
+    if (this->has_return_point() == false)
+        co_return false;
+
+    auto dest = this->server.maps.find(this->_match_return_map);
+    if (dest == nullptr)
+        co_return false;
+
+    auto position = this->_match_return_position.value();
+    if (fb::is_cross() == false)
+        co_return co_await this->map(dest, position);
+
+    if (this->map() == nullptr)
+        co_return false;
+
+    try
+    {
+        auto   world = this->world();
+        auto&& resp  = co_await this->server.http.post(
+            "internal",
+            "/in-game/transfer",
+            internal_reqs::Transfer{world, internal::Service::Game, dest->model().host, this->name(), false});
+
+        switch (static_cast<ERROR_CODE>(resp.error))
+        {
+        case ERROR_CODE::NONE:
+            break;
+
+        case ERROR_CODE::SERVER_NOT_READY:
+            throw std::runtime_error(_TEXT(MESSAGE_NOT_READY_GAME_SERVER));
+
+        case ERROR_CODE::BANNED:
+            throw std::runtime_error(character::container::build_ban_message(resp.ban_reason, resp.ban_expire_date));
+
+        default:
+            throw std::runtime_error(std::format(_TEXT(MESSAGE_UNKNOWN_ERROR_WITH_CODE), resp.error));
+        }
+
+        std::ignore = co_await this->map(nullptr);
+        co_await this->server.save(*this);
+        co_await this->listener.on_transfer(*this, *dest, position, resp.ip, resp.port);
+    }
+    catch (std::exception& e)
+    {
+        this->update_map();
+        this->show();
+        this->listener.on_message(*this, e.what(), MESSAGE_TYPE::STATE);
+        co_return false;
+    }
+    catch (boost::system::error_code& /*e*/)
+    {
+        this->update_map();
+        this->show();
+        this->listener.on_message(*this, _TEXT(MESSAGE_NOT_READY_GAME_SERVER), MESSAGE_TYPE::STATE);
+        co_return false;
+    }
+
+    co_return true;
 }
 
 void character::role(ROLE value)
@@ -1411,7 +1511,7 @@ async::task<void> character::broadcast_friends(std::string_view message, MESSAGE
 
     if (to_uids.empty() == false)
     {
-        auto world = fb::config<uint32_t>("world");
+        auto world = this->world();
         auto host  = fb::config<uint32_t>("id");
         co_await this->server.http.post("internal",
                                         "/in-game/friend-broadcast",
@@ -1421,7 +1521,8 @@ async::task<void> character::broadcast_friends(std::string_view message, MESSAGE
                                                                        this->name(),
                                                                        message_str,
                                                                        static_cast<uint8_t>(type),
-                                                                       std::move(to_uids)});
+                                                                       std::move(to_uids),
+                                                                       fb::process_role()});
     }
     co_return;
 }
@@ -1766,7 +1867,7 @@ async::task<void> character::whisper(std::string receiver_name, std::string mess
         }
     }
 
-    auto   world = fb::config<uint32_t>("world");
+    auto   world = this->world();
     auto&& resp  = co_await this->server.http.post("internal",
                                                   "/in-game/whisper",
                                                   internal_reqs::Whisper{world, sender_name, receiver_name, message});
@@ -2061,6 +2162,7 @@ fb::protocol::internal::Character character::to_protocol() const
 
     auto dto             = fb::protocol::internal::Character();
     dto.id               = this->id;
+    dto.world            = this->_world;
     dto.name             = this->_name;
     dto.pw               = this->_pw;
     dto.birth            = this->_birthday;
@@ -2074,7 +2176,22 @@ fb::protocol::internal::Character character::to_protocol() const
     dto.gender           = static_cast<uint8_t>(this->_gender);
     dto.nation           = static_cast<uint8_t>(this->_nation);
     dto.divine_beast     = static_cast<uint8_t>(this->_divine_beast);
-    if (this->_map != nullptr && this->_map->model().return_to.has_value())
+    if (fb::is_cross())
+    {
+        if (this->_match_return_position.has_value())
+        {
+            dto.map = this->_match_return_map;
+            dto.position =
+                fb::protocol::internal::Position{this->_match_return_position->x, this->_match_return_position->y};
+        }
+        else
+        {
+            fb::logger::fatal("Character {} cross to_protocol without home snapshot", this->_name);
+            dto.map      = 0;
+            dto.position = fb::protocol::internal::Position{1, 1};
+        }
+    }
+    else if (this->_map != nullptr && this->_map->model().return_to.has_value())
     {
         auto return_map_id = this->_map->model().return_to.value();
         dto.map            = return_map_id;

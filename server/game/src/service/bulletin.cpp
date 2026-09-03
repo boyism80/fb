@@ -71,12 +71,13 @@ fb::game::bulletin::article service::bulletin::to_article(const fb::protocol::in
                                        .next     = next};
 }
 
-async::task<std::list<fb::game::bulletin::article>> service::bulletin::list(uint16_t section, uint16_t offset)
+async::task<std::list<fb::game::bulletin::article>> service::bulletin::list(uint32_t world,
+                                                                            uint16_t section,
+                                                                            uint16_t offset)
 {
     this->assert_section(section);
 
-    auto   world = fb::config<uint32_t>("world");
-    auto&& resp  = co_await this->server.http.get<internal_resp::GetArticleList>(
+    auto&& resp = co_await this->server.http.get<internal_resp::GetArticleList>(
         "internal",
         std::format("/bulletin/{}/{}?offset={}", world, section, offset));
 
@@ -89,12 +90,11 @@ async::task<std::list<fb::game::bulletin::article>> service::bulletin::list(uint
     co_return std::move(articles);
 }
 
-async::task<fb::game::bulletin::article> service::bulletin::read(uint16_t section, uint16_t id)
+async::task<fb::game::bulletin::article> service::bulletin::read(uint32_t world, uint16_t section, uint16_t id)
 {
     this->assert_section(section);
 
-    auto   world = fb::config<uint32_t>("world");
-    auto&& resp  = co_await this->server.http.get<internal_resp::GetArticle>(
+    auto&& resp = co_await this->server.http.get<internal_resp::GetArticle>(
         "internal",
         std::format("/bulletin/{}/{}/{}", world, section, id));
     if (resp.success == false)
@@ -114,7 +114,7 @@ service::bulletin::write(character& ch, uint16_t section, std::string_view title
     if (contents.length() > 256)
         throw std::runtime_error(_TEXT(MESSAGE_BULLETIN_TOO_LONG_CONTENTS));
 
-    auto   world = fb::config<uint32_t>("world");
+    auto   world = ch.world();
     auto&& resp  = co_await this->server.http.post(
         "internal",
         "/bulletin/write",
@@ -128,7 +128,7 @@ async::task<void> service::bulletin::remove(character& ch, uint16_t section, uin
 {
     this->assert_auth(ch, section);
 
-    auto   world = fb::config<uint32_t>("world");
+    auto   world = ch.world();
     auto&& resp  = co_await this->server.http.post("internal",
                                                   "/bulletin/delete",
                                                   internal_reqs::DeleteArticle{world, id, section, ch.id});

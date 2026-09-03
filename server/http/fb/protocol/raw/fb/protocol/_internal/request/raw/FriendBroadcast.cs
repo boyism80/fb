@@ -46,6 +46,7 @@ public struct FriendBroadcast : IFlatbufferObject
   public ArraySegment<byte>? GetToUidsBytes() { return __p.__vector_as_arraysegment(16); }
 #endif
   public uint[] GetToUidsArray() { return __p.__vector_as_array<uint>(16); }
+  public fb.protocol._internal.raw.ProcessRole Role { get { int o = __p.__offset(18); return o != 0 ? (fb.protocol._internal.raw.ProcessRole)__p.bb.GetSbyte(o + __p.bb_pos) : fb.protocol._internal.raw.ProcessRole.Home; } }
 
   public static Offset<fb.protocol._internal.request.raw.FriendBroadcast> CreateFriendBroadcast(FlatBufferBuilder builder,
       uint world = 0,
@@ -54,19 +55,21 @@ public struct FriendBroadcast : IFlatbufferObject
       StringOffset from_nameOffset = default(StringOffset),
       StringOffset messageOffset = default(StringOffset),
       byte type = 0,
-      VectorOffset to_uidsOffset = default(VectorOffset)) {
-    builder.StartTable(7);
+      VectorOffset to_uidsOffset = default(VectorOffset),
+      fb.protocol._internal.raw.ProcessRole role = fb.protocol._internal.raw.ProcessRole.Home) {
+    builder.StartTable(8);
     FriendBroadcast.AddToUids(builder, to_uidsOffset);
     FriendBroadcast.AddMessage(builder, messageOffset);
     FriendBroadcast.AddFromName(builder, from_nameOffset);
     FriendBroadcast.AddFromUid(builder, from_uid);
     FriendBroadcast.AddHost(builder, host);
     FriendBroadcast.AddWorld(builder, world);
+    FriendBroadcast.AddRole(builder, role);
     FriendBroadcast.AddType(builder, type);
     return FriendBroadcast.EndFriendBroadcast(builder);
   }
 
-  public static void StartFriendBroadcast(FlatBufferBuilder builder) { builder.StartTable(7); }
+  public static void StartFriendBroadcast(FlatBufferBuilder builder) { builder.StartTable(8); }
   public static void AddWorld(FlatBufferBuilder builder, uint world) { builder.AddUint(0, world, 0); }
   public static void AddHost(FlatBufferBuilder builder, uint host) { builder.AddUint(1, host, 0); }
   public static void AddFromUid(FlatBufferBuilder builder, uint fromUid) { builder.AddUint(2, fromUid, 0); }
@@ -79,6 +82,7 @@ public struct FriendBroadcast : IFlatbufferObject
   public static VectorOffset CreateToUidsVectorBlock(FlatBufferBuilder builder, ArraySegment<uint> data) { builder.StartVector(4, data.Count, 4); builder.Add(data); return builder.EndVector(); }
   public static VectorOffset CreateToUidsVectorBlock(FlatBufferBuilder builder, IntPtr dataPtr, int sizeInBytes) { builder.StartVector(1, sizeInBytes, 1); builder.Add<uint>(dataPtr, sizeInBytes); return builder.EndVector(); }
   public static void StartToUidsVector(FlatBufferBuilder builder, int numElems) { builder.StartVector(4, numElems, 4); }
+  public static void AddRole(FlatBufferBuilder builder, fb.protocol._internal.raw.ProcessRole role) { builder.AddSbyte(7, (sbyte)role, 0); }
   public static Offset<fb.protocol._internal.request.raw.FriendBroadcast> EndFriendBroadcast(FlatBufferBuilder builder) {
     int o = builder.EndTable();
     return new Offset<fb.protocol._internal.request.raw.FriendBroadcast>(o);
@@ -100,6 +104,7 @@ static public class FriendBroadcastVerify
       && verifier.VerifyString(tablePos, 12 /*Message*/, false)
       && verifier.VerifyField(tablePos, 14 /*Type*/, 1 /*byte*/, 1, false)
       && verifier.VerifyVectorOfData(tablePos, 16 /*ToUids*/, 4 /*uint*/, false)
+      && verifier.VerifyField(tablePos, 18 /*Role*/, 1 /*fb.protocol._internal.raw.ProcessRole*/, 1, false)
       && verifier.VerifyTableEnd(tablePos);
   }
 }

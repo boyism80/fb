@@ -29,6 +29,7 @@ void login<V>::serialize(fb::stream_writer<big_endian>& writer) const
 
     if (transfer.has_value())
     {
+        writer.write<uint32_t>(this->transfer.value().world);
         writer.write<uint16_t>(this->transfer.value().map);
         writer.write<uint16_t>(this->transfer.value().position.x);
         writer.write<uint16_t>(this->transfer.value().position.y);
@@ -60,10 +61,11 @@ void login<V>::deserialize(fb::stream_reader<big_endian>& reader)
     this->name = reader.read<std::string, uint8_t>();
     if (reader.read<bool>())
     {
+        auto world     = reader.read<uint32_t>();
         auto map       = reader.read<uint16_t>();
         auto x         = reader.read<uint16_t>();
         auto y         = reader.read<uint16_t>();
-        this->transfer = transfer_param{.map = map, .position = fb::model::point<uint16_t>(x, y)};
+        this->transfer = transfer_param{.world = world, .map = map, .position = fb::model::point<uint16_t>(x, y)};
     }
 
     if (this->client_version == CLIENT_VERSION::v651 && reader.readable_size() >= 1)

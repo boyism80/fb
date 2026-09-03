@@ -1,3 +1,4 @@
+using Dapper;
 using Http.Extension;
 using Http.Model;
 using Http.Service;
@@ -72,6 +73,14 @@ namespace Http.Reepository
         public void Delete(uint world, uint id)
         {
             base.Delete(world, new ClanKey { Id = id });
+        }
+
+        public async Task<uint?> GetWorld(uint id)
+        {
+            await using var conn = _dbContext.GetUnifiedConnection();
+            return await conn.QueryFirstOrDefaultAsync<uint?>(
+                "SELECT `world` FROM `clan_name` WHERE `id` = @id",
+                new { id });
         }
     }
 }

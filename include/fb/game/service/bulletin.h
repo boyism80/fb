@@ -28,8 +28,8 @@ public:
     explicit bulletin(fb::game::server& server);
 
     // clang-format off
-    async::task<std::list<fb::game::bulletin::article>> list(uint16_t section, uint16_t offset);
-    async::task<fb::game::bulletin::article>            read(uint16_t section, uint16_t id);
+    async::task<std::list<fb::game::bulletin::article>> list(uint32_t world, uint16_t section, uint16_t offset);
+    async::task<fb::game::bulletin::article>            read(uint32_t world, uint16_t section, uint16_t id);
     async::task<void>                                   write(character& ch, uint16_t section, std::string_view title, std::string_view contents);
     async::task<void>                                   remove(character& ch, uint16_t section, uint16_t id);
     // clang-format on

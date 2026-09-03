@@ -178,6 +178,7 @@ async::task<void> listener_impl::on_transfer(character&                  me,
     writer.write<uint32_t>(me.id);
     writer.write<std::string>(me.name());
     writer.write<uint8_t>(1);
+    writer.write<uint32_t>(me.world());
     writer.write<uint16_t>(map.model().id);
     writer.write<uint16_t>(position.x);
     writer.write<uint16_t>(position.y);

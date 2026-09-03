@@ -1,5 +1,6 @@
-﻿using Http.Model;
+using Http.Model;
 using Http.Redis;
+using Http.Service;
 using Newtonsoft.Json;
 using StackExchange.Redis;
 
@@ -248,7 +249,7 @@ namespace Http.Service
                     {
                         Message = maintenanceInfo.Message,
                         EndTime = maintenanceInfo.EndTime.ToString("yyyy-MM-dd HH:mm:ss")
-                    }, "amq.direct", $"fb.{world}.game.{serverId}");
+                    }, AmqpRoute.Exchange, AmqpRoute.Unicast("home", world, serverId));
 
                     messageCount++;
                 }

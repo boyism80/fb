@@ -33,6 +33,18 @@ namespace Internal.Services
             _distributedLock = distributedLock;
         }
 
+        public async Task<Response.GroupDetails> GetById(uint id)
+        {
+            var world = await _dbContext.Character.GetWorld(id);
+            if (!world.HasValue)
+                return new Response.GroupDetails
+                {
+                    Error = (uint)ErrorCode.GroupNotFound
+                };
+
+            return await Get(world.Value, id);
+        }
+
         public async Task<Response.GroupDetails> Get(uint world, uint id)
         {
             try
@@ -205,7 +217,7 @@ namespace Internal.Services
                     Error = (uint)ErrorCode.None
                 };
 
-                await _rabbitMqService.PublishAsync(response, "amq.direct", $"fb.{world}.group");
+                await _rabbitMqService.PublishFanoutAsync(response, "group", world);
                 return response;
             }
             catch (LogicException e)
@@ -374,7 +386,7 @@ namespace Internal.Services
                     Error = (uint)ErrorCode.None
                 };
 
-                await _rabbitMqService.PublishAsync(response, "amq.direct", $"fb.{world}.group");
+                await _rabbitMqService.PublishFanoutAsync(response, "group", world);
                 return response;
             }
             catch (LogicException e)
@@ -531,7 +543,7 @@ namespace Internal.Services
                     Error = (uint)ErrorCode.None
                 };
 
-                await _rabbitMqService.PublishAsync(response, "amq.direct", $"fb.{world}.group");
+                await _rabbitMqService.PublishFanoutAsync(response, "group", world);
                 return response;
             }
             catch (LogicException e)
@@ -556,7 +568,7 @@ namespace Internal.Services
         {
             try
             {
-                var world = request.World;
+                var world = await _dbContext.Character.GetWorld(request.Group) ?? request.World;
                 await using var _ = await _distributedLock.Lock(world, Group.DistributedLockKey(request.Group));
 
                 var group = await _dbContext.Group.Get(world, request.Group) ??
@@ -570,7 +582,7 @@ namespace Internal.Services
                     Type = request.Type,
                     Error = (uint)ErrorCode.None
                 };
-                await _rabbitMqService.PublishAsync(response, "amq.direct", $"fb.{world}.group");
+                await _rabbitMqService.PublishFanoutAsync(response, "group", world);
                 return response;
             }
             catch (LogicException e)
@@ -717,7 +729,7 @@ namespace Internal.Services
                 Error = (uint)ErrorCode.None
             };
 
-            await _rabbitMqService.PublishAsync(response, "amq.direct", $"fb.{world}.group");
+            await _rabbitMqService.PublishFanoutAsync(response, "group", world);
             return response;
         }
 
@@ -762,7 +774,7 @@ namespace Internal.Services
                 Error = (uint)ErrorCode.None
             };
 
-            await _rabbitMqService.PublishAsync(response, "amq.direct", $"fb.{world}.group");
+            await _rabbitMqService.PublishFanoutAsync(response, "group", world);
             return response;
         }
     }
