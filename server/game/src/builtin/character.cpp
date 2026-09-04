@@ -21,6 +21,7 @@
 #include <unordered_map>
 #include <tuple>
 #include <format>
+#include <random.h>
 
 using namespace fb::game;
 using table = fb::model::table;
@@ -3736,52 +3737,97 @@ int builtin::character::builtin_transfer_to(lua_State* L)
     auto lua = fb::lua::get(L);
     if (lua == nullptr)
         return 0;
+
     auto ch = lua->touserdata<fb::game::character>(1);
     if (ch == nullptr)
         return 0;
 
     auto ip   = lua->tostring(2);
     auto port = static_cast<uint16_t>(lua->tointeger(3));
-    auto host = static_cast<uint8_t>(lua->tointeger(4));
     if (ip.empty() || port == 0)
         return 0;
+    if (lua->is_table(5) == false)
+        throw std::runtime_error("transfer_to requires a destination table");
 
-    auto map_id = uint32_t{0};
-    auto spawn  = fb::model::point16_t{0, 0};
-    if (lua->is_table(5))
+    auto map      = std::shared_ptr<fb::game::map>{};
+    auto position = fb::model::point16_t{};
+    auto option   = fb::game::transfer_option{};
+
+    lua_getfield(*lua, 5, "match_id");
+    lua_getfield(*lua, 5, "match_type");
+    if (lua->is_nil(-2) == false || lua->is_nil(-1) == false)
     {
-        lua_getfield(*lua, 5, "map");
-        if (lua->is_number(-1))
-            map_id = static_cast<uint32_t>(lua->tointeger(-1));
+        if (lua->is_string(-2) == false || lua->is_number(-1) == false)
+            throw std::runtime_error("transfer_to requires match_id and match_type together");
+
+        auto match_id   = lua->tostring(-2);
+        auto match_type = static_cast<uint32_t>(lua->tointeger(-1));
         lua->remove(-1);
-        lua_getfield(*lua, 5, "x");
-        if (lua->is_number(-1))
-            spawn.x = static_cast<uint16_t>(lua->tointeger(-1));
         lua->remove(-1);
-        lua_getfield(*lua, 5, "y");
-        if (lua->is_number(-1))
-            spawn.y = static_cast<uint16_t>(lua->tointeger(-1));
-        lua->remove(-1);
+        if (match_id.empty() || match_type == 0)
+            throw std::runtime_error("transfer_to requires match_id and match_type together");
+
+        auto type_enum = static_cast<MATCH_TYPE>(match_type);
+        if (table::matchmaking->contains(type_enum) == false)
+            throw std::runtime_error("transfer_to unknown match_type");
+
+        auto& row = table::matchmaking[type_enum];
+        if (row.map.header != DSL::map)
+            throw std::runtime_error("transfer_to matchmaking map dsl is invalid");
+
+        auto params = fb::model::dsl::map(row.map.params);
+        map         = ch->server.maps.find(params.id);
+        if (map == nullptr)
+            throw std::runtime_error("transfer_to map not found");
+
+        position.x = params.x;
+        position.y = params.y;
+        if (params.right > params.x)
+            position.x = random<uint16_t>(params.x, params.right);
+        if (params.bottom > params.y)
+            position.y = random<uint16_t>(params.y, params.bottom);
+
+        option.match = fb::game::transfer_match{.id = std::move(match_id), .type = match_type};
     }
-    if (map_id == 0)
+    else
     {
-        for (auto& [id, model] : table::map)
+        lua->remove(-1);
+        lua->remove(-1);
+
+        lua_getfield(*lua, 5, "map");
+        if (lua->is_number(-1) == false || lua->tointeger(-1) == 0)
+            throw std::runtime_error("transfer_to requires map or match_type");
+
+        auto map_id = static_cast<uint32_t>(lua->tointeger(-1));
+        lua->remove(-1);
+        map = ch->server.maps.find(map_id);
+        if (map == nullptr)
+            throw std::runtime_error("transfer_to map not found");
+
+        lua_getfield(*lua, 5, "position");
+        if (lua->is_table(-1))
         {
-            if (model.host == host)
-            {
-                map_id = model.id;
-                if (lua->is_table(5) == false)
-                    spawn = model.spawn_position().value_or(fb::model::point16_t{0, 0});
-                break;
-            }
+            lua->rawgeti(-1, 1);
+            lua->rawgeti(-2, 2);
+            if (lua->is_number(-2) == false || lua->is_number(-1) == false)
+                throw std::runtime_error("transfer_to position requires x and y together");
+
+            position.x = static_cast<uint16_t>(lua->tointeger(-2));
+            position.y = static_cast<uint16_t>(lua->tointeger(-1));
+            lua->remove(-1);
+            lua->remove(-1);
+            lua->remove(-1);
+        }
+        else if (lua->is_nil(-1))
+        {
+            lua->remove(-1);
+            position = map->model().spawn_position().value_or(fb::model::point16_t{0, 0});
+        }
+        else
+        {
+            throw std::runtime_error("transfer_to position must be a table");
         }
     }
-    if (map_id == 0)
-        return 0;
-
-    auto dest_map = ch->server.maps.find(map_id);
-    if (dest_map == nullptr)
-        return 0;
 
     auto ip_str   = std::string(ip);
     auto weak     = ch->weak_from_this_as<fb::game::character>();
@@ -3790,7 +3836,7 @@ int builtin::character::builtin_transfer_to(lua_State* L)
     builder.yield = [=]() -> async::task<void> {
         std::ignore = co_await ch->map(nullptr);
         co_await ch->server.save(*ch);
-        co_await ch->listener.on_transfer(*ch, *dest_map, spawn, ip_str, port);
+        co_await ch->listener.on_transfer(*ch, *map, position, ip_str, port, option);
         co_return;
     };
     builder.resume = [=]() -> async::task<int> {

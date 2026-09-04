@@ -6581,6 +6581,7 @@ public:
     const fb::model::enum_value::MATCH_TYPE id;
     const uint32_t member_count;
     const uint32_t team_count;
+    const fb::model::dsl map;
 #endif
 
 #ifdef DECLARE_MATCHMAKING_CUSTOM_CONSTRUCTOR
@@ -6593,7 +6594,8 @@ DECLARE_MATCHMAKING_CONSTRUCTOR
 #endif
         id(fb::model::build<fb::model::enum_value::MATCH_TYPE>(json["id"])),
         member_count(fb::model::build<uint32_t>(json["member_count"])),
-        team_count(fb::model::build<uint32_t>(json["team_count"]))
+        team_count(fb::model::build<uint32_t>(json["team_count"])),
+        map(fb::model::build<dsl>(json["map"]))
 #ifdef DECLARE_MATCHMAKING_INITIALIZER
 DECLARE_MATCHMAKING_INITIALIZER
 #endif

@@ -1,5 +1,6 @@
 #include <fb/game/character.h>
 #include <fb/game/server.h>
+#include <fb/game/match.h>
 #include <fb/game/thread_params.h>
 #include <fb/context.h>
 #include <fb/model/model.h>
@@ -48,6 +49,16 @@ character::character(fb::game::server& server, const initial_params& params) :
     client_version(params.client_version), ui_mode(params.ui_mode)
 {
     this->_ping_state.last_ping_time = server.now() - std::chrono::seconds(10);
+}
+
+std::shared_ptr<fb::game::match> character::match() const
+{
+    return this->_match.lock();
+}
+
+void character::match(std::shared_ptr<fb::game::match> value)
+{
+    this->_match = value;
 }
 
 character::~character()
@@ -369,6 +380,9 @@ void character::save_return_point()
 void character::restore_return_point(uint32_t map, const fb::model::point16_t& position)
 {
     this->assert_thread();
+    if (map == 0)
+        return;
+
     this->_match_return_map      = map;
     this->_match_return_position = position;
 }
@@ -391,7 +405,7 @@ fb::model::point16_t character::return_position() const
 async::task<bool> character::transfer_home()
 {
     this->assert_thread();
-    if (this->has_return_point() == false)
+    if (this->has_return_point() == false || this->_match_return_map == 0)
         co_return false;
 
     auto dest = this->server.maps.find(this->_match_return_map);
@@ -1992,11 +2006,18 @@ void character::handle_death(std::shared_ptr<fb::game::object> killer)
         log_data["killer_name"] = UTF8(killer_ch.name(), PLATFORM::WINDOWS);
     }
     this->server.log.write("death", log_data);
+
+    auto session = this->match();
+    if (session != nullptr)
+        session->on_death(*this, killer);
 }
 
 void character::enqueue_death_warp()
 {
     this->assert_thread();
+
+    if (this->match() != nullptr)
+        return;
 
     auto weak    = this->weak_from_this_as<character>();
     auto builder = this->server.threads.new_builder(weak);
@@ -2176,20 +2197,17 @@ fb::protocol::internal::Character character::to_protocol() const
     dto.gender           = static_cast<uint8_t>(this->_gender);
     dto.nation           = static_cast<uint8_t>(this->_nation);
     dto.divine_beast     = static_cast<uint8_t>(this->_divine_beast);
-    if (fb::is_cross())
+    if (this->_match_return_position.has_value() && this->_match_return_map != 0)
     {
-        if (this->_match_return_position.has_value())
-        {
-            dto.map = this->_match_return_map;
-            dto.position =
-                fb::protocol::internal::Position{this->_match_return_position->x, this->_match_return_position->y};
-        }
-        else
-        {
-            fb::logger::fatal("Character {} cross to_protocol without home snapshot", this->_name);
-            dto.map      = 0;
-            dto.position = fb::protocol::internal::Position{1, 1};
-        }
+        dto.map = this->_match_return_map;
+        dto.position =
+            fb::protocol::internal::Position{this->_match_return_position->x, this->_match_return_position->y};
+    }
+    else if (fb::is_cross())
+    {
+        fb::logger::fatal("Character {} cross to_protocol without home snapshot", this->_name);
+        dto.map      = 0;
+        dto.position = fb::protocol::internal::Position{1, 1};
     }
     else if (this->_map != nullptr && this->_map->model().return_to.has_value())
     {

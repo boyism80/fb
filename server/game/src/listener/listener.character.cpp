@@ -8,6 +8,7 @@
 using namespace fb::game;
 
 namespace game_resp = fb::protocol::game::response;
+namespace game_reqs = fb::protocol::game::request;
 
 void listener_impl::on_message(character& me, std::string_view message, MESSAGE_TYPE type)
 {
@@ -171,17 +172,35 @@ async::task<void> listener_impl::on_transfer(character&                  me,
                                              map&                        map,
                                              const fb::model::point16_t& position,
                                              std::string_view            ip,
-                                             uint16_t                    port)
+                                             uint16_t                    port,
+                                             const transfer_option&      option)
 {
     auto stream = fb::stream();
     auto writer = fb::stream_writer<big_endian>(stream);
     writer.write<uint32_t>(me.id);
     writer.write<std::string>(me.name());
-    writer.write<uint8_t>(1);
-    writer.write<uint32_t>(me.world());
-    writer.write<uint16_t>(map.model().id);
-    writer.write<uint16_t>(position.x);
-    writer.write<uint16_t>(position.y);
+
+    auto flags = game_reqs::TRANSFER_PARAM::MAP;
+    if (option.match.has_value() && option.match->id.empty() == false)
+        flags |= game_reqs::TRANSFER_PARAM::MATCH;
+    if (me.client_version == fb::protocol::CLIENT_VERSION::v651 && me.ui_mode == fb::protocol::CLIENT_UI_MODE::NEW)
+        flags |= game_reqs::TRANSFER_PARAM::UI_MODE;
+
+    writer.write<uint8_t>(static_cast<uint8_t>(flags));
+    if (ENUM_IN(flags, game_reqs::TRANSFER_PARAM::MAP))
+    {
+        writer.write<uint32_t>(me.world());
+        writer.write<uint16_t>(map.model().id);
+        writer.write<uint16_t>(position.x);
+        writer.write<uint16_t>(position.y);
+    }
+    if (ENUM_IN(flags, game_reqs::TRANSFER_PARAM::MATCH))
+    {
+        writer.write<std::string>(option.match->id);
+        writer.write<uint32_t>(option.match->type);
+    }
+    if (ENUM_IN(flags, game_reqs::TRANSFER_PARAM::UI_MODE))
+        writer.write<uint8_t>(static_cast<uint8_t>(me.ui_mode));
 
     auto socket_ptr = me.socket_ptr();
     if (socket_ptr != nullptr)

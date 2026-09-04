@@ -27,6 +27,7 @@
 #include <cstdint>
 #include <set>
 #include <shared_mutex>
+#include <string>
 #include <string_view>
 #include <unordered_map>
 #include <optional>
@@ -48,12 +49,24 @@ class StartMaintenance;
 namespace fb::game {
 
 class map;
+class match;
 
 struct friend_entry
 {
     uint32_t    uid = 0;
     std::string name;
     bool        mutual = false;
+};
+
+struct transfer_match
+{
+    std::string id;
+    uint32_t    type = 0;
+};
+
+struct transfer_option
+{
+    std::optional<transfer_match> match;
 };
 
 class character : public life
@@ -133,6 +146,7 @@ private:
     std::vector<friend_entry>                        _friends;
     std::optional<fb::model::point16_t>              _match_return_position = std::nullopt;
     uint32_t                                         _match_return_map      = 0;
+    std::weak_ptr<match>                             _match;
     bool                                             _options[static_cast<uint8_t>(OPTION::LOCK_WALK_SPEED) + 1] = {
         1,
     };
@@ -265,6 +279,8 @@ public:
     uint32_t                                                  return_map() const;
     fb::model::point16_t                                      return_position() const;
     [[nodiscard]] async::task<bool>                           transfer_home();
+    std::shared_ptr<fb::game::match>                          match() const;
+    void                                                      match(std::shared_ptr<fb::game::match> value);
     void                                                      role(ROLE value);
     const std::optional<uint32_t>&                            birthday() const;
     void                                                      birthday(const std::optional<uint32_t>& value);
@@ -484,7 +500,7 @@ public:
     virtual void                            on_screen_refresh(character& ch) = 0;
     virtual void                            on_level_up(character& me) = 0;
     virtual void                            on_update(character& me, UPDATE_STATE_LEVEL level = UPDATE_STATE_LEVEL::EXP_MONEY | UPDATE_STATE_LEVEL::CROWD_CONTROL) = 0;
-    [[nodiscard]] virtual async::task<void> on_transfer(character& me, fb::game::map& map, const fb::model::point16_t& position, std::string_view ip, uint16_t port) = 0;
+    [[nodiscard]] virtual async::task<void> on_transfer(character& me, fb::game::map& map, const fb::model::point16_t& position, std::string_view ip, uint16_t port, const transfer_option& option = {}) = 0;
     virtual void                            on_ping(character& ch, uint32_t token) = 0;
     virtual void                            on_save(character& ch) = 0;
     virtual void                            on_bulk_update(character& ch, const std::vector<object*>& objects) = 0;

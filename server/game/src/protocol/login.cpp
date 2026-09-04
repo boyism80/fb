@@ -25,17 +25,29 @@ void login<V>::serialize(fb::stream_writer<big_endian>& writer) const
     writer.write<uint16_t>(static_cast<uint16_t>(this->client_version));
     writer.write<uint32_t>(this->id);
     writer.write<std::string, uint8_t>(this->name);
-    writer.write<bool>(this->transfer.has_value());
 
-    if (transfer.has_value())
+    auto flags = TRANSFER_PARAM::NONE;
+    if (this->transfer.has_value())
+        flags |= TRANSFER_PARAM::MAP;
+    if (this->match.has_value() && this->match->id.empty() == false)
+        flags |= TRANSFER_PARAM::MATCH;
+    if (this->client_version == CLIENT_VERSION::v651 && this->ui_mode == CLIENT_UI_MODE::NEW)
+        flags |= TRANSFER_PARAM::UI_MODE;
+
+    writer.write<uint8_t>(static_cast<uint8_t>(flags));
+    if (ENUM_IN(flags, TRANSFER_PARAM::MAP))
     {
         writer.write<uint32_t>(this->transfer.value().world);
         writer.write<uint16_t>(this->transfer.value().map);
         writer.write<uint16_t>(this->transfer.value().position.x);
         writer.write<uint16_t>(this->transfer.value().position.y);
     }
-
-    if (this->client_version == CLIENT_VERSION::v651 && this->ui_mode == CLIENT_UI_MODE::NEW)
+    if (ENUM_IN(flags, TRANSFER_PARAM::MATCH))
+    {
+        writer.write<std::string>(this->match->id);
+        writer.write<uint32_t>(this->match->type);
+    }
+    if (ENUM_IN(flags, TRANSFER_PARAM::UI_MODE))
         writer.write<uint8_t>(static_cast<uint8_t>(this->ui_mode));
 }
 
@@ -59,7 +71,9 @@ void login<V>::deserialize(fb::stream_reader<big_endian>& reader)
 
     this->id   = reader.read<uint32_t>();
     this->name = reader.read<std::string, uint8_t>();
-    if (reader.read<bool>())
+
+    auto flags = static_cast<TRANSFER_PARAM>(reader.read<uint8_t>());
+    if (ENUM_IN(flags, TRANSFER_PARAM::MAP))
     {
         auto world     = reader.read<uint32_t>();
         auto map       = reader.read<uint16_t>();
@@ -67,15 +81,16 @@ void login<V>::deserialize(fb::stream_reader<big_endian>& reader)
         auto y         = reader.read<uint16_t>();
         this->transfer = transfer_param{.world = world, .map = map, .position = fb::model::point<uint16_t>(x, y)};
     }
-
-    if (this->client_version == CLIENT_VERSION::v651 && reader.readable_size() >= 1)
+    if (ENUM_IN(flags, TRANSFER_PARAM::MATCH))
     {
+        auto id     = reader.read<std::string>();
+        auto type   = reader.read<uint32_t>();
+        this->match = match_param{.id = std::move(id), .type = type};
+    }
+    if (ENUM_IN(flags, TRANSFER_PARAM::UI_MODE))
         this->ui_mode = static_cast<CLIENT_UI_MODE>(reader.read<uint8_t>());
-    }
     else
-    {
         this->ui_mode = CLIENT_UI_MODE::OLD;
-    }
 }
 
 template class login<CLIENT_VERSION::v550>;

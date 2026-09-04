@@ -3,6 +3,7 @@
 #include <fb/game/character.h>
 #include <fb/game/instance_map.h>
 #include <fb/game/map.h>
+#include <fb/game/match.h>
 #include <fb/game/mob.h>
 #include <fb/game/npc.h>
 #include <fb/game/server.h>
@@ -622,6 +623,14 @@ std::shared_ptr<fb::game::map> map::container::choice_entry(character& ch, const
     // Explicit instance target bypasses systemic routing.
     if (dest->is_instance())
         return dest;
+
+    auto session = ch.match();
+    if (session != nullptr)
+    {
+        auto inst = this->ensure_instance(dest, session->slot());
+        if (inst != nullptr)
+            return inst;
+    }
 
     auto source = dest;
     switch (source->model().instance_rule)

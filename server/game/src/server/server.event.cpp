@@ -76,6 +76,7 @@ async::task<bool> fb::game::server::on_disconnected(fb::socket<character>& socke
     if (ptr != nullptr)
     {
         co_await ptr->matchmaker.unregister_queue(true);
+        this->matches.leave(*ptr);
 
         // Log logout event
         auto log_data              = Json::Value();

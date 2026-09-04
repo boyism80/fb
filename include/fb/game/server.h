@@ -12,6 +12,7 @@
 #include <fb/game/map.h>
 #include <fb/hash.h>
 #include <fb/game/group.h>
+#include <fb/game/match.h>
 #include <fb/game/clan.h>
 #include <fb/game/castle.h>
 #include <fb/game/service/mail.h>
@@ -149,6 +150,7 @@ public:
     clan::container         clans;
     castle::container       castles;
     group::container        groups;
+    match::container        matches;
     service::mail           mail;
     service::bulletin       bulletin;
     service::system_storage system_storage;

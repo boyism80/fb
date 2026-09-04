@@ -131,7 +131,7 @@ public:
     void                            on_dialog_email(character& me, const fb::game::object& obj, std::string_view message, std::string_view str1, std::string_view str2, bool button_prev = false, bool button_next = false, uint32_t seq = 0xFFFFFFFD) override final;
     void                            on_dialog_0x30_10(character& me, const fb::model::object& obj, std::string_view message, uint32_t seq = 0xFFFFFFFD) override final;
     void                            on_dialog_0x30_10(character& me, const fb::game::object& obj, std::string_view message, uint32_t seq = 0xFFFFFFFD) override final;
-    [[nodiscard]] async::task<void> on_transfer(character& me, fb::game::map& map, const fb::model::point16_t& position, std::string_view ip, uint16_t port) override final;
+    [[nodiscard]] async::task<void> on_transfer(character& me, fb::game::map& map, const fb::model::point16_t& position, std::string_view ip, uint16_t port, const transfer_option& option = {}) override final;
     void                            on_ping(character& ch, uint32_t token) override final;
     void                            on_save(character& ch) override final;
     void                            on_bulk_update(character& ch, const std::vector<object*>& objects) override final;

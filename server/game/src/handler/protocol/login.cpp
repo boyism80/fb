@@ -284,8 +284,17 @@ async::task<std::shared_ptr<character>> login<V>::init(const game_reqs::login<V>
 
     session.data(ch);
 
-    if (co_await ch->map(this->server.maps[map], fb::model::point16_t(position_x, position_y)) == false)
-        co_return nullptr;
+    if (request.match.has_value() && request.match->id.empty() == false)
+        co_await this->server.matches.join(*ch, request.match->id, request.match->type);
+
+    if (ch->map() == nullptr)
+    {
+        if (co_await ch->map(this->server.maps[map], fb::model::point16_t(position_x, position_y)) == false)
+        {
+            this->server.matches.leave(*ch);
+            co_return nullptr;
+        }
+    }
 
     for (auto& buff : resp.character.buffs)
     {
@@ -318,6 +327,7 @@ async::task<std::shared_ptr<character>> login<V>::init(const game_reqs::login<V>
     bool inserted = this->server.characters.insert(ch);
     if (inserted == false)
     {
+        this->server.matches.leave(*ch);
         fb::logger::fatal(
             "Character {} already exists in server during initial insert - disconnecting duplicate session",
             ch->name());
@@ -353,15 +363,6 @@ async::task<std::shared_ptr<character>> login<V>::init(const game_reqs::login<V>
     ch->collections.sync();
     ch->update_time(static_cast<uint8_t>(this->server.time().hours()),
                     static_cast<uint8_t>(this->server.time().minutes()));
-    if (fb::is_cross() && ch->has_return_point())
-    {
-        auto lua = this->server.lua.open("scripts/interaction.lua", "on_match_start");
-        if (lua)
-        {
-            lua->pushobject(ch);
-            std::ignore = lua->call(1);
-        }
-    }
     if (request.from == internal::Service::Login)
     {
         auto msg = this->elapsed_message(resp.character.updated_date);

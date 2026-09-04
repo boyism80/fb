@@ -1535,6 +1535,8 @@ namespace Fb.Model
         public uint MemberCount { get; set; }
         [JsonProperty("team_count")]
         public uint TeamCount { get; set; }
+        [JsonProperty("map")]
+        public Dsl Map { get; set; }
     }
 
     public class MobSpawn

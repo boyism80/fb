@@ -38,6 +38,7 @@ async::task<void> fb::game::server::init_lua()
         lua.build<fb::game::buff, fb::lua::luable>();
         lua.build<fb::game::map, fb::thread_switchable>();
         lua.build<fb::game::matchmaker, fb::lua::luable>();
+        lua.build<fb::game::match, fb::lua::luable>();
         lua.build<fb::game::group, fb::thread_switchable>();
         lua.build<fb::game::object, fb::thread_switchable>();
         lua.build<fb::game::life, fb::game::object>();
@@ -357,6 +358,7 @@ fb::game::server::server(boost::asio::io_context& io_context, uint16_t port) :
     clans(*this),
     castles(*this),
     groups(*this),
+    matches(*this),
     mail(*this),
     bulletin(*this),
     system_storage(*this),
