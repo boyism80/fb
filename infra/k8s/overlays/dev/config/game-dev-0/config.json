@@ -19,6 +19,10 @@
         "ip": "marketplace",
         "port": 80
     },
+    "matchmaking": {
+        "ip": "matchmaking",
+        "port": 80
+    },
     "login": {
         "ip": "127.0.0.1",
         "port": 30010

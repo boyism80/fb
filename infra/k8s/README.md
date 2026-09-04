@@ -23,7 +23,7 @@ infra/k8s/
 | `mysql-unified`, `mysql-dev-global`, `mysql-dev-0`, `mysql-dev-log-0` | StatefulSet | 1 each |
 | `redis-unified`, `redis-dev-global`, `redis-dev-0` | StatefulSet | 1 each |
 | `rabbitmq-internal`, `rabbitmq-log` | StatefulSet | 1 each |
-| `gateway`, `login-dev`, `game-dev-0` | StatefulSet | 1 each |
+| `gateway`, `login-dev`, `game-dev-0`, `game-cross-200`, `game-cross-201`, `game-cross-202` | StatefulSet | 1 each |
 | `internal`, `log-dev`, `write-back-dev`, `marketplace`, `matchmaking`, `admin-tool` | Deployment | 1 each |
 
 Production (Pulumi) scales shards/replicas up using the same naming pattern.
@@ -67,6 +67,7 @@ kubectl -n fb get pods
 | Gateway | 30000 |
 | Login | 30010 |
 | Game | 30030 |
+| Game (cross) | 30320, 30321, 30322 |
 | Internal | 30200 |
 | Admin Tool | 30210 |
 | Marketplace | 30220 |

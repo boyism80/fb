@@ -1,11 +1,11 @@
 {
-    "id": 0,
-    "name": "game-dev-0",
-    "role": "home",
+    "id": 202,
+    "name": "game-cross-202",
+    "role": "cross",
     "world": 1,
     "delay": 5,
-    "ip": "__FB_HOST__",
-    "port": 30030,
+    "ip": "127.0.0.1",
+    "port": 30322,
     "thread": {
         "logic": 32,
         "io": 12
@@ -24,7 +24,7 @@
         "port": 80
     },
     "login": {
-        "ip": "__FB_HOST__",
+        "ip": "127.0.0.1",
         "port": 30010
     },
     "amqp": {

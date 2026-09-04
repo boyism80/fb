@@ -210,6 +210,19 @@ namespace Runner.ViewModel
             get => Model.Port;
             set => Model.Port = value;
         }
+        public string Role
+        {
+            get
+            {
+                var role = string.IsNullOrWhiteSpace(Model.Role) ? "home" : Model.Role.Trim().ToLowerInvariant();
+                return role == "cross" ? "cross" : "home";
+            }
+            set
+            {
+                var role = string.IsNullOrWhiteSpace(value) ? "home" : value.Trim().ToLowerInvariant();
+                Model.Role = role == "cross" ? "cross" : "home";
+            }
+        }
 
         public GameSetting(Model.GameSetting model)
         {
@@ -496,6 +509,7 @@ namespace Runner.ViewModel
         public ICommand NewRedis { get; private set; }
         public ICommand NewLogin { get; private set; }
         public ICommand NewGame { get; private set; }
+        public ICommand NewCrossGame { get; private set; }
         public ICommand FindWorkingDirectory { get; private set; }
         public ICommand PatchCommand { get; private set; }
         public ICommand BuildCommand { get; private set; }
@@ -556,6 +570,7 @@ namespace Runner.ViewModel
             NewRedis = new RelayCommand(OnNewRedis);
             NewLogin = new RelayCommand(OnNewLogin);
             NewGame = new RelayCommand(OnNewGame);
+            NewCrossGame = new RelayCommand(OnNewCrossGame);
             FindWorkingDirectory = new RelayCommand(OnFindWorkingDirectory);
             PatchCommand = new RelayCommand(OnPatch);
             BuildCommand = new RelayCommand(OnBuild);
@@ -1101,6 +1116,7 @@ namespace Runner.ViewModel
                     var conf = new JObject();
                     conf["id"] = i;
                     conf["name"] = $"login-{i}";
+                    conf["role"] = "home";
                     conf["world"] = 1;
                     conf["ip"] = ExternalIP;
                     conf["port"] = setting.Port;
@@ -1157,6 +1173,7 @@ namespace Runner.ViewModel
                     {
                         max_concurrent = 128
                     });
+                    conf["meta_dat"] = "Meta.dat";
                     File.WriteAllText(Path.Combine([loginDir, $"config_login_{i}.json"]), conf.ToString(Formatting.Indented));
                 }
 
@@ -1166,9 +1183,11 @@ namespace Runner.ViewModel
                     if (setting.Port == 0)
                         throw new InvalidOperationException($"{i + 1}번째 게임 서버의 포트가 설정되지 않았습니다.");
 
+                    var role = setting.Role == "cross" ? "cross" : "home";
                     var conf = new JObject();
                     conf["id"] = setting.ID;
-                    conf["name"] = $"game-{setting.ID}";
+                    conf["name"] = role == "cross" ? $"game-cross-{setting.ID}" : $"game-{setting.ID}";
+                    conf["role"] = role;
                     conf["world"] = 1;
                     conf["delay"] = 5;
                     conf["ip"] = ExternalIP;
@@ -1214,6 +1233,8 @@ namespace Runner.ViewModel
                     {
                         max_concurrent = 128
                     });
+                    conf["meta_dat"] = "Meta.dat";
+                    conf["sobj_tbl"] = "SObj.tbl";
                     File.WriteAllText(Path.Combine([gameDir, $"config_game_{setting.ID}.json"]), conf.ToString(Formatting.Indented));
                 }
 
@@ -1452,7 +1473,8 @@ namespace Runner.ViewModel
                 for (int i = 0; i < Game.Count; i++)
                 {
                     var setting = Game[i];
-                    game.Processes.Add(ExecCPP("game.exe", $"game-{i}", $"config_game_{setting.ID}"));
+                    var env = setting.Role == "cross" ? $"game-cross-{setting.ID}" : $"game-{setting.ID}";
+                    game.Processes.Add(ExecCPP("game.exe", env, $"config_game_{setting.ID}"));
                 }
                 Servers.Add(game);
             }
@@ -1882,7 +1904,28 @@ namespace Runner.ViewModel
             Game.Add(new GameSetting(new Model.GameSetting
             {
                 ID = Game.Count,
-                Port = 0
+                Port = 0,
+                Role = "home"
+            }));
+        }
+
+        private void OnNewCrossGame(object obj)
+        {
+            var usedIds = Game.Select(g => g.ID).ToHashSet();
+            var id = 200;
+            while (usedIds.Contains(id))
+                id++;
+
+            var usedPorts = Game.Select(g => g.Port).ToHashSet();
+            var port = (ushort)3100;
+            while (usedPorts.Contains(port))
+                port++;
+
+            Game.Add(new GameSetting(new Model.GameSetting
+            {
+                ID = id,
+                Port = port,
+                Role = "cross"
             }));
         }
 

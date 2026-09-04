@@ -1964,6 +1964,21 @@
             "node": 30240
         }
     },
+    "cross": {
+        "game": {
+            "containers": {
+                "200": {
+                    "port": 30320
+                },
+                "201": {
+                    "port": 30321
+                },
+                "202": {
+                    "port": 30322
+                }
+            }
+        }
+    },
     "admin-tool": {
         "replicas": 1,
         "port": {

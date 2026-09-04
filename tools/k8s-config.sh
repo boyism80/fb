@@ -12,7 +12,7 @@ if [[ -f "$ROOT/infra/k8s/config/fb-host.env" ]]; then
     FB_HOST="${FB_HOST:-127.0.0.1}"
 fi
 
-mkdir -p "$CONFIG"/{gateway,login-dev,game-dev-0,internal,log-dev,write-back-dev,marketplace,matchmaking,admin-tool}
+mkdir -p "$CONFIG"/{gateway,login-dev,game-dev-0,game-cross-200,game-cross-201,game-cross-202,internal,log-dev,write-back-dev,marketplace,matchmaking,admin-tool}
 
 render_cpp_config() {
     local service="$1"
@@ -25,6 +25,9 @@ render_cpp_config() {
 render_cpp_config gateway
 render_cpp_config login-dev
 render_cpp_config game-dev-0
+render_cpp_config game-cross-200
+render_cpp_config game-cross-201
+render_cpp_config game-cross-202
 
 cp "$ROOT/infra/k8s/config/internal/appsettings.k8s.json" "$CONFIG/internal/"
 cp "$ROOT/infra/k8s/config/log-dev/appsettings.json" "$CONFIG/log-dev/"

@@ -302,6 +302,39 @@ services:
     networks:
       - fb
 
+  game-cross:
+    profiles: [app]
+    image: fb/game:local
+    build:
+      context: ../..
+      dockerfile: server/game/Dockerfile
+      args:
+        BUILD_TYPE: ${BUILD_TYPE:-Release}
+        BUILD_IMAGE: fb/build:local
+        DATA_IMAGE: fb/data:local
+    command: ["./game", "-c", "config.json"]
+    depends_on:
+      mysql:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+      internal:
+        condition: service_started
+      login:
+        condition: service_started
+      marketplace:
+        condition: service_started
+      matchmaking:
+        condition: service_started
+    volumes:
+      - ./config/game-cross/config.json:/app/config.json:ro
+    ports:
+      - "${GAME_CROSS_PORT:-3100}:3100"
+    networks:
+      - fb
+
 networks:
   fb:
     name: fb-dev

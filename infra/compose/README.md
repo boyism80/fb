@@ -16,7 +16,7 @@ From the repository root:
 cp infra/compose/.env.example infra/compose/.env
 # Edit FB_HOST if clients connect from another machine (LAN IP)
 
-bash tools/compose-config.sh   # render gateway/login/game configs
+bash tools/compose-config.sh   # render gateway/login/game/game-cross configs
 bash tools/compose-build.sh    # build fb/data, fb/build, app images (long first run)
 docker compose -f infra/compose/docker-compose.yml --profile infra --profile app up -d
 ```
@@ -32,7 +32,7 @@ bash tools/compose-up.sh
 | Profile | Services |
 |---------|----------|
 | `infra` | mysql, redis, rabbitmq |
-| `app` | internal, write-back, log, marketplace, matchmaking, admin-tool, gateway, login, game |
+| `app` | internal, write-back, log, marketplace, matchmaking, admin-tool, gateway, login, game, game-cross |
 
 Infra only:
 
@@ -51,6 +51,7 @@ docker compose -f infra/compose/docker-compose.yml --profile infra up -d
 | Gateway | 3001 |
 | Login | 3002 |
 | Game | 3004 |
+| Game (cross) | 3100 |
 | Marketplace | 3010 |
 | Matchmaking | 3340 |
 | Admin Tool | 3020 |
@@ -61,7 +62,7 @@ docker compose -f infra/compose/docker-compose.yml --profile infra up -d
 - **`config/*/appsettings.Development.json`** — .NET services (Docker DNS: `mysql`, `redis`, …)
 - **`config/*/config.json.template`** — C++ services; rendered by `tools/compose-config.sh`
 
-Generated files (gitignored): `config/gateway/config.json`, `config/login/config.json`, `config/game/config.json`.
+Generated files (gitignored): `config/gateway/config.json`, `config/login/config.json`, `config/game/config.json`, `config/game-cross/config.json`.
 
 ## Build notes
 

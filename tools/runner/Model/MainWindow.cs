@@ -45,6 +45,7 @@ namespace Runner.Model
     {
         public required int ID { get; set; }
         public required ushort Port { get; set; }
+        public string Role { get; set; } = "home";
     }
 
     public class InternalSetting
@@ -137,6 +138,14 @@ namespace Runner.Model
                     model.Matchmaking.Port = 3340;
                 if (model.AdminTool.Port == 0)
                     model.AdminTool.Port = 30210;
+                if (model.Game != null)
+                {
+                    foreach (var game in model.Game)
+                    {
+                        if (string.IsNullOrWhiteSpace(game.Role))
+                            game.Role = "home";
+                    }
+                }
                 model.Window = window;
                 return model;
             }

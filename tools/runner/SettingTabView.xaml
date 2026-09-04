@@ -1,6 +1,7 @@
 <UserControl x:Class="Runner.SettingTabView"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:sys="clr-namespace:System;assembly=System.Runtime"
              xmlns:converter="clr-namespace:Runner.Converter"
              xmlns:vm="clr-namespace:Runner.ViewModel">
     <UserControl.Resources>
@@ -656,6 +657,10 @@
                                             Style="{StaticResource SettingAddButton}"
                                             Margin="0,0,6,0"
                                             Command="{Binding NewGame}" />
+                                    <Button Content="교차 서버 추가"
+                                            Style="{StaticResource SettingAddButton}"
+                                            Margin="0,0,6,0"
+                                            Command="{Binding NewCrossGame}" />
                                     <Button Content="제거"
                                             Style="{StaticResource SettingAddButton}"
                                             Command="{Binding DeleteGame}"
@@ -687,6 +692,17 @@
                                             <DataTemplate>
                                                 <TextBox Text="{Binding Port, UpdateSourceTrigger=PropertyChanged, Mode=TwoWay}"
                                                          Width="72" />
+                                            </DataTemplate>
+                                        </DataGridTemplateColumn.CellTemplate>
+                                    </DataGridTemplateColumn>
+                                    <DataGridTemplateColumn Header="ROLE">
+                                        <DataGridTemplateColumn.CellTemplate>
+                                            <DataTemplate>
+                                                <ComboBox SelectedItem="{Binding Role, UpdateSourceTrigger=PropertyChanged, Mode=TwoWay}"
+                                                          Width="80">
+                                                    <sys:String>home</sys:String>
+                                                    <sys:String>cross</sys:String>
+                                                </ComboBox>
                                             </DataTemplate>
                                         </DataGridTemplateColumn.CellTemplate>
                                     </DataGridTemplateColumn>

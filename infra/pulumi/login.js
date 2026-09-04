@@ -14,6 +14,7 @@ module.exports = function () {
                 const config = {
                     id: 0,
                     name: `login-${worldName}`,
+                    role: "home",
                     world: worldConf.id,
                     ip: conf.host,
                     port: worldConf.login.port,

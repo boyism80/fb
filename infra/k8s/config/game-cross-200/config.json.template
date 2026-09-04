@@ -1,11 +1,11 @@
 {
-    "id": 0,
-    "name": "game-dev-0",
-    "role": "home",
+    "id": 200,
+    "name": "game-cross-200",
+    "role": "cross",
     "world": 1,
     "delay": 5,
     "ip": "__FB_HOST__",
-    "port": 30030,
+    "port": 30320,
     "thread": {
         "logic": 32,
         "io": 12
