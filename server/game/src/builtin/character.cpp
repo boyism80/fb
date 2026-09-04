@@ -63,7 +63,6 @@ IMPLEMENT_LUA_EXTENSION(character, "fb.game.character")
 {"dropitem",                     builtin::character::builtin_item_drop},
 {"mkitem",                       builtin::character::builtin_mkitem},
 {"rmitem",                       builtin::character::builtin_rmitem},
-{"preview_item_looks",           builtin::character::builtin_preview_item_looks},
 {"exchange",                     builtin::character::builtin_exchange},
 {"state",                        builtin::character::builtin_state},
 {"mimic",                        builtin::character::builtin_mimic},
@@ -1175,70 +1174,6 @@ int builtin::character::builtin_rmitem(lua_State* L)
         lua->pushboolean(false);
         return 1;
     }
-}
-
-/**
- * Send fake inventory update packets for empty slots so admins can preview item icons.
- * Args: start_look (json/raw), optional count (default 1), optional color (default 0).
- * Applies +0xBFFF unless look is already >= 0xBFFF. Returns number of packets sent.
- */
-int builtin::character::builtin_preview_item_looks(lua_State* L)
-{
-    auto lua = fb::lua::get(L);
-    if (lua == nullptr)
-        return 0;
-
-    auto ch = lua->touserdata<fb::game::character>(1);
-    if (ch == nullptr)
-    {
-        lua->pushinteger(0);
-        return 1;
-    }
-
-    auto start_look = static_cast<uint32_t>(lua->tointeger(2, 0));
-    auto count      = static_cast<int>(lua->tointeger(3, 1));
-    auto color      = static_cast<uint8_t>(lua->tointeger(4, 0));
-    if (count < 1)
-        count = 1;
-
-    auto weak     = ch->weak_from_this_as<fb::game::character>();
-    auto sent     = std::make_shared<int>(0);
-    auto builder  = lua->new_co_builder();
-    builder.weak  = weak;
-    builder.yield = [=]() -> async::task<void> {
-        constexpr uint32_t ITEM_LOOK_OFFSET = 0xBFFF;
-
-        auto to_wire = [](uint32_t raw) -> uint16_t {
-            if (raw >= ITEM_LOOK_OFFSET)
-                return static_cast<uint16_t>(std::min<uint32_t>(raw, 0xFFFF));
-            auto wire = raw + ITEM_LOOK_OFFSET;
-            return static_cast<uint16_t>(std::min<uint32_t>(wire, 0xFFFF));
-        };
-
-        for (int i = 0; i < CONTAINER_CAPACITY && *sent < count; ++i)
-        {
-            if (ch->items.at(static_cast<uint8_t>(i)) != nullptr)
-                continue;
-
-            auto raw  = start_look + static_cast<uint32_t>(*sent);
-            auto wire = to_wire(raw);
-            auto name = std::format("룩{}", raw);
-            fb::protocol::visit_client_version(ch->client_version, [&]<fb::protocol::CLIENT_VERSION V> {
-                ch->send(fb::protocol::game::response::item_update<V>(static_cast<uint8_t>(i),
-                                                                      wire,
-                                                                      color,
-                                                                      std::move(name),
-                                                                      1));
-            });
-            ++(*sent);
-        }
-        co_return;
-    };
-    builder.resume = [=]() -> async::task<int> {
-        lua->pushinteger(*sent);
-        co_return 1;
-    };
-    return builder.run();
 }
 
 int builtin::character::builtin_exchange(lua_State* L)
