@@ -334,12 +334,12 @@ local function run_meet_sequence(map)
 end
 
 -- Per-character countdown on this map only (map:objects runs on map thread).
-local function set_map_char_timers(map, seconds)
+local function set_map_char_timers(map, seconds, timer_type)
     if map == nil then
         return
     end
     for _, ch in pairs(map:objects(OBJECT_TYPE.CHARACTER)) do
-        ch:timer(seconds, true)
+        ch:timer(seconds, timer_type)
     end
 end
 
@@ -347,7 +347,7 @@ local function clear_bridge_timer()
     if not state.get('countdown_active') then
         return
     end
-    set_map_char_timers(id2map(MAP_ID), 0)
+    set_map_char_timers(id2map(MAP_ID), 0, TIMER_TYPE.OFF)
     state.set('countdown_active', false)
 end
 
@@ -371,14 +371,14 @@ local function warp_chilsung_all()
     local jiknyeo = name2map(HOUSE_JIKNYEO) or id2map(10959)
 
     if state.get('chilsung_countdown') then
-        set_map_char_timers(map, 0)
+        set_map_char_timers(map, 0, TIMER_TYPE.OFF)
         state.set('chilsung_countdown', false)
     end
 
     for _, ch in pairs(map:objects(OBJECT_TYPE.CHARACTER)) do
         local house = (ch:gender() == GENDER.MALE) and gyeonu or jiknyeo
         if house ~= nil then
-            ch:timer(BRIDGE_BUILD_SECONDS, true)
+            ch:timer(BRIDGE_BUILD_SECONDS, TIMER_TYPE.DECREASE)
             ch:map(house, math.random(7, 12), math.random(6, 12))
         end
     end
@@ -458,7 +458,7 @@ local function run_bridge_build_phase(map, t)
     end
 
     if rem ~= nil and rem > 0 and not state.get('countdown_active') then
-        set_map_char_timers(map, rem)
+        set_map_char_timers(map, rem, TIMER_TYPE.DECREASE)
         state.set('countdown_active', true)
     end
 end
@@ -654,7 +654,7 @@ function M.sync_timer(me)
     if rem == nil or rem <= 0 then
         return
     end
-    me:timer(rem, true)
+    me:timer(rem, TIMER_TYPE.DECREASE)
 end
 
 function M.on_tick()

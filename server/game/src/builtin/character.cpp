@@ -3903,9 +3903,11 @@ int builtin::character::builtin_timer(lua_State* L)
     if (ch == nullptr)
         return 0;
 
-    auto value    = static_cast<uint32_t>(lua->tointeger(2));
-    auto decrease = lua->toboolean(3);
-    auto type     = decrease ? TIMER_TYPE::DECREASE : TIMER_TYPE::INCREASE;
+    if (lua->argc() < 3)
+        return 0;
+
+    auto value = static_cast<uint32_t>(lua->tointeger(2));
+    auto type  = static_cast<TIMER_TYPE>(lua->tointeger(3));
 
     auto weak     = ch->weak_from_this_as<fb::game::character>();
     auto builder  = lua->new_co_builder();

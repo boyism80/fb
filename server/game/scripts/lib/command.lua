@@ -331,34 +331,41 @@ M.functions = {
     
     ['타이머'] = {
         ['privilege'] = ROLE.ADMIN,
-        ['usage'] = '<시간(초)> [증가|감소] - 타이머 설정 (기본: 감소)',
+        ['usage'] = '<시간(초)> [증가|감소] | 제거 - 타이머 설정/제거 (기본: 감소)',
         ['command'] = function (me, args)
             local time_arg = args[1]
             local mode_arg = args[2]
             if not time_arg then
                 me:message("사용법: /타이머 <시간(초)> [증가|감소]")
-                return true
-            end
-            local time = tonumber(time_arg)
-            if not time or time < 0 then
-                me:message("시간은 0보다 큰 숫자여야 합니다.")
+                me:message("사용법: /타이머 제거")
                 return true
             end
 
-            local decrease = true
-            if mode_arg then
-                if mode_arg == '증가' then
-                    decrease = false
-                elseif mode_arg == '감소' then
-                    decrease = true
-                else
-                    me:message("사용법: /타이머 <시간(초)> [증가|감소]")
+            if time_arg == '제거' then
+                me:timer(0, TIMER_TYPE.OFF)
+                return true
+            else
+                local time = tonumber(time_arg)
+                if not time or time < 0 then
+                    me:message("시간은 0보다 큰 숫자여야 합니다.")
                     return true
                 end
-            end
 
-            me:timer(time, decrease)
-            return true
+                local timer_type = TIMER_TYPE.DECREASE
+                if mode_arg then
+                    if mode_arg == '증가' then
+                        timer_type = TIMER_TYPE.INCREASE
+                    elseif mode_arg == '감소' then
+                        timer_type = TIMER_TYPE.DECREASE
+                    else
+                        me:message("사용법: /타이머 <시간(초)> [증가|감소]")
+                        return true
+                    end
+                end
+
+                me:timer(time, timer_type)
+                return true
+            end
         end,
     },
 

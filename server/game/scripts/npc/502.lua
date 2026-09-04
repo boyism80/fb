@@ -172,7 +172,7 @@ local function run_chilseok(me, npc)
         if map ~= nil then
             -- Message/timer before map (thread hop).
             if rem ~= nil and rem > 0 then
-                me:timer(rem, true)
+                me:timer(rem, TIMER_TYPE.DECREASE)
             end
             me:map(map, math.random(7, 12), math.random(6, 12))
         end

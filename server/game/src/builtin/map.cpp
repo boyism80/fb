@@ -839,10 +839,12 @@ int builtin::map::builtin_timer(lua_State* L)
     if (map == nullptr)
         return 0;
 
-    auto value    = static_cast<uint32_t>(lua->tointeger(2));
-    auto decrease = lua->toboolean(3);
-    auto type     = decrease ? TIMER_TYPE::DECREASE : TIMER_TYPE::INCREASE;
-    auto map_id   = map->id;
+    if (lua->argc() < 3)
+        return 0;
+
+    auto value  = static_cast<uint32_t>(lua->tointeger(2));
+    auto type   = static_cast<TIMER_TYPE>(lua->tointeger(3));
+    auto map_id = map->id;
 
     auto& server = static_cast<fb::game::server&>(lua->executor);
     // Filter on each character's thread: snapshot predicates must not call

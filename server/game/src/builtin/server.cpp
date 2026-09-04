@@ -894,11 +894,12 @@ int builtin::server::builtin_timer(lua_State* L)
     if (lua == nullptr)
         return 0;
 
-    auto& srv      = static_cast<fb::game::server&>(lua->executor);
-    auto  value    = (uint32_t)lua->tointeger(1);
-    auto  decrease = lua->toboolean(2);
+    if (lua->argc() < 2)
+        return 0;
 
-    auto type = decrease ? TIMER_TYPE::DECREASE : TIMER_TYPE::INCREASE;
+    auto& srv   = static_cast<fb::game::server&>(lua->executor);
+    auto  value = (uint32_t)lua->tointeger(1);
+    auto  type  = static_cast<TIMER_TYPE>(lua->tointeger(2));
     srv.characters.foreach_enqueue([value, type](auto& ch) -> async::task<void> {
         ch->timer(value, type);
         co_return;

@@ -443,7 +443,7 @@ local function matchmaking_confirm_seconds(confirm_deadline)
 end
 
 local function matchmaking_clear_timer(me)
-    me:timer(0, false)
+    me:timer(0, TIMER_TYPE.OFF)
 end
 
 local function matchmaking_state(me)
@@ -885,7 +885,7 @@ return {
         local now_ts = now()
         state.queue_started_at = now_ts
         state.elapsed_seconds = 0
-        me:timer(1200, false)
+        me:timer(1200, TIMER_TYPE.INCREASE)
         me:message(string.format('매치메이킹 대기를 시작했습니다. (유형: %d)', match_type), MESSAGE_TYPE.STATE)
     end,
 
@@ -914,7 +914,7 @@ return {
             state.elapsed_seconds = 0
         end
         local confirm_seconds = matchmaking_confirm_seconds(confirm_deadline)
-        me:timer(confirm_seconds, true)
+        me:timer(confirm_seconds, TIMER_TYPE.DECREASE)
         me:message(
             string.format('매치가 제안되었습니다. %d초 안에 수락해 주세요. (유형: %d)', confirm_seconds, match_type),
             MESSAGE_TYPE.STATE
@@ -953,7 +953,7 @@ return {
     end,
 
     on_match_start = function(me)
-        me:timer(MATCH_DURATION_SECONDS, false)
+        me:timer(MATCH_DURATION_SECONDS, TIMER_TYPE.INCREASE)
         me:message('매치가 시작되었습니다.', MESSAGE_TYPE.STATE)
         sleep(MATCH_DURATION_SECONDS * 1000)
         on_match_end(me)
@@ -966,7 +966,7 @@ return {
             local state = matchmaking_state(me)
             local elapsed = state.elapsed_seconds or 0
             state.queue_started_at = now() - elapsed
-            me:timer(1200, false)
+            me:timer(1200, TIMER_TYPE.INCREASE)
             if reason == 0 then
                 me:message(
                     string.format('상대가 응답하지 않아 대기를 이어갑니다. (유형: %d)', match_type),
