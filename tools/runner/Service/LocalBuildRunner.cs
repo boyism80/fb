@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using System.IO;
 using System.IO.Compression;
 
@@ -28,7 +29,7 @@ namespace Runner.Service
 
         public static async Task RunAsync(
             string workdir,
-            string? vcvarsAllPath,
+            string vcvarsAllPath,
             Action<string> log,
             CancellationToken cancellationToken = default)
         {
@@ -36,26 +37,18 @@ namespace Runner.Service
             var distDir = Path.Combine(buildDir, "dist");
             Directory.CreateDirectory(distDir);
 
-            var cmakeCache = Path.Combine(buildDir, "CMakeCache.txt");
-            if (File.Exists(cmakeCache) == false)
-            {
-                log("[cmake] Configuring CMake..." + Environment.NewLine);
-                var configure = await RunToolAsync(
-                    workdir,
-                    vcvarsAllPath,
-                    "cmake",
-                    "-S . -B build",
-                    TimeSpan.FromMinutes(30),
-                    log,
-                    cancellationToken);
+            log("[cmake] Configuring CMake..." + Environment.NewLine);
+            var configure = await RunToolAsync(
+                workdir,
+                vcvarsAllPath,
+                "cmake",
+                "-S . -B build",
+                TimeSpan.FromMinutes(30),
+                log,
+                cancellationToken);
 
-                if (configure.ExitCode != 0)
-                    throw new BuildFailedException("cmake configure", TrimOutput(configure));
-            }
-            else
-            {
-                log("[cmake] Using existing CMake cache." + Environment.NewLine);
-            }
+            if (configure.ExitCode != 0)
+                throw new BuildFailedException("cmake configure", TrimOutput(configure));
 
             log("[cpp] Building C++ (Debug)..." + Environment.NewLine);
             var cppBuild = await RunToolAsync(
@@ -131,12 +124,16 @@ namespace Runner.Service
                 log,
                 "[json]");
 
+            log("[meta] Copying Meta.dat and SObj.tbl..." + Environment.NewLine);
+            CopyFile(workdir, distDir, @"resources\meta\Meta.dat", "Meta.dat", log);
+            CopyFile(workdir, distDir, @"resources\meta\SObj.tbl", "SObj.tbl", log);
+
             log("[build] Local build completed successfully." + Environment.NewLine);
         }
 
         private static async Task<ProcessResult> RunToolAsync(
             string workdir,
-            string? vcvarsAllPath,
+            string vcvarsAllPath,
             string tool,
             string arguments,
             TimeSpan timeout,
@@ -163,6 +160,20 @@ namespace Runner.Service
                 cancellationToken);
         }
 
+        private static void CopyFile(string workdir, string distDir, string relativeSource, string fileName, Action<string> log)
+        {
+            var source = Path.Combine(workdir, relativeSource);
+            var dest = Path.Combine(distDir, fileName);
+            if (File.Exists(source) == false)
+            {
+                log($"[copy] WARNING: {source} not found{Environment.NewLine}");
+                return;
+            }
+
+            File.Copy(source, dest, true);
+            log($"[copy] {source} -> {dest}{Environment.NewLine}");
+        }
+
         private static void CopyExecutable(string buildDir, string distDir, string relativeSource, string fileName, Action<string> log)
         {
             var source = Path.Combine(buildDir, relativeSource);
@@ -172,6 +183,14 @@ namespace Runner.Service
 
             File.Copy(source, dest, true);
             log($"[copy] {source} -> {dest}{Environment.NewLine}");
+
+            var pdbSource = Path.ChangeExtension(source, ".pdb");
+            if (File.Exists(pdbSource))
+            {
+                var pdbDest = Path.ChangeExtension(dest, ".pdb");
+                File.Copy(pdbSource, pdbDest, true);
+                log($"[copy] {pdbSource} -> {pdbDest}{Environment.NewLine}");
+            }
         }
 
         private static void CopyDirectory(string sourceDir, string destDir, Action<string> log, string prefix)
@@ -202,6 +221,21 @@ namespace Runner.Service
         private static string TrimOutput(ProcessResult result)
         {
             var text = (result.StdErr + Environment.NewLine + result.StdOut).Trim();
+            var lines = text.Replace("\r\n", "\n").Split('\n');
+            var errors = new List<string>();
+            foreach (var line in lines)
+            {
+                if (line.Contains("error ", StringComparison.OrdinalIgnoreCase)
+                    || line.Contains("error:", StringComparison.OrdinalIgnoreCase)
+                    || line.Contains("fatal error", StringComparison.OrdinalIgnoreCase))
+                {
+                    errors.Add(line);
+                }
+            }
+
+            if (errors.Count > 0)
+                text = string.Join(Environment.NewLine, errors);
+
             if (text.Length > 2000)
                 text = text[..2000] + "...";
             return string.IsNullOrWhiteSpace(text) ? $"Exit code {result.ExitCode}" : text;

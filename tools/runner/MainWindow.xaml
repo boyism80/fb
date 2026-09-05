@@ -97,12 +97,20 @@
                                                     <MenuItem Header="맵"
                                                               IsEnabled="{Binding IsEnableEdit}"
                                                               Command="{Binding UpdateMapFile}" />
+                                                    <MenuItem Header="메타"
+                                                              IsEnabled="{Binding IsEnableEdit}"
+                                                              Command="{Binding UpdateMetaFile}" />
                                                     <MenuItem Header="데이터"
                                                               IsEnabled="{Binding IsEnableEdit}"
                                                               Command="{Binding UpdateResourceFile}" />
                                                     <MenuItem Header="스크립트"
                                                               Command="{Binding UpdateScript}" />
                                                 </MenuItem>
+                                            </MenuItem>
+                                            <MenuItem Header="도구">
+                                                <MenuItem Header="운영툴"
+                                                          IsEnabled="{Binding IsRunning}"
+                                                          Command="{Binding OpenAdminTool}" />
                                             </MenuItem>
                                         </Menu>
                                         <StackPanel Grid.Column="1"

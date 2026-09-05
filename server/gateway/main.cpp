@@ -1,4 +1,5 @@
 #include <fb/gateway/server.h>
+#include <fb/crash.h>
 #include <fb/socket.h>
 #include <iomanip>
 #include <iostream>
@@ -6,12 +7,12 @@
 #include <fb/leak.h>
 #include <fb/config.h>
 #include <fb/console.h>
+#include <fb/logger.h>
 #include <fb/protocol/flatbuffer/protocol.h>
 #include <boost/program_options.hpp>
+#include <boost/stacktrace.hpp>
 #include <filesystem>
-#ifndef _WIN32
-#include <execinfo.h>
-#else
+#ifdef _WIN32
 #include "resource.h"
 #endif
 
@@ -43,6 +44,7 @@ int main(int argc, char** argv)
             std::cerr << "Failed to initialize config from: " << config_path << std::endl;
             return -1;
         }
+        fb::crash::install("gateway");
     }
     catch (const std::exception& e)
     {
@@ -73,7 +75,9 @@ int main(int argc, char** argv)
     }
     catch (std::exception& e)
     {
-        std::cerr << "unhandled exception catched in main : " << e.what() << std::endl;
+        fb::logger::fatal("unhandled exception catched in main : {}\n{}",
+                          e.what(),
+                          boost::stacktrace::to_string(boost::stacktrace::stacktrace()));
     }
 
     // Clean up

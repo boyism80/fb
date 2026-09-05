@@ -93,7 +93,7 @@ namespace Runner.ViewModel
         public Brush StatusBrush =>
             Application.Current.TryFindResource(StatusBrushKey) as Brush ?? Brushes.Gray;
 
-        public InfraCheckItem Pass(string? detail = null)
+        public InfraCheckItem Pass(string detail = null)
         {
             if (detail != null)
                 Detail = detail;
@@ -102,7 +102,7 @@ namespace Runner.ViewModel
             return this;
         }
 
-        public InfraCheckItem Fail(string message, string? detail = null)
+        public InfraCheckItem Fail(string message, string detail = null)
         {
             if (detail != null)
                 Detail = detail;
@@ -111,9 +111,9 @@ namespace Runner.ViewModel
             return this;
         }
 
-        public event PropertyChangedEventHandler? PropertyChanged;
+        public event PropertyChangedEventHandler PropertyChanged;
 
-        protected void OnPropertyChanged([CallerMemberName] string? propertyName = null)
+        protected void OnPropertyChanged([CallerMemberName] string propertyName = null)
         {
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
         }

@@ -17,6 +17,7 @@
 #include <async/awaitable_get.h>
 #include <iomanip>
 #include <mutex>
+#include <optional>
 #include <boost/stacktrace.hpp>
 
 namespace fb {
@@ -97,10 +98,13 @@ private:
         static constexpr uint32_t MAX_TPS   = 100;
 
         auto reader = fb::stream_reader<big_endian>(stream);
+        auto opcode = std::optional<uint8_t>{};
         try
         {
             while (!stream.empty())
             {
+                opcode.reset();
+
                 if (socket.is_open() == false)
                     break;
 
@@ -121,8 +125,8 @@ private:
                 if (this->assert_tps(socket) && socket.limiter.update(MAX_TPS) == false)
                     throw std::runtime_error("tps limit exceeded");
 
-                auto opcode = reader.read<uint8_t>();
-                if (this->handler.protocol.should_decrypt(opcode))
+                opcode = reader.read<uint8_t>();
+                if (this->handler.protocol.should_decrypt(*opcode))
                     size = socket.encryption().decrypt(stream, reader.seek() - 1, size);
 
                 reader.flush(); // remove magic code and size
@@ -132,28 +136,28 @@ private:
                 // Session missing / version not established → deserialize as v550.
                 auto client_version = fb::protocol::client_version_or_default(socket.data());
 
-                if (!this->handler.protocol.has_opcode(opcode))
+                if (!this->handler.protocol.has_opcode(*opcode))
                 {
-                    fb::logger::warn(std::format("Undefined protocol. [{:#x}]", opcode));
+                    fb::logger::warn(std::format("Undefined protocol. [{:#x}]", *opcode));
                 }
-                else if (!this->handler.protocol.has_entry(opcode, client_version))
+                else if (!this->handler.protocol.has_entry(*opcode, client_version))
                 {
                     fb::logger::warn(std::format("Undefined handler. [{:#x}] version={}",
-                                                 opcode,
+                                                 *opcode,
                                                  fb::protocol::to_string(client_version)));
                 }
                 else
                 {
-                    auto protocol       = this->handler.protocol.get_deserializer(opcode, client_version)(reader);
-                    auto await_dispatch = this->handler.protocol.get_handler(opcode, client_version).await_dispatch;
+                    auto protocol       = this->handler.protocol.get_deserializer(*opcode, client_version)(reader);
+                    auto await_dispatch = this->handler.protocol.get_handler(*opcode, client_version).await_dispatch;
                     auto fd             = socket.fd();
                     auto weak           = socket.template weak_from_this_as<fb::socket<T>>();
                     auto builder        = this->threads.new_builder(weak);
                     auto frame          = execution_context::create();
                     frame->slot(context::local::slot_id(), context{.transaction_id = mint_transaction_id()});
                     builder.context = execution_context::token(std::move(frame));
-                    builder.func =
-                        [this, protocol, weak, fd, opcode, client_version](auto& thread) -> async::task<void> {
+                    builder.func    = [this, protocol, weak, fd, opcode = *opcode, client_version](
+                                       auto& thread) -> async::task<void> {
                         try
                         {
                             if (weak.expired())
@@ -179,11 +183,11 @@ private:
                         }
                         catch (std::exception& e)
                         {
-                            fb::logger::fatal(e.what());
+                            fb::logger::fatal("{} [{:#x}]", e.what(), opcode);
                         }
                         catch (...)
                         {
-                            fb::logger::fatal("unhandled exception");
+                            fb::logger::fatal("unhandled exception [{:#x}]", opcode);
                         }
                     };
 
@@ -203,12 +207,18 @@ private:
         }
         catch (std::exception& e)
         {
-            fb::logger::fatal(e.what());
+            if (opcode.has_value())
+                fb::logger::fatal("{} [{:#x}]", e.what(), opcode.value());
+            else
+                fb::logger::fatal(e.what());
             socket.close();
         }
         catch (...)
         {
-            fb::logger::fatal("unhandled exception while parse packet");
+            if (opcode.has_value())
+                fb::logger::fatal("unhandled exception while parse packet [{:#x}]", opcode.value());
+            else
+                fb::logger::fatal("unhandled exception while parse packet");
             socket.close();
         }
     }

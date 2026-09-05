@@ -50,9 +50,8 @@ public:
     void serialize(fb::stream_writer<big_endian>& writer) const;
 #else
     void deserialize(fb::stream_reader<big_endian>& reader);
-#endif
-
     void parse(SPELL_TYPE type);
+#endif
 };
 
 #ifndef BOT

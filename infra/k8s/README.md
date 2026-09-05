@@ -11,7 +11,7 @@ Pulumi-based deploy is optional; see `infra/pulumi/` and [wiki: Linux — Pulumi
 infra/k8s/
   base/           namespace
   infra/          mysql, redis, rabbitmq (StatefulSets)
-  apps/           gateway, login, game (StatefulSets) + .NET (Deployments)
+  apps/           gateway, login, game, game-cross (StatefulSets) + .NET + crash-watch (Deployments)
   config/         appsettings.k8s.json + C++ config templates
   overlays/dev/   kustomize entry point
 ```
@@ -24,7 +24,7 @@ infra/k8s/
 | `redis-unified`, `redis-dev-global`, `redis-dev-0` | StatefulSet | 1 each |
 | `rabbitmq-internal`, `rabbitmq-log` | StatefulSet | 1 each |
 | `gateway`, `login-dev`, `game-dev-0`, `game-cross-200`, `game-cross-201`, `game-cross-202` | StatefulSet | 1 each |
-| `internal`, `log-dev`, `write-back-dev`, `marketplace`, `matchmaking`, `admin-tool` | Deployment | 1 each |
+| `internal`, `log-dev`, `write-back-dev`, `marketplace`, `matchmaking`, `admin-tool`, `crash-watch` | Deployment | 1 each |
 
 Production (Pulumi) scales shards/replicas up using the same naming pattern.
 
@@ -38,7 +38,7 @@ Production (Pulumi) scales shards/replicas up using the same naming pattern.
 ```bash
 # example: kind
 kind load docker-image fb/game:local
-# … repeat for fb/internal:local, fb/gateway:local, etc.
+# … repeat for fb/internal:local, fb/gateway:local, fb/crash-watch:local, etc.
 ```
 
 ## Configure client address
@@ -77,6 +77,17 @@ kubectl -n fb get pods
 | RabbitMQ internal AMQP | 31020 |
 
 Connect clients to `<node-ip>:30000` (gateway). Ensure `FB_HOST` in C++ configs matches the reachable node IP.
+
+C++ servers always write daily files to `logs/YYYY-MM-DD-{server}.log` in the container working directory (`game`, `login`, `gateway`). Instance id is in each line. Those files are ephemeral unless you copy them out; crash-watch still uses container logs for Discord.
+
+## Crash watch
+
+`crash-watch` watches gateway, login, and game pods (home and cross share `app: game`) and posts Discord when a container exits non-zero. Leave the webhook empty to log only.
+
+```bash
+kubectl -n fb patch secret discord-webhook --type merge \
+  -p '{"stringData":{"url":"https://discord.com/api/webhooks/..."}}'
+```
 
 ## Custom registry
 

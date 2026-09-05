@@ -237,6 +237,7 @@ services:
         condition: service_started
     volumes:
       - ./config/gateway/config.json:/app/config.json:ro
+      - ./logs:/app/logs
     ports:
       - "${GATEWAY_PORT:-3001}:3001"
     networks:
@@ -264,6 +265,7 @@ services:
         condition: service_started
     volumes:
       - ./config/login/config.json:/app/config.json:ro
+      - ./logs:/app/logs
     ports:
       - "${LOGIN_PORT:-3002}:3002"
     networks:
@@ -297,6 +299,7 @@ services:
         condition: service_started
     volumes:
       - ./config/game/config.json:/app/config.json:ro
+      - ./logs:/app/logs
     ports:
       - "${GAME_PORT:-3004}:3004"
     networks:
@@ -330,8 +333,31 @@ services:
         condition: service_started
     volumes:
       - ./config/game-cross/config.json:/app/config.json:ro
+      - ./logs:/app/logs
     ports:
       - "${GAME_CROSS_PORT:-3100}:3100"
+    networks:
+      - fb
+
+  crash-watch:
+    profiles: [app]
+    image: fb/crash-watch:local
+    build:
+      context: ../crash-watch
+      dockerfile: Dockerfile
+    environment:
+      DISCORD_WEBHOOK_URL: ${DISCORD_WEBHOOK_URL:-}
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+    depends_on:
+      gateway:
+        condition: service_started
+      login:
+        condition: service_started
+      game:
+        condition: service_started
+      game-cross:
+        condition: service_started
     networks:
       - fb
 

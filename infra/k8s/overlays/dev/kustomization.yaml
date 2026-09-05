@@ -74,3 +74,6 @@ images:
   - name: fb/game
     newName: fb/game
     newTag: local
+  - name: fb/crash-watch
+    newName: fb/crash-watch
+    newTag: local

@@ -282,7 +282,7 @@ uint8_t trade::add(uint8_t index)
     if (this->_items.contains(index))
         return this->_items.at(index);
 
-    auto order = this->_items.size();
+    auto order = static_cast<uint8_t>(this->_items.size());
     this->_items.insert({index, order});
     return order;
 }

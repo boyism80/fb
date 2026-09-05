@@ -12,3 +12,4 @@ resources:
   - gateway.yaml
   - login.yaml
   - game.yaml
+  - crash-watch.yaml

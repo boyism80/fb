@@ -78,7 +78,9 @@ namespace Runner.ViewModel
             Model = model;
         }
 
+#pragma warning disable CS0067 // Raised by PropertyChanged.Fody
         public event PropertyChangedEventHandler PropertyChanged;
+#pragma warning restore CS0067
     }
 
     public class RedisConnection : INotifyPropertyChanged
@@ -100,7 +102,9 @@ namespace Runner.ViewModel
             Model = model;
         }
 
+#pragma warning disable CS0067 // Raised by PropertyChanged.Fody
         public event PropertyChangedEventHandler PropertyChanged;
+#pragma warning restore CS0067
     }
 
     public class RabbitMqConnection
@@ -339,8 +343,8 @@ namespace Runner.ViewModel
         }
 
         private bool _infrastructureLoaded;
-        private CancellationTokenSource? _infraCheckCts;
-        private InfraCheckResult? _lastInfraResult;
+        private CancellationTokenSource _infraCheckCts;
+        private InfraCheckResult _lastInfraResult;
         public bool IsEnableEdit
         {
             get
@@ -521,8 +525,10 @@ namespace Runner.ViewModel
         public ICommand NewInitPoint { get; set; }
         public ICommand DeleteInitPoint { get; private set; }
         public ICommand UpdateMapFile { get; private set; }
+        public ICommand UpdateMetaFile { get; private set; }
         public ICommand UpdateResourceFile { get; private set; }
         public ICommand UpdateScript { get; private set; }
+        public ICommand OpenAdminTool { get; private set; }
 
         public MainWindow(Model.MainWindow model)
         {
@@ -582,8 +588,10 @@ namespace Runner.ViewModel
             NewInitPoint = new RelayCommand(OnNewInitPoint);
             DeleteInitPoint = new RelayCommand(OnDeleteInitPoint);
             UpdateMapFile = new RelayCommand(OnUpdateMapFile);
+            UpdateMetaFile = new RelayCommand(OnUpdateMetaFile);
             UpdateResourceFile = new RelayCommand(OnUpdateResourceFile);
             UpdateScript = new RelayCommand(OnUpdateScript);
+            OpenAdminTool = new RelayCommand(OnOpenAdminTool);
         }
 
         private void InitSettingNav()
@@ -642,7 +650,7 @@ namespace Runner.ViewModel
                 }
             });
 
-            InfraCheckResult? result = null;
+            InfraCheckResult result = null;
 
             try
             {
@@ -872,6 +880,28 @@ namespace Runner.ViewModel
             }
         }
 
+        private void OnOpenAdminTool(object obj)
+        {
+            try
+            {
+                if (IsRunning == false)
+                    throw new InvalidOperationException("서버가 실행 중이 아닙니다.");
+
+                if (AdminToolPort == 0)
+                    throw new InvalidOperationException("Admin Tool 서버 포트가 설정되지 않았습니다.");
+
+                Process.Start(new ProcessStartInfo
+                {
+                    FileName = $"http://127.0.0.1:{AdminToolPort}",
+                    UseShellExecute = true
+                });
+            }
+            catch (Exception e)
+            {
+                MessageBox.Show(e.Message);
+            }
+        }
+
         private void OnUpdateMapFile(object obj)
         {
             try
@@ -883,6 +913,31 @@ namespace Runner.ViewModel
                 var output = Path.Combine(WorkingDirectory, "build", "dist", "maps");
                 System.IO.Compression.ZipFile.ExtractToDirectory(path, output, true);
                 MessageBox.Show("맵 파일을 업데이트 했습니다.", "완료");
+            }
+            catch (Exception e)
+            {
+                MessageBox.Show(e.Message);
+            }
+        }
+
+        private void OnUpdateMetaFile(object obj)
+        {
+            try
+            {
+                var distDir = Path.Combine(WorkingDirectory, "build", "dist");
+                Directory.CreateDirectory(distDir);
+
+                var files = new[] { "Meta.dat", "SObj.tbl" };
+                foreach (var fileName in files)
+                {
+                    var path = Path.Combine(WorkingDirectory, "resources", "meta", fileName);
+                    if (File.Exists(path) == false)
+                        throw new InvalidOperationException($"{path} 파일을 찾을 수 없습니다.");
+
+                    File.Copy(path, Path.Combine(distDir, fileName), overwrite: true);
+                }
+
+                MessageBox.Show("메타 파일을 업데이트 했습니다.", "완료");
             }
             catch (Exception e)
             {
@@ -1939,7 +1994,7 @@ namespace Runner.ViewModel
             }));
         }
 
-        private void Game_CollectionChanged(object? sender, NotifyCollectionChangedEventArgs e)
+        private void Game_CollectionChanged(object sender, NotifyCollectionChangedEventArgs e)
         {
             switch (e.Action)
             {
@@ -1958,7 +2013,7 @@ namespace Runner.ViewModel
             }
         }
 
-        private void Login_CollectionChanged(object? sender, NotifyCollectionChangedEventArgs e)
+        private void Login_CollectionChanged(object sender, NotifyCollectionChangedEventArgs e)
         {
             switch (e.Action)
             {
@@ -1977,7 +2032,7 @@ namespace Runner.ViewModel
             }
         }
 
-        private void Redis_CollectionChanged(object? sender, System.Collections.Specialized.NotifyCollectionChangedEventArgs e)
+        private void Redis_CollectionChanged(object sender, System.Collections.Specialized.NotifyCollectionChangedEventArgs e)
         {
             switch (e.Action)
             {
@@ -1997,7 +2052,7 @@ namespace Runner.ViewModel
             }
         }
 
-        private void MySQL_CollectionChanged(object? sender, System.Collections.Specialized.NotifyCollectionChangedEventArgs e)
+        private void MySQL_CollectionChanged(object sender, System.Collections.Specialized.NotifyCollectionChangedEventArgs e)
         {
             switch (e.Action)
             {
@@ -2175,7 +2230,7 @@ namespace Runner.ViewModel
                 }
                 return true;
             }
-            catch (Exception ex)
+            catch (Exception)
             {
                 return false;
             }

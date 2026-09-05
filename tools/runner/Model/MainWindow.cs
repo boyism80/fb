@@ -149,7 +149,7 @@ namespace Runner.Model
                 model.Window = window;
                 return model;
             }
-            catch (Exception e)
+            catch (Exception)
             {
                 return null;
             }

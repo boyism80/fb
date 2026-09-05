@@ -2,9 +2,18 @@
 #define __LOGGER_H__
 
 #include <fb/config.h>
+#include <fb/encoding.h>
 #include <fb/model/datetime.h>
 #include <boost/algorithm/string.hpp>
+#include <atomic>
+#include <condition_variable>
+#include <cstdio>
+#include <deque>
+#include <format>
+#include <mutex>
+#include <string>
 #include <string_view>
+#include <thread>
 
 namespace fb {
 
@@ -21,15 +30,23 @@ public:
     };
 
 private:
-    level _level;
+    level                   _level;
+    std::string             _service;
+    std::string             _name;
+    std::deque<std::string> _queue;
+    std::mutex              _queue_mutex;
+    std::condition_variable _queue_cv;
+    std::atomic<bool>       _stop{false};
+    std::thread             _writer;
+    static constexpr size_t _queue_limit = 4096;
 
 private:
-    logger(fb::logger::level level);
+    logger(fb::logger::level level, std::string service, std::string name);
 
 public:
     logger(const logger&) = delete;
     logger(logger&&)      = delete;
-    ~logger()             = default;
+    ~logger();
 
 public:
     logger& operator= (logger&)       = delete;
@@ -37,7 +54,12 @@ public:
 
 private:
     bool           has_flag(fb::logger::level level) const;
+    void           enqueue(std::string line);
+    void           writer_run();
     static logger& get();
+
+public:
+    static std::string daily_path(std::string_view service);
 
 public:
     template <class... Args> static fb::logger& debug(std::string_view fmt, Args&&... args);
@@ -68,7 +90,12 @@ fb::logger& fb::logger::debug(fb::console::color color, std::string_view fmt, Ar
         return ist;
 
     auto message = std::vformat(fmt, std::make_format_args(args...));
-    fb::console::puts(color, "{:<7} {} {}", "[DEBUG]", fb::model::datetime().to_string(), message);
+    auto line    = std::format("{:<7} {} [{}] {}", "[DEBUG]", fb::model::datetime().to_string(), ist._name, message);
+#ifdef _WIN32
+    line = fb::utf8(line);
+#endif
+    fb::console::puts(color, "{}", line);
+    ist.enqueue(std::move(line));
 
     return ist;
 }
@@ -87,7 +114,12 @@ fb::logger& fb::logger::info(fb::console::color color, std::string_view fmt, Arg
         return ist;
 
     auto message = std::vformat(fmt, std::make_format_args(args...));
-    fb::console::puts(color, "{:<7} {} {}", "[INFO]", fb::model::datetime().to_string(), message);
+    auto line    = std::format("{:<7} {} [{}] {}", "[INFO]", fb::model::datetime().to_string(), ist._name, message);
+#ifdef _WIN32
+    line = fb::utf8(line);
+#endif
+    fb::console::puts(color, "{}", line);
+    ist.enqueue(std::move(line));
 
     return ist;
 }
@@ -106,7 +138,12 @@ fb::logger& fb::logger::warn(fb::console::color color, std::string_view fmt, Arg
         return ist;
 
     auto message = std::vformat(fmt, std::make_format_args(args...));
-    fb::console::puts(color, "{:<7} {} {}", "[WARN]", fb::model::datetime().to_string(), message);
+    auto line    = std::format("{:<7} {} [{}] {}", "[WARN]", fb::model::datetime().to_string(), ist._name, message);
+#ifdef _WIN32
+    line = fb::utf8(line);
+#endif
+    fb::console::puts(color, "{}", line);
+    ist.enqueue(std::move(line));
 
     return ist;
 }
@@ -125,7 +162,14 @@ fb::logger& fb::logger::fatal(fb::console::color color, std::string_view fmt, Ar
         return ist;
 
     auto message = std::vformat(fmt, std::make_format_args(args...));
-    fb::console::puts(color, "{:<7} {} {}", "[FATAL]", fb::model::datetime().to_string(), message);
+    auto line    = std::format("{:<7} {} [{}] {}", "[FATAL]", fb::model::datetime().to_string(), ist._name, message);
+#ifdef _WIN32
+    line = fb::utf8(line);
+#endif
+    fb::console::puts(color, "{}", line);
+    std::fprintf(stderr, "%s\n", line.c_str());
+    std::fflush(stderr);
+    ist.enqueue(std::move(line));
 
     return ist;
 }

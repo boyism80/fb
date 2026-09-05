@@ -32,7 +32,7 @@ bash tools/compose-up.sh
 | Profile | Services |
 |---------|----------|
 | `infra` | mysql, redis, rabbitmq |
-| `app` | internal, write-back, log, marketplace, matchmaking, admin-tool, gateway, login, game, game-cross |
+| `app` | internal, write-back, log, marketplace, matchmaking, admin-tool, gateway, login, game, game-cross, crash-watch |
 
 Infra only:
 
@@ -58,11 +58,13 @@ docker compose -f infra/compose/docker-compose.yml --profile infra up -d
 
 ## Configuration
 
-- **`.env`** — ports and `FB_HOST` (client-facing IP)
+- **`.env`** — ports, `FB_HOST`, optional `DISCORD_WEBHOOK_URL` (empty disables Discord)
 - **`config/*/appsettings.Development.json`** — .NET services (Docker DNS: `mysql`, `redis`, …)
 - **`config/*/config.json.template`** — C++ services; rendered by `tools/compose-config.sh`
 
 Generated files (gitignored): `config/gateway/config.json`, `config/login/config.json`, `config/game/config.json`, `config/game-cross/config.json`.
+
+C++ servers always write daily files under `infra/compose/logs/` (`YYYY-MM-DD-{server}.log`, for example `2026-09-04-game.log`). Instance id is in each line, not in the filename. Crash dumps append to the same file. `log.file` is not a config key.
 
 ## Build notes
 
@@ -72,7 +74,8 @@ Build order is enforced by `tools/compose-build.sh`:
 
 1. `server/fb/data/Dockerfile`
 2. `server/fb/Dockerfile`
-3. Application images via `docker compose build`
+3. `infra/crash-watch/Dockerfile` (`fb/crash-watch:local`)
+4. Application images via `docker compose build`
 
 ## Tear down
 

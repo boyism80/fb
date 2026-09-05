@@ -63,7 +63,7 @@ namespace Runner.Behavior
             parent.ScrollToVerticalOffset(parent.VerticalOffset - e.Delta);
         }
 
-        private static ScrollViewer? FindChildScrollViewer(DependencyObject parent)
+        private static ScrollViewer FindChildScrollViewer(DependencyObject parent)
         {
             for (var i = 0; i < VisualTreeHelper.GetChildrenCount(parent); i++)
             {
@@ -79,7 +79,7 @@ namespace Runner.Behavior
             return null;
         }
 
-        private static ScrollViewer? FindParentScrollViewer(DependencyObject child)
+        private static ScrollViewer FindParentScrollViewer(DependencyObject child)
         {
             for (var parent = VisualTreeHelper.GetParent(child); parent != null; parent = VisualTreeHelper.GetParent(parent))
             {

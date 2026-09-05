@@ -1525,18 +1525,18 @@ async::task<void> character::broadcast_friends(std::string_view message, MESSAGE
 
     if (to_uids.empty() == false)
     {
-        auto world = this->world();
-        auto host  = fb::config<uint32_t>("id");
-        co_await this->server.http.post("internal",
-                                        "/in-game/friend-broadcast",
-                                        internal_reqs::FriendBroadcast{world,
-                                                                       host,
-                                                                       this->id,
-                                                                       this->name(),
-                                                                       message_str,
-                                                                       static_cast<uint8_t>(type),
-                                                                       std::move(to_uids),
-                                                                       fb::process_role()});
+        auto world  = this->world();
+        auto host   = fb::config<uint32_t>("id");
+        std::ignore = co_await this->server.http.post("internal",
+                                                      "/in-game/friend-broadcast",
+                                                      internal_reqs::FriendBroadcast{world,
+                                                                                     host,
+                                                                                     this->id,
+                                                                                     this->name(),
+                                                                                     message_str,
+                                                                                     static_cast<uint8_t>(type),
+                                                                                     std::move(to_uids),
+                                                                                     fb::process_role()});
     }
     co_return;
 }

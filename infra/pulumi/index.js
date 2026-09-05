@@ -13,6 +13,7 @@ const adminTool = require('./admin-tool')
 const log = require('./log')
 const marketplace = require('./marketplace')
 const matchmaking = require('./matchmaking')
+const crashWatch = require('./crash-watch')
 const fs = require('fs');
 const path = require('path')
 
@@ -58,4 +59,5 @@ const allHttpResources = [].concat(internalResources || [], marketplaceResources
 const gatewayResources = gateway.setup(namespace, conf, allHttpResources)
 const loginResources = login.setup(namespace, conf, allHttpResources)
 const gameResources = game.setup(namespace, conf, allHttpResources)
+crashWatch.setup(namespace, allInfraResources)
 // bot.setup(namespace, conf, [].concat(gatewayResources || [], loginResources || [], gameResources || []))
