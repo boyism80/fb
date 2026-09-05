@@ -1,6 +1,8 @@
 #ifndef __FB_CRASH_H__
 #define __FB_CRASH_H__
 
+#include <cstddef>
+
 #ifdef _WIN32
 #include <Windows.h>
 #endif

@@ -146,7 +146,7 @@ private:
     std::vector<friend_entry>                        _friends;
     std::optional<fb::model::point16_t>              _match_return_position = std::nullopt;
     uint32_t                                         _match_return_map      = 0;
-    std::weak_ptr<match>                             _match;
+    std::weak_ptr<fb::game::match>                   _match;
     bool                                             _options[static_cast<uint8_t>(OPTION::LOCK_WALK_SPEED) + 1] = {
         1,
     };

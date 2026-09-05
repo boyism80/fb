@@ -91,7 +91,7 @@ async::task<bool> item_combine<V>::handle(fb::socket<character>& session, game_r
         auto  remain     = params.count;
         while (remain > 0)
         {
-            auto item  = this->server.make<fb::game::item>(table::item[params.id]);
+            auto item  = this->server.template make<fb::game::item>(table::item[params.id]);
             auto count = std::min<uint16_t>(model.capacity, remain);
             item->count(count);
             std::ignore  = co_await ch->items.add(item);

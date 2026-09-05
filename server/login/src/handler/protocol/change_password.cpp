@@ -52,7 +52,7 @@ async::task<bool> change_password<V>::handle(fb::socket<fb::login::session>& ses
             throw newpw_exception(_TEXT(MESSAGE_ACCOUNT_NEW_PW_EQUALIZATION));
 
         auto   world = fb::config<uint32_t>("world");
-        auto&& resp1 = co_await this->server.http.get<internal::response::GetUid>(
+        auto&& resp1 = co_await this->server.http.template get<internal::response::GetUid>(
             "internal",
             std::format("/account/{}/uid/{}", world, request.name));
         co_await this->server.threads.switching(weak);

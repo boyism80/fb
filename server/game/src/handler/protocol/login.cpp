@@ -166,9 +166,9 @@ async::task<std::shared_ptr<character>> login<V>::init(const game_reqs::login<V>
     auto world = request.transfer.has_value() ? request.transfer->world : fb::config<uint32_t>("world");
     if (world == 0)
         world = fb::config<uint32_t>("world");
-    auto&& resp =
-        co_await this->server.http.get<internal_resp::Init>("internal",
-                                                            std::format("/in-game/init/{}/{}", world, request.id));
+    auto&& resp = co_await this->server.http.template get<internal_resp::Init>(
+        "internal",
+        std::format("/in-game/init/{}/{}", world, request.id));
     auto map        = request.transfer.has_value() ? request.transfer->map : resp.character.map;
     auto position_x = resp.character.position.x;
     auto position_y = resp.character.position.y;
@@ -262,8 +262,8 @@ async::task<std::shared_ptr<character>> login<V>::init(const game_reqs::login<V>
     params.client_version = request.client_version;
     params.ui_mode        = request.ui_mode;
 
-    auto ch   = this->server.make<character>(params);
-    auto weak = ch->weak_from_this_as<character>();
+    auto ch   = this->server.template make<character>(params);
+    auto weak = ch->template weak_from_this_as<character>();
     co_await this->server.threads.switching(weak);
     if (fb::is_cross())
     {

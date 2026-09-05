@@ -22,31 +22,31 @@ namespace {
 template <fb::protocol::CLIENT_VERSION V, typename Writer>
 void write_internal_info_header(Writer& writer, fb::game::character& ch)
 {
-    writer.write<int8_t>(ch.stat.phydef());
-    writer.write<int8_t>(ch.stat.dam());
-    writer.write<int8_t>(ch.stat.hit());
+    writer.template write<int8_t>(ch.stat.phydef());
+    writer.template write<int8_t>(ch.stat.dam());
+    writer.template write<int8_t>(ch.stat.hit());
 
     auto& clan_id = ch.clan_id();
     if (clan_id.has_value())
     {
         auto guard = ch.server.clans.enter_read(clan_id.value());
-        writer.write<std::string>(guard.value()->name());
-        writer.write<std::string>(guard.value()->title().value_or(""));
+        writer.template write<std::string>(guard.value()->name());
+        writer.template write<std::string>(guard.value()->title().value_or(""));
     }
     else
     {
-        writer.write<std::string>("");
-        writer.write<std::string>("");
+        writer.template write<std::string>("");
+        writer.template write<std::string>("");
     }
-    writer.write<std::string>(ch.title());
+    writer.template write<std::string>(ch.title());
 
     auto& marriage = ch.marriage();
     if constexpr (V == fb::protocol::CLIENT_VERSION::v651)
     {
         if (marriage.spouse_id.has_value())
-            writer.write<std::string>(std::string("배우자: ") + marriage.spouse_name);
+            writer.template write<std::string>(std::string("배우자: ") + marriage.spouse_name);
         else
-            writer.write<std::string>("");
+            writer.template write<std::string>("");
     }
     else
     {
@@ -71,10 +71,10 @@ void write_internal_info_header(Writer& writer, fb::game::character& ch)
         {
             sstream << _TEXT(MESSAGE_GROUP_NONE);
         }
-        writer.write<std::string>(sstream.str());
+        writer.template write<std::string>(sstream.str());
     }
 
-    writer.write<uint8_t>(ch.option(OPTION::GROUP));
+    writer.template write<uint8_t>(ch.option(OPTION::GROUP));
 
     auto     cls      = ch.cls();
     auto     level    = ch.level();
@@ -84,8 +84,8 @@ void write_internal_info_header(Writer& writer, fb::game::character& ch)
     {
         remained = table::ability->stacked_exp(cls, level) - ch.exp();
     }
-    writer.write<uint32_t>(fb::game::encode_client_amount(remained));
-    writer.write<std::string>(table::promotion[ch.cls()][ch.promotion()].name);
+    writer.template write<uint32_t>(fb::game::encode_client_amount(remained));
+    writer.template write<std::string>(table::promotion[ch.cls()][ch.promotion()].name);
 }
 
 template <typename Writer>
@@ -93,19 +93,19 @@ void write_equip_slot_v651(Writer& writer, const std::shared_ptr<fb::game::equip
 {
     if (eq == nullptr)
     {
-        writer.write<uint16_t>(0); // empty look = 0
-        writer.write<uint8_t>(0);
-        writer.write<std::string>("");
-        writer.write<std::string>(""); // unknown_name_b
-        writer.write<uint32_t>(0);     // unknown_u32
+        writer.template write<uint16_t>(0); // empty look = 0
+        writer.template write<uint8_t>(0);
+        writer.template write<std::string>("");
+        writer.template write<std::string>(""); // unknown_name_b
+        writer.template write<uint32_t>(0);     // unknown_u32
     }
     else
     {
-        writer.write<uint16_t>(eq->look());
-        writer.write<uint8_t>(eq->color());
-        writer.write<std::string>(eq->name());
-        writer.write<std::string>("");
-        writer.write<uint32_t>(0);
+        writer.template write<uint16_t>(eq->look());
+        writer.template write<uint8_t>(eq->color());
+        writer.template write<std::string>(eq->name());
+        writer.template write<std::string>("");
+        writer.template write<uint32_t>(0);
     }
 }
 
@@ -115,7 +115,7 @@ template <CLIENT_VERSION V>
 void internal_info<V>::serialize(fb::stream_writer<big_endian>& writer) const
 {
     header::serialize(writer);
-    writer.write<uint8_t>(opcode);
+    writer.template write<uint8_t>(opcode);
     write_internal_info_header<V>(writer, this->ch);
 
     auto equipments =
@@ -128,35 +128,35 @@ void internal_info<V>::serialize(fb::stream_writer<big_endian>& writer) const
     {
         if (eq == nullptr)
         {
-            writer.write<uint16_t>(0xFFFF);
-            writer.write<uint8_t>(0x00);
+            writer.template write<uint16_t>(0xFFFF);
+            writer.template write<uint8_t>(0x00);
         }
         else
         {
-            writer.write<uint16_t>(eq->look());
-            writer.write<uint8_t>(eq->color());
+            writer.template write<uint16_t>(eq->look());
+            writer.template write<uint8_t>(eq->color());
         }
     }
 
-    writer.write<uint8_t>(0x00);
-    writer.write<uint8_t>(this->ch.option(OPTION::TRADE));
-    writer.write<uint8_t>(this->ch.option(OPTION::PK_PROTECT));
+    writer.template write<uint8_t>(0x00);
+    writer.template write<uint8_t>(this->ch.option(OPTION::TRADE));
+    writer.template write<uint8_t>(this->ch.option(OPTION::PK_PROTECT));
 
-    writer.write<uint8_t>((uint8_t)this->ch.achievements.size());
+    writer.template write<uint8_t>((uint8_t)this->ch.achievements.size());
     for (auto& [_, achievement] : this->ch.achievements)
     {
-        writer.write<uint8_t>(achievement->icon);
-        writer.write<uint8_t>(achievement->color);
-        writer.write<std::string>(achievement->text);
+        writer.template write<uint8_t>(achievement->icon);
+        writer.template write<uint8_t>(achievement->color);
+        writer.template write<std::string>(achievement->text);
     }
-    writer.write<uint8_t>(0x00);
+    writer.template write<uint8_t>(0x00);
 }
 
 template <>
 void internal_info<CLIENT_VERSION::v651>::serialize(fb::stream_writer<big_endian>& writer) const
 {
     header::serialize(writer);
-    writer.write<uint8_t>(opcode);
+    writer.template write<uint8_t>(opcode);
     write_internal_info_header<CLIENT_VERSION::v651>(writer, this->ch);
 
     // parts 1,2,3,4,7,8,20,21,22
@@ -171,15 +171,15 @@ void internal_info<CLIENT_VERSION::v651>::serialize(fb::stream_writer<big_endian
     write_equip_slot_v651(writer, nullptr); // parts 22 unknown
 
     // no fixed 0x00
-    writer.write<uint8_t>(this->ch.option(OPTION::TRADE));
-    writer.write<uint8_t>(this->ch.option(OPTION::PK_PROTECT));
+    writer.template write<uint8_t>(this->ch.option(OPTION::TRADE));
+    writer.template write<uint8_t>(this->ch.option(OPTION::PK_PROTECT));
 
-    writer.write<uint8_t>((uint8_t)this->ch.achievements.size());
+    writer.template write<uint8_t>((uint8_t)this->ch.achievements.size());
     for (auto& [_, achievement] : this->ch.achievements)
     {
-        writer.write<uint8_t>(achievement->icon);
-        writer.write<uint8_t>(achievement->color);
-        writer.write<std::string>(achievement->text);
+        writer.template write<uint8_t>(achievement->icon);
+        writer.template write<uint8_t>(achievement->color);
+        writer.template write<std::string>(achievement->text);
     }
 }
 

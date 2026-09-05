@@ -51,7 +51,7 @@ async::task<bool> give_money<V>::handle(fb::socket<character>& session, game_req
             if (mob->items().size() >= CONTAINER_CAPACITY)
                 throw std::runtime_error(_TEXT(MESSAGE_MONEY_CANNOT_GIVE_ANYMORE));
 
-            auto item = this->server.make<fb::game::cash>(money);
+            auto item = this->server.template make<fb::game::cash>(money);
             mob->push_item(item);
         }
         break;

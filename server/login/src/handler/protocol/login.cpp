@@ -30,9 +30,9 @@ async::task<bool> login<V>::handle(fb::socket<fb::login::session>& session, logi
         this->server.assert_account(name, pw);
 
         auto   world = fb::config<uint32_t>("world");
-        auto&& resp1 =
-            co_await this->server.http.get<internal::response::GetUid>("internal",
-                                                                       std::format("/account/{}/uid/{}", world, name));
+        auto&& resp1 = co_await this->server.http.template get<internal::response::GetUid>(
+            "internal",
+            std::format("/account/{}/uid/{}", world, name));
         co_await this->server.threads.switching(weak);
 
         if (resp1.success == false)
