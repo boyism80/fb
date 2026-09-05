@@ -93,7 +93,7 @@ module.exports = function () {
                         port: game.logPort,
                         level: ["info", "warn", "fatal"]
                     },
-                    lazy_load_maps: false,
+                    lazy_load_maps: game.role === "cross",
                     exp_multiplier: 1.0,
                     drop_rate_multiplier: 1.0,
                     http: {
