@@ -1,17 +1,5 @@
 local M = {}
 
-local TARGET = {
-    all    = '전체 유저',
-    single = '특정 유저',
-}
-
-local REWARD = {
-    item  = '아이템',
-    exp   = '경험치',
-    money = '금전',
-    none  = '없음',
-}
-
 local function parse_positive_number(raw)
     if raw == nil or raw == '' then
         return nil
@@ -24,12 +12,12 @@ local function parse_positive_number(raw)
 end
 
 function M.handle(me, npc)
-    local target_sel, btn = me:pursuit(npc, '누구에게 보낼까요?', { TARGET.all, TARGET.single })
+    local target_sel, btn = me:pursuit(npc, '누구에게 보낼까요?', { '전체 유저', '특정 유저' })
     if btn == DIALOG_RESULT.QUIT then
         return true
     end
 
-    local is_global = (target_sel == TARGET.all)
+    local is_global = (target_sel == 1)
     local user_name = nil
     if is_global == false then
         user_name = me:input(npc, '캐릭터 이름을 입력하세요.')
@@ -59,13 +47,13 @@ function M.handle(me, npc)
 
 ::REWARD_MENU::
     local reward_sel, reward_btn = me:pursuit(npc, '보상을 추가할까요?', {
-        REWARD.item, REWARD.exp, REWARD.money, REWARD.none,
+        '아이템', '경험치', '금전', '없음',
     })
     if reward_btn == DIALOG_RESULT.QUIT then
         return true
     end
 
-    if reward_sel == REWARD.item then
+    if reward_sel == 1 then
         local item_name = me:input(npc, '아이템 이름을 입력하세요.')
         if item_name == nil or item_name == '' then
             me:dialog(npc, '아이템 이름이 필요합니다.', { prev = false, next = true })
@@ -85,7 +73,7 @@ function M.handle(me, npc)
 
         attachments['item'][item_name] = (attachments['item'][item_name] or 0) + count
         goto REWARD_MENU
-    elseif reward_sel == REWARD.exp then
+    elseif reward_sel == 2 then
         local count_raw = me:input(npc, '경험치를 입력하세요.')
         local count = parse_positive_number(count_raw)
         if count == nil then
@@ -94,7 +82,7 @@ function M.handle(me, npc)
         end
         attachments['exp'] = attachments['exp'] + count
         goto REWARD_MENU
-    elseif reward_sel == REWARD.money then
+    elseif reward_sel == 3 then
         local count_raw = me:input(npc, '금전을 입력하세요.')
         local count = parse_positive_number(count_raw)
         if count == nil then
@@ -103,7 +91,7 @@ function M.handle(me, npc)
         end
         attachments['money'] = attachments['money'] + count
         goto REWARD_MENU
-    elseif reward_sel ~= REWARD.none then
+    elseif reward_sel ~= 4 then
         return true
     end
 

@@ -7,17 +7,15 @@ return {
             return
         end
 
-        local OPT_BAERYEOK = '소림사백열장전수'
-        local OPT_SEONPUNG = '소림사선풍각전수'
         local sel, btn = me:pursuit(npc, "안녕하세요. 어떻게 오셨나요?", {
-            OPT_BAERYEOK,
-            OPT_SEONPUNG,
+            '소림사백열장전수',
+            '소림사선풍각전수',
         })
         if btn == DIALOG_RESULT.QUIT then
             return
         end
 
-        if sel == OPT_BAERYEOK then
+        if sel == 1 then
             if me:spell("백열장") then
                 local d = me:dialog(npc, "당신은 백열장을 배워 수련중이군요..", { prev = false, next = true })
                 if d == DIALOG_RESULT.QUIT then
@@ -67,7 +65,7 @@ return {
             return
         end
 
-        if sel == OPT_SEONPUNG then
+        if sel == 2 then
             if me:spell("선풍각") then
                 me:dialog(npc, "선풍각을 배워 수련중이구려. 선풍각은 수련에 따라 얼마든지 강해진다오. 수련을 게을리 하지 마시길. 나무아미타불..", { prev = false, next = false })
                 return

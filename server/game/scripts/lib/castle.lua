@@ -272,10 +272,8 @@ function M.enter_castle(me, npc_obj, totem_name_kr, divine_beast)
                 return true
             end
 
-            local OPT_YES = '입장합니다.'
-            local OPT_NO = '아니오.'
-            local selected = me:pursuit(npc_obj, string.format('[%s] 입장료 20만전을 [%s]문파에게 지불합니다. 입장하시겠습니까?', castle_name, owner_name), { OPT_YES, OPT_NO })
-            if selected ~= OPT_YES then
+            local selected = me:pursuit(npc_obj, string.format('[%s] 입장료 20만전을 [%s]문파에게 지불합니다. 입장하시겠습니까?', castle_name, owner_name), { '입장합니다.', '아니오.' })
+            if selected ~= 1 then
                 return true
             end
 

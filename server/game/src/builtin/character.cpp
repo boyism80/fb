@@ -504,7 +504,7 @@ int builtin::character::builtin_item(lua_State* L)
         return 1;
     }
 
-    // item dialog
+    // item dialog — yields a 1-based row index, same as list/menu/pursuit
     auto oid   = uint32_t{0xFFFFFFFD};
     auto model = (const fb::model::object*)nullptr;
     if (lua->is_userdata<fb::game::object>(2))
@@ -584,6 +584,17 @@ int builtin::character::builtin_item(lua_State* L)
         if (lua_rawget(L, 5) == LUA_TNUMBER)
             pursuit = static_cast<uint16_t>(lua->tointeger(-1));
         lua_pop(L, 1);
+    }
+
+    if (immediate == false && lua->is_table(4))
+    {
+        if (lua->ref != LUA_NOREF)
+        {
+            luaL_unref(*lua, LUA_REGISTRYINDEX, lua->ref);
+            lua->ref = LUA_NOREF;
+        }
+        lua_pushvalue(L, 4);
+        lua->ref = luaL_ref(L, LUA_REGISTRYINDEX);
     }
 
     auto weak     = ch->weak_from_this_as<fb::game::character>();
@@ -4873,7 +4884,7 @@ int fb::game::builtin::character::builtin_dialog(lua_State* L)
         model = lua->touserdata<fb::model::object>(2);
         if (uses_portrait_appearance(*model))
         {
-            appearance = appearance_factory::create(*model).release();
+            appearance = appearance_factory::create(*model, *ch).release();
             model      = nullptr;
         }
     }
@@ -4985,7 +4996,7 @@ int fb::game::builtin::character::builtin_list(lua_State* L)
         model = lua->touserdata<fb::model::object>(2);
         if (uses_portrait_appearance(*model))
         {
-            appearance = appearance_factory::create(*model).release();
+            appearance = appearance_factory::create(*model, *ch).release();
             model      = nullptr;
         }
     }
@@ -5392,7 +5403,7 @@ int fb::game::builtin::character::builtin_pursuit(lua_State* L)
 {
     // Ex) ch:pursuit(npc, "msg", {"opt1", "opt2"} [, { pursuit = 0xFFFF, immediate = true }])
     // Ex) ch:pursuit(npc, "msg", { {"HP", "100"}, {"MP", "50"} } [, { ... }])  -- subtype 10 dual field
-    // Select yields option/label name. Dialog TOP is C2S 0x43 (object click), not a yield result.
+    // Yields a 1-based option index, same as list/menu. Dialog TOP is C2S 0x43 (object click), not a yield result.
     auto lua = fb::lua::get(L);
     if (lua == nullptr)
         return 0;
@@ -5478,6 +5489,17 @@ int fb::game::builtin::character::builtin_pursuit(lua_State* L)
         if (lua_rawget(L, 5) == LUA_TBOOLEAN)
             immediate = lua_toboolean(L, -1);
         lua_pop(L, 1);
+    }
+
+    if (immediate == false)
+    {
+        if (lua->ref != LUA_NOREF)
+        {
+            luaL_unref(*lua, LUA_REGISTRYINDEX, lua->ref);
+            lua->ref = LUA_NOREF;
+        }
+        lua_pushvalue(L, 4);
+        lua->ref = luaL_ref(L, LUA_REGISTRYINDEX);
     }
 
     auto weak     = ch->weak_from_this_as<fb::game::character>();

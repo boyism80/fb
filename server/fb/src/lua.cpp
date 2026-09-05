@@ -975,6 +975,12 @@ void root::release(context& ctx)
         if (lua_status(ctx) != LUA_OK)
             throw std::runtime_error("lua ctx's current state is not LUA_OK");
 
+        if (ctx.ref != LUA_NOREF)
+        {
+            luaL_unref(ctx, LUA_REGISTRYINDEX, ctx.ref);
+            ctx.ref = LUA_NOREF;
+        }
+
         lua_settop(ctx, 0);
         ctx.parent(nullptr);
         ctx.options(call_options{});
@@ -1009,6 +1015,12 @@ void root::revoke(context& ctx)
     auto it = this->busy.find(ctx);
     if (it == this->busy.end())
         return;
+
+    if (ctx.ref != LUA_NOREF)
+    {
+        luaL_unref(ctx, LUA_REGISTRYINDEX, ctx.ref);
+        ctx.ref = LUA_NOREF;
+    }
 
     ctx.clear_call_engaged();
     this->busy.erase(it);

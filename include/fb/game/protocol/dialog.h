@@ -178,22 +178,57 @@ namespace fb::protocol::game::response {
 
 using namespace fb::model::enum_value;
 
+#ifndef BOT
+template <CLIENT_VERSION V>
 class dialog : public fb::protocol::header
 {
 public:
     static constexpr uint8_t opcode = 0x30;
-#ifndef BOT
+    FB_PROTOCOL_VERSION_TAGS(V);
     using appearance_ptr = std::unique_ptr<fb::game::appearance>;
-#endif
 
 public:
-#ifndef BOT
     const appearance_ptr             appearance;
     const std::optional<std::string> message; // nullopt → subtype 1 (no text)
     const bool                       button_prev;
     const bool                       button_next;
     const uint32_t                   oid;
+
+public:
+    dialog(std::optional<std::string> message, bool button_prev, bool button_next, uint32_t oid = 0xFFFFFFFD);
+    dialog(const fb::model::object&   object,
+           std::optional<std::string> message,
+           bool                       button_prev,
+           bool                       button_next,
+           uint32_t                   oid = 0xFFFFFFFD);
+    dialog(const fb::game::object&    object,
+           std::optional<std::string> message,
+           bool                       button_prev,
+           bool                       button_next,
+           uint32_t                   oid = 0xFFFFFFFD);
+    dialog(appearance_ptr&&           appearance,
+           std::optional<std::string> message,
+           bool                       button_prev,
+           bool                       button_next,
+           uint32_t                   oid = 0xFFFFFFFD);
+
+public:
+    void serialize(fb::stream_writer<big_endian>& writer) const;
+};
+
+template <>
+void dialog<CLIENT_VERSION::v651>::serialize(fb::stream_writer<big_endian>& writer) const;
+
+using dialog_v550 = dialog<CLIENT_VERSION::v550>;
+using dialog_v565 = dialog<CLIENT_VERSION::v565>;
+using dialog_v651 = dialog<CLIENT_VERSION::v651>;
 #else
+class dialog : public fb::protocol::header
+{
+public:
+    static constexpr uint8_t opcode = 0x30;
+
+public:
     uint16_t                   look;
     uint8_t                    color;
     std::optional<std::string> message;
@@ -201,40 +236,14 @@ public:
     bool                       button_next;
     uint8_t                    type_echo;
     uint32_t                   oid;
-#endif
 
 public:
-#ifndef BOT
-    dialog(std::optional<std::string> message, bool button_prev, bool button_next, uint32_t oid = 0xFFFFFFFD);
-
-    dialog(const fb::model::object&   object,
-           std::optional<std::string> message,
-           bool                       button_prev,
-           bool                       button_next,
-           uint32_t                   oid = 0xFFFFFFFD);
-
-    dialog(const fb::game::object&    object,
-           std::optional<std::string> message,
-           bool                       button_prev,
-           bool                       button_next,
-           uint32_t                   oid = 0xFFFFFFFD);
-
-    dialog(appearance_ptr&&           appearance,
-           std::optional<std::string> message,
-           bool                       button_prev,
-           bool                       button_next,
-           uint32_t                   oid = 0xFFFFFFFD);
-#else
     dialog() = default;
-#endif
 
 public:
-#ifndef BOT
-    void serialize(fb::stream_writer<big_endian>& writer) const;
-#else
     void deserialize(fb::stream_reader<big_endian>& reader);
-#endif
 };
+#endif
 
 } // namespace fb::protocol::game::response
 

@@ -129,9 +129,7 @@ local function buy_clan_sword(me, npc_obj)
     end
 
 ::BUY_CONFIRM::
-    local OPT_YES = '네. 지금 당장 주세요!'
-    local OPT_NO = '아니요. 돈이 없네요...'
-    local selected, list_btn = me:list(npc_obj, string.format('그래, 금전 %d전을 댓가로 문파검을 구입하겠는가?', price), { OPT_YES, OPT_NO }, { prev = true })
+    local selected, list_btn = me:list(npc_obj, string.format('그래, 금전 %d전을 댓가로 문파검을 구입하겠는가?', price), { '네. 지금 당장 주세요!', '아니요. 돈이 없네요...' }, { prev = true })
     if list_btn == DIALOG_RESULT.QUIT then
         return
     end
@@ -214,12 +212,9 @@ local function clan_vault(me, npc_obj)
         return
     end
 
-    local OPT_QUERY = '문파자금 조회'
-    local OPT_DEPOSIT = '문파자금 입금'
-    local OPT_WITHDRAW = '문파자금 출금'
-    local menu = { OPT_QUERY, OPT_DEPOSIT }
+    local menu = { '문파자금 조회', '문파자금 입금' }
     if is_master then
-        table.insert(menu, OPT_WITHDRAW)
+        table.insert(menu, '문파자금 출금')
     end
 
     local selected, button = me:pursuit(npc_obj, string.format('현재 문파자금은 %d전입니다. 무엇을 하시겠습니까?', clan:money()), menu)
@@ -227,12 +222,12 @@ local function clan_vault(me, npc_obj)
         return
     end
 
-    if selected == OPT_QUERY then
+    if selected == 1 then
         me:dialog(npc_obj, string.format('문파자금은 %d전입니다.', clan:money()), { prev = false, next = false })
         return
     end
 
-    if selected == OPT_DEPOSIT then
+    if selected == 2 then
         local amount = me:input(npc_obj, '얼마를 입금하시겠습니까?')
         if amount == nil then
             return
@@ -257,7 +252,7 @@ local function clan_vault(me, npc_obj)
         return
     end
 
-    if selected == OPT_WITHDRAW then
+    if selected == 3 then
         local intro = me:dialog(npc_obj, '가지고 있는 성의 자금이 있다면, 언제든 찾아 쓸 수가 있지. 그래, 자네는 문파의 문주인가?', { prev = false, next = true })
         if intro == DIALOG_RESULT.QUIT then
             return
@@ -299,24 +294,20 @@ local function clan_vault(me, npc_obj)
 end
 
 function M.on_sensei_click(me, npc_obj)
-    local OPT_SECRETARY = '비서 구입'
-    local OPT_SWORD = '문파검 구입'
-    local OPT_REVIVE = '부활'
-    local OPT_VAULT = '문파자금'
     local selected, button = me:pursuit(npc_obj, '성을 관리하기란 쉬운 일이 아니지. 그래, 무엇을 원하는가?', {
-        OPT_SECRETARY, OPT_SWORD, OPT_REVIVE, OPT_VAULT
+        '비서 구입', '문파검 구입', '부활', '문파자금'
     })
     if button == DIALOG_RESULT.QUIT then
         return
     end
 
-    if selected == OPT_SECRETARY then
+    if selected == 1 then
         buy_secretary(me, npc_obj)
-    elseif selected == OPT_SWORD then
+    elseif selected == 2 then
         buy_clan_sword(me, npc_obj)
-    elseif selected == OPT_REVIVE then
+    elseif selected == 3 then
         revive_ghost(me, npc_obj)
-    elseif selected == OPT_VAULT then
+    elseif selected == 4 then
         clan_vault(me, npc_obj)
     end
 end
@@ -359,14 +350,12 @@ function M.buy_clothes(me, npc_obj)
         return
     end
 
-    local OPT_YES = '네. 주세요.'
-    local OPT_NO = '너무 비싸요.'
-    local selected = me:pursuit(npc_obj, string.format('[%s]을 구입하시겠습니까? 비용은 %d전 입니다.', clothes_name, price), { OPT_YES, OPT_NO })
-    if selected == OPT_NO then
+    local selected = me:pursuit(npc_obj, string.format('[%s]을 구입하시겠습니까? 비용은 %d전 입니다.', clothes_name, price), { '네. 주세요.', '너무 비싸요.' })
+    if selected == 2 then
         me:dialog(npc_obj, '그럼 더 신중히 생각해 보신 뒤 오시기 바랍니다.', { prev = false, next = false })
         return
     end
-    if selected ~= OPT_YES then
+    if selected ~= 1 then
         return
     end
     if me:money() < price then
@@ -413,10 +402,8 @@ function M.repair_dragon_weapon(me, npc_obj)
         price = 1
     end
 
-    local OPT_YES = '네 맞습니다.'
-    local OPT_NO = '아니오, 착용후 다시 올게요.'
-    local selected = me:pursuit(npc_obj, string.format('지금부터 자네 손에 들고있는 용무기를 고쳐주겠네. 자네가 고칠 무기는 [%s]가 맞는가? 수리비 %d전.', name, price), { OPT_YES, OPT_NO })
-    if selected ~= OPT_YES then
+    local selected = me:pursuit(npc_obj, string.format('지금부터 자네 손에 들고있는 용무기를 고쳐주겠네. 자네가 고칠 무기는 [%s]가 맞는가? 수리비 %d전.', name, price), { '네 맞습니다.', '아니오, 착용후 다시 올게요.' })
+    if selected ~= 1 then
         return
     end
     if me:money() < price then
@@ -500,16 +487,20 @@ end
 
 function M.on_trainer_click(me, npc_obj)
     local totem = select(1, castle_lib.totem_of_map(me:map())) or '신수'
-    local OPT_SINSOO = totem .. '마법진 배우기'
-    local OPT_KUMGANG = totem .. '금강진 배우기'
-    local OPT_BLESS = totem .. '축복진 배우기'
-    local selected, button = me:pursuit(npc_obj, '수련은 멀고도 험한법...\n무엇을 원하시오?', { OPT_SINSOO, OPT_KUMGANG, OPT_BLESS })
+    local selected, button = me:pursuit(npc_obj, '수련은 멀고도 험한법...\n무엇을 원하시오?', {
+        totem .. '마법진 배우기',
+        totem .. '금강진 배우기',
+        totem .. '축복진 배우기',
+    })
     if button == DIALOG_RESULT.QUIT then
         return
     end
 
-    if selected == OPT_KUMGANG or selected == OPT_BLESS then
+    if selected == 2 or selected == 3 then
         me:dialog(npc_obj, '......', { prev = false, next = false })
+        return
+    end
+    if selected ~= 1 then
         return
     end
 
@@ -523,14 +514,12 @@ function M.on_trainer_click(me, npc_obj)
         return
     end
 
-    local OPT_YES = '예. 배우겠습니다.'
-    local OPT_NO = '아니오. 다음 기회에..'
-    local confirm = me:pursuit(npc_obj, '마법을 배우겠는가?', { OPT_YES, OPT_NO })
-    if confirm == OPT_NO then
+    local confirm = me:pursuit(npc_obj, '마법을 배우겠는가?', { '예. 배우겠습니다.', '아니오. 다음 기회에..' })
+    if confirm == 2 then
         me:dialog(npc_obj, '준비가 되거든 언제든지 찾아오게...', { prev = false, next = false })
         return
     end
-    if confirm ~= OPT_YES then
+    if confirm ~= 1 then
         return
     end
     if name2spell(spell_name) == nil then

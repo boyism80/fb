@@ -6,9 +6,8 @@ local DIVINE_BEAST_ID = DIVINE_BEAST.BLACK_TORTOISE
 
 return {
     on_click = function(me, npc)
-        local OPT_ENTER = TOTEM .. '성 입장'
-        local selected, button = me:pursuit(npc, '안녕하세요. 어떻게 오셨나요?', { OPT_ENTER })
-        if button == DIALOG_RESULT.QUIT or selected ~= OPT_ENTER then
+        local selected, button = me:pursuit(npc, '안녕하세요. 어떻게 오셨나요?', { TOTEM .. '성 입장' })
+        if button == DIALOG_RESULT.QUIT or selected ~= 1 then
             return
         end
 

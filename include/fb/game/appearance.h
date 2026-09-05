@@ -96,28 +96,29 @@ template <>
 class character_appearance<fb::protocol::CLIENT_VERSION::v651> : public appearance
 {
 public:
-    GENDER                  gender          = GENDER::MALE;
-    std::optional<STATE>    state           = std::nullopt;
-    uint16_t                hair            = 0;
-    std::optional<uint8_t>  hair_color      = std::nullopt;
-    std::optional<uint16_t> weapon          = std::nullopt;
-    std::optional<uint8_t>  weapon_color    = std::nullopt;
-    std::optional<uint8_t>  armor           = std::nullopt;
-    std::optional<uint8_t>  armor_color     = std::nullopt;
-    std::optional<uint8_t>  shield          = std::nullopt;
-    std::optional<uint8_t>  shield_color    = std::nullopt;
-    std::optional<uint16_t> disguise        = std::nullopt;
-    uint8_t                 speed           = 0;
-    uint16_t                ridable_id      = 0;
-    uint8_t                 face            = 0;
-    uint8_t                 hair_style      = 0;
-    uint8_t                 face_hair_tint  = 0;
-    uint8_t                 body_color      = 0;
-    uint8_t                 hair_to_hat     = 0;
-    std::optional<uint8_t>  helmet          = std::nullopt;
-    std::optional<uint8_t>  helmet_color    = std::nullopt;
-    uint16_t                accessory_pack  = 0xFFFF;
-    uint8_t                 accessory_color = 0;
+    GENDER                       gender          = GENDER::MALE;
+    std::optional<STATE>         state           = std::nullopt;
+    uint16_t                     hair            = 0;
+    std::optional<uint8_t>       hair_color      = std::nullopt;
+    std::optional<uint16_t>      weapon          = std::nullopt;
+    std::optional<uint8_t>       weapon_color    = std::nullopt;
+    std::optional<uint8_t>       armor           = std::nullopt;
+    std::optional<uint8_t>       armor_color     = std::nullopt;
+    std::optional<uint8_t>       shield          = std::nullopt;
+    std::optional<uint8_t>       shield_color    = std::nullopt;
+    std::optional<uint16_t>      disguise        = std::nullopt;
+    uint8_t                      speed           = 0;
+    uint16_t                     ridable_id      = 0;
+    uint8_t                      face            = 0;
+    uint8_t                      hair_style      = 0;
+    uint8_t                      face_hair_tint  = 0;
+    uint8_t                      body_color      = 0;
+    uint8_t                      hair_to_hat     = 0;
+    std::optional<uint8_t>       helmet          = std::nullopt;
+    std::optional<uint8_t>       helmet_color    = std::nullopt;
+    uint16_t                     accessory_pack  = 0xFFFF;
+    uint8_t                      accessory_color = 0;
+    fb::protocol::CLIENT_UI_MODE ui_mode         = fb::protocol::CLIENT_UI_MODE::OLD;
 
 public:
     static character_appearance from(const character& ch);
@@ -161,6 +162,7 @@ public:
     void to_lua(fb::lua::context* lua) const override;
 };
 
+template <fb::protocol::CLIENT_VERSION V = fb::protocol::CLIENT_VERSION::v550>
 class object_appearance : public appearance
 {
 public:
@@ -178,11 +180,19 @@ public:
     void to_lua(fb::lua::context* lua) const override;
 };
 
+template <>
+void object_appearance<fb::protocol::CLIENT_VERSION::v651>::serialize(fb::stream_writer<big_endian>& writer) const;
+
 class appearance_factory
 {
 public:
     static std::unique_ptr<appearance> create(const fb::model::object& obj);
     static std::unique_ptr<appearance> create(const fb::game::object& obj);
+    template <fb::protocol::CLIENT_VERSION V>
+    static std::unique_ptr<appearance> create(const fb::model::object& obj);
+    template <fb::protocol::CLIENT_VERSION V>
+    static std::unique_ptr<appearance> create(const fb::game::object& obj);
+    static std::unique_ptr<appearance> create(const fb::model::object& obj, const fb::game::character& viewer);
     static std::unique_ptr<appearance> create(const fb::game::object& obj, const fb::game::character& viewer);
 
 private:

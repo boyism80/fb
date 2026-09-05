@@ -50,30 +50,25 @@ end
 
 return {
     on_click = function(me, npc)
-        local OPT_BUY = '물건 사기'
-        local OPT_SELL = '물건 팔기'
-        local OPT_QUEST = '별주부전'
-        local OPT_TREASURE = '용왕의보물'
-        local OPT_GOLD = '금은보화'
         local main_sel, main_btn = me:pursuit(npc, "안녕하세요. 어떻게 오셨나요?", {
-            OPT_BUY,
-            OPT_SELL,
-            OPT_QUEST,
-            OPT_TREASURE,
-            OPT_GOLD,
+            '물건 사기',
+            '물건 팔기',
+            '별주부전',
+            '용왕의보물',
+            '금은보화',
         })
         if main_btn == DIALOG_RESULT.QUIT then
             return
         end
-        if main_sel == OPT_BUY or main_sel == OPT_SELL then
+        if main_sel == 1 or main_sel == 2 then
             me:dialog(npc, "준비중입니다.", { prev = false, next = false })
             return
         end
-        if main_sel == OPT_TREASURE then
+        if main_sel == 4 then
             run_cidequest_jangdol(me, npc)
             return
         end
-        if main_sel == OPT_GOLD then
+        if main_sel == 5 then
             local code = me:exchange(
                 { ['item'] = { ["금은보화"] = 1 } },
                 { ['money'] = 15000 }

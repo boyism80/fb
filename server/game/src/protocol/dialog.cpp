@@ -182,6 +182,13 @@ void dialog<CLIENT_VERSION::v651>::deserialize(fb::stream_reader<big_endian>& re
 
     case dialog_type::ITEM:
     case dialog_type::PURSUIT:
+    {
+        this->oid     = reader.read<uint32_t>();
+        this->pursuit = reader.read<uint16_t>();
+        this->name    = reader.read<std::string, uint8_t>();
+        break;
+    }
+
     case dialog_type::DUAL_FIELD:
     {
         this->oid     = reader.read<uint32_t>();
@@ -310,21 +317,26 @@ void dialog_list<CLIENT_VERSION::v651>::deserialize(fb::stream_reader<big_endian
     case list_type::LIST:
     case list_type::LIST_NO_MSG:
     {
-        this->oid    = reader.read<uint32_t>();
-        this->button = static_cast<DIALOG_RESULT>(reader.read<uint32_t>());
-        switch (this->button)
+        // 6.51: [oid u32][seq u16][u16] then NEXT adds [1][index u8] (send 12).
+        this->oid = reader.read<uint32_t>();
+        this->seq = reader.read<uint16_t>();
+        auto code = reader.read<uint16_t>();
+        if (reader.readable_size() >= 2)
         {
-        case DIALOG_RESULT::PREV:
-        case DIALOG_RESULT::QUIT:
-            break;
-
-        case DIALOG_RESULT::NEXT:
             reader.read<uint8_t>();
-            this->index = reader.read<uint8_t>();
-            break;
+            this->index  = reader.read<uint8_t>();
+            this->button = DIALOG_RESULT::NEXT;
         }
-        if (reader.readable_size() >= 4)
-            reader.read<uint32_t>();
+        else if (code == static_cast<uint16_t>(DIALOG_RESULT::PREV) ||
+                 code == static_cast<uint16_t>(DIALOG_RESULT::QUIT) ||
+                 code == static_cast<uint16_t>(DIALOG_RESULT::NEXT))
+        {
+            this->button = static_cast<DIALOG_RESULT>(code);
+        }
+        else
+        {
+            this->button = DIALOG_RESULT::QUIT;
+        }
         break;
     }
     }
@@ -427,6 +439,11 @@ void dialog<CLIENT_VERSION::v651>::serialize(fb::stream_writer<big_endian>& writ
 
     case dialog_type::ITEM:
     case dialog_type::PURSUIT:
+        writer.write<uint32_t>(this->oid);
+        writer.write<uint16_t>(this->pursuit);
+        writer.write<std::string, uint8_t>(this->name);
+        break;
+
     case dialog_type::DUAL_FIELD:
         writer.write<uint32_t>(this->oid);
         writer.write<uint16_t>(this->pursuit);

@@ -106,14 +106,12 @@ end
 
 return {
     on_click = function(me, npc)
-        local OPT_CULTURAL = '문화재보호공무원'
-        local OPT_MONSTER = '환상의섬에 나타난 괴물'
-        local selected, button = me:pursuit(npc, '안녕하세요. 어떻게 오셨나요?', { OPT_CULTURAL, OPT_MONSTER })
+        local selected, button = me:pursuit(npc, '안녕하세요. 어떻게 오셨나요?', { '문화재보호공무원', '환상의섬에 나타난 괴물' })
         if button == DIALOG_RESULT.QUIT then
             return
         end
 
-        if selected == OPT_CULTURAL then
+        if selected == 1 then
             cultural_property_quest(me, npc)
         end
     end

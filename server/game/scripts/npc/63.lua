@@ -127,9 +127,9 @@ return {
         if button == DIALOG_RESULT.QUIT then
             return
         end
-        if index == '머리모양을 바꾸고 싶어요' then
+        if index == 1 then
             do_hair_style(me, npc)
-        elseif index == '머리염색' then
+        elseif index == 2 then
             do_hair_dye(me, npc)
         end
     end

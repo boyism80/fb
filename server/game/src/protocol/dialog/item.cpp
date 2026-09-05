@@ -3,33 +3,47 @@
 namespace fb::protocol::game::response {
 
 #ifndef BOT
-dialog_item::dialog_item(const fb::model::object&            obj,
-                         const fb::game::dialog::item_pairs& items,
-                         std::string_view                    message,
-                         uint32_t                            oid,
-                         uint16_t                            pursuit) :
-    appearance(fb::game::appearance_factory::create(obj)),
+template <CLIENT_VERSION V>
+dialog_item<V>::dialog_item(const fb::model::object&            obj,
+                            const fb::game::dialog::item_pairs& items,
+                            std::string_view                    message,
+                            uint32_t                            oid,
+                            uint16_t                            pursuit) :
+    appearance(fb::game::appearance_factory::create<V>(obj)),
     items(items),
     message(std::string(message)),
     pursuit(pursuit),
     oid(oid)
 { }
 
-dialog_item::dialog_item(const fb::game::object&             object,
-                         const fb::game::dialog::item_pairs& items,
-                         std::string_view                    message,
-                         uint32_t                            oid,
-                         uint16_t                            pursuit) :
-    appearance(fb::game::appearance_factory::create(object)),
+template <CLIENT_VERSION V>
+dialog_item<V>::dialog_item(const fb::game::object&             object,
+                            const fb::game::dialog::item_pairs& items,
+                            std::string_view                    message,
+                            uint32_t                            oid,
+                            uint16_t                            pursuit) :
+    appearance(fb::game::appearance_factory::create<V>(object)),
     items(items),
     message(std::string(message)),
     pursuit(pursuit),
     oid(oid)
 { }
-#endif
 
-#ifndef BOT
-void dialog_item::serialize(fb::stream_writer<big_endian>& writer) const
+template <CLIENT_VERSION V>
+dialog_item<V>::dialog_item(appearance_ptr&&                    appearance,
+                            const fb::game::dialog::item_pairs& items,
+                            std::string_view                    message,
+                            uint32_t                            oid,
+                            uint16_t                            pursuit) :
+    appearance(std::move(appearance)),
+    items(items),
+    message(std::string(message)),
+    pursuit(pursuit),
+    oid(oid)
+{ }
+
+template <CLIENT_VERSION V>
+void dialog_item<V>::serialize(fb::stream_writer<big_endian>& writer) const
 {
     constexpr auto type_value = static_cast<uint8_t>(type);
 
@@ -52,6 +66,36 @@ void dialog_item::serialize(fb::stream_writer<big_endian>& writer) const
         writer.write<std::string>(item.desc);
     }
 }
+
+template <>
+void dialog_item<CLIENT_VERSION::v651>::serialize(fb::stream_writer<big_endian>& writer) const
+{
+    constexpr auto type_value = static_cast<uint8_t>(type);
+
+    header::serialize(writer);
+    writer.write<uint8_t>(opcode);
+    writer.write<uint8_t>(type_value);
+    writer.write<uint8_t>(type_value);
+    writer.write<uint32_t>(this->oid);
+    this->appearance->serialize(writer);
+    writer.write<uint32_t>(0);
+    writer.write<std::string, uint16_t>(this->message);
+    writer.write<uint16_t>(this->pursuit);
+    writer.write<uint16_t>((uint16_t)this->items.size());
+
+    for (auto& [item, value] : this->items)
+    {
+        writer.write<uint16_t>(item.look);
+        writer.write<uint8_t>(item.color);
+        writer.write<uint32_t>(value);
+        writer.write<std::string>(item.name);
+        writer.write<std::string>(item.desc);
+    }
+}
+
+template class dialog_item<CLIENT_VERSION::v550>;
+template class dialog_item<CLIENT_VERSION::v565>;
+template class dialog_item<CLIENT_VERSION::v651>;
 #else
 void dialog_item::deserialize(fb::stream_reader<big_endian>& reader)
 {

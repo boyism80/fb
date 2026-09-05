@@ -1,8 +1,5 @@
 -- npc: 용노인
 
-local OPT_CAVE = '용왕굴이 어디 인가요?'
-local OPT_HELLO = '그냥 인사하러 왔어요...!!'
-
 local REQUIRED_FANGS = {
     '진룡의어금니',
     '묵룡의어금니',
@@ -68,22 +65,17 @@ return {
     end,
 
     on_hello = function(me, npc)
-        local OPT_FANG_YES = '네.. 여기 4가지의 어금니를 모두 가져왔습니다.'
-        local OPT_FANG_NO = '아니오.. 그게 무엇인가요?'
-        local OPT_FRIEND_YES = '네.. 같이 갈 친구가 있어요..'
-        local OPT_FRIEND_NO = '아니오.. 혼자 갈래요..'
-
         local dest_options = {}
         for i, dest in ipairs(DESTINATIONS) do
             dest_options[i] = dest.option
         end
 
         ::NPC_98_0001::
-        local selected, button = me:pursuit(npc, '안녕하신가? 여긴 무슨일로 찾아 오셨는가?', { OPT_CAVE, OPT_HELLO })
+        local selected, button = me:pursuit(npc, '안녕하신가? 여긴 무슨일로 찾아 오셨는가?', { '용왕굴이 어디 인가요?', '그냥 인사하러 왔어요...!!' })
         if button == DIALOG_RESULT.QUIT then
             return
         end
-        if selected ~= OPT_CAVE then
+        if selected ~= 1 then
             return
         end
 
@@ -111,7 +103,7 @@ return {
             goto NPC_98_0003
         end
 
-        selected, button = me:list(npc, '혹시.. 어금니를 가져 오셨는가?', { OPT_FANG_YES, OPT_FANG_NO })
+        selected, button = me:list(npc, '혹시.. 어금니를 가져 오셨는가?', { '네.. 여기 4가지의 어금니를 모두 가져왔습니다.', '아니오.. 그게 무엇인가요?' })
         if button == DIALOG_RESULT.QUIT then
             return
         end
@@ -314,7 +306,7 @@ return {
             return
         end
 
-        selected, button = me:list(npc, '혹시 같이 갈 친구가 있나?', { OPT_FRIEND_YES, OPT_FRIEND_NO })
+        selected, button = me:list(npc, '혹시 같이 갈 친구가 있나?', { '네.. 같이 갈 친구가 있어요..', '아니오.. 혼자 갈래요..' })
         if button == DIALOG_RESULT.QUIT then
             return
         end

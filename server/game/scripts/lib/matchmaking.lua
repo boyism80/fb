@@ -1,8 +1,5 @@
 local M = {}
 
-local YES = '예'
-local NO = '아니오'
-
 local function queues()
     return {
         { type = MATCH_TYPE.MATCH_1, label = '매치 1' },
@@ -27,11 +24,11 @@ function M.handle(me, npc)
     end
 
     if mm:enrolled() then
-        local selected, button = me:pursuit(npc, '현재 등록된 매칭이 있습니다. 취소하시겠습니까?', { YES, NO })
+        local selected, button = me:pursuit(npc, '현재 등록된 매칭이 있습니다. 취소하시겠습니까?', { '예', '아니오' })
         if button == DIALOG_RESULT.QUIT then
             return true
         end
-        if selected == YES then
+        if selected == 1 then
             local err = mm:unregister()
             if err ~= nil then
                 me:dialog(npc, err, { prev = false, next = true })
@@ -51,22 +48,16 @@ function M.handle(me, npc)
         return true
     end
 
-    local queue = nil
-    for _, q in ipairs(queues()) do
-        if q.label == selected then
-            queue = q
-            break
-        end
-    end
+    local queue = queues()[selected]
     if queue == nil then
         return true
     end
 
-    local confirm_selected, confirm_button = me:pursuit(npc, string.format('"%s" 매치를 등록하시겠습니까?', queue.label), { YES, NO })
+    local confirm_selected, confirm_button = me:pursuit(npc, string.format('"%s" 매치를 등록하시겠습니까?', queue.label), { '예', '아니오' })
     if confirm_button == DIALOG_RESULT.QUIT then
         return true
     end
-    if confirm_selected ~= YES then
+    if confirm_selected ~= 1 then
         return true
     end
 

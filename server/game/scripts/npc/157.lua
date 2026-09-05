@@ -136,22 +136,19 @@ end
 
 return {
     on_click = function(me, npc)
-        local OPT_JUNGKI = '정기모으기'
-        local OPT_INFINITE = '무한 복장'
-        local OPT_NORMAL = '일반 복장'
-        local selected, button = me:pursuit(npc, '안녕하세요. 어떻게 오셨나요?', { OPT_JUNGKI, OPT_INFINITE, OPT_NORMAL })
+        local selected, button = me:pursuit(npc, '안녕하세요. 어떻게 오셨나요?', { '정기모으기', '무한 복장', '일반 복장' })
         if button == DIALOG_RESULT.QUIT then
             return
         end
-        if selected == OPT_JUNGKI then
+        if selected == 1 then
             do_jungki(me, npc, q, step)
             return
         end
-        if selected == OPT_INFINITE then
+        if selected == 2 then
             do_armor_infinite(me, npc)
             return
         end
-        if selected == OPT_NORMAL then
+        if selected == 3 then
             do_armor_normal(me, npc)
             return
         end
