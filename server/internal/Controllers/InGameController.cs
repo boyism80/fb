@@ -292,6 +292,9 @@ namespace Internal.Controllers
                 if (targetSession == null)
                     throw new LogicException(ErrorCode.Offline);
 
+                if (targetWorld != world && SameCrossHost(session, targetSession) == false)
+                    throw new LogicException(ErrorCode.Offline);
+
                 var target = await _dbContext.Character.Get(targetWorld, targetSession.Uid) ??
                     throw new LogicException(ErrorCode.NotFoundCharacter);
 
@@ -798,6 +801,20 @@ namespace Internal.Controllers
                 default:
                     throw new Exception($"invalid option type : {type}");
             }
+        }
+
+        private static bool SameCrossHost(Session session, Session target)
+        {
+            if (AmqpRoute.Parse(session.Role) != Protocol.ProcessRole.Cross)
+                return false;
+
+            if (AmqpRoute.Parse(target.Role) != Protocol.ProcessRole.Cross)
+                return false;
+
+            if (session.Host != target.Host)
+                return false;
+
+            return true;
         }
     }
 }
