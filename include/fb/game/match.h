@@ -65,6 +65,7 @@ public:
     async::task<void> join(character& ch);
     void              leave(character& ch);
     void              wait(uint32_t seconds);
+    void              duration(uint32_t seconds, uint32_t grace_seconds = 0);
     void              finish(uint32_t grace_seconds);
     void              on_death(character& ch, std::shared_ptr<object> killer);
     async::task<void> close();

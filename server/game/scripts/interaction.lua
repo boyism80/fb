@@ -921,12 +921,12 @@ return {
         if selected == 1 then
             local err = me:matchmaker():confirm()
             if err ~= nil then
-                me:message(err, MESSAGE_TYPE.STATE)
+                me:message('상대가 매치를 거절했거나 이미 종료된 매치입니다.', MESSAGE_TYPE.STATE)
             end
         else
             local err = me:matchmaker():decline()
             if err ~= nil then
-                me:message(err, MESSAGE_TYPE.STATE)
+                me:message('이미 종료된 매치입니다.', MESSAGE_TYPE.STATE)
             end
         end
     end,

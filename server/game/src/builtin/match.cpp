@@ -10,6 +10,7 @@ IMPLEMENT_LUA_EXTENSION(match, "fb.game.match")
 {"type",          builtin::match::builtin_type},
 {"state",         builtin::match::builtin_state},
 {"wait",          builtin::match::builtin_wait},
+{"duration",      builtin::match::builtin_duration},
 {"finish",        builtin::match::builtin_finish},
 {"members",       builtin::match::builtin_members},
 {"member_count",  builtin::match::builtin_member_count},
@@ -88,6 +89,24 @@ int builtin::match::builtin_wait(lua_State* L)
 
     auto seconds = static_cast<uint32_t>(lua->tointeger(2));
     session->wait(seconds);
+    return 0;
+}
+
+int builtin::match::builtin_duration(lua_State* L)
+{
+    auto lua = fb::lua::get(L);
+    if (lua == nullptr)
+        return 0;
+
+    auto session = lua->touserdata<fb::game::match>(1);
+    if (session == nullptr)
+        return 0;
+
+    auto seconds = static_cast<uint32_t>(lua->tointeger(2));
+    auto grace   = uint32_t{0};
+    if (lua->argc() >= 3)
+        grace = static_cast<uint32_t>(lua->tointeger(3));
+    session->duration(seconds, grace);
     return 0;
 }
 

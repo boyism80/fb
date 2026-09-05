@@ -12,8 +12,7 @@ return {
     on_playing = function(match, me)
         me:timer(MATCH_DURATION_SECONDS, TIMER_TYPE.INCREASE)
         me:message('매치가 시작되었습니다.', MESSAGE_TYPE.STATE)
-        sleep(MATCH_DURATION_SECONDS * 1000)
-        match:finish(5)
+        match:duration(MATCH_DURATION_SECONDS, 5)
     end,
 
     on_death = function(match, me, killer)

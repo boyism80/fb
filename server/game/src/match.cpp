@@ -225,6 +225,58 @@ void match::wait(uint32_t seconds)
         fb::timer::repeat_type::once);
 }
 
+void match::duration(uint32_t seconds, uint32_t grace_seconds)
+{
+    auto thread = this->_server.threads.current();
+    if (thread == nullptr)
+    {
+        thread = this->_server.threads.at(0);
+        if (thread == nullptr)
+            return;
+
+        auto self    = this->shared_from_this_as<match>();
+        auto builder = thread->new_builder<void>();
+        builder.func = [self, seconds, grace_seconds](auto&) -> async::task<void> {
+            self->duration(seconds, grace_seconds);
+            co_return;
+        };
+        builder.enqueue();
+        return;
+    }
+
+    auto lock = std::lock_guard(this->_mutex);
+    if (this->_state != MATCH_STATE::playing)
+        return;
+
+    if (seconds == 0)
+    {
+        this->cancel_timer();
+        return;
+    }
+
+    if (this->_timer != nullptr)
+        return;
+
+    auto weak    = this->weak_from_this_as<match>();
+    this->_timer = thread->settimer(
+        [weak, grace_seconds](const fb::model::datetime&, std::thread::id) -> async::task<void> {
+            auto self = weak.lock();
+            if (self == nullptr)
+                co_return;
+
+            auto playing = false;
+            {
+                auto inner = std::lock_guard(self->_mutex);
+                playing    = self->_state == MATCH_STATE::playing;
+            }
+            if (playing)
+                self->finish(grace_seconds);
+            co_return;
+        },
+        fb::model::timespan(std::chrono::seconds(seconds)),
+        fb::timer::repeat_type::once);
+}
+
 void match::finish(uint32_t grace_seconds)
 {
     auto thread = this->_server.threads.current();

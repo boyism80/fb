@@ -433,7 +433,9 @@ async::task<void> matchmaker::register_queue(uint32_t match_type)
     }
 
     if (entries.size() > matchmaking_config.member_count)
-        throw std::runtime_error(enum_tostring(fb::model::enum_value::ERROR_CODE::UNHANDLED));
+        throw std::runtime_error(std::format("이 매치는 {}명까지 참가할 수 있습니다. (현재 그룹 {}명)",
+                                             matchmaking_config.member_count,
+                                             entries.size()));
 
     auto&& resp = co_await this->owner.server.http.post("matchmaking",
                                                         "/matchmaking/register",
