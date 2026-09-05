@@ -1,3 +1,4 @@
+using Dapper;
 using Http.Extension;
 using Http.Model;
 using Http.Service;
@@ -39,6 +40,7 @@ namespace Http.Reepository
                     `id`,
                     `name`,
                     `title`,
+                    `money`,
                     `deleted`,
                     `created_date`,
                     `updated_date`)
@@ -46,12 +48,14 @@ namespace Http.Reepository
                     {value.Id.Escape()},
                     {value.Name.Escape()},
                     {value.Title.Escape()},
+                    {value.Money.Escape()},
                     0,
                     {value.CreatedDate.Escape()},
                     {value.UpdatedDate.Escape()})
                 ON DUPLICATE KEY UPDATE 
                     `name`=VALUES(`name`),
                     `title`=VALUES(`title`),
+                    `money`=VALUES(`money`),
                     `updated_date`=VALUES(`updated_date`);
                 """;
 
@@ -69,6 +73,14 @@ namespace Http.Reepository
         public void Delete(uint world, uint id)
         {
             base.Delete(world, new ClanKey { Id = id });
+        }
+
+        public async Task<uint?> GetWorld(uint id)
+        {
+            await using var conn = _dbContext.GetUnifiedConnection();
+            return await conn.QueryFirstOrDefaultAsync<uint?>(
+                "SELECT `world` FROM `clan_name` WHERE `id` = @id",
+                new { id });
         }
     }
 }

@@ -12,6 +12,6 @@ async::task<void> deliver_system_storage::handle(const internal_resp::DeliverSys
     if (message.error != 0)
         co_return;
 
-    this->server.system_storage.apply_deliver_entries(message.entries);
+    this->server.system_storage.on_deliver(message.entries);
     co_return;
 }

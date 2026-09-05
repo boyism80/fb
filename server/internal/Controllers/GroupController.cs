@@ -16,6 +16,12 @@ namespace Internal.Controllers
             _groupService = groupService;
         }
 
+        [HttpGet("id/{id}")]
+        public async Task<Response.GroupDetails> GetById(uint id)
+        {
+            return await _groupService.GetById(id);
+        }
+
         [HttpGet("{world}/{id}")]
         public async Task<Response.GroupDetails> Get(uint world, uint id)
         {

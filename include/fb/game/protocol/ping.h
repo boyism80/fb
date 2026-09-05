@@ -8,10 +8,6 @@ namespace fb::protocol::game::response {
 
 using namespace fb::model::enum_value;
 
-/**
- * Server-to-client ping (0x68).
- * Payload: 4-byte big-endian uint32_t (token).
- */
 class ping : public fb::protocol::header
 {
 public:
@@ -26,9 +22,7 @@ public:
 
 public:
 #ifndef BOT
-    explicit ping(uint32_t value) :
-        value(value)
-    { }
+    explicit ping(uint32_t value);
 #else
     ping() = default;
 #endif

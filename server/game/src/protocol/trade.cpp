@@ -2,8 +2,18 @@
 
 namespace fb::protocol::game::request {
 
+#ifdef BOT
+template <CLIENT_VERSION V>
+trade<V>::trade(state action, uint32_t oid, const params& parameter) :
+    action(action),
+    oid(oid),
+    parameter(parameter)
+{ }
+#endif
+
 #ifdef BOT // bot only
-void trade::serialize(fb::stream_writer<big_endian>& writer) const
+template <CLIENT_VERSION V>
+void trade<V>::serialize(fb::stream_writer<big_endian>& writer) const
 {
     header::serialize(writer);
     writer.write<uint8_t>(opcode);
@@ -25,8 +35,34 @@ void trade::serialize(fb::stream_writer<big_endian>& writer) const
         break;
     }
 }
+
+template <>
+void trade<CLIENT_VERSION::v651>::serialize(fb::stream_writer<big_endian>& writer) const
+{
+    header::serialize(writer);
+    writer.write<uint8_t>(opcode);
+    writer.write<uint8_t>(static_cast<uint8_t>(this->action));
+    writer.write<uint32_t>(this->oid);
+
+    switch (this->action)
+    {
+    case state::UP_ITEM:
+        writer.write<uint8_t>(this->parameter.index);
+        break;
+
+    case state::ITEM_COUNT:
+        writer.write<uint8_t>(this->parameter.index);
+        writer.write<uint8_t>(static_cast<uint8_t>(this->parameter.count));
+        break;
+
+    case state::UP_MONEY:
+        writer.write<uint32_t>(this->parameter.money);
+        break;
+    }
+}
 #else // server only
-void trade::deserialize(fb::stream_reader<big_endian>& reader)
+template <CLIENT_VERSION V>
+void trade<V>::deserialize(fb::stream_reader<big_endian>& reader)
 {
     header::deserialize(reader);
     this->action = static_cast<fb::game::trade::state>(reader.read<uint8_t>());
@@ -46,6 +82,33 @@ void trade::deserialize(fb::stream_reader<big_endian>& reader)
         break;
     }
 }
+
+template <>
+void trade<CLIENT_VERSION::v651>::deserialize(fb::stream_reader<big_endian>& reader)
+{
+    header::deserialize(reader);
+    this->action = static_cast<fb::game::trade::state>(reader.read<uint8_t>());
+    this->oid    = reader.read<uint32_t>();
+    switch (this->action)
+    {
+    case fb::game::trade::state::UP_ITEM:
+        this->parameter.index = reader.read<uint8_t>();
+        break;
+
+    case fb::game::trade::state::ITEM_COUNT:
+        this->parameter.index = reader.read<uint8_t>();
+        this->parameter.count = reader.read<uint8_t>();
+        break;
+
+    case fb::game::trade::state::UP_MONEY:
+        this->parameter.money = reader.read<uint32_t>();
+        break;
+    }
+}
 #endif
+
+template class trade<CLIENT_VERSION::v550>;
+template class trade<CLIENT_VERSION::v565>;
+template class trade<CLIENT_VERSION::v651>;
 
 } // namespace fb::protocol::game::request

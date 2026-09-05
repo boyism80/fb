@@ -8,7 +8,8 @@ namespace fb::game::builtin {
 struct character
 {
     static int builtin_uid(lua_State* L);
-    static int builtin_look(lua_State* L);
+    static int builtin_hair(lua_State* L);
+    static int builtin_face(lua_State* L);
     static int builtin_color(lua_State* L);
     static int builtin_gender(lua_State* L);
     static int builtin_money(lua_State* L);
@@ -67,6 +68,12 @@ struct character
     static int builtin_mkspell(lua_State* L);
     static int builtin_rmspell(lua_State* L);
     static int builtin_world(lua_State* L);
+    static int builtin_world_map(lua_State* L);
+    static int builtin_save_return_point(lua_State* L);
+    static int builtin_save(lua_State* L);
+    static int builtin_return_point(lua_State* L);
+    static int builtin_transfer_home(lua_State* L);
+    static int builtin_transfer_to(lua_State* L);
     static int builtin_ad(lua_State* L);
     static int builtin_web(lua_State* L);
     static int builtin_timer(lua_State* L);
@@ -74,7 +81,7 @@ struct character
     static int builtin_birthday(lua_State* L);
     static int builtin_active(lua_State* L);
     static int builtin_super_hide(lua_State* L);
-    static int builtin_creature(lua_State* L);
+    static int builtin_divine_beast(lua_State* L);
     static int builtin_teleport(lua_State* L);
     static int builtin_dialog(lua_State* L);
     static int builtin_list(lua_State* L);
@@ -105,7 +112,13 @@ struct character
     static int builtin_marriage(lua_State* L);
     static int builtin_marry(lua_State* L);
     static int builtin_divorce(lua_State* L);
-    static int builtin_unknown_12(lua_State* L);
+    static int builtin_collection(lua_State* L);
+    static int builtin_unknown_4f(lua_State* L);
+    static int builtin_notice(lua_State* L);
+    static int builtin_browser(lua_State* L);
+    static int builtin_group_portrait(lua_State* L);
+    static int builtin_web_map_markers(lua_State* L);
+    static int builtin_web_map(lua_State* L);
     static int builtin_move_confirm_noscroll(lua_State* L);
     static int builtin_ui(lua_State* L);
     static int builtin_item_throw_confirm(lua_State* L);

@@ -32,7 +32,7 @@ int builtin::door::builtin_toggle(lua_State* L)
         door->toggle();
         *opened = door->opened();
 
-        const auto size = fb::model::size<uint16_t>(door->model.pairs.size(), 1);
+        const auto size = fb::model::size<uint16_t>(door->model().pairs.size(), 1);
         const auto area = fb::model::area<uint16_t>(door->pivot.x,
                                                     door->pivot.y,
                                                     door->pivot.x + size.width,

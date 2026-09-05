@@ -52,6 +52,7 @@
 #include <fb/game/protocol/spell/update.h>
 #include <fb/game/protocol/spell/remove.h>
 #include <fb/game/protocol/spell/delay.h>
+#include <fb/game/protocol/character/show.h>
 #include <fb/game/protocol/character/update_external.h>
 #include <fb/game/protocol/character/id.h>
 #include <fb/game/protocol/character/update_internal.h>
@@ -101,7 +102,13 @@
 #include <fb/game/protocol/trade/money.h>
 #include <fb/game/protocol/trade/close.h>
 #include <fb/game/protocol/trade/lock.h>
-#include <fb/game/protocol/unknown_12.h>
+#include <fb/game/protocol/collection.h>
+#include <fb/game/protocol/unknown_4f.h>
+#include <fb/game/protocol/unknown_54.h>
+#include <fb/game/protocol/notice.h>
+#include <fb/game/protocol/browser.h>
+#include <fb/game/protocol/group_portrait.h>
+#include <fb/game/protocol/web_map.h>
 #include <fb/game/protocol/update_cc.h>
 #include <fb/game/protocol/object/move_confirm_noscroll.h>
 #include <fb/game/protocol/ui_screen.h>

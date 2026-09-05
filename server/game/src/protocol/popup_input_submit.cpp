@@ -3,7 +3,16 @@
 namespace fb::protocol::game::request {
 
 #ifdef BOT
-void popup_input_submit::serialize(fb::stream_writer<big_endian>& writer) const
+template <CLIENT_VERSION V>
+popup_input_submit<V>::popup_input_submit(uint8_t param0, const std::string& text) :
+    param0(param0),
+    text(text)
+{ }
+#endif
+
+#ifdef BOT
+template <CLIENT_VERSION V>
+void popup_input_submit<V>::serialize(fb::stream_writer<big_endian>& writer) const
 {
     header::serialize(writer);
     writer.write<uint8_t>(opcode);
@@ -11,12 +20,17 @@ void popup_input_submit::serialize(fb::stream_writer<big_endian>& writer) const
     writer.write<std::string, uint16_t>(this->text);
 }
 #else
-void popup_input_submit::deserialize(fb::stream_reader<big_endian>& reader)
+template <CLIENT_VERSION V>
+void popup_input_submit<V>::deserialize(fb::stream_reader<big_endian>& reader)
 {
     header::deserialize(reader);
     this->param0 = reader.read<uint8_t>();
     this->text   = reader.read<std::string, uint16_t>();
 }
 #endif
+
+template class popup_input_submit<CLIENT_VERSION::v550>;
+template class popup_input_submit<CLIENT_VERSION::v565>;
+template class popup_input_submit<CLIENT_VERSION::v651>;
 
 } // namespace fb::protocol::game::request

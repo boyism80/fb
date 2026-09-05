@@ -2,14 +2,17 @@
 #define __PROTOCOL_GAME_PONG_H__
 
 #include <fb/protocol/header.h>
+#include <fb/protocol/client_version.h>
 #include <fb/model/model.h>
 
 namespace fb::protocol::game::request {
 
+template <CLIENT_VERSION V>
 class pong : public fb::protocol::header
 {
 public:
     static constexpr uint8_t opcode = 0x75;
+    FB_PROTOCOL_VERSION_TAGS(V);
 
 public:
 #ifndef BOT
@@ -24,10 +27,7 @@ public:
 #ifndef BOT
     pong() = default;
 #else
-    pong(uint32_t token, uint32_t client_tick_ms) :
-        token(token),
-        client_tick_ms(client_tick_ms)
-    { }
+    pong(uint32_t token, uint32_t client_tick_ms);
 #endif
 
 public:

@@ -8,7 +8,8 @@ namespace fb::gateway::handler::protocol {
 
 namespace gateway_reqs = fb::protocol::gateway::request;
 
-class connection_ack : public fb::handler::protocol<fb::gateway::server, gateway_reqs::connection_ack>
+template <fb::protocol::CLIENT_VERSION V>
+class connection_ack : public fb::handler::protocol<fb::gateway::server, gateway_reqs::connection_ack<V>>
 {
 public:
     connection_ack(fb::gateway::server& server);
@@ -17,7 +18,8 @@ public:
     connection_ack& operator= (const connection_ack&) = delete;
     connection_ack& operator= (connection_ack&&)      = delete;
 
-    async::task<bool> handle(fb::socket<fb::gateway::session>& session, gateway_reqs::connection_ack& request) override;
+    async::task<bool> handle(fb::socket<fb::gateway::session>& session,
+                             gateway_reqs::connection_ack<V>&  request) override;
 };
 
 } // namespace fb::gateway::handler::protocol

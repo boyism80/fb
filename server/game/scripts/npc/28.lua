@@ -405,7 +405,7 @@ local function run_change_face(me, npc)
                 end
                 return true
             end
-            me:look(hair)
+            me:hair(hair)
             me:money(money - 1000000)
             if me:dialog(npc, '새 얼굴이 마음에 드는가? 맘에 안들어도 다시 해 줄 수는 없네.', { prev = false, next = true }) == DIALOG_RESULT.QUIT then
                 return false
@@ -536,44 +536,37 @@ return {
             if not run_init_dialogs(me, npc) then
                 return
             end
-            local OPT_STR = '힘올리기'
-            local OPT_INT = '지력올리기'
-            local OPT_DEX = '민첩올리기'
-            local OPT_HP = '체력사기'
-            local OPT_MP = '마력사기'
-            local OPT_FACE = '성형'
-            local OPT_GENDER = '성전환'
             local index, button = me:pursuit(npc, '그래도 버티고 서서 도대체 원하는 것이 뭐냐?', {
-                OPT_STR, OPT_INT, OPT_DEX, OPT_HP, OPT_MP, OPT_FACE, OPT_GENDER,
+                '힘올리기', '지력올리기', '민첩올리기', '체력사기', '마력사기', '성형', '성전환',
             })
             if button == DIALOG_RESULT.QUIT then
                 return
             end
-            if index == OPT_STR then
+            if index == 1 then
                 if not run_buy_stat(me, npc, 'str', '힘') then
                     return
                 end
-            elseif index == OPT_INT then
+            elseif index == 2 then
                 if not run_buy_stat(me, npc, 'int', '지력') then
                     return
                 end
-            elseif index == OPT_DEX then
+            elseif index == 3 then
                 if not run_buy_stat(me, npc, 'dex', '민첩성') then
                     return
                 end
-            elseif index == OPT_HP then
+            elseif index == 4 then
                 if not run_buy_hp(me, npc) then
                     return
                 end
-            elseif index == OPT_MP then
+            elseif index == 5 then
                 if not run_buy_mp(me, npc) then
                     return
                 end
-            elseif index == OPT_FACE then
+            elseif index == 6 then
                 if not run_change_face(me, npc) then
                     return
                 end
-            elseif index == OPT_GENDER then
+            elseif index == 7 then
                 if not run_change_gender(me, npc) then
                     return
                 end

@@ -2,15 +2,17 @@
 #include <fb/game/server.h>
 #include <tuple>
 
-using namespace fb::game::handler::protocol;
-
 namespace game_reqs = fb::protocol::game::request;
 
-trade::trade(fb::game::server& server) :
-    fb::handler::protocol<fb::game::server, game_reqs::trade>(server)
+namespace fb::game::handler::protocol {
+
+template <fb::protocol::CLIENT_VERSION V>
+trade<V>::trade(fb::game::server& server) :
+    fb::handler::protocol<fb::game::server, game_reqs::trade<V>>(server)
 { }
 
-async::task<bool> trade::handle(fb::socket<character>& session, game_reqs::trade& request)
+template <fb::protocol::CLIENT_VERSION V>
+async::task<bool> trade<V>::handle(fb::socket<character>& session, game_reqs::trade<V>& request)
 {
     auto me = session.data();
     if (me->inited() == false)
@@ -53,3 +55,9 @@ async::task<bool> trade::handle(fb::socket<character>& session, game_reqs::trade
 
     co_return true;
 }
+
+template class trade<fb::protocol::CLIENT_VERSION::v550>;
+template class trade<fb::protocol::CLIENT_VERSION::v565>;
+template class trade<fb::protocol::CLIENT_VERSION::v651>;
+
+} // namespace fb::game::handler::protocol

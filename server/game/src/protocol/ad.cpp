@@ -3,6 +3,15 @@
 namespace fb::protocol::game::response {
 
 #ifndef BOT
+ad::ad(uint32_t width, uint32_t height, std::string url, uint8_t time) :
+    width(width),
+    height(height),
+    url(url),
+    time(time)
+{ }
+#endif
+
+#ifndef BOT
 void ad::serialize(fb::stream_writer<big_endian>& writer) const
 {
     header::serialize(writer);

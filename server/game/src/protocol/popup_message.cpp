@@ -3,6 +3,26 @@
 namespace fb::protocol::game::response {
 
 #ifndef BOT
+popup_message::popup_message(uint8_t param0, uint8_t param1, uint8_t param2, uint8_t param3, std::string_view text) :
+    param0(param0),
+    param1(param1),
+    param2(param2),
+    param3(param3),
+    text(std::string(text))
+{ }
+#endif
+
+#ifndef BOT
+popup_input::popup_input(uint8_t param0, uint8_t param1, uint8_t param2, uint8_t param3, std::string_view text) :
+    param0(param0),
+    param1(param1),
+    param2(param2),
+    param3(param3),
+    text(std::string(text))
+{ }
+#endif
+
+#ifndef BOT
 void popup_message::serialize(fb::stream_writer<big_endian>& writer) const
 {
     header::serialize(writer);

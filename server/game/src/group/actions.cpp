@@ -38,7 +38,7 @@ async::task<void> group::container::create(character& me, std::string_view targe
         }
     }
 
-    auto   world = fb::config<uint32_t>("world");
+    auto   world = me.world();
     auto&& resp  = co_await this->_server.http.post(
         "internal",
         "/group/create",
@@ -62,7 +62,7 @@ async::task<void> group::container::destroy(character& me)
         co_return;
 
     auto   weak  = me.weak_from_this_as<character>();
-    auto   world = fb::config<uint32_t>("world");
+    auto   world = me.world();
     auto&& resp =
         co_await this->_server.http.post("internal",
                                          "/group/destroy",
@@ -89,7 +89,7 @@ async::task<void> group::container::toggle_member(character& actor, std::string_
         }
     }
 
-    auto   world = fb::config<uint32_t>("world");
+    auto   world = actor.world();
     auto&& resp  = co_await this->_server.http.post(
         "internal",
         "/group/toggle",
@@ -134,7 +134,7 @@ async::task<void> group::container::leave_member(character& leaver)
     if (leaver.group_id().has_value() == false)
         co_return;
 
-    auto   world = fb::config<uint32_t>("world");
+    auto   world = leaver.world();
     auto&& resp =
         co_await this->_server.http.post("internal",
                                          "/group/leave",

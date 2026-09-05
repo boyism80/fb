@@ -75,19 +75,6 @@ fb::stream server::make_crt_stream(const fb::encryption& encryption)
     return stream;
 }
 
-bool server::decrypt_policy(uint8_t opcode) const
-{
-    switch (opcode)
-    {
-    case fb::protocol::gateway::request::version::opcode:
-    case fb::protocol::gateway::request::connection_ack::opcode:
-        return false;
-
-    default:
-        return true;
-    }
-}
-
 async::task<void> server::on_start()
 {
     static constexpr const char* message = "CONNECTED SERVER\n";
@@ -105,8 +92,8 @@ async::task<void> server::on_start()
 
 async::task<void> server::on_accepted(fb::socket<session>& socket)
 {
-    auto data = std::make_shared<session>();
-    socket.data(data);
+    // Session (with const client_version) is created in the version handler
+    // after C2S 0x00. Until then acceptor deserializes as v550.
     co_return;
 }
 
@@ -140,7 +127,8 @@ async::task<void> server::update_status()
                                                                         this->id(),
                                                                         this->name(),
                                                                         fb::config<std::string_view>("ip"),
-                                                                        fb::config<uint16_t>("port")});
+                                                                        fb::config<uint16_t>("port"),
+                                                                        fb::protocol::internal::ProcessRole::Home});
     }
     catch (const std::exception& e)
     {

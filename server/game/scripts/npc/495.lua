@@ -1,4 +1,5 @@
 -- npc: 출발도우미
+
 local enum = require('lib.enum')
 local MAP_ID_LOBBY = 12010
 local MAP_ID_GAME = 12011
@@ -20,7 +21,7 @@ return {
             if btn == DIALOG_RESULT.QUIT then
                 return
             end
-            btn = me:dialog(npc, "살려드릴테니 어서 다시 달리기에 참여하러 가보세요.", { prev = false, next = false })
+            btn = me:dialog(npc, "살려드릴테니 어서 다시 달리기에 참여하러 가보세요.", { prev = false, next = true })
             if btn == DIALOG_RESULT.QUIT then
                 return
             end
@@ -52,7 +53,7 @@ return {
             else
                 prize_name = property("survive_prize_joiner") or prize_name
             end
-            local btn = me:dialog(npc, "축하합니다! " .. me:name() .. "님은 " .. tostring(rank) .. "등으로 완주하여 상품으로 " .. prize_name .. "을(를) 받으실 수 있습니다.", { prev = false, next = false })
+            local btn = me:dialog(npc, "축하합니다! " .. me:name() .. "님은 " .. tostring(rank) .. "등으로 완주하여 상품으로 " .. prize_name .. "을(를) 받으실 수 있습니다.", { prev = false, next = true })
             if btn == DIALOG_RESULT.QUIT then
                 return
             end
@@ -133,11 +134,11 @@ return {
             end
             if sel == 1 then
                 me:dialog(npc, "[서바이벌달리기] 에서는 몬스터에게 단 한대만 맞더라도, 바로 사망을 하게 됩니다.\n\n하지만 죽음에 따른 패널티는 따로 없으니 너무 걱정은 하지 않으셔도 됩니다.\n그럼 입장시켜 드리겠습니다.", { prev = false, next = false })
-                local game_map = name2map("서바이벌달리기")
-                if game_map then
+                local run_map = name2map("서바이벌달리기")
+                if run_map then
                     local x = math.random(6, 13)
                     local y = 5 + math.random(0, 3)
-                    me:map(game_map, x, y)
+                    me:map(run_map, x, y)
                 end
             elseif sel == 3 then
                 me:dialog(npc, "퇴장하시겠다구요? [서바이벌증표]를 회수하고, 퇴장을 도와드리겠습니다.", { prev = false, next = true })

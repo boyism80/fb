@@ -32,9 +32,16 @@ public:
         bool  notify   = true;
     };
 
-    using damage_target = std::pair<std::shared_ptr<life>, uint64_t>;
-    using damage_list   = std::vector<damage_target>;
-    using mob_vector    = std::vector<std::shared_ptr<mob>>;
+    using damage_target    = std::pair<std::shared_ptr<life>, uint64_t>;
+    using damage_list      = std::vector<damage_target>;
+    using mob_vector       = std::vector<std::shared_ptr<mob>>;
+    using character_vector = std::vector<std::shared_ptr<character>>;
+
+    struct damage_settle
+    {
+        mob_vector       dead_mobs;
+        character_vector dead_characters;
+    };
 
 protected:
     uint32_t           _damage_rate       = 1000;
@@ -59,10 +66,15 @@ protected:
     virtual ~life();
     // clang-format on
 
+public:
+    const fb::model::life& model() const override;
+
 protected:
     // clang-format off
-    mob_vector        damage_targets(const damage_list& targets, const damage_opts& opts);
+    damage_settle     damage_targets(const damage_list& targets, const damage_opts& opts);
     async::task<void> settle_deaths(mob_vector dead);
+    async::task<void> invoke_on_mob_damaged(const damage_list& targets);
+    async::task<void> settle_character_deaths(const character_vector& dead, std::shared_ptr<life> killer);
     // clang-format on
 
 public:
@@ -76,6 +88,7 @@ public:
     void                      update_hp(uint64_t diff, bool critical, bool notify = true);
     batch_update_guard        batch_update();
     virtual void              kill(DESTROY_TYPE destroy_type = DESTROY_TYPE::DEFAULT);
+    virtual void              handle_death(std::shared_ptr<fb::game::object> killer = nullptr);
     virtual async::task<void> damage_to(const damage_list& targets);
     virtual async::task<void> damage_to(const damage_list& targets, const damage_opts& opts);
     virtual bool              alive() const;

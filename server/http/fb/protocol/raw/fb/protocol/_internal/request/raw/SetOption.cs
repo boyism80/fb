@@ -22,27 +22,29 @@ public struct SetOption : IFlatbufferObject
 
   public uint World { get { int o = __p.__offset(4); return o != 0 ? __p.bb.GetUint(o + __p.bb_pos) : (uint)0; } }
   public uint User { get { int o = __p.__offset(6); return o != 0 ? __p.bb.GetUint(o + __p.bb_pos) : (uint)0; } }
-  public byte Type { get { int o = __p.__offset(8); return o != 0 ? __p.bb.Get(o + __p.bb_pos) : (byte)0; } }
-  public bool Enabled { get { int o = __p.__offset(10); return o != 0 ? 0!=__p.bb.Get(o + __p.bb_pos) : (bool)false; } }
+  public fb.protocol._internal.raw.OptionChange? Changes(int j) { int o = __p.__offset(8); return o != 0 ? (fb.protocol._internal.raw.OptionChange?)(new fb.protocol._internal.raw.OptionChange()).__assign(__p.__indirect(__p.__vector(o) + j * 4), __p.bb) : null; }
+  public int ChangesLength { get { int o = __p.__offset(8); return o != 0 ? __p.__vector_len(o) : 0; } }
 
   public static Offset<fb.protocol._internal.request.raw.SetOption> CreateSetOption(FlatBufferBuilder builder,
       uint world = 0,
       uint user = 0,
-      byte type = 0,
-      bool enabled = false) {
-    builder.StartTable(4);
+      VectorOffset changesOffset = default(VectorOffset)) {
+    builder.StartTable(3);
+    SetOption.AddChanges(builder, changesOffset);
     SetOption.AddUser(builder, user);
     SetOption.AddWorld(builder, world);
-    SetOption.AddEnabled(builder, enabled);
-    SetOption.AddType(builder, type);
     return SetOption.EndSetOption(builder);
   }
 
-  public static void StartSetOption(FlatBufferBuilder builder) { builder.StartTable(4); }
+  public static void StartSetOption(FlatBufferBuilder builder) { builder.StartTable(3); }
   public static void AddWorld(FlatBufferBuilder builder, uint world) { builder.AddUint(0, world, 0); }
   public static void AddUser(FlatBufferBuilder builder, uint user) { builder.AddUint(1, user, 0); }
-  public static void AddType(FlatBufferBuilder builder, byte type) { builder.AddByte(2, type, 0); }
-  public static void AddEnabled(FlatBufferBuilder builder, bool enabled) { builder.AddBool(3, enabled, false); }
+  public static void AddChanges(FlatBufferBuilder builder, VectorOffset changesOffset) { builder.AddOffset(2, changesOffset.Value, 0); }
+  public static VectorOffset CreateChangesVector(FlatBufferBuilder builder, Offset<fb.protocol._internal.raw.OptionChange>[] data) { builder.StartVector(4, data.Length, 4); for (int i = data.Length - 1; i >= 0; i--) builder.AddOffset(data[i].Value); return builder.EndVector(); }
+  public static VectorOffset CreateChangesVectorBlock(FlatBufferBuilder builder, Offset<fb.protocol._internal.raw.OptionChange>[] data) { builder.StartVector(4, data.Length, 4); builder.Add(data); return builder.EndVector(); }
+  public static VectorOffset CreateChangesVectorBlock(FlatBufferBuilder builder, ArraySegment<Offset<fb.protocol._internal.raw.OptionChange>> data) { builder.StartVector(4, data.Count, 4); builder.Add(data); return builder.EndVector(); }
+  public static VectorOffset CreateChangesVectorBlock(FlatBufferBuilder builder, IntPtr dataPtr, int sizeInBytes) { builder.StartVector(1, sizeInBytes, 1); builder.Add<Offset<fb.protocol._internal.raw.OptionChange>>(dataPtr, sizeInBytes); return builder.EndVector(); }
+  public static void StartChangesVector(FlatBufferBuilder builder, int numElems) { builder.StartVector(4, numElems, 4); }
   public static Offset<fb.protocol._internal.request.raw.SetOption> EndSetOption(FlatBufferBuilder builder) {
     int o = builder.EndTable();
     return new Offset<fb.protocol._internal.request.raw.SetOption>(o);
@@ -59,8 +61,7 @@ static public class SetOptionVerify
     return verifier.VerifyTableStart(tablePos)
       && verifier.VerifyField(tablePos, 4 /*World*/, 4 /*uint*/, 4, false)
       && verifier.VerifyField(tablePos, 6 /*User*/, 4 /*uint*/, 4, false)
-      && verifier.VerifyField(tablePos, 8 /*Type*/, 1 /*byte*/, 1, false)
-      && verifier.VerifyField(tablePos, 10 /*Enabled*/, 1 /*bool*/, 1, false)
+      && verifier.VerifyVectorOfTables(tablePos, 8 /*Changes*/, fb.protocol._internal.raw.OptionChangeVerify.Verify, false)
       && verifier.VerifyTableEnd(tablePos);
   }
 }

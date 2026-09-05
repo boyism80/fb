@@ -1,6 +1,7 @@
 {
     "id": 0,
     "name": "login-dev",
+    "role": "home",
     "world": 1,
     "ip": "127.0.0.1",
     "port": 30010,
@@ -59,5 +60,6 @@
     },
     "http": {
         "max_concurrent": 128
-    }
+    },
+    "meta_dat": "Meta.dat"
 }

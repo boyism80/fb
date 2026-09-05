@@ -12,9 +12,8 @@ clan::container::container(server& server) :
 
 async::task<clan::container::entity_ptr> clan::container::fetch(uint32_t id)
 {
-    auto   world = fb::config<uint32_t>("world");
     auto&& resp =
-        co_await this->_server.http.get<internal_resp::ClanDetails>("internal", std::format("/clan/{}/{}", world, id));
+        co_await this->_server.http.get<internal_resp::ClanDetails>("internal", std::format("/clan/id/{}", id));
 
     switch (static_cast<fb::model::enum_value::ERROR_CODE>(resp.error))
     {
@@ -28,7 +27,15 @@ async::task<clan::container::entity_ptr> clan::container::fetch(uint32_t id)
                 clan_member{member.name, static_cast<CLAN_ROLE>(member.role)}
             });
         }
-        co_return this->_server.make<fb::game::clan>(id, resp.clan.name, resp.clan.title, members);
+        auto enemy_clan_ids =
+            std::unordered_set<uint32_t>(resp.clan.enemy_clan_ids.begin(), resp.clan.enemy_clan_ids.end());
+        co_return this->_server.make<fb::game::clan>(id,
+                                                     resp.clan.name,
+                                                     resp.clan.title,
+                                                     members,
+                                                     resp.clan.allied_clan_id,
+                                                     enemy_clan_ids,
+                                                     resp.clan.money);
     }
 
     case fb::model::enum_value::ERROR_CODE::NOT_FOUND_CLAN:

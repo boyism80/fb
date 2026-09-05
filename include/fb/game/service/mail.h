@@ -46,7 +46,6 @@ private:
     static mail_box::summary to_summary(const fb::protocol::internal::MailSummary& mail);
     static mail_box::summary to_summary(const fb::protocol::internal::Mail& mail);
     static mail_box::mail    to_mail(const fb::protocol::internal::Mail& mail);
-    void                     apply_received(character& ch, const mail_box::received& entry);
     // clang-format on
 };
 

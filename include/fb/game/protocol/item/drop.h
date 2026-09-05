@@ -2,16 +2,19 @@
 #define __PROTOCOL_GAME_DROP_H__
 
 #include <fb/protocol/header.h>
+#include <fb/protocol/client_version.h>
 #include <fb/model/model.h>
 
 namespace fb::protocol::game::request {
 
 using namespace fb::model::enum_value;
 
+template <CLIENT_VERSION V>
 class item_drop : public fb::protocol::header
 {
 public:
     static constexpr uint8_t opcode = 0x08;
+    FB_PROTOCOL_VERSION_TAGS(V);
 
 public:
 #ifndef BOT
@@ -26,10 +29,7 @@ public:
 #ifndef BOT
     item_drop() = default;
 #else
-    item_drop(uint8_t index, bool all) :
-        index(index),
-        all(all)
-    { }
+    item_drop(uint8_t index, bool all);
 #endif
 
 public:

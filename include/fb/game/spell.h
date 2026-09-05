@@ -20,11 +20,11 @@ public:
 
 private:
     fb::model::datetime _next;
+    uint32_t            _model_id = 0;
 
 public:
     const fb::game::server& server;
     const fb::game::life&   owner;
-    const fb::model::spell& model;
 
 public:
     // clang-format off
@@ -34,6 +34,7 @@ public:
 
 public:
     // clang-format off
+    const fb::model::spell&    model() const;
     void                       delay(uint16_t value);
     uint16_t                   delay() const;
     const fb::model::datetime& next() const;
@@ -91,10 +92,10 @@ public:
 
 private:
     fb::model::timespan _duration;
+    uint32_t            _model_id = 0;
 
 public:
     const fb::game::server&   server;
-    const fb::model::spell&   model;
     const fb::game::object*   caster;
     const fb::model::datetime start;
 
@@ -106,6 +107,7 @@ public:
 
 public:
     // clang-format off
+    const fb::model::spell&    model() const;
     const fb::model::timespan& duration() const;
     void                       duration(const fb::model::timespan& value);
     fb::model::timespan        remaining() const;
@@ -125,7 +127,6 @@ public:
     using super::begin;
     using super::cbegin;
     using super::cend;
-    using super::contains;
     using super::end;
     using super::erase;
     using super::insert;
@@ -139,11 +140,14 @@ public:
     // clang-format on
 
 private:
-    bool push_back(const std::shared_ptr<buff>& buff);
+    bool                  push_back(const std::shared_ptr<buff>& buff);
+    std::shared_ptr<buff> find(uint32_t id) const;
 
 public:
     // clang-format off
+    bool                                             contains(uint32_t id) const;
     bool                                             contains(const fb::model::spell& model) const;
+    void                                             discard_expired(uint32_t id);
     [[nodiscard]] async::task<std::shared_ptr<buff>> push_back(const fb::model::spell& spell, uint32_t seconds, const std::shared_ptr<fb::game::object>& caster = nullptr);
     [[nodiscard]] async::task<bool>                  remove(uint32_t id);
     [[nodiscard]] async::task<bool>                  remove(const fb::model::spell& spell);

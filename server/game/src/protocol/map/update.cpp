@@ -5,7 +5,8 @@ namespace fb::protocol::game::request {
 using namespace fb::model::enum_value;
 
 #ifndef BOT // server only
-void map_update::deserialize(fb::stream_reader<big_endian>& reader)
+template <CLIENT_VERSION V>
+void map_update<V>::deserialize(fb::stream_reader<big_endian>& reader)
 {
     header::deserialize(reader);
     this->begin.x     = reader.read<uint16_t>();
@@ -14,8 +15,24 @@ void map_update::deserialize(fb::stream_reader<big_endian>& reader)
     this->size.height = reader.read<uint8_t>();
     this->crc         = reader.read<uint16_t>();
 }
+
+template <>
+void map_update<CLIENT_VERSION::v651>::deserialize(fb::stream_reader<big_endian>& reader)
+{
+    header::deserialize(reader);
+    this->begin.x     = reader.read<uint16_t>();
+    this->begin.y     = reader.read<uint16_t>();
+    this->size.width  = reader.read<uint8_t>();
+    this->size.height = reader.read<uint8_t>();
+    auto b2           = reader.read<uint8_t>();
+    auto b1           = reader.read<uint8_t>();
+    auto b0           = reader.read<uint8_t>();
+    this->crc         = static_cast<uint16_t>((b1 << 8) | b0);
+    (void)b2;
+}
 #else // bot only
-void map_update::serialize(fb::stream_writer<big_endian>& writer) const
+template <CLIENT_VERSION V>
+void map_update<V>::serialize(fb::stream_writer<big_endian>& writer) const
 {
     header::serialize(writer);
     writer.write<uint16_t>(this->begin_x);
@@ -24,11 +41,36 @@ void map_update::serialize(fb::stream_writer<big_endian>& writer) const
     writer.write<uint8_t>(this->height);
     writer.write<uint16_t>(this->crc);
 }
+
+template <>
+void map_update<CLIENT_VERSION::v651>::serialize(fb::stream_writer<big_endian>& writer) const
+{
+    header::serialize(writer);
+    writer.write<uint16_t>(this->begin_x);
+    writer.write<uint16_t>(this->begin_y);
+    writer.write<uint8_t>(this->width);
+    writer.write<uint8_t>(this->height);
+    writer.write<uint8_t>(0);
+    writer.write<uint8_t>(static_cast<uint8_t>(this->crc >> 8));
+    writer.write<uint8_t>(static_cast<uint8_t>(this->crc));
+}
 #endif
+
+template class map_update<CLIENT_VERSION::v550>;
+template class map_update<CLIENT_VERSION::v565>;
+template class map_update<CLIENT_VERSION::v651>;
 
 } // namespace fb::protocol::game::request
 
 namespace fb::protocol::game::response {
+
+#ifndef BOT
+map_update::map_update(const fb::game::map& map, const fb::model::point16_t& begin, const fb::model::size8_t& size) :
+    map(map),
+    begin(begin),
+    size(size)
+{ }
+#endif
 
 using namespace fb::model::enum_value;
 
@@ -38,14 +80,14 @@ void map_update::serialize(fb::stream_writer<big_endian>& writer) const
     header::serialize(writer);
     writer.write<uint8_t>(opcode);
 
-    if (this->map.model.effect == MAP_EFFECT_TYPE::NONE)
+    if (this->map.model().effect == MAP_EFFECT_TYPE::NONE)
     {
         writer.write<uint8_t>(0x00);
     }
     else
     {
         writer.write<uint8_t>(0x04);
-        writer.write<uint8_t>(static_cast<uint8_t>(this->map.model.effect));
+        writer.write<uint8_t>(static_cast<uint8_t>(this->map.model().effect));
     }
 
     writer.write<uint16_t>(this->begin.x);

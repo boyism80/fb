@@ -12,9 +12,8 @@ group::container::container(server& server) :
 
 async::task<group::container::entity_ptr> group::container::fetch(uint32_t id)
 {
-    auto   world = fb::config<uint32_t>("world");
-    auto&& resp  = co_await this->_server.http.get<internal_resp::GroupDetails>("internal",
-                                                                               std::format("/group/{}/{}", world, id));
+    auto&& resp =
+        co_await this->_server.http.get<internal_resp::GroupDetails>("internal", std::format("/group/id/{}", id));
 
     switch (static_cast<fb::model::enum_value::ERROR_CODE>(resp.error))
     {

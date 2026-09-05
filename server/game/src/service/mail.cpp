@@ -69,20 +69,6 @@ mail_box::mail service::mail::to_mail(const fb::protocol::internal::Mail& mail)
     };
 }
 
-void service::mail::apply_received(character& ch, const mail_box::received& entry)
-{
-    ch.mail_box.unread_count(entry.unread);
-    if (entry.system_mail_id.has_value())
-        ch.mail_box.mark_system_mail(entry.system_mail_id.value());
-
-    auto log_data            = Json::Value();
-    log_data["character_id"] = static_cast<Json::Int64>(ch.id);
-    log_data["sender_name"]  = UTF8(entry.snapshot.sender, PLATFORM::WINDOWS);
-    log_data["mail_id"]      = static_cast<Json::Int64>(entry.snapshot.id);
-    log_data["title"]        = UTF8(entry.snapshot.title, PLATFORM::WINDOWS);
-    this->server.log.write("mail_receive", log_data);
-}
-
 async::task<void> service::mail::on_received(const mail_box::received& entry)
 {
     auto ch = this->server.characters.find(entry.user_id);
@@ -91,7 +77,16 @@ async::task<void> service::mail::on_received(const mail_box::received& entry)
         auto weak    = ch->template weak_from_this_as<character>();
         auto builder = this->server.threads.new_builder(weak);
         builder.func = [this, ch, entry](auto&) -> async::task<void> {
-            this->apply_received(*ch, entry);
+            ch->mail_box.unread_count(entry.unread);
+            if (entry.system_mail_id.has_value())
+                ch->mail_box.mark_system_mail(entry.system_mail_id.value());
+
+            auto log_data            = Json::Value();
+            log_data["character_id"] = static_cast<Json::Int64>(ch->id);
+            log_data["sender_name"]  = UTF8(entry.snapshot.sender, PLATFORM::WINDOWS);
+            log_data["mail_id"]      = static_cast<Json::Int64>(entry.snapshot.id);
+            log_data["title"]        = UTF8(entry.snapshot.title, PLATFORM::WINDOWS);
+            this->server.log.write("mail_receive", log_data);
             co_return;
         };
         builder.enqueue();
@@ -103,17 +98,7 @@ async::task<void> service::mail::on_received_batch(const std::vector<mail_box::r
 {
     for (const auto& entry : entries)
     {
-        auto ch = this->server.characters.find(entry.user_id);
-        if (ch == nullptr)
-            continue;
-
-        auto weak    = ch->template weak_from_this_as<character>();
-        auto builder = this->server.threads.new_builder(weak);
-        builder.func = [this, ch, entry](auto&) -> async::task<void> {
-            this->apply_received(*ch, entry);
-            co_return;
-        };
-        builder.enqueue();
+        co_await this->on_received(entry);
     }
     co_return;
 }
@@ -125,7 +110,7 @@ service::mail::send(character& sender, std::string_view to, std::string_view tit
     auto   to_str       = std::string(to);
     auto   title_str    = std::string(title);
     auto   contents_str = std::string(contents);
-    auto   world        = fb::config<uint32_t>("world");
+    auto   world        = sender.world();
     auto&& resp         = co_await this->server.http.post(
         "internal",
         "/mail/write",
@@ -149,7 +134,7 @@ service::mail::send(character& sender, std::string_view to, std::string_view tit
 async::task<std::vector<mail_box::summary>> service::mail::list(const character& ch, uint16_t offset, uint16_t count)
 {
     auto   weak  = ch.weak_from_this();
-    auto   world = fb::config<uint32_t>("world");
+    auto   world = ch.world();
     auto&& resp  = co_await this->server.http.get<internal_resp::GetMailList>(
         "internal",
         std::format("/mail/{}/{}?offset={}&count={}", world, ch.id, offset, count));
@@ -172,7 +157,7 @@ async::task<std::vector<mail_box::summary>> service::mail::list(const character&
 async::task<mail_box::mail> service::mail::read(character& ch, uint16_t id)
 {
     auto   weak  = ch.weak_from_this_as<character>();
-    auto   world = fb::config<uint32_t>("world");
+    auto   world = ch.world();
     auto   url   = std::format("/mail/{}/{}/{}", world, ch.id, id);
     auto&& resp  = co_await this->server.http.get<internal_resp::GetMail>("internal", url);
     co_await this->server.threads.switching(weak);
@@ -188,7 +173,7 @@ async::task<mail_box::mail> service::mail::read(character& ch, uint16_t id)
 async::task<void> service::mail::remove(character& ch, uint16_t id)
 {
     auto   weak  = ch.weak_from_this_as<character>();
-    auto   world = fb::config<uint32_t>("world");
+    auto   world = ch.world();
     auto&& resp =
         co_await this->server.http.post("internal", "/mail/delete", internal_reqs::DeleteMail{world, ch.id, id});
     co_await this->server.threads.switching(weak);

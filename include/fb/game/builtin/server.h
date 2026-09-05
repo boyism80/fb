@@ -14,6 +14,9 @@ struct server
     static int builtin_time_forward(lua_State* L);
     static int builtin_time_backward(lua_State* L);
     static int builtin_datetime(lua_State* L);
+    static int builtin_to_lunar(lua_State* L);
+    static int builtin_from_lunar(lua_State* L);
+    static int builtin_event_is(lua_State* L);
     static int builtin_name2mob(lua_State* L);
     static int builtin_name2spell(lua_State* L);
     static int builtin_name2npc(lua_State* L);
@@ -26,11 +29,15 @@ struct server
     static int builtin_id2map(lua_State* L);
     static int builtin_id2ch(lua_State* L);
     static int builtin_id2item(lua_State* L);
+    static int builtin_id2clan(lua_State* L);
+    static int builtin_castle(lua_State* L);
+    static int builtin_siege_active(lua_State* L);
     static int builtin_pursuit_sell(lua_State* L);
     static int builtin_pursuit_sell_price(lua_State* L);
     static int builtin_pursuit_buy(lua_State* L);
     static int builtin_timer(lua_State* L);
     static int builtin_weather(lua_State* L);
+    static int builtin_weather_reroll(lua_State* L);
     static int builtin_bright(lua_State* L);
     static int builtin_name_with(lua_State* L);
     static int builtin_assert_korean(lua_State* L);
@@ -52,6 +59,8 @@ struct server
     static int builtin_drop_rate_multiplier(lua_State* L);
     static int builtin_http_response_delay(lua_State* L);
     static int builtin_property(lua_State* L);
+    static int builtin_match_transfer(lua_State* L);
+    static int builtin_is_cross(lua_State* L);
 };
 
 } // namespace fb::game::builtin

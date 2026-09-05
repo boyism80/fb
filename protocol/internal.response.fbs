@@ -42,6 +42,13 @@ table Transfer {
   maintenance_end_time: string?; // ISO 8601 format
 }
 
+table MatchTransfer {
+  error: uint;
+  ip: string;
+  port: ushort;
+  id: ubyte;
+}
+
 
 
 table Whisper {
@@ -165,8 +172,10 @@ table Init {
   quests: [fb.protocol.internal.Quest];
   storage_boxes: [fb.protocol.internal.StorageBox];
   marketplace_pendings: [fb.protocol.internal.MarketplacePending];
+  friends: [fb.protocol.internal.FriendEntry];
   mail: uint;
   system_mail_ids: [uint];
+  collection_unlocks: [fb.protocol.internal.CollectionUnlock];
 }
 
 
@@ -255,6 +264,9 @@ table UpdatedClan {
   new_role: uint?;
   old_title: string?;
   new_title: string?;
+  /// Counterpart clan id for Ally/Unally/Enemy/Unenemy actions.
+  related_clan_id: uint?;
+  money: ulong = 0;
   error: uint;
 }
 
@@ -284,6 +296,20 @@ table Broadcast {
 table UpdateFriends
 {
   error: uint;
+  friends: [fb.protocol.internal.FriendEntry];
+}
+
+table FriendRelation {
+  user: uint;
+  friend_uid: uint;
+  friend_name: string;
+  mutual: bool;
+}
+
+table FriendMessage {
+  to_uid: uint;
+  message: string;
+  type: ubyte;
 }
 
 table GetSystemStorageBoxes {
@@ -350,7 +376,24 @@ table SetDateTime {
   error: uint;
 }
 
+table CastleList {
+  host: uint;
+  castles: [fb.protocol.internal.Castle];
+  error: uint;
+}
+
+table UpdatedCastle {
+  host: uint;
+  divine_beast: ubyte;
+  owner_clan_id: uint?;
+  error: uint;
+}
+
 table StartMaintenance {
   message: string;
   end_time: string;
+}
+
+table FriendBroadcast {
+  error: uint;
 }

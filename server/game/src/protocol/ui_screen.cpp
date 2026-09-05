@@ -3,6 +3,12 @@
 namespace fb::protocol::game::response {
 
 #ifndef BOT
+ui_screen::ui_screen(UI_SCREEN screen) :
+    screen(screen)
+{ }
+#endif
+
+#ifndef BOT
 void ui_screen::serialize(fb::stream_writer<big_endian>& writer) const
 {
     header::serialize(writer);

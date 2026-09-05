@@ -12,3 +12,8 @@ ring::ring(const ring& right) :
 
 ring::~ring()
 { }
+
+const fb::model::ring& ring::model() const
+{
+    return static_cast<const fb::model::ring&>(fb::model::table::item[this->_model_id]);
+}

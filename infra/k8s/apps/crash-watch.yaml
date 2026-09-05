@@ -1,0 +1,72 @@
+apiVersion: v1
+kind: Secret
+metadata:
+  name: discord-webhook
+  namespace: fb
+type: Opaque
+stringData:
+  # Do not commit real values. Inject via kubectl / Pulumi / GitHub Secret.
+  url: ""
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: crash-watch
+  namespace: fb
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: crash-watch
+  namespace: fb
+rules:
+  - apiGroups: [""]
+    resources: ["pods"]
+    verbs: ["get", "list", "watch"]
+  - apiGroups: [""]
+    resources: ["pods/log"]
+    verbs: ["get"]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: crash-watch
+  namespace: fb
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: crash-watch
+subjects:
+  - kind: ServiceAccount
+    name: crash-watch
+    namespace: fb
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: crash-watch
+  namespace: fb
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: crash-watch
+  template:
+    metadata:
+      labels:
+        app: crash-watch
+    spec:
+      serviceAccountName: crash-watch
+      containers:
+        - name: crash-watch
+          image: fb/crash-watch:local
+          imagePullPolicy: IfNotPresent
+          env:
+            - name: WATCH_NAMESPACE
+              value: fb
+            - name: DISCORD_WEBHOOK_URL
+              valueFrom:
+                secretKeyRef:
+                  name: discord-webhook
+                  key: url
+                  optional: true

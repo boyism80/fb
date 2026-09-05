@@ -17,6 +17,11 @@ consume::consume(const consume& right) :
 consume::~consume()
 { }
 
+const fb::model::consume& consume::model() const
+{
+    return static_cast<const fb::model::consume&>(fb::model::table::item[this->_model_id]);
+}
+
 async::task<bool> consume::active()
 {
     if (this->_container == nullptr)
@@ -40,7 +45,7 @@ async::task<bool> consume::active()
     auto log_data               = Json::Value();
     log_data["character_id"]    = static_cast<Json::Int64>(owner->id);
     log_data["character_name"]  = UTF8(owner->name(), PLATFORM::WINDOWS);
-    log_data["item_id"]         = static_cast<Json::Int64>(this->based<fb::model::item>().id);
+    log_data["item_id"]         = static_cast<Json::Int64>(this->model().id);
     log_data["item_name"]       = UTF8(this->name(), PLATFORM::WINDOWS);
     log_data["remaining_count"] = static_cast<Json::Int64>(this->_count);
     owner->server.log.write("item_consume", log_data);

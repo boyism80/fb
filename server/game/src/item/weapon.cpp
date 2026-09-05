@@ -12,10 +12,15 @@ fb::game::weapon::weapon(const weapon& right) :
 fb::game::weapon::~weapon()
 { }
 
+const fb::model::weapon& fb::game::weapon::model() const
+{
+    return static_cast<const fb::model::weapon&>(fb::model::table::item[this->_model_id]);
+}
+
 std::string fb::game::weapon::mid_message() const
 {
     std::stringstream sstream;
-    auto&             model = this->based<fb::model::weapon>();
+    auto&             model = this->model();
 
     sstream << "파괴력: 　　 S:　" << std::to_string(model.damage_small.min) << 'm'
             << std::to_string(model.damage_small.max) << std::endl;
@@ -29,19 +34,19 @@ const std::string& fb::game::weapon::name() const
     if (this->_custom_name.has_value())
         return this->_custom_name.value();
     else
-        return this->_model.name;
+        return this->model().name;
 }
 
 std::string fb::game::weapon::inven_name() const
 {
-    auto& model = this->based<fb::model::equipment>();
+    auto& model = this->model();
     return this->_custom_name.value_or(model.name);
 }
 
 std::string fb::game::weapon::trade_name() const
 {
     auto  sstream    = std::stringstream();
-    auto& model      = this->based<fb::model::equipment>();
+    auto& model      = this->model();
     float percentage = this->_durability / float(model.durability) * 100;
 
     sstream << this->_custom_name.value_or(model.name) << '(' << std::fixed << std::setprecision(1) << percentage

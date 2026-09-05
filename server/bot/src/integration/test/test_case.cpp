@@ -17,8 +17,8 @@ bot_integration_test::bot_integration_test(game_bot_controller& controller, uint
     // Register common hooks for sequence and position responses
     this->controller.hook(this, this, &bot_integration_test::on_hook_sequence);
     this->controller.hook(this, this, &bot_integration_test::on_hook_position);
+    this->controller.hook(this, this, &bot_integration_test::on_hook_show);
     this->controller.hook(this, this, &bot_integration_test::on_hook_update_external);
-    this->controller.hook(this, this, &bot_integration_test::on_hook_update_external_brief);
 }
 
 bot_integration_test::test_state bot_integration_test::get_state() const
@@ -401,8 +401,7 @@ async::task<void> bot_integration_test::on_hook_position(fb::bot::game_bot& bot,
     co_return;
 }
 
-async::task<void> bot_integration_test::on_hook_update_external(fb::bot::game_bot&                      bot,
-                                                                const game_resp::update_external<true>& resp)
+async::task<void> bot_integration_test::on_hook_show(fb::bot::game_bot& bot, const game_resp::show_v550& resp)
 {
     if (bot.oid() == 0)
         bot.set_oid(resp.oid);
@@ -414,8 +413,8 @@ async::task<void> bot_integration_test::on_hook_update_external(fb::bot::game_bo
     co_return;
 }
 
-async::task<void> bot_integration_test::on_hook_update_external_brief(fb::bot::game_bot&                       bot,
-                                                                      const game_resp::update_external<false>& resp)
+async::task<void> bot_integration_test::on_hook_update_external(fb::bot::game_bot&                     bot,
+                                                                const game_resp::update_external_v550& resp)
 {
     if (bot.oid() == 0)
         bot.set_oid(resp.oid);

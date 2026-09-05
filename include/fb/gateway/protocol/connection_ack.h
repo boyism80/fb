@@ -2,6 +2,7 @@
 #define __PROTOCOL_GATEWAY_CONNECTION_ACK_H__
 
 #include <fb/protocol/header.h>
+#include <fb/protocol/client_version.h>
 #include <string>
 
 namespace fb::protocol::gateway::request {
@@ -11,10 +12,13 @@ namespace fb::protocol::gateway::request {
  * Sent by the client immediately after receiving the welcome packet (0x7E, 0x1B, "CONNECTED SERVER\n").
  * Payload: null-terminated client identifier string (e.g. "baram"), up to 6 bytes.
  */
+template <CLIENT_VERSION V>
 class connection_ack : public fb::protocol::header
 {
 public:
-    static constexpr uint8_t opcode = 0x62;
+    static constexpr uint8_t opcode  = 0x62;
+    static constexpr bool    decrypt = false;
+    FB_PROTOCOL_VERSION_TAGS(V);
 
 public:
     std::string client_name;
@@ -29,6 +33,11 @@ public:
     void serialize(fb::stream_writer<big_endian>& writer) const;
 #endif
 };
+
+#ifndef BOT
+template <>
+void connection_ack<CLIENT_VERSION::v651>::deserialize(fb::stream_reader<big_endian>& reader);
+#endif
 
 } // namespace fb::protocol::gateway::request
 

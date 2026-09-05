@@ -1,4 +1,4 @@
-﻿using AutoMapper;
+using AutoMapper;
 using Fb.Model.EnumValue;
 using Http.Model;
 using Protocol = fb.protocol._internal;
@@ -225,7 +225,7 @@ namespace Http.Service
                 Host  = host,
                 Error = (uint)ErrorCode.None
             };
-            await _rabbitMqService.PublishAsync(response, "amq.direct", $"fb.{world}.storage");
+            await _rabbitMqService.PublishFanoutAsync(response, "storage", world);
         }
 
         private async Task PublishDeliverAsync(uint world, List<StorageBox> boxes, uint host)
@@ -242,7 +242,7 @@ namespace Http.Service
                 Host    = host,
                 Error   = (uint)ErrorCode.None
             };
-            await _rabbitMqService.PublishAsync(response, "amq.direct", $"fb.{world}.storage");
+            await _rabbitMqService.PublishFanoutAsync(response, "storage", world);
         }
     }
 }

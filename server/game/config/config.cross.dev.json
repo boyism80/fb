@@ -1,0 +1,60 @@
+{
+    "id": 200,
+    "name": "game-cross-0",
+    "role": "cross",
+    "world": 1,
+    "delay": 1,
+    "ip": "127.0.0.1",
+    "port": 3100,
+    "thread": {
+        "logic": 12,
+        "io": 12
+    },
+    "save": 600,
+    "internal": {
+        "ip": "127.0.0.1",
+        "port": 3000
+    },
+    "marketplace": {
+        "ip": "127.0.0.1",
+        "port": 3010
+    },
+    "matchmaking": {
+        "ip": "127.0.0.1",
+        "port": 3340
+    },
+    "log": {
+        "level": [
+            "debug",
+            "info",
+            "warn",
+            "fatal"
+        ]
+    },
+    "login": {
+        "ip": "127.0.0.1",
+        "port": 3002
+    },
+    "amqp": {
+        "internal": {
+            "ip": "127.0.0.1",
+            "port": 5672,
+            "uid": "guest",
+            "pwd": "guest"
+        },
+        "log": {
+            "ip": "127.0.0.1",
+            "port": 5672,
+            "uid": "guest",
+            "pwd": "guest"
+        }
+    },
+    "lazy_load_maps": true,
+    "exp_multiplier": 100.0,
+    "drop_rate_multiplier": 100.0,
+    "http": {
+        "max_concurrent": 128
+    },
+    "meta_dat": "Meta.dat",
+    "sobj_tbl": "SObj.tbl"
+}

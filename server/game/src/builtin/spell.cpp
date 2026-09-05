@@ -25,7 +25,7 @@ int builtin::spell::builtin_model(lua_State* L)
     auto builder   = lua->new_co_builder();
     builder.weak   = weak;
     builder.yield  = [=]() -> async::task<void> {
-        *model_ptr = &spell->model;
+        *model_ptr = &spell->model();
         co_return;
     };
     builder.resume = [=]() -> async::task<int> {

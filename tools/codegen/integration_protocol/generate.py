@@ -24,12 +24,18 @@ OPCODE_RE = re.compile(
     r"static\s+constexpr\s+uint8_t\s+opcode\s*=\s*([^;]+);"
 )
 TEMPLATE_RE = re.compile(r"template\s*<([^>]+)>\s*class\s+(\w+)\s*:")
+# Template header that immediately precedes the matched class declaration.
+LEADING_TEMPLATE_RE = re.compile(r"template\s*<([^>]+)>\s*$")
+
+# The bot speaks a single C2S layout; versioned requests are instantiated for it.
+BOT_CLIENT_VERSION_ALIAS = "BOT_CLIENT_VERSION"
+BOT_CLIENT_VERSION_VALUE = "fb::protocol::CLIENT_VERSION::v550"
 
 FIELD_RE = re.compile(
     r"^\s*(?:(?:const|static|volatile)\s+)*"
     r"(std::string|uint32_t|uint16_t|uint8_t|int32_t|int16_t|int8_t|bool|"
     r"ACTION|CHAT_TYPE|DURATION|MESSAGE_TYPE|SPELL_TYPE|STATE|DIRECTION|"
-    r"UPDATE_STATE_LEVEL|"
+    r"UPDATE_STATE_LEVEL|OPTION|EQUIPMENT_PARTS|SWAP_TYPE|"
     r"fb::model::point<uint16_t>)"
     r"\s+(\w+)\s*(?:=\s*[^;]+)?;",
     re.MULTILINE,
@@ -47,6 +53,8 @@ ENUM_TYPES = {
     "DIALOG_RESULT",
     "BULLETIN_BUTTON_ENABLE",
     "UPDATE_STATE_LEVEL",
+    "OPTION",
+    "EQUIPMENT_PARTS",
 }
 
 PRIMITIVE_FIELD_TYPES = {
@@ -73,9 +81,9 @@ class ProtocolType:
     direction: str  # request | response
     alias: str      # game_reqs | game_resp
     class_name: str
-    cpp_type: str
+    cpp_type: str   # C++ expression, may carry template arguments
     opcode: int
-    type_key: str
+    type_key: str   # stable registry key, without CLIENT_VERSION arguments
     name: str
     has_default_ctor: bool = False
     fields: list[ProtocolField] = field(default_factory=list)
@@ -93,6 +101,10 @@ def parse_opcode(expr: str) -> int | None:
     if m:
         return int(m.group(1))
     return None
+
+
+def is_client_version_template(template_params: str | None) -> bool:
+    return bool(template_params) and "CLIENT_VERSION" in template_params
 
 
 def expand_conditional_opcode(
@@ -117,11 +129,15 @@ def expand_conditional_opcode(
     if opcode is None:
         raise ValueError(f"unsupported opcode expression: {opcode_expr}")
 
-    cpp_name = class_name
+    # Registry keys stay version agnostic; the C++ type is instantiated for the
+    # single layout the bot speaks.
+    if is_client_version_template(template_params):
+        return [make_type(direction, alias, class_name, opcode, versioned=True)]
+
     if template_params:
         raise ValueError(f"unsupported template protocol: {class_name} <{template_params}>")
 
-    return [make_type(direction, alias, cpp_name, opcode)]
+    return [make_type(direction, alias, class_name, opcode)]
 
 
 def make_lua_name(cpp_name: str) -> str:
@@ -140,14 +156,21 @@ def make_lua_name(cpp_name: str) -> str:
     return f"{base}_{params.replace(',', '_').replace(' ', '')}"
 
 
-def make_type(direction: str, alias: str, cpp_name: str, opcode: int) -> ProtocolType:
+def make_type(
+    direction: str,
+    alias: str,
+    cpp_name: str,
+    opcode: int,
+    versioned: bool = False,
+) -> ProtocolType:
     type_key = f"{alias}::{cpp_name}"
     name = make_lua_name(cpp_name)
+    cpp_type = f"{type_key}<{BOT_CLIENT_VERSION_ALIAS}>" if versioned else type_key
     return ProtocolType(
         direction=direction,
         alias=alias,
         class_name=cpp_name,
-        cpp_type=type_key,
+        cpp_type=cpp_type,
         opcode=opcode,
         type_key=type_key,
         name=name,
@@ -346,14 +369,44 @@ def split_ctor_params(params: str) -> list[tuple[str, str]]:
     return parsed
 
 
+def extract_parameter_list(text: str, open_paren_index: int) -> tuple[str, int] | None:
+    if open_paren_index >= len(text) or text[open_paren_index] != "(":
+        return None
+
+    depth = 0
+    angle = 0
+    for i in range(open_paren_index, len(text)):
+        ch = text[i]
+        if ch == "<":
+            angle += 1
+        elif ch == ">" and angle > 0:
+            angle -= 1
+        elif ch == "(" and angle == 0:
+            depth += 1
+        elif ch == ")" and angle == 0:
+            depth -= 1
+            if depth == 0:
+                return text[open_paren_index + 1 : i], i + 1
+    return None
+
+
 def extract_bot_ctor_params(class_body: str, class_name: str) -> list[tuple[str, str]]:
+    # After ctors moved into .cpp, BOT constructors are declarations that end
+    # with ';' rather than an inline ': member()' / '{ body }'.
     bot_view = preprocess_for_bot(class_body)
-    pattern = rf"\b{re.escape(class_name)}\s*\(([^)]*)\)\s*(?::|,|\{{)"
+    pattern = rf"\b{re.escape(class_name)}\s*\("
     for match in re.finditer(pattern, bot_view):
-        params = match.group(1).strip()
-        if not params:
+        extracted = extract_parameter_list(bot_view, match.end() - 1)
+        if extracted is None:
             continue
-        if "= default" in match.group(0):
+
+        params, end = extracted
+        rest = bot_view[end:].lstrip()
+        if rest.startswith("= default"):
+            continue
+        if not rest or rest[0] not in ";:{,":
+            continue
+        if not params.strip():
             continue
         return split_ctor_params(params)
     return []
@@ -396,11 +449,20 @@ def scan_protocols() -> list[ProtocolType]:
             for m in CLASS_RE.finditer(sub):
                 class_name = m.group(1)
                 start = m.start()
-                prefix = sub[max(0, start - 120) : start]
+                leading = sub[max(0, start - 120) : start]
+                # Skip explicit specializations (v651 overlays). The bot speaks
+                # the primary CLIENT_VERSION template instantiated as v550.
+                if re.search(r"template\s*<>\s*$", leading):
+                    continue
+
                 template_params = None
-                tm = TEMPLATE_RE.search(prefix + m.group(0))
+                tm = TEMPLATE_RE.match(m.group(0))
                 if tm and tm.group(2) == class_name:
                     template_params = tm.group(1)
+                else:
+                    lm = LEADING_TEMPLATE_RE.search(leading)
+                    if lm:
+                        template_params = lm.group(1)
 
                 chunk = sub[m.end() : m.end() + 500]
                 om = OPCODE_RE.search(chunk)
@@ -591,7 +653,7 @@ def generate_marshal_functions(types: list[ProtocolType]) -> list[str]:
                 "    if (lua == nullptr)",
                 "        return;",
                 "",
-                f"    const auto& resp = static_cast<const {t.type_key}&>(header);",
+                f"    const auto& resp = static_cast<const {t.cpp_type}&>(header);",
                 "    lua->new_table();",
             ]
         )
@@ -662,7 +724,7 @@ def generate_protocol_builders(types: list[ProtocolType]) -> list[str]:
                     f"int lua_builder_{sym}(lua_State* L)",
                     "{",
                     *lua_builder_prologue(),
-                    f"    lua_protocol::push_request(L, std::make_shared<{t.type_key}>());",
+                    f"    lua_protocol::push_request(L, std::make_shared<{t.cpp_type}>());",
                     "    return 1;",
                     "}",
                     "",
@@ -683,7 +745,7 @@ def generate_protocol_builders(types: list[ProtocolType]) -> list[str]:
         lines.append("{")
         lines.extend(lua_builder_prologue())
         lines.extend(arg_lines)
-        lines.append(f"    lua_protocol::push_request(L, std::make_shared<{t.type_key}>({ctor_args}));")
+        lines.append(f"    lua_protocol::push_request(L, std::make_shared<{t.cpp_type}>({ctor_args}));")
         lines.append("    return 1;")
         lines.append("}")
         lines.append("")
@@ -710,6 +772,8 @@ def generate_lua_cpp(types: list[ProtocolType]) -> str:
         "",
         "namespace game_reqs = fb::protocol::game::request;",
         "namespace game_resp = fb::protocol::game::response;",
+        "",
+        f"constexpr auto {BOT_CLIENT_VERSION_ALIAS} = {BOT_CLIENT_VERSION_VALUE};",
         "",
         "namespace detail {",
         "",
@@ -790,6 +854,8 @@ def generate_cpp(types: list[ProtocolType]) -> str:
         "",
         "namespace fb::bot::integration::detail {",
         "",
+        f"constexpr auto {BOT_CLIENT_VERSION_ALIAS} = {BOT_CLIENT_VERSION_VALUE};",
+        "",
     ]
 
     for t in types:
@@ -799,12 +865,12 @@ def generate_cpp(types: list[ProtocolType]) -> str:
                 [
                     f"void ensure_registered_{sym}(fb::bot::game_bot_controller& controller)",
                     "{",
-                    f"    controller.ensure_handler_registered<{t.type_key}>();",
+                    f"    controller.ensure_handler_registered<{t.cpp_type}>();",
                     "}",
                     "",
                     f"std::shared_ptr<fb::protocol::header> clone_{sym}(const fb::protocol::header& header)",
                     "{",
-                    f"    return std::make_shared<{t.type_key}>(static_cast<const {t.type_key}&>(header));",
+                    f"    return std::make_shared<{t.cpp_type}>(static_cast<const {t.cpp_type}&>(header));",
                     "}",
                     "",
                     f"std::shared_ptr<fb::protocol::header> create_{sym}()",
@@ -829,7 +895,7 @@ def generate_cpp(types: list[ProtocolType]) -> str:
                     f"std::shared_ptr<fb::protocol::header> create_{sym}()",
                     "{",
                     (
-                        f"    return std::make_shared<{t.type_key}>();"
+                        f"    return std::make_shared<{t.cpp_type}>();"
                         if t.has_default_ctor
                         else "    return nullptr;"
                     ),

@@ -11,6 +11,9 @@ public:
     ring(fb::game::server& server, const fb::model::ring& model, const initial_params& params = {});
     ring(const ring& right);
     ~ring();
+
+public:
+    const fb::model::ring& model() const override;
 };
 
 } // namespace fb::game

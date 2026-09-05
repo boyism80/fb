@@ -5,7 +5,8 @@ using namespace fb::model;
 namespace fb::protocol::game::request {
 
 #ifndef BOT
-void move::deserialize(fb::stream_reader<big_endian>& reader)
+template <CLIENT_VERSION V>
+void move<V>::deserialize(fb::stream_reader<big_endian>& reader)
 {
     header::deserialize(reader);
     this->direction       = DIRECTION(reader.read<uint8_t>());
@@ -14,13 +15,15 @@ void move::deserialize(fb::stream_reader<big_endian>& reader)
     this->position.y      = reader.read<uint16_t>();
 }
 #else
-move::move(DIRECTION direction, uint32_t walk_queue_slot, fb::model::point<uint16_t> position) :
+template <CLIENT_VERSION V>
+move<V>::move(DIRECTION direction, uint32_t walk_queue_slot, fb::model::point<uint16_t> position) :
     direction(direction),
     walk_queue_slot(static_cast<uint8_t>(walk_queue_slot)),
     position(position)
 { }
 
-void move::serialize(fb::stream_writer<big_endian>& writer) const
+template <CLIENT_VERSION V>
+void move<V>::serialize(fb::stream_writer<big_endian>& writer) const
 {
     header::serialize(writer);
     writer.write<uint8_t>(opcode);
@@ -30,6 +33,10 @@ void move::serialize(fb::stream_writer<big_endian>& writer) const
     writer.write<uint16_t>(this->position.y);
 }
 #endif
+
+template class move<CLIENT_VERSION::v550>;
+template class move<CLIENT_VERSION::v565>;
+template class move<CLIENT_VERSION::v651>;
 
 } // namespace fb::protocol::game::request
 

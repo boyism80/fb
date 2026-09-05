@@ -593,12 +593,54 @@ jobs:
           cache-to: type=registry,ref=${{ env.REGISTRY }}/${{ github.repository }}/matchmaking:buildcache,mode=max
           file: server/matchmaking/Dockerfile
 
+  crash-watch:
+    runs-on: [self-hosted, linux, build]
+    permissions:
+      contents: read
+      packages: write
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v5
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v4
+        with:
+         version: latest
+
+      - name: Login to ghcr
+        uses: docker/login-action@v4
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Extract metadata
+        id: meta
+        uses: docker/metadata-action@v6
+        with:
+          images: ${{ env.REGISTRY }}/${{ github.repository }}/crash-watch
+          flavor: |
+            latest=true
+
+      - name: Build crash-watch
+        uses: docker/build-push-action@v7
+        env:
+          DOCKER_BUILD_RECORD_UPLOAD: false
+          DOCKER_BUILD_SUMMARY: false
+        with:
+          platforms: linux/amd64
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          context: infra/crash-watch
+          file: infra/crash-watch/Dockerfile
+
   cleanup-cache:
     runs-on: [self-hosted, linux, build]
     permissions:
       contents: read
       packages: write
-    needs: [build-linux, internal, write-back, gateway, login, game, bot, admin-tool, log, marketplace, matchmaking]
+    needs: [build-linux, internal, write-back, gateway, login, game, bot, admin-tool, log, marketplace, matchmaking, crash-watch]
     steps:
       - name: Checkout repository
         uses: actions/checkout@v5
@@ -611,7 +653,7 @@ jobs:
     permissions:
       contents: read
       packages: write
-    needs: [internal, write-back, bot, gateway, login, game, admin-tool, log, marketplace, matchmaking]
+    needs: [internal, write-back, bot, gateway, login, game, admin-tool, log, marketplace, matchmaking, crash-watch]
     steps:
       - name: Checkout repository
         uses: actions/checkout@v5
@@ -651,6 +693,7 @@ jobs:
           SCRIPT_PUBLISH_DOWNLOAD_BASE_URL: ${{ secrets.SCRIPT_PUBLISH_DOWNLOAD_BASE_URL }}
           SCRIPT_PUBLISH_USERNAME: ${{ secrets.NAS_ID }}
           SCRIPT_PUBLISH_PASSWORD: ${{ secrets.NAS_PW }}
+          DISCORD_WEBHOOK_URL: ${{ secrets.DISCORD_WEBHOOK_URL }}
         with:
           work-dir: infra/pulumi
           command: up
@@ -754,6 +797,20 @@ jobs:
             Write-Host "Warning: server\game\json not found"
           }
 
+      - name: Copy meta files
+        shell: powershell
+        run: |
+          $files = @("Meta.dat", "SObj.tbl")
+          foreach ($file in $files) {
+            $source = Join-Path "resources\meta" $file
+            if (Test-Path $source) {
+              Copy-Item -Path $source -Destination (Join-Path "build" $file) -Force
+              Write-Host "Copied $source to build\$file"
+            } else {
+              Write-Host "Warning: $source not found"
+            }
+          }
+
       - name: Copy config files
         shell: powershell
         run: |
@@ -789,6 +846,8 @@ jobs:
             build/maps
             build/scripts
             build/json
+            build/Meta.dat
+            build/SObj.tbl
             build/config.gateway.json
             build/config.login.json
             build/config.game.json
@@ -811,6 +870,8 @@ jobs:
           if (Test-Path build\maps) { Copy-Item build\maps -Destination (Join-Path $distZip "maps") -Recurse }
           if (Test-Path build\scripts) { Copy-Item build\scripts -Destination (Join-Path $distZip "scripts") -Recurse }
           if (Test-Path build\json) { Copy-Item build\json -Destination (Join-Path $distZip "json") -Recurse }
+          if (Test-Path build\Meta.dat) { Copy-Item build\Meta.dat -Destination (Join-Path $distZip "Meta.dat") }
+          if (Test-Path build\SObj.tbl) { Copy-Item build\SObj.tbl -Destination (Join-Path $distZip "SObj.tbl") }
 
       - name: Zip dist package
         shell: powershell

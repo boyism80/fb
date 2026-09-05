@@ -2,15 +2,17 @@
 #include <fb/game/handler/protocol/move.h>
 #include <fb/game/server.h>
 
-using namespace fb::game::handler::protocol;
-
 namespace game_reqs = fb::protocol::game::request;
 
-update_move::update_move(fb::game::server& server) :
-    fb::handler::protocol<fb::game::server, game_reqs::update_move>(server)
+namespace fb::game::handler::protocol {
+
+template <fb::protocol::CLIENT_VERSION V>
+update_move<V>::update_move(fb::game::server& server) :
+    fb::handler::protocol<fb::game::server, game_reqs::update_move<V>>(server)
 { }
 
-async::task<bool> update_move::handle(fb::socket<character>& session, game_reqs::update_move& request)
+template <fb::protocol::CLIENT_VERSION V>
+async::task<bool> update_move<V>::handle(fb::socket<character>& session, game_reqs::update_move<V>& request)
 {
     auto ch = session.data();
     if (ch->inited() == false)
@@ -20,10 +22,16 @@ async::task<bool> update_move::handle(fb::socket<character>& session, game_reqs:
     if (map == nullptr)
         co_return true;
 
-    auto move_handler = fb::game::handler::protocol::move(this->server);
+    auto move_handler = fb::game::handler::protocol::move<V>(this->server);
     auto moved = co_await move_handler.handle(session, request.direction, request.position, request.walk_queue_slot);
     if (moved)
         ch->update_map(*map, request.begin, request.size, request.crc);
 
     co_return true;
 }
+
+template class update_move<fb::protocol::CLIENT_VERSION::v550>;
+template class update_move<fb::protocol::CLIENT_VERSION::v565>;
+template class update_move<fb::protocol::CLIENT_VERSION::v651>;
+
+} // namespace fb::game::handler::protocol

@@ -21,15 +21,25 @@ namespace Http.Service
 
         public AchievementRepository Achievement => Bind<AchievementRepository>();
 
+        public FriendRepository Friend => Bind<FriendRepository>();
+
         public ClanRepository Clan => Bind<ClanRepository>();
 
         public ClanMemberRepository ClanMember => Bind<ClanMemberRepository>();
+
+        public ClanAllianceRepository ClanAlliance => Bind<ClanAllianceRepository>();
+
+        public ClanEnemyRepository ClanEnemy => Bind<ClanEnemyRepository>();
+
+        public CastleRepository Castle => Bind<CastleRepository>();
 
         public CharacterRealtimeStateRepository CharacterRealtimeState => Bind<CharacterRealtimeStateRepository>();
 
         public MailRepository Mail => Bind<MailRepository>();
 
         public QuestRepository Quest => Bind<QuestRepository>();
+
+        public CollectionUnlockRepository CollectionUnlock => Bind<CollectionUnlockRepository>();
 
         public SystemMailRepository SystemMail => Bind<SystemMailRepository>();
 

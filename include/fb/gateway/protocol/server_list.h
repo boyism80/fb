@@ -2,6 +2,7 @@
 #define __PROTOCOL_GATEWAY_SERVER_LIST_H__
 
 #include <fb/protocol/header.h>
+#include <fb/protocol/client_version.h>
 #include <format>
 #include <string_view>
 
@@ -26,10 +27,12 @@ public:
 
 namespace fb::protocol::gateway::request {
 
+template <CLIENT_VERSION V>
 class server_list : public fb::protocol::header
 {
 public:
     static constexpr uint8_t opcode = 0x57;
+    FB_PROTOCOL_VERSION_TAGS(V);
 
 public:
     uint8_t action;

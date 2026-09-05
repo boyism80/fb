@@ -1,6 +1,44 @@
 local sky_maze = require('lib.sky_maze')
+local siege = require('schedule.siege')
 
 local M = {}
+
+local function is_clan_master(me)
+    local clan = me:clan()
+    if clan == nil then
+        return false
+    end
+
+    for _, member in pairs(clan:members()) do
+        if member:role() == CLAN_ROLE.MASTER and member:name() == me:name() then
+            return true
+        end
+    end
+
+    return false
+end
+
+local function ensure_clan_as_master(me)
+    if is_clan_master(me) then
+        return true, me:clan()
+    end
+
+    local clan = me:clan()
+    if clan ~= nil then
+        local err = clan:leave(me)
+        if err ~= nil then
+            return false, err
+        end
+    end
+
+    local name = string.format('공성%s%d', me:name(), math.random(1000, 9999))
+    local err = me:create_clan(name)
+    if err ~= nil then
+        return false, err
+    end
+
+    return true, me:clan()
+end
 
 M.functions = {
     ['명령어'] = {
@@ -58,6 +96,15 @@ M.functions = {
             end
             me:message(string.format("총 %d개의 명령어가 있습니다.", #available_commands), MESSAGE_TYPE.BROWN)
             
+            return true
+        end,
+    },
+
+    ['주사위'] = {
+        ['privilege'] = ROLE.USER,
+        ['usage'] = '- 1부터 100까지 주사위를 굴립니다',
+        ['command'] = function (me, args)
+            me:chat(string.format('주사위 [%d]나왔습니다.', math.random(1, 100)))
             return true
         end,
     },
@@ -142,8 +189,8 @@ M.functions = {
                 return true
             end
 
-            local model = name2map(name)
-            if model == nil then
+            local map = name2map(name)
+            if map == nil then
                 me:message(string.format("존재하지 않는 맵입니다: %s", name))
                 return true
             end
@@ -165,9 +212,8 @@ M.functions = {
                 end
             end
 
-            local map = model
             if slot ~= nil then
-                map = model:instance(slot)
+                map = map:instance(slot)
                 if map == nil then
                     me:message(string.format("인스턴스 맵을 생성할 수 없습니다: %s (slot %d)", name, slot))
                     return true
@@ -241,6 +287,28 @@ M.functions = {
             return true
         end,
     },
+
+    ['날씨갱신'] = {
+        ['privilege'] = ROLE.ADMIN,
+        ['usage'] = '- 현재와 다른 날씨가 나올 때까지 스케줄 재추첨',
+        ['command'] = function (me, args)
+            local names = {
+                [0] = '맑음',
+                [1] = '비',
+                [2] = '눈',
+                [3] = '새',
+            }
+            local before, after = weather_reroll()
+            local before_name = names[before] or tostring(before)
+            local after_name = names[after] or tostring(after)
+            if before == after then
+                me:message(string.format("날씨 갱신 실패 (타입이 바뀌지 않음): %s", before_name), MESSAGE_TYPE.BROWN)
+            else
+                me:message(string.format("날씨 갱신: %s -> %s", before_name, after_name), MESSAGE_TYPE.BROWN)
+            end
+            return true
+        end,
+    },
     
     ['밝기'] = {
         ['privilege'] = ROLE.ADMIN,
@@ -263,57 +331,153 @@ M.functions = {
     
     ['타이머'] = {
         ['privilege'] = ROLE.ADMIN,
-        ['usage'] = '<시간(초)> [증가|감소] - 타이머 설정 (기본: 감소)',
+        ['usage'] = '<시간(초)> [증가|감소] | 제거 - 타이머 설정/제거 (기본: 감소)',
         ['command'] = function (me, args)
             local time_arg = args[1]
             local mode_arg = args[2]
             if not time_arg then
                 me:message("사용법: /타이머 <시간(초)> [증가|감소]")
-                return true
-            end
-            local time = tonumber(time_arg)
-            if not time or time < 0 then
-                me:message("시간은 0보다 큰 숫자여야 합니다.")
+                me:message("사용법: /타이머 제거")
                 return true
             end
 
-            local decrease = true
-            if mode_arg then
-                if mode_arg == '증가' then
-                    decrease = false
-                elseif mode_arg == '감소' then
-                    decrease = true
-                else
-                    me:message("사용법: /타이머 <시간(초)> [증가|감소]")
+            if time_arg == '제거' then
+                me:timer(0, TIMER_TYPE.OFF)
+                return true
+            else
+                local time = tonumber(time_arg)
+                if not time or time < 0 then
+                    me:message("시간은 0보다 큰 숫자여야 합니다.")
                     return true
                 end
+
+                local timer_type = TIMER_TYPE.DECREASE
+                if mode_arg then
+                    if mode_arg == '증가' then
+                        timer_type = TIMER_TYPE.INCREASE
+                    elseif mode_arg == '감소' then
+                        timer_type = TIMER_TYPE.DECREASE
+                    else
+                        me:message("사용법: /타이머 <시간(초)> [증가|감소]")
+                        return true
+                    end
+                end
+
+                me:timer(time, timer_type)
+                return true
+            end
+        end,
+    },
+
+    ['스크립트타이머'] = {
+        ['privilege'] = ROLE.ADMIN,
+        ['usage'] = '시작|중지 [맵ID] [밀리초] - map:set_timer 스모크 (기본: 현재맵, 1000ms)',
+        ['command'] = function (me, args)
+            local action = args[1]
+            if action ~= '시작' and action ~= '중지' then
+                me:message("사용법: /스크립트타이머 시작|중지 [맵ID] [밀리초]")
+                return true
             end
 
-            me:timer(time, decrease)
+            local map_id = tonumber(args[2])
+            local map = nil
+            if map_id ~= nil then
+                map = id2map(map_id)
+            else
+                map = me:map()
+                if map ~= nil then
+                    map_id = map:model():id()
+                end
+            end
+            if map == nil then
+                me:message("맵을 찾을 수 없습니다.")
+                return true
+            end
+
+            local NAME = 'script_timer_smoke'
+            local PATH = 'scripts/lib/script_timer_smoke.lua'
+
+            if action == '중지' then
+                local ok = map:cancel_timer(NAME)
+                if ok then
+                    me:message(string.format("스크립트 타이머 중지: map=%d name=%s", map_id, NAME))
+                else
+                    me:message("중지할 스크립트 타이머가 없습니다.")
+                end
+                return true
+            end
+
+            local interval = tonumber(args[3]) or 1000
+            if interval <= 0 then
+                me:message("밀리초는 1 이상이어야 합니다.")
+                return true
+            end
+
+            local id = map:set_timer(interval, PATH, 'on_tick', { name = NAME })
+            if id == nil then
+                me:message("스크립트 타이머 설치 실패")
+                return true
+            end
+
+            me:message(string.format("스크립트 타이머 시작: map=%d interval=%dms id=%s", map_id, interval, tostring(id)))
             return true
         end,
     },
 
     ['현재시간'] = {
         ['privilege'] = ROLE.ADMIN,
-        ['usage'] = '[YYYY-MM-DD HH:MM:SS] - 현재 서버 시간 조회/설정',
+        ['usage'] = '[YYYY-MM-DD HH:MM:SS [음력]] - 현재 서버 시간 조회/설정',
         ['command'] = function (me, args)
             if #args == 0 then
                 local dt = datetime()
-                me:message(string.format("현재 서버 시간: %04d-%02d-%02d %02d:%02d:%02d",
-                    dt.year, dt.month, dt.day, dt.hour, dt.minute, dt.second), MESSAGE_TYPE.BROWN)
+                if dt.lunar_year ~= nil then
+                    local leap = dt.lunar_leap and ' (윤)' or ''
+                    me:message(string.format(
+                        "현재 서버 시간: %04d-%02d-%02d %02d:%02d:%02d / 음력 %04d-%02d-%02d%s",
+                        dt.year, dt.month, dt.day, dt.hour, dt.minute, dt.second,
+                        dt.lunar_year, dt.lunar_month, dt.lunar_day, leap), MESSAGE_TYPE.BROWN)
+                else
+                    me:message(string.format("현재 서버 시간: %04d-%02d-%02d %02d:%02d:%02d",
+                        dt.year, dt.month, dt.day, dt.hour, dt.minute, dt.second), MESSAGE_TYPE.BROWN)
+                end
                 return true
             end
 
-            local value = table.concat(args, ' ')
+            local lunar = args[#args] == '음력'
+            local date_args = args
+            if lunar then
+                date_args = { table.unpack(args, 1, #args - 1) }
+            end
+
+            local value = table.concat(date_args, ' ')
             if not string.match(value, '^%d%d%d%d%-%d%d%-%d%d %d%d:%d%d:%d%d$') then
-                me:message("사용법: /현재시간 YYYY-MM-DD HH:MM:SS")
+                me:message("사용법: /현재시간 YYYY-MM-DD HH:MM:SS [음력]")
                 return true
+            end
+
+            if lunar then
+                local y, m, d, hh, mm, ss = string.match(value, '^(%d%d%d%d)%-(%d%d)%-(%d%d) (%d%d):(%d%d):(%d%d)$')
+                local solar, err = from_lunar({
+                    year = tonumber(y),
+                    month = tonumber(m),
+                    day = tonumber(d),
+                    leap = false,
+                }, tonumber(hh), tonumber(mm), tonumber(ss))
+                if solar == nil then
+                    me:message(string.format("음력 변환 실패: %s", err or "unknown error"), MESSAGE_TYPE.BROWN)
+                    return true
+                end
+                value = string.format("%04d-%02d-%02d %02d:%02d:%02d",
+                    solar.year, solar.month, solar.day, solar.hour, solar.minute, solar.second)
             end
 
             local success, error_message = now(value)
             if success then
-                me:message(string.format("현재 시간을 %s 로 설정 요청했습니다.", value), MESSAGE_TYPE.BROWN)
+                if lunar then
+                    me:message(string.format("현재 시간을 음력 기준 양력 %s 로 설정 요청했습니다.", value), MESSAGE_TYPE.BROWN)
+                else
+                    me:message(string.format("현재 시간을 %s 로 설정 요청했습니다.", value), MESSAGE_TYPE.BROWN)
+                end
             else
                 me:message(string.format("현재시간 설정 실패: %s", error_message or "unknown error"), MESSAGE_TYPE.BROWN)
             end
@@ -374,6 +538,62 @@ M.functions = {
             return true
         end,
     },
+
+    ['공성시작'] = {
+        ['privilege'] = ROLE.ADMIN,
+        ['usage'] = '<신수> - 신수성 공성 시작 (주작/현무/청룡/백호)',
+        ['command'] = function (me, args)
+            local name = table.unpack(args)
+            if not name then
+                me:message("사용법: /공성시작 <신수> (주작/현무/청룡/백호)")
+                return true
+            end
+
+            local divine_beast = siege.NAME_TO_DIVINE_BEAST[name]
+            if divine_beast == nil then
+                me:message("신수는 주작/현무/청룡/백호 중 하나여야 합니다.")
+                return true
+            end
+
+            local ok, result = siege.start_siege(divine_beast)
+            if ok then
+                me:message(string.format("%s의성 공성전을 시작했습니다. (지속 %d초)", name, result), MESSAGE_TYPE.BROWN)
+            else
+                me:message(string.format("공성시작 실패: %s", result or "unknown error"), MESSAGE_TYPE.BROWN)
+            end
+            return true
+        end,
+    },
+
+    ['공성종료'] = {
+        ['privilege'] = ROLE.ADMIN,
+        ['usage'] = '- 진행 중인 신수성 공성전 종료',
+        ['command'] = function (me, args)
+            local ended = siege.end_active_sieges()
+            if #ended == 0 then
+                me:message("진행 중인 공성전이 없습니다.", MESSAGE_TYPE.BROWN)
+            else
+                me:message(string.format("공성전 종료: %s", table.concat(ended, ', ')), MESSAGE_TYPE.BROWN)
+            end
+            return true
+        end,
+    },
+
+    ['공성준비'] = {
+        ['privilege'] = ROLE.ADMIN,
+        ['usage'] = '- 공성 참가용 문파장 문파 준비',
+        ['command'] = function (me, args)
+            local ok, result = ensure_clan_as_master(me)
+            if ok == false then
+                me:message(string.format("공성준비 실패: %s", result or "unknown error"), MESSAGE_TYPE.BROWN)
+                return true
+            end
+
+            local clan = result
+            me:message(string.format("공성준비 완료: 문파 [%s] 문파장", clan and clan:name() or '?'), MESSAGE_TYPE.BROWN)
+            return true
+        end,
+    },
     
     ['타이틀'] = {
         ['privilege'] = ROLE.ADMIN,
@@ -410,7 +630,7 @@ M.functions = {
     
     ['변신'] = {
         ['privilege'] = ROLE.ADMIN,
-        ['usage'] = '<변신ID> - 변신',
+        ['usage'] = '<변신ID> - 변신 (mob.json raw look, +0x7FFF 보정)',
         ['command'] = function (me, args)
             local value = table.unpack(args)
             if not value then
@@ -422,7 +642,14 @@ M.functions = {
                 me:message("변신 ID는 0 이상의 숫자여야 합니다.")
                 return true
             end
-            me:mimic({ disguise = value })
+            -- mob/npc table look = json raw + 0x7FFF (server.init build hook)
+            local MOB_LOOK_OFFSET = 0x7FFF
+            local wire = value
+            if value < MOB_LOOK_OFFSET then
+                wire = value + MOB_LOOK_OFFSET
+            end
+            me:mimic({ disguise = wire })
+            me:message(string.format("변신 raw=%d wire=%d", value, wire))
             return true
         end,
     },
@@ -488,15 +715,23 @@ M.functions = {
         
         ['몬스터생성'] = {
             ['privilege'] = ROLE.ADMIN,
-            ['usage'] = '<몬스터이름> [x] [y] - 몬스터 생성',
+            ['usage'] = '<몬스터이름> [x] [y] [마릿수] - 몬스터 생성',
             ['command'] = function (me, args)
-                local name, x, y = table.unpack(args)
+                local name, x, y, count_arg = table.unpack(args)
                 if not name then
-                    me:message("사용법: /몬스터생성 <몬스터이름> [x] [y]")
+                    me:message("사용법: /몬스터생성 <몬스터이름> [x] [y] [마릿수]")
                     return true
                 end
-                
-                if x == nil and y == nil then
+
+                local count = 1
+                if x == nil then
+                    x, y = me:position()
+                elseif y == nil then
+                    count = tonumber(x)
+                    if not count or count < 1 then
+                        me:message("마릿수는 1 이상의 숫자여야 합니다.")
+                        return true
+                    end
                     x, y = me:position()
                 else
                     x = tonumber(x)
@@ -505,8 +740,18 @@ M.functions = {
                         me:message("좌표는 숫자여야 합니다.")
                         return true
                     end
+                    if count_arg ~= nil then
+                        count = tonumber(count_arg)
+                        if not count or count < 1 then
+                            me:message("마릿수는 1 이상의 숫자여야 합니다.")
+                            return true
+                        end
+                    end
                 end
-                me:spawn_mob(name, x, y, false)
+
+                for i = 1, count do
+                    me:spawn_mob(name, x, y, false)
+                end
                 return true
             end,
         },
@@ -917,7 +1162,7 @@ M.functions = {
                     me:message("사용법: /월드맵 <월드맵이름>")
                     return true
                 end
-                me:world(name)
+                me:world_map(name)
                 return true
             end,
         },
@@ -978,7 +1223,26 @@ M.functions = {
                     me:message("머리 ID는 0 이상의 숫자여야 합니다.")
                     return true
                 end
-                me:look(value)
+                me:hair(value)
+                return true
+            end,
+        },
+        
+        ['얼굴바꾸기'] = {
+            ['privilege'] = ROLE.ADMIN,
+            ['usage'] = '<얼굴ID> - 얼굴 변경 (6.51 NEW UI)',
+            ['command'] = function (me, args)
+                local value = table.unpack(args)
+                if not value then
+                    me:message("사용법: /얼굴바꾸기 <얼굴ID>")
+                    return true
+                end
+                value = tonumber(value)
+                if not value or value < 0 then
+                    me:message("얼굴 ID는 0 이상의 숫자여야 합니다.")
+                    return true
+                end
+                me:face(value)
                 return true
             end,
         },
@@ -1157,7 +1421,9 @@ M.functions = {
                         return true
                     end
                 end
-                mknpc(name, map, x, y)
+
+                local direction = me:direction()
+                mknpc(name, map, x, y, direction)
                 return true
             end,
         },
@@ -1277,16 +1543,101 @@ M.functions = {
             end,
         },
         
-        ['unknown_12'] = {
+        ['도감'] = {
             ['privilege'] = ROLE.ADMIN,
-            ['usage'] = '[oid] [slot] [flag] - S2C 0x12 (slot=인벤문자 1=a, flag<0xA0→[무장] / >=0xA0→레벨업토스트). 생략 시 자신 oid·slot0·flag1',
+            ['usage'] = '<group_id> <slot> [onoff] - S2C 0x12 type2. 도감 탭을 연 뒤 그룹의 slot을 해금(1)/잠금(0). onoff 생략=해금',
             ['command'] = function (me, args)
-                local oid, slot, flag = table.unpack(args)
-                if oid or slot or flag then
-                    me:unknown_12(tonumber(oid) or 0, tonumber(slot) or 0, tonumber(flag) or 1)
-                else
-                    me:unknown_12()
+                local group_id = tonumber(args[1])
+                local slot = tonumber(args[2])
+                if group_id == nil or slot == nil then
+                    me:message('사용법: /도감 <group_id> <slot> [onoff]')
+                    return true
                 end
+                local onoff = true
+                if args[3] ~= nil then
+                    local n = tonumber(args[3])
+                    if n ~= nil then
+                        onoff = n ~= 0
+                    else
+                        onoff = args[3] ~= 'false'
+                    end
+                end
+                me:collection(group_id, slot, onoff)
+                return true
+            end,
+        },
+
+        ['unknown_4f'] = {
+            ['privilege'] = ROLE.ADMIN,
+            ['usage'] = '- S2C 0x4F UI 윈도우 오픈 (5.65+). 클라가 0x54 phase5로 응답',
+            ['command'] = function (me, args)
+                me:unknown_4f()
+                return true
+            end,
+        },
+
+        ['notice'] = {
+            ['privilege'] = ROLE.ADMIN,
+            ['usage'] = '[flag] [텍스트] - S2C 0x58 공지 텍스트창 (6.51 NEW). flag 0이면 창 닫기',
+            ['command'] = function (me, args)
+                local flag = 1
+                local from = 1
+                if tonumber(args[1]) then
+                    flag = tonumber(args[1])
+                    from = 2
+                end
+
+                local text = table.concat(args, ' ', from, #args)
+                if text == '' then
+                    text = 'test'
+                end
+
+                me:notice(flag, text)
+                return true
+            end,
+        },
+
+        ['group_portrait'] = {
+            ['privilege'] = ROLE.ADMIN,
+            ['usage'] = '[subtype] [count] - S2C 0x63 그룹 초상 리스트 (6.51 NEW). 생략 시 subtype2·count0(빈 리스트)',
+            ['command'] = function (me, args)
+                local subtype, count = table.unpack(args)
+                me:group_portrait(tonumber(subtype) or 2, tonumber(count) or 0)
+                return true
+            end,
+        },
+
+        ['web_map_markers'] = {
+            ['privilege'] = ROLE.ADMIN,
+            ['usage'] = '[x y 이름]... - S2C 0x70 웹맵 마커. 생략 시 마커 없음. x/y 0이면 현재 좌표, 이름 생략 시 자신',
+            ['command'] = function (me, args)
+                local values = {}
+                local i = 1
+                while i <= #args do
+                    values[#values + 1] = tonumber(args[i]) or 0
+                    values[#values + 1] = tonumber(args[i + 1]) or 0
+                    values[#values + 1] = args[i + 2] or ''
+                    i = i + 3
+                end
+                me:web_map_markers(table.unpack(values))
+                return true
+            end,
+        },
+
+        ['web_map'] = {
+            ['privilege'] = ROLE.ADMIN,
+            ['usage'] = '- S2C 0x70 현재 맵의 다른 캐릭터 마커 (C2S 0x7C 응답과 동일)',
+            ['command'] = function (me, args)
+                me:web_map()
+                return true
+            end,
+        },
+
+        ['browser'] = {
+            ['privilege'] = ROLE.ADMIN,
+            ['usage'] = '- S2C 0x62 NEW UI 오픈 (6.51). 게이트웨이 C2S 0x62와 별개',
+            ['command'] = function (me, args)
+                me:browser()
                 return true
             end,
         },
@@ -1789,29 +2140,29 @@ M.functions = {
             ['privilege'] = ROLE.ADMIN,
             ['usage'] = '<신수> - 신수 변경 (청룡, 주작, 백호, 현무)',
             ['command'] = function (me, args)
-                local creature_name = table.unpack(args)
-                if not creature_name then
+                local divine_beast_name = table.unpack(args)
+                if not divine_beast_name then
                     me:message("사용법: /신수바꾸기 <신수> (청룡, 주작, 백호, 현무 중 하나)")
                     return true
                 end
                 
-                local creature_value = nil
-                if creature_name == '청룡' then
-                    creature_value = CREATURE.DRAGON
-                elseif creature_name == '주작' then
-                    creature_value = CREATURE.PHOENIX
-                elseif creature_name == '백호' then
-                    creature_value = CREATURE.TIGER
-                elseif creature_name == '현무' then
-                    creature_value = CREATURE.TURTLE
+                local divine_beast_value = nil
+                if divine_beast_name == '청룡' then
+                    divine_beast_value = DIVINE_BEAST.AZURE_DRAGON
+                elseif divine_beast_name == '주작' then
+                    divine_beast_value = DIVINE_BEAST.VERMILION_BIRD
+                elseif divine_beast_name == '백호' then
+                    divine_beast_value = DIVINE_BEAST.WHITE_TIGER
+                elseif divine_beast_name == '현무' then
+                    divine_beast_value = DIVINE_BEAST.BLACK_TORTOISE
                 else
                     me:message("신수는 청룡, 주작, 백호, 현무 중 하나여야 합니다.")
                     return true
                 end
                 
-                local success = me:creature(creature_value)
+                local success = me:divine_beast(divine_beast_value)
                 if success then
-                    me:message(string.format("신수가 %s 변경되었습니다. 재접속 후 변경사항을 확인할 수 있습니다.", name_with(creature_name, '으로', '로')), MESSAGE_TYPE.BROWN)
+                    me:message(string.format("신수가 %s 변경되었습니다. 재접속 후 변경사항을 확인할 수 있습니다.", name_with(divine_beast_name, '으로', '로')), MESSAGE_TYPE.BROWN)
                 else
                     me:message("신수 변경에 실패했습니다.", MESSAGE_TYPE.BROWN)
                 end
@@ -1946,6 +2297,20 @@ M.functions = {
             end,
         },
 
+        ['테이블리로드'] = {
+            ['privilege'] = ROLE.ADMIN,
+            ['usage'] = '- json/xlsx 데이터 테이블 리로드',
+            ['command'] = function (me, args)
+                local ok, err = reload_table()
+                if ok then
+                    me:message("테이블 리로드를 요청했습니다. 완료되면 관리자에게 알림이 갑니다.", MESSAGE_TYPE.BROWN)
+                else
+                    me:message(err or "테이블 리로드에 실패했습니다.")
+                end
+                return true
+            end,
+        },
+
         ['HTTP지연'] = {
             ['privilege'] = ROLE.ADMIN,
             ['usage'] = '[밀리초] - HTTP 응답 지연 조회/설정 (테스트용)',
@@ -1998,7 +2363,7 @@ M.functions = {
 
         ['이속'] = {
             ['privilege'] = ROLE.ADMIN,
-            ['usage'] = '[0-5] - 기본 이속(base_speed) 조회/설정 (유효값=base+buff, clamp 0~5)',
+            ['usage'] = '[0-5] (6.51 GM은 0-10) - 기본 이속(base_speed) 조회/설정',
             ['command'] = function (me, args)
                 if #args == 0 then
                     me:message(string.format("이속 base=%d buff=%d effective=%d",
@@ -2007,8 +2372,8 @@ M.functions = {
                 end
 
                 local value = tonumber(args[1])
-                if value == nil or value < 0 or value > 5 or value ~= math.floor(value) then
-                    me:message("사용법: /이속 [0-5]")
+                if value == nil or value < 0 or value > 10 or value ~= math.floor(value) then
+                    me:message("사용법: /이속 [0-5] (6.51 GM은 0-10)")
                     return true
                 end
 

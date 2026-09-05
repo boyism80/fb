@@ -15,7 +15,7 @@
 
 using namespace fb::lua;
 
-void fb::lua::report_load_failed(std::string_view path)
+void fb::lua::report_load_failed(std::string_view path, std::string_view error)
 {
 #if defined DEBUG || defined _DEBUG
     if (path.empty())
@@ -27,13 +27,30 @@ void fb::lua::report_load_failed(std::string_view path)
 
     static auto logs  = std::set<std::string>{};
     static auto mutex = std::mutex{};
-    auto        key   = std::string(path);
+    auto        key   = error.empty() ? std::string(path) : std::format("{}|{}", path, error);
     auto        _     = std::lock_guard(mutex);
     if (logs.contains(key))
         return;
 
     logs.insert(key);
-    fb::logger::warn("cannot load script {}", path);
+    if (error.empty())
+        fb::logger::warn("cannot load script {}", path);
+    else
+        fb::logger::warn("cannot load script {}: {}", path, error);
+#endif
+}
+
+void fb::lua::report_load_failed_from_stack(lua_State* L, std::string_view path)
+{
+#if defined DEBUG || defined _DEBUG
+    const char* raw = L != nullptr ? lua_tostring(L, -1) : nullptr;
+    auto        err = raw != nullptr ? std::string(raw) : std::string{};
+    if (L != nullptr)
+        lua_pop(L, 1);
+    report_load_failed(path, err);
+#else
+    if (L != nullptr)
+        lua_pop(L, 1);
 #endif
 }
 
@@ -836,7 +853,7 @@ bool root::dump(std::string_view path)
 
     if (luaL_loadfile(*this, path_str.c_str()) != LUA_OK)
     {
-        context::pop(1); // pop error message
+        report_load_failed_from_stack(*this, path_str);
         this->_bytecodes[path_str] = std::vector<char>{};
         return false;
     }
@@ -860,13 +877,14 @@ bool root::dump(std::string_view path)
 
     if (lua_pcall(*this, 0, 1, 0) != LUA_OK)
     {
-        context::pop(1);
+        report_load_failed_from_stack(*this, path_str);
         this->_bytecodes[path_str].clear();
         return false;
     }
 
     if (this->store_module(*this, path_str) == false)
     {
+        report_load_failed(path_str, "module must return a table");
         this->_bytecodes[path_str].clear();
         return false;
     }
@@ -957,6 +975,12 @@ void root::release(context& ctx)
         if (lua_status(ctx) != LUA_OK)
             throw std::runtime_error("lua ctx's current state is not LUA_OK");
 
+        if (ctx.ref != LUA_NOREF)
+        {
+            luaL_unref(ctx, LUA_REGISTRYINDEX, ctx.ref);
+            ctx.ref = LUA_NOREF;
+        }
+
         lua_settop(ctx, 0);
         ctx.parent(nullptr);
         ctx.options(call_options{});
@@ -991,6 +1015,12 @@ void root::revoke(context& ctx)
     auto it = this->busy.find(ctx);
     if (it == this->busy.end())
         return;
+
+    if (ctx.ref != LUA_NOREF)
+    {
+        luaL_unref(ctx, LUA_REGISTRYINDEX, ctx.ref);
+        ctx.ref = LUA_NOREF;
+    }
 
     ctx.clear_call_engaged();
     this->busy.erase(it);

@@ -25,7 +25,8 @@ endpoint::endpoint(const endpoint& right) :
 namespace fb::protocol::gateway::request {
 
 #ifndef BOT
-void server_list::deserialize(fb::stream_reader<big_endian>& reader)
+template <CLIENT_VERSION V>
+void server_list<V>::deserialize(fb::stream_reader<big_endian>& reader)
 {
     header::deserialize(reader);
     this->action = reader.read<uint8_t>();
@@ -33,12 +34,14 @@ void server_list::deserialize(fb::stream_reader<big_endian>& reader)
         this->index = reader.read<uint8_t>();
 }
 #else
-server_list::server_list(uint8_t action, uint8_t index) :
+template <CLIENT_VERSION V>
+server_list<V>::server_list(uint8_t action, uint8_t index) :
     action(action),
     index(index)
 { }
 
-void server_list::serialize(fb::stream_writer<big_endian>& writer) const
+template <CLIENT_VERSION V>
+void server_list<V>::serialize(fb::stream_writer<big_endian>& writer) const
 {
     header::serialize(writer);
     writer.write<uint8_t>(opcode);
@@ -48,6 +51,10 @@ void server_list::serialize(fb::stream_writer<big_endian>& writer) const
         writer.write<uint8_t>(this->index);
 }
 #endif
+
+template class server_list<CLIENT_VERSION::v550>;
+template class server_list<CLIENT_VERSION::v565>;
+template class server_list<CLIENT_VERSION::v651>;
 
 } // namespace fb::protocol::gateway::request
 

@@ -1,7 +1,7 @@
 #include <fb/model/model.h>
 
-const fb::model::promotion* fb::model::__promotion::operator() (fb::model::enum_value::CLASS cls,
-                                                                uint8_t                      promotion) const
+const fb::model::promotion* fb::model::___promotion::operator() (fb::model::enum_value::CLASS cls,
+                                                                 uint8_t                      promotion) const
 {
     try
     {
@@ -14,9 +14,9 @@ const fb::model::promotion* fb::model::__promotion::operator() (fb::model::enum_
     }
 }
 
-bool fb::model::__promotion::name2class(std::string_view              name,
-                                        fb::model::enum_value::CLASS& cls,
-                                        uint8_t&                      promotion) const
+bool fb::model::___promotion::name2class(std::string_view              name,
+                                         fb::model::enum_value::CLASS& cls,
+                                         uint8_t&                      promotion) const
 {
     for (const auto& [k1, v1] : *this)
     {
@@ -34,7 +34,7 @@ bool fb::model::__promotion::name2class(std::string_view              name,
     return false;
 }
 
-bool fb::model::__promotion::class2name(fb::model::enum_value::CLASS cls, uint8_t promotion, std::string& name) const
+bool fb::model::___promotion::class2name(fb::model::enum_value::CLASS cls, uint8_t promotion, std::string& name) const
 {
     if (this->contains(cls) == false)
         return false;

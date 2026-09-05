@@ -1,15 +1,17 @@
 #include <fb/game/handler/protocol/user_list.h>
 #include <fb/game/server.h>
 
-using namespace fb::game::handler::protocol;
-
 namespace game_reqs = fb::protocol::game::request;
 
-user_list::user_list(fb::game::server& server) :
-    fb::handler::protocol<fb::game::server, game_reqs::user_list>(server)
+namespace fb::game::handler::protocol {
+
+template <fb::protocol::CLIENT_VERSION V>
+user_list<V>::user_list(fb::game::server& server) :
+    fb::handler::protocol<fb::game::server, game_reqs::user_list<V>>(server)
 { }
 
-async::task<bool> user_list::handle(fb::socket<character>& session, game_reqs::user_list& request)
+template <fb::protocol::CLIENT_VERSION V>
+async::task<bool> user_list<V>::handle(fb::socket<character>& session, game_reqs::user_list<V>& request)
 {
     auto ch = session.data();
     if (ch->inited() == false)
@@ -18,3 +20,9 @@ async::task<bool> user_list::handle(fb::socket<character>& session, game_reqs::u
     co_await ch->show_user_list();
     co_return true;
 }
+
+template class user_list<fb::protocol::CLIENT_VERSION::v550>;
+template class user_list<fb::protocol::CLIENT_VERSION::v565>;
+template class user_list<fb::protocol::CLIENT_VERSION::v651>;
+
+} // namespace fb::game::handler::protocol

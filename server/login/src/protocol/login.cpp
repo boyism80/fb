@@ -2,15 +2,25 @@
 
 namespace fb::protocol::login::request {
 
+#ifdef BOT
+template <CLIENT_VERSION V>
+login<V>::login(std::string_view id, std::string_view pw) :
+    id(std::string(id)),
+    pw(std::string(pw))
+{ }
+#endif
+
 #ifndef BOT
-void login::deserialize(fb::stream_reader<big_endian>& reader)
+template <CLIENT_VERSION V>
+void login<V>::deserialize(fb::stream_reader<big_endian>& reader)
 {
     header::deserialize(reader);
     this->id = reader.read<std::string, uint8_t>();
     this->pw = reader.read<std::string, uint8_t>();
 }
 #else
-void login::serialize(fb::stream_writer<big_endian>& writer) const
+template <CLIENT_VERSION V>
+void login<V>::serialize(fb::stream_writer<big_endian>& writer) const
 {
     header::serialize(writer);
     writer.write<uint8_t>(opcode);
@@ -18,5 +28,9 @@ void login::serialize(fb::stream_writer<big_endian>& writer) const
     writer.write<std::string, uint8_t>(this->pw);
 }
 #endif
+
+template class login<CLIENT_VERSION::v550>;
+template class login<CLIENT_VERSION::v565>;
+template class login<CLIENT_VERSION::v651>;
 
 } // namespace fb::protocol::login::request

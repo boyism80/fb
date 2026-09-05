@@ -7,6 +7,7 @@
 #include <async/propagation.h>
 #include <async/task.h>
 #include <thread>
+#include <atomic>
 
 namespace fb {
 
@@ -30,7 +31,8 @@ public:
     using handle_callback_type = std::function<async::task<void>(const fb::model::datetime&, std::thread::id)>;
 
 private:
-    bool _canceled = false;
+    bool              _canceled = false;
+    std::atomic<bool> _running{false};
 
 public:
     const handle_callback_type      fn;
@@ -61,6 +63,22 @@ public:
     bool canceled() const
     {
         return this->_canceled;
+    }
+
+    bool running() const
+    {
+        return this->_running.load(std::memory_order_acquire);
+    }
+
+    bool try_begin_run()
+    {
+        bool expected = false;
+        return this->_running.compare_exchange_strong(expected, true, std::memory_order_acq_rel);
+    }
+
+    void end_run()
+    {
+        this->_running.store(false, std::memory_order_release);
     }
 };
 

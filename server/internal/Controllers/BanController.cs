@@ -40,7 +40,7 @@ namespace Internal.Controllers
                 };
 
                 // Publish notification via RabbitMQ
-                await _rabbitMqService.PublishAsync(response, "amq.direct", $"fb.{request.World}.ban");
+                await _rabbitMqService.PublishFanoutAsync(response, "ban", request.World);
 
                 return response;
             }
@@ -80,7 +80,7 @@ namespace Internal.Controllers
                 };
 
                 // Publish notification via RabbitMQ
-                await _rabbitMqService.PublishAsync(response, "amq.direct", $"fb.{request.World}.unban");
+                await _rabbitMqService.PublishFanoutAsync(response, "ban", request.World);
 
                 return response;
             }

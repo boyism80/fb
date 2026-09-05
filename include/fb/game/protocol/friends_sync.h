@@ -28,9 +28,7 @@ public:
 
 public:
 #ifndef BOT
-    explicit friends_sync(uint8_t enabled) :
-        enabled(enabled)
-    { }
+    explicit friends_sync(uint8_t enabled);
 #else
     friends_sync() = default;
 #endif

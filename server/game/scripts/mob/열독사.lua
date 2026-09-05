@@ -1,4 +1,7 @@
 return {
+    -- on_mob_action = function(me, you)
+    -- end,
+
     -- on_mob_attack = function(me, you)
     -- end,
 

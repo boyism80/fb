@@ -31,11 +31,11 @@ std::optional<fb::model::datetime> fb::model::item::expire_time(const fb::model:
     return now + this->duration.value();
 }
 
-fb::model::item* fb::model::__item::name2item(std::string_view name) const
+fb::model::item* fb::model::___item::name2item(std::string_view name) const
 {
-    static const __item* cache_owner = nullptr;
-    static auto          cache       = std::unordered_map<std::string, fb::model::item*>{};
-    static auto          cache_mutex = std::shared_mutex{};
+    static const ___item* cache_owner = nullptr;
+    static auto           cache       = std::unordered_map<std::string, fb::model::item*>{};
+    static auto           cache_mutex = std::shared_mutex{};
 
     auto name_str = std::string(name);
     {
@@ -66,11 +66,11 @@ fb::model::item* fb::model::__item::name2item(std::string_view name) const
     return nullptr;
 }
 
-std::vector<fb::model::item*> fb::model::__item::name2item_prefix(std::string_view prefix) const
+std::vector<fb::model::item*> fb::model::___item::name2item_prefix(std::string_view prefix) const
 {
-    static const __item* cache_owner  = nullptr;
-    static auto          sorted_items = std::map<std::string, fb::model::item*>{};
-    static auto          cache_mutex  = std::shared_mutex{};
+    static const ___item* cache_owner  = nullptr;
+    static auto           sorted_items = std::map<std::string, fb::model::item*>{};
+    static auto           cache_mutex  = std::shared_mutex{};
 
     {
         auto lock = std::unique_lock(cache_mutex);

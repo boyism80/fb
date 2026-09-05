@@ -8,7 +8,8 @@ namespace fb::protocol::response {
 class transfer : public fb::protocol::header
 {
 public:
-    static constexpr uint8_t opcode = 0x03;
+    static constexpr uint8_t opcode  = 0x03;
+    static constexpr bool    decrypt = false;
 
 public:
 #ifdef BOT

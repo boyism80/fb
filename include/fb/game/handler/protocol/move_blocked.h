@@ -12,7 +12,8 @@ namespace game_reqs = fb::protocol::game::request;
  * Handler for client packet 0x69 (move blocked).
  * Performs no action; packet is consumed and ignored (same as original map server).
  */
-class move_blocked : public fb::handler::protocol<fb::game::server, game_reqs::move_blocked>
+template <fb::protocol::CLIENT_VERSION V>
+class move_blocked : public fb::handler::protocol<fb::game::server, game_reqs::move_blocked<V>>
 {
 public:
     move_blocked(fb::game::server& server);
@@ -21,7 +22,7 @@ public:
     move_blocked& operator= (const move_blocked&) = delete;
     move_blocked& operator= (move_blocked&&)      = delete;
 
-    async::task<bool> handle(fb::socket<character>& session, game_reqs::move_blocked& request) override;
+    async::task<bool> handle(fb::socket<character>& session, game_reqs::move_blocked<V>& request) override;
 };
 
 } // namespace fb::game::handler::protocol

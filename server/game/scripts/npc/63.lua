@@ -63,7 +63,7 @@ local function do_hair_style(me, npc)
                 me:dialog(npc, '금액이 ' .. (price - money) .. '전 부족합니다.', { prev = false, next = false })
                 return
             end
-            me:look(face)
+            me:hair(face)
             me:money(money - price)
             me:dialog(npc, '선택하신 머리로 설정해 드렸습니다.', { prev = false, next = false })
             return
@@ -127,9 +127,9 @@ return {
         if button == DIALOG_RESULT.QUIT then
             return
         end
-        if index == '머리모양을 바꾸고 싶어요' then
+        if index == 1 then
             do_hair_style(me, npc)
-        elseif index == '머리염색' then
+        elseif index == 2 then
             do_hair_dye(me, npc)
         end
     end

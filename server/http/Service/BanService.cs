@@ -1,4 +1,4 @@
-﻿using Fb.Model.EnumValue;
+using Fb.Model.EnumValue;
 using Http.Model;
 
 namespace Http.Service
@@ -20,8 +20,10 @@ namespace Http.Service
         public async Task<BanResult> Ban(uint world, string name, string reason, uint? days)
         {
             // Get user ID from name
-            var userId = await _dbContext.Character.GetCharacterId(world, name) ??
+            var row = await _dbContext.Character.GetCharacterRef(name) ??
                 throw new LogicException(ErrorCode.NotFoundCharacter);
+            world = row.World;
+            var userId = row.Id;
 
             // Calculate expire date
             DateTime? expireDate = null;
@@ -68,8 +70,10 @@ namespace Http.Service
         public async Task<UnbanResult> Unban(uint world, string name)
         {
             // Get user ID from name
-            var userId = await _dbContext.Character.GetCharacterId(world, name) ??
+            var row = await _dbContext.Character.GetCharacterRef(name) ??
                 throw new LogicException(ErrorCode.NotFoundCharacter);
+            world = row.World;
+            var userId = row.Id;
 
             // Check if ban exists
             var ban = await _dbContext.Ban.Get(world, userId);

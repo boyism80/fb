@@ -3,16 +3,19 @@
 #include <fb/encoding.h>
 #include <json/json.h>
 
-using namespace fb::game::handler::protocol;
 using table = fb::model::table;
 
 namespace game_reqs = fb::protocol::game::request;
 
-item_combine::item_combine(fb::game::server& server) :
-    fb::handler::protocol<fb::game::server, game_reqs::item_combine>(server)
+namespace fb::game::handler::protocol {
+
+template <fb::protocol::CLIENT_VERSION V>
+item_combine<V>::item_combine(fb::game::server& server) :
+    fb::handler::protocol<fb::game::server, game_reqs::item_combine<V>>(server)
 { }
 
-async::task<bool> item_combine::handle(fb::socket<character>& session, game_reqs::item_combine& request)
+template <fb::protocol::CLIENT_VERSION V>
+async::task<bool> item_combine<V>::handle(fb::socket<character>& session, game_reqs::item_combine<V>& request)
 {
     auto ch = session.data();
     if (ch->inited() == false)
@@ -28,7 +31,7 @@ async::task<bool> item_combine::handle(fb::socket<character>& session, game_reqs
         if (item == nullptr)
             continue;
 
-        auto& model = item->based<fb::model::item>();
+        auto& model = item->model();
         dsl.push_back(fb::model::dsl::item(model.id, item->count(), std::nullopt, std::nullopt, 100.0));
     }
 
@@ -88,7 +91,7 @@ async::task<bool> item_combine::handle(fb::socket<character>& session, game_reqs
         auto  remain     = params.count;
         while (remain > 0)
         {
-            auto item  = this->server.make<fb::game::item>(table::item[params.id]);
+            auto item  = this->server.template make<fb::game::item>(table::item[params.id]);
             auto count = std::min<uint16_t>(model.capacity, remain);
             item->count(count);
             std::ignore  = co_await ch->items.add(item);
@@ -128,3 +131,9 @@ async::task<bool> item_combine::handle(fb::socket<character>& session, game_reqs
 
     co_return true;
 }
+
+template class item_combine<fb::protocol::CLIENT_VERSION::v550>;
+template class item_combine<fb::protocol::CLIENT_VERSION::v565>;
+template class item_combine<fb::protocol::CLIENT_VERSION::v651>;
+
+} // namespace fb::game::handler::protocol

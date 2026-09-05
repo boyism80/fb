@@ -7,12 +7,13 @@ using namespace fb::model;
 
 namespace internal_reqs = fb::protocol::internal::request;
 
-complete::complete(fb::login::server& server) :
-    fb::handler::protocol<fb::login::server, fb::protocol::login::request::complete>(server)
+template <fb::protocol::CLIENT_VERSION V>
+complete<V>::complete(fb::login::server& server) :
+    fb::handler::protocol<fb::login::server, login_reqs::complete<V>>(server)
 { }
 
-async::task<bool> complete::handle(fb::socket<fb::login::session>&         session,
-                                   fb::protocol::login::request::complete& request)
+template <fb::protocol::CLIENT_VERSION V>
+async::task<bool> complete<V>::handle(fb::socket<fb::login::session>& session, login_reqs::complete<V>& request)
 {
     auto fd   = session.fd();
     auto weak = session.weak_from_this_as<fb::socket<fb::login::session>>();
@@ -20,6 +21,9 @@ async::task<bool> complete::handle(fb::socket<fb::login::session>&         sessi
     try
     {
         auto session_data = session.data();
+        if (session_data == nullptr)
+            throw std::runtime_error("session is not established");
+
         if (session_data->pk == -1)
             throw std::exception();
 
@@ -31,12 +35,16 @@ async::task<bool> complete::handle(fb::socket<fb::login::session>&         sessi
         if (gender != GENDER::MALE && gender != GENDER::FEMALE)
             throw id_exception(_TEXT(MESSAGE_CLIENT_GENDER_INVALID));
 
-        auto creature = static_cast<CREATURE>(request.creature);
-        if (creature != CREATURE::PHOENIX && creature != CREATURE::TIGER && creature != CREATURE::TURTLE &&
-            creature != CREATURE::DRAGON)
-            throw id_exception(_TEXT(MESSAGE_CLIENT_CREATURE_INVALID));
+        auto divine_beast = static_cast<DIVINE_BEAST>(request.divine_beast);
+        if (divine_beast != DIVINE_BEAST::VERMILION_BIRD && divine_beast != DIVINE_BEAST::WHITE_TIGER &&
+            divine_beast != DIVINE_BEAST::BLACK_TORTOISE && divine_beast != DIVINE_BEAST::AZURE_DRAGON)
+            throw id_exception(_TEXT(MESSAGE_CLIENT_DIVINE_BEAST_INVALID));
 
-        auto   world    = fb::config<uint32_t>("world");
+        auto world = fb::config<uint32_t>("world");
+        auto face  = uint8_t{0};
+        if constexpr (V == fb::protocol::CLIENT_VERSION::v651)
+            face = request.face;
+
         auto&& response = co_await this->server.http.post("internal",
                                                           "/account/make",
                                                           internal_reqs::MakeCharacter{world,
@@ -44,7 +52,8 @@ async::task<bool> complete::handle(fb::socket<fb::login::session>&         sessi
                                                                                        request.hair,
                                                                                        request.gender,
                                                                                        request.nation,
-                                                                                       request.creature});
+                                                                                       request.divine_beast,
+                                                                                       face});
         co_await this->server.threads.switching(weak);
 
         if (response.success == false)
@@ -68,3 +77,7 @@ async::task<bool> complete::handle(fb::socket<fb::login::session>&         sessi
 
     co_return true;
 }
+
+template class complete<fb::protocol::CLIENT_VERSION::v550>;
+template class complete<fb::protocol::CLIENT_VERSION::v565>;
+template class complete<fb::protocol::CLIENT_VERSION::v651>;

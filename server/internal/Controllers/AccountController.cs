@@ -109,12 +109,14 @@ namespace Internal.Controllers
         {
             try
             {
-                var uid = await _dbContext.Character.GetCharacterId(world, name) ??
-                throw new LogicException(ErrorCode.NotFoundCharacter);
+                var row = await _dbContext.Character.GetCharacterRef(name) ??
+                    throw new LogicException(ErrorCode.NotFoundCharacter);
+                if (row.World != world)
+                    throw new LogicException(ErrorCode.NotFoundCharacter);
 
                 return new Response.GetUid
                 {
-                    Uid = uid,
+                    Uid = row.Id,
                     Success = true
                 };
             }
@@ -157,7 +159,7 @@ namespace Internal.Controllers
         public async Task<Response.ReserveName> ReserveName(Request.ReserveName request)
         {
             var world = request.World;
-            await using var connection = _dbContext.GetGlobalConnection(world);
+            await using var connection = _dbContext.GetUnifiedConnection();
             var result = await connection.QueryFirstAsync<ReserveNameResult>("USP_NAME_SET", new
             {
                 uname = request.Name,
@@ -228,8 +230,8 @@ namespace Internal.Controllers
                     };
                 }
 
-                if (request.Creature != (byte)Creature.Phoenix && request.Creature != (byte)Creature.Tiger &&
-                    request.Creature != (byte)Creature.Turtle && request.Creature != (byte)Creature.Dragon)
+                if (request.DivineBeast != (byte)DivineBeast.VermilionBird && request.DivineBeast != (byte)DivineBeast.WhiteTiger &&
+                    request.DivineBeast != (byte)DivineBeast.BlackTortoise && request.DivineBeast != (byte)DivineBeast.AzureDragon)
                 {
                     return new Response.MakeCharacter
                     {
@@ -241,10 +243,11 @@ namespace Internal.Controllers
                 var ch = await _dbContext.Character.Get(world, request.Uid) ??
                     throw new Exception($"user {request.Uid} not found");
 
-                ch.Look = request.Hair;
+                ch.Hair = request.Hair;
+                ch.Face = request.Face;
                 ch.Gender = request.Gender;
                 ch.Nation = request.Nation;
-                ch.Creature = request.Creature;
+                ch.DivineBeast = request.DivineBeast;
                 _dbContext.Character.Set(world, ch);
 
                 await _dbContext.SaveChangesAsync();

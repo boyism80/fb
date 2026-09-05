@@ -63,7 +63,7 @@ struct game_bot
     static int builtin_drop_item(lua_State* L);
     static int builtin_drop_money(lua_State* L);
     static int builtin_change_class(lua_State* L);
-    static int builtin_apply_item_condition(lua_State* L);
+    static int builtin_item_condition(lua_State* L);
     static int builtin_reverse_item_condition(lua_State* L);
     static int builtin_invite_group(lua_State* L);
     static int builtin_leave_group(lua_State* L);

@@ -3,6 +3,12 @@
 namespace fb::protocol::game::response {
 
 #ifndef BOT
+update_cc::update_cc(const fb::game::life& value) :
+    life(value)
+{ }
+#endif
+
+#ifndef BOT
 void update_cc::serialize(fb::stream_writer<big_endian>& writer) const
 {
     header::serialize(writer);

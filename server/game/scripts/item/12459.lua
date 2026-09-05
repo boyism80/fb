@@ -1,8 +1,10 @@
 -- item: 채집통 [9 마리]
+local jar = require('lib.butterfly_jar')
 
 return {
-    -- on_activated = function(me, item)
-    -- end,
+    on_activated = function(me, item)
+        jar.shake(me, item)
+    end,
 
     -- on_deactivated = function(me, item)
     -- end,

@@ -3,7 +3,7 @@ local enum = require('lib.enum')
 
 return {
     on_click = function(me, npc)
-        if property("sesi_rightnow") ~= 1 then
+        if not require('lib.festival').is('설날') then
             me:dialog(npc, "......", { prev = false, next = false })
             return
         end

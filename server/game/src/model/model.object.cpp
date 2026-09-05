@@ -17,10 +17,10 @@ fb::model::enum_value::OBJECT_TYPE fb::model::object::what() const
 
 bool fb::model::object::operator== (const fb::model::object& r) const
 {
-    return this == &r;
+    return this->id == r.id && this->what() == r.what();
 }
 
 bool fb::model::object::operator!= (const fb::model::object& r) const
 {
-    return this != &r;
+    return !(*this == r);
 }

@@ -4,9 +4,10 @@ using table = fb::model::table;
 using namespace fb::protocol::game::response;
 
 #ifndef BOT
-map_worlds::map_worlds(uint32_t id, uint16_t index) :
+map_worlds::map_worlds(uint32_t id, uint16_t index, bool use_offset_new) :
     id(id),
-    index(index)
+    index(index),
+    use_offset_new(use_offset_new)
 { }
 #endif
 
@@ -27,9 +28,10 @@ void map_worlds::serialize(fb::stream_writer<big_endian>& writer) const
 
     for (int i = 0; i < points.size(); i++)
     {
-        auto& point = points[i];
-        writer.write<uint16_t>(point.offset.x);
-        writer.write<uint16_t>(point.offset.y);
+        auto& point  = points[i];
+        auto& offset = this->use_offset_new ? point.offset_new : point.offset;
+        writer.write<uint16_t>(offset.x);
+        writer.write<uint16_t>(offset.y);
         writer.write<std::string, uint8_t>(point.name);
         writer.write<uint16_t>(static_cast<uint16_t>(this->id)); // world_value → 0x3F value
         writer.write<uint16_t>(this->id);

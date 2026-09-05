@@ -25,7 +25,7 @@ return {
     			['desc'] = '자신의 체력을 약간 회복하는 기술로써, ',
     			['material'] = {{['name'] = '도토리', ['count'] = 20}, {['name'] = '토끼고기', ['count'] = 10}}
     		},
-    		[spell.creature_spell(me:creature(), 1)] = {
+    		[spell.divine_beast_spell(me:divine_beast(), 1)] = {
     			['level'] = 12,
     			['desc'] = '신수의 속성을 가진 원거리 마법이네멀리서도 적을 공격할 수 있는 기술이네',
     			['material'] = {{['name'] = '도토리', ['count'] = 20}, {['name'] = '토끼고기', ['count'] = 10}}

@@ -80,7 +80,7 @@ local CASES = {
     },
     {
         name = "부활",
-        response = resp.update_external_detailed,
+        response = resp.show,
         cast_type = "TARGET",
         pre = function(caster, target, state)
             caster:setup_bot_stats(100000, 100000)
@@ -95,7 +95,7 @@ local CASES = {
 
             local pos = target:position()
             local packet = caster:request(
-                resp.update_external_detailed,
+                resp.show,
                 protocol.spell_cast("TARGET", state.hell_slot, "", target:oid(), pos),
                 function(pkt)
                     return pkt.oid == target:oid() and pkt.state == "GHOST"

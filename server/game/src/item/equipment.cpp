@@ -19,10 +19,15 @@ fb::game::equipment::equipment(const equipment& right) :
 fb::game::equipment::~equipment()
 { }
 
+const fb::model::equipment& fb::game::equipment::model() const
+{
+    return static_cast<const fb::model::equipment&>(fb::model::table::item[this->_model_id]);
+}
+
 std::string fb::game::equipment::trade_name() const
 {
     std::stringstream sstream;
-    auto&             model      = this->based<fb::model::equipment>();
+    auto&             model      = this->model();
     float             percentage = this->_durability / float(model.durability) * 100;
     sstream << model.name << '(' << std::fixed << std::setprecision(1) << percentage << "%)";
 
@@ -40,7 +45,7 @@ async::task<bool> fb::game::equipment::active()
         co_return false;
 
     auto  parts = EQUIPMENT_PARTS::UNKNOWN;
-    auto& model = this->based<fb::model::equipment>();
+    auto& model = this->model();
 
     for (auto& dsl : model.condition)
     {
@@ -170,9 +175,6 @@ async::task<bool> fb::game::equipment::active()
         std::ignore = lua->call(3);
     }
 
-    // Call listener for packet response
-    owner->listener.on_equipment_on(*owner, *this, parts);
-
     co_return true;
 }
 
@@ -183,7 +185,7 @@ std::optional<uint32_t> fb::game::equipment::durability() const
 
 void fb::game::equipment::durability(uint32_t value)
 {
-    auto& model       = this->based<fb::model::equipment>();
+    auto& model       = this->model();
     this->_durability = std::max(uint32_t(0), std::min(model.durability, value));
 }
 
@@ -196,7 +198,7 @@ bool fb::game::equipment::durability_down(uint32_t value)
     if (owner == nullptr)
         return false;
 
-    auto& model  = this->based<fb::model::equipment>();
+    auto& model  = this->model();
     auto  before = this->_durability;
 
     if (value > this->_durability)
@@ -220,7 +222,7 @@ std::string fb::game::equipment::mid_message() const
 std::string fb::game::equipment::tip_message() const
 {
     std::stringstream sstream;
-    auto&             model = this->based<fb::model::equipment>();
+    auto&             model = this->model();
 
     sstream << this->name() << std::endl;
     sstream << "내구성: " << std::to_string(this->_durability) << '/' << std::to_string(model.durability) << ' '

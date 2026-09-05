@@ -1,6 +1,6 @@
 #include <fb/game/mst.recipe.h>
 
-fb::model::__recipe::__recipe() :
+fb::model::___recipe::___recipe() :
     fb::model::array_container<fb::model::recipe>(std::string_view("json/recipe.json"))
 {
     this->_root      = std::make_unique<fb::model::recipe_node>();
@@ -9,9 +9,9 @@ fb::model::__recipe::__recipe() :
     };
 }
 
-fb::model::__recipe::~__recipe() = default;
+fb::model::___recipe::~___recipe() = default;
 
-const fb::model::recipe* fb::model::__recipe::find(const std::vector<fb::model::dsl::item>& dsl) const
+const fb::model::recipe* fb::model::___recipe::find(const std::vector<fb::model::dsl::item>& dsl) const
 {
     auto gen          = this->_root->find(dsl);
     auto ptr          = (const fb::model::recipe*)nullptr;

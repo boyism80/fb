@@ -1,6 +1,7 @@
 {
     "id": 0,
     "name": "game-0",
+    "role": "home",
     "world": 1,
     "delay": 1,
     "ip": "__FB_HOST__",
@@ -53,5 +54,7 @@
     "drop_rate_multiplier": 100.0,
     "http": {
         "max_concurrent": 128
-    }
+    },
+    "meta_dat": "Meta.dat",
+    "sobj_tbl": "SObj.tbl"
 }

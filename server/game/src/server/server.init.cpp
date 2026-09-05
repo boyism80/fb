@@ -5,9 +5,12 @@
 #include <fb/lua.h>
 #include <fb/encoding.h>
 #include <fb/console.h>
+#include <fb/logger.h>
+#include <fb/amqp_route.h>
 #include <fb/protocol/flatbuffer/protocol.h>
 #include <json/json.h>
 #include <format>
+#include <boost/asio/post.hpp>
 
 using namespace fb::game;
 using namespace fb::model::enum_value;
@@ -28,12 +31,14 @@ async::task<void> fb::game::server::init_lua()
         lua.build<fb::game::quest, fb::lua::luable>();
         lua.build<fb::game::door, fb::lua::luable>();
         lua.build<fb::game::clan, fb::lua::luable>();
+        lua.build<fb::game::castle, fb::lua::luable>();
         lua.build<fb::game::clan_member, fb::lua::luable>();
         lua.build<fb::game::achievement, fb::lua::luable>();
         lua.build<fb::game::spell, fb::lua::luable>();
         lua.build<fb::game::buff, fb::lua::luable>();
         lua.build<fb::game::map, fb::thread_switchable>();
         lua.build<fb::game::matchmaker, fb::lua::luable>();
+        lua.build<fb::game::match, fb::lua::luable>();
         lua.build<fb::game::group, fb::thread_switchable>();
         lua.build<fb::game::object, fb::thread_switchable>();
         lua.build<fb::game::life, fb::game::object>();
@@ -60,6 +65,9 @@ async::task<void> fb::game::server::init_lua()
         lua.build("time_forward", builtin::server::builtin_time_forward);
         lua.build("time_backward", builtin::server::builtin_time_backward);
         lua.build("datetime", builtin::server::builtin_datetime);
+        lua.build("to_lunar", builtin::server::builtin_to_lunar);
+        lua.build("from_lunar", builtin::server::builtin_from_lunar);
+        lua.build("event_is", builtin::server::builtin_event_is);
         lua.build("name2mob", builtin::server::builtin_name2mob);
         lua.build("name2spell", builtin::server::builtin_name2spell);
         lua.build("name2item", builtin::server::builtin_name2item);
@@ -72,6 +80,9 @@ async::task<void> fb::game::server::init_lua()
         lua.build("id2npc", builtin::server::builtin_id2npc);
         lua.build("id2map", builtin::server::builtin_id2map);
         lua.build("id2ch", builtin::server::builtin_id2ch);
+        lua.build("id2clan", builtin::server::builtin_id2clan);
+        lua.build("castle", builtin::server::builtin_castle);
+        lua.build("siege_active", builtin::server::builtin_siege_active);
         lua.build("broadcast", builtin::server::builtin_broadcast);
         lua.build("assert_alive", builtin::server::builtin_assert_alive);
         lua.build("pursuit_sell", builtin::server::builtin_pursuit_sell);
@@ -79,6 +90,7 @@ async::task<void> fb::game::server::init_lua()
         lua.build("pursuit_buy", builtin::server::builtin_pursuit_buy);
         lua.build("timer", builtin::server::builtin_timer);
         lua.build("weather", builtin::server::builtin_weather);
+        lua.build("weather_reroll", builtin::server::builtin_weather_reroll);
         lua.build("bright", builtin::server::builtin_bright);
         lua.build("name_with", builtin::server::builtin_name_with);
         lua.build("assert_korean", builtin::server::builtin_assert_korean);
@@ -98,6 +110,8 @@ async::task<void> fb::game::server::init_lua()
         lua.build("drop_rate_multiplier", builtin::server::builtin_drop_rate_multiplier);
         lua.build("http_response_delay", builtin::server::builtin_http_response_delay);
         lua.build("property", builtin::server::builtin_property);
+        lua.build("match_transfer", builtin::server::builtin_match_transfer);
+        lua.build("is_cross", builtin::server::builtin_is_cross);
 
         fb::model::lua::map_enum(lua);
         fb::model::lua::map_const(lua);
@@ -141,11 +155,12 @@ async::task<void> fb::game::server::init_thread_params()
             for (const auto& map : maps)
             {
                 params->add_map(map);
-                if (table::mob_spawn->contains(map->model.id))
+                if (table::mob_spawn->contains(map->model().id))
                 {
-                    for (auto& spawn : table::mob_spawn[map->model.id])
+                    auto& spawns = table::mob_spawn[map->model().id];
+                    for (uint32_t i = 0; i < spawns.size(); i++)
                     {
-                        params->rezens.push_back(std::make_unique<fb::game::rezen>(*this, spawn, map));
+                        params->rezens.push_back(std::make_unique<fb::game::rezen>(*this, map->model().id, i, map));
                     }
                 }
             }
@@ -206,6 +221,10 @@ void fb::game::server::init_handlers()
     this->handler.protocol.bind<fb::game::handler::protocol::pong>();
     this->handler.protocol.bind<fb::game::handler::protocol::user_info_submit>();
     this->handler.protocol.bind<fb::game::handler::protocol::popup_input_submit>();
+    this->handler.protocol.bind<fb::game::handler::protocol::collection>(); // 6.51 collection UI
+    this->handler.protocol.bind<fb::game::handler::protocol::unknown_54>(); // 5.65+ 0x4F window round trip
+    this->handler.protocol.bind<fb::game::handler::protocol::browser>();    // 6.51 in-game IE window
+    this->handler.protocol.bind<fb::game::handler::protocol::web_map>();    // 6.51 web map
 }
 
 void fb::game::server::init_timers()
@@ -216,7 +235,8 @@ void fb::game::server::init_timers()
     this->bind_timer<fb::game::handler::timer::system_mail_timer>(1s);
     this->bind_timer<fb::game::handler::timer::system_storage_box_timer>(1s);
 
-    this->schedules.init();
+    if (fb::is_cross() == false)
+        this->schedules.init();
     auto announce_interval = std::chrono::seconds(fb::model::const_value::time::ANNOUNCE.total_milliseconds() / 1000);
     this->bind_timer<fb::game::handler::timer::announce>(announce_interval);
     this->bind_thread_timer<fb::game::handler::timer::mob_action_timer>(100ms);
@@ -235,38 +255,45 @@ void fb::game::server::init_timers()
 
 void fb::game::server::init_amqp_handlers()
 {
-    // clang-format off
-    auto world     = config<uint32_t>("world");
-    auto host_name = std::format("fb.{}.game.{}", world, config<uint32_t>("id"));
-    this->handler.amqp.bind<fb::game::handler::amqp::kick_out>(host_name);
-    this->handler.amqp.bind<fb::game::handler::amqp::whisper>(host_name);
-    this->handler.amqp.bind<fb::game::handler::amqp::shutdown>("fb.global"); // Shutdown: all servers
-    this->handler.amqp.bind<fb::game::handler::amqp::broadcast>(std::format("fb.{}.global", world));
-    this->handler.amqp.bind<fb::game::handler::amqp::broadcast_save>(std::format("fb.{}.system", world));
-    this->handler.amqp.bind<fb::game::handler::amqp::create_group>(std::format("fb.{}.group", world));
-    this->handler.amqp.bind<fb::game::handler::amqp::updated_group>(std::format("fb.{}.group", world));
-    this->handler.amqp.bind<fb::game::handler::amqp::destroy_group>(std::format("fb.{}.group", world));
-    this->handler.amqp.bind<fb::game::handler::amqp::create_clan>(std::format("fb.{}.clan", world));
-    this->handler.amqp.bind<fb::game::handler::amqp::destroy_clan>(std::format("fb.{}.clan", world));
-    this->handler.amqp.bind<fb::game::handler::amqp::updated_clan>(std::format("fb.{}.clan", world));
-    this->handler.amqp.bind<fb::game::handler::amqp::broadcast_clan>(std::format("fb.{}.clan", world));
-    this->handler.amqp.bind<fb::game::handler::amqp::write_mail>(std::format("fb.{}.mail", world));
-    this->handler.amqp.bind<fb::game::handler::amqp::write_mails>(std::format("fb.{}.mail", world));
-    this->handler.amqp.bind<fb::game::handler::amqp::deliver_system_mail>(std::format("fb.{}.mail", world));
-    this->handler.amqp.bind<fb::game::handler::amqp::write_storage_box>(std::format("fb.{}.storage", world));
-    this->handler.amqp.bind<fb::game::handler::amqp::deliver_system_storage>(std::format("fb.{}.storage", world));
-    this->handler.amqp.bind<fb::game::handler::amqp::ban>(std::format("fb.{}.ban", world));
-    this->handler.amqp.bind<fb::game::handler::amqp::set_exp_multiplier>(std::format("fb.{}.global", world));
-    this->handler.amqp.bind<fb::game::handler::amqp::reload_tables>(std::format("fb.{}.global", world));
-    this->handler.amqp.bind<fb::game::handler::amqp::reload_scripts>(std::format("fb.{}.global", world));
-    this->handler.amqp.bind<fb::game::handler::amqp::set_drop_rate_multiplier>(std::format("fb.{}.global", world));
-    this->handler.amqp.bind<fb::game::handler::amqp::set_datetime>(std::format("fb.{}.global", world));
-    this->handler.amqp.bind<fb::game::handler::amqp::start_maintenance>(std::format("fb.{}.game.{}", world, fb::config<uint32_t>("id")));
-    auto matchmaking_route = std::format("fb.{}.matchmaking", world);
-    this->handler.amqp.bind<fb::game::handler::amqp::matchmaking_proposed>(matchmaking_route);
-    this->handler.amqp.bind<fb::game::handler::amqp::matchmaking_ready>(matchmaking_route);
-    this->handler.amqp.bind<fb::game::handler::amqp::matchmaking_dissolved>(matchmaking_route);
-    // clang-format on
+    auto scope = fb::amqp_scope();
+    auto id    = fb::config<uint32_t>("id");
+    auto game  = fb::amqp_key("game", scope, id);
+
+    this->handler.amqp.bind<fb::game::handler::amqp::kick_out>(game);
+    this->handler.amqp.bind<fb::game::handler::amqp::whisper>(game);
+    this->handler.amqp.bind<fb::game::handler::amqp::friend_relation>(game);
+    this->handler.amqp.bind<fb::game::handler::amqp::friend_message>(game);
+    this->handler.amqp.bind<fb::game::handler::amqp::start_maintenance>(game);
+    this->handler.amqp.bind<fb::game::handler::amqp::shutdown>("fb.global");
+
+    this->handler.amqp.bind<fb::game::handler::amqp::create_clan>(fb::amqp_key("clan", scope));
+    this->handler.amqp.bind<fb::game::handler::amqp::destroy_clan>(fb::amqp_key("clan", scope));
+    this->handler.amqp.bind<fb::game::handler::amqp::updated_clan>(fb::amqp_key("clan", scope));
+    this->handler.amqp.bind<fb::game::handler::amqp::broadcast_clan>(fb::amqp_key("clan", scope));
+    this->handler.amqp.bind<fb::game::handler::amqp::create_group>(fb::amqp_key("group", scope));
+    this->handler.amqp.bind<fb::game::handler::amqp::updated_group>(fb::amqp_key("group", scope));
+    this->handler.amqp.bind<fb::game::handler::amqp::destroy_group>(fb::amqp_key("group", scope));
+    this->handler.amqp.bind<fb::game::handler::amqp::write_mail>(fb::amqp_key("mail", scope));
+    this->handler.amqp.bind<fb::game::handler::amqp::write_mails>(fb::amqp_key("mail", scope));
+    this->handler.amqp.bind<fb::game::handler::amqp::deliver_system_mail>(fb::amqp_key("mail", scope));
+    this->handler.amqp.bind<fb::game::handler::amqp::write_storage_box>(fb::amqp_key("storage", scope));
+    this->handler.amqp.bind<fb::game::handler::amqp::deliver_system_storage>(fb::amqp_key("storage", scope));
+    this->handler.amqp.bind<fb::game::handler::amqp::ban>(fb::amqp_key("ban", scope));
+    this->handler.amqp.bind<fb::game::handler::amqp::broadcast_save>(fb::amqp_key("system", scope));
+    this->handler.amqp.bind<fb::game::handler::amqp::matchmaking_proposed>(fb::amqp_key("matchmaking", scope));
+    this->handler.amqp.bind<fb::game::handler::amqp::matchmaking_ready>(fb::amqp_key("matchmaking", scope));
+    this->handler.amqp.bind<fb::game::handler::amqp::matchmaking_dissolved>(fb::amqp_key("matchmaking", scope));
+
+    if (scope != "cross")
+    {
+        this->handler.amqp.bind<fb::game::handler::amqp::updated_castle>(fb::amqp_key("castle", scope));
+        this->handler.amqp.bind<fb::game::handler::amqp::broadcast>(fb::amqp_key("global", scope));
+        this->handler.amqp.bind<fb::game::handler::amqp::set_datetime>(fb::amqp_key("global", scope));
+        this->handler.amqp.bind<fb::game::handler::amqp::set_exp_multiplier>(fb::amqp_key("global", scope));
+        this->handler.amqp.bind<fb::game::handler::amqp::set_drop_rate_multiplier>(fb::amqp_key("global", scope));
+        this->handler.amqp.bind<fb::game::handler::amqp::reload_tables>(fb::amqp_key("global", scope));
+        this->handler.amqp.bind<fb::game::handler::amqp::reload_scripts>(fb::amqp_key("global", scope));
+    }
 }
 
 async::task<void> fb::game::server::init_map_scripts()
@@ -295,11 +322,28 @@ async::task<void> fb::game::server::init_script()
 
     auto builder = init_thread->new_builder<void>();
     builder.func = [this](auto&) -> async::task<void> {
-        auto lua = this->lua.open();
-        if (lua)
+        // init.lua may call yielding builtins (e.g. map:model); run via call()/lua_resume,
+        // not load()/lua_pcall which cannot cross a C-call boundary.
+        static constexpr auto path = "scripts/init.lua";
+        auto                  lua  = this->lua.open();
+        if (!lua)
+            co_return;
+
+        auto* ctx = lua.get();
+        if (::luaL_loadfile(*ctx, path) != LUA_OK)
         {
-            if (lua->load("scripts/init.lua") == false)
-                fb::logger::warn("Server init script failed: cannot load scripts/init.lua");
+            fb::lua::report_load_failed_from_stack(*ctx, path);
+            fb::logger::warn("Server init script failed: {}", path);
+            co_return;
+        }
+
+        try
+        {
+            std::ignore = co_await lua->call(0);
+        }
+        catch (const std::exception& e)
+        {
+            fb::logger::warn("Server init script failed: {}: {}", path, e.what());
         }
         co_return;
     };
@@ -312,12 +356,16 @@ fb::game::server::server(boost::asio::io_context& io_context, uint16_t port) :
     listener(*this),
     characters(*this),
     clans(*this),
+    castles(*this),
     groups(*this),
+    matches(*this),
     mail(*this),
     bulletin(*this),
     system_storage(*this),
     system_mail(*this),
     schedules(*this),
+    script_timers(*this),
+    weather(*this),
     log(fb::config<std::string>("amqp:log:ip"),
         fb::config<uint16_t>("amqp:log:port"),
         fb::config<std::string>("amqp:log:uid"),
@@ -387,6 +435,9 @@ async::task<void> fb::game::server::on_start()
 
     co_await this->init_lua();
     co_await fb::model::loader(*this).run();
+    this->meta.load(fb::config<std::string>("meta_dat", std::string("Meta.dat")), true);
+    this->sobj.load(fb::config<std::string>("sobj_tbl", std::string("SObj.tbl")));
+    this->init_collection_mobs();
     co_await map_loader(*this).run();
     co_await script_loader(*this).run();
     co_await npc_spawner(*this).run();
@@ -400,6 +451,35 @@ async::task<void> fb::game::server::on_start()
     co_await this->init_map_scripts();
     this->init_handlers();
     this->init_timers();
+    this->weather.sync();
     this->init_amqp_handlers();
+    // HTTP needs io_context, which starts only after on_start returns.
+    // Queue castle warmup on the first game thread once IO is running.
+    boost::asio::post(this->io_context, [this]() {
+        auto* thread = this->threads.at(0);
+        if (thread == nullptr)
+        {
+            fb::logger::warn("castles: no game thread available for startup load");
+            return;
+        }
+
+        auto builder = thread->new_builder<void>();
+        builder.func = [this](auto&) -> async::task<void> {
+            try
+            {
+                if (fb::is_cross() == false)
+                {
+                    co_await this->castles.load_all();
+                    fb::logger::info("castles: loaded all divine beast castles");
+                }
+            }
+            catch (std::exception& e)
+            {
+                fb::logger::warn("castles: load_all failed: {}", e.what());
+            }
+            co_return;
+        };
+        builder.enqueue();
+    });
     co_await this->init_script();
 }

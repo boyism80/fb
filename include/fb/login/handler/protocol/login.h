@@ -11,7 +11,8 @@ namespace fb::login::handler::protocol {
 
 namespace login_reqs = fb::protocol::login::request;
 
-class login : public fb::handler::protocol<fb::login::server, login_reqs::login>
+template <fb::protocol::CLIENT_VERSION V>
+class login : public fb::handler::protocol<fb::login::server, login_reqs::login<V>>
 {
 public:
     login(fb::login::server& server);
@@ -20,7 +21,7 @@ public:
     login& operator= (const login&) = delete;
     login& operator= (login&&)      = delete;
 
-    async::task<bool> handle(fb::socket<fb::login::session>& session, login_reqs::login& request) override;
+    async::task<bool> handle(fb::socket<fb::login::session>& session, login_reqs::login<V>& request) override;
 
     /// <summary>
     /// Builds a ban message string with reason and expire date.

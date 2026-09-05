@@ -33,6 +33,7 @@ public:
 #ifndef BOT
     const uint32_t id;
     const uint16_t index;
+    const bool     use_offset_new;
 #else
     std::string              key;
     uint8_t                  world_count;
@@ -42,7 +43,7 @@ public:
 
 public:
 #ifndef BOT
-    map_worlds(uint32_t id, uint16_t index);
+    map_worlds(uint32_t id, uint16_t index, bool use_offset_new = false);
 #else
     map_worlds() = default;
 #endif

@@ -2,16 +2,19 @@
 #define __PROTOCOL_GAME_GIVE_H__
 
 #include <fb/protocol/header.h>
+#include <fb/protocol/client_version.h>
 #include <fb/model/model.h>
 
 namespace fb::protocol::game::request {
 
 using namespace fb::model::enum_value;
 
+template <CLIENT_VERSION V>
 class give_item : public fb::protocol::header
 {
 public:
     static constexpr uint8_t opcode = 0x29;
+    FB_PROTOCOL_VERSION_TAGS(V);
 
 public:
 #ifndef BOT
@@ -26,10 +29,7 @@ public:
 #ifndef BOT
     give_item() = default;
 #else
-    give_item(uint8_t slot, bool all) :
-        slot(slot),
-        all(all)
-    { }
+    give_item(uint8_t slot, bool all);
 #endif
 
 public:
@@ -40,10 +40,12 @@ public:
 #endif
 };
 
+template <CLIENT_VERSION V>
 class give_money : public fb::protocol::header
 {
 public:
     static constexpr uint8_t opcode = 0x2A;
+    FB_PROTOCOL_VERSION_TAGS(V);
 
 public:
 #ifndef BOT
@@ -56,9 +58,7 @@ public:
 #ifndef BOT
     give_money() = default;
 #else
-    give_money(uint32_t money) :
-        money(money)
-    { }
+    give_money(uint32_t money);
 #endif
 
 public:

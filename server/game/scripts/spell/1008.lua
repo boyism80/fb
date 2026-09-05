@@ -18,11 +18,11 @@ return {
     end,
 
     on_buff = function(me, sp)
-        me:dam(me:dam()+3)
+        me:buff_dam(me:buff_dam() + 3)
     end,
 
     on_unbuff = function(me, sp)
-        me:dam(me:dam()-3)
+        me:buff_dam(me:buff_dam() - 3)
     end,
 
     -- on_concast = function(me, sp)

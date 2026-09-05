@@ -21,6 +21,7 @@ namespace Http.Migration
             {
                 MigrationProfile.Internal => new[]
                 {
+                    MigrationScope.Unified,
                     MigrationScope.WorldGlobal,
                     MigrationScope.WorldData,
                     MigrationScope.UnifiedData,
@@ -46,13 +47,13 @@ namespace Http.Migration
                 {
                     "marketplace_listing",
                     "marketplace_purchase",
+                    "name_registry",
+                    "clan_name",
                 },
                 MigrationScope.UnifiedData => Array.Empty<string>(),
                 MigrationScope.WorldGlobal => new[]
                 {
-                    "name_registry",
-                    "clan_name",
-                    "USP_NAME_SET",
+                    "castle",
                 },
                 MigrationScope.WorldData => new[]
                 {

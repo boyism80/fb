@@ -19,7 +19,7 @@ namespace Runner.Service
             string arguments,
             string workingDirectory,
             TimeSpan timeout,
-            Action<string>? onOutput = null,
+            Action<string> onOutput = null,
             CancellationToken cancellationToken = default)
         {
             var stdout = new StringBuilder();
@@ -121,7 +121,7 @@ namespace Runner.Service
             string command,
             string workingDirectory,
             TimeSpan timeout,
-            Action<string>? onOutput = null,
+            Action<string> onOutput = null,
             CancellationToken cancellationToken = default)
         {
             return RunAsync("cmd.exe", $"/c {command}", workingDirectory, timeout, onOutput, cancellationToken);

@@ -1,4 +1,5 @@
 -- npc: 열쇠교환상
+
 local enum = require('lib.enum')
 
 local EXCHANGES = {
@@ -25,7 +26,7 @@ return {
             return
         end
 
-        local btn = me:dialog(npc, '오호 그런가? 보물열쇠를 가지고 오면 내가 바꿔주긴 하는데...', { prev = false, next = false })
+        local btn = me:dialog(npc, '오호 그런가? 보물열쇠를 가지고 오면 내가 바꿔주긴 하는데...', { prev = false, next = true })
         if btn == DIALOG_RESULT.QUIT then
             return
         end

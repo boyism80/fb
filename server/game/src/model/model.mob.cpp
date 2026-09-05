@@ -6,11 +6,11 @@
 #include <unordered_map>
 #include <shared_mutex>
 
-fb::model::mob* fb::model::__mob::name2mob(std::string_view name) const
+fb::model::mob* fb::model::___mob::name2mob(std::string_view name) const
 {
-    static const __mob* cache_owner = nullptr;
-    static auto         cache       = std::unordered_map<std::string, fb::model::mob*>{};
-    static auto         cache_mutex = std::shared_mutex{};
+    static const ___mob* cache_owner = nullptr;
+    static auto          cache       = std::unordered_map<std::string, fb::model::mob*>{};
+    static auto          cache_mutex = std::shared_mutex{};
 
     auto name_str = std::string(name);
     {

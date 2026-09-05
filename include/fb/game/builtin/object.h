@@ -17,6 +17,7 @@ struct object
     static int builtin_position(lua_State* L);
     static int builtin_front_position(lua_State* L);
     static int builtin_direction(lua_State* L);
+    static int builtin_move(lua_State* L);
     static int builtin_chat(lua_State* L);
     static int builtin_buff(lua_State* L);
     static int builtin_unbuff(lua_State* L);

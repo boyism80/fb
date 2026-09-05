@@ -11,12 +11,17 @@ using namespace fb::game;
 spell::spell(const fb::game::server& server, const life& owner, const fb::model::spell& model, uint16_t delay) :
     server(server),
     owner(owner),
-    model(model),
+    _model_id(model.id),
     _next(server.now() + std::chrono::seconds(delay))
 { }
 
 spell::~spell()
 { }
+
+const fb::model::spell& spell::model() const
+{
+    return fb::model::table::spell[this->_model_id];
+}
 
 void spell::delay(uint16_t value)
 {
@@ -68,7 +73,7 @@ std::shared_ptr<fb::game::spell> fb::game::spells::find(std::string_view name) c
         if (spell == nullptr)
             continue;
 
-        if (spell->model.name == name)
+        if (spell->model().name == name)
             return spell;
     }
 
@@ -89,7 +94,7 @@ std::shared_ptr<fb::game::spell> fb::game::spells::find(const fb::model::spell& 
         if (spell == nullptr)
             continue;
 
-        if (spell->model.id == model.id)
+        if (spell->model().id == model.id)
             return spell;
     }
 
@@ -116,8 +121,8 @@ uint8_t spells::add(std::shared_ptr<spell> element)
             auto  log_data             = Json::Value();
             log_data["character_id"]   = static_cast<Json::Int64>(ch.id);
             log_data["character_name"] = UTF8(ch.name(), PLATFORM::WINDOWS);
-            log_data["spell_id"]       = static_cast<Json::Int64>(element->model.id);
-            log_data["spell_name"]     = UTF8(element->model.name, PLATFORM::WINDOWS);
+            log_data["spell_id"]       = static_cast<Json::Int64>(element->model().id);
+            log_data["spell_name"]     = UTF8(element->model().name, PLATFORM::WINDOWS);
             log_data["slot"]           = index;
             ch.server.log.write("spell_add", log_data);
         }
@@ -145,8 +150,8 @@ uint8_t spells::add(std::shared_ptr<spell> element, uint8_t index)
             auto  log_data             = Json::Value();
             log_data["character_id"]   = static_cast<Json::Int64>(ch.id);
             log_data["character_name"] = UTF8(ch.name(), PLATFORM::WINDOWS);
-            log_data["spell_id"]       = static_cast<Json::Int64>(element->model.id);
-            log_data["spell_name"]     = UTF8(element->model.name, PLATFORM::WINDOWS);
+            log_data["spell_id"]       = static_cast<Json::Int64>(element->model().id);
+            log_data["spell_name"]     = UTF8(element->model().name, PLATFORM::WINDOWS);
             log_data["slot"]           = index;
             ch.server.log.write("spell_add", log_data);
         }
@@ -241,14 +246,19 @@ bool spells::swap(uint8_t src, uint8_t dst)
 
 buff::buff(const fb::game::server& server, const fb::model::spell& model, const object* caster, uint32_t seconds) :
     server(server),
-    model(model),
     caster(caster),
     start(server.now()),
+    _model_id(model.id),
     _duration(std::chrono::seconds(seconds))
 { }
 
 buff::~buff()
 { }
+
+const fb::model::spell& buff::model() const
+{
+    return fb::model::table::spell[this->_model_id];
+}
 
 const fb::model::timespan& buff::duration() const
 {
@@ -288,6 +298,37 @@ buffs::buffs(const buffs& other) :
 buffs::~buffs()
 { }
 
+std::shared_ptr<buff> buffs::find(uint32_t id) const
+{
+    this->_owner.assert_thread();
+
+    auto it = super::find(id);
+    if (it == super::end())
+        return nullptr;
+
+    return it->second;
+}
+
+void buffs::discard_expired(uint32_t id)
+{
+    this->_owner.assert_thread();
+
+    auto buff = this->find(id);
+    if (buff == nullptr || buff->remaining() > 0ms)
+        return;
+
+    this->_owner.listener.on_unbuff(this->_owner, *buff);
+    this->erase(id);
+}
+
+bool buffs::contains(uint32_t id) const
+{
+    this->_owner.assert_thread();
+
+    auto buff = this->find(id);
+    return buff != nullptr && buff->remaining() > 0ms;
+}
+
 bool buffs::contains(const fb::model::spell& model) const
 {
     this->_owner.assert_thread();
@@ -299,9 +340,11 @@ bool buffs::push_back(const std::shared_ptr<buff>& buff)
 {
     this->_owner.assert_thread();
 
-    auto& model = buff->model;
+    auto& model = buff->model();
     if (this->contains(model.id))
         return false;
+
+    this->discard_expired(model.id);
 
     this->insert({model.id, buff});
 
@@ -313,7 +356,7 @@ bool buffs::push_back(const std::shared_ptr<buff>& buff)
     if (lua)
     {
         lua->pushobject(this->_owner);
-        lua->pushobject(buff->model);
+        lua->pushobject(buff->model());
         std::ignore = lua->call(2);
     }
 
@@ -331,10 +374,12 @@ async::task<std::shared_ptr<buff>> buffs::push_back(const fb::model::spell&     
 
     if (this->contains(model.id))
     {
-        auto& buff = this->at(model.id);
+        auto buff = this->find(model.id);
         buff->remaining(std::chrono::seconds(seconds));
         co_return buff;
     }
+
+    this->discard_expired(model.id);
 
     auto& server  = this->_owner.server;
     auto  created = server.make<buff>(model, caster.get(), seconds);
@@ -358,34 +403,35 @@ async::task<bool> buffs::remove(uint32_t id)
 {
     this->_owner.assert_thread();
 
-    auto buff = this->operator[] (id);
+    auto buff = this->find(id);
     if (buff == nullptr)
         co_return false;
 
-    // Execute unbuff script
-    auto& model = buff->model;
-    auto  path  = std::format("scripts/spell/{}.lua", model.id);
-    auto  func  = "on_unbuff";
+    auto& model = buff->model();
 
-    auto lua = this->_owner.server.lua.open(path, func);
-    if (lua)
-    {
-        lua->pushobject(this->_owner);
-        lua->pushobject(buff->model);
-        std::ignore = lua->call(2);
-    }
-
-    // Call listener for packet response
+    // Notify client before the script runs. on_unbuff may warp the owner
+    // (e.g. spell 72), which changes the active thread and would make
+    // send/message assert if they ran afterward.
     this->_owner.listener.on_unbuff(this->_owner, *buff);
 
-    // Show unbuff message for characters
     if (this->_owner.is(OBJECT_TYPE::CHARACTER))
     {
         auto& ch = static_cast<character&>(this->_owner);
-        ch.message(std::format(_TEXT(MESSAGE_SPELL_UNBUFF), buff->model.name));
+        ch.message(std::format(_TEXT(MESSAGE_SPELL_UNBUFF), model.name));
     }
 
     this->erase(id);
+
+    auto path = std::format("scripts/spell/{}.lua", model.id);
+    auto func = "on_unbuff";
+    auto lua  = this->_owner.server.lua.open(path, func);
+    if (lua)
+    {
+        lua->pushobject(this->_owner);
+        lua->pushobject(model);
+        std::ignore = co_await lua->call(2);
+    }
+
     co_await this->_owner.server.destroy(*buff);
     co_return true;
 }
@@ -404,5 +450,5 @@ std::shared_ptr<buff> buffs::operator[] (uint32_t id) const
     if (this->contains(id) == false)
         return nullptr;
 
-    return super::at(id);
+    return this->find(id);
 }

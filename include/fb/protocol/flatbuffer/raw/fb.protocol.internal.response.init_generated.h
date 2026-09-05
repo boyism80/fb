@@ -15,6 +15,8 @@ static_assert(FLATBUFFERS_VERSION_MAJOR == 25 &&
 
 #include "fb.protocol.internal.achievement_generated.h"
 #include "fb.protocol.internal.character_generated.h"
+#include "fb.protocol.internal.collectionunlock_generated.h"
+#include "fb.protocol.internal.friendentry_generated.h"
 #include "fb.protocol.internal.item_generated.h"
 #include "fb.protocol.internal.marketplacepending_generated.h"
 #include "fb.protocol.internal.marriage_generated.h"
@@ -49,8 +51,10 @@ struct Init FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
     VT_QUESTS = 22,
     VT_STORAGE_BOXES = 24,
     VT_MARKETPLACE_PENDINGS = 26,
-    VT_MAIL = 28,
-    VT_SYSTEM_MAIL_IDS = 30
+    VT_FRIENDS = 28,
+    VT_MAIL = 30,
+    VT_SYSTEM_MAIL_IDS = 32,
+    VT_COLLECTION_UNLOCKS = 34
   };
   const fb::protocol::internal::raw::Character *character() const {
     return GetPointer<const fb::protocol::internal::raw::Character *>(VT_CHARACTER);
@@ -88,11 +92,17 @@ struct Init FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
   const ::flatbuffers::Vector<::flatbuffers::Offset<fb::protocol::internal::raw::MarketplacePending>> *marketplace_pendings() const {
     return GetPointer<const ::flatbuffers::Vector<::flatbuffers::Offset<fb::protocol::internal::raw::MarketplacePending>> *>(VT_MARKETPLACE_PENDINGS);
   }
+  const ::flatbuffers::Vector<::flatbuffers::Offset<fb::protocol::internal::raw::FriendEntry>> *friends() const {
+    return GetPointer<const ::flatbuffers::Vector<::flatbuffers::Offset<fb::protocol::internal::raw::FriendEntry>> *>(VT_FRIENDS);
+  }
   uint32_t mail() const {
     return GetField<uint32_t>(VT_MAIL, 0);
   }
   const ::flatbuffers::Vector<uint32_t> *system_mail_ids() const {
     return GetPointer<const ::flatbuffers::Vector<uint32_t> *>(VT_SYSTEM_MAIL_IDS);
+  }
+  const ::flatbuffers::Vector<::flatbuffers::Offset<fb::protocol::internal::raw::CollectionUnlock>> *collection_unlocks() const {
+    return GetPointer<const ::flatbuffers::Vector<::flatbuffers::Offset<fb::protocol::internal::raw::CollectionUnlock>> *>(VT_COLLECTION_UNLOCKS);
   }
   bool Verify(::flatbuffers::Verifier &verifier) const {
     return VerifyTableStart(verifier) &&
@@ -127,9 +137,15 @@ struct Init FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
            VerifyOffset(verifier, VT_MARKETPLACE_PENDINGS) &&
            verifier.VerifyVector(marketplace_pendings()) &&
            verifier.VerifyVectorOfTables(marketplace_pendings()) &&
+           VerifyOffset(verifier, VT_FRIENDS) &&
+           verifier.VerifyVector(friends()) &&
+           verifier.VerifyVectorOfTables(friends()) &&
            VerifyField<uint32_t>(verifier, VT_MAIL, 4) &&
            VerifyOffset(verifier, VT_SYSTEM_MAIL_IDS) &&
            verifier.VerifyVector(system_mail_ids()) &&
+           VerifyOffset(verifier, VT_COLLECTION_UNLOCKS) &&
+           verifier.VerifyVector(collection_unlocks()) &&
+           verifier.VerifyVectorOfTables(collection_unlocks()) &&
            verifier.EndTable();
   }
 };
@@ -174,11 +190,17 @@ struct InitBuilder {
   void add_marketplace_pendings(::flatbuffers::Offset<::flatbuffers::Vector<::flatbuffers::Offset<fb::protocol::internal::raw::MarketplacePending>>> marketplace_pendings) {
     fbb_.AddOffset(Init::VT_MARKETPLACE_PENDINGS, marketplace_pendings);
   }
+  void add_friends(::flatbuffers::Offset<::flatbuffers::Vector<::flatbuffers::Offset<fb::protocol::internal::raw::FriendEntry>>> friends) {
+    fbb_.AddOffset(Init::VT_FRIENDS, friends);
+  }
   void add_mail(uint32_t mail) {
     fbb_.AddElement<uint32_t>(Init::VT_MAIL, mail, 0);
   }
   void add_system_mail_ids(::flatbuffers::Offset<::flatbuffers::Vector<uint32_t>> system_mail_ids) {
     fbb_.AddOffset(Init::VT_SYSTEM_MAIL_IDS, system_mail_ids);
+  }
+  void add_collection_unlocks(::flatbuffers::Offset<::flatbuffers::Vector<::flatbuffers::Offset<fb::protocol::internal::raw::CollectionUnlock>>> collection_unlocks) {
+    fbb_.AddOffset(Init::VT_COLLECTION_UNLOCKS, collection_unlocks);
   }
   explicit InitBuilder(::flatbuffers::FlatBufferBuilder &_fbb)
         : fbb_(_fbb) {
@@ -205,11 +227,15 @@ inline ::flatbuffers::Offset<Init> CreateInit(
     ::flatbuffers::Offset<::flatbuffers::Vector<::flatbuffers::Offset<fb::protocol::internal::raw::Quest>>> quests = 0,
     ::flatbuffers::Offset<::flatbuffers::Vector<::flatbuffers::Offset<fb::protocol::internal::raw::StorageBox>>> storage_boxes = 0,
     ::flatbuffers::Offset<::flatbuffers::Vector<::flatbuffers::Offset<fb::protocol::internal::raw::MarketplacePending>>> marketplace_pendings = 0,
+    ::flatbuffers::Offset<::flatbuffers::Vector<::flatbuffers::Offset<fb::protocol::internal::raw::FriendEntry>>> friends = 0,
     uint32_t mail = 0,
-    ::flatbuffers::Offset<::flatbuffers::Vector<uint32_t>> system_mail_ids = 0) {
+    ::flatbuffers::Offset<::flatbuffers::Vector<uint32_t>> system_mail_ids = 0,
+    ::flatbuffers::Offset<::flatbuffers::Vector<::flatbuffers::Offset<fb::protocol::internal::raw::CollectionUnlock>>> collection_unlocks = 0) {
   InitBuilder builder_(_fbb);
+  builder_.add_collection_unlocks(collection_unlocks);
   builder_.add_system_mail_ids(system_mail_ids);
   builder_.add_mail(mail);
+  builder_.add_friends(friends);
   builder_.add_marketplace_pendings(marketplace_pendings);
   builder_.add_storage_boxes(storage_boxes);
   builder_.add_quests(quests);
@@ -239,8 +265,10 @@ inline ::flatbuffers::Offset<Init> CreateInitDirect(
     const std::vector<::flatbuffers::Offset<fb::protocol::internal::raw::Quest>> *quests = nullptr,
     const std::vector<::flatbuffers::Offset<fb::protocol::internal::raw::StorageBox>> *storage_boxes = nullptr,
     const std::vector<::flatbuffers::Offset<fb::protocol::internal::raw::MarketplacePending>> *marketplace_pendings = nullptr,
+    const std::vector<::flatbuffers::Offset<fb::protocol::internal::raw::FriendEntry>> *friends = nullptr,
     uint32_t mail = 0,
-    const std::vector<uint32_t> *system_mail_ids = nullptr) {
+    const std::vector<uint32_t> *system_mail_ids = nullptr,
+    const std::vector<::flatbuffers::Offset<fb::protocol::internal::raw::CollectionUnlock>> *collection_unlocks = nullptr) {
   auto items__ = items ? _fbb.CreateVector<::flatbuffers::Offset<fb::protocol::internal::raw::Item>>(*items) : 0;
   auto spells__ = spells ? _fbb.CreateVector<::flatbuffers::Offset<fb::protocol::internal::raw::Spell>>(*spells) : 0;
   auto matchmaking_skills__ = matchmaking_skills ? _fbb.CreateVector<::flatbuffers::Offset<fb::protocol::internal::raw::MatchmakingSkill>>(*matchmaking_skills) : 0;
@@ -248,7 +276,9 @@ inline ::flatbuffers::Offset<Init> CreateInitDirect(
   auto quests__ = quests ? _fbb.CreateVector<::flatbuffers::Offset<fb::protocol::internal::raw::Quest>>(*quests) : 0;
   auto storage_boxes__ = storage_boxes ? _fbb.CreateVector<::flatbuffers::Offset<fb::protocol::internal::raw::StorageBox>>(*storage_boxes) : 0;
   auto marketplace_pendings__ = marketplace_pendings ? _fbb.CreateVector<::flatbuffers::Offset<fb::protocol::internal::raw::MarketplacePending>>(*marketplace_pendings) : 0;
+  auto friends__ = friends ? _fbb.CreateVector<::flatbuffers::Offset<fb::protocol::internal::raw::FriendEntry>>(*friends) : 0;
   auto system_mail_ids__ = system_mail_ids ? _fbb.CreateVector<uint32_t>(*system_mail_ids) : 0;
+  auto collection_unlocks__ = collection_unlocks ? _fbb.CreateVector<::flatbuffers::Offset<fb::protocol::internal::raw::CollectionUnlock>>(*collection_unlocks) : 0;
   return fb::protocol::internal::response::raw::CreateInit(
       _fbb,
       character,
@@ -263,8 +293,10 @@ inline ::flatbuffers::Offset<Init> CreateInitDirect(
       quests__,
       storage_boxes__,
       marketplace_pendings__,
+      friends__,
       mail,
-      system_mail_ids__);
+      system_mail_ids__,
+      collection_unlocks__);
 }
 
 inline const fb::protocol::internal::response::raw::Init *GetInit(const void *buf) {

@@ -27,6 +27,11 @@ public:
 
 private:
     void send_update_appearance(fb::game::object& obj, const fb::model::appearance& appearance);
+    void send_update_appearance(fb::game::object&            obj,
+                                fb::game::character&         to,
+                                const fb::model::appearance& appearance);
+    void send_non_character_external(fb::game::object& me);
+    void send_non_character_external(fb::game::object& me, fb::game::character& you);
 
 public:
     // clang-format off
@@ -34,8 +39,10 @@ public:
     void                            on_destroy(fb::game::object& me) override final;
     void                            on_chat(fb::game::object& me, std::string_view message, CHAT_TYPE chat_type = CHAT_TYPE::NORMAL) override final;
     void                            on_direction(fb::game::object& me) override final;
-    void                            on_update_external(fb::game::object& me, bool detailed) override final;
-    void                            on_update_external(fb::game::object& me, fb::game::object& you, bool detailed) override final;
+    void                            on_show(fb::game::object& me) override final;
+    void                            on_show(fb::game::object& me, fb::game::object& you) override final;
+    void                            on_update_external(fb::game::object& me) override final;
+    void                            on_update_external(fb::game::object& me, fb::game::object& you) override final;
     void                            on_hide(fb::game::object& me, DESTROY_TYPE destroy_type = DESTROY_TYPE::DEFAULT) override final;
     void                            on_hide(fb::game::object& me, fb::game::object& you, DESTROY_TYPE destroy_type = DESTROY_TYPE::DEFAULT) override final;
     void                            on_move(fb::game::object& me, const fb::model::point16_t& before) override final;
@@ -100,6 +107,7 @@ public:
     void                            on_dialog(character& me, std::optional<std::string> message, bool button_prev, bool button_next, uint32_t seq = 0xFFFFFFFD) override final;
     void                            on_dialog(character& me, const fb::model::object& object, std::optional<std::string> message, bool button_prev, bool button_next, uint32_t seq = 0xFFFFFFFD) override final;
     void                            on_dialog(character& me, const fb::game::object& obj, std::optional<std::string> message, bool button_prev, bool button_next, uint32_t seq = 0xFFFFFFFD) override final;
+    void                            on_dialog(character& me, std::unique_ptr<fb::game::appearance>&& appearance_ptr, std::optional<std::string> message, bool button_prev, bool button_next, uint32_t seq = 0xFFFFFFFD) override final;
     void                            on_dialog(character& me, const fb::model::object& obj, std::string_view message, const std::vector<std::string>& menus, uint32_t seq = 0xFFFFFFFD, std::optional<std::string> ext = std::nullopt) override final;
     void                            on_dialog(character& me, const fb::game::object& obj, std::string_view message, const std::vector<std::string>& menus, uint32_t seq = 0xFFFFFFFD, std::optional<std::string> ext = std::nullopt) override final;
     void                            on_dialog(character& me, const fb::model::object& obj, std::optional<std::string> message, const std::vector<std::string>& menus, bool button_prev, uint32_t seq = 0xFFFFFFFD) override final;
@@ -123,7 +131,7 @@ public:
     void                            on_dialog_email(character& me, const fb::game::object& obj, std::string_view message, std::string_view str1, std::string_view str2, bool button_prev = false, bool button_next = false, uint32_t seq = 0xFFFFFFFD) override final;
     void                            on_dialog_0x30_10(character& me, const fb::model::object& obj, std::string_view message, uint32_t seq = 0xFFFFFFFD) override final;
     void                            on_dialog_0x30_10(character& me, const fb::game::object& obj, std::string_view message, uint32_t seq = 0xFFFFFFFD) override final;
-    [[nodiscard]] async::task<void> on_transfer(character& me, fb::game::map& map, const fb::model::point16_t& position, std::string_view ip, uint16_t port) override final;
+    [[nodiscard]] async::task<void> on_transfer(character& me, fb::game::map& map, const fb::model::point16_t& position, std::string_view ip, uint16_t port, const transfer_option& option = {}) override final;
     void                            on_ping(character& ch, uint32_t token) override final;
     void                            on_save(character& ch) override final;
     void                            on_bulk_update(character& ch, const std::vector<object*>& objects) override final;
@@ -134,6 +142,11 @@ public:
     void                            on_freeze(character& ch, bool value) override final;
     void                            on_friends_sync(character& ch, uint8_t enabled) override final;
     void                            on_holyday_screen(character& ch, uint8_t screen, uint8_t hair, fb::model::enum_value::DIRECTION direction, const fb::model::point<uint8_t>& position) override final;
+    void                            on_group_portrait(character& ch, std::vector<fb::protocol::game::response::group_portrait_entry> entries) override final;
+    void                            on_group_portrait_hp(character& ch, std::string name, uint32_t cur_hp) override final;
+    void                            on_collection_list(character& ch) override final;
+    void                            on_collection_flag(character& ch, uint8_t group_id, uint8_t slot, bool onoff) override final;
+    void                            on_collection_dialog(character& ch, uint8_t group_id) override final;
     void                            on_spell_delay(life& me, const spell& spell, uint32_t delay) override final;
     // clang-format on
 };

@@ -7,7 +7,7 @@ namespace Runner.Service
 {
     public static class InfrastructureChecker
     {
-        public static string? VcvarsAllPath { get; private set; }
+        public static string VcvarsAllPath { get; private set; }
 
         private static readonly (string Label, string RelativePath)[] DependencySentinels =
         {
@@ -23,13 +23,14 @@ namespace Runner.Service
             ("zlib headers", @"dependency\include\zlib"),
             ("cpp-async headers", @"dependency\include\async"),
             ("aho_corasick headers", @"dependency\include\aho_corasick"),
+            ("croncpp header", @"dependency\include\croncpp.h"),
             ("Boost headers", @"dependency\include\boost"),
         };
 
         public static async Task<InfraCheckResult> CheckAllAsync(
             Model.MainWindow model,
             IReadOnlyList<InfraCheckItem> items,
-            Action<InfraCheckItem>? onItemUpdated = null,
+            Action<InfraCheckItem> onItemUpdated = null,
             CancellationToken cancellationToken = default)
         {
             var workdir = model.WorkingDirectory ?? string.Empty;
@@ -283,8 +284,8 @@ namespace Runner.Service
                         return;
                     }
 
-                    string? bestSdk = null;
-                    Version? bestVersion = null;
+                    string bestSdk = null;
+                    Version bestVersion = null;
 
                     foreach (var line in result.StdOut.Split('\n', StringSplitOptions.RemoveEmptyEntries))
                     {

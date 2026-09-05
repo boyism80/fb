@@ -24,6 +24,9 @@ docker buildx build --load \
     -f "$ROOT/server/fb/Dockerfile" \
     "$ROOT"
 
+echo "Building fb/crash-watch:local..."
+docker buildx build --load -t fb/crash-watch:local -f "$ROOT/infra/crash-watch/Dockerfile" "$ROOT/infra/crash-watch"
+
 echo "Building application images via compose..."
 docker compose -f "$COMPOSE_FILE" --profile app build
 

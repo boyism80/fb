@@ -30,7 +30,7 @@ namespace Runner.Model
     public class GatewaySetting
     {
         public required ushort Port { get; set; }
-        public ushort ClientVersion { get; set; } = 550;
+        public List<ushort> ClientVersions { get; set; } = new List<ushort> { 550, 565, 651 };
         public byte ClientNation { get; set; } = 215;
     }
 
@@ -45,6 +45,7 @@ namespace Runner.Model
     {
         public required int ID { get; set; }
         public required ushort Port { get; set; }
+        public string Role { get; set; } = "home";
     }
 
     public class InternalSetting
@@ -127,8 +128,8 @@ namespace Runner.Model
             try
             {
                 var model = JsonConvert.DeserializeObject<MainWindow>(File.ReadAllText(path));
-                if (model.Gateway.ClientVersion == 0)
-                    model.Gateway.ClientVersion = 550;
+                if (model.Gateway.ClientVersions == null || model.Gateway.ClientVersions.Count == 0)
+                    model.Gateway.ClientVersions = new List<ushort> { 550, 565, 651 };
                 if (model.Gateway.ClientNation == 0)
                     model.Gateway.ClientNation = 215;
                 if (model.Marketplace.Port == 0)
@@ -137,10 +138,18 @@ namespace Runner.Model
                     model.Matchmaking.Port = 3340;
                 if (model.AdminTool.Port == 0)
                     model.AdminTool.Port = 30210;
+                if (model.Game != null)
+                {
+                    foreach (var game in model.Game)
+                    {
+                        if (string.IsNullOrWhiteSpace(game.Role))
+                            game.Role = "home";
+                    }
+                }
                 model.Window = window;
                 return model;
             }
-            catch (Exception e)
+            catch (Exception)
             {
                 return null;
             }

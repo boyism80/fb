@@ -36,6 +36,7 @@ protected:
 
 public:
     // clang-format off
+    const fb::model::weapon&          model() const override;
     const std::string&                name() const override final;
     std::string                       inven_name() const override;
     std::string                       trade_name() const override;

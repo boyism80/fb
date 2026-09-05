@@ -3,8 +3,23 @@
 #include <fb/bot/gateway_bot.h>
 #include <fb/bot/login_bot.h>
 #include <fb/bot/login_controller.h>
+#include <fb/protocol/client_version.h>
 
 using namespace fb::bot::load;
+
+namespace {
+
+// Client version the gateway bots emulate.
+fb::protocol::CLIENT_VERSION configured_client_version()
+{
+    auto packed = fb::config<uint16_t>("client:version", 550);
+    if (fb::protocol::is_supported(packed) == false)
+        return fb::protocol::CLIENT_VERSION::v550;
+
+    return static_cast<fb::protocol::CLIENT_VERSION>(packed);
+}
+
+} // namespace
 
 gateway_bot_controller::gateway_bot_controller(bot_container& container) :
     fb::bot::gateway_bot_controller(container),
@@ -41,20 +56,30 @@ async::task<void> gateway_bot_controller::on_bot_spawn()
 
 async::task<void> gateway_bot_controller::on_welcome(gateway_bot& bot, const gateway_resp::welcome& response)
 {
-    bot.send(gateway_reqs::version{550, 0xD7}, false, true);
+    auto cv     = configured_client_version();
+    auto nation = static_cast<uint8_t>(fb::config<uint16_t>("client:nation", 0xD7));
+
+    // Runtime CLIENT_VERSION -> compile-time V for the versioned request layout.
+    fb::protocol::visit_client_version(cv, [&]<fb::protocol::CLIENT_VERSION V> {
+        bot.send(gateway_reqs::version<V>{cv, nation}, false, true);
+    });
     co_return;
 }
 
 async::task<void> gateway_bot_controller::on_crt(gateway_bot& bot, const gateway_resp::encryption& response)
 {
     bot.encryption(response.cryptor);
-    bot.send(gateway_reqs::server_list{0x01, 0});
+    fb::protocol::visit_client_version(configured_client_version(), [&]<fb::protocol::CLIENT_VERSION V> {
+        bot.send(gateway_reqs::server_list<V>{0x01, 0});
+    });
     co_return;
 }
 
 async::task<void> gateway_bot_controller::on_hosts(gateway_bot& bot, const gateway_resp::server_list& response)
 {
-    bot.send(gateway_reqs::server_list{0x00, 0});
+    fb::protocol::visit_client_version(configured_client_version(), [&]<fb::protocol::CLIENT_VERSION V> {
+        bot.send(gateway_reqs::server_list<V>{0x00, 0});
+    });
     co_return;
 }
 

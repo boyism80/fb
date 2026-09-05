@@ -1,4 +1,5 @@
 #include <fb/game/server.h>
+#include <fb/protocol/client_version.h>
 
 using namespace fb::game;
 
@@ -10,7 +11,9 @@ void listener_impl::on_dialog(character&                 me,
                               bool                       button_next,
                               uint32_t                   oid)
 {
-    me.send(game_resp::dialog(std::move(message), button_prev, button_next, oid));
+    fb::protocol::visit_client_version(me.client_version, [&]<fb::protocol::CLIENT_VERSION V> {
+        me.send(game_resp::dialog<V>(std::move(message), button_prev, button_next, oid));
+    });
 }
 
 void listener_impl::on_dialog(character&                 me,
@@ -20,7 +23,9 @@ void listener_impl::on_dialog(character&                 me,
                               bool                       button_next,
                               uint32_t                   oid)
 {
-    me.send(game_resp::dialog(object, std::move(message), button_prev, button_next, oid));
+    fb::protocol::visit_client_version(me.client_version, [&]<fb::protocol::CLIENT_VERSION V> {
+        me.send(game_resp::dialog<V>(object, std::move(message), button_prev, button_next, oid));
+    });
 }
 
 void listener_impl::on_dialog(character&                 me,
@@ -30,7 +35,21 @@ void listener_impl::on_dialog(character&                 me,
                               bool                       button_next,
                               uint32_t                   oid)
 {
-    me.send(game_resp::dialog(obj, std::move(message), button_prev, button_next, oid));
+    fb::protocol::visit_client_version(me.client_version, [&]<fb::protocol::CLIENT_VERSION V> {
+        me.send(game_resp::dialog<V>(obj, std::move(message), button_prev, button_next, oid));
+    });
+}
+
+void listener_impl::on_dialog(character&                              me,
+                              std::unique_ptr<fb::game::appearance>&& appearance,
+                              std::optional<std::string>              message,
+                              bool                                    button_prev,
+                              bool                                    button_next,
+                              uint32_t                                oid)
+{
+    fb::protocol::visit_client_version(me.client_version, [&]<fb::protocol::CLIENT_VERSION V> {
+        me.send(game_resp::dialog<V>(std::move(appearance), std::move(message), button_prev, button_next, oid));
+    });
 }
 
 void listener_impl::on_dialog(character&                      me,
@@ -40,7 +59,9 @@ void listener_impl::on_dialog(character&                      me,
                               uint32_t                        oid,
                               std::optional<std::string>      ext)
 {
-    me.send(game_resp::dialog_menu(obj, menus, message, oid, std::move(ext)));
+    fb::protocol::visit_client_version(me.client_version, [&]<fb::protocol::CLIENT_VERSION V> {
+        me.send(game_resp::dialog_menu<V>(obj, menus, message, oid, std::move(ext)));
+    });
 }
 
 void listener_impl::on_dialog(character&                      me,
@@ -50,7 +71,9 @@ void listener_impl::on_dialog(character&                      me,
                               uint32_t                        oid,
                               std::optional<std::string>      ext)
 {
-    me.send(game_resp::dialog_menu(obj, menus, message, oid, std::move(ext)));
+    fb::protocol::visit_client_version(me.client_version, [&]<fb::protocol::CLIENT_VERSION V> {
+        me.send(game_resp::dialog_menu<V>(obj, menus, message, oid, std::move(ext)));
+    });
 }
 
 void listener_impl::on_dialog(character&                      me,
@@ -60,7 +83,9 @@ void listener_impl::on_dialog(character&                      me,
                               bool                            button_prev,
                               uint32_t                        oid)
 {
-    me.send(game_resp::dialog_list(obj, menus, std::move(message), button_prev, oid));
+    fb::protocol::visit_client_version(me.client_version, [&]<fb::protocol::CLIENT_VERSION V> {
+        me.send(game_resp::dialog_list<V>(obj, menus, std::move(message), button_prev, oid));
+    });
 }
 
 void listener_impl::on_dialog(character&                      me,
@@ -70,7 +95,9 @@ void listener_impl::on_dialog(character&                      me,
                               bool                            button_prev,
                               uint32_t                        oid)
 {
-    me.send(game_resp::dialog_list(obj, menus, std::move(message), button_prev, oid));
+    fb::protocol::visit_client_version(me.client_version, [&]<fb::protocol::CLIENT_VERSION V> {
+        me.send(game_resp::dialog_list<V>(obj, menus, std::move(message), button_prev, oid));
+    });
 }
 
 void listener_impl::on_dialog(character&                              me,
@@ -80,7 +107,9 @@ void listener_impl::on_dialog(character&                              me,
                               bool                                    button_prev,
                               uint32_t                                oid)
 {
-    me.send(game_resp::dialog_list(std::move(appearance), menus, std::move(message), button_prev, oid));
+    fb::protocol::visit_client_version(me.client_version, [&]<fb::protocol::CLIENT_VERSION V> {
+        me.send(game_resp::dialog_list<V>(std::move(appearance), menus, std::move(message), button_prev, oid));
+    });
 }
 
 void listener_impl::on_dialog(character&                  me,
@@ -89,7 +118,9 @@ void listener_impl::on_dialog(character&                  me,
                               const std::vector<uint8_t>& item_slots,
                               uint32_t                    oid)
 {
-    me.send(game_resp::dialog_slot(obj, item_slots, message, oid));
+    fb::protocol::visit_client_version(me.client_version, [&]<fb::protocol::CLIENT_VERSION V> {
+        me.send(game_resp::dialog_slot<V>(obj, item_slots, message, oid));
+    });
 }
 
 void listener_impl::on_dialog(character&                  me,
@@ -98,7 +129,9 @@ void listener_impl::on_dialog(character&                  me,
                               const std::vector<uint8_t>& item_slots,
                               uint32_t                    oid)
 {
-    me.send(game_resp::dialog_slot(obj, item_slots, message, oid));
+    fb::protocol::visit_client_version(me.client_version, [&]<fb::protocol::CLIENT_VERSION V> {
+        me.send(game_resp::dialog_slot<V>(obj, item_slots, message, oid));
+    });
 }
 
 void listener_impl::on_dialog(character&                me,
@@ -108,7 +141,9 @@ void listener_impl::on_dialog(character&                me,
                               uint32_t                  oid,
                               uint16_t                  pursuit)
 {
-    me.send(game_resp::dialog_item(obj, pairs, message, oid, pursuit));
+    fb::protocol::visit_client_version(me.client_version, [&]<fb::protocol::CLIENT_VERSION V> {
+        me.send(game_resp::dialog_item<V>(obj, pairs, message, oid, pursuit));
+    });
 }
 
 void listener_impl::on_dialog(character&                me,
@@ -118,7 +153,9 @@ void listener_impl::on_dialog(character&                me,
                               uint32_t                  oid,
                               uint16_t                  pursuit)
 {
-    me.send(game_resp::dialog_item(obj, pairs, message, oid, pursuit));
+    fb::protocol::visit_client_version(me.client_version, [&]<fb::protocol::CLIENT_VERSION V> {
+        me.send(game_resp::dialog_item<V>(obj, pairs, message, oid, pursuit));
+    });
 }
 
 void listener_impl::on_dialog(character&                 me,
@@ -128,7 +165,9 @@ void listener_impl::on_dialog(character&                 me,
                               std::optional<std::string> ext,
                               uint16_t                   pursuit)
 {
-    me.send(game_resp::dialog_input(obj, message, oid, std::move(ext), pursuit));
+    fb::protocol::visit_client_version(me.client_version, [&]<fb::protocol::CLIENT_VERSION V> {
+        me.send(game_resp::dialog_input<V>(obj, message, oid, std::move(ext), pursuit));
+    });
 }
 
 void listener_impl::on_dialog(character&                 me,
@@ -138,7 +177,9 @@ void listener_impl::on_dialog(character&                 me,
                               std::optional<std::string> ext,
                               uint16_t                   pursuit)
 {
-    me.send(game_resp::dialog_input(obj, message, oid, std::move(ext), pursuit));
+    fb::protocol::visit_client_version(me.client_version, [&]<fb::protocol::CLIENT_VERSION V> {
+        me.send(game_resp::dialog_input<V>(obj, message, oid, std::move(ext), pursuit));
+    });
 }
 
 void listener_impl::on_dialog(character&                 me,
@@ -151,7 +192,9 @@ void listener_impl::on_dialog(character&                 me,
                               bool                       password,
                               uint32_t                   oid)
 {
-    me.send(game_resp::dialog_input_ext(obj, std::move(message), top, bottom, maxlen, prev, password, oid));
+    fb::protocol::visit_client_version(me.client_version, [&]<fb::protocol::CLIENT_VERSION V> {
+        me.send(game_resp::dialog_input_ext<V>(obj, std::move(message), top, bottom, maxlen, prev, password, oid));
+    });
 }
 
 void listener_impl::on_dialog(character&                 me,
@@ -164,7 +207,9 @@ void listener_impl::on_dialog(character&                 me,
                               bool                       password,
                               uint32_t                   oid)
 {
-    me.send(game_resp::dialog_input_ext(obj, std::move(message), top, bottom, maxlen, prev, password, oid));
+    fb::protocol::visit_client_version(me.client_version, [&]<fb::protocol::CLIENT_VERSION V> {
+        me.send(game_resp::dialog_input_ext<V>(obj, std::move(message), top, bottom, maxlen, prev, password, oid));
+    });
 }
 
 void listener_impl::on_dialog_pursuit(character&                      me,
@@ -174,7 +219,9 @@ void listener_impl::on_dialog_pursuit(character&                      me,
                                       uint32_t                        oid,
                                       uint16_t                        pursuit)
 {
-    me.send(game_resp::dialog_pursuit(obj, options, message, oid, pursuit));
+    fb::protocol::visit_client_version(me.client_version, [&]<fb::protocol::CLIENT_VERSION V> {
+        me.send(game_resp::dialog_pursuit<V>(obj, options, message, oid, pursuit));
+    });
 }
 
 void listener_impl::on_dialog_pursuit(character&                      me,
@@ -184,7 +231,9 @@ void listener_impl::on_dialog_pursuit(character&                      me,
                                       uint32_t                        oid,
                                       uint16_t                        pursuit)
 {
-    me.send(game_resp::dialog_pursuit(obj, options, message, oid, pursuit));
+    fb::protocol::visit_client_version(me.client_version, [&]<fb::protocol::CLIENT_VERSION V> {
+        me.send(game_resp::dialog_pursuit<V>(obj, options, message, oid, pursuit));
+    });
 }
 
 void listener_impl::on_dialog_spell(character&               me,
@@ -193,7 +242,9 @@ void listener_impl::on_dialog_spell(character&               me,
                                     uint32_t                 oid,
                                     uint16_t                 pursuit)
 {
-    me.send(game_resp::dialog_spell(obj, message, oid, pursuit));
+    fb::protocol::visit_client_version(me.client_version, [&]<fb::protocol::CLIENT_VERSION V> {
+        me.send(game_resp::dialog_spell<V>(obj, message, oid, pursuit));
+    });
 }
 
 void listener_impl::on_dialog_spell(character&              me,
@@ -202,7 +253,9 @@ void listener_impl::on_dialog_spell(character&              me,
                                     uint32_t                oid,
                                     uint16_t                pursuit)
 {
-    me.send(game_resp::dialog_spell(obj, message, oid, pursuit));
+    fb::protocol::visit_client_version(me.client_version, [&]<fb::protocol::CLIENT_VERSION V> {
+        me.send(game_resp::dialog_spell<V>(obj, message, oid, pursuit));
+    });
 }
 
 void listener_impl::on_dialog_dual_field(character&                                              me,
@@ -212,7 +265,9 @@ void listener_impl::on_dialog_dual_field(character&                             
                                          uint32_t                                                oid,
                                          uint16_t                                                pursuit)
 {
-    me.send(game_resp::dialog_dual_field(obj, pairs, message, oid, pursuit));
+    fb::protocol::visit_client_version(me.client_version, [&]<fb::protocol::CLIENT_VERSION V> {
+        me.send(game_resp::dialog_dual_field<V>(obj, pairs, message, oid, pursuit));
+    });
 }
 
 void listener_impl::on_dialog_dual_field(character&                                              me,
@@ -222,7 +277,9 @@ void listener_impl::on_dialog_dual_field(character&                             
                                          uint32_t                                                oid,
                                          uint16_t                                                pursuit)
 {
-    me.send(game_resp::dialog_dual_field(obj, pairs, message, oid, pursuit));
+    fb::protocol::visit_client_version(me.client_version, [&]<fb::protocol::CLIENT_VERSION V> {
+        me.send(game_resp::dialog_dual_field<V>(obj, pairs, message, oid, pursuit));
+    });
 }
 
 void listener_impl::on_dialog_email(character&               me,
@@ -234,7 +291,9 @@ void listener_impl::on_dialog_email(character&               me,
                                     bool                     button_next,
                                     uint32_t                 oid)
 {
-    me.send(game_resp::dialog_email(obj, message, str1, str2, button_prev, button_next, oid));
+    fb::protocol::visit_client_version(me.client_version, [&]<fb::protocol::CLIENT_VERSION V> {
+        me.send(game_resp::dialog_email<V>(obj, message, str1, str2, button_prev, button_next, oid));
+    });
 }
 
 void listener_impl::on_dialog_email(character&              me,
@@ -246,7 +305,9 @@ void listener_impl::on_dialog_email(character&              me,
                                     bool                    button_next,
                                     uint32_t                oid)
 {
-    me.send(game_resp::dialog_email(obj, message, str1, str2, button_prev, button_next, oid));
+    fb::protocol::visit_client_version(me.client_version, [&]<fb::protocol::CLIENT_VERSION V> {
+        me.send(game_resp::dialog_email<V>(obj, message, str1, str2, button_prev, button_next, oid));
+    });
 }
 
 void listener_impl::on_dialog_0x30_10(character&               me,
@@ -254,7 +315,9 @@ void listener_impl::on_dialog_0x30_10(character&               me,
                                       std::string_view         message,
                                       uint32_t                 oid)
 {
-    me.send(game_resp::dialog_0x30_10(obj, message, false, false, oid));
+    fb::protocol::visit_client_version(me.client_version, [&]<fb::protocol::CLIENT_VERSION V> {
+        me.send(game_resp::dialog_0x30_10<V>(obj, message, false, false, oid));
+    });
 }
 
 void listener_impl::on_dialog_0x30_10(character&              me,
@@ -262,5 +325,7 @@ void listener_impl::on_dialog_0x30_10(character&              me,
                                       std::string_view        message,
                                       uint32_t                oid)
 {
-    me.send(game_resp::dialog_0x30_10(obj, message, false, false, oid));
+    fb::protocol::visit_client_version(me.client_version, [&]<fb::protocol::CLIENT_VERSION V> {
+        me.send(game_resp::dialog_0x30_10<V>(obj, message, false, false, oid));
+    });
 }

@@ -1,10 +1,8 @@
 -- npc: 현무포목상
+local castle_npc = require('lib.castle_npc')
 
 return {
     on_click = function(me, npc)
-        local button = me:dialog(npc, "준비중입니다.", { prev = false, next = false })
-        if button == DIALOG_RESULT.QUIT then
-            return
-        end
+        castle_npc.on_cloth_shop_click(me, npc)
     end
 }

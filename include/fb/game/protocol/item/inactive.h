@@ -2,16 +2,19 @@
 #define __PROTOCOL_GAME_INACTIVE_H__
 
 #include <fb/protocol/header.h>
+#include <fb/protocol/client_version.h>
 #include <fb/model/model.h>
 
 namespace fb::protocol::game::request {
 
 using namespace fb::model::enum_value;
 
+template <CLIENT_VERSION V>
 class item_inactive : public fb::protocol::header
 {
 public:
     static constexpr uint8_t opcode = 0x1F;
+    FB_PROTOCOL_VERSION_TAGS(V);
 
 public:
 #ifndef BOT
@@ -24,9 +27,7 @@ public:
 #ifndef BOT
     item_inactive() = default;
 #else
-    item_inactive(EQUIPMENT_PARTS parts) :
-        parts(parts)
-    { }
+    item_inactive(EQUIPMENT_PARTS parts);
 #endif
 
 public:

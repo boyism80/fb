@@ -1,33 +1,25 @@
 local M = {}
 
-local OPT = {
-    search   = '검색',
-    register = '등록',
-    cancel   = '취소',
-}
-local YES = '예'
-local NO = '아니오'
-
 function M.handle(me, npc)
 ::MARKETPLACE_MENU::
-    local marketplace_selected, button = me:pursuit(npc, '거래소 메뉴', { OPT.search, OPT.register, OPT.cancel })
+    local marketplace_selected, button = me:pursuit(npc, '거래소 메뉴', { '검색', '등록', '취소' })
     if button == DIALOG_RESULT.QUIT then
         return true
     end
 
-    if marketplace_selected == OPT.search then
+    if marketplace_selected == 1 then
         local result = M.search(me, npc)
         if result == false then
             return false
         end
         goto MARKETPLACE_MENU
-    elseif marketplace_selected == OPT.register then
+    elseif marketplace_selected == 2 then
         local result = M.list(me, npc)
         if result == false then
             return false
         end
         goto MARKETPLACE_MENU
-    elseif marketplace_selected == OPT.cancel then
+    elseif marketplace_selected == 3 then
         local result = M.cancel(me, npc)
         if result == false then
             return false
@@ -101,12 +93,12 @@ function M.search(me, npc)
         goto MARKETPLACE_SEARCH
     end
 
-    local selected_model = name2item(selected)
-    if selected_model == nil then
+    local selected_pair = item_list[selected]
+    if selected_pair == nil then
         goto MARKETPLACE_SEARCH
     end
 
-    local selected_name = selected_model:name()
+    local selected_name = selected_pair[1]
     if selected_name == nil or listing_map[selected_name] == nil or #listing_map[selected_name] == 0 then
         goto MARKETPLACE_SEARCH
     end
@@ -146,12 +138,7 @@ function M.search(me, npc)
             return false
         end
 
-        for i, display_text in ipairs(listing_list) do
-            if display_text == selected_display then
-                selected_listing = candidates[i]
-                break
-            end
-        end
+        selected_listing = candidates[selected_display]
     end
 
     if selected_listing == nil then
@@ -216,12 +203,12 @@ function M.search(me, npc)
         end
         warning_text = warning_text .. '\n정말 구매하시겠습니까?'
 
-        local confirm_selected, confirm_button = me:pursuit(npc, warning_text, { YES, NO })
+        local confirm_selected, confirm_button = me:pursuit(npc, warning_text, { '예', '아니오' })
         if confirm_button == DIALOG_RESULT.QUIT then
             return false
         end
 
-        if confirm_selected ~= YES then
+        if confirm_selected ~= 1 then
             goto MARKETPLACE_SEARCH
         end
     end
@@ -339,12 +326,12 @@ function M.list(me, npc)
     local listing_fee = math.floor(total_sale_amount * 0.05)
 
     local fee_message = string.format('판매금액의 5%%인 %d전이 수수료로 부과됩니다.\n등록하시겠습니까?', listing_fee)
-    local confirm_selected, confirm_button = me:pursuit(npc, fee_message, { YES, NO })
+    local confirm_selected, confirm_button = me:pursuit(npc, fee_message, { '예', '아니오' })
     if confirm_button == DIALOG_RESULT.QUIT then
         return false
     end
 
-    if confirm_selected ~= YES then
+    if confirm_selected ~= 1 then
         goto MARKETPLACE_LIST
     end
 
@@ -429,12 +416,12 @@ function M.cancel(me, npc)
         goto MARKETPLACE_CANCEL
     end
 
-    local selected_model = name2item(selected)
-    if selected_model == nil then
+    local selected_pair = item_list[selected]
+    if selected_pair == nil then
         goto MARKETPLACE_CANCEL
     end
 
-    local selected_name = selected_model:name()
+    local selected_name = selected_pair[1]
     if selected_name == nil or listing_map[selected_name] == nil or #listing_map[selected_name] == 0 then
         goto MARKETPLACE_CANCEL
     end
@@ -461,24 +448,19 @@ function M.cancel(me, npc)
             return false
         end
 
-        for i, display_text in ipairs(listing_list) do
-            if display_text == cancel_selected then
-                selected_listing = candidates[i]
-                break
-            end
-        end
+        selected_listing = candidates[cancel_selected]
     end
 
     if selected_listing == nil then
         goto MARKETPLACE_CANCEL
     end
 
-    local confirm_selected, confirm_button = me:pursuit(npc, '수수료를 반환받지 못합니다. 정말 취소하시겠습니까?', { YES, NO })
+    local confirm_selected, confirm_button = me:pursuit(npc, '수수료를 반환받지 못합니다. 정말 취소하시겠습니까?', { '예', '아니오' })
     if confirm_button == DIALOG_RESULT.QUIT then
         return false
     end
 
-    if confirm_selected ~= YES then
+    if confirm_selected ~= 1 then
         goto MARKETPLACE_CANCEL
     end
 

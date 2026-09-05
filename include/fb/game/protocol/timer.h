@@ -24,10 +24,7 @@ public:
 
 public:
 #ifndef BOT
-    timer(uint32_t time, TIMER_TYPE type = TIMER_TYPE::DECREASE) :
-        time(time),
-        type(type)
-    { }
+    timer(uint32_t time, TIMER_TYPE type = TIMER_TYPE::DECREASE);
 #else
     timer() = default;
 #endif

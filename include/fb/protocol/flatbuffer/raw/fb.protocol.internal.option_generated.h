@@ -35,7 +35,8 @@ struct Option FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
     VT_TRADE = 20,
     VT_FAST_MOVE = 22,
     VT_EFFECT_SOUND = 24,
-    VT_PK_PROTECT = 26
+    VT_PK_PROTECT = 26,
+    VT_VISIBLE_HELMET = 28
   };
   uint32_t uid() const {
     return GetField<uint32_t>(VT_UID, 0);
@@ -73,6 +74,9 @@ struct Option FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
   bool pk_protect() const {
     return GetField<uint8_t>(VT_PK_PROTECT, 0) != 0;
   }
+  bool visible_helmet() const {
+    return GetField<uint8_t>(VT_VISIBLE_HELMET, 0) != 0;
+  }
   bool Verify(::flatbuffers::Verifier &verifier) const {
     return VerifyTableStart(verifier) &&
            VerifyField<uint32_t>(verifier, VT_UID, 4) &&
@@ -87,6 +91,7 @@ struct Option FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
            VerifyField<uint8_t>(verifier, VT_FAST_MOVE, 1) &&
            VerifyField<uint8_t>(verifier, VT_EFFECT_SOUND, 1) &&
            VerifyField<uint8_t>(verifier, VT_PK_PROTECT, 1) &&
+           VerifyField<uint8_t>(verifier, VT_VISIBLE_HELMET, 1) &&
            verifier.EndTable();
   }
 };
@@ -131,6 +136,9 @@ struct OptionBuilder {
   void add_pk_protect(bool pk_protect) {
     fbb_.AddElement<uint8_t>(Option::VT_PK_PROTECT, static_cast<uint8_t>(pk_protect), 0);
   }
+  void add_visible_helmet(bool visible_helmet) {
+    fbb_.AddElement<uint8_t>(Option::VT_VISIBLE_HELMET, static_cast<uint8_t>(visible_helmet), 0);
+  }
   explicit OptionBuilder(::flatbuffers::FlatBufferBuilder &_fbb)
         : fbb_(_fbb) {
     start_ = fbb_.StartTable();
@@ -155,9 +163,11 @@ inline ::flatbuffers::Offset<Option> CreateOption(
     bool trade = false,
     bool fast_move = false,
     bool effect_sound = false,
-    bool pk_protect = false) {
+    bool pk_protect = false,
+    bool visible_helmet = false) {
   OptionBuilder builder_(_fbb);
   builder_.add_uid(uid);
+  builder_.add_visible_helmet(visible_helmet);
   builder_.add_pk_protect(pk_protect);
   builder_.add_effect_sound(effect_sound);
   builder_.add_fast_move(fast_move);

@@ -4,6 +4,7 @@
 #include <fb/model/model.h>
 #include <fb/game/object.h>
 #include <format>
+#include <thread>
 
 using namespace fb::game;
 
@@ -12,7 +13,7 @@ object::object(fb::game::server& server, const fb::model::object& model, const i
     server(server),
     listener(server.listener),
     _oid(params.id),
-    _model(model),
+    _model_id(model.id),
     _position(params.position),
     _direction(params.direction),
     _map(params.map),
@@ -24,18 +25,13 @@ object::object(fb::game::server& server, const fb::model::object& model, const i
 object::object(const object& right) :
     object(
         right.server,
-        right._model,
+        right.model(),
         initial_params{.id = right._oid, .position = right._position, .direction = right._direction, .map = right._map})
 { }
 
 object::~object()
 {
     this->listener.on_destroy(*this);
-}
-
-const fb::model::object& object::based() const
-{
-    return this->_model;
 }
 
 bool object::is(OBJECT_TYPE type) const
@@ -46,34 +42,46 @@ bool object::is(OBJECT_TYPE type) const
 
 const std::string& object::name() const
 {
-    return this->_model.name;
+    return this->model().name;
 }
 
 uint16_t object::look() const
 {
-    return this->_model.look;
+    return this->model().look;
 }
 
 uint8_t object::color() const
 {
-    return this->_model.color;
+    return this->model().color;
 }
 
 OBJECT_TYPE object::what() const
 {
-    return this->_model.what();
+    return this->model().what();
 }
 
-void object::update_external(bool detailed)
+void object::show()
 {
     this->assert_thread();
-    this->listener.on_update_external(*this, detailed);
+    this->listener.on_show(*this);
 }
 
-void object::update_external(object& to, bool detailed)
+void object::show(object& to)
 {
     this->assert_thread();
-    this->listener.on_update_external(*this, to, detailed);
+    this->listener.on_show(*this, to);
+}
+
+void object::update_external()
+{
+    this->assert_thread();
+    this->listener.on_update_external(*this);
+}
+
+void object::update_external(object& to)
+{
+    this->assert_thread();
+    this->listener.on_update_external(*this, to);
 }
 
 bool object::super_hide() const
@@ -177,7 +185,7 @@ bool object::position(uint16_t x, uint16_t y, bool refresh)
         this->update_position();
 
     if (sight(before, this->_position, this->_map) == false)
-        this->update_external(*this, true);
+        this->show(*this);
 
     this->update_sector();
 
@@ -211,11 +219,11 @@ bool object::position(uint16_t x, uint16_t y, bool refresh)
 
             if (!before_sight && after_sight) // I entered the other object's sight
             {
-                this->update_external(*obj, true);
+                this->show(*obj);
             }
             else if (refresh && before_sight && after_sight) // Force refresh while already in sight
             {
-                this->update_external(*obj, true);
+                this->show(*obj);
             }
             else
             {
@@ -227,7 +235,7 @@ bool object::position(uint16_t x, uint16_t y, bool refresh)
         {
             if (!sight(before, obj->_position, this->_map) && this->sight(*obj))
             {
-                obj->update_external(*this, true);
+                obj->show(*this);
             }
         }
     }
@@ -257,7 +265,7 @@ bool object::move(DIRECTION direction)
         return false;
 
     auto after = this->side_position(direction);
-    if (this->_map->movable(*this, after) == false)
+    if (this->_map->movable(*this, direction) == false)
         return false;
 
     if (this->direction(direction) == false)
@@ -276,7 +284,7 @@ bool object::move(DIRECTION direction)
     }
 
     {
-        auto& map_model = this->_map->model;
+        auto& map_model = this->_map->model();
         auto  path      = std::format("scripts/map/{}.lua", map_model.id);
         auto  func      = "on_map_move";
 
@@ -337,11 +345,14 @@ bool object::direction(DIRECTION value)
 
     this->_direction = value;
 
-    auto lua = this->server.lua.open("scripts/interaction.lua", "on_direction");
-    if (lua)
+    if (this->is(OBJECT_TYPE::CHARACTER))
     {
-        lua->pushobject(*this);
-        std::ignore = lua->call(1);
+        auto lua = this->server.lua.open("scripts/interaction.lua", "on_direction");
+        if (lua)
+        {
+            lua->pushobject(*this);
+            std::ignore = lua->call(1);
+        }
     }
 
     this->listener.on_direction(*this);
@@ -477,10 +488,23 @@ fb::model::area<uint16_t> object::sight_area() const
 
 async::task<bool> object::map(map_ptr map, std::optional<fb::model::point16_t> position, map_options options)
 {
-    this->assert_thread();
+    if (this->_map == nullptr && map != nullptr)
+    {
+#if defined DEBUG || defined _DEBUG
+        auto* map_thread = map->thread();
+        if (map_thread == nullptr)
+            throw std::runtime_error("active thread is null");
+        if (std::this_thread::get_id() != map_thread->id())
+            throw std::runtime_error("active thread not matched");
+#endif
+    }
+    else
+    {
+        this->assert_thread();
+    }
 
     if (map != nullptr && position.has_value() == false)
-        position = map->model.spawn_position();
+        position = map->model().spawn_position();
 
     auto  weak         = this->weak_from_this_as<object>();
     auto& context      = this->server;
@@ -501,7 +525,7 @@ async::task<bool> object::map(map_ptr map, std::optional<fb::model::point16_t> p
         if (map == nullptr)
         {
             if (this->_map != nullptr)
-                co_await this->invoke_map_character_hook(this->_map->model, "on_map_leave");
+                co_await this->invoke_map_character_hook(this->_map->model(), "on_map_leave");
 
             // broadcast near characters
             for (const auto& x : this->_map->nears(this->_position))
@@ -566,7 +590,7 @@ async::task<bool> object::map(map_ptr map, std::optional<fb::model::point16_t> p
 
         if (this->_map != nullptr)
         {
-            if (this->_map->model.id == map->model.id)
+            if (this->_map->model().id == map->model().id)
             {
                 for (const auto& x : this->_map->nears(this->_position))
                 {
@@ -615,8 +639,8 @@ async::task<bool> object::map(map_ptr map, std::optional<fb::model::point16_t> p
         this->update_map(*map);
         this->update_position();
         if (notify)
-            this->update_external(true);
-        this->update_bgm(map->model.bgm, 100);
+            this->show();
+        this->update_bgm(map->model().bgm, 100);
 
         if (notify)
         {
@@ -625,11 +649,16 @@ async::task<bool> object::map(map_ptr map, std::optional<fb::model::point16_t> p
                 if (obj.get() == this)
                     continue;
 
-                obj->update_external(*this, true);
+                obj->show(*this);
             }
         }
 
-        co_await this->invoke_map_character_hook(map->model, "on_map_enter");
+        co_await this->invoke_map_character_hook(map->model(), "on_map_enter");
+
+        // on_map_enter may call me:map() (e.g. castle evict), which switches this
+        // coroutine onto the destination thread. Re-anchor to the object's current
+        // thread before returning so the caller's assert_thread / name() stay valid.
+        co_await this->server.threads.switching(weak);
 
         co_return true;
     }
@@ -857,7 +886,7 @@ fb::thread* object::thread() const
     if (this->_thread != nullptr)
         return this->_thread;
     else
-        return this->server.threads.modular(this->_model.id);
+        return this->server.threads.modular(this->_model_id);
 }
 
 void object::update_id()

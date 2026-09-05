@@ -22,9 +22,7 @@ public:
 
 public:
 #ifndef BOT
-    weather(WEATHER_TYPE value) :
-        value(value)
-    { }
+    weather(WEATHER_TYPE value);
 #else
     weather() = default;
 #endif

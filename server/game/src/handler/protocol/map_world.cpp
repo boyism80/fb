@@ -1,16 +1,19 @@
 #include <fb/game/handler/protocol/map_world.h>
 #include <fb/game/server.h>
 
-using namespace fb::game::handler::protocol;
 using table = fb::model::table;
 
 namespace game_reqs = fb::protocol::game::request;
 
-map_world::map_world(fb::game::server& server) :
-    fb::handler::protocol<fb::game::server, game_reqs::map_world>(server)
+namespace fb::game::handler::protocol {
+
+template <fb::protocol::CLIENT_VERSION V>
+map_world<V>::map_world(fb::game::server& server) :
+    fb::handler::protocol<fb::game::server, game_reqs::map_world<V>>(server)
 { }
 
-async::task<bool> map_world::handle(fb::socket<character>& session, game_reqs::map_world& request)
+template <fb::protocol::CLIENT_VERSION V>
+async::task<bool> map_world<V>::handle(fb::socket<character>& session, game_reqs::map_world<V>& request)
 {
     auto ch = session.data();
     if (ch->inited() == false)
@@ -24,7 +27,7 @@ async::task<bool> map_world::handle(fb::socket<character>& session, game_reqs::m
     if (ch->map() == this->server.maps[after.map])
     {
         ch->update_map();
-        ch->update_external(true);
+        ch->show();
     }
     else
     {
@@ -32,3 +35,9 @@ async::task<bool> map_world::handle(fb::socket<character>& session, game_reqs::m
     }
     co_return true;
 }
+
+template class map_world<fb::protocol::CLIENT_VERSION::v550>;
+template class map_world<fb::protocol::CLIENT_VERSION::v565>;
+template class map_world<fb::protocol::CLIENT_VERSION::v651>;
+
+} // namespace fb::game::handler::protocol

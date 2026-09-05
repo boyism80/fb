@@ -5,12 +5,12 @@
 #include <sstream>
 #include <vector>
 
-fb::model::__ability::__ability() :
+fb::model::___ability::___ability() :
     fb::model::kv_container<fb::model::enum_value::CLASS, fb::model::kv_container<uint8_t, fb::model::ability>>(
         std::string_view("json/ability.json"))
 { }
 
-void fb::model::__ability::build_stacked_exp()
+void fb::model::___ability::build_stacked_exp()
 {
     this->_stacked_exp.clear();
 
@@ -67,7 +67,7 @@ void fb::model::__ability::build_stacked_exp()
     }
 }
 
-uint64_t fb::model::__ability::stacked_exp(fb::model::enum_value::CLASS cls, uint8_t level) const
+uint64_t fb::model::___ability::stacked_exp(fb::model::enum_value::CLASS cls, uint8_t level) const
 {
     auto cls_iter = this->_stacked_exp.find(cls);
     if (cls_iter == this->_stacked_exp.cend())

@@ -180,12 +180,12 @@ async::task<void> game_bot_controller::on_time(game_bot& bot, const game_resp::t
     co_return;
 }
 
-async::task<void> game_bot_controller::on_state(game_bot& bot, const game_resp::update_internal& response)
+async::task<void> game_bot_controller::on_state(game_bot& bot, const game_resp::update_internal_v550& response)
 {
     if (ENUM_IN(response.level, UPDATE_STATE_LEVEL::BASED))
     {
         bot.set_nation(response.ch_nation);
-        bot.set_creature(response.ch_creature);
+        bot.set_divine_beast(response.ch_divine_beast);
         bot.set_level(response.ch_level);
         bot.set_base_hp(response.ch_base_hp);
         bot.set_base_mp(response.ch_base_mp);
@@ -260,7 +260,7 @@ async::task<void> game_bot_controller::on_move(game_bot& bot, const game_resp::m
     co_return;
 }
 
-async::task<void> game_bot_controller::on_map(game_bot& bot, const game_resp::map_config& response)
+async::task<void> game_bot_controller::on_map(game_bot& bot, const game_resp::map_config_v550& response)
 {
     // TODO: Execute map-specific test scenarios
     // Example: Test NPC interactions, item spawning, area transitions, etc.
@@ -315,7 +315,10 @@ async::task<void> game_bot_controller::on_bot_connected(game_bot& bot)
                       bot.transfer_buffer().size(),
                       bot.inited());
 
-    bot.send(fb::protocol::game::request::login(bot.transfer_buffer()), false, true);
+    // Bootstrap 0x10 always uses the v550 layout; the packed client_version field
+    // inside the transfer blob still establishes the session version.
+    using login_request = fb::protocol::game::request::login<fb::protocol::CLIENT_VERSION::v550>;
+    bot.send(login_request(bot.transfer_buffer()), false, true);
 
     co_return;
 }

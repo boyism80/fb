@@ -8,5 +8,7 @@
 #include <fb/login/protocol/create.h>
 #include <fb/login/protocol/complete.h>
 #include <fb/login/protocol/update_pw.h>
+#include <fb/login/protocol/meta_dat.h>
+#include <fb/login/protocol/name_list.h>
 
 #endif

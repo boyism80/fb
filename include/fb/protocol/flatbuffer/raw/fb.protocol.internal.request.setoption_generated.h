@@ -13,6 +13,8 @@ static_assert(FLATBUFFERS_VERSION_MAJOR == 25 &&
               FLATBUFFERS_VERSION_REVISION == 10,
              "Non-compatible flatbuffers version included");
 
+#include "fb.protocol.internal.optionchange_generated.h"
+
 namespace fb {
 namespace protocol {
 namespace internal {
@@ -27,8 +29,7 @@ struct SetOption FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
   enum FlatBuffersVTableOffset FLATBUFFERS_VTABLE_UNDERLYING_TYPE {
     VT_WORLD = 4,
     VT_USER = 6,
-    VT_TYPE = 8,
-    VT_ENABLED = 10
+    VT_CHANGES = 8
   };
   uint32_t world() const {
     return GetField<uint32_t>(VT_WORLD, 0);
@@ -36,18 +37,16 @@ struct SetOption FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
   uint32_t user() const {
     return GetField<uint32_t>(VT_USER, 0);
   }
-  uint8_t type() const {
-    return GetField<uint8_t>(VT_TYPE, 0);
-  }
-  bool enabled() const {
-    return GetField<uint8_t>(VT_ENABLED, 0) != 0;
+  const ::flatbuffers::Vector<::flatbuffers::Offset<fb::protocol::internal::raw::OptionChange>> *changes() const {
+    return GetPointer<const ::flatbuffers::Vector<::flatbuffers::Offset<fb::protocol::internal::raw::OptionChange>> *>(VT_CHANGES);
   }
   bool Verify(::flatbuffers::Verifier &verifier) const {
     return VerifyTableStart(verifier) &&
            VerifyField<uint32_t>(verifier, VT_WORLD, 4) &&
            VerifyField<uint32_t>(verifier, VT_USER, 4) &&
-           VerifyField<uint8_t>(verifier, VT_TYPE, 1) &&
-           VerifyField<uint8_t>(verifier, VT_ENABLED, 1) &&
+           VerifyOffset(verifier, VT_CHANGES) &&
+           verifier.VerifyVector(changes()) &&
+           verifier.VerifyVectorOfTables(changes()) &&
            verifier.EndTable();
   }
 };
@@ -62,11 +61,8 @@ struct SetOptionBuilder {
   void add_user(uint32_t user) {
     fbb_.AddElement<uint32_t>(SetOption::VT_USER, user, 0);
   }
-  void add_type(uint8_t type) {
-    fbb_.AddElement<uint8_t>(SetOption::VT_TYPE, type, 0);
-  }
-  void add_enabled(bool enabled) {
-    fbb_.AddElement<uint8_t>(SetOption::VT_ENABLED, static_cast<uint8_t>(enabled), 0);
+  void add_changes(::flatbuffers::Offset<::flatbuffers::Vector<::flatbuffers::Offset<fb::protocol::internal::raw::OptionChange>>> changes) {
+    fbb_.AddOffset(SetOption::VT_CHANGES, changes);
   }
   explicit SetOptionBuilder(::flatbuffers::FlatBufferBuilder &_fbb)
         : fbb_(_fbb) {
@@ -83,14 +79,25 @@ inline ::flatbuffers::Offset<SetOption> CreateSetOption(
     ::flatbuffers::FlatBufferBuilder &_fbb,
     uint32_t world = 0,
     uint32_t user = 0,
-    uint8_t type = 0,
-    bool enabled = false) {
+    ::flatbuffers::Offset<::flatbuffers::Vector<::flatbuffers::Offset<fb::protocol::internal::raw::OptionChange>>> changes = 0) {
   SetOptionBuilder builder_(_fbb);
+  builder_.add_changes(changes);
   builder_.add_user(user);
   builder_.add_world(world);
-  builder_.add_enabled(enabled);
-  builder_.add_type(type);
   return builder_.Finish();
+}
+
+inline ::flatbuffers::Offset<SetOption> CreateSetOptionDirect(
+    ::flatbuffers::FlatBufferBuilder &_fbb,
+    uint32_t world = 0,
+    uint32_t user = 0,
+    const std::vector<::flatbuffers::Offset<fb::protocol::internal::raw::OptionChange>> *changes = nullptr) {
+  auto changes__ = changes ? _fbb.CreateVector<::flatbuffers::Offset<fb::protocol::internal::raw::OptionChange>>(*changes) : 0;
+  return fb::protocol::internal::request::raw::CreateSetOption(
+      _fbb,
+      world,
+      user,
+      changes__);
 }
 
 inline const fb::protocol::internal::request::raw::SetOption *GetSetOption(const void *buf) {

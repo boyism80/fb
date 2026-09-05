@@ -25,6 +25,7 @@ struct listener_t
     virtual void on_dialog(character& me, std::optional<std::string> message, bool button_prev, bool button_next, uint32_t seq = 0xFFFFFFFD) = 0;
     virtual void on_dialog(character& me, const fb::model::object& object, std::optional<std::string> message, bool button_prev, bool button_next, uint32_t seq = 0xFFFFFFFD) = 0;
     virtual void on_dialog(character& me, const fb::game::object& obj, std::optional<std::string> message, bool button_prev, bool button_next, uint32_t seq = 0xFFFFFFFD) = 0;
+    virtual void on_dialog(character& me, std::unique_ptr<appearance>&& appearance_ptr, std::optional<std::string> message, bool button_prev, bool button_next, uint32_t seq = 0xFFFFFFFD) = 0;
     virtual void on_dialog(character& me, const fb::model::object& obj, std::string_view message, const std::vector<std::string>& menus, uint32_t seq = 0xFFFFFFFD, std::optional<std::string> ext = std::nullopt) = 0;
     virtual void on_dialog(character& me, const fb::game::object& obj, std::string_view message, const std::vector<std::string>& menus, uint32_t seq = 0xFFFFFFFD, std::optional<std::string> ext = std::nullopt) = 0;
     virtual void on_dialog(character& me, const fb::model::object& obj, std::optional<std::string> message, const std::vector<std::string>& menus, bool button_prev, uint32_t seq = 0xFFFFFFFD) = 0;

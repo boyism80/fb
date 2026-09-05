@@ -88,6 +88,17 @@ M.QUEST_SKULL_NECKLACE_9 = 263
 M.QUEST_HWAHWA = 264
 M.QUEST_JINGOGYUN = 265
 M.QUEST_HWAHWA_SMILE = 266
+M.QUEST_JUNGYANG_GUKHWA = 267
+M.QUEST_SEOTDAL_GIFTS = 268
+M.QUEST_KIMJANG = 269
+
+-- Festival quests that replay each lunar year (ensure + get).
+function M.get_annual(me, id)
+    local festival = require('lib.festival')
+    local q = me:quest(id)
+    festival.ensure_current_lunar_year(q)
+    return q
+end
 
 local interaction
 local function string_split(self, delimiter)

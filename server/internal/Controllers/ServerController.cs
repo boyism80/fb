@@ -31,7 +31,8 @@ namespace Internal.Controllers
                     request.Id,
                     request.Name,
                     request.Ip,
-                    request.Port);
+                    request.Port,
+                    request.Role);
 
                 return new Response.Heartbeat
                 {

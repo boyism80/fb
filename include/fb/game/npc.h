@@ -30,6 +30,9 @@ public:
     // clang-format on
 
 public:
+    const fb::model::npc& model() const override;
+
+public:
     // clang-format off
     void           soliloquy();
     void           assert_thread() const override final;

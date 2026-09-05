@@ -11,6 +11,9 @@ public:
     auxiliary(fb::game::server& server, const fb::model::auxiliary& model, const initial_params& params = {});
     auxiliary(const fb::game::auxiliary& right);
     ~auxiliary();
+
+public:
+    const fb::model::auxiliary& model() const override;
 };
 
 } // namespace fb::game

@@ -48,7 +48,7 @@ module.exports = function () {
                     max_concurrent: 128
                 },
                 client: {
-                    version: conf.gateway.client.version,
+                    versions: conf.gateway.client.versions,
                     nation: conf.gateway.client.nation
                 },
             }

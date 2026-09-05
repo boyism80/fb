@@ -1,23 +1,31 @@
 #include <fb/game/handler/protocol/click.h>
 #include <fb/game/server.h>
 
-using namespace fb::game::handler::protocol;
-
 namespace game_reqs = fb::protocol::game::request;
 
-click::click(fb::game::server& server) :
-    fb::handler::protocol<fb::game::server, game_reqs::click>(server)
+namespace fb::game::handler::protocol {
+
+template <fb::protocol::CLIENT_VERSION V>
+click<V>::click(fb::game::server& server) :
+    fb::handler::protocol<fb::game::server, game_reqs::click<V>>(server)
 { }
 
-async::task<bool> click::handle(fb::socket<character>& session, game_reqs::click& request)
+template <fb::protocol::CLIENT_VERSION V>
+async::task<bool> click<V>::handle(fb::socket<character>& session, game_reqs::click<V>& request)
 {
     auto ch = session.data();
     if (ch->inited() == false)
         co_return true;
 
+    if constexpr (V == fb::protocol::CLIENT_VERSION::v651)
+    {
+        if (request.flag == game_reqs::click<V>::FLAG_COORD)
+            co_return true;
+    }
+
     // Object-flag click (map object, F1/F2, dialog TOP): drop any waiting dialog first.
     // Real NPC then restarts via on_click; sentinel oid 0xFFFFFFFD just closes.
-    if (request.flag == game_reqs::click::FLAG_OBJECT && ch->dialog != nullptr)
+    if (request.flag == game_reqs::click<V>::FLAG_OBJECT && ch->dialog != nullptr)
     {
         ch->dialog->release();
         ch->dialog = nullptr;
@@ -40,7 +48,8 @@ async::task<bool> click::handle(fb::socket<character>& session, game_reqs::click
     }
 }
 
-async::task<void> click::handle_f1(character* ch)
+template <fb::protocol::CLIENT_VERSION V>
+async::task<void> click<V>::handle_f1(character* ch)
 {
     if (fb::model::const_value::script::F1_EVENT_SCRIPT == "")
         co_return;
@@ -57,7 +66,8 @@ async::task<void> click::handle_f1(character* ch)
     std::ignore = lua->call(1);
 }
 
-async::task<void> click::handle_f2(character* ch)
+template <fb::protocol::CLIENT_VERSION V>
+async::task<void> click<V>::handle_f2(character* ch)
 {
     if (fb::model::const_value::script::F2_EVENT_SCRIPT == "")
         co_return;
@@ -74,7 +84,8 @@ async::task<void> click::handle_f2(character* ch)
     std::ignore = lua->call(1);
 }
 
-async::task<void> click::handle_object_click(character* ch, game_reqs::click& request)
+template <fb::protocol::CLIENT_VERSION V>
+async::task<void> click<V>::handle_object_click(character* ch, game_reqs::click<V>& request)
 {
     auto map = ch->map();
     if (map == nullptr)
@@ -96,7 +107,7 @@ async::task<void> click::handle_object_click(character* ch, game_reqs::click& re
 
     case OBJECT_TYPE::NPC:
     {
-        auto& model = static_cast<npc&>(*you).based<fb::model::npc>();
+        auto& model = static_cast<npc&>(*you).model();
         auto  path  = std::format("scripts/npc/{}.lua", model.id);
         auto  func  = "on_click";
 
@@ -111,3 +122,9 @@ async::task<void> click::handle_object_click(character* ch, game_reqs::click& re
     break;
     }
 }
+
+template class click<fb::protocol::CLIENT_VERSION::v550>;
+template class click<fb::protocol::CLIENT_VERSION::v565>;
+template class click<fb::protocol::CLIENT_VERSION::v651>;
+
+} // namespace fb::game::handler::protocol

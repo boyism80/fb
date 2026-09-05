@@ -24,15 +24,13 @@ local DYE_OPTIONS = {
 }
 
 local function main_menu(me, npc)
-    local OPT_STYLE = '머리모양을 바꾸고 싶어요'
-    local OPT_DYE = '머리염색'
-    local index, button = me:pursuit(npc, '안녕하세요. 어떻게 오셨나요?', { OPT_STYLE, OPT_DYE })
+    local index, button = me:pursuit(npc, '안녕하세요. 어떻게 오셨나요?', { '머리모양을 바꾸고 싶어요', '머리염색' })
     if button == DIALOG_RESULT.QUIT then
         return
     end
-    if index == OPT_STYLE then
+    if index == 1 then
         do_hair_style(me, npc)
-    elseif index == OPT_DYE then
+    elseif index == 2 then
         do_hair_dye(me, npc)
     end
 end
@@ -63,7 +61,7 @@ local function do_hair_style(me, npc)
                 me:dialog(npc, '금액이 ' .. (HAIR_STYLE_PRICE - money) .. '전 부족합니다.', { prev = false, next = false })
                 return
             end
-            me:look(face)
+            me:hair(face)
             me:money(money - HAIR_STYLE_PRICE)
             me:dialog(npc, '선택하신 머리로 설정해 드렸습니다.', { prev = false, next = false })
             return

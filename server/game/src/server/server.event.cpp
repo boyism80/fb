@@ -2,6 +2,7 @@
 #include <fb/game/handler.h>
 #include <fb/log_collector.h>
 #include <fb/encoding.h>
+#include <fb/amqp_route.h>
 #include <json/json.h>
 #include <format>
 #include <tuple>
@@ -13,18 +14,6 @@ using namespace std::chrono_literals;
 namespace game_reqs     = fb::protocol::game::request;
 namespace internal      = fb::protocol::internal;
 namespace internal_reqs = fb::protocol::internal::request;
-
-bool fb::game::server::decrypt_policy(uint8_t opcode) const
-{
-    switch (opcode)
-    {
-    case game_reqs::login::opcode:
-        return false;
-
-    default:
-        return true;
-    }
-}
 
 bool fb::game::server::assert_tps(const fb::socket<fb::game::character>& socket) const
 {
@@ -60,7 +49,7 @@ async::task<bool> fb::game::server::on_disconnected(fb::socket<character>& socke
         {
             co_await this->save(*ch);
         }
-        auto world  = fb::config<uint32_t>("world");
+        auto world  = ch->world();
         std::ignore = co_await this->http.post("internal", "/in-game/logout", internal_reqs::Logout{world, ch->name()});
     }
     catch (std::exception& e)
@@ -87,6 +76,7 @@ async::task<bool> fb::game::server::on_disconnected(fb::socket<character>& socke
     if (ptr != nullptr)
     {
         co_await ptr->matchmaker.unregister_queue(true);
+        this->matches.leave(*ptr);
 
         // Log logout event
         auto log_data              = Json::Value();
@@ -96,7 +86,7 @@ async::task<bool> fb::game::server::on_disconnected(fb::socket<character>& socke
         auto map                   = ptr->map();
         if (map != nullptr)
         {
-            log_data["map"]        = map->model.id;
+            log_data["map"]        = map->model().id;
             log_data["position_x"] = ptr->position().x;
             log_data["position_y"] = ptr->position().y;
         }
@@ -105,10 +95,12 @@ async::task<bool> fb::game::server::on_disconnected(fb::socket<character>& socke
         auto& group_id = ptr->group_id();
         if (group_id.has_value())
         {
-            this->groups.write(group_id.value(), [weak](auto& group) {
+            auto gid = group_id.value();
+            this->groups.write(gid, [weak](auto& group) {
                 group->detach(weak);
             });
             ptr->group_reset();
+            this->groups.update_portraits(gid);
         }
 
         auto& clan_id = ptr->clan_id();
@@ -166,20 +158,18 @@ uint32_t fb::game::server::thread_id(const fb::socket<character>& socket) const
     if (map == nullptr)
         return 0;
 
-    return map->model.id;
+    return map->model().id;
 }
 
 void fb::game::server::on_init_amqp(fb::amqp::socket& amqp)
 {
-    auto world = config<uint32_t>("world");
-    this->handler.amqp.declare_queue("amq.direct", "fb.global");                        // Shutdown: all servers
-    this->handler.amqp.declare_queue("amq.direct", std::format("fb.{}.system", world)); // System mail, broadcast save
-    this->handler.amqp.declare_queue("amq.direct", std::format("fb.{}.game.{}", world, fb::config<uint32_t>("id")));
-    this->handler.amqp.declare_queue("amq.direct", std::format("fb.{}.global", world));
-    this->handler.amqp.declare_queue("amq.direct", std::format("fb.{}.group", world));
-    this->handler.amqp.declare_queue("amq.direct", std::format("fb.{}.clan", world));
-    this->handler.amqp.declare_queue("amq.direct", std::format("fb.{}.mail", world));
-    this->handler.amqp.declare_queue("amq.direct", std::format("fb.{}.storage", world));
-    this->handler.amqp.declare_queue("amq.direct", std::format("fb.{}.ban", world));
-    this->handler.amqp.declare_queue("amq.direct", std::format("fb.{}.matchmaking", world));
+    auto scope = fb::amqp_scope();
+    auto id    = fb::config<uint32_t>("id");
+    this->handler.amqp.declare_queue("amq.direct", "fb.global");
+    for (auto& t : fb::k_amqp_topics)
+    {
+        if (t.kind == fb::amqp_kind::home && scope == "cross")
+            continue;
+        this->handler.amqp.declare_queue("amq.direct", fb::amqp_key(t.name, scope, id));
+    }
 }

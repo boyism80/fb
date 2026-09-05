@@ -19,6 +19,7 @@ return {
             if btn == DIALOG_RESULT.QUIT then
                 return
             end
+            npc:chat('안녕하세요')
             q = me:start_quest(quest.QUEST_BEGINNER_PATH)
             if q == nil then
                 me:dialog(npc, "퀘스트를 시작할 수 없습니다.", { prev = false, next = false })
@@ -42,6 +43,7 @@ return {
                 return
             end
             me:dialog(npc, "안녕하세요", { prev = false, next = true })
+            npc:chat('안녕하세요')
             return
         end
 

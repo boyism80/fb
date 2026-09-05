@@ -16,10 +16,15 @@ npc::npc(const npc& right) :
 npc::~npc()
 { }
 
+const fb::model::npc& npc::model() const
+{
+    return fb::model::table::npc[this->_model_id];
+}
+
 void fb::game::npc::soliloquy()
 {
     this->assert_thread();
-    auto& model = this->based<fb::model::npc>();
+    auto& model = this->model();
     if (table::soliloquy->contains(model.id) == false)
         return;
 
@@ -44,5 +49,5 @@ void npc::assert_thread() const
 
 std::shared_ptr<fb::game::appearance> npc::appearance() const
 {
-    return this->based<fb::model::npc>().create_appearance();
+    return this->model().create_appearance();
 }

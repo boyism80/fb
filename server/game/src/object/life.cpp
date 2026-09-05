@@ -20,6 +20,11 @@ life::life(fb::game::server& server, const fb::model::life& model, fb::game::sta
 life::~life()
 { }
 
+const fb::model::life& life::model() const
+{
+    return fb::model::table::life[this->_model_id];
+}
+
 void life::on_init()
 {
     this->spells.owner(this->shared_from_this_as<life>());
@@ -67,12 +72,17 @@ void life::kill(DESTROY_TYPE destroy_type)
     this->stat.hp(0, false);
 }
 
-life::mob_vector life::damage_targets(const damage_list& targets, const damage_opts& opts)
+void life::handle_death(std::shared_ptr<fb::game::object> killer)
+{
+    this->assert_thread();
+}
+
+life::damage_settle life::damage_targets(const damage_list& targets, const damage_opts& opts)
 {
     this->assert_thread();
 
     auto attacker = this->shared_from_this_as<life>();
-    auto dead     = mob_vector{};
+    auto settle   = damage_settle{};
 
     for (auto& [target, value] : targets)
     {
@@ -93,13 +103,13 @@ life::mob_vector life::damage_targets(const damage_list& targets, const damage_o
                 if (body->parts_mode() == MOB_PARTS_MODE::PARTS && m->stat.hp() == 0 && m->invincible() == false)
                 {
                     m->invincible(true);
-                    dead.push_back(m);
+                    settle.dead_mobs.push_back(m);
                 }
 
                 if (body->stat.hp() == 0 && body->invincible() == false)
                 {
                     body->invincible(true);
-                    dead.push_back(body);
+                    settle.dead_mobs.push_back(body);
                 }
                 continue;
             }
@@ -113,23 +123,24 @@ life::mob_vector life::damage_targets(const damage_list& targets, const damage_o
                 continue;
 
             m->invincible(true);
-            dead.push_back(m);
+            settle.dead_mobs.push_back(m);
         }
         else if (target->is(OBJECT_TYPE::CHARACTER))
         {
-            if (target->stat.hp() != 0)
-                continue;
-
             auto ch = std::static_pointer_cast<character>(target);
-            if (ch->alive() == false)
+            if (ch->stat.hp() != 0)
                 continue;
 
-            ch->kill(DESTROY_TYPE::DEAD);
-            ch->notify_death(attacker);
+            // Defer kill/death_warp until after invoke_on_mob_damaged so later target
+            // checks still see a stable thread affinity for this attack frame.
+            if (ch->state() == STATE::GHOST)
+                continue;
+
+            settle.dead_characters.push_back(ch);
         }
     }
 
-    return dead;
+    return settle;
 }
 
 async::task<void> life::settle_deaths(mob_vector dead)
@@ -141,7 +152,7 @@ async::task<void> life::settle_deaths(mob_vector dead)
     {
         if (m == nullptr)
             continue;
-        groups[m->based<fb::model::mob>().id].push_back(m);
+        groups[m->model().id].push_back(m);
     }
 
     for (auto& [id, mobs] : groups)
@@ -194,9 +205,87 @@ async::task<void> life::damage_to(const damage_list& targets)
 async::task<void> life::damage_to(const damage_list& targets, const damage_opts& opts)
 {
     this->assert_thread();
-    auto dead = this->damage_targets(targets, opts);
-    if (dead.empty() == false)
-        co_await this->settle_deaths(std::move(dead));
+    auto settle = this->damage_targets(targets, opts);
+    co_await this->invoke_on_mob_damaged(targets);
+    co_await this->settle_character_deaths(settle.dead_characters, this->shared_from_this_as<life>());
+    if (settle.dead_mobs.empty() == false)
+        co_await this->settle_deaths(std::move(settle.dead_mobs));
+    co_return;
+}
+
+async::task<void> life::settle_character_deaths(const character_vector& dead, std::shared_ptr<life> killer)
+{
+    this->assert_thread();
+    for (auto& ch : dead)
+    {
+        if (ch == nullptr)
+            continue;
+
+        // HP already zero from damage; skip if already settled as ghost.
+        if (ch->stat.hp() != 0)
+            continue;
+        if (ch->state() == STATE::GHOST)
+            continue;
+
+        if (killer != nullptr && killer->is(OBJECT_TYPE::CHARACTER))
+        {
+            auto lua = this->server.lua.open("scripts/interaction.lua", "on_character_kill");
+            if (lua)
+            {
+                lua->pushobject(*killer);
+                lua->pushobject(*ch);
+                std::ignore = co_await lua->call(2);
+            }
+        }
+
+        // settle_death awaits penalty on this map thread, then detaches death_warp.
+        // Do not co_await map() here — that would migrate this damage coroutine
+        // onto the victim's destination map thread.
+        co_await ch->settle_death(killer);
+    }
+    co_return;
+}
+
+async::task<void> life::invoke_on_mob_damaged(const damage_list& targets)
+{
+    this->assert_thread();
+
+    auto attacker = this->shared_from_this_as<life>();
+    for (auto& [target, value] : targets)
+    {
+        if (target == nullptr || target->is(OBJECT_TYPE::MOB) == false)
+            continue;
+
+        auto m    = std::static_pointer_cast<mob>(target);
+        auto path = std::format("scripts/mob/{}.lua", m->model().id);
+        auto func = "on_mob_damaged";
+
+        // Avoid open(path, func) — it reports missing funcs for every generic mob.
+        auto lua = this->server.lua.new_context(nullptr, {.auto_release = false});
+        if (lua == nullptr)
+            continue;
+        if (lua->load(path) == false || lua->func(func) == false)
+        {
+            lua->release();
+            continue;
+        }
+
+        lua->pushobject(m);
+        lua->pushobject(attacker);
+        try
+        {
+            std::ignore = co_await lua->call(2);
+        }
+        catch (std::exception& e)
+        {
+            fb::logger::warn("error in on_mob_damaged {}: {}", m->model().id, e.what());
+        }
+        catch (...)
+        {
+            fb::logger::warn("unknown error in on_mob_damaged {}", m->model().id);
+        }
+        lua->release();
+    }
     co_return;
 }
 
@@ -229,7 +318,7 @@ async::task<void> life::attack(DURATION duration)
         auto weapon = ch->items.weapon();
         if (weapon != nullptr)
         {
-            auto& model = weapon->based<fb::model::weapon>();
+            auto& model = weapon->model();
             auto  path  = std::format("scripts/item/{}.lua", model.id);
             auto  func  = "on_attack";
 
@@ -255,7 +344,7 @@ async::task<void> life::attack(DURATION duration)
 uint64_t life::exp() const
 {
     this->assert_thread();
-    return static_cast<const fb::model::life&>(this->_model).exp;
+    return this->model().exp;
 }
 
 bool life::alive() const
@@ -268,7 +357,7 @@ bool life::active(fb::game::spell& spell, std::string_view message)
 {
     this->assert_thread();
 
-    auto& model = spell.model;
+    auto& model = spell.model();
     auto  path  = std::format("scripts/spell/{}.lua", model.id);
     auto  func  = "on_cast";
 
@@ -276,11 +365,11 @@ bool life::active(fb::game::spell& spell, std::string_view message)
     if (!lua)
         return false;
 
-    if (spell.model.type != SPELL_TYPE::INPUT)
+    if (spell.model().type != SPELL_TYPE::INPUT)
         return false;
 
     lua->pushobject(this);
-    lua->pushobject(spell.model);
+    lua->pushobject(spell.model());
     lua->pushstring(message);
     std::ignore = lua->call(3);
     return true;
@@ -302,7 +391,7 @@ bool life::active(fb::game::spell& spell, uint32_t oid)
 bool life::active(fb::game::spell& spell, fb::game::object& to)
 {
     this->assert_thread();
-    auto& model = spell.model;
+    auto& model = spell.model();
     auto  path  = std::format("scripts/spell/{}.lua", model.id);
     auto  func  = "on_cast";
 
@@ -310,7 +399,7 @@ bool life::active(fb::game::spell& spell, fb::game::object& to)
     if (!lua)
         return false;
 
-    if (spell.model.type != SPELL_TYPE::TARGET)
+    if (spell.model().type != SPELL_TYPE::TARGET)
         return false;
 
     auto map = this->map();
@@ -325,7 +414,7 @@ bool life::active(fb::game::spell& spell, fb::game::object& to)
 
     lua->pushobject(this);
     lua->pushobject(&to);
-    lua->pushobject(spell.model);
+    lua->pushobject(spell.model());
     std::ignore = lua->call(3);
     return true;
 }
@@ -333,7 +422,7 @@ bool life::active(fb::game::spell& spell, fb::game::object& to)
 bool life::active(fb::game::spell& spell)
 {
     this->assert_thread();
-    auto& model = spell.model;
+    auto& model = spell.model();
     auto  path  = std::format("scripts/spell/{}.lua", model.id);
     auto  func  = "on_cast";
 
@@ -341,11 +430,11 @@ bool life::active(fb::game::spell& spell)
     if (!lua)
         return false;
 
-    if (spell.model.type != SPELL_TYPE::NORMAL)
+    if (spell.model().type != SPELL_TYPE::NORMAL)
         return false;
 
     lua->pushobject(this);
-    lua->pushobject(spell.model);
+    lua->pushobject(spell.model());
     std::ignore = lua->call(2);
     return true;
 }

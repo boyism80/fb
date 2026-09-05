@@ -33,7 +33,7 @@ namespace Internal.Controllers
                 var summaryList = _mapper.Map<List<Http.Model.Mail>, List<Protocol.MailSummary>>(mails.ToList());
                 if (summaryList.Count > 0)
                 {
-                    // Resolve sender names from UIDs (name table is in global DB, cannot JOIN)
+                    // Find sender names from UIDs (name table is in unified DB, cannot JOIN)
                     var senderIds = mails.Select(m => m.Sender).Distinct().ToList();
                     var senderNames = await _dbContext.Character.GetName(world, senderIds);
 
@@ -74,7 +74,7 @@ namespace Internal.Controllers
 
                 var protocolMail = _mapper.Map<Protocol.Mail>(mail);
 
-                // Resolve sender name from UID (name table is in global DB, cannot JOIN)
+                // Find sender name from UID (name table is in unified DB, cannot JOIN)
                 var senderName = await _dbContext.Character.GetName(world, mail.Sender) ?? string.Empty;
                 protocolMail.Sender = senderName;
 
@@ -145,7 +145,7 @@ namespace Internal.Controllers
                     Error   = (uint)ErrorCode.None
                 };
 
-                await _rabbitMqService.PublishAsync(response, "amq.direct", $"fb.{request.World}.mail");
+                await _rabbitMqService.PublishFanoutAsync(response, "mail", request.World);
                 return response;
             }
             catch (LogicException e)
@@ -211,7 +211,7 @@ namespace Internal.Controllers
                     Error   = (uint)ErrorCode.None
                 };
 
-                await _rabbitMqService.PublishAsync(response, "amq.direct", $"fb.{request.World}.mail");
+                await _rabbitMqService.PublishFanoutAsync(response, "mail", request.World);
                 return response;
             }
             catch (LogicException e)
@@ -240,7 +240,7 @@ namespace Internal.Controllers
                 var mail = await _dbContext.Mail.Write(request.World, request.User, request.Sender, request.Title, request.Contents);
                 var protocolMail = _mapper.Map<Protocol.Mail>(mail);
 
-                // Resolve sender name from UID (name table is in global DB, cannot JOIN)
+                // Find sender name from UID (name table is in unified DB, cannot JOIN)
                 var senderName = await _dbContext.Character.GetName(request.World, mail.Sender) ?? string.Empty;
                 protocolMail.Sender = senderName;
 
@@ -252,7 +252,7 @@ namespace Internal.Controllers
                     Error = (uint)ErrorCode.None
                 };
 
-                await _rabbitMqService.PublishAsync(response, "amq.direct", $"fb.{request.World}.mail");
+                await _rabbitMqService.PublishFanoutAsync(response, "mail", request.World);
                 return response;
             }
             catch (LogicException e)

@@ -8,7 +8,8 @@ namespace fb::login::handler::protocol {
 
 namespace login_reqs = fb::protocol::login::request;
 
-class agreement : public fb::handler::protocol<fb::login::server, login_reqs::agreement>
+template <fb::protocol::CLIENT_VERSION V>
+class agreement : public fb::handler::protocol<fb::login::server, login_reqs::agreement<V>, 1000, 10, true>
 {
 public:
     agreement(fb::login::server& server);
@@ -17,7 +18,7 @@ public:
     agreement& operator= (const agreement&) = delete;
     agreement& operator= (agreement&&)      = delete;
 
-    async::task<bool> handle(fb::socket<fb::login::session>& session, login_reqs::agreement& request) override;
+    async::task<bool> handle(fb::socket<fb::login::session>& session, login_reqs::agreement<V>& request) override;
 };
 
 } // namespace fb::login::handler::protocol

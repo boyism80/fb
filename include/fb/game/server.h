@@ -12,17 +12,24 @@
 #include <fb/game/map.h>
 #include <fb/hash.h>
 #include <fb/game/group.h>
+#include <fb/game/match.h>
 #include <fb/game/clan.h>
+#include <fb/game/castle.h>
 #include <fb/game/service/mail.h>
 #include <fb/game/service/bulletin.h>
 #include <fb/game/service/system_storage.h>
 #include <fb/game/service/system_mail.h>
 #include <fb/game/service/schedule.h>
+#include <fb/game/service/script_timer.h>
 #include <fb/game/service/property.h>
+#include <fb/game/service/weather.h>
 #include <fb/game/storage.h>
 #include <fb/game/system_storage_box.h>
 #include <fb/log_collector.h>
+#include <fb/meta_dat_file.h>
+#include <fb/sobj_tbl_file.h>
 #include <fb/synchronized.h>
+#include <optional>
 #include <vector>
 #include <memory>
 #include <mutex>
@@ -43,10 +50,17 @@ REGISTER_RESPONSE(fb::protocol::internal::request::LeaveClan, fb::protocol::inte
 REGISTER_RESPONSE(fb::protocol::internal::request::KickClan, fb::protocol::internal::response::UpdatedClan)
 REGISTER_RESPONSE(fb::protocol::internal::request::ChangeClanRole, fb::protocol::internal::response::UpdatedClan)
 REGISTER_RESPONSE(fb::protocol::internal::request::BroadcastClan, fb::protocol::internal::response::BroadcastClan)
+REGISTER_RESPONSE(fb::protocol::internal::request::AllyClan, fb::protocol::internal::response::UpdatedClan)
+REGISTER_RESPONSE(fb::protocol::internal::request::UnallyClan, fb::protocol::internal::response::UpdatedClan)
+REGISTER_RESPONSE(fb::protocol::internal::request::DeclareClanEnemy, fb::protocol::internal::response::UpdatedClan)
+REGISTER_RESPONSE(fb::protocol::internal::request::EndClanEnemy, fb::protocol::internal::response::UpdatedClan)
+REGISTER_RESPONSE(fb::protocol::internal::request::SetClanMoney, fb::protocol::internal::response::UpdatedClan)
+REGISTER_RESPONSE(fb::protocol::internal::request::SetCastleOwner, fb::protocol::internal::response::UpdatedCastle)
 REGISTER_RESPONSE(fb::protocol::internal::request::Logout, fb::protocol::internal::response::Logout)
 REGISTER_RESPONSE(fb::protocol::internal::request::Save, fb::protocol::internal::response::Save)
 REGISTER_RESPONSE(fb::protocol::internal::request::SaveBatch, fb::protocol::internal::response::BatchSave)
 REGISTER_RESPONSE(fb::protocol::internal::request::Broadcast, fb::protocol::internal::response::Broadcast)
+REGISTER_RESPONSE(fb::protocol::internal::request::FriendBroadcast, fb::protocol::internal::response::FriendBroadcast)
 REGISTER_RESPONSE(fb::protocol::internal::request::CreateGroup, fb::protocol::internal::response::GroupDetails)
 REGISTER_RESPONSE(fb::protocol::internal::request::EnterGroup, fb::protocol::internal::response::UpdatedGroup)
 REGISTER_RESPONSE(fb::protocol::internal::request::LeaveGroup, fb::protocol::internal::response::UpdatedGroup)
@@ -61,6 +75,7 @@ REGISTER_RESPONSE(fb::protocol::internal::request::DeliverSystemMail, fb::protoc
 REGISTER_RESPONSE(fb::protocol::internal::request::DeleteMail, fb::protocol::internal::response::DeleteMail)
 REGISTER_RESPONSE(fb::protocol::internal::request::Whisper, fb::protocol::internal::response::Whisper)
 REGISTER_RESPONSE(fb::protocol::internal::request::Transfer, fb::protocol::internal::response::Transfer)
+REGISTER_RESPONSE(fb::protocol::internal::request::MatchTransfer, fb::protocol::internal::response::MatchTransfer)
 REGISTER_RESPONSE(fb::protocol::internal::request::UpdateFriends, fb::protocol::internal::response::UpdateFriends)
 REGISTER_RESPONSE(fb::protocol::internal::request::WriteSystemStorageBox, fb::protocol::internal::response::WriteSystemStorageBox)
 REGISTER_RESPONSE(fb::protocol::internal::request::WriteStorageBox, fb::protocol::internal::response::WriteStorageBox)
@@ -120,23 +135,30 @@ public:
     using protocol_generator = std::function<std::unique_ptr<fb::protocol::header>(const fb::game::object&)>;
 
 private:
-    fb::model::datetime _time;
-    double              _exp_multiplier;
-    double              _drop_rate_multiplier;
+    fb::model::datetime                           _time;
+    double                                        _exp_multiplier;
+    double                                        _drop_rate_multiplier;
+    std::unordered_map<uint32_t, fb::model::mob*> _collection_mobs;
 
 public:
     fb::log_collector       log;
+    fb::meta_dat_file       meta;
+    fb::sobj_tbl_file       sobj;
     listener_impl           listener;
     character::container    characters;
     map::container          maps;
     clan::container         clans;
+    castle::container       castles;
     group::container        groups;
+    match::container        matches;
     service::mail           mail;
     service::bulletin       bulletin;
     service::system_storage system_storage;
     service::system_mail    system_mail;
     service::schedule       schedules;
+    service::script_timer   script_timers;
     service::property       property;
+    service::weather        weather;
 
 public:
     server(boost::asio::io_context& io_context, uint16_t port);
@@ -154,6 +176,7 @@ private:
     void                  init_amqp_handlers();
     async::task<void>     init_map_scripts();
     async::task<void>     init_script();
+    void                  init_collection_mobs();
     // clang-format on
 
 public:
@@ -183,7 +206,6 @@ protected:
     // clang-format off
     uint8_t           id() const override final;
     internal::Service service() const override final;
-    bool              decrypt_policy(uint8_t opcode) const override final;
     bool              assert_tps(const fb::socket<character>& socket) const override final;
     void              on_init_amqp(fb::amqp::socket& amqp) override final;
     async::task<void> on_start() override final;
@@ -198,19 +220,24 @@ public:
     async::task<void>                 save();
     async::task<void>                 save(character& ch);
     void                              sync_time();
+    static uint8_t                    brightness_from_time(uint8_t hours, uint8_t minutes);
+    uint8_t                           brightness() const;
     async::task<internal_resp::Ban>   ban(std::string_view name, std::string_view reason, const std::optional<uint32_t>& days);
     async::task<internal_resp::Unban> unban(std::string_view name);
     // clang-format on
 
 public:
     // clang-format off
-    virtual uint32_t           thread_id(const fb::socket<character>& socket) const;
-    const fb::model::datetime& time() const;
-    async::task<void>          update_status();
-    double                     exp_multiplier() const;
-    void                       exp_multiplier(double value);
-    double                     drop_rate_multiplier() const;
-    void                       drop_rate_multiplier(double value);
+    virtual uint32_t                                     thread_id(const fb::socket<character>& socket) const;
+    const fb::model::datetime&                           time() const;
+    async::task<void>                                    update_status();
+    double                                               exp_multiplier() const;
+    void                                                 exp_multiplier(double value);
+    double                                               drop_rate_multiplier() const;
+    void                                                 drop_rate_multiplier(double value);
+    const std::unordered_map<uint32_t, fb::model::mob*>& collection_mobs() const;
+    fb::model::mob*                                      collection_mob(uint32_t mob_id) const;
+    fb::model::mob*                                      collection_mob(const fb::meta_dat_collection_item& item) const;
     // clang-format on
 };
 

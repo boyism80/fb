@@ -2,6 +2,7 @@
 #define __PROTOCOL_GAME_POPUP_INPUT_SUBMIT_H__
 
 #include <fb/protocol/header.h>
+#include <fb/protocol/client_version.h>
 #include <fb/model/model.h>
 #include <string>
 
@@ -9,16 +10,12 @@ namespace fb::protocol::game::request {
 
 using namespace fb::model::enum_value;
 
-/**
- * C2S 0x23 — popup_input (S2C 0x1B) dismiss submit.
- * Client: sub_48C900 (mode==0) → sub_48C800.
- * Wire: param0 (echo of S2C 0x1B param0) + u16 BE text_len + CP949 text.
- * Distinct from S2C option (also 0x23).
- */
+template <CLIENT_VERSION V>
 class popup_input_submit : public fb::protocol::header
 {
 public:
     static constexpr uint8_t opcode = 0x23;
+    FB_PROTOCOL_VERSION_TAGS(V);
 
 public:
 #ifdef BOT
@@ -31,10 +28,7 @@ public:
 
 public:
 #ifdef BOT
-    popup_input_submit(uint8_t param0, const std::string& text) :
-        param0(param0),
-        text(text)
-    { }
+    popup_input_submit(uint8_t param0, const std::string& text);
 #else
     popup_input_submit() = default;
 #endif

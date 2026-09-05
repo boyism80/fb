@@ -12,3 +12,8 @@ auxiliary::auxiliary(const auxiliary& right) :
 
 auxiliary::~auxiliary()
 { }
+
+const fb::model::auxiliary& auxiliary::model() const
+{
+    return static_cast<const fb::model::auxiliary&>(fb::model::table::item[this->_model_id]);
+}

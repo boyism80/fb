@@ -46,6 +46,156 @@ spec:
           configMap:
             name: game-dev-0
 ---
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: game-cross-200
+  namespace: fb
+spec:
+  serviceName: game
+  replicas: 1
+  selector:
+    matchLabels:
+      app: game
+      game: game-cross-200
+  template:
+    metadata:
+      labels:
+        app: game
+        game: game-cross-200
+    spec:
+      containers:
+        - name: game
+          image: fb/game:local
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 30320
+              name: game-200
+          command: ["./game"]
+          args: ["-c", "config.json"]
+          volumeMounts:
+            - name: config-volume
+              mountPath: /app/config.json
+              subPath: config.json
+          readinessProbe:
+            tcpSocket:
+              port: game-200
+            initialDelaySeconds: 10
+            periodSeconds: 5
+            timeoutSeconds: 3
+            failureThreshold: 3
+          livenessProbe:
+            tcpSocket:
+              port: game-200
+            initialDelaySeconds: 30
+            periodSeconds: 10
+            timeoutSeconds: 3
+            failureThreshold: 3
+      volumes:
+        - name: config-volume
+          configMap:
+            name: game-cross-200
+---
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: game-cross-201
+  namespace: fb
+spec:
+  serviceName: game
+  replicas: 1
+  selector:
+    matchLabels:
+      app: game
+      game: game-cross-201
+  template:
+    metadata:
+      labels:
+        app: game
+        game: game-cross-201
+    spec:
+      containers:
+        - name: game
+          image: fb/game:local
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 30321
+              name: game-201
+          command: ["./game"]
+          args: ["-c", "config.json"]
+          volumeMounts:
+            - name: config-volume
+              mountPath: /app/config.json
+              subPath: config.json
+          readinessProbe:
+            tcpSocket:
+              port: game-201
+            initialDelaySeconds: 10
+            periodSeconds: 5
+            timeoutSeconds: 3
+            failureThreshold: 3
+          livenessProbe:
+            tcpSocket:
+              port: game-201
+            initialDelaySeconds: 30
+            periodSeconds: 10
+            timeoutSeconds: 3
+            failureThreshold: 3
+      volumes:
+        - name: config-volume
+          configMap:
+            name: game-cross-201
+---
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: game-cross-202
+  namespace: fb
+spec:
+  serviceName: game
+  replicas: 1
+  selector:
+    matchLabels:
+      app: game
+      game: game-cross-202
+  template:
+    metadata:
+      labels:
+        app: game
+        game: game-cross-202
+    spec:
+      containers:
+        - name: game
+          image: fb/game:local
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 30322
+              name: game-202
+          command: ["./game"]
+          args: ["-c", "config.json"]
+          volumeMounts:
+            - name: config-volume
+              mountPath: /app/config.json
+              subPath: config.json
+          readinessProbe:
+            tcpSocket:
+              port: game-202
+            initialDelaySeconds: 10
+            periodSeconds: 5
+            timeoutSeconds: 3
+            failureThreshold: 3
+          livenessProbe:
+            tcpSocket:
+              port: game-202
+            initialDelaySeconds: 30
+            periodSeconds: 10
+            timeoutSeconds: 3
+            failureThreshold: 3
+      volumes:
+        - name: config-volume
+          configMap:
+            name: game-cross-202
+---
 apiVersion: v1
 kind: Service
 metadata:
@@ -60,3 +210,15 @@ spec:
       port: 30030
       targetPort: game-0
       nodePort: 30030
+    - name: game-cross-200
+      port: 30320
+      targetPort: game-200
+      nodePort: 30320
+    - name: game-cross-201
+      port: 30321
+      targetPort: game-201
+      nodePort: 30321
+    - name: game-cross-202
+      port: 30322
+      targetPort: game-202
+      nodePort: 30322

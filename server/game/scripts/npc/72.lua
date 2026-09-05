@@ -2,14 +2,12 @@
 
 return {
     on_click = function(me, npc)
-        local OPT_PK12 = 'PK12지입장'
-        local OPT_BRIDE = '신부여성입장'
-        local selected, button = me:pursuit(npc, '안녕하세요. 어떻게 오셨나요?', { OPT_PK12, OPT_BRIDE })
+        local selected, button = me:pursuit(npc, '안녕하세요. 어떻게 오셨나요?', { 'PK12지입장', '신부여성입장' })
         if button == DIALOG_RESULT.QUIT then
             return
         end
 
-        if selected == OPT_PK12 then
+        if selected == 1 then
             ::NPC_72_0001::
             button = me:dialog(npc, '그래, 여길 들어가고 싶단 말이지?', { prev = false, next = true })
             if button == DIALOG_RESULT.QUIT then
@@ -106,7 +104,7 @@ return {
             local y = 12 + math.random(1, 5)
             me:map(map, {x, y})
 
-        elseif selected == OPT_BRIDE then
+        elseif selected == 2 then
             ::NPC_72_0010::
             button = me:dialog(npc, '그래, 무슨일이지?', { prev = false, next = true })
             if button == DIALOG_RESULT.QUIT then

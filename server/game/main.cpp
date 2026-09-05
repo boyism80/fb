@@ -1,13 +1,14 @@
 #include <fb/game/server.h>
+#include <fb/crash.h>
+#include <fb/logger.h>
 #include <fb/leak.h>
 #include <fb/mst.h>
 #include <boost/program_options.hpp>
+#include <boost/stacktrace.hpp>
 #include <filesystem>
 #ifdef _WIN32
 #include <Windows.h>
 #include "resource.h"
-#else
-#include <execinfo.h>
 #endif
 
 using namespace fb;
@@ -38,6 +39,7 @@ int main(int argc, char* argv[])
             std::cerr << "Failed to initialize config from: " << config_path << std::endl;
             return -1;
         }
+        fb::crash::install("game");
     }
     catch (const std::exception& e)
     {
@@ -65,7 +67,9 @@ int main(int argc, char* argv[])
     }
     catch (std::exception& e)
     {
-        std::cerr << "unhandled exception catched in main : " << e.what() << std::endl;
+        fb::logger::fatal("unhandled exception catched in main : {}\n{}",
+                          e.what(),
+                          boost::stacktrace::to_string(boost::stacktrace::stacktrace()));
     }
 
     // Release

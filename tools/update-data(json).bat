@@ -1,0 +1,43 @@
+@ECHO OFF
+
+git submodule update --recursive --remote data-converter
+PUSHD data-converter
+
+SET DISABLE_TTY=%1
+
+IF "%1" == "true" (
+	dotnet publish ExcelTableConverter.csproj -c Release /p:DefineConstants=DISABLED_TTY -o bin
+) ELSE (
+	dotnet publish ExcelTableConverter.csproj -c Release -o bin
+)
+
+if ERRORLEVEL 1 GOTO END
+PUSHD bin
+CALL ExcelTableConverter.exe --dir=..\..\..\resources\table --lang="c++|c#|node|go" --dsl=..\..\..\resources\table\dsl.json --ns fb.model --additional-headers=model.additional.h
+POPD
+POPD
+
+if ERRORLEVEL 1 GOTO END
+
+PUSHD ..
+RMDIR /s /q "server\game\json"
+RMDIR /s /q "server\login\json"
+RMDIR /s /q "server\bot\json"
+XCOPY "tools\data-converter\bin\output\json\server\*.json" "server\game\json\*.json"
+XCOPY "tools\data-converter\bin\output\json\server\*.json" "server\login\json\*.json"
+XCOPY "tools\data-converter\bin\output\json\server\*.json" "server\bot\json\*.json"
+
+RMDIR /s /q "server\internal\json"
+RMDIR /s /q "server\admin-tool\json"
+RMDIR /s /q "server\marketplace\json"
+RMDIR /s /q "server\matchmaking\json"
+XCOPY "tools\data-converter\bin\output\json\server\*.json" "server\internal\json\*.json"
+XCOPY "tools\data-converter\bin\output\json\server\*.json" "server\admin-tool\json\*.json"
+XCOPY "tools\data-converter\bin\output\json\server\*.json" "server\marketplace\json\*.json"
+XCOPY "tools\data-converter\bin\output\json\server\*.json" "server\matchmaking\json\*.json"
+POPD
+
+GOTO SKIP_PAUSE
+:END
+PAUSE
+:SKIP_PAUSE

@@ -17,11 +17,12 @@ namespace Http.Model
         public string Pw { get; set; }
         public uint? Birth { get; set; }
         public Fb.Model.EnumValue.Role Role { get; set; }
-        public ushort Look { get; set; }
+        public ushort Hair { get; set; }
+        public byte Face { get; set; }
         public byte Color { get; set; }
         public byte Gender { get; set; }
         public byte Nation { get; set; }
-        public byte? Creature { get; set; }
+        public byte? DivineBeast { get; set; }
         public uint Map { get; set; }
         public ushort PositionX { get; set; }
         public ushort PositionY { get; set; }
@@ -52,6 +53,8 @@ namespace Http.Model
         public string Title { get; set; } = string.Empty;
         public bool SuperHide { get; set; }
         public byte Speed { get; set; }
+        public short Reputation { get; set; }
+        public ushort Evaluation { get; set; }
         public DateTime? FirstLoginDate { get; set; }
     }
 }

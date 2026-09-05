@@ -85,11 +85,11 @@ void storage_box::init(const std::vector<entry>& entries)
     }
 }
 
-void storage_box::apply_delivered(const std::vector<entry>& delivered)
+void storage_box::add(const std::vector<entry>& entries)
 {
     this->_owner.assert_thread();
 
-    for (const auto& box : delivered)
+    for (const auto& box : entries)
     {
         if (box.system_storage_box_id.has_value())
         {
@@ -190,7 +190,7 @@ async::task<bool> storage_box::receive_reward(uint32_t entry_id)
     }
 
     auto weak  = this->_owner.weak_from_this_as<character>();
-    auto world = fb::config<uint32_t>("world");
+    auto world = this->_owner.world();
     fb::logger::debug("storage_box.receive_reward claim begin user={} entry={} world={} http_delay_ms={}",
                       this->_owner.id,
                       entry_id,

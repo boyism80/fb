@@ -8,18 +8,23 @@ using namespace fb::login::handler::protocol;
 
 namespace internal_reqs = fb::protocol::internal::request;
 
-create_account::create_account(fb::login::server& server) :
-    fb::handler::protocol<fb::login::server, fb::protocol::login::request::create>(server)
+template <fb::protocol::CLIENT_VERSION V>
+create_account<V>::create_account(fb::login::server& server) :
+    fb::handler::protocol<fb::login::server, login_reqs::create<V>>(server)
 { }
 
-async::task<bool> create_account::handle(fb::socket<fb::login::session>&       session,
-                                         fb::protocol::login::request::create& request)
+template <fb::protocol::CLIENT_VERSION V>
+async::task<bool> create_account<V>::handle(fb::socket<fb::login::session>& session, login_reqs::create<V>& request)
 {
     auto fd   = session.fd();
     auto weak = session.weak_from_this_as<fb::socket<fb::login::session>>();
 
     try
     {
+        auto session_data = session.data();
+        if (session_data == nullptr)
+            throw std::runtime_error("session is not established");
+
         auto name = std::string(request.id);
         auto pw   = std::string(request.pw);
 
@@ -63,7 +68,6 @@ async::task<bool> create_account::handle(fb::socket<fb::login::session>&       s
             throw id_exception(_TEXT(MESSAGE_ACCOUNT_ALREADY_EXISTS));
 
         this->server.send(session, response::message("", 0x00));
-        auto session_data  = session.data();
         session_data->pk   = uid;
         session_data->name = name;
 
@@ -88,3 +92,7 @@ async::task<bool> create_account::handle(fb::socket<fb::login::session>&       s
 
     co_return true;
 }
+
+template class create_account<fb::protocol::CLIENT_VERSION::v550>;
+template class create_account<fb::protocol::CLIENT_VERSION::v565>;
+template class create_account<fb::protocol::CLIENT_VERSION::v651>;

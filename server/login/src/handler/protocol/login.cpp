@@ -10,11 +10,13 @@ using table = fb::model::table;
 
 namespace internal_reqs = fb::protocol::internal::request;
 
-login::login(fb::login::server& server) :
-    fb::handler::protocol<fb::login::server, fb::protocol::login::request::login>(server)
+template <fb::protocol::CLIENT_VERSION V>
+login<V>::login(fb::login::server& server) :
+    fb::handler::protocol<fb::login::server, login_reqs::login<V>>(server)
 { }
 
-async::task<bool> login::handle(fb::socket<fb::login::session>& session, fb::protocol::login::request::login& request)
+template <fb::protocol::CLIENT_VERSION V>
+async::task<bool> login<V>::handle(fb::socket<fb::login::session>& session, login_reqs::login<V>& request)
 {
     auto weak  = session.weak_from_this_as<fb::socket<fb::login::session>>();
     auto delay = fb::config<uint32_t>("transfer delay");
@@ -28,9 +30,9 @@ async::task<bool> login::handle(fb::socket<fb::login::session>& session, fb::pro
         this->server.assert_account(name, pw);
 
         auto   world = fb::config<uint32_t>("world");
-        auto&& resp1 =
-            co_await this->server.http.get<internal::response::GetUid>("internal",
-                                                                       std::format("/account/{}/uid/{}", world, name));
+        auto&& resp1 = co_await this->server.http.template get<internal::response::GetUid>(
+            "internal",
+            std::format("/account/{}/uid/{}", world, name));
         co_await this->server.threads.switching(weak);
 
         if (resp1.success == false)
@@ -132,7 +134,8 @@ async::task<bool> login::handle(fb::socket<fb::login::session>& session, fb::pro
     co_return true;
 }
 
-std::string login::build_ban_message(std::string_view reason, const std::optional<std::string>& expire_date)
+template <fb::protocol::CLIENT_VERSION V>
+std::string login<V>::build_ban_message(std::string_view reason, const std::optional<std::string>& expire_date)
 {
     auto ban_message = std::string(_TEXT(MESSAGE_ACCOUNT_BANNED));
     if (!reason.empty())
@@ -150,8 +153,9 @@ std::string login::build_ban_message(std::string_view reason, const std::optiona
     return ban_message;
 }
 
-std::string login::build_maintenance_message(const std::optional<std::string>& message,
-                                             const std::optional<std::string>& end_time)
+template <fb::protocol::CLIENT_VERSION V>
+std::string login<V>::build_maintenance_message(const std::optional<std::string>& message,
+                                                const std::optional<std::string>& end_time)
 {
     auto maintenance_message = std::string(_TEXT(MESSAGE_MAINTENANCE_IN_PROGRESS));
     if (message.has_value() && !message.value().empty())
@@ -164,3 +168,7 @@ std::string login::build_maintenance_message(const std::optional<std::string>& m
     }
     return maintenance_message;
 }
+
+template class login<fb::protocol::CLIENT_VERSION::v550>;
+template class login<fb::protocol::CLIENT_VERSION::v565>;
+template class login<fb::protocol::CLIENT_VERSION::v651>;

@@ -1,3 +1,5 @@
+local castle = require('lib.castle')
+
 local M = {}
 
 local function execute_mob_spell_hit(me, you, spell)
@@ -39,8 +41,8 @@ function M.force_position(you, x, y)
     return true
 end
 
-function M.creature_spell(creature, index)
-    if creature == CREATURE.PHOENIX then
+function M.divine_beast_spell(divine_beast, index)
+    if divine_beast == DIVINE_BEAST.VERMILION_BIRD then
         if index == 1 then
             return '화염주'
         elseif index == 2 then
@@ -55,7 +57,7 @@ function M.creature_spell(creature, index)
             return nil
         end
         
-    elseif creature == CREATURE.TIGER then
+    elseif divine_beast == DIVINE_BEAST.WHITE_TIGER then
         if index == 1 then
             return '백열주'
         elseif index == 2 then
@@ -70,7 +72,7 @@ function M.creature_spell(creature, index)
             return nil
         end
         
-    elseif creature == CREATURE.TURTLE then
+    elseif divine_beast == DIVINE_BEAST.BLACK_TORTOISE then
         if index == 1 then
             return '자무주'
         elseif index == 2 then
@@ -84,7 +86,7 @@ function M.creature_spell(creature, index)
         else
             return nil
         end
-    elseif creature == CREATURE.DRAGON then
+    elseif divine_beast == DIVINE_BEAST.AZURE_DRAGON then
         if index == 1 then
             return '뢰진주'
         elseif index == 2 then
@@ -103,8 +105,8 @@ function M.creature_spell(creature, index)
     end
 end
 
-function M.creature_area_spell(creature, index)
-    if creature == CREATURE.PHOENIX then
+function M.divine_beast_area_spell(divine_beast, index)
+    if divine_beast == DIVINE_BEAST.VERMILION_BIRD then
         if index == 1 then
             return "화염주'첨"
         elseif index == 2 then
@@ -119,7 +121,7 @@ function M.creature_area_spell(creature, index)
             return nil
         end
         
-    elseif creature == CREATURE.TIGER then
+    elseif divine_beast == DIVINE_BEAST.WHITE_TIGER then
         if index == 1 then
             return "백열주'첨"
         elseif index == 2 then
@@ -134,7 +136,7 @@ function M.creature_area_spell(creature, index)
             return nil
         end
         
-    elseif creature == CREATURE.TURTLE then
+    elseif divine_beast == DIVINE_BEAST.BLACK_TORTOISE then
         if index == 1 then
             return "자무주'첨"
         elseif index == 2 then
@@ -148,7 +150,7 @@ function M.creature_area_spell(creature, index)
         else
             return nil
         end
-    elseif creature == CREATURE.DRAGON then
+    elseif divine_beast == DIVINE_BEAST.AZURE_DRAGON then
         if index == 1 then
             return "뢰진주'첨"
         elseif index == 2 then
@@ -253,15 +255,6 @@ function M.attacker_blocks_pvp(me)
     return me ~= nil and me:is(OBJECT_TYPE.CHARACTER) and me:option(OPTION.PK_PROTECT)
 end
 
-function M.map_pk_enabled(me)
-    local map = me:map()
-    if map == nil then
-        return false
-    end
-    local option = map:model():option()
-    return (option & MAP_OPTION.ENABLE_PK) == MAP_OPTION.ENABLE_PK
-end
-
 function M.can_harm_character(me, you, pk, blocks_pvp)
     if you == nil or not you:is(OBJECT_TYPE.CHARACTER) then
         return false
@@ -273,7 +266,7 @@ function M.can_harm_character(me, you, pk, blocks_pvp)
     end
 
     if pk == nil then
-        pk = M.map_pk_enabled(me)
+        pk = castle.map_pk_enabled(me)
     end
     if not pk then
         return false
@@ -283,6 +276,10 @@ function M.can_harm_character(me, you, pk, blocks_pvp)
         blocks_pvp = M.attacker_blocks_pvp(me)
     end
     if blocks_pvp then
+        return false
+    end
+
+    if castle.blocks_siege_friendly_fire(me, you) then
         return false
     end
 
@@ -313,7 +310,7 @@ function M.assert_map_debuff(me, you)
     end
     
     if you:is(OBJECT_TYPE.CHARACTER) then
-        if not M.map_pk_enabled(me) then
+        if not castle.map_pk_enabled(me) then
             me:message('걸리지 않습니다.')
             return false
         end
@@ -344,7 +341,7 @@ function M.assert_map_damage(me, you)
     end
     
     if you:is(OBJECT_TYPE.CHARACTER) then
-        if not M.map_pk_enabled(me) then
+        if not castle.map_pk_enabled(me) then
             me:message('대상이 올바르지 않습니다.')
             return false
         end
@@ -589,7 +586,7 @@ function M.attack_cast(me, you, spell, opts)
     me:message(string.format("%s 외웠습니다.", name_with(spell:name())))
     me:action(ACTION.ATTACK, DURATION.ATTACK, 1)
     
-    local pk = (option & MAP_OPTION.ENABLE_PK) == MAP_OPTION.ENABLE_PK
+    local pk = castle.map_pk_enabled(me)
     local blocks_pvp = M.attacker_blocks_pvp(me)
     local damaged = false
     local skill_rate = me:skill_damage_rate() / 1000.0
@@ -686,7 +683,7 @@ function M.damage_near(me, spell, opts)
     me:sound(sound)
     me:action(ACTION.CAST_SPELL, DURATION.SPELL, 1)
     local skill_rate = me:skill_damage_rate() / 1000.0
-    local pk = M.map_pk_enabled(me)
+    local pk = castle.map_pk_enabled(me)
     local blocks_pvp = M.attacker_blocks_pvp(me)
     local targets = {}
     for _, you in pairs(M.near(me, OBJECT_TYPE.LIFE)) do
@@ -731,7 +728,7 @@ function M.damage_near_target(me, you, spell, opts)
     me:sound(sound)
     me:action(ACTION.CAST_SPELL, DURATION.SPELL, 1)
     local skill_rate = me:skill_damage_rate() / 1000.0
-    local pk = M.map_pk_enabled(me)
+    local pk = castle.map_pk_enabled(me)
     local blocks_pvp = M.attacker_blocks_pvp(me)
     local near_targets = M.near(you, OBJECT_TYPE.LIFE)
     table.insert(near_targets, you)
@@ -785,7 +782,7 @@ function M.damage_area(me, you, spell, opts)
     end
 
     local skill_rate = me:skill_damage_rate() / 1000.0
-    local pk = M.map_pk_enabled(me)
+    local pk = castle.map_pk_enabled(me)
     local blocks_pvp = M.attacker_blocks_pvp(me)
     local targets = {}
     for _, obj in pairs(you) do

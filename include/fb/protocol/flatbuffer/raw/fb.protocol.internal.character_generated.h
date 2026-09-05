@@ -31,50 +31,57 @@ struct Character FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
   typedef CharacterBuilder Builder;
   enum FlatBuffersVTableOffset FLATBUFFERS_VTABLE_UNDERLYING_TYPE {
     VT_ID = 4,
-    VT_NAME = 6,
-    VT_PW = 8,
-    VT_BIRTH = 10,
-    VT_ROLE = 12,
-    VT_LOOK = 14,
-    VT_COLOR = 16,
-    VT_GENDER = 18,
-    VT_NATION = 20,
-    VT_CREATURE = 22,
-    VT_MAP = 24,
-    VT_POSITION = 26,
-    VT_DIRECTION = 28,
-    VT_STATE = 30,
-    VT_CLASS_TYPE = 32,
-    VT_PROMOTION = 34,
-    VT_LEVEL = 36,
-    VT_EXP = 38,
-    VT_MONEY = 40,
-    VT_DEPOSITED_MONEY = 42,
-    VT_MIMICRY = 44,
-    VT_HP = 46,
-    VT_BASE_HP = 48,
-    VT_ADDITIONAL_HP = 50,
-    VT_MP = 52,
-    VT_BASE_MP = 54,
-    VT_ADDITIONAL_MP = 56,
-    VT_WEAPON_COLOR = 58,
-    VT_HELMET_COLOR = 60,
-    VT_ARMOR_COLOR = 62,
-    VT_SHIELD_COLOR = 64,
-    VT_RING_LEFT_COLOR = 66,
-    VT_RING_RIGHT_COLOR = 68,
-    VT_AUX_TOP_COLOR = 70,
-    VT_AUX_BOT_COLOR = 72,
-    VT_BUFFS = 74,
-    VT_TITLE = 76,
-    VT_CREATED_DATE = 78,
-    VT_UPDATED_DATE = 80,
-    VT_FIRST_LOGIN_DATE = 82,
-    VT_SUPER_HIDE = 84,
-    VT_SPEED = 86
+    VT_WORLD = 6,
+    VT_NAME = 8,
+    VT_PW = 10,
+    VT_BIRTH = 12,
+    VT_ROLE = 14,
+    VT_HAIR = 16,
+    VT_COLOR = 18,
+    VT_GENDER = 20,
+    VT_NATION = 22,
+    VT_DIVINE_BEAST = 24,
+    VT_MAP = 26,
+    VT_POSITION = 28,
+    VT_DIRECTION = 30,
+    VT_STATE = 32,
+    VT_CLASS_TYPE = 34,
+    VT_PROMOTION = 36,
+    VT_LEVEL = 38,
+    VT_EXP = 40,
+    VT_MONEY = 42,
+    VT_DEPOSITED_MONEY = 44,
+    VT_MIMICRY = 46,
+    VT_HP = 48,
+    VT_BASE_HP = 50,
+    VT_ADDITIONAL_HP = 52,
+    VT_MP = 54,
+    VT_BASE_MP = 56,
+    VT_ADDITIONAL_MP = 58,
+    VT_WEAPON_COLOR = 60,
+    VT_HELMET_COLOR = 62,
+    VT_ARMOR_COLOR = 64,
+    VT_SHIELD_COLOR = 66,
+    VT_RING_LEFT_COLOR = 68,
+    VT_RING_RIGHT_COLOR = 70,
+    VT_AUX_TOP_COLOR = 72,
+    VT_AUX_BOT_COLOR = 74,
+    VT_BUFFS = 76,
+    VT_TITLE = 78,
+    VT_CREATED_DATE = 80,
+    VT_UPDATED_DATE = 82,
+    VT_FIRST_LOGIN_DATE = 84,
+    VT_SUPER_HIDE = 86,
+    VT_SPEED = 88,
+    VT_REPUTATION = 90,
+    VT_EVALUATION = 92,
+    VT_FACE = 94
   };
   uint32_t id() const {
     return GetField<uint32_t>(VT_ID, 0);
+  }
+  uint32_t world() const {
+    return GetField<uint32_t>(VT_WORLD, 0);
   }
   const ::flatbuffers::String *name() const {
     return GetPointer<const ::flatbuffers::String *>(VT_NAME);
@@ -88,8 +95,8 @@ struct Character FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
   uint8_t role() const {
     return GetField<uint8_t>(VT_ROLE, 0);
   }
-  uint16_t look() const {
-    return GetField<uint16_t>(VT_LOOK, 0);
+  uint16_t hair() const {
+    return GetField<uint16_t>(VT_HAIR, 0);
   }
   uint16_t color() const {
     return GetField<uint16_t>(VT_COLOR, 0);
@@ -100,8 +107,8 @@ struct Character FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
   uint8_t nation() const {
     return GetField<uint8_t>(VT_NATION, 0);
   }
-  uint8_t creature() const {
-    return GetField<uint8_t>(VT_CREATURE, 0);
+  uint8_t divine_beast() const {
+    return GetField<uint8_t>(VT_DIVINE_BEAST, 0);
   }
   uint32_t map() const {
     return GetField<uint32_t>(VT_MAP, 0);
@@ -199,9 +206,19 @@ struct Character FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
   uint8_t speed() const {
     return GetField<uint8_t>(VT_SPEED, 0);
   }
+  int16_t reputation() const {
+    return GetField<int16_t>(VT_REPUTATION, 0);
+  }
+  uint16_t evaluation() const {
+    return GetField<uint16_t>(VT_EVALUATION, 0);
+  }
+  uint8_t face() const {
+    return GetField<uint8_t>(VT_FACE, 0);
+  }
   bool Verify(::flatbuffers::Verifier &verifier) const {
     return VerifyTableStart(verifier) &&
            VerifyField<uint32_t>(verifier, VT_ID, 4) &&
+           VerifyField<uint32_t>(verifier, VT_WORLD, 4) &&
            VerifyOffset(verifier, VT_NAME) &&
            verifier.VerifyString(name()) &&
            VerifyOffset(verifier, VT_PW) &&
@@ -209,11 +226,11 @@ struct Character FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
            VerifyOffset(verifier, VT_BIRTH) &&
            verifier.VerifyTable(birth()) &&
            VerifyField<uint8_t>(verifier, VT_ROLE, 1) &&
-           VerifyField<uint16_t>(verifier, VT_LOOK, 2) &&
+           VerifyField<uint16_t>(verifier, VT_HAIR, 2) &&
            VerifyField<uint16_t>(verifier, VT_COLOR, 2) &&
            VerifyField<uint8_t>(verifier, VT_GENDER, 1) &&
            VerifyField<uint8_t>(verifier, VT_NATION, 1) &&
-           VerifyField<uint8_t>(verifier, VT_CREATURE, 1) &&
+           VerifyField<uint8_t>(verifier, VT_DIVINE_BEAST, 1) &&
            VerifyField<uint32_t>(verifier, VT_MAP, 4) &&
            VerifyOffset(verifier, VT_POSITION) &&
            verifier.VerifyTable(position()) &&
@@ -262,6 +279,9 @@ struct Character FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
            verifier.VerifyString(first_login_date()) &&
            VerifyField<uint8_t>(verifier, VT_SUPER_HIDE, 1) &&
            VerifyField<uint8_t>(verifier, VT_SPEED, 1) &&
+           VerifyField<int16_t>(verifier, VT_REPUTATION, 2) &&
+           VerifyField<uint16_t>(verifier, VT_EVALUATION, 2) &&
+           VerifyField<uint8_t>(verifier, VT_FACE, 1) &&
            verifier.EndTable();
   }
 };
@@ -272,6 +292,9 @@ struct CharacterBuilder {
   ::flatbuffers::uoffset_t start_;
   void add_id(uint32_t id) {
     fbb_.AddElement<uint32_t>(Character::VT_ID, id, 0);
+  }
+  void add_world(uint32_t world) {
+    fbb_.AddElement<uint32_t>(Character::VT_WORLD, world, 0);
   }
   void add_name(::flatbuffers::Offset<::flatbuffers::String> name) {
     fbb_.AddOffset(Character::VT_NAME, name);
@@ -285,8 +308,8 @@ struct CharacterBuilder {
   void add_role(uint8_t role) {
     fbb_.AddElement<uint8_t>(Character::VT_ROLE, role, 0);
   }
-  void add_look(uint16_t look) {
-    fbb_.AddElement<uint16_t>(Character::VT_LOOK, look, 0);
+  void add_hair(uint16_t hair) {
+    fbb_.AddElement<uint16_t>(Character::VT_HAIR, hair, 0);
   }
   void add_color(uint16_t color) {
     fbb_.AddElement<uint16_t>(Character::VT_COLOR, color, 0);
@@ -297,8 +320,8 @@ struct CharacterBuilder {
   void add_nation(uint8_t nation) {
     fbb_.AddElement<uint8_t>(Character::VT_NATION, nation, 0);
   }
-  void add_creature(uint8_t creature) {
-    fbb_.AddElement<uint8_t>(Character::VT_CREATURE, creature, 0);
+  void add_divine_beast(uint8_t divine_beast) {
+    fbb_.AddElement<uint8_t>(Character::VT_DIVINE_BEAST, divine_beast, 0);
   }
   void add_map(uint32_t map) {
     fbb_.AddElement<uint32_t>(Character::VT_MAP, map, 0);
@@ -396,6 +419,15 @@ struct CharacterBuilder {
   void add_speed(uint8_t speed) {
     fbb_.AddElement<uint8_t>(Character::VT_SPEED, speed, 0);
   }
+  void add_reputation(int16_t reputation) {
+    fbb_.AddElement<int16_t>(Character::VT_REPUTATION, reputation, 0);
+  }
+  void add_evaluation(uint16_t evaluation) {
+    fbb_.AddElement<uint16_t>(Character::VT_EVALUATION, evaluation, 0);
+  }
+  void add_face(uint8_t face) {
+    fbb_.AddElement<uint8_t>(Character::VT_FACE, face, 0);
+  }
   explicit CharacterBuilder(::flatbuffers::FlatBufferBuilder &_fbb)
         : fbb_(_fbb) {
     start_ = fbb_.StartTable();
@@ -410,15 +442,16 @@ struct CharacterBuilder {
 inline ::flatbuffers::Offset<Character> CreateCharacter(
     ::flatbuffers::FlatBufferBuilder &_fbb,
     uint32_t id = 0,
+    uint32_t world = 0,
     ::flatbuffers::Offset<::flatbuffers::String> name = 0,
     ::flatbuffers::Offset<::flatbuffers::String> pw = 0,
     ::flatbuffers::Offset<nullable::nullable_uint> birth = 0,
     uint8_t role = 0,
-    uint16_t look = 0,
+    uint16_t hair = 0,
     uint16_t color = 0,
     uint8_t gender = 0,
     uint8_t nation = 0,
-    uint8_t creature = 0,
+    uint8_t divine_beast = 0,
     uint32_t map = 0,
     ::flatbuffers::Offset<fb::protocol::internal::raw::Position> position = 0,
     uint8_t direction = 0,
@@ -450,7 +483,10 @@ inline ::flatbuffers::Offset<Character> CreateCharacter(
     ::flatbuffers::Offset<::flatbuffers::String> updated_date = 0,
     ::flatbuffers::Offset<::flatbuffers::String> first_login_date = 0,
     bool super_hide = false,
-    uint8_t speed = 0) {
+    uint8_t speed = 0,
+    int16_t reputation = 0,
+    uint16_t evaluation = 0,
+    uint8_t face = 0) {
   CharacterBuilder builder_(_fbb);
   builder_.add_additional_mp(additional_mp);
   builder_.add_base_mp(base_mp);
@@ -480,9 +516,13 @@ inline ::flatbuffers::Offset<Character> CreateCharacter(
   builder_.add_birth(birth);
   builder_.add_pw(pw);
   builder_.add_name(name);
+  builder_.add_world(world);
   builder_.add_id(id);
+  builder_.add_evaluation(evaluation);
+  builder_.add_reputation(reputation);
   builder_.add_color(color);
-  builder_.add_look(look);
+  builder_.add_hair(hair);
+  builder_.add_face(face);
   builder_.add_speed(speed);
   builder_.add_super_hide(super_hide);
   builder_.add_level(level);
@@ -490,7 +530,7 @@ inline ::flatbuffers::Offset<Character> CreateCharacter(
   builder_.add_class_type(class_type);
   builder_.add_state(state);
   builder_.add_direction(direction);
-  builder_.add_creature(creature);
+  builder_.add_divine_beast(divine_beast);
   builder_.add_nation(nation);
   builder_.add_gender(gender);
   builder_.add_role(role);
@@ -500,15 +540,16 @@ inline ::flatbuffers::Offset<Character> CreateCharacter(
 inline ::flatbuffers::Offset<Character> CreateCharacterDirect(
     ::flatbuffers::FlatBufferBuilder &_fbb,
     uint32_t id = 0,
+    uint32_t world = 0,
     const char *name = nullptr,
     const char *pw = nullptr,
     ::flatbuffers::Offset<nullable::nullable_uint> birth = 0,
     uint8_t role = 0,
-    uint16_t look = 0,
+    uint16_t hair = 0,
     uint16_t color = 0,
     uint8_t gender = 0,
     uint8_t nation = 0,
-    uint8_t creature = 0,
+    uint8_t divine_beast = 0,
     uint32_t map = 0,
     ::flatbuffers::Offset<fb::protocol::internal::raw::Position> position = 0,
     uint8_t direction = 0,
@@ -540,7 +581,10 @@ inline ::flatbuffers::Offset<Character> CreateCharacterDirect(
     const char *updated_date = nullptr,
     const char *first_login_date = nullptr,
     bool super_hide = false,
-    uint8_t speed = 0) {
+    uint8_t speed = 0,
+    int16_t reputation = 0,
+    uint16_t evaluation = 0,
+    uint8_t face = 0) {
   auto name__ = name ? _fbb.CreateString(name) : 0;
   auto pw__ = pw ? _fbb.CreateString(pw) : 0;
   auto buffs__ = buffs ? _fbb.CreateVector<::flatbuffers::Offset<fb::protocol::internal::raw::Buff>>(*buffs) : 0;
@@ -551,15 +595,16 @@ inline ::flatbuffers::Offset<Character> CreateCharacterDirect(
   return fb::protocol::internal::raw::CreateCharacter(
       _fbb,
       id,
+      world,
       name__,
       pw__,
       birth,
       role,
-      look,
+      hair,
       color,
       gender,
       nation,
-      creature,
+      divine_beast,
       map,
       position,
       direction,
@@ -591,7 +636,10 @@ inline ::flatbuffers::Offset<Character> CreateCharacterDirect(
       updated_date__,
       first_login_date__,
       super_hide,
-      speed);
+      speed,
+      reputation,
+      evaluation,
+      face);
 }
 
 inline const fb::protocol::internal::raw::Character *GetCharacter(const void *buf) {

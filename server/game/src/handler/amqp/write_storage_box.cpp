@@ -12,6 +12,6 @@ async::task<void> write_storage_box::handle(const internal_resp::WriteStorageBox
     if (message.error != 0)
         co_return;
 
-    this->server.system_storage.apply_write_box(message.box);
+    this->server.system_storage.on_write_box(message.box);
     co_return;
 }

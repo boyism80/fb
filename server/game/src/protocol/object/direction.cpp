@@ -3,23 +3,30 @@
 namespace fb::protocol::game::request {
 
 #ifndef BOT
-void direction::deserialize(fb::stream_reader<big_endian>& reader)
+template <CLIENT_VERSION V>
+void direction<V>::deserialize(fb::stream_reader<big_endian>& reader)
 {
     header::deserialize(reader);
     this->value = DIRECTION(reader.read<uint8_t>());
 }
 #else
-direction::direction(DIRECTION value) :
+template <CLIENT_VERSION V>
+direction<V>::direction(DIRECTION value) :
     value(value)
 { }
 
-void direction::serialize(fb::stream_writer<big_endian>& writer) const
+template <CLIENT_VERSION V>
+void direction<V>::serialize(fb::stream_writer<big_endian>& writer) const
 {
     header::serialize(writer);
     writer.write<uint8_t>(opcode);
     writer.write<uint8_t>((uint8_t)this->value);
 }
 #endif
+
+template class direction<CLIENT_VERSION::v550>;
+template class direction<CLIENT_VERSION::v565>;
+template class direction<CLIENT_VERSION::v651>;
 
 } // namespace fb::protocol::game::request
 

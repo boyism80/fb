@@ -94,6 +94,12 @@ call :ensure_git_repo https://github.com/cjgdev/aho_corasick aho_corasick
 ROBOCOPY aho_corasick\src\aho_corasick\ %DEST%\include\aho_corasick\ *.hpp /MIR /NFL /NDL /NJH /NJS /NP
 if %ERRORLEVEL% GEQ 8 exit /b %ERRORLEVEL%
 
+REM No pinned ref; tracks default branch. Header-only cron expression library.
+call :ensure_git_repo https://github.com/mariusbancila/croncpp croncpp
+if not exist "%DEST%\include" mkdir "%DEST%\include"
+COPY /Y croncpp\include\croncpp.h %DEST%\include\croncpp.h >nul
+if ERRORLEVEL 1 exit /b %ERRORLEVEL%
+
 call :ensure_git_repo https://github.com/boostorg/boost boost %BOOST_REF%
 PUSHD boost
 git submodule update --init --recursive

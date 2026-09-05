@@ -6,19 +6,42 @@ using namespace fb::gateway::handler::protocol;
 
 namespace gateway_resp = fb::protocol::gateway::response;
 
-version::version(fb::gateway::server& server) :
-    fb::handler::protocol<fb::gateway::server, gateway_reqs::version>(server)
+namespace {
+
+bool is_version_allowed(uint16_t packed)
+{
+    const auto& node = fb::config_node("client:versions");
+    if (node.isArray() == false || node.size() == 0)
+        return false;
+
+    for (const auto& item : node)
+    {
+        if (static_cast<uint16_t>(item.asUInt()) == packed)
+            return true;
+    }
+    return false;
+}
+
+} // namespace
+
+template <fb::protocol::CLIENT_VERSION V>
+version<V>::version(fb::gateway::server& server) :
+    fb::handler::protocol<fb::gateway::server, gateway_reqs::version<V>>(server)
 { }
 
-async::task<bool> version::handle(fb::socket<fb::gateway::session>& session, gateway_reqs::version& request)
+template <fb::protocol::CLIENT_VERSION V>
+async::task<bool> version<V>::handle(fb::socket<fb::gateway::session>& session, gateway_reqs::version<V>& request)
 {
     try
     {
-        if (request.v != fb::config<uint16_t>("client:version"))
+        if (is_version_allowed(request.v) == false)
             throw std::runtime_error(_TEXT(MESSAGE_CLIENT_VERSION_MISMATCH));
 
         if (request.nation != fb::config<uint8_t>("client:nation"))
             throw std::runtime_error(_TEXT(MESSAGE_CLIENT_NATION_INVALID));
+
+        // Establish const session version after bootstrap deserialize (always v550 layout).
+        session.data(std::make_shared<fb::gateway::session>(request.client_version));
 
         auto encryption = fb::encryption::generate();
         session.encryption(encryption);
@@ -31,3 +54,7 @@ async::task<bool> version::handle(fb::socket<fb::gateway::session>& session, gat
         co_return false;
     }
 }
+
+template class version<fb::protocol::CLIENT_VERSION::v550>;
+template class version<fb::protocol::CLIENT_VERSION::v565>;
+template class version<fb::protocol::CLIENT_VERSION::v651>;

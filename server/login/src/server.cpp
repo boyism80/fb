@@ -5,6 +5,8 @@
 #include <fb/log_collector.h>
 #include <fb/console.h>
 #include <fb/encoding.h>
+#include <fb/logger.h>
+#include <fb/amqp_route.h>
 #include <fb/protocol/flatbuffer/protocol.h>
 #include <fb/model/loader.h>
 #include <format>
@@ -28,22 +30,11 @@ fb::login::server::server(boost::asio::io_context& io_context, uint16_t port) :
     this->handler.protocol.bind<fb::login::handler::protocol::create_account>();
     this->handler.protocol.bind<fb::login::handler::protocol::complete>();
     this->handler.protocol.bind<fb::login::handler::protocol::change_password>();
+    this->handler.protocol.bind<fb::login::handler::protocol::meta_dat>();
 }
 
 fb::login::server::~server()
 { }
-
-bool fb::login::server::decrypt_policy(uint8_t opcode) const
-{
-    switch (opcode)
-    {
-    case fb::protocol::login::request::agreement::opcode:
-        return false;
-
-    default:
-        return true;
-    }
-}
 
 async::task<void> fb::login::server::on_start()
 {
@@ -55,6 +46,7 @@ async::task<void> fb::login::server::on_start()
 #endif
 
     co_await fb::model::loader(*this).run();
+    this->meta.load(fb::config<std::string>("meta_dat", std::string("Meta.dat")), false);
 
     co_await fb::acceptor<session>::on_start();
 
@@ -64,11 +56,9 @@ async::task<void> fb::login::server::on_start()
 #endif
 
     this->bind_timer<fb::login::handler::timer::heart_beat>(1s);
-    this->handler.amqp.bind<fb::login::handler::amqp::shutdown>("fb.global"); // Shutdown: all servers
-    this->handler.amqp.bind<fb::login::handler::amqp::set_datetime>(
-        std::format("fb.{}.global", fb::config<uint32_t>("world")));
-    this->handler.amqp.bind<fb::login::handler::amqp::reload_tables>(
-        std::format("fb.{}.global", fb::config<uint32_t>("world")));
+    this->handler.amqp.bind<fb::login::handler::amqp::shutdown>("fb.global");
+    this->handler.amqp.bind<fb::login::handler::amqp::set_datetime>(fb::amqp_key("global", fb::amqp_scope()));
+    this->handler.amqp.bind<fb::login::handler::amqp::reload_tables>(fb::amqp_key("global", fb::amqp_scope()));
 }
 
 async::task<void> fb::login::server::update_status()
@@ -83,7 +73,8 @@ async::task<void> fb::login::server::update_status()
                                                                         this->id(),
                                                                         this->name(),
                                                                         fb::config<std::string_view>("ip"),
-                                                                        fb::config<uint16_t>("port")});
+                                                                        fb::config<uint16_t>("port"),
+                                                                        fb::protocol::internal::ProcessRole::Home});
     }
     catch (const std::exception& e)
     {
@@ -122,8 +113,8 @@ void fb::login::server::assert_account(std::string_view id, std::string_view pw)
 
 async::task<void> fb::login::server::on_accepted(fb::socket<session>& socket)
 {
-    auto data = std::make_shared<session>();
-    socket.data(data);
+    // Session (with const client_version) is created in the agreement handler
+    // after C2S 0x10. Until then acceptor deserializes as v550.
     co_return;
 }
 
@@ -139,6 +130,6 @@ async::task<bool> fb::login::server::on_disconnected(fb::socket<session>& socket
 
 void fb::login::server::on_init_amqp(fb::amqp::socket& amqp)
 {
-    this->handler.amqp.declare_queue("amq.direct", "fb.global"); // Shutdown: all servers
-    this->handler.amqp.declare_queue("amq.direct", std::format("fb.{}.global", fb::config<uint32_t>("world")));
+    this->handler.amqp.declare_queue("amq.direct", "fb.global");
+    this->handler.amqp.declare_queue("amq.direct", fb::amqp_key("global", fb::amqp_scope()));
 }

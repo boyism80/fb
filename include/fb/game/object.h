@@ -18,6 +18,15 @@ namespace fb::game {
 
 using namespace fb::model::enum_value;
 
+enum class OBJECT_CURSOR : uint8_t
+{
+    ATTACK       = 0,
+    INSPECT      = 11,
+    INTERACT     = 12,
+    INTERACT_ALT = 14,
+    ITEM         = 15
+};
+
 using map_callback = std::function<async::task<bool>()>;
 
 struct map_options
@@ -60,12 +69,12 @@ private:
     mutable std::shared_mutex _map_lock;
 
 protected:
-    uint32_t                 _oid = 0;
-    const fb::model::object& _model;
-    fb::model::point16_t     _position  = fb::model::point16_t(0, 0);
-    DIRECTION                _direction = DIRECTION::BOTTOM;
-    map_ptr                  _map       = nullptr;
-    fb::thread*              _thread    = nullptr;
+    uint32_t             _oid       = 0;
+    uint32_t             _model_id  = 0;
+    fb::model::point16_t _position  = fb::model::point16_t(0, 0);
+    DIRECTION            _direction = DIRECTION::BOTTOM;
+    map_ptr              _map       = nullptr;
+    fb::thread*          _thread    = nullptr;
 
 public:
     listener_t&       listener;
@@ -90,11 +99,6 @@ private:
     // clang-format on
 
 public:
-    template <typename T> const T& based() const
-    {
-        return static_cast<const T&>(this->_model);
-    }
-
     virtual void on_init();
 
 public:
@@ -104,14 +108,16 @@ public:
     virtual size_t                          send(const fb::protocol::header& response, bool encrypt = true, bool wrap = true);
     uint32_t                                oid() const;
     void                                    oid(uint32_t value);
-    const fb::model::object&                based() const;
+    virtual const fb::model::object&        model() const = 0;
     bool                                    is(OBJECT_TYPE type) const;
     virtual const std::string&              name() const;
     virtual uint16_t                        look() const;
     virtual uint8_t                         color() const;
     virtual OBJECT_TYPE                     what() const;
-    virtual void                            update_external(bool detailed);
-    virtual void                            update_external(object& you, bool detailed);
+    virtual void                            show();
+    virtual void                            show(object& you);
+    virtual void                            update_external();
+    virtual void                            update_external(object& you);
     virtual bool                            super_hide() const;
     virtual bool                            hidden(const object& target) const;
     virtual void                            chat(std::string_view message, CHAT_TYPE chat_type = CHAT_TYPE::NORMAL, bool decorate = true);
@@ -167,8 +173,10 @@ struct object::listener_t
     // clang-format off
     virtual void on_chat(fb::game::object& me, std::string_view message, CHAT_TYPE chat_type = CHAT_TYPE::NORMAL) = 0;
     virtual void on_direction(fb::game::object& me)                                                               = 0;
-    virtual void on_update_external(fb::game::object& me, bool detailed)                                          = 0;
-    virtual void on_update_external(fb::game::object& me, fb::game::object& you, bool detailed)                   = 0;
+    virtual void on_show(fb::game::object& me)                                                                    = 0;
+    virtual void on_show(fb::game::object& me, fb::game::object& you)                                             = 0;
+    virtual void on_update_external(fb::game::object& me)                                                         = 0;
+    virtual void on_update_external(fb::game::object& me, fb::game::object& you)                                  = 0;
     virtual void on_hide(fb::game::object& me, DESTROY_TYPE destroy_type = DESTROY_TYPE::DEFAULT)                 = 0;
     virtual void on_hide(fb::game::object& me, fb::game::object& you, DESTROY_TYPE destroy_type)                  = 0;
     virtual void on_move(fb::game::object& me, const fb::model::point16_t& before)                                = 0;

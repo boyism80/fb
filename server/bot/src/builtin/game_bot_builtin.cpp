@@ -221,7 +221,7 @@ IMPLEMENT_LUA_EXTENSION(game_bot, "fb.bot")
     {"drop_item",                builtin::game_bot::builtin_drop_item},
     {"drop_money",               builtin::game_bot::builtin_drop_money},
     {"change_class",             builtin::game_bot::builtin_change_class},
-    {"apply_item_condition",     builtin::game_bot::builtin_apply_item_condition},
+    {"item_condition",           builtin::game_bot::builtin_item_condition},
     {"reverse_item_condition",   builtin::game_bot::builtin_reverse_item_condition},
     {"invite_group",             builtin::game_bot::builtin_invite_group},
     {"leave_group",              builtin::game_bot::builtin_leave_group},
@@ -1700,7 +1700,7 @@ int builtin::game_bot::builtin_change_class(lua_State* L)
     return builder.run();
 }
 
-int builtin::game_bot::builtin_apply_item_condition(lua_State* L)
+int builtin::game_bot::builtin_item_condition(lua_State* L)
 {
     auto lua = fb::lua::get(L);
     if (lua == nullptr)

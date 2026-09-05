@@ -171,6 +171,7 @@ namespace Http.Reepository
                     `attachments`=VALUES(`attachments`),
                     `received`=VALUES(`received`),
                     `expired_date`=VALUES(`expired_date`),
+                    `deleted`=0,
                     `updated_date`=VALUES(`updated_date`);
                 """;
         }
@@ -216,6 +217,7 @@ namespace Http.Reepository
                     `attachments`=VALUES(`attachments`),
                     `received`=VALUES(`received`),
                     `expired_date`=VALUES(`expired_date`),
+                    `deleted`=0,
                     `updated_date`=VALUES(`updated_date`);
                 """;
         }

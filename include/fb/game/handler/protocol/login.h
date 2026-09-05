@@ -8,7 +8,8 @@ namespace fb::game::handler::protocol {
 
 namespace game_reqs = fb::protocol::game::request;
 
-class login : public fb::handler::protocol<fb::game::server, game_reqs::login>
+template <fb::protocol::CLIENT_VERSION V>
+class login : public fb::handler::protocol<fb::game::server, game_reqs::login<V>>
 {
     using ch_ptr_t = std::shared_ptr<character>;
 
@@ -28,14 +29,15 @@ private:
     void                  init_quests(const std::vector<internal::Quest>& response, character& ch);
     void                  init_marketplace(const std::vector<internal::MarketplacePending>& response, character& ch);
     void                  init_achievements(const std::vector<internal::Achievement>& response, character& ch);
+    void                  init_collection_unlocks(const std::vector<internal::CollectionUnlock>& response, character& ch);
     void                  init_storage(const internal_resp::Init& response, character& ch);
-    async::task<ch_ptr_t> init(const game_reqs::login& request, fb::socket<character>& session);
+    async::task<ch_ptr_t> init(const game_reqs::login<V>& request, fb::socket<character>& session);
     std::string           elapsed_message(std::string_view dt);
-    async::task<bool>     assert_login(const game_reqs::login& request);
+    async::task<bool>     assert_login(const game_reqs::login<V>& request);
     // clang-format on
 
 public:
-    async::task<bool> handle(fb::socket<character>& session, game_reqs::login& request) override;
+    async::task<bool> handle(fb::socket<character>& session, game_reqs::login<V>& request) override;
 };
 
 } // namespace fb::game::handler::protocol

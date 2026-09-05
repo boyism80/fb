@@ -43,6 +43,8 @@ private:
     uint64_t                          _mp                = 0;
     int64_t                           _buff_hp           = 0;
     int64_t                           _buff_mp           = 0;
+    float                             _buff_hp_percent   = 0.0f;
+    float                             _buff_mp_percent   = 0.0f;
     uint8_t                           _buff_str          = 0;
     uint8_t                           _buff_dex          = 0;
     uint8_t                           _buff_int          = 0;
@@ -88,6 +90,10 @@ public:
     virtual void     buff_hp(int64_t value);
     virtual int64_t  buff_mp() const;
     virtual void     buff_mp(int64_t value);
+    virtual float    buff_hp_percent() const;
+    virtual void     buff_hp_percent(float value);
+    virtual float    buff_mp_percent() const;
+    virtual void     buff_mp_percent(float value);
     virtual uint8_t  buff_str() const;
     virtual void     buff_str(uint8_t value);
     virtual uint8_t  buff_dex() const;
@@ -166,25 +172,18 @@ public:
     uint64_t         base_hp() const;
     uint64_t         base_mp() const;
     uint8_t          base_str() const;
-    virtual uint8_t  str() const;
     uint8_t          base_dex() const;
-    virtual uint8_t  dex() const;
     uint8_t          base_int() const;
-    virtual uint8_t  intelligence() const;
     int8_t           base_phydef() const;
-    virtual int8_t   phydef() const;
     int8_t           base_magdef() const;
-    virtual int8_t   magdef() const;
     uint8_t          base_dam() const;
-    virtual int8_t   dam() const;
     uint8_t          base_hit() const;
-    virtual int8_t   hit() const;
     uint8_t          base_speed() const override;
+    uint8_t          speed() const override;
     void             buff_speed(int8_t value) override;
     uint64_t         base_regenerative() const;
-    virtual uint64_t maxhp() const override;
-    virtual uint64_t maxmp() const override;
-    virtual uint64_t regenerative() const override;
+    void             equipment_on(const fb::model::equipment& model);
+    void             equipment_off(const fb::model::equipment& model);
     uint64_t         damage(uint64_t value, std::shared_ptr<fb::game::object> from = nullptr, bool critical = false, float rate = 1.0f, bool physical = true, bool fixed = false, bool notify = true) override final;
     // clang-format on
 };

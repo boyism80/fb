@@ -15,6 +15,8 @@ namespace fb::bot::integration {
 namespace game_reqs = fb::protocol::game::request;
 namespace game_resp = fb::protocol::game::response;
 
+constexpr auto BOT_CLIENT_VERSION = fb::protocol::CLIENT_VERSION::v550;
+
 namespace detail {
 
 void marshal_lua_game_resp__action(lua_State* L, const fb::protocol::header& header)
@@ -92,6 +94,16 @@ void marshal_lua_game_resp__bright(lua_State* L, const fb::protocol::header& hea
     lua->pushstring("value");
     lua->pushinteger(resp.value);
     lua->settable(-3);
+}
+
+void marshal_lua_game_resp__browser(lua_State* L, const fb::protocol::header& header)
+{
+    auto* lua = fb::lua::get(L);
+    if (lua == nullptr)
+        return;
+
+    const auto& resp = static_cast<const game_resp::browser<BOT_CLIENT_VERSION>&>(header);
+    lua->new_table();
 }
 
 void marshal_lua_game_resp__bulletin_article(lua_State* L, const fb::protocol::header& header)
@@ -247,6 +259,25 @@ void marshal_lua_game_resp__chat(lua_State* L, const fb::protocol::header& heade
     lua->settable(-3);
     lua->pushstring("type_id");
     lua->pushinteger(static_cast<lua_Integer>(resp.type));
+    lua->settable(-3);
+}
+
+void marshal_lua_game_resp__collection(lua_State* L, const fb::protocol::header& header)
+{
+    auto* lua = fb::lua::get(L);
+    if (lua == nullptr)
+        return;
+
+    const auto& resp = static_cast<const game_resp::collection<BOT_CLIENT_VERSION>&>(header);
+    lua->new_table();
+    lua->pushstring("oid");
+    lua->pushinteger(resp.oid);
+    lua->settable(-3);
+    lua->pushstring("slot");
+    lua->pushinteger(resp.slot);
+    lua->settable(-3);
+    lua->pushstring("flag");
+    lua->pushinteger(resp.flag);
     lua->settable(-3);
 }
 
@@ -613,7 +644,7 @@ void marshal_lua_game_resp__effect(lua_State* L, const fb::protocol::header& hea
     if (lua == nullptr)
         return;
 
-    const auto& resp = static_cast<const game_resp::effect&>(header);
+    const auto& resp = static_cast<const game_resp::effect<BOT_CLIENT_VERSION>&>(header);
     lua->new_table();
     lua->pushstring("oid");
     lua->pushinteger(resp.oid);
@@ -629,7 +660,7 @@ void marshal_lua_game_resp__external_info(lua_State* L, const fb::protocol::head
     if (lua == nullptr)
         return;
 
-    const auto& resp = static_cast<const game_resp::external_info&>(header);
+    const auto& resp = static_cast<const game_resp::external_info<BOT_CLIENT_VERSION>&>(header);
     lua->new_table();
     lua->pushstring("title");
     lua->pushstring(resp.title);
@@ -691,6 +722,9 @@ void marshal_lua_game_resp__external_info(lua_State* L, const fb::protocol::head
     lua->pushstring("trade_option");
     lua->pushinteger(resp.trade_option);
     lua->settable(-3);
+    lua->pushstring("reputation");
+    lua->pushinteger(resp.reputation);
+    lua->settable(-3);
 }
 
 void marshal_lua_game_resp__freeze(lua_State* L, const fb::protocol::header& header)
@@ -716,6 +750,22 @@ void marshal_lua_game_resp__friends_sync(lua_State* L, const fb::protocol::heade
     lua->new_table();
     lua->pushstring("enabled");
     lua->pushinteger(resp.enabled);
+    lua->settable(-3);
+}
+
+void marshal_lua_game_resp__group_portrait(lua_State* L, const fb::protocol::header& header)
+{
+    auto* lua = fb::lua::get(L);
+    if (lua == nullptr)
+        return;
+
+    const auto& resp = static_cast<const game_resp::group_portrait<BOT_CLIENT_VERSION>&>(header);
+    lua->new_table();
+    lua->pushstring("subtype");
+    lua->pushinteger(resp.subtype);
+    lua->settable(-3);
+    lua->pushstring("count");
+    lua->pushinteger(resp.count);
     lua->settable(-3);
 }
 
@@ -796,7 +846,7 @@ void marshal_lua_game_resp__internal_info(lua_State* L, const fb::protocol::head
     if (lua == nullptr)
         return;
 
-    const auto& resp = static_cast<const game_resp::internal_info&>(header);
+    const auto& resp = static_cast<const game_resp::internal_info<BOT_CLIENT_VERSION>&>(header);
     lua->new_table();
     lua->pushstring("phydef");
     lua->pushinteger(resp.phydef);
@@ -905,7 +955,7 @@ void marshal_lua_game_resp__item_tip(lua_State* L, const fb::protocol::header& h
     if (lua == nullptr)
         return;
 
-    const auto& resp = static_cast<const game_resp::item_tip&>(header);
+    const auto& resp = static_cast<const game_resp::item_tip<BOT_CLIENT_VERSION>&>(header);
     lua->new_table();
     lua->pushstring("position");
     lua->pushinteger(resp.position);
@@ -921,8 +971,21 @@ void marshal_lua_game_resp__item_unequip(lua_State* L, const fb::protocol::heade
     if (lua == nullptr)
         return;
 
-    const auto& resp = static_cast<const game_resp::item_unequip&>(header);
+    const auto& resp = static_cast<const game_resp::item_unequip<BOT_CLIENT_VERSION>&>(header);
     lua->new_table();
+    lua->pushstring("parts");
+    try
+    {
+        lua->pushstring(fb::model::enum_value::enum_tostring(resp.parts));
+    }
+    catch (...)
+    {
+        lua->pushnil();
+    }
+    lua->settable(-3);
+    lua->pushstring("parts_id");
+    lua->pushinteger(static_cast<lua_Integer>(resp.parts));
+    lua->settable(-3);
 }
 
 void marshal_lua_game_resp__item_update(lua_State* L, const fb::protocol::header& header)
@@ -931,7 +994,7 @@ void marshal_lua_game_resp__item_update(lua_State* L, const fb::protocol::header
     if (lua == nullptr)
         return;
 
-    const auto& resp = static_cast<const game_resp::item_update&>(header);
+    const auto& resp = static_cast<const game_resp::item_update<BOT_CLIENT_VERSION>&>(header);
     lua->new_table();
     lua->pushstring("index");
     lua->pushinteger(resp.index);
@@ -956,8 +1019,21 @@ void marshal_lua_game_resp__item_update_slot(lua_State* L, const fb::protocol::h
     if (lua == nullptr)
         return;
 
-    const auto& resp = static_cast<const game_resp::item_update_slot&>(header);
+    const auto& resp = static_cast<const game_resp::item_update_slot<BOT_CLIENT_VERSION>&>(header);
     lua->new_table();
+    lua->pushstring("parts");
+    try
+    {
+        lua->pushstring(fb::model::enum_value::enum_tostring(resp.parts));
+    }
+    catch (...)
+    {
+        lua->pushnil();
+    }
+    lua->settable(-3);
+    lua->pushstring("parts_id");
+    lua->pushinteger(static_cast<lua_Integer>(resp.parts));
+    lua->settable(-3);
     lua->pushstring("look");
     lua->pushinteger(resp.look);
     lua->settable(-3);
@@ -966,6 +1042,12 @@ void marshal_lua_game_resp__item_update_slot(lua_State* L, const fb::protocol::h
     lua->settable(-3);
     lua->pushstring("name");
     lua->pushstring(resp.name);
+    lua->settable(-3);
+    lua->pushstring("unknown_name_b");
+    lua->pushstring(resp.unknown_name_b);
+    lua->settable(-3);
+    lua->pushstring("unknown_u32");
+    lua->pushinteger(resp.unknown_u32);
     lua->settable(-3);
 }
 
@@ -1004,13 +1086,22 @@ void marshal_lua_game_resp__map_config(lua_State* L, const fb::protocol::header&
     if (lua == nullptr)
         return;
 
-    const auto& resp = static_cast<const game_resp::map_config&>(header);
+    const auto& resp = static_cast<const game_resp::map_config<BOT_CLIENT_VERSION>&>(header);
     lua->new_table();
     lua->pushstring("id");
     lua->pushinteger(resp.id);
     lua->settable(-3);
     lua->pushstring("building");
     lua->pushboolean(resp.building);
+    lua->settable(-3);
+    lua->pushstring("flags");
+    lua->pushinteger(resp.flags);
+    lua->settable(-3);
+    lua->pushstring("extra");
+    lua->pushinteger(resp.extra);
+    lua->settable(-3);
+    lua->pushstring("light");
+    lua->pushinteger(resp.light);
     lua->settable(-3);
     lua->pushstring("name");
     lua->pushstring(resp.name);
@@ -1128,7 +1219,7 @@ void marshal_lua_game_resp__move_confirm(lua_State* L, const fb::protocol::heade
     if (lua == nullptr)
         return;
 
-    const auto& resp = static_cast<const game_resp::move_confirm&>(header);
+    const auto& resp = static_cast<const game_resp::move_confirm<BOT_CLIENT_VERSION>&>(header);
     lua->new_table();
     lua->pushstring("direction");
     try
@@ -1210,13 +1301,29 @@ void marshal_lua_game_resp__move_confirm_noscroll(lua_State* L, const fb::protoc
     lua->settable(-3);
 }
 
+void marshal_lua_game_resp__notice(lua_State* L, const fb::protocol::header& header)
+{
+    auto* lua = fb::lua::get(L);
+    if (lua == nullptr)
+        return;
+
+    const auto& resp = static_cast<const game_resp::notice<BOT_CLIENT_VERSION>&>(header);
+    lua->new_table();
+    lua->pushstring("flag");
+    lua->pushinteger(resp.flag);
+    lua->settable(-3);
+    lua->pushstring("text");
+    lua->pushstring(resp.text);
+    lua->settable(-3);
+}
+
 void marshal_lua_game_resp__option(lua_State* L, const fb::protocol::header& header)
 {
     auto* lua = fb::lua::get(L);
     if (lua == nullptr)
         return;
 
-    const auto& resp = static_cast<const game_resp::option&>(header);
+    const auto& resp = static_cast<const game_resp::option<BOT_CLIENT_VERSION>&>(header);
     lua->new_table();
     lua->pushstring("weather_effect");
     lua->pushboolean(resp.weather_effect);
@@ -1232,6 +1339,9 @@ void marshal_lua_game_resp__option(lua_State* L, const fb::protocol::header& hea
     lua->settable(-3);
     lua->pushstring("effect_sound");
     lua->pushboolean(resp.effect_sound);
+    lua->settable(-3);
+    lua->pushstring("visible_helmet");
+    lua->pushboolean(resp.visible_helmet);
     lua->settable(-3);
 }
 
@@ -1346,6 +1456,74 @@ void marshal_lua_game_resp__screen_refresh_complete(lua_State* L, const fb::prot
     lua->new_table();
 }
 
+void marshal_lua_game_resp__show(lua_State* L, const fb::protocol::header& header)
+{
+    auto* lua = fb::lua::get(L);
+    if (lua == nullptr)
+        return;
+
+    const auto& resp = static_cast<const game_resp::show<BOT_CLIENT_VERSION>&>(header);
+    lua->new_table();
+    lua->pushstring("x");
+    lua->pushinteger(resp.x);
+    lua->settable(-3);
+    lua->pushstring("y");
+    lua->pushinteger(resp.y);
+    lua->settable(-3);
+    lua->pushstring("direction");
+    lua->pushinteger(resp.direction);
+    lua->settable(-3);
+    lua->pushstring("oid");
+    lua->pushinteger(resp.oid);
+    lua->settable(-3);
+    lua->pushstring("disguised");
+    lua->pushinteger(resp.disguised);
+    lua->settable(-3);
+    lua->pushstring("state");
+    try
+    {
+        lua->pushstring(fb::model::enum_value::enum_tostring(resp.state));
+    }
+    catch (...)
+    {
+        lua->pushnil();
+    }
+    lua->settable(-3);
+    lua->pushstring("state_id");
+    lua->pushinteger(static_cast<lua_Integer>(resp.state));
+    lua->settable(-3);
+    lua->pushstring("look");
+    lua->pushinteger(resp.look);
+    lua->settable(-3);
+    lua->pushstring("color");
+    lua->pushinteger(resp.color);
+    lua->settable(-3);
+    lua->pushstring("armor_dress");
+    lua->pushinteger(resp.armor_dress);
+    lua->settable(-3);
+    lua->pushstring("armor_color");
+    lua->pushinteger(resp.armor_color);
+    lua->settable(-3);
+    lua->pushstring("weapon_dress");
+    lua->pushinteger(resp.weapon_dress);
+    lua->settable(-3);
+    lua->pushstring("weapon_color");
+    lua->pushinteger(resp.weapon_color);
+    lua->settable(-3);
+    lua->pushstring("shield_dress");
+    lua->pushinteger(resp.shield_dress);
+    lua->settable(-3);
+    lua->pushstring("shield_color");
+    lua->pushinteger(resp.shield_color);
+    lua->settable(-3);
+    lua->pushstring("head_marker");
+    lua->pushinteger(resp.head_marker);
+    lua->settable(-3);
+    lua->pushstring("name");
+    lua->pushstring(resp.name);
+    lua->settable(-3);
+}
+
 void marshal_lua_game_resp__sound(lua_State* L, const fb::protocol::header& header)
 {
     auto* lua = fb::lua::get(L);
@@ -1423,7 +1601,7 @@ void marshal_lua_game_resp__spell_update(lua_State* L, const fb::protocol::heade
     if (lua == nullptr)
         return;
 
-    const auto& resp = static_cast<const game_resp::spell_update&>(header);
+    const auto& resp = static_cast<const game_resp::spell_update<BOT_CLIENT_VERSION>&>(header);
     lua->new_table();
     lua->pushstring("index");
     lua->pushinteger(resp.index);
@@ -1497,13 +1675,16 @@ void marshal_lua_game_resp__trade_dialog(lua_State* L, const fb::protocol::heade
     if (lua == nullptr)
         return;
 
-    const auto& resp = static_cast<const game_resp::trade_dialog&>(header);
+    const auto& resp = static_cast<const game_resp::trade_dialog<BOT_CLIENT_VERSION>&>(header);
     lua->new_table();
     lua->pushstring("oid");
     lua->pushinteger(resp.oid);
     lua->settable(-3);
     lua->pushstring("name");
     lua->pushstring(resp.name);
+    lua->settable(-3);
+    lua->pushstring("reputation");
+    lua->pushinteger(resp.reputation);
     lua->settable(-3);
 }
 
@@ -1568,23 +1749,14 @@ void marshal_lua_game_resp__ui_screen(lua_State* L, const fb::protocol::header& 
     lua->new_table();
 }
 
-void marshal_lua_game_resp__unknown_12(lua_State* L, const fb::protocol::header& header)
+void marshal_lua_game_resp__unknown_4f(lua_State* L, const fb::protocol::header& header)
 {
     auto* lua = fb::lua::get(L);
     if (lua == nullptr)
         return;
 
-    const auto& resp = static_cast<const game_resp::unknown_12&>(header);
+    const auto& resp = static_cast<const game_resp::unknown_4f<BOT_CLIENT_VERSION>&>(header);
     lua->new_table();
-    lua->pushstring("oid");
-    lua->pushinteger(resp.oid);
-    lua->settable(-3);
-    lua->pushstring("slot");
-    lua->pushinteger(resp.slot);
-    lua->settable(-3);
-    lua->pushstring("flag");
-    lua->pushinteger(resp.flag);
-    lua->settable(-3);
 }
 
 void marshal_lua_game_resp__update(lua_State* L, const fb::protocol::header& header)
@@ -1593,7 +1765,7 @@ void marshal_lua_game_resp__update(lua_State* L, const fb::protocol::header& hea
     if (lua == nullptr)
         return;
 
-    const auto& resp = static_cast<const game_resp::update&>(header);
+    const auto& resp = static_cast<const game_resp::update<BOT_CLIENT_VERSION>&>(header);
     lua->new_table();
     lua->pushstring("object_count");
     lua->pushinteger(resp.object_count);
@@ -1654,91 +1826,14 @@ void marshal_lua_game_resp__update_cc(lua_State* L, const fb::protocol::header& 
     lua->settable(-3);
 }
 
-void marshal_lua_game_resp__update_external_false_(lua_State* L, const fb::protocol::header& header)
+void marshal_lua_game_resp__update_external(lua_State* L, const fb::protocol::header& header)
 {
     auto* lua = fb::lua::get(L);
     if (lua == nullptr)
         return;
 
-    const auto& resp = static_cast<const game_resp::update_external<false>&>(header);
+    const auto& resp = static_cast<const game_resp::update_external<BOT_CLIENT_VERSION>&>(header);
     lua->new_table();
-    lua->pushstring("x");
-    lua->pushinteger(resp.x);
-    lua->settable(-3);
-    lua->pushstring("y");
-    lua->pushinteger(resp.y);
-    lua->settable(-3);
-    lua->pushstring("direction");
-    lua->pushinteger(resp.direction);
-    lua->settable(-3);
-    lua->pushstring("oid");
-    lua->pushinteger(resp.oid);
-    lua->settable(-3);
-    lua->pushstring("disguised");
-    lua->pushinteger(resp.disguised);
-    lua->settable(-3);
-    lua->pushstring("state");
-    try
-    {
-        lua->pushstring(fb::model::enum_value::enum_tostring(resp.state));
-    }
-    catch (...)
-    {
-        lua->pushnil();
-    }
-    lua->settable(-3);
-    lua->pushstring("state_id");
-    lua->pushinteger(static_cast<lua_Integer>(resp.state));
-    lua->settable(-3);
-    lua->pushstring("look");
-    lua->pushinteger(resp.look);
-    lua->settable(-3);
-    lua->pushstring("color");
-    lua->pushinteger(resp.color);
-    lua->settable(-3);
-    lua->pushstring("armor_dress");
-    lua->pushinteger(resp.armor_dress);
-    lua->settable(-3);
-    lua->pushstring("armor_color");
-    lua->pushinteger(resp.armor_color);
-    lua->settable(-3);
-    lua->pushstring("weapon_dress");
-    lua->pushinteger(resp.weapon_dress);
-    lua->settable(-3);
-    lua->pushstring("weapon_color");
-    lua->pushinteger(resp.weapon_color);
-    lua->settable(-3);
-    lua->pushstring("shield_dress");
-    lua->pushinteger(resp.shield_dress);
-    lua->settable(-3);
-    lua->pushstring("shield_color");
-    lua->pushinteger(resp.shield_color);
-    lua->settable(-3);
-    lua->pushstring("head_marker");
-    lua->pushinteger(resp.head_marker);
-    lua->settable(-3);
-    lua->pushstring("name");
-    lua->pushstring(resp.name);
-    lua->settable(-3);
-}
-
-void marshal_lua_game_resp__update_external_true_(lua_State* L, const fb::protocol::header& header)
-{
-    auto* lua = fb::lua::get(L);
-    if (lua == nullptr)
-        return;
-
-    const auto& resp = static_cast<const game_resp::update_external<true>&>(header);
-    lua->new_table();
-    lua->pushstring("x");
-    lua->pushinteger(resp.x);
-    lua->settable(-3);
-    lua->pushstring("y");
-    lua->pushinteger(resp.y);
-    lua->settable(-3);
-    lua->pushstring("direction");
-    lua->pushinteger(resp.direction);
-    lua->settable(-3);
     lua->pushstring("oid");
     lua->pushinteger(resp.oid);
     lua->settable(-3);
@@ -1818,7 +1913,7 @@ void marshal_lua_game_resp__update_internal(lua_State* L, const fb::protocol::he
     if (lua == nullptr)
         return;
 
-    const auto& resp = static_cast<const game_resp::update_internal&>(header);
+    const auto& resp = static_cast<const game_resp::update_internal<BOT_CLIENT_VERSION>&>(header);
     lua->new_table();
     lua->pushstring("level");
     try
@@ -1845,8 +1940,11 @@ void marshal_lua_game_resp__update_internal(lua_State* L, const fb::protocol::he
     lua->pushstring("ch_nation");
     lua->pushinteger(resp.ch_nation);
     lua->settable(-3);
-    lua->pushstring("ch_creature");
-    lua->pushinteger(resp.ch_creature);
+    lua->pushstring("ch_divine_beast");
+    lua->pushinteger(resp.ch_divine_beast);
+    lua->settable(-3);
+    lua->pushstring("unknown_based_5");
+    lua->pushinteger(resp.unknown_based_5);
     lua->settable(-3);
     lua->pushstring("ch_level");
     lua->pushinteger(resp.ch_level);
@@ -1865,6 +1963,12 @@ void marshal_lua_game_resp__update_internal(lua_State* L, const fb::protocol::he
     lua->settable(-3);
     lua->pushstring("ch_dexterity");
     lua->pushinteger(resp.ch_dexterity);
+    lua->settable(-3);
+    lua->pushstring("reputation");
+    lua->pushinteger(resp.reputation);
+    lua->settable(-3);
+    lua->pushstring("evaluation");
+    lua->pushinteger(resp.evaluation);
     lua->settable(-3);
     lua->pushstring("ch_hp");
     lua->pushinteger(resp.ch_hp);
@@ -1889,6 +1993,12 @@ void marshal_lua_game_resp__update_internal(lua_State* L, const fb::protocol::he
     lua->settable(-3);
     lua->pushstring("ch_speed");
     lua->pushinteger(resp.ch_speed);
+    lua->settable(-3);
+    lua->pushstring("unknown_exp_pad");
+    lua->pushinteger(resp.unknown_exp_pad);
+    lua->settable(-3);
+    lua->pushstring("option_bits");
+    lua->pushinteger(resp.option_bits);
     lua->settable(-3);
 }
 
@@ -1959,7 +2069,7 @@ void marshal_lua_game_resp__web(lua_State* L, const fb::protocol::header& header
     if (lua == nullptr)
         return;
 
-    const auto& resp = static_cast<const game_resp::web&>(header);
+    const auto& resp = static_cast<const game_resp::web<BOT_CLIENT_VERSION>&>(header);
     lua->new_table();
     lua->pushstring("type");
     lua->pushinteger(resp.type);
@@ -1970,6 +2080,16 @@ void marshal_lua_game_resp__web(lua_State* L, const fb::protocol::header& header
     lua->pushstring("message");
     lua->pushstring(resp.message);
     lua->settable(-3);
+}
+
+void marshal_lua_game_resp__web_map(lua_State* L, const fb::protocol::header& header)
+{
+    auto* lua = fb::lua::get(L);
+    if (lua == nullptr)
+        return;
+
+    const auto& resp = static_cast<const game_resp::web_map<BOT_CLIENT_VERSION>&>(header);
+    lua->new_table();
 }
 
 } // namespace detail
@@ -1984,7 +2104,54 @@ int lua_builder_game_reqs__attack(lua_State* L)
     if (lua == nullptr)
         return luaL_error(L, "integration protocol requires active lua context");
 
-    lua_protocol::push_request(L, std::make_shared<game_reqs::attack>());
+    lua_protocol::push_request(L, std::make_shared<game_reqs::attack<BOT_CLIENT_VERSION>>());
+    return 1;
+}
+
+int lua_builder_game_reqs__browser(lua_State* L)
+{
+    auto lua = fb::lua::get(L);
+    if (lua == nullptr)
+        return luaL_error(L, "integration protocol requires active lua context");
+
+    const auto type = static_cast<uint8_t>(lua->tointeger(1));
+    lua_protocol::push_request(L, std::make_shared<game_reqs::browser<BOT_CLIENT_VERSION>>(type));
+    return 1;
+}
+
+int lua_builder_game_reqs__bulletin(lua_State* L)
+{
+    auto lua = fb::lua::get(L);
+    if (lua == nullptr)
+        return luaL_error(L, "integration protocol requires active lua context");
+
+    const auto action   = fb::model::enum_value::enum_parse<fb::model::enum_value::BULLETIN_ACTION>(lua->tostring(1));
+    const auto section  = static_cast<uint16_t>(lua->tointeger(2));
+    const auto article  = static_cast<uint16_t>(lua->tointeger(3));
+    const auto offset   = static_cast<uint16_t>(lua->tointeger(4));
+    const auto title    = lua->tostring(5);
+    const auto contents = lua->tostring(6);
+    const auto user     = lua->tostring(7);
+    lua_protocol::push_request(L,
+                               std::make_shared<game_reqs::bulletin<BOT_CLIENT_VERSION>>(action,
+                                                                                         section,
+                                                                                         article,
+                                                                                         offset,
+                                                                                         title,
+                                                                                         contents,
+                                                                                         user));
+    return 1;
+}
+
+int lua_builder_game_reqs__chat(lua_State* L)
+{
+    auto lua = fb::lua::get(L);
+    if (lua == nullptr)
+        return luaL_error(L, "integration protocol requires active lua context");
+
+    const auto shout   = lua->toboolean(1);
+    const auto message = lua->tostring(2);
+    lua_protocol::push_request(L, std::make_shared<game_reqs::chat<BOT_CLIENT_VERSION>>(shout, message));
     return 1;
 }
 
@@ -1996,7 +2163,29 @@ int lua_builder_game_reqs__click(lua_State* L)
 
     const auto oid  = static_cast<uint32_t>(lua->tointeger(1));
     const auto flag = static_cast<uint8_t>(lua->tointeger(2));
-    lua_protocol::push_request(L, std::make_shared<game_reqs::click>(oid, flag));
+    lua_protocol::push_request(L, std::make_shared<game_reqs::click<BOT_CLIENT_VERSION>>(oid, flag));
+    return 1;
+}
+
+int lua_builder_game_reqs__collection(lua_State* L)
+{
+    auto lua = fb::lua::get(L);
+    if (lua == nullptr)
+        return luaL_error(L, "integration protocol requires active lua context");
+
+    const auto slot = static_cast<uint8_t>(lua->tointeger(1));
+    lua_protocol::push_request(L, std::make_shared<game_reqs::collection<BOT_CLIENT_VERSION>>(slot));
+    return 1;
+}
+
+int lua_builder_game_reqs__direction(lua_State* L)
+{
+    auto lua = fb::lua::get(L);
+    if (lua == nullptr)
+        return luaL_error(L, "integration protocol requires active lua context");
+
+    const auto value = fb::model::enum_value::enum_parse<fb::model::enum_value::DIRECTION>(lua->tostring(1));
+    lua_protocol::push_request(L, std::make_shared<game_reqs::direction<BOT_CLIENT_VERSION>>(value));
     return 1;
 }
 
@@ -2006,7 +2195,18 @@ int lua_builder_game_reqs__door(lua_State* L)
     if (lua == nullptr)
         return luaL_error(L, "integration protocol requires active lua context");
 
-    lua_protocol::push_request(L, std::make_shared<game_reqs::door>());
+    lua_protocol::push_request(L, std::make_shared<game_reqs::door<BOT_CLIENT_VERSION>>());
+    return 1;
+}
+
+int lua_builder_game_reqs__emotion(lua_State* L)
+{
+    auto lua = fb::lua::get(L);
+    if (lua == nullptr)
+        return luaL_error(L, "integration protocol requires active lua context");
+
+    const auto value = static_cast<uint8_t>(lua->tointeger(1));
+    lua_protocol::push_request(L, std::make_shared<game_reqs::emotion<BOT_CLIENT_VERSION>>(value));
     return 1;
 }
 
@@ -2016,7 +2216,7 @@ int lua_builder_game_reqs__exit(lua_State* L)
     if (lua == nullptr)
         return luaL_error(L, "integration protocol requires active lua context");
 
-    lua_protocol::push_request(L, std::make_shared<game_reqs::exit>());
+    lua_protocol::push_request(L, std::make_shared<game_reqs::exit<BOT_CLIENT_VERSION>>());
     return 1;
 }
 
@@ -2026,7 +2226,7 @@ int lua_builder_game_reqs__front_info(lua_State* L)
     if (lua == nullptr)
         return luaL_error(L, "integration protocol requires active lua context");
 
-    lua_protocol::push_request(L, std::make_shared<game_reqs::front_info>());
+    lua_protocol::push_request(L, std::make_shared<game_reqs::front_info<BOT_CLIENT_VERSION>>());
     return 1;
 }
 
@@ -2038,7 +2238,7 @@ int lua_builder_game_reqs__give_item(lua_State* L)
 
     const auto slot = static_cast<uint8_t>(lua->tointeger(1));
     const auto all  = lua->toboolean(2);
-    lua_protocol::push_request(L, std::make_shared<game_reqs::give_item>(slot, all));
+    lua_protocol::push_request(L, std::make_shared<game_reqs::give_item<BOT_CLIENT_VERSION>>(slot, all));
     return 1;
 }
 
@@ -2049,7 +2249,7 @@ int lua_builder_game_reqs__give_money(lua_State* L)
         return luaL_error(L, "integration protocol requires active lua context");
 
     const auto money = static_cast<uint32_t>(lua->tointeger(1));
-    lua_protocol::push_request(L, std::make_shared<game_reqs::give_money>(money));
+    lua_protocol::push_request(L, std::make_shared<game_reqs::give_money<BOT_CLIENT_VERSION>>(money));
     return 1;
 }
 
@@ -2060,7 +2260,7 @@ int lua_builder_game_reqs__group(lua_State* L)
         return luaL_error(L, "integration protocol requires active lua context");
 
     const auto name = lua->tostring(1);
-    lua_protocol::push_request(L, std::make_shared<game_reqs::group>(name));
+    lua_protocol::push_request(L, std::make_shared<game_reqs::group<BOT_CLIENT_VERSION>>(name));
     return 1;
 }
 
@@ -2071,7 +2271,7 @@ int lua_builder_game_reqs__item_active(lua_State* L)
         return luaL_error(L, "integration protocol requires active lua context");
 
     const auto index = static_cast<uint8_t>(lua->tointeger(1));
-    lua_protocol::push_request(L, std::make_shared<game_reqs::item_active>(index));
+    lua_protocol::push_request(L, std::make_shared<game_reqs::item_active<BOT_CLIENT_VERSION>>(index));
     return 1;
 }
 
@@ -2083,7 +2283,7 @@ int lua_builder_game_reqs__item_drop(lua_State* L)
 
     const auto index = static_cast<uint8_t>(lua->tointeger(1));
     const auto all   = lua->toboolean(2);
-    lua_protocol::push_request(L, std::make_shared<game_reqs::item_drop>(index, all));
+    lua_protocol::push_request(L, std::make_shared<game_reqs::item_drop<BOT_CLIENT_VERSION>>(index, all));
     return 1;
 }
 
@@ -2094,7 +2294,7 @@ int lua_builder_game_reqs__item_drop_money(lua_State* L)
         return luaL_error(L, "integration protocol requires active lua context");
 
     const auto chunk = static_cast<uint32_t>(lua->tointeger(1));
-    lua_protocol::push_request(L, std::make_shared<game_reqs::item_drop_money>(chunk));
+    lua_protocol::push_request(L, std::make_shared<game_reqs::item_drop_money<BOT_CLIENT_VERSION>>(chunk));
     return 1;
 }
 
@@ -2105,7 +2305,7 @@ int lua_builder_game_reqs__item_inactive(lua_State* L)
         return luaL_error(L, "integration protocol requires active lua context");
 
     const auto parts = fb::model::enum_value::enum_parse<fb::model::enum_value::EQUIPMENT_PARTS>(lua->tostring(1));
-    lua_protocol::push_request(L, std::make_shared<game_reqs::item_inactive>(parts));
+    lua_protocol::push_request(L, std::make_shared<game_reqs::item_inactive<BOT_CLIENT_VERSION>>(parts));
     return 1;
 }
 
@@ -2117,7 +2317,7 @@ int lua_builder_game_reqs__item_info(lua_State* L)
 
     const auto position = static_cast<uint16_t>(lua->tointeger(1));
     const auto slot     = static_cast<uint8_t>(lua->tointeger(2));
-    lua_protocol::push_request(L, std::make_shared<game_reqs::item_info>(position, slot));
+    lua_protocol::push_request(L, std::make_shared<game_reqs::item_info<BOT_CLIENT_VERSION>>(position, slot));
     return 1;
 }
 
@@ -2129,7 +2329,18 @@ int lua_builder_game_reqs__item_throws(lua_State* L)
 
     const auto all   = lua->toboolean(1);
     const auto index = static_cast<uint8_t>(lua->tointeger(2));
-    lua_protocol::push_request(L, std::make_shared<game_reqs::item_throws>(all, index));
+    lua_protocol::push_request(L, std::make_shared<game_reqs::item_throws<BOT_CLIENT_VERSION>>(all, index));
+    return 1;
+}
+
+int lua_builder_game_reqs__loot(lua_State* L)
+{
+    auto lua = fb::lua::get(L);
+    if (lua == nullptr)
+        return luaL_error(L, "integration protocol requires active lua context");
+
+    const auto boost = lua->toboolean(1);
+    lua_protocol::push_request(L, std::make_shared<game_reqs::loot<BOT_CLIENT_VERSION>>(boost));
     return 1;
 }
 
@@ -2139,7 +2350,7 @@ int lua_builder_game_reqs__map_update(lua_State* L)
     if (lua == nullptr)
         return luaL_error(L, "integration protocol requires active lua context");
 
-    lua_protocol::push_request(L, std::make_shared<game_reqs::map_update>());
+    lua_protocol::push_request(L, std::make_shared<game_reqs::map_update<BOT_CLIENT_VERSION>>());
     return 1;
 }
 
@@ -2152,7 +2363,7 @@ int lua_builder_game_reqs__map_world(lua_State* L)
     const auto value  = static_cast<uint16_t>(lua->tointeger(1));
     const auto before = static_cast<uint16_t>(lua->tointeger(2));
     const auto after  = static_cast<uint16_t>(lua->tointeger(3));
-    lua_protocol::push_request(L, std::make_shared<game_reqs::map_world>(value, before, after));
+    lua_protocol::push_request(L, std::make_shared<game_reqs::map_world<BOT_CLIENT_VERSION>>(value, before, after));
     return 1;
 }
 
@@ -2162,7 +2373,36 @@ int lua_builder_game_reqs__miss(lua_State* L)
     if (lua == nullptr)
         return luaL_error(L, "integration protocol requires active lua context");
 
-    lua_protocol::push_request(L, std::make_shared<game_reqs::miss>());
+    lua_protocol::push_request(L, std::make_shared<game_reqs::miss<BOT_CLIENT_VERSION>>());
+    return 1;
+}
+
+int lua_builder_game_reqs__move(lua_State* L)
+{
+    auto lua = fb::lua::get(L);
+    if (lua == nullptr)
+        return luaL_error(L, "integration protocol requires active lua context");
+
+    const auto direction       = fb::model::enum_value::enum_parse<fb::model::enum_value::DIRECTION>(lua->tostring(1));
+    const auto walk_queue_slot = static_cast<uint32_t>(lua->tointeger(2));
+    fb::model::point<uint16_t> position;
+    if (lua->is_table(3))
+    {
+        lua->rawgeti(3, 1);
+        position.x = static_cast<uint16_t>(lua->tointeger(-1));
+        lua->pop(1);
+        lua->rawgeti(3, 2);
+        position.y = static_cast<uint16_t>(lua->tointeger(-1));
+        lua->pop(1);
+    }
+    else
+    {
+        position.x = static_cast<uint16_t>(lua->tointeger(3));
+        position.y = static_cast<uint16_t>(lua->tointeger(4));
+    }
+    lua_protocol::push_request(
+        L,
+        std::make_shared<game_reqs::move<BOT_CLIENT_VERSION>>(direction, walk_queue_slot, position));
     return 1;
 }
 
@@ -2172,7 +2412,7 @@ int lua_builder_game_reqs__move_blocked(lua_State* L)
     if (lua == nullptr)
         return luaL_error(L, "integration protocol requires active lua context");
 
-    lua_protocol::push_request(L, std::make_shared<game_reqs::move_blocked>());
+    lua_protocol::push_request(L, std::make_shared<game_reqs::move_blocked<BOT_CLIENT_VERSION>>());
     return 1;
 }
 
@@ -2184,7 +2424,7 @@ int lua_builder_game_reqs__pong(lua_State* L)
 
     const auto token          = static_cast<uint32_t>(lua->tointeger(1));
     const auto client_tick_ms = static_cast<uint32_t>(lua->tointeger(2));
-    lua_protocol::push_request(L, std::make_shared<game_reqs::pong>(token, client_tick_ms));
+    lua_protocol::push_request(L, std::make_shared<game_reqs::pong<BOT_CLIENT_VERSION>>(token, client_tick_ms));
     return 1;
 }
 
@@ -2196,7 +2436,7 @@ int lua_builder_game_reqs__popup_input_submit(lua_State* L)
 
     const auto param0 = static_cast<uint8_t>(lua->tointeger(1));
     const auto text   = lua->tostring(2);
-    lua_protocol::push_request(L, std::make_shared<game_reqs::popup_input_submit>(param0, text));
+    lua_protocol::push_request(L, std::make_shared<game_reqs::popup_input_submit<BOT_CLIENT_VERSION>>(param0, text));
     return 1;
 }
 
@@ -2206,7 +2446,7 @@ int lua_builder_game_reqs__post(lua_State* L)
     if (lua == nullptr)
         return luaL_error(L, "integration protocol requires active lua context");
 
-    lua_protocol::push_request(L, std::make_shared<game_reqs::post>());
+    lua_protocol::push_request(L, std::make_shared<game_reqs::post<BOT_CLIENT_VERSION>>());
     return 1;
 }
 
@@ -2216,7 +2456,7 @@ int lua_builder_game_reqs__screen_refresh(lua_State* L)
     if (lua == nullptr)
         return luaL_error(L, "integration protocol requires active lua context");
 
-    lua_protocol::push_request(L, std::make_shared<game_reqs::screen_refresh>());
+    lua_protocol::push_request(L, std::make_shared<game_reqs::screen_refresh<BOT_CLIENT_VERSION>>());
     return 1;
 }
 
@@ -2226,7 +2466,7 @@ int lua_builder_game_reqs__self_info(lua_State* L)
     if (lua == nullptr)
         return luaL_error(L, "integration protocol requires active lua context");
 
-    lua_protocol::push_request(L, std::make_shared<game_reqs::self_info>());
+    lua_protocol::push_request(L, std::make_shared<game_reqs::self_info<BOT_CLIENT_VERSION>>());
     return 1;
 }
 
@@ -2255,7 +2495,9 @@ int lua_builder_game_reqs__spell_cast(lua_State* L)
         position.x = static_cast<uint16_t>(lua->tointeger(5));
         position.y = static_cast<uint16_t>(lua->tointeger(6));
     }
-    lua_protocol::push_request(L, std::make_shared<game_reqs::spell_cast>(type, slot, message, oid, position));
+    lua_protocol::push_request(
+        L,
+        std::make_shared<game_reqs::spell_cast<BOT_CLIENT_VERSION>>(type, slot, message, oid, position));
     return 1;
 }
 
@@ -2268,7 +2510,19 @@ int lua_builder_game_reqs__swap(lua_State* L)
     const auto type = fb::model::enum_value::enum_parse<fb::model::enum_value::SWAP_TYPE>(lua->tostring(1));
     const auto src  = static_cast<uint8_t>(lua->tointeger(2));
     const auto dst  = static_cast<uint8_t>(lua->tointeger(3));
-    lua_protocol::push_request(L, std::make_shared<game_reqs::swap>(type, src, dst));
+    lua_protocol::push_request(L, std::make_shared<game_reqs::swap<BOT_CLIENT_VERSION>>(type, src, dst));
+    return 1;
+}
+
+int lua_builder_game_reqs__unknown_54(lua_State* L)
+{
+    auto lua = fb::lua::get(L);
+    if (lua == nullptr)
+        return luaL_error(L, "integration protocol requires active lua context");
+
+    const auto token = static_cast<uint32_t>(lua->tointeger(1));
+    const auto phase = static_cast<uint8_t>(lua->tointeger(2));
+    lua_protocol::push_request(L, std::make_shared<game_reqs::unknown_54<BOT_CLIENT_VERSION>>(token, phase));
     return 1;
 }
 
@@ -2280,7 +2534,7 @@ int lua_builder_game_reqs__update_option(lua_State* L)
 
     const auto option = fb::model::enum_value::enum_parse<fb::model::enum_value::OPTION>(lua->tostring(1));
     const auto ride   = lua->toboolean(2);
-    lua_protocol::push_request(L, std::make_shared<game_reqs::update_option>(option, ride));
+    lua_protocol::push_request(L, std::make_shared<game_reqs::update_option<BOT_CLIENT_VERSION>>(option, ride));
     return 1;
 }
 
@@ -2290,7 +2544,17 @@ int lua_builder_game_reqs__user_list(lua_State* L)
     if (lua == nullptr)
         return luaL_error(L, "integration protocol requires active lua context");
 
-    lua_protocol::push_request(L, std::make_shared<game_reqs::user_list>());
+    lua_protocol::push_request(L, std::make_shared<game_reqs::user_list<BOT_CLIENT_VERSION>>());
+    return 1;
+}
+
+int lua_builder_game_reqs__web_map(lua_State* L)
+{
+    auto lua = fb::lua::get(L);
+    if (lua == nullptr)
+        return luaL_error(L, "integration protocol requires active lua context");
+
+    lua_protocol::push_request(L, std::make_shared<game_reqs::web_map<BOT_CLIENT_VERSION>>());
     return 1;
 }
 
@@ -2302,7 +2566,7 @@ int lua_builder_game_reqs__whisper(lua_State* L)
 
     const auto name    = lua->tostring(1);
     const auto message = lua->tostring(2);
-    lua_protocol::push_request(L, std::make_shared<game_reqs::whisper>(name, message));
+    lua_protocol::push_request(L, std::make_shared<game_reqs::whisper<BOT_CLIENT_VERSION>>(name, message));
     return 1;
 }
 
@@ -2311,10 +2575,22 @@ void register_builders(lua_State* L)
     lua_newtable(L);
     lua_pushcfunction(L, lua_builder_game_reqs__attack);
     lua_setfield(L, -2, "attack");
+    lua_pushcfunction(L, lua_builder_game_reqs__browser);
+    lua_setfield(L, -2, "browser");
+    lua_pushcfunction(L, lua_builder_game_reqs__bulletin);
+    lua_setfield(L, -2, "bulletin");
+    lua_pushcfunction(L, lua_builder_game_reqs__chat);
+    lua_setfield(L, -2, "chat");
     lua_pushcfunction(L, lua_builder_game_reqs__click);
     lua_setfield(L, -2, "click");
+    lua_pushcfunction(L, lua_builder_game_reqs__collection);
+    lua_setfield(L, -2, "collection");
+    lua_pushcfunction(L, lua_builder_game_reqs__direction);
+    lua_setfield(L, -2, "direction");
     lua_pushcfunction(L, lua_builder_game_reqs__door);
     lua_setfield(L, -2, "door");
+    lua_pushcfunction(L, lua_builder_game_reqs__emotion);
+    lua_setfield(L, -2, "emotion");
     lua_pushcfunction(L, lua_builder_game_reqs__exit);
     lua_setfield(L, -2, "exit");
     lua_pushcfunction(L, lua_builder_game_reqs__front_info);
@@ -2337,12 +2613,16 @@ void register_builders(lua_State* L)
     lua_setfield(L, -2, "item_info");
     lua_pushcfunction(L, lua_builder_game_reqs__item_throws);
     lua_setfield(L, -2, "item_throws");
+    lua_pushcfunction(L, lua_builder_game_reqs__loot);
+    lua_setfield(L, -2, "loot");
     lua_pushcfunction(L, lua_builder_game_reqs__map_update);
     lua_setfield(L, -2, "map_update");
     lua_pushcfunction(L, lua_builder_game_reqs__map_world);
     lua_setfield(L, -2, "map_world");
     lua_pushcfunction(L, lua_builder_game_reqs__miss);
     lua_setfield(L, -2, "miss");
+    lua_pushcfunction(L, lua_builder_game_reqs__move);
+    lua_setfield(L, -2, "move");
     lua_pushcfunction(L, lua_builder_game_reqs__move_blocked);
     lua_setfield(L, -2, "move_blocked");
     lua_pushcfunction(L, lua_builder_game_reqs__pong);
@@ -2359,10 +2639,14 @@ void register_builders(lua_State* L)
     lua_setfield(L, -2, "spell_cast");
     lua_pushcfunction(L, lua_builder_game_reqs__swap);
     lua_setfield(L, -2, "swap");
+    lua_pushcfunction(L, lua_builder_game_reqs__unknown_54);
+    lua_setfield(L, -2, "unknown_54");
     lua_pushcfunction(L, lua_builder_game_reqs__update_option);
     lua_setfield(L, -2, "update_option");
     lua_pushcfunction(L, lua_builder_game_reqs__user_list);
     lua_setfield(L, -2, "user_list");
+    lua_pushcfunction(L, lua_builder_game_reqs__web_map);
+    lua_setfield(L, -2, "web_map");
     lua_pushcfunction(L, lua_builder_game_reqs__whisper);
     lua_setfield(L, -2, "whisper");
 }

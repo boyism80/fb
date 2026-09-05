@@ -3,51 +3,15 @@ local lib = require('lib.interaction')
 local spell = require('lib.spell')
 local npc = require('lib.npc')
 local command = require('lib.command')
+local castle_lib = require('lib.castle')
 
--- Gatekeeper NPC name -> { totem name (e.g. "청룡"), totem_key (e.g. "dragon") } for "~참가" chat.
+-- Gatekeeper NPC name -> { totem name, DIVINE_BEAST } for "~참가" chat.
 local gatekeeper_by_name = {
-    ["주작성문지기"] = { "주작", "bird" },
-    ["청룡성문지기"] = { "청룡", "dragon" },
-    ["현무성문지기"] = { "현무", "turtle" },
-    ["백호성문지기"] = { "백호", "tiger" },
+    ["주작성문지기"] = { "주작", DIVINE_BEAST.VERMILION_BIRD },
+    ["청룡성문지기"] = { "청룡", DIVINE_BEAST.AZURE_DRAGON },
+    ["현무성문지기"] = { "현무", DIVINE_BEAST.BLACK_TORTOISE },
+    ["백호성문지기"] = { "백호", DIVINE_BEAST.WHITE_TIGER },
 }
-
-local function run_gatekeeper_entrance(me, npc_obj, totem_name_kr, totem_key)
-    local clan = me:clan()
-    if not clan then
-        me:dialog(npc_obj, '가입된 문파가 없습니다.')
-        return true
-    end
-    if me:state() == STATE.GHOST then
-        me:dialog(npc_obj, '유령은 참가할 수 없습니다.')
-        return true
-    end
-    local occupant = (_G.clan_castle_occupant or {})[totem_key] or ''
-    local siege_start = _G.clan_siege_start or 0
-    local siege_map = _G.clan_siege_map or ''
-    local clan_name = clan:name()
-    local castle_name = totem_name_kr .. '성'
-    local map_entrance = name2map(totem_name_kr .. '성입구')
-    local map_inner = name2map(totem_name_kr .. '의성')
-    if not map_entrance then
-        me:dialog(npc_obj, '입장할 수 있는 맵이 없습니다.')
-        return true
-    end
-    if clan_name == occupant then
-        if siege_start == 0 and map_inner then
-            me:map(map_inner, math.random(11, 17), math.random(4, 11))
-        else
-            me:map(map_entrance, math.random(49, 57), math.random(145, 148))
-        end
-        return true
-    end
-    if siege_map == castle_name then
-        me:map(map_entrance, math.random(49, 57), math.random(145, 148))
-        return true
-    end
-    me:dialog(npc_obj, string.format('현재 %s 공성이 진행중이지 않습니다.', castle_name))
-    return true
-end
 
 local function run_black_flag(me, npc_obj)
     if me:dialog(npc_obj, '아니, 내가 검정깃발을 가지고 있다는걸 어떻게 알았나.. 으음...', { prev = false, next = true }) == DIALOG_RESULT.QUIT then
@@ -336,7 +300,7 @@ local npc_chat_handlers = {
         func = function(me, npc_obj, params)
             local name = npc_obj:model():name()
             local info = gatekeeper_by_name[name]
-            return run_gatekeeper_entrance(me, npc_obj, info[1], info[2])
+            return castle_lib.enter_castle(me, npc_obj, info[1], info[2])
         end,
     },
     {
@@ -348,6 +312,18 @@ local npc_chat_handlers = {
         end,
         func = function(me, npc_obj, params)
             return run_black_flag(me, npc_obj)
+        end,
+    },
+    {
+        priority = 200,
+        anchors = { '안녕' },
+        literal = true,
+        condition = function(npc_obj)
+            return npc_obj:model():name() == '용노인'
+        end,
+        func = function(me, npc_obj, params)
+            me:script('scripts/npc/98.lua', 'on_hello', npc_obj)
+            return true
         end,
     },
 }
@@ -467,7 +443,7 @@ local function matchmaking_confirm_seconds(confirm_deadline)
 end
 
 local function matchmaking_clear_timer(me)
-    me:timer(0, false)
+    me:timer(0, TIMER_TYPE.OFF)
 end
 
 local function matchmaking_state(me)
@@ -490,8 +466,7 @@ local function on_attack(me, additional_attack)
         return 0
     end
 
-    local option = map:model():option()
-    local pk = (option & MAP_OPTION.ENABLE_PK) == MAP_OPTION.ENABLE_PK
+    local pk = castle_lib.map_pk_enabled(me)
     local enemy_type = OBJECT_TYPE.LIFE
     if not pk or (me:is(OBJECT_TYPE.CHARACTER) and me:option(OPTION.PK_PROTECT)) then
         enemy_type = OBJECT_TYPE.MOB
@@ -554,7 +529,7 @@ local function on_attack(me, additional_attack)
             end
         end
 
-        if target ~= nil then
+        if target ~= nil and not castle_lib.blocks_siege_friendly_fire(me, target) and not lib.is_miss(me, target, 'front') then
             lib.damage(me, target, nil, 701)
             count = count + 1
         end
@@ -579,7 +554,7 @@ local function on_attack(me, additional_attack)
         if weapon ~= nil then
             damaged_sound = SOUND.DAMAGE
         end
-        if front ~= nil and not lib.is_miss(me, front) then
+        if front ~= nil and not castle_lib.blocks_siege_friendly_fire(me, front) and not lib.is_miss(me, front, 'front') then
             lib.damage(me, front, nil, damaged_sound)
             count = count + 1
         end
@@ -596,8 +571,10 @@ local function on_attack(me, additional_attack)
 
             local nears = me:nears(enemy_type, points, false)
             for _, obj in pairs(nears) do
-                lib.damage(me, obj, 0.4, damaged_sound)
-                count = count + 1
+                if not castle_lib.blocks_siege_friendly_fire(me, obj) and not lib.is_miss(me, obj, 'side') then
+                    lib.damage(me, obj, 0.4, damaged_sound)
+                    count = count + 1
+                end
             end
         end
 
@@ -615,8 +592,10 @@ local function on_attack(me, additional_attack)
 
             local nears = me:nears(enemy_type, points, false)
             for _, obj in pairs(nears) do
-                lib.damage(me, obj, 0.5, damaged_sound)
-                count = count + 1
+                if not castle_lib.blocks_siege_friendly_fire(me, obj) and not lib.is_miss(me, obj, 'back') then
+                    lib.damage(me, obj, 0.5, damaged_sound)
+                    count = count + 1
+                end
             end
         end
     end
@@ -656,6 +635,23 @@ end
 
 return {
     on_attack = on_attack,
+
+    on_character_kill = function(killer, victim)
+        if killer == nil or victim == nil then
+            return
+        end
+        if not killer:is(OBJECT_TYPE.CHARACTER) or not victim:is(OBJECT_TYPE.CHARACTER) then
+            return
+        end
+        if not castle_lib.map_siege_castle(victim) then
+            return
+        end
+        if not castle_lib.map_pk_enabled(victim) then
+            return
+        end
+
+        broadcast(string.format('[정보] %s님이 %s님에게 죽어서 탈락했습니다.', victim:name(), killer:name()), MESSAGE_TYPE.WORLD)
+    end,
 
     on_equipment_active = function(me, parts, equipment)
         lib.any_action(me)
@@ -713,11 +709,11 @@ return {
     on_move = function(me)
         lib.any_action(me)
 
-        if me:is(OBJECT_TYPE.CHARACTER) then
-            local quest = require('lib.quest')
-            quest.red_clay_on_move(me)
-            quest.mountain_treasure_fabric_on_move(me)
-        end
+        -- if me:is(OBJECT_TYPE.CHARACTER) then
+        --     local quest = require('lib.quest')
+        --     quest.red_clay_on_move(me)
+        --     quest.mountain_treasure_fabric_on_move(me)
+        -- end
     end,
 
     on_direction = function(me)
@@ -760,7 +756,20 @@ return {
 
     on_npc_chat = on_npc_chat,
 
+    on_clan_left = function(me)
+        castle_lib.evict(me)
+        castle_lib.strip_all(me)
+    end,
+
     on_login = function(me, first_login)
+        castle_lib.strip_all(me)
+        castle_lib.evict(me)
+
+        local clan = me:clan()
+        if clan ~= nil and me:role() <= ROLE.USER then
+            clan:message(string.format('[%s] %s님이 접속하셨습니다.', clan:name(), me:name()), MESSAGE_TYPE.NOTIFY)
+        end
+
         if first_login then
             me:push_achievement(0, make_baram_birth_label() .. " 생", 0, 47)
         end
@@ -868,7 +877,7 @@ return {
         local now_ts = now()
         state.queue_started_at = now_ts
         state.elapsed_seconds = 0
-        me:timer(1200, false)
+        me:timer(1200, TIMER_TYPE.INCREASE)
         me:message(string.format('매치메이킹 대기를 시작했습니다. (유형: %d)', match_type), MESSAGE_TYPE.STATE)
     end,
 
@@ -897,7 +906,7 @@ return {
             state.elapsed_seconds = 0
         end
         local confirm_seconds = matchmaking_confirm_seconds(confirm_deadline)
-        me:timer(confirm_seconds, true)
+        me:timer(confirm_seconds, TIMER_TYPE.DECREASE)
         me:message(
             string.format('매치가 제안되었습니다. %d초 안에 수락해 주세요. (유형: %d)', confirm_seconds, match_type),
             MESSAGE_TYPE.STATE
@@ -912,12 +921,12 @@ return {
         if selected == 1 then
             local err = me:matchmaker():confirm()
             if err ~= nil then
-                me:message(err, MESSAGE_TYPE.STATE)
+                me:message('상대가 매치를 거절했거나 이미 종료된 매치입니다.', MESSAGE_TYPE.STATE)
             end
         else
             local err = me:matchmaker():decline()
             if err ~= nil then
-                me:message(err, MESSAGE_TYPE.STATE)
+                me:message('이미 종료된 매치입니다.', MESSAGE_TYPE.STATE)
             end
         end
     end,
@@ -925,7 +934,17 @@ return {
     on_matchmaking_ready = function(me, match_id, match_type)
         matchmaking_clear_timer(me)
         matchmaking_clear_state(me)
-        me:message(string.format('매치가 성사되었습니다. (유형: %d)', match_type), MESSAGE_TYPE.STATE)
+        me:save_return_point()
+        me:save()
+        local dest = match_transfer(match_id)
+        if dest == nil then
+            me:message('교차 서버를 찾을 수 없습니다.', MESSAGE_TYPE.STATE)
+            return
+        end
+        me:transfer_to(dest.ip, dest.port, dest.id, {
+            match_id = match_id,
+            match_type = match_type
+        })
     end,
 
     on_matchmaking_dissolved = function(me, match_id, match_type, reason, outcome)
@@ -933,7 +952,7 @@ return {
             local state = matchmaking_state(me)
             local elapsed = state.elapsed_seconds or 0
             state.queue_started_at = now() - elapsed
-            me:timer(1200, false)
+            me:timer(1200, TIMER_TYPE.INCREASE)
             if reason == 0 then
                 me:message(
                     string.format('상대가 응답하지 않아 대기를 이어갑니다. (유형: %d)', match_type),

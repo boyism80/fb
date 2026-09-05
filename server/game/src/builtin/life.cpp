@@ -34,9 +34,11 @@ IMPLEMENT_LUA_EXTENSION(fb::game::life, "fb.game.life")
 {"delirious",            builtin::life::builtin_delirious},
 {"base_hp",              builtin::life::builtin_base_hp},
 {"buff_hp",              builtin::life::builtin_buff_hp},
+{"buff_hp_percent",      builtin::life::builtin_buff_hp_percent},
 {"maxhp",                builtin::life::builtin_maxhp},
 {"base_mp",              builtin::life::builtin_base_mp},
 {"buff_mp",              builtin::life::builtin_buff_mp},
+{"buff_mp_percent",      builtin::life::builtin_buff_mp_percent},
 {"maxmp",                builtin::life::builtin_maxmp},
 {"base_str",             builtin::life::builtin_base_str},
 {"buff_str",             builtin::life::builtin_buff_str},
@@ -1082,6 +1084,49 @@ int builtin::life::builtin_buff_hp(lua_State* L)
     }
 }
 
+int builtin::life::builtin_buff_hp_percent(lua_State* L)
+{
+    auto lua = fb::lua::get(L);
+    if (lua == nullptr)
+        return 0;
+    auto argc = lua->argc();
+    auto obj  = lua->touserdata<fb::game::life>(1);
+    if (obj == nullptr)
+        return 0;
+
+    if (argc == 1)
+    {
+        auto value    = std::make_shared<float>();
+        auto weak     = obj->weak_from_this();
+        auto builder  = lua->new_co_builder();
+        builder.weak  = weak;
+        builder.yield = [=]() -> async::task<void> {
+            *value = obj->stat.buff_hp_percent();
+            co_return;
+        };
+        builder.resume = [=]() -> async::task<int> {
+            lua->pushnumber(*value);
+            co_return 1;
+        };
+        return builder.run();
+    }
+    else
+    {
+        auto value    = static_cast<float>(lua_tonumber(L, 2));
+        auto weak     = obj->weak_from_this();
+        auto builder  = lua->new_co_builder();
+        builder.weak  = weak;
+        builder.yield = [=]() -> async::task<void> {
+            obj->stat.buff_hp_percent(value);
+            co_return;
+        };
+        builder.resume = []() -> async::task<int> {
+            co_return 0;
+        };
+        return builder.run();
+    }
+}
+
 int builtin::life::builtin_maxhp(lua_State* L)
 {
     auto lua = fb::lua::get(L);
@@ -1164,6 +1209,49 @@ int builtin::life::builtin_buff_mp(lua_State* L)
         builder.weak  = weak;
         builder.yield = [=]() -> async::task<void> {
             obj->stat.buff_mp(value);
+            co_return;
+        };
+        builder.resume = []() -> async::task<int> {
+            co_return 0;
+        };
+        return builder.run();
+    }
+}
+
+int builtin::life::builtin_buff_mp_percent(lua_State* L)
+{
+    auto lua = fb::lua::get(L);
+    if (lua == nullptr)
+        return 0;
+    auto argc = lua->argc();
+    auto obj  = lua->touserdata<fb::game::life>(1);
+    if (obj == nullptr)
+        return 0;
+
+    if (argc == 1)
+    {
+        auto value    = std::make_shared<float>();
+        auto weak     = obj->weak_from_this();
+        auto builder  = lua->new_co_builder();
+        builder.weak  = weak;
+        builder.yield = [=]() -> async::task<void> {
+            *value = obj->stat.buff_mp_percent();
+            co_return;
+        };
+        builder.resume = [=]() -> async::task<int> {
+            lua->pushnumber(*value);
+            co_return 1;
+        };
+        return builder.run();
+    }
+    else
+    {
+        auto value    = static_cast<float>(lua_tonumber(L, 2));
+        auto weak     = obj->weak_from_this();
+        auto builder  = lua->new_co_builder();
+        builder.weak  = weak;
+        builder.yield = [=]() -> async::task<void> {
+            obj->stat.buff_mp_percent(value);
             co_return;
         };
         builder.resume = []() -> async::task<int> {

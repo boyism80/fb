@@ -306,12 +306,12 @@ local SPECIAL_SPELLS = {
             slog("성황령 pre: oid=%d map=%d hp=%d mp=%d pos=(%d,%d)",
             caster:oid(), caster:map(), caster:hp(), caster:mp(), pos[1], pos[2])
             
-            slog("성황령 pre: casting 헬파이어 on self, waiting update_external_detailed GHOST")
+            slog("성황령 pre: casting 헬파이어 on self, waiting show GHOST")
             local packet = caster:request(
-            resp.update_external_detailed,
+            resp.show,
             protocol.spell_cast("TARGET", hell_slot, "", caster:oid(), pos),
             function(pkt)
-                slog("성황령 pre: update_external_detailed oid=%d state=%s (want oid=%d GHOST)",
+                slog("성황령 pre: show oid=%d state=%s (want oid=%d GHOST)",
                 pkt.oid, tostring(pkt.state), caster:oid())
                 return pkt.oid == caster:oid() and pkt.state == "GHOST"
             end)

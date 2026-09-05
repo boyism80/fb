@@ -56,7 +56,7 @@ local function restore_target_state(target, caster)
     if target:state() == "GHOST" then
         target:chat("/체력바꾸기 10000")
         local packet = target:request(
-            resp.update_external_detailed,
+            resp.show,
             protocol.update_option("EXTENSION", true),
             function(p)
                 return p.oid == target:oid() and p.state == "NORMAL"
@@ -66,7 +66,7 @@ local function restore_target_state(target, caster)
         end
     elseif target:state() == "RIDING" then
         local packet = target:request(
-            resp.update_external_detailed,
+            resp.show,
             protocol.update_option("EXTENSION", true),
             function(p)
                 return p.oid == target:oid() and p.state == "NORMAL"
@@ -129,7 +129,7 @@ local function enter_ghost(target, caster)
 
     local pos = target:position()
     local packet = caster:request(
-        resp.update_external_detailed,
+        resp.show,
         protocol.spell_cast("TARGET", hell_slot, "", target:oid(), pos),
         function(pkt)
             return pkt.oid == target:oid() and pkt.state == "GHOST"
@@ -149,7 +149,7 @@ local function enter_riding(target)
     target:spawn_monster_relative("말", 1, 0)
 
     local packet = target:request(
-        resp.update_external_detailed,
+        resp.show,
         protocol.update_option("EXTENSION", true),
         function(pkt)
             return pkt.oid == target:oid() and pkt.state == "RIDING"
@@ -260,7 +260,7 @@ local function run_uitae_variant(ctx, variant)
     end
 
     local packet = caster:request(
-        resp.update_external_detailed,
+        resp.show,
         protocol.item_active(slot),
         function(p)
             if p.oid ~= caster:oid() then

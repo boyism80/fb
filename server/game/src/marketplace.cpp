@@ -52,7 +52,7 @@ async::task<marketplace::listing> marketplace::list(uint8_t slot, uint16_t count
     if (item == nullptr)
         throw std::runtime_error(_TEXT(MESSAGE_MARKETPLACE_ITEM_NOT_FOUND_AT_INDEX));
 
-    auto& model = item->based<fb::model::item>();
+    auto& model = item->model();
     if (item->count() < count)
         throw std::runtime_error(_TEXT(MESSAGE_MARKETPLACE_INSUFFICIENT_ITEM_COUNT));
 
@@ -117,7 +117,7 @@ async::task<marketplace::listing> marketplace::list(uint8_t slot, uint16_t count
     // Send request to marketplace server
     try
     {
-        auto   world = fb::config<uint32_t>("world");
+        auto   world = this->_owner.world();
         auto&& resp  = co_await this->_owner.server.http.post(
             "marketplace",
             "/marketplace/list",
@@ -199,7 +199,7 @@ async::task<bool> marketplace::cancel(std::string_view id)
     this->_owner.server.log.write("marketplace_cancel", log_data_before);
 
     auto   weak  = this->_owner.weak_from_this_as<fb::game::character>();
-    auto   world = fb::config<uint32_t>("world");
+    auto   world = this->_owner.world();
     auto   req   = mp_reqs::Cancel{world, this->_owner.id, id_copy};
     auto&& resp  = co_await this->_owner.server.http.post("marketplace", "/marketplace/cancel", req);
 
@@ -288,7 +288,7 @@ async::task<marketplace::listing> marketplace::purchase(std::string_view listing
     this->_owner.server.log.write("marketplace_purchase", log_data_before);
 
     // Send purchase request to marketplace server
-    auto world           = fb::config<uint32_t>("world");
+    auto world           = this->_owner.world();
     auto unhandled_error = true;
     auto restore_money   = false;
     auto character_gone  = false;
@@ -704,11 +704,12 @@ async::task<void> marketplace::restore()
             std::string title   = _TEXT(MESSAGE_MARKETPLACE_LISTING_RECOVERY_TITLE);
             std::string message = _TEXT(MESSAGE_MARKETPLACE_LISTING_RECOVERY_MESSAGE);
 
-            co_await this->_owner.server.system_storage.create(this->_owner.id,
-                                                               std::format("marketplace:list:{}", listing_id),
-                                                               title,
-                                                               message,
-                                                               pending_info.dsls);
+            std::ignore =
+                co_await this->_owner.server.system_storage.create(this->_owner.id,
+                                                                   std::format("marketplace:list:{}", listing_id),
+                                                                   title,
+                                                                   message,
+                                                                   pending_info.dsls);
 
             auto log_data            = Json::Value();
             log_data["character_id"] = static_cast<Json::Int64>(this->_owner.id);
@@ -743,7 +744,7 @@ async::task<void> marketplace::restore()
                     auto dsls_copy  = pending_info.dsls;
                     dsls_copy.push_back(refund_dsl.to_dsl());
 
-                    co_await this->_owner.server.system_storage.create(
+                    std::ignore = co_await this->_owner.server.system_storage.create(
                         this->_owner.id,
                         std::format("marketplace:purchase:refund:{}", purchase_id),
                         _TEXT(MESSAGE_MARKETPLACE_PURCHASE_REFUND_TITLE),
@@ -765,11 +766,12 @@ async::task<void> marketplace::restore()
         else
         {
             // Purchase record does not exist - restore money
-            co_await this->_owner.server.system_storage.create(this->_owner.id,
-                                                               std::format("marketplace:purchase:{}", purchase_id),
-                                                               _TEXT(MESSAGE_MARKETPLACE_PURCHASE_RECOVERY_TITLE),
-                                                               _TEXT(MESSAGE_MARKETPLACE_PURCHASE_RECOVERY_MESSAGE),
-                                                               pending_info.dsls);
+            std::ignore =
+                co_await this->_owner.server.system_storage.create(this->_owner.id,
+                                                                   std::format("marketplace:purchase:{}", purchase_id),
+                                                                   _TEXT(MESSAGE_MARKETPLACE_PURCHASE_RECOVERY_TITLE),
+                                                                   _TEXT(MESSAGE_MARKETPLACE_PURCHASE_RECOVERY_MESSAGE),
+                                                                   pending_info.dsls);
 
             auto log_data            = Json::Value();
             log_data["character_id"] = static_cast<Json::Int64>(this->_owner.id);

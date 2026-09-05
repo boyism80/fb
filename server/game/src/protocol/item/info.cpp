@@ -3,7 +3,16 @@
 namespace fb::protocol::game::request {
 
 #ifdef BOT
-void item_info::serialize(fb::stream_writer<big_endian>& writer) const
+template <CLIENT_VERSION V>
+item_info<V>::item_info(uint16_t position, uint8_t slot) :
+    position(position),
+    slot(slot)
+{ }
+#endif
+
+#ifdef BOT
+template <CLIENT_VERSION V>
+void item_info<V>::serialize(fb::stream_writer<big_endian>& writer) const
 {
     header::serialize(writer);
     writer.write<uint8_t>(opcode);
@@ -14,8 +23,24 @@ void item_info::serialize(fb::stream_writer<big_endian>& writer) const
     writer.write<uint8_t>(1);
     writer.write<uint8_t>(this->slot + 1);
 }
+
+template <>
+void item_info<CLIENT_VERSION::v651>::serialize(fb::stream_writer<big_endian>& writer) const
+{
+    header::serialize(writer);
+    writer.write<uint8_t>(opcode);
+    writer.write<uint16_t>(this->position);
+    writer.write<uint8_t>(0);
+    writer.write<uint8_t>(1);
+    writer.write<uint8_t>(1);
+    writer.write<uint8_t>(this->slot + 1);
+    writer.write<uint8_t>(1);
+    writer.write<uint8_t>(0);
+    writer.write<uint8_t>(0);
+}
 #else
-void item_info::deserialize(fb::stream_reader<big_endian>& reader)
+template <CLIENT_VERSION V>
+void item_info<V>::deserialize(fb::stream_reader<big_endian>& reader)
 {
     header::deserialize(reader);
     this->position = reader.read<uint16_t>();
@@ -24,5 +49,27 @@ void item_info::deserialize(fb::stream_reader<big_endian>& reader)
     this->filler2  = reader.read<uint8_t>();
     this->slot     = reader.read<uint8_t>() - 1;
 }
+
+template <>
+void item_info<CLIENT_VERSION::v651>::deserialize(fb::stream_reader<big_endian>& reader)
+{
+    header::deserialize(reader);
+    this->position = reader.read<uint16_t>();
+    this->filler0  = reader.read<uint8_t>();
+    this->filler1  = reader.read<uint8_t>();
+    this->filler2  = reader.read<uint8_t>();
+    this->slot     = reader.read<uint8_t>() - 1;
+    if (reader.readable_size() >= 3)
+    {
+        reader.read<uint8_t>();
+        reader.read<uint8_t>();
+        reader.read<uint8_t>();
+    }
+}
 #endif
+
+template class item_info<CLIENT_VERSION::v550>;
+template class item_info<CLIENT_VERSION::v565>;
+template class item_info<CLIENT_VERSION::v651>;
+
 } // namespace fb::protocol::game::request

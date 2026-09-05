@@ -2,8 +2,11 @@
 #include <fb/game/handler.h>
 #include <fb/log_collector.h>
 #include <fb/logger.h>
+#include <fb/amqp_route.h>
 #include <json/json.h>
+#include <cmath>
 #include <tuple>
+#include <map>
 
 using namespace fb::game;
 
@@ -133,15 +136,50 @@ void fb::game::server::sync_time()
     }
 
     this->_time = updated;
+    this->weather.sync();
+}
+
+uint8_t fb::game::server::brightness_from_time(uint8_t hours, uint8_t minutes)
+{
+    if (hours >= 1)
+        return 20;
+
+    const auto t = static_cast<uint32_t>(minutes) * 60u;
+    double     v;
+    if (t <= 1200)
+        v = 1.0 - (static_cast<double>(450 * t / 3600) * 0.0043333336);
+    else if (t <= 2400)
+        v = 0.35;
+    else if (t < 3600)
+        v = (static_cast<double>(450 * t / 3600) - 300.0) * 0.0043333336 + 0.35;
+    else
+        v = 1.0;
+
+    auto value = static_cast<int>(std::lround((v - 0.35) / 0.65 * 20.0));
+    if (value < 0)
+        value = 0;
+    if (value > 20)
+        value = 20;
+    return static_cast<uint8_t>(value);
+}
+
+uint8_t fb::game::server::brightness() const
+{
+    return brightness_from_time(static_cast<uint8_t>(this->_time.hours()), static_cast<uint8_t>(this->_time.minutes()));
 }
 
 async::task<void> fb::game::server::save(character& ch)
 {
     if (ch.inited() == false)
         co_return;
+    if (fb::is_cross() && ch.has_return_point() == false)
+    {
+        fb::logger::fatal("Character {} cross save without home snapshot", ch.name());
+        co_return;
+    }
 
     auto weak    = ch.weak_from_this();
-    auto world   = fb::config<uint32_t>("world");
+    auto world   = ch.world();
     auto payload = this->save_payload(ch);
     std::ignore  = co_await this->http.post("internal", "/in-game/save", internal_reqs::Save{world, payload});
 
@@ -207,7 +245,7 @@ internal::SavePayload fb::game::server::save_payload(const character& ch) const
         if (spell == nullptr)
             continue;
 
-        spells.push_back(internal::Spell{ch.id, i, spell->model.id, spell->next().to_string()});
+        spells.push_back(internal::Spell{ch.id, i, spell->model().id, spell->next().to_string()});
     }
 
     auto achievements = std::vector<internal::Achievement>();
@@ -226,6 +264,7 @@ internal::SavePayload fb::game::server::save_payload(const character& ch) const
 
     auto marketplace_pendings = ch.marketplace.to_save_dtos();
     auto matchmaking_skills   = ch.matchmaker.to_protocol();
+    auto collection_unlocks   = ch.collections.to_protocol(ch.id);
 
     return internal::SavePayload(ch.to_protocol(),
                                  ch.marriage().to_protocol(),
@@ -234,46 +273,55 @@ internal::SavePayload fb::game::server::save_payload(const character& ch) const
                                  matchmaking_skills,
                                  achievements,
                                  quests,
-                                 marketplace_pendings);
+                                 marketplace_pendings,
+                                 collection_unlocks);
 }
 
 async::task<void> fb::game::server::save()
 {
     static constexpr size_t SAVE_BATCH_CHUNK_SIZE = 100;
-    auto                    world                 = fb::config<uint32_t>("world");
     auto                    tasks                 = std::vector<async::task<void>>{};
     tasks.reserve(this->threads.count());
     for (auto& [id, thread] : this->threads)
     {
         auto builder = thread->new_builder<void>();
-        builder.func = [this, world](auto& thread) -> async::task<void> {
-            auto params     = thread.template data<thread_params>();
-            auto characters = std::vector<character*>{};
-            auto payloads   = std::vector<internal::SavePayload>{};
-            characters.reserve(params->characters.size());
-            payloads.reserve(params->characters.size());
+        builder.func = [this](auto& thread) -> async::task<void> {
+            auto params = thread.template data<thread_params>();
+            auto by_world =
+                std::map<uint32_t, std::pair<std::vector<character*>, std::vector<internal::SavePayload>>>{};
             co_await params->characters.foreach ([&](auto& character) {
                 if (!character->inited())
                     return;
+                if (fb::is_cross() && character->has_return_point() == false)
+                {
+                    fb::logger::fatal("Character {} cross save without home snapshot", character->name());
+                    return;
+                }
 
-                characters.push_back(character.get());
-                payloads.push_back(this->save_payload(*character));
+                auto& chunk = by_world[character->world()];
+                chunk.first.push_back(character.get());
+                chunk.second.push_back(this->save_payload(*character));
             });
 
-            const size_t total = payloads.size();
-            for (size_t offset = 0; offset < total; offset += SAVE_BATCH_CHUNK_SIZE)
+            for (auto& [world, chunk] : by_world)
             {
-                const size_t chunk_end = (std::min)(offset + SAVE_BATCH_CHUNK_SIZE, total);
-                auto         chunk =
-                    std::vector<internal::SavePayload>(payloads.begin() + static_cast<std::ptrdiff_t>(offset),
-                                                       payloads.begin() + static_cast<std::ptrdiff_t>(chunk_end));
-                std::ignore = co_await this->http.post("internal",
-                                                       "/in-game/save-batch",
-                                                       internal_reqs::SaveBatch{world, std::move(chunk)});
-
-                for (size_t i = offset; i < chunk_end; i++)
+                auto&        characters = chunk.first;
+                auto&        payloads   = chunk.second;
+                const size_t total      = payloads.size();
+                for (size_t offset = 0; offset < total; offset += SAVE_BATCH_CHUNK_SIZE)
                 {
-                    characters[i]->save_ack();
+                    const size_t chunk_end = (std::min)(offset + SAVE_BATCH_CHUNK_SIZE, total);
+                    auto         batch =
+                        std::vector<internal::SavePayload>(payloads.begin() + static_cast<std::ptrdiff_t>(offset),
+                                                           payloads.begin() + static_cast<std::ptrdiff_t>(chunk_end));
+                    std::ignore = co_await this->http.post("internal",
+                                                           "/in-game/save-batch",
+                                                           internal_reqs::SaveBatch{world, std::move(batch)});
+
+                    for (size_t i = offset; i < chunk_end; i++)
+                    {
+                        characters[i]->save_ack();
+                    }
                 }
             }
             co_return;
@@ -301,7 +349,8 @@ async::task<void> fb::game::server::update_status()
                                                                         this->id(),
                                                                         this->name(),
                                                                         fb::config<std::string_view>("ip"),
-                                                                        fb::config<uint16_t>("port")});
+                                                                        fb::config<uint16_t>("port"),
+                                                                        fb::process_role()});
     }
     catch (const std::exception& e)
     {

@@ -78,7 +78,9 @@ namespace Runner.ViewModel
             Model = model;
         }
 
+#pragma warning disable CS0067 // Raised by PropertyChanged.Fody
         public event PropertyChangedEventHandler PropertyChanged;
+#pragma warning restore CS0067
     }
 
     public class RedisConnection : INotifyPropertyChanged
@@ -100,7 +102,9 @@ namespace Runner.ViewModel
             Model = model;
         }
 
+#pragma warning disable CS0067 // Raised by PropertyChanged.Fody
         public event PropertyChangedEventHandler PropertyChanged;
+#pragma warning restore CS0067
     }
 
     public class RabbitMqConnection
@@ -143,10 +147,22 @@ namespace Runner.ViewModel
             get => Model.Port;
             set => Model.Port = value;
         }
-        public ushort ClientVersion
+        public string ClientVersions
         {
-            get => Model.ClientVersion;
-            set => Model.ClientVersion = value;
+            get => string.Join(",", Model.ClientVersions ?? new List<ushort>());
+            set
+            {
+                var parsed = new List<ushort>();
+                if (string.IsNullOrWhiteSpace(value) == false)
+                {
+                    foreach (var part in value.Split(new[] { ',', ' ', ';' }, StringSplitOptions.RemoveEmptyEntries))
+                    {
+                        if (ushort.TryParse(part.Trim(), out var v))
+                            parsed.Add(v);
+                    }
+                }
+                Model.ClientVersions = parsed.Count > 0 ? parsed : new List<ushort> { 550, 565, 651 };
+            }
         }
         public byte ClientNation
         {
@@ -197,6 +213,19 @@ namespace Runner.ViewModel
         {
             get => Model.Port;
             set => Model.Port = value;
+        }
+        public string Role
+        {
+            get
+            {
+                var role = string.IsNullOrWhiteSpace(Model.Role) ? "home" : Model.Role.Trim().ToLowerInvariant();
+                return role == "cross" ? "cross" : "home";
+            }
+            set
+            {
+                var role = string.IsNullOrWhiteSpace(value) ? "home" : value.Trim().ToLowerInvariant();
+                Model.Role = role == "cross" ? "cross" : "home";
+            }
         }
 
         public GameSetting(Model.GameSetting model)
@@ -314,8 +343,8 @@ namespace Runner.ViewModel
         }
 
         private bool _infrastructureLoaded;
-        private CancellationTokenSource? _infraCheckCts;
-        private InfraCheckResult? _lastInfraResult;
+        private CancellationTokenSource _infraCheckCts;
+        private InfraCheckResult _lastInfraResult;
         public bool IsEnableEdit
         {
             get
@@ -484,6 +513,7 @@ namespace Runner.ViewModel
         public ICommand NewRedis { get; private set; }
         public ICommand NewLogin { get; private set; }
         public ICommand NewGame { get; private set; }
+        public ICommand NewCrossGame { get; private set; }
         public ICommand FindWorkingDirectory { get; private set; }
         public ICommand PatchCommand { get; private set; }
         public ICommand BuildCommand { get; private set; }
@@ -495,8 +525,10 @@ namespace Runner.ViewModel
         public ICommand NewInitPoint { get; set; }
         public ICommand DeleteInitPoint { get; private set; }
         public ICommand UpdateMapFile { get; private set; }
+        public ICommand UpdateMetaFile { get; private set; }
         public ICommand UpdateResourceFile { get; private set; }
         public ICommand UpdateScript { get; private set; }
+        public ICommand OpenAdminTool { get; private set; }
 
         public MainWindow(Model.MainWindow model)
         {
@@ -544,6 +576,7 @@ namespace Runner.ViewModel
             NewRedis = new RelayCommand(OnNewRedis);
             NewLogin = new RelayCommand(OnNewLogin);
             NewGame = new RelayCommand(OnNewGame);
+            NewCrossGame = new RelayCommand(OnNewCrossGame);
             FindWorkingDirectory = new RelayCommand(OnFindWorkingDirectory);
             PatchCommand = new RelayCommand(OnPatch);
             BuildCommand = new RelayCommand(OnBuild);
@@ -555,8 +588,10 @@ namespace Runner.ViewModel
             NewInitPoint = new RelayCommand(OnNewInitPoint);
             DeleteInitPoint = new RelayCommand(OnDeleteInitPoint);
             UpdateMapFile = new RelayCommand(OnUpdateMapFile);
+            UpdateMetaFile = new RelayCommand(OnUpdateMetaFile);
             UpdateResourceFile = new RelayCommand(OnUpdateResourceFile);
             UpdateScript = new RelayCommand(OnUpdateScript);
+            OpenAdminTool = new RelayCommand(OnOpenAdminTool);
         }
 
         private void InitSettingNav()
@@ -615,7 +650,7 @@ namespace Runner.ViewModel
                 }
             });
 
-            InfraCheckResult? result = null;
+            InfraCheckResult result = null;
 
             try
             {
@@ -845,6 +880,28 @@ namespace Runner.ViewModel
             }
         }
 
+        private void OnOpenAdminTool(object obj)
+        {
+            try
+            {
+                if (IsRunning == false)
+                    throw new InvalidOperationException("서버가 실행 중이 아닙니다.");
+
+                if (AdminToolPort == 0)
+                    throw new InvalidOperationException("Admin Tool 서버 포트가 설정되지 않았습니다.");
+
+                Process.Start(new ProcessStartInfo
+                {
+                    FileName = $"http://127.0.0.1:{AdminToolPort}",
+                    UseShellExecute = true
+                });
+            }
+            catch (Exception e)
+            {
+                MessageBox.Show(e.Message);
+            }
+        }
+
         private void OnUpdateMapFile(object obj)
         {
             try
@@ -856,6 +913,31 @@ namespace Runner.ViewModel
                 var output = Path.Combine(WorkingDirectory, "build", "dist", "maps");
                 System.IO.Compression.ZipFile.ExtractToDirectory(path, output, true);
                 MessageBox.Show("맵 파일을 업데이트 했습니다.", "완료");
+            }
+            catch (Exception e)
+            {
+                MessageBox.Show(e.Message);
+            }
+        }
+
+        private void OnUpdateMetaFile(object obj)
+        {
+            try
+            {
+                var distDir = Path.Combine(WorkingDirectory, "build", "dist");
+                Directory.CreateDirectory(distDir);
+
+                var files = new[] { "Meta.dat", "SObj.tbl" };
+                foreach (var fileName in files)
+                {
+                    var path = Path.Combine(WorkingDirectory, "resources", "meta", fileName);
+                    if (File.Exists(path) == false)
+                        throw new InvalidOperationException($"{path} 파일을 찾을 수 없습니다.");
+
+                    File.Copy(path, Path.Combine(distDir, fileName), overwrite: true);
+                }
+
+                MessageBox.Show("메타 파일을 업데이트 했습니다.", "완료");
             }
             catch (Exception e)
             {
@@ -1089,6 +1171,7 @@ namespace Runner.ViewModel
                     var conf = new JObject();
                     conf["id"] = i;
                     conf["name"] = $"login-{i}";
+                    conf["role"] = "home";
                     conf["world"] = 1;
                     conf["ip"] = ExternalIP;
                     conf["port"] = setting.Port;
@@ -1145,6 +1228,7 @@ namespace Runner.ViewModel
                     {
                         max_concurrent = 128
                     });
+                    conf["meta_dat"] = "Meta.dat";
                     File.WriteAllText(Path.Combine([loginDir, $"config_login_{i}.json"]), conf.ToString(Formatting.Indented));
                 }
 
@@ -1154,9 +1238,11 @@ namespace Runner.ViewModel
                     if (setting.Port == 0)
                         throw new InvalidOperationException($"{i + 1}번째 게임 서버의 포트가 설정되지 않았습니다.");
 
+                    var role = setting.Role == "cross" ? "cross" : "home";
                     var conf = new JObject();
                     conf["id"] = setting.ID;
-                    conf["name"] = $"game-{setting.ID}";
+                    conf["name"] = role == "cross" ? $"game-cross-{setting.ID}" : $"game-{setting.ID}";
+                    conf["role"] = role;
                     conf["world"] = 1;
                     conf["delay"] = 5;
                     conf["ip"] = ExternalIP;
@@ -1202,6 +1288,8 @@ namespace Runner.ViewModel
                     {
                         max_concurrent = 128
                     });
+                    conf["meta_dat"] = "Meta.dat";
+                    conf["sobj_tbl"] = "SObj.tbl";
                     File.WriteAllText(Path.Combine([gameDir, $"config_game_{setting.ID}.json"]), conf.ToString(Formatting.Indented));
                 }
 
@@ -1249,7 +1337,7 @@ namespace Runner.ViewModel
                 });
                 gatewayConf["client"] = JObject.FromObject(new
                 {
-                    version = Gateway.ClientVersion,
+                    versions = Gateway.Model.ClientVersions ?? new List<ushort> { 550, 565, 651 },
                     nation = Gateway.ClientNation
                 });
 
@@ -1440,7 +1528,8 @@ namespace Runner.ViewModel
                 for (int i = 0; i < Game.Count; i++)
                 {
                     var setting = Game[i];
-                    game.Processes.Add(ExecCPP("game.exe", $"game-{i}", $"config_game_{setting.ID}"));
+                    var env = setting.Role == "cross" ? $"game-cross-{setting.ID}" : $"game-{setting.ID}";
+                    game.Processes.Add(ExecCPP("game.exe", env, $"config_game_{setting.ID}"));
                 }
                 Servers.Add(game);
             }
@@ -1870,7 +1959,28 @@ namespace Runner.ViewModel
             Game.Add(new GameSetting(new Model.GameSetting
             {
                 ID = Game.Count,
-                Port = 0
+                Port = 0,
+                Role = "home"
+            }));
+        }
+
+        private void OnNewCrossGame(object obj)
+        {
+            var usedIds = Game.Select(g => g.ID).ToHashSet();
+            var id = 200;
+            while (usedIds.Contains(id))
+                id++;
+
+            var usedPorts = Game.Select(g => g.Port).ToHashSet();
+            var port = (ushort)3100;
+            while (usedPorts.Contains(port))
+                port++;
+
+            Game.Add(new GameSetting(new Model.GameSetting
+            {
+                ID = id,
+                Port = port,
+                Role = "cross"
             }));
         }
 
@@ -1884,7 +1994,7 @@ namespace Runner.ViewModel
             }));
         }
 
-        private void Game_CollectionChanged(object? sender, NotifyCollectionChangedEventArgs e)
+        private void Game_CollectionChanged(object sender, NotifyCollectionChangedEventArgs e)
         {
             switch (e.Action)
             {
@@ -1903,7 +2013,7 @@ namespace Runner.ViewModel
             }
         }
 
-        private void Login_CollectionChanged(object? sender, NotifyCollectionChangedEventArgs e)
+        private void Login_CollectionChanged(object sender, NotifyCollectionChangedEventArgs e)
         {
             switch (e.Action)
             {
@@ -1922,7 +2032,7 @@ namespace Runner.ViewModel
             }
         }
 
-        private void Redis_CollectionChanged(object? sender, System.Collections.Specialized.NotifyCollectionChangedEventArgs e)
+        private void Redis_CollectionChanged(object sender, System.Collections.Specialized.NotifyCollectionChangedEventArgs e)
         {
             switch (e.Action)
             {
@@ -1942,7 +2052,7 @@ namespace Runner.ViewModel
             }
         }
 
-        private void MySQL_CollectionChanged(object? sender, System.Collections.Specialized.NotifyCollectionChangedEventArgs e)
+        private void MySQL_CollectionChanged(object sender, System.Collections.Specialized.NotifyCollectionChangedEventArgs e)
         {
             switch (e.Action)
             {
@@ -2120,7 +2230,7 @@ namespace Runner.ViewModel
                 }
                 return true;
             }
-            catch (Exception ex)
+            catch (Exception)
             {
                 return false;
             }

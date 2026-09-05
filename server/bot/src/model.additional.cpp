@@ -7,8 +7,8 @@
 #include <shared_mutex>
 #include <mutex>
 
-const fb::model::promotion* fb::model::__promotion::operator() (fb::model::enum_value::CLASS cls,
-                                                                uint8_t                      promotion) const
+const fb::model::promotion* fb::model::___promotion::operator() (fb::model::enum_value::CLASS cls,
+                                                                 uint8_t                      promotion) const
 {
     try
     {
@@ -21,9 +21,9 @@ const fb::model::promotion* fb::model::__promotion::operator() (fb::model::enum_
     }
 }
 
-bool fb::model::__promotion::name2class(std::string_view              name,
-                                        fb::model::enum_value::CLASS& cls,
-                                        uint8_t&                      promotion) const
+bool fb::model::___promotion::name2class(std::string_view              name,
+                                         fb::model::enum_value::CLASS& cls,
+                                         uint8_t&                      promotion) const
 {
     static auto cache       = std::unordered_map<std::string, std::pair<fb::model::enum_value::CLASS, uint8_t>>{};
     static auto cache_mutex = std::shared_mutex{};
@@ -60,7 +60,7 @@ bool fb::model::__promotion::name2class(std::string_view              name,
     return false;
 }
 
-bool fb::model::__promotion::class2name(fb::model::enum_value::CLASS cls, uint8_t promotion, std::string& name) const
+bool fb::model::___promotion::class2name(fb::model::enum_value::CLASS cls, uint8_t promotion, std::string& name) const
 {
     if (this->contains(cls) == false)
         return false;
@@ -72,7 +72,7 @@ bool fb::model::__promotion::class2name(fb::model::enum_value::CLASS cls, uint8_
     return true;
 }
 
-fb::model::mob* fb::model::__mob::name2mob(std::string_view name) const
+fb::model::mob* fb::model::___mob::name2mob(std::string_view name) const
 {
     static auto cache       = std::unordered_map<std::string, fb::model::mob*>{};
     static auto cache_mutex = std::shared_mutex{};
@@ -97,7 +97,7 @@ fb::model::mob* fb::model::__mob::name2mob(std::string_view name) const
     return nullptr;
 }
 
-fb::model::item* fb::model::__item::name2item(std::string_view name) const
+fb::model::item* fb::model::___item::name2item(std::string_view name) const
 {
     static auto cache       = std::unordered_map<std::string, fb::model::item*>{};
     static auto cache_mutex = std::shared_mutex{};
@@ -123,7 +123,7 @@ fb::model::item* fb::model::__item::name2item(std::string_view name) const
     return nullptr;
 }
 
-std::vector<fb::model::item*> fb::model::__item::name2item_prefix(std::string_view prefix) const
+std::vector<fb::model::item*> fb::model::___item::name2item_prefix(std::string_view prefix) const
 {
     static auto sorted_items = std::map<std::string, fb::model::item*>{};
     static auto once_flag    = std::once_flag{};
@@ -172,7 +172,7 @@ std::vector<fb::model::item*> fb::model::__item::name2item_prefix(std::string_vi
     return result;
 }
 
-fb::model::npc* fb::model::__npc::name2npc(std::string_view name) const
+fb::model::npc* fb::model::___npc::name2npc(std::string_view name) const
 {
     static auto cache       = std::unordered_map<std::string, fb::model::npc*>{};
     static auto cache_mutex = std::shared_mutex{};
@@ -198,7 +198,7 @@ fb::model::npc* fb::model::__npc::name2npc(std::string_view name) const
     return nullptr;
 }
 
-fb::model::map* fb::model::__map::name2map(std::string_view name) const
+fb::model::map* fb::model::___map::name2map(std::string_view name) const
 {
     static auto cache       = std::unordered_map<std::string, fb::model::map*>{};
     static auto cache_mutex = std::shared_mutex{};
@@ -224,7 +224,7 @@ fb::model::map* fb::model::__map::name2map(std::string_view name) const
     return nullptr;
 }
 
-fb::model::spell* fb::model::__spell::name2spell(std::string_view name) const
+fb::model::spell* fb::model::___spell::name2spell(std::string_view name) const
 {
     static auto cache       = std::unordered_map<std::string, fb::model::spell*>{};
     static auto cache_mutex = std::shared_mutex{};

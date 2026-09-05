@@ -1,15 +1,7 @@
 -- mob: 주머니유성지
 
 return {
-    -- on_mob_attack = function(me, you)
-    -- end,
-
-    -- on_mob_die = function(me)
-    -- end,
-
-    -- on_mob_kill = function(me, mobs)
-    -- end,
-
-    -- on_mob_spell_hit = function(me, you, spell)
-    -- end
+    on_mob_attack = function(me, you)
+        me:chat('나 유성지가 쉽게 당할것 같으냐!!?', CHAT_TYPE.NORMAL, true)
+    end
 }

@@ -81,6 +81,11 @@ if [ $? -ne 0 ]; then
     echo "build fb/matchmaking failed"
     exit $?
 fi
+sudo docker buildx build --progress=plain --push --tag ghcr.io/boyism80/fb/crash-watch:latest -f infra/crash-watch/Dockerfile infra/crash-watch
+if [ $? -ne 0 ]; then
+    echo "build fb/crash-watch failed"
+    exit $?
+fi
 pushd infra/pulumi
 pulumi config set --secret host "$EXTERNAL_IP"
 pulumi up -y

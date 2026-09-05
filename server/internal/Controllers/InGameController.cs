@@ -4,6 +4,7 @@ using Http;
 using Http.Model;
 using Http.Model.Redis;
 using Http.Service;
+using Internal.Services;
 using Microsoft.AspNetCore.Mvc;
 using Option = Http.Model.Option;
 using Protocol = fb.protocol._internal;
@@ -26,6 +27,7 @@ namespace Internal.Controllers
         private readonly ServerStateService _serverStateService;
         private readonly LogService _logService;
         private readonly MaintenanceService _maintenanceService;
+        private readonly FriendService _friendService;
         public InGameController(ILogger<InGameController> logger,
             RabbitMqService rabbitMqService,
             SessionService sessionService,
@@ -35,7 +37,8 @@ namespace Internal.Controllers
             BanService banService,
             ServerStateService serverStateService,
             LogService logService,
-            MaintenanceService maintenanceService)
+            MaintenanceService maintenanceService,
+            FriendService friendService)
         {
             _logger = logger;
             _rabbitMqService = rabbitMqService;
@@ -47,6 +50,7 @@ namespace Internal.Controllers
             _serverStateService = serverStateService;
             _logService = logService;
             _maintenanceService = maintenanceService;
+            _friendService = friendService;
         }
 
         [HttpPost("login")]
@@ -86,14 +90,19 @@ namespace Internal.Controllers
                     }
                 }
 
-                var conf = await _serverStateService.GetHostConfig(world, fb.protocol._internal.Service.Game, request.Host);
+                Http.Service.ServerStateService.HostConfig conf;
+                if (request.Role == Protocol.ProcessRole.Cross)
+                    conf = await _serverStateService.GetCrossHost(request.Host);
+                else
+                    conf = await _serverStateService.GetHostConfig(world, Protocol.Service.Game, request.Host);
                 if (conf == null)
                     throw new LogicException(ErrorCode.ServerNotReady);
 
                 var success = await _sessionService.Login(world, request.Name, new Session
                 {
                     Uid = request.Uid,
-                    Host = request.Host
+                    Host = request.Host,
+                    Role = AmqpRoute.Name(request.Role)
                 }, request.Force);
 
                 if (!success)
@@ -190,7 +199,7 @@ namespace Internal.Controllers
                         {
                             Uid = session.Uid,
                             Name = request.Name
-                        }, "amq.direct", $"fb.{world}.game.{session.Host}");
+                        }, AmqpRoute.Exchange, AmqpRoute.Unicast(session, world));
                         throw new LogicException(ErrorCode.AlreadyLogin);
                     }
                 }
@@ -233,6 +242,39 @@ namespace Internal.Controllers
             }
         }
 
+        [HttpPost("match-transfer")]
+        public async Task<Response.MatchTransfer> MatchTransfer(Request.MatchTransfer request)
+        {
+            try
+            {
+                var pick = await _serverStateService.PickLiveCrossServer(request.MatchId);
+                if (pick == null)
+                    throw new LogicException(ErrorCode.ServerNotReady);
+
+                return new Response.MatchTransfer
+                {
+                    Ip = pick.IP,
+                    Port = pick.Port,
+                    Id = pick.Id
+                };
+            }
+            catch (LogicException e)
+            {
+                return new Response.MatchTransfer
+                {
+                    Error = (uint)e.Error
+                };
+            }
+            catch (Exception e)
+            {
+                _logger.LogError(e.Message);
+                return new Response.MatchTransfer
+                {
+                    Error = (uint)ErrorCode.Unhandled
+                };
+            }
+        }
+
         [HttpPost("whisper")]
         public async Task<Response.Whisper> Whisper(Request.Whisper request)
         {
@@ -243,14 +285,20 @@ namespace Internal.Controllers
                 var session = await _sessionService.Get(world, request.From) ??
                     throw new LogicException(ErrorCode.Offline);
 
-                var targetSession = await _sessionService.Get(world, request.To);
+                var targetRef = await _dbContext.Character.GetCharacterRef(request.To) ??
+                    throw new LogicException(ErrorCode.Offline);
+                var targetWorld = targetRef.World;
+                var targetSession = await _sessionService.Get(targetWorld, request.To);
                 if (targetSession == null)
                     throw new LogicException(ErrorCode.Offline);
 
-                var target = await _dbContext.Character.Get(world, targetSession.Uid) ??
+                if (targetWorld != world && SameCrossHost(session, targetSession) == false)
+                    throw new LogicException(ErrorCode.Offline);
+
+                var target = await _dbContext.Character.Get(targetWorld, targetSession.Uid) ??
                     throw new LogicException(ErrorCode.NotFoundCharacter);
 
-                var targetOption = await _dbContext.Option.Get(world, targetSession.Uid) ??
+                var targetOption = await _dbContext.Option.Get(targetWorld, targetSession.Uid) ??
                     throw new LogicException(ErrorCode.NotFoundOption);
 
                 if (!targetOption.Whisper)
@@ -263,7 +311,7 @@ namespace Internal.Controllers
                     To = target.Name,
                     Message = request.Message
                 };
-                await _rabbitMqService.PublishAsync(response, "amq.direct", $"fb.{request.World}.game.{targetSession.Host}");
+                await _rabbitMqService.PublishAsync(response, AmqpRoute.Exchange, AmqpRoute.Unicast(targetSession, targetWorld));
                 return response;
             }
             catch (LogicException e)
@@ -298,7 +346,7 @@ namespace Internal.Controllers
                 Error = (uint)ErrorCode.None
             };
 
-            await _rabbitMqService.PublishAsync(response, "amq.direct", $"fb.{request.World}.global");
+            await _rabbitMqService.PublishAsync(response, AmqpRoute.Exchange, AmqpRoute.Home("global", request.World));
             return response;
         }
 
@@ -311,7 +359,7 @@ namespace Internal.Controllers
                 Error = (uint)ErrorCode.None
             };
 
-            await _rabbitMqService.PublishAsync(response, "amq.direct", $"fb.{request.World}.global");
+            await _rabbitMqService.PublishAsync(response, AmqpRoute.Exchange, AmqpRoute.Home("global", request.World));
             return response;
         }
 
@@ -326,7 +374,7 @@ namespace Internal.Controllers
             };
 
             // Game/login logic hosts
-            await _rabbitMqService.PublishAsync(response, "amq.direct", $"fb.{request.World}.global");
+            await _rabbitMqService.PublishAsync(response, AmqpRoute.Exchange, AmqpRoute.Home("global", request.World));
             // C# hosts (AmqpListener on fb.global)
             await _rabbitMqService.PublishAsync(response, "amq.direct", "fb.global");
             return response;
@@ -342,7 +390,7 @@ namespace Internal.Controllers
                 ScriptPaths = request.ScriptPaths ?? new List<string>()
             };
 
-            await _rabbitMqService.PublishAsync(response, "amq.direct", $"fb.{request.World}.global");
+            await _rabbitMqService.PublishAsync(response, AmqpRoute.Exchange, AmqpRoute.Home("global", request.World));
             return response;
         }
 
@@ -355,7 +403,7 @@ namespace Internal.Controllers
                 Error = (uint)ErrorCode.None
             };
 
-            await _rabbitMqService.PublishAsync(response, "amq.direct", $"fb.{request.World}.global");
+            await _rabbitMqService.PublishAsync(response, AmqpRoute.Exchange, AmqpRoute.Home("global", request.World));
             return response;
         }
 
@@ -369,19 +417,20 @@ namespace Internal.Controllers
                 Error = (uint)ErrorCode.None
             };
 
-            await _rabbitMqService.PublishAsync(response, "amq.direct", $"fb.{request.World}.global");
+            await _rabbitMqService.PublishAsync(response, AmqpRoute.Exchange, AmqpRoute.Home("global", request.World));
             return response;
         }
 
         [HttpPost("update-friends")]
-        public Task<Response.UpdateFriends> UpdateFriends(Request.UpdateFriends request)
+        public async Task<Response.UpdateFriends> UpdateFriends(Request.UpdateFriends request)
         {
-            var response = new Response.UpdateFriends
-            {
-                Error = (uint)ErrorCode.None
-            };
+            return await _friendService.Update(request);
+        }
 
-            return Task.FromResult(response);
+        [HttpPost("friend-broadcast")]
+        public async Task<Response.FriendBroadcast> FriendBroadcast(Request.FriendBroadcast request)
+        {
+            return await _friendService.Broadcast(request);
         }
 
         [HttpGet("init/{world}/{uid}")]
@@ -393,8 +442,10 @@ namespace Internal.Controllers
             var matchmakingSkills = await _dbContext.MatchmakingSkill.Get(world, uid);
             var achievements = await _dbContext.Achievement.Get(world, uid);
             var quests = await _dbContext.Quest.Get(world, uid);
+            var collectionUnlocks = await _dbContext.CollectionUnlock.Get(world, uid);
             var storageBoxes = await _dbContext.StorageBox.Get(world, uid);
             var marketplacePendings = await _dbContext.MarketplacePending.Get(world, uid);
+            var friends = await _friendService.GetEntries(world, uid);
             var option = await _dbContext.Option.Get(world, uid) ??
                 _dbContext.Option.Set(world, new Option
                 {
@@ -422,20 +473,23 @@ namespace Internal.Controllers
 
             await _dbContext.SaveChangesAsync();
             var now = DateTime.Now;
+            var character = _mapper.Map<Protocol.Character>(ch);
             return new Response.Init
             {
-                Character = _mapper.Map<Protocol.Character>(ch),
+                Character = character,
                 Marriage = marriageProtocol,
                 Items = items.Select(_mapper.Map<Protocol.Item>).ToList(),
                 Spells = spells.Select(_mapper.Map<Protocol.Spell>).ToList(),
                 MatchmakingSkills = matchmakingSkills.Select(_mapper.Map<Protocol.MatchmakingSkill>).ToList(),
                 Achievements = achievements.Select(_mapper.Map<Protocol.Achievement>).ToList(),
                 Quests = quests.Select(_mapper.Map<Protocol.Quest>).ToList(),
+                CollectionUnlocks = collectionUnlocks.Select(_mapper.Map<Protocol.CollectionUnlock>).ToList(),
                 StorageBoxes = storageBoxes
                     .Where(box => box.ExpiredDate == null || box.ExpiredDate > now)
                     .Select(_mapper.Map<Protocol.StorageBox>)
                     .ToList(),
                 MarketplacePendings = marketplacePendings.Select(_mapper.Map<Protocol.MarketplacePending>).ToList(),
+                Friends = friends,
                 Option = _mapper.Map<Protocol.Option>(option),
                 Clan = sync.Clan,
                 Group = sync.Group,
@@ -561,16 +615,18 @@ namespace Internal.Controllers
             var spellsTask = _dbContext.Spell.GetMany(world, characterIds);
             var achievementsTask = _dbContext.Achievement.GetMany(world, characterIds);
             var questsTask = _dbContext.Quest.GetMany(world, characterIds);
+            var collectionUnlocksTask = _dbContext.CollectionUnlock.GetMany(world, characterIds);
             var marketplacePendingsTask = _dbContext.MarketplacePending.GetMany(world, characterIds);
 
             await Task.WhenAll(charactersTask, itemsTask, spellsTask, achievementsTask, questsTask,
-                marketplacePendingsTask);
+                collectionUnlocksTask, marketplacePendingsTask);
 
             var characters = await charactersTask;
             var itemsByOwner = await itemsTask;
             var spellsByOwner = await spellsTask;
             var achievementsByOwner = await achievementsTask;
             var questsByOwner = await questsTask;
+            var collectionUnlocksByOwner = await collectionUnlocksTask;
             var marketplacePendingsByOwner = await marketplacePendingsTask;
 
             foreach (var data in payloads)
@@ -579,11 +635,12 @@ namespace Internal.Controllers
                 if (!characters.TryGetValue(characterId, out var existingCharacter))
                     throw new Exception($"Character not found: {characterId}");
 
-                ApplyOneSavePayload(world, data,
+                ApplyOneSavePayload(world, data, existingCharacter,
                     itemsByOwner.GetValueOrDefault(characterId) ?? Array.Empty<Item>(),
                     spellsByOwner.GetValueOrDefault(characterId) ?? Array.Empty<Spell>(),
                     achievementsByOwner.GetValueOrDefault(characterId) ?? Array.Empty<Achievement>(),
                     questsByOwner.GetValueOrDefault(characterId) ?? Array.Empty<Quest>(),
+                    collectionUnlocksByOwner.GetValueOrDefault(characterId) ?? Array.Empty<CollectionUnlock>(),
                     marketplacePendingsByOwner.GetValueOrDefault(characterId) ?? Array.Empty<MarketplacePending>());
             }
         }
@@ -591,15 +648,19 @@ namespace Internal.Controllers
         private void ApplyOneSavePayload(
             uint world,
             Protocol.SavePayload data,
+            Character existingCharacter,
             IReadOnlyList<Item> existingItems,
             IReadOnlyList<Spell> existingSpells,
             IReadOnlyList<Achievement> existingAchievements,
             IReadOnlyList<Quest> existingQuests,
+            IReadOnlyList<CollectionUnlock> existingCollectionUnlocks,
             IReadOnlyList<MarketplacePending> existingMarketplacePendings)
         {
             var characterId = data.Character.Id;
 
             var ch = _mapper.Map<Character>(data.Character);
+            ch.Reputation = existingCharacter.Reputation;
+            ch.Evaluation = existingCharacter.Evaluation;
             _dbContext.Character.Set(world, ch);
 
             var marriage = _mapper.Map<Http.Model.Marriage>(data.Marriage);
@@ -640,6 +701,14 @@ namespace Internal.Controllers
                 removed => _dbContext.Quest.Delete(world, removed),
                 alive => _dbContext.Quest.Set(world, alive));
 
+            var collectionUnlocks = _mapper.Map<Protocol.CollectionUnlock[], CollectionUnlock[]>(
+                data.CollectionUnlocks?.ToArray() ?? Array.Empty<Protocol.CollectionUnlock>());
+            ApplyHashEntitySnapshot(
+                collectionUnlocks,
+                existingCollectionUnlocks,
+                removed => _dbContext.CollectionUnlock.Delete(world, removed),
+                alive => _dbContext.CollectionUnlock.Set(world, alive));
+
             var marketplacePendings = _mapper.Map<Protocol.MarketplacePending[], MarketplacePending[]>(
                 data.MarketplacePendings?.ToArray() ?? Array.Empty<Protocol.MarketplacePending>());
             ApplyMarketplacePendingSnapshot(world, characterId, marketplacePendings, existingMarketplacePendings);
@@ -651,59 +720,15 @@ namespace Internal.Controllers
             try
             {
                 var world = request.World;
+                if (request.Changes == null || request.Changes.Count == 0)
+                    throw new Exception("option changes is empty");
 
                 var option = await _dbContext.Option.Get(world, request.User) ??
                     throw new Exception($"option {request.User} not found");
 
-                switch ((Fb.Model.EnumValue.Option)request.Type)
-                {
-                    case Fb.Model.EnumValue.Option.Whisper:
-                        option.Whisper = request.Enabled;
-                        break;
+                foreach (var change in request.Changes)
+                    ApplyOption(option, change.Type, change.Enabled);
 
-                    case Fb.Model.EnumValue.Option.Group:
-                        option.Group = request.Enabled;
-                        break;
-
-                    case Fb.Model.EnumValue.Option.Roar:
-                        option.Roar = request.Enabled;
-                        break;
-
-                    case Fb.Model.EnumValue.Option.News:
-                        option.News = request.Enabled;
-                        break;
-
-                    case Fb.Model.EnumValue.Option.MagicEffect:
-                        option.MagicEffect = request.Enabled;
-                        break;
-
-                    case Fb.Model.EnumValue.Option.WeatherEffect:
-                        option.WeatherEffect = request.Enabled;
-                        break;
-
-                    case Fb.Model.EnumValue.Option.FixedMove:
-                        option.FixedMove = request.Enabled;
-                        break;
-
-                    case Fb.Model.EnumValue.Option.Trade:
-                        option.Trade = request.Enabled;
-                        break;
-
-                    case Fb.Model.EnumValue.Option.FastMove:
-                        option.FastMove = request.Enabled;
-                        break;
-
-                    case Fb.Model.EnumValue.Option.EffectSound:
-                        option.EffectSound = request.Enabled;
-                        break;
-
-                    case Fb.Model.EnumValue.Option.PkProtect:
-                        option.PkProtect = request.Enabled;
-                        break;
-
-                    default:
-                        throw new Exception($"invalid option type : {request.Type}");
-                }
                 _dbContext.Option.Set(world, option);
 
                 await _dbContext.SaveChangesAsync();
@@ -719,6 +744,77 @@ namespace Internal.Controllers
                     Success = false
                 };
             }
+        }
+
+        private static void ApplyOption(Option option, byte type, bool enabled)
+        {
+            switch ((Fb.Model.EnumValue.Option)type)
+            {
+                case Fb.Model.EnumValue.Option.Whisper:
+                    option.Whisper = enabled;
+                    break;
+
+                case Fb.Model.EnumValue.Option.Group:
+                    option.Group = enabled;
+                    break;
+
+                case Fb.Model.EnumValue.Option.Roar:
+                    option.Roar = enabled;
+                    break;
+
+                case Fb.Model.EnumValue.Option.News:
+                    option.News = enabled;
+                    break;
+
+                case Fb.Model.EnumValue.Option.MagicEffect:
+                    option.MagicEffect = enabled;
+                    break;
+
+                case Fb.Model.EnumValue.Option.WeatherEffect:
+                    option.WeatherEffect = enabled;
+                    break;
+
+                case Fb.Model.EnumValue.Option.FixedMove:
+                    option.FixedMove = enabled;
+                    break;
+
+                case Fb.Model.EnumValue.Option.Trade:
+                    option.Trade = enabled;
+                    break;
+
+                case Fb.Model.EnumValue.Option.FastMove:
+                    option.FastMove = enabled;
+                    break;
+
+                case Fb.Model.EnumValue.Option.EffectSound:
+                    option.EffectSound = enabled;
+                    break;
+
+                case Fb.Model.EnumValue.Option.PkProtect:
+                    option.PkProtect = enabled;
+                    break;
+
+                case Fb.Model.EnumValue.Option.VisibleHelmet:
+                    option.VisibleHelmet = enabled;
+                    break;
+
+                default:
+                    throw new Exception($"invalid option type : {type}");
+            }
+        }
+
+        private static bool SameCrossHost(Session session, Session target)
+        {
+            if (AmqpRoute.Parse(session.Role) != Protocol.ProcessRole.Cross)
+                return false;
+
+            if (AmqpRoute.Parse(target.Role) != Protocol.ProcessRole.Cross)
+                return false;
+
+            if (session.Host != target.Host)
+                return false;
+
+            return true;
         }
     }
 }

@@ -5,6 +5,8 @@
 #include <functional>
 #include <string>
 #include <string_view>
+#include <format>
+#include <stdexcept>
 #include <async/task.h>
 #include <fb/amqp.h>
 #include <fb/logger.h>
@@ -133,14 +135,20 @@ public:
             // Declare queue with auto-generated name and bind with specified route key
             // auto_delete: true to automatically delete queue when connection closes
             auto& queue = this->_amqp->declare_queue(true, false, true, false, this->_owner.threads);
-            queue.bind(exchange, route_key);
+            if (queue.bind(exchange, route_key) == false)
+            {
+                throw std::runtime_error(std::format("Failed to bind AMQP queue to '{}'", std::string(route_key)));
+            }
 
             auto& route = queue.route();
             if (this->_handlers.contains(route))
             {
                 for (auto& [opcode, fn] : this->_handlers.at(route))
                 {
-                    queue.handler(opcode, std::move(fn));
+                    if (!fn)
+                        continue;
+
+                    queue.handler(opcode, handler_func{fn});
                 }
             }
         }

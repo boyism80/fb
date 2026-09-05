@@ -13,6 +13,8 @@ static_assert(FLATBUFFERS_VERSION_MAJOR == 25 &&
               FLATBUFFERS_VERSION_REVISION == 10,
              "Non-compatible flatbuffers version included");
 
+#include "fb.protocol.internal.processrole_generated.h"
+
 namespace fb {
 namespace protocol {
 namespace internal {
@@ -29,7 +31,8 @@ struct Login FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
     VT_UID = 6,
     VT_NAME = 8,
     VT_HOST = 10,
-    VT_FORCE = 12
+    VT_FORCE = 12,
+    VT_ROLE = 14
   };
   uint32_t world() const {
     return GetField<uint32_t>(VT_WORLD, 0);
@@ -46,6 +49,9 @@ struct Login FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
   bool force() const {
     return GetField<uint8_t>(VT_FORCE, 0) != 0;
   }
+  fb::protocol::internal::raw::ProcessRole role() const {
+    return static_cast<fb::protocol::internal::raw::ProcessRole>(GetField<int8_t>(VT_ROLE, 0));
+  }
   bool Verify(::flatbuffers::Verifier &verifier) const {
     return VerifyTableStart(verifier) &&
            VerifyField<uint32_t>(verifier, VT_WORLD, 4) &&
@@ -54,6 +60,7 @@ struct Login FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
            verifier.VerifyString(name()) &&
            VerifyField<uint8_t>(verifier, VT_HOST, 1) &&
            VerifyField<uint8_t>(verifier, VT_FORCE, 1) &&
+           VerifyField<int8_t>(verifier, VT_ROLE, 1) &&
            verifier.EndTable();
   }
 };
@@ -77,6 +84,9 @@ struct LoginBuilder {
   void add_force(bool force) {
     fbb_.AddElement<uint8_t>(Login::VT_FORCE, static_cast<uint8_t>(force), 0);
   }
+  void add_role(fb::protocol::internal::raw::ProcessRole role) {
+    fbb_.AddElement<int8_t>(Login::VT_ROLE, static_cast<int8_t>(role), 0);
+  }
   explicit LoginBuilder(::flatbuffers::FlatBufferBuilder &_fbb)
         : fbb_(_fbb) {
     start_ = fbb_.StartTable();
@@ -94,11 +104,13 @@ inline ::flatbuffers::Offset<Login> CreateLogin(
     uint32_t uid = 0,
     ::flatbuffers::Offset<::flatbuffers::String> name = 0,
     uint8_t host = 0,
-    bool force = false) {
+    bool force = false,
+    fb::protocol::internal::raw::ProcessRole role = fb::protocol::internal::raw::ProcessRole_Home) {
   LoginBuilder builder_(_fbb);
   builder_.add_name(name);
   builder_.add_uid(uid);
   builder_.add_world(world);
+  builder_.add_role(role);
   builder_.add_force(force);
   builder_.add_host(host);
   return builder_.Finish();
@@ -110,7 +122,8 @@ inline ::flatbuffers::Offset<Login> CreateLoginDirect(
     uint32_t uid = 0,
     const char *name = nullptr,
     uint8_t host = 0,
-    bool force = false) {
+    bool force = false,
+    fb::protocol::internal::raw::ProcessRole role = fb::protocol::internal::raw::ProcessRole_Home) {
   auto name__ = name ? _fbb.CreateString(name) : 0;
   return fb::protocol::internal::request::raw::CreateLogin(
       _fbb,
@@ -118,7 +131,8 @@ inline ::flatbuffers::Offset<Login> CreateLoginDirect(
       uid,
       name__,
       host,
-      force);
+      force,
+      role);
 }
 
 inline const fb::protocol::internal::request::raw::Login *GetLogin(const void *buf) {

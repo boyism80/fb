@@ -17,7 +17,7 @@ local PK_SKY_MAZE_NAMES = {
 
 local function map_name_to_id(name)
     local m = name2map(name)
-    if m ~= nil then return m:id() end
+    if m ~= nil then return m:model():id() end
     return nil
 end
 
@@ -67,7 +67,7 @@ function M.get_slot(i)
     end
     local m = id2map(map_id)
     if m ~= nil then
-        return m:name()
+        return m:model():name()
     end
     return SKY_MAZE_NAMES[i + 1]
 end
@@ -79,7 +79,7 @@ function M.get_pk_slot(i)
     end
     local m = id2map(map_id)
     if m ~= nil then
-        return m:name()
+        return m:model():name()
     end
     return PK_SKY_MAZE_NAMES[i + 1]
 end

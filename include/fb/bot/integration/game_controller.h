@@ -51,8 +51,8 @@ public:
 private:
     async::task<void> on_timer();
     async::task<void> on_time(game_bot& bot, const game_resp::time& response);
-    async::task<void> on_state(game_bot& bot, const game_resp::update_internal& response);
-    async::task<void> on_map(game_bot& bot, const game_resp::map_config& response);
+    async::task<void> on_state(game_bot& bot, const game_resp::update_internal_v550& response);
+    async::task<void> on_map(game_bot& bot, const game_resp::map_config_v550& response);
     async::task<void> on_message(game_bot& bot, const game_resp::message& response);
     async::task<void> on_sequence(game_bot& bot, const game_resp::id& response);
     async::task<void> on_position(game_bot& bot, const game_resp::position& response);

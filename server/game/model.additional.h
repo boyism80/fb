@@ -365,9 +365,9 @@ public:                                                                         
     const fb::model::buy* find(const fb::model::npc& npc, const fb::model::item& item) const;
 
 #define DECLARE_BLOCKED_WORD_CONTAINER_CUSTOM_CONSTRUCTOR \
-    __blocked_word();                                     \
-    __blocked_word(const __blocked_word&) = delete;       \
-    ~__blocked_word()                     = default;
+    ___blocked_word();                                    \
+    ___blocked_word(const ___blocked_word&) = delete;     \
+    ~___blocked_word()                      = default;
 
 #define DECLARE_BLOCKED_WORD_CONTAINER_EXTENSION        \
                                                         \
@@ -391,9 +391,9 @@ public:                                                \
     { }
 
 #define DECLARE_RECIPE_CONTAINER_CUSTOM_CONSTRUCTOR \
-    __recipe();                                     \
-    __recipe(const __recipe&) = delete;             \
-    ~__recipe();
+    ___recipe();                                    \
+    ___recipe(const ___recipe&) = delete;           \
+    ~___recipe();
 
 #define DECLARE_RECIPE_CONTAINER_EXTENSION         \
                                                    \
@@ -404,9 +404,9 @@ public:                                            \
     const fb::model::recipe* find(const std::vector<fb::model::dsl::item>& dsl) const;
 
 #define DECLARE_ABILITY_CONTAINER_CUSTOM_CONSTRUCTOR \
-    __ability();                                     \
-    __ability(const __ability&) = delete;            \
-    ~__ability()                = default;
+    ___ability();                                    \
+    ___ability(const ___ability&) = delete;          \
+    ~___ability()                 = default;
 
 #define DECLARE_ABILITY_CONTAINER_EXTENSION                                                               \
                                                                                                           \
@@ -553,5 +553,15 @@ public:                         \
                                    \
 public:                            \
     std::optional<fb::model::datetime> next_execution(const fb::model::datetime& now) const;
+
+#define DECLARE_EVENT_EXTENSION \
+                                \
+public:                         \
+    bool is_active(const fb::model::datetime& now) const;
+
+#define DECLARE_MOB_SPAWN_EXTENSION \
+                                    \
+public:                             \
+    bool conditions_met(const fb::model::datetime& now) const;
 
 #endif

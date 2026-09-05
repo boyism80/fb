@@ -2,16 +2,19 @@
 #define __PROTOCOL_GAME_SWAP_H__
 
 #include <fb/protocol/header.h>
+#include <fb/protocol/client_version.h>
 #include <fb/model/model.h>
 
 namespace fb::protocol::game::request {
 
 using namespace fb::model::enum_value;
 
+template <CLIENT_VERSION V>
 class swap : public fb::protocol::header
 {
 public:
     static constexpr uint8_t opcode = 0x30;
+    FB_PROTOCOL_VERSION_TAGS(V);
 
 public:
 #ifndef BOT
@@ -28,11 +31,7 @@ public:
 #ifndef BOT
     swap() = default;
 #else
-    swap(const SWAP_TYPE type, const uint8_t src, const uint8_t dst) :
-        type(type),
-        src(src),
-        dst(dst)
-    { }
+    swap(const SWAP_TYPE type, const uint8_t src, const uint8_t dst);
 #endif
 
 public:

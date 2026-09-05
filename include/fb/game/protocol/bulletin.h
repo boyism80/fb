@@ -2,6 +2,7 @@
 #define __PROTOCOL_GAME_BULLETIN_H__
 
 #include <fb/protocol/header.h>
+#include <fb/protocol/client_version.h>
 #include <fb/model/model.h>
 #include <string_view>
 
@@ -13,10 +14,12 @@ namespace fb::protocol::game::request {
 
 using namespace fb::model::enum_value;
 
+template <CLIENT_VERSION V>
 class bulletin : public fb::protocol::header
 {
 public:
     static constexpr uint8_t opcode = 0x3B;
+    FB_PROTOCOL_VERSION_TAGS(V);
 
 public:
 #if BOT

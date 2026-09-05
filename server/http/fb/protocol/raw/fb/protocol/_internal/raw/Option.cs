@@ -32,6 +32,7 @@ public struct Option : IFlatbufferObject
   public bool FastMove { get { int o = __p.__offset(22); return o != 0 ? 0!=__p.bb.Get(o + __p.bb_pos) : (bool)false; } }
   public bool EffectSound { get { int o = __p.__offset(24); return o != 0 ? 0!=__p.bb.Get(o + __p.bb_pos) : (bool)false; } }
   public bool PkProtect { get { int o = __p.__offset(26); return o != 0 ? 0!=__p.bb.Get(o + __p.bb_pos) : (bool)false; } }
+  public bool VisibleHelmet { get { int o = __p.__offset(28); return o != 0 ? 0!=__p.bb.Get(o + __p.bb_pos) : (bool)false; } }
 
   public static Offset<fb.protocol._internal.raw.Option> CreateOption(FlatBufferBuilder builder,
       uint uid = 0,
@@ -45,9 +46,11 @@ public struct Option : IFlatbufferObject
       bool trade = false,
       bool fast_move = false,
       bool effect_sound = false,
-      bool pk_protect = false) {
-    builder.StartTable(12);
+      bool pk_protect = false,
+      bool visible_helmet = false) {
+    builder.StartTable(13);
     Option.AddUid(builder, uid);
+    Option.AddVisibleHelmet(builder, visible_helmet);
     Option.AddPkProtect(builder, pk_protect);
     Option.AddEffectSound(builder, effect_sound);
     Option.AddFastMove(builder, fast_move);
@@ -62,7 +65,7 @@ public struct Option : IFlatbufferObject
     return Option.EndOption(builder);
   }
 
-  public static void StartOption(FlatBufferBuilder builder) { builder.StartTable(12); }
+  public static void StartOption(FlatBufferBuilder builder) { builder.StartTable(13); }
   public static void AddUid(FlatBufferBuilder builder, uint uid) { builder.AddUint(0, uid, 0); }
   public static void AddWhisper(FlatBufferBuilder builder, bool whisper) { builder.AddBool(1, whisper, false); }
   public static void AddGroup(FlatBufferBuilder builder, bool group) { builder.AddBool(2, group, false); }
@@ -75,6 +78,7 @@ public struct Option : IFlatbufferObject
   public static void AddFastMove(FlatBufferBuilder builder, bool fastMove) { builder.AddBool(9, fastMove, false); }
   public static void AddEffectSound(FlatBufferBuilder builder, bool effectSound) { builder.AddBool(10, effectSound, false); }
   public static void AddPkProtect(FlatBufferBuilder builder, bool pkProtect) { builder.AddBool(11, pkProtect, false); }
+  public static void AddVisibleHelmet(FlatBufferBuilder builder, bool visibleHelmet) { builder.AddBool(12, visibleHelmet, false); }
   public static Offset<fb.protocol._internal.raw.Option> EndOption(FlatBufferBuilder builder) {
     int o = builder.EndTable();
     return new Offset<fb.protocol._internal.raw.Option>(o);
@@ -101,6 +105,7 @@ static public class OptionVerify
       && verifier.VerifyField(tablePos, 22 /*FastMove*/, 1 /*bool*/, 1, false)
       && verifier.VerifyField(tablePos, 24 /*EffectSound*/, 1 /*bool*/, 1, false)
       && verifier.VerifyField(tablePos, 26 /*PkProtect*/, 1 /*bool*/, 1, false)
+      && verifier.VerifyField(tablePos, 28 /*VisibleHelmet*/, 1 /*bool*/, 1, false)
       && verifier.VerifyTableEnd(tablePos);
   }
 }

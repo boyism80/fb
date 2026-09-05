@@ -213,28 +213,23 @@ end
 return {
     on_click = function(me, npc)
         ::NPC_156_0001::
-        local OPT_ICE_SWORD = '얼음칼만들기'
-        local OPT_SPIRIT = '초혼술방법'
-        local OPT_AMBER = '호박투구만들기'
-        local OPT_LIGHT_AMBER = '연호박투구만들기'
-        local OPT_GOLD_AMBER = '황금호박투구만들기'
         local sel, btn = me:pursuit(npc, '안녕하세요. 어떻게 오셨나요?', {
-            OPT_ICE_SWORD,
-            OPT_SPIRIT,
-            OPT_AMBER,
-            OPT_LIGHT_AMBER,
-            OPT_GOLD_AMBER,
+            '얼음칼만들기',
+            '초혼술방법',
+            '호박투구만들기',
+            '연호박투구만들기',
+            '황금호박투구만들기',
         })
         if btn == DIALOG_RESULT.QUIT then
             return
         end
-        if sel == OPT_ICE_SWORD then
+        if sel == 1 then
             if run_ice_sword(me, npc) == false then
                 return
             end
-        elseif sel == OPT_SPIRIT then
+        elseif sel == 2 then
             run_spirit_summon_shark_weapon(me, npc)
-        elseif sel == OPT_AMBER then
+        elseif sel == 3 then
             local r = run_amber_helmet_craft(me, npc, AMBER_HELMET_COLORS, true)
             if r == DIALOG_RESULT.QUIT then
                 return
@@ -242,7 +237,7 @@ return {
             if r == DIALOG_RESULT.PREV then
                 goto NPC_156_0001
             end
-        elseif sel == OPT_LIGHT_AMBER then
+        elseif sel == 4 then
             local r = run_amber_helmet_craft(me, npc, LIGHT_AMBER_HELMET_COLORS, true)
             if r == DIALOG_RESULT.QUIT then
                 return
@@ -250,7 +245,7 @@ return {
             if r == DIALOG_RESULT.PREV then
                 goto NPC_156_0001
             end
-        elseif sel == OPT_GOLD_AMBER then
+        elseif sel == 5 then
             local r = run_amber_helmet_craft(me, npc, GOLD_AMBER_HELMET_COLORS, true)
             if r == DIALOG_RESULT.QUIT then
                 return

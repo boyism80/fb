@@ -42,8 +42,8 @@ namespace Internal.Controllers
                 uint userId = request.User;
                 if (!string.IsNullOrWhiteSpace(request.Name))
                 {
-                    var resolved = await _dbContext.Character.GetCharacterId(request.World, request.Name.Trim());
-                    if (resolved.HasValue == false)
+                    var characterId = await _dbContext.Character.GetCharacterId(request.World, request.Name.Trim());
+                    if (characterId.HasValue == false)
                     {
                         return new Response.WriteStorageBox
                         {
@@ -52,7 +52,7 @@ namespace Internal.Controllers
                         };
                     }
 
-                    userId = resolved.Value;
+                    userId = characterId.Value;
                 }
 
                 if (userId == 0)

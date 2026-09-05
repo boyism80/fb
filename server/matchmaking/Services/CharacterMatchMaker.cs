@@ -114,10 +114,10 @@ public sealed class CharacterMatchMaker : MatchMaker<CharacterRegistryEntry>
 
             try
             {
-                await _rabbitMqService.PublishAsync(
+                await _rabbitMqService.PublishFanoutAsync(
                     message,
-                    "amq.direct",
-                    $"fb.{world}.matchmaking",
+                    "matchmaking",
+                    world,
                     cancellationToken);
             }
             catch (Exception ex)

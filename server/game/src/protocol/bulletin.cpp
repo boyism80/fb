@@ -3,7 +3,8 @@
 namespace fb::protocol::game::request {
 
 #ifndef BOT
-void bulletin::deserialize(fb::stream_reader<big_endian>& reader)
+template <CLIENT_VERSION V>
+void bulletin<V>::deserialize(fb::stream_reader<big_endian>& reader)
 {
     header::deserialize(reader);
     this->action = (BULLETIN_ACTION)reader.read<uint8_t>();
@@ -39,14 +40,57 @@ void bulletin::deserialize(fb::stream_reader<big_endian>& reader)
         break;
     }
 }
+
+template <>
+void bulletin<CLIENT_VERSION::v651>::deserialize(fb::stream_reader<big_endian>& reader)
+{
+    header::deserialize(reader);
+    this->action = (BULLETIN_ACTION)reader.read<uint8_t>();
+
+    switch (this->action)
+    {
+    case BULLETIN_ACTION::ARTICLES:
+        this->section = reader.read<uint16_t>();
+        this->offset  = reader.read<uint16_t>();
+        if (reader.readable_size() > 0)
+            reader.read<uint8_t>();
+        break;
+
+    case BULLETIN_ACTION::ARTICLE:
+        this->section = reader.read<uint16_t>();
+        this->article = reader.read<uint16_t>();
+        if (reader.readable_size() > 0)
+            reader.read<uint8_t>();
+        break;
+
+    case BULLETIN_ACTION::WRITE:
+        this->section  = reader.read<uint16_t>();
+        this->title    = reader.read<std::string, uint8_t>();
+        this->contents = reader.read<std::string, uint16_t>();
+        break;
+
+    case BULLETIN_ACTION::DELETE:
+        this->section = reader.read<uint16_t>();
+        this->article = reader.read<uint16_t>();
+        break;
+
+    case BULLETIN_ACTION::SEND_MAIL:
+        this->section  = reader.read<uint16_t>();
+        this->user     = reader.read<std::string>();
+        this->title    = reader.read<std::string>();
+        this->contents = reader.read<std::string, uint16_t>();
+        break;
+    }
+}
 #else
-bulletin::bulletin(BULLETIN_ACTION  action,
-                   uint16_t         section,
-                   uint16_t         article,
-                   uint16_t         offset,
-                   std::string_view title,
-                   std::string_view contents,
-                   std::string_view user) :
+template <CLIENT_VERSION V>
+bulletin<V>::bulletin(BULLETIN_ACTION  action,
+                      uint16_t         section,
+                      uint16_t         article,
+                      uint16_t         offset,
+                      std::string_view title,
+                      std::string_view contents,
+                      std::string_view user) :
     action(action),
     section(section),
     article(article),
@@ -56,7 +100,8 @@ bulletin::bulletin(BULLETIN_ACTION  action,
     user(std::string(user))
 { }
 
-void bulletin::serialize(fb::stream_writer<big_endian>& writer) const
+template <CLIENT_VERSION V>
+void bulletin<V>::serialize(fb::stream_writer<big_endian>& writer) const
 {
     header::serialize(writer);
     writer.write<uint8_t>(opcode);
@@ -93,4 +138,9 @@ void bulletin::serialize(fb::stream_writer<big_endian>& writer) const
     }
 }
 #endif
+
+template class bulletin<CLIENT_VERSION::v550>;
+template class bulletin<CLIENT_VERSION::v565>;
+template class bulletin<CLIENT_VERSION::v651>;
+
 } // namespace fb::protocol::game::request

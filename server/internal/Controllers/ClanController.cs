@@ -42,7 +42,7 @@ namespace Internal.Controllers
         private async Task<List<Protocol.ClanMember>> GetClanMemberResponse(uint world, uint id)
         {
             var members = await _dbContext.ClanMember.Get(world, id);
-            await using var conn = _dbContext.GetGlobalConnection(world);
+            await using var conn = _dbContext.GetUnifiedConnection();
             var names = await conn.QueryAsync($"SELECT `id`, `name` FROM `name_registry` WHERE id IN ({string.Join(',', members.Select(x => x.User))})");
             var nameDict = names.ToDictionary(x => x.id, x => x.name);
 
@@ -55,6 +55,45 @@ namespace Internal.Controllers
                     Role = x.Role
                 };
             }).ToList();
+        }
+
+        private async Task<Protocol.Clan> GetClanResponse(uint world, Clan clan)
+        {
+            var protocolClan = _mapper.Map<Protocol.Clan>(clan);
+            var alliance = await _dbContext.ClanAlliance.Get(world, clan.Id);
+            protocolClan.AlliedClanId = alliance?.AlliedClan;
+            var enemies = await _dbContext.ClanEnemy.Get(world, clan.Id);
+            protocolClan.EnemyClanIds = enemies.Select(x => x.EnemyClan).ToList();
+            return protocolClan;
+        }
+
+        [HttpGet("id/{id}")]
+        public async Task<Response.ClanDetails> GetById(uint id)
+        {
+            try
+            {
+                var world = await _dbContext.Clan.GetWorld(id);
+                if (!world.HasValue)
+                    throw new LogicException(ErrorCode.NotFoundClan);
+
+                return await Get(world.Value, id);
+            }
+            catch (LogicException e)
+            {
+                return new Response.ClanDetails
+                {
+                    Action = Protocol.ClanDetailsAction.Query,
+                    Error = (uint)e.Error
+                };
+            }
+            catch (Exception)
+            {
+                return new Response.ClanDetails
+                {
+                    Action = Protocol.ClanDetailsAction.Query,
+                    Error = (uint)ErrorCode.Unhandled
+                };
+            }
         }
 
         [HttpGet("{world}/{id}")]
@@ -70,7 +109,7 @@ namespace Internal.Controllers
                 return new Response.ClanDetails
                 {
                     Action = Protocol.ClanDetailsAction.Query,
-                    Clan = _mapper.Map<Protocol.Clan>(clan),
+                    Clan = await GetClanResponse(world, clan),
                     Members = await GetClanMemberResponse(world, id),
                     Error = (uint)ErrorCode.None
                 };
@@ -98,7 +137,7 @@ namespace Internal.Controllers
         public async Task<Response.ClanDetails> Create(Request.CreateClan request)
         {
             var world = request.World;
-            await using var db = _dbContext.GetGlobalConnection(world);
+            await using var db = _dbContext.GetUnifiedConnection();
             await db.OpenAsync();
             await using var trans = await db.BeginTransactionAsync();
             try
@@ -115,8 +154,8 @@ namespace Internal.Controllers
                     throw new LogicException(ErrorCode.ClanNameAlreadyExists);
 
                 var newClanId = await db.QuerySingleAsync<uint>(
-                    @"INSERT INTO clan_name (name) VALUES (@Name);SELECT LAST_INSERT_ID();",
-                    new { Name = request.Name },
+                    @"INSERT INTO clan_name (name, world) VALUES (@Name, @World);SELECT LAST_INSERT_ID();",
+                    new { Name = request.Name, World = world },
                     transaction: trans
                 );
 
@@ -153,12 +192,12 @@ namespace Internal.Controllers
                 {
                     Host = request.Host,
                     Action = Protocol.ClanDetailsAction.Create,
-                    Clan = _mapper.Map<Protocol.Clan>(clan),
+                    Clan = await GetClanResponse(world, clan),
                     Members = await GetClanMemberResponse(world, clan.Id),
                     Error = (uint)ErrorCode.None
                 };
 
-                await _rabbitMqService.PublishAsync(response, "amq.direct", $"fb.{request.World}.clan");
+                await _rabbitMqService.PublishFanoutAsync(response, "clan", request.World);
                 return response;
             }
             catch (LogicException e)
@@ -190,7 +229,7 @@ namespace Internal.Controllers
         public async Task<Response.DestroyClan> Destroy(Request.DestroyClan request)
         {
             var world = request.World;
-            await using var db = _dbContext.GetGlobalConnection(world);
+            await using var db = _dbContext.GetUnifiedConnection();
             await db.OpenAsync();
             await using var trans = await db.BeginTransactionAsync();
             try
@@ -238,7 +277,7 @@ namespace Internal.Controllers
                 await _dbContext.SaveChangesAsync();
                 await trans.CommitAsync();
 
-                var conn = _dbContext.GetGlobalConnection(world);
+                var conn = _dbContext.GetUnifiedConnection();
                 var masterName = await conn.QueryFirstOrDefaultAsync<string>(
                     $"SELECT `name` FROM `name_registry` WHERE id = {ch.Id}");
 
@@ -255,7 +294,7 @@ namespace Internal.Controllers
                     Error = (uint)ErrorCode.None
                 };
 
-                await _rabbitMqService.PublishAsync(response, "amq.direct", $"fb.{request.World}.clan");
+                await _rabbitMqService.PublishFanoutAsync(response, "clan", request.World);
                 return response;
             }
             catch (LogicException e)
@@ -339,7 +378,7 @@ namespace Internal.Controllers
                     NewTitle = request.Title,
                     Error = (uint)ErrorCode.None
                 };
-                await _rabbitMqService.PublishAsync(response, "amq.direct", $"fb.{request.World}.clan");
+                await _rabbitMqService.PublishFanoutAsync(response, "clan", request.World);
                 return response;
             }
             catch (LogicException e)
@@ -454,7 +493,7 @@ namespace Internal.Controllers
                     Error = (uint)ErrorCode.None
                 };
 
-                await _rabbitMqService.PublishAsync(response, "amq.direct", $"fb.{request.World}.clan");
+                await _rabbitMqService.PublishFanoutAsync(response, "clan", request.World);
                 return response;
             }
             catch (LogicException e)
@@ -541,7 +580,7 @@ namespace Internal.Controllers
                     Error = (uint)ErrorCode.None
                 };
 
-                await _rabbitMqService.PublishAsync(response, "amq.direct", $"fb.{request.World}.clan");
+                await _rabbitMqService.PublishFanoutAsync(response, "clan", request.World);
                 return response;
             }
             catch (LogicException e)
@@ -661,7 +700,7 @@ namespace Internal.Controllers
                     Error = (uint)ErrorCode.None
                 };
 
-                await _rabbitMqService.PublishAsync(response, "amq.direct", $"fb.{request.World}.clan");
+                await _rabbitMqService.PublishFanoutAsync(response, "clan", request.World);
                 return response;
             }
             catch (LogicException e)
@@ -688,7 +727,7 @@ namespace Internal.Controllers
         {
             try
             {
-                var world = request.World;
+                var world = await _dbContext.Clan.GetWorld(request.Clan) ?? request.World;
                 await using var _ = await _distributedLock.Lock(world, Clan.DistributedLockKey(request.Clan));
 
                 var clan = await _dbContext.Clan.Get(world, request.Clan) ??
@@ -702,7 +741,7 @@ namespace Internal.Controllers
                     Type = request.Type,
                     Error = (uint)ErrorCode.None
                 };
-                await _rabbitMqService.PublishAsync(response, "amq.direct", $"fb.{world}.clan");
+                await _rabbitMqService.PublishFanoutAsync(response, "clan", world);
                 return response;
             }
             catch (LogicException e)
@@ -824,7 +863,7 @@ namespace Internal.Controllers
                     Error = (uint)ErrorCode.None
                 };
 
-                await _rabbitMqService.PublishAsync(response, "amq.direct", $"fb.{request.World}.clan");
+                await _rabbitMqService.PublishFanoutAsync(response, "clan", request.World);
                 return response;
             }
             catch (LogicException e)
@@ -842,6 +881,403 @@ namespace Internal.Controllers
                 {
                     Host = request.Host,
                     Action = Protocol.ClanActionType.ChangeRole,
+                    Error = (uint)ErrorCode.Unhandled
+                };
+            }
+        }
+        [HttpPost("ally")]
+        public async Task<Response.UpdatedClan> Ally(Request.AllyClan request)
+        {
+            try
+            {
+                var world = request.World;
+                var requester = await _dbContext.Character.Get(world, request.RequesterUid) ??
+                    throw new LogicException(ErrorCode.NotFoundCharacter);
+
+                await using var _1 = await _distributedLock.Lock(world, CharacterRealtimeState.DistributedLockKey(requester.Id));
+
+                var requesterSync = await _dbContext.CharacterRealtimeState.Get(world, requester.Id) ??
+                    throw new LogicException(ErrorCode.NotFoundCharacterSync);
+
+                if (requesterSync.Clan == null)
+                    throw new LogicException(ErrorCode.ClanNotJoined);
+
+                if (requesterSync.Clan.Value != request.Clan)
+                    throw new LogicException(ErrorCode.ClanNotMatched);
+
+                if (request.Clan == request.TargetClan)
+                    throw new LogicException(ErrorCode.ClanCannotAllySelf);
+
+                await using var _2 = await _distributedLock.Lock(world, Clan.DistributedLockKey(request.Clan));
+
+                var clan = await _dbContext.Clan.Get(world, request.Clan) ??
+                    throw new LogicException(ErrorCode.NotFoundClan);
+
+                var requesterMember = await _dbContext.ClanMember.Get(world, clan.Id, requester.Id) ??
+                    throw new LogicException(ErrorCode.NotFoundClanMember);
+
+                if (requesterMember.Role != (uint)ClanRole.Master)
+                    throw new LogicException(ErrorCode.ClanNoPrivilege);
+
+                var targetClan = await _dbContext.Clan.Get(world, request.TargetClan) ??
+                    throw new LogicException(ErrorCode.ClanTargetNotFound);
+
+                await using var _3 = await _distributedLock.Lock(world, ClanAlliance.DistributedLockKey(request.Clan));
+                await using var _4 = await _distributedLock.Lock(world, ClanAlliance.DistributedLockKey(request.TargetClan));
+
+                if (await _dbContext.ClanAlliance.Get(world, request.Clan) != null)
+                    throw new LogicException(ErrorCode.ClanAlreadyAllied);
+
+                if (await _dbContext.ClanAlliance.Get(world, request.TargetClan) != null)
+                    throw new LogicException(ErrorCode.ClanAlreadyAllied);
+
+                if (await _dbContext.ClanEnemy.Get(world, request.Clan, request.TargetClan) != null)
+                    throw new LogicException(ErrorCode.ClanCannotAllyEnemy);
+
+                _dbContext.ClanAlliance.Set(world, new ClanAlliance { Clan = request.Clan, AlliedClan = request.TargetClan });
+                _dbContext.ClanAlliance.Set(world, new ClanAlliance { Clan = request.TargetClan, AlliedClan = request.Clan });
+
+                await _dbContext.SaveChangesAsync();
+
+                var response = new Response.UpdatedClan
+                {
+                    Host = request.Host,
+                    Action = Protocol.ClanActionType.Ally,
+                    ClanId = clan.Id,
+                    ClanName = clan.Name,
+                    Actor = new Protocol.CharacterRef
+                    {
+                        Uid = requester.Id,
+                        Name = requester.Name
+                    },
+                    RelatedClanId = targetClan.Id,
+                    Error = (uint)ErrorCode.None
+                };
+
+                await _rabbitMqService.PublishFanoutAsync(response, "clan", request.World);
+                return response;
+            }
+            catch (LogicException e)
+            {
+                return new Response.UpdatedClan
+                {
+                    Host = request.Host,
+                    Action = Protocol.ClanActionType.Ally,
+                    Error = (uint)e.Error
+                };
+            }
+            catch (Exception)
+            {
+                return new Response.UpdatedClan
+                {
+                    Host = request.Host,
+                    Action = Protocol.ClanActionType.Ally,
+                    Error = (uint)ErrorCode.Unhandled
+                };
+            }
+        }
+        [HttpPost("unally")]
+        public async Task<Response.UpdatedClan> Unally(Request.UnallyClan request)
+        {
+            try
+            {
+                var world = request.World;
+                var requester = await _dbContext.Character.Get(world, request.RequesterUid) ??
+                    throw new LogicException(ErrorCode.NotFoundCharacter);
+
+                await using var _1 = await _distributedLock.Lock(world, CharacterRealtimeState.DistributedLockKey(requester.Id));
+
+                var requesterSync = await _dbContext.CharacterRealtimeState.Get(world, requester.Id) ??
+                    throw new LogicException(ErrorCode.NotFoundCharacterSync);
+
+                if (requesterSync.Clan == null)
+                    throw new LogicException(ErrorCode.ClanNotJoined);
+
+                if (requesterSync.Clan.Value != request.Clan)
+                    throw new LogicException(ErrorCode.ClanNotMatched);
+
+                await using var _2 = await _distributedLock.Lock(world, Clan.DistributedLockKey(request.Clan));
+
+                var clan = await _dbContext.Clan.Get(world, request.Clan) ??
+                    throw new LogicException(ErrorCode.NotFoundClan);
+
+                var requesterMember = await _dbContext.ClanMember.Get(world, clan.Id, requester.Id) ??
+                    throw new LogicException(ErrorCode.NotFoundClanMember);
+
+                if (requesterMember.Role != (uint)ClanRole.Master)
+                    throw new LogicException(ErrorCode.ClanNoPrivilege);
+
+                await using var _3 = await _distributedLock.Lock(world, ClanAlliance.DistributedLockKey(request.Clan));
+
+                var alliance = await _dbContext.ClanAlliance.Get(world, request.Clan) ??
+                    throw new LogicException(ErrorCode.ClanNotAllied);
+
+                var alliedClanId = alliance.AlliedClan;
+                await using var _4 = await _distributedLock.Lock(world, ClanAlliance.DistributedLockKey(alliedClanId));
+
+                _dbContext.ClanAlliance.Delete(world, request.Clan);
+                _dbContext.ClanAlliance.Delete(world, alliedClanId);
+
+                await _dbContext.SaveChangesAsync();
+
+                var response = new Response.UpdatedClan
+                {
+                    Host = request.Host,
+                    Action = Protocol.ClanActionType.Unally,
+                    ClanId = clan.Id,
+                    ClanName = clan.Name,
+                    Actor = new Protocol.CharacterRef
+                    {
+                        Uid = requester.Id,
+                        Name = requester.Name
+                    },
+                    RelatedClanId = alliedClanId,
+                    Error = (uint)ErrorCode.None
+                };
+
+                await _rabbitMqService.PublishFanoutAsync(response, "clan", request.World);
+                return response;
+            }
+            catch (LogicException e)
+            {
+                return new Response.UpdatedClan
+                {
+                    Host = request.Host,
+                    Action = Protocol.ClanActionType.Unally,
+                    Error = (uint)e.Error
+                };
+            }
+            catch (Exception)
+            {
+                return new Response.UpdatedClan
+                {
+                    Host = request.Host,
+                    Action = Protocol.ClanActionType.Unally,
+                    Error = (uint)ErrorCode.Unhandled
+                };
+            }
+        }
+        [HttpPost("enemy")]
+        public async Task<Response.UpdatedClan> Enemy(Request.DeclareClanEnemy request)
+        {
+            try
+            {
+                var world = request.World;
+                var requester = await _dbContext.Character.Get(world, request.RequesterUid) ??
+                    throw new LogicException(ErrorCode.NotFoundCharacter);
+
+                await using var _1 = await _distributedLock.Lock(world, CharacterRealtimeState.DistributedLockKey(requester.Id));
+
+                var requesterSync = await _dbContext.CharacterRealtimeState.Get(world, requester.Id) ??
+                    throw new LogicException(ErrorCode.NotFoundCharacterSync);
+
+                if (requesterSync.Clan == null)
+                    throw new LogicException(ErrorCode.ClanNotJoined);
+
+                if (requesterSync.Clan.Value != request.Clan)
+                    throw new LogicException(ErrorCode.ClanNotMatched);
+
+                if (request.Clan == request.TargetClan)
+                    throw new LogicException(ErrorCode.ClanCannotEnemySelf);
+
+                await using var _2 = await _distributedLock.Lock(world, Clan.DistributedLockKey(request.Clan));
+
+                var clan = await _dbContext.Clan.Get(world, request.Clan) ??
+                    throw new LogicException(ErrorCode.NotFoundClan);
+
+                var requesterMember = await _dbContext.ClanMember.Get(world, clan.Id, requester.Id) ??
+                    throw new LogicException(ErrorCode.NotFoundClanMember);
+
+                if (requesterMember.Role != (uint)ClanRole.Master)
+                    throw new LogicException(ErrorCode.ClanNoPrivilege);
+
+                var targetClan = await _dbContext.Clan.Get(world, request.TargetClan) ??
+                    throw new LogicException(ErrorCode.ClanTargetNotFound);
+
+                var alliance = await _dbContext.ClanAlliance.Get(world, request.Clan);
+                if (alliance != null && alliance.AlliedClan == request.TargetClan)
+                    throw new LogicException(ErrorCode.ClanCannotEnemyAlly);
+
+                if (await _dbContext.ClanEnemy.Get(world, request.Clan, request.TargetClan) != null)
+                    throw new LogicException(ErrorCode.ClanAlreadyEnemy);
+
+                _dbContext.ClanEnemy.Set(world, new ClanEnemy { Clan = request.Clan, EnemyClan = request.TargetClan });
+                _dbContext.ClanEnemy.Set(world, new ClanEnemy { Clan = request.TargetClan, EnemyClan = request.Clan });
+
+                await _dbContext.SaveChangesAsync();
+
+                var response = new Response.UpdatedClan
+                {
+                    Host = request.Host,
+                    Action = Protocol.ClanActionType.Enemy,
+                    ClanId = clan.Id,
+                    ClanName = clan.Name,
+                    Actor = new Protocol.CharacterRef
+                    {
+                        Uid = requester.Id,
+                        Name = requester.Name
+                    },
+                    RelatedClanId = targetClan.Id,
+                    Error = (uint)ErrorCode.None
+                };
+
+                await _rabbitMqService.PublishFanoutAsync(response, "clan", request.World);
+                return response;
+            }
+            catch (LogicException e)
+            {
+                return new Response.UpdatedClan
+                {
+                    Host = request.Host,
+                    Action = Protocol.ClanActionType.Enemy,
+                    Error = (uint)e.Error
+                };
+            }
+            catch (Exception)
+            {
+                return new Response.UpdatedClan
+                {
+                    Host = request.Host,
+                    Action = Protocol.ClanActionType.Enemy,
+                    Error = (uint)ErrorCode.Unhandled
+                };
+            }
+        }
+        [HttpPost("money")]
+        public async Task<Response.UpdatedClan> SetMoney(Request.SetClanMoney request)
+        {
+            try
+            {
+                var world = await _dbContext.Clan.GetWorld(request.Clan) ?? request.World;
+                await using var _ = await _distributedLock.Lock(world, Clan.DistributedLockKey(request.Clan));
+
+                var clan = await _dbContext.Clan.Get(world, request.Clan) ??
+                    throw new LogicException(ErrorCode.NotFoundClan);
+
+                if (request.Delta > 0)
+                {
+                    var next = clan.Money + (ulong)request.Delta;
+                    if (next < clan.Money)
+                        throw new LogicException(ErrorCode.Unhandled);
+                    clan.Money = next;
+                }
+                else if (request.Delta < 0)
+                {
+                    var abs = (ulong)(-request.Delta);
+                    if (clan.Money < abs)
+                        throw new LogicException(ErrorCode.Unhandled);
+                    clan.Money -= abs;
+                }
+
+                _dbContext.Clan.Set(world, clan);
+                await _dbContext.SaveChangesAsync();
+
+                var response = new Response.UpdatedClan
+                {
+                    Host = request.Host,
+                    Action = Protocol.ClanActionType.SetMoney,
+                    ClanId = clan.Id,
+                    ClanName = clan.Name,
+                    Money = clan.Money,
+                    Error = (uint)ErrorCode.None
+                };
+                await _rabbitMqService.PublishFanoutAsync(response, "clan", world);
+                return response;
+            }
+            catch (LogicException e)
+            {
+                return new Response.UpdatedClan
+                {
+                    Host = request.Host,
+                    Action = Protocol.ClanActionType.SetMoney,
+                    Error = (uint)e.Error
+                };
+            }
+            catch (Exception)
+            {
+                return new Response.UpdatedClan
+                {
+                    Host = request.Host,
+                    Action = Protocol.ClanActionType.SetMoney,
+                    Error = (uint)ErrorCode.Unhandled
+                };
+            }
+        }
+        [HttpPost("unenemy")]
+        public async Task<Response.UpdatedClan> Unenemy(Request.EndClanEnemy request)
+        {
+            try
+            {
+                var world = request.World;
+                var requester = await _dbContext.Character.Get(world, request.RequesterUid) ??
+                    throw new LogicException(ErrorCode.NotFoundCharacter);
+
+                await using var _1 = await _distributedLock.Lock(world, CharacterRealtimeState.DistributedLockKey(requester.Id));
+
+                var requesterSync = await _dbContext.CharacterRealtimeState.Get(world, requester.Id) ??
+                    throw new LogicException(ErrorCode.NotFoundCharacterSync);
+
+                if (requesterSync.Clan == null)
+                    throw new LogicException(ErrorCode.ClanNotJoined);
+
+                if (requesterSync.Clan.Value != request.Clan)
+                    throw new LogicException(ErrorCode.ClanNotMatched);
+
+                await using var _2 = await _distributedLock.Lock(world, Clan.DistributedLockKey(request.Clan));
+
+                var clan = await _dbContext.Clan.Get(world, request.Clan) ??
+                    throw new LogicException(ErrorCode.NotFoundClan);
+
+                var requesterMember = await _dbContext.ClanMember.Get(world, clan.Id, requester.Id) ??
+                    throw new LogicException(ErrorCode.NotFoundClanMember);
+
+                if (requesterMember.Role != (uint)ClanRole.Master)
+                    throw new LogicException(ErrorCode.ClanNoPrivilege);
+
+                var enemy = await _dbContext.ClanEnemy.Get(world, request.Clan, request.TargetClan) ??
+                    throw new LogicException(ErrorCode.ClanNotEnemy);
+
+                var reverseEnemy = await _dbContext.ClanEnemy.Get(world, request.TargetClan, request.Clan);
+
+                _dbContext.ClanEnemy.Delete(world, enemy);
+                if (reverseEnemy != null)
+                    _dbContext.ClanEnemy.Delete(world, reverseEnemy);
+
+                await _dbContext.SaveChangesAsync();
+
+                var response = new Response.UpdatedClan
+                {
+                    Host = request.Host,
+                    Action = Protocol.ClanActionType.Unenemy,
+                    ClanId = clan.Id,
+                    ClanName = clan.Name,
+                    Actor = new Protocol.CharacterRef
+                    {
+                        Uid = requester.Id,
+                        Name = requester.Name
+                    },
+                    RelatedClanId = request.TargetClan,
+                    Error = (uint)ErrorCode.None
+                };
+
+                await _rabbitMqService.PublishFanoutAsync(response, "clan", request.World);
+                return response;
+            }
+            catch (LogicException e)
+            {
+                return new Response.UpdatedClan
+                {
+                    Host = request.Host,
+                    Action = Protocol.ClanActionType.Unenemy,
+                    Error = (uint)e.Error
+                };
+            }
+            catch (Exception)
+            {
+                return new Response.UpdatedClan
+                {
+                    Host = request.Host,
+                    Action = Protocol.ClanActionType.Unenemy,
                     Error = (uint)ErrorCode.Unhandled
                 };
             }

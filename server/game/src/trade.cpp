@@ -135,7 +135,7 @@ bool trade::up_item(uint8_t index)
         if (item == nullptr)
             throw std::runtime_error(_TEXT(MESSAGE_NOT_FOUND_ITEM));
 
-        auto& model = item->based<fb::model::item>();
+        auto& model = item->model();
 
         if (this->trading() == false)
             throw std::runtime_error(_TEXT(MESSAGE_TRADE_NOT_TRADING));
@@ -218,7 +218,7 @@ bool trade::count(uint16_t count)
             throw std::runtime_error(_TEXT(MESSAGE_TRADE_NOT_SELECTED));
 
         auto  item  = owner->items[this->_selected];
-        auto& model = item->based<fb::model::item>();
+        auto& model = item->model();
         if (model.trade == false)
             throw std::runtime_error(_TEXT(MESSAGE_TRADE_NOT_ALLOWED_TO_TRADE));
 
@@ -282,7 +282,7 @@ uint8_t trade::add(uint8_t index)
     if (this->_items.contains(index))
         return this->_items.at(index);
 
-    auto order = this->_items.size();
+    auto order = static_cast<uint8_t>(this->_items.size());
     this->_items.insert({index, order});
     return order;
 }
@@ -320,7 +320,7 @@ std::shared_ptr<fb::game::item> trade::find(const fb::model::item& item) const
         if (x == nullptr)
             continue;
 
-        auto& model = x->based<fb::model::item>();
+        auto& model = x->model();
         if (&model == &item)
             return std::static_pointer_cast<fb::game::item>(x);
     }
@@ -340,7 +340,7 @@ void trade::assert_exchange(const trade& trade) const
     auto buffer = std::unordered_map<uint32_t, uint16_t>{};
     for (const auto& item : trade.items())
     {
-        auto& model       = item->based<fb::model::item>();
+        auto& model       = item->model();
         buffer[model.id] += item->trade_count();
     }
 
@@ -352,7 +352,7 @@ void trade::assert_exchange(const trade& trade) const
         if (item->trade_count() == 0)
             continue;
 
-        auto& model = item->based<fb::model::item>();
+        auto& model = item->model();
         if (buffer.contains(model.id) == false)
             continue;
 
@@ -471,7 +471,7 @@ async::task<bool> trade::lock()
             if (item != nullptr)
             {
                 auto item_data         = Json::Value{};
-                item_data["item_id"]   = static_cast<Json::Int64>(item->based<fb::model::item>().id);
+                item_data["item_id"]   = static_cast<Json::Int64>(item->model().id);
                 item_data["item_name"] = UTF8(item->name(), PLATFORM::WINDOWS);
                 item_data["count"]     = static_cast<Json::Int64>(item->trade_count());
                 items1.push_back(item_data);
@@ -489,7 +489,7 @@ async::task<bool> trade::lock()
             if (item != nullptr)
             {
                 auto item_data         = Json::Value{};
-                item_data["item_id"]   = static_cast<Json::Int64>(item->based<fb::model::item>().id);
+                item_data["item_id"]   = static_cast<Json::Int64>(item->model().id);
                 item_data["item_name"] = UTF8(item->name(), PLATFORM::WINDOWS);
                 item_data["count"]     = static_cast<Json::Int64>(item->trade_count());
                 items2.push_back(item_data);

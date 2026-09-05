@@ -41,7 +41,9 @@ struct UpdatedClan FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
     VT_NEW_ROLE = 22,
     VT_OLD_TITLE = 24,
     VT_NEW_TITLE = 26,
-    VT_ERROR = 28
+    VT_RELATED_CLAN_ID = 28,
+    VT_MONEY = 30,
+    VT_ERROR = 32
   };
   uint32_t host() const {
     return GetField<uint32_t>(VT_HOST, 0);
@@ -79,6 +81,12 @@ struct UpdatedClan FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
   const ::flatbuffers::String *new_title() const {
     return GetPointer<const ::flatbuffers::String *>(VT_NEW_TITLE);
   }
+  const nullable::nullable_uint *related_clan_id() const {
+    return GetPointer<const nullable::nullable_uint *>(VT_RELATED_CLAN_ID);
+  }
+  uint64_t money() const {
+    return GetField<uint64_t>(VT_MONEY, 0);
+  }
   uint32_t error() const {
     return GetField<uint32_t>(VT_ERROR, 0);
   }
@@ -105,6 +113,9 @@ struct UpdatedClan FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
            verifier.VerifyString(old_title()) &&
            VerifyOffset(verifier, VT_NEW_TITLE) &&
            verifier.VerifyString(new_title()) &&
+           VerifyOffset(verifier, VT_RELATED_CLAN_ID) &&
+           verifier.VerifyTable(related_clan_id()) &&
+           VerifyField<uint64_t>(verifier, VT_MONEY, 8) &&
            VerifyField<uint32_t>(verifier, VT_ERROR, 4) &&
            verifier.EndTable();
   }
@@ -150,6 +161,12 @@ struct UpdatedClanBuilder {
   void add_new_title(::flatbuffers::Offset<::flatbuffers::String> new_title) {
     fbb_.AddOffset(UpdatedClan::VT_NEW_TITLE, new_title);
   }
+  void add_related_clan_id(::flatbuffers::Offset<nullable::nullable_uint> related_clan_id) {
+    fbb_.AddOffset(UpdatedClan::VT_RELATED_CLAN_ID, related_clan_id);
+  }
+  void add_money(uint64_t money) {
+    fbb_.AddElement<uint64_t>(UpdatedClan::VT_MONEY, money, 0);
+  }
   void add_error(uint32_t error) {
     fbb_.AddElement<uint32_t>(UpdatedClan::VT_ERROR, error, 0);
   }
@@ -178,9 +195,13 @@ inline ::flatbuffers::Offset<UpdatedClan> CreateUpdatedClan(
     ::flatbuffers::Offset<nullable::nullable_uint> new_role = 0,
     ::flatbuffers::Offset<::flatbuffers::String> old_title = 0,
     ::flatbuffers::Offset<::flatbuffers::String> new_title = 0,
+    ::flatbuffers::Offset<nullable::nullable_uint> related_clan_id = 0,
+    uint64_t money = 0,
     uint32_t error = 0) {
   UpdatedClanBuilder builder_(_fbb);
+  builder_.add_money(money);
   builder_.add_error(error);
+  builder_.add_related_clan_id(related_clan_id);
   builder_.add_new_title(new_title);
   builder_.add_old_title(old_title);
   builder_.add_new_role(new_role);
@@ -210,6 +231,8 @@ inline ::flatbuffers::Offset<UpdatedClan> CreateUpdatedClanDirect(
     ::flatbuffers::Offset<nullable::nullable_uint> new_role = 0,
     const char *old_title = nullptr,
     const char *new_title = nullptr,
+    ::flatbuffers::Offset<nullable::nullable_uint> related_clan_id = 0,
+    uint64_t money = 0,
     uint32_t error = 0) {
   auto clan_name__ = clan_name ? _fbb.CreateString(clan_name) : 0;
   auto old_title__ = old_title ? _fbb.CreateString(old_title) : 0;
@@ -228,6 +251,8 @@ inline ::flatbuffers::Offset<UpdatedClan> CreateUpdatedClanDirect(
       new_role,
       old_title__,
       new_title__,
+      related_clan_id,
+      money,
       error);
 }
 

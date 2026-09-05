@@ -2,6 +2,7 @@
 #define __PROTOCOL_GAME_MAP_UPDATE_H__
 
 #include <fb/protocol/header.h>
+#include <fb/protocol/client_version.h>
 #include <fb/model/model.h>
 #ifndef BOT
 #include <fb/game/map.h>
@@ -32,10 +33,12 @@ namespace fb::protocol::game::request {
 
 using namespace fb::model::enum_value;
 
+template <CLIENT_VERSION V>
 class map_update : public fb::protocol::header
 {
 public:
     static constexpr uint8_t opcode = 0x05;
+    FB_PROTOCOL_VERSION_TAGS(V);
 
 public:
 #ifndef BOT
@@ -98,11 +101,7 @@ public:
 
 public:
 #ifndef BOT
-    map_update(const fb::game::map& map, const fb::model::point16_t& begin, const fb::model::size8_t& size) :
-        map(map),
-        begin(begin),
-        size(size)
-    { }
+    map_update(const fb::game::map& map, const fb::model::point16_t& begin, const fb::model::size8_t& size);
 #else
     map_update() = default;
 #endif

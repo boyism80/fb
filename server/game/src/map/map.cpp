@@ -6,6 +6,44 @@
 using namespace fb::game;
 using table = fb::model::table;
 
+namespace {
+
+uint8_t leave_mask(DIRECTION direction)
+{
+    switch (direction)
+    {
+    case DIRECTION::TOP:
+        return fb::sobj_tbl_file::NORTH;
+    case DIRECTION::RIGHT:
+        return fb::sobj_tbl_file::EAST;
+    case DIRECTION::BOTTOM:
+        return fb::sobj_tbl_file::SOUTH;
+    case DIRECTION::LEFT:
+        return fb::sobj_tbl_file::WEST;
+    default:
+        return 0;
+    }
+}
+
+uint8_t enter_mask(DIRECTION direction)
+{
+    switch (direction)
+    {
+    case DIRECTION::TOP:
+        return fb::sobj_tbl_file::SOUTH;
+    case DIRECTION::RIGHT:
+        return fb::sobj_tbl_file::WEST;
+    case DIRECTION::BOTTOM:
+        return fb::sobj_tbl_file::NORTH;
+    case DIRECTION::LEFT:
+        return fb::sobj_tbl_file::EAST;
+    default:
+        return 0;
+    }
+}
+
+} // namespace
+
 map::map(fb::game::server&     server,
          uint32_t              id,
          const fb::model::map& model,
@@ -14,7 +52,7 @@ map::map(fb::game::server&     server,
          size_t                size) :
     id(id),
     server(server),
-    model(model),
+    _model_id(model.id),
     active(active),
     doors(*this)
 {
@@ -27,6 +65,21 @@ map::map(fb::game::server&     server,
     this->load_tiles(data, size);
 }
 
+const fb::model::map& map::model() const
+{
+    return fb::model::table::map[this->_model_id];
+}
+
+MAP_CONFIG_FLAG map::config_flag() const
+{
+    return this->_config_flag;
+}
+
+void map::config_flag(MAP_CONFIG_FLAG value)
+{
+    this->_config_flag = value;
+}
+
 void map::load_tiles(const void* data, size_t size)
 {
     if (this->loaded())
@@ -37,16 +90,16 @@ void map::load_tiles(const void* data, size_t size)
 
     this->_size.width = reader.read<uint16_t>();
     if (this->_size.width == 0)
-        throw std::runtime_error(std::format(_TEXT(MESSAGE_MAP_INVALID_DATA), this->model.name));
+        throw std::runtime_error(std::format(_TEXT(MESSAGE_MAP_INVALID_DATA), this->model().name));
 
     this->_size.height = reader.read<uint16_t>();
     if (this->_size.height == 0)
-        throw std::runtime_error(std::format(_TEXT(MESSAGE_MAP_INVALID_DATA), this->model.name));
+        throw std::runtime_error(std::format(_TEXT(MESSAGE_MAP_INVALID_DATA), this->model().name));
 
     uint32_t map_size = this->_size.width * this->_size.height;
     this->_tiles      = std::make_unique<tile[]>(map_size);
     if (this->_tiles == nullptr)
-        throw std::runtime_error(std::format(_TEXT(MESSAGE_MAP_TILE_ALLOCATION_FAILED), this->model.name));
+        throw std::runtime_error(std::format(_TEXT(MESSAGE_MAP_TILE_ALLOCATION_FAILED), this->model().name));
 
     for (uint32_t i = 0; i < map_size; i++)
     {
@@ -64,13 +117,13 @@ void map::copy_tiles(const fb::game::map& source)
         return;
 
     if (source.loaded() == false || source._tiles == nullptr)
-        throw std::runtime_error(std::format(_TEXT(MESSAGE_MAP_INVALID_DATA), this->model.name));
+        throw std::runtime_error(std::format(_TEXT(MESSAGE_MAP_INVALID_DATA), this->model().name));
 
     this->_size   = source._size;
     auto map_size = static_cast<uint32_t>(this->_size.width) * static_cast<uint32_t>(this->_size.height);
     this->_tiles  = std::make_unique<tile[]>(map_size);
     if (this->_tiles == nullptr)
-        throw std::runtime_error(std::format(_TEXT(MESSAGE_MAP_TILE_ALLOCATION_FAILED), this->model.name));
+        throw std::runtime_error(std::format(_TEXT(MESSAGE_MAP_TILE_ALLOCATION_FAILED), this->model().name));
 
     std::copy_n(source._tiles.get(), map_size, this->_tiles.get());
 
@@ -135,7 +188,17 @@ bool map::blocked(uint16_t x, uint16_t y) const
     if (y >= this->_size.height)
         return true;
 
-    return this->_tiles[y * this->_size.width + x].blocked;
+    auto& tile = this->_tiles[y * this->_size.width + x];
+    if (tile.blocked)
+        return true;
+
+    if (tile.id == 0)
+        return true;
+
+    if (this->server.sobj.fully_blocked(tile.object))
+        return true;
+
+    return false;
 }
 
 bool map::block(uint16_t x, uint16_t y, bool option)
@@ -198,7 +261,7 @@ bool map::movable(const fb::model::point16_t& position, const std::function<bool
     if (this->in_ground(position) == false)
         return false;
 
-    if ((*this)(position.x, position.y)->blocked)
+    if (this->blocked(position.x, position.y))
         return false;
 
     auto index = this->index(position);
@@ -251,31 +314,48 @@ bool map::movable(const object& object, const fb::model::point16_t position) con
 
 bool map::movable(const object& object, DIRECTION direction) const
 {
-    fb::model::point16_t position = object.position();
-
+    auto from = object.position();
+    auto to   = from;
     switch (direction)
     {
     case DIRECTION::BOTTOM:
-        position.y++;
+        to.y++;
         break;
 
     case DIRECTION::TOP:
-        position.y--;
+        to.y--;
         break;
 
     case DIRECTION::LEFT:
-        position.x--;
+        to.x--;
         break;
 
     case DIRECTION::RIGHT:
-        position.x++;
+        to.x++;
         break;
+
+    default:
+        return false;
     }
 
-    if (this->movable(object, position) == false)
+    if (this->in_ground(from) == false)
         return false;
 
-    return true;
+    if (this->in_ground(to) == false)
+        return false;
+
+    auto from_tile = (*this)(from.x, from.y);
+    auto to_tile   = (*this)(to.x, to.y);
+    if (from_tile == nullptr || to_tile == nullptr)
+        return false;
+
+    if ((this->server.sobj.collision(from_tile->object) & leave_mask(direction)) != 0)
+        return false;
+
+    if ((this->server.sobj.collision(to_tile->object) & enter_mask(direction)) != 0)
+        return false;
+
+    return this->movable(object, to);
 }
 
 bool map::movable_forward(const object& object, uint16_t step) const
@@ -286,10 +366,10 @@ bool map::movable_forward(const object& object, uint16_t step) const
 const fb::model::warp* map::warpable(const fb::model::point16_t& position) const
 {
     auto warps = table::warp;
-    if (warps->contains(this->model.id) == false)
+    if (warps->contains(this->model().id) == false)
         return nullptr;
 
-    for (auto& warp : warps[this->model.id])
+    for (auto& warp : warps[this->model().id])
     {
         if (warp.before == position)
             return &warp;

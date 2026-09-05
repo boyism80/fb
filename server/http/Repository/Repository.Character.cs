@@ -60,11 +60,12 @@ namespace Http.Reepository
                     `pw`,
                     `role`,
                     `birth`,
-                    `look`,
+                    `hair`,
+                    `face`,
                     `color`,
                     `gender`,
                     `nation`,
-                    `creature`,
+                    `divine_beast`,
                     `map`,
                     `position_x`,
                     `position_y`,
@@ -95,6 +96,8 @@ namespace Http.Reepository
                     `title`,
                     `super_hide`,
                     `speed`,
+                    `reputation`,
+                    `evaluation`,
                     `deleted`,
                     `created_date`,
                     `updated_date`,
@@ -106,11 +109,12 @@ namespace Http.Reepository
                     {value.Pw.Escape()},
                     {value.Role.Escape()},
                     {value.Birth.Escape()},
-                    {value.Look.Escape()},
+                    {value.Hair.Escape()},
+                    {value.Face.Escape()},
                     {value.Color.Escape()},
                     {value.Gender.Escape()},
                     {value.Nation.Escape()},
-                    {value.Creature.Escape()},
+                    {value.DivineBeast.Escape()},
                     {value.Map.Escape()},
                     {value.PositionX.Escape()},
                     {value.PositionY.Escape()},
@@ -141,6 +145,8 @@ namespace Http.Reepository
                     {value.Title.Escape()},
                     {value.SuperHide.Escape()},
                     {value.Speed.Escape()},
+                    {value.Reputation.Escape()},
+                    {value.Evaluation.Escape()},
                     0,
                     {value.CreatedDate.Escape()},
                     {value.UpdatedDate.Escape()},
@@ -149,11 +155,12 @@ namespace Http.Reepository
                     `pw`=VALUES(`pw`),
                     `role`=VALUES(`role`),
                     `birth`=VALUES(`birth`),
-                    `look`=VALUES(`look`),
+                    `hair`=VALUES(`hair`),
+                    `face`=VALUES(`face`),
                     `color`=VALUES(`color`),
                     `gender`=VALUES(`gender`),
                     `nation`=VALUES(`nation`),
-                    `creature`=VALUES(`creature`),
+                    `divine_beast`=VALUES(`divine_beast`),
                     `map`=VALUES(`map`),
                     `position_x`=VALUES(`position_x`),
                     `position_y`=VALUES(`position_y`),
@@ -184,6 +191,8 @@ namespace Http.Reepository
                     `title`=VALUES(`title`),
                     `super_hide`=VALUES(`super_hide`),
                     `speed`=VALUES(`speed`),
+                    `reputation`=VALUES(`reputation`),
+                    `evaluation`=VALUES(`evaluation`),
                     `updated_date`=VALUES(`updated_date`),
                     `first_login_date`=COALESCE(VALUES(`first_login_date`), `first_login_date`);
                 """;
@@ -191,34 +200,54 @@ namespace Http.Reepository
             return sql;
         }
 
+        public async Task<uint?> GetCharacterId(string name)
+        {
+            var row = await GetCharacterRef(name);
+            return row?.Id;
+        }
+
         public async Task<uint?> GetCharacterId(uint world, string name)
         {
-            await using var conn = _dbContext.GetGlobalConnection(world);
-            var result = await conn.QueryAsync<uint>("USP_NAME_GET_ID", new
-            {
-                n = name
-            }, commandType: CommandType.StoredProcedure);
+            var row = await GetCharacterRef(name);
+            if (row == null || row.World != world)
+                return null;
+            return row.Id;
+        }
 
-            if (result.Any())
-                return result.ElementAt(0);
+        public async Task<CharacterName> GetCharacterRef(string name)
+        {
+            await using var conn = _dbContext.GetUnifiedConnection();
+            return await conn.QueryFirstOrDefaultAsync<CharacterName>(
+                "SELECT id, world, name FROM name_registry WHERE name = @name",
+                new { name });
+        }
 
-            return null;
+        public async Task<uint?> GetWorld(uint id)
+        {
+            await using var conn = _dbContext.GetUnifiedConnection();
+            return await conn.QueryFirstOrDefaultAsync<uint?>(
+                "SELECT world FROM name_registry WHERE id = @id",
+                new { id });
         }
 
         public async Task<string> GetName(uint world, uint id)
         {
-            await using var conn = _dbContext.GetGlobalConnection(world);
-            var result = await conn.QueryFirstOrDefaultAsync<CharacterName>($"SELECT id, name FROM name_registry WHERE id = {id}");
+            await using var conn = _dbContext.GetUnifiedConnection();
+            var result = await conn.QueryFirstOrDefaultAsync<CharacterName>(
+                "SELECT id, world, name FROM name_registry WHERE id = @id",
+                new { id });
             return result?.Name;
         }
 
         public async Task<IReadOnlyDictionary<uint, string>> GetName(uint world, IEnumerable<uint> ids)
         {
-            if (ids.Any() == false)
+            var list = ids.Distinct().ToList();
+            if (list.Count == 0)
                 return new Dictionary<uint, string>();
 
-            await using var conn = _dbContext.GetGlobalConnection(world);
-            var result = await conn.QueryAsync<CharacterName>($"SELECT id, name FROM name_registry WHERE id IN ({string.Join(',', ids)})");
+            await using var conn = _dbContext.GetUnifiedConnection();
+            var result = await conn.QueryAsync<CharacterName>(
+                $"SELECT id, world, name FROM name_registry WHERE id IN ({string.Join(',', list)})");
             return result.ToDictionary(x => x.Id, x => x.Name);
         }
     }

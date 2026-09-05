@@ -1,5 +1,6 @@
 #include <fb/game/server.h>
 #include <fb/model/model.h>
+#include <fb/protocol/client_version.h>
 
 using namespace fb::game;
 
@@ -7,7 +8,11 @@ namespace game_resp = fb::protocol::game::response;
 
 void listener_impl::on_equipment_on(character& me, item& item, EQUIPMENT_PARTS parts)
 {
-    me.send(game_resp::item_update_slot(me, parts));
+    me.stat.equipment_on(static_cast<equipment&>(item).model());
+
+    fb::protocol::visit_client_version(me.client_version, [&]<fb::protocol::CLIENT_VERSION V> {
+        me.send(game_resp::item_update_slot<V>(me, parts));
+    });
     me.sound(SOUND::EQUIPMENT_ON);
 
     std::stringstream sstream;
@@ -55,16 +60,25 @@ void listener_impl::on_equipment_on(character& me, item& item, EQUIPMENT_PARTS p
                            me.stat.regenerative(),
                            me.stat.magdef());
     me.message(sstream.str(), MESSAGE_TYPE::STATE);
+
+    me.update(UPDATE_STATE_LEVEL::BASED | UPDATE_STATE_LEVEL::HP_MP);
 }
 
 void listener_impl::on_equipment_off(character& me, EQUIPMENT_PARTS parts, fb::game::equipment& equipment)
 {
+    me.stat.equipment_off(equipment.model());
+
+    fb::protocol::visit_client_version(me.client_version, [&]<fb::protocol::CLIENT_VERSION V> {
+        me.send(game_resp::item_unequip<V>(parts));
+    });
     me.sound(SOUND::EQUIPMENT_OFF);
+
+    me.update(UPDATE_STATE_LEVEL::BASED | UPDATE_STATE_LEVEL::HP_MP);
 }
 
 void listener_impl::on_durability_down(character& me, fb::game::equipment& equipment, uint32_t before, uint32_t after)
 {
-    auto& model          = equipment.based<fb::model::equipment>();
+    auto& model          = equipment.model();
     auto  percent_before = (uint8_t)std::ceil((before * 100) / (double)model.durability);
     auto  percent_after  = (uint8_t)std::ceil((after * 100) / (double)model.durability);
 

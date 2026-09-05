@@ -1,15 +1,7 @@
 -- mob: 주머니해골왕
 
 return {
-    -- on_mob_attack = function(me, you)
-    -- end,
-
-    -- on_mob_die = function(me)
-    -- end,
-
-    -- on_mob_kill = function(me, mobs)
-    -- end,
-
-    -- on_mob_spell_hit = function(me, you, spell)
-    -- end
+    on_mob_attack = function(me, you)
+        me:chat('이대로 죽을 성 싶으냐!!', CHAT_TYPE.NORMAL, true)
+    end
 }

@@ -1,5 +1,6 @@
 #include <fb/game/handler/protocol/login.h>
 #include <fb/game/server.h>
+#include <fb/amqp_route.h>
 #include <fb/game/handler/amqp/ban.h>
 #include <fb/game/storage.h>
 #include <fb/model/model.h>
@@ -9,18 +10,22 @@
 #include <sstream>
 #include <chrono>
 #include <tuple>
+#include <format>
 
-using namespace fb::game::handler::protocol;
 using namespace fb::game;
 using table = fb::model::table;
 
 namespace game_reqs = fb::protocol::game::request;
 
-login::login(fb::game::server& server) :
-    fb::handler::protocol<fb::game::server, game_reqs::login>(server)
+namespace fb::game::handler::protocol {
+
+template <fb::protocol::CLIENT_VERSION V>
+login<V>::login(fb::game::server& server) :
+    fb::handler::protocol<fb::game::server, game_reqs::login<V>>(server)
 { }
 
-void login::init_option(const internal::Option& response, fb::game::character& ch)
+template <fb::protocol::CLIENT_VERSION V>
+void login<V>::init_option(const internal::Option& response, fb::game::character& ch)
 {
     ch.option(OPTION::WHISPER, response.whisper, false);
     ch.option(OPTION::GROUP, response.group, false);
@@ -33,9 +38,11 @@ void login::init_option(const internal::Option& response, fb::game::character& c
     ch.option(OPTION::FAST_MOVE, response.fast_move, false);
     ch.option(OPTION::EFFECT_SOUND, response.effect_sound, false);
     ch.option(OPTION::PK_PROTECT, response.pk_protect, false);
+    ch.option(OPTION::VISIBLE_HELMET, response.visible_helmet, false);
 }
 
-void login::init_items(const std::vector<internal::Item>& response, character& ch)
+template <fb::protocol::CLIENT_VERSION V>
+void login<V>::init_items(const std::vector<internal::Item>& response, character& ch)
 {
     for (auto& x : response)
     {
@@ -55,12 +62,13 @@ void login::init_items(const std::vector<internal::Item>& response, character& c
         else
             std::ignore = ch.items.wear((EQUIPMENT_PARTS)x.parts, std::static_pointer_cast<fb::game::equipment>(item));
 
-        if (x.custom_name.has_value() && item->based<fb::model::item>().attr(ITEM_ATTRIBUTE::WEAPON))
+        if (x.custom_name.has_value() && item->model().attr(ITEM_ATTRIBUTE::WEAPON))
             static_cast<weapon*>(item.get())->custom_name(x.custom_name.value());
     }
 }
 
-void login::init_spells(const std::vector<internal::Spell>& response, character& ch)
+template <fb::protocol::CLIENT_VERSION V>
+void login<V>::init_spells(const std::vector<internal::Spell>& response, character& ch)
 {
     for (auto& x : response)
     {
@@ -79,12 +87,14 @@ void login::init_spells(const std::vector<internal::Spell>& response, character&
     }
 }
 
-void login::init_matchmaker(const std::vector<internal::MatchmakingSkill>& response, character& ch)
+template <fb::protocol::CLIENT_VERSION V>
+void login<V>::init_matchmaker(const std::vector<internal::MatchmakingSkill>& response, character& ch)
 {
     ch.matchmaker.load(response);
 }
 
-void login::init_quests(const std::vector<fb::protocol::internal::Quest>& response, fb::game::character& ch)
+template <fb::protocol::CLIENT_VERSION V>
+void login<V>::init_quests(const std::vector<fb::protocol::internal::Quest>& response, fb::game::character& ch)
 {
     for (auto& x : response)
     {
@@ -92,8 +102,9 @@ void login::init_quests(const std::vector<fb::protocol::internal::Quest>& respon
     }
 }
 
-void login::init_marketplace(const std::vector<fb::protocol::internal::MarketplacePending>& response,
-                             fb::game::character&                                           ch)
+template <fb::protocol::CLIENT_VERSION V>
+void login<V>::init_marketplace(const std::vector<fb::protocol::internal::MarketplacePending>& response,
+                                fb::game::character&                                           ch)
 {
     auto pending_listings = fb::game::marketplace::pending_listings_t{};
     for (const auto& row : response)
@@ -124,7 +135,16 @@ void login::init_marketplace(const std::vector<fb::protocol::internal::Marketpla
         ch.marketplace.set_pending_listings(std::move(pending_listings));
 }
 
-void login::init_achievements(const std::vector<fb::protocol::internal::Achievement>& response, fb::game::character& ch)
+template <fb::protocol::CLIENT_VERSION V>
+void login<V>::init_collection_unlocks(const std::vector<fb::protocol::internal::CollectionUnlock>& response,
+                                       fb::game::character&                                         ch)
+{
+    ch.collections.load(response);
+}
+
+template <fb::protocol::CLIENT_VERSION V>
+void login<V>::init_achievements(const std::vector<fb::protocol::internal::Achievement>& response,
+                                 fb::game::character&                                    ch)
 {
     for (auto& a : response)
     {
@@ -133,17 +153,22 @@ void login::init_achievements(const std::vector<fb::protocol::internal::Achievem
     }
 }
 
-void login::init_storage(const fb::protocol::internal::response::Init& response, fb::game::character& ch)
+template <fb::protocol::CLIENT_VERSION V>
+void login<V>::init_storage(const fb::protocol::internal::response::Init& response, fb::game::character& ch)
 {
     ch.server.system_storage.init_from_login(ch, response.storage_boxes);
 }
 
-async::task<std::shared_ptr<character>> login::init(const game_reqs::login& request, fb::socket<character>& session)
+template <fb::protocol::CLIENT_VERSION V>
+async::task<std::shared_ptr<character>> login<V>::init(const game_reqs::login<V>& request,
+                                                       fb::socket<character>&     session)
 {
-    auto   world = fb::config<uint32_t>("world");
-    auto&& resp =
-        co_await this->server.http.get<internal_resp::Init>("internal",
-                                                            std::format("/in-game/init/{}/{}", world, request.id));
+    auto world = request.transfer.has_value() ? request.transfer->world : fb::config<uint32_t>("world");
+    if (world == 0)
+        world = fb::config<uint32_t>("world");
+    auto&& resp = co_await this->server.http.template get<internal_resp::Init>(
+        "internal",
+        std::format("/in-game/init/{}/{}", world, request.id));
     auto map        = request.transfer.has_value() ? request.transfer->map : resp.character.map;
     auto position_x = resp.character.position.x;
     auto position_y = resp.character.position.y;
@@ -176,7 +201,7 @@ async::task<std::shared_ptr<character>> login::init(const game_reqs::login& requ
             co_return nullptr;
         }
 
-        auto spawn = return_map->model.spawn_position().value_or(fb::model::point16_t{0, 0});
+        auto spawn = return_map->model().spawn_position().value_or(fb::model::point16_t{0, 0});
         map        = return_map_id;
         position_x = spawn.x;
         position_y = spawn.y;
@@ -185,6 +210,7 @@ async::task<std::shared_ptr<character>> login::init(const game_reqs::login& requ
     auto socket_ptr     = session.shared_from_this_as<fb::socket<character>>();
     auto params         = character::initial_params{.socket = socket_ptr};
     params.id           = resp.character.id;
+    params.world        = resp.character.world != 0 ? resp.character.world : world;
     params.name         = resp.character.name;
     params.pw           = resp.character.pw;
     params.birthday     = resp.character.birth;
@@ -199,7 +225,8 @@ async::task<std::shared_ptr<character>> login::init(const game_reqs::login& requ
     params.promotion    = resp.character.promotion;
     params.color        = resp.character.color;
     params.direction    = static_cast<DIRECTION>(resp.character.direction);
-    params.look         = resp.character.look;
+    params.hair         = resp.character.hair;
+    params.face         = resp.character.face;
     params.money        = resp.character.money;
     params.gender       = static_cast<GENDER>(resp.character.gender);
     params.level        = resp.character.level;
@@ -213,29 +240,37 @@ async::task<std::shared_ptr<character>> login::init(const game_reqs::login& requ
     {
         auto const& m  = resp.character.mimicry.value();
         auto state     = m.state.has_value() ? std::optional<STATE>(static_cast<STATE>(m.state.value())) : std::nullopt;
-        params.mimicry = character_appearance(static_cast<GENDER>(m.gender),
-                                              state,
-                                              m.hair,
-                                              m.hair_color,
-                                              m.weapon,
-                                              m.weapon_color,
-                                              m.armor,
-                                              m.armor_color,
-                                              m.shield,
-                                              m.shield_color,
-                                              m.disguise);
+        params.mimicry = character_appearance<>(static_cast<GENDER>(m.gender),
+                                                state,
+                                                m.hair,
+                                                m.hair_color,
+                                                m.weapon,
+                                                m.weapon_color,
+                                                m.armor,
+                                                m.armor_color,
+                                                m.shield,
+                                                m.shield_color,
+                                                m.disguise);
     }
     else
     {
         params.mimicry = std::nullopt;
     }
-    params.nation     = static_cast<NATION>(resp.character.nation);
-    params.creature   = static_cast<CREATURE>(resp.character.creature);
-    params.super_hide = resp.character.super_hide;
+    params.nation         = static_cast<NATION>(resp.character.nation);
+    params.divine_beast   = static_cast<DIVINE_BEAST>(resp.character.divine_beast);
+    params.super_hide     = resp.character.super_hide;
+    params.client_version = request.client_version;
+    params.ui_mode        = request.ui_mode;
 
-    auto ch   = this->server.make<character>(params);
-    auto weak = ch->weak_from_this_as<character>();
+    auto ch   = this->server.template make<character>(params);
+    auto weak = ch->template weak_from_this_as<character>();
     co_await this->server.threads.switching(weak);
+    if (fb::is_cross())
+    {
+        ch->restore_return_point(resp.character.map,
+                                 fb::model::point16_t{static_cast<uint16_t>(resp.character.position.x),
+                                                      static_cast<uint16_t>(resp.character.position.y)});
+    }
     ch->items.deposited(resp.character.deposited_money);
     ch->stat.base_hp(resp.character.base_hp, false);
     ch->stat.hp(resp.character.hp, false);
@@ -249,8 +284,17 @@ async::task<std::shared_ptr<character>> login::init(const game_reqs::login& requ
 
     session.data(ch);
 
-    if (co_await ch->map(this->server.maps[map], fb::model::point16_t(position_x, position_y)) == false)
-        co_return nullptr;
+    if (request.match.has_value() && request.match->id.empty() == false)
+        co_await this->server.matches.join(*ch, request.match->id, request.match->type);
+
+    if (ch->map() == nullptr)
+    {
+        if (co_await ch->map(this->server.maps[map], fb::model::point16_t(position_x, position_y)) == false)
+        {
+            this->server.matches.leave(*ch);
+            co_return nullptr;
+        }
+    }
 
     for (auto& buff : resp.character.buffs)
     {
@@ -266,6 +310,7 @@ async::task<std::shared_ptr<character>> login::init(const game_reqs::login& requ
         {
             group->enter(weak);
             ch->group_id(group->id());
+            this->server.groups.update_portraits(*group);
         }
     }
 
@@ -282,6 +327,7 @@ async::task<std::shared_ptr<character>> login::init(const game_reqs::login& requ
     bool inserted = this->server.characters.insert(ch);
     if (inserted == false)
     {
+        this->server.matches.leave(*ch);
         fb::logger::fatal(
             "Character {} already exists in server during initial insert - disconnecting duplicate session",
             ch->name());
@@ -295,9 +341,17 @@ async::task<std::shared_ptr<character>> login::init(const game_reqs::login& requ
     this->init_matchmaker(resp.matchmaking_skills, *ch);
     this->init_achievements(resp.achievements, *ch);
     this->init_quests(resp.quests, *ch);
+    this->init_collection_unlocks(resp.collection_unlocks, *ch);
     this->init_marketplace(resp.marketplace_pendings, *ch);
     this->init_storage(resp, *ch);
     this->init_option(resp.option, *ch);
+    {
+        auto entries = std::vector<friend_entry>{};
+        entries.reserve(resp.friends.size());
+        for (auto& entry : resp.friends)
+            entries.push_back(friend_entry{entry.uid, entry.name, entry.mutual});
+        ch->friends(std::move(entries));
+    }
     ch->marriage(fb::game::marriage(resp.marriage.remarriage_after.empty()
                                         ? this->server.now()
                                         : fb::model::datetime(resp.marriage.remarriage_after),
@@ -306,6 +360,7 @@ async::task<std::shared_ptr<character>> login::init(const game_reqs::login& requ
                                     resp.marriage.divorce_count));
 
     ch->init();
+    ch->collections.sync();
     ch->update_time(static_cast<uint8_t>(this->server.time().hours()),
                     static_cast<uint8_t>(this->server.time().minutes()));
     if (request.from == internal::Service::Login)
@@ -321,6 +376,14 @@ async::task<std::shared_ptr<character>> login::init(const game_reqs::login& requ
             lua->pushboolean(ch->is_first_login());
             std::ignore = lua->call(2);
         }
+
+        ch->friends_sync(1);
+        // Notify from Init mutual flags. Client may later replace the list;
+        // accept that race rather than deferring behind a pending flag.
+        {
+            auto message = std::format(_TEXT(MESSAGE_FRIEND_LOGIN), ch->name());
+            co_await ch->broadcast_friends(message, MESSAGE_TYPE::NOTIFY, true);
+        }
     }
 
     co_await this->server.system_storage.sync(*ch);
@@ -330,13 +393,16 @@ async::task<std::shared_ptr<character>> login::init(const game_reqs::login& requ
     co_return ch;
 }
 
-async::task<bool> login::assert_login(const game_reqs::login& request)
+template <fb::protocol::CLIENT_VERSION V>
+async::task<bool> login<V>::assert_login(const game_reqs::login<V>& request)
 {
-    auto   world = fb::config<uint32_t>("world");
-    auto&& resp  = co_await this->server.http.post(
+    auto world = request.transfer.has_value() ? request.transfer->world : fb::config<uint32_t>("world");
+    if (world == 0)
+        world = fb::config<uint32_t>("world");
+    auto&& resp = co_await this->server.http.post(
         "internal",
         "/in-game/login",
-        internal_reqs::Login{world, request.id, request.name, fb::config<uint8_t>("id"), false});
+        internal_reqs::Login{world, request.id, request.name, fb::config<uint8_t>("id"), false, fb::process_role()});
     switch (static_cast<ERROR_CODE>(resp.error))
     {
     case ERROR_CODE::NONE:
@@ -352,7 +418,8 @@ async::task<bool> login::assert_login(const game_reqs::login& request)
     }
 }
 
-std::string login::elapsed_message(std::string_view dt)
+template <fb::protocol::CLIENT_VERSION V>
+std::string login<V>::elapsed_message(std::string_view dt)
 {
     auto elapsed = this->server.now() - fb::model::datetime(dt);
     if (elapsed.total_milliseconds() < 1000 * 60)
@@ -375,7 +442,8 @@ std::string login::elapsed_message(std::string_view dt)
     return sstream.str();
 }
 
-async::task<bool> login::handle(fb::socket<character>& session, game_reqs::login& request)
+template <fb::protocol::CLIENT_VERSION V>
+async::task<bool> login<V>::handle(fb::socket<character>& session, game_reqs::login<V>& request)
 {
     session.encryption(request.enc_type, request.enc_key);
     fb::logger::info("{} has connected.", request.name);
@@ -405,7 +473,7 @@ async::task<bool> login::handle(fb::socket<character>& session, game_reqs::login
     log_data["level"]          = ch->level();
     if (auto map = ch->map(); map != nullptr)
     {
-        log_data["map"]        = map->model.id;
+        log_data["map"]        = map->model().id;
         log_data["position_x"] = ch->position().x;
         log_data["position_y"] = ch->position().y;
     }
@@ -413,3 +481,9 @@ async::task<bool> login::handle(fb::socket<character>& session, game_reqs::login
 
     co_return true;
 }
+
+template class login<fb::protocol::CLIENT_VERSION::v550>;
+template class login<fb::protocol::CLIENT_VERSION::v565>;
+template class login<fb::protocol::CLIENT_VERSION::v651>;
+
+} // namespace fb::game::handler::protocol

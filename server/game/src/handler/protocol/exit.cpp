@@ -1,15 +1,17 @@
 #include <fb/game/handler/protocol/exit.h>
 #include <fb/game/server.h>
 
-using namespace fb::game::handler::protocol;
-
 namespace game_reqs = fb::protocol::game::request;
 
-exit::exit(fb::game::server& server) :
-    fb::handler::protocol<fb::game::server, game_reqs::exit>(server)
+namespace fb::game::handler::protocol {
+
+template <fb::protocol::CLIENT_VERSION V>
+exit<V>::exit(fb::game::server& server) :
+    fb::handler::protocol<fb::game::server, game_reqs::exit<V>>(server)
 { }
 
-async::task<bool> exit::handle(fb::socket<character>& session, game_reqs::exit& request)
+template <fb::protocol::CLIENT_VERSION V>
+async::task<bool> exit<V>::handle(fb::socket<character>& session, game_reqs::exit<V>& request)
 {
     auto ch = session.data();
     if (ch->inited() == false)
@@ -21,3 +23,9 @@ async::task<bool> exit::handle(fb::socket<character>& session, game_reqs::exit& 
                                    internal::Service::Game);
     co_return true;
 }
+
+template class exit<fb::protocol::CLIENT_VERSION::v550>;
+template class exit<fb::protocol::CLIENT_VERSION::v565>;
+template class exit<fb::protocol::CLIENT_VERSION::v651>;
+
+} // namespace fb::game::handler::protocol

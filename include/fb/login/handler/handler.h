@@ -7,6 +7,7 @@
 #include <fb/login/handler/protocol/complete.h>
 #include <fb/login/handler/protocol/create_account.h>
 #include <fb/login/handler/protocol/login.h>
+#include <fb/login/handler/protocol/meta_dat.h>
 
 // AMQP handlers
 #include <fb/login/handler/amqp/shutdown.h>

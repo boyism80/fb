@@ -43,9 +43,15 @@
 #include <fb/game/handler/protocol/pong.h>
 #include <fb/game/handler/protocol/user_info_submit.h>
 #include <fb/game/handler/protocol/popup_input_submit.h>
+#include <fb/game/handler/protocol/collection.h>
+#include <fb/game/handler/protocol/unknown_54.h>
+#include <fb/game/handler/protocol/browser.h>
+#include <fb/game/handler/protocol/web_map.h>
 
 #include <fb/game/handler/amqp/kick_out.h>
 #include <fb/game/handler/amqp/whisper.h>
+#include <fb/game/handler/amqp/friend_relation.h>
+#include <fb/game/handler/amqp/friend_message.h>
 #include <fb/game/handler/amqp/shutdown.h>
 #include <fb/game/handler/amqp/broadcast.h>
 #include <fb/game/handler/amqp/create_group.h>
@@ -54,6 +60,7 @@
 #include <fb/game/handler/amqp/create_clan.h>
 #include <fb/game/handler/amqp/destroy_clan.h>
 #include <fb/game/handler/amqp/updated_clan.h>
+#include <fb/game/handler/amqp/updated_castle.h>
 #include <fb/game/handler/amqp/broadcast_clan.h>
 #include <fb/game/handler/amqp/write_mail.h>
 #include <fb/game/handler/amqp/write_mails.h>

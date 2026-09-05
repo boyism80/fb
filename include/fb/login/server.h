@@ -16,6 +16,7 @@
 #include <fb/login/session.h>
 #include <fb/login/protocol.h>
 #include <fb/log_collector.h>
+#include <fb/meta_dat_file.h>
 #include <memory>
 #include <string_view>
 
@@ -48,6 +49,7 @@ private:
 
 public:
     fb::log_collector log;
+    fb::meta_dat_file meta;
 
 public:
     server(boost::asio::io_context& io_context, uint16_t port);
@@ -59,7 +61,6 @@ public:
     void assert_account(std::string_view id, std::string_view pw) const;
 
 protected:
-    bool                            decrypt_policy(uint8_t opcode) const override final;
     void                            on_init_amqp(fb::amqp::socket& amqp) override final;
     [[nodiscard]] async::task<void> on_start() override final;
     [[nodiscard]] async::task<void> on_accepted(fb::socket<fb::login::session>& socket) override final;

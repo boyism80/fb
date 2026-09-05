@@ -56,7 +56,8 @@ IF(WIN32)
                                 zlib$<$<CONFIG:Debug>:d>.lib
                                 flatbuffers$<$<CONFIG:Debug>:d>.lib
                                 lua$<$<CONFIG:Debug>:d>.lib
-                                ws2_32)
+                                ws2_32
+                                dbghelp)
 ELSE()
   set(CMAKE_CXX_FLAGS_RELEASE "-O3 -g -fsanitize=address -fstack-protector-strong -fno-omit-frame-pointer -DNDEBUG")
   set(CMAKE_CXX_FLAGS_DEBUG   "-O0 -g -fsanitize=address -fstack-protector-strong -fno-omit-frame-pointer")

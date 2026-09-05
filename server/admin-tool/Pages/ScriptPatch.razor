@@ -163,7 +163,7 @@
                         }
                         else if (selectedWorld.HasValue)
                         {
-                            <strong>World @selectedWorld.Value</strong>
+                            <strong>@GetWorldDisplayName(selectedWorld.Value)</strong>
                         }
                         else
                         {
@@ -206,16 +206,41 @@
     private bool canPublish;
     private int fileInputKey;
     private string currentUserName = "Admin";
+    private Dictionary<uint, string> worldToServerName = new();
 
     [CascadingParameter(Name = "SelectedWorld")]
     private uint? selectedWorld { get; set; }
 
     protected override async Task OnInitializedAsync()
     {
+        LoadWorldNames();
         var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
         var nameClaim = authState.User.FindFirst(ClaimTypes.Name);
         if (!string.IsNullOrEmpty(nameClaim?.Value))
             currentUserName = nameClaim.Value;
+    }
+
+    private void LoadWorldNames()
+    {
+        try
+        {
+            worldToServerName = Configuration.GetSection("WorldServers").GetChildren()
+                .Where(child => uint.TryParse(child.Key, out _))
+                .ToDictionary(
+                    child => uint.Parse(child.Key),
+                    child => child.Value ?? child.Key);
+        }
+        catch
+        {
+            worldToServerName = new Dictionary<uint, string>();
+        }
+    }
+
+    private string GetWorldDisplayName(uint world)
+    {
+        if (worldToServerName.TryGetValue(world, out var name) && !string.IsNullOrWhiteSpace(name))
+            return name;
+        return $"World {world}";
     }
 
     private async Task OnInputFileChange(InputFileChangeEventArgs e)
@@ -400,7 +425,7 @@
             foreach (var world in targetWorlds)
                 await RabbitMqService.PublishAsync(message, "amq.direct", $"fb.{world}.global");
 
-            var targetLabel = applyAllWorlds ? "전체 월드" : $"World {selectedWorld.Value}";
+            var targetLabel = applyAllWorlds ? "전체 월드" : GetWorldDisplayName(selectedWorld.Value);
             var detail = string.Join(", ", orderedPaths);
             await LogService.WriteAsync("script_patch", new
             {
@@ -424,7 +449,7 @@
 
             successMessage = applyAllWorlds
                 ? $"{orderedPaths.Count}개 스크립트를 업로드하고 전체 월드({targetWorlds.Count})에 리로드를 요청했습니다."
-                : $"{orderedPaths.Count}개 스크립트를 업로드하고 World {selectedWorld.Value}에 리로드를 요청했습니다.";
+                : $"{orderedPaths.Count}개 스크립트를 업로드하고 {GetWorldDisplayName(selectedWorld.Value)}에 리로드를 요청했습니다.";
             ClearFiles();
         }
         catch (Exception ex)
@@ -438,7 +463,7 @@
                 Actor = currentUserName,
                 Target = applyAllWorlds
                     ? "전체 월드"
-                    : (selectedWorld.HasValue ? $"World {selectedWorld.Value}" : "unknown"),
+                    : (selectedWorld.HasValue ? GetWorldDisplayName(selectedWorld.Value) : "unknown"),
                 Success = false
             });
         }
@@ -450,17 +475,7 @@
 
     private List<uint> GetWorlds()
     {
-        try
-        {
-            return Configuration.GetSection("WorldServers").GetChildren()
-                .Where(child => uint.TryParse(child.Key, out _))
-                .Select(child => uint.Parse(child.Key))
-                .ToList();
-        }
-        catch
-        {
-            return new List<uint>();
-        }
+        return worldToServerName.Keys.ToList();
     }
 
     private static string FormatSize(long bytes)

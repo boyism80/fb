@@ -39,6 +39,8 @@ console::console()
     if (_system_tty)
     {
 #ifdef _WIN32
+        SetConsoleOutputCP(CP_UTF8);
+        SetConsoleCP(CP_UTF8);
         auto hwnd   = GetStdHandle(STD_OUTPUT_HANDLE);
         auto screen = CONSOLE_SCREEN_BUFFER_INFO{};
         GetConsoleScreenBufferInfo(hwnd, &screen);

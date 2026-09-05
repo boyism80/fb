@@ -2,6 +2,7 @@
 #define __PROTOCOL_GAME_GROUP_H__
 
 #include <fb/protocol/header.h>
+#include <fb/protocol/client_version.h>
 #include <fb/model/model.h>
 #include <string_view>
 
@@ -9,10 +10,12 @@ namespace fb::protocol::game::request {
 
 using namespace fb::model::enum_value;
 
+template <CLIENT_VERSION V>
 class group : public fb::protocol::header
 {
 public:
     static constexpr uint8_t opcode = 0x2E;
+    FB_PROTOCOL_VERSION_TAGS(V);
 
 public:
 #ifndef BOT
@@ -25,9 +28,7 @@ public:
 #ifndef BOT
     group() = default;
 #else
-    group(std::string_view name) :
-        name(std::string(name))
-    { }
+    group(std::string_view name);
 #endif
 
 public:

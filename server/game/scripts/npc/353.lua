@@ -54,11 +54,12 @@ local function run_material_list(me, npc)
         return
     end
     q:step(1)
+    require('lib.festival').stamp_lunar_year(q)
     me:dialog(npc, "그런데.. 섣달집의 선릉이를 조심하셔야 되요. 이 녀석은 발명한답시고 잡동사니들을 모으는 녀석이라..\n\n부탁드리겠습니다. 감사합니다~", { prev = false, next = true })
 end
 
 local function run_hand_in(me, npc)
-    local q = me:quest(quest.QUEST_BAEK_MONGYEON)
+    local q = quest.get_annual(me, quest.QUEST_BAEK_MONGYEON)
     if q == nil or q:completed() then
         return
     end
@@ -142,6 +143,7 @@ local function run_hand_in(me, npc)
             return
         end
         q:complete()
+        require('lib.festival').mark_completed_year(q)
         me:dialog(npc, "다 받아오셨군요! 감사합니다!!", { prev = false, next = true })
         me:dialog(npc, "감사합니다.. 보답으로 제가 만든 부적과 비서를 드릴께요.", { prev = false, next = true })
         me:dialog(npc, "중화절부적은.. 가지고 있으면 옷이나 몸에 벼룩같은 벌레가 들지 말라고 가지고 다니는거구요, 일년동안 가지고 계시면 좋은일이 생길꺼에요.", { prev = false, next = true })
@@ -158,11 +160,11 @@ return {
             return
         end
 
-        if property("sesi_rightnow") ~= 2 then
+        if not require('lib.festival').is('중화절') then
             return
         end
 
-        local q = me:quest(quest.QUEST_BAEK_MONGYEON)
+        local q = quest.get_annual(me, quest.QUEST_BAEK_MONGYEON)
 
         ::NPC_353_0002::
         local sel, list_btn = me:list(npc, "안녕하세요?", {

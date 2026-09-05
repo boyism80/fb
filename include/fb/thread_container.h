@@ -162,36 +162,23 @@ public:
 
         if (this->retry_count == 0 && target_thread->id() == std::this_thread::get_id())
         {
-            auto promise    = std::make_shared<async::task_completion_source<T>>();
-            auto need_yield = false;
-            try
+            // Same-thread fast path. Do not use suspend_always on errors:
+            // nothing resumes it, so the caller coroutine would hang forever
+            // with no exception propagation (and no logs).
+            if (when_fn(*target_thread) == false)
+                throw std::runtime_error("condition not satisfied");
+
+            execution_context::pending(this->context);
+
+            if constexpr (std::is_same_v<T, void>)
             {
-                if (when_fn(*target_thread) == false)
-                    throw std::runtime_error("condition not satisfied");
-
-                execution_context::pending(this->context);
-
-                if constexpr (std::is_same_v<T, void>)
-                {
-                    co_await this->func(*target_thread);
-                    promise->set_value();
-                }
-                else
-                {
-                    auto value = co_await this->func(*target_thread);
-                    promise->set_value(std::move(value));
-                }
-                co_return co_await promise->task();
+                co_await this->func(*target_thread);
+                co_return;
             }
-            catch (...)
+            else
             {
-                promise->set_exception(std::make_exception_ptr(std::current_exception()));
-                need_yield = true;
+                co_return co_await this->func(*target_thread);
             }
-
-            if (need_yield)
-                co_await std::suspend_always{};
-            co_return co_await promise->task();
         }
 
         auto fn_holder    = std::make_shared<thread::handle_func_type<T>>(std::move(this->func));

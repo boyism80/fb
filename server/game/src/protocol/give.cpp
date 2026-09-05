@@ -3,7 +3,23 @@
 namespace fb::protocol::game::request {
 
 #ifdef BOT
-void give_item::serialize(fb::stream_writer<big_endian>& writer) const
+template <CLIENT_VERSION V>
+give_item<V>::give_item(uint8_t slot, bool all) :
+    slot(slot),
+    all(all)
+{ }
+#endif
+
+#ifdef BOT
+template <CLIENT_VERSION V>
+give_money<V>::give_money(uint32_t money) :
+    money(money)
+{ }
+#endif
+
+#ifdef BOT
+template <CLIENT_VERSION V>
+void give_item<V>::serialize(fb::stream_writer<big_endian>& writer) const
 {
     header::serialize(writer);
     writer.write<uint8_t>(opcode);
@@ -11,7 +27,8 @@ void give_item::serialize(fb::stream_writer<big_endian>& writer) const
     writer.write<bool>(this->all);
 }
 #else
-void give_item::deserialize(fb::stream_reader<big_endian>& reader)
+template <CLIENT_VERSION V>
+void give_item<V>::deserialize(fb::stream_reader<big_endian>& reader)
 {
     header::deserialize(reader);
     this->slot = reader.read<uint8_t>() - 1;
@@ -20,17 +37,27 @@ void give_item::deserialize(fb::stream_reader<big_endian>& reader)
 #endif
 
 #ifdef BOT
-void give_money::serialize(fb::stream_writer<big_endian>& writer) const
+template <CLIENT_VERSION V>
+void give_money<V>::serialize(fb::stream_writer<big_endian>& writer) const
 {
     header::serialize(writer);
     writer.write<uint8_t>(opcode);
     writer.write<uint32_t>(this->money);
 }
 #else
-void give_money::deserialize(fb::stream_reader<big_endian>& reader)
+template <CLIENT_VERSION V>
+void give_money<V>::deserialize(fb::stream_reader<big_endian>& reader)
 {
     header::deserialize(reader);
     this->money = reader.read<uint32_t>();
 }
 #endif
+
+template class give_item<CLIENT_VERSION::v550>;
+template class give_item<CLIENT_VERSION::v565>;
+template class give_item<CLIENT_VERSION::v651>;
+template class give_money<CLIENT_VERSION::v550>;
+template class give_money<CLIENT_VERSION::v565>;
+template class give_money<CLIENT_VERSION::v651>;
+
 } // namespace fb::protocol::game::request

@@ -36,6 +36,15 @@ configMapGenerator:
   - name: game-dev-0
     files:
       - config.json=config/game-dev-0/config.json
+  - name: game-cross-200
+    files:
+      - config.json=config/game-cross-200/config.json
+  - name: game-cross-201
+    files:
+      - config.json=config/game-cross-201/config.json
+  - name: game-cross-202
+    files:
+      - config.json=config/game-cross-202/config.json
 
 images:
   - name: fb/internal
@@ -64,4 +73,7 @@ images:
     newTag: local
   - name: fb/game
     newName: fb/game
+    newTag: local
+  - name: fb/crash-watch
+    newName: fb/crash-watch
     newTag: local

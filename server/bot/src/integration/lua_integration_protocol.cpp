@@ -18,6 +18,9 @@
 #include <unordered_set>
 #include <vector>
 
+// The bot speaks the v550 C2S layout; versioned requests are instantiated for it.
+constexpr auto BOT_CLIENT_VERSION = fb::protocol::CLIENT_VERSION::v550;
+
 namespace fb::bot::integration::lua_protocol {
 
 namespace {
@@ -319,112 +322,202 @@ int lua_builder_dialog(lua_State* L)
 
     if (type_name == "NORMAL" || type_name == "TEXT")
     {
-        push_request(L, std::make_shared<game_reqs::dialog_list>(list_type::TEXT, action, message, index, button));
+        push_request(L,
+                     std::make_shared<game_reqs::dialog_list<BOT_CLIENT_VERSION>>(list_type::TEXT,
+                                                                                  action,
+                                                                                  message,
+                                                                                  index,
+                                                                                  button));
         return 1;
     }
     else if (type_name == "TEXT_NO_MSG" || type_name == "NORMAL_NO_MSG")
     {
         push_request(L,
-                     std::make_shared<game_reqs::dialog_list>(list_type::TEXT_NO_MSG, action, message, index, button));
+                     std::make_shared<game_reqs::dialog_list<BOT_CLIENT_VERSION>>(list_type::TEXT_NO_MSG,
+                                                                                  action,
+                                                                                  message,
+                                                                                  index,
+                                                                                  button));
         return 1;
     }
     else if (type_name == "LIST")
     {
-        push_request(L, std::make_shared<game_reqs::dialog_list>(list_type::LIST, action, message, index, button));
+        push_request(L,
+                     std::make_shared<game_reqs::dialog_list<BOT_CLIENT_VERSION>>(list_type::LIST,
+                                                                                  action,
+                                                                                  message,
+                                                                                  index,
+                                                                                  button));
         return 1;
     }
     else if (type_name == "LIST_NO_MSG")
     {
         push_request(L,
-                     std::make_shared<game_reqs::dialog_list>(list_type::LIST_NO_MSG, action, message, index, button));
+                     std::make_shared<game_reqs::dialog_list<BOT_CLIENT_VERSION>>(list_type::LIST_NO_MSG,
+                                                                                  action,
+                                                                                  message,
+                                                                                  index,
+                                                                                  button));
         return 1;
     }
     else if (type_name == "INPUT_EX" || type_name == "INPUT_EXT")
     {
-        push_request(L, std::make_shared<game_reqs::dialog_list>(list_type::INPUT, action, message, index, button));
+        push_request(L,
+                     std::make_shared<game_reqs::dialog_list<BOT_CLIENT_VERSION>>(list_type::INPUT,
+                                                                                  action,
+                                                                                  message,
+                                                                                  index,
+                                                                                  button));
         return 1;
     }
     else if (type_name == "INPUT_EXT_NO_MSG")
     {
         push_request(L,
-                     std::make_shared<game_reqs::dialog_list>(list_type::INPUT_NO_MSG, action, message, index, button));
+                     std::make_shared<game_reqs::dialog_list<BOT_CLIENT_VERSION>>(list_type::INPUT_NO_MSG,
+                                                                                  action,
+                                                                                  message,
+                                                                                  index,
+                                                                                  button));
         return 1;
     }
     else if (type_name == "INPUT_PASSWORD")
     {
-        push_request(
-            L,
-            std::make_shared<game_reqs::dialog_list>(list_type::INPUT_PASSWORD, action, message, index, button));
+        push_request(L,
+                     std::make_shared<game_reqs::dialog_list<BOT_CLIENT_VERSION>>(list_type::INPUT_PASSWORD,
+                                                                                  action,
+                                                                                  message,
+                                                                                  index,
+                                                                                  button));
         return 1;
     }
     else if (type_name == "INPUT_PASSWORD_NO_MSG")
     {
-        push_request(
-            L,
-            std::make_shared<game_reqs::dialog_list>(list_type::INPUT_PASSWORD_NO_MSG, action, message, index, button));
+        push_request(L,
+                     std::make_shared<game_reqs::dialog_list<BOT_CLIENT_VERSION>>(list_type::INPUT_PASSWORD_NO_MSG,
+                                                                                  action,
+                                                                                  message,
+                                                                                  index,
+                                                                                  button));
         return 1;
     }
     else if (type_name == "EMAIL")
     {
-        push_request(L, std::make_shared<game_reqs::dialog_list>(list_type::EMAIL, action, message, index, button));
+        push_request(L,
+                     std::make_shared<game_reqs::dialog_list<BOT_CLIENT_VERSION>>(list_type::EMAIL,
+                                                                                  action,
+                                                                                  message,
+                                                                                  index,
+                                                                                  button));
         return 1;
     }
     else if (type_name == "LOOK")
     {
         // LOOK ACK uses the same TEXT button layout on the wire.
-        push_request(L, std::make_shared<game_reqs::dialog_list>(list_type::TEXT, action, message, index, button));
+        push_request(L,
+                     std::make_shared<game_reqs::dialog_list<BOT_CLIENT_VERSION>>(list_type::TEXT,
+                                                                                  action,
+                                                                                  message,
+                                                                                  index,
+                                                                                  button));
         return 1;
     }
     else if (type_name == "MENU")
     {
-        push_request(L, std::make_shared<game_reqs::dialog>(dialog_type::MENU, action, message, index, pursuit, name));
+        push_request(L,
+                     std::make_shared<game_reqs::dialog<BOT_CLIENT_VERSION>>(dialog_type::MENU,
+                                                                             action,
+                                                                             message,
+                                                                             index,
+                                                                             pursuit,
+                                                                             name));
         return 1;
     }
     else if (type_name == "MENU_NO_EXT")
     {
-        push_request(
-            L,
-            std::make_shared<game_reqs::dialog>(dialog_type::MENU_NO_EXT, action, message, index, pursuit, name));
+        push_request(L,
+                     std::make_shared<game_reqs::dialog<BOT_CLIENT_VERSION>>(dialog_type::MENU_NO_EXT,
+                                                                             action,
+                                                                             message,
+                                                                             index,
+                                                                             pursuit,
+                                                                             name));
         return 1;
     }
     else if (type_name == "INPUT")
     {
-        push_request(
-            L,
-            std::make_shared<game_reqs::dialog>(dialog_type::INPUT_NO_EXT, action, message, index, pursuit, name));
+        push_request(L,
+                     std::make_shared<game_reqs::dialog<BOT_CLIENT_VERSION>>(dialog_type::INPUT_NO_EXT,
+                                                                             action,
+                                                                             message,
+                                                                             index,
+                                                                             pursuit,
+                                                                             name));
         return 1;
     }
     else if (type_name == "INPUT_EXT_2F" || type_name == "INPUT_WITH_EXT")
     {
-        push_request(L, std::make_shared<game_reqs::dialog>(dialog_type::INPUT, action, message, index, pursuit, name));
+        push_request(L,
+                     std::make_shared<game_reqs::dialog<BOT_CLIENT_VERSION>>(dialog_type::INPUT,
+                                                                             action,
+                                                                             message,
+                                                                             index,
+                                                                             pursuit,
+                                                                             name));
         return 1;
     }
     else if (type_name == "SLOT")
     {
-        push_request(L, std::make_shared<game_reqs::dialog>(dialog_type::SLOT, action, message, index, pursuit, name));
+        push_request(L,
+                     std::make_shared<game_reqs::dialog<BOT_CLIENT_VERSION>>(dialog_type::SLOT,
+                                                                             action,
+                                                                             message,
+                                                                             index,
+                                                                             pursuit,
+                                                                             name));
         return 1;
     }
     else if (type_name == "SPELL")
     {
-        push_request(L, std::make_shared<game_reqs::dialog>(dialog_type::SPELL, action, message, index, pursuit, name));
+        push_request(L,
+                     std::make_shared<game_reqs::dialog<BOT_CLIENT_VERSION>>(dialog_type::SPELL,
+                                                                             action,
+                                                                             message,
+                                                                             index,
+                                                                             pursuit,
+                                                                             name));
         return 1;
     }
     else if (type_name == "ITEM")
     {
-        push_request(L, std::make_shared<game_reqs::dialog>(dialog_type::ITEM, action, message, index, pursuit, name));
+        push_request(L,
+                     std::make_shared<game_reqs::dialog<BOT_CLIENT_VERSION>>(dialog_type::ITEM,
+                                                                             action,
+                                                                             message,
+                                                                             index,
+                                                                             pursuit,
+                                                                             name));
         return 1;
     }
     else if (type_name == "PURSUIT")
     {
         push_request(L,
-                     std::make_shared<game_reqs::dialog>(dialog_type::PURSUIT, action, message, index, pursuit, name));
+                     std::make_shared<game_reqs::dialog<BOT_CLIENT_VERSION>>(dialog_type::PURSUIT,
+                                                                             action,
+                                                                             message,
+                                                                             index,
+                                                                             pursuit,
+                                                                             name));
         return 1;
     }
     else if (type_name == "DUAL_FIELD")
     {
-        push_request(
-            L,
-            std::make_shared<game_reqs::dialog>(dialog_type::DUAL_FIELD, action, message, index, pursuit, name));
+        push_request(L,
+                     std::make_shared<game_reqs::dialog<BOT_CLIENT_VERSION>>(dialog_type::DUAL_FIELD,
+                                                                             action,
+                                                                             message,
+                                                                             index,
+                                                                             pursuit,
+                                                                             name));
         return 1;
     }
     else
@@ -440,7 +533,7 @@ int lua_builder_trade(lua_State* L)
         auto& lua = require_lua(L);
 
         namespace game_reqs = fb::protocol::game::request;
-        using trade_state   = game_reqs::trade::state;
+        using trade_state   = game_reqs::trade<BOT_CLIENT_VERSION>::state;
 
         static const std::unordered_map<std::string_view, trade_state> states = {
             {"REQUEST",    trade_state::REQUEST   },
@@ -463,7 +556,7 @@ int lua_builder_trade(lua_State* L)
 
         fb::logger::debug("protocol.trade action={} oid={}", action_name, oid);
 
-        game_reqs::trade::params parameter{};
+        game_reqs::trade<BOT_CLIENT_VERSION>::params parameter{};
         if (lua.argc() >= 3 && lua.is_nil(3) == false)
         {
             if (lua.is_table(3) == false)
@@ -485,7 +578,7 @@ int lua_builder_trade(lua_State* L)
             lua.pop(1);
         }
 
-        push_request(L, std::make_shared<game_reqs::trade>(i->second, oid, parameter));
+        push_request(L, std::make_shared<game_reqs::trade<BOT_CLIENT_VERSION>>(i->second, oid, parameter));
         return 1;
     }
     catch (const std::exception& e)
@@ -525,7 +618,7 @@ int lua_builder_move(lua_State* L)
         position.y = static_cast<uint16_t>(lua.tointeger(4));
     }
 
-    push_request(L, std::make_shared<game_reqs::move>(direction, walk_queue_slot, position));
+    push_request(L, std::make_shared<game_reqs::move<BOT_CLIENT_VERSION>>(direction, walk_queue_slot, position));
     return 1;
 }
 
@@ -537,7 +630,7 @@ void register_manual_builders(lua_State* L)
     lua_pushcfunction(L, [](lua_State* L) -> int {
         auto& lua   = require_lua(L);
         auto  value = static_cast<uint8_t>(lua.tointeger(1));
-        push_request(L, std::make_shared<game_reqs::emotion>(value));
+        push_request(L, std::make_shared<game_reqs::emotion<BOT_CLIENT_VERSION>>(value));
         return 1;
     });
     lua_setfield(L, -2, "emotion");
@@ -546,7 +639,7 @@ void register_manual_builders(lua_State* L)
         auto& lua     = require_lua(L);
         auto  shout   = lua.toboolean(1);
         auto  message = lua.tostring(2);
-        push_request(L, std::make_shared<game_reqs::chat>(shout, message));
+        push_request(L, std::make_shared<game_reqs::chat<BOT_CLIENT_VERSION>>(shout, message));
         return 1;
     });
     lua_setfield(L, -2, "chat");
@@ -560,7 +653,14 @@ void register_manual_builders(lua_State* L)
         auto  title    = lua.argc() >= 5 && lua.is_nil(5) == false ? lua.tostring(5) : std::string{};
         auto  contents = lua.argc() >= 6 && lua.is_nil(6) == false ? lua.tostring(6) : std::string{};
         auto  user     = lua.argc() >= 7 && lua.is_nil(7) == false ? lua.tostring(7) : std::string{};
-        push_request(L, std::make_shared<game_reqs::bulletin>(action, section, article, offset, title, contents, user));
+        push_request(L,
+                     std::make_shared<game_reqs::bulletin<BOT_CLIENT_VERSION>>(action,
+                                                                               section,
+                                                                               article,
+                                                                               offset,
+                                                                               title,
+                                                                               contents,
+                                                                               user));
         return 1;
     });
     lua_setfield(L, -2, "bulletin");
@@ -571,7 +671,7 @@ void register_manual_builders(lua_State* L)
     lua_pushcfunction(L, [](lua_State* L) -> int {
         auto&      lua   = require_lua(L);
         const auto boost = lua.toboolean(1);
-        push_request(L, std::make_shared<game_reqs::loot>(boost));
+        push_request(L, std::make_shared<game_reqs::loot<BOT_CLIENT_VERSION>>(boost));
         return 1;
     });
     lua_setfield(L, -2, "loot");
@@ -585,8 +685,8 @@ void register_manual_builders(lua_State* L)
     lua_pushcfunction(L, [](lua_State* L) -> int {
         auto& lua  = require_lua(L);
         auto  oid  = static_cast<uint32_t>(lua.tointeger(1));
-        auto  flag = static_cast<uint8_t>(lua.tointeger(2, game_reqs::click::FLAG_OBJECT));
-        push_request(L, std::make_shared<game_reqs::click>(oid, flag));
+        auto  flag = static_cast<uint8_t>(lua.tointeger(2, game_reqs::click<BOT_CLIENT_VERSION>::FLAG_OBJECT));
+        push_request(L, std::make_shared<game_reqs::click<BOT_CLIENT_VERSION>>(oid, flag));
         return 1;
     });
     lua_setfield(L, -2, "click");
@@ -611,7 +711,7 @@ void register_manual_builders(lua_State* L)
             lua.pop(1);
         }
 
-        push_request(L, std::make_shared<game_reqs::item_combine>(indices));
+        push_request(L, std::make_shared<game_reqs::item_combine<BOT_CLIENT_VERSION>>(indices));
         return 1;
     });
     lua_setfield(L, -2, "item_combine");

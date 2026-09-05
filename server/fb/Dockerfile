@@ -64,6 +64,11 @@ WORKDIR /app
 RUN git clone https://github.com/cjgdev/aho_corasick /app/aho_corasick
 RUN cp -r /app/aho_corasick/src/aho_corasick /usr/local/include/aho_corasick
 
+# No pinned ref in update-modules.bat; tracks default branch. Header-only.
+WORKDIR /app
+RUN git clone https://github.com/mariusbancila/croncpp /app/croncpp
+RUN cp /app/croncpp/include/croncpp.h /usr/local/include/croncpp.h
+
 WORKDIR /app
 RUN git clone --branch ${BOOST_REF} https://github.com/boostorg/boost /app/boost
 WORKDIR /app/boost

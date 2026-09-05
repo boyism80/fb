@@ -3,29 +3,41 @@
 namespace fb::protocol::game::response {
 
 #ifndef BOT
-dialog_slot::dialog_slot(const fb::model::object&    obj,
-                         const std::vector<uint8_t>& slots,
-                         std::string_view            message,
-                         uint32_t                    oid) :
-    appearance(fb::game::appearance_factory::create(obj)),
+template <CLIENT_VERSION V>
+dialog_slot<V>::dialog_slot(const fb::model::object&    obj,
+                            const std::vector<uint8_t>& slots,
+                            std::string_view            message,
+                            uint32_t                    oid) :
+    appearance(fb::game::appearance_factory::create<V>(obj)),
     slots(slots),
     message(std::string(message)),
     oid(oid)
 { }
 
-dialog_slot::dialog_slot(const fb::game::object&     object,
-                         const std::vector<uint8_t>& slots,
-                         std::string_view            message,
-                         uint32_t                    oid) :
-    appearance(fb::game::appearance_factory::create(object)),
+template <CLIENT_VERSION V>
+dialog_slot<V>::dialog_slot(const fb::game::object&     object,
+                            const std::vector<uint8_t>& slots,
+                            std::string_view            message,
+                            uint32_t                    oid) :
+    appearance(fb::game::appearance_factory::create<V>(object)),
     slots(slots),
     message(std::string(message)),
     oid(oid)
 { }
-#endif
 
-#ifndef BOT
-void dialog_slot::serialize(fb::stream_writer<big_endian>& writer) const
+template <CLIENT_VERSION V>
+dialog_slot<V>::dialog_slot(appearance_ptr&&            appearance,
+                            const std::vector<uint8_t>& slots,
+                            std::string_view            message,
+                            uint32_t                    oid) :
+    appearance(std::move(appearance)),
+    slots(slots),
+    message(std::string(message)),
+    oid(oid)
+{ }
+
+template <CLIENT_VERSION V>
+void dialog_slot<V>::serialize(fb::stream_writer<big_endian>& writer) const
 {
     constexpr auto type_value = static_cast<uint8_t>(type);
 
@@ -44,6 +56,32 @@ void dialog_slot::serialize(fb::stream_writer<big_endian>& writer) const
         writer.write<uint8_t>(slot);
     }
 }
+
+template <>
+void dialog_slot<CLIENT_VERSION::v651>::serialize(fb::stream_writer<big_endian>& writer) const
+{
+    constexpr auto type_value = static_cast<uint8_t>(type);
+
+    header::serialize(writer);
+    writer.write<uint8_t>(opcode);
+    writer.write<uint8_t>(type_value);
+    writer.write<uint8_t>(type_value);
+    writer.write<uint32_t>(this->oid);
+    this->appearance->serialize(writer);
+    writer.write<uint32_t>(0);
+    writer.write<std::string, uint16_t>(this->message);
+    writer.write<uint16_t>(0xFFFF);
+    writer.write<uint8_t>((uint8_t)this->slots.size());
+
+    for (auto slot : this->slots)
+    {
+        writer.write<uint8_t>(slot);
+    }
+}
+
+template class dialog_slot<CLIENT_VERSION::v550>;
+template class dialog_slot<CLIENT_VERSION::v565>;
+template class dialog_slot<CLIENT_VERSION::v651>;
 #else
 void dialog_slot::deserialize(fb::stream_reader<big_endian>& reader)
 {

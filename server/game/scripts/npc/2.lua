@@ -129,22 +129,19 @@ end
 
 return {
     on_click = function(me, npc)
-        local OPT_PALGU = '팔괘'
-        local OPT_WATER = '순수한물'
-        local OPT_AMBER = '황금호박무기만들기'
-        local sel, btn = me:pursuit(npc, '안녕하세요. 어떻게 오셨나요?', { OPT_PALGU, OPT_WATER, OPT_AMBER })
+        local sel, btn = me:pursuit(npc, '안녕하세요. 어떻게 오셨나요?', { '팔괘', '순수한물', '황금호박무기만들기' })
         if btn == DIALOG_RESULT.QUIT then
             return
         end
-        if sel == OPT_PALGU then
+        if sel == 1 then
             ranggyuryun_palgu(me, npc)
             return
         end
-        if sel == OPT_WATER then
+        if sel == 2 then
             ranggyuryun_pure_water(me, npc)
             return
         end
-        if sel == OPT_AMBER then
+        if sel == 3 then
             ranggyuryun_golden_amber(me, npc)
         end
     end

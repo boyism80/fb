@@ -2,15 +2,17 @@
 #include <fb/game/server.h>
 #include <tuple>
 
-using namespace fb::game::handler::protocol;
-
 namespace game_reqs = fb::protocol::game::request;
 
-swap::swap(fb::game::server& server) :
-    fb::handler::protocol<fb::game::server, game_reqs::swap>(server)
+namespace fb::game::handler::protocol {
+
+template <fb::protocol::CLIENT_VERSION V>
+swap<V>::swap(fb::game::server& server) :
+    fb::handler::protocol<fb::game::server, game_reqs::swap<V>>(server)
 { }
 
-async::task<bool> swap::handle(fb::socket<character>& session, game_reqs::swap& request)
+template <fb::protocol::CLIENT_VERSION V>
+async::task<bool> swap<V>::handle(fb::socket<character>& session, game_reqs::swap<V>& request)
 {
     auto ch = session.data();
     if (ch->inited() == false)
@@ -35,3 +37,9 @@ async::task<bool> swap::handle(fb::socket<character>& session, game_reqs::swap& 
     }
     co_return true;
 }
+
+template class swap<fb::protocol::CLIENT_VERSION::v550>;
+template class swap<fb::protocol::CLIENT_VERSION::v565>;
+template class swap<fb::protocol::CLIENT_VERSION::v651>;
+
+} // namespace fb::game::handler::protocol

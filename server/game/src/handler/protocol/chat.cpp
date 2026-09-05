@@ -3,15 +3,17 @@
 #include <fb/encoding.h>
 #include <json/json.h>
 
-using namespace fb::game::handler::protocol;
-
 namespace game_reqs = fb::protocol::game::request;
 
-chat::chat(fb::game::server& server) :
-    fb::handler::protocol<fb::game::server, game_reqs::chat>(server)
+namespace fb::game::handler::protocol {
+
+template <fb::protocol::CLIENT_VERSION V>
+chat<V>::chat(fb::game::server& server) :
+    fb::handler::protocol<fb::game::server, game_reqs::chat<V>>(server)
 { }
 
-async::task<bool> chat::handle(fb::socket<character>& session, game_reqs::chat& request)
+template <fb::protocol::CLIENT_VERSION V>
+async::task<bool> chat<V>::handle(fb::socket<character>& session, game_reqs::chat<V>& request)
 {
     auto ch = session.data();
     if (ch->inited() == false)
@@ -22,7 +24,7 @@ async::task<bool> chat::handle(fb::socket<character>& session, game_reqs::chat& 
     if (map == nullptr)
         co_return true;
 
-    if (ch->role() == ROLE::USER && ENUM_IN(map->model.option, MAP_OPTION::DISABLE_TALK))
+    if (ch->role() == ROLE::USER && ENUM_IN(map->model().option, MAP_OPTION::DISABLE_TALK))
         co_return true;
 
     if (co_await try_command(ch, weak, request))
@@ -37,7 +39,8 @@ async::task<bool> chat::handle(fb::socket<character>& session, game_reqs::chat& 
     co_return true;
 }
 
-async::task<bool> chat::try_command(character* ch, std::weak_ptr<character> weak, game_reqs::chat& request)
+template <fb::protocol::CLIENT_VERSION V>
+async::task<bool> chat<V>::try_command(character* ch, std::weak_ptr<character> weak, game_reqs::chat<V>& request)
 {
     auto lua = this->server.lua.open("scripts/interaction.lua", "on_chat", nullptr, {.auto_release = false});
     if (!lua)
@@ -74,12 +77,13 @@ async::task<bool> chat::try_command(character* ch, std::weak_ptr<character> weak
     log_data["command"]        = UTF8(request.message, PLATFORM::WINDOWS);
     auto map                   = ptr->map();
     if (map != nullptr)
-        log_data["map"] = map->model.id;
+        log_data["map"] = map->model().id;
     this->server.log.write("command_execute", log_data);
     co_return true;
 }
 
-void chat::handle_normal_chat(character* ch, game_reqs::chat& request, const std::shared_ptr<fb::game::map>& map)
+template <fb::protocol::CLIENT_VERSION V>
+void chat<V>::handle_normal_chat(character* ch, game_reqs::chat<V>& request, const std::shared_ptr<fb::game::map>& map)
 {
     if (map == nullptr)
         return;
@@ -93,6 +97,12 @@ void chat::handle_normal_chat(character* ch, game_reqs::chat& request, const std
     log_data["character_name"] = UTF8(ch->name(), PLATFORM::WINDOWS);
     log_data["message"]        = UTF8(message, PLATFORM::WINDOWS);
     log_data["chat_type"]      = request.shout ? "shout" : "normal";
-    log_data["map"]            = map->model.id;
+    log_data["map"]            = map->model().id;
     this->server.log.write("chat", log_data);
 }
+
+template class chat<fb::protocol::CLIENT_VERSION::v550>;
+template class chat<fb::protocol::CLIENT_VERSION::v565>;
+template class chat<fb::protocol::CLIENT_VERSION::v651>;
+
+} // namespace fb::game::handler::protocol

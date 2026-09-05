@@ -83,6 +83,12 @@ namespace Http.Service
             await PublishAsync(exchangeName, routeKey, bytes, persistent: false, cancellationToken);
         }
 
+        public async Task PublishFanoutAsync(IFlatBufferEx protocol, string topic, uint homeWorld, CancellationToken cancellationToken = default)
+        {
+            foreach (var key in AmqpRoute.Fanout(topic, homeWorld))
+                await PublishAsync(protocol, AmqpRoute.Exchange, key, cancellationToken);
+        }
+
         public async Task PublishAsync(string exchangeName, string routingKey, byte[] body, bool persistent = true, CancellationToken cancellationToken = default)
         {
             if (body == null || body.Length == 0)

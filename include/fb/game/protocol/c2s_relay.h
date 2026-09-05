@@ -9,10 +9,6 @@ namespace fb::protocol::game::response {
 
 using namespace fb::model::enum_value;
 
-/**
- * S2C 0x4B — client relays the payload bytes back as a C2S packet (no opcode prefix added).
- * Payload first byte is typically a C2S opcode. Stack buffer on client is ~10000 bytes.
- */
 class c2s_relay : public fb::protocol::header
 {
 public:
@@ -27,9 +23,7 @@ public:
 
 public:
 #ifndef BOT
-    explicit c2s_relay(std::string_view payload) :
-        payload(std::string(payload))
-    { }
+    explicit c2s_relay(std::string_view payload);
 #else
     c2s_relay() = default;
 #endif

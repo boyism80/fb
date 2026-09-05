@@ -3,6 +3,12 @@
 namespace fb::protocol::game::response {
 
 #ifndef BOT
+ping::ping(uint32_t value) :
+    value(value)
+{ }
+#endif
+
+#ifndef BOT
 void ping::serialize(fb::stream_writer<big_endian>& writer) const
 {
     header::serialize(writer);

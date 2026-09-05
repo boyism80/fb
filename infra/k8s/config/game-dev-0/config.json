@@ -1,6 +1,7 @@
 {
     "id": 0,
     "name": "game-dev-0",
+    "role": "home",
     "world": 1,
     "delay": 5,
     "ip": "127.0.0.1",
@@ -16,6 +17,10 @@
     },
     "marketplace": {
         "ip": "marketplace",
+        "port": 80
+    },
+    "matchmaking": {
+        "ip": "matchmaking",
         "port": 80
     },
     "login": {
@@ -46,5 +51,7 @@
     "drop_rate_multiplier": 1.0,
     "http": {
         "max_concurrent": 128
-    }
+    },
+    "meta_dat": "Meta.dat",
+    "sobj_tbl": "SObj.tbl"
 }

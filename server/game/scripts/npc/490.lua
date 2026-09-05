@@ -177,20 +177,18 @@ end
 
 return {
     on_click = function(me, npc)
-        local OPT_WEDDING = '웨딩드레스특별판매'
-        local OPT_WING = '가릉빈가의날개옷교환'
         local sel, btn = me:pursuit(npc, "안녕하세요. 어떻게 오셨나요?", {
-            OPT_WEDDING,
-            OPT_WING,
+            '웨딩드레스특별판매',
+            '가릉빈가의날개옷교환',
         })
         if btn == DIALOG_RESULT.QUIT then
             return
         end
-        if sel == OPT_WEDDING then
+        if sel == 1 then
             run_wedding_dress_sale(me, npc)
             return
         end
-        if sel == OPT_WING then
+        if sel == 2 then
             run_garimbin_wing_exchange(me, npc)
             return
         end

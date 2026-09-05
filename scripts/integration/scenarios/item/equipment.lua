@@ -28,7 +28,7 @@ function run(ctx, index)
                     return false
                 end
 
-                bot:apply_item_condition(entry.name)
+                bot:item_condition(entry.name)
                 if bot:equip(0) == false then
                     log("fatal", string.format("[%d] Equip failed: %s (condition applied)", seq + 1, entry.name))
                     return false

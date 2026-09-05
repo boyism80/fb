@@ -13,6 +13,7 @@ IMPLEMENT_LUA_EXTENSION(fb::model::map, "fb.model.map")
 {"cardinal",            builtin::model::map::builtin_cardinal},
 {"revive",              builtin::model::map::builtin_revive},
 {"option",              builtin::model::map::builtin_option},
+{"siege_castle",        builtin::model::map::builtin_siege_castle},
 {"clone",               builtin::model::map::builtin_clone},
 {"instance",            builtin::model::map::builtin_instance},
 {"instance_rule",       builtin::model::map::builtin_instance_rule},
@@ -166,6 +167,22 @@ int builtin::model::map::builtin_option(lua_State* L)
         return 0;
 
     lua->pushinteger(map->option);
+    return 1;
+}
+
+int builtin::model::map::builtin_siege_castle(lua_State* L)
+{
+    auto lua = fb::lua::get(L);
+    if (lua == nullptr)
+        return 0;
+    auto map = lua->touserdata<fb::model::map>(1);
+    if (map == nullptr)
+        return 0;
+
+    if (map->siege_castle.has_value() == false)
+        return 0;
+
+    lua->pushinteger(static_cast<uint32_t>(map->siege_castle.value()));
     return 1;
 }
 

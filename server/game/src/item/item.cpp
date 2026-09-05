@@ -12,13 +12,18 @@ item::item(fb::game::server& server, const fb::model::item& model, const initial
 { }
 
 item::item(const item& right) :
-    object(right.server, right._model, initial_params{.count = right._count, .expire_time = right.expire_time}),
+    object(right.server, right.model(), initial_params{.count = right._count, .expire_time = right.expire_time}),
     listener(right.listener),
     expire_time(right.expire_time)
 { }
 
 item::~item()
 { }
+
+const fb::model::item& item::model() const
+{
+    return fb::model::table::item[this->_model_id];
+}
 
 std::shared_ptr<fb::game::character> item::owner() const
 {
@@ -55,7 +60,7 @@ async::task<bool> item::map(std::shared_ptr<fb::game::map>      map,
 std::string item::tip_message() const
 {
     std::stringstream sstream;
-    auto&             model = this->based<fb::model::item>();
+    auto&             model = this->model();
 
     sstream << "가격: " << model.price;
     const std::string& desc = model.desc;
@@ -66,7 +71,7 @@ std::string item::tip_message() const
 
 std::string item::inven_name() const
 {
-    auto& model = this->based<fb::model::item>();
+    auto& model = this->model();
     auto  count = this->_count - this->_trade_count;
     if (model.attr(ITEM_ATTRIBUTE::BUNDLE) && count > 1)
     {
@@ -82,7 +87,7 @@ std::string item::inven_name() const
 
 std::string item::trade_name() const
 {
-    auto& model = this->based<fb::model::item>();
+    auto& model = this->model();
 
     if (model.attr(ITEM_ATTRIBUTE::BUNDLE) && this->_trade_count > 1)
     {
@@ -108,7 +113,7 @@ uint16_t item::fill(uint16_t count)
 
 uint16_t item::free_space() const
 {
-    auto& model = this->based<fb::model::item>();
+    auto& model = this->model();
     return model.capacity - this->_count;
 }
 
@@ -164,7 +169,7 @@ async::task<bool> item::active()
     if (this->empty())
         std::ignore = this->_container->remove(this->shared_from_this_as<fb::game::item>());
 
-    auto& model = this->based<fb::model::item>();
+    auto& model = this->model();
     auto  path  = std::format("scripts/item/{}.lua", model.id);
     auto  func  = "on_activated";
 
@@ -183,7 +188,7 @@ async::task<bool> item::active()
 
 std::shared_ptr<fb::game::item> item::split(uint16_t count)
 {
-    auto& model = this->based<fb::model::item>();
+    auto& model = this->model();
     if (model.attr(ITEM_ATTRIBUTE::BUNDLE) && this->_count > count)
     {
         this->_count -= count;
@@ -200,11 +205,11 @@ void item::merge(std::shared_ptr<fb::game::item> item)
     if (this->_container == nullptr)
         return;
 
-    auto& model = this->based<fb::model::item>();
+    auto& model = this->model();
     if (model.attr(ITEM_ATTRIBUTE::BUNDLE) == false)
         return;
 
-    if (model != item->based())
+    if (model != item->model())
         return;
 
     auto owner = this->owner();
@@ -229,7 +234,7 @@ fb::thread* fb::game::item::thread() const
         return this->server.threads.current();
 
     if (this->_map != nullptr)
-        return this->server.threads.modular(this->_map->model.id);
+        return this->server.threads.modular(this->_map->model().id);
 
     if (this->_container != nullptr)
         return owner->thread();
@@ -271,7 +276,7 @@ fb::protocol::internal::Item item::to_protocol(EQUIPMENT_PARTS parts) const
     if (this->_container == nullptr)
         throw std::runtime_error("cannot convert to protocol because container is empty");
 
-    auto& model        = this->based<fb::model::item>();
+    auto& model        = this->model();
     auto  result       = fb::protocol::internal::Item();
     result.user        = owner->id;
     result.index       = -1;

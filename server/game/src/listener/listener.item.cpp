@@ -11,7 +11,9 @@ void listener_impl::on_item_remove(character& me, uint8_t index, ITEM_DELETE_TYP
 
 void listener_impl::on_item_update(character& me, uint8_t index)
 {
-    me.send(game_resp::item_update(me, index));
+    fb::protocol::visit_client_version(me.client_version, [&]<fb::protocol::CLIENT_VERSION V> {
+        me.send(game_resp::item_update<V>(me, index));
+    });
 }
 
 void listener_impl::on_item_swap(character& me, uint8_t src, uint8_t dst)

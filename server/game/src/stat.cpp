@@ -10,6 +10,48 @@
 
 using namespace fb::game;
 
+namespace {
+
+uint8_t character_speed_cap(const character& ch)
+{
+    if (ch.client_version == fb::protocol::CLIENT_VERSION::v651 && ch.role() >= ROLE::ADMIN)
+        return 10;
+    return 5;
+}
+
+void notify_walk_speed(character& ch)
+{
+    if (ch.client_version == fb::protocol::CLIENT_VERSION::v651)
+        ch.update_external();
+    else
+        ch.update(UPDATE_STATE_LEVEL::EXP_MONEY | UPDATE_STATE_LEVEL::CROWD_CONTROL);
+}
+
+uint64_t apply_percent_pool(int64_t base, int64_t buff, float percent)
+{
+    constexpr auto max_signed = std::numeric_limits<int64_t>::max();
+    if (buff > 0 && base > max_signed - buff)
+        return static_cast<uint64_t>(max_signed);
+
+    auto sum = base + buff;
+    if (sum < 1)
+        return 1;
+
+    if (percent == 0.0f)
+        return static_cast<uint64_t>(sum);
+
+    auto pct_bonus = static_cast<int64_t>(static_cast<double>(sum) * percent / 100.0);
+    if (pct_bonus > 0 && sum > max_signed - pct_bonus)
+        return static_cast<uint64_t>(max_signed);
+
+    auto total = sum + pct_bonus;
+    if (total < 1)
+        return 1;
+    return static_cast<uint64_t>(total);
+}
+
+} // namespace
+
 fb::game::stat::stat(life& owner) :
     owner(owner)
 { }
@@ -20,6 +62,8 @@ fb::game::stat::stat(const stat& other) :
     _mp(other._mp),
     _buff_hp(other._buff_hp),
     _buff_mp(other._buff_mp),
+    _buff_hp_percent(other._buff_hp_percent),
+    _buff_mp_percent(other._buff_mp_percent),
     _buff_str(other._buff_str),
     _buff_dex(other._buff_dex),
     _buff_int(other._buff_int),
@@ -38,6 +82,8 @@ fb::game::stat::stat(stat&& other) :
     _mp(other._mp),
     _buff_hp(other._buff_hp),
     _buff_mp(other._buff_mp),
+    _buff_hp_percent(other._buff_hp_percent),
+    _buff_mp_percent(other._buff_mp_percent),
     _buff_str(other._buff_str),
     _buff_dex(other._buff_dex),
     _buff_int(other._buff_int),
@@ -72,6 +118,30 @@ void fb::game::stat::buff_mp(int64_t value)
 {
     this->owner.assert_thread();
     this->_buff_mp = value;
+}
+
+float fb::game::stat::buff_hp_percent() const
+{
+    this->owner.assert_thread();
+    return this->_buff_hp_percent;
+}
+
+void fb::game::stat::buff_hp_percent(float value)
+{
+    this->owner.assert_thread();
+    this->_buff_hp_percent = value;
+}
+
+float fb::game::stat::buff_mp_percent() const
+{
+    this->owner.assert_thread();
+    return this->_buff_mp_percent;
+}
+
+void fb::game::stat::buff_mp_percent(float value)
+{
+    this->owner.assert_thread();
+    this->_buff_mp_percent = value;
 }
 
 uint8_t fb::game::stat::buff_str() const
@@ -321,14 +391,7 @@ uint64_t fb::game::stat::maxhp() const
     this->owner.assert_thread();
     auto base =
         static_cast<int64_t>(std::min(this->base_hp(), static_cast<uint64_t>(std::numeric_limits<int64_t>::max())));
-    auto buff = this->buff_hp();
-    if (buff > 0 && base > std::numeric_limits<int64_t>::max() - buff)
-        return static_cast<uint64_t>(std::numeric_limits<int64_t>::max());
-
-    auto sum = base + buff;
-    if (sum < 1)
-        return 1;
-    return static_cast<uint64_t>(sum);
+    return apply_percent_pool(base, this->buff_hp(), this->buff_hp_percent());
 }
 
 uint64_t fb::game::stat::maxmp() const
@@ -336,14 +399,7 @@ uint64_t fb::game::stat::maxmp() const
     this->owner.assert_thread();
     auto base =
         static_cast<int64_t>(std::min(this->base_mp(), static_cast<uint64_t>(std::numeric_limits<int64_t>::max())));
-    auto buff = this->buff_mp();
-    if (buff > 0 && base > std::numeric_limits<int64_t>::max() - buff)
-        return static_cast<uint64_t>(std::numeric_limits<int64_t>::max());
-
-    auto sum = base + buff;
-    if (sum < 1)
-        return 1;
-    return static_cast<uint64_t>(sum);
+    return apply_percent_pool(base, this->buff_mp(), this->buff_mp_percent());
 }
 
 uint8_t fb::game::stat::str() const
@@ -548,16 +604,16 @@ void character_stat::base_speed(uint8_t value, bool notify)
 {
     this->owner.assert_thread();
 
-    if (value > 5)
-        value = 5;
+    auto cap = character_speed_cap(this->owner);
+    if (value > cap)
+        value = cap;
 
     if (this->_speed == value)
         return;
 
     this->_speed = value;
-    // Trailer walk_speed is always appended to update_internal.
     if (notify)
-        this->owner.update(UPDATE_STATE_LEVEL::EXP_MONEY | UPDATE_STATE_LEVEL::CROWD_CONTROL);
+        notify_walk_speed(this->owner);
 }
 
 void character_stat::base_regenerative(uint64_t value, bool notify)
@@ -584,52 +640,10 @@ uint8_t character_stat::base_str() const
     return this->_str;
 }
 
-uint8_t character_stat::str() const
-{
-    this->owner.assert_thread();
-    auto str        = fb::game::stat::str();
-    auto additional = (uint64_t)0;
-    for (auto& [_, equipment] : this->owner.items.equipments())
-    {
-        if (equipment == nullptr)
-            continue;
-
-        auto& model  = equipment->based<fb::model::equipment>();
-        additional  += model.strength;
-    }
-
-    auto limit = std::numeric_limits<uint64_t>::max();
-    if (limit - str < additional)
-        return limit;
-
-    return str + additional;
-}
-
 uint8_t character_stat::base_dex() const
 {
     this->owner.assert_thread();
     return this->_dex;
-}
-
-uint8_t character_stat::dex() const
-{
-    this->owner.assert_thread();
-    auto dex        = fb::game::stat::dex();
-    auto additional = (uint64_t)0;
-    for (auto& [_, equipment] : this->owner.items.equipments())
-    {
-        if (equipment == nullptr)
-            continue;
-
-        auto& model  = equipment->based<fb::model::equipment>();
-        additional  += model.dexterity;
-    }
-
-    auto limit = std::numeric_limits<uint64_t>::max();
-    if (limit - dex < additional)
-        return limit;
-
-    return dex + additional;
 }
 
 uint8_t character_stat::base_int() const
@@ -638,90 +652,16 @@ uint8_t character_stat::base_int() const
     return this->_int;
 }
 
-uint8_t character_stat::intelligence() const
-{
-    this->owner.assert_thread();
-    auto intelligence = fb::game::stat::intelligence();
-    auto additional   = (uint64_t)0;
-    for (auto& [_, equipment] : this->owner.items.equipments())
-    {
-        if (equipment == nullptr)
-            continue;
-
-        auto& model  = equipment->based<fb::model::equipment>();
-        additional  += model.intelligence;
-    }
-
-    auto limit = std::numeric_limits<uint64_t>::max();
-    if (limit - intelligence < additional)
-        return limit;
-
-    return intelligence + additional;
-}
-
 int8_t character_stat::base_phydef() const
 {
     this->owner.assert_thread();
     return this->_phydef;
 }
 
-int8_t character_stat::phydef() const
-{
-    this->owner.assert_thread();
-    auto phydef     = fb::game::stat::phydef();
-    auto additional = (uint64_t)0;
-    for (auto& [_, equipment] : this->owner.items.equipments())
-    {
-        if (equipment == nullptr)
-            continue;
-
-        auto& model  = equipment->based<fb::model::equipment>();
-        additional  += model.defensive_physical;
-    }
-
-    auto sum = (int16_t)phydef + (int16_t)additional;
-    return (int8_t)std::max<int16_t>(-127, std::min<int16_t>(128, sum));
-}
-
 int8_t character_stat::base_magdef() const
 {
     this->owner.assert_thread();
     return this->_magdef;
-}
-
-int8_t character_stat::magdef() const
-{
-    this->owner.assert_thread();
-    auto magdef     = fb::game::stat::magdef();
-    auto additional = (uint64_t)0;
-    for (auto& [_, equipment] : this->owner.items.equipments())
-    {
-        if (equipment == nullptr)
-            continue;
-
-        auto& model  = equipment->based<fb::model::equipment>();
-        additional  += model.defensive_magical;
-    }
-
-    auto sum = (int16_t)magdef + (int16_t)additional;
-    return (int8_t)std::max<int16_t>(-127, std::min<int16_t>(128, sum));
-}
-
-int8_t character_stat::dam() const
-{
-    this->owner.assert_thread();
-    auto    dam_val    = fb::game::stat::dam();
-    int16_t additional = 0;
-    for (auto& [_, equipment] : this->owner.items.equipments())
-    {
-        if (equipment == nullptr)
-            continue;
-
-        auto& model  = equipment->based<fb::model::equipment>();
-        additional  += static_cast<int16_t>(static_cast<int8_t>(model.damage));
-    }
-    int16_t sum = static_cast<int16_t>(dam_val) + additional;
-    return static_cast<int8_t>(std::max<int16_t>(-128, std::min<int16_t>(127, sum)));
 }
 
 uint8_t character_stat::base_dam() const
@@ -742,6 +682,18 @@ uint8_t character_stat::base_speed() const
     return this->_speed;
 }
 
+uint8_t character_stat::speed() const
+{
+    this->owner.assert_thread();
+    auto sum = static_cast<int>(this->base_speed()) + static_cast<int>(fb::game::stat::buff_speed());
+    auto cap = character_speed_cap(this->owner);
+    if (sum < 0)
+        return 0;
+    if (sum > cap)
+        return static_cast<uint8_t>(cap);
+    return static_cast<uint8_t>(sum);
+}
+
 void character_stat::buff_speed(int8_t value)
 {
     this->owner.assert_thread();
@@ -749,24 +701,7 @@ void character_stat::buff_speed(int8_t value)
     auto before = this->speed();
     fb::game::stat::buff_speed(value);
     if (before != this->speed())
-        this->owner.update(UPDATE_STATE_LEVEL::EXP_MONEY | UPDATE_STATE_LEVEL::CROWD_CONTROL);
-}
-
-int8_t character_stat::hit() const
-{
-    this->owner.assert_thread();
-    auto    hit_val    = fb::game::stat::hit();
-    int16_t additional = 0;
-    for (auto& [_, equipment] : this->owner.items.equipments())
-    {
-        if (equipment == nullptr)
-            continue;
-
-        auto& model  = equipment->based<fb::model::equipment>();
-        additional  += static_cast<int16_t>(static_cast<int8_t>(model.hit));
-    }
-    int16_t sum = static_cast<int16_t>(hit_val) + additional;
-    return static_cast<int8_t>(std::max<int16_t>(-128, std::min<int16_t>(127, sum)));
+        notify_walk_speed(this->owner);
 }
 
 uint64_t character_stat::base_regenerative() const
@@ -775,98 +710,40 @@ uint64_t character_stat::base_regenerative() const
     return this->_regenerative;
 }
 
-uint64_t character_stat::maxhp() const
+void character_stat::equipment_on(const fb::model::equipment& model)
 {
     this->owner.assert_thread();
-    constexpr auto max_signed = std::numeric_limits<int64_t>::max();
-    int64_t        base_flat =
-        static_cast<int64_t>(std::min(this->base_hp(), static_cast<uint64_t>(max_signed))) + this->buff_hp();
-    float hp_pct = 0.0f;
 
-    for (auto& [_, equipment] : this->owner.items.equipments())
-    {
-        if (equipment == nullptr)
-            continue;
-
-        auto& model = equipment->based<fb::model::equipment>();
-        if (model.base_hp > 0 && base_flat > max_signed - model.base_hp)
-            base_flat = max_signed;
-        else if (model.base_hp < 0 && base_flat < std::numeric_limits<int64_t>::min() - model.base_hp)
-            base_flat = std::numeric_limits<int64_t>::min();
-        else
-            base_flat += model.base_hp;
-        hp_pct += model.hp_percentage;
-    }
-
-    if (base_flat < 1)
-        return 1;
-
-    auto pct_bonus = static_cast<int64_t>(static_cast<double>(base_flat) * hp_pct / 100.0);
-    if (pct_bonus > 0 && base_flat > max_signed - pct_bonus)
-        return static_cast<uint64_t>(max_signed);
-
-    auto total = base_flat + pct_bonus;
-    if (total < 1)
-        return 1;
-    return static_cast<uint64_t>(total);
+    this->buff_hp(this->buff_hp() + model.base_hp);
+    this->buff_mp(this->buff_mp() + model.base_mp);
+    this->buff_hp_percent(this->buff_hp_percent() + model.hp_percentage);
+    this->buff_mp_percent(this->buff_mp_percent() + model.mp_percentage);
+    this->buff_str(this->buff_str() + model.strength);
+    this->buff_dex(this->buff_dex() + model.dexterity);
+    this->buff_int(this->buff_int() + model.intelligence);
+    this->buff_phydef(this->buff_phydef() + model.defensive_physical);
+    this->buff_magdef(this->buff_magdef() + model.defensive_magical);
+    this->buff_dam(this->buff_dam() + model.damage);
+    this->buff_hit(this->buff_hit() + model.hit);
+    this->buff_regenerative(this->buff_regenerative() + static_cast<int64_t>(model.healing_cycle));
 }
 
-uint64_t character_stat::maxmp() const
+void character_stat::equipment_off(const fb::model::equipment& model)
 {
     this->owner.assert_thread();
-    constexpr auto max_signed = std::numeric_limits<int64_t>::max();
-    int64_t        base_flat =
-        static_cast<int64_t>(std::min(this->base_mp(), static_cast<uint64_t>(max_signed))) + this->buff_mp();
-    float mp_pct = 0.0f;
 
-    for (auto& [_, equipment] : this->owner.items.equipments())
-    {
-        if (equipment == nullptr)
-            continue;
-
-        auto& model = equipment->based<fb::model::equipment>();
-        if (model.base_mp > 0 && base_flat > max_signed - model.base_mp)
-            base_flat = max_signed;
-        else if (model.base_mp < 0 && base_flat < std::numeric_limits<int64_t>::min() - model.base_mp)
-            base_flat = std::numeric_limits<int64_t>::min();
-        else
-            base_flat += model.base_mp;
-        mp_pct += model.mp_percentage;
-    }
-
-    if (base_flat < 1)
-        return 1;
-
-    auto pct_bonus = static_cast<int64_t>(static_cast<double>(base_flat) * mp_pct / 100.0);
-    if (pct_bonus > 0 && base_flat > max_signed - pct_bonus)
-        return static_cast<uint64_t>(max_signed);
-
-    auto total = base_flat + pct_bonus;
-    if (total < 1)
-        return 1;
-    return static_cast<uint64_t>(total);
-}
-
-uint64_t character_stat::regenerative() const
-{
-    this->owner.assert_thread();
-    auto base       = fb::game::stat::regenerative();
-    auto additional = uint64_t(0);
-
-    for (auto& [_, equipment] : this->owner.items.equipments())
-    {
-        if (equipment == nullptr)
-            continue;
-
-        auto& model  = equipment->based<fb::model::equipment>();
-        additional  += model.healing_cycle;
-    }
-
-    auto max_val = std::numeric_limits<uint64_t>::max();
-    if (max_val - base < additional)
-        return max_val;
-
-    return base + additional;
+    this->buff_hp(this->buff_hp() - model.base_hp);
+    this->buff_mp(this->buff_mp() - model.base_mp);
+    this->buff_hp_percent(this->buff_hp_percent() - model.hp_percentage);
+    this->buff_mp_percent(this->buff_mp_percent() - model.mp_percentage);
+    this->buff_str(this->buff_str() - model.strength);
+    this->buff_dex(this->buff_dex() - model.dexterity);
+    this->buff_int(this->buff_int() - model.intelligence);
+    this->buff_phydef(this->buff_phydef() - model.defensive_physical);
+    this->buff_magdef(this->buff_magdef() - model.defensive_magical);
+    this->buff_dam(this->buff_dam() - model.damage);
+    this->buff_hit(this->buff_hit() - model.hit);
+    this->buff_regenerative(this->buff_regenerative() - static_cast<int64_t>(model.healing_cycle));
 }
 
 uint64_t character_stat::damage(uint64_t                          value,
@@ -909,7 +786,7 @@ uint64_t character_stat::damage(uint64_t                          value,
         if (durability.has_value() == false)
             continue;
 
-        auto& model = equipment->based<fb::model::equipment>();
+        auto& model = equipment->model();
         if (equipment->durability_down(1))
         {
             auto equipment = this->owner.items.equipment_off(parts);
@@ -938,21 +815,21 @@ mob_stat::mob_stat(mob_stat&& other) :
 uint64_t mob_stat::base_hp() const
 {
     this->owner.assert_thread();
-    auto& model = this->owner.based<fb::model::mob>();
+    auto& model = this->owner.model();
     return model.hp;
 }
 
 uint64_t mob_stat::base_mp() const
 {
     this->owner.assert_thread();
-    auto& model = this->owner.based<fb::model::mob>();
+    auto& model = this->owner.model();
     return model.mp;
 }
 
 uint8_t mob_stat::base_str() const
 {
     this->owner.assert_thread();
-    // auto& model = this->owner.based<fb::model::mob>();
+    // auto& model = this->owner.model();
     // return model.str;
     return 0;
 }
@@ -960,7 +837,7 @@ uint8_t mob_stat::base_str() const
 uint8_t mob_stat::base_dex() const
 {
     this->owner.assert_thread();
-    // auto& model = this->owner.based<fb::model::mob>();
+    // auto& model = this->owner.model();
     // return model.dex;
     return 0;
 }
@@ -968,7 +845,7 @@ uint8_t mob_stat::base_dex() const
 uint8_t mob_stat::base_int() const
 {
     this->owner.assert_thread();
-    // auto& model = this->owner.based<fb::model::mob>();
+    // auto& model = this->owner.model();
     // return model.int;
     return 0;
 }
@@ -976,21 +853,21 @@ uint8_t mob_stat::base_int() const
 int8_t mob_stat::base_phydef() const
 {
     this->owner.assert_thread();
-    auto& model = this->owner.based<fb::model::mob>();
+    auto& model = this->owner.model();
     return model.defensive_physical;
 }
 
 int8_t mob_stat::base_magdef() const
 {
     this->owner.assert_thread();
-    auto& model = this->owner.based<fb::model::mob>();
+    auto& model = this->owner.model();
     return model.defensive_magical;
 }
 
 uint8_t mob_stat::base_dam() const
 {
     this->owner.assert_thread();
-    // auto& model = this->owner.based<fb::model::mob>();
+    // auto& model = this->owner.model();
     // return model.dam;
     return 0;
 }
@@ -998,7 +875,7 @@ uint8_t mob_stat::base_dam() const
 uint8_t mob_stat::base_hit() const
 {
     this->owner.assert_thread();
-    // auto& model = this->owner.based<fb::model::mob>();
+    // auto& model = this->owner.model();
     // return model.hit;
     return 0;
 }
@@ -1012,7 +889,7 @@ uint64_t mob_stat::base_regenerative() const
 float mob_stat::base_resist(RESIST type) const
 {
     this->owner.assert_thread();
-    auto& model = this->owner.based<fb::model::mob>();
+    auto& model = this->owner.model();
     auto  i     = model.resist.find(type);
     if (i == model.resist.end())
         return 0.0f;

@@ -31,14 +31,14 @@ namespace AdminTool.Services
             int pageSize,
             string searchTerm = null)
         {
-            await using var globalConn = _dbContext.GetGlobalConnection(world);
+            await using var globalConn = _dbContext.GetUnifiedConnection();
 
             var hasSearch = !string.IsNullOrWhiteSpace(searchTerm);
             var searchPattern = hasSearch ? $"%{searchTerm.Trim()}%" : null;
 
             var whereClause = hasSearch
-                ? "WHERE n.`name` LIKE @searchPattern OR CAST(n.`id` AS CHAR) LIKE @searchPattern"
-                : string.Empty;
+                ? "WHERE n.`world` = @world AND (n.`name` LIKE @searchPattern OR CAST(n.`id` AS CHAR) LIKE @searchPattern)"
+                : "WHERE n.`world` = @world";
 
             var totalCount = await globalConn.QueryFirstOrDefaultAsync<int>(
                 $"""
@@ -46,7 +46,7 @@ namespace AdminTool.Services
                 FROM `name_registry` n
                 {whereClause}
                 """,
-                new { searchPattern });
+                new { world, searchPattern });
 
             if (totalCount == 0)
             {
@@ -64,7 +64,7 @@ namespace AdminTool.Services
                 ORDER BY n.`id` ASC
                 LIMIT @pageSize OFFSET @offset
                 """,
-                new { searchPattern, pageSize, offset })).ToList();
+                new { world, searchPattern, pageSize, offset })).ToList();
 
             if (!nameList.Any())
             {
@@ -230,8 +230,10 @@ namespace AdminTool.Services
 
             try
             {
-                await using var globalConn = _dbContext.GetGlobalConnection(world);
-                stats.TotalAccounts = await globalConn.QuerySingleAsync<int>("SELECT COUNT(*) FROM `name_registry`");
+                await using var globalConn = _dbContext.GetUnifiedConnection();
+                stats.TotalAccounts = await globalConn.QuerySingleAsync<int>(
+                    "SELECT COUNT(*) FROM `name_registry` WHERE `world` = @world",
+                    new { world });
             }
             catch (Exception ex)
             {

@@ -2,6 +2,7 @@
 #define __PROTOCOL_GAME_TRADE_H__
 
 #include <fb/protocol/header.h>
+#include <fb/protocol/client_version.h>
 #include <fb/model/model.h>
 #ifndef BOT
 #include <fb/game/trade.h>
@@ -11,19 +12,20 @@ namespace fb::protocol::game::request {
 
 using namespace fb::model::enum_value;
 
+template <CLIENT_VERSION V>
 class trade : public fb::protocol::header
 {
 public:
     static constexpr uint8_t opcode = 0x4A;
+    FB_PROTOCOL_VERSION_TAGS(V);
 
 public:
-    typedef union
+    struct params
     {
-    public:
-        uint8_t  index;
-        uint16_t count;
-        uint32_t money;
-    } params;
+        uint8_t  index = 0;
+        uint16_t count = 0;
+        uint32_t money = 0;
+    };
 
 public:
 #ifndef BOT
@@ -50,11 +52,7 @@ public:
 #ifndef BOT
     trade() = default;
 #else
-    trade(state action, uint32_t oid, const params& parameter) :
-        action(action),
-        oid(oid),
-        parameter(parameter)
-    { }
+    trade(state action, uint32_t oid, const params& parameter);
 #endif
 
 public:
@@ -64,6 +62,14 @@ public:
     void deserialize(fb::stream_reader<big_endian>& reader);
 #endif
 };
+
+#ifdef BOT
+template <>
+void trade<CLIENT_VERSION::v651>::serialize(fb::stream_writer<big_endian>& writer) const;
+#else
+template <>
+void trade<CLIENT_VERSION::v651>::deserialize(fb::stream_reader<big_endian>& reader);
+#endif
 
 } // namespace fb::protocol::game::request
 

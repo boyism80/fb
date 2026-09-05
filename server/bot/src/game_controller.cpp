@@ -5,6 +5,9 @@
 
 using namespace fb::bot;
 
+// The bot speaks the v550 C2S layout; versioned requests are instantiated for it.
+constexpr auto BOT_CLIENT_VERSION = fb::protocol::CLIENT_VERSION::v550;
+
 game_bot_controller::game_bot_controller(bot_container& container) :
     bot_controller<game_bot>(container)
 {
@@ -30,26 +33,14 @@ game_bot_controller::game_bot_controller(bot_container& container) :
     this->bind(&game_bot_controller::on_update);
     this->bind(&game_bot_controller::on_map);
     this->bind(&game_bot_controller::on_transfer);
-    this->bind(&game_bot_controller::on_update_external<true>);
-    this->bind(&game_bot_controller::on_update_external<false>);
+    this->bind(&game_bot_controller::on_show);
+    this->bind(&game_bot_controller::on_update_external);
     this->bind(&game_bot_controller::on_item_update);
     this->bind(&game_bot_controller::on_item_remove);
     this->bind(&game_bot_controller::on_internal_info);
     this->bind(&game_bot_controller::on_ping);
 
     integration::protocol_registry::register_all();
-}
-
-bool game_bot_controller::decrypt_policy(int opcode) const
-{
-    switch (opcode)
-    {
-    case fb::protocol::response::transfer::opcode: // Host discovery
-        return false;
-
-    default:
-        return true;
-    }
 }
 
 async::task<void> game_bot_controller::on_bot_disconnected(game_bot& bot)
@@ -63,19 +54,19 @@ async::task<void> game_bot_controller::on_time(game_bot& bot, const game_resp::t
     co_return;
 }
 
-async::task<void> game_bot_controller::on_map_config(game_bot& bot, const game_resp::map_config& response)
+async::task<void> game_bot_controller::on_map_config(game_bot& bot, const game_resp::map_config_v550& response)
 {
     bot.set_map(response.id);
     co_return;
 }
 
-async::task<void> game_bot_controller::on_state(game_bot& bot, const game_resp::update_internal& response)
+async::task<void> game_bot_controller::on_state(game_bot& bot, const game_resp::update_internal_v550& response)
 {
     // Update character information based on the state level received
     if (ENUM_IN(response.level, UPDATE_STATE_LEVEL::BASED))
     {
         bot.set_nation(response.ch_nation);
-        bot.set_creature(response.ch_creature);
+        bot.set_divine_beast(response.ch_divine_beast);
         bot.set_level(response.ch_level);
         bot.set_base_hp(response.ch_base_hp);
         bot.set_base_mp(response.ch_base_mp);
@@ -107,7 +98,7 @@ async::task<void> game_bot_controller::on_state(game_bot& bot, const game_resp::
     co_return;
 }
 
-async::task<void> game_bot_controller::on_option(game_bot& bot, const game_resp::option& response)
+async::task<void> game_bot_controller::on_option(game_bot& bot, const game_resp::option_v550& response)
 {
     co_return;
 }
@@ -128,7 +119,7 @@ async::task<void> game_bot_controller::on_message(game_bot& bot, const game_resp
 
         auto id  = what["id"].str();
         auto msg = std::format("\"{}\"에 대한 응답입니다.", what["msg"].str());
-        bot.send(game_reqs::whisper(id, msg));
+        bot.send(game_reqs::whisper<BOT_CLIENT_VERSION>(id, msg));
     }
 
     co_return;
@@ -140,7 +131,7 @@ async::task<void> game_bot_controller::on_sequence(game_bot& bot, const game_res
     co_return;
 }
 
-async::task<void> game_bot_controller::on_spell_update(game_bot& bot, const game_resp::spell_update& response)
+async::task<void> game_bot_controller::on_spell_update(game_bot& bot, const game_resp::spell_update_v550& response)
 {
     // Update the bot's spell inventory with the new or updated spell
     bot.update_spell(response.index, response.name, response.type);
@@ -191,7 +182,7 @@ async::task<void> game_bot_controller::on_move(game_bot& bot, const game_resp::m
     co_return;
 }
 
-async::task<void> game_bot_controller::on_map(game_bot& bot, const game_resp::map_config& response)
+async::task<void> game_bot_controller::on_map(game_bot& bot, const game_resp::map_config_v550& response)
 {
     if (response.id == 1)
     {
@@ -231,7 +222,7 @@ async::task<void> game_bot_controller::on_transfer(game_bot& bot, const fb::prot
     co_return;
 }
 
-async::task<void> game_bot_controller::on_effect(game_bot& bot, const game_resp::effect& response)
+async::task<void> game_bot_controller::on_effect(game_bot& bot, const game_resp::effect_v550& response)
 {
     // Effect is a one-time event, no need to store state
     co_return;
@@ -273,12 +264,12 @@ async::task<void> game_bot_controller::on_update_cc(game_bot& bot, const game_re
     co_return;
 }
 
-async::task<void> game_bot_controller::on_update(game_bot& bot, const game_resp::update& response)
+async::task<void> game_bot_controller::on_update(game_bot& bot, const game_resp::update_v550& response)
 {
     co_return;
 }
 
-async::task<void> game_bot_controller::on_item_update(game_bot& bot, const game_resp::item_update& response)
+async::task<void> game_bot_controller::on_item_update(game_bot& bot, const game_resp::item_update_v550& response)
 {
     // Update the bot's inventory with the new or updated item
     bot.update_item(response.index, response.name, response.count);
@@ -292,7 +283,7 @@ async::task<void> game_bot_controller::on_item_remove(game_bot& bot, const game_
     co_return;
 }
 
-async::task<void> game_bot_controller::on_internal_info(game_bot& bot, const game_resp::internal_info& response)
+async::task<void> game_bot_controller::on_internal_info(game_bot& bot, const game_resp::internal_info_v550& response)
 {
     bot.set_clan_name(response.clan_name);
     bot.set_clan_title(response.clan_title);
@@ -305,7 +296,7 @@ async::task<void> game_bot_controller::on_internal_info(game_bot& bot, const gam
 
 async::task<void> game_bot_controller::on_ping(game_bot& bot, const game_resp::ping& response)
 {
-    bot.send(game_reqs::pong(response.value, 0));
+    bot.send(game_reqs::pong<BOT_CLIENT_VERSION>(response.value, 0));
     co_return;
 }
 

@@ -24,3 +24,4 @@ render_template() {
 render_template "$COMPOSE_DIR/config/gateway/config.json.template" "$COMPOSE_DIR/config/gateway/config.json"
 render_template "$COMPOSE_DIR/config/login/config.json.template" "$COMPOSE_DIR/config/login/config.json"
 render_template "$COMPOSE_DIR/config/game/config.json.template" "$COMPOSE_DIR/config/game/config.json"
+render_template "$COMPOSE_DIR/config/game-cross/config.json.template" "$COMPOSE_DIR/config/game-cross/config.json"
