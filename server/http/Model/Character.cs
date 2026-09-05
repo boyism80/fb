@@ -19,6 +19,7 @@ namespace Http.Model
         public Fb.Model.EnumValue.Role Role { get; set; }
         public ushort Hair { get; set; }
         public byte Face { get; set; }
+        public ushort RidableId { get; set; } = 1;
         public byte Color { get; set; }
         public byte Gender { get; set; }
         public byte Nation { get; set; }

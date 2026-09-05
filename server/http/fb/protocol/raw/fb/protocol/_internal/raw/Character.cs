@@ -103,6 +103,7 @@ public struct Character : IFlatbufferObject
   public short Reputation { get { int o = __p.__offset(90); return o != 0 ? __p.bb.GetShort(o + __p.bb_pos) : (short)0; } }
   public ushort Evaluation { get { int o = __p.__offset(92); return o != 0 ? __p.bb.GetUshort(o + __p.bb_pos) : (ushort)0; } }
   public byte Face { get { int o = __p.__offset(94); return o != 0 ? __p.bb.Get(o + __p.bb_pos) : (byte)0; } }
+  public ushort RidableId { get { int o = __p.__offset(96); return o != 0 ? __p.bb.GetUshort(o + __p.bb_pos) : (ushort)0; } }
 
   public static Offset<fb.protocol._internal.raw.Character> CreateCharacter(FlatBufferBuilder builder,
       uint id = 0,
@@ -150,8 +151,9 @@ public struct Character : IFlatbufferObject
       byte speed = 0,
       short reputation = 0,
       ushort evaluation = 0,
-      byte face = 0) {
-    builder.StartTable(46);
+      byte face = 0,
+      ushort ridable_id = 0) {
+    builder.StartTable(47);
     Character.AddAdditionalMp(builder, additional_mp);
     Character.AddBaseMp(builder, base_mp);
     Character.AddMp(builder, mp);
@@ -182,6 +184,7 @@ public struct Character : IFlatbufferObject
     Character.AddName(builder, nameOffset);
     Character.AddWorld(builder, world);
     Character.AddId(builder, id);
+    Character.AddRidableId(builder, ridable_id);
     Character.AddEvaluation(builder, evaluation);
     Character.AddReputation(builder, reputation);
     Character.AddColor(builder, color);
@@ -201,7 +204,7 @@ public struct Character : IFlatbufferObject
     return Character.EndCharacter(builder);
   }
 
-  public static void StartCharacter(FlatBufferBuilder builder) { builder.StartTable(46); }
+  public static void StartCharacter(FlatBufferBuilder builder) { builder.StartTable(47); }
   public static void AddId(FlatBufferBuilder builder, uint id) { builder.AddUint(0, id, 0); }
   public static void AddWorld(FlatBufferBuilder builder, uint world) { builder.AddUint(1, world, 0); }
   public static void AddName(FlatBufferBuilder builder, StringOffset nameOffset) { builder.AddOffset(2, nameOffset.Value, 0); }
@@ -253,6 +256,7 @@ public struct Character : IFlatbufferObject
   public static void AddReputation(FlatBufferBuilder builder, short reputation) { builder.AddShort(43, reputation, 0); }
   public static void AddEvaluation(FlatBufferBuilder builder, ushort evaluation) { builder.AddUshort(44, evaluation, 0); }
   public static void AddFace(FlatBufferBuilder builder, byte face) { builder.AddByte(45, face, 0); }
+  public static void AddRidableId(FlatBufferBuilder builder, ushort ridableId) { builder.AddUshort(46, ridableId, 0); }
   public static Offset<fb.protocol._internal.raw.Character> EndCharacter(FlatBufferBuilder builder) {
     int o = builder.EndTable();
     return new Offset<fb.protocol._internal.raw.Character>(o);
@@ -313,6 +317,7 @@ static public class CharacterVerify
       && verifier.VerifyField(tablePos, 90 /*Reputation*/, 2 /*short*/, 2, false)
       && verifier.VerifyField(tablePos, 92 /*Evaluation*/, 2 /*ushort*/, 2, false)
       && verifier.VerifyField(tablePos, 94 /*Face*/, 1 /*byte*/, 1, false)
+      && verifier.VerifyField(tablePos, 96 /*RidableId*/, 2 /*ushort*/, 2, false)
       && verifier.VerifyTableEnd(tablePos);
   }
 }

@@ -19,7 +19,7 @@ async::task<void> group::container::create(character& me, std::string_view targe
         throw std::runtime_error(_TEXT(MESSAGE_GROUP_DISABLED_MINE));
 
     if (me.group_id().has_value())
-        throw std::runtime_error(_TEXT(MESSAGE_GROUP_ALREADY_JOINED));
+        throw std::runtime_error(_TEXT(MESSAGE_ALREADY_JOINED_GROUP));
     if (me.name() == target_name_str)
         throw std::runtime_error(_TEXT(MESSAGE_CANNOT_GROUP_SELF));
 
@@ -31,7 +31,7 @@ async::task<void> group::container::create(character& me, std::string_view targe
         if (target != nullptr)
         {
             if (target->group_id().has_value())
-                throw std::runtime_error(_TEXT(MESSAGE_GROUP_ALREADY_JOINED));
+                throw std::runtime_error(std::format(_TEXT(MESSAGE_GROUP_ALREADY_JOINED), target_name_str));
 
             if (target->option(OPTION::GROUP) == false)
                 throw std::runtime_error(_TEXT(MESSAGE_GROUP_DISABLED_TARGET));
