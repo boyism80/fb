@@ -1247,6 +1247,32 @@ M.functions = {
             end,
         },
         
+        ['탈것바꾸기'] = {
+            ['privilege'] = ROLE.ADMIN,
+            ['usage'] = '<탈것ID> - 탈것 ID 변경 (6.51 NEW UI)',
+            ['command'] = function (me, args)
+                if me:client_version() ~= 651 or me:ui_mode() ~= 1 then
+                    me:message("6.51 NEW UI에서만 사용할 수 있습니다.")
+                    me:chat('client version: ' .. me:client_version())
+                    me:chat('ui mode: ' .. me:ui_mode())
+                    return true
+                end
+                local value = table.unpack(args)
+                if not value then
+                    me:message("사용법: /탈것바꾸기 <탈것ID>")
+                    return true
+                end
+                value = tonumber(value)
+                if not value or value < 0 or value > 65535 then
+                    me:message("탈것 ID는 0 이상 65535 이하의 숫자여야 합니다.")
+                    return true
+                end
+                me:state(STATE.RIDING)
+                me:ridable_id(value)
+                return true
+            end,
+        },
+        
         ['머리염색'] = {
             ['privilege'] = ROLE.ADMIN,
             ['usage'] = '<색상ID> - 머리 염색',

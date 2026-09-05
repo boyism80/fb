@@ -52,7 +52,10 @@ IMPLEMENT_LUA_EXTENSION(character, "fb.game.character")
 {"uid",                          builtin::character::builtin_uid},
 {"hair",                         builtin::character::builtin_hair},
 {"face",                         builtin::character::builtin_face},
+{"ridable_id",                   builtin::character::builtin_ridable_id},
 {"color",                        builtin::character::builtin_color},
+{"client_version",               builtin::character::builtin_client_version},
+{"ui_mode",                      builtin::character::builtin_ui_mode},
 {"gender",                       builtin::character::builtin_gender},
 {"money",                        builtin::character::builtin_money},
 {"exp",                          builtin::character::builtin_exp},
@@ -283,6 +286,100 @@ int builtin::character::builtin_face(lua_State* L)
         };
         return builder.run();
     }
+}
+
+int builtin::character::builtin_ridable_id(lua_State* L)
+{
+    auto lua = fb::lua::get(L);
+    if (lua == nullptr)
+        return 0;
+
+    auto argc = lua->argc();
+    auto ch   = lua->touserdata<fb::game::character>(1);
+    if (ch == nullptr)
+        return 0;
+
+    if (argc == 1)
+    {
+        auto weak       = ch->weak_from_this_as<fb::game::character>();
+        auto ridable_id = std::make_shared<uint16_t>();
+        auto builder    = lua->new_co_builder();
+        builder.weak    = weak;
+        builder.yield   = [=]() -> async::task<void> {
+            *ridable_id = ch->ridable_id();
+            co_return;
+        };
+        builder.resume = [=]() -> async::task<int> {
+            lua->pushinteger(*ridable_id);
+            co_return 1;
+        };
+        return builder.run();
+    }
+    else
+    {
+        auto value    = (uint16_t)lua->tointeger(2);
+        auto weak     = ch->weak_from_this_as<fb::game::character>();
+        auto builder  = lua->new_co_builder();
+        builder.weak  = weak;
+        builder.yield = [=]() -> async::task<void> {
+            ch->ridable_id(value);
+            co_return;
+        };
+        builder.resume = []() -> async::task<int> {
+            co_return 0;
+        };
+        return builder.run();
+    }
+}
+
+int builtin::character::builtin_client_version(lua_State* L)
+{
+    auto lua = fb::lua::get(L);
+    if (lua == nullptr)
+        return 0;
+
+    auto ch = lua->touserdata<fb::game::character>(1);
+    if (ch == nullptr)
+        return 0;
+
+    auto weak     = ch->weak_from_this_as<fb::game::character>();
+    auto version  = std::make_shared<uint16_t>();
+    auto builder  = lua->new_co_builder();
+    builder.weak  = weak;
+    builder.yield = [=]() -> async::task<void> {
+        *version = static_cast<uint16_t>(ch->client_version);
+        co_return;
+    };
+    builder.resume = [=]() -> async::task<int> {
+        lua->pushinteger(*version);
+        co_return 1;
+    };
+    return builder.run();
+}
+
+int builtin::character::builtin_ui_mode(lua_State* L)
+{
+    auto lua = fb::lua::get(L);
+    if (lua == nullptr)
+        return 0;
+
+    auto ch = lua->touserdata<fb::game::character>(1);
+    if (ch == nullptr)
+        return 0;
+
+    auto weak     = ch->weak_from_this_as<fb::game::character>();
+    auto ui_mode  = std::make_shared<uint8_t>();
+    auto builder  = lua->new_co_builder();
+    builder.weak  = weak;
+    builder.yield = [=]() -> async::task<void> {
+        *ui_mode = static_cast<uint8_t>(ch->ui_mode);
+        co_return;
+    };
+    builder.resume = [=]() -> async::task<int> {
+        lua->pushinteger(*ui_mode);
+        co_return 1;
+    };
+    return builder.run();
 }
 
 int builtin::character::builtin_color(lua_State* L)

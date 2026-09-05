@@ -125,6 +125,7 @@ private:
     uint16_t                                         _evaluation       = 0;
     GENDER                                           _gender           = GENDER::MALE;
     STATE                                            _state            = STATE::NORMAL;
+    uint16_t                                         _ridable_id       = 1;
     uint8_t                                          _level            = 1;
     CLASS                                            _class            = CLASS::NONE;
     uint8_t                                          _promotion        = 0;
@@ -189,6 +190,7 @@ public:
         DIRECTION                              direction        = DIRECTION::BOTTOM;
         uint16_t                               hair             = 0;
         uint8_t                                face             = 0;
+        uint16_t                               ridable_id       = 1;
         uint64_t                               money            = 0;
         GENDER                                 gender           = GENDER::MALE;
         uint8_t                                level            = 1;
@@ -227,6 +229,7 @@ private:
     async::task<void>               death_penalty();
     async::task<void>               settle_kills(mob_vector dead);
     void                            enqueue_death_warp();
+    [[nodiscard]] async::task<void> ride(mob& horse, uint16_t ridable_id = 1);
     // clang-format on
 
 public:
@@ -246,6 +249,7 @@ public:
     uint16_t                                 look() const override final;
     uint16_t                                 hair() const;
     uint8_t                                  face() const;
+    uint16_t                                 ridable_id() const;
     uint8_t                                  color() const override final;
     [[nodiscard]] async::task<bool>          map(std::shared_ptr<fb::game::map> map, std::optional<fb::model::point16_t> position = std::nullopt, map_options options = {}) override final;
     void                                     update_map(const fb::game::map& map) override final;
@@ -286,6 +290,7 @@ public:
     void                                                      birthday(const std::optional<uint32_t>& value);
     void                                                      hair(uint16_t value);
     void                                                      face(uint8_t value);
+    void                                                      ridable_id(uint16_t value);
     void                                                      color(uint8_t value);
     std::optional<uint8_t>                                    armor_color() const;
     void                                                      armor_color(std::optional<uint8_t> value);
@@ -351,8 +356,7 @@ public:
     void                                                      assert_state(const std::vector<STATE>& values) const;
     bool                                                      move(const fb::model::point16_t& before, uint8_t walk_queue_slot = 0);
     bool                                                      move(DIRECTION direction, const fb::model::point16_t& before, uint8_t walk_queue_slot = 0);
-    [[nodiscard]] async::task<void>                           ride(mob& horse);
-    [[nodiscard]] async::task<void>                           ride();
+    [[nodiscard]] async::task<void>                           ride(uint16_t ridable_id = 1);
     [[nodiscard]] async::task<void>                           unride();
     bool                                                      alive() const;
     void                                                      message(std::string_view message, MESSAGE_TYPE type = MESSAGE_TYPE::STATE);

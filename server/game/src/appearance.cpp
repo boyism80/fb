@@ -59,8 +59,9 @@ character_appearance<fb::protocol::CLIENT_VERSION::v651>::from(const character& 
 {
     auto app = character_appearance<fb::protocol::CLIENT_VERSION::v651>{};
     fill_appearance_from_character(app, ch);
-    app.face    = ch.face();
-    auto helmet = ch.items.helmet();
+    app.face       = ch.face();
+    app.ridable_id = ch.state() == STATE::RIDING ? ch.ridable_id() : uint16_t{0};
+    auto helmet    = ch.items.helmet();
     if (helmet != nullptr && ch.option(OPTION::VISIBLE_HELMET))
     {
         app.helmet       = static_cast<uint8_t>(helmet->model().dress);
@@ -273,6 +274,9 @@ void character_appearance<fb::protocol::CLIENT_VERSION::v651>::to_lua(fb::lua::c
     lua->settable(-3);
     lua->pushstring("face");
     lua->pushinteger(static_cast<lua_Integer>(this->face));
+    lua->settable(-3);
+    lua->pushstring("ridable_id");
+    lua->pushinteger(static_cast<lua_Integer>(this->ridable_id));
     lua->settable(-3);
     if (this->hair_color.has_value())
     {

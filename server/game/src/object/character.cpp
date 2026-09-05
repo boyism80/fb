@@ -43,10 +43,10 @@ character::character(fb::game::server& server, const initial_params& params) :
     _world(params.world), _role(params.role), _birthday(params.birthday), _hair(params.hair), _face(params.face),
     _color(params.color), _armor_color(params.armor_color), _weapon_color(params.weapon_color),
     _shield_color(params.shield_color), _experience(params.exp), _gender(params.gender), _state(params.state),
-    _level(params.level), _class(params.class_type), _promotion(params.promotion), _money(params.money),
-    _mimicry(params.mimicry), _title(params.title), _nation(params.nation), _divine_beast(params.divine_beast),
-    _super_hide(params.super_hide), _last_afk_time(server.now()), _marriage(server.now()), id(params.id),
-    client_version(params.client_version), ui_mode(params.ui_mode)
+    _ridable_id(params.ridable_id), _level(params.level), _class(params.class_type), _promotion(params.promotion),
+    _money(params.money), _mimicry(params.mimicry), _title(params.title), _nation(params.nation),
+    _divine_beast(params.divine_beast), _super_hide(params.super_hide), _last_afk_time(server.now()),
+    _marriage(server.now()), id(params.id), client_version(params.client_version), ui_mode(params.ui_mode)
 {
     this->_ping_state.last_ping_time = server.now() - std::chrono::seconds(10);
 }
@@ -591,6 +591,24 @@ void character::face(uint8_t value)
     this->_face = value;
     this->show();
     this->refresh_group_portrait();
+}
+
+uint16_t character::ridable_id() const
+{
+    this->assert_thread();
+
+    return this->_ridable_id;
+}
+
+void character::ridable_id(uint16_t value)
+{
+    this->assert_thread();
+
+    if (this->_ridable_id == value)
+        return;
+
+    this->_ridable_id = value;
+    this->show();
 }
 
 uint8_t character::color() const
@@ -1610,7 +1628,7 @@ bool character::move(DIRECTION direction, const fb::model::point16_t& before, ui
     }
 }
 
-async::task<void> character::ride(mob& horse)
+async::task<void> character::ride(mob& horse, uint16_t ridable_id)
 {
     this->assert_thread();
 
@@ -1627,7 +1645,8 @@ async::task<void> character::ride(mob& horse)
         if (horse.map() != this->_map)
             throw std::runtime_error(_TEXT(MESSAGE_ERROR_UNKNOWN));
 
-        std::ignore = co_await horse.map(nullptr);
+        std::ignore       = co_await horse.map(nullptr);
+        this->_ridable_id = ridable_id;
         this->state(STATE::RIDING);
         horse.kill();
         co_await horse.destroy();
@@ -1639,7 +1658,7 @@ async::task<void> character::ride(mob& horse)
     }
 }
 
-async::task<void> character::ride()
+async::task<void> character::ride(uint16_t ridable_id)
 {
     this->assert_thread();
 
@@ -1651,7 +1670,7 @@ async::task<void> character::ride()
         if (front == nullptr)
             throw std::runtime_error(_TEXT(MESSAGE_EXCEPTION_NO_CONVEYANCE));
 
-        co_await this->ride(static_cast<mob&>(*front));
+        co_await this->ride(static_cast<mob&>(*front), ridable_id);
     }
     catch (std::exception& e)
     {
@@ -2193,6 +2212,7 @@ fb::protocol::internal::Character character::to_protocol() const
     dto.role             = static_cast<uint8_t>(this->_role);
     dto.hair             = this->_hair;
     dto.face             = this->_face;
+    dto.ridable_id       = this->_ridable_id;
     dto.color            = this->_color;
     dto.gender           = static_cast<uint8_t>(this->_gender);
     dto.nation           = static_cast<uint8_t>(this->_nation);

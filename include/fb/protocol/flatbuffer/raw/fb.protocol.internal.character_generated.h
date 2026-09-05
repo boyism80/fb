@@ -75,7 +75,8 @@ struct Character FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
     VT_SPEED = 88,
     VT_REPUTATION = 90,
     VT_EVALUATION = 92,
-    VT_FACE = 94
+    VT_FACE = 94,
+    VT_RIDABLE_ID = 96
   };
   uint32_t id() const {
     return GetField<uint32_t>(VT_ID, 0);
@@ -215,6 +216,9 @@ struct Character FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
   uint8_t face() const {
     return GetField<uint8_t>(VT_FACE, 0);
   }
+  uint16_t ridable_id() const {
+    return GetField<uint16_t>(VT_RIDABLE_ID, 0);
+  }
   bool Verify(::flatbuffers::Verifier &verifier) const {
     return VerifyTableStart(verifier) &&
            VerifyField<uint32_t>(verifier, VT_ID, 4) &&
@@ -282,6 +286,7 @@ struct Character FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
            VerifyField<int16_t>(verifier, VT_REPUTATION, 2) &&
            VerifyField<uint16_t>(verifier, VT_EVALUATION, 2) &&
            VerifyField<uint8_t>(verifier, VT_FACE, 1) &&
+           VerifyField<uint16_t>(verifier, VT_RIDABLE_ID, 2) &&
            verifier.EndTable();
   }
 };
@@ -428,6 +433,9 @@ struct CharacterBuilder {
   void add_face(uint8_t face) {
     fbb_.AddElement<uint8_t>(Character::VT_FACE, face, 0);
   }
+  void add_ridable_id(uint16_t ridable_id) {
+    fbb_.AddElement<uint16_t>(Character::VT_RIDABLE_ID, ridable_id, 0);
+  }
   explicit CharacterBuilder(::flatbuffers::FlatBufferBuilder &_fbb)
         : fbb_(_fbb) {
     start_ = fbb_.StartTable();
@@ -486,7 +494,8 @@ inline ::flatbuffers::Offset<Character> CreateCharacter(
     uint8_t speed = 0,
     int16_t reputation = 0,
     uint16_t evaluation = 0,
-    uint8_t face = 0) {
+    uint8_t face = 0,
+    uint16_t ridable_id = 0) {
   CharacterBuilder builder_(_fbb);
   builder_.add_additional_mp(additional_mp);
   builder_.add_base_mp(base_mp);
@@ -518,6 +527,7 @@ inline ::flatbuffers::Offset<Character> CreateCharacter(
   builder_.add_name(name);
   builder_.add_world(world);
   builder_.add_id(id);
+  builder_.add_ridable_id(ridable_id);
   builder_.add_evaluation(evaluation);
   builder_.add_reputation(reputation);
   builder_.add_color(color);
@@ -584,7 +594,8 @@ inline ::flatbuffers::Offset<Character> CreateCharacterDirect(
     uint8_t speed = 0,
     int16_t reputation = 0,
     uint16_t evaluation = 0,
-    uint8_t face = 0) {
+    uint8_t face = 0,
+    uint16_t ridable_id = 0) {
   auto name__ = name ? _fbb.CreateString(name) : 0;
   auto pw__ = pw ? _fbb.CreateString(pw) : 0;
   auto buffs__ = buffs ? _fbb.CreateVector<::flatbuffers::Offset<fb::protocol::internal::raw::Buff>>(*buffs) : 0;
@@ -639,7 +650,8 @@ inline ::flatbuffers::Offset<Character> CreateCharacterDirect(
       speed,
       reputation,
       evaluation,
-      face);
+      face,
+      ridable_id);
 }
 
 inline const fb::protocol::internal::raw::Character *GetCharacter(const void *buf) {

@@ -111,7 +111,17 @@ async::task<bool> login<V>::handle(fb::socket<fb::login::session>& session, logi
         auto writer    = fb::stream_writer<big_endian>(parameter);
         writer.write<uint32_t>(uid);
         writer.write<std::string>(name);
-        writer.write<uint8_t>(0);
+
+        // Game C2S 0x10 flags: TRANSFER_PARAM::UI_MODE = 0x04, then CLIENT_UI_MODE.
+        auto flags = uint8_t{0};
+        auto sess  = session.data();
+        if (sess != nullptr && sess->client_version == fb::protocol::CLIENT_VERSION::v651 &&
+            sess->ui_mode == fb::protocol::CLIENT_UI_MODE::NEW)
+            flags = 0x04;
+
+        writer.write<uint8_t>(flags);
+        if (flags == 0x04)
+            writer.write<uint8_t>(static_cast<uint8_t>(sess->ui_mode));
         std::ignore = this->server.transfer(session, resp3.ip, resp3.port, internal::Service::Login, parameter);
         co_return true;
     }

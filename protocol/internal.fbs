@@ -88,6 +88,7 @@ table Character {
     reputation: short;
     evaluation: ushort;
     face: ubyte;
+    ridable_id: ushort = 1;
 }
 
 table Marriage {
