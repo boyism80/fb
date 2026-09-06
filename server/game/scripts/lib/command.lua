@@ -2323,15 +2323,15 @@ M.functions = {
             end,
         },
 
-        ['테이블리로드'] = {
+        ['테이블패치'] = {
             ['privilege'] = ROLE.ADMIN,
-            ['usage'] = '- json/xlsx 데이터 테이블 리로드',
+            ['usage'] = '- json/xlsx 데이터 테이블 패치',
             ['command'] = function (me, args)
                 local ok, err = reload_table()
                 if ok then
-                    me:message("테이블 리로드를 요청했습니다. 완료되면 관리자에게 알림이 갑니다.", MESSAGE_TYPE.BROWN)
+                    me:message("테이블 패치를 요청했습니다. 완료되면 관리자에게 알림이 갑니다.", MESSAGE_TYPE.BROWN)
                 else
-                    me:message(err or "테이블 리로드에 실패했습니다.")
+                    me:message(err or "테이블 패치에 실패했습니다.")
                 end
                 return true
             end,
