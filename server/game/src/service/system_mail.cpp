@@ -162,7 +162,7 @@ fb::async_generator<void> service::system_mail::delivery_coroutine()
                     auto&& resp =
                         co_await this->server.http.post("internal",
                                                         "/mail/deliver-system-mail",
-                                                        internal_reqs::DeliverSystemMail{world,
+                                                        internal_reqs::DeliverSystemMail{*world,
                                                                                          mail.id,
                                                                                          mail.sender,
                                                                                          std::move(chunk_users),

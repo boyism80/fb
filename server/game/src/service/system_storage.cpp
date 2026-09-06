@@ -430,7 +430,7 @@ async::task<void> service::system_storage::poll_and_deliver()
                 auto&& resp =
                     co_await this->server.http.post("internal",
                                                     "/storage/system/deliver",
-                                                    internal_reqs::DeliverSystemStorage{world,
+                                                    internal_reqs::DeliverSystemStorage{*world,
                                                                                         box.id,
                                                                                         std::move(chunk_users),
                                                                                         fb::config<uint32_t>("id")});

@@ -18,7 +18,7 @@ end
 function M.handle(me, npc)
     local mm = me:matchmaker()
 
-    if fb.is_cross() and not mm:enrolled() then
+    if is_cross() and not mm:enrolled() then
         me:dialog(npc, '교차 서버에서는 매치메이킹을 등록할 수 없습니다.', { prev = false, next = true })
         return true
     end
