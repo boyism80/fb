@@ -5,8 +5,10 @@
 #include <fb/amqp.h>
 #include <atomic>
 #include <condition_variable>
+#include <cstdint>
 #include <deque>
 #include <mutex>
+#include <optional>
 #include <thread>
 
 namespace fb {
@@ -17,7 +19,7 @@ private:
     std::unique_ptr<fb::amqp::socket> _amqp;
     std::string                       _server_id;
     std::string                       _server_name;
-    uint32_t                          _world;
+    std::optional<uint32_t>           _world;
 
     std::deque<Json::Value> _buffer;
     std::mutex              _buffer_mutex;
@@ -26,13 +28,13 @@ private:
     std::thread             _worker;
 
 public:
-    log_collector(std::string_view hostname,
-                  uint16_t         port,
-                  std::string_view uid,
-                  std::string_view pwd,
-                  std::string_view server_id,
-                  std::string_view server_name,
-                  uint32_t         world);
+    log_collector(std::string_view        hostname,
+                  uint16_t                port,
+                  std::string_view        uid,
+                  std::string_view        pwd,
+                  std::string_view        server_id,
+                  std::string_view        server_name,
+                  std::optional<uint32_t> world);
     ~log_collector();
 
     log_collector(const log_collector&)             = delete;

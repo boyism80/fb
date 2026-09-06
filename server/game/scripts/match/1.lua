@@ -20,19 +20,15 @@ return {
             return
         end
 
-        local group = me:group()
-        if group == nil then
+        local team = match:team(me)
+        if team == nil then
             match:finish(5)
             return
         end
 
-        local master = group:master()
-        for _, ch in ipairs(match:members()) do
+        for _, ch in ipairs(team:members()) do
             if ch:state() ~= STATE.GHOST then
-                local other = ch:group()
-                if other ~= nil and other:master() == master then
-                    return
-                end
+                return
             end
         end
 

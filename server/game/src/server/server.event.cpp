@@ -168,7 +168,7 @@ void fb::game::server::on_init_amqp(fb::amqp::socket& amqp)
     this->handler.amqp.declare_queue("amq.direct", "fb.global");
     for (auto& t : fb::k_amqp_topics)
     {
-        if (t.kind == fb::amqp_kind::home && scope == "cross")
+        if (std::string_view(t.name) == "castle" && scope == "cross")
             continue;
         this->handler.amqp.declare_queue("amq.direct", fb::amqp_key(t.name, scope, id));
     }

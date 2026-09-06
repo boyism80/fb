@@ -13,8 +13,8 @@ static_assert(FLATBUFFERS_VERSION_MAJOR == 25 &&
               FLATBUFFERS_VERSION_REVISION == 10,
              "Non-compatible flatbuffers version included");
 
-#include "fb.protocol.internal.processrole_generated.h"
 #include "fb.protocol.internal.service_generated.h"
+#include "nullable_uint_generated.h"
 
 namespace fb {
 namespace protocol {
@@ -33,11 +33,10 @@ struct Heartbeat FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
     VT_ID = 8,
     VT_NAME = 10,
     VT_IP = 12,
-    VT_PORT = 14,
-    VT_ROLE = 16
+    VT_PORT = 14
   };
-  uint32_t world() const {
-    return GetField<uint32_t>(VT_WORLD, 0);
+  const nullable::nullable_uint *world() const {
+    return GetPointer<const nullable::nullable_uint *>(VT_WORLD);
   }
   fb::protocol::internal::raw::Service service() const {
     return static_cast<fb::protocol::internal::raw::Service>(GetField<int8_t>(VT_SERVICE, 0));
@@ -54,12 +53,10 @@ struct Heartbeat FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
   uint16_t port() const {
     return GetField<uint16_t>(VT_PORT, 0);
   }
-  fb::protocol::internal::raw::ProcessRole role() const {
-    return static_cast<fb::protocol::internal::raw::ProcessRole>(GetField<int8_t>(VT_ROLE, 0));
-  }
   bool Verify(::flatbuffers::Verifier &verifier) const {
     return VerifyTableStart(verifier) &&
-           VerifyField<uint32_t>(verifier, VT_WORLD, 4) &&
+           VerifyOffset(verifier, VT_WORLD) &&
+           verifier.VerifyTable(world()) &&
            VerifyField<int8_t>(verifier, VT_SERVICE, 1) &&
            VerifyField<uint8_t>(verifier, VT_ID, 1) &&
            VerifyOffset(verifier, VT_NAME) &&
@@ -67,7 +64,6 @@ struct Heartbeat FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
            VerifyOffset(verifier, VT_IP) &&
            verifier.VerifyString(ip()) &&
            VerifyField<uint16_t>(verifier, VT_PORT, 2) &&
-           VerifyField<int8_t>(verifier, VT_ROLE, 1) &&
            verifier.EndTable();
   }
 };
@@ -76,8 +72,8 @@ struct HeartbeatBuilder {
   typedef Heartbeat Table;
   ::flatbuffers::FlatBufferBuilder &fbb_;
   ::flatbuffers::uoffset_t start_;
-  void add_world(uint32_t world) {
-    fbb_.AddElement<uint32_t>(Heartbeat::VT_WORLD, world, 0);
+  void add_world(::flatbuffers::Offset<nullable::nullable_uint> world) {
+    fbb_.AddOffset(Heartbeat::VT_WORLD, world);
   }
   void add_service(fb::protocol::internal::raw::Service service) {
     fbb_.AddElement<int8_t>(Heartbeat::VT_SERVICE, static_cast<int8_t>(service), 0);
@@ -94,9 +90,6 @@ struct HeartbeatBuilder {
   void add_port(uint16_t port) {
     fbb_.AddElement<uint16_t>(Heartbeat::VT_PORT, port, 0);
   }
-  void add_role(fb::protocol::internal::raw::ProcessRole role) {
-    fbb_.AddElement<int8_t>(Heartbeat::VT_ROLE, static_cast<int8_t>(role), 0);
-  }
   explicit HeartbeatBuilder(::flatbuffers::FlatBufferBuilder &_fbb)
         : fbb_(_fbb) {
     start_ = fbb_.StartTable();
@@ -110,19 +103,17 @@ struct HeartbeatBuilder {
 
 inline ::flatbuffers::Offset<Heartbeat> CreateHeartbeat(
     ::flatbuffers::FlatBufferBuilder &_fbb,
-    uint32_t world = 0,
+    ::flatbuffers::Offset<nullable::nullable_uint> world = 0,
     fb::protocol::internal::raw::Service service = fb::protocol::internal::raw::Service_Gateway,
     uint8_t id = 0,
     ::flatbuffers::Offset<::flatbuffers::String> name = 0,
     ::flatbuffers::Offset<::flatbuffers::String> ip = 0,
-    uint16_t port = 0,
-    fb::protocol::internal::raw::ProcessRole role = fb::protocol::internal::raw::ProcessRole_Home) {
+    uint16_t port = 0) {
   HeartbeatBuilder builder_(_fbb);
   builder_.add_ip(ip);
   builder_.add_name(name);
   builder_.add_world(world);
   builder_.add_port(port);
-  builder_.add_role(role);
   builder_.add_id(id);
   builder_.add_service(service);
   return builder_.Finish();
@@ -130,13 +121,12 @@ inline ::flatbuffers::Offset<Heartbeat> CreateHeartbeat(
 
 inline ::flatbuffers::Offset<Heartbeat> CreateHeartbeatDirect(
     ::flatbuffers::FlatBufferBuilder &_fbb,
-    uint32_t world = 0,
+    ::flatbuffers::Offset<nullable::nullable_uint> world = 0,
     fb::protocol::internal::raw::Service service = fb::protocol::internal::raw::Service_Gateway,
     uint8_t id = 0,
     const char *name = nullptr,
     const char *ip = nullptr,
-    uint16_t port = 0,
-    fb::protocol::internal::raw::ProcessRole role = fb::protocol::internal::raw::ProcessRole_Home) {
+    uint16_t port = 0) {
   auto name__ = name ? _fbb.CreateString(name) : 0;
   auto ip__ = ip ? _fbb.CreateString(ip) : 0;
   return fb::protocol::internal::request::raw::CreateHeartbeat(
@@ -146,8 +136,7 @@ inline ::flatbuffers::Offset<Heartbeat> CreateHeartbeatDirect(
       id,
       name__,
       ip__,
-      port,
-      role);
+      port);
 }
 
 inline const fb::protocol::internal::request::raw::Heartbeat *GetHeartbeat(const void *buf) {

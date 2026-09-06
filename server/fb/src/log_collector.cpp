@@ -8,17 +8,18 @@
 #include <sstream>
 #include <chrono>
 #include <format>
+#include <optional>
 #include <vector>
 
 using namespace fb;
 
-log_collector::log_collector(std::string_view hostname,
-                             uint16_t         port,
-                             std::string_view uid,
-                             std::string_view pwd,
-                             std::string_view server_id,
-                             std::string_view server_name,
-                             uint32_t         world) :
+log_collector::log_collector(std::string_view        hostname,
+                             uint16_t                port,
+                             std::string_view        uid,
+                             std::string_view        pwd,
+                             std::string_view        server_id,
+                             std::string_view        server_name,
+                             std::optional<uint32_t> world) :
     _server_id(std::string(server_id)),
     _server_name(std::string(server_name)),
     _world(world)
@@ -157,7 +158,7 @@ std::string log_collector::serialize_log_array(const std::vector<Json::Value>& e
 
 std::string log_collector::get_routing_key() const
 {
-    if (this->_world > 0)
-        return std::format("fb.{}.log", this->_world);
+    if (this->_world)
+        return std::format("fb.{}.log", *this->_world);
     return "fb.log";
 }

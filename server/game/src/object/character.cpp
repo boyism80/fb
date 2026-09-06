@@ -413,7 +413,7 @@ async::task<bool> character::transfer_home()
         co_return false;
 
     auto position = this->_match_return_position.value();
-    if (fb::is_cross() == false)
+    if (fb::config<std::optional<uint32_t>>("world"))
         co_return co_await this->map(dest, position);
 
     if (this->map() == nullptr)
@@ -1543,9 +1543,10 @@ async::task<void> character::broadcast_friends(std::string_view message, MESSAGE
 
     if (to_uids.empty() == false)
     {
-        auto world  = this->world();
-        auto host   = fb::config<uint32_t>("id");
-        std::ignore = co_await this->server.http.post("internal",
+        auto world         = this->world();
+        auto host          = fb::config<uint32_t>("id");
+        auto process_world = fb::config<std::optional<uint32_t>>("world");
+        std::ignore        = co_await this->server.http.post("internal",
                                                       "/in-game/friend-broadcast",
                                                       internal_reqs::FriendBroadcast{world,
                                                                                      host,
@@ -1554,7 +1555,7 @@ async::task<void> character::broadcast_friends(std::string_view message, MESSAGE
                                                                                      message_str,
                                                                                      static_cast<uint8_t>(type),
                                                                                      std::move(to_uids),
-                                                                                     fb::process_role()});
+                                                                                     process_world});
     }
     co_return;
 }
@@ -1814,7 +1815,7 @@ async::task<void> character::whisper(std::string receiver_name, std::string mess
                 co_return;
             }
 
-            co_await this->server.clans.broadcast(this->clan_id().value(), text, MESSAGE_TYPE::BROWN);
+            co_await this->server.clans.broadcast(this->world(), this->clan_id().value(), text, MESSAGE_TYPE::BROWN);
 
             auto log_data           = Json::Value();
             log_data["sender_id"]   = static_cast<Json::Int64>(this->id);
@@ -1831,7 +1832,7 @@ async::task<void> character::whisper(std::string receiver_name, std::string mess
                 co_return;
             }
 
-            co_await this->server.groups.broadcast(this->group_id().value(), text, MESSAGE_TYPE::YELLOW);
+            co_await this->server.groups.broadcast(this->world(), this->group_id().value(), text, MESSAGE_TYPE::YELLOW);
 
             auto log_data           = Json::Value();
             log_data["sender_id"]   = static_cast<Json::Int64>(this->id);
@@ -2223,7 +2224,7 @@ fb::protocol::internal::Character character::to_protocol() const
         dto.position =
             fb::protocol::internal::Position{this->_match_return_position->x, this->_match_return_position->y};
     }
-    else if (fb::is_cross())
+    else if (!fb::config<std::optional<uint32_t>>("world"))
     {
         fb::logger::fatal("Character {} cross to_protocol without home snapshot", this->_name);
         dto.map      = 0;

@@ -39,6 +39,7 @@ async::task<void> fb::game::server::init_lua()
         lua.build<fb::game::map, fb::thread_switchable>();
         lua.build<fb::game::matchmaker, fb::lua::luable>();
         lua.build<fb::game::match, fb::lua::luable>();
+        lua.build<fb::game::match::team, fb::lua::luable>();
         lua.build<fb::game::group, fb::thread_switchable>();
         lua.build<fb::game::object, fb::thread_switchable>();
         lua.build<fb::game::life, fb::game::object>();
@@ -235,7 +236,7 @@ void fb::game::server::init_timers()
     this->bind_timer<fb::game::handler::timer::system_mail_timer>(1s);
     this->bind_timer<fb::game::handler::timer::system_storage_box_timer>(1s);
 
-    if (fb::is_cross() == false)
+    if (fb::config<std::optional<uint32_t>>("world"))
         this->schedules.init();
     auto announce_interval = std::chrono::seconds(fb::model::const_value::time::ANNOUNCE.total_milliseconds() / 1000);
     this->bind_timer<fb::game::handler::timer::announce>(announce_interval);
@@ -273,6 +274,7 @@ void fb::game::server::init_amqp_handlers()
     this->handler.amqp.bind<fb::game::handler::amqp::create_group>(fb::amqp_key("group", scope));
     this->handler.amqp.bind<fb::game::handler::amqp::updated_group>(fb::amqp_key("group", scope));
     this->handler.amqp.bind<fb::game::handler::amqp::destroy_group>(fb::amqp_key("group", scope));
+    this->handler.amqp.bind<fb::game::handler::amqp::broadcast_group>(fb::amqp_key("group", scope));
     this->handler.amqp.bind<fb::game::handler::amqp::write_mail>(fb::amqp_key("mail", scope));
     this->handler.amqp.bind<fb::game::handler::amqp::write_mails>(fb::amqp_key("mail", scope));
     this->handler.amqp.bind<fb::game::handler::amqp::deliver_system_mail>(fb::amqp_key("mail", scope));
@@ -284,16 +286,16 @@ void fb::game::server::init_amqp_handlers()
     this->handler.amqp.bind<fb::game::handler::amqp::matchmaking_ready>(fb::amqp_key("matchmaking", scope));
     this->handler.amqp.bind<fb::game::handler::amqp::matchmaking_dissolved>(fb::amqp_key("matchmaking", scope));
 
-    if (scope != "cross")
+    if (fb::config<std::optional<uint32_t>>("world"))
     {
         this->handler.amqp.bind<fb::game::handler::amqp::updated_castle>(fb::amqp_key("castle", scope));
-        this->handler.amqp.bind<fb::game::handler::amqp::broadcast>(fb::amqp_key("global", scope));
-        this->handler.amqp.bind<fb::game::handler::amqp::set_datetime>(fb::amqp_key("global", scope));
-        this->handler.amqp.bind<fb::game::handler::amqp::set_exp_multiplier>(fb::amqp_key("global", scope));
-        this->handler.amqp.bind<fb::game::handler::amqp::set_drop_rate_multiplier>(fb::amqp_key("global", scope));
-        this->handler.amqp.bind<fb::game::handler::amqp::reload_tables>(fb::amqp_key("global", scope));
-        this->handler.amqp.bind<fb::game::handler::amqp::reload_scripts>(fb::amqp_key("global", scope));
     }
+    this->handler.amqp.bind<fb::game::handler::amqp::broadcast>(fb::amqp_key("global", scope));
+    this->handler.amqp.bind<fb::game::handler::amqp::set_datetime>(fb::amqp_key("global", scope));
+    this->handler.amqp.bind<fb::game::handler::amqp::set_exp_multiplier>(fb::amqp_key("global", scope));
+    this->handler.amqp.bind<fb::game::handler::amqp::set_drop_rate_multiplier>(fb::amqp_key("global", scope));
+    this->handler.amqp.bind<fb::game::handler::amqp::reload_tables>(fb::amqp_key("global", scope));
+    this->handler.amqp.bind<fb::game::handler::amqp::reload_scripts>(fb::amqp_key("global", scope));
 }
 
 async::task<void> fb::game::server::init_map_scripts()
@@ -372,7 +374,7 @@ fb::game::server::server(boost::asio::io_context& io_context, uint16_t port) :
         fb::config<std::string>("amqp:log:pwd"),
         std::to_string(fb::config<uint32_t>("id")),
         fb::config<std::string>("name"),
-        fb::config<uint32_t>("world")),
+        fb::config<std::optional<uint32_t>>("world")),
     _exp_multiplier(fb::config<double>("exp_multiplier")),
     _drop_rate_multiplier(fb::config<double>("drop_rate_multiplier"))
 { }
@@ -467,7 +469,7 @@ async::task<void> fb::game::server::on_start()
         builder.func = [this](auto&) -> async::task<void> {
             try
             {
-                if (fb::is_cross() == false)
+                if (fb::config<std::optional<uint32_t>>("world"))
                 {
                     co_await this->castles.load_all();
                     fb::logger::info("castles: loaded all divine beast castles");

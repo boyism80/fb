@@ -33,7 +33,7 @@ async::task<void> character::container::broadcast(std::string_view message,
     auto message_str = std::string(message);
     if (broadcast_type == BROADCAST_TYPE::GLOBAL)
     {
-        auto   world = fb::config<uint32_t>("world");
+        auto   world = fb::config<std::optional<uint32_t>>("world");
         auto&& resp  = co_await this->_server.http.post(
             "internal",
             "/in-game/broadcast",

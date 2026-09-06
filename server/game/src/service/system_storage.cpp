@@ -232,14 +232,14 @@ async::task<void> service::system_storage::sync(character& ch)
     co_return;
 }
 
-async::task<bool> service::system_storage::create(uint32_t                           user_id,
+async::task<bool> service::system_storage::create(uint32_t                           world,
+                                                  uint32_t                           user_id,
                                                   std::string_view                   external_ref,
                                                   std::string_view                   title,
                                                   std::string_view                   message,
                                                   const std::vector<fb::model::dsl>& attachments,
                                                   const std::optional<std::string>&  expire_date)
 {
-    const auto world            = fb::config<uint32_t>("world");
     const auto attachments_json = attachments_to_json(attachments);
 
     try
@@ -273,14 +273,14 @@ async::task<bool> service::system_storage::create(uint32_t                      
     }
 }
 
-async::task<bool> service::system_storage::create(std::string_view                   user_name,
+async::task<bool> service::system_storage::create(uint32_t                           world,
+                                                  std::string_view                   user_name,
                                                   std::string_view                   title,
                                                   std::string_view                   message,
                                                   const std::vector<fb::model::dsl>& attachments,
                                                   const std::optional<std::string>&  expire_date,
                                                   std::string_view                   external_ref)
 {
-    const auto world            = fb::config<uint32_t>("world");
     const auto attachments_json = attachments_to_json(attachments);
 
     try
@@ -314,13 +314,13 @@ async::task<bool> service::system_storage::create(std::string_view              
     }
 }
 
-async::task<bool> service::system_storage::create_system(std::string_view                   title,
+async::task<bool> service::system_storage::create_system(uint32_t                           world,
+                                                         std::string_view                   title,
                                                          std::string_view                   message,
                                                          const std::vector<fb::model::dsl>& attachments,
                                                          const std::optional<std::string>&  expire_date,
                                                          std::string_view                   external_ref)
 {
-    const auto world            = fb::config<uint32_t>("world");
     const auto attachments_json = attachments_to_json(attachments);
 
     try
@@ -353,7 +353,8 @@ async::task<bool> service::system_storage::create_system(std::string_view       
 
 async::task<void> service::system_storage::poll_and_deliver()
 {
-    if (fb::is_cross())
+    auto world = fb::config<std::optional<uint32_t>>("world");
+    if (!world)
         co_return;
 
     const auto now = this->server.now();
@@ -363,8 +364,7 @@ async::task<void> service::system_storage::poll_and_deliver()
         co_return;
 
     auto        max_box_id = uint32_t{0};
-    const auto  world      = fb::config<uint32_t>("world");
-    const auto& fetch_url  = std::format("/storage/system/{}?offset={}", world, this->_poll_offset);
+    const auto& fetch_url  = std::format("/storage/system/{}?offset={}", *world, this->_poll_offset);
 
     try
     {

@@ -42,9 +42,9 @@ public:
 
 public:
     // clang-format off
-    async::task<bool> create(uint32_t user_id, std::string_view external_ref, std::string_view title, std::string_view message, const std::vector<fb::model::dsl>& attachments, const std::optional<std::string>& expire_date = std::nullopt);
-    async::task<bool> create(std::string_view user_name, std::string_view title, std::string_view message, const std::vector<fb::model::dsl>& attachments, const std::optional<std::string>& expire_date = std::nullopt, std::string_view external_ref = "");
-    async::task<bool> create_system(std::string_view title, std::string_view message, const std::vector<fb::model::dsl>& attachments, const std::optional<std::string>& expire_date = std::nullopt, std::string_view external_ref = "");
+    async::task<bool> create(uint32_t world, uint32_t user_id, std::string_view external_ref, std::string_view title, std::string_view message, const std::vector<fb::model::dsl>& attachments, const std::optional<std::string>& expire_date = std::nullopt);
+    async::task<bool> create(uint32_t world, std::string_view user_name, std::string_view title, std::string_view message, const std::vector<fb::model::dsl>& attachments, const std::optional<std::string>& expire_date = std::nullopt, std::string_view external_ref = "");
+    async::task<bool> create_system(uint32_t world, std::string_view title, std::string_view message, const std::vector<fb::model::dsl>& attachments, const std::optional<std::string>& expire_date = std::nullopt, std::string_view external_ref = "");
     async::task<void> sync(character& ch);
     async::task<void> poll_and_deliver();
     void              deliver(const std::vector<storage_box::entry>& entries, const std::vector<uint32_t>& user_ids);

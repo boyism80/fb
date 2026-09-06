@@ -1,7 +1,6 @@
 {
     "id": 0,
     "name": "game-dev-0",
-    "role": "home",
     "world": 1,
     "delay": 5,
     "ip": "127.0.0.1",

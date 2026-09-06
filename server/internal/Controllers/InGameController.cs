@@ -90,11 +90,7 @@ namespace Internal.Controllers
                     }
                 }
 
-                Http.Service.ServerStateService.HostConfig conf;
-                if (request.Role == Protocol.ProcessRole.Cross)
-                    conf = await _serverStateService.GetCrossHost(request.Host);
-                else
-                    conf = await _serverStateService.GetHostConfig(world, Protocol.Service.Game, request.Host);
+                var conf = await _serverStateService.GetHostConfig(request.ProcessWorld, Protocol.Service.Game, request.Host);
                 if (conf == null)
                     throw new LogicException(ErrorCode.ServerNotReady);
 
@@ -102,7 +98,7 @@ namespace Internal.Controllers
                 {
                     Uid = request.Uid,
                     Host = request.Host,
-                    Role = AmqpRoute.Name(request.Role)
+                    World = request.ProcessWorld
                 }, request.Force);
 
                 if (!success)
@@ -199,7 +195,7 @@ namespace Internal.Controllers
                         {
                             Uid = session.Uid,
                             Name = request.Name
-                        }, AmqpRoute.Exchange, AmqpRoute.Unicast(session, world));
+                        }, AmqpRoute.Exchange, AmqpRoute.Unicast(session));
                         throw new LogicException(ErrorCode.AlreadyLogin);
                     }
                 }
@@ -311,7 +307,7 @@ namespace Internal.Controllers
                     To = target.Name,
                     Message = request.Message
                 };
-                await _rabbitMqService.PublishAsync(response, AmqpRoute.Exchange, AmqpRoute.Unicast(targetSession, targetWorld));
+                await _rabbitMqService.PublishAsync(response, AmqpRoute.Exchange, AmqpRoute.Unicast(targetSession));
                 return response;
             }
             catch (LogicException e)
@@ -805,10 +801,7 @@ namespace Internal.Controllers
 
         private static bool SameCrossHost(Session session, Session target)
         {
-            if (AmqpRoute.Parse(session.Role) != Protocol.ProcessRole.Cross)
-                return false;
-
-            if (AmqpRoute.Parse(target.Role) != Protocol.ProcessRole.Cross)
+            if (session.World.HasValue || target.World.HasValue)
                 return false;
 
             if (session.Host != target.Host)

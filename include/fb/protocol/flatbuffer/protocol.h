@@ -29,7 +29,6 @@
 #include <mutex>
 #include <memory>
 #include <fb/protocol/flatbuffer/raw/fb.protocol.internal.service_generated.h>
-#include <fb/protocol/flatbuffer/raw/fb.protocol.internal.processrole_generated.h>
 #include <fb/protocol/flatbuffer/raw/fb.protocol.internal.groupactiontype_generated.h>
 #include <fb/protocol/flatbuffer/raw/fb.protocol.internal.groupdetailsaction_generated.h>
 #include <fb/protocol/flatbuffer/raw/fb.protocol.internal.clanactiontype_generated.h>
@@ -253,7 +252,6 @@ namespace fb::protocol::internal
     class SavePayload;
     class OptionChange;
     enum class Service : int8_t;
-    enum class ProcessRole : int8_t;
     enum class GroupActionType : int8_t;
     enum class GroupDetailsAction : int8_t;
     enum class ClanActionType : int8_t;
@@ -717,7 +715,6 @@ template <> struct FlatBufferOffset<fb::protocol::matchmaking::response::Confirm
 template <> struct FlatBufferOffset<fb::protocol::matchmaking::response::Decline> { typedef flatbuffers::Offset<fb::protocol::matchmaking::response::raw::Decline> type; };
 template <> struct FlatBufferOffset<fb::protocol::matchmaking::response::Status> { typedef flatbuffers::Offset<fb::protocol::matchmaking::response::raw::Status> type; };
 template <> struct FlatBufferOffset<fb::protocol::internal::Service> { typedef fb::protocol::internal::raw::Service type; };
-template <> struct FlatBufferOffset<fb::protocol::internal::ProcessRole> { typedef fb::protocol::internal::raw::ProcessRole type; };
 template <> struct FlatBufferOffset<fb::protocol::internal::GroupActionType> { typedef fb::protocol::internal::raw::GroupActionType type; };
 template <> struct FlatBufferOffset<fb::protocol::internal::GroupDetailsAction> { typedef fb::protocol::internal::raw::GroupDetailsAction type; };
 template <> struct FlatBufferOffset<fb::protocol::internal::ClanActionType> { typedef fb::protocol::internal::raw::ClanActionType type; };
@@ -1111,11 +1108,6 @@ enum class Service : int8_t
     Gateway = fb::protocol::internal::raw::Service::Service_Gateway,
     Login = fb::protocol::internal::raw::Service::Service_Login,
     Game = fb::protocol::internal::raw::Service::Service_Game,
-};
-enum class ProcessRole : int8_t
-{
-    Home = fb::protocol::internal::raw::ProcessRole::ProcessRole_Home,
-    Cross = fb::protocol::internal::raw::ProcessRole::ProcessRole_Cross,
 };
 enum class GroupActionType : int8_t
 {
@@ -2647,21 +2639,21 @@ public:
     std::string name;
     uint8_t host = 0;
     bool force = false;
-    fb::protocol::internal::ProcessRole role;
+    std::optional<uint32_t> process_world = std::nullopt;
 
 public:
     Login() = default;
 
     Login(const Login& x)
-        : world(x.world), uid(x.uid), name(x.name), host(x.host), force(x.force), role(x.role)
+        : world(x.world), uid(x.uid), name(x.name), host(x.host), force(x.force), process_world(x.process_world)
     { }
 
-    Login(uint32_t world, uint32_t uid, std::string_view name, uint8_t host, bool force, fb::protocol::internal::ProcessRole role)
-        : world(world), uid(uid), name(std::string(name)), host(host), force(force), role(role)
+    Login(uint32_t world, uint32_t uid, std::string_view name, uint8_t host, bool force, const std::optional<uint32_t>& process_world)
+        : world(world), uid(uid), name(std::string(name)), host(host), force(force), process_world(process_world)
     { }
 
     Login(const fb::protocol::internal::request::raw::Login& raw)
-        : world(raw.world()), uid(raw.uid()), name(flatbuffers::option::decode(raw.name()->c_str())), host(raw.host()), force(raw.force()), role((fb::protocol::internal::ProcessRole)raw.role())
+        : world(raw.world()), uid(raw.uid()), name(flatbuffers::option::decode(raw.name()->c_str())), host(raw.host()), force(raw.force()), process_world(raw.process_world() != nullptr ? raw.process_world()->value() : std::optional<uint32_t>())
     { }
 
 public:
@@ -4328,7 +4320,7 @@ public:
     static inline fb::protocol::internal::request::FlatBufferProtocolType FlatBufferProtocolType = fb::protocol::internal::request::FlatBufferProtocolType::Broadcast;
 
 public:
-    uint32_t world = 0;
+    std::optional<uint32_t> world = std::nullopt;
     uint32_t host = 0;
     std::string message;
     uint8_t type = 0;
@@ -4340,12 +4332,12 @@ public:
         : world(x.world), host(x.host), message(x.message), type(x.type)
     { }
 
-    Broadcast(uint32_t world, uint32_t host, std::string_view message, uint8_t type)
+    Broadcast(const std::optional<uint32_t>& world, uint32_t host, std::string_view message, uint8_t type)
         : world(world), host(host), message(std::string(message)), type(type)
     { }
 
     Broadcast(const fb::protocol::internal::request::raw::Broadcast& raw)
-        : world(raw.world()), host(raw.host()), message(flatbuffers::option::decode(raw.message()->c_str())), type(raw.type())
+        : world(raw.world() != nullptr ? raw.world()->value() : std::optional<uint32_t>()), host(raw.host()), message(flatbuffers::option::decode(raw.message()->c_str())), type(raw.type())
     { }
 
 public:
@@ -4418,21 +4410,21 @@ public:
     std::string message;
     uint8_t type = 0;
     std::vector<uint32_t> to_uids = {};
-    fb::protocol::internal::ProcessRole role;
+    std::optional<uint32_t> process_world = std::nullopt;
 
 public:
     FriendBroadcast() = default;
 
     FriendBroadcast(const FriendBroadcast& x)
-        : world(x.world), host(x.host), from_uid(x.from_uid), from_name(x.from_name), message(x.message), type(x.type), to_uids(x.to_uids), role(x.role)
+        : world(x.world), host(x.host), from_uid(x.from_uid), from_name(x.from_name), message(x.message), type(x.type), to_uids(x.to_uids), process_world(x.process_world)
     { }
 
-    FriendBroadcast(uint32_t world, uint32_t host, uint32_t from_uid, std::string_view from_name, std::string_view message, uint8_t type, std::vector<uint32_t> to_uids, fb::protocol::internal::ProcessRole role)
-        : world(world), host(host), from_uid(from_uid), from_name(std::string(from_name)), message(std::string(message)), type(type), to_uids(to_uids), role(role)
+    FriendBroadcast(uint32_t world, uint32_t host, uint32_t from_uid, std::string_view from_name, std::string_view message, uint8_t type, std::vector<uint32_t> to_uids, const std::optional<uint32_t>& process_world)
+        : world(world), host(host), from_uid(from_uid), from_name(std::string(from_name)), message(std::string(message)), type(type), to_uids(to_uids), process_world(process_world)
     { }
 
     FriendBroadcast(const fb::protocol::internal::request::raw::FriendBroadcast& raw)
-        : world(raw.world()), host(raw.host()), from_uid(raw.from_uid()), from_name(flatbuffers::option::decode(raw.from_name()->c_str())), message(flatbuffers::option::decode(raw.message()->c_str())), type(raw.type()), to_uids(unpack<uint32_t>(raw.to_uids())), role((fb::protocol::internal::ProcessRole)raw.role())
+        : world(raw.world()), host(raw.host()), from_uid(raw.from_uid()), from_name(flatbuffers::option::decode(raw.from_name()->c_str())), message(flatbuffers::option::decode(raw.message()->c_str())), type(raw.type()), to_uids(unpack<uint32_t>(raw.to_uids())), process_world(raw.process_world() != nullptr ? raw.process_world()->value() : std::optional<uint32_t>())
     { }
 
 public:
@@ -4797,27 +4789,26 @@ public:
     static inline fb::protocol::internal::request::FlatBufferProtocolType FlatBufferProtocolType = fb::protocol::internal::request::FlatBufferProtocolType::Heartbeat;
 
 public:
-    uint32_t world = 0;
+    std::optional<uint32_t> world = std::nullopt;
     fb::protocol::internal::Service service;
     uint8_t id = 0;
     std::string name;
     std::string ip;
     uint16_t port = 0;
-    fb::protocol::internal::ProcessRole role;
 
 public:
     Heartbeat() = default;
 
     Heartbeat(const Heartbeat& x)
-        : world(x.world), service(x.service), id(x.id), name(x.name), ip(x.ip), port(x.port), role(x.role)
+        : world(x.world), service(x.service), id(x.id), name(x.name), ip(x.ip), port(x.port)
     { }
 
-    Heartbeat(uint32_t world, fb::protocol::internal::Service service, uint8_t id, std::string_view name, std::string_view ip, uint16_t port, fb::protocol::internal::ProcessRole role)
-        : world(world), service(service), id(id), name(std::string(name)), ip(std::string(ip)), port(port), role(role)
+    Heartbeat(const std::optional<uint32_t>& world, fb::protocol::internal::Service service, uint8_t id, std::string_view name, std::string_view ip, uint16_t port)
+        : world(world), service(service), id(id), name(std::string(name)), ip(std::string(ip)), port(port)
     { }
 
     Heartbeat(const fb::protocol::internal::request::raw::Heartbeat& raw)
-        : world(raw.world()), service((fb::protocol::internal::Service)raw.service()), id(raw.id()), name(flatbuffers::option::decode(raw.name()->c_str())), ip(flatbuffers::option::decode(raw.ip()->c_str())), port(raw.port()), role((fb::protocol::internal::ProcessRole)raw.role())
+        : world(raw.world() != nullptr ? raw.world()->value() : std::optional<uint32_t>()), service((fb::protocol::internal::Service)raw.service()), id(raw.id()), name(flatbuffers::option::decode(raw.name()->c_str())), ip(flatbuffers::option::decode(raw.ip()->c_str())), port(raw.port())
     { }
 
 public:
@@ -4842,7 +4833,7 @@ public:
     static inline fb::protocol::internal::request::FlatBufferProtocolType FlatBufferProtocolType = fb::protocol::internal::request::FlatBufferProtocolType::SetExpMultiplier;
 
 public:
-    uint32_t world = 0;
+    std::optional<uint32_t> world = std::nullopt;
     double value = 0.0;
 
 public:
@@ -4852,12 +4843,12 @@ public:
         : world(x.world), value(x.value)
     { }
 
-    SetExpMultiplier(uint32_t world, double value)
+    SetExpMultiplier(const std::optional<uint32_t>& world, double value)
         : world(world), value(value)
     { }
 
     SetExpMultiplier(const fb::protocol::internal::request::raw::SetExpMultiplier& raw)
-        : world(raw.world()), value(raw.value())
+        : world(raw.world() != nullptr ? raw.world()->value() : std::optional<uint32_t>()), value(raw.value())
     { }
 
 public:
@@ -4882,7 +4873,7 @@ public:
     static inline fb::protocol::internal::request::FlatBufferProtocolType FlatBufferProtocolType = fb::protocol::internal::request::FlatBufferProtocolType::ReloadTables;
 
 public:
-    uint32_t world = 0;
+    std::optional<uint32_t> world = std::nullopt;
     std::string url;
     std::vector<std::string> table_names = {};
 
@@ -4893,12 +4884,12 @@ public:
         : world(x.world), url(x.url), table_names(x.table_names)
     { }
 
-    ReloadTables(uint32_t world, std::string_view url, std::vector<std::string> table_names)
+    ReloadTables(const std::optional<uint32_t>& world, std::string_view url, std::vector<std::string> table_names)
         : world(world), url(std::string(url)), table_names(table_names)
     { }
 
     ReloadTables(const fb::protocol::internal::request::raw::ReloadTables& raw)
-        : world(raw.world()), url(flatbuffers::option::decode(raw.url()->c_str())), table_names(unpack<std::string>(raw.table_names()))
+        : world(raw.world() != nullptr ? raw.world()->value() : std::optional<uint32_t>()), url(flatbuffers::option::decode(raw.url()->c_str())), table_names(unpack<std::string>(raw.table_names()))
     { }
 
 public:
@@ -4923,7 +4914,7 @@ public:
     static inline fb::protocol::internal::request::FlatBufferProtocolType FlatBufferProtocolType = fb::protocol::internal::request::FlatBufferProtocolType::ReloadScripts;
 
 public:
-    uint32_t world = 0;
+    std::optional<uint32_t> world = std::nullopt;
     std::string url;
     std::vector<std::string> script_paths = {};
 
@@ -4934,12 +4925,12 @@ public:
         : world(x.world), url(x.url), script_paths(x.script_paths)
     { }
 
-    ReloadScripts(uint32_t world, std::string_view url, std::vector<std::string> script_paths)
+    ReloadScripts(const std::optional<uint32_t>& world, std::string_view url, std::vector<std::string> script_paths)
         : world(world), url(std::string(url)), script_paths(script_paths)
     { }
 
     ReloadScripts(const fb::protocol::internal::request::raw::ReloadScripts& raw)
-        : world(raw.world()), url(flatbuffers::option::decode(raw.url()->c_str())), script_paths(unpack<std::string>(raw.script_paths()))
+        : world(raw.world() != nullptr ? raw.world()->value() : std::optional<uint32_t>()), url(flatbuffers::option::decode(raw.url()->c_str())), script_paths(unpack<std::string>(raw.script_paths()))
     { }
 
 public:
@@ -4964,7 +4955,7 @@ public:
     static inline fb::protocol::internal::request::FlatBufferProtocolType FlatBufferProtocolType = fb::protocol::internal::request::FlatBufferProtocolType::SetDropRateMultiplier;
 
 public:
-    uint32_t world = 0;
+    std::optional<uint32_t> world = std::nullopt;
     double value = 0.0;
 
 public:
@@ -4974,12 +4965,12 @@ public:
         : world(x.world), value(x.value)
     { }
 
-    SetDropRateMultiplier(uint32_t world, double value)
+    SetDropRateMultiplier(const std::optional<uint32_t>& world, double value)
         : world(world), value(value)
     { }
 
     SetDropRateMultiplier(const fb::protocol::internal::request::raw::SetDropRateMultiplier& raw)
-        : world(raw.world()), value(raw.value())
+        : world(raw.world() != nullptr ? raw.world()->value() : std::optional<uint32_t>()), value(raw.value())
     { }
 
 public:
@@ -5004,7 +4995,7 @@ public:
     static inline fb::protocol::internal::request::FlatBufferProtocolType FlatBufferProtocolType = fb::protocol::internal::request::FlatBufferProtocolType::SetDateTime;
 
 public:
-    uint32_t world = 0;
+    std::optional<uint32_t> world = std::nullopt;
     std::string datetime;
     bool reset = false;
 
@@ -5015,12 +5006,12 @@ public:
         : world(x.world), datetime(x.datetime), reset(x.reset)
     { }
 
-    SetDateTime(uint32_t world, std::string_view datetime, bool reset)
+    SetDateTime(const std::optional<uint32_t>& world, std::string_view datetime, bool reset)
         : world(world), datetime(std::string(datetime)), reset(reset)
     { }
 
     SetDateTime(const fb::protocol::internal::request::raw::SetDateTime& raw)
-        : world(raw.world()), datetime(flatbuffers::option::decode(raw.datetime()->c_str())), reset(raw.reset())
+        : world(raw.world() != nullptr ? raw.world()->value() : std::optional<uint32_t>()), datetime(flatbuffers::option::decode(raw.datetime()->c_str())), reset(raw.reset())
     { }
 
 public:
@@ -9581,7 +9572,7 @@ flatbuffers::Offset<fb::protocol::internal::request::raw::Login> build<fb::proto
             flatbuffers::build<std::string>(builder, value.name),
             flatbuffers::build<uint8_t>(builder, value.host),
             flatbuffers::build<bool>(builder, value.force),
-            flatbuffers::build<fb::protocol::internal::ProcessRole>(builder, value.role));
+            flatbuffers::build<std::optional<uint32_t>>(builder, value.process_world));
 }
 template <>
 flatbuffers::Offset<fb::protocol::internal::request::raw::Logout> build<fb::protocol::internal::request::Logout>(FlatBufferBuilder& builder, const fb::protocol::internal::request::Logout& value)
@@ -9942,7 +9933,7 @@ template <>
 flatbuffers::Offset<fb::protocol::internal::request::raw::Broadcast> build<fb::protocol::internal::request::Broadcast>(FlatBufferBuilder& builder, const fb::protocol::internal::request::Broadcast& value)
 {
     return fb::protocol::internal::request::raw::CreateBroadcast(builder,
-            flatbuffers::build<uint32_t>(builder, value.world),
+            flatbuffers::build<std::optional<uint32_t>>(builder, value.world),
             flatbuffers::build<uint32_t>(builder, value.host),
             flatbuffers::build<std::string>(builder, value.message),
             flatbuffers::build<uint8_t>(builder, value.type));
@@ -9966,7 +9957,7 @@ flatbuffers::Offset<fb::protocol::internal::request::raw::FriendBroadcast> build
             flatbuffers::build<std::string>(builder, value.message),
             flatbuffers::build<uint8_t>(builder, value.type),
             flatbuffers::build<std::vector<uint32_t>>(builder, value.to_uids),
-            flatbuffers::build<fb::protocol::internal::ProcessRole>(builder, value.role));
+            flatbuffers::build<std::optional<uint32_t>>(builder, value.process_world));
 }
 template <>
 flatbuffers::Offset<fb::protocol::internal::request::raw::DeliverSystemStorage> build<fb::protocol::internal::request::DeliverSystemStorage>(FlatBufferBuilder& builder, const fb::protocol::internal::request::DeliverSystemStorage& value)
@@ -10048,26 +10039,25 @@ template <>
 flatbuffers::Offset<fb::protocol::internal::request::raw::Heartbeat> build<fb::protocol::internal::request::Heartbeat>(FlatBufferBuilder& builder, const fb::protocol::internal::request::Heartbeat& value)
 {
     return fb::protocol::internal::request::raw::CreateHeartbeat(builder,
-            flatbuffers::build<uint32_t>(builder, value.world),
+            flatbuffers::build<std::optional<uint32_t>>(builder, value.world),
             flatbuffers::build<fb::protocol::internal::Service>(builder, value.service),
             flatbuffers::build<uint8_t>(builder, value.id),
             flatbuffers::build<std::string>(builder, value.name),
             flatbuffers::build<std::string>(builder, value.ip),
-            flatbuffers::build<uint16_t>(builder, value.port),
-            flatbuffers::build<fb::protocol::internal::ProcessRole>(builder, value.role));
+            flatbuffers::build<uint16_t>(builder, value.port));
 }
 template <>
 flatbuffers::Offset<fb::protocol::internal::request::raw::SetExpMultiplier> build<fb::protocol::internal::request::SetExpMultiplier>(FlatBufferBuilder& builder, const fb::protocol::internal::request::SetExpMultiplier& value)
 {
     return fb::protocol::internal::request::raw::CreateSetExpMultiplier(builder,
-            flatbuffers::build<uint32_t>(builder, value.world),
+            flatbuffers::build<std::optional<uint32_t>>(builder, value.world),
             flatbuffers::build<double>(builder, value.value));
 }
 template <>
 flatbuffers::Offset<fb::protocol::internal::request::raw::ReloadTables> build<fb::protocol::internal::request::ReloadTables>(FlatBufferBuilder& builder, const fb::protocol::internal::request::ReloadTables& value)
 {
     return fb::protocol::internal::request::raw::CreateReloadTables(builder,
-            flatbuffers::build<uint32_t>(builder, value.world),
+            flatbuffers::build<std::optional<uint32_t>>(builder, value.world),
             flatbuffers::build<std::string>(builder, value.url),
             flatbuffers::build<std::vector<std::string>>(builder, value.table_names));
 }
@@ -10075,7 +10065,7 @@ template <>
 flatbuffers::Offset<fb::protocol::internal::request::raw::ReloadScripts> build<fb::protocol::internal::request::ReloadScripts>(FlatBufferBuilder& builder, const fb::protocol::internal::request::ReloadScripts& value)
 {
     return fb::protocol::internal::request::raw::CreateReloadScripts(builder,
-            flatbuffers::build<uint32_t>(builder, value.world),
+            flatbuffers::build<std::optional<uint32_t>>(builder, value.world),
             flatbuffers::build<std::string>(builder, value.url),
             flatbuffers::build<std::vector<std::string>>(builder, value.script_paths));
 }
@@ -10083,14 +10073,14 @@ template <>
 flatbuffers::Offset<fb::protocol::internal::request::raw::SetDropRateMultiplier> build<fb::protocol::internal::request::SetDropRateMultiplier>(FlatBufferBuilder& builder, const fb::protocol::internal::request::SetDropRateMultiplier& value)
 {
     return fb::protocol::internal::request::raw::CreateSetDropRateMultiplier(builder,
-            flatbuffers::build<uint32_t>(builder, value.world),
+            flatbuffers::build<std::optional<uint32_t>>(builder, value.world),
             flatbuffers::build<double>(builder, value.value));
 }
 template <>
 flatbuffers::Offset<fb::protocol::internal::request::raw::SetDateTime> build<fb::protocol::internal::request::SetDateTime>(FlatBufferBuilder& builder, const fb::protocol::internal::request::SetDateTime& value)
 {
     return fb::protocol::internal::request::raw::CreateSetDateTime(builder,
-            flatbuffers::build<uint32_t>(builder, value.world),
+            flatbuffers::build<std::optional<uint32_t>>(builder, value.world),
             flatbuffers::build<std::string>(builder, value.datetime),
             flatbuffers::build<bool>(builder, value.reset));
 }

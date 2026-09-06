@@ -10,6 +10,8 @@
 #include <sstream>
 #include <format>
 #include <filesystem>
+#include <optional>
+#include <type_traits>
 #include <boost/program_options.hpp>
 #include <fb/console.h>
 
@@ -19,6 +21,12 @@ template <typename T> struct config_value_type
 {
     typedef T type;
 };
+
+template <typename T> struct is_std_optional : std::false_type
+{ };
+
+template <typename T> struct is_std_optional<std::optional<T>> : std::true_type
+{ };
 
 template <> struct config_value_type<Json::Value>
 {
@@ -38,7 +46,16 @@ template <> struct config_value_type<std::string_view>
 template <typename T>
 inline static typename config_value_type<T>::type json_value(const Json::Value& value)
 {
-    throw std::runtime_error("unsupported type");
+    if constexpr (is_std_optional<T>::value)
+    {
+        if (value.isNull())
+            return std::nullopt;
+        return T{json_value<typename T::value_type>(value)};
+    }
+    else
+    {
+        throw std::runtime_error("unsupported type");
+    }
 }
 
 template <>

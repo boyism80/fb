@@ -33,18 +33,20 @@ public:
     LUA_PROTOTYPE
 
 public:
+    class team;
     class container;
 
 private:
-    server&                               _server;
-    const std::string                     _id;
-    const uint32_t                        _type;
-    const uint32_t                        _slot;
-    const uint32_t                        _expected;
-    MATCH_STATE                           _state = MATCH_STATE::waiting;
-    mutable std::mutex                    _mutex;
-    std::vector<std::weak_ptr<character>> _members;
-    std::shared_ptr<fb::timer>            _timer;
+    server&                                             _server;
+    const std::string                                   _id;
+    const uint32_t                                      _type;
+    const uint32_t                                      _slot;
+    const uint32_t                                      _expected;
+    MATCH_STATE                                         _state = MATCH_STATE::waiting;
+    mutable std::mutex                                  _mutex;
+    std::vector<std::weak_ptr<character>>               _members;
+    std::unordered_map<uint32_t, std::shared_ptr<team>> _teams;
+    std::shared_ptr<fb::timer>                          _timer;
 
 public:
     match(server& server, std::string id, uint32_t type, uint32_t slot, uint32_t expected);
@@ -60,9 +62,11 @@ public:
     MATCH_STATE                             state() const;
     uint32_t                                member_count();
     std::vector<std::shared_ptr<character>> members();
+    std::vector<std::shared_ptr<team>>      teams();
+    std::shared_ptr<team>                   find(const character& ch);
     std::shared_ptr<fb::game::map>          map(uint32_t model_id);
 
-    async::task<void> join(character& ch);
+    async::task<void> join(character& ch, uint32_t team = 0);
     void              leave(character& ch);
     void              wait(uint32_t seconds);
     void              duration(uint32_t seconds, uint32_t grace_seconds = 0);
@@ -81,6 +85,33 @@ private:
     async::task<void>                       play();
 };
 
+class match::team : public fb::lua::luable
+{
+public:
+    LUA_PROTOTYPE
+
+private:
+    match&                                _match;
+    const uint32_t                        _id;
+    std::weak_ptr<character>              _leader;
+    std::vector<std::weak_ptr<character>> _members;
+
+public:
+    team(match& match, uint32_t id);
+    team(const team&) = delete;
+    team(team&&)      = delete;
+    ~team()           = default;
+
+public:
+    uint32_t                                id() const;
+    std::shared_ptr<character>              leader() const;
+    std::vector<std::shared_ptr<character>> members();
+    bool                                    contains(const character& ch) const;
+    void                                    enter(character& ch);
+    void                                    leave(character& ch);
+    void                                    pick_leader();
+};
+
 class match::container
 {
 private:
@@ -94,7 +125,7 @@ public:
 
 public:
     std::shared_ptr<match> ensure(std::string_view match_id, uint32_t match_type);
-    async::task<void>      join(character& ch, std::string_view match_id, uint32_t match_type);
+    async::task<void>      join(character& ch, std::string_view match_id, uint32_t match_type, uint32_t team = 0);
     void                   leave(character& ch);
     void                   remove(std::string_view match_id);
 };

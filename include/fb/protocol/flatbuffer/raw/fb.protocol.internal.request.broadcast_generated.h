@@ -13,6 +13,8 @@ static_assert(FLATBUFFERS_VERSION_MAJOR == 25 &&
               FLATBUFFERS_VERSION_REVISION == 10,
              "Non-compatible flatbuffers version included");
 
+#include "nullable_uint_generated.h"
+
 namespace fb {
 namespace protocol {
 namespace internal {
@@ -30,8 +32,8 @@ struct Broadcast FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
     VT_MESSAGE = 8,
     VT_TYPE = 10
   };
-  uint32_t world() const {
-    return GetField<uint32_t>(VT_WORLD, 0);
+  const nullable::nullable_uint *world() const {
+    return GetPointer<const nullable::nullable_uint *>(VT_WORLD);
   }
   uint32_t host() const {
     return GetField<uint32_t>(VT_HOST, 0);
@@ -44,7 +46,8 @@ struct Broadcast FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
   }
   bool Verify(::flatbuffers::Verifier &verifier) const {
     return VerifyTableStart(verifier) &&
-           VerifyField<uint32_t>(verifier, VT_WORLD, 4) &&
+           VerifyOffset(verifier, VT_WORLD) &&
+           verifier.VerifyTable(world()) &&
            VerifyField<uint32_t>(verifier, VT_HOST, 4) &&
            VerifyOffset(verifier, VT_MESSAGE) &&
            verifier.VerifyString(message()) &&
@@ -57,8 +60,8 @@ struct BroadcastBuilder {
   typedef Broadcast Table;
   ::flatbuffers::FlatBufferBuilder &fbb_;
   ::flatbuffers::uoffset_t start_;
-  void add_world(uint32_t world) {
-    fbb_.AddElement<uint32_t>(Broadcast::VT_WORLD, world, 0);
+  void add_world(::flatbuffers::Offset<nullable::nullable_uint> world) {
+    fbb_.AddOffset(Broadcast::VT_WORLD, world);
   }
   void add_host(uint32_t host) {
     fbb_.AddElement<uint32_t>(Broadcast::VT_HOST, host, 0);
@@ -82,7 +85,7 @@ struct BroadcastBuilder {
 
 inline ::flatbuffers::Offset<Broadcast> CreateBroadcast(
     ::flatbuffers::FlatBufferBuilder &_fbb,
-    uint32_t world = 0,
+    ::flatbuffers::Offset<nullable::nullable_uint> world = 0,
     uint32_t host = 0,
     ::flatbuffers::Offset<::flatbuffers::String> message = 0,
     uint8_t type = 0) {
@@ -96,7 +99,7 @@ inline ::flatbuffers::Offset<Broadcast> CreateBroadcast(
 
 inline ::flatbuffers::Offset<Broadcast> CreateBroadcastDirect(
     ::flatbuffers::FlatBufferBuilder &_fbb,
-    uint32_t world = 0,
+    ::flatbuffers::Offset<nullable::nullable_uint> world = 0,
     uint32_t host = 0,
     const char *message = nullptr,
     uint8_t type = 0) {

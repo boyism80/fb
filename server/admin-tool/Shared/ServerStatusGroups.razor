@@ -219,12 +219,15 @@ else
                 : char.ToUpper(service[0]) + service[1..]
         };
 
-    private string FormatWorldName(uint world)
+    private string FormatWorldName(uint? world)
     {
-        if (WorldNames != null && WorldNames.TryGetValue(world, out var name))
+        if (!world.HasValue)
+            return "교차";
+
+        if (WorldNames != null && WorldNames.TryGetValue(world.Value, out var name))
             return name;
 
-        return $"World {world}";
+        return $"World {world.Value}";
     }
 
     private sealed class ServerGroup

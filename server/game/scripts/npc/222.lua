@@ -50,6 +50,11 @@ local function marriage_npc(me, npc)
             return
         end
 
+        if found:world() ~= me:world() then
+            me:dialog(npc, '다른 서버 출신과는 결혼할 수 없습니다.')
+            return
+        end
+
         if found:gender() == me:gender() then
             me:dialog(npc, '같은 성별끼리는 결혼할 수 없습니다.')
             return

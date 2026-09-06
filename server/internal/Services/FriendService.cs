@@ -169,7 +169,7 @@ namespace Internal.Services
                 var session = await _sessionService.Get(world, toName);
                 if (session == null)
                     continue;
-                if (session.Host == request.Host && AmqpRoute.Parse(session.Role) == request.Role)
+                if (session.Host == request.Host && session.World == request.ProcessWorld)
                     continue;
 
                 await _rabbitMqService.PublishAsync(new Response.FriendMessage
@@ -177,7 +177,7 @@ namespace Internal.Services
                     ToUid = toUid,
                     Message = request.Message,
                     Type = request.Type
-                }, AmqpRoute.Exchange, AmqpRoute.Unicast(session, world));
+                }, AmqpRoute.Exchange, AmqpRoute.Unicast(session));
             }
 
             return new Response.FriendBroadcast
@@ -234,7 +234,7 @@ namespace Internal.Services
                     FriendUid = update.FriendUid,
                     FriendName = update.FriendName,
                     Mutual = update.Mutual
-                }, AmqpRoute.Exchange, AmqpRoute.Unicast(peerSession, world));
+                }, AmqpRoute.Exchange, AmqpRoute.Unicast(peerSession));
             }
         }
 

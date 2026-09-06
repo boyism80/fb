@@ -13,6 +13,8 @@ static_assert(FLATBUFFERS_VERSION_MAJOR == 25 &&
               FLATBUFFERS_VERSION_REVISION == 10,
              "Non-compatible flatbuffers version included");
 
+#include "nullable_uint_generated.h"
+
 namespace fb {
 namespace protocol {
 namespace internal {
@@ -29,8 +31,8 @@ struct SetDateTime FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
     VT_DATETIME = 6,
     VT_RESET = 8
   };
-  uint32_t world() const {
-    return GetField<uint32_t>(VT_WORLD, 0);
+  const nullable::nullable_uint *world() const {
+    return GetPointer<const nullable::nullable_uint *>(VT_WORLD);
   }
   const ::flatbuffers::String *datetime() const {
     return GetPointer<const ::flatbuffers::String *>(VT_DATETIME);
@@ -40,7 +42,8 @@ struct SetDateTime FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
   }
   bool Verify(::flatbuffers::Verifier &verifier) const {
     return VerifyTableStart(verifier) &&
-           VerifyField<uint32_t>(verifier, VT_WORLD, 4) &&
+           VerifyOffset(verifier, VT_WORLD) &&
+           verifier.VerifyTable(world()) &&
            VerifyOffset(verifier, VT_DATETIME) &&
            verifier.VerifyString(datetime()) &&
            VerifyField<uint8_t>(verifier, VT_RESET, 1) &&
@@ -52,8 +55,8 @@ struct SetDateTimeBuilder {
   typedef SetDateTime Table;
   ::flatbuffers::FlatBufferBuilder &fbb_;
   ::flatbuffers::uoffset_t start_;
-  void add_world(uint32_t world) {
-    fbb_.AddElement<uint32_t>(SetDateTime::VT_WORLD, world, 0);
+  void add_world(::flatbuffers::Offset<nullable::nullable_uint> world) {
+    fbb_.AddOffset(SetDateTime::VT_WORLD, world);
   }
   void add_datetime(::flatbuffers::Offset<::flatbuffers::String> datetime) {
     fbb_.AddOffset(SetDateTime::VT_DATETIME, datetime);
@@ -74,7 +77,7 @@ struct SetDateTimeBuilder {
 
 inline ::flatbuffers::Offset<SetDateTime> CreateSetDateTime(
     ::flatbuffers::FlatBufferBuilder &_fbb,
-    uint32_t world = 0,
+    ::flatbuffers::Offset<nullable::nullable_uint> world = 0,
     ::flatbuffers::Offset<::flatbuffers::String> datetime = 0,
     bool reset = false) {
   SetDateTimeBuilder builder_(_fbb);
@@ -86,7 +89,7 @@ inline ::flatbuffers::Offset<SetDateTime> CreateSetDateTime(
 
 inline ::flatbuffers::Offset<SetDateTime> CreateSetDateTimeDirect(
     ::flatbuffers::FlatBufferBuilder &_fbb,
-    uint32_t world = 0,
+    ::flatbuffers::Offset<nullable::nullable_uint> world = 0,
     const char *datetime = nullptr,
     bool reset = false) {
   auto datetime__ = datetime ? _fbb.CreateString(datetime) : 0;

@@ -565,7 +565,7 @@ namespace fb.protocol._internal
                 builder.Build(value.Name),
                 builder.Build(value.Host),
                 builder.Build(value.Force),
-                builder.Build(value.Role));
+                builder.Build(value.ProcessWorld));
         }
         public static Offset<fb.protocol._internal.request.raw.Logout> Build(this FlatBufferBuilder builder, fb.protocol._internal.request.Logout value)
         {
@@ -1034,7 +1034,7 @@ namespace fb.protocol._internal
                 builder.Build(value.Message),
                 builder.Build(value.Type),
                 builder.Build(value.ToUids),
-                builder.Build(value.Role));
+                builder.Build(value.ProcessWorld));
         }
         public static Offset<fb.protocol._internal.request.raw.DeliverSystemStorage> Build(this FlatBufferBuilder builder, fb.protocol._internal.request.DeliverSystemStorage value)
         {
@@ -1139,8 +1139,7 @@ namespace fb.protocol._internal
                 builder.Build(value.Id),
                 builder.Build(value.Name),
                 builder.Build(value.Ip),
-                builder.Build(value.Port),
-                builder.Build(value.Role));
+                builder.Build(value.Port));
         }
         public static Offset<fb.protocol._internal.request.raw.SetExpMultiplier> Build(this FlatBufferBuilder builder, fb.protocol._internal.request.SetExpMultiplier value)
         {
@@ -2300,10 +2299,6 @@ namespace fb.protocol._internal
         public static fb.protocol._internal.raw.Service Build(this FlatBufferBuilder builder, fb.protocol._internal.Service value)
         {
             return (fb.protocol._internal.raw.Service)value;
-        }
-        public static fb.protocol._internal.raw.ProcessRole Build(this FlatBufferBuilder builder, fb.protocol._internal.ProcessRole value)
-        {
-            return (fb.protocol._internal.raw.ProcessRole)value;
         }
         public static fb.protocol._internal.raw.GroupActionType Build(this FlatBufferBuilder builder, fb.protocol._internal.GroupActionType value)
         {
@@ -2831,7 +2826,7 @@ namespace fb.protocol._internal.request
                 builder.Build(value.Name),
                 builder.Build(value.Host),
                 builder.Build(value.Force),
-                builder.Build(value.Role));
+                builder.Build(value.ProcessWorld));
         }
         public static Offset<fb.protocol._internal.request.raw.Logout> Build(this FlatBufferBuilder builder, fb.protocol._internal.request.Logout value)
         {
@@ -3300,7 +3295,7 @@ namespace fb.protocol._internal.request
                 builder.Build(value.Message),
                 builder.Build(value.Type),
                 builder.Build(value.ToUids),
-                builder.Build(value.Role));
+                builder.Build(value.ProcessWorld));
         }
         public static Offset<fb.protocol._internal.request.raw.DeliverSystemStorage> Build(this FlatBufferBuilder builder, fb.protocol._internal.request.DeliverSystemStorage value)
         {
@@ -3405,8 +3400,7 @@ namespace fb.protocol._internal.request
                 builder.Build(value.Id),
                 builder.Build(value.Name),
                 builder.Build(value.Ip),
-                builder.Build(value.Port),
-                builder.Build(value.Role));
+                builder.Build(value.Port));
         }
         public static Offset<fb.protocol._internal.request.raw.SetExpMultiplier> Build(this FlatBufferBuilder builder, fb.protocol._internal.request.SetExpMultiplier value)
         {
@@ -4566,10 +4560,6 @@ namespace fb.protocol._internal.request
         public static fb.protocol._internal.raw.Service Build(this FlatBufferBuilder builder, fb.protocol._internal.Service value)
         {
             return (fb.protocol._internal.raw.Service)value;
-        }
-        public static fb.protocol._internal.raw.ProcessRole Build(this FlatBufferBuilder builder, fb.protocol._internal.ProcessRole value)
-        {
-            return (fb.protocol._internal.raw.ProcessRole)value;
         }
         public static fb.protocol._internal.raw.GroupActionType Build(this FlatBufferBuilder builder, fb.protocol._internal.GroupActionType value)
         {
@@ -5127,7 +5117,7 @@ namespace fb.protocol._internal.response
                 builder.Build(value.Name),
                 builder.Build(value.Host),
                 builder.Build(value.Force),
-                builder.Build(value.Role));
+                builder.Build(value.ProcessWorld));
         }
         public static Offset<fb.protocol._internal.request.raw.Logout> Build(this FlatBufferBuilder builder, fb.protocol._internal.request.Logout value)
         {
@@ -5596,7 +5586,7 @@ namespace fb.protocol._internal.response
                 builder.Build(value.Message),
                 builder.Build(value.Type),
                 builder.Build(value.ToUids),
-                builder.Build(value.Role));
+                builder.Build(value.ProcessWorld));
         }
         public static Offset<fb.protocol._internal.request.raw.DeliverSystemStorage> Build(this FlatBufferBuilder builder, fb.protocol._internal.request.DeliverSystemStorage value)
         {
@@ -5701,8 +5691,7 @@ namespace fb.protocol._internal.response
                 builder.Build(value.Id),
                 builder.Build(value.Name),
                 builder.Build(value.Ip),
-                builder.Build(value.Port),
-                builder.Build(value.Role));
+                builder.Build(value.Port));
         }
         public static Offset<fb.protocol._internal.request.raw.SetExpMultiplier> Build(this FlatBufferBuilder builder, fb.protocol._internal.request.SetExpMultiplier value)
         {
@@ -6862,10 +6851,6 @@ namespace fb.protocol._internal.response
         public static fb.protocol._internal.raw.Service Build(this FlatBufferBuilder builder, fb.protocol._internal.Service value)
         {
             return (fb.protocol._internal.raw.Service)value;
-        }
-        public static fb.protocol._internal.raw.ProcessRole Build(this FlatBufferBuilder builder, fb.protocol._internal.ProcessRole value)
-        {
-            return (fb.protocol._internal.raw.ProcessRole)value;
         }
         public static fb.protocol._internal.raw.GroupActionType Build(this FlatBufferBuilder builder, fb.protocol._internal.GroupActionType value)
         {
@@ -7423,7 +7408,7 @@ namespace fb.protocol.marketplace
                 builder.Build(value.Name),
                 builder.Build(value.Host),
                 builder.Build(value.Force),
-                builder.Build(value.Role));
+                builder.Build(value.ProcessWorld));
         }
         public static Offset<fb.protocol._internal.request.raw.Logout> Build(this FlatBufferBuilder builder, fb.protocol._internal.request.Logout value)
         {
@@ -7892,7 +7877,7 @@ namespace fb.protocol.marketplace
                 builder.Build(value.Message),
                 builder.Build(value.Type),
                 builder.Build(value.ToUids),
-                builder.Build(value.Role));
+                builder.Build(value.ProcessWorld));
         }
         public static Offset<fb.protocol._internal.request.raw.DeliverSystemStorage> Build(this FlatBufferBuilder builder, fb.protocol._internal.request.DeliverSystemStorage value)
         {
@@ -7997,8 +7982,7 @@ namespace fb.protocol.marketplace
                 builder.Build(value.Id),
                 builder.Build(value.Name),
                 builder.Build(value.Ip),
-                builder.Build(value.Port),
-                builder.Build(value.Role));
+                builder.Build(value.Port));
         }
         public static Offset<fb.protocol._internal.request.raw.SetExpMultiplier> Build(this FlatBufferBuilder builder, fb.protocol._internal.request.SetExpMultiplier value)
         {
@@ -9158,10 +9142,6 @@ namespace fb.protocol.marketplace
         public static fb.protocol._internal.raw.Service Build(this FlatBufferBuilder builder, fb.protocol._internal.Service value)
         {
             return (fb.protocol._internal.raw.Service)value;
-        }
-        public static fb.protocol._internal.raw.ProcessRole Build(this FlatBufferBuilder builder, fb.protocol._internal.ProcessRole value)
-        {
-            return (fb.protocol._internal.raw.ProcessRole)value;
         }
         public static fb.protocol._internal.raw.GroupActionType Build(this FlatBufferBuilder builder, fb.protocol._internal.GroupActionType value)
         {
@@ -9664,7 +9644,7 @@ namespace fb.protocol.marketplace.request
                 builder.Build(value.Name),
                 builder.Build(value.Host),
                 builder.Build(value.Force),
-                builder.Build(value.Role));
+                builder.Build(value.ProcessWorld));
         }
         public static Offset<fb.protocol._internal.request.raw.Logout> Build(this FlatBufferBuilder builder, fb.protocol._internal.request.Logout value)
         {
@@ -10133,7 +10113,7 @@ namespace fb.protocol.marketplace.request
                 builder.Build(value.Message),
                 builder.Build(value.Type),
                 builder.Build(value.ToUids),
-                builder.Build(value.Role));
+                builder.Build(value.ProcessWorld));
         }
         public static Offset<fb.protocol._internal.request.raw.DeliverSystemStorage> Build(this FlatBufferBuilder builder, fb.protocol._internal.request.DeliverSystemStorage value)
         {
@@ -10238,8 +10218,7 @@ namespace fb.protocol.marketplace.request
                 builder.Build(value.Id),
                 builder.Build(value.Name),
                 builder.Build(value.Ip),
-                builder.Build(value.Port),
-                builder.Build(value.Role));
+                builder.Build(value.Port));
         }
         public static Offset<fb.protocol._internal.request.raw.SetExpMultiplier> Build(this FlatBufferBuilder builder, fb.protocol._internal.request.SetExpMultiplier value)
         {
@@ -11399,10 +11378,6 @@ namespace fb.protocol.marketplace.request
         public static fb.protocol._internal.raw.Service Build(this FlatBufferBuilder builder, fb.protocol._internal.Service value)
         {
             return (fb.protocol._internal.raw.Service)value;
-        }
-        public static fb.protocol._internal.raw.ProcessRole Build(this FlatBufferBuilder builder, fb.protocol._internal.ProcessRole value)
-        {
-            return (fb.protocol._internal.raw.ProcessRole)value;
         }
         public static fb.protocol._internal.raw.GroupActionType Build(this FlatBufferBuilder builder, fb.protocol._internal.GroupActionType value)
         {
@@ -11906,7 +11881,7 @@ namespace fb.protocol.marketplace.response
                 builder.Build(value.Name),
                 builder.Build(value.Host),
                 builder.Build(value.Force),
-                builder.Build(value.Role));
+                builder.Build(value.ProcessWorld));
         }
         public static Offset<fb.protocol._internal.request.raw.Logout> Build(this FlatBufferBuilder builder, fb.protocol._internal.request.Logout value)
         {
@@ -12375,7 +12350,7 @@ namespace fb.protocol.marketplace.response
                 builder.Build(value.Message),
                 builder.Build(value.Type),
                 builder.Build(value.ToUids),
-                builder.Build(value.Role));
+                builder.Build(value.ProcessWorld));
         }
         public static Offset<fb.protocol._internal.request.raw.DeliverSystemStorage> Build(this FlatBufferBuilder builder, fb.protocol._internal.request.DeliverSystemStorage value)
         {
@@ -12480,8 +12455,7 @@ namespace fb.protocol.marketplace.response
                 builder.Build(value.Id),
                 builder.Build(value.Name),
                 builder.Build(value.Ip),
-                builder.Build(value.Port),
-                builder.Build(value.Role));
+                builder.Build(value.Port));
         }
         public static Offset<fb.protocol._internal.request.raw.SetExpMultiplier> Build(this FlatBufferBuilder builder, fb.protocol._internal.request.SetExpMultiplier value)
         {
@@ -13641,10 +13615,6 @@ namespace fb.protocol.marketplace.response
         public static fb.protocol._internal.raw.Service Build(this FlatBufferBuilder builder, fb.protocol._internal.Service value)
         {
             return (fb.protocol._internal.raw.Service)value;
-        }
-        public static fb.protocol._internal.raw.ProcessRole Build(this FlatBufferBuilder builder, fb.protocol._internal.ProcessRole value)
-        {
-            return (fb.protocol._internal.raw.ProcessRole)value;
         }
         public static fb.protocol._internal.raw.GroupActionType Build(this FlatBufferBuilder builder, fb.protocol._internal.GroupActionType value)
         {
@@ -14148,7 +14118,7 @@ namespace fb.protocol.matchmaking
                 builder.Build(value.Name),
                 builder.Build(value.Host),
                 builder.Build(value.Force),
-                builder.Build(value.Role));
+                builder.Build(value.ProcessWorld));
         }
         public static Offset<fb.protocol._internal.request.raw.Logout> Build(this FlatBufferBuilder builder, fb.protocol._internal.request.Logout value)
         {
@@ -14617,7 +14587,7 @@ namespace fb.protocol.matchmaking
                 builder.Build(value.Message),
                 builder.Build(value.Type),
                 builder.Build(value.ToUids),
-                builder.Build(value.Role));
+                builder.Build(value.ProcessWorld));
         }
         public static Offset<fb.protocol._internal.request.raw.DeliverSystemStorage> Build(this FlatBufferBuilder builder, fb.protocol._internal.request.DeliverSystemStorage value)
         {
@@ -14722,8 +14692,7 @@ namespace fb.protocol.matchmaking
                 builder.Build(value.Id),
                 builder.Build(value.Name),
                 builder.Build(value.Ip),
-                builder.Build(value.Port),
-                builder.Build(value.Role));
+                builder.Build(value.Port));
         }
         public static Offset<fb.protocol._internal.request.raw.SetExpMultiplier> Build(this FlatBufferBuilder builder, fb.protocol._internal.request.SetExpMultiplier value)
         {
@@ -15883,10 +15852,6 @@ namespace fb.protocol.matchmaking
         public static fb.protocol._internal.raw.Service Build(this FlatBufferBuilder builder, fb.protocol._internal.Service value)
         {
             return (fb.protocol._internal.raw.Service)value;
-        }
-        public static fb.protocol._internal.raw.ProcessRole Build(this FlatBufferBuilder builder, fb.protocol._internal.ProcessRole value)
-        {
-            return (fb.protocol._internal.raw.ProcessRole)value;
         }
         public static fb.protocol._internal.raw.GroupActionType Build(this FlatBufferBuilder builder, fb.protocol._internal.GroupActionType value)
         {
@@ -16388,7 +16353,7 @@ namespace fb.protocol.matchmaking.mq
                 builder.Build(value.Name),
                 builder.Build(value.Host),
                 builder.Build(value.Force),
-                builder.Build(value.Role));
+                builder.Build(value.ProcessWorld));
         }
         public static Offset<fb.protocol._internal.request.raw.Logout> Build(this FlatBufferBuilder builder, fb.protocol._internal.request.Logout value)
         {
@@ -16857,7 +16822,7 @@ namespace fb.protocol.matchmaking.mq
                 builder.Build(value.Message),
                 builder.Build(value.Type),
                 builder.Build(value.ToUids),
-                builder.Build(value.Role));
+                builder.Build(value.ProcessWorld));
         }
         public static Offset<fb.protocol._internal.request.raw.DeliverSystemStorage> Build(this FlatBufferBuilder builder, fb.protocol._internal.request.DeliverSystemStorage value)
         {
@@ -16962,8 +16927,7 @@ namespace fb.protocol.matchmaking.mq
                 builder.Build(value.Id),
                 builder.Build(value.Name),
                 builder.Build(value.Ip),
-                builder.Build(value.Port),
-                builder.Build(value.Role));
+                builder.Build(value.Port));
         }
         public static Offset<fb.protocol._internal.request.raw.SetExpMultiplier> Build(this FlatBufferBuilder builder, fb.protocol._internal.request.SetExpMultiplier value)
         {
@@ -18123,10 +18087,6 @@ namespace fb.protocol.matchmaking.mq
         public static fb.protocol._internal.raw.Service Build(this FlatBufferBuilder builder, fb.protocol._internal.Service value)
         {
             return (fb.protocol._internal.raw.Service)value;
-        }
-        public static fb.protocol._internal.raw.ProcessRole Build(this FlatBufferBuilder builder, fb.protocol._internal.ProcessRole value)
-        {
-            return (fb.protocol._internal.raw.ProcessRole)value;
         }
         public static fb.protocol._internal.raw.GroupActionType Build(this FlatBufferBuilder builder, fb.protocol._internal.GroupActionType value)
         {
@@ -18627,7 +18587,7 @@ namespace fb.protocol.matchmaking.request
                 builder.Build(value.Name),
                 builder.Build(value.Host),
                 builder.Build(value.Force),
-                builder.Build(value.Role));
+                builder.Build(value.ProcessWorld));
         }
         public static Offset<fb.protocol._internal.request.raw.Logout> Build(this FlatBufferBuilder builder, fb.protocol._internal.request.Logout value)
         {
@@ -19096,7 +19056,7 @@ namespace fb.protocol.matchmaking.request
                 builder.Build(value.Message),
                 builder.Build(value.Type),
                 builder.Build(value.ToUids),
-                builder.Build(value.Role));
+                builder.Build(value.ProcessWorld));
         }
         public static Offset<fb.protocol._internal.request.raw.DeliverSystemStorage> Build(this FlatBufferBuilder builder, fb.protocol._internal.request.DeliverSystemStorage value)
         {
@@ -19201,8 +19161,7 @@ namespace fb.protocol.matchmaking.request
                 builder.Build(value.Id),
                 builder.Build(value.Name),
                 builder.Build(value.Ip),
-                builder.Build(value.Port),
-                builder.Build(value.Role));
+                builder.Build(value.Port));
         }
         public static Offset<fb.protocol._internal.request.raw.SetExpMultiplier> Build(this FlatBufferBuilder builder, fb.protocol._internal.request.SetExpMultiplier value)
         {
@@ -20362,10 +20321,6 @@ namespace fb.protocol.matchmaking.request
         public static fb.protocol._internal.raw.Service Build(this FlatBufferBuilder builder, fb.protocol._internal.Service value)
         {
             return (fb.protocol._internal.raw.Service)value;
-        }
-        public static fb.protocol._internal.raw.ProcessRole Build(this FlatBufferBuilder builder, fb.protocol._internal.ProcessRole value)
-        {
-            return (fb.protocol._internal.raw.ProcessRole)value;
         }
         public static fb.protocol._internal.raw.GroupActionType Build(this FlatBufferBuilder builder, fb.protocol._internal.GroupActionType value)
         {
@@ -20868,7 +20823,7 @@ namespace fb.protocol.matchmaking.response
                 builder.Build(value.Name),
                 builder.Build(value.Host),
                 builder.Build(value.Force),
-                builder.Build(value.Role));
+                builder.Build(value.ProcessWorld));
         }
         public static Offset<fb.protocol._internal.request.raw.Logout> Build(this FlatBufferBuilder builder, fb.protocol._internal.request.Logout value)
         {
@@ -21337,7 +21292,7 @@ namespace fb.protocol.matchmaking.response
                 builder.Build(value.Message),
                 builder.Build(value.Type),
                 builder.Build(value.ToUids),
-                builder.Build(value.Role));
+                builder.Build(value.ProcessWorld));
         }
         public static Offset<fb.protocol._internal.request.raw.DeliverSystemStorage> Build(this FlatBufferBuilder builder, fb.protocol._internal.request.DeliverSystemStorage value)
         {
@@ -21442,8 +21397,7 @@ namespace fb.protocol.matchmaking.response
                 builder.Build(value.Id),
                 builder.Build(value.Name),
                 builder.Build(value.Ip),
-                builder.Build(value.Port),
-                builder.Build(value.Role));
+                builder.Build(value.Port));
         }
         public static Offset<fb.protocol._internal.request.raw.SetExpMultiplier> Build(this FlatBufferBuilder builder, fb.protocol._internal.request.SetExpMultiplier value)
         {
@@ -22604,10 +22558,6 @@ namespace fb.protocol.matchmaking.response
         {
             return (fb.protocol._internal.raw.Service)value;
         }
-        public static fb.protocol._internal.raw.ProcessRole Build(this FlatBufferBuilder builder, fb.protocol._internal.ProcessRole value)
-        {
-            return (fb.protocol._internal.raw.ProcessRole)value;
-        }
         public static fb.protocol._internal.raw.GroupActionType Build(this FlatBufferBuilder builder, fb.protocol._internal.GroupActionType value)
         {
             return (fb.protocol._internal.raw.GroupActionType)value;
@@ -22647,11 +22597,6 @@ namespace fb.protocol._internal
         Gateway,
         Login,
         Game,
-    }
-    public enum ProcessRole
-    {
-        Home,
-        Cross,
     }
     public enum GroupActionType
     {
@@ -24188,7 +24133,7 @@ namespace fb.protocol._internal.request
         public string Name { get; set; } = string.Empty;
         public byte Host { get; set; } = 0;
         public bool Force { get; set; } = false;
-        public fb.protocol._internal.ProcessRole Role { get; set; }
+        public uint? ProcessWorld { get; set; } = null;
 
         public Login()
         { }
@@ -24200,7 +24145,7 @@ namespace fb.protocol._internal.request
             Name = raw.Name;
             Host = raw.Host;
             Force = raw.Force;
-            Role = (fb.protocol._internal.ProcessRole)raw.Role;
+            ProcessWorld = raw.ProcessWorld != null ? (uint?)raw.ProcessWorld.Value.Value : null;
         }
 
         public Login(byte[] bytes) : this(fb.protocol._internal.request.raw.Login.GetRootAsLogin(new ByteBuffer(bytes)))
@@ -25875,7 +25820,7 @@ namespace fb.protocol._internal.request
     public class Broadcast : IFlatBufferEx
     {
         public int ProtocolType => (int)FlatBufferProtocolType.Broadcast;
-        public uint World { get; set; } = 0;
+        public uint? World { get; set; } = null;
         public uint Host { get; set; } = 0;
         public string Message { get; set; } = string.Empty;
         public byte Type { get; set; } = 0;
@@ -25885,7 +25830,7 @@ namespace fb.protocol._internal.request
 
         public Broadcast(fb.protocol._internal.request.raw.Broadcast raw)
         {
-            World = raw.World;
+            World = raw.World != null ? (uint?)raw.World.Value.Value : null;
             Host = raw.Host;
             Message = raw.Message;
             Type = raw.Type;
@@ -25964,7 +25909,7 @@ namespace fb.protocol._internal.request
         public string Message { get; set; } = string.Empty;
         public byte Type { get; set; } = 0;
         public List<uint> ToUids { get; set; } = new List<uint>();
-        public fb.protocol._internal.ProcessRole Role { get; set; }
+        public uint? ProcessWorld { get; set; } = null;
 
         public FriendBroadcast()
         { }
@@ -25978,7 +25923,7 @@ namespace fb.protocol._internal.request
             Message = raw.Message;
             Type = raw.Type;
             ToUids = Enumerable.Range(0, raw.ToUidsLength).Select(i => raw.ToUids(i)).Select(x => x).ToList();
-            Role = (fb.protocol._internal.ProcessRole)raw.Role;
+            ProcessWorld = raw.ProcessWorld != null ? (uint?)raw.ProcessWorld.Value.Value : null;
         }
 
         public FriendBroadcast(byte[] bytes) : this(fb.protocol._internal.request.raw.FriendBroadcast.GetRootAsFriendBroadcast(new ByteBuffer(bytes)))
@@ -26351,26 +26296,24 @@ namespace fb.protocol._internal.request
     public class Heartbeat : IFlatBufferEx
     {
         public int ProtocolType => (int)FlatBufferProtocolType.Heartbeat;
-        public uint World { get; set; } = 0;
+        public uint? World { get; set; } = null;
         public fb.protocol._internal.Service Service { get; set; }
         public byte Id { get; set; } = 0;
         public string Name { get; set; } = string.Empty;
         public string Ip { get; set; } = string.Empty;
         public ushort Port { get; set; } = 0;
-        public fb.protocol._internal.ProcessRole Role { get; set; }
 
         public Heartbeat()
         { }
 
         public Heartbeat(fb.protocol._internal.request.raw.Heartbeat raw)
         {
-            World = raw.World;
+            World = raw.World != null ? (uint?)raw.World.Value.Value : null;
             Service = (fb.protocol._internal.Service)raw.Service;
             Id = raw.Id;
             Name = raw.Name;
             Ip = raw.Ip;
             Port = raw.Port;
-            Role = (fb.protocol._internal.ProcessRole)raw.Role;
         }
 
         public Heartbeat(byte[] bytes) : this(fb.protocol._internal.request.raw.Heartbeat.GetRootAsHeartbeat(new ByteBuffer(bytes)))
@@ -26399,7 +26342,7 @@ namespace fb.protocol._internal.request
     public class SetExpMultiplier : IFlatBufferEx
     {
         public int ProtocolType => (int)FlatBufferProtocolType.SetExpMultiplier;
-        public uint World { get; set; } = 0;
+        public uint? World { get; set; } = null;
         public double Value { get; set; } = 0.0;
 
         public SetExpMultiplier()
@@ -26407,7 +26350,7 @@ namespace fb.protocol._internal.request
 
         public SetExpMultiplier(fb.protocol._internal.request.raw.SetExpMultiplier raw)
         {
-            World = raw.World;
+            World = raw.World != null ? (uint?)raw.World.Value.Value : null;
             Value = raw.Value;
         }
 
@@ -26437,7 +26380,7 @@ namespace fb.protocol._internal.request
     public class ReloadTables : IFlatBufferEx
     {
         public int ProtocolType => (int)FlatBufferProtocolType.ReloadTables;
-        public uint World { get; set; } = 0;
+        public uint? World { get; set; } = null;
         public string Url { get; set; } = string.Empty;
         public List<string> TableNames { get; set; } = new List<string>();
 
@@ -26446,7 +26389,7 @@ namespace fb.protocol._internal.request
 
         public ReloadTables(fb.protocol._internal.request.raw.ReloadTables raw)
         {
-            World = raw.World;
+            World = raw.World != null ? (uint?)raw.World.Value.Value : null;
             Url = raw.Url;
             TableNames = Enumerable.Range(0, raw.TableNamesLength).Select(i => raw.TableNames(i)).Select(x => x).ToList();
         }
@@ -26477,7 +26420,7 @@ namespace fb.protocol._internal.request
     public class ReloadScripts : IFlatBufferEx
     {
         public int ProtocolType => (int)FlatBufferProtocolType.ReloadScripts;
-        public uint World { get; set; } = 0;
+        public uint? World { get; set; } = null;
         public string Url { get; set; } = string.Empty;
         public List<string> ScriptPaths { get; set; } = new List<string>();
 
@@ -26486,7 +26429,7 @@ namespace fb.protocol._internal.request
 
         public ReloadScripts(fb.protocol._internal.request.raw.ReloadScripts raw)
         {
-            World = raw.World;
+            World = raw.World != null ? (uint?)raw.World.Value.Value : null;
             Url = raw.Url;
             ScriptPaths = Enumerable.Range(0, raw.ScriptPathsLength).Select(i => raw.ScriptPaths(i)).Select(x => x).ToList();
         }
@@ -26517,7 +26460,7 @@ namespace fb.protocol._internal.request
     public class SetDropRateMultiplier : IFlatBufferEx
     {
         public int ProtocolType => (int)FlatBufferProtocolType.SetDropRateMultiplier;
-        public uint World { get; set; } = 0;
+        public uint? World { get; set; } = null;
         public double Value { get; set; } = 0.0;
 
         public SetDropRateMultiplier()
@@ -26525,7 +26468,7 @@ namespace fb.protocol._internal.request
 
         public SetDropRateMultiplier(fb.protocol._internal.request.raw.SetDropRateMultiplier raw)
         {
-            World = raw.World;
+            World = raw.World != null ? (uint?)raw.World.Value.Value : null;
             Value = raw.Value;
         }
 
@@ -26555,7 +26498,7 @@ namespace fb.protocol._internal.request
     public class SetDateTime : IFlatBufferEx
     {
         public int ProtocolType => (int)FlatBufferProtocolType.SetDateTime;
-        public uint World { get; set; } = 0;
+        public uint? World { get; set; } = null;
         public string Datetime { get; set; } = string.Empty;
         public bool Reset { get; set; } = false;
 
@@ -26564,7 +26507,7 @@ namespace fb.protocol._internal.request
 
         public SetDateTime(fb.protocol._internal.request.raw.SetDateTime raw)
         {
-            World = raw.World;
+            World = raw.World != null ? (uint?)raw.World.Value.Value : null;
             Datetime = raw.Datetime;
             Reset = raw.Reset;
         }

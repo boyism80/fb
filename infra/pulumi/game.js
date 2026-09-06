@@ -21,7 +21,6 @@ module.exports = function () {
                         resourceName: `game-${worldName}-${i}`,
                         id: parseInt(i),
                         name: `game-${worldName}-${i}`,
-                        role: "home",
                         world: worldConf.id,
                         port: container.port,
                         loginPort: worldConf.login.port,
@@ -37,8 +36,7 @@ module.exports = function () {
                         resourceName: `game-cross-${i}`,
                         id: parseInt(i),
                         name: `game-cross-${i}`,
-                        role: "cross",
-                        world: firstWorld.id,
+                        world: null,
                         port: container.port,
                         loginPort: firstWorld.login.port,
                         logHost: `log-${firstWorldName}`,
@@ -51,7 +49,6 @@ module.exports = function () {
                 const config = {
                     id: game.id,
                     name: game.name,
-                    role: game.role,
                     world: game.world,
                     delay: 5,
                     ip: conf.host,
@@ -93,7 +90,7 @@ module.exports = function () {
                         port: game.logPort,
                         level: ["info", "warn", "fatal"]
                     },
-                    lazy_load_maps: game.role === "cross",
+                    lazy_load_maps: game.world == null,
                     exp_multiplier: 1.0,
                     drop_rate_multiplier: 1.0,
                     http: {
@@ -110,7 +107,7 @@ module.exports = function () {
 
                 const portName = `game-${index}`
                 const labels = { app: "game" }
-                if (game.role === "cross")
+                if (game.world == null)
                     labels.game = game.resourceName
 
                 const statefulSet = new k8s.apps.v1.StatefulSet(game.resourceName, {

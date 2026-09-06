@@ -3,6 +3,7 @@
 #include <fb/gateway/protocol.h>
 #include <fb/log_collector.h>
 #include <format>
+#include <optional>
 
 using namespace fb::gateway;
 using namespace fb::protocol::gateway;
@@ -18,7 +19,7 @@ server::server(boost::asio::io_context& io_context, uint16_t port) :
         fb::config<std::string>("amqp:log:pwd"),
         std::to_string(fb::config<uint32_t>("id")),
         fb::config<std::string>("name"),
-        0) // Gateway is unified (world = 0)
+        std::nullopt)
 {
     this->handler.protocol.bind<fb::gateway::handler::protocol::version>();
     this->handler.protocol.bind<fb::gateway::handler::protocol::server_list>();
@@ -118,17 +119,15 @@ async::task<void> server::update_status()
 {
     try
     {
-        // Gateway is a global service that doesn't belong to any specific world
-        // Use 0 as the world identifier for gateway heartbeat (0 represents unified)
+        // Gateway does not belong to a home world.
         std::ignore = co_await this->http.post("internal",
                                                "/server/heartbeat",
-                                               internal_reqs::Heartbeat{0,
+                                               internal_reqs::Heartbeat{std::nullopt,
                                                                         internal::Service::Gateway,
                                                                         this->id(),
                                                                         this->name(),
                                                                         fb::config<std::string_view>("ip"),
-                                                                        fb::config<uint16_t>("port"),
-                                                                        fb::protocol::internal::ProcessRole::Home});
+                                                                        fb::config<uint16_t>("port")});
     }
     catch (const std::exception& e)
     {

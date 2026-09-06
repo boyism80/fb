@@ -20,7 +20,7 @@ public struct Heartbeat : IFlatbufferObject
   public void __init(int _i, ByteBuffer _bb) { __p = new Table(_i, _bb); }
   public Heartbeat __assign(int _i, ByteBuffer _bb) { __init(_i, _bb); return this; }
 
-  public uint World { get { int o = __p.__offset(4); return o != 0 ? __p.bb.GetUint(o + __p.bb_pos) : (uint)0; } }
+  public nullable.nullable_uint? World { get { int o = __p.__offset(4); return o != 0 ? (nullable.nullable_uint?)(new nullable.nullable_uint()).__assign(__p.__indirect(o + __p.bb_pos), __p.bb) : null; } }
   public fb.protocol._internal.raw.Service Service { get { int o = __p.__offset(6); return o != 0 ? (fb.protocol._internal.raw.Service)__p.bb.GetSbyte(o + __p.bb_pos) : fb.protocol._internal.raw.Service.Gateway; } }
   public byte Id { get { int o = __p.__offset(8); return o != 0 ? __p.bb.Get(o + __p.bb_pos) : (byte)0; } }
   public string Name { get { int o = __p.__offset(10); return o != 0 ? __p.__string(o + __p.bb_pos) : null; } }
@@ -38,35 +38,31 @@ public struct Heartbeat : IFlatbufferObject
 #endif
   public byte[] GetIpArray() { return __p.__vector_as_array<byte>(12); }
   public ushort Port { get { int o = __p.__offset(14); return o != 0 ? __p.bb.GetUshort(o + __p.bb_pos) : (ushort)0; } }
-  public fb.protocol._internal.raw.ProcessRole Role { get { int o = __p.__offset(16); return o != 0 ? (fb.protocol._internal.raw.ProcessRole)__p.bb.GetSbyte(o + __p.bb_pos) : fb.protocol._internal.raw.ProcessRole.Home; } }
 
   public static Offset<fb.protocol._internal.request.raw.Heartbeat> CreateHeartbeat(FlatBufferBuilder builder,
-      uint world = 0,
+      Offset<nullable.nullable_uint> worldOffset = default(Offset<nullable.nullable_uint>),
       fb.protocol._internal.raw.Service service = fb.protocol._internal.raw.Service.Gateway,
       byte id = 0,
       StringOffset nameOffset = default(StringOffset),
       StringOffset ipOffset = default(StringOffset),
-      ushort port = 0,
-      fb.protocol._internal.raw.ProcessRole role = fb.protocol._internal.raw.ProcessRole.Home) {
-    builder.StartTable(7);
+      ushort port = 0) {
+    builder.StartTable(6);
     Heartbeat.AddIp(builder, ipOffset);
     Heartbeat.AddName(builder, nameOffset);
-    Heartbeat.AddWorld(builder, world);
+    Heartbeat.AddWorld(builder, worldOffset);
     Heartbeat.AddPort(builder, port);
-    Heartbeat.AddRole(builder, role);
     Heartbeat.AddId(builder, id);
     Heartbeat.AddService(builder, service);
     return Heartbeat.EndHeartbeat(builder);
   }
 
-  public static void StartHeartbeat(FlatBufferBuilder builder) { builder.StartTable(7); }
-  public static void AddWorld(FlatBufferBuilder builder, uint world) { builder.AddUint(0, world, 0); }
+  public static void StartHeartbeat(FlatBufferBuilder builder) { builder.StartTable(6); }
+  public static void AddWorld(FlatBufferBuilder builder, Offset<nullable.nullable_uint> worldOffset) { builder.AddOffset(0, worldOffset.Value, 0); }
   public static void AddService(FlatBufferBuilder builder, fb.protocol._internal.raw.Service service) { builder.AddSbyte(1, (sbyte)service, 0); }
   public static void AddId(FlatBufferBuilder builder, byte id) { builder.AddByte(2, id, 0); }
   public static void AddName(FlatBufferBuilder builder, StringOffset nameOffset) { builder.AddOffset(3, nameOffset.Value, 0); }
   public static void AddIp(FlatBufferBuilder builder, StringOffset ipOffset) { builder.AddOffset(4, ipOffset.Value, 0); }
   public static void AddPort(FlatBufferBuilder builder, ushort port) { builder.AddUshort(5, port, 0); }
-  public static void AddRole(FlatBufferBuilder builder, fb.protocol._internal.raw.ProcessRole role) { builder.AddSbyte(6, (sbyte)role, 0); }
   public static Offset<fb.protocol._internal.request.raw.Heartbeat> EndHeartbeat(FlatBufferBuilder builder) {
     int o = builder.EndTable();
     return new Offset<fb.protocol._internal.request.raw.Heartbeat>(o);
@@ -81,13 +77,12 @@ static public class HeartbeatVerify
   static public bool Verify(Google.FlatBuffers.Verifier verifier, uint tablePos)
   {
     return verifier.VerifyTableStart(tablePos)
-      && verifier.VerifyField(tablePos, 4 /*World*/, 4 /*uint*/, 4, false)
+      && verifier.VerifyTable(tablePos, 4 /*World*/, nullable.nullable_uintVerify.Verify, false)
       && verifier.VerifyField(tablePos, 6 /*Service*/, 1 /*fb.protocol._internal.raw.Service*/, 1, false)
       && verifier.VerifyField(tablePos, 8 /*Id*/, 1 /*byte*/, 1, false)
       && verifier.VerifyString(tablePos, 10 /*Name*/, false)
       && verifier.VerifyString(tablePos, 12 /*Ip*/, false)
       && verifier.VerifyField(tablePos, 14 /*Port*/, 2 /*ushort*/, 2, false)
-      && verifier.VerifyField(tablePos, 16 /*Role*/, 1 /*fb.protocol._internal.raw.ProcessRole*/, 1, false)
       && verifier.VerifyTableEnd(tablePos);
   }
 }

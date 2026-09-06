@@ -11,24 +11,12 @@
 
 namespace fb {
 
-inline fb::protocol::internal::ProcessRole process_role()
-{
-    auto s = fb::config<std::string_view>("role", "home");
-    if (s == "cross")
-        return fb::protocol::internal::ProcessRole::Cross;
-    return fb::protocol::internal::ProcessRole::Home;
-}
-
-inline bool is_cross()
-{
-    return process_role() == fb::protocol::internal::ProcessRole::Cross;
-}
-
 inline std::string amqp_scope()
 {
-    if (is_cross())
+    auto world = fb::config<std::optional<uint32_t>>("world");
+    if (!world)
         return "cross";
-    return std::format("w{}", fb::config<uint32_t>("world"));
+    return std::format("w{}", *world);
 }
 
 enum class amqp_kind

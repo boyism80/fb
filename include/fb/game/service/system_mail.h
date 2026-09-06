@@ -45,7 +45,7 @@ public:
     explicit system_mail(fb::game::server& server);
 
     // clang-format off
-    async::task<bool> create(uint32_t sender, std::string_view title, std::string_view contents, const std::optional<std::string>& expire_date);
+    async::task<bool> create(uint32_t world, uint32_t sender, std::string_view title, std::string_view contents, const std::optional<std::string>& expire_date);
     async::task<void> poll_and_deliver();
     // clang-format on
 };

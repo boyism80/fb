@@ -10,7 +10,7 @@ schedule_timer::schedule_timer(fb::game::server& server) :
 
 async::task<void> schedule_timer::handle()
 {
-    if (fb::is_cross())
+    if (!fb::config<std::optional<uint32_t>>("world"))
         co_return;
 
     co_await this->server.schedules.poll();

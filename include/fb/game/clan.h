@@ -95,7 +95,7 @@ public:
     async::task<void> kick_member(character& kicker, std::string_view target_name);
     async::task<void> change_role(character& changer, std::string_view target_name, CLAN_ROLE role);
     async::task<void> set_title(character& changer, std::string_view title);
-    async::task<void> broadcast(uint32_t clan_id, std::string_view message, MESSAGE_TYPE type);
+    async::task<void> broadcast(uint32_t world, uint32_t clan_id, std::string_view message, MESSAGE_TYPE type);
     async::task<void> request_ally(character& requester, uint32_t target_clan_id);
     async::task<void> break_ally(character& requester);
     async::task<void> declare_enemy(character& requester, uint32_t target_clan_id);
@@ -113,7 +113,7 @@ public:
     async::task<void> on_unally(uint32_t clan_id, std::optional<uint32_t> related_clan_id);
     async::task<void> on_enemy(uint32_t clan_id, std::optional<uint32_t> related_clan_id);
     async::task<void> on_unenemy(uint32_t clan_id, std::optional<uint32_t> related_clan_id);
-    async::task<void> add_money(uint32_t clan_id, int64_t delta);
+    async::task<void> add_money(uint32_t world, uint32_t clan_id, int64_t delta);
     async::task<void> on_set_money(uint32_t clan_id, uint64_t money);
     // clang-format on
 };

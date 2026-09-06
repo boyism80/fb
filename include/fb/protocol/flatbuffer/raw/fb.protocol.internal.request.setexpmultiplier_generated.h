@@ -13,6 +13,8 @@ static_assert(FLATBUFFERS_VERSION_MAJOR == 25 &&
               FLATBUFFERS_VERSION_REVISION == 10,
              "Non-compatible flatbuffers version included");
 
+#include "nullable_uint_generated.h"
+
 namespace fb {
 namespace protocol {
 namespace internal {
@@ -28,15 +30,16 @@ struct SetExpMultiplier FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
     VT_WORLD = 4,
     VT_VALUE = 6
   };
-  uint32_t world() const {
-    return GetField<uint32_t>(VT_WORLD, 0);
+  const nullable::nullable_uint *world() const {
+    return GetPointer<const nullable::nullable_uint *>(VT_WORLD);
   }
   double value() const {
     return GetField<double>(VT_VALUE, 0.0);
   }
   bool Verify(::flatbuffers::Verifier &verifier) const {
     return VerifyTableStart(verifier) &&
-           VerifyField<uint32_t>(verifier, VT_WORLD, 4) &&
+           VerifyOffset(verifier, VT_WORLD) &&
+           verifier.VerifyTable(world()) &&
            VerifyField<double>(verifier, VT_VALUE, 8) &&
            verifier.EndTable();
   }
@@ -46,8 +49,8 @@ struct SetExpMultiplierBuilder {
   typedef SetExpMultiplier Table;
   ::flatbuffers::FlatBufferBuilder &fbb_;
   ::flatbuffers::uoffset_t start_;
-  void add_world(uint32_t world) {
-    fbb_.AddElement<uint32_t>(SetExpMultiplier::VT_WORLD, world, 0);
+  void add_world(::flatbuffers::Offset<nullable::nullable_uint> world) {
+    fbb_.AddOffset(SetExpMultiplier::VT_WORLD, world);
   }
   void add_value(double value) {
     fbb_.AddElement<double>(SetExpMultiplier::VT_VALUE, value, 0.0);
@@ -65,7 +68,7 @@ struct SetExpMultiplierBuilder {
 
 inline ::flatbuffers::Offset<SetExpMultiplier> CreateSetExpMultiplier(
     ::flatbuffers::FlatBufferBuilder &_fbb,
-    uint32_t world = 0,
+    ::flatbuffers::Offset<nullable::nullable_uint> world = 0,
     double value = 0.0) {
   SetExpMultiplierBuilder builder_(_fbb);
   builder_.add_value(value);

@@ -62,6 +62,7 @@ struct transfer_match
 {
     std::string id;
     uint32_t    type = 0;
+    uint32_t    team = 0;
 };
 
 struct transfer_option

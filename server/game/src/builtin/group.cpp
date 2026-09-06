@@ -106,6 +106,22 @@ int builtin::group::builtin_message(lua_State* L)
 
     auto                                  master_name = group->master();
     character::container::character_ptr_t master_ch   = srv.characters.find(master_name);
+    auto                                  world       = uint32_t{0};
+    if (master_ch != nullptr)
+    {
+        world = master_ch->world();
+    }
+    else
+    {
+        for (auto& member : group->characters())
+        {
+            if (member == nullptr)
+                continue;
+
+            world = member->world();
+            break;
+        }
+    }
 
     auto error   = std::make_shared<std::optional<std::string>>();
     auto builder = lua->new_co_builder();
@@ -115,7 +131,10 @@ int builtin::group::builtin_message(lua_State* L)
         auto& server = static_cast<fb::game::server&>(lua->executor);
         try
         {
-            co_await server.groups.broadcast(group_id, message, type);
+            if (world == 0)
+                throw std::runtime_error("no online group member");
+
+            co_await server.groups.broadcast(world, group_id, message, type);
         }
         catch (std::exception& e)
         {

@@ -249,7 +249,7 @@ namespace Http.Service
                     {
                         Message = maintenanceInfo.Message,
                         EndTime = maintenanceInfo.EndTime.ToString("yyyy-MM-dd HH:mm:ss")
-                    }, AmqpRoute.Exchange, AmqpRoute.Unicast("home", world, serverId));
+                    }, AmqpRoute.Exchange, AmqpRoute.Unicast(world, serverId));
 
                     messageCount++;
                 }

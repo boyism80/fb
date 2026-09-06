@@ -13,7 +13,7 @@ static_assert(FLATBUFFERS_VERSION_MAJOR == 25 &&
               FLATBUFFERS_VERSION_REVISION == 10,
              "Non-compatible flatbuffers version included");
 
-#include "fb.protocol.internal.processrole_generated.h"
+#include "nullable_uint_generated.h"
 
 namespace fb {
 namespace protocol {
@@ -34,7 +34,7 @@ struct FriendBroadcast FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
     VT_MESSAGE = 12,
     VT_TYPE = 14,
     VT_TO_UIDS = 16,
-    VT_ROLE = 18
+    VT_PROCESS_WORLD = 18
   };
   uint32_t world() const {
     return GetField<uint32_t>(VT_WORLD, 0);
@@ -57,8 +57,8 @@ struct FriendBroadcast FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
   const ::flatbuffers::Vector<uint32_t> *to_uids() const {
     return GetPointer<const ::flatbuffers::Vector<uint32_t> *>(VT_TO_UIDS);
   }
-  fb::protocol::internal::raw::ProcessRole role() const {
-    return static_cast<fb::protocol::internal::raw::ProcessRole>(GetField<int8_t>(VT_ROLE, 0));
+  const nullable::nullable_uint *process_world() const {
+    return GetPointer<const nullable::nullable_uint *>(VT_PROCESS_WORLD);
   }
   bool Verify(::flatbuffers::Verifier &verifier) const {
     return VerifyTableStart(verifier) &&
@@ -72,7 +72,8 @@ struct FriendBroadcast FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
            VerifyField<uint8_t>(verifier, VT_TYPE, 1) &&
            VerifyOffset(verifier, VT_TO_UIDS) &&
            verifier.VerifyVector(to_uids()) &&
-           VerifyField<int8_t>(verifier, VT_ROLE, 1) &&
+           VerifyOffset(verifier, VT_PROCESS_WORLD) &&
+           verifier.VerifyTable(process_world()) &&
            verifier.EndTable();
   }
 };
@@ -102,8 +103,8 @@ struct FriendBroadcastBuilder {
   void add_to_uids(::flatbuffers::Offset<::flatbuffers::Vector<uint32_t>> to_uids) {
     fbb_.AddOffset(FriendBroadcast::VT_TO_UIDS, to_uids);
   }
-  void add_role(fb::protocol::internal::raw::ProcessRole role) {
-    fbb_.AddElement<int8_t>(FriendBroadcast::VT_ROLE, static_cast<int8_t>(role), 0);
+  void add_process_world(::flatbuffers::Offset<nullable::nullable_uint> process_world) {
+    fbb_.AddOffset(FriendBroadcast::VT_PROCESS_WORLD, process_world);
   }
   explicit FriendBroadcastBuilder(::flatbuffers::FlatBufferBuilder &_fbb)
         : fbb_(_fbb) {
@@ -125,15 +126,15 @@ inline ::flatbuffers::Offset<FriendBroadcast> CreateFriendBroadcast(
     ::flatbuffers::Offset<::flatbuffers::String> message = 0,
     uint8_t type = 0,
     ::flatbuffers::Offset<::flatbuffers::Vector<uint32_t>> to_uids = 0,
-    fb::protocol::internal::raw::ProcessRole role = fb::protocol::internal::raw::ProcessRole_Home) {
+    ::flatbuffers::Offset<nullable::nullable_uint> process_world = 0) {
   FriendBroadcastBuilder builder_(_fbb);
+  builder_.add_process_world(process_world);
   builder_.add_to_uids(to_uids);
   builder_.add_message(message);
   builder_.add_from_name(from_name);
   builder_.add_from_uid(from_uid);
   builder_.add_host(host);
   builder_.add_world(world);
-  builder_.add_role(role);
   builder_.add_type(type);
   return builder_.Finish();
 }
@@ -147,7 +148,7 @@ inline ::flatbuffers::Offset<FriendBroadcast> CreateFriendBroadcastDirect(
     const char *message = nullptr,
     uint8_t type = 0,
     const std::vector<uint32_t> *to_uids = nullptr,
-    fb::protocol::internal::raw::ProcessRole role = fb::protocol::internal::raw::ProcessRole_Home) {
+    ::flatbuffers::Offset<nullable::nullable_uint> process_world = 0) {
   auto from_name__ = from_name ? _fbb.CreateString(from_name) : 0;
   auto message__ = message ? _fbb.CreateString(message) : 0;
   auto to_uids__ = to_uids ? _fbb.CreateVector<uint32_t>(*to_uids) : 0;
@@ -160,7 +161,7 @@ inline ::flatbuffers::Offset<FriendBroadcast> CreateFriendBroadcastDirect(
       message__,
       type,
       to_uids__,
-      role);
+      process_world);
 }
 
 inline const fb::protocol::internal::request::raw::FriendBroadcast *GetFriendBroadcast(const void *buf) {

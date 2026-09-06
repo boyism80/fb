@@ -2286,9 +2286,10 @@ int builtin::character::builtin_create_group(lua_State* L)
             co_await server.groups.create(*shared, name);
             *success = true;
         }
-        catch (std::exception&)
+        catch (std::exception& e)
         {
             *success = false;
+            shared->message(e.what(), MESSAGE_TYPE::STATE);
         }
     };
     builder.resume = [=]() -> async::task<int> {
@@ -3896,6 +3897,16 @@ int builtin::character::builtin_transfer_to(lua_State* L)
             position.y = random<uint16_t>(params.y, params.bottom);
 
         option.match = fb::game::transfer_match{.id = std::move(match_id), .type = match_type};
+
+        lua_getfield(*lua, 5, "match_team");
+        if (lua->is_nil(-1) == false)
+        {
+            if (lua->is_number(-1) == false)
+                throw std::runtime_error("transfer_to match_team must be a number");
+
+            option.match->team = static_cast<uint32_t>(lua->tointeger(-1));
+        }
+        lua->remove(-1);
     }
     else
     {
@@ -6062,7 +6073,7 @@ int builtin::character::builtin_send_system_mail(lua_State* L)
     auto builder  = lua->new_co_builder();
     builder.yield = [=]() -> async::task<void> {
         auto& server = static_cast<fb::game::server&>(lua->executor);
-        *success     = co_await server.system_mail.create(ch->id, title, contents, expire_date);
+        *success     = co_await server.system_mail.create(ch->world(), ch->id, title, contents, expire_date);
     };
     builder.resume = [=]() -> async::task<int> {
         lua->pushboolean(*success);
@@ -6179,7 +6190,8 @@ int builtin::character::builtin_send_storage_box(lua_State* L)
     auto builder  = lua->new_co_builder();
     builder.yield = [=]() -> async::task<void> {
         auto& server = static_cast<fb::game::server&>(lua->executor);
-        *success     = co_await server.system_storage.create(user_name, title, message, attachments, expire_date);
+        *success =
+            co_await server.system_storage.create(ch->world(), user_name, title, message, attachments, expire_date);
     };
     builder.resume = [=]() -> async::task<int> {
         lua->pushboolean(*success);
@@ -6289,7 +6301,7 @@ int builtin::character::builtin_send_system_storage_box(lua_State* L)
     auto builder  = lua->new_co_builder();
     builder.yield = [=]() -> async::task<void> {
         auto& server = static_cast<fb::game::server&>(lua->executor);
-        *success     = co_await server.system_storage.create_system(title, message, attachments, expire_date);
+        *success = co_await server.system_storage.create_system(ch->world(), title, message, attachments, expire_date);
     };
     builder.resume = [=]() -> async::task<int> {
         lua->pushboolean(*success);
@@ -6957,6 +6969,11 @@ int builtin::character::builtin_marry(lua_State* L)
         const auto& my_m   = me->marriage();
         const auto& tar_m  = target->marriage();
 
+        if (me->world() != target->world())
+        {
+            *error = "different world";
+            co_return;
+        }
         if (my_m.spouse_id.has_value())
         {
             *error = "already married";

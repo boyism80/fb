@@ -13,9 +13,13 @@ castle::container::container(server& server) :
 
 async::task<castle::container::entity_ptr> castle::container::fetch(uint32_t id)
 {
-    auto   world = fb::config<uint32_t>("world");
+    auto world = fb::config<std::optional<uint32_t>>("world");
+    if (!world)
+        co_return this->_server.make<fb::game::castle>(static_cast<fb::model::enum_value::DIVINE_BEAST>(id),
+                                                       std::nullopt);
+
     auto&& resp =
-        co_await this->_server.http.get<internal_resp::CastleList>("internal", std::format("/castle/{}", world));
+        co_await this->_server.http.get<internal_resp::CastleList>("internal", std::format("/castle/{}", *world));
 
     if (static_cast<fb::model::enum_value::ERROR_CODE>(resp.error) != fb::model::enum_value::ERROR_CODE::NONE)
     {
@@ -83,11 +87,14 @@ async::task<void> castle::container::end_siege(fb::model::enum_value::DIVINE_BEA
     if (previous_owner.has_value() && previous_owner.value() == winner_clan_id.value())
         co_return;
 
-    auto   world = fb::config<uint32_t>("world");
+    auto world = fb::config<std::optional<uint32_t>>("world");
+    if (!world)
+        co_return;
+
     auto&& resp =
         co_await this->_server.http.post("internal",
                                          "/castle/owner",
-                                         fb::protocol::internal::request::SetCastleOwner{world,
+                                         fb::protocol::internal::request::SetCastleOwner{*world,
                                                                                          fb::config<uint32_t>("host"),
                                                                                          static_cast<uint8_t>(id),
                                                                                          winner_clan_id});
