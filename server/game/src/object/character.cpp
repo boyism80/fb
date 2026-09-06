@@ -48,7 +48,7 @@ character::character(fb::game::server& server, const initial_params& params) :
     _divine_beast(params.divine_beast), _super_hide(params.super_hide), _last_afk_time(server.now()),
     _marriage(server.now()), id(params.id), client_version(params.client_version), ui_mode(params.ui_mode)
 {
-    this->_ping_state.last_ping_time = server.now() - std::chrono::seconds(10);
+    this->_ping_state.last_ping_time = server.now();
 }
 
 std::shared_ptr<fb::game::match> character::match() const
@@ -1280,6 +1280,9 @@ void character::update_time(uint8_t hours, uint8_t minutes)
 
 void character::init()
 {
+    this->_ping_state.enabled        = true;
+    this->_ping_state.pong_received  = true;
+    this->_ping_state.last_ping_time = this->server.now();
     this->listener.on_character_init(*this);
 }
 

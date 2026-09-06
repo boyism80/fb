@@ -175,6 +175,8 @@ async::task<void> listener_impl::on_transfer(character&                  me,
                                              uint16_t                    port,
                                              const transfer_option&      option)
 {
+    me.ping_state().enabled = false;
+
     auto stream = fb::stream();
     auto writer = fb::stream_writer<big_endian>(stream);
     writer.write<uint32_t>(me.id);
