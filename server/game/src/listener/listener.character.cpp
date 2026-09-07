@@ -175,6 +175,8 @@ async::task<void> listener_impl::on_transfer(character&                  me,
                                              uint16_t                    port,
                                              const transfer_option&      option)
 {
+    me.ping_state().enabled = false;
+
     auto stream = fb::stream();
     auto writer = fb::stream_writer<big_endian>(stream);
     writer.write<uint32_t>(me.id);
@@ -198,6 +200,7 @@ async::task<void> listener_impl::on_transfer(character&                  me,
     {
         writer.write<std::string>(option.match->id);
         writer.write<uint32_t>(option.match->type);
+        writer.write<uint32_t>(option.match->team);
     }
     if (ENUM_IN(flags, game_reqs::TRANSFER_PARAM::UI_MODE))
         writer.write<uint8_t>(static_cast<uint8_t>(me.ui_mode));

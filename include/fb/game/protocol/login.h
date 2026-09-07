@@ -20,7 +20,7 @@ enum class TRANSFER_PARAM : uint8_t
 /**
  * C2S game login (opcode 0x10). Echoed transfer blob:
  *   enc | key | from | client_version u16 | uid | name | flags u8 | sections
- * flags: MAP (world/map/xy), MATCH (match_id/match_type), UI_MODE (CLIENT_UI_MODE).
+ * flags: MAP (world/map/xy), MATCH (match_id/match_type/team), UI_MODE (CLIENT_UI_MODE).
  */
 template <CLIENT_VERSION V>
 class login : public fb::protocol::header
@@ -44,6 +44,7 @@ public:
     public:
         std::string id;
         uint32_t    type = 0;
+        uint32_t    team = 0;
     };
 
 public:

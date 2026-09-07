@@ -62,6 +62,7 @@ struct transfer_match
 {
     std::string id;
     uint32_t    type = 0;
+    uint32_t    team = 0;
 };
 
 struct transfer_option
@@ -95,13 +96,15 @@ public:
 
     /**
      * Ping state for keepalive: last ping time, token, and whether pong was received.
-     * Initially pong_received is true so the first ping is sent after the interval.
+     * enabled is false until login init completes, and is cleared when a process
+     * transfer starts so the character is not a ping target during the handoff.
      */
     struct ping_state_t
     {
         fb::model::datetime last_ping_time;
         uint32_t            token         = 0;
         bool                pong_received = true;
+        bool                enabled       = false;
     };
 
 private:

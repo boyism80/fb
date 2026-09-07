@@ -17,6 +17,15 @@ struct match
     static int builtin_member_count(lua_State* L);
     static int builtin_expected(lua_State* L);
     static int builtin_map(lua_State* L);
+    static int builtin_team(lua_State* L);
+    static int builtin_teams(lua_State* L);
+};
+
+struct match_team
+{
+    static int builtin_id(lua_State* L);
+    static int builtin_leader(lua_State* L);
+    static int builtin_members(lua_State* L);
 };
 
 } // namespace fb::game::builtin

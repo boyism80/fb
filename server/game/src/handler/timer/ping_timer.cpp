@@ -27,12 +27,15 @@ async::task<void> ping_timer::handle(const fb::model::datetime& now, std::thread
         if (ch == nullptr)
             co_return;
 
+        auto& state = ch->ping_state();
+        if (!state.enabled)
+            co_return;
+
         auto socket_ptr = ch->socket_ptr();
         if (socket_ptr == nullptr || !socket_ptr->is_open())
             co_return;
 
-        auto& state   = ch->ping_state();
-        auto  elapsed = now - state.last_ping_time;
+        auto elapsed = now - state.last_ping_time;
         if (elapsed < ping_interval)
             co_return;
 

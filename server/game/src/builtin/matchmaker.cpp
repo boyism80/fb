@@ -287,9 +287,10 @@ int builtin::matchmaker::builtin_confirm(lua_State* L)
             co_return;
         }
 
+        auto match_id = *pending;
         try
         {
-            co_await self->matchmaker.confirm_queue(*pending, false);
+            co_await self->matchmaker.confirm_queue(std::move(match_id), false);
         }
         catch (const std::exception& e)
         {
@@ -332,9 +333,10 @@ int builtin::matchmaker::builtin_decline(lua_State* L)
             co_return;
         }
 
+        auto match_id = *pending;
         try
         {
-            co_await self->matchmaker.decline_queue(*pending, false);
+            co_await self->matchmaker.decline_queue(std::move(match_id), false);
         }
         catch (const std::exception& e)
         {

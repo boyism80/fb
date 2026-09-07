@@ -23,7 +23,7 @@ fb::login::server::server(boost::asio::io_context& io_context, uint16_t port) :
         fb::config<std::string>("amqp:log:pwd"),
         std::to_string(fb::config<uint32_t>("id")),
         fb::config<std::string>("name"),
-        fb::config<uint32_t>("world"))
+        fb::config<std::optional<uint32_t>>("world"))
 {
     this->handler.protocol.bind<fb::login::handler::protocol::login>();
     this->handler.protocol.bind<fb::login::handler::protocol::agreement>();
@@ -73,8 +73,7 @@ async::task<void> fb::login::server::update_status()
                                                                         this->id(),
                                                                         this->name(),
                                                                         fb::config<std::string_view>("ip"),
-                                                                        fb::config<uint16_t>("port"),
-                                                                        fb::protocol::internal::ProcessRole::Home});
+                                                                        fb::config<uint16_t>("port")});
     }
     catch (const std::exception& e)
     {

@@ -238,7 +238,7 @@ async::task<void> matchmaker::unregister_queue(bool quiet)
     co_return;
 }
 
-async::task<void> matchmaker::confirm_queue(std::string_view match_id, bool quiet)
+async::task<void> matchmaker::confirm_queue(std::string match_id, bool quiet)
 {
     this->owner.assert_thread();
 
@@ -282,12 +282,11 @@ async::task<void> matchmaker::confirm_queue(std::string_view match_id, bool quie
         auto ptr        = this->owner.weak_from_this_as<character>().lock();
         if (ptr != nullptr)
         {
-            auto match_id_str = std::string(match_id);
-            auto lua          = this->owner.server.lua.open("scripts/interaction.lua", "on_matchmaking_confirm");
+            auto lua = this->owner.server.lua.open("scripts/interaction.lua", "on_matchmaking_confirm");
             if (lua)
             {
                 lua->pushobject(ptr);
-                lua->pushstring(match_id_str.c_str());
+                lua->pushstring(match_id.c_str());
                 lua->pushinteger(match_type);
                 std::ignore = lua->call(3);
             }
@@ -297,7 +296,7 @@ async::task<void> matchmaker::confirm_queue(std::string_view match_id, bool quie
     co_return;
 }
 
-async::task<void> matchmaker::decline_queue(std::string_view match_id, bool quiet)
+async::task<void> matchmaker::decline_queue(std::string match_id, bool quiet)
 {
     this->owner.assert_thread();
 
@@ -345,12 +344,11 @@ async::task<void> matchmaker::decline_queue(std::string_view match_id, bool quie
         auto ptr        = this->owner.weak_from_this_as<character>().lock();
         if (ptr != nullptr)
         {
-            auto match_id_str = std::string(match_id);
-            auto lua          = this->owner.server.lua.open("scripts/interaction.lua", "on_matchmaking_decline");
+            auto lua = this->owner.server.lua.open("scripts/interaction.lua", "on_matchmaking_decline");
             if (lua)
             {
                 lua->pushobject(ptr);
-                lua->pushstring(match_id_str.c_str());
+                lua->pushstring(match_id.c_str());
                 lua->pushinteger(match_type);
                 std::ignore = lua->call(3);
             }
@@ -369,6 +367,9 @@ async::task<void> matchmaker::decline_queue(std::string_view match_id, bool quie
 async::task<void> matchmaker::register_queue(uint32_t match_type)
 {
     this->owner.assert_thread();
+
+    if (!fb::config<std::optional<uint32_t>>("world"))
+        throw std::runtime_error("교차 서버에서는 매치메이킹을 등록할 수 없습니다.");
 
     auto weak = this->owner.weak_from_this_as<character>();
     if (weak.expired())

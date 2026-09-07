@@ -13,6 +13,8 @@ static_assert(FLATBUFFERS_VERSION_MAJOR == 25 &&
               FLATBUFFERS_VERSION_REVISION == 10,
              "Non-compatible flatbuffers version included");
 
+#include "nullable_uint_generated.h"
+
 namespace fb {
 namespace protocol {
 namespace internal {
@@ -29,8 +31,8 @@ struct ReloadTables FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
     VT_URL = 6,
     VT_TABLE_NAMES = 8
   };
-  uint32_t world() const {
-    return GetField<uint32_t>(VT_WORLD, 0);
+  const nullable::nullable_uint *world() const {
+    return GetPointer<const nullable::nullable_uint *>(VT_WORLD);
   }
   const ::flatbuffers::String *url() const {
     return GetPointer<const ::flatbuffers::String *>(VT_URL);
@@ -40,7 +42,8 @@ struct ReloadTables FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
   }
   bool Verify(::flatbuffers::Verifier &verifier) const {
     return VerifyTableStart(verifier) &&
-           VerifyField<uint32_t>(verifier, VT_WORLD, 4) &&
+           VerifyOffset(verifier, VT_WORLD) &&
+           verifier.VerifyTable(world()) &&
            VerifyOffset(verifier, VT_URL) &&
            verifier.VerifyString(url()) &&
            VerifyOffset(verifier, VT_TABLE_NAMES) &&
@@ -54,8 +57,8 @@ struct ReloadTablesBuilder {
   typedef ReloadTables Table;
   ::flatbuffers::FlatBufferBuilder &fbb_;
   ::flatbuffers::uoffset_t start_;
-  void add_world(uint32_t world) {
-    fbb_.AddElement<uint32_t>(ReloadTables::VT_WORLD, world, 0);
+  void add_world(::flatbuffers::Offset<nullable::nullable_uint> world) {
+    fbb_.AddOffset(ReloadTables::VT_WORLD, world);
   }
   void add_url(::flatbuffers::Offset<::flatbuffers::String> url) {
     fbb_.AddOffset(ReloadTables::VT_URL, url);
@@ -76,7 +79,7 @@ struct ReloadTablesBuilder {
 
 inline ::flatbuffers::Offset<ReloadTables> CreateReloadTables(
     ::flatbuffers::FlatBufferBuilder &_fbb,
-    uint32_t world = 0,
+    ::flatbuffers::Offset<nullable::nullable_uint> world = 0,
     ::flatbuffers::Offset<::flatbuffers::String> url = 0,
     ::flatbuffers::Offset<::flatbuffers::Vector<::flatbuffers::Offset<::flatbuffers::String>>> table_names = 0) {
   ReloadTablesBuilder builder_(_fbb);
@@ -88,7 +91,7 @@ inline ::flatbuffers::Offset<ReloadTables> CreateReloadTables(
 
 inline ::flatbuffers::Offset<ReloadTables> CreateReloadTablesDirect(
     ::flatbuffers::FlatBufferBuilder &_fbb,
-    uint32_t world = 0,
+    ::flatbuffers::Offset<nullable::nullable_uint> world = 0,
     const char *url = nullptr,
     const std::vector<::flatbuffers::Offset<::flatbuffers::String>> *table_names = nullptr) {
   auto url__ = url ? _fbb.CreateString(url) : 0;

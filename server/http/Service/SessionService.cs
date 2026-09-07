@@ -157,7 +157,7 @@ namespace Http.Service
                 {
                     Uid = existingSession.Uid,
                     Name = name
-                }, AmqpRoute.Exchange, AmqpRoute.Unicast(existingSession, world));
+                }, AmqpRoute.Exchange, AmqpRoute.Unicast(existingSession));
             }
 
             return false;

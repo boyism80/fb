@@ -1,8 +1,7 @@
 {
     "id": 200,
     "name": "game-cross-200",
-    "role": "cross",
-    "world": 1,
+    "world": null,
     "delay": 5,
     "ip": "127.0.0.1",
     "port": 30320,

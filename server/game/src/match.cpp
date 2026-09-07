@@ -6,6 +6,8 @@
 #include <fb/model/model.h>
 #include <fb/model/datetime.h>
 #include <fb/logger.h>
+#include <random.h>
+#include <algorithm>
 #include <chrono>
 #include <format>
 
@@ -57,6 +59,36 @@ std::vector<std::shared_ptr<character>> match::members()
 {
     auto lock = std::lock_guard(this->_mutex);
     return this->snapshot();
+}
+
+std::vector<std::shared_ptr<match::team>> match::teams()
+{
+    auto lock   = std::lock_guard(this->_mutex);
+    auto result = std::vector<std::shared_ptr<team>>{};
+    result.reserve(this->_teams.size());
+    for (auto& [id, team] : this->_teams)
+    {
+        if (team != nullptr)
+            result.push_back(team);
+    }
+    std::sort(result.begin(), result.end(), [](const auto& a, const auto& b) {
+        return a->id() < b->id();
+    });
+    return result;
+}
+
+std::shared_ptr<match::team> match::find(const character& ch)
+{
+    auto lock = std::lock_guard(this->_mutex);
+    for (auto& [_, team] : this->_teams)
+    {
+        if (team == nullptr)
+            continue;
+
+        if (team->contains(ch))
+            return team;
+    }
+    return nullptr;
 }
 
 std::shared_ptr<fb::game::map> match::map(uint32_t model_id)
@@ -122,7 +154,7 @@ async::task<void> match::invoke(std::string_view func, character& ch, std::share
     co_return;
 }
 
-async::task<void> match::join(character& ch)
+async::task<void> match::join(character& ch, uint32_t team)
 {
     auto already = false;
     auto full    = false;
@@ -142,6 +174,13 @@ async::task<void> match::join(character& ch)
         }
         if (already == false)
             this->_members.push_back(ch.weak_from_this_as<character>());
+        if (already == false && team != 0)
+        {
+            auto& slot = this->_teams[team];
+            if (slot == nullptr)
+                slot = std::make_shared<match::team>(*this, team);
+            slot->enter(ch);
+        }
     }
     if (already)
         co_return;
@@ -173,6 +212,11 @@ void match::leave(character& ch)
                 it = this->_members.erase(it);
             else
                 ++it;
+        }
+        for (auto& [_, team] : this->_teams)
+        {
+            if (team != nullptr)
+                team->leave(ch);
         }
         empty = this->_members.empty();
     }
@@ -425,6 +469,11 @@ async::task<void> match::play()
         this->_state = MATCH_STATE::playing;
         this->cancel_timer();
         members = this->snapshot();
+        for (auto& [_, team] : this->_teams)
+        {
+            if (team != nullptr)
+                team->pick_leader();
+        }
     }
 
     for (auto& ch : members)
@@ -458,6 +507,7 @@ async::task<void> match::close()
         this->cancel_timer();
         members = this->snapshot();
         this->_members.clear();
+        this->_teams.clear();
     }
 
     for (auto& ch : members)
@@ -504,6 +554,98 @@ async::task<void> match::close()
     co_return;
 }
 
+match::team::team(match& match, uint32_t id) :
+    _match(match),
+    _id(id)
+{ }
+
+uint32_t match::team::id() const
+{
+    return this->_id;
+}
+
+bool match::team::contains(const character& ch) const
+{
+    for (auto& weak : this->_members)
+    {
+        auto member = weak.lock();
+        if (member != nullptr && member.get() == &ch)
+            return true;
+    }
+    return false;
+}
+
+std::shared_ptr<character> match::team::leader() const
+{
+    auto lock = std::lock_guard(this->_match._mutex);
+    return this->_leader.lock();
+}
+
+std::vector<std::shared_ptr<character>> match::team::members()
+{
+    auto lock   = std::lock_guard(this->_match._mutex);
+    auto result = std::vector<std::shared_ptr<character>>{};
+    auto live   = std::vector<std::weak_ptr<character>>{};
+    for (auto& weak : this->_members)
+    {
+        auto ch = weak.lock();
+        if (ch == nullptr)
+            continue;
+
+        live.push_back(weak);
+        result.push_back(ch);
+    }
+    this->_members = std::move(live);
+    return result;
+}
+
+void match::team::enter(character& ch)
+{
+    for (auto& weak : this->_members)
+    {
+        auto existing = weak.lock();
+        if (existing != nullptr && existing.get() == &ch)
+            return;
+    }
+    this->_members.push_back(ch.weak_from_this_as<character>());
+}
+
+void match::team::leave(character& ch)
+{
+    auto it = this->_members.begin();
+    while (it != this->_members.end())
+    {
+        auto existing = it->lock();
+        if (existing == nullptr || existing.get() == &ch)
+            it = this->_members.erase(it);
+        else
+            ++it;
+    }
+
+    auto leader = this->_leader.lock();
+    if (leader != nullptr && leader.get() == &ch)
+        this->_leader.reset();
+}
+
+void match::team::pick_leader()
+{
+    auto live = std::vector<std::shared_ptr<character>>{};
+    for (auto& weak : this->_members)
+    {
+        auto ch = weak.lock();
+        if (ch != nullptr)
+            live.push_back(ch);
+    }
+    if (live.empty())
+    {
+        this->_leader.reset();
+        return;
+    }
+
+    auto i        = random<uint32_t>(0, static_cast<uint32_t>(live.size() - 1));
+    this->_leader = live[i];
+}
+
 match::container::container(server& server) :
     _server(server)
 { }
@@ -535,7 +677,7 @@ std::shared_ptr<match> match::container::ensure(std::string_view match_id, uint3
     return session;
 }
 
-async::task<void> match::container::join(character& ch, std::string_view match_id, uint32_t match_type)
+async::task<void> match::container::join(character& ch, std::string_view match_id, uint32_t match_type, uint32_t team)
 {
     if (match_id.empty())
         co_return;
@@ -547,7 +689,7 @@ async::task<void> match::container::join(character& ch, std::string_view match_i
         current->leave(ch);
 
     auto session = this->ensure(match_id, match_type);
-    co_await session->join(ch);
+    co_await session->join(ch, team);
     co_return;
 }
 

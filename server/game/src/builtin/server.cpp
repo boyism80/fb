@@ -2,6 +2,7 @@
 #include <fb/lua.h>
 #include <fb/encoding.h>
 #include <fb/amqp_route.h>
+#include <fb/config.h>
 #include <json/json.h>
 #include <boost/xpressive/xpressive.hpp>
 #include <chrono>
@@ -112,7 +113,7 @@ int builtin::server::builtin_now(lua_State* L)
         auto builder  = lua->new_co_builder();
         builder.yield = [=]() -> async::task<void> {
             auto&  server = static_cast<fb::game::server&>(lua->executor);
-            auto   world  = fb::config<uint32_t>("world");
+            auto   world  = fb::config<std::optional<uint32_t>>("world");
             auto&& resp   = co_await server.http.post("internal",
                                                     "/in-game/set-datetime",
                                                     internal_reqs::SetDateTime{world, value, reset});
@@ -165,7 +166,7 @@ int builtin::server::builtin_time_forward(lua_State* L)
     auto builder  = lua->new_co_builder();
     builder.yield = [=]() -> async::task<void> {
         auto& server = static_cast<fb::game::server&>(lua->executor);
-        auto  world  = fb::config<uint32_t>("world");
+        auto  world  = fb::config<std::optional<uint32_t>>("world");
         auto  resp   = co_await server.http.post("internal",
                                               "/in-game/set-datetime",
                                               internal_reqs::SetDateTime{world, datetime, false});
@@ -217,7 +218,7 @@ int builtin::server::builtin_time_backward(lua_State* L)
     auto builder  = lua->new_co_builder();
     builder.yield = [=]() -> async::task<void> {
         auto& server = static_cast<fb::game::server&>(lua->executor);
-        auto  world  = fb::config<uint32_t>("world");
+        auto  world  = fb::config<std::optional<uint32_t>>("world");
         auto  resp   = co_await server.http.post("internal",
                                               "/in-game/set-datetime",
                                               internal_reqs::SetDateTime{world, datetime, false});
@@ -1079,7 +1080,7 @@ int builtin::server::builtin_reload_table(lua_State* L)
     auto builder  = lua->new_co_builder();
     builder.yield = [=]() -> async::task<void> {
         auto& server = static_cast<fb::game::server&>(lua->executor);
-        auto  world  = fb::config<uint32_t>("world");
+        auto  world  = fb::config<std::optional<uint32_t>>("world");
         auto  resp =
             co_await server.http.post("internal", "/in-game/reload-tables", internal_reqs::ReloadTables(world, "", {}));
         if (resp.error == 0)
@@ -1298,12 +1299,19 @@ int builtin::server::builtin_ban(lua_State* L)
     auto error    = std::make_shared<std::string>();
     auto builder  = lua->new_co_builder();
     builder.yield = [=]() -> async::task<void> {
-        auto&  server = static_cast<fb::game::server&>(lua->executor);
-        auto&& resp   = co_await server.ban(name, reason, days);
-        if (resp.error == 0)
-            *success = true;
-        else
-            *error = std::format("Ban failed with error code: {}", resp.error);
+        auto& server = static_cast<fb::game::server&>(lua->executor);
+        try
+        {
+            auto&& resp = co_await server.ban(name, reason, days);
+            if (resp.error == 0)
+                *success = true;
+            else
+                *error = std::format("Ban failed with error code: {}", resp.error);
+        }
+        catch (std::exception& e)
+        {
+            *error = e.what();
+        }
     };
     builder.resume = [=]() -> async::task<int> {
         lua->pushboolean(*success);
@@ -1336,12 +1344,19 @@ int builtin::server::builtin_unban(lua_State* L)
     auto error    = std::make_shared<std::string>();
     auto builder  = lua->new_co_builder();
     builder.yield = [=]() -> async::task<void> {
-        auto&  server = static_cast<fb::game::server&>(lua->executor);
-        auto&& resp   = co_await server.unban(name);
-        if (resp.error == 0)
-            *success = true;
-        else
-            *error = std::format("Unban failed with error code: {}", resp.error);
+        auto& server = static_cast<fb::game::server&>(lua->executor);
+        try
+        {
+            auto&& resp = co_await server.unban(name);
+            if (resp.error == 0)
+                *success = true;
+            else
+                *error = std::format("Unban failed with error code: {}", resp.error);
+        }
+        catch (std::exception& e)
+        {
+            *error = e.what();
+        }
     };
     builder.resume = [=]() -> async::task<int> {
         lua->pushboolean(*success);
@@ -1439,7 +1454,7 @@ int builtin::server::builtin_exp_multiplier(lua_State* L)
         auto builder  = lua->new_co_builder();
         builder.yield = [=]() -> async::task<void> {
             auto& server = static_cast<fb::game::server&>(lua->executor);
-            auto  world  = fb::config<uint32_t>("world");
+            auto  world  = fb::config<std::optional<uint32_t>>("world");
             auto  resp   = co_await server.http.post("internal",
                                                   "/in-game/set-exp-multiplier",
                                                   internal_reqs::SetExpMultiplier(world, multiplier));
@@ -1484,7 +1499,7 @@ int builtin::server::builtin_drop_rate_multiplier(lua_State* L)
         auto builder  = lua->new_co_builder();
         builder.yield = [=]() -> async::task<void> {
             auto& server = static_cast<fb::game::server&>(lua->executor);
-            auto  world  = fb::config<uint32_t>("world");
+            auto  world  = fb::config<std::optional<uint32_t>>("world");
             auto  resp   = co_await server.http.post("internal",
                                                   "/in-game/set-drop-rate-multiplier",
                                                   internal_reqs::SetDropRateMultiplier(world, multiplier));
@@ -1612,7 +1627,7 @@ int builtin::server::builtin_is_cross(lua_State* L)
     if (lua == nullptr)
         return 0;
 
-    lua->pushboolean(fb::is_cross());
+    lua->pushboolean(!fb::config<std::optional<uint32_t>>("world"));
     return 1;
 }
 
@@ -1623,6 +1638,11 @@ int builtin::server::builtin_match_transfer(lua_State* L)
         return 0;
 
     auto match_id = std::string(lua->tostring(1));
+    if (!fb::config<std::optional<uint32_t>>("world"))
+    {
+        lua->pushnil();
+        return 1;
+    }
     auto ok       = std::make_shared<bool>(false);
     auto ip       = std::make_shared<std::string>();
     auto port     = std::make_shared<uint16_t>(0);

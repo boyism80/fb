@@ -50,13 +50,13 @@ service::system_mail::system_mail(fb::game::server& server) :
     _delivery(delivery_coroutine())
 { }
 
-async::task<bool> service::system_mail::create(uint32_t                          sender,
+async::task<bool> service::system_mail::create(uint32_t                          world,
+                                               uint32_t                          sender,
                                                std::string_view                  title,
                                                std::string_view                  contents,
                                                const std::optional<std::string>& expire_date)
 {
-    const auto world = fb::config<uint32_t>("world");
-    auto&&     resp  = co_await this->server.http.post(
+    auto&& resp = co_await this->server.http.post(
         "internal",
         "/mail/system",
         internal_reqs::WriteSystemMail{world,
@@ -81,7 +81,8 @@ fb::async_generator<void> service::system_mail::delivery_coroutine()
         const auto now = this->server.now();
         prune_expired_mails(this->_pending_mails, now);
 
-        if (fb::is_cross())
+        auto world = fb::config<std::optional<uint32_t>>("world");
+        if (!world)
         {
             co_await fb::async_suspend{};
             continue;
@@ -94,8 +95,7 @@ fb::async_generator<void> service::system_mail::delivery_coroutine()
         }
 
         auto        max_mail_id = uint32_t{0};
-        const auto  world       = fb::config<uint32_t>("world");
-        const auto& fetch_url   = std::format("/mail/system/{}?offset={}", world, this->_poll_offset);
+        const auto& fetch_url   = std::format("/mail/system/{}?offset={}", *world, this->_poll_offset);
 
         try
         {
@@ -162,7 +162,7 @@ fb::async_generator<void> service::system_mail::delivery_coroutine()
                     auto&& resp =
                         co_await this->server.http.post("internal",
                                                         "/mail/deliver-system-mail",
-                                                        internal_reqs::DeliverSystemMail{world,
+                                                        internal_reqs::DeliverSystemMail{*world,
                                                                                          mail.id,
                                                                                          mail.sender,
                                                                                          std::move(chunk_users),

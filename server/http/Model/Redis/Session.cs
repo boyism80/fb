@@ -4,6 +4,6 @@ namespace Http.Model.Redis
     {
         public uint Uid { get; set; }
         public uint Host { get; set; }
-        public string Role { get; set; } = "home";
+        public uint? World { get; set; }
     }
 }

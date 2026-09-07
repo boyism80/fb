@@ -20,7 +20,7 @@ public struct SetDateTime : IFlatbufferObject
   public void __init(int _i, ByteBuffer _bb) { __p = new Table(_i, _bb); }
   public SetDateTime __assign(int _i, ByteBuffer _bb) { __init(_i, _bb); return this; }
 
-  public uint World { get { int o = __p.__offset(4); return o != 0 ? __p.bb.GetUint(o + __p.bb_pos) : (uint)0; } }
+  public nullable.nullable_uint? World { get { int o = __p.__offset(4); return o != 0 ? (nullable.nullable_uint?)(new nullable.nullable_uint()).__assign(__p.__indirect(o + __p.bb_pos), __p.bb) : null; } }
   public string Datetime { get { int o = __p.__offset(6); return o != 0 ? __p.__string(o + __p.bb_pos) : null; } }
 #if ENABLE_SPAN_T
   public Span<byte> GetDatetimeBytes() { return __p.__vector_as_span<byte>(6, 1); }
@@ -31,18 +31,18 @@ public struct SetDateTime : IFlatbufferObject
   public bool Reset { get { int o = __p.__offset(8); return o != 0 ? 0!=__p.bb.Get(o + __p.bb_pos) : (bool)false; } }
 
   public static Offset<fb.protocol._internal.request.raw.SetDateTime> CreateSetDateTime(FlatBufferBuilder builder,
-      uint world = 0,
+      Offset<nullable.nullable_uint> worldOffset = default(Offset<nullable.nullable_uint>),
       StringOffset datetimeOffset = default(StringOffset),
       bool reset = false) {
     builder.StartTable(3);
     SetDateTime.AddDatetime(builder, datetimeOffset);
-    SetDateTime.AddWorld(builder, world);
+    SetDateTime.AddWorld(builder, worldOffset);
     SetDateTime.AddReset(builder, reset);
     return SetDateTime.EndSetDateTime(builder);
   }
 
   public static void StartSetDateTime(FlatBufferBuilder builder) { builder.StartTable(3); }
-  public static void AddWorld(FlatBufferBuilder builder, uint world) { builder.AddUint(0, world, 0); }
+  public static void AddWorld(FlatBufferBuilder builder, Offset<nullable.nullable_uint> worldOffset) { builder.AddOffset(0, worldOffset.Value, 0); }
   public static void AddDatetime(FlatBufferBuilder builder, StringOffset datetimeOffset) { builder.AddOffset(1, datetimeOffset.Value, 0); }
   public static void AddReset(FlatBufferBuilder builder, bool reset) { builder.AddBool(2, reset, false); }
   public static Offset<fb.protocol._internal.request.raw.SetDateTime> EndSetDateTime(FlatBufferBuilder builder) {
@@ -59,7 +59,7 @@ static public class SetDateTimeVerify
   static public bool Verify(Google.FlatBuffers.Verifier verifier, uint tablePos)
   {
     return verifier.VerifyTableStart(tablePos)
-      && verifier.VerifyField(tablePos, 4 /*World*/, 4 /*uint*/, 4, false)
+      && verifier.VerifyTable(tablePos, 4 /*World*/, nullable.nullable_uintVerify.Verify, false)
       && verifier.VerifyString(tablePos, 6 /*Datetime*/, false)
       && verifier.VerifyField(tablePos, 8 /*Reset*/, 1 /*bool*/, 1, false)
       && verifier.VerifyTableEnd(tablePos);

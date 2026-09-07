@@ -13,6 +13,8 @@ static_assert(FLATBUFFERS_VERSION_MAJOR == 25 &&
               FLATBUFFERS_VERSION_REVISION == 10,
              "Non-compatible flatbuffers version included");
 
+#include "nullable_uint_generated.h"
+
 namespace fb {
 namespace protocol {
 namespace internal {
@@ -28,15 +30,16 @@ struct SetDropRateMultiplier FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Ta
     VT_WORLD = 4,
     VT_VALUE = 6
   };
-  uint32_t world() const {
-    return GetField<uint32_t>(VT_WORLD, 0);
+  const nullable::nullable_uint *world() const {
+    return GetPointer<const nullable::nullable_uint *>(VT_WORLD);
   }
   double value() const {
     return GetField<double>(VT_VALUE, 0.0);
   }
   bool Verify(::flatbuffers::Verifier &verifier) const {
     return VerifyTableStart(verifier) &&
-           VerifyField<uint32_t>(verifier, VT_WORLD, 4) &&
+           VerifyOffset(verifier, VT_WORLD) &&
+           verifier.VerifyTable(world()) &&
            VerifyField<double>(verifier, VT_VALUE, 8) &&
            verifier.EndTable();
   }
@@ -46,8 +49,8 @@ struct SetDropRateMultiplierBuilder {
   typedef SetDropRateMultiplier Table;
   ::flatbuffers::FlatBufferBuilder &fbb_;
   ::flatbuffers::uoffset_t start_;
-  void add_world(uint32_t world) {
-    fbb_.AddElement<uint32_t>(SetDropRateMultiplier::VT_WORLD, world, 0);
+  void add_world(::flatbuffers::Offset<nullable::nullable_uint> world) {
+    fbb_.AddOffset(SetDropRateMultiplier::VT_WORLD, world);
   }
   void add_value(double value) {
     fbb_.AddElement<double>(SetDropRateMultiplier::VT_VALUE, value, 0.0);
@@ -65,7 +68,7 @@ struct SetDropRateMultiplierBuilder {
 
 inline ::flatbuffers::Offset<SetDropRateMultiplier> CreateSetDropRateMultiplier(
     ::flatbuffers::FlatBufferBuilder &_fbb,
-    uint32_t world = 0,
+    ::flatbuffers::Offset<nullable::nullable_uint> world = 0,
     double value = 0.0) {
   SetDropRateMultiplierBuilder builder_(_fbb);
   builder_.add_value(value);

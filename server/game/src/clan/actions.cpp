@@ -3,6 +3,7 @@
 #include <fb/game/character.h>
 #include <fb/game/thread_params.h>
 #include <fb/config.h>
+#include <fb/amqp_route.h>
 #include <fb/model/model.h>
 #include <macro.h>
 
@@ -86,6 +87,10 @@ async::task<void> clan::container::join_member(character& inviter, std::string_v
     auto weak            = inviter.weak_from_this_as<character>();
     auto target_name_str = std::string(target_name);
 
+    auto target = this->_server.characters.find(target_name_str);
+    if (target != nullptr && target->world() != inviter.world())
+        throw std::runtime_error("다른 월드 플레이어를 문파에 초대할 수 없습니다.");
+
     auto current_thread = this->_server.threads.current();
     if (current_thread != nullptr)
     {
@@ -146,6 +151,10 @@ async::task<void> clan::container::kick_member(character& kicker, std::string_vi
     auto weak            = kicker.weak_from_this_as<character>();
     auto target_name_str = std::string(target_name);
 
+    auto target = this->_server.characters.find(target_name_str);
+    if (target != nullptr && target->world() != kicker.world())
+        throw std::runtime_error("다른 월드 플레이어를 문파에서 추방할 수 없습니다.");
+
     auto current_thread = this->_server.threads.current();
     if (current_thread != nullptr)
     {
@@ -179,6 +188,10 @@ async::task<void> clan::container::change_role(character& changer, std::string_v
 
     auto weak            = changer.weak_from_this_as<character>();
     auto target_name_str = std::string(target_name);
+
+    auto target = this->_server.characters.find(target_name_str);
+    if (target != nullptr && target->world() != changer.world())
+        throw std::runtime_error("다른 월드 플레이어의 문파 직책을 변경할 수 없습니다.");
 
     auto current_thread = this->_server.threads.current();
     if (current_thread != nullptr)
@@ -256,6 +269,19 @@ async::task<void> clan::container::request_ally(character& requester, uint32_t t
         throw std::runtime_error(_TEXT(MESSAGE_CLAN_CANNOT_ALLY_SELF));
 
     {
+        auto target_guard = this->try_enter_read(target_clan_id);
+        if (target_guard.has_value() && target_guard->value() != nullptr)
+        {
+            for (auto& [name, _] : target_guard->value()->members())
+            {
+                auto ch = this->_server.characters.find(name);
+                if (ch != nullptr && ch->world() != requester.world())
+                    throw std::runtime_error("다른 월드 문파와는 동맹할 수 없습니다.");
+            }
+        }
+    }
+
+    {
         auto guard = this->try_enter_read(clan_id.value());
         if (guard.has_value() == false || guard->value() == nullptr)
             throw std::runtime_error(_TEXT(MESSAGE_NOT_JOINED_CLAN));
@@ -322,6 +348,19 @@ async::task<void> clan::container::declare_enemy(character& requester, uint32_t 
         throw std::runtime_error(_TEXT(MESSAGE_CLAN_CANNOT_ENEMY_SELF));
 
     {
+        auto target_guard = this->try_enter_read(target_clan_id);
+        if (target_guard.has_value() && target_guard->value() != nullptr)
+        {
+            for (auto& [name, _] : target_guard->value()->members())
+            {
+                auto ch = this->_server.characters.find(name);
+                if (ch != nullptr && ch->world() != requester.world())
+                    throw std::runtime_error("다른 월드 문파와는 적대할 수 없습니다.");
+            }
+        }
+    }
+
+    {
         auto guard = this->try_enter_read(clan_id.value());
         if (guard.has_value() == false || guard->value() == nullptr)
             throw std::runtime_error(_TEXT(MESSAGE_NOT_JOINED_CLAN));
@@ -384,10 +423,10 @@ async::task<void> clan::container::end_enemy(character& requester, uint32_t targ
     co_await this->on_updated(resp);
 }
 
-async::task<void> clan::container::broadcast(uint32_t clan_id, std::string_view message, MESSAGE_TYPE type)
+async::task<void>
+clan::container::broadcast(uint32_t world, uint32_t clan_id, std::string_view message, MESSAGE_TYPE type)
 {
     auto   message_str = std::string(message);
-    auto   world       = fb::config<uint32_t>("world");
     auto&& resp        = co_await this->_server.http.post("internal",
                                                    "/clan/broadcast",
                                                    internal_reqs::BroadcastClan{world,
@@ -399,13 +438,12 @@ async::task<void> clan::container::broadcast(uint32_t clan_id, std::string_view 
     co_await this->on_broadcast(resp.clan, std::move(resp.message), resp.type);
 }
 
-async::task<void> clan::container::add_money(uint32_t clan_id, int64_t delta)
+async::task<void> clan::container::add_money(uint32_t world, uint32_t clan_id, int64_t delta)
 {
     if (delta == 0)
         co_return;
 
     auto*  before = this->_server.threads.current();
-    auto   world  = fb::config<uint32_t>("world");
     auto&& resp   = co_await this->_server.http.post(
         "internal",
         "/clan/money",

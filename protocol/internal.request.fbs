@@ -12,7 +12,7 @@ table Login {
   name: string;
   host: ubyte;
   force: bool;
-  role: fb.protocol.internal.ProcessRole;
+  process_world: uint?;
 }
 
 
@@ -309,7 +309,7 @@ table EndClanEnemy {
 }
 
 table Broadcast {
-  world: uint;
+  world: uint?;
   host: uint;
   message: string;
   type: ubyte;
@@ -329,7 +329,7 @@ table FriendBroadcast {
   message: string;
   type: ubyte;
   to_uids: [uint];
-  role: fb.protocol.internal.ProcessRole;
+  process_world: uint?;
 }
 
 table DeliverSystemStorage {
@@ -393,39 +393,38 @@ table Unban {
 }
 
 table Heartbeat {
-  world: uint;
+  world: uint?;
   service: fb.protocol.internal.Service;
   id: ubyte;
   name: string;
   ip: string;
   port: ushort;
-  role: fb.protocol.internal.ProcessRole;
 }
 
 table SetExpMultiplier {
-  world: uint;
+  world: uint?;
   value: double;
 }
 
 table ReloadTables {
-  world: uint;
+  world: uint?;
   url: string;
   table_names: [string];
 }
 
 table ReloadScripts {
-  world: uint;
+  world: uint?;
   url: string;
   script_paths: [string];
 }
 
 table SetDropRateMultiplier {
-  world: uint;
+  world: uint?;
   value: double;
 }
 
 table SetDateTime {
-  world: uint;
+  world: uint?;
   datetime: string;
   reset: bool = false;
 }

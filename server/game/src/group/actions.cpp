@@ -3,6 +3,7 @@
 #include <fb/game/character.h>
 #include <fb/game/thread_params.h>
 #include <fb/config.h>
+#include <fb/amqp_route.h>
 #include <fb/encoding.h>
 #include <macro.h>
 #include <functional>
@@ -22,6 +23,10 @@ async::task<void> group::container::create(character& me, std::string_view targe
         throw std::runtime_error(_TEXT(MESSAGE_ALREADY_JOINED_GROUP));
     if (me.name() == target_name_str)
         throw std::runtime_error(_TEXT(MESSAGE_CANNOT_GROUP_SELF));
+
+    auto target = this->_server.characters.find(target_name_str);
+    if (target != nullptr && target->world() != me.world())
+        throw std::runtime_error("다른 월드 플레이어와는 그룹할 수 없습니다.");
 
     auto current_thread = this->_server.threads.current();
     if (current_thread != nullptr)
@@ -76,6 +81,12 @@ async::task<void> group::container::toggle_member(character& actor, std::string_
 {
     auto weak            = actor.weak_from_this_as<character>();
     auto target_name_str = std::string(target_name);
+
+    {
+        auto found = this->_server.characters.find(target_name_str);
+        if (found != nullptr && found->world() != actor.world())
+            throw std::runtime_error("다른 월드 플레이어와는 그룹할 수 없습니다.");
+    }
 
     auto current_thread = this->_server.threads.current();
     if (current_thread != nullptr)
@@ -173,10 +184,10 @@ async::task<void> group::container::leave_member(character& leaver)
     }
 }
 
-async::task<void> group::container::broadcast(uint32_t group_id, std::string_view message, MESSAGE_TYPE type)
+async::task<void>
+group::container::broadcast(uint32_t world, uint32_t group_id, std::string_view message, MESSAGE_TYPE type)
 {
     auto   message_str = std::string(message);
-    auto   world       = fb::config<uint32_t>("world");
     auto&& resp        = co_await this->_server.http.post("internal",
                                                    "/group/broadcast",
                                                    internal_reqs::BroadcastGroup{world,

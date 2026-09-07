@@ -65,7 +65,7 @@ public:
     async::task<void> handle_action(character& actor, std::string_view target_name);
     async::task<void> toggle_member(character& actor, std::string_view target_name);
     async::task<void> leave_member(character& leaver);
-    async::task<void> broadcast(uint32_t group_id, std::string_view message, MESSAGE_TYPE type);
+    async::task<void> broadcast(uint32_t world, uint32_t group_id, std::string_view message, MESSAGE_TYPE type);
     async::task<void> on_error(uint32_t error, std::string_view actor);
     async::task<void> on_create(std::string target, uint32_t group_id, std::string master, std::map<uint32_t, std::string> members);
     async::task<void> on_destroyed(std::string actor, uint32_t group_id);

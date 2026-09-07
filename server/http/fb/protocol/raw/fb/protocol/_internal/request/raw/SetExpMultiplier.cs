@@ -20,20 +20,20 @@ public struct SetExpMultiplier : IFlatbufferObject
   public void __init(int _i, ByteBuffer _bb) { __p = new Table(_i, _bb); }
   public SetExpMultiplier __assign(int _i, ByteBuffer _bb) { __init(_i, _bb); return this; }
 
-  public uint World { get { int o = __p.__offset(4); return o != 0 ? __p.bb.GetUint(o + __p.bb_pos) : (uint)0; } }
+  public nullable.nullable_uint? World { get { int o = __p.__offset(4); return o != 0 ? (nullable.nullable_uint?)(new nullable.nullable_uint()).__assign(__p.__indirect(o + __p.bb_pos), __p.bb) : null; } }
   public double Value { get { int o = __p.__offset(6); return o != 0 ? __p.bb.GetDouble(o + __p.bb_pos) : (double)0.0; } }
 
   public static Offset<fb.protocol._internal.request.raw.SetExpMultiplier> CreateSetExpMultiplier(FlatBufferBuilder builder,
-      uint world = 0,
+      Offset<nullable.nullable_uint> worldOffset = default(Offset<nullable.nullable_uint>),
       double value = 0.0) {
     builder.StartTable(2);
     SetExpMultiplier.AddValue(builder, value);
-    SetExpMultiplier.AddWorld(builder, world);
+    SetExpMultiplier.AddWorld(builder, worldOffset);
     return SetExpMultiplier.EndSetExpMultiplier(builder);
   }
 
   public static void StartSetExpMultiplier(FlatBufferBuilder builder) { builder.StartTable(2); }
-  public static void AddWorld(FlatBufferBuilder builder, uint world) { builder.AddUint(0, world, 0); }
+  public static void AddWorld(FlatBufferBuilder builder, Offset<nullable.nullable_uint> worldOffset) { builder.AddOffset(0, worldOffset.Value, 0); }
   public static void AddValue(FlatBufferBuilder builder, double value) { builder.AddDouble(1, value, 0.0); }
   public static Offset<fb.protocol._internal.request.raw.SetExpMultiplier> EndSetExpMultiplier(FlatBufferBuilder builder) {
     int o = builder.EndTable();
@@ -49,7 +49,7 @@ static public class SetExpMultiplierVerify
   static public bool Verify(Google.FlatBuffers.Verifier verifier, uint tablePos)
   {
     return verifier.VerifyTableStart(tablePos)
-      && verifier.VerifyField(tablePos, 4 /*World*/, 4 /*uint*/, 4, false)
+      && verifier.VerifyTable(tablePos, 4 /*World*/, nullable.nullable_uintVerify.Verify, false)
       && verifier.VerifyField(tablePos, 6 /*Value*/, 8 /*double*/, 8, false)
       && verifier.VerifyTableEnd(tablePos);
   }

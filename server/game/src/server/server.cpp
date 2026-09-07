@@ -7,6 +7,7 @@
 #include <cmath>
 #include <tuple>
 #include <map>
+#include <stdexcept>
 
 using namespace fb::game;
 
@@ -172,7 +173,7 @@ async::task<void> fb::game::server::save(character& ch)
 {
     if (ch.inited() == false)
         co_return;
-    if (fb::is_cross() && ch.has_return_point() == false)
+    if (!fb::config<std::optional<uint32_t>>("world") && ch.has_return_point() == false)
     {
         fb::logger::fatal("Character {} cross save without home snapshot", ch.name());
         co_return;
@@ -191,9 +192,23 @@ async::task<internal_resp::Ban> fb::game::server::ban(std::string_view          
                                                       std::string_view               reason,
                                                       const std::optional<uint32_t>& days)
 {
-    auto   name_str   = std::string(name);
+    auto name_str = std::string(name);
+    auto target   = this->characters.find(name_str);
+    auto world    = uint32_t{0};
+    if (target != nullptr)
+    {
+        world = target->world();
+    }
+    else if (auto process_world = fb::config<std::optional<uint32_t>>("world"))
+    {
+        world = *process_world;
+    }
+    else
+    {
+        throw std::runtime_error("교차 서버에서는 접속 중인 플레이어만 제재할 수 있습니다.");
+    }
+
     auto   reason_str = std::string(reason);
-    auto   world      = fb::config<uint32_t>("world");
     auto&& resp =
         co_await this->http.post("internal", "/ban/add", internal_reqs::Ban{world, name_str, reason_str, days});
     co_return std::move(resp);
@@ -201,9 +216,23 @@ async::task<internal_resp::Ban> fb::game::server::ban(std::string_view          
 
 async::task<internal_resp::Unban> fb::game::server::unban(std::string_view name)
 {
-    auto   name_str = std::string(name);
-    auto   world    = fb::config<uint32_t>("world");
-    auto&& resp     = co_await this->http.post("internal", "/ban/remove", internal_reqs::Unban{world, name_str});
+    auto name_str = std::string(name);
+    auto target   = this->characters.find(name_str);
+    auto world    = uint32_t{0};
+    if (target != nullptr)
+    {
+        world = target->world();
+    }
+    else if (auto process_world = fb::config<std::optional<uint32_t>>("world"))
+    {
+        world = *process_world;
+    }
+    else
+    {
+        throw std::runtime_error("교차 서버에서는 접속 중인 플레이어만 제재할 수 있습니다.");
+    }
+
+    auto&& resp = co_await this->http.post("internal", "/ban/remove", internal_reqs::Unban{world, name_str});
     co_return std::move(resp);
 }
 
@@ -292,7 +321,7 @@ async::task<void> fb::game::server::save()
             co_await params->characters.foreach ([&](auto& character) {
                 if (!character->inited())
                     return;
-                if (fb::is_cross() && character->has_return_point() == false)
+                if (!fb::config<std::optional<uint32_t>>("world") && character->has_return_point() == false)
                 {
                     fb::logger::fatal("Character {} cross save without home snapshot", character->name());
                     return;
@@ -341,7 +370,7 @@ async::task<void> fb::game::server::update_status()
 {
     try
     {
-        auto world  = fb::config<uint32_t>("world");
+        auto world  = fb::config<std::optional<uint32_t>>("world");
         std::ignore = co_await this->http.post("internal",
                                                "/server/heartbeat",
                                                internal_reqs::Heartbeat{world,
@@ -349,8 +378,7 @@ async::task<void> fb::game::server::update_status()
                                                                         this->id(),
                                                                         this->name(),
                                                                         fb::config<std::string_view>("ip"),
-                                                                        fb::config<uint16_t>("port"),
-                                                                        fb::process_role()});
+                                                                        fb::config<uint16_t>("port")});
     }
     catch (const std::exception& e)
     {

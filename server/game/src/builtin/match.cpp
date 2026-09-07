@@ -1,5 +1,6 @@
 #include <fb/game/server.h>
 #include <fb/game/match.h>
+#include <fb/game/character.h>
 #include <fb/game/builtin/match.h>
 
 using namespace fb::game;
@@ -16,6 +17,14 @@ IMPLEMENT_LUA_EXTENSION(match, "fb.game.match")
 {"member_count",  builtin::match::builtin_member_count},
 {"expected",      builtin::match::builtin_expected},
 {"map",           builtin::match::builtin_map},
+{"team",          builtin::match::builtin_team},
+{"teams",         builtin::match::builtin_teams},
+END_LUA_EXTENSION;
+
+IMPLEMENT_LUA_EXTENSION(match::team, "fb.game.match.team")
+{"id",            builtin::match_team::builtin_id},
+{"leader",        builtin::match_team::builtin_leader},
+{"members",       builtin::match_team::builtin_members},
 END_LUA_EXTENSION; // clang-format on
 
 int builtin::match::builtin_id(lua_State* L)
@@ -191,5 +200,99 @@ int builtin::match::builtin_map(lua_State* L)
         lua->pushnil();
     else
         lua->pushobject(*map);
+    return 1;
+}
+
+int builtin::match::builtin_team(lua_State* L)
+{
+    auto lua = fb::lua::get(L);
+    if (lua == nullptr)
+        return 0;
+
+    auto session = lua->touserdata<fb::game::match>(1);
+    if (session == nullptr)
+        return 0;
+
+    auto ch = lua->touserdata<fb::game::character>(2);
+    if (ch == nullptr)
+        return 0;
+
+    auto team = session->find(*ch);
+    if (team == nullptr)
+        lua->pushnil();
+    else
+        lua->pushobject(*team);
+    return 1;
+}
+
+int builtin::match::builtin_teams(lua_State* L)
+{
+    auto lua = fb::lua::get(L);
+    if (lua == nullptr)
+        return 0;
+
+    auto session = lua->touserdata<fb::game::match>(1);
+    if (session == nullptr)
+        return 0;
+
+    auto teams = session->teams();
+    lua->new_table();
+    for (auto i = 0; i < static_cast<int>(teams.size()); i++)
+    {
+        lua->pushobject(*teams[i]);
+        lua->rawseti(-2, i + 1);
+    }
+    return 1;
+}
+
+int builtin::match_team::builtin_id(lua_State* L)
+{
+    auto lua = fb::lua::get(L);
+    if (lua == nullptr)
+        return 0;
+
+    auto team = lua->touserdata<fb::game::match::team>(1);
+    if (team == nullptr)
+        return 0;
+
+    lua->pushinteger(team->id());
+    return 1;
+}
+
+int builtin::match_team::builtin_leader(lua_State* L)
+{
+    auto lua = fb::lua::get(L);
+    if (lua == nullptr)
+        return 0;
+
+    auto team = lua->touserdata<fb::game::match::team>(1);
+    if (team == nullptr)
+        return 0;
+
+    auto leader = team->leader();
+    if (leader == nullptr)
+        lua->pushnil();
+    else
+        lua->pushobject(*leader);
+    return 1;
+}
+
+int builtin::match_team::builtin_members(lua_State* L)
+{
+    auto lua = fb::lua::get(L);
+    if (lua == nullptr)
+        return 0;
+
+    auto team = lua->touserdata<fb::game::match::team>(1);
+    if (team == nullptr)
+        return 0;
+
+    auto members = team->members();
+    lua->new_table();
+    for (auto i = 0; i < static_cast<int>(members.size()); i++)
+    {
+        lua->pushobject(*members[i]);
+        lua->rawseti(-2, i + 1);
+    }
     return 1;
 }

@@ -385,6 +385,16 @@ int builtin::clan::builtin_message(lua_State* L)
     auto message = lua->tostring(2);
     auto type    = lua->toenum(3, MESSAGE_TYPE::NOTIFY);
     auto clan_id = clan->id();
+    auto world   = uint32_t{0};
+    for (auto& [_, weak] : clan->characters())
+    {
+        auto member = weak.lock();
+        if (member == nullptr)
+            continue;
+
+        world = member->world();
+        break;
+    }
 
     auto error    = std::make_shared<std::optional<std::string>>();
     auto builder  = lua->new_co_builder();
@@ -392,7 +402,10 @@ int builtin::clan::builtin_message(lua_State* L)
         auto& server = static_cast<fb::game::server&>(lua->executor);
         try
         {
-            co_await server.clans.broadcast(clan_id, message, type);
+            if (world == 0)
+                throw std::runtime_error("no online clan member");
+
+            co_await server.clans.broadcast(world, clan_id, message, type);
         }
         catch (std::exception& e)
         {
@@ -718,8 +731,19 @@ int builtin::clan::builtin_money(lua_State* L)
         return 1;
     }
 
-    auto delta    = static_cast<int64_t>(lua->tointeger(2));
-    auto clan_id  = clan->id();
+    auto delta   = static_cast<int64_t>(lua->tointeger(2));
+    auto clan_id = clan->id();
+    auto world   = uint32_t{0};
+    for (auto& [_, weak] : clan->characters())
+    {
+        auto member = weak.lock();
+        if (member == nullptr)
+            continue;
+
+        world = member->world();
+        break;
+    }
+
     auto error    = std::make_shared<std::optional<std::string>>();
     auto money    = std::make_shared<uint64_t>(0);
     auto builder  = lua->new_co_builder();
@@ -727,7 +751,10 @@ int builtin::clan::builtin_money(lua_State* L)
         auto& server = static_cast<fb::game::server&>(lua->executor);
         try
         {
-            co_await server.clans.add_money(clan_id, delta);
+            if (world == 0)
+                throw std::runtime_error("no online clan member");
+
+            co_await server.clans.add_money(world, clan_id, delta);
             auto guard = co_await server.clans.ensure(clan_id);
             if (guard.value() != nullptr)
                 *money = guard.value()->money();

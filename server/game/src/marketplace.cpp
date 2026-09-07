@@ -705,7 +705,8 @@ async::task<void> marketplace::restore()
             std::string message = _TEXT(MESSAGE_MARKETPLACE_LISTING_RECOVERY_MESSAGE);
 
             std::ignore =
-                co_await this->_owner.server.system_storage.create(this->_owner.id,
+                co_await this->_owner.server.system_storage.create(this->_owner.world(),
+                                                                   this->_owner.id,
                                                                    std::format("marketplace:list:{}", listing_id),
                                                                    title,
                                                                    message,
@@ -745,6 +746,7 @@ async::task<void> marketplace::restore()
                     dsls_copy.push_back(refund_dsl.to_dsl());
 
                     std::ignore = co_await this->_owner.server.system_storage.create(
+                        this->_owner.world(),
                         this->_owner.id,
                         std::format("marketplace:purchase:refund:{}", purchase_id),
                         _TEXT(MESSAGE_MARKETPLACE_PURCHASE_REFUND_TITLE),
@@ -767,7 +769,8 @@ async::task<void> marketplace::restore()
         {
             // Purchase record does not exist - restore money
             std::ignore =
-                co_await this->_owner.server.system_storage.create(this->_owner.id,
+                co_await this->_owner.server.system_storage.create(this->_owner.world(),
+                                                                   this->_owner.id,
                                                                    std::format("marketplace:purchase:{}", purchase_id),
                                                                    _TEXT(MESSAGE_MARKETPLACE_PURCHASE_RECOVERY_TITLE),
                                                                    _TEXT(MESSAGE_MARKETPLACE_PURCHASE_RECOVERY_MESSAGE),

@@ -931,7 +931,7 @@ return {
         end
     end,
 
-    on_matchmaking_ready = function(me, match_id, match_type)
+    on_matchmaking_ready = function(me, match_id, match_type, match_team)
         matchmaking_clear_timer(me)
         matchmaking_clear_state(me)
         me:save_return_point()
@@ -943,7 +943,8 @@ return {
         end
         me:transfer_to(dest.ip, dest.port, dest.id, {
             match_id = match_id,
-            match_type = match_type
+            match_type = match_type,
+            match_team = match_team
         })
     end,
 

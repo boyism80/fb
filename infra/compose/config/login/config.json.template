@@ -1,7 +1,6 @@
 {
     "id": 0,
     "name": "login-0",
-    "role": "home",
     "world": 1,
     "ip": "__FB_HOST__",
     "port": 3002,

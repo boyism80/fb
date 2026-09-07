@@ -1171,7 +1171,6 @@ namespace Runner.ViewModel
                     var conf = new JObject();
                     conf["id"] = i;
                     conf["name"] = $"login-{i}";
-                    conf["role"] = "home";
                     conf["world"] = 1;
                     conf["ip"] = ExternalIP;
                     conf["port"] = setting.Port;
@@ -1242,8 +1241,10 @@ namespace Runner.ViewModel
                     var conf = new JObject();
                     conf["id"] = setting.ID;
                     conf["name"] = role == "cross" ? $"game-cross-{setting.ID}" : $"game-{setting.ID}";
-                    conf["role"] = role;
-                    conf["world"] = 1;
+                    if (role == "cross")
+                        conf["world"] = JValue.CreateNull();
+                    else
+                        conf["world"] = 1;
                     conf["delay"] = 5;
                     conf["ip"] = ExternalIP;
                     conf["port"] = setting.Port;

@@ -31,7 +31,7 @@ public struct Login : IFlatbufferObject
   public byte[] GetNameArray() { return __p.__vector_as_array<byte>(8); }
   public byte Host { get { int o = __p.__offset(10); return o != 0 ? __p.bb.Get(o + __p.bb_pos) : (byte)0; } }
   public bool Force { get { int o = __p.__offset(12); return o != 0 ? 0!=__p.bb.Get(o + __p.bb_pos) : (bool)false; } }
-  public fb.protocol._internal.raw.ProcessRole Role { get { int o = __p.__offset(14); return o != 0 ? (fb.protocol._internal.raw.ProcessRole)__p.bb.GetSbyte(o + __p.bb_pos) : fb.protocol._internal.raw.ProcessRole.Home; } }
+  public nullable.nullable_uint? ProcessWorld { get { int o = __p.__offset(14); return o != 0 ? (nullable.nullable_uint?)(new nullable.nullable_uint()).__assign(__p.__indirect(o + __p.bb_pos), __p.bb) : null; } }
 
   public static Offset<fb.protocol._internal.request.raw.Login> CreateLogin(FlatBufferBuilder builder,
       uint world = 0,
@@ -39,12 +39,12 @@ public struct Login : IFlatbufferObject
       StringOffset nameOffset = default(StringOffset),
       byte host = 0,
       bool force = false,
-      fb.protocol._internal.raw.ProcessRole role = fb.protocol._internal.raw.ProcessRole.Home) {
+      Offset<nullable.nullable_uint> process_worldOffset = default(Offset<nullable.nullable_uint>)) {
     builder.StartTable(6);
+    Login.AddProcessWorld(builder, process_worldOffset);
     Login.AddName(builder, nameOffset);
     Login.AddUid(builder, uid);
     Login.AddWorld(builder, world);
-    Login.AddRole(builder, role);
     Login.AddForce(builder, force);
     Login.AddHost(builder, host);
     return Login.EndLogin(builder);
@@ -56,7 +56,7 @@ public struct Login : IFlatbufferObject
   public static void AddName(FlatBufferBuilder builder, StringOffset nameOffset) { builder.AddOffset(2, nameOffset.Value, 0); }
   public static void AddHost(FlatBufferBuilder builder, byte host) { builder.AddByte(3, host, 0); }
   public static void AddForce(FlatBufferBuilder builder, bool force) { builder.AddBool(4, force, false); }
-  public static void AddRole(FlatBufferBuilder builder, fb.protocol._internal.raw.ProcessRole role) { builder.AddSbyte(5, (sbyte)role, 0); }
+  public static void AddProcessWorld(FlatBufferBuilder builder, Offset<nullable.nullable_uint> processWorldOffset) { builder.AddOffset(5, processWorldOffset.Value, 0); }
   public static Offset<fb.protocol._internal.request.raw.Login> EndLogin(FlatBufferBuilder builder) {
     int o = builder.EndTable();
     return new Offset<fb.protocol._internal.request.raw.Login>(o);
@@ -76,7 +76,7 @@ static public class LoginVerify
       && verifier.VerifyString(tablePos, 8 /*Name*/, false)
       && verifier.VerifyField(tablePos, 10 /*Host*/, 1 /*byte*/, 1, false)
       && verifier.VerifyField(tablePos, 12 /*Force*/, 1 /*bool*/, 1, false)
-      && verifier.VerifyField(tablePos, 14 /*Role*/, 1 /*fb.protocol._internal.raw.ProcessRole*/, 1, false)
+      && verifier.VerifyTable(tablePos, 14 /*ProcessWorld*/, nullable.nullable_uintVerify.Verify, false)
       && verifier.VerifyTableEnd(tablePos);
   }
 }

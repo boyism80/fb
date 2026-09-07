@@ -13,7 +13,7 @@ static_assert(FLATBUFFERS_VERSION_MAJOR == 25 &&
               FLATBUFFERS_VERSION_REVISION == 10,
              "Non-compatible flatbuffers version included");
 
-#include "fb.protocol.internal.processrole_generated.h"
+#include "nullable_uint_generated.h"
 
 namespace fb {
 namespace protocol {
@@ -32,7 +32,7 @@ struct Login FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
     VT_NAME = 8,
     VT_HOST = 10,
     VT_FORCE = 12,
-    VT_ROLE = 14
+    VT_PROCESS_WORLD = 14
   };
   uint32_t world() const {
     return GetField<uint32_t>(VT_WORLD, 0);
@@ -49,8 +49,8 @@ struct Login FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
   bool force() const {
     return GetField<uint8_t>(VT_FORCE, 0) != 0;
   }
-  fb::protocol::internal::raw::ProcessRole role() const {
-    return static_cast<fb::protocol::internal::raw::ProcessRole>(GetField<int8_t>(VT_ROLE, 0));
+  const nullable::nullable_uint *process_world() const {
+    return GetPointer<const nullable::nullable_uint *>(VT_PROCESS_WORLD);
   }
   bool Verify(::flatbuffers::Verifier &verifier) const {
     return VerifyTableStart(verifier) &&
@@ -60,7 +60,8 @@ struct Login FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
            verifier.VerifyString(name()) &&
            VerifyField<uint8_t>(verifier, VT_HOST, 1) &&
            VerifyField<uint8_t>(verifier, VT_FORCE, 1) &&
-           VerifyField<int8_t>(verifier, VT_ROLE, 1) &&
+           VerifyOffset(verifier, VT_PROCESS_WORLD) &&
+           verifier.VerifyTable(process_world()) &&
            verifier.EndTable();
   }
 };
@@ -84,8 +85,8 @@ struct LoginBuilder {
   void add_force(bool force) {
     fbb_.AddElement<uint8_t>(Login::VT_FORCE, static_cast<uint8_t>(force), 0);
   }
-  void add_role(fb::protocol::internal::raw::ProcessRole role) {
-    fbb_.AddElement<int8_t>(Login::VT_ROLE, static_cast<int8_t>(role), 0);
+  void add_process_world(::flatbuffers::Offset<nullable::nullable_uint> process_world) {
+    fbb_.AddOffset(Login::VT_PROCESS_WORLD, process_world);
   }
   explicit LoginBuilder(::flatbuffers::FlatBufferBuilder &_fbb)
         : fbb_(_fbb) {
@@ -105,12 +106,12 @@ inline ::flatbuffers::Offset<Login> CreateLogin(
     ::flatbuffers::Offset<::flatbuffers::String> name = 0,
     uint8_t host = 0,
     bool force = false,
-    fb::protocol::internal::raw::ProcessRole role = fb::protocol::internal::raw::ProcessRole_Home) {
+    ::flatbuffers::Offset<nullable::nullable_uint> process_world = 0) {
   LoginBuilder builder_(_fbb);
+  builder_.add_process_world(process_world);
   builder_.add_name(name);
   builder_.add_uid(uid);
   builder_.add_world(world);
-  builder_.add_role(role);
   builder_.add_force(force);
   builder_.add_host(host);
   return builder_.Finish();
@@ -123,7 +124,7 @@ inline ::flatbuffers::Offset<Login> CreateLoginDirect(
     const char *name = nullptr,
     uint8_t host = 0,
     bool force = false,
-    fb::protocol::internal::raw::ProcessRole role = fb::protocol::internal::raw::ProcessRole_Home) {
+    ::flatbuffers::Offset<nullable::nullable_uint> process_world = 0) {
   auto name__ = name ? _fbb.CreateString(name) : 0;
   return fb::protocol::internal::request::raw::CreateLogin(
       _fbb,
@@ -132,7 +133,7 @@ inline ::flatbuffers::Offset<Login> CreateLoginDirect(
       name__,
       host,
       force,
-      role);
+      process_world);
 }
 
 inline const fb::protocol::internal::request::raw::Login *GetLogin(const void *buf) {

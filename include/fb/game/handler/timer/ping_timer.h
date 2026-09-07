@@ -7,8 +7,8 @@
 namespace fb::game::handler::timer {
 
 /**
- * Thread timer: every 1s, for each character in this thread, send ping if 5s elapsed
- * and pong was received (or first ping). Token is random.
+ * Thread timer: every 1s, for each ping-enabled character in this thread, send ping
+ * if 5s elapsed and pong was received (or first ping). Token is random.
  */
 class ping_timer : public fb::handler::timer<fb::game::server>
 {

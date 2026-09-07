@@ -46,6 +46,7 @@ void login<V>::serialize(fb::stream_writer<big_endian>& writer) const
     {
         writer.write<std::string>(this->match->id);
         writer.write<uint32_t>(this->match->type);
+        writer.write<uint32_t>(this->match->team);
     }
     if (ENUM_IN(flags, TRANSFER_PARAM::UI_MODE))
         writer.write<uint8_t>(static_cast<uint8_t>(this->ui_mode));
@@ -85,7 +86,8 @@ void login<V>::deserialize(fb::stream_reader<big_endian>& reader)
     {
         auto id     = reader.read<std::string>();
         auto type   = reader.read<uint32_t>();
-        this->match = match_param{.id = std::move(id), .type = type};
+        auto team   = reader.read<uint32_t>();
+        this->match = match_param{.id = std::move(id), .type = type, .team = team};
     }
     if (ENUM_IN(flags, TRANSFER_PARAM::UI_MODE))
         this->ui_mode = static_cast<CLIENT_UI_MODE>(reader.read<uint8_t>());

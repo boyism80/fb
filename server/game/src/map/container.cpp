@@ -205,7 +205,7 @@ bool map::container::load_block(uint32_t id, std::vector<fb::model::point16_t>& 
 
 void map::container::load(const fb::model::map& model)
 {
-    auto active    = fb::is_cross() || (model.host == this->host);
+    auto active    = !fb::config<std::optional<uint32_t>>("world") || (model.host == this->host);
     auto lazy_load = fb::config<bool>("lazy_load_maps", false);
     auto binary    = std::vector<char>();
     auto blocks    = std::vector<fb::model::point16_t>();

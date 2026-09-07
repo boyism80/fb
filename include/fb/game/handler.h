@@ -57,6 +57,7 @@
 #include <fb/game/handler/amqp/create_group.h>
 #include <fb/game/handler/amqp/updated_group.h>
 #include <fb/game/handler/amqp/destroy_group.h>
+#include <fb/game/handler/amqp/broadcast_group.h>
 #include <fb/game/handler/amqp/create_clan.h>
 #include <fb/game/handler/amqp/destroy_clan.h>
 #include <fb/game/handler/amqp/updated_clan.h>
