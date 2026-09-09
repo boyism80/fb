@@ -48,9 +48,9 @@ Each scanned `game_reqs::*` / `game_resp::*` type gets:
 
 | Field | Response | Request |
 |-------|----------|---------|
-| `ensure_registered` | `ensure_handler_registered<T>()` | no-op |
+| `bind` | `controller.bind<T>()` | no-op |
 | `clone` | copy from received header | `nullptr` |
 | `create` | `nullptr` | `make_shared<T>()` |
 | `marshal_lua` | field codegen | stub |
 
-`protocol_registry::register_all()` registers response `clone` handlers by type key at `game_bot_controller` startup.
+`protocol_registry::register_all()` registers response `clone` handlers by type key at `game_bot_controller` startup. `protocol_registry::bind()` binds default no-op handlers for response types that do not already have a handler.

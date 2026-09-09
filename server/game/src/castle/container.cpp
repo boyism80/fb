@@ -55,7 +55,7 @@ async::task<void> castle::container::load_all()
 
     for (auto divine_beast : ALL)
     {
-        std::ignore = co_await this->ensure(static_cast<uint32_t>(divine_beast));
+        std::ignore = co_await this->enter_write(static_cast<uint32_t>(divine_beast));
     }
 }
 
@@ -64,7 +64,7 @@ async::task<void> castle::container::on_updated(const internal_resp::UpdatedCast
     if (static_cast<fb::model::enum_value::ERROR_CODE>(resp.error) != fb::model::enum_value::ERROR_CODE::NONE)
         co_return;
 
-    auto guard = co_await this->ensure(resp.divine_beast);
+    auto guard = co_await this->enter_write(resp.divine_beast);
     if (guard.value() != nullptr)
         guard.value()->owner_clan_id(resp.owner_clan_id);
 }
@@ -73,7 +73,7 @@ async::task<void> castle::container::end_siege(fb::model::enum_value::DIVINE_BEA
                                                const std::optional<uint32_t>&      winner_clan_id)
 {
     auto id    = static_cast<uint32_t>(divine_beast);
-    auto guard = co_await this->ensure(id);
+    auto guard = co_await this->enter_write(id);
     if (guard.value() == nullptr)
         co_return;
 

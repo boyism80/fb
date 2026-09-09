@@ -205,7 +205,7 @@ async::task<void> clan::container::on_destroyed(uint32_t clan_id, std::string cl
 
 async::task<void> clan::container::on_broadcast(uint32_t clan_id, std::string message, uint8_t type)
 {
-    auto guard = co_await this->ensure(clan_id);
+    auto guard = co_await this->enter_write(clan_id);
     if (guard.value() == nullptr)
         co_return;
     auto& clan = guard.value();
@@ -230,7 +230,7 @@ async::task<void> clan::container::on_broadcast(uint32_t clan_id, std::string me
 
 async::task<void> clan::container::on_set_title(uint32_t clan_id, std::optional<std::string> new_title)
 {
-    auto guard = co_await this->ensure(clan_id);
+    auto guard = co_await this->enter_write(clan_id);
     if (guard.value() == nullptr)
         co_return;
     auto& clan = guard.value();
@@ -254,7 +254,7 @@ async::task<void> clan::container::on_join(uint32_t clan_id, std::optional<std::
         co_return;
 
     auto joined_member_name = new_member.value();
-    auto guard              = co_await this->ensure(clan_id);
+    auto guard              = co_await this->enter_write(clan_id);
     if (guard.value() == nullptr)
         co_return;
     auto& clan = guard.value();
@@ -323,7 +323,7 @@ async::task<void> clan::container::on_leave(uint32_t clan_id, std::optional<std:
         co_return;
 
     auto deleted_member_name = deleted_member.value();
-    auto guard               = co_await this->ensure(clan_id);
+    auto guard               = co_await this->enter_write(clan_id);
     if (guard.value() == nullptr)
         co_return;
     auto& clan = guard.value();
@@ -389,7 +389,7 @@ async::task<void> clan::container::on_kick(uint32_t clan_id, std::optional<std::
         co_return;
 
     auto deleted_member_name = deleted_member.value();
-    auto guard               = co_await this->ensure(clan_id);
+    auto guard               = co_await this->enter_write(clan_id);
     if (guard.value() == nullptr)
         co_return;
     auto& clan = guard.value();
@@ -456,11 +456,11 @@ async::task<void> clan::container::on_ally(uint32_t clan_id, std::optional<uint3
 
     auto other_id = related_clan_id.value();
 
-    auto guard = co_await this->ensure(clan_id);
+    auto guard = co_await this->enter_write(clan_id);
     if (guard.value() != nullptr)
         guard.value()->allied_clan_id(other_id);
 
-    auto other_guard = co_await this->ensure(other_id);
+    auto other_guard = co_await this->enter_write(other_id);
     if (other_guard.value() != nullptr)
         other_guard.value()->allied_clan_id(clan_id);
 
@@ -478,7 +478,7 @@ async::task<void> clan::container::on_ally(uint32_t clan_id, std::optional<uint3
 
 async::task<void> clan::container::on_unally(uint32_t clan_id, std::optional<uint32_t> related_clan_id)
 {
-    auto guard = co_await this->ensure(clan_id);
+    auto guard = co_await this->enter_write(clan_id);
     if (guard.value() != nullptr)
         guard.value()->allied_clan_id(std::nullopt);
 
@@ -486,7 +486,7 @@ async::task<void> clan::container::on_unally(uint32_t clan_id, std::optional<uin
 
     if (related_clan_id.has_value())
     {
-        auto other_guard = co_await this->ensure(related_clan_id.value());
+        auto other_guard = co_await this->enter_write(related_clan_id.value());
         if (other_guard.value() != nullptr)
             other_guard.value()->allied_clan_id(std::nullopt);
 
@@ -509,11 +509,11 @@ async::task<void> clan::container::on_enemy(uint32_t clan_id, std::optional<uint
 
     auto other_id = related_clan_id.value();
 
-    auto guard = co_await this->ensure(clan_id);
+    auto guard = co_await this->enter_write(clan_id);
     if (guard.value() != nullptr)
         guard.value()->add_enemy_clan(other_id);
 
-    auto other_guard = co_await this->ensure(other_id);
+    auto other_guard = co_await this->enter_write(other_id);
     if (other_guard.value() != nullptr)
         other_guard.value()->add_enemy_clan(clan_id);
 
@@ -536,11 +536,11 @@ async::task<void> clan::container::on_unenemy(uint32_t clan_id, std::optional<ui
 
     auto other_id = related_clan_id.value();
 
-    auto guard = co_await this->ensure(clan_id);
+    auto guard = co_await this->enter_write(clan_id);
     if (guard.value() != nullptr)
         guard.value()->remove_enemy_clan(other_id);
 
-    auto other_guard = co_await this->ensure(other_id);
+    auto other_guard = co_await this->enter_write(other_id);
     if (other_guard.value() != nullptr)
         other_guard.value()->remove_enemy_clan(clan_id);
 
@@ -565,7 +565,7 @@ async::task<void> clan::container::on_change_role(uint32_t                   cla
     if (target_name.has_value() == false)
         co_return;
 
-    auto guard = co_await this->ensure(clan_id);
+    auto guard = co_await this->enter_write(clan_id);
     if (guard.value() == nullptr)
         co_return;
     auto& clan = guard.value();
@@ -619,7 +619,7 @@ async::task<void> clan::container::on_change_role(uint32_t                   cla
 
 async::task<void> clan::container::on_set_money(uint32_t clan_id, uint64_t money)
 {
-    auto guard = co_await this->ensure(clan_id);
+    auto guard = co_await this->enter_write(clan_id);
     if (guard.value() == nullptr)
         co_return;
 

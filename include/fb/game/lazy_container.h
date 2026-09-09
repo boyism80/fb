@@ -22,13 +22,13 @@ public:
     using write_guard = typename super::sub_container_type::async_write_guard;
     using read_guard  = typename super::sub_container_type::read_guard;
 
-    class ensure_guard
+    class guard
     {
     public:
-        ensure_guard(ensure_guard&&) noexcept             = default;
-        ensure_guard& operator= (ensure_guard&&) noexcept = delete;
-        ensure_guard(const ensure_guard&)                 = delete;
-        ensure_guard& operator= (const ensure_guard&)     = delete;
+        guard(guard&&) noexcept             = default;
+        guard& operator= (guard&&) noexcept = delete;
+        guard(const guard&)                 = delete;
+        guard& operator= (const guard&)     = delete;
 
         entity_ptr&       value() noexcept;
         const entity_ptr& value() const noexcept;
@@ -40,8 +40,8 @@ public:
         std::optional<write_guard> _write_guard;
         entity_ptr                 _empty;
 
-        ensure_guard();
-        explicit ensure_guard(write_guard&& guard);
+        guard();
+        explicit guard(write_guard&& guard);
     };
 
 public:
@@ -59,7 +59,7 @@ protected:
 protected:
     virtual async::task<entity_ptr> fetch(uint32_t id) = 0;
 
-    async::task<ensure_guard> ensure_impl(uint32_t id, fb::thread& thread_ref);
+    async::task<guard> enter_write_impl(uint32_t id, fb::thread& thread_ref);
 
 public:
     explicit lazy_container(server& server);
@@ -68,8 +68,8 @@ public:
     lazy_container(lazy_container&&)      = delete;
     virtual ~lazy_container()             = default;
 
-    async::task<ensure_guard> ensure(uint32_t id);
-    bool                      contains(hash_type id) const;
+    async::task<guard> enter_write(uint32_t id);
+    bool               contains(hash_type id) const;
 };
 
 } // namespace fb::game

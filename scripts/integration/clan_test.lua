@@ -109,20 +109,16 @@ local function setup_npc(bot)
     return npc
 end
 
-local function ensure_npc(bot)
-    if g_npc ~= nil then
-        return g_npc
-    end
-    return setup_npc(bot)
-end
-
 local function dismiss_normal(bot)
     -- Final me:dialog has no follow-up packet; do not wait (timeout would fail the scenario).
     bot:send(protocol.dialog("NORMAL", 0, "", 0, 0, "", "NEXT"))
 end
 
 local function click_expect(bot, expect_type)
-    local npc = ensure_npc(bot)
+    local npc = g_npc
+    if npc == nil then
+        npc = setup_npc(bot)
+    end
     local use_ext = (expect_type == "list" or expect_type == "normal" or expect_type == "input_ext")
     local fn = use_ext and bot.request_dialog_ext or bot.request_dialog
     local packet = fn(bot,

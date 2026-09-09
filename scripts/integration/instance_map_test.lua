@@ -274,8 +274,8 @@ test_suite {
                 return false
             end
 
-            -- 6) Re-ensure while occupied
-            progress(a, "STEP 6: re-ensure occupied instance")
+            -- 6) Enter again while occupied
+            progress(a, "STEP 6: re-enter occupied instance")
             move_to_source(a, POS[1], POS[2])
             ctx:sleep(ENTER_WAIT)
             face_drop_marker(ctx, a, true)

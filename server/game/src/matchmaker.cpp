@@ -5,6 +5,7 @@
 #include <fb/logger.h>
 #include <fb/model/model.h>
 #include <macro.h>
+#include <tuple>
 
 using namespace fb::game;
 using table = fb::model::table;
@@ -15,7 +16,9 @@ namespace mp_resp = mp::response;
 
 matchmaker::matchmaker(character& owner) :
     owner(owner)
-{ }
+{
+    this->load({});
+}
 
 matchmaking_skill::dto_type matchmaking_skill::to_protocol(uint32_t user) const
 {
@@ -33,6 +36,16 @@ void matchmaker::load(const std::vector<matchmaking_skill::dto_type>& skills)
                                    .mu         = skill.mu,
                                    .sigma      = skill.sigma,
                                });
+    }
+
+    for (auto& [type, row] : table::matchmaking)
+    {
+        std::ignore = row;
+        auto id     = static_cast<uint32_t>(type);
+        if (this->_entries.contains(id) == false)
+        {
+            this->upsert(id, DEFAULT_MU, DEFAULT_SIGMA);
+        }
     }
 }
 
@@ -55,22 +68,6 @@ std::optional<matchmaking_skill> matchmaker::get(uint32_t match_type) const
         return std::nullopt;
 
     return i->second;
-}
-
-matchmaking_skill matchmaker::ensure_skill(uint32_t match_type)
-{
-    this->owner.assert_thread();
-
-    auto skill = this->get(match_type);
-    if (skill.has_value())
-        return skill.value();
-
-    this->upsert(match_type, DEFAULT_MU, DEFAULT_SIGMA);
-    return matchmaking_skill{
-        .match_type = match_type,
-        .mu         = DEFAULT_MU,
-        .sigma      = DEFAULT_SIGMA,
-    };
 }
 
 void matchmaker::upsert(uint32_t match_type, double mu, double sigma)
@@ -427,8 +424,10 @@ async::task<void> matchmaker::register_queue(uint32_t match_type)
             if (ptr == nullptr)
                 throw std::runtime_error(_TEXT(MESSAGE_MARKETPLACE_CHARACTER_EXPIRED));
 
-            auto skill = ptr->matchmaker.ensure_skill(match_type);
-            co_return mp::RegistryEntry{world, ptr->id, skill.mu, skill.sigma};
+            auto skill = ptr->matchmaker.get(match_type);
+            auto mu    = skill.has_value() ? skill->mu : matchmaker::DEFAULT_MU;
+            auto sigma = skill.has_value() ? skill->sigma : matchmaker::DEFAULT_SIGMA;
+            co_return mp::RegistryEntry{world, ptr->id, mu, sigma};
         };
         entries.push_back(co_await builder.dispatch());
     }

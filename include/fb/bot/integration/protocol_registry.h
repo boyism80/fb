@@ -32,7 +32,7 @@ struct protocol_entry
     protocol_direction direction;
     uint8_t            opcode;
 
-    void (*ensure_registered)(game_bot_controller&);
+    void (*bind)(game_bot_controller&);
     std::shared_ptr<fb::protocol::header> (*clone)(const fb::protocol::header&);
     std::shared_ptr<fb::protocol::header> (*create)();
     void (*marshal_lua)(lua_State* L, const fb::protocol::header& header);
@@ -51,6 +51,7 @@ public:
     static const protocol_entry* find_by_type_key(const char* type_key);
 
     static void register_all();
+    static void bind(game_bot_controller& controller);
     static void marshal_lua_stub(lua_State* L, const fb::protocol::header& header);
 };
 

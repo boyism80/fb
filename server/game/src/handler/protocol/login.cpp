@@ -310,7 +310,7 @@ async::task<std::shared_ptr<character>> login<V>::init(const game_reqs::login<V>
 
     if (resp.group.has_value())
     {
-        auto guard = co_await this->server.groups.ensure(resp.group.value());
+        auto guard = co_await this->server.groups.enter_write(resp.group.value());
         if (auto& group = guard.value(); group != nullptr)
         {
             group->enter(weak);
@@ -321,7 +321,7 @@ async::task<std::shared_ptr<character>> login<V>::init(const game_reqs::login<V>
 
     if (resp.clan.has_value())
     {
-        auto guard = co_await this->server.clans.ensure(resp.clan.value());
+        auto guard = co_await this->server.clans.enter_write(resp.clan.value());
         if (auto& clan = guard.value(); clan != nullptr)
         {
             clan->attach(weak);

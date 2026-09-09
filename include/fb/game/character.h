@@ -221,7 +221,7 @@ private:
     // clang-format off
     uint64_t                        limited_exp(uint64_t exp) const;
     fb::model::point16_t            viewport_centered(const fb::model::point16_t& position) const;
-    void                            ensure_camera_pivot() const;
+    void                            camera_pivot() const;
     bool                            level_up();
     bool                            max_level() const;
     float                           experience_percent() const;

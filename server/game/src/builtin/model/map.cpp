@@ -243,7 +243,10 @@ int builtin::model::map::builtin_instance(lua_State* L)
     auto builder  = lua->new_co_builder();
     builder.weak  = weak;
     builder.yield = [=, server = &server]() -> async::task<void> {
-        *holder = server->maps.ensure_instance(source, slot);
+        auto inst = server->maps.find(source, slot);
+        if (inst == nullptr)
+            inst = server->maps.create_instance(source, slot);
+        *holder = inst;
         co_return;
     };
     builder.resume = [=]() -> async::task<int> {

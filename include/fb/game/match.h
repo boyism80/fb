@@ -124,7 +124,6 @@ public:
     explicit container(server& server);
 
 public:
-    std::shared_ptr<match> ensure(std::string_view match_id, uint32_t match_type);
     async::task<void>      join(character& ch, std::string_view match_id, uint32_t match_type, uint32_t team = 0);
     void                   leave(character& ch);
     void                   remove(std::string_view match_id);

@@ -1204,7 +1204,7 @@ void character::option(OPTION key, bool value, bool notify)
         if (value)
             this->_camera_pivot.reset();
         else
-            this->ensure_camera_pivot();
+            this->camera_pivot();
     }
 
     if (key == OPTION::VISIBLE_HELMET)
@@ -1320,7 +1320,7 @@ fb::model::point16_t character::viewport_centered(const fb::model::point16_t& po
     return fb::model::point16_t{vx, vy};
 }
 
-void character::ensure_camera_pivot() const
+void character::camera_pivot() const
 {
     this->assert_thread();
 
@@ -1367,7 +1367,7 @@ fb::model::point16_t character::viewport() const
     this->assert_thread();
 
     if (this->option(OPTION::FIXED_MOVE) == false)
-        this->ensure_camera_pivot();
+        this->camera_pivot();
 
     return this->viewport(this->position());
 }
@@ -1616,7 +1616,7 @@ bool character::move(DIRECTION direction, const fb::model::point16_t& before, ui
     {
         auto viewport = this->viewport(before);
         if (this->option(OPTION::FIXED_MOVE) == false)
-            this->ensure_camera_pivot();
+            this->camera_pivot();
 
         auto v651 = this->client_version == fb::protocol::CLIENT_VERSION::v651;
         if (v651 && ENUM_IN(map->config_flag(), MAP_CONFIG_FLAG::NO_SELF_CONFIRM))

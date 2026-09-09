@@ -25,7 +25,7 @@ end
 
 -- If the quest was completed (or stamped) in a previous lunar year, clear it for replay.
 -- Param convention: leading number is lunar year (e.g. "2026" or "2026:0:0:0").
-function M.ensure_current_lunar_year(q)
+function M.reset(q)
     if q == nil then
         return M.lunar_year()
     end

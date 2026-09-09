@@ -41,6 +41,7 @@ game_bot_controller::game_bot_controller(bot_container& container) :
     this->bind(&game_bot_controller::on_ping);
 
     integration::protocol_registry::register_all();
+    integration::protocol_registry::bind(*this);
 }
 
 async::task<void> game_bot_controller::on_bot_disconnected(game_bot& bot)

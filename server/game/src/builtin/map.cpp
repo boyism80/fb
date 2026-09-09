@@ -641,7 +641,10 @@ int builtin::map::builtin_instance(lua_State* L)
         if (source == nullptr)
             co_return;
 
-        *holder = server->maps.ensure_instance(source, slot);
+        auto inst = server->maps.find(source, slot);
+        if (inst == nullptr)
+            inst = server->maps.create_instance(source, slot);
+        *holder = inst;
         co_return;
     };
     builder.resume = [=]() -> async::task<int> {

@@ -863,9 +863,9 @@ def generate_cpp(types: list[ProtocolType]) -> str:
         if t.direction == "response":
             lines.extend(
                 [
-                    f"void ensure_registered_{sym}(fb::bot::game_bot_controller& controller)",
+                    f"void bind_{sym}(fb::bot::game_bot_controller& controller)",
                     "{",
-                    f"    controller.ensure_handler_registered<{t.cpp_type}>();",
+                    f"    controller.bind<{t.cpp_type}>();",
                     "}",
                     "",
                     f"std::shared_ptr<fb::protocol::header> clone_{sym}(const fb::protocol::header& header)",
@@ -883,7 +883,7 @@ def generate_cpp(types: list[ProtocolType]) -> str:
         else:
             lines.extend(
                 [
-                    f"void ensure_registered_{sym}(fb::bot::game_bot_controller&)",
+                    f"void bind_{sym}(fb::bot::game_bot_controller&)",
                     "{",
                     "}",
                     "",
@@ -918,7 +918,7 @@ def generate_cpp(types: list[ProtocolType]) -> str:
         direction = "protocol_direction::response" if t.direction == "response" else "protocol_direction::request"
         lines.append(f"        {direction},")
         lines.append(f"        0x{t.opcode:02X},")
-        lines.append(f"        &detail::ensure_registered_{sym},")
+        lines.append(f"        &detail::bind_{sym},")
         lines.append(f"        &detail::clone_{sym},")
         lines.append(f"        &detail::create_{sym},")
         if t.direction == "response":
