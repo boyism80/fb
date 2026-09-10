@@ -11,9 +11,8 @@ namespace fb::bot::integration::detail {
 
 constexpr auto BOT_CLIENT_VERSION = fb::protocol::CLIENT_VERSION::v550;
 
-void bind_game_reqs__attack(fb::bot::game_bot_controller&)
-{
-}
+void bind_default_game_reqs__attack(fb::bot::game_bot_controller&)
+{ }
 
 std::shared_ptr<fb::protocol::header> clone_game_reqs__attack(const fb::protocol::header&)
 {
@@ -25,9 +24,8 @@ std::shared_ptr<fb::protocol::header> create_game_reqs__attack()
     return std::make_shared<game_reqs::attack<BOT_CLIENT_VERSION>>();
 }
 
-void bind_game_reqs__browser(fb::bot::game_bot_controller&)
-{
-}
+void bind_default_game_reqs__browser(fb::bot::game_bot_controller&)
+{ }
 
 std::shared_ptr<fb::protocol::header> clone_game_reqs__browser(const fb::protocol::header&)
 {
@@ -39,9 +37,8 @@ std::shared_ptr<fb::protocol::header> create_game_reqs__browser()
     return nullptr;
 }
 
-void bind_game_reqs__bulletin(fb::bot::game_bot_controller&)
-{
-}
+void bind_default_game_reqs__bulletin(fb::bot::game_bot_controller&)
+{ }
 
 std::shared_ptr<fb::protocol::header> clone_game_reqs__bulletin(const fb::protocol::header&)
 {
@@ -53,9 +50,8 @@ std::shared_ptr<fb::protocol::header> create_game_reqs__bulletin()
     return nullptr;
 }
 
-void bind_game_reqs__chat(fb::bot::game_bot_controller&)
-{
-}
+void bind_default_game_reqs__chat(fb::bot::game_bot_controller&)
+{ }
 
 std::shared_ptr<fb::protocol::header> clone_game_reqs__chat(const fb::protocol::header&)
 {
@@ -67,9 +63,8 @@ std::shared_ptr<fb::protocol::header> create_game_reqs__chat()
     return nullptr;
 }
 
-void bind_game_reqs__click(fb::bot::game_bot_controller&)
-{
-}
+void bind_default_game_reqs__click(fb::bot::game_bot_controller&)
+{ }
 
 std::shared_ptr<fb::protocol::header> clone_game_reqs__click(const fb::protocol::header&)
 {
@@ -81,9 +76,8 @@ std::shared_ptr<fb::protocol::header> create_game_reqs__click()
     return nullptr;
 }
 
-void bind_game_reqs__collection(fb::bot::game_bot_controller&)
-{
-}
+void bind_default_game_reqs__collection(fb::bot::game_bot_controller&)
+{ }
 
 std::shared_ptr<fb::protocol::header> clone_game_reqs__collection(const fb::protocol::header&)
 {
@@ -95,9 +89,8 @@ std::shared_ptr<fb::protocol::header> create_game_reqs__collection()
     return nullptr;
 }
 
-void bind_game_reqs__dialog(fb::bot::game_bot_controller&)
-{
-}
+void bind_default_game_reqs__dialog(fb::bot::game_bot_controller&)
+{ }
 
 std::shared_ptr<fb::protocol::header> clone_game_reqs__dialog(const fb::protocol::header&)
 {
@@ -109,9 +102,8 @@ std::shared_ptr<fb::protocol::header> create_game_reqs__dialog()
     return nullptr;
 }
 
-void bind_game_reqs__dialog_list(fb::bot::game_bot_controller&)
-{
-}
+void bind_default_game_reqs__dialog_list(fb::bot::game_bot_controller&)
+{ }
 
 std::shared_ptr<fb::protocol::header> clone_game_reqs__dialog_list(const fb::protocol::header&)
 {
@@ -123,9 +115,8 @@ std::shared_ptr<fb::protocol::header> create_game_reqs__dialog_list()
     return nullptr;
 }
 
-void bind_game_reqs__direction(fb::bot::game_bot_controller&)
-{
-}
+void bind_default_game_reqs__direction(fb::bot::game_bot_controller&)
+{ }
 
 std::shared_ptr<fb::protocol::header> clone_game_reqs__direction(const fb::protocol::header&)
 {
@@ -137,9 +128,8 @@ std::shared_ptr<fb::protocol::header> create_game_reqs__direction()
     return nullptr;
 }
 
-void bind_game_reqs__door(fb::bot::game_bot_controller&)
-{
-}
+void bind_default_game_reqs__door(fb::bot::game_bot_controller&)
+{ }
 
 std::shared_ptr<fb::protocol::header> clone_game_reqs__door(const fb::protocol::header&)
 {
@@ -151,9 +141,8 @@ std::shared_ptr<fb::protocol::header> create_game_reqs__door()
     return std::make_shared<game_reqs::door<BOT_CLIENT_VERSION>>();
 }
 
-void bind_game_reqs__emotion(fb::bot::game_bot_controller&)
-{
-}
+void bind_default_game_reqs__emotion(fb::bot::game_bot_controller&)
+{ }
 
 std::shared_ptr<fb::protocol::header> clone_game_reqs__emotion(const fb::protocol::header&)
 {
@@ -165,9 +154,8 @@ std::shared_ptr<fb::protocol::header> create_game_reqs__emotion()
     return nullptr;
 }
 
-void bind_game_reqs__exit(fb::bot::game_bot_controller&)
-{
-}
+void bind_default_game_reqs__exit(fb::bot::game_bot_controller&)
+{ }
 
 std::shared_ptr<fb::protocol::header> clone_game_reqs__exit(const fb::protocol::header&)
 {
@@ -179,9 +167,8 @@ std::shared_ptr<fb::protocol::header> create_game_reqs__exit()
     return std::make_shared<game_reqs::exit<BOT_CLIENT_VERSION>>();
 }
 
-void bind_game_reqs__friends(fb::bot::game_bot_controller&)
-{
-}
+void bind_default_game_reqs__friends(fb::bot::game_bot_controller&)
+{ }
 
 std::shared_ptr<fb::protocol::header> clone_game_reqs__friends(const fb::protocol::header&)
 {
@@ -193,9 +180,8 @@ std::shared_ptr<fb::protocol::header> create_game_reqs__friends()
     return nullptr;
 }
 
-void bind_game_reqs__front_info(fb::bot::game_bot_controller&)
-{
-}
+void bind_default_game_reqs__front_info(fb::bot::game_bot_controller&)
+{ }
 
 std::shared_ptr<fb::protocol::header> clone_game_reqs__front_info(const fb::protocol::header&)
 {
@@ -207,9 +193,8 @@ std::shared_ptr<fb::protocol::header> create_game_reqs__front_info()
     return std::make_shared<game_reqs::front_info<BOT_CLIENT_VERSION>>();
 }
 
-void bind_game_reqs__give_item(fb::bot::game_bot_controller&)
-{
-}
+void bind_default_game_reqs__give_item(fb::bot::game_bot_controller&)
+{ }
 
 std::shared_ptr<fb::protocol::header> clone_game_reqs__give_item(const fb::protocol::header&)
 {
@@ -221,9 +206,8 @@ std::shared_ptr<fb::protocol::header> create_game_reqs__give_item()
     return nullptr;
 }
 
-void bind_game_reqs__give_money(fb::bot::game_bot_controller&)
-{
-}
+void bind_default_game_reqs__give_money(fb::bot::game_bot_controller&)
+{ }
 
 std::shared_ptr<fb::protocol::header> clone_game_reqs__give_money(const fb::protocol::header&)
 {
@@ -235,9 +219,8 @@ std::shared_ptr<fb::protocol::header> create_game_reqs__give_money()
     return nullptr;
 }
 
-void bind_game_reqs__group(fb::bot::game_bot_controller&)
-{
-}
+void bind_default_game_reqs__group(fb::bot::game_bot_controller&)
+{ }
 
 std::shared_ptr<fb::protocol::header> clone_game_reqs__group(const fb::protocol::header&)
 {
@@ -249,9 +232,8 @@ std::shared_ptr<fb::protocol::header> create_game_reqs__group()
     return nullptr;
 }
 
-void bind_game_reqs__item_active(fb::bot::game_bot_controller&)
-{
-}
+void bind_default_game_reqs__item_active(fb::bot::game_bot_controller&)
+{ }
 
 std::shared_ptr<fb::protocol::header> clone_game_reqs__item_active(const fb::protocol::header&)
 {
@@ -263,9 +245,8 @@ std::shared_ptr<fb::protocol::header> create_game_reqs__item_active()
     return nullptr;
 }
 
-void bind_game_reqs__item_combine(fb::bot::game_bot_controller&)
-{
-}
+void bind_default_game_reqs__item_combine(fb::bot::game_bot_controller&)
+{ }
 
 std::shared_ptr<fb::protocol::header> clone_game_reqs__item_combine(const fb::protocol::header&)
 {
@@ -277,9 +258,8 @@ std::shared_ptr<fb::protocol::header> create_game_reqs__item_combine()
     return nullptr;
 }
 
-void bind_game_reqs__item_drop(fb::bot::game_bot_controller&)
-{
-}
+void bind_default_game_reqs__item_drop(fb::bot::game_bot_controller&)
+{ }
 
 std::shared_ptr<fb::protocol::header> clone_game_reqs__item_drop(const fb::protocol::header&)
 {
@@ -291,9 +271,8 @@ std::shared_ptr<fb::protocol::header> create_game_reqs__item_drop()
     return nullptr;
 }
 
-void bind_game_reqs__item_drop_money(fb::bot::game_bot_controller&)
-{
-}
+void bind_default_game_reqs__item_drop_money(fb::bot::game_bot_controller&)
+{ }
 
 std::shared_ptr<fb::protocol::header> clone_game_reqs__item_drop_money(const fb::protocol::header&)
 {
@@ -305,9 +284,8 @@ std::shared_ptr<fb::protocol::header> create_game_reqs__item_drop_money()
     return nullptr;
 }
 
-void bind_game_reqs__item_inactive(fb::bot::game_bot_controller&)
-{
-}
+void bind_default_game_reqs__item_inactive(fb::bot::game_bot_controller&)
+{ }
 
 std::shared_ptr<fb::protocol::header> clone_game_reqs__item_inactive(const fb::protocol::header&)
 {
@@ -319,9 +297,8 @@ std::shared_ptr<fb::protocol::header> create_game_reqs__item_inactive()
     return nullptr;
 }
 
-void bind_game_reqs__item_info(fb::bot::game_bot_controller&)
-{
-}
+void bind_default_game_reqs__item_info(fb::bot::game_bot_controller&)
+{ }
 
 std::shared_ptr<fb::protocol::header> clone_game_reqs__item_info(const fb::protocol::header&)
 {
@@ -333,9 +310,8 @@ std::shared_ptr<fb::protocol::header> create_game_reqs__item_info()
     return nullptr;
 }
 
-void bind_game_reqs__item_throws(fb::bot::game_bot_controller&)
-{
-}
+void bind_default_game_reqs__item_throws(fb::bot::game_bot_controller&)
+{ }
 
 std::shared_ptr<fb::protocol::header> clone_game_reqs__item_throws(const fb::protocol::header&)
 {
@@ -347,9 +323,8 @@ std::shared_ptr<fb::protocol::header> create_game_reqs__item_throws()
     return nullptr;
 }
 
-void bind_game_reqs__login(fb::bot::game_bot_controller&)
-{
-}
+void bind_default_game_reqs__login(fb::bot::game_bot_controller&)
+{ }
 
 std::shared_ptr<fb::protocol::header> clone_game_reqs__login(const fb::protocol::header&)
 {
@@ -361,9 +336,8 @@ std::shared_ptr<fb::protocol::header> create_game_reqs__login()
     return nullptr;
 }
 
-void bind_game_reqs__loot(fb::bot::game_bot_controller&)
-{
-}
+void bind_default_game_reqs__loot(fb::bot::game_bot_controller&)
+{ }
 
 std::shared_ptr<fb::protocol::header> clone_game_reqs__loot(const fb::protocol::header&)
 {
@@ -375,9 +349,8 @@ std::shared_ptr<fb::protocol::header> create_game_reqs__loot()
     return nullptr;
 }
 
-void bind_game_reqs__map_update(fb::bot::game_bot_controller&)
-{
-}
+void bind_default_game_reqs__map_update(fb::bot::game_bot_controller&)
+{ }
 
 std::shared_ptr<fb::protocol::header> clone_game_reqs__map_update(const fb::protocol::header&)
 {
@@ -389,9 +362,8 @@ std::shared_ptr<fb::protocol::header> create_game_reqs__map_update()
     return std::make_shared<game_reqs::map_update<BOT_CLIENT_VERSION>>();
 }
 
-void bind_game_reqs__map_world(fb::bot::game_bot_controller&)
-{
-}
+void bind_default_game_reqs__map_world(fb::bot::game_bot_controller&)
+{ }
 
 std::shared_ptr<fb::protocol::header> clone_game_reqs__map_world(const fb::protocol::header&)
 {
@@ -403,9 +375,8 @@ std::shared_ptr<fb::protocol::header> create_game_reqs__map_world()
     return nullptr;
 }
 
-void bind_game_reqs__miss(fb::bot::game_bot_controller&)
-{
-}
+void bind_default_game_reqs__miss(fb::bot::game_bot_controller&)
+{ }
 
 std::shared_ptr<fb::protocol::header> clone_game_reqs__miss(const fb::protocol::header&)
 {
@@ -417,9 +388,8 @@ std::shared_ptr<fb::protocol::header> create_game_reqs__miss()
     return std::make_shared<game_reqs::miss<BOT_CLIENT_VERSION>>();
 }
 
-void bind_game_reqs__move(fb::bot::game_bot_controller&)
-{
-}
+void bind_default_game_reqs__move(fb::bot::game_bot_controller&)
+{ }
 
 std::shared_ptr<fb::protocol::header> clone_game_reqs__move(const fb::protocol::header&)
 {
@@ -431,9 +401,8 @@ std::shared_ptr<fb::protocol::header> create_game_reqs__move()
     return nullptr;
 }
 
-void bind_game_reqs__move_blocked(fb::bot::game_bot_controller&)
-{
-}
+void bind_default_game_reqs__move_blocked(fb::bot::game_bot_controller&)
+{ }
 
 std::shared_ptr<fb::protocol::header> clone_game_reqs__move_blocked(const fb::protocol::header&)
 {
@@ -445,9 +414,8 @@ std::shared_ptr<fb::protocol::header> create_game_reqs__move_blocked()
     return std::make_shared<game_reqs::move_blocked<BOT_CLIENT_VERSION>>();
 }
 
-void bind_game_reqs__pong(fb::bot::game_bot_controller&)
-{
-}
+void bind_default_game_reqs__pong(fb::bot::game_bot_controller&)
+{ }
 
 std::shared_ptr<fb::protocol::header> clone_game_reqs__pong(const fb::protocol::header&)
 {
@@ -459,9 +427,8 @@ std::shared_ptr<fb::protocol::header> create_game_reqs__pong()
     return nullptr;
 }
 
-void bind_game_reqs__popup_input_submit(fb::bot::game_bot_controller&)
-{
-}
+void bind_default_game_reqs__popup_input_submit(fb::bot::game_bot_controller&)
+{ }
 
 std::shared_ptr<fb::protocol::header> clone_game_reqs__popup_input_submit(const fb::protocol::header&)
 {
@@ -473,9 +440,8 @@ std::shared_ptr<fb::protocol::header> create_game_reqs__popup_input_submit()
     return nullptr;
 }
 
-void bind_game_reqs__post(fb::bot::game_bot_controller&)
-{
-}
+void bind_default_game_reqs__post(fb::bot::game_bot_controller&)
+{ }
 
 std::shared_ptr<fb::protocol::header> clone_game_reqs__post(const fb::protocol::header&)
 {
@@ -487,9 +453,8 @@ std::shared_ptr<fb::protocol::header> create_game_reqs__post()
     return std::make_shared<game_reqs::post<BOT_CLIENT_VERSION>>();
 }
 
-void bind_game_reqs__screen_refresh(fb::bot::game_bot_controller&)
-{
-}
+void bind_default_game_reqs__screen_refresh(fb::bot::game_bot_controller&)
+{ }
 
 std::shared_ptr<fb::protocol::header> clone_game_reqs__screen_refresh(const fb::protocol::header&)
 {
@@ -501,9 +466,8 @@ std::shared_ptr<fb::protocol::header> create_game_reqs__screen_refresh()
     return std::make_shared<game_reqs::screen_refresh<BOT_CLIENT_VERSION>>();
 }
 
-void bind_game_reqs__self_info(fb::bot::game_bot_controller&)
-{
-}
+void bind_default_game_reqs__self_info(fb::bot::game_bot_controller&)
+{ }
 
 std::shared_ptr<fb::protocol::header> clone_game_reqs__self_info(const fb::protocol::header&)
 {
@@ -515,9 +479,8 @@ std::shared_ptr<fb::protocol::header> create_game_reqs__self_info()
     return std::make_shared<game_reqs::self_info<BOT_CLIENT_VERSION>>();
 }
 
-void bind_game_reqs__spell_cast(fb::bot::game_bot_controller&)
-{
-}
+void bind_default_game_reqs__spell_cast(fb::bot::game_bot_controller&)
+{ }
 
 std::shared_ptr<fb::protocol::header> clone_game_reqs__spell_cast(const fb::protocol::header&)
 {
@@ -529,9 +492,8 @@ std::shared_ptr<fb::protocol::header> create_game_reqs__spell_cast()
     return nullptr;
 }
 
-void bind_game_reqs__swap(fb::bot::game_bot_controller&)
-{
-}
+void bind_default_game_reqs__swap(fb::bot::game_bot_controller&)
+{ }
 
 std::shared_ptr<fb::protocol::header> clone_game_reqs__swap(const fb::protocol::header&)
 {
@@ -543,9 +505,8 @@ std::shared_ptr<fb::protocol::header> create_game_reqs__swap()
     return nullptr;
 }
 
-void bind_game_reqs__trade(fb::bot::game_bot_controller&)
-{
-}
+void bind_default_game_reqs__trade(fb::bot::game_bot_controller&)
+{ }
 
 std::shared_ptr<fb::protocol::header> clone_game_reqs__trade(const fb::protocol::header&)
 {
@@ -557,9 +518,8 @@ std::shared_ptr<fb::protocol::header> create_game_reqs__trade()
     return nullptr;
 }
 
-void bind_game_reqs__unknown_54(fb::bot::game_bot_controller&)
-{
-}
+void bind_default_game_reqs__unknown_54(fb::bot::game_bot_controller&)
+{ }
 
 std::shared_ptr<fb::protocol::header> clone_game_reqs__unknown_54(const fb::protocol::header&)
 {
@@ -571,9 +531,8 @@ std::shared_ptr<fb::protocol::header> create_game_reqs__unknown_54()
     return nullptr;
 }
 
-void bind_game_reqs__update_option(fb::bot::game_bot_controller&)
-{
-}
+void bind_default_game_reqs__update_option(fb::bot::game_bot_controller&)
+{ }
 
 std::shared_ptr<fb::protocol::header> clone_game_reqs__update_option(const fb::protocol::header&)
 {
@@ -585,9 +544,8 @@ std::shared_ptr<fb::protocol::header> create_game_reqs__update_option()
     return nullptr;
 }
 
-void bind_game_reqs__user_info_submit(fb::bot::game_bot_controller&)
-{
-}
+void bind_default_game_reqs__user_info_submit(fb::bot::game_bot_controller&)
+{ }
 
 std::shared_ptr<fb::protocol::header> clone_game_reqs__user_info_submit(const fb::protocol::header&)
 {
@@ -599,9 +557,8 @@ std::shared_ptr<fb::protocol::header> create_game_reqs__user_info_submit()
     return nullptr;
 }
 
-void bind_game_reqs__user_list(fb::bot::game_bot_controller&)
-{
-}
+void bind_default_game_reqs__user_list(fb::bot::game_bot_controller&)
+{ }
 
 std::shared_ptr<fb::protocol::header> clone_game_reqs__user_list(const fb::protocol::header&)
 {
@@ -613,9 +570,8 @@ std::shared_ptr<fb::protocol::header> create_game_reqs__user_list()
     return std::make_shared<game_reqs::user_list<BOT_CLIENT_VERSION>>();
 }
 
-void bind_game_reqs__web_map(fb::bot::game_bot_controller&)
-{
-}
+void bind_default_game_reqs__web_map(fb::bot::game_bot_controller&)
+{ }
 
 std::shared_ptr<fb::protocol::header> clone_game_reqs__web_map(const fb::protocol::header&)
 {
@@ -627,9 +583,8 @@ std::shared_ptr<fb::protocol::header> create_game_reqs__web_map()
     return std::make_shared<game_reqs::web_map<BOT_CLIENT_VERSION>>();
 }
 
-void bind_game_reqs__whisper(fb::bot::game_bot_controller&)
-{
-}
+void bind_default_game_reqs__whisper(fb::bot::game_bot_controller&)
+{ }
 
 std::shared_ptr<fb::protocol::header> clone_game_reqs__whisper(const fb::protocol::header&)
 {
@@ -641,9 +596,9 @@ std::shared_ptr<fb::protocol::header> create_game_reqs__whisper()
     return nullptr;
 }
 
-void bind_game_resp__action(fb::bot::game_bot_controller& controller)
+void bind_default_game_resp__action(fb::bot::game_bot_controller& controller)
 {
-    controller.bind<game_resp::action>();
+    controller.bind_default<game_resp::action>();
 }
 
 std::shared_ptr<fb::protocol::header> clone_game_resp__action(const fb::protocol::header& header)
@@ -656,9 +611,9 @@ std::shared_ptr<fb::protocol::header> create_game_resp__action()
     return nullptr;
 }
 
-void bind_game_resp__ad(fb::bot::game_bot_controller& controller)
+void bind_default_game_resp__ad(fb::bot::game_bot_controller& controller)
 {
-    controller.bind<game_resp::ad>();
+    controller.bind_default<game_resp::ad>();
 }
 
 std::shared_ptr<fb::protocol::header> clone_game_resp__ad(const fb::protocol::header& header)
@@ -671,9 +626,9 @@ std::shared_ptr<fb::protocol::header> create_game_resp__ad()
     return nullptr;
 }
 
-void bind_game_resp__bright(fb::bot::game_bot_controller& controller)
+void bind_default_game_resp__bright(fb::bot::game_bot_controller& controller)
 {
-    controller.bind<game_resp::bright>();
+    controller.bind_default<game_resp::bright>();
 }
 
 std::shared_ptr<fb::protocol::header> clone_game_resp__bright(const fb::protocol::header& header)
@@ -686,14 +641,15 @@ std::shared_ptr<fb::protocol::header> create_game_resp__bright()
     return nullptr;
 }
 
-void bind_game_resp__browser(fb::bot::game_bot_controller& controller)
+void bind_default_game_resp__browser(fb::bot::game_bot_controller& controller)
 {
-    controller.bind<game_resp::browser<BOT_CLIENT_VERSION>>();
+    controller.bind_default<game_resp::browser<BOT_CLIENT_VERSION>>();
 }
 
 std::shared_ptr<fb::protocol::header> clone_game_resp__browser(const fb::protocol::header& header)
 {
-    return std::make_shared<game_resp::browser<BOT_CLIENT_VERSION>>(static_cast<const game_resp::browser<BOT_CLIENT_VERSION>&>(header));
+    return std::make_shared<game_resp::browser<BOT_CLIENT_VERSION>>(
+        static_cast<const game_resp::browser<BOT_CLIENT_VERSION>&>(header));
 }
 
 std::shared_ptr<fb::protocol::header> create_game_resp__browser()
@@ -701,9 +657,9 @@ std::shared_ptr<fb::protocol::header> create_game_resp__browser()
     return nullptr;
 }
 
-void bind_game_resp__bulletin_article(fb::bot::game_bot_controller& controller)
+void bind_default_game_resp__bulletin_article(fb::bot::game_bot_controller& controller)
 {
-    controller.bind<game_resp::bulletin_article>();
+    controller.bind_default<game_resp::bulletin_article>();
 }
 
 std::shared_ptr<fb::protocol::header> clone_game_resp__bulletin_article(const fb::protocol::header& header)
@@ -716,9 +672,9 @@ std::shared_ptr<fb::protocol::header> create_game_resp__bulletin_article()
     return nullptr;
 }
 
-void bind_game_resp__bulletin_articles(fb::bot::game_bot_controller& controller)
+void bind_default_game_resp__bulletin_articles(fb::bot::game_bot_controller& controller)
 {
-    controller.bind<game_resp::bulletin_articles>();
+    controller.bind_default<game_resp::bulletin_articles>();
 }
 
 std::shared_ptr<fb::protocol::header> clone_game_resp__bulletin_articles(const fb::protocol::header& header)
@@ -731,9 +687,9 @@ std::shared_ptr<fb::protocol::header> create_game_resp__bulletin_articles()
     return nullptr;
 }
 
-void bind_game_resp__bulletin_mail(fb::bot::game_bot_controller& controller)
+void bind_default_game_resp__bulletin_mail(fb::bot::game_bot_controller& controller)
 {
-    controller.bind<game_resp::bulletin_mail>();
+    controller.bind_default<game_resp::bulletin_mail>();
 }
 
 std::shared_ptr<fb::protocol::header> clone_game_resp__bulletin_mail(const fb::protocol::header& header)
@@ -746,9 +702,9 @@ std::shared_ptr<fb::protocol::header> create_game_resp__bulletin_mail()
     return nullptr;
 }
 
-void bind_game_resp__bulletin_mails(fb::bot::game_bot_controller& controller)
+void bind_default_game_resp__bulletin_mails(fb::bot::game_bot_controller& controller)
 {
-    controller.bind<game_resp::bulletin_mails>();
+    controller.bind_default<game_resp::bulletin_mails>();
 }
 
 std::shared_ptr<fb::protocol::header> clone_game_resp__bulletin_mails(const fb::protocol::header& header)
@@ -761,9 +717,9 @@ std::shared_ptr<fb::protocol::header> create_game_resp__bulletin_mails()
     return nullptr;
 }
 
-void bind_game_resp__bulletin_message(fb::bot::game_bot_controller& controller)
+void bind_default_game_resp__bulletin_message(fb::bot::game_bot_controller& controller)
 {
-    controller.bind<game_resp::bulletin_message>();
+    controller.bind_default<game_resp::bulletin_message>();
 }
 
 std::shared_ptr<fb::protocol::header> clone_game_resp__bulletin_message(const fb::protocol::header& header)
@@ -776,9 +732,9 @@ std::shared_ptr<fb::protocol::header> create_game_resp__bulletin_message()
     return nullptr;
 }
 
-void bind_game_resp__bulletin_sections(fb::bot::game_bot_controller& controller)
+void bind_default_game_resp__bulletin_sections(fb::bot::game_bot_controller& controller)
 {
-    controller.bind<game_resp::bulletin_sections>();
+    controller.bind_default<game_resp::bulletin_sections>();
 }
 
 std::shared_ptr<fb::protocol::header> clone_game_resp__bulletin_sections(const fb::protocol::header& header)
@@ -791,9 +747,9 @@ std::shared_ptr<fb::protocol::header> create_game_resp__bulletin_sections()
     return nullptr;
 }
 
-void bind_game_resp__c2s_relay(fb::bot::game_bot_controller& controller)
+void bind_default_game_resp__c2s_relay(fb::bot::game_bot_controller& controller)
 {
-    controller.bind<game_resp::c2s_relay>();
+    controller.bind_default<game_resp::c2s_relay>();
 }
 
 std::shared_ptr<fb::protocol::header> clone_game_resp__c2s_relay(const fb::protocol::header& header)
@@ -806,9 +762,9 @@ std::shared_ptr<fb::protocol::header> create_game_resp__c2s_relay()
     return nullptr;
 }
 
-void bind_game_resp__chat(fb::bot::game_bot_controller& controller)
+void bind_default_game_resp__chat(fb::bot::game_bot_controller& controller)
 {
-    controller.bind<game_resp::chat>();
+    controller.bind_default<game_resp::chat>();
 }
 
 std::shared_ptr<fb::protocol::header> clone_game_resp__chat(const fb::protocol::header& header)
@@ -821,14 +777,15 @@ std::shared_ptr<fb::protocol::header> create_game_resp__chat()
     return nullptr;
 }
 
-void bind_game_resp__collection(fb::bot::game_bot_controller& controller)
+void bind_default_game_resp__collection(fb::bot::game_bot_controller& controller)
 {
-    controller.bind<game_resp::collection<BOT_CLIENT_VERSION>>();
+    controller.bind_default<game_resp::collection<BOT_CLIENT_VERSION>>();
 }
 
 std::shared_ptr<fb::protocol::header> clone_game_resp__collection(const fb::protocol::header& header)
 {
-    return std::make_shared<game_resp::collection<BOT_CLIENT_VERSION>>(static_cast<const game_resp::collection<BOT_CLIENT_VERSION>&>(header));
+    return std::make_shared<game_resp::collection<BOT_CLIENT_VERSION>>(
+        static_cast<const game_resp::collection<BOT_CLIENT_VERSION>&>(header));
 }
 
 std::shared_ptr<fb::protocol::header> create_game_resp__collection()
@@ -836,14 +793,14 @@ std::shared_ptr<fb::protocol::header> create_game_resp__collection()
     return nullptr;
 }
 
-void bind_game_resp__dialog(fb::bot::game_bot_controller& controller)
+void bind_default_game_resp__dialog(fb::bot::game_bot_controller& controller)
 {
-    controller.bind<game_resp::dialog<BOT_CLIENT_VERSION>>();
+    controller.bind_default<game_resp::dialog>();
 }
 
 std::shared_ptr<fb::protocol::header> clone_game_resp__dialog(const fb::protocol::header& header)
 {
-    return std::make_shared<game_resp::dialog<BOT_CLIENT_VERSION>>(static_cast<const game_resp::dialog<BOT_CLIENT_VERSION>&>(header));
+    return std::make_shared<game_resp::dialog>(static_cast<const game_resp::dialog&>(header));
 }
 
 std::shared_ptr<fb::protocol::header> create_game_resp__dialog()
@@ -851,14 +808,14 @@ std::shared_ptr<fb::protocol::header> create_game_resp__dialog()
     return nullptr;
 }
 
-void bind_game_resp__dialog_0x30_10(fb::bot::game_bot_controller& controller)
+void bind_default_game_resp__dialog_0x30_10(fb::bot::game_bot_controller& controller)
 {
-    controller.bind<game_resp::dialog_0x30_10<BOT_CLIENT_VERSION>>();
+    controller.bind_default<game_resp::dialog_0x30_10>();
 }
 
 std::shared_ptr<fb::protocol::header> clone_game_resp__dialog_0x30_10(const fb::protocol::header& header)
 {
-    return std::make_shared<game_resp::dialog_0x30_10<BOT_CLIENT_VERSION>>(static_cast<const game_resp::dialog_0x30_10<BOT_CLIENT_VERSION>&>(header));
+    return std::make_shared<game_resp::dialog_0x30_10>(static_cast<const game_resp::dialog_0x30_10&>(header));
 }
 
 std::shared_ptr<fb::protocol::header> create_game_resp__dialog_0x30_10()
@@ -866,14 +823,14 @@ std::shared_ptr<fb::protocol::header> create_game_resp__dialog_0x30_10()
     return nullptr;
 }
 
-void bind_game_resp__dialog_dual_field(fb::bot::game_bot_controller& controller)
+void bind_default_game_resp__dialog_dual_field(fb::bot::game_bot_controller& controller)
 {
-    controller.bind<game_resp::dialog_dual_field<BOT_CLIENT_VERSION>>();
+    controller.bind_default<game_resp::dialog_dual_field>();
 }
 
 std::shared_ptr<fb::protocol::header> clone_game_resp__dialog_dual_field(const fb::protocol::header& header)
 {
-    return std::make_shared<game_resp::dialog_dual_field<BOT_CLIENT_VERSION>>(static_cast<const game_resp::dialog_dual_field<BOT_CLIENT_VERSION>&>(header));
+    return std::make_shared<game_resp::dialog_dual_field>(static_cast<const game_resp::dialog_dual_field&>(header));
 }
 
 std::shared_ptr<fb::protocol::header> create_game_resp__dialog_dual_field()
@@ -881,14 +838,14 @@ std::shared_ptr<fb::protocol::header> create_game_resp__dialog_dual_field()
     return nullptr;
 }
 
-void bind_game_resp__dialog_email(fb::bot::game_bot_controller& controller)
+void bind_default_game_resp__dialog_email(fb::bot::game_bot_controller& controller)
 {
-    controller.bind<game_resp::dialog_email<BOT_CLIENT_VERSION>>();
+    controller.bind_default<game_resp::dialog_email>();
 }
 
 std::shared_ptr<fb::protocol::header> clone_game_resp__dialog_email(const fb::protocol::header& header)
 {
-    return std::make_shared<game_resp::dialog_email<BOT_CLIENT_VERSION>>(static_cast<const game_resp::dialog_email<BOT_CLIENT_VERSION>&>(header));
+    return std::make_shared<game_resp::dialog_email>(static_cast<const game_resp::dialog_email&>(header));
 }
 
 std::shared_ptr<fb::protocol::header> create_game_resp__dialog_email()
@@ -896,14 +853,14 @@ std::shared_ptr<fb::protocol::header> create_game_resp__dialog_email()
     return nullptr;
 }
 
-void bind_game_resp__dialog_input(fb::bot::game_bot_controller& controller)
+void bind_default_game_resp__dialog_input(fb::bot::game_bot_controller& controller)
 {
-    controller.bind<game_resp::dialog_input<BOT_CLIENT_VERSION>>();
+    controller.bind_default<game_resp::dialog_input>();
 }
 
 std::shared_ptr<fb::protocol::header> clone_game_resp__dialog_input(const fb::protocol::header& header)
 {
-    return std::make_shared<game_resp::dialog_input<BOT_CLIENT_VERSION>>(static_cast<const game_resp::dialog_input<BOT_CLIENT_VERSION>&>(header));
+    return std::make_shared<game_resp::dialog_input>(static_cast<const game_resp::dialog_input&>(header));
 }
 
 std::shared_ptr<fb::protocol::header> create_game_resp__dialog_input()
@@ -911,14 +868,14 @@ std::shared_ptr<fb::protocol::header> create_game_resp__dialog_input()
     return nullptr;
 }
 
-void bind_game_resp__dialog_input_ext(fb::bot::game_bot_controller& controller)
+void bind_default_game_resp__dialog_input_ext(fb::bot::game_bot_controller& controller)
 {
-    controller.bind<game_resp::dialog_input_ext<BOT_CLIENT_VERSION>>();
+    controller.bind_default<game_resp::dialog_input_ext>();
 }
 
 std::shared_ptr<fb::protocol::header> clone_game_resp__dialog_input_ext(const fb::protocol::header& header)
 {
-    return std::make_shared<game_resp::dialog_input_ext<BOT_CLIENT_VERSION>>(static_cast<const game_resp::dialog_input_ext<BOT_CLIENT_VERSION>&>(header));
+    return std::make_shared<game_resp::dialog_input_ext>(static_cast<const game_resp::dialog_input_ext&>(header));
 }
 
 std::shared_ptr<fb::protocol::header> create_game_resp__dialog_input_ext()
@@ -926,14 +883,14 @@ std::shared_ptr<fb::protocol::header> create_game_resp__dialog_input_ext()
     return nullptr;
 }
 
-void bind_game_resp__dialog_item(fb::bot::game_bot_controller& controller)
+void bind_default_game_resp__dialog_item(fb::bot::game_bot_controller& controller)
 {
-    controller.bind<game_resp::dialog_item<BOT_CLIENT_VERSION>>();
+    controller.bind_default<game_resp::dialog_item>();
 }
 
 std::shared_ptr<fb::protocol::header> clone_game_resp__dialog_item(const fb::protocol::header& header)
 {
-    return std::make_shared<game_resp::dialog_item<BOT_CLIENT_VERSION>>(static_cast<const game_resp::dialog_item<BOT_CLIENT_VERSION>&>(header));
+    return std::make_shared<game_resp::dialog_item>(static_cast<const game_resp::dialog_item&>(header));
 }
 
 std::shared_ptr<fb::protocol::header> create_game_resp__dialog_item()
@@ -941,14 +898,14 @@ std::shared_ptr<fb::protocol::header> create_game_resp__dialog_item()
     return nullptr;
 }
 
-void bind_game_resp__dialog_list(fb::bot::game_bot_controller& controller)
+void bind_default_game_resp__dialog_list(fb::bot::game_bot_controller& controller)
 {
-    controller.bind<game_resp::dialog_list<BOT_CLIENT_VERSION>>();
+    controller.bind_default<game_resp::dialog_list>();
 }
 
 std::shared_ptr<fb::protocol::header> clone_game_resp__dialog_list(const fb::protocol::header& header)
 {
-    return std::make_shared<game_resp::dialog_list<BOT_CLIENT_VERSION>>(static_cast<const game_resp::dialog_list<BOT_CLIENT_VERSION>&>(header));
+    return std::make_shared<game_resp::dialog_list>(static_cast<const game_resp::dialog_list&>(header));
 }
 
 std::shared_ptr<fb::protocol::header> create_game_resp__dialog_list()
@@ -956,14 +913,14 @@ std::shared_ptr<fb::protocol::header> create_game_resp__dialog_list()
     return nullptr;
 }
 
-void bind_game_resp__dialog_menu(fb::bot::game_bot_controller& controller)
+void bind_default_game_resp__dialog_menu(fb::bot::game_bot_controller& controller)
 {
-    controller.bind<game_resp::dialog_menu<BOT_CLIENT_VERSION>>();
+    controller.bind_default<game_resp::dialog_menu>();
 }
 
 std::shared_ptr<fb::protocol::header> clone_game_resp__dialog_menu(const fb::protocol::header& header)
 {
-    return std::make_shared<game_resp::dialog_menu<BOT_CLIENT_VERSION>>(static_cast<const game_resp::dialog_menu<BOT_CLIENT_VERSION>&>(header));
+    return std::make_shared<game_resp::dialog_menu>(static_cast<const game_resp::dialog_menu&>(header));
 }
 
 std::shared_ptr<fb::protocol::header> create_game_resp__dialog_menu()
@@ -971,14 +928,14 @@ std::shared_ptr<fb::protocol::header> create_game_resp__dialog_menu()
     return nullptr;
 }
 
-void bind_game_resp__dialog_pursuit(fb::bot::game_bot_controller& controller)
+void bind_default_game_resp__dialog_pursuit(fb::bot::game_bot_controller& controller)
 {
-    controller.bind<game_resp::dialog_pursuit<BOT_CLIENT_VERSION>>();
+    controller.bind_default<game_resp::dialog_pursuit>();
 }
 
 std::shared_ptr<fb::protocol::header> clone_game_resp__dialog_pursuit(const fb::protocol::header& header)
 {
-    return std::make_shared<game_resp::dialog_pursuit<BOT_CLIENT_VERSION>>(static_cast<const game_resp::dialog_pursuit<BOT_CLIENT_VERSION>&>(header));
+    return std::make_shared<game_resp::dialog_pursuit>(static_cast<const game_resp::dialog_pursuit&>(header));
 }
 
 std::shared_ptr<fb::protocol::header> create_game_resp__dialog_pursuit()
@@ -986,14 +943,14 @@ std::shared_ptr<fb::protocol::header> create_game_resp__dialog_pursuit()
     return nullptr;
 }
 
-void bind_game_resp__dialog_slot(fb::bot::game_bot_controller& controller)
+void bind_default_game_resp__dialog_slot(fb::bot::game_bot_controller& controller)
 {
-    controller.bind<game_resp::dialog_slot<BOT_CLIENT_VERSION>>();
+    controller.bind_default<game_resp::dialog_slot>();
 }
 
 std::shared_ptr<fb::protocol::header> clone_game_resp__dialog_slot(const fb::protocol::header& header)
 {
-    return std::make_shared<game_resp::dialog_slot<BOT_CLIENT_VERSION>>(static_cast<const game_resp::dialog_slot<BOT_CLIENT_VERSION>&>(header));
+    return std::make_shared<game_resp::dialog_slot>(static_cast<const game_resp::dialog_slot&>(header));
 }
 
 std::shared_ptr<fb::protocol::header> create_game_resp__dialog_slot()
@@ -1001,14 +958,14 @@ std::shared_ptr<fb::protocol::header> create_game_resp__dialog_slot()
     return nullptr;
 }
 
-void bind_game_resp__dialog_spell(fb::bot::game_bot_controller& controller)
+void bind_default_game_resp__dialog_spell(fb::bot::game_bot_controller& controller)
 {
-    controller.bind<game_resp::dialog_spell<BOT_CLIENT_VERSION>>();
+    controller.bind_default<game_resp::dialog_spell>();
 }
 
 std::shared_ptr<fb::protocol::header> clone_game_resp__dialog_spell(const fb::protocol::header& header)
 {
-    return std::make_shared<game_resp::dialog_spell<BOT_CLIENT_VERSION>>(static_cast<const game_resp::dialog_spell<BOT_CLIENT_VERSION>&>(header));
+    return std::make_shared<game_resp::dialog_spell>(static_cast<const game_resp::dialog_spell&>(header));
 }
 
 std::shared_ptr<fb::protocol::header> create_game_resp__dialog_spell()
@@ -1016,9 +973,9 @@ std::shared_ptr<fb::protocol::header> create_game_resp__dialog_spell()
     return nullptr;
 }
 
-void bind_game_resp__die(fb::bot::game_bot_controller& controller)
+void bind_default_game_resp__die(fb::bot::game_bot_controller& controller)
 {
-    controller.bind<game_resp::die>();
+    controller.bind_default<game_resp::die>();
 }
 
 std::shared_ptr<fb::protocol::header> clone_game_resp__die(const fb::protocol::header& header)
@@ -1031,9 +988,9 @@ std::shared_ptr<fb::protocol::header> create_game_resp__die()
     return nullptr;
 }
 
-void bind_game_resp__direction(fb::bot::game_bot_controller& controller)
+void bind_default_game_resp__direction(fb::bot::game_bot_controller& controller)
 {
-    controller.bind<game_resp::direction>();
+    controller.bind_default<game_resp::direction>();
 }
 
 std::shared_ptr<fb::protocol::header> clone_game_resp__direction(const fb::protocol::header& header)
@@ -1046,14 +1003,15 @@ std::shared_ptr<fb::protocol::header> create_game_resp__direction()
     return nullptr;
 }
 
-void bind_game_resp__effect(fb::bot::game_bot_controller& controller)
+void bind_default_game_resp__effect(fb::bot::game_bot_controller& controller)
 {
-    controller.bind<game_resp::effect<BOT_CLIENT_VERSION>>();
+    controller.bind_default<game_resp::effect<BOT_CLIENT_VERSION>>();
 }
 
 std::shared_ptr<fb::protocol::header> clone_game_resp__effect(const fb::protocol::header& header)
 {
-    return std::make_shared<game_resp::effect<BOT_CLIENT_VERSION>>(static_cast<const game_resp::effect<BOT_CLIENT_VERSION>&>(header));
+    return std::make_shared<game_resp::effect<BOT_CLIENT_VERSION>>(
+        static_cast<const game_resp::effect<BOT_CLIENT_VERSION>&>(header));
 }
 
 std::shared_ptr<fb::protocol::header> create_game_resp__effect()
@@ -1061,14 +1019,15 @@ std::shared_ptr<fb::protocol::header> create_game_resp__effect()
     return nullptr;
 }
 
-void bind_game_resp__external_info(fb::bot::game_bot_controller& controller)
+void bind_default_game_resp__external_info(fb::bot::game_bot_controller& controller)
 {
-    controller.bind<game_resp::external_info<BOT_CLIENT_VERSION>>();
+    controller.bind_default<game_resp::external_info<BOT_CLIENT_VERSION>>();
 }
 
 std::shared_ptr<fb::protocol::header> clone_game_resp__external_info(const fb::protocol::header& header)
 {
-    return std::make_shared<game_resp::external_info<BOT_CLIENT_VERSION>>(static_cast<const game_resp::external_info<BOT_CLIENT_VERSION>&>(header));
+    return std::make_shared<game_resp::external_info<BOT_CLIENT_VERSION>>(
+        static_cast<const game_resp::external_info<BOT_CLIENT_VERSION>&>(header));
 }
 
 std::shared_ptr<fb::protocol::header> create_game_resp__external_info()
@@ -1076,9 +1035,9 @@ std::shared_ptr<fb::protocol::header> create_game_resp__external_info()
     return nullptr;
 }
 
-void bind_game_resp__freeze(fb::bot::game_bot_controller& controller)
+void bind_default_game_resp__freeze(fb::bot::game_bot_controller& controller)
 {
-    controller.bind<game_resp::freeze>();
+    controller.bind_default<game_resp::freeze>();
 }
 
 std::shared_ptr<fb::protocol::header> clone_game_resp__freeze(const fb::protocol::header& header)
@@ -1091,9 +1050,9 @@ std::shared_ptr<fb::protocol::header> create_game_resp__freeze()
     return nullptr;
 }
 
-void bind_game_resp__friends_sync(fb::bot::game_bot_controller& controller)
+void bind_default_game_resp__friends_sync(fb::bot::game_bot_controller& controller)
 {
-    controller.bind<game_resp::friends_sync>();
+    controller.bind_default<game_resp::friends_sync>();
 }
 
 std::shared_ptr<fb::protocol::header> clone_game_resp__friends_sync(const fb::protocol::header& header)
@@ -1106,14 +1065,15 @@ std::shared_ptr<fb::protocol::header> create_game_resp__friends_sync()
     return nullptr;
 }
 
-void bind_game_resp__group_portrait(fb::bot::game_bot_controller& controller)
+void bind_default_game_resp__group_portrait(fb::bot::game_bot_controller& controller)
 {
-    controller.bind<game_resp::group_portrait<BOT_CLIENT_VERSION>>();
+    controller.bind_default<game_resp::group_portrait<BOT_CLIENT_VERSION>>();
 }
 
 std::shared_ptr<fb::protocol::header> clone_game_resp__group_portrait(const fb::protocol::header& header)
 {
-    return std::make_shared<game_resp::group_portrait<BOT_CLIENT_VERSION>>(static_cast<const game_resp::group_portrait<BOT_CLIENT_VERSION>&>(header));
+    return std::make_shared<game_resp::group_portrait<BOT_CLIENT_VERSION>>(
+        static_cast<const game_resp::group_portrait<BOT_CLIENT_VERSION>&>(header));
 }
 
 std::shared_ptr<fb::protocol::header> create_game_resp__group_portrait()
@@ -1121,9 +1081,9 @@ std::shared_ptr<fb::protocol::header> create_game_resp__group_portrait()
     return nullptr;
 }
 
-void bind_game_resp__hide(fb::bot::game_bot_controller& controller)
+void bind_default_game_resp__hide(fb::bot::game_bot_controller& controller)
 {
-    controller.bind<game_resp::hide>();
+    controller.bind_default<game_resp::hide>();
 }
 
 std::shared_ptr<fb::protocol::header> clone_game_resp__hide(const fb::protocol::header& header)
@@ -1136,9 +1096,9 @@ std::shared_ptr<fb::protocol::header> create_game_resp__hide()
     return nullptr;
 }
 
-void bind_game_resp__holyday_screen(fb::bot::game_bot_controller& controller)
+void bind_default_game_resp__holyday_screen(fb::bot::game_bot_controller& controller)
 {
-    controller.bind<game_resp::holyday_screen>();
+    controller.bind_default<game_resp::holyday_screen>();
 }
 
 std::shared_ptr<fb::protocol::header> clone_game_resp__holyday_screen(const fb::protocol::header& header)
@@ -1151,9 +1111,9 @@ std::shared_ptr<fb::protocol::header> create_game_resp__holyday_screen()
     return nullptr;
 }
 
-void bind_game_resp__id(fb::bot::game_bot_controller& controller)
+void bind_default_game_resp__id(fb::bot::game_bot_controller& controller)
 {
-    controller.bind<game_resp::id>();
+    controller.bind_default<game_resp::id>();
 }
 
 std::shared_ptr<fb::protocol::header> clone_game_resp__id(const fb::protocol::header& header)
@@ -1166,9 +1126,9 @@ std::shared_ptr<fb::protocol::header> create_game_resp__id()
     return nullptr;
 }
 
-void bind_game_resp__init(fb::bot::game_bot_controller& controller)
+void bind_default_game_resp__init(fb::bot::game_bot_controller& controller)
 {
-    controller.bind<game_resp::init>();
+    controller.bind_default<game_resp::init>();
 }
 
 std::shared_ptr<fb::protocol::header> clone_game_resp__init(const fb::protocol::header& header)
@@ -1181,14 +1141,15 @@ std::shared_ptr<fb::protocol::header> create_game_resp__init()
     return nullptr;
 }
 
-void bind_game_resp__internal_info(fb::bot::game_bot_controller& controller)
+void bind_default_game_resp__internal_info(fb::bot::game_bot_controller& controller)
 {
-    controller.bind<game_resp::internal_info<BOT_CLIENT_VERSION>>();
+    controller.bind_default<game_resp::internal_info<BOT_CLIENT_VERSION>>();
 }
 
 std::shared_ptr<fb::protocol::header> clone_game_resp__internal_info(const fb::protocol::header& header)
 {
-    return std::make_shared<game_resp::internal_info<BOT_CLIENT_VERSION>>(static_cast<const game_resp::internal_info<BOT_CLIENT_VERSION>&>(header));
+    return std::make_shared<game_resp::internal_info<BOT_CLIENT_VERSION>>(
+        static_cast<const game_resp::internal_info<BOT_CLIENT_VERSION>&>(header));
 }
 
 std::shared_ptr<fb::protocol::header> create_game_resp__internal_info()
@@ -1196,9 +1157,9 @@ std::shared_ptr<fb::protocol::header> create_game_resp__internal_info()
     return nullptr;
 }
 
-void bind_game_resp__item_remove(fb::bot::game_bot_controller& controller)
+void bind_default_game_resp__item_remove(fb::bot::game_bot_controller& controller)
 {
-    controller.bind<game_resp::item_remove>();
+    controller.bind_default<game_resp::item_remove>();
 }
 
 std::shared_ptr<fb::protocol::header> clone_game_resp__item_remove(const fb::protocol::header& header)
@@ -1211,9 +1172,9 @@ std::shared_ptr<fb::protocol::header> create_game_resp__item_remove()
     return nullptr;
 }
 
-void bind_game_resp__item_throw_confirm(fb::bot::game_bot_controller& controller)
+void bind_default_game_resp__item_throw_confirm(fb::bot::game_bot_controller& controller)
 {
-    controller.bind<game_resp::item_throw_confirm>();
+    controller.bind_default<game_resp::item_throw_confirm>();
 }
 
 std::shared_ptr<fb::protocol::header> clone_game_resp__item_throw_confirm(const fb::protocol::header& header)
@@ -1226,9 +1187,9 @@ std::shared_ptr<fb::protocol::header> create_game_resp__item_throw_confirm()
     return nullptr;
 }
 
-void bind_game_resp__item_throws(fb::bot::game_bot_controller& controller)
+void bind_default_game_resp__item_throws(fb::bot::game_bot_controller& controller)
 {
-    controller.bind<game_resp::item_throws>();
+    controller.bind_default<game_resp::item_throws>();
 }
 
 std::shared_ptr<fb::protocol::header> clone_game_resp__item_throws(const fb::protocol::header& header)
@@ -1241,14 +1202,15 @@ std::shared_ptr<fb::protocol::header> create_game_resp__item_throws()
     return nullptr;
 }
 
-void bind_game_resp__item_tip(fb::bot::game_bot_controller& controller)
+void bind_default_game_resp__item_tip(fb::bot::game_bot_controller& controller)
 {
-    controller.bind<game_resp::item_tip<BOT_CLIENT_VERSION>>();
+    controller.bind_default<game_resp::item_tip<BOT_CLIENT_VERSION>>();
 }
 
 std::shared_ptr<fb::protocol::header> clone_game_resp__item_tip(const fb::protocol::header& header)
 {
-    return std::make_shared<game_resp::item_tip<BOT_CLIENT_VERSION>>(static_cast<const game_resp::item_tip<BOT_CLIENT_VERSION>&>(header));
+    return std::make_shared<game_resp::item_tip<BOT_CLIENT_VERSION>>(
+        static_cast<const game_resp::item_tip<BOT_CLIENT_VERSION>&>(header));
 }
 
 std::shared_ptr<fb::protocol::header> create_game_resp__item_tip()
@@ -1256,14 +1218,15 @@ std::shared_ptr<fb::protocol::header> create_game_resp__item_tip()
     return nullptr;
 }
 
-void bind_game_resp__item_unequip(fb::bot::game_bot_controller& controller)
+void bind_default_game_resp__item_unequip(fb::bot::game_bot_controller& controller)
 {
-    controller.bind<game_resp::item_unequip<BOT_CLIENT_VERSION>>();
+    controller.bind_default<game_resp::item_unequip<BOT_CLIENT_VERSION>>();
 }
 
 std::shared_ptr<fb::protocol::header> clone_game_resp__item_unequip(const fb::protocol::header& header)
 {
-    return std::make_shared<game_resp::item_unequip<BOT_CLIENT_VERSION>>(static_cast<const game_resp::item_unequip<BOT_CLIENT_VERSION>&>(header));
+    return std::make_shared<game_resp::item_unequip<BOT_CLIENT_VERSION>>(
+        static_cast<const game_resp::item_unequip<BOT_CLIENT_VERSION>&>(header));
 }
 
 std::shared_ptr<fb::protocol::header> create_game_resp__item_unequip()
@@ -1271,14 +1234,15 @@ std::shared_ptr<fb::protocol::header> create_game_resp__item_unequip()
     return nullptr;
 }
 
-void bind_game_resp__item_update(fb::bot::game_bot_controller& controller)
+void bind_default_game_resp__item_update(fb::bot::game_bot_controller& controller)
 {
-    controller.bind<game_resp::item_update<BOT_CLIENT_VERSION>>();
+    controller.bind_default<game_resp::item_update<BOT_CLIENT_VERSION>>();
 }
 
 std::shared_ptr<fb::protocol::header> clone_game_resp__item_update(const fb::protocol::header& header)
 {
-    return std::make_shared<game_resp::item_update<BOT_CLIENT_VERSION>>(static_cast<const game_resp::item_update<BOT_CLIENT_VERSION>&>(header));
+    return std::make_shared<game_resp::item_update<BOT_CLIENT_VERSION>>(
+        static_cast<const game_resp::item_update<BOT_CLIENT_VERSION>&>(header));
 }
 
 std::shared_ptr<fb::protocol::header> create_game_resp__item_update()
@@ -1286,14 +1250,15 @@ std::shared_ptr<fb::protocol::header> create_game_resp__item_update()
     return nullptr;
 }
 
-void bind_game_resp__item_update_slot(fb::bot::game_bot_controller& controller)
+void bind_default_game_resp__item_update_slot(fb::bot::game_bot_controller& controller)
 {
-    controller.bind<game_resp::item_update_slot<BOT_CLIENT_VERSION>>();
+    controller.bind_default<game_resp::item_update_slot<BOT_CLIENT_VERSION>>();
 }
 
 std::shared_ptr<fb::protocol::header> clone_game_resp__item_update_slot(const fb::protocol::header& header)
 {
-    return std::make_shared<game_resp::item_update_slot<BOT_CLIENT_VERSION>>(static_cast<const game_resp::item_update_slot<BOT_CLIENT_VERSION>&>(header));
+    return std::make_shared<game_resp::item_update_slot<BOT_CLIENT_VERSION>>(
+        static_cast<const game_resp::item_update_slot<BOT_CLIENT_VERSION>&>(header));
 }
 
 std::shared_ptr<fb::protocol::header> create_game_resp__item_update_slot()
@@ -1301,9 +1266,9 @@ std::shared_ptr<fb::protocol::header> create_game_resp__item_update_slot()
     return nullptr;
 }
 
-void bind_game_resp__map_bgm(fb::bot::game_bot_controller& controller)
+void bind_default_game_resp__map_bgm(fb::bot::game_bot_controller& controller)
 {
-    controller.bind<game_resp::map_bgm>();
+    controller.bind_default<game_resp::map_bgm>();
 }
 
 std::shared_ptr<fb::protocol::header> clone_game_resp__map_bgm(const fb::protocol::header& header)
@@ -1316,9 +1281,9 @@ std::shared_ptr<fb::protocol::header> create_game_resp__map_bgm()
     return nullptr;
 }
 
-void bind_game_resp__map_bgm_stop(fb::bot::game_bot_controller& controller)
+void bind_default_game_resp__map_bgm_stop(fb::bot::game_bot_controller& controller)
 {
-    controller.bind<game_resp::map_bgm_stop>();
+    controller.bind_default<game_resp::map_bgm_stop>();
 }
 
 std::shared_ptr<fb::protocol::header> clone_game_resp__map_bgm_stop(const fb::protocol::header& header)
@@ -1331,14 +1296,15 @@ std::shared_ptr<fb::protocol::header> create_game_resp__map_bgm_stop()
     return nullptr;
 }
 
-void bind_game_resp__map_config(fb::bot::game_bot_controller& controller)
+void bind_default_game_resp__map_config(fb::bot::game_bot_controller& controller)
 {
-    controller.bind<game_resp::map_config<BOT_CLIENT_VERSION>>();
+    controller.bind_default<game_resp::map_config<BOT_CLIENT_VERSION>>();
 }
 
 std::shared_ptr<fb::protocol::header> clone_game_resp__map_config(const fb::protocol::header& header)
 {
-    return std::make_shared<game_resp::map_config<BOT_CLIENT_VERSION>>(static_cast<const game_resp::map_config<BOT_CLIENT_VERSION>&>(header));
+    return std::make_shared<game_resp::map_config<BOT_CLIENT_VERSION>>(
+        static_cast<const game_resp::map_config<BOT_CLIENT_VERSION>&>(header));
 }
 
 std::shared_ptr<fb::protocol::header> create_game_resp__map_config()
@@ -1346,9 +1312,9 @@ std::shared_ptr<fb::protocol::header> create_game_resp__map_config()
     return nullptr;
 }
 
-void bind_game_resp__map_update(fb::bot::game_bot_controller& controller)
+void bind_default_game_resp__map_update(fb::bot::game_bot_controller& controller)
 {
-    controller.bind<game_resp::map_update>();
+    controller.bind_default<game_resp::map_update>();
 }
 
 std::shared_ptr<fb::protocol::header> clone_game_resp__map_update(const fb::protocol::header& header)
@@ -1361,9 +1327,9 @@ std::shared_ptr<fb::protocol::header> create_game_resp__map_update()
     return nullptr;
 }
 
-void bind_game_resp__map_worlds(fb::bot::game_bot_controller& controller)
+void bind_default_game_resp__map_worlds(fb::bot::game_bot_controller& controller)
 {
-    controller.bind<game_resp::map_worlds>();
+    controller.bind_default<game_resp::map_worlds>();
 }
 
 std::shared_ptr<fb::protocol::header> clone_game_resp__map_worlds(const fb::protocol::header& header)
@@ -1376,9 +1342,9 @@ std::shared_ptr<fb::protocol::header> create_game_resp__map_worlds()
     return nullptr;
 }
 
-void bind_game_resp__message(fb::bot::game_bot_controller& controller)
+void bind_default_game_resp__message(fb::bot::game_bot_controller& controller)
 {
-    controller.bind<game_resp::message>();
+    controller.bind_default<game_resp::message>();
 }
 
 std::shared_ptr<fb::protocol::header> clone_game_resp__message(const fb::protocol::header& header)
@@ -1391,9 +1357,9 @@ std::shared_ptr<fb::protocol::header> create_game_resp__message()
     return nullptr;
 }
 
-void bind_game_resp__move(fb::bot::game_bot_controller& controller)
+void bind_default_game_resp__move(fb::bot::game_bot_controller& controller)
 {
-    controller.bind<game_resp::move>();
+    controller.bind_default<game_resp::move>();
 }
 
 std::shared_ptr<fb::protocol::header> clone_game_resp__move(const fb::protocol::header& header)
@@ -1406,14 +1372,15 @@ std::shared_ptr<fb::protocol::header> create_game_resp__move()
     return nullptr;
 }
 
-void bind_game_resp__move_confirm(fb::bot::game_bot_controller& controller)
+void bind_default_game_resp__move_confirm(fb::bot::game_bot_controller& controller)
 {
-    controller.bind<game_resp::move_confirm<BOT_CLIENT_VERSION>>();
+    controller.bind_default<game_resp::move_confirm<BOT_CLIENT_VERSION>>();
 }
 
 std::shared_ptr<fb::protocol::header> clone_game_resp__move_confirm(const fb::protocol::header& header)
 {
-    return std::make_shared<game_resp::move_confirm<BOT_CLIENT_VERSION>>(static_cast<const game_resp::move_confirm<BOT_CLIENT_VERSION>&>(header));
+    return std::make_shared<game_resp::move_confirm<BOT_CLIENT_VERSION>>(
+        static_cast<const game_resp::move_confirm<BOT_CLIENT_VERSION>&>(header));
 }
 
 std::shared_ptr<fb::protocol::header> create_game_resp__move_confirm()
@@ -1421,14 +1388,15 @@ std::shared_ptr<fb::protocol::header> create_game_resp__move_confirm()
     return nullptr;
 }
 
-void bind_game_resp__move_confirm_noscroll(fb::bot::game_bot_controller& controller)
+void bind_default_game_resp__move_confirm_noscroll(fb::bot::game_bot_controller& controller)
 {
-    controller.bind<game_resp::move_confirm_noscroll>();
+    controller.bind_default<game_resp::move_confirm_noscroll>();
 }
 
 std::shared_ptr<fb::protocol::header> clone_game_resp__move_confirm_noscroll(const fb::protocol::header& header)
 {
-    return std::make_shared<game_resp::move_confirm_noscroll>(static_cast<const game_resp::move_confirm_noscroll&>(header));
+    return std::make_shared<game_resp::move_confirm_noscroll>(
+        static_cast<const game_resp::move_confirm_noscroll&>(header));
 }
 
 std::shared_ptr<fb::protocol::header> create_game_resp__move_confirm_noscroll()
@@ -1436,14 +1404,15 @@ std::shared_ptr<fb::protocol::header> create_game_resp__move_confirm_noscroll()
     return nullptr;
 }
 
-void bind_game_resp__notice(fb::bot::game_bot_controller& controller)
+void bind_default_game_resp__notice(fb::bot::game_bot_controller& controller)
 {
-    controller.bind<game_resp::notice<BOT_CLIENT_VERSION>>();
+    controller.bind_default<game_resp::notice<BOT_CLIENT_VERSION>>();
 }
 
 std::shared_ptr<fb::protocol::header> clone_game_resp__notice(const fb::protocol::header& header)
 {
-    return std::make_shared<game_resp::notice<BOT_CLIENT_VERSION>>(static_cast<const game_resp::notice<BOT_CLIENT_VERSION>&>(header));
+    return std::make_shared<game_resp::notice<BOT_CLIENT_VERSION>>(
+        static_cast<const game_resp::notice<BOT_CLIENT_VERSION>&>(header));
 }
 
 std::shared_ptr<fb::protocol::header> create_game_resp__notice()
@@ -1451,14 +1420,15 @@ std::shared_ptr<fb::protocol::header> create_game_resp__notice()
     return nullptr;
 }
 
-void bind_game_resp__option(fb::bot::game_bot_controller& controller)
+void bind_default_game_resp__option(fb::bot::game_bot_controller& controller)
 {
-    controller.bind<game_resp::option<BOT_CLIENT_VERSION>>();
+    controller.bind_default<game_resp::option<BOT_CLIENT_VERSION>>();
 }
 
 std::shared_ptr<fb::protocol::header> clone_game_resp__option(const fb::protocol::header& header)
 {
-    return std::make_shared<game_resp::option<BOT_CLIENT_VERSION>>(static_cast<const game_resp::option<BOT_CLIENT_VERSION>&>(header));
+    return std::make_shared<game_resp::option<BOT_CLIENT_VERSION>>(
+        static_cast<const game_resp::option<BOT_CLIENT_VERSION>&>(header));
 }
 
 std::shared_ptr<fb::protocol::header> create_game_resp__option()
@@ -1466,9 +1436,9 @@ std::shared_ptr<fb::protocol::header> create_game_resp__option()
     return nullptr;
 }
 
-void bind_game_resp__ping(fb::bot::game_bot_controller& controller)
+void bind_default_game_resp__ping(fb::bot::game_bot_controller& controller)
 {
-    controller.bind<game_resp::ping>();
+    controller.bind_default<game_resp::ping>();
 }
 
 std::shared_ptr<fb::protocol::header> clone_game_resp__ping(const fb::protocol::header& header)
@@ -1481,9 +1451,9 @@ std::shared_ptr<fb::protocol::header> create_game_resp__ping()
     return nullptr;
 }
 
-void bind_game_resp__popup_input(fb::bot::game_bot_controller& controller)
+void bind_default_game_resp__popup_input(fb::bot::game_bot_controller& controller)
 {
-    controller.bind<game_resp::popup_input>();
+    controller.bind_default<game_resp::popup_input>();
 }
 
 std::shared_ptr<fb::protocol::header> clone_game_resp__popup_input(const fb::protocol::header& header)
@@ -1496,9 +1466,9 @@ std::shared_ptr<fb::protocol::header> create_game_resp__popup_input()
     return nullptr;
 }
 
-void bind_game_resp__popup_message(fb::bot::game_bot_controller& controller)
+void bind_default_game_resp__popup_message(fb::bot::game_bot_controller& controller)
 {
-    controller.bind<game_resp::popup_message>();
+    controller.bind_default<game_resp::popup_message>();
 }
 
 std::shared_ptr<fb::protocol::header> clone_game_resp__popup_message(const fb::protocol::header& header)
@@ -1511,9 +1481,9 @@ std::shared_ptr<fb::protocol::header> create_game_resp__popup_message()
     return nullptr;
 }
 
-void bind_game_resp__position(fb::bot::game_bot_controller& controller)
+void bind_default_game_resp__position(fb::bot::game_bot_controller& controller)
 {
-    controller.bind<game_resp::position>();
+    controller.bind_default<game_resp::position>();
 }
 
 std::shared_ptr<fb::protocol::header> clone_game_resp__position(const fb::protocol::header& header)
@@ -1526,9 +1496,9 @@ std::shared_ptr<fb::protocol::header> create_game_resp__position()
     return nullptr;
 }
 
-void bind_game_resp__save(fb::bot::game_bot_controller& controller)
+void bind_default_game_resp__save(fb::bot::game_bot_controller& controller)
 {
-    controller.bind<game_resp::save>();
+    controller.bind_default<game_resp::save>();
 }
 
 std::shared_ptr<fb::protocol::header> clone_game_resp__save(const fb::protocol::header& header)
@@ -1541,14 +1511,15 @@ std::shared_ptr<fb::protocol::header> create_game_resp__save()
     return nullptr;
 }
 
-void bind_game_resp__screen_refresh_complete(fb::bot::game_bot_controller& controller)
+void bind_default_game_resp__screen_refresh_complete(fb::bot::game_bot_controller& controller)
 {
-    controller.bind<game_resp::screen_refresh_complete>();
+    controller.bind_default<game_resp::screen_refresh_complete>();
 }
 
 std::shared_ptr<fb::protocol::header> clone_game_resp__screen_refresh_complete(const fb::protocol::header& header)
 {
-    return std::make_shared<game_resp::screen_refresh_complete>(static_cast<const game_resp::screen_refresh_complete&>(header));
+    return std::make_shared<game_resp::screen_refresh_complete>(
+        static_cast<const game_resp::screen_refresh_complete&>(header));
 }
 
 std::shared_ptr<fb::protocol::header> create_game_resp__screen_refresh_complete()
@@ -1556,14 +1527,15 @@ std::shared_ptr<fb::protocol::header> create_game_resp__screen_refresh_complete(
     return nullptr;
 }
 
-void bind_game_resp__show(fb::bot::game_bot_controller& controller)
+void bind_default_game_resp__show(fb::bot::game_bot_controller& controller)
 {
-    controller.bind<game_resp::show<BOT_CLIENT_VERSION>>();
+    controller.bind_default<game_resp::show<BOT_CLIENT_VERSION>>();
 }
 
 std::shared_ptr<fb::protocol::header> clone_game_resp__show(const fb::protocol::header& header)
 {
-    return std::make_shared<game_resp::show<BOT_CLIENT_VERSION>>(static_cast<const game_resp::show<BOT_CLIENT_VERSION>&>(header));
+    return std::make_shared<game_resp::show<BOT_CLIENT_VERSION>>(
+        static_cast<const game_resp::show<BOT_CLIENT_VERSION>&>(header));
 }
 
 std::shared_ptr<fb::protocol::header> create_game_resp__show()
@@ -1571,9 +1543,9 @@ std::shared_ptr<fb::protocol::header> create_game_resp__show()
     return nullptr;
 }
 
-void bind_game_resp__sound(fb::bot::game_bot_controller& controller)
+void bind_default_game_resp__sound(fb::bot::game_bot_controller& controller)
 {
-    controller.bind<game_resp::sound>();
+    controller.bind_default<game_resp::sound>();
 }
 
 std::shared_ptr<fb::protocol::header> clone_game_resp__sound(const fb::protocol::header& header)
@@ -1586,9 +1558,9 @@ std::shared_ptr<fb::protocol::header> create_game_resp__sound()
     return nullptr;
 }
 
-void bind_game_resp__spell_buff(fb::bot::game_bot_controller& controller)
+void bind_default_game_resp__spell_buff(fb::bot::game_bot_controller& controller)
 {
-    controller.bind<game_resp::spell_buff>();
+    controller.bind_default<game_resp::spell_buff>();
 }
 
 std::shared_ptr<fb::protocol::header> clone_game_resp__spell_buff(const fb::protocol::header& header)
@@ -1601,9 +1573,9 @@ std::shared_ptr<fb::protocol::header> create_game_resp__spell_buff()
     return nullptr;
 }
 
-void bind_game_resp__spell_delay(fb::bot::game_bot_controller& controller)
+void bind_default_game_resp__spell_delay(fb::bot::game_bot_controller& controller)
 {
-    controller.bind<game_resp::spell_delay>();
+    controller.bind_default<game_resp::spell_delay>();
 }
 
 std::shared_ptr<fb::protocol::header> clone_game_resp__spell_delay(const fb::protocol::header& header)
@@ -1616,9 +1588,9 @@ std::shared_ptr<fb::protocol::header> create_game_resp__spell_delay()
     return nullptr;
 }
 
-void bind_game_resp__spell_remove(fb::bot::game_bot_controller& controller)
+void bind_default_game_resp__spell_remove(fb::bot::game_bot_controller& controller)
 {
-    controller.bind<game_resp::spell_remove>();
+    controller.bind_default<game_resp::spell_remove>();
 }
 
 std::shared_ptr<fb::protocol::header> clone_game_resp__spell_remove(const fb::protocol::header& header)
@@ -1631,9 +1603,9 @@ std::shared_ptr<fb::protocol::header> create_game_resp__spell_remove()
     return nullptr;
 }
 
-void bind_game_resp__spell_unbuff(fb::bot::game_bot_controller& controller)
+void bind_default_game_resp__spell_unbuff(fb::bot::game_bot_controller& controller)
 {
-    controller.bind<game_resp::spell_unbuff>();
+    controller.bind_default<game_resp::spell_unbuff>();
 }
 
 std::shared_ptr<fb::protocol::header> clone_game_resp__spell_unbuff(const fb::protocol::header& header)
@@ -1646,14 +1618,15 @@ std::shared_ptr<fb::protocol::header> create_game_resp__spell_unbuff()
     return nullptr;
 }
 
-void bind_game_resp__spell_update(fb::bot::game_bot_controller& controller)
+void bind_default_game_resp__spell_update(fb::bot::game_bot_controller& controller)
 {
-    controller.bind<game_resp::spell_update<BOT_CLIENT_VERSION>>();
+    controller.bind_default<game_resp::spell_update<BOT_CLIENT_VERSION>>();
 }
 
 std::shared_ptr<fb::protocol::header> clone_game_resp__spell_update(const fb::protocol::header& header)
 {
-    return std::make_shared<game_resp::spell_update<BOT_CLIENT_VERSION>>(static_cast<const game_resp::spell_update<BOT_CLIENT_VERSION>&>(header));
+    return std::make_shared<game_resp::spell_update<BOT_CLIENT_VERSION>>(
+        static_cast<const game_resp::spell_update<BOT_CLIENT_VERSION>&>(header));
 }
 
 std::shared_ptr<fb::protocol::header> create_game_resp__spell_update()
@@ -1661,9 +1634,9 @@ std::shared_ptr<fb::protocol::header> create_game_resp__spell_update()
     return nullptr;
 }
 
-void bind_game_resp__time(fb::bot::game_bot_controller& controller)
+void bind_default_game_resp__time(fb::bot::game_bot_controller& controller)
 {
-    controller.bind<game_resp::time>();
+    controller.bind_default<game_resp::time>();
 }
 
 std::shared_ptr<fb::protocol::header> clone_game_resp__time(const fb::protocol::header& header)
@@ -1676,9 +1649,9 @@ std::shared_ptr<fb::protocol::header> create_game_resp__time()
     return nullptr;
 }
 
-void bind_game_resp__timer(fb::bot::game_bot_controller& controller)
+void bind_default_game_resp__timer(fb::bot::game_bot_controller& controller)
 {
-    controller.bind<game_resp::timer>();
+    controller.bind_default<game_resp::timer>();
 }
 
 std::shared_ptr<fb::protocol::header> clone_game_resp__timer(const fb::protocol::header& header)
@@ -1691,9 +1664,9 @@ std::shared_ptr<fb::protocol::header> create_game_resp__timer()
     return nullptr;
 }
 
-void bind_game_resp__trade_bundle(fb::bot::game_bot_controller& controller)
+void bind_default_game_resp__trade_bundle(fb::bot::game_bot_controller& controller)
 {
-    controller.bind<game_resp::trade_bundle>();
+    controller.bind_default<game_resp::trade_bundle>();
 }
 
 std::shared_ptr<fb::protocol::header> clone_game_resp__trade_bundle(const fb::protocol::header& header)
@@ -1706,9 +1679,9 @@ std::shared_ptr<fb::protocol::header> create_game_resp__trade_bundle()
     return nullptr;
 }
 
-void bind_game_resp__trade_close(fb::bot::game_bot_controller& controller)
+void bind_default_game_resp__trade_close(fb::bot::game_bot_controller& controller)
 {
-    controller.bind<game_resp::trade_close>();
+    controller.bind_default<game_resp::trade_close>();
 }
 
 std::shared_ptr<fb::protocol::header> clone_game_resp__trade_close(const fb::protocol::header& header)
@@ -1721,14 +1694,15 @@ std::shared_ptr<fb::protocol::header> create_game_resp__trade_close()
     return nullptr;
 }
 
-void bind_game_resp__trade_dialog(fb::bot::game_bot_controller& controller)
+void bind_default_game_resp__trade_dialog(fb::bot::game_bot_controller& controller)
 {
-    controller.bind<game_resp::trade_dialog<BOT_CLIENT_VERSION>>();
+    controller.bind_default<game_resp::trade_dialog<BOT_CLIENT_VERSION>>();
 }
 
 std::shared_ptr<fb::protocol::header> clone_game_resp__trade_dialog(const fb::protocol::header& header)
 {
-    return std::make_shared<game_resp::trade_dialog<BOT_CLIENT_VERSION>>(static_cast<const game_resp::trade_dialog<BOT_CLIENT_VERSION>&>(header));
+    return std::make_shared<game_resp::trade_dialog<BOT_CLIENT_VERSION>>(
+        static_cast<const game_resp::trade_dialog<BOT_CLIENT_VERSION>&>(header));
 }
 
 std::shared_ptr<fb::protocol::header> create_game_resp__trade_dialog()
@@ -1736,9 +1710,9 @@ std::shared_ptr<fb::protocol::header> create_game_resp__trade_dialog()
     return nullptr;
 }
 
-void bind_game_resp__trade_lock(fb::bot::game_bot_controller& controller)
+void bind_default_game_resp__trade_lock(fb::bot::game_bot_controller& controller)
 {
-    controller.bind<game_resp::trade_lock>();
+    controller.bind_default<game_resp::trade_lock>();
 }
 
 std::shared_ptr<fb::protocol::header> clone_game_resp__trade_lock(const fb::protocol::header& header)
@@ -1751,9 +1725,9 @@ std::shared_ptr<fb::protocol::header> create_game_resp__trade_lock()
     return nullptr;
 }
 
-void bind_game_resp__trade_money(fb::bot::game_bot_controller& controller)
+void bind_default_game_resp__trade_money(fb::bot::game_bot_controller& controller)
 {
-    controller.bind<game_resp::trade_money>();
+    controller.bind_default<game_resp::trade_money>();
 }
 
 std::shared_ptr<fb::protocol::header> clone_game_resp__trade_money(const fb::protocol::header& header)
@@ -1766,9 +1740,9 @@ std::shared_ptr<fb::protocol::header> create_game_resp__trade_money()
     return nullptr;
 }
 
-void bind_game_resp__trade_upload(fb::bot::game_bot_controller& controller)
+void bind_default_game_resp__trade_upload(fb::bot::game_bot_controller& controller)
 {
-    controller.bind<game_resp::trade_upload>();
+    controller.bind_default<game_resp::trade_upload>();
 }
 
 std::shared_ptr<fb::protocol::header> clone_game_resp__trade_upload(const fb::protocol::header& header)
@@ -1781,9 +1755,9 @@ std::shared_ptr<fb::protocol::header> create_game_resp__trade_upload()
     return nullptr;
 }
 
-void bind_game_resp__ui_screen(fb::bot::game_bot_controller& controller)
+void bind_default_game_resp__ui_screen(fb::bot::game_bot_controller& controller)
 {
-    controller.bind<game_resp::ui_screen>();
+    controller.bind_default<game_resp::ui_screen>();
 }
 
 std::shared_ptr<fb::protocol::header> clone_game_resp__ui_screen(const fb::protocol::header& header)
@@ -1796,14 +1770,15 @@ std::shared_ptr<fb::protocol::header> create_game_resp__ui_screen()
     return nullptr;
 }
 
-void bind_game_resp__unknown_4f(fb::bot::game_bot_controller& controller)
+void bind_default_game_resp__unknown_4f(fb::bot::game_bot_controller& controller)
 {
-    controller.bind<game_resp::unknown_4f<BOT_CLIENT_VERSION>>();
+    controller.bind_default<game_resp::unknown_4f<BOT_CLIENT_VERSION>>();
 }
 
 std::shared_ptr<fb::protocol::header> clone_game_resp__unknown_4f(const fb::protocol::header& header)
 {
-    return std::make_shared<game_resp::unknown_4f<BOT_CLIENT_VERSION>>(static_cast<const game_resp::unknown_4f<BOT_CLIENT_VERSION>&>(header));
+    return std::make_shared<game_resp::unknown_4f<BOT_CLIENT_VERSION>>(
+        static_cast<const game_resp::unknown_4f<BOT_CLIENT_VERSION>&>(header));
 }
 
 std::shared_ptr<fb::protocol::header> create_game_resp__unknown_4f()
@@ -1811,14 +1786,15 @@ std::shared_ptr<fb::protocol::header> create_game_resp__unknown_4f()
     return nullptr;
 }
 
-void bind_game_resp__update(fb::bot::game_bot_controller& controller)
+void bind_default_game_resp__update(fb::bot::game_bot_controller& controller)
 {
-    controller.bind<game_resp::update<BOT_CLIENT_VERSION>>();
+    controller.bind_default<game_resp::update<BOT_CLIENT_VERSION>>();
 }
 
 std::shared_ptr<fb::protocol::header> clone_game_resp__update(const fb::protocol::header& header)
 {
-    return std::make_shared<game_resp::update<BOT_CLIENT_VERSION>>(static_cast<const game_resp::update<BOT_CLIENT_VERSION>&>(header));
+    return std::make_shared<game_resp::update<BOT_CLIENT_VERSION>>(
+        static_cast<const game_resp::update<BOT_CLIENT_VERSION>&>(header));
 }
 
 std::shared_ptr<fb::protocol::header> create_game_resp__update()
@@ -1826,9 +1802,9 @@ std::shared_ptr<fb::protocol::header> create_game_resp__update()
     return nullptr;
 }
 
-void bind_game_resp__update_cc(fb::bot::game_bot_controller& controller)
+void bind_default_game_resp__update_cc(fb::bot::game_bot_controller& controller)
 {
-    controller.bind<game_resp::update_cc>();
+    controller.bind_default<game_resp::update_cc>();
 }
 
 std::shared_ptr<fb::protocol::header> clone_game_resp__update_cc(const fb::protocol::header& header)
@@ -1841,14 +1817,15 @@ std::shared_ptr<fb::protocol::header> create_game_resp__update_cc()
     return nullptr;
 }
 
-void bind_game_resp__update_external(fb::bot::game_bot_controller& controller)
+void bind_default_game_resp__update_external(fb::bot::game_bot_controller& controller)
 {
-    controller.bind<game_resp::update_external<BOT_CLIENT_VERSION>>();
+    controller.bind_default<game_resp::update_external<BOT_CLIENT_VERSION>>();
 }
 
 std::shared_ptr<fb::protocol::header> clone_game_resp__update_external(const fb::protocol::header& header)
 {
-    return std::make_shared<game_resp::update_external<BOT_CLIENT_VERSION>>(static_cast<const game_resp::update_external<BOT_CLIENT_VERSION>&>(header));
+    return std::make_shared<game_resp::update_external<BOT_CLIENT_VERSION>>(
+        static_cast<const game_resp::update_external<BOT_CLIENT_VERSION>&>(header));
 }
 
 std::shared_ptr<fb::protocol::header> create_game_resp__update_external()
@@ -1856,9 +1833,9 @@ std::shared_ptr<fb::protocol::header> create_game_resp__update_external()
     return nullptr;
 }
 
-void bind_game_resp__update_hp(fb::bot::game_bot_controller& controller)
+void bind_default_game_resp__update_hp(fb::bot::game_bot_controller& controller)
 {
-    controller.bind<game_resp::update_hp>();
+    controller.bind_default<game_resp::update_hp>();
 }
 
 std::shared_ptr<fb::protocol::header> clone_game_resp__update_hp(const fb::protocol::header& header)
@@ -1871,14 +1848,15 @@ std::shared_ptr<fb::protocol::header> create_game_resp__update_hp()
     return nullptr;
 }
 
-void bind_game_resp__update_internal(fb::bot::game_bot_controller& controller)
+void bind_default_game_resp__update_internal(fb::bot::game_bot_controller& controller)
 {
-    controller.bind<game_resp::update_internal<BOT_CLIENT_VERSION>>();
+    controller.bind_default<game_resp::update_internal<BOT_CLIENT_VERSION>>();
 }
 
 std::shared_ptr<fb::protocol::header> clone_game_resp__update_internal(const fb::protocol::header& header)
 {
-    return std::make_shared<game_resp::update_internal<BOT_CLIENT_VERSION>>(static_cast<const game_resp::update_internal<BOT_CLIENT_VERSION>&>(header));
+    return std::make_shared<game_resp::update_internal<BOT_CLIENT_VERSION>>(
+        static_cast<const game_resp::update_internal<BOT_CLIENT_VERSION>&>(header));
 }
 
 std::shared_ptr<fb::protocol::header> create_game_resp__update_internal()
@@ -1886,9 +1864,9 @@ std::shared_ptr<fb::protocol::header> create_game_resp__update_internal()
     return nullptr;
 }
 
-void bind_game_resp__user_info(fb::bot::game_bot_controller& controller)
+void bind_default_game_resp__user_info(fb::bot::game_bot_controller& controller)
 {
-    controller.bind<game_resp::user_info>();
+    controller.bind_default<game_resp::user_info>();
 }
 
 std::shared_ptr<fb::protocol::header> clone_game_resp__user_info(const fb::protocol::header& header)
@@ -1901,9 +1879,9 @@ std::shared_ptr<fb::protocol::header> create_game_resp__user_info()
     return nullptr;
 }
 
-void bind_game_resp__user_list(fb::bot::game_bot_controller& controller)
+void bind_default_game_resp__user_list(fb::bot::game_bot_controller& controller)
 {
-    controller.bind<game_resp::user_list>();
+    controller.bind_default<game_resp::user_list>();
 }
 
 std::shared_ptr<fb::protocol::header> clone_game_resp__user_list(const fb::protocol::header& header)
@@ -1916,9 +1894,9 @@ std::shared_ptr<fb::protocol::header> create_game_resp__user_list()
     return nullptr;
 }
 
-void bind_game_resp__weather(fb::bot::game_bot_controller& controller)
+void bind_default_game_resp__weather(fb::bot::game_bot_controller& controller)
 {
-    controller.bind<game_resp::weather>();
+    controller.bind_default<game_resp::weather>();
 }
 
 std::shared_ptr<fb::protocol::header> clone_game_resp__weather(const fb::protocol::header& header)
@@ -1931,14 +1909,15 @@ std::shared_ptr<fb::protocol::header> create_game_resp__weather()
     return nullptr;
 }
 
-void bind_game_resp__web(fb::bot::game_bot_controller& controller)
+void bind_default_game_resp__web(fb::bot::game_bot_controller& controller)
 {
-    controller.bind<game_resp::web<BOT_CLIENT_VERSION>>();
+    controller.bind_default<game_resp::web<BOT_CLIENT_VERSION>>();
 }
 
 std::shared_ptr<fb::protocol::header> clone_game_resp__web(const fb::protocol::header& header)
 {
-    return std::make_shared<game_resp::web<BOT_CLIENT_VERSION>>(static_cast<const game_resp::web<BOT_CLIENT_VERSION>&>(header));
+    return std::make_shared<game_resp::web<BOT_CLIENT_VERSION>>(
+        static_cast<const game_resp::web<BOT_CLIENT_VERSION>&>(header));
 }
 
 std::shared_ptr<fb::protocol::header> create_game_resp__web()
@@ -1946,14 +1925,15 @@ std::shared_ptr<fb::protocol::header> create_game_resp__web()
     return nullptr;
 }
 
-void bind_game_resp__web_map(fb::bot::game_bot_controller& controller)
+void bind_default_game_resp__web_map(fb::bot::game_bot_controller& controller)
 {
-    controller.bind<game_resp::web_map<BOT_CLIENT_VERSION>>();
+    controller.bind_default<game_resp::web_map<BOT_CLIENT_VERSION>>();
 }
 
 std::shared_ptr<fb::protocol::header> clone_game_resp__web_map(const fb::protocol::header& header)
 {
-    return std::make_shared<game_resp::web_map<BOT_CLIENT_VERSION>>(static_cast<const game_resp::web_map<BOT_CLIENT_VERSION>&>(header));
+    return std::make_shared<game_resp::web_map<BOT_CLIENT_VERSION>>(
+        static_cast<const game_resp::web_map<BOT_CLIENT_VERSION>&>(header));
 }
 
 std::shared_ptr<fb::protocol::header> create_game_resp__web_map()
@@ -1967,1335 +1947,1069 @@ namespace fb::bot::integration {
 
 static const protocol_entry ENTRIES[] = {
     {
-        "game_reqs::attack",
-        "attack",
-        protocol_direction::request,
-        0x13,
-        &detail::bind_game_reqs__attack,
-        &detail::clone_game_reqs__attack,
-        &detail::create_game_reqs__attack,
-        &protocol_registry::marshal_lua_stub,
-    },
-    {
-        "game_reqs::browser",
-        "browser",
-        protocol_direction::request,
-        0x73,
-        &detail::bind_game_reqs__browser,
-        &detail::clone_game_reqs__browser,
-        &detail::create_game_reqs__browser,
-        &protocol_registry::marshal_lua_stub,
-    },
-    {
-        "game_reqs::bulletin",
-        "bulletin",
-        protocol_direction::request,
-        0x3B,
-        &detail::bind_game_reqs__bulletin,
-        &detail::clone_game_reqs__bulletin,
-        &detail::create_game_reqs__bulletin,
-        &protocol_registry::marshal_lua_stub,
-    },
-    {
-        "game_reqs::chat",
-        "chat",
-        protocol_direction::request,
-        0x0E,
-        &detail::bind_game_reqs__chat,
-        &detail::clone_game_reqs__chat,
-        &detail::create_game_reqs__chat,
-        &protocol_registry::marshal_lua_stub,
-    },
-    {
-        "game_reqs::click",
-        "click",
-        protocol_direction::request,
-        0x43,
-        &detail::bind_game_reqs__click,
-        &detail::clone_game_reqs__click,
-        &detail::create_game_reqs__click,
-        &protocol_registry::marshal_lua_stub,
-    },
-    {
-        "game_reqs::collection",
-        "collection",
-        protocol_direction::request,
-        0x27,
-        &detail::bind_game_reqs__collection,
-        &detail::clone_game_reqs__collection,
-        &detail::create_game_reqs__collection,
-        &protocol_registry::marshal_lua_stub,
-    },
-    {
-        "game_reqs::dialog",
-        "dialog",
-        protocol_direction::request,
-        0x39,
-        &detail::bind_game_reqs__dialog,
-        &detail::clone_game_reqs__dialog,
-        &detail::create_game_reqs__dialog,
-        &protocol_registry::marshal_lua_stub,
-    },
-    {
-        "game_reqs::dialog_list",
-        "dialog_list",
-        protocol_direction::request,
-        0x3A,
-        &detail::bind_game_reqs__dialog_list,
-        &detail::clone_game_reqs__dialog_list,
-        &detail::create_game_reqs__dialog_list,
-        &protocol_registry::marshal_lua_stub,
-    },
-    {
-        "game_reqs::direction",
-        "direction",
-        protocol_direction::request,
-        0x11,
-        &detail::bind_game_reqs__direction,
-        &detail::clone_game_reqs__direction,
-        &detail::create_game_reqs__direction,
-        &protocol_registry::marshal_lua_stub,
-    },
-    {
-        "game_reqs::door",
-        "door",
-        protocol_direction::request,
-        0x20,
-        &detail::bind_game_reqs__door,
-        &detail::clone_game_reqs__door,
-        &detail::create_game_reqs__door,
-        &protocol_registry::marshal_lua_stub,
-    },
-    {
-        "game_reqs::emotion",
-        "emotion",
-        protocol_direction::request,
-        0x1D,
-        &detail::bind_game_reqs__emotion,
-        &detail::clone_game_reqs__emotion,
-        &detail::create_game_reqs__emotion,
-        &protocol_registry::marshal_lua_stub,
-    },
-    {
-        "game_reqs::exit",
-        "exit",
-        protocol_direction::request,
-        0x0B,
-        &detail::bind_game_reqs__exit,
-        &detail::clone_game_reqs__exit,
-        &detail::create_game_reqs__exit,
-        &protocol_registry::marshal_lua_stub,
-    },
-    {
-        "game_reqs::friends",
-        "friends",
-        protocol_direction::request,
-        0x77,
-        &detail::bind_game_reqs__friends,
-        &detail::clone_game_reqs__friends,
-        &detail::create_game_reqs__friends,
-        &protocol_registry::marshal_lua_stub,
-    },
-    {
-        "game_reqs::front_info",
-        "front_info",
-        protocol_direction::request,
-        0x09,
-        &detail::bind_game_reqs__front_info,
-        &detail::clone_game_reqs__front_info,
-        &detail::create_game_reqs__front_info,
-        &protocol_registry::marshal_lua_stub,
-    },
-    {
-        "game_reqs::give_item",
-        "give_item",
-        protocol_direction::request,
-        0x29,
-        &detail::bind_game_reqs__give_item,
-        &detail::clone_game_reqs__give_item,
-        &detail::create_game_reqs__give_item,
-        &protocol_registry::marshal_lua_stub,
-    },
-    {
-        "game_reqs::give_money",
-        "give_money",
-        protocol_direction::request,
-        0x2A,
-        &detail::bind_game_reqs__give_money,
-        &detail::clone_game_reqs__give_money,
-        &detail::create_game_reqs__give_money,
-        &protocol_registry::marshal_lua_stub,
-    },
-    {
-        "game_reqs::group",
-        "group",
-        protocol_direction::request,
-        0x2E,
-        &detail::bind_game_reqs__group,
-        &detail::clone_game_reqs__group,
-        &detail::create_game_reqs__group,
-        &protocol_registry::marshal_lua_stub,
-    },
-    {
-        "game_reqs::item_active",
-        "item_active",
-        protocol_direction::request,
-        0x1C,
-        &detail::bind_game_reqs__item_active,
-        &detail::clone_game_reqs__item_active,
-        &detail::create_game_reqs__item_active,
-        &protocol_registry::marshal_lua_stub,
-    },
-    {
-        "game_reqs::item_combine",
-        "item_combine",
-        protocol_direction::request,
-        0x6B,
-        &detail::bind_game_reqs__item_combine,
-        &detail::clone_game_reqs__item_combine,
-        &detail::create_game_reqs__item_combine,
-        &protocol_registry::marshal_lua_stub,
-    },
-    {
-        "game_reqs::item_drop",
-        "item_drop",
-        protocol_direction::request,
-        0x08,
-        &detail::bind_game_reqs__item_drop,
-        &detail::clone_game_reqs__item_drop,
-        &detail::create_game_reqs__item_drop,
-        &protocol_registry::marshal_lua_stub,
-    },
-    {
-        "game_reqs::item_drop_money",
-        "item_drop_money",
-        protocol_direction::request,
-        0x24,
-        &detail::bind_game_reqs__item_drop_money,
-        &detail::clone_game_reqs__item_drop_money,
-        &detail::create_game_reqs__item_drop_money,
-        &protocol_registry::marshal_lua_stub,
-    },
-    {
-        "game_reqs::item_inactive",
-        "item_inactive",
-        protocol_direction::request,
-        0x1F,
-        &detail::bind_game_reqs__item_inactive,
-        &detail::clone_game_reqs__item_inactive,
-        &detail::create_game_reqs__item_inactive,
-        &protocol_registry::marshal_lua_stub,
-    },
-    {
-        "game_reqs::item_info",
-        "item_info",
-        protocol_direction::request,
-        0x66,
-        &detail::bind_game_reqs__item_info,
-        &detail::clone_game_reqs__item_info,
-        &detail::create_game_reqs__item_info,
-        &protocol_registry::marshal_lua_stub,
-    },
-    {
-        "game_reqs::item_throws",
-        "item_throws",
-        protocol_direction::request,
-        0x17,
-        &detail::bind_game_reqs__item_throws,
-        &detail::clone_game_reqs__item_throws,
-        &detail::create_game_reqs__item_throws,
-        &protocol_registry::marshal_lua_stub,
-    },
-    {
-        "game_reqs::login",
-        "login",
-        protocol_direction::request,
-        0x10,
-        &detail::bind_game_reqs__login,
-        &detail::clone_game_reqs__login,
-        &detail::create_game_reqs__login,
-        &protocol_registry::marshal_lua_stub,
-    },
-    {
-        "game_reqs::loot",
-        "loot",
-        protocol_direction::request,
-        0x07,
-        &detail::bind_game_reqs__loot,
-        &detail::clone_game_reqs__loot,
-        &detail::create_game_reqs__loot,
-        &protocol_registry::marshal_lua_stub,
-    },
-    {
-        "game_reqs::map_update",
-        "map_update",
-        protocol_direction::request,
-        0x05,
-        &detail::bind_game_reqs__map_update,
-        &detail::clone_game_reqs__map_update,
-        &detail::create_game_reqs__map_update,
-        &protocol_registry::marshal_lua_stub,
-    },
-    {
-        "game_reqs::map_world",
-        "map_world",
-        protocol_direction::request,
-        0x3F,
-        &detail::bind_game_reqs__map_world,
-        &detail::clone_game_reqs__map_world,
-        &detail::create_game_reqs__map_world,
-        &protocol_registry::marshal_lua_stub,
-    },
-    {
-        "game_reqs::miss",
-        "miss",
-        protocol_direction::request,
-        0x0C,
-        &detail::bind_game_reqs__miss,
-        &detail::clone_game_reqs__miss,
-        &detail::create_game_reqs__miss,
-        &protocol_registry::marshal_lua_stub,
-    },
-    {
-        "game_reqs::move",
-        "move",
-        protocol_direction::request,
-        0x32,
-        &detail::bind_game_reqs__move,
-        &detail::clone_game_reqs__move,
-        &detail::create_game_reqs__move,
-        &protocol_registry::marshal_lua_stub,
-    },
-    {
-        "game_reqs::move_blocked",
-        "move_blocked",
-        protocol_direction::request,
-        0x69,
-        &detail::bind_game_reqs__move_blocked,
-        &detail::clone_game_reqs__move_blocked,
-        &detail::create_game_reqs__move_blocked,
-        &protocol_registry::marshal_lua_stub,
-    },
-    {
-        "game_reqs::pong",
-        "pong",
-        protocol_direction::request,
-        0x75,
-        &detail::bind_game_reqs__pong,
-        &detail::clone_game_reqs__pong,
-        &detail::create_game_reqs__pong,
-        &protocol_registry::marshal_lua_stub,
-    },
-    {
-        "game_reqs::popup_input_submit",
-        "popup_input_submit",
-        protocol_direction::request,
-        0x23,
-        &detail::bind_game_reqs__popup_input_submit,
-        &detail::clone_game_reqs__popup_input_submit,
-        &detail::create_game_reqs__popup_input_submit,
-        &protocol_registry::marshal_lua_stub,
-    },
-    {
-        "game_reqs::post",
-        "post",
-        protocol_direction::request,
-        0x34,
-        &detail::bind_game_reqs__post,
-        &detail::clone_game_reqs__post,
-        &detail::create_game_reqs__post,
-        &protocol_registry::marshal_lua_stub,
-    },
-    {
-        "game_reqs::screen_refresh",
-        "screen_refresh",
-        protocol_direction::request,
-        0x38,
-        &detail::bind_game_reqs__screen_refresh,
-        &detail::clone_game_reqs__screen_refresh,
-        &detail::create_game_reqs__screen_refresh,
-        &protocol_registry::marshal_lua_stub,
-    },
-    {
-        "game_reqs::self_info",
-        "self_info",
-        protocol_direction::request,
-        0x2D,
-        &detail::bind_game_reqs__self_info,
-        &detail::clone_game_reqs__self_info,
-        &detail::create_game_reqs__self_info,
-        &protocol_registry::marshal_lua_stub,
-    },
-    {
-        "game_reqs::spell_cast",
-        "spell_cast",
-        protocol_direction::request,
-        0x0F,
-        &detail::bind_game_reqs__spell_cast,
-        &detail::clone_game_reqs__spell_cast,
-        &detail::create_game_reqs__spell_cast,
-        &protocol_registry::marshal_lua_stub,
-    },
-    {
-        "game_reqs::swap",
-        "swap",
-        protocol_direction::request,
-        0x30,
-        &detail::bind_game_reqs__swap,
-        &detail::clone_game_reqs__swap,
-        &detail::create_game_reqs__swap,
-        &protocol_registry::marshal_lua_stub,
-    },
-    {
-        "game_reqs::trade",
-        "trade",
-        protocol_direction::request,
-        0x4A,
-        &detail::bind_game_reqs__trade,
-        &detail::clone_game_reqs__trade,
-        &detail::create_game_reqs__trade,
-        &protocol_registry::marshal_lua_stub,
-    },
-    {
-        "game_reqs::unknown_54",
-        "unknown_54",
-        protocol_direction::request,
-        0x54,
-        &detail::bind_game_reqs__unknown_54,
-        &detail::clone_game_reqs__unknown_54,
-        &detail::create_game_reqs__unknown_54,
-        &protocol_registry::marshal_lua_stub,
-    },
-    {
-        "game_reqs::update_option",
-        "update_option",
-        protocol_direction::request,
-        0x1B,
-        &detail::bind_game_reqs__update_option,
-        &detail::clone_game_reqs__update_option,
-        &detail::create_game_reqs__update_option,
-        &protocol_registry::marshal_lua_stub,
-    },
-    {
-        "game_reqs::user_info_submit",
-        "user_info_submit",
-        protocol_direction::request,
-        0x53,
-        &detail::bind_game_reqs__user_info_submit,
-        &detail::clone_game_reqs__user_info_submit,
-        &detail::create_game_reqs__user_info_submit,
-        &protocol_registry::marshal_lua_stub,
-    },
-    {
-        "game_reqs::user_list",
-        "user_list",
-        protocol_direction::request,
-        0x18,
-        &detail::bind_game_reqs__user_list,
-        &detail::clone_game_reqs__user_list,
-        &detail::create_game_reqs__user_list,
-        &protocol_registry::marshal_lua_stub,
-    },
-    {
-        "game_reqs::web_map",
-        "web_map",
-        protocol_direction::request,
-        0x7C,
-        &detail::bind_game_reqs__web_map,
-        &detail::clone_game_reqs__web_map,
-        &detail::create_game_reqs__web_map,
-        &protocol_registry::marshal_lua_stub,
-    },
-    {
-        "game_reqs::whisper",
-        "whisper",
-        protocol_direction::request,
-        0x19,
-        &detail::bind_game_reqs__whisper,
-        &detail::clone_game_reqs__whisper,
-        &detail::create_game_reqs__whisper,
-        &protocol_registry::marshal_lua_stub,
-    },
-    {
-        "game_resp::action",
-        "action",
-        protocol_direction::response,
-        0x1A,
-        &detail::bind_game_resp__action,
-        &detail::clone_game_resp__action,
-        &detail::create_game_resp__action,
-        &detail::marshal_lua_game_resp__action,
-    },
-    {
-        "game_resp::ad",
-        "ad",
-        protocol_direction::response,
-        0x5B,
-        &detail::bind_game_resp__ad,
-        &detail::clone_game_resp__ad,
-        &detail::create_game_resp__ad,
-        &detail::marshal_lua_game_resp__ad,
-    },
-    {
-        "game_resp::bright",
-        "bright",
-        protocol_direction::response,
-        0x20,
-        &detail::bind_game_resp__bright,
-        &detail::clone_game_resp__bright,
-        &detail::create_game_resp__bright,
-        &detail::marshal_lua_game_resp__bright,
-    },
-    {
-        "game_resp::browser",
-        "browser",
-        protocol_direction::response,
-        0x62,
-        &detail::bind_game_resp__browser,
-        &detail::clone_game_resp__browser,
-        &detail::create_game_resp__browser,
-        &detail::marshal_lua_game_resp__browser,
-    },
-    {
-        "game_resp::bulletin_article",
-        "bulletin_article",
-        protocol_direction::response,
-        0x31,
-        &detail::bind_game_resp__bulletin_article,
-        &detail::clone_game_resp__bulletin_article,
-        &detail::create_game_resp__bulletin_article,
-        &detail::marshal_lua_game_resp__bulletin_article,
-    },
-    {
-        "game_resp::bulletin_articles",
-        "bulletin_articles",
-        protocol_direction::response,
-        0x31,
-        &detail::bind_game_resp__bulletin_articles,
-        &detail::clone_game_resp__bulletin_articles,
-        &detail::create_game_resp__bulletin_articles,
-        &detail::marshal_lua_game_resp__bulletin_articles,
-    },
-    {
-        "game_resp::bulletin_mail",
-        "bulletin_mail",
-        protocol_direction::response,
-        0x31,
-        &detail::bind_game_resp__bulletin_mail,
-        &detail::clone_game_resp__bulletin_mail,
-        &detail::create_game_resp__bulletin_mail,
-        &detail::marshal_lua_game_resp__bulletin_mail,
-    },
-    {
-        "game_resp::bulletin_mails",
-        "bulletin_mails",
-        protocol_direction::response,
-        0x31,
-        &detail::bind_game_resp__bulletin_mails,
-        &detail::clone_game_resp__bulletin_mails,
-        &detail::create_game_resp__bulletin_mails,
-        &detail::marshal_lua_game_resp__bulletin_mails,
-    },
-    {
-        "game_resp::bulletin_message",
-        "bulletin_message",
-        protocol_direction::response,
-        0x31,
-        &detail::bind_game_resp__bulletin_message,
-        &detail::clone_game_resp__bulletin_message,
-        &detail::create_game_resp__bulletin_message,
-        &detail::marshal_lua_game_resp__bulletin_message,
-    },
-    {
-        "game_resp::bulletin_sections",
-        "bulletin_sections",
-        protocol_direction::response,
-        0x31,
-        &detail::bind_game_resp__bulletin_sections,
-        &detail::clone_game_resp__bulletin_sections,
-        &detail::create_game_resp__bulletin_sections,
-        &detail::marshal_lua_game_resp__bulletin_sections,
-    },
-    {
-        "game_resp::c2s_relay",
-        "c2s_relay",
-        protocol_direction::response,
-        0x4B,
-        &detail::bind_game_resp__c2s_relay,
-        &detail::clone_game_resp__c2s_relay,
-        &detail::create_game_resp__c2s_relay,
-        &detail::marshal_lua_game_resp__c2s_relay,
-    },
-    {
-        "game_resp::chat",
-        "chat",
-        protocol_direction::response,
-        0x0D,
-        &detail::bind_game_resp__chat,
-        &detail::clone_game_resp__chat,
-        &detail::create_game_resp__chat,
-        &detail::marshal_lua_game_resp__chat,
-    },
-    {
-        "game_resp::collection",
-        "collection",
-        protocol_direction::response,
-        0x12,
-        &detail::bind_game_resp__collection,
-        &detail::clone_game_resp__collection,
-        &detail::create_game_resp__collection,
-        &detail::marshal_lua_game_resp__collection,
-    },
-    {
-        "game_resp::dialog",
-        "dialog",
-        protocol_direction::response,
-        0x30,
-        &detail::bind_game_resp__dialog,
-        &detail::clone_game_resp__dialog,
-        &detail::create_game_resp__dialog,
-        &detail::marshal_lua_game_resp__dialog,
-    },
-    {
-        "game_resp::dialog_0x30_10",
-        "dialog_0x30_10",
-        protocol_direction::response,
-        0x30,
-        &detail::bind_game_resp__dialog_0x30_10,
-        &detail::clone_game_resp__dialog_0x30_10,
-        &detail::create_game_resp__dialog_0x30_10,
-        &detail::marshal_lua_game_resp__dialog_0x30_10,
-    },
-    {
-        "game_resp::dialog_dual_field",
-        "dialog_dual_field",
-        protocol_direction::response,
-        0x2F,
-        &detail::bind_game_resp__dialog_dual_field,
-        &detail::clone_game_resp__dialog_dual_field,
-        &detail::create_game_resp__dialog_dual_field,
-        &detail::marshal_lua_game_resp__dialog_dual_field,
-    },
-    {
-        "game_resp::dialog_email",
-        "dialog_email",
-        protocol_direction::response,
-        0x30,
-        &detail::bind_game_resp__dialog_email,
-        &detail::clone_game_resp__dialog_email,
-        &detail::create_game_resp__dialog_email,
-        &detail::marshal_lua_game_resp__dialog_email,
-    },
-    {
-        "game_resp::dialog_input",
-        "dialog_input",
-        protocol_direction::response,
-        0x2F,
-        &detail::bind_game_resp__dialog_input,
-        &detail::clone_game_resp__dialog_input,
-        &detail::create_game_resp__dialog_input,
-        &detail::marshal_lua_game_resp__dialog_input,
-    },
-    {
-        "game_resp::dialog_input_ext",
-        "dialog_input_ext",
-        protocol_direction::response,
-        0x30,
-        &detail::bind_game_resp__dialog_input_ext,
-        &detail::clone_game_resp__dialog_input_ext,
-        &detail::create_game_resp__dialog_input_ext,
-        &detail::marshal_lua_game_resp__dialog_input_ext,
-    },
-    {
-        "game_resp::dialog_item",
-        "dialog_item",
-        protocol_direction::response,
-        0x2F,
-        &detail::bind_game_resp__dialog_item,
-        &detail::clone_game_resp__dialog_item,
-        &detail::create_game_resp__dialog_item,
-        &detail::marshal_lua_game_resp__dialog_item,
-    },
-    {
-        "game_resp::dialog_list",
-        "dialog_list",
-        protocol_direction::response,
-        0x30,
-        &detail::bind_game_resp__dialog_list,
-        &detail::clone_game_resp__dialog_list,
-        &detail::create_game_resp__dialog_list,
-        &detail::marshal_lua_game_resp__dialog_list,
-    },
-    {
-        "game_resp::dialog_menu",
-        "dialog_menu",
-        protocol_direction::response,
-        0x2F,
-        &detail::bind_game_resp__dialog_menu,
-        &detail::clone_game_resp__dialog_menu,
-        &detail::create_game_resp__dialog_menu,
-        &detail::marshal_lua_game_resp__dialog_menu,
-    },
-    {
-        "game_resp::dialog_pursuit",
-        "dialog_pursuit",
-        protocol_direction::response,
-        0x2F,
-        &detail::bind_game_resp__dialog_pursuit,
-        &detail::clone_game_resp__dialog_pursuit,
-        &detail::create_game_resp__dialog_pursuit,
-        &detail::marshal_lua_game_resp__dialog_pursuit,
-    },
-    {
-        "game_resp::dialog_slot",
-        "dialog_slot",
-        protocol_direction::response,
-        0x2F,
-        &detail::bind_game_resp__dialog_slot,
-        &detail::clone_game_resp__dialog_slot,
-        &detail::create_game_resp__dialog_slot,
-        &detail::marshal_lua_game_resp__dialog_slot,
-    },
-    {
-        "game_resp::dialog_spell",
-        "dialog_spell",
-        protocol_direction::response,
-        0x2F,
-        &detail::bind_game_resp__dialog_spell,
-        &detail::clone_game_resp__dialog_spell,
-        &detail::create_game_resp__dialog_spell,
-        &detail::marshal_lua_game_resp__dialog_spell,
-    },
-    {
-        "game_resp::die",
-        "die",
-        protocol_direction::response,
-        0x5F,
-        &detail::bind_game_resp__die,
-        &detail::clone_game_resp__die,
-        &detail::create_game_resp__die,
-        &detail::marshal_lua_game_resp__die,
-    },
-    {
-        "game_resp::direction",
-        "direction",
-        protocol_direction::response,
-        0x11,
-        &detail::bind_game_resp__direction,
-        &detail::clone_game_resp__direction,
-        &detail::create_game_resp__direction,
-        &detail::marshal_lua_game_resp__direction,
-    },
-    {
-        "game_resp::effect",
-        "effect",
-        protocol_direction::response,
-        0x29,
-        &detail::bind_game_resp__effect,
-        &detail::clone_game_resp__effect,
-        &detail::create_game_resp__effect,
-        &detail::marshal_lua_game_resp__effect,
-    },
-    {
-        "game_resp::external_info",
-        "external_info",
-        protocol_direction::response,
-        0x34,
-        &detail::bind_game_resp__external_info,
-        &detail::clone_game_resp__external_info,
-        &detail::create_game_resp__external_info,
-        &detail::marshal_lua_game_resp__external_info,
-    },
-    {
-        "game_resp::freeze",
-        "freeze",
-        protocol_direction::response,
-        0x51,
-        &detail::bind_game_resp__freeze,
-        &detail::clone_game_resp__freeze,
-        &detail::create_game_resp__freeze,
-        &detail::marshal_lua_game_resp__freeze,
-    },
-    {
-        "game_resp::friends_sync",
-        "friends_sync",
-        protocol_direction::response,
-        0x6A,
-        &detail::bind_game_resp__friends_sync,
-        &detail::clone_game_resp__friends_sync,
-        &detail::create_game_resp__friends_sync,
-        &detail::marshal_lua_game_resp__friends_sync,
-    },
-    {
-        "game_resp::group_portrait",
-        "group_portrait",
-        protocol_direction::response,
-        0x63,
-        &detail::bind_game_resp__group_portrait,
-        &detail::clone_game_resp__group_portrait,
-        &detail::create_game_resp__group_portrait,
-        &detail::marshal_lua_game_resp__group_portrait,
-    },
-    {
-        "game_resp::hide",
-        "hide",
-        protocol_direction::response,
-        0x0E,
-        &detail::bind_game_resp__hide,
-        &detail::clone_game_resp__hide,
-        &detail::create_game_resp__hide,
-        &detail::marshal_lua_game_resp__hide,
-    },
-    {
-        "game_resp::holyday_screen",
-        "holyday_screen",
-        protocol_direction::response,
-        0x5A,
-        &detail::bind_game_resp__holyday_screen,
-        &detail::clone_game_resp__holyday_screen,
-        &detail::create_game_resp__holyday_screen,
-        &detail::marshal_lua_game_resp__holyday_screen,
-    },
-    {
-        "game_resp::id",
-        "id",
-        protocol_direction::response,
-        0x05,
-        &detail::bind_game_resp__id,
-        &detail::clone_game_resp__id,
-        &detail::create_game_resp__id,
-        &detail::marshal_lua_game_resp__id,
-    },
-    {
-        "game_resp::init",
-        "init",
-        protocol_direction::response,
-        0x1E,
-        &detail::bind_game_resp__init,
-        &detail::clone_game_resp__init,
-        &detail::create_game_resp__init,
-        &detail::marshal_lua_game_resp__init,
-    },
-    {
-        "game_resp::internal_info",
-        "internal_info",
-        protocol_direction::response,
-        0x39,
-        &detail::bind_game_resp__internal_info,
-        &detail::clone_game_resp__internal_info,
-        &detail::create_game_resp__internal_info,
-        &detail::marshal_lua_game_resp__internal_info,
-    },
-    {
-        "game_resp::item_remove",
-        "item_remove",
-        protocol_direction::response,
-        0x10,
-        &detail::bind_game_resp__item_remove,
-        &detail::clone_game_resp__item_remove,
-        &detail::create_game_resp__item_remove,
-        &detail::marshal_lua_game_resp__item_remove,
-    },
-    {
-        "game_resp::item_throw_confirm",
-        "item_throw_confirm",
-        protocol_direction::response,
-        0x4E,
-        &detail::bind_game_resp__item_throw_confirm,
-        &detail::clone_game_resp__item_throw_confirm,
-        &detail::create_game_resp__item_throw_confirm,
-        &detail::marshal_lua_game_resp__item_throw_confirm,
-    },
-    {
-        "game_resp::item_throws",
-        "item_throws",
-        protocol_direction::response,
-        0x16,
-        &detail::bind_game_resp__item_throws,
-        &detail::clone_game_resp__item_throws,
-        &detail::create_game_resp__item_throws,
-        &detail::marshal_lua_game_resp__item_throws,
-    },
-    {
-        "game_resp::item_tip",
-        "item_tip",
-        protocol_direction::response,
-        0x59,
-        &detail::bind_game_resp__item_tip,
-        &detail::clone_game_resp__item_tip,
-        &detail::create_game_resp__item_tip,
-        &detail::marshal_lua_game_resp__item_tip,
-    },
-    {
-        "game_resp::item_unequip",
-        "item_unequip",
-        protocol_direction::response,
-        0x38,
-        &detail::bind_game_resp__item_unequip,
-        &detail::clone_game_resp__item_unequip,
-        &detail::create_game_resp__item_unequip,
-        &detail::marshal_lua_game_resp__item_unequip,
-    },
-    {
-        "game_resp::item_update",
-        "item_update",
-        protocol_direction::response,
-        0x0F,
-        &detail::bind_game_resp__item_update,
-        &detail::clone_game_resp__item_update,
-        &detail::create_game_resp__item_update,
-        &detail::marshal_lua_game_resp__item_update,
-    },
-    {
-        "game_resp::item_update_slot",
-        "item_update_slot",
-        protocol_direction::response,
-        0x37,
-        &detail::bind_game_resp__item_update_slot,
-        &detail::clone_game_resp__item_update_slot,
-        &detail::create_game_resp__item_update_slot,
-        &detail::marshal_lua_game_resp__item_update_slot,
-    },
-    {
-        "game_resp::map_bgm",
-        "map_bgm",
-        protocol_direction::response,
-        0x19,
-        &detail::bind_game_resp__map_bgm,
-        &detail::clone_game_resp__map_bgm,
-        &detail::create_game_resp__map_bgm,
-        &detail::marshal_lua_game_resp__map_bgm,
-    },
-    {
-        "game_resp::map_bgm_stop",
-        "map_bgm_stop",
-        protocol_direction::response,
-        0x19,
-        &detail::bind_game_resp__map_bgm_stop,
-        &detail::clone_game_resp__map_bgm_stop,
-        &detail::create_game_resp__map_bgm_stop,
-        &detail::marshal_lua_game_resp__map_bgm_stop,
-    },
-    {
-        "game_resp::map_config",
-        "map_config",
-        protocol_direction::response,
-        0x15,
-        &detail::bind_game_resp__map_config,
-        &detail::clone_game_resp__map_config,
-        &detail::create_game_resp__map_config,
-        &detail::marshal_lua_game_resp__map_config,
-    },
-    {
-        "game_resp::map_update",
-        "map_update",
-        protocol_direction::response,
-        0x06,
-        &detail::bind_game_resp__map_update,
-        &detail::clone_game_resp__map_update,
-        &detail::create_game_resp__map_update,
-        &detail::marshal_lua_game_resp__map_update,
-    },
-    {
-        "game_resp::map_worlds",
-        "map_worlds",
-        protocol_direction::response,
-        0x2E,
-        &detail::bind_game_resp__map_worlds,
-        &detail::clone_game_resp__map_worlds,
-        &detail::create_game_resp__map_worlds,
-        &detail::marshal_lua_game_resp__map_worlds,
-    },
-    {
-        "game_resp::message",
-        "message",
-        protocol_direction::response,
-        0x0A,
-        &detail::bind_game_resp__message,
-        &detail::clone_game_resp__message,
-        &detail::create_game_resp__message,
-        &detail::marshal_lua_game_resp__message,
-    },
-    {
-        "game_resp::move",
-        "move",
-        protocol_direction::response,
-        0x0C,
-        &detail::bind_game_resp__move,
-        &detail::clone_game_resp__move,
-        &detail::create_game_resp__move,
-        &detail::marshal_lua_game_resp__move,
-    },
-    {
-        "game_resp::move_confirm",
-        "move_confirm",
-        protocol_direction::response,
-        0x0B,
-        &detail::bind_game_resp__move_confirm,
-        &detail::clone_game_resp__move_confirm,
-        &detail::create_game_resp__move_confirm,
-        &detail::marshal_lua_game_resp__move_confirm,
-    },
-    {
-        "game_resp::move_confirm_noscroll",
-        "move_confirm_noscroll",
-        protocol_direction::response,
-        0x26,
-        &detail::bind_game_resp__move_confirm_noscroll,
-        &detail::clone_game_resp__move_confirm_noscroll,
-        &detail::create_game_resp__move_confirm_noscroll,
-        &detail::marshal_lua_game_resp__move_confirm_noscroll,
-    },
-    {
-        "game_resp::notice",
-        "notice",
-        protocol_direction::response,
-        0x58,
-        &detail::bind_game_resp__notice,
-        &detail::clone_game_resp__notice,
-        &detail::create_game_resp__notice,
-        &detail::marshal_lua_game_resp__notice,
-    },
-    {
-        "game_resp::option",
-        "option",
-        protocol_direction::response,
-        0x23,
-        &detail::bind_game_resp__option,
-        &detail::clone_game_resp__option,
-        &detail::create_game_resp__option,
-        &detail::marshal_lua_game_resp__option,
-    },
-    {
-        "game_resp::ping",
-        "ping",
-        protocol_direction::response,
-        0x68,
-        &detail::bind_game_resp__ping,
-        &detail::clone_game_resp__ping,
-        &detail::create_game_resp__ping,
-        &detail::marshal_lua_game_resp__ping,
-    },
-    {
-        "game_resp::popup_input",
-        "popup_input",
-        protocol_direction::response,
-        0x1B,
-        &detail::bind_game_resp__popup_input,
-        &detail::clone_game_resp__popup_input,
-        &detail::create_game_resp__popup_input,
-        &detail::marshal_lua_game_resp__popup_input,
-    },
-    {
-        "game_resp::popup_message",
-        "popup_message",
-        protocol_direction::response,
-        0x35,
-        &detail::bind_game_resp__popup_message,
-        &detail::clone_game_resp__popup_message,
-        &detail::create_game_resp__popup_message,
-        &detail::marshal_lua_game_resp__popup_message,
-    },
-    {
-        "game_resp::position",
-        "position",
-        protocol_direction::response,
-        0x04,
-        &detail::bind_game_resp__position,
-        &detail::clone_game_resp__position,
-        &detail::create_game_resp__position,
-        &detail::marshal_lua_game_resp__position,
-    },
-    {
-        "game_resp::save",
-        "save",
-        protocol_direction::response,
-        0x21,
-        &detail::bind_game_resp__save,
-        &detail::clone_game_resp__save,
-        &detail::create_game_resp__save,
-        &detail::marshal_lua_game_resp__save,
-    },
-    {
-        "game_resp::screen_refresh_complete",
-        "screen_refresh_complete",
-        protocol_direction::response,
-        0x22,
-        &detail::bind_game_resp__screen_refresh_complete,
-        &detail::clone_game_resp__screen_refresh_complete,
-        &detail::create_game_resp__screen_refresh_complete,
-        &detail::marshal_lua_game_resp__screen_refresh_complete,
-    },
-    {
-        "game_resp::show",
-        "show",
-        protocol_direction::response,
-        0x33,
-        &detail::bind_game_resp__show,
-        &detail::clone_game_resp__show,
-        &detail::create_game_resp__show,
-        &detail::marshal_lua_game_resp__show,
-    },
-    {
-        "game_resp::sound",
-        "sound",
-        protocol_direction::response,
-        0x19,
-        &detail::bind_game_resp__sound,
-        &detail::clone_game_resp__sound,
-        &detail::create_game_resp__sound,
-        &detail::marshal_lua_game_resp__sound,
-    },
-    {
-        "game_resp::spell_buff",
-        "spell_buff",
-        protocol_direction::response,
-        0x3A,
-        &detail::bind_game_resp__spell_buff,
-        &detail::clone_game_resp__spell_buff,
-        &detail::create_game_resp__spell_buff,
-        &detail::marshal_lua_game_resp__spell_buff,
-    },
-    {
-        "game_resp::spell_delay",
-        "spell_delay",
-        protocol_direction::response,
-        0x3A,
-        &detail::bind_game_resp__spell_delay,
-        &detail::clone_game_resp__spell_delay,
-        &detail::create_game_resp__spell_delay,
-        &detail::marshal_lua_game_resp__spell_delay,
-    },
-    {
-        "game_resp::spell_remove",
-        "spell_remove",
-        protocol_direction::response,
-        0x18,
-        &detail::bind_game_resp__spell_remove,
-        &detail::clone_game_resp__spell_remove,
-        &detail::create_game_resp__spell_remove,
-        &detail::marshal_lua_game_resp__spell_remove,
-    },
-    {
-        "game_resp::spell_unbuff",
-        "spell_unbuff",
-        protocol_direction::response,
-        0x3A,
-        &detail::bind_game_resp__spell_unbuff,
-        &detail::clone_game_resp__spell_unbuff,
-        &detail::create_game_resp__spell_unbuff,
-        &detail::marshal_lua_game_resp__spell_unbuff,
-    },
-    {
-        "game_resp::spell_update",
-        "spell_update",
-        protocol_direction::response,
-        0x17,
-        &detail::bind_game_resp__spell_update,
-        &detail::clone_game_resp__spell_update,
-        &detail::create_game_resp__spell_update,
-        &detail::marshal_lua_game_resp__spell_update,
-    },
-    {
-        "game_resp::time",
-        "time",
-        protocol_direction::response,
-        0x20,
-        &detail::bind_game_resp__time,
-        &detail::clone_game_resp__time,
-        &detail::create_game_resp__time,
-        &detail::marshal_lua_game_resp__time,
-    },
-    {
-        "game_resp::timer",
-        "timer",
-        protocol_direction::response,
-        0x67,
-        &detail::bind_game_resp__timer,
-        &detail::clone_game_resp__timer,
-        &detail::create_game_resp__timer,
-        &detail::marshal_lua_game_resp__timer,
-    },
-    {
-        "game_resp::trade_bundle",
-        "trade_bundle",
-        protocol_direction::response,
-        0x42,
-        &detail::bind_game_resp__trade_bundle,
-        &detail::clone_game_resp__trade_bundle,
-        &detail::create_game_resp__trade_bundle,
-        &detail::marshal_lua_game_resp__trade_bundle,
-    },
-    {
-        "game_resp::trade_close",
-        "trade_close",
-        protocol_direction::response,
-        0x42,
-        &detail::bind_game_resp__trade_close,
-        &detail::clone_game_resp__trade_close,
-        &detail::create_game_resp__trade_close,
-        &detail::marshal_lua_game_resp__trade_close,
-    },
-    {
-        "game_resp::trade_dialog",
-        "trade_dialog",
-        protocol_direction::response,
-        0x42,
-        &detail::bind_game_resp__trade_dialog,
-        &detail::clone_game_resp__trade_dialog,
-        &detail::create_game_resp__trade_dialog,
-        &detail::marshal_lua_game_resp__trade_dialog,
-    },
-    {
-        "game_resp::trade_lock",
-        "trade_lock",
-        protocol_direction::response,
-        0x42,
-        &detail::bind_game_resp__trade_lock,
-        &detail::clone_game_resp__trade_lock,
-        &detail::create_game_resp__trade_lock,
-        &detail::marshal_lua_game_resp__trade_lock,
-    },
-    {
-        "game_resp::trade_money",
-        "trade_money",
-        protocol_direction::response,
-        0x42,
-        &detail::bind_game_resp__trade_money,
-        &detail::clone_game_resp__trade_money,
-        &detail::create_game_resp__trade_money,
-        &detail::marshal_lua_game_resp__trade_money,
-    },
-    {
-        "game_resp::trade_upload",
-        "trade_upload",
-        protocol_direction::response,
-        0x42,
-        &detail::bind_game_resp__trade_upload,
-        &detail::clone_game_resp__trade_upload,
-        &detail::create_game_resp__trade_upload,
-        &detail::marshal_lua_game_resp__trade_upload,
-    },
-    {
-        "game_resp::ui_screen",
-        "ui_screen",
-        protocol_direction::response,
-        0x3E,
-        &detail::bind_game_resp__ui_screen,
-        &detail::clone_game_resp__ui_screen,
-        &detail::create_game_resp__ui_screen,
-        &detail::marshal_lua_game_resp__ui_screen,
-    },
-    {
-        "game_resp::unknown_4f",
-        "unknown_4f",
-        protocol_direction::response,
-        0x4F,
-        &detail::bind_game_resp__unknown_4f,
-        &detail::clone_game_resp__unknown_4f,
-        &detail::create_game_resp__unknown_4f,
-        &detail::marshal_lua_game_resp__unknown_4f,
-    },
-    {
-        "game_resp::update",
-        "update",
-        protocol_direction::response,
-        0x07,
-        &detail::bind_game_resp__update,
-        &detail::clone_game_resp__update,
-        &detail::create_game_resp__update,
-        &detail::marshal_lua_game_resp__update,
-    },
-    {
-        "game_resp::update_cc",
-        "update_cc",
-        protocol_direction::response,
-        0x24,
-        &detail::bind_game_resp__update_cc,
-        &detail::clone_game_resp__update_cc,
-        &detail::create_game_resp__update_cc,
-        &detail::marshal_lua_game_resp__update_cc,
-    },
-    {
-        "game_resp::update_external",
-        "update_external",
-        protocol_direction::response,
-        0x1D,
-        &detail::bind_game_resp__update_external,
-        &detail::clone_game_resp__update_external,
-        &detail::create_game_resp__update_external,
-        &detail::marshal_lua_game_resp__update_external,
-    },
-    {
-        "game_resp::update_hp",
-        "update_hp",
-        protocol_direction::response,
-        0x13,
-        &detail::bind_game_resp__update_hp,
-        &detail::clone_game_resp__update_hp,
-        &detail::create_game_resp__update_hp,
-        &detail::marshal_lua_game_resp__update_hp,
-    },
-    {
-        "game_resp::update_internal",
-        "update_internal",
-        protocol_direction::response,
-        0x08,
-        &detail::bind_game_resp__update_internal,
-        &detail::clone_game_resp__update_internal,
-        &detail::create_game_resp__update_internal,
-        &detail::marshal_lua_game_resp__update_internal,
-    },
-    {
-        "game_resp::user_info",
-        "user_info",
-        protocol_direction::response,
-        0x4D,
-        &detail::bind_game_resp__user_info,
-        &detail::clone_game_resp__user_info,
-        &detail::create_game_resp__user_info,
-        &detail::marshal_lua_game_resp__user_info,
-    },
-    {
-        "game_resp::user_list",
-        "user_list",
-        protocol_direction::response,
-        0x36,
-        &detail::bind_game_resp__user_list,
-        &detail::clone_game_resp__user_list,
-        &detail::create_game_resp__user_list,
-        &detail::marshal_lua_game_resp__user_list,
-    },
-    {
-        "game_resp::weather",
-        "weather",
-        protocol_direction::response,
-        0x1F,
-        &detail::bind_game_resp__weather,
-        &detail::clone_game_resp__weather,
-        &detail::create_game_resp__weather,
-        &detail::marshal_lua_game_resp__weather,
-    },
-    {
-        "game_resp::web",
-        "web",
-        protocol_direction::response,
-        0x66,
-        &detail::bind_game_resp__web,
-        &detail::clone_game_resp__web,
-        &detail::create_game_resp__web,
-        &detail::marshal_lua_game_resp__web,
-    },
-    {
-        "game_resp::web_map",
-        "web_map",
-        protocol_direction::response,
-        0x70,
-        &detail::bind_game_resp__web_map,
-        &detail::clone_game_resp__web_map,
-        &detail::create_game_resp__web_map,
-        &detail::marshal_lua_game_resp__web_map,
-    },
+     "game_reqs::attack",                                 "attack",
+     protocol_direction::request,
+     0x13,                                                                                                &detail::bind_default_game_reqs__attack,
+     &detail::clone_game_reqs__attack,
+     &detail::create_game_reqs__attack,
+     &protocol_registry::marshal_lua_stub,
+     },
+    {
+     "game_reqs::browser",                                                   "browser",
+     protocol_direction::request,
+     0x73,                   &detail::bind_default_game_reqs__browser,
+     &detail::clone_game_reqs__browser,
+     &detail::create_game_reqs__browser,
+     &protocol_registry::marshal_lua_stub,
+     },
+    {
+     "game_reqs::bulletin",                  "bulletin",
+     protocol_direction::request,
+     0x3B,                                                                                                         &detail::bind_default_game_reqs__bulletin,
+     &detail::clone_game_reqs__bulletin,
+     &detail::create_game_reqs__bulletin,
+     &protocol_registry::marshal_lua_stub,
+     },
+    {
+     "game_reqs::chat",          "chat",
+     protocol_direction::request,
+     0x0E,                                                               &detail::bind_default_game_reqs__chat,
+     &detail::clone_game_reqs__chat,
+     &detail::create_game_reqs__chat,
+     &protocol_registry::marshal_lua_stub,
+     },
+    {
+     "game_reqs::click",                         "click",
+     protocol_direction::request,
+     0x43,                                                                      &detail::bind_default_game_reqs__click,
+     &detail::clone_game_reqs__click,
+     &detail::create_game_reqs__click,
+     &protocol_registry::marshal_lua_stub,
+     },
+    {
+     "game_reqs::collection",                                  "collection",
+     protocol_direction::request,
+     0x27,                                                                                                &detail::bind_default_game_reqs__collection,
+     &detail::clone_game_reqs__collection,
+     &detail::create_game_reqs__collection,
+     &protocol_registry::marshal_lua_stub,
+     },
+    {
+     "game_reqs::dialog",                                                   "dialog",
+     protocol_direction::request,
+     0x39,                              &detail::bind_default_game_reqs__dialog,
+     &detail::clone_game_reqs__dialog,
+     &detail::create_game_reqs__dialog,
+     &protocol_registry::marshal_lua_stub,
+     },
+    {
+     "game_reqs::dialog_list",               "dialog_list",
+     protocol_direction::request,
+     0x3A,                                                                                                         &detail::bind_default_game_reqs__dialog_list,
+     &detail::clone_game_reqs__dialog_list,
+     &detail::create_game_reqs__dialog_list,
+     &protocol_registry::marshal_lua_stub,
+     },
+    {
+     "game_reqs::direction",            "direction",
+     protocol_direction::request,
+     0x11,                                                               &detail::bind_default_game_reqs__direction,
+     &detail::clone_game_reqs__direction,
+     &detail::create_game_reqs__direction,
+     &protocol_registry::marshal_lua_stub,
+     },
+    {
+     "game_reqs::door",                         "door",
+     protocol_direction::request,
+     0x20,                                                               &detail::bind_default_game_reqs__door,
+     &detail::clone_game_reqs__door,
+     &detail::create_game_reqs__door,
+     &protocol_registry::marshal_lua_stub,
+     },
+    {
+     "game_reqs::emotion",                              "emotion",
+     protocol_direction::request,
+     0x1D,                                                                                                &detail::bind_default_game_reqs__emotion,
+     &detail::clone_game_reqs__emotion,
+     &detail::create_game_reqs__emotion,
+     &protocol_registry::marshal_lua_stub,
+     },
+    {
+     "game_reqs::exit",                                                   "exit",
+     protocol_direction::request,
+     0x0B,                                                   &detail::bind_default_game_reqs__exit,
+     &detail::clone_game_reqs__exit,
+     &detail::create_game_reqs__exit,
+     &protocol_registry::marshal_lua_stub,
+     },
+    {
+     "game_reqs::friends",                     "friends",
+     protocol_direction::request,
+     0x77,                                                                                                         &detail::bind_default_game_reqs__friends,
+     &detail::clone_game_reqs__friends,
+     &detail::create_game_reqs__friends,
+     &protocol_registry::marshal_lua_stub,
+     },
+    {
+     "game_reqs::front_info",           "front_info",
+     protocol_direction::request,
+     0x09,                                                               &detail::bind_default_game_reqs__front_info,
+     &detail::clone_game_reqs__front_info,
+     &detail::create_game_reqs__front_info,
+     &protocol_registry::marshal_lua_stub,
+     },
+    {
+     "game_reqs::give_item",                         "give_item",
+     protocol_direction::request,
+     0x29,                                                                      &detail::bind_default_game_reqs__give_item,
+     &detail::clone_game_reqs__give_item,
+     &detail::create_game_reqs__give_item,
+     &protocol_registry::marshal_lua_stub,
+     },
+    {
+     "game_reqs::give_money",                                "give_money",
+     protocol_direction::request,
+     0x2A,                                                                                                &detail::bind_default_game_reqs__give_money,
+     &detail::clone_game_reqs__give_money,
+     &detail::create_game_reqs__give_money,
+     &protocol_registry::marshal_lua_stub,
+     },
+    {
+     "game_reqs::group",                                                   "group",
+     protocol_direction::request,
+     0x2E,                                                     &detail::bind_default_game_reqs__group,
+     &detail::clone_game_reqs__group,
+     &detail::create_game_reqs__group,
+     &protocol_registry::marshal_lua_stub,
+     },
+    {
+     "game_reqs::item_active",               "item_active",
+     protocol_direction::request,
+     0x1C,                                                                                                         &detail::bind_default_game_reqs__item_active,
+     &detail::clone_game_reqs__item_active,
+     &detail::create_game_reqs__item_active,
+     &protocol_registry::marshal_lua_stub,
+     },
+    {
+     "game_reqs::item_combine",         "item_combine",
+     protocol_direction::request,
+     0x6B,                                                               &detail::bind_default_game_reqs__item_combine,
+     &detail::clone_game_reqs__item_combine,
+     &detail::create_game_reqs__item_combine,
+     &protocol_registry::marshal_lua_stub,
+     },
+    {
+     "game_reqs::item_drop",                         "item_drop",
+     protocol_direction::request,
+     0x08,                                                                &detail::bind_default_game_reqs__item_drop,
+     &detail::clone_game_reqs__item_drop,
+     &detail::create_game_reqs__item_drop,
+     &protocol_registry::marshal_lua_stub,
+     },
+    {
+     "game_reqs::item_drop_money",                                  "item_drop_money",
+     protocol_direction::request,
+     0x24,                                                                                                &detail::bind_default_game_reqs__item_drop_money,
+     &detail::clone_game_reqs__item_drop_money,
+     &detail::create_game_reqs__item_drop_money,
+     &protocol_registry::marshal_lua_stub,
+     },
+    {
+     "game_reqs::item_inactive",                                                   "item_inactive",
+     protocol_direction::request,
+     0x1F,                                               &detail::bind_default_game_reqs__item_inactive,
+     &detail::clone_game_reqs__item_inactive,
+     &detail::create_game_reqs__item_inactive,
+     &protocol_registry::marshal_lua_stub,
+     },
+    {
+     "game_reqs::item_info",              "item_info",
+     protocol_direction::request,
+     0x66,                                                                                                         &detail::bind_default_game_reqs__item_info,
+     &detail::clone_game_reqs__item_info,
+     &detail::create_game_reqs__item_info,
+     &protocol_registry::marshal_lua_stub,
+     },
+    {
+     "game_reqs::item_throws",      "item_throws",
+     protocol_direction::request,
+     0x17,                                                               &detail::bind_default_game_reqs__item_throws,
+     &detail::clone_game_reqs__item_throws,
+     &detail::create_game_reqs__item_throws,
+     &protocol_registry::marshal_lua_stub,
+     },
+    {
+     "game_reqs::login",                         "login",
+     protocol_direction::request,
+     0x10,                                                                 &detail::bind_default_game_reqs__login,
+     &detail::clone_game_reqs__login,
+     &detail::create_game_reqs__login,
+     &protocol_registry::marshal_lua_stub,
+     },
+    {
+     "game_reqs::loot",                        "loot",
+     protocol_direction::request,
+     0x07,                                                                                                &detail::bind_default_game_reqs__loot,
+     &detail::clone_game_reqs__loot,
+     &detail::create_game_reqs__loot,
+     &protocol_registry::marshal_lua_stub,
+     },
+    {
+     "game_reqs::map_update",                                                   "map_update",
+     protocol_direction::request,
+     0x05,       &detail::bind_default_game_reqs__map_update,
+     &detail::clone_game_reqs__map_update,
+     &detail::create_game_reqs__map_update,
+     &protocol_registry::marshal_lua_stub,
+     },
+    {
+     "game_reqs::map_world",            "map_world",
+     protocol_direction::request,
+     0x3F,                                                                                                         &detail::bind_default_game_reqs__map_world,
+     &detail::clone_game_reqs__map_world,
+     &detail::create_game_reqs__map_world,
+     &protocol_registry::marshal_lua_stub,
+     },
+    {
+     "game_reqs::miss",         "miss",
+     protocol_direction::request,
+     0x0C,                                                               &detail::bind_default_game_reqs__miss,
+     &detail::clone_game_reqs__miss,
+     &detail::create_game_reqs__miss,
+     &protocol_registry::marshal_lua_stub,
+     },
+    {
+     "game_reqs::move",                         "move",
+     protocol_direction::request,
+     0x32,                                                               &detail::bind_default_game_reqs__move,
+     &detail::clone_game_reqs__move,
+     &detail::create_game_reqs__move,
+     &protocol_registry::marshal_lua_stub,
+     },
+    {
+     "game_reqs::move_blocked",                                  "move_blocked",
+     protocol_direction::request,
+     0x69,                                                                                                &detail::bind_default_game_reqs__move_blocked,
+     &detail::clone_game_reqs__move_blocked,
+     &detail::create_game_reqs__move_blocked,
+     &protocol_registry::marshal_lua_stub,
+     },
+    {
+     "game_reqs::pong",                                                   "pong",
+     protocol_direction::request,
+     0x75,                                                    &detail::bind_default_game_reqs__pong,
+     &detail::clone_game_reqs__pong,
+     &detail::create_game_reqs__pong,
+     &protocol_registry::marshal_lua_stub,
+     },
+    {
+     "game_reqs::popup_input_submit",                     "popup_input_submit",
+     protocol_direction::request,
+     0x23,                                                                                                         &detail::bind_default_game_reqs__popup_input_submit,
+     &detail::clone_game_reqs__popup_input_submit,
+     &detail::create_game_reqs__popup_input_submit,
+     &protocol_registry::marshal_lua_stub,
+     },
+    {
+     "game_reqs::post",        "post",
+     protocol_direction::request,
+     0x34,                                                               &detail::bind_default_game_reqs__post,
+     &detail::clone_game_reqs__post,
+     &detail::create_game_reqs__post,
+     &protocol_registry::marshal_lua_stub,
+     },
+    {
+     "game_reqs::screen_refresh",                         "screen_refresh",
+     protocol_direction::request,
+     0x38,                                                                 &detail::bind_default_game_reqs__screen_refresh,
+     &detail::clone_game_reqs__screen_refresh,
+     &detail::create_game_reqs__screen_refresh,
+     &protocol_registry::marshal_lua_stub,
+     },
+    {
+     "game_reqs::self_info",                                   "self_info",
+     protocol_direction::request,
+     0x2D,                                                                                                &detail::bind_default_game_reqs__self_info,
+     &detail::clone_game_reqs__self_info,
+     &detail::create_game_reqs__self_info,
+     &protocol_registry::marshal_lua_stub,
+     },
+    {
+     "game_reqs::spell_cast",                                                   "spell_cast",
+     protocol_direction::request,
+     0x0F,                                                   &detail::bind_default_game_reqs__spell_cast,
+     &detail::clone_game_reqs__spell_cast,
+     &detail::create_game_reqs__spell_cast,
+     &protocol_registry::marshal_lua_stub,
+     },
+    {
+     "game_reqs::swap",                     "swap",
+     protocol_direction::request,
+     0x30,                                                                                                         &detail::bind_default_game_reqs__swap,
+     &detail::clone_game_reqs__swap,
+     &detail::create_game_reqs__swap,
+     &protocol_registry::marshal_lua_stub,
+     },
+    {
+     "game_reqs::trade",      "trade",
+     protocol_direction::request,
+     0x4A,                                                               &detail::bind_default_game_reqs__trade,
+     &detail::clone_game_reqs__trade,
+     &detail::create_game_reqs__trade,
+     &protocol_registry::marshal_lua_stub,
+     },
+    {
+     "game_reqs::unknown_54",                         "unknown_54",
+     protocol_direction::request,
+     0x54,                                                                      &detail::bind_default_game_reqs__unknown_54,
+     &detail::clone_game_reqs__unknown_54,
+     &detail::create_game_reqs__unknown_54,
+     &protocol_registry::marshal_lua_stub,
+     },
+    {
+     "game_reqs::update_option",                     "update_option",
+     protocol_direction::request,
+     0x1B,                                                                                                &detail::bind_default_game_reqs__update_option,
+     &detail::clone_game_reqs__update_option,
+     &detail::create_game_reqs__update_option,
+     &protocol_registry::marshal_lua_stub,
+     },
+    {
+     "game_reqs::user_info_submit",                                                   "user_info_submit",
+     protocol_direction::request,
+     0x53,                                                                    &detail::bind_default_game_reqs__user_info_submit,
+     &detail::clone_game_reqs__user_info_submit,
+     &detail::create_game_reqs__user_info_submit,
+     &protocol_registry::marshal_lua_stub,
+     },
+    {
+     "game_reqs::user_list",                     "user_list",
+     protocol_direction::request,
+     0x18,                                                                                                         &detail::bind_default_game_reqs__user_list,
+     &detail::clone_game_reqs__user_list,
+     &detail::create_game_reqs__user_list,
+     &protocol_registry::marshal_lua_stub,
+     },
+    {
+     "game_reqs::web_map",    "web_map",
+     protocol_direction::request,
+     0x7C,                                                               &detail::bind_default_game_reqs__web_map,
+     &detail::clone_game_reqs__web_map,
+     &detail::create_game_reqs__web_map,
+     &protocol_registry::marshal_lua_stub,
+     },
+    {
+     "game_reqs::whisper",                         "whisper",
+     protocol_direction::request,
+     0x19,                                                                 &detail::bind_default_game_reqs__whisper,
+     &detail::clone_game_reqs__whisper,
+     &detail::create_game_reqs__whisper,
+     &protocol_registry::marshal_lua_stub,
+     },
+    {
+     "game_resp::action",                             "action",
+     protocol_direction::response,
+     0x1A,                                                                                                &detail::bind_default_game_resp__action,
+     &detail::clone_game_resp__action,
+     &detail::create_game_resp__action,
+     &detail::marshal_lua_game_resp__action,
+     },
+    {
+     "game_resp::ad",                                                   "ad",
+     protocol_direction::response,
+     0x5B,                                                       &detail::bind_default_game_resp__ad,
+     &detail::clone_game_resp__ad,
+     &detail::create_game_resp__ad,
+     &detail::marshal_lua_game_resp__ad,
+     },
+    {
+     "game_resp::bright",                     "bright",
+     protocol_direction::response,
+     0x20,                                                                                                         &detail::bind_default_game_resp__bright,
+     &detail::clone_game_resp__bright,
+     &detail::create_game_resp__bright,
+     &detail::marshal_lua_game_resp__bright,
+     },
+    {
+     "game_resp::browser",             "browser",
+     protocol_direction::response,
+     0x62,                                                               &detail::bind_default_game_resp__browser,
+     &detail::clone_game_resp__browser,
+     &detail::create_game_resp__browser,
+     &detail::marshal_lua_game_resp__browser,
+     },
+    {
+     "game_resp::bulletin_article",                         "bulletin_article",
+     protocol_direction::response,
+     0x31,                                                                &detail::bind_default_game_resp__bulletin_article,
+     &detail::clone_game_resp__bulletin_article,
+     &detail::create_game_resp__bulletin_article,
+     &detail::marshal_lua_game_resp__bulletin_article,
+     },
+    {
+     "game_resp::bulletin_articles",                          "bulletin_articles",
+     protocol_direction::response,
+     0x31,                                                                                                &detail::bind_default_game_resp__bulletin_articles,
+     &detail::clone_game_resp__bulletin_articles,
+     &detail::create_game_resp__bulletin_articles,
+     &detail::marshal_lua_game_resp__bulletin_articles,
+     },
+    {
+     "game_resp::bulletin_mail",                                                   "bulletin_mail",
+     protocol_direction::response,
+     0x31, &detail::bind_default_game_resp__bulletin_mail,
+     &detail::clone_game_resp__bulletin_mail,
+     &detail::create_game_resp__bulletin_mail,
+     &detail::marshal_lua_game_resp__bulletin_mail,
+     },
+    {
+     "game_resp::bulletin_mails",         "bulletin_mails",
+     protocol_direction::response,
+     0x31,                                                                                                         &detail::bind_default_game_resp__bulletin_mails,
+     &detail::clone_game_resp__bulletin_mails,
+     &detail::create_game_resp__bulletin_mails,
+     &detail::marshal_lua_game_resp__bulletin_mails,
+     },
+    {
+     "game_resp::bulletin_message",         "bulletin_message",
+     protocol_direction::response,
+     0x31,                                                               &detail::bind_default_game_resp__bulletin_message,
+     &detail::clone_game_resp__bulletin_message,
+     &detail::create_game_resp__bulletin_message,
+     &detail::marshal_lua_game_resp__bulletin_message,
+     },
+    {
+     "game_resp::bulletin_sections",                         "bulletin_sections",
+     protocol_direction::response,
+     0x31,                                                                   &detail::bind_default_game_resp__bulletin_sections,
+     &detail::clone_game_resp__bulletin_sections,
+     &detail::create_game_resp__bulletin_sections,
+     &detail::marshal_lua_game_resp__bulletin_sections,
+     },
+    {
+     "game_resp::c2s_relay",                                "c2s_relay",
+     protocol_direction::response,
+     0x4B,                                                                                                &detail::bind_default_game_resp__c2s_relay,
+     &detail::clone_game_resp__c2s_relay,
+     &detail::create_game_resp__c2s_relay,
+     &detail::marshal_lua_game_resp__c2s_relay,
+     },
+    {
+     "game_resp::chat",                                                   "chat",
+     protocol_direction::response,
+     0x0D,                                           &detail::bind_default_game_resp__chat,
+     &detail::clone_game_resp__chat,
+     &detail::create_game_resp__chat,
+     &detail::marshal_lua_game_resp__chat,
+     },
+    {
+     "game_resp::collection",                   "collection",
+     protocol_direction::response,
+     0x12,                                                                                                         &detail::bind_default_game_resp__collection,
+     &detail::clone_game_resp__collection,
+     &detail::create_game_resp__collection,
+     &detail::marshal_lua_game_resp__collection,
+     },
+    {
+     "game_resp::dialog",                "dialog",
+     protocol_direction::response,
+     0x30,                                                                 &detail::bind_default_game_resp__dialog,
+     &detail::clone_game_resp__dialog,
+     &detail::create_game_resp__dialog,
+     &detail::marshal_lua_game_resp__dialog,
+     },
+    {
+     "game_resp::dialog_0x30_10",                        "dialog_0x30_10",
+     protocol_direction::response,
+     0x30,                                                                    &detail::bind_default_game_resp__dialog_0x30_10,
+     &detail::clone_game_resp__dialog_0x30_10,
+     &detail::create_game_resp__dialog_0x30_10,
+     &detail::marshal_lua_game_resp__dialog_0x30_10,
+     },
+    {
+     "game_resp::dialog_dual_field",                                "dialog_dual_field",
+     protocol_direction::response,
+     0x2F,                                                                                                &detail::bind_default_game_resp__dialog_dual_field,
+     &detail::clone_game_resp__dialog_dual_field,
+     &detail::create_game_resp__dialog_dual_field,
+     &detail::marshal_lua_game_resp__dialog_dual_field,
+     },
+    {
+     "game_resp::dialog_email",                                                   "dialog_email",
+     protocol_direction::response,
+     0x30,                           &detail::bind_default_game_resp__dialog_email,
+     &detail::clone_game_resp__dialog_email,
+     &detail::create_game_resp__dialog_email,
+     &detail::marshal_lua_game_resp__dialog_email,
+     },
+    {
+     "game_resp::dialog_input",         "dialog_input",
+     protocol_direction::response,
+     0x2F,                                                                                                         &detail::bind_default_game_resp__dialog_input,
+     &detail::clone_game_resp__dialog_input,
+     &detail::create_game_resp__dialog_input,
+     &detail::marshal_lua_game_resp__dialog_input,
+     },
+    {
+     "game_resp::dialog_input_ext", "dialog_input_ext",
+     protocol_direction::response,
+     0x30,                                                  &detail::bind_default_game_resp__dialog_input_ext,
+     &detail::clone_game_resp__dialog_input_ext,
+     &detail::create_game_resp__dialog_input_ext,
+     &detail::marshal_lua_game_resp__dialog_input_ext,
+     },
+    {
+     "game_resp::dialog_item",                        "dialog_item",
+     protocol_direction::response,
+     0x2F,                                                             &detail::bind_default_game_resp__dialog_item,
+     &detail::clone_game_resp__dialog_item,
+     &detail::create_game_resp__dialog_item,
+     &detail::marshal_lua_game_resp__dialog_item,
+     },
+    {
+     "game_resp::dialog_list",                         "dialog_list",
+     protocol_direction::response,
+     0x30,                                                                                                &detail::bind_default_game_resp__dialog_list,
+     &detail::clone_game_resp__dialog_list,
+     &detail::create_game_resp__dialog_list,
+     &detail::marshal_lua_game_resp__dialog_list,
+     },
+    {
+     "game_resp::dialog_menu",                                                   "dialog_menu",
+     protocol_direction::response,
+     0x2F,                                           &detail::bind_default_game_resp__dialog_menu,
+     &detail::clone_game_resp__dialog_menu,
+     &detail::create_game_resp__dialog_menu,
+     &detail::marshal_lua_game_resp__dialog_menu,
+     },
+    {
+     "game_resp::dialog_pursuit",         "dialog_pursuit",
+     protocol_direction::response,
+     0x2F,                                                                                                         &detail::bind_default_game_resp__dialog_pursuit,
+     &detail::clone_game_resp__dialog_pursuit,
+     &detail::create_game_resp__dialog_pursuit,
+     &detail::marshal_lua_game_resp__dialog_pursuit,
+     },
+    {
+     "game_resp::dialog_slot", "dialog_slot",
+     protocol_direction::response,
+     0x2F,                                                  &detail::bind_default_game_resp__dialog_slot,
+     &detail::clone_game_resp__dialog_slot,
+     &detail::create_game_resp__dialog_slot,
+     &detail::marshal_lua_game_resp__dialog_slot,
+     },
+    {
+     "game_resp::dialog_spell",                        "dialog_spell",
+     protocol_direction::response,
+     0x2F,                                                                 &detail::bind_default_game_resp__dialog_spell,
+     &detail::clone_game_resp__dialog_spell,
+     &detail::create_game_resp__dialog_spell,
+     &detail::marshal_lua_game_resp__dialog_spell,
+     },
+    {
+     "game_resp::die",                                   "die",
+     protocol_direction::response,
+     0x5F,                                                                                                &detail::bind_default_game_resp__die,
+     &detail::clone_game_resp__die,
+     &detail::create_game_resp__die,
+     &detail::marshal_lua_game_resp__die,
+     },
+    {
+     "game_resp::direction",                                                   "direction",
+     protocol_direction::response,
+     0x11,                                             &detail::bind_default_game_resp__direction,
+     &detail::clone_game_resp__direction,
+     &detail::create_game_resp__direction,
+     &detail::marshal_lua_game_resp__direction,
+     },
+    {
+     "game_resp::effect",               "effect",
+     protocol_direction::response,
+     0x29,                                                                                                         &detail::bind_default_game_resp__effect,
+     &detail::clone_game_resp__effect,
+     &detail::create_game_resp__effect,
+     &detail::marshal_lua_game_resp__effect,
+     },
+    {
+     "game_resp::external_info",            "external_info",
+     protocol_direction::response,
+     0x34,                                                             &detail::bind_default_game_resp__external_info,
+     &detail::clone_game_resp__external_info,
+     &detail::create_game_resp__external_info,
+     &detail::marshal_lua_game_resp__external_info,
+     },
+    {
+     "game_resp::freeze",                        "freeze",
+     protocol_direction::response,
+     0x51,                                                            &detail::bind_default_game_resp__freeze,
+     &detail::clone_game_resp__freeze,
+     &detail::create_game_resp__freeze,
+     &detail::marshal_lua_game_resp__freeze,
+     },
+    {
+     "game_resp::friends_sync",                      "friends_sync",
+     protocol_direction::response,
+     0x6A,                                                                                                &detail::bind_default_game_resp__friends_sync,
+     &detail::clone_game_resp__friends_sync,
+     &detail::create_game_resp__friends_sync,
+     &detail::marshal_lua_game_resp__friends_sync,
+     },
+    {
+     "game_resp::group_portrait",                                                   "group_portrait",
+     protocol_direction::response,
+     0x63,         &detail::bind_default_game_resp__group_portrait,
+     &detail::clone_game_resp__group_portrait,
+     &detail::create_game_resp__group_portrait,
+     &detail::marshal_lua_game_resp__group_portrait,
+     },
+    {
+     "game_resp::hide",             "hide",
+     protocol_direction::response,
+     0x0E,                                                                                                         &detail::bind_default_game_resp__hide,
+     &detail::clone_game_resp__hide,
+     &detail::create_game_resp__hide,
+     &detail::marshal_lua_game_resp__hide,
+     },
+    {
+     "game_resp::holyday_screen",      "holyday_screen",
+     protocol_direction::response,
+     0x5A,                                                       &detail::bind_default_game_resp__holyday_screen,
+     &detail::clone_game_resp__holyday_screen,
+     &detail::create_game_resp__holyday_screen,
+     &detail::marshal_lua_game_resp__holyday_screen,
+     },
+    {
+     "game_resp::id",                        "id",
+     protocol_direction::response,
+     0x05,                                                          &detail::bind_default_game_resp__id,
+     &detail::clone_game_resp__id,
+     &detail::create_game_resp__id,
+     &detail::marshal_lua_game_resp__id,
+     },
+    {
+     "game_resp::init",                            "init",
+     protocol_direction::response,
+     0x1E,                                                                                                &detail::bind_default_game_resp__init,
+     &detail::clone_game_resp__init,
+     &detail::create_game_resp__init,
+     &detail::marshal_lua_game_resp__init,
+     },
+    {
+     "game_resp::internal_info",                                                   "internal_info",
+     protocol_direction::response,
+     0x39,                                     &detail::bind_default_game_resp__internal_info,
+     &detail::clone_game_resp__internal_info,
+     &detail::create_game_resp__internal_info,
+     &detail::marshal_lua_game_resp__internal_info,
+     },
+    {
+     "game_resp::item_remove",              "item_remove",
+     protocol_direction::response,
+     0x10,                                                                                                         &detail::bind_default_game_resp__item_remove,
+     &detail::clone_game_resp__item_remove,
+     &detail::create_game_resp__item_remove,
+     &detail::marshal_lua_game_resp__item_remove,
+     },
+    {
+     "game_resp::item_throw_confirm",       "item_throw_confirm",
+     protocol_direction::response,
+     0x4E,                                                        &detail::bind_default_game_resp__item_throw_confirm,
+     &detail::clone_game_resp__item_throw_confirm,
+     &detail::create_game_resp__item_throw_confirm,
+     &detail::marshal_lua_game_resp__item_throw_confirm,
+     },
+    {
+     "game_resp::item_throws",                        "item_throws",
+     protocol_direction::response,
+     0x16,                                                            &detail::bind_default_game_resp__item_throws,
+     &detail::clone_game_resp__item_throws,
+     &detail::create_game_resp__item_throws,
+     &detail::marshal_lua_game_resp__item_throws,
+     },
+    {
+     "game_resp::item_tip",                            "item_tip",
+     protocol_direction::response,
+     0x59,                                                                                                &detail::bind_default_game_resp__item_tip,
+     &detail::clone_game_resp__item_tip,
+     &detail::create_game_resp__item_tip,
+     &detail::marshal_lua_game_resp__item_tip,
+     },
+    {
+     "game_resp::item_unequip",                                                   "item_unequip",
+     protocol_direction::response,
+     0x38,                                    &detail::bind_default_game_resp__item_unequip,
+     &detail::clone_game_resp__item_unequip,
+     &detail::create_game_resp__item_unequip,
+     &detail::marshal_lua_game_resp__item_unequip,
+     },
+    {
+     "game_resp::item_update",             "item_update",
+     protocol_direction::response,
+     0x0F,                                                                                                         &detail::bind_default_game_resp__item_update,
+     &detail::clone_game_resp__item_update,
+     &detail::create_game_resp__item_update,
+     &detail::marshal_lua_game_resp__item_update,
+     },
+    {
+     "game_resp::item_update_slot",               "item_update_slot",
+     protocol_direction::response,
+     0x37,                                                                &detail::bind_default_game_resp__item_update_slot,
+     &detail::clone_game_resp__item_update_slot,
+     &detail::create_game_resp__item_update_slot,
+     &detail::marshal_lua_game_resp__item_update_slot,
+     },
+    {
+     "game_resp::map_bgm",                        "map_bgm",
+     protocol_direction::response,
+     0x19,                                                                 &detail::bind_default_game_resp__map_bgm,
+     &detail::clone_game_resp__map_bgm,
+     &detail::create_game_resp__map_bgm,
+     &detail::marshal_lua_game_resp__map_bgm,
+     },
+    {
+     "game_resp::map_bgm_stop",                                 "map_bgm_stop",
+     protocol_direction::response,
+     0x19,                                                                                                &detail::bind_default_game_resp__map_bgm_stop,
+     &detail::clone_game_resp__map_bgm_stop,
+     &detail::create_game_resp__map_bgm_stop,
+     &detail::marshal_lua_game_resp__map_bgm_stop,
+     },
+    {
+     "game_resp::map_config",                                                   "map_config",
+     protocol_direction::response,
+     0x15,                                              &detail::bind_default_game_resp__map_config,
+     &detail::clone_game_resp__map_config,
+     &detail::create_game_resp__map_config,
+     &detail::marshal_lua_game_resp__map_config,
+     },
+    {
+     "game_resp::map_update",            "map_update",
+     protocol_direction::response,
+     0x06,                                                                                                         &detail::bind_default_game_resp__map_update,
+     &detail::clone_game_resp__map_update,
+     &detail::create_game_resp__map_update,
+     &detail::marshal_lua_game_resp__map_update,
+     },
+    {
+     "game_resp::map_worlds",            "map_worlds",
+     protocol_direction::response,
+     0x2E,                                                             &detail::bind_default_game_resp__map_worlds,
+     &detail::clone_game_resp__map_worlds,
+     &detail::create_game_resp__map_worlds,
+     &detail::marshal_lua_game_resp__map_worlds,
+     },
+    {
+     "game_resp::message",                        "message",
+     protocol_direction::response,
+     0x0A,                                                              &detail::bind_default_game_resp__message,
+     &detail::clone_game_resp__message,
+     &detail::create_game_resp__message,
+     &detail::marshal_lua_game_resp__message,
+     },
+    {
+     "game_resp::move",                         "move",
+     protocol_direction::response,
+     0x0C,                                                                                                &detail::bind_default_game_resp__move,
+     &detail::clone_game_resp__move,
+     &detail::create_game_resp__move,
+     &detail::marshal_lua_game_resp__move,
+     },
+    {
+     "game_resp::move_confirm",                                                   "move_confirm",
+     protocol_direction::response,
+     0x0B,                                                               &detail::bind_default_game_resp__move_confirm,
+     &detail::clone_game_resp__move_confirm,
+     &detail::create_game_resp__move_confirm,
+     &detail::marshal_lua_game_resp__move_confirm,
+     },
+    {
+     "game_resp::move_confirm_noscroll",                     "move_confirm_noscroll",
+     protocol_direction::response,
+     0x26,                                                                                                         &detail::bind_default_game_resp__move_confirm_noscroll,
+     &detail::clone_game_resp__move_confirm_noscroll,
+     &detail::create_game_resp__move_confirm_noscroll,
+     &detail::marshal_lua_game_resp__move_confirm_noscroll,
+     },
+    {
+     "game_resp::notice",    "notice",
+     protocol_direction::response,
+     0x58,                                                     &detail::bind_default_game_resp__notice,
+     &detail::clone_game_resp__notice,
+     &detail::create_game_resp__notice,
+     &detail::marshal_lua_game_resp__notice,
+     },
+    {
+     "game_resp::option",                        "option",
+     protocol_direction::response,
+     0x23,                                                                        &detail::bind_default_game_resp__option,
+     &detail::clone_game_resp__option,
+     &detail::create_game_resp__option,
+     &detail::marshal_lua_game_resp__option,
+     },
+    {
+     "game_resp::ping",                                   "ping",
+     protocol_direction::response,
+     0x68,                                                                                                &detail::bind_default_game_resp__ping,
+     &detail::clone_game_resp__ping,
+     &detail::create_game_resp__ping,
+     &detail::marshal_lua_game_resp__ping,
+     },
+    {
+     "game_resp::popup_input",                                                   "popup_input",
+     protocol_direction::response,
+     0x1B,       &detail::bind_default_game_resp__popup_input,
+     &detail::clone_game_resp__popup_input,
+     &detail::create_game_resp__popup_input,
+     &detail::marshal_lua_game_resp__popup_input,
+     },
+    {
+     "game_resp::popup_message",            "popup_message",
+     protocol_direction::response,
+     0x35,                                                                                                         &detail::bind_default_game_resp__popup_message,
+     &detail::clone_game_resp__popup_message,
+     &detail::create_game_resp__popup_message,
+     &detail::marshal_lua_game_resp__popup_message,
+     },
+    {
+     "game_resp::position",       "position",
+     protocol_direction::response,
+     0x04,                                                        &detail::bind_default_game_resp__position,
+     &detail::clone_game_resp__position,
+     &detail::create_game_resp__position,
+     &detail::marshal_lua_game_resp__position,
+     },
+    {
+     "game_resp::save",                        "save",
+     protocol_direction::response,
+     0x21,                                                        &detail::bind_default_game_resp__save,
+     &detail::clone_game_resp__save,
+     &detail::create_game_resp__save,
+     &detail::marshal_lua_game_resp__save,
+     },
+    {
+     "game_resp::screen_refresh_complete",                            "screen_refresh_complete",
+     protocol_direction::response,
+     0x22,                                                                                                &detail::bind_default_game_resp__screen_refresh_complete,
+     &detail::clone_game_resp__screen_refresh_complete,
+     &detail::create_game_resp__screen_refresh_complete,
+     &detail::marshal_lua_game_resp__screen_refresh_complete,
+     },
+    {
+     "game_resp::show",                                                   "show",
+     protocol_direction::response,
+     0x33,                                        &detail::bind_default_game_resp__show,
+     &detail::clone_game_resp__show,
+     &detail::create_game_resp__show,
+     &detail::marshal_lua_game_resp__show,
+     },
+    {
+     "game_resp::sound",                 "sound",
+     protocol_direction::response,
+     0x19,                                                                                                         &detail::bind_default_game_resp__sound,
+     &detail::clone_game_resp__sound,
+     &detail::create_game_resp__sound,
+     &detail::marshal_lua_game_resp__sound,
+     },
+    {
+     "game_resp::spell_buff",      "spell_buff",
+     protocol_direction::response,
+     0x3A,                                                       &detail::bind_default_game_resp__spell_buff,
+     &detail::clone_game_resp__spell_buff,
+     &detail::create_game_resp__spell_buff,
+     &detail::marshal_lua_game_resp__spell_buff,
+     },
+    {
+     "game_resp::spell_delay",                        "spell_delay",
+     protocol_direction::response,
+     0x3A,                                                               &detail::bind_default_game_resp__spell_delay,
+     &detail::clone_game_resp__spell_delay,
+     &detail::create_game_resp__spell_delay,
+     &detail::marshal_lua_game_resp__spell_delay,
+     },
+    {
+     "game_resp::spell_remove",                       "spell_remove",
+     protocol_direction::response,
+     0x18,                                                                                                &detail::bind_default_game_resp__spell_remove,
+     &detail::clone_game_resp__spell_remove,
+     &detail::create_game_resp__spell_remove,
+     &detail::marshal_lua_game_resp__spell_remove,
+     },
+    {
+     "game_resp::spell_unbuff",                                                   "spell_unbuff",
+     protocol_direction::response,
+     0x3A,                                              &detail::bind_default_game_resp__spell_unbuff,
+     &detail::clone_game_resp__spell_unbuff,
+     &detail::create_game_resp__spell_unbuff,
+     &detail::marshal_lua_game_resp__spell_unbuff,
+     },
+    {
+     "game_resp::spell_update",                  "spell_update",
+     protocol_direction::response,
+     0x17,                                                                                                         &detail::bind_default_game_resp__spell_update,
+     &detail::clone_game_resp__spell_update,
+     &detail::create_game_resp__spell_update,
+     &detail::marshal_lua_game_resp__spell_update,
+     },
+    {
+     "game_resp::time",      "time",
+     protocol_direction::response,
+     0x20,                                                       &detail::bind_default_game_resp__time,
+     &detail::clone_game_resp__time,
+     &detail::create_game_resp__time,
+     &detail::marshal_lua_game_resp__time,
+     },
+    {
+     "game_resp::timer",                        "timer",
+     protocol_direction::response,
+     0x67,                                                                &detail::bind_default_game_resp__timer,
+     &detail::clone_game_resp__timer,
+     &detail::create_game_resp__timer,
+     &detail::marshal_lua_game_resp__timer,
+     },
+    {
+     "game_resp::trade_bundle",                             "trade_bundle",
+     protocol_direction::response,
+     0x42,                                                                                                &detail::bind_default_game_resp__trade_bundle,
+     &detail::clone_game_resp__trade_bundle,
+     &detail::create_game_resp__trade_bundle,
+     &detail::marshal_lua_game_resp__trade_bundle,
+     },
+    {
+     "game_resp::trade_close",                                                   "trade_close",
+     protocol_direction::response,
+     0x42,                                                    &detail::bind_default_game_resp__trade_close,
+     &detail::clone_game_resp__trade_close,
+     &detail::create_game_resp__trade_close,
+     &detail::marshal_lua_game_resp__trade_close,
+     },
+    {
+     "game_resp::trade_dialog",               "trade_dialog",
+     protocol_direction::response,
+     0x42,                                                                                                         &detail::bind_default_game_resp__trade_dialog,
+     &detail::clone_game_resp__trade_dialog,
+     &detail::create_game_resp__trade_dialog,
+     &detail::marshal_lua_game_resp__trade_dialog,
+     },
+    {
+     "game_resp::trade_lock",           "trade_lock",
+     protocol_direction::response,
+     0x42,                                                            &detail::bind_default_game_resp__trade_lock,
+     &detail::clone_game_resp__trade_lock,
+     &detail::create_game_resp__trade_lock,
+     &detail::marshal_lua_game_resp__trade_lock,
+     },
+    {
+     "game_resp::trade_money",                        "trade_money",
+     protocol_direction::response,
+     0x42,                                                                      &detail::bind_default_game_resp__trade_money,
+     &detail::clone_game_resp__trade_money,
+     &detail::create_game_resp__trade_money,
+     &detail::marshal_lua_game_resp__trade_money,
+     },
+    {
+     "game_resp::trade_upload",                           "trade_upload",
+     protocol_direction::response,
+     0x42,                                                                                                &detail::bind_default_game_resp__trade_upload,
+     &detail::clone_game_resp__trade_upload,
+     &detail::create_game_resp__trade_upload,
+     &detail::marshal_lua_game_resp__trade_upload,
+     },
+    {
+     "game_resp::ui_screen",                                                   "ui_screen",
+     protocol_direction::response,
+     0x3E,                     &detail::bind_default_game_resp__ui_screen,
+     &detail::clone_game_resp__ui_screen,
+     &detail::create_game_resp__ui_screen,
+     &detail::marshal_lua_game_resp__ui_screen,
+     },
+    {
+     "game_resp::unknown_4f",    "unknown_4f",
+     protocol_direction::response,
+     0x4F,                                                                                                         &detail::bind_default_game_resp__unknown_4f,
+     &detail::clone_game_resp__unknown_4f,
+     &detail::create_game_resp__unknown_4f,
+     &detail::marshal_lua_game_resp__unknown_4f,
+     },
+    {
+     "game_resp::update",            "update",
+     protocol_direction::response,
+     0x07,                                                             &detail::bind_default_game_resp__update,
+     &detail::clone_game_resp__update,
+     &detail::create_game_resp__update,
+     &detail::marshal_lua_game_resp__update,
+     },
+    {
+     "game_resp::update_cc",                        "update_cc",
+     protocol_direction::response,
+     0x24,                                                                    &detail::bind_default_game_resp__update_cc,
+     &detail::clone_game_resp__update_cc,
+     &detail::create_game_resp__update_cc,
+     &detail::marshal_lua_game_resp__update_cc,
+     },
+    {
+     "game_resp::update_external",                                   "update_external",
+     protocol_direction::response,
+     0x1D,                                                                                                &detail::bind_default_game_resp__update_external,
+     &detail::clone_game_resp__update_external,
+     &detail::create_game_resp__update_external,
+     &detail::marshal_lua_game_resp__update_external,
+     },
+    {
+     "game_resp::update_hp",                                                   "update_hp",
+     protocol_direction::response,
+     0x13,           &detail::bind_default_game_resp__update_hp,
+     &detail::clone_game_resp__update_hp,
+     &detail::create_game_resp__update_hp,
+     &detail::marshal_lua_game_resp__update_hp,
+     },
+    {
+     "game_resp::update_internal",              "update_internal",
+     protocol_direction::response,
+     0x08,                                                                                                         &detail::bind_default_game_resp__update_internal,
+     &detail::clone_game_resp__update_internal,
+     &detail::create_game_resp__update_internal,
+     &detail::marshal_lua_game_resp__update_internal,
+     },
+    {
+     "game_resp::user_info",     "user_info",
+     protocol_direction::response,
+     0x4D,                                                      &detail::bind_default_game_resp__user_info,
+     &detail::clone_game_resp__user_info,
+     &detail::create_game_resp__user_info,
+     &detail::marshal_lua_game_resp__user_info,
+     },
+    {
+     "game_resp::user_list",                        "user_list",
+     protocol_direction::response,
+     0x36,                                                                  &detail::bind_default_game_resp__user_list,
+     &detail::clone_game_resp__user_list,
+     &detail::create_game_resp__user_list,
+     &detail::marshal_lua_game_resp__user_list,
+     },
+    {
+     "game_resp::weather",                                   "weather",
+     protocol_direction::response,
+     0x1F,                                                                                                &detail::bind_default_game_resp__weather,
+     &detail::clone_game_resp__weather,
+     &detail::create_game_resp__weather,
+     &detail::marshal_lua_game_resp__weather,
+     },
+    {
+     "game_resp::web",                                                   "web",
+     protocol_direction::response,
+     0x66,          &detail::bind_default_game_resp__web,
+     &detail::clone_game_resp__web,
+     &detail::create_game_resp__web,
+     &detail::marshal_lua_game_resp__web,
+     },
+    {
+     "game_resp::web_map",  "web_map",
+     protocol_direction::response,
+     0x70,                                                                                                         &detail::bind_default_game_resp__web_map,
+     &detail::clone_game_resp__web_map,
+     &detail::create_game_resp__web_map,
+     &detail::marshal_lua_game_resp__web_map,
+     },
 };
 
 const protocol_entry* protocol_registry::entries()

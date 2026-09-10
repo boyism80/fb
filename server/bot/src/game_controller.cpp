@@ -1,6 +1,10 @@
 #include <fb/bot/game_controller.h>
 #include <fb/bot/container.h>
+#include <fb/bot/integration/bulletin_bot.h>
+#include <fb/bot/integration/dialog_bot.h>
+#include <fb/bot/integration/dialog_ext_bot.h>
 #include <fb/bot/integration/protocol_registry.h>
+#include <fb/bot/integration/trade_bot.h>
 #include <fb/logger.h>
 
 using namespace fb::bot;
@@ -41,7 +45,15 @@ game_bot_controller::game_bot_controller(bot_container& container) :
     this->bind(&game_bot_controller::on_ping);
 
     integration::protocol_registry::register_all();
-    integration::protocol_registry::bind(*this);
+    // Shared opcodes (bulletin 0x31, dialog 0x2F/0x30, trade 0x42) need the
+    // unified bot deserializer first. bind_default is first-writer-wins;
+    // generated per-subtype types would otherwise own the opcode and later
+    // request<bulletin_bot>() would skip binding.
+    this->bind_default<integration::bulletin_bot>();
+    this->bind_default<integration::dialog_bot>();
+    this->bind_default<integration::dialog_ext_bot>();
+    this->bind_default<integration::trade_bot>();
+    integration::protocol_registry::bind_default(*this);
 }
 
 async::task<void> game_bot_controller::on_bot_disconnected(game_bot& bot)
@@ -212,6 +224,7 @@ async::task<void> game_bot_controller::on_transfer(game_bot& bot, const fb::prot
 
     auto created = this->create(response.parameter);
     created->set_transfer_from_bot_id(bot.id);
+    created->set_name(bot.name());
     fb::logger::debug("bot transfer reconnect: bot={} old_bot_id={} new_bot_id={} endpoint={}:{}",
                       created->name(),
                       bot.id,

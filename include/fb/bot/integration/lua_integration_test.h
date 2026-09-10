@@ -106,7 +106,6 @@ private:
     async::task<bool> run_lua_function(int func_ref);
     async::task<void> run_lua_void(int func_ref, std::optional<uint32_t> extra_arg = std::nullopt);
     async::task<void> invoke_lua_hook(int                         lua_ref,
-                                      fb::lua::context&           lua_ctx,
                                       fb::bot::game_bot&          bot,
                                       const fb::protocol::header& header,
                                       const protocol_entry*       entry);

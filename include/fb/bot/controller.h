@@ -25,7 +25,7 @@ public:
     virtual async::task<void> on_closed(fb::socket<>& socket)                      = 0;
     virtual async::task<void> on_bot_connected(base_bot& bot)                      = 0;
     virtual async::task<void> on_bot_disconnected(base_bot& bot)                   = 0;
-    virtual void              bind(uint8_t opcode)                                = 0;
+    virtual void              bind_default(uint8_t opcode)                         = 0;
 };
 
 template <typename BotType>
@@ -134,7 +134,7 @@ protected:
         co_await this->on_bot_disconnected(typed_bot);
     }
 
-    virtual void bind(uint8_t opcode) override
+    virtual void bind_default(uint8_t opcode) override
     {
         {
             auto shared_lock = std::shared_lock<std::shared_mutex>(this->_handler_mutex);
@@ -164,7 +164,7 @@ public:
         return std::static_pointer_cast<T>(this->shared_from_this());
     }
 
-    template <typename ResponseType> void bind()
+    template <typename ResponseType> void bind_default()
     {
         {
             auto shared_lock = std::shared_lock<std::shared_mutex>(this->_handler_mutex);
@@ -456,7 +456,7 @@ bot<BotType>::request_by_opcode(std::shared_ptr<BotType>                        
                                 bool                                                         wrap,
                                 std::function<std::shared_ptr<fb::protocol::header>(const fb::protocol::header&)> clone)
 {
-    static_cast<base_bot_controller&>(target->controller).bind(response_opcode);
+    static_cast<base_bot_controller&>(target->controller).bind_default(response_opcode);
 
     auto self_ptr = std::static_pointer_cast<BotType>(target->shared_from_this());
     auto context  = std::make_shared<request_erased_context>(self_ptr, response_opcode);
@@ -587,7 +587,7 @@ async::task<ResponseType> bot<BotType>::request(std::shared_ptr<BotType>        
                                                 bool                                                 encrypt,
                                                 bool                                                 wrap)
 {
-    target->controller.template bind<ResponseType>();
+    target->controller.template bind_default<ResponseType>();
 
     auto response = co_await this->request_by_opcode(
         target,

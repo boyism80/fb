@@ -177,19 +177,77 @@ def make_type(
     )
 
 
+_DIRECTIVE_RE = re.compile(r"^\s*#\s*(ifndef|ifdef|if|else|endif)\b(.*)$")
+
+
+def _bot_if_branch(directive: str, rest: str) -> str | None:
+    rest = rest.split("//", 1)[0].strip()
+    rest = re.sub(r"\s+", " ", rest)
+    if directive == "ifdef" and rest.split(" ", 1)[0] == "BOT":
+        return "keep"
+    if directive == "ifndef" and rest.split(" ", 1)[0] == "BOT":
+        return "skip"
+    if directive == "if":
+        if rest in ("BOT", "defined(BOT)", "defined BOT"):
+            return "keep"
+        if rest in ("!BOT", "!defined(BOT)", "! defined(BOT)"):
+            return "skip"
+    return None
+
+
 def preprocess_for_bot(text: str) -> str:
-    text = re.sub(
-        r"#ifndef\s+BOT\b.*?#else\b(.*?)#endif",
-        r"\1",
-        text,
-        flags=re.DOTALL,
-    )
-    text = re.sub(r"#ifndef\s+BOT\b.*?#endif", "", text, flags=re.DOTALL)
-    text = re.sub(r"#if\s+BOT\b(.*?)#else\b.*?#endif", r"\1", text, flags=re.DOTALL)
-    text = re.sub(r"#ifdef\s+BOT\b(.*?)#else\b.*?#endif", r"\1", text, flags=re.DOTALL)
-    text = re.sub(r"#if\s+BOT\b(.*?)#endif", r"\1", text, flags=re.DOTALL)
-    text = re.sub(r"#ifdef\s+BOT\b(.*?)#endif", r"\1", text, flags=re.DOTALL)
-    return text
+    """Keep the BOT-defined view of #ifdef/#ifndef BOT. Nested, not regex-greedy.
+
+    A file-level `#ifndef BOT` helper (e.g. compute_head_marker) must not
+    swallow a later `#else` inside `class show`.
+    """
+    lines = text.splitlines(keepends=True)
+    out: list[str] = []
+    stack: list[dict[str, bool | str | None]] = []
+
+    def emitting() -> bool:
+        return all(frame["on"] for frame in stack)
+
+    for line in lines:
+        match = _DIRECTIVE_RE.match(line.rstrip("\r\n"))
+        if match is None:
+            if emitting():
+                out.append(line)
+            continue
+
+        directive = match.group(1)
+        rest = match.group(2)
+        if directive in ("ifdef", "ifndef", "if"):
+            parent = emitting()
+            branch = _bot_if_branch(directive, rest)
+            if branch == "keep":
+                on = parent
+                kind = "keep"
+            elif branch == "skip":
+                on = False
+                kind = "skip"
+            else:
+                on = parent
+                kind = "other"
+            stack.append({"on": on, "parent": parent, "kind": kind})
+            continue
+
+        if directive == "else":
+            if not stack:
+                continue
+            frame = stack[-1]
+            if frame["kind"] == "keep":
+                frame["on"] = False
+            elif frame["kind"] == "skip":
+                frame["on"] = frame["parent"]
+            continue
+
+        if directive == "endif":
+            if stack:
+                stack.pop()
+            continue
+
+    return "".join(out)
 
 
 def extract_class_body(ns_body: str, match: re.Match[str]) -> str:
@@ -445,6 +503,12 @@ def scan_protocols() -> list[ProtocolType]:
             sub = extract_namespace_body(text, direction)
             if sub is None:
                 continue
+
+            # Dialog family (and similar) is a CLIENT_VERSION template on the
+            # server and a non-template class under #else BOT. Scan the BOT
+            # view so generated code does not emit Type<BOT_CLIENT_VERSION>
+            # for those packets.
+            sub = preprocess_for_bot(sub)
 
             for m in CLASS_RE.finditer(sub):
                 class_name = m.group(1)
@@ -863,9 +927,9 @@ def generate_cpp(types: list[ProtocolType]) -> str:
         if t.direction == "response":
             lines.extend(
                 [
-                    f"void bind_{sym}(fb::bot::game_bot_controller& controller)",
+                    f"void bind_default_{sym}(fb::bot::game_bot_controller& controller)",
                     "{",
-                    f"    controller.bind<{t.cpp_type}>();",
+                    f"    controller.bind_default<{t.cpp_type}>();",
                     "}",
                     "",
                     f"std::shared_ptr<fb::protocol::header> clone_{sym}(const fb::protocol::header& header)",
@@ -883,7 +947,7 @@ def generate_cpp(types: list[ProtocolType]) -> str:
         else:
             lines.extend(
                 [
-                    f"void bind_{sym}(fb::bot::game_bot_controller&)",
+                    f"void bind_default_{sym}(fb::bot::game_bot_controller&)",
                     "{",
                     "}",
                     "",
@@ -918,7 +982,7 @@ def generate_cpp(types: list[ProtocolType]) -> str:
         direction = "protocol_direction::response" if t.direction == "response" else "protocol_direction::request"
         lines.append(f"        {direction},")
         lines.append(f"        0x{t.opcode:02X},")
-        lines.append(f"        &detail::bind_{sym},")
+        lines.append(f"        &detail::bind_default_{sym},")
         lines.append(f"        &detail::clone_{sym},")
         lines.append(f"        &detail::create_{sym},")
         if t.direction == "response":
