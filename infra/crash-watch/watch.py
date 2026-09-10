@@ -20,12 +20,18 @@ def incoming_webhook_url(url):
 
 def crash_excerpt(log_text):
     start = log_text.rfind("*** FB CRASH ***")
-    if start < 0:
-        return log_text[-4000:]
-    end = log_text.find("*** END CRASH ***", start)
-    if end >= 0:
-        return log_text[start : end + len("*** END CRASH ***")]
-    return log_text[start:]
+    if start >= 0:
+        end = log_text.find("*** END CRASH ***", start)
+        if end >= 0:
+            return log_text[start : end + len("*** END CRASH ***")]
+        return log_text[start:]
+
+    asan = log_text.rfind("ERROR: AddressSanitizer:")
+    if asan < 0:
+        asan = log_text.rfind("==ERROR: AddressSanitizer:")
+    if asan >= 0:
+        return log_text[asan : asan + 4000]
+    return log_text[-4000:]
 
 
 def notify(title, body):

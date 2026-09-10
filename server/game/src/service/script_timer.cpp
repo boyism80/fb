@@ -141,26 +141,34 @@ async::task<std::optional<uint64_t>> service::script_timer::create_or_replace(fb
     auto* server = &this->server;
     auto  timer  = thread->settimer(
         [server, id, map_id, path, func, repeat](const fb::model::datetime&, std::thread::id) -> async::task<void> {
-            auto& timers = server->script_timers;
+            // Copy captures into the coroutine frame before any suspend. The
+            // lambda object itself may be destroyed while lua->call is yielded.
+            auto* srv         = server;
+            auto  timer_id    = id;
+            auto  mid         = map_id;
+            auto  script_path = path;
+            auto  script_func = func;
+            auto  once        = (repeat == false);
+            auto& timers      = srv->script_timers;
 
-            if (server->maps.find(map_id) == nullptr)
+            if (srv->maps.find(mid) == nullptr)
             {
-                timers.cancel(id);
+                timers.cancel(timer_id);
                 co_return;
             }
 
-            auto lua = server->lua.open(path, func);
+            auto lua = srv->lua.open(script_path, script_func);
             if (lua)
             {
                 std::ignore = co_await lua->call(0);
             }
             else
             {
-                fb::logger::warn("script_timer: failed to open {}:{}", path, func);
+                fb::logger::warn("script_timer: failed to open {}:{}", script_path, script_func);
             }
 
-            if (repeat == false)
-                timers.cancel(id);
+            if (once)
+                timers.cancel(timer_id);
             co_return;
         },
         duration,

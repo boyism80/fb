@@ -51,9 +51,9 @@ void fb::thread::on_thread(uint8_t index)
 void fb::thread::on_idle()
 {
     auto now = fb::model::datetime();
-    for (int i = this->_timers.size() - 1; i >= 0; i--)
+    for (int i = static_cast<int>(this->_timers.size()) - 1; i >= 0; i--)
     {
-        auto timer = this->_timers[i].get();
+        auto timer = this->_timers[i];
         if (timer->canceled())
         {
             this->_timers.erase(this->_timers.begin() + i);
@@ -72,10 +72,14 @@ void fb::thread::on_idle()
         if (timer->repeat == fb::timer::repeat_type::repeat)
             timer->begin = now;
 
-        auto fn    = fb::timer::handle_callback_type{timer->fn};
         auto index = this->_index;
         execution_context::pending(timer->context);
-        async::awaitable_then(fn(now, this->_thread.get_id()), [timer, index](auto result) {
+
+        // Invoke timer->fn in place and keep this shared_ptr until the task
+        // finishes. Copying the std::function and dropping it at the end of this
+        // iteration frees coroutine-lambda captures while lua/script_timer is
+        // still suspended (ASan heap-use-after-free).
+        async::awaitable_then(timer->fn(now, this->_thread.get_id()), [timer, index](auto result) {
             try
             {
                 result();
@@ -130,10 +134,11 @@ std::shared_ptr<fb::timer> fb::thread::settimer(fb::timer::handle_callback_type&
     auto snapshot = execution_context::token();
     auto ptr      = new fb::timer(
         [this, fn](const fb::model::datetime&, std::thread::id) -> async::task<void> {
-            auto index = this->_index;
+            auto index    = this->_index;
+            auto callback = fn;
             try
             {
-                co_await fn(fb::model::datetime(), this->_thread.get_id());
+                co_await callback(fb::model::datetime(), this->_thread.get_id());
             }
             catch (std::exception& e)
             {

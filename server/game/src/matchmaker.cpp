@@ -144,26 +144,64 @@ void matchmaker::enqueue_squad_unregister(uint32_t match_type, std::string_view 
 
     auto registry_id_str = std::string(registry_id);
     auto owner_id        = this->owner.id;
-    this->owner.server.characters.foreach_enqueue(
-        [registry_id_str, match_type](auto& ch) -> async::task<void> {
-            auto id = ch->matchmaker.registry_id();
-            if (id.has_value() == false || id.value() != registry_id_str)
-                co_return;
-
-            auto lua = ch->server.lua.open("scripts/interaction.lua", "on_matchmaking_unregister");
-            if (lua)
+    auto names           = std::vector<std::string>{};
+    auto group_id        = this->owner.group_id();
+    if (group_id.has_value())
+    {
+        auto group_guard = this->owner.server.groups.try_enter_read(group_id.value());
+        if (group_guard.has_value() && group_guard->value() != nullptr)
+        {
+            for (auto& name : group_guard->value()->members())
             {
-                lua->pushobject(ch);
-                lua->pushinteger(match_type);
-                lua->pushstring(registry_id_str.c_str());
-                std::ignore = lua->call(3);
+                auto ch = this->owner.server.characters.find(name);
+                if (ch != nullptr && ch->id != owner_id)
+                    names.push_back(name);
             }
-            ch->matchmaker.clear_enrollment();
-            co_return;
-        },
-        [owner_id](const character::container::character_ptr_t& ch) {
-            return ch->id != owner_id;
-        });
+        }
+    }
+
+    if (names.empty() == false)
+    {
+        this->owner.server.characters.foreach_enqueue(
+            names,
+            [registry_id_str, match_type](auto& ch) -> async::task<void> {
+                auto lua = ch->server.lua.open("scripts/interaction.lua", "on_matchmaking_unregister");
+                if (lua)
+                {
+                    lua->pushobject(ch);
+                    lua->pushinteger(match_type);
+                    lua->pushstring(registry_id_str.c_str());
+                    std::ignore = co_await lua->call(3);
+                }
+                ch->matchmaker.clear_pending_match_id();
+                ch->matchmaker.clear_enrollment();
+                co_return;
+            });
+    }
+    else
+    {
+        this->owner.server.characters.foreach_enqueue(
+            [registry_id_str, match_type](auto& ch) -> async::task<void> {
+                auto id = ch->matchmaker.registry_id();
+                if (id.has_value() == false || id.value() != registry_id_str)
+                    co_return;
+
+                auto lua = ch->server.lua.open("scripts/interaction.lua", "on_matchmaking_unregister");
+                if (lua)
+                {
+                    lua->pushobject(ch);
+                    lua->pushinteger(match_type);
+                    lua->pushstring(registry_id_str.c_str());
+                    std::ignore = co_await lua->call(3);
+                }
+                ch->matchmaker.clear_pending_match_id();
+                ch->matchmaker.clear_enrollment();
+                co_return;
+            },
+            [owner_id](const character::container::character_ptr_t& ch) {
+                return ch->id != owner_id;
+            });
+    }
 }
 
 async::task<void> matchmaker::unregister_queue(bool quiet)
@@ -178,8 +216,10 @@ async::task<void> matchmaker::unregister_queue(bool quiet)
     auto world        = this->owner.world();
     auto match_type   = enrollment.match_type;
     auto character_id = this->owner.id;
+    auto weak         = this->owner.weak_from_this_as<character>();
     this->clear_enrollment();
 
+    auto error = std::optional<std::string>{};
     try
     {
         auto&& resp =
@@ -187,48 +227,52 @@ async::task<void> matchmaker::unregister_queue(bool quiet)
                                                   "/matchmaking/unregister",
                                                   mp_reqs::Unregister{match_type, registry_id, world, character_id});
 
+        if (weak.lock() == nullptr)
+            co_return;
+        co_await this->owner.server.threads.switching(weak);
+
         if (resp.error != 0 || resp.success == false)
         {
+            auto message = enum_tostring(static_cast<fb::model::enum_value::ERROR_CODE>(resp.error));
             if (quiet)
-            {
-                fb::logger::warn("matchmaking unregister failed for character {}: {}",
-                                 character_id,
-                                 enum_tostring(static_cast<fb::model::enum_value::ERROR_CODE>(resp.error)));
-            }
+                fb::logger::warn("matchmaking unregister failed for character {}: {}", character_id, message);
             else
-            {
-                this->set_enrollment(match_type, registry_id);
-                throw std::runtime_error(enum_tostring(static_cast<fb::model::enum_value::ERROR_CODE>(resp.error)));
-            }
+                error = message;
         }
     }
     catch (const std::exception& e)
     {
+        error = e.what();
+    }
+
+    if (error.has_value())
+    {
+        if (weak.lock() != nullptr)
+            co_await this->owner.server.threads.switching(weak);
+
         if (quiet)
         {
-            fb::logger::warn("matchmaking unregister failed for character {}: {}", character_id, e.what());
+            fb::logger::warn("matchmaking unregister failed for character {}: {}", character_id, error.value());
         }
         else
         {
             this->set_enrollment(match_type, registry_id);
-            throw;
+            throw std::runtime_error(error.value());
         }
     }
 
     this->enqueue_squad_unregister(match_type, registry_id);
 
+    auto ptr = weak.lock();
+    if (ptr != nullptr)
     {
-        auto ptr = this->owner.weak_from_this_as<character>().lock();
-        if (ptr != nullptr)
+        auto lua = this->owner.server.lua.open("scripts/interaction.lua", "on_matchmaking_unregister");
+        if (lua)
         {
-            auto lua = this->owner.server.lua.open("scripts/interaction.lua", "on_matchmaking_unregister");
-            if (lua)
-            {
-                lua->pushobject(ptr);
-                lua->pushinteger(match_type);
-                lua->pushstring(registry_id.c_str());
-                std::ignore = lua->call(3);
-            }
+            lua->pushobject(ptr);
+            lua->pushinteger(match_type);
+            lua->pushstring(registry_id.c_str());
+            std::ignore = co_await lua->call(3);
         }
     }
 
@@ -244,39 +288,48 @@ async::task<void> matchmaker::confirm_queue(std::string match_id, bool quiet)
 
     auto world        = this->owner.world();
     auto character_id = this->owner.id;
+    auto weak         = this->owner.weak_from_this_as<character>();
 
+    auto error = std::optional<std::string>{};
     try
     {
         auto&& resp = co_await this->owner.server.http.post("matchmaking",
                                                             "/matchmaking/confirm",
                                                             mp_reqs::Confirm{match_id, world, character_id});
 
+        if (weak.lock() == nullptr)
+            co_return;
+        co_await this->owner.server.threads.switching(weak);
+
         if (resp.error != 0)
         {
+            auto message = enum_tostring(static_cast<fb::model::enum_value::ERROR_CODE>(resp.error));
             if (quiet)
-            {
-                fb::logger::warn("matchmaking confirm failed for character {}: {}",
-                                 character_id,
-                                 enum_tostring(static_cast<fb::model::enum_value::ERROR_CODE>(resp.error)));
-            }
+                fb::logger::warn("matchmaking confirm failed for character {}: {}", character_id, message);
             else
-            {
-                throw std::runtime_error(enum_tostring(static_cast<fb::model::enum_value::ERROR_CODE>(resp.error)));
-            }
+                error = message;
         }
     }
     catch (const std::exception& e)
     {
+        error = e.what();
+    }
+
+    if (error.has_value())
+    {
+        if (weak.lock() != nullptr)
+            co_await this->owner.server.threads.switching(weak);
+
         if (quiet)
-            fb::logger::warn("matchmaking confirm failed for character {}: {}", character_id, e.what());
+            fb::logger::warn("matchmaking confirm failed for character {}: {}", character_id, error.value());
         else
-            throw;
+            throw std::runtime_error(error.value());
     }
 
     if (!quiet)
     {
         auto match_type = this->_enrollment.has_value() ? this->_enrollment->match_type : 0;
-        auto ptr        = this->owner.weak_from_this_as<character>().lock();
+        auto ptr        = weak.lock();
         if (ptr != nullptr)
         {
             auto lua = this->owner.server.lua.open("scripts/interaction.lua", "on_matchmaking_confirm");
@@ -285,7 +338,7 @@ async::task<void> matchmaker::confirm_queue(std::string match_id, bool quiet)
                 lua->pushobject(ptr);
                 lua->pushstring(match_id.c_str());
                 lua->pushinteger(match_type);
-                std::ignore = lua->call(3);
+                std::ignore = co_await lua->call(3);
             }
         }
     }
@@ -302,33 +355,42 @@ async::task<void> matchmaker::decline_queue(std::string match_id, bool quiet)
 
     auto world        = this->owner.world();
     auto character_id = this->owner.id;
+    auto weak         = this->owner.weak_from_this_as<character>();
 
+    auto error = std::optional<std::string>{};
     try
     {
         auto&& resp = co_await this->owner.server.http.post("matchmaking",
                                                             "/matchmaking/decline",
                                                             mp_reqs::Decline{match_id, world, character_id});
 
+        if (weak.lock() == nullptr)
+            co_return;
+        co_await this->owner.server.threads.switching(weak);
+
         if (resp.error != 0)
         {
+            auto message = enum_tostring(static_cast<fb::model::enum_value::ERROR_CODE>(resp.error));
             if (quiet)
-            {
-                fb::logger::warn("matchmaking decline failed for character {}: {}",
-                                 character_id,
-                                 enum_tostring(static_cast<fb::model::enum_value::ERROR_CODE>(resp.error)));
-            }
+                fb::logger::warn("matchmaking decline failed for character {}: {}", character_id, message);
             else
-            {
-                throw std::runtime_error(enum_tostring(static_cast<fb::model::enum_value::ERROR_CODE>(resp.error)));
-            }
+                error = message;
         }
     }
     catch (const std::exception& e)
     {
+        error = e.what();
+    }
+
+    if (error.has_value())
+    {
+        if (weak.lock() != nullptr)
+            co_await this->owner.server.threads.switching(weak);
+
         if (quiet)
-            fb::logger::warn("matchmaking decline failed for character {}: {}", character_id, e.what());
+            fb::logger::warn("matchmaking decline failed for character {}: {}", character_id, error.value());
         else
-            throw;
+            throw std::runtime_error(error.value());
     }
 
     this->clear_pending_match_id_if(match_id);
@@ -338,7 +400,7 @@ async::task<void> matchmaker::decline_queue(std::string match_id, bool quiet)
     if (!quiet)
     {
         auto match_type = squad_notify.has_value() ? squad_notify->match_type : 0;
-        auto ptr        = this->owner.weak_from_this_as<character>().lock();
+        auto ptr        = weak.lock();
         if (ptr != nullptr)
         {
             auto lua = this->owner.server.lua.open("scripts/interaction.lua", "on_matchmaking_decline");
@@ -347,7 +409,7 @@ async::task<void> matchmaker::decline_queue(std::string match_id, bool quiet)
                 lua->pushobject(ptr);
                 lua->pushstring(match_id.c_str());
                 lua->pushinteger(match_type);
-                std::ignore = lua->call(3);
+                std::ignore = co_await lua->call(3);
             }
         }
     }
@@ -440,6 +502,12 @@ async::task<void> matchmaker::register_queue(uint32_t match_type)
     auto&& resp = co_await this->owner.server.http.post("matchmaking",
                                                         "/matchmaking/register",
                                                         mp_reqs::Register{match_type, entries});
+
+    self = weak.lock();
+    if (self == nullptr)
+        throw std::runtime_error(_TEXT(MESSAGE_MARKETPLACE_CHARACTER_EXPIRED));
+    co_await this->owner.server.threads.switching(weak);
+
     if (resp.error != 0)
         throw std::runtime_error(enum_tostring(static_cast<fb::model::enum_value::ERROR_CODE>(resp.error)));
 
@@ -467,7 +535,7 @@ async::task<void> matchmaker::register_queue(uint32_t match_type)
                     lua->pushobject(ptr);
                     lua->pushinteger(match_type);
                     lua->pushstring(registry_id_str.c_str());
-                    std::ignore = lua->call(3);
+                    std::ignore = co_await lua->call(3);
                 }
                 co_return;
             };
@@ -482,7 +550,7 @@ async::task<void> matchmaker::register_queue(uint32_t match_type)
             lua->pushobject(self);
             lua->pushinteger(match_type);
             lua->pushstring(resp.registry_id.c_str());
-            std::ignore = lua->call(3);
+            std::ignore = co_await lua->call(3);
         }
     }
 
