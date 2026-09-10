@@ -124,9 +124,9 @@ public:
     explicit container(server& server);
 
 public:
-    async::task<void>      join(character& ch, std::string_view match_id, uint32_t match_type, uint32_t team = 0);
-    void                   leave(character& ch);
-    void                   remove(std::string_view match_id);
+    async::task<void> join(character& ch, std::string_view match_id, uint32_t match_type, uint32_t team = 0);
+    void              leave(character& ch);
+    void              remove(std::string_view match_id);
 };
 
 } // namespace fb::game

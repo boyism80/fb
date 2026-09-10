@@ -53,10 +53,11 @@ public:
     logger& operator= (const logger&) = delete;
 
 private:
-    bool           has_flag(fb::logger::level level) const;
-    void           enqueue(std::string line);
-    void           writer_run();
-    static logger& get();
+    bool               has_flag(fb::logger::level level) const;
+    void               enqueue(std::string line);
+    void               writer_run();
+    static logger&     get();
+    static std::string format_line(std::string_view tag, std::string_view name, std::string_view message);
 
 public:
     static std::string daily_path(std::string_view service);
@@ -90,7 +91,7 @@ fb::logger& fb::logger::debug(fb::console::color color, std::string_view fmt, Ar
         return ist;
 
     auto message = std::vformat(fmt, std::make_format_args(args...));
-    auto line    = std::format("{:<7} {} [{}] {}", "[DEBUG]", fb::model::datetime().to_string(), ist._name, message);
+    auto line    = format_line("[DEBUG]", ist._name, message);
 #ifdef _WIN32
     line = fb::utf8(line);
 #endif
@@ -114,7 +115,7 @@ fb::logger& fb::logger::info(fb::console::color color, std::string_view fmt, Arg
         return ist;
 
     auto message = std::vformat(fmt, std::make_format_args(args...));
-    auto line    = std::format("{:<7} {} [{}] {}", "[INFO]", fb::model::datetime().to_string(), ist._name, message);
+    auto line    = format_line("[INFO]", ist._name, message);
 #ifdef _WIN32
     line = fb::utf8(line);
 #endif
@@ -138,7 +139,7 @@ fb::logger& fb::logger::warn(fb::console::color color, std::string_view fmt, Arg
         return ist;
 
     auto message = std::vformat(fmt, std::make_format_args(args...));
-    auto line    = std::format("{:<7} {} [{}] {}", "[WARN]", fb::model::datetime().to_string(), ist._name, message);
+    auto line    = format_line("[WARN]", ist._name, message);
 #ifdef _WIN32
     line = fb::utf8(line);
 #endif
@@ -162,7 +163,7 @@ fb::logger& fb::logger::fatal(fb::console::color color, std::string_view fmt, Ar
         return ist;
 
     auto message = std::vformat(fmt, std::make_format_args(args...));
-    auto line    = std::format("{:<7} {} [{}] {}", "[FATAL]", fb::model::datetime().to_string(), ist._name, message);
+    auto line    = format_line("[FATAL]", ist._name, message);
 #ifdef _WIN32
     line = fb::utf8(line);
 #endif

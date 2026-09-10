@@ -470,8 +470,7 @@ async::task<void> group::container::on_kick(std::string                target,
 async::task<void> group::container::on_destroyed(std::string actor, uint32_t group_id)
 {
     this->erase(group_id, [this, group_id](const auto& group) {
-        auto members = std::vector<std::string>{group->members()};
-        members.push_back(group->master());
+        auto members = roster_names(*group);
 
         this->_server.characters.foreach_enqueue(members, [this](auto& ch) -> async::task<void> {
             if (ch->matchmaker.enrolled())

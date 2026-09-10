@@ -10,11 +10,6 @@ fb::logger::logger(fb::logger::level level, std::string service, std::string nam
     _service(std::move(service)),
     _name(std::move(name))
 {
-    if (this->_service.empty())
-        this->_service = "unknown";
-    if (this->_name.empty())
-        this->_name = "unknown";
-
     this->_writer = std::thread(&logger::writer_run, this);
 }
 
@@ -31,8 +26,18 @@ fb::logger::~logger()
 std::string fb::logger::daily_path(std::string_view service)
 {
     auto dt = fb::model::datetime();
-    auto s  = service.empty() ? "unknown" : service;
-    return std::format("logs/{:04}-{:02}-{:02}-{}.log", dt.year(), dt.month(), dt.day(), s);
+    if (service.empty())
+        return std::format("logs/{:04}-{:02}-{:02}.log", dt.year(), dt.month(), dt.day());
+
+    return std::format("logs/{:04}-{:02}-{:02}-{}.log", dt.year(), dt.month(), dt.day(), service);
+}
+
+std::string fb::logger::format_line(std::string_view tag, std::string_view name, std::string_view message)
+{
+    if (name.empty())
+        return std::format("{:<7} {} {}", tag, fb::model::datetime().to_string(), message);
+
+    return std::format("{:<7} {} [{}] {}", tag, fb::model::datetime().to_string(), name, message);
 }
 
 bool fb::logger::has_flag(fb::logger::level level) const
@@ -122,8 +127,8 @@ fb::logger& fb::logger::get()
     std::call_once(flag, [] {
         auto level      = (int)fb::logger::level::NONE;
         auto log_config = fb::config<>("log");
-        auto name       = fb::config<std::string>("name", std::string{"unknown"});
-        auto service    = std::string{"unknown"};
+        auto name       = fb::config<std::string>("name", std::string{});
+        auto service    = std::string{};
 
         if (log_config.isObject() && log_config.isMember("level"))
         {
@@ -140,9 +145,6 @@ fb::logger& fb::logger::get()
                     level |= (int)fb::logger::level::FATAL;
             }
         }
-
-        if (name.empty())
-            name = "unknown";
 
         if (name.starts_with("gateway"))
             service = "gateway";
