@@ -286,19 +286,22 @@ local function test_scenario_4(ctx, index)
         end)
     log("debug", string.format("Chat[%d]: %s", index, "scenario 4: item dialog done"))
 
-    log("debug", string.format("Chat[%d]: %s", index, "scenario 4: dialog ITEM step (expect normal)"))
-    local packet = bot:request_dialog_ext(
-        protocol.dialog("ITEM", 0, "", 0, 0, "unknown"),
-        function(p)
-            return p.type == "normal"
-        end)
-    log("debug", string.format("Chat[%d]: %s", index, "scenario 4: ITEM step done, message=" .. tostring(packet.message)))
+    log("debug", string.format("Chat[%d]: %s", index, "scenario 4: dialog ITEM step (unknown item quits shop)"))
+    bot:send(protocol.dialog("ITEM", 0, "", 0, 0, "unknown"))
 
-    local ok = packet.message == "This player is a hacker."
+    log("debug", string.format("Chat[%d]: %s", index, "scenario 4: click NPC again after QUIT (expect pursuit)"))
+    local packet = bot:request_dialog(
+        protocol.click(npc.oid),
+        function(p)
+            return p.type == "pursuit"
+        end)
+    log("debug", string.format("Chat[%d]: %s", index, "scenario 4: shop reopened, type=" .. tostring(packet.type)))
+
+    local ok = packet ~= nil and packet.type == "pursuit"
     if ok then
         log("debug", string.format("Chat[%d]: %s", index, "scenario 4 completed successfully"))
     else
-        log("fatal", string.format("Chat[%d]: %s", index, "scenario 4 FAILED: unexpected message"))
+        log("fatal", string.format("Chat[%d]: %s", index, "scenario 4 FAILED: shop did not reopen after QUIT"))
     end
     return ok
 end

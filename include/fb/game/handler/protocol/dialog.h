@@ -3,6 +3,7 @@
 
 #include <fb/handler.h>
 #include <fb/game/server.h>
+#include <fb/lua.h>
 
 namespace fb::game::handler::protocol {
 
@@ -19,6 +20,9 @@ public:
     dialog& operator= (dialog&&)      = delete;
 
     async::task<bool> handle(fb::socket<character>& session, game_reqs::dialog<V>& request) override;
+
+private:
+    lua_Integer selected(fb::lua::context* lua, const game_reqs::dialog<V>& request);
 };
 
 } // namespace fb::game::handler::protocol

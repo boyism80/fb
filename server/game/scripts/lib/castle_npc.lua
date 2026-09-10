@@ -175,7 +175,11 @@ local function buy_secretary(me, npc_obj)
         return
     end
 
-    local item_name, price = table.unpack(SECRETARIES[selected])
+    local secretary = SECRETARIES[selected]
+    if secretary == nil then
+        return
+    end
+    local item_name, price = table.unpack(secretary)
     if name2item(item_name) == nil then
         me:dialog(npc_obj, '준비중인 물품입니다.', { prev = false, next = false })
         return

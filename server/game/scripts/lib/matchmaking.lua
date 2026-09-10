@@ -49,7 +49,7 @@ function M.handle(me, npc)
 
 ::MATCHMAKING_TYPE::
     local selected, button = me:pursuit(npc, '매치 유형을 선택해 주세요.', labels)
-    if button == DIALOG_RESULT.QUIT then
+    if selected == nil or button == DIALOG_RESULT.QUIT then
         return true
     end
 

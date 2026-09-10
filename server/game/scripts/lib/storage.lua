@@ -81,13 +81,13 @@ function M.handle(me, npc)
     end
     
     local entry_index, button = me:pursuit(npc, '통합보관함', entry_list)
-    if button == DIALOG_RESULT.QUIT then
+    if entry_index == nil or button == DIALOG_RESULT.QUIT then
         return true
     end
 
     current_entry = entries[entry_index]
     if current_entry == nil then
-        goto STORAGE_LIST
+        return true
     end
     
 ::ENTRY_DETAIL::

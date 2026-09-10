@@ -181,11 +181,19 @@ void dialog<CLIENT_VERSION::v651>::deserialize(fb::stream_reader<big_endian>& re
     }
 
     case dialog_type::ITEM:
-    case dialog_type::PURSUIT:
     {
         this->oid     = reader.read<uint32_t>();
         this->pursuit = reader.read<uint16_t>();
-        this->name    = reader.read<std::string, uint8_t>();
+        reader.read<uint8_t>();
+        this->item_value = reader.read<uint32_t>();
+        this->index      = reader.read<uint8_t>();
+        break;
+    }
+
+    case dialog_type::PURSUIT:
+    {
+        this->oid   = reader.read<uint32_t>();
+        this->index = reader.read<uint16_t>() + 1;
         break;
     }
 
@@ -438,10 +446,16 @@ void dialog<CLIENT_VERSION::v651>::serialize(fb::stream_writer<big_endian>& writ
         break;
 
     case dialog_type::ITEM:
-    case dialog_type::PURSUIT:
         writer.write<uint32_t>(this->oid);
         writer.write<uint16_t>(this->pursuit);
-        writer.write<std::string, uint8_t>(this->name);
+        writer.write<uint8_t>(1);
+        writer.write<uint32_t>(this->item_value);
+        writer.write<uint8_t>(static_cast<uint8_t>(this->index));
+        break;
+
+    case dialog_type::PURSUIT:
+        writer.write<uint32_t>(this->oid);
+        writer.write<uint16_t>(this->index - 1);
         break;
 
     case dialog_type::DUAL_FIELD:
