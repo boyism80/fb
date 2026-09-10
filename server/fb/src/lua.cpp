@@ -539,44 +539,6 @@ int context::yield(int retc)
     return lua_yield(*this, retc);
 }
 
-void context::clear_loaded_modules()
-{
-    lua_getglobal(*this, "package");
-    if (lua_istable(*this, -1) == false)
-    {
-        lua_pop(*this, 1);
-        return;
-    }
-
-    lua_getfield(*this, -1, "loaded");
-    if (lua_istable(*this, -1) == false)
-    {
-        lua_pop(*this, 2);
-        return;
-    }
-
-    std::vector<std::string> keys;
-    lua_pushnil(*this);
-    while (lua_next(*this, -2) != 0)
-    {
-        if (lua_type(*this, -2) == LUA_TSTRING)
-        {
-            auto key = lua_tostring(*this, -2);
-            if (key != nullptr && std::string_view(key).starts_with("lib."))
-                keys.emplace_back(key);
-        }
-        lua_pop(*this, 1);
-    }
-
-    for (const auto& key : keys)
-    {
-        lua_pushnil(*this);
-        lua_setfield(*this, -2, key.c_str());
-    }
-
-    lua_pop(*this, 2);
-}
-
 void context::release()
 {
     auto root = static_cast<fb::lua::root*>(this->owner);
@@ -875,8 +837,11 @@ bool root::dump(std::string_view path)
 
     ::lua_dump(*this, callback, params, 1);
 
+    const auto outermost = (this->_loading == 0);
+    this->_loading++;
     if (lua_pcall(*this, 0, 1, 0) != LUA_OK)
     {
+        this->_loading--;
         report_load_failed_from_stack(*this, path_str);
         this->_bytecodes[path_str].clear();
         return false;
@@ -884,11 +849,16 @@ bool root::dump(std::string_view path)
 
     if (this->store_module(*this, path_str) == false)
     {
+        this->_loading--;
         report_load_failed(path_str, "module must return a table");
         this->_bytecodes[path_str].clear();
         return false;
     }
 
+    this->remember_lib_from_path(path_str);
+    if (outermost)
+        this->capture_loaded_libs();
+    this->_loading--;
     return true;
 }
 
@@ -1054,12 +1024,7 @@ context* fb::lua::context_pool::new_context(context* parent, call_options option
     if (this->_roots.contains(id) == false)
         return nullptr;
 
-    auto* ctx = this->_roots[id]->pop(parent, options);
-#if defined DEBUG || defined _DEBUG
-    if (ctx != nullptr)
-        ctx->clear_loaded_modules();
-#endif
-    return ctx;
+    return this->_roots[id]->pop(parent, options);
 }
 
 context::guard fb::lua::context_pool::open(context* parent, call_options options)
@@ -1139,22 +1104,27 @@ std::string script_disk_path(std::string_view relative)
     return std::format("scripts/{}", path);
 }
 
-std::string lib_module_name_from_relative(std::string_view relative)
+std::string lib_module_name_from_path(std::string_view path)
 {
-    auto path = std::string(relative);
-    for (auto& ch : path)
+    auto normalized = std::string(path);
+    for (auto& ch : normalized)
     {
         if (ch == '\\')
             ch = '/';
     }
-    while (!path.empty() && path.front() == '/')
-        path.erase(path.begin());
+    while (!normalized.empty() && normalized.front() == '/')
+        normalized.erase(normalized.begin());
+
+    constexpr std::string_view scripts_prefix = "scripts/";
+    if (normalized.size() >= scripts_prefix.size() &&
+        normalized.compare(0, scripts_prefix.size(), scripts_prefix) == 0)
+        normalized.erase(0, scripts_prefix.size());
 
     constexpr std::string_view prefix = "lib/";
-    if (path.size() < prefix.size() || path.compare(0, prefix.size(), prefix) != 0)
+    if (normalized.size() < prefix.size() || normalized.compare(0, prefix.size(), prefix) != 0)
         return {};
 
-    auto module = path.substr(prefix.size());
+    auto module = normalized.substr(prefix.size());
     if (module.size() >= 4 && module.ends_with(".lua"))
         module.resize(module.size() - 4);
     for (auto& ch : module)
@@ -1169,6 +1139,51 @@ std::string lib_module_name_from_relative(std::string_view relative)
 
 } // namespace
 
+void root::remember_lib_from_path(std::string_view path)
+{
+    auto name = lib_module_name_from_path(path);
+    if (name.empty() == false)
+        this->_lib_modules.insert(std::move(name));
+}
+
+void root::capture_loaded_libs()
+{
+    // Called only after pcall/require has returned on this root, never while
+    // another load is inserting into package.loaded.
+    lua_getglobal(*this, "package");
+    if (lua_istable(*this, -1) == false)
+    {
+        lua_pop(*this, 1);
+        return;
+    }
+
+    lua_getfield(*this, -1, "loaded");
+    if (lua_istable(*this, -1) == false)
+    {
+        lua_pop(*this, 2);
+        return;
+    }
+
+    lua_pushnil(*this);
+    while (lua_next(*this, -2) != 0)
+    {
+        if (lua_type(*this, -2) == LUA_TSTRING)
+        {
+            auto key = lua_tostring(*this, -2);
+            if (key != nullptr && std::string_view(key).starts_with("lib."))
+                this->_lib_modules.emplace(key);
+        }
+        lua_pop(*this, 1);
+    }
+    lua_pop(*this, 2);
+}
+
+void root::unload_remembered_libs()
+{
+    for (const auto& name : this->_lib_modules)
+        this->unload_package(name);
+}
+
 async::task<void> fb::lua::context_pool::reload_scripts(const std::vector<std::string>& relative_paths)
 {
     auto disk_paths = std::vector<std::string>{};
@@ -1177,7 +1192,7 @@ async::task<void> fb::lua::context_pool::reload_scripts(const std::vector<std::s
     for (const auto& relative : relative_paths)
     {
         disk_paths.push_back(script_disk_path(relative));
-        auto module = lib_module_name_from_relative(relative);
+        auto module = lib_module_name_from_path(relative);
         if (module.empty() == false)
             lib_modules.push_back(std::move(module));
     }
