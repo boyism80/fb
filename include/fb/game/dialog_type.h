@@ -15,7 +15,7 @@ enum class type : uint8_t
     SLOT         = 5,
     PURSUIT      = 6,
     SPELL        = 8,
-    DUAL_FIELD   = 10,
+    BUY          = 10,
 };
 
 enum class list_type : uint8_t

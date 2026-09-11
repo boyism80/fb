@@ -334,13 +334,13 @@ void marshal_lua_game_resp__dialog_0x30_10(lua_State* L, const fb::protocol::hea
     lua->settable(-3);
 }
 
-void marshal_lua_game_resp__dialog_dual_field(lua_State* L, const fb::protocol::header& header)
+void marshal_lua_game_resp__dialog_buy(lua_State* L, const fb::protocol::header& header)
 {
     auto* lua = fb::lua::get(L);
     if (lua == nullptr)
         return;
 
-    const auto& resp = static_cast<const game_resp::dialog_dual_field&>(header);
+    const auto& resp = static_cast<const game_resp::dialog_buy&>(header);
     lua->new_table();
     lua->pushstring("type_echo");
     lua->pushinteger(resp.type_echo);

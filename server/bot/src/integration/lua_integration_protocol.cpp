@@ -509,10 +509,10 @@ int lua_builder_dialog(lua_State* L)
                                                                              name));
         return 1;
     }
-    else if (type_name == "DUAL_FIELD")
+    else if (type_name == "BUY")
     {
         push_request(L,
-                     std::make_shared<game_reqs::dialog<BOT_CLIENT_VERSION>>(dialog_type::DUAL_FIELD,
+                     std::make_shared<game_reqs::dialog<BOT_CLIENT_VERSION>>(dialog_type::BUY,
                                                                              action,
                                                                              message,
                                                                              index,

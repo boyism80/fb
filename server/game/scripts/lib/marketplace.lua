@@ -63,9 +63,13 @@ function M.search(me, npc)
         return true
     end
 
+    local use_buy_ui = (me:client_version() == 651 and me:ui_mode() == 1)
+    local rows = {}
+    local listing_by_row = {}
     local item_list = {}
     local listing_map = {}
-    for i, listing in ipairs(result.listings) do
+
+    for _, listing in ipairs(result.listings) do
         local item_model = id2item(listing.item_data.model)
         if item_model ~= nil then
             local item_name = item_model:name()
@@ -73,11 +77,39 @@ function M.search(me, npc)
                 listing_map[item_name] = {}
             end
             table.insert(listing_map[item_name], listing)
-            table.insert(item_list, {item_name, listing.price})
+            table.insert(item_list, { item_name, listing.price })
+
+            local count = listing.item_data.count or 0
+            if count < 0 then
+                count = 0
+            elseif count > 255 then
+                count = 255
+            end
+
+            local percent = nil
+            if item_model:attr(ITEM_ATTRIBUTE.EQUIPMENT) and listing.item_data.durability ~= nil then
+                local max_durability = item_model:durability()
+                if max_durability ~= nil and max_durability > 0 then
+                    percent = math.floor((listing.item_data.durability / max_durability) * 100)
+                    if percent < 0 then
+                        percent = 0
+                    elseif percent > 255 then
+                        percent = 255
+                    end
+                end
+            end
+
+            table.insert(rows, {
+                model = item_model,
+                price = listing.price,
+                count = count,
+                percent = percent,
+            })
+            table.insert(listing_by_row, listing)
         end
     end
 
-    if #item_list == 0 then
+    if #rows == 0 then
         local button = me:dialog(npc, '검색 결과가 없습니다.', { prev = true, next = true })
         if button == DIALOG_RESULT.QUIT then
             return false
@@ -88,81 +120,111 @@ function M.search(me, npc)
         return true
     end
 
-    local selected = me:item(npc, '검색 결과입니다. 그림도 있고, 옆에 가격도 함께 드리니 잘 생각하시고 골라주세요.', item_list)
-    if selected == nil then
-        return false
-    end
-
-    local selected_pair = item_list[selected]
-    if selected_pair == nil then
-        return false
-    end
-
-    local selected_name = selected_pair[1]
-    if selected_name == nil or listing_map[selected_name] == nil or #listing_map[selected_name] == 0 then
-        goto MARKETPLACE_SEARCH
-    end
-
+    local msg = '검색 결과입니다. 그림도 있고, 옆에 가격도 함께 드리니 잘 생각하시고 골라주세요.'
     local selected_listing = nil
-    local candidates = listing_map[selected_name]
-    if #candidates == 1 then
-        selected_listing = candidates[1]
-    else
-        local listing_list = {}
-        for i, listing in ipairs(candidates) do
-            local item_model = id2item(listing.item_data.model)
-            local item_name = '알 수 없는 아이템'
-            if item_model ~= nil then
-                item_name = item_model:name()
-            end
+    local client_count = nil
 
-            local display_text = item_name
-            if item_model ~= nil then
-                if item_model:attr(ITEM_ATTRIBUTE.EQUIPMENT) and listing.item_data.durability ~= nil then
-                    local max_durability = item_model:durability()
-                    if max_durability ~= nil and max_durability > 0 then
-                        local durability_percent = math.floor((listing.item_data.durability / max_durability) * 100)
-                        display_text = string.format('%s(%d%%)', item_name, durability_percent)
-                    end
-                elseif item_model:attr(ITEM_ATTRIBUTE.BUNDLE) then
-                    display_text = string.format('%s(%d개)', item_name, listing.item_data.count)
-                end
-            end
-
-            display_text = string.format('%s - %d전', display_text, listing.price)
-            table.insert(listing_list, display_text)
-        end
-
-        local selected_display, button = me:pursuit(npc, '같은 아이템이 여러 개 있습니다. 선택해주세요.', listing_list)
-        if selected_display == nil or button == DIALOG_RESULT.QUIT then
+    if use_buy_ui then
+        -- 6.51 NEW: one row per listing; client prompts for quantity
+        local selected, count = me:buy(npc, msg, rows)
+        if selected == nil then
             return false
         end
-
-        selected_listing = candidates[selected_display]
+        selected_listing = listing_by_row[selected]
         if selected_listing == nil then
             return false
+        end
+        client_count = tonumber(count)
+    else
+        local selected = me:item(npc, msg, item_list)
+        if selected == nil then
+            return false
+        end
+
+        local selected_pair = item_list[selected]
+        if selected_pair == nil then
+            return false
+        end
+
+        local selected_name = selected_pair[1]
+        if selected_name == nil or listing_map[selected_name] == nil or #listing_map[selected_name] == 0 then
+            goto MARKETPLACE_SEARCH
+        end
+
+        local candidates = listing_map[selected_name]
+        if #candidates == 1 then
+            selected_listing = candidates[1]
+        else
+            local listing_list = {}
+            for _, listing in ipairs(candidates) do
+                local item_model = id2item(listing.item_data.model)
+                local item_name = '알 수 없는 아이템'
+                if item_model ~= nil then
+                    item_name = item_model:name()
+                end
+
+                local display_text = item_name
+                if item_model ~= nil then
+                    if item_model:attr(ITEM_ATTRIBUTE.EQUIPMENT) and listing.item_data.durability ~= nil then
+                        local max_durability = item_model:durability()
+                        if max_durability ~= nil and max_durability > 0 then
+                            local durability_percent = math.floor((listing.item_data.durability / max_durability) * 100)
+                            display_text = string.format('%s(%d%%)', item_name, durability_percent)
+                        end
+                    elseif item_model:attr(ITEM_ATTRIBUTE.BUNDLE) then
+                        display_text = string.format('%s(%d개)', item_name, listing.item_data.count)
+                    end
+                end
+
+                display_text = string.format('%s - %d전', display_text, listing.price)
+                table.insert(listing_list, display_text)
+            end
+
+            local selected_display, button = me:pursuit(npc, '같은 아이템이 여러 개 있습니다. 선택해주세요.', listing_list)
+            if selected_display == nil or button == DIALOG_RESULT.QUIT then
+                return false
+            end
+
+            selected_listing = candidates[selected_display]
+            if selected_listing == nil then
+                return false
+            end
         end
     end
 
     local selected_model = id2item(selected_listing.item_data.model)
     local purchase_count = 1
     if selected_model ~= nil and selected_model:attr(ITEM_ATTRIBUTE.BUNDLE) then
-        local max_count = selected_listing.item_data.count
-        local count_input = me:input(npc, string.format('최대 수량이 %d개입니다. 몇 개를 구매하시겠습니까?', max_count))
-        if count_input == nil then
-            goto MARKETPLACE_SEARCH
-        end
-
-        purchase_count = tonumber(count_input)
-        if purchase_count == nil or purchase_count <= 0 or purchase_count > selected_listing.item_data.count then
-            local button = me:dialog(npc, '올바른 수량을 입력해주세요.', { prev = true, next = true })
-            if button == DIALOG_RESULT.QUIT then
-                return false
-            end
-            if button == DIALOG_RESULT.PREV then
+        if use_buy_ui then
+            purchase_count = client_count or 1
+            if purchase_count <= 0 or purchase_count > selected_listing.item_data.count then
+                local button = me:dialog(npc, '올바른 수량을 입력해주세요.', { prev = true, next = true })
+                if button == DIALOG_RESULT.QUIT then
+                    return false
+                end
+                if button == DIALOG_RESULT.PREV then
+                    goto MARKETPLACE_SEARCH
+                end
                 goto MARKETPLACE_SEARCH
             end
-            goto MARKETPLACE_SEARCH
+        else
+            local max_count = selected_listing.item_data.count
+            local count_input = me:input(npc, string.format('최대 수량이 %d개입니다. 몇 개를 구매하시겠습니까?', max_count))
+            if count_input == nil then
+                goto MARKETPLACE_SEARCH
+            end
+
+            purchase_count = tonumber(count_input)
+            if purchase_count == nil or purchase_count <= 0 or purchase_count > selected_listing.item_data.count then
+                local button = me:dialog(npc, '올바른 수량을 입력해주세요.', { prev = true, next = true })
+                if button == DIALOG_RESULT.QUIT then
+                    return false
+                end
+                if button == DIALOG_RESULT.PREV then
+                    goto MARKETPLACE_SEARCH
+                end
+                goto MARKETPLACE_SEARCH
+            end
         end
     end
 
@@ -195,18 +257,31 @@ function M.search(me, npc)
         end
     end
 
-    if #warning_messages > 0 then
-        local warning_text = '이 아이템은 온전한 상태가 아닙니다:\n'
-        for i, msg in ipairs(warning_messages) do
-            warning_text = warning_text .. '- ' .. msg .. '\n'
+    local show_total_confirm = use_buy_ui and purchase_count > 1
+    if show_total_confirm or #warning_messages > 0 then
+        local confirm_text = ''
+        if #warning_messages > 0 then
+            confirm_text = '이 아이템은 온전한 상태가 아닙니다:\n'
+            for _, msg in ipairs(warning_messages) do
+                confirm_text = confirm_text .. '- ' .. msg .. '\n'
+            end
+            confirm_text = confirm_text .. '\n'
         end
-        warning_text = warning_text .. '\n정말 구매하시겠습니까?'
+        if show_total_confirm then
+            local item_name = '아이템'
+            if selected_model ~= nil then
+                item_name = selected_model:name()
+            end
+            local total_price = selected_listing.price * purchase_count
+            confirm_text = confirm_text .. string.format('%s %d개\n총 %d전입니다.\n\n',
+                item_name, purchase_count, total_price)
+        end
+        confirm_text = confirm_text .. '정말 구매하시겠습니까?'
 
-        local confirm_selected, confirm_button = me:pursuit(npc, warning_text, { '예', '아니오' })
+        local confirm_selected, confirm_button = me:pursuit(npc, confirm_text, { '예', '아니오' })
         if confirm_button == DIALOG_RESULT.QUIT then
             return false
         end
-
         if confirm_selected ~= 1 then
             goto MARKETPLACE_SEARCH
         end

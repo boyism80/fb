@@ -92,6 +92,7 @@ struct character
     static int builtin_menu(lua_State* L);
     static int builtin_slot(lua_State* L);
     static int builtin_pursuit(lua_State* L);
+    static int builtin_buy(lua_State* L);
     static int builtin_spell(lua_State* L);
     static int builtin_email(lua_State* L);
     static int builtin_dialog_0x30_10(lua_State* L);

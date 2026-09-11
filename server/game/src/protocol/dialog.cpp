@@ -33,7 +33,8 @@ dialog<CLIENT_VERSION::v651>::dialog(fb::game::dialog::type type,
                                      uint32_t               oid,
                                      uint16_t               seq,
                                      std::string            ext,
-                                     uint32_t               item_value) :
+                                     uint32_t               id,
+                                     uint8_t                count) :
     type(type),
     oid(oid),
     seq(seq),
@@ -43,7 +44,8 @@ dialog<CLIENT_VERSION::v651>::dialog(fb::game::dialog::type type,
     pursuit(pursuit),
     name(std::move(name)),
     ext(std::move(ext)),
-    item_value(item_value)
+    id(id),
+    count(count)
 { }
 #endif
 
@@ -116,7 +118,7 @@ void dialog<V>::deserialize(fb::stream_reader<big_endian>& reader)
 
     case dialog_type::ITEM:
     case dialog_type::PURSUIT:
-    case dialog_type::DUAL_FIELD:
+    case dialog_type::BUY:
     {
         this->oid     = reader.read<uint32_t>();
         this->pursuit = reader.read<uint16_t>();
@@ -189,14 +191,14 @@ void dialog<CLIENT_VERSION::v651>::deserialize(fb::stream_reader<big_endian>& re
         break;
     }
 
-    case dialog_type::DUAL_FIELD:
+    case dialog_type::BUY:
     {
         this->oid     = reader.read<uint32_t>();
         this->pursuit = reader.read<uint16_t>();
-        reader.read<uint8_t>();
-        this->item_value = reader.read<uint32_t>();
-        this->index      = reader.read<uint8_t>();
-        this->name       = std::to_string(this->item_value);
+        reader.read<uint8_t>(); // constant 1
+        this->id    = reader.read<uint32_t>();
+        this->count = reader.read<uint8_t>();
+        this->name  = std::to_string(this->id);
         break;
     }
 
@@ -388,7 +390,7 @@ void dialog<V>::serialize(fb::stream_writer<big_endian>& writer) const
 
     case dialog_type::ITEM:
     case dialog_type::PURSUIT:
-    case dialog_type::DUAL_FIELD:
+    case dialog_type::BUY:
         writer.write<uint32_t>(this->oid);
         writer.write<uint16_t>(this->pursuit);
         writer.write<std::string, uint8_t>(this->name);
@@ -444,12 +446,12 @@ void dialog<CLIENT_VERSION::v651>::serialize(fb::stream_writer<big_endian>& writ
         writer.write<std::string, uint8_t>(this->name);
         break;
 
-    case dialog_type::DUAL_FIELD:
+    case dialog_type::BUY:
         writer.write<uint32_t>(this->oid);
         writer.write<uint16_t>(this->pursuit);
         writer.write<uint8_t>(1);
-        writer.write<uint32_t>(this->item_value);
-        writer.write<uint8_t>(static_cast<uint8_t>(this->index));
+        writer.write<uint32_t>(this->id);
+        writer.write<uint8_t>(this->count);
         break;
     }
 }

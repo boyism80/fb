@@ -823,17 +823,17 @@ std::shared_ptr<fb::protocol::header> create_game_resp__dialog_0x30_10()
     return nullptr;
 }
 
-void bind_default_game_resp__dialog_dual_field(fb::bot::game_bot_controller& controller)
+void bind_default_game_resp__dialog_buy(fb::bot::game_bot_controller& controller)
 {
-    controller.bind_default<game_resp::dialog_dual_field>();
+    controller.bind_default<game_resp::dialog_buy>();
 }
 
-std::shared_ptr<fb::protocol::header> clone_game_resp__dialog_dual_field(const fb::protocol::header& header)
+std::shared_ptr<fb::protocol::header> clone_game_resp__dialog_buy(const fb::protocol::header& header)
 {
-    return std::make_shared<game_resp::dialog_dual_field>(static_cast<const game_resp::dialog_dual_field&>(header));
+    return std::make_shared<game_resp::dialog_buy>(static_cast<const game_resp::dialog_buy&>(header));
 }
 
-std::shared_ptr<fb::protocol::header> create_game_resp__dialog_dual_field()
+std::shared_ptr<fb::protocol::header> create_game_resp__dialog_buy()
 {
     return nullptr;
 }
@@ -2427,12 +2427,12 @@ static const protocol_entry ENTRIES[] = {
      &detail::marshal_lua_game_resp__dialog_0x30_10,
      },
     {
-     "game_resp::dialog_dual_field",                                "dialog_dual_field",
+     "game_resp::dialog_buy",                                "dialog_buy",
      protocol_direction::response,
-     0x2F,                                                                                                &detail::bind_default_game_resp__dialog_dual_field,
-     &detail::clone_game_resp__dialog_dual_field,
-     &detail::create_game_resp__dialog_dual_field,
-     &detail::marshal_lua_game_resp__dialog_dual_field,
+     0x2F,                                                                                                &detail::bind_default_game_resp__dialog_buy,
+     &detail::clone_game_resp__dialog_buy,
+     &detail::create_game_resp__dialog_buy,
+     &detail::marshal_lua_game_resp__dialog_buy,
      },
     {
      "game_resp::dialog_email",                                                   "dialog_email",
@@ -2547,7 +2547,7 @@ static const protocol_entry ENTRIES[] = {
      &detail::marshal_lua_game_resp__freeze,
      },
     {
-     "game_resp::friends_sync",                      "friends_sync",
+     "game_resp::friends_sync",                             "friends_sync",
      protocol_direction::response,
      0x6A,                                                                                                &detail::bind_default_game_resp__friends_sync,
      &detail::clone_game_resp__friends_sync,

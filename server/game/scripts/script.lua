@@ -1,3 +1,5 @@
+local npc = require('lib.npc')
+
 return {
     group_lock = function(me, group)
         if group == nil then
@@ -209,7 +211,7 @@ return {
         end
         
         ------------------------------------------------------------------
-        -- 0x2F pursuit / dual / item / slot / spell
+        -- 0x2F pursuit / buy / item / slot / spell
         ------------------------------------------------------------------
         if not pause('0x2F pursuit (string list): Select name or QUIT.') then return end
         do
@@ -217,17 +219,29 @@ return {
             local name, btn = me:pursuit(me, 'pursuit list', { OPT.a, OPT.b, OPT.c })
             log('pursuit', name, btn)
         end
-        
-        if not pause('0x2F pursuit dual-field (ordered pairs): Select label or QUIT.') then return end
+
+        if not pause('0x2F buy: Select 목검 row or QUIT. (v651 NEW=merchant, OLD=name list)') then return end
         do
-            local label, btn = me:pursuit(me, 'pursuit dual', {
-                { 'HP', '100' },
-                { 'MP', '50' },
-                { 'ATK', '12' },
-            })
-            log('pursuit_dual', label, btn)
+            local acorn = name2item('도토리')
+            local sword = name2item('목검')
+            if acorn == nil or sword == nil then
+                me:chat('[dialog_test] buy skipped (missing 도토리/목검 model)')
+            else
+                local BUY = {
+                    { model = acorn, price = 100, count = 0 },
+                    { model = sword, price = 500, count = 1, percent = 80 },
+                }
+                local idx, count = me:buy(me, 'buy: pick 목검 (expect 2)', BUY)
+                if type(idx) == 'number' and BUY[idx] ~= nil then
+                    local row = BUY[idx]
+                    log('buy', idx, string.format('%s price=%d count=%d percent=%s client_count=%s',
+                        row.model.name, row.price, row.count, tostring(row.percent), tostring(count)))
+                else
+                    log('buy', idx, count)
+                end
+            end
         end
-        
+
         if not pause('0x2F item: needs shop-like pairs. Select or QUIT.') then return end
         do
             local pairs = {
@@ -263,8 +277,28 @@ return {
         me:dialog(me, 'dialog_test complete. Check chat for [dialog_test] results.', { prev = false, next = true })
     end,
     
-    func = function(me, val1, val2, val3)
-        local npc = name2npc('낙랑')
-        local button = me:dialog(npc, '대단히 중요하니 끝까지 읽어주세요! 빈번히 발생하는 아이디 해킹을 미연에 방지하기 위해 또 하나의 2차 비밀번호를 정해야 합니다.', { prev = false, next = true })
+    -- buy smoke test. v651 NEW → merchant columns; v651 OLD / 5.50 → name list.
+    --   /스크립트
+    func = function(me)
+        local acorn = name2item('도토리')
+        local sword = name2item('목검')
+        if acorn == nil or sword == nil then
+            me:chat('[buy_test] skipped (missing 도토리/목검 model)')
+            return
+        end
+
+        local BUY = {
+            { model = acorn, price = 100, count = 0 },
+            { model = sword, price = 500, count = 1, percent = 80 },
+        }
+        local idx, count = me:buy(me, string.format('buy: pick 목검 (expect 2) ver=%s ui=%s',
+            tostring(me:client_version()), tostring(me:ui_mode())), BUY)
+        if type(idx) == 'number' and BUY[idx] ~= nil then
+            local row = BUY[idx]
+            me:chat(string.format('[buy_test] idx=%d %s price=%d count=%d percent=%s client_count=%s',
+                idx, row.model.name, row.price, row.count, tostring(row.percent), tostring(count)))
+        else
+            me:chat(string.format('[buy_test] idx=%s count=%s', tostring(idx), tostring(count)))
+        end
     end
 }

@@ -24,7 +24,7 @@ void marshal_lua_game_resp__chat(lua_State* L, const fb::protocol::header& heade
 void marshal_lua_game_resp__collection(lua_State* L, const fb::protocol::header& header);
 void marshal_lua_game_resp__dialog(lua_State* L, const fb::protocol::header& header);
 void marshal_lua_game_resp__dialog_0x30_10(lua_State* L, const fb::protocol::header& header);
-void marshal_lua_game_resp__dialog_dual_field(lua_State* L, const fb::protocol::header& header);
+void marshal_lua_game_resp__dialog_buy(lua_State* L, const fb::protocol::header& header);
 void marshal_lua_game_resp__dialog_email(lua_State* L, const fb::protocol::header& header);
 void marshal_lua_game_resp__dialog_input(lua_State* L, const fb::protocol::header& header);
 void marshal_lua_game_resp__dialog_input_ext(lua_State* L, const fb::protocol::header& header);

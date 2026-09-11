@@ -22,9 +22,9 @@ lua_Integer dialog<V>::selected(fb::lua::context* lua, const game_reqs::dialog<V
         auto n = static_cast<int>(lua_rawlen(*lua, -1));
         if constexpr (V == fb::protocol::CLIENT_VERSION::v651)
         {
-            if (request.type == fb::game::dialog::type::DUAL_FIELD)
+            if (request.type == fb::game::dialog::type::BUY)
             {
-                found = static_cast<lua_Integer>(request.item_value);
+                found = static_cast<lua_Integer>(request.id);
                 if (found < 1 || found > n)
                     found = 0;
                 lua->pop(1);
@@ -72,6 +72,31 @@ lua_Integer dialog<V>::selected(fb::lua::context* lua, const game_reqs::dialog<V
                         label = item->name();
                 }
                 lua->pop(1);
+
+                if (label.empty())
+                {
+                    lua->pushstring("model");
+                    if (lua_rawget(*lua, -2) != LUA_TNIL)
+                    {
+                        if (lua->is_userdata<fb::model::item>(-1))
+                        {
+                            auto model = lua->touserdata<fb::model::item>(-1);
+                            if (model != nullptr)
+                                label = model->name;
+                        }
+                        else if (lua->is_userdata<fb::game::item>(-1))
+                        {
+                            auto item = lua->touserdata<fb::game::item>(-1);
+                            if (item != nullptr)
+                                label = item->name();
+                        }
+                        else if (lua->is_string(-1))
+                        {
+                            label = lua->tostring(-1);
+                        }
+                    }
+                    lua->pop(1);
+                }
             }
             lua->pop(1);
             if (label.empty())
@@ -123,7 +148,6 @@ async::task<bool> dialog<V>::handle(fb::socket<character>& session, game_reqs::d
 
     case fb::game::dialog::type::ITEM:
     case fb::game::dialog::type::PURSUIT:
-    case fb::game::dialog::type::DUAL_FIELD:
     {
         auto found = this->selected(lua, request);
         if (found != 0)
@@ -131,6 +155,27 @@ async::task<bool> dialog<V>::handle(fb::socket<character>& session, game_reqs::d
         else
             lua->pushnil();
         lua->resume(1);
+        break;
+    }
+
+    case fb::game::dialog::type::BUY:
+    {
+        // Yields: selected (1-based index or nil), count (v651 NEW quantity; else nil)
+        auto found = this->selected(lua, request);
+        if (found != 0)
+        {
+            lua->pushinteger(found);
+            if constexpr (V == fb::protocol::CLIENT_VERSION::v651)
+                lua->pushinteger(request.count);
+            else
+                lua->pushnil();
+            lua->resume(2);
+        }
+        else
+        {
+            lua->pushnil();
+            lua->resume(1);
+        }
         break;
     }
 
