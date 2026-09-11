@@ -144,64 +144,27 @@ void matchmaker::enqueue_squad_unregister(uint32_t match_type, std::string_view 
 
     auto registry_id_str = std::string(registry_id);
     auto owner_id        = this->owner.id;
-    auto names           = std::vector<std::string>{};
-    auto group_id        = this->owner.group_id();
-    if (group_id.has_value())
-    {
-        auto group_guard = this->owner.server.groups.try_enter_read(group_id.value());
-        if (group_guard.has_value() && group_guard->value() != nullptr)
-        {
-            for (auto& name : group_guard->value()->members())
+    this->owner.server.characters.foreach_enqueue(
+        [registry_id_str, match_type](auto& ch) -> async::task<void> {
+            auto id = ch->matchmaker.registry_id();
+            if (id.has_value() == false || id.value() != registry_id_str)
+                co_return;
+
+            auto lua = ch->server.lua.open("scripts/interaction.lua", "on_matchmaking_unregister");
+            if (lua)
             {
-                auto ch = this->owner.server.characters.find(name);
-                if (ch != nullptr && ch->id != owner_id)
-                    names.push_back(name);
+                lua->pushobject(ch);
+                lua->pushinteger(match_type);
+                lua->pushstring(registry_id_str.c_str());
+                std::ignore = co_await lua->call(3);
             }
-        }
-    }
-
-    if (names.empty() == false)
-    {
-        this->owner.server.characters.foreach_enqueue(
-            names,
-            [registry_id_str, match_type](auto& ch) -> async::task<void> {
-                auto lua = ch->server.lua.open("scripts/interaction.lua", "on_matchmaking_unregister");
-                if (lua)
-                {
-                    lua->pushobject(ch);
-                    lua->pushinteger(match_type);
-                    lua->pushstring(registry_id_str.c_str());
-                    std::ignore = co_await lua->call(3);
-                }
-                ch->matchmaker.clear_pending_match_id();
-                ch->matchmaker.clear_enrollment();
-                co_return;
-            });
-    }
-    else
-    {
-        this->owner.server.characters.foreach_enqueue(
-            [registry_id_str, match_type](auto& ch) -> async::task<void> {
-                auto id = ch->matchmaker.registry_id();
-                if (id.has_value() == false || id.value() != registry_id_str)
-                    co_return;
-
-                auto lua = ch->server.lua.open("scripts/interaction.lua", "on_matchmaking_unregister");
-                if (lua)
-                {
-                    lua->pushobject(ch);
-                    lua->pushinteger(match_type);
-                    lua->pushstring(registry_id_str.c_str());
-                    std::ignore = co_await lua->call(3);
-                }
-                ch->matchmaker.clear_pending_match_id();
-                ch->matchmaker.clear_enrollment();
-                co_return;
-            },
-            [owner_id](const character::container::character_ptr_t& ch) {
-                return ch->id != owner_id;
-            });
-    }
+            ch->matchmaker.clear_pending_match_id();
+            ch->matchmaker.clear_enrollment();
+            co_return;
+        },
+        [owner_id](const character::container::character_ptr_t& ch) {
+            return ch->id != owner_id;
+        });
 }
 
 async::task<void> matchmaker::unregister_queue(bool quiet)

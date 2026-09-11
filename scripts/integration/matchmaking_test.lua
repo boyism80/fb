@@ -16,6 +16,7 @@ local HOME_MAP = "낙랑의방"
 local MSG_NOT_GROUP_MASTER = "그룹장만 매치메이킹을 이용할 수 있습니다."
 local MSG_REGISTER_START = "매치메이킹 대기를 시작했습니다"
 local MSG_REGISTER_CANCEL = "매치메이킹 대기를 취소했습니다"
+local MSG_MATCH_CANCELLED = "매치가 취소되었습니다"
 local MSG_MATCH_ENDED = "매치가 종료되었습니다."
 local MSG_PROPOSAL_DIALOG = "매치를 찾았습니다"
 
@@ -137,9 +138,6 @@ local function kill_self(bot)
         return false
     end
 
-    bot:setup_bot_stats(100000, 100000)
-    bot:set_current_hp_mp(50, bot:mp())
-
     local hell_slot = bot:learn_spell("헬파이어")
     if hell_slot == 0xFF then
         return false
@@ -162,6 +160,9 @@ test_suite {
 
     on_initialize = function(ctx)
         progress(ctx:bot(0), "MATCHMAKING TEST INITIALIZED WITH " .. ctx:bot_count() .. " BOTS")
+        for i = 0, ctx:bot_count() - 1 do
+            ctx:bot(i):setup_bot_stats(50, 10000)
+        end
         lib.formation.arrange_in_line(ctx)
     end,
 
@@ -203,6 +204,8 @@ test_suite {
                 return false
             end
 
+            -- Waiting leave → "대기를 취소했습니다"; Pending leave → "매치가 취소되었습니다".
+            -- Remote latency can form a match before STEP 5, so either message is success.
             progress(b, "STEP 5: B LEAVES GROUP, AB UNREGISTER")
             local cancel_packet = b:request_on(
                 a,
@@ -210,11 +213,12 @@ test_suite {
                 protocol.group(b:name()),
                 function(p)
                     return is_state_text(p, MSG_REGISTER_CANCEL)
+                        or is_state_text(p, MSG_MATCH_CANCELLED)
                 end,
                 MESSAGE_WAIT_MS
             )
             if cancel_packet == nil or cancel_packet == false then
-                progress(a, "FAILED: AB DID NOT RECEIVE UNREGISTER MESSAGE")
+                progress(a, "FAILED: AB DID NOT RECEIVE UNREGISTER OR MATCH-CANCEL MESSAGE")
                 return false
             end
 
