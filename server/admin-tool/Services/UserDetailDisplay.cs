@@ -124,6 +124,33 @@ namespace AdminTool.Services
             }
         }
 
+        public static string FormatMobName(uint mobId)
+        {
+            try
+            {
+                if (Table.Mob.TryGetValue(mobId, out var mob) && !string.IsNullOrWhiteSpace(mob?.Name))
+                    return mob.Name;
+            }
+            catch
+            {
+                // ignore lookup errors
+            }
+
+            return $"#{mobId}";
+        }
+
+        public static int GetMobTotalCount()
+        {
+            try
+            {
+                return Table.Mob.Count;
+            }
+            catch
+            {
+                return 0;
+            }
+        }
+
         public static string FormatBuffName(uint modelId)
         {
             var spellName = FormatSpellName((int)modelId);

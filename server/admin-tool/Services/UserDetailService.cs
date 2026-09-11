@@ -89,6 +89,25 @@ namespace AdminTool.Services
             };
         }
 
+        public async Task<UserDetailCollectionData> LoadCollectionAsync(uint world, uint userId)
+        {
+            var unlocks = (await _dbContext.CollectionUnlock.Get(world, userId))
+                .OrderBy(u => u.MobId)
+                .Select(u => new UserCollectionRow
+                {
+                    MobId = u.MobId,
+                    Name = UserDetailDisplay.FormatMobName(u.MobId),
+                    UnlockedDate = u.CreatedDate
+                })
+                .ToList();
+
+            return new UserDetailCollectionData
+            {
+                Unlocks = unlocks,
+                TotalMobCount = UserDetailDisplay.GetMobTotalCount()
+            };
+        }
+
         public async Task<UserDetailMatchmakingData> LoadMatchmakingAsync(uint world, uint userId)
         {
             var skills = (await _dbContext.MatchmakingSkill.Get(world, userId))
@@ -350,6 +369,22 @@ namespace AdminTool.Services
         public List<Spell> Spells { get; set; } = new();
 
         public List<Achievement> Achievements { get; set; } = new();
+    }
+
+    public class UserDetailCollectionData
+    {
+        public List<UserCollectionRow> Unlocks { get; set; } = new();
+
+        public int TotalMobCount { get; set; }
+    }
+
+    public class UserCollectionRow
+    {
+        public uint MobId { get; set; }
+
+        public string Name { get; set; } = string.Empty;
+
+        public DateTime UnlockedDate { get; set; }
     }
 
     public class UserDetailSocialData

@@ -60,6 +60,7 @@ builder.Services.AddScoped<AdminTool.Services.AuthService>();
 builder.Services.AddScoped<AdminTool.Services.UserService>();
 builder.Services.AddScoped<AdminTool.Services.UserDetailService>();
 builder.Services.AddScoped<AdminTool.Services.MarketplaceAdminService>();
+builder.Services.AddScoped<AdminTool.Services.GameDbResetService>();
 builder.Services.AddSingleton<AdminTool.Services.AdminActivityLogService>();
 builder.Services.AddSingleton<AdminTool.Services.TablePublishService>();
 builder.Services.AddSingleton<AdminTool.Services.ScriptPublishService>();

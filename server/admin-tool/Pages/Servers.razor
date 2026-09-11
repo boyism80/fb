@@ -1,4 +1,5 @@
 @page "/servers"
+@using AdminTool.Services
 @using Fb.Model.EnumValue
 @using Http.Service
 @using Microsoft.AspNetCore.Authorization
@@ -6,9 +7,12 @@
 @using Response = fb.protocol._internal.response
 @inject ServerStateService ServerStateService
 @inject CacheService CacheService
+@inject GameDbResetService GameDbResetService
 @inject RabbitMqService RabbitMqService
 @inject AuthenticationStateProvider AuthenticationStateProvider
 @inject IConfiguration Configuration
+@inject AdminActivityLogService ActivityLog
+@inject LogService LogService
 @attribute [AuthorizeRole(Role.Admin)]
 
 <PageTitle>서버 상태 - FB ADMIN</PageTitle>
@@ -125,8 +129,82 @@
                 }
             </div>
         </div>
+        <div class="card-bg dash-card dash-ops-panel" style="margin-top:var(--section-gap);">
+            <h2 class="dash-card-title">DB 초기화</h2>
+            <p class="dash-ops-desc">
+                선택한 월드의 MySQL 게임 DB(캐릭터/아이템/도감 등)를 비웁니다. Redis 캐시·세션과는 별개로 처리되며, 이 작업은 되돌릴 수 없습니다.
+            </p>
+            <ul class="dash-ops-hint" style="margin:0 0 1rem;padding-left:1.25rem;">
+                <li>모든 게임 서버가 종료된 상태여야 합니다.</li>
+                <li>Superadmin 이상 권한이 필요합니다.</li>
+                <li>실행 전 백업을 권장합니다.</li>
+            </ul>
+            <div class="dash-btn-grid dash-btn-grid-single">
+                <button class="dash-ops-btn"
+                        @onclick="ShowDbResetModal"
+                        disabled="@(isDbResetProcessing || !canResetDatabase || filteredServers.Any() || !selectedWorld.HasValue)">
+                    @if (isDbResetProcessing) { <span>초기화 중...</span> }
+                    else { <span>DB 초기화</span> }
+                </button>
+            </div>
+            @if (!canResetDatabase)
+            {
+                <p class="dash-ops-hint">DB 초기화는 Superadmin 이상 권한이 필요합니다.</p>
+            }
+            else if (filteredServers.Any())
+            {
+                <p class="dash-ops-hint">서버가 실행 중이면 DB를 초기화할 수 없습니다.</p>
+            }
+            else if (!selectedWorld.HasValue)
+            {
+                <p class="dash-ops-hint">월드를 선택하세요.</p>
+            }
+        </div>
     }
 </div>
+
+@if (showDbResetModal)
+{
+    <div class="stitch-modal-backdrop" tabindex="-1" @onclick="CloseDbResetModal">
+        <div class="stitch-modal" @onclick:stopPropagation="true">
+            <div class="stitch-modal-header">
+                <h2 class="stitch-modal-title">DB 초기화 확인</h2>
+                <button type="button" class="stitch-modal-close" @onclick="CloseDbResetModal" aria-label="닫기">
+                    <span class="material-symbols-outlined">close</span>
+                </button>
+            </div>
+            <div class="stitch-modal-body">
+                <div class="stitch-error-banner" style="margin-bottom:1rem;">
+                    <div class="stitch-error-banner-content">
+                        <span class="material-symbols-outlined">warning</span>
+                        <span>
+                            월드 @(selectedWorld)의 캐릭터/아이템/도감 등 MySQL 게임 데이터가 영구 삭제됩니다.
+                            Redis 캐시와 세션은 별도로 정리되며, 이 작업은 되돌릴 수 없습니다.
+                        </span>
+                    </div>
+                </div>
+                <label class="form-label" for="dbResetConfirmInput">확인을 위해 <code>RESET</code> 을 입력하세요 (대소문자 구분)</label>
+                <input id="dbResetConfirmInput"
+                       type="text"
+                       class="form-control stitch-input"
+                       @bind="dbResetConfirmText"
+                       @bind:event="oninput"
+                       autocomplete="off"
+                       disabled="@isDbResetProcessing" />
+            </div>
+            <div class="stitch-modal-footer">
+                <button type="button" class="stitch-btn stitch-btn-neutral" @onclick="CloseDbResetModal" disabled="@isDbResetProcessing">취소</button>
+                <button type="button"
+                        class="stitch-btn stitch-btn-danger"
+                        @onclick="ExecuteDbReset"
+                        disabled="@(isDbResetProcessing || !IsDbResetConfirmValid)">
+                    @if (isDbResetProcessing) { <span>초기화 중...</span> }
+                    else { <span>DB 초기화 실행</span> }
+                </button>
+            </div>
+        </div>
+    </div>
+}
 
 @code {
     [CascadingParameter(Name = "SelectedWorld")]
@@ -140,10 +218,17 @@
     private bool isSessionProcessing;
     private bool isSaveProcessing;
     private bool isShutdownProcessing;
+    private bool isDbResetProcessing;
     private bool canSaveServers;
     private bool canShutdownServers;
+    private bool canResetDatabase;
+    private bool showDbResetModal;
+    private string dbResetConfirmText = string.Empty;
     private string errorMessage;
     private string successMessage;
+
+    private bool IsDbResetConfirmValid =>
+        string.Equals(dbResetConfirmText?.Trim(), "RESET", StringComparison.Ordinal);
 
     protected override async Task OnInitializedAsync()
     {
@@ -184,6 +269,7 @@
                          user.IsInRole(nameof(Role.Owner));
         canShutdownServers = user.IsInRole(nameof(Role.Superadmin)) ||
                              user.IsInRole(nameof(Role.Owner));
+        canResetDatabase = canShutdownServers;
     }
 
     private async Task LoadServers()
@@ -343,6 +429,116 @@
         finally
         {
             isShutdownProcessing = false;
+        }
+    }
+
+    private void ShowDbResetModal()
+    {
+        if (!canResetDatabase || filteredServers == null || filteredServers.Any() || !selectedWorld.HasValue)
+            return;
+
+        dbResetConfirmText = string.Empty;
+        showDbResetModal = true;
+        errorMessage = null;
+        successMessage = null;
+    }
+
+    private void CloseDbResetModal()
+    {
+        if (isDbResetProcessing)
+            return;
+
+        showDbResetModal = false;
+        dbResetConfirmText = string.Empty;
+    }
+
+    private async Task ExecuteDbReset()
+    {
+        if (!canResetDatabase)
+        {
+            errorMessage = "DB 초기화 권한이 없습니다.";
+            return;
+        }
+
+        if (!IsDbResetConfirmValid)
+        {
+            errorMessage = "확인 문구가 올바르지 않습니다. RESET 을 입력하세요.";
+            return;
+        }
+
+        if (!selectedWorld.HasValue)
+        {
+            errorMessage = "월드가 선택되지 않았습니다.";
+            return;
+        }
+
+        isDbResetProcessing = true;
+        errorMessage = null;
+        successMessage = null;
+
+        var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
+        var actor = authState.User?.Identity?.Name ?? "unknown";
+        var world = selectedWorld.Value;
+
+        try
+        {
+            var result = await GameDbResetService.ResetWorldAsync(world);
+            if (!result.Success)
+            {
+                errorMessage = result.Error;
+                ActivityLog.Add(new AdminActivityEntry
+                {
+                    Category = "db_reset",
+                    Summary = $"월드 {world} DB 초기화 실패",
+                    Detail = result.Error,
+                    Actor = actor,
+                    Target = $"world:{world}",
+                    Success = false
+                });
+                return;
+            }
+
+            showDbResetModal = false;
+            dbResetConfirmText = string.Empty;
+            successMessage =
+                $"월드 {world} DB 초기화 완료 (테이블 {result.TruncatedTables}개, 캐시 키 {result.ClearedCacheKeys}개).";
+
+            await LogService.WriteAsync("db_reset", new
+            {
+                world,
+                truncated_tables = result.TruncatedTables,
+                cleared_cache_keys = result.ClearedCacheKeys,
+                actor
+            });
+
+            ActivityLog.Add(new AdminActivityEntry
+            {
+                Category = "db_reset",
+                Summary = $"월드 {world} DB 초기화 완료",
+                Detail = $"tables={result.TruncatedTables}, cache_keys={result.ClearedCacheKeys}",
+                Actor = actor,
+                Target = $"world:{world}",
+                Success = true
+            });
+
+            await LoadServers();
+        }
+        catch (Exception ex)
+        {
+            errorMessage = $"DB 초기화 중 오류: {ex.Message}";
+            ActivityLog.Add(new AdminActivityEntry
+            {
+                Category = "db_reset",
+                Summary = $"월드 {world} DB 초기화 예외",
+                Detail = ex.Message,
+                Actor = actor,
+                Target = $"world:{world}",
+                Success = false
+            });
+        }
+        finally
+        {
+            isDbResetProcessing = false;
         }
     }
 }
