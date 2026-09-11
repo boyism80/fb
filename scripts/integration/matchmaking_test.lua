@@ -10,7 +10,6 @@ local DIALOG_WAIT_MS = 15000
 local MESSAGE_WAIT_MS = 15000
 local PROPOSAL_WAIT_MS = 25000
 local MATCH_END_WAIT_MS = 30000
-local MATCH_START_WAIT_MS = 40000
 local TRANSFER_WAIT_MS = 30000
 local HOME_WAIT_MS = 30000
 local POLL_INTERVAL_MS = 200
@@ -30,7 +29,6 @@ local MSG_NOT_GROUP_MASTER = "그룹장만 매치메이킹을 이용할 수 있�
 local MSG_REGISTER_START = "매치메이킹 대기를 시작했습니다"
 local MSG_REGISTER_CANCEL = "매치메이킹 대기를 취소했습니다"
 local MSG_MATCH_CANCELLED = "매치가 취소되었습니다"
-local MSG_MATCH_STARTED = "매치가 시작되었습니다."
 local MSG_MATCH_ENDED = "매치가 종료되었습니다."
 local MSG_PROPOSAL_DIALOG = "매치를 찾았습니다"
 local MSG_GROUP_JOINED = "님 그룹에 참여"
@@ -206,10 +204,9 @@ end
 -- bot_indices are suite indices (0-based). Always re-read ctx:bot after any
 -- transfer — Lua-held bot refs go stale when the bot reconnects.
 -- fatal_pos is 1-based into bot_indices: that bot's death ends the match.
--- wait_for_start: MATCH_1 calls match:wait(30) before playing; deaths before
--- that are ignored. MATCH_2 starts immediately and the start message may already
--- have been pushed before this scenario runs, so skip it there.
-local function finish_match(ctx, bot_indices, fatal_pos, wait_for_start)
+-- Do not wait for "match started" here: on_playing fires during join/transfer,
+-- before this scenario can install a hook, so the message is often already gone.
+local function finish_match(ctx, bot_indices, fatal_pos)
     local function live(pos)
         return ctx:bot(bot_indices[pos])
     end
@@ -227,21 +224,6 @@ local function finish_match(ctx, bot_indices, fatal_pos, wait_for_start)
     if on_match_map == false then
         progress(live(1), "FAILED: EXPECTED MATCH MAP, GOT " .. tostring(map_name(live(1))))
         return false
-    end
-
-    if wait_for_start then
-        local started = live(1):request(
-            resp.message,
-            nil,
-            function(p)
-                return is_state_text(p, MSG_MATCH_STARTED)
-            end,
-            MATCH_START_WAIT_MS
-        )
-        if started == nil or started == false then
-            progress(live(1), "FAILED: DID NOT RECEIVE MATCH STARTED")
-            return false
-        end
     end
 
     for pos = 1, fatal_pos - 1 do
@@ -424,7 +406,7 @@ test_suite {
             end
 
             progress(ctx:bot(0), "STEP 7: FINISH MATCH 2 AND RETURN HOME")
-            if finish_match(ctx, indices, #indices, false) == false then
+            if finish_match(ctx, indices, #indices) == false then
                 return false
             end
 
@@ -451,7 +433,7 @@ test_suite {
         function(ctx)
             progress(ctx:bot(4), "STEP 9: FINISH MATCH 1 AND RETURN HOME")
             -- A single death wipes a 1v1 team, so the first kill ends the match.
-            if finish_match(ctx, {4, 5}, 1, true) == false then
+            if finish_match(ctx, {4, 5}, 1) == false then
                 return false
             end
 

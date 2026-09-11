@@ -158,6 +158,7 @@ IMPLEMENT_LUA_EXTENSION(character, "fb.game.character")
 {"marry",                        builtin::character::builtin_marry},
 {"divorce",                      builtin::character::builtin_divorce},
 {"collection",                   builtin::character::builtin_collection},
+{"collection_unlock_all",        builtin::character::builtin_collection_unlock_all},
 {"unknown_4f",                   builtin::character::builtin_unknown_4f},
 {"notice",                       builtin::character::builtin_notice},
 {"browser",                      builtin::character::builtin_browser},
@@ -4091,6 +4092,30 @@ int builtin::character::builtin_collection(lua_State* L)
     return builder.run();
 }
 
+int builtin::character::builtin_collection_unlock_all(lua_State* L)
+{
+    auto lua = fb::lua::get(L);
+    if (lua == nullptr)
+        return 0;
+
+    auto ch = lua->touserdata<fb::game::character>(1);
+    if (ch == nullptr)
+        return 0;
+
+    auto weak     = ch->weak_from_this_as<fb::game::character>();
+    auto added    = std::make_shared<uint32_t>(0);
+    auto builder  = lua->new_co_builder();
+    builder.weak  = weak;
+    builder.yield = [=]() -> async::task<void> {
+        *added = co_await ch->collections.unlock_all();
+        co_return;
+    };
+    builder.resume = [=]() -> async::task<int> {
+        lua->pushinteger(*added);
+        co_return 1;
+    };
+    return builder.run();
+}
 
 int builtin::character::builtin_unknown_4f(lua_State* L)
 {

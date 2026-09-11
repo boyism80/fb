@@ -1583,6 +1583,16 @@ M.functions = {
             end,
         },
 
+        ['도감채우기'] = {
+            ['privilege'] = ROLE.ADMIN,
+            ['usage'] = '- 모든 도감 항목 해금',
+            ['command'] = function (me, args)
+                local added = me:collection_unlock_all()
+                me:message(string.format('도감 %d개를 해금했습니다.', added or 0))
+                return true
+            end,
+        },
+
         ['unknown_4f'] = {
             ['privilege'] = ROLE.ADMIN,
             ['usage'] = '- S2C 0x4F UI 윈도우 오픈 (5.65+). 클라가 0x54 phase5로 응답',

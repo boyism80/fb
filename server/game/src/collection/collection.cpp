@@ -134,6 +134,42 @@ async::task<void> character_collections::set(uint8_t group_id, uint8_t slot, boo
     co_return;
 }
 
+async::task<uint32_t> character_collections::unlock_all()
+{
+    auto* ch = this->owner_character();
+    if (ch == nullptr)
+        co_return 0;
+
+    auto added = uint32_t{0};
+    for (const auto& [mob_id, mob] : ch->server.collection_mobs())
+    {
+        if (mob == nullptr)
+            continue;
+
+        if (this->contains(mob_id))
+            continue;
+
+        if (this->unlock(mob_id) == false)
+            continue;
+
+        ++added;
+
+        if (ch->client_version != fb::protocol::CLIENT_VERSION::v651)
+            continue;
+
+        auto* item = ch->server.meta.find_item(mob->name);
+        if (item == nullptr)
+            continue;
+
+        ch->listener.on_collection_flag(*ch, item->group_id, item->slot, true);
+    }
+
+    if (added > 0 && ch->client_version == fb::protocol::CLIENT_VERSION::v651)
+        ch->listener.on_collection_list(*ch);
+
+    co_return added;
+}
+
 uint8_t character_collections::unlocked_count(uint8_t group_id) const
 {
     auto* ch = this->owner_character();

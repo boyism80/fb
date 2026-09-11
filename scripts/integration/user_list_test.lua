@@ -30,6 +30,9 @@ test_suite {
                 counts[promotion.cls] = (counts[promotion.cls] or 0) + 1
             end
 
+            -- change_class is fire-and-forget (/직업바꾸기 has no waitable class-name response).
+            ctx:sleep(2000)
+
             local packet = ctx:bot(0):request(
                 resp.user_list,
                 protocol.user_list(),
