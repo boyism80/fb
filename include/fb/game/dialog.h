@@ -19,6 +19,15 @@ namespace fb::game::dialog {
 using item_pair  = std::pair<fb::model::item&, uint32_t>;
 using item_pairs = std::vector<item_pair>;
 
+struct buy_entry
+{
+    const fb::model::item& model;
+    uint32_t               price = 0;
+    uint8_t                count = 0;
+    std::optional<uint8_t> percent; // nullopt → wire 0xFF (omit "(N%)")
+};
+using buy_entries = std::vector<buy_entry>;
+
 // clang-format off
 struct listener_t
 {
@@ -44,8 +53,8 @@ struct listener_t
     virtual void on_dialog_pursuit(character& me, const fb::game::object& obj, std::string_view message, const std::vector<std::string>& options, uint32_t seq = 0xFFFFFFFD, uint16_t pursuit = 0xFFFF) = 0;
     virtual void on_dialog_spell(character& me, const fb::model::object& obj, std::string_view message, uint32_t seq = 0xFFFFFFFD, uint16_t pursuit = 0xFFFF) = 0;
     virtual void on_dialog_spell(character& me, const fb::game::object& obj, std::string_view message, uint32_t seq = 0xFFFFFFFD, uint16_t pursuit = 0xFFFF) = 0;
-    virtual void on_dialog_dual_field(character& me, const fb::model::object& obj, std::string_view message, const std::vector<std::pair<std::string, std::string>>& pairs, uint32_t seq = 0xFFFFFFFD, uint16_t pursuit = 0xFFFF) = 0;
-    virtual void on_dialog_dual_field(character& me, const fb::game::object& obj, std::string_view message, const std::vector<std::pair<std::string, std::string>>& pairs, uint32_t seq = 0xFFFFFFFD, uint16_t pursuit = 0xFFFF) = 0;
+    virtual void on_dialog_buy(character& me, const fb::model::object& obj, std::string_view message, const buy_entries& entries, uint32_t seq = 0xFFFFFFFD, uint16_t pursuit = 0xFFFF) = 0;
+    virtual void on_dialog_buy(character& me, const fb::game::object& obj, std::string_view message, const buy_entries& entries, uint32_t seq = 0xFFFFFFFD, uint16_t pursuit = 0xFFFF) = 0;
 
     virtual void on_dialog_email(character& me, const fb::model::object& obj, std::string_view message, std::string_view str1, std::string_view str2, bool button_prev = false, bool button_next = false, uint32_t seq = 0xFFFFFFFD) = 0;
     virtual void on_dialog_email(character& me, const fb::game::object& obj, std::string_view message, std::string_view str1, std::string_view str2, bool button_prev = false, bool button_next = false, uint32_t seq = 0xFFFFFFFD) = 0;

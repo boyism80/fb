@@ -36,6 +36,20 @@ public sealed class RegistryQueue<TEntry>
         }
     }
 
+    public string Describe()
+    {
+        lock (_lock)
+        {
+            if (_byCreatedDate.Count == 0)
+            {
+                return "empty";
+            }
+
+            var oldest = (DateTime.UtcNow - _byCreatedDate.Min.CreatedDateTime).TotalSeconds;
+            return $"{_byCreatedDate.Count} registries / {TotalEntryCount()} entries (oldest {oldest:F1}s)";
+        }
+    }
+
     public void Add(Registry<TEntry> registry)
     {
         lock (_lock)

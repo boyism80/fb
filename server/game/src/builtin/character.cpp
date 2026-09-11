@@ -133,6 +133,7 @@ IMPLEMENT_LUA_EXTENSION(character, "fb.game.character")
 {"menu",                         builtin::character::builtin_menu},
 {"slot",                         builtin::character::builtin_slot},
 {"pursuit",                      builtin::character::builtin_pursuit},
+{"buy",                          builtin::character::builtin_buy},
 {"spell",                        builtin::character::builtin_spell},
 {"email",                        builtin::character::builtin_email},
 {"dialog_0x30_10",               builtin::character::builtin_dialog_0x30_10},
@@ -157,6 +158,7 @@ IMPLEMENT_LUA_EXTENSION(character, "fb.game.character")
 {"marry",                        builtin::character::builtin_marry},
 {"divorce",                      builtin::character::builtin_divorce},
 {"collection",                   builtin::character::builtin_collection},
+{"collection_unlock_all",        builtin::character::builtin_collection_unlock_all},
 {"unknown_4f",                   builtin::character::builtin_unknown_4f},
 {"notice",                       builtin::character::builtin_notice},
 {"browser",                      builtin::character::builtin_browser},
@@ -603,12 +605,13 @@ int builtin::character::builtin_item(lua_State* L)
 
     // item dialog — yields a 1-based row index, same as list/menu/pursuit
     auto oid   = uint32_t{0xFFFFFFFD};
-    auto model = (const fb::model::object*)nullptr;
+    auto model = static_cast<const fb::model::object*>(nullptr);
+    auto obj   = std::shared_ptr<fb::game::object>(nullptr);
     if (lua->is_userdata<fb::game::object>(2))
     {
-        auto obj = lua->touserdata<fb::game::object>(2);
-        oid      = obj->oid();
-        model    = &obj->model();
+        obj   = lua->touserdata<fb::game::object>(2);
+        oid   = obj->oid();
+        model = &obj->model();
     }
     else if (lua->is_userdata<fb::model::object>(2))
     {
@@ -698,7 +701,11 @@ int builtin::character::builtin_item(lua_State* L)
     auto builder  = lua->new_co_builder();
     builder.weak  = weak;
     builder.yield = [=]() -> async::task<void> {
-        ch->listener.on_dialog(*ch, *model, message, items, oid, pursuit);
+        if (obj != nullptr)
+            ch->listener.on_dialog(*ch, *obj, message, items, oid, pursuit);
+        else
+            ch->listener.on_dialog(*ch, *model, message, items, oid, pursuit);
+
         if (immediate == false)
         {
             if (ch->dialog != nullptr)
@@ -4085,6 +4092,31 @@ int builtin::character::builtin_collection(lua_State* L)
     return builder.run();
 }
 
+int builtin::character::builtin_collection_unlock_all(lua_State* L)
+{
+    auto lua = fb::lua::get(L);
+    if (lua == nullptr)
+        return 0;
+
+    auto ch = lua->touserdata<fb::game::character>(1);
+    if (ch == nullptr)
+        return 0;
+
+    auto weak     = ch->weak_from_this_as<fb::game::character>();
+    auto added    = std::make_shared<uint32_t>(0);
+    auto builder  = lua->new_co_builder();
+    builder.weak  = weak;
+    builder.yield = [=]() -> async::task<void> {
+        *added = co_await ch->collections.unlock_all();
+        co_return;
+    };
+    builder.resume = [=]() -> async::task<int> {
+        lua->pushinteger(*added);
+        co_return 1;
+    };
+    return builder.run();
+}
+
 int builtin::character::builtin_unknown_4f(lua_State* L)
 {
     auto lua = fb::lua::get(L);
@@ -5510,7 +5542,6 @@ int fb::game::builtin::character::builtin_slot(lua_State* L)
 int fb::game::builtin::character::builtin_pursuit(lua_State* L)
 {
     // Ex) ch:pursuit(npc, "msg", {"opt1", "opt2"} [, { pursuit = 0xFFFF, immediate = true }])
-    // Ex) ch:pursuit(npc, "msg", { {"HP", "100"}, {"MP", "50"} } [, { ... }])  -- subtype 10 dual field
     // Yields a 1-based option index, same as list/menu. Dialog TOP is C2S 0x43 (object click), not a yield result.
     auto lua = fb::lua::get(L);
     if (lua == nullptr)
@@ -5542,46 +5573,13 @@ int fb::game::builtin::character::builtin_pursuit(lua_State* L)
     if (lua->is_table(4) == false)
         return 0;
 
-    auto size     = lua->rawlen(4);
-    auto use_dual = false;
-    auto options  = std::vector<std::string>();
-    auto pairs    = std::vector<std::pair<std::string, std::string>>();
-    if (size > 0)
+    auto size    = lua->rawlen(4);
+    auto options = std::vector<std::string>();
+    for (int i = 0; i < size; i++)
     {
-        lua->rawgeti(4, 1);
-        use_dual = lua->is_table(-1);
+        lua->rawgeti(4, i + 1);
+        options.push_back(lua->tostring(-1));
         lua_pop(L, 1);
-    }
-
-    if (use_dual)
-    {
-        for (int i = 0; i < size; i++)
-        {
-            lua->rawgeti(4, i + 1);
-            if (lua->is_table(-1) == false)
-            {
-                lua_pop(L, 1);
-                continue;
-            }
-            lua->rawgeti(-1, 1);
-            auto label = lua->tostring(-1);
-            lua_pop(L, 1);
-            lua->rawgeti(-1, 2);
-            auto value = lua->tostring(-1);
-            lua_pop(L, 1);
-            lua_pop(L, 1);
-            if (label.empty() == false)
-                pairs.emplace_back(std::move(label), std::move(value));
-        }
-    }
-    else
-    {
-        for (int i = 0; i < size; i++)
-        {
-            lua->rawgeti(4, i + 1);
-            options.push_back(lua->tostring(-1));
-            lua_pop(L, 1);
-        }
     }
 
     auto pursuit   = uint16_t{0xFFFF};
@@ -5614,20 +5612,164 @@ int fb::game::builtin::character::builtin_pursuit(lua_State* L)
     auto builder  = lua->new_co_builder();
     builder.weak  = weak;
     builder.yield = [=]() -> async::task<void> {
-        if (use_dual)
-        {
-            if (obj != nullptr)
-                ch->listener.on_dialog_dual_field(*ch, *obj, message, pairs, oid, pursuit);
-            else
-                ch->listener.on_dialog_dual_field(*ch, *model, message, pairs, oid, pursuit);
-        }
+        if (obj != nullptr)
+            ch->listener.on_dialog_pursuit(*ch, *obj, message, options, oid, pursuit);
         else
+            ch->listener.on_dialog_pursuit(*ch, *model, message, options, oid, pursuit);
+
+        if (immediate == false)
         {
-            if (obj != nullptr)
-                ch->listener.on_dialog_pursuit(*ch, *obj, message, options, oid, pursuit);
-            else
-                ch->listener.on_dialog_pursuit(*ch, *model, message, options, oid, pursuit);
+            if (ch->dialog != nullptr)
+                ch->dialog->release();
+
+            ch->dialog = lua;
         }
+        co_return;
+    };
+    if (immediate)
+    {
+        builder.resume = []() -> async::task<int> {
+            co_return 0;
+        };
+    }
+    return builder.run();
+}
+
+int fb::game::builtin::character::builtin_buy(lua_State* L)
+{
+    // Ex) local selected, count = me:buy(npc, "msg", {
+    //       { model = item_model, price = 100, count = 0 },
+    //       { model = item_model, price = 500, count = 1, percent = 80 },
+    //     } [, { pursuit = 0xFFFF, immediate = true }])
+    // percent nil/omitted → wire 0xFF (no "(N%)").
+    // Yields 1-based row index; on v651 NEW also yields client quantity (count).
+    auto lua = fb::lua::get(L);
+    if (lua == nullptr)
+        return 0;
+
+    auto ch = lua->touserdata<fb::game::character>(1);
+    if (ch == nullptr)
+        return 0;
+
+    auto oid   = uint32_t{0xFFFFFFFD};
+    auto model = static_cast<const fb::model::object*>(nullptr);
+    auto obj   = std::shared_ptr<fb::game::object>(nullptr);
+    if (lua->is_userdata<fb::game::object>(2))
+    {
+        obj   = lua->touserdata<fb::game::object>(2);
+        oid   = obj->oid();
+        model = &obj->model();
+    }
+    else if (lua->is_userdata<fb::model::object>(2))
+    {
+        model = lua->touserdata<fb::model::object>(2);
+    }
+    else
+    {
+        return 0;
+    }
+
+    auto message = lua->tostring(3);
+    if (lua->is_table(4) == false)
+        return 0;
+
+    auto entries = fb::game::dialog::buy_entries();
+    auto size    = lua->rawlen(4);
+    for (int i = 0; i < size; i++)
+    {
+        lua->rawgeti(4, i + 1);
+        if (lua->is_table(-1) == false)
+        {
+            lua_pop(L, 1);
+            continue;
+        }
+
+        auto item_model = static_cast<fb::model::item*>(nullptr);
+        auto price      = uint32_t{0};
+        auto count      = uint8_t{0};
+        auto percent    = std::optional<uint8_t>{};
+
+        lua->pushstring("model");
+        if (lua_rawget(L, -2) != LUA_TNIL)
+        {
+            if (lua->is_userdata<fb::model::item>(-1))
+                item_model = lua->touserdata<fb::model::item>(-1);
+            else if (lua->is_string(-1))
+                item_model = table::item->name2item(lua->tostring(-1));
+        }
+        lua_pop(L, 1);
+
+        lua->pushstring("price");
+        if (lua_rawget(L, -2) == LUA_TNUMBER)
+            price = static_cast<uint32_t>(lua->tointeger(-1));
+        lua_pop(L, 1);
+
+        lua->pushstring("count");
+        if (lua_rawget(L, -2) == LUA_TNUMBER)
+        {
+            auto n = lua->tointeger(-1);
+            if (n < 0)
+                n = 0;
+            if (n > 0xFF)
+                n = 0xFF;
+            count = static_cast<uint8_t>(n);
+        }
+        lua_pop(L, 1);
+
+        lua->pushstring("percent");
+        if (lua_rawget(L, -2) == LUA_TNUMBER)
+        {
+            auto n = lua->tointeger(-1);
+            if (n < 0)
+                n = 0;
+            if (n > 0xFF)
+                n = 0xFF;
+            percent = static_cast<uint8_t>(n);
+        }
+        lua_pop(L, 1);
+
+        lua_pop(L, 1); // row table
+
+        if (item_model == nullptr)
+            continue;
+
+        entries.push_back({*item_model, price, count, percent});
+    }
+
+    auto pursuit   = uint16_t{0xFFFF};
+    auto immediate = false;
+    if (lua->argc() >= 5 && lua->is_table(5))
+    {
+        lua->pushstring("pursuit");
+        if (lua_rawget(L, 5) == LUA_TNUMBER)
+            pursuit = static_cast<uint16_t>(lua->tointeger(-1));
+        lua_pop(L, 1);
+
+        lua->pushstring("immediate");
+        if (lua_rawget(L, 5) == LUA_TBOOLEAN)
+            immediate = lua_toboolean(L, -1);
+        lua_pop(L, 1);
+    }
+
+    if (immediate == false)
+    {
+        if (lua->ref != LUA_NOREF)
+        {
+            luaL_unref(*lua, LUA_REGISTRYINDEX, lua->ref);
+            lua->ref = LUA_NOREF;
+        }
+        lua_pushvalue(L, 4);
+        lua->ref = luaL_ref(L, LUA_REGISTRYINDEX);
+    }
+
+    auto weak     = ch->weak_from_this_as<fb::game::character>();
+    auto builder  = lua->new_co_builder();
+    builder.weak  = weak;
+    builder.yield = [=]() -> async::task<void> {
+        if (obj != nullptr)
+            ch->listener.on_dialog_buy(*ch, *obj, message, entries, oid, pursuit);
+        else
+            ch->listener.on_dialog_buy(*ch, *model, message, entries, oid, pursuit);
 
         if (immediate == false)
         {

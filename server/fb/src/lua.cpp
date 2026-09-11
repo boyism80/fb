@@ -1116,8 +1116,7 @@ std::string lib_module_name_from_path(std::string_view path)
         normalized.erase(normalized.begin());
 
     constexpr std::string_view scripts_prefix = "scripts/";
-    if (normalized.size() >= scripts_prefix.size() &&
-        normalized.compare(0, scripts_prefix.size(), scripts_prefix) == 0)
+    if (normalized.size() >= scripts_prefix.size() && normalized.compare(0, scripts_prefix.size(), scripts_prefix) == 0)
         normalized.erase(0, scripts_prefix.size());
 
     constexpr std::string_view prefix = "lib/";

@@ -21,7 +21,7 @@ enum class dialog_type : uint8_t
     slot         = static_cast<uint8_t>(fb::game::dialog::type::SLOT),
     pursuit      = static_cast<uint8_t>(fb::game::dialog::type::PURSUIT),
     spell        = static_cast<uint8_t>(fb::game::dialog::type::SPELL),
-    dual_field   = static_cast<uint8_t>(fb::game::dialog::type::DUAL_FIELD),
+    buy          = static_cast<uint8_t>(fb::game::dialog::type::BUY),
 };
 
 struct dialog_item_data
@@ -52,7 +52,7 @@ public:
     uint16_t                                         item_pursuit = 0xFFFF;
     std::vector<std::string>                         menu_menus;
     std::vector<uint8_t>                             slot_slots;
-    std::vector<std::pair<std::string, std::string>> dual_pairs;
+    std::vector<std::pair<std::string, std::string>> buy_entries;
 
 public:
     dialog_bot() = default;

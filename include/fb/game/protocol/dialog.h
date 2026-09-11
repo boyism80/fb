@@ -87,7 +87,8 @@ public:
     const uint16_t               pursuit;
     const std::string            name;
     const std::string            ext;
-    const uint32_t               item_value;
+    const uint32_t               id;    // BUY only: S2C row id (1-based)
+    const uint8_t                count; // BUY only: quantity from client prompt
 #else
     fb::game::dialog::type type   = fb::game::dialog::type::MENU;
     uint32_t               oid    = 0;
@@ -98,7 +99,8 @@ public:
     uint16_t               pursuit = 0;
     std::string            name;
     std::string            ext;
-    uint32_t               item_value = 0;
+    uint32_t               id    = 0; // BUY only: S2C row id (1-based)
+    uint8_t                count = 0; // BUY only: quantity from client prompt
 #endif
 
 public:
@@ -111,10 +113,11 @@ public:
            uint16_t               index,
            uint16_t               pursuit,
            std::string            name,
-           uint32_t               oid        = 0,
-           uint16_t               seq        = 0,
-           std::string            ext        = {},
-           uint32_t               item_value = 0);
+           uint32_t               oid   = 0,
+           uint16_t               seq   = 0,
+           std::string            ext   = {},
+           uint32_t               id    = 0,
+           uint8_t                count = 0);
 #endif
 
 public:

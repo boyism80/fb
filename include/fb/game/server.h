@@ -100,6 +100,7 @@ REGISTER_RESPONSE(fb::protocol::matchmaking::request::Register, fb::protocol::ma
 REGISTER_RESPONSE(fb::protocol::matchmaking::request::Unregister, fb::protocol::matchmaking::response::Unregister)
 REGISTER_RESPONSE(fb::protocol::matchmaking::request::Confirm, fb::protocol::matchmaking::response::Confirm)
 REGISTER_RESPONSE(fb::protocol::matchmaking::request::Decline, fb::protocol::matchmaking::response::Decline)
+REGISTER_RESPONSE(fb::protocol::matchmaking::request::Status, fb::protocol::matchmaking::response::Status)
 // clang-format on
 
 namespace fb::game {

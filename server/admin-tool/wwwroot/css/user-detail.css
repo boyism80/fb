@@ -33,6 +33,16 @@
     box-sizing: border-box;
 }
 
+.user-detail-collection-toolbar {
+    margin-bottom: 0.75rem;
+}
+
+.user-detail-collection-toolbar .stitch-input {
+    display: block;
+    width: 100%;
+    max-width: 280px;
+}
+
 .user-detail-summary-body {
     display: flex;
     flex-direction: column;

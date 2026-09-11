@@ -95,21 +95,21 @@ void dialog_bot::deserialize(fb::stream_reader<big_endian>& reader)
     }
     break;
 
-    case dialog_type::dual_field:
+    case dialog_type::buy:
     {
         read_appearance(reader, *this);
         this->message = reader.read<std::string, uint16_t>();
         this->pursuit = reader.read<uint16_t>();
 
-        uint16_t pair_count = reader.read<uint16_t>();
-        this->dual_pairs.clear();
+        uint16_t entry_count = reader.read<uint16_t>();
+        this->buy_entries.clear();
         this->menu_menus.clear();
-        for (uint16_t i = 0; i < pair_count; i++)
+        for (uint16_t i = 0; i < entry_count; i++)
         {
-            auto label = reader.read<std::string, uint8_t>();
+            auto name  = reader.read<std::string, uint8_t>();
             auto value = reader.read<std::string, uint8_t>();
-            this->menu_menus.push_back(label);
-            this->dual_pairs.emplace_back(std::move(label), std::move(value));
+            this->menu_menus.push_back(name);
+            this->buy_entries.emplace_back(std::move(name), std::move(value));
         }
     }
     break;

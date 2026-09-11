@@ -279,6 +279,11 @@
     transition: border-color 0.15s;
 }
 
+.stitch-input {
+    padding: 0 0.75rem;
+    box-sizing: border-box;
+}
+
 .stitch-input:focus,
 .stitch-search:focus,
 .bulletin-search-input:focus,

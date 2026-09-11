@@ -43,6 +43,10 @@ public class MatchmakingController : ControllerBase
         }
         catch (LogicException e)
         {
+            _logger.LogWarning(
+                "Matchmaking register rejected for match type {MatchType}: {Error}",
+                request.MatchType,
+                e.Error);
             return new Response.Register
             {
                 RegistryId = string.Empty,
@@ -67,10 +71,8 @@ public class MatchmakingController : ControllerBase
     {
         try
         {
-            if (!Guid.TryParse(request.RegistryId, out var registryId))
-            {
-                throw new LogicException(ErrorCode.MatchmakingRegistryNotFound);
-            }
+            // The registry id is only a hint; the caller is identified by its entry id.
+            Guid.TryParse(request.RegistryId, out var registryId);
 
             var entryId = CharacterRegistryEntry.ToEntryId(request.World, request.CharacterId);
 
@@ -88,6 +90,11 @@ public class MatchmakingController : ControllerBase
         }
         catch (LogicException e)
         {
+            _logger.LogWarning(
+                "Matchmaking unregister rejected for character {World}:{CharacterId}: {Error}",
+                request.World,
+                request.CharacterId,
+                e.Error);
             return new Response.Unregister
             {
                 Success = false,
@@ -128,6 +135,12 @@ public class MatchmakingController : ControllerBase
         }
         catch (LogicException e)
         {
+            _logger.LogWarning(
+                "Matchmaking confirm rejected for character {World}:{CharacterId} on match {MatchId}: {Error}",
+                request.World,
+                request.CharacterId,
+                request.MatchId,
+                e.Error);
             return new Response.Confirm
             {
                 Error = (uint)e.Error,
@@ -167,6 +180,12 @@ public class MatchmakingController : ControllerBase
         }
         catch (LogicException e)
         {
+            _logger.LogWarning(
+                "Matchmaking decline rejected for character {World}:{CharacterId} on match {MatchId}: {Error}",
+                request.World,
+                request.CharacterId,
+                request.MatchId,
+                e.Error);
             return new Response.Decline
             {
                 Error = (uint)e.Error

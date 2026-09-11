@@ -141,11 +141,74 @@
             }
         </div>
     </div>
+
+    <div class="card-bg stitch-form-card" style="margin-top:var(--section-gap);">
+        <div class="stitch-form-card-header">
+            <h2 class="dash-card-title">
+                <span class="material-symbols-outlined" aria-hidden="true">menu_book</span>
+                도감
+            </h2>
+            <span class="stitch-badge">해금 @UnlockedCount / @TotalMobCount</span>
+        </div>
+        <div class="user-detail-card-content">
+            @if (Collection == null)
+            {
+                <p class="text-muted mb-0">도감 데이터를 불러오는 중...</p>
+            }
+            else
+            {
+                <div class="user-detail-collection-toolbar">
+                    <input type="text"
+                           class="stitch-input"
+                           placeholder="몬스터명 / Mob ID"
+                           @bind="collectionSearch"
+                           @bind:event="oninput" />
+                </div>
+                @if (FilteredUnlocks.Any())
+                {
+                    <div class="dash-table-wrap">
+                        <table class="dash-table">
+                            <thead>
+                                <tr>
+                                    <th>Mob ID</th>
+                                    <th>몬스터명</th>
+                                    <th>해금일시</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var row in FilteredUnlocks)
+                                {
+                                    <tr>
+                                        <td class="table-meta">@row.MobId</td>
+                                        <td>@row.Name</td>
+                                        <td class="table-meta">@UserDetailDisplay.FormatDateTime(row.UnlockedDate)</td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                }
+                else if (Collection.Unlocks.Any())
+                {
+                    <p class="text-muted mb-0">검색 결과가 없습니다.</p>
+                }
+                else
+                {
+                    <p class="text-muted mb-0">해금된 도감 항목이 없습니다.</p>
+                }
+            }
+        </div>
+    </div>
 </div>
 
 @code {
     [Parameter, EditorRequired]
     public Character Character { get; set; } = null!;
+
+    [Parameter]
+    public UserDetailCollectionData Collection { get; set; }
+
+    private string collectionSearch = string.Empty;
 
     private CharacterExpInfo ExpInfo =>
         UserDetailDisplay.GetExpInfo(Character.Class, Character.Level, Character.Exp);
@@ -158,4 +221,25 @@
 
     private List<Buff> ActiveBuffs =>
         Character.Buffs?.Where(b => b.Time > 0).ToList() ?? new List<Buff>();
+
+    private int UnlockedCount => Collection?.Unlocks.Count ?? 0;
+
+    private int TotalMobCount => Collection?.TotalMobCount ?? 0;
+
+    private IEnumerable<UserCollectionRow> FilteredUnlocks
+    {
+        get
+        {
+            if (Collection == null)
+                return Enumerable.Empty<UserCollectionRow>();
+
+            var query = collectionSearch?.Trim() ?? string.Empty;
+            if (string.IsNullOrEmpty(query))
+                return Collection.Unlocks;
+
+            return Collection.Unlocks.Where(row =>
+                row.Name.Contains(query, StringComparison.OrdinalIgnoreCase) ||
+                row.MobId.ToString().Contains(query, StringComparison.OrdinalIgnoreCase));
+        }
+    }
 }

@@ -491,6 +491,17 @@ async::task<bool> login<V>::handle(fb::socket<character>& session, game_reqs::lo
     }
     this->server.log.write("login", log_data);
 
+    auto weak    = ch->template weak_from_this_as<character>();
+    auto builder = this->server.threads.new_builder(weak);
+    builder.func = [weak](auto&) -> async::task<void> {
+        auto ptr = weak.lock();
+        if (ptr == nullptr)
+            co_return;
+
+        co_await ptr->matchmaker.discard_leftover_enrollment();
+    };
+    builder.enqueue();
+
     co_return true;
 }
 

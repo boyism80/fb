@@ -66,8 +66,8 @@ const char* dialog_type_name(dialog_type type)
         return "pursuit";
     case dialog_type::spell:
         return "spell";
-    case dialog_type::dual_field:
-        return "dual_field";
+    case dialog_type::buy:
+        return "buy";
     default:
         return "unknown";
     }
@@ -213,17 +213,17 @@ void push_dialog(fb::lua::context* lua, const dialog_bot& resp)
     }
     lua->settable(-3);
 
-    lua->pushstring("dual_pairs");
+    lua->pushstring("buy_entries");
     lua->new_table();
-    for (size_t i = 0; i < resp.dual_pairs.size(); ++i)
+    for (size_t i = 0; i < resp.buy_entries.size(); ++i)
     {
         lua->pushinteger(static_cast<lua_Integer>(i + 1));
         lua->new_table();
-        lua->pushstring("label");
-        lua->pushstring(resp.dual_pairs[i].first);
+        lua->pushstring("name");
+        lua->pushstring(resp.buy_entries[i].first);
         lua->settable(-3);
         lua->pushstring("value");
-        lua->pushstring(resp.dual_pairs[i].second);
+        lua->pushstring(resp.buy_entries[i].second);
         lua->settable(-3);
         lua->settable(-3);
     }

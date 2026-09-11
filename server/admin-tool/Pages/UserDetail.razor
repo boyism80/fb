@@ -54,7 +54,18 @@
                                     StorageVaultCount="itemCounts.StorageVaults" />
                 break;
             case "character":
-                <UserDetailCharacter Character="core.Character" />
+                @if (collection != null)
+                {
+                    <UserDetailCharacter Character="core.Character" Collection="collection" />
+                }
+                else if (tabLoading)
+                {
+                    <TabLoading />
+                }
+                else
+                {
+                    <UserDetailCharacter Character="core.Character" />
+                }
                 break;
             case "items":
                 @if (items != null)
@@ -266,6 +277,7 @@
     private UserDetailCore core;
     private UserDetailItemsData items;
     private UserDetailProgressData progress;
+    private UserDetailCollectionData collection;
     private UserDetailSocialData social;
     private UserDetailMailData mailData;
     private UserDetailMatchmakingData matchmaking;
@@ -330,6 +342,7 @@
         core = null;
         items = null;
         progress = null;
+        collection = null;
         social = null;
         mailData = null;
         matchmaking = null;
@@ -411,6 +424,9 @@
             case "overview":
                 if (items == null)
                     await LoadItemCountsAsync(world);
+                break;
+            case "character":
+                collection = await UserDetailService.LoadCollectionAsync(world, (uint)UserId);
                 break;
             case "items":
                 items = await UserDetailService.LoadItemsAsync(world, (uint)UserId);

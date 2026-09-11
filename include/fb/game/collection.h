@@ -30,6 +30,7 @@ public:
     std::vector<fb::protocol::internal::CollectionUnlock> to_protocol(uint32_t user) const;
     async::task<void>                                     try_unlock(uint32_t mob_id);
     async::task<void>                                     set(uint8_t group_id, uint8_t slot, bool onoff);
+    async::task<uint32_t>                                 unlock_all();
     uint8_t                                               unlocked_count(uint8_t group_id) const;
     std::vector<uint8_t>                                  bitmask(uint8_t group_id) const;
     // clang-format on

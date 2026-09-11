@@ -92,6 +92,7 @@ struct character
     static int builtin_menu(lua_State* L);
     static int builtin_slot(lua_State* L);
     static int builtin_pursuit(lua_State* L);
+    static int builtin_buy(lua_State* L);
     static int builtin_spell(lua_State* L);
     static int builtin_email(lua_State* L);
     static int builtin_dialog_0x30_10(lua_State* L);
@@ -116,6 +117,7 @@ struct character
     static int builtin_marry(lua_State* L);
     static int builtin_divorce(lua_State* L);
     static int builtin_collection(lua_State* L);
+    static int builtin_collection_unlock_all(lua_State* L);
     static int builtin_unknown_4f(lua_State* L);
     static int builtin_notice(lua_State* L);
     static int builtin_browser(lua_State* L);
