@@ -18,28 +18,6 @@ local function is_clan_master(me)
     return false
 end
 
-local function ensure_clan_as_master(me)
-    if is_clan_master(me) then
-        return true, me:clan()
-    end
-
-    local clan = me:clan()
-    if clan ~= nil then
-        local err = clan:leave(me)
-        if err ~= nil then
-            return false, err
-        end
-    end
-
-    local name = string.format('공성%s%d', me:name(), math.random(1000, 9999))
-    local err = me:create_clan(name)
-    if err ~= nil then
-        return false, err
-    end
-
-    return true, me:clan()
-end
-
 M.functions = {
     ['명령어'] = {
         ['privilege'] = ROLE.USER,
@@ -583,13 +561,25 @@ M.functions = {
         ['privilege'] = ROLE.ADMIN,
         ['usage'] = '- 공성 참가용 문파장 문파 준비',
         ['command'] = function (me, args)
-            local ok, result = ensure_clan_as_master(me)
-            if ok == false then
-                me:message(string.format("공성준비 실패: %s", result or "unknown error"), MESSAGE_TYPE.BROWN)
-                return true
+            if is_clan_master(me) == false then
+                local clan = me:clan()
+                if clan ~= nil then
+                    local err = clan:leave(me)
+                    if err ~= nil then
+                        me:message(string.format("공성준비 실패: %s", err), MESSAGE_TYPE.BROWN)
+                        return true
+                    end
+                end
+
+                local name = string.format('공성%s%d', me:name(), math.random(1000, 9999))
+                local err = me:create_clan(name)
+                if err ~= nil then
+                    me:message(string.format("공성준비 실패: %s", err), MESSAGE_TYPE.BROWN)
+                    return true
+                end
             end
 
-            local clan = result
+            local clan = me:clan()
             me:message(string.format("공성준비 완료: 문파 [%s] 문파장", clan and clan:name() or '?'), MESSAGE_TYPE.BROWN)
             return true
         end,

@@ -232,7 +232,7 @@ void map::container::load(const fb::model::map& model)
     this->insert(map);
 }
 
-bool map::container::ensure_loaded(const std::shared_ptr<fb::game::map>& map)
+bool map::container::load_tiles(const std::shared_ptr<fb::game::map>& map)
 {
     if (map == nullptr)
         return false;
@@ -433,9 +433,19 @@ std::shared_ptr<fb::game::map> map::container::name2map(std::string_view name) c
 std::shared_ptr<fb::game::map> map::container::create_instance(const std::shared_ptr<fb::game::map>& source,
                                                                uint32_t                              slot)
 {
+    if (source == nullptr || slot == 0)
+        return nullptr;
+
+    auto root = source->is_instance() ? source->source() : source;
+    if (root == nullptr)
+        return nullptr;
+
+    if (this->load_tiles(root) == false)
+        return nullptr;
+
     auto created = false;
     auto map     = this->_maps.write([&](registry& registry) {
-        auto& pool = this->_slot_pools[source->model().id];
+        auto& pool = this->_slot_pools[root->model().id];
         auto  it   = pool.by_slot.find(slot);
         if (it != pool.by_slot.end() && it->second != nullptr && it->second->closing() == false)
             return it->second;
@@ -444,10 +454,10 @@ std::shared_ptr<fb::game::map> map::container::create_instance(const std::shared
             pool.by_slot.erase(it);
 
         auto id  = this->allocate_id(registry);
-        auto map = std::make_shared<fb::game::instance_map>(this->server, id, slot, source);
+        auto map = std::make_shared<fb::game::instance_map>(this->server, id, slot, root);
         registry.push(id, map);
         this->_sequence = std::max(this->_sequence, id + 1);
-        this->register_slot(source->model().id, slot, map);
+        this->register_slot(root->model().id, slot, map);
         created          = true;
         auto created_map = std::static_pointer_cast<fb::game::map>(map);
         this->append_snapshot(created_map);
@@ -488,7 +498,7 @@ std::shared_ptr<fb::game::map> map::container::clone(const std::shared_ptr<fb::g
     if (root == nullptr)
         return nullptr;
 
-    if (this->ensure_loaded(root) == false)
+    if (this->load_tiles(root) == false)
         return nullptr;
 
     auto slot = this->_maps.write([&](registry&) {
@@ -498,8 +508,7 @@ std::shared_ptr<fb::game::map> map::container::clone(const std::shared_ptr<fb::g
     return this->create_instance(root, slot);
 }
 
-std::shared_ptr<fb::game::map> map::container::ensure_instance(const std::shared_ptr<fb::game::map>& source,
-                                                               uint32_t                              slot)
+std::shared_ptr<fb::game::map> map::container::find(const std::shared_ptr<fb::game::map>& source, uint32_t slot) const
 {
     if (source == nullptr || slot == 0)
         return nullptr;
@@ -508,27 +517,20 @@ std::shared_ptr<fb::game::map> map::container::ensure_instance(const std::shared
     if (root == nullptr)
         return nullptr;
 
-    auto existing = this->_maps.write([&](registry&) -> std::shared_ptr<fb::game::map> {
-        auto& pool = this->_slot_pools[root->model().id];
-        auto  it   = pool.by_slot.find(slot);
-        if (it == pool.by_slot.end() || it->second == nullptr)
+    return this->_maps.read([&](const registry&) -> std::shared_ptr<fb::game::map> {
+        auto pool_it = this->_slot_pools.find(root->model().id);
+        if (pool_it == this->_slot_pools.end())
+            return nullptr;
+
+        auto it = pool_it->second.by_slot.find(slot);
+        if (it == pool_it->second.by_slot.end() || it->second == nullptr)
             return nullptr;
 
         if (it->second->closing())
-        {
-            pool.by_slot.erase(it);
             return nullptr;
-        }
 
         return it->second;
     });
-    if (existing != nullptr)
-        return existing;
-
-    if (this->ensure_loaded(root) == false)
-        return nullptr;
-
-    return this->create_instance(root, slot);
 }
 
 void map::container::unregister_group_instance(const std::shared_ptr<fb::game::map>& map)
@@ -627,7 +629,9 @@ std::shared_ptr<fb::game::map> map::container::choice_entry(character& ch, const
     auto session = ch.match();
     if (session != nullptr)
     {
-        auto inst = this->ensure_instance(dest, session->slot());
+        auto inst = this->find(dest, session->slot());
+        if (inst == nullptr)
+            inst = this->create_instance(dest, session->slot());
         if (inst != nullptr)
             return inst;
     }

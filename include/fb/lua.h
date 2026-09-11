@@ -14,6 +14,7 @@ extern "C"
 #include <map>
 #include <list>
 #include <cstdint>
+#include <unordered_set>
 #include <random>
 #include <functional>
 #include <mutex>
@@ -569,7 +570,6 @@ public:
     bool                call_engaged() const;
     void                clear_call_engaged();
     void                clear_script_path();
-    void                clear_loaded_modules();
 
 public:
     class co_builder
@@ -631,14 +631,17 @@ public:
     using bytecode_set   = std::unordered_map<std::string, std::vector<char>>;
 
 private:
-    bytecode_set _bytecodes;
+    bytecode_set                    _bytecodes;
+    std::unordered_set<std::string> _lib_modules;
+    int                             _loading = 0;
+
+    void remember_lib_from_path(std::string_view path);
+    void capture_loaded_libs();
+    void unload_remembered_libs();
 
 public:
     friend class context;
 
-private:
-
-public:
     unique_lua_map idle, busy;
 
 public:
@@ -791,26 +794,35 @@ bool fb::lua::context::load(std::string_view fmt, Args&&... args)
     auto* root = this->owner != nullptr ? static_cast<fb::lua::root*>(this->owner) : static_cast<fb::lua::root*>(this);
 
 #if defined DEBUG || defined _DEBUG
+    const auto outermost = (root->_loading == 0);
+    root->_loading++;
+    if (outermost)
+        root->unload_remembered_libs();
+
+    auto ok = false;
     if (luaL_loadfile(*this, fname.c_str()) != LUA_OK)
     {
         fb::lua::report_load_failed_from_stack(*this, fname);
-        return false;
     }
-
-    if (lua_pcall(*this, 0, 1, 0) != LUA_OK)
+    else if (lua_pcall(*this, 0, 1, 0) != LUA_OK)
     {
         fb::lua::report_load_failed_from_stack(*this, fname);
-        return false;
     }
-
-    if (root->store_module(*this, fname) == false)
+    else if (root->store_module(*this, fname) == false)
     {
         fb::lua::report_load_failed(fname, "module must return a table");
-        return false;
+    }
+    else
+    {
+        this->_script_path = fname;
+        ok                 = true;
+        root->remember_lib_from_path(fname);
     }
 
-    this->_script_path = fname;
-    return true;
+    if (outermost)
+        root->capture_loaded_libs();
+    root->_loading--;
+    return ok;
 #else
     if (auto cached = root->_bytecodes.find(fname); cached != root->_bytecodes.end())
     {

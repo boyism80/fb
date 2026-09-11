@@ -100,7 +100,10 @@ std::shared_ptr<fb::game::map> match::map(uint32_t model_id)
     if (source == nullptr)
         return nullptr;
 
-    return this->_server.maps.ensure_instance(source, this->_slot);
+    auto inst = this->_server.maps.find(source, this->_slot);
+    if (inst == nullptr)
+        inst = this->_server.maps.create_instance(source, this->_slot);
+    return inst;
 }
 
 std::vector<std::shared_ptr<character>> match::snapshot()
@@ -650,33 +653,6 @@ match::container::container(server& server) :
     _server(server)
 { }
 
-std::shared_ptr<match> match::container::ensure(std::string_view match_id, uint32_t match_type)
-{
-    auto key  = std::string(match_id);
-    auto lock = std::lock_guard(this->_mutex);
-    auto it   = this->_sessions.find(key);
-    if (it != this->_sessions.end())
-        return it->second;
-
-    auto expected  = uint32_t{1};
-    auto type_enum = static_cast<fb::model::enum_value::MATCH_TYPE>(match_type);
-    if (table::matchmaking->contains(type_enum))
-    {
-        auto& row = table::matchmaking[type_enum];
-        expected  = row.member_count * row.team_count;
-        if (expected == 0)
-            expected = 1;
-    }
-
-    auto slot = this->_next_slot++;
-    if (slot == 0)
-        slot = this->_next_slot++;
-
-    auto session = std::make_shared<match>(this->_server, key, match_type, slot, expected);
-    this->_sessions.emplace(key, session);
-    return session;
-}
-
 async::task<void> match::container::join(character& ch, std::string_view match_id, uint32_t match_type, uint32_t team)
 {
     if (match_id.empty())
@@ -688,7 +664,36 @@ async::task<void> match::container::join(character& ch, std::string_view match_i
     if (current != nullptr)
         current->leave(ch);
 
-    auto session = this->ensure(match_id, match_type);
+    auto session = std::shared_ptr<match>{};
+    {
+        auto key  = std::string(match_id);
+        auto lock = std::lock_guard(this->_mutex);
+        auto it   = this->_sessions.find(key);
+        if (it != this->_sessions.end())
+        {
+            session = it->second;
+        }
+        else
+        {
+            auto expected  = uint32_t{1};
+            auto type_enum = static_cast<fb::model::enum_value::MATCH_TYPE>(match_type);
+            if (table::matchmaking->contains(type_enum))
+            {
+                auto& row = table::matchmaking[type_enum];
+                expected  = row.member_count * row.team_count;
+                if (expected == 0)
+                    expected = 1;
+            }
+
+            auto slot = this->_next_slot++;
+            if (slot == 0)
+                slot = this->_next_slot++;
+
+            session = std::make_shared<match>(this->_server, key, match_type, slot, expected);
+            this->_sessions.emplace(key, session);
+        }
+    }
+
     co_await session->join(ch, team);
     co_return;
 }

@@ -78,18 +78,20 @@ void dialog_dual_field<CLIENT_VERSION::v651>::serialize(fb::stream_writer<big_en
     writer.write<std::string, uint16_t>(this->message);
     writer.write<uint16_t>(this->pursuit);
     writer.write<uint16_t>((uint16_t)pairs.size());
-    for (auto& [label, value] : pairs)
+    for (uint16_t i = 0; i < pairs.size(); i++)
     {
+        const auto& [label, value] = pairs[i];
         auto name = label;
         if (value.empty() == false)
         {
             name += " ";
             name += value;
         }
-        writer.write<uint32_t>(0);
+        auto row = static_cast<uint32_t>(i + 1);
+        writer.write<uint32_t>(row);
         writer.write<uint16_t>(0);
         writer.write<uint8_t>(0);
-        writer.write<uint32_t>(0);
+        writer.write<uint32_t>(row);
         writer.write<uint8_t>(0);
         writer.write<std::string>(name);
         writer.write<uint8_t>(0xFF);

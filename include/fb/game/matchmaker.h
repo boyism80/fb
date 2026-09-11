@@ -57,7 +57,6 @@ public:
     void                                     load(const std::vector<matchmaking_skill::dto_type>& skills);
     std::vector<matchmaking_skill::dto_type> to_protocol() const;
     std::optional<matchmaking_skill>         get(uint32_t match_type) const;
-    matchmaking_skill                        ensure_skill(uint32_t match_type);
     void                                     upsert(uint32_t match_type, double mu, double sigma);
     const std::optional<std::string>&        pending_match_id() const;
     void                                     set_pending_match_id(std::string match_id);

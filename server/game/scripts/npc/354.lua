@@ -107,17 +107,6 @@ local function clear_ferment_slot(q, kimchi_id)
     write_ferment_slots(q, slots)
 end
 
-local function ensure_kimjang_quest(me)
-    local q = quest.get_annual(me, quest.QUEST_KIMJANG)
-    if q == nil then
-        q = me:start_quest(quest.QUEST_KIMJANG)
-        if q ~= nil then
-            festival.stamp_lunar_year(q)
-        end
-    end
-    return q
-end
-
 local function has_all_materials(me, materials)
     for name, count in pairs(materials) do
         if not me:has_items(name, count) then
@@ -277,7 +266,13 @@ return {
                 return
             end
 
-            local q = ensure_kimjang_quest(me)
+            local q = quest.get_annual(me, quest.QUEST_KIMJANG)
+            if q == nil then
+                q = me:start_quest(quest.QUEST_KIMJANG)
+                if q ~= nil then
+                    festival.stamp_lunar_year(q)
+                end
+            end
             if q == nil then
                 return
             end

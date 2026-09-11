@@ -427,14 +427,15 @@ void lua_integration_test::clear_all_hooks()
     if (this->_lua_root == nullptr)
         return;
 
+    auto* L = (lua_State*)*this->_lua_root;
     for (auto& [opcode, bindings] : this->_hook_refs)
     {
         for (auto& binding : bindings)
         {
-            if (binding.lua_ctx == nullptr)
+            if (binding.lua_ref == LUA_NOREF)
                 continue;
 
-            luaL_unref((lua_State*)*binding.lua_ctx, LUA_REGISTRYINDEX, binding.lua_ref);
+            luaL_unref(L, LUA_REGISTRYINDEX, binding.lua_ref);
         }
 
         this->controller.unhook_opcode(this, opcode);
@@ -472,8 +473,8 @@ void lua_integration_test::register_opcode_hook(uint8_t               opcode,
     this->controller.hook_opcode(
         this,
         opcode,
-        [this, lua_ref, entry, lua_ctx](game_bot& bot, const fb::protocol::header& header) -> async::task<void> {
-            co_await this->invoke_lua_hook(lua_ref, *lua_ctx, bot, header, entry);
+        [this, lua_ref, entry](game_bot& bot, const fb::protocol::header& header) -> async::task<void> {
+            co_await this->invoke_lua_hook(lua_ref, bot, header, entry);
         });
 }
 
@@ -482,12 +483,16 @@ void lua_integration_test::unhook_opcode(uint8_t opcode)
     auto it = this->_hook_refs.find(opcode);
     if (it != this->_hook_refs.end())
     {
-        for (auto& binding : it->second)
+        if (this->_lua_root != nullptr)
         {
-            if (binding.lua_ctx == nullptr)
-                continue;
+            auto* L = (lua_State*)*this->_lua_root;
+            for (auto& binding : it->second)
+            {
+                if (binding.lua_ref == LUA_NOREF)
+                    continue;
 
-            luaL_unref((lua_State*)*binding.lua_ctx, LUA_REGISTRYINDEX, binding.lua_ref);
+                luaL_unref(L, LUA_REGISTRYINDEX, binding.lua_ref);
+            }
         }
 
         this->_hook_refs.erase(it);
@@ -497,15 +502,31 @@ void lua_integration_test::unhook_opcode(uint8_t opcode)
 }
 
 async::task<void> lua_integration_test::invoke_lua_hook(int                         lua_ref,
-                                                        fb::lua::context&           lua_ctx,
                                                         fb::bot::game_bot&          bot,
                                                         const fb::protocol::header& header,
                                                         const protocol_entry*       entry)
 {
-    auto* L = (lua_State*)lua_ctx;
+    if (this->_lua_root == nullptr)
+        co_return;
 
-    lua_rawgeti(L, LUA_REGISTRYINDEX, lua_ref);
-    lua_ctx.pushobject(this);
+    // ctx:hook is registered from a scenario coroutine. That context goes back
+    // to the pool (or is reused) after the scenario returns. Invoke on a fresh
+    // context so MATCH_ENDED during a later yield cannot pcall a dead/yielded
+    // thread.
+    auto  opts = fb::lua::call_options{.auto_release = true, .auto_resume_parent = false};
+    auto* ctx  = this->_lua_root->pop(nullptr, opts);
+    if (ctx == nullptr)
+        co_return;
+
+    lua_rawgeti(*ctx, LUA_REGISTRYINDEX, lua_ref);
+    if (lua_isfunction(*ctx, -1) == false)
+    {
+        lua_pop(*ctx, 1);
+        ctx->release();
+        co_return;
+    }
+
+    ctx->pushobject(this);
 
     auto                               bots = this->get_test_bots();
     std::shared_ptr<fb::bot::game_bot> pushed_bot;
@@ -518,10 +539,17 @@ async::task<void> lua_integration_test::invoke_lua_hook(int                     
         }
     }
     if (pushed_bot == nullptr)
+        pushed_bot = bot.shared_from_this_as<fb::bot::game_bot>();
+    if (pushed_bot == nullptr)
+    {
+        lua_settop(*ctx, 0);
+        ctx->release();
         co_return;
+    }
 
-    lua_ctx.pushobject(pushed_bot);
+    ctx->pushobject(pushed_bot);
 
+    auto* L = (lua_State*)*ctx;
     if (entry->clone != nullptr)
     {
         auto cloned = entry->clone(header);
@@ -532,11 +560,27 @@ async::task<void> lua_integration_test::invoke_lua_hook(int                     
         entry->marshal_lua(L, header);
     }
 
-    if (lua_pcall(L, 3, 0, 0) != LUA_OK)
+    if (ctx->argc() < 4)
     {
-        auto err = lua_ctx.tostring(-1);
-        fb::logger::fatal("{}: hook callback failed: {}", this->name(), err.empty() ? "unknown error" : err);
-        lua_ctx.pop(1);
+        lua_settop(*ctx, 0);
+        ctx->release();
+        co_return;
+    }
+
+    try
+    {
+        std::ignore = co_await ctx->call(3);
+    }
+    catch (const std::exception& e)
+    {
+        auto* what = e.what();
+        fb::logger::fatal("{}: hook callback failed: {}",
+                          this->name(),
+                          (what != nullptr && what[0] != '\0') ? what : typeid(e).name());
+    }
+    catch (...)
+    {
+        fb::logger::fatal("{}: hook callback failed", this->name());
     }
 
     co_return;
@@ -569,13 +613,7 @@ async::task<bool> lua_integration_test::run_lua_function(int func_ref)
             fb::logger::fatal("{}: {}", this->name(), what);
         else
             fb::logger::fatal("{}: {} (empty what())", this->name(), typeid(e).name());
-
-        if (ctx != nullptr && lua_status(*ctx) != LUA_OK && ctx->argc() >= 1)
-        {
-            auto err = ctx->tostring(-1);
-            if (err.empty() == false)
-                fb::logger::fatal("{}: lua stack error: {}", this->name(), err);
-        }
+        // context::resume() already logged the Lua error and revoked the thread.
     }
     catch (...)
     {

@@ -127,9 +127,6 @@ void bot_integration_test::try_complete_transfer(game_bot& bot)
     if (source_bot_id == 0)
         return;
 
-    if (this->controller.has_transfer_context(source_bot_id) == false)
-        return;
-
     auto reconnected_index = std::optional<uint32_t>{};
     auto it                = std::find_if(this->_test_bots.begin(), this->_test_bots.end(), [&bot](auto& b) {
         return b.get() == &bot;
@@ -162,19 +159,22 @@ void bot_integration_test::try_complete_transfer(game_bot& bot)
         this->_test_bots[reconnected_index.value()] = std::move(*it);
         this->_test_bots.erase(it);
 
-        const auto invoked =
-            this->controller.invoke_transfer_context(source_bot_id, bot.shared_from_this_as<game_bot>());
-        if (invoked)
-            bot.set_transfer_from_bot_id(0);
-        else
+        if (this->controller.has_transfer_context(source_bot_id))
         {
-            fb::logger::warn(
-                "bot transfer hook: test={} bot={} bot_id={} source_bot_id={} invoke_transfer_context failed",
-                this->name(),
-                bot.name(),
-                bot.id,
-                source_bot_id);
+            const auto invoked =
+                this->controller.invoke_transfer_context(source_bot_id, bot.shared_from_this_as<game_bot>());
+            if (invoked == false)
+            {
+                fb::logger::warn(
+                    "bot transfer hook: test={} bot={} bot_id={} source_bot_id={} invoke_transfer_context failed",
+                    this->name(),
+                    bot.name(),
+                    bot.id,
+                    source_bot_id);
+            }
         }
+
+        bot.set_transfer_from_bot_id(0);
     }
     else
     {

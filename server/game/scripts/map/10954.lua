@@ -3,8 +3,8 @@ local yudu_gosa = require('lib.yudu_gosa')
 local magpie_bridge = require('lib.magpie_bridge')
 
 local function boot()
-    -- on_map_init runs only once per process map load; enter must re-ensure timer.
-    magpie_bridge.ensure_timer()
+    -- on_map_init runs only once per process map load; enter must set the timer again.
+    magpie_bridge.set_timer()
 end
 
 return {

@@ -637,7 +637,7 @@ function M.shop(me, npc, config)
         end
 
         local selected, button = me:pursuit(npc, greeting, labels)
-        if button == DIALOG_RESULT.QUIT then
+        if selected == nil or button == DIALOG_RESULT.QUIT then
             return
         end
 
@@ -678,6 +678,9 @@ function M.show_buy_menu(me, npc)
     end
 
     local item = items[slot]
+    if item == nil then
+        return
+    end
     local model = item:model()
     local price = purchase_list[model:name()]
     local count = 1
@@ -732,18 +735,18 @@ local function show_sell_catalog(me, npc, sell_id)
 ::NPC_SELL_DIALOG_000::
     local selected = me:item(npc, '제가 파는 물건들입니다. 그림도 있고, 옆에 가격도 함께 드리니 잘 생각하시고 골라주세요.', list)
     if selected == nil then
-        return DIALOG_RESULT.NEXT
+        return
     end
 
     local pair = list[selected]
     if pair == nil then
-        return me:dialog(npc, 'This player is a hacker.')
+        return
     end
 
     local count = 1
     local item = pair[1]
     if item == nil then
-        return me:dialog(npc, 'This player is a hacker.')
+        return
     end
     local selected_name = item:name()
 
@@ -804,15 +807,15 @@ function M.show_sell_menu(me, npc, categories)
         end
 
         local selected, button = me:pursuit(npc, '무엇을 사시겠어요?', labels)
-        if button == DIALOG_RESULT.QUIT then
+        if selected == nil or button == DIALOG_RESULT.QUIT then
             return
         end
 
         local category = categories[selected]
-        if category ~= nil then
-            return show_sell_catalog(me, npc, category[2])
+        if category == nil then
+            return
         end
-        return DIALOG_RESULT.NEXT
+        return show_sell_catalog(me, npc, category[2])
     end
 
     return show_sell_catalog(me, npc)
@@ -861,6 +864,9 @@ function M.show_repair_menu(me, npc)
     end
 
     local item = items[selected]
+    if item == nil then
+        return
+    end
     local model = item:model()
     local price = math.floor(model:repair_price() * (model:durability() - item:durability()))
 
@@ -971,7 +977,14 @@ function M.show_hold_item_menu(me, npc)
     end
 
     local slot = me:slot(npc, '무엇을 맡기시겠습니까?', slots)
+    if slot == nil then
+        return DIALOG_RESULT.NEXT
+    end
+
     local item = items[slot]
+    if item == nil then
+        return
+    end
     local model = item:model()
     local count = 1
     if model:attr(ITEM_ATTRIBUTE.BUNDLE) then
@@ -1066,12 +1079,12 @@ function M.show_return_item_menu(me, npc)
 
     local selected = me:item(npc, '제가 맡고 있는 물건들입니다. 무엇을 찾으시겠습니까?', list)
     if selected == nil then
-        return DIALOG_RESULT.NEXT
+        return
     end
 
     local pair = list[selected]
     if pair == nil then
-        return DIALOG_RESULT.NEXT
+        return
     end
 
     local stored_item = me:stored_item(pair[1]:name())
@@ -1138,6 +1151,9 @@ function M.show_rename_weapon_menu(me, npc)
     end
 
     local weapon = items[slot]
+    if weapon == nil then
+        return
+    end
 ::NPC_RENAME_WEAPON_DIALOG_002::
     local name = me:input(npc, '어떤 이름을 붙이고 싶으세요?')
     if name == nil then
@@ -1216,13 +1232,13 @@ function M.basic_class(me, npc, class, spells)
 
             table.sort(preview, function(a, b) return spells[a].level < spells[b].level end)
             local selected, button = me:pursuit(npc, '자네 수준이라면 이런 마법들을 알아볼 수 있겠군', preview)
-            if button == DIALOG_RESULT.QUIT then
+            if selected == nil or button == DIALOG_RESULT.QUIT then
                 return
             end
 
             local name = preview[selected]
             if name == nil then
-                goto NPC_BASIC_CLASS_000
+                return
             end
             local spell = spells[name]
             if me:dialog(npc, string.format('%s %s', name_with(name, '은', '는'), spell.desc), { prev = false, next = true }) == DIALOG_RESULT.QUIT then
@@ -1266,13 +1282,13 @@ function M.basic_class(me, npc, class, spells)
 
             table.sort(preview, function(a, b) return spells[a].level < spells[b].level end)
             local selected, button = me:pursuit(npc, '자네 수준이라면 이런 마법들을 배울 수 있겠군', preview)
-            if button == DIALOG_RESULT.QUIT then
+            if selected == nil or button == DIALOG_RESULT.QUIT then
                 return
             end
 
             local name = preview[selected]
             if name == nil then
-                goto NPC_BASIC_CLASS_000
+                return
             end
             local spell = spells[name]
             if me:dialog(npc, string.format('%s %s', name_with(name, '은', '는'), spell.desc), { prev = false, next = true }) == DIALOG_RESULT.QUIT then
@@ -1533,11 +1549,11 @@ function M.promotion_skills(me, npc, class)
     local tier_sel, tier_btn = me:pursuit(npc, '안녕하세요. 어떻게 오셨나요?', {
         '1차 승급기술', '2차 승급기술', '3차 승급기술',
     })
-    if tier_btn == DIALOG_RESULT.QUIT then
+    if tier_sel == nil or tier_btn == DIALOG_RESULT.QUIT then
         return
     end
     local tier = tier_sel
-    if tier == nil or tier < 1 or tier > 3 then
+    if tier < 1 or tier > 3 then
         return
     end
     if me:promotion() < tier - 1 then
@@ -1550,7 +1566,7 @@ function M.promotion_skills(me, npc, class)
         return
     end
     local selected, skill_btn = me:pursuit(npc, '안녕하세요. 어떤 기술을 배울래요?', spells)
-    if skill_btn == DIALOG_RESULT.QUIT then
+    if selected == nil or skill_btn == DIALOG_RESULT.QUIT then
         return
     end
     local spell_name = spells[selected]

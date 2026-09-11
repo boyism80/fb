@@ -701,19 +701,19 @@ int builtin::server::builtin_castle(lua_State* L)
         }
     }
 
-    // Slow path: lazy-load from internal/DB via ensure().
+    // Slow path: lazy-load from internal/DB via enter_write().
     auto holder   = std::make_shared<std::shared_ptr<fb::game::castle>>();
     auto builder  = lua->new_co_builder();
     builder.yield = [=]() -> async::task<void> {
         auto& server = static_cast<fb::game::server&>(lua->executor);
         try
         {
-            auto guard = co_await server.castles.ensure(divine_beast);
+            auto guard = co_await server.castles.enter_write(divine_beast);
             *holder    = guard.value();
         }
         catch (std::exception& e)
         {
-            fb::logger::warn("castle ensure failed (id: {}): {}", divine_beast, e.what());
+            fb::logger::warn("castle enter_write failed (id: {}): {}", divine_beast, e.what());
         }
         co_return;
     };

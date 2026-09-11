@@ -58,4 +58,14 @@ void protocol_registry::register_all()
     }
 }
 
+void protocol_registry::bind_default(game_bot_controller& controller)
+{
+    for (size_t i = 0; i < entry_count(); ++i)
+    {
+        auto& entry = entries()[i];
+        if (entry.bind_default != nullptr)
+            entry.bind_default(controller);
+    }
+}
+
 } // namespace fb::bot::integration

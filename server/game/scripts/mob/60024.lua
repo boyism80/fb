@@ -10,7 +10,7 @@ local CHAT = '국화주 한 병 주면 안 잡아먹지!!'
 local busy = {}
 local primed = {}
 
-local function ensure_chat(me)
+local function chat(me)
     local oid = tostring(me:oid())
     if primed[oid] then
         return
@@ -20,7 +20,7 @@ local function ensure_chat(me)
 end
 
 local function handle_hit(me, you)
-    ensure_chat(me)
+    chat(me)
 
     if you == nil or not you:is(OBJECT_TYPE.CHARACTER) then
         return
@@ -50,7 +50,7 @@ end
 
 return {
     on_mob_action = function(me)
-        ensure_chat(me)
+        chat(me)
     end,
 
     on_mob_damaged = function(me, you)

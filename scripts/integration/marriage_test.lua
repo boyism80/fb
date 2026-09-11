@@ -73,19 +73,15 @@ local function setup_npc(bot)
     return npc
 end
 
-local function ensure_npc(bot)
-    if g_npc ~= nil then
-        return g_npc
-    end
-    return setup_npc(bot)
-end
-
 local function dismiss_normal(bot)
     bot:send(protocol.dialog("NORMAL", 0, "", 0, 0, "", "NEXT"))
 end
 
 local function click_expect(bot, expect_type)
-    local npc = ensure_npc(bot)
+    local npc = g_npc
+    if npc == nil then
+        npc = setup_npc(bot)
+    end
     local use_ext = (expect_type == "list" or expect_type == "normal" or expect_type == "input_ext")
     local fn = use_ext and bot.request_dialog_ext or bot.request_dialog
     return fn(bot,
@@ -274,18 +270,12 @@ local function assert_spouse_info(bot, spouse_name)
     return true, nil
 end
 
-local function ensure_item(bot, name)
-    local slot = bot:item_slot(name)
-    if slot ~= 0xFF then
-        return slot
-    end
-    bot:create_item(name, 1)
-    slot = bot:item_slot(name)
-    return slot
-end
-
 local function use_caller_expect_message(bot, text)
-    local slot = ensure_item(bot, ITEM_CALLER)
+    local slot = bot:item_slot(ITEM_CALLER)
+    if slot == 0xFF then
+        bot:create_item(ITEM_CALLER, 1)
+        slot = bot:item_slot(ITEM_CALLER)
+    end
     if slot == 0xFF then
         return nil, "caller item missing"
     end
@@ -304,7 +294,11 @@ local function use_caller_expect_message(bot, text)
 end
 
 local function use_caller_teleport(ctx, bot, spouse)
-    local slot = ensure_item(bot, ITEM_CALLER)
+    local slot = bot:item_slot(ITEM_CALLER)
+    if slot == 0xFF then
+        bot:create_item(ITEM_CALLER, 1)
+        slot = bot:item_slot(ITEM_CALLER)
+    end
     if slot == 0xFF then
         return false, "caller item missing"
     end

@@ -267,7 +267,7 @@ async::task<void> group::container::on_enter(std::string                target,
         co_return;
 
     auto new_member_name = new_member.value();
-    auto guard           = co_await this->ensure(group_id);
+    auto guard           = co_await this->enter_write(group_id);
     if (guard.value() == nullptr)
         co_return;
     auto& group = guard.value();
@@ -323,7 +323,7 @@ async::task<void> group::container::on_leave(std::string                target,
         co_return;
 
     auto deleted_member_name = deleted_member.value();
-    auto guard               = co_await this->ensure(group_id);
+    auto guard               = co_await this->enter_write(group_id);
     if (guard.value() == nullptr)
         co_return;
     auto& group = guard.value();
@@ -399,7 +399,7 @@ async::task<void> group::container::on_kick(std::string                target,
         co_return;
 
     auto deleted_member_name = deleted_member.value();
-    auto guard               = co_await this->ensure(group_id);
+    auto guard               = co_await this->enter_write(group_id);
     if (guard.value() == nullptr)
         co_return;
     auto& group = guard.value();
@@ -470,8 +470,7 @@ async::task<void> group::container::on_kick(std::string                target,
 async::task<void> group::container::on_destroyed(std::string actor, uint32_t group_id)
 {
     this->erase(group_id, [this, group_id](const auto& group) {
-        auto members = std::vector<std::string>{group->members()};
-        members.push_back(group->master());
+        auto members = roster_names(*group);
 
         this->_server.characters.foreach_enqueue(members, [this](auto& ch) -> async::task<void> {
             if (ch->matchmaker.enrolled())
@@ -500,7 +499,7 @@ async::task<void> group::container::on_destroyed(std::string actor, uint32_t gro
 
 async::task<void> group::container::on_broadcast(uint32_t group_id, std::string message, uint8_t type)
 {
-    auto guard = co_await this->ensure(group_id);
+    auto guard = co_await this->enter_write(group_id);
     if (guard.value() == nullptr)
         co_return;
     auto& group = guard.value();

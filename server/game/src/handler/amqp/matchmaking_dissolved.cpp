@@ -39,7 +39,7 @@ async::task<void> matchmaking_dissolved::handle(const fb::protocol::matchmaking:
                     lua->pushinteger(match_type);
                     lua->pushinteger(reason);
                     lua->pushinteger(outcome_value);
-                    std::ignore = lua->call(5);
+                    std::ignore = co_await lua->call(5);
                 }
                 co_return;
             };

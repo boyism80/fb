@@ -591,7 +591,7 @@ function M.settle_remaining(minute, second)
     return 0
 end
 
-local function ensure_bridge_timer()
+local function set_bridge_timer()
     local map = id2map(MAP_ID)
     if map == nil then
         return false
@@ -600,7 +600,7 @@ local function ensure_bridge_timer()
     return id ~= nil
 end
 
-local function ensure_chilsung_timer()
+local function set_chilsung_timer()
     local chilsung = id2map(CHILSUNG_MAP_ID)
     if chilsung == nil then
         return false
@@ -619,21 +619,21 @@ function M.start(map)
     state.reset()
     state.set('tick_busy', false)
     clear_event_mobs(map)
-    local ok = ensure_bridge_timer()
-    ensure_chilsung_timer()
+    local ok = set_bridge_timer()
+    set_chilsung_timer()
     return ok
 end
 
--- Start/replace drivers without wiping ceremony state.
-function M.ensure_timer()
+-- Replace drivers without wiping ceremony state.
+function M.set_timer()
     state.set('tick_busy', false)
-    local ok = ensure_bridge_timer()
-    ensure_chilsung_timer()
+    local ok = set_bridge_timer()
+    set_chilsung_timer()
     return ok
 end
 
 function M.on_bridge_enter(me)
-    M.ensure_timer()
+    M.set_timer()
     M.sync_timer(me)
     local map = (me ~= nil) and me:map() or id2map(MAP_ID)
     flush_bridge_mobs(map)

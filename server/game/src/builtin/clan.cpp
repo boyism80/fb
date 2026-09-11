@@ -755,7 +755,7 @@ int builtin::clan::builtin_money(lua_State* L)
                 throw std::runtime_error("no online clan member");
 
             co_await server.clans.add_money(world, clan_id, delta);
-            auto guard = co_await server.clans.ensure(clan_id);
+            auto guard = co_await server.clans.enter_write(clan_id);
             if (guard.value() != nullptr)
                 *money = guard.value()->money();
         }

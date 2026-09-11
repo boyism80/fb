@@ -846,9 +846,6 @@ int builtin::game_bot::builtin_request(lua_State* L)
             co_return;
         }
 
-        if (response_entry->ensure_registered != nullptr)
-            response_entry->ensure_registered(static_cast<game_bot_controller&>(bot_ptr->controller));
-
         auto condition = [lua, validator_ref, response_entry](const fb::protocol::header& header) -> bool {
             auto* L_state = static_cast<lua_State*>(*lua);
             auto* lua_ctx = fb::lua::get(L_state);
@@ -953,9 +950,6 @@ int builtin::game_bot::builtin_request_on(lua_State* L)
             luaL_unref(L_state, LUA_REGISTRYINDEX, validator_ref);
             co_return;
         }
-
-        if (response_entry->ensure_registered != nullptr)
-            response_entry->ensure_registered(static_cast<game_bot_controller&>(listener_ptr->controller));
 
         auto condition = [lua, validator_ref, response_entry](const fb::protocol::header& header) -> bool {
             auto* L_state = static_cast<lua_State*>(*lua);

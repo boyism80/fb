@@ -38,7 +38,7 @@ async::task<void> matchmaking_ready::handle(const fb::protocol::matchmaking::mq:
                         lua->pushstring(match_id.c_str());
                         lua->pushinteger(match_type);
                         lua->pushinteger(team_id);
-                        std::ignore = lua->call(4);
+                        std::ignore = co_await lua->call(4);
                     }
                     co_return;
                 };

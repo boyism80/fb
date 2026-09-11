@@ -283,6 +283,7 @@ async::task<void> game_bot_controller::on_transfer(game_bot& bot, const fb::prot
 
     auto created = this->create(response.parameter);
     created->set_transfer_from_bot_id(bot.id);
+    created->set_name(bot.name());
     fb::logger::debug("bot transfer reconnect [integration]: bot={} old_bot_id={} new_bot_id={} endpoint={}:{}",
                       created->name(),
                       bot.id,

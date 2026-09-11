@@ -193,7 +193,6 @@ private:
     void                           release_slot(uint32_t model_id, uint32_t slot, const std::shared_ptr<fb::game::map>& map);
     void                           register_slot(uint32_t model_id, uint32_t slot, const std::shared_ptr<fb::game::map>& map);
     void                           unregister_group_instance(const std::shared_ptr<fb::game::map>& map);
-    std::shared_ptr<fb::game::map> create_instance(const std::shared_ptr<fb::game::map>& source, uint32_t slot);
     std::shared_ptr<fb::game::map> choice_by_capacity(const std::shared_ptr<fb::game::map>& source);
     std::shared_ptr<fb::game::map> choice_by_group(character& ch, const std::shared_ptr<fb::game::map>& source);
     // clang-format on
@@ -202,19 +201,20 @@ public:
     // clang-format off
     bool                              contains(uint32_t id) const;
     std::shared_ptr<fb::game::map>    find(uint32_t id) const;
+    std::shared_ptr<fb::game::map>    find(const std::shared_ptr<fb::game::map>& source, uint32_t slot) const;
     std::shared_ptr<fb::game::map>    operator[] (uint32_t id) const;
     std::shared_ptr<const snapshot_t> snapshot() const;
     void                              insert(const std::shared_ptr<fb::game::map>& map);
     void                              erase(uint32_t id);
     void                              load(const fb::model::map& model);
-    bool                              ensure_loaded(const std::shared_ptr<fb::game::map>& map);
+    bool                              load_tiles(const std::shared_ptr<fb::game::map>& map);
     void                              invoke_init_script(const std::shared_ptr<fb::game::map>& map);
     async::task<void>                 invoke_init_script_wait(const std::shared_ptr<fb::game::map>& map);
     void                              spawn_npc(const fb::model::npc_spawn& spawn);
     async::task<void>                 cleanup();
     std::shared_ptr<fb::game::map>    name2map(std::string_view name) const;
     std::shared_ptr<fb::game::map>    clone(const std::shared_ptr<fb::game::map>& source);
-    std::shared_ptr<fb::game::map>    ensure_instance(const std::shared_ptr<fb::game::map>& source, uint32_t slot);
+    std::shared_ptr<fb::game::map>    create_instance(const std::shared_ptr<fb::game::map>& source, uint32_t slot);
     std::shared_ptr<fb::game::map>    choice_entry(character& ch, const std::shared_ptr<fb::game::map>& dest);
     async::task<void>                 destroy(const std::shared_ptr<fb::game::map>& map);
     void                              rezen_force();

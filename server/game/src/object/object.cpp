@@ -576,7 +576,7 @@ async::task<bool> object::map(map_ptr map, std::optional<fb::model::point16_t> p
         if (map->closing())
             co_return false;
 
-        if (this->server.maps.ensure_loaded(map) == false)
+        if (this->server.maps.load_tiles(map) == false)
             co_return false;
 
         // here the character is on some map.
