@@ -11,6 +11,7 @@ public class MatchMaker<TEntry>
     where TEntry : IRegistryEntry
 {
     private readonly MatchmakingOptions _options;
+    private readonly ILogger _logger;
     private readonly Dictionary<uint, RegistryQueue<TEntry>> _registryQueues = new();
     private readonly Dictionary<Guid, Match<TEntry>> _pendingMatches = new();
     private readonly Dictionary<string, EnrollmentRef> _activeEntries = new();
@@ -23,9 +24,10 @@ public class MatchMaker<TEntry>
 
     public event Func<DissolvedMatchResult<TEntry>, CancellationToken, Task> MatchDissolved;
 
-    public MatchMaker(IOptions<MatchmakingOptions> options)
+    public MatchMaker(IOptions<MatchmakingOptions> options, ILogger logger)
     {
         _options = options.Value;
+        _logger = logger;
     }
 
     public Guid Enroll(uint matchType, IReadOnlyList<TEntry> entries)
@@ -50,10 +52,29 @@ public class MatchMaker<TEntry>
                     throw new LogicException(ErrorCode.MatchmakingDuplicateEntry);
                 }
 
-                if (_activeEntries.ContainsKey(entry.EntryId))
+                if (_activeEntries.TryGetValue(entry.EntryId, out var active)
+                    && active.State == EnrollmentState.Pending)
                 {
                     throw new LogicException(ErrorCode.MatchmakingAlreadyEnrolled);
                 }
+            }
+
+            // A waiting enrollment without a live owner is leftover state, so drop it
+            // instead of locking the character out of the queue forever.
+            foreach (var entry in entries)
+            {
+                if (!_activeEntries.TryGetValue(entry.EntryId, out var stale))
+                {
+                    continue;
+                }
+
+                _logger.LogWarning(
+                    "Enroll evicted leftover registry {RegistryId} of {EntryId} for match type {MatchType}",
+                    stale.RegistryId,
+                    entry.EntryId,
+                    stale.MatchType);
+                UnregisterFromQueue(stale.MatchType, stale.RegistryId);
+                ClearRegistryEnrollment(stale.RegistryId);
             }
 
             Registry<TEntry> registry;
@@ -83,6 +104,12 @@ public class MatchMaker<TEntry>
             }
 
             _registryIndex[registry.Id] = (matchType, EnrollmentState.Waiting);
+            _logger.LogInformation(
+                "Enrolled registry {RegistryId} for match type {MatchType} with entries {Entries}",
+                registry.Id,
+                matchType,
+                string.Join(",", entries.Select(entry => entry.EntryId)));
+            LogQueueState("enroll");
             return registry.Id;
         }
     }
@@ -97,50 +124,42 @@ public class MatchMaker<TEntry>
 
         lock (_lock)
         {
-            if (!_registryIndex.TryGetValue(registryId, out var registryState)
-                || registryState.MatchType != matchType)
+            if (!_activeEntries.TryGetValue(entryId, out var enrollment))
             {
+                _logger.LogWarning(
+                    "Unenroll from {EntryId} found nothing to remove (requested registry {RegistryId}, match type {MatchType})",
+                    entryId,
+                    registryId,
+                    matchType);
                 throw new LogicException(ErrorCode.MatchmakingRegistryNotFound);
             }
 
-            if (!_activeEntries.TryGetValue(entryId, out var enrollment)
-                || enrollment.RegistryId != registryId)
+            if (enrollment.RegistryId != registryId || enrollment.MatchType != matchType)
             {
-                throw new LogicException(ErrorCode.MatchmakingNotParticipant);
+                _logger.LogWarning(
+                    "Unenroll from {EntryId} referenced {RegistryId}/{MatchType} but the live enrollment is {LiveRegistryId}/{LiveMatchType}",
+                    entryId,
+                    registryId,
+                    matchType,
+                    enrollment.RegistryId,
+                    enrollment.MatchType);
             }
 
-            if (registryState.State == EnrollmentState.Pending)
+            if (enrollment.State == EnrollmentState.Pending && enrollment.MatchId.HasValue
+                && _pendingMatches.TryGetValue(enrollment.MatchId.Value, out var match))
             {
-                if (!enrollment.MatchId.HasValue
-                    || !_pendingMatches.TryGetValue(enrollment.MatchId.Value, out var match))
-                {
-                    throw new LogicException(ErrorCode.MatchmakingMatchNotFound);
-                }
-
-                if (!match.AllEntryIds.Contains(entryId))
-                {
-                    throw new LogicException(ErrorCode.MatchmakingNotParticipant);
-                }
-
                 dissolved = Dissolve(match, DissolveReason.Decline, entryId);
-            }
-            else if (registryState.State == EnrollmentState.Waiting)
-            {
-                if (enrollment.State != EnrollmentState.Waiting)
-                {
-                    throw new LogicException(ErrorCode.MatchmakingNotInWaitingState);
-                }
-
-                if (!UnregisterFromQueue(matchType, registryId))
-                {
-                    throw new LogicException(ErrorCode.MatchmakingRegistryNotFound);
-                }
-
-                ClearRegistryEnrollment(registryId);
             }
             else
             {
-                throw new LogicException(ErrorCode.MatchmakingNotInWaitingState);
+                UnregisterFromQueue(enrollment.MatchType, enrollment.RegistryId);
+                ClearRegistryEnrollment(enrollment.RegistryId);
+                _logger.LogInformation(
+                    "Unenrolled registry {RegistryId} of match type {MatchType} requested by {EntryId}",
+                    enrollment.RegistryId,
+                    enrollment.MatchType,
+                    entryId);
+                LogQueueState("unenroll");
             }
         }
 
@@ -178,6 +197,13 @@ public class MatchMaker<TEntry>
             }
 
             match.ConfirmedEntryIds.Add(entryId);
+            _logger.LogInformation(
+                "Match {MatchId} confirmed by {EntryId} ({Confirmed}/{Total})",
+                matchId,
+                entryId,
+                match.ConfirmedEntryIds.Count,
+                match.AllEntryIds.Count());
+
             if (!match.AllEntryIds.All(id => match.ConfirmedEntryIds.Contains(id)))
             {
                 return false;
@@ -211,6 +237,7 @@ public class MatchMaker<TEntry>
                 throw new LogicException(ErrorCode.MatchmakingNotParticipant);
             }
 
+            _logger.LogInformation("Match {MatchId} declined by {EntryId}", matchId, entryId);
             result = Dissolve(match, DissolveReason.Decline, entryId);
         }
 
@@ -278,12 +305,23 @@ public class MatchMaker<TEntry>
                         }
                     }
 
+                    _logger.LogInformation(
+                        "Proposed match {MatchId} for match type {MatchType} with registries {Registries}",
+                        match.MatchId,
+                        matchType,
+                        string.Join(",", match.AllRegistries.Select(registry => registry.Id)));
+
                     proposed.Add(new ProposedMatchResult<TEntry>
                     {
                         Match = match,
                         ConfirmDeadline = GetConfirmDeadline(match)
                     });
                 }
+            }
+
+            if (proposed.Count > 0)
+            {
+                LogQueueState("propose");
             }
         }
 
@@ -320,6 +358,23 @@ public class MatchMaker<TEntry>
         {
             cancellationToken.ThrowIfCancellationRequested();
             await RaiseMatchDissolvedAsync(item, cancellationToken);
+        }
+    }
+
+    public void LogQueueState(string reason)
+    {
+        lock (_lock)
+        {
+            var queues = string.Join(
+                ", ",
+                _registryQueues.Select(pair => $"{pair.Key}:{pair.Value.Describe()}"));
+
+            _logger.LogInformation(
+                "Matchmaking state after {Reason}: queues [{Queues}], pending matches {PendingMatches}, enrolled entries {EnrolledEntries}",
+                reason,
+                queues,
+                _pendingMatches.Count,
+                _activeEntries.Count);
         }
     }
 
@@ -374,6 +429,7 @@ public class MatchMaker<TEntry>
         }
 
         _pendingMatches.Remove(match.MatchId);
+        LogQueueState("finalize");
         return match;
     }
 
@@ -399,26 +455,35 @@ public class MatchMaker<TEntry>
             if (!outcome.Requeued)
             {
                 ClearRegistryEnrollment(registry.Id);
+                _logger.LogInformation(
+                    "Registry {RegistryId} dropped from match {MatchId} ({Reason})",
+                    registry.Id,
+                    match.MatchId,
+                    reason);
             }
             else
             {
-                var requeued = RegisterToQueue(
-                    match.MatchType,
-                    registry.Entries.ToList(),
-                    registry.CreatedDateTime);
-                _registryIndex.Remove(registry.Id);
-                _registryIndex[requeued.Id] = (match.MatchType, EnrollmentState.Waiting);
+                // The registry keeps its id so game servers never hold a dangling reference.
+                _registryQueues[match.MatchType].Add(registry);
+                _registryIndex[registry.Id] = (match.MatchType, EnrollmentState.Waiting);
                 foreach (var entry in registry.Entries)
                 {
                     _activeEntries[entry.EntryId] = new EnrollmentRef(
                         EnrollmentState.Waiting,
                         match.MatchType,
-                        requeued.Id);
+                        registry.Id);
                 }
+
+                _logger.LogInformation(
+                    "Registry {RegistryId} requeued after match {MatchId} ({Reason})",
+                    registry.Id,
+                    match.MatchId,
+                    reason);
             }
         }
 
         _pendingMatches.Remove(match.MatchId);
+        LogQueueState("dissolve");
         return new DissolvedMatchResult<TEntry>
         {
             Match = match,

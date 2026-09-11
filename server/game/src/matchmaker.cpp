@@ -167,6 +167,38 @@ void matchmaker::enqueue_squad_unregister(uint32_t match_type, std::string_view 
         });
 }
 
+async::task<void> matchmaker::discard_leftover_enrollment()
+{
+    // Enrollment only lives for the duration of a session, so anything the queue
+    // still holds at login time is leftover state that nobody can cancel.
+    auto& server       = this->owner.server;
+    auto  world        = this->owner.world();
+    auto  character_id = this->owner.id;
+
+    try
+    {
+        auto&& status =
+            co_await server.http.post("matchmaking", "/matchmaking/status", mp_reqs::Status{world, character_id});
+
+        if (status.error != 0 || status.registry_id.empty())
+            co_return;
+
+        auto&& resp =
+            co_await server.http.post("matchmaking",
+                                      "/matchmaking/unregister",
+                                      mp_reqs::Unregister{status.match_type, status.registry_id, world, character_id});
+
+        fb::logger::warn("matchmaking dropped leftover registry {} of character {} at login (success: {})",
+                         status.registry_id,
+                         character_id,
+                         resp.success);
+    }
+    catch (const std::exception& e)
+    {
+        fb::logger::warn("matchmaking leftover check failed for character {}: {}", character_id, e.what());
+    }
+}
+
 async::task<void> matchmaker::unregister_queue(bool quiet)
 {
     this->owner.assert_thread();
@@ -462,17 +494,25 @@ async::task<void> matchmaker::register_queue(uint32_t match_type)
                                              matchmaking_config.member_count,
                                              entries.size()));
 
-    auto&& resp = co_await this->owner.server.http.post("matchmaking",
-                                                        "/matchmaking/register",
-                                                        mp_reqs::Register{match_type, entries});
+    auto& server       = this->owner.server;
+    auto  character_id = this->owner.id;
 
-    self = weak.lock();
-    if (self == nullptr)
-        throw std::runtime_error(_TEXT(MESSAGE_MARKETPLACE_CHARACTER_EXPIRED));
-    co_await this->owner.server.threads.switching(weak);
+    auto&& resp =
+        co_await server.http.post("matchmaking", "/matchmaking/register", mp_reqs::Register{match_type, entries});
 
     if (resp.error != 0)
         throw std::runtime_error(enum_tostring(static_cast<fb::model::enum_value::ERROR_CODE>(resp.error)));
+
+    self = weak.lock();
+    if (self == nullptr)
+    {
+        // The character vanished while registering, so the queue would keep an owner-less registry.
+        std::ignore = co_await server.http.post("matchmaking",
+                                                "/matchmaking/unregister",
+                                                mp_reqs::Unregister{match_type, resp.registry_id, world, character_id});
+        throw std::runtime_error(_TEXT(MESSAGE_MARKETPLACE_CHARACTER_EXPIRED));
+    }
+    co_await server.threads.switching(weak);
 
     this->set_enrollment(match_type, resp.registry_id);
 

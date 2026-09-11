@@ -22,7 +22,7 @@ public sealed class CharacterMatchMaker : MatchMaker<CharacterRegistryEntry>
         RabbitMqService rabbitMqService,
         IMapper mapper,
         ILogger<CharacterMatchMaker> logger)
-        : base(options)
+        : base(options, logger)
     {
         _rabbitMqService = rabbitMqService;
         _mapper = mapper;
@@ -38,10 +38,11 @@ public sealed class CharacterMatchMaker : MatchMaker<CharacterRegistryEntry>
         CancellationToken cancellationToken)
     {
         _logger.LogInformation(
-            "Match {MatchId} awaiting confirmation for match type {MatchType}, deadline {ConfirmDeadline}",
+            "Match {MatchId} awaiting confirmation for match type {MatchType}, deadline {ConfirmDeadline}, entries {Entries}",
             args.Match.MatchId,
             args.Match.MatchType,
-            args.ConfirmDeadline);
+            args.ConfirmDeadline,
+            string.Join(",", args.Match.AllEntryIds));
 
         var message = new fb.protocol.matchmaking.mq.Proposed
         {
@@ -59,9 +60,10 @@ public sealed class CharacterMatchMaker : MatchMaker<CharacterRegistryEntry>
         CancellationToken cancellationToken)
     {
         _logger.LogInformation(
-            "Match {MatchId} finalized for match type {MatchType}",
+            "Match {MatchId} finalized for match type {MatchType}, entries {Entries}",
             match.MatchId,
-            match.MatchType);
+            match.MatchType,
+            string.Join(",", match.AllEntryIds));
 
         var message = new fb.protocol.matchmaking.mq.Ready
         {
@@ -78,9 +80,16 @@ public sealed class CharacterMatchMaker : MatchMaker<CharacterRegistryEntry>
         CancellationToken cancellationToken)
     {
         _logger.LogInformation(
-            "Match {MatchId} dissolved due to {Reason}",
+            "Match {MatchId} dissolved due to {Reason}, outcomes {Outcomes}",
             result.Match.MatchId,
-            result.Reason);
+            result.Reason,
+            string.Join(
+                " | ",
+                result.Outcomes.Select(outcome => string.Format(
+                    "{0}={1} [{2}]",
+                    outcome.RegistryId,
+                    outcome.Requeued ? "requeued" : "dropped",
+                    string.Join(",", outcome.Entries.Select(entry => entry.EntryId))))));
 
         var message = new fb.protocol.matchmaking.mq.Dissolved
         {

@@ -5,6 +5,8 @@ namespace Matchmaking.Services;
 
 public sealed class MatchConfirmationBackgroundService : BackgroundService
 {
+    private const int HeartbeatSeconds = 30;
+
     private readonly MatchMaker<CharacterRegistryEntry> _matchMaker;
     private readonly ILogger<MatchConfirmationBackgroundService> _logger;
 
@@ -18,11 +20,19 @@ public sealed class MatchConfirmationBackgroundService : BackgroundService
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
+        var elapsedSeconds = 0;
+
         while (!stoppingToken.IsCancellationRequested)
         {
             try
             {
                 await _matchMaker.TickConfirmationAsync(stoppingToken);
+
+                elapsedSeconds++;
+                if (elapsedSeconds % HeartbeatSeconds == 0)
+                {
+                    _matchMaker.LogQueueState("heartbeat");
+                }
             }
             catch (Exception ex)
             {

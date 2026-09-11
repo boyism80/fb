@@ -68,6 +68,7 @@ public:
     void                                     clear_enrollment();
     async::task<void>                        register_queue(uint32_t match_type);
     async::task<void>                        unregister_queue(bool quiet = false);
+    async::task<void>                        discard_leftover_enrollment();
     async::task<void>                        confirm_queue(std::string match_id, bool quiet = false);
     async::task<void>                        decline_queue(std::string match_id, bool quiet = false);
 };
