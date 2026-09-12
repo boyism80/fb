@@ -1,4 +1,4 @@
--- mob: 고양이인어
+-- mob: 고양인어
 
 return {
     -- on_mob_attack = function(me, you)
