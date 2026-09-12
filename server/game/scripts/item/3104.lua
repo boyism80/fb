@@ -3,7 +3,7 @@
 return {
     on_activated = function(me, item)
         local look = name2mob('토깽이'):look()
-        me:mimic({ disguise = look })
+        me:mimic({ disguise = look, armor_color = me:armor_color() })
         me:effect(3)
         me:sound(25)
     end,

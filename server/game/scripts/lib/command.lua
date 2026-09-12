@@ -638,7 +638,7 @@ M.functions = {
             if value < MOB_LOOK_OFFSET then
                 wire = value + MOB_LOOK_OFFSET
             end
-            me:mimic({ disguise = wire })
+            me:mimic({ disguise = wire, armor_color = me:armor_color() })
             me:message(string.format("변신 raw=%d wire=%d", value, wire))
             return true
         end,

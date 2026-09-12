@@ -648,6 +648,8 @@ void character::armor_color(std::optional<uint8_t> value)
     this->assert_thread();
 
     this->_armor_color = value;
+    if (this->_mimicry.has_value() && this->_mimicry->disguise.has_value())
+        this->_mimicry->armor_color = value;
     this->show();
 }
 

@@ -1650,7 +1650,7 @@ int builtin::character::builtin_mimic(lua_State* L)
         auto weak     = ch->weak_from_this_as<fb::game::character>();
         auto builder  = lua->new_co_builder();
         builder.weak  = weak;
-        builder.yield = [=]() -> async::task<void> {
+        builder.yield = [=]() mutable -> async::task<void> {
             ch->mimicry(std::move(appearance));
             co_return;
         };
