@@ -141,14 +141,20 @@ namespace AdminTool.Services
 
         public static int GetMobTotalCount()
         {
+            // Collection denominator = Meta.dat entries that resolve to a mob
+            // (same set as game server collection_mobs), not Table.Mob.Count.
             try
             {
-                return Table.Mob.Count;
+                var total = MetaDatCollection.GetCollectionMobTotalCount();
+                if (total > 0)
+                    return total;
             }
             catch
             {
-                return 0;
+                // fall through
             }
+
+            return 0;
         }
 
         public static string FormatBuffName(uint modelId)
