@@ -19,5 +19,8 @@
 	"client": {
 		"version": 550,
 		"nation": 215
+	},
+	"integration": {
+		"max_parallel_tests": 4
 	}
 }

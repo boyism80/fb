@@ -9,11 +9,15 @@
 #include <fb/model/loader.h>
 #include <memory>
 #include <queue>
+#include <deque>
 #include <vector>
 #include <unordered_map>
+#include <unordered_set>
 #include <typeindex>
 #include <functional>
 #include <shared_mutex>
+#include <mutex>
+#include <optional>
 
 namespace fb::bot::integration {
 
@@ -28,8 +32,18 @@ private:
 
 private:
     std::vector<std::unique_ptr<bot_integration_test>> _test_instances;
-    std::queue<bot_integration_test*>                  _test_queue;
-    bot_integration_test*                              _current_test{nullptr};
+
+    std::deque<bot_integration_test*> _parallel_queue;
+    std::deque<bot_integration_test*> _serial_queue;
+
+    std::unordered_set<uint32_t>                        _free_seats;
+    std::unordered_map<bot_integration_test*, uint32_t> _active_seats;
+    uint32_t                                            _max_parallel_tests{4};
+    bool                                                _serial_phase_started{false};
+    bool                                                _finished{false};
+
+    std::unordered_map<uint32_t, bot_integration_test*> _bot_owners;
+    std::mutex                                          _schedule_mutex;
 
     struct test_result
     {
@@ -38,6 +52,7 @@ private:
         std::string message;
     };
     std::vector<test_result> _test_results;
+    std::mutex               _results_mutex;
 
     using hook_function = std::function<async::task<void>(game_bot&, const fb::protocol::header&)>;
     std::unordered_map<bot_integration_test*, std::unordered_map<uint8_t, std::vector<hook_function>>> _test_hooks;
@@ -47,6 +62,17 @@ public:
     game_bot_controller(bot_container& container);
 
     void initialize() override;
+
+    void                  own(uint32_t bot_id, bot_integration_test* test);
+    void                  reown(uint32_t old_bot_id, uint32_t new_bot_id);
+    bot_integration_test* owner_of(uint32_t bot_id);
+    void                  clear_ownership_for_test(bot_integration_test* test);
+
+    void     notify_test_ready(bot_integration_test* test);
+    void     enqueue_test(std::unique_ptr<bot_integration_test> test, bool serial, bool extra_slot);
+    bool     has_more_tests() const;
+    void     print_final_test_results();
+    uint32_t max_parallel_tests() const;
 
 private:
     async::task<void> on_timer();
@@ -59,6 +85,13 @@ private:
     async::task<void> on_move(game_bot& bot, const game_resp::move& response);
     async::task<void> on_transfer(game_bot& bot, const fb::protocol::response::transfer& response);
 
+    void              try_schedule_parallel();
+    void              start_serial_phase();
+    void              on_test_complete(bot_integration_test* test, bool success);
+    async::task<void> run_one(bot_integration_test* test);
+    void              detach_run_one(bot_integration_test* test);
+    void              finish_suite_if_done();
+
 protected:
     async::task<void> on_integration_hook_execution(uint8_t                     opcode,
                                                     game_bot&                   bot,
@@ -67,14 +100,6 @@ protected:
 public:
     virtual async::task<void> on_bot_connected(game_bot& bot) override;
     virtual async::task<void> on_bot_disconnected(game_bot& bot) override;
-
-    void              notify_test_ready();
-    async::task<void> start_current_test();
-    void              enqueue_test(std::unique_ptr<bot_integration_test> test);
-    void              start_next_test();
-    bool              has_more_tests() const;
-    void              print_final_test_results();
-    async::task<void> active_test();
 
     template <typename ResponseType> void
     hook_for_test(bot_integration_test*                                                   test,

@@ -1,4 +1,5 @@
 local spell_runner = require("integration.lib.spell_runner")
+local bot_diag     = require("integration.lib.bot_diag")
 
 local M = {}
 
@@ -14,47 +15,60 @@ local WEAPON_NAME = "목도"
 local NOT_READY_MESSAGE = "비바람이 휘몰아치고 있습니다."
 local NAKRANG_ROOM = "낙랑의방"
 local NEARBY_MOB_CLEAR_RANGE = 3
+local g_suite_slot = 0
 
 local function restore_position(caster, map_name, position)
-    slog("restore_position: enter target=%s pos=(%s,%s)",
+    slog("restore_position: enter target=%s pos=(%s,%s) suite_slot=%s",
         tostring(map_name),
         tostring(position and position[1]),
-        tostring(position and position[2]))
+        tostring(position and position[2]),
+        tostring(g_suite_slot))
+    bot_diag.dump(caster, "restore_position:before")
 
     if map_name == nil or position == nil then
         slog("restore_position: missing map_name or position")
+        bot_diag.dump(caster, "restore_position:missing_target")
         return false
     end
 
     local map_id = caster:map()
     local map_model = id2map(map_id)
-    if map_model == nil then
-        slog("restore_position: id2map(%d) not found", map_id)
-        return false
+    if map_model ~= nil then
+        local current = caster:position()
+        local current_name = map_model:name()
+        slog("restore_position: current map=%s (id=%d) pos=(%d,%d) target map=%s pos=(%d,%d)",
+            current_name, map_id, current[1], current[2],
+            map_name, position[1], position[2])
+    else
+        slog("restore_position: current map id=%s unknown (0xFFFF=uninitialized?); forcing move to target",
+            tostring(map_id))
     end
 
-    local current = caster:position()
-    local current_name = map_model:name()
-    slog("restore_position: current map=%s (id=%d) pos=(%d,%d) target map=%s pos=(%d,%d)",
-        current_name, map_id, current[1], current[2],
-        map_name, position[1], position[2])
-
-    local cmd = string.format("/맵이동 %s %d %d", map_name, position[1], position[2])
+    local cmd = string.format("/맵이동 %s %d %d %d", map_name, position[1], position[2], g_suite_slot)
     slog("restore_position: branch=transfer cmd=%s", cmd)
-    caster:transfer(protocol.chat(false, cmd))
+    local ok, err = pcall(function()
+        caster:transfer(protocol.chat(false, cmd))
+    end)
+    if ok == false then
+        slog("restore_position: transfer FAILED err=%s", tostring(err))
+        bot_diag.dump(caster, "restore_position:transfer_failed")
+        return false
+    end
     slog("restore_position: transfer returned")
+    bot_diag.dump(caster, "restore_position:after")
     return true
 end
 
 local function restore_nakrang_room(caster)
     local map_model = id2map(caster:map())
     if map_model == nil then
-        slog("restore_nakrang_room: id2map(%d) not found", caster:map())
+        slog("restore_nakrang_room: id2map(%s) not found", tostring(caster:map()))
+        bot_diag.dump(caster, "restore_nakrang_room:unknown_map")
         return false
     end
     
     if map_model:name() ~= NAKRANG_ROOM then
-        caster:transfer(protocol.chat(false, "/맵이동 " .. NAKRANG_ROOM .. " 6 6"))
+        caster:transfer(protocol.chat(false, string.format("/맵이동 %s 6 6 %d", NAKRANG_ROOM, g_suite_slot)))
     end
     return true
 end
@@ -130,14 +144,30 @@ local SPECIAL_SPELLS = {
                 return true
             end
 
+            bot_diag.dump(caster, "귀환:before_cast")
             local map_model = id2map(caster:map())
             if map_model == nil then
-                slog("귀환: id2map(%d) not found", caster:map())
+                slog("귀환: id2map(%s) not found before cast", tostring(caster:map()))
+                bot_diag.dump(caster, "귀환:unknown_map_before_cast")
                 return false
             end
             state.return_map_name = map_model:name()
             state.return_pos = caster:position()
-            caster:transfer(protocol.spell_cast("NORMAL", slot, "", 0, {0, 0}))
+            slog("귀환: casting; will restore to map=%s pos=(%d,%d) suite_slot=%s",
+                state.return_map_name,
+                state.return_pos[1],
+                state.return_pos[2],
+                tostring(g_suite_slot))
+
+            local ok, err = pcall(function()
+                caster:transfer(protocol.spell_cast("NORMAL", slot, "", 0, {0, 0}))
+            end)
+            if ok == false then
+                slog("귀환: cast transfer FAILED err=%s", tostring(err))
+                bot_diag.dump(caster, "귀환:cast_transfer_failed")
+                return false
+            end
+            bot_diag.dump(caster, "귀환:after_cast_transfer")
             return true
         end,
         post = function(caster, _, state)
@@ -148,7 +178,12 @@ local SPECIAL_SPELLS = {
                 return true
             end
 
-            return restore_position(caster, state.return_map_name, state.return_pos)
+            bot_diag.dump(caster, "귀환:post_before_restore")
+            local ok = restore_position(caster, state.return_map_name, state.return_pos)
+            if ok == false then
+                bot_diag.dump(caster, "귀환:post_restore_failed")
+            end
+            return ok
         end,
     },
     {
@@ -169,7 +204,8 @@ local SPECIAL_SPELLS = {
             state.packet = packet
             
             if skill.is_cast_ready(packet.text, "비영사천문") == false then
-                slog("비영사천문: cast not ready: p.text=" .. packet.text)
+                slog("비영사천문: cast not ready: p.text=" .. tostring(packet and packet.text))
+                bot_diag.dump(caster, "비영사천문:cast_not_ready")
                 return false
             end
             
@@ -179,6 +215,7 @@ local SPECIAL_SPELLS = {
             
             if skill.positions_equal(caster:position(), state.before) then
                 slog("비영사천문: position unchanged after cast")
+                bot_diag.dump(caster, "비영사천문:position_unchanged")
                 return false
             end
             
@@ -334,7 +371,7 @@ local SPECIAL_SPELLS = {
             slog("성황령 cast: completed map=%d pos=(%d,%d)", caster:map(), pos[1], pos[2])
             
             slog("성황령 post: restoring map and stats")
-            caster:chat("/맵이동 낙랑의방 6 6")
+            caster:chat(string.format("/맵이동 낙랑의방 6 6 %d", g_suite_slot))
             caster:set_max_hp_mp(100000, 100000)
             slog("성황령 post: completed map=%d hp=%d mp=%d",
             caster:map(), caster:hp(), caster:mp())
@@ -345,6 +382,7 @@ local SPECIAL_SPELLS = {
 
 function M.run(ctx, bot_index)
     local caster = ctx:bot(bot_index)
+    g_suite_slot = ctx:suite_slot()
     log("debug", "SPECIAL SPELL TEST STARTED")
     local option = require("integration.lib.option")
     if option.disable_pk_protect(caster) == false then

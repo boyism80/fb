@@ -23,33 +23,36 @@ function M.arrange_in_line(ctx, map_name, start_x, start_y)
     start_x  = start_x or DEFAULT_X
     start_y  = start_y or DEFAULT_Y
 
+    local slot  = ctx:suite_slot()
     local count = ctx:bot_count()
     for i = 0, count - 1 do
         local bot = ctx:bot(i)
-        bot:map_move(map_name, start_x + i, start_y)
+        bot:map_move(map_name, start_x + i, start_y, slot)
         bot:direction("BOTTOM")
     end
 end
 
 function M.arrange_in_grid(ctx, map_name, start_x, start_y, end_x, end_y)
+    local slot  = ctx:suite_slot()
     local width = end_x - start_x + 1
     local count = ctx:bot_count()
     for i = 0, count - 1 do
         local bot = ctx:bot(i)
         local x   = start_x + (i % width)
         local y   = start_y + math.floor(i / width)
-        bot:map_move(map_name, x, y)
+        bot:map_move(map_name, x, y, slot)
     end
 end
 
 function M.arrange_skill_parallel(ctx, map_name)
     map_name = map_name or DEFAULT_MAP
 
+    local slot = ctx:suite_slot()
     for _, group in ipairs(SKILL_PARALLEL_LAYOUT) do
         for i, bot_index in ipairs(group.bots) do
             local pos = group.positions[i]
             local bot = ctx:bot(bot_index)
-            bot:map_move(map_name, pos[1], pos[2])
+            bot:map_move(map_name, pos[1], pos[2], slot)
             bot:direction("BOTTOM")
         end
     end

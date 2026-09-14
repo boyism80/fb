@@ -580,6 +580,22 @@ game_bot::map_move(std::string_view map_name, uint16_t x, uint16_t y, std::chron
     }
 }
 
+async::task<void>
+game_bot::map_move(std::string_view map_name, uint16_t x, uint16_t y, uint32_t slot, std::chrono::milliseconds timeout)
+{
+    auto map_name_str = std::string(map_name);
+    auto command      = std::format("/맵이동 {} {} {} {}", map_name_str, x, y, slot);
+    auto map          = table::map->name2map(map_name_str);
+    if (map == nullptr)
+        co_return;
+
+    // Client map id is the model id for both source and instance maps, so map_config
+    // cannot prove instance entry. Match instance_map_test: chat + short wait.
+    this->chat(command);
+    auto wait = timeout < 1500ms ? timeout : 1500ms;
+    co_await this->thread()->sleep(wait);
+}
+
 async::task<void> game_bot::change_level(uint8_t level, std::chrono::milliseconds timeout)
 {
     if (this->_level == level)

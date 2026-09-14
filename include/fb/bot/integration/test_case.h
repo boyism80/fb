@@ -4,6 +4,7 @@
 #include <fb/bot/game_bot.h>
 #include <fb/synchronized.h>
 #include <async/task.h>
+#include <async/task_completion_source.h>
 #include <memory>
 #include <vector>
 #include <atomic>
@@ -13,6 +14,8 @@
 #include <functional>
 #include <optional>
 #include <fb/generator.h>
+#include <queue>
+#include <unordered_map>
 
 namespace fb::bot::integration {
 
@@ -53,9 +56,14 @@ public:
     };
 
 private:
-    test_bots_t            _test_bots;
-    test_state             _state{test_state::idle};
-    std::queue<scenario_t> _scenario_queue;
+    test_bots_t                                          _test_bots;
+    test_state                                           _state{test_state::idle};
+    std::queue<scenario_t>                               _scenario_queue;
+    uint32_t                                             _suite_slot{0};
+    std::optional<uint32_t>                              _extra_slot;
+    bool                                                 _needs_extra_slot{false};
+    bool                                                 _serial{false};
+    std::shared_ptr<async::task_completion_source<void>> _ready_promise;
 
 public:
     game_bot_controller& controller;
@@ -78,7 +86,9 @@ public:
 private:
     async::task<void> execute_parallel_scenario(std::shared_ptr<parallel_scenarios_context> context, uint32_t index);
     void              mark_bot_logged_in(game_bot& bot);
-    void              try_complete_transfer(game_bot& bot);
+
+public:
+    void try_complete_transfer(game_bot& bot);
 
 protected:
     virtual generator<scenario_t> on_generate_scenario() = 0;
@@ -111,6 +121,17 @@ public:
     virtual async::task<bool>              check_should_skip();
     async::task<bool>                      execute();
     virtual std::string                    name() const = 0;
+
+    void                    suite_slot(uint32_t slot);
+    uint32_t                suite_slot() const;
+    void                    extra_slot(std::optional<uint32_t> slot);
+    std::optional<uint32_t> extra_slot() const;
+    void                    needs_extra_slot(bool value);
+    bool                    needs_extra_slot() const;
+    void                    serial(bool value);
+    bool                    serial() const;
+    void                    prepare_ready_wait();
+    async::task<void>       wait_until_ready();
 };
 
 } // namespace fb::bot::integration

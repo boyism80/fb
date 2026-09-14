@@ -1125,11 +1125,18 @@ int builtin::game_bot::builtin_map_move(lua_State* L)
     auto y       = require_integer<uint16_t>(L, lua, 4);
     auto bot_ptr = bot;
 
+    std::optional<uint32_t> slot;
+    if (lua_gettop(L) >= 5 && lua_isnil(L, 5) == false)
+        slot = require_integer<uint32_t>(L, lua, 5);
+
     auto builder  = lua->new_co_builder();
-    builder.yield = [bot_ptr, map, x, y]() -> async::task<void> {
+    builder.yield = [bot_ptr, map, x, y, slot]() -> async::task<void> {
         if (bot_ptr == nullptr)
             co_return;
-        co_await bot_ptr->map_move(map, x, y, INTEGRATION_DEFAULT_TIMEOUT);
+        if (slot.has_value())
+            co_await bot_ptr->map_move(map, x, y, slot.value(), INTEGRATION_DEFAULT_TIMEOUT);
+        else
+            co_await bot_ptr->map_move(map, x, y, INTEGRATION_DEFAULT_TIMEOUT);
     };
     builder.resume = []() -> async::task<int> {
         co_return 0;

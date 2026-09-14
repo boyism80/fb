@@ -54,7 +54,67 @@ void bot_integration_test::on_bot_disconnected(std::shared_ptr<fb::bot::game_bot
 
 void bot_integration_test::notify_ready()
 {
-    this->controller.notify_test_ready();
+    if (this->_ready_promise != nullptr)
+        this->_ready_promise->set_value();
+}
+
+void bot_integration_test::prepare_ready_wait()
+{
+    this->_ready_promise = std::make_shared<async::task_completion_source<void>>();
+}
+
+async::task<void> bot_integration_test::wait_until_ready()
+{
+    if (this->_ready_promise == nullptr)
+        this->prepare_ready_wait();
+
+    if (this->is_ready() && this->get_state() == test_state::idle)
+    {
+        this->set_state(test_state::ready);
+        this->_ready_promise->set_value();
+    }
+
+    co_await this->_ready_promise->task();
+}
+
+void bot_integration_test::suite_slot(uint32_t slot)
+{
+    this->_suite_slot = slot;
+}
+
+uint32_t bot_integration_test::suite_slot() const
+{
+    return this->_suite_slot;
+}
+
+void bot_integration_test::extra_slot(std::optional<uint32_t> slot)
+{
+    this->_extra_slot = slot;
+}
+
+std::optional<uint32_t> bot_integration_test::extra_slot() const
+{
+    return this->_extra_slot;
+}
+
+void bot_integration_test::needs_extra_slot(bool value)
+{
+    this->_needs_extra_slot = value;
+}
+
+bool bot_integration_test::needs_extra_slot() const
+{
+    return this->_needs_extra_slot;
+}
+
+void bot_integration_test::serial(bool value)
+{
+    this->_serial = value;
+}
+
+bool bot_integration_test::serial() const
+{
+    return this->_serial;
 }
 
 async::task<void> bot_integration_test::on_finished()
@@ -126,6 +186,8 @@ void bot_integration_test::try_complete_transfer(game_bot& bot)
     const auto source_bot_id = bot.transfer_from_bot_id();
     if (source_bot_id == 0)
         return;
+
+    this->controller.reown(source_bot_id, bot.id);
 
     auto reconnected_index = std::optional<uint32_t>{};
     auto it                = std::find_if(this->_test_bots.begin(), this->_test_bots.end(), [&bot](auto& b) {
@@ -209,11 +271,15 @@ async::task<void> bot_integration_test::on_activated(game_bot_controller& contro
     auto endpoint =
         boost::asio::ip::tcp::endpoint(boost::asio::ip::address::from_string(ip), fb::config<uint16_t>("port"));
 
-    fb::logger::debug("{} initializing and spawning {} bots", this->name(), this->bot_count);
+    fb::logger::debug("{} initializing and spawning {} bots (suite_slot={})",
+                      this->name(),
+                      this->bot_count,
+                      this->_suite_slot);
 
     for (auto i = 0u; i < this->bot_count; i++)
     {
         auto gateway_bot = controller.container.gateway->create();
+        controller.own(gateway_bot->id, this);
         gateway_bot->connect(endpoint);
     }
 
@@ -232,13 +298,11 @@ async::task<void> bot_integration_test::on_activated(game_bot_controller& contro
 async::task<void> bot_integration_test::on_initialize(game_bot_controller& controller)
 {
     auto bots = this->get_test_bots();
+    auto slot = this->_suite_slot;
     for (int i = 0; i < bots.size(); i++)
     {
         auto& bot = bots[i];
-        if (bot->position().x == 6 && bot->position().y == 6)
-            continue;
-
-        co_await bot->map_move("낙랑의방", 6, 6, DEFAULT_TIMEOUT);
+        co_await bot->map_move("낙랑의방", 6, 6, slot, DEFAULT_TIMEOUT);
     }
 }
 

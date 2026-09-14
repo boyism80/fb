@@ -11,7 +11,6 @@ local resp     = require("integration.response")
 local protocol = require("integration.protocol")
 
 local MAP          = "낙랑의방"
-local SLOT         = 5
 local POS          = {6, 6}
 local DROP_POS     = {7, 6}
 local MARKER_S     = "목도"
@@ -45,9 +44,11 @@ local function move_to_source(bot, x, y)
 end
 
 local function move_to_instance(bot, x, y, slot)
-    x    = x or POS[1]
-    y    = y or POS[2]
-    slot = slot or SLOT
+    x = x or POS[1]
+    y = y or POS[2]
+    if slot == nil then
+        error("move_to_instance requires suite_slot")
+    end
     progress(bot, string.format("MOVE TO C %s slot=%d (%d,%d)", MAP, slot, x, y))
     bot:chat(string.format("/맵이동 %s %d %d %d", MAP, x, y, slot))
 end
@@ -130,9 +131,9 @@ local function cast_by_name(caster, target_name, spell_name)
 end
 
 -- Stand at POS facing the drop tile (RIGHT -> DROP_POS).
-local function face_drop_marker(ctx, bot, use_instance)
+local function face_drop_marker(ctx, bot, use_instance, slot)
     if use_instance then
-        move_to_instance(bot, POS[1], POS[2], SLOT)
+        move_to_instance(bot, POS[1], POS[2], slot)
     else
         move_to_source(bot, POS[1], POS[2])
     end
@@ -141,14 +142,14 @@ local function face_drop_marker(ctx, bot, use_instance)
 end
 
 -- Clear ground items on S and on instance slot, then return to S.
-local function clear_maps(ctx, bot)
-    progress(bot, string.format("CLEAR GROUND ON S AND SLOT %d", SLOT))
+local function clear_maps(ctx, bot, slot)
+    progress(bot, string.format("CLEAR GROUND ON S AND SLOT %d", slot))
     move_to_source(bot, POS[1], POS[2])
     ctx:sleep(ENTER_WAIT)
     bot:chat("/아이템삭제")
     ctx:sleep(300)
 
-    move_to_instance(bot, POS[1], POS[2], SLOT)
+    move_to_instance(bot, POS[1], POS[2], slot)
     ctx:sleep(ENTER_WAIT)
     bot:chat("/아이템삭제")
     ctx:sleep(300)
@@ -182,8 +183,10 @@ test_suite {
         function(ctx)
             local a = ctx:bot(0)
             local b = ctx:bot(1)
+            local SLOT = ctx:suite_slot()
+            local SLOT_B = ctx:extra_slot() -- reserved seat K; unused by this scenario
 
-            progress(a, string.format("SCENARIO START map=%s slot=%d", MAP, SLOT))
+            progress(a, string.format("SCENARIO START map=%s slot=%d extra=%s", MAP, SLOT, tostring(SLOT_B)))
 
             a:setup_bot_stats(100000, 100000)
             b:setup_bot_stats(100000, 100000)
@@ -192,7 +195,7 @@ test_suite {
             a:clear_inventory()
             b:clear_inventory()
 
-            clear_maps(ctx, a)
+            clear_maps(ctx, a, SLOT)
             move_to_source(b, POS[1] + 2, POS[2])
             ctx:sleep(ENTER_WAIT)
 
@@ -201,7 +204,7 @@ test_suite {
             a:chat(string.format("/맵이동 %s %d %d", MAP, DROP_POS[1], DROP_POS[2]))
             ctx:sleep(ENTER_WAIT)
             drop_marker(a, MARKER_S)
-            face_drop_marker(ctx, a, false)
+            face_drop_marker(ctx, a, false, SLOT)
 
             if assert_front_contains(a, MARKER_S, "step0") == false then
                 return false
@@ -217,7 +220,7 @@ test_suite {
             a:chat(string.format("/맵이동 %s %d %d %d", MAP, DROP_POS[1], DROP_POS[2], SLOT))
             ctx:sleep(ENTER_WAIT)
             drop_marker(a, MARKER_C)
-            face_drop_marker(ctx, a, true)
+            face_drop_marker(ctx, a, true, SLOT)
 
             if assert_front_isolation(a, MARKER_C, MARKER_S, "step2") == false then
                 return false
@@ -225,12 +228,12 @@ test_suite {
 
             -- 3) B cross-check S then join C
             progress(b, "STEP 3: cross-check S then join C")
-            face_drop_marker(ctx, b, false)
+            face_drop_marker(ctx, b, false, SLOT)
             if assert_front_contains(b, MARKER_S, "step3-S") == false then
                 return false
             end
 
-            face_drop_marker(ctx, b, true)
+            face_drop_marker(ctx, b, true, SLOT)
             if assert_front_isolation(b, MARKER_C, MARKER_S, "step3-C") == false then
                 return false
             end
@@ -240,8 +243,8 @@ test_suite {
             a:chat(string.format("/맵이동 %s %d %d %d", MAP, DROP_POS[1], DROP_POS[2], SLOT))
             ctx:sleep(ENTER_WAIT)
             drop_marker(a, MARKER_SHARE)
-            face_drop_marker(ctx, a, true)
-            face_drop_marker(ctx, b, true)
+            face_drop_marker(ctx, a, true, SLOT)
+            face_drop_marker(ctx, b, true, SLOT)
             if assert_front_contains(b, MARKER_SHARE, "step4") == false then
                 return false
             end
@@ -258,7 +261,7 @@ test_suite {
             end
             ctx:sleep(1000)
             -- teleport_lookup places B beside A; re-align for front_info.
-            face_drop_marker(ctx, b, true)
+            face_drop_marker(ctx, b, true, SLOT)
             if assert_front_contains(b, MARKER_SHARE, "step5-summon") == false then
                 return false
             end
@@ -269,7 +272,7 @@ test_suite {
                 return fail(a, "step5: 출두 failed")
             end
             ctx:sleep(1000)
-            face_drop_marker(ctx, a, true)
+            face_drop_marker(ctx, a, true, SLOT)
             if assert_front_contains(a, MARKER_SHARE, "step5-chuldu") == false then
                 return false
             end
@@ -278,7 +281,7 @@ test_suite {
             progress(a, "STEP 6: re-enter occupied instance")
             move_to_source(a, POS[1], POS[2])
             ctx:sleep(ENTER_WAIT)
-            face_drop_marker(ctx, a, true)
+            face_drop_marker(ctx, a, true, SLOT)
             if assert_front_contains(a, MARKER_SHARE, "step6") == false then
                 return false
             end
@@ -294,13 +297,13 @@ test_suite {
             a:chat(string.format("/맵이동 %s %d %d %d", MAP, DROP_POS[1], DROP_POS[2], SLOT))
             ctx:sleep(ENTER_WAIT)
             drop_marker(a, MARKER_C)
-            face_drop_marker(ctx, a, true)
+            face_drop_marker(ctx, a, true, SLOT)
 
             if assert_front_isolation(a, MARKER_C, MARKER_SHARE, "step7-recreate") == false then
                 return false
             end
 
-            face_drop_marker(ctx, a, false)
+            face_drop_marker(ctx, a, false, SLOT)
             if assert_front_contains(a, MARKER_S, "step7-source") == false then
                 return false
             end

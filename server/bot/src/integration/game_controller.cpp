@@ -5,17 +5,17 @@
 #include <fb/bot/container.h>
 #include <fb/bot/gateway_controller.h>
 #include <fb/logger.h>
+#include <fb/config.h>
 #include <async/awaitable_get.h>
+#include <async/awaitable_then.h>
 
 using namespace fb::bot::integration;
 using table = fb::model::table;
 using namespace fb::model::enum_value;
 
 game_bot_controller::game_bot_controller(bot_container& container) :
-    fb::bot::game_bot_controller(container),
-    _current_test(nullptr)
+    fb::bot::game_bot_controller(container)
 {
-    // Bind integration test specific handlers
     this->bind<trade_bot>([](game_bot& bot, trade_bot& protocol) -> async::task<void> {
         co_return;
     });
@@ -75,108 +75,333 @@ void game_bot_controller::initialize()
         }
     };
 
-    // Sync boundary between bot init thread and async-cpp (model loader).
     async::awaitable_get(fb::model::loader(this->container).run());
 
-    // Set up integration test timer with different interval (slower for detailed testing)
     this->bind_timer(&game_bot_controller::on_timer, 1000ms);
 
-    for (auto& script : lua_integration_test::discover_scripts())
+    this->_max_parallel_tests = fb::config<uint32_t>("integration:max_parallel_tests", 4u);
+    if (this->_max_parallel_tests == 0)
+        this->_max_parallel_tests = 1;
+
+    // Instance slots must be >= 1 (see scripts/lib/command.lua 맵이동). Seats are 1..K;
+    // tests that need a second instance use extra_slot = K+1.
+    for (uint32_t i = 1; i <= this->_max_parallel_tests; i++)
+        this->_free_seats.insert(i);
+
+    for (auto& discovered : lua_integration_test::discover_scripts())
     {
-        this->enqueue_test(std::make_unique<lua_integration_test>(*this, script));
+        this->enqueue_test(
+            std::make_unique<lua_integration_test>(*this, discovered.path, discovered.serial, discovered.extra_slot),
+            discovered.serial,
+            discovered.extra_slot);
     }
 
-    // Log the test queue in a more manageable format
-    fb::logger::info("Integration test controller initialized with {} tests in queue", this->_test_queue.size());
-    fb::logger::info("Test execution order:");
+    fb::logger::info("Integration test controller initialized: parallel={} serial={} max_parallel={}",
+                     this->_parallel_queue.size(),
+                     this->_serial_queue.size(),
+                     this->_max_parallel_tests);
 
-    auto temp_queue  = this->_test_queue;
-    int  test_number = 1;
-    while (!temp_queue.empty())
-    {
-        fb::logger::info("  {}. {}", test_number++, temp_queue.front()->name());
-        temp_queue.pop();
-    }
-
-    this->active_test();
+    this->try_schedule_parallel();
+    if (this->_active_seats.empty() && this->_parallel_queue.empty())
+        this->start_serial_phase();
 }
 
-async::task<void> game_bot_controller::active_test()
+uint32_t game_bot_controller::max_parallel_tests() const
 {
-    if (this->_current_test == nullptr)
-    {
-        fb::logger::warn("No tests to activate");
-        co_return;
-    }
-
-    fb::logger::debug("Activating first test: '{}'", this->_current_test->name());
-    std::ignore = this->_current_test->on_activated(*this);
+    return this->_max_parallel_tests;
 }
 
-void game_bot_controller::notify_test_ready()
+void game_bot_controller::own(uint32_t bot_id, bot_integration_test* test)
 {
-    if (this->_current_test)
+    auto lock                 = std::lock_guard(this->_schedule_mutex);
+    this->_bot_owners[bot_id] = test;
+}
+
+void game_bot_controller::reown(uint32_t old_bot_id, uint32_t new_bot_id)
+{
+    auto lock = std::lock_guard(this->_schedule_mutex);
+    auto it   = this->_bot_owners.find(old_bot_id);
+    if (it == this->_bot_owners.end())
+        return;
+
+    auto* test = it->second;
+    this->_bot_owners.erase(it);
+    this->_bot_owners[new_bot_id] = test;
+}
+
+bot_integration_test* game_bot_controller::owner_of(uint32_t bot_id)
+{
+    auto lock = std::lock_guard(this->_schedule_mutex);
+    auto it   = this->_bot_owners.find(bot_id);
+    if (it == this->_bot_owners.end())
+        return nullptr;
+    return it->second;
+}
+
+void game_bot_controller::clear_ownership_for_test(bot_integration_test* test)
+{
+    auto lock = std::lock_guard(this->_schedule_mutex);
+    for (auto it = this->_bot_owners.begin(); it != this->_bot_owners.end();)
     {
-        fb::logger::debug("Test '{}' is ready, starting execution", this->_current_test->name());
-        std::ignore = this->start_current_test();
+        if (it->second == test)
+            it = this->_bot_owners.erase(it);
+        else
+            ++it;
     }
 }
 
-async::task<void> game_bot_controller::start_current_test()
+void game_bot_controller::enqueue_test(std::unique_ptr<bot_integration_test> test, bool serial, bool extra_slot)
 {
-    if (!this->_current_test)
+    test->serial(serial);
+    test->needs_extra_slot(extra_slot);
+    this->_test_instances.push_back(std::move(test));
+    auto* ptr = this->_test_instances.back().get();
+    if (serial)
+        this->_serial_queue.push_back(ptr);
+    else
+        this->_parallel_queue.push_back(ptr);
+}
+
+void game_bot_controller::try_schedule_parallel()
+{
+    std::vector<bot_integration_test*> to_start;
+
     {
-        fb::logger::warn("No current test to start");
-        co_return;
+        auto lock = std::lock_guard(this->_schedule_mutex);
+        while (this->_parallel_queue.empty() == false && this->_free_seats.empty() == false)
+        {
+            auto seat_it = this->_free_seats.begin();
+            auto seat    = *seat_it;
+            this->_free_seats.erase(seat_it);
+
+            auto* test = this->_parallel_queue.front();
+            this->_parallel_queue.pop_front();
+
+            test->suite_slot(seat);
+            if (test->needs_extra_slot())
+                test->extra_slot(this->_max_parallel_tests + 1);
+            else
+                test->extra_slot(std::nullopt);
+
+            this->_active_seats[test] = seat;
+            to_start.push_back(test);
+        }
     }
 
-    if (this->_current_test->is_running())
+    for (auto* test : to_start)
+        this->detach_run_one(test);
+}
+
+void game_bot_controller::detach_run_one(bot_integration_test* test)
+{
+    async::awaitable_then(this->run_one(test), [this, test](auto result) {
+        try
+        {
+            result();
+        }
+        catch (const std::exception& e)
+        {
+            fb::logger::fatal("Test '{}' run_one failed: {}", test->name(), e.what());
+            this->on_test_complete(test, false);
+        }
+        catch (...)
+        {
+            fb::logger::fatal("Test '{}' run_one failed", test->name());
+            this->on_test_complete(test, false);
+        }
+    });
+}
+
+async::task<void> game_bot_controller::run_one(bot_integration_test* test)
+{
+    auto success      = false;
+    auto need_cleanup = false;
+    try
     {
-        fb::logger::warn("Test '{}' is already running", this->_current_test->name());
-        co_return;
+        fb::logger::info("Starting test '{}' (suite_slot={})", test->name(), test->suite_slot());
+        test->prepare_ready_wait();
+        co_await test->on_activated(*this);
+        co_await test->wait_until_ready();
+        success = co_await test->execute();
+    }
+    catch (const std::exception& e)
+    {
+        fb::logger::fatal("Test '{}' exception: {}", test->name(), e.what());
+        success      = false;
+        need_cleanup = true;
+    }
+    catch (...)
+    {
+        fb::logger::fatal("Test '{}' exception", test->name());
+        success      = false;
+        need_cleanup = true;
     }
 
-    fb::logger::info("Starting test '{}'", this->_current_test->name());
-    auto success = co_await this->_current_test->execute();
+    if (need_cleanup)
+    {
+        try
+        {
+            co_await test->on_finished();
+        }
+        catch (...)
+        { }
+    }
 
-    // Store test result
-    test_result result;
-    result.name    = this->_current_test->name();
-    result.success = success;
-    result.message = success ? "PASSED" : "FAILED";
-    this->_test_results.push_back(result);
+    this->on_test_complete(test, success);
+    co_return;
+}
+
+void game_bot_controller::on_test_complete(bot_integration_test* test, bool success)
+{
+    {
+        auto        lock = std::lock_guard(this->_results_mutex);
+        test_result result;
+        result.name    = test->name();
+        result.success = success;
+        result.message = success ? "PASSED" : "FAILED";
+        this->_test_results.push_back(result);
+    }
 
     if (success)
-        fb::logger::info(fb::console::color::light_green,
-                         "Test '{}' completed successfully",
-                         this->_current_test->name());
+        fb::logger::info(fb::console::color::light_green, "Test '{}' completed successfully", test->name());
     else
-        fb::logger::fatal(fb::console::color::light_red, "Test '{}' failed", this->_current_test->name());
+        fb::logger::fatal(fb::console::color::light_red, "Test '{}' failed", test->name());
 
-    this->_current_test = nullptr;
-    this->start_next_test();
+    this->clear_ownership_for_test(test);
+
+    bool parallel_done     = false;
+    bool start_serial_next = false;
+    bool continue_serial   = false;
+    bool finish            = false;
+
+    {
+        auto lock = std::lock_guard(this->_schedule_mutex);
+        if (auto it = this->_active_seats.find(test); it != this->_active_seats.end())
+        {
+            this->_free_seats.insert(it->second);
+            this->_active_seats.erase(it);
+        }
+
+        if (test->serial() && this->_serial_queue.empty() == false && this->_serial_queue.front() == test)
+            this->_serial_queue.pop_front();
+
+        parallel_done = this->_active_seats.empty() && this->_parallel_queue.empty();
+
+        if (parallel_done == false)
+        {
+            // schedule more parallel outside lock
+        }
+        else if (this->_serial_phase_started == false)
+        {
+            start_serial_next = true;
+        }
+        else if (this->_serial_queue.empty() == false)
+        {
+            continue_serial = true;
+        }
+        else if (this->_finished == false)
+        {
+            this->_finished = true;
+            finish          = true;
+        }
+    }
+
+    if (parallel_done == false)
+    {
+        this->try_schedule_parallel();
+        return;
+    }
+
+    if (start_serial_next || continue_serial)
+    {
+        this->start_serial_phase();
+        return;
+    }
+
+    if (finish)
+    {
+        this->print_final_test_results();
+        this->container.exit();
+    }
+}
+
+void game_bot_controller::start_serial_phase()
+{
+    bot_integration_test* test   = nullptr;
+    bool                  finish = false;
+    {
+        auto lock                   = std::lock_guard(this->_schedule_mutex);
+        this->_serial_phase_started = true;
+        if (this->_serial_queue.empty())
+        {
+            if (this->_finished == false && this->_active_seats.empty() && this->_parallel_queue.empty())
+            {
+                this->_finished = true;
+                finish          = true;
+            }
+        }
+        else
+        {
+            test = this->_serial_queue.front();
+        }
+    }
+
+    if (finish)
+    {
+        this->print_final_test_results();
+        this->container.exit();
+        return;
+    }
+
+    if (test == nullptr)
+        return;
+
+    test->suite_slot(1);
+    test->extra_slot(std::nullopt);
+    fb::logger::info("Starting serial phase with '{}'", test->name());
+    this->detach_run_one(test);
+}
+
+void game_bot_controller::finish_suite_if_done()
+{
+    bool finish = false;
+    {
+        auto lock = std::lock_guard(this->_schedule_mutex);
+        if (this->_finished)
+            return;
+        if (this->_active_seats.empty() == false)
+            return;
+        if (this->_parallel_queue.empty() == false)
+            return;
+        if (this->_serial_queue.empty() == false)
+            return;
+
+        this->_finished = true;
+        finish          = true;
+    }
+
+    if (finish)
+    {
+        this->print_final_test_results();
+        this->container.exit();
+    }
+}
+
+void game_bot_controller::notify_test_ready(bot_integration_test* test)
+{
+    if (test == nullptr)
+        return;
+    // Ready wait is signaled from bot_integration_test::notify_ready via promise.
+    std::ignore = test;
 }
 
 async::task<void> game_bot_controller::on_timer()
 {
-    // Timer is only used for starting the first test from the queue
-    // Subsequent tests are started automatically by the test chain
-    static bool first_test_started = false;
-
-    if (!first_test_started)
-    {
-        first_test_started = true;
-        // No longer need to start tests - they start automatically via hooks
-        fb::logger::debug("Integration test controller initialized - tests will start automatically");
-    }
-
     co_return;
 }
 
 async::task<void> game_bot_controller::on_time(game_bot& bot, const game_resp::time& response)
 {
-    // Integration test: Validate time synchronization
-    // TODO: Add time validation logic
     co_return;
 }
 
@@ -218,52 +443,36 @@ async::task<void> game_bot_controller::on_state(game_bot& bot, const game_resp::
 
 async::task<void> game_bot_controller::on_message(game_bot& bot, const game_resp::message& response)
 {
-    // Integration test: Validate message handling and trigger test responses
-    if (response.type == MESSAGE_TYPE::NOTIFY)
-    {
-        // TODO: Parse message and execute appropriate test case
-        // Example: Test command processing, NPC interactions, etc.
-    }
     co_return;
 }
 
 async::task<void> game_bot_controller::on_sequence(game_bot& bot, const game_resp::id& response)
 {
-    // Integration test: Validate object ID consistency
     bot.set_oid(response.oid);
 
-    if (this->_current_test != nullptr)
-        this->_current_test->try_notify_ready();
+    if (auto* test = this->owner_of(bot.id); test != nullptr)
+        test->try_notify_ready();
 
     co_return;
 }
 
 async::task<void> game_bot_controller::on_position(game_bot& bot, const game_resp::position& response)
 {
-    // Integration test: Validate position updates
     bot.set_position(response.abs);
-    // TODO: Add position validation logic
     co_return;
 }
 
 async::task<void> game_bot_controller::on_move(game_bot& bot, const game_resp::move& response)
 {
-    // Integration test: Validate movement mechanics
     if (bot.oid() != response.id)
-    {
-        // TODO: Log object ID mismatch for test analysis
         co_return;
-    }
 
     bot.set_position(response.position);
-    // TODO: Add movement validation logic
     co_return;
 }
 
 async::task<void> game_bot_controller::on_map(game_bot& bot, const game_resp::map_config_v550& response)
 {
-    // TODO: Execute map-specific test scenarios
-    // Example: Test NPC interactions, item spawning, area transitions, etc.
     co_return;
 }
 
@@ -284,6 +493,7 @@ async::task<void> game_bot_controller::on_transfer(game_bot& bot, const fb::prot
     auto created = this->create(response.parameter);
     created->set_transfer_from_bot_id(bot.id);
     created->set_name(bot.name());
+    this->reown(bot.id, created->id);
     fb::logger::debug("bot transfer reconnect [integration]: bot={} old_bot_id={} new_bot_id={} endpoint={}:{}",
                       created->name(),
                       bot.id,
@@ -297,7 +507,15 @@ async::task<void> game_bot_controller::on_transfer(game_bot& bot, const fb::prot
 
 async::task<void> game_bot_controller::on_bot_connected(game_bot& bot)
 {
-    if (this->_current_test)
+    auto* test = this->owner_of(bot.id);
+    if (test == nullptr && bot.transfer_from_bot_id() != 0)
+    {
+        test = this->owner_of(bot.transfer_from_bot_id());
+        if (test != nullptr)
+            this->reown(bot.transfer_from_bot_id(), bot.id);
+    }
+
+    if (test != nullptr)
     {
         std::shared_ptr<game_bot> bot_shared;
         {
@@ -307,7 +525,11 @@ async::task<void> game_bot_controller::on_bot_connected(game_bot& bot)
         }
 
         if (bot_shared)
-            this->_current_test->on_bot_connected(bot_shared);
+        {
+            test->on_bot_connected(bot_shared);
+            if (bot.transfer_from_bot_id() != 0)
+                test->try_complete_transfer(bot);
+        }
     }
 
     fb::logger::debug("bot transfer login send: bot={} bot_id={} transfer_buffer_bytes={} inited={}",
@@ -316,8 +538,6 @@ async::task<void> game_bot_controller::on_bot_connected(game_bot& bot)
                       bot.transfer_buffer().size(),
                       bot.inited());
 
-    // Bootstrap 0x10 always uses the v550 layout; the packed client_version field
-    // inside the transfer blob still establishes the session version.
     using login_request = fb::protocol::game::request::login<fb::protocol::CLIENT_VERSION::v550>;
     bot.send(login_request(bot.transfer_buffer()), false, true);
 
@@ -330,9 +550,6 @@ async::task<void> game_bot_controller::on_bot_disconnected(game_bot& bot)
                       bot.name(),
                       bot.id,
                       bot.inited());
-
-    // Integration test: Collect test results and perform cleanup
-    // TODO: Generate test report for this bot session
     co_return;
 }
 
@@ -340,26 +557,21 @@ async::task<void> game_bot_controller::on_integration_hook_execution(uint8_t    
                                                                      game_bot&                   bot,
                                                                      const fb::protocol::header& header)
 {
-    // Only execute hooks if there's a current test
-    if (!this->_current_test)
+    auto* test = this->owner_of(bot.id);
+    if (test == nullptr)
         co_return;
 
     auto shared_lock = std::shared_lock<std::shared_mutex>(this->_hook_mutex);
+    auto test_it     = this->_test_hooks.find(test);
+    if (test_it == this->_test_hooks.end())
+        co_return;
 
-    // Execute hooks only for the current test
-    auto test_it = this->_test_hooks.find(this->_current_test);
-    if (test_it != this->_test_hooks.end())
-    {
-        auto& test_hooks = test_it->second;
-        auto  cmd_it     = test_hooks.find(opcode);
-        if (cmd_it != test_hooks.end())
-        {
-            for (auto& hook : cmd_it->second)
-            {
-                co_await hook(bot, header);
-            }
-        }
-    }
+    auto cmd_it = test_it->second.find(opcode);
+    if (cmd_it == test_it->second.end())
+        co_return;
+
+    for (auto& hook : cmd_it->second)
+        co_await hook(bot, header);
 }
 
 void game_bot_controller::hook_opcode(bot_integration_test* test, uint8_t opcode, hook_function fn)
@@ -381,82 +593,43 @@ void game_bot_controller::unhook_opcode(bot_integration_test* test, uint8_t opco
         this->_test_hooks.erase(test_it);
 }
 
-void game_bot_controller::enqueue_test(std::unique_ptr<bot_integration_test> test)
-{
-    // Store the test instance for lifetime management
-    this->_test_instances.push_back(std::move(test));
-
-    // Add the test to the queue
-    this->_test_queue.push(this->_test_instances.back().get());
-
-    // If this is the first test, set it as current
-    if (this->_current_test == nullptr)
-    {
-        this->_current_test = this->_test_queue.front();
-    }
-}
-
-void game_bot_controller::start_next_test()
-{
-    if (this->_test_queue.empty())
-    {
-        fb::logger::debug("No more tests in queue");
-        return;
-    }
-
-    // Remove the completed test from the queue
-    this->_test_queue.pop();
-
-    if (this->_test_queue.empty())
-    {
-        this->print_final_test_results();
-        this->container.exit();
-        return;
-    }
-
-    // Set the next test as current
-    this->_current_test = this->_test_queue.front();
-    fb::logger::debug("Starting next test: '{}'", this->_current_test->name());
-
-    // Activate the next test
-    std::ignore = this->active_test();
-}
-
 bool game_bot_controller::has_more_tests() const
 {
-    return !this->_test_queue.empty();
+    return this->_parallel_queue.empty() == false || this->_serial_queue.empty() == false ||
+           this->_active_seats.empty() == false;
 }
 
 void game_bot_controller::print_final_test_results()
 {
     fb::logger::info(fb::console::color::cyan, "=== INTEGRATION TEST RESULTS ===");
 
-    int total_tests  = this->_test_results.size();
+    int total_tests  = 0;
     int passed_tests = 0;
     int failed_tests = 0;
 
-    // Print individual test results
-    for (const auto& result : this->_test_results)
     {
-        if (result.success)
+        auto lock   = std::lock_guard(this->_results_mutex);
+        total_tests = static_cast<int>(this->_test_results.size());
+        for (const auto& result : this->_test_results)
         {
-            fb::logger::info(fb::console::color::light_green, "[PASS] {}: {}", result.name, result.message);
-            passed_tests++;
-        }
-        else
-        {
-            fb::logger::fatal(fb::console::color::light_red, "[FAIL] {}: {}", result.name, result.message);
-            failed_tests++;
+            if (result.success)
+            {
+                fb::logger::info(fb::console::color::light_green, "[PASS] {}: {}", result.name, result.message);
+                passed_tests++;
+            }
+            else
+            {
+                fb::logger::fatal(fb::console::color::light_red, "[FAIL] {}: {}", result.name, result.message);
+                failed_tests++;
+            }
         }
     }
 
-    // Print summary
     fb::logger::info(fb::console::color::cyan, "=== SUMMARY ===");
     fb::logger::info(fb::console::color::light_blue, "Total tests: {}", total_tests);
     fb::logger::info(fb::console::color::light_green, "Passed: {}", passed_tests);
     fb::logger::info(fb::console::color::light_red, "Failed: {}", failed_tests);
 
-    // Print overall result
     if (failed_tests == 0)
     {
         fb::logger::info(fb::console::color::light_green,

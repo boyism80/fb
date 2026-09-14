@@ -1,5 +1,5 @@
 -- Integration test registry
--- Execution order matches the previous C++ enqueue order in game_controller.cpp.
+-- Phase A: parallel (default). Phase B: serial after Phase A drains.
 
 register_test("movement_test")
 register_test("attack_test")
@@ -12,7 +12,7 @@ register_test("item_test")
 register_test("item_give_test")
 register_test("emotion_test")
 register_test("front_info_test")
-register_test("instance_map_test")
+register_test("instance_map_test", { extra_slot = true })
 register_test("chat_interaction_test")
 register_test("user_list_test")
 register_test("swap_test")
@@ -20,7 +20,7 @@ register_test("throw_test")
 register_test("group_test")
 register_test("matchmaking_test")
 register_test("clan_test")
-register_test("marriage_test")
+register_test("marriage_test", { serial = true })
 register_test("marketplace_test")
 register_test("storage_box_test")
 register_test("worldmap_test")

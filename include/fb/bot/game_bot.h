@@ -253,6 +253,11 @@ public:
     void                                   set_remained_exp(uint32_t value);
     async::task<void>                      move(DIRECTION direction, int step = 1, const fb::model::timespan& delay = 500ms);
     async::task<void>                      map_move(std::string_view map_name, uint16_t x, uint16_t y, std::chrono::milliseconds timeout);
+    async::task<void>                      map_move(std::string_view            map_name,
+                                                    uint16_t                    x,
+                                                    uint16_t                    y,
+                                                    uint32_t                    slot,
+                                                    std::chrono::milliseconds   timeout);
     async::task<void>                      change_level(uint8_t level, std::chrono::milliseconds timeout);
     async::task<void>                      change_stats(uint8_t str, uint8_t dex, uint8_t intelligence, std::chrono::milliseconds timeout);
     async::task<void>                      change_str(uint8_t str, std::chrono::milliseconds timeout);

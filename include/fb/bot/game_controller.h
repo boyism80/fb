@@ -51,10 +51,39 @@ public:
             if (completed.exchange(true))
                 return;
 
-            fb::logger::fatal("bot transfer timeout: source_bot_id={}", source_bot_id);
-
             if (auto controller = controller_weak.lock())
+            {
+                std::shared_ptr<game_bot> bot;
+                controller->read_bots([&](const auto& bots) {
+                    auto it = bots.find(source_bot_id);
+                    if (it != bots.end())
+                        bot = it->second;
+                });
+
+                if (bot != nullptr)
+                {
+                    fb::logger::fatal(
+                        "bot transfer timeout: source_bot_id={} name={} oid={} map={} pos=({},{}) inited={}",
+                        source_bot_id,
+                        bot->name(),
+                        bot->oid(),
+                        bot->map(),
+                        bot->position().x,
+                        bot->position().y,
+                        bot->inited());
+                }
+                else
+                {
+                    fb::logger::fatal("bot transfer timeout: source_bot_id={} (bot already removed from controller)",
+                                      source_bot_id);
+                }
+
                 controller->remove_transfer_context(source_bot_id);
+            }
+            else
+            {
+                fb::logger::fatal("bot transfer timeout: source_bot_id={} (controller gone)", source_bot_id);
+            }
 
             promise->set_exception(std::make_exception_ptr(std::runtime_error("request timeout")));
         }

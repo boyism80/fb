@@ -30,10 +30,11 @@ local function relocate_other_bots(ctx)
     -- Grid init places bots 12/13/14 at (6,6)/(7,6)/(8,6); stage the rest on lower rows.
     local start_x, start_y = 5, 12
     local width = 11
+    local slot = ctx:suite_slot()
     for i = 2, count - 1 do
         local bot = ctx:bot(i)
         local offset = i - 2
-        bot:map_move(ACTIVE_MAP, start_x + (offset % width), start_y + math.floor(offset / width))
+        bot:map_move(ACTIVE_MAP, start_x + (offset % width), start_y + math.floor(offset / width), slot)
     end
 end
 
@@ -79,9 +80,10 @@ local function restore_target_state(target, caster)
     return true
 end
 
-local function arrange_facing_pair(caster, target)
-    caster:map_move(ACTIVE_MAP, 6, 6)
-    target:map_move(ACTIVE_MAP, 7, 6)
+local function arrange_facing_pair(ctx, caster, target)
+    local slot = ctx:suite_slot()
+    caster:map_move(ACTIVE_MAP, 6, 6, slot)
+    target:map_move(ACTIVE_MAP, 7, 6, slot)
     caster:direction("RIGHT")
     target:direction("RIGHT")
 end
@@ -224,7 +226,7 @@ local function run_uitae_variant(ctx, variant)
     end
     clear_map_drops(caster)
 
-    arrange_facing_pair(caster, target)
+    arrange_facing_pair(ctx, caster, target)
     if equip_target_loadout(target) == false then
         return false
     end

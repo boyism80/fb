@@ -1,6 +1,7 @@
 local lib = require("integration.lib")
 local resp = require("integration.response")
 local protocol = require("integration.protocol")
+local bot_diag = require("integration.lib.bot_diag")
 
 local TEST_BOTS = 6
 local MAX_HP = 50
@@ -45,6 +46,16 @@ local function progress(bot, message)
     log(level, string.format("matchmaking_test bot=%s %s", name, message))
     if bot ~= nil then
         bot:chat("=== " .. message .. " ===")
+        if level == "fatal" then
+            bot_diag.dump(bot, "matchmaking:" .. message)
+        end
+    end
+end
+
+local function dump_match_bots(ctx, bot_indices, label)
+    for pos = 1, #bot_indices do
+        local bot = ctx:bot(bot_indices[pos])
+        bot_diag.dump(bot, string.format("%s idx=%s pos=%d", label, tostring(bot_indices[pos]), pos))
     end
 end
 
@@ -222,7 +233,12 @@ local function finish_match(ctx, bot_indices, fatal_pos)
     end, TRANSFER_WAIT_MS)
 
     if on_match_map == false then
-        progress(live(1), "FAILED: EXPECTED MATCH MAP, GOT " .. tostring(map_name(live(1))))
+        local maps = {}
+        for pos = 1, #bot_indices do
+            maps[#maps + 1] = string.format("%d=%s", bot_indices[pos], tostring(map_name(live(pos))))
+        end
+        progress(live(1), "FAILED: EXPECTED MATCH MAP, GOT " .. table.concat(maps, ", "))
+        dump_match_bots(ctx, bot_indices, "matchmaking:not_on_match_map")
         return false
     end
 
@@ -265,6 +281,7 @@ local function finish_match(ctx, bot_indices, fatal_pos)
     )
     if ended == nil or ended == false then
         progress(live(fatal_pos), "FAILED: DID NOT RECEIVE MATCH ENDED")
+        dump_match_bots(ctx, bot_indices, "matchmaking:no_match_ended")
         return false
     end
 
@@ -278,7 +295,12 @@ local function finish_match(ctx, bot_indices, fatal_pos)
     end, HOME_WAIT_MS)
 
     if at_home == false then
-        progress(live(1), "FAILED: DID NOT RETURN TO " .. HOME_MAP)
+        local maps = {}
+        for pos = 1, #bot_indices do
+            maps[#maps + 1] = string.format("%d=%s", bot_indices[pos], tostring(map_name(live(pos))))
+        end
+        progress(live(1), "FAILED: DID NOT RETURN TO " .. HOME_MAP .. " maps=" .. table.concat(maps, ", "))
+        dump_match_bots(ctx, bot_indices, "matchmaking:not_home")
         return false
     end
     return true
