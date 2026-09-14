@@ -8,7 +8,7 @@ using namespace fb::game;
 IMPLEMENT_LUA_EXTENSION(matchmaker, "fb.game.matchmaker")
 {"mu",                 builtin::matchmaker::builtin_mu},
 {"sigma",              builtin::matchmaker::builtin_sigma},
-{"enrolled",           builtin::matchmaker::builtin_enrolled},
+{"registered",         builtin::matchmaker::builtin_registered},
 {"registry_id",        builtin::matchmaker::builtin_registry_id},
 {"pending_match_id",   builtin::matchmaker::builtin_pending_match_id},
 {"register",           builtin::matchmaker::builtin_register},
@@ -87,7 +87,7 @@ int builtin::matchmaker::builtin_sigma(lua_State* L)
     return builder.run();
 }
 
-int builtin::matchmaker::builtin_enrolled(lua_State* L)
+int builtin::matchmaker::builtin_registered(lua_State* L)
 {
     auto lua = fb::lua::get(L);
     if (lua == nullptr)
@@ -97,20 +97,20 @@ int builtin::matchmaker::builtin_enrolled(lua_State* L)
     if (mm == nullptr)
         return 0;
 
-    auto weak     = mm->owner.weak_from_this_as<fb::game::character>();
-    auto enrolled = std::make_shared<bool>(false);
-    auto builder  = lua->new_co_builder();
-    builder.weak  = weak;
-    builder.yield = [=]() -> async::task<void> {
+    auto weak       = mm->owner.weak_from_this_as<fb::game::character>();
+    auto registered = std::make_shared<bool>(false);
+    auto builder    = lua->new_co_builder();
+    builder.weak    = weak;
+    builder.yield   = [=]() -> async::task<void> {
         auto self = weak.lock();
         if (self == nullptr)
             co_return;
 
-        *enrolled = self->matchmaker.enrolled();
+        *registered = self->matchmaker.registered();
         co_return;
     };
     builder.resume = [=]() -> async::task<int> {
-        lua->pushboolean(*enrolled);
+        lua->pushboolean(*registered);
         co_return 1;
     };
     return builder.run();

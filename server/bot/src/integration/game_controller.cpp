@@ -473,6 +473,7 @@ async::task<void> game_bot_controller::on_move(game_bot& bot, const game_resp::m
 
 async::task<void> game_bot_controller::on_map(game_bot& bot, const game_resp::map_config_v550& response)
 {
+    bot.set_map(response.id);
     co_return;
 }
 

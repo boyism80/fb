@@ -473,7 +473,7 @@ async::task<void> group::container::on_destroyed(std::string actor, uint32_t gro
         auto members = roster_names(*group);
 
         this->_server.characters.foreach_enqueue(members, [this](auto& ch) -> async::task<void> {
-            if (ch->matchmaker.enrolled())
+            if (ch->matchmaker.registered())
                 co_await ch->matchmaker.unregister_queue(true);
             ch->group_reset();
             this->clear_portraits(*ch);

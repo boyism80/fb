@@ -39,7 +39,7 @@ public:
     character& owner;
 
 private:
-    struct enrollment_state
+    struct registration_state
     {
         uint32_t    match_type;
         std::string registry_id;
@@ -47,7 +47,9 @@ private:
 
     std::unordered_map<uint32_t, matchmaking_skill> _entries;
     std::optional<std::string>                      _pending_match_id;
-    std::optional<enrollment_state>                 _enrollment;
+    std::optional<registration_state>               _registration;
+    // Set before Register HTTP so Proposed cannot observe "not registered".
+    bool _registering = false;
 
     void enqueue_squad_unregister(uint32_t match_type, std::string_view registry_id);
 
@@ -62,13 +64,14 @@ public:
     void                                     set_pending_match_id(std::string match_id);
     void                                     clear_pending_match_id();
     bool                                     clear_pending_match_id_if(std::string_view match_id);
-    bool                                     enrolled() const;
+    bool                                     registered() const;
     std::optional<std::string_view>          registry_id() const;
-    void                                     set_enrollment(uint32_t match_type, std::string registry_id);
-    void                                     clear_enrollment();
+    void                                     begin_registration(uint32_t match_type);
+    void                                     set_registration(uint32_t match_type, std::string registry_id);
+    void                                     clear_registration();
     async::task<void>                        register_queue(uint32_t match_type);
     async::task<void>                        unregister_queue(bool quiet = false);
-    async::task<void>                        discard_leftover_enrollment();
+    async::task<void>                        discard_leftover_registration();
     async::task<void>                        confirm_queue(std::string match_id, bool quiet = false);
     async::task<void>                        decline_queue(std::string match_id, bool quiet = false);
 };

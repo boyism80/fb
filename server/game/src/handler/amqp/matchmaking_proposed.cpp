@@ -28,23 +28,22 @@ async::task<void> matchmaking_proposed::handle(const fb::protocol::matchmaking::
                 auto weak    = ch->weak_from_this_as<character>();
                 auto builder = this->server.threads.new_builder(weak);
                 builder.func = [ch, match_id, match_type, confirm_deadline](auto&) -> async::task<void> {
-                    if (ch->matchmaker.enrolled())
-                    {
-                        ch->matchmaker.set_pending_match_id(match_id);
-
-                        auto lua = ch->server.lua.open("scripts/interaction.lua", "on_matchmaking_proposed");
-                        if (lua)
-                        {
-                            lua->pushobject(ch);
-                            lua->pushstring(match_id.c_str());
-                            lua->pushinteger(match_type);
-                            lua->pushstring(confirm_deadline.c_str());
-                            std::ignore = co_await lua->call(4);
-                        }
-                    }
-                    else
+                    if (ch->matchmaker.registered() == false)
                     {
                         co_await ch->matchmaker.decline_queue(match_id, true);
+                        co_return;
+                    }
+
+                    ch->matchmaker.set_pending_match_id(match_id);
+
+                    auto lua = ch->server.lua.open("scripts/interaction.lua", "on_matchmaking_proposed");
+                    if (lua)
+                    {
+                        lua->pushobject(ch);
+                        lua->pushstring(match_id.c_str());
+                        lua->pushinteger(match_type);
+                        lua->pushstring(confirm_deadline.c_str());
+                        std::ignore = co_await lua->call(4);
                     }
                     co_return;
                 };

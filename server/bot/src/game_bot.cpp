@@ -76,7 +76,13 @@ point<uint16_t> game_bot::position() const
 
 void game_bot::set_position(const point<uint16_t>& value)
 {
-    this->_position = value;
+    this->_position     = value;
+    this->_has_position = true;
+}
+
+bool game_bot::has_position() const
+{
+    return this->_has_position;
 }
 
 bool game_bot::inited() const
@@ -220,7 +226,18 @@ uint8_t game_bot::level() const
 
 void game_bot::set_level(uint8_t value)
 {
-    this->_level = value;
+    this->_level        = value;
+    this->_has_internal = true;
+}
+
+bool game_bot::has_internal() const
+{
+    return this->_has_internal;
+}
+
+void game_bot::set_has_internal(bool value)
+{
+    this->_has_internal = value;
 }
 
 uint32_t game_bot::base_hp() const
@@ -589,11 +606,24 @@ game_bot::map_move(std::string_view map_name, uint16_t x, uint16_t y, uint32_t s
     if (map == nullptr)
         co_return;
 
-    // Client map id is the model id for both source and instance maps, so map_config
-    // cannot prove instance entry. Match instance_map_test: chat + short wait.
-    this->chat(command);
-    auto wait = timeout < 1500ms ? timeout : 1500ms;
-    co_await this->thread()->sleep(wait);
+    // Different model id: wait for map_config (same-host). Cross-host callers should
+    // use transfer() instead; this path times out on the old socket.
+    // Same model id (S <-> C instance): map_config cannot distinguish; chat + short wait.
+    if (this->_map != map->id)
+    {
+        std::ignore = co_await this->request<game_resp::map_config_v550>(
+            game_reqs::chat<BOT_CLIENT_VERSION>{false, command},
+            [map](auto& resp) -> bool {
+                return resp.id == map->id;
+            },
+            timeout);
+    }
+    else
+    {
+        this->chat(command);
+        auto wait = timeout < 1500ms ? timeout : 1500ms;
+        co_await this->thread()->sleep(wait);
+    }
 }
 
 async::task<void> game_bot::change_level(uint8_t level, std::chrono::milliseconds timeout)

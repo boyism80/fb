@@ -18,7 +18,7 @@ end
 function M.handle(me, npc)
     local mm = me:matchmaker()
 
-    if is_cross() and not mm:enrolled() then
+    if is_cross() and not mm:registered() then
         me:dialog(npc, '교차 서버에서는 매치메이킹을 등록할 수 없습니다.', { prev = false, next = true })
         return true
     end
@@ -28,7 +28,7 @@ function M.handle(me, npc)
         return true
     end
 
-    if mm:enrolled() then
+    if mm:registered() then
         local selected, button = me:pursuit(npc, '현재 등록된 매칭이 있습니다. 취소하시겠습니까?', { '예', '아니오' })
         if button == DIALOG_RESULT.QUIT then
             return true

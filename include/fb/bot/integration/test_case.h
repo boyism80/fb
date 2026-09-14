@@ -101,6 +101,8 @@ protected:
     virtual async::task<void>     on_hook_position(game_bot& bot, const game_resp::position& resp);
     virtual async::task<void>     on_hook_show(game_bot& bot, const game_resp::show_v550& resp);
     virtual async::task<void>     on_hook_update_external(game_bot& bot, const game_resp::update_external_v550& resp);
+    virtual async::task<void>     on_hook_map_config(game_bot& bot, const game_resp::map_config_v550& resp);
+    virtual async::task<void>     on_hook_update_internal(game_bot& bot, const game_resp::update_internal_v550& resp);
 
     [[nodiscard]] async::task<void> sleep(std::chrono::milliseconds duration);
 

@@ -16,6 +16,10 @@ function M.form(ctx)
                 return packet.type == "STATE"
                     and packet.text:find("님 그룹에 참여") ~= nil
             end)
+        if type(r) ~= "table" then
+            log("fatal", "group.form failed for " .. tostring(target:name()) .. ": " .. tostring(r))
+            return false
+        end
         log("debug", r.text)
     end
 end

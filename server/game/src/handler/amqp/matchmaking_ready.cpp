@@ -29,7 +29,7 @@ async::task<void> matchmaking_ready::handle(const fb::protocol::matchmaking::mq:
                 auto builder = this->server.threads.new_builder(weak);
                 builder.func = [ch, match_id, match_type, team_id](auto&) -> async::task<void> {
                     ch->matchmaker.clear_pending_match_id_if(match_id);
-                    ch->matchmaker.clear_enrollment();
+                    ch->matchmaker.clear_registration();
 
                     auto lua = ch->server.lua.open("scripts/interaction.lua", "on_matchmaking_ready");
                     if (lua)

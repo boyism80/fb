@@ -97,6 +97,7 @@ private:
     uint16_t                        _map = 0xFFFF;
     uint32_t                        _oid = 0;
     point<uint16_t>                 _position;
+    bool                            _has_position = false;
     fb::stream                      _transfer_buffer;
     fb::protocol::CLIENT_VERSION    _client_version = fb::protocol::CLIENT_VERSION::v550;
     uint32_t                        _transfer_from_bot_id = 0;
@@ -110,6 +111,7 @@ private:
     uint8_t                         _nation        = 0;
     uint8_t                         _divine_beast  = 0;
     uint8_t                         _level         = 0;
+    bool                            _has_internal  = false;
     uint32_t                        _base_hp       = 0;
     uint32_t                        _base_mp       = 0;
     uint8_t                         _strength      = 0;
@@ -165,6 +167,7 @@ public:
     void                                   set_map(uint16_t value);
     point<uint16_t>                        position() const;
     void                                   set_position(const point<uint16_t>& value);
+    bool                                   has_position() const;
     bool                                   inited() const;
     void                                   inited(bool value);
     const fb::stream&                      transfer_buffer() const;
@@ -193,6 +196,8 @@ public:
     void                                   set_divine_beast(uint8_t value);
     uint8_t                                level() const;
     void                                   set_level(uint8_t value);
+    bool                                   has_internal() const;
+    void                                   set_has_internal(bool value);
     uint32_t                               base_hp() const;
     void                                   set_base_hp(uint32_t value);
     uint32_t                               base_mp() const;

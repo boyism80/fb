@@ -17,6 +17,19 @@ local NAKRANG_ROOM = "낙랑의방"
 local NEARBY_MOB_CLEAR_RANGE = 3
 local g_suite_slot = 0
 
+local function at_dest_map(caster, map_name)
+    local map_model = id2map(caster:map())
+    return map_model ~= nil and map_model:name() == map_name
+end
+
+local function at_dest(caster, map_name, position)
+    if at_dest_map(caster, map_name) == false then
+        return false
+    end
+    local pos = caster:position()
+    return pos[1] == position[1] and pos[2] == position[2]
+end
+
 local function restore_position(caster, map_name, position)
     slog("restore_position: enter target=%s pos=(%s,%s) suite_slot=%s",
         tostring(map_name),
@@ -44,17 +57,41 @@ local function restore_position(caster, map_name, position)
             tostring(map_id))
     end
 
-    local cmd = string.format("/맵이동 %s %d %d %d", map_name, position[1], position[2], g_suite_slot)
-    slog("restore_position: branch=transfer cmd=%s", cmd)
+    if at_dest(caster, map_name, position) then
+        slog("restore_position: already at dest")
+        return true
+    end
+
+    -- Motel maps from 귀환 are often on hosts that cannot create seat instances.
+    -- Step 1: transfer to source 낙랑의방 (no slot) so the host can serve the map.
+    -- Step 2: local map_move into suite_slot instance.
+    local cmd_src = string.format("/맵이동 %s %d %d", map_name, position[1], position[2])
+    slog("restore_position: branch=transfer_src cmd=%s", cmd_src)
     local ok, err = pcall(function()
-        caster:transfer(protocol.chat(false, cmd))
+        caster:transfer(protocol.chat(false, cmd_src))
     end)
-    if ok == false then
-        slog("restore_position: transfer FAILED err=%s", tostring(err))
-        bot_diag.dump(caster, "restore_position:transfer_failed")
+    if ok == false and at_dest_map(caster, map_name) == false then
+        slog("restore_position: transfer_src FAILED err=%s", tostring(err))
+        bot_diag.dump(caster, "restore_position:transfer_src_failed")
         return false
     end
-    slog("restore_position: transfer returned")
+    if at_dest_map(caster, map_name) == false then
+        slog("restore_position: not on target map after transfer_src")
+        bot_diag.dump(caster, "restore_position:transfer_src_map_mismatch")
+        return false
+    end
+
+    slog("restore_position: branch=map_move_slot suite_slot=%s", tostring(g_suite_slot))
+    local move_ok, move_err = pcall(function()
+        caster:map_move(map_name, position[1], position[2], g_suite_slot)
+    end)
+    if at_dest(caster, map_name, position) == false then
+        slog("restore_position: map_move_slot failed err=%s", tostring(move_err))
+        bot_diag.dump(caster, "restore_position:slot_failed")
+        return false
+    end
+
+    slog("restore_position: done")
     bot_diag.dump(caster, "restore_position:after")
     return true
 end
@@ -66,9 +103,12 @@ local function restore_nakrang_room(caster)
         bot_diag.dump(caster, "restore_nakrang_room:unknown_map")
         return false
     end
-    
+
     if map_model:name() ~= NAKRANG_ROOM then
-        caster:transfer(protocol.chat(false, string.format("/맵이동 %s 6 6 %d", NAKRANG_ROOM, g_suite_slot)))
+        local ok = restore_position(caster, NAKRANG_ROOM, {6, 6})
+        if ok == false then
+            return false
+        end
     end
     return true
 end

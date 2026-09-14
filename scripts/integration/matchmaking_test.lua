@@ -9,15 +9,16 @@ local MAX_MP = 10000
 
 local DIALOG_WAIT_MS = 15000
 local MESSAGE_WAIT_MS = 15000
-local PROPOSAL_WAIT_MS = 25000
+local PROPOSAL_WAIT_MS = 35000
 local MATCH_END_WAIT_MS = 30000
-local TRANSFER_WAIT_MS = 30000
-local HOME_WAIT_MS = 30000
+local TRANSFER_WAIT_MS = 45000
+local HOME_WAIT_MS = 45000
 local POLL_INTERVAL_MS = 200
 
 -- The bot that triggers a proposal waits this long so every other bot has its
 -- proposal hook installed first. A pushed dialog is lost if nobody is listening.
-local SETTLE_MS = 2000
+-- Under high parallel load, dialog/AMQP latency grows — keep this generous.
+local SETTLE_MS = 4000
 
 local F1_OID = 0xFFFFFFFF
 local OPT_MATCHMAKING = "매치메이킹"
@@ -31,7 +32,10 @@ local MSG_REGISTER_START = "매치메이킹 대기를 시작했습니다"
 local MSG_REGISTER_CANCEL = "매치메이킹 대기를 취소했습니다"
 local MSG_MATCH_CANCELLED = "매치가 취소되었습니다"
 local MSG_MATCH_ENDED = "매치가 종료되었습니다."
-local MSG_PROPOSAL_DIALOG = "매치를 찾았습니다"
+-- STATE is emitted in the same server turn that arms ch->dialog, before me:list
+-- yields. Prefer this over catching 0x30: hooks do not buffer, and the trigger
+-- bot's register finishes before AMQP proposal arrives under load.
+local MSG_PROPOSAL_STATE = "매치가 제안되었습니다"
 local MSG_GROUP_JOINED = "님 그룹에 참여"
 
 local function progress(bot, message)
@@ -116,6 +120,41 @@ local function f1_register(bot, option, member)
     return true
 end
 
+-- Trigger bot that forms the match: after YES, wait for proposal STATE (not
+-- REGISTER_START). A matching hook drops non-matching packets, so waiting for
+-- REGISTER_START first can discard the proposal under a fast match tick.
+local function f1_register_await_proposal(bot, option)
+    if pursuit(bot, protocol.click(F1_OID)) == nil then
+        progress(bot, "FAILED: F1 MENU DID NOT OPEN")
+        return false
+    end
+    if pursuit(bot, protocol.dialog("PURSUIT", 0, "", 0, 0, OPT_MATCHMAKING)) == nil then
+        progress(bot, "FAILED: MATCHMAKING MENU DID NOT OPEN")
+        return false
+    end
+    if pursuit(bot, protocol.dialog("PURSUIT", 0, "", 0, 0, option)) == nil then
+        progress(bot, "FAILED: " .. option .. " CONFIRM DID NOT OPEN")
+        return false
+    end
+
+    local yes = protocol.dialog("PURSUIT", 0, "", 0, 0, OPT_YES)
+    local caught, packet = pcall(function()
+        return bot:request(
+            resp.message,
+            yes,
+            function(p)
+                return is_state_text(p, MSG_PROPOSAL_STATE)
+            end,
+            PROPOSAL_WAIT_MS
+        )
+    end)
+    if caught == false or packet == nil or packet == false then
+        progress(bot, "FAILED: NO MATCH PROPOSAL STATE AFTER REGISTER " .. option)
+        return false
+    end
+    return true
+end
+
 local function f1_fail_not_group_master(bot)
     if pursuit(bot, protocol.click(F1_OID)) == nil then
         return false
@@ -139,21 +178,41 @@ local function f1_fail_not_group_master(bot)
 end
 
 local function confirm_proposal_and_transfer(bot)
-    local packet = bot:request_dialog_ext(
-        protocol.chat(false, "."),
-        function(p)
-            return p.type == "list"
-                and p.message ~= nil
-                and p.message:find(MSG_PROPOSAL_DIALOG, 1, true) ~= nil
-        end,
-        PROPOSAL_WAIT_MS
-    )
-    if packet == nil then
-        progress(bot, "FAILED: NO MATCH PROPOSAL DIALOG")
+    -- Wait-only: arm the message hook with no poke so a late AMQP proposal is not lost.
+    -- Timeout throws; catch so the parallel lane can fail cleanly.
+    local caught, packet = pcall(function()
+        return bot:request(
+            resp.message,
+            nil,
+            function(p)
+                return is_state_text(p, MSG_PROPOSAL_STATE)
+            end,
+            PROPOSAL_WAIT_MS
+        )
+    end)
+    if caught == false or packet == nil or packet == false then
+        progress(bot, "FAILED: NO MATCH PROPOSAL STATE")
         return false
     end
 
-    bot:transfer(protocol.dialog("LIST", 0, "", 1, 0, "", "NEXT"))
+    local ok, err = pcall(function()
+        bot:transfer(protocol.dialog("LIST", 0, "", 1, 0, "", "NEXT"))
+    end)
+    if ok == false then
+        progress(bot, "FAILED: CONFIRM/TRANSFER err=" .. tostring(err))
+        return false
+    end
+    return true
+end
+
+local function confirm_after_proposal_state(bot)
+    local ok, err = pcall(function()
+        bot:transfer(protocol.dialog("LIST", 0, "", 1, 0, "", "NEXT"))
+    end)
+    if ok == false then
+        progress(bot, "FAILED: CONFIRM/TRANSFER err=" .. tostring(err))
+        return false
+    end
     return true
 end
 
@@ -320,10 +379,11 @@ local function confirm_lanes(indices, trigger)
         local bot = ctx:bot(trigger.index)
         progress(bot, "SETTLE THEN REGISTER " .. trigger.option)
         bot:sleep(SETTLE_MS)
-        if f1_register(bot, trigger.option) == false then
+        if f1_register_await_proposal(bot, trigger.option) == false then
             return false
         end
-        return confirm_proposal_and_transfer(bot)
+        progress(bot, "CONFIRM PROPOSAL AND TRANSFER")
+        return confirm_after_proposal_state(bot)
     end }
 
     return { parallel = lanes }
@@ -440,17 +500,40 @@ test_suite {
             local e = ctx:bot(4)
             local f = ctx:bot(5)
 
-            progress(e, "STEP 8: REVIVE SOLO BOTS THEN REGISTER MATCH 1")
+            progress(e, "STEP 8: REVIVE SOLO BOTS AND CLEAR GROUPS")
             if revive(e) == false or revive(f) == false then
                 progress(e, "FAILED: COULD NOT REVIVE SOLO BOTS")
                 return false
             end
 
-            -- MATCH_1 is 1v1, so one entry waits until F registers in parallel.
-            return f1_register(e, OPT_MATCH_1)
+            -- Match 1 is 1v1; leftover Match 2 groups would make register fail on size.
+            lib.group.cleanup(ctx)
+            return true
         end,
 
-        confirm_lanes({4}, {index = 5, option = OPT_MATCH_1}),
+        -- Both solos arm the proposal wait at YES time. Do not pre-register E in a
+        -- prior scenario: under load a Match 1 form can fire before the waiter hook.
+        { parallel = {
+            [4] = { function(ctx)
+                local bot = ctx:bot(4)
+                progress(bot, "REGISTER MATCH 1 THEN CONFIRM")
+                if f1_register_await_proposal(bot, OPT_MATCH_1) == false then
+                    return false
+                end
+                progress(bot, "CONFIRM PROPOSAL AND TRANSFER")
+                return confirm_after_proposal_state(bot)
+            end },
+            [5] = { function(ctx)
+                local bot = ctx:bot(5)
+                progress(bot, "SETTLE THEN REGISTER MATCH 1")
+                bot:sleep(SETTLE_MS)
+                if f1_register_await_proposal(bot, OPT_MATCH_1) == false then
+                    return false
+                end
+                progress(bot, "CONFIRM PROPOSAL AND TRANSFER")
+                return confirm_after_proposal_state(bot)
+            end },
+        } },
 
         function(ctx)
             progress(ctx:bot(4), "STEP 9: FINISH MATCH 1 AND RETURN HOME")

@@ -498,7 +498,7 @@ async::task<bool> login<V>::handle(fb::socket<character>& session, game_reqs::lo
         if (ptr == nullptr)
             co_return;
 
-        co_await ptr->matchmaker.discard_leftover_enrollment();
+        co_await ptr->matchmaker.discard_leftover_registration();
     };
     builder.enqueue();
 
