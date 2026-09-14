@@ -525,13 +525,11 @@ async::task<void> game_bot_controller::on_bot_connected(game_bot& bot)
         }
 
         if (bot_shared)
-        {
             test->on_bot_connected(bot_shared);
-            if (bot.transfer_from_bot_id() != 0)
-                test->try_complete_transfer(bot);
-        }
     }
 
+    // Do not complete transfer here — TCP connect is not enough.
+    // Wait until login finishes (oid/inited) via show/update_external hooks.
     fb::logger::debug("bot transfer login send: bot={} bot_id={} transfer_buffer_bytes={} inited={}",
                       bot.name(),
                       bot.id,

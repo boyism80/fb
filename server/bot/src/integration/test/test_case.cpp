@@ -187,6 +187,10 @@ void bot_integration_test::try_complete_transfer(game_bot& bot)
     if (source_bot_id == 0)
         return;
 
+    // Transfer await must not resolve until the reconnected bot has a live session.
+    if (bot.oid() == 0 || bot.inited() == false)
+        return;
+
     this->controller.reown(source_bot_id, bot.id);
 
     auto reconnected_index = std::optional<uint32_t>{};
@@ -454,6 +458,7 @@ async::task<void> bot_integration_test::on_hook_sequence(fb::bot::game_bot& bot,
     if (bot.oid() == resp.oid)
         this->mark_bot_logged_in(bot);
 
+    this->try_complete_transfer(bot);
     this->try_notify_ready();
     co_return;
 }
@@ -461,6 +466,7 @@ async::task<void> bot_integration_test::on_hook_sequence(fb::bot::game_bot& bot,
 async::task<void> bot_integration_test::on_hook_position(fb::bot::game_bot& bot, const game_resp::position& resp)
 {
     this->mark_bot_logged_in(bot);
+    this->try_complete_transfer(bot);
     this->try_notify_ready();
     co_return;
 }
@@ -470,9 +476,8 @@ async::task<void> bot_integration_test::on_hook_show(fb::bot::game_bot& bot, con
     if (bot.oid() == 0)
         bot.set_oid(resp.oid);
 
-    this->try_complete_transfer(bot);
-
     this->mark_bot_logged_in(bot);
+    this->try_complete_transfer(bot);
     this->try_notify_ready();
     co_return;
 }
@@ -483,11 +488,10 @@ async::task<void> bot_integration_test::on_hook_update_external(fb::bot::game_bo
     if (bot.oid() == 0)
         bot.set_oid(resp.oid);
 
-    this->try_complete_transfer(bot);
-
     if (bot.oid() == resp.oid)
         this->mark_bot_logged_in(bot);
 
+    this->try_complete_transfer(bot);
     this->try_notify_ready();
     co_return;
 }

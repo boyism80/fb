@@ -14,10 +14,7 @@ template <fb::protocol::CLIENT_VERSION V>
 async::task<bool> map_update<V>::handle(fb::socket<character>& session, game_reqs::map_update<V>& request)
 {
     auto ch = session.data();
-    if (ch == nullptr)
-        co_return true;
-
-    if (ch->inited() == false)
+    if (ch == nullptr || ch->inited() == false)
         co_return true;
 
     auto map = ch->map();

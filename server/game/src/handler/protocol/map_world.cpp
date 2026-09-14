@@ -16,7 +16,7 @@ template <fb::protocol::CLIENT_VERSION V>
 async::task<bool> map_world<V>::handle(fb::socket<character>& session, game_reqs::map_world<V>& request)
 {
     auto ch = session.data();
-    if (ch->inited() == false)
+    if (ch == nullptr || ch->inited() == false)
         co_return true;
 
     auto  world_table = table::world;

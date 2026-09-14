@@ -15,7 +15,7 @@ template <fb::protocol::CLIENT_VERSION V>
 async::task<bool> item_throws<V>::handle(fb::socket<character>& session, game_reqs::item_throws<V>& request)
 {
     auto ch = session.data();
-    if (ch->inited() == false)
+    if (ch == nullptr || ch->inited() == false)
         co_return true;
 
     std::ignore = co_await ch->items.throws(request.index, request.all);

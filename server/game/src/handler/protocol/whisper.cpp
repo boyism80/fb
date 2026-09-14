@@ -14,7 +14,7 @@ template <fb::protocol::CLIENT_VERSION V>
 async::task<bool> whisper<V>::handle(fb::socket<character>& session, game_reqs::whisper<V>& request)
 {
     auto me = session.data();
-    if (me->inited() == false)
+    if (me == nullptr || me->inited() == false)
         co_return true;
 
     auto weak = me->weak_from_this_as<character>();
