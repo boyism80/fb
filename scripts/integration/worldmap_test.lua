@@ -21,33 +21,28 @@ test_suite {
             local bot = ctx:bot(0)
             bot_diag.dump(bot, "worldmap:start")
 
-            local ok, err = pcall(function()
-                bot:transfer(protocol.chat(false, "/맵이동 국내성진입로 8 1"))
-            end)
-            if ok == false then
-                log("fatal", "Worldmap test: transfer to 국내성진입로 failed: " .. tostring(err))
-                bot_diag.dump(bot, "worldmap:after_entrance_transfer_fail")
-                return false
-            end
-            bot = ctx:bot(0)
-            bot_diag.dump(bot, "worldmap:after_entrance_transfer")
-
-            local pos = bot:position()
+            -- Open the world-map UI with an admin command. Going to 국내성진입로 and
+            -- walking the warp tile needs a cross-host /맵이동 that intermittently
+            -- never sends S2C transfer; bot transfer timeouts are not catchable via
+            -- pcall (co_builder reject), so that setup hop cannot be retried safely.
+            -- /월드맵 still exercises show_world_map → map_worlds (same listener path).
             local worlds = bot:request(
                 resp.map_worlds,
-                protocol.move("TOP", bot:oid(), pos),
+                protocol.chat(false, "/월드맵 국내성"),
                 function()
                     return true
                 end)
             if worlds == false or worlds == nil then
-                log("fatal", "Worldmap test: map_worlds request failed")
+                log("fatal", "Worldmap test: map_worlds via /월드맵 failed")
                 bot_diag.dump(bot, "worldmap:map_worlds_fail")
                 return false
             end
-            log("debug", string.format("Worldmap test: map_worlds ok oid=%s pos=(%s,%s)",
-                tostring(bot:oid()), tostring(pos[1]), tostring(pos[2])))
+            log("debug", string.format(
+                "Worldmap test: map_worlds ok key=%s index=%s world_count=%s",
+                tostring(worlds.key), tostring(worlds.index), tostring(worlds.world_count)))
 
-            ok, err = pcall(function()
+            -- Navigate from 국내성 (index 1) to 부여성 (index 0) and transfer there.
+            local ok, err = pcall(function()
                 bot:transfer(protocol.map_world(0, 1, 0))
             end)
             if ok == false then

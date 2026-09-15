@@ -46,6 +46,7 @@ local STORAGE_SALE_TITLE     = "거래소 판매"
 -- Shared across sequential/parallel scenario steps
 local g_list_msg     = nil
 local g_purchase_msg = nil
+local g_purchase_done = false
 local g_cancel_msg   = nil
 local g_search_ok    = false
 local g_search_err   = nil
@@ -109,13 +110,6 @@ local function cleanup_bot(bot)
     bot:money(0)
 end
 
-local function message_contains(packet, text)
-    return packet ~= nil
-        and packet.message ~= nil
-        and packet.message:find(text, 1, true) ~= nil
-end
-
--- Server messages may contain irregular spacing (e.g. "등록한 물품이  없습니다.").
 local function message_normalized_contains(packet, text)
     if packet == nil or packet.message == nil then
         return false
@@ -184,7 +178,7 @@ local function find_menu_option(packet, text)
     return nil
 end
 
-local function resolve_list_slot(bot, item_name, slot_packet)
+local function list_slot_for_item(bot, item_name, slot_packet)
     local invent_0 = bot:item_slot(item_name)
     if invent_0 == nil or invent_0 == 0xFF then
         invent_0 = nil
@@ -198,7 +192,7 @@ local function resolve_list_slot(bot, item_name, slot_packet)
     end
 
     progress(bot, string.format(
-        "resolve_list_slot item=%s invent_0=%s dialog_slots_1based=[%s]",
+        "list_slot_for_item item=%s invent_0=%s dialog_slots_1based=[%s]",
         item_name,
         tostring(invent_0),
         table.concat(dialog_slots_1based, ",")))
@@ -214,7 +208,7 @@ local function resolve_list_slot(bot, item_name, slot_packet)
 
     if #dialog_slots_1based > 0 then
         local slot_1 = dialog_slots_1based[1]
-        progress(bot, string.format("resolve_list_slot fallback slot_1=%s", tostring(slot_1)))
+        progress(bot, string.format("list_slot_for_item fallback slot_1=%s", tostring(slot_1)))
         return slot_1
     end
 
@@ -255,31 +249,42 @@ local function open_storage_entry_detail(bot, title)
 end
 
 local function receive_storage(bot, title)
-    local detail, err = open_storage_entry_detail(bot, title)
-    if detail == nil then
-        return false, err
+    local last_err = nil
+    for attempt = 1, 3 do
+        local detail, err = open_storage_entry_detail(bot, title)
+        if detail == nil then
+            last_err = err
+            progress(bot, string.format("receive_storage open failed attempt=%d title=%s err=%s",
+                attempt, title, tostring(err)))
+            close_marketplace_menu(bot)
+        else
+            local packet = bot:request_dialog(
+                protocol.dialog("NORMAL", DIALOG_NEXT, "", 0, 0, "", "NEXT"),
+                function(p)
+                    return p.type == "pursuit"
+                end)
+            if packet == nil or packet.type ~= "pursuit" then
+                last_err = "receive confirm missing"
+                progress(bot, string.format("receive_storage confirm missing attempt=%d title=%s", attempt, title))
+                close_marketplace_menu(bot)
+            else
+                packet = bot:request_dialog_ext(
+                    protocol.dialog("PURSUIT", 0, "", 0, 0, OPT_YES),
+                    function(p)
+                        return p.type == "normal" and p.message ~= nil
+                    end)
+                if packet == nil then
+                    last_err = "receive result missing"
+                    progress(bot, string.format("receive_storage result missing attempt=%d title=%s", attempt, title))
+                    close_marketplace_menu(bot)
+                else
+                    close_marketplace_menu(bot)
+                    return true, packet.message
+                end
+            end
+        end
     end
-
-    local packet = bot:request_dialog(
-        protocol.dialog("NORMAL", DIALOG_NEXT, "", 0, 0, "", "NEXT"),
-        function(p)
-            return p.type == "pursuit"
-        end)
-    if packet == nil or packet.type ~= "pursuit" then
-        return false, "receive confirm missing"
-    end
-
-    packet = bot:request_dialog_ext(
-        protocol.dialog("PURSUIT", 0, "", 0, 0, OPT_YES),
-        function(p)
-            return p.type == "normal" and p.message ~= nil
-        end)
-    if packet == nil then
-        return false, "receive result missing"
-    end
-
-    close_marketplace_menu(bot)
-    return true, packet.message
+    return false, last_err
 end
 
 local function prepare_weapon(bot)
@@ -312,7 +317,7 @@ local function list_item_flow(bot, item_name, count, price)
         return nil, "list slot dialog missing"
     end
 
-    local slot = resolve_list_slot(bot, item_name, packet)
+    local slot = list_slot_for_item(bot, item_name, packet)
     if slot == nil then
         return nil, "item slot not found: " .. item_name
     end
@@ -362,7 +367,7 @@ local function list_item_flow(bot, item_name, count, price)
         return nil, "fee confirm missing"
     end
 
-    if message_contains(packet, MSG_FEE_CONFIRM) == false then
+    if packet == nil or packet.message == nil or packet.message:find(MSG_FEE_CONFIRM, 1, true) == nil then
         return nil, "unexpected fee dialog: " .. tostring(packet.message)
     end
 
@@ -397,7 +402,7 @@ local function abort_search_item_dialog(bot, item_name)
         return
     end
 
-    if message_contains(after, MSG_WARNING) then
+    if after ~= nil and after.message ~= nil and after.message:find(MSG_WARNING, 1, true) ~= nil then
         after = bot:request_dialog(
             protocol.dialog("PURSUIT", 0, "", 0, 0, OPT_NO),
             function(p)
@@ -423,6 +428,7 @@ local function search_listings_expect_empty(bot, item_name)
 
     local input_req = protocol.dialog("INPUT", 0, item_name, 0, 0, "", "NEXT")
 
+    -- Empty result is dialog_ext (0x30). Item listings use dialog (0x2F).
     packet = bot:request_dialog_ext(
         input_req,
         function(p)
@@ -448,6 +454,7 @@ local function search_listings_expect_present(bot, item_name)
         return nil, "search input missing"
     end
 
+    -- Listing results are dialog item (0x2F), not dialog_ext (0x30).
     packet = bot:request_dialog(
         protocol.dialog("INPUT", 0, item_name, 0, 0, "", "NEXT"),
         function(p)
@@ -508,7 +515,7 @@ local function assert_search_has_item(bot, item_name, expect_found)
         end
         if packet.type ~= "item" then
             local msg = packet.message
-        close_marketplace_menu(bot)
+            close_marketplace_menu(bot)
             return false, "expected listings, got=" .. tostring(msg)
         end
         abort_search_item_dialog(bot, item_name)
@@ -525,7 +532,8 @@ local function assert_search_has_item(bot, item_name, expect_found)
         return false, "listing unexpectedly found"
     end
 
-    if message_contains(packet, MSG_SEARCH_EMPTY) == false and message_normalized_contains(packet, MSG_SEARCH_EMPTY) == false then
+    if (packet.message == nil or packet.message:find(MSG_SEARCH_EMPTY, 1, true) == nil)
+        and message_normalized_contains(packet, MSG_SEARCH_EMPTY) == false then
         local msg = packet.message
         close_marketplace_menu(bot)
         return false, "expected empty search, got=" .. tostring(msg)
@@ -683,7 +691,7 @@ local function cancel_item_flow(bot, item_name)
         return nil, "cancel confirm missing"
     end
 
-    if message_contains(packet, MSG_CANCEL_CONFIRM) == false then
+    if packet.message == nil or packet.message:find(MSG_CANCEL_CONFIRM, 1, true) == nil then
         local first = packet.menu_menus and packet.menu_menus[1]
         if first == nil then
             return nil, "cancel multi option missing"
@@ -723,7 +731,8 @@ local function assert_cancel_list_empty(bot)
     if packet == nil then
         return false, tostring(err)
     end
-    if message_contains(packet, MSG_CANCEL_EMPTY) == false and message_normalized_contains(packet, MSG_CANCEL_EMPTY) == false then
+    if (packet.message == nil or packet.message:find(MSG_CANCEL_EMPTY, 1, true) == nil)
+        and message_normalized_contains(packet, MSG_CANCEL_EMPTY) == false then
         local msg = packet.message
         close_marketplace_menu(bot)
         return false, "expected empty cancel list, got=" .. tostring(msg)
@@ -750,7 +759,7 @@ local function wait_money_deducted_during_delay(ctx, bot, pay_amount)
         if g_purchase_api_started == false then
             return
         end
-        if g_purchase_msg ~= nil then
+        if g_purchase_done then
             return
         end
         if packet.ch_money ~= nil and packet.ch_money < pay_amount then
@@ -765,9 +774,12 @@ local function wait_money_deducted_during_delay(ctx, bot, pay_amount)
     end)
 
     local waited = 0
-    while g_purchase_api_started == false and g_purchase_msg == nil do
+    while g_purchase_api_started == false and g_purchase_done == false do
         ctx:sleep(100)
         waited = waited + 100
+        if waited >= HTTP_DELAY_MS + DIALOG_TIMEOUT_MS + 5000 then
+            break
+        end
     end
     if g_purchase_api_started == false then
         ctx:unhook("update_internal")
@@ -781,9 +793,12 @@ local function wait_money_deducted_during_delay(ctx, bot, pay_amount)
         bot:money()))
 
     waited = 0
-    while observed_deduct == false and g_purchase_msg == nil do
+    while observed_deduct == false and g_purchase_done == false do
         ctx:sleep(100)
         waited = waited + 100
+        if waited >= HTTP_DELAY_MS + DIALOG_TIMEOUT_MS + 5000 then
+            break
+        end
     end
 
     ctx:unhook("update_internal")
@@ -793,7 +808,7 @@ local function wait_money_deducted_during_delay(ctx, bot, pay_amount)
         tostring(observed_deduct),
         tostring(observed_money),
         bot:money(),
-        tostring(g_purchase_msg ~= nil),
+        tostring(g_purchase_done),
         tostring(last_update_level),
         tostring(last_update_money),
         waited))
@@ -833,6 +848,8 @@ test_suite {
     end,
 
     on_finished = function(ctx)
+        ctx:bot(0):chat("/HTTP지연 0")
+        ctx:bot(1):chat("/HTTP지연 0")
         cleanup_bot(ctx:bot(0))
         cleanup_bot(ctx:bot(1))
     end,
@@ -1138,6 +1155,7 @@ test_suite {
             b:money(g_pay_amount)
             b:chat(string.format("/HTTP지연 %d", HTTP_DELAY_MS))
             g_purchase_msg = nil
+            g_purchase_done = false
             g_money_ok = false
             g_purchase_api_started = false
             progress(a, "P2 PREP DONE")
@@ -1151,6 +1169,7 @@ test_suite {
                         local bot = ctx:bot(1)
                         progress(bot, "P2: CONFIRM PURCHASE")
                         g_purchase_msg = select(1, purchase_item_flow(bot, WEAPON_ITEM, 1))
+                        g_purchase_done = true
                         progress(bot, "P2: PURCHASE DONE msg=" .. tostring(g_purchase_msg))
                         return g_purchase_msg ~= nil and g_purchase_msg:find(MSG_PURCHASE_OK, 1, true) ~= nil
                     end,

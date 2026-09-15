@@ -17,19 +17,6 @@ local NAKRANG_ROOM = "낙랑의방"
 local NEARBY_MOB_CLEAR_RANGE = 3
 local g_suite_slot = 0
 
-local function at_dest_map(caster, map_name)
-    local map_model = id2map(caster:map())
-    return map_model ~= nil and map_model:name() == map_name
-end
-
-local function at_dest(caster, map_name, position)
-    if at_dest_map(caster, map_name) == false then
-        return false
-    end
-    local pos = caster:position()
-    return pos[1] == position[1] and pos[2] == position[2]
-end
-
 local function restore_position(caster, map_name, position)
     slog("restore_position: enter target=%s pos=(%s,%s) suite_slot=%s",
         tostring(map_name),
@@ -57,7 +44,12 @@ local function restore_position(caster, map_name, position)
             tostring(map_id))
     end
 
-    if at_dest(caster, map_name, position) then
+    local dest_model = id2map(caster:map())
+    local dest_pos = caster:position()
+    if dest_model ~= nil
+        and dest_model:name() == map_name
+        and dest_pos[1] == position[1]
+        and dest_pos[2] == position[2] then
         slog("restore_position: already at dest")
         return true
     end
@@ -70,12 +62,14 @@ local function restore_position(caster, map_name, position)
     local ok, err = pcall(function()
         caster:transfer(protocol.chat(false, cmd_src))
     end)
-    if ok == false and at_dest_map(caster, map_name) == false then
+    dest_model = id2map(caster:map())
+    if ok == false and (dest_model == nil or dest_model:name() ~= map_name) then
         slog("restore_position: transfer_src FAILED err=%s", tostring(err))
         bot_diag.dump(caster, "restore_position:transfer_src_failed")
         return false
     end
-    if at_dest_map(caster, map_name) == false then
+    dest_model = id2map(caster:map())
+    if dest_model == nil or dest_model:name() ~= map_name then
         slog("restore_position: not on target map after transfer_src")
         bot_diag.dump(caster, "restore_position:transfer_src_map_mismatch")
         return false
@@ -85,7 +79,12 @@ local function restore_position(caster, map_name, position)
     local move_ok, move_err = pcall(function()
         caster:map_move(map_name, position[1], position[2], g_suite_slot)
     end)
-    if at_dest(caster, map_name, position) == false then
+    dest_model = id2map(caster:map())
+    dest_pos = caster:position()
+    if dest_model == nil
+        or dest_model:name() ~= map_name
+        or dest_pos[1] ~= position[1]
+        or dest_pos[2] ~= position[2] then
         slog("restore_position: map_move_slot failed err=%s", tostring(move_err))
         bot_diag.dump(caster, "restore_position:slot_failed")
         return false

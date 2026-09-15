@@ -30,11 +30,6 @@ local function progress(bot, message)
     bot:chat("=== " .. message .. " ===")
 end
 
-local function fail(bot, message)
-    progress(bot, "FAILED: " .. message)
-    return false
-end
-
 local function move_to_source(bot, x, y)
     x = x or POS[1]
     y = y or POS[2]
@@ -89,7 +84,8 @@ local function assert_front_contains(bot, item_name, label)
         return seen[item_name] == true
     end)
     if seen == nil or seen[item_name] ~= true then
-        return fail(bot, string.format("%s: front_info missing '%s'", label, item_name))
+        progress(bot, string.format("FAILED: %s: front_info missing '%s'", label, item_name))
+        return false
     end
     progress(bot, string.format("%s: front_info OK '%s'", label, item_name))
     return true
@@ -102,13 +98,16 @@ local function assert_front_isolation(bot, present_name, absent_name, label)
         return seen[present_name] == true
     end)
     if seen == nil then
-        return fail(bot, string.format("%s: front_info timeout (wanted '%s')", label, present_name))
+        progress(bot, string.format("FAILED: %s: front_info timeout (wanted '%s')", label, present_name))
+        return false
     end
     if seen[absent_name] then
-        return fail(bot, string.format("%s: still sees source marker '%s'", label, absent_name))
+        progress(bot, string.format("FAILED: %s: still sees source marker '%s'", label, absent_name))
+        return false
     end
     if seen[present_name] ~= true then
-        return fail(bot, string.format("%s: missing instance marker '%s'", label, present_name))
+        progress(bot, string.format("FAILED: %s: missing instance marker '%s'", label, present_name))
+        return false
     end
     progress(bot, string.format("%s: isolation OK", label))
     return true
@@ -257,7 +256,8 @@ test_suite {
             ctx:sleep(ENTER_WAIT)
 
             if cast_by_name(a, b:name(), "소환") == false then
-                return fail(a, "step5: 소환 failed")
+                progress(a, "FAILED: step5: 소환 failed")
+                return false
             end
             ctx:sleep(1000)
             -- teleport_lookup places B beside A; re-align for front_info.
@@ -269,7 +269,8 @@ test_suite {
             move_to_source(a, POS[1], POS[2])
             ctx:sleep(ENTER_WAIT)
             if cast_by_name(a, b:name(), "출두") == false then
-                return fail(a, "step5: 출두 failed")
+                progress(a, "FAILED: step5: 출두 failed")
+                return false
             end
             ctx:sleep(1000)
             face_drop_marker(ctx, a, true, SLOT)
