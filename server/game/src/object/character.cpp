@@ -64,7 +64,10 @@ void character::match(std::shared_ptr<fb::game::match> value)
 character::~character()
 {
     if (this->dialog != nullptr)
+    {
         this->dialog->release();
+        this->dialog = nullptr;
+    }
 }
 
 void character::on_init()

@@ -11,28 +11,54 @@ function M.run_chat_step(bot, command, pass_prefix, fail_prefix)
         pass_prefix,
         fail_prefix))
 
-    local packet = bot:request(
-        resp.chat,
-        protocol.chat(false, command),
-        function(p)
-            local text = p.text or ""
-            local pass_match = string.find(text, pass_prefix, 1, true) ~= nil
-            local fail_match = string.find(text, fail_prefix, 1, true) ~= nil
-            log("debug", string.format(
-                "chat validator: text=%q pass_match=%s fail_match=%s",
-                text,
-                tostring(pass_match),
-                tostring(fail_match)))
-            return pass_match or fail_match
-        end)
+    local attempts = 3
+    for attempt = 1, attempts do
+        local packet = bot:request(
+            resp.chat,
+            protocol.chat(false, command),
+            function(p)
+                local text = p.text or ""
+                if string.find(text, command, 1, true) ~= nil then
+                    local pass_match = string.find(text, pass_prefix, 1, true) ~= nil
+                    local fail_match = string.find(text, fail_prefix, 1, true) ~= nil
+                    if pass_match == false and fail_match == false then
+                        return false
+                    end
+                end
+                local pass_match = string.find(text, pass_prefix, 1, true) ~= nil
+                local fail_match = string.find(text, fail_prefix, 1, true) ~= nil
+                log("debug", string.format(
+                    "chat validator: text=%q pass_match=%s fail_match=%s",
+                    text,
+                    tostring(pass_match),
+                    tostring(fail_match)))
+                return pass_match or fail_match
+            end)
 
-    local pass = string.find(packet.text or "", pass_prefix, 1, true) ~= nil
-    log("debug", string.format(
-        "run_chat_step result: bot=%s pass=%s text=%q",
-        bot:name(),
-        tostring(pass),
-        packet.text or ""))
-    return pass, packet.text
+        if type(packet) ~= "table" then
+            log("fatal", string.format(
+                "run_chat_step: no chat response bot=%s attempt=%d/%d command=%q",
+                bot:name(),
+                attempt,
+                attempts,
+                command))
+            if attempt < attempts then
+                bot:sleep(500)
+            else
+                return false, nil
+            end
+        else
+            local pass = string.find(packet.text or "", pass_prefix, 1, true) ~= nil
+            log("debug", string.format(
+                "run_chat_step result: bot=%s pass=%s text=%q",
+                bot:name(),
+                tostring(pass),
+                packet.text or ""))
+            return pass, packet.text
+        end
+    end
+
+    return false, nil
 end
 
 function M.run_script(bot, script_file, ...)

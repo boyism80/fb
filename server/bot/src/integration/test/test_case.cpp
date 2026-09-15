@@ -170,9 +170,6 @@ bool bot_integration_test::is_ready() const
         if (bot == nullptr)
             return false;
 
-        // Same bar as try_complete_transfer: oid alone is not enough for /맵이동
-        // or other admin chat. Under high parallel, map_config can arrive before
-        // position/update_internal and tests would start half-initialized.
         if (bot->oid() == 0 || bot->inited() == false || bot->map() == 0xFFFF || bot->has_position() == false ||
             bot->has_internal() == false)
             return false;
@@ -193,9 +190,6 @@ void bot_integration_test::try_complete_transfer(game_bot& bot)
     if (source_bot_id == 0)
         return;
 
-    // Transfer await must not resolve until the reconnected bot has a live session
-    // with known map, server position, and internal state. Chat/admin commands are
-    // ignored until the character is fully ready; map_config/position can arrive first.
     if (bot.oid() == 0 || bot.inited() == false || bot.map() == 0xFFFF || bot.has_position() == false ||
         bot.has_internal() == false)
         return;
@@ -494,7 +488,6 @@ async::task<void> bot_integration_test::on_hook_show(fb::bot::game_bot& bot, con
 async::task<void> bot_integration_test::on_hook_map_config(fb::bot::game_bot&                bot,
                                                            const game_resp::map_config_v550& resp)
 {
-    // Base on_map_config already set_map; complete transfer once map is known.
     this->try_complete_transfer(bot);
     this->try_notify_ready();
     co_return;

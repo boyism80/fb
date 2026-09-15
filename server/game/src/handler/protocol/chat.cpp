@@ -44,7 +44,16 @@ async::task<bool> chat<V>::try_command(character* ch, std::weak_ptr<character> w
 {
     auto lua = this->server.lua.open("scripts/interaction.lua", "on_chat", nullptr, {.auto_release = false});
     if (!lua)
+    {
+        if (request.message.empty() == false && request.message[0] == '/')
+        {
+            fb::logger::warn("try_command: dropping slash command (lua unavailable) name={} msg={}",
+                             ch->name(),
+                             request.message);
+            co_return true;
+        }
         co_return false;
+    }
 
     lua->pushobject(ch);
     lua->pushstring(request.message);

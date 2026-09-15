@@ -48,8 +48,7 @@ private:
     std::unordered_map<uint32_t, matchmaking_skill> _entries;
     std::optional<std::string>                      _pending_match_id;
     std::optional<registration_state>               _registration;
-    // Set before Register HTTP so Proposed cannot observe "not registered".
-    bool _registering = false;
+    bool                                            _registering = false;
 
     void enqueue_squad_unregister(uint32_t match_type, std::string_view registry_id);
 

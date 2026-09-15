@@ -17,11 +17,9 @@ using namespace fb::lua;
 
 void fb::lua::report_load_failed(std::string_view path, std::string_view error)
 {
-#if defined DEBUG || defined _DEBUG
     if (path.empty())
         return;
 
-    // Optional hooks may omit the file entirely — stay silent.
     if (std::filesystem::exists(std::string(path)) == false)
         return;
 
@@ -37,26 +35,19 @@ void fb::lua::report_load_failed(std::string_view path, std::string_view error)
         fb::logger::warn("cannot load script {}", path);
     else
         fb::logger::warn("cannot load script {}: {}", path, error);
-#endif
 }
 
 void fb::lua::report_load_failed_from_stack(lua_State* L, std::string_view path)
 {
-#if defined DEBUG || defined _DEBUG
     const char* raw = L != nullptr ? lua_tostring(L, -1) : nullptr;
     auto        err = raw != nullptr ? std::string(raw) : std::string{};
     if (L != nullptr)
         lua_pop(L, 1);
     report_load_failed(path, err);
-#else
-    if (L != nullptr)
-        lua_pop(L, 1);
-#endif
 }
 
 void fb::lua::report_func_missing(std::string_view path, std::string_view func)
 {
-#if defined DEBUG || defined _DEBUG
     if (path.empty() || func.empty())
         return;
 
@@ -69,7 +60,6 @@ void fb::lua::report_func_missing(std::string_view path, std::string_view func)
 
     logs.insert(key);
     fb::logger::warn("script function missing: {} in {}", func, path);
-#endif
 }
 
 context* fb::lua::get(lua_State* ctx)
@@ -922,13 +912,22 @@ context* root::pop(context* parent, call_options options)
         auto key = (lua_State*)*ptr.get();
 
         if (this->idle.contains(key) || this->busy.contains(key))
+        {
+            fb::logger::warn("lua context alloc failed: duplicate key idle={} busy={}",
+                             this->idle.size(),
+                             this->busy.size());
             return nullptr;
+        }
 
         this->busy.insert({key, std::move(ptr)});
         return this->busy[key].get();
     }
     else
     {
+        fb::logger::warn("lua pool exhausted: idle={} busy={} max={}",
+                         this->idle.size(),
+                         this->busy.size(),
+                         DEFAULT_POOL_SIZE);
         return nullptr;
     }
 }
@@ -1022,7 +1021,10 @@ context* fb::lua::context_pool::new_context(context* parent, call_options option
 {
     auto id = std::this_thread::get_id();
     if (this->_roots.contains(id) == false)
+    {
+        fb::logger::warn("lua context unavailable: calling thread has no lua root");
         return nullptr;
+    }
 
     return this->_roots[id]->pop(parent, options);
 }
@@ -1037,7 +1039,10 @@ fb::lua::context_pool::open(std::string_view path, std::string_view func, contex
 {
     auto* ctx = this->new_context(parent, options);
     if (ctx == nullptr)
+    {
+        fb::logger::warn("lua open failed: path={} func={}", path, func);
         return context::guard{};
+    }
 
     if (ctx->load(path) == false)
     {

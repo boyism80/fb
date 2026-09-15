@@ -606,9 +606,6 @@ game_bot::map_move(std::string_view map_name, uint16_t x, uint16_t y, uint32_t s
     if (map == nullptr)
         co_return;
 
-    // Different model id: wait for map_config (same-host). Cross-host callers should
-    // use transfer() instead; this path times out on the old socket.
-    // Same model id (S <-> C instance): map_config cannot distinguish; chat + short wait.
     if (this->_map != map->id)
     {
         std::ignore = co_await this->request<game_resp::map_config_v550>(

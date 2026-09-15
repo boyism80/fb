@@ -301,7 +301,7 @@ int bot_request_dialog_impl(lua_State* L)
             cleanup();
             auto* what = e.what();
             fb::logger::fatal("request_dialog failed: {}", (what != nullptr && what[0] != '\0') ? what : "unknown");
-            throw;
+            co_return;
         }
 
         cleanup();

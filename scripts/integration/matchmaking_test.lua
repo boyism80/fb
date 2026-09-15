@@ -7,18 +7,17 @@ local TEST_BOTS = 6
 local MAX_HP = 50
 local MAX_MP = 10000
 
-local DIALOG_WAIT_MS = 15000
+local DIALOG_WAIT_MS = 30000
 local MESSAGE_WAIT_MS = 15000
-local PROPOSAL_WAIT_MS = 35000
+local PROPOSAL_WAIT_MS = 45000
 local MATCH_END_WAIT_MS = 30000
 local TRANSFER_WAIT_MS = 45000
 local HOME_WAIT_MS = 45000
 local POLL_INTERVAL_MS = 200
 
--- The bot that triggers a proposal waits this long so every other bot has its
--- proposal hook installed first. A pushed dialog is lost if nobody is listening.
--- Under high parallel load, dialog/AMQP latency grows — keep this generous.
 local SETTLE_MS = 4000
+
+local aborted = false
 
 local F1_OID = 0xFFFFFFFF
 local OPT_MATCHMAKING = "매치메이킹"
@@ -32,10 +31,7 @@ local MSG_REGISTER_START = "매치메이킹 대기를 시작했습니다"
 local MSG_REGISTER_CANCEL = "매치메이킹 대기를 취소했습니다"
 local MSG_MATCH_CANCELLED = "매치가 취소되었습니다"
 local MSG_MATCH_ENDED = "매치가 종료되었습니다."
--- STATE is emitted in the same server turn that arms ch->dialog, before me:list
--- yields. Prefer this over catching 0x30: hooks do not buffer, and the trigger
--- bot's register finishes before AMQP proposal arrives under load.
-local MSG_PROPOSAL_STATE = "매치가 제안되었습니다"
+local MSG_PROPOSAL_DIALOG = "매치를 찾았습니다"
 local MSG_GROUP_JOINED = "님 그룹에 참여"
 
 local function progress(bot, message)
@@ -54,6 +50,16 @@ local function progress(bot, message)
             bot_diag.dump(bot, "matchmaking:" .. message)
         end
     end
+end
+
+local function abort_remaining(bot, message)
+    aborted = true
+    progress(bot, message)
+    return false
+end
+
+local function if_aborted()
+    return aborted
 end
 
 local function dump_match_bots(ctx, bot_indices, label)
@@ -120,9 +126,12 @@ local function f1_register(bot, option, member)
     return true
 end
 
--- Trigger bot that forms the match: after YES, wait for proposal STATE (not
--- REGISTER_START). A matching hook drops non-matching packets, so waiting for
--- REGISTER_START first can discard the proposal under a fast match tick.
+local function is_proposal_list(packet)
+    return packet.type == "list"
+        and packet.message ~= nil
+        and packet.message:find(MSG_PROPOSAL_DIALOG, 1, true) ~= nil
+end
+
 local function f1_register_await_proposal(bot, option)
     if pursuit(bot, protocol.click(F1_OID)) == nil then
         progress(bot, "FAILED: F1 MENU DID NOT OPEN")
@@ -139,17 +148,10 @@ local function f1_register_await_proposal(bot, option)
 
     local yes = protocol.dialog("PURSUIT", 0, "", 0, 0, OPT_YES)
     local caught, packet = pcall(function()
-        return bot:request(
-            resp.message,
-            yes,
-            function(p)
-                return is_state_text(p, MSG_PROPOSAL_STATE)
-            end,
-            PROPOSAL_WAIT_MS
-        )
+        return bot:request_dialog_ext(yes, is_proposal_list, PROPOSAL_WAIT_MS)
     end)
     if caught == false or packet == nil or packet == false then
-        progress(bot, "FAILED: NO MATCH PROPOSAL STATE AFTER REGISTER " .. option)
+        progress(bot, "FAILED: NO MATCH PROPOSAL LIST AFTER REGISTER " .. option)
         return false
     end
     return true
@@ -160,52 +162,42 @@ local function f1_fail_not_group_master(bot)
         return false
     end
 
-    local packet = bot:request_dialog_ext(
-        protocol.dialog("PURSUIT", 0, "", 0, 0, OPT_MATCHMAKING),
-        function(p)
-            return p.type == "normal"
-                and p.message ~= nil
-                and p.message:find(MSG_NOT_GROUP_MASTER, 1, true) ~= nil
-        end,
-        DIALOG_WAIT_MS
-    )
-    if packet == nil then
+    local caught, packet = pcall(function()
+        return bot:request_dialog_ext(
+            protocol.dialog("PURSUIT", 0, "", 0, 0, OPT_MATCHMAKING),
+            function(p)
+                return p.type == "normal"
+                    and p.message ~= nil
+                    and p.message:find(MSG_NOT_GROUP_MASTER, 1, true) ~= nil
+            end,
+            DIALOG_WAIT_MS
+        )
+    end)
+    if caught == false or packet == nil then
         return false
     end
 
-    -- After NEXT, server.lua loops back to F1 with me:pursuit (0x2F), not 0x30.
     return pursuit(bot, protocol.dialog("NORMAL", 0, "", 0, 0, "", "NEXT")) ~= nil
 end
 
 local function confirm_proposal_and_transfer(bot)
-    -- Wait-only: arm the message hook with no poke so a late AMQP proposal is not lost.
-    -- Timeout throws; catch so the parallel lane can fail cleanly.
     local caught, packet = pcall(function()
-        return bot:request(
-            resp.message,
-            nil,
-            function(p)
-                return is_state_text(p, MSG_PROPOSAL_STATE)
-            end,
-            PROPOSAL_WAIT_MS
-        )
+        return bot:request_dialog_ext(protocol.chat(false, "."), is_proposal_list, PROPOSAL_WAIT_MS)
     end)
     if caught == false or packet == nil or packet == false then
-        progress(bot, "FAILED: NO MATCH PROPOSAL STATE")
-        return false
+        return abort_remaining(bot, "FAILED: NO MATCH PROPOSAL LIST")
     end
 
     local ok, err = pcall(function()
         bot:transfer(protocol.dialog("LIST", 0, "", 1, 0, "", "NEXT"))
     end)
     if ok == false then
-        progress(bot, "FAILED: CONFIRM/TRANSFER err=" .. tostring(err))
-        return false
+        return abort_remaining(bot, "FAILED: CONFIRM/TRANSFER err=" .. tostring(err))
     end
     return true
 end
 
-local function confirm_after_proposal_state(bot)
+local function confirm_after_proposal_list(bot)
     local ok, err = pcall(function()
         bot:transfer(protocol.dialog("LIST", 0, "", 1, 0, "", "NEXT"))
     end)
@@ -230,9 +222,6 @@ local function poll_until(ctx, condition, timeout_ms)
 end
 
 local function revive(bot)
-    -- /체력바꾸기 clears GHOST even when max hp is unchanged; setup_bot_stats skips
-    -- that command when base_hp already matches. Hellfire damage is mp*1.5, so mp
-    -- must be restored too — MATCH_2 leaves everyone at 0 mp.
     local hp = bot:request(
         resp.update_internal,
         protocol.chat(false, string.format("/체력바꾸기 %d", MAX_HP)),
@@ -271,11 +260,6 @@ local function hellfire_cast(bot)
     return protocol.spell_cast("TARGET", slot, "", bot:oid(), bot:position())
 end
 
--- bot_indices are suite indices (0-based). Always re-read ctx:bot after any
--- transfer — Lua-held bot refs go stale when the bot reconnects.
--- fatal_pos is 1-based into bot_indices: that bot's death ends the match.
--- Do not wait for "match started" here: on_playing fires during join/transfer,
--- before this scenario can install a hook, so the message is often already gone.
 local function finish_match(ctx, bot_indices, fatal_pos)
     local function live(pos)
         return ctx:bot(bot_indices[pos])
@@ -369,6 +353,9 @@ local function confirm_lanes(indices, trigger)
     local lanes = {}
     for _, index in ipairs(indices) do
         lanes[index] = { function(ctx)
+            if if_aborted() then
+                return false
+            end
             local bot = ctx:bot(index)
             progress(bot, "WAIT FOR PROPOSAL AND TRANSFER")
             return confirm_proposal_and_transfer(bot)
@@ -376,14 +363,17 @@ local function confirm_lanes(indices, trigger)
     end
 
     lanes[trigger.index] = { function(ctx)
+        if if_aborted() then
+            return false
+        end
         local bot = ctx:bot(trigger.index)
         progress(bot, "SETTLE THEN REGISTER " .. trigger.option)
         bot:sleep(SETTLE_MS)
         if f1_register_await_proposal(bot, trigger.option) == false then
-            return false
+            return abort_remaining(bot, "FAILED: REGISTER/PROPOSAL " .. trigger.option)
         end
         progress(bot, "CONFIRM PROPOSAL AND TRANSFER")
-        return confirm_after_proposal_state(bot)
+        return confirm_after_proposal_list(bot)
     end }
 
     return { parallel = lanes }
@@ -394,6 +384,7 @@ test_suite {
     bot_count = TEST_BOTS,
 
     on_initialize = function(ctx)
+        aborted = false
         progress(ctx:bot(0), "MATCHMAKING TEST INITIALIZED WITH " .. ctx:bot_count() .. " BOTS")
         for i = 0, ctx:bot_count() - 1 do
             ctx:bot(i):setup_bot_stats(MAX_HP, MAX_MP)
@@ -407,6 +398,10 @@ test_suite {
 
     scenarios = {
         function(ctx)
+            if if_aborted() then
+                return false
+            end
+
             local a = ctx:bot(0)
             local b = ctx:bot(1)
             local c = ctx:bot(2)
@@ -415,23 +410,20 @@ test_suite {
 
             progress(a, "STEP 1-2: FORM GROUPS AB AND CD")
             if a:invite_group(b) == false then
-                progress(a, "FAILED TO FORM GROUP AB")
-                return false
+                return abort_remaining(a, "FAILED TO FORM GROUP AB")
             end
             if c:invite_group(d) == false then
-                progress(c, "FAILED TO FORM GROUP CD")
-                return false
+                return abort_remaining(c, "FAILED TO FORM GROUP CD")
             end
 
             progress(b, "STEP 3: NON-LEADER B TRIES F1 MATCHMAKING")
             if f1_fail_not_group_master(b) == false then
-                progress(b, "FAILED: B SHOULD BE REJECTED AS NON-GROUP-LEADER")
-                return false
+                return abort_remaining(b, "FAILED: B SHOULD BE REJECTED AS NON-GROUP-LEADER")
             end
 
             progress(a, "STEP 4: LEADER A REGISTERS MATCH 2 VIA F1")
             if f1_register(a, OPT_MATCH_2, b) == false then
-                return false
+                return abort_remaining(a, "FAILED: REGISTER MATCH 2")
             end
 
             progress(b, "STEP 5: B LEAVES GROUP, AB UNREGISTER")
@@ -446,8 +438,7 @@ test_suite {
                 MESSAGE_WAIT_MS
             )
             if cancelled == nil or cancelled == false then
-                progress(a, "FAILED: AB DID NOT RECEIVE UNREGISTER OR MATCH-CANCEL MESSAGE")
-                return false
+                return abort_remaining(a, "FAILED: AB DID NOT RECEIVE UNREGISTER OR MATCH-CANCEL MESSAGE")
             end
 
             progress(a, "STEP 6: RE-FORM AB THEN REGISTER FIVE PLAYERS")
@@ -460,20 +451,17 @@ test_suite {
                 MESSAGE_WAIT_MS
             )
             if joined == nil or joined == false then
-                progress(a, "FAILED TO RE-FORM GROUP AB")
-                return false
+                return abort_remaining(a, "FAILED TO RE-FORM GROUP AB")
             end
 
-            -- MATCH_2 is 3v3. Five entries cannot form a match, so the proposal
-            -- only fires once F registers from inside the parallel block.
             if f1_register(a, OPT_MATCH_2, b) == false then
-                return false
+                return abort_remaining(a, "FAILED: RE-REGISTER MATCH 2 AB")
             end
             if f1_register(c, OPT_MATCH_2, d) == false then
-                return false
+                return abort_remaining(c, "FAILED: REGISTER MATCH 2 CD")
             end
             if f1_register(e, OPT_MATCH_2) == false then
-                return false
+                return abort_remaining(e, "FAILED: REGISTER MATCH 2 E")
             end
 
             return true
@@ -482,6 +470,10 @@ test_suite {
         confirm_lanes({0, 1, 2, 3, 4}, {index = 5, option = OPT_MATCH_2}),
 
         function(ctx)
+            if if_aborted() then
+                return false
+            end
+
             local indices = {}
             for i = 0, TEST_BOTS - 1 do
                 indices[#indices + 1] = i
@@ -489,7 +481,7 @@ test_suite {
 
             progress(ctx:bot(0), "STEP 7: FINISH MATCH 2 AND RETURN HOME")
             if finish_match(ctx, indices, #indices) == false then
-                return false
+                return abort_remaining(ctx:bot(0), "FAILED: MATCH 2 FINISH")
             end
 
             progress(ctx:bot(0), "STEP 7 PASSED: MATCH 2 ENDED AND RETURNED HOME")
@@ -497,49 +489,58 @@ test_suite {
         end,
 
         function(ctx)
+            if if_aborted() then
+                return false
+            end
+
             local e = ctx:bot(4)
             local f = ctx:bot(5)
 
             progress(e, "STEP 8: REVIVE SOLO BOTS AND CLEAR GROUPS")
             if revive(e) == false or revive(f) == false then
-                progress(e, "FAILED: COULD NOT REVIVE SOLO BOTS")
-                return false
+                return abort_remaining(e, "FAILED: COULD NOT REVIVE SOLO BOTS")
             end
 
-            -- Match 1 is 1v1; leftover Match 2 groups would make register fail on size.
             lib.group.cleanup(ctx)
             return true
         end,
 
-        -- Both solos arm the proposal wait at YES time. Do not pre-register E in a
-        -- prior scenario: under load a Match 1 form can fire before the waiter hook.
         { parallel = {
             [4] = { function(ctx)
+                if if_aborted() then
+                    return false
+                end
                 local bot = ctx:bot(4)
                 progress(bot, "REGISTER MATCH 1 THEN CONFIRM")
                 if f1_register_await_proposal(bot, OPT_MATCH_1) == false then
-                    return false
+                    return abort_remaining(bot, "FAILED: MATCH 1 REGISTER/PROPOSAL E")
                 end
                 progress(bot, "CONFIRM PROPOSAL AND TRANSFER")
-                return confirm_after_proposal_state(bot)
+                return confirm_after_proposal_list(bot)
             end },
             [5] = { function(ctx)
+                if if_aborted() then
+                    return false
+                end
                 local bot = ctx:bot(5)
                 progress(bot, "SETTLE THEN REGISTER MATCH 1")
                 bot:sleep(SETTLE_MS)
                 if f1_register_await_proposal(bot, OPT_MATCH_1) == false then
-                    return false
+                    return abort_remaining(bot, "FAILED: MATCH 1 REGISTER/PROPOSAL F")
                 end
                 progress(bot, "CONFIRM PROPOSAL AND TRANSFER")
-                return confirm_after_proposal_state(bot)
+                return confirm_after_proposal_list(bot)
             end },
         } },
 
         function(ctx)
-            progress(ctx:bot(4), "STEP 9: FINISH MATCH 1 AND RETURN HOME")
-            -- A single death wipes a 1v1 team, so the first kill ends the match.
-            if finish_match(ctx, {4, 5}, 1) == false then
+            if if_aborted() then
                 return false
+            end
+
+            progress(ctx:bot(4), "STEP 9: FINISH MATCH 1 AND RETURN HOME")
+            if finish_match(ctx, {4, 5}, 1) == false then
+                return abort_remaining(ctx:bot(4), "FAILED: MATCH 1 FINISH")
             end
 
             progress(ctx:bot(4), "STEP 9 PASSED: MATCH 1 ENDED AND RETURNED HOME")

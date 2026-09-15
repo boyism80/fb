@@ -178,8 +178,6 @@ void matchmaker::enqueue_squad_unregister(uint32_t match_type, std::string_view 
 
 async::task<void> matchmaker::discard_leftover_registration()
 {
-    // Registration only lives for the duration of a session, so anything the queue
-    // still holds at login time is leftover state that nobody can cancel.
     auto& server       = this->owner.server;
     auto  world        = this->owner.world();
     auto  character_id = this->owner.id;
@@ -212,7 +210,6 @@ async::task<void> matchmaker::unregister_queue(bool quiet)
 {
     this->owner.assert_thread();
 
-    // Register HTTP still in flight — drop the local flag only.
     if (this->_registration.has_value() == false)
     {
         if (this->_registering)
@@ -511,7 +508,6 @@ async::task<void> matchmaker::register_queue(uint32_t match_type)
     auto& server       = this->owner.server;
     auto  character_id = this->owner.id;
 
-    // Mark registered before Register HTTP so Proposed cannot race ahead of local state.
     for (auto& ch : participants)
     {
         if (ch.get() == &this->owner)
@@ -568,7 +564,6 @@ async::task<void> matchmaker::register_queue(uint32_t match_type)
         }
         catch (...)
         {
-            // Do not co_await inside catch: throw; after suspend loses the exception.
             http_error = std::current_exception();
         }
 
@@ -592,11 +587,9 @@ async::task<void> matchmaker::register_queue(uint32_t match_type)
     self = weak.lock();
     if (self == nullptr)
     {
-        // The character vanished while registering, so the queue would keep an owner-less registry.
         std::ignore = co_await server.http.post("matchmaking",
                                                 "/matchmaking/unregister",
                                                 mp_reqs::Unregister{match_type, resp.registry_id, world, character_id});
-        // Do not touch this/owner — only clear participants still held by shared_ptr.
         for (auto& ch : participants)
         {
             auto member_weak = ch->weak_from_this_as<character>();
