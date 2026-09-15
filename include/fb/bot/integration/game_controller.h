@@ -18,6 +18,7 @@
 #include <shared_mutex>
 #include <mutex>
 #include <optional>
+#include <chrono>
 
 namespace fb::bot::integration {
 
@@ -51,8 +52,9 @@ private:
         bool        success;
         std::string message;
     };
-    std::vector<test_result> _test_results;
-    std::mutex               _results_mutex;
+    std::vector<test_result>              _test_results;
+    std::mutex                            _results_mutex;
+    std::chrono::steady_clock::time_point _suite_start{};
 
     using hook_function = std::function<async::task<void>(game_bot&, const fb::protocol::header&)>;
     std::unordered_map<bot_integration_test*, std::unordered_map<uint8_t, std::vector<hook_function>>> _test_hooks;

@@ -101,6 +101,7 @@ void game_bot_controller::initialize()
                      this->_serial_queue.size(),
                      this->_max_parallel_tests);
 
+    this->_suite_start = std::chrono::steady_clock::now();
     this->try_schedule_parallel();
     if (this->_active_seats.empty() && this->_parallel_queue.empty())
         this->start_serial_phase();
@@ -628,6 +629,23 @@ void game_bot_controller::print_final_test_results()
     fb::logger::info(fb::console::color::light_blue, "Total tests: {}", total_tests);
     fb::logger::info(fb::console::color::light_green, "Passed: {}", passed_tests);
     fb::logger::info(fb::console::color::light_red, "Failed: {}", failed_tests);
+
+    auto elapsed = std::chrono::steady_clock::now() - this->_suite_start;
+    auto ms      = std::chrono::duration_cast<std::chrono::milliseconds>(elapsed).count();
+    if (ms < 0)
+        ms = 0;
+    auto total_sec = ms / 1000;
+    auto rem_ms    = static_cast<int>(ms % 1000);
+    auto minutes   = total_sec / 60;
+    auto seconds   = static_cast<int>(total_sec % 60);
+    if (minutes > 0)
+    {
+        fb::logger::info(fb::console::color::light_blue, "Total elapsed: {}m {:02d}.{:03d}s", minutes, seconds, rem_ms);
+    }
+    else
+    {
+        fb::logger::info(fb::console::color::light_blue, "Total elapsed: {}.{:03d}s", seconds, rem_ms);
+    }
 
     if (failed_tests == 0)
     {

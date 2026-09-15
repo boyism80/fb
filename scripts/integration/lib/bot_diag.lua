@@ -15,14 +15,15 @@ end
 function M.dump(bot, label)
     label = label or "bot"
     if bot == nil then
-        log("fatal", string.format("[bot_diag] %s bot=nil", label))
+        log("debug", string.format("[bot_diag] %s bot=nil", label))
         return
     end
 
     local ok, err = pcall(function()
         local pos = bot:position()
         local map_id = bot:map()
-        log("fatal", string.format(
+        -- Diagnostic only — never FATAL. Real failures use log("fatal") at the assert site.
+        log("debug", string.format(
             "[bot_diag] %s name=%s oid=%s map={%s} pos=(%s,%s) hp=%s/%s mp=%s/%s level=%s state=%s",
             label,
             tostring(bot:name()),
@@ -38,14 +39,14 @@ function M.dump(bot, label)
             tostring(bot:state())))
     end)
     if ok == false then
-        log("fatal", string.format("[bot_diag] %s dump failed: %s", label, tostring(err)))
+        log("debug", string.format("[bot_diag] %s dump failed: %s", label, tostring(err)))
     end
 end
 
 function M.dump_many(bots, label)
     label = label or "bots"
     if bots == nil then
-        log("fatal", string.format("[bot_diag] %s bots=nil", label))
+        log("debug", string.format("[bot_diag] %s bots=nil", label))
         return
     end
     for i, bot in ipairs(bots) do
