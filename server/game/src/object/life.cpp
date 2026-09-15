@@ -234,7 +234,18 @@ async::task<void> life::settle_character_deaths(const character_vector& dead, st
             {
                 lua->pushobject(*killer);
                 lua->pushobject(*ch);
-                std::ignore = co_await lua->call(2);
+                try
+                {
+                    std::ignore = co_await lua->call(2);
+                }
+                catch (std::exception& e)
+                {
+                    fb::logger::warn("on_character_kill failed: {}", e.what());
+                }
+                catch (...)
+                {
+                    fb::logger::warn("on_character_kill failed");
+                }
             }
         }
 
@@ -261,14 +272,11 @@ async::task<void> life::invoke_on_mob_damaged(const damage_list& targets)
         auto func = "on_mob_damaged";
 
         // Avoid open(path, func) — it reports missing funcs for every generic mob.
-        auto lua = this->server.lua.new_context(nullptr, {.auto_release = false});
-        if (lua == nullptr)
+        auto lua = this->server.lua.open();
+        if (!lua)
             continue;
         if (lua->load(path) == false || lua->func(func) == false)
-        {
-            lua->release();
             continue;
-        }
 
         lua->pushobject(m);
         lua->pushobject(attacker);
@@ -284,7 +292,6 @@ async::task<void> life::invoke_on_mob_damaged(const damage_list& targets)
         {
             fb::logger::warn("unknown error in on_mob_damaged {}", m->model().id);
         }
-        lua->release();
     }
     co_return;
 }
@@ -327,7 +334,7 @@ async::task<void> life::attack(DURATION duration)
             {
                 weapon_lua->pushobject(ch);
                 weapon_lua->pushobject(weapon);
-                std::ignore = weapon_lua->call(2);
+                fb::lua::detach_call(std::move(weapon_lua), 2);
             }
 
             // Handle weapon durability
@@ -371,7 +378,7 @@ bool life::active(fb::game::spell& spell, std::string_view message)
     lua->pushobject(this);
     lua->pushobject(spell.model());
     lua->pushstring(message);
-    std::ignore = lua->call(3);
+    fb::lua::detach_call(std::move(lua), 3);
     return true;
 }
 
@@ -415,7 +422,7 @@ bool life::active(fb::game::spell& spell, fb::game::object& to)
     lua->pushobject(this);
     lua->pushobject(&to);
     lua->pushobject(spell.model());
-    std::ignore = lua->call(3);
+    fb::lua::detach_call(std::move(lua), 3);
     return true;
 }
 
@@ -435,7 +442,7 @@ bool life::active(fb::game::spell& spell)
 
     lua->pushobject(this);
     lua->pushobject(spell.model());
-    std::ignore = lua->call(2);
+    fb::lua::detach_call(std::move(lua), 2);
     return true;
 }
 

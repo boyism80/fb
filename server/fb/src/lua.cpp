@@ -431,7 +431,6 @@ void fb::lua::context::resume(int argc, int* n)
         return;
     }
 
-    auto root  = static_cast<fb::lua::root*>(this->owner);
     auto state = lua_resume(*this, nullptr, argc);
     if (state == LUA_YIELD)
         return;
@@ -446,9 +445,12 @@ void fb::lua::context::resume(int argc, int* n)
         fb::logger::fatal(message);
 
         auto promise            = promise_type{this->_promise};
+        this->_promise          = nullptr;
         auto parent             = this->_parent;
         auto auto_resume_parent = this->_options.auto_resume_parent;
-        root->revoke(*this);
+
+        // Leave the context for the caller's guard to reclaim via release()->revoke.
+        this->clear_call_engaged();
 
         if (parent != nullptr && lua_status(*parent) == LUA_YIELD && auto_resume_parent)
         {
@@ -479,7 +481,6 @@ void fb::lua::context::resume(int argc, int* n)
         this->_promise          = nullptr;
         auto parent             = this->_parent;
         auto auto_resume_parent = this->_options.auto_resume_parent;
-        auto auto_release       = this->_options.auto_release;
         if (parent != nullptr)
         {
             auto context = fb::execution_context::token();
@@ -514,13 +515,12 @@ void fb::lua::context::resume(int argc, int* n)
         else if (n != nullptr)
             *n = this->argc();
 
+        // Ownership stays with the caller's guard. Clear engaged before set_value so a
+        // synchronously resumed waiter can ~guard-release after reading return values.
+        this->clear_call_engaged();
+
         if (promise != nullptr)
             promise->set_value(true);
-
-        // Release after set_value so waiters can still read return values
-        // (e.g. lua_xmove) while this context is completing.
-        if (auto_release)
-            root->release(*this);
     }
 }
 
@@ -966,6 +966,7 @@ void root::release(context& ctx)
 
     if (this->_initial_thread.id() != std::this_thread::get_id())
     {
+        fb::logger::warn("lua context release on non-owner thread");
         auto builder = this->_initial_thread.new_builder<void>();
         builder.func = [=, &ctx](auto&) -> async::task<void> {
             internal_func(ctx);
@@ -981,18 +982,35 @@ void root::release(context& ctx)
 
 void root::revoke(context& ctx)
 {
-    auto it = this->busy.find(ctx);
-    if (it == this->busy.end())
-        return;
+    auto internal_func = [this](context& ctx) {
+        auto it = this->busy.find(ctx);
+        if (it == this->busy.end())
+            return;
 
-    if (ctx.ref != LUA_NOREF)
+        if (ctx.ref != LUA_NOREF)
+        {
+            luaL_unref(ctx, LUA_REGISTRYINDEX, ctx.ref);
+            ctx.ref = LUA_NOREF;
+        }
+
+        ctx.clear_call_engaged();
+        this->busy.erase(it);
+    };
+
+    if (this->_initial_thread.id() != std::this_thread::get_id())
     {
-        luaL_unref(ctx, LUA_REGISTRYINDEX, ctx.ref);
-        ctx.ref = LUA_NOREF;
+        fb::logger::warn("lua context revoke on non-owner thread");
+        auto builder = this->_initial_thread.new_builder<void>();
+        builder.func = [=, &ctx](auto&) -> async::task<void> {
+            internal_func(ctx);
+            co_return;
+        };
+        builder.enqueue();
     }
-
-    ctx.clear_call_engaged();
-    this->busy.erase(it);
+    else
+    {
+        internal_func(ctx);
+    }
 }
 
 async::task<void> fb::lua::context::switching()
@@ -1087,6 +1105,47 @@ fb::lua::context::guard& fb::lua::context::guard::operator= (context::guard&& ot
         other._ctx = nullptr;
     }
     return *this;
+}
+
+async::task<void> fb::lua::context::guard::dispose()
+{
+    auto* ctx  = this->_ctx;
+    this->_ctx = nullptr;
+    if (ctx == nullptr)
+        co_return;
+
+    co_await ctx->switching();
+    ctx->release();
+}
+
+void fb::lua::detach_call(context::guard g, int argc)
+{
+    if (!g)
+        return;
+
+    async::awaitable_then(
+        [argc](context::guard g) -> async::task<void> {
+            try
+            {
+                std::ignore = co_await g->call(argc);
+            }
+            catch (std::exception& e)
+            {
+                fb::logger::warn("lua detach_call: {}", e.what());
+            }
+            catch (...)
+            {
+                fb::logger::warn("lua detach_call: unknown error");
+            }
+        }(std::move(g)),
+        [](async::awaitable_result<void> result) {
+            try
+            {
+                result();
+            }
+            catch (...)
+            { }
+        });
 }
 
 async::task<void> fb::lua::context_pool::dump(std::string_view path)

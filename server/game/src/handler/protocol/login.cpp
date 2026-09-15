@@ -379,7 +379,7 @@ async::task<std::shared_ptr<character>> login<V>::init(const game_reqs::login<V>
         {
             lua->pushobject(ch);
             lua->pushboolean(ch->is_first_login());
-            std::ignore = lua->call(2);
+            fb::lua::detach_call(std::move(lua), 2);
         }
 
         ch->friends_sync(1);

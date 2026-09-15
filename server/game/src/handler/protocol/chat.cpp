@@ -42,40 +42,40 @@ async::task<bool> chat<V>::handle(fb::socket<character>& session, game_reqs::cha
 template <fb::protocol::CLIENT_VERSION V>
 async::task<bool> chat<V>::try_command(character* ch, std::weak_ptr<character> weak, game_reqs::chat<V>& request)
 {
-    auto lua = this->server.lua.open("scripts/interaction.lua", "on_chat", nullptr, {.auto_release = false});
-    if (!lua)
-    {
-        if (request.message.empty() == false && request.message[0] == '/')
-        {
-            fb::logger::warn("try_command: dropping slash command (lua unavailable) name={} msg={}",
-                             ch->name(),
-                             request.message);
-            co_return true;
-        }
-        co_return false;
-    }
+    bool                       stop = false;
+    std::shared_ptr<character> ptr;
 
-    lua->pushobject(ch);
-    lua->pushstring(request.message);
-    lua->pushboolean(request.shout);
-    std::ignore = co_await lua->call(3);
+    {
+        auto lua = this->server.lua.open("scripts/interaction.lua", "on_chat");
+        if (!lua)
+        {
+            if (request.message.empty() == false && request.message[0] == '/')
+            {
+                fb::logger::warn("try_command: dropping slash command (lua unavailable) name={} msg={}",
+                                 ch->name(),
+                                 request.message);
+                co_return true;
+            }
+            co_return false;
+        }
+
+        lua->pushobject(ch);
+        lua->pushstring(request.message);
+        lua->pushboolean(request.shout);
+        std::ignore = co_await lua->call(3);
+
+        // Read on owner thread before any switching; ~lua releases at block end.
+        if (weak.expired() == false)
+            stop = lua->toboolean(1);
+    }
 
     if (weak.expired())
-    {
-        lua->release();
         co_return true;
-    }
 
     co_await this->server.threads.switching(weak);
-    auto ptr = weak.lock();
+    ptr = weak.lock();
     if (ptr == nullptr)
-    {
-        lua->release();
         co_return true;
-    }
-
-    auto stop = lua->toboolean(1);
-    lua->release();
 
     if (stop == false)
         co_return false;

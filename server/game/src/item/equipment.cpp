@@ -172,7 +172,7 @@ async::task<bool> fb::game::equipment::active()
         lua->pushobject(owner);
         lua->pushinteger(parts);
         lua->pushobject(*this);
-        std::ignore = lua->call(3);
+        fb::lua::detach_call(std::move(lua), 3);
     }
 
     co_return true;

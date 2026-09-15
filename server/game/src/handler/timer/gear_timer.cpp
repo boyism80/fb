@@ -12,7 +12,7 @@ async::task<void> gear_timer::handle(const fb::model::datetime& now, std::thread
 {
     auto thread = this->server.threads.at(id);
     auto params = thread->template data<thread_params>();
-    auto lua    = this->server.lua.new_context(nullptr, {.auto_release = false});
+    auto lua    = this->server.lua.open();
 
     auto view = params->map_view;
     for (auto& map : *view)
@@ -52,10 +52,10 @@ async::task<void> gear_timer::handle(const fb::model::datetime& now, std::thread
         {
             for (auto& equipment : equipments)
             {
-                if (lua == nullptr)
+                if (!lua)
                 {
-                    lua = this->server.lua.new_context(nullptr, {.auto_release = false});
-                    if (lua == nullptr)
+                    lua = this->server.lua.open();
+                    if (!lua)
                         continue;
                 }
 
@@ -80,12 +80,12 @@ async::task<void> gear_timer::handle(const fb::model::datetime& now, std::thread
                 }
                 catch (std::exception& e)
                 {
-                    lua = nullptr;
+                    lua = fb::lua::context::guard{};
                     fb::logger::warn("gear_timer: on_concast failed (map={}): {}", map->id, e.what());
                 }
                 catch (...)
                 {
-                    lua = nullptr;
+                    lua = fb::lua::context::guard{};
                     fb::logger::warn("gear_timer: on_concast failed (map={})", map->id);
                 }
 
@@ -93,9 +93,6 @@ async::task<void> gear_timer::handle(const fb::model::datetime& now, std::thread
             }
         }
     }
-
-    if (lua != nullptr)
-        lua->release();
 
     co_await thread->switching();
     co_return;

@@ -143,7 +143,6 @@ class thread;
 
 struct call_options
 {
-    bool auto_release       = true;
     bool auto_resume_parent = true;
 };
 
@@ -269,9 +268,25 @@ public:
             return this->_ctx;
         }
 
+        context& operator* () const
+        {
+            return *this->_ctx;
+        }
+
         explicit operator bool () const
         {
             return this->_ctx != nullptr;
+        }
+
+        // Switch to the context owner thread then release. Prefer scope-end ~guard when
+        // already on the owner thread (e.g. after co_await call before any switching).
+        async::task<void> dispose();
+
+        // Drop ownership without releasing. Prefer assigning an empty guard when the
+        // context should still be reclaimed via release()/revoke().
+        void detach() noexcept
+        {
+            this->_ctx = nullptr;
         }
     };
 
@@ -773,6 +788,10 @@ void report_load_failed_from_stack(lua_State* L, std::string_view path);
 // Debug: warn once when a loaded script is missing the expected entry function.
 // No-op in release.
 void report_func_missing(std::string_view path, std::string_view func);
+
+// Move guard into a detached task that co_awaits call; caller returns immediately.
+// Used for dialog starters and other non-blocking script launches.
+void detach_call(context::guard g, int argc);
 
 } // namespace fb::lua
 

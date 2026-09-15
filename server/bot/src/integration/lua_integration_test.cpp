@@ -552,16 +552,17 @@ async::task<void> lua_integration_test::invoke_lua_hook(int                     
     // to the pool (or is reused) after the scenario returns. Invoke on a fresh
     // context so MATCH_ENDED during a later yield cannot pcall a dead/yielded
     // thread.
-    auto  opts = fb::lua::call_options{.auto_release = true, .auto_resume_parent = false};
-    auto* ctx  = this->_lua_root->pop(nullptr, opts);
-    if (ctx == nullptr)
+    auto  opts = fb::lua::call_options{.auto_resume_parent = false};
+    auto* raw  = this->_lua_root->pop(nullptr, opts);
+    if (raw == nullptr)
         co_return;
+
+    auto ctx = fb::lua::context::guard{raw};
 
     lua_rawgeti(*ctx, LUA_REGISTRYINDEX, lua_ref);
     if (lua_isfunction(*ctx, -1) == false)
     {
         lua_pop(*ctx, 1);
-        ctx->release();
         co_return;
     }
 
@@ -582,7 +583,6 @@ async::task<void> lua_integration_test::invoke_lua_hook(int                     
     if (pushed_bot == nullptr)
     {
         lua_settop(*ctx, 0);
-        ctx->release();
         co_return;
     }
 
@@ -602,7 +602,6 @@ async::task<void> lua_integration_test::invoke_lua_hook(int                     
     if (ctx->argc() < 4)
     {
         lua_settop(*ctx, 0);
-        ctx->release();
         co_return;
     }
 
@@ -627,10 +626,12 @@ async::task<void> lua_integration_test::invoke_lua_hook(int                     
 
 async::task<bool> lua_integration_test::run_lua_function(int func_ref)
 {
-    auto  opts = fb::lua::call_options{.auto_release = false, .auto_resume_parent = false};
-    auto* ctx  = this->_lua_root->pop(nullptr, opts);
-    if (ctx == nullptr)
+    auto  opts = fb::lua::call_options{.auto_resume_parent = false};
+    auto* raw  = this->_lua_root->pop(nullptr, opts);
+    if (raw == nullptr)
         co_return false;
+
+    auto ctx = fb::lua::context::guard{raw};
 
     lua_rawgeti(*ctx, LUA_REGISTRYINDEX, func_ref);
     this->push_ctx(*ctx);
@@ -642,8 +643,6 @@ async::task<bool> lua_integration_test::run_lua_function(int func_ref)
 
         if (ctx->argc() >= 1)
             result = ctx->toboolean(-1);
-
-        ctx->release();
     }
     catch (const std::exception& e)
     {
@@ -652,7 +651,6 @@ async::task<bool> lua_integration_test::run_lua_function(int func_ref)
             fb::logger::fatal("{}: {}", this->name(), what);
         else
             fb::logger::fatal("{}: {} (empty what())", this->name(), typeid(e).name());
-        // context::resume() already logged the Lua error and revoked the thread.
     }
     catch (...)
     {
@@ -664,10 +662,12 @@ async::task<bool> lua_integration_test::run_lua_function(int func_ref)
 
 async::task<void> lua_integration_test::run_lua_void(int func_ref, std::optional<uint32_t> extra_arg)
 {
-    auto  opts = fb::lua::call_options{.auto_release = true, .auto_resume_parent = false};
-    auto* ctx  = this->_lua_root->pop(nullptr, opts);
-    if (ctx == nullptr)
+    auto  opts = fb::lua::call_options{.auto_resume_parent = false};
+    auto* raw  = this->_lua_root->pop(nullptr, opts);
+    if (raw == nullptr)
         co_return;
+
+    auto ctx = fb::lua::context::guard{raw};
 
     lua_rawgeti(*ctx, LUA_REGISTRYINDEX, func_ref);
     this->push_ctx(*ctx);

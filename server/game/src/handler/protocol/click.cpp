@@ -63,7 +63,7 @@ async::task<void> click<V>::handle_f1(character* ch)
         co_return;
 
     lua->pushobject(ch);
-    std::ignore = lua->call(1);
+    fb::lua::detach_call(std::move(lua), 1);
 }
 
 template <fb::protocol::CLIENT_VERSION V>
@@ -81,7 +81,7 @@ async::task<void> click<V>::handle_f2(character* ch)
         co_return;
 
     lua->pushobject(ch);
-    std::ignore = lua->call(1);
+    fb::lua::detach_call(std::move(lua), 1);
 }
 
 template <fb::protocol::CLIENT_VERSION V>
@@ -117,7 +117,7 @@ async::task<void> click<V>::handle_object_click(character* ch, game_reqs::click<
 
         lua->pushobject(ch);
         lua->pushobject(static_cast<npc&>(*you));
-        std::ignore = lua->call(2);
+        fb::lua::detach_call(std::move(lua), 2);
     }
     break;
     }

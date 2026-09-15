@@ -1243,7 +1243,7 @@ int builtin::object::builtin_script(lua_State* L)
 
     struct script_child
     {
-        fb::lua::context* ctx = nullptr;
+        fb::lua::context::guard g{};
     };
 
     auto child_holder = std::make_shared<script_child>();
@@ -1259,55 +1259,35 @@ int builtin::object::builtin_script(lua_State* L)
 
         *obj_holder = shared;
 
-        auto new_lua = static_cast<fb::game::server&>(lua->executor)
-                           .lua.new_context(lua,
-                                            {
-                                                .auto_release       = true,
-                                                .auto_resume_parent = false,
-                                            });
-        if (new_lua == nullptr)
-            co_return;
-
         auto path = file;
         if (path.starts_with("scripts/") == false)
             path = std::format("scripts/{}", file);
 
-        if (new_lua->load(path) == false)
-        {
-            new_lua->release();
+        auto g = static_cast<fb::game::server&>(lua->executor).lua.open(path, func, lua, {.auto_resume_parent = false});
+        if (!g)
             co_return;
-        }
 
-        if (new_lua->func(func) == false)
-        {
-            fb::lua::report_func_missing(path, func);
-            new_lua->release();
-            co_return;
-        }
+        g->pushobject(*obj_holder);
+        lua_xmove(*lua, *g, argc - 3);
 
-        new_lua->pushobject(*obj_holder);
-        lua_xmove(*lua, *new_lua, argc - 3);
-
-        child_holder->ctx = new_lua;
+        child_holder->g = std::move(g);
         try
         {
-            std::ignore = co_await new_lua->call(argc - 2, retc_holder.get());
+            std::ignore = co_await child_holder->g->call(argc - 2, retc_holder.get());
         }
         catch (...)
         {
-            child_holder->ctx = nullptr;
+            child_holder->g = fb::lua::context::guard{};
             throw;
         }
     };
     builder.resume = [=]() -> async::task<int> {
-        auto new_lua      = child_holder->ctx;
-        child_holder->ctx = nullptr;
-        if (new_lua == nullptr)
+        if (!child_holder->g)
             co_return 0;
 
         auto n = *retc_holder;
-        lua_xmove(*new_lua, *lua, n);
-        // Child uses auto_release=true; release happens after call completion.
+        lua_xmove(*child_holder->g, *lua, n);
+        child_holder->g = fb::lua::context::guard{};
         co_return n;
     };
     return builder.run();
