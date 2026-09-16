@@ -30,6 +30,7 @@ bot_integration_test::test_state bot_integration_test::get_state() const
 
 void bot_integration_test::set_state(test_state state)
 {
+    this->assert_thread();
     this->_state = state;
 }
 
@@ -45,6 +46,7 @@ bool bot_integration_test::is_running() const
 
 void bot_integration_test::on_bot_connected(std::shared_ptr<fb::bot::game_bot> bot)
 {
+    this->assert_thread();
     this->_test_bots.push_back(bot);
     this->try_notify_ready();
 }
@@ -56,8 +58,23 @@ void bot_integration_test::on_bot_disconnected(std::shared_ptr<fb::bot::game_bot
 
 void bot_integration_test::notify_ready()
 {
-    if (this->_ready_promise != nullptr)
-        this->_ready_promise->set_value();
+    auto promise = this->_ready_promise;
+    if (promise == nullptr)
+        return;
+
+    auto* seat = this->controller.seat_thread(this->suite_slot());
+    if (seat == nullptr || seat->id() == std::this_thread::get_id())
+    {
+        promise->set_value();
+        return;
+    }
+
+    auto builder = seat->new_builder<void>();
+    builder.func = [promise](auto&) -> async::task<void> {
+        promise->set_value();
+        co_return;
+    };
+    builder.enqueue();
 }
 
 void bot_integration_test::prepare_ready_wait()
@@ -148,7 +165,7 @@ async::task<void> bot_integration_test::on_finished()
         if (std::chrono::steady_clock::now() >= deadline)
             break;
 
-        auto thread = this->controller.container.threads.at(0);
+        auto* thread = this->controller.seat_thread(this->suite_slot());
         if (thread == nullptr)
             break;
 
@@ -186,6 +203,8 @@ void bot_integration_test::mark_bot_logged_in(game_bot& bot)
 
 void bot_integration_test::try_complete_transfer(game_bot& bot)
 {
+    this->assert_thread();
+
     const auto source_bot_id = bot.transfer_from_bot_id();
     if (source_bot_id == 0)
         return;
@@ -194,7 +213,7 @@ void bot_integration_test::try_complete_transfer(game_bot& bot)
         bot.has_internal() == false)
         return;
 
-    this->controller.reown(source_bot_id, bot.id);
+    this->controller.move_owner(source_bot_id, bot.id);
 
     auto reconnected_index = std::optional<uint32_t>{};
     auto it                = std::find_if(this->_test_bots.begin(), this->_test_bots.end(), [&bot](auto& b) {
@@ -257,6 +276,8 @@ void bot_integration_test::try_complete_transfer(game_bot& bot)
 
 void bot_integration_test::try_notify_ready()
 {
+    this->assert_thread();
+
     if (this->is_ready() == false)
         return;
 
@@ -518,4 +539,16 @@ async::task<void> bot_integration_test::on_hook_update_external(fb::bot::game_bo
 async::task<void> bot_integration_test::sleep(std::chrono::milliseconds duration)
 {
     co_await this->controller.container.threads.current()->sleep(duration);
+}
+
+void bot_integration_test::assert_thread() const
+{
+#if defined(DEBUG) || defined(_DEBUG)
+    if (this->_suite_slot == 0)
+        throw std::runtime_error(std::format("{}: suite_slot is not assigned", this->name()));
+
+    auto* seat = this->controller.seat_thread(this->_suite_slot);
+    if (seat == nullptr || seat->id() != std::this_thread::get_id())
+        throw std::runtime_error(std::format("{}: test mutation on non-seat thread", this->name()));
+#endif
 }

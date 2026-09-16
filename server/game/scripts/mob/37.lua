@@ -5,12 +5,6 @@ local ACHIEVEMENT_RABBIT_CAPTURE = 20
 local ITEM_RABBIT_LIVER = '토끼의간'
 
 return {
-    -- on_mob_attack = function(me, you)
-    -- end,
-
-    -- on_mob_die = function(me)
-    -- end,
-
     on_mob_kill = function(me, mobs)
         if me == nil or mobs == nil or #mobs == 0 then
             return
@@ -57,7 +51,4 @@ return {
         me:push_achievement(ACHIEVEMENT_RABBIT_CAPTURE, '토깽이를 성공적으로 포획했다!', 7, 1)
         me:dialog(mob, '으으윽..', { prev = false, next = false })
     end,
-
-    -- on_mob_spell_hit = function(me, you, spell)
-    -- end
 }

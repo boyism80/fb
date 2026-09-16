@@ -25,11 +25,8 @@ async::task<bool> click<V>::handle(fb::socket<character>& session, game_reqs::cl
 
     // Object-flag click (map object, F1/F2, dialog TOP): drop any waiting dialog first.
     // Real NPC then restarts via on_click; sentinel oid 0xFFFFFFFD just closes.
-    if (request.flag == game_reqs::click<V>::FLAG_OBJECT && ch->dialog != nullptr)
-    {
-        ch->dialog->release();
-        ch->dialog = nullptr;
-    }
+    if (request.flag == game_reqs::click<V>::FLAG_OBJECT)
+        ch->cancel_dialog("dialog cancelled");
 
     if (request.oid == 0xFFFFFFFF)
     {
@@ -63,7 +60,7 @@ async::task<void> click<V>::handle_f1(character* ch)
         co_return;
 
     lua->pushobject(ch);
-    fb::lua::detach_call(std::move(lua), 1);
+    fb::lua::run_async(std::move(lua), 1);
 }
 
 template <fb::protocol::CLIENT_VERSION V>
@@ -81,7 +78,7 @@ async::task<void> click<V>::handle_f2(character* ch)
         co_return;
 
     lua->pushobject(ch);
-    fb::lua::detach_call(std::move(lua), 1);
+    fb::lua::run_async(std::move(lua), 1);
 }
 
 template <fb::protocol::CLIENT_VERSION V>
@@ -117,7 +114,7 @@ async::task<void> click<V>::handle_object_click(character* ch, game_reqs::click<
 
         lua->pushobject(ch);
         lua->pushobject(static_cast<npc&>(*you));
-        fb::lua::detach_call(std::move(lua), 2);
+        fb::lua::run_async(std::move(lua), 2);
     }
     break;
     }

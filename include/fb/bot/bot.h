@@ -30,6 +30,7 @@ protected:
     hook_container       _hooks;
     fb::async_executor&  _executor;
     base_bot_controller& _bot_controller;
+    fb::thread*          _pinned_thread = nullptr;
 
 public:
     const uint32_t id;
@@ -55,6 +56,8 @@ public:
 
 public:
     virtual fb::thread* thread() const;
+    void                pin_thread(fb::thread* t);
+    fb::thread*         pinned_thread() const;
 };
 
 template <typename BotType>

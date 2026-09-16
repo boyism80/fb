@@ -66,9 +66,11 @@ public:
     void initialize() override;
 
     void                  own(uint32_t bot_id, bot_integration_test* test);
-    void                  reown(uint32_t old_bot_id, uint32_t new_bot_id);
+    void                  move_owner(uint32_t old_bot_id, uint32_t new_bot_id);
     bot_integration_test* owner_of(uint32_t bot_id);
     void                  clear_ownership_for_test(bot_integration_test* test);
+    fb::thread*           seat_thread(uint32_t suite_slot) const;
+    void                  pin_bot_to_seat(uint32_t bot_id, bot_integration_test* test);
 
     void     notify_test_ready(bot_integration_test* test);
     void     enqueue_test(std::unique_ptr<bot_integration_test> test, bool serial, bool extra_slot);

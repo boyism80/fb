@@ -126,7 +126,7 @@ async::task<void> login_bot_controller::on_transfer(login_bot& bot, const fb_res
 
     auto created = this->container.game->create(response.parameter);
     if (auto* game = dynamic_cast<fb::bot::integration::game_bot_controller*>(this->container.game.get()))
-        game->reown(bot.id, created->id);
+        game->move_owner(bot.id, created->id);
 
     created->connect(endpoint);
 

@@ -120,11 +120,9 @@ async::task<bool> dialog<V>::handle(fb::socket<character>& session, game_reqs::d
     if (ch == nullptr || ch->inited() == false)
         co_return true;
 
-    if (ch->dialog == nullptr)
+    auto lua = ch->take_dialog();
+    if (lua == nullptr)
         co_return true;
-
-    auto lua   = ch->dialog;
-    ch->dialog = nullptr;
 
     switch (request.type)
     {
@@ -180,7 +178,7 @@ async::task<bool> dialog<V>::handle(fb::socket<character>& session, game_reqs::d
     }
 
     default:
-        lua->release();
+        lua->reject("unsupported dialog type");
         break;
     }
 

@@ -295,7 +295,7 @@ async::task<void> map::container::run_init_script(const std::shared_ptr<fb::game
         co_return;
 
     lua->pushobject(map);
-    fb::lua::detach_call(std::move(lua), 1);
+    fb::lua::run_async(std::move(lua), 1);
 
     co_return;
 }

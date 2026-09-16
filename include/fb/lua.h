@@ -277,17 +277,6 @@ public:
         {
             return this->_ctx != nullptr;
         }
-
-        // Switch to the context owner thread then release. Prefer scope-end ~guard when
-        // already on the owner thread (e.g. after co_await call before any switching).
-        async::task<void> dispose();
-
-        // Drop ownership without releasing. Prefer assigning an empty guard when the
-        // context should still be reclaimed via release()/revoke().
-        void detach() noexcept
-        {
-            this->_ctx = nullptr;
-        }
     };
 
 public:
@@ -297,8 +286,12 @@ private:
     context*     _parent = nullptr;
     promise_type _promise;
     call_options _options;
-    bool         _call_engaged = false;
+    context**    _dialog_slot     = nullptr; // &character::dialog while parked
+    int          _running         = 0;
+    bool         _release_pending = false;
     std::string  _script_path;
+
+    void finish_resume();
 
 protected:
     lua_State*  _ctx = nullptr;
@@ -578,13 +571,16 @@ public:
     int                 yield(int retc);
     void                release();
     void                reject(std::string_view message);
+    void                drop(std::string_view message = "lua context dropped");
     void                parent(context* parent);
     context*            parent() const;
     void                options(call_options opts);
     const call_options& options() const;
-    bool                call_engaged() const;
-    void                clear_call_engaged();
     void                clear_script_path();
+    bool                has_dialog_slot() const;
+    void                bind_dialog_slot(context*& slot);
+    void                clear_dialog_slot();
+    std::string_view    script_path() const;
 
 public:
     class co_builder
@@ -755,9 +751,11 @@ public:
     context_pool(const context_pool&)             = delete;
     context_pool& operator= (const context_pool&) = delete;
 
+private:
+    context* new_context(context* parent = nullptr, call_options options = {});
+
 public:
     // clang-format off
-    context*            new_context(context* parent = nullptr, call_options options = {});
     context::guard      open(context* parent = nullptr, call_options options = {});
     context::guard      open(std::string_view path, std::string_view func, context* parent = nullptr, call_options options = {});
     async::task<void>   dump(std::string_view path);
@@ -789,9 +787,7 @@ void report_load_failed_from_stack(lua_State* L, std::string_view path);
 // No-op in release.
 void report_func_missing(std::string_view path, std::string_view func);
 
-// Move guard into a detached task that co_awaits call; caller returns immediately.
-// Used for dialog starters and other non-blocking script launches.
-void detach_call(context::guard g, int argc);
+void run_async(context::guard g, int argc);
 
 } // namespace fb::lua
 

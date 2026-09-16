@@ -334,7 +334,7 @@ async::task<void> life::attack(DURATION duration)
             {
                 weapon_lua->pushobject(ch);
                 weapon_lua->pushobject(weapon);
-                fb::lua::detach_call(std::move(weapon_lua), 2);
+                fb::lua::run_async(std::move(weapon_lua), 2);
             }
 
             // Handle weapon durability
@@ -378,7 +378,7 @@ bool life::active(fb::game::spell& spell, std::string_view message)
     lua->pushobject(this);
     lua->pushobject(spell.model());
     lua->pushstring(message);
-    fb::lua::detach_call(std::move(lua), 3);
+    fb::lua::run_async(std::move(lua), 3);
     return true;
 }
 
@@ -422,7 +422,7 @@ bool life::active(fb::game::spell& spell, fb::game::object& to)
     lua->pushobject(this);
     lua->pushobject(&to);
     lua->pushobject(spell.model());
-    fb::lua::detach_call(std::move(lua), 3);
+    fb::lua::run_async(std::move(lua), 3);
     return true;
 }
 
@@ -442,7 +442,7 @@ bool life::active(fb::game::spell& spell)
 
     lua->pushobject(this);
     lua->pushobject(spell.model());
-    fb::lua::detach_call(std::move(lua), 2);
+    fb::lua::run_async(std::move(lua), 2);
     return true;
 }
 

@@ -89,7 +89,7 @@ std::shared_ptr<equipment> items::equipment_off(EQUIPMENT_PARTS parts)
         lua->pushobject(*owner);
         lua->pushinteger(parts);
         lua->pushobject(*equipment);
-        fb::lua::detach_call(std::move(lua), 3);
+        fb::lua::run_async(std::move(lua), 3);
     }
 
     owner->show();
@@ -1072,7 +1072,7 @@ async::task<void> items::loot(bool boost)
         if (lua)
         {
             lua->pushobject(*owner);
-            fb::lua::detach_call(std::move(lua), 1);
+            fb::lua::run_async(std::move(lua), 1);
         }
 
         owner->assert_state({STATE::GHOST, STATE::RIDING});

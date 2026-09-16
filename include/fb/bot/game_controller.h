@@ -5,6 +5,7 @@
 #include <fb/game/protocol.h>
 #include <fb/bot/game_bot.h>
 #include <fb/logger.h>
+#include <mutex>
 
 namespace fb::bot {
 
@@ -96,6 +97,7 @@ public:
 
 private:
     std::unordered_map<uint32_t, std::shared_ptr<transfer_context>> _transfer_contexts;
+    mutable std::mutex                                              _transfer_mutex;
 
 protected:
     game_bot_controller(bot_container& container);

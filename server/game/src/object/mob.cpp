@@ -225,6 +225,10 @@ async::task<bool> mob::call_action_script()
     {
         fb::logger::warn(e.what());
     }
+    catch (...)
+    {
+        fb::logger::warn("unknown error in on_mob_action {}", model.id);
+    }
 
     auto shared = weak.lock();
     if (shared == nullptr)
@@ -251,7 +255,7 @@ async::task<void> mob::call_attack_script()
     else
         lua->pushnil();
 
-    fb::lua::detach_call(std::move(lua), 2);
+    fb::lua::run_async(std::move(lua), 2);
     co_return;
 }
 

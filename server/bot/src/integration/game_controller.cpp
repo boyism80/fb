@@ -4,10 +4,12 @@
 #include <fb/bot/game_bot.h>
 #include <fb/bot/container.h>
 #include <fb/bot/gateway_controller.h>
+#include <fb/bot/login_controller.h>
 #include <fb/logger.h>
 #include <fb/config.h>
 #include <async/awaitable_get.h>
 #include <async/awaitable_then.h>
+#include <format>
 
 using namespace fb::bot::integration;
 using table = fb::model::table;
@@ -112,22 +114,87 @@ uint32_t game_bot_controller::max_parallel_tests() const
     return this->_max_parallel_tests;
 }
 
-void game_bot_controller::own(uint32_t bot_id, bot_integration_test* test)
+fb::thread* game_bot_controller::seat_thread(uint32_t suite_slot) const
 {
-    auto lock                 = std::lock_guard(this->_schedule_mutex);
-    this->_bot_owners[bot_id] = test;
+    if (suite_slot < 1 || suite_slot > this->_max_parallel_tests)
+        throw std::runtime_error(
+            std::format("invalid suite_slot {} (max_parallel={})", suite_slot, this->_max_parallel_tests));
+
+    return this->container.threads.at(suite_slot - 1);
 }
 
-void game_bot_controller::reown(uint32_t old_bot_id, uint32_t new_bot_id)
+void game_bot_controller::pin_bot_to_seat(uint32_t bot_id, bot_integration_test* test)
 {
-    auto lock = std::lock_guard(this->_schedule_mutex);
-    auto it   = this->_bot_owners.find(old_bot_id);
-    if (it == this->_bot_owners.end())
+    if (test == nullptr || test->suite_slot() == 0)
         return;
 
-    auto* test = it->second;
-    this->_bot_owners.erase(it);
-    this->_bot_owners[new_bot_id] = test;
+    auto* seat = this->seat_thread(test->suite_slot());
+    if (seat == nullptr)
+        return;
+
+    std::shared_ptr<base_bot> bot;
+    this->read_bots([&](const auto& bots) {
+        auto it = bots.find(bot_id);
+        if (it != bots.end())
+            bot = it->second;
+    });
+
+    if (bot == nullptr && this->container.login != nullptr)
+    {
+        this->container.login->read_bots([&](const auto& bots) {
+            auto it = bots.find(bot_id);
+            if (it != bots.end())
+                bot = it->second;
+        });
+    }
+
+    if (bot == nullptr && this->container.gateway != nullptr)
+    {
+        this->container.gateway->read_bots([&](const auto& bots) {
+            auto it = bots.find(bot_id);
+            if (it != bots.end())
+                bot = it->second;
+        });
+    }
+
+    if (bot == nullptr)
+        return;
+
+    bot->pin_thread(seat);
+
+    auto builder = seat->new_builder<void>();
+    builder.func = [bot_id, bot](auto& thread) -> async::task<void> {
+        auto params = thread.template data<bot_thread_params>();
+        if (params != nullptr)
+            params->bots.insert({bot_id, bot});
+        co_return;
+    };
+    builder.enqueue();
+}
+
+void game_bot_controller::own(uint32_t bot_id, bot_integration_test* test)
+{
+    {
+        auto lock                 = std::lock_guard(this->_schedule_mutex);
+        this->_bot_owners[bot_id] = test;
+    }
+    this->pin_bot_to_seat(bot_id, test);
+}
+
+void game_bot_controller::move_owner(uint32_t old_bot_id, uint32_t new_bot_id)
+{
+    bot_integration_test* test = nullptr;
+    {
+        auto lock = std::lock_guard(this->_schedule_mutex);
+        auto it   = this->_bot_owners.find(old_bot_id);
+        if (it == this->_bot_owners.end())
+            return;
+
+        test = it->second;
+        this->_bot_owners.erase(it);
+        this->_bot_owners[new_bot_id] = test;
+    }
+    this->pin_bot_to_seat(new_bot_id, test);
 }
 
 bot_integration_test* game_bot_controller::owner_of(uint32_t bot_id)
@@ -219,6 +286,9 @@ async::task<void> game_bot_controller::run_one(bot_integration_test* test)
     auto need_cleanup = false;
     try
     {
+        auto* seat = this->seat_thread(test->suite_slot());
+        co_await seat->switching();
+
         fb::logger::info("Starting test '{}' (suite_slot={})", test->name(), test->suite_slot());
         test->prepare_ready_wait();
         co_await test->on_activated(*this);
@@ -495,7 +565,7 @@ async::task<void> game_bot_controller::on_transfer(game_bot& bot, const fb::prot
     auto created = this->create(response.parameter);
     created->set_transfer_from_bot_id(bot.id);
     created->set_name(bot.name());
-    this->reown(bot.id, created->id);
+    this->move_owner(bot.id, created->id);
     fb::logger::debug("bot transfer reconnect [integration]: bot={} old_bot_id={} new_bot_id={} endpoint={}:{}",
                       created->name(),
                       bot.id,
@@ -514,11 +584,17 @@ async::task<void> game_bot_controller::on_bot_connected(game_bot& bot)
     {
         test = this->owner_of(bot.transfer_from_bot_id());
         if (test != nullptr)
-            this->reown(bot.transfer_from_bot_id(), bot.id);
+            this->move_owner(bot.transfer_from_bot_id(), bot.id);
     }
 
     if (test != nullptr)
     {
+        this->pin_bot_to_seat(bot.id, test);
+
+        auto* seat = this->seat_thread(test->suite_slot());
+        if (seat != nullptr && seat->id() != std::this_thread::get_id())
+            co_await seat->switching();
+
         std::shared_ptr<game_bot> bot_shared;
         {
             auto guard = this->_bots.enter_read();

@@ -89,7 +89,7 @@ async::task<void> gateway_bot_controller::on_transfer(gateway_bot& bot, const fb
     auto endpoint = boost::asio::ip::tcp::endpoint(ip, response.port);
 
     if (auto* game = dynamic_cast<fb::bot::integration::game_bot_controller*>(this->container.game.get()))
-        game->reown(bot.id, created->id);
+        game->move_owner(bot.id, created->id);
 
     created->connect(endpoint);
 

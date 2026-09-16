@@ -85,11 +85,12 @@ local function click_expect(bot, expect_type)
     end
     local use_ext = (expect_type == "list" or expect_type == "normal" or expect_type == "input_ext")
     local fn = use_ext and bot.request_dialog_ext or bot.request_dialog
-    return fn(bot,
+    local packet = fn(bot,
         protocol.click(npc.oid),
         function(p)
             return p.type == expect_type
         end)
+    return packet
 end
 
 local function select_pursuit(bot, option, expect_type)

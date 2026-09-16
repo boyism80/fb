@@ -279,7 +279,7 @@ bool object::move(DIRECTION direction)
         if (lua)
         {
             lua->pushobject(*this);
-            fb::lua::detach_call(std::move(lua), 1);
+            fb::lua::run_async(std::move(lua), 1);
         }
     }
 
@@ -292,7 +292,7 @@ bool object::move(DIRECTION direction)
         if (map_lua)
         {
             map_lua->pushobject(*this);
-            fb::lua::detach_call(std::move(map_lua), 1);
+            fb::lua::run_async(std::move(map_lua), 1);
         }
     }
 
@@ -351,7 +351,7 @@ bool object::direction(DIRECTION value)
         if (lua)
         {
             lua->pushobject(*this);
-            fb::lua::detach_call(std::move(lua), 1);
+            fb::lua::run_async(std::move(lua), 1);
         }
     }
 

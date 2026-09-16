@@ -400,8 +400,17 @@ lua_integration_test::~lua_integration_test()
 
 void lua_integration_test::init_lua()
 {
-    auto& thread    = *this->controller.container.threads.at(0);
-    this->_lua_root = std::make_unique<fb::lua::root>(this->controller.container, thread);
+    auto* seat = this->controller.seat_thread(this->suite_slot());
+    if (seat == nullptr)
+        throw std::runtime_error(
+            std::format("{}: seat thread is null for suite_slot={}", this->name(), this->suite_slot()));
+
+#if defined(DEBUG) || defined(_DEBUG)
+    if (seat->id() != std::this_thread::get_id())
+        throw std::runtime_error(std::format("{}: init_lua must run on seat thread", this->name()));
+#endif
+
+    this->_lua_root = std::make_unique<fb::lua::root>(this->controller.container, *seat);
 
     auto& lua = *this->_lua_root;
 

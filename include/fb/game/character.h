@@ -363,6 +363,9 @@ public:
     [[nodiscard]] async::task<void>                           unride();
     bool                                                      alive() const;
     void                                                      message(std::string_view message, MESSAGE_TYPE type = MESSAGE_TYPE::STATE);
+    void                                                      cancel_dialog(std::string_view message);
+    fb::lua::context*                                         take_dialog();
+    void                                                      set_dialog(fb::lua::context* ctx);
     async::task<void>                                         whisper(std::string receiver_name, std::string message);
     void                                                      thread(fb::thread* value);
     void                                                      browse_ch(const character& ch);

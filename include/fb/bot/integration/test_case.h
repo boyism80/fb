@@ -134,6 +134,7 @@ public:
     bool                    serial() const;
     void                    prepare_ready_wait();
     async::task<void>       wait_until_ready();
+    void                    assert_thread() const;
 };
 
 } // namespace fb::bot::integration

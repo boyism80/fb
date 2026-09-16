@@ -74,7 +74,8 @@ public:
 
     static uint32_t get_thread_count()
     {
-        return 1;
+        auto count = fb::config<uint32_t>("integration:max_parallel_tests", 4u);
+        return count == 0 ? 1u : count;
     }
 
     static uint32_t get_io_size()

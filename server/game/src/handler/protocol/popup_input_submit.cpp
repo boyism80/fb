@@ -13,11 +13,10 @@ async::task<bool> popup_input_submit<V>::handle(fb::socket<character>&          
     if (ch == nullptr || ch->inited() == false)
         co_return true;
 
-    if (ch->dialog == nullptr)
+    auto lua = ch->take_dialog();
+    if (lua == nullptr)
         co_return true;
 
-    auto lua    = ch->dialog;
-    ch->dialog  = nullptr;
     std::ignore = request.param0;
     lua->pushstring(request.text);
     lua->resume(1);
