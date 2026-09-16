@@ -66,6 +66,7 @@ uint16_t game_bot::map() const
 
 void game_bot::set_map(uint16_t value)
 {
+    this->_instance_slot.reset();
     this->_map = value;
 }
 
@@ -573,7 +574,8 @@ game_bot::map_move(std::string_view map_name, uint16_t x, uint16_t y, std::chron
     {
         co_return;
     }
-    else if (this->_map == map->id && this->_position == fb::model::point<uint16_t>{x, y})
+    else if (this->_map == map->id && this->_position == fb::model::point<uint16_t>{x, y} &&
+             this->_instance_slot.has_value() == false)
     {
         co_return;
     }
@@ -595,6 +597,8 @@ game_bot::map_move(std::string_view map_name, uint16_t x, uint16_t y, std::chron
             },
             timeout);
     }
+
+    this->_instance_slot.reset();
 }
 
 async::task<void>
@@ -606,6 +610,27 @@ game_bot::map_move(std::string_view map_name, uint16_t x, uint16_t y, uint32_t s
     if (map == nullptr)
         co_return;
 
+    if (this->_map == map->id && this->_position == fb::model::point<uint16_t>{x, y} && this->_instance_slot == slot)
+        co_return;
+
+    // Same model.id + same coords but slot untracked/mismatch: server may be a no-op
+    // (already on destination instance at that tile) and emit no 0x04. Nudge first so
+    // the final /맵이동 always produces a position packet.
+    if (this->_map == map->id && this->_position == fb::model::point<uint16_t>{x, y} && this->_instance_slot != slot)
+    {
+        auto nudge_x       = static_cast<uint16_t>(x == 0 ? x + 1 : x - 1);
+        auto nudge_y       = y;
+        auto nudge_command = std::format("/맵이동 {} {} {} {}", map_name_str, nudge_x, nudge_y, slot);
+        std::ignore        = co_await this->request<game_resp::position>(
+            game_reqs::chat<BOT_CLIENT_VERSION>{false, nudge_command},
+            [nudge_x, nudge_y](auto& resp) -> bool {
+                return resp.abs.x == nudge_x && resp.abs.y == nudge_y;
+            },
+            timeout);
+    }
+
+    // Instance and source share model.id, so map_config cannot prove slot entry.
+    // Same-model moves still emit position (warp) or map_config+position (S->C / C->C).
     if (this->_map != map->id)
     {
         std::ignore = co_await this->request<game_resp::map_config_v550>(
@@ -617,10 +642,15 @@ game_bot::map_move(std::string_view map_name, uint16_t x, uint16_t y, uint32_t s
     }
     else
     {
-        this->chat(command);
-        auto wait = timeout < 1500ms ? timeout : 1500ms;
-        co_await this->thread()->sleep(wait);
+        std::ignore = co_await this->request<game_resp::position>(
+            game_reqs::chat<BOT_CLIENT_VERSION>{false, command},
+            [x, y](auto& resp) -> bool {
+                return resp.abs.x == x && resp.abs.y == y;
+            },
+            timeout);
     }
+
+    this->_instance_slot = slot;
 }
 
 async::task<void> game_bot::change_level(uint8_t level, std::chrono::milliseconds timeout)

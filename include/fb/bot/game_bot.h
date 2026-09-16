@@ -95,6 +95,7 @@ private:
     std::vector<pattern_params>     _pattern_params;
     datetime                        _next_action_time;
     uint16_t                        _map = 0xFFFF;
+    std::optional<uint32_t>         _instance_slot;
     uint32_t                        _oid = 0;
     point<uint16_t>                 _position;
     bool                            _has_position = false;
